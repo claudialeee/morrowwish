@@ -8,6 +8,27 @@ let lang=(()=>{let explicit=null;
  return (navigator.language||"en").toLowerCase().startsWith("zh")?"zh":"en";
 })();
 const words={
+"an indie game studio":"独立游戏工作室",
+"We make playful worlds about imagination, freedom and delightful surprises. No pressure, no endless menus—just a little joy to discover.":"我们创造充满想象、自由与惊喜的游戏世界。不必精通任何技巧，也无需面对冗长的菜单，只要来发现一点小小的快乐。",
+"60-SECOND CHALLENGE":"60 秒挑战",
+"Match food to hungry fish. Keep the water clean!":"给小鱼喂对食物，保持水质清洁！",
+"Feed the fish":"去喂小鱼",
+"Feed the fish ":"去喂小鱼 ",
+"✷ Play instantly":"✷ 即点即玩",
+"♡ Follow your curiosity":"♡ 跟随好奇心",
+"☼ Come back whenever":"☼ 随时回来玩",
+"Independent games for curious people.":"为好奇的人制作独立游戏。",
+"Play our worlds":"探索游戏世界",
+"03 / THE WHOLE IDEA":"03 / 我们的想法",
+"Play Flip Dash":"开始玩翻转冲刺",
+"Play Parcel Panic":"开始玩包裹分拣",
+"Play Pocket Aquarium":"开始玩口袋水族馆",
+"Flip Dash":"翻转冲刺",
+"Parcel Panic":"包裹分拣",
+"Pocket Aquarium":"口袋水族馆",
+"Pawsibly":"猫猫",
+"Innocent!":"绝对无辜！",
+
 "Morrow Wish home":"Morrow Wish 首页",
 "Play Pawsibly Innocent!":"开始玩猫猫大捣蛋","A mischievous orange cartoon cat in a cozy room":"温馨客厅里的淘气橘猫","Our worlds":"我们的世界","Tiny games":"小游戏","About":"关于","Find your next adventure":"寻找下一段冒险",
 "THE HOME OF NOT-SO-ORDINARY DAYS":"让平凡的日子有点不一样",
