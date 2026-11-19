@@ -4,6 +4,14 @@ on:
     branches: [main]
     paths:
       - 'public/pawsibly-innocent/**'
+      - 'public/studio-audio.js'
+      - 'public/hub.css'
+      - 'public/elsewhere/index.html'
+      - 'public/tiny-town/index.html'
+      - 'public/flip-dash/index.html'
+      - 'public/parcel-panic/index.html'
+      - 'public/pocket-aquarium/index.html'
+      - 'public/upgrade.js'
       - 'public/lang.js'
       - 'public/index.html'
       - 'scripts/browser-test-pawsibly.mjs'

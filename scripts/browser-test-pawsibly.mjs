@@ -82,7 +82,52 @@ try{
  assert.match(homeZh.footer,/独立游戏/,'Footer must be Chinese');
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
  assert.match(homeZh.catTitle,/猫猫绝对无辜/,'Chinese flagship title must appear');
- assert.ok(homeZh.miniHeight<420,'Short arcade section should be compact');
- assert.ok(homeZh.aboutHeight<310,'About section should be compact');
- console.log('CHROMIUM CANVAS + CONTROLS + BILINGUAL GAME + COMPACT CHINESE HOMEPAGE PASSED');
+ assert.ok(homeZh.miniHeight>420&&homeZh.miniHeight<720,'The 02 game gallery must be comfortably sized');
+ assert.ok(homeZh.aboutHeight>230&&homeZh.aboutHeight<420,'The 03 studio introduction should be medium-sized');
+ // The cat's core distraction needs to work with real pointer input and clear feedback.
+ await page.goto(url,{waitUntil:'load',timeout:40000});
+ const enHelp=await page.locator('#yarnExplain').textContent();
+ assert.match(enHelp,/human|noise|investigate/i,'English help explains how yarn works');
+ const initialYarn=await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn);
+ await page.locator('#tool').click();await page.waitForTimeout(200);
+ const tossed=await page.evaluate(()=>{
+  const s=window.__PAWSIBLY_TEST__.getState();
+  return {yarn:s.yarn,noise:s.noise,trail:s.throwTrail,alert:s.alert,sound:window.MorrowwishAudio?.status()};
+ });
+ console.log('Real yarn button and audio:',JSON.stringify(tossed));
+ assert.equal(tossed.yarn,initialYarn-1,'Yarn ball should be consumed after pressing the button');
+ assert.ok(tossed.noise&&tossed.trail,'Yarn ball should draw an arc and lure the human');
+ assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.loopSteps>0,'Real WebAudio soundtrack should emit notes after user click');
+ assert.ok(tossed.sound.playing,'Original cat background score should be playing');
+ await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
+ assert.match(await page.locator('#yarnExplain').textContent(),/主人|毛线/,'Chinese explanation for yarn is clear');
+ assert.match(await page.locator('#catLegend').textContent(),/纸箱|小鱼/,'Chinese prop legend is present');
+ const audioButton=page.locator('#sound');
+ await audioButton.click();
+ assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
+ await audioButton.click();
+ assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Sound button must restore audio');
+
+ // All six showcased studio games must have real audio controls and synthesized music.
+ const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','pawsibly-innocent'];
+ for(const game of routes){
+  const p=await browser.newPage({viewport:{width:1250,height:900}});
+  try{
+   await p.goto(new URL('/'+game+'/',url).toString(),{waitUntil:'load',timeout:40000});
+   await p.waitForTimeout(200);
+   assert.equal(await p.evaluate(()=>typeof window.MorrowwishAudio),'object','Audio engine missing in '+game);
+   const control=p.locator('[data-mw-audio]');
+   assert.equal(await control.count(),1,'Must show exactly one audio toggle in '+game);
+   // A trusted pointer interaction unlocks Web Audio without an autoplay attempt.
+   await p.mouse.click(25,450);await p.waitForTimeout(680);
+   const sound=await p.evaluate(()=>window.MorrowwishAudio.status());
+   console.log('Audio smoke '+game+': '+JSON.stringify(sound));
+   assert.equal(sound.enabled,true,'Music must be enabled after the first click in '+game);
+   assert.equal(sound.playing,true,'Music loop must start in '+game);
+   assert.ok(sound.oscillators>0&&sound.loopSteps>0,'Synthesizer must play actual notes in '+game);
+   await control.click();assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute must work in '+game);
+   await control.click();assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Unmute must work in '+game);
+  }finally{await p.close()}
+ }
+ console.log('CHROMIUM CAT GAMEPLAY, BILINGUAL YARN TUTORIAL, HOME LAYOUT AND SIX ORIGINAL MUSIC SCORES PASS');
 }finally{await browser.close()}
