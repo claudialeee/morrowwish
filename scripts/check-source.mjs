@@ -199,15 +199,21 @@ for(const source of [mysterySource,'public/elsewhere/app.js'])new vm.Script(fs.r
 console.log('Elsewhere mystery validation: 2,048 simulated ending paths, four secret illustrations, old save support, and bilingual endings checked.');
 
 
-// Four intentionally distinct, original looping soundtracks, separate from SFX.
-const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
-new vm.Script(originalMusic,{filename:'public/studio-music.js'});
-for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
+// Four distinct complete CC0 recordings, native seamless looping, separate from game SFX.
+const recordedMusic=fs.readFileSync('public/studio-music.js','utf8');
+new vm.Script(recordedMusic,{filename:'public/studio-music.js'});
+const licensedTracks={
+ 'tiny-town':'bedroom-window-vast.mp3',
+ 'flip-dash':'overdrive-signal-lost.mp3',
+ 'parcel-panic':'evergreen-open-road.mp3',
+ 'pocket-aquarium':'quiet-room.mp3'
+};
+for(const [slug,filename] of Object.entries(licensedTracks)){
  const page=fs.readFileSync('public/'+slug+'/index.html','utf8');
- if(!page.includes('src="/studio-music.js"')||!page.includes('src="/studio-audio.js"')){
+ if(!page.includes('src="/studio-music.js"')||!page.includes('src="/studio-audio.js"'))
   throw new Error('Music and SFX must both load: '+slug);
- }
- if(!originalMusic.includes("'"+slug+"':{"))throw new Error('Original music profile missing: '+slug);
+ if(!recordedMusic.includes("'"+slug+"':")||!recordedMusic.includes(filename))
+  throw new Error('Licensed music profile missing: '+slug);
 }
 const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
 for(const marker of ['function portrait(person)','data:image/webp;base64,','function homesView(','fans=state.residents.filter(']){
@@ -215,7 +221,9 @@ for(const marker of ['function portrait(person)','data:image/webp;base64,','func
 }
 if(!fs.readFileSync('public/studio-audio.js','utf8').includes('[data-mw-music]'))
  throw new Error('Music toggle must not trigger the sound effects button');
-console.log('Game music: 4 original profiles, independent bilingual controls, and 12 illustrated portraits checked.');
+if(!recordedMusic.includes('audio.loop=true')||!recordedMusic.includes('if(enabled)play(); // Attempt immediately'))
+ throw new Error('Recorded music must loop and attempt to play on load');
+console.log('Game music: 4 CC0 instrumental recordings, native loop, independent bilingual controls, and illustrated portraits checked.');
 
 // Five-scene Elsewhere runtime validation: test the actual adapter and the release HTML.
 const fiveSceneSandbox={window:{}};
@@ -270,16 +278,14 @@ for(const pattern of ['audio.autoplay=enabled','if(enabled)start();','setWorld:s
 }
 console.log('Five-scene Elsewhere runtime validation: four short lives, reachable secrets, translated story, illustrated endings and immediate music attempt checked.');
 
-// Instant soundtrack attempt + in-game weekly news placement/regression checks.
-const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
-if(!immediateMusic.includes('if(enabled)start(); // Immediately attempt at script execution')||
-   !immediateMusic.includes('nextTime=ctx.currentTime+.008')||
-   !immediateMusic.includes('ctx.onstatechange=')||
-   !immediateMusic.includes('function pauseScheduling()')||
-   !immediateMusic.includes("if(enabled&&(!running||ctx?.state!=='running'))start()")||
-   !immediateMusic.includes("evt.target?.closest?.('[data-mw-music]')")||
-   !immediateMusic.includes('if(nextTime<ctx.currentTime-halfBeat*2)'))
- throw new Error('Soundtrack must stay in sync with AudioContext, recover after suspension, and not silence itself on music-button click');
+// Native media audio avoids Web Audio oscillator timers and resumes after page sleep.
+const recordedEngine=fs.readFileSync('public/studio-music.js','utf8');
+if(!recordedEngine.includes('if(enabled)play(); // Attempt immediately')||
+   !recordedEngine.includes("audio.loop=true")||
+   !recordedEngine.includes('audio.addEventListener(\'playing\'')||
+   !recordedEngine.includes("evt.target?.closest?.('[data-mw-music]')")||
+   !recordedEngine.includes('FALLBACK+track.file'))
+ throw new Error('Music player must auto-attempt, loop, recover when tapped, and support fallback CDN');
 for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
  const html=fs.readFileSync('public/'+slug+'/index.html','utf8');
  if(!html.includes('rel="preload" href="/studio-music.js" as="script"'))throw new Error('Music should preload: '+slug);
