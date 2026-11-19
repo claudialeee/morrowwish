@@ -300,6 +300,44 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
 .tt-builder-rail .choice.tt-liked{background:#eef9f4;border-color:#a0d4bb}
 .tt-builder-rail .choice .tt-fit{margin-top:4px;font-size:9px;color:#82658c;font-weight:850;line-height:1.3}
 .tt-journey[data-step="3"] ~ .tt-playstage .tt-map-panel,.tt-journey[data-step="3"] ~ .tt-news-panel{border-color:#cfb0c6;box-shadow:0 0 0 2px #d7bad65a}
+
+/* Cohesive grouped households, original illustrated human SVG portraits. */
+.tt-playstage{grid-template-columns:248px minmax(0,1fr) 236px}
+.tt-resident-rail{max-height:none;overflow:visible}
+.tt-resident-rail .residents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.tt-household{min-width:0;border:1px solid #eadbd6;background:linear-gradient(155deg,#fffaf6,#ffefea);border-radius:13px;padding:7px 5px;box-shadow:0 2px 5px #d9b4b21c}
+.tt-house-head{display:flex;align-items:center;justify-content:space-between;gap:3px;margin:0 2px 6px;font-size:11px;font-weight:900;color:#866d7b}
+.tt-house-head small{font-size:9px;color:#aa929d;font-weight:700}
+.tt-house-people{display:flex;justify-content:space-evenly;align-items:start;gap:3px;min-height:71px}
+.tt-resident-rail .tt-person{min-width:0;flex:1;padding:3px 1px;border:1px solid transparent;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:transparent;color:#69576b;text-align:center}
+.tt-resident-rail .tt-person:hover{background:#f7eae8}
+.tt-resident-rail .tt-person.awSelected{background:#eee6fa;border-color:#ac91d4}
+.tt-person .tt-portrait{width:40px;height:40px;max-width:100%;border-radius:12px;display:block;position:relative;overflow:hidden}
+.tt-person .tt-portrait svg{display:block;width:100%;height:100%}
+.tt-person b{display:block;font-size:10px;line-height:1.1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tt-person small{font-size:10px;white-space:nowrap;color:#977885}
+.tt-person .tt-gender{position:absolute;right:0;bottom:0;border-radius:6px 0 9px 0;background:#fff9f4dd;font-size:9px;line-height:12px;padding:0 3px;color:#795b74;font-weight:900}
+.tt-person.is-active .tt-portrait{box-shadow:0 0 0 2px #9bdbc4}
+.tt-incoming{margin-top:10px}
+.tt-incoming .tt-household{background:#faf6f2;border-style:dashed;opacity:.8}
+.tt-builder-rail .cards{display:grid;grid-template-columns:1fr;gap:7px}
+.tt-builder-rail .choice{width:100%;display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:10px;min-height:56px;padding:7px 10px;text-align:left;border-radius:12px}
+.tt-builder-rail .choice .ico{font-size:26px;line-height:1.1;flex:none}
+.tt-builder-rail .choice .tt-card-copy{min-width:0;display:flex;flex-direction:column;gap:2px;flex:1}
+.tt-builder-rail .choice .label{font-size:12px;line-height:1.2;font-weight:900}
+.tt-builder-rail .choice .detail{font-size:10px;line-height:1.3}
+.tt-builder-rail .choice .tt-fit{font-size:9px;margin:0}
+.tt-builder-rail .choice .tt-card-arrow{color:#c8a3a7;font-size:16px;font-weight:900}
+.tt-builder-rail .choice.active .tt-card-arrow{color:#8a5c96}
+.tt-builder-rail .tt-club-example{font-size:10px;line-height:1.6}
+.tt-builder-rail .awClub .aw-club-venues span{font-size:10px}
+.tt-resident-detail{font-size:11px;line-height:1.5}
+.tile .tt-club-pending{position:absolute;right:2px;top:2px;font-size:9px;line-height:1.2;padding:3px 5px;background:#e9d8f8;color:#62518a;border-radius:8px;font-weight:850;z-index:10}
+.visitor svg{width:22px;height:22px;vertical-align:middle;border-radius:50%}
+.runner svg{width:27px;height:27px;vertical-align:middle}
+@media(max-width:1040px){.tt-playstage{grid-template-columns:218px minmax(0,1fr) 214px;gap:9px}.tt-person .tt-portrait{width:35px;height:35px}.tt-house-people{min-height:67px}}
+@media(max-width:780px){.tt-playstage{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}.tt-resident-rail .residents{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:570px){.tt-playstage{grid-template-columns:1fr}.tt-resident-rail .residents,.tt-incoming .residents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.tt-person .tt-portrait{width:44px;height:44px}.tt-house-people{min-height:79px}.tt-builder-rail .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.tt-builder-rail .choice{min-width:0;height:89px;min-height:89px;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;padding:5px 3px}.tt-builder-rail .choice .ico{font-size:23px}.tt-builder-rail .choice .tt-card-copy{align-items:center;justify-content:start;gap:2px;flex:none}.tt-builder-rail .choice .label{font-size:10px}.tt-builder-rail .choice .detail{font-size:9px}.tt-builder-rail .choice .tt-card-arrow{display:none}.tt-builder-rail .choice .tt-fit{font-size:8px;line-height:1.1}.tt-resident-rail .tt-rail-hint{font-size:10px}}
 </style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
 <body><script src="/telemetry.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
   <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
@@ -316,9 +354,9 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
 </div>
 <div class="tt-playstage">
  <aside class="panel tt-resident-rail" aria-label="Residents and interests">
-  <div class="tt-rail-heading"><b class="aw-en">👥 Your neighbors</b><b class="aw-zh">👥 居民喜欢什么？</b><span id="ttResidentCount">8</span></div>
-  <p class="tt-rail-hint aw-en">First interest is their favorite. Tap someone to see their walking area.</p>
-  <p class="tt-rail-hint aw-zh">每个人的第一项是最喜欢的活动。点居民可查看活动范围。</p>
+  <div class="tt-rail-heading"><b class="aw-en">👥 Neighbors by home</b><b class="aw-zh">👥 邻居与同住的人</b><span id="ttResidentCount">8</span></div>
+  <p class="tt-rail-hint aw-en">Tap a portrait for hobbies and walking range.</p>
+  <p class="tt-rail-hint aw-zh">同住的人放在一起。点头像看兴趣和步行范围。</p>
   <div class="residents" id="residents"></div>
   <p class="hint aw-resident-hint" id="focusInfo" hidden></p>
   <div class="info tt-resident-detail" id="residentWhy" hidden></div>
@@ -334,9 +372,9 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
    <strong id="awCoachTitle">Choose a place to build</strong>
    <p id="awCoachText">Look at neighbors' interests, then pick a venue on the right.</p>
   </div>
-  <div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div><div class="aw-club-links" id="clubLinks" aria-hidden="true"></div></div>
+  <div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div></div>
   <div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div>
-  <div class="tt-map-footer"><span class="aw-en">Connected venues show 0/2 → 1/2 → ✓ club progress</span><span class="aw-zh">相邻场所的连线显示社团进度：0/2 → 1/2 → ✓</span></div>
+  <div class="tt-map-footer"><span class="aw-en">Tap a resident on the left to highlight their walking area.</span><span class="aw-zh">点击左边居民，可查看他们能步行到达的格子。</span></div>
   <div class="info tt-preview" id="preview"><span class="aw-en">Pick a venue first.</span><span class="aw-zh">先在右边选择一个场所。</span></div>
   <details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details>
  </section>
@@ -353,7 +391,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
   <div class="tt-divider"></div>
   <div class="tt-subheading"><span class="aw-en">🎉 Club progress</span><span class="aw-zh">🎉 社团进度</span></div>
   <div class="feed" id="clubProgress"></div>
-  <div class="tt-club-example"><span class="aw-en">Example: 🎮 Arcade + 🎵 Music Studio next to each other; 2 visitors at each for 2 weeks → Rhythm Club.</span><span class="aw-zh">例如：🎮 街机厅挨着 🎵 音乐工作室，两处每周都至少有 2 人，连续 2 周 → 节奏社。</span></div>
+  <div class="tt-club-example"><span class="aw-en">🎮 When the same 2 gaming fans visit an arcade two weeks in a row, they start a Gaming Club. No building adjacency needed.</span><span class="aw-zh">🎮 两位爱玩游戏的居民连续两周一起去街机厅，就会成立游戏社。不需要两个建筑挨在一起。</span></div>
  </aside>
 </div>
 <section class="panel tt-news-panel" aria-label="Town news">
@@ -383,16 +421,14 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     art:{name:'Art Workshop',icon:'🎨',color:'#f9c879',capacity:2},
     social:{name:'Café',icon:'☕',color:'#9ddbc2',capacity:2}
   };
-  const COMBOS = {
-    'game|music':{name:'Rhythm Club',icon:'🎶'},
-    'art|game':{name:'Indie Game Studio',icon:'🕹️'},
-    'game|social':{name:'Board Game Nights',icon:'🎲'},
-    'art|music':{name:'Street Performers',icon:'🎸'},
-    'music|social':{name:'Open Mic',icon:'🎤'},
-    'art|social':{name:'Art Salon',icon:'🖌️'}
+  const CLUBS = {
+    game: {name:'Gaming Club',icon:'🎮'},
+    music:{name:'Music Club',icon:'🎵'},
+    art:{name:'Art Club',icon:'🎨'},
+    social:{name:'Café Friends',icon:'☕'}
   };
   const NAMES = ['Leo','Mia','Kai','Lucy','Lulu','Bobby','Eva','David'];
-  const FACES = ['🙂','😺','😊','😎','😄','🥰','🤓','😋'];
+  const GENDERS = ['male','female','male','female','female','male','female','male'];
   function hash(n) { n |= 0; n = Math.imul(n ^ n >>> 16, 0x7feb352d); n = Math.imul(n ^ n >>> 15, 0x846ca68b); return (n ^ n >>> 16) >>> 0; }
   function rng(seed) {let v = seed>>>0;return function(){v=(v+0x6d2b79f5)>>>0;let t=v;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
   function shuffle(a,rand){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -402,16 +438,17 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     // Mixed interests; a primary and secondary interest for each resident.
     const primaries=shuffle(['game','game','game','game','music','music','art','social'],r);
     const freeHomes=Array.from({length:16},(_,p)=>p).filter(p=>!obstacles.includes(p));
+    const homes=shuffle(freeHomes,r); // Four pairs of housemates, then two new households in Week 5.
     const residents=primaries.map((primary,i)=>{
       let others=TYPES.filter(t=>t!==primary), secondary=others[Math.floor(r()*others.length)];
-      let home=freeHomes[Math.floor(r()*freeHomes.length)];
-      return {id:i,name:NAMES[i],face:FACES[i],primary,secondary,home,reach:2+Math.floor(r()*3)};
+      let home=homes[Math.floor(i/2)];
+      return {id:i,name:NAMES[i],gender:GENDERS[i],primary,secondary,home,reach:2+Math.floor(r()*3)};
     });
     // Announced newcomer wave at the start of week 5. This changes demand and forces capacity tradeoffs.
     const incoming=shuffle(['game','game','music','art'],r).map((primary,i)=>{
       const secondary=TYPES.filter(t=>t!==primary)[Math.floor(r()*3)];
-      const home=freeHomes[Math.floor(r()*freeHomes.length)];
-      return {id:i+8,name:['Nora','Ben','Zoe','Max'][i],face:['🙂','😎','😊','🤓'][i],primary,secondary,home,reach:2+Math.floor(r()*3)};
+      const home=homes[4+Math.floor(i/2)];
+      return {id:i+8,name:['Nora','Ben','Zoe','Max'][i],gender:['female','male','female','male'][i],primary,secondary,home,reach:2+Math.floor(r()*3)};
     });
     const offers=Array.from({length:TURNS},()=>shuffle(TYPES,r).slice(0,3));
     return {seed,turn:0,obstacles,residents,incoming,offers,buildings:[],clubStreak:{},last:null,totalScore:0};
@@ -430,8 +467,6 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     return 999;
   }
   const adjacent=(a,b)=>distance(a,b)===1;
-  function pairKey(a,b){return [a,b].sort().join('|');}
-  function clubName(a,b){return COMBOS[pairKey(a,b)] || {name:'Community Club',icon:'🎉'};}
   function simulate(s){
     let b=s.buildings;
     let capacities=b.map(x=>INFO[x.type].capacity+(x.level-1));
@@ -444,8 +479,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
         if(interest<0)continue;
         let dist=walkDist(resident.home,building.pos,s.obstacles);
         if(dist>resident.reach)continue;
-        let nearComp=b.some((q,j)=>j!==bi&&adjacent(building.pos,q.pos)&&q.type!==building.type&& (q.type===resident.primary || q.type===resident.secondary));
-        let utility=interest-dist+(nearComp?2:0)+building.level-1;
+        let utility=interest-dist+building.level-1;
         if(utility>=6)candidates.push({ri,bi,utility,rank:hash(s.seed*19+ri*31+building.pos*7)%100});
       }
     }
@@ -454,22 +488,28 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     let assignments=Array(s.residents.length).fill(-1),occupancy=b.map(()=>[]);
     for(const c of candidates){if(assignments[c.ri]<0&&capacities[c.bi]>0){assignments[c.ri]=c.bi;occupancy[c.bi].push(c.ri);capacities[c.bi]--;}}
     let active=assignments.filter(n=>n>=0).length;
+    // A club grows out of a *shared interest*, not two unrelated adjacent buildings.
+    // At least two of the same people must return to one matching venue in consecutive weeks.
+    // Once founded, the club stays founded even if attendance changes later.
     let pending=[],streaks={},clubs=[];
-    for(let i=0;i<b.length;i++)for(let j=i+1;j<b.length;j++){
-      if(b[i].type===b[j].type||!adjacent(b[i].pos,b[j].pos))continue;
-      let participants=occupancy[i].length+occupancy[j].length;
-      // A club needs both venues used, >= 3 distinct attendees, and two consecutive weeks.
-      if(participants>=4&&occupancy[i].length>=2&&occupancy[j].length>=2){
-        let key=pairKey(b[i].pos,b[j].pos)+':'+pairKey(b[i].type,b[j].type);
-        streaks[key]=(s.clubStreak[key]||0)+1;
-        let desc=clubName(b[i].type,b[j].type);
-        let entity={key,positions:[b[i].pos,b[j].pos],types:[b[i].type,b[j].type],name:desc.name,icon:desc.icon,participants,streak:streaks[key]};
-        if(streaks[key]>=2)clubs.push(entity);else pending.push(entity);
-      }
+    for(let i=0;i<b.length;i++){
+      const venue=b[i],key='hobby:'+venue.type+':'+venue.pos;
+      const attendees=occupancy[i];
+      const prevAttendees=s.last?.occupancy?.[i]||[];
+      const returning=attendees.filter(ri=>prevAttendees.includes(ri));
+      const prior=s.clubStreak[key]||0;
+      let streak=0;
+      if(prior>=2)streak=prior; // Established clubs are persistent.
+      else if(attendees.length>=2)streak=prior===1&&returning.length>=2?2:1;
+      if(!streak)continue;
+      streaks[key]=streak;
+      const desc=CLUBS[venue.type];
+      const entity={key,type:venue.type,positions:[venue.pos],types:[venue.type],name:desc.name,icon:desc.icon,participants:attendees.length,members:attendees,returning,streak};
+      if(streak>=2)clubs.push(entity);else pending.push(entity);
     }
-    // Different locations can share a culture, but a culture counts only once.
-    clubs=clubs.filter((c,i,all)=>all.findIndex(o=>pairKey(...o.types)===pairKey(...c.types))===i);
-    pending=pending.filter((c,i,all)=>all.findIndex(o=>pairKey(...o.types)===pairKey(...c.types))===i);
+    // Each hobby counts as a single club category, even if several venues support it.
+    clubs=clubs.filter((c,i,all)=>all.findIndex(o=>o.type===c.type)===i);
+    pending=pending.filter(c=>!clubs.some(o=>o.type===c.type)).filter((c,i,all)=>all.findIndex(o=>o.type===c.type)===i);
     const empty=b.filter((v,i)=>occupancy[i].length===0).length;
     const attendedTypes=new Set(assignments.map((bi)=>bi<0?null:b[bi].type).filter(Boolean)).size;
     const score=active*10+clubs.length*24+pending.length*6+attendedTypes*4-empty*5;
@@ -504,7 +544,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     const grade=success?(s.totalScore>=1150?'S':s.totalScore>=1000?'A':'B'):'C';
     return {success,grade,active:v.active,clubs:v.clubs.length,totalScore:s.totalScore,finalScore:v.score};
   }
-  return {W,TURNS,TYPES,INFO,COMBOS,generate,simulate,moves,step,outcome,adjacent,distance,walkDist};
+  return {W,TURNS,TYPES,INFO,CLUBS,generate,simulate,moves,step,outcome,adjacent,distance,walkDist};
 });
 
 </script>
@@ -516,7 +556,7 @@ const icons=E.INFO;
 const explainKinds={game:'Gaming',music:'Music',art:'Art',social:'Social'};
 const zhVenues={game:'街机厅',music:'音乐工作室',art:'艺术工坊',social:'咖啡馆'};
 const zhKinds={game:'游戏',music:'音乐',art:'艺术',social:'社交'};
-const zhClubs={'Rhythm Club':'节奏社','Indie Game Studio':'独立游戏社','Board Game Nights':'桌游之夜','Street Performers':'街头表演社','Open Mic':'开放麦','Art Salon':'艺术沙龙','Community Club':'社区社团'};
+const zhClubs={'Gaming Club':'游戏社','Music Club':'音乐社','Art Club':'美术社','Café Friends':'咖啡友邻会'};
 const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
 const L=(en,cn)=>zh()?cn:en;
 const venue=t=>L(icons[t]?.name||t,zhVenues[t]||t);
@@ -524,6 +564,40 @@ const kind=t=>L(explainKinds[t]||t,zhKinds[t]||t);
 const club=n=>L(n,zhClubs[n]||n);
 const cell=p=>'ABCD'[p%4]+(Math.floor(p/4)+1);
 const all=()=>state.residents.concat(state.turn<5?state.incoming:[]);
+// Twelve original, friendly illustrated portraits — no smiley-face emoji and no external assets.
+function portrait(person){
+ const i=person.id,skin=['#edba96','#ce9776','#e9c09f','#ab7158','#f0c3ab','#be846e'][i%6];
+ const hair=['#49323b','#634033','#34394d','#7c4b39','#4a3445','#986347'][i%6];
+ const shirt=['#a18fd2','#88b9a5','#d9a17e','#95a8c9','#c68fa4','#9fbaa0'][i%6];
+ const bg=['#f4dfeb','#e5e9fa','#dceee6','#f8e4d5','#f5e7db','#e2ebf1'][i%6];
+ const female=person.gender==='female',long=female&&(i%3!==0),glasses=i%5===2;
+ const back=long?'<path d="M14 28 Q13 9 32 10 Q51 9 50 30 L52 55 L12 55Z" fill="'+hair+'"/>':'';
+ const front=long?'<path d="M17 23 Q16 10 31 12 Q48 11 47 25 L43 26 Q35 23 27 17 Q24 24 18 26Z" fill="'+hair+'"/>':female?
+ '<path d="M16 23 Q18 9 35 12 Q48 13 48 26 L43 25 Q37 18 27 19 L18 27Z" fill="'+hair+'"/>':
+ '<path d="M16 27 Q13 15 24 12 L28 14 Q40 7 48 18 L47 28 Q44 19 36 20 Q27 26 17 24Z" fill="'+hair+'"/>';
+ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'+
+ '<rect width="64" height="64" rx="15" fill="'+bg+'"/>'+back+
+ '<path d="M8 64 Q10 47 24 45 L40 45 Q54 47 56 64Z" fill="'+shirt+'"/>'+
+ '<path d="M28 41 L28 50 Q32 54 36 50 L36 41Z" fill="'+skin+'"/>'+
+ '<ellipse cx="32" cy="31" rx="17" ry="19" fill="'+skin+'"/>'+front+
+ '<path d="M22 30 q3 -2 6 0 M36 30 q3 -2 6 0" fill="none" stroke="'+hair+'" stroke-linecap="round" stroke-width="1.5"/>'+
+ '<circle cx="25.5" cy="32.5" r="1.5" fill="#43383e"/><circle cx="39" cy="32.5" r="1.5" fill="#43383e"/>'+
+ '<path d="M32 34 l-1 5 h3" fill="none" stroke="#a87169" stroke-linecap="round" stroke-width="1.1"/>'+
+ '<path d="M28.5 42 Q32 44 35.5 42" fill="none" stroke="#a65d6b" stroke-linecap="round" stroke-width="1.4"/>'+
+ (glasses?'<path d="M20 30 h11 v8 h-11z M34 30 h11 v8 h-11z M31 33 h3" fill="none" stroke="#775b68" stroke-width="1.4" rx="3"/>':'')+
+ '</svg>';
+}
+function homesView(people,sim,isUpcoming=false){
+ const groups=new Map();
+ for(const person of people){if(!groups.has(person.home))groups.set(person.home,[]);groups.get(person.home).push(person);}
+ return [...groups.entries()].sort((a,b)=>a[0]-b[0]).map(([home,members])=>
+ '<div class="tt-household" data-home="'+home+'"><div class="tt-house-head"><span>🏠 '+cell(home)+'</span><small>'+members.length+L(' people',' 人')+'</small></div><div class="tt-house-people">'+members.map(p=>{
+  const idx=state.residents.findIndex(x=>x.id===p.id),isOut=!isUpcoming&&idx>=0&&sim.assignments[idx]>=0,chosen=p.id===focusId;
+  const label=p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary);
+  return '<button type="button" class="tt-person'+(chosen?' awSelected':'')+(isOut?' is-active':'')+'" data-r="'+p.id+'" aria-label="'+safe(label)+'" title="'+safe(label)+'"><span class="tt-portrait">'+portrait(p)+'<span class="tt-gender">'+(p.gender==='female'?'♀':'♂')+'</span></span><b>'+safe(p.name)+'</b><small>'+icons[p.primary].icon+' · '+icons[p.secondary].icon+'</small></button>';
+ }).join('')+'</div></div>'
+ ).join('');
+}
 function reason(st,rs,i){
  const p=st.residents[i],bi=rs.assignments[i];
  if(bi>=0)return L('Attending '+icons[st.buildings[bi].type].name+' ('+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' steps)','正在参加'+venue(st.buildings[bi].type)+'（步行 '+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' 格）');
@@ -534,55 +608,36 @@ function reason(st,rs,i){
 }
 function statusUI(){
  const rs=state.last||E.simulate(state),p=all().find(q=>q.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
- $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; purple tiles are within '+p.reach+' steps.',p.name+' 住在 '+cell(p.home)+'；紫色格子表示步行可达（'+p.reach+' 格）。'):L('Select a resident to see their home and walking range.','点击居民，查看住址和步行范围。');
- $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):'';
+ $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; the purple squares are within '+p.reach+' steps.',p.name+'住在'+cell(p.home)+'，紫色格子是步行可到达的位置。'):'';
+ $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Walking range ','步行 ')+p.reach+L(' tiles',' 格')+' · '+L('Likes ','喜欢 ')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Moves in Week 5','第 5 周入住'):reason(state,rs,i))):'';
  $('residentWhy').hidden=!p;
- const list=[];
- for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
-  const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
-  const key=[x.type,y.type].sort().join('|'),name=E.COMBOS[key]?.name||'Community Club';
-  const left=rs.occupancy[a].length,right=rs.occupancy[b].length,ck=[x.pos,y.pos].sort((m,n)=>m-n).join('|')+':'+key,streak=rs.streaks[ck]||0;
-  list.push({name,left,right,streak,first:x.type,second:y.type,pos:cell(x.pos)+' + '+cell(y.pos)});
+ const choices=[];
+ for(let index=0;index<state.buildings.length;index++){
+  const building=state.buildings[index],key='hobby:'+building.type+':'+building.pos;
+  const attendance=rs.occupancy[index].length,streak=rs.streaks[key]||0;
+  const existing=choices.find(x=>x.type===building.type);
+  if(!existing||streak>existing.streak||(streak===existing.streak&&attendance>existing.attendance)){
+   if(existing)choices.splice(choices.indexOf(existing),1);
+   choices.push({type:building.type,pos:building.pos,attendance,streak});
+  }
  }
- list.sort((a,b)=>b.streak-a.streak||(b.left+b.right-a.left-a.right));
- $('clubProgress').innerHTML=list.length?list.slice(0,8).map(c=>{
-  const missing=Math.max(0,2-c.left)+Math.max(0,2-c.right);
-  const hint=c.streak>=2?L('✓ Club established!','✓ 社团已成立！'):c.streak===1?L('1/2 weeks — keep 2 visitors at both venues next week.','已满足 1/2 周，下周两处仍要各有至少 2 人。'):L('Needs '+missing+' more visitor(s) to reach 2 at each venue.','两处都要至少 2 人，目前还差 '+missing+' 位访客。');
-  return '<div class="awClub"><div class="aw-club-head"><b>'+safe(club(c.name))+'</b><small>'+c.pos+' · '+(c.streak>=2?'✓':c.streak+'/2')+'</small></div><div class="aw-club-venues"><span>'+safe(venue(c.first))+' <b>'+c.left+'/2</b></span><span>'+safe(venue(c.second))+' <b>'+c.right+'/2</b></span></div><div class="aw-club-state'+(c.streak>=2?' ready':'')+'">'+safe(hint)+'</div></div>';
- }).join(''):'<div class="aw-club-state">'+L('Build two different venues on adjacent tiles; progress appears here.','先把两种不同场所建在相邻格子里，组建进度就会显示在这里。')+'</div>';
+ choices.sort((a,b)=>b.streak-a.streak||b.attendance-a.attendance);
+ $('clubProgress').innerHTML=choices.length?choices.map(c=>{
+  const name=club(E.CLUBS[c.type].name),isFounded=c.streak>=2;
+  const message=isFounded?L('✓ Club founded!','✓ 社团已成立！'):c.streak===1?L('1/2 weeks: bring back 2 of the same people next week.','已聚在一起 1/2 周：下周让其中至少 2 人再来。'):L('Invite '+Math.max(0,2-c.attendance)+' more hobby fan(s).','还需 '+Math.max(0,2-c.attendance)+' 位同好来参加活动。');
+  return '<div class="awClub"><div class="aw-club-head"><b>'+E.CLUBS[c.type].icon+' '+safe(name)+'</b><small>'+cell(c.pos)+'</small></div><div class="aw-club-venues"><span>'+safe(venue(c.type))+'</span><span>'+L('Visitors ','本周 ')+c.attendance+'</span></div><div class="aw-club-state'+(isFounded?' ready':'')+'">'+message+'</div></div>';
+ }).join(''):'<div class="aw-club-state">'+L('Clubs start when two people with the same hobby keep meeting at one venue.','同好们在同一个场所连续两周相聚，就能组成社团。')+'</div>';
 }
-
 function positionCenter(pos){const rect=board.getBoundingClientRect(),cell=board.children[pos].getBoundingClientRect();return {x:cell.left-rect.left+cell.width/2,y:cell.top-rect.top+cell.height/2};}
 function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function gameProgress(step){window.arcadeMetric?.('town_'+step,{game:'tiny-town'});}
 function timeBucket(ms){return ms<=15000?'under-15s':ms<=30000?'15-30s':ms<=60000?'30-60s':ms<=120000?'1-2m':ms<=300000?'2-5m':'over-5m';}
 function resetMobileConfirmation(){pendingMovePos=null;$('awMobileControls').hidden=true;}
-function showClubLinks(){
-  const holder=$('clubLinks');holder.innerHTML='';
-  const rs=state.last;if(!rs)return;
-  let markup='';
-  const cx=p=>(p%4+.5)*100,cy=p=>(Math.floor(p/4)+.5)*100;
-  for(let i=0;i<state.buildings.length;i++)for(let j=i+1;j<state.buildings.length;j++){
-    const a=state.buildings[i],b=state.buildings[j];
-    if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
-    const ck=[a.pos,b.pos].sort((x,y)=>x-y).join('|')+':'+[a.type,b.type].sort().join('|');
-    const streak=rs.streaks[ck]||0;
-    const ax=cx(a.pos),ay=cy(a.pos),bx=cx(b.pos),by=cy(b.pos);
-    const mx=(ax+bx)/2,my=(ay+by)/2,dx=(bx-ax)/100,dy=(by-ay)/100;
-    const good=streak>=2,color=good?'#168a55':streak===1?'#8569e4':'#a39ba4';
-    markup+='<line x1="'+(mx-dx*20)+'" y1="'+(my-dy*20)+'" x2="'+(mx+dx*20)+'" y2="'+(my+dy*20)+'" stroke="'+color+'" stroke-width="7" stroke-linecap="round" '+(good?'':'stroke-dasharray="7 5"')+'/>';
-    markup+='<rect x="'+(mx-21)+'" y="'+(my-11)+'" width="42" height="22" rx="11" fill="'+color+'" stroke="#fff" stroke-width="2"/><text x="'+mx+'" y="'+(my+1)+'">'+(good?'✓':streak+'/2')+'</text>';
-  }
-  if(markup)holder.innerHTML='<svg viewBox="0 0 400 400" preserveAspectRatio="none" role="presentation">'+markup+'</svg>';
-}
 function clubTip(s){
  const rs=s.last||E.simulate(s);
- if(rs.pending.length)return L('A new club is forming! Keep both venues busy next week.','社团正在形成！下周让两个场所继续各有至少 2 人。');
- for(let i=0;i<s.buildings.length;i++)for(let j=i+1;j<s.buildings.length;j++){
-  const a=s.buildings[i],b=s.buildings[j];if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
-  if(rs.occupancy[i].length<2||rs.occupancy[j].length<2)return L('Each adjacent venue needs at least 2 visitors for 2 weeks.','相邻两处场所都要至少 2 位访客，并连续保持 2 周。');
- }
- return rs.clubs.length?L(rs.clubs.length+' club type(s) established.','已成立 '+rs.clubs.length+' 类社团。'):L('Build different venues side by side with 2 visitors each.','把两种不同场所建在相邻格子里，让每处至少有 2 人。');
+ if(rs.pending.length)return L('Two neighbors met this week. Bring back at least two of the same people next week to start a club.','已经有同好聚在一起了！下周让至少两位相同居民再来一次，就能成立社团。');
+ if(rs.clubs.length)return L(rs.clubs.length+' interest club(s) have formed.','已经成立 '+rs.clubs.length+' 类兴趣社团。');
+ return L('Bring two residents with a shared hobby to the same place for two weeks in a row.','让至少两位有相同爱好的居民连续两周到同一个场所活动，就能成立社团。');
 }
 function updateReceipt(){
  const rs=state.last,box=$('weekReceipt');if(!rs){box.hidden=true;return;}
@@ -597,9 +652,9 @@ function updateCoach(){
  $('ttJourney').dataset.step=done?'3':step;
  let title='',tip='';
  if(done){title=L('Town complete!','小镇建成啦！');tip=L('See how your neighbors did, or try a new town.','看看居民们过得怎么样，或再建一座新小镇。');}
- else if(busy){title=L('Great! Watch your neighbors','建好了！看看居民们的活动');tip=L('Residents visit automatically. Club connections update when two venues meet the rules.','居民会自动参加活动，社团连线也会更新进度。');}
+ else if(busy){title=L('Great! See who meets up','建好了！看看谁来玩');tip=L('Neighbors attend places that match their interests. Returning hobby groups can become clubs.','居民会去喜欢的场所。经常一起活动的同好可以成立社团。');}
  else if(!selected){title=L('Step 1 · Pick a venue','第 1 步 · 选择场所');tip=L('Look at the interests on the left, then select a venue on the right.','先看看左边的居民喜欢什么，再从右边选一种场所。');}
- else{title=L('Step 2 · Choose a square','第 2 步 · 选择建造位置');tip=L('Click a green square on the map. Put different venues next to each other for clubs.','点击地图上的绿色格子建造。不同场所挨着建，更容易组成社团。');}
+ else{title=L('Step 2 · Choose a square','第 2 步 · 选择建造位置');tip=L('Choose a green square near the homes of people who enjoy this activity.','点击绿色格子，尽量建在喜欢这项活动的居民家附近。');}
  $('awCoachStep').textContent=L('WEEK ','第 ')+Math.min(state.turn+1,E.TURNS)+' / '+E.TURNS+L('',' 周');
  $('awCoachTitle').textContent=title;$('awCoachText').textContent=tip;
  $('autoPlace').textContent=L('✦ Auto-build (uses 1 turn)','✦ 自动建造（消耗 1 回合）');
@@ -630,28 +685,26 @@ $('goalActive').innerHTML=(state.last?.active>=9?'✓':'○')+' '+L('Have 9 happ
 $('goalClub').innerHTML=(state.last?.clubs.length>=2?'✓':'○')+' '+L('Two different clubs','建立两类不同社团');$('goalClub').className=state.last?.clubs.length>=2?'good':'';
 const currently=state.last?.occupancy||[];const people=all(),focused=people.find(p=>p.id===focusId),focusIndex=state.residents.findIndex(p=>p.id===focusId),homes=new Map();for(const p of people)homes.set(p.home,(homes.get(p.home)||0)+1);
 let establishedPositions=new Map();for(const club of(state.last?.clubs||[]))for(const pos of club.positions)establishedPositions.set(pos,club.icon);
+const formingPositions=new Set((state.last?.pending||[]).flatMap(c=>c.positions));
 board.innerHTML='';const buildings=new Map(state.buildings.map(b=>[b.pos,b]));
 for(let i=0;i<16;i++){
  let tile=document.createElement('button');const d=focused?E.walkDist(focused.home,i,state.obstacles):999,attend=focusIndex>=0&&state.last?.assignments[focusIndex]>=0&&state.buildings[state.last.assignments[focusIndex]].pos===i;tile.className='tile'+(state.obstacles.includes(i)?' blocked':'')+(d<=focused?.reach?' awReach':'')+(focused?.home===i?' awHome':'')+(attend?' awVenue':'')+(validPlots.has(i)?' awPlaceable':'');tile.type='button';tile.dataset.pos=i;
  let b=buildings.get(i);if(state.obstacles.includes(i)){tile.innerHTML='<span class="rock">🌳</span>';tile.disabled=true;}
  else if(b){const bi=state.buildings.findIndex(q=>q.pos===i);
-   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+state.residents[ri].face+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':''}`;
+   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+portrait(state.residents[ri])+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':formingPositions.has(i)?'<span class="tt-club-pending" title="'+L('One week of shared hobby visits','同好活动已持续 1 周')+'">1/2周</span>':''}`;
  }else{tile.innerHTML='<span style="color:#8cad96;font-weight:900;font-size:21px">+</span>';}
  tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(focused&&d<=focused.reach?L(' · '+d+' steps from '+focused.name,' · 距 '+focused.name+' '+d+' 格'):'')+(validPlots.has(i)?L(' · Ready to '+(selected==='upgrade'?'upgrade':'build'),' · 可以'+(selected==='upgrade'?'升级':'建造')):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
  tile.addEventListener('pointerleave',()=>{hover=-1});
  tile.addEventListener('focus',()=>renderingPreview(i));
  tile.addEventListener('click',()=>act(i));board.appendChild(tile);
 }
-showClubLinks();
-$('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');const resident=all().find(p=>p.id===focusId),favorite=resident?.primary===type,liked=resident?.secondary===type;button.className='choice'+(selected===type?' active':'')+(favorite?' tt-favorite':liked?' tt-liked':'');button.disabled=busy;button.innerHTML='<div class="ico">'+icons[type].icon+'</div><div class="label">'+venue(type)+'</div><div class="detail">'+L('Capacity ','容纳 ')+icons[type].capacity+L('',' 人')+'</div>'+(favorite?'<div class="tt-fit">'+L('★ '+resident.name+' loves this','★ '+resident.name+' 最喜欢')+'</div>':liked?'<div class="tt-fit">'+L('✓ '+resident.name+' likes this','✓ '+resident.name+' 也喜欢')+'</div>':'');button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Selected '+icons[type].name+'. Hover over the map to preview, then click a green square.','已选 '+venue(type)+'。移到地图上预览，点击绿色格子建造。');};$('cards').appendChild(button);}}
+$('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');const resident=all().find(p=>p.id===focusId),favorite=resident?.primary===type,liked=resident?.secondary===type;button.className='choice'+(selected===type?' active':'')+(favorite?' tt-favorite':liked?' tt-liked':'');button.disabled=busy;button.innerHTML='<span class="ico">'+icons[type].icon+'</span><span class="tt-card-copy"><span class="label">'+venue(type)+'</span><span class="detail">'+L('Capacity ','容纳 ')+icons[type].capacity+L('',' 人')+'</span>'+(favorite?'<span class="tt-fit">'+L('★ '+resident.name+' loves this','★ '+resident.name+' 最喜欢')+'</span>':liked?'<span class="tt-fit">'+L('✓ '+resident.name+' likes this','✓ '+resident.name+' 也喜欢')+'</span>':'')+'</span><span class="tt-card-arrow">›</span>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Selected '+icons[type].name+'. Hover over the map to preview, then click a green square.','已选 '+venue(type)+'。移到地图上预览，点击绿色格子建造。');};$('cards').appendChild(button);}}
 $('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=busy||!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
 $('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
-$('residents').innerHTML=state.residents.map((r,i)=>{
- const sim=state.last||E.simulate(state),isOut=sim.assignments[i]>=0;
- return '<button type="button" class="res '+(isOut?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small class="tt-interests"><b>'+icons[r.primary].icon+' '+kind(r.primary)+'</b> · '+icons[r.secondary].icon+' '+kind(r.secondary)+'</small><small class="'+(isOut?'aw-attending':'')+'">'+(isOut?L('● At an activity','● 正在活动'):L('○ At home','○ 在家'))+'</small></div></button>';
-}).join('');
+const sim=state.last||E.simulate(state);
+$('residents').innerHTML=homesView(state.residents,sim);
 $('awIncomingGroup').hidden=state.turn>=5;
-$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small class="tt-interests"><b>'+icons[r.primary].icon+' '+kind(r.primary)+'</b> · '+icons[r.secondary].icon+' '+kind(r.secondary)+'</small></div></button>').join(''):'';
+$('incoming').innerHTML=state.turn<5?homesView(state.incoming,sim,true):'';
 statusUI();if(state.last)updateReceipt();refreshFeed();
 }
 $('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
@@ -661,8 +714,8 @@ $('autoPlace').onclick=()=>{
  if(selected==='upgrade'||!selected)selected=state.offers[state.turn][0];
  const options=E.moves(state).filter(m=>m.action==='place'&&m.type===selected);
  let best=null,score=-Infinity;
- for(const m of options){const s=E.step(state,m),close=state.buildings.filter(b=>E.adjacent(b.pos,m.pos)&&b.type!==m.type).length;
- const quality=s.last.active*7+s.last.clubs.length*45+close*9;
+ for(const m of options){const s=E.step(state,m);
+ const quality=s.last.active*7+s.last.clubs.length*55+s.last.pending.length*12;
  if(quality>score){best=m;score=quality}}
  if(best){gameProgress('coach-used');act(best.pos,true)}
 };
@@ -676,7 +729,7 @@ function float(msg,sub){const el=document.createElement('div');el.className='fee
 function drawRunners(previous,current){const previousAssign=previous?.assignments||[];for(let ri=0;ri<current.assignments.length;ri++){
 let to=current.assignments[ri];if(to<0)continue;let dest=state.buildings[to].pos;let from=previousAssign[ri]>=0&&state.buildings[previousAssign[ri]]?state.buildings[previousAssign[ri]].pos:state.residents[ri].home;
 if(from===dest)continue;
-const p=positionCenter(from),q=positionCenter(dest),el=document.createElement('span');el.className='runner';el.textContent=state.residents[ri].face;el.style.left=p.x+'px';el.style.top=p.y+'px';board.appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.left=q.x+'px';el.style.top=q.y+'px';}));setTimeout(()=>el.remove(),850);
+const p=positionCenter(from),q=positionCenter(dest),el=document.createElement('span');el.className='runner';el.innerHTML=portrait(state.residents[ri]);el.style.left=p.x+'px';el.style.top=p.y+'px';board.appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.left=q.x+'px';el.style.top=q.y+'px';}));setTimeout(()=>el.remove(),850);
 }}
 function act(pos,confirmed=false){
  if(busy||state.turn>=E.TURNS)return;
@@ -695,7 +748,7 @@ if(newClubs.length&&!hasTrackedClub){hasTrackedClub=true;gameProgress('first-clu
 selected=null;touchArmed=null;render();updateReceipt();
 if(move.action==='place'){
  const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');
- addFeed('🏠 Built '+icons[move.type].name+'. Residents reassigned their activities.','🏠 建好了'+venue(move.type)+'，居民开始选择新的活动场所。');
+ addFeed(icons[move.type].icon+' Built '+icons[move.type].name+'. Residents found new places to meet.',icons[move.type].icon+' '+venue(move.type)+'建好了，居民们又多了一个活动场所。');
 }else{
  const type=state.buildings.find(b=>b.pos===move.pos).type;
  addFeed('⬆ Upgraded '+icons[type].name+' for +1 capacity.','⬆ '+venue(type)+'升级了，增加 1 个座位。');
@@ -717,7 +770,7 @@ function endGame(){
  const result=E.outcome(state);gameProgress('grade-'+result.grade.toLowerCase());gameProgress('duration-'+timeBucket(metrics.gameDurationMs));
  $('endIcon').textContent=result.success?'🎊':'🌱';
  $('endTitle').textContent=result.success?L('The town is thriving!','小镇越来越繁荣！'):L('Try a different layout','换个布局，再试一次');
- const nextTip=result.success?L('What new town will you create next?','下一座小镇会是什么模样？'):(result.clubs<2?L('Put different venues side by side for a club. ','把两种不同场所建在相邻的格子里。'):'')+(result.active<9?L('Build within neighbors’ walking range.','把场所建在居民步行可达的范围内。'):'');
+ const nextTip=result.success?L('What new town will you create next?','下一座小镇会是什么模样？'):(result.clubs<2?L('Keep two hobby fans visiting the same venue for two consecutive weeks. ','让两位同好连续两周去同一个场所活动。'):'')+(result.active<9?L('Build within neighbors’ walking range.','把场所建在居民步行可达的范围内。'):'');
  $('endText').innerHTML=L('Grade ','评级 ')+'<b>'+result.grade+'</b> · '+L('Total vitality ','总活力 ')+'<b>'+result.totalScore+'</b><br>'+L('Happy neighbors ','快乐居民 ')+result.active+'/12 · '+L('Clubs ','社团 ')+result.clubs+'<br>'+safe(nextTip);
  $('end').classList.add('show');
 }
