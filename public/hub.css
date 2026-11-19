@@ -75,29 +75,57 @@ html[lang="zh-CN"] .hero h1 .period{display:none}
 @media(max-width:780px){.cat-feature-card h3{font-size:47px}}
 @media(max-width:540px){.cat-feature-card h3{font-size:41px}.cat-feature-card .feature-art{height:43%}}
 
-/* Compact secondary content. Signature worlds remain the focus of the home page. */
-.tiny-section{padding:34px 0 36px}
-.tiny-section .section-intro{margin-bottom:16px}
-.tiny-section .section-intro h2{font-size:clamp(25px,2.7vw,34px)}
-.tiny-section .section-intro>p{font-size:12px;margin-top:5px}
-.tiny-section .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
-.tiny-section .mini-game{display:flex;flex-direction:row;min-height:122px;border-radius:17px}
-.tiny-section .mini-game>img{height:auto;min-height:122px;width:37%;flex:0 0 37%;object-fit:cover}
-.tiny-section .mini-copy{min-height:122px;padding:11px 13px;gap:3px}
-.tiny-section .mini-copy strong{font-size:17px;line-height:1.15}
-.tiny-section .mini-type{font-size:9px;letter-spacing:.08em}
-.tiny-section .mini-descr{font-size:10px;min-height:0;line-height:1.4}
-.tiny-section .mini-cta{font-size:10px}
-.about-section{padding:30px 0 36px;grid-template-columns:minmax(140px,220px) minmax(0,1fr);gap:30px}
-.about-section .about-art{height:150px;border-radius:22px;max-width:220px}
-.about-section .about-cat{transform:translateX(-50%) scale(.72);transform-origin:bottom center;bottom:-42px}
-.about-copy h2{font-size:clamp(23px,2.5vw,31px);margin:6px 0}
-.about-copy p{font-size:12px;line-height:1.6;margin:4px 0 8px}
-.about-chips{margin-top:9px;gap:6px}
+/* Secondary section hierarchy: 02 is a real, browseable game gallery; 03 is a small studio note. */
+.tiny-section{padding:50px 0 54px}
+.tiny-section .section-intro{margin-bottom:23px}
+.tiny-section .section-intro h2{font-size:clamp(29px,3vw,40px)}
+.tiny-section .section-intro>p{font-size:14px;line-height:1.6;margin-top:7px}
+.tiny-section .mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.tiny-section .mini-game{display:flex;flex-direction:row;align-items:stretch;min-height:180px;border-radius:21px}
+.tiny-section .mini-game>img{width:43%;flex:0 0 43%;height:auto;min-height:180px;object-fit:cover}
+.tiny-section .mini-copy{min-width:0;min-height:180px;padding:18px 15px;gap:6px}
+.tiny-section .mini-copy strong{font-size:22px;line-height:1.15}
+.tiny-section .mini-type{font-size:10px;letter-spacing:.1em}
+.tiny-section .mini-descr{font-size:12px;min-height:0;line-height:1.55}
+.tiny-section .mini-cta{font-size:12px;margin-top:auto}
+.about-section{padding:20px 0 24px;grid-template-columns:minmax(120px,165px) minmax(0,1fr);gap:24px}
+.about-section .about-art{height:113px;border-radius:17px;max-width:165px}
+.about-section .about-cat{transform:translateX(-50%) scale(.55);transform-origin:bottom center;bottom:-35px}
+.about-copy h2{font-size:clamp(21px,2.2vw,27px);margin:3px 0}
+.about-copy p{font-size:12px;line-height:1.5;margin:3px 0 6px}
+.about-chips{margin-top:7px;gap:6px}
 .about-chips span{padding:5px 9px;font-size:10px}
 .site-footer{padding:16px 0}
 .cat-feature-card h3 .mw-chinese-heading{font-size:clamp(24px,2.5vw,32px);line-height:1.25}
 .cat-feature-card .cat-original{font:700 14px/1.4 'Nunito',system-ui,sans-serif;letter-spacing:-.03em;display:block;color:#a87b87;margin-top:5px}
-@media(max-width:950px){.tiny-section .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tiny-section .mini-game{min-width:0}.tiny-section .mini-copy{padding:10px 8px}.tiny-section .mini-copy strong{font-size:15px}}
-@media(max-width:700px){.tiny-section{padding:27px 0 29px}.tiny-section .mini-grid{grid-template-columns:1fr;gap:10px}.tiny-section .mini-game,.tiny-section .mini-game>img,.tiny-section .mini-copy{min-height:104px}.tiny-section .mini-game>img{width:30%;flex-basis:30%}.tiny-section .mini-copy{padding:12px 14px}.tiny-section .mini-copy strong{font-size:18px}.about-section{grid-template-columns:1fr;padding:27px 0 32px;gap:0}.about-section .about-art{display:none}.cat-feature-card h3 .mw-chinese-heading{font-size:30px}}
-@media(max-width:400px){.tiny-section .mini-game>img{width:35%;flex-basis:35%}.tiny-section .mini-copy{padding:9px 11px}.about-chips{gap:5px}}
+@media(max-width:950px){
+ .tiny-section .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+ .tiny-section .mini-game{min-width:0;min-height:180px}
+ .tiny-section .mini-game>img{width:39%;flex-basis:39%;min-height:180px}
+ .tiny-section .mini-copy{min-height:180px;padding:14px 10px}
+ .tiny-section .mini-copy strong{font-size:18px}
+ .tiny-section .mini-descr{font-size:11px}
+}
+@media(max-width:700px){
+ .tiny-section{padding:34px 0 38px}
+ .tiny-section .section-intro{margin-bottom:16px}
+ .tiny-section .mini-grid{grid-template-columns:1fr;gap:12px}
+ .tiny-section .mini-game{min-height:144px}
+ .tiny-section .mini-game>img{width:35%;flex-basis:35%;min-height:144px}
+ .tiny-section .mini-copy{min-height:144px;padding:15px 17px;gap:6px}
+ .tiny-section .mini-copy strong{font-size:22px}
+ .tiny-section .mini-type{font-size:10px}
+ .tiny-section .mini-descr{font-size:12px}
+ .tiny-section .mini-cta{font-size:12px}
+ .about-section{grid-template-columns:1fr;padding:18px 0 20px;gap:0}
+ .about-section .about-art{display:none}
+ .about-copy h2{font-size:23px}
+ .about-copy p{font-size:12px}
+ .cat-feature-card h3 .mw-chinese-heading{font-size:30px}
+}
+@media(max-width:400px){
+ .tiny-section .mini-game>img{width:34%;flex-basis:34%}
+ .tiny-section .mini-copy{padding:12px 13px}
+ .tiny-section .mini-copy strong{font-size:19px}
+ .about-chips{gap:5px}
+}
