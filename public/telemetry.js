@@ -36,6 +36,8 @@ persistent=!!visitor;
 }}catch{}
 const eventCounts={starts:0,ends:0,retries:0,shares:0,clicks:0,completion:0};
 const lastSent={starts:0,ends:0,retries:0,shares:0,clicks:0,completion:0};
+const signalCounts=Object.create(null),lastSignals=Object.create(null);
+function signal(id){if(!/^[a-z0-9_-]{2,40}$/.test(id))return;signalCounts[id]=(signalCounts[id]||0)+1;}
 let firstMs=-1,firstMsSent=false,level=0,score=0,lastClock=performance.now(),closed=false,flushSeq=0;
 function event(eventName,p={}){const n=String(eventName||"").toLowerCase();
 if(n==="run_start"||n==="game_start"||n==="town_started"||n==="town_started-game")eventCounts.starts++;
@@ -47,6 +49,18 @@ if(n==="level_complete"||n==="game_complete"||n.startsWith("town_grade-")||n.sta
 if(n.startsWith("town_week-"))level=Math.max(level,Number(n.split("-").at(-1))||0);
 if(Number.isFinite(Number(p?.level||p?.week)))level=Math.max(level,Number(p.level||p.week));
 if(p?.score!==undefined&&Number.isFinite(Number(p.score)))score=Math.max(score,Math.min(10000000,Number(p.score)));
+// Compact, aggregated gameplay milestones: no per-click database rows.
+if(n==="cat_level_won"&&Number(p?.level)>=1&&Number(p?.level)<=9)signal("cat_room_"+Math.floor(Number(p.level)));
+if(n==="cat_caught")signal("cat_caught");
+if(n==="cat_fish")signal("cat_fish");
+if(n==="cat_souvenir")signal("cat_souvenir");
+if(n==="town_first-club")signal("town_club");
+if(n==="town_completed-win")signal("town_win");
+if(n==="town_completed-lose")signal("town_lose");
+if(n.startsWith("town_feedback-")){const v=n.slice(14);if(["fun","confusing","not-fun"].includes(v))signal("town_feedback_"+v);}
+if(/^town_exit-week-[1-8]$/.test(n))signal(n.replaceAll("-","_"));
+if(["feed_success","feed_drop"].includes(n)&&game==="pocket-aquarium")signal(n);
+if(n==="game_complete"&&game==="pocket-aquarium"){const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
 }
 window.arcadeMetric=event;
 const onFirstAction=()=>{if(firstMs<0)firstMs=Math.round(performance.now()-start);};
@@ -57,12 +71,13 @@ function send(data){if(disabled)return;try{const body=JSON.stringify({...shared,
 send({kind:"visit"});
 function flush(force=false){if(closed)return;const now=performance.now(),deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
 let changed=deltaSec>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
+const signals={};for(const [k,v] of Object.entries(signalCounts)){const delta=v-(lastSignals[k]||0);if(delta>0){signals[k]=delta;changed=true;}}
 if(!changed&&!force)return;
 const hasAction=firstMs>=0&&!firstMsSent;
-send({kind:"session",seq:flushSeq++,seconds:deltaSec,firstMs:hasAction?firstMs:-1,...dif,levels:level,score});
-for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];if(hasAction)firstMsSent=true;lastClock=now;
+send({kind:"session",seq:flushSeq++,seconds:deltaSec,firstMs:hasAction?firstMs:-1,...dif,signals,levels:level,score});
+for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;
 }
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else lastClock=performance.now();});
 window.addEventListener("pagehide",()=>{flush(true);closed=true;});
 window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();}});
 })();

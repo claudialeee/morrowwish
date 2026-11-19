@@ -130,7 +130,7 @@
     if(event==='life_completed')window.arcadeMetric?.('game_complete');
     if(event==='life_restarted')window.arcadeMetric?.('retry');
     if(event==='share_clicked')window.arcadeMetric?.('share_clicked');
-    const own={event,session,runId:active?.runId||undefined,...data};
+    const own={event,session,runId:active?.runId||undefined,scenes:active?.world?WORLD_BY_ID[active.world]?.chapters?.length:0,...data};
     const payload=JSON.stringify(own);
     if(TRACKED.has(event)&&active&&visitorId){
       const external=JSON.stringify({...own,visitor:visitorId,world:active.world});

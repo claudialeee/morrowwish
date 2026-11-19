@@ -10,7 +10,16 @@ function visitors(rows){return uniq(rows.map(r=>r.visitor||r.view_id));}
 function mainStats(x){
   const {rows,dates}=x,visits=rows.filter(r=>r.kind==="visit"),sessions=rows.filter(r=>r.kind==="session");
   const sum=(r,k)=>r.reduce((a,b)=>a+Math.max(0,Number(b.data[k])||0),0);
-  const score=(part)=>{const visitsOf=part.filter(r=>r.kind==="visit"),sessionsOf=part.filter(r=>r.kind==="session");const times=sum(sessionsOf,"seconds");return {pageviews:uniq(visitsOf.map(r=>r.view_id||r.visitor+"-"+r.day)),visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,avgFirstMs:(()=>{let n=sessionsOf.filter(r=>Number(r.data.firstMs)>=0);return n.length?Math.round(n.reduce((s,r)=>s+Number(r.data.firstMs),0)/n.length):0})(),maxLevel:Math.max(0,...sessionsOf.map(r=>Number(r.data.levels)||0))};};
+  const score=(part)=>{
+    const visitsOf=part.filter(r=>r.kind==="visit"),sessionsOf=part.filter(r=>r.kind==="session");
+    const pageviews=uniq(visitsOf.map(r=>r.view_id||r.visitor+"-"+r.day));
+    const startedViews=uniq(sessionsOf.filter(r=>Number(r.data.starts)>0).map(r=>r.view_id));
+    const times=sum(sessionsOf,"seconds"),signals={};
+    for(const r of sessionsOf)for(const [k,v] of Object.entries(r.data.signals||{})){
+      if(/^[a-z0-9_-]{2,40}$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>0)signals[k]=(signals[k]||0)+Math.min(10000,Number(v));
+    }
+    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals};
+  };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
   const byDay=dates.map(day=>{let r=rows.filter(x=>x.day===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(r=>r.view_id||r.visitor+"-"+r.day)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
@@ -24,24 +33,39 @@ function mainStats(x){
     const campaign=tidy(d.utmCampaign,45)||"organic";
     const game=tidy(r.game,40);
     const key=JSON.stringify([game,source,campaign]);
-    if(!channelGroups.has(key))channelGroups.set(key,{game,source,campaign,views:new Set(),visitors:new Set(),runs:0,retries:0,seconds:0,ends:0,shares:0});
+    if(!channelGroups.has(key))channelGroups.set(key,{game,source,campaign,views:new Set(),startedViews:new Set(),visitors:new Set(),runs:0,retries:0,seconds:0,ends:0,shares:0});
     const z=channelGroups.get(key);
     if(r.kind==="visit"){z.views.add(r.view_id||r.visitor+"-"+r.day);z.visitors.add(r.visitor||r.view_id);}
-    else {z.runs+=Math.max(0,Number(d.starts)||0);z.retries+=Math.max(0,Number(d.retries)||0);z.ends+=Math.max(0,Number(d.ends)||0);z.shares+=Math.max(0,Number(d.shares)||0);z.seconds+=Math.max(0,Number(d.seconds)||0);}
+    else {if(Number(d.starts)>0)z.startedViews.add(r.view_id);z.runs+=Math.max(0,Number(d.starts)||0);z.retries+=Math.max(0,Number(d.retries)||0);z.ends+=Math.max(0,Number(d.ends)||0);z.shares+=Math.max(0,Number(d.shares)||0);z.seconds+=Math.max(0,Number(d.seconds)||0);}
   }
-  const byGameChannel=[...channelGroups.values()].map(z=>({game:z.game,source:z.source,campaign:z.campaign,pageviews:z.views.size,visitors:z.visitors.size,starts:z.runs,retries:z.retries,ends:z.ends,shares:z.shares,avgSeconds:z.views.size?Math.round(z.seconds/z.views.size):0,startRate:pct(z.runs,z.views.size)})).sort((a,b)=>b.pageviews-a.pageviews).slice(0,150);
-  const total=score(rows);
-  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...total,completions:total.completion,d1Cohort:0,d1Returned:0,d1Rate:null,unknownPastVisits:0},byGame,byDay,byGameChannel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  const byGameChannel=[...channelGroups.values()].map(z=>({game:z.game,source:z.source,campaign:z.campaign,pageviews:z.views.size,visitors:z.visitors.size,starts:z.runs,retries:z.retries,ends:z.ends,shares:z.shares,avgSeconds:z.views.size?Math.round(z.seconds/z.views.size):0,startRate:pct(z.startedViews.size,z.views.size)})).sort((a,b)=>b.pageviews-a.pageviews).slice(0,150);
+  const total=score(rows.filter(r=>r.game!=="hub"));
+  const all=score(rows);
+  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byGameChannel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
- const rows=x.rows, events=new Map(),people=new Map(),worlds=["no-work","bookshop","paris","cabin"];const getId=r=>r.run_id||r.data.runId||r.visitor+"-"+(r.data.session||"na");
- for(let r of rows){const id=getId(r),world=r.data.world||"no-work";if(!events.has(id))events.set(id,{id,world,visitor:r.visitor||id,opened:false,views:new Set(),completed:new Set(),finished:false,ending:false,restarted:0,shares:0,route:""});let a=events.get(id);a.world=world;a.visitor=r.visitor||a.visitor;const ev=r.event_name||r.data.event||"";let ch=Number(r.data.chapter);if(ev==="world_open")a.opened=true;if(ev==="chapter_view"&&ch>=1&&ch<=8)a.views.add(ch);if(ev==="chapter_completed"&&ch>=1&&ch<=8)a.completed.add(ch);if(ev==="life_completed"){a.finished=true;a.route=tidy(r.data.routeVector,60)||a.route;}if(ev==="ending_view")a.ending=true;if(ev==="life_restarted")a.restarted++;if(ev==="share_clicked")a.shares++;if(r.data.routeVector)a.route=tidy(r.data.routeVector,60);}
- const runs=[...events.values()],opened=runs.filter(a=>a.opened),count=(pred)=>runs.filter(pred).length,has=(k,phase)=>count(a=>a[phase].has(k));
- const firstViews=has(1,"views"),firstCompletions=has(1,"completed");
- const worldSummary=worlds.map(world=>{let a=runs.filter(r=>r.world===world);let starts=a.filter(r=>r.opened).length,first=a.filter(r=>r.completed.has(1)).length,views=a.filter(r=>r.views.has(1)).length,ends=a.filter(r=>r.finished).length;return {world,starts,ch1Views:views,ch1Completed:first,firstRate:pct(first,views),ends,endingViews:a.filter(r=>r.ending).length,replays:a.reduce((n,r)=>n+r.restarted,0),fullRate:pct(ends,starts)};});
- const visitorGroups=new Map();for(let a of runs){let p=visitorGroups.get(a.visitor)||[];p.push(a);visitorGroups.set(a.visitor,p)}const replayVisitors=[...visitorGroups.values()].filter(g=>g.filter(x=>x.opened).length>=2||g.some(x=>x.restarted>0)).length;const differentRouteVisitors=[...visitorGroups.values()].filter(g=>new Set(g.filter(x=>x.finished).map(x=>x.world+":"+x.route)).size>=2).length;
- const routeMap=new Map();for(let a of runs.filter(a=>a.finished&&a.route)){let k=a.world+"|"+a.route;routeMap.set(k,(routeMap.get(k)||0)+1)}const routes=[...routeMap].map(([key,count])=>({world:key.split("|")[0],route:key.split("|")[1],count})).sort((a,b)=>b.count-a.count).slice(0,12);
- return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,readErrors:0,trackingVersion:2,summary:{runs:opened.length,firstViews,firstCompletions,firstCompletionRate:pct(firstCompletions,firstViews),completed:count(a=>a.finished),endingViews:count(a=>a.ending),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),differentRouteVisitors,differentRouteReplayRate:pct(differentRouteVisitors,replayVisitors),differentRouteDenominator:replayVisitors,shares:runs.reduce((n,r)=>n+r.shares,0)},funnel:Array.from({length:8},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates:Array.from({length:7},(_,i)=>{const from=i+1,eligible=has(from,"completed"),continued=runs.filter(r=>r.completed.has(from)&&r.views.has(from+1)).length;return {from,to:from+1,eligible,continued,rate:pct(continued,eligible)}}),worlds:worldSummary,routes};
+ // Five-scene edition only. Legacy eight-scene records stay in D1 but are not mixed into this funnel.
+ const rows=x.rows.filter(r=>Number(r.data.scenes)===5),runsById=new Map(),worlds=["no-work","bookshop","paris","cabin"];
+ for(const r of rows){
+   const id=r.run_id||r.data.runId||r.visitor+"-"+(r.data.session||"na");
+   if(!runsById.has(id))runsById.set(id,{world:r.data.world||"no-work",visitor:r.visitor||id,opened:false,views:new Set(),completed:new Set(),finished:false,restarted:0});
+   const z=runsById.get(id),ev=r.event_name||r.data.event||"",ch=Number(r.data.chapter);
+   z.world=r.data.world||z.world;
+   if(ev==="world_open")z.opened=true;
+   if(ev==="chapter_view"&&ch>=1&&ch<=5)z.views.add(ch);
+   if(ev==="chapter_completed"&&ch>=1&&ch<=5)z.completed.add(ch);
+   if(ev==="life_completed")z.finished=true;
+   if(ev==="life_restarted")z.restarted++;
+ }
+ const runs=[...runsById.values()],opened=runs.filter(r=>r.opened),has=(k,phase)=>runs.filter(r=>r[phase].has(k)).length;
+ const finished=opened.filter(r=>r.finished).length;
+ const visitorGroups=new Map();
+ for(const r of opened){if(!visitorGroups.has(r.visitor))visitorGroups.set(r.visitor,[]);visitorGroups.get(r.visitor).push(r);}
+ const replayVisitors=[...visitorGroups.values()].filter(a=>a.length>=2||a.some(r=>r.restarted>0)).length;
+ const continueRates=Array.from({length:4},(_,i)=>{const from=i+1,eligible=has(from,"completed"),continued=runs.filter(r=>r.completed.has(from)&&r.views.has(from+1)).length;return {from,to:from+1,eligible,continued,rate:pct(continued,eligible)};});
+ const dropoff=continueRates.filter(r=>r.eligible>0).sort((a,b)=>(b.eligible-b.continued)-(a.eligible-a.continued)||a.from-b.from)[0];
+ const worldSummary=worlds.map(world=>{const a=opened.filter(r=>r.world===world),done=a.filter(r=>r.finished).length;return {world,starts:a.length,ends:done,fullRate:pct(done,a.length)};});
+ return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,trackingVersion:5,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:5},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
 }
 const cookieName="morrowwish_studio_auth", ttl=30*24*60*60;
 async function signSession(exp,keyText){
