@@ -96,7 +96,12 @@ jobs:
             code=$(curl -sSL --max-time 20 -o /dev/null -w '%{http_code}' "https://morrowwish.vercel.app$route")
             test "$code" = 200 || { echo "::error::Public URL $route returned HTTP $code"; exit 1; }
           done
-          echo 'Public Vercel proxy routes verified without a Vercel deployment.'
+          curl -fsSL --max-time 20 'https://morrowwish.vercel.app/' -o /tmp/morrowwish-live-home.html
+          grep -Fq 'Big surprises' /tmp/morrowwish-live-home.html || { echo '::error::Homepage slogan is not live'; exit 1; }
+          grep -Fq 'href="/pawsibly-innocent/"' /tmp/morrowwish-live-home.html || { echo '::error::Cat game homepage card is not live'; exit 1; }
+          curl -fsSL --max-time 20 'https://morrowwish.vercel.app/pawsibly-innocent/' -o /tmp/morrowwish-live-cat.html
+          grep -Fq 'PAWSIBLY' /tmp/morrowwish-live-cat.html || { echo '::error::Cat game content is not live'; exit 1; }
+          echo 'Public homepage slogan, cat link, and playable game markup verified.'
       - name: Publish automatic game promotion kit for each release
         uses: actions/upload-artifact@v4
         with:
