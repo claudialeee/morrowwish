@@ -73,6 +73,22 @@ try{
  assert.match(chineseContent.documentTitle,/猫猫绝对无辜/,'Browser tab title should be localized');
  assert.deepEqual(chineseContent.englishWords,[],'Chinese game content must contain no visible English words');
  assert.match(chineseContent.aria,/猫猫捣蛋游戏/,'Chinese canvas accessible label is localized');
+ const roomsLocalized=await page.evaluate(()=>{
+  const audit=[];
+  for(let i=0;i<window.__PAWSIBLY_TEST__.rooms.length;i++){
+   window.__PAWSIBLY_TEST__.choose(i,false);
+   const label=document.getElementById('chapter')?.textContent||'';
+   const visible=document.querySelector('main')?.innerText||'';
+   audit.push({room:i+1,label,untranslated:(visible.match(/[A-Za-z]{3,}/g)||[])});
+  }
+  window.__PAWSIBLY_TEST__.choose(0,false);
+  return audit;
+ });
+ console.log('All eight room Chinese strings:',JSON.stringify(roomsLocalized));
+ for(const room of roomsLocalized){
+  assert.match(room.label,/[\u4e00-\u9fff]/,'Room '+room.room+' must have a Chinese name');
+  assert.deepEqual(room.untranslated,[],'No English strings in room '+room.room);
+ }
  assert.match(await page.locator('.explainer').textContent(),/三步学会|偷到三条|粉色猫门/,'Chinese rules must be visible above the board');
  for(const value of [zh.subtitle,zh.mission,zh.shelf,zh.hint,zh.instructions,zh.room])
   assert.match(value,/[\u4e00-\u9fff]/,'Chinese regions must be translated');
@@ -141,6 +157,7 @@ try{
 
  // All six showcased studio games must have real audio controls and synthesized music.
  const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','pawsibly-innocent'];
+ const audioArrangements=[];
  for(const game of routes){
   const p=await browser.newPage({viewport:{width:1250,height:900}});
   await p.route('**/api/session',route=>route.fulfill({status:204,body:''}));
@@ -154,6 +171,8 @@ try{
    await p.mouse.click(25,450);await p.waitForTimeout(680);
    const sound=await p.evaluate(()=>window.MorrowwishAudio.status());
    console.log('Audio smoke '+game+': '+JSON.stringify(sound));
+   audioArrangements.push(sound.arrangement);
+   assert.ok(sound.track&&sound.arrangement&&sound.lead,'Each game should expose its individual original musical arrangement');
    assert.equal(sound.enabled,true,'Music must be enabled after the first click in '+game);
    assert.equal(sound.playing,true,'Music loop must start in '+game);
    assert.ok(sound.oscillators>0&&sound.loopSteps>0,'Synthesizer must play actual notes in '+game);
@@ -161,5 +180,6 @@ try{
    await control.click();assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Unmute must work in '+game);
   }finally{await p.close()}
  }
+ assert.equal(new Set(audioArrangements).size,6,'Six games must not reuse one soundtrack or arrangement');
  console.log('CHROMIUM CAT GAMEPLAY, BILINGUAL YARN TUTORIAL, HOME LAYOUT AND SIX ORIGINAL MUSIC SCORES PASS');
 }finally{await browser.close()}
