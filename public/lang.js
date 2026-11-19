@@ -9,7 +9,7 @@ let lang=(()=>{let explicit=null;
 })();
 const words={
 "Morrow Wish home":"Morrow Wish 首页",
-"Our worlds":"我们的世界","Tiny games":"小游戏","About":"关于","Find your next adventure":"寻找下一段冒险",
+"Play Pawsibly Innocent!":"开始玩猫猫大捣蛋","A mischievous orange cartoon cat in a cozy room":"温馨客厅里的淘气橘猫","Our worlds":"我们的世界","Tiny games":"小游戏","About":"关于","Find your next adventure":"寻找下一段冒险",
 "THE HOME OF NOT-SO-ORDINARY DAYS":"让平凡的日子有点不一样",
 "Little games.":"小小游戏。","Big surprises":"大大惊喜","Try another life. Build a free-spirited town. Or sneak around as a very mischievous cat.":"体验另一种人生，建造自由的小镇，或者化身淘气猫猫，在家里搞点小动作。","Every click leads somewhere unexpected.":"每次点击，都有意想不到的乐趣。","02 / FOUR LITTLE ADVENTURES":"02 / 四场小小冒险","Four little adventures, from lightning-fast challenges to the cutest kind of trouble. Pick one and play.":"四款随时开玩的小游戏：挑战手速，也可以当一只爱捣蛋的小猫。","COZY CAT CHAOS":"猫猫捣蛋计划","Steal three fish. Outsmart the human. Make adorable trouble.":"偷三条小鱼，骗过主人，制造一点可爱的小混乱。","Let the mischief begin":"开启捣蛋计划","Big daydreams":"大大幻想","Some days you need a whole new world. Some days you just need five minutes.":"有时你需要一个全新的世界，有时只要五分钟。",
 "Come play a different kind of what-if.":"来体验不一样的「如果」。",

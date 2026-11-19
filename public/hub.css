@@ -41,3 +41,6 @@ html[lang="zh-CN"] .section-intro h2 em,html[lang="zh-CN"] .about-copy h2 em{fon
 .mini-cat>img{background:linear-gradient(135deg,#ffe5e4,#e3f6dc)}
 .mini-cat .mini-type,.mini-cat .mini-cta{color:#d76d8c}
 @media(min-width:781px){.mini-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.mini-copy{padding:16px}.mini-copy strong{font-size:20px}}
+
+/* Chinese headline uses Chinese punctuation rather than an orphan English dot. */
+html[lang="zh-CN"] .hero h1 .period{display:none}
