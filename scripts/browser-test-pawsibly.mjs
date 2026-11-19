@@ -144,8 +144,10 @@ try{
  console.log('Real yarn button and audio:',JSON.stringify(tossed));
  assert.equal(tossed.yarn,initialYarn-1,'Yarn ball should be consumed after pressing the button');
  assert.ok(tossed.noise&&tossed.trail,'Yarn ball should draw an arc and lure the human');
- assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.loopSteps>0,'Real WebAudio soundtrack should emit notes after user click');
- assert.ok(tossed.sound.playing,'Original cat background score should be playing');
+ assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.effects>0,'Cat yarn action must still play sound effects');
+ assert.equal(tossed.sound.playing,false,'Cat background music must never play');
+ assert.equal(tossed.sound.backgroundMusic,false,'Cat game must use sound effects only');
+ assert.equal(tossed.sound.loopSteps,0,'Cat game must never schedule a background music loop');
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
  assert.match(await page.locator('#yarnExplain').textContent(),/主人|毛线/,'Chinese explanation for yarn is clear');
  assert.match(await page.locator('#catLegend').textContent(),/纸箱|小鱼/,'Chinese prop legend is present');
@@ -155,9 +157,9 @@ try{
  await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Sound button must restore audio');
 
- // All six showcased studio games must have real audio controls and synthesized music.
+ // All six showcased studio games must have sound effects and no background music.
  const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','pawsibly-innocent'];
- const audioArrangements=[];
+ const noMusicAudit=[];
  for(const game of routes){
   const p=await browser.newPage({viewport:{width:1250,height:900}});
   await p.route('**/api/session',route=>route.fulfill({status:204,body:''}));
@@ -167,19 +169,30 @@ try{
    assert.equal(await p.evaluate(()=>typeof window.MorrowwishAudio),'object','Audio engine missing in '+game);
    const control=p.locator('[data-mw-audio]');
    assert.equal(await control.count(),1,'Must show exactly one audio toggle in '+game);
-   // A trusted pointer interaction unlocks Web Audio without an autoplay attempt.
-   await p.mouse.click(25,450);await p.waitForTimeout(680);
+   // A trusted pointer interaction unlocks Web Audio without triggering a background score.
+   await p.mouse.click(25,450);await p.waitForTimeout(530);
+   const idle=await p.evaluate(()=>window.MorrowwishAudio.status());
+   await p.waitForTimeout(390);
+   const later=await p.evaluate(()=>window.MorrowwishAudio.status());
+   console.log('Sound-effects-only idle '+game+': '+JSON.stringify({idle,later}));
+   assert.equal(later.enabled,true,'Sound effects should be enabled in '+game);
+   assert.equal(later.playing,false,'There must be no BGM playback in '+game);
+   assert.equal(later.backgroundMusic,false,'BGM engine must be removed from '+game);
+   assert.equal(later.loopSteps,0,'No melody scheduler can run in '+game);
+   assert.equal(later.oscillators,idle.oscillators,'Idle game must not emit new audio oscillators in '+game);
+   // Explicit action still plays an audible effect, not a melody.
+   await p.evaluate(()=>window.MorrowwishAudio.effect('tap'));
    const sound=await p.evaluate(()=>window.MorrowwishAudio.status());
-   console.log('Audio smoke '+game+': '+JSON.stringify(sound));
-   audioArrangements.push(sound.arrangement);
-   assert.ok(sound.track&&sound.arrangement&&sound.lead,'Each game should expose its individual original musical arrangement');
-   assert.equal(sound.enabled,true,'Music must be enabled after the first click in '+game);
-   assert.equal(sound.playing,true,'Music loop must start in '+game);
-   assert.ok(sound.oscillators>0&&sound.loopSteps>0,'Synthesizer must play actual notes in '+game);
+   assert.ok(sound.oscillators>later.oscillators&&sound.effects>later.effects,'Action SFX must work in '+game);
+   noMusicAudit.push(game);
+   assert.match(await control.getAttribute('aria-label'),/sound effects|音效/i,'Sound control must refer only to effects');
    await control.click();assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute must work in '+game);
+   const silent=await p.evaluate(()=>{const a=window.MorrowwishAudio,b=a.status();a.effect('tap');return{before:b,after:a.status()}});
+   assert.equal(silent.after.oscillators,silent.before.oscillators,'Muted effects must not create audio oscillators in '+game);
    await control.click();assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Unmute must work in '+game);
+   assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().playing),false,'Unmuting must not start background music in '+game);
   }finally{await p.close()}
  }
- assert.equal(new Set(audioArrangements).size,6,'Six games must not reuse one soundtrack or arrangement');
- console.log('CHROMIUM CAT GAMEPLAY, BILINGUAL YARN TUTORIAL, HOME LAYOUT AND SIX ORIGINAL MUSIC SCORES PASS');
+ assert.equal(noMusicAudit.length,6,'All six games must be verified without BGM');
+ console.log('CHROMIUM CAT GAMEPLAY, BILINGUAL TUTORIAL, SIX SOUND-EFFECTS-ONLY GAMES PASS');
 }finally{await browser.close()}
