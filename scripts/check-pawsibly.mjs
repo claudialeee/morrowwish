@@ -54,6 +54,6 @@ while(!test.getState().done&&attempts++<95){
 assert.ok(test.getState().winning,'First room should be winnable without special tools');
 assert.equal(events.filter(e=>e.name==='game_complete').length,1,'Exactly one completion event');
 listeners['morrowwish-language-change']({detail:{lang:'zh'}});
-assert.ok(nodes.get('subtitle').textContent.includes('小猫'));
+assert.ok(nodes.get('subtitle').textContent.includes('偷零食'),'Chinese gameplay copy switches correctly');
 assert.ok(frames>=1,'Canvas art rendered');
 console.log('Pawsibly Innocent: all 8 room routes/items, yarn, first-room escape, telemetry, canvas and bilingual text PASS.');
