@@ -67,17 +67,17 @@ const $=id=>document.getElementById(id);
 const I18N={
 zh:{
 pageTitle:"Morrow Wish · 统一数据中心",back:"返回游戏首页 ↗",tag:"私人工作室 · 统一看板",title:"统一数据中心",
-intro:"主页优先，随后按工作室展示顺序列出游戏。Elsewhere 的章节、通关和重玩数据在下方统一分析。",
+intro:"首先统计网站首页，再按展示顺序列出游戏。平行人生的章节、通关与重玩数据也会统一汇总。",
 today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",
-accessTitle:"工作室专用看板",accessHint:"输入 Analytics 访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"Analytics 访问码",accessButton:"查看数据",
+accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
-trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"按首页展示顺序：主页 → No More Mondays → Elsewhere → 精选小游戏。已下架作品不显示，但旧记录仍保留。",
-colGame:"游戏",colPv:"PV",colVisitors:"访客",colStarts:"启动",colRetries:"重玩",colTime:"平均会话",colDone:"完成",colShares:"分享",colConversion:"启动 / PV",
+trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"按首页展示顺序：网站首页 → 小镇物语 → 平行人生 → 精选小游戏。已下架作品不显示，但历史记录仍保留。",
+colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"启动",colRetries:"重玩",colTime:"平均会话",colDone:"完成",colShares:"分享",colConversion:"启动率",
 sourcesTitle:"访客从哪里来",sourcesDesc:"对比来源、设备、外部网站及原独立站的贡献。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站（域名）",websites:"访问网址",
-coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件和粗粒度来源，不记录姓名、邮箱或完整 IP。独立浏览器通过第一方随机 ID 的哈希识别，不等于真实人数。尊重 Do Not Track 与 Global Privacy Control。Vercel Analytics 的历史数据不会自动回填。",
-statPv:"页面浏览量 · PV",statPvNote:"所有游戏及首页",statVisitors:"独立浏览器",statVisitorsNote:"匿名浏览器，不是人数",statStarts:"游戏启动次数",statStartsNote:"玩家开始一局",statSession:"平均会话时长",statSessionNote:"按匿名会话计算",statRetries:"重玩次数",statRetriesNote:"Retry / Replay / 再玩一次",statShares:"分享点击",statSharesNote:"成绩或挑战分享",statFinished:"关卡 / 游戏完成",statFinishedNote:"已记录的完成事件",statD1:"首访次日回访率",statD1Note:"样本 {n} 个匿名浏览器",
+coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件与粗粒度流量来源，不记录姓名、邮箱或完整 IP 地址。独立浏览器通过本站随机标识估算，不等于真实人数。尊重浏览器的“不追踪”和“全局隐私控制”设置。历史访问数据不会自动补录。",
+statPv:"页面浏览量",statPvNote:"所有游戏及首页",statVisitors:"独立浏览器",statVisitorsNote:"匿名浏览器，不是人数",statStarts:"游戏启动次数",statStartsNote:"玩家开始一局",statSession:"平均会话时长",statSessionNote:"按匿名会话计算",statRetries:"重玩次数",statRetriesNote:"点击重试、重开或再玩一次",statShares:"分享点击",statSharesNote:"成绩或挑战分享",statFinished:"关卡 / 游戏完成",statFinishedNote:"已记录的完成事件",statD1:"首访次日回访率",statD1Note:"样本 {n} 个匿名浏览器",
 seconds:"{n} 秒",none:"暂无数据",headHome:"网站首页",empty:"—",coverageDays:"覆盖最近 {days} 天，共读取 {records} 条匿名记录。",coveragePartial:"本次统计达到读取上限，结果可能不完整。",coverageOld:"旧版会话有 {n} 条缺少稳定访客 ID，计入访问或会话，但不计入独立访客。",coverageDetails:"数据从统一采集系统上线后累计。页面加载计入 PV；游玩时长等在离开页面或切换标签页后汇总。次日留存按首次访问浏览器在次日是否再次出现计算。",
-direct:"直接访问",internal:"站内跳转",external:"外部网站",mobile:"手机",tablet:"平板",desktop:"桌面",arcade:"Morrow Wish",legacy:"原 Tiny Town 网址",unknown:"未知",failGeneric:"服务暂时不可用"
+direct:"直接访问",internal:"站内跳转",external:"外部网站",mobile:"手机",tablet:"平板",desktop:"桌面",arcade:"Morrow Wish 工作室",legacy:"原小镇物语网址",unknown:"未知",failGeneric:"服务暂时不可用"
 },
 en:{
 pageTitle:"Morrow Wish · Studio Analytics",back:"Back to games ↗",tag:"PRIVATE STUDIO · ONE DASHBOARD",title:"Studio Analytics",
@@ -93,15 +93,15 @@ statPv:"Pageviews · PV",statPvNote:"All games and homepage",statVisitors:"Uniqu
 seconds:"{n} sec",none:"No data yet",headHome:"Homepage",empty:"—",coverageDays:"Last {days} days; {records} anonymous records read.",coveragePartial:"The read limit was reached; some data may be excluded.",coverageOld:"{n} legacy sessions lack a stable visitor ID. They count toward pageviews/sessions, but not unique browsers.",coverageDetails:"Data is collected from the launch of the unified system. Page loads count as pageviews; gameplay duration is sent when leaving the page or switching tabs. Day-1 retention measures whether a browser returned the day after its first recorded visit.",
 direct:"Direct",internal:"Internal navigation",external:"External website",mobile:"Mobile",tablet:"Tablet",desktop:"Desktop",arcade:"Morrow Wish",legacy:"Original Tiny Town site",unknown:"Unknown",failGeneric:"Service temporarily unavailable"
 }};
-const gameNames={"elsewhere":"Elsewhere","hub":{zh:"网站首页",en:"Homepage"},"flip-dash":"Flip Dash","parcel-panic":"Parcel Panic","tiny-town":"No More Mondays: Tiny Town","echo-heist":"Echo Heist","orbit-escape":"Orbit Escape","tower-tuck":"Tower Tuck","traffic-tangle":"Traffic Tangle","perfect-pour":"Perfect Pour","color-current":"Color Current","grid-glider":"Grid Glider","mirror-mosaic":"Mirror Mosaic","pocket-aquarium":"Pocket Aquarium"};
+const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"}};
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
-try{lang=localStorage.getItem("morrowwish-dashboard-language")==="en"?"en":"zh";}catch{}
+try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
 const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
 function dateFormat(x){return new Date(x).toLocaleString(lang==="zh"?"zh-CN":"en-US");}
-function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lastError});}else status.textContent=t(kind);}
+function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lang==="zh"?t("failGeneric"):lastError});}else status.textContent=t(kind);}
 function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
 function nameFor(x){return t(x)===x?x:t(x);}
 function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=Math.max(1,...data.map(a=>Number(a.value)||0));el.innerHTML=data.length?data.map(x=>{const label=nameFor(x.name||"unknown"),number=Math.max(0,Number(x.value)||0);return '<div class="metric-row"><div class="name" title="'+escapeHTML(label)+'">'+escapeHTML(label)+'</div><div class="track"><div class="fill" style="width:'+Math.max(1,Math.min(100,100*number/max))+'%"></div></div><div class="n">'+format(number)+'</div></div>';}).join(""):'<p class="description">'+escapeHTML(t("none"))+'</p>';}
@@ -118,13 +118,13 @@ metricCard(t("statD1"),r.d1Rate==null?t("empty"):r.d1Rate+"%",t("statD1Note",{n:
 ].join("");
 const max=Math.max(1,...days.map(d=>Number(d.pageviews)||0));
 $("graph").innerHTML=days.map(d=>{const day=escapeHTML(String(d.day||"").slice(5)),pv=Math.max(2,Math.min(140,Math.round((Number(d.pageviews)||0)/max*140))),vis=Math.max(2,Math.min(140,Math.round((Number(d.visitors)||0)/max*140)));return '<div class="day-col"><div class="day-count">'+format(d.pageviews)+'</div><div class="bars"><div class="bar pv" style="height:'+pv+'px" title="'+escapeHTML(t("pvLabel"))+' '+format(d.pageviews)+'"></div><div class="bar vis" style="height:'+vis+'px" title="'+escapeHTML(t("uniqueLabel"))+' '+format(d.visitors)+'"></div></div><div class="day-date">'+day+'</div></div>';}).join("");
-const displayOrder=['hub','tiny-town','elsewhere','flip-dash','echo-heist','parcel-panic','pocket-aquarium','tower-tuck','traffic-tangle'];
+const displayOrder=['hub','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
  // Elsewhere uses the same complete unified metrics as all other games.
  const x=visibleGames.get(gameId)||{game:gameId,pageviews:0,visitors:0,starts:0,retries:0,avgSeconds:0,completion:0,shares:0};
  const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url=x.game==="hub"?"/":"/"+encodeURIComponent(x.game)+"/";
- return '<tr '+(x.game==='elsewhere'?'data-elsewhere-row ':'')+'class="'+(['tiny-town','flip-dash','echo-heist','elsewhere'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+format(x.pageviews)+'</td><td>'+format(x.visitors)+'</td><td>'+format(x.starts)+'</td><td>'+format(x.retries)+'</td><td>'+format(x.avgSeconds)+'s</td><td>'+format(x.completion)+'</td><td>'+format(x.shares)+'</td><td>'+(x.game==='hub'?t('empty'):pct(x.starts,x.pageviews)+'%')+'</td></tr>';
+ return '<tr '+(x.game==='elsewhere'?'data-elsewhere-row ':'')+'class="'+(['tiny-town','flip-dash','elsewhere'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+format(x.pageviews)+'</td><td>'+format(x.visitors)+'</td><td>'+format(x.starts)+'</td><td>'+format(x.retries)+'</td><td>'+escapeHTML(t('seconds',{n:format(x.avgSeconds)}))+'</td><td>'+format(x.completion)+'</td><td>'+format(x.shares)+'</td><td>'+(x.game==='hub'?t('empty'):pct(x.starts,x.pageviews)+'%')+'</td></tr>';
 }).join("");
 for(const id of ["sources","devices","referrers","sites"])breakdown(id,j[id]);
 const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)})];
@@ -132,10 +132,10 @@ if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.pus
 
 let elsewhereData=null;
 const EW={
-zh:{title:'Elsewhere：平行人生',desc:'场景漏斗、完整路线和不同路线的重复体验，统计直接并入同一数据中心。',open:'打开 Elsewhere ↗',funnel:'八幕故事漏斗',funnelNote:'按每条人生的唯一 run 去重，完成率以进入该场景的人生次数为分母。',continue:'场景继续率',continueNote:'第 N 幕完成后实际进入第 N+1 幕的占比。',worlds:'按世界比较',world:'世界',runs:'人生开始次数',chapter1:'首幕完成',rate:'首幕完成率',finished:'通关',replays:'重开',routes:'最常见的通关路线',routeNote:'路线如 1-2-1-1-2-1-2-1，分别代表八幕的选择编号。',route:'选择路径',times:'通关次数',starts:'人生次数',firstDone:'首幕完成率',ending:'通关次数',replayRate:'重玩访客率',different:'不同路线复玩率',replayHint:'有重玩的访客 / 进入过游戏的访客',differentHint:'完成至少两条人生的访客中，选择路线不同的比例',noData:'目前没有足够的真实数据',pending:'正在加载 Elsewhere 匿名玩法数据…',empty:'—',coverage:'累计 {n} 条匿名事件；仅统计开始采集后的数据。',partial:' 已达到读取上限，数据不完整。',errors:' 有 {n} 条记录读取失败。',denom:'分母 {n}',chapter:'第 {n} 幕',started:'进入',done:'完成'},
+zh:{title:'平行人生 · 故事数据',desc:'场景漏斗、完整路线和不同路线的重复体验，统一汇总在这里。',open:'打开平行人生 ↗',funnel:'八幕故事漏斗',funnelNote:'按每条人生的唯一 run 去重，完成率以进入该场景的人生次数为分母。',continue:'场景继续率',continueNote:'第 N 幕完成后实际进入第 N+1 幕的占比。',worlds:'按世界比较',world:'世界',runs:'人生开始次数',chapter1:'首幕完成',rate:'首幕完成率',finished:'通关',replays:'重开',routes:'最常见的通关路线',routeNote:'路线如 1-2-1-1-2-1-2-1，分别代表八幕的选择编号。',route:'选择路径',times:'通关次数',starts:'人生次数',firstDone:'首幕完成率',ending:'通关次数',replayRate:'重玩访客率',different:'不同路线复玩率',replayHint:'有重玩的访客 / 进入过游戏的访客',differentHint:'完成至少两条人生的访客中，选择路线不同的比例',noData:'目前没有足够的真实数据',pending:'正在加载平行人生的匿名游玩数据…',empty:'—',coverage:'累计 {n} 条匿名事件；仅统计开始采集后的数据。',partial:' 已达到读取上限，数据不完整。',errors:' 有 {n} 条记录读取失败。',denom:'分母 {n}',chapter:'第 {n} 幕',started:'进入',done:'完成'},
 en:{title:'Elsewhere · Other Lives',desc:'Chapter progression, complete paths and different-route replays, within the same studio dashboard.',open:'Play Elsewhere ↗',funnel:'Eight-scene funnel',funnelNote:'Deduplicated by life run. Scene completion rates use scene entrants as the denominator.',continue:'Scene continuation',continueNote:'Share of players who reached chapter N+1 after finishing chapter N.',worlds:'Compare worlds',world:'World',runs:'Runs started',chapter1:'Scene 1 done',rate:'First chapter rate',finished:'Lives completed',replays:'Restarts',routes:'Top completed routes',routeNote:'A route such as 1-2-1-1-2-1-2-1 records choices across eight scenes.',route:'Choice path',times:'Completions',starts:'Life runs',firstDone:'Chapter 1 finish',ending:'Finished lives',replayRate:'Visitor replay rate',different:'Different-route replay',replayHint:'Visitors who replayed / visitors who started',differentHint:'Among visitors completing two or more lives, share who explored distinct choice routes',noData:'Not enough genuine play data yet',pending:'Loading Elsewhere anonymous play data…',empty:'—',coverage:'{n} anonymous events received since tracking began.',partial:' Read limit reached; results are incomplete.',errors:' {n} records failed to load.',denom:'Denominator: {n}',chapter:'Scene {n}',started:'View',done:'Complete'}
 };
-const worldLabels={'no-work':'No More Work',bookshop:'Seaside Bookshop',paris:'A Life in Paris',cabin:'Cabin in the Woods'};
+const worldLabels={'no-work':{zh:'不需要工作了',en:'No More Work'},bookshop:{zh:'海边书店',en:'Seaside Bookshop'},paris:{zh:'巴黎的另一种人生',en:'A Life in Paris'},cabin:{zh:'林间小屋',en:'Cabin in the Woods'}};const worldName=id=>worldLabels[id]?.[lang]||id;
 const ewText=(k,p={})=>{let x=EW[lang][k]||k;for(const [name,val] of Object.entries(p))x=x.replaceAll('{'+name+'}',String(val));return x};
 const ewPct=n=>n==null?ewText('empty'):(Number(n).toFixed(1)+'%');
 function updateEWLabels(){for(const node of document.querySelectorAll('[data-ew]'))node.textContent=ewText(node.dataset.ew);}
@@ -154,18 +154,18 @@ function renderElsewhere(j){
  $('ew-funnel').innerHTML=f.map(row=>{const match=/^(\d)-(view|complete)$/.exec(row.step)||[],label=ewText('chapter',{n:match[1]||'?'})+' · '+ewText(match[2]==='view'?'started':'done');return '<div class="ew-funnel-row"><span>'+escapeHTML(label)+'</span><div class="ew-bar"><span style="width:'+Math.max(0,100*(row.value||0)/max)+'%"></span></div><strong>'+format(row.value)+'</strong></div>'}).join('');
  $('ew-continue').innerHTML=rates.map(row=>'<div class="ew-continue-row"><span>'+escapeHTML(ewText('chapter',{n:row.from}))+' → '+escapeHTML(ewText('chapter',{n:row.to}))+'<div class="description">'+format(row.continued)+' / '+format(row.eligible)+'</div></span><b>'+escapeHTML(ewPct(row.rate))+'</b></div>').join('');
 
- $('ew-worlds').innerHTML=worlds.map(w=>'<tr><td>'+escapeHTML(worldLabels[w.world]||w.world)+'</td><td>'+format(w.starts)+'</td><td>'+format(w.ch1Completed)+'</td><td>'+escapeHTML(ewPct(w.firstRate))+'</td><td>'+format(w.ends)+'</td><td>'+format(w.replays)+'</td></tr>').join('');
- $('ew-routes').innerHTML=routes.length?routes.map(r=>'<tr><td>'+escapeHTML(worldLabels[r.world]||r.world)+'</td><td><code>'+escapeHTML(r.route)+'</code></td><td>'+format(r.count)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center">'+escapeHTML(ewText('noData'))+'</td></tr>';
+ $('ew-worlds').innerHTML=worlds.map(w=>'<tr><td>'+escapeHTML(worldName(w.world))+'</td><td>'+format(w.starts)+'</td><td>'+format(w.ch1Completed)+'</td><td>'+escapeHTML(ewPct(w.firstRate))+'</td><td>'+format(w.ends)+'</td><td>'+format(w.replays)+'</td></tr>').join('');
+ $('ew-routes').innerHTML=routes.length?routes.map(r=>'<tr><td>'+escapeHTML(worldName(r.world))+'</td><td><code>'+escapeHTML(r.route)+'</code></td><td>'+format(r.count)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center">'+escapeHTML(ewText('noData'))+'</td></tr>';
  $('ew-coverage').textContent=ewText('coverage',{n:format(j.records)})+(j.partial?ewText('partial'):'')+(j.readErrors?ewText('errors',{n:format(j.readErrors)}):'');
  $('ew-state').hidden=true;$('ew-report').hidden=false;
 }
 async function loadElsewhere(){
  $('ew-state').hidden=false;$('ew-state').className='ew-state';$('ew-state').textContent=ewText('pending');$('ew-report').hidden=true;
  try{const response=await fetch('/api/elsewhere-summary?days='+$('days').value,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});const j=await response.json();if(!response.ok)throw new Error(j.error||'HTTP '+response.status);renderElsewhere(j)}
- catch(e){$('ew-state').textContent=ewText('noData')+' · '+(e.message||'Unavailable');$('ew-state').className='ew-state error';}
+ catch(e){$('ew-state').textContent=ewText('noData')+' · '+(lang==='zh'?t('failGeneric'):(e.message||'Unavailable'));$('ew-state').className='ew-state error';}
 }
 function applyLanguage(next){lang=next==="en"?"en":"zh";document.documentElement.lang=lang==="en"?"en":"zh-CN";document.title=t("pageTitle");
-try{localStorage.setItem("morrowwish-dashboard-language",lang);}catch{}
+try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL(location.href);uri.searchParams.set('lang',lang);history.replaceState(history.state,'',uri.pathname+uri.search+uri.hash);}catch{}
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
