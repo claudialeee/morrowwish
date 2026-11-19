@@ -171,6 +171,30 @@ try{
          checkboxDescriptions:checkboxDescriptions.map(o=>({text:safe(o.text),checked:o.checked})),
          buttons:buttons.map(o=>({...o,text:safe(o.text)}))
        };
+       // Advance only the six already-confirmed eligibility declarations.
+       // This is an intermediate wizard step, NEVER the final Submit action.
+       const verifiedText=checkboxDescriptions.map(x=>x.text.toLowerCase()).join(' ');
+       const requiredPhrases=['desktop chrome','tested and works on mobile','default language is english',
+          'the first minute makes it clear','someone other than you','rights to all code'];
+       if(checkboxDescriptions.length===6 && requiredPhrases.every(p=>verifiedText.includes(p))){
+         const boxes=page.locator('input[type="checkbox"]');
+         for(let i=0;i<6;i++)await boxes.nth(i).check({force:true});
+         const next=page.getByRole('button',{name:'Continue',exact:true});
+         if(await next.count() && await next.isEnabled()){
+           await next.click({timeout:5000});
+           await page.waitForTimeout(2500);
+           const region=await page.locator('main').count()?page.locator('main').first():page.locator('body');
+           const stepFields=await inspectFields(page);
+           const nextButtons=await page.locator('button:visible').evaluateAll(ns=>ns.map(n=>({
+              text:(n.innerText||n.getAttribute('aria-label')||'').trim().slice(0,100),
+              type:n.type,disabled:n.disabled
+           })).filter(x=>x.text.length<100).slice(0,40)).catch(()=>[]);
+           report.submissionForm.nextStep={path:new URL(page.url()).pathname,text:safe(await region.innerText().catch(()=>'')),
+             fields:stepFields,buttons:nextButtons.map(o=>({...o,text:safe(o.text)}))};
+           report.note='Advanced eligibility checkboxes to inspect game form; no game submitted.';
+         }
+       }
+
     }
  }else{
     report.status=page.url().startsWith(root+'/')?'portal-not-rendered':'unexpected-origin';
