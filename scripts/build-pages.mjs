@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { generateDiscovery } from './discovery.mjs';
 
 const base = process.cwd();
 const out = path.join(base, 'cloudflare-pages', 'public');
@@ -16,3 +17,5 @@ if (!analytics.includes('async function api') || !router.includes('ASSETS.fetch'
 }
 fs.writeFileSync(path.join(out, '_worker.js'), analytics + '\n' + router);
 console.log('Built Cloudflare Pages assets from canonical public/ and src/.');
+
+generateDiscovery(out);
