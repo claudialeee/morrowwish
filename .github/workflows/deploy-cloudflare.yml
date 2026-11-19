@@ -70,4 +70,11 @@ jobs:
             sleep 3
           done
           test "$good" = 1 || { echo "::error::Analytics API returned $code; expected 401 without login"; exit 1; }
+          # A 200 alone can conceal a fallback HTML page: inspect the file body.
+          for asset in no-work-public bookshop-cooperative paris-screens cabin-refuge; do
+            code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-ending.svg -w '%{http_code}' "https://morrowwish.pages.dev/elsewhere/endings/$asset.svg")
+            test "$code" = 200 && grep -q '<svg' /tmp/elsewhere-ending.svg || { echo "::error::Ending illustration $asset missing or invalid (HTTP $code)"; exit 1; }
+          done
+          code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-endings.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/endings.js')
+          test "$code" = 200 && grep -q 'ELSEWHERE_ENDINGS' /tmp/elsewhere-endings.js || { echo "::error::Ending script missing or invalid (HTTP $code)"; exit 1; }
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'

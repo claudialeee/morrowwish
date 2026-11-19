@@ -32,3 +32,30 @@ for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js
  if(text.toLowerCase().includes(['ruckus','button'].join('-')))throw Error('Old project name remains in '+file);
 }
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
+
+
+// Elsewhere: every route must lead to a complete, illustrated, bilingual ending.
+import vm from 'node:vm';
+const storySandbox={window:{}};
+for(const file of ['public/elsewhere/season.js','public/elsewhere/endings.js','public/zh-polish.js']){
+  vm.runInNewContext(fs.readFileSync(file,'utf8'),storySandbox,{filename:file,timeout:2000});
+}
+const storyWorlds=storySandbox.window.ELSEWHERE_SEASON||[];
+const storyEndings=storySandbox.window.ELSEWHERE_ENDINGS||{};
+if(storyWorlds.length!==4)throw Error('Elsewhere must have four complete worlds');
+if(!fs.readFileSync('public/elsewhere/index.html','utf8').includes('/elsewhere/endings.js'))throw Error('Elsewhere ending script is not loaded');
+const storyApp=fs.readFileSync('public/elsewhere/app.js','utf8');
+if(!storyApp.includes('const anchor=')||!storyApp.includes('function resolveEnding()'))throw Error('Elsewhere continuity logic missing');
+for(const world of storyWorlds){
+  const endings=storyEndings[world.id];
+  if(world.acts.length!==8||world.acts.some(act=>act.choices.length!==2||!act.n[0]))throw Error('Incomplete story: '+world.id);
+  if(endings?.paths.length!==2||endings.paths.some(p=>p.finales.length!==2)||endings.memories.length<2)throw Error('Incomplete ending matrix: '+world.id);
+  for(const path of endings.paths){
+    const asset='public/elsewhere/endings/'+path.image;
+    if(!fs.existsSync(asset)||!fs.readFileSync(asset,'utf8').includes('<svg'))throw Error('Missing ending illustration: '+asset);
+    for(const finale of path.finales){
+      if(!finale.title?.[0]||!finale.title?.[1]||!finale.detail?.[0]||!finale.detail?.[1])throw Error('Missing bilingual ending: '+world.id);
+    }
+  }
+}
+console.log('Elsewhere branching logic, 32 scenes, 16 endings and 8 SVG illustrations checked.');
