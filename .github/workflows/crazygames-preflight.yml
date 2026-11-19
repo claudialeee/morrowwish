@@ -25,7 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game: [flip-dash, parcel-panic]
+        game: [flip-dash, parcel-panic, pawsibly-innocent, elsewhere, tiny-town, pocket-aquarium]
+      max-parallel: 3
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
