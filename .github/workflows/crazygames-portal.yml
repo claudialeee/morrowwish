@@ -29,7 +29,7 @@ jobs:
       - name: Check studio session and available submission entrypoint
         env:
           CRAZYGAMES_STORAGE_STATE_B64: ${{ secrets.CRAZYGAMES_STORAGE_STATE_B64 }}
-          CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL }}
+          CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
           CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
         run: node scripts/crazygames-portal.mjs
       - name: Save sanitized portal capability report (no cookies or private HTML)
