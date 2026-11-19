@@ -17,6 +17,10 @@ on:
       - 'scripts/browser-test-pawsibly.mjs'
       - '.github/workflows/browser-test-pawsibly.yml'
   workflow_dispatch:
+# Only the most recent source revision needs a browser test.
+concurrency:
+  group: morrowwish-browser-smoke-main
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

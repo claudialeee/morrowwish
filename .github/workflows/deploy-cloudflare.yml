@@ -6,7 +6,13 @@ on:
     paths:
       - 'public/**'
       - 'src/**'
-      - 'scripts/**'
+      # Only scripts that affect the deployed site or release automation.
+      # Browser-only test edits must not trigger another production deploy.
+      - 'scripts/build-pages.mjs'
+      - 'scripts/discovery.mjs'
+      - 'scripts/detect-new-games.mjs'
+      - 'scripts/publish-bluesky.mjs'
+      - 'scripts/submit-indexnow.mjs'
       - 'cloudflare-pages/wrangler.jsonc'
       - 'package.json'
       - 'package-lock.json'
@@ -18,7 +24,9 @@ permissions:
 
 concurrency:
   group: morrowwish-cloudflare-pages-production
-  cancel-in-progress: false
+  # A newer main commit supersedes queued or in-progress older deploys.
+  # Prevent stale source checks from producing failure notifications.
+  cancel-in-progress: true
 
 jobs:
   deploy:
