@@ -136,3 +136,28 @@ body{background:#fff8f1}
 .music-credit a{color:#d6baa9;text-decoration:underline;text-underline-offset:2px}
 .about-dialog .dialog-bottom{margin-top:15px;color:#b89da4;letter-spacing:.12em;font-size:10px}
 @media(max-width:600px){.about-dialog{padding:22px 20px 25px}.story-letter p{font-size:14px;line-height:1.85}}
+
+/* Consistent Morrow Wish navigation: main-site back action is always top-left.
+   The Elsewhere wordmark is a secondary in-game way back to the life picker. */
+.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;column-gap:16px;align-items:center}
+.topbar-start{display:flex;align-items:center;gap:17px;min-width:0}
+.topbar-start .studio-home{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:40px;white-space:nowrap}
+.topbar-divider{height:25px;width:1px;background:rgba(130,101,112,.28);flex:none}
+.topbar-start .brand{flex:none;font-size:27px}
+.topbar .top-actions{justify-self:end;gap:15px;min-width:0}
+.topbar>#mw-language{justify-self:end}
+@media(max-width:780px){
+  .topbar{height:auto;min-height:77px;padding:12px 0;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:9px}
+  .topbar-start{grid-column:1 / -1;justify-content:space-between}
+  .topbar-start .studio-home{min-height:38px;font-size:12px;padding:9px 12px}
+  .topbar-start .brand{font-size:25px}
+  .topbar-divider{display:none}
+  .topbar .top-actions{grid-column:1;grid-row:2;justify-self:start;gap:10px;flex-wrap:wrap}
+  .topbar>#mw-language{grid-column:2;grid-row:2;align-self:center}
+  .topbar .elsewhere-music{max-width:150px}
+}
+@media(max-width:390px){
+  .topbar .top-actions{gap:7px}
+  .topbar .elsewhere-music{max-width:130px}
+  .topbar .text-button{font-size:11px}
+}

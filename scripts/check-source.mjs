@@ -307,3 +307,24 @@ if(newsTopIndex<0||guideIndex<0||newsTopIndex>guideIndex||
    !newsTopPage.includes("state.last.pending.map(c=>zhClubs[c.name]||c.name)"))
  throw new Error('Town News must appear above gameplay and update in both languages');
 console.log('Immediate music start and top-positioned bilingual Town News checked.');
+
+
+// Elsewhere's primary escape route must match all studio games: the first
+// interactive item in the header returns to Morrow Wish, not the life picker.
+const elsewhereHeader=fs.readFileSync('public/elsewhere/index.html','utf8');
+const navStart=elsewhereHeader.indexOf('<header class="topbar">');
+const navEnd=elsewhereHeader.indexOf('</header>',navStart);
+if(navStart<0||navEnd<0)throw new Error('Missing Elsewhere header');
+const nav=elsewhereHeader.slice(navStart,navEnd);
+const studioLink=nav.indexOf('<a class="studio-home studio-home-leading" href="/"');
+const internalLink=nav.indexOf('<a href="/elsewhere/" class="brand" id="brand"');
+if(studioLink<0||internalLink<0||studioLink>internalLink)
+  throw new Error('Elsewhere header must lead with the Morrow Wish homepage link');
+if((nav.match(/href="\/"(?=\s|>)/g)||[]).length!==1)
+  throw new Error('Elsewhere header must have one unambiguous studio-home link');
+if(!nav.includes('id="home-btn"')||!nav.includes('id="brand"'))
+  throw new Error('Elsewhere life-picker navigation must remain available');
+const elsewhereStyles=fs.readFileSync('public/elsewhere/style.css','utf8');
+if(!elsewhereStyles.includes('.topbar-start')||!elsewhereStyles.includes('.topbar>#mw-language'))
+  throw new Error('Elsewhere desktop and mobile nav responsive layout missing');
+console.log('Elsewhere top-left homepage navigation, internal life picker and mobile layout checked.');
