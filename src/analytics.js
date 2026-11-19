@@ -14,8 +14,24 @@ function mainStats(x){
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
   const byDay=dates.map(day=>{let r=rows.filter(x=>x.day===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(r=>r.view_id||r.visitor+"-"+r.day)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
+  // Attribute every visit and its subsequent session deltas to the actual game + campaign.
+  // UTM beats referrer, which beats direct. Keep organic traffic as a separate cohort.
+  const channelGroups=new Map();
+  for(const r of rows){
+    if(r.kind!=="visit"&&r.kind!=="session")continue;
+    const d=r.data||{};
+    const source=tidy(d.utmSource,45)||((d.source==="external"&&d.referrer)?tidy(d.referrer,60):d.source==="internal"?"internal":"direct");
+    const campaign=tidy(d.utmCampaign,45)||"organic";
+    const game=tidy(r.game,40);
+    const key=JSON.stringify([game,source,campaign]);
+    if(!channelGroups.has(key))channelGroups.set(key,{game,source,campaign,views:new Set(),visitors:new Set(),runs:0,retries:0,seconds:0,ends:0,shares:0});
+    const z=channelGroups.get(key);
+    if(r.kind==="visit"){z.views.add(r.view_id||r.visitor+"-"+r.day);z.visitors.add(r.visitor||r.view_id);}
+    else {z.runs+=Math.max(0,Number(d.starts)||0);z.retries+=Math.max(0,Number(d.retries)||0);z.ends+=Math.max(0,Number(d.ends)||0);z.shares+=Math.max(0,Number(d.shares)||0);z.seconds+=Math.max(0,Number(d.seconds)||0);}
+  }
+  const byGameChannel=[...channelGroups.values()].map(z=>({game:z.game,source:z.source,campaign:z.campaign,pageviews:z.views.size,visitors:z.visitors.size,starts:z.runs,retries:z.retries,ends:z.ends,shares:z.shares,avgSeconds:z.views.size?Math.round(z.seconds/z.views.size):0,startRate:pct(z.runs,z.views.size)})).sort((a,b)=>b.pageviews-a.pageviews).slice(0,150);
   const total=score(rows);
-  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...total,completions:total.completion,d1Cohort:0,d1Returned:0,d1Rate:null,unknownPastVisits:0},byGame,byDay,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...total,completions:total.completion,d1Cohort:0,d1Returned:0,d1Rate:null,unknownPastVisits:0},byGame,byDay,byGameChannel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
  const rows=x.rows, events=new Map(),people=new Map(),worlds=["no-work","bookshop","paris","cabin"];const getId=r=>r.run_id||r.data.runId||r.visitor+"-"+(r.data.session||"na");
