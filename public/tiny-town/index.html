@@ -224,8 +224,8 @@ body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8e
   <div class="panel aw-club-progress-panel"><div class="panel-title">🎉 Club progress</div><div class="feed" id="clubProgress"></div></div>
  </div></div>
  <div class="aw-lower-grid">
-  <section class="aw-advanced aw-residents-panel" id="awResidentsDetails"><div class="aw-expanded-heading">👥 Residents &amp; interests <span>Tap a resident for more details</span></div><div class="panel aw-advanced-body"><div class="residents" id="residents"></div><div class="info" id="residentWhy" hidden></div><div class="aw-incoming-group" id="awIncomingGroup"><div class="section aw-incoming-heading">Four neighbors move in during Week 5</div><div class="residents" id="incoming"></div></div></div></section>
-  <section class="aw-advanced aw-news"><div class="aw-expanded-heading">📰 Town news <span>Latest town updates</span></div><div class="panel aw-advanced-body"><div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div></div></section>
+  <section class="aw-advanced aw-residents-panel" id="awResidentsDetails"><div class="aw-expanded-heading"><b class="aw-en">👥 Residents &amp; interests</b><b class="aw-zh">👥 居民与兴趣</b><span class="aw-en">Tap a resident to see their details</span><span class="aw-zh">点击居民查看详情</span></div><div class="panel aw-advanced-body"><div class="residents" id="residents"></div><div class="info" id="residentWhy" hidden></div><div class="aw-incoming-group" id="awIncomingGroup"><div class="section aw-incoming-heading"><span class="aw-en">Four new neighbors arrive in Week 5</span><span class="aw-zh">第 5 周将有 4 位新居民入住</span></div><div class="residents" id="incoming"></div></div></div></section>
+  <section class="aw-advanced aw-news"><div class="aw-expanded-heading"><b class="aw-en">📰 Town news</b><b class="aw-zh">📰 小镇新闻</b><span class="aw-en">Latest town updates</span><span class="aw-zh">最新动态</span></div><div class="panel aw-advanced-body"><div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div></div></section>
  </div>
 </div>
 <div id="end" class="end" role="dialog" aria-modal="true"><div class="end-card"><div class="big" id="endIcon">🎉</div><h2 id="endTitle">Town complete</h2><p id="endText"></p><div class="end-buttons"><button class="btn primary" id="newAgain">New town</button><button class="btn" id="sameAgain">Replay same seed</button><button class="btn" id="closeEnd">View town</button></div>
@@ -402,7 +402,8 @@ function reason(st,rs,i){
 function statusUI(){
  const rs=state.last||E.simulate(state),p=all().find(q=>q.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
  $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; purple tiles are within '+p.reach+' steps.',p.name+' 住在 '+cell(p.home)+'；紫色格子表示步行可达（'+p.reach+' 格）。'):L('Select a resident to see their home and walking range.','点击居民，查看住址和步行范围。');
- $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):L('Choose a resident to inspect their activity.','点击一位居民，查看兴趣和活动。');
+ $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):'';
+ $('residentWhy').hidden=!p;
  const list=[];
  for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
   const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
@@ -510,8 +511,12 @@ showClubLinks();
 $('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');button.className='choice'+(selected===type?' active':'');button.innerHTML='<div class="ico">'+icons[type].icon+'</div><div class="label">'+venue(type)+'</div><div class="detail">'+L('Capacity ','容纳 ')+icons[type].capacity+L('',' 人')+'</div>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Selected '+icons[type].name+'. Hover a green plot to preview; click to build.','已选择'+venue(type)+'。鼠标移到绿色格子上可预览，点击即可建造。');};$('cards').appendChild(button);}}
 $('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
 $('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
-$('residents').innerHTML=state.residents.map((r,i)=>{const rs=state.last||E.simulate(state),venue=rs.assignments[i]??-1;return '<button type="button" class="res '+(venue>=0?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+safe(reason(state,rs,i))+'</small></div></button>';}).join('');
-$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+L('Arrives in Week 5','第 5 周入住')+'</small></div></button>').join(''):L('All newcomers have arrived.','新邻居已经全部入住。');
+$('residents').innerHTML=state.residents.map((r,i)=>{
+ const sim=state.last||E.simulate(state),isOut=sim.assignments[i]>=0;
+ return '<button type="button" class="res '+(isOut?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small class="'+(isOut?'aw-attending':'')+'">'+(isOut?L('● At an activity','● 正在活动'):L('○ At home','○ 在家'))+'</small></div></button>';
+}).join('');
+$('awIncomingGroup').hidden=state.turn>=5;
+$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small></div></button>').join(''):'';
 statusUI();if(state.last)updateReceipt();refreshFeed();
 }
 $('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
