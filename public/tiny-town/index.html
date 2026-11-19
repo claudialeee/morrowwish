@@ -354,29 +354,43 @@ const E=window.AfterWorkEngine;const $=id=>document.getElementById(id);
 const board=$('board');let state,selected=null,hover=-1,busy=false,history=[],started,metrics,touchArmed=null,pendingMovePos=null,focusId=null,hasTrackedClub=false;const touchMode=false;
 const icons=E.INFO;
 const explainKinds={game:'Gaming',music:'Music',art:'Art',social:'Social'};
+const zhVenues={game:'街机厅',music:'音乐工作室',art:'艺术工坊',social:'咖啡馆'};
+const zhKinds={game:'游戏',music:'音乐',art:'艺术',social:'社交'};
+const zhClubs={'Rhythm Club':'节奏社','Indie Game Studio':'独立游戏社','Board Game Nights':'桌游之夜','Street Performers':'街头表演社','Open Mic':'开放麦','Art Salon':'艺术沙龙','Community Club':'社区社团'};
+const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
+const L=(en,cn)=>zh()?cn:en;
+const venue=t=>L(icons[t]?.name||t,zhVenues[t]||t);
+const kind=t=>L(explainKinds[t]||t,zhKinds[t]||t);
+const club=n=>L(n,zhClubs[n]||n);
 const cell=p=>'ABCD'[p%4]+(Math.floor(p/4)+1);
 const all=()=>state.residents.concat(state.turn<5?state.incoming:[]);
 function reason(st,rs,i){
-  const p=st.residents[i],bi=rs.assignments[i];
-  if(bi>=0)return 'Attending '+E.INFO[st.buildings[bi].type].name+' ('+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' steps)';
-  const matches=st.buildings.filter(b=>b.type===p.primary||b.type===p.secondary);
-  if(!matches.length)return 'No matching venue exists';
-  if(!matches.some(b=>E.walkDist(p.home,b.pos,st.obstacles)<=p.reach))return 'Matching venues are outside this resident\'s walking range';
-  return 'Matching reachable venues are full';
+ const p=st.residents[i],bi=rs.assignments[i];
+ if(bi>=0)return L('Attending '+icons[st.buildings[bi].type].name+' ('+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' steps)','正在参加'+venue(st.buildings[bi].type)+'（步行 '+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' 格）');
+ const matches=st.buildings.filter(b=>b.type===p.primary||b.type===p.secondary);
+ if(!matches.length)return L('No matching venue exists','没有符合兴趣的场所');
+ if(!matches.some(b=>E.walkDist(p.home,b.pos,st.obstacles)<=p.reach))return L('Matching venues are too far away','喜欢的场所超出步行范围');
+ return L('Nearby matching venues are full','附近喜欢的场所已经满员');
 }
-function statusUI(){const rs=state.last||E.simulate(state),p=all().find(p=>p.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
-  $('focusInfo').textContent=p?p.name+' lives at '+cell(p.home)+'; purple highlights reachable tiles ('+p.reach+' steps).':'Select a resident.';
-  $('residentWhy').textContent=p?(p.name+' · Home '+cell(p.home)+' · Walking reach: '+p.reach+' · Primary: '+explainKinds[p.primary]+' / Secondary: '+explainKinds[p.secondary]+' · '+(i<0?'Arrives in Week 5':reason(state,rs,i))):'Select a resident.';
-  const list=[];
-  for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
-    const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
-    const key=[x.type,y.type].sort().join('|'),name=E.COMBOS[key]?.name||'Club';
-    const left=rs.occupancy[a].length,right=rs.occupancy[b].length,ck=[x.pos,y.pos].sort().join('|')+':'+key,streak=rs.streaks[ck]||0;
-    list.push({name,left,right,streak,pos:cell(x.pos)+' + '+cell(y.pos)});
-  }
-  list.sort((a,b)=>b.streak-a.streak||(b.left+b.right-a.left-a.right));
-  $('clubProgress').innerHTML=list.length?list.slice(0,8).map(c=>'<div class="awClub"><b>'+safe(c.name)+'</b> · '+c.pos+'<div>'+c.left+'/2 + '+c.right+'/2 people · '+(c.streak>=2?'<span class="good">Stable ✓</span>':c.streak===1?'<span class="good">1/2 weeks</span>':'Needs two full venues for 2 weeks')+'</div></div>').join(''):'Build two different venues next to each other; each needs 2 people for 2 weeks. See “How do clubs form?” under the map.';
+function statusUI(){
+ const rs=state.last||E.simulate(state),p=all().find(q=>q.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
+ $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; purple tiles are within '+p.reach+' steps.',p.name+' 住在 '+cell(p.home)+'；紫色格子表示步行可达（'+p.reach+' 格）。'):L('Select a resident to see their home and walking range.','点击居民，查看住址和步行范围。');
+ $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):L('Choose a resident to inspect their activity.','点击一位居民，查看兴趣和活动。');
+ const list=[];
+ for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
+  const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
+  const key=[x.type,y.type].sort().join('|'),name=E.COMBOS[key]?.name||'Community Club';
+  const left=rs.occupancy[a].length,right=rs.occupancy[b].length,ck=[x.pos,y.pos].sort((m,n)=>m-n).join('|')+':'+key,streak=rs.streaks[ck]||0;
+  list.push({name,left,right,streak,first:x.type,second:y.type,pos:cell(x.pos)+' + '+cell(y.pos)});
+ }
+ list.sort((a,b)=>b.streak-a.streak||(b.left+b.right-a.left-a.right));
+ $('clubProgress').innerHTML=list.length?list.slice(0,8).map(c=>{
+  const missing=Math.max(0,2-c.left)+Math.max(0,2-c.right);
+  const hint=c.streak>=2?L('✓ Club established!','✓ 社团已成立！'):c.streak===1?L('1/2 weeks — keep 2 visitors at both venues next week.','已满足 1/2 周，下周两处仍要各有至少 2 人。'):L('Needs '+missing+' more visitor(s) to reach 2 at each venue.','两处都要至少 2 人，目前还差 '+missing+' 位访客。');
+  return '<div class="awClub"><div class="aw-club-head"><b>'+safe(club(c.name))+'</b><small>'+c.pos+' · '+(c.streak>=2?'✓':c.streak+'/2')+'</small></div><div class="aw-club-venues"><span>'+safe(venue(c.first))+' <b>'+c.left+'/2</b></span><span>'+safe(venue(c.second))+' <b>'+c.right+'/2</b></span></div><div class="aw-club-state'+(c.streak>=2?' ready':'')+'">'+safe(hint)+'</div></div>';
+ }).join(''):'<div class="aw-club-state">'+L('Build two different venues on adjacent tiles; progress appears here.','先把两种不同场所建在相邻格子里，组建进度就会显示在这里。')+'</div>';
 }
+
 function positionCenter(pos){const rect=board.getBoundingClientRect(),cell=board.children[pos].getBoundingClientRect();return {x:cell.left-rect.left+cell.width/2,y:cell.top-rect.top+cell.height/2};}
 function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function gameProgress(step){window.arcadeMetric?.('town_'+step,{game:'tiny-town'});}
@@ -392,47 +406,42 @@ function showClubLinks(){
     if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
     const ck=[a.pos,b.pos].sort((x,y)=>x-y).join('|')+':'+[a.type,b.type].sort().join('|');
     const streak=rs.streaks[ck]||0;
-    if(!streak)continue;
     const ax=cx(a.pos),ay=cy(a.pos),bx=cx(b.pos),by=cy(b.pos);
     const mx=(ax+bx)/2,my=(ay+by)/2,dx=(bx-ax)/100,dy=(by-ay)/100;
-    const good=streak>=2,color=good?'#168a55':'#8569e4';
+    const good=streak>=2,color=good?'#168a55':streak===1?'#8569e4':'#a39ba4';
     markup+='<line x1="'+(mx-dx*20)+'" y1="'+(my-dy*20)+'" x2="'+(mx+dx*20)+'" y2="'+(my+dy*20)+'" stroke="'+color+'" stroke-width="7" stroke-linecap="round" '+(good?'':'stroke-dasharray="7 5"')+'/>';
-    markup+='<rect x="'+(mx-21)+'" y="'+(my-11)+'" width="42" height="22" rx="11" fill="'+color+'" stroke="#fff" stroke-width="2"/><text x="'+mx+'" y="'+(my+1)+'">'+(good?'✓':'1/2')+'</text>';
+    markup+='<rect x="'+(mx-21)+'" y="'+(my-11)+'" width="42" height="22" rx="11" fill="'+color+'" stroke="#fff" stroke-width="2"/><text x="'+mx+'" y="'+(my+1)+'">'+(good?'✓':streak+'/2')+'</text>';
   }
   if(markup)holder.innerHTML='<svg viewBox="0 0 400 400" preserveAspectRatio="none" role="presentation">'+markup+'</svg>';
 }
 function clubTip(s){
-  const rs=s.last||E.simulate(s);
-  if(rs.pending.length)return 'A new club is forming!';
-  for(let i=0;i<s.buildings.length;i++)for(let j=i+1;j<s.buildings.length;j++){
-    const a=s.buildings[i],b=s.buildings[j];
-    if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
-    
-    const left=rs.occupancy[i].length,right=rs.occupancy[j].length;
-    if(left<2||right<2)return 'Clubs need at least two visitors at each neighboring venue for two weeks.';
-  }
-  if(!rs.clubs.length)return 'Keep two busy, different venues side by side for two weeks.';
-  return rs.clubs.length+' stable club type'+(rs.clubs.length===1?'':'s')+' so far.';
+ const rs=s.last||E.simulate(s);
+ if(rs.pending.length)return L('A new club is forming! Keep both venues busy next week.','社团正在形成！下周让两个场所继续各有至少 2 人。');
+ for(let i=0;i<s.buildings.length;i++)for(let j=i+1;j<s.buildings.length;j++){
+  const a=s.buildings[i],b=s.buildings[j];if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
+  if(rs.occupancy[i].length<2||rs.occupancy[j].length<2)return L('Each adjacent venue needs at least 2 visitors for 2 weeks.','相邻两处场所都要至少 2 位访客，并连续保持 2 周。');
+ }
+ return rs.clubs.length?L(rs.clubs.length+' club type(s) established.','已成立 '+rs.clubs.length+' 类社团。'):L('Build different venues side by side with 2 visitors each.','把两种不同场所建在相邻格子里，让每处至少有 2 人。');
 }
 function updateReceipt(){
  const rs=state.last,box=$('weekReceipt');if(!rs){box.hidden=true;return;}
  box.hidden=false;
- $('weekReceiptTitle').textContent='Week '+state.turn+' · '+rs.active+' active · '+rs.clubs.length+' club'+(rs.clubs.length===1?'':'s')+' · +'+rs.score;
+ $('weekReceiptTitle').textContent=L('Week ','第 ')+state.turn+L(' · ',' 周 · ')+rs.active+L(' active · ',' 位参加 · ')+rs.clubs.length+L(' clubs · +',' 个社团 · +')+rs.score;
  const usedTypes=new Set(rs.assignments.map(bi=>bi>=0?state.buildings[bi].type:null).filter(Boolean)).size;
- $('weekReceiptBody').innerHTML='<b>Vitality:</b> '+rs.active+' active × 10 + '+rs.clubs.length+' stable clubs × 24 + '+rs.pending.length+' forming × 6 + '+usedTypes+' used venue types × 4 − '+rs.empty+' empty buildings × 5.<br><b>Club tip:</b> '+safe(clubTip(state));
+ $('weekReceiptBody').innerHTML='<b>'+L('Vitality','活力')+':</b> '+rs.active+' × 10 + '+rs.clubs.length+' × 24 + '+rs.pending.length+' × 6 + '+usedTypes+' × 4 − '+rs.empty+' × 5.<br><b>'+L('Club tip','社团提示')+':</b> '+safe(clubTip(state));
 }
 
-
 function updateCoach(){
-const turn=state.turn;
-let title='Build your first happy place',text='A place is already selected. Tap any green square. Your neighbors visit on their own!';
-if(turn===1){title='Build a lasting club';text='Keep two different neighboring venues busy for two weeks to form a social club.'}
-if(turn>1&&turn<5){title='Your town is coming alive';text='Keep placing different venues near each other. Watch neighbors gather.'}
-if(turn>=5){title='New neighbors arrived!';text='Give everyone something fun to do, and complete two kinds of clubs.'}
-if(turn>=E.TURNS){title='Look what you created!';text='Start a new little town to try something different.'}
-$('awCoachStep').textContent='WEEK '+Math.min(turn+1,E.TURNS)+' / '+E.TURNS;
-$('awCoachTitle').textContent=title;$('awCoachText').textContent=text;
-$('awCoach').classList.toggle('aw-compact',turn>0);
+ const turn=state.turn;
+ let title=L('Build your first happy place','建造第一个快乐场所'),tip=L('Choose a place and click a green tile. Neighbors visit automatically.','先选场所，再点击绿色格子建造。居民会自动前来参加。');
+ if(turn===1){title=L('Build a lasting club','开始组建社团');tip=L('Put a different venue next to the first, and keep 2 visitors at both for 2 weeks.','在已有场所上下左右相邻处建不同场所，让两处各有至少 2 人，保持 2 周。');}
+ if(turn>1&&turn<5){title=L('Your town is coming alive','小镇越来越热闹');tip=clubTip(state);}
+ if(turn>=5){title=L('New neighbors arrived!','新邻居来了！');tip=L('Aim for 9 active neighbors and 2 different club types.','让至少 9 位居民参加活动，并成立 2 类不同社团。');}
+ if(turn>=E.TURNS){title=L('Look what you created!','看看你建造的小镇！');tip=L('Start a new town to try something different.','换张地图，再体验另一种小镇生活。');}
+ $('awCoachStep').textContent=L('WEEK ','第 ')+Math.min(turn+1,E.TURNS)+' / '+E.TURNS+L('',' 周');
+ $('awCoachTitle').textContent=title;$('awCoachText').textContent=tip;
+ $('autoPlace').textContent=L('✦ Auto-build (uses 1 turn)','✦ 自动建造（消耗 1 回合）');$('autoPlace').disabled=turn>=E.TURNS;
+ $('awCoach').classList.toggle('aw-compact',turn>0);
 }
 function start(seed){if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=state.offers[0][0];focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='<div class="event">🟢 AI now does every job. Everyone has endless free time. Build a place to gather! Four newcomers arrive in Week 5.</div>';render();}
 function renderingPreview(pos){if(busy||state.turn>=E.TURNS)return;
