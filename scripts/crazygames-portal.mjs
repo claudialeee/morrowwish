@@ -44,7 +44,7 @@ async function viewActions(page){
 }
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
- const context=await browser.newContext(state?{storageState:state}:{});
+ const context=await browser.newContext(email&&password?{}:state?{storageState:state}:{});
  const page=await context.newPage();
  const networkStats={scriptsOk:0,scriptsFailed:0,requestsFailed:0,serverErrors:0,consoleErrors:0};
  page.on('requestfailed',req=>{if(req.url().startsWith(root))networkStats.requestsFailed++});
@@ -62,7 +62,7 @@ try{
  page.on('response',response=>{try{const r=response.request();if(r.method()==='POST' && new URL(response.url()).hostname.endsWith('.crazygames.com'))loginPostStatuses.push(response.status());}catch{}});
  let pageErrorCount=0;
  page.on('pageerror',()=>{pageErrorCount++;});
- const response=await page.goto(root+'/games',{waitUntil:'domcontentloaded',timeout:45000});
+ const response=await page.goto(email&&password?root+'/login':root+'/games',{waitUntil:'domcontentloaded',timeout:45000});
  await page.waitForTimeout(6200);
  report.pageErrorCount=pageErrorCount;
  report.bodyTextLength=await page.locator('body').innerText().then(x=>x.length).catch(()=>0);
@@ -91,6 +91,10 @@ try{
       }
       await page.waitForURL(u=>!isLogin({url:()=>u.toString()}),{timeout:12000}).catch(()=>{});
       await page.waitForTimeout(3200);
+      if(!isLogin(page) && !page.url().startsWith(root+'/games')){
+        await page.goto(root+'/games',{waitUntil:'domcontentloaded',timeout:30000}).catch(()=>{});
+        await page.waitForTimeout(1800);
+      }
     }else{
       report.loginFormNotFound=true;
     }
