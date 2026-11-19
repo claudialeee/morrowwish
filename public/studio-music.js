@@ -58,6 +58,16 @@
    noise=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.24),ctx.sampleRate);
    const data=noise.getChannelData(0);let state=7182;
    for(let i=0;i<data.length;i++){state=(state*1664525+1013904223)>>>0;data[i]=(state/2147483648-1)*.8}
+   // Chrome/Safari can suspend an AudioContext AFTER the first few audible notes.
+   // Always keep our scheduling state in sync with the actual playback state.
+   ctx.onstatechange=()=>{
+    if(ctx.state==='running'){
+     if(enabled&&!document.hidden&&!running)activate();
+    }else{
+     pauseScheduling();
+    }
+    sync();
+   };
    return true;
   }catch{return false}
  }
@@ -130,24 +140,32 @@
    voice(melody,t,sustain,score.instrument,style==='ocean'?.045:style==='drive'?.039:.050);
   }
  }
+ function pauseScheduling(){
+  if(interval){clearInterval(interval);interval=null}
+  running=false;
+ }
  function schedule(){
   if(!running||!ctx||!enabled)return;
-  if(ctx.state==='suspended')return;
+  // A Web Audio context may become suspended or interrupted mid-game.
+  if(ctx.state!=='running'){pauseScheduling();sync();return}
   const halfBeat=30/score.bpm;
+  // Don't spend a long time catching up after throttled timers or device sleep.
+  if(nextTime<ctx.currentTime-halfBeat*2)nextTime=ctx.currentTime+.012;
   let guard=0;
   while(nextTime<ctx.currentTime+.40&&guard++<10){
    perform(step,nextTime);step=(step+1)%64;nextTime+=halfBeat;
   }
  }
  function stop(){
-  running=false;
-  if(interval){clearInterval(interval);interval=null}
+  pauseScheduling();
   if(ctx&&output){try{output.gain.cancelScheduledValues(ctx.currentTime);output.gain.setTargetAtTime(.00001,ctx.currentTime,.055)}catch{}}
   sync();
  }
  function activate(){
   if(!ctx||ctx.state!=='running'||running||!enabled||document.hidden)return false;
-  running=true;step=0;nextTime=ctx.currentTime+.008;
+  running=true;
+  // Continue the same musical sequence after an interruption instead of replaying its first note.
+  nextTime=ctx.currentTime+.008;
   output.gain.cancelScheduledValues(ctx.currentTime);
   output.gain.setTargetAtTime(.38,ctx.currentTime,.028);
   schedule();interval=setInterval(schedule,85);
@@ -155,14 +173,15 @@
  }
  function start(){
   if(!enabled||document.hidden||!ensure())return false;
-  if(running)return true;
-  // Try sound immediately, without requiring a click. Browser autoplay policies
-  // may suspend Web Audio; the first gesture resumes in that case.
+  if(ctx.state==='running')return running?true:activate();
+  // Never trust 'running' if the browser has suspended the actual audio engine.
+  pauseScheduling();
   try{
-   if(ctx.state==='running')return activate();
    const result=ctx.resume();
    if(ctx.state==='running')return activate();
-   if(result?.then)result.then(()=>{if(enabled&&!document.hidden)activate()}).catch(()=>{sync()});
+   if(result?.then)result.then(()=>{
+    if(enabled&&!document.hidden&&ctx.state==='running')activate();
+   }).catch(()=>sync());
   }catch{}
   sync();return false;
  }
@@ -175,14 +194,14 @@
   if(!button)return;
   button.textContent=label();
   button.title=(isZh()?'原创循环配乐「':'Original looping music “')+score.title[isZh()?'zh':'en']+'”';
-  const blocked=enabled&&ctx?.state==='suspended'&&!running;
+  const blocked=enabled&&ctx&&ctx.state!=='running';
   if(blocked)button.textContent=isZh()?'♫ 音乐：点击开启':'♫ Music: Tap to play';
   button.setAttribute('aria-label',button.textContent);button.setAttribute('aria-pressed',String(enabled));
   button.classList.toggle('mw-music-off',!enabled);
  }
  function mount(){
   button=document.createElement('button');button.type='button';button.className='mw-music-toggle';
-  button.dataset.mwMusic='true';button.addEventListener('click',e=>{e.stopPropagation();toggle()});
+  button.dataset.mwMusic='true';button.addEventListener('click',e=>{e.stopPropagation();if(enabled&&(!running||ctx?.state!=='running'))start();else toggle();});
   const css=document.createElement('style');
   css.textContent='.mw-music-toggle{font:750 12px/1.3 system-ui,sans-serif;background:#f7e9f2;color:#6c5077;border:1px solid #dec6db;border-radius:999px;padding:8px 12px;min-height:35px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px #8a708619}.mw-music-toggle:hover{background:#f0dfed}.mw-music-toggle:focus-visible{outline:3px solid #bca1e0;outline-offset:2px}.mw-music-toggle.mw-music-off{background:#f6f4f2;color:#8b8187;border-color:#e6dedf}@media(max-width:620px){.mw-music-toggle{font-size:10px;padding:7px 9px}}';
   document.head.appendChild(css);
@@ -198,7 +217,7 @@
  function unlock(evt){
   if(evt.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(evt.key))return;
   firstGesture=true;
-  if(enabled&&!running)start();
+  if(enabled&&(!running||ctx?.state!=='running'))start();
  }
  document.addEventListener('pointerdown',unlock,{capture:true,passive:true});
  document.addEventListener('keydown',unlock,true);
