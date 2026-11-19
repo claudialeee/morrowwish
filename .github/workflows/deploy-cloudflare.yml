@@ -56,8 +56,19 @@ jobs:
           }
           const live = await get('/workers/scripts/' + encodeURIComponent(cfg.name) + '/settings');
           if (!live.ok) {
-            console.error('::error::Unable to read live Worker settings: HTTP ' + live.code +
-              ', Cloudflare codes ' + JSON.stringify((live.body.errors || []).map(e => e.code)));
+            console.log('Live Worker settings request: HTTP ' + live.code + ', Cloudflare codes ' +
+              JSON.stringify((live.body.errors || []).map(e => e.code)));
+            const workers = await get('/workers/scripts');
+            console.log('Worker list API:', workers.ok ? 'OK' :
+              'HTTP ' + workers.code + ', codes ' + JSON.stringify((workers.body.errors || []).map(e => e.code)));
+            if (workers.ok) console.log('Worker names in configured account:',
+              JSON.stringify((workers.body.result || []).map(w => w.id || w.name).filter(Boolean).slice(0, 40)));
+            const databases = await get('/d1/database');
+            console.log('D1 list API:', databases.ok ? 'OK' :
+              'HTTP ' + databases.code + ', codes ' + JSON.stringify((databases.body.errors || []).map(e => e.code)));
+            if (databases.ok) console.log('D1 databases in configured account:',
+              JSON.stringify((databases.body.result || []).map(d => ({ name: d.name, uuid: d.uuid })).slice(0, 40)));
+            console.error('::error::The configured Worker is not accessible at its repository account ID; deployment withheld.');
             process.exit(1);
           }
           const bindings = live.body.result?.bindings || [];
