@@ -32,6 +32,17 @@
 .ability,.collection-hint{font-size:11px;font-weight:800;color:#8e7a90;line-height:1.5;margin:-8px 0 0}
 .collection-hint{margin-top:7px}
 .mischief-tools .button:focus-visible{outline:3px solid #b67bd4;outline-offset:3px}
+
+/* Little hand-drawn cat portraits and a real scrapbook instead of emoji placeholders. */
+.skin{display:grid;place-items:center;overflow:visible}
+.cat-portrait{position:relative;width:28px;height:27px;background:var(--cat-fur);border:2px solid var(--cat-detail);border-radius:48% 48% 42% 42%;display:grid;place-items:center;isolation:isolate}
+.cat-portrait:before,.cat-portrait:after{content:'';position:absolute;top:-10px;width:12px;height:13px;background:var(--cat-fur);border:2px solid var(--cat-detail);border-radius:3px 11px 3px 3px;transform:rotate(-21deg);z-index:-1}
+.cat-portrait:before{left:-1px}.cat-portrait:after{right:-1px;transform:rotate(21deg)}
+.cat-portrait b{font:bold 13px/1 system-ui;color:#534458;margin-top:2px;letter-spacing:-2px}
+.souvenir-shelf{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:9px}
+.souvenir-stamp{padding:0;border:1px solid #eddae7;border-radius:8px;background:#fff1ee;color:#d4a2b5;font-size:15px;height:30px;display:grid;place-items:center;line-height:1}
+.souvenir-stamp.found{background:#f3e2f5;border-color:#cdaed8;color:#a66ea9}
+.souvenir-stamp:disabled{opacity:.38;cursor:default}
 </style><script src="/lang.js" defer></script><script src="/pawsibly-innocent/game.js" defer></script></head>
 <body><header class="sitebar"><a class="back" href="/" id="back">← Morrow Wish</a><span class="brand">morrow<span>wish</span> presents ♡</span></header>
 <main class="wrap"><div class="heading"><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h1>PAWSIBLY<br><span>INNOCENT!</span></h1><p class="sub" id="subtitle">Steal the snacks. Outsmart the human. Leave a little chaos.</p></div>
@@ -40,6 +51,6 @@
 <aside class="panel"><div><div class="row"><span class="mini-label" id="missionLabel">TODAY'S MISSION</span><span class="hearts" id="hearts" aria-label="3 hearts">♥ ♥ ♥</span></div><h2 class="chapter" id="chapter">The Sunny Lounge</h2><p class="chapter-sub" id="chapterSub">Nobody suspects the little orange menace.</p></div><div class="divider"></div>
 <div><div class="meter-label"><span id="snackLabel">FISH ACQUIRED</span><b id="fishCount">0 / 3</b></div><div class="meter"><i id="meterFill"></i></div><p class="mission" id="mission">Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.</p></div><div class="mischief-tools"><button class="button yarn" id="tool" type="button" aria-label="Toss yarn to distract the human">◉ Toss yarn</button><div class="collection-count"><span id="collectionLabel">KEEPSAKES</span><strong id="collection">0 / 8</strong></div></div><p class="ability" id="ability">Starts with a yarn ball</p><div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">STEPS</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
 <div class="buttons"><button class="button secondary" id="restart">↻ Retry</button><button class="button mint" id="sound">♪ Sound off</button></div><div class="divider"></div><div class="levels"><span class="mini-label" id="roomLabel">CHOOSE A ROOM</span><div class="progress" id="levels" style="margin-top:10px"></div></div>
-<div class="divider"></div><div class="clothes"><span class="mini-label" id="closetLabel">YOUR LITTLE TROUBLEMAKER</span><div class="wardrobe" id="wardrobe" style="margin-top:10px"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock more cats.</p><p class="collection-hint" id="collectionHint">Every room hides a souvenir. Collect it, then escape to keep it.</p></div></aside></div>
+<div class="divider"></div><div class="clothes"><span class="mini-label" id="closetLabel">YOUR LITTLE TROUBLEMAKER</span><div class="wardrobe" id="wardrobe" style="margin-top:10px"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock more cats.</p><p class="collection-hint" id="collectionHint">Every room hides a souvenir. Collect it, then escape to keep it.</p><div class="souvenir-shelf" id="souvenirShelf" aria-label="Eight collectible room memories"></div></div></aside></div>
 <section class="explainer"><h2 id="howTitle">Tiny paws. Big plans.</h2><p id="howBody">Tap the floor to move. The human moves every step. Steal three fish and escape, or explore for a hidden souvenir. Toss yarn to lure the human away, switch off lamps to sneak by, hide in boxes and dodge robot vacuums. Play as five cats with different abilities. Eight rooms plus a daily remix — no account needed.</p></section></main>
 <script src="/telemetry.js" defer></script></body></html>
