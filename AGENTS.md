@@ -42,6 +42,12 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 9. Run `npm ci` and `npm run check`; play through a full run/retry in a browser if browser access is available, and test desktop/mobile layouts. If live browser tests are unavailable, say so specifically.
 10. Commit and push to `main`; inspect GitHub Actions until the run is **success**, then check the actual public routes and analytics API behavior. A successful git push alone does not establish successful release.
 
+## New-game organic discovery and distribution
+- Treat the homepage's actual playable game links as the launch catalog. The build now automatically generates `sitemap.xml`, RSS `feed.xml`, `games.json` and VideoGame/social metadata via `scripts/discovery.mjs`; do not hand-edit generated production sitemap content.
+- Provide accurate per-game title, description and preferably PNG/JPEG share thumbnail; SVG-only Open Graph images may not preview on social networks. Every new game launch will generate a tracked, per-game release kit in the GitHub Actions artifacts.
+- Keep game and homepage metadata consistent. The unified Analytics dashboard includes UTM-attributed channel quality; use `utm_source`, `utm_medium` and `utm_campaign` in promotion links.
+- Do not assume social posts or portal listings exist merely because release kits were generated. Platform submission/review or account authorization may still be required. No TinyFish, personal social accounts, spam posts or paid promotional tools.
+
 ## Editing an existing game, homepage, or dashboard
 - Locate the canonical source file(s), understand the current behavior, and make targeted changes without silently replacing other games or translations.
 - For game changes, test the full playable loop and instrumentation.
