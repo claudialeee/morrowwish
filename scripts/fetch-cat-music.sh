@@ -3,6 +3,17 @@
 # Source: https://opengameart.org/content/happy-clappy-loop
 # Artist: OwlishMedia. License: CC0 1.0.
 set -euo pipefail
+# Minimal GitHub hosted runners do not always include ffmpeg/ffprobe.
+if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+  echo "Installing audio converter for CC0 music asset..."
+  if command -v sudo >/dev/null 2>&1; then
+    sudo apt-get update -qq
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg >/dev/null
+  else
+    echo "Audio converter missing. Install ffmpeg to prepare the soundtrack." >&2
+    exit 1
+  fi
+fi
 target="public/audio/cat-happy-clappy.ogg"
 mkdir -p public/audio
 if [ -s "$target" ] && ffprobe -v error -show_entries stream=codec_name -of default=noprint_wrappers=1 "$target" | grep -q 'opus'; then

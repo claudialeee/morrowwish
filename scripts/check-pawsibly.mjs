@@ -52,6 +52,9 @@ while(!test.getState().done&&attempts++<95){
  test.move(step.x-s.cat.x,step.y-s.cat.y);
 }
 assert.ok(test.getState().winning,'First room should be winnable without special tools');
+const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
+assert.ok(earned.best?.['room-0']?.stars>=1&&earned.best?.['room-0']?.stars<=3,'Winning a room must save real stars toward new cats');
+assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
 assert.equal(events.filter(e=>e.name==='game_complete').length,1,'Exactly one completion event');
 listeners['morrowwish-language-change']({detail:{lang:'zh'}});
 assert.ok(nodes.get('subtitle').textContent.includes('偷零食'),'Chinese gameplay copy switches correctly');

@@ -166,8 +166,8 @@ try{
  assert.equal(tossed.yarn,initialYarn-1,'Yarn ball should be consumed after pressing the button');
  assert.ok(tossed.noise&&tossed.trail,'Yarn ball should draw an arc and lure the human');
  assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.effects>0,'Cat yarn action must still play sound effects');
- assert.equal(tossed.sound.playing,false,'Cat background music must never play');
- assert.equal(tossed.sound.backgroundMusic,false,'Cat game must use sound effects only');
+ assert.equal(tossed.sound.playing,false,'Cat SFX engine must never synthesize a music loop');
+ assert.equal(tossed.sound.backgroundMusic,false,'Cat sound-effects subsystem must contain no BGM');
  assert.equal(tossed.sound.loopSteps,0,'Cat game must never schedule a background music loop');
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
  assert.match(await page.locator('#yarnExplain').textContent(),/主人|毛线/,'Chinese explanation for yarn is clear');
@@ -178,8 +178,65 @@ try{
  await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Sound button must restore audio');
 
- // All six showcased studio games must have sound effects and no background music.
- const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','pawsibly-innocent'];
+ // Cat gets a real, recorded piano theme; the five other games stay effects-only.
+ const recording=await page.request.get(new URL('/audio/cat-happy-clappy.ogg',url).toString());
+ assert.equal(recording.status(),200,'Self-hosted CC0 piano recording must be published');
+ const ogg=await recording.body();
+ assert.equal(ogg.subarray(0,4).toString(),'OggS','Recording must be encoded Ogg audio, not synthesized notes');
+ assert.ok(ogg.length>40000,'Recording must be a complete musical track');
+ const initialMusic=await page.evaluate(()=>window.MorrowwishCatMusic?.status());
+ assert.equal(initialMusic?.source,'recorded-cc0','Cat soundtrack must be an actual recording');
+ assert.equal(initialMusic?.enabled,true,'Cat music is enabled by default after interaction');
+ await page.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing&&window.MorrowwishCatMusic?.status().readyState>=2,{timeout:8000});
+ const playing=await page.evaluate(()=>window.MorrowwishCatMusic.status());
+ assert.ok(playing.duration>5,'Recorded theme should be longer than a single ding');
+ assert.match(await page.locator('#music').textContent(),/背景音乐/,'Chinese music control must be localized');
+ const musicButton=page.locator('#music');
+ await musicButton.click();
+ assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),false,'Music toggle must pause the recording');
+ assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Music toggle must not mute effects');
+ await musicButton.click();
+ assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),true,'Music toggle must resume the recorded theme');
+ console.log('Real CC0 piano soundtrack and separate music/SFX controls:',JSON.stringify(playing));
+
+ // Unlocks: every threshold must enable the correct cat; selection must persist.
+ const unlock=await browser.newPage({viewport:{width:1200,height:850}});
+ try{
+  await unlock.goto(url,{waitUntil:'load',timeout:40000});
+  const thresholds=[0,3,7,12,18];
+  for(const stars of [0,2,3,6,7,11,12,17,18]){
+   await unlock.evaluate(stars=>{
+    const best={},total=Math.min(stars,24);
+    for(let k=0,left=total;k<8&&left>0;k++){const give=Math.min(3,left);best['room-'+k]={stars:give,score:100};left-=give}
+    localStorage.setItem('pawsibly-innocent-save-v1',JSON.stringify({unlocked:7,best,cat:0,souvenirs:{}}));
+    localStorage.setItem('morrowwish-cat-music-enabled','0');
+   },stars);
+   await unlock.reload({waitUntil:'load',timeout:40000});
+   const status=await unlock.evaluate(()=>({
+    available:[...document.querySelectorAll('#wardrobe .skin')].map(b=>!b.disabled),
+    stars:Number(document.getElementById('starTotal')?.textContent||0),
+    hint:document.getElementById('skinHint')?.textContent||''
+   }));
+   assert.equal(status.stars,stars,'The displayed star count must be accurate');
+   assert.deepEqual(status.available,thresholds.map(t=>stars>=t),'Cat unlock gates must match the earned stars at '+stars);
+   assert.ok(status.hint.length>8,'Wardrobe should show progress toward the next cat');
+  }
+  await unlock.locator('#wardrobe .skin').nth(4).click();
+  const selected=await unlock.evaluate(()=>({
+   cat:JSON.parse(localStorage.getItem('pawsibly-innocent-save-v1')).cat,
+   active:[...document.querySelectorAll('#wardrobe .skin')].findIndex(b=>b.classList.contains('active')),
+   ability:document.getElementById('ability').textContent
+  }));
+  assert.equal(selected.cat,4,'Unlocking the fifth cat must allow selecting it');
+  assert.equal(selected.active,4,'The selected cat must be visibly active');
+  await unlock.reload({waitUntil:'load'});
+  assert.equal(await unlock.locator('#wardrobe .skin.active').count(),1);
+  assert.equal(await unlock.evaluate(()=>[...document.querySelectorAll('#wardrobe .skin')].findIndex(b=>b.classList.contains('active'))),4,'Selected cat must persist after reload');
+  console.log('Cat unlock and persistent selection checked at thresholds:',JSON.stringify({thresholds,selected}));
+ }finally{await unlock.close()}
+
+ // Five non-cat studio games remain effects-only; never synthesize melodies.
+ const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
  const noMusicAudit=[];
  for(const game of routes){
   const p=await browser.newPage({viewport:{width:1250,height:900}});
@@ -214,6 +271,6 @@ try{
    assert.equal(await p.evaluate(()=>window.MorrowwishAudio.status().playing),false,'Unmuting must not start background music in '+game);
   }finally{await p.close()}
  }
- assert.equal(noMusicAudit.length,6,'All six games must be verified without BGM');
- console.log('CHROMIUM CAT GAMEPLAY, BILINGUAL TUTORIAL, SIX SOUND-EFFECTS-ONLY GAMES PASS');
+ assert.equal(noMusicAudit.length,5,'Five non-cat games must remain without BGM');
+ console.log('CHROMIUM CAT GAMEPLAY, STAR UNLOCKS, RECORDED PIANO MUSIC AND FIVE SOUND-EFFECTS-ONLY GAMES PASS');
 }finally{await browser.close()}

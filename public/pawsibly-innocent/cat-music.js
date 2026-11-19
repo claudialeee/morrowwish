@@ -18,7 +18,7 @@ function sync(){
  button.textContent=wanted?(zh?'♫ 背景音乐：开':'♫ Background music: On'):(zh?'♫ 背景音乐：关':'♫ Background music: Off');
  button.setAttribute('aria-pressed',String(wanted));
  button.setAttribute('aria-label',button.textContent);
- if(credit){credit.querySelector('a').textContent=zh?'配乐：Happy Clappy Loop · OwlishMedia（CC0）':'Music: Happy Clappy Loop · OwlishMedia (CC0)'}
+ if(credit){credit.querySelector('a').textContent=zh?'配乐：轻快钢琴曲（CC0 公共领域）':'Music: Happy Clappy Loop · OwlishMedia (CC0)'}
 }
 function start(){
  if(!wanted||document.hidden)return false;
