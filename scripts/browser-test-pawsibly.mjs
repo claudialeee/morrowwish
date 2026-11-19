@@ -137,17 +137,20 @@ try{
  assert.match(homeZh.catPitch,/三条小鱼|毛线球|粉色猫门/,'New Chinese promotional copy should explain gameplay');
  assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
+ assert.ok(homeZh.heroPitch.indexOf('捣蛋小猫')<homeZh.heroPitch.indexOf('从未活过的人生')&&homeZh.heroPitch.indexOf('从未活过的人生')<homeZh.heroPitch.indexOf('自由的小镇'),'Hero copy must list cat, Elsewhere and town in their displayed order');
  assert.ok(homeZh.miniHeight>420&&homeZh.miniHeight<720,'The 02 game gallery must be comfortably sized');
  assert.ok(homeZh.aboutHeight>230&&homeZh.aboutHeight<420,'The 03 studio introduction should be medium-sized');
  await page.evaluate(()=>window.MorrowwishI18n.set('en'));
  const homeEn=await page.evaluate(()=>({
   order:[...document.querySelectorAll('.feature-grid>article')].map(x=>x.querySelector('a[data-id]')?.dataset.id),
   catTitle:document.querySelector('.cat-feature-card h3')?.innerText,
-  catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText
+  catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
+  heroPitch:document.querySelector('.hero>p')?.innerText
  }));
  assert.deepEqual(homeEn.order,['pawsibly-innocent','elsewhere','tiny-town'],'English homepage should share the same first-game order');
  assert.match(homeEn.catTitle,/Pawsibly\s*Innocent!/,'English heading must still show its original name');
  assert.match(homeEn.catPitch,/Three fish to steal/,'English promotional copy must be updated');
+ assert.ok(homeEn.heroPitch.indexOf('mischievous cat')<homeEn.heroPitch.indexOf('life you never lived')&&homeEn.heroPitch.indexOf('life you never lived')<homeEn.heroPitch.indexOf('town where everyone is free'),'English hero copy must match cat, Elsewhere and town order');
  // The cat's core distraction needs to work with real pointer input and clear feedback.
  await page.goto(url,{waitUntil:'load',timeout:40000});
  await page.evaluate(()=>window.MorrowwishI18n.set('en'));
