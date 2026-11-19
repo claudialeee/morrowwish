@@ -444,24 +444,27 @@ function updateCoach(){
  $('awCoach').classList.toggle('aw-compact',turn>0);
 }
 function start(seed){if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=state.offers[0][0];focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='';addFeed('🟢 AI handles the work. Everyone has time to create and connect. Four neighbors arrive in Week 5.','🟢 AI 承担了所有工作，大家可以自由生活。第 5 周还会有四位新邻居入住。');render();}
-function renderingPreview(pos){if(busy||state.turn>=E.TURNS)return;
-const options=E.moves(state),move=options.find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
-if(!move){$('preview').textContent=selected==='upgrade'?'Choose a green-outlined building.':'Choose a green-outlined empty tile.';return;}
-const future=E.step(state,move),v=future.last,prev=state.last||E.simulate(state);
-const fresh=v.clubs.filter(c=>!prev.clubs.some(p=>p.key===c.key));
-const changes=[];
-for(let i=0;i<future.residents.length;i++){const r=future.residents[i],old=i<state.residents.length?prev.assignments[i]:-1,now=v.assignments[i];
+function renderingPreview(pos){
+ if(busy||state.turn>=E.TURNS)return;
+ const move=E.moves(state).find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
+ if(!move){$('preview').textContent=L('Choose a green-outlined tile.','请选择绿色边框的格子。');return;}
+ const future=E.step(state,move),v=future.last,prev=state.last||E.simulate(state);
+ const fresh=v.clubs.filter(c=>!prev.clubs.some(p=>p.key===c.key));
+ const changes=[];
+ for(let i=0;i<future.residents.length;i++){
+  const r=future.residents[i],old=i<state.residents.length?prev.assignments[i]:-1,now=v.assignments[i];
   if(old<0&&now>=0)changes.push('<span class="good">✓ '+safe(r.name)+'</span>: '+safe(reason(future,v,i)));
   else if(old>=0&&now<0)changes.push('<span class="bad">! '+safe(r.name)+'</span>: '+safe(reason(future,v,i)));
-  else if(old>=0&&now>=0&&state.buildings[old]?.pos!==future.buildings[now]?.pos)changes.push('↔ '+safe(r.name)+' changes venue');
+  else if(old>=0&&now>=0&&state.buildings[old]?.pos!==future.buildings[now]?.pos)changes.push('↔ '+safe(r.name)+L(' changes venue',' 换了活动场所'));
+ }
+ $('preview').innerHTML='<b>'+L('Preview','预览')+'</b> · '+L('Active ','参加 ')+prev.active+' → <b>'+v.active+'</b> · '+L('Clubs ','社团 ')+prev.clubs.length+' → <b>'+v.clubs.length+'</b> · +'+v.score+L(' vitality',' 活力')+(fresh.length?'<div class="good">'+L('New club: ','新社团：')+safe(fresh.map(c=>club(c.name)).join('、'))+'</div>':'')+(v.pending.length?'<div>'+L('Club progress: ','社团进度：')+safe(v.pending.map(c=>club(c.name)+' '+c.streak+'/2').join('、'))+'</div>':'')+'<div class="awReason"><b>'+L('Club tip','社团提示')+':</b> '+safe(clubTip(future))+'</div>'+(changes.length?changes.slice(0,3).map(x=>'<div class="awReason">'+x+'</div>').join(''):'');
 }
-$('preview').innerHTML='<b>Preview</b> · Active '+prev.active+' → <b>'+v.active+'</b> · Clubs '+prev.clubs.length+' → <b>'+v.clubs.length+'</b> · +'+v.score+' vitality'+(fresh.length?'<div class="good">Club: '+safe(fresh.map(c=>c.name).join(', '))+'</div>':'')+(v.pending.length?'<div>Club progressing: '+safe(v.pending.map(c=>c.name+' '+c.streak+'/2').join(', '))+'</div>':'')+'<div class="awReason"><b>Club:</b> '+safe(clubTip(future))+'</div>'+(changes.length?changes.slice(0,3).map(x=>'<div class="awReason">'+x+'</div>').join(''):'');}
 function render(){
 const validPlots=new Set(E.moves(state).filter(m=>selected==='upgrade'?m.action==='upgrade':(m.action==='place'&&m.type===selected)).map(m=>m.pos));
 updateCoach();
-$('turn').textContent=state.turn+' / '+E.TURNS;$('active').textContent=(state.last?.active||0)+' / '+state.residents.length;$('clubs').textContent=(state.last?.clubs.length||0)+' / 2';$('score').textContent=state.totalScore;$('seed').textContent='Seed '+state.seed;$('activeNote').hidden=state.turn>=5;
-$('goalActive').innerHTML=(state.last?.active>=9?'✓':'○')+' Have 9 happy neighbors';$('goalActive').className=state.last?.active>=9?'good':'';
-$('goalClub').innerHTML=(state.last?.clubs.length>=2?'✓':'○')+' Two different clubs';$('goalClub').className=state.last?.clubs.length>=2?'good':'';
+$('turn').textContent=state.turn+' / '+E.TURNS;$('active').textContent=(state.last?.active||0)+' / '+state.residents.length;$('clubs').textContent=(state.last?.clubs.length||0)+' / 2';$('score').textContent=state.totalScore;$('seed').textContent=L('Seed ','地图编号 ')+state.seed;$('activeNote').hidden=state.turn>=5;
+$('goalActive').innerHTML=(state.last?.active>=9?'✓':'○')+' '+L('Have 9 happy neighbors','让 9 位居民开心出门');$('goalActive').className=state.last?.active>=9?'good':'';
+$('goalClub').innerHTML=(state.last?.clubs.length>=2?'✓':'○')+' '+L('Two different clubs','建立两类不同社团');$('goalClub').className=state.last?.clubs.length>=2?'good':'';
 const currently=state.last?.occupancy||[];const people=all(),focused=people.find(p=>p.id===focusId),focusIndex=state.residents.findIndex(p=>p.id===focusId),homes=new Map();for(const p of people)homes.set(p.home,(homes.get(p.home)||0)+1);
 let establishedPositions=new Map();for(const club of(state.last?.clubs||[]))for(const pos of club.positions)establishedPositions.set(pos,club.icon);
 board.innerHTML='';const buildings=new Map(state.buildings.map(b=>[b.pos,b]));
@@ -469,7 +472,7 @@ for(let i=0;i<16;i++){
  let tile=document.createElement('button');const d=focused?E.walkDist(focused.home,i,state.obstacles):999,attend=focusIndex>=0&&state.last?.assignments[focusIndex]>=0&&state.buildings[state.last.assignments[focusIndex]].pos===i;tile.className='tile'+(state.obstacles.includes(i)?' blocked':'')+(d<=focused?.reach?' awReach':'')+(focused?.home===i?' awHome':'')+(attend?' awVenue':'')+(validPlots.has(i)?' awPlaceable':'');tile.type='button';tile.dataset.pos=i;
  let b=buildings.get(i);if(state.obstacles.includes(i)){tile.innerHTML='<span class="rock">🌳</span>';tile.disabled=true;}
  else if(b){const bi=state.buildings.findIndex(q=>q.pos===i);
-   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${icons[b.type].name}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+state.residents[ri].face+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':''}`;
+   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+state.residents[ri].face+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':''}`;
  }else{tile.innerHTML='<span style="color:#8cad96;font-weight:900;font-size:21px">+</span>';}
  tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(d<=3?' · '+d+' steps from '+focused.name:'')+(validPlots.has(i)?' · Ready to '+(selected==='upgrade'?'upgrade':'build'):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
  tile.addEventListener('pointerleave',()=>{hover=-1});
@@ -477,12 +480,12 @@ for(let i=0;i<16;i++){
  tile.addEventListener('click',()=>act(i));board.appendChild(tile);
 }
 showClubLinks();
-$('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');button.className='choice'+(selected===type?' active':'');button.innerHTML='<div class="ico">'+icons[type].icon+'</div><div class="label">'+icons[type].name+'</div><div class="detail">Capacity '+icons[type].capacity+'</div>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent='Selected '+icons[type].name+'. Hover a green plot to preview; click to build.';};$('cards').appendChild(button);}}
+$('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');button.className='choice'+(selected===type?' active':'');button.innerHTML='<div class="ico">'+icons[type].icon+'</div><div class="label">'+venue(type)+'</div><div class="detail">'+L('Capacity ','容纳 ')+icons[type].capacity+L('',' 人')+'</div>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Selected '+icons[type].name+'. Hover a green plot to preview; click to build.','已选择'+venue(type)+'。鼠标移到绿色格子上可预览，点击即可建造。');};$('cards').appendChild(button);}}
 $('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
-$('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent='Click a green Level 1 building to add one seat. An upgrade takes one week.';};
-$('residents').innerHTML=state.residents.map((r,i)=>{const rs=state.last||E.simulate(state),venue=rs.assignments[i]??-1;return '<button type="button" class="res '+(venue>=0?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+explainKinds[r.primary]+' · '+explainKinds[r.secondary]+'</small><small>'+safe(reason(state,rs,i))+'</small></div></button>';}).join('');
-$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+explainKinds[r.primary]+' · '+explainKinds[r.secondary]+'</small><small>Arrives in Week 5</small></div></button>').join(''):'All newcomers have arrived.';
-statusUI();
+$('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
+$('residents').innerHTML=state.residents.map((r,i)=>{const rs=state.last||E.simulate(state),venue=rs.assignments[i]??-1;return '<button type="button" class="res '+(venue>=0?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+safe(reason(state,rs,i))+'</small></div></button>';}).join('');
+$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+L('Arrives in Week 5','第 5 周入住')+'</div></button>').join(''):L('All newcomers have arrived.','新邻居已经全部入住。');
+statusUI();if(state.last)updateReceipt();refreshFeed();
 }
 $('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
 $('incoming').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
