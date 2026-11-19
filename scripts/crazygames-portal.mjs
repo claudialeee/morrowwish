@@ -194,7 +194,7 @@ try{
          report.wizardProgress.continueEnabled=!!(await next.count()&&await next.isEnabled());
          if(report.wizardProgress.checkedCount===6 && report.wizardProgress.continueEnabled){
            report.wizardProgress.phase='advancing';
-           await next.click({timeout:3500});
+           await next.evaluate(button=>button.click());
            await page.waitForTimeout(3500);
            report.wizardProgress.phase='advanced';
            const region=await page.locator('main').count()?page.locator('main').first():page.locator('body');
