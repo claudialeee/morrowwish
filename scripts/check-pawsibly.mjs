@@ -6,7 +6,7 @@ const source=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 new vm.Script(source,{filename:'game.js'});
 const nop=()=>{},nodes=new Map(),events=[],listeners={},saved={};
 const ctx=new Proxy({createLinearGradient:()=>({addColorStop:nop})},{get(o,k){return o[k]??nop}});
-function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop},hidden:false,appendChild:nop,setAttribute:nop,
+function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop},hidden:false,appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
 addEventListener(type,callback){listeners[id+':'+type]=callback},getContext:()=>ctx,
 getBoundingClientRect:()=>({left:0,top:0,width:840,height:588})}}
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id)},createElement:element,querySelectorAll:()=>[]};
