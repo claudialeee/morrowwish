@@ -17,6 +17,11 @@ if(!dashboard.includes('"elsewhere":"Elsewhere"'))throw Error('Elsewhere must be
 if(!dashboard.includes("['hub','tiny-town','elsewhere'"))throw Error('Dashboard order mismatch');
 if(!dashboard.includes("'pocket-aquarium'"))throw Error('Pocket Aquarium must remain in dashboard order');
 if(!telemetry.includes('"pocket-aquarium"'))throw Error('Pocket Aquarium must remain in telemetry');
+const aquarium=fs.readFileSync('public/pocket-aquarium/index.html','utf8');
+for(const marker of ["metric('game_start'","metric('game_complete'","metric('game_retry'","feed_success","time=60","zh:{"]){
+ if(!aquarium.includes(marker))throw Error('Pocket Aquarium V2 missing gameplay or analytics: '+marker);
+}
+
 if(!telemetry.includes('"elsewhere"'))throw Error('Missing Elsewhere telemetry');
 if(!fs.readFileSync('src/analytics.js','utf8').includes('ARCADE_ANALYTICS_KEY'))throw Error('Missing Analytics authentication');
 for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js','public/studio-insights/index.html']){
