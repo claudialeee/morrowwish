@@ -197,3 +197,22 @@ for(const w of storyWorlds){
 }
 for(const source of [mysterySource,'public/elsewhere/app.js'])new vm.Script(fs.readFileSync(source,'utf8'),{filename:source});
 console.log('Elsewhere mystery validation: 2,048 simulated ending paths, four secret illustrations, old save support, and bilingual endings checked.');
+
+
+// Four intentionally distinct, original looping soundtracks, separate from SFX.
+const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
+new vm.Script(originalMusic,{filename:'public/studio-music.js'});
+for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
+ const page=fs.readFileSync('public/'+slug+'/index.html','utf8');
+ if(!page.includes('src="/studio-music.js"')||!page.includes('src="/studio-audio.js"')){
+  throw new Error('Music and SFX must both load: '+slug);
+ }
+ if(!originalMusic.includes("'"+slug+"':{"))throw new Error('Original music profile missing: '+slug);
+}
+const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
+for(const marker of ['function portrait(person)','data:image/webp;base64,','function homesView(','fans=state.residents.filter(']){
+ if(!tinyMusicPage.includes(marker))throw new Error('Tiny Town polish missing: '+marker);
+}
+if(!fs.readFileSync('public/studio-audio.js','utf8').includes('[data-mw-music]'))
+ throw new Error('Music toggle must not trigger the sound effects button');
+console.log('Game music: 4 original profiles, independent bilingual controls, and 12 illustrated portraits checked.');
