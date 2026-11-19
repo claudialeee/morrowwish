@@ -443,7 +443,7 @@ function updateCoach(){
  $('autoPlace').textContent=L('✦ Auto-build (uses 1 turn)','✦ 自动建造（消耗 1 回合）');$('autoPlace').disabled=turn>=E.TURNS;
  $('awCoach').classList.toggle('aw-compact',turn>0);
 }
-function start(seed){if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=state.offers[0][0];focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='<div class="event">🟢 AI now does every job. Everyone has endless free time. Build a place to gather! Four newcomers arrive in Week 5.</div>';render();}
+function start(seed){if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=state.offers[0][0];focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='';addFeed('🟢 AI handles the work. Everyone has time to create and connect. Four neighbors arrive in Week 5.','🟢 AI 承担了所有工作，大家可以自由生活。第 5 周还会有四位新邻居入住。');render();}
 function renderingPreview(pos){if(busy||state.turn>=E.TURNS)return;
 const options=E.moves(state),move=options.find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
 if(!move){$('preview').textContent=selected==='upgrade'?'Choose a green-outlined building.':'Choose a green-outlined empty tile.';return;}
@@ -496,8 +496,13 @@ $('autoPlace').onclick=()=>{
  if(quality>score){best=m;score=quality}}
  if(best){gameProgress('coach-used');act(best.pos,true)}
 };
-function addFeed(msg){const div=document.createElement('div');div.className='event';div.textContent=msg;$('feed').prepend(div);while($('feed').children.length>8)$('feed').lastChild.remove();}
-function float(msg,sub){let el=document.createElement('div');el.className='feedback';el.innerHTML=safe(msg)+(sub?'<small>'+safe(sub)+'</small>':'');$('mapWrap').appendChild(el);setTimeout(()=>el.remove(),1900);}
+function addFeed(en,cn=en){
+ const el=document.createElement('div');el.className='event';el.dataset.en=en;el.dataset.cn=cn;el.textContent=L(en,cn);$('feed').prepend(el);
+ while($('feed').children.length>8)$('feed').lastChild.remove();
+}
+function refreshFeed(){for(const el of $('feed').children)if(el.dataset.en)el.textContent=L(el.dataset.en,el.dataset.cn);}
+function float(msg,sub){const el=document.createElement('div');el.className='feedback';el.innerHTML=safe(msg)+(sub?'<small>'+safe(sub)+'</small>':'');$('mapWrap').appendChild(el);setTimeout(()=>el.remove(),1900);}
+
 function drawRunners(previous,current){const previousAssign=previous?.assignments||[];for(let ri=0;ri<current.assignments.length;ri++){
 let to=current.assignments[ri];if(to<0)continue;let dest=state.buildings[to].pos;let from=previousAssign[ri]>=0&&state.buildings[previousAssign[ri]]?state.buildings[previousAssign[ri]].pos:state.residents[ri].home;
 if(from===dest)continue;
@@ -518,20 +523,35 @@ busy=true;
 const newClubs=state.last.clubs.filter(x=>!oldClubKeys.has(x.key));const oldActive=previous?.active||0;
 if(newClubs.length&&!hasTrackedClub){hasTrackedClub=true;gameProgress('first-club');}
 selected=state.turn<E.TURNS?state.offers[state.turn][0]:null;touchArmed=null;render();updateReceipt();
-if(move.action==='place'){const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');addFeed('🏠 Built '+icons[move.type].name+'. Residents reassigned their activities.');}
-else addFeed('⬆ Upgraded '+icons[state.buildings.find(b=>b.pos===move.pos).type].name+' for +1 capacity.');
-if(state.turn===5)addFeed('🚚 Four newcomers moved in! The town now has 12 residents.');
-if(state.last.active>oldActive)addFeed('✨ '+(state.last.active-oldActive)+' more residents are active this week.');
-if(state.last.pending.length)addFeed('🌱 New club forming: '+state.last.pending.map(c=>c.name).join(', ')+' (needs another week). ' );
-if(newClubs.length)addFeed('🎊 Stable club founded: '+newClubs.map(x=>x.name).join(', ')+'!');
-if(state.last.empty)addFeed('🔎 '+state.last.empty+' building(s) empty. They use space but attract no one.');
+if(move.action==='place'){
+ const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');
+ addFeed('🏠 Built '+icons[move.type].name+'. Residents reassigned their activities.','🏠 建好了'+venue(move.type)+'，居民开始选择新的活动场所。');
+}else{
+ const type=state.buildings.find(b=>b.pos===move.pos).type;
+ addFeed('⬆ Upgraded '+icons[type].name+' for +1 capacity.','⬆ '+venue(type)+'升级了，增加 1 个座位。');
+}
+if(state.turn===5)addFeed('🚚 Four newcomers moved in! The town now has 12 residents.','🚚 四位新邻居入住！现在小镇有 12 位居民。');
+if(state.last.active>oldActive)addFeed('✨ '+(state.last.active-oldActive)+' more residents are active this week.','✨ 本周又有 '+(state.last.active-oldActive)+' 位居民参加活动。');
+if(state.last.pending.length)addFeed('🌱 New club forming: '+state.last.pending.map(c=>c.name).join(', ')+' (needs another week).','🌱 社团正在形成：'+state.last.pending.map(c=>club(c.name)).join('、')+'（下周还需保持至少 2 人）。');
+if(newClubs.length)addFeed('🎊 Stable club founded: '+newClubs.map(c=>c.name).join(', ')+'!','🎊 新社团成立：'+newClubs.map(c=>club(c.name)).join('、')+'！');
+if(state.last.empty)addFeed('🔎 '+state.last.empty+' building(s) empty this week.','🔎 本周有 '+state.last.empty+' 处场所无人参加活动。');
 drawRunners(previous,state.last);
-if(newClubs.length)setTimeout(()=>float('🎉 '+newClubs[0].name,'Residents formed a club!'),870);
-else setTimeout(()=>float('Active '+state.last.active+' / '+state.residents.length,'+'+state.last.score+' vitality'),800);
-$('preview').textContent='Week '+state.turn+': '+state.last.active+' active, '+state.last.clubs.length+' club types, +'+state.last.score+' vitality.';
+if(newClubs.length)setTimeout(()=>float('🎉 '+club(newClubs[0].name),L('A new club is here!','新社团成立啦！')),870);
+else setTimeout(()=>float(L('Active ','参加活动 ')+state.last.active+' / '+state.residents.length,'+'+state.last.score+L(' vitality',' 活力')),800);
+$('preview').textContent=L('Week ','第 ')+state.turn+L(': ',' 周：')+state.last.active+L(' active, ',' 人参加活动，')+state.last.clubs.length+L(' club types, +',' 类社团，+')+state.last.score+L(' vitality.',' 活力。');
+
 setTimeout(()=>{busy=false;if(state.turn>=E.TURNS)endGame();},1850);
 }
-function endGame(){metrics.completed=true;metrics.gameDurationMs=Math.round(performance.now()-started);const result=E.outcome(state);gameProgress('grade-'+result.grade.toLowerCase());gameProgress('duration-'+timeBucket(metrics.gameDurationMs));const nextTip=result.success?'What new town will you create next?':(result.clubs<2?'Put different venues side by side for a club. ':'')+(result.active<9?'Build more places within neighbors\' walking range.':'');$('endIcon').textContent=result.success?'🎊':'🌱';$('endTitle').textContent=result.success?'The town is thriving!':'Try a different layout';$('endText').innerHTML='Grade <b>'+result.grade+'</b> · Total vitality <b>'+result.totalScore+'</b><br>Happy neighbors '+result.active+'/12 · Clubs '+result.clubs+'<br>'+nextTip;$('end').classList.add('show');}
+function endGame(){
+ metrics.completed=true;metrics.gameDurationMs=Math.round(performance.now()-started);
+ const result=E.outcome(state);gameProgress('grade-'+result.grade.toLowerCase());gameProgress('duration-'+timeBucket(metrics.gameDurationMs));
+ $('endIcon').textContent=result.success?'🎊':'🌱';
+ $('endTitle').textContent=result.success?L('The town is thriving!','小镇越来越繁荣！'):L('Try a different layout','换个布局，再试一次');
+ const nextTip=result.success?L('What new town will you create next?','下一座小镇会是什么模样？'):(result.clubs<2?L('Put different venues side by side for a club. ','把两种不同场所建在相邻的格子里。'):'')+(result.active<9?L('Build within neighbors’ walking range.','把场所建在居民步行可达的范围内。'):'');
+ $('endText').innerHTML=L('Grade ','评级 ')+'<b>'+result.grade+'</b> · '+L('Total vitality ','总活力 ')+'<b>'+result.totalScore+'</b><br>'+L('Happy neighbors ','快乐居民 ')+result.active+'/12 · '+L('Clubs ','社团 ')+result.clubs+'<br>'+safe(nextTip);
+ $('end').classList.add('show');
+}
+
 $('same').onclick=()=>{gameProgress('retry-click');start(state.seed);};$('random').onclick=()=>{gameProgress('new-map-click');start((Date.now()>>>0)||13);};
 function answerFeedback(kind){if(!metrics||metrics.feedback)return;metrics.feedback=kind;gameProgress('feedback-'+kind);$('feedbackQuestion').hidden=true;$('feedbackThanks').hidden=false;}
 $('feedbackFun').onclick=()=>answerFeedback('fun');
@@ -544,11 +564,11 @@ if(typeof window.addEventListener==='function')window.addEventListener('pagehide
 $('newAgain').onclick=()=>$('random').click();$('sameAgain').onclick=()=>$('same').click();$('closeEnd').onclick=()=>$('end').classList.remove('show');
 $('export').onclick=()=>{gameProgress('playtest-export');let result={version:'prototype-0.1',...metrics,gameOutcome:E.outcome(state),moves:history,generatedLocally:true,notice:'This optional debug log is downloaded locally. Anonymous usage events are sent to Vercel Analytics.'};let blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='afterwork-playtest-'+state.seed+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);};
 $('shareGame').onclick=async()=>{
- const shareUrl='https://morrowwish.vercel.app/tiny-town/',data={title:'No More Mondays: Tiny Town',text:'AI took all the jobs. Every day is free. Can you help this tiny town find its purpose?',url:shareUrl};
+ const shareUrl='https://morrowwish.vercel.app/tiny-town/',data={title:'No More Mondays: Tiny Town',text:L('AI handles the work. Everyone is free to build a meaningful life.','AI 承担了所有工作，人们可以自由生活。快来建造你的小镇！'),url:shareUrl};
  try{if(navigator.share){await navigator.share(data);gameProgress('shared-link');}
- else if(navigator.clipboard){await navigator.clipboard.writeText(shareUrl);$('shareGame').textContent='Link copied ✓';gameProgress('shared-link');}
- else{window.prompt('Copy game URL:',shareUrl);}}
- catch(e){if(e?.name!=='AbortError')window.prompt('Copy game URL:',shareUrl);}
+ else if(navigator.clipboard){await navigator.clipboard.writeText(shareUrl);$('shareGame').textContent=L('Link copied ✓','链接已复制 ✓');gameProgress('shared-link');}
+ else{window.prompt(L('Copy game URL:','复制游戏链接：'),shareUrl);}}
+ catch(e){if(e?.name!=='AbortError')window.prompt(L('Copy game URL:','复制游戏链接：'),shareUrl);}
 };
 start(1);
 })();
