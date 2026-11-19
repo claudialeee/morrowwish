@@ -2,6 +2,8 @@ import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage({viewport:{width:1250,height:900},deviceScaleFactor:1});
+// Local Python HTTP server cannot accept analytics POSTs; fulfill them in-browser.
+await page.route('**/api/session',route=>route.fulfill({status:204,body:''}));
 const errors=[];
 page.on('pageerror',e=>{errors.push(e.stack||e.message);console.log('PAGE ERROR:',e.stack||e.message)});
 page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE ERROR:',m.text())});
@@ -113,6 +115,7 @@ try{
  const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','pawsibly-innocent'];
  for(const game of routes){
   const p=await browser.newPage({viewport:{width:1250,height:900}});
+  await p.route('**/api/session',route=>route.fulfill({status:204,body:''}));
   try{
    await p.goto(new URL('/'+game+'/',url).toString(),{waitUntil:'load',timeout:40000});
    await p.waitForTimeout(200);
