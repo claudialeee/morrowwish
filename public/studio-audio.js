@@ -61,6 +61,8 @@ function sfx(midi,kind='tap'){
   tone(midi,t,.10,'sine',.026);tone(midi+7,t+.08,.15,'sine',.016);break;
  case 'crash':
   tone(midi-12,t,.09,'triangle',.028);tone(midi-19,t+.05,.13,'triangle',.017);break;
+ case 'gameover':
+  tone(midi+7,t,.13,'triangle',.024);tone(midi+3,t+.09,.17,'sine',.022);tone(midi-2,t+.22,.28,'sine',.019);break;
  case 'pop':
   tone(midi,t,.12,'sine',.025);break;
  case 'quiet':
@@ -75,7 +77,7 @@ const mappings={
  yarn:[74,'bounce'],lured:[76,'bounce'],light:[69,'quiet'],souvenir:[81,'success'],milk:[77,'pop'],
  tap:[71,'quiet'],select:[72,'quiet'],step:[71,'quiet'],flip:[75,'bounce'],sort:[69,'pop'],
  bubble:[79,'pop'],page:[69,'quiet'],feed:[77,'pop'],combo:[81,'success'],build:[72,'success'],
- complete:[74,'success'],fail:[52,'fail'],retry:[67,'quiet'],start:[69,'quiet']
+ complete:[74,'success'],fail:[52,'fail'],end_fail:[65,'gameover'],retry:[67,'quiet'],start:[69,'quiet']
 };
 function effect(kind='tap'){const [n,s]=mappings[kind]||mappings.tap;sfx(n,s)}
 function note(freq){if(enabled&&unlocked)sfx(69+12*Math.log2(Math.max(40,freq)/440),'pop')}
@@ -91,20 +93,21 @@ document.addEventListener('keydown',gesture,true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stop()}else if(enabled&&unlocked)start()});
 window.addEventListener('pagehide',stop);
 window.addEventListener('morrowwish-language-change',()=>setTimeout(sync,0));
-function onMetric(name){
+function onMetric(name,data){
  switch(String(name||'').toLowerCase()){
- case 'game_complete':case 'level_complete':case 'town_completed-win':case 'town_grade-a':case 'town_grade-s':effect('complete');break;
- case 'game_over':case 'town_completed-lose':effect('fail');break;
+ case 'game_complete':effect(data?.reason==='dirty'||data?.grade==='D'?'end_fail':'complete');break;
+ case 'level_complete':case 'town_completed-win':case 'town_grade-a':case 'town_grade-s':effect('complete');break;
+ case 'game_over':case 'town_completed-lose':effect('end_fail');break;
  case 'feed_success':effect('feed');break;
  case 'combo':case 'town_first-club':effect('combo');break;
- case 'run_end':effect('complete');break;
+ case 'run_end':effect(Number(data?.won)===0?'end_fail':'complete');break;
  case 'game_retry':case 'town_retry-click':effect('retry');break;
  case 'town_first-place-quick':case 'town_first-upgrade':effect('build');break;
  default:break;
  }
 }
 const originalMetric=window.arcadeMetric;
-if(typeof originalMetric==='function')window.arcadeMetric=function(name,...args){const result=originalMetric.call(this,name,...args);onMetric(name);return result};
+if(typeof originalMetric==='function')window.arcadeMetric=function(name,...args){const result=originalMetric.call(this,name,...args);onMetric(name,args[0]);return result};
 document.addEventListener('pointerdown',e=>{
  if(!enabled||!unlocked)return;
  const target=e.target;
