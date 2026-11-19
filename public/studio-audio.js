@@ -24,7 +24,7 @@ try{const stored=localStorage.getItem(KEY);enabled=stored===null?localStorage.ge
 let ctx=null,bus=null,unlocked=false,beatTimer=null,next=0,step=0,oscillators=0,loops=0,sounds=0,button=null,firstHint=true;
 const lang=()=>{if(route==='pocket-aquarium')return document.querySelector('.languages button.active')?.id==='zh'?'zh':'en';return window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh')?'zh':'en'};
 function copy(){const zh=lang()==='zh';return enabled?(zh?'♫ 音乐与音效：开':'♫ Music & SFX: On'):(zh?'♪ 音乐与音效：关':'♪ Music & SFX: Off')}
-function labels(){if(!button)return;button.textContent=copy();button.setAttribute('aria-label',copy());button.setAttribute('aria-pressed',String(enabled));button.title=lang()==='zh'?'点击切换音乐和音效。首次操作后播放。':'Toggle music and sound effects. Audio begins on your first interaction.'}
+function labels(){if(!button)return;button.textContent=button.classList.contains('lab-mute')?(enabled?'♫':'♪'):copy();button.setAttribute('aria-label',copy());button.setAttribute('aria-pressed',String(enabled));button.title=lang()==='zh'?'点击切换音乐和音效。首次操作后播放。':'Toggle music and sound effects. Audio begins on your first interaction.'}
 function midi(note){return 440*Math.pow(2,(note-69)/12)}
 function ensure(){if(ctx)return true;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;ctx=new A();bus=ctx.createGain();bus.gain.value=.40;bus.connect(ctx.destination);return true}catch{return false}}
 function voice(freq,time,duration,wave,amount,attack=.012){if(!ctx||!enabled||!bus)return;try{
