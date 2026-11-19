@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "establishedAt": "2026-11-19T19:47:14Z",
+  "policy": "Initial baseline only. Never promote these as newly published merely because this file was created.",
+  "gameSlugs": [
+    "elsewhere",
+    "tiny-town",
+    "pawsibly-innocent",
+    "flip-dash",
+    "parcel-panic",
+    "pocket-aquarium"
+  ],
+  "previouslyPublishedCampaigns": [],
+  "notes": "Compare future homepage data-id and live games.json; require public playable URL and successful telemetry check before publishing. No social accounts currently connected to Metricool."
+}
