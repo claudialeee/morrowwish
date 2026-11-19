@@ -125,6 +125,20 @@ jobs:
             test "$ready" = 1 || { echo "::error::Mystery art $asset not live after retries (HTTP $code)"; exit 1; }
           done
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
+      - name: Verify six real-gameplay promotion assets are live (not HTML fallbacks)
+        run: |
+          set -eu
+          for game in elsewhere tiny-town pawsibly-innocent flip-dash parcel-panic pocket-aquarium; do
+            for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
+              url="$origin/promo/$game/real-gameplay-portrait.mp4?deploy=$GITHUB_SHA"
+              type=$(curl -sSLI --max-time 20 "$url" | tr -d '\r' | grep -i '^content-type:' | tail -1 || true)
+              case "$type" in *video/mp4*) ;; *) echo "::error::Expected real MP4 but received $type: $url"; exit 1 ;; esac
+              cover="$origin/promo/$game/cover-square.png?deploy=$GITHUB_SHA"
+              type=$(curl -sSLI --max-time 20 "$cover" | tr -d '\r' | grep -i '^content-type:' | tail -1 || true)
+              case "$type" in *image/png*) ;; *) echo "::error::Expected PNG cover but received $type: $cover"; exit 1 ;; esac
+            done
+          done
+          echo 'All six real-gameplay media assets are public and use correct content types.'
       - name: Verify public Morrow Wish game URLs via Vercel proxy
         run: |
           set -eu
