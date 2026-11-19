@@ -53,6 +53,9 @@ jobs:
           node --check scripts/discovery.mjs
           node --check scripts/submit-indexnow.mjs
           node scripts/discovery.mjs --release-kit
+          node --check scripts/detect-new-games.mjs
+          node --check scripts/publish-bluesky.mjs
+          PREVIOUS_SHA="${{ github.event.before }}" node scripts/detect-new-games.mjs
           test -s release-kit/elsewhere.json
           test -s release-kit/tiny-town.json
       - name: Deploy existing Cloudflare Pages production project
@@ -108,6 +111,12 @@ jobs:
           name: morrowwish-game-promotion-kit
           path: release-kit/
           retention-days: 30
+      - name: Publish new game to connected studio social account
+        continue-on-error: true
+        env:
+          MORROW_BLUESKY_HANDLE: ${{ secrets.MORROW_BLUESKY_HANDLE }}
+          MORROW_BLUESKY_APP_PASSWORD: ${{ secrets.MORROW_BLUESKY_APP_PASSWORD }}
+        run: node scripts/publish-bluesky.mjs
       - name: Notify Bing and other IndexNow search engines
         continue-on-error: true
         run: node scripts/submit-indexnow.mjs
