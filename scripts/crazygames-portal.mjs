@@ -182,11 +182,21 @@ try{
           'the first minute makes it clear','someone other than you','rights to all code'];
        if(checkboxDescriptions.length===6 && requiredPhrases.every(p=>verifiedText.includes(p))){
          const boxes=page.locator('input[type="checkbox"]');
-         for(let i=0;i<6;i++)await boxes.nth(i).check({force:true});
+         report.wizardProgress={phase:'checking'};
+         for(let i=0;i<6;i++){
+           report.wizardProgress.lastAttempted=i+1;
+           await boxes.nth(i).evaluate(el=>{if(!el.checked)el.click();});
+           await page.waitForTimeout(100);
+           if(!(await boxes.nth(i).isChecked())){report.wizardProgress.failedCheckbox=i+1;break;}
+         }
+         report.wizardProgress.checkedCount=await boxes.evaluateAll(ns=>ns.filter(n=>n.checked).length);
          const next=page.getByRole('button',{name:'Continue',exact:true});
-         if(await next.count() && await next.isEnabled()){
-           await next.click({timeout:5000});
-           await page.waitForTimeout(2500);
+         report.wizardProgress.continueEnabled=!!(await next.count()&&await next.isEnabled());
+         if(report.wizardProgress.checkedCount===6 && report.wizardProgress.continueEnabled){
+           report.wizardProgress.phase='advancing';
+           await next.click({timeout:3500});
+           await page.waitForTimeout(3500);
+           report.wizardProgress.phase='advanced';
            const region=await page.locator('main').count()?page.locator('main').first():page.locator('body');
            const stepFields=await inspectFields(page);
            const nextButtons=await page.locator('button:visible').evaluateAll(ns=>ns.map(n=>({
