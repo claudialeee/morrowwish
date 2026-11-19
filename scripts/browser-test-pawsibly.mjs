@@ -24,6 +24,18 @@ try{
  });
  console.log('Canvas audit:',JSON.stringify(initial));
  assert.equal(initial.loaded,true,'Game Javascript must initialize');
+ const ruleLayout=await page.evaluate(()=>{
+  const intro=document.querySelector('.explainer'),board=document.getElementById('board'),steps=intro?.querySelectorAll('.rule-step')||[];
+  return{introTop:intro?.getBoundingClientRect().top,introBottom:intro?.getBoundingClientRect().bottom,
+    boardTop:board?.getBoundingClientRect().top,steps:steps.length,
+    ruleText:intro?.textContent,numberOfRules:document.querySelectorAll('.explainer').length,
+    strayTip:document.querySelectorAll('#tip').length};
+ });
+ console.log('Above-board how-to guide:',JSON.stringify(ruleLayout));
+ assert.equal(ruleLayout.numberOfRules,1,'Only one main rule guide should remain');
+ assert.equal(ruleLayout.steps,3,'Rules must be grouped into three visible actions');
+ assert.equal(ruleLayout.strayTip,0,'Do not duplicate the top three-step tutorial');
+ assert.ok(ruleLayout.introBottom<ruleLayout.boardTop,'Game rules must be above the playable canvas');
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
  assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
@@ -47,6 +59,7 @@ try{
  }));
  console.log('Chinese switch:',JSON.stringify(zh));
  assert.equal(zh.lang,'zh-CN');
+ assert.match(await page.locator('.explainer').textContent(),/三步学会|偷到三条|粉色猫门/,'Chinese rules must be visible above the board');
  for(const value of [zh.subtitle,zh.mission,zh.shelf,zh.hint,zh.instructions,zh.room])
   assert.match(value,/[\u4e00-\u9fff]/,'Chinese regions must be translated');
  await page.evaluate(()=>{
@@ -65,7 +78,7 @@ try{
  console.log('English switch:',JSON.stringify(en));
  assert.equal(en.lang,'en');
  assert.ok(en.winScore.includes('Score'),'Victory score label must switch language');
- assert.ok(en.instructions.includes('Tap'),'English tutorial must remain usable');
+ assert.ok(en.instructions.includes('human'),'English tutorial must explain human movement');
  assert.equal(errors.length,0,'Canvas and UI must be free of uncaught errors');
  await page.goto(new URL('/',url).toString(),{waitUntil:'load',timeout:40000});
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(170);
