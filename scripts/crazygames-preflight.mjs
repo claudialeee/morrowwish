@@ -101,9 +101,9 @@ try {
    await c.close();
  }
 
- // Record ACTUAL browser playback (not animation built from still images).
- // Two required aspect ratios; no soundtrack and no static-image video.
- if(['flip-dash','parcel-panic'].includes(slug)){
+ // Record ACTUAL browser gameplay, not an animation of still images.
+ // Capture all six baseline games with real browser interactions.
+ {
   for(const [label,width,height] of [['landscape',1920,1080],['portrait',1080,1620]]){
    const c=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,
      recordVideo:{dir:out,size:{width,height}}});
@@ -116,7 +116,9 @@ try {
    await p.addStyleTag({content:'*,*::before,*::after{cursor:none!important}'});
    const start=p.getByRole('button',{name:/^play now$|^play$/i}).first();
    if(await start.count())await start.click().catch(()=>{});
-   const duration=16000,origin=Date.now();
+   if(slug==='elsewhere')await p.locator('[data-random-world]').first().click({timeout:2500}).catch(()=>{});
+   if(slug==='pocket-aquarium')await p.locator('#start').click({timeout:2500}).catch(()=>{});
+   const duration=14000,origin=Date.now();let moveNumber=0;
    while(Date.now()-origin<duration){
      if(slug==='flip-dash')await p.keyboard.press('Space').catch(()=>{});
      if(slug==='parcel-panic'){
@@ -130,6 +132,35 @@ try {
          await p.mouse.up();
        }
      }
+     // Run deterministic, visible controls rather than synthetic video frames.
+     if(slug==='elsewhere'){
+       const ch=p.locator('.scene-choice:visible,[data-lens]:visible').first();
+       if(await ch.count())await ch.click({timeout:900}).catch(()=>{});
+       const next=p.locator('#continue-btn:visible,.scene-next:visible').first();
+       if(await next.count())await next.click({timeout:900}).catch(()=>{});
+     }
+     if(slug==='pawsibly-innocent'){
+       const dirs=['ArrowRight','ArrowDown','ArrowLeft','ArrowUp'];
+       await p.keyboard.press(dirs[moveNumber%dirs.length]).catch(()=>{});
+       if(moveNumber%5===0)await p.locator('#tool:visible').click({timeout:1000}).catch(()=>{});
+     }
+     if(slug==='tiny-town'){
+       const auto=p.locator('#autoPlace:visible:not([disabled])');
+       if(await auto.count())await auto.click({timeout:1500}).catch(()=>{});
+       const choice=p.locator('.tt-builder-rail .choice:visible:not([disabled])').first();
+       if(await choice.count())await choice.click({timeout:1200}).catch(()=>{});
+       const tile=p.locator('.tile.awPlaceable:visible').first();
+       if(await tile.count())await tile.click({timeout:1200}).catch(()=>{});
+       const confirm=p.locator('#confirmMove:visible:not([disabled])');
+       if(await confirm.count())await confirm.click({timeout:1200}).catch(()=>{});
+     }
+     if(slug==='pocket-aquarium'){
+       const food=p.locator('.food:visible');
+       if(await food.count())await food.nth(moveNumber%await food.count()).click({timeout:1200}).catch(()=>{});
+       const canvas=p.locator('#sea');const box=await canvas.boundingBox().catch(()=>null);
+       if(box)await p.mouse.click(box.x+box.width*(.25+(moveNumber%4)*.16),box.y+box.height*.52).catch(()=>{});
+     }
+     moveNumber++;
      await wait(750);
      const restart=p.getByRole('button',{name:/^play now$|^retry$|^play again$/i}).first();
      if(await restart.count()&&await restart.isVisible().catch(()=>false))await restart.click().catch(()=>{});
