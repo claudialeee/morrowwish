@@ -46,6 +46,8 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const context=await browser.newContext(state?{storageState:state}:{});
  const page=await context.newPage();
+ const loginPostStatuses=[];
+ page.on('response',response=>{try{const r=response.request();if(r.method()==='POST' && new URL(response.url()).hostname.endsWith('.crazygames.com'))loginPostStatuses.push(response.status());}catch{}});
  let pageErrorCount=0;
  page.on('pageerror',()=>{pageErrorCount++;});
  const response=await page.goto(root+'/games',{waitUntil:'domcontentloaded',timeout:45000});
@@ -64,6 +66,8 @@ try{
       await e.fill(email);
       await pw.fill(password);
       const submit=page.locator('button[type="submit"],input[type="submit"]').first();
+      report.loginMethod=await submit.count()?'explicit-submit-button':'press-enter';
+      report.loginFormCount=await page.locator('form').count().catch(()=>0);
       if(await submit.count()){
         await Promise.allSettled([page.waitForURL(u=>!isLogin({url:()=>u.toString()}),{timeout:18000}),submit.click({timeout:5000})]);
       }else{
@@ -73,6 +77,15 @@ try{
     }else{
       report.loginFormNotFound=true;
     }
+ }
+ report.loginPostStatuses=loginPostStatuses;
+ if(report.credentialLoginAttempted){
+   const body=(await page.locator('body').innerText().catch(()=>'' )).toLowerCase();
+   report.loginFeedbackSignals=['incorrect','invalid','wrong password','authentication failed','sign in failed','login failed',
+      'verify your email','verify your account','email not found','user not found','try again','captcha','security check',
+      'check your email','too many attempts','password reset','something went wrong','sign in','log in']
+       .filter(phrase=>body.includes(phrase));
+   report.loginCaptchaVisible=await page.locator('iframe[src*="captcha"],iframe[src*="turnstile"],[class*="captcha"],[id*="captcha"]').count().then(x=>x>0).catch(()=>false);
  }
  report.pagePath=new URL(page.url()).pathname;
  report.loginScreen=isLogin(page);
