@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {chromium} from 'playwright';
 
-const domain='https://developer.crazygames.com/';
+const domain='https://developer.crazygames.com/games';
 const data=process.env.CRAZYGAMES_STORAGE_STATE_B64;
 const out=path.join(process.cwd(),'.check','crazygames','portal-inspection.json');
 fs.mkdirSync(path.dirname(out),{recursive:true});
@@ -33,7 +33,7 @@ try {
  const page=await context.newPage();
  const response=await page.goto(domain,{waitUntil:'domcontentloaded',timeout:45000});
  await page.waitForTimeout(3200);
- if(!page.url().startsWith(domain)) {
+ if(!page.url().startsWith('https://developer.crazygames.com/')) {
   report.status='unexpected-domain';
  } else {
   report.portalHttpStatus=response?.status()||null;
@@ -55,7 +55,7 @@ try {
   const signIn=allVisible.some(x=>/^(sign\s*in|log\s*in|login|create\s*account)$/i.test(x));
   report.loginScreen=signIn;
   report.submissionActionFound=hasSubmit;
-  report.authenticated=hasSubmit&&!signIn;
+  report.authenticated=!signIn && (hasSubmit || (report.pagePath?.startsWith('/games') && (report.uiActions?.some(x=>/game|project|dashboard/i.test(x)))));
   report.status=report.authenticated?'studio-session-active':'authorization-or-portal-ui-unconfirmed';
   // Only whitelisted UI labels; never copy personal information into CI artifacts.
   const labels=await page.locator('label').allTextContents().catch(()=>[]);
