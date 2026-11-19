@@ -36,6 +36,53 @@ jobs:
         run: npm ci
       - name: Verify game source
         run: npm run check
+      - name: Inspect live Worker D1 binding before deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const cfg = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
+          const bound = cfg.d1_databases?.find(x => x.binding === 'DB');
+          if (!process.env.CLOUDFLARE_API_TOKEN || !bound) {
+            console.error('::error::Missing Cloudflare secret or DB binding');
+            process.exit(1);
+          }
+          const base = 'https://api.cloudflare.com/client/v4/accounts/' + cfg.account_id;
+          async function get(path) {
+            const response = await fetch(base + path, { headers: { Authorization: 'Bearer ' + process.env.CLOUDFLARE_API_TOKEN } });
+            const body = await response.json().catch(() => ({}));
+            return { code: response.status, ok: response.ok && body.success !== false, body };
+          }
+          const live = await get('/workers/scripts/' + encodeURIComponent(cfg.name) + '/settings');
+          if (!live.ok) {
+            console.error('::error::Unable to read live Worker settings: HTTP ' + live.code +
+              ', Cloudflare codes ' + JSON.stringify((live.body.errors || []).map(e => e.code)));
+            process.exit(1);
+          }
+          const bindings = live.body.result?.bindings || [];
+          const active = bindings.find(b => b.name === 'DB' && String(b.type).includes('d1'));
+          console.log('Repository D1 binding ID:', bound.database_id);
+          console.log('Active Worker D1 binding ID:', active?.id || active?.database_id || 'NOT FOUND');
+          if (!active) {
+            console.error('::error::The live Worker has no DB D1 binding. Stop before deployment to protect analytics.');
+            process.exit(1);
+          }
+          const activeId = active.database_id || active.id;
+          if (activeId !== bound.database_id) {
+            console.error('::error::D1 binding mismatch: update wrangler.jsonc only after verifying the live DB.');
+            process.exit(1);
+          }
+          const db = await get('/d1/database/' + encodeURIComponent(bound.database_id));
+          console.log('D1 metadata check:', db.ok ? 'FOUND' :
+            'HTTP ' + db.code + ', Cloudflare codes ' + JSON.stringify((db.body.errors || []).map(e => e.code)));
+          if (db.ok) console.log('D1 database name:', db.body.result?.name || '(unnamed)');
+          else if (db.code === 403) console.log('D1 metadata requires Account D1 Read permission; this token may lack it.');
+          else {
+            console.error('::error::D1 database not found or unavailable for this account/token; deployment withheld.');
+            process.exit(1);
+          }
+          NODE
       - name: Publish existing Cloudflare Worker (never deploy Vercel)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
