@@ -46,8 +46,13 @@ const browser=await chromium.launch({headless:true});
 try{
  const context=await browser.newContext(state?{storageState:state}:{});
  const page=await context.newPage();
+ let pageErrorCount=0;
+ page.on('pageerror',()=>{pageErrorCount++;});
  const response=await page.goto(root+'/games',{waitUntil:'domcontentloaded',timeout:45000});
- await page.waitForTimeout(2200);
+ await page.waitForTimeout(6200);
+ report.pageErrorCount=pageErrorCount;
+ report.bodyTextLength=await page.locator('body').innerText().then(x=>x.length).catch(()=>0);
+ report.visibleControls=await page.locator('button:visible,a[href]:visible,input:visible').count().catch(()=>0);
  report.portalHttpStatus=response?.status()||null;
  report.firstPath=new URL(page.url()).pathname;
  if(isLogin(page)&&email&&password){
@@ -71,13 +76,15 @@ try{
  }
  report.pagePath=new URL(page.url()).pathname;
  report.loginScreen=isLogin(page);
+ report.bodyTextLength=await page.locator('body').innerText().then(x=>x.length).catch(()=>0);
+ report.visibleControls=await page.locator('button:visible,a[href]:visible,input:visible').count().catch(()=>0);
  report.inputFields=await inspectFields(page);
  if(report.loginScreen){
     report.status='authorization-required';
     report.authenticated=false;
     report.note=report.credentialLoginAttempted?'CrazyGames still requires login or additional verification; no game submitted.':'Saved browser session is not authenticated; configure studio email and password as GitHub secrets.';
     report.loginActions=(await viewActions(page)).slice(0,12);
- }else if(page.url().startsWith(root+'/')){
+ }else if(page.url().startsWith(root+'/') && report.visibleControls>0 && report.bodyTextLength>20){
     report.authenticated=true;
     report.status='studio-session-active';
     const routes=await viewActions(page);
@@ -97,7 +104,7 @@ try{
          actionLabels:(await viewActions(page)).map(x=>x.text)};
     }
  }else{
-    report.status='unexpected-origin';
+    report.status=page.url().startsWith(root+'/')?'portal-not-rendered':'unexpected-origin';
  }
  await context.close();
 }catch(e){
