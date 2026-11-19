@@ -158,7 +158,7 @@ function lampDraw(x,y,on,time){round(x-18,y-24,36,51,8,on?"#8d90a0":"#f9d7a6");r
 function milkDraw(x,y){ellipse(x,y+16,25,9,"#9da2b955");ellipse(x,y+5,26,15,"#9db8cb");ellipse(x,y+2,22,10,"#fffaf2");label("♡",x,y+7,"bold 16px system-ui","#dd9dad")}
 function vacuumDraw(x,y,time){ellipse(x,y+18,30,10,"#73709b44");ellipse(x,y,26,22,"#988bbd");ellipse(x,y-5,20,15,"#ded7f2");shape(x-7,y-7,2.5,"#544964");shape(x+7,y-7,2.5,"#544964");stroke(x-7,y+2,x+7,y+2,"#9c7da7",2);shape(x+20,y-18,4,"#fa97a0")}
 function roomDecor(time){const theme=s.scene,night=s.index===6||s.lightTurns>0;round(12,9,816,48,13,theme.wall);for(let i=0;i<8;i++){shape(38+i*106,20+Math.sin(time*.001+i)*3,2.8,"#fff9eeee")}
-const motif={lounge:"☀",kitchen:"♡",laundry:"✳",bedroom:"☾",library:"✦",plants:"❀",night:"✧",final:"★"}[theme.type];
+const motif={lounge:"☀",kitchen:"♡",laundry:"☁",bedroom:"☾",library:"✦",plants:"❀",night:"✧",final:"★"}[theme.type];
 label(motif,810,43,"bold 29px system-ui","#fff8f5");
 ctx.fillStyle=theme.rug+"77";ctx.beginPath();ctx.ellipse(415,330,190,110,-.14,0,Math.PI*2);ctx.fill();
 if(night){round(0,0,840,588,0,"#6463a319");for(let i=0;i<12;i++){let x=30+i*67,y=110+(i*61)%440;shape(x,y,1.5+Math.sin(time*.002+i), "#fff9d1aa")}}

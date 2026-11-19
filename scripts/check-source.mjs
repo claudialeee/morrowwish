@@ -54,6 +54,23 @@ for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
 await import('./check-pawsibly.mjs');
 
+// Prevent decorative starburst glyphs from leaking back into any published page,
+// SVG social card, dynamically generated game copy, or language map.
+const starburst=String.fromCodePoint(0x2733);
+function auditPublishedText(dir){
+ for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+  const file=dir+'/'+entry.name;
+  if(entry.isDirectory()){auditPublishedText(file);continue}
+  if(!/\.(?:html?|css|js|svg|json|xml|txt|webmanifest)$/.test(entry.name))continue;
+  const content=fs.readFileSync(file,'utf8');
+  if(content.includes(starburst)||/&#(?:10035|x2733);|\\u2733/i.test(content))
+   throw new Error('Unwanted starburst glyph found in published file: '+file);
+ }
+}
+auditPublishedText('public');
+console.log('Published pages and UI source contain no starburst glyphs.');
+
+
 
 // Elsewhere: every route must lead to a complete, illustrated, bilingual ending.
 import vm from 'node:vm';
