@@ -269,3 +269,23 @@ for(const pattern of ['audio.autoplay=enabled','if(enabled)start();','setWorld:s
  if(!musicSource.includes(pattern))throw Error('Missing immediate and licensed soundtrack handling: '+pattern);
 }
 console.log('Five-scene Elsewhere runtime validation: four short lives, reachable secrets, translated story, illustrated endings and immediate music attempt checked.');
+
+// Instant soundtrack attempt + in-game weekly news placement/regression checks.
+const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
+if(!immediateMusic.includes('if(enabled)start(); // Immediately attempt at script execution')||
+   !immediateMusic.includes('nextTime=ctx.currentTime+.008')||
+   !immediateMusic.includes("if(enabled&&!running)start()"))
+ throw new Error('Soundtrack should attempt to play on load and resume instantly after a blocked autoplay');
+for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
+ const html=fs.readFileSync('public/'+slug+'/index.html','utf8');
+ if(!html.includes('rel="preload" href="/studio-music.js" as="script"'))throw new Error('Music should preload: '+slug);
+}
+const newsTopPage=fs.readFileSync('public/tiny-town/index.html','utf8');
+const newsTopIndex=newsTopPage.indexOf('<section class="panel tt-news-panel"');
+const guideIndex=newsTopPage.indexOf('<div class="tt-journey"');
+if(newsTopIndex<0||guideIndex<0||newsTopIndex>guideIndex||
+   !newsTopPage.includes('function newsText(el)')||
+   !newsTopPage.includes('el.dataset.week=String(state?.turn||0)')||
+   !newsTopPage.includes("state.last.pending.map(c=>zhClubs[c.name]||c.name)"))
+ throw new Error('Town News must appear above gameplay and update in both languages');
+console.log('Immediate music start and top-positioned bilingual Town News checked.');
