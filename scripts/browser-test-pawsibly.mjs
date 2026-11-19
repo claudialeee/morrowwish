@@ -86,6 +86,7 @@ try{
  assert.ok(homeZh.aboutHeight>230&&homeZh.aboutHeight<420,'The 03 studio introduction should be medium-sized');
  // The cat's core distraction needs to work with real pointer input and clear feedback.
  await page.goto(url,{waitUntil:'load',timeout:40000});
+ await page.evaluate(()=>window.MorrowwishI18n.set('en'));
  const enHelp=await page.locator('#yarnExplain').textContent();
  assert.match(enHelp,/human|noise|investigate/i,'English help explains how yarn works');
  const initialYarn=await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn);
