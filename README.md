@@ -2,53 +2,48 @@
 
 Private source repository for the Morrow Wish browser-game studio.
 
-**Public site:** https://morrowwish.vercel.app/  
-**Studio dashboard:** https://morrowwish.vercel.app/studio-insights/
+**Public website:** https://morrowwish.vercel.app/
+**Unified dashboard:** https://morrowwish.vercel.app/studio-insights/
 
-## Architecture
+## Production architecture
 
-Vercel is a **fixed, unchanging URL/reverse-proxy layer only**. Never redeploy it for game updates. The production game files, logic and Analytics run on **Cloudflare Workers + Assets + D1**. Cloudflare Pages (`morrowwish`) is a secondary independent deployment. All ordinary updates are deployed to the existing Cloudflare Worker `ruckus-button`.
+Vercel is ONLY the fixed public URL and reverse proxy. Its project-level rewrite routes requests to **Cloudflare Pages project `morrowwish`**. Game files, rules, APIs, and Analytics are all served by Cloudflare Pages + D1, with **no Vercel deployments required for updates**.
 
-- `public/index.html`: games home and rankings
-- `public/<game-slug>/`: each browser game
-- `public/telemetry.js`: shared visit/game metrics; register new game IDs here
-- `public/lang.js`: shared English/Chinese switch
-- `public/studio-insights/index.html`: single Analytics dashboard and display order
-- `public/elsewhere/`: Elsewhere game and story assets
-- `src/worker.js`: Cloudflare Worker router
-- `src/analytics.js`: API and Cloudflare D1 queries, shared by both deployments
-- `wrangler.jsonc`: existing production Worker and D1 bindings
-- `scripts/build-pages.mjs`: generates secondary Pages deployment from the same source files
-- `cloudflare-pages/wrangler.jsonc`: secondary Pages binding config
+- `public/` contains the homepage, games, language switch and unified dashboard.
+- `public/index.html`: homepage and ordered game cards.
+- `public/telemetry.js`: game analytics events and supported game IDs.
+- `public/lang.js`: shared Chinese and English interface.
+- `public/studio-insights/index.html`: single Analytics dashboard and ordering.
+- `src/worker.js`: API router, bundled into the Pages `_worker.js`.
+- `src/analytics.js`: Analytics API and server-side login.
+- `cloudflare-pages/wrangler.jsonc`: production project name and D1 binding.
+- `scripts/build-pages.mjs`: builds Pages from the canonical source.
+- `CLAUDE.md`: integration rules for AI game developers.
 
-## Develop
+The production Cloudflare project is **`morrowwish`** and its D1 database is **`morrowwish-analytics`**. `cloudflare-pages/public/` is generated and ignored by Git; DO NOT edit it directly.
 
-Edit existing source in `public/` and `src/`. **Do not treat `cloudflare-pages/public/` as source:** it is generated and gitignored.
+## Install and validate
 
 ```sh
-npm install
+npm ci
 npm run check
 ```
 
-Deploy **only Cloudflare Worker** to production:
+## Deploy changes (Cloudflare only)
 
 ```sh
 npx wrangler login
 npm run deploy
 ```
 
-Publish independent Cloudflare Pages backup when required:
+`npm run deploy` builds and deploys to the **existing Cloudflare Pages project `morrowwish`**. Never deploy Vercel, create a second Cloudflare Pages project, or modify the public URL. Deployments do not use Vercel's deployment quota.
 
-```sh
-npm run deploy:pages
-```
+The Analytics login key (`ARCADE_ANALYTICS_KEY`) is a secret in the Pages project, never in Git. Do not commit credentials, dashboard passwords or .env/.dev.vars files. Existing D1 records must be preserved.
 
-The Pages deployment is optional; routine updates go to the Worker only. Never deploy Vercel, create additional Cloudflare Workers, upgrade plans, buy domains, or reset D1. The dashboard password is an existing secret `ARCADE_ANALYTICS_KEY` stored in Cloudflare, **never** in the repository. Do not commit OAuth tokens, Wrangler auth files, passwords, or access-code files.
+## Add a game
 
-## Analytics integration
+Add `public/<game-slug>/`, link a card in `public/index.html`, add the game slug to `public/telemetry.js`, and register its display name and its homepage-consistent order in `public/studio-insights/index.html`. Keep **Elsewhere** capitalized, existing detailed Elsewhere analytics functional, and language support bilingual.
 
-When adding a game, add its route to `public/index.html`, whitelist its ID in `public/telemetry.js`, integrate calls to `window.arcadeMetric` for important gameplay events, and add its display name and order to `public/studio-insights/index.html`. Keep hub first, preserve Elsewhere detailed reports, and check DNT/GPC behavior. Keep all games bilingual where possible.
+## Collaborative publishing
 
-## CI publishing
-
-`automation/deploy-cloudflare.example.yml` is a **manual-run-only** GitHub Actions template, intentionally not active. To enable it later, move it to `.github/workflows/deploy-cloudflare.yml` with a GitHub credential authorized for workflow changes, and configure the repository secret `CLOUDFLARE_API_TOKEN` with narrowly scoped Cloudflare Worker edit permissions. It will never deploy Vercel. No GitHub Action is configured to run on push in the current repository.
+Contributors work in feature branches and open pull requests into `main`. The Actions workflow in `automation/deploy-cloudflare.example.yml` is an **inactive, manual-only template**, not installed as an active workflow. Only the owner deploys after reviewing and merging PRs. No push triggers a deployment.

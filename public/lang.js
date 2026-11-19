@@ -30,7 +30,7 @@ const words={
 "Feed your fish, gather pearls, grow an underwater world.":"喂养小鱼、收集珍珠，慢慢打造水下世界。",
 "Let's dash ":"开始冲刺 ","Start sorting ":"开始分类 ","Visit the aquarium ":"进入水族馆 ",
 "Find your next world":"寻找下一个世界",
-"RUCKUS BUTTON · HOME":"MORROW WISH · 首页","MORROW WISH · HOME":"MORROW WISH · 首页",
+"MORROW WISH · HOME":"MORROW WISH · 首页",
 "READY TO PLAY":"准备开玩","PLAY NOW":"开始游戏","Ready":"就绪","SCORE":"得分","BEST":"最高分","How to play":"怎么玩","Restart":"重新开始","RESUME":"继续游戏",
 "HOW TO PLAY":"玩法说明","GAME OVER":"游戏结束","LEVEL COMPLETE":"关卡完成",
 "PLAY AGAIN":"再玩一次","NEXT LEVEL":"下一关","RETRY":"重试","RESTART":"重新开始",
@@ -81,7 +81,7 @@ const words={
 "WHAT GUIDES YOU":"是什么指引着你",
 "Your story stays in this browser. No account needed.":"故事保存在当前浏览器中，无需账号。",
 "Start this life again":"重新开始这一生","AN EXPERIMENT IN UNLIVED LIVES":"未曾体验的人生实验",
-"PART OF THE RUCKUS BUTTON FAMILY":"MORROW WISH 工作室作品",
+"PART OF THE MORROW WISH FAMILY":"MORROW WISH 工作室作品",
 "ABOUT THIS EXPERIMENT":"关于这个实验","A NOTE FROM ELSEWHERE":"来自《Elsewhere》的一封信",
 "A little space to":"留一点空间","imagine differently.":"去想象不一样的生活。",
 "THANK YOU FOR BEING HERE":"感谢你来到这里",
@@ -126,7 +126,7 @@ function translateNode(n){
 let observer, busy=false;
 function process(root){if(!root)return;translateNode(root);let walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);while(walker.nextNode())translateNode(walker.currentNode);}
 function render(){if(!document.body)return;busy=true;observer?.disconnect();process(document.body);document.documentElement.lang=lang==="zh"?"zh-CN":"en";const control=document.getElementById("mw-language");if(control){control.setAttribute("aria-label",lang==="zh"?"Language / 语言":"Language / 语言");control.innerHTML=lang==="zh"?'<span class="mw-language-active">中文</span><span>EN</span>':'<span>中文</span><span class="mw-language-active">EN</span>';}
- if(document.title){let dt=originals.get(document)||document.title;originals.set(document,dt);if(lang==="zh"){document.title=dt.replace(" — Free Browser Game"," — 免费网页游戏").replace(" | Ruckus Button"," | Morrow Wish");}else document.title=dt;}
+ if(document.title){let dt=originals.get(document)||document.title;originals.set(document,dt);if(lang==="zh"){document.title=dt.replace(" — Free Browser Game"," — 免费网页游戏").replace(" | Morrow Wish"," | Morrow Wish");}else document.title=dt;}
  observer?.observe(document.body,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["title","aria-label","placeholder","data-instructions"]});busy=false;
 }
 function set(next){if(next!=="zh"&&next!=="en")return;lang=next;try{localStorage.setItem(KEY,lang)}catch(_){}render();window.dispatchEvent(new CustomEvent("morrowwish-language-change",{detail:{lang}}));}
