@@ -97,8 +97,7 @@ const gameNames={"elsewhere":"Elsewhere","hub":{zh:"网站首页",en:"Homepage"}
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
-try{lang=localStorage.getItem("ruckus-dashboard-language")==="en"?"en":"zh";}catch{}
-try{sessionStorage.removeItem("ruckus-button-studio-key");}catch{}
+try{lang=localStorage.getItem("morrowwish-dashboard-language")==="en"?"en":"zh";}catch{}
 const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
 function dateFormat(x){return new Date(x).toLocaleString(lang==="zh"?"zh-CN":"en-US");}
@@ -166,7 +165,7 @@ async function loadElsewhere(){
  catch(e){$('ew-state').textContent=ewText('noData')+' · '+(e.message||'Unavailable');$('ew-state').className='ew-state error';}
 }
 function applyLanguage(next){lang=next==="en"?"en":"zh";document.documentElement.lang=lang==="en"?"en":"zh-CN";document.title=t("pageTitle");
-try{localStorage.setItem("ruckus-dashboard-language",lang);}catch{}
+try{localStorage.setItem("morrowwish-dashboard-language",lang);}catch{}
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
