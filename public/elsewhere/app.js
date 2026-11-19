@@ -64,10 +64,10 @@
     allSaves[active.world] = structuredClone(active);
     try { localStorage.setItem(STORE_KEY, JSON.stringify(allSaves)); } catch { notify('Your browser could not save this life.'); }
   }
-  function freshState(id) { return {world:id, chapter:0, selected:null, decisions:[], scores:[0,0,0], finished:false, runId:newId(), endingTracked:false, storyVersion:2, explored:{}, inspected:{}, seenChapters:[]}; }
+  function freshState(id) { return {world:id, chapter:0, selected:null, decisions:[], scores:[0,0,0], finished:false, runId:newId(), endingTracked:false, storyVersion:3, explored:{}, inspected:{}, seenChapters:[]}; }
   function getState(id) {
     const s=allSaves[id], w=WORLD_BY_ID[id];
-    if (!s || !w || !Array.isArray(s.decisions) || !Array.isArray(s.scores) || s.scores.length!==3 || !Number.isInteger(s.chapter) || s.chapter<0 || s.chapter>=w.chapters.length || typeof s.finished!=='boolean') return freshState(id);
+    if (!s || !w || !Array.isArray(s.decisions) || !Array.isArray(s.scores) || s.scores.length!==3 || !Number.isInteger(s.chapter) || s.chapter<0 || s.chapter>=Math.max(8,w.chapters.length) || typeof s.finished!=='boolean') return freshState(id);
     if (s.selected!==null && (typeof s.selected!=='number' || s.selected<0 || s.selected>2)) return freshState(id);
     const copy=structuredClone(s);
     if(!copy.storyVersion||copy.storyVersion<2){
@@ -76,6 +76,34 @@
       copy.finished=false;copy.selected=null;copy.endingTracked=false;
       copy.storyVersion=2;copy.explored={};copy.seenChapters=[];
     }
+    // Preserve old eight-scene saves when reducing the story to five decisions.
+    if((copy.storyVersion||0)<3){
+      const indices=[1,3,4,6,7],oldChapter=copy.chapter,wasFinished=copy.finished;
+      const oldChoices=copy.decisions.slice();
+      const oldExplored=copy.explored&&typeof copy.explored==='object'?copy.explored:{};
+      const oldInspected=copy.inspected&&typeof copy.inspected==='object'?copy.inspected:{};
+      const target=wasFinished?4:Math.max(0,indices.findIndex(x=>x>=oldChapter));
+      copy.chapter=target;
+      copy.selected=wasFinished?copy.selected:(indices[target]===oldChapter?copy.selected:null);
+      copy.decisions=indices.map(i=>oldChoices[i]||null);
+      if(!wasFinished&&copy.selected===null)copy.decisions[target]=null;
+      copy.explored={};copy.inspected={};
+      for(let i=0;i<indices.length;i++){
+        const old=indices[i];
+        if(Number.isInteger(oldExplored[old]))copy.explored[i]=oldExplored[old];
+        if(Array.isArray(oldInspected[old]))copy.inspected[i]=[...oldInspected[old]];
+      }
+      copy.seenChapters=indices.flatMap((old,i)=>copy.seenChapters?.includes(old)?[i]:[]);
+      copy.scores=[0,0,0];
+      const newWorld=WORLD_BY_ID[copy.world];
+      for(let i=0;i<indices.length;i++){
+        const ch=copy.decisions[i]?.choice;
+        const effect=newWorld.chapters[i]?.choices[ch-1]?.effect;
+        if(effect)copy.scores=copy.scores.map((n,k)=>n+(Number(effect[k])||0));
+      }
+      copy.storyVersion=3;
+    }
+
     if(!copy.explored||typeof copy.explored!=='object')copy.explored={};
     // Old saves have only the last hotspot visited; keep that discovery.
     if(!copy.inspected||typeof copy.inspected!=='object'){
@@ -143,7 +171,7 @@
     try{localStorage.setItem(COLLECTION_KEY,JSON.stringify(endingCollection));}catch{}
   }
   function mysteryPanel(state){
-    if(!state||active.chapter===0||active.finished)return '';
+    if(!state||active.finished)return '';
     const zh=window.MorrowwishI18n?.get()==='zh';
     const marks=state.pieces.map(found=>'<span class="'+(found?'found':'')+'"></span>').join('');
     const latest=state.pieces.findLastIndex(Boolean);
@@ -157,9 +185,9 @@
       const save=allSaves[w.id];
       const zh=window.MorrowwishI18n?.get()==='zh',found=Array.isArray(endingCollection[w.id])?endingCollection[w.id].length:0;
       const progress=save&&(save.chapter>0||save.selected!==null)&&!save.finished
-        ?(zh?'继续第 '+Math.min(save.chapter+1,8)+' / 8 幕':'CONTINUE SCENE '+Math.min(save.chapter+1,8)+' / 8')
+        ?(zh?'继续第 '+Math.min(save.chapter+1,5)+' / 5 幕':'CONTINUE SCENE '+Math.min(save.chapter+1,5)+' / 5')
         :found?(zh?'已收集 '+found+' / 6 个结局':found+' / 6 ENDINGS DISCOVERED')
-        :(zh?'8 幕互动故事':'8 CINEMATIC SCENES');
+        :(zh?'5 幕互动故事':'5 CINEMATIC SCENES');
       return `<button class="world-card" style="--card-accent:${w.accent}" data-world="${w.id}" type="button" aria-label="Enter ${w.title}"><img class="world-card-image" src="/elsewhere/scenes/${w.id}-1.svg" alt="${w.title}, illustrated story world" loading="lazy"><div class="world-card-info"><span class="world-tag">${w.tag}</span><div class="world-name">${w.title}</div><p class="world-description">${w.subtitle}</p><div class="world-card-bottom"><span class="world-progress">${progress}</span><span class="world-arrow" aria-hidden="true">↗</span></div></div></button>`;
     }).join('');
   }
@@ -170,7 +198,7 @@
     $('#narrate-btn').setAttribute('aria-pressed','false');
   }
   function goHome(push=true) {
-    stopSpeech();active=null;
+    stopSpeech();window.ElsewhereMusic?.setWorld('home');active=null;
     $('#home-view').classList.remove('hidden');$('#play-view').classList.add('hidden');$('#home-btn').classList.add('hidden');$('#site-footer').classList.remove('hidden');
     renderGrid(); if(push) history.pushState({},'',location.pathname);
     window.scrollTo({top:0,behavior:'instant'});
@@ -178,7 +206,7 @@
   }
   function openWorld(id,options={}) {
     const w=WORLD_BY_ID[id]; if(!w)return;
-    stopSpeech();active=options.restart?freshState(id):getState(id);
+    stopSpeech();window.ElsewhereMusic?.setWorld(id);active=options.restart?freshState(id):getState(id);
     if(options.restart)persist();
     $('#home-view').classList.add('hidden');$('#play-view').classList.remove('hidden');$('#home-btn').classList.remove('hidden');$('#site-footer').classList.add('hidden');
     if(options.push!==false)history.pushState({world:id},'',`/elsewhere/?world=${encodeURIComponent(id)}`);
@@ -202,7 +230,7 @@
     // Follow long-term commitments, not merely the last selected dialogue.
     const chapter=active.chapter;
     const anchor=((w.id==='bookshop'||w.id==='paris')&&(chapter===5||chapter===6))?4:
-      (w.id==='cabin'&&chapter===6)?3:chapter-1;
+      (w.id==='cabin'&&chapter===3)?1:chapter-1;
     const commitment=active.decisions[anchor];
     const prior=active.decisions[chapter-1];
     const variant=commitment?.choice===2?1:0;
@@ -239,7 +267,7 @@
     if(!active)return;
     renderSidebar();
     const w=WORLD_BY_ID[active.world];
-    if(active.finished){renderEnding();return;}
+    if(active.finished){window.ElsewhereMusic?.setEnding(active.world);renderEnding();return;}
     const ch=resolvedChapter(),act=seasonById[w.id]?.acts[active.chapter];
     const visited=active.explored?.[active.chapter],discovery=ch.inspect?.[visited];
     const sceneNo=active.chapter+1;
@@ -252,14 +280,14 @@
     const causality=ch.echo?
       '<div class="story-continuity"><span>'+(window.MorrowwishI18n?.get()==='zh'?'你之前的选择带来了变化':'BECAUSE OF AN EARLIER CHOICE')+'</span><p>'+escapeStory(ch.echo)+'</p></div>':'';
     const mystery=mysteryState();
-    const hookIndex=[1,4,6].indexOf(active.chapter);
+    const hookIndex=[0,2,3].indexOf(active.chapter);
     const chapterHook=mystery&&hookIndex>=0
       ?'<div class="mystery-hook"><span>'+(window.MorrowwishI18n?.get()==='zh'?'未解的线索':'A QUESTION REMAINS')+'</span><p>'+escapeStory(localizeStory(mystery.data.hooks[hookIndex]))+'</p></div>':'';
-    const revealed=mystery?.unlocked&&active.chapter===7
+    const revealed=mystery?.unlocked&&active.chapter===4
       ?'<div class="mystery-reveal"><span>'+(window.MorrowwishI18n?.get()==='zh'?'隐藏故事线已解锁':'HIDDEN STORY DISCOVERED')+'</span><p>'+escapeStory(localizeStory(mystery.data.revealing))+'</p></div>':'';
     const threadPanel=mysteryPanel(mystery);
     const inspectList='<div class="scene-details"><span class="micro-label">EXPLORE THE MOMENT</span><div class="scene-hotspots">'+memory.map((a,i)=>'<button type="button" data-inspect="'+i+'" class="scene-hotspot '+(visited===i?'active':active.inspected?.[active.chapter]?.includes(i)?'visited':'')+'"><span>'+a[0]+'</span>'+a[1]+'</button>').join('')+'</div>'+(discovery?'<div id="scene-discovery" class="scene-discovery"><span>✧ YOU NOTICED</span><p>'+discovery[2]+'</p></div>':'')+'</div>';
-    $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / 08</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/8*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+causality+chapterHook+revealed+threadPanel+inspectList+action+'</div>';
+    $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / '+String(w.chapters.length).padStart(2,'0')+'</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/w.chapters.length*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+causality+chapterHook+revealed+threadPanel+inspectList+action+'</div>';
     $('#story-paper').setAttribute('aria-label','Scene '+sceneNo+': '+ch.title);
     if(active.selected===null&&!active.seenChapters.includes(active.chapter)){
       active.seenChapters.push(active.chapter);persist();
@@ -290,8 +318,8 @@
     if(!active)return null;
     const story=window.ELSEWHERE_ENDINGS?.[active.world];
     if(!story)return null;
-    const route=active.decisions[6]?.choice===2?1:0;
-    const next=active.decisions[7]?.choice===2?1:0;
+    const route=active.decisions[3]?.choice===2?1:0;
+    const next=active.decisions[4]?.choice===2?1:0;
     const mystery=mysteryState();
     const secret=Boolean(mystery?.unlocked);
     const path=secret?{image:mystery.data.art}:story.paths[route];
@@ -315,10 +343,10 @@
     const sub=escapeStory(localizeStory(finale.sub)),detail=escapeStory(localizeStory(finale.detail));
     const memory=result.memories.map(x=>'<p>'+escapeStory(localizeStory(x))+'</p>').join('');
     const acts=seasonById[active.world]?.acts||[];
-    const decision=acts[6]?.choices?.[(active.decisions[6]?.choice||1)-1]?.[0]||'';
-    const last=acts[7]?.choices?.[(active.decisions[7]?.choice||1)-1]?.[0]||'';
+    const decision=acts[3]?.choices?.[(active.decisions[3]?.choice||1)-1]?.[0]||'';
+    const last=acts[4]?.choices?.[(active.decisions[4]?.choice||1)-1]?.[0]||'';
     const turns=decision&&last?'<div class="ending-route"><span>'+(zh?'你的关键决定':'YOUR TURNING POINTS')+'</span><strong>'+escapeStory(window.MorrowwishI18n?.t?.(decision)||decision)+' · '+escapeStory(window.MorrowwishI18n?.t?.(last)||last)+'</strong></div>':'';
-    $('#chapter-content').innerHTML='<div class="cinematic-frame ending-scene"><img class="cinematic-image" src="'+image+'" alt="'+escapeStory(w.title)+' illustrated ending: '+title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-caption"><span class="scene-time">'+(zh?'你走出的结局':'THE ENDING YOU SHAPED')+' · '+escapeStory(w.title.toUpperCase())+'</span><h1>'+title+'</h1></div></div><div class="scene-content ending-content">'+rare+gallery+'<div class="micro-label">'+(zh?'你的人生，你的选择':'A LIFE YOU SHAPED')+'</div><h2>'+sub+'</h2><p>'+detail+'</p><div class="ending-consequence"><span class="micro-label">'+(zh?'一路走来的决定':'HOW YOU GOT HERE')+'</span>'+memory+'</div>'+turns+(result.secret?'':'<p class="mystery-whisper">'+escapeStory(localizeStory(window.ELSEWHERE_MYSTERIES?.[active.world]?.closing||['Another path waits.','还有另一条路。']))+'</p>')+'<div class="ending-actions"><button type="button" class="next-btn" id="ending-share">'+(zh?'分享这个结局 ↗':'Share this ending ↗')+'</button><button type="button" class="outline-btn" id="ending-again">'+(zh?'换一种方式再活一次 ↺':'Live it differently ↺')+'</button></div><div class="ending-feedback"><span>'+(zh?'你还想体验另一段人生吗？':'Would you come back to live another life?')+'</span>'+(active.feedback?'<p>'+(zh?'谢谢你的反馈。':'Thank you for sharing your thoughts.')+'</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">'+(zh?'当然':'Absolutely')+'</button><button type="button" data-feedback="maybe">'+(zh?'也许':'Maybe')+'</button><button type="button" data-feedback="no">'+(zh?'暂时不会':'Not yet')+'</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">'+(zh?'探索另一段人生 →':'Explore another life →')+'</button></div></div>';
+    $('#chapter-content').innerHTML='<div class="ending-illustration"><img src="'+image+'" alt="'+title+'" fetchpriority="high"></div><div class="ending-title-panel"><span>'+(zh?'你走出的结局':'THE ENDING YOU SHAPED')+'</span><h1>'+title+'</h1></div><div class="scene-content ending-content">'+rare+gallery+'<div class="micro-label">'+(zh?'你的人生，你的选择':'A LIFE YOU SHAPED')+'</div><h2>'+sub+'</h2><p>'+detail+'</p><div class="ending-consequence"><span class="micro-label">'+(zh?'一路走来的决定':'HOW YOU GOT HERE')+'</span>'+memory+'</div>'+turns+(result.secret?'':'<p class="mystery-whisper">'+escapeStory(localizeStory(window.ELSEWHERE_MYSTERIES?.[active.world]?.closing||['Another path waits.','还有另一条路。']))+'</p>')+'<div class="ending-actions"><button type="button" class="next-btn" id="ending-share">'+(zh?'分享这个结局 ↗':'Share this ending ↗')+'</button><button type="button" class="outline-btn" id="ending-again">'+(zh?'换一种方式再活一次 ↺':'Live it differently ↺')+'</button></div><div class="ending-feedback"><span>'+(zh?'你还想体验另一段人生吗？':'Would you come back to live another life?')+'</span>'+(active.feedback?'<p>'+(zh?'谢谢你的反馈。':'Thank you for sharing your thoughts.')+'</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">'+(zh?'当然':'Absolutely')+'</button><button type="button" data-feedback="maybe">'+(zh?'也许':'Maybe')+'</button><button type="button" data-feedback="no">'+(zh?'暂时不会':'Not yet')+'</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">'+(zh?'探索另一段人生 →':'Explore another life →')+'</button></div></div>';
   }
   function shareWorld() {
     if(!active)return;
@@ -327,7 +355,7 @@
     const chosenEnding=resolveEnding()?.finale;
     const zh=window.MorrowwishI18n?.get()==='zh';
     const message=zh
-      ?(active.finished&&chosenEnding?'我在《平行人生》解锁了「'+localizeStory(chosenEnding.title)+'」结局。你会活出哪种人生？':'我在《平行人生》体验了另一段人生。你会做出怎样的选择？')
+      ?(active.finished&&chosenEnding?'我在另一段人生里，走到了「'+localizeStory(chosenEnding.title)+'」。换作是你，会走到哪里？':'如果人生可以重来，你会选择哪条路？来试试《平行人生》。')
       :(active.finished&&chosenEnding?'I discovered the ending “'+localizeStory(chosenEnding.title)+'” in Elsewhere. Which life will you live?':'I lived another life in “'+w.title+'.” What would you choose?');
     track('share_clicked',{world:w.id,finished:active.finished});
     if(navigator.share){navigator.share({title:`${w.title} · Elsewhere`,text:message,url:link.toString()}).catch(()=>{});return;}

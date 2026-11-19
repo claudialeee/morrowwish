@@ -216,3 +216,56 @@ for(const marker of ['function portrait(person)','data:image/webp;base64,','func
 if(!fs.readFileSync('public/studio-audio.js','utf8').includes('[data-mw-music]'))
  throw new Error('Music toggle must not trigger the sound effects button');
 console.log('Game music: 4 original profiles, independent bilingual controls, and 12 illustrated portraits checked.');
+
+// Five-scene Elsewhere runtime validation: test the actual adapter and the release HTML.
+const fiveSceneSandbox={window:{}};
+const copyForVm=x=>JSON.parse(JSON.stringify(x));
+for(const path of ['public/elsewhere/season.js','public/elsewhere/continuity.js',
+  'public/elsewhere/endings.js','public/elsewhere/mysteries.js']){
+  vm.runInNewContext(fs.readFileSync(path,'utf8'),fiveSceneSandbox,{filename:path,timeout:3000});
+}
+vm.runInNewContext(fs.readFileSync('public/elsewhere/fast-story.js','utf8'),{
+  window:fiveSceneSandbox.window,structuredClone:copyForVm},{filename:'public/elsewhere/fast-story.js',timeout:3000});
+const fastWorlds=fiveSceneSandbox.window.ELSEWHERE_SEASON;
+const fastMysteries=fiveSceneSandbox.window.ELSEWHERE_MYSTERIES;
+const fastContinuity=fiveSceneSandbox.window.ELSEWHERE_CONTINUITY;
+if(fiveSceneSandbox.window.ELSEWHERE_FAST_STORY_VERSION!==3)throw Error('Unexpected Elsewhere fast-story version');
+for(const world of fastWorlds){
+  if(world.acts.length!==5)throw Error('Five-scene story regression: '+world.id);
+  for(const [i,act] of world.acts.entries()){
+    if(act.choices.length!==2||!act.n[0]||!act.clock||!act.loc)throw Error('Incomplete five-scene act: '+world.id+' '+i);
+    if(!fastContinuity.hints[world.id]?.[i]||fastContinuity.hints[world.id][i].length!==2)
+      throw Error('Missing contextual tradeoff: '+world.id+' '+i);
+    if(!fiveSceneSandbox.window.MORROW_ZH_STORIES[act.n[0]])
+      throw Error('Untranslated new story scene: '+world.id+' '+i);
+  }
+  const secret=fastMysteries[world.id];
+  if(secret.steps.some(piece=>piece.at>=5))throw Error('Secret still requires removed scene: '+world.id);
+  let reachable=0;
+  for(let mask=0;mask<32;mask++){
+    const picks=Array.from({length:5},(_,i)=>1+(mask>>i&1));
+    if(secret.steps.every(piece=>piece.choice===undefined||picks[piece.at]===piece.choice))reachable++;
+  }
+  if(reachable<=0||reachable>=32)throw Error('Secret should require specific choices: '+world.id);
+}
+const fastPage=fs.readFileSync('public/elsewhere/index.html','utf8');
+const ordered=['/elsewhere/season.js','/elsewhere/continuity.js','/elsewhere/mysteries.js',
+  '/elsewhere/fast-story.js','/elsewhere/app.js'];
+if(!ordered.every((x,i)=>i===0||fastPage.indexOf(ordered[i-1])<fastPage.indexOf(x)))
+  throw Error('Elsewhere scripts load in wrong order');
+if(!fastPage.includes('/elsewhere/music.js'))throw Error('Elsewhere music auto-start script not mounted');
+if(!fastPage.includes('five illustrated scenes'))throw Error('Elsewhere about page still describes eight scenes');
+for(const src of ['public/elsewhere/music.js','public/elsewhere/fast-story.js','public/elsewhere/app.js']){
+  new vm.Script(fs.readFileSync(src,'utf8'),{filename:src});
+}
+const fastApp=fs.readFileSync('public/elsewhere/app.js','utf8');
+for(const pattern of ['storyVersion:3','const route=active.decisions[3]','const next=active.decisions[4]',
+  'elsewhere_endings_collection_v1','window.ElsewhereMusic?.setEnding(active.world)']){
+  if(!fastApp.includes(pattern))throw Error('Five-scene app requirement missing: '+pattern);
+}
+if(!fastApp.includes('ending-illustration'))throw Error('Full-size illustrated ending view missing');
+const musicSource=fs.readFileSync('public/elsewhere/music.js','utf8');
+for(const pattern of ['audio.autoplay=enabled','if(enabled)start();','setWorld:switchTo','setEnding:','CC0']){
+ if(!musicSource.includes(pattern))throw Error('Missing immediate and licensed soundtrack handling: '+pattern);
+}
+console.log('Five-scene Elsewhere runtime validation: four short lives, reachable secrets, translated story, illustrated endings and immediate music attempt checked.');

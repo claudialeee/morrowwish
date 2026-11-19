@@ -8,7 +8,7 @@
   <meta name="description" content="What if you had chosen another life? Step into four illustrated, choice-driven lives. Every decision changes the journey. Play free, no account required.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Elsewhere — Live another life">
-  <meta property="og:description" content="One life is never the whole story. Discover the roads you didn't take in this free interactive fiction experience.">
+  <meta property="og:description" content="Five illustrated moments. One life shaped by your choices. Free to play, with more endings to discover.">
   <meta property="og:image" content="https://morrowwish.vercel.app/elsewhere/og.svg">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="/art/morrowwish-mark.svg">
@@ -22,7 +22,9 @@
   <script defer src="/elsewhere/endings.js"></script>
   <script defer src="/elsewhere/continuity.js"></script>
   <script defer src="/elsewhere/mysteries.js"></script>
+  <script defer src="/elsewhere/fast-story.js"></script>
   <script defer src="/elsewhere/app.js"></script>
+<script src="/elsewhere/music.js"></script>
 <script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -42,7 +44,7 @@
         <div class="hero-copy">
           <div class="eyebrow"><span class="eyebrow-star">✦</span> FOR ALL THE ROADS NOT TAKEN</div>
           <h1 id="hero-heading">Somewhere,<br><em>another you</em><br>is living.</h1>
-          <p>What if you could step into the life you never chose? Pick a world, make a choice, and see where another story takes you.</p>
+          <p>What if you could live the life you never chose? Five moments, a few meaningful decisions, and a story that becomes yours.</p>
           <div class="hero-actions">
             <button class="primary-btn" type="button" data-random-world>Start a random life <span aria-hidden="true">↗</span></button>
             <a class="secondary-link" href="#worlds">Explore all worlds <span aria-hidden="true">↓</span></a>
@@ -86,7 +88,7 @@
 
     <footer id="site-footer" class="site-footer"><span>elsewhere<span class="brand-dot">.</span></span><span>PART OF THE MORROW WISH FAMILY</span><button type="button" id="footer-about">ABOUT THIS EXPERIMENT ↗</button></footer>
   </div>
-  <dialog id="about-dialog" class="about-dialog" aria-labelledby="about-heading"><div class="dialog-top"><span class="eyebrow">A NOTE FROM ELSEWHERE</span><button id="dialog-close" type="button" class="circle-button" aria-label="Close">×</button></div><h2 id="about-heading">A little space to<br><em>imagine differently.</em></h2><p>Elsewhere is an original, choice-driven collection of short fictional lives. Each world has eight illustrated scenes and multiple ways to shape the story. Your decisions are saved locally in your browser. We collect pseudonymous browser and play-session identifiers, chapter progress, and numeric choice paths to measure completion and whether players explore different routes. We do not collect names, emails, typed story content, or readable choice text. Do Not Track and Global Privacy Control settings are respected.</p><p>This version uses original branching stories and on-device adaptive reading, not live generative AI. Elsewhere is now part of Morrow Wish. It is free to explore, with no accounts or purchases.</p><div class="dialog-bottom">THANK YOU FOR BEING HERE</div></dialog>
+  <dialog id="about-dialog" class="about-dialog" aria-labelledby="about-heading"><div class="dialog-top"><span class="eyebrow">ABOUT THIS LITTLE EXPERIMENT</span><button id="dialog-close" type="button" class="circle-button" aria-label="Close">×</button></div><h2 id="about-heading">A little space to<br><em>imagine differently.</em></h2><p>Elsewhere is an original, choice-driven collection of short fictional lives. Each world has five illustrated scenes, meaningful decisions, and an ending shaped by your choices. Your decisions are saved locally in your browser. We collect pseudonymous browser and play-session identifiers, chapter progress, and numeric choice paths to measure completion and whether players explore different routes. We do not collect names, emails, typed story content, or readable choice text. Do Not Track and Global Privacy Control settings are respected.</p><p>This version uses original branching stories and on-device adaptive reading, not live generative AI. Elsewhere is now part of Morrow Wish. It is free to explore, with no accounts or purchases.</p><div class="dialog-bottom">THANK YOU FOR BEING HERE</div></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script defer src="/studio-audio.js"></script></body>
 </html>
