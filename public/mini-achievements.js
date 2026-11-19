@@ -42,9 +42,10 @@ function render(){
  const grid=add('div','','mw-ach-grid');for(const b of badges)add('span',(state.unlocked[b[0]]?'✓ ':'○ ')+badgeName(b),state.unlocked[b[0]]?'':'locked',grid);
  add('div',goalMessage(),'mw-ach-next');showTeaser();
  if(id==='pocket-aquarium'){
-  const button=add('button',tr('分享成绩','Share result'),'mw-ach-share');button.type='button';
-  const status=add('span','','mw-ach-status');status.setAttribute('role','status');
-  button.onclick=async()=>{const output=tr('口袋水族箱','Pocket Aquarium')+' · '+last.score+' '+tr('分','points')+' · '+tr('最佳','Best')+' '+state.best+'\n'+location.origin+'/pocket-aquarium/';try{await navigator.clipboard.writeText(output);status.textContent=tr('已复制','Copied');window.arcadeMetric?.('share_click',{score:last.score})}catch{status.textContent=output}};
+  const socials=add('div','','mw-ach-share-options');
+  const url=new URL(location.origin+'/pocket-aquarium/');url.searchParams.set('beat',String(last.score));
+  if(zh())url.searchParams.set('lang','zh');
+  window.MorrowwishSocialShare?.render(socials,{title:tr('口袋水族箱','Pocket Aquarium'),score:last.score,url:url.toString(),language:zh()?'zh':'en'});
  }
 }
 function completed(d){
