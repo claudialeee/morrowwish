@@ -3,24 +3,29 @@
    https://opengameart.org/content/happy-clappy-loop
    Other games remain SFX-only. */
 (()=>{'use strict';
-const button=document.getElementById('music'),credit=document.getElementById('musicCredit');
+const button=document.getElementById('music'),credit=document.getElementById('musicCredit'),permission=document.getElementById('musicPermission');
 if(!button)return;
 const KEY='morrowwish-cat-music-enabled';
 let wanted=true,started=false,error='';
 try{const saved=localStorage.getItem(KEY);if(saved==='0'||saved==='1')wanted=saved==='1'}catch{}
-const audio=document.createElement('audio');
-audio.id='catRecordedMusic';audio.loop=true;audio.preload=wanted?'auto':'none';audio.volume=.16;
-audio.src='/audio/cat-happy-clappy.ogg';audio.setAttribute('aria-hidden','true');
-document.body.appendChild(audio);
-// Start transferring and decoding the recording immediately, BEFORE the first click.
-// Browsers may block autoplay with sound, but they do permit early buffering.
-if(wanted)audio.load();
+// The audio element is at the very start of <body>, so fetching begins before
+// the game interface is parsed. This script never resets its buffered audio.
+const audio=document.getElementById('catRecordedMusic');
+if(!audio)return;
+audio.volume=.16;
+let blocked=false;
+if(wanted&&audio.networkState===0)audio.load();
 const lang=()=>window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh')?'zh':'en';
 function sync(){
  const zh=lang()==='zh';
  button.textContent=wanted?(zh?'♫ 背景音乐：开':'♫ Background music: On'):(zh?'♫ 背景音乐：关':'♫ Background music: Off');
  button.setAttribute('aria-pressed',String(wanted));
  button.setAttribute('aria-label',button.textContent);
+ if(permission){
+  permission.textContent=lang()==='zh'?'♫ 点击开启背景音乐':'♫ Tap to play music';
+  permission.setAttribute('aria-label',permission.textContent);
+  permission.hidden=!wanted||!blocked;
+ }
  if(credit){credit.querySelector('a').textContent=zh?'配乐：轻快钢琴曲（CC0 公共领域）':'Music: Happy Clappy Loop · OwlishMedia (CC0)'}
 }
 function start(){
@@ -28,24 +33,32 @@ function start(){
  // Calling play() directly from the trusted interaction preserves autoplay permission.
  // The file was already requested on page load, so the first click should play quickly.
  const result=audio.play();
- if(result&&typeof result.then==='function')result.then(()=>{started=true;error='';}).catch(e=>{
-  // A blocked autoplay is normal: the next real click will retry.
-  if(e?.name!=='NotAllowedError'&&e?.name!=='AbortError')error=e?.message||'Playback failed';
+ if(result&&typeof result.then==='function')result.then(()=>{
+  started=true;blocked=false;error='';sync();
+ }).catch(e=>{
+  if(e?.name==='NotAllowedError'){
+   // Audible autoplay requires permission in many browsers. Ask for one tap
+   // instead of leaving the user wondering why the soundtrack is silent.
+   blocked=true;sync();
+  }else if(e?.name!=='AbortError'){
+   error=e?.message||'Playback failed';
+  }
  });
- else started=true;
+ else{started=true;blocked=false;sync()}
  return true;
 }
 function stop(){audio.pause()}
 function toggle(){
  wanted=!wanted;try{localStorage.setItem(KEY,wanted?'1':'0')}catch{}
- if(wanted){audio.preload='auto';audio.load();start()}else stop();
+ if(wanted){audio.preload='auto';start()}else{blocked=false;stop()}
  sync();return wanted;
 }
-function status(){return{enabled:wanted,playing:!audio.paused&&!audio.ended,started,preload:audio.preload,source:'recorded-cc0',src:audio.currentSrc||audio.src,readyState:audio.readyState,duration:Number.isFinite(audio.duration)?audio.duration:0,volume:audio.volume,error}}
+function status(){return{enabled:wanted,playing:!audio.paused&&!audio.ended,started,blocked,preload:audio.preload,source:'recorded-cc0',src:audio.currentSrc||audio.src,readyState:audio.readyState,duration:Number.isFinite(audio.duration)?audio.duration:0,volume:audio.volume,error}}
 button.addEventListener('click',toggle);
+permission?.addEventListener('click',()=>{start()});
 function gesture(e){
  if(e.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(e.key))return;
- if(e.target?.closest?.('#music,#sound,#mw-language'))return;
+ if(e.target?.closest?.('#music,#sound,#musicPermission,#mw-language'))return;
  if(wanted&&audio.paused)start();
 }
 document.addEventListener('pointerdown',gesture,true);

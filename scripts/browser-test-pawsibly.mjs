@@ -30,6 +30,8 @@ try{
  assert.equal(preloaded.preload,'auto','Recorded cat music must preload before first interaction');
  assert.ok(preloaded.readyState>=2,'Recorded music should already be buffered before first click');
  assert.equal(preloaded.error,'','Early loading should not report an audio error');
+ assert.equal(await page.locator('#catRecordedMusic').count(),1,'HTML should contain the sole early-preloading audio element');
+ assert.equal(await page.locator('link[rel="preload"][as="audio"]').count(),1,'Browser should request cat music at the start of page loading');
  console.log('Recorded cat song ready before user input:',JSON.stringify(preloaded));
  assert.equal(initial.loaded,true,'Game Javascript must initialize');
  const ruleLayout=await page.evaluate(()=>{
@@ -207,6 +209,30 @@ try{
  await musicButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),true,'Music toggle must resume the recorded theme');
  console.log('Real CC0 piano soundtrack and separate music/SFX controls:',JSON.stringify(playing));
+
+ // Simulate a browser rejecting unprompted autoplay: the player must get a
+ // visible, one-click way to start the already-preloaded recording.
+ const policyPage=await browser.newPage({viewport:{width:1200,height:850}});
+ try{
+  await policyPage.addInitScript(()=>{
+   const original=HTMLMediaElement.prototype.play;
+   let rejected=false;
+   HTMLMediaElement.prototype.play=function(...args){
+    if(this.id==='catRecordedMusic'&&!rejected){
+     rejected=true;
+     return Promise.reject(new DOMException('User interaction required','NotAllowedError'));
+    }
+    return original.apply(this,args);
+   };
+  });
+  await policyPage.goto(url,{waitUntil:'load',timeout:40000});
+  await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().blocked===true);
+  assert.equal(await policyPage.locator('#musicPermission').isVisible(),true,'Autoplay block must show a clear music start prompt');
+  await policyPage.locator('#musicPermission').click();
+  await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing===true);
+  assert.equal(await policyPage.locator('#musicPermission').isVisible(),false,'Prompt should disappear once music plays');
+  console.log('Autoplay-block fallback: one click starts the recorded music');
+ }finally{await policyPage.close()}
 
  // Unlocks: every threshold must enable the correct cat; selection must persist.
  const unlock=await browser.newPage({viewport:{width:1200,height:850}});
