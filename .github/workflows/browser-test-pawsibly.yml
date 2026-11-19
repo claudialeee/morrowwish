@@ -1,0 +1,32 @@
+name: Real-browser cat adventure smoke test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/pawsibly-innocent/**'
+      - 'public/lang.js'
+      - 'public/index.html'
+      - 'scripts/browser-test-pawsibly.mjs'
+      - '.github/workflows/browser-test-pawsibly.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chromium-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runner
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Run Chromium test against local source
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-local.log 2>&1 &
+          sleep 2
+          node scripts/browser-test-pawsibly.mjs

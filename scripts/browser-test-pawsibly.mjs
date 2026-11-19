@@ -1,0 +1,69 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1250,height:900},deviceScaleFactor:1});
+const errors=[];
+page.on('pageerror',e=>{errors.push(e.stack||e.message);console.log('PAGE ERROR:',e.stack||e.message)});
+page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE ERROR:',m.text())});
+try{
+ const url=process.env.GAME_BROWSER_TEST_URL||'http://127.0.0.1:8765/pawsibly-innocent/';
+ console.log('Opening '+url);
+ await page.goto(url,{waitUntil:'load',timeout:40000});
+ await page.waitForTimeout(850);
+ const initial=await page.evaluate(()=>{
+  const canvas=document.getElementById('board'),s=window.__PAWSIBLY_TEST__?.getState();
+  if(!canvas||!s)return {loaded:false,canvas:!!canvas,game:!!s};
+  const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+  let opaque=0,unique=new Set();
+  for(let i=0;i<pixels.length;i+=400){if(pixels[i+3]>0)opaque++;unique.add([pixels[i],pixels[i+1],pixels[i+2]].join(','))}
+  return {loaded:true,opaque,uniqueColors:unique.size,position:{...s.cat},
+    mission:document.getElementById('mission')?.textContent,
+    yarn:document.getElementById('tool')?.textContent};
+ });
+ console.log('Canvas audit:',JSON.stringify(initial));
+ assert.equal(initial.loaded,true,'Game Javascript must initialize');
+ assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
+ assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
+ assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
+ const before=initial.position;
+ const clicked=await page.evaluate(()=>{const s=window.__PAWSIBLY_TEST__.getState(),b=document.getElementById('board').getBoundingClientRect();return {x:b.x+(s.cat.x+1.5)*b.width/10,y:b.y+(s.cat.y+.5)*b.height/7};});
+ await page.mouse.click(clicked.x,clicked.y);await page.waitForTimeout(420);
+ const after=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().cat}));
+ console.log('Click movement:',JSON.stringify({before,after}));
+ assert.notDeepEqual(after,before,'Mouse click must move the cat');
+ assert.equal(errors.length,0,'No uncaught exception after clicking');
+ await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(110);
+ const zh=await page.evaluate(()=>({
+  lang:document.documentElement.lang,
+  subtitle:document.getElementById('subtitle').textContent,
+  mission:document.getElementById('mission').textContent,
+  button:document.getElementById('tool').textContent,
+  shelf:document.getElementById('collectionLabel').textContent,
+  hint:document.getElementById('collectionHint').textContent,
+  instructions:document.getElementById('howBody').textContent,
+  room:document.getElementById('chapter').textContent
+ }));
+ console.log('Chinese switch:',JSON.stringify(zh));
+ assert.equal(zh.lang,'zh-CN');
+ for(const value of [zh.subtitle,zh.mission,zh.shelf,zh.hint,zh.instructions,zh.room])
+  assert.match(value,/[\u4e00-\u9fff]/,'Chinese regions must be translated');
+ await page.evaluate(()=>{
+  const s=window.__PAWSIBLY_TEST__.getState();
+  s.cat={x:s.door.x,y:s.door.y-1};s.got=3;s.done=false;
+  window.__PAWSIBLY_TEST__.move(0,1);
+ });await page.waitForTimeout(110);
+ const winZh=await page.evaluate(()=>({visible:!document.getElementById('overlay').hidden,title:document.getElementById('resultTitle').textContent,
+  desc:document.getElementById('resultDesc').textContent,score:document.getElementById('resultScore').textContent}));
+ console.log('Chinese victory:',JSON.stringify(winZh));
+ assert.equal(winZh.visible,true);assert.match(winZh.desc,/[\u4e00-\u9fff]/);
+ await page.evaluate(()=>window.MorrowwishI18n.set('en'));await page.waitForTimeout(110);
+ const en=await page.evaluate(()=>({lang:document.documentElement.lang,subtitle:document.getElementById('subtitle').textContent,
+  winTitle:document.getElementById('resultTitle').textContent,winScore:document.getElementById('resultScore').textContent,
+  room:document.getElementById('chapter').textContent,instructions:document.getElementById('howBody').textContent}));
+ console.log('English switch:',JSON.stringify(en));
+ assert.equal(en.lang,'en');
+ assert.ok(en.winScore.includes('Score'),'Victory score label must switch language');
+ assert.ok(en.instructions.includes('Tap'),'English tutorial must remain usable');
+ assert.equal(errors.length,0,'Canvas and UI must be free of uncaught errors');
+ console.log('CHROMIUM BROWSER GAMEPLAY + BILINGUAL TEST PASSED');
+}finally{await browser.close()}
