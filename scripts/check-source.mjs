@@ -17,4 +17,10 @@ if (!telemetry.includes('"elsewhere"'))
   throw new Error('Elsewhere must be included in telemetry whitelist.');
 if (!fs.readFileSync('src/analytics.js','utf8').includes('ARCADE_ANALYTICS_KEY'))
   throw new Error('Missing dashboard server-side authentication.');
+const aquarium = fs.readFileSync('public/pocket-aquarium/index.html','utf8');
+for (const marker of ["metric('game_start'", "metric('game_complete'", "metric('game_retry'", "feed_success", "time=60", "zh:{"]) {
+  if (!aquarium.includes(marker)) throw new Error('Pocket Aquarium missing gameplay/analytics marker: ' + marker);
+}
+if (!telemetry.includes('"pocket-aquarium"')) throw new Error('Pocket Aquarium missing telemetry allowlist.');
+if (!dashboard.includes("'parcel-panic','pocket-aquarium'")) throw new Error('Pocket Aquarium missing from unified dashboard.');
 console.log('Source layout, Analytics wiring, dashboard order and game labels validated.');
