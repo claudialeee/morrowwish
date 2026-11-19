@@ -11,6 +11,22 @@ const day=new Date().toISOString().slice(0,10);
 let source="direct",referrer="",utmSource="",utmMedium="",utmCampaign="";
 try{if(ref){const u=new URL(ref),host=u.hostname.toLowerCase();referrer=host.slice(0,110);source=["morrowwish.vercel.app","tiny-arcade-lab.vercel.app","after-work-tiny-town.vercel.app",location.hostname].includes(host)?"internal":"external";}}catch{}
 try{const q=new URLSearchParams(location.search);const clean=v=>(v||"").replace(/[^a-zA-Z0-9 _.-]/g,"").slice(0,45);utmSource=clean(q.get("utm_source"));utmMedium=clean(q.get("utm_medium"));utmCampaign=clean(q.get("utm_campaign"));}catch{}
+// Preserve first campaign attribution on same-site hops (homepage -> game -> replay).
+// Avoid carrying stale campaigns into a completely separate visit.
+try{
+ const key="morrowwish-session-campaign";
+ const active=utmSource||utmCampaign;
+ if(active){
+  sessionStorage.setItem(key,JSON.stringify({source:utmSource,medium:utmMedium,campaign:utmCampaign,at:Date.now()}));
+ }else if(ref&&source==="internal"){
+  const saved=JSON.parse(sessionStorage.getItem(key)||"null");
+  if(saved&&Date.now()-Number(saved.at)<30*60*1000){
+   utmSource=String(saved.source||"").slice(0,45);
+   utmMedium=String(saved.medium||"").slice(0,45);
+   utmCampaign=String(saved.campaign||"").slice(0,45);
+  }
+ }
+}catch{}
 let visitor="",firstSeen="",persistent=false;
 try{if(navigator.globalPrivacyControl!==true&&navigator.doNotTrack!=="1"){
 visitor=localStorage.getItem("arcade-visitor-v2")||"";
