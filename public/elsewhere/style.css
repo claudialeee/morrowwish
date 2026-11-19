@@ -60,3 +60,15 @@ body{background:#fff8f1}
 .ending-route{margin:25px 0;background:#faf0e8;border-radius:15px;padding:18px 20px;color:#a47f8e;font-size:10px;letter-spacing:.12em}.ending-route strong{display:block;margin-top:7px;color:#594b62;font-size:14px;letter-spacing:.08em}
 @media(max-width:900px){.play-layout{grid-template-columns:1fr}.play-sidebar{display:none}.cinematic-frame{height:clamp(260px,53vw,430px)}}
 @media(max-width:600px){.scene-content{padding:22px 18px 38px}.cinematic-caption{left:21px;bottom:21px}.cinematic-frame{height:255px}.cinematic-top{inset:13px 15px auto;font-size:8px}.cinematic-caption h1{font-size:38px}.scene-choices{grid-template-columns:1fr}.scene-narrative p{font-size:17px}.scene-character{padding:14px}.scene-hotspots{gap:7px}.scene-hotspot{padding:11px 9px;font-size:11px}.scene-hotspot span{font-size:19px}}
+
+/* Story continuity and the consequence panel beneath each illustrated ending. */
+.story-continuity{margin:22px 0;padding:16px 20px;border-left:3px solid #ba9b8b;border-radius:0 12px 12px 0;background:#f6f0e7;color:#695d63}
+.story-continuity span{display:block;margin-bottom:7px;font-size:10px;font-weight:850;letter-spacing:.13em;color:#a37878}
+.story-continuity p{margin:0;font-size:14px;line-height:1.7}
+.ending-consequence{margin:24px 0;padding:22px 23px;background:#f8f2e8;border:1px solid #ecdfd0;border-radius:14px}
+.ending-consequence .micro-label{display:block;margin-bottom:12px}
+.ending-consequence p{margin:8px 0;color:#5f636c;font-size:14px;line-height:1.7}
+.ending-consequence p:before{content:"✦";padding-right:10px;color:#ba9686}
+.ending-route span{display:block;margin-bottom:8px}
+.ending-scene .cinematic-image{object-position:center center}
+@media(max-width:650px){.ending-consequence{padding:16px}.story-continuity{padding:13px 16px}}

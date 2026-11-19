@@ -155,9 +155,14 @@
   function resolvedChapter(){
     const w=WORLD_BY_ID[active.world],base=w.chapters[active.chapter],act=seasonById[w.id]?.acts[active.chapter];
     if(!act)return base;
-    const prior=active.decisions[active.chapter-1];
-    const variant=prior?.choice===2?1:0;
-    return {...base,scene:act.n[variant]||act.n[0],dialogue:act.say,inspect:act.inspect,image:'/elsewhere/scenes/'+w.id+'-'+(active.chapter+1)+'.svg',branchRoute:prior?.tag};
+    // Follow long-term commitments, not merely the last selected dialogue.
+    const chapter=active.chapter;
+    const anchor=((w.id==='bookshop'||w.id==='paris')&&(chapter===5||chapter===6))?4:
+      (w.id==='cabin'&&chapter===6)?3:chapter-1;
+    const commitment=active.decisions[anchor];
+    const prior=active.decisions[chapter-1];
+    const variant=commitment?.choice===2?1:0;
+    return {...base,scene:act.n[variant]||act.n[0],dialogue:act.say,inspect:act.inspect,image:'/elsewhere/scenes/'+w.id+'-'+(chapter+1)+'.svg',branchRoute:prior?.tag};
   }
   function inspectScene(index){
     if(!active||active.finished)return;
@@ -181,8 +186,13 @@
       ?'<div class="scene-prompt"><span class="micro-label">A MOMENT THAT CHANGES THINGS</span><h3>What would you do?</h3><div class="scene-choices">'+ch.choices.map((c,i)=>'<button type="button" class="scene-choice" data-choice="'+i+'"><span class="scene-choice-mark">'+(i===0?'✷':'✦')+'</span><span><strong>'+c.label+'</strong><small>Make this part of your story</small></span><span class="scene-choice-arrow">↗</span></button>').join('')+'</div></div>'
       :'<div class="scene-result"><span class="micro-label">YOU CHOSE · '+ch.choices[active.selected].label+'</span><p>'+ch.choices[active.selected].reply+'</p><button type="button" class="next-btn scene-next" id="continue-btn">'+(sceneNo===w.chapters.length?'See how your life ends':'Continue your story')+' <span aria-hidden="true">→</span></button></div>';
     const memory=act?.inspect||[];
+    const earlier=window.ELSEWHERE_ENDINGS?.[active.world]?.memories?.slice(-1)[0];
+    const remembered=earlier?.choices?.[(active.decisions[earlier.at]?.choice||0)-1];
+    const causality=(active.chapter===5||active.chapter===6)&&remembered?
+      '<div class="story-continuity"><span>'+(window.MorrowwishI18n?.get()==='zh'?'你之前做出的决定':'A CHOICE YOU MADE EARLIER')+'</span><p>'+escapeStory(localizeStory(remembered))+'</p></div>':'';
+
     const inspectList='<div class="scene-details"><span class="micro-label">EXPLORE THE MOMENT</span><div class="scene-hotspots">'+memory.map((a,i)=>'<button type="button" data-inspect="'+i+'" class="scene-hotspot '+(visited===i?'active':'')+'"><span>'+a[0]+'</span>'+a[1]+'</button>').join('')+'</div>'+(discovery?'<div id="scene-discovery" class="scene-discovery"><span>✧ YOU NOTICED</span><p>'+discovery[2]+'</p></div>':'')+'</div>';
-    $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / 08</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/8*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+inspectList+action+'</div>';
+    $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / 08</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/8*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+causality+inspectList+action+'</div>';
     $('#story-paper').setAttribute('aria-label','Scene '+sceneNo+': '+ch.title);
     if(active.selected===null&&!active.seenChapters.includes(active.chapter)){
       active.seenChapters.push(active.chapter);persist();
@@ -207,22 +217,39 @@
     else{active.chapter++;active.selected=null;persist();}
     stopSpeech();renderChapter();window.scrollTo({top:0,behavior:'smooth'});
   }
-  const STORY_ENDINGS={"no-work":[{"title":"The Greenhouse That Stayed","sub":"You built a home for a city with nothing but time.","detail":"No one had to show up. They came because you made the room feel like theirs. The greenhouse belongs to the neighbors who keep returning."},{"title":"The Road Beyond Tuesday","sub":"Your freedom was never meant to stand still.","detail":"You planted something that will grow without you. Then you took the road to the next little adventure."}],"bookshop":[{"title":"The Bookshop of Open Doors","sub":"A town found a home between two shelves.","detail":"You turned a forgotten shop into a place where neighbors hold the keys together and the harbor has a new chapter."},{"title":"Postcards Beyond the Harbor","sub":"Some stories belong to the road.","detail":"The shop remains a place to return to. Its stories travel with you, carrying the voices of the people you met."}],"paris":[{"title":"The Cinema of Second Chances","sub":"You saved the room where strangers become neighbors.","detail":"At the first reopening, the projectionist keeps you a seat. Paris finally feels like somewhere you might stay."},{"title":"The City of Little Screens","sub":"You helped the city find new places to dream.","detail":"On roofs, in courtyards, and between narrow streets, people gather for the films you helped set free."}],"cabin":[{"title":"The Lantern in the Snow","sub":"You became a light someone could find.","detail":"On winter nights the ranger cabin glows beside the lake. Your quiet life has room for others."},{"title":"The Path After Winter","sub":"You learned to belong without standing still.","detail":"You leave the lake safer than you found it, and carry its stillness wherever your next season leads."}]};
+  function localizeStory(v){return String(Array.isArray(v)?(v[window.MorrowwishI18n?.get()==='zh'?1:0]||v[0]||''):(v||''));}
+  function escapeStory(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function resolveEnding(){
+    if(!active)return null;
+    const story=window.ELSEWHERE_ENDINGS?.[active.world];
+    if(!story)return null;
+    const route=active.decisions[6]?.choice===2?1:0;
+    const next=active.decisions[7]?.choice===2?1:0;
+    const path=story.paths[route];
+    return {route,next,path,finale:path.finales[next],memories:story.memories.map(x=>{
+      const choice=active.decisions[x.at]?.choice;
+      return choice===1||choice===2?x.choices[choice-1]:null;
+    }).filter(Boolean)};
+  }
   function renderEnding(){
-    const w=WORLD_BY_ID[active.world];
-    if(!active.endingTracked){active.endingTracked=true;persist();track('ending_view',{world:active.world,routeVector:routeVector()});}
-    const choice=active.decisions[active.decisions.length-1]?.choice===2?1:0;
-    const ending=STORY_ENDINGS[w.id]?.[choice]||STORY_ENDINGS['no-work'][0];
-    const pathTaken=active.decisions.filter(Boolean).map(d=>d.choice||1).join(' → ');
-    const image='/elsewhere/scenes/'+w.id+'-8.svg';
-    $('#chapter-content').innerHTML='<div class="cinematic-frame ending-scene"><img class="cinematic-image" src="'+image+'" alt="The final scene of '+w.title+'"><div class="cinematic-shade"></div><div class="cinematic-caption"><span class="scene-time">YOUR UNIQUE ENDING · '+w.title.toUpperCase()+'</span><h1>'+ending.title+'</h1></div></div><div class="scene-content ending-content"><div class="micro-label">A LIFE YOU SHAPED</div><h2>'+ending.sub+'</h2><p>'+ending.detail+'</p><div class="ending-route">YOUR CHOICES<br><strong>'+pathTaken+'</strong></div><div class="ending-actions"><button type="button" class="next-btn" id="ending-share">Share this ending ↗</button><button type="button" class="outline-btn" id="ending-again">Live it differently ↺</button></div><div class="ending-feedback"><span>Would you come back to live another life?</span>'+(active.feedback?'<p>Thank you for sharing your thoughts.</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">Absolutely</button><button type="button" data-feedback="maybe">Maybe</button><button type="button" data-feedback="no">Not yet</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">Explore another life →</button></div></div>';
+    const w=WORLD_BY_ID[active.world],result=resolveEnding();
+    if(!result)return;
+    if(!active.endingTracked){active.endingTracked=true;persist();track('ending_view',{world:active.world,routeVector:routeVector(),storyRoute:result.route,lifeDirection:result.next});}
+    const zh=window.MorrowwishI18n?.get()==='zh';
+    const finale=result.finale,image='/elsewhere/endings/'+result.path.image;
+    const title=escapeStory(localizeStory(finale.title));
+    const sub=escapeStory(localizeStory(finale.sub)),detail=escapeStory(localizeStory(finale.detail));
+    const memory=result.memories.map(x=>'<p>'+escapeStory(localizeStory(x))+'</p>').join('');
+    const decision=active.decisions[6]?.label||'',last=active.decisions[7]?.label||'';
+    const turns=decision&&last?'<div class="ending-route"><span>'+(zh?'你的关键决定':'YOUR TURNING POINTS')+'</span><strong>'+escapeStory(window.MorrowwishI18n?.t?.(decision)||decision)+' · '+escapeStory(window.MorrowwishI18n?.t?.(last)||last)+'</strong></div>':'';
+    $('#chapter-content').innerHTML='<div class="cinematic-frame ending-scene"><img class="cinematic-image" src="'+image+'" alt="'+escapeStory(w.title)+' illustrated ending: '+title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-caption"><span class="scene-time">'+(zh?'你走出的结局':'THE ENDING YOU SHAPED')+' · '+escapeStory(w.title.toUpperCase())+'</span><h1>'+title+'</h1></div></div><div class="scene-content ending-content"><div class="micro-label">'+(zh?'你的人生，你的选择':'A LIFE YOU SHAPED')+'</div><h2>'+sub+'</h2><p>'+detail+'</p><div class="ending-consequence"><span class="micro-label">'+(zh?'一路走来的决定':'HOW YOU GOT HERE')+'</span>'+memory+'</div>'+turns+'<div class="ending-actions"><button type="button" class="next-btn" id="ending-share">'+(zh?'分享这个结局 ↗':'Share this ending ↗')+'</button><button type="button" class="outline-btn" id="ending-again">'+(zh?'换一种方式再活一次 ↺':'Live it differently ↺')+'</button></div><div class="ending-feedback"><span>'+(zh?'你还想体验另一段人生吗？':'Would you come back to live another life?')+'</span>'+(active.feedback?'<p>'+(zh?'谢谢你的反馈。':'Thank you for sharing your thoughts.')+'</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">'+(zh?'当然':'Absolutely')+'</button><button type="button" data-feedback="maybe">'+(zh?'也许':'Maybe')+'</button><button type="button" data-feedback="no">'+(zh?'暂时不会':'Not yet')+'</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">'+(zh?'探索另一段人生 →':'Explore another life →')+'</button></div></div>';
   }
   function shareWorld() {
     if(!active)return;
     const w=WORLD_BY_ID[active.world];
     const link=new URL(location.origin+location.pathname);link.searchParams.set('world',w.id);
-    const chosenEnding=STORY_ENDINGS[w.id]?.[active.decisions[active.decisions.length-1]?.choice===2?1:0];
-    const message=active.finished&&chosenEnding?`I discovered the ending “${chosenEnding.title}” in Elsewhere. Which life will you live?`:`I lived another life in “${w.title}.” What would you choose?`;
+    const chosenEnding=resolveEnding()?.finale;
+    const message=active.finished&&chosenEnding?`I discovered the ending “${localizeStory(chosenEnding.title)}” in Elsewhere. Which life will you live?`:`I lived another life in “${w.title}.” What would you choose?`;
     track('share_clicked',{world:w.id,finished:active.finished});
     if(navigator.share){navigator.share({title:`${w.title} · Elsewhere`,text:message,url:link.toString()}).catch(()=>{});return;}
     const text=message+' '+link.toString();
@@ -271,4 +298,5 @@
   if(initial&&WORLD_BY_ID[initial])openWorld(initial,{push:false});
   else {track('home_view');}
   if ('serviceWorker' in navigator && location.protocol === 'https:') {navigator.serviceWorker.register('/elsewhere/sw.js').catch(()=>{});}
+  window.addEventListener('morrowwish-language-change',()=>{if(active?.finished)renderEnding();});
 })();
