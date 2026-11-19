@@ -15,16 +15,18 @@ try{const q=new URLSearchParams(location.search);const clean=v=>(v||"").replace(
 // Avoid carrying stale campaigns into a completely separate visit.
 try{
  const key="morrowwish-session-campaign";
- const active=utmSource||utmCampaign;
- if(active){
-  sessionStorage.setItem(key,JSON.stringify({source:utmSource,medium:utmMedium,campaign:utmCampaign,at:Date.now()}));
- }else if(ref&&source==="internal"){
+ if(ref&&source==="internal"&&!utmSource&&!utmCampaign){
   const saved=JSON.parse(sessionStorage.getItem(key)||"null");
   if(saved&&Date.now()-Number(saved.at)<30*60*1000){
-   utmSource=String(saved.source||"").slice(0,45);
-   utmMedium=String(saved.medium||"").slice(0,45);
-   utmCampaign=String(saved.campaign||"").slice(0,45);
+   // Use the original acquisition source across homepage-to-game navigation.
+   source=String(saved.entrySource||"direct").slice(0,30);
+   referrer=String(saved.referrer||"").slice(0,110);
+   utmSource=String(saved.utmSource||"").slice(0,45);
+   utmMedium=String(saved.utmMedium||"").slice(0,45);
+   utmCampaign=String(saved.utmCampaign||"").slice(0,45);
   }
+ }else if(source!=="internal"||utmSource||utmCampaign){
+  sessionStorage.setItem(key,JSON.stringify({entrySource:source,referrer,utmSource,utmMedium,utmCampaign,at:Date.now()}));
  }
 }catch{}
 let visitor="",firstSeen="",persistent=false;
@@ -61,6 +63,8 @@ if(n.startsWith("town_feedback-")){const v=n.slice(14);if(["fun","confusing","no
 if(/^town_exit-week-[1-8]$/.test(n))signal(n.replaceAll("-","_"));
 if(["feed_success","feed_drop"].includes(n)&&game==="pocket-aquarium")signal(n);
 if(n==="game_complete"&&game==="pocket-aquarium"){const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
+if(game==="flip-dash"&&n==="run_end"){signal("flip_finished");const duration=Number(p?.duration)||0;if(duration>=10)signal("flip_10s");if(duration>=30)signal("flip_30s");}
+if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
 }
 window.arcadeMetric=event;
 const onFirstAction=()=>{if(firstMs<0)firstMs=Math.round(performance.now()-start);};

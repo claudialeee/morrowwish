@@ -36,7 +36,13 @@ a{color:#a56a83}a:hover{color:#684f7f}
 .metric-row .track,.ew-bar{background:#f1e6e1}.metric-row .fill{background:#dfa6a5}.lang-switch{background:#f7eae6;border-color:#e9d4d4}.lang-switch button{color:#876f7e}.lang-switch button[aria-pressed="true"]{background:#fffdf8;color:#9b657b;box-shadow:0 2px 6px #a5898429}
 .elsewhere-section{border-top:1px solid #ead6d3}.ew-kicker{color:#b584a7}.ew-link{border-color:#e4cad8;color:#985d8d;background:#fff6f7}.ew-state{color:#897486}
 .ew-stats .stat{background:linear-gradient(145deg,#fff3ed,#fffafd);border-color:#ebd8e2}.ew-continue-row{border-color:#eedee6}.ew-continue-row b{color:#ac7cba}.ew-bar span{background:linear-gradient(90deg,#e69e96,#ba9bdb)}.ew-state.error{color:#b75b72}
-.ew-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.ew-dropoff{background:#fff9f2;padding:13px 16px;border:1px solid #efded6;border-radius:14px;font-size:13px;line-height:1.7;margin:8px 0 14px}.ew-details{background:#fffdf9;border:1px solid #efded6;border-radius:16px;padding:13px;margin-top:12px}.ew-details summary{cursor:pointer;color:#925f82;font-weight:800;font-size:13px}.ew-details[open] summary{margin-bottom:14px}.signal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.signal-card{padding:16px;background:#fffdf9;border:1px solid #efded6;border-radius:17px}.signal-card h3{font-size:14px;color:#5e4b62;margin:0 0 9px}.signal-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px}.signal-row b{font-variant-numeric:tabular-nums}.signal-card p{margin:10px 0 0}@media(max-width:800px){.signal-grid{grid-template-columns:1fr}.ew-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ew-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.ew-dropoff{background:#fff9f2;padding:13px 16px;border:1px solid #efded6;border-radius:14px;font-size:13px;line-height:1.7;margin:8px 0 14px}.ew-details{background:#fffdf9;border:1px solid #efded6;border-radius:16px;padding:13px;margin-top:12px}.ew-details summary{cursor:pointer;color:#925f82;font-weight:800;font-size:13px}.ew-details[open] summary{margin-bottom:14px}.signal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.signal-card{padding:16px;background:#fffdf9;border:1px solid #efded6;border-radius:17px}.signal-card h3{font-size:14px;color:#5e4b62;margin:0 0 9px}.signal-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px}.signal-row b{font-variant-numeric:tabular-nums}.signal-card p{margin:10px 0 0}
+.signal-card .signal-row span{color:#837381}.signal-card .signal-row b{color:#5c4b61}
+.compact-channels{table-layout:fixed}.compact-channels th:first-child,.compact-channels td:first-child{width:40%;overflow:hidden;text-overflow:ellipsis}
+.compact-channels td:nth-child(2){font-variant-numeric:tabular-nums}
+.device-summary{max-width:430px;margin:8px 0}.device-details{margin-top:10px}
+@media(max-width:540px){.compact-channels th,.compact-channels td{padding:10px 7px;font-size:11px}}
+@media(max-width:800px){.signal-grid{grid-template-columns:1fr}.ew-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body><main class="wrap">
 <div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
 <div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><select id="days" aria-label="Date range / 日期范围"><option value="1" data-i18n="today"></option><option value="3" data-i18n="day3"></option><option value="7" data-i18n="day7" selected></option><option value="14" data-i18n="day14"></option></select><button id="reload" type="button" data-i18n="refresh"></button></div></div>
@@ -49,15 +55,20 @@ a{color:#a56a83}a:hover{color:#684f7f}
 <section class="section elsewhere-section" id="elsewhere-analytics" aria-labelledby="ew-title">
  <div class="section-head"><div><div class="ew-kicker">ELSEWHERE · OTHER LIVES</div><h2 id="ew-title" data-ew="title"></h2><p class="description" data-ew="desc"></p></div><a href="/elsewhere/" class="ew-link" data-ew="open"></a></div>
  <div class="ew-state" id="ew-state"></div><div id="ew-report" hidden>
- <div class="stats ew-stats" id="ew-stats"></div><div class="ew-dropoff" id="ew-dropoff"></div>
+ <div class="ew-dropoff" id="ew-dropoff"></div>
  <details class="ew-details"><summary data-ew="more">展开五幕明细</summary>
   <div class="split"><div class="panel"><h3 data-ew="funnel"></h3><div class="ew-funnel" id="ew-funnel"></div></div><div class="panel"><h3 data-ew="continue"></h3><div class="ew-continue" id="ew-continue"></div></div></div>
   <div class="section"><h2 data-ew="worlds"></h2><div class="panel table-wrap"><table class="table"><thead><tr><th data-ew="world"></th><th data-ew="runs"></th><th data-ew="finished"></th><th data-ew="finishRate"></th></tr></thead><tbody id="ew-worlds"></tbody></table></div></div>
  </details><p class="ew-coverage description" id="ew-coverage"></p></div>
 </section>
-<section class="section" id="promotion-channels"><div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
-<div class="table-wrap"><table class="table"><thead><tr><th data-i18n="channelGame"></th><th data-i18n="channelSource"></th><th data-i18n="channelCampaign"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colConversion"></th><th data-i18n="colTime"></th><th data-i18n="colRetries"></th></tr></thead><tbody id="channel-rows"></tbody></table></div></section>
-<section class="section"><div class="section-head"><h2 data-i18n="sourcesTitle"></h2><div class="description" data-i18n="sourcesDesc"></div></div><div class="split"><div class="panel breakdown"><h3 data-i18n="sourceType"></h3><div id="sources"></div></div><div class="panel breakdown"><h3 data-i18n="deviceType"></h3><div id="devices"></div></div><div class="panel breakdown"><h3 data-i18n="referrerHosts"></h3><div id="referrers"></div></div></div></section>
+<section class="section" id="promotion-channels">
+ <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
+ <div class="panel table-wrap"><table class="table compact-channels">
+  <thead><tr><th data-i18n="channelSource"></th><th data-i18n="channelVisits"></th><th data-i18n="colConversion"></th><th data-i18n="colTime"></th></tr></thead>
+  <tbody id="channel-rows"></tbody>
+ </table></div>
+ <details class="ew-details device-details"><summary data-i18n="deviceMore"></summary><div id="devices" class="device-summary"></div></details>
+</section>
 <section class="section"><h2 data-i18n="coverageTitle"></h2><p class="description" id="coverage"></p></section></div>
 <div class="fineprint" data-i18n="footnote"></div></main><script>
 (()=>{"use strict";
@@ -70,8 +81,8 @@ today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 �
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
 trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"首页在前，游戏顺序与官网一致。开玩率按至少启动过一次的页面访问计算，完成数包含关卡完成。",
-colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"启动",colRetries:"重玩",colTime:"平均会话",colDone:"完成",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"仅展示猫猫、小镇、水族箱最值得跟踪的三个指标；新版采集开始生效。",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishDirty:"水质失败",signalWait:"等待新版游玩数据",
-channelTitle:"推广渠道效果",channelDesc:"按游戏与渠道对比真实试玩质量。推广链接使用 UTM 参数区分来源；organic 为未指定推广活动。数据从新版采集开始生效。",channelGame:"游戏",channelSource:"渠道",channelCampaign:"活动",sourcesTitle:"访客从哪里来",sourcesDesc:"区分直接访问、站内跳转和外部网站。直接打开网页或浏览器隐藏来源时，不会有来源网站域名。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站 / 直接访问",websites:"访问网址",
+colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"启动",colRetries:"重玩",colTime:"平均会话",colDone:"完成",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"六款游戏都在这里，每款只展示三个有用指标。新埋点不会补录历史数据。",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishDirty:"水质失败",signalWait:"等待新版游玩数据",
+channelTitle:"推广渠道效果",channelDesc:"按来源汇总六款游戏的试玩表现，只显示前五个来源，其他合并；不把站内跳转当成推广来源。新归因口径从本次更新后生效。",channelGame:"游戏",channelSource:"来源渠道",channelVisits:"游戏页访问",channelDirect:"直接 / 未识别",channelOther:"其他来源",deviceMore:"查看设备分布",flipSignal:"Flip Dash",parcelSignal:"Parcel Panic",elsewhereSignal:"平行人生",flipRuns:"结束的局数",flip10:"存活至少 10 秒",flip30:"存活至少 30 秒",parcelSorted:"正确分拣",parcelMissed:"漏接 / 分错",parcel10:"完成至少 10 件的局数",elsewhereFirst:"首幕完成率",elsewhereFull:"故事完读率",elsewhereReplay:"重玩率",channelCampaign:"活动",sourcesTitle:"访客从哪里来",sourcesDesc:"区分直接访问、站内跳转和外部网站。直接打开网页或浏览器隐藏来源时，不会有来源网站域名。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站 / 直接访问",websites:"访问网址",
 coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件与粗粒度流量来源，不记录姓名、邮箱或完整 IP 地址。独立浏览器通过本站随机标识估算，不等于真实人数。尊重浏览器的“不追踪”和“全局隐私控制”设置。历史访问数据不会自动补录。",
 statPv:"页面浏览量",statPvNote:"所有游戏及首页",statVisitors:"独立浏览器",statVisitorsNote:"匿名浏览器，不是人数",statStarts:"游戏启动次数",statStartsNote:"玩家开始一局",statSession:"平均会话时长",statSessionNote:"按匿名会话计算",statRetries:"重玩次数",statRetriesNote:"点击重试、重开或再玩一次",statShares:"分享点击",statSharesNote:"成绩或挑战分享",statFinished:"关卡 / 游戏完成",statFinishedNote:"已记录的完成事件",statD1:"首访次日回访率",statD1Note:"样本 {n} 个匿名浏览器",
 seconds:"{n} 秒",none:"暂无数据",headHome:"网站首页",empty:"—",coverageDays:"覆盖最近 {days} 天，共读取 {records} 条匿名记录。",coveragePartial:"本次统计达到读取上限，结果可能不完整。",coverageOld:"旧版会话有 {n} 条缺少稳定访客 ID，计入访问或会话，但不计入独立访客。",coverageDetails:"网页加载计入 PV；游玩时长和细分信号在离开或切换页面时汇总。新增指标不补录历史数据。",
@@ -84,8 +95,8 @@ today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
 trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Homepage first, followed by the visible game order. Start rate is the share of game-page visits that started play; completions can include levels.",
-colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Starts",colRetries:"Replays",colTime:"Avg. session",colDone:"Completions",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three actionable signals per game, beginning with this release.",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishDirty:"Dirty-water endings",signalWait:"Awaiting new gameplay data",
-channelTitle:"Promotion channel performance",channelDesc:"Compare engagement by game and acquisition channel. UTM-tagged campaign links identify promotion sources; organic means no tagged campaign. New data only.",channelGame:"Game",channelSource:"Channel",channelCampaign:"Campaign",sourcesTitle:"Where visitors come from",sourcesDesc:"Traffic sources, devices, referring sites and the original standalone site.",sourceType:"Traffic type",deviceType:"Device type",referrerHosts:"Referring sites (domains)",websites:"Website",
+colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Starts",colRetries:"Replays",colTime:"Avg. session",colDone:"Completions",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"All six games, three useful signals each. New tracking does not backfill past play.",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishDirty:"Dirty-water endings",signalWait:"Awaiting new gameplay data",
+channelTitle:"Promotion channel performance",channelDesc:"Top five acquisition sources across all six games; remaining sources are grouped. Internal navigation is excluded. Updated attribution applies to future visits.",channelGame:"Game",channelSource:"Source",channelVisits:"Game pageviews",channelDirect:"Direct / unknown",channelOther:"Other sources",deviceMore:"Show device breakdown",flipSignal:"Flip Dash",parcelSignal:"Parcel Panic",elsewhereSignal:"Elsewhere",flipRuns:"Finished runs",flip10:"Survived 10+ sec",flip30:"Survived 30+ sec",parcelSorted:"Correctly sorted",parcelMissed:"Missed / wrong",parcel10:"Runs with 10+ parcels",elsewhereFirst:"First scene completed",elsewhereFull:"Story finish rate",elsewhereReplay:"Replay rate",channelCampaign:"Campaign",sourcesTitle:"Where visitors come from",sourcesDesc:"Traffic sources, devices, referring sites and the original standalone site.",sourceType:"Traffic type",deviceType:"Device type",referrerHosts:"Referring sites (domains)",websites:"Website",
 coverageTitle:"Metrics & coverage",footnote:"Anonymous gameplay and coarse traffic attribution; no names, emails or complete IP addresses. Browser counts use random first-party identifiers, not people. Do Not Track and Global Privacy Control are respected.",
 statPv:"Pageviews · PV",statPvNote:"All games and homepage",statVisitors:"Unique browsers",statVisitorsNote:"Anonymous browsers, not people",statStarts:"Game starts",statStartsNote:"Started a new run",statSession:"Avg. session length",statSessionNote:"Across anonymous sessions",statRetries:"Replays",statRetriesNote:"Retry / Replay clicks",statShares:"Share clicks",statSharesNote:"Shared a score or challenge",statFinished:"Level / game completions",statFinishedNote:"Recorded completion events",statD1:"Day-1 return rate",statD1Note:"Cohort: {n} anonymous browsers",
 seconds:"{n} sec",none:"No data yet",headHome:"Homepage",empty:"—",coverageDays:"Last {days} days; {records} anonymous records read.",coveragePartial:"The read limit was reached; some data may be excluded.",coverageOld:"{n} legacy sessions lack a stable visitor ID. They count toward pageviews/sessions, but not unique browsers.",coverageDetails:"Page loads count as pageviews. Game durations and gameplay signals are aggregated on tab hide or exit; newly added metrics are not backfilled.",
@@ -103,6 +114,29 @@ function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$
 function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
 function nameFor(x){return t(x)===x?x:t(x);}
 function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=Math.max(1,...data.map(a=>Number(a.value)||0));el.innerHTML=data.length?data.map(x=>{const label=nameFor(x.name||"unknown"),number=Math.max(0,Number(x.value)||0);return '<div class="metric-row"><div class="name" title="'+escapeHTML(label)+'">'+escapeHTML(label)+'</div><div class="track"><div class="fill" style="width:'+Math.max(1,Math.min(100,100*number/max))+'%"></div></div><div class="n">'+format(number)+'</div></div>';}).join(""):'<p class="description">'+escapeHTML(t("none"))+'</p>';}
+function renderSignals(gameRows){
+ const byGame=new Map((gameRows||[]).map(x=>[x.game,x])),signalFor=id=>byGame.get(id)?.signals||{};
+ const chapters=elsewhereData?.funnel||[],story=elsewhereData?.summary||{};
+ const chapterVal=name=>chapters.find(x=>x.step===name)?.value||0;
+ const firstViews=chapterVal('1-view'),firstDone=chapterVal('1-complete');
+ const percentage=(v,known=true)=>known&&v!=null?Number(v).toFixed(1)+'%':t('empty');
+ const view=elsewhereData&&Number(story.runs)>0;
+ const cards=[
+  {id:'pawsibly-innocent',fields:[['catRoom1','cat_room_1'],['catRoom8','cat_room_8'],['catCaught','cat_caught']]},
+  {id:'elsewhere',values:[['elsewhereFirst',percentage(firstViews?firstDone/firstViews*100:null,firstViews>0)],['elsewhereFull',percentage(story.fullRate,view)],['elsewhereReplay',percentage(story.replayRate,view)]]},
+  {id:'tiny-town',fields:[['townWin','town_win'],['townLose','town_lose'],['townConfusing','town_feedback_confusing']]},
+  {id:'flip-dash',fields:[['flipRuns','flip_finished'],['flip10','flip_10s'],['flip30','flip_30s']]},
+  {id:'parcel-panic',fields:[['parcelSorted','parcel_sorted'],['parcelMissed','parcel_missed'],['parcel10','parcel_ten_sorted']]},
+  {id:'pocket-aquarium',fields:[['fishGood','aquarium_grade_good'],['fishFed','feed_success'],['fishDirty','aquarium_dirty_end']]}
+ ];
+ $('signal-grid').innerHTML=cards.map(g=>{
+  const nm=gameNames[g.id],name=nm?.[lang]||g.id,metrics=signalFor(g.id);
+  const active=g.id==='elsewhere'?view:Object.values(metrics).some(x=>Number(x)>0);
+  const values=g.values||g.fields.map(([label,key])=>[label,String(key==='aquarium_grade_good'?Number(metrics.aquarium_grade_s||0)+Number(metrics.aquarium_grade_a||0):Number(metrics[key]||0))]);
+  const body=active?values.map(([label,value])=>'<div class="signal-row"><span>'+escapeHTML(t(label))+'</span><b>'+escapeHTML(value)+'</b></div>').join(''):'<p class="description">'+escapeHTML(t('signalWait'))+'</p>';
+  return '<div class="signal-card"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(name)+'</a></h3>'+body+'</div>';
+ }).join('');
+}
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];
 $("stats").innerHTML=[
  metricCard(t("statVisitors"),format(r.visitors),t("statVisitorsNote")),
@@ -121,22 +155,18 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url=x.game==="hub"?"/":"/"+encodeURIComponent(x.game)+"/";
  return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+format(x.pageviews)+'</td><td>'+format(x.starts)+'</td><td>'+(x.game==='hub'?t('empty'):(x.pageviews?format(x.startRate??pct(x.starts,x.pageviews))+'%':t('empty')))+'</td><td>'+format(x.completion)+'</td><td>'+format(x.retries)+'</td><td>'+escapeHTML(t('seconds',{n:format(x.avgSeconds)}))+'</td></tr>';
 }).join("");
-const channels=Array.isArray(j.byGameChannel)?j.byGameChannel:[];
-$("channel-rows").innerHTML=channels.filter(x=>displayOrder.includes(x.game)&&x.pageviews>0).slice(0,70).map(x=>{
- const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang];
- return '<tr><td>'+escapeHTML(label)+'</td><td>'+escapeHTML(x.source||"direct")+'</td><td>'+escapeHTML(x.campaign||"organic")+'</td><td>'+format(x.pageviews)+'</td><td>'+format(x.starts)+'</td><td>'+(x.startRate==null?'—':format(x.startRate)+'%')+'</td><td>'+escapeHTML(t("seconds",{n:format(x.avgSeconds)}))+'</td><td>'+format(x.retries)+'</td></tr>';
-}).join("")||'<tr><td colspan="8">'+escapeHTML(t("none"))+'</td></tr>';
-for(const id of ["sources","devices","referrers"])breakdown(id,j[id]);
-const signalFor=id=>visibleGames.get(id)?.signals||{};
- const snapshots=[
-  {name:'catSignal',data:signalFor('pawsibly-innocent'),fields:[['catRoom1','cat_room_1'],['catRoom8','cat_room_8'],['catCaught','cat_caught']]},
-  {name:'townSignal',data:signalFor('tiny-town'),fields:[['townWin','town_win'],['townLose','town_lose'],['townConfusing','town_feedback_confusing']]},
-  {name:'fishSignal',data:signalFor('pocket-aquarium'),fields:[['fishGood','aquarium_grade_good'],['fishFed','feed_success'],['fishDirty','aquarium_dirty_end']]}
- ];
- $('signal-grid').innerHTML=snapshots.map(g=>{const count=Object.values(g.data).reduce((a,b)=>a+Number(b||0),0);
- const val=k=>k==='aquarium_grade_good'?Number(g.data.aquarium_grade_s||0)+Number(g.data.aquarium_grade_a||0):Number(g.data[k]||0);
- return '<div class="signal-card"><h3>'+escapeHTML(t(g.name))+'</h3>'+(count?g.fields.map(([name,k])=>'<div class="signal-row"><span>'+escapeHTML(t(name))+'</span><b>'+format(val(k))+'</b></div>').join(''):'<p class="description">'+escapeHTML(t('signalWait'))+'</p>')+'</div>'}).join('');
- const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)})];
+const channels=Array.isArray(j.byChannel)?j.byChannel:[];
+const leading=channels.slice(0,5),extra=channels.slice(5);
+const visibleChannels=leading.slice();
+if(extra.length){
+ const count=k=>extra.reduce((n,x)=>n+Number(x[k]||0),0);
+ const views=count('pageviews'),started=count('startedViews'),seconds=count('seconds');
+ visibleChannels.push({source:'__other__',pageviews:views,startedViews:started,seconds,avgSeconds:views?Math.round(seconds/views):0,startRate:pct(started,views)});
+}
+$("channel-rows").innerHTML=visibleChannels.map(x=>'<tr><td title="'+escapeHTML(x.source)+'">'+escapeHTML(x.source==='direct'?t('channelDirect'):x.source==='__other__'?t('channelOther'):x.source)+'</td><td>'+format(x.pageviews)+'</td><td>'+(x.startRate==null?t('empty'):format(x.startRate)+'%')+'</td><td>'+escapeHTML(t('seconds',{n:format(x.avgSeconds)}))+'</td></tr>').join('')||'<tr><td colspan="4">'+escapeHTML(t("none"))+'</td></tr>';
+breakdown("devices",j.devices);
+renderSignals(games);
+const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)})];
 if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=chunks.join(" ");$("report").hidden=false;}
 
 let elsewhereData=null;
@@ -150,20 +180,17 @@ const ewPct=n=>n==null?ewText('empty'):(Number(n).toFixed(1)+'%');
 function updateEWLabels(){for(const node of document.querySelectorAll('[data-ew]'))node.textContent=ewText(node.dataset.ew);}
 function renderElsewhere(j){
  elsewhereData=j;updateEWLabels();const d=j.summary||{},f=j.funnel||[],rates=j.continueRates||[],worlds=j.worlds||[];
- $('ew-stats').innerHTML=[
-  [ewText('starts'),format(d.runs),ewText('denom',{n:format(d.runs)})],
-  [ewText('finishRate'),ewPct(d.fullRate),format(d.completed||0)+' / '+format(d.runs||0)],
-  [ewText('replayRate'),ewPct(d.replayRate),ewText('replayHint')]
- ].map(x=>metricCard(...x)).join('');
+ if(lastData)renderSignals(lastData.byGame||[]);
  $('ew-dropoff').innerHTML='<b>'+escapeHTML(ewText('dropoff'))+': </b>'+escapeHTML(d.dropoffChapter?ewText('dropoffMessage',{n:d.dropoffChapter,lost:format(d.dropoffLost),rate:ewPct(d.dropoffRate)}):ewText('dropoffEmpty'));
  const max=Math.max(1,...f.map(x=>x.value||0));
- $('ew-funnel').innerHTML=f.map(x=>{const m=/^(\\d)-(view|complete)$/.exec(x.step)||[];return '<div class="ew-funnel-row"><span>'+escapeHTML(ewText('chapter',{n:m[1]||'?'})+' · '+ewText(m[2]==='view'?'started':'done'))+'</span><div class="ew-bar"><span style="width:'+100*(x.value||0)/max+'%"></span></div><strong>'+format(x.value)+'</strong></div>'}).join('');
+ $('ew-funnel').innerHTML=f.map(x=>{const m=/^(\d)-(view|complete)$/.exec(x.step)||[];return '<div class="ew-funnel-row"><span>'+escapeHTML(ewText('chapter',{n:m[1]||'?'})+' · '+ewText(m[2]==='view'?'started':'done'))+'</span><div class="ew-bar"><span style="width:'+100*(x.value||0)/max+'%"></span></div><strong>'+format(x.value)+'</strong></div>'}).join('');
  $('ew-continue').innerHTML=rates.map(x=>'<div class="ew-continue-row"><span>'+escapeHTML(ewText('chapter',{n:x.from}))+' → '+escapeHTML(ewText('chapter',{n:x.to}))+'</span><b>'+escapeHTML(ewPct(x.rate))+'</b></div>').join('');
  $('ew-worlds').innerHTML=worlds.map(x=>'<tr><td>'+escapeHTML(worldName(x.world))+'</td><td>'+format(x.starts)+'</td><td>'+format(x.ends)+'</td><td>'+escapeHTML(ewPct(x.fullRate))+'</td></tr>').join('');
  $('ew-coverage').textContent=ewText('coverage',{n:format(j.records)})+(j.partial?ewText('partial'):'');
  $('ew-state').hidden=true;$('ew-report').hidden=false;
 }
 async function loadElsewhere(){
+ elsewhereData=null;if(lastData)renderSignals(lastData.byGame||[]);
  $('ew-state').hidden=false;$('ew-state').className='ew-state';$('ew-state').textContent=ewText('pending');$('ew-report').hidden=true;
  try{const response=await fetch('/api/elsewhere-summary?days='+$('days').value,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});const j=await response.json();if(!response.ok)throw new Error(j.error||'HTTP '+response.status);renderElsewhere(j)}
  catch(e){$('ew-state').textContent=ewText('noData')+' · '+(lang==='zh'?t('failGeneric'):(e.message||'Unavailable'));$('ew-state').className='ew-state error';}

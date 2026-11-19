@@ -56,6 +56,25 @@ for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js
  const text=fs.readFileSync(file,'utf8');
  if(text.toLowerCase().includes(['ruckus','button'].join('-')))throw Error('Old project name remains in '+file);
 }
+// Keep the marketing dashboard compact and make sure all six live games are monitored.
+const trackerSource=fs.readFileSync('src/analytics.js','utf8');
+const arcadeSource=fs.readFileSync('public/upgrade.js','utf8');
+for(const id of ['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
+ if(!dashboard.includes("id:'"+id+"'"))throw new Error('Gameplay insight missing published game '+id);
+}
+for(const metric of ['flip_finished','flip_10s','flip_30s','parcel_sorted','parcel_missed','parcel_ten_sorted']){
+ if(!telemetry.includes(metric))throw new Error('Missing game telemetry signal '+metric);
+}
+if(!arcadeSource.includes('event("parcel_sorted")')||!arcadeSource.includes('event("parcel_missed")'))
+ throw new Error('Parcel Panic outcome instrumentation missing');
+if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel')||dashboard.includes('j.byGameChannel'))
+ throw new Error('Dashboard must use grouped acquisition-channel rollups');
+if(!dashboard.includes('channels.slice(0,5)')||!dashboard.includes('channels.slice(5)'))
+ throw new Error('Promotion summary must cap visible channels and combine the rest');
+if(!dashboard.includes('<details class="ew-details"><summary data-ew="more">'))
+ throw new Error('Elsewhere scene details should remain collapsed by default');
+console.log('Six game analytics cards, compact acquisition channels and actionable telemetry checked.');
+
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
 await import('./check-pawsibly.mjs');
 
