@@ -59,6 +59,20 @@ try{
  }));
  console.log('Chinese switch:',JSON.stringify(zh));
  assert.equal(zh.lang,'zh-CN');
+ const chineseContent=await page.evaluate(()=>({
+  title:document.getElementById('gameTitle')?.innerText,
+  byline:document.getElementById('studioByline')?.innerText,
+  documentTitle:document.title,
+  rules:document.getElementById('howTitle')?.innerText,
+  englishWords:(document.querySelector('main')?.innerText.match(/[A-Za-z]{3,}/g)||[]),
+  aria:document.getElementById('board')?.getAttribute('aria-label')
+ }));
+ console.log('Cat all-Chinese visible UI:',JSON.stringify(chineseContent));
+ assert.equal(chineseContent.title,'猫猫绝对无辜！','The Chinese game title must not show PAWSIBLY INNOCENT');
+ assert.equal(chineseContent.byline,'出品 ♡','The brand byline must not leave "presents" untranslated');
+ assert.match(chineseContent.documentTitle,/猫猫绝对无辜/,'Browser tab title should be localized');
+ assert.deepEqual(chineseContent.englishWords,[],'Chinese game content must contain no visible English words');
+ assert.match(chineseContent.aria,/猫猫捣蛋游戏/,'Chinese canvas accessible label is localized');
  assert.match(await page.locator('.explainer').textContent(),/三步学会|偷到三条|粉色猫门/,'Chinese rules must be visible above the board');
  for(const value of [zh.subtitle,zh.mission,zh.shelf,zh.hint,zh.instructions,zh.room])
   assert.match(value,/[\u4e00-\u9fff]/,'Chinese regions must be translated');
