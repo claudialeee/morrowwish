@@ -195,7 +195,7 @@ body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8e
 <p id="awCoachText">Tap a green square to build your first place.</p><button type="button" class="btn quick-assist" id="autoPlace">✦ Auto-build (uses 1 turn)</button>
 </div>
 <p class="hint aw-resident-hint" id="focusInfo" style="margin:8px 0">Select a resident to highlight their home and walking range.</p><div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div><div class="aw-club-links" id="clubLinks" aria-hidden="true"></div></div>
-<div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div><div class="aw-map-tip">Connected venues show club progress: 0/2 → 1/2 → ✓.</div><details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details></div>
+<div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div><div class="aw-map-tip"><span class="aw-en">Map connections show club progress: 0/2 → 1/2 → ✓.</span><span class="aw-zh">地图连线显示社团进度：0/2 → 1/2 → ✓。</span></div><details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details></div>
   <div class="side"><div class="panel"><div class="panel-title">✿ Pick a place <span class="panel-sub">then tap the map</span></div><div class="cards" id="cards"></div><button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button><div class="info" id="preview">Hover over a green tile to preview the result.</div></div>
   <div class="panel aw-goal-panel"><div class="panel-title">♡ Make a happy little town <span class="panel-sub">8 turns</span></div><div class="goals"><div id="goalActive">○ Help 9 neighbors have fun</div><div id="goalClub">○ Form 2 different clubs</div></div></div>
   <section class="aw-advanced" id="awResidentsDetails"><div class="aw-expanded-heading">👥 Residents &amp; interests <span>Tap to see homes &amp; reach</span></div><div class="panel aw-advanced-body"><div class="panel-title">👥 Residents <span class="panel-sub">Tap for home & range</span></div><div class="residents" id="residents"></div><div class="info" id="residentWhy">Choose a resident to inspect their activity.</div><div class="section" style="margin-top:12px">Arriving in Week 5 · advance notice</div><div class="residents" id="incoming"></div></div></section><div class="panel"><div class="panel-title">🎉 Club progress</div><div class="feed" id="clubProgress"></div></div>
@@ -474,7 +474,7 @@ for(let i=0;i<16;i++){
  else if(b){const bi=state.buildings.findIndex(q=>q.pos===i);
    tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+state.residents[ri].face+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':''}`;
  }else{tile.innerHTML='<span style="color:#8cad96;font-weight:900;font-size:21px">+</span>';}
- tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(d<=3?' · '+d+' steps from '+focused.name:'')+(validPlots.has(i)?' · Ready to '+(selected==='upgrade'?'upgrade':'build'):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
+ tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(d<=3?L(' · '+d+' steps from '+focused.name,' · 距 '+focused.name+' '+d+' 格'):'')+(validPlots.has(i)?L(' · Ready to '+(selected==='upgrade'?'upgrade':'build'),' · 可以'+(selected==='upgrade'?'升级':'建造')):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
  tile.addEventListener('pointerleave',()=>{hover=-1});
  tile.addEventListener('focus',()=>renderingPreview(i));
  tile.addEventListener('click',()=>act(i));board.appendChild(tile);
@@ -484,7 +484,7 @@ $('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[st
 $('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
 $('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
 $('residents').innerHTML=state.residents.map((r,i)=>{const rs=state.last||E.simulate(state),venue=rs.assignments[i]??-1;return '<button type="button" class="res '+(venue>=0?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+safe(reason(state,rs,i))+'</small></div></button>';}).join('');
-$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+L('Arrives in Week 5','第 5 周入住')+'</div></button>').join(''):L('All newcomers have arrived.','新邻居已经全部入住。');
+$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+L('Arrives in Week 5','第 5 周入住')+'</small></div></button>').join(''):L('All newcomers have arrived.','新邻居已经全部入住。');
 statusUI();if(state.last)updateReceipt();refreshFeed();
 }
 $('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
@@ -514,8 +514,8 @@ const p=positionCenter(from),q=positionCenter(dest),el=document.createElement('s
 function act(pos,confirmed=false){
  if(busy||state.turn>=E.TURNS)return;
  const move=E.moves(state).find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
- if(!move){resetMobileConfirmation();$('preview').innerHTML='<span class="bad">Choose a green-outlined tile.</span>';return;}
- if(touchMode&&!confirmed){pendingMovePos=pos;renderingPreview(pos);$('awMobileControls').hidden=false;$('confirmMove').textContent='Confirm '+(selected==='upgrade'?'upgrade':'build')+' · '+cell(pos);return;}
+ if(!move){resetMobileConfirmation();$('preview').innerHTML='<span class="bad">'+L('Choose a green-outlined tile.','请选择绿色边框的格子。')+'</span>';return;}
+ if(touchMode&&!confirmed){pendingMovePos=pos;renderingPreview(pos);$('awMobileControls').hidden=false;$('confirmMove').textContent=L('Confirm '+(selected==='upgrade'?'upgrade':'build')+' · '+cell(pos),'确认'+(selected==='upgrade'?'升级':'建造')+' · '+cell(pos));return;}
  resetMobileConfirmation();
  if(metrics.firstChoiceMs==null){metrics.firstChoiceMs=Math.round(performance.now()-started);gameProgress('started');gameProgress('first-place-'+timeBucket(metrics.firstChoiceMs));}
 const previous=state.last;const oldClubKeys=new Set(previous?.clubs.map(x=>x.key)||[]);state=E.step(state,move);history.push(move);metrics.actions.push({atMs:Math.round(performance.now()-started),move,active:state.last.active,clubs:state.last.clubs.length,roundScore:state.last.score});
@@ -573,6 +573,14 @@ $('shareGame').onclick=async()=>{
  else{window.prompt(L('Copy game URL:','复制游戏链接：'),shareUrl);}}
  catch(e){if(e?.name!=='AbortError')window.prompt(L('Copy game URL:','复制游戏链接：'),shareUrl);}
 };
+window.addEventListener('morrowwish-language-change',()=>{
+ if(!state)return;render();
+ if($('end').classList.contains('show')){
+  const r=E.outcome(state);
+  $('endTitle').textContent=r.success?L('The town is thriving!','小镇越来越繁荣！'):L('Try a different layout','换个布局，再试一次');
+  $('endText').innerHTML=L('Grade ','评级 ')+'<b>'+r.grade+'</b> · '+L('Total vitality ','总活力 ')+'<b>'+r.totalScore+'</b><br>'+L('Happy neighbors ','快乐居民 ')+r.active+'/12 · '+L('Clubs ','社团 ')+r.clubs;
+ }
+});
 start(1);
 })();
 </script></body></html>
