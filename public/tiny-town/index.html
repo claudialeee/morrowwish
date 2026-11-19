@@ -383,16 +383,14 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     art:{name:'Art Workshop',icon:'🎨',color:'#f9c879',capacity:2},
     social:{name:'Café',icon:'☕',color:'#9ddbc2',capacity:2}
   };
-  const COMBOS = {
-    'game|music':{name:'Rhythm Club',icon:'🎶'},
-    'art|game':{name:'Indie Game Studio',icon:'🕹️'},
-    'game|social':{name:'Board Game Nights',icon:'🎲'},
-    'art|music':{name:'Street Performers',icon:'🎸'},
-    'music|social':{name:'Open Mic',icon:'🎤'},
-    'art|social':{name:'Art Salon',icon:'🖌️'}
+  const CLUBS = {
+    game: {name:'Gaming Club',icon:'🎮'},
+    music:{name:'Music Club',icon:'🎵'},
+    art:{name:'Art Club',icon:'🎨'},
+    social:{name:'Café Friends',icon:'☕'}
   };
   const NAMES = ['Leo','Mia','Kai','Lucy','Lulu','Bobby','Eva','David'];
-  const FACES = ['🙂','😺','😊','😎','😄','🥰','🤓','😋'];
+  const GENDERS = ['male','female','male','female','female','male','female','male'];
   function hash(n) { n |= 0; n = Math.imul(n ^ n >>> 16, 0x7feb352d); n = Math.imul(n ^ n >>> 15, 0x846ca68b); return (n ^ n >>> 16) >>> 0; }
   function rng(seed) {let v = seed>>>0;return function(){v=(v+0x6d2b79f5)>>>0;let t=v;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
   function shuffle(a,rand){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -402,16 +400,17 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     // Mixed interests; a primary and secondary interest for each resident.
     const primaries=shuffle(['game','game','game','game','music','music','art','social'],r);
     const freeHomes=Array.from({length:16},(_,p)=>p).filter(p=>!obstacles.includes(p));
+    const homes=shuffle(freeHomes,r); // Four pairs of housemates, then two new households in Week 5.
     const residents=primaries.map((primary,i)=>{
       let others=TYPES.filter(t=>t!==primary), secondary=others[Math.floor(r()*others.length)];
-      let home=freeHomes[Math.floor(r()*freeHomes.length)];
-      return {id:i,name:NAMES[i],face:FACES[i],primary,secondary,home,reach:2+Math.floor(r()*3)};
+      let home=homes[Math.floor(i/2)];
+      return {id:i,name:NAMES[i],gender:GENDERS[i],primary,secondary,home,reach:2+Math.floor(r()*3)};
     });
     // Announced newcomer wave at the start of week 5. This changes demand and forces capacity tradeoffs.
     const incoming=shuffle(['game','game','music','art'],r).map((primary,i)=>{
       const secondary=TYPES.filter(t=>t!==primary)[Math.floor(r()*3)];
-      const home=freeHomes[Math.floor(r()*freeHomes.length)];
-      return {id:i+8,name:['Nora','Ben','Zoe','Max'][i],face:['🙂','😎','😊','🤓'][i],primary,secondary,home,reach:2+Math.floor(r()*3)};
+      const home=homes[4+Math.floor(i/2)];
+      return {id:i+8,name:['Nora','Ben','Zoe','Max'][i],gender:['female','male','female','male'][i],primary,secondary,home,reach:2+Math.floor(r()*3)};
     });
     const offers=Array.from({length:TURNS},()=>shuffle(TYPES,r).slice(0,3));
     return {seed,turn:0,obstacles,residents,incoming,offers,buildings:[],clubStreak:{},last:null,totalScore:0};
@@ -431,7 +430,6 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
   }
   const adjacent=(a,b)=>distance(a,b)===1;
   function pairKey(a,b){return [a,b].sort().join('|');}
-  function clubName(a,b){return COMBOS[pairKey(a,b)] || {name:'Community Club',icon:'🎉'};}
   function simulate(s){
     let b=s.buildings;
     let capacities=b.map(x=>INFO[x.type].capacity+(x.level-1));
@@ -444,8 +442,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
         if(interest<0)continue;
         let dist=walkDist(resident.home,building.pos,s.obstacles);
         if(dist>resident.reach)continue;
-        let nearComp=b.some((q,j)=>j!==bi&&adjacent(building.pos,q.pos)&&q.type!==building.type&& (q.type===resident.primary || q.type===resident.secondary));
-        let utility=interest-dist+(nearComp?2:0)+building.level-1;
+        let utility=interest-dist+building.level-1;
         if(utility>=6)candidates.push({ri,bi,utility,rank:hash(s.seed*19+ri*31+building.pos*7)%100});
       }
     }
@@ -454,22 +451,28 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     let assignments=Array(s.residents.length).fill(-1),occupancy=b.map(()=>[]);
     for(const c of candidates){if(assignments[c.ri]<0&&capacities[c.bi]>0){assignments[c.ri]=c.bi;occupancy[c.bi].push(c.ri);capacities[c.bi]--;}}
     let active=assignments.filter(n=>n>=0).length;
+    // A club grows out of a *shared interest*, not two unrelated adjacent buildings.
+    // At least two of the same people must return to one matching venue in consecutive weeks.
+    // Once founded, the club stays founded even if attendance changes later.
     let pending=[],streaks={},clubs=[];
-    for(let i=0;i<b.length;i++)for(let j=i+1;j<b.length;j++){
-      if(b[i].type===b[j].type||!adjacent(b[i].pos,b[j].pos))continue;
-      let participants=occupancy[i].length+occupancy[j].length;
-      // A club needs both venues used, >= 3 distinct attendees, and two consecutive weeks.
-      if(participants>=4&&occupancy[i].length>=2&&occupancy[j].length>=2){
-        let key=pairKey(b[i].pos,b[j].pos)+':'+pairKey(b[i].type,b[j].type);
-        streaks[key]=(s.clubStreak[key]||0)+1;
-        let desc=clubName(b[i].type,b[j].type);
-        let entity={key,positions:[b[i].pos,b[j].pos],types:[b[i].type,b[j].type],name:desc.name,icon:desc.icon,participants,streak:streaks[key]};
-        if(streaks[key]>=2)clubs.push(entity);else pending.push(entity);
-      }
+    for(let i=0;i<b.length;i++){
+      const venue=b[i],key='hobby:'+venue.type+':'+venue.pos;
+      const attendees=occupancy[i];
+      const prevAttendees=s.last?.occupancy?.[i]||[];
+      const returning=attendees.filter(ri=>prevAttendees.includes(ri));
+      const prior=s.clubStreak[key]||0;
+      let streak=0;
+      if(prior>=2)streak=prior; // Established clubs are persistent.
+      else if(attendees.length>=2)streak=prior===1&&returning.length>=2?2:1;
+      if(!streak)continue;
+      streaks[key]=streak;
+      const desc=CLUBS[venue.type];
+      const entity={key,type:venue.type,positions:[venue.pos],types:[venue.type],name:desc.name,icon:desc.icon,participants:attendees.length,members:attendees,returning,streak};
+      if(streak>=2)clubs.push(entity);else pending.push(entity);
     }
-    // Different locations can share a culture, but a culture counts only once.
-    clubs=clubs.filter((c,i,all)=>all.findIndex(o=>pairKey(...o.types)===pairKey(...c.types))===i);
-    pending=pending.filter((c,i,all)=>all.findIndex(o=>pairKey(...o.types)===pairKey(...c.types))===i);
+    // Each hobby counts as a single club category, even if several venues support it.
+    clubs=clubs.filter((c,i,all)=>all.findIndex(o=>o.type===c.type)===i);
+    pending=pending.filter(c=>!clubs.some(o=>o.type===c.type)).filter((c,i,all)=>all.findIndex(o=>o.type===c.type)===i);
     const empty=b.filter((v,i)=>occupancy[i].length===0).length;
     const attendedTypes=new Set(assignments.map((bi)=>bi<0?null:b[bi].type).filter(Boolean)).size;
     const score=active*10+clubs.length*24+pending.length*6+attendedTypes*4-empty*5;
@@ -504,7 +507,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     const grade=success?(s.totalScore>=1150?'S':s.totalScore>=1000?'A':'B'):'C';
     return {success,grade,active:v.active,clubs:v.clubs.length,totalScore:s.totalScore,finalScore:v.score};
   }
-  return {W,TURNS,TYPES,INFO,COMBOS,generate,simulate,moves,step,outcome,adjacent,distance,walkDist};
+  return {W,TURNS,TYPES,INFO,CLUBS,generate,simulate,moves,step,outcome,adjacent,distance,walkDist};
 });
 
 </script>
