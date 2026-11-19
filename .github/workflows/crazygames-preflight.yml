@@ -37,6 +37,8 @@ jobs:
           npm ci
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
       - name: Check URL, iframe rendering, covers, real recorded gameplay
         run: node scripts/crazygames-preflight.mjs "${{ matrix.game }}"
       - name: Save evidence and CrazyGames-sized media (NOT submission receipt)
