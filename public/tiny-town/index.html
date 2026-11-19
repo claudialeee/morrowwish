@@ -467,7 +467,6 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
     return 999;
   }
   const adjacent=(a,b)=>distance(a,b)===1;
-  function pairKey(a,b){return [a,b].sort().join('|');}
   function simulate(s){
     let b=s.buildings;
     let capacities=b.map(x=>INFO[x.type].capacity+(x.level-1));
@@ -692,7 +691,7 @@ for(let i=0;i<16;i++){
  let tile=document.createElement('button');const d=focused?E.walkDist(focused.home,i,state.obstacles):999,attend=focusIndex>=0&&state.last?.assignments[focusIndex]>=0&&state.buildings[state.last.assignments[focusIndex]].pos===i;tile.className='tile'+(state.obstacles.includes(i)?' blocked':'')+(d<=focused?.reach?' awReach':'')+(focused?.home===i?' awHome':'')+(attend?' awVenue':'')+(validPlots.has(i)?' awPlaceable':'');tile.type='button';tile.dataset.pos=i;
  let b=buildings.get(i);if(state.obstacles.includes(i)){tile.innerHTML='<span class="rock">🌳</span>';tile.disabled=true;}
  else if(b){const bi=state.buildings.findIndex(q=>q.pos===i);
-   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+portrait(state.residents[ri])+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':formingPositions.has(i)?'<span class="tt-club-pending">1/2</span>':''}`;
+   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+portrait(state.residents[ri])+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':formingPositions.has(i)?'<span class="tt-club-pending" title="'+L('One week of shared hobby visits','同好活动已持续 1 周')+'">1/2周</span>':''}`;
  }else{tile.innerHTML='<span style="color:#8cad96;font-weight:900;font-size:21px">+</span>';}
  tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(focused&&d<=focused.reach?L(' · '+d+' steps from '+focused.name,' · 距 '+focused.name+' '+d+' 格'):'')+(validPlots.has(i)?L(' · Ready to '+(selected==='upgrade'?'upgrade':'build'),' · 可以'+(selected==='upgrade'?'升级':'建造')):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
  tile.addEventListener('pointerleave',()=>{hover=-1});
@@ -749,7 +748,7 @@ if(newClubs.length&&!hasTrackedClub){hasTrackedClub=true;gameProgress('first-clu
 selected=null;touchArmed=null;render();updateReceipt();
 if(move.action==='place'){
  const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');
- addFeed('🏠 Built '+icons[move.type].name+'. Residents reassigned their activities.','🏠 建好了'+venue(move.type)+'，居民开始选择新的活动场所。');
+ addFeed(icons[move.type].icon+' Built '+icons[move.type].name+'. Residents found new places to meet.',icons[move.type].icon+' '+venue(move.type)+'建好了，居民们又多了一个活动场所。');
 }else{
  const type=state.buildings.find(b=>b.pos===move.pos).type;
  addFeed('⬆ Upgraded '+icons[type].name+' for +1 capacity.','⬆ '+venue(type)+'升级了，增加 1 个座位。');
