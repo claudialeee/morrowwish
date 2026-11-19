@@ -1,27 +1,30 @@
-/* Elsewhere only: licensed CC0 instrumental score (AERIS MUSIC).
-   Source: https://github.com/farmmer938-lgtm/aeris-cc0-music (CC0 1.0)
+/* Elsewhere only: original, fully orchestrated game soundtrack by Melissa Elliott (0xabad1dea).
+   Music repository: https://github.com/0xabad1dea/glorytales
+   License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+   The game credits the composer and license in the About letter.
+   Replaces the earlier CC0 lo-fi score with fantasy-acoustic themes.
    Start immediately on load where browser policy permits; otherwise on first gesture.
    No timers, artificial delays or synthesized repeating tones. */
 (()=>{'use strict';
 const KEY='elsewhere.music.enabled';
-const ROOT='https://cdn.jsdelivr.net/gh/farmmer938-lgtm/aeris-cc0-music@main/tracks/';
-const RAW='https://raw.githubusercontent.com/farmmer938-lgtm/aeris-cc0-music/main/tracks/';
+const ROOT='https://cdn.jsdelivr.net/gh/0xabad1dea/glorytales@master/tracks/';
+const RAW='https://raw.githubusercontent.com/0xabad1dea/glorytales/master/tracks/';
 const tracks={
- home:'evergreen-open-road.mp3',
- 'no-work':'evergreen-open-road.mp3',
- bookshop:'bedroom-window-outlands.mp3',
- paris:'old-photos-outlands.mp3',
- cabin:'quiet-room.mp3',
- 'end-no-work':'afterglow-vast.mp3',
- 'end-bookshop':'old-photos-outlands.mp3',
- 'end-paris':'afterglow-vast.mp3',
- 'end-cabin':'quiet-room.mp3'
-};
+ home:'002-StartMenuScreen-80BPM-loop.mp3',        // harp and gentle bells, reflective invitation
+ 'no-work':'013-LongRoad-100BPM-loop.mp3',      // warm traveling ensemble, more motion
+ bookshop:'005-HistoricVillage-99BPM-loop.mp3',// wistful cello, old bookshop and harbor
+ paris:'014-CatsEyeWaltz-96BPM-loop.mp3',      // romantic waltz for a changing city
+ cabin:'007-MagicalForest-85BPM-loop.mp3',    // woodwind, violin, soft forest mystery
+ 'end-no-work':'008-TheSkyClears-88BPM-loop.mp3',
+ 'end-bookshop':'002-StartMenuScreen-80BPM-loop.mp3',
+ 'end-paris':'002-StartMenuScreen-80BPM-loop.mp3',
+ 'end-cabin':'002-StartMenuScreen-80BPM-loop.mp3'
+}
 let enabled=true;
 try{const saved=localStorage.getItem(KEY);enabled=saved===null?true:saved==='1';}catch{}
 const audio=new Audio();
 audio.loop=true;audio.preload='auto';audio.autoplay=enabled;
-audio.volume=.19;
+audio.volume=.13;
 let world='home',fallback=false,blocked=false,control=null;
 audio.src=ROOT+tracks[world];
 function zh(){return window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh');}
