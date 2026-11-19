@@ -145,16 +145,26 @@
   if(ctx&&output){try{output.gain.cancelScheduledValues(ctx.currentTime);output.gain.setTargetAtTime(.00001,ctx.currentTime,.055)}catch{}}
   sync();
  }
- function start(){
-  firstGesture=true;
-  if(!enabled||document.hidden||!ensure())return false;
-  try{ctx.resume()?.catch?.(()=>{})}catch{}
-  if(running)return true;
-  running=true;step=0;nextTime=ctx.currentTime+.12;
+ function activate(){
+  if(!ctx||ctx.state!=='running'||running||!enabled||document.hidden)return false;
+  running=true;step=0;nextTime=ctx.currentTime+.008;
   output.gain.cancelScheduledValues(ctx.currentTime);
-  output.gain.setTargetAtTime(.38,ctx.currentTime,.16);
+  output.gain.setTargetAtTime(.38,ctx.currentTime,.028);
   schedule();interval=setInterval(schedule,85);
   sync();return true;
+ }
+ function start(){
+  if(!enabled||document.hidden||!ensure())return false;
+  if(running)return true;
+  // Try sound immediately, without requiring a click. Browser autoplay policies
+  // may suspend Web Audio; the first gesture resumes in that case.
+  try{
+   if(ctx.state==='running')return activate();
+   const result=ctx.resume();
+   if(ctx.state==='running')return activate();
+   if(result?.then)result.then(()=>{if(enabled&&!document.hidden)activate()}).catch(()=>{sync()});
+  }catch{}
+  sync();return false;
  }
  function toggle(){
   enabled=!enabled;try{localStorage.setItem(KEY,enabled?'1':'0')}catch{}
@@ -165,7 +175,9 @@
   if(!button)return;
   button.textContent=label();
   button.title=(isZh()?'原创循环配乐「':'Original looping music “')+score.title[isZh()?'zh':'en']+'”';
-  button.setAttribute('aria-label',label());button.setAttribute('aria-pressed',String(enabled));
+  const blocked=enabled&&ctx?.state==='suspended'&&!running;
+  if(blocked)button.textContent=isZh()?'♫ 音乐：点击开启':'♫ Music: Tap to play';
+  button.setAttribute('aria-label',button.textContent);button.setAttribute('aria-pressed',String(enabled));
   button.classList.toggle('mw-music-off',!enabled);
  }
  function mount(){
@@ -185,14 +197,16 @@
  }
  function unlock(evt){
   if(evt.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(evt.key))return;
-  if(!firstGesture&&enabled)start();
+  firstGesture=true;
+  if(enabled&&!running)start();
  }
  document.addEventListener('pointerdown',unlock,{capture:true,passive:true});
  document.addEventListener('keydown',unlock,true);
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else if(enabled&&firstGesture)start()});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else if(enabled)start()});
  window.addEventListener('pagehide',stop);
  window.addEventListener('morrowwish-language-change',()=>setTimeout(sync,0));
  if(game==='pocket-aquarium')document.addEventListener('click',e=>{if(e.target.closest?.('.languages'))setTimeout(sync,0)});
+ if(enabled)start(); // Immediately attempt at script execution, before DOMContentLoaded.
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
  window.MorrowwishMusic={start,stop,toggle,sync,status:()=>({game,enabled,running,unlocked:firstGesture,title:score.title.en,step,tempo:score.bpm})};
 })();
