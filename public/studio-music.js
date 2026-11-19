@@ -194,7 +194,6 @@
    document.body.appendChild(button);
   }
   sync();
-  if(enabled)start(); // Attempt playback the moment the page script is ready.
  }
  function unlock(evt){
   if(evt.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(evt.key))return;
@@ -207,6 +206,7 @@
  window.addEventListener('pagehide',stop);
  window.addEventListener('morrowwish-language-change',()=>setTimeout(sync,0));
  if(game==='pocket-aquarium')document.addEventListener('click',e=>{if(e.target.closest?.('.languages'))setTimeout(sync,0)});
+ if(enabled)start(); // Immediately attempt at script execution, before DOMContentLoaded.
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
  window.MorrowwishMusic={start,stop,toggle,sync,status:()=>({game,enabled,running,unlocked:firstGesture,title:score.title.en,step,tempo:score.bpm})};
 })();
