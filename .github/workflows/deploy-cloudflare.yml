@@ -58,6 +58,13 @@ jobs:
           if (!live.ok) {
             console.log('Live Worker settings request: HTTP ' + live.code + ', Cloudflare codes ' +
               JSON.stringify((live.body.errors || []).map(e => e.code)));
+            const accountsResponse = await fetch('https://api.cloudflare.com/client/v4/accounts?per_page=50', {
+              headers: { Authorization: 'Bearer ' + process.env.CLOUDFLARE_API_TOKEN }
+            });
+            const accountsBody = await accountsResponse.json().catch(() => ({}));
+            console.log('Token account discovery: HTTP ' + accountsResponse.status);
+            console.log('Accessible account IDs:', JSON.stringify(
+              (accountsBody.result || []).map(a => a.id).slice(0, 30)));
             const workers = await get('/workers/scripts');
             console.log('Worker list API:', workers.ok ? 'OK' :
               'HTTP ' + workers.code + ', codes ' + JSON.stringify((workers.body.errors || []).map(e => e.code)));
