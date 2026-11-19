@@ -6,7 +6,7 @@ on:
     paths:
       - 'scripts/crazygames-preflight.mjs'
       - 'scripts/discovery.mjs'
-      - 'promotion/ledger.json'
+      # Promotion scheduling status alone does not rerun six browser recordings.
       - '.github/workflows/crazygames-preflight.yml'
   workflow_dispatch:
 
