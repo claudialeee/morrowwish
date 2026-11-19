@@ -189,7 +189,8 @@ try{
  assert.equal(initialMusic?.enabled,true,'Cat music is enabled by default after interaction');
  await page.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing&&window.MorrowwishCatMusic?.status().readyState>=2,{timeout:8000});
  const playing=await page.evaluate(()=>window.MorrowwishCatMusic.status());
- assert.ok(playing.duration>5,'Recorded theme should be longer than a single ding');
+ assert.equal(playing.error,'','Recorded cat music must not report a playback error');
+ assert.ok(playing.readyState>=2,'Recorded cat music must be decoded and playable');
  assert.match(await page.locator('#music').textContent(),/背景音乐/,'Chinese music control must be localized');
  const musicButton=page.locator('#music');
  await musicButton.click();

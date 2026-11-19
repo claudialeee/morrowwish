@@ -31,6 +31,8 @@ do
     ffmpeg -nostdin -y -v error -i "$src" -map 0:a:0 -vn -c:a libopus -b:a 72k -ar 48000 "$target"
     ffprobe -v error -show_entries stream=codec_name -of default=noprint_wrappers=1 "$target" | grep -q opus
     test "$(wc -c < "$target")" -gt 40000
+    duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$target")
+    awk -v seconds="$duration" 'BEGIN{exit(seconds>5?0:1)}'
     echo "Imported CC0 recorded piano loop from $url as $target"
     exit 0
   fi
