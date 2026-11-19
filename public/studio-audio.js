@@ -16,7 +16,7 @@ function sync(){
  control.textContent=compact?(enabled?'🔊':'🔇'):((enabled?'🔊 ':'🔇 ')+copy());
  control.setAttribute('aria-label',copy());
  control.setAttribute('aria-pressed',String(enabled));
- control.title=lang()==='zh'?'开启或关闭游戏音效（没有背景音乐）':'Turn game sound effects on or off (no background music)';
+ control.title=lang()==='zh'?'开启或关闭音效（背景音乐可单独控制）':'Turn sound effects on or off (music has a separate control)';
 }
 function ensure(){if(ctx)return true;try{
  const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;
@@ -108,7 +108,7 @@ if(typeof originalMetric==='function')window.arcadeMetric=function(name,...args)
 document.addEventListener('pointerdown',e=>{
  if(!enabled||!unlocked)return;
  const target=e.target;
- if(target.closest?.('[data-mw-audio], #sound, .lab-mute, #board'))return;
+ if(target.closest?.('[data-mw-audio], [data-mw-music], #sound, .lab-mute, #board'))return;
  if(target.closest?.('canvas')){effect(route==='flip-dash'?'flip':route==='parcel-panic'?'sort':'bubble');return}
  if(target.closest?.('button,[role="button"]'))effect(route==='elsewhere'?'page':route==='tiny-town'?'build':'tap');
 },false);
