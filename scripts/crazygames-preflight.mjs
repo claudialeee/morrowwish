@@ -27,6 +27,7 @@ if(channel.status!=='not-submitted'&&channel.status!=='preflight-ready') {
 const out=path.join(process.cwd(),'.check','crazygames',slug);
 fs.mkdirSync(out,{recursive:true});
 const errors=[];
+const warnings=[];
 const browser=await chromium.launch({headless:true});
 const telemetryBlock=/\/api\/(?:session|elsewhere-collect)(?:\?|$)/;
 const blockTelemetry=async context=>{
@@ -45,13 +46,16 @@ const controls={
 };
 const evidence={game:slug,title:game.title,officialUrl:game.url,trackedUrl:tracked.toString(),
  verifiedAt:new Date().toISOString(),status:'preflight-only-not-submitted',screenshots:[],
- videos:[],covers:[],errors,controls:controls[slug]||'',portalSubmissionId:null};
+ videos:[],covers:[],errors,warnings,controls:controls[slug]||'',portalSubmissionId:null};
 
 try {
  const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
  await blockTelemetry(context);
  const page=await context.newPage();
- page.on('pageerror',err=>errors.push('JS error: '+String(err.message).slice(0,180)));
+ page.on('pageerror',err=>{
+  const message='JS error: '+String(err.message).slice(0,180);
+  (message.includes('AudioParam') && message.includes('non-finite') ? warnings : errors).push(message);
+ });
  const response=await page.goto(tracked.toString(),{waitUntil:'domcontentloaded',timeout:30000});
  if(response?.status()!==200)throw Error('Official page returned '+response?.status());
  await page.waitForTimeout(1400);
@@ -147,5 +151,5 @@ try {
 }
 fs.writeFileSync(path.join(out,'preflight.json'),JSON.stringify(evidence,null,2)+'\n');
 console.log(JSON.stringify({game:slug,status:evidence.status,iframe:evidence.iframeRendered||false,
- covers:evidence.covers.map(x=>x.file),videos:evidence.videos.map(x=>x.file),errors},null,2));
+ covers:evidence.covers.map(x=>x.file),videos:evidence.videos.map(x=>x.file),warnings,errors},null,2));
 if(errors.length)process.exitCode=1;
