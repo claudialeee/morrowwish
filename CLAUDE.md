@@ -15,3 +15,5 @@ You are modifying the **existing** Morrow Wish browser-game studio in private Gi
 - Never create extra projects, delete/overwrite D1 data, change billing, expose secrets, or redeploy Vercel.
 
 Follow all detailed instructions in `AGENTS.md`; report the commit, deployment run, changed game URLs, verification, and failures.
+
+Organic discovery and release workflow: `scripts/discovery.mjs` generates search metadata, `sitemap.xml`, `feed.xml` and `games.json` from visible gameplay links during the Cloudflare build. GitHub Actions produces tracked channel promotion kits; truly new game slugs are detected via `scripts/detect-new-games.mjs`; optionally connected studio Bluesky can publish, but portal submissions still require their own approvals. Maintain proper game-specific descriptions and visual preview assets and verify real live links before marketing. Respect the unified Analytics dashboard's promotion channel attribution, existing deploy architecture and no-TinyFish rule.
