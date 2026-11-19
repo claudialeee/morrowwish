@@ -1,0 +1,49 @@
+name: CrazyGames live-URL preflight and real gameplay media
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/crazygames-preflight.mjs'
+      - 'scripts/discovery.mjs'
+      - 'promotion/ledger.json'
+      - '.github/workflows/crazygames-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morrowwish-crazygames-preflight-main
+  cancel-in-progress: true
+
+jobs:
+  verify-first-games:
+    name: Verify ${{ matrix.game }} for externally hosted iframe submission
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        game: [flip-dash, parcel-panic]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies and Playwright browser (no paid service)
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Check URL, iframe rendering, covers, real recorded gameplay
+        run: node scripts/crazygames-preflight.mjs "${{ matrix.game }}"
+      - name: Save evidence and CrazyGames-sized media (NOT submission receipt)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crazygames-preflight-${{ matrix.game }}
+          path: .check/crazygames/${{ matrix.game }}/
+          if-no-files-found: warn
+          retention-days: 14
