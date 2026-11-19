@@ -65,5 +65,24 @@ try{
  assert.ok(en.winScore.includes('Score'),'Victory score label must switch language');
  assert.ok(en.instructions.includes('Tap'),'English tutorial must remain usable');
  assert.equal(errors.length,0,'Canvas and UI must be free of uncaught errors');
- console.log('CHROMIUM BROWSER GAMEPLAY + BILINGUAL TEST PASSED');
+ await page.goto(new URL('/',url).toString(),{waitUntil:'load',timeout:40000});
+ await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(170);
+ const homeZh=await page.evaluate(()=>({
+  lang:document.documentElement.lang,
+  about:document.querySelector('.about-copy p')?.textContent,
+  footer:document.querySelector('.footer-row>span')?.textContent,
+  miniDescription:document.querySelector('.tiny-section .section-intro>p')?.textContent,
+  catTitle:document.querySelector('.cat-feature-card h3')?.textContent,
+  miniHeight:Math.round(document.querySelector('.tiny-section')?.getBoundingClientRect().height||0),
+  aboutHeight:Math.round(document.querySelector('.about-section')?.getBoundingClientRect().height||0)
+ }));
+ console.log('Homepage Chinese and compact sections:',JSON.stringify(homeZh));
+ assert.equal(homeZh.lang,'zh-CN');
+ assert.match(homeZh.about,/想象|自由/,'About text must be Chinese');
+ assert.match(homeZh.footer,/独立游戏/,'Footer must be Chinese');
+ assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
+ assert.match(homeZh.catTitle,/猫猫绝对无辜/,'Chinese flagship title must appear');
+ assert.ok(homeZh.miniHeight<420,'Short arcade section should be compact');
+ assert.ok(homeZh.aboutHeight<310,'About section should be compact');
+ console.log('CHROMIUM CANVAS + CONTROLS + BILINGUAL GAME + COMPACT CHINESE HOMEPAGE PASSED');
 }finally{await browser.close()}
