@@ -91,6 +91,12 @@ jobs:
           test "$code" = 200 && grep -q 'ELSEWHERE_ENDINGS' /tmp/elsewhere-endings.js || { echo "::error::Ending script missing or invalid (HTTP $code)"; exit 1; }
           code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-continuity.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/continuity.js')
           test "$code" = 200 && grep -q 'ELSEWHERE_CONTINUITY' /tmp/elsewhere-continuity.js || { echo "::error::Story continuity script missing or invalid (HTTP $code)"; exit 1; }
+          code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-mysteries.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/mysteries.js')
+          test "$code" = 200 && grep -q 'ELSEWHERE_MYSTERIES' /tmp/elsewhere-mysteries.js || { echo "::error::Missing live hidden narrative module (HTTP $code)"; exit 1; }
+          for asset in no-work-secret bookshop-secret paris-secret cabin-secret; do
+            code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-secret.svg -w '%{http_code}' "https://morrowwish.pages.dev/elsewhere/endings/$asset.svg")
+            test "$code" = 200 && grep -q '<svg' /tmp/elsewhere-secret.svg || { echo "::error::Missing live mystery artwork $asset (HTTP $code)"; exit 1; }
+          done
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
       - name: Verify public Morrow Wish game URLs via Vercel proxy
         run: |

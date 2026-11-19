@@ -105,3 +105,58 @@ for(const source of ['public/elsewhere/app.js','public/elsewhere/season.js','pub
   new vm.Script(fs.readFileSync(source,'utf8'),{filename:source});
 }
 console.log('Elsewhere continuity, bilingual decisions, conditional film option, seasonal timeline, and syntax checked.');
+
+
+// Elsewhere mystery validation: real choice and exploration gating, persistent endings, bilingual art.
+const mysterySource='public/elsewhere/mysteries.js';
+const mysterySandbox={window:{}};
+vm.runInNewContext(fs.readFileSync(mysterySource,'utf8'),mysterySandbox,{filename:mysterySource,timeout:2000});
+const mysteries=mysterySandbox.window.ELSEWHERE_MYSTERIES||{};
+const mysteryPage=fs.readFileSync('public/elsewhere/index.html','utf8');
+const offlineScript=fs.readFileSync('public/elsewhere/sw.js','utf8');
+if(!mysteryPage.includes('/elsewhere/mysteries.js')||!offlineScript.includes('/elsewhere/mysteries.js'))throw Error('Hidden story module missing from public or offline app');
+for(const token of ['function mysteryState()','function recordEnding(','COLLECTION_KEY','active.inspected','mystery-rare','HIDDEN STORY DISCOVERED']){
+ if(!storyApp.includes(token))throw Error('Missing functional Elsewhere story mechanic: '+token);
+}
+const seenMysteryArts=new Set();
+for(const w of storyWorlds){
+ const data=mysteries[w.id];
+ if(!data||data.steps?.length!==4||data.hooks?.length!==3||data.teasers?.length!==3||data.result?.length!==2)
+   throw Error('Incomplete hidden narrative: '+w.id);
+ const properPair=p=>Array.isArray(p)&&p.length===2&&p.every(x=>typeof x==='string'&&x.trim().length>0);
+ for(const pair of [data.name,data.description,data.revealing,data.closing,...data.hooks,...data.teasers])
+   if(!properPair(pair))throw Error('Untranslated mystery copy: '+w.id);
+ for(const conclusion of data.result)
+   for(const value of [conclusion.title,conclusion.sub,conclusion.detail])
+     if(!properPair(value))throw Error('Untranslated hidden ending: '+w.id);
+ if(seenMysteryArts.has(data.art))throw Error('Ending art must be unique: '+data.art);
+ seenMysteryArts.add(data.art);
+ const art='public/elsewhere/endings/'+data.art;
+ const xml=fs.readFileSync(art,'utf8');
+ if(!xml.startsWith('<svg')||!xml.includes('</svg>')||!xml.includes('viewBox'))throw Error('Secret illustration invalid: '+art);
+ for(const r of data.steps){
+   if(!Number.isInteger(r.at)||r.at<0||r.at>=8||!properPair(r.label))throw Error('Invalid clue requirement: '+w.id);
+   const isInspection=r.inspect!==undefined, isChoice=r.choice!==undefined;
+   if(isInspection===isChoice)throw Error('Clue must require exactly one interaction: '+w.id);
+   if(isInspection&&(!Number.isInteger(r.inspect)||r.inspect<0||r.inspect>=w.acts[r.at].inspect.length))
+     throw Error('Mystery refers to absent inspection: '+w.id);
+   if(isChoice&&(!Number.isInteger(r.choice)||r.choice<1||r.choice>w.acts[r.at].choices.length))
+     throw Error('Mystery refers to absent choice: '+w.id);
+ }
+ let secrets=0,normal=0;
+ // Simulate 2^8 story paths, both with and without discovered objects.
+ for(let bits=0;bits<256;bits++){
+   const decisions=Array.from({length:8},(_,i)=>1+(bits>>i&1));
+   for(const inspected of [false,true]){
+     const matched=data.steps.every(r=>r.choice!==undefined?decisions[r.at]===r.choice:inspected);
+     if(matched)secrets++;else normal++;
+     const next=decisions[7]-1;
+     const final=matched?data.result[next]:storyEndings[w.id].paths[decisions[6]-1].finales[next];
+     if(!properPair(final.title)||!properPair(final.detail))throw Error('Unreachable or malformed ending: '+w.id);
+   }
+ }
+ if(secrets<1||normal<1)throw Error('Hidden ending cannot be both earned and missed: '+w.id);
+ console.log(w.id+': '+secrets+' hidden and '+normal+' regular simulated completions');
+}
+for(const source of [mysterySource,'public/elsewhere/app.js'])new vm.Script(fs.readFileSync(source,'utf8'),{filename:source});
+console.log('Elsewhere mystery validation: 2,048 simulated ending paths, four secret illustrations, old save support, and bilingual endings checked.');

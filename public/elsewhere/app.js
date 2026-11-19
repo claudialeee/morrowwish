@@ -25,6 +25,7 @@
     return selected;
   }
   const STORE_KEY = 'elsewhere_lives_v1';
+  const COLLECTION_KEY = 'elsewhere_endings_collection_v1';
   const LENS_KEY='elsewhere_reader_lens_v2';
   let lens=(()=>{try{return localStorage.getItem(LENS_KEY)||'curiosity'}catch{return 'curiosity'}})();
   const QUALITY_NAMES = ['Curiosity','Connection','Freedom'];
@@ -35,6 +36,9 @@
   const visitorId=(()=>{if(!TRACKING_ALLOWED())return null;try{let s=localStorage.getItem('arcade-visitor-v2')||localStorage.getItem('elsewhere-visitor-v2');if(!s||!/^[a-zA-Z0-9-]{8,80}$/.test(s)){s=newId()}localStorage.setItem('arcade-visitor-v2',s);return s}catch{return null}})();
   const $ = (s) => document.querySelector(s);
   let allSaves = readSaves();
+  let endingCollection=(()=>{
+    try{const value=JSON.parse(localStorage.getItem(COLLECTION_KEY)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}catch{return {};}
+  })();
   let active = null;
   let speaking = false;
   let toastTimeout;
@@ -60,7 +64,7 @@
     allSaves[active.world] = structuredClone(active);
     try { localStorage.setItem(STORE_KEY, JSON.stringify(allSaves)); } catch { notify('Your browser could not save this life.'); }
   }
-  function freshState(id) { return {world:id, chapter:0, selected:null, decisions:[], scores:[0,0,0], finished:false, runId:newId(), endingTracked:false, storyVersion:2, explored:{}, seenChapters:[]}; }
+  function freshState(id) { return {world:id, chapter:0, selected:null, decisions:[], scores:[0,0,0], finished:false, runId:newId(), endingTracked:false, storyVersion:2, explored:{}, inspected:{}, seenChapters:[]}; }
   function getState(id) {
     const s=allSaves[id], w=WORLD_BY_ID[id];
     if (!s || !w || !Array.isArray(s.decisions) || !Array.isArray(s.scores) || s.scores.length!==3 || !Number.isInteger(s.chapter) || s.chapter<0 || s.chapter>=w.chapters.length || typeof s.finished!=='boolean') return freshState(id);
@@ -73,6 +77,13 @@
       copy.storyVersion=2;copy.explored={};copy.seenChapters=[];
     }
     if(!copy.explored||typeof copy.explored!=='object')copy.explored={};
+    // Old saves have only the last hotspot visited; keep that discovery.
+    if(!copy.inspected||typeof copy.inspected!=='object'){
+      copy.inspected={};
+      for(const [scene,spot] of Object.entries(copy.explored)){
+        if(Number.isInteger(Number(spot))&&Number(spot)>=0)copy.inspected[scene]=[Number(spot)];
+      }
+    }
     if(!Array.isArray(copy.seenChapters))copy.seenChapters=[];
     if(typeof copy.runId!=='string'||copy.runId.length<8)copy.runId=newId();
     if(typeof copy.endingTracked!=='boolean')copy.endingTracked=false;
@@ -112,10 +123,43 @@
     };
     return `<div class="world-art" aria-hidden="true"><svg viewBox="0 0 600 360" preserveAspectRatio="xMidYMid slice" role="img"><rect width="600" height="360" fill="url(#s-${id})"/>${common}${images[id]||images.cabin}</svg></div>`;
   }
+  // A secret is earned from specific earlier decisions and inspected objects, not RNG.
+  function mysteryState(){
+    if(!active)return null;
+    const data=window.ELSEWHERE_MYSTERIES?.[active.world];
+    if(!data)return null;
+    const pieces=data.steps.map(piece=>piece.inspect!==undefined
+      ?((Array.isArray(active.inspected?.[piece.at])&&active.inspected[piece.at].includes(piece.inspect))||active.explored?.[piece.at]===piece.inspect)
+      :active.decisions[piece.at]?.choice===piece.choice);
+    return {data,pieces,count:pieces.filter(Boolean).length,unlocked:pieces.every(Boolean)};
+  }
+  function collectionId(result){return result.secret?'secret-'+result.next:'regular-'+result.route+'-'+result.next;}
+  function recordEnding(result){
+    if(!active?.finished||!result)return;
+    const key=collectionId(result),world=active.world;
+    const existing=Array.isArray(endingCollection[world])?endingCollection[world]:[];
+    if(existing.includes(key))return;
+    endingCollection[world]=[...existing,key].slice(-6);
+    try{localStorage.setItem(COLLECTION_KEY,JSON.stringify(endingCollection));}catch{}
+  }
+  function mysteryPanel(state){
+    if(!state||active.chapter===0||active.finished)return '';
+    const zh=window.MorrowwishI18n?.get()==='zh';
+    const marks=state.pieces.map(found=>'<span class="'+(found?'found':'')+'"></span>').join('');
+    const latest=state.pieces.findLastIndex(Boolean);
+    const detail=latest>=0?localizeStory(state.data.steps[latest].label):localizeStory(state.data.teasers[0]);
+    const phase=Math.min(2,Math.max(0,Math.floor((active.chapter-1)/3)));
+    const hint=state.unlocked?localizeStory(state.data.revealing):localizeStory(state.data.teasers[phase]);
+    return '<div class="mystery-panel"><div class="mystery-heading"><span>'+(zh?'另一条故事线':'ANOTHER STORY THREAD')+'</span><b>'+state.count+' / '+state.pieces.length+'</b></div><div class="mystery-dots">'+marks+'</div><p>'+escapeStory(state.count?detail:hint)+'</p>'+(state.count&&!state.unlocked?'<small>'+escapeStory(hint)+'</small>':'')+'</div>';
+  }
   function renderGrid() {
     $('#world-grid').innerHTML=worlds.map(w=>{
       const save=allSaves[w.id];
-      const progress=save?.finished?'LIFE COMPLETED':save&&(save.chapter>0||save.selected!==null)?`CONTINUE SCENE ${Math.min(save.chapter+1,8)} · 8`:'8 CINEMATIC SCENES';
+      const zh=window.MorrowwishI18n?.get()==='zh',found=Array.isArray(endingCollection[w.id])?endingCollection[w.id].length:0;
+      const progress=save&&(save.chapter>0||save.selected!==null)&&!save.finished
+        ?(zh?'继续第 '+Math.min(save.chapter+1,8)+' / 8 幕':'CONTINUE SCENE '+Math.min(save.chapter+1,8)+' / 8')
+        :found?(zh?'已收集 '+found+' / 6 个结局':found+' / 6 ENDINGS DISCOVERED')
+        :(zh?'8 幕互动故事':'8 CINEMATIC SCENES');
       return `<button class="world-card" style="--card-accent:${w.accent}" data-world="${w.id}" type="button" aria-label="Enter ${w.title}"><img class="world-card-image" src="/elsewhere/scenes/${w.id}-1.svg" alt="${w.title}, illustrated story world" loading="lazy"><div class="world-card-info"><span class="world-tag">${w.tag}</span><div class="world-name">${w.title}</div><p class="world-description">${w.subtitle}</p><div class="world-card-bottom"><span class="world-progress">${progress}</span><span class="world-arrow" aria-hidden="true">↗</span></div></div></button>`;
     }).join('');
   }
@@ -185,6 +229,9 @@
     if(!ch.inspect?.[index])return;
     active.explored=active.explored||{};
     active.explored[active.chapter]=index;
+    active.inspected=active.inspected||{};
+    const previous=Array.isArray(active.inspected[active.chapter])?active.inspected[active.chapter]:[];
+    if(!previous.includes(index))active.inspected[active.chapter]=[...previous,index];
     persist();renderChapter();
     document.getElementById('scene-discovery')?.scrollIntoView({block:'nearest',behavior:'smooth'});
   }
@@ -204,8 +251,15 @@
     // The reminder is keyed to an actual earlier decision; it is not a generic recitation.
     const causality=ch.echo?
       '<div class="story-continuity"><span>'+(window.MorrowwishI18n?.get()==='zh'?'你之前的选择带来了变化':'BECAUSE OF AN EARLIER CHOICE')+'</span><p>'+escapeStory(ch.echo)+'</p></div>':'';
-    const inspectList='<div class="scene-details"><span class="micro-label">EXPLORE THE MOMENT</span><div class="scene-hotspots">'+memory.map((a,i)=>'<button type="button" data-inspect="'+i+'" class="scene-hotspot '+(visited===i?'active':'')+'"><span>'+a[0]+'</span>'+a[1]+'</button>').join('')+'</div>'+(discovery?'<div id="scene-discovery" class="scene-discovery"><span>✧ YOU NOTICED</span><p>'+discovery[2]+'</p></div>':'')+'</div>';
-    $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / 08</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/8*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+causality+inspectList+action+'</div>';
+    const mystery=mysteryState();
+    const hookIndex=[1,4,6].indexOf(active.chapter);
+    const chapterHook=mystery&&hookIndex>=0
+      ?'<div class="mystery-hook"><span>'+(window.MorrowwishI18n?.get()==='zh'?'未解的线索':'A QUESTION REMAINS')+'</span><p>'+escapeStory(localizeStory(mystery.data.hooks[hookIndex]))+'</p></div>':'';
+    const revealed=mystery?.unlocked&&active.chapter===7
+      ?'<div class="mystery-reveal"><span>'+(window.MorrowwishI18n?.get()==='zh'?'隐藏故事线已解锁':'HIDDEN STORY DISCOVERED')+'</span><p>'+escapeStory(localizeStory(mystery.data.revealing))+'</p></div>':'';
+    const threadPanel=mysteryPanel(mystery);
+    const inspectList='<div class="scene-details"><span class="micro-label">EXPLORE THE MOMENT</span><div class="scene-hotspots">'+memory.map((a,i)=>'<button type="button" data-inspect="'+i+'" class="scene-hotspot '+(visited===i?'active':active.inspected?.[active.chapter]?.includes(i)?'visited':'')+'"><span>'+a[0]+'</span>'+a[1]+'</button>').join('')+'</div>'+(discovery?'<div id="scene-discovery" class="scene-discovery"><span>✧ YOU NOTICED</span><p>'+discovery[2]+'</p></div>':'')+'</div>';
+    $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / 08</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/8*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+causality+chapterHook+revealed+threadPanel+inspectList+action+'</div>';
     $('#story-paper').setAttribute('aria-label','Scene '+sceneNo+': '+ch.title);
     if(active.selected===null&&!active.seenChapters.includes(active.chapter)){
       active.seenChapters.push(active.chapter);persist();
@@ -238,8 +292,11 @@
     if(!story)return null;
     const route=active.decisions[6]?.choice===2?1:0;
     const next=active.decisions[7]?.choice===2?1:0;
-    const path=story.paths[route];
-    return {route,next,path,finale:path.finales[next],memories:story.memories.map(x=>{
+    const mystery=mysteryState();
+    const secret=Boolean(mystery?.unlocked);
+    const path=secret?{image:mystery.data.art}:story.paths[route];
+    const finale=secret?mystery.data.result[next]:path.finales[next];
+    return {route,next,path,finale,secret,memories:story.memories.map(x=>{
       const choice=active.decisions[x.at]?.choice;
       return choice===1||choice===2?x.choices[choice-1]:null;
     }).filter(Boolean)};
@@ -247,22 +304,31 @@
   function renderEnding(){
     const w=WORLD_BY_ID[active.world],result=resolveEnding();
     if(!result)return;
+    recordEnding(result);
     if(!active.endingTracked){active.endingTracked=true;persist();track('ending_view',{world:active.world,routeVector:routeVector(),storyRoute:result.route,lifeDirection:result.next});}
     const zh=window.MorrowwishI18n?.get()==='zh';
     const finale=result.finale,image='/elsewhere/endings/'+result.path.image;
     const title=escapeStory(localizeStory(finale.title));
+    const discovered=Array.isArray(endingCollection[active.world])?endingCollection[active.world].length:0;
+    const gallery='<div class="ending-collection">'+(zh?'本世界已发现的结局：':'Endings discovered in this world: ')+discovered+' / 6</div>';
+    const rare=result.secret?'<span class="mystery-rare">'+(zh?'隐藏结局已发现':'SECRET ENDING DISCOVERED')+'</span>':'';
     const sub=escapeStory(localizeStory(finale.sub)),detail=escapeStory(localizeStory(finale.detail));
     const memory=result.memories.map(x=>'<p>'+escapeStory(localizeStory(x))+'</p>').join('');
-    const decision=active.decisions[6]?.label||'',last=active.decisions[7]?.label||'';
+    const acts=seasonById[active.world]?.acts||[];
+    const decision=acts[6]?.choices?.[(active.decisions[6]?.choice||1)-1]?.[0]||'';
+    const last=acts[7]?.choices?.[(active.decisions[7]?.choice||1)-1]?.[0]||'';
     const turns=decision&&last?'<div class="ending-route"><span>'+(zh?'你的关键决定':'YOUR TURNING POINTS')+'</span><strong>'+escapeStory(window.MorrowwishI18n?.t?.(decision)||decision)+' · '+escapeStory(window.MorrowwishI18n?.t?.(last)||last)+'</strong></div>':'';
-    $('#chapter-content').innerHTML='<div class="cinematic-frame ending-scene"><img class="cinematic-image" src="'+image+'" alt="'+escapeStory(w.title)+' illustrated ending: '+title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-caption"><span class="scene-time">'+(zh?'你走出的结局':'THE ENDING YOU SHAPED')+' · '+escapeStory(w.title.toUpperCase())+'</span><h1>'+title+'</h1></div></div><div class="scene-content ending-content"><div class="micro-label">'+(zh?'你的人生，你的选择':'A LIFE YOU SHAPED')+'</div><h2>'+sub+'</h2><p>'+detail+'</p><div class="ending-consequence"><span class="micro-label">'+(zh?'一路走来的决定':'HOW YOU GOT HERE')+'</span>'+memory+'</div>'+turns+'<div class="ending-actions"><button type="button" class="next-btn" id="ending-share">'+(zh?'分享这个结局 ↗':'Share this ending ↗')+'</button><button type="button" class="outline-btn" id="ending-again">'+(zh?'换一种方式再活一次 ↺':'Live it differently ↺')+'</button></div><div class="ending-feedback"><span>'+(zh?'你还想体验另一段人生吗？':'Would you come back to live another life?')+'</span>'+(active.feedback?'<p>'+(zh?'谢谢你的反馈。':'Thank you for sharing your thoughts.')+'</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">'+(zh?'当然':'Absolutely')+'</button><button type="button" data-feedback="maybe">'+(zh?'也许':'Maybe')+'</button><button type="button" data-feedback="no">'+(zh?'暂时不会':'Not yet')+'</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">'+(zh?'探索另一段人生 →':'Explore another life →')+'</button></div></div>';
+    $('#chapter-content').innerHTML='<div class="cinematic-frame ending-scene"><img class="cinematic-image" src="'+image+'" alt="'+escapeStory(w.title)+' illustrated ending: '+title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-caption"><span class="scene-time">'+(zh?'你走出的结局':'THE ENDING YOU SHAPED')+' · '+escapeStory(w.title.toUpperCase())+'</span><h1>'+title+'</h1></div></div><div class="scene-content ending-content">'+rare+gallery+'<div class="micro-label">'+(zh?'你的人生，你的选择':'A LIFE YOU SHAPED')+'</div><h2>'+sub+'</h2><p>'+detail+'</p><div class="ending-consequence"><span class="micro-label">'+(zh?'一路走来的决定':'HOW YOU GOT HERE')+'</span>'+memory+'</div>'+turns+(result.secret?'':'<p class="mystery-whisper">'+escapeStory(localizeStory(window.ELSEWHERE_MYSTERIES?.[active.world]?.closing||['Another path waits.','还有另一条路。']))+'</p>')+'<div class="ending-actions"><button type="button" class="next-btn" id="ending-share">'+(zh?'分享这个结局 ↗':'Share this ending ↗')+'</button><button type="button" class="outline-btn" id="ending-again">'+(zh?'换一种方式再活一次 ↺':'Live it differently ↺')+'</button></div><div class="ending-feedback"><span>'+(zh?'你还想体验另一段人生吗？':'Would you come back to live another life?')+'</span>'+(active.feedback?'<p>'+(zh?'谢谢你的反馈。':'Thank you for sharing your thoughts.')+'</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">'+(zh?'当然':'Absolutely')+'</button><button type="button" data-feedback="maybe">'+(zh?'也许':'Maybe')+'</button><button type="button" data-feedback="no">'+(zh?'暂时不会':'Not yet')+'</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">'+(zh?'探索另一段人生 →':'Explore another life →')+'</button></div></div>';
   }
   function shareWorld() {
     if(!active)return;
     const w=WORLD_BY_ID[active.world];
     const link=new URL(location.origin+location.pathname);link.searchParams.set('world',w.id);
     const chosenEnding=resolveEnding()?.finale;
-    const message=active.finished&&chosenEnding?`I discovered the ending “${localizeStory(chosenEnding.title)}” in Elsewhere. Which life will you live?`:`I lived another life in “${w.title}.” What would you choose?`;
+    const zh=window.MorrowwishI18n?.get()==='zh';
+    const message=zh
+      ?(active.finished&&chosenEnding?'我在《平行人生》解锁了「'+localizeStory(chosenEnding.title)+'」结局。你会活出哪种人生？':'我在《平行人生》体验了另一段人生。你会做出怎样的选择？')
+      :(active.finished&&chosenEnding?'I discovered the ending “'+localizeStory(chosenEnding.title)+'” in Elsewhere. Which life will you live?':'I lived another life in “'+w.title+'.” What would you choose?');
     track('share_clicked',{world:w.id,finished:active.finished});
     if(navigator.share){navigator.share({title:`${w.title} · Elsewhere`,text:message,url:link.toString()}).catch(()=>{});return;}
     const text=message+' '+link.toString();
