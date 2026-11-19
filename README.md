@@ -10,8 +10,8 @@ Private source repository for the Morrow Wish browser-game studio.
 Vercel is ONLY the fixed public URL and reverse proxy. Its project-level rewrite routes requests to **Cloudflare Pages project `morrowwish`**. Game files, rules, APIs, and Analytics are all served by Cloudflare Pages + D1, with **no Vercel deployments required for updates**.
 
 - `public/` contains the homepage, games, language switch and unified dashboard.
-- `public/pawsibly-innocent/` contains Pawsibly Innocent!, an original cat stealth-puzzle game with eight rooms, a daily challenge, unlockable cats, and bilingual text.
-- `public/index.html`: homepage and ordered game cards.
+- `public/pawsibly-innocent/` contains Pawsibly Innocent!, an original cat stealth-puzzle game with eight themed rooms, yarn lures, collectible souvenirs, light stealth, roaming vacuums, five cats with perks, a daily remix, and bilingual text.
+- `public/index.html`: three signature featured worlds (Elsewhere, Tiny Town, Pawsibly Innocent!) plus a separate section for quick mini-games.
 - `public/telemetry.js`: game analytics events and supported game IDs.
 - `public/lang.js`: shared Chinese and English interface.
 - `public/studio-insights/index.html`: single Analytics dashboard and ordering.

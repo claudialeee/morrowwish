@@ -44,3 +44,33 @@ html[lang="zh-CN"] .section-intro h2 em,html[lang="zh-CN"] .about-copy h2 em{fon
 
 /* Chinese headline uses Chinese punctuation rather than an orphan English dot. */
 html[lang="zh-CN"] .hero h1 .period{display:none}
+
+/* Three signature worlds share equal-size primary cards. */
+.cat-feature-card{background:linear-gradient(155deg,#ffeff0,#fff1e0 61%,#dff1dc)}
+.cat-feature-card h3{font-family:'Nunito',system-ui,sans-serif;color:#7d5267}
+.cat-feature-card h3 em{font:inherit;color:#e98198}
+.cat-button{background:#cb6e88;color:#fffdf6}
+.cat-feature-card .feature-art:before{background:linear-gradient(180deg,#fff2e8,transparent)}
+.cat-sticker{background:#f3d48f;color:#865a5a;transform:rotate(9deg)}
+@media(min-width:1000px){
+ .feature-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+ .feature-card{min-height:552px}
+ .feature-content{padding:27px 23px 0}
+ .feature-card h3{font-size:clamp(31px,3.3vw,43px)}
+ .elsewhere-card h3{font-size:clamp(44px,4vw,59px)}
+ .cat-feature-card h3{font-size:clamp(32px,3.6vw,44px)}
+ .feature-content>p{font-size:13px}
+ .feature-chips{gap:5px}
+ .feature-chips span{font-size:9px;padding:6px 8px}
+ .edge-sticker{width:56px;height:56px;right:8px;top:9px;font-size:8px}
+ .feature-art,.cat-feature-card .feature-art{height:42%}
+ .card-button{padding:12px 14px;margin-top:14px;gap:9px}
+ .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:781px) and (max-width:999px){
+ .feature-grid{grid-template-columns:1fr;max-width:590px;margin-inline:auto}
+ .feature-card{min-height:545px}
+ .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:780px){.cat-feature-card h3{font-size:47px}}
+@media(max-width:540px){.cat-feature-card h3{font-size:41px}.cat-feature-card .feature-art{height:43%}}
