@@ -46,6 +46,18 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const context=await browser.newContext(state?{storageState:state}:{});
  const page=await context.newPage();
+ const networkStats={scriptsOk:0,scriptsFailed:0,requestsFailed:0,serverErrors:0,consoleErrors:0};
+ page.on('requestfailed',req=>{if(req.url().startsWith(root))networkStats.requestsFailed++});
+ page.on('console',msg=>{if(msg.type()==='error')networkStats.consoleErrors++});
+ page.on('response',res=>{try{
+   const req=res.request(),url=new URL(res.url());
+   if(url.host!=='developer.crazygames.com')return;
+   if(req.resourceType()==='script'){
+     if(res.status()>=400)networkStats.scriptsFailed++;
+     else networkStats.scriptsOk++;
+   }
+   if(res.status()>=500)networkStats.serverErrors++;
+ }catch{}});
  const loginPostStatuses=[];
  page.on('response',response=>{try{const r=response.request();if(r.method()==='POST' && new URL(response.url()).hostname.endsWith('.crazygames.com'))loginPostStatuses.push(response.status());}catch{}});
  let pageErrorCount=0;
@@ -87,6 +99,20 @@ try{
        .filter(phrase=>body.includes(phrase));
    report.loginCaptchaVisible=await page.locator('iframe[src*="captcha"],iframe[src*="turnstile"],[class*="captcha"],[id*="captcha"]').count().then(x=>x>0).catch(()=>false);
  }
+ if(!isLogin(page)){
+   await page.waitForLoadState('networkidle',{timeout:10000}).catch(()=>{});
+   await page.waitForTimeout(3500);
+   const visible=await page.locator('body').innerText().then(t=>t.length).catch(()=>0);
+   if(visible===0){
+     report.emptyPageRetried=true;
+     await page.reload({waitUntil:'domcontentloaded',timeout:30000}).catch(()=>{});
+     await page.waitForTimeout(6500);
+   }
+ }
+ report.networkStats=networkStats;
+ report.pageBasics=await page.evaluate(()=>({documentReady:document.readyState,htmlBytes:document.documentElement.outerHTML.length,
+   bodyMarkupLength:document.body?.innerHTML?.length||0,scriptTags:document.scripts.length,
+   pageTitle:document.title.slice(0,80),rootElements:document.body?.children?.length||0})).catch(()=>null);
  report.pagePath=new URL(page.url()).pathname;
  report.loginScreen=isLogin(page);
  report.bodyTextLength=await page.locator('body').innerText().then(x=>x.length).catch(()=>0);
