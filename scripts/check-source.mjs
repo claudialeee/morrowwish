@@ -13,7 +13,7 @@ const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 const config=JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc','utf8'));
 if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
 if(config.d1_databases?.[0]?.database_name!=='morrowwish-analytics')throw Error('Wrong D1 database');
-if(!dashboard.includes('"elsewhere":"Elsewhere"'))throw Error('Elsewhere must be capitalized');
+if(!dashboard.includes('zh:"平行人生",en:"Elsewhere"'))throw Error('Dashboard must show 平行人生 in Chinese and Elsewhere in English');
 if(!dashboard.includes("['hub','tiny-town','elsewhere'"))throw Error('Dashboard order mismatch');
 if(!dashboard.includes("'pocket-aquarium'"))throw Error('Pocket Aquarium must remain in dashboard order');
 if(!telemetry.includes('"pocket-aquarium"'))throw Error('Pocket Aquarium must remain in telemetry');
