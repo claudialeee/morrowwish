@@ -557,7 +557,7 @@ const icons=E.INFO;
 const explainKinds={game:'Gaming',music:'Music',art:'Art',social:'Social'};
 const zhVenues={game:'街机厅',music:'音乐工作室',art:'艺术工坊',social:'咖啡馆'};
 const zhKinds={game:'游戏',music:'音乐',art:'艺术',social:'社交'};
-const zhClubs={'Rhythm Club':'节奏社','Indie Game Studio':'独立游戏社','Board Game Nights':'桌游之夜','Street Performers':'街头表演社','Open Mic':'开放麦','Art Salon':'艺术沙龙','Community Club':'社区社团'};
+const zhClubs={'Gaming Club':'游戏社','Music Club':'音乐社','Art Club':'美术社','Café Friends':'咖啡友邻会'};
 const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
 const L=(en,cn)=>zh()?cn:en;
 const venue=t=>L(icons[t]?.name||t,zhVenues[t]||t);
@@ -565,6 +565,40 @@ const kind=t=>L(explainKinds[t]||t,zhKinds[t]||t);
 const club=n=>L(n,zhClubs[n]||n);
 const cell=p=>'ABCD'[p%4]+(Math.floor(p/4)+1);
 const all=()=>state.residents.concat(state.turn<5?state.incoming:[]);
+// Twelve original, friendly illustrated portraits — no smiley-face emoji and no external assets.
+function portrait(person){
+ const i=person.id,skin=['#edba96','#ce9776','#e9c09f','#ab7158','#f0c3ab','#be846e'][i%6];
+ const hair=['#49323b','#634033','#34394d','#7c4b39','#4a3445','#986347'][i%6];
+ const shirt=['#a18fd2','#88b9a5','#d9a17e','#95a8c9','#c68fa4','#9fbaa0'][i%6];
+ const bg=['#f4dfeb','#e5e9fa','#dceee6','#f8e4d5','#f5e7db','#e2ebf1'][i%6];
+ const female=person.gender==='female',long=female&&(i%3!==0),glasses=i%5===2;
+ const back=long?'<path d="M14 28 Q13 9 32 10 Q51 9 50 30 L52 55 L12 55Z" fill="'+hair+'"/>':'';
+ const front=long?'<path d="M17 23 Q16 10 31 12 Q48 11 47 25 L43 26 Q35 23 27 17 Q24 24 18 26Z" fill="'+hair+'"/>':female?
+ '<path d="M16 23 Q18 9 35 12 Q48 13 48 26 L43 25 Q37 18 27 19 L18 27Z" fill="'+hair+'"/>':
+ '<path d="M16 27 Q13 15 24 12 L28 14 Q40 7 48 18 L47 28 Q44 19 36 20 Q27 26 17 24Z" fill="'+hair+'"/>';
+ return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'+
+ '<rect width="64" height="64" rx="15" fill="'+bg+'"/>'+back+
+ '<path d="M8 64 Q10 47 24 45 L40 45 Q54 47 56 64Z" fill="'+shirt+'"/>'+
+ '<path d="M28 41 L28 50 Q32 54 36 50 L36 41Z" fill="'+skin+'"/>'+
+ '<ellipse cx="32" cy="31" rx="17" ry="19" fill="'+skin+'"/>'+front+
+ '<path d="M22 30 q3 -2 6 0 M36 30 q3 -2 6 0" fill="none" stroke="'+hair+'" stroke-linecap="round" stroke-width="1.5"/>'+
+ '<circle cx="25.5" cy="32.5" r="1.5" fill="#43383e"/><circle cx="39" cy="32.5" r="1.5" fill="#43383e"/>'+
+ '<path d="M32 34 l-1 5 h3" fill="none" stroke="#a87169" stroke-linecap="round" stroke-width="1.1"/>'+
+ '<path d="M28.5 42 Q32 44 35.5 42" fill="none" stroke="#a65d6b" stroke-linecap="round" stroke-width="1.4"/>'+
+ (glasses?'<path d="M20 30 h11 v8 h-11z M34 30 h11 v8 h-11z M31 33 h3" fill="none" stroke="#775b68" stroke-width="1.4" rx="3"/>':'')+
+ '</svg>';
+}
+function homesView(people,sim,isUpcoming=false){
+ const groups=new Map();
+ for(const person of people){if(!groups.has(person.home))groups.set(person.home,[]);groups.get(person.home).push(person);}
+ return [...groups.entries()].sort((a,b)=>a[0]-b[0]).map(([home,members])=>
+ '<div class="tt-household" data-home="'+home+'"><div class="tt-house-head"><span>🏠 '+cell(home)+'</span><small>'+members.length+L(' people',' 人')+'</small></div><div class="tt-house-people">'+members.map(p=>{
+  const idx=state.residents.findIndex(x=>x.id===p.id),isOut=!isUpcoming&&idx>=0&&sim.assignments[idx]>=0,chosen=p.id===focusId;
+  const label=p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary);
+  return '<button type="button" class="tt-person'+(chosen?' awSelected':'')+(isOut?' is-active':'')+'" data-r="'+p.id+'" aria-label="'+safe(label)+'" title="'+safe(label)+'"><span class="tt-portrait">'+portrait(p)+'<span class="tt-gender">'+(p.gender==='female'?'♀':'♂')+'</span></span><b>'+safe(p.name)+'</b><small>'+icons[p.primary].icon+' · '+icons[p.secondary].icon+'</small></button>';
+ }).join('')+'</div></div>'
+ ).join('');
+}
 function reason(st,rs,i){
  const p=st.residents[i],bi=rs.assignments[i];
  if(bi>=0)return L('Attending '+icons[st.buildings[bi].type].name+' ('+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' steps)','正在参加'+venue(st.buildings[bi].type)+'（步行 '+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' 格）');
@@ -575,55 +609,36 @@ function reason(st,rs,i){
 }
 function statusUI(){
  const rs=state.last||E.simulate(state),p=all().find(q=>q.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
- $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; purple tiles are within '+p.reach+' steps.',p.name+' 住在 '+cell(p.home)+'；紫色格子表示步行可达（'+p.reach+' 格）。'):L('Select a resident to see their home and walking range.','点击居民，查看住址和步行范围。');
- $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):'';
+ $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; the purple squares are within '+p.reach+' steps.',p.name+'住在'+cell(p.home)+'，紫色格子是步行可到达的位置。'):'';
+ $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Walking range ','步行 ')+p.reach+L(' tiles',' 格')+' · '+L('Likes ','喜欢 ')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Moves in Week 5','第 5 周入住'):reason(state,rs,i))):'';
  $('residentWhy').hidden=!p;
- const list=[];
- for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
-  const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
-  const key=[x.type,y.type].sort().join('|'),name=E.COMBOS[key]?.name||'Community Club';
-  const left=rs.occupancy[a].length,right=rs.occupancy[b].length,ck=[x.pos,y.pos].sort((m,n)=>m-n).join('|')+':'+key,streak=rs.streaks[ck]||0;
-  list.push({name,left,right,streak,first:x.type,second:y.type,pos:cell(x.pos)+' + '+cell(y.pos)});
+ const choices=[];
+ for(let index=0;index<state.buildings.length;index++){
+  const building=state.buildings[index],key='hobby:'+building.type+':'+building.pos;
+  const attendance=rs.occupancy[index].length,streak=rs.streaks[key]||0;
+  const existing=choices.find(x=>x.type===building.type);
+  if(!existing||streak>existing.streak||(streak===existing.streak&&attendance>existing.attendance)){
+   if(existing)choices.splice(choices.indexOf(existing),1);
+   choices.push({type:building.type,pos:building.pos,attendance,streak});
+  }
  }
- list.sort((a,b)=>b.streak-a.streak||(b.left+b.right-a.left-a.right));
- $('clubProgress').innerHTML=list.length?list.slice(0,8).map(c=>{
-  const missing=Math.max(0,2-c.left)+Math.max(0,2-c.right);
-  const hint=c.streak>=2?L('✓ Club established!','✓ 社团已成立！'):c.streak===1?L('1/2 weeks — keep 2 visitors at both venues next week.','已满足 1/2 周，下周两处仍要各有至少 2 人。'):L('Needs '+missing+' more visitor(s) to reach 2 at each venue.','两处都要至少 2 人，目前还差 '+missing+' 位访客。');
-  return '<div class="awClub"><div class="aw-club-head"><b>'+safe(club(c.name))+'</b><small>'+c.pos+' · '+(c.streak>=2?'✓':c.streak+'/2')+'</small></div><div class="aw-club-venues"><span>'+safe(venue(c.first))+' <b>'+c.left+'/2</b></span><span>'+safe(venue(c.second))+' <b>'+c.right+'/2</b></span></div><div class="aw-club-state'+(c.streak>=2?' ready':'')+'">'+safe(hint)+'</div></div>';
- }).join(''):'<div class="aw-club-state">'+L('Build two different venues on adjacent tiles; progress appears here.','先把两种不同场所建在相邻格子里，组建进度就会显示在这里。')+'</div>';
+ choices.sort((a,b)=>b.streak-a.streak||b.attendance-a.attendance);
+ $('clubProgress').innerHTML=choices.length?choices.map(c=>{
+  const name=club(E.CLUBS[c.type].name),isFounded=c.streak>=2;
+  const message=isFounded?L('✓ Club founded!','✓ 社团已成立！'):c.streak===1?L('1/2 weeks: bring back 2 of the same people next week.','已聚在一起 1/2 周：下周让其中至少 2 人再来。'):L('Invite '+Math.max(0,2-c.attendance)+' more hobby fan(s).','还需 '+Math.max(0,2-c.attendance)+' 位同好来参加活动。');
+  return '<div class="awClub"><div class="aw-club-head"><b>'+E.CLUBS[c.type].icon+' '+safe(name)+'</b><small>'+cell(c.pos)+'</small></div><div class="aw-club-venues"><span>'+safe(venue(c.type))+'</span><span>'+L('Visitors ','本周 ')+c.attendance+'</span></div><div class="aw-club-state'+(isFounded?' ready':'')+'">'+message+'</div></div>';
+ }).join(''):'<div class="aw-club-state">'+L('Clubs start when two people with the same hobby keep meeting at one venue.','同好们在同一个场所连续两周相聚，就能组成社团。')+'</div>';
 }
-
 function positionCenter(pos){const rect=board.getBoundingClientRect(),cell=board.children[pos].getBoundingClientRect();return {x:cell.left-rect.left+cell.width/2,y:cell.top-rect.top+cell.height/2};}
 function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function gameProgress(step){window.arcadeMetric?.('town_'+step,{game:'tiny-town'});}
 function timeBucket(ms){return ms<=15000?'under-15s':ms<=30000?'15-30s':ms<=60000?'30-60s':ms<=120000?'1-2m':ms<=300000?'2-5m':'over-5m';}
 function resetMobileConfirmation(){pendingMovePos=null;$('awMobileControls').hidden=true;}
-function showClubLinks(){
-  const holder=$('clubLinks');holder.innerHTML='';
-  const rs=state.last;if(!rs)return;
-  let markup='';
-  const cx=p=>(p%4+.5)*100,cy=p=>(Math.floor(p/4)+.5)*100;
-  for(let i=0;i<state.buildings.length;i++)for(let j=i+1;j<state.buildings.length;j++){
-    const a=state.buildings[i],b=state.buildings[j];
-    if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
-    const ck=[a.pos,b.pos].sort((x,y)=>x-y).join('|')+':'+[a.type,b.type].sort().join('|');
-    const streak=rs.streaks[ck]||0;
-    const ax=cx(a.pos),ay=cy(a.pos),bx=cx(b.pos),by=cy(b.pos);
-    const mx=(ax+bx)/2,my=(ay+by)/2,dx=(bx-ax)/100,dy=(by-ay)/100;
-    const good=streak>=2,color=good?'#168a55':streak===1?'#8569e4':'#a39ba4';
-    markup+='<line x1="'+(mx-dx*20)+'" y1="'+(my-dy*20)+'" x2="'+(mx+dx*20)+'" y2="'+(my+dy*20)+'" stroke="'+color+'" stroke-width="7" stroke-linecap="round" '+(good?'':'stroke-dasharray="7 5"')+'/>';
-    markup+='<rect x="'+(mx-21)+'" y="'+(my-11)+'" width="42" height="22" rx="11" fill="'+color+'" stroke="#fff" stroke-width="2"/><text x="'+mx+'" y="'+(my+1)+'">'+(good?'✓':streak+'/2')+'</text>';
-  }
-  if(markup)holder.innerHTML='<svg viewBox="0 0 400 400" preserveAspectRatio="none" role="presentation">'+markup+'</svg>';
-}
 function clubTip(s){
  const rs=s.last||E.simulate(s);
- if(rs.pending.length)return L('A new club is forming! Keep both venues busy next week.','社团正在形成！下周让两个场所继续各有至少 2 人。');
- for(let i=0;i<s.buildings.length;i++)for(let j=i+1;j<s.buildings.length;j++){
-  const a=s.buildings[i],b=s.buildings[j];if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
-  if(rs.occupancy[i].length<2||rs.occupancy[j].length<2)return L('Each adjacent venue needs at least 2 visitors for 2 weeks.','相邻两处场所都要至少 2 位访客，并连续保持 2 周。');
- }
- return rs.clubs.length?L(rs.clubs.length+' club type(s) established.','已成立 '+rs.clubs.length+' 类社团。'):L('Build different venues side by side with 2 visitors each.','把两种不同场所建在相邻格子里，让每处至少有 2 人。');
+ if(rs.pending.length)return L('Two neighbors met this week. Bring back at least two of the same people next week to start a club.','已经有同好聚在一起了！下周让至少两位相同居民再来一次，就能成立社团。');
+ if(rs.clubs.length)return L(rs.clubs.length+' interest club(s) have formed.','已经成立 '+rs.clubs.length+' 类兴趣社团。');
+ return L('Bring two residents with a shared hobby to the same place for two weeks in a row.','让至少两位有相同爱好的居民连续两周到同一个场所活动，就能成立社团。');
 }
 function updateReceipt(){
  const rs=state.last,box=$('weekReceipt');if(!rs){box.hidden=true;return;}
