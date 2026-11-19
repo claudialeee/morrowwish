@@ -216,6 +216,9 @@
  }
  function unlock(evt){
   if(evt.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(evt.key))return;
+  // Do not start on pointerdown for this button: its subsequent click handles
+  // playback, otherwise pointerdown starts music and click immediately turns it off.
+  if(evt.target?.closest?.('[data-mw-music]'))return;
   firstGesture=true;
   if(enabled&&(!running||ctx?.state!=='running'))start();
  }
