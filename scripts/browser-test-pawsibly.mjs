@@ -93,6 +93,7 @@ try{
  }));
  console.log('Homepage Chinese and compact sections:',JSON.stringify(homeZh));
  assert.equal(homeZh.lang,'zh-CN');
+ assert.equal(await page.locator('body').textContent().then(s=>(s.match(/✳/g)||[]).length),0,'Homepage should not display the disliked ✳ decorative glyph');
  assert.match(homeZh.about,/想象|自由/,'About text must be Chinese');
  assert.match(homeZh.footer,/独立游戏/,'Footer must be Chinese');
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
