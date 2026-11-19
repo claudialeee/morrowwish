@@ -1,0 +1,145 @@
+/* Morrow Wish unified language switch. No external translation requests or tracking. */
+(()=>{"use strict";
+const KEY="morrowwish.language";
+let lang=(()=>{try{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en")return q;const saved=localStorage.getItem(KEY);if(saved==="zh"||saved==="en")return saved;}catch(_){}return (navigator.language||"en").toLowerCase().startsWith("zh")?"zh":"en";})();
+const words={
+"Morrow Wish home":"Morrow Wish 首页",
+"Our worlds":"我们的世界","Tiny games":"小游戏","About":"关于","Find your next adventure":"寻找下一段冒险",
+"THE HOME OF NOT-SO-ORDINARY DAYS":"让平凡的日子有点不一样",
+"Little games.":"小小游戏。","Big daydreams":"大大幻想","Some days you need a whole new world. Some days you just need five minutes.":"有时你需要一个全新的世界，有时只要五分钟。",
+"Come play a different kind of what-if.":"来体验不一样的「如果」。",
+"✷ Free to play":"✷ 免费游玩","✷ No account needed":"✷ 无需注册","✷ Made with curiosity":"✷ 用好奇心制作",
+"01 / TWO WORLDS WORTH GETTING LOST IN":"01 / 两个值得沉浸的世界",
+"Where should we go ":"今天想去","today?":"哪里？",
+"CREATE YOUR OWN TOMORROW":"创造自己的明天","THE ROADS YOU DIDN'T TAKE":"未曾走过的路",
+"AI took all the jobs. Everyone has time to do anything.":"AI 接管了所有工作。人人终于可以自由安排时间。",
+"What would you build a life around?":"自由之后，你想如何生活？",
+"Cozy strategy":"治愈系策略","Make a meaningful town":"打造有意义的小镇","Build your little world":"建造自己的小世界",
+"your rules":"你的规则","your town ✷":"你的小镇 ✷",
+"A bookshop by the sea? A new beginning in Paris?":"海边书店？巴黎的新开始？",
+"Choose another life and see what happens next.":"选择另一种人生，看看故事会如何展开。",
+"Four parallel lives":"四种平行人生","Choices that matter":"由选择改变结局",
+"Live another life":"体验另一种人生","what if...":"如果当初……",
+"02 / THREE SMALL ESCAPES":"02 / 三场短暂的逃离",
+"Just five ":"再玩五","more":"分","minutes?":"钟？",
+"Three tiny games, each with its own little obsession. Pick one and play.":"三款各有特色的小游戏。选一款，马上开始。",
+"ONE-TAP ACTION":"一键动作","SPEED & SORTING":"反应与分类","CALM & COLLECT":"休闲收集",
+"Flip Dash":"翻转冲刺","Parcel Panic":"快递大作战","Pocket Aquarium":"口袋水族馆",
+"Flip gravity. Dodge the spikes. Beat your best run.":"翻转重力，躲过尖刺，不断刷新纪录。",
+"Match the parcels before the docks overflow.":"在货物堆满之前，把包裹送到对应位置。",
+"Feed your fish, gather pearls, grow an underwater world.":"喂养小鱼、收集珍珠，慢慢打造水下世界。",
+"Let's dash ":"开始冲刺 ","Start sorting ":"开始分类 ","Visit the aquarium ":"进入水族馆 ",
+"Find your next world":"寻找下一个世界",
+"RUCKUS BUTTON · HOME":"MORROW WISH · 首页","MORROW WISH · HOME":"MORROW WISH · 首页",
+"READY TO PLAY":"准备开玩","PLAY NOW":"开始游戏","Ready":"就绪","SCORE":"得分","BEST":"最高分","How to play":"怎么玩","Restart":"重新开始","RESUME":"继续游戏",
+"HOW TO PLAY":"玩法说明","GAME OVER":"游戏结束","LEVEL COMPLETE":"关卡完成",
+"PLAY AGAIN":"再玩一次","NEXT LEVEL":"下一关","RETRY":"重试","RESTART":"重新开始",
+"NEXT":"下一步","BACK":"返回","SHARE":"分享","COPIED!":"已复制！","Challenge copied!":"挑战链接已复制！",
+"TODAY'S CHALLENGE":"今日挑战","↻ RETRY INSTANTLY":"↻ 立刻重试",
+"BEAT YOUR PERSONAL BEST":"突破个人纪录","FRIEND BEATEN!":"超过好友！",
+"EXPERIMENTAL GAME":"实验小游戏","SHARE YOUR SCORE":"分享成绩",
+"DAILY UTC SEED: ":"今日随机种子：","seconds":"秒","seconds.":"秒。",
+"One-button Runner":"一键跑酷","Reflex / Sorting":"反应与分类","Idle Collection":"休闲收集",
+"Flip gravity. Dodge danger. Beat the daily challenge.":"翻转重力，躲开危险，挑战今日纪录。",
+"Tap or press Space to flip gravity and dodge the pink hazards.":"点击或按空格键翻转重力，躲开粉色障碍。",
+"Drag the parcel into the right dock before it falls.":"在包裹掉落前，把它拖到对应颜色的货位。",
+"Drag a package to its matching colored dock.":"将包裹拖到同颜色的货位。",
+"Feed fish and build your little ocean world.":"给鱼儿喂食，建造自己的海底小天地。",
+"Click water to feed, earn pearls, and buy fish.":"点击水面投喂，收集珍珠，购买新鱼。",
+"Tap / Space to flip gravity":"点击或按空格翻转重力","TAP TO FLIP":"点击翻转",
+"TAP TO FLIP GRAVITY":"点击翻转重力","TAP OR SPACE TO FLIP":"点击或按空格翻转",
+"AVOID PINK BLOCKS":"躲开粉色障碍","KEEP MOVING":"继续前进",
+"5 chances • drag boxes to the same color dock":"你有 5 次机会，把包裹拖到同色货位",
+"DRAG PACKAGES INTO MATCHING DOCKS":"把包裹拖到对应颜色的货位",
+"Sort accurately to build a score multiplier":"连续正确分类可提高得分倍率",
+"MATCH THE BOX TO ITS DOCK":"将包裹放入对应货位","GRAB • DRAG • RELEASE":"抓住 · 拖动 · 放开",
+"CYAN":"青色","GOLD":"金色","PINK":"粉色","DOCK ":"货位 ","DROP ZONE":"投递区",
+"STREAK ":"连击 "," LIVES":" 次机会"," DELIVERED":" 已投递","PARCELS":"包裹",
+"Pearls: ":"珍珠：","Fish: ":"鱼儿：","Income: ":"收入：",
+"NEW FISH":"新鱼","BETTER FILTER":"升级过滤器"," pearls":" 颗珍珠",
+"Your adventure":"你的冒险","Your journey":"你的旅程",
+"NO MORE MONDAYS":"再也没有星期一","No More Mondays":"再也没有星期一",
+"BUILD":"建造","PLAY":"游玩","CONTINUE":"继续","CONTINUE →":"继续 →",
+"Week ":"第 ","WEEK":"周","WEEK ":"第 ","NEXT WEEK":"下一周","NEW GAME":"新游戏",
+"Start over":"重新开始","Start over?":"重新开始？","Game rules":"游戏规则",
+"EXPLORE ELSEWHERE →":"探索《Elsewhere》→","A MORROW WISH GAME":"MORROW WISH 出品",
+"FREE TO PLAY":"免费游玩","NO SIGN-UP":"无需注册","YOUR CHOICES MATTER":"你的选择很重要",
+"All lives":"所有人生","Explore all worlds":"探索所有世界","Enter your first life":"开启第一段人生",
+"Somewhere,":"在某个地方，","another you":"另一个你","is living.":"正在生活。",
+"FOR ALL THE ROADS NOT TAKEN":"献给所有未曾走过的路",
+"A thousand possible tomorrows":"一千种可能的明天","ONE LIFE IS NEVER THE WHOLE STORY":"一种人生，远不是故事的全部",
+"A STORY THAT FEELS LIKE YOURS":"属于你的故事","What are you looking for?":"你想寻找什么？",
+"Choose a reading lens. Later chapters will reflect your preference, without needing an account.":"选择你的阅读偏好，后续章节会随之改变。无需登录。",
+"Discover":"探索","Connect":"联结","Rest":"休息",
+"THE DOORS ARE OPEN":"通往另一种生活的门已打开",
+"Where will you":"你想从","begin?":"哪里开始？","FOUR LIVES · EIGHT SCENES EACH":"四种人生 · 每段八个场景",
+"A SMALL EXPERIMENT IN BEING HUMAN":"关于如何生活的小实验",
+"You don't have to":"你不必","get life right.":"每次都做对选择。",
+"Choose your world":"选择你的世界","Follow your instincts":"跟随你的直觉",
+"Discover who you become":"看看自己会成为谁","Listen":"朗读","Share":"分享",
+"THIS IS YOUR OTHER LIFE":"这是你的另一种人生","YOUR JOURNEY":"你走过的旅程",
+"WHAT GUIDES YOU":"是什么指引着你",
+"Your story stays in this browser. No account needed.":"故事保存在当前浏览器中，无需账号。",
+"Start this life again":"重新开始这一生","AN EXPERIMENT IN UNLIVED LIVES":"未曾体验的人生实验",
+"PART OF THE RUCKUS BUTTON FAMILY":"MORROW WISH 工作室作品",
+"ABOUT THIS EXPERIMENT":"关于这个实验","A NOTE FROM ELSEWHERE":"来自《Elsewhere》的一封信",
+"A little space to":"留一点空间","imagine differently.":"去想象不一样的生活。",
+"THANK YOU FOR BEING HERE":"感谢你来到这里",
+"Shape what happens next":"你的选择决定接下来的故事",
+"Curiosity":"好奇","Connection":"联结","Freedom":"自由",
+"LIFE COMPLETED":"人生篇章完成","8 CINEMATIC SCENES":"八幕电影般的场景",
+"See how your life ends":"查看你的结局","Continue your story":"继续故事",
+"Scene ":"场景 ","SCENE ":"场景 ",
+"A FRIEND":"一位朋友","Thank you for sharing your thoughts.":"感谢分享你的想法。",
+"Invitation copied — share it with someone curious.":"邀请链接已复制，发给感兴趣的朋友吧。",
+"Read-aloud is not available in this browser.":"你的浏览器不支持朗读。",
+"Start over? Your choices and ending for this life will be replaced.":"重新开始？这一段人生的选择与结局会被覆盖。",
+"The Greenhouse That Stayed":"留下的温室","The Road Beyond Tuesday":"星期二以外的路",
+"The Bookshop of Open Doors":"敞开大门的书店","Postcards Beyond the Harbor":"港湾彼岸的明信片",
+"The Cinema of Second Chances":"第二次机会电影院","The City of Little Screens":"小银幕之城",
+"The Lantern in the Snow":"雪地里的灯","The Path After Winter":"冬日之后的路",
+"The future is yours.":"未来由你决定。",
+"3 small games":"三款小游戏"
+};
+const dynamic=[
+[/^You reached (\d+(?:\.\d+)?) seconds\. Learn the pattern, then beat it\.$/,"你坚持了 $1 秒。熟悉节奏，再挑战纪录！"],
+[/^You survived (\d+(?:\.\d+)?) seconds\.$/,"你坚持了 $1 秒。"],
+[/^You sorted (\d+) parcels\. Chase a bigger streak\.$/,"你成功分类了 $1 个包裹。挑战更长连击！"],
+[/^The delivery docks overflowed\. Deliveries: (\d+)$/,"货位堆满了，本次成功投递 $1 件。"],
+[/^Lives: (\d+)  \|  Streak: (\d+)  \|  Delivered: (\d+)$/,"机会：$1  |  连击：$2  |  已投递：$3"],
+[/^(\d+) points?$/,"$1 分"],[/^(\d+) seconds?$/,"$1 秒"],
+[/^Week (\d+)$/,"第 $1 周"],[/^WEEK (\d+)$/,"第 $1 周"],
+[/^SCENE (\d+)$/,"场景 $1"],[/^Scene (\d+)$/,"场景 $1"],
+[/^LEVEL (\d+)$/,"第 $1 关"],[/^(\d+) POINTS$/,"$1 分"]
+];
+function translateText(s){if(lang!=="zh"||typeof s!=="string")return s;const trimmed=s.trim();if(!trimmed)return s;const lookup=Object.prototype.hasOwnProperty.call(words,trimmed)?words[trimmed]:window.MORROW_ZH_STORIES?.[trimmed];let result=lookup;if(result==null){for(const [rx,to] of dynamic){if(rx.test(trimmed)){result=trimmed.replace(rx,to);break;}}}if(result==null)return s;return s.slice(0,s.indexOf(trimmed))+result+s.slice(s.indexOf(trimmed)+trimmed.length);}
+const originals=new WeakMap(), rendered=new WeakMap(),attrs=new WeakMap();
+const skip=new Set(["SCRIPT","STYLE","NOSCRIPT","TEXTAREA","CODE","PRE"]);
+function translateNode(n){
+ if(n.nodeType===3){if(!n.parentElement||skip.has(n.parentElement.tagName))return;let origin=originals.get(n);const prev=rendered.get(n);if(origin===undefined||(n.nodeValue!==prev&&n.nodeValue!==origin)){origin=n.nodeValue;originals.set(n,origin);}
+ const next=lang==="zh"?translateText(origin):origin;if(n.nodeValue!==next)n.nodeValue=next;rendered.set(n,next);
+ }else if(n.nodeType===1){
+  if(skip.has(n.tagName))return;
+  for(const a of ["title","aria-label","placeholder","data-instructions"]){if(!n.hasAttribute(a))continue;let saved=attrs.get(n)||{};let current=n.getAttribute(a);if(saved[a]===undefined||(current!==saved[a].last&&current!==saved[a].original))saved[a]={original:current,last:current};let next=lang==="zh"?translateText(saved[a].original):saved[a].original;if(next!==current)n.setAttribute(a,next);saved[a].last=next;attrs.set(n,saved);}
+ }
+}
+let observer, busy=false;
+function process(root){if(!root)return;translateNode(root);let walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);while(walker.nextNode())translateNode(walker.currentNode);}
+function render(){if(!document.body)return;busy=true;observer?.disconnect();process(document.body);document.documentElement.lang=lang==="zh"?"zh-CN":"en";const control=document.getElementById("mw-language");if(control){control.setAttribute("aria-label",lang==="zh"?"Language / 语言":"Language / 语言");control.innerHTML=lang==="zh"?'<span class="mw-language-active">中文</span><span>EN</span>':'<span>中文</span><span class="mw-language-active">EN</span>';}
+ if(document.title){let dt=originals.get(document)||document.title;originals.set(document,dt);if(lang==="zh"){document.title=dt.replace(" — Free Browser Game"," — 免费网页游戏").replace(" | Ruckus Button"," | Morrow Wish");}else document.title=dt;}
+ observer?.observe(document.body,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["title","aria-label","placeholder","data-instructions"]});busy=false;
+}
+function set(next){if(next!=="zh"&&next!=="en")return;lang=next;try{localStorage.setItem(KEY,lang)}catch(_){}render();window.dispatchEvent(new CustomEvent("morrowwish-language-change",{detail:{lang}}));}
+function mount(){
+ if(!document.body||document.getElementById("mw-language"))return;
+ const style=document.createElement("style");style.textContent='.mw-language-switch{display:inline-flex;align-items:center;gap:1px;border:1px solid #aaa6;border-radius:999px;padding:3px;background:#fffdf7e8;color:#293043;font:600 12px system-ui,sans-serif;cursor:pointer;white-space:nowrap;box-shadow:0 2px 12px #0001}.mw-language-switch span{padding:5px 7px;border-radius:999px}.mw-language-active{color:white;background:#394d60}.mw-language-float{position:fixed;top:12px;right:12px;z-index:2147483000}@media(max-width:700px){.mw-language-float{top:auto;bottom:12px;right:12px}}';document.head.appendChild(style);
+ const b=document.createElement("button");b.id="mw-language";b.className="mw-language-switch";b.type="button";b.title="中文 / English";b.onclick=()=>set(lang==="zh"?"en":"zh");
+ const holder=document.querySelector('.nav-row')||document.querySelector('.game-top .scoreboard')||document.querySelector('.arcade-return')||document.querySelector('.topbar')||document.querySelector('.site-header');
+ if(holder){holder.appendChild(b);}else{b.classList.add("mw-language-float");document.body.appendChild(b);}
+ observer=new MutationObserver((records)=>{if(busy)return;busy=true;observer.disconnect();for(const rec of records){if(rec.type==="characterData")translateNode(rec.target);else if(rec.type==="attributes")translateNode(rec.target);else for(const node of rec.addedNodes)if(node!==b)process(node);}observer.observe(document.body,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["title","aria-label","placeholder","data-instructions"]});busy=false;});
+ render();
+}
+window.Morrow WishI18n={get:()=>lang,set,t:translateText,words};
+if(window.CanvasRenderingContext2D){for(const key of ["fillText","strokeText"]){const old=CanvasRenderingContext2D.prototype[key];if(old&&!old.__mw){const fn=function(text,...args){return old.call(this,translateText(String(text)),...args)};fn.__mw=true;CanvasRenderingContext2D.prototype[key]=fn;}}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount);else mount();
+})();

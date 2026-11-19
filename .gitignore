@@ -1,0 +1,25 @@
+# Local secrets and Cloudflare credentials
+dashboard-access.txt
+device.out
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+*.p12
+*.pfx
+.wrangler/
+cloudflare-pages/.wrangler/
+# Generated build output - source of truth is public/ and src/
+cloudflare-pages/public/
+.check/
+.build/
+.retired/
+node_modules/
+*.log
+.DS_Store
+download-result.json
+coverage/
+test-results/

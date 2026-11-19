@@ -1,0 +1,12 @@
+{
+  "name": "morrowwish",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-11-18",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ruckus-button-analytics",
+      "database_id": "0230fdf6-448b-4cd6-9cae-f7384862caaa"
+    }
+  ]
+}

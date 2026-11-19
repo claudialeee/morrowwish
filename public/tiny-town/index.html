@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>No More Mondays: Tiny Town — Free Online Strategy Game</title><meta name="description" content="AI now does every job. Humanity has unlimited free time. Help neighbors rediscover friendship, fun, and purpose in a free 8-turn town-building strategy game."><meta property="og:image" content="https://morrowwish.vercel.app/social/tiny-town.png"><meta name="twitter:image" content="https://morrowwish.vercel.app/social/tiny-town.png"><meta property="og:title" content="No More Mondays: Tiny Town"><meta property="og:description" content="AI took the jobs. Every day is free. Help a tiny town discover what makes life worth living."><link rel="canonical" href="https://morrowwish.vercel.app/tiny-town/"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:type" content="website"><meta property="og:url" content="https://morrowwish.vercel.app/tiny-town/"><meta property="og:site_name" content="Morrow Wish"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="No More Mondays: Tiny Town — Free Browser Game"><meta name="twitter:description" content="AI took over every job. All the time in the world is yours. Now what?"><script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"No More Mondays: Tiny Town","url":"https://morrowwish.vercel.app/tiny-town/","description":"In a world where AI does all the work, people have endless free time. Build venues, form clubs, and help a tiny town rediscover joy, friendship, and purpose in eight turns.","genre":["Strategy","Puzzle","Casual"],"gamePlatform":"Web Browser","applicationCategory":"Game","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true}</script><script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script><script defer src="/_vercel/insights/script.js"></script>
+<style>
+:root{--bg:#f7f5f0;--ink:#2d3442;--muted:#647082;--accent:#675cf4;--mint:#c8f2dd;--card:#fffefa;--line:#e2e2df}*{box-sizing:border-box}body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);margin:0}.app{max-width:1190px;margin:auto;padding:22px 18px 42px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap}h1{font-size:30px;letter-spacing:-1px;margin:0}h1 span{font-size:13px;letter-spacing:0;color:var(--muted);font-weight:500}.sub{font-size:13px;color:var(--muted);margin:5px 0 0}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{background:white;border:1px solid #d7d8dc;border-radius:11px;color:#333b4a;padding:9px 12px;font-weight:700;cursor:pointer;font-size:12px}.btn:hover{border-color:var(--accent)}.btn:disabled{opacity:.4;cursor:not-allowed}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 16px}.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 15px}.stat .k{font-size:11px;color:var(--muted)}.stat .v{font-size:24px;font-weight:800;line-height:1.35;font-variant-numeric:tabular-nums}.layout{display:grid;grid-template-columns:minmax(0,1fr) 328px;gap:16px;align-items:start}.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;box-shadow:0 4px 14px rgba(45,52,66,.03)}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;font-weight:800;font-size:15px}.panel-sub{font-size:12px;color:var(--muted);font-weight:500}.map-wrap{margin:auto;max-width:590px;position:relative}.board{display:grid;grid-template-columns:repeat(4,1fr);aspect-ratio:1/1;gap:7px;position:relative}.tile{border:2px solid #d3e6d9;border-radius:15px;position:relative;background:linear-gradient(145deg,#def4e2,#cbe5d4);display:flex;align-items:center;justify-content:center;overflow:hidden;min-width:0;cursor:pointer;transition:transform .1s,border-color .1s}.tile:focus-visible{outline:3px solid var(--accent)}.tile:after{content:'';position:absolute;bottom:9%;left:8%;width:84%;height:5%;background:#a9cabb22;border-radius:100%}.tile:not(.blocked):hover{border-color:#8278f8;transform:translateY(-2px)}.tile.selected:hover{border-color:var(--accent);box-shadow:0 0 0 3px #b2adff77 inset}.tile.blocked{background:repeating-linear-gradient(45deg,#e6e6e4,#e6e6e4 7px,#dcdedc 7px,#dcdedc 14px);border-color:#e1e3e0;cursor:not-allowed}.rock{font-size:28px;opacity:.7}.building{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1;position:relative;transform-origin:bottom}.building.pop{animation:pop .42s ease-out}.building .roof{width:64px;height:11px;border-radius:10px 10px 1px 1px;background:#ffffff8a;border:2px solid #ffffffa8;transform:skewX(-9deg);max-width:82%}.building .body{background:var(--color);width:min(78px,90%);min-height:61px;border-radius:9px 9px 13px 13px;border-bottom:5px solid #35394520;box-shadow:inset -8px -5px 0 #00000009, 1px 4px 0 #3b494a1a;display:flex;align-items:center;justify-content:center;flex-direction:column}.building .emoji{font-size:27px;line-height:1.25;filter:drop-shadow(0 2px #fff6)}.building .name{font-size:10px;font-weight:900;white-space:nowrap}.building .level{position:absolute;right:-7px;top:0;background:#fff;color:#6255d6;border-radius:30px;padding:2px 4px;font-weight:900;font-size:9px}.visit{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:0;z-index:3}.visitor{font-size:15px;filter:drop-shadow(0 1px 1px #fff);animation:land .35s ease-out both}.club-pill{position:absolute;right:4px;top:3px;font-size:13px;z-index:3;background:#fff;border-radius:99px;padding:1px 5px;box-shadow:0 1px 3px #0001}.runner{position:absolute;z-index:40;font-size:21px;pointer-events:none;left:0;top:0;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 2px #2d344266);transition:left .75s cubic-bezier(.1,.5,.2,1),top .75s cubic-bezier(.1,.5,.2,1)}.feedback{position:absolute;z-index:45;top:42%;left:50%;transform:translate(-50%,-50%);border-radius:22px;padding:12px 18px;background:#fffefaed;box-shadow:0 9px 22px #0002;border:2px solid #e5dfbc;text-align:center;font-size:15px;font-weight:900;pointer-events:none;animation:feedback 1.8s ease-out both;max-width:92%;white-space:nowrap}.feedback small{display:block;color:#6b7180;font-size:11px;margin-top:3px}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:12px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{background:#f9f9fb;border:2px solid #ebeaf0;border-radius:13px;padding:10px 5px;cursor:pointer;text-align:center;min-width:0;transition:transform .12s,border-color .12s}.choice:hover{transform:translateY(-2px)}.choice.active{border-color:var(--accent);background:#f1efff}.choice .ico{font-size:28px}.choice .label{font-size:12px;font-weight:800;margin-top:2px}.choice .detail{font-size:10px;color:var(--muted);margin-top:3px}.side{display:flex;flex-direction:column;gap:12px}.section{font-size:12px;font-weight:800;margin-bottom:8px}.info{border-radius:12px;padding:11px;background:#f1f3f8;font-size:12px;min-height:58px;line-height:1.6;margin-top:10px}.upgrade{display:flex;width:100%;justify-content:center;margin-top:8px;gap:8px}.upgrade.active{background:#f1efff;border-color:var(--accent)}.residents{display:grid;grid-template-columns:1fr 1fr;gap:7px}.res{background:#f8f7f5;border-radius:10px;padding:7px;display:flex;align-items:center;gap:6px;border:1px solid transparent}.res.working{border-color:#abdfbf;background:#f3fcf5}.face{font-size:22px}.res b{font-size:11px}.res small{display:block;color:var(--muted);font-size:9px;margin-top:2px}.feed{min-height:58px;max-height:190px;overflow:auto;background:#f7f7f8;border-radius:10px;padding:8px 10px}.event{font-size:11px;padding:5px 0;border-bottom:1px solid #ebebee;line-height:1.5}.event:last-child{border-bottom:none}.goals{font-size:12px;line-height:1.8}.goals b{font-weight:900}.good{color:#168050}.bad{color:#b06747}.end{display:none;position:fixed;inset:0;background:#273249aa;z-index:100;align-items:center;justify-content:center;padding:16px}.end.show{display:flex}.end-card{background:white;padding:28px;border-radius:20px;max-width:425px;width:100%;text-align:center;box-shadow:0 25px 90px #171e3590}.end h2{margin:6px 0;font-size:27px}.end .big{font-size:50px}.end p{color:#616d78;font-size:14px;line-height:1.6}.end-buttons{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px}@keyframes pop{0%{transform:translateY(-24px) scale(.75);opacity:.2}70%{transform:translateY(3px) scale(1.08)}100%{transform:translateY(0) scale(1)}}@keyframes land{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}@keyframes feedback{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-100%) scale(1)}}@media(max-width:760px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(4,1fr);gap:5px}.stat{padding:9px}.stat .v{font-size:20px}.panel{padding:12px}.board{gap:5px}.building .roof{height:7px;width:50px}.building .body{width:min(64px,90%);min-height:49px}.building .emoji{font-size:22px}.building .name{font-size:9px}.residents{grid-template-columns:repeat(4,1fr)}.res{flex-direction:column;text-align:center}.res small{font-size:8px}h1{font-size:26px}}@media(max-width:390px){.residents{grid-template-columns:repeat(2,1fr)}.stat .v{font-size:18px}.building .name{font-size:8px}}
+
+/* V2.1 UI overlays: engine is unchanged */
+.tile.awReach{box-shadow:inset 0 0 0 3px #8f80f7aa}.tile.awHome{border-color:#604edf;box-shadow:inset 0 0 0 4px #8f80f7aa}.tile.awVenue{border-color:#128660}.awHouse{position:absolute;bottom:3px;left:3px;background:#ffffffdc;border-radius:6px;padding:1px 3px;font-size:10px;z-index:6}.awCoord{position:absolute;top:3px;left:5px;font-size:10px;font-weight:800;color:#597b66;z-index:6}.res{cursor:pointer;text-align:left}.res.awSelected{border-color:#7565ea;background:#eeeaff}.res.awNew{border-style:dashed}.res small{line-height:1.4}.awClub{padding:6px 0;border-bottom:1px solid #eee;font-size:11px}.awReason{font-size:11px;padding:3px 0}@media(max-width:760px){.residents{grid-template-columns:repeat(2,1fr)}.res{flex-direction:row;text-align:left}.res small{font-size:9px}}
+.seo-content{margin:15px 0 0;padding:20px 22px;background:#fffefa;border:1px solid #e2e2df;border-radius:15px;color:#2d3442;line-height:1.65}.seo-content h2{font-size:17px;margin:12px 0 5px}.seo-content h3{font-size:14px;margin:11px 0 3px}.seo-content p{font-size:13px;margin:5px 0 8px;color:#4d5b6e}.seo-content a{color:#564ada}.seo-content .seo-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
+/* V2.2: first-time play clarity, preserves deterministic gameplay */
+.top .sub{max-width:675px;font-size:14px;line-height:1.5}
+.aw-coach{background:linear-gradient(120deg,#f0eeff,#f5fff7);border:1px solid #d8d4f0;border-radius:15px;padding:13px 15px 12px;margin:0 0 11px}
+.aw-coach-kicker{display:block;color:#5c50b6;font-size:10px;font-weight:900;letter-spacing:.065em;margin-bottom:5px}
+.aw-coach strong{display:block;font-size:16px;line-height:1.35;color:#363956}
+.aw-coach p{font-size:12px;line-height:1.6;color:#576576;margin:5px 0 0}
+.aw-coach.aw-compact{padding:10px 13px;background:#f8f7ff}
+.aw-coach.aw-compact strong{font-size:13px}
+.aw-coach.aw-compact p{font-size:11px}
+.aw-resident-hint{font-size:11px!important;color:#798192}
+.tile.awPlaceable:not(.blocked){border-color:#2c9f68;box-shadow:inset 0 0 0 2px #53b78280;background:linear-gradient(145deg,#e9fbe9,#c6efd8)}
+.tile.awPlaceable:not(.blocked):hover,.tile.awPlaceable:not(.blocked):focus-visible{border-color:#6a5bef;box-shadow:inset 0 0 0 3px #7f73e76b}
+.aw-map-tip{font-size:12px;color:#367751;line-height:1.5;margin-top:10px}
+.aw-map-tip>span:last-child{color:#738090}
+.aw-tip-dot{display:inline-block;width:10px;height:10px;border:2px solid #24945d;border-radius:50%;background:#80d9a3;margin-right:4px}
+.aw-rule-details{margin-top:11px;border:1px solid #e5e7ee;background:#f9fafc;padding:10px 12px;border-radius:12px}
+.aw-rule-details summary{cursor:pointer;color:#5557a5;font-size:12px;font-weight:800}
+.aw-rule-details summary span{color:#8991a1;font-weight:500;margin-left:5px}
+.aw-rule-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:11px 0}
+.aw-rule-steps>div{background:white;border:1px solid #e8e8ef;border-radius:10px;padding:9px}
+.aw-rule-steps b{display:block;font-size:11px;color:#353852}
+.aw-rule-steps small{display:block;margin-top:4px;color:#647082;font-size:10px;line-height:1.4}
+.aw-rule-details p{font-size:11px;line-height:1.65;color:#576576;margin:5px 0 0}
+.aw-advanced{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.aw-advanced>summary{display:flex;align-items:center;gap:9px;padding:14px;font-weight:800;font-size:13px;cursor:pointer;list-style:none}
+.aw-advanced>summary::-webkit-details-marker{display:none}
+.aw-advanced>summary span{font-size:10px;color:#8991a1;font-weight:500;margin-left:auto}
+.aw-advanced>summary::after{content:'+';font-size:19px;line-height:1;color:#675cf4}
+.aw-advanced[open]>summary::after{content:'−'}
+.aw-advanced-body{border:0;border-radius:0;border-top:1px solid #ebebef;box-shadow:none}
+.aw-advanced-body .panel-title{font-size:13px}
+.aw-goal-panel{border-color:#e2d9f6;background:#fffefe}
+.aw-goal-panel .goals{font-size:13px;font-weight:650}
+.aw-goal-note{font-size:11px;font-weight:400;line-height:1.5;margin-top:8px;color:#77808d}
+.stats .stat:nth-child(3){background:#f8f6ff;border-color:#dfd6fb}
+.stats .stat:last-child{background:#fafafa;border-color:#ebedef}
+.stats .stat:last-child .v{font-size:20px;color:#7d8490}
+@media(max-width:760px){.aw-rule-steps{grid-template-columns:1fr}.aw-coach{padding:11px 12px}.aw-advanced>summary{padding:12px}.aw-map-tip{font-size:11px}}
+
+/* v2.2 quick-start game guide, visible before the map */
+.aw-quick-guide{background:#fffefa;border:1px solid #e2dff1;border-radius:15px;padding:13px 16px;margin:0 0 11px}
+.aw-qg-heading{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+.aw-qg-heading strong{font-size:15px;color:#30394b}
+.aw-qg-heading span{font-size:11px;color:#788090}
+.aw-qg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.aw-qg-grid>div{display:flex;flex-direction:column;gap:3px;border-left:3px solid #b9b2f4;padding:1px 10px}
+.aw-qg-grid b{font-size:12px;color:#443c85}
+.aw-qg-grid span{font-size:11px;line-height:1.4;color:#586575}
+.aw-qg-goal{font-size:11px;line-height:1.5;margin-top:10px;padding-top:9px;border-top:1px solid #f0eef4;color:#566173}
+.aw-qg-goal b{color:#363a67}
+.aw-qg-goal span{color:#848b97;margin-left:5px}
+@media(max-width:760px){.aw-quick-guide{padding:11px 12px;margin-bottom:7px}.aw-qg-grid{grid-template-columns:1fr;gap:6px}.aw-qg-grid>div{display:block;padding:2px 8px}.aw-qg-grid b{font-size:11px;margin-right:5px}.aw-qg-grid span{font-size:11px}.aw-qg-heading{margin-bottom:7px}.aw-qg-goal{margin-top:7px;padding-top:7px}.aw-qg-goal span{display:none}}
+
+/* V2.3: complete game rules above the board; technical details folded */
+.aw-quick-guide{padding:14px 16px 12px}
+.aw-rule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}
+.aw-rule-box{border:1px solid #ebe8f2;background:#fbfaff;border-radius:12px;padding:10px 12px}
+.aw-rule-box>b{display:flex;align-items:center;gap:7px;color:#383a6c;font-size:12px;line-height:1.35}
+.aw-rule-num{flex:none;width:21px;height:21px;border-radius:50%;background:#e4dfff;color:#5043ad;font-weight:850;text-align:center;line-height:21px}
+.aw-rule-box p{margin:5px 0 0;font-size:11px;line-height:1.55;color:#536173}
+.aw-rule-box p strong{font-weight:750;color:#344653}
+.aw-rule-more{margin-top:11px;border-top:1px solid #eceaf0;padding-top:10px}
+.aw-rule-more>summary{cursor:pointer;font-size:12px;font-weight:800;color:#5047a2}
+.aw-rule-more>summary span{font-size:11px;font-weight:500;color:#8590a2;margin-left:5px}
+.aw-rule-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 17px;margin-top:11px}
+.aw-rule-more-grid>div{border-left:3px solid #d5cef2;padding-left:11px}
+.aw-rule-more-grid b{font-size:11px;color:#394058}
+.aw-rule-more-grid p{font-size:11px;line-height:1.55;color:#657185;margin:4px 0 0}
+@media(max-width:760px){
+ .aw-rule-grid{grid-template-columns:1fr;gap:5px}
+ .aw-rule-box{padding:8px 10px}
+ .aw-rule-box p{font-size:11px;margin-top:3px}
+ .aw-rule-more-grid{grid-template-columns:1fr;gap:11px}
+}
+
+/* v2.4: prioritize the board; keep full mechanics available but collapsed */
+.aw-minimal-guide{padding:9px 14px;border-radius:12px;margin:0 0 9px}
+.aw-mini-main strong{font-size:14px;color:#383655;letter-spacing:-.1px}
+.aw-mini-steps{font-size:12px;color:#5c6679;line-height:1.4;margin:5px 0}
+.aw-mini-steps span{color:#6559d2;margin:0 4px;font-weight:900}
+.aw-mini-steps b{color:#28794d;font-weight:800}
+.aw-mini-rules{border-top:1px solid #efedf4;padding-top:5px;margin-top:6px}
+.aw-mini-rules>summary{font-size:11px;color:#6155c3;font-weight:750;cursor:pointer;width:max-content}
+.aw-mini-rule-list{padding:5px 1px 4px}
+.aw-mini-rule-list p{font-size:11px;line-height:1.5;color:#566074;margin:6px 0}
+.aw-mini-rule-list p b{color:#393950}
+.aw-mini-advanced{margin-top:8px;padding:8px 0 2px;border-top:1px solid #eeecf4}
+.aw-mini-advanced>summary{font-size:11px;font-weight:750;cursor:pointer;color:#6559b5}
+.aw-mini-advanced .aw-rule-more-grid{margin-top:10px}
+.aw-coach,.aw-coach.aw-compact{padding:8px 11px;margin-bottom:7px;background:#faf9ff;border-color:#eeeaf8}
+.aw-coach-kicker,.aw-coach p{display:none!important}
+.aw-coach strong,.aw-coach.aw-compact strong{font-size:12px}
+.aw-resident-hint{display:none}
+.aw-map-tip{margin:7px 0 0;color:#8790a0;font-size:10px}
+.aw-map-tip:empty{display:none}
+.aw-goal-note{display:none}
+.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stats .stat:last-child{display:none}
+@media(max-width:760px){
+ .aw-minimal-guide{padding:9px 11px}
+ .aw-mini-main strong{font-size:13px}
+ .aw-mini-steps{font-size:11px}
+ .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* v2.5 clarity and feedback without rules changes */
+.aw-end-feedback{margin-top:16px;padding-top:12px;border-top:1px solid #eaeaf0;color:#7a8090;font-size:11px}
+.aw-feedback-buttons{display:flex;justify-content:center;gap:7px;margin-top:9px;flex-wrap:wrap}
+.aw-feedback-buttons button{border:1px solid #e5e3ed;border-radius:20px;padding:6px 11px;background:#faf9ff;font-size:11px;font-weight:750;color:#514c76;cursor:pointer}
+.aw-feedback-buttons button:hover{border-color:#aaa0ee;background:#f1eeff}
+#feedbackThanks[hidden],#feedbackQuestion[hidden]{display:none!important}
+
+#export[hidden],.aw-mobile-controls[hidden],.aw-week-receipt[hidden],.aw-active-note[hidden]{display:none!important}
+.aw-active-note{display:block;font-size:9px;line-height:1.15;color:#807c98;margin-top:3px}
+.aw-club-links{position:absolute;inset:0;z-index:12;pointer-events:none}
+.aw-club-links svg{width:100%;height:100%;display:block;overflow:visible}
+.aw-club-links svg text{font-family:system-ui, sans-serif;font-size:11px;font-weight:900;dominant-baseline:middle;text-anchor:middle;fill:#fff}
+.aw-week-receipt{margin:9px 0 0;padding:7px 10px;border:1px solid #e4e6eb;border-radius:10px;background:#fbfcfa}
+.aw-week-receipt>summary{font-size:11px;color:#4d6577;font-weight:750;cursor:pointer}
+.aw-week-receipt #weekReceiptBody{font-size:11px;line-height:1.55;color:#5f6878;padding:7px 0 2px}
+.aw-week-receipt #weekReceiptBody b{color:#3a485b}
+.aw-mobile-controls{margin:10px auto 0;display:flex;gap:8px;justify-content:center}
+.aw-mobile-controls .btn.primary{flex:1;font-size:13px;padding:10px 15px}
+.aw-map-tip{line-height:1.4}
+@media(max-width:760px){.aw-map-tip{font-size:10px}}
+</style><style>.arcade-return{background:#282d57;color:#effdff;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 16px;font:750 12px system-ui;position:relative;z-index:22}.arcade-return a{color:#9eefe1;text-decoration:none;font-weight:850}.arcade-return span{color:#d6e4f0;font-size:11px}@media(max-width:500px){.arcade-return span{display:none}}</style><style>
+:root{--bg:#fff8ef;--ink:#4f4254;--muted:#877887;--accent:#e68e8b;--mint:#d3ecd9;--card:#fffdf8;--line:#efddd4}
+body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8ef;color:var(--ink);font-family:Nunito,system-ui,sans-serif}
+.arcade-return{background:#fff2eb!important;color:#8c6979!important;border-bottom:1px solid #efd8d2}.arcade-return a{color:#a66e81!important}.arcade-return span{color:#a98b91!important}
+.app{padding-top:28px}h1{font-size:clamp(29px,4vw,45px);color:#514557}h1 span{color:#a78b95}.sub{color:#8c7d8b}.btn{border-radius:999px;border-color:#e9d5d4;background:#fffdf8;color:#8a6b7e}.btn.primary{background:#e69d94;border-color:#e69d94;color:#fff}
+.stat,.panel{background:#fffdf8;border:1px solid #ecdad7;border-radius:21px;box-shadow:0 9px 27px #a6887e15}.stat .k{font-weight:800;color:#977b91}.stat .v{color:#64556f}
+.aw-quick-guide{background:#fff0da!important;border-radius:22px!important;border-color:#f2d8c8!important}.aw-mini-main strong{color:#8e6171!important}.aw-mini-steps{color:#8a727e!important}.aw-mini-steps span{color:#cf8d88!important}.aw-mini-rules summary{color:#b78181!important}
+.aw-coach{background:#fff1ea!important;border-color:#f0d6d0!important;color:#685665!important;border-radius:18px!important}.aw-coach strong{color:#655062!important}.aw-coach p{color:#8f7786!important}.quick-assist{display:inline-flex;margin-top:8px!important;background:#866c99!important;color:#fff!important;padding:10px 16px!important;border:0!important;font-weight:900;font-size:12px!important;box-shadow:0 4px 0 #d4c7db}
+.tile{border-radius:16px;background:linear-gradient(145deg,#e5f4dc,#d4eacb);border-color:#cee5c6}.tile.awPlaceable{box-shadow:0 0 0 2px #b0d9b6 inset}.tile.blocked{background:#f0e5d6;border-color:#e7dcc9}.choice{background:#fff8ef;border-color:#ecdfd8;border-radius:16px}.choice.active{background:#fae6e4;border-color:#e49a9a}.choice .label{color:#74606d}.info,.feed{background:#faf2ec}.panel-title,.goals{color:#665567}.end-card{background:#fffbf6;border-radius:24px}.end{background:#5a496d91}#upgrade[hidden]{display:none!important}
+@media(max-width:780px){.app{padding:13px 10px}.layout{display:flex;flex-direction:column}.side,.layout>.panel{width:100%}.side{display:contents}.side>.panel:first-child{order:-1}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:13px}}
+</style><script src="/lang.js"></script></head>
+<body><script src="/telemetry.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
+  <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
+<section class="aw-quick-guide aw-minimal-guide" aria-label="How to play">
+<div class="aw-mini-main"><strong>8 little turns · build a happier town</strong></div>
+<div class="aw-mini-steps"><b>1.</b> Pick a place <span>→</span> <b>2.</b> Tap a green square <span>→</span> <b>3.</b> Watch neighbors gather</div>
+<details class="aw-mini-rules">
+<summary>How do clubs work? (optional)</summary>
+<div class="aw-mini-rule-list">
+<p><b>Your turn:</b> Put down one venue each week. You get 8 moves.</p>
+<p><b>Neighbors:</b> Each has different interests and a walking range (2–4 steps).</p>
+<p><b>Clubs:</b> Different neighboring venues form a club when both host at least two people for two consecutive weeks.</p>
+<p><b>Victory:</b> By Week 8, get 9 neighbors out of the house and form 2 lasting clubs.</p>
+</div>
+<details class="aw-mini-advanced">
+<summary>Advanced: capacities, scoring &amp; mechanics</summary>
+<div class="aw-rule-more-grid">
+<div><b>Seats &amp; upgrades</b><p>Arcade 3 · Music Studio 2 · Art Workshop 2 · Café 2. Optional upgrades add one seat.</p></div>
+<div><b>Resident choices</b><p>Neighbors prefer primary over secondary interests and pick venues automatically, considering distance and availability. Each attends one venue per week. Rocks block paths. Adjacent means sharing an edge, not a corner.</p></div>
+<div><b>Different club types</b><p>Put different venues side by side; each needs 2 visitors for 2 consecutive weeks.</p></div>
+<div><b>Vitality &amp; grades</b><p>Each week: +10 for each active resident, +24 per stable club, +6 per forming club, +4 per attended venue type, −5 per empty venue. Total scores of 1,000/1,150 earn A/S on winning; other wins B, losses C.</p></div>
+<div><b>Controls</b><p>Hover over a tile to preview. On mobile, tap a tile twice to confirm. Tap Residents &amp; interests to inspect everyone, including the four upcoming arrivals. New maps vary their layouts and offers.</p></div>
+</div>
+</details>
+</details>
+</section>
+  <div class="stats"><div class="stat"><div class="k">Week</div><div class="v" id="turn">0 / 8</div></div><div class="stat"><div class="k">Happy neighbors</div><div class="v" id="active">0 / 8</div><small class="aw-active-note" id="activeNote">4 join in Week 5</small></div><div class="stat"><div class="k">Social clubs</div><div class="v" id="clubs">0 / 2</div></div><div class="stat"><div class="k">Town joy</div><div class="v" id="score">0</div></div></div>
+  <div class="layout"><div class="panel"><div class="panel-title"><span>🌿 Your town</span><span class="panel-sub" id="seed">Seed</span></div>
+<div class="aw-coach" id="awCoach" aria-live="polite">
+<span class="aw-coach-kicker" id="awCoachStep">START HERE · WEEK 1 OF 8</span>
+<strong id="awCoachTitle">Build your first meeting place</strong>
+<p id="awCoachText">Tap a green square to build your first place.</p><button type="button" class="btn quick-assist" id="autoPlace">✦ Build one for me</button>
+</div>
+<p class="hint aw-resident-hint" id="focusInfo" style="margin:8px 0">Select a resident to highlight their home and walking range.</p><div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div><div class="aw-club-links" id="clubLinks" aria-hidden="true"></div></div>
+<div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div><div class="aw-map-tip">Tip: Different places next to each other can form clubs. No math required!</div><details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details></div>
+  <div class="side"><div class="panel"><div class="panel-title">✿ Pick a place <span class="panel-sub">then tap the map</span></div><div class="cards" id="cards"></div><button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button><div class="info" id="preview">Hover over a green tile to preview the result.</div></div>
+  <div class="panel aw-goal-panel"><div class="panel-title">♡ Make a happy little town <span class="panel-sub">8 turns</span></div><div class="goals"><div id="goalActive">○ Help 9 neighbors have fun</div><div id="goalClub">○ Form 2 different clubs</div></div></div>
+  <details class="aw-advanced" id="awResidentsDetails"><summary>👥 Residents & interests <span>Tap to see homes &amp; reach</span></summary><div class="panel aw-advanced-body"><div class="panel-title">👥 Residents <span class="panel-sub">Tap for home & range</span></div><div class="residents" id="residents"></div><div class="info" id="residentWhy">Choose a resident to inspect their activity.</div><div class="section" style="margin-top:12px">Arriving in Week 5 · advance notice</div><div class="residents" id="incoming"></div></div></details><div class="panel"><div class="panel-title">🎉 Club progress</div><div class="feed" id="clubProgress"></div></div>
+  <details class="aw-advanced aw-news"><summary>📰 Town news <span>Details of each week</span></summary><div class="panel aw-advanced-body"><div class="panel-title">📰 Town News</div><div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div></div></details></div></div>
+</div>
+<div id="end" class="end" role="dialog" aria-modal="true"><div class="end-card"><div class="big" id="endIcon">🎉</div><h2 id="endTitle">Town complete</h2><p id="endText"></p><div class="end-buttons"><button class="btn primary" id="newAgain">New town</button><button class="btn" id="sameAgain">Replay same seed</button><button class="btn" id="closeEnd">View town</button></div>
+<div class="aw-end-feedback"><div id="feedbackQuestion"><span>How was this round?</span><div class="aw-feedback-buttons"><button id="feedbackFun" type="button">Fun</button><button id="feedbackConfusing" type="button">Confusing</button><button id="feedbackNotFun" type="button">Not fun</button></div></div><div id="feedbackThanks" hidden>Thanks for the feedback!</div></div>
+</div></div>
+<script>
+/* After Work: Tiny Town — deterministic, dependency-free rules engine.
+   Browser: window.AfterWorkEngine. Node: require('./engine').
+   Uses first-party anonymous Vercel Analytics; no user account or gameplay data upload.
+*/
+(function (root, factory) {
+  const e = factory();
+  if (typeof module === 'object' && module.exports) module.exports = e;
+  else root.AfterWorkEngine = e;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const W = 4, TURNS = 8;
+  const TYPES = ['game','music','art','social'];
+  const INFO = {
+    game: {name:'Arcade',icon:'🎮',color:'#b5a1fc',capacity:3},
+    music:{name:'Music Studio',icon:'🎵',color:'#f8b0bc',capacity:2},
+    art:{name:'Art Workshop',icon:'🎨',color:'#f9c879',capacity:2},
+    social:{name:'Café',icon:'☕',color:'#9ddbc2',capacity:2}
+  };
+  const COMBOS = {
+    'game|music':{name:'Rhythm Club',icon:'🎶'},
+    'art|game':{name:'Indie Game Studio',icon:'🕹️'},
+    'game|social':{name:'Board Game Nights',icon:'🎲'},
+    'art|music':{name:'Street Performers',icon:'🎸'},
+    'music|social':{name:'Open Mic',icon:'🎤'},
+    'art|social':{name:'Art Salon',icon:'🖌️'}
+  };
+  const NAMES = ['Leo','Mia','Kai','Lucy','Lulu','Bobby','Eva','David'];
+  const FACES = ['🙂','😺','😊','😎','😄','🥰','🤓','😋'];
+  function hash(n) { n |= 0; n = Math.imul(n ^ n >>> 16, 0x7feb352d); n = Math.imul(n ^ n >>> 15, 0x846ca68b); return (n ^ n >>> 16) >>> 0; }
+  function rng(seed) {let v = seed>>>0;return function(){v=(v+0x6d2b79f5)>>>0;let t=v;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+  function shuffle(a,rand){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function generate(seed) {
+    seed=(seed>>>0)||1;let r=rng(seed);
+    const obstacles=shuffle([0,3,12,15,5,6,9,10],r).slice(0,2).sort((a,b)=>a-b);
+    // Mixed interests; a primary and secondary interest for each resident.
+    const primaries=shuffle(['game','game','game','game','music','music','art','social'],r);
+    const freeHomes=Array.from({length:16},(_,p)=>p).filter(p=>!obstacles.includes(p));
+    const residents=primaries.map((primary,i)=>{
+      let others=TYPES.filter(t=>t!==primary), secondary=others[Math.floor(r()*others.length)];
+      let home=freeHomes[Math.floor(r()*freeHomes.length)];
+      return {id:i,name:NAMES[i],face:FACES[i],primary,secondary,home,reach:2+Math.floor(r()*3)};
+    });
+    // Announced newcomer wave at the start of week 5. This changes demand and forces capacity tradeoffs.
+    const incoming=shuffle(['game','game','music','art'],r).map((primary,i)=>{
+      const secondary=TYPES.filter(t=>t!==primary)[Math.floor(r()*3)];
+      const home=freeHomes[Math.floor(r()*freeHomes.length)];
+      return {id:i+8,name:['Nora','Ben','Zoe','Max'][i],face:['🙂','😎','😊','🤓'][i],primary,secondary,home,reach:2+Math.floor(r()*3)};
+    });
+    const offers=Array.from({length:TURNS},()=>shuffle(TYPES,r).slice(0,3));
+    return {seed,turn:0,obstacles,residents,incoming,offers,buildings:[],clubStreak:{},last:null,totalScore:0};
+  }
+  const distance=(a,b)=>Math.abs(a%W-b%W)+Math.abs(Math.floor(a/W)-Math.floor(b/W));
+  function walkDist(a,b,obstacles){
+    if(obstacles.includes(a)||obstacles.includes(b))return 999;
+    let seen=new Set([a]),front=[a],dist=0;
+    while(front.length){if(front.includes(b))return dist;let next=[];
+      for(let pos of front)for(let q of [pos-1,pos+1,pos-4,pos+4]){
+        if(q<0||q>=16||distance(pos,q)!==1||obstacles.includes(q)||seen.has(q))continue;
+        seen.add(q);next.push(q);
+      }
+      front=next;dist++;
+    }
+    return 999;
+  }
+  const adjacent=(a,b)=>distance(a,b)===1;
+  function pairKey(a,b){return [a,b].sort().join('|');}
+  function clubName(a,b){return COMBOS[pairKey(a,b)] || {name:'Community Club',icon:'🎉'};}
+  function simulate(s){
+    let b=s.buildings;
+    let capacities=b.map(x=>INFO[x.type].capacity+(x.level-1));
+    let candidates=[];
+    for(let ri=0;ri<s.residents.length;ri++){
+      let resident=s.residents[ri];
+      for(let bi=0;bi<b.length;bi++){
+        let building=b[bi];
+        let interest=building.type===resident.primary?15:(building.type===resident.secondary?10:-100);
+        if(interest<0)continue;
+        let dist=walkDist(resident.home,building.pos,s.obstacles);
+        if(dist>resident.reach)continue;
+        let nearComp=b.some((q,j)=>j!==bi&&adjacent(building.pos,q.pos)&&q.type!==building.type&& (q.type===resident.primary || q.type===resident.secondary));
+        let utility=interest-dist+(nearComp?2:0)+building.level-1;
+        if(utility>=6)candidates.push({ri,bi,utility,rank:hash(s.seed*19+ri*31+building.pos*7)%100});
+      }
+    }
+    // Deterministic weighted greedy matching: one activity per resident/week.
+    candidates.sort((a,b)=>b.utility-a.utility||a.rank-b.rank||a.ri-b.ri);
+    let assignments=Array(s.residents.length).fill(-1),occupancy=b.map(()=>[]);
+    for(const c of candidates){if(assignments[c.ri]<0&&capacities[c.bi]>0){assignments[c.ri]=c.bi;occupancy[c.bi].push(c.ri);capacities[c.bi]--;}}
+    let active=assignments.filter(n=>n>=0).length;
+    let pending=[],streaks={},clubs=[];
+    for(let i=0;i<b.length;i++)for(let j=i+1;j<b.length;j++){
+      if(b[i].type===b[j].type||!adjacent(b[i].pos,b[j].pos))continue;
+      let participants=occupancy[i].length+occupancy[j].length;
+      // A club needs both venues used, >= 3 distinct attendees, and two consecutive weeks.
+      if(participants>=4&&occupancy[i].length>=2&&occupancy[j].length>=2){
+        let key=pairKey(b[i].pos,b[j].pos)+':'+pairKey(b[i].type,b[j].type);
+        streaks[key]=(s.clubStreak[key]||0)+1;
+        let desc=clubName(b[i].type,b[j].type);
+        let entity={key,positions:[b[i].pos,b[j].pos],types:[b[i].type,b[j].type],name:desc.name,icon:desc.icon,participants,streak:streaks[key]};
+        if(streaks[key]>=2)clubs.push(entity);else pending.push(entity);
+      }
+    }
+    // Different locations can share a culture, but a culture counts only once.
+    clubs=clubs.filter((c,i,all)=>all.findIndex(o=>pairKey(...o.types)===pairKey(...c.types))===i);
+    pending=pending.filter((c,i,all)=>all.findIndex(o=>pairKey(...o.types)===pairKey(...c.types))===i);
+    const empty=b.filter((v,i)=>occupancy[i].length===0).length;
+    const attendedTypes=new Set(assignments.map((bi)=>bi<0?null:b[bi].type).filter(Boolean)).size;
+    const score=active*10+clubs.length*24+pending.length*6+attendedTypes*4-empty*5;
+    return {active,occupancy,assignments,clubs,pending,streaks,score,empty};
+  }
+  function moves(s){
+    if(s.turn>=TURNS)return [];
+    let out=[];
+    let occ=new Set([...s.obstacles,...s.buildings.map(b=>b.pos)]);
+    for(const card of s.offers[s.turn])for(let p=0;p<16;p++)if(!occ.has(p))out.push({action:'place',type:card,pos:p});
+    // Upgrading takes up the entire round; max level 2.
+    for(const b of s.buildings)if(b.level===1)out.push({action:'upgrade',pos:b.pos});
+    return out;
+  }
+  function step(s,m){
+    if(s.turn>=TURNS)throw Error('Game complete');
+    const legal=moves(s).some(x=>x.action===m.action&&x.pos===m.pos&&(x.type||'')===(m.type||''));
+    if(!legal)throw Error('Illegal move '+JSON.stringify(m));
+    const n={...s,turn:s.turn+1,buildings:s.buildings.map(x=>({...x})),clubStreak:{...s.clubStreak}};
+    if(n.turn===5)n.residents=s.residents.concat(s.incoming);
+    if(m.action==='place')n.buildings.push({type:m.type,pos:m.pos,level:1});
+    if(m.action==='upgrade')n.buildings.find(x=>x.pos===m.pos).level=2;
+    const result=simulate(n);
+    n.last={...result,previousClubs:s.last?s.last.clubs.map(c=>c.key):[]};
+    n.clubStreak=result.streaks;
+    n.totalScore=s.totalScore+result.score;
+    return n;
+  }
+  function outcome(s){
+    const v=s.last||{active:0,clubs:[],score:0};
+    const success=v.active>=9&&v.clubs.length>=2;
+    const grade=success?(s.totalScore>=1150?'S':s.totalScore>=1000?'A':'B'):'C';
+    return {success,grade,active:v.active,clubs:v.clubs.length,totalScore:s.totalScore,finalScore:v.score};
+  }
+  return {W,TURNS,TYPES,INFO,COMBOS,generate,simulate,moves,step,outcome,adjacent,distance,walkDist};
+});
+
+</script>
+<script>
+(function(){
+const E=window.AfterWorkEngine;const $=id=>document.getElementById(id);
+const board=$('board');let state,selected=null,hover=-1,busy=false,history=[],started,metrics,touchArmed=null,pendingMovePos=null,focusId=null,hasTrackedClub=false;const touchMode=false;
+const icons=E.INFO;
+const explainKinds={game:'Gaming',music:'Music',art:'Art',social:'Social'};
+const cell=p=>'ABCD'[p%4]+(Math.floor(p/4)+1);
+const all=()=>state.residents.concat(state.turn<5?state.incoming:[]);
+function reason(st,rs,i){
+  const p=st.residents[i],bi=rs.assignments[i];
+  if(bi>=0)return 'Attending '+E.INFO[st.buildings[bi].type].name+' ('+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' steps)';
+  const matches=st.buildings.filter(b=>b.type===p.primary||b.type===p.secondary);
+  if(!matches.length)return 'No matching venue exists';
+  if(!matches.some(b=>E.walkDist(p.home,b.pos,st.obstacles)<=p.reach))return 'Matching venues are outside this resident\'s walking range';
+  return 'Matching reachable venues are full';
+}
+function statusUI(){const rs=state.last||E.simulate(state),p=all().find(p=>p.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
+  $('focusInfo').textContent=p?p.name+' lives at '+cell(p.home)+'; purple highlights reachable tiles ('+p.reach+' steps).':'Select a resident.';
+  $('residentWhy').textContent=p?(p.name+' · Home '+cell(p.home)+' · Walking reach: '+p.reach+' · Primary: '+explainKinds[p.primary]+' / Secondary: '+explainKinds[p.secondary]+' · '+(i<0?'Arrives in Week 5':reason(state,rs,i))):'Select a resident.';
+  const list=[];
+  for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
+    const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
+    const key=[x.type,y.type].sort().join('|'),name=E.COMBOS[key]?.name||'Club';
+    const left=rs.occupancy[a].length,right=rs.occupancy[b].length,ck=[x.pos,y.pos].sort().join('|')+':'+key,streak=rs.streaks[ck]||0;
+    list.push({name,left,right,streak,pos:cell(x.pos)+' + '+cell(y.pos)});
+  }
+  list.sort((a,b)=>b.streak-a.streak||(b.left+b.right-a.left-a.right));
+  $('clubProgress').innerHTML=list.length?list.slice(0,8).map(c=>'<div class="awClub"><b>'+safe(c.name)+'</b> · '+c.pos+'<div>'+c.left+'/2 + '+c.right+'/2 people · '+(c.streak>=2?'<span class="good">Stable ✓</span>':c.streak===1?'<span class="good">1/2 weeks</span>':'Needs two full venues for 2 weeks')+'</div></div>').join(''):'Build two different venues next to each other; each needs 2 people for 2 weeks. See “How do clubs form?” under the map.';
+}
+function positionCenter(pos){const rect=board.getBoundingClientRect(),cell=board.children[pos].getBoundingClientRect();return {x:cell.left-rect.left+cell.width/2,y:cell.top-rect.top+cell.height/2};}
+function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function gameProgress(step){window.arcadeMetric?.('town_'+step,{game:'tiny-town'});}
+function timeBucket(ms){return ms<=15000?'under-15s':ms<=30000?'15-30s':ms<=60000?'30-60s':ms<=120000?'1-2m':ms<=300000?'2-5m':'over-5m';}
+function resetMobileConfirmation(){pendingMovePos=null;$('awMobileControls').hidden=true;}
+function showClubLinks(){
+  const holder=$('clubLinks');holder.innerHTML='';
+  const rs=state.last;if(!rs)return;
+  let markup='';
+  const cx=p=>(p%4+.5)*100,cy=p=>(Math.floor(p/4)+.5)*100;
+  for(let i=0;i<state.buildings.length;i++)for(let j=i+1;j<state.buildings.length;j++){
+    const a=state.buildings[i],b=state.buildings[j];
+    if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
+    const ck=[a.pos,b.pos].sort((x,y)=>x-y).join('|')+':'+[a.type,b.type].sort().join('|');
+    const streak=rs.streaks[ck]||0;
+    if(!streak)continue;
+    const ax=cx(a.pos),ay=cy(a.pos),bx=cx(b.pos),by=cy(b.pos);
+    const mx=(ax+bx)/2,my=(ay+by)/2,dx=(bx-ax)/100,dy=(by-ay)/100;
+    const good=streak>=2,color=good?'#168a55':'#8569e4';
+    markup+='<line x1="'+(mx-dx*20)+'" y1="'+(my-dy*20)+'" x2="'+(mx+dx*20)+'" y2="'+(my+dy*20)+'" stroke="'+color+'" stroke-width="7" stroke-linecap="round" '+(good?'':'stroke-dasharray="7 5"')+'/>';
+    markup+='<rect x="'+(mx-21)+'" y="'+(my-11)+'" width="42" height="22" rx="11" fill="'+color+'" stroke="#fff" stroke-width="2"/><text x="'+mx+'" y="'+(my+1)+'">'+(good?'✓':'1/2')+'</text>';
+  }
+  if(markup)holder.innerHTML='<svg viewBox="0 0 400 400" preserveAspectRatio="none" role="presentation">'+markup+'</svg>';
+}
+function clubTip(s){
+  const rs=s.last||E.simulate(s);
+  if(rs.pending.length)return 'A new club is forming!';
+  for(let i=0;i<s.buildings.length;i++)for(let j=i+1;j<s.buildings.length;j++){
+    const a=s.buildings[i],b=s.buildings[j];
+    if(a.type===b.type||!E.adjacent(a.pos,b.pos))continue;
+    
+    const left=rs.occupancy[i].length,right=rs.occupancy[j].length;
+    if(left<2||right<2)return 'Clubs need at least two visitors at each neighboring venue for two weeks.';
+  }
+  if(!rs.clubs.length)return 'Keep two busy, different venues side by side for two weeks.';
+  return rs.clubs.length+' stable club type'+(rs.clubs.length===1?'':'s')+' so far.';
+}
+function updateReceipt(){
+ const rs=state.last,box=$('weekReceipt');if(!rs){box.hidden=true;return;}
+ box.hidden=false;
+ $('weekReceiptTitle').textContent='Week '+state.turn+' · '+rs.active+' active · '+rs.clubs.length+' club'+(rs.clubs.length===1?'':'s')+' · +'+rs.score;
+ const usedTypes=new Set(rs.assignments.map(bi=>bi>=0?state.buildings[bi].type:null).filter(Boolean)).size;
+ $('weekReceiptBody').innerHTML='<b>Vitality:</b> '+rs.active+' active × 10 + '+rs.clubs.length+' stable clubs × 24 + '+rs.pending.length+' forming × 6 + '+usedTypes+' used venue types × 4 − '+rs.empty+' empty buildings × 5.<br><b>Club tip:</b> '+safe(clubTip(state));
+}
+
+
+function updateCoach(){
+const turn=state.turn;
+let title='Build your first happy place',text='A place is already selected. Tap any green square. Your neighbors visit on their own!';
+if(turn===1){title='Build a lasting club';text='Keep two different neighboring venues busy for two weeks to form a social club.'}
+if(turn>1&&turn<5){title='Your town is coming alive';text='Keep placing different venues near each other. Watch neighbors gather.'}
+if(turn>=5){title='New neighbors arrived!';text='Give everyone something fun to do, and complete two kinds of clubs.'}
+if(turn>=E.TURNS){title='Look what you created!';text='Start a new little town to try something different.'}
+$('awCoachStep').textContent='WEEK '+Math.min(turn+1,E.TURNS)+' / '+E.TURNS;
+$('awCoachTitle').textContent=title;$('awCoachText').textContent=text;
+$('awCoach').classList.toggle('aw-compact',turn>0);
+}
+function start(seed){if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=state.offers[0][0];focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='<div class="event">🟢 AI now does every job. Everyone has endless free time. Build a place to gather! Four newcomers arrive in Week 5.</div>';render();}
+function renderingPreview(pos){if(busy||state.turn>=E.TURNS)return;
+const options=E.moves(state),move=options.find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
+if(!move){$('preview').textContent=selected==='upgrade'?'Choose a green-outlined building.':'Choose a green-outlined empty tile.';return;}
+const future=E.step(state,move),v=future.last,prev=state.last||E.simulate(state);
+const fresh=v.clubs.filter(c=>!prev.clubs.some(p=>p.key===c.key));
+const changes=[];
+for(let i=0;i<future.residents.length;i++){const r=future.residents[i],old=i<state.residents.length?prev.assignments[i]:-1,now=v.assignments[i];
+  if(old<0&&now>=0)changes.push('<span class="good">✓ '+safe(r.name)+'</span>: '+safe(reason(future,v,i)));
+  else if(old>=0&&now<0)changes.push('<span class="bad">! '+safe(r.name)+'</span>: '+safe(reason(future,v,i)));
+  else if(old>=0&&now>=0&&state.buildings[old]?.pos!==future.buildings[now]?.pos)changes.push('↔ '+safe(r.name)+' changes venue');
+}
+$('preview').innerHTML='<b>Preview</b> · Active '+prev.active+' → <b>'+v.active+'</b> · Clubs '+prev.clubs.length+' → <b>'+v.clubs.length+'</b> · +'+v.score+' vitality'+(fresh.length?'<div class="good">Club: '+safe(fresh.map(c=>c.name).join(', '))+'</div>':'')+(v.pending.length?'<div>Club progressing: '+safe(v.pending.map(c=>c.name+' '+c.streak+'/2').join(', '))+'</div>':'')+'<div class="awReason"><b>Club:</b> '+safe(clubTip(future))+'</div>'+(changes.length?changes.slice(0,3).map(x=>'<div class="awReason">'+x+'</div>').join(''):'');}
+function render(){
+const validPlots=new Set(E.moves(state).filter(m=>selected==='upgrade'?m.action==='upgrade':(m.action==='place'&&m.type===selected)).map(m=>m.pos));
+updateCoach();
+$('turn').textContent=state.turn+' / '+E.TURNS;$('active').textContent=(state.last?.active||0)+' / '+state.residents.length;$('clubs').textContent=(state.last?.clubs.length||0)+' / 2';$('score').textContent=state.totalScore;$('seed').textContent='Seed '+state.seed;$('activeNote').hidden=state.turn>=5;
+$('goalActive').innerHTML=(state.last?.active>=9?'✓':'○')+' Have 9 happy neighbors';$('goalActive').className=state.last?.active>=9?'good':'';
+$('goalClub').innerHTML=(state.last?.clubs.length>=2?'✓':'○')+' Two different clubs';$('goalClub').className=state.last?.clubs.length>=2?'good':'';
+const currently=state.last?.occupancy||[];const people=all(),focused=people.find(p=>p.id===focusId),focusIndex=state.residents.findIndex(p=>p.id===focusId),homes=new Map();for(const p of people)homes.set(p.home,(homes.get(p.home)||0)+1);
+let establishedPositions=new Map();for(const club of(state.last?.clubs||[]))for(const pos of club.positions)establishedPositions.set(pos,club.icon);
+board.innerHTML='';const buildings=new Map(state.buildings.map(b=>[b.pos,b]));
+for(let i=0;i<16;i++){
+ let tile=document.createElement('button');const d=focused?E.walkDist(focused.home,i,state.obstacles):999,attend=focusIndex>=0&&state.last?.assignments[focusIndex]>=0&&state.buildings[state.last.assignments[focusIndex]].pos===i;tile.className='tile'+(state.obstacles.includes(i)?' blocked':'')+(d<=focused?.reach?' awReach':'')+(focused?.home===i?' awHome':'')+(attend?' awVenue':'')+(validPlots.has(i)?' awPlaceable':'');tile.type='button';tile.dataset.pos=i;
+ let b=buildings.get(i);if(state.obstacles.includes(i)){tile.innerHTML='<span class="rock">🌳</span>';tile.disabled=true;}
+ else if(b){const bi=state.buildings.findIndex(q=>q.pos===i);
+   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${icons[b.type].name}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+state.residents[ri].face+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':''}`;
+ }else{tile.innerHTML='<span style="color:#8cad96;font-weight:900;font-size:21px">+</span>';}
+ tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(d<=3?' · '+d+' steps from '+focused.name:'')+(validPlots.has(i)?' · Ready to '+(selected==='upgrade'?'upgrade':'build'):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
+ tile.addEventListener('pointerleave',()=>{hover=-1});
+ tile.addEventListener('focus',()=>renderingPreview(i));
+ tile.addEventListener('click',()=>act(i));board.appendChild(tile);
+}
+showClubLinks();
+$('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');button.className='choice'+(selected===type?' active':'');button.innerHTML='<div class="ico">'+icons[type].icon+'</div><div class="label">'+icons[type].name+'</div><div class="detail">Capacity '+icons[type].capacity+'</div>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent='Selected '+icons[type].name+'. Hover a green plot to preview; click to build.';};$('cards').appendChild(button);}}
+$('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
+$('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent='Click a green Level 1 building to add one seat. An upgrade takes one week.';};
+$('residents').innerHTML=state.residents.map((r,i)=>{const rs=state.last||E.simulate(state),venue=rs.assignments[i]??-1;return '<button type="button" class="res '+(venue>=0?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+explainKinds[r.primary]+' · '+explainKinds[r.secondary]+'</small><small>'+safe(reason(state,rs,i))+'</small></div></button>';}).join('');
+$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+explainKinds[r.primary]+' · '+explainKinds[r.secondary]+'</small><small>Arrives in Week 5</small></div></button>').join(''):'All newcomers have arrived.';
+statusUI();
+}
+$('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
+$('incoming').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
+$('autoPlace').onclick=()=>{
+ if(busy||state.turn>=E.TURNS)return;
+ if(selected==='upgrade')selected=state.offers[state.turn][0];
+ const options=E.moves(state).filter(m=>m.action==='place'&&m.type===selected);
+ let best=null,score=-Infinity;
+ for(const m of options){const s=E.step(state,m),close=state.buildings.filter(b=>E.adjacent(b.pos,m.pos)&&b.type!==m.type).length;
+ const quality=s.last.active*7+s.last.clubs.length*45+close*9;
+ if(quality>score){best=m;score=quality}}
+ if(best){gameProgress('coach-used');act(best.pos,true)}
+};
+function addFeed(msg){const div=document.createElement('div');div.className='event';div.textContent=msg;$('feed').prepend(div);while($('feed').children.length>8)$('feed').lastChild.remove();}
+function float(msg,sub){let el=document.createElement('div');el.className='feedback';el.innerHTML=safe(msg)+(sub?'<small>'+safe(sub)+'</small>':'');$('mapWrap').appendChild(el);setTimeout(()=>el.remove(),1900);}
+function drawRunners(previous,current){const previousAssign=previous?.assignments||[];for(let ri=0;ri<current.assignments.length;ri++){
+let to=current.assignments[ri];if(to<0)continue;let dest=state.buildings[to].pos;let from=previousAssign[ri]>=0&&state.buildings[previousAssign[ri]]?state.buildings[previousAssign[ri]].pos:state.residents[ri].home;
+if(from===dest)continue;
+const p=positionCenter(from),q=positionCenter(dest),el=document.createElement('span');el.className='runner';el.textContent=state.residents[ri].face;el.style.left=p.x+'px';el.style.top=p.y+'px';board.appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.left=q.x+'px';el.style.top=q.y+'px';}));setTimeout(()=>el.remove(),850);
+}}
+function act(pos,confirmed=false){
+ if(busy||state.turn>=E.TURNS)return;
+ const move=E.moves(state).find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
+ if(!move){resetMobileConfirmation();$('preview').innerHTML='<span class="bad">Choose a green-outlined tile.</span>';return;}
+ if(touchMode&&!confirmed){pendingMovePos=pos;renderingPreview(pos);$('awMobileControls').hidden=false;$('confirmMove').textContent='Confirm '+(selected==='upgrade'?'upgrade':'build')+' · '+cell(pos);return;}
+ resetMobileConfirmation();
+ if(metrics.firstChoiceMs==null){metrics.firstChoiceMs=Math.round(performance.now()-started);gameProgress('started');gameProgress('first-place-'+timeBucket(metrics.firstChoiceMs));}
+const previous=state.last;const oldClubKeys=new Set(previous?.clubs.map(x=>x.key)||[]);state=E.step(state,move);history.push(move);metrics.actions.push({atMs:Math.round(performance.now()-started),move,active:state.last.active,clubs:state.last.clubs.length,roundScore:state.last.score});
+if([2,4,6].includes(state.turn))gameProgress('week-'+state.turn);
+if(move.action==='upgrade'&&history.filter(m=>m.action==='upgrade').length===1)gameProgress('first-upgrade');
+if(state.turn===E.TURNS)gameProgress(E.outcome(state).success?'completed-win':'completed-lose');
+busy=true;
+const newClubs=state.last.clubs.filter(x=>!oldClubKeys.has(x.key));const oldActive=previous?.active||0;
+if(newClubs.length&&!hasTrackedClub){hasTrackedClub=true;gameProgress('first-club');}
+selected=state.turn<E.TURNS?state.offers[state.turn][0]:null;touchArmed=null;render();updateReceipt();
+if(move.action==='place'){const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');addFeed('🏠 Built '+icons[move.type].name+'. Residents reassigned their activities.');}
+else addFeed('⬆ Upgraded '+icons[state.buildings.find(b=>b.pos===move.pos).type].name+' for +1 capacity.');
+if(state.turn===5)addFeed('🚚 Four newcomers moved in! The town now has 12 residents.');
+if(state.last.active>oldActive)addFeed('✨ '+(state.last.active-oldActive)+' more residents are active this week.');
+if(state.last.pending.length)addFeed('🌱 New club forming: '+state.last.pending.map(c=>c.name).join(', ')+' (needs another week). ' );
+if(newClubs.length)addFeed('🎊 Stable club founded: '+newClubs.map(x=>x.name).join(', ')+'!');
+if(state.last.empty)addFeed('🔎 '+state.last.empty+' building(s) empty. They use space but attract no one.');
+drawRunners(previous,state.last);
+if(newClubs.length)setTimeout(()=>float('🎉 '+newClubs[0].name,'Residents formed a club!'),870);
+else setTimeout(()=>float('Active '+state.last.active+' / '+state.residents.length,'+'+state.last.score+' vitality'),800);
+$('preview').textContent='Week '+state.turn+': '+state.last.active+' active, '+state.last.clubs.length+' club types, +'+state.last.score+' vitality.';
+setTimeout(()=>{busy=false;if(state.turn>=E.TURNS)endGame();},1850);
+}
+function endGame(){metrics.completed=true;metrics.gameDurationMs=Math.round(performance.now()-started);const result=E.outcome(state);gameProgress('grade-'+result.grade.toLowerCase());gameProgress('duration-'+timeBucket(metrics.gameDurationMs));const nextTip=result.success?'What new town will you create next?':(result.clubs<2?'Put different venues side by side for a club. ':'')+(result.active<9?'Build more places within neighbors\' walking range.':'');$('endIcon').textContent=result.success?'🎊':'🌱';$('endTitle').textContent=result.success?'The town is thriving!':'Try a different layout';$('endText').innerHTML='Grade <b>'+result.grade+'</b> · Total vitality <b>'+result.totalScore+'</b><br>Happy neighbors '+result.active+'/12 · Clubs '+result.clubs+'<br>'+nextTip;$('end').classList.add('show');}
+$('same').onclick=()=>{gameProgress('retry-click');start(state.seed);};$('random').onclick=()=>{gameProgress('new-map-click');start((Date.now()>>>0)||13);};
+function answerFeedback(kind){if(!metrics||metrics.feedback)return;metrics.feedback=kind;gameProgress('feedback-'+kind);$('feedbackQuestion').hidden=true;$('feedbackThanks').hidden=false;}
+$('feedbackFun').onclick=()=>answerFeedback('fun');
+$('feedbackConfusing').onclick=()=>answerFeedback('confusing');
+$('feedbackNotFun').onclick=()=>answerFeedback('not-fun');
+$('confirmMove').onclick=()=>{if(pendingMovePos!==null)act(pendingMovePos,true);};
+$('cancelMove').onclick=()=>resetMobileConfirmation();
+if(typeof location!=='undefined'&&new URLSearchParams(location.search).has('debug'))$('export').hidden=false;
+if(typeof window.addEventListener==='function')window.addEventListener('pagehide',()=>{if(state&&state.turn>0&&state.turn<E.TURNS)gameProgress('exit-week-'+state.turn);});
+$('newAgain').onclick=()=>$('random').click();$('sameAgain').onclick=()=>$('same').click();$('closeEnd').onclick=()=>$('end').classList.remove('show');
+$('export').onclick=()=>{gameProgress('playtest-export');let result={version:'prototype-0.1',...metrics,gameOutcome:E.outcome(state),moves:history,generatedLocally:true,notice:'This optional debug log is downloaded locally. Anonymous usage events are sent to Vercel Analytics.'};let blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='afterwork-playtest-'+state.seed+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);};
+$('shareGame').onclick=async()=>{
+ const shareUrl='https://morrowwish.vercel.app/tiny-town/',data={title:'No More Mondays: Tiny Town',text:'AI took all the jobs. Every day is free. Can you help this tiny town find its purpose?',url:shareUrl};
+ try{if(navigator.share){await navigator.share(data);gameProgress('shared-link');}
+ else if(navigator.clipboard){await navigator.clipboard.writeText(shareUrl);$('shareGame').textContent='Link copied ✓';gameProgress('shared-link');}
+ else{window.prompt('Copy game URL:',shareUrl);}}
+ catch(e){if(e?.name!=='AbortError')window.prompt('Copy game URL:',shareUrl);}
+};
+start(1);
+})();
+</script></body></html>

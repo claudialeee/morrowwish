@@ -1,0 +1,15 @@
+{
+  "name": "morrowwish-arcade",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Morrow Wish browser games and unified analytics on Cloudflare",
+  "scripts": {
+    "check": "node scripts/check-source.mjs",
+    "deploy": "wrangler deploy --keep-vars",
+    "build:pages": "node scripts/build-pages.mjs",
+    "deploy:pages": "npm run build:pages && cd cloudflare-pages && wrangler pages deploy public --project-name morrowwish --branch main"
+  },
+  "devDependencies": {
+    "wrangler": "4.165.0"
+  }
+}

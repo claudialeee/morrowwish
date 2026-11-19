@@ -1,0 +1,184 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#fff7ef"><title>Morrow Wish · Studio Analytics</title><style>
+:root{color-scheme:dark;--base:#0a1427;--surface:#14243d;--panel:#172b48;--line:#294463;--txt:#e8f4ff;--muted:#9cb8d2;--green:#88f1d5;--blue:#76baff;--purple:#b09dff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--txt);font-family:Inter,system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:radial-gradient(ellipse at 43% -300px,#243e67,var(--base) 62%)}
+a{color:var(--green);text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.wrap{width:min(1180px,calc(100% - 30px));margin:auto;padding:25px 0 65px}.nav{display:flex;justify-content:space-between;align-items:center;gap:15px;padding-bottom:14px;border-bottom:1px solid var(--line)}.logo{font-size:12px;letter-spacing:.12em;font-weight:900}.logo em{font-style:normal;background:#9ff4db;color:#0b2834;padding:7px 9px;border-radius:8px;margin-right:8px}.back{font-size:12px}
+.tag{display:inline-block;margin-top:35px;font-size:11px;color:var(--green);font-weight:900;letter-spacing:.14em}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:22px;margin-bottom:25px}.hero h1{font-size:clamp(29px,4.5vw,52px);letter-spacing:-.055em;margin:8px 0}.hero p{max-width:660px;color:var(--muted);font-size:13px;line-height:1.7;margin:0}.period{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.period select,.period button,.auth input{background:#1a3352;border:1px solid #395979;color:#e9f4ff;padding:11px 13px;border-radius:10px}.period button{color:#0b2b36;background:var(--green);border:0;font-weight:900}
+.auth{padding:21px;max-width:590px;border:1px solid #365778;background:var(--surface);border-radius:18px}.auth h2{font-size:21px;margin:0 0 8px}.auth p{color:var(--muted);font-size:12px;line-height:1.6}.auth form{display:flex;gap:8px;flex-wrap:wrap}.auth input{flex:1;min-width:190px}.auth button{background:var(--green);color:#082c36;border:0;border-radius:10px;padding:11px 18px;font-weight:850}.status{font-size:12px;color:#b8d4e9;margin:13px 0 22px;min-height:19px}.status.error{color:#ff9aa9}
+[hidden]{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 27px}.stat{padding:19px;background:linear-gradient(150deg,#192f4d,#12243d);border:1px solid #325171;border-radius:15px}.stat .label{font-size:11px;color:var(--muted);letter-spacing:.02em;line-height:1.4}.stat .big{font-size:clamp(27px,3vw,39px);line-height:1.25;font-weight:900;letter-spacing:-.035em;margin:8px 0 3px;font-variant-numeric:tabular-nums}.stat .note{font-size:10px;color:#79b9c5}.section{margin:20px 0 28px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px}.section h2{font-size:20px;letter-spacing:-.025em;margin:0}.description{font-size:12px;color:var(--muted)}.panel{border:1px solid var(--line);background:#11223a;border-radius:17px;padding:16px}
+.legend{font-size:11px;color:#afc9df;display:flex;gap:14px;justify-content:flex-end}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}.legend .a{background:var(--green)}.legend .b{background:var(--blue)}
+.graph{min-height:208px;display:flex;align-items:end;gap:12px;overflow-x:auto;padding:15px 0 7px}.day-col{flex:1;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:9px}.bars{height:145px;display:flex;align-items:end;justify-content:center;gap:4px;width:100%;border-bottom:1px solid #54708e66}.bar{width:19px;min-height:2px;border-radius:6px 6px 0 0;transition:height .15s}.bar.pv{background:var(--green)}.bar.vis{background:var(--blue)}.day-count{font-size:11px;color:#cfe3f1;white-space:nowrap}.day-date{font-size:10px;color:#8eaac3}
+.table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}.table th{color:#99bbd5;font-weight:800;background:#1a3453}.table th,.table td{text-align:right;padding:13px 11px;border-bottom:1px solid #29435e}.table th:first-child,.table td:first-child{text-align:left;position:sticky;left:0;background:#142943;z-index:1}.table tr:hover td{background:#203b56}.table tr:hover td:first-child{background:#203b56}.table .game-name{font-weight:750}.table small{font-size:10px;color:var(--muted);margin-left:7px}.table .focus td:first-child{color:#a4f6dc}
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.breakdown{min-height:200px}.breakdown h3{font-size:13px;font-weight:850;margin:0 0 18px}.metric-row{display:grid;grid-template-columns:125px 1fr 45px;gap:12px;align-items:center;margin:11px 0;font-size:12px}.metric-row .name{color:#cee0ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-row .track{height:8px;border-radius:10px;background:#304766;overflow:hidden}.metric-row .fill{height:100%;background:#86e8d6;border-radius:10px}.metric-row .n{text-align:right;font-variant-numeric:tabular-nums;color:#9abbd5}
+.fineprint{border-top:1px solid var(--line);margin-top:35px;padding-top:18px;color:#819bb7;font-size:11px;line-height:1.7}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.section h2{font-size:17px}}@media(max-width:440px){.wrap{width:calc(100% - 20px)}.stat{padding:12px}.stat .big{font-size:27px}.graph{gap:6px}.day-col{min-width:49px}.bar{width:13px}.table{font-size:11px}}
+
+.nav-right{display:flex;align-items:center;gap:17px}.lang-switch{display:flex;align-items:center;background:#10243d;border:1px solid #365879;padding:3px;border-radius:11px;gap:3px}.lang-switch button{background:transparent;border:0;color:#a5c0d8;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:800;line-height:1.2}.lang-switch button[aria-pressed="true"]{background:#86efda;color:#092e3e;box-shadow:0 1px 5px #0003}.period select{min-width:140px}.auth input{width:100%;max-width:320px}.hero{padding-top:6px}@media(max-width:590px){.nav-right{gap:7px}.back{font-size:11px}.lang-switch button{padding:7px 8px}.hero{margin-top:9px}.hero p{font-size:12px}.period select{min-width:auto}}
+.elsewhere-section{margin-top:42px;padding-top:25px;border-top:1px solid #345574}.ew-kicker{font-size:11px;color:#e5a9d9;letter-spacing:.16em;font-weight:900;margin-bottom:8px}.ew-link{font-size:12px;color:#efc5d7;border:1px solid #7d607e;padding:11px 14px;border-radius:10px}.ew-state{font-size:12px;color:#a5b9d0;margin:15px 0}.ew-stats{grid-template-columns:repeat(5,minmax(0,1fr));margin-top:12px}.ew-stats .stat{background:linear-gradient(145deg,#252947,#17243f);border-color:#504e77}.ew-stats .big{font-size:clamp(22px,2.6vw,32px)}.elsewhere-section .panel h3{font-size:15px;font-weight:850;margin:0 0 18px}.ew-funnel-row{display:grid;grid-template-columns:112px minmax(70px,1fr) 55px;gap:12px;align-items:center;margin:11px 0;font-size:12px}.ew-bar{height:11px;background:#2a3d5a;border-radius:10px;overflow:hidden}.ew-bar span{height:100%;display:block;background:linear-gradient(90deg,#8bafff,#ecb3d1);border-radius:10px;min-width:1px}.ew-funnel-row strong{font-variant-numeric:tabular-nums;text-align:right}.ew-continue-row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2b425d;padding:15px 0;gap:12px;font-size:13px}.ew-continue-row b{font-size:18px;color:#cfbcfa}.ew-coverage{padding-top:12px}.ew-state.error{color:#ffa3b3}@media(max-width:980px){.ew-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:540px){.ew-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ew-funnel-row{grid-template-columns:90px minmax(70px,1fr) 43px;gap:6px;font-size:10px}}
+
+/* Warm Morrow Wish studio dashboard — no dark/blue navigation or data panels */
+:root{color-scheme:light;--base:#fff8ee;--surface:#fffdf9;--panel:#fffdf9;--line:#edd9d4;--txt:#4b3d4b;--muted:#847887;--green:#de8b86;--blue:#aa91bb;--purple:#9c8bc1}
+body{background:radial-gradient(ellipse at 82% -10%,#f6e3ed,transparent 48%),radial-gradient(ellipse at 0% 12%,#fff0d4,transparent 45%),#fff8ee;color:#4b3d4b}
+a{color:#a56a83}a:hover{color:#684f7f}
+.wrap{max-width:1180px}.nav{border-color:#ead6cf}.logo{color:#5e5062}.logo em{background:#f3a19b;color:#fffaf2;border-radius:12px}.tag{color:#bf8186}.hero h1{color:#4f3c50}
+.hero p,.auth p,.description,.fineprint,.stat .label,.metric-row .n,.metric-row .name,.day-date,.stat .note{color:#91818c}
+.period select,.period button,.auth input{background:#fffdf9;color:#5f5065;border:1px solid #ead8d7;border-radius:13px}
+.period button,.auth button{background:#e89591;color:#fff;border:0;box-shadow:0 4px 0 #e7c9c1}
+.auth{background:#fffdf9;border:1px solid #efded5;border-radius:21px;box-shadow:0 12px 35px #b596921c}
+.auth h2,.section h2{color:#574759}.status{color:#8c7789}.status.error{color:#bb6674}
+.stat{background:linear-gradient(140deg,#fffefa,#fff5f0);border:1px solid #efded8;border-radius:20px;box-shadow:0 8px 24px #bfa5a21a}
+.stat .big{color:#5e4b62}.stat .note{color:#b18288}.panel{background:#fffefa;border:1px solid #eadbd7;border-radius:20px;box-shadow:0 9px 27px #b5a6a41b}
+.legend{color:#917b89}.day-count{color:#5e5062}.bars{border-color:#ead3d0}.bar.pv{background:#e79d91}.bar.vis{background:#ad9bd1}
+.table th{background:#fff2e9;color:#8f6c7d}.table th,.table td{border-bottom:1px solid #efded6;color:#5a4c5c}
+.table th:first-child,.table td:first-child{background:#fffdf9}.table tr:hover td,.table tr:hover td:first-child{background:#fff1e8}
+.table .focus td:first-child{color:#965e81}.table .game-name{font-weight:900;color:#645168}.table .game-name:hover{color:#c67d88}.table small{color:#99818b}
+.metric-row .track,.ew-bar{background:#f1e6e1}.metric-row .fill{background:#dfa6a5}.lang-switch{background:#f7eae6;border-color:#e9d4d4}.lang-switch button{color:#876f7e}.lang-switch button[aria-pressed="true"]{background:#fffdf8;color:#9b657b;box-shadow:0 2px 6px #a5898429}
+.elsewhere-section{border-top:1px solid #ead6d3}.ew-kicker{color:#b584a7}.ew-link{border-color:#e4cad8;color:#985d8d;background:#fff6f7}.ew-state{color:#897486}
+.ew-stats .stat{background:linear-gradient(145deg,#fff3ed,#fffafd);border-color:#ebd8e2}.ew-continue-row{border-color:#eedee6}.ew-continue-row b{color:#ac7cba}.ew-bar span{background:linear-gradient(90deg,#e69e96,#ba9bdb)}.ew-state.error{color:#b75b72}
+</style></head><body><main class="wrap">
+<div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
+<div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><select id="days" aria-label="Date range / 日期范围"><option value="1" data-i18n="today"></option><option value="3" data-i18n="day3"></option><option value="7" data-i18n="day7" selected></option><option value="14" data-i18n="day14"></option></select><button id="reload" type="button" data-i18n="refresh"></button></div></div>
+<section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
+<div id="report" hidden><div class="stats" id="stats"></div>
+<section class="section"><div class="section-head"><h2 data-i18n="trend"></h2><div class="legend"><span><i class="a"></i><span data-i18n="pvLabel"></span></span><span><i class="b"></i><span data-i18n="uniqueLabel"></span></span></div></div><div class="panel"><div class="graph" id="graph"></div></div></section>
+<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colVisitors"></th><th data-i18n="colStarts"></th><th data-i18n="colRetries"></th><th data-i18n="colTime"></th><th data-i18n="colDone"></th><th data-i18n="colShares"></th><th data-i18n="colConversion"></th></tr></thead><tbody id="games"></tbody></table></div></section>
+
+<section class="section elsewhere-section" id="elsewhere-analytics" aria-labelledby="ew-title">
+ <div class="section-head"><div><div class="ew-kicker">ELSEWHERE · OTHER LIVES</div><h2 id="ew-title" data-ew="title">Elsewhere：平行人生</h2><p class="description" data-ew="desc">场景漏斗、完整路线和不同路线的重复体验，统计直接并入同一数据中心。</p></div><a href="/elsewhere/" target="_blank" rel="noopener" class="ew-link" data-ew="open">打开 Elsewhere ↗</a></div>
+ <div class="ew-state" id="ew-state" role="status">尚未读取 Elsewhere 数据。</div>
+ <div id="ew-report" hidden>
+  <div class="stats ew-stats" id="ew-stats"></div>
+  <div class="split">
+   <div class="panel"><h3 data-ew="funnel">八幕故事漏斗</h3><div class="ew-funnel" id="ew-funnel"></div><p class="description" data-ew="funnelNote">按每条人生的唯一 run 去重，完成率以进入该场景的人生次数为分母。</p></div>
+   <div class="panel"><h3 data-ew="continue">场景继续率</h3><div class="ew-continue" id="ew-continue"></div><p class="description" data-ew="continueNote">第 N 幕完成后实际进入第 N+1 幕的占比。</p></div>
+  </div>
+  <div class="section"><div class="section-head"><h2 data-ew="worlds">按世界比较</h2></div>
+   <div class="panel table-wrap"><table class="table"><thead><tr><th data-ew="world">世界</th><th data-ew="runs">开始人数次</th><th data-ew="chapter1">首幕完成</th><th data-ew="rate">首幕完成率</th><th data-ew="finished">通关</th><th data-ew="replays">重开</th></tr></thead><tbody id="ew-worlds"></tbody></table></div></div>
+  <div class="section"><div class="section-head"><h2 data-ew="routes">最常见的通关路线</h2><p class="description" data-ew="routeNote">路线如 1-2-1-1-2-1-2-1，分别代表八幕的选择编号。</p></div>
+   <div class="panel table-wrap"><table class="table"><thead><tr><th data-ew="world">世界</th><th data-ew="route">选择路径</th><th data-ew="times">通关次数</th></tr></thead><tbody id="ew-routes"></tbody></table></div></div>
+  <p class="ew-coverage description" id="ew-coverage"></p>
+ </div>
+</section><section class="section"><div class="section-head"><h2 data-i18n="sourcesTitle"></h2><div class="description" data-i18n="sourcesDesc"></div></div><div class="split"><div class="panel breakdown"><h3 data-i18n="sourceType"></h3><div id="sources"></div></div><div class="panel breakdown"><h3 data-i18n="deviceType"></h3><div id="devices"></div></div><div class="panel breakdown"><h3 data-i18n="referrerHosts"></h3><div id="referrers"></div></div><div class="panel breakdown"><h3 data-i18n="websites"></h3><div id="sites"></div></div></div></section>
+<section class="section"><h2 data-i18n="coverageTitle"></h2><p class="description" id="coverage"></p></section></div>
+<div class="fineprint" data-i18n="footnote"></div></main><script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id);
+const I18N={
+zh:{
+pageTitle:"Morrow Wish · 统一数据中心",back:"返回游戏首页 ↗",tag:"私人工作室 · 统一看板",title:"统一数据中心",
+intro:"主页优先，随后按工作室展示顺序列出游戏。Elsewhere 的章节、通关和重玩数据在下方统一分析。",
+today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",
+accessTitle:"工作室专用看板",accessHint:"输入 Analytics 访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"Analytics 访问码",accessButton:"查看数据",
+ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
+trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"按首页展示顺序：主页 → No More Mondays → Elsewhere → 精选小游戏。已下架作品不显示，但旧记录仍保留。",
+colGame:"游戏",colPv:"PV",colVisitors:"访客",colStarts:"启动",colRetries:"重玩",colTime:"平均会话",colDone:"完成",colShares:"分享",colConversion:"启动 / PV",
+sourcesTitle:"访客从哪里来",sourcesDesc:"对比来源、设备、外部网站及原独立站的贡献。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站（域名）",websites:"访问网址",
+coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件和粗粒度来源，不记录姓名、邮箱或完整 IP。独立浏览器通过第一方随机 ID 的哈希识别，不等于真实人数。尊重 Do Not Track 与 Global Privacy Control。Vercel Analytics 的历史数据不会自动回填。",
+statPv:"页面浏览量 · PV",statPvNote:"所有游戏及首页",statVisitors:"独立浏览器",statVisitorsNote:"匿名浏览器，不是人数",statStarts:"游戏启动次数",statStartsNote:"玩家开始一局",statSession:"平均会话时长",statSessionNote:"按匿名会话计算",statRetries:"重玩次数",statRetriesNote:"Retry / Replay / 再玩一次",statShares:"分享点击",statSharesNote:"成绩或挑战分享",statFinished:"关卡 / 游戏完成",statFinishedNote:"已记录的完成事件",statD1:"首访次日回访率",statD1Note:"样本 {n} 个匿名浏览器",
+seconds:"{n} 秒",none:"暂无数据",headHome:"网站首页",empty:"—",coverageDays:"覆盖最近 {days} 天，共读取 {records} 条匿名记录。",coveragePartial:"本次统计达到读取上限，结果可能不完整。",coverageOld:"旧版会话有 {n} 条缺少稳定访客 ID，计入访问或会话，但不计入独立访客。",coverageDetails:"数据从统一采集系统上线后累计。页面加载计入 PV；游玩时长等在离开页面或切换标签页后汇总。次日留存按首次访问浏览器在次日是否再次出现计算。",
+direct:"直接访问",internal:"站内跳转",external:"外部网站",mobile:"手机",tablet:"平板",desktop:"桌面",arcade:"Morrow Wish",legacy:"原 Tiny Town 网址",unknown:"未知",failGeneric:"服务暂时不可用"
+},
+en:{
+pageTitle:"Morrow Wish · Studio Analytics",back:"Back to games ↗",tag:"PRIVATE STUDIO · ONE DASHBOARD",title:"Studio Analytics",
+intro:"Homepage first, followed by games in studio order. Elsewhere chapters, endings and replays are analyzed below.",
+today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",
+accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
+ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
+trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Fixed studio order: homepage, No More Mondays, Elsewhere, and handpicked games. Retired games are hidden; past records remain.",
+colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Starts",colRetries:"Replays",colTime:"Avg. session",colDone:"Completions",colShares:"Shares",colConversion:"Starts / PV",
+sourcesTitle:"Where visitors come from",sourcesDesc:"Traffic sources, devices, referring sites and the original standalone site.",sourceType:"Traffic type",deviceType:"Device type",referrerHosts:"Referring sites (domains)",websites:"Website",
+coverageTitle:"Metrics & coverage",footnote:"We collect anonymous gameplay events and coarse traffic sources — not names, emails or full IP addresses. Unique browsers are estimated from hashed first-party random IDs, not actual people. Do Not Track and Global Privacy Control are respected. Historical Vercel Analytics traffic is not automatically backfilled.",
+statPv:"Pageviews · PV",statPvNote:"All games and homepage",statVisitors:"Unique browsers",statVisitorsNote:"Anonymous browsers, not people",statStarts:"Game starts",statStartsNote:"Started a new run",statSession:"Avg. session length",statSessionNote:"Across anonymous sessions",statRetries:"Replays",statRetriesNote:"Retry / Replay clicks",statShares:"Share clicks",statSharesNote:"Shared a score or challenge",statFinished:"Level / game completions",statFinishedNote:"Recorded completion events",statD1:"Day-1 return rate",statD1Note:"Cohort: {n} anonymous browsers",
+seconds:"{n} sec",none:"No data yet",headHome:"Homepage",empty:"—",coverageDays:"Last {days} days; {records} anonymous records read.",coveragePartial:"The read limit was reached; some data may be excluded.",coverageOld:"{n} legacy sessions lack a stable visitor ID. They count toward pageviews/sessions, but not unique browsers.",coverageDetails:"Data is collected from the launch of the unified system. Page loads count as pageviews; gameplay duration is sent when leaving the page or switching tabs. Day-1 retention measures whether a browser returned the day after its first recorded visit.",
+direct:"Direct",internal:"Internal navigation",external:"External website",mobile:"Mobile",tablet:"Tablet",desktop:"Desktop",arcade:"Morrow Wish",legacy:"Original Tiny Town site",unknown:"Unknown",failGeneric:"Service temporarily unavailable"
+}};
+const gameNames={"elsewhere":"Elsewhere","hub":{zh:"网站首页",en:"Homepage"},"flip-dash":"Flip Dash","parcel-panic":"Parcel Panic","tiny-town":"No More Mondays: Tiny Town","echo-heist":"Echo Heist","orbit-escape":"Orbit Escape","tower-tuck":"Tower Tuck","traffic-tangle":"Traffic Tangle","perfect-pour":"Perfect Pour","color-current":"Color Current","grid-glider":"Grid Glider","mirror-mosaic":"Mirror Mosaic","pocket-aquarium":"Pocket Aquarium"};
+const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
+let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
+try{lang=localStorage.getItem("ruckus-dashboard-language")==="en"?"en":"zh";}catch{}
+try{sessionStorage.removeItem("ruckus-button-studio-key");}catch{}
+const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
+const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
+function dateFormat(x){return new Date(x).toLocaleString(lang==="zh"?"zh-CN":"en-US");}
+function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lastError});}else status.textContent=t(kind);}
+function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
+function nameFor(x){return t(x)===x?x:t(x);}
+function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=Math.max(1,...data.map(a=>Number(a.value)||0));el.innerHTML=data.length?data.map(x=>{const label=nameFor(x.name||"unknown"),number=Math.max(0,Number(x.value)||0);return '<div class="metric-row"><div class="name" title="'+escapeHTML(label)+'">'+escapeHTML(label)+'</div><div class="track"><div class="fill" style="width:'+Math.max(1,Math.min(100,100*number/max))+'%"></div></div><div class="n">'+format(number)+'</div></div>';}).join(""):'<p class="description">'+escapeHTML(t("none"))+'</p>';}
+function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];
+$("stats").innerHTML=[
+metricCard(t("statPv"),format(r.pageviews),t("statPvNote")),
+metricCard(t("statVisitors"),format(r.visitors),t("statVisitorsNote")),
+metricCard(t("statStarts"),format(r.starts),t("statStartsNote")),
+metricCard(t("statSession"),t("seconds",{n:format(r.avgSeconds)}),t("statSessionNote")),
+metricCard(t("statRetries"),format(r.retries),t("statRetriesNote")),
+metricCard(t("statShares"),format(r.shares),t("statSharesNote")),
+metricCard(t("statFinished"),format(r.completions),t("statFinishedNote")),
+metricCard(t("statD1"),r.d1Rate==null?t("empty"):r.d1Rate+"%",t("statD1Note",{n:format(r.d1Cohort)}))
+].join("");
+const max=Math.max(1,...days.map(d=>Number(d.pageviews)||0));
+$("graph").innerHTML=days.map(d=>{const day=escapeHTML(String(d.day||"").slice(5)),pv=Math.max(2,Math.min(140,Math.round((Number(d.pageviews)||0)/max*140))),vis=Math.max(2,Math.min(140,Math.round((Number(d.visitors)||0)/max*140)));return '<div class="day-col"><div class="day-count">'+format(d.pageviews)+'</div><div class="bars"><div class="bar pv" style="height:'+pv+'px" title="'+escapeHTML(t("pvLabel"))+' '+format(d.pageviews)+'"></div><div class="bar vis" style="height:'+vis+'px" title="'+escapeHTML(t("uniqueLabel"))+' '+format(d.visitors)+'"></div></div><div class="day-date">'+day+'</div></div>';}).join("");
+const displayOrder=['hub','tiny-town','elsewhere','flip-dash','echo-heist','parcel-panic','tower-tuck','traffic-tangle'];
+const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
+$("games").innerHTML=displayOrder.map(gameId=>{
+ // Elsewhere uses the same complete unified metrics as all other games.
+ const x=visibleGames.get(gameId)||{game:gameId,pageviews:0,visitors:0,starts:0,retries:0,avgSeconds:0,completion:0,shares:0};
+ const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url=x.game==="hub"?"/":"/"+encodeURIComponent(x.game)+"/";
+ return '<tr '+(x.game==='elsewhere'?'data-elsewhere-row ':'')+'class="'+(['tiny-town','flip-dash','echo-heist','elsewhere'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+format(x.pageviews)+'</td><td>'+format(x.visitors)+'</td><td>'+format(x.starts)+'</td><td>'+format(x.retries)+'</td><td>'+format(x.avgSeconds)+'s</td><td>'+format(x.completion)+'</td><td>'+format(x.shares)+'</td><td>'+(x.game==='hub'?t('empty'):pct(x.starts,x.pageviews)+'%')+'</td></tr>';
+}).join("");
+for(const id of ["sources","devices","referrers","sites"])breakdown(id,j[id]);
+const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)})];
+if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=chunks.join(" ");$("report").hidden=false;}
+
+let elsewhereData=null;
+const EW={
+zh:{title:'Elsewhere：平行人生',desc:'场景漏斗、完整路线和不同路线的重复体验，统计直接并入同一数据中心。',open:'打开 Elsewhere ↗',funnel:'八幕故事漏斗',funnelNote:'按每条人生的唯一 run 去重，完成率以进入该场景的人生次数为分母。',continue:'场景继续率',continueNote:'第 N 幕完成后实际进入第 N+1 幕的占比。',worlds:'按世界比较',world:'世界',runs:'人生开始次数',chapter1:'首幕完成',rate:'首幕完成率',finished:'通关',replays:'重开',routes:'最常见的通关路线',routeNote:'路线如 1-2-1-1-2-1-2-1，分别代表八幕的选择编号。',route:'选择路径',times:'通关次数',starts:'人生次数',firstDone:'首幕完成率',ending:'通关次数',replayRate:'重玩访客率',different:'不同路线复玩率',replayHint:'有重玩的访客 / 进入过游戏的访客',differentHint:'完成至少两条人生的访客中，选择路线不同的比例',noData:'目前没有足够的真实数据',pending:'正在加载 Elsewhere 匿名玩法数据…',empty:'—',coverage:'累计 {n} 条匿名事件；仅统计开始采集后的数据。',partial:' 已达到读取上限，数据不完整。',errors:' 有 {n} 条记录读取失败。',denom:'分母 {n}',chapter:'第 {n} 幕',started:'进入',done:'完成'},
+en:{title:'Elsewhere · Other Lives',desc:'Chapter progression, complete paths and different-route replays, within the same studio dashboard.',open:'Play Elsewhere ↗',funnel:'Eight-scene funnel',funnelNote:'Deduplicated by life run. Scene completion rates use scene entrants as the denominator.',continue:'Scene continuation',continueNote:'Share of players who reached chapter N+1 after finishing chapter N.',worlds:'Compare worlds',world:'World',runs:'Runs started',chapter1:'Scene 1 done',rate:'First chapter rate',finished:'Lives completed',replays:'Restarts',routes:'Top completed routes',routeNote:'A route such as 1-2-1-1-2-1-2-1 records choices across eight scenes.',route:'Choice path',times:'Completions',starts:'Life runs',firstDone:'Chapter 1 finish',ending:'Finished lives',replayRate:'Visitor replay rate',different:'Different-route replay',replayHint:'Visitors who replayed / visitors who started',differentHint:'Among visitors completing two or more lives, share who explored distinct choice routes',noData:'Not enough genuine play data yet',pending:'Loading Elsewhere anonymous play data…',empty:'—',coverage:'{n} anonymous events received since tracking began.',partial:' Read limit reached; results are incomplete.',errors:' {n} records failed to load.',denom:'Denominator: {n}',chapter:'Scene {n}',started:'View',done:'Complete'}
+};
+const worldLabels={'no-work':'No More Work',bookshop:'Seaside Bookshop',paris:'A Life in Paris',cabin:'Cabin in the Woods'};
+const ewText=(k,p={})=>{let x=EW[lang][k]||k;for(const [name,val] of Object.entries(p))x=x.replaceAll('{'+name+'}',String(val));return x};
+const ewPct=n=>n==null?ewText('empty'):(Number(n).toFixed(1)+'%');
+function updateEWLabels(){for(const node of document.querySelectorAll('[data-ew]'))node.textContent=ewText(node.dataset.ew);}
+function renderElsewhere(j){
+ elsewhereData=j;updateEWLabels();
+ const s=j.summary||{},f=j.funnel||[],worlds=j.worlds||[],rates=j.continueRates||[],routes=j.routes||[];
+ const cards=[
+ [ewText('starts'),format(s.runs),ewText('denom',{n:format(s.runs)})],
+ [ewText('firstDone'),ewPct(s.firstCompletionRate),ewText('denom',{n:format(s.firstViews)})],
+ [ewText('ending'),format(s.completed),ewText('denom',{n:format(s.runs)})],
+ [ewText('replayRate'),ewPct(s.replayRate),ewText('replayHint')],
+ [ewText('different'),ewPct(s.differentRouteReplayRate),ewText('differentHint')]
+ ];
+ $('ew-stats').innerHTML=cards.map(row=>metricCard(...row)).join('');
+ const max=Math.max(1,...f.map(row=>row.value||0));
+ $('ew-funnel').innerHTML=f.map(row=>{const match=/^(\d)-(view|complete)$/.exec(row.step)||[],label=ewText('chapter',{n:match[1]||'?'})+' · '+ewText(match[2]==='view'?'started':'done');return '<div class="ew-funnel-row"><span>'+escapeHTML(label)+'</span><div class="ew-bar"><span style="width:'+Math.max(0,100*(row.value||0)/max)+'%"></span></div><strong>'+format(row.value)+'</strong></div>'}).join('');
+ $('ew-continue').innerHTML=rates.map(row=>'<div class="ew-continue-row"><span>'+escapeHTML(ewText('chapter',{n:row.from}))+' → '+escapeHTML(ewText('chapter',{n:row.to}))+'<div class="description">'+format(row.continued)+' / '+format(row.eligible)+'</div></span><b>'+escapeHTML(ewPct(row.rate))+'</b></div>').join('');
+
+ $('ew-worlds').innerHTML=worlds.map(w=>'<tr><td>'+escapeHTML(worldLabels[w.world]||w.world)+'</td><td>'+format(w.starts)+'</td><td>'+format(w.ch1Completed)+'</td><td>'+escapeHTML(ewPct(w.firstRate))+'</td><td>'+format(w.ends)+'</td><td>'+format(w.replays)+'</td></tr>').join('');
+ $('ew-routes').innerHTML=routes.length?routes.map(r=>'<tr><td>'+escapeHTML(worldLabels[r.world]||r.world)+'</td><td><code>'+escapeHTML(r.route)+'</code></td><td>'+format(r.count)+'</td></tr>').join(''):'<tr><td colspan="3" style="text-align:center">'+escapeHTML(ewText('noData'))+'</td></tr>';
+ $('ew-coverage').textContent=ewText('coverage',{n:format(j.records)})+(j.partial?ewText('partial'):'')+(j.readErrors?ewText('errors',{n:format(j.readErrors)}):'');
+ $('ew-state').hidden=true;$('ew-report').hidden=false;
+}
+async function loadElsewhere(){
+ $('ew-state').hidden=false;$('ew-state').className='ew-state';$('ew-state').textContent=ewText('pending');$('ew-report').hidden=true;
+ try{const response=await fetch('/api/elsewhere-summary?days='+$('days').value,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});const j=await response.json();if(!response.ok)throw new Error(j.error||'HTTP '+response.status);renderElsewhere(j)}
+ catch(e){$('ew-state').textContent=ewText('noData')+' · '+(e.message||'Unavailable');$('ew-state').className='ew-state error';}
+}
+function applyLanguage(next){lang=next==="en"?"en":"zh";document.documentElement.lang=lang==="en"?"en":"zh-CN";document.title=t("pageTitle");
+try{localStorage.setItem("ruckus-dashboard-language",lang);}catch{}
+for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
+for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
+for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
+if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();setStatus(statusKind,lastError);
+}
+async function load(){setStatus("loading");$("reload").disabled=true;
+try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
+render(j);loadElsewhere();$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
+}catch(e){$("report").hidden=true;setStatus("error",e.message||t("failGeneric"));}finally{$("reload").disabled=false;}}
+document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLanguage(b.dataset.lang)));
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load();}catch(err){setStatus("error",err.message||t("failGeneric"));}});
+$("reload").addEventListener("click",load);$("days").addEventListener("change",load);
+applyLanguage(lang);load();
+})();
+</script></body></html>
