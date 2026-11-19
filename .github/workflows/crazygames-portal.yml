@@ -2,6 +2,11 @@ name: Inspect authorized CrazyGames studio portal (read only)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/crazygames-portal.mjs'
+      - '.github/workflows/crazygames-portal.yml'
 
 permissions:
   contents: read
