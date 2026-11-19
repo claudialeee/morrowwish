@@ -44,3 +44,6 @@ window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{},{"Share this
 
 /* Home copy and Pocket Aquarium Chinese localization, kept in GitHub production source. */
 window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{},{"Start with the games closest to our heart. One lets you reinvent a town; the other lets you reinvent a life.":"从我们心中最珍视的游戏开始。一个让你建造自由的小镇；另一个让你重塑一种人生。","Start with the games closest to our heart. One lets you build a town where everyone is free; the other lets you reinvent a life.":"从我们心中最珍视的游戏开始。一个让你建造自由的小镇；另一个让你重塑一种人生。","Games don't have to be loud to be memorable.":"小小游戏，也能带你去奇妙的世界。","Small games can take you somewhere wonderful.":"小小游戏，也能带你去奇妙的世界。","Feed the right fish at the right time. Make a splash in 60 seconds.":"选对鱼食，抓准时机。60 秒成为喂鱼高手。","Feed the right fish at the right time.":"选对鱼食，抓准时机。","60-SECOND CHALLENGE":"60 秒挑战","Match food to hungry fish. Keep the water clean!":"选对鱼食，喂饱小鱼，保持水质清澈！","Feed the fish":"给小鱼喂食","Play Pocket Aquarium":"游玩口袋水族箱"});
+
+/* Random Elsewhere adventure CTA. */
+window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{}, {"Start a random life":"随机开启一段人生"});

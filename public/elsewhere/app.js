@@ -12,6 +12,18 @@
     }))};
   }):legacy;
   const WORLD_BY_ID = Object.fromEntries(worlds.map(w => [w.id, w]));
+  // The hero CTA chooses a random story rather than always starting the first.
+  // Re-rolls avoid immediately repeating the last random story in this session.
+  function randomWorldId() {
+    let previous=null;
+    try{previous=sessionStorage.getItem('elsewhere-last-random-world')}catch(_){}
+    const choices=worlds.filter(w=>w.id!==previous);
+    const pool=choices.length?choices:worlds;
+    if(!pool.length)return null;
+    const selected=pool[Math.floor(Math.random()*pool.length)].id;
+    try{sessionStorage.setItem('elsewhere-last-random-world',selected)}catch(_){}
+    return selected;
+  }
   const STORE_KEY = 'elsewhere_lives_v1';
   const LENS_KEY='elsewhere_reader_lens_v2';
   let lens=(()=>{try{return localStorage.getItem(LENS_KEY)||'curiosity'}catch{return 'curiosity'}})();
@@ -235,6 +247,7 @@
   }
   function openAbout(){$('#about-dialog').showModal();}
   document.addEventListener('click',event=>{
+    const random=event.target.closest('[data-random-world]');if(random){const id=randomWorldId();if(id)openWorld(id);return;}
     const world=event.target.closest('[data-world]');if(world){openWorld(world.dataset.world);return;}
     const insight=event.target.closest('[data-inspect]');if(insight){inspectScene(Number(insight.dataset.inspect));return;}
     const choice=event.target.closest('[data-choice]');if(choice){choose(Number(choice.dataset.choice));return;}
