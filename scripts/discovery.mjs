@@ -70,6 +70,7 @@ function addMetadata(html, game) {
   if (!metaValue(html,'name','twitter:description')) tags.push('<meta name="twitter:description" content="'+xml(game.description)+'">');
   if (!metaValue(html,'name','twitter:image') && !game.preview.endsWith('.svg')) tags.push('<meta name="twitter:image" content="'+xml(game.preview)+'">');
   const schema={'@context':'https://schema.org','@type':'VideoGame',name:game.title,description:game.description,url:game.url,image:game.preview,genre:game.category,applicationCategory:'Game',operatingSystem:'Any',inLanguage:['en','zh'],isAccessibleForFree:true,playMode:'SinglePlayer',publisher:{'@type':'Organization',name:'Morrow Wish',url:ORIGIN}};
+  if (!html.includes('/portal-mode.js')) tags.push('<script defer src="/portal-mode.js"></script>');
   if (!html.includes('"@type":"VideoGame"')) tags.push('<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,'\\u003c')+'</script>');
   return html.replace(/<\/head>/i,tags.join('\n')+'\n</head>');
 }
@@ -114,7 +115,7 @@ export function generateReleaseKit(dest) {
       discord:base+'\n'+trackedLink(game,'discord'),
     };
     const kit={...game,posts,
-      crazygames:{title:game.title,description:game.description,developer:'Morrow Wish',submission:'https://developer.crazygames.com/',requirements:'Standalone HTML5 zip, game screenshots, actual gameplay and controls; developer review required.'},
+      crazygames:{title:game.title,description:game.description,developer:'Morrow Wish',submission:'https://developer.crazygames.com/',iframeURL:trackedLink(game,'crazygames','portal'),requirements:'Standalone HTML5 zip, game screenshots, actual gameplay and controls; developer review required.'},
       itch:{title:game.title,description:game.description,genre:game.category,gameURL:trackedLink(game,'itch','portal'),requirements:'Public project with uploaded playable HTML5 build, cover image and accurate tags; first-time setup required.'},
       newgrounds:{title:game.title,description:game.description,gameURL:trackedLink(game,'newgrounds','portal'),requirements:'HTML5 game package and moderated submission; platform-specific QA.'}
     };
