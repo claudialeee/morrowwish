@@ -89,6 +89,14 @@ jobs:
           code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-continuity.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/continuity.js')
           test "$code" = 200 && grep -q 'ELSEWHERE_CONTINUITY' /tmp/elsewhere-continuity.js || { echo "::error::Story continuity script missing or invalid (HTTP $code)"; exit 1; }
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
+      - name: Verify public Morrow Wish game URLs via Vercel proxy
+        run: |
+          set -eu
+          for route in / /pawsibly-innocent/ /pawsibly-innocent/game.js; do
+            code=$(curl -sSL --max-time 20 -o /dev/null -w '%{http_code}' "https://morrowwish.vercel.app$route")
+            test "$code" = 200 || { echo "::error::Public URL $route returned HTTP $code"; exit 1; }
+          done
+          echo 'Public Vercel proxy routes verified without a Vercel deployment.'
       - name: Publish automatic game promotion kit for each release
         uses: actions/upload-artifact@v4
         with:
