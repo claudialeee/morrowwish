@@ -748,16 +748,16 @@ if(newClubs.length&&!hasTrackedClub){hasTrackedClub=true;gameProgress('first-clu
 selected=null;touchArmed=null;render();updateReceipt();
 if(move.action==='place'){
  const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');
- addFeed(icons[move.type].icon+' Built '+icons[move.type].name+'. Residents found new places to meet.',icons[move.type].icon+' '+venue(move.type)+'建好了，居民们又多了一个活动场所。');
+ addFeed(icons[move.type].icon+' Built '+icons[move.type].name+'. Residents found new places to meet.',icons[move.type].icon+' '+zhVenues[move.type]+'建好了，居民们又多了一个活动场所。');
 }else{
  const type=state.buildings.find(b=>b.pos===move.pos).type;
- addFeed('⬆ Upgraded '+icons[type].name+' for +1 capacity.','⬆ '+venue(type)+'升级了，增加 1 个座位。');
+ addFeed('⬆ Upgraded '+icons[type].name+' for +1 capacity.','⬆ '+zhVenues[type]+'升级了，增加 1 个座位。');
 }
 if(state.last.empty)addFeed('🔎 '+state.last.empty+' building(s) empty this week.','🔎 本周有 '+state.last.empty+' 处场所无人参加活动。');
 if(state.turn===5)addFeed('🚚 Four newcomers moved in! The town now has 12 residents.','🚚 四位新邻居入住！现在小镇有 12 位居民。');
 if(state.last.active>oldActive)addFeed('✨ '+(state.last.active-oldActive)+' more residents are active this week.','✨ 本周又有 '+(state.last.active-oldActive)+' 位居民参加活动。');
-if(state.last.pending.length)addFeed('🌱 New club forming: '+state.last.pending.map(c=>c.name).join(', ')+' (needs another week).','🌱 社团正在形成：'+state.last.pending.map(c=>club(c.name)).join('、')+'（下周还需保持至少 2 人）。');
-if(newClubs.length)addFeed('🎊 Stable club founded: '+newClubs.map(c=>c.name).join(', ')+'!','🎊 新社团成立：'+newClubs.map(c=>club(c.name)).join('、')+'！');
+if(state.last.pending.length)addFeed('🌱 New club forming: '+state.last.pending.map(c=>c.name).join(', ')+' (needs another week).','🌱 社团正在形成：'+state.last.pending.map(c=>zhClubs[c.name]||c.name).join('、')+'（下周还需保持至少 2 人）。');
+if(newClubs.length)addFeed('🎊 Stable club founded: '+newClubs.map(c=>c.name).join(', ')+'!','🎊 新社团成立：'+newClubs.map(c=>zhClubs[c.name]||c.name).join('、')+'！');
 
 drawRunners(previous,state.last);
 if(newClubs.length)setTimeout(()=>float('🎉 '+club(newClubs[0].name),L('A new club is here!','新社团成立啦！')),870);
