@@ -199,24 +199,27 @@ for(const source of [mysterySource,'public/elsewhere/app.js'])new vm.Script(fs.r
 console.log('Elsewhere mystery validation: 2,048 simulated ending paths, four secret illustrations, old save support, and bilingual endings checked.');
 
 
-// Four distinct CC0 instrumental recordings, native looping, separate from SFX.
+// Four distinctly styled cheerful CC0 recordings, no shared Lo-fi fallback.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
 new vm.Script(originalMusic,{filename:'public/studio-music.js'});
 const bgmTracks={
- 'tiny-town':'bedroom-window-vast.mp3',
- 'flip-dash':'overdrive-signal-lost.mp3',
- 'parcel-panic':'evergreen-open-road.mp3',
- 'pocket-aquarium':'quiet-room.mp3'
+ 'tiny-town':{hex:'5570626561742f48617070792057686973746c696e6720556b756c656c652e6d7033',title:'Happy Whistling Ukulele'},
+ 'flip-dash':{hex:'5570626561742f496e76656e74696e6720466c696768742e6d7033',title:'Inventing Flight'},
+ 'parcel-panic':{hex:'436f6d6564792f42757379626f64792e6d7033',title:'Busybody'},
+ 'pocket-aquarium':{hex:'576f726c642f436f6e6e656374696e67205261696e626f77732e6d7033',title:'Connecting Rainbows'}
 };
-for(const [slug,file] of Object.entries(bgmTracks)){
+for(const [slug,{hex,title}] of Object.entries(bgmTracks)){
  const page=fs.readFileSync('public/'+slug+'/index.html','utf8');
  if(!page.includes('src="/studio-music.js"')||!page.includes('src="/studio-audio.js"'))
   throw new Error('Music and SFX must both load: '+slug);
- if(!page.includes('rel="preload" as="audio"')||!page.includes(file))
-  throw new Error('Full-track music must preload: '+slug);
- if(!originalMusic.includes("'"+slug+"':")||!originalMusic.includes(file))
-  throw new Error('Licensed BGM profile missing: '+slug);
+ if(!page.includes('rel="preload" as="audio"')||!page.includes('https://en.freepd.cn/api/music/'+hex))
+  throw new Error('Bright BGM must preload from FreePD: '+slug);
+ if(!originalMusic.includes("'"+slug+"':")||!originalMusic.includes(hex)||!originalMusic.includes(title))
+  throw new Error('Bright BGM profile missing: '+slug);
 }
+if(originalMusic.includes('aeris-cc0-music')||originalMusic.includes('createOscillator')||
+   originalMusic.includes('bedroom-window-vast.mp3')||originalMusic.includes('FALLBACK+track.file'))
+ throw new Error('Retired dark/bass-heavy Lo-fi or synthesizer music is still configured');
 const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
 for(const marker of ['function portrait(person)','data:image/webp;base64,','function homesView(','fans=state.residents.filter(']){
  if(!tinyMusicPage.includes(marker))throw new Error('Tiny Town polish missing: '+marker);
@@ -312,7 +315,7 @@ console.log('Elsewhere musical redesign and story letter copy checked.');
 const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
 for(const marker of ['if(enabled)play(); // Attempt immediately','audio.loop=true',
  'audio.addEventListener(\'playing\'','audio.addEventListener(\'error\'',
- 'FALLBACK+track.file',"evt.target?.closest?.('[data-mw-music]')"]){
+ 'audio.src=track.url',"evt.target?.closest?.('[data-mw-music]')"]){
  if(!immediateMusic.includes(marker))throw new Error('Robust licensed BGM missing: '+marker);
 }
 for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
