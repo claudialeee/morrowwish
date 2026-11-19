@@ -71,7 +71,7 @@ intro:"首先统计网站首页，再按展示顺序列出游戏。平行人生�
 today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
-trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"按首页展示顺序：网站首页 → 小镇物语 → 平行人生 → 精选小游戏。已下架作品不显示，但历史记录仍保留。",
+trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"按首页展示顺序：网站首页 → 平行人生 → 小镇物语 → 猫猫大捣蛋 → 精选小游戏。已下架作品不显示，但历史记录仍保留。",
 colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"启动",colRetries:"重玩",colTime:"平均会话",colDone:"完成",colShares:"分享",colConversion:"启动率",
 sourcesTitle:"访客从哪里来",sourcesDesc:"区分直接访问、站内跳转和外部网站。直接打开网页或浏览器隐藏来源时，不会有来源网站域名。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站 / 直接访问",websites:"访问网址",
 coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件与粗粒度流量来源，不记录姓名、邮箱或完整 IP 地址。独立浏览器通过本站随机标识估算，不等于真实人数。尊重浏览器的“不追踪”和“全局隐私控制”设置。历史访问数据不会自动补录。",
@@ -85,7 +85,7 @@ intro:"Homepage first, followed by games in studio order. Elsewhere chapters, en
 today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
-trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Fixed studio order: homepage, Elsewhere, No More Mondays, and handpicked games. Retired games are hidden; past records remain.",
+trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Fixed studio order: homepage, Elsewhere, No More Mondays, MEOWHEM!, and handpicked games. Retired games are hidden; past records remain.",
 colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Starts",colRetries:"Replays",colTime:"Avg. session",colDone:"Completions",colShares:"Shares",colConversion:"Starts / PV",
 sourcesTitle:"Where visitors come from",sourcesDesc:"Traffic sources, devices, referring sites and the original standalone site.",sourceType:"Traffic type",deviceType:"Device type",referrerHosts:"Referring sites (domains)",websites:"Website",
 coverageTitle:"Metrics & coverage",footnote:"We collect anonymous gameplay events and coarse traffic sources — not names, emails or full IP addresses. Unique browsers are estimated from hashed first-party random IDs, not actual people. Do Not Track and Global Privacy Control are respected. Historical Vercel Analytics traffic is not automatically backfilled.",
@@ -93,7 +93,7 @@ statPv:"Pageviews · PV",statPvNote:"All games and homepage",statVisitors:"Uniqu
 seconds:"{n} sec",none:"No data yet",headHome:"Homepage",empty:"—",coverageDays:"Last {days} days; {records} anonymous records read.",coveragePartial:"The read limit was reached; some data may be excluded.",coverageOld:"{n} legacy sessions lack a stable visitor ID. They count toward pageviews/sessions, but not unique browsers.",coverageDetails:"Data is collected from the launch of the unified system. Page loads count as pageviews; gameplay duration is sent when leaving the page or switching tabs. Day-1 retention measures whether a browser returned the day after its first recorded visit.",
 direct:"Direct",internal:"Internal navigation",external:"External website",mobile:"Mobile",tablet:"Tablet",desktop:"Desktop",arcade:"Morrow Wish",legacy:"Legacy tracking events",direct_no_referrer:"Direct (no referring site)",unknown:"Not provided",failGeneric:"Service temporarily unavailable"
 }};
-const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"}};
+const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"},"meowhem":{zh:"猫猫大捣蛋",en:"MEOWHEM!"}};
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
@@ -118,7 +118,7 @@ metricCard(t("statD1"),r.d1Rate==null?t("empty"):r.d1Rate+"%",t("statD1Note",{n:
 ].join("");
 const max=Math.max(1,...days.map(d=>Number(d.pageviews)||0));
 $("graph").innerHTML=days.map(d=>{const day=escapeHTML(String(d.day||"").slice(5)),pv=Math.max(2,Math.min(140,Math.round((Number(d.pageviews)||0)/max*140))),vis=Math.max(2,Math.min(140,Math.round((Number(d.visitors)||0)/max*140)));return '<div class="day-col"><div class="day-count">'+format(d.pageviews)+'</div><div class="bars"><div class="bar pv" style="height:'+pv+'px" title="'+escapeHTML(t("pvLabel"))+' '+format(d.pageviews)+'"></div><div class="bar vis" style="height:'+vis+'px" title="'+escapeHTML(t("uniqueLabel"))+' '+format(d.visitors)+'"></div></div><div class="day-date">'+day+'</div></div>';}).join("");
-const displayOrder=['hub','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
+const displayOrder=['hub','elsewhere','tiny-town','meowhem','flip-dash','parcel-panic','pocket-aquarium'];
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
  // Elsewhere uses the same complete unified metrics as all other games.
