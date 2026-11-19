@@ -77,10 +77,10 @@ try{
     if(await e.count() && await pw.count()){
       await e.fill(email);
       await pw.fill(password);
-      const submit=page.getByRole('button',{name:/^(log\\s*in|sign\\s*in|login|continue)$/i}).first();
+      const submit=page.getByRole('button',{name:/^(log ?in|sign ?in|login|continue)$/i}).first();
       const typed=page.locator('button[type="submit"],input[type="submit"]').first();
-      const formButton=page.locator('form button').filter({hasText:/log\\s*in|sign\\s*in|continue/i}).first();
-      report.loginButtons=await page.locator('form button').evaluateAll(bs=>bs.map(b=>({type:b.type,label:(b.innerText||'').trim().slice(0,48)})).filter(b=>/log\\s*in|sign\\s*in|continue/i.test(b.label)).slice(0,8)).catch(()=>[]);
+      const formButton=page.locator('form button').filter({hasText:/log ?in|sign ?in|continue/i}).first();
+      report.loginButtons=await page.locator('form button').evaluateAll(bs=>bs.map(b=>({type:b.type,label:(b.innerText||'').trim().slice(0,48)})).filter(b=>/log ?in|sign ?in|continue/i.test(b.label)).slice(0,8)).catch(()=>[]);
       report.loginFormCount=await page.locator('form').count().catch(()=>0);
       const action=await submit.count()?submit:await typed.count()?typed:formButton;
       report.loginMethod=await action.count()?'click-login-button':'press-enter';
