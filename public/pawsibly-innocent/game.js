@@ -18,7 +18,7 @@ const EXTRAS=[
  {yarn:[1,2],relic:[4,4],light:[0,0],robot:[8,4]},
  {yarn:[5,0],relic:[8,5],light:[8,3],robot:[6,4]},
  {yarn:[1,5],relic:[6,5],light:[8,0],robot:[8,4]},
- {yarn:[4,1],relic:[8,5],milk:[2,3],light:[6,0],robot:[8,3]},
+ {yarn:[4,1],relic:[8,5],milk:[0,3],light:[6,0],robot:[8,3]},
  {yarn:[2,2],relic:[8,4],light:[8,3],robot:[9,3]},
  {yarn:[1,5],relic:[8,4],milk:[0,4],light:[5,0],robot:[8,3]}
 ];
