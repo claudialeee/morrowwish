@@ -1,22 +1,36 @@
-/* Morrow Wish licensed game BGM
- * Replaces beep-like procedural tones with finished instrumental recordings.
- * Tracks by AERIS MUSIC, released under CC0 1.0:
- * https://github.com/farmmer938-lgtm/aeris-cc0-music
- * Independent of all gameplay sound effects. */
+/* Morrow Wish: four distinct bright CC0 game recordings.
+ * Replaces overly bass-heavy, similar-sounding Lo-fi with lighter genres.
+ * Source: FreePD (public-domain music), available via its FreePD mirror.
+ * https://en.freepd.cn/music — CC0 / commercial use permitted.
+ * Existing game sound effects are separate; no synthesised one-note music. */
 (()=>{'use strict';
  const slug=location.pathname.split('/').filter(Boolean)[0]||'';
  const catalog={
-  'tiny-town':       {title:'Bedroom Window Vast',zh:'窗边的午后',file:'bedroom-window-vast.mp3',volume:.24},
-  'flip-dash':       {title:'Overdrive Signal Lost',zh:'疾速信号',file:'overdrive-signal-lost.mp3',volume:.25},
-  'parcel-panic':    {title:'Evergreen (Open Road)',zh:'沿途好心情',file:'evergreen-open-road.mp3',volume:.25},
-  'pocket-aquarium': {title:'Quiet Room',zh:'静谧时光',file:'quiet-room.mp3',volume:.21}
+   'tiny-town': {
+     title:'Happy Whistling Ukulele',zh:'开心的口哨与尤克里里',genre:'bright acoustic',
+     url:'https://en.freepd.cn/api/music/5570626561742f48617070792057686973746c696e6720556b756c656c652e6d7033',
+     volume:.14
+   },
+   'flip-dash': {
+     title:'Inventing Flight',zh:'轻快飞行',genre:'uplifting adventure',
+     url:'https://en.freepd.cn/api/music/5570626561742f496e76656e74696e6720466c696768742e6d7033',
+     volume:.13
+   },
+   'parcel-panic': {
+     title:'Busybody',zh:'忙碌的小滑稽',genre:'playful comedy',
+     url:'https://en.freepd.cn/api/music/436f6d6564792f42757379626f64792e6d7033',
+     volume:.14
+   },
+   'pocket-aquarium': {
+     title:'Connecting Rainbows',zh:'彩虹相连',genre:'gentle world music',
+     url:'https://en.freepd.cn/api/music/576f726c642f436f6e6e656374696e67205261696e626f77732e6d7033',
+     volume:.11
+   }
  };
  const track=catalog[slug];if(!track)return;
- const SOURCE='https://cdn.jsdelivr.net/gh/farmmer938-lgtm/aeris-cc0-music@main/tracks/';
- const FALLBACK='https://raw.githubusercontent.com/farmmer938-lgtm/aeris-cc0-music/main/tracks/';
  const KEY='morrowwish-music-enabled';
  let enabled=true;try{enabled=localStorage.getItem(KEY)!=='0'}catch{}
- let audio=null,button=null,gestureSeen=false,blocked=false,unavailable=false,fallbackUsed=false;
+ let audio=null,button=null,gestureSeen=false,blocked=false,unavailable=false;
  const zh=()=>slug==='pocket-aquarium'?
   (document.querySelector('.languages button.active')?.id==='zh'):
   (window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh'));
@@ -29,7 +43,7 @@
  function sync(){
   if(!button)return;
   button.textContent=label();
-  button.title=(zh()?'背景音乐：':'Music: ')+(zh()?track.zh:track.title)+' · CC0';
+  button.title=(zh()?'轻盈配乐：':'Light background music: ')+(zh()?track.zh:track.title)+' · FreePD CC0';
   button.setAttribute('aria-label',label());
   button.setAttribute('aria-pressed',String(enabled));
   button.classList.toggle('mw-music-off',!enabled);
@@ -42,11 +56,11 @@
   audio.preload='auto';audio.loop=true;audio.volume=track.volume;
   audio.setAttribute('playsinline','');
   audio.setAttribute('aria-hidden','true');
-  audio.src=SOURCE+track.file;
+  audio.src=track.url;
   audio.addEventListener('playing',()=>{blocked=false;unavailable=false;sync()});
   audio.addEventListener('pause',()=>{if(enabled&&!document.hidden&&!audio.ended){blocked=!audio.error;sync()}});
   audio.addEventListener('error',()=>{
-   if(!fallbackUsed){fallbackUsed=true;const wasEnabled=enabled;audio.src=FALLBACK+track.file;audio.load();if(wasEnabled)play();return}
+   // Never fall back to the disliked Lo-fi recordings.
    unavailable=true;blocked=false;sync();
   });
   return audio;
@@ -109,7 +123,7 @@
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
  if(enabled)play(); // Attempt immediately; browsers may require first user gesture.
  window.MorrowwishMusic={start:play,stop:pause,toggle,sync,status:()=>({
-  game:slug,enabled,playing:!!audio&&!audio.paused,blocked,unavailable,source:audio?.currentSrc||audio?.src||SOURCE+track.file,
+  game:slug,enabled,playing:!!audio&&!audio.paused,blocked,unavailable,source:audio?.currentSrc||audio?.src||track.url,
   track:track.title,currentTime:audio?.currentTime||0,loop:audio?.loop===true
  })};
 })();
