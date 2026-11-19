@@ -161,3 +161,6 @@ body{background:#fff8f1}
   .topbar .elsewhere-music{max-width:130px}
   .topbar .text-button{font-size:11px}
 }
+
+/* Keep full CC BY music credits legible without dominating the story letter. */
+.music-credit .music-titles{display:block;font-size:10px;line-height:1.7;color:#a8a0a8;margin-top:3px;letter-spacing:.005em}

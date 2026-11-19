@@ -1,32 +1,32 @@
-/* Elsewhere only: original, fully orchestrated game soundtrack by Melissa Elliott (0xabad1dea).
-   Music repository: https://github.com/0xabad1dea/glorytales
-   License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
-   The game credits the composer and license in the About letter.
-   Replaces the earlier CC0 lo-fi score with fantasy-acoustic themes.
-   Start immediately on load where browser policy permits; otherwise on first gesture.
-   No timers, artificial delays or synthesized repeating tones. */
+/* Elsewhere soundtrack: light, sunny, human-composed instrumental music.
+ * Kevin MacLeod, https://incompetech.com/music/royalty-free/
+ * CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+ * Tracks: Carefree, Life of Riley, Bossa Antigua, Easy Lemon,
+ *         Porch Swing Days - slower. Credits are visible in About.
+ * Starts at page-load when the browser allows; first gesture otherwise.
+ */
 (()=>{'use strict';
 const KEY='elsewhere.music.enabled';
-const ROOT='https://cdn.jsdelivr.net/gh/0xabad1dea/glorytales@master/tracks/';
-const RAW='https://raw.githubusercontent.com/0xabad1dea/glorytales/master/tracks/';
+const ROOT='https://incompetech.com/music/royalty-free/mp3-royaltyfree/';
+const RAW='https://static.incompetech.com/music/royalty-free/mp3-royaltyfree/';
 const tracks={
- home:'002-StartMenuScreen-80BPM-loop.mp3',        // harp and gentle bells, reflective invitation
- 'no-work':'013-LongRoad-100BPM-loop.mp3',      // warm traveling ensemble, more motion
- bookshop:'005-HistoricVillage-99BPM-loop.mp3',// wistful cello, old bookshop and harbor
- paris:'014-CatsEyeWaltz-96BPM-loop.mp3',      // romantic waltz for a changing city
- cabin:'007-MagicalForest-85BPM-loop.mp3',    // woodwind, violin, soft forest mystery
- 'end-no-work':'008-TheSkyClears-88BPM-loop.mp3',
- 'end-bookshop':'002-StartMenuScreen-80BPM-loop.mp3',
- 'end-paris':'002-StartMenuScreen-80BPM-loop.mp3',
- 'end-cabin':'002-StartMenuScreen-80BPM-loop.mp3'
+ home:'Carefree.mp3',                       // cheerful ukulele / guitar / marimba (96 BPM)
+ 'no-work':'Life of Riley.mp3',            // friendly, uplifting and lightly playful (102 BPM)
+ bookshop:'Bossa Antigua.mp3',            // mellow sunny jazz guitar (70 BPM)
+ paris:'Easy Lemon.mp3',                  // relaxed everyday Paris, guitar / mallet keys (82 BPM)
+ cabin:'Porch Swing Days - slower.mp3',  // flowing acoustic guitars, feel-good (calm)
+ 'end-no-work':'Life of Riley.mp3',
+ 'end-bookshop':'Bossa Antigua.mp3',
+ 'end-paris':'Easy Lemon.mp3',
+ 'end-cabin':'Porch Swing Days - slower.mp3'
 }
 let enabled=true;
 try{const saved=localStorage.getItem(KEY);enabled=saved===null?true:saved==='1';}catch{}
 const audio=new Audio();
 audio.loop=true;audio.preload='auto';audio.autoplay=enabled;
-audio.volume=.13;
+audio.volume=.12;
 let world='home',fallback=false,blocked=false,control=null;
-audio.src=ROOT+tracks[world];
+audio.src=ROOT+encodeURIComponent(tracks[world]);
 function zh(){return window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh');}
 function sync(){
  if(!control)return;
@@ -46,8 +46,10 @@ function start(){
 function switchTo(id){
  const next=tracks[id]?id:'home';
  if(world===next){if(enabled&&audio.paused)start();return;}
+ // Keep the melody flowing when the story reaches its ending.
+ if(tracks[world]===tracks[next]){world=next;if(enabled&&audio.paused)start();return;}
  world=next;fallback=false;
- audio.pause();audio.src=ROOT+tracks[world];audio.load();
+ audio.pause();audio.src=ROOT+encodeURIComponent(tracks[world]);audio.load();
  if(enabled)start();
 }
 function toggle(){
@@ -58,7 +60,7 @@ function toggle(){
 }
 audio.addEventListener('error',()=>{
  if(fallback)return;
- fallback=true; audio.src=RAW+tracks[world];audio.load();if(enabled)start();
+ fallback=true; audio.src=RAW+encodeURIComponent(tracks[world]);audio.load();if(enabled)start();
 });
 document.addEventListener('pointerdown',()=>{if(enabled&&audio.paused)start();},true);
 document.addEventListener('keydown',e=>{
@@ -75,6 +77,6 @@ function mount(){
  sync();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
-window.ElsewhereMusic={setWorld:switchTo,setEnding:(id)=>switchTo('end-'+id),toggle,play:start,status:()=>({enabled,world,blocked,paused:audio.paused,src:audio.currentSrc||audio.src})};
+window.ElsewhereMusic={setWorld:switchTo,setEnding:(id)=>switchTo('end-'+id),toggle,play:start,status:()=>({enabled,world,blocked,paused:audio.paused,track:tracks[world],src:audio.currentSrc||audio.src})};
 if(enabled)start();
 })();

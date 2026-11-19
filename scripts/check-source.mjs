@@ -268,7 +268,7 @@ if(!fastPage.includes('<details class="letter-details">'))
   throw Error('Elsewhere play and data disclosure must be separate and collapsed');
 if(fastPage.includes('not live generative AI')||fastPage.includes('pseudonymous browser and play-session identifiers, chapter progress'))
   throw Error('Technical disclaimers must not dominate the Elsewhere story letter');
-if(!fastPage.includes('https://github.com/0xabad1dea/glorytales')||!fastPage.includes('creativecommons.org/licenses/by/4.0'))
+if(!fastPage.includes('https://incompetech.com/music/royalty-free/')||!fastPage.includes('creativecommons.org/licenses/by/4.0'))
   throw Error('Elsewhere must give the composer and Creative Commons attribution');
 for(const src of ['public/elsewhere/music.js','public/elsewhere/fast-story.js','public/elsewhere/app.js']){
   new vm.Script(fs.readFileSync(src,'utf8'),{filename:src});
@@ -280,7 +280,7 @@ for(const pattern of ['storyVersion:3','const route=active.decisions[3]','const 
 }
 if(!fastApp.includes('ending-illustration'))throw Error('Full-size illustrated ending view missing');
 const musicSource=fs.readFileSync('public/elsewhere/music.js','utf8');
-for(const pattern of ['audio.autoplay=enabled','if(enabled)start();','setWorld:switchTo','setEnding:','CC BY 4.0','0xabad1dea/glorytales']){
+for(const pattern of ['audio.autoplay=enabled','if(enabled)start();','setWorld:switchTo','setEnding:','CC BY 4.0','Kevin MacLeod','Carefree.mp3']){
  if(!musicSource.includes(pattern))throw Error('Missing immediate and licensed soundtrack handling: '+pattern);
 }
 console.log('Five-scene Elsewhere runtime validation: four short lives, reachable secrets, translated story, illustrated endings and immediate music attempt checked.');
@@ -288,11 +288,23 @@ console.log('Five-scene Elsewhere runtime validation: four short lives, reachabl
 const letterZh=fs.readFileSync('public/zh-polish.js','utf8');
 if(!letterZh.includes('来自《平行人生》的一封信')||!letterZh.includes('海边书店的租约只剩十天'))
   throw Error('Elsewhere letter needs authored, natural Chinese');
-if(musicSource.includes('farmmer938-lgtm/aeris-cc0-music')||musicSource.includes('evergreen-open-road.mp3'))
+if(musicSource.includes('farmmer938-lgtm/aeris-cc0-music')||musicSource.includes('0xabad1dea/glorytales')||musicSource.includes('evergreen-open-road.mp3')||musicSource.includes('CatsEyeWaltz'))
   throw Error('Previous mismatched soundtrack is still in use');
-const melodyPaths=['002-StartMenuScreen-80BPM-loop.mp3','013-LongRoad-100BPM-loop.mp3',
-  '005-HistoricVillage-99BPM-loop.mp3','014-CatsEyeWaltz-96BPM-loop.mp3','007-MagicalForest-85BPM-loop.mp3'];
+const melodyPaths=['Carefree.mp3','Life of Riley.mp3','Bossa Antigua.mp3','Easy Lemon.mp3','Porch Swing Days - slower.mp3'];
 for(const track of melodyPaths)if(!musicSource.includes(track))throw Error('Missing licensed instrumental theme: '+track);
+const cheerfulMusic=fs.readFileSync('public/elsewhere/music.js','utf8');
+if(!cheerfulMusic.includes("home:'Carefree.mp3'")||
+ !cheerfulMusic.includes("'no-work':'Life of Riley.mp3'")||
+ !cheerfulMusic.includes("bookshop:'Bossa Antigua.mp3'")||
+ !cheerfulMusic.includes("paris:'Easy Lemon.mp3'")||
+ !cheerfulMusic.includes("cabin:'Porch Swing Days - slower.mp3'"))
+ throw Error('Elsewhere soundtrack must stay consistently warm, bright and relaxed');
+if(!cheerfulMusic.includes('if(tracks[world]===tracks[next])'))
+ throw Error('Elsewhere should continue the same melody into its ending');
+if(!cheerfulMusic.includes('encodeURIComponent(tracks[world])'))
+ throw Error('Elsewhere music filenames require URI encoding');
+if(!fastPage.includes('Music by <a')||!fastPage.includes('Kevin MacLeod'))
+ throw Error('New music author and title credits missing');
 console.log('Elsewhere musical redesign and story letter copy checked.');
 
 

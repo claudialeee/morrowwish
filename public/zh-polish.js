@@ -66,3 +66,6 @@ window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{},{"A LETTER F
 
 /* Accurate catalogue attribution. */
 window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{}, {'Music from Glorytales by':'配乐选自 Glorytales，作者：'});
+
+/* Elsewhere soundtrack attribution. */
+window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{}, {'Music by':'背景音乐：'});
