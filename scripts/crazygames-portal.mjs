@@ -58,7 +58,7 @@ try{
  if(isLogin(page)&&email&&password){
     report.credentialLoginAttempted=true;
     // Password login avoids Google SSO automated-browser restrictions.
-    const e=page.locator('input[type="email"],input[name="email"],input[autocomplete="username"]').first();
+    const e=page.locator('input[type="email"],input[name="email"],input[autocomplete="username"],input[placeholder*="@"],input[type="text"]').first();
     const pw=page.locator('input[type="password"]').first();
     if(await e.count() && await pw.count()){
       await e.fill(email);
