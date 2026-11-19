@@ -1,8 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateDiscovery } from './discovery.mjs';
+import { execFileSync } from 'node:child_process';
 
 const base = process.cwd();
+if (!fs.existsSync('public/audio/cat-happy-clappy.ogg'))
+  execFileSync('bash',['scripts/fetch-cat-music.sh'],{stdio:'inherit'});
 const out = path.join(base, 'cloudflare-pages', 'public');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });

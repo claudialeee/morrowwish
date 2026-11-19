@@ -9,6 +9,7 @@ on:
       # Only scripts that affect the deployed site or release automation.
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
+      - 'scripts/fetch-cat-music.sh'
       - 'scripts/discovery.mjs'
       - 'scripts/detect-new-games.mjs'
       - 'scripts/publish-bluesky.mjs'
@@ -43,6 +44,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Fetch CC0 recorded cat soundtrack
+        run: bash scripts/fetch-cat-music.sh
       - name: Verify source, game ordering, and D1 binding
         run: |
           npm run check
@@ -79,7 +82,7 @@ jobs:
       - name: Verify Cloudflare site and analytics API
         run: |
           set -eu
-          for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /icons/pawsibly-innocent.svg /studio-insights/; do
+          for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /pawsibly-innocent/cat-music.js /audio/cat-happy-clappy.ogg /icons/pawsibly-innocent.svg /studio-insights/; do
             ready=0
             for attempt in 1 2 3 4 5 6; do
               code=$(curl -sSL --max-time 15 -o /dev/null -w '%{http_code}' "https://morrowwish.pages.dev$route?verify=$GITHUB_SHA&attempt=$attempt" || true)
