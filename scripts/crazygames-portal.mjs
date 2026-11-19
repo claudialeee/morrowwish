@@ -42,7 +42,7 @@ async function viewActions(page){
     path:x.path.startsWith('/')?x.path.split('?')[0]:'n/a'})).slice(0,24)).catch(()=>[]);
  return opts;
 }
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
  const context=await browser.newContext(state?{storageState:state}:{});
  const page=await context.newPage();
