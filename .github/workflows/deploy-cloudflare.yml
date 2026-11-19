@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,6 +48,13 @@ jobs:
           }
           console.log('Existing Morrow Wish Pages project and production D1 binding verified.');
           NODE
+      - name: Verify discovery and launch automation
+        run: |
+          node --check scripts/discovery.mjs
+          node --check scripts/submit-indexnow.mjs
+          node scripts/discovery.mjs --release-kit
+          test -s release-kit/elsewhere.json
+          test -s release-kit/tiny-town.json
       - name: Deploy existing Cloudflare Pages production project
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -78,3 +87,12 @@ jobs:
           code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-endings.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/endings.js')
           test "$code" = 200 && grep -q 'ELSEWHERE_ENDINGS' /tmp/elsewhere-endings.js || { echo "::error::Ending script missing or invalid (HTTP $code)"; exit 1; }
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
+      - name: Publish automatic game promotion kit for each release
+        uses: actions/upload-artifact@v4
+        with:
+          name: morrowwish-game-promotion-kit
+          path: release-kit/
+          retention-days: 30
+      - name: Notify Bing and other IndexNow search engines
+        continue-on-error: true
+        run: node scripts/submit-indexnow.mjs
