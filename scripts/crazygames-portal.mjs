@@ -40,7 +40,18 @@ try {
   const allButtons=await page.getByRole('button').allTextContents().catch(()=>[]);
   const allLinks=await page.getByRole('link').allTextContents().catch(()=>[]);
   const allVisible=[...allButtons,...allLinks].map(x=>x.trim()).filter(Boolean);
-  const hasSubmit=allVisible.some(x=>/submit\s*(a\s*)?game|add\s*(a\s*)?game|new\s*game/i.test(x));
+  // List only generic UI actions. Never put personal/account text or cookies in CI logs.
+  const uiPattern=/\b(game|submit|upload|new|create|dashboard|project|draft|developer|publish|review|iframe)\b/i;
+  report.uiActions=[...new Set(allVisible.filter(x=>x.length<100&&uiPattern.test(x)).map(x=>x.slice(0,90)))].slice(0,35);
+  report.portalRoutes=await page.locator('a[href]').evaluateAll(links=>links.map(a=>{
+    const label=(a.innerText||a.getAttribute('aria-label')||'').trim();
+    if(!/game|submit|upload|new|create|dashboard|project/i.test(label)||label.length>100)return null;
+    try{const u=new URL(a.href);return {label:label.slice(0,70),path:u.origin==='https://developer.crazygames.com'?u.pathname:'external-link'};}catch{return null;}
+  }).filter(Boolean).slice(0,20)).catch(()=>[]);
+  report.pagePath=new URL(page.url()).pathname;
+  report.headingRoles=await page.locator('h1,h2,h3').allTextContents().then(xs=>xs.filter(v=>v.length<70&&/game|dashboard|submit|create|new|upload|welcome|login|sign in/i.test(v)).slice(0,10)).catch(()=>[]);
+
+  const hasSubmit=allVisible.some(x=>/submit\s*(a\s*)?game|add\s*(a\s*)?game|new\s*game|create\s*(a\s*)?game|upload\s*(a\s*)?game|my games/i.test(x));
   const signIn=allVisible.some(x=>/^(sign\s*in|log\s*in|login|create\s*account)$/i.test(x));
   report.loginScreen=signIn;
   report.submissionActionFound=hasSubmit;
