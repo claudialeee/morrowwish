@@ -1,0 +1,654 @@
+{
+  "schemaVersion": 1,
+  "studio": "Morrow Wish",
+  "baselineDate": "2026-11-19",
+  "sourceOfTruth": [
+    "https://github.com/claudialeee/morrowwish/tree/main",
+    "https://morrowwish.vercel.app/games.json"
+  ],
+  "notes": "This is a verified-state ledger, not proof of submission. Never set scheduled/published without platform-issued ID or verified public URL. For platform-native gameplay, use portal analytics, not website UTM alone.",
+  "games": [
+    {
+      "slug": "elsewhere",
+      "officialUrl": "https://morrowwish.vercel.app/elsewhere/",
+      "campaign": "baseline-playtest",
+      "channels": {
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=crazygames&utm_medium=portal&utm_campaign=elsewhere-playtest"
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=itch&utm_medium=portal&utm_campaign=elsewhere-playtest"
+        },
+        "reddit": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "reddit",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=reddit&utm_medium=social&utm_campaign=elsewhere-playtest"
+        },
+        "newgrounds": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "newgrounds",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=newgrounds&utm_medium=portal&utm_campaign=elsewhere-playtest"
+        },
+        "youtube": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "youtube",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=youtube&utm_medium=video&utm_campaign=elsewhere-playtest"
+        },
+        "tiktok": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "tiktok",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=tiktok&utm_medium=video&utm_campaign=elsewhere-playtest"
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=google&utm_medium=organic&utm_campaign=elsewhere-playtest"
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=bing&utm_medium=organic&utm_campaign=elsewhere-playtest"
+        },
+        "bluesky": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bluesky",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=bluesky&utm_medium=social&utm_campaign=elsewhere-playtest"
+        },
+        "instagram": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "instagram",
+          "utm_campaign": "elsewhere-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=instagram&utm_medium=social&utm_campaign=elsewhere-playtest"
+        }
+      }
+    },
+    {
+      "slug": "tiny-town",
+      "officialUrl": "https://morrowwish.vercel.app/tiny-town/",
+      "campaign": "baseline-playtest",
+      "channels": {
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=crazygames&utm_medium=portal&utm_campaign=tiny-town-playtest"
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=itch&utm_medium=portal&utm_campaign=tiny-town-playtest"
+        },
+        "reddit": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "reddit",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=reddit&utm_medium=social&utm_campaign=tiny-town-playtest"
+        },
+        "newgrounds": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "newgrounds",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=newgrounds&utm_medium=portal&utm_campaign=tiny-town-playtest"
+        },
+        "youtube": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "youtube",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=youtube&utm_medium=video&utm_campaign=tiny-town-playtest"
+        },
+        "tiktok": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "tiktok",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=tiktok&utm_medium=video&utm_campaign=tiny-town-playtest"
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=google&utm_medium=organic&utm_campaign=tiny-town-playtest"
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=bing&utm_medium=organic&utm_campaign=tiny-town-playtest"
+        },
+        "bluesky": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bluesky",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=bluesky&utm_medium=social&utm_campaign=tiny-town-playtest"
+        },
+        "instagram": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "instagram",
+          "utm_campaign": "tiny-town-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=instagram&utm_medium=social&utm_campaign=tiny-town-playtest"
+        }
+      }
+    },
+    {
+      "slug": "pawsibly-innocent",
+      "officialUrl": "https://morrowwish.vercel.app/pawsibly-innocent/",
+      "campaign": "baseline-playtest",
+      "channels": {
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=crazygames&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=itch&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "reddit": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "reddit",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=reddit&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "newgrounds": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "newgrounds",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=newgrounds&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "youtube": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "youtube",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=youtube&utm_medium=video&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "tiktok": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "tiktok",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=tiktok&utm_medium=video&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=google&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=bing&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "bluesky": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bluesky",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=bluesky&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
+        },
+        "instagram": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "instagram",
+          "utm_campaign": "pawsibly-innocent-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=instagram&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
+        }
+      }
+    },
+    {
+      "slug": "flip-dash",
+      "officialUrl": "https://morrowwish.vercel.app/flip-dash/",
+      "campaign": "baseline-playtest",
+      "channels": {
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=crazygames&utm_medium=portal&utm_campaign=flip-dash-playtest"
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=itch&utm_medium=portal&utm_campaign=flip-dash-playtest"
+        },
+        "reddit": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "reddit",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=reddit&utm_medium=social&utm_campaign=flip-dash-playtest"
+        },
+        "newgrounds": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "newgrounds",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=newgrounds&utm_medium=portal&utm_campaign=flip-dash-playtest"
+        },
+        "youtube": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "youtube",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=youtube&utm_medium=video&utm_campaign=flip-dash-playtest"
+        },
+        "tiktok": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "tiktok",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=tiktok&utm_medium=video&utm_campaign=flip-dash-playtest"
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=google&utm_medium=organic&utm_campaign=flip-dash-playtest"
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=bing&utm_medium=organic&utm_campaign=flip-dash-playtest"
+        },
+        "bluesky": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bluesky",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=bluesky&utm_medium=social&utm_campaign=flip-dash-playtest"
+        },
+        "instagram": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "instagram",
+          "utm_campaign": "flip-dash-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=instagram&utm_medium=social&utm_campaign=flip-dash-playtest"
+        }
+      }
+    },
+    {
+      "slug": "parcel-panic",
+      "officialUrl": "https://morrowwish.vercel.app/parcel-panic/",
+      "campaign": "baseline-playtest",
+      "channels": {
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=crazygames&utm_medium=portal&utm_campaign=parcel-panic-playtest"
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=itch&utm_medium=portal&utm_campaign=parcel-panic-playtest"
+        },
+        "reddit": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "reddit",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=reddit&utm_medium=social&utm_campaign=parcel-panic-playtest"
+        },
+        "newgrounds": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "newgrounds",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=newgrounds&utm_medium=portal&utm_campaign=parcel-panic-playtest"
+        },
+        "youtube": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "youtube",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=youtube&utm_medium=video&utm_campaign=parcel-panic-playtest"
+        },
+        "tiktok": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "tiktok",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=tiktok&utm_medium=video&utm_campaign=parcel-panic-playtest"
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=google&utm_medium=organic&utm_campaign=parcel-panic-playtest"
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=bing&utm_medium=organic&utm_campaign=parcel-panic-playtest"
+        },
+        "bluesky": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bluesky",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=bluesky&utm_medium=social&utm_campaign=parcel-panic-playtest"
+        },
+        "instagram": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "instagram",
+          "utm_campaign": "parcel-panic-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=instagram&utm_medium=social&utm_campaign=parcel-panic-playtest"
+        }
+      }
+    },
+    {
+      "slug": "pocket-aquarium",
+      "officialUrl": "https://morrowwish.vercel.app/pocket-aquarium/",
+      "campaign": "baseline-playtest",
+      "channels": {
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=crazygames&utm_medium=portal&utm_campaign=pocket-aquarium-playtest"
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=itch&utm_medium=portal&utm_campaign=pocket-aquarium-playtest"
+        },
+        "reddit": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "reddit",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=reddit&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
+        },
+        "newgrounds": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "newgrounds",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=newgrounds&utm_medium=portal&utm_campaign=pocket-aquarium-playtest"
+        },
+        "youtube": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "youtube",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=youtube&utm_medium=video&utm_campaign=pocket-aquarium-playtest"
+        },
+        "tiktok": {
+          "priority": "P1",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "tiktok",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=tiktok&utm_medium=video&utm_campaign=pocket-aquarium-playtest"
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=google&utm_medium=organic&utm_campaign=pocket-aquarium-playtest"
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=bing&utm_medium=organic&utm_campaign=pocket-aquarium-playtest"
+        },
+        "bluesky": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bluesky",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=bluesky&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
+        },
+        "instagram": {
+          "priority": "P2",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "instagram",
+          "utm_campaign": "pocket-aquarium-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=instagram&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
+        }
+      }
+    }
+  ]
+}
