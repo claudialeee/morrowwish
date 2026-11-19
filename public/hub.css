@@ -36,3 +36,8 @@ html[lang="zh-CN"] .mw-english-heading{display:none!important}
 html[lang="en"] .mw-english-heading{display:inline!important}
 html[lang="zh-CN"] .section-intro h2,html[lang="zh-CN"] .about-copy h2{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.025em}
 html[lang="zh-CN"] .section-intro h2 em,html[lang="zh-CN"] .about-copy h2 em{font:inherit!important;color:inherit!important}
+
+/* MEOWHEM! cat game joins the playful mini-game collection. */
+.mini-cat>img{background:linear-gradient(135deg,#ffe5e4,#e3f6dc)}
+.mini-cat .mini-type,.mini-cat .mini-cta{color:#d76d8c}
+@media(min-width:781px){.mini-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.mini-copy{padding:16px}.mini-copy strong{font-size:20px}}
