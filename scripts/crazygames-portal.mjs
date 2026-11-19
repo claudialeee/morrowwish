@@ -24,8 +24,9 @@ try {
 } catch {
  throw Error('CRAZYGAMES_STORAGE_STATE_B64 is not a valid Playwright storage-state JSON. No site was accessed.');
 }
+const stateSummary={cookieCount:state.cookies.length,cookieDomains:[...new Set(state.cookies.map(c=>c.domain))].slice(0,10),origins:state.origins.map(o=>({origin:new URL(o.origin).host,localStorageKeys:o.localStorage?.length||0})).slice(0,10)};
 const browser=await chromium.launch({headless:true});
-const report={checkedAt:new Date().toISOString(),status:'inspection-incomplete',
+const report={checkedAt:new Date().toISOString(),sessionStateSummary:stateSummary,status:'inspection-incomplete',
  authenticated:false,submissionActionFound:false,formLabels:[],loginScreen:false,
  note:'No game submission or modification was attempted.'};
 try {
