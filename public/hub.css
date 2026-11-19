@@ -129,3 +129,56 @@ html[lang="zh-CN"] .hero h1 .period{display:none}
  .tiny-section .mini-copy strong{font-size:19px}
  .about-chips{gap:5px}
 }
+
+/* November 2026 homepage visual re-balance: 02 is a spacious card gallery;
+   03 is a legible studio introduction, not a narrow banner. */
+.tiny-section{padding:55px 0 58px}
+.tiny-section .section-intro{margin-bottom:25px}
+.tiny-section .mini-grid{gap:20px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiny-section .mini-game{min-height:0;display:flex;flex-direction:column;border-radius:23px;overflow:hidden}
+.tiny-section .mini-game>img{display:block;min-height:0;height:184px;width:100%;flex:0 0 auto;object-fit:cover}
+.tiny-section .mini-copy{min-height:155px;padding:18px 21px 20px;gap:6px}
+.tiny-section .mini-copy strong{font-size:22px;line-height:1.22}
+.tiny-section .mini-type{font-size:10px;letter-spacing:.13em}
+.tiny-section .mini-descr{font-size:12px;line-height:1.6;min-height:0}
+.tiny-section .mini-cta{font-size:12px;margin-top:auto}
+.about-section{grid-template-columns:minmax(180px,255px) minmax(0,1fr);gap:38px;padding:43px 0 51px;align-items:center}
+.about-section .about-art{display:block;max-width:255px;width:100%;height:194px;border-radius:25px}
+.about-section .about-cat{transform:translateX(-50%) scale(.82);transform-origin:bottom center;bottom:-35px}
+.about-copy h2{font-size:clamp(26px,2.5vw,34px);margin:8px 0 10px}
+.about-copy p{font-size:14px;line-height:1.65;margin:4px 0 13px}
+.about-chips{margin-top:14px;gap:9px}
+.about-chips span{font-size:11px;padding:7px 11px}
+@media(min-width:701px) and (max-width:1000px){
+ .tiny-section .mini-grid{gap:14px}
+ .tiny-section .mini-game>img{height:155px}
+ .tiny-section .mini-copy{padding:15px 14px 18px;min-height:165px}
+ .tiny-section .mini-copy strong{font-size:20px}
+ .about-section{grid-template-columns:minmax(160px,210px) minmax(0,1fr);gap:24px}
+ .about-section .about-art{height:172px}
+}
+@media(max-width:700px){
+ .tiny-section{padding:40px 0 45px}
+ .tiny-section .mini-grid{grid-template-columns:1fr;gap:13px}
+ .tiny-section .mini-game{flex-direction:row;min-height:145px;border-radius:18px}
+ .tiny-section .mini-game>img{width:36%;flex:0 0 36%;height:auto;min-height:145px;object-fit:cover}
+ .tiny-section .mini-copy{padding:15px 18px;min-height:145px;gap:4px}
+ .tiny-section .mini-copy strong{font-size:20px}
+ .tiny-section .mini-descr{font-size:12px;line-height:1.5}
+ .about-section{grid-template-columns:minmax(115px,165px) minmax(0,1fr);gap:17px;padding:33px 0 38px}
+ .about-section .about-art{display:block;max-width:165px;height:151px;border-radius:18px}
+ .about-section .about-cat{transform:translateX(-50%) scale(.62);transform-origin:bottom center}
+ .about-copy h2{font-size:24px;margin:5px 0}
+ .about-copy p{font-size:12px;line-height:1.6;margin:4px 0 8px}
+ .about-chips{margin-top:7px;gap:5px}
+ .about-chips span{font-size:10px;padding:5px 7px}
+}
+@media(max-width:440px){
+ .tiny-section .mini-game>img{width:36%;flex-basis:36%}
+ .tiny-section .mini-copy{padding:11px 12px;min-height:140px}
+ .tiny-section .mini-copy strong{font-size:19px}
+ .about-section{grid-template-columns:1fr;gap:10px}
+ .about-section .about-art{display:none}
+ .about-copy h2{font-size:26px}
+ .about-copy p{font-size:13px}
+}
