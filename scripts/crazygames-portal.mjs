@@ -155,7 +155,7 @@ try{
     if(await choice.count()){
        await choice.click({timeout:4500}).catch(()=>{});
        await page.waitForTimeout(1300);
-       const safe=t=>String(t||'').replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/ig,'[redacted-email]').replace(/https?:\\/\\/[^\\s]+/gi,'[redacted-url]').slice(0,2500);
+       const safe=t=>String(t||'').replace(/\S+@\S+/g,'[redacted-email]').replace(/https?:\/\/\S+/g,'[redacted-url]').slice(0,2500);
        const formRegion=await page.locator('main').count()?page.locator('main').first():page.locator('body');
        const checkboxDescriptions=await page.locator('input[type="checkbox"]').evaluateAll(ns=>ns.map(n=>{
          const parent=n.closest('label')||n.parentElement?.parentElement||n.parentElement;
