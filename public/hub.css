@@ -28,3 +28,11 @@ html[lang="zh-CN"] .mw-chinese-heading{display:inline;font:inherit;color:inherit
 html[lang="zh-CN"] .section-intro h2 em{font:inherit;color:inherit}
 html[lang="zh-CN"] .section-intro h2{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.025em}
 html[lang="zh-CN"] .feature-card h3 em{font:inherit;color:inherit}
+
+/* Whole Chinese headings never mix translated fragments, colors, or fonts. */
+.mw-chinese-heading{display:none!important}
+html[lang="zh-CN"] .mw-chinese-heading{display:inline!important;font:inherit!important;color:inherit!important;letter-spacing:inherit!important}
+html[lang="zh-CN"] .mw-english-heading{display:none!important}
+html[lang="en"] .mw-english-heading{display:inline!important}
+html[lang="zh-CN"] .section-intro h2,html[lang="zh-CN"] .about-copy h2{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.025em}
+html[lang="zh-CN"] .section-intro h2 em,html[lang="zh-CN"] .about-copy h2 em{font:inherit!important;color:inherit!important}
