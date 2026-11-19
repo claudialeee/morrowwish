@@ -275,6 +275,27 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
 @media(max-width:1010px){.tt-playstage{grid-template-columns:190px minmax(0,1fr) 203px;gap:9px}.tt-playstage>.panel{padding:10px 8px}.tt-resident-rail .res{gap:4px;padding:4px 5px}.tt-journey-item{font-size:11px}.tt-builder-rail .choice{min-height:80px}}
 @media(max-width:780px){.tt-playstage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);grid-template-areas:"res map" "build map";gap:9px;align-items:start}.tt-resident-rail{grid-area:res;max-height:250px}.tt-map-panel{grid-area:map}.tt-builder-rail{grid-area:build}.tt-map-panel .map-wrap{width:100%}.tt-journey-item{min-height:40px;padding:5px;font-size:10px;gap:5px}.tt-step-num{width:20px;height:20px;font-size:10px}}
 @media(max-width:570px){.tt-playstage{grid-template-columns:1fr;grid-template-areas:"res" "build" "map";gap:8px}.tt-resident-rail{max-height:none}.tt-resident-rail .residents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.tt-resident-rail .res{min-height:58px;flex-direction:column;text-align:center;padding:5px 2px;gap:2px}.tt-resident-rail .res .face{font-size:22px}.tt-resident-rail .res b{font-size:10px}.tt-resident-rail .res small{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tt-resident-rail .res .tt-resident-state{display:none}.tt-incoming .residents{grid-template-columns:repeat(4,minmax(0,1fr))}.tt-incoming .res{min-height:44px}.tt-rail-hint{margin-bottom:7px}.tt-journey{gap:4px;margin:7px 0}.tt-journey-item{font-size:9px;flex-direction:column;gap:3px;text-align:center;padding:5px 1px}.tt-journey-item .tt-step-num{width:18px;height:18px}.tt-stats{margin:5px 0 8px;gap:5px}.tt-stats .stat{padding:6px 4px;gap:3px}.tt-stats .stat .k{font-size:9px}.tt-stats .stat .v{font-size:15px}.tt-builder-rail .cards{grid-template-columns:repeat(3,minmax(0,1fr))}.tt-builder-rail .choice{min-height:66px;padding:5px}.tt-builder-rail .choice .ico{font-size:20px}.tt-builder-rail .tt-auto{margin:7px 0 0!important}.tt-builder-rail .tt-divider,.tt-builder-rail .tt-goals,.tt-builder-rail .tt-subheading,.tt-builder-rail #clubProgress,.tt-builder-rail .tt-club-example{display:none}.tt-map-panel .aw-coach{margin-bottom:7px!important}.tt-news-panel .feed{display:block;max-height:125px}.tt-news-panel .event{margin:4px 0}.tt-map-footer{font-size:9px}}
+
+/* Keep the board central, and scan primary/secondary interests at a glance. */
+.tt-map-panel .map-wrap{max-width:440px}
+.tt-resident-rail{max-height:585px}
+.tt-resident-rail .res small.tt-interests{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-resident-rail .res small.tt-interests b{font-weight:900;color:#745b84}
+.tt-journey[data-step="1"] ~ .tt-playstage .tt-builder-rail{border-color:#e4b09a;box-shadow:0 0 0 2px #f5d1ba70}
+.tt-journey[data-step="2"] ~ .tt-playstage .tt-map-panel{border-color:#e4b09a;box-shadow:0 0 0 2px #f5d1ba70}
+.tt-builder-rail .choice:disabled{opacity:.65;cursor:wait}
+.tt-playstage .aw-coach,.tt-playstage .aw-coach.aw-compact{background:#fff3e8!important;border:1px solid #ebd8cb!important}
+@media(max-width:570px){
+ .tt-map-panel .map-wrap{max-width:440px}
+ .tt-builder-rail .tt-divider{display:block;margin:8px 0}
+ .tt-builder-rail .tt-goals{display:grid;font-size:10px;gap:3px}
+ .tt-builder-rail .tt-subheading{display:block;font-size:11px}
+ .tt-builder-rail #clubProgress{display:block;max-height:75px}
+ .tt-builder-rail .tt-club-example{display:none}
+ .tt-resident-rail .res small.tt-interests{font-size:8px}
+ .tt-resident-rail .tt-rail-hint{font-size:10px}
+ .tt-resident-rail .res b{font-size:9px}
+}
 </style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
 <body><script src="/telemetry.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
   <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
@@ -292,8 +313,8 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
 <div class="tt-playstage">
  <aside class="panel tt-resident-rail" aria-label="Residents and interests">
   <div class="tt-rail-heading"><b class="aw-en">👥 Your neighbors</b><b class="aw-zh">👥 居民喜欢什么？</b><span id="ttResidentCount">8</span></div>
-  <p class="tt-rail-hint aw-en">Their interests tell you where to build. Tap any resident to see their walking area.</p>
-  <p class="tt-rail-hint aw-zh">先看看谁喜欢什么，再决定建什么。点居民可查看活动范围。</p>
+  <p class="tt-rail-hint aw-en">First interest is their favorite. Tap someone to see their walking area.</p>
+  <p class="tt-rail-hint aw-zh">每个人的第一项是最喜欢的活动。点居民可查看活动范围。</p>
   <div class="residents" id="residents"></div>
   <p class="hint aw-resident-hint" id="focusInfo" hidden></p>
   <div class="info tt-resident-detail" id="residentWhy" hidden></div>
@@ -623,10 +644,10 @@ $('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected
 $('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
 $('residents').innerHTML=state.residents.map((r,i)=>{
  const sim=state.last||E.simulate(state),isOut=sim.assignments[i]>=0;
- return '<button type="button" class="res '+(isOut?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small class="'+(isOut?'aw-attending':'')+'">'+(isOut?L('● At an activity','● 正在活动'):L('○ At home','○ 在家'))+'</small></div></button>';
+ return '<button type="button" class="res '+(isOut?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small class="tt-interests"><b>'+icons[r.primary].icon+' '+kind(r.primary)+'</b> · '+icons[r.secondary].icon+' '+kind(r.secondary)+'</small><small class="'+(isOut?'aw-attending':'')+'">'+(isOut?L('● At an activity','● 正在活动'):L('○ At home','○ 在家'))+'</small></div></button>';
 }).join('');
 $('awIncomingGroup').hidden=state.turn>=5;
-$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small></div></button>').join(''):'';
+$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small class="tt-interests"><b>'+icons[r.primary].icon+' '+kind(r.primary)+'</b> · '+icons[r.secondary].icon+' '+kind(r.secondary)+'</small></div></button>').join(''):'';
 statusUI();if(state.last)updateReceipt();refreshFeed();
 }
 $('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
