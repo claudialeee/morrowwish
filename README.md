@@ -46,4 +46,8 @@ Add `public/<game-slug>/`, link a card in `public/index.html`, add the game slug
 
 ## Collaborative publishing
 
-Contributors work in feature branches and open pull requests into `main`. The active GitHub Actions workflow in .github/workflows/deploy-cloudflare.yml runs on main pushes and deploys only Cloudflare Pages through npm run deploy. It uses the CLOUDFLARE_API_TOKEN repository secret. Vercel is never deployed by this workflow. The automation/deploy-cloudflare.example.yml file is an inactive template.
+All coding agents should read [AGENTS.md](AGENTS.md) first; Claude also reads [CLAUDE.md](CLAUDE.md). These files document source layout, new-game integration, bilingual content, telemetry, unified dashboard ordering, tests, production restrictions, and verified-release reporting.
+
+The authorized collaborator `Kartepolo` has GitHub write permission and may **push directly to `main` for ordinary code changes without owner approval**. Feature branches/PRs are optional when useful; they are not an approval prerequisite. The active GitHub Actions workflow at `.github/workflows/deploy-cloudflare.yml` checks source and deploys qualifying `main` pushes to the **existing Cloudflare Pages project** using the `CLOUDFLARE_API_TOKEN` repository secret. Do not redeploy Vercel or create replacement Cloudflare resources. After a push, check the Actions run and verify the live game and analytics; a pushed commit is not automatically proof of a successful release.
+
+The `automation/deploy-cloudflare.example.yml` file is an inactive legacy template.
