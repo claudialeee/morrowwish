@@ -9,9 +9,12 @@ const KEY='morrowwish-cat-music-enabled';
 let wanted=true,started=false,error='';
 try{const saved=localStorage.getItem(KEY);if(saved==='0'||saved==='1')wanted=saved==='1'}catch{}
 const audio=document.createElement('audio');
-audio.id='catRecordedMusic';audio.loop=true;audio.preload='none';audio.volume=.16;
+audio.id='catRecordedMusic';audio.loop=true;audio.preload=wanted?'auto':'none';audio.volume=.16;
 audio.src='/audio/cat-happy-clappy.ogg';audio.setAttribute('aria-hidden','true');
 document.body.appendChild(audio);
+// Start transferring and decoding the recording immediately, BEFORE the first click.
+// Browsers may block autoplay with sound, but they do permit early buffering.
+if(wanted)audio.load();
 const lang=()=>window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh')?'zh':'en';
 function sync(){
  const zh=lang()==='zh';
@@ -22,18 +25,28 @@ function sync(){
 }
 function start(){
  if(!wanted||document.hidden)return false;
- started=true;
- const result=audio.play();if(result&&typeof result.catch==='function')result.catch(e=>{error=e?.message||'Playback blocked'});
+ // Calling play() directly from the trusted interaction preserves autoplay permission.
+ // The file was already requested on page load, so the first click should play quickly.
+ const result=audio.play();
+ if(result&&typeof result.then==='function')result.then(()=>{started=true;error='';}).catch(e=>{
+  // A blocked autoplay is normal: the next real click will retry.
+  if(e?.name!=='NotAllowedError'&&e?.name!=='AbortError')error=e?.message||'Playback failed';
+ });
+ else started=true;
  return true;
 }
 function stop(){audio.pause()}
-function toggle(){wanted=!wanted;try{localStorage.setItem(KEY,wanted?'1':'0')}catch{}if(wanted)start();else stop();sync();return wanted}
-function status(){return{enabled:wanted,playing:!audio.paused&&!audio.ended,started,source:'recorded-cc0',src:audio.currentSrc||audio.src,readyState:audio.readyState,duration:Number.isFinite(audio.duration)?audio.duration:0,volume:audio.volume,error}}
+function toggle(){
+ wanted=!wanted;try{localStorage.setItem(KEY,wanted?'1':'0')}catch{}
+ if(wanted){audio.preload='auto';audio.load();start()}else stop();
+ sync();return wanted;
+}
+function status(){return{enabled:wanted,playing:!audio.paused&&!audio.ended,started,preload:audio.preload,source:'recorded-cc0',src:audio.currentSrc||audio.src,readyState:audio.readyState,duration:Number.isFinite(audio.duration)?audio.duration:0,volume:audio.volume,error}}
 button.addEventListener('click',toggle);
 function gesture(e){
  if(e.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(e.key))return;
  if(e.target?.closest?.('#music,#sound,#mw-language'))return;
- if(!started&&wanted)start();
+ if(wanted&&audio.paused)start();
 }
 document.addEventListener('pointerdown',gesture,true);
 document.addEventListener('keydown',gesture,true);
@@ -43,4 +56,7 @@ window.addEventListener('morrowwish-language-change',sync);
 audio.addEventListener('error',()=>{error='Audio asset unavailable';stop()});
 window.MorrowwishCatMusic={start,stop,toggle,status,sync};
 sync();
+// On browsers that explicitly permit autoplay (e.g. returning players), start at once;
+// otherwise the fully buffered recording starts on their first interaction.
+if(wanted)start();
 })();

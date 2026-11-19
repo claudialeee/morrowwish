@@ -23,6 +23,14 @@ try{
     yarn:document.getElementById('tool')?.textContent};
  });
  console.log('Canvas audit:',JSON.stringify(initial));
+ // Regression: a new visitor gets a prefetched soundtrack before any interaction.
+ // No click required to download/prepare the recorded music.
+ await page.waitForFunction(()=>document.getElementById('catRecordedMusic')?.readyState>=2,null,{timeout:10000});
+ const preloaded=await page.evaluate(()=>window.MorrowwishCatMusic.status());
+ assert.equal(preloaded.preload,'auto','Recorded cat music must preload before first interaction');
+ assert.ok(preloaded.readyState>=2,'Recorded music should already be buffered before first click');
+ assert.equal(preloaded.error,'','Early loading should not report an audio error');
+ console.log('Recorded cat song ready before user input:',JSON.stringify(preloaded));
  assert.equal(initial.loaded,true,'Game Javascript must initialize');
  const ruleLayout=await page.evaluate(()=>{
   const intro=document.querySelector('.explainer'),board=document.getElementById('board'),steps=intro?.querySelectorAll('.rule-step')||[];
