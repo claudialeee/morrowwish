@@ -77,15 +77,20 @@ try{
     if(await e.count() && await pw.count()){
       await e.fill(email);
       await pw.fill(password);
-      const submit=page.locator('button[type="submit"],input[type="submit"]').first();
-      report.loginMethod=await submit.count()?'explicit-submit-button':'press-enter';
+      const submit=page.getByRole('button',{name:/^(log\\s*in|sign\\s*in|login|continue)$/i}).first();
+      const typed=page.locator('button[type="submit"],input[type="submit"]').first();
+      const formButton=page.locator('form button').filter({hasText:/log\\s*in|sign\\s*in|continue/i}).first();
+      report.loginButtons=await page.locator('form button').evaluateAll(bs=>bs.map(b=>({type:b.type,label:(b.innerText||'').trim().slice(0,48)})).filter(b=>/log\\s*in|sign\\s*in|continue/i.test(b.label)).slice(0,8)).catch(()=>[]);
       report.loginFormCount=await page.locator('form').count().catch(()=>0);
-      if(await submit.count()){
-        await Promise.allSettled([page.waitForURL(u=>!isLogin({url:()=>u.toString()}),{timeout:18000}),submit.click({timeout:5000})]);
+      const action=await submit.count()?submit:await typed.count()?typed:formButton;
+      report.loginMethod=await action.count()?'click-login-button':'press-enter';
+      if(await action.count()){
+        await action.click({timeout:5000}).catch(()=>{});
       }else{
         await pw.press('Enter').catch(()=>{});
       }
-      await page.waitForTimeout(2200);
+      await page.waitForURL(u=>!isLogin({url:()=>u.toString()}),{timeout:12000}).catch(()=>{});
+      await page.waitForTimeout(3200);
     }else{
       report.loginFormNotFound=true;
     }
