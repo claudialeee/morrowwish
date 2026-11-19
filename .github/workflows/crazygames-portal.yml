@@ -18,7 +18,7 @@ concurrency:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 4
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,7 +29,6 @@ jobs:
         run: |
           npm ci
           npm install --no-save --no-package-lock playwright
-          npx playwright install chromium
       - name: Check studio session and available submission entrypoint
         env:
           CRAZYGAMES_STORAGE_STATE_B64: ${{ secrets.CRAZYGAMES_STORAGE_STATE_B64 }}
