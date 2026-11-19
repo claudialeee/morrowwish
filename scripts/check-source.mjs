@@ -199,15 +199,23 @@ for(const source of [mysterySource,'public/elsewhere/app.js'])new vm.Script(fs.r
 console.log('Elsewhere mystery validation: 2,048 simulated ending paths, four secret illustrations, old save support, and bilingual endings checked.');
 
 
-// Four intentionally distinct, original looping soundtracks, separate from SFX.
+// Four distinct CC0 instrumental recordings, native looping, separate from SFX.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
 new vm.Script(originalMusic,{filename:'public/studio-music.js'});
-for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
+const bgmTracks={
+ 'tiny-town':'bedroom-window-vast.mp3',
+ 'flip-dash':'overdrive-signal-lost.mp3',
+ 'parcel-panic':'evergreen-open-road.mp3',
+ 'pocket-aquarium':'quiet-room.mp3'
+};
+for(const [slug,file] of Object.entries(bgmTracks)){
  const page=fs.readFileSync('public/'+slug+'/index.html','utf8');
- if(!page.includes('src="/studio-music.js"')||!page.includes('src="/studio-audio.js"')){
+ if(!page.includes('src="/studio-music.js"')||!page.includes('src="/studio-audio.js"'))
   throw new Error('Music and SFX must both load: '+slug);
- }
- if(!originalMusic.includes("'"+slug+"':{"))throw new Error('Original music profile missing: '+slug);
+ if(!page.includes('rel="preload" as="audio"')||!page.includes(file))
+  throw new Error('Full-track music must preload: '+slug);
+ if(!originalMusic.includes("'"+slug+"':")||!originalMusic.includes(file))
+  throw new Error('Licensed BGM profile missing: '+slug);
 }
 const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
 for(const marker of ['function portrait(person)','data:image/webp;base64,','function homesView(','fans=state.residents.filter(']){
@@ -288,12 +296,13 @@ for(const track of melodyPaths)if(!musicSource.includes(track))throw Error('Miss
 console.log('Elsewhere musical redesign and story letter copy checked.');
 
 
-// Instant soundtrack attempt + in-game weekly news placement/regression checks.
+// Native media looping fixes browser-suspended Web Audio oscillators.
 const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
-if(!immediateMusic.includes('if(enabled)start(); // Immediately attempt at script execution')||
-   !immediateMusic.includes('nextTime=ctx.currentTime+.008')||
-   !immediateMusic.includes("if(enabled&&!running)start()"))
- throw new Error('Soundtrack should attempt to play on load and resume instantly after a blocked autoplay');
+for(const marker of ['if(enabled)play(); // Attempt immediately','audio.loop=true',
+ 'audio.addEventListener(\'playing\'','audio.addEventListener(\'error\'',
+ 'FALLBACK+track.file',"evt.target?.closest?.('[data-mw-music]')"]){
+ if(!immediateMusic.includes(marker))throw new Error('Robust licensed BGM missing: '+marker);
+}
 for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
  const html=fs.readFileSync('public/'+slug+'/index.html','utf8');
  if(!html.includes('rel="preload" href="/studio-music.js" as="script"'))throw new Error('Music should preload: '+slug);
