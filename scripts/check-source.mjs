@@ -52,6 +52,7 @@ for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js
  if(text.toLowerCase().includes(['ruckus','button'].join('-')))throw Error('Old project name remains in '+file);
 }
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
+await import('./check-pawsibly.mjs');
 
 
 // Elsewhere: every route must lead to a complete, illustrated, bilingual ending.
