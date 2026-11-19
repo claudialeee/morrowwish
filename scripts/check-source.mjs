@@ -28,7 +28,7 @@ for(const marker of ["metric('game_start'","metric('game_complete'","metric('gam
 if(!telemetry.includes('"elsewhere"'))throw Error('Missing Elsewhere telemetry');
 if(!telemetry.includes('"meowhem"'))throw Error('Missing MEOWHEM telemetry');
 const catGame=fs.readFileSync('public/meowhem/game.js','utf8');
-for(const marker of ['game_start','game_complete','game_retry','level_complete','guardMove','morrowwish-language-change']){
+for(const marker of ['game_start','game_complete','game_retry','cat_level_won','guardMove','morrowwish-language-change']){
  if(!catGame.includes(marker))throw Error('MEOWHEM missing gameplay/analytics: '+marker);
 }
 if(!fs.readFileSync('public/index.html','utf8').includes('href="/meowhem/"'))throw Error('Homepage missing MEOWHEM link');
