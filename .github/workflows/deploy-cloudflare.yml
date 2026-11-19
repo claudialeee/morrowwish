@@ -68,7 +68,7 @@ jobs:
       - name: Verify Cloudflare site and analytics API
         run: |
           set -eu
-          for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /studio-insights/; do
+          for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /icons/pawsibly-innocent.svg /studio-insights/; do
             code=$(curl -sSL --max-time 15 -o /dev/null -w '%{http_code}' "https://morrowwish.pages.dev$route")
             test "$code" = 200 || { echo "::error::Page $route returned $code"; exit 1; }
           done
