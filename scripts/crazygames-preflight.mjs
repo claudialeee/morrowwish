@@ -104,7 +104,7 @@ try {
  // Record ACTUAL browser playback (not animation built from still images).
  // Two required aspect ratios; no soundtrack and no static-image video.
  if(['flip-dash','parcel-panic'].includes(slug)){
-  for(const [label,width,height] of [['landscape',1280,720],['portrait',800,1200]]){
+  for(const [label,width,height] of [['landscape',1920,1080],['portrait',1080,1620]]){
    const c=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,
      recordVideo:{dir:out,size:{width,height}}});
    await blockTelemetry(c);
@@ -112,6 +112,8 @@ try {
    const response=await p.goto(tracked.toString(),{waitUntil:'domcontentloaded',timeout:30000});
    if(response?.status()!==200){errors.push('Video page HTTP '+response?.status());await c.close();continue;}
    await p.waitForTimeout(650);
+   // Hide cursor in the recording only; the site and player controls remain unchanged.
+   await p.addStyleTag({content:'*,*::before,*::after{cursor:none!important}'});
    const start=p.getByRole('button',{name:/^play now$|^play$/i}).first();
    if(await start.count())await start.click().catch(()=>{});
    const duration=16000,origin=Date.now();
