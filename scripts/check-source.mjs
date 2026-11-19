@@ -31,7 +31,21 @@ const catGame=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 for(const marker of ['game_start','game_complete','game_retry','cat_level_won','guardMove','morrowwish-language-change']){
  if(!catGame.includes(marker))throw Error('Pawsibly Innocent missing gameplay/analytics: '+marker);
 }
-if(!fs.readFileSync('public/index.html','utf8').includes('href="/pawsibly-innocent/"'))throw Error('Homepage missing Pawsibly Innocent link');
+const homepage=fs.readFileSync('public/index.html','utf8');
+const featured=homepage.match(/<div class="feature-grid">([\s\S]*?)<\/div><\/section>/)?.[1]||'';
+const minis=homepage.match(/<div class="mini-grid">([\s\S]*?)<\/div><\/div><\/section>/)?.[1]||'';
+for(const link of ['href="/pawsibly-innocent/"','href="/elsewhere/"','href="/tiny-town/"']){
+ if(!featured.includes(link))throw Error('Missing signature world featured card: '+link);
+}
+if((featured.match(/class="feature-card/g)||[]).length!==3)throw Error('Three signature games required');
+if(minis.includes('href="/pawsibly-innocent/"'))throw Error('Cat world must not be in mini-games');
+for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souvenirs','function vacuumDraw','function roomDecor']){
+ if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);
+}
+const catHTML=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
+for(const id of ['id="tool"','id="collection"','id="ability"'])if(!catHTML.includes(id))throw Error('Cat interface missing '+id);
+if(!fs.readFileSync('public/art/pawsibly-scene.svg','utf8').includes('<svg'))throw Error('Featured cat art missing');
+
 if(!fs.readFileSync('src/analytics.js','utf8').includes('ARCADE_ANALYTICS_KEY'))throw Error('Missing Analytics authentication');
 for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js','public/studio-insights/index.html']){
  const text=fs.readFileSync(file,'utf8');
