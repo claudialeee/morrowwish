@@ -157,35 +157,57 @@ body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8e
 .awClub .aw-club-state.ready{color:#25825b;font-weight:800}
 .aw-coach p{display:block!important}
 @media(max-width:540px){.aw-club-guide{padding:9px 10px}.aw-club-guide p{font-size:11px}}
+
+/* Compact v3 layout: action-focused side rail, always-visible resident/news panels below. */
+.aw-minimal-guide{padding:10px 14px!important}
+.aw-club-example{display:block;margin-top:8px;padding-top:9px;border-top:1px solid #eddcd1}
+.aw-club-example-tag{font-size:11px;font-weight:850;color:#916c7c}
+.aw-club-example .aw-en,.aw-club-example .aw-zh{font-size:12px}
+.aw-example-venues{display:inline-flex;gap:5px;align-items:center;margin:5px 10px 2px 0;vertical-align:middle}
+.aw-example-venues>span:not(.aw-example-plus){display:inline-block;border-radius:9px;background:#fffdf8;border:1px solid #e6d8d2;padding:4px 8px;font-size:11px;font-weight:750;white-space:nowrap}
+.aw-example-plus{font-weight:800;color:#ae8f91}
+.aw-club-example p{margin:4px 0 0;display:inline;font-size:11px;line-height:1.6;color:#796878}
+.aw-club-example p b{color:#745264}
+.layout{grid-template-columns:minmax(0,1fr) 298px;gap:14px}
+.side{gap:11px}
+.side>.panel{padding:12px 13px;border-radius:18px}
+.side .panel-title{font-size:13px;margin-bottom:8px}
+.side .panel-sub{font-size:10px}
+.side .aw-club-progress-panel .feed{max-height:266px;padding:3px;background:transparent;min-height:0}
+.aw-club-progress-panel .awClub{margin-bottom:6px;padding:7px 9px!important}
+.aw-club-progress-panel .aw-club-state{font-size:10px}
+.aw-picker-panel .choice{padding:8px 4px}
+.aw-picker-panel #preview{font-size:11px;line-height:1.5}
+.aw-lower-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(260px,1fr);gap:14px;margin-top:14px;align-items:start}
+.aw-lower-grid>.aw-advanced{border-radius:19px}
+.aw-lower-grid .aw-expanded-heading{padding:11px 13px;font-size:13px}
+.aw-lower-grid .aw-expanded-heading span{font-size:10px}
+.aw-lower-grid .aw-advanced-body{padding:10px 12px 12px!important;box-shadow:none;background:transparent}
+.aw-lower-grid .residents{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.aw-lower-grid .res{min-width:0;min-height:61px;padding:7px;display:flex;align-items:center;flex-direction:row;text-align:left;gap:6px;border:1px solid #efe5de;background:#fffaf5;border-radius:11px}
+.aw-lower-grid .res .face{flex:none;font-size:22px}
+.aw-lower-grid .res>div{min-width:0;flex:1}
+.aw-lower-grid .res b{font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aw-lower-grid .res small{font-size:10px;line-height:1.4;display:block;color:#897889;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aw-lower-grid .res .aw-attending{color:#287957}
+.aw-lower-grid #residentWhy{margin-top:9px;font-size:11px;line-height:1.5}
+#residentWhy[hidden],#awIncomingGroup[hidden]{display:none!important}
+.aw-incoming-heading{font-size:11px;font-weight:800;color:#a37b82;margin:10px 0 6px;border-top:1px solid #eee0d7;padding-top:9px}
+.aw-lower-grid .aw-news .feed{max-height:280px;min-height:145px;overflow:auto;border:0;background:transparent;padding:1px 3px}
+.aw-lower-grid .aw-news .event{font-size:11px;line-height:1.5}
+@media(max-width:960px){.aw-lower-grid{grid-template-columns:1fr}}
+@media(max-width:780px){.layout{display:flex;flex-direction:column;gap:10px}.side{display:contents}.side>.panel:first-child{order:-1}.aw-lower-grid{margin-top:11px}.aw-lower-grid .residents{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:540px){.aw-club-example p{display:block;font-size:11px}.aw-example-venues{display:flex;margin-top:5px;margin-bottom:5px}.aw-lower-grid .residents{grid-template-columns:repeat(2,minmax(0,1fr))}.aw-lower-grid .aw-news .feed{max-height:210px}.aw-expanded-heading span{display:none}}
 </style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
 <body><script src="/telemetry.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
   <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
 <section class="aw-quick-guide aw-minimal-guide" aria-label="How to play">
-<div class="aw-mini-main"><strong>8 little turns · build a happier town</strong></div>
-<div class="aw-mini-steps"><b>1.</b> Pick a place <span>→</span> <b>2.</b> Tap a green square <span>→</span> <b>3.</b> Watch neighbors gather</div>
-<div class="aw-club-guide">
- <div class="aw-en"><strong>🎉 How to make a club</strong><p>🏡 Put <b>different venues side by side</b> → 👥 Get <b>2 visitors at each</b> → 📅 Repeat for <b>2 weeks</b>.</p><small>They must share an edge, not just touch at a corner. Map connectors show 0/2 → 1/2 → ✓.</small></div>
- <div class="aw-zh"><strong>🎉 怎样组建社团</strong><p>🏡 <b>两种不同场所上下左右相邻</b> → 👥 <b>每处至少 2 人</b> → 📅 <b>连续保持 2 周</b>，社团就成立！</p><small>斜对角不算相邻；地图连线显示进度：0/2 → 1/2 → ✓。</small></div>
-</div>
-<details class="aw-mini-rules">
-<summary>How do clubs work? (optional)</summary>
-<div class="aw-mini-rule-list">
-<p><b>Your turn:</b> Put down one venue each week. You get 8 moves.</p>
-<p><b>Neighbors:</b> Each has different interests and a walking range (2–4 steps).</p>
-<p><b>Clubs:</b> Different neighboring venues form a club when both host at least two people for two consecutive weeks.</p>
-<p><b>Victory:</b> By Week 8, get 9 neighbors out of the house and form 2 lasting clubs.</p>
-</div>
-<details class="aw-mini-advanced">
-<summary>Advanced: capacities, scoring &amp; mechanics</summary>
-<div class="aw-rule-more-grid">
-<div><b>Seats &amp; upgrades</b><p>Arcade 3 · Music Studio 2 · Art Workshop 2 · Café 2. Optional upgrades add one seat.</p></div>
-<div><b>Resident choices</b><p>Neighbors prefer primary over secondary interests and pick venues automatically, considering distance and availability. Each attends one venue per week. Rocks block paths. Adjacent means sharing an edge, not a corner.</p></div>
-<div><b>Different club types</b><p>Put different venues side by side; each needs 2 visitors for 2 consecutive weeks.</p></div>
-<div><b>Vitality &amp; grades</b><p>Each week: +10 for each active resident, +24 per stable club, +6 per forming club, +4 per attended venue type, −5 per empty venue. Total scores of 1,000/1,150 earn A/S on winning; other wins B, losses C.</p></div>
-<div><b>Controls</b><p>Hover over a tile to preview. On mobile, tap a tile twice to confirm. Tap Residents &amp; interests to inspect everyone, including the four upcoming arrivals. New maps vary their layouts and offers.</p></div>
-</div>
-</details>
-</details>
+ <div class="aw-mini-main"><strong>8 little turns · build a happier town</strong></div>
+ <div class="aw-mini-steps"><b>1.</b> Pick a place <span>→</span> <b>2.</b> Tap a green square <span>→</span> <b>3.</b> Watch neighbors gather</div>
+ <div class="aw-club-example">
+  <div class="aw-en"><span class="aw-club-example-tag">🎉 Club example</span><div class="aw-example-venues"><span>🎮 Arcade</span><span class="aw-example-plus">+</span><span>🎵 Music Studio</span></div><p>Build them in <b>two squares sharing an edge</b>. If <b>2 residents visit each venue</b> for <b>2 weeks in a row</b>, they form a Rhythm Club.</p></div>
+  <div class="aw-zh"><span class="aw-club-example-tag">🎉 举个例子：怎么组建社团？</span><div class="aw-example-venues"><span>🎮 街机厅</span><span class="aw-example-plus">+</span><span>🎵 音乐工作室</span></div><p>把它们建在<b>紧挨着的两个格子</b>（斜对角不算）。连续 <b>2 周</b>，<b>每个场所都有至少 2 位居民来玩</b>，就会成立「节奏社」。</p></div>
+ </div>
 </section>
   <div class="stats"><div class="stat"><div class="k">Week</div><div class="v" id="turn">0 / 8</div></div><div class="stat"><div class="k">Happy neighbors</div><div class="v" id="active">0 / 8</div><small class="aw-active-note" id="activeNote">4 join in Week 5</small></div><div class="stat"><div class="k">Social clubs</div><div class="v" id="clubs">0 / 2</div></div><div class="stat"><div class="k">Town joy</div><div class="v" id="score">0</div></div></div>
   <div class="layout"><div class="panel"><div class="panel-title"><span>🌿 Your town</span><span class="panel-sub" id="seed">Seed</span></div>
@@ -196,10 +218,15 @@ body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8e
 </div>
 <p class="hint aw-resident-hint" id="focusInfo" style="margin:8px 0">Select a resident to highlight their home and walking range.</p><div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div><div class="aw-club-links" id="clubLinks" aria-hidden="true"></div></div>
 <div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div><div class="aw-map-tip"><span class="aw-en">Map connections show club progress: 0/2 → 1/2 → ✓.</span><span class="aw-zh">地图连线显示社团进度：0/2 → 1/2 → ✓。</span></div><details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details></div>
-  <div class="side"><div class="panel"><div class="panel-title">✿ Pick a place <span class="panel-sub">then tap the map</span></div><div class="cards" id="cards"></div><button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button><div class="info" id="preview">Hover over a green tile to preview the result.</div></div>
+  <div class="side">
+  <div class="panel aw-picker-panel"><div class="panel-title">✿ Pick a place <span class="panel-sub">then tap the map</span></div><div class="cards" id="cards"></div><button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button><div class="info" id="preview">Hover over a green tile to preview the result.</div></div>
   <div class="panel aw-goal-panel"><div class="panel-title">♡ Make a happy little town <span class="panel-sub">8 turns</span></div><div class="goals"><div id="goalActive">○ Help 9 neighbors have fun</div><div id="goalClub">○ Form 2 different clubs</div></div></div>
-  <section class="aw-advanced" id="awResidentsDetails"><div class="aw-expanded-heading">👥 Residents &amp; interests <span>Tap to see homes &amp; reach</span></div><div class="panel aw-advanced-body"><div class="panel-title">👥 Residents <span class="panel-sub">Tap for home & range</span></div><div class="residents" id="residents"></div><div class="info" id="residentWhy">Choose a resident to inspect their activity.</div><div class="section" style="margin-top:12px">Arriving in Week 5 · advance notice</div><div class="residents" id="incoming"></div></div></section><div class="panel"><div class="panel-title">🎉 Club progress</div><div class="feed" id="clubProgress"></div></div>
-  <section class="aw-advanced aw-news"><div class="aw-expanded-heading">📰 Town news <span>Details of each week</span></div><div class="panel aw-advanced-body"><div class="panel-title">📰 Town News</div><div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div></div></section></div></div>
+  <div class="panel aw-club-progress-panel"><div class="panel-title">🎉 Club progress</div><div class="feed" id="clubProgress"></div></div>
+ </div></div>
+ <div class="aw-lower-grid">
+  <section class="aw-advanced aw-residents-panel" id="awResidentsDetails"><div class="aw-expanded-heading"><b class="aw-en">👥 Residents &amp; interests</b><b class="aw-zh">👥 居民与兴趣</b><span class="aw-en">Tap a resident to see their details</span><span class="aw-zh">点击居民查看详情</span></div><div class="panel aw-advanced-body"><div class="residents" id="residents"></div><div class="info" id="residentWhy" hidden></div><div class="aw-incoming-group" id="awIncomingGroup"><div class="section aw-incoming-heading"><span class="aw-en">Four new neighbors arrive in Week 5</span><span class="aw-zh">第 5 周将有 4 位新居民入住</span></div><div class="residents" id="incoming"></div></div></div></section>
+  <section class="aw-advanced aw-news"><div class="aw-expanded-heading"><b class="aw-en">📰 Town news</b><b class="aw-zh">📰 小镇新闻</b><span class="aw-en">Latest town updates</span><span class="aw-zh">最新动态</span></div><div class="panel aw-advanced-body"><div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div></div></section>
+ </div>
 </div>
 <div id="end" class="end" role="dialog" aria-modal="true"><div class="end-card"><div class="big" id="endIcon">🎉</div><h2 id="endTitle">Town complete</h2><p id="endText"></p><div class="end-buttons"><button class="btn primary" id="newAgain">New town</button><button class="btn" id="sameAgain">Replay same seed</button><button class="btn" id="closeEnd">View town</button></div>
 <div class="aw-end-feedback"><div id="feedbackQuestion"><span>How was this round?</span><div class="aw-feedback-buttons"><button id="feedbackFun" type="button">Fun</button><button id="feedbackConfusing" type="button">Confusing</button><button id="feedbackNotFun" type="button">Not fun</button></div></div><div id="feedbackThanks" hidden>Thanks for the feedback!</div></div>
@@ -375,7 +402,8 @@ function reason(st,rs,i){
 function statusUI(){
  const rs=state.last||E.simulate(state),p=all().find(q=>q.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
  $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; purple tiles are within '+p.reach+' steps.',p.name+' 住在 '+cell(p.home)+'；紫色格子表示步行可达（'+p.reach+' 格）。'):L('Select a resident to see their home and walking range.','点击居民，查看住址和步行范围。');
- $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):L('Choose a resident to inspect their activity.','点击一位居民，查看兴趣和活动。');
+ $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Reach ','步行范围 ')+p.reach+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Arrives in Week 5','第 5 周入住'):reason(state,rs,i))):'';
+ $('residentWhy').hidden=!p;
  const list=[];
  for(let a=0;a<state.buildings.length;a++)for(let b=a+1;b<state.buildings.length;b++){
   const x=state.buildings[a],y=state.buildings[b];if(x.type===y.type||!E.adjacent(x.pos,y.pos))continue;
@@ -483,8 +511,12 @@ showClubLinks();
 $('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');button.className='choice'+(selected===type?' active':'');button.innerHTML='<div class="ico">'+icons[type].icon+'</div><div class="label">'+venue(type)+'</div><div class="detail">'+L('Capacity ','容纳 ')+icons[type].capacity+L('',' 人')+'</div>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Selected '+icons[type].name+'. Hover a green plot to preview; click to build.','已选择'+venue(type)+'。鼠标移到绿色格子上可预览，点击即可建造。');};$('cards').appendChild(button);}}
 $('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
 $('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
-$('residents').innerHTML=state.residents.map((r,i)=>{const rs=state.last||E.simulate(state),venue=rs.assignments[i]??-1;return '<button type="button" class="res '+(venue>=0?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+safe(reason(state,rs,i))+'</small></div></button>';}).join('');
-$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small>'+L('Arrives in Week 5','第 5 周入住')+'</small></div></button>').join(''):L('All newcomers have arrived.','新邻居已经全部入住。');
+$('residents').innerHTML=state.residents.map((r,i)=>{
+ const sim=state.last||E.simulate(state),isOut=sim.assignments[i]>=0;
+ return '<button type="button" class="res '+(isOut?'working ':'')+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small><small class="'+(isOut?'aw-attending':'')+'">'+(isOut?L('● At an activity','● 正在活动'):L('○ At home','○ 在家'))+'</small></div></button>';
+}).join('');
+$('awIncomingGroup').hidden=state.turn>=5;
+$('incoming').innerHTML=state.turn<5?state.incoming.map(r=>'<button type="button" class="res awNew '+(focusId===r.id?'awSelected':'')+'" data-r="'+r.id+'"><span class="face">'+r.face+'</span><div><b>'+safe(r.name)+' · 🏠 '+cell(r.home)+'</b><small>'+kind(r.primary)+' · '+kind(r.secondary)+'</small></div></button>').join(''):'';
 statusUI();if(state.last)updateReceipt();refreshFeed();
 }
 $('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
