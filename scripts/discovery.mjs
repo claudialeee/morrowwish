@@ -48,7 +48,7 @@ export function publishedGames() {
   if (!games.length) throw Error('No published game links on homepage.');
   return games;
 }
-export function trackedLink(game, source, medium='social', phase='launch') {
+export function trackedLink(game, source, medium='social', phase='playtest') {
   const u=new URL(game.url);
   u.searchParams.set('utm_source',source);
   u.searchParams.set('utm_medium',medium);
@@ -103,6 +103,20 @@ export function generateDiscovery(out) {
 }
 export function generateReleaseKit(dest) {
   const games=publishedGames();
+  // Keep campaign identifiers identical to the persistent, verified-state ledger.
+  const ledgerPath=path.join(ROOT,'promotion','ledger.json');
+  if(fs.existsSync(ledgerPath)){
+    const ledger=JSON.parse(fs.readFileSync(ledgerPath,'utf8'));
+    for(const game of games){
+      const record=ledger.games?.find(x=>x.slug===game.slug);
+      if(!record || record.officialUrl!==game.url) throw Error('Release ledger missing or mismatched: '+game.slug);
+      for(const [source,channel] of Object.entries(record.channels||{})){
+        const medium=new URL(channel.trackedUrl).searchParams.get('utm_medium');
+        const expected=trackedLink(game,source,medium);
+        if(expected!==channel.trackedUrl) throw Error('Release UTM does not match ledger for '+game.slug+'/'+source);
+      }
+    }
+  }
   fs.mkdirSync(dest,{recursive:true});
   for (const game of games) {
     const base='New free browser game: '+game.title+'. '+game.description;
