@@ -123,6 +123,17 @@ try{
  report.bodyTextLength=await page.locator('body').innerText().then(x=>x.length).catch(()=>0);
  report.visibleControls=await page.locator('button:visible,a[href]:visible,input:visible').count().catch(()=>0);
  report.inputFields=await inspectFields(page);
+ const safeText=(await page.locator('body').innerText().catch(()=>'' )).toLowerCase();
+ report.uiSignals=['create','new game','submit','add game','my games','dashboard','log in','sign in','logout',
+  'welcome','billing','payment','verification','verify','error','not found','loading','please','try again',
+  'pending','approval','support','cookie','accept','access','unauthorized','loading','sign up','javascript']
+  .filter(x=>safeText.includes(x));
+ report.visibleButtonKinds=await page.locator('button:visible').evaluateAll(bs=>bs.map(b=>(b.innerText||b.getAttribute('aria-label')||'').trim().toLowerCase())
+   .filter(x=>/^(create|add|new|submit|accept|continue|reload|refresh|log in|sign in|retry|back|close|ok|manage|games|dashboard|enable|start|yes|no)/i.test(x))
+   .slice(0,15)).catch(()=>[]);
+ report.pageHeadings=await page.locator('h1,h2,h3').allTextContents().then(xs=>xs.map(s=>s.trim())
+   .filter(x=>x.length<=70 && /game|start|publish|dashboard|error|access|login|review|verify|welcome|billing/i.test(x)).slice(0,8)).catch(()=>[]);
+
  if(report.loginScreen){
     report.status='authorization-required';
     report.authenticated=false;
