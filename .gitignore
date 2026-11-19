@@ -23,3 +23,6 @@ node_modules/
 download-result.json
 coverage/
 test-results/
+
+# Database migration exports contain private analytics and must never be committed
+.migration/
