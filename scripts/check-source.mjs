@@ -274,8 +274,12 @@ console.log('Five-scene Elsewhere runtime validation: four short lives, reachabl
 const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
 if(!immediateMusic.includes('if(enabled)start(); // Immediately attempt at script execution')||
    !immediateMusic.includes('nextTime=ctx.currentTime+.008')||
-   !immediateMusic.includes("if(enabled&&!running)start()"))
- throw new Error('Soundtrack should attempt to play on load and resume instantly after a blocked autoplay');
+   !immediateMusic.includes('ctx.onstatechange=')||
+   !immediateMusic.includes('function pauseScheduling()')||
+   !immediateMusic.includes("if(enabled&&(!running||ctx?.state!=='running'))start()")||
+   !immediateMusic.includes("evt.target?.closest?.('[data-mw-music]')")||
+   !immediateMusic.includes('if(nextTime<ctx.currentTime-halfBeat*2)'))
+ throw new Error('Soundtrack must stay in sync with AudioContext, recover after suspension, and not silence itself on music-button click');
 for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
  const html=fs.readFileSync('public/'+slug+'/index.html','utf8');
  if(!html.includes('rel="preload" href="/studio-music.js" as="script"'))throw new Error('Music should preload: '+slug);
