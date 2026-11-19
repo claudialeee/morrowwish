@@ -117,7 +117,11 @@ try{
   about:document.querySelector('.about-copy p')?.textContent,
   footer:document.querySelector('.footer-row>span')?.textContent,
   miniDescription:document.querySelector('.tiny-section .section-intro>p')?.textContent,
-  catTitle:document.querySelector('.cat-feature-card h3')?.textContent,
+  catTitle:document.querySelector('.cat-feature-card h3')?.innerText,
+  catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
+  catCTA:document.querySelector('.cat-feature-card .card-button')?.innerText,
+  heroPitch:document.querySelector('.hero>p')?.innerText,
+  featureOrder:[...document.querySelectorAll('.feature-grid>article')].map(x=>x.querySelector('a[data-id]')?.dataset.id),
   miniHeight:Math.round(document.querySelector('.tiny-section')?.getBoundingClientRect().height||0),
   aboutHeight:Math.round(document.querySelector('.about-section')?.getBoundingClientRect().height||0)
  }));
@@ -127,9 +131,23 @@ try{
  assert.match(homeZh.about,/想象|自由/,'About text must be Chinese');
  assert.match(homeZh.footer,/独立游戏/,'Footer must be Chinese');
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
- assert.match(homeZh.catTitle,/猫猫绝对无辜/,'Chinese flagship title must appear');
+ assert.equal(homeZh.catTitle?.trim(),'猫猫绝对无辜！','Chinese title must show no English Pawsibly subtitle');
+ assert.doesNotMatch(homeZh.catTitle,/Pawsibly|Innocent/i,'Chinese title must not leak its English name');
+ assert.deepEqual(homeZh.featureOrder,['pawsibly-innocent','elsewhere','tiny-town'],'Cat must be the first game on homepage');
+ assert.match(homeZh.catPitch,/三条小鱼|毛线球|粉色猫门/,'New Chinese promotional copy should explain gameplay');
+ assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
+ assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
  assert.ok(homeZh.miniHeight>420&&homeZh.miniHeight<720,'The 02 game gallery must be comfortably sized');
  assert.ok(homeZh.aboutHeight>230&&homeZh.aboutHeight<420,'The 03 studio introduction should be medium-sized');
+ await page.evaluate(()=>window.MorrowwishI18n.set('en'));
+ const homeEn=await page.evaluate(()=>({
+  order:[...document.querySelectorAll('.feature-grid>article')].map(x=>x.querySelector('a[data-id]')?.dataset.id),
+  catTitle:document.querySelector('.cat-feature-card h3')?.innerText,
+  catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText
+ }));
+ assert.deepEqual(homeEn.order,['pawsibly-innocent','elsewhere','tiny-town'],'English homepage should share the same first-game order');
+ assert.match(homeEn.catTitle,/Pawsibly\s*Innocent!/,'English heading must still show its original name');
+ assert.match(homeEn.catPitch,/Three fish to steal/,'English promotional copy must be updated');
  // The cat's core distraction needs to work with real pointer input and clear feedback.
  await page.goto(url,{waitUntil:'load',timeout:40000});
  await page.evaluate(()=>window.MorrowwishI18n.set('en'));
