@@ -3,9 +3,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const ORIGIN = 'https://morrowwish.vercel.app';
 const ROOT = process.cwd();
+export const INDEXNOW_KEY = createHash('sha256').update('morrowwish.vercel.app/indexnow/v1').digest('hex').slice(0,32);
 const PUBLIC = path.join(ROOT, 'public');
 const xml = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const clean = s => String(s || '').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();
@@ -83,6 +85,7 @@ export function generateDiscovery(out) {
   fs.mkdirSync(out,{recursive:true});
   fs.writeFileSync(path.join(out,'sitemap.xml'),makeSitemap(games));
   fs.writeFileSync(path.join(out,'feed.xml'),makeFeed(games));
+  fs.writeFileSync(path.join(out,INDEXNOW_KEY+'.txt'),INDEXNOW_KEY);
   fs.writeFileSync(path.join(out,'games.json'),JSON.stringify({studio:'Morrow Wish',site:ORIGIN+'/',games},null,2)+'\n');
   for (const game of games) {
     const file=path.join(out,game.slug,'index.html');
