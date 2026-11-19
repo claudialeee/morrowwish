@@ -50,3 +50,51 @@ jobs:
           path: .check/crazygames/${{ matrix.game }}/
           if-no-files-found: warn
           retention-days: 14
+
+  stage-public-media:
+    # Uploads real recorded media to the studio website. This is NOT a CrazyGames submission.
+    needs: verify-first-games
+    if: success()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Download real Chromium-recorded gameplay assets
+        uses: actions/download-artifact@v4
+        with:
+          pattern: crazygames-preflight-*
+          path: .check/staged
+          merge-multiple: false
+      - name: Stage validated first-party media for social campaigns
+        run: |
+          set -euo pipefail
+          for dir in .check/staged/crazygames-preflight-*; do
+            [ -d "$dir" ] || continue
+            slug="${dir##*crazygames-preflight-}"
+            case "$slug" in
+              elsewhere|tiny-town|pawsibly-innocent|flip-dash|parcel-panic|pocket-aquarium) ;;
+              *) echo "Unrecognized game $slug"; exit 1 ;;
+            esac
+            test -s "$dir/preflight.json"
+            node -e 'const x=require("./"+process.argv[1]);if(x.errors.length||!x.iframeRendered||x.videos.length<2||x.covers.length<3)process.exit(1)' "$dir/preflight.json"
+            dest="public/promo/$slug"
+            mkdir -p "$dest"
+            for name in cover-landscape.png cover-portrait.png cover-square.png real-gameplay-landscape.mp4 real-gameplay-portrait.mp4; do
+              test -s "$dir/$name"
+              if [ ! -f "$dest/$name" ]; then cp "$dir/$name" "$dest/$name"; fi
+            done
+          done
+          git add public/promo/
+          if git diff --cached --quiet; then
+            echo "Media already exists. Nothing to update."
+            exit 0
+          fi
+          git config user.name 'morrowwish-promo-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Stage verified six-game real-play media and cover art'
+          git pull --rebase origin main
+          git push origin HEAD:main
