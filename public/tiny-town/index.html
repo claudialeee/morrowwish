@@ -198,35 +198,143 @@ body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8e
 @media(max-width:960px){.aw-lower-grid{grid-template-columns:1fr}}
 @media(max-width:780px){.layout{display:flex;flex-direction:column;gap:10px}.side{display:contents}.side>.panel:first-child{order:-1}.aw-lower-grid{margin-top:11px}.aw-lower-grid .residents{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:540px){.aw-club-example p{display:block;font-size:11px}.aw-example-venues{display:flex;margin-top:5px;margin-bottom:5px}.aw-lower-grid .residents{grid-template-columns:repeat(2,minmax(0,1fr))}.aw-lower-grid .aw-news .feed{max-height:210px}.aw-expanded-heading span{display:none}}
+
+/* Guided playstage: residents, map and venue choices occupy one shared view. */
+.tt-journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 8px}
+.tt-journey-item{min-height:44px;display:flex;align-items:center;justify-content:center;gap:9px;background:#f3ece6;color:#9b8790;border:1px solid #f0e1da;border-radius:13px;padding:9px 7px;font-size:12px;font-weight:800;line-height:1.3;transition:background .15s,border-color .15s}
+.tt-step-num{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:#eae1df;color:#a08c95;font-size:12px}
+.tt-journey[data-step="1"] [data-phase="1"],.tt-journey[data-step="2"] [data-phase="2"],.tt-journey[data-step="3"] [data-phase="3"]{background:#fff0dc;border-color:#e6bfae;color:#794c65;box-shadow:0 3px 11px #bc9d7b20}
+.tt-journey[data-step="1"] [data-phase="1"] .tt-step-num,.tt-journey[data-step="2"] [data-phase="2"] .tt-step-num,.tt-journey[data-step="3"] [data-phase="3"] .tt-step-num{background:#de8f82;color:white}
+.tt-journey[data-step="2"] [data-phase="1"],.tt-journey[data-step="3"] [data-phase="1"],.tt-journey[data-step="3"] [data-phase="2"]{color:#53977e}
+.tt-journey[data-step="2"] [data-phase="1"] .tt-step-num,.tt-journey[data-step="3"] [data-phase="1"] .tt-step-num,.tt-journey[data-step="3"] [data-phase="2"] .tt-step-num{background:#d6efe1;color:#398668}
+.tt-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:7px 0 11px;max-width:none}
+.tt-stats .stat{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;padding:6px 10px;box-shadow:none;border-radius:12px}
+.tt-stats .stat .k{font-size:11px}.tt-stats .stat .v{font-size:17px;line-height:1.2}
+.tt-stats .stat small{width:100%;text-align:center}
+.tt-playstage{display:grid;grid-template-columns:218px minmax(0,1fr) 226px;gap:12px;align-items:start}
+.tt-playstage>.panel{padding:13px 12px;border-radius:19px;min-width:0;box-shadow:0 6px 25px #ab8b8216}
+.tt-rail-heading,.tt-map-heading{display:flex;align-items:baseline;justify-content:space-between;gap:7px;margin-bottom:6px;color:#705467;font-size:14px;font-weight:900}
+.tt-rail-heading>b,.tt-map-heading>b{font-size:14px}
+.tt-rail-heading>span,.tt-map-heading>span{font-size:10px;color:#988593;font-weight:550}
+.tt-rail-hint{font-size:11px;color:#8c7a86;line-height:1.45;margin:0 0 9px}
+.tt-resident-rail{max-height:620px;overflow:auto;scrollbar-width:thin}
+.tt-resident-rail .residents{display:flex;flex-direction:column;gap:5px}
+.tt-resident-rail .res{display:flex;align-items:center;flex-direction:row;text-align:left;gap:7px;min-height:43px;padding:5px 7px;background:#fff9f3;border:1px solid #f2e5df;border-radius:10px}
+.tt-resident-rail .res .face{font-size:22px;flex:none}
+.tt-resident-rail .res>div{min-width:0;flex:1}
+.tt-resident-rail .res b{font-size:11px;display:block;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-resident-rail .res small{font-size:10px;line-height:1.4;color:#8b7b86;display:block}
+.tt-resident-rail .res small.tt-resident-state{font-size:9px}
+.tt-resident-rail .res.awSelected{background:#f0eafb;border-color:#a59fd6}
+.tt-resident-rail .tt-resident-detail{font-size:10px;margin:8px 0;padding:8px;line-height:1.5;border:1px solid #eadce8}
+.tt-resident-detail[hidden]{display:none!important}
+.tt-incoming{border-top:1px solid #f1e6e2;margin-top:10px;padding-top:9px}
+.tt-incoming[hidden]{display:none!important}
+.tt-incoming-label{font-size:10px;color:#9a7a8b;font-weight:800;margin-bottom:6px}
+.tt-incoming .res{background:#faf7f4;border-style:dashed;opacity:.8}
+.tt-incoming .res small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-map-panel{position:relative}
+.tt-map-heading{margin-bottom:5px}
+.tt-map-panel .aw-coach,.tt-map-panel .aw-coach.aw-compact{margin:0 0 9px!important;padding:9px 11px!important;border-radius:12px!important}
+.tt-map-panel .aw-coach .aw-coach-kicker{display:none!important}
+.tt-map-panel .aw-coach strong{font-size:13px!important}
+.tt-map-panel .aw-coach p{display:block!important;font-size:11px!important;line-height:1.4;margin:3px 0 0}
+.tt-map-panel .map-wrap{max-width:510px;width:100%;margin:auto}
+.tt-map-panel .board{gap:5px}
+.tt-map-panel .tile{border-radius:11px}
+.tt-map-footer{margin:9px 0 5px;text-align:center;font-size:10px;color:#988390}
+.tt-map-panel .tt-preview{font-size:11px;line-height:1.5;min-height:0;padding:8px 10px;margin:6px 0 0}
+.tt-map-panel .aw-week-receipt{margin:6px 0 0}
+.tt-builder-rail .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.tt-builder-rail .choice{min-height:87px;padding:9px 4px;border-radius:12px;line-height:1.3}
+.tt-builder-rail .choice .ico{font-size:27px;margin:0}
+.tt-builder-rail .choice .label{font-size:11px}
+.tt-builder-rail .choice .detail{font-size:10px}
+.tt-builder-rail .tt-auto{width:100%;margin:9px 0 0!important;font-size:11px!important;padding:9px 8px!important;box-shadow:none;justify-content:center}
+.tt-builder-rail .upgrade{display:block;width:100%;margin:8px 0 0}
+.tt-builder-rail .upgrade[hidden]{display:none!important}
+.tt-divider{height:1px;background:#efe3de;margin:12px 0}
+.tt-subheading{font-size:12px;font-weight:850;color:#745e72;margin-bottom:7px}
+.tt-goals{display:grid;gap:6px;font-size:11px;line-height:1.4}
+.tt-builder-rail .feed{min-height:0;max-height:176px;overflow:auto;background:transparent;padding:0}
+.tt-builder-rail .awClub{padding:7px!important;margin:0 0 6px}
+.tt-builder-rail .aw-club-venues{gap:4px}
+.tt-builder-rail .aw-club-venues span{font-size:10px;padding:2px 4px}
+.tt-builder-rail .aw-club-state{font-size:10px}
+.tt-club-example{border-radius:10px;background:#fff3e9;padding:8px;margin-top:9px;font-size:10px;color:#8c6e7e;line-height:1.5}
+.tt-news-panel{margin:12px 0 0;padding:11px 14px!important}
+.tt-news-heading{display:flex;gap:12px;align-items:baseline;font-size:13px;color:#795c6b;margin-bottom:6px}
+.tt-news-heading span{font-size:10px;color:#a08b93}
+.tt-news-panel .feed{min-height:0;max-height:115px;overflow:auto;background:transparent;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;padding:0}
+.tt-news-panel .event{font-size:11px;line-height:1.45;margin:0;background:#fff8f3;border:1px solid #f0e5e0;border-radius:9px;padding:6px 8px}
+.tt-journey .aw-zh,.tt-resident-rail .aw-zh,.tt-map-panel .aw-zh,.tt-builder-rail .aw-zh,.tt-news-panel .aw-zh{display:none}
+html[lang="zh-CN"] .tt-journey .aw-zh,html[lang="zh-CN"] .tt-resident-rail .aw-zh,html[lang="zh-CN"] .tt-map-panel .aw-zh,html[lang="zh-CN"] .tt-builder-rail .aw-zh,html[lang="zh-CN"] .tt-news-panel .aw-zh{display:inline}
+html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-en,html[lang="zh-CN"] .tt-map-panel .aw-en,html[lang="zh-CN"] .tt-builder-rail .aw-en,html[lang="zh-CN"] .tt-news-panel .aw-en{display:none}
+.tt-stats .stat:last-child{display:none}
+@media(min-width:1300px){.tt-playstage{grid-template-columns:240px minmax(0,1fr) 245px}}
+@media(max-width:1010px){.tt-playstage{grid-template-columns:190px minmax(0,1fr) 203px;gap:9px}.tt-playstage>.panel{padding:10px 8px}.tt-resident-rail .res{gap:4px;padding:4px 5px}.tt-journey-item{font-size:11px}.tt-builder-rail .choice{min-height:80px}}
+@media(max-width:780px){.tt-playstage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);grid-template-areas:"res map" "build map";gap:9px;align-items:start}.tt-resident-rail{grid-area:res;max-height:250px}.tt-map-panel{grid-area:map}.tt-builder-rail{grid-area:build}.tt-map-panel .map-wrap{width:100%}.tt-journey-item{min-height:40px;padding:5px;font-size:10px;gap:5px}.tt-step-num{width:20px;height:20px;font-size:10px}}
+@media(max-width:570px){.tt-playstage{grid-template-columns:1fr;grid-template-areas:"res" "build" "map";gap:8px}.tt-resident-rail{max-height:none}.tt-resident-rail .residents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.tt-resident-rail .res{min-height:58px;flex-direction:column;text-align:center;padding:5px 2px;gap:2px}.tt-resident-rail .res .face{font-size:22px}.tt-resident-rail .res b{font-size:10px}.tt-resident-rail .res small{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tt-resident-rail .res .tt-resident-state{display:none}.tt-incoming .residents{grid-template-columns:repeat(4,minmax(0,1fr))}.tt-incoming .res{min-height:44px}.tt-rail-hint{margin-bottom:7px}.tt-journey{gap:4px;margin:7px 0}.tt-journey-item{font-size:9px;flex-direction:column;gap:3px;text-align:center;padding:5px 1px}.tt-journey-item .tt-step-num{width:18px;height:18px}.tt-stats{margin:5px 0 8px;gap:5px}.tt-stats .stat{padding:6px 4px;gap:3px}.tt-stats .stat .k{font-size:9px}.tt-stats .stat .v{font-size:15px}.tt-builder-rail .cards{grid-template-columns:repeat(3,minmax(0,1fr))}.tt-builder-rail .choice{min-height:66px;padding:5px}.tt-builder-rail .choice .ico{font-size:20px}.tt-builder-rail .tt-auto{margin:7px 0 0!important}.tt-builder-rail .tt-divider,.tt-builder-rail .tt-goals,.tt-builder-rail .tt-subheading,.tt-builder-rail #clubProgress,.tt-builder-rail .tt-club-example{display:none}.tt-map-panel .aw-coach{margin-bottom:7px!important}.tt-news-panel .feed{display:block;max-height:125px}.tt-news-panel .event{margin:4px 0}.tt-map-footer{font-size:9px}}
 </style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
 <body><script src="/telemetry.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
   <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
-<section class="aw-quick-guide aw-minimal-guide" aria-label="How to play">
- <div class="aw-mini-main"><strong>8 little turns · build a happier town</strong></div>
- <div class="aw-mini-steps"><b>1.</b> Pick a place <span>→</span> <b>2.</b> Tap a green square <span>→</span> <b>3.</b> Watch neighbors gather</div>
- <div class="aw-club-example">
-  <div class="aw-en"><span class="aw-club-example-tag">🎉 Club example</span><div class="aw-example-venues"><span>🎮 Arcade</span><span class="aw-example-plus">+</span><span>🎵 Music Studio</span></div><p>Build them in <b>two squares sharing an edge</b>. If <b>2 residents visit each venue</b> for <b>2 weeks in a row</b>, they form a Rhythm Club.</p></div>
-  <div class="aw-zh"><span class="aw-club-example-tag">🎉 举个例子：怎么组建社团？</span><div class="aw-example-venues"><span>🎮 街机厅</span><span class="aw-example-plus">+</span><span>🎵 音乐工作室</span></div><p>把它们建在<b>紧挨着的两个格子</b>（斜对角不算）。连续 <b>2 周</b>，<b>每个场所都有至少 2 位居民来玩</b>，就会成立「节奏社」。</p></div>
- </div>
-</section>
-  <div class="stats"><div class="stat"><div class="k">Week</div><div class="v" id="turn">0 / 8</div></div><div class="stat"><div class="k">Happy neighbors</div><div class="v" id="active">0 / 8</div><small class="aw-active-note" id="activeNote">4 join in Week 5</small></div><div class="stat"><div class="k">Social clubs</div><div class="v" id="clubs">0 / 2</div></div><div class="stat"><div class="k">Town joy</div><div class="v" id="score">0</div></div></div>
-  <div class="layout"><div class="panel"><div class="panel-title"><span>🌿 Your town</span><span class="panel-sub" id="seed">Seed</span></div>
-<div class="aw-coach" id="awCoach" aria-live="polite">
-<span class="aw-coach-kicker" id="awCoachStep">START HERE · WEEK 1 OF 8</span>
-<strong id="awCoachTitle">Build your first meeting place</strong>
-<p id="awCoachText">Tap a green square to build your first place.</p><button type="button" class="btn quick-assist" id="autoPlace">✦ Auto-build (uses 1 turn)</button>
+<div class="tt-journey" id="ttJourney" data-step="1" aria-label="Game steps">
+ <div class="tt-journey-item" data-phase="1"><span class="tt-step-num">1</span><span class="aw-en">Check interests · pick a venue</span><span class="aw-zh">看兴趣，选场所</span></div>
+ <div class="tt-journey-item" data-phase="2"><span class="tt-step-num">2</span><span class="aw-en">Choose a map square</span><span class="aw-zh">点击地图建造</span></div>
+ <div class="tt-journey-item" data-phase="3"><span class="tt-step-num">3</span><span class="aw-en">Watch residents & clubs</span><span class="aw-zh">看居民与社团变化</span></div>
 </div>
-<p class="hint aw-resident-hint" id="focusInfo" style="margin:8px 0">Select a resident to highlight their home and walking range.</p><div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div><div class="aw-club-links" id="clubLinks" aria-hidden="true"></div></div>
-<div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div><div class="aw-map-tip"><span class="aw-en">Map connections show club progress: 0/2 → 1/2 → ✓.</span><span class="aw-zh">地图连线显示社团进度：0/2 → 1/2 → ✓。</span></div><details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details></div>
-  <div class="side">
-  <div class="panel aw-picker-panel"><div class="panel-title">✿ Pick a place <span class="panel-sub">then tap the map</span></div><div class="cards" id="cards"></div><button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button><div class="info" id="preview">Hover over a green tile to preview the result.</div></div>
-  <div class="panel aw-goal-panel"><div class="panel-title">♡ Make a happy little town <span class="panel-sub">8 turns</span></div><div class="goals"><div id="goalActive">○ Help 9 neighbors have fun</div><div id="goalClub">○ Form 2 different clubs</div></div></div>
-  <div class="panel aw-club-progress-panel"><div class="panel-title">🎉 Club progress</div><div class="feed" id="clubProgress"></div></div>
- </div></div>
- <div class="aw-lower-grid">
-  <section class="aw-advanced aw-residents-panel" id="awResidentsDetails"><div class="aw-expanded-heading"><b class="aw-en">👥 Residents &amp; interests</b><b class="aw-zh">👥 居民与兴趣</b><span class="aw-en">Tap a resident to see their details</span><span class="aw-zh">点击居民查看详情</span></div><div class="panel aw-advanced-body"><div class="residents" id="residents"></div><div class="info" id="residentWhy" hidden></div><div class="aw-incoming-group" id="awIncomingGroup"><div class="section aw-incoming-heading"><span class="aw-en">Four new neighbors arrive in Week 5</span><span class="aw-zh">第 5 周将有 4 位新居民入住</span></div><div class="residents" id="incoming"></div></div></div></section>
-  <section class="aw-advanced aw-news"><div class="aw-expanded-heading"><b class="aw-en">📰 Town news</b><b class="aw-zh">📰 小镇新闻</b><span class="aw-en">Latest town updates</span><span class="aw-zh">最新动态</span></div><div class="panel aw-advanced-body"><div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div></div></section>
- </div>
+<div class="stats tt-stats">
+ <div class="stat"><div class="k">Week</div><div class="v" id="turn">0 / 8</div></div>
+ <div class="stat"><div class="k">Happy neighbors</div><div class="v" id="active">0 / 8</div><small class="aw-active-note" id="activeNote">4 join in Week 5</small></div>
+ <div class="stat"><div class="k">Social clubs</div><div class="v" id="clubs">0 / 2</div></div>
+ <div class="stat"><div class="k">Town joy</div><div class="v" id="score">0</div></div>
+</div>
+<div class="tt-playstage">
+ <aside class="panel tt-resident-rail" aria-label="Residents and interests">
+  <div class="tt-rail-heading"><b class="aw-en">👥 Your neighbors</b><b class="aw-zh">👥 居民喜欢什么？</b><span id="ttResidentCount">8</span></div>
+  <p class="tt-rail-hint aw-en">Their interests tell you where to build. Tap any resident to see their walking area.</p>
+  <p class="tt-rail-hint aw-zh">先看看谁喜欢什么，再决定建什么。点居民可查看活动范围。</p>
+  <div class="residents" id="residents"></div>
+  <p class="hint aw-resident-hint" id="focusInfo" hidden></p>
+  <div class="info tt-resident-detail" id="residentWhy" hidden></div>
+  <div id="awIncomingGroup" class="tt-incoming">
+   <div class="tt-incoming-label"><span class="aw-en">+4 arrive in Week 5</span><span class="aw-zh">第 5 周还有 4 位新邻居</span></div>
+   <div class="residents" id="incoming"></div>
+  </div>
+ </aside>
+ <section class="panel tt-map-panel" aria-label="Town map">
+  <div class="tt-map-heading"><b class="aw-en">🌿 Your town</b><b class="aw-zh">🌿 你的小镇</b><span id="seed">Seed</span></div>
+  <div class="aw-coach" id="awCoach" aria-live="polite">
+   <span class="aw-coach-kicker" id="awCoachStep">START HERE</span>
+   <strong id="awCoachTitle">Choose a place to build</strong>
+   <p id="awCoachText">Look at neighbors' interests, then pick a venue on the right.</p>
+  </div>
+  <div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div><div class="aw-club-links" id="clubLinks" aria-hidden="true"></div></div>
+  <div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div>
+  <div class="tt-map-footer"><span class="aw-en">Connected venues show 0/2 → 1/2 → ✓ club progress</span><span class="aw-zh">相邻场所的连线显示社团进度：0/2 → 1/2 → ✓</span></div>
+  <div class="info tt-preview" id="preview"><span class="aw-en">Pick a venue first.</span><span class="aw-zh">先在右边选择一个场所。</span></div>
+  <details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details>
+ </section>
+ <aside class="panel tt-builder-rail" aria-label="Build and track progress">
+  <div class="tt-rail-heading"><b class="aw-en">✿ Build this week</b><b class="aw-zh">✿ 本周建什么？</b></div>
+  <p class="tt-rail-hint aw-en">Choose one, then place it on a green square on the map.</p>
+  <p class="tt-rail-hint aw-zh">先选一种场所，再点地图上的绿色格子。</p>
+  <div class="cards" id="cards"></div>
+  <button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button>
+  <button type="button" class="btn quick-assist tt-auto" id="autoPlace">✦ Auto-build (uses 1 turn)</button>
+  <div class="tt-divider"></div>
+  <div class="tt-subheading"><span class="aw-en">♡ Your goal</span><span class="aw-zh">♡ 通关目标</span></div>
+  <div class="goals tt-goals"><div id="goalActive">○ Help 9 neighbors have fun</div><div id="goalClub">○ Form 2 different clubs</div></div>
+  <div class="tt-divider"></div>
+  <div class="tt-subheading"><span class="aw-en">🎉 Club progress</span><span class="aw-zh">🎉 社团进度</span></div>
+  <div class="feed" id="clubProgress"></div>
+  <div class="tt-club-example"><span class="aw-en">Example: 🎮 Arcade + 🎵 Music Studio next to each other; 2 visitors at each for 2 weeks → Rhythm Club.</span><span class="aw-zh">例如：🎮 街机厅挨着 🎵 音乐工作室，两处每周都至少有 2 人，连续 2 周 → 节奏社。</span></div>
+ </aside>
+</div>
+<section class="panel tt-news-panel" aria-label="Town news">
+ <div class="tt-news-heading"><b class="aw-en">📰 Town news</b><b class="aw-zh">📰 小镇新闻</b><span class="aw-en">The latest things happening in town</span><span class="aw-zh">刚刚发生的事</span></div>
+ <div class="feed" id="feed"><div class="event">The town is quiet. Your first action advances one week.</div></div>
+</section>
 </div>
 <div id="end" class="end" role="dialog" aria-modal="true"><div class="end-card"><div class="big" id="endIcon">🎉</div><h2 id="endTitle">Town complete</h2><p id="endText"></p><div class="end-buttons"><button class="btn primary" id="newAgain">New town</button><button class="btn" id="sameAgain">Replay same seed</button><button class="btn" id="closeEnd">View town</button></div>
 <div class="aw-end-feedback"><div id="feedbackQuestion"><span>How was this round?</span><div class="aw-feedback-buttons"><button id="feedbackFun" type="button">Fun</button><button id="feedbackConfusing" type="button">Confusing</button><button id="feedbackNotFun" type="button">Not fun</button></div></div><div id="feedbackThanks" hidden>Thanks for the feedback!</div></div>
