@@ -65,3 +65,43 @@ for(const world of storyWorlds){
   }
 }
 console.log('Elsewhere branching logic, 32 scenes, 16 endings and 8 SVG illustrations checked.');
+
+// Elsewhere continuity v3: translated tradeoffs, conditional callbacks, and no conjured plot items.
+const continuitySrc='public/elsewhere/continuity.js';
+if(!fs.existsSync(continuitySrc))throw Error('Missing Elsewhere continuity engine');
+const continuitySandbox={window:{}};
+vm.runInNewContext(fs.readFileSync(continuitySrc,'utf8'),continuitySandbox,{filename:continuitySrc,timeout:2000});
+const continuity=continuitySandbox.window.ELSEWHERE_CONTINUITY;
+if(!continuity?.beats||!continuity.hints||!continuity.overrides)throw Error('Missing continuity structure');
+const elsewherePage=fs.readFileSync('public/elsewhere/index.html','utf8');
+if(!elsewherePage.includes('/elsewhere/continuity.js'))throw Error('Continuity engine not loaded');
+const elsewhereServiceWorker=fs.readFileSync('public/elsewhere/sw.js','utf8');
+if(!elsewhereServiceWorker.includes('/elsewhere/continuity.js')||!elsewhereServiceWorker.includes('/elsewhere/endings.js'))throw Error('Offline scripts missing from Elsewhere cache');
+if(!storyApp.includes('BECAUSE OF AN EARLIER CHOICE')||!storyApp.includes('c.hint')||!storyApp.includes('morrowwish-language-change'))throw Error('Elsewhere story reminder, choice hints or language switching missing');
+for(const world of storyWorlds){
+  const hints=continuity.hints[world.id],beats=continuity.beats[world.id],overrides=continuity.overrides[world.id]||{};
+  if(hints?.length!==8||!beats||Object.keys(beats).length<4)throw Error('Incomplete choice consequences: '+world.id);
+  for(let scene=0;scene<8;scene++){
+    if(hints[scene]?.length!==2||hints[scene].some(v=>v.length!==2||!v[0]||!v[1]))throw Error('Missing bilingual choice hints: '+world.id+' scene '+(scene+1));
+  }
+  for(const [sceneStr,beat] of Object.entries(beats)){
+    const scene=Number(sceneStr);
+    if(!Number.isInteger(scene)||scene<1||scene>7||beat.from<0||beat.from>=scene||beat.echo?.length!==2
+       ||beat.echo.some(t=>t?.length!==2||!t[0]||!t[1])||beat.echo[0][0]===beat.echo[1][0])throw Error('Invalid story consequence: '+world.id+' scene '+sceneStr);
+  }
+  for(const [sceneStr,override] of Object.entries(overrides)){
+    const scene=Number(sceneStr);
+    if(!Number.isInteger(scene)||scene<1||scene>7||override.from<0||override.from>=scene
+      ||override.variants?.length!==2)throw Error('Invalid conditional option: '+world.id+' scene '+sceneStr);
+    for(const v of override.variants){
+      if(v!==null&&(v.choice<0||v.choice>1||v.label?.length!==2||v.reply?.length!==2||!v.label[1]||!v.reply[1]))throw Error('Missing localized conditional option: '+world.id+' scene '+sceneStr);
+    }
+  }
+}
+// Before scene 4, the Paris missing reel must be found rather than silently appearing.
+if(!continuity.overrides.paris[3].variants[0]?.label?.[0].includes('newsreels'))throw Error('Paris reel continuity regression');
+if(!storyWorlds.find(w=>w.id==='cabin').acts[7].clock.includes('SPRING'))throw Error('Cabin timeline must allow repairs to finish');
+for(const source of ['public/elsewhere/app.js','public/elsewhere/season.js','public/elsewhere/endings.js',continuitySrc,'public/zh-polish.js']){
+  new vm.Script(fs.readFileSync(source,'utf8'),{filename:source});
+}
+console.log('Elsewhere continuity, bilingual decisions, conditional film option, seasonal timeline, and syntax checked.');

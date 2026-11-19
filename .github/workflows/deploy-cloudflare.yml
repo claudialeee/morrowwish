@@ -86,6 +86,8 @@ jobs:
           done
           code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-endings.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/endings.js')
           test "$code" = 200 && grep -q 'ELSEWHERE_ENDINGS' /tmp/elsewhere-endings.js || { echo "::error::Ending script missing or invalid (HTTP $code)"; exit 1; }
+          code=$(curl -sSL --max-time 15 -o /tmp/elsewhere-continuity.js -w '%{http_code}' 'https://morrowwish.pages.dev/elsewhere/continuity.js')
+          test "$code" = 200 && grep -q 'ELSEWHERE_CONTINUITY' /tmp/elsewhere-continuity.js || { echo "::error::Story continuity script missing or invalid (HTTP $code)"; exit 1; }
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
       - name: Publish automatic game promotion kit for each release
         uses: actions/upload-artifact@v4

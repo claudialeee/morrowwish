@@ -72,3 +72,12 @@ body{background:#fff8f1}
 .ending-route span{display:block;margin-bottom:8px}
 .ending-scene .cinematic-image{object-position:center center}
 @media(max-width:650px){.ending-consequence{padding:16px}.story-continuity{padding:13px 16px}}
+
+/* The player sees a consequence of their own decision, not a generic moral. */
+.story-continuity{position:relative;background:linear-gradient(125deg,#f9f0e6,#f5e5db);border-left:4px solid #b78481;box-shadow:0 5px 20px rgba(92,68,73,.07)}
+.story-continuity span{color:#9f6a78;letter-spacing:.12em}
+.story-continuity p{color:#554954;font-size:clamp(14px,1.5vw,16px);line-height:1.75}
+.scene-choice small{display:block;line-height:1.5;margin-top:5px;max-width:42ch;white-space:normal}
+.scene-choice strong{line-height:1.35}
+.scene-choice:focus-visible{outline:3px solid #ba7f85;outline-offset:3px}
+@media(max-width:650px){.story-continuity{margin:16px 0;padding:14px 16px}.scene-choice small{font-size:11.5px}}

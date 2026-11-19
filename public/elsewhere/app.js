@@ -162,7 +162,22 @@
     const commitment=active.decisions[anchor];
     const prior=active.decisions[chapter-1];
     const variant=commitment?.choice===2?1:0;
-    return {...base,scene:act.n[variant]||act.n[0],dialogue:act.say,inspect:act.inspect,image:'/elsewhere/scenes/'+w.id+'-'+(chapter+1)+'.svg',branchRoute:prior?.tag};
+    const extra=window.ELSEWHERE_CONTINUITY||{};
+    const beat=extra.beats?.[w.id]?.[chapter];
+    const remembered=beat?active.decisions[beat.from]?.choice:undefined;
+    const echo=remembered===1||remembered===2?localizeStory(beat.echo[remembered-1]):'';
+    const hints=extra.hints?.[w.id]?.[chapter]||[];
+    const choices=base.choices.map((c,i)=>({...c,hint:hints[i]||null}));
+    const override=extra.overrides?.[w.id]?.[chapter];
+    const sourceChoice=override?active.decisions[override.from]?.choice:undefined;
+    const replacements=sourceChoice===1||sourceChoice===2?override.variants[sourceChoice-1]:null;
+    for(let i=0;i<choices.length;i++){
+      const alternative=replacements?.choice===i?replacements:null;
+      if(!alternative)continue;
+      if(alternative.label)choices[i].label=localizeStory(alternative.label);
+      if(alternative.reply)choices[i].reply=localizeStory(alternative.reply);
+    }
+    return {...base,choices,echo,scene:act.n[variant]||act.n[0],dialogue:act.say,inspect:act.inspect,image:'/elsewhere/scenes/'+w.id+'-'+(chapter+1)+'.svg',branchRoute:prior?.tag};
   }
   function inspectScene(index){
     if(!active||active.finished)return;
@@ -183,14 +198,12 @@
     const sceneNo=active.chapter+1;
     const photo=ch.image||'/elsewhere/scenes/'+w.id+'-'+sceneNo+'.svg';
     const action=active.selected===null
-      ?'<div class="scene-prompt"><span class="micro-label">A MOMENT THAT CHANGES THINGS</span><h3>What would you do?</h3><div class="scene-choices">'+ch.choices.map((c,i)=>'<button type="button" class="scene-choice" data-choice="'+i+'"><span class="scene-choice-mark">'+(i===0?'✷':'✦')+'</span><span><strong>'+c.label+'</strong><small>Make this part of your story</small></span><span class="scene-choice-arrow">↗</span></button>').join('')+'</div></div>'
+      ?'<div class="scene-prompt"><span class="micro-label">A MOMENT THAT CHANGES THINGS</span><h3>What would you do?</h3><div class="scene-choices">'+ch.choices.map((c,i)=>'<button type="button" class="scene-choice" data-choice="'+i+'"><span class="scene-choice-mark">'+(i===0?'✷':'✦')+'</span><span><strong>'+c.label+'</strong><small>'+escapeStory(localizeStory(c.hint||['A different path opens.','走向另一条路。']))+'</small></span><span class="scene-choice-arrow">↗</span></button>').join('')+'</div></div>'
       :'<div class="scene-result"><span class="micro-label">YOU CHOSE · '+ch.choices[active.selected].label+'</span><p>'+ch.choices[active.selected].reply+'</p><button type="button" class="next-btn scene-next" id="continue-btn">'+(sceneNo===w.chapters.length?'See how your life ends':'Continue your story')+' <span aria-hidden="true">→</span></button></div>';
     const memory=act?.inspect||[];
-    const earlier=window.ELSEWHERE_ENDINGS?.[active.world]?.memories?.slice(-1)[0];
-    const remembered=earlier?.choices?.[(active.decisions[earlier.at]?.choice||0)-1];
-    const causality=(active.chapter===5||active.chapter===6)&&remembered?
-      '<div class="story-continuity"><span>'+(window.MorrowwishI18n?.get()==='zh'?'你之前做出的决定':'A CHOICE YOU MADE EARLIER')+'</span><p>'+escapeStory(localizeStory(remembered))+'</p></div>':'';
-
+    // The reminder is keyed to an actual earlier decision; it is not a generic recitation.
+    const causality=ch.echo?
+      '<div class="story-continuity"><span>'+(window.MorrowwishI18n?.get()==='zh'?'你之前的选择带来了变化':'BECAUSE OF AN EARLIER CHOICE')+'</span><p>'+escapeStory(ch.echo)+'</p></div>':'';
     const inspectList='<div class="scene-details"><span class="micro-label">EXPLORE THE MOMENT</span><div class="scene-hotspots">'+memory.map((a,i)=>'<button type="button" data-inspect="'+i+'" class="scene-hotspot '+(visited===i?'active':'')+'"><span>'+a[0]+'</span>'+a[1]+'</button>').join('')+'</div>'+(discovery?'<div id="scene-discovery" class="scene-discovery"><span>✧ YOU NOTICED</span><p>'+discovery[2]+'</p></div>':'')+'</div>';
     $('#chapter-content').innerHTML='<div class="cinematic-frame"><img class="cinematic-image" src="'+photo+'" alt="Illustrated scene: '+ch.title+'" fetchpriority="high"><div class="cinematic-shade"></div><div class="cinematic-top"><span>ELSEWHERE / '+w.title.toUpperCase()+'</span><span>SCENE '+String(sceneNo).padStart(2,'0')+' / 08</span></div><div class="cinematic-caption"><span class="scene-time">'+ch.time+'</span><h1>'+ch.title+'</h1></div></div><div class="scene-content" id="reading-area"><div class="scene-progress-track"><span style="width:'+(sceneNo/8*100)+'%"></span></div><div class="scene-narrative"><span class="micro-label">YOUR DAY UNFOLDS</span><p id="narration-text">'+ch.scene+'</p></div><div class="scene-character"><span class="scene-avatar">'+({'no-work':'🌿',bookshop:'📚',paris:'🥐',cabin:'❄️'}[w.id])+'</span><div><span class="scene-speaker">'+(seasonById[w.id]?.character||'A FRIEND')+'</span><p>'+String(ch.dialogue||'').replace(/^([^:]+):\s*/,'')+'</p></div></div>'+causality+inspectList+action+'</div>';
     $('#story-paper').setAttribute('aria-label','Scene '+sceneNo+': '+ch.title);
@@ -262,8 +275,9 @@
     if(!active || active.finished)return;
     const ch=resolvedChapter();
     const prev=active.decisions[active.chapter-1]; const recall=(prev&&ch.recall?.[prev.tag])||'';
-    const u=new SpeechSynthesisUtterance(ch.scene+' '+(ch.dialogue||'')+' '+recall+(active.selected!==null?' '+ch.choices[active.selected].reply:''));
-    u.rate=.87;u.pitch=.98;u.lang='en-US';
+    const translate=window.MorrowwishI18n?.t||((s)=>s);
+    const u=new SpeechSynthesisUtterance([ch.scene,ch.dialogue,ch.echo,recall,active.selected!==null?ch.choices[active.selected].reply:''].filter(Boolean).map(s=>translate(String(s))).join(' '));
+    u.rate=.87;u.pitch=.98;u.lang=window.MorrowwishI18n?.get()==='zh'?'zh-CN':'en-US';
     u.onend=u.onerror=()=>{speaking=false;$('#narrate-btn').innerHTML='<span aria-hidden="true">◌</span> Listen';$('#narrate-btn').setAttribute('aria-pressed','false');};
     speaking=true;$('#narrate-btn').innerHTML='<span aria-hidden="true">■</span> Stop';$('#narrate-btn').setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);track('listen_started',{world:active.world,chapter:active.chapter+1});
   }
@@ -298,5 +312,5 @@
   if(initial&&WORLD_BY_ID[initial])openWorld(initial,{push:false});
   else {track('home_view');}
   if ('serviceWorker' in navigator && location.protocol === 'https:') {navigator.serviceWorker.register('/elsewhere/sw.js').catch(()=>{});}
-  window.addEventListener('morrowwish-language-change',()=>{if(active?.finished)renderEnding();});
+  window.addEventListener('morrowwish-language-change',()=>{if(active)renderChapter();else renderGrid();});
 })();
