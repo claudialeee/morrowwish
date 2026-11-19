@@ -4,7 +4,7 @@ for (const file of [
   'public/index.html','public/tiny-town/index.html','public/elsewhere/index.html',
   'public/elsewhere/app.js','public/telemetry.js','public/lang.js',
   'public/zh-site.js','public/zh-stories.js','public/zh-polish.js',
-  'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/meowhem/index.html','public/meowhem/game.js','public/icons/meowhem.svg',
+  'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/pawsibly-innocent/index.html','public/pawsibly-innocent/game.js','public/icons/pawsibly-innocent.svg',
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
@@ -15,7 +15,7 @@ if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
 if(config.d1_databases?.[0]?.database_name!=='morrowwish-analytics')throw Error('Wrong D1 database');
 if(!dashboard.includes('zh:"平行人生",en:"Elsewhere"'))throw Error('Dashboard must show 平行人生 in Chinese and Elsewhere in English');
 const displayOrder=dashboard.match(/const displayOrder=\[([^\]]+)\];/)?.[1]||'';
-for(const name of ['hub','elsewhere','tiny-town','meowhem','flip-dash','parcel-panic','pocket-aquarium']){
+for(const name of ['hub','elsewhere','tiny-town','pawsibly-innocent','flip-dash','parcel-panic','pocket-aquarium']){
  if(!displayOrder.includes("'"+name+"'"))throw Error('Dashboard missing visible game: '+name);
 }
 if(!dashboard.includes("'pocket-aquarium'"))throw Error('Pocket Aquarium must remain in dashboard order');
@@ -26,12 +26,12 @@ for(const marker of ["metric('game_start'","metric('game_complete'","metric('gam
 }
 
 if(!telemetry.includes('"elsewhere"'))throw Error('Missing Elsewhere telemetry');
-if(!telemetry.includes('"meowhem"'))throw Error('Missing MEOWHEM telemetry');
-const catGame=fs.readFileSync('public/meowhem/game.js','utf8');
+if(!telemetry.includes('"pawsibly-innocent"'))throw Error('Missing Pawsibly Innocent telemetry');
+const catGame=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 for(const marker of ['game_start','game_complete','game_retry','cat_level_won','guardMove','morrowwish-language-change']){
- if(!catGame.includes(marker))throw Error('MEOWHEM missing gameplay/analytics: '+marker);
+ if(!catGame.includes(marker))throw Error('Pawsibly Innocent missing gameplay/analytics: '+marker);
 }
-if(!fs.readFileSync('public/index.html','utf8').includes('href="/meowhem/"'))throw Error('Homepage missing MEOWHEM link');
+if(!fs.readFileSync('public/index.html','utf8').includes('href="/pawsibly-innocent/"'))throw Error('Homepage missing Pawsibly Innocent link');
 if(!fs.readFileSync('src/analytics.js','utf8').includes('ARCADE_ANALYTICS_KEY'))throw Error('Missing Analytics authentication');
 for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js','public/studio-insights/index.html']){
  const text=fs.readFileSync(file,'utf8');
