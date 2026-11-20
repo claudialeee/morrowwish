@@ -306,6 +306,7 @@ class YardScene {
       species: sp, spot, found: false, revealT: 0,
       peekT: 0.4 + Math.random() * 1.2, peeking: true,
     };
+    window.MorrowwishAudio?.effect?.('rustle');
     this.game.toast(`🌿 草丛里有只野猫在探头…点它！`);
   }
   // spawn the hiding wild cat at whichever bush is closest to (x,y)
