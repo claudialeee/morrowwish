@@ -13,6 +13,11 @@ try{
       await page.goto(origin+'/cat-bond/?platform=crazygames&lang=en',{waitUntil:'load',timeout:40000});
       await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
       await page.waitForSelector('#panel.open .dex-cell',{timeout:12000});
+      await page.waitForTimeout(80); // MutationObserver's ZH→EN DOM pass
+      const starterCopy=await page.locator('#panel.open').innerText();
+      assert.doesNotMatch(starterCopy,/[\u4e00-\u9fff]/,
+        'CrazyGames English starter dialog has untranslated Chinese: '+starterCopy);
+
       const layout=await page.evaluate(()=>{
         const stage=document.getElementById('stage').getBoundingClientRect();
         const panel=document.querySelector('#panel.open .card').getBoundingClientRect();
@@ -51,6 +56,11 @@ try{
         game.yardTap(spot.x,spot.y);
       });
       await page.waitForSelector('#cp-go',{timeout:8000});
+      await page.waitForTimeout(80);
+      const battlePrepCopy=await page.locator('#panel.open').innerText();
+      assert.doesNotMatch(battlePrepCopy,/[\u4e00-\u9fff]/,
+        'CrazyGames English battle prep has untranslated Chinese: '+battlePrepCopy);
+
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
       if(width===907){
@@ -61,6 +71,11 @@ try{
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
+        await page.waitForTimeout(80);
+        const catchCopy=await page.locator('#panel.open').innerText();
+        assert.doesNotMatch(catchCopy,/[\u4e00-\u9fff]/,
+          'CrazyGames English catch result has untranslated Chinese: '+catchCopy);
+
         assert.equal(await page.evaluate(()=>State.S.cats.length),2);
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
