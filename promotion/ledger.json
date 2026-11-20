@@ -742,6 +742,26 @@
     "updatedAt": "2026-11-19",
     "deployCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
     "method": "Six real-gameplay portrait videos have embedded licensed CC0 soundtrack in deployed production assets; Metricool pending video posts have had their media replaced; previously published video posts cannot be edited in place.",
-    "verifyRun": "https://github.com/claudialeee/morrowwish/actions/runs/44654968983"
+    "verifyRun": "https://github.com/claudialeee/morrowwish/actions/runs/44654968983",
+    "relaunchPosts": [
+      {
+        "game": "pawsibly-innocent",
+        "network": "tiktok",
+        "scheduledPostId": "435011751",
+        "scheduledPostUuid": "5330988901130978532",
+        "scheduledAt": "2026-11-20T10:30:00",
+        "timezone": "America/Los_Angeles",
+        "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place"
+      },
+      {
+        "game": "pawsibly-innocent",
+        "network": "youtube",
+        "scheduledPostId": "435011765",
+        "scheduledPostUuid": "-6568402882065120978",
+        "scheduledAt": "2026-11-20T11:30:00",
+        "timezone": "America/Los_Angeles",
+        "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place"
+      }
+    ]
   }
 }
