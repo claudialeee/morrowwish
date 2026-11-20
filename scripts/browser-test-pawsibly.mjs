@@ -142,7 +142,7 @@ try{
  }));
  console.log('Homepage Chinese and compact sections:',JSON.stringify(homeZh));
  assert.equal(homeZh.lang,'zh-CN');
- assert.match(homeZh.worldsPitch,/三条鱼.*院子.*人生.*小镇/,'Four-world homepage introduction should name all four adventures naturally in Chinese');
+ assert.match(homeZh.worldsPitch,/院子.*三条鱼.*小镇.*人生/,'Featured introduction must follow Cat Bond, fish, town and Elsewhere');
  assert.doesNotMatch(homeZh.worldsPitch,/Be a sneaky cat|Four worlds/,'No English four-world pitch on Chinese homepage');
  assert.equal(homeZh.bondCount,1,'Cat Bond homepage card must appear exactly once');
  assert.equal(homeZh.bondTitle?.trim(),'猫猫纽带','Chinese Cat Bond heading should not repeat English game name');
@@ -156,7 +156,7 @@ try{
  assert.match(homeZh.catPitch,/三条小鱼|毛线球|粉色猫门/,'New Chinese promotional copy should explain gameplay');
  assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
- assert.ok(homeZh.heroPitch.indexOf('捣蛋小猫')<homeZh.heroPitch.indexOf('从未活过的人生')&&homeZh.heroPitch.indexOf('从未活过的人生')<homeZh.heroPitch.indexOf('自由的小镇'),'Hero copy must list cat, Elsewhere and town in their displayed order');
+ assert.ok(homeZh.heroPitch.indexOf('和满院子的猫咪')<homeZh.heroPitch.indexOf('捣蛋小猫')&&homeZh.heroPitch.indexOf('捣蛋小猫')<homeZh.heroPitch.indexOf('自由的小镇')&&homeZh.heroPitch.indexOf('自由的小镇')<homeZh.heroPitch.indexOf('从未活过的人生'),'Homepage hero must match the four featured cards in order');
  assert.ok(homeZh.miniHeight>270&&homeZh.miniHeight<480,'The 02 game gallery should be compact without hiding any games');
  assert.ok(homeZh.aboutHeight>130&&homeZh.aboutHeight<260,'The 03 studio introduction should not consume a full screen');
  const compactLayout=await page.evaluate(()=>{

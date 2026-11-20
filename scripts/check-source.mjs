@@ -85,11 +85,34 @@ const catGame=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 for(const marker of ['game_start','game_complete','game_retry','cat_level_won','guardMove','morrowwish-language-change']){
  if(!catGame.includes(marker))throw Error('Pawsibly Innocent missing gameplay/analytics: '+marker);
 }
+const translationSource=fs.readFileSync('public/lang.js','utf8');
 const homepage=fs.readFileSync('public/index.html','utf8');
-const oneLineHero='化身捣蛋小猫偷三条鱼，和满院子的猫咪成为朋友，体验一段从未活过的人生，或建造人人自由的小镇。';
+const oneLineHero='和满院子的猫咪成为朋友，化身捣蛋小猫偷三条鱼，建造人人自由的小镇，或体验一段从未活过的人生。';
 const heroMarkup=homepage.match(/<p class="hero-copy">([\s\S]*?)<\/p>/)?.[1]||'';
 if(!heroMarkup.includes('<span class="hero-zh-copy" lang="zh-CN">'+oneLineHero+'</span>')||/<(?:wbr|br)\b/i.test(heroMarkup))
   throw Error('Homepage Chinese hero must keep all four worlds together as one unbroken sentence');
+// Never reorder featured cards without updating BOTH homepage introductions.
+// These checks compare real card order rather than preserving a stale fixed order.
+const featuredOrder=[...homepage.matchAll(/<article class="feature-card[^"]*"><a class="card-hit" href="[^"]+" data-id="([^"]+)"/g)].map(m=>m[1]);
+const phrases={
+ 'cat-bond':['和满院子的猫咪成为朋友','Befriend a yard full of cats','和满院子的猫咪一起成长'],
+ 'pawsibly-innocent':['化身捣蛋小猫偷三条鱼','steal three fish as a mischievous cat','化身小猫偷走三条鱼'],
+ 'tiny-town':['建造人人自由的小镇','build a town where everyone is free','建造人人自由的小镇'],
+ 'elsewhere':['体验一段从未活过的人生','explore a life you never lived','体验一段从未活过的人生']
+};
+const homeEnglish=homepage.match(/class="hero-en-copy">([^<]+)</)?.[1]||'';
+const leadEnglish=homepage.match(/<section class="featured-section[^>]*>[\s\S]*?<div class="section-intro">[\s\S]*?<\/h2><\/div><p>([^<]+)</)?.[1]||'';
+const leadZh=(translationSource.match(/"Raise a yard of cats and explore together[^"]*":"([^"]+)"/)||[])[1]||'';
+for(const [index,id] of featuredOrder.entries()){
+ if(!phrases[id])continue;
+ const previous=featuredOrder.slice(0,index).filter(p=>phrases[p]);
+ for(let i=0;i<3;i++){
+  const copy=[oneLineHero,homeEnglish,leadZh][i];
+  const marker=phrases[id][i];
+  if(!copy.includes(marker)||previous.some(pr=>copy.indexOf(phrases[pr][i])>copy.indexOf(marker)))
+   throw Error('Homepage descriptions must match featured ordering: '+id);
+ }
+}
 const homeStyles=fs.readFileSync('public/hub.css','utf8');
 if(!homeStyles.includes(".elsewhere-card h3{font-family:'Nunito'"))throw Error('Elsewhere heading must match other featured headings');
 if((homepage.match(/class="card-hit"/g)||[]).length!==4)throw Error('All featured cards must have full-card pointer targets');
