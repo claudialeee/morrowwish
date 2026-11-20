@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-11-19",
-  "explanation": "Operational queue. Status does not become submitted or published until confirmed in the developer portal/public project page. itch statuses are reported by the studio, not independently verified.",
+  "explanation": "Six existing itch.io game pages were verified on the logged-in Morrow Wish studio profile. Cat Bond not present as of 2026-11-19. CrazyGames entries reflect its portal, while GitHub issue #23 is internal tracking only.",
   "submissionPolicy": {
     "crazygamesMaxPerReviewCycle": 1,
     "source": "Morrow Wish conservative quality-first policy (not a claimed CrazyGames platform limit)",
@@ -64,33 +64,52 @@
     "games": [
       {
         "slug": "pawsibly-innocent",
-        "status": "studio-reported-live"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/pawsibly-innocent",
+        "verifiedOnStudioProfile": true,
+        "verifiedDate": "2026-11-19"
       },
       {
         "slug": "elsewhere",
-        "status": "studio-reported-live"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/elsewhere",
+        "verifiedOnStudioProfile": true,
+        "verifiedDate": "2026-11-19"
       },
       {
         "slug": "tiny-town",
-        "status": "studio-reported-live"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/tiny-town",
+        "verifiedOnStudioProfile": true,
+        "verifiedDate": "2026-11-19"
       },
       {
         "slug": "flip-dash",
-        "status": "studio-reported-live"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/flip-dash",
+        "verifiedOnStudioProfile": true,
+        "verifiedDate": "2026-11-19"
       },
       {
         "slug": "parcel-panic",
-        "status": "studio-reported-live"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/parcel-panic",
+        "verifiedOnStudioProfile": true,
+        "verifiedDate": "2026-11-19"
       },
       {
         "slug": "pocket-aquarium",
-        "status": "studio-reported-live"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/pocket-aquarium",
+        "verifiedOnStudioProfile": true,
+        "verifiedDate": "2026-11-19"
       },
       {
         "slug": "cat-bond",
         "status": "not-created"
       }
-    ]
+    ],
+    "newProjectPage": "https://itch.io/game/new"
   },
   "excluded": [
     "reddit",
