@@ -13,12 +13,22 @@ window.addEventListener('DOMContentLoaded', () => {
     location.reload();
   });
 
-  // Intro starfield + floating paw motes (Morrow Wish ambience)
-  startIntroStars();
-
+  // Bind Start before any optional decorations, so mobile GPU issues cannot block play.
+  let starting=false;
   const startGame = () => {
-    document.getElementById('intro').classList.add('hide');
-    game.start();
+    if(starting)return;
+    starting=true;
+    try {
+      game.start();
+      document.getElementById('intro').classList.add('hide');
+      window.__CAT_BOND_STARTED__=true;
+    } catch(error) {
+      starting=false;
+      console.error('Cat Bond start failed',error);
+      const hint=document.getElementById('start-error');
+      if(hint){hint.hidden=false;hint.textContent='游戏启动失败，请刷新页面重试：'+(error?.message||'');}
+      return;
+    }
     if (window.Raising) Raising.init();
 
     // Any time the player has no cats (fresh start OR a save that ended up empty),
@@ -47,6 +57,8 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   document.getElementById('intro-start').addEventListener('click', startGame);
+  try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
+  window.__CAT_BOND_READY__=true;
 
   // dev screenshot harness: ?autodev seeds a lively yard & skips the intro
   if (location.search.includes('autodev')) {
