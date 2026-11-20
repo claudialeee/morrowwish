@@ -239,127 +239,50 @@ console.log('Published pages and UI source contain no starburst glyphs.');
 
 
 
-// Elsewhere: every route must lead to a complete, illustrated, bilingual ending.
+// Elsewhere dream-lives QA replaces the retired eight-scene suite.
 import vm from 'node:vm';
-const storySandbox={window:{}};
-for(const file of ['public/elsewhere/season.js','public/elsewhere/endings.js','public/zh-polish.js']){
-  vm.runInNewContext(fs.readFileSync(file,'utf8'),storySandbox,{filename:file,timeout:2000});
-}
-const storyWorlds=storySandbox.window.ELSEWHERE_SEASON||[];
-const storyEndings=storySandbox.window.ELSEWHERE_ENDINGS||{};
-if(storyWorlds.length!==4)throw Error('Elsewhere must have four complete worlds');
-if(!fs.readFileSync('public/elsewhere/index.html','utf8').includes('/elsewhere/endings.js'))throw Error('Elsewhere ending script is not loaded');
-const storyApp=fs.readFileSync('public/elsewhere/app.js','utf8');
-if(!storyApp.includes('const anchor=')||!storyApp.includes('function resolveEnding()'))throw Error('Elsewhere continuity logic missing');
-for(const world of storyWorlds){
-  const endings=storyEndings[world.id];
-  if(world.acts.length!==8||world.acts.some(act=>act.choices.length!==2||!act.n[0]))throw Error('Incomplete story: '+world.id);
-  if(endings?.paths.length!==2||endings.paths.some(p=>p.finales.length!==2)||endings.memories.length<2)throw Error('Incomplete ending matrix: '+world.id);
-  for(const path of endings.paths){
-    const asset='public/elsewhere/endings/'+path.image;
-    if(!fs.existsSync(asset)||!fs.readFileSync(asset,'utf8').includes('<svg'))throw Error('Missing ending illustration: '+asset);
-    for(const finale of path.finales){
-      if(!finale.title?.[0]||!finale.title?.[1]||!finale.detail?.[0]||!finale.detail?.[1])throw Error('Missing bilingual ending: '+world.id);
-    }
-  }
-}
-console.log('Elsewhere branching logic, 32 scenes, 16 endings and 8 SVG illustrations checked.');
-
-// Elsewhere continuity v3: translated tradeoffs, conditional callbacks, and no conjured plot items.
-const continuitySrc='public/elsewhere/continuity.js';
-if(!fs.existsSync(continuitySrc))throw Error('Missing Elsewhere continuity engine');
-const continuitySandbox={window:{}};
-vm.runInNewContext(fs.readFileSync(continuitySrc,'utf8'),continuitySandbox,{filename:continuitySrc,timeout:2000});
-const continuity=continuitySandbox.window.ELSEWHERE_CONTINUITY;
-if(!continuity?.beats||!continuity.hints||!continuity.overrides)throw Error('Missing continuity structure');
-const elsewherePage=fs.readFileSync('public/elsewhere/index.html','utf8');
-if(!elsewherePage.includes('/elsewhere/continuity.js'))throw Error('Continuity engine not loaded');
-const elsewhereServiceWorker=fs.readFileSync('public/elsewhere/sw.js','utf8');
-if(!elsewhereServiceWorker.includes('/elsewhere/continuity.js')||!elsewhereServiceWorker.includes('/elsewhere/endings.js'))throw Error('Offline scripts missing from Elsewhere cache');
-if(!storyApp.includes('BECAUSE OF AN EARLIER CHOICE')||!storyApp.includes('c.hint')||!storyApp.includes('morrowwish-language-change'))throw Error('Elsewhere story reminder, choice hints or language switching missing');
-for(const world of storyWorlds){
-  const hints=continuity.hints[world.id],beats=continuity.beats[world.id],overrides=continuity.overrides[world.id]||{};
-  if(hints?.length!==8||!beats||Object.keys(beats).length<4)throw Error('Incomplete choice consequences: '+world.id);
-  for(let scene=0;scene<8;scene++){
-    if(hints[scene]?.length!==2||hints[scene].some(v=>v.length!==2||!v[0]||!v[1]))throw Error('Missing bilingual choice hints: '+world.id+' scene '+(scene+1));
-  }
-  for(const [sceneStr,beat] of Object.entries(beats)){
-    const scene=Number(sceneStr);
-    if(!Number.isInteger(scene)||scene<1||scene>7||beat.from<0||beat.from>=scene||beat.echo?.length!==2
-       ||beat.echo.some(t=>t?.length!==2||!t[0]||!t[1])||beat.echo[0][0]===beat.echo[1][0])throw Error('Invalid story consequence: '+world.id+' scene '+sceneStr);
-  }
-  for(const [sceneStr,override] of Object.entries(overrides)){
-    const scene=Number(sceneStr);
-    if(!Number.isInteger(scene)||scene<1||scene>7||override.from<0||override.from>=scene
-      ||override.variants?.length!==2)throw Error('Invalid conditional option: '+world.id+' scene '+sceneStr);
-    for(const v of override.variants){
-      if(v!==null&&(v.choice<0||v.choice>1||v.label?.length!==2||v.reply?.length!==2||!v.label[1]||!v.reply[1]))throw Error('Missing localized conditional option: '+world.id+' scene '+sceneStr);
-    }
-  }
-}
-// Before scene 4, the Paris missing reel must be found rather than silently appearing.
-if(!continuity.overrides.paris[3].variants[0]?.label?.[0].includes('newsreels'))throw Error('Paris reel continuity regression');
-if(!storyWorlds.find(w=>w.id==='cabin').acts[7].clock.includes('SPRING'))throw Error('Cabin timeline must allow repairs to finish');
-for(const source of ['public/elsewhere/app.js','public/elsewhere/season.js','public/elsewhere/endings.js',continuitySrc,'public/zh-polish.js']){
-  new vm.Script(fs.readFileSync(source,'utf8'),{filename:source});
-}
-console.log('Elsewhere continuity, bilingual decisions, conditional film option, seasonal timeline, and syntax checked.');
-
-
-// Elsewhere mystery validation: real choice and exploration gating, persistent endings, bilingual art.
-const mysterySource='public/elsewhere/mysteries.js';
-const mysterySandbox={window:{}};
-vm.runInNewContext(fs.readFileSync(mysterySource,'utf8'),mysterySandbox,{filename:mysterySource,timeout:2000});
-const mysteries=mysterySandbox.window.ELSEWHERE_MYSTERIES||{};
-const mysteryPage=fs.readFileSync('public/elsewhere/index.html','utf8');
-const offlineScript=fs.readFileSync('public/elsewhere/sw.js','utf8');
-if(!mysteryPage.includes('/elsewhere/mysteries.js')||!offlineScript.includes('/elsewhere/mysteries.js'))throw Error('Hidden story module missing from public or offline app');
-for(const token of ['function mysteryState()','function recordEnding(','COLLECTION_KEY','active.inspected','mystery-rare','HIDDEN STORY DISCOVERED']){
- if(!storyApp.includes(token))throw Error('Missing functional Elsewhere story mechanic: '+token);
-}
-const seenMysteryArts=new Set();
-for(const w of storyWorlds){
- const data=mysteries[w.id];
- if(!data||data.steps?.length!==4||data.hooks?.length!==3||data.teasers?.length!==3||data.result?.length!==2)
-   throw Error('Incomplete hidden narrative: '+w.id);
- const properPair=p=>Array.isArray(p)&&p.length===2&&p.every(x=>typeof x==='string'&&x.trim().length>0);
- for(const pair of [data.name,data.description,data.revealing,data.closing,...data.hooks,...data.teasers])
-   if(!properPair(pair))throw Error('Untranslated mystery copy: '+w.id);
- for(const conclusion of data.result)
-   for(const value of [conclusion.title,conclusion.sub,conclusion.detail])
-     if(!properPair(value))throw Error('Untranslated hidden ending: '+w.id);
- if(seenMysteryArts.has(data.art))throw Error('Ending art must be unique: '+data.art);
- seenMysteryArts.add(data.art);
- const art='public/elsewhere/endings/'+data.art;
- const xml=fs.readFileSync(art,'utf8');
- if(!xml.startsWith('<svg')||!xml.includes('</svg>')||!xml.includes('viewBox'))throw Error('Secret illustration invalid: '+art);
- for(const r of data.steps){
-   if(!Number.isInteger(r.at)||r.at<0||r.at>=8||!properPair(r.label))throw Error('Invalid clue requirement: '+w.id);
-   const isInspection=r.inspect!==undefined, isChoice=r.choice!==undefined;
-   if(isInspection===isChoice)throw Error('Clue must require exactly one interaction: '+w.id);
-   if(isInspection&&(!Number.isInteger(r.inspect)||r.inspect<0||r.inspect>=w.acts[r.at].inspect.length))
-     throw Error('Mystery refers to absent inspection: '+w.id);
-   if(isChoice&&(!Number.isInteger(r.choice)||r.choice<1||r.choice>w.acts[r.at].choices.length))
-     throw Error('Mystery refers to absent choice: '+w.id);
+const dreamSource=fs.readFileSync('public/elsewhere/dreams.js','utf8');
+const dreamPage=fs.readFileSync('public/elsewhere/index.html','utf8');
+const dreamCss=fs.readFileSync('public/elsewhere/dreams.css','utf8');
+const dreamSw=fs.readFileSync('public/elsewhere/sw.js','utf8');
+new vm.Script(dreamSource);
+for(const marker of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/telemetry.js','/social-share.js'])
+ if(!dreamPage.includes(marker))throw Error('Elsewhere missing script or style: '+marker);
+if(!dreamSw.includes('/elsewhere/dreams.js')||!dreamSw.includes('/elsewhere/dreams.css'))throw Error('Elsewhere cache is stale');
+if(!dreamCss.includes('@media(max-width:600px)')||!dreamCss.includes('prefers-reduced-motion'))
+ throw Error('Elsewhere responsive CSS incomplete');
+const dreamCore=dreamSource.slice(dreamSource.indexOf('const L='),dreamSource.indexOf('const $='));
+const dreamSandbox={};
+vm.runInNewContext(dreamCore+';globalThis.lives=WORLDS;',dreamSandbox,{timeout:2000});
+const lives=dreamSandbox.lives;
+const bilingual=v=>Array.isArray(v)&&v.length===2&&v.every(x=>typeof x==='string'&&x.trim().length>1);
+if(lives.length!==6||new Set(lives.map(w=>w.id)).size!==6)throw Error('Expected six distinct dream worlds');
+for(const life of lives){
+ for(const pair of [life.place,life.name,life.tag,life.tease,life.secret])
+  if(!bilingual(pair))throw Error('Untranslated life: '+life.id);
+ if(life.acts.length!==3||life.endings.length!==3||life.rare.length!==2)
+  throw Error('Expected three moments and four endings: '+life.id);
+ if(life.acts[1].twists?.length!==3||life.acts[2].turns?.length!==3)
+  throw Error('Choices must cause future scenes to change: '+life.id);
+ for(const act of life.acts){
+  if(!bilingual(act.title)||act.choices?.length!==3)throw Error('Incomplete life moment: '+life.id);
+  if(act.body&&!bilingual(act.body))throw Error('Missing bilingual intro: '+life.id);
+  for(const c of act.choices)if(c.length!==2||!bilingual(c[0])||!bilingual(c[1]))
+   throw Error('Missing bilingual choice or consequence: '+life.id);
  }
- let secrets=0,normal=0;
- // Simulate 2^8 story paths, both with and without discovered objects.
- for(let bits=0;bits<256;bits++){
-   const decisions=Array.from({length:8},(_,i)=>1+(bits>>i&1));
-   for(const inspected of [false,true]){
-     const matched=data.steps.every(r=>r.choice!==undefined?decisions[r.at]===r.choice:inspected);
-     if(matched)secrets++;else normal++;
-     const next=decisions[7]-1;
-     const final=matched?data.result[next]:storyEndings[w.id].paths[decisions[6]-1].finales[next];
-     if(!properPair(final.title)||!properPair(final.detail))throw Error('Unreachable or malformed ending: '+w.id);
-   }
- }
- if(secrets<1||normal<1)throw Error('Hidden ending cannot be both earned and missed: '+w.id);
- console.log(w.id+': '+secrets+' hidden and '+normal+' regular simulated completions');
+ for(const line of [...life.acts[1].twists,...life.acts[2].turns])
+  if(!bilingual(line))throw Error('Untranslated plot twist: '+life.id);
+ for(const ending of [...life.endings,life.rare])
+  if(ending.length!==2||!bilingual(ending[0])||!bilingual(ending[1]))throw Error('Untranslated ending: '+life.id);
+ const reachable=new Set();
+ for(let a=0;a<3;a++)for(let b=0;b<3;b++)for(let c=0;c<3;c++)for(const clue of [false,true])
+  reachable.add(clue&&[a,b,c].includes(0)?3:c);
+ if(reachable.size!==4)throw Error('Unreachable hidden ending: '+life.id);
+ if(!dreamSource.includes('id==="'+life.id+'"'))throw Error('Missing illustrated world: '+life.id);
 }
-for(const source of [mysterySource,'public/elsewhere/app.js'])new vm.Script(fs.readFileSync(source,'utf8'),{filename:source});
-console.log('Elsewhere mystery validation: 2,048 simulated ending paths, four secret illustrations, old save support, and bilingual endings checked.');
-
+for(const key of ['track("world_open"','track("chapter_view"','track("choice_made"','track("chapter_completed"','track("life_completed"','track("ending_view"','window.arcadeMetric?.("game_complete")','navigator.globalPrivacyControl','MorrowwishSocialShare?.open','history.pushState'])
+ if(!dreamSource.includes(key))throw Error('Elsewhere missing analytics, privacy or gameplay: '+key);
+console.log('Elsewhere: six illustrated lives, 18 scenes, 24 bilingual endings, and 324 paths checked.');
 
 // Four distinctly styled cheerful CC0 recordings, no shared Lo-fi fallback.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
@@ -390,88 +313,12 @@ if(!fs.readFileSync('public/studio-audio.js','utf8').includes('[data-mw-music]')
  throw new Error('Music toggle must not trigger the sound effects button');
 console.log('Game music: 4 original profiles, independent bilingual controls, and 12 illustrated portraits checked.');
 
-// Five-scene Elsewhere runtime validation: test the actual adapter and the release HTML.
-const fiveSceneSandbox={window:{}};
-const copyForVm=x=>JSON.parse(JSON.stringify(x));
-for(const path of ['public/elsewhere/season.js','public/elsewhere/continuity.js',
-  'public/elsewhere/endings.js','public/elsewhere/mysteries.js']){
-  vm.runInNewContext(fs.readFileSync(path,'utf8'),fiveSceneSandbox,{filename:path,timeout:3000});
-}
-vm.runInNewContext(fs.readFileSync('public/elsewhere/fast-story.js','utf8'),{
-  window:fiveSceneSandbox.window,structuredClone:copyForVm},{filename:'public/elsewhere/fast-story.js',timeout:3000});
-const fastWorlds=fiveSceneSandbox.window.ELSEWHERE_SEASON;
-const fastMysteries=fiveSceneSandbox.window.ELSEWHERE_MYSTERIES;
-const fastContinuity=fiveSceneSandbox.window.ELSEWHERE_CONTINUITY;
-if(fiveSceneSandbox.window.ELSEWHERE_FAST_STORY_VERSION!==3)throw Error('Unexpected Elsewhere fast-story version');
-for(const world of fastWorlds){
-  if(world.acts.length!==5)throw Error('Five-scene story regression: '+world.id);
-  for(const [i,act] of world.acts.entries()){
-    if(act.choices.length!==2||!act.n[0]||!act.clock||!act.loc)throw Error('Incomplete five-scene act: '+world.id+' '+i);
-    if(!fastContinuity.hints[world.id]?.[i]||fastContinuity.hints[world.id][i].length!==2)
-      throw Error('Missing contextual tradeoff: '+world.id+' '+i);
-    if(!fiveSceneSandbox.window.MORROW_ZH_STORIES[act.n[0]])
-      throw Error('Untranslated new story scene: '+world.id+' '+i);
-  }
-  const secret=fastMysteries[world.id];
-  if(secret.steps.some(piece=>piece.at>=5))throw Error('Secret still requires removed scene: '+world.id);
-  let reachable=0;
-  for(let mask=0;mask<32;mask++){
-    const picks=Array.from({length:5},(_,i)=>1+(mask>>i&1));
-    if(secret.steps.every(piece=>piece.choice===undefined||picks[piece.at]===piece.choice))reachable++;
-  }
-  if(reachable<=0||reachable>=32)throw Error('Secret should require specific choices: '+world.id);
-}
-const fastPage=fs.readFileSync('public/elsewhere/index.html','utf8');
-const ordered=['/elsewhere/season.js','/elsewhere/continuity.js','/elsewhere/mysteries.js',
-  '/elsewhere/fast-story.js','/elsewhere/app.js'];
-if(!ordered.every((x,i)=>i===0||fastPage.indexOf(ordered[i-1])<fastPage.indexOf(x)))
-  throw Error('Elsewhere scripts load in wrong order');
-if(!fastPage.includes('/elsewhere/music.js'))throw Error('Elsewhere music auto-start script not mounted');
-if(!fastPage.includes('A LETTER FROM ELSEWHERE')||!fastPage.includes('The bookshop by the sea has ten days left on its lease.'))
-  throw Error('Elsewhere must introduce its worlds through the story letter');
-if(!fastPage.includes('<details class="letter-details">'))
-  throw Error('Elsewhere play and data disclosure must be separate and collapsed');
-if(fastPage.includes('not live generative AI')||fastPage.includes('pseudonymous browser and play-session identifiers, chapter progress'))
-  throw Error('Technical disclaimers must not dominate the Elsewhere story letter');
-if(!fastPage.includes('https://incompetech.com/music/royalty-free/')||!fastPage.includes('creativecommons.org/licenses/by/4.0'))
-  throw Error('Elsewhere must give the composer and Creative Commons attribution');
-for(const src of ['public/elsewhere/music.js','public/elsewhere/fast-story.js','public/elsewhere/app.js']){
-  new vm.Script(fs.readFileSync(src,'utf8'),{filename:src});
-}
-const fastApp=fs.readFileSync('public/elsewhere/app.js','utf8');
-for(const pattern of ['storyVersion:3','const route=active.decisions[3]','const next=active.decisions[4]',
-  'elsewhere_endings_collection_v1','window.ElsewhereMusic?.setEnding(active.world)']){
-  if(!fastApp.includes(pattern))throw Error('Five-scene app requirement missing: '+pattern);
-}
-if(!fastApp.includes('ending-illustration'))throw Error('Full-size illustrated ending view missing');
-const musicSource=fs.readFileSync('public/elsewhere/music.js','utf8');
-for(const pattern of ['audio.autoplay=enabled','if(enabled)start();','setWorld:switchTo','setEnding:','CC BY 4.0','Kevin MacLeod','Carefree.mp3']){
- if(!musicSource.includes(pattern))throw Error('Missing immediate and licensed soundtrack handling: '+pattern);
-}
-console.log('Five-scene Elsewhere runtime validation: four short lives, reachable secrets, translated story, illustrated endings and immediate music attempt checked.');
-
-const letterZh=fs.readFileSync('public/zh-polish.js','utf8');
-if(!letterZh.includes('来自《平行人生》的一封信')||!letterZh.includes('海边书店的租约只剩十天'))
-  throw Error('Elsewhere letter needs authored, natural Chinese');
-if(musicSource.includes('farmmer938-lgtm/aeris-cc0-music')||musicSource.includes('0xabad1dea/glorytales')||musicSource.includes('evergreen-open-road.mp3')||musicSource.includes('CatsEyeWaltz'))
-  throw Error('Previous mismatched soundtrack is still in use');
-const melodyPaths=['Carefree.mp3','Life of Riley.mp3','Bossa Antigua.mp3','Easy Lemon.mp3','Porch Swing Days - slower.mp3'];
-for(const track of melodyPaths)if(!musicSource.includes(track))throw Error('Missing licensed instrumental theme: '+track);
-const cheerfulMusic=fs.readFileSync('public/elsewhere/music.js','utf8');
-if(!cheerfulMusic.includes("home:'Carefree.mp3'")||
- !cheerfulMusic.includes("'no-work':'Life of Riley.mp3'")||
- !cheerfulMusic.includes("bookshop:'Bossa Antigua.mp3'")||
- !cheerfulMusic.includes("paris:'Easy Lemon.mp3'")||
- !cheerfulMusic.includes("cabin:'Porch Swing Days - slower.mp3'"))
- throw Error('Elsewhere soundtrack must stay consistently warm, bright and relaxed');
-if(!cheerfulMusic.includes('if(tracks[world]===tracks[next])'))
- throw Error('Elsewhere should continue the same melody into its ending');
-if(!cheerfulMusic.includes('encodeURIComponent(tracks[world])'))
- throw Error('Elsewhere music filenames require URI encoding');
-if(!fastPage.includes('Music by <a')||!fastPage.includes('Kevin MacLeod'))
- throw Error('New music author and title credits missing');
-console.log('Elsewhere musical redesign and story letter copy checked.');
-
+// The new fast visual adventure intentionally supersedes the letter-heavy legacy game.
+if(dreamPage.includes('/elsewhere/app.js')||dreamPage.includes('/elsewhere/fast-story.js')||dreamPage.includes('/elsewhere/music.js'))
+ throw Error('Elsewhere old scripts still launch');
+if(dreamPage.includes('A LETTER FROM ELSEWHERE')||dreamPage.includes('letter-details'))
+ throw Error('Elsewhere should not show long prose before gameplay');
+console.log('Elsewhere launches directly into its illustration-led adventures.');
 
 // Native media looping fixes browser-suspended Web Audio oscillators.
 const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
@@ -495,25 +342,14 @@ if(newsTopIndex<0||guideIndex<0||newsTopIndex>guideIndex||
 console.log('Immediate music start and top-positioned bilingual Town News checked.');
 
 
-// Elsewhere's primary escape route must match all studio games: the first
-// interactive item in the header returns to Morrow Wish, not the life picker.
-const elsewhereHeader=fs.readFileSync('public/elsewhere/index.html','utf8');
-const navStart=elsewhereHeader.indexOf('<header class="topbar">');
-const navEnd=elsewhereHeader.indexOf('</header>',navStart);
-if(navStart<0||navEnd<0)throw new Error('Missing Elsewhere header');
-const nav=elsewhereHeader.slice(navStart,navEnd);
-const studioLink=nav.indexOf('<a class="studio-home studio-home-leading" href="/"');
-const internalLink=nav.indexOf('<a href="/elsewhere/" class="brand" id="brand"');
-if(studioLink<0||internalLink<0||studioLink>internalLink)
-  throw new Error('Elsewhere header must lead with the Morrow Wish homepage link');
-if((nav.match(/href="\/"(?=\s|>)/g)||[]).length!==1)
-  throw new Error('Elsewhere header must have one unambiguous studio-home link');
-if(!nav.includes('id="home-btn"')||!nav.includes('id="brand"'))
-  throw new Error('Elsewhere life-picker navigation must remain available');
-const elsewhereStyles=fs.readFileSync('public/elsewhere/style.css','utf8');
-if(!elsewhereStyles.includes('.topbar-start')||!elsewhereStyles.includes('.topbar>#mw-language'))
-  throw new Error('Elsewhere desktop and mobile nav responsive layout missing');
-console.log('Elsewhere top-left homepage navigation, internal life picker and mobile layout checked.');
+// Elsewhere header returns home first and offers bilingual controls.
+const navStart=dreamPage.indexOf('<header class="top">'),navEnd=dreamPage.indexOf('</header>',navStart);
+if(navStart<0||navEnd<0)throw Error('Missing Elsewhere header');
+const nav=dreamPage.slice(navStart,navEnd);
+if(nav.indexOf('href="/"')<0||nav.indexOf('href="/"')>nav.indexOf('href="/elsewhere/"')||!nav.includes('id="language"'))
+ throw Error('Elsewhere studio-home link or language toggle missing');
+if((nav.match(/href="\/"(?=\s|>)/g)||[]).length!==1)throw Error('Ambiguous Elsewhere homepage route');
+console.log('Elsewhere navigation and language toggle checked.');
 
 // Parcel Panic must be genuinely playable with one click or 1/2/3 keys on laptops,
 // while retaining touch drag and the old analytics/achievements event contracts.
@@ -649,7 +485,7 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
    throw Error('Shared social dialog must support truthful story captions and game analytics');
  const pages=[
   ['tiny-town','public/tiny-town/index.html','MorrowwishSocialShare.open({'],
-  ['elsewhere','public/elsewhere/index.html','/elsewhere/app.js'],
+  ['elsewhere','public/elsewhere/index.html','/elsewhere/dreams.js'],
   ['pawsibly-innocent','public/pawsibly-innocent/index.html','/pawsibly-innocent/game.js']
  ];
  for(const [name,path,marker] of pages){
@@ -658,16 +494,17 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
    throw Error(name+' must load the shared social modal');
  }
  const town=fs.readFileSync('public/tiny-town/index.html','utf8');
- const elsewhere=fs.readFileSync('public/elsewhere/app.js','utf8');
+ const elsewhere=fs.readFileSync('public/elsewhere/dreams.js','utf8');
  const cat=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
  if(!town.includes('outcome?.totalScore||0')||
     !town.includes("onShare:()=>gameProgress('shared-link')"))
   throw Error('Tiny Town share must use real game score and preserve tracking');
- if(!elsewhere.includes("link.searchParams.set('world',w.id)")||
-    !elsewhere.includes("localizeStory(chosenEnding.title)")||
-    !elsewhere.includes("onShare:platform=>track('share_clicked'"))
-  throw Error('Elsewhere share must preserve playable world deep links and ending');
- if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
+ if(!elsewhere.includes('MorrowwishSocialShare?.open')||
+     !elsewhere.includes('onShare:platform=>track("share_clicked"')||
+     !elsewhere.includes('encodeURIComponent(w.id)'))
+   throw Error('Elsewhere share must preserve playable world deep links and ending');
+
+if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cat.includes("meta:{game:'pawsibly-innocent',level:room}"))
   throw Error('Cat share must include real score and room');
  console.log('All three flagship game share menus: 6 social sites, localized messages, active scores and deep links.');

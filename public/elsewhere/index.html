@@ -3,112 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff8ef">
+  <meta name="theme-color" content="#f8f4ef">
   <meta name="color-scheme" content="light">
-  <meta name="description" content="What if you had chosen another life? Step into four illustrated, choice-driven lives. Every decision changes the journey. Play free, no account required.">
+  <meta name="description" content="What if you woke up living your dream life? Six breathtaking destinations, bold decisions, unexpected twists and 24 illustrated endings. Play Elsewhere free in two minutes.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Elsewhere — Live another life">
-  <meta property="og:description" content="Five illustrated moments. One life shaped by your choices. Free to play, with more endings to discover.">
-  <meta property="og:image" content="https://morrowwish.vercel.app/elsewhere/og.svg">
+  <meta property="og:title" content="Elsewhere — A life beyond your wildest dreams">
+  <meta property="og:description" content="A villa on the Amalfi Coast. Love in Paris. Stardom in Tokyo. Your dream life starts here—and then the surprise arrives.">
+  <meta property="og:image" content="https://morrowwish.vercel.app/promo/elsewhere/cover-landscape.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="/art/morrowwish-mark.svg">
+  <link rel="canonical" href="https://morrowwish.vercel.app/elsewhere/">
   <link rel="manifest" href="/elsewhere/manifest.webmanifest">
-  <link rel="preconnect" href="https://incompetech.com">
-  <link rel="dns-prefetch" href="//static.incompetech.com">
-  <link rel="stylesheet" href="/elsewhere/style.css">
-  <link rel="canonical" href="https://morrowwish.vercel.app/elsewhere/"><title>Elsewhere — Morrow Wish</title>
+  <link rel="stylesheet" href="/elsewhere/dreams.css">
+  <title>Elsewhere — Live your dream life · Morrow Wish</title>
   <script defer src="/telemetry.js"></script>
-  <script defer src="/elsewhere/story.js"></script>
-  <script defer src="/elsewhere/branches.js"></script>
-  <script defer src="/elsewhere/season.js"></script>
-  <script defer src="/elsewhere/endings.js"></script>
-  <script defer src="/elsewhere/continuity.js"></script>
-  <script defer src="/elsewhere/mysteries.js"></script>
-  <script defer src="/elsewhere/fast-story.js"></script>
   <script defer src="/social-share.js"></script>
-  <script defer src="/elsewhere/app.js"></script>
-<script src="/elsewhere/music.js"></script>
-<script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
+  <script defer src="/elsewhere/dreams.js"></script>
+</head>
 <body>
-  <div class="ambient ambient-one" aria-hidden="true"></div>
-  <div class="ambient ambient-two" aria-hidden="true"></div>
-  <div class="site-wrap">
-    <header class="topbar">
-      <div class="topbar-start">
-        <a class="studio-home studio-home-leading" href="/" aria-label="Back to Morrow Wish home">← Morrow Wish</a>
-        <span class="topbar-divider" aria-hidden="true"></span>
-        <a href="/elsewhere/" class="brand" id="brand" aria-label="Elsewhere — all lives">elsewhere<span class="brand-dot">.</span></a>
-      </div>
-      <div class="top-actions">
-        <span class="small-label top-edition">A MORROW WISH STORY</span>
-        <button id="home-btn" class="text-button hidden" type="button"><span aria-hidden="true">←</span> All lives</button>
-        <button id="about-btn" class="circle-button" type="button" aria-label="About Elsewhere">?</button>
-      </div>
-    </header>
-
-    <main id="home-view">
-      <section class="hero" aria-labelledby="hero-heading">
-        <div class="hero-copy">
-          <div class="eyebrow"><span class="eyebrow-star">✦</span> FOR ALL THE ROADS NOT TAKEN</div>
-          <h1 id="hero-heading">Somewhere,<br><em>another you</em><br>is living.</h1>
-          <p>What if you could live the life you never chose? Five moments, a few meaningful decisions, and a story that becomes yours.</p>
-          <div class="hero-actions">
-            <button class="primary-btn" type="button" data-random-world>Start a random life <span aria-hidden="true">↗</span></button>
-            <a class="secondary-link" href="#worlds">Explore all worlds <span aria-hidden="true">↓</span></a>
-          </div>
-          <div class="hero-fine">FREE TO PLAY <span class="separator"></span> NO SIGN-UP <span class="separator"></span> YOUR CHOICES MATTER</div>
-        </div>
-        <div class="hero-visual" aria-hidden="true">
-          <div class="hero-sun"></div>
-          <div class="hero-ring hero-ring-one"></div><div class="hero-ring hero-ring-two"></div>
-          <div class="hero-island island-back"></div><div class="hero-island island-front"></div>
-          <div class="hero-window"><div class="hero-figure"></div></div>
-          <span class="floating-label floating-label-one">A thousand possible tomorrows</span>
-          <span class="floating-label floating-label-two">01 / ∞</span>
-          <div class="hero-visual-caption">ONE LIFE IS NEVER THE WHOLE STORY</div>
-        </div>
-      </section>
-
-      <section class="lens-section" aria-labelledby="lens-label"><div><div class="eyebrow dark-eyebrow">A STORY THAT FEELS LIKE YOURS</div><h2 id="lens-label">What are you looking for?</h2><p>Choose a reading lens. Later chapters will reflect your preference, without needing an account.</p></div><div class="lens-buttons" role="group" aria-label="Reading lens"><button type="button" data-lens="curiosity">Discover</button><button type="button" data-lens="connection">Connect</button><button type="button" data-lens="stillness">Rest</button></div></section>
-      <section id="worlds" class="worlds-section" aria-labelledby="worlds-heading">
-        <div class="section-heading">
-          <div><div class="eyebrow dark-eyebrow">THE DOORS ARE OPEN</div><h2 id="worlds-heading">Where will you <em>begin?</em></h2></div>
-          <span class="section-aside">FOUR LIVES · EIGHT SCENES EACH</span>
-        </div>
-        <div class="world-grid" id="world-grid"></div>
-      </section>
-      <section class="interlude" aria-labelledby="interlude-heading">
-        <div class="interlude-star" aria-hidden="true">✷</div>
-        <div><div class="eyebrow">A SMALL EXPERIMENT IN BEING HUMAN</div><h2 id="interlude-heading">You don't have to<br><em>get life right.</em></h2><p>There are no perfect answers here. Only different lives, strange turns, and moments worth remembering.</p></div>
-        <div class="interlude-steps"><div><strong>01</strong><span>Choose your world</span></div><div><strong>02</strong><span>Follow your instincts</span></div><div><strong>03</strong><span>Discover who you become</span></div></div>
-      </section>
-    </main>
-
-    <main id="play-view" class="hidden" aria-live="off">
-      <div class="play-top"><div class="play-breadcrumb" id="play-breadcrumb"></div><div class="play-utilities"><button type="button" class="subtle-btn" id="narrate-btn" title="Read chapter aloud"><span aria-hidden="true">◌</span> Listen</button><button type="button" class="subtle-btn" id="share-btn" title="Share this world"><span aria-hidden="true">↗</span> Share</button></div></div>
-      <div class="play-layout">
-        <aside class="play-sidebar"><div class="aside-kicker">THIS IS YOUR OTHER LIFE</div><div id="sidebar-art" class="sidebar-art"></div><h2 id="sidebar-title"></h2><p id="sidebar-subtitle"></p><div class="side-divider"></div><div class="aside-kicker">YOUR JOURNEY</div><div class="progress-dots" id="progress-dots"></div><div class="side-divider"></div><div class="aside-kicker">WHAT GUIDES YOU</div><div id="quality-bars" class="quality-bars"></div><div class="aside-quiet">Your story stays in this browser. No account needed.</div><button type="button" class="restart-link" id="restart-btn">↺ &nbsp; Start this life again</button></aside>
-        <section class="story-paper" id="story-paper"><div id="chapter-content"></div></section>
-      </div>
-      <div class="play-footer">ELSEWHERE <span>·</span> AN EXPERIMENT IN UNLIVED LIVES</div>
-    </main>
-
-    <footer id="site-footer" class="site-footer"><span>elsewhere<span class="brand-dot">.</span></span><span>PART OF THE MORROW WISH FAMILY</span><button type="button" id="footer-about">ABOUT THIS EXPERIMENT ↗</button></footer>
-  </div>
-  <dialog id="about-dialog" class="about-dialog" aria-labelledby="about-heading">
-  <div class="dialog-top"><span class="eyebrow">A LETTER FROM ELSEWHERE</span><button id="dialog-close" type="button" class="circle-button" aria-label="Close">×</button></div>
-  <h2 id="about-heading">Dear you,<br><em>another life is waiting.</em></h2>
-  <div class="story-letter">
-    <p>The bookshop by the sea has ten days left on its lease. The old cinema in Paris closes on Sunday. Footprints cross a frozen lake, and no one knows where they lead. At the greenhouse, Bea wants to play her violin, while her neighbor just wants somewhere quiet to sit.</p>
-    <p>That's how these stories begin. No one knows quite what to do next, but somehow the decision falls to you.</p>
-    <p>Some doors won't close once you've opened them. Some places become better after you leave.</p>
-    <p>We'll stop writing here. The rest is yours to live.</p>
-    <p class="letter-signature">See you in another life,<span>Morrow Wish</span></p>
-  </div>
-  <details class="letter-details"><summary>Play &amp; data details</summary><p>Free to play, no account needed. Your choices and progress are saved locally. We use pseudonymous play-session identifiers, chapter progress and numeric choice paths to improve the experience, not your name, email or written story text. Do Not Track and Global Privacy Control settings are respected.</p></details>
-  <div class="music-credit">Music by <a href="https://incompetech.com/music/royalty-free/" target="_blank" rel="noopener noreferrer">Kevin MacLeod (incompetech.com)</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a><span class="music-titles">Carefree · Life of Riley · Bossa Antigua · Easy Lemon · Porch Swing Days - slower</span></div>
-  <div class="dialog-bottom">MORROW WISH · STORIES FOR ANOTHER DAY</div>
-</dialog>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script defer src="/studio-audio.js"></script><script src="/audio-dock.js"></script><script src="/game-fullscreen.js?v=5" defer></script></body>
+  <header class="top">
+    <div class="brand-area">
+      <a class="home-link" href="/" aria-label="Back to Morrow Wish home">← Morrow Wish</a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <a class="brand" href="/elsewhere/">Elsewhere<i>.</i></a>
+    </div>
+    <div class="top-right">
+      <span>A MORROW WISH ADVENTURE</span>
+      <button type="button" class="lang-btn" id="language" aria-label="Switch language">中文</button>
+    </div>
+  </header>
+  <main>
+    <section id="home" aria-label="Choose another life"></section>
+    <section id="game" hidden aria-label="Playable story"></section>
+    <section id="ending" hidden aria-label="Your alternate life ending"></section>
+    <noscript><p>Enable JavaScript to play Elsewhere. 启用 JavaScript 即可体验平行人生。</p></noscript>
+  </main>
+  <div id="toast" hidden role="status" aria-live="polite"></div>
+  <footer class="footer">ELSEWHERE · MORROW WISH · EVERY LIFE HAS ANOTHER DOOR</footer>
+</body>
 </html>
