@@ -63,7 +63,16 @@ try{
  let pageErrorCount=0;
  page.on('pageerror',()=>{pageErrorCount++;});
  const response=await page.goto(email&&password?root+'/login':root+'/games',{waitUntil:'domcontentloaded',timeout:45000});
- await page.waitForTimeout(6200);
+ await page.waitForTimeout(2500);
+ if(isLogin(page)){
+   await page.locator('input[type="password"]').first().waitFor({state:'attached',timeout:13000}).catch(()=>{});
+   if(!(await page.locator('input[type="password"]').count())){
+      await page.reload({waitUntil:'domcontentloaded',timeout:25000}).catch(()=>{});
+      await page.locator('input[type="password"]').first().waitFor({state:'attached',timeout:11000}).catch(()=>{});
+   }
+ }else{
+   await page.waitForTimeout(2300);
+ }
  report.pageErrorCount=pageErrorCount;
  report.bodyTextLength=await page.locator('body').innerText().then(x=>x.length).catch(()=>0);
  report.visibleControls=await page.locator('button:visible,a[href]:visible,input:visible').count().catch(()=>0);
