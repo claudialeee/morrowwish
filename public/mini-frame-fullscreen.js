@@ -13,10 +13,25 @@
   const zh=()=>document.documentElement.lang.toLowerCase().startsWith('zh')||
     window.MorrowwishI18n?.get?.()==='zh';
 
+  function fitArcadeCanvas(){
+    if(!frame||route==='pocket-aquarium')return;
+    const area=frame.querySelector('.mw-mini-playfield');
+    if(!area)return;
+    if(!active()){frame.style.removeProperty('--mw-mini-canvas-width');return;}
+    const rect=area.getBoundingClientRect();
+    // Preserve 16:9 and pointer coordinates, including portrait phone screens.
+    const width=Math.max(1,Math.floor(Math.min(rect.width,rect.height*16/9)));
+    frame.style.setProperty('--mw-mini-canvas-width',width+'px');
+  }
   function sizeChanged(){
-    // The aquarium's canvas recalculates drawing dimensions from #tank.
-    requestAnimationFrame(()=>{window.dispatchEvent(new Event('resize'));
-      requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));});
+    requestAnimationFrame(()=>{
+      fitArcadeCanvas();
+      window.dispatchEvent(new Event('resize'));
+      requestAnimationFrame(()=>{
+        fitArcadeCanvas();
+        window.dispatchEvent(new Event('resize'));
+      });
+    });
   }
   function update(){
     if(!frame)return;
@@ -83,6 +98,7 @@
     playfield.className='mw-mini-playfield';
     frame.append(playfield);
     playfield.append(canvas,overlay);
+    if(typeof ResizeObserver!=='undefined')new ResizeObserver(fitArcadeCanvas).observe(playfield);
     if(footer){
       footer.classList.add('mw-mini-frame-status');
       frame.append(footer);
@@ -121,6 +137,7 @@
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&fallback){event.preventDefault();leave();}
   });
+  window.addEventListener('resize',fitArcadeCanvas);
   window.addEventListener('morrowwish-language-change',update);
   window.addEventListener('pageshow',update);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
