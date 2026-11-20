@@ -64,9 +64,13 @@ async function projectExists(page,slug){
   const res=await page.goto(target,{waitUntil:'domcontentloaded',timeout:20000}).catch(()=>null);
   if(!res||res.status()!==200)return false;
   const title=await page.title();
+  const url=new URL(page.url());
+  if(url.hostname!==STUDIO+'.itch.io'||url.pathname.replace(/\/$/,'')!=='/'+slug)return false;
   if(/not found|404|page isn't available/i.test(title))return false;
-  // More reliable than guessing from dashboard buttons: require game-page markup.
-  return await page.locator('.game_info_panel_widget, .game_title, #game_drop, .game_frame, .game_page').count()>0;
+  const body=(await page.locator('body').innerText()).slice(0,1600);
+  if(/this page isn't available|could not be found/i.test(body))return false;
+  return title.toLowerCase().includes(slug.replaceAll('-',' ').toLowerCase()) ||
+    await page.locator('.game_info_panel_widget, .game_title, #game_drop, .game_frame, .game_page').count()>0;
 }
 async function publish(browser,ctx,page,g,tmp){
   const target=HOST+'/'+g.slug;
