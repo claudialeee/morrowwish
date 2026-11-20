@@ -55,6 +55,8 @@ if(!heroMarkup.includes('<span class="hero-zh-copy" lang="zh-CN">'+oneLineHero+'
 const homeStyles=fs.readFileSync('public/hub.css','utf8');
 if(!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;'))
   throw Error('Homepage Chinese hero no-wrap style is missing');
+if(!homeStyles.includes('@media(max-width:700px)')||!homeStyles.includes('html[lang="zh-CN"] .hero>p.hero-copy{white-space:normal;overflow:visible;max-width:100%}')||!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{white-space:normal;overflow-wrap:break-word;'))
+  throw Error('Homepage Chinese tagline must wrap naturally on phones instead of horizontal scrolling');
 if(!homeStyles.includes('/* Balanced compact homepage: all game cards are reduced, never just the heading. */')||!homeStyles.includes('.feature-card{display:grid;grid-template-columns:minmax(0,59%) minmax(0,41%);height:272px;'))
   throw Error('Homepage must keep compact image-and-copy featured cards');
 if(!homeStyles.includes('.hero-doodles{display:none}')||!homeStyles.includes('.tiny-section .mini-game{display:flex;flex-direction:column;min-height:0;height:208px;'))

@@ -176,6 +176,28 @@ try{
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
  assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
+ // Desktop keeps the tagline on one line; 320/390px phones must show every character by wrapping.
+ for(const phoneWidth of [390,320]){
+   await page.setViewportSize({width:phoneWidth,height:844});
+   const mobileTagline=await page.evaluate(()=>{
+     const copy=document.querySelector('.hero .hero-zh-copy');
+     const container=copy.parentElement;
+     const style=getComputedStyle(copy);
+     return {
+       whiteSpace:style.whiteSpace,
+       lineHeight:parseFloat(style.lineHeight),
+       height:copy.getBoundingClientRect().height,
+       horizontalOverflow:container.scrollWidth-container.clientWidth,
+       overflowX:getComputedStyle(container).overflowX
+     };
+   });
+   console.log('Chinese phone hero wraps:',phoneWidth,JSON.stringify(mobileTagline));
+   assert.equal(mobileTagline.whiteSpace,'normal','Phone slogan should not force a single line');
+   assert.ok(mobileTagline.height>mobileTagline.lineHeight*1.5,'Phone slogan should be fully visible across multiple lines');
+   assert.ok(mobileTagline.horizontalOverflow<=1,'Phone slogan should not require sideways scrolling');
+   assert.notEqual(mobileTagline.overflowX,'auto','Phone slogan must not use horizontal scroll');
+ }
+ await page.setViewportSize({width:1250,height:900});
  const newCatCover=page.locator('.cat-feature-card .feature-art img');
  assert.ok((await newCatCover.getAttribute('src'))?.startsWith('/art/pawsibly-hatted-muted.avif'),'First game must use approved soft-pastel hatted-cat cover');
  await newCatCover.scrollIntoViewIfNeeded();

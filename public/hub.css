@@ -297,7 +297,9 @@ html[lang="zh-CN"] .hero>p.hero-copy{white-space:nowrap;max-width:100%;overflow:
  .site-nav{font-size:10px}.site-nav a:last-child{display:none}
  .hero{padding:21px 0 23px}.hero h1{font-size:clamp(31px,6.3vw,43px);margin:8px 0 11px}
  .hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{font-size:11px;line-height:1.55}
- html[lang="zh-CN"] .hero>p.hero-copy{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin}
+ /* On phones, show the full Chinese tagline without horizontal swipe. */
+ html[lang="zh-CN"] .hero>p.hero-copy{white-space:normal;overflow:visible;max-width:100%}
+ html[lang="zh-CN"] .hero .hero-zh-copy{white-space:normal;overflow-wrap:break-word;text-wrap:pretty}
  .hero-promise{margin-top:11px;gap:12px}.hero-promise span{font-size:9px}
  .featured-section .section-intro{margin-bottom:10px}
  .section-intro h2{font-size:24px}

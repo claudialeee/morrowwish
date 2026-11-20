@@ -52,6 +52,7 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 - Locate the canonical source file(s), understand the current behavior, and make targeted changes without silently replacing other games or translations.
 - For game changes, test the full playable loop and instrumentation.
 - For homepage changes, verify both languages and every promoted link; keep game ranking and dashboard ordering aligned.
+- Homepage hero tagline: preserve the approved Chinese sentence verbatim. On desktop it stays in a single line; at phone widths (700px and below), it must wrap naturally into visible lines without any horizontal scrolling. Verify at 390px and 320px. Do not revert to the old phone `white-space:nowrap` + `overflow-x:auto` behavior.
 - For analytics changes, preserve existing event formats and Elsewhere dedicated reporting; do not change database or authentication secrets. Test whether events arrive rather than merely checking that the page loads.
 - Protect user data; never reset, wipe, or migrate production D1 without separate explicit authorization.
 
