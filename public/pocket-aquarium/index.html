@@ -94,7 +94,11 @@ try{lang=new URLSearchParams(location.search).get('lang')||localStorage.getItem(
 let state='ready',played=false,score=0,time=60,quality=100,combo=0,maxCombo=0,fed=0,stock=24,choice=0,elapsed=0,stockClock=2,spawnClock=0,fish=[],pellets=[],bubbles=[],sparks=[],W=800,H=440,previous=0,frameId=0,lastEnding='calm',lastGrade='D';
 const rand=(a,b)=>a+Math.random()*(b-a),cap=(v,a,b)=>Math.min(b,Math.max(a,v)),tr=(k,obj={})=>String(I[lang][k]||k).replace(/\{(\w+)\}/g,(_,key)=>String(obj[key]??''));
 function metric(name,details={}){try{window.arcadeMetric?.(name,details)}catch(e){}}
-function size(){const r=tank.getBoundingClientRect(),oldW=W,oldH=H;W=Math.max(310,r.width);H=Math.max(260,r.height);const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(fish.length){for(const f of fish){f.x=cap(f.x*W/oldW,42,W-42);f.y=cap(f.y*H/oldH,78,H-52)}}}
+function size(){const r=tank.getBoundingClientRect(),oldW=W,oldH=H;W=Math.max(310,r.width);H=Math.max(260,r.height);const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(oldW>0&&oldH>0){
+ for(const f of fish){f.x=cap(f.x*W/oldW,42,W-42);f.y=cap(f.y*H/oldH,78,H-52);}
+ // Keep pellets and feedback particles aligned when mobile viewport changes.
+ for(const p of [...pellets,...sparks,...bubbles]){p.x=cap(p.x*W/oldW,0,W);p.y=cap(p.y*H/oldH,0,H);}
+}}
 function fishMaker(i){return {type:i%3,x:rand(58,Math.max(59,W-58)),y:rand(90,H-65),vx:rand(25,58)*(Math.random()<.5?-1:1),vy:rand(-14,14),size:rand(24,33),wait:rand(.5,5),starve:0,blink:rand(0,7),eatFlash:0};}
 function init(){score=0;time=60;quality=100;combo=0;maxCombo=0;fed=0;stock=24;choice=0;elapsed=0;stockClock=2;spawnClock=0;lastEnding='calm';lastGrade='D';pellets=[];sparks=[];bubbles=[];fish=Array.from({length:5},(_,i)=>fishMaker(i));fish.forEach((f,i)=>f.wait=.4+i*1.05);choose(0);hud();}
 function begin(){if(played)metric('game_retry');played=true;init();state='playing';$('overlay').hidden=true;previous=performance.now();metric('game_start',{lang});}
