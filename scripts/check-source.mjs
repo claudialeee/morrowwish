@@ -146,8 +146,13 @@ if(!arcadeSource.includes('event("parcel_sorted",')||!arcadeSource.includes('eve
  throw new Error('Parcel Panic outcome instrumentation missing');
 if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel')||dashboard.includes('j.byGameChannel'))
  throw new Error('Dashboard must use grouped acquisition-channel rollups');
-if(!dashboard.includes('channels.slice(0,5)')||!dashboard.includes('channels.slice(5)'))
- throw new Error('Promotion summary must cap visible channels and combine the rest');
+// The current compact channel table pins Bluesky as one row, then displays
+// four leading channels plus a roll-up for the remainder. Avoid freezing the
+// test to the previous all-channel slice implementation.
+if(!dashboard.includes('otherChannels.slice(0,4)')||
+   !dashboard.includes('otherChannels.slice(4)')||
+   !dashboard.includes("source:'__other__'"))
+ throw new Error('Promotion summary must keep compact channel rows and combine the rest');
 if(!dashboard.includes('<details class="ew-details"><summary data-ew="more">'))
  throw new Error('Elsewhere scene details should remain collapsed by default');
 console.log('Six game analytics cards, compact acquisition channels and actionable telemetry checked.');
