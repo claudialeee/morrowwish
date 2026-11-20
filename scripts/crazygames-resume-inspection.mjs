@@ -64,6 +64,27 @@ try{
        })).slice(0,55)),
        buttons:await page.locator('button:visible').allTextContents().catch(()=>[])
      };
+
+     report.detailsControls={
+       combo:await page.locator('[role=combobox]').evaluateAll(ns=>ns.map((e,i)=>({
+          index:i,tag:e.tagName,preview:(e.closest('tr')?.innerText||e.parentElement?.parentElement?.innerText||'').slice(0,105),
+          current:(e.innerText||'').slice(0,80),outer:e.outerHTML.slice(0,260)
+       }))),
+       editables:await page.locator('[contenteditable=true],textarea').evaluateAll(ns=>ns.map((e,i)=>({
+          index:i,tag:e.tagName,role:e.getAttribute('role'),outer:e.outerHTML.slice(0,380)
+       }))),
+       fileControls:await page.locator('input[type=file]').evaluateAll(ns=>ns.map((e,i)=>({
+          index:i,accept:e.accept,context:(e.closest('tr')?.innerText||e.closest('label')?.innerText||e.parentElement?.parentElement?.innerText||'').slice(0,130)
+       })))
+     };
+     const combo=page.getByRole('combobox').first();
+     const rect=await combo.boundingBox().catch(()=>null);
+     if(rect){
+       await page.mouse.click(rect.x+rect.width/2,rect.y+rect.height/2).catch(()=>{});
+       await page.waitForTimeout(650);
+       report.detailsControls.firstMenu=(await page.locator('[role=option]').allTextContents().catch(()=>[])).map(x=>x.trim()).slice(0,70);
+       report.detailsControls.menuBodyTail=redact(await page.locator('body').innerText().catch(()=>'' )).slice(-1500);
+     }
    }
 
    if(await go.isEnabled().catch(()=>false)){
