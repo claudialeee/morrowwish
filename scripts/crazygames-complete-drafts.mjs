@@ -70,7 +70,7 @@ async function toDetails(page,ctx,id,log){
  let text=await body(page);
  if(text.includes('Finalize submission')&&text.includes('Ready to submit?'))return page;
  if(text.includes('Game details') && text.includes('Cover images'))return page;
- if(!/Upload your game|Game name/.test(text))throw Error('Draft editing view unavailable: '+mask(text,250));
+ if(!/Upload your game|Game name/.test(text))throw Error('Draft editing view unavailable: '+mask(text,1500));
  const go=await button(page,'Go to QA');
  if(go&&await go.isEnabled().catch(()=>false)){
     log.push('go-to-qa');
@@ -114,7 +114,8 @@ async function toDetails(page,ctx,id,log){
  // Some drafts may already resume directly to third step.
  await sleep(900);
  if((await body(page)).includes('Cover images'))return page;
- throw Error('Draft cannot advance to Details; buttons '+JSON.stringify((await readStage(page)).buttons));
+ const stage=await readStage(page);
+ throw Error('Draft cannot advance to Details: '+JSON.stringify({path:stage.path,buttons:stage.buttons,body:stage.txt.slice(0,1700)}));
 }
 async function selectCombo(page,i,desired){
  const combo=page.getByRole('combobox').nth(i);
@@ -292,6 +293,7 @@ async function main(){
       const row=ledger.games.find(x=>x.slug===slug),g=catalog.find(x=>x.slug===slug),title=copy[slug];
       if(!row||!g||!title||row.officialUrl!==g.url)throw Error('Official catalog and release ledger mismatch');
       const c=row.channels.crazygames,ref=c.draftPreviewId;
+      if(c.status==='submitted-for-review'&&c.platformId){rec.status='already-submitted';rec.platformId=c.platformId;continue;}
       if(c.status!=='draft'||!ref)throw Error('No existing verified Draft ID; skip to prevent duplicate');
       const url=new URL(c.trackedUrl);
       if(url.origin!=='https://morrowwish.vercel.app'||url.pathname!==new URL(g.url).pathname||url.searchParams.get('utm_source')!=='crazygames'||url.searchParams.get('utm_medium')!=='portal')
@@ -302,7 +304,7 @@ async function main(){
       else{rec.status='details-open';save();await details(current,slug,rec);rec.status='ready-for-final-submit';save();}
       await finalSubmit(current,ref,rec);
        if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_SUBMIT_BLOCKER '+JSON.stringify({slug,stage:rec.finalStep,checkboxes:rec.finalCheckboxLabels}));}
-    }catch(e){rec.status='blocked';rec.reason=mask(e.message,270);}
+    }catch(e){rec.status='blocked';rec.reason=mask(e.message,2000);}
     finally{rec.finishedAt=time();save();console.log(JSON.stringify({slug,status:rec.status,platformId:rec.platformId||null,reason:rec.reason||null,stages:rec.stages}));}
   }
   await ctx.close();
