@@ -184,3 +184,13 @@ html[lang="zh-CN"] .hero h1 .period{display:none}
 
 /* Keep the studio introduction on one line on desktop in Chinese; allow natural wrapping on smaller screens. */
 @media(min-width:1001px){html[lang="zh-CN"] .about-copy p{max-width:none;white-space:nowrap;font-size:clamp(12px,1.12vw,14px)}}
+
+/* Sentence-aware English homepage hero layout: keep each thought intact on desktop, permit wrapping on phones. */
+html[lang="en"] .hero>p{max-width:760px;text-wrap:balance}
+html[lang="en"] .hero .hero-sentence{display:inline-block;white-space:nowrap;margin-right:.32em}
+html[lang="en"] .hero>p strong{display:inline-block;white-space:nowrap}
+@media(max-width:640px){
+  html[lang="en"] .hero>p{max-width:36ch}
+  html[lang="en"] .hero .hero-sentence,
+  html[lang="en"] .hero>p strong{display:inline;white-space:normal}
+}
