@@ -41,6 +41,7 @@
   })();
   let active = null;
   let speaking = false;
+  let speechToken=0,speechDelay=null;
   let toastTimeout;
 
   function readSaves() {
@@ -191,10 +192,33 @@
       return `<button class="world-card" style="--card-accent:${w.accent}" data-world="${w.id}" type="button" aria-label="Enter ${w.title}"><img class="world-card-image" src="/elsewhere/scenes/${w.id}-1.svg" alt="${w.title}, illustrated story world" loading="lazy"><div class="world-card-info"><span class="world-tag">${w.tag}</span><div class="world-name">${w.title}</div><p class="world-description">${w.subtitle}</p><div class="world-card-bottom"><span class="world-progress">${progress}</span><span class="world-arrow" aria-hidden="true">↗</span></div></div></button>`;
     }).join('');
   }
+  function speechLabel(active){
+    const zh=window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh');
+    return '<span aria-hidden="true">'+(active?'■':'◌')+'</span> '+(zh?(active?'停止朗读':'朗读'):(active?'Stop':'Listen'));
+  }
+  function chooseNarrationVoice(language){
+    const available=window.speechSynthesis?.getVoices?.()||[];
+    const prefix=language.slice(0,2).toLowerCase();
+    const candidates=available.filter(v=>(v.lang||'').toLowerCase().startsWith(prefix));
+    candidates.sort((a,b)=>{
+      const score=v=>{
+        const name=v.name||'',loc=(v.lang||'').toLowerCase();
+        return (/premium|enhanced|natural|neural/i.test(name)?100:0)+
+         (/ava|zoe|jenny|xiaoxiao|tingting|mei-jia|samantha|google.*english|google.*中文/i.test(name)?35:0)+
+         (/google|apple|microsoft/i.test(name)?12:0)+
+         (loc===language.toLowerCase()?15:0)+(v.localService?4:0)-
+         (/compact|espeak|festival|fred|albert/i.test(name)?80:0);
+      };
+      return score(b)-score(a);
+    });
+    return candidates[0]||null;
+  }
   function stopSpeech() {
+    speechToken++;
+    if(speechDelay!==null){clearTimeout(speechDelay);speechDelay=null;}
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     speaking=false;
-    $('#narrate-btn').innerHTML='<span aria-hidden="true">◌</span> Listen';
+    $('#narrate-btn').innerHTML=speechLabel(false);
     $('#narrate-btn').setAttribute('aria-pressed','false');
   }
   function goHome(push=true) {
@@ -368,16 +392,40 @@
     });
   }
   function narrate() {
-    if(!('speechSynthesis' in window)){notify('Read-aloud is not available in this browser.');return;}
+    if(!('speechSynthesis' in window)){notify('Read-aloud is unavailable in this browser.');return;}
     if(speaking){stopSpeech();return;}
     if(!active || active.finished)return;
-    const ch=resolvedChapter();
-    const prev=active.decisions[active.chapter-1]; const recall=(prev&&ch.recall?.[prev.tag])||'';
+    const ch=resolvedChapter(),prev=active.decisions[active.chapter-1];
+    const recall=(prev&&ch.recall?.[prev.tag])||'';
     const translate=window.MorrowwishI18n?.t||((s)=>s);
-    const u=new SpeechSynthesisUtterance([ch.scene,ch.dialogue,ch.echo,recall,active.selected!==null?ch.choices[active.selected].reply:''].filter(Boolean).map(s=>translate(String(s))).join(' '));
-    u.rate=.87;u.pitch=.98;u.lang=window.MorrowwishI18n?.get()==='zh'?'zh-CN':'en-US';
-    u.onend=u.onerror=()=>{speaking=false;$('#narrate-btn').innerHTML='<span aria-hidden="true">◌</span> Listen';$('#narrate-btn').setAttribute('aria-pressed','false');};
-    speaking=true;$('#narrate-btn').innerHTML='<span aria-hidden="true">■</span> Stop';$('#narrate-btn').setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);track('listen_started',{world:active.world,chapter:active.chapter+1});
+    const language=window.MorrowwishI18n?.get?.()==='zh'?'zh-CN':'en-US';
+    const voice=chooseNarrationVoice(language);
+    const passages=[ch.scene,ch.dialogue,ch.echo,recall,active.selected!==null?ch.choices[active.selected].reply:'']
+      .filter(Boolean).map(text=>translate(String(text)).trim()).filter(Boolean);
+    // Separate story beats so the voice can breathe instead of reading a dense paragraph in one robotic monotone.
+    const lines=passages.flatMap(p=>p.split(language==='zh-CN'?/(?<=[。！？；])/:/(?<=[.!?])\\s+/).map(t=>t.trim()).filter(Boolean));
+    if(!lines.length)return;
+    const token=++speechToken;
+    speaking=true;$('#narrate-btn').innerHTML=speechLabel(true);
+    $('#narrate-btn').setAttribute('aria-pressed','true');
+    let index=0;
+    const advance=()=>{
+      if(token!==speechToken||!speaking)return;
+      if(index>=lines.length){stopSpeech();return;}
+      const utterance=new SpeechSynthesisUtterance(lines[index++]);
+      utterance.lang=language;
+      utterance.rate=language==='zh-CN'?.94:.98;
+      utterance.pitch=1.02;
+      if(voice)utterance.voice=voice;
+      utterance.onend=()=>{if(token===speechToken)speechDelay=setTimeout(advance,190)};
+      utterance.onerror=e=>{if(token===speechToken){
+        if(e.error==='canceled'||e.error==='interrupted')return;
+        stopSpeech();notify(language==='zh-CN'?'朗读暂不可用，请尝试更换设备语音。':'Read-aloud is unavailable with this device voice.');
+      }};
+      window.speechSynthesis.speak(utterance);
+    };
+    advance();
+    track('listen_started',{world:active.world,chapter:active.chapter+1,voice:voice?.name||'device-default'});
   }
   function restart() {
     if(!active)return;
