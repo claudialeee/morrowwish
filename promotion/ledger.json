@@ -885,13 +885,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "published",
           "platformId": null,
-          "publicUrl": null,
+          "publicUrl": "https://morrowwishgames.itch.io/cat-bond",
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "cat-bond-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=itch&utm_medium=portal&utm_campaign=cat-bond-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=itch&utm_medium=portal&utm_campaign=cat-bond-playtest",
+          "verifiedAt": "2026-11-20"
         }
       }
     }
