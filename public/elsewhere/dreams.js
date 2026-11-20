@@ -301,8 +301,14 @@ async function share(){
 }
 function toast(msg){$("#toast").textContent=msg;$("#toast").hidden=false;setTimeout(()=>$("#toast").hidden=true,2400)}
 function setLanguage(l){
+ if(l!=="zh"&&l!=="en")return;
  lang=l;document.documentElement.lang=l==="zh"?"zh-CN":"en";
  try{localStorage.setItem(LANG,l)}catch{}
+ // Keep refreshes and shared deep links in the language the visitor selected.
+ const params=new URLSearchParams(location.search);
+ if(l==="zh")params.set("lang","zh");else params.delete("lang");
+ const query=params.toString();
+ history.replaceState(history.state||{},"",location.pathname+(query?"?"+query:"")+location.hash);
  document.querySelectorAll("[data-language]").forEach(button=>{
   const selected=button.dataset.language===l;
   button.classList.toggle("is-active",selected);

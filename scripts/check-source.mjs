@@ -358,7 +358,8 @@ if(nav.indexOf('href="/"')<0||nav.indexOf('href="/"')>nav.indexOf('href="/elsewh
  throw Error('Elsewhere studio-home link or language toggle missing');
 if((nav.match(/href="\/"(?=\s|>)/g)||[]).length!==1)throw Error('Ambiguous Elsewhere homepage route');
 if(!dreamSource.includes('button.setAttribute("aria-pressed",String(selected))')||!dreamSource.includes('el.matches("[data-language]")'))throw Error('Elsewhere language options must highlight the current language and respond directly');
-console.log('Elsewhere home navigation and two-option language selector checked.');
+if(!dreamSource.includes('history.replaceState(history.state||{}')||!dreamSource.includes('params.delete("lang")'))throw Error('Elsewhere language preference must survive refreshing deep links');
+console.log('Elsewhere home navigation, bilingual selector, and persistent URL language checked.');
 
 // Parcel Panic must be genuinely playable with one click or 1/2/3 keys on laptops,
 // while retaining touch drag and the old analytics/achievements event contracts.
