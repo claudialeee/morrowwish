@@ -86,9 +86,31 @@ function mainStats(x){
   const homeSources=[...homeBySource.values()].map(z=>({...z,clickRate:pct(z.clickedViews,z.visits)})).sort((a,b)=>b.visits-a.visits);
   const homeViews=homeSources.reduce((n,z)=>n+z.visits,0),homeClickedViews=homeSources.reduce((n,z)=>n+z.clickedViews,0);
   const homeFunnel={visits:homeViews,clickedViews:homeClickedViews,clickRate:pct(homeClickedViews,homeViews),byGame:homeClickCounts,bySource:homeSources};
+  // These events are first-party gameplay from itch.io-attributed game loads,
+  // not itch.io's own Browser Plays or creator project-page views.
+  const itchByGame=new Map(),itchSeen=new Set();
+  for(const v of visits){
+    if(!eligible.has(v.game))continue;
+    const d=v.data||{},ref=String(d.referrer||"").toLowerCase(),utm=String(d.utmSource||"").toLowerCase();
+    if(utm!=="itch"&&utm!=="itch.io"&&!/(^|\.)itch\.(io|zone)$/.test(ref))continue;
+    const id=v.game+":"+(v.view_id||v.visitor+"-"+v.day);
+    if(itchSeen.has(id))continue;itchSeen.add(id);
+    if(!itchByGame.has(v.game))itchByGame.set(v.game,{game:v.game,pageviews:0,startedViews:0,starts:0,completions:0,seconds:0});
+    const z=itchByGame.get(v.game),events=sessionsByView.get(v.view_id)||[];
+    z.pageviews++;
+    if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
+    z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
+    z.completions+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.completion)||0),0);
+    z.seconds+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.seconds)||0),0);
+  }
+  const itchGames=[...itchByGame.values()].map(z=>({
+    ...z,startRate:pct(z.startedViews,z.pageviews),avgSeconds:z.pageviews?Math.round(z.seconds/z.pageviews):0
+  })).sort((a,b)=>b.pageviews-a.pageviews);
+  const itch={source:"first-party-game-events",pageviews:itchGames.reduce((n,z)=>n+z.pageviews,0),
+    starts:itchGames.reduce((n,z)=>n+z.starts,0),games:itchGames};
   const total=score(rows.filter(r=>r.game!=="hub"));
   const all=score(rows);
-  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
  // Five-scene edition only. Legacy eight-scene records stay in D1 but are not mixed into this funnel.
