@@ -6,7 +6,7 @@
     "https://github.com/claudialeee/morrowwish/tree/main",
     "https://morrowwish.vercel.app/games.json"
   ],
-  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions.",
+  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions. As of 2026-11-20, channel priorities follow promotion/channel-policy.json; AI-restrictive communities and nonconverting routine social posting are excluded.",
   "games": [
     {
       "slug": "elsewhere",
@@ -39,17 +39,18 @@
           "verifiedAt": "2026-11-19T22:48:00-08:00"
         },
         "reddit": {
-          "priority": "P0",
+          "priority": "PAUSED",
           "status": "not-submitted",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "reddit",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=reddit&utm_medium=social&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=reddit&utm_medium=social&utm_campaign=elsewhere-playtest",
+          "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -66,7 +67,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "tiktok": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -83,7 +84,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -97,7 +98,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -111,7 +112,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -123,10 +124,11 @@
           "scheduledPostUuid": "-6698758501667025303",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -140,7 +142,8 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "futureRoutinePromotions": false
         }
       }
     },
@@ -175,17 +178,18 @@
           "verifiedAt": "2026-11-19T22:48:00-08:00"
         },
         "reddit": {
-          "priority": "P0",
+          "priority": "PAUSED",
           "status": "not-submitted",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "reddit",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=reddit&utm_medium=social&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=reddit&utm_medium=social&utm_campaign=tiny-town-playtest",
+          "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -202,7 +206,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "tiktok": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -219,7 +223,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -233,7 +237,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -247,7 +251,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -259,10 +263,11 @@
           "scheduledPostUuid": "3571523986394140455",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -276,7 +281,8 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "futureRoutinePromotions": false
         }
       }
     },
@@ -312,17 +318,18 @@
           "verifiedAt": "2026-11-19T22:48:00-08:00"
         },
         "reddit": {
-          "priority": "P0",
+          "priority": "PAUSED",
           "status": "not-submitted",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "reddit",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=reddit&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=reddit&utm_medium=social&utm_campaign=pawsibly-innocent-playtest",
+          "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "published",
           "platformId": "dTMkpzwRS7Q",
           "publicUrl": "https://www.youtube.com/shorts/dTMkpzwRS7Q",
@@ -339,7 +346,7 @@
           "audioFix": "embedded-cc0-verified"
         },
         "tiktok": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "published",
           "platformId": "7710064497150496014",
           "publicUrl": "https://www.tiktok.com/@morrowwishgames/video/7710064497150496014",
@@ -356,7 +363,7 @@
           "audioFix": "embedded-cc0-verified"
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -370,7 +377,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -384,7 +391,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -396,10 +403,11 @@
           "scheduledPostUuid": "7431507669702624105",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "published",
           "platformId": "https://www.instagram.com/reel/Df8f0EFBdCl/",
           "publicUrl": "https://www.instagram.com/reel/Df8f0EFBdCl/",
@@ -412,7 +420,8 @@
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
-          "publishedAt": "2026-11-19T17:40:00"
+          "publishedAt": "2026-11-19T17:40:00",
+          "futureRoutinePromotions": false
         }
       }
     },
@@ -447,17 +456,18 @@
           "verifiedAt": "2026-11-19T22:48:00-08:00"
         },
         "reddit": {
-          "priority": "P0",
+          "priority": "PAUSED",
           "status": "not-submitted",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "reddit",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=reddit&utm_medium=social&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=reddit&utm_medium=social&utm_campaign=flip-dash-playtest",
+          "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -474,7 +484,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "tiktok": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -491,7 +501,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -505,7 +515,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -519,7 +529,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -531,10 +541,11 @@
           "scheduledPostUuid": "-5041114954126112910",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -548,7 +559,8 @@
           "autoPublish": true,
           "scheduler": "Metricool",
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "futureRoutinePromotions": false
         }
       }
     },
@@ -583,17 +595,18 @@
           "verifiedAt": "2026-11-19T22:48:00-08:00"
         },
         "reddit": {
-          "priority": "P0",
+          "priority": "PAUSED",
           "status": "not-submitted",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "reddit",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=reddit&utm_medium=social&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=reddit&utm_medium=social&utm_campaign=parcel-panic-playtest",
+          "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -610,7 +623,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "tiktok": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -627,7 +640,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -641,7 +654,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -655,7 +668,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -667,10 +680,11 @@
           "scheduledPostUuid": "-2455852106785797895",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -684,7 +698,8 @@
           "autoPublish": true,
           "scheduler": "Metricool",
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "futureRoutinePromotions": false
         }
       }
     },
@@ -719,17 +734,18 @@
           "verifiedAt": "2026-11-19T22:48:00-08:00"
         },
         "reddit": {
-          "priority": "P0",
+          "priority": "PAUSED",
           "status": "not-submitted",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "reddit",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=reddit&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=reddit&utm_medium=social&utm_campaign=pocket-aquarium-playtest",
+          "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -746,7 +762,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "tiktok": {
-          "priority": "P1",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -763,7 +779,7 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -777,7 +793,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -791,7 +807,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -803,10 +819,11 @@
           "scheduledPostUuid": "-7938132296443410982",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -820,7 +837,8 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "futureRoutinePromotions": false
         }
       }
     },
@@ -830,7 +848,7 @@
       "campaign": "cat-bond-playtest",
       "channels": {
         "bluesky": {
-          "priority": "P2",
+          "priority": "PAUSED",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -842,10 +860,11 @@
           "scheduledPostUuid": "-9005777504556397934",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
-          "autoPublish": true
+          "autoPublish": true,
+          "futureRoutinePromotions": false
         },
         "google": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -859,7 +878,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P1",
+          "priority": "P3",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -898,7 +917,10 @@
     }
   ],
   "excludedChannels": [
-    "newgrounds"
+    "newgrounds",
+    "reddit:r/playmygame",
+    "reddit:r/Games",
+    "reddit:r/IndieGaming"
   ],
   "promotionAudio": {
     "updatedAt": "2026-11-19",
