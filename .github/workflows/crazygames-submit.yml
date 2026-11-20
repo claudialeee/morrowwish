@@ -1,9 +1,22 @@
-name: Submit all six Morrow Wish games to CrazyGames (live iframe)
+name: Submit ONE QA-approved Morrow Wish game to CrazyGames (live iframe)
 
 # QA hold: Do NOT auto-submit new or rejected builds until a human confirms the
 # gameplay quality checklist has passed. Explicit workflow_dispatch only.
 on:
   workflow_dispatch:
+    inputs:
+      slug:
+        description: "Exactly ONE game: requires an approved quality gate"
+        required: true
+        type: choice
+        options:
+          - cat-bond
+          - pawsibly-innocent
+          - tiny-town
+          - elsewhere
+          - flip-dash
+          - parcel-panic
+          - pocket-aquarium
 
 permissions:
   contents: write
@@ -13,7 +26,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  submit-six:
+  submit-one:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -21,6 +34,23 @@ jobs:
         with:
           ref: main
           persist-credentials: true
+      - name: Enforce single-game external QA signoff before portal access
+        env:
+          SELECTED_SLUG: ${{ inputs.slug }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const slug=process.env.SELECTED_SLUG || '';
+          const gate=JSON.parse(fs.readFileSync('promotion/crazygames-quality-gate.json','utf8'));
+          const supported=new Set(['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium']);
+          if(!supported.has(slug)||slug.includes(','))throw Error('Exactly one recognized game is required.');
+          if(gate.status!=='approved'||gate.approvedSlug!==slug)throw Error('QA HOLD: this game has not been approved for a CrazyGames submission. Do not use the portal as a playtest.');
+          for(const field of ['gameplayTest','firstTimePlayers','visualReview','technicalPreview','contentAndRights']){
+            if(typeof gate.evidence?.[field]!=='string'||gate.evidence[field].trim().length<12)
+              throw Error('QA HOLD: missing documented signoff: '+field);
+          }
+          console.log('One-game QA release approved:',slug);
+          NODE
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -33,13 +63,13 @@ jobs:
         env:
           CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
           CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
-          CRAZYGAMES_TARGET_SLUGS: pawsibly-innocent,elsewhere,tiny-town,parcel-panic,pocket-aquarium,flip-dash
+          CRAZYGAMES_TARGET_SLUGS: ${{ inputs.slug }}
         run: node scripts/crazygames-complete-drafts.mjs
       - name: Save platform feedback and evidence, even on a partial submission
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: crazygames-six-submission-results
+          name: crazygames-one-submission-results
           path: .check/crazygames/submission-results.json
           if-no-files-found: warn
           retention-days: 30

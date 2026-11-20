@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "status": "hold",
+  "approvedSlug": null,
+  "policy": "Exactly one game per review cycle, selected only after explicit quality signoff. This is the Morrow Wish studio policy, not a statement of a published CrazyGames universal platform limit.",
+  "evidence": {
+    "gameplayTest": "",
+    "firstTimePlayers": "",
+    "visualReview": "",
+    "technicalPreview": "",
+    "contentAndRights": ""
+  },
+  "candidates": [
+    {
+      "slug": "cat-bond",
+      "readiness": "not-assessed",
+      "risk": "Many systems and new art; must validate full loop, controls, pacing, visuals and crashes with cold players."
+    },
+    {
+      "slug": "pawsibly-innocent",
+      "readiness": "rework-required",
+      "risk": "User reported a rejected CrazyGames submission. Earlier stealth/iframe fixes are not sufficient evidence of compelling play."
+    },
+    {
+      "slug": "tiny-town",
+      "readiness": "not-assessed",
+      "risk": "Original concept but win/loss pacing, clarity, depth, and multiple meaningful strategies need validation."
+    },
+    {
+      "slug": "elsewhere",
+      "readiness": "not-assessed",
+      "risk": "Narrative, text load and replay value must fit short-session browser players."
+    },
+    {
+      "slug": "flip-dash",
+      "readiness": "not-assessed",
+      "risk": "One-click controls are accessible, but generic endless-runner mechanics need a distinct hook and satisfying progression."
+    },
+    {
+      "slug": "parcel-panic",
+      "readiness": "not-assessed",
+      "risk": "Simple color-lane sorting may lack mastery, variety and replay incentives."
+    },
+    {
+      "slug": "pocket-aquarium",
+      "readiness": "not-assessed",
+      "risk": "One-minute matching challenge may lack enough depth and meaningful choices."
+    }
+  ]
+}
