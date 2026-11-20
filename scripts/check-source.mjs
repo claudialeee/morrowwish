@@ -82,7 +82,8 @@ for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souve
 const catHTML=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
 for(const id of ['id="tool"','id="collection"','id="ability"'])if(!catHTML.includes(id))throw Error('Cat interface missing '+id);
 if(!fs.readFileSync('public/art/pawsibly-scene.svg','utf8').includes('<svg'))throw Error('Featured cat art missing');
-if(!homepage.includes('/art/pawsibly-scene.svg?v=sly-tabby-20261120')||!fs.readFileSync('public/art/pawsibly-scene.svg','utf8').includes('Original sly ginger tabby'))throw Error('Pawsibly homepage must use the new sly feline cover');
+const approvedPawsiblyCover=fs.readFileSync('public/art/pawsibly-hatted-muted.avif');
+if(!homepage.includes('/art/pawsibly-hatted-muted.avif?v=20261120')||approvedPawsiblyCover.length<4000||approvedPawsiblyCover.toString('ascii',4,12)!=='ftypavif')throw Error('Pawsibly homepage must use the approved muted hatted cat cover');
 
 if(!fs.readFileSync('src/analytics.js','utf8').includes('ARCADE_ANALYTICS_KEY'))throw Error('Missing Analytics authentication');
 for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js','public/studio-insights/index.html']){

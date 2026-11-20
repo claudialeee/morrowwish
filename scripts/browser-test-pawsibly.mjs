@@ -176,6 +176,11 @@ try{
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
  assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
+ const newCatCover=page.locator('.cat-feature-card .feature-art img');
+ assert.ok((await newCatCover.getAttribute('src'))?.startsWith('/art/pawsibly-hatted-muted.avif'),'First game must use approved soft-pastel hatted-cat cover');
+ await newCatCover.scrollIntoViewIfNeeded();
+ await page.waitForFunction(()=>{const im=document.querySelector('.cat-feature-card .feature-art img');return im?.complete&&im.naturalWidth>0;},null,{timeout:10000});
+ assert.equal(await newCatCover.evaluate(img=>img.naturalWidth),560,'Optimized first-game cover must load correctly');
  const typeSizes=await page.evaluate(()=>({
   title:parseFloat(getComputedStyle(document.querySelector('.cat-feature-card h3')).fontSize),
   copy:parseFloat(getComputedStyle(document.querySelector('.cat-feature-card .feature-content>p')).fontSize),
