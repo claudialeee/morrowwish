@@ -11,8 +11,12 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 fs.cpSync(path.join(base, 'public'), out, { recursive: true });
 
-const analytics = fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
-  .replace('export async function api', 'async function api');
+// Dated provider snapshot stays inside the authenticated Worker response, not a public asset.
+const social = JSON.parse(fs.readFileSync(path.join(base,'promotion','social-metrics-snapshot.json'),'utf8'));
+if(social.schemaVersion!==1||!Array.isArray(social.platforms))throw Error('Invalid social snapshot');
+const analytics = 'const SOCIAL_SNAPSHOT='+JSON.stringify(social)+';\n'
+  + fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
+    .replace('export async function api', 'async function api');
 const router = fs.readFileSync(path.join(base, 'src', 'worker.js'), 'utf8')
   .replace('import {api} from "./analytics.js";', '');
 if (!analytics.includes('async function api') || !router.includes('ASSETS.fetch')) {
