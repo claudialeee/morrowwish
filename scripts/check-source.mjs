@@ -372,52 +372,52 @@ if(!elsewhereStyles.includes('.topbar-start')||!elsewhereStyles.includes('.topba
   throw new Error('Elsewhere desktop and mobile nav responsive layout missing');
 console.log('Elsewhere top-left homepage navigation, internal life picker and mobile layout checked.');
 
-// Parcel Panic: release coordinates must determine the scored color lane.
-// Tests are an actual execution of the G["parcel-panic"] factory, not keyword checks.
+// Parcel Panic must be genuinely playable with one click or 1/2/3 keys on laptops,
+// while retaining touch drag and the old analytics/achievements event contracts.
 {
- const source=fs.readFileSync('public/upgrade.js','utf8');
- const start=source.indexOf('G["parcel-panic"]=()=>{');
- const end=source.indexOf('const factory=G[id]',start);
- if(start<0||end<0)throw new Error('Missing Parcel Panic game factory');
- const factory=source.slice(start,end);
- const play=({x,y,move=true,lang='en'}={})=>{
-  const G={},colors=['#47ddfc','#ffcb68','#fd79a8'];let score=0,status='',sfx=0,deliveries=0;
-  const tools={G,seeded:()=>()=>.5,seed:'test',combo:0,shake:0,
-   clamp:(v,lo,hi)=>Math.min(hi,Math.max(lo,v)),
-   info:text=>{status=text},add:n=>{score+=n},winEffect:()=>{sfx++},finish:()=>{},
-   burst:()=>{},tone:()=>{},vibrate:()=>{},rnd:()=>1,colors,bg:()=>{},box:()=>{},
-   line:()=>{},txt:()=>{},glow:()=>{},circ:()=>{},
-   window:{MorrowwishI18n:{get:()=>lang}},event:(name)=>{if(name==='parcel_sorted')deliveries++},
+ const src=fs.readFileSync('public/upgrade.js','utf8');
+ const from=src.indexOf('G["parcel-panic"]=()=>{'),to=src.indexOf('const factory=G[id]',from);
+ if(from<0||to<0)throw Error('Parcel Panic factory missing');
+ const factory=src.slice(from,to);
+ function play(actions,lang='en'){
+  const G={},events=[];let points=0,finishes=0,status='';
+  const env={G,seeded:()=>()=>.5,seed:'test',combo:0,shake:0,
+   colors:['#47ddfc','#ffcb68','#fd79a8'],clamp:(x,a,b)=>Math.min(b,Math.max(a,x)),
+   info:v=>status=v,add:x=>{points+=x},winEffect:()=>{env.combo++},
+   finish:()=>{finishes++},burst:()=>{},tone:()=>{},vibrate:()=>{},rnd:()=>1,
+   event:(name,data)=>events.push({name,data}),bg:()=>{},box:()=>{},line:()=>{},
+   txt:()=>{},glow:()=>{},circ:()=>{},
+   window:{mwMiniDelivered:0,MorrowwishI18n:{get:()=>lang}},
    document:{documentElement:{lang:lang==='zh'?'zh-CN':'en'}}};
-  const m=new Function(...Object.keys(tools),factory+';return G["parcel-panic"]();')(...Object.values(tools));
-  m.init();m.tick(1.31); // First guaranteed cyan package at (470, approximately 181).
-  m.down(470,181);
-  if(move)m.move(x,y);
-  m.up(x,y);m.tick(.01);
-  return {score,status,sfx,deliveries};
- };
- const cases=[
-  {case:'cyan lane middle',result:play({x:190,y:300}),minScore:1,delivered:1},
-  {case:'cyan lane top',result:play({x:190,y:105}),minScore:1,delivered:1},
-  {case:'cyan lane bottom',result:play({x:190,y:470}),minScore:1,delivered:1},
-  {case:'release without final move event',result:play({x:190,y:470,move:false}),minScore:1,delivered:1},
-  {case:'wrong color remains a miss',result:play({x:770,y:300}),minScore:0,delivered:0,lives:'4 LIVES'},
-  {case:'outside all lanes not counted',result:play({x:340,y:300}),minScore:0,delivered:0,lives:'5 LIVES'}
- ];
- for(const test of cases){
-  if((test.minScore>0)!==(test.result.score>0)||
-     test.result.deliveries!==test.delivered||
-     (test.lives&&!test.result.status.includes(test.lives))){
-   throw new Error('Parcel Panic scoring regression '+test.case+': '+JSON.stringify(test.result));
-  }
+  const mode=new Function(...Object.keys(env),factory+'return G["parcel-panic"]();')(...Object.values(env));
+  mode.init();for(const step of actions)mode[step[0]](...step.slice(1));
+  return {points,events,delivered:env.window.mwMiniDelivered,finishes,status};
  }
- const zh=play({x:190,y:300,lang:'zh'});
- if(!zh.status.includes('已送达 1 件'))throw new Error('Parcel Panic Chinese status not localized');
- if(!factory.includes('Math.abs(x-X)<=90')||!factory.includes('拖到同色通道内松手即可得分')||
-    !factory.includes('feedback={x:docks[target]'))throw new Error('Parcel Panic drop-zone UI or score feedback missing');
+ const ready=[['tick',.6]];
+ const good=[
+  ['click correct lane',play([...ready,['down',190,460],['up',190,460]])],
+  ['keyboard 1',play([...ready,['key','1']])],
+  ['arrow left',play([...ready,['key','ArrowLeft']])],
+  ['touch drag',play([...ready,['down',480,167],['move',190,455],['up',190,455]])]
+ ];
+ for(const [name,result] of good){
+  if(result.points<14||result.delivered!==1||result.events.filter(x=>x.name==='parcel_sorted').length!==1)
+   throw Error('Parcel Panic correct sort failed '+name+': '+JSON.stringify(result));
+ }
+ const wrong=play([...ready,['down',770,460],['up',770,460]]);
+ if(wrong.points!==0||wrong.events.filter(x=>x.name==='parcel_missed').length!==1)
+  throw Error('Parcel Panic wrong lane must count as a miss');
+ const empty=play([['down',190,450],['up',190,450]]);
+ if(empty.points!==0||empty.events.length)throw Error('Empty dock cannot score');
+ const three=play([...ready,['key','1'],['tick',.2],['key','2'],['tick',.2],['key','3']]);
+ if(three.points<42||three.delivered!==3||three.events.filter(x=>x.name==='parcel_sorted').length!==3)
+  throw Error('Sequential parcels or combos broken: '+JSON.stringify(three));
+ const zh=play([...ready,['key','1']], 'zh');
+ if(!zh.status.includes('已送达')&&!zh.status.includes('直接点击'))throw Error('One-click Chinese hints missing');
  const page=fs.readFileSync('public/parcel-panic/index.html','utf8');
- const dictionary=fs.readFileSync('public/zh-mini.js','utf8');
- if(!page.includes('Release anywhere inside')&&!page.includes('release anywhere inside'))throw new Error('Parcel Panic instructions outdated');
- if(!dictionary.includes('同色通道，在里面任意位置松手'))throw new Error('Parcel Panic Chinese instructions missing');
- console.log('Parcel Panic scoring: full matching lane, true release position, invalid drop, Chinese copy and positive score passed.');
+ const translations=fs.readFileSync('public/zh-mini.js','utf8');
+ if(!page.includes('click its color lane or press 1, 2, or 3')||
+    !translations.includes('按顺序分拣包裹')||
+    !factory.includes('NEXT PARCEL'))throw Error('One-click onboarding copy missing');
+ console.log('Parcel Panic: one-click, keyboard, touch drag, wrong/empty lane, combos and zh copy passed.');
 }
