@@ -747,20 +747,34 @@
       {
         "game": "pawsibly-innocent",
         "network": "tiktok",
-        "scheduledPostId": "435011751",
+        "scheduledPostId": "435012892",
         "scheduledPostUuid": "5330988901130978532",
-        "scheduledAt": "2026-11-20T10:30:00",
+        "scheduledAt": "2026-11-19T17:48:00",
         "timezone": "America/Los_Angeles",
-        "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place"
+        "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place",
+        "status": "scheduled"
       },
       {
         "game": "pawsibly-innocent",
         "network": "youtube",
-        "scheduledPostId": "435011765",
+        "scheduledPostId": "435012910",
         "scheduledPostUuid": "-6568402882065120978",
-        "scheduledAt": "2026-11-20T11:30:00",
+        "scheduledAt": "2026-11-19T17:50:00",
         "timezone": "America/Los_Angeles",
-        "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place"
+        "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place",
+        "status": "scheduled"
+      }
+    ],
+    "oldSilentPosts": [
+      {
+        "network": "tiktok",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7710057296314780959",
+        "status": "published-needs-platform-deletion"
+      },
+      {
+        "network": "youtube",
+        "url": "https://www.youtube.com/shorts/tH_qdYKdvW4",
+        "status": "published-needs-platform-deletion"
       }
     ]
   }
