@@ -55,6 +55,11 @@ if(!heroMarkup.includes('<span class="hero-zh-copy" lang="zh-CN">'+oneLineHero+'
 const homeStyles=fs.readFileSync('public/hub.css','utf8');
 if(!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;'))
   throw Error('Homepage Chinese hero no-wrap style is missing');
+if(!homeStyles.includes('/* Balanced compact homepage: all game cards are reduced, never just the heading. */')||!homeStyles.includes('.feature-card{display:grid;grid-template-columns:minmax(0,59%) minmax(0,41%);height:318px;'))
+  throw Error('Homepage must keep compact image-and-copy featured cards');
+if(!homeStyles.includes('.hero-doodles{display:none}')||!homeStyles.includes('.tiny-section .mini-game{display:flex;flex-direction:column;min-height:0;height:230px;'))
+  throw Error('Homepage decorative overlaps and oversized mini-game cards must not return');
+if(homepage.includes('<h1>Little games.<br><em>'))throw Error('Homepage headline must not be forced into two giant lines');
 
 const featured=homepage.match(/<div class="feature-grid">([\s\S]*?)<\/div><\/section>/)?.[1]||'';
 const minis=homepage.match(/<div class="mini-grid">([\s\S]*?)<\/div><\/div><\/section>/)?.[1]||'';

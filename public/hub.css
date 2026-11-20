@@ -228,59 +228,107 @@ html[lang="en"] .hero>p strong{display:block;white-space:nowrap;margin-top:4px}
 .bond-sticker{background:#e9b7cd;color:#744d79;border-color:#fff9f0;transform:rotate(-8deg)}
 @media(max-width:780px){.bond-feature-card .feature-art{height:47%}}
 
-/* Compact homepage and preserve the entire Chinese four-world promise in one line. */
-.nav-row{min-height:65px;gap:22px}
-.wordmark img{width:38px;height:38px}
-.hero{padding:21px 0 19px}
-.hero h1{font-size:clamp(41px,4.8vw,59px);line-height:1.02;margin:9px 0 13px}
-.hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{max-width:1100px;font-size:14px;line-height:1.5;margin:0 auto}
-.hero .hero-en-copy{display:block}
-.hero .hero-zh-copy{display:none}
+/* Balanced compact homepage: all game cards are reduced, never just the heading. */
+.nav-row{min-height:59px;gap:19px}
+.wordmark{font-size:18px}.wordmark img{width:33px;height:33px}.wordmark small{margin-top:5px}
+.site-nav{font-size:12px;gap:22px}.top-play{padding:9px 14px}
+.hero{padding:18px 0 20px}
+.hero .eyebrow{font-size:10px;letter-spacing:.13em}
+.hero h1{font-size:clamp(34px,3.95vw,52px);line-height:1.14;letter-spacing:-.061em;margin:6px auto 10px;text-wrap:balance}
+.hero h1 em:after{height:5px;bottom:-4px}
+.hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{max-width:100%;font-size:clamp(11px,1.05vw,14px);line-height:1.58;margin:0 auto;color:#706a75}
+.hero .hero-en-copy{display:block}.hero .hero-zh-copy{display:none}
 html[lang="zh-CN"] .hero .hero-en-copy{display:none}
-html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;letter-spacing:-.015em}
-html[lang="zh-CN"] .hero>p.hero-copy{max-width:100%;white-space:nowrap;overflow-x:auto;overscroll-behavior-x:contain}
-.hero-promise{margin:12px auto 0;gap:8px}
-.hero-promise span{padding:5px 10px;font-size:10px}
-.doodle.sun{font-size:33px}.doodle.spark{font-size:41px}.doodle.flower{font-size:27px}.doodle.smile{font-size:28px}
-.featured-section .section-intro{margin-bottom:14px}
+html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;letter-spacing:-.026em}
+html[lang="zh-CN"] .hero>p.hero-copy{white-space:nowrap;max-width:100%;overflow:visible}
+.hero-promise{margin:9px auto 0;gap:22px}
+.hero-promise span{padding:0;border:0;background:transparent;box-shadow:none;color:#8f818b;font-size:10px;font-weight:800}
+.hero-doodles{display:none} /* No decorative symbols over the single-line promise. */
+.featured-section{padding-bottom:32px}
+.featured-section .section-intro{margin-bottom:12px;align-items:center}
 .featured-section .section-intro>p{display:none}
-.section-intro h2{font-size:clamp(25px,2.8vw,34px);margin-top:4px}
-.feature-grid{gap:17px}
-.feature-card{min-height:480px;border-radius:25px}
-.feature-content{padding:21px 25px 0}
-.feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:clamp(30px,3vw,39px);margin:10px 0}
-.elsewhere-card h3{font-size:clamp(41px,4vw,53px);margin-top:17px}
-.feature-content>p{font-size:12.5px;line-height:1.5;margin-bottom:11px}
-.feature-chips{gap:5px}
-.feature-chips span{padding:5px 8px}
-.card-button{padding:10px 16px;margin-top:11px;font-size:12px}
-.feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{height:38%}
-.featured-section{padding-bottom:42px}
-@media(max-width:780px){
-  .hero{padding:21px 0 17px}
-  .hero h1{font-size:clamp(40px,6.9vw,53px)}
-  .feature-grid{max-width:550px}
-  .feature-card{min-height:485px}
-  .feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{height:37%}
+.section-intro h2{font-size:clamp(23px,2.35vw,31px);margin-top:3px}
+.section-index{font-size:10px}
+.feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;gap:14px;margin:0}
+.feature-card{display:grid;grid-template-columns:minmax(0,59%) minmax(0,41%);height:318px;min-height:0;border-radius:20px;box-shadow:0 11px 32px rgba(91,71,82,.095)}
+.feature-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(91,71,82,.13)}
+.feature-content,.bond-feature-card .feature-content{position:relative;z-index:2;grid-column:1;min-width:0;padding:18px 12px 16px 20px;display:flex;flex-direction:column;align-items:flex-start}
+.card-eyebrow{font-size:9px;letter-spacing:.08em;line-height:1.4}.tag-star{font-size:14px;margin-right:3px}
+.feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:clamp(25px,2.8vw,35px);line-height:1.06;letter-spacing:-.045em;margin:9px 0 10px}
+.feature-card h3 .mw-chinese-heading{font-size:inherit;line-height:inherit}
+.elsewhere-card h3{font-size:clamp(34px,3.55vw,45px);margin:11px 0 9px}
+.feature-content>p{font-size:11.5px;line-height:1.45;max-width:none;margin:0 0 9px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.feature-chips{gap:5px;max-width:100%}.feature-chips span{font-size:8.5px;padding:4px 7px}
+.card-button{margin-top:auto;gap:10px;padding:9px 12px;font-size:11px;min-height:36px;max-width:100%;box-shadow:0 4px 0 rgba(80,64,73,.12)}
+.feature-card .feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{grid-column:2;position:relative;inset:auto;width:100%;height:100%;overflow:hidden;min-width:0;z-index:1}
+.feature-card .feature-art img{width:100%;height:100%;object-fit:cover;object-position:center}
+.feature-card .feature-art:before{display:none}
+.edge-sticker{display:none}
+.tiny-section{padding:32px 0 36px}
+.tiny-section .section-intro{margin-bottom:14px}.tiny-section .section-intro h2{font-size:clamp(23px,2.3vw,30px)}
+.tiny-section .section-intro>p{font-size:12px;margin:0}
+.tiny-section .mini-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tiny-section .mini-game{display:flex;flex-direction:column;min-height:0;height:230px;border-radius:17px}
+.tiny-section .mini-game>img{width:100%;height:113px;flex:0 0 113px;min-height:0;object-fit:cover}
+.tiny-section .mini-copy{padding:11px 15px 12px;gap:3px;min-height:0}
+.tiny-section .mini-copy strong{font-size:18px;line-height:1.2}
+.tiny-section .mini-type{font-size:9px}.tiny-section .mini-descr{font-size:11px;line-height:1.45;min-height:0}
+.tiny-section .mini-cta{font-size:11px}
+.about-section{grid-template-columns:minmax(135px,190px) minmax(0,1fr);gap:25px;padding:28px 0 34px}
+.about-section .about-art{display:block;max-width:190px;width:100%;height:145px;border-radius:20px}
+.about-section .about-cat{transform:translateX(-50%) scale(.65);transform-origin:bottom center;bottom:-35px}
+.about-copy h2{font-size:clamp(22px,2.3vw,29px);margin:4px 0 7px}
+.about-copy p{font-size:12px;line-height:1.55;margin:4px 0 8px}
+.about-chips{margin-top:8px;gap:7px}.about-chips span{font-size:10px;padding:5px 8px}
+@media(max-width:900px){
+ .feature-grid{grid-template-columns:1fr;max-width:760px;margin-inline:auto;gap:12px}
+ .feature-card{height:238px;grid-template-columns:minmax(0,60%) minmax(0,40%)}
+ .feature-content,.bond-feature-card .feature-content{padding:15px 15px 14px 20px}
+ .feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:30px;margin:6px 0 8px}
+ .elsewhere-card h3{font-size:37px}
+ .feature-content>p{-webkit-line-clamp:2}
+ .feature-chips{display:none}
+ .hero{padding:15px 0 17px}
+ .hero h1{font-size:clamp(30px,4.7vw,43px)}
+ .site-nav{gap:12px}
 }
-@media(max-width:540px){
-  .nav-row{min-height:60px}
-  .wordmark img{width:32px;height:32px}
-  .hero{padding:16px 0 15px}
-  .hero .eyebrow{font-size:9px;letter-spacing:.11em}
-  .hero h1{font-size:clamp(33px,9vw,43px);line-height:1.03;margin:7px 0 10px}
-  .hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{font-size:11px;line-height:1.45}
-  .hero-promise{margin-top:9px;gap:5px}
-  .hero-promise span{padding:4px 7px;font-size:8px}
-  .hero-doodles{display:none}
-  .section-intro h2{font-size:26px}
-  .featured-section .section-intro{margin-bottom:10px}
-  .feature-card{min-height:465px;border-radius:22px}
-  .feature-content{padding:18px 19px 0}
-  .feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:35px;margin:7px 0}
-  .elsewhere-card h3{font-size:45px;margin-top:12px}
-  .feature-content>p{font-size:12px;line-height:1.45;margin-bottom:9px}
-  .feature-chips span{font-size:8px;padding:4px 6px}
-  .card-button{margin-top:10px;padding:9px 14px}
-  .feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{height:34%}
+@media(max-width:700px){
+ .nav-row{min-height:54px;gap:10px}.wordmark{font-size:16px}.wordmark img{width:30px;height:30px}
+ .site-nav{font-size:10px}.site-nav a:last-child{display:none}
+ .hero{padding:13px 0 15px}.hero h1{font-size:clamp(29px,6vw,40px);margin:5px 0 7px}
+ .hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{font-size:11px;line-height:1.55}
+ html[lang="zh-CN"] .hero>p.hero-copy{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin}
+ .hero-promise{margin-top:7px;gap:12px}.hero-promise span{font-size:9px}
+ .featured-section .section-intro{margin-bottom:10px}
+ .section-intro h2{font-size:24px}
+ .feature-grid{max-width:100%}
+ .feature-card{height:221px;grid-template-columns:minmax(0,61%) minmax(0,39%);border-radius:16px}
+ .feature-content,.bond-feature-card .feature-content{padding:13px 9px 13px 15px}
+ .card-eyebrow{font-size:8px}.tag-star{font-size:11px}
+ .feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:clamp(23px,4.4vw,30px);margin:6px 0}
+ .elsewhere-card h3{font-size:clamp(29px,6vw,36px);margin:7px 0}
+ .feature-content>p{font-size:11px;line-height:1.35;margin-bottom:6px;-webkit-line-clamp:3}
+ .card-button{font-size:10.5px;padding:8px 10px;min-height:34px}
+ .tiny-section{padding:26px 0 30px}
+ .tiny-section .section-intro{margin-bottom:12px}
+ .tiny-section .mini-grid{grid-template-columns:1fr;gap:10px}
+ .tiny-section .mini-game{height:133px;min-height:0;flex-direction:row}
+ .tiny-section .mini-game>img{width:37%;flex:0 0 37%;height:100%;min-height:0}
+ .tiny-section .mini-copy{min-width:0;min-height:0;padding:12px 13px;gap:2px}
+ .tiny-section .mini-copy strong{font-size:18px}
+ .tiny-section .mini-descr{font-size:11px}
+ .about-section{grid-template-columns:1fr;gap:0;padding:20px 0 23px}
+ .about-section .about-art{display:none}
+ .about-copy h2{font-size:23px}
+}
+@media(max-width:430px){
+ .shell{width:calc(100% - 28px)}
+ .hero h1{font-size:clamp(27px,7.5vw,33px)}
+ .hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{font-size:10.5px}
+ .hero-promise{gap:9px}
+ .feature-card{height:215px;grid-template-columns:minmax(0,62%) minmax(0,38%)}
+ .feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:23px}
+ .elsewhere-card h3{font-size:31px}
+ .feature-content>p{-webkit-line-clamp:2}
+ .card-button{font-size:10px;padding:7px 9px}
 }
