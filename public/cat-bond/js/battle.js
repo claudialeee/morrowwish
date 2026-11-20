@@ -797,10 +797,26 @@ class CaptureBattle {
     const live = this.liveEnemies();
     this.captureReady = live.some(e => e.hp / e.maxhp < 0.28);
     const packN = this.enemies.length;
-    this.hint = this.autoMode ? (this._autoLastAction&&this.t-(this._autoLastAt||0)<2.5 ? '🤖 智能自动 · '+this._autoLastAction : '🤖 智能自动 · 自动放技能、闪避、必杀 · 点击集火')
-      : (this.captureReady ? '野猫斗志快耗尽了，收服它！'
-      : (this.ult >= 100 ? '必杀能量已满！按 R 释放'
-      : (packN > 1 ? `野猫群 ${live.length}/${packN} 只 · 鼠标瞄准 · Q/E 技能` : '鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避')));
+    // Each control scheme gets its own legible instruction. Mobile users
+    // should never be told to use a mouse or Space key.
+    const touch=!!this.game.isTouch;
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    this.hint=this.autoMode
+      ?(this._autoLastAction&&this.t-(this._autoLastAt||0)<2.5
+        ?'🤖 智能自动 · '+this._autoLastAction
+        :'🤖 智能自动 · 自动放技能、闪避、必杀 · 点击集火')
+      :touch
+        ?(this.captureReady
+          ?(english?'Wild cat almost tamed! Keep attacking!':'野猫快被收服了！继续攻击！')
+          :this.ult>=100
+            ?(english?'Ultimate ready! Tap the cyclone button':'必杀技已准备好，点击旋风按钮')
+            :(english?'Slide left to move · Hold right to attack · Tap Dodge'
+              :'左侧滑动移动 · 右侧按住攻击 · 点击闪避'))
+        :(this.captureReady?'野猫斗志快耗尽了，收服它！'
+          :(this.ult>=100?'必杀能量已满！按 R 释放'
+            :(packN>1?`野猫群 ${live.length}/${packN} 只 · 鼠标瞄准 · Q/E 技能`
+              :'鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避')));
+
 
     if (live.length === 0) this.finish(true);
   }

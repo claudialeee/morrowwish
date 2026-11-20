@@ -454,6 +454,7 @@ class Game {
     this.updateBattleUI();
     // Display current battle state, including keyboard P toggles.
     this.syncBattleModeUI();
+    this.syncBattleControlHelp();
   }
 
   updateSkillLabels() {
@@ -503,6 +504,19 @@ class Game {
       CatArt.renderCatThumb(el.querySelector('canvas'), sp);
       el.addEventListener('click', () => b.switchTo(i));
     });
+  }
+
+  syncBattleControlHelp(){
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const dodge=document.getElementById('mv-dodge');
+    const hint=dodge?.querySelector('.mv-k');
+    if(hint)hint.textContent=this.isTouch?(english?'Tap':'点击'):'Space';
+    const dodgeTip=this.isTouch
+      ?(english?'Tap to dodge attacks (brief invincibility)':'点击闪避攻击（短暂无敌）')
+      :(english?'Dodge attacks (Space; brief invincibility)':'闪避攻击（空格键；短暂无敌）');
+    if(dodge){dodge.title=dodgeTip;dodge.setAttribute('aria-label',dodgeTip);}
+    const basic=document.getElementById('mv-basic')?.querySelector('.mv-k');
+    if(basic&&this.isTouch)basic.textContent=english?'Tap':'点击';
   }
 
   syncBattleModeUI(){

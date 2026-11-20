@@ -822,3 +822,22 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 .journey-path .btn{font-size:12px;padding:9px 12px;flex:0 0 auto;min-width:55px}
 @media(max-width:480px){.journey-path{padding:8px;gap:7px}.journey-copy b{font-size:12px}
  .journey-copy p{font-size:11px}.journey-path .btn{padding:8px 9px;min-width:48px}}
+
+/* Battle HUD must remain readable in narrow, rotated CrazyGames frames. */
+@media(max-width:520px){
+  #battle-ui .battle-topbar{left:6px;right:6px;transform:none;width:auto;max-width:none;
+    display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px;padding:5px 6px}
+  #battle-ui #wild-name{min-width:0;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+  #battle-ui #btn-auto{font-size:10px;padding:6px 6px;max-width:155px;min-width:0}
+  #battle-ui #btn-flee{font-size:10px;padding:6px 5px}
+  #battle-ui .battle-hint{top:57px;max-width:calc(100% - 16px);font-size:10px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #battle-ui .move .mv-name{font-size:11px}
+}
+@media(min-height:550px){
+  #cp-wild{width:188px!important;height:144px!important;
+    border:1px solid #b8d1c3;border-radius:18px!important;
+    background:linear-gradient(145deg,#eff9f0,#e1edf7)!important;
+    box-shadow:inset 0 0 0 2px #ffffffa0}
+  #cr{width:200px!important;height:156px!important}
+}
