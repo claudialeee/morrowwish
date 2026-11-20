@@ -125,6 +125,31 @@ try{
       if(!isLogin(page))await page.waitForTimeout(2000);
    }
  }
+
+ // The developer portal occasionally remains on /login even after Chrome
+ // renders a valid form. Retry once in the same browser context, but never
+ // retry when a credential/captcha error is visible.
+ if(isLogin(page) && email && password){
+   const visible=(await page.locator('body').innerText().catch(()=>'' )).toLowerCase();
+   const blocked=/incorrect|invalid password|account locked|captcha|too many attempts|verify your account/.test(visible);
+   if(!blocked){
+     report.loginRetryAttempted=true;
+     await page.goto(root+'/login',{waitUntil:'domcontentloaded',timeout:25000}).catch(()=>{});
+     await page.locator('input[type="password"]').first().waitFor({state:'visible',timeout:15000}).catch(()=>{});
+     const emailField=page.locator('input[type="email"],input[placeholder*="@"],input[autocomplete="username"]').first();
+     const pw=page.locator('input[type="password"]').first();
+     if(await emailField.isVisible().catch(()=>false) && await pw.isVisible().catch(()=>false)){
+       await emailField.fill(email);
+       await pw.fill(password);
+       const submit=page.getByRole('button',{name:/^log ?in$/i}).first();
+       if(await submit.isEnabled().catch(()=>false)){
+         await submit.click({timeout:4500}).catch(()=>{});
+         await page.waitForURL(u=>!isLogin({url:()=>u.toString()}),{timeout:13000}).catch(()=>{});
+         await page.waitForTimeout(2000);
+       }
+     }
+   }
+ }
  report.loginPostStatuses=loginPostStatuses;
  if(report.credentialLoginAttempted){
    const body=(await page.locator('body').innerText().catch(()=>'' )).toLowerCase();
