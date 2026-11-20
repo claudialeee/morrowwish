@@ -152,6 +152,17 @@ async function details(page,slug,rec){
  rec.tag=await selectCombo(page,1,game.tags);
  rec.tools=await selectCombo(page,2,['JavaScript','HTML5','Custom JavaScript','Custom engine','Other','Custom','Web','Code']);
  if(!rec.tag.selected||!rec.tools.selected)throw Error('Category/tag/tool options missing; need exact official menu values');
+ // CrazyGames marks the extra free-text field as invalid when AI tools = Other.
+ // The portal's generic mandatory-fields message hides this conditional requirement.
+ if((await page.getByRole('combobox').nth(2).innerText()).includes('Other')){
+   const otherTool=page.locator('input[type="text"][aria-invalid="true"]').first();
+   if(!await otherTool.count())throw Error('Other selected but its required explanation field was not found');
+   await otherTool.fill('Custom HTML5, JavaScript and CSS; AI-assisted development with ChatGPT and Claude.');
+   await otherTool.press('Tab');
+   rec.otherToolDetailsProvided=true;
+   if((await otherTool.getAttribute('aria-invalid'))==='true')
+     throw Error('CrazyGames still marks Other tool explanation invalid');
+ }
  const editors=page.locator('.ql-editor[contenteditable=true]');
  if(await editors.count()!==2)throw Error('Expected two Quill editors for description and controls');
  await editors.nth(0).fill(game.description);
