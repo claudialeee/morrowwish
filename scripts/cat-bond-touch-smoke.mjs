@@ -5,13 +5,16 @@ const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const failures=[];
 try{
-  // Render the exact homepage thumbnail, including its embedded watercolor WebP.
-  // A broken SVG/data URI can have a URL and still render an empty tile.
+  // Verify the currently selected first-party Cat Bond cover, not an outdated
+  // hardcoded filename. Still check that the image loads and paints real pixels.
   const coverPage=await browser.newPage();
   try{
     await coverPage.goto(origin+'/?lang=zh',{waitUntil:'domcontentloaded'});
     const cover=coverPage.locator('.bond-feature-card .feature-art img');
-    assert.ok((await cover.getAttribute('src')).startsWith('/art/cat-bond-cozy.webp'),'Homepage must show the actual generated Cat Bond image');
+    const coverSrc=await cover.getAttribute('src');
+    const coverPath=new URL(coverSrc,origin).pathname;
+    assert.match(coverPath,/^\/art\/cat-bond[^/]*\.(?:webp|png|jpe?g)$/i,
+      'Cat Bond homepage must use a first-party generated cover image');
     await cover.scrollIntoViewIfNeeded();
     await coverPage.waitForFunction(()=>{
       const img=document.querySelector('.bond-feature-card .feature-art img');
