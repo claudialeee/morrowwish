@@ -186,6 +186,16 @@ async function details(page,slug,rec){
   // all validation and media conversion succeed. Invoke the React button's native
   // click handler directly to avoid interception by transient toast overlays.
   await more.evaluate(el=>el.click()).catch(e=>{throw Error('Details save failed: '+mask(e.message,180))});
+  await sleep(900);
+  rec.validationDiagnostics=await page.evaluate(()=>{
+    const fields=[...document.querySelectorAll('input,textarea,[role="combobox"],[contenteditable="true"]')];
+    const errors=[...document.querySelectorAll('[aria-invalid="true"], .Mui-error, .MuiFormHelperText-root, [role="alert"], .MuiSnackbar-root')];
+    return {
+      fields:fields.map((el,i)=>({i,tag:el.tagName,role:el.getAttribute('role'),type:el.getAttribute('type'),name:el.name,id:el.id,required:el.required,ariaRequired:el.getAttribute('aria-required'),invalid:el.getAttribute('aria-invalid'),value:el.type==='checkbox'?el.checked:(el.innerText||el.value||'').slice(0,90),label:(el.closest('.MuiFormControl-root,.MuiFormGroup-root')?.innerText||'').slice(0,125)})).slice(0,75),
+      errors:errors.map(el=>({className:el.className?.toString().slice(0,100),text:(el.innerText||el.textContent||'').trim().slice(0,250)})).filter(x=>x.text).slice(0,35),
+      formErrors:[...document.querySelectorAll('form')].map(f=>({invalidCount:f.querySelectorAll(':invalid').length,html:f.outerHTML.slice(0,200)})).slice(0,3)
+    };
+  });
  await page.getByText(/submit|review|terms/i).first().waitFor({timeout:14000}).catch(()=>{});
  await sleep(2200);
  rec.finalStep=await readStage(page);
@@ -262,6 +272,7 @@ async function main(){
       const current=await toDetails(page,ctx,ref,rec.stages);rec.status='details-open';save();
       await details(current,slug,rec);rec.status='ready-for-final-submit';save();
       await finalSubmit(current,ref,rec);
+       if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_DIAGNOSTIC_FIRST_FAILURE '+JSON.stringify(rec.validationDiagnostics)); break;}
     }catch(e){rec.status='blocked';rec.reason=mask(e.message,270);}
     finally{rec.finishedAt=time();save();console.log(JSON.stringify({slug,status:rec.status,platformId:rec.platformId||null,reason:rec.reason||null,stages:rec.stages}));}
   }
