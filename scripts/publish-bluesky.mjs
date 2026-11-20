@@ -11,6 +11,7 @@ if(!newGames.length){ console.log('No newly launched games to announce.'); proce
 const identifier=process.env.MORROW_BLUESKY_HANDLE;
 const password=process.env.MORROW_BLUESKY_APP_PASSWORD;
 if(!identifier||!password){console.log('Studio Bluesky credentials not configured: automatic external posting skipped; release kit is available.');process.exit(0);}
+if(/(^|@)ruckusbutton\.bsky\.social$/i.test(identifier))throw Error('Retired Bluesky account cannot be used for future promotion.');
 const api='https://bsky.social/xrpc/';
 async function request(url,opts={}){
  const r=await fetch(url,{...opts,signal:AbortSignal.timeout(18000)});

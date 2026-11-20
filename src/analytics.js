@@ -27,6 +27,7 @@ function mainStats(x){
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
   const eligible=new Set(["pawsibly-innocent","cat-bond","elsewhere","tiny-town","flip-dash","parcel-panic","pocket-aquarium"]);
+  const normalizeSource=s=>/(^|\.)bsky\.(app|social)$/i.test(s)?"bluesky":s;
   const sessionsByView=new Map();
   for(const r of sessions){
     if(!r.view_id||!eligible.has(r.game))continue;
@@ -40,7 +41,7 @@ function mainStats(x){
     if(seenVisits.has(id))continue;
     seenVisits.add(id);
     const d=r.data||{};
-    const source=tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct");
+    const source=normalizeSource(tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct"));
     // Internal navigation is not an acquisition channel; new visits inherit
     // their first-party landing source through telemetry.js.
     if(source==="internal")continue;
@@ -68,7 +69,7 @@ function mainStats(x){
     const id=v.view_id||v.visitor+"-"+v.day;
     if(seenHomeViews.has(id))continue;seenHomeViews.add(id);
     const d=v.data||{};
-    const source=tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct");
+    const source=normalizeSource(tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct"));
     if(source==="internal")continue;
     if(!homeBySource.has(source))homeBySource.set(source,{source,visits:0,clickedViews:0,clicks:0});
     const z=homeBySource.get(source);z.visits++;
