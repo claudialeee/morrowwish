@@ -1085,7 +1085,7 @@ const UI = {
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
         +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name
-        +' · '+skillUnlock.skill.desc+'</span><small>'+(english?'Equipped to E. Your kitten can now use a second element!'
+        +' · '+(english?'New element unlocked for your next battle':skillUnlock.skill.desc)+'</span><small>'+(english?'Equipped to E. Your kitten can now use a second element!'
           :'已自动装备到 E 技能位！下场战斗就能使用不同元素。')+'</small></div>':''}
       ${masteryReward?'<div class="golden-paw-unlock"><strong>🏅 '+(english?'GOLDEN PAW UNLOCKED!':'金爪徽章解锁！')+'</strong><p>'+medalMessage+'</p><small>'
         +(english?'Medals':'已获徽章')+' '+mastery.medals+'/'+mastery.total+' · '
@@ -1132,8 +1132,8 @@ const UI = {
         :'已解锁 '+adv.unlocked+'/'+adv.totalRegions+' 个探索区域');
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">${en?'🧭 Your Cat Adventure':'🧭 猫猫冒险手册'}</h2>
-      <p class="sub center">${en?'Collect new friends, build bonds and unlock hidden places.'
-        :'收集新朋友、培养感情、探索更广阔的猫咪世界。'}</p>
+      <p class="sub center">${en?'Collect friends, unlock skills, earn workshop coins and explore new places.'
+        :'收集新伙伴、觉醒技能、经营工坊、探索新地区——每条路线都有成长目标。'}</p>
       <div class="journey-paths">
         <article class="journey-path">
           <div class="journey-icon">🐾</div>
@@ -1150,6 +1150,13 @@ const UI = {
               :'撸猫 '+adv.pets+'/'+petTarget+' 次可获得亲密奖励'}</p>
             <div class="journey-progress"><span style="width:${Math.min(100,adv.pets/petTarget*100)}%"></span></div>
           </div><button class="btn gold" id="journey-bond">${en?'Pet':'撸猫'}</button>
+        </article>
+        <article class="journey-path">
+          <div class="journey-icon">☀️</div>
+          <div class="journey-copy"><b>${en?'Earn coins in the workshop':'让猫咪经营工坊赚钱'}</b>
+            <p>${en?'Assign a kitten to the Sun station, earn coins offline, and collect when ready.'
+              :'派猫去晒太阳位上岗，离线也赚金币；回来一键收取。'}</p>
+          </div><button class="btn gold" id="journey-workshop">${en?'Workshop':'工坊'}</button>
         </article>
         <article class="journey-path">
           <div class="journey-icon">🗺️</div>
@@ -1178,6 +1185,7 @@ const UI = {
       if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}
       this.game.toast(en?'Tap a cat in the yard to earn affection!':'点击庭院里的猫咪，提高好感并领取奖励！');
     };
+    document.getElementById('journey-workshop').onclick=()=>this.openWorkshop();
     document.getElementById('journey-explore').onclick=()=>{this.closeAll();this.game.openWorldMap();};
   },
 
@@ -1186,6 +1194,7 @@ const UI = {
     const options = GameData.SPECIES.filter(s => s.rarity === 'N').slice(0, 3);
     const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${sp.name}">
       <canvas width="90" height="76"></canvas>
+      <div class="tiny starter-element">${this.game.elemIcon(Skills.elementOf(sp.id))} ${Skills.elementOf(sp.id)==='fire'?'火系':Skills.elementOf(sp.id)==='grass'?'草系':'水系'}</div>
       <div class="name">${sp.name}</div>
       <div class="rarity rarity-N">普通</div>
       <div class="tiny">${sp.desc}</div>

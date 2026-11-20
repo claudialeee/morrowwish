@@ -109,6 +109,15 @@ try{
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
+        await page.waitForSelector('#cr-newskill',{timeout:5000});
+        const firstMove=await page.evaluate(()=>{
+          const starter=State.S.cats[0];
+          return {skill:starter.loadout?.[2],awakened:starter.skillAwakened};
+        });
+        assert.equal(firstMove.awakened,true,'First captured companion awakens a new ability');
+        assert.ok(firstMove.skill,'The new ability is automatically equipped');
+        assert.equal(await page.locator('.skill-reveal-card').count(),1,
+          'New players must visibly celebrate an unlocked skill');
         const rank=await page.locator('.battle-grade b').innerText();
         assert.equal(rank,'S','Good play earns an S rank and a permanent species medal');
         await page.waitForSelector('.golden-paw-unlock',{timeout:5000});
@@ -134,8 +143,10 @@ try{
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
         await page.locator('#collection-goal').click();
         await page.waitForSelector('#journey-collect');
-        assert.equal(await page.locator('.journey-path').count(),3,
-          'Collection, bonding and exploration should all be discoverable');
+        assert.equal(await page.locator('.journey-path').count(),4,
+          'Collection, workshop, bonding and exploration should all be discoverable');
+        assert.equal(await page.locator('#journey-workshop').count(),1,
+          'Workshop must be reachable directly from the adventure guide');
         await page.locator('#journey-mastery').click();
         await page.waitForSelector('.golden-paw-stamp');
         assert.ok((await page.locator('.golden-paw-stamp').count())>=1,

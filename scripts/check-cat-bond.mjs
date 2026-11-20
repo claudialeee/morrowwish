@@ -412,7 +412,7 @@ const adventure=game.adventureStatus();
 assert.ok(adventure.totalRegions>=5&&adventure.unlocked>=1,'Explore track uses real world unlocks');
 UI.openJourney();
 const journeyHTML=document.getElementById('panel').innerHTML;
-assert.ok(['journey-collect','journey-bond','journey-explore'].every(x=>journeyHTML.includes(x)),
+assert.ok(['journey-collect','journey-bond','journey-workshop','journey-explore'].every(x=>journeyHTML.includes(x)),
   'Adventures must offer collecting, bonding and exploration actions');
 UI.closeAll();
 State.S.petCount=oldPets;State.S.bondingRewards=oldBond;

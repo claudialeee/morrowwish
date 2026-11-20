@@ -451,14 +451,21 @@
     const available=new Set(learnableSkills(cat).map(sk=>sk.id));
     const current=Array.isArray(cat.loadout)?cat.loadout:[];
     const defaults=defaultLoadout(cat);
-    const next=Array.from({length:4},(_,i)=>{
-      const id=current[i];
-      const skill=id?skillById(id):null;
-      const kindValid=i===3?(skill&&skill.ultCost>0):(skill&&skill.ultCost===0);
-      return kindValid&&available.has(id)?id:defaults[i];
+    // Auto-created equipment upgrades itself when a new level/bond gate opens.
+    // An explicitly edited loadout is left alone and only repairs illegal slots.
+    const lastAuto=Array.isArray(cat.autoSkillLoadout)?cat.autoSkillLoadout:[];
+    const unchanged=lastAuto.length===4&&current.length===4
+      &&current.every((sk,i)=>sk===lastAuto[i]);
+    if(!cat.skillEdited&&(!current.length||unchanged)){
+      cat.loadout=defaults.slice();
+      cat.autoSkillLoadout=defaults.slice();
+      return cat.loadout;
+    }
+    const next=Array.from({length:4},(_,idx)=>{
+      const id=current[idx],sk=id?skillById(id):null;
+      const legal=idx===3?sk&&sk.ultCost>0:sk&&sk.ultCost===0;
+      return legal&&available.has(id)?id:defaults[idx];
     });
-    // Player may have learned an ultimate after the last save; empty slot
-    // should automatically reveal it when the level/bond prerequisite is met.
     if(JSON.stringify(current)!==JSON.stringify(next))cat.loadout=next;
     return cat.loadout||next;
   }
@@ -480,6 +487,7 @@
     if(!cat.skillEdited&&(previous[2]===prevDefault[2]||previous[2]==null)){
       cat.loadout=previous;
       if(selected)cat.loadout[2]=selected.id;
+      cat.autoSkillLoadout=cat.loadout.slice();
     }
     return selected;
   }
@@ -487,17 +495,24 @@
   function progressionHint(cat){
     const sp=speciesOf(cat),rare=rarityIdx(sp?.rarity||'N');
     const lv=cat.level||1,bond=cat.affinity||0;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
     if(rare===0&&!cat.skillAwakened&&lv<4&&bond<40)
-      return '首次收服伙伴后学会跨元素技能（也可提升至 Lv.4 或好感40）';
+      return en?'Catch your first friend for a new elemental skill (or reach Lv.4 / affection 40)'
+        :'首次收服伙伴后学会跨元素技能（也可提升至 Lv.4 或好感40）';
     if(rare===0&&(lv<8||bond<40))
-      return '下一阶段：Lv.8 + 好感40 → 元素必杀技';
+      return en?'Next: Lv.8 + affection 40 to unlock an elemental ultimate'
+        :'下一阶段：Lv.8 + 好感40 → 元素必杀技';
     if(rare===1&&(lv<3||bond<20))
-      return '下一阶段：Lv.3 + 好感20 → 元素必杀技';
+      return en?'Next: Lv.3 + affection 20 to unlock an elemental ultimate'
+        :'下一阶段：Lv.3 + 好感20 → 元素必杀技';
     if(rare<2&&(lv<10||bond<60))
-      return '进阶修炼：Lv.10 + 好感60 → 第三种元素技能';
+      return en?'Advanced: Lv.10 + affection 60 for a third element'
+        :'进阶修炼：Lv.10 + 好感60 → 第三种元素技能';
     if(rare>=2&&lv<12)
-      return '天生掌握高级元素技能；Lv.12 可探索更多元素搭配';
-    return '继续提升等级与羁绊，尝试搭配不同元素连携';
+      return en?'Special elemental skills are innate; Lv.12 reveals broader combinations'
+        :'天生掌握高级元素技能；Lv.12 可探索更多元素搭配';
+    return en?'Keep training to master more elemental combinations'
+      :'继续提升等级与羁绊，尝试搭配不同元素连携';
   }
 
   // ==========================================================================
