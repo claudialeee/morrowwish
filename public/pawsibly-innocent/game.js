@@ -304,7 +304,7 @@ function throwYarnTo(p){
  if(!aimingYarn||!s||s.done||s.yarnAnimating)return false;
  if(!yarnTarget(p)){popup(YARN_LEGEND[lang].badTarget);return false}
  s.noise={...p};s.yarnDestination={...p};s.distractionTurns=0;s.yarnThrows++;s.throwTrail={from:{...s.cat},to:{...p},at:performance.now()};
- s.alert=Math.max(7,pathTo(s.human,p,true).length+3);s.lastSeen=null;s.yarn--;s.steps++;
+ s.alert=Math.max(7,pathTo(s.human,p,true,true).length+3);s.lastSeen=null;s.yarn--;s.steps++;
  setYarnAim(false);
  throwStars(s.noise,"#db9fef");audio("yarn");startYarnChase();popup("lured");
  metric("cat_yarn_toss",{level:s.index+1,target_x:p.x,target_y:p.y});
