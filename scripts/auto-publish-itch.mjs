@@ -22,11 +22,11 @@ const mappedName=g=>({'tiny-town':'Tiny Town','cat-bond':'Cat Bond','pawsibly-in
 const slogans={'cat-bond':'RAISE CATS. MAKE FRIENDS.','pawsibly-innocent':'A LITTLE CAT. BIG TROUBLE.','elsewhere':'ONE MORE LIFE TO LIVE.','tiny-town':'BUILD A TOWN. LIVE FREE.','pocket-aquarium':'A LITTLE WORLD UNDERWATER.','parcel-panic':'SORT FAST. STAY SHARP.','flip-dash':'ONE MORE JUMP.'};
 const exists=f=>fs.existsSync(path.join(ROOT,f));
 const coverSource=g=>[
-  'public/promo/'+g.slug+'/cover-landscape.png',
-  'public/promo/'+g.slug+'/cover-square.png',
   'public/art/'+g.slug+'-editorial.webp',
   'public/art/'+g.slug+'-cozy.webp',
   'public/art/'+g.slug+'-scene.svg',
+  'public/promo/'+g.slug+'/cover-landscape.png',
+  'public/promo/'+g.slug+'/cover-square.png',
   'public/social/'+g.slug+'.png',
 ].find(exists);
 async function coverFor(browser,g,tmp){
