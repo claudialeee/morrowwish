@@ -167,14 +167,21 @@ try{
  const enHelp=await page.locator('#yarnExplain').textContent();
  assert.match(enHelp,/human|noise|investigate/i,'English help explains how yarn works');
  const initialYarn=await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn);
- await page.locator('#tool').click();await page.waitForTimeout(200);
+ await page.locator('#tool').click();
+ assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.isAiming()),true,'Toss yarn should enter target-select mode');
+ assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),initialYarn,'Entering aim mode must not consume yarn');
+ const boardBox=await page.locator('#board').boundingBox();
+ await page.locator('#board').click({position:{x:boardBox.width*8.5/10,y:boardBox.height*4.5/7}});
+ await page.waitForTimeout(200);
  const tossed=await page.evaluate(()=>{
   const s=window.__PAWSIBLY_TEST__.getState();
   return {yarn:s.yarn,noise:s.noise,trail:s.throwTrail,alert:s.alert,sound:window.MorrowwishAudio?.status()};
  });
  console.log('Real yarn button and audio:',JSON.stringify(tossed));
  assert.equal(tossed.yarn,initialYarn-1,'Yarn ball should be consumed after pressing the button');
- assert.ok(tossed.noise&&tossed.trail,'Yarn ball should draw an arc and lure the human');
+ assert.ok(tossed.noise&&tossed.trail,'A player-selected yarn landing spot should create a distraction');
+ assert.deepEqual(tossed.noise,{x:8,y:4},'Yarn should land where the player taps');
+ assert.equal(await page.locator('[data-move]').count(),0,'Touch directional pad was removed');
  assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.effects>0,'Cat yarn action must still play sound effects');
  assert.equal(tossed.sound.playing,false,'Cat SFX engine must never synthesize a music loop');
  assert.equal(tossed.sound.backgroundMusic,false,'Cat sound-effects subsystem must contain no BGM');
