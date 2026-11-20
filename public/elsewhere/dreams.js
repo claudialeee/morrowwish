@@ -34,7 +34,7 @@ const Q={
  recap:L("关键行动","DECISIVE ACTIONS"),replay:L("换一种打法","Try another approach"),
  another:L("体验另一段人生","Another life"),share:L("分享结局","Share this ending"),
  galleryNote:L("只记录这一版真实解锁的结局。","Only outcomes earned in this edition are counted."),
- collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
+ collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("你拖住了对方，但这次还不足以让他们彻底认输。","You stopped them for now, but the case is not fully won."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
 };
 let lang=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en"){try{localStorage.setItem("morrowwish.language",q)}catch{}return q}
 try{const x=localStorage.getItem("morrowwish.language");if(x==="zh"||x==="en")return x}catch{}return navigator.language?.toLowerCase().startsWith("zh")?"zh":"en"})();
@@ -197,7 +197,7 @@ function finish(){
  const m=meta(state.id),decision=resolve();
  const key=decision.kind,winning=decision.quality!=="cost";
  const copies=decision.quality==="perfect"?Qe("perfect"):decision.quality==="strong"?Qe("strong"):Qe("cost");
- const result=winning?T(decision.entry[1]):T(decision.detail);
+ const result=winning?T(decision.entry[1]):T(Q.partialDesc);
  const past=Array.isArray(gallery[state.id])?gallery[state.id]:[];
  if(winning&&!past.includes(decision.n)){gallery[state.id]=[...past,decision.n];try{localStorage.setItem(STORAGE,JSON.stringify(gallery))}catch{}}
  if(!state.completed){
@@ -214,10 +214,11 @@ function finish(){
 async function share(){
  if(!state||state.history.length!==5)return;
  const d=resolve(),m=meta(state.id),url=location.origin+"/elsewhere/?world="+encodeURIComponent(state.id);
+ const shareTitle=d.quality==="cost"?T(Q.cost):T(d.entry[0]);
  const message=d.quality==="cost"?(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇还差一步就能逆转。你会怎么选？":"I came close to winning "+T(m.name)+" in Elsewhere. What would you do?"):(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇，赢得了「"+T(d.entry[0])+"」这个结局。你能做得更好吗？":'I earned "'+T(d.entry[0])+'" in Elsewhere: '+T(m.name)+'. Can you beat my ending?');
  track("share_clicked",{world:state.id,outcome:d.quality});
- if(window.MorrowwishSocialShare?.open){window.MorrowwishSocialShare.open({title:T(d.entry[0]),message,url,language:lang,meta:{game:"elsewhere",world:state.id},onShare:platform=>track("share_clicked",{world:state.id,platform})});return}
- try{if(navigator.share){await navigator.share({title:T(d.entry[0]),text:message,url});return}}catch(err){if(err?.name==="AbortError")return}
+ if(window.MorrowwishSocialShare?.open){window.MorrowwishSocialShare.open({title:shareTitle,message,url,language:lang,meta:{game:"elsewhere",world:state.id},onShare:platform=>track("share_clicked",{world:state.id,platform})});return}
+ try{if(navigator.share){await navigator.share({title:shareTitle,text:message,url});return}}catch(err){if(err?.name==="AbortError")return}
  try{await navigator.clipboard.writeText(message+" "+url);toast(lang==="zh"?"已复制分享文案和链接":"Share link copied")}catch{toast(url)}
 }
 function toast(msg){

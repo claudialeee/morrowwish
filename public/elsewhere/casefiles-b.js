@@ -122,8 +122,8 @@ W.iceland={
  ],
  [
  S("向导认识那位失踪的气候学家","THE GUIDE KNOWS THE MISSING SCIENTIST",
- "十年前，这名学者公开反对在冰川下钻探，随后突然失联。现在同一个呼号再次出现，向导坚持去救他。",
- "The scientist protested drilling beneath the glacier before disappearing. Now his call sign has returned, and the guide wants to help.",
+ "十年前，这名学者就反对在冰川下钻探。上周他要公开新证据，随后失联；现在旧呼号再次出现，向导坚持去救他。",
+ "The scientist opposed glacier drilling a decade ago. He vanished last week, just before revealing new evidence. Now his old call sign has returned.",
  C("翻出当年的失踪报道","Recover the original missing-person reports","报道提到研究员最后在能源公司工地现身。","The reports place him at the energy company's site.","proof"),
  C("让向导带你走旧救援通道","Follow the guide's old rescue route","你们找到避开危险裂缝的路线。","The guide finds a route away from unstable crevasses.","allies"),
  C("联系地方搜救指挥部","Notify the regional search commander","指挥部要求工地保留所有人员出入记录。","The rescue commander orders the company to preserve site records.","leverage")),
