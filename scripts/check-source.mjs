@@ -46,6 +46,14 @@ if(!dashboard.includes('id="game-details"')||!dashboard.includes('data-i18n="gam
  throw Error('Dashboard must prioritize honest game starts, normal finishes and replays with provider sync status');
 // Primary dashboard must preserve visit-to-start and start-to-finish context
 // and not show unsupported portals as native social-view channels.
+const requiredChannels=['itch','crazygames','kongregate','youtube','tiktok','instagram','bluesky','search'];
+const channelIds=dashboard.match(/const fallbackIds=\[([^\]]+)\];/)?.[1]||'';
+if(requiredChannels.some(name=>!channelIds.includes("'"+name+"'"))||
+   !dashboard.includes('id="future-channels"')||
+   !dashboard.includes('id="future-channel-list"')||
+   !dashboard.includes('channelState:')||
+   dashboard.includes("t('notApplicable')"))
+ throw Error('Promotion pipeline channels must stay visible; irrelevant metrics stay blank, not N/A');
 if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const finishRate=")||
    !dashboard.includes("const startRate=")||
