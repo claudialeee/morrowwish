@@ -26,6 +26,9 @@ if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status
  throw Error('CrazyGames scripts must fail closed if not individually QA-approved');
 
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
+const social=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
+if(social.schemaVersion!==1||social.platforms.find(x=>x.id==='instagram')?.views!==273)throw Error('Provider metrics snapshot must preserve available and unknown native metrics');
+if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 // The mini-game upgrade already emits run_start/run_end. Do not count
 // duplicate local game.js tracking events as extra sessions.
@@ -144,7 +147,7 @@ for(const metric of ['flip_finished','flip_10s','flip_30s','parcel_sorted','parc
 }
 if(!arcadeSource.includes('event("parcel_sorted",')||!arcadeSource.includes('event("parcel_missed",'))
  throw new Error('Parcel Panic outcome instrumentation missing');
-if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel')||dashboard.includes('j.byGameChannel'))
+if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel')||!dashboard.includes('j.socialPulse')||dashboard.includes('j.byGameChannel'))
  throw new Error('Dashboard must use grouped acquisition-channel rollups');
 // The current compact channel table pins Bluesky as one row, then displays
 // four leading channels plus a roll-up for the remainder. Avoid freezing the

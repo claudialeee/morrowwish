@@ -45,14 +45,16 @@ function mainStats(x){
     // Internal navigation is not an acquisition channel; new visits inherit
     // their first-party landing source through telemetry.js.
     if(source==="internal")continue;
-    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,seconds:0});
+    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,starts:0,ends:0,seconds:0});
     const z=channels.get(source);z.views++;
     const events=sessionsByView.get(r.view_id)||[];
     if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
+    z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
+    z.ends+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.ends)||0),0);
     z.seconds+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.seconds)||0),0);
   }
   const byChannel=[...channels.values()].map(z=>({
-    source:z.source,pageviews:z.views,startedViews:z.startedViews,
+    source:z.source,pageviews:z.views,startedViews:z.startedViews,starts:z.starts,ends:z.ends,
     startRate:pct(z.startedViews,z.views),
     seconds:z.seconds,avgSeconds:z.views?Math.round(z.seconds/z.views):0
   })).sort((a,b)=>b.pageviews-a.pageviews);
@@ -193,7 +195,7 @@ export async function api(req,env){
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
   const x=await read(req,env,p==="/api/summary"?"arcade":"elsewhere");
-  return json(p==="/api/summary"?mainStats(x):elsewhereStats(x));
+  return json(p==="/api/summary"?{...mainStats(x),socialPulse:typeof SOCIAL_SNAPSHOT==="undefined"?null:SOCIAL_SNAPSHOT}:elsewhereStats(x));
  }
  return json({error:"Not found"},404);
 }
