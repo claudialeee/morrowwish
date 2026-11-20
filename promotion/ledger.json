@@ -6,7 +6,7 @@
     "https://github.com/claudialeee/morrowwish/tree/main",
     "https://morrowwish.vercel.app/games.json"
   ],
-  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions. As of 2026-11-20, channel priorities follow promotion/channel-policy.json; AI-restrictive communities and nonconverting routine social posting are excluded. Instagram Reels remains in low-effort P2 tests: six Reels showed 273 aggregate views in Metricool at review; this is exposure, not evidence of game starts. Video channels should be compared on attributed plays after links are optimized.",
+  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions. As of 2026-11-20, channel priorities follow promotion/channel-policy.json; AI-restrictive communities and nonconverting routine social posting are excluded. Instagram Reels remains in low-effort P2 tests: six Reels showed 273 aggregate views in Metricool at review; this is exposure, not evidence of game starts. Video channels should be compared on attributed plays after links are optimized. Native social metrics in promotion/social-metrics-snapshot.json are manual provider readouts, NOT live metrics. Existing old-version blurry clips MUST NOT be reused in new campaigns; fresh in-game captures required.",
   "games": [
     {
       "slug": "elsewhere",
@@ -50,7 +50,7 @@
           "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -64,10 +64,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "tiktok": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -81,10 +82,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -98,7 +100,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -112,7 +114,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -128,7 +130,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -144,7 +146,8 @@
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
           "futureRoutinePromotions": true,
-          "testingMode": "reuse-existing-clips-only"
+          "testingMode": "reuse-existing-clips-only",
+          "requiresNewCapture": true
         }
       }
     },
@@ -190,7 +193,7 @@
           "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -204,10 +207,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "tiktok": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -221,10 +225,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -238,7 +243,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -252,7 +257,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -268,7 +273,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -284,7 +289,8 @@
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
           "futureRoutinePromotions": true,
-          "testingMode": "reuse-existing-clips-only"
+          "testingMode": "reuse-existing-clips-only",
+          "requiresNewCapture": true
         }
       }
     },
@@ -331,7 +337,7 @@
           "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "published",
           "platformId": "dTMkpzwRS7Q",
           "publicUrl": "https://www.youtube.com/shorts/dTMkpzwRS7Q",
@@ -345,10 +351,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "publishedAt": "2026-11-19T17:50:00",
-          "audioFix": "embedded-cc0-verified"
+          "audioFix": "embedded-cc0-verified",
+          "requiresNewCapture": true
         },
         "tiktok": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "published",
           "platformId": "7710064497150496014",
           "publicUrl": "https://www.tiktok.com/@morrowwishgames/video/7710064497150496014",
@@ -362,10 +369,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "publishedAt": "2026-11-19T17:48:00",
-          "audioFix": "embedded-cc0-verified"
+          "audioFix": "embedded-cc0-verified",
+          "requiresNewCapture": true
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -379,7 +387,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -393,7 +401,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -409,7 +417,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "published",
           "platformId": "https://www.instagram.com/reel/Df8f0EFBdCl/",
           "publicUrl": "https://www.instagram.com/reel/Df8f0EFBdCl/",
@@ -424,7 +432,8 @@
           "autoPublish": true,
           "publishedAt": "2026-11-19T17:40:00",
           "futureRoutinePromotions": true,
-          "testingMode": "reuse-existing-clips-only"
+          "testingMode": "reuse-existing-clips-only",
+          "requiresNewCapture": true
         }
       }
     },
@@ -470,7 +479,7 @@
           "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -484,10 +493,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "tiktok": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -501,10 +511,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -518,7 +529,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -532,7 +543,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -548,7 +559,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -564,7 +575,8 @@
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
           "futureRoutinePromotions": true,
-          "testingMode": "reuse-existing-clips-only"
+          "testingMode": "reuse-existing-clips-only",
+          "requiresNewCapture": true
         }
       }
     },
@@ -610,7 +622,7 @@
           "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -624,10 +636,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "tiktok": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -641,10 +654,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -658,7 +672,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -672,7 +686,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -688,7 +702,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -704,7 +718,8 @@
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
           "futureRoutinePromotions": true,
-          "testingMode": "reuse-existing-clips-only"
+          "testingMode": "reuse-existing-clips-only",
+          "requiresNewCapture": true
         }
       }
     },
@@ -750,7 +765,7 @@
           "pauseReason": "No approved subreddit for games made with substantial generative AI; manual rules review required."
         },
         "youtube": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -764,10 +779,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "tiktok": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -781,10 +797,11 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
-          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
+          "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
+          "requiresNewCapture": true
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -798,7 +815,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -812,7 +829,7 @@
           "indexNowAcceptanceVerified": false
         },
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -828,7 +845,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "P2",
+          "priority": "P1",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -844,7 +861,8 @@
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
           "futureRoutinePromotions": true,
-          "testingMode": "reuse-existing-clips-only"
+          "testingMode": "reuse-existing-clips-only",
+          "requiresNewCapture": true
         }
       }
     },
@@ -854,7 +872,7 @@
       "campaign": "cat-bond-playtest",
       "channels": {
         "bluesky": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -870,7 +888,7 @@
           "futureRoutinePromotions": false
         },
         "google": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
@@ -884,7 +902,7 @@
           "sitemapSubmitted": true
         },
         "bing": {
-          "priority": "P3",
+          "priority": "P2",
           "status": "crawlable-not-index-verified",
           "platformId": null,
           "publicUrl": null,
@@ -1005,5 +1023,18 @@
       "nextAction": "Import verified website from Google Search Console in Bing Webmaster Tools, or verify manually if import unavailable."
     },
     "note": "The source sitemap now includes seven game URLs plus homepage. Auto-generating build and IndexNow notification are configured. Do not mark indexing or IndexNow acceptance confirmed without platform receipts."
+  },
+  "blueskyNewAccount": {
+    "handle": "morrowwishgames.bsky.social",
+    "metricoolBrandId": 8237096,
+    "firstGamePost": {
+      "id": "435980962",
+      "game": "cat-bond",
+      "status": "scheduled",
+      "schedule": "2026-11-20T11:18:00-08:00",
+      "utms": "utm_source=bluesky&utm_medium=social&utm_campaign=new-account-launch",
+      "media": "none",
+      "verifiedLive": false
+    }
   }
 }
