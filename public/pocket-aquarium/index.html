@@ -42,6 +42,22 @@ main{max-width:1080px;margin:auto;padding:10px 22px 38px}.heading{text-align:cen
  .overlay{padding:12px}
  .dialog{max-height:100%;overflow-y:auto}
 }
+
+/* Keep the complete aquarium game inside 320px–390px phone viewports. */
+@media(max-width:600px){
+ html,body{width:100%;max-width:100%}
+ header,main,.shell,.tank,.scores,.meters,.foods{min-width:0;max-width:100%}
+ header,main{width:100%}
+ .shell{width:100%}
+ .heading h1{font-size:clamp(30px,9vw,39px);overflow-wrap:anywhere}
+ .overlay{min-width:0}
+ .overlay .dialog{width:100%;min-width:0;max-width:100%}
+ .dialog h2,.dialog p{overflow-wrap:anywhere}
+ .scores,.meters,.foods{min-width:0}
+ .scores>.stat,.meters>.meter,.foods>.food{min-width:0}
+ .foods .food{gap:4px}
+ .under{flex-wrap:wrap}
+}
 </style>
 </head>
 <body data-game="pocket-aquarium">
