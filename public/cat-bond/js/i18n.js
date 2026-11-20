@@ -48,7 +48,7 @@
     // ---- frictionless first-time capture loop ----
     '领养心仪的小猫，和伙伴一起战斗、成长，探索更大的猫咪世界。': 'Adopt a kitten, fight and grow together, and explore a bigger world of cats.',
     '🐾 收集 25 种猫': '🐾 Collect 25 cat breeds',
-    '⚔️ 学新技能 · 挑战评级': '⚔️ Learn skills · Earn battle grades',
+    '⚔️ 双猫合击 · 觉醒新技能': '⚔️ Duo attacks · Awaken new skills',
     '🧶 工坊赚金币 · 培养猫': '🧶 Earn coins · Raise your cats',
     '🗺️ 解锁地图 · 发现秘密': '🗺️ Unlock areas · Discover secrets',
     '开局只要一步：选一只小猫，寻找第一位伙伴': 'Start with one kitten, then find your first new friend',

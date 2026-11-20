@@ -124,7 +124,9 @@ const UI = {
       <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
       <div class="duo-relation"><strong>${name}</strong><span>${en?'Trust':'默契'} ${p}/100</span>
         <div class="duo-meter"><span style="width:${p}%"></span></div>
-        <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small></div>
+        <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small>
+        ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
+          +CatRelations.secretStory(a,b)+'</span></p>':''}</div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${en?'Set active pair':'设为搭档'}</button>
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>

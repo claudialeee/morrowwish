@@ -1110,3 +1110,6 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
  #yard-surprise{bottom:max(92px,calc(env(safe-area-inset-bottom,0px) + 86px));font-size:12px}}
 @media(orientation:landscape) and (max-height:530px){#duo-burst{bottom:65px;right:8px;min-height:32px;padding:5px 9px;font-size:10px}
  #yard-surprise{bottom:57px;left:49%;max-width:44%}}
+
+.duo-secret-story{padding:12px;border:1px solid #d7b98f;border-radius:12px;background:#fff7dc;color:#684f49;text-align:left;font-size:12px;font-weight:850;line-height:1.55}
+.duo-secret-story span{display:block;margin-top:5px;font-size:13px;color:#526752;font-weight:650;line-height:1.6}
