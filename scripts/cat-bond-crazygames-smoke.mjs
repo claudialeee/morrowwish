@@ -143,10 +143,17 @@ try{
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
         await page.locator('#collection-goal').click();
         await page.waitForSelector('#journey-collect');
-        assert.equal(await page.locator('.journey-path').count(),4,
-          'Collection, workshop, bonding and exploration should all be discoverable');
+        assert.equal(await page.locator('.journey-path').count(),5,
+          'Collection, skills, workshop, bonding and exploration should all be discoverable');
         assert.equal(await page.locator('#journey-workshop').count(),1,
           'Workshop must be reachable directly from the adventure guide');
+        assert.equal(await page.locator('#journey-skills').count(),1,
+          'The newly learned skill must have a visible progression route');
+        await page.locator('#journey-skills').click();
+        await page.waitForSelector('#panel .skill-roadmap');
+        assert.equal(await page.locator('#panel .sk-slot').count(),4,
+          'The skill route must open the four-slot playable skill loadout');
+        await page.evaluate(()=>UI.openJourney());
         await page.locator('#journey-mastery').click();
         await page.waitForSelector('.golden-paw-stamp');
         assert.ok((await page.locator('.golden-paw-stamp').count())>=1,
