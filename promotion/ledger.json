@@ -733,6 +733,12 @@
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48"
         }
       }
+    },
+    {
+      "slug": "cat-bond",
+      "officialUrl": "https://morrowwish.vercel.app/cat-bond/",
+      "campaign": "cat-bond-playtest",
+      "channels": {}
     }
   ],
   "excludedChannels": [
