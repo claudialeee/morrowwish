@@ -179,29 +179,93 @@ const UI = {
   },
 
   openRoster() {
-    const cats = State.S.cats;
-    if (cats.length === 0) { this.panel(`<span class="card-close">×</span><h2>我的猫猫</h2><p class="sub">还没有猫猫，去庭院捉迷藏找一只吧！</p>`); return; }
-    const chips = cats.map(c => {
-      const sp = GameData.speciesById(c.species);
-      return `<div class="dex-cell ${State.S.masteryBadges?.[c.species]?'golden-paw':''}" data-uid="${c.uid}">
-        ${State.S.masteryBadges?.[c.species]?'<span class="golden-paw-stamp" title="Golden Paw · S rank">🏅 S</span>':''}
+    const cats=State.S.cats||[];
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    if(cats.length===0){
+      this.panel(`<span class="card-close">×</span><h2>${english?'My Cats':'我的猫猫'}</h2>
+        <p class="sub">${english?'Find your first cat in the yard!':'还没有猫猫，去庭院捉迷藏吧！'}</p>`);
+      return;
+    }
+    // Group duplicate *individuals* under one illustrated breed card; no saved
+    // cat is removed, and the group can still expose all individuals on demand.
+    const speciesGroups=new Map();
+    for(const cat of cats){
+      if(!speciesGroups.has(cat.species))speciesGroups.set(cat.species,[]);
+      speciesGroups.get(cat.species).push(cat);
+    }
+    const cards=[...speciesGroups.entries()].sort((a,b)=>{
+      const latest=group=>Math.max(...group.map(cat=>cats.indexOf(cat)));
+      return latest(b[1])-latest(a[1]);
+    }).map(([id,group])=>{
+      const sp=GameData.speciesById(id);
+      if(!sp)return '';
+      const strongest=group.reduce((best,cat)=>!best||State.catPower(cat)>State.catPower(best)?cat:best,null);
+      const mastered=!!State.S.masteryBadges?.[id];
+      return `<button type="button" class="dex-cell breed-group ${mastered?'golden-paw':''}" data-breed="${id}"
+        aria-label="${english?'Open':'查看'} ${sp.name} ${group.length}">
+        ${mastered?'<span class="golden-paw-stamp">🏅 S</span>':''}
+        ${group.length>1?'<span class="breed-group-count">×'+group.length+'</span>':''}
         <canvas width="90" height="76"></canvas>
-        <div class="name">${State.catName(c)} <span class="tiny">Lv.${c.level}</span></div>
+        <div class="name">${sp.name}</div>
         <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
-        <div class="tiny">❤ ${Math.round(c.affinity)}</div>
-      </div>`;
+        <div class="tiny">${english?'Top Lv.':'最高等级 Lv.'}${strongest.level}</div>
+      </button>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
-      <h2>我的猫猫 <span class="tiny">(${cats.length})</span></h2>
-      <p class="sub">点击查看详情、培养与互动</p>
-      <div class="dex-grid">${chips}</div>`);
-    const cells = document.querySelectorAll('#panel .dex-cell');
-    cells.forEach(cell => {
-      const uid = cell.dataset.uid;
-      const c = cats.find(x => x.uid === uid);
-      CatArt.renderCatThumb(cell.querySelector('canvas'), GameData.speciesById(c.species));
-      cell.addEventListener('click', () => this.openCatDetail(c));
+      <h2>${english?'My Cats':'我的猫猫'} <span class="tiny">(${cats.length})</span></h2>
+      <p class="sub">${english
+        ?speciesGroups.size+' breeds · Duplicate cats are grouped; tap a breed to manage them.'
+        :'已收集 '+speciesGroups.size+' 个品种 · 同品种合并展示，点开可管理每一只。'}</p>
+      <div class="dex-grid">${cards}</div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
+    document.querySelectorAll('#panel [data-breed]').forEach(cell=>{
+      const sp=GameData.speciesById(cell.dataset.breed);
+      CatArt.renderCatThumb(cell.querySelector('canvas'),sp);
+      cell.addEventListener('click',()=>{
+        const group=speciesGroups.get(sp.id);
+        if(group.length===1)this.openCatDetail(group[0]);
+        else this.openBreedRoster(sp,0);
+      });
     });
+  },
+
+  openBreedRoster(species,page=0) {
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const all=State.S.cats.filter(cat=>cat.species===species.id)
+      .sort((a,b)=>State.catPower(b)-State.catPower(a));
+    const perPage=8,totalPages=Math.max(1,Math.ceil(all.length/perPage));
+    const current=Math.min(Math.max(0,page),totalPages-1);
+    const safe=str=>String(str??'').replace(/[&<>"']/g,ch=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[ch]);
+    const rows=all.slice(current*perPage,(current+1)*perPage).map(cat=>
+      `<button type="button" class="breed-member" data-cat-uid="${safe(cat.uid)}">
+        <canvas width="68" height="56"></canvas>
+        <span><strong>${safe(State.catName(cat))}</strong><small>Lv.${cat.level} · ❤ ${Math.round(cat.affinity)}
+          · ⚔ ${State.catPower(cat)}${cat.shiny?' · ✨':''}</small></span>
+        <span aria-hidden="true">›</span>
+      </button>`).join('');
+    this.panel(`<span class="card-close">×</span>
+      <h2>${species.name} <span class="tiny">×${all.length}</span></h2>
+      <p class="sub">${english?'Every individual is kept. Choose one to train or bond.'
+        :'所有猫猫均已保留，选择其中一只进行培养和互动。'}</p>
+      <div class="breed-member-list">${rows}</div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn" id="breed-prev" ${current===0?'disabled':''}>‹</button>
+        <span class="tiny">${current+1}/${totalPages}</span>
+        <button class="btn" id="breed-next" ${current===totalPages-1?'disabled':''}>›</button>
+        <button class="btn ghost" id="breed-back">${english?'All breeds':'返回品种'}</button>
+      </div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
+    document.querySelectorAll('#panel [data-cat-uid]').forEach(button=>{
+      const cat=all.find(v=>v.uid===button.dataset.catUid);
+      if(!cat)return;
+      CatArt.renderCatThumb(button.querySelector('canvas'),species);
+      button.onclick=()=>this.openCatDetail(cat);
+    });
+    document.getElementById('breed-prev').onclick=()=>this.openBreedRoster(species,current-1);
+    document.getElementById('breed-next').onclick=()=>this.openBreedRoster(species,current+1);
+    document.getElementById('breed-back').onclick=()=>this.openRoster();
   },
 
   openCatDetail(cat) {
