@@ -1,0 +1,43 @@
+name: Morrow Wish Portal Release Queue
+
+on:
+  workflow_run:
+    workflows: ["Deploy Morrow Wish to Cloudflare Pages"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  queue:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build live game submission queue (never claim portal publication)
+        run: node scripts/portal-submission-queue.mjs
+      - name: Open or update ONE studio portal queue issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('node:fs');
+            const body=fs.readFileSync('release-kit/portal-queue.md','utf8');
+            const marker='<!-- morrowwish-portal-queue -->';
+            const params={...context.repo,state:'all',per_page:100};
+            const existing=await github.paginate(github.rest.issues.listForRepo,params);
+            const item=existing.find(x=>!x.pull_request && (x.body||'').includes(marker));
+            if(item){
+              await github.rest.issues.update({...context.repo,issue_number:item.number,body,state:'open'});
+              core.info('Updated portal submission queue: '+item.html_url);
+            }else{
+              const created=await github.rest.issues.create({...context.repo,title:'Portal submissions: CrazyGames + itch.io',body});
+              core.info('Created portal submission queue: '+created.data.html_url);
+            }
