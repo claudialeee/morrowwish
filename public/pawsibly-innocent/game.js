@@ -106,12 +106,15 @@ function badgeToast(names){
  el.hidden=false;clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true},2500);
 }
 function checkBadges(quiet=false){
- const earned=[];
+ const earned=[],earnedIds=[];
  for(const badge of BADGES)if(!save.achievements[badge.id]&&badge.ok()){
-  save.achievements[badge.id]=true;earned.push(badge[lang==="zh"?"zh":"en"]);
+  save.achievements[badge.id]=true;earned.push(badge[lang==="zh"?"zh":"en"]);earnedIds.push(badge.id);
   if(!quiet)metric("cat_achievement_unlocked",{achievement:badge.id,level:s?.index+1||1});
  }
- if(earned.length){saveGame();if(!quiet){badgeToast(earned);audio("win")}}
+ if(earned.length){saveGame();if(!quiet){
+  if(s&&Array.isArray(s.newBadges))s.newBadges.push(...earnedIds);
+  badgeToast(earned);audio("win");
+ }}
 }
 function addStat(name,n=1){save.stats[name]=(Number(save.stats[name])||0)+n;saveGame();checkBadges()}
 const YARN_LEGEND={
@@ -141,10 +144,10 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
-function init(index=0,isDaily=false){clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+function init(index=0,isDaily=false){clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
-$("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY<br><span>INNOCENT!</span>";
+$("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
 document.title=lang==="zh"?"猫猫绝对无辜！— Morrow Wish":"Pawsibly Innocent! — A Little Cat, A Lot of Trouble | Morrow Wish";
 const ids={back:"back",eyebrow:"eyebrow",subtitle:"subtitle",missionLabel:"missionLabel",snackLabel:"snackLabel",scoreLabel:"scoreLabel",moveLabel:"moveLabel",starLabel:"starLabel",roomLabel:"roomLabel",closetLabel:"closetLabel",skinHint:"skinHint",restart:"retry",rulesKicker:"rulesKicker",howTitle:"howTitle",ruleStep1Title:"ruleStep1Title",ruleStep1Text:"ruleStep1Text",ruleStep2Title:"ruleStep2Title",ruleStep2Text:"ruleStep2Text",ruleStep3Title:"ruleStep3Title",ruleStep3Text:"ruleStep3Text",ruleBonus:"ruleBonus",mission:"mission"};for(const [id,k]of Object.entries(ids))$(id).textContent=tr(k);
@@ -175,6 +178,12 @@ function renderCollections(){
   const unlocked=!!save.souvenirs[i],pending=s?.hasRelic&&s.index===i&&!unlocked;
   return '<div class="relic-card '+(unlocked?'':'locked')+'"><span class="glyph">'+(unlocked||pending?item.glyph:"🔒")+'</span><span><strong>'+(unlocked||pending?item[lang==="zh"?"zh":"en"]:"???")+'</strong><small>'+(unlocked?item[lang==="zh"?"zhDesc":"enDesc"]:(pending?(lang==="zh"?"本局找到，待逃脱保存":"Found now; escape to save"):(lang==="zh"?"第 "+(i+1)+" 关 · 尚未收藏":"Room "+(i+1)+" · not found")))+'</small></span></div>';
  }).join("");
+ const chipbar=$("badgeHighlights");
+ if(chipbar){
+  const owned=BADGES.filter(b=>save.achievements[b.id]),upcoming=BADGES.filter(b=>!save.achievements[b.id]);
+  const preview=owned.slice(-3);while(preview.length<3&&upcoming.length)preview.push(upcoming.shift());
+  chipbar.innerHTML=preview.map(b=>'<span class="badge-chip '+(save.achievements[b.id]?'':'locked')+'" title="'+b[lang==="zh"?"zhDesc":"enDesc"]+'">'+(save.achievements[b.id]?b.glyph:"🔒")+' '+b[lang==="zh"?"zh":"en"]+'</span>').join("");
+ }
  if(grid)grid.innerHTML=BADGES.map(b=>{
   const got=!!save.achievements[b.id];return '<div class="achievement-card '+(got?'':'locked')+'"><span class="glyph">'+(got?b.glyph:"🔒")+'</span><span><strong>'+b[lang==="zh"?"zh":"en"]+'</strong><small>'+b[lang==="zh"?"zhDesc":"enDesc"]+(got?(lang==="zh"?" · 已获得":" · Unlocked"):"")+'</small></span></div>';
  }).join("");
@@ -199,6 +208,16 @@ function updateDare(){
  if(!s)return;const done=dareDone(),el=$("bonusDare");
  if(el){el.textContent=(done?"✓ ":"☆ ")+(lang==="zh"?"额外挑战 · ":"BONUS DARE · ")+DARES[s.index][lang];el.classList.toggle("complete",done);}
  if(done&&!s.dareAnnounced){s.dareAnnounced=true;metric("cat_dare_completed",{level:s.index+1,kind:DARES[s.index].kind});if(!s.done){throwStars(s.cat,"#ffd78a");audio("fish")}}
+}
+function resultLoot(){
+ if(!s)return "";
+ const parts=[];
+ if(s.winning&&s.hasRelic)parts.push(RELICS[s.index].glyph+" "+RELICS[s.index][lang==="zh"?"zh":"en"]+(lang==="zh"?" · 已收藏":" · Saved"));
+ if(s.newBadges?.length){
+  const names=s.newBadges.map(id=>BADGES.find(b=>b.id===id)?.[lang==="zh"?"zh":"en"]).filter(Boolean);
+  if(names.length)parts.push("🏅 "+(lang==="zh"?"新成就：":"Achievements: ")+names.join(" / "));
+ }
+ return parts.join("   ·   ");
 }
 function resultLine(){
  const bonus=s.winning?(dareDone()?(lang==="zh"?" · 额外挑战 ✓ +150":" · BONUS ✓ +150"):(lang==="zh"?" · 额外挑战未完成":" · Bonus missed")):"";
@@ -414,7 +433,7 @@ const id=daily?"daily-"+today:"room-"+stage;const old=save.best[id]||{stars:0,sc
  metric("cat_level_won",{level:daily?9:stage+1,score:s.score});}
 metric(win?"game_complete":"game_over",{level:daily?9:stage+1,score:s.score,stars,bonus:bonus?1:0,steps:s.steps,duration:s.startedAt?Math.round((performance.now()-s.startedAt)/1000):0});syncUI();translateUI();
 $("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=tr(win?"winTitle":"loseTitle");$("resultDesc").textContent=win?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");
-$("resultScore").textContent=resultLine();
+$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("stage").classList.toggle("victory",win);
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(win?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share");$("overlay").hidden=false;}
 function command(x,y){if(!s||s.done||s.yarnAnimating)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=catPathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}
  // Risk-aware routing already avoids dangerous tiles; a tap must never deadlock movement.
@@ -618,7 +637,7 @@ $("shareResult").onclick=share;
 $("tool")&&($("tool").onclick=throwYarn);
 $("sound").onclick=()=>{window.MorrowwishAudio?.toggle?.();$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff")};
 window.addEventListener("morrowwish-language-change",e=>{lang=e.detail.lang==="zh"?"zh":"en";translateUI();syncUI();if(s.done)finishOverlayTranslate()});
-function finishOverlayTranslate(){$("resultTitle").textContent=tr(s.winning?"winTitle":"loseTitle");$("resultDesc").textContent=s.winning?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");$("resultScore").textContent=resultLine();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(s.winning?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share")}
+function finishOverlayTranslate(){$("resultTitle").textContent=tr(s.winning?"winTitle":"loseTitle");$("resultDesc").textContent=s.winning?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(s.winning?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share")}
 window.__PAWSIBLY_TEST__={getState:()=>s,move:single,choose:init,throwYarn,throwYarnTo,advanceYarnChase,isChasing:()=>yarnChaseTimer!==null,isAiming:()=>aimingYarn,rooms:ROOMS};
 window.addEventListener("resize",fitCanvasPixels);
 fitCanvasPixels();checkBadges(true);init(entryRoom,entryDaily);requestAnimationFrame(draw);
