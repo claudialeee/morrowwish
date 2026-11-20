@@ -943,3 +943,26 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 @media(max-width:700px){#yard-cat-switch{bottom:max(65px,env(safe-area-inset-bottom) + 57px);
  left:7px;font-size:11px;padding:7px 9px;max-width:54%}}
 @media(max-height:440px){#yard-cat-switch{bottom:55px;left:7px;font-size:10px;padding:6px 8px}}
+
+/* Collapsed breed roster: short, readable list regardless of collection size. */
+#panel .breed-group{position:relative;cursor:pointer}
+#panel .breed-group-count{display:block;position:absolute;left:7px;top:6px;
+ padding:2px 7px;border-radius:999px;background:#e2ebdf;color:#3e694e;
+ border:1px solid #b9d1bc;font:900 11px/1.3 system-ui;z-index:2}
+#panel .breed-group:focus-visible{outline:3px solid #64ad82;outline-offset:2px}
+#panel .breed-member-list{display:grid;gap:7px;margin:14px 0}
+#panel .breed-member{display:flex;align-items:center;gap:10px;width:100%;
+ padding:7px 12px;border:1px solid #d4dfcd;border-radius:13px;
+ background:#fffaf0;color:#375344;text-align:left;cursor:pointer;
+ font-family:inherit;touch-action:manipulation}
+#panel .breed-member:hover,#panel .breed-member:focus-visible{
+ border-color:#68a981;background:#e9f7ea;outline:none}
+#panel .breed-member canvas{flex:0 0 68px;width:68px;height:56px}
+#panel .breed-member span:nth-child(2){flex:1;min-width:0}
+#panel .breed-member strong{display:block;font-size:14px}
+#panel .breed-member small{display:block;font-size:11px;color:#61776b;line-height:1.5}
+#panel .reunion-reward{margin:8px auto;max-width:430px;padding:10px 13px;
+ border:1px solid #b5d5b9;background:#e9f5e7;color:#3b694c;
+ border-radius:12px;font-weight:750;font-size:12px;line-height:1.6}
+@media(max-width:450px){#panel .breed-member{gap:7px;padding:5px 8px}
+ #panel .breed-member canvas{width:57px;height:47px;flex-basis:57px}}

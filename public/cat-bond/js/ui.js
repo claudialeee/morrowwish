@@ -595,7 +595,7 @@ const UI = {
             :(en?'Best grade '+best+' · Earn S to win the Golden Paw'
               :'历史最佳 '+best+' 级 · 挑战 S 级可解锁金爪徽章')}</p>
           <canvas id="dx" width="160" height="130" style="display:block;margin:10px auto;border-radius:12px"></canvas>
-          <p class="tiny center">${en?'Captured':'已捕获'} ${State.S.dex[sp.id]} ·
+          <p class="tiny center">${en?'Successful encounters':'累计成功收服'} ${State.S.dex[sp.id]} ·
              ${en?'S goal':'S级挑战'} ${this.game.gradeTimeLimit(sp.rarity)}s ·
              ${en?'70% HP, 6-hit combo or perfect dodge':'保留70%血量，6连击或完美闪避'}</p>
           <div class="btn-row" style="justify-content:center">
@@ -944,12 +944,14 @@ const UI = {
     };
   },
 
-  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null) {
+  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null, reunion=false) {
     const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const name=wildSp.name;
-    const headline=english?'A new friend joined!':'新伙伴加入啦！';
+    const headline=reunion
+      ?(english?'A familiar friend returns!':'老朋友又来啦！')
+      :(english?'A new friend joined!':'新伙伴加入啦！');
     const totalText=english
       ?'Cat collection '+status.count+'/'+status.total
       :'猫咪图鉴 '+status.count+'/'+status.total;
@@ -975,7 +977,13 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">🎉 ${headline}</h2>
       <canvas id="cr" width="180" height="140" style="display:block;margin:8px auto"></canvas>
-      <p class="center"><b class="rarity-${wildSp.rarity}">${name}</b> ${english?'joined your yard':'已加入庭院'}</p>
+      <p class="center"><b class="rarity-${wildSp.rarity}">${name}</b> ${reunion
+        ?(english?'made your bond stronger':'让你们的纽带更深了')
+        :(english?'joined your yard':'已加入庭院')}</p>
+      ${reunion?'<p class="center reunion-reward">'
+        +(english?'💞 This breed already has 2 resident cats. Strongest cat: +8 affection, +45 XP, plus 2 treats.'
+          :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 零食，不再增加重复个体。')
+        +'</p>':''}
       <p class="sub center">${totalText} · ${goalText}</p>
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small></div></div>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}

@@ -68,6 +68,7 @@ if(n==="bond_first_capture")signal("bond_first_capture");
 if(n==="bond_continue_search")signal("bond_continue");
 if(n==="bond_battle_grade"&&["S","A","B","C"].includes(p?.grade))signal("bond_grade_"+p.grade.toLowerCase());
 if(n==="bond_mastery_unlocked")signal("bond_mastery_medal");
+if(n==="bond_repeat_reunion")signal("bond_reunion");
 if(n==="cat_souvenir")signal("cat_souvenir");
 if(n==="town_first-club")signal("town_club");
 if(n==="town_completed-win")signal("town_win");

@@ -688,9 +688,23 @@ class Game {
       return;
     }
     if (win) {
-      const newCat = State.makeCat(b.wild.id);
-      if (window.Raising && Raising.decorateNewCat) Raising.decorateNewCat(newCat);
-      State.S.cats.push(newCat);
+      // Two resident individuals per breed allow different personalities
+      // and breeding; further repeat captures nurture the existing breed.
+      // Previously saved cats are NEVER removed or migrated.
+      const sameBreed=State.S.cats.filter(cat=>cat.species===b.wild.id);
+      const reunion=sameBreed.length>=2;
+      const newCat=reunion
+        ?sameBreed.reduce((best,cat)=>!best||State.catPower(cat)>State.catPower(best)?cat:best,null)
+        :State.makeCat(b.wild.id);
+      if(!reunion){
+        if(window.Raising&&Raising.decorateNewCat)Raising.decorateNewCat(newCat);
+        State.S.cats.push(newCat);
+      }else{
+        newCat.affinity=Math.min(100,(newCat.affinity||0)+8);
+        State.addXp(newCat,45);
+        State.S.treats+=2;
+        metric('bond_repeat_reunion',{species:b.wild.id,owned:sameBreed.length});
+      }
       State.S.dex[b.wild.id] = (State.S.dex[b.wild.id] || 0) + 1;
       State.S.catchCount++;
       const milestoneRewards=this.grantCollectionMilestones();
@@ -708,11 +722,11 @@ class Game {
       // Unified analytics: a won capture completes the run; also a capture event.
       metric('game_complete', { level: State.S.catchCount, rarity: b.wild.rarity, score: State.S.catchCount });
       window.MorrowwishAudio?.effect?.('capture');
-      metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity });
+      metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity,addedToRoster:!reunion });
       if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
       metric('bond_battle_grade',{grade:performance.grade,seconds:performance.seconds,
         combo:performance.combo,rarity:b.wild.rarity});
-      UI.openCatchResult(b.wild, newCat, milestoneRewards, performance, masteryReward);
+      UI.openCatchResult(b.wild,newCat,milestoneRewards,performance,masteryReward,reunion);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
