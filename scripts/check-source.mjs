@@ -442,3 +442,47 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
   throw Error('Elsewhere existing ending feedback missing');
  console.log('All six published games offer post-play feedback without any registration.');
 }
+
+
+// Game-onboarding and aquarium mood regression: no returning-player autostart.
+{
+ const upgrade=fs.readFileSync('public/upgrade.js','utf8');
+ if(upgrade.includes('event("auto_start")')||
+    !upgrade.includes('showReadyScreen();')||
+    !upgrade.includes('goBtn.onclick=()=>window.start();')||
+    !upgrade.includes('if(!running&&extras.hidden)showReadyScreen()'))
+  throw Error('Flip Dash and Parcel Panic must wait for an explicit Play click on every visit');
+ const aq=fs.readFileSync('public/pocket-aquarium/index.html','utf8');
+ const match=[...aq.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes('function endingFor()'));
+ if(!match)throw Error('Pocket Aquarium endings script missing');
+ new vm.Script(match,{filename:'pocket-aquarium game'});
+ for(const end of ['festival','clear','friends','calm','rest']){
+  if(!match.includes(end+':{icon:'))throw Error('Aquarium ending missing '+end);
+  if(!match.includes("ending:lastEnding"))throw Error('Aquarium analytics should identify the ending');
+ }
+ const decision=match.match(/function endingFor\(\)\{return ([^\n]+)\}/)?.[1];
+ if(!decision)throw Error('Aquarium outcome evaluator missing');
+ const expected=[
+  [{score:550,fed:13,quality:90},'festival'],
+  [{score:90,fed:4,quality:90},'clear'],
+  [{score:190,fed:7,quality:66},'friends'],
+  [{score:0,fed:0,quality:27},'rest'],
+  [{score:0,fed:0,quality:64},'calm']
+ ];
+ for(const [run,answer] of expected){
+  const found=new Function('score','fed','quality','return '+decision)(run.score,run.fed,run.quality);
+  if(found!==answer)throw Error('Aquarium outcome regression '+answer+' vs '+found);
+ }
+ const gameplay=match.slice(match.indexOf('function update(dt)'),match.indexOf('function paintFish('));
+ if(gameplay.includes('finish(true)')||gameplay.includes('quality<=0')||
+    !gameplay.includes('if(time<=0)finish()')||
+    !match.includes('quality=cap(quality+3.2,18,100)')||
+    !match.includes("state='playing';$('overlay').hidden=true"))
+   throw Error('Aquarium should complete 60s with restorative, non-punishing water mechanics');
+ const dashboardText=fs.readFileSync('public/studio-insights/index.html','utf8');
+ const trackerText=fs.readFileSync('public/telemetry.js','utf8');
+ if(!dashboardText.includes("['fishFinished','aquarium_completed']")||
+    !trackerText.includes('signal("aquarium_completed")'))
+   throw Error('Aquarium 60-second completion telemetry missing from unified dashboard');
+ console.log('Five aquarium endings and click-to-start arcade flow verified.');
+}

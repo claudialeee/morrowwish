@@ -141,5 +141,21 @@ return{
 };};
 const factory=G[id];G[id]=()=>{const m=factory();return{init(l){m.init(l);},tick(d){fxTick(d);m.tick(d);},draw(){if(shake){c.save();c.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);}m.draw();fxDraw();if(shake)c.restore();},down(x,y){m.down?.(x,y);},up(x,y){m.up?.(x,y);},move(x,y){m.move?.(x,y);},key(k){m.key?.(k);}};};
 mode=G[id]();mode.init(1);document.getElementById("best").textContent=localStorage.getItem("arcade-high-"+id)||"0";document.querySelector(".score-chip:last-of-type span")?.textContent;
-if(localStorage.getItem("lab-seen-"+id)==="1"){start();event("auto_start");}else{document.getElementById("overlay-kicker").textContent="TODAY'S CHALLENGE";goBtn.textContent="PLAY NOW";}
+// Always show the instructions first, even for returning players.
+ // No countdown, falling parcels or hazards are advanced until START is clicked.
+function showReadyScreen(){
+ const zh=language()==="zh";
+ running=false;over.hidden=false;overPanel.classList.remove("lab-completed");
+ document.getElementById("overlay-kicker").textContent=zh?"玩法说明":"HOW TO PLAY";
+ overTitle.textContent=names[id]||document.querySelector(".game-title")?.textContent||id;
+ overDesc.textContent=zh?
+  (id==="parcel-panic"?"看下一件包裹的颜色，点击对应通道投递；也可以按 1、2、3 键。错投会失去一次机会。":
+   id==="flip-dash"?"点击画面或按空格键切换重力，避开粉色障碍。坚持越久，得分越高。":document.body.dataset.instructions):
+  document.body.dataset.instructions;
+ goBtn.textContent=zh?"开始游戏":"START GAME";
+ goBtn.style.display="";
+ goBtn.onclick=()=>window.start();
+}
+showReadyScreen();
+window.addEventListener("morrowwish-language-change",()=>{if(!running&&extras.hidden)showReadyScreen()});
 })();
