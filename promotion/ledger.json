@@ -6,7 +6,7 @@
     "https://github.com/claudialeee/morrowwish/tree/main",
     "https://morrowwish.vercel.app/games.json"
   ],
-  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions. As of 2026-11-20, channel priorities follow promotion/channel-policy.json; AI-restrictive communities and nonconverting routine social posting are excluded.",
+  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions. As of 2026-11-20, channel priorities follow promotion/channel-policy.json; AI-restrictive communities and nonconverting routine social posting are excluded. Instagram Reels remains in low-effort P2 tests: six Reels showed 273 aggregate views in Metricool at review; this is exposure, not evidence of game starts. Video channels should be compared on attributed plays after links are optimized.",
   "games": [
     {
       "slug": "elsewhere",
@@ -128,7 +128,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -143,7 +143,8 @@
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
-          "futureRoutinePromotions": false
+          "futureRoutinePromotions": true,
+          "testingMode": "reuse-existing-clips-only"
         }
       }
     },
@@ -267,7 +268,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -282,7 +283,8 @@
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
-          "futureRoutinePromotions": false
+          "futureRoutinePromotions": true,
+          "testingMode": "reuse-existing-clips-only"
         }
       }
     },
@@ -407,7 +409,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "published",
           "platformId": "https://www.instagram.com/reel/Df8f0EFBdCl/",
           "publicUrl": "https://www.instagram.com/reel/Df8f0EFBdCl/",
@@ -421,7 +423,8 @@
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
           "publishedAt": "2026-11-19T17:40:00",
-          "futureRoutinePromotions": false
+          "futureRoutinePromotions": true,
+          "testingMode": "reuse-existing-clips-only"
         }
       }
     },
@@ -545,7 +548,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -560,7 +563,8 @@
           "scheduler": "Metricool",
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
-          "futureRoutinePromotions": false
+          "futureRoutinePromotions": true,
+          "testingMode": "reuse-existing-clips-only"
         }
       }
     },
@@ -684,7 +688,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -699,7 +703,8 @@
           "scheduler": "Metricool",
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
-          "futureRoutinePromotions": false
+          "futureRoutinePromotions": true,
+          "testingMode": "reuse-existing-clips-only"
         }
       }
     },
@@ -823,7 +828,7 @@
           "futureRoutinePromotions": false
         },
         "instagram": {
-          "priority": "PAUSED",
+          "priority": "P2",
           "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
@@ -838,7 +843,8 @@
           "autoPublish": true,
           "audioFix": "embedded-cc0-verified",
           "audioFixDeployedCommit": "30a82a8b91198fd7bedf2d0b5205e45a35315e48",
-          "futureRoutinePromotions": false
+          "futureRoutinePromotions": true,
+          "testingMode": "reuse-existing-clips-only"
         }
       }
     },
