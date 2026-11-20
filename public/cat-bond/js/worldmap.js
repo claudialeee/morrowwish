@@ -292,6 +292,7 @@
       px: WORLD_W * 0.12, py: WORLD_H * 0.5,   // player start near the portal
       pvx: 0, pvy: 0, face: 1, t: 0, walkT: 0, moving: false,
       cam: { x: 0, y: 0 },
+      target: null,
       spawns: spawns, nodes: nodes, decor: decor,
       grid: grid, visited: 0,
       portal: { x: WORLD_W * 0.08, y: WORLD_H * 0.5 },
@@ -309,6 +310,13 @@
     updateRegion(dt);
   }
 
+  function setDestination(sx,sy){
+    if(mode!=='region'||!world||!game)return false;
+    world.target={x:Math.max(60,Math.min(WORLD_W-60,world.cam.x+sx)),
+      y:Math.max(60,Math.min(WORLD_H-60,world.cam.y+sy))};
+    return true;
+  }
+
   function updateRegion(dt) {
     var w = world, k = game.keys || {};
     w.t += dt;
@@ -320,15 +328,28 @@
     if (k['d'] || k['arrowright']) ax += 1;
     if (k['w'] || k['arrowup']) ay -= 1;
     if (k['s'] || k['arrowdown']) ay += 1;
-    var SPD = 230;
+    // Mobile drag is a floating joystick. Short taps walk to a destination.
+    var joy=game.joystick;
+    if(joy&&joy.active&&joy.context==='region'){
+      if(Math.hypot(joy.dx,joy.dy)>.12){ax+=joy.dx;ay+=joy.dy;}
+      w.target=null;
+    }
+    if(ax||ay)w.target=null;
+    if(!ax&&!ay&&w.target){
+      var dx=w.target.x-w.px,dy=w.target.y-w.py,dist=Math.hypot(dx,dy);
+      if(dist>14){ax=dx/dist;ay=dy/dist;}else w.target=null;
+    }
+    var SPD=230,ease=Math.min(1,dt*11);
     if (ax || ay) {
       var m = Math.hypot(ax, ay) || 1;
-      w.pvx = (ax / m) * SPD; w.pvy = (ay / m) * SPD;
-      w.face = ax < 0 ? -1 : (ax > 0 ? 1 : w.face);
+      w.pvx += ((ax/m)*SPD-w.pvx)*ease;
+      w.pvy += ((ay/m)*SPD-w.pvy)*ease;
+      w.face = ax < -.08 ? -1 : (ax > .08 ? 1 : w.face);
       w.moving = true; w.walkT += dt;
     } else {
-      w.pvx *= 0.8; w.pvy *= 0.8;
-      if (Math.abs(w.pvx) < 4 && Math.abs(w.pvy) < 4) { w.pvx = w.pvy = 0; w.moving = false; }
+      var drag=Math.exp(-dt*12);
+      w.pvx*=drag;w.pvy*=drag;
+      if (Math.hypot(w.pvx,w.pvy)<4){w.pvx=0;w.pvy=0;w.moving=false;}
     }
     w.px = Math.max(60, Math.min(WORLD_W - 60, w.px + w.pvx * dt));
     w.py = Math.max(60, Math.min(WORLD_H - 60, w.py + w.pvy * dt));
@@ -651,6 +672,25 @@
     }
 
     drawRegionHUD(ctx);
+    if(game.isTouch){
+      var joy=game.joystick;
+      ctx.save();
+      if(joy&&joy.active&&joy.context==='region'){
+        ctx.lineWidth=2;ctx.strokeStyle='rgba(255,251,239,.92)';
+        ctx.fillStyle='rgba(76,102,77,.25)';
+        ctx.beginPath();ctx.arc(joy.ox,joy.oy,46,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.fillStyle='rgba(255,251,239,.95)';
+        ctx.beginPath();ctx.arc(joy.ox+joy.dx*46,joy.oy+joy.dy*46,17,0,Math.PI*2);ctx.fill();
+      }else if(w.t<12){
+        const hint='按住拖动移动猫咪 · 轻点地面自动前往';
+        ctx.font='700 12px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+        const hw=Math.min(W-16,ctx.measureText(hint).width+24),hx=W/2,hy=Math.max(95,H-94);
+        ctx.fillStyle='rgba(255,252,242,.9)';
+        roundRect(ctx,hx-hw/2,hy-14,hw,29,13);ctx.fill();
+        ctx.fillStyle='#516754';ctx.fillText(hint,hx,hy,Math.max(50,hw-14));
+      }
+      ctx.restore();
+    }
   }
 
   // themed parallax decor (shrubs/crystals) scrolling at a fraction of cam speed
@@ -720,6 +760,7 @@
     update: update,
     draw: draw,
     handleTap: handleTap,
+    setDestination: setDestination,
     onEncounter: onEncounter,
     onCollect: onCollect,
     onExit: onExit,
