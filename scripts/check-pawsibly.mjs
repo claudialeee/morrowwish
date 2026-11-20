@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const source=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 new vm.Script(source,{filename:'game.js'});
-const nop=()=>{},nodes=new Map(),events=[],listeners={},saved={};
+const nop=()=>{},nodes=new Map(),events=[],listeners={},saved={},pendingIntervals=new Map();let intervalId=0;
 const ctx=new Proxy({createLinearGradient:()=>({addColorStop:nop})},{get(o,k){return o[k]??nop}});
 function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop,toggle:nop},hidden:false,appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
 addEventListener(type,callback){listeners[id+':'+type]=callback},getContext:()=>ctx,
@@ -15,7 +15,7 @@ let frames=0;
 vm.runInNewContext(source,{window,document,performance:{now:()=>1000},navigator:{},Date,Math,console,
  URLSearchParams,location:{search:''},
  localStorage:{getItem:key=>saved[key]??null,setItem:(key,value)=>saved[key]=value},
- requestAnimationFrame:fn=>{if(frames++===0)fn(1250)},setInterval:()=>1,clearInterval:nop,setTimeout:()=>1,clearTimeout:nop},{timeout:2500});
+ requestAnimationFrame:fn=>{if(frames++===0)fn(1250)},setInterval:fn=>{pendingIntervals.set(++intervalId,fn);return intervalId},clearInterval:id=>pendingIntervals.delete(id),setTimeout:()=>1,clearTimeout:nop},{timeout:2500});
 const test=window.__PAWSIBLY_TEST__;
 assert.equal(test.rooms.length,8);
 const key=p=>p.x+','+p.y;
@@ -104,4 +104,15 @@ assert.ok(source.includes('grid-template-columns:minmax(0,1fr) clamp(204px'),
  'CrazyGames embed should use a readable mission panel beside the game');
 assert.ok(source.includes('fitCanvasPixels')&&source.includes('catPathTo'),
  'High-DPI canvas and risk-aware click routing must remain in the review build');
-console.log('Pawsibly Innocent: QA review checks passed (8 rooms, fair introductory route, distinct mechanics, bilingual state, iframe UI, and telemetry).');
+// A new player's simple click sequence must clear the kitchen without being trapped in a repeat-loss loop.
+test.choose(1,false);
+for(const p of [{x:2,y:4},{x:6,y:5},{x:9,y:5},{x:9,y:6}]){
+ const evt={clientX:(p.x+.5)*84,clientY:(p.y+.5)*84};
+ listeners['board:pointerdown'](evt);
+ for(let tick=0;tick<75&&pendingIntervals.size;tick++){
+  for(const [id,fn] of [...pendingIntervals.entries()])if(pendingIntervals.has(id))fn();
+ }
+}
+assert.equal(test.getState().winning,true,'Kitchen must be playable by following a short, intuitive route');
+assert.equal(test.getState().lives,3,'Early kitchen should not punish an ordinary path with an unfair capture');
+console.log('Pawsibly Innocent: QA review checks passed (8 rooms, first-two-room playability, distinct stealth mechanics, iframe UI, and analytics).');
