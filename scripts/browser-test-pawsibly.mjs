@@ -131,12 +131,19 @@ try{
   catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
   catCTA:document.querySelector('.cat-feature-card .card-button')?.innerText,
   heroPitch:document.querySelector('.hero>p')?.innerText,
+  worldsPitch:document.querySelector('#worlds .section-intro>p')?.innerText,
+  bondTitle:document.querySelector('.bond-feature-card h3')?.innerText,
+  bondCount:document.querySelectorAll('.bond-feature-card').length,
   featureOrder:[...document.querySelectorAll('.feature-grid>article')].map(x=>x.querySelector('a[data-id]')?.dataset.id),
   miniHeight:Math.round(document.querySelector('.tiny-section')?.getBoundingClientRect().height||0),
   aboutHeight:Math.round(document.querySelector('.about-section')?.getBoundingClientRect().height||0)
  }));
  console.log('Homepage Chinese and compact sections:',JSON.stringify(homeZh));
  assert.equal(homeZh.lang,'zh-CN');
+ assert.match(homeZh.worldsPitch,/四个世界，四种乐趣/,'Four-world homepage introduction must be translated into Chinese');
+ assert.doesNotMatch(homeZh.worldsPitch,/Be a sneaky cat|Four worlds/,'No English four-world pitch on Chinese homepage');
+ assert.equal(homeZh.bondCount,1,'Cat Bond homepage card must appear exactly once');
+ assert.equal(homeZh.bondTitle?.trim(),'猫猫纽带','Chinese Cat Bond heading should not repeat English game name');
  assert.equal(await page.locator('body').textContent().then(s=>(s.match(/✳/g)||[]).length),0,'Homepage should not display the disliked ✳ decorative glyph');
  assert.match(homeZh.about,/想象|自由/,'About text must be Chinese');
  assert.match(homeZh.footer,/独立游戏/,'Footer must be Chinese');
