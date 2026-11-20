@@ -48,11 +48,11 @@ function signal(id){if(!/^[a-z0-9_-]{2,40}$/.test(id))return;signalCounts[id]=(s
 let firstMs=-1,firstMsSent=false,level=0,score=0,lastClock=performance.now(),closed=false,flushSeq=0;
 function event(eventName,p={}){const n=String(eventName||"").toLowerCase();
 if(n==="run_start"||n==="game_start"||n==="town_started"||n==="town_started-game")eventCounts.starts++;
-if(n==="run_end"||n==="game_complete"||n==="game_over"||n.startsWith("town_duration-"))eventCounts.ends++;
+if(["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n))eventCounts.ends++;
 if(n.includes("instant_replay")||n.includes("retry")||n.includes("restart")||n==="town_replayed")eventCounts.retries++;
 if(["share_click","share_clicked","shared-link","town_shared-link"].includes(n))eventCounts.shares++;
 if(n==="next_game_click"||n==="next_game_clicked"||n==="game_open")eventCounts.clicks++;
-if(n==="level_complete"||n==="game_complete"||n.startsWith("town_grade-")||n.startsWith("town_grade"))eventCounts.completion++;
+if(n==="level_complete"||n==="game_complete"||n==="town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++;
 if(n.startsWith("town_week-"))level=Math.max(level,Number(n.split("-").at(-1))||0);
 if(Number.isFinite(Number(p?.level||p?.week)))level=Math.max(level,Number(p.level||p.week));
 if(p?.score!==undefined&&Number.isFinite(Number(p.score)))score=Math.max(score,Math.min(10000000,Number(p.score)));
@@ -69,8 +69,11 @@ if(["play_feedback_fun","play_feedback_confusing","play_feedback_not_fun"].inclu
 if(/^town_exit-week-[1-8]$/.test(n))signal(n.replaceAll("-","_"));
 if(["feed_success","feed_drop"].includes(n)&&game==="pocket-aquarium")signal(n);
 if(n==="game_complete"&&game==="pocket-aquarium"){signal("aquarium_completed");const outcome=String(p?.ending||"");if(["festival","clear","friends","rest","calm"].includes(outcome))signal("aquarium_ending_"+outcome);const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
-if(game==="flip-dash"&&n==="run_end"){signal("flip_finished");const duration=Number(p?.duration)||0;if(duration>=10)signal("flip_10s");if(duration>=30)signal("flip_30s");}
+if(game==="flip-dash"&&(n==="run_end"||n==="game_over")){signal("flip_finished");const duration=Number(p?.duration)||0;if(duration>=10)signal("flip_10s");if(duration>=30)signal("flip_30s");}
 if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
+// Start/end/replay are essential: persist immediately instead of waiting for
+// pagehide, which is unreliable on mobile and inside game portal iframes.
+if(["run_start","game_start","run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose","town_started","town_started-game","game_retry"].includes(n))flush(true);
 }
 window.arcadeMetric=event;
 const onFirstAction=()=>{if(firstMs<0)firstMs=Math.round(performance.now()-start);};
@@ -86,7 +89,16 @@ document.addEventListener("click",e=>{
  flush(true);
 },true);
 const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign};
-function send(data){if(disabled)return;try{const body=JSON.stringify({...shared,...data});const blob=new Blob([body],{type:"text/plain;charset=UTF-8"});if(navigator.sendBeacon&&navigator.sendBeacon(collector,blob))return;fetch(collector,{method:"POST",headers:{"Content-Type":"text/plain"},mode:"cors",body,keepalive:true}).catch(()=>{});}catch{}}
+function send(data){if(disabled)return;try{
+ const body=JSON.stringify({...shared,...data}),blob=new Blob([body],{type:"text/plain;charset=UTF-8"});
+ // Foreground events should be requested immediately. sendBeacon is most
+ // useful when a page is being hidden/unloaded, not for every live event.
+ if((document.visibilityState==="hidden"||closed)&&navigator.sendBeacon?.(collector,blob))return;
+ fetch(collector,{method:"POST",headers:{"Content-Type":"text/plain"},mode:"cors",body,keepalive:true}).catch(()=>{
+  // Fallback for transient network failure; the browser still owns delivery.
+  try{navigator.sendBeacon?.(collector,blob)}catch{}
+ });
+}catch{}}
 send({kind:"visit",hubClickVersion:game==="hub"?1:undefined});
 function flush(force=false){if(closed)return;const now=performance.now(),deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
 let changed=deltaSec>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
@@ -99,4 +111,6 @@ for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k o
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else lastClock=performance.now();});
 window.addEventListener("pagehide",()=>{flush(true);closed=true;});
 window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();}});
+ // Keep engaged sessions visible during long mobile play without per-click writes.
+ setInterval(()=>{if(!closed&&document.visibilityState==="visible")flush()},60000);
 })();

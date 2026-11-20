@@ -27,6 +27,18 @@ if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status
 
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
+// The mini-game upgrade already emits run_start/run_end. Do not count
+// duplicate local game.js tracking events as extra sessions.
+const miniUpgrade=fs.readFileSync('public/upgrade.js','utf8');
+const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
+if(!miniUpgrade.includes('event("run_start"') ||
+   !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
+if(!telemetry.includes('"town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++') ||
+   !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
+   !telemetry.includes('"level_complete"')) throw Error('Terminal gameplay events must be counted separately from clears');
+if(!analyticsSource.includes('z.ends+=events.reduce') ||
+   !dashboard.includes('data-i18n="colEnds"')) throw Error('Unified and itch.io dashboard must show finished runs');
+
 const config=JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc','utf8'));
 if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
 if(config.d1_databases?.[0]?.database_name!=='morrowwish-analytics')throw Error('Wrong D1 database');
