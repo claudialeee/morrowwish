@@ -207,9 +207,9 @@ try{
     const action=page.getByRole('link',{name:/^(add|new|submit|create)( a| my)? game$/i}).first();
     const fallback=page.getByRole('button',{name:/^(add|new|submit|create)( a| my)? game$/i}).first();
     const choice=await action.count()?action:fallback;
-    if(await choice.count()){
-       await choice.click({timeout:4500}).catch(()=>{});
-       await page.waitForTimeout(1300);
+    if(await choice.count() || report.authenticated){
+       await page.goto(root+'/submit',{waitUntil:'domcontentloaded',timeout:30000}).catch(()=>{});
+       await page.waitForTimeout(1600);
        const safe=t=>String(t||'').replace(/\S+@\S+/g,'[redacted-email]').replace(/https?:\/\/\S+/g,'[redacted-url]').slice(0,2500);
        const formRegion=await page.locator('main').count()?page.locator('main').first():page.locator('body');
        const checkboxDescriptions=await page.locator('input[type="checkbox"]').evaluateAll(ns=>ns.map(n=>{
