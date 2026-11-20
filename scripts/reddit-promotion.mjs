@@ -15,7 +15,7 @@ const hooks = {
 function draft(game) {
  const [community,title,description,question] = hooks[game.slug] || ['playmygame','[Web] We released '+game.title+', a free browser game',game.description,'What did you enjoy most, and what felt unclear?'];
  const trackedUrl = trackedLink(game,'reddit','social','playtest');
- const body = ['We are Morrow Wish, a small indie game studio, and we made '+game.title+'.',description,'Play free in your browser (no download or account): '+trackedUrl,question,'Developer post / self-promotion disclosure: this is our game.'].join('\n\n');
+ const body = ['We are Morrow Wish, a small indie game studio, and we made '+game.title+(/[.!?]$/.test(game.title)?'':'.'),description,'Play free in your browser (no download or account): '+trackedUrl,question,'Developer post / self-promotion disclosure: this is our game.'].join('\n\n');
  const form = new URL('https://www.reddit.com/r/'+community+'/submit');
  form.searchParams.set('title',title); form.searchParams.set('text',body);
  return {slug:game.slug,game:game.title,community:'r/'+community,title,body,gameUrl:game.url,trackedUrl,submissionFormUrl:form.toString(),status:'draft-not-posted'};
