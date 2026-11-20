@@ -83,7 +83,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -91,7 +91,9 @@
           "utm_campaign": "elsewhere-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=google&utm_medium=organic&utm_campaign=elsewhere-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -216,7 +218,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -224,7 +226,9 @@
           "utm_campaign": "tiny-town-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=google&utm_medium=organic&utm_campaign=tiny-town-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -350,7 +354,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -358,7 +362,9 @@
           "utm_campaign": "pawsibly-innocent-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=google&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -482,7 +488,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -490,7 +496,9 @@
           "utm_campaign": "flip-dash-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=google&utm_medium=organic&utm_campaign=flip-dash-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -615,7 +623,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -623,7 +631,9 @@
           "utm_campaign": "parcel-panic-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=google&utm_medium=organic&utm_campaign=parcel-panic-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -748,7 +758,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -756,7 +766,9 @@
           "utm_campaign": "pocket-aquarium-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=google&utm_medium=organic&utm_campaign=pocket-aquarium-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -828,7 +840,7 @@
         },
         "google": {
           "priority": "P1",
-          "status": "crawlable-not-index-verified",
+          "status": "sitemap-submitted-indexing-not-verified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
@@ -836,7 +848,9 @@
           "utm_campaign": "cat-bond-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=google&utm_medium=organic&utm_campaign=cat-bond-playtest",
           "listedInGeneratedSitemap": true,
-          "indexingVerified": false
+          "indexingVerified": false,
+          "googleSearchConsoleVerified": true,
+          "sitemapSubmitted": true
         },
         "bing": {
           "priority": "P1",
@@ -939,14 +953,21 @@
     "expectedGameCount": 7,
     "includesCatBond": true,
     "google": {
-      "status": "sitemap-and-meta-configured-search-console-submission-unverified",
-      "searchConsoleEvidence": null
+      "status": "ownership-verified-sitemap-submitted-indexing-pending",
+      "searchConsoleProperty": "https://morrowwish.vercel.app/",
+      "sitemapSubmitted": "https://morrowwish.vercel.app/sitemap.xml",
+      "confirmationSource": "User confirmed Google verification and sitemap submission in ChatGPT on 2026-11-19",
+      "sitemapProcessingSuccessVerified": false,
+      "pageIndexingVerified": false
     },
     "bing": {
       "status": "indexnow-configured-acceptance-not-yet-verified",
       "notifyScript": "scripts/submit-indexnow.mjs",
       "deployWorkflow": ".github/workflows/deploy-cloudflare.yml",
-      "verifiedResponse": null
+      "verifiedResponse": null,
+      "webmasterPropertyVerified": false,
+      "sitemapSubmissionVerified": false,
+      "nextAction": "Import verified website from Google Search Console in Bing Webmaster Tools, or verify manually if import unavailable."
     },
     "note": "The source sitemap now includes seven game URLs plus homepage. Auto-generating build and IndexNow notification are configured. Do not mark indexing or IndexNow acceptance confirmed without platform receipts."
   }
