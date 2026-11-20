@@ -583,7 +583,7 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
    throw Error('Tiny Town share must include a real run score and tracking');
  if(!elsewhere.includes('MorrowwishSocialShare?.open')||
      !elsewhere.includes('onShare:platform=>track("share_clicked"')||
-     !elsewhere.includes('encodeURIComponent(w.id)'))
+     !(elsewhere.includes('encodeURIComponent(w.id)')||elsewhere.includes('encodeURIComponent(state.id)')))
    throw Error('Elsewhere share must preserve playable world deep links and ending');
 
 if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
