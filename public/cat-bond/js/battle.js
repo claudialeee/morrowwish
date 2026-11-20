@@ -40,6 +40,7 @@ class CaptureBattle {
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
     this.comboBest = 0;                   // best this battle
+    this.perfectDodges = 0;               // earns tactical capture rankings
     this.comboFlash = 0;                  // milestone pop timer
     this.slowmo = 0;                      // perfect-dodge bullet-time timer
 
@@ -638,6 +639,7 @@ class CaptureBattle {
       if (Math.hypot(p.x - f.x, p.y - f.y) < 40) { perfect = true; break; }
     }
     if (perfect && f === this.me()) {
+      this.perfectDodges++;
       this.slowmo = 0.9; this.flash = 0.25; f.inv = 0.7;
       this.gainUlt(18);
       this.addCombo(3);                                  // reward precise timing with chain
