@@ -47,6 +47,16 @@ for(let i=0;i<games.length;i++){
  assert.deepEqual(await checked.json(),{recorded:true,removed:true},g+' read and clean');
  assert.equal(rows.find(x=>x.view_id===probe),undefined,g+' probe cleanup');
 }
+for(const g of ['flip-dash','parcel-panic']){
+ const id='test-abandoned-'+g;
+ for(const evt of [
+  {kind:'visit',game:g,viewId:id,visitor:'test-visitor',utmSource:'bluesky',source:'external'},
+  {kind:'session',game:g,viewId:id,visitor:'test-visitor',starts:1,ends:0,abandons:1,seconds:9,utmSource:'bluesky'}
+ ]){
+  const response=await api(req('/api/session',evt),env);
+  assert.equal(response.status,202,g+' abandoned-run write');
+ }
+}
 const bad=await api(new Request('https://morrowwish.pages.dev/api/diagnostic-check?probe=bad'),env);
 assert.equal(bad.status,400,'invalid diagnostic token must be rejected');
 const auth=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1'),env);
@@ -56,10 +66,12 @@ assert.equal(response.status,200);
 const summary=await response.json();
 for(const g of games){
  const row=summary.byGame.find(x=>x.game===g);
- assert.equal(row?.starts,1,g+' start counted');
- assert.equal(row?.ends,1,g+' end counted');
- assert.equal(row?.pageviews,1,g+' game view counted');
+ const endless=g==='flip-dash'||g==='parcel-panic';
+ assert.equal(row?.starts,endless?2:1,g+' all starts counted');
+ assert.equal(row?.ends,1,g+' finished run counted');
+ assert.equal(row?.abandons,endless?1:0,g+' abandoned runs never count as completions');
+ assert.equal(row?.pageviews,endless?2:1,g+' game views counted');
 }
-assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,6,'combined referral starts');
+assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,8,'combined referral starts');
 assert.equal(rows.some(x=>x.category==='diagnostic'),false,'no persistent smoke events');
 console.log('Six-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
