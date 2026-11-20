@@ -544,6 +544,16 @@ class Game {
       const sk = f.eSkill;
       eBtn.querySelector('.mv-icon').textContent = sk ? this.skillIcon(sk) : '💨';
       eBtn.querySelector('.mv-k').textContent = sk ? sk.name : 'E';
+      eBtn.title=sk?sk.name+' · '+sk.desc:'E · 疾扑';
+    }
+    if(qBtn){const sk=f.qSkill;qBtn.title=sk?sk.name+' · '+sk.desc:'Q · 猫爪技能';}
+    const ult=document.getElementById('ult-btn');
+    if(ult){
+      const sk=f.ultSkill,en=window.MorrowwishI18n?.get?.()!=='zh';
+      ult.querySelector('.mv-icon').textContent=sk?this.skillIcon(sk):'🌪️';
+      ult.querySelector('.mv-name').textContent=sk?sk.name:(en?'Cat Storm':'喵之怒涛');
+      ult.title=sk?sk.name+' · '+sk.desc
+        :(en?'Train your cat to unlock an elemental ultimate':'培养猫咪后可解锁元素必杀技');
     }
   }
 

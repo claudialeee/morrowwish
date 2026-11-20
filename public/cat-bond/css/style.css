@@ -1003,3 +1003,27 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
  #battle-ui .battle-help-section{padding:7px 9px;margin:6px 0}
  #battle-ui .battle-help-section p{font-size:11px;margin:3px 0}
 }
+
+/* Explain money and passive production before the player sees a station list. */
+#panel .work-earn-header{margin:10px 0 14px;padding:13px;border-radius:15px;background:linear-gradient(120deg,#fff0c8,#ebf5df);border:1px solid #ddc88a;color:#66502f}
+#panel .work-earn-header>strong{display:block;font-size:16px;color:#765020}
+#panel .work-earn-header>p{font-size:12px;line-height:1.6;margin:6px 0 10px}
+#panel .work-earn-stats{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+#panel .work-earn-stats>span{display:grid;gap:3px;flex:1 1 85px;padding:8px 9px;border-radius:10px;background:#fffaf1d9;border:1px solid #e6dcc1;font-size:10px}
+#panel .work-earn-stats b{font-size:14px;color:#526e45}
+#panel .work-earn-header>.btn{margin:3px 6px 5px 0;max-width:100%}
+#panel .work-section-intro{color:#627765;font-size:11px;line-height:1.5;margin:10px 0}
+#panel .workshop-row{border-radius:14px;padding:12px 9px;margin:7px 0;border:1px solid #d9e2d6}
+#panel .workshop-row.work-money{background:#fff2d9;border:2px solid #e8c77c}
+#panel .work-usage{font-size:11px;line-height:1.4;margin:3px 0;color:#5a735e}
+#panel .work-income{font-size:12px;line-height:1.5;color:#4b6852}
+#panel .work-income b{font-size:13px;color:#795e2f}
+#panel .work-employee{font-size:11px;color:#6b7964;line-height:1.5;margin:4px 0}
+#panel .work-pending{font-size:12px;color:#536c56}
+#panel .work-pending>b{color:#a96c23;font-weight:900}
+#panel .workshop-row .st-btns .btn{white-space:normal}
+#panel .workshop-row .st-btns small{display:block;font-size:9px;margin-top:2px}
+#panel .work-nursery-title{margin:12px 0 7px;font-size:15px;color:#52674e}
+#panel .skill-progression-note,#panel .skill-discovery{font-size:11px;line-height:1.6;padding:7px 10px;border-radius:10px;background:#edf5e8;color:#536950;border:1px solid #cbdec8;margin:9px 0}
+#battle-ui #ult-btn .mv-name{font-size:11px;font-weight:900;color:#5b4b7e;display:block;max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:520px){#battle-ui #ult-btn .mv-name{font-size:10px;max-width:55px}#panel .workshop-row{padding:8px 6px}#panel .work-earn-header{padding:10px}}

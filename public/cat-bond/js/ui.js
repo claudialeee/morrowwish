@@ -574,7 +574,8 @@ const UI = {
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2>📖 ${State.catName(cat)} · 技能搭配</h2>
-      <p class="sub">点击学习/切换每个槽位的技能。元素克制、连招、状态都看搭配！可学范围随等级与好感解锁。</p>
+      <p class="sub">这只猫可装备 ${learn.length} 种技能。点击对应技能装配 Q / E / 必杀槽。</p>
+      <p class="skill-progression-note">普通猫通过升级与好感解锁元素必杀；SR / SSR 更早解锁专属必杀。能量充满后按 R 或点击右下角释放。</p>
       <div class="sk-list">${rows}</div>
       <div class="btn-row"><button class="btn gold" id="sk-back">← 返回</button></div>`);
     this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
@@ -902,6 +903,8 @@ const UI = {
       </div>`;
     }).join('');
     const newBreed=!State.S.dex[wildSp.id];
+    const skillPreview=window.Skills?Skills.skillsByElement(Skills.elementOf(wildSp.id))
+      .filter(sk=>sk.ultCost>0).map(sk=>sk.name).join(' / '):'';
     const rareText=wildSp.rarity==='SSR'?'👑 传说邂逅'
       :wildSp.rarity==='SR'?'🌟 史诗邂逅'
       :wildSp.rarity==='R'?'✨ 稀有邂逅'
@@ -912,6 +915,7 @@ const UI = {
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
+      ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
       ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
