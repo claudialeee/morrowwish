@@ -231,6 +231,51 @@ assert.equal(game.gradeBattle({team:[{hp:5,maxhp:100}],t:150,comboBest:0,perfect
   'Slow battered capture without skill merits C grade');
 assert.ok(document.getElementById('panel').innerHTML.includes('battle-grade'),
   'Capture result includes the earned grade and bonus');
+// S-masteries are meaningful, breed-specific, saved achievements. The
+// next rare encounter uses the permanent luck bonus; repeat wins cannot farm it.
+const S=State.S;
+const priorBadges={...(S.masteryBadges||{})};
+const priorBest={...(S.bestGrades||{})};
+const priorLures=S.luckLure||0;
+const priorCatchCount=S.catchCount;
+S.masteryBadges={};S.bestGrades={};
+const masterCat=State.makeCat('doudou');
+const rank={grade:'S'};
+const firstMastery=game.recordBattleMastery(GameData.speciesById('doudou'),rank,masterCat);
+assert.ok(firstMastery,'First S on a breed awards a Golden Paw');
+assert.equal(firstMastery.status.medals,1);
+assert.equal(S.masteryBadges.doudou,true,'Golden Paw stored per species');
+assert.equal(S.bestGrades.doudou,'S','Best rank persisted in the codex');
+assert.equal(masterCat.affinity,15,'First S improves the rescued cat bond');
+assert.equal(S.luckLure,priorLures+1,'First S gives a useful rare-cat lure');
+assert.equal(game.recordBattleMastery(GameData.speciesById('doudou'),{grade:'S'},masterCat),null,
+  'Repeated S on the same breed cannot farm lures or mastery');
+assert.equal(S.luckLure,priorLures+1,'Repeat S grants zero additional lures');
+game.recordBattleMastery(GameData.speciesById('tangyuan'),{grade:'S'},State.makeCat('tangyuan'));
+game.recordBattleMastery(GameData.speciesById('xiaohui'),{grade:'S'},State.makeCat('xiaohui'));
+assert.equal(game.masteryStatus().medals,3);
+assert.ok(Math.abs(game.masteryStatus().luckBonus-.12)<1e-8,
+  'Three different S ranks unlock a modest permanent rare-sighting bonus');
+UI.openDex();
+const dexHTML=document.getElementById('panel').innerHTML;
+assert.ok(dexHTML.includes('golden-paw-stamp'),'Codex must show earned S medals');
+assert.ok(!dexHTML.includes('解锁隐藏传说种'),'Codex must not advertise fictional unlocks');
+UI.closeAll();
+const originalRoll=GameData.rollSpecies;
+let effectiveLuck=-1;
+S.luckLure=0;
+S.catchCount=6;
+GameData.rollSpecies=luck=>{
+  effectiveLuck=luck;
+  return GameData.speciesById('jinwu');
+};
+game.yard.startHideAndSeek();
+assert.ok(effectiveLuck>=.12,'Permanent medals must improve actual world encounter weighting');
+game.yard.hide=null;
+GameData.rollSpecies=originalRoll;
+S.masteryBadges=priorBadges;S.bestGrades=priorBest;S.luckLure=priorLures;
+S.catchCount=priorCatchCount;
+
 // One-time collection milestones reward actual new species, not repeated grinding.
 const priorCoins=State.S.coins, priorTreats=State.S.treats, priorMilestones=[...(State.S.collectionMilestones||[])];
 State.S.dex['xiaohui']=1;
