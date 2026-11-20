@@ -142,7 +142,7 @@ try{
  }));
  console.log('Homepage Chinese and compact sections:',JSON.stringify(homeZh));
  assert.equal(homeZh.lang,'zh-CN');
- assert.match(homeZh.worldsPitch,/四个世界，四种乐趣/,'Four-world homepage introduction must be translated into Chinese');
+ assert.match(homeZh.worldsPitch,/三条鱼.*院子.*人生.*小镇/,'Four-world homepage introduction should name all four adventures naturally in Chinese');
  assert.doesNotMatch(homeZh.worldsPitch,/Be a sneaky cat|Four worlds/,'No English four-world pitch on Chinese homepage');
  assert.equal(homeZh.bondCount,1,'Cat Bond homepage card must appear exactly once');
  assert.equal(homeZh.bondTitle?.trim(),'猫猫纽带','Chinese Cat Bond heading should not repeat English game name');
