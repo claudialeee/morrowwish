@@ -12,7 +12,7 @@
   <meta property="og:description" content="Raise a yard of cats, hunt wild ones in a real-time arena, and build unbreakable bonds. A free cozy game from Morrow Wish." />
   <meta property="og:image" content="https://morrowwish.vercel.app/art/cat-bond-scene.svg" />
   <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
-  <link rel="stylesheet" href="css/style.css?v=36" />
+  <link rel="stylesheet" href="css/style.css?v=37-mobile" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js" defer></script>
 </head>
@@ -102,11 +102,12 @@
           <span class="intro-guide-title">30 秒上手</span>
           <div class="intro-steps">
             <div class="intro-step"><span class="intro-step-ico">🐾</span><div><b>① 撸猫 & 找野猫</b><p>点击院子里的猫咪增加好感，点右下 🌿 在草丛里找野生猫猫。</p></div></div>
-            <div class="intro-step"><span class="intro-step-ico">⚔️</span><div><b>② 即时战斗</b><p>WASD 移动，鼠标瞄准，左键猫爪，Q/E 放技能，空格闪避。</p></div></div>
+            <div class="intro-step"><span class="intro-step-ico">⚔️</span><div><b>② 即时战斗</b><p><span class="cb-desktop-only">WASD 移动，鼠标瞄准，左键猫爪，Q/E 放技能，空格闪避。</span><span class="cb-mobile-only">左半屏滑动移动，右半屏按住攻击；下方点击技能与闪避。</span></p></div></div>
             <div class="intro-step"><span class="intro-step-ico">💞</span><div><b>③ 收服 & 养成</b><p>把野猫斗志打空就能收服。喂养、培养、进化，建立更强的纽带。</p></div></div>
           </div>
         </div>
         <button class="btn gold" id="intro-start" style="padding:14px 34px;font-size:1.15rem">开始冒险 🐱</button>
+        <p id="start-error" hidden role="alert"></p>
         <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
       </div>
     </div>
@@ -125,7 +126,7 @@
   <script src="js/battle.js?v=36"></script>
   <script src="js/ui.js?v=36"></script>
   <script src="js/game.js?v=36"></script>
-  <script src="js/main.js?v=36"></script>
+  <script src="js/main.js?v=37-mobile"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=36"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
