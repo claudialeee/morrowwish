@@ -2,7 +2,7 @@
    All tones are event-triggered and stop promptly. No external audio assets. */
 (()=>{'use strict';
 const route=location.pathname.split('/').filter(Boolean)[0];
-const games=new Set(['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium']);
+const games=new Set(['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','cat-bond']);
 if(!games.has(route))return;
 const KEY='morrowwish-audio-enabled';
 let enabled=true;
@@ -75,11 +75,23 @@ function sfx(midi,kind='tap'){
 const mappings={
  fish:[77,'success'],win:[74,'success'],bad:[55,'fail'],caught:[52,'fail'],vase:[62,'crash'],
  yarn:[74,'bounce'],lured:[76,'bounce'],light:[69,'quiet'],souvenir:[81,'success'],milk:[77,'pop'],
+ pet:[72,'bounce'],rustle:[69,'quiet'],paw:[74,'quiet'],discover:[79,'success'],capture:[77,'success'],
  tap:[71,'quiet'],select:[72,'quiet'],step:[71,'quiet'],flip:[75,'bounce'],sort:[69,'pop'],
  bubble:[79,'pop'],page:[69,'quiet'],feed:[77,'pop'],combo:[81,'success'],build:[72,'success'],
  complete:[74,'success'],fail:[52,'fail'],end_fail:[65,'gameover'],retry:[67,'quiet'],start:[69,'quiet']
 };
-function effect(kind='tap'){const [n,s]=mappings[kind]||mappings.tap;sfx(n,s)}
+function effect(kind='tap'){
+ // Cat Bond's gentle layered gestures avoid beeps on every canvas movement.
+ if(route==='cat-bond'&&['pet','rustle','paw','discover'].includes(kind)){
+   if(!enabled||!unlocked||!ctx)return;
+   const t=ctx.currentTime+.008;
+   const notes={pet:[67,71],rustle:[70,74],paw:[61,68],discover:[74,79,83]}[kind];
+   const base=kind==='rustle'?'sine':'triangle';
+   notes.forEach((n,i)=>tone(n,t+i*.055,kind==='discover'?.18:.075,base,kind==='discover'?.016:.007));
+   effects++;return;
+ }
+ const [n,s]=mappings[kind]||mappings.tap;sfx(n,s);
+}
 function note(freq){if(enabled&&unlocked)sfx(69+12*Math.log2(Math.max(40,freq)/440),'pop')}
 function status(){return{profile:route,enabled,unlocked,playing:false,backgroundMusic:false,oscillators:voices,loopSteps:0,effects,audioState:ctx?.state||'not-created'}}
 window.MorrowwishAudio={start,toggle,effect,note,status,sync,isEnabled:()=>enabled};
@@ -95,7 +107,7 @@ window.addEventListener('pagehide',stop);
 window.addEventListener('morrowwish-language-change',()=>setTimeout(sync,0));
 function onMetric(name,data){
  switch(String(name||'').toLowerCase()){
- case 'game_complete':effect(data?.reason==='dirty'||data?.grade==='D'?'end_fail':'complete');break;
+ case 'game_complete':effect(route==='cat-bond'?'capture':(data?.reason==='dirty'||data?.grade==='D'?'end_fail':'complete'));break;
  case 'level_complete':case 'town_completed-win':case 'town_grade-a':case 'town_grade-s':effect('complete');break;
  case 'game_over':case 'town_completed-lose':effect('end_fail');break;
  case 'feed_success':effect('feed');break;
@@ -112,7 +124,7 @@ document.addEventListener('pointerdown',e=>{
  if(!enabled||!unlocked)return;
  const target=e.target;
  if(target.closest?.('[data-mw-audio], [data-mw-music], #sound, .lab-mute, #board'))return;
- if(target.closest?.('canvas')){effect(route==='flip-dash'?'flip':route==='parcel-panic'?'sort':'bubble');return}
+ if(target.closest?.('canvas')){if(route==='cat-bond')return;effect(route==='flip-dash'?'flip':route==='parcel-panic'?'sort':'bubble');return}
  if(target.closest?.('button,[role="button"]'))effect(route==='elsewhere'?'page':route==='tiny-town'?'build':'tap');
 },false);
 function mount(){
@@ -129,7 +141,8 @@ function mount(){
  const css=document.createElement('style');
  css.textContent='.mw-audio-control{font:700 12px/1.35 system-ui,sans-serif;cursor:pointer;white-space:nowrap;padding:9px 13px;border-radius:999px;border:1px solid #b39da7aa;background:#fff9f2;color:#704f70;box-shadow:0 2px 8px #5c47601a;min-height:35px}.mw-audio-control:hover{filter:brightness(.97)}.mw-audio-control:focus-visible{outline:3px solid #bb91d7;outline-offset:2px}@media(max-width:700px){.mw-audio-control{font-size:11px;padding:7px 10px;white-space:normal;max-width:170px}}';
  document.head.appendChild(css);
- const holder=route==='pocket-aquarium'?document.querySelector('header'):route==='tiny-town'||route==='elsewhere'?document.querySelector('.top-actions'):document.querySelector('.scoreboard');
+ const holder=route==='cat-bond'?document.querySelector('#stage'):
+    route==='pocket-aquarium'?document.querySelector('header'):route==='tiny-town'||route==='elsewhere'?document.querySelector('.top-actions'):document.querySelector('.scoreboard');
  if(holder)holder.appendChild(control);
  else{control.classList.add('mw-audio-fixed');css.textContent+='.mw-audio-fixed{position:fixed;right:14px;bottom:58px;z-index:9999}';document.body.appendChild(control)}
  if(route==='pocket-aquarium')document.querySelectorAll('.languages button').forEach(b=>b.addEventListener('click',()=>setTimeout(sync,0)));
