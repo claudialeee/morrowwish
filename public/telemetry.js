@@ -75,6 +75,7 @@ if(n==="town_completed-win")signal("town_win");
 if(n==="town_completed-lose")signal("town_lose");
 if(n.startsWith("town_feedback-")){const v=n.slice(14);if(["fun","confusing","not-fun"].includes(v))signal("town_feedback_"+v);}
 if(["play_feedback_fun","play_feedback_confusing","play_feedback_not_fun"].includes(n))signal(n);
+if(["elsewhere_return_yes","elsewhere_return_maybe","elsewhere_return_no"].includes(n))signal(n);
 if(/^town_exit-week-[1-8]$/.test(n))signal(n.replaceAll("-","_"));
 if(["feed_success","feed_drop"].includes(n)&&game==="pocket-aquarium")signal(n);
 if(n==="game_complete"&&game==="pocket-aquarium"){signal("aquarium_completed");const outcome=String(p?.ending||"");if(["festival","clear","friends","rest","calm"].includes(outcome))signal("aquarium_ending_"+outcome);const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
@@ -82,7 +83,7 @@ if(game==="flip-dash"&&(n==="run_end"||n==="game_over")){signal("flip_finished")
 if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
 // Start/end/replay are essential: persist immediately instead of waiting for
 // pagehide, which is unreliable on mobile and inside game portal iframes.
-if(["run_start","game_start","run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose","town_started","town_started-game","game_retry"].includes(n))flush(true);
+if(["run_start","game_start","run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose","town_started","town_started-game","game_retry"].includes(n)||n.startsWith("play_feedback_")||n.startsWith("town_feedback-")||n.startsWith("elsewhere_return_"))flush(true);
 }
 window.arcadeMetric=event;
 const onFirstAction=()=>{if(firstMs<0)firstMs=Math.round(performance.now()-start);};

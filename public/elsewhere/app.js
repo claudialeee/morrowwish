@@ -131,6 +131,7 @@
     if(event==='life_completed')window.arcadeMetric?.('game_complete');
     if(event==='life_restarted')window.arcadeMetric?.('retry');
     if(event==='share_clicked')window.arcadeMetric?.('share_clicked');
+    if(event==='ending_feedback'&&['yes','maybe','no'].includes(data.sentiment))window.arcadeMetric?.('elsewhere_return_'+data.sentiment);
     const own={event,session,runId:active?.runId||undefined,scenes:active?.world?WORLD_BY_ID[active.world]?.chapters?.length:0,...data};
     const payload=JSON.stringify(own);
     if(TRACKED.has(event)&&active&&visitorId){
@@ -453,7 +454,7 @@
     const choice=event.target.closest('[data-choice]');if(choice){choose(Number(choice.dataset.choice));return;}
     if(event.target.closest('#continue-btn')){continueChapter();return;}
     const lensBtn=event.target.closest('[data-lens]');if(lensBtn){lens=lensBtn.dataset.lens;try{localStorage.setItem(LENS_KEY,lens)}catch{};refreshLens();track('lens_selected',{lens});return;}
-    const feedback=event.target.closest('[data-feedback]');if(feedback&&active?.finished&&!active.feedback){active.feedback=feedback.dataset.feedback;persist();track('ending_feedback',{world:active.world,sentiment:active.feedback});renderEnding();notify('Thank you for helping shape Elsewhere.');return;}
+    const feedback=event.target.closest('[data-feedback]');if(feedback&&active?.finished&&!active.feedback){active.feedback=feedback.dataset.feedback;persist();track('ending_feedback',{world:active.world,sentiment:active.feedback});renderEnding();notify(window.MorrowwishI18n?.get?.()==='zh'?'谢谢反馈，下一段人生见。':'Thanks for helping shape Elsewhere.');return;}
     if(event.target.closest('#ending-share')||event.target.closest('#share-btn')){shareWorld();return;}
     if(event.target.closest('#ending-again')||event.target.closest('#restart-btn')){restart();return;}
     if(event.target.closest('#ending-home')||event.target.closest('#home-btn')){goHome();return;}

@@ -143,7 +143,12 @@ function renderSignals(gameRows){
   const prefix=g.id==='tiny-town'?'town_feedback_':'play_feedback_';
   const votes=[Number(metrics[prefix+'fun']||0),Number(metrics[prefix+'confusing']||0),Number(metrics[prefix+(g.id==='tiny-town'?'not-fun':'not_fun')]||0)];
   const feeling=(g.id!=='elsewhere'&&votes.some(x=>x>0))?'<div class="signal-feedback">'+escapeHTML(t('feelPrefix'))+' · '+escapeHTML(t('feelFun'))+' '+votes[0]+' · '+escapeHTML(t('feelConfusing'))+' '+votes[1]+' · '+escapeHTML(t('feelNotFun'))+' '+votes[2]+'</div>':'';
-  return '<div class="signal-card"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(name)+'</a></h3>'+body+feeling+'</div>';
+  // Elsewhere's ending question asks whether a player wants another life;
+  // keep it separate from "fun/confusing/not fun" votes.
+  const returnVotes=['yes','maybe','no'].map(key=>Number(metrics['elsewhere_return_'+key]||0));
+  const returnLine=g.id==='elsewhere'&&returnVotes.some(n=>n>0)
+    ?'<div class="signal-feedback">'+(lang==='zh'?'愿意再来':'Play another life')+' · '+(lang==='zh'?'愿意 ':'Yes ')+returnVotes[0]+' · '+(lang==='zh'?'也许 ':'Maybe ')+returnVotes[1]+' · '+(lang==='zh'?'暂时不会 ':'No ')+returnVotes[2]+'</div>':'';
+  return '<div class="signal-card"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(name)+'</a></h3>'+body+feeling+returnLine+'</div>';
  }).join('');
 }
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];

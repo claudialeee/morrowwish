@@ -74,6 +74,7 @@ jobs:
       - name: Verify source, game ordering, and D1 binding
         run: |
           npm run check
+          node scripts/test-analytics-integrity.mjs
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const config = JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc', 'utf8'));
@@ -193,6 +194,35 @@ jobs:
           verify_live /pawsibly-innocent/ /tmp/morrowwish-live-cat.html 'PAWSIBLY'
           verify_live /pawsibly-innocent/game.js /tmp/morrowwish-live-game.js 'function throwYarn'
           echo 'Public homepage slogan, cat link, and playable game markup verified.'
+      - name: Verify live D1 telemetry ingestion for six games without adding player stats
+        run: |
+          set -eu
+          check_probe() {
+            origin="$1"
+            game="$2"
+            probe="mw-qa-$(node -e "process.stdout.write(require('node:crypto').randomUUID())")"
+            body=$(printf '{"kind":"visit","game":"%s","viewId":"%s","visitor":"ci-smoke","smokeProbe":"mw-qa-v1"}' "$game" "$probe")
+            code=$(curl -sSL --max-time 18 -o /tmp/mw-qa-write.json -w '%{http_code}' -X POST \
+              -H 'Content-Type: text/plain' --data "$body" "$origin/api/session" || true)
+            if [ "$code" != 202 ]; then
+              echo "::error::D1 write failed for $game through $origin (HTTP $code)"
+              exit 1
+            fi
+            check=$(curl -sSL --max-time 18 "$origin/api/diagnostic-check?probe=$probe" || true)
+            if ! printf '%s' "$check" | grep -Fq '"recorded":true'; then
+              echo "::error::D1 read-back failed for $game through $origin"
+              exit 1
+            fi
+            if ! printf '%s' "$check" | grep -Fq '"removed":true'; then
+              echo "::error::D1 diagnostic cleanup failed for $game through $origin"
+              exit 1
+            fi
+            echo "D1 live first-party analytics verified: $game via $origin"
+          }
+          for game in pawsibly-innocent tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
+            check_probe https://morrowwish.pages.dev "$game"
+          done
+          check_probe https://morrowwish.vercel.app flip-dash
       - name: Publish automatic game promotion kit for each release
         uses: actions/upload-artifact@v4
         with:
