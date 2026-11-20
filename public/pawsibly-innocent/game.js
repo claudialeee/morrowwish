@@ -307,7 +307,7 @@ const cgEmbed=/(?:^|\/\/)(?:[^/]*\.)?crazygames\.com(?:\/|$)/i.test(document.ref
 if(cgEmbed&&document.head){
  document.documentElement.classList.add("cg-play");
  const css=document.createElement("style");
- css.textContent=\`
+ css.textContent=`
  html.cg-play,html.cg-play body{height:100%;min-height:0;overflow:hidden;margin:0;background:#282235}
  html.cg-play .sitebar,html.cg-play .heading,html.cg-play .explainer,
  html.cg-play aside.panel,html.cg-play .cat-legend,html.cg-play .tip,
@@ -328,7 +328,7 @@ if(cgEmbed&&document.head){
  html.cg-play #cgStealthHUD{position:absolute;z-index:2;top:8px;right:8px;min-width:125px;max-width:48%;padding:8px 10px;background:rgba(40,47,58,.86);border:2px solid #b8e5d5;border-radius:12px;box-shadow:0 4px 12px #0003;color:white;font:900 12px/1.15 Nunito,sans-serif;text-align:center;pointer-events:none}
  html.cg-play #cgStealthHUD.alert{border-color:#ff758e;background:#7a344b}
  @media(max-height:440px){html.cg-play .stealth-actionbar{height:48px}html.cg-play #stage{width:min(calc(100vw - 12px),calc((100dvh - 61px)*10/7))!important}}
- \`;
+ `;
  document.head.appendChild(css);
  const hud=document.createElement("div");
  hud.id="cgStealthHUD";hud.setAttribute("role","status");
