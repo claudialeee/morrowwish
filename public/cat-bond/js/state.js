@@ -18,6 +18,8 @@ const DEFAULT_STATE = () => ({
   bondingRewards: [], // claimed bonding milestones
   collectionMilestones: [], // one-time, cumulative codex discovery rewards
   repeatSightings: 0, // repeated already-owned species encountered while searching
+  bestGrades: {}, // speciesId -> best capture score (C/B/A/S), for rematches
+  masteryBadges: {}, // speciesId -> true; only a first S earns a permanent Golden Paw
 });
 
 let S = DEFAULT_STATE();
