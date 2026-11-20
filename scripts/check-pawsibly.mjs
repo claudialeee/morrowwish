@@ -37,6 +37,8 @@ for(let i=0;i<8;i++){
  assert.ok(path(s,s.cat,s.door)!==null);
 }
 test.choose(0,false);
+const startingHuman={...test.getState().human};
+const stationaryCat={...test.getState().cat};
 const original=test.getState().yarn;
 test.throwYarn();
 assert.equal(test.isAiming(),true,'Pressing yarn should enter aim mode');
@@ -44,6 +46,12 @@ assert.equal(test.getState().yarn,original,'Aiming must not consume the yarn');
 assert.equal(test.throwYarnTo({x:8,y:4}),true,'Player can choose a reachable landing tile');
 assert.equal(test.getState().yarn,original-1);
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().noise)),{x:8,y:4});
+assert.notDeepEqual(JSON.parse(JSON.stringify(test.getState().human)),startingHuman,'Human must react in the same frame as yarn throw');
+assert.equal(test.isChasing(),true,'Human must continue toward the noise autonomously');
+for(let i=0;i<20&&test.isChasing();i++)test.advanceYarnChase();
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:8,y:4},'Human walks all the way to the yarn without moving the cat');
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().cat)),stationaryCat,'Human distraction should not force cat movement');
+assert.equal(test.isChasing(),false,'The human stops at the yarn rather than pacing forever');
 test.choose(0,false);
 const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 let attempts=0;
