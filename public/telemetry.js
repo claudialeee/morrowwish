@@ -72,6 +72,15 @@ if(n==="bond_mastery_unlocked")signal("bond_mastery_medal");
 if(n==="bond_repeat_reunion")signal("bond_reunion");
 if(n==="cat_souvenir")signal("cat_souvenir");
 if(n==="town_first-club")signal("town_club");
+if(n==="town_second-wish")signal("town_second_wish");
+if(n==="town_combo_found")signal("town_combo_discovered");
+if(n==="town_epic_wonder")signal("town_epic_wonder");
+if(n==="town_city_mutation")signal("town_city_mutation");
+if(n==="town_petition_met")signal("town_petition_met");
+if(n==="town_petition_missed")signal("town_petition_missed");
+if(n==="town_social_crisis")signal("town_social_crisis");
+if(n==="town_building_moved")signal("town_building_moved");
+if(["town_charter_wonder","town_charter_care","town_charter_dream"].includes(n))signal(n.replaceAll("-","_"));
 if(n==="town_completed-win")signal("town_win");
 if(n==="town_completed-lose")signal("town_lose");
 if(n.startsWith("town_feedback-")){const v=n.slice(14);if(["fun","confusing","not-fun"].includes(v))signal("town_feedback_"+v);}

@@ -312,6 +312,13 @@ if(originalMusic.includes('aeris-cc0-music')||originalMusic.includes('createOsci
 const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
 const townV4=fs.readFileSync('public/tiny-town/game-v4.js','utf8');
 new vm.Script(townV4,{filename:'public/tiny-town/game-v4.js'});
+for(const marker of ['const residents=[','const legends=[','function connectedLegend(','function discoverLegends()','function processResidents(','function relocate(pos)','function updatePromise(','function finalLayers()']){
+ if(!townV4.includes(marker))throw Error('Tiny Town strategic gameplay missing: '+marker);
+}
+for(const marker of ['id="cityLandmark"','id="citizens"','id="petition"','id="moveWish"','id="charterSelect"','id="endStory"']){
+ if(!tinyMusicPage.includes(marker))throw Error('Tiny Town strategic interface missing: '+marker);
+}
+
 for(const marker of ['src="/tiny-town/game-v4.js"','id="intro"','id="endArt"','id="savePostcard"','id="feedbackQuestion"']){
  if(!tinyMusicPage.includes(marker))throw new Error('Tiny Town wish-cascade UI missing: '+marker);
 }

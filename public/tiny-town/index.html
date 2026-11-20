@@ -160,6 +160,56 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
 }
 @media(max-width:350px){.tile-icon{font-size:19px}.tile-name{font-size:8px}.header{flex-direction:column}.top-actions{justify-content:flex-start}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* Wish Cascade 4.5: focused characters, tactical rescue, and a real wonder reveal. */
+.charter-select{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 16px}
+.charter{min-width:0;border:2px solid #e9dce9;background:#fffefb;border-radius:13px;padding:9px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:#877185}
+.charter b{font-size:12px;color:#5f466c}
+.charter span{font-size:22px}.charter small{font-size:9px;line-height:1.4}
+.charter.active{border-color:#a17dbb;background:#f6e9fa;box-shadow:inset 0 0 0 2px #ffffff}
+.intro-note{font-size:12px;font-weight:750;margin:8px 0 0;color:#8a6b8e}
+.citizen-panel{border-radius:14px;background:#faf4ed;padding:10px 9px;margin:10px 0;border:1px solid #f0e2df}
+.citizen-head{display:flex;justify-content:space-between;align-items:baseline;gap:4px;font-size:11px;font-weight:900;color:#805f7b}
+.citizen-head small{font-size:9px;font-weight:650;color:#a58c9a}
+.citizens{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:6px 0 1px}
+.citizen{background:#fff;border:1px solid #eededb;border-radius:10px;padding:4px 1px;text-align:center;display:flex;flex-direction:column;gap:1px;min-width:0}
+.citizen .portrait{font-size:21px}
+.citizen-name{font-weight:900;color:#756377;font-size:9px}
+.citizen-mood{font-weight:950;color:#cd88a6;font-size:9px;letter-spacing:-2px;white-space:nowrap}
+.citizen.sad{background:#fff0e8;border-color:#e8ad9f}.citizen.sad .citizen-mood{color:#cb7161}
+.citizen.happy{background:#f4fbef;border-color:#b7dfbd}.citizen.happy .citizen-mood{color:#5c9b7b}
+.petition{background:linear-gradient(100deg,#fff5dc,#fff3e8);border-radius:12px;padding:10px 11px;margin:10px 0;font-size:11px;display:flex;flex-direction:column;gap:5px;color:#8a6b85;line-height:1.4}
+.petition b{color:#795676}.petition small{font-size:9px;color:#a1848d}
+#moveWish{border:1px dashed #c7a8c3;color:#86678c;background:#fcf5ff;width:100%;padding:10px;font-size:11px;border-radius:11px;font-weight:850;margin:3px 0}
+#moveWish[hidden]{display:none}#moveWish.chosen{background:#eddff3;border-color:#9d76b1}
+
+.tile-people{position:absolute;bottom:2px;left:2px;font-size:clamp(10px,1.8vw,15px);letter-spacing:-7px;white-space:nowrap;pointer-events:none;filter:drop-shadow(0 1px 1px #fff)}
+.tile.just-built .tile-icon{animation:buildingArrival .55s cubic-bezier(.2,1.3,.3,1) both}
+.tile.combo-spark:after{content:'✦ ✧ ✦';position:absolute;top:7px;left:0;right:0;color:#c79056;font-size:19px;font-weight:900;text-align:center;pointer-events:none;animation:comboShower 1.2s ease-out both}
+@keyframes buildingArrival{0%{opacity:0;transform:translateY(-18px) scale(.5)}60%{opacity:1;transform:translateY(3px) scale(1.3)}100%{transform:translateY(0) scale(1)}}
+@keyframes comboShower{0%{opacity:0;transform:translateY(10px) scale(.45)}35%{opacity:1;transform:translateY(-8px) scale(1.05)}100%{opacity:0;transform:translateY(-32px) scale(1.4)}}
+.end-story{background:#fff4e4;color:#7b5c72!important;border-radius:11px;padding:9px 11px;font-size:12px!important;font-weight:800}
+.tile.movable{border-color:#be8ccc!important;cursor:pointer!important;box-shadow:0 0 0 3px #ecddf6!important;animation:goldPulse 1.7s infinite}
+.city-landmark{position:absolute;left:calc(50% - 32px);top:-10px;z-index:1;pointer-events:none;opacity:0;font-size:70px;line-height:1;transform:translateY(24px) scale(.7);filter:drop-shadow(0 9px 8px #604e7c42)}
+.city-landmark.revealed{animation:townMiracle 1.8s ease-out forwards;opacity:1;transform:translateY(0) scale(1)}
+@keyframes townMiracle{0%{opacity:0;transform:translateY(45px) scale(.35) rotate(-13deg)}55%{opacity:1;transform:translateY(-9px) scale(1.24) rotate(5deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+.board{position:relative;z-index:2}
+.world[data-theme="sky"]:before{content:'☁☁';top:3px;left:3%;font-size:76px}
+.world[data-theme="party"]:after,.world[data-theme="chaos"]:after{content:'🎇';font-size:44px;top:5px;right:18px}
+.world[data-theme="cat"]:after{content:'🐾';font-size:35px;top:13px}
+.world[data-theme="art"]:after{content:'🎨';font-size:38px}
+.world[data-theme="calm"]:after{content:'🌺';font-size:38px}
+.wish-copy em{display:block;font-style:normal;font-size:9px;font-weight:850;color:#ac7b91;margin-top:2px}
+.legend-counter{margin:5px 0 0;font-size:10px;color:#92758d;font-weight:850}
+@media(max-width:650px){
+ .charter{font-size:10px;padding:7px 3px}.charter small{display:none}
+ .citizen-panel{padding:7px 8px;margin:7px 0}.citizens{gap:3px}
+ .citizen .portrait{font-size:19px}
+ .petition{margin:7px 0;padding:8px 9px}
+ .petition small{display:none}
+ .charter-select{gap:5px}.legend-counter{font-size:9px}
+ #moveWish{margin:5px 0;padding:8px;font-size:10px}
+}
 </style>
 <script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script>
 </head>
@@ -180,8 +230,8 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
  <div class="progress" aria-hidden="true"><div id="progressFill"></div></div>
  <div class="stage">
   <section class="panel map-panel">
-   <div class="panel-top"><strong id="mapTitle">Your little town</strong><span data-en="Every decision changes the world" data-zh="每个选择都会改变世界">Every decision changes the world</span></div>
-   <div class="world" id="mapWrap" data-theme="normal"><span class="world-magic" aria-hidden="true">✧ ✦ ✧</span><div class="board" id="board" aria-label="Town map"></div></div>
+   <div class="panel-top"><strong id="mapTitle">Your little town</strong><span class="legend-counter"><span data-en="EPIC WONDERS" data-zh="大型奇观">EPIC WONDERS</span> <span id="legendCount">0/9</span></span></div>
+   <div class="world" id="mapWrap" data-theme="normal"><span class="world-magic" aria-hidden="true">✧ ✦ ✧</span><span id="cityLandmark" class="city-landmark" aria-hidden="true"></span><div class="board" id="board" aria-label="Town map"></div></div>
    <p class="caption" id="guide" aria-live="polite">Pick a wish, then pick a place.</p>
    <div class="preview" id="preview"><span data-en="Find combinations by placing related wishes next to each other." data-zh="把相互关联的愿望建在一起，发现隐藏组合。">Find combinations by placing related wishes next to each other.</span></div>
    <div class="city-extras">
@@ -195,13 +245,22 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
    <p data-en="Choose one wild idea. Watch your town respond." data-zh="选一个大胆的主意，看看小镇会发生什么。">Choose one wild idea. Watch your town respond.</p>
    <div class="cards" id="cards"></div>
    <p class="pick-hint" id="pickHint"></p>
-   <div class="tip-box"><b data-en="Secret tip" data-zh="秘密提示">Secret tip</b><span data-en="Put related wishes beside each other. A small change may transform the entire town." data-zh="把相关愿望摆在一起，小小变化可能让整座城进化。">Put related wishes beside each other. A small change may transform the entire town.</span><small data-en="Complete 7 days. Discover 2 combos and keep harmony at 3+ for a dream ending." data-zh="完成 7 天，发现至少 2 种组合且和谐达到 3，即可达成梦想。">Complete 7 days. Discover 2 combos and keep harmony at 3+ for a dream ending.</small></div>
+   <div class="citizen-panel"><div class="citizen-head"><b data-en="YOUR FIVE NEIGHBORS" data-zh="小镇里的五位居民">YOUR FIVE NEIGHBORS</b><small data-en="They will remember your choices" data-zh="他们记得你的选择">They will remember your choices</small></div><div id="citizens" class="citizens"></div></div>
+   <div class="petition" id="petition"></div>
+   <button type="button" id="moveWish" hidden data-en="↔ Move one building" data-zh="↔ 搬迁一次建筑">↔ Move one building</button>
+   <div class="tip-box"><b data-en="Secret tip" data-zh="秘密提示">Secret tip</b><span data-en="Put related wishes beside each other. A small change may transform the entire town." data-zh="把相关愿望摆在一起，小小变化可能让整座城进化。">Put related wishes beside each other. A small change may transform the entire town.</span><small data-en="Build a 3-wish epic wonder while keeping harmony at 3+ for a dream ending." data-zh="三个相关愿望连成一片，形成大型奇观，同时保持和谐 3 以上，才能圆满通关。">Complete 7 days. Discover 2 combos and keep harmony at 3+ for a dream ending.</small></div>
   </aside>
  </div>
  <div id="intro" class="overlay show" role="dialog" aria-modal="true"><div class="modal">
   <div class="kicker" data-en="7 DAYS · 7 WISHES · ONE IMPOSSIBLE TOWN" data-zh="7 天 · 7 个愿望 · 一座不可能的小镇">7 DAYS · 7 WISHES · ONE IMPOSSIBLE TOWN</div>
   <h2 data-en="Everybody is finally free." data-zh="全人类，终于不用上班了。">Everybody is finally free.</h2>
-  <div class="intro-inner">🐈 🌸 🎸 🎈<span data-en="Place wishes on the map. Discover secret combos. Watch the entire town transform." data-zh="把愿望放进小镇，碰出隐藏组合，见证整个城市发生奇妙进化。">Place wishes on the map. Discover secret combos. Watch the entire town transform.</span></div>
+  <div class="intro-inner">🐈 🌸 🎸 🎈<span data-en="Build two-wish combinations, link three wishes for a city-sized miracle, and keep your neighbors from falling out." data-zh="两个愿望碰出组合，三个愿望连成大型奇观，同时别让居民们吵翻天。">Build two-wish combinations, link three wishes for a city-sized miracle, and keep your neighbors from falling out.</span></div>
+  <div class="intro-note" data-en="Choose your town's founding rule" data-zh="先为这座小镇定下第一条规则">Choose your town's founding rule</div>
+  <div class="charter-select" id="charterSelect">
+   <button type="button" class="charter" data-law="wonder"><span>🎲</span><b data-en="Go wild" data-zh="大胆放飞">Go wild</b><small data-en="Big scores, big arguments" data-zh="高分伴随更多分歧">Big scores, big arguments</small></button>
+   <button type="button" class="charter active" data-law="care"><span>🤝</span><b data-en="Share freedom" data-zh="共同自由">Share freedom</b><small data-en="Combos restore harmony" data-zh="组合能够恢复和谐">Combos restore harmony</small></button>
+   <button type="button" class="charter" data-law="dream"><span>✨</span><b data-en="Dream huge" data-zh="造一场大梦">Dream huge</b><small data-en="Epic wonders score more" data-zh="大型奇观更有价值">Epic wonders score more</small></button>
+  </div>
   <div class="modal-choices"><button type="button" class="button primary" id="introStart" data-en="Make my first wish" data-zh="实现第一个愿望">Make my first wish</button></div>
  </div></div>
  <div id="storyModal" class="overlay" role="dialog" aria-modal="true" aria-live="polite"><div class="modal">
@@ -211,7 +270,7 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
  <div id="end" class="overlay" role="dialog" aria-modal="true"><div class="modal end-modal">
   <div class="kicker" data-en="YOUR SEVEN-DAY STORY" data-zh="你独一无二的七日故事">YOUR SEVEN-DAY STORY</div>
   <h2 id="endTitle"></h2><div class="ending-art" id="endArt"></div>
-  <p class="end-line" id="endLine"></p><p class="end-details" id="endDetail"></p><p class="end-goal" id="endGoal"></p>
+  <p class="end-line" id="endLine"></p><p class="end-story" id="endStory"></p><p class="end-details" id="endDetail"></p><p class="end-goal" id="endGoal"></p>
   <div class="modal-choices"><button type="button" class="button primary" id="newAgain" data-en="Try another town" data-zh="再建一座小镇">Try another town</button><button type="button" class="button" id="savePostcard" data-en="Save postcard" data-zh="保存结局插画">Save postcard</button><button type="button" class="button" id="shareEnding" data-en="Share" data-zh="分享">Share</button><button type="button" class="button" id="viewTown" data-en="View town" data-zh="查看小镇">View town</button></div>
   <div class="feedback"><div id="feedbackQuestion"><div class="question" data-en="Was this town fun?" data-zh="这局好玩吗？">Was this town fun?</div><div class="feedback-buttons"><button type="button" id="feedbackFun" data-en="Fun" data-zh="好玩">Fun</button><button type="button" id="feedbackConfusing" data-en="Confusing" data-zh="没看懂">Confusing</button><button type="button" id="feedbackNotFun" data-en="Not fun" data-zh="不好玩">Not fun</button></div></div><div id="feedbackThanks" hidden data-en="Thanks for helping us improve!" data-zh="谢谢反馈！">Thanks for helping us improve!</div></div>
  </div></div>
