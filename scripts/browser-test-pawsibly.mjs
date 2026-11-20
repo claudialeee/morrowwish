@@ -171,11 +171,16 @@ try{
  console.log('Balanced compact homepage geometry:',JSON.stringify(compactLayout));
  assert.equal(compactLayout.heroWhiteSpace,'nowrap','Chinese four-world sentence must stay on a single line');
  assert.equal(compactLayout.doodles,'none','Decorations must not collide with the single-line hero');
- assert.ok(compactLayout.heroHeight<190,'Top headline must leave room for the games');
- assert.ok(compactLayout.firstCardTop<440,'First flagship game card must be visible near the top');
+ assert.ok(compactLayout.heroHeight>=190&&compactLayout.heroHeight<315,'Hero needs visual breathing room while showing games on first screen');
+ assert.ok(compactLayout.firstCardTop<505,'First flagship game card must remain visible on first screen');
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
- assert.ok(compactLayout.firstCardHeight>=290&&compactLayout.firstCardHeight<=340,'Flagship game cards must be reduced from their old 480px height');
+ assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
+ const bondImage=page.locator('.bond-feature-card .feature-art img');
+ assert.ok((await bondImage.getAttribute('src'))?.startsWith('/art/cat-bond-home.webp'), 'Cat Bond should use the approved friendship illustration');
+ await bondImage.scrollIntoViewIfNeeded();
+ await page.waitForFunction(()=>{const im=document.querySelector('.bond-feature-card .feature-art img');return im?.complete&&im.naturalWidth>0;},null,{timeout:10000});
+ assert.equal(await bondImage.evaluate(im=>im.naturalWidth),480,'Approved garden illustration must load as the optimized WebP');
  await page.evaluate(()=>window.MorrowwishI18n.set('en'));
  const homeEn=await page.evaluate(()=>({
   order:[...document.querySelectorAll('.feature-grid>article')].map(x=>x.querySelector('a[data-id]')?.dataset.id),
