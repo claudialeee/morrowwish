@@ -841,3 +841,38 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
     box-shadow:inset 0 0 0 2px #ffffffa0}
   #cr{width:200px!important;height:156px!important}
 }
+
+/* New-player screens share the bright, illustrated garden palette instead of
+   suddenly switching to dark purple panels. Other management screens remain as-is. */
+#panel>.card.cat-highlight-card{
+ background:linear-gradient(152deg,#fffaf0 0%,#f3f7ed 63%,#f0e5dd 100%);
+ color:#385347;border:1.5px solid #ddceb0;
+ box-shadow:0 22px 62px rgba(19,48,32,.27);
+}
+#panel .cat-highlight-card h2,#panel .cat-highlight-card h3{color:#395d4a}
+#panel .cat-highlight-card .sub,#panel .cat-highlight-card .tiny{color:#647b69}
+#panel .cat-highlight-card .card-close{color:#5b7567}
+#panel .cat-highlight-card .btn{background:#dceada;color:#365645;border:1px solid #bbd4c0}
+#panel .cat-highlight-card .btn.gold{background:linear-gradient(135deg,#f5dc93,#f1bc77);
+ color:#493523;border:1px solid #d6ac70;font-weight:900}
+#panel .cat-highlight-card .btn.ghost{background:rgba(255,255,255,.7);border:1px solid #ccdacd;color:#506d5c}
+#panel .cat-highlight-card .dex-cell{font-family:inherit;color:#3d5948;
+ background:rgba(255,255,255,.74);border:1.5px solid #d8d9c4;box-shadow:0 4px 12px #4a69420d;
+ border-radius:15px;min-width:0}
+#panel .cat-highlight-card .dex-cell:hover,#panel .cat-highlight-card .dex-cell:focus-visible{
+ border-color:#75ad8d;box-shadow:0 5px 15px #47956c25;outline:none}
+#panel .cat-highlight-card .dex-cell .name{color:#315340}
+#panel .cat-highlight-card .rarity-N{color:#647366}
+#panel .cat-highlight-card .rarity-R{color:#366d9a}
+#panel .cat-highlight-card .rarity-SR{color:#744ba7}
+#panel .cat-highlight-card .rarity-SSR{color:#996d2f}
+#panel .cat-highlight-card .roster .chip{background:#ffffffbb;color:#425f4b;border:1px solid #d0ddcb}
+#panel .cat-highlight-card .roster .chip.sel{background:#d9edda;border-color:#65a883}
+#panel .cat-highlight-card .journey-path{background:#ffffffb9;border:1px solid #d8e3d5}
+#panel .cat-highlight-card .journey-copy b{color:#385847}
+#panel .cat-highlight-card .journey-copy p{color:#607766}
+#panel .cat-highlight-card .journey-progress{background:#dbe7db}
+#panel .cat-highlight-card .collection-reward{color:#82622e}
+#panel .cat-starter-card .dex-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#panel .cat-starter-card .dex-cell{padding:9px 6px}
+@media(max-width:360px){#panel .cat-starter-card .dex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

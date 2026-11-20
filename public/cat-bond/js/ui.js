@@ -709,6 +709,7 @@ const UI = {
         <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">⚙️ AI策略</button>
         <button class="btn ghost" id="cp-cancel">放它走</button>
       </div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     CatArt.renderCatThumb(document.getElementById('cp-wild'), wildSp);
     const roster = document.getElementById('cp-roster');
     const refreshSel = () => roster.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('sel', this.teamUids.includes(ch.dataset.uid)));
@@ -816,6 +817,7 @@ const UI = {
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
         <button class="btn ghost" id="cr-journey">${english?'What else can I do?':'还有什么可以玩？'}</button>
       </div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
     const dismiss=()=>{
       this.closeAll();
@@ -872,6 +874,7 @@ const UI = {
           </div><button class="btn gold" id="journey-explore">${en?'Explore':'探索'}</button>
         </article>
       </div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.getElementById('journey-collect').onclick=()=>{
       this.closeAll();
       if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}
@@ -888,14 +891,14 @@ const UI = {
   // ---------- starter picker (first run) ----------
   openStarter(onPick) {
     const options = GameData.SPECIES.filter(s => s.rarity === 'N').slice(0, 3);
-    const chips = options.map(sp => `<div class="dex-cell" data-id="${sp.id}">
+    const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${sp.name}">
       <canvas width="90" height="76"></canvas>
       <div class="name">${sp.name}</div>
       <div class="rarity rarity-N">普通</div>
       <div class="tiny">${sp.desc}</div>
-    </div>`).join('');
+    </button>`).join('');
     const p = document.getElementById('panel');
-    p.innerHTML = `<div class="card"><h2 class="center">选择你的第一只猫猫</h2>
+    p.innerHTML = `<div class="card cat-highlight-card cat-starter-card"><h2 class="center">选择你的第一只猫猫</h2>
       <p class="sub center">它会陪你一起去捕捉更多伙伴</p>
       <div class="dex-grid">${chips}</div></div>`;
     p.dataset.mandatory = 'true';
