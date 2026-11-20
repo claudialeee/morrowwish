@@ -304,6 +304,18 @@ canvas { display: block; width: 100%; height: 100%; }
 @keyframes logoIn { from{ opacity:0; transform: scale(0.8) translateY(10px);} to{ opacity:1; transform:none;} }
 #intro.hide { display:none; }
 
+/* 30-second onboarding card on the intro screen */
+.intro-guide { width: min(520px, 92vw); margin: 2px auto 2px; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 14px 16px; text-align: left; }
+.intro-guide-title { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 2px;
+  color: var(--gold); text-align: center; margin-bottom: 10px; }
+.intro-steps { display: flex; flex-direction: column; gap: 9px; }
+.intro-step { display: flex; align-items: flex-start; gap: 11px; }
+.intro-step-ico { font-size: 1.5rem; line-height: 1.1; flex: none; width: 30px; text-align: center; }
+.intro-step b { display: block; font-size: 0.9rem; color: var(--text); margin-bottom: 2px; }
+.intro-step p { font-size: 0.8rem; color: var(--muted); line-height: 1.45; margin: 0; }
+@media (max-width: 480px) { .intro-step-ico { font-size: 1.25rem; } .intro-step b { font-size: 0.85rem; } .intro-step p { font-size: 0.75rem; } }
+
 /* tiny studio footer stamp used in-game */
 .studio-stamp { position:absolute; bottom: 6px; right: 12px; z-index: 25; font-size: 0.62rem;
   letter-spacing: 2px; color: rgba(255,255,255,0.28); pointer-events:none; }

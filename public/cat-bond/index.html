@@ -17,7 +17,7 @@
   <script src="/studio-audio.js" defer></script>
 </head>
 <body>
-  <a class="cb-home" href="/" id="cb-home" aria-label="Back to Morrow Wish">← Morrow Wish</a>
+  <a class="cb-home" href="/" id="cb-home" aria-label="返回 Morrow Wish">← Morrow Wish 首页</a>
   <div id="game-root">
     <div id="stage">
       <canvas id="scene"></canvas>
@@ -97,7 +97,14 @@
         <h1 class="game-logo">猫猫纽带<span class="logo-en">Cat Bond</span></h1>
         <p>一群会思考的小猫咪住在你的庭院里。陪它们玩耍、喂养、建立<b>好感纽带</b>，
           然后带上最亲密的伙伴，去草丛里<b>捉迷藏</b>，在即时竞技场里收服更多野生猫猫。</p>
-        <p class="tiny">💡 点猫=撸猫 · 🌿=找野猫 · 战斗：WASD移动 · 鼠标瞄准 · Q/E技能 · 空格闪避 · R必杀</p>
+        <div class="intro-guide">
+          <span class="intro-guide-title">30 秒上手</span>
+          <div class="intro-steps">
+            <div class="intro-step"><span class="intro-step-ico">🐾</span><div><b>① 撸猫 & 找野猫</b><p>点击院子里的猫咪增加好感，点右下 🌿 在草丛里找野生猫猫。</p></div></div>
+            <div class="intro-step"><span class="intro-step-ico">⚔️</span><div><b>② 即时战斗</b><p>WASD 移动，鼠标瞄准，左键猫爪，Q/E 放技能，空格闪避。</p></div></div>
+            <div class="intro-step"><span class="intro-step-ico">💞</span><div><b>③ 收服 & 养成</b><p>把野猫斗志打空就能收服。喂养、培养、进化，建立更强的纽带。</p></div></div>
+          </div>
+        </div>
         <button class="btn gold" id="intro-start" style="padding:14px 34px;font-size:1.15rem">开始冒险 🐱</button>
         <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
       </div>

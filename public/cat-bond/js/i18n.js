@@ -19,6 +19,12 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    // ---- site shell (back link + aria) ----
+    '← Morrow Wish 首页': '← Morrow Wish',
+    '返回 Morrow Wish': 'Back to Morrow Wish',
+    'Morrow Wish 首页': 'Morrow Wish home',
+    '首页': 'home',
+    '返回': 'Back',
     // ---- title / studio / intro ----
     '猫猫纽带': 'Cat Bond',
     'STUDIO 工作室 呈现': 'STUDIO presents',
@@ -30,6 +36,14 @@
       '💡 Tap a cat = pet it · 🌿 = find wild cats · Battle: WASD move · aim with mouse · Q/E skills · Space dodge · R ultimate',
     '开始冒险 🐱': 'Start the adventure 🐱',
     '🗑️ 重置存档（出问题点这里）': '🗑️ Reset save (tap here if stuck)',
+    // 30-second onboarding guide
+    '30 秒上手': '30-SECOND GUIDE',
+    '① 撸猫 & 找野猫': '① Pet & find wild cats',
+    '点击院子里的猫咪增加好感，点右下 🌿 在草丛里找野生猫猫。': 'Tap cats in the yard to raise affection; tap 🌿 (bottom-right) to find wild cats in the grass.',
+    '② 即时战斗': '② Real-time battle',
+    'WASD 移动，鼠标瞄准，左键猫爪，Q/E 放技能，空格闪避。': 'WASD to move, aim with the mouse, left-click to claw, Q/E for skills, Space to dodge.',
+    '③ 收服 & 养成': '③ Capture & raise',
+    '把野猫斗志打空就能收服。喂养、培养、进化，建立更强的纽带。': "Drain a wild cat's morale to capture it. Feed, train and evolve to build stronger bonds.",
 
     // ---- HUD / tab bar / yard actions ----
     '🏡 庭院': '🏡 Yard',
@@ -614,11 +628,12 @@
     busy = true;
     if (observer) observer.disconnect();
     walk(document.body);
-    // Localize the document title and <html lang> for English mode.
+    // Localize the document title. The page ships an English <title> for SEO;
+    // Chinese mode needs an explicit Chinese form (it has no Han to convert).
     try {
-      var savedTitle = originals.get(document);
-      if (savedTitle === undefined) { savedTitle = { zh: document.title, en: toEnglish(document.title) }; originals.set(document, savedTitle); }
-      document.title = lang() === 'en' ? savedTitle.en : savedTitle.zh;
+      document.title = lang() === 'en'
+        ? 'Cat Bond — Raise cats, capture wild ones | Morrow Wish'
+        : '猫猫纽带 — 养猫、收服野猫 | Morrow Wish';
     } catch (e) {}
     if (observer) observer.observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ATTRS });
     busy = false;
