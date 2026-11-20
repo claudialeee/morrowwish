@@ -256,11 +256,11 @@ async function finalSubmit(page,id,rec){
  if(!(await submit.count())||!(await submit.isEnabled().catch(()=>false))){
     rec.status='final-step-incomplete';return;
  }
- await submit.click({timeout:14000}).catch(e=>{throw Error('Final submit click failed: '+mask(e.message,250))});
+ await submit.evaluate(el=>el.click()).catch(e=>{throw Error('Final submit click failed: '+mask(e.message,250))});
  await sleep(2400);
  const confirmation=page.getByRole('button',{name:/^confirm(?: submission)?$|^yes,? submit$|^submit game$/i});
  if(await confirmation.count() && await confirmation.last().isVisible().catch(()=>false)){
-   await confirmation.last().click({timeout:7000});
+   await confirmation.last().evaluate(el=>el.click());
    await sleep(2600);
  }
  rec.submitResult=await readStage(page);
