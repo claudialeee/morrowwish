@@ -175,6 +175,7 @@ function defaultRaising() {
     butterfly: { active: false, spawnAt: 0 },
     mementos: {},
     firstSunPay:false,
+    firstSunCollected:false,
   };
 }
 
@@ -192,6 +193,7 @@ function init() {
   if (!('breeding' in r)) r.breeding = null;
   if (!r.mementos) r.mementos = {};
   if(r.firstSunPay==null)r.firstSunPay=!!(r.stations||[]).find(st=>st.type==='sun'&&(st.assignedUid||st.stored));
+  if(r.firstSunCollected==null)r.firstSunCollected=!!r.firstSunPay;
   (State.S.cats || []).forEach(ensureCatFields);
   return r;
 }
@@ -266,7 +268,7 @@ function assignCat(stationId, uid) {
   let firstPay=0;
   if(st.type==='sun'&&!raising().firstSunPay){
     firstPay=Math.min(12,Math.max(0,stationCap(st)-st.stored));
-    st.stored+=firstPay;raising().firstSunPay=true;
+    st.stored+=firstPay;raising().firstSunPay=true;raising().firstSunCollected=false;
   }
   return {ok:true,firstPay};
 }
@@ -291,7 +293,10 @@ function collect(stationId) {
   const t = st && STATION_TYPES[st.type];
   if (!st || !t || !t.res) return { res: null, amount: 0 };
   const amount = Math.floor(st.stored);
-  if (amount > 0) { resWallet(t.res, amount); st.stored -= amount; }
+  if (amount > 0) {
+    resWallet(t.res,amount);st.stored-=amount;
+    if(st.type==='sun'&&raising().firstSunPay)raising().firstSunCollected=true;
+  }
   return { res: t.res, amount };
 }
 

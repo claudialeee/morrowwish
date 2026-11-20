@@ -110,6 +110,15 @@ try{
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
         await page.waitForSelector('#cr-newskill',{timeout:5000});
+        await page.waitForSelector('#cr-duo',{timeout:5000});
+        const unlockedDuo=await page.evaluate(()=>{
+          const cats=State.S.cats;
+          const duo=window.CatRelations?.active(cats);
+          return {ready:!!duo,name:duo?.name||'',points:duo?.value||0};
+        });
+        assert.equal(unlockedDuo.ready,true,'First captured cat forms a usable duo');
+        assert.ok(unlockedDuo.name.length>=4,'New duo must have a named elemental move');
+        assert.ok(unlockedDuo.points>=20,'The first duo starts with enough trust to fight');
         const firstMove=await page.evaluate(()=>{
           const starter=State.S.cats[0];
           return {skill:starter.loadout?.[2],awakened:starter.skillAwakened};
@@ -147,6 +156,12 @@ try{
           'Collection, skills, workshop, bonding and exploration should all be discoverable');
         assert.equal(await page.locator('#journey-workshop').count(),1,
           'Workshop must be reachable directly from the adventure guide');
+        await page.locator('#journey-duo').click();
+        await page.waitForSelector('#duo-play');
+        assert.ok((await page.locator('.duo-relation').innerText()).length>10,
+          'Duo relationship management must display a real trust meter');
+        await page.locator('#duo-return').click();
+        await page.waitForSelector('#journey-collect');
         assert.equal(await page.locator('#journey-skills').count(),1,
           'The newly learned skill must have a visible progression route');
         await page.locator('#journey-skills').click();
@@ -170,6 +185,16 @@ try{
         }));
         await page.locator('#dx-rematch').click();
         await page.waitForFunction(()=>window.__game.scene==='battle');
+        const duoDamage=await page.evaluate(()=>{
+          const b=window.__game.battle;
+          if(!b?.duo)return null;
+          b.duoCharge=100;
+          const target=b.enemies[0],before=target.hp;
+          const cast=b.castDuo();
+          return {cast,damage:before-target.hp,uses:b.duoUses};
+        });
+        assert.ok(duoDamage?.cast&&duoDamage.damage>0&&duoDamage.uses===1,
+          'Real duo move must activate and deal damage, not just display a name');
         await page.evaluate(()=>{
           const g=window.__game,b=g.battle;
           if(!b.masteryChallenge)throw Error('Codex rematch entered normal capture');

@@ -203,7 +203,7 @@ const UI = {
     const sun=stations.find(st=>st.type==='sun');
     const rate=Number(sun?.ratePerHour||0);
     const pending=stations.reduce((n,st)=>n+st.stored,0);
-    const firstPay=!!(State.S.raising?.firstSunPay&&sun?.stored>0);
+    const firstPay=!!(State.S.raising?.firstSunPay&&!State.S.raising?.firstSunCollected&&sun?.stored>0);
     const descriptions={
       sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on food, treats and upgrades':'金币用于喂猫、买零食、升级工坊'],
       fishing:[en?'Catch fish':'钓小鱼干',en?'Train cat levels and buy rare-cat lures':'小鱼干用于练级、买稀有诱饵'],
