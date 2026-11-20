@@ -1,0 +1,98 @@
+/* Cat Bond: source-of-truth visual renderer for the original illustrated kittens.
+   Intentionally replaces only visuals. All game species IDs, movement, input,
+   battles, saves, progression and collision systems remain untouched. */
+(()=>{
+  'use strict';
+  if (!window.CatArt || !window.CAT_BOND_KITTEN_ATLAS) return;
+  const drawing=window.CatArt;
+  const source=new Image();
+  let loaded=false;
+  const w=60,h=90;
+  const indices={
+    // Six original kitten illustrations, in the same order as the reference.
+    tangyuan:0,doudou:3,xiaohui:3,moqiu:5,nainai:4,nietu:4,niuniu:2,
+    sanhua:1,lixiao:2,lanbao:3,dundun:3,yunduo:4,zherdd:4,
+    qisi:0,duanduan:0,jinjc:0,xianluo:4,yinghua:4,senlin:0,
+    youling:5,nuowei:0,baomao:0,jinwu:0,yuelian:4,xingchen:5
+  };
+  const paletteIndex={
+    orange:0,brownTabby:0,silver:3,tux:2,white:4,black:5,cream:4,
+    calico:1,blue:3,ragdoll:4,siamese:4,maine:0,flame:0,cloud:4,
+    mystic:5,goldShaded:0,apricot:0,cheese:0,norwegian:0,bengal:0
+  };
+  const fallbackDraw=drawing.drawCat;
+  function indexOf(options){
+    const sp=options.species||{};
+    if(sp.id&&Object.prototype.hasOwnProperty.call(indices,sp.id)) return indices[sp.id];
+    return paletteIndex[options.palette||sp.palette]??0;
+  }
+  function render(ctx,x,y,options){
+    const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
+    // An image draws as soon as its first frame has decoded. On older browsers
+    // without AVIF decoding, preserve playability with the legacy renderer.
+    if(!loaded){fallbackDraw(ctx,x,y,o);return;}
+    const gr=o.growth||null;
+    const scale=(o.scale||1)*(gr?.scale||1);
+    const face=o.face===-1?-1:1;
+    const hop=pose==='play'?Math.abs(Math.sin(t*7))*5:0;
+    const sway=pose==='walk'?Math.sin(t*8)*.055:
+      pose==='sleep'?Math.sin(t*1.5)*.012:
+      pose==='belly'?Math.sin(t*4)*.10:
+      Math.sin(t*1.5)*.022;
+    const bob=pose==='walk'?Math.abs(Math.sin(t*8))*2:
+      Math.sin(t*2)*.55;
+    ctx.save();
+    ctx.translate(x,y-hop-bob);
+    ctx.scale(face*scale,scale);
+    if(gr?.aura){
+      const aura=ctx.createRadialGradient(0,0,3,0,0,55);
+      aura.addColorStop(0,'rgba(255,255,255,0)');
+      aura.addColorStop(.62,gr.aura+'30');
+      aura.addColorStop(1,gr.aura+'00');
+      ctx.fillStyle=aura;ctx.beginPath();ctx.ellipse(0,0,55,45,0,0,Math.PI*2);ctx.fill();
+    }
+    ctx.rotate(sway);
+    // A subtle, transparent shadow anchors the photographed character to
+    // the painted yard; no rectangular backgrounds or vector replacement.
+    ctx.fillStyle='rgba(73,63,51,.12)';
+    ctx.beginPath();ctx.ellipse(0,33,27,4.3,0,0,Math.PI*2);ctx.fill();
+    ctx.drawImage(source,indexOf(o)*w,0,w,h,-30,-55,60,90);
+    if(mood==='love'){
+      ctx.fillStyle='#ef8fa8';ctx.font='13px system-ui';
+      ctx.fillText('♥',22,-38-Math.sin(t*3)*2);
+    }
+    if(gr?.gem){
+      ctx.fillStyle=gr.gemColor||'#e8bb68';ctx.font='12px system-ui';
+      ctx.fillText('✦',20,-47);
+    }
+    if(gr?.sparkle){
+      ctx.fillStyle=gr.gemColor||'#e8bb68';ctx.font='10px system-ui';
+      ctx.fillText('✧',-26,-36);
+    }
+    ctx.restore();
+  }
+  function thumbnail(canvas,species){
+    const ctx=canvas.getContext('2d');if(!ctx)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // The same real illustration is used in every thumbnail and card.
+    const scale=Math.min(canvas.width/63,canvas.height/90)*.88;
+    render(ctx,canvas.width/2,canvas.height*.57,{
+      species,scale,pose:'sit',mood:'neutral',t:0.6
+    });
+  }
+  drawing.drawCat=render;
+  drawing.renderCatThumb=thumbnail;
+  source.onload=()=>{
+    loaded=source.naturalWidth===w*6&&source.naturalHeight===h;
+    if(!loaded)return;
+    // Intro uses a static canvas; repaint once the atlas is decoded.
+    if(typeof window.paintIntroCatGallery==='function'){
+      try{window.paintIntroCatGallery();}catch(_){}
+    }
+    window.dispatchEvent(new Event('cat-bond-illustrations-ready'));
+  };
+  source.onerror=()=>{
+    console.warn('Cat Bond kitten art failed to load; retaining playable fallback.');
+  };
+  source.src=window.CAT_BOND_KITTEN_ATLAS;
+})();
