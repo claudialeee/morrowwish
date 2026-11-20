@@ -67,6 +67,25 @@ try{
             origin:new URL(p.url()).origin,path:new URL(p.url()).pathname,
             body:redact(await p.locator('body').innerText().catch(()=>'' )).slice(-1300)
          })));
+         const next=context.pages().find(p=>p.url().startsWith(root+'/qa-continue/'));
+         if(next){
+           await next.getByText('Details',{exact:true}).first().waitFor({timeout:14000}).catch(()=>{});
+           await next.waitForTimeout(1500);
+           let t=await next.locator('body').innerText().catch(()=>'' );
+           if(t.length<70){
+             await next.reload({waitUntil:'domcontentloaded',timeout:20000}).catch(()=>{});
+             await next.waitForTimeout(4500);
+             t=await next.locator('body').innerText().catch(()=>'' );
+           }
+           report.qaNavigation.detailsPage={
+             path:new URL(next.url()).pathname,text:redact(t),
+             buttons:await next.locator('button:visible').allTextContents().catch(()=>[]),
+             fields:await next.locator('input,textarea,select').evaluateAll(xs=>xs.filter(el=>el.getBoundingClientRect().width>0)
+               .map(el=>({type:el.type,name:el.name,placeholder:el.placeholder,required:el.required})).slice(0,45)),
+             fileInputs:await next.locator('input[type=file]').count()
+           };
+         }
+
        }
      }
    }
