@@ -26,6 +26,11 @@ main{max-width:1080px;margin:auto;padding:10px 22px 38px}.heading{text-align:cen
 .hint{color:#c18a5c;text-align:center;font-size:12px;font-weight:850;line-height:1.6;min-height:20px;margin-top:9px}.under{display:flex;justify-content:space-between;gap:10px;margin-top:12px;color:#7a9289;font-size:12px}.restart{border:0;background:none;text-decoration:underline;color:#577e75;font-size:12px;padding:0}.footer{text-align:center;color:#9aac9e;font-size:11px;margin-top:20px}
 .pop{position:absolute;pointer-events:none;font-size:17px;font-weight:950;white-space:nowrap;text-shadow:0 2px 2px #145453;animation:float .9s ease-out forwards;color:#ffdfa1}@keyframes float{0%{opacity:0;transform:translate(-50%,0)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px)}}.pop.bad{color:#ffc4af}
 @media(max-width:600px){header{padding:15px 15px 6px}main{padding:8px 11px 25px}.heading{margin:6px 0 16px}.heading h1{font-size:39px}.heading p{font-size:12px}.shell{padding:9px;border-radius:20px}.stat{border-radius:12px;padding:9px 2px}.stat strong{font-size:23px}.tank{height:390px}.meter{padding:9px}.foods{gap:6px}.food{gap:5px}.food .shortcut{display:none}.food .dot{width:15px;height:15px}.food .food-label{font-size:11px}.hint{font-size:11px}.in-water{font-size:10px}.under{font-size:11px}}
+.overlay[data-ending="festival"]{background:linear-gradient(150deg,#2a776fef,#26678cfa)}
+.overlay[data-ending="clear"]{background:linear-gradient(150deg,#216e8ceF,#2d8b8bfa)}
+.overlay[data-ending="friends"]{background:linear-gradient(150deg,#426a85ef,#3c817cfa)}
+.overlay[data-ending="rest"],.overlay[data-ending="calm"]{background:linear-gradient(150deg,#3d6a77ef,#487d77fa)}
+.overlay[data-ending]:not([data-ending=""]) .fish-icon{font-size:64px;filter:drop-shadow(0 5px 9px #0b373640)}
 </style>
 </head>
 <body data-game="pocket-aquarium">
@@ -43,28 +48,57 @@ main{max-width:1080px;margin:auto;padding:10px 22px 38px}.heading{text-align:cen
 const $=id=>document.getElementById(id),tank=$('tank'),canvas=$('sea'),ctx=canvas.getContext('2d');
 const palette=['#ffaf76','#91ddae','#ff9dbd'],bestKey='mw:pocket-aquarium:best-v2',challengeGoal=Math.min(10000000,Math.max(0,Number(new URLSearchParams(location.search).get('beat'))||0));
 const I={
-en:{eyebrow:'A LITTLE OCEAN · A BIG CHALLENGE',subtitle:'Feed the right fish at the right time. Make a splash in 60 seconds.',score:'SCORE',time:'TIME LEFT',best:'BEST',water:'WATER QUALITY',combo:'COMBO',shrimp:'Shrimp',algae:'Algae',plankton:'Plankton',inWater:'Tap near hungry fish to drop matching food',instructions:'Choose food → watch for colorful hungry bubbles → tap!',restart:'Restart ↻',footer:'Made for tiny moments of joy · Morrow Wish',stock:'Food left: {n} · +1 every 2s',title:'Feed Frenzy!',startDesc:'Pick a food color, then feed fish with matching hungry bubbles.',startTip:'Aim ahead of moving fish. Wrong food and wasted drops dirty the water!',startButton:"LET’S PLAY · 60s",overTitle:"Time’s up!",dirtyTitle:'Oh no, cloudy water!',overDesc:'{score} points · {fed} fish fed · best combo ×{combo}',grade:'Grade {grade} · {quality}% water clarity',again:'PLAY AGAIN',good:'YUM! +{n}',bad:'WASTED FOOD',starved:'SO HUNGRY!',confirm:'Start a new game?'},
-zh:{eyebrow:'小小海洋 · 大大挑战',subtitle:'选对鱼食，抓准时机。60 秒成为喂鱼高手。',score:'得分',time:'剩余时间',best:'最高分',water:'水质',combo:'连击',shrimp:'虾粒',algae:'海藻',plankton:'浮游生物',inWater:'点击饥饿鱼儿附近，投下对应鱼食',instructions:'选鱼食 → 看鱼儿头顶的彩色气泡 → 瞄准投喂！',restart:'重新开始 ↻',footer:'给日常添一点小快乐 · Morrow Wish',stock:'剩余鱼食：{n} · 每 2 秒补充 1 份',title:'喂鱼大挑战！',startDesc:'选择鱼食颜色，投喂头顶同色气泡的饥饿鱼儿。',startTip:'鱼儿会游动，要提前预判！投错、浪费鱼食都会污染水质。',startButton:'开始挑战 · 60 秒',overTitle:'时间到！',dirtyTitle:'哎呀，水太浑浊了！',overDesc:'获得 {score} 分 · 成功喂食 {fed} 次 · 最高连击 ×{combo}',grade:'评级 {grade} · 水质 {quality}%',again:'再玩一次',good:'好吃！+{n}',bad:'浪费鱼食',starved:'饿坏啦！',confirm:'重新开始本局吗？'}};
+en:{eyebrow:'A LITTLE OCEAN · A BIG CHALLENGE',subtitle:'Feed the right fish at the right time. Make a splash in 60 seconds.',score:'SCORE',time:'TIME LEFT',best:'BEST',water:'WATER QUALITY',combo:'COMBO',shrimp:'Shrimp',algae:'Algae',plankton:'Plankton',inWater:'Tap near hungry fish to drop matching food',instructions:'Choose food → watch for colorful hungry bubbles → tap!',restart:'Restart ↻',footer:'Made for tiny moments of joy · Morrow Wish',stock:'Food left: {n} · +1 every 2s',title:'Feed Frenzy!',startDesc:'Pick a food color, then feed fish with matching hungry bubbles.',startTip:'Watch each hungry bubble, choose the matching food, then tap nearby. Correct feeds help keep the water clear!',startButton:"LET’S PLAY · 60s",overTitle:"Time’s up!",dirtyTitle:'A Little Ocean Reset',overDesc:'{score} points · {fed} fish fed · best combo ×{combo}',grade:'Grade {grade} · {quality}% water clarity',again:'PLAY AGAIN',good:'YUM! +{n}',bad:'MISSED',starved:'A LITTLE HUNGRY',confirm:'Start a new game?'},
+zh:{eyebrow:'小小海洋 · 大大挑战',subtitle:'选对鱼食，抓准时机。60 秒成为喂鱼高手。',score:'得分',time:'剩余时间',best:'最高分',water:'水质',combo:'连击',shrimp:'虾粒',algae:'海藻',plankton:'浮游生物',inWater:'点击饥饿鱼儿附近，投下对应鱼食',instructions:'选鱼食 → 看鱼儿头顶的彩色气泡 → 瞄准投喂！',restart:'重新开始 ↻',footer:'给日常添一点小快乐 · Morrow Wish',stock:'剩余鱼食：{n} · 每 2 秒补充 1 份',title:'喂鱼大挑战！',startDesc:'选择鱼食颜色，投喂头顶同色气泡的饥饿鱼儿。',startTip:'先观察鱼儿头顶的彩色气泡，选同色鱼食，再点击附近投喂。成功喂食也能改善水质。',startButton:'开始挑战 · 60 秒',overTitle:'时间到！',dirtyTitle:'小小海洋休息日',overDesc:'获得 {score} 分 · 成功喂食 {fed} 次 · 最高连击 ×{combo}',grade:'评级 {grade} · 水质 {quality}%',again:'再玩一次',good:'好吃！+{n}',bad:'没投中',starved:'有点饿啦',confirm:'重新开始本局吗？'}};
 let lang='en',best=0;
 try{lang=new URLSearchParams(location.search).get('lang')||localStorage.getItem('morrowwish.language')||localStorage.getItem('mw:lang')||((navigator.language||'en').toLowerCase().startsWith('zh')?'zh':'en');best=Number(localStorage.getItem(bestKey))||0;}catch(e){}if(lang!=='zh')lang='en';
-let state='ready',played=false,score=0,time=60,quality=100,combo=0,maxCombo=0,fed=0,stock=24,choice=0,elapsed=0,stockClock=2,spawnClock=0,fish=[],pellets=[],bubbles=[],sparks=[],W=800,H=440,previous=0,frameId=0;
+let state='ready',played=false,score=0,time=60,quality=100,combo=0,maxCombo=0,fed=0,stock=24,choice=0,elapsed=0,stockClock=2,spawnClock=0,fish=[],pellets=[],bubbles=[],sparks=[],W=800,H=440,previous=0,frameId=0,lastEnding='calm',lastGrade='D';
 const rand=(a,b)=>a+Math.random()*(b-a),cap=(v,a,b)=>Math.min(b,Math.max(a,v)),tr=(k,obj={})=>String(I[lang][k]||k).replace(/\{(\w+)\}/g,(_,key)=>String(obj[key]??''));
 function metric(name,details={}){try{window.arcadeMetric?.(name,details)}catch(e){}}
 function size(){const r=tank.getBoundingClientRect(),oldW=W,oldH=H;W=Math.max(310,r.width);H=Math.max(260,r.height);const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);if(fish.length){for(const f of fish){f.x=cap(f.x*W/oldW,42,W-42);f.y=cap(f.y*H/oldH,78,H-52)}}}
 function fishMaker(i){return {type:i%3,x:rand(58,Math.max(59,W-58)),y:rand(90,H-65),vx:rand(25,58)*(Math.random()<.5?-1:1),vy:rand(-14,14),size:rand(24,33),wait:rand(.5,5),starve:0,blink:rand(0,7),eatFlash:0};}
-function init(){score=0;time=60;quality=100;combo=0;maxCombo=0;fed=0;stock=24;choice=0;elapsed=0;stockClock=2;spawnClock=0;pellets=[];sparks=[];bubbles=[];fish=Array.from({length:5},(_,i)=>fishMaker(i));fish.forEach((f,i)=>f.wait=.4+i*1.05);choose(0);hud();}
+function init(){score=0;time=60;quality=100;combo=0;maxCombo=0;fed=0;stock=24;choice=0;elapsed=0;stockClock=2;spawnClock=0;lastEnding='calm';lastGrade='D';pellets=[];sparks=[];bubbles=[];fish=Array.from({length:5},(_,i)=>fishMaker(i));fish.forEach((f,i)=>f.wait=.4+i*1.05);choose(0);hud();}
 function begin(){if(played)metric('game_retry');played=true;init();state='playing';$('overlay').hidden=true;previous=performance.now();metric('game_start',{lang});}
-function finish(dirty=false){if(state!=='playing')return;state='done';let grade=score>=710&&quality>=60?'S':score>=480?'A':score>=290?'B':score>=130?'C':'D';if(score>best){best=score;try{localStorage.setItem(bestKey,String(best))}catch(e){}}hud();modal('done',dirty,grade);metric('game_complete',{score,best,grade,fed,quality:Math.round(quality),duration:Math.round(elapsed),reason:dirty?'dirty':'time'});}
-function modal(mode,dirty=false,grade='D'){$('overlay').hidden=false;$('endIcon').textContent=mode==='start'?'🐠':grade==='S'?'🏆':'🐡';$('modalTitle').textContent=tr(mode==='start'?'title':dirty?'dirtyTitle':'overTitle');$('modalDescription').textContent=mode==='start'?tr('startDesc'):tr('overDesc',{score,fed,combo:maxCombo});$('modalTip').textContent=(mode==='start'?tr('startTip'):tr('grade',{grade,quality:Math.round(quality)}))+(challengeGoal?' · '+(lang==='zh'?(mode==='start'?'好友挑战：超越 ':'好友挑战 '+(score>challengeGoal?'成功！':'目标 ')):(mode==='start'?'Friend challenge: Beat ':'Friend challenge: '+(score>challengeGoal?'Beaten! ':'Target ')))+(mode==='done'&&score>challengeGoal?'':challengeGoal):'');$('start').textContent=tr(mode==='start'?'startButton':'again');}
-function language(l){lang=l==='zh'?'zh':'en';document.documentElement.lang=lang==='zh'?'zh-CN':'en';try{localStorage.setItem('mw:lang',lang);localStorage.setItem('morrowwish.language',lang);const u=new URL(location.href);u.searchParams.set('lang',lang);history.replaceState({},'',u.pathname+u.search+u.hash);}catch(e){}$('home').href='../?lang='+lang;document.querySelectorAll('[data-i]').forEach(n=>n.textContent=tr(n.dataset.i));$('en').classList.toggle('active',lang==='en');$('zh').classList.toggle('active',lang==='zh');hud();if(state!=='playing')modal(state==='done'?'done':'start',quality<=0,score>=710?'S':score>=480?'A':score>=290?'B':score>=130?'C':'D');}
+// Each finished run tells a different, encouraging story based on actual play.
+const ENDINGS={
+ festival:{icon:'🪸',en:'The Reef Is Celebrating!',zh:'海底庆典！',
+  enDesc:'The fish have had a wonderful feast. Your little reef is full of life.',
+  zhDesc:'鱼儿们吃得开心，珊瑚礁里热热闹闹。你把这里照顾得真好。'},
+ clear:{icon:'🐬',en:'Crystal Blue Cove',zh:'清澈的蓝色小湾',
+  enDesc:'The water is sparkling and the fish are swimming happily through your peaceful cove.',
+  zhDesc:'水清清亮亮，鱼儿自在地游过。这里成了它们最喜欢的小海湾。'},
+ friends:{icon:'🐟',en:'A New Fish Friend',zh:'鱼儿的新朋友',
+  enDesc:'The fish recognize their new keeper. Come back and discover more little moments together.',
+  zhDesc:'鱼儿渐渐熟悉了你。再来陪它们玩一局，还会有新的惊喜。'},
+ rest:{icon:'🫧',en:'A Little Ocean Reset',zh:'小小海洋休息日',
+  enDesc:'The water needs a little rest, but your fish are doing fine. Every ocean gets a fresh start.',
+  zhDesc:'水质还可以再改善，鱼儿们先悠闲地休息一下。下一局又是新的开始。'},
+ calm:{icon:'🐠',en:'A Peaceful Ocean Afternoon',zh:'平静的海洋午后',
+  enDesc:'A quiet afternoon by the water. The fish will be here when you visit again.',
+  zhDesc:'悠闲的一天过去了，鱼儿还在水里轻轻游动。下次再来看看吧。'}
+};
+function endingFor(){return quality<40?'rest':score>=420&&fed>=9&&quality>=55?'festival':quality>=78&&fed>=4?'clear':fed>=4||score>=110?'friends':'calm';}
+function gradeFor(){return score>=710&&quality>=60?'S':score>=480&&quality>=55?'A':score>=290?'B':score>=130?'C':'D';}
+function finish(){if(state!=='playing')return;state='done';lastGrade=gradeFor();lastEnding=endingFor();
+ if(score>best){best=score;try{localStorage.setItem(bestKey,String(best))}catch(e){}}
+ hud();modal('done');metric('game_complete',{score,best,grade:lastGrade,fed,quality:Math.round(quality),duration:Math.round(elapsed),reason:'time',ending:lastEnding});}
+function modal(mode){const end=ENDINGS[lastEnding];$('overlay').hidden=false;
+ $('overlay').dataset.ending=mode==='done'?lastEnding:'';
+ $('endIcon').textContent=mode==='start'?'🐠':end.icon;
+ $('modalTitle').textContent=mode==='start'?tr('title'):lang==='zh'?end.zh:end.en;
+ $('modalDescription').textContent=mode==='start'?tr('startDesc'):lang==='zh'?end.zhDesc:end.enDesc;
+ $('modalTip').textContent=(mode==='start'?tr('startTip'):tr('overDesc',{score,fed,combo:maxCombo})+' · '+tr('grade',{grade:lastGrade,quality:Math.round(quality)}))+
+ (challengeGoal?' · '+(lang==='zh'?(mode==='start'?'好友挑战：超越 ':'好友挑战 '+(score>challengeGoal?'成功！':'目标 ')):(mode==='start'?'Friend challenge: Beat ':'Friend challenge: '+(score>challengeGoal?'Beaten! ':'Target ')))+(mode==='done'&&score>challengeGoal?'':challengeGoal):'');
+ $('start').textContent=tr(mode==='start'?'startButton':'again');}
+function language(l){lang=l==='zh'?'zh':'en';document.documentElement.lang=lang==='zh'?'zh-CN':'en';try{localStorage.setItem('mw:lang',lang);localStorage.setItem('morrowwish.language',lang);const u=new URL(location.href);u.searchParams.set('lang',lang);history.replaceState({},'',u.pathname+u.search+u.hash);}catch(e){}$('home').href='../?lang='+lang;document.querySelectorAll('[data-i]').forEach(n=>n.textContent=tr(n.dataset.i));$('en').classList.toggle('active',lang==='en');$('zh').classList.toggle('active',lang==='zh');hud();if(state!=='playing')modal(state==='done'?'done':'start');}
 function choose(c){choice=c;document.querySelectorAll('.food').forEach(b=>{const on=Number(b.dataset.food)===c;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on))});}
 function hud(){$('score').textContent=score;$('time').textContent=Math.ceil(time);$('best').textContent=Math.max(best,score);$('waterTxt').textContent=Math.round(quality)+'%';$('waterBar').style.width=quality+'%';$('waterBar').classList.toggle('warning',quality<40);$('comboTxt').textContent='×'+combo;$('comboBar').style.width=cap(combo/9*100,0,100)+'%';$('stock').textContent=tr('stock',{n:stock});}
 function popup(x,y,s,bad=false){const e=document.createElement('span');e.className='pop'+(bad?' bad':'');e.style.left=x+'px';e.style.top=y+'px';e.textContent=s;tank.appendChild(e);setTimeout(()=>e.remove(),900);}
-function miss(p){quality=cap(quality-7,0,100);combo=0;popup(p.x,p.y,tr('bad'),true);for(let i=0;i<7;i++)sparks.push({x:p.x,y:p.y,vx:rand(-38,38),vy:rand(-25,15),life:rand(.3,.65),r:rand(2,5),color:'#a5c3b3'});if(quality<=0)finish(true);}
-function feed(f,p){f.wait=rand(4,6.8);f.starve=0;f.eatFlash=.28;fed++;combo++;maxCombo=Math.max(maxCombo,combo);const points=15+Math.min(8,combo-1)*5;score+=points;quality=cap(quality+1.1,0,100);popup(f.x,f.y-f.size-12,tr('good',{n:points}));for(let i=0;i<9;i++)sparks.push({x:f.x,y:f.y,vx:rand(-60,60),vy:rand(-80,30),life:rand(.3,.75),r:rand(2,5),color:palette[p.type]});metric('feed_success',{score,points,combo});}
+function miss(p){quality=cap(quality-3,18,100);combo=0;popup(p.x,p.y,tr('bad'),true);for(let i=0;i<7;i++)sparks.push({x:p.x,y:p.y,vx:rand(-38,38),vy:rand(-25,15),life:rand(.3,.65),r:rand(2,5),color:'#a5c3b3'});}
+function feed(f,p){f.wait=rand(4,6.8);f.starve=0;f.eatFlash=.28;fed++;combo++;maxCombo=Math.max(maxCombo,combo);const points=15+Math.min(8,combo-1)*5;score+=points;quality=cap(quality+3.2,18,100);popup(f.x,f.y-f.size-12,tr('good',{n:points}));for(let i=0;i<9;i++)sparks.push({x:f.x,y:f.y,vx:rand(-60,60),vy:rand(-80,30),life:rand(.3,.75),r:rand(2,5),color:palette[p.type]});metric('feed_success',{score,points,combo});}
 function drop(e){if(state!=='playing'||stock<=0)return;const r=canvas.getBoundingClientRect();const x=cap(e.clientX-r.left,15,W-15),y=cap(e.clientY-r.top,20,H-22);stock--;pellets.push({x,y,type:choice,sink:rand(44,70),age:0,life:2.45,r:5});metric('feed_drop',{food:choice});hud();}
-function update(dt){elapsed+=dt;time=Math.max(0,time-dt);stockClock-=dt;if(stockClock<=0){stockClock+=2;stock=Math.min(26,stock+1);}spawnClock+=dt;if(spawnClock>=12&&fish.length<8){fish.push(fishMaker(fish.length));spawnClock=0;}
-for(const f of fish){f.blink+=dt*7;f.wait=Math.max(0,f.wait-dt);f.eatFlash=Math.max(0,f.eatFlash-dt);let target=null,near=Infinity;if(f.wait===0){f.starve+=dt;if(f.starve>7){quality=cap(quality-5,0,100);popup(f.x,f.y,tr('starved'),true);f.wait=rand(1.5,3);f.starve=0;combo=0;}for(const p of pellets){if(p.type!==f.type)continue;const d=Math.hypot(p.x-f.x,p.y-f.y);if(d<Math.min(215,W*.43)&&d<near){target=p;near=d;}}}
+function update(dt){elapsed+=dt;time=Math.max(0,time-dt);quality=cap(quality+.20*dt,18,100);stockClock-=dt;if(stockClock<=0){stockClock+=2;stock=Math.min(26,stock+1);}spawnClock+=dt;if(spawnClock>=12&&fish.length<8){fish.push(fishMaker(fish.length));spawnClock=0;}
+for(const f of fish){f.blink+=dt*7;f.wait=Math.max(0,f.wait-dt);f.eatFlash=Math.max(0,f.eatFlash-dt);let target=null,near=Infinity;if(f.wait===0){f.starve+=dt;if(f.starve>11){quality=cap(quality-2,18,100);popup(f.x,f.y,tr('starved'),true);f.wait=rand(1.5,3);f.starve=0;combo=0;}for(const p of pellets){if(p.type!==f.type)continue;const d=Math.hypot(p.x-f.x,p.y-f.y);if(d<Math.min(215,W*.43)&&d<near){target=p;near=d;}}}
 if(target){const dx=target.x-f.x,dy=target.y-f.y,d=Math.hypot(dx,dy)||1,sp=120-(100-quality)*.25;f.vx+=(dx/d*sp-f.vx)*Math.min(1,dt*3.2);f.vy+=(dy/d*sp-f.vy)*Math.min(1,dt*3.2);}else{f.vx=cap(f.vx+Math.sin(elapsed*.5+f.type)*dt*8,-70,70);f.vy=cap(f.vy+Math.cos(elapsed*.6+f.type)*dt*8,-24,24);}
 f.x=cap(f.x+f.vx*dt,42,W-42);f.y=cap(f.y+f.vy*dt,83,H-52);if(f.x<=42)f.vx=Math.abs(f.vx);if(f.x>=W-42)f.vx=-Math.abs(f.vx);if(f.y<=83)f.vy=Math.abs(f.vy);if(f.y>=H-52)f.vy=-Math.abs(f.vy);
 if(target&&Math.hypot(f.x-target.x,f.y-target.y)<f.size*.85+7){const at=pellets.indexOf(target);if(at>=0){pellets.splice(at,1);feed(f,target);}}
@@ -73,7 +107,7 @@ for(let i=pellets.length-1;i>=0;i--){const p=pellets[i];p.age+=dt;p.y+=p.sink*dt
 for(let i=sparks.length-1;i>=0;i--){const p=sparks[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;if(p.life<=0)sparks.splice(i,1);}
 if(Math.random()<dt*3)bubbles.push({x:rand(15,W-15),y:H+6,r:rand(1,4),v:rand(9,26)});
 for(let i=bubbles.length-1;i>=0;i--){bubbles[i].y-=bubbles[i].v*dt;if(bubbles[i].y<-8)bubbles.splice(i,1);}
-if(quality<=0)finish(true);else if(time<=0)finish();hud();}
+if(time<=0)finish();hud();}
 function paintFish(f){const x=f.x,y=f.y,s=f.size,dir=f.vx<0?-1:1,cols=[['#ffcb8f','#df856e'],['#a6e3c9','#3d9493'],['#ffc3d7','#c574a4']][f.type];ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
 ctx.fillStyle=cols[1];ctx.beginPath();ctx.moveTo(-s*.65,0);ctx.lineTo(-s*1.4,-s*.57*(1+Math.sin(f.blink)*.14));ctx.lineTo(-s*1.4,s*.57);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(-s*.18,-s*.47);ctx.lineTo(0,-s*.78);ctx.lineTo(s*.28,-s*.46);ctx.fill();
 const g=ctx.createLinearGradient(0,-s*.55,0,s*.55);g.addColorStop(0,cols[0]);g.addColorStop(1,cols[1]);ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,s*.9,s*.52,0,0,Math.PI*2);ctx.fill();
@@ -88,7 +122,7 @@ for(const b of bubbles){ctx.strokeStyle='#d7fff16f';ctx.lineWidth=1;ctx.beginPat
 for(const p of pellets){ctx.fillStyle=palette[p.type];ctx.shadowBlur=9;ctx.shadowColor=palette[p.type];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
 for(const f of fish)paintFish(f);
 for(const p of sparks){ctx.globalAlpha=Math.min(1,p.life*2);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
-if(quality<85){ctx.fillStyle='rgba(117,101,70,'+((85-quality)/85*.36)+')';ctx.fillRect(0,0,W,H);}ctx.fillStyle='#ffffff0c';ctx.fillRect(0,0,12,H);ctx.fillStyle='#00000017';ctx.fillRect(W-9,0,9,H);}
+if(quality<55){ctx.fillStyle='rgba(117,101,70,'+((55-quality)/55*.16)+')';ctx.fillRect(0,0,W,H);}ctx.fillStyle='#ffffff0c';ctx.fillRect(0,0,12,H);ctx.fillStyle='#00000017';ctx.fillRect(W-9,0,9,H);}
 function animate(now){const dt=Math.min(.05,Math.max(0,(now-previous)/1000||0));previous=now;if(state==='playing')update(dt);else elapsed+=Math.min(dt,.015);draw();frameId=requestAnimationFrame(animate);}
 document.querySelectorAll('.food').forEach(b=>b.addEventListener('click',()=>choose(Number(b.dataset.food))));
 canvas.addEventListener('pointerdown',drop);$('start').addEventListener('click',begin);
