@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-11-20",
-  "explanation": "CrazyGames status: the owner reported a submission rejected on 2026-11-20 with 'The overall quality of the game does not yet meet the expectations of our platform.' The previously submitted Pawsibly Innocent! is the known candidate, but the exact portal record was not independently re-fetched. Six itch.io game pages previously verified; Cat Bond listing must be separately verified.",
+  "explanation": "All seven games are now published on itch.io, including Cat Bond. Cat Bond appeared publicly on itch.io's Cats, Cozy+Pets and simulation browse lists as of November 20, 2026; other six were verified on logged-in studio page Nov 19. CrazyGames Pawsibly Innocent quality rejection is owner-reported; portal record has not been rechecked.",
   "submissionPolicy": {
     "crazygamesMaxPerReviewCycle": 1,
     "source": "Morrow Wish conservative quality-first policy (not a claimed CrazyGames platform limit)",
@@ -106,7 +106,11 @@
       },
       {
         "slug": "cat-bond",
-        "status": "not-created"
+        "status": "published",
+        "publicUrl": "https://morrowwishgames.itch.io/cat-bond",
+        "verifiedOnStudioProfile": false,
+        "verifiedOnPublicDiscovery": true,
+        "verifiedDate": "2026-11-20"
       }
     ],
     "newProjectPage": "https://itch.io/game/new"

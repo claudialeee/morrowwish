@@ -16,7 +16,7 @@ We will NOT submit every game just because it deploys. The user reports that the
 
 ## Internal go/no-go tests (our goals, NOT CrazyGames thresholds)
 1. **Fun and distinctiveness**: candidate must have an interesting, differentiated core loop with real decisions or mastery. No repetitive click-only filler. Compare against current CrazyGames competitors, including first 60 seconds and a full 3+ minute play.
-2. **Cold playtests**: observe at least 10 players who have never been told the rules. At least 8/10 should understand the objective within 30 sec; at least 7/10 should complete the first useful objective within 2 min; at least 6/10 should voluntarily retry/continue. These are targets, not approval guarantees. Record source observations and note exceptions.
+2. **Natural stranger traffic, not recruited friends**: prefer unbiased visitors arriving through itch.io search/browse, search engines, and game discovery sites. Observe a cohort of at least 50 real game starts from identifiable organic discovery sources (or document why a smaller sample is all that exists) and inspect actual median session time, objective completion and voluntary retry. Treat 8/10 understand within 30 sec, 7/10 reach the first objective in 2 min, and 6/10 continuing as qualitative design targets when available, NOT requirements to recruit ten people. Do not infer organic status from direct/unknown traffic, page impressions or ad/creator referral clicks. These are internal goals, not CrazyGames requirements.
 3. **Progression**: playable for multiple complete sessions; at least 3 mechanics/variations revealed progressively, clear cause-and-effect, balanced difficulty, meaningful reward/unlock/score goals, no guaranteed-win strategy or unavoidable-fail trap.
 4. **Visual/audio**: comparable clarity and art consistency to accepted games, no tiny text or weak resolution, no misleading cover, audible and consistent feedback, correct asset rights.
 5. **Automated and manual QA**: zero major bugs; mobile and desktop real-browser input, key screen sizes, tab restore, restart, language switching, limited bandwidth, performance, and CrazyGames Developer Portal preview (including security/referrer differences).
@@ -31,3 +31,8 @@ A successful code check or a polished trailer is not evidence that gameplay is f
 - Keep external review state synchronized with official portal receipts; the existing portal-status file may be stale.
 - While one game is under review, keep all other candidate submissions on hold. Do not automatically resubmit a rejected game.
 - Evaluate the best *current* candidate by measured quality, not historic priority lists.
+
+## Organic discovery before CrazyGames QA
+- itch.io: seven published games. Cat Bond has been independently observed in public Cats and Cozy+Pets browse results. Keep accurate categories, tags, covers, screenshots, and browser-playable links; never refresh by creating duplicate pages.
+- Next growth experiments: targeted itch.io Release Announcements, an allowed browser-game subreddit post, and smaller nonexclusive browser-game directories only when they reach genuine players. Keep per-channel source/referrer in the existing first-party dashboard. Avoid broad hashtag-only mass posting and low-quality short videos.
+- Measure direct game page -> start -> meaningful play -> retry, not impressions. The initial goal of 50 organic starts is only a practical sample target, not a claim that those players have already arrived.

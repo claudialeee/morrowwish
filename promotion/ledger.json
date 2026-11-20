@@ -6,7 +6,7 @@
     "https://github.com/claudialeee/morrowwish/tree/main",
     "https://morrowwish.vercel.app/games.json"
   ],
-  "notes": "The six existing itch.io pages were confirmed via the logged-in Morrow Wish studio profile on 2026-11-19. Cat Bond was not listed. Confirm all new itch.io pages and CrazyGames submissions against platform-issued records; internal GitHub queues are not submissions.",
+  "notes": "All seven Morrow Wish games have itch.io pages, including Cat Bond at https://morrowwishgames.itch.io/cat-bond (public itch.io discoverability listing verified 2026-11-20). CrazyGames submissions require individually approved quality signoff; internal queues are not portal submissions.",
   "games": [
     {
       "slug": "elsewhere",
