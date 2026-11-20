@@ -150,7 +150,7 @@ function showReadyScreen(){
  overTitle.textContent=names[id]||document.querySelector(".game-title")?.textContent||id;
  overDesc.textContent=zh?
   (id==="parcel-panic"?"看下一件包裹的颜色，点击对应通道投递；也可以按 1、2、3 键。错投会失去一次机会。":
-   "点击画面或按空格键切换重力，避开粉色障碍。坚持越久，得分越高。"):
+   id==="flip-dash"?"点击画面或按空格键切换重力，避开粉色障碍。坚持越久，得分越高。":document.body.dataset.instructions):
   document.body.dataset.instructions;
  goBtn.textContent=zh?"开始游戏":"START GAME";
  goBtn.style.display="";
