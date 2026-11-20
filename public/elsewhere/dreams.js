@@ -1,214 +1,92 @@
-/* Elsewhere — dream lives. Standalone, bilingual, illustrated micro-adventures. */
+/* Elsewhere — Casefiles v3. Short coherent thrillers, real consequences, and earned endings. */
 (()=>{"use strict";
 const L=(zh,en)=>[zh,en];
-const WORLDS=[
-{id:"amalfi",place:L("意大利 · 阿马尔菲","ITALY · AMALFI"),name:L("醒来，拥有一座海边别墅","You wake up owning a seaside villa"),tag:L("财富与自由","LUXURY & FREEDOM"),tease:L("无边泳池、私人游艇，还有一把不属于你的钥匙。","A private yacht, an infinity pool, and a key that isn't yours."),color:"#cf7c51",secret:L("藏在柠檬树下的银钥匙","A silver key beneath the lemon tree"),
- acts:[
- {title:L("第一天，你拥有一切","DAY ONE: YOU HAVE EVERYTHING"),body:L("管家递来游艇钥匙：今天没有行程，没有人催你。","Your butler hands you the yacht keys. Nothing is scheduled."),choices:[
- [L("开船去无人海湾","Sail to a hidden cove"),L("沙滩上有一张写着你名字的旧明信片。","An old postcard on the beach bears your name.")],
- [L("办一场盛大的露台派对","Throw a spectacular terrace party"),L("最后一位客人留下一把金钥匙。","The last guest leaves a golden key.")],
- [L("什么都不做，只看日落","Do nothing but watch the sunset"),L("海上的陌生帆船，为你亮起灯。","A strange sailboat turns on its lights for you.")]]},
- {title:L("这不是普通的假期","THIS ISN'T AN ORDINARY HOLIDAY"),twists:[
- L("那张明信片来自明天，落款竟然是你自己。","The postcard is dated tomorrow. It's signed by you."),
- L("金钥匙打开一扇暗门，里面有另一份遗嘱。","The key opens a secret room with a second will."),
- L("帆船送来一封信：日落前，选好真正想要的生活。","The boat delivers a note: choose your real life before sunset.")],
- choices:[
- [L("解开这座别墅的秘密","Uncover the villa's secret"),L("你发现了通往一座私人小岛的航线。","You find a route to a private island.")],
- [L("先享受，再说其他","Live extravagantly while you can"),L("你把整座海岸的灯光都请到了晚宴上。","You fill the coast with the lights of your party.")],
- [L("带一个陌生人一起冒险","Take a stranger on an adventure"),L("一个人告诉你：这里其实不必属于谁。","Someone tells you this place needn't belong to anyone.")]]},
- {title:L("最后一场日落","ONE LAST SUNSET"),turns:[
- L("海面出现一条发光的航线，尽头是一座地图上不存在的岛。","A glowing sea route leads to an island on no map."),
- L("晚宴上所有人突然安静下来，等你说出真正的愿望。","The guests go quiet. They're waiting for your real wish."),
- L("你可以把钥匙留给一个人，也可以把整片海还给自己。","You could give someone the key—or keep the horizon for yourself.")],
- choices:[
- [L("追着光，驶向未知","Follow the light into the unknown"),L("你的第一段真正自由的航程开始了。","Your first truly free voyage begins.")],
- [L("把今晚变成传奇","Make this night legendary"),L("你让整座海岸记住了这场派对。","The whole coast remembers your party.")],
- [L("留下钥匙，和喜欢的人出发","Leave the keys and leave together"),L("你终于明白，有些浪漫不需要房产证。","Some kinds of romance don't need a deed.")]]}],
- endings:[
- [L("永远的第一张船票","A Ticket to Everywhere"),L("你拥有的不再只是一座别墅，而是想去哪里的自由。","You trade one extraordinary address for a world of destinations.")],
- [L("阿马尔菲的传说","The Amalfi Legend"),L("人们多年后还会谈起那晚，而你永远是故事的主人公。","Years later, they still talk about your impossible party.")],
- [L("比海景更珍贵","Something Better Than a View"),L("你放下豪宅，却找到了愿意一起看遍日落的人。","You leave the villa and find someone to chase sunsets with.")]],
- rare:[L("你继承了整个夏天","The Summer That Stayed"),L("银钥匙打开的不是房门，而是一封邀请：想回来时，夏天随时为你重开。","The silver key unlocks a promise: summer will be here whenever you return.")]},
-{id:"paris",place:L("法国 · 巴黎","FRANCE · PARIS"),name:L("在巴黎，谈一场电影般的恋爱","A cinematic love story in Paris"),tag:L("浪漫与心动","ROMANCE"),tease:L("花店、天台与午夜十二点前的一次大胆决定。","Roses, rooftops, and one brave decision before midnight."),color:"#be7591",secret:L("藏在咖啡杯底的手写号码","A handwritten number under your coffee"),
- acts:[
- {title:L("巴黎今夜只属于你","PARIS IS YOURS TONIGHT"),body:L("你住进蒙马特的顶楼，桌上躺着一张写着「今晚见」的明信片。","You wake in a Montmartre penthouse. A postcard says: 'See you tonight.'"),choices:[
- [L("穿上最好看的衣服赴约","Dress up and show up"),L("咖啡馆有一张桌子为你留着。","A table at the café is waiting for you.")],
- [L("拿着明信片寻找寄信人","Find the postcard's sender"),L("你沿着玫瑰花瓣走到了一家唱片店。","A trail of rose petals leads to a record shop.")],
- [L("骑单车，随心所欲逛巴黎","Explore Paris on a bicycle"),L("转过街角，你撞见了一个熟悉的背影。","Around a corner, you glimpse a strangely familiar figure.")]]},
- {title:L("一封不可能的情书","AN IMPOSSIBLE LOVE LETTER"),twists:[
- L("约会对象说：我们曾在十年后的巴黎见过。","Your date claims you met in Paris ten years from now."),
- L("唱片店播放的歌，是你还没写出来的情歌。","The song playing is one you haven't written yet."),
- L("那个背影转过头，竟拿着你未来的合照。","The stranger turns, holding a photo of your future together.")],
- choices:[
- [L("相信这场荒唐的缘分","Believe in impossible fate"),L("对方带你去看一处不对外开放的天台。","You're invited onto a secret rooftop.")],
- [L("先问清楚真相","Demand the truth first"),L("你得到一份只写着午夜时间的地址。","You're handed an address marked midnight.")],
- [L("把故事改写成自己的","Rewrite the script yourself"),L("你拉起对方的手，跑进了雨中的巴黎。","You take their hand and run into rainy Paris.")]]},
- {title:L("午夜之前","BEFORE MIDNIGHT"),turns:[
- L("天台上的最后一盏灯亮了，你们只能许下一个愿望。","One rooftop light comes on. You can make only one wish."),
- L("塞纳河畔的钟开始敲响，真相和心动只能选一个。","The Seine's bells ring. Truth and romance pull in different directions."),
- L("雨停了，空荡荡的街道等着你们决定下一站。","The rain stops. An empty boulevard waits for your next move.")],
- choices:[
- [L("勇敢告白","Say how you feel"),L("你说出了从前不敢说的那句话。","You say the words you've always held back.")],
- [L("一起消失在巴黎的夜里","Disappear into the Paris night"),L("两张火车票，目的地留白。","Two train tickets, destination blank.")],
- [L("留下来，把浪漫过成日常","Stay and make this your everyday"),L("第二天，咖啡馆多了两只熟悉的杯子。","The café saves two cups for tomorrow.")]]}],
- endings:[
- [L("爱在午夜降临","Love Arrives at Midnight"),L("你没有保证永远，但这一刻你终于选择了心动。","You can't promise forever. You can choose this moment.")],
- [L("私奔去世界尽头","The Great Escape"),L("巴黎是故事的第一站，你们连下一张车票都不想提前买。","Paris is only chapter one. No return ticket required.")],
- [L("住在玫瑰花开的街角","A Life Full of Roses"),L("电影不会在接吻之后结束。你们喜欢的，是每天的续集。","The movie doesn't end with a kiss. You love the everyday sequel.")]],
- rare:[L("写给十年后的你","A Letter From Ten Years Ahead"),L("那个号码打通后，接电话的是十年后的你：别害怕，幸福是真的。","You call the number. Your future self answers: don't be afraid—it's real.")]},
-{id:"tokyo",place:L("日本 · 东京","JAPAN · TOKYO"),name:L("今晚，你是世界级巨星","Tonight, you're a global superstar"),tag:L("名气与冒险","FAME & REBELLION"),tease:L("十万人在等你登台，后台却出现了另一份歌单。","A stadium awaits. Someone has switched your setlist."),color:"#8e70c8",secret:L("藏在后台镜子上的星形贴纸","A star sticker on your dressing mirror"),
- acts:[
- {title:L("十万人在喊你的名字","A HUNDRED THOUSAND VOICES"),body:L("东京巨蛋，倒计时三十秒。经纪人说：千万别唱那首歌。","Tokyo Dome. Thirty seconds to showtime. Your manager bans one song."),choices:[
- [L("照着剧本完美登场","Deliver the perfect show"),L("舞台升起，尖叫声盖过了心跳。","The stage rises above a wave of screams.")],
- [L("直接唱那首禁歌","Sing the forbidden song"),L("第一句歌词响起，后台所有人都愣住了。","Your first lyric stuns everyone backstage.")],
- [L("邀请一位粉丝合唱","Bring a fan on stage"),L("被选中的粉丝竟比你还懂这首歌。","The chosen fan knows every word—even the lost verse.")]]},
- {title:L("演唱会突然失控","THE SHOW GOES OFF-SCRIPT"),twists:[
- L("巨幕出现一段你从没拍过的纪录片，观众屏住呼吸。","The big screen plays a documentary you never filmed."),
- L("全场忽然跟着你唱起经纪公司删掉的歌词。","The stadium sings the lyrics your label erased."),
- L("那位粉丝递来耳返：有人想在今晚夺走你的声音。","The fan whispers: someone plans to steal your voice tonight.")],
- choices:[
- [L("当着所有人公开秘密","Tell the whole stadium"),L("灯光灭了一秒，然后十万人为你鼓掌。","The lights cut out. Then the stadium cheers for you.")],
- [L("跟幕后老板正面对决","Confront the people in control"),L("你走向后台，第一次把话筒握在自己手里。","For once, you hold the microphone on your terms.")],
- [L("抛下剧本，开一场即兴秀","Throw away the script"),L("乐队跟上节奏，今晚变得不可复制。","The band follows. The show becomes one of a kind.")]]},
- {title:L("最后一首歌，唱给谁","WHO GETS YOUR ENCORE?"),turns:[
- L("歌声停下，数万只手举着手机，等你的最后一句话。","Thousands of lights rise, waiting for your last words."),
- L("公司递来一份天价合同：签字，就不能再唱自己的歌。","A fortune is offered—if you give up your own songs."),
- L("巨幕上的倒计时归零。现在，没有任何人能告诉你怎么做。","The countdown hits zero. Nobody gets to tell you what to do.")],
- choices:[
- [L("宣布独立，夺回自己的人生","Go independent, take back your life"),L("你把麦克风交给乐队，走向真正的自由。","You take ownership of your music.")],
- [L("让今夜成为史上最疯狂的演出","Make it the wildest show ever"),L("烟花从体育馆上空绽放，震撼所有人。","Fireworks explode above the stadium.")],
- [L("摘下明星面具，去过普通日子","Disappear and live anonymously"),L("你戴上帽子，坐上了最后一班地铁。","You pull on a cap and board the last train.")]]}],
- endings:[
- [L("你的名字，你的音乐","The Music Is Yours"),L("没有人再能替你决定唱什么。下一张专辑，你会自己命名。","Nobody gets to choose your songs. Your next album is yours.")],
- [L("东京最耀眼的夜晚","A Night That Shook Tokyo"),L("这场演唱会成为传奇。所有人都说，没人能复制你的疯狂。","The concert becomes legend, impossible to reproduce.")],
- [L("消失的超级巨星","The Superstar Who Vanished"),L("你拥有过全世界的掌声，现在最奢侈的是没人认出你。","You had the world's applause. Now anonymity is a luxury.")]],
- rare:[L("写给未来的安可","The Secret Encore"),L("星形贴纸后是一卷老录音：那首禁歌本就属于你。今夜，音乐回家了。","Behind the star is proof the forbidden song was always yours.")]},
-{id:"iceland",place:L("冰岛 · 极光之夜","ICELAND · NORTHERN LIGHTS"),name:L("在极光下，实现一个愿望","One wish beneath the northern lights"),tag:L("奇迹与探险","MAGIC & ADVENTURE"),tease:L("玻璃小屋、热泉与一个据说能实现愿望的夜晚。","A glass cabin, a hot spring, and one night when wishes may work."),color:"#568f99",secret:L("藏在雪地里的蓝色星石","A blue starstone in the snow"),
- acts:[
- {title:L("整个天空为你亮起","THE SKY LIGHTS UP FOR YOU"),body:L("你躺在冰岛玻璃小屋里。极光出现时，桌上的旧指南针突然旋转。","In an Icelandic glass cabin, an antique compass spins as the aurora appears."),choices:[
- [L("冲出去追极光","Chase the lights"),L("你发现雪上有一串发亮的脚印。","Glowing footprints appear in the snow.")],
- [L("泡进露天温泉，看星星","Watch the sky from a hot spring"),L("水面浮上一只装着纸条的小瓶子。","A tiny message bottle surfaces beside you.")],
- [L("乘雪地摩托去冰川","Ride out to the glacier"),L("冰缝里传来一阵遥远又熟悉的歌声。","A familiar song echoes through the glacier.")]]},
- {title:L("北极光给出的选择","A MESSAGE IN THE AURORA"),twists:[
- L("脚印的尽头站着明天的你，正向你挥手。","At the end of the footprints stands tomorrow's you."),
- L("瓶中纸条写着：你可以找回一个失去的瞬间。","The note promises you one moment from your past."),
- L("歌声的主人说：今晚能让世界暂停一小时。","A traveler says you can stop time for one hour.")],
- choices:[
- [L("大胆许一个不可能的愿","Make an impossible wish"),L("天空亮得像白昼，你听到了自己的答案。","The sky flares bright as day.")],
- [L("去追问奇迹的真相","Find out how the magic works"),L("你发现了埋在冰雪下的古老观测站。","You discover an ancient observatory under the ice.")],
- [L("把愿望送给需要的人","Give your wish to someone else"),L("极光从绿色变成金色，像在回答你。","The aurora turns gold, as if answering.")]]},
- {title:L("天亮以后，奇迹会消失","THE MAGIC ENDS AT DAWN"),turns:[
- L("黎明的第一缕光出现，你只剩最后一次许愿机会。","The first dawn light rises. One wish remains."),
- L("观测站的门打开，里面有一张通往未知世界的地图。","The observatory reveals a map to a world nobody knows."),
- L("你的愿望让整片天空都变亮了，陌生人等你决定最后一件事。","The sky glows brighter. A stranger asks for your final decision.")],
- choices:[
- [L("把时间留给自己","Keep a moment just for yourself"),L("世界安静下来，幸福终于不是匆忙的事。","The world goes quiet. Happiness doesn't have to hurry.")],
- [L("跟随极光去世界尽头","Follow the aurora beyond the map"),L("你跨进了从未有人抵达的黎明。","You step into a dawn nobody has ever seen.")],
- [L("让奇迹留给所有人","Let everyone share the magic"),L("整个小镇今夜都看见了从未见过的星光。","The whole village sees a sky full of impossible stars.")]]}],
- endings:[
- [L("偷来的一小时","One Extra Hour"),L("你不再想把每分钟填满。只想慢慢过完这一刻。","You discover that one unhurried hour can be a whole life.")],
- [L("极光尽头的旅行者","Beyond the Northern Lights"),L("你找到一条只在极光下出现的路，世界从此没有边界。","You find a path that appears only beneath the aurora.")],
- [L("全世界的流星雨","A Sky for Everyone"),L("这次奇迹不再属于你一个人。你的愿望让所有人抬头。","Your wish gives the whole world one unforgettable night.")]],
- rare:[L("极光记得你的名字","The Aurora Knows Your Name"),L("蓝色星石让你保留了一个愿望。往后的每个平凡夜晚，都会有光。","The starstone saves one wish for every ordinary night to come.")]},
-{id:"maldives",place:L("马尔代夫 · 私人海岛","MALDIVES · PRIVATE ISLAND"),name:L("突然继承一座私人小岛","You inherit a private island"),tag:L("躺平与惊喜","PARADISE"),tease:L("水上别墅、透明海水，以及海底一封奇怪的邀请。","An overwater villa, turquoise sea, and a message beneath the reef."),color:"#4c9e9b",secret:L("海星旁的珍珠贝壳","A pearl shell beside the starfish"),
- acts:[
- {title:L("起床，就是海上天堂","YOU WAKE IN PARADISE"),body:L("你醒在水上别墅。律师留下信：整座小岛现在是你的。","You wake in an overwater villa. A letter says the island is yours."),choices:[
- [L("跳进海里，和海龟潜水","Dive with the sea turtles"),L("海底珊瑚之间夹着一只密封的玻璃瓶。","A sealed bottle waits beneath the reef.")],
- [L("邀请好友开海岛狂欢派对","Invite friends for an island party"),L("所有客人都到了，唯独送信的人没出现。","Everyone arrives—except the person who sent the letter.")],
- [L("独享漂浮早餐和无边泳池","Enjoy a floating breakfast in peace"),L("泳池底部出现了一条隐藏的海底通道。","A hidden passage appears beneath your pool.")]]},
- {title:L("海底藏着另一座岛","THE ISLAND BENEATH THE ISLAND"),twists:[
- L("瓶子里的地图指向附近一座潮汐才会露出的秘密岛。","The bottle maps an island that appears only at low tide."),
- L("派对开始时，整个岛的灯同时变成了蓝色。","As the party begins, every island light turns blue."),
- L("通道尽头是一间能看见海底鲸鱼的旧观景室。","The passage leads to a forgotten whale-watching room.")],
- choices:[
- [L("驾驶快艇去寻找秘密","Take a speedboat to investigate"),L("你看见了世界上最安静的私人沙滩。","You discover a beach untouched by anyone.")],
- [L("带所有朋友一起寻找","Take everyone on the adventure"),L("一整船的人笑着冲向一座没人标记的岛。","You all race toward an unmarked island.")],
- [L("暂时保守秘密，一个人看看","Keep the discovery to yourself"),L("你发现了一件只属于这座岛的宝物。","You find something precious hidden in plain sight.")]]},
- {title:L("天堂的真正主人","WHO REALLY OWNS PARADISE?"),turns:[
- L("潮水将要上涨，秘密岛只剩最后一个小时。","The tide rises. You have one hour left on the secret island."),
- L("朋友们要为这场冒险取名。你却突然想永远留在这里。","Your friends want to name the adventure. You want to stay forever."),
- L("宝物是一封未寄出的信：真正的快乐不必拥有。","The treasure is an unsent letter: joy isn't something to own.")],
- choices:[
- [L("把秘密留给自己，悠闲过一生","Keep this paradise a private secret"),L("你决定让日落和海风成为日常。","You make sunsets and sea breezes your everyday life.")],
- [L("举办世界上最快乐的海岛节","Host the happiest island festival"),L("海滩上亮起了比星星还多的灯。","The beach shines brighter than the stars.")],
- [L("交出岛屿，去下一站冒险","Give up the island and keep exploring"),L("你背起一只小包，跳上远航的船。","You board the next boat with one small bag.")]]}],
- endings:[
- [L("每天都是假期","Every Day Is a Holiday"),L("小岛没有周一。你终于可以跟着潮汐决定一天怎么过。","Your island has no Mondays. The tide sets your schedule.")],
- [L("世界上最快乐的岛","The Happiest Island on Earth"),L("没人记得派对的预算，只记得海上那个发光的晚上。","Nobody remembers the budget, only the luminous night.")],
- [L("拥有世界的人","Rich in the Whole World"),L("你曾拥有一整座岛，最后发现自由比所有权更大。","You owned an island. Freedom turned out to be bigger.")]],
- rare:[L("海洋送给你的秘密","A Gift From the Ocean"),L("珍珠里的微小地图告诉你：世界上还有六座等待被发现的小岛。","Inside the pearl is a map of six more islands waiting for you.")]},
-{id:"swiss",place:L("瑞士 · 阿尔卑斯山","SWITZERLAND · THE ALPS"),name:L("登上一列开往未知的豪华列车","Board a train to an unknown life"),tag:L("奇遇与命运","MYSTERY & WONDER"),tease:L("雪山全景套房、香槟，以及一张没有终点的车票。","Alpine suites, champagne, and a ticket with no destination."),color:"#7495c0",secret:L("餐车座位下的金色车票","A golden ticket beneath the dining seat"),
- acts:[
- {title:L("你拥有一张没有终点的票","THE TICKET HAS NO DESTINATION"),body:L("你在阿尔卑斯豪华列车里醒来。车窗外是雪山，车票上写着：任何人生。","You wake aboard an Alpine luxury train. The ticket reads: ANY LIFE."),choices:[
- [L("去餐车认识神秘旅客","Meet the stranger in the dining car"),L("对方知道你的名字，却说你们还没见过。","They know your name, but insist you haven't met.")],
- [L("打开包厢里上锁的行李箱","Open the locked suitcase"),L("箱子里是一张几十年后的你的照片。","The suitcase contains a photo of you decades from now.")],
- [L("在观景车厢欣赏雪山","Watch the Alps roll by"),L("玻璃倒影里的列车，竟朝相反方向行驶。","In the glass reflection, the train moves backward.")]]},
- {title:L("下一站，可以改写人生","THE NEXT STOP CAN CHANGE YOUR LIFE"),twists:[
- L("神秘旅客说：下一站下车，你就能交换一次人生。","The stranger offers you one chance to swap lives."),
- L("照片背面写着：别在下一站下车。","The photo says: Do not leave at the next station."),
- L("列车员说：每扇车门都通向一个不同的你。","The conductor says every door leads to a different you.")],
- choices:[
- [L("选一扇门，赌一次运气","Choose a door and take a chance"),L("门外是你从没去过的夏天。","The door opens onto a summer you've never lived.")],
- [L("先认识车上的每一个人","Meet everyone aboard before deciding"),L("所有人都在讲述自己错过的一段人生。","Everyone describes a life they almost lived.")],
- [L("保持神秘，继续看窗外的雪山","Keep riding into the mountains"),L("列车越过云层，整个世界突然亮了起来。","The train rises above the clouds.")]]},
- {title:L("终点站由你决定","YOU CHOOSE THE LAST STOP"),turns:[
- L("车长递来最后一张空白车票：只需要写一个愿望。","The conductor offers a blank ticket. Write one wish."),
- L("旅客们开始下车，他们每个人都找到了自己的另一段人生。","The other passengers disembark into alternate lives."),
- L("铁轨尽头不是车站，是一片你从未见过的星空。","The tracks end beneath a sky you've never seen.")],
- choices:[
- [L("下车，去过最疯狂的新生活","Step off into your wildest new life"),L("车门打开，风里全是新故事的味道。","The door opens into your next great story.")],
- [L("邀请刚认识的人一起冒险","Bring your new friends along"),L("这趟原本孤独的旅行有了同行者。","Your once-solitary journey finds its people.")],
- [L("不下车，让列车永远开下去","Never disembark; keep riding"),L("列车长笑了：你找到真正属于自己的终点了。","The conductor smiles. You've found your destination.")]]}],
- endings:[
- [L("另一个你，终于出发","The Life You Almost Missed"),L("你走进没有选过的生活。最好的故事才刚开始。","You step into the life you never chose. The best part is still ahead.")],
- [L("永远有朋友的旅程","A Journey With Your People"),L("风景再美，也有人愿意陪你看。下一站一起决定。","The views are sweeter shared. You choose the next stop together.")],
- [L("没有终点的幸福","The Train That Never Ends"),L("你不再寻找所谓正确的人生，只享受一路经过的风景。","You stop searching for the right life and love the journey.")]],
- rare:[L("最后一张黄金车票","The Golden Ticket"),L("金色车票写着：你随时都可以重新出发。它永远有效。","The golden ticket never expires. Another beginning is always possible.")]}
+const CASES=window.ELSEWHERE_CASEFILES||{};
+const META=[
+ {id:"amalfi",name:L("继承阿马尔菲海岸的豪宅","An Amalfi Villa Is Yours"),place:L("意大利 · 阿马尔菲","ITALY · AMALFI"),tag:L("奢华 · 反转","LUXURY · REVERSAL"),color:"#cf7c51"},
+ {id:"paris",name:L("巴黎恋爱，卷入名画失窃案","Love and Art Theft in Paris"),place:L("法国 · 巴黎","FRANCE · PARIS"),tag:L("浪漫 · 悬疑","ROMANCE · MYSTERY"),color:"#be7591"},
+ {id:"tokyo",name:L("今晚，夺回你的巨星人生","Take Back Your Superstar Life"),place:L("日本 · 东京","JAPAN · TOKYO"),tag:L("巨星 · 逆袭","STARDOM · COMEBACK"),color:"#8e70c8"},
+ {id:"iceland",name:L("极光之夜，收到失踪者的求救","An SOS Beneath the Aurora"),place:L("冰岛 · 极光之夜","ICELAND · NORTHERN LIGHTS"),tag:L("极光 · 惊险","AURORA · THRILLER"),color:"#568f99"},
+ {id:"maldives",name:L("一觉醒来，继承私人海岛","You Wake Up Owning an Island"),place:L("马尔代夫 · 私人海岛","MALDIVES · PRIVATE ISLAND"),tag:L("海岛 · 反击","PARADISE · COMEBACK"),color:"#4c9e9b"},
+ {id:"swiss",name:L("雪山豪华列车的秘密拍卖","A Secret Auction on the Alpine Express"),place:L("瑞士 · 阿尔卑斯山","SWITZERLAND · THE ALPS"),tag:L("豪华列车 · 悬疑","LUXURY TRAIN · MYSTERY"),color:"#7495c0"}
 ];
-const EXTRA=window.ELSEWHERE_EXTRA_SCENES||{};
-for(const world of WORLDS){
- const additional=EXTRA[world.id];if(!additional)throw Error("Missing five-scene expansion: "+world.id);
- const finalAct=world.acts[2];finalAct.after=additional.after;
- world.shock=additional.shock;
- world.acts=[world.acts[0],world.acts[1],additional.bridge,additional.storm,finalAct];
-}
-const $=s=>document.querySelector(s);
-const S=(k,def)=>{try{return JSON.parse(localStorage.getItem(k)||"null")??def}catch{return def}};
-const SAVE="elsewhere_dream_v1",COLL="elsewhere_dream_gallery_v1",LANG="morrowwish.language";
-let lang=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en"){try{localStorage.setItem(LANG,q)}catch{}return q}try{const stored=localStorage.getItem(LANG);if(stored==="zh"||stored==="en")return stored}catch{}return navigator.language?.toLowerCase().startsWith("zh")?"zh":"en"})();
-const tr=v=>Array.isArray(v)?v[lang==="zh"?0:1]||v[0]:v;
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let gallery=S(COLL,{}),state=null,lastWorld=null;
-const uid=()=>globalThis.crypto?.randomUUID?.()||String(Date.now())+"-"+Math.random().toString(36).slice(2);
-const canTrack=()=>navigator.globalPrivacyControl!==true&&navigator.doNotTrack!=="1";
-const visitor=(()=>{if(!canTrack())return "";try{return localStorage.getItem("arcade-visitor-v2")||uid()}catch{return ""}})();
-const labels={
- hero:L("你想体验哪一种人生？","Which life would you dare to live?"),
- intro:L("醒来，你已经拥有了梦寐以求的一切。然后，意外发生了。","You wake up with everything you ever wanted. Then something unexpected happens."),
- random:L("命运随机开局","Surprise me"),explore:L("选择你的梦幻人生","Pick your dream life"),
- tiny:L("6 段人生 · 五幕冒险 · 24 种结局","6 DREAM LIVES · FIVE MOMENTS · 24 ENDINGS"),
- gallery:L("人生收藏册","Your life collection"),saved:L("已解锁","discovered"),noSave:L("还没有开启。试试第一段人生。","Your first adventure is waiting."),
- restart:L("换条路再活一次","Try a different fate"),home:L("其他人生","All lives"),next:L("继续这段人生","See what happens next"),
- ending:L("这一生，你活成了……","THIS IS THE LIFE YOU LIVED"),another:L("再体验另一段人生","Live another life"),
- share:L("分享我的结局","Share my ending"), secret:L("插画里有个隐藏的小秘密","There's a secret hidden in the illustration"),
- secretFound:L("隐藏线索已找到！可能开启特殊结局","Hidden clue found! A rare ending may await."),
- progress:L("关键时刻","TURNING POINT"),choice:L("这次，你怎么选？","WHAT WILL YOU DO?"),
- consequence:L("你改变了故事","YOUR CHOICE CHANGED THINGS"),all:L("已收藏结局","Endings discovered"),
- return:L("返回主页","Back to Morrow Wish"),lang:L("中文 / EN","中文 / EN"),
- collected:L("你解锁了一张人生明信片","YOU UNLOCKED A LIFE POSTCARD"),
- reveal:L("发现隐藏细节","Discover a hidden detail"),
- shock:L("命运突然转弯","THE STORY JUST TURNED"),openTwist:L("揭开意外","Reveal the surprise"),sealed:L("你以为这一生会照着计划进行……","You thought this life would go according to plan…"),endingNext:L("揭晓我的人生结局","Reveal my ending")
+for(const meta of META)if(!CASES[meta.id])throw Error("Missing Elsewhere casefile: "+meta.id);
+const Q={
+ hero:L("换一段人生，亲手改写结局。","A new life. A story only you can change."),
+ intro:L("先过上梦寐以求的生活，再揭开一个不得不面对的秘密。你做的决定会留下真实后果。","Wake up in a life you once dreamed of. Uncover its secret—and live with the consequences."),
+ random:L("随机开启一段人生","Surprise me"),explore:L("选择人生","Choose your life"),
+ tiny:L("六段冒险 · 每局五幕 · 结局由你争取","6 ADVENTURES · 5 MOMENTS EACH · EARN YOUR ENDING"),
+ gallery:L("结局收藏","Endings discovered"),saved:L("已解锁","discovered"),none:L("你的第一段故事，还没有开始。","Your first case is waiting."),
+ home:L("其他人生","All lives"),choice:L("你准备怎么做？","WHAT WILL YOU DO?"),
+ proof:L("证据","Evidence"),allies:L("支援","Allies"),leverage:L("筹码","Leverage"),
+ stake:L("本次目标","YOUR MISSION"),next:L("继续调查","Continue"),endingNext:L("看看你的结局","Reveal the outcome"),
+ reveal:L("揭开真相","Reveal the truth"),sealed:L("刚找到的线索，将在下一刻改写整件事。","What you've found is about to change everything."),
+ twist:L("关键反转","THE REVEAL"),result:L("你的行动带来的后果","WHAT YOUR ACTION CHANGED"),
+ prior:L("上一幕，你成功做到","LAST TIME YOU"),secret:L("隐藏证据已收集","Hidden evidence secured"),
+ findSecret:L("发现一份隐藏证据","Find hidden evidence"),
+ ending:L("这一生，你改变了什么？","WHAT DID YOU ACTUALLY CHANGE?"),
+ earned:L("成果报告","YOUR CASE REPORT"),strong:L("漂亮逆转","A decisive win"),cost:L("险中争取到一线机会","A narrow victory"),perfect:L("完美反击","A perfect reversal"),
+ missingProof:L("公开的材料还不够完整。你迫使对方暂停行动，但后续仍需补齐证据。","Your evidence was incomplete. You forced a pause, but must finish the investigation."),
+ missingAllies:L("你争取到公开谈判的机会，但支持者还不够多。下一步需要更多人站出来。","You won a public hearing, but not enough people stood with you. More support is needed."),
+ missingLeverage:L("对手暂时让步，但你的实际控制权还不足以让他们彻底退出。","The opponent backs down for now, but you lack the leverage to keep them out for good."),
+ strongBecause:L("你的准备足够充分，最终一击真正奏效。","Your earlier decisions gave your final move real force."),
+ perfectBecause:L("你找到隐藏证据、建立了盟友，也有足够的调查材料，一举逆转局面。","You found the hidden evidence, built an alliance, and brought proof strong enough to turn everything around."),
+ recap:L("关键行动","DECISIVE ACTIONS"),replay:L("换一种打法","Try another approach"),
+ another:L("体验另一段人生","Another life"),share:L("分享结局","Share this ending"),
+ galleryNote:L("只记录这一版真实解锁的结局。","Only outcomes earned in this edition are counted."),
+ collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
 };
-function E(key){return esc(tr(labels[key]))}
+let lang=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en"){try{localStorage.setItem("morrowwish.language",q)}catch{}return q}
+try{const x=localStorage.getItem("morrowwish.language");if(x==="zh"||x==="en")return x}catch{}return navigator.language?.toLowerCase().startsWith("zh")?"zh":"en"})();
+const T=v=>Array.isArray(v)?v[lang==="zh"?0:1]:v;
+const esc=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
+const Qe=k=>esc(T(Q[k])), $=s=>document.querySelector(s);
+const STORAGE="elsewhere_casefiles_gallery_v3";
+let gallery=(()=>{try{return JSON.parse(localStorage.getItem(STORAGE)||"{}")}catch{return {}}})();
+if(!gallery||typeof gallery!=="object"||Array.isArray(gallery))gallery={};
+let state=null,lastWorld=null;
+const uid=()=>globalThis.crypto?.randomUUID?.()||String(Date.now())+Math.random().toString(36).slice(2);
+const tracked=()=>navigator.globalPrivacyControl!==true&&navigator.doNotTrack!=="1";
+const visitor=(()=>{if(!tracked())return "";try{return localStorage.getItem("arcade-visitor-v2")||uid()}catch{return ""}})();
 function track(event,data={}){
- if(!canTrack())return;
+ if(!tracked())return;
  if(event==="world_open")window.arcadeMetric?.("game_start");
  if(event==="life_completed")window.arcadeMetric?.("game_complete");
  if(event==="life_restarted")window.arcadeMetric?.("retry");
  if(event==="share_clicked")window.arcadeMetric?.("share_clicked");
- let payload={event,world:state?.id||"",scenes:5,edition:"dream-v2",visitor,session:state?.session||"",runId:state?.runId||"",...data};
- try{const body=JSON.stringify(payload);if(visitor){const blob=new Blob([body],{type:"text/plain;charset=UTF-8"});if(!navigator.sendBeacon?.("/api/elsewhere-collect",blob))fetch("/api/elsewhere-collect",{method:"POST",headers:{"Content-Type":"text/plain"},body,keepalive:true}).catch(()=>{})}}catch{}
+ const payload={event,world:state?.id||"",edition:"casefiles-v3",scenes:5,visitor,runId:state?.runId||"",session:state?.session||"",...data};
+ if(!visitor)return;
+ try{
+  const body=JSON.stringify(payload);
+  if(!navigator.sendBeacon?.("/api/elsewhere-collect",new Blob([body],{type:"text/plain;charset=UTF-8"})))
+   fetch("/api/elsewhere-collect",{method:"POST",headers:{"Content-Type":"text/plain"},body,keepalive:true}).catch(()=>{});
+ }catch{}
 }
+const story=id=>CASES[id],meta=id=>META.find(x=>x.id===id);
+const types=["proof","allies","leverage"];
+function node(){
+ if(!state)return null;
+ const c=story(state.id);
+ if(state.stage===0)return c.intro;
+ if(state.stage===4)return c.finale;
+ return c.paths[state.route][state.stage-1];
+}
+function resolve(){
+ if(!state||state.history.length!==5)return null;
+ const last=state.history[4],kind=last.gain,n=types.indexOf(kind);
+ const rare=state.secret&&n===0&&state.scores.proof>=2&&state.scores.allies>=2;
+ const quality=rare?"perfect":state.scores[kind]>=2?"strong":"cost";
+ const entry=rare?story(state.id).rare:story(state.id).endings[n];
+ const detail=quality==="cost"?Q["missing"+kind[0].toUpperCase()+kind.slice(1)]:quality==="perfect"?Q.perfectBecause:Q.strongBecause;
+ return {n:rare?3:n,kind,quality,entry,detail};
+}
+function badge(kind){
+ return '<span class="case-gain '+kind+'">'+Qe(kind)+' +1</span>';
+}
+function counters(){
+ return '<div class="case-resources" aria-label="'+(lang==="zh"?"调查进度":"Investigation resources")+'">'+types.map(t=>'<span>'+Qe(t)+' <b>'+state.scores[t]+'</b></span>').join("")+'</div>';
+}
+function closeToTop(){window.scrollTo({top:0,behavior:"instant"})}
 const sky=(a,b)=>'<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#71d5d5"/><stop offset="1" stop-color="#196f9c"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="22"/></filter></defs><rect width="900" height="540" fill="url(#sky)"/>';
 function art(id){
  let s="",defs="";
@@ -242,122 +120,126 @@ function art(id){
  const unique=(defs+s).replaceAll('id="sky"','id="sky-'+id+'"').replaceAll("url(#sky)","url(#sky-"+id+")").replaceAll('id="sea"','id="sea-'+id+'"').replaceAll("url(#sea)","url(#sea-"+id+")");
  return '<svg class="dream-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+unique+'</svg>';
 }
+
 function renderHome(){
- state=null;history.replaceState({}, "", "/elsewhere/"+(lang==="zh"?"?lang=zh":""));window.DreamAudio?.setWorld("home")
+ state=null;window.DreamAudio?.setWorld("home");
+ history.replaceState({}, "", "/elsewhere/"+(lang==="zh"?"?lang=zh":""));
  $("#home").hidden=false;$("#game").hidden=true;$("#ending").hidden=true;
- const explored=Object.values(gallery).flat().length;
- $("#home").innerHTML='<div class="intro"><span class="kicker">ELSEWHERE · PARALLEL LIVES</span><h1>'+E("hero")+'</h1><p>'+E("intro")+'</p><div class="intro-actions"><button class="big-btn" data-random>'+E("random")+' ↗</button><a class="soft-link" href="#lives">'+E("explore")+' ↓</a></div><small>'+E("tiny")+'</small><div class="home-audio">'+(window.DreamAudio?.controls()||'')+'</div></div><div id="lives" class="life-grid">'+WORLDS.map(w=>'<button class="life-card" data-world="'+w.id+'" style="--accent:'+w.color+'"><div class="card-image">'+art(w.id)+'</div><span class="place">'+esc(tr(w.place))+'</span><strong>'+esc(tr(w.name))+'</strong><span class="tease">'+esc(tr(w.tease))+'</span><span class="card-foot">'+esc(tr(w.tag))+' <b>↗</b></span></button>').join("")+'</div><section class="album"><div class="album-head"><h2>'+E("gallery")+'</h2><span>'+explored+' / 24 '+E("saved")+'</span></div><div class="album-cards">'+(explored?Object.entries(gallery).flatMap(([id,nums])=>nums.map(n=>{let w=WORLDS.find(x=>x.id===id);if(!w)return "";let ending=n===3?w.rare:w.endings[n];return '<div class="album-card"><span>'+esc(tr(w.place))+'</span><strong>'+esc(tr(ending[0]))+'</strong></div>'})).join(""):'<p>'+E("noSave")+'</p>')+'</div></section>';
- document.title=(lang==="zh"?"平行人生 — Morrow Wish":"Elsewhere — Morrow Wish");window.DreamAudio?.sync();
-}
-function randomWorld(){
- const pool=WORLDS.filter(w=>w.id!==lastWorld);const w=pool[Math.floor(Math.random()*pool.length)]||WORLDS[0];openWorld(w.id);
+ const unlocked=Object.values(gallery).filter(Array.isArray).reduce((n,v)=>n+v.length,0);
+ $("#home").innerHTML='<div class="intro"><span class="kicker">ELSEWHERE · STORIES WITH CONSEQUENCES</span><h1>'+Qe("hero")+'</h1><p>'+Qe("intro")+'</p><div class="intro-actions"><button class="big-btn" data-random>'+Qe("random")+' ↗</button><a class="soft-link" href="#lives">'+Qe("explore")+' ↓</a></div><small>'+Qe("tiny")+'</small><div class="home-audio">'+(window.DreamAudio?.controls()||"")+'</div></div><div class="life-grid" id="lives">'+META.map(m=>'<button type="button" class="life-card" data-world="'+m.id+'" style="--accent:'+m.color+'"><div class="card-image">'+art(m.id)+'</div><span class="place">'+esc(T(m.place))+'</span><strong>'+esc(T(m.name))+'</strong><span class="tease">'+esc(T(story(m.id).mystery))+'</span><span class="card-foot">'+esc(T(m.tag))+' <b>↗</b></span></button>').join("")+'</div><section class="album"><div class="album-head"><h2>'+Qe("gallery")+'</h2><span>'+unlocked+' / 24 '+Qe("saved")+'</span></div><div class="album-cards">'+(unlocked?Object.entries(gallery).flatMap(([id,nums])=>(nums||[]).map(n=>{if(!story(id))return "";const end=n===3?story(id).rare:story(id).endings[n];return end?'<div class="album-card"><span>'+esc(T(meta(id).place))+'</span><strong>'+esc(T(end[0]))+'</strong></div>':""})).join(""):'<p>'+Qe("none")+'</p>')+'</div><p class="case-gallery-note">'+Qe("galleryNote")+'</p></section>';
+ document.title=lang==="zh"?"平行人生 — Morrow Wish":"Elsewhere — Morrow Wish";window.DreamAudio?.sync();
 }
 function openWorld(id,retry=false,push=true){
- const w=WORLDS.find(x=>x.id===id);if(!w)return;
- lastWorld=id;state={id,stage:0,selected:null,history:[],revealed:{},seen:{},secret:false,runId:uid(),session:uid(),start:Date.now()};window.DreamAudio?.setWorld(id);
+ if(!story(id))return;
+ lastWorld=id;
+ state={id,route:null,stage:0,selected:null,history:[],scores:{proof:0,allies:0,leverage:0},secret:false,seen:{},revealed:{},completed:false,runId:uid(),session:uid()};
+ window.DreamAudio?.setWorld(id);
  if(retry)track("life_restarted",{world:id});
  track("world_open",{world:id,resume:false});
  $("#home").hidden=true;$("#game").hidden=false;$("#ending").hidden=true;
  if(push)history.pushState({world:id},"","/elsewhere/?world="+encodeURIComponent(id)+(lang==="zh"?"&lang=zh":""));
- renderStage();window.scrollTo({top:0,behavior:"instant"});
- document.title=tr(w.name)+" — Elsewhere";
+ renderStage();closeToTop();document.title=T(meta(id).name)+" — Elsewhere";
 }
-function sceneBody(act,i){
- if(i===0)return act.body;
- if(i===1)return act.twists[state.history[0]?.index??0];
- if(i===2)return act.branches[state.history[1]?.index??0];
- if(i===3)return act.branches[state.history[2]?.index??0];
- return act.turns[state.history[1]?.index??0];
+function randomWorld(){
+ const list=META.filter(x=>x.id!==lastWorld),chosen=list[Math.floor(Math.random()*list.length)]||META[0];
+ openWorld(chosen.id);
+}
+function particles(){
+ return '<div class="surprise-particles" aria-hidden="true">'+Array.from({length:16},(_,n)=>'<i style="--n:'+n+';--x:'+Math.round(Math.cos(n*2.4)*(90+n*9))+'px;--y:'+Math.round(Math.sin(n*2.4)*(90+n*8))+'px"></i>').join("")+'</div>';
 }
 function renderStage(){
  if(!state)return;
- const w=WORLDS.find(x=>x.id===state.id),i=state.stage,act=w.acts[i],total=w.acts.length;
- const twist=i===1||i===3;
- const sealed=twist&&!state.revealed[i]&&state.selected===null;
- const impact=state.selected!==null?act.choices[state.selected][1]:null;
- const body=sceneBody(act,i);
- const after=i===4?act.after?.[state.history[3]?.index??0]:null;
- const showBody=sealed?labels.sealed:body;
- const choices=sealed?'<div class="reveal-cta"><button class="big-btn" data-twist type="button">'+E("openTwist")+' ✧</button></div>':
-  state.selected===null?
-   '<div class="choices-label">'+E("choice")+'</div><div class="choices">'+act.choices.map((c,j)=>'<button type="button" class="choice" data-choice="'+j+'"><span class="choice-num">0'+(j+1)+'</span><strong>'+esc(tr(c[0]))+'</strong><span aria-hidden="true">↗</span></button>').join("")+'</div>':
-   '<div class="impact"><span>'+E("consequence")+'</span><p>'+esc(tr(impact))+'</p><button class="big-btn" type="button" data-continue>'+ (i===total-1?E("endingNext"):E("next")) +' →</button></div>';
- const particles=twist?'<div class="surprise-particles" aria-hidden="true">'+Array.from({length:15},(_,n)=>'<i style="--n:'+n+';--x:'+Math.round(Math.cos(n*2.399)* (95+n*10))+'px;--y:'+Math.round(Math.sin(n*2.399)*(90+n*9))+'px"></i>').join("")+'</div>':'';
- const cover=sealed?'<button type="button" class="twist-curtain" data-twist aria-label="'+E("openTwist")+'"><span class="curtain-eye">✧</span><small>'+E("shock")+'</small><strong>'+E("openTwist")+'</strong><span aria-hidden="true">↗</span></button>':'';
- const subtitle=sealed?E("shock"):esc(tr(w.tag));
- const title=sealed?E("shock"):esc(tr(w.name));
- const audioControls=window.DreamAudio?.controls()||"";
- $("#game").innerHTML='<div class="game-top"><button type="button" class="ghost-btn" data-home>← '+E("home")+'</button><span class="game-place">'+esc(tr(w.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / '+total+'</span>'+audioControls+'</div></div><div class="scene '+(twist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+w.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(w.id)+particles+(!sealed?'<button type="button" class="secret-pin '+(state.secret?"is-found":"")+'" aria-label="'+E("reveal")+'" title="'+E("secret")+'" data-secret>✦</button>':'')+'<div class="art-label"><span>'+subtitle+'</span><h2>'+title+'</h2></div>'+cover+'</div><div class="scene-body"><div class="progress-track" aria-hidden="true"><span style="width:'+Math.round(((i+1)/total)*100)+'%"></span></div><div class="moment-pips" aria-label="'+(lang==="zh"?"故事进度":"Story progress")+'">'+w.acts.map((_,n)=>'<span class="'+(n<i?"is-done":n===i?"is-current":"")+'"></span>').join("")+'</div><span class="scene-kicker">'+E("progress")+' '+String(i+1).padStart(2,"0")+' / '+String(total).padStart(2,"0")+'</span><h2>'+(sealed?E("shock"):esc(tr(act.title)))+'</h2><p class="story-line">'+esc(tr(showBody))+'</p>'+(after&&!sealed?'<p class="story-echo">'+esc(tr(after))+'</p>':'')+(state.secret?'<div class="found-clue">✦ '+E("secretFound")+'</div>':'')+choices+'</div></div>';
+ const m=meta(state.id),s=node(),i=state.stage,isTwist=[2,4].includes(i),sealed=isTwist&&!state.revealed[i]&&state.selected===null;
+ const result=state.selected===null?null:s.choices[state.selected];
+ const prior=state.history[i-1],controls=window.DreamAudio?.controls()||"";
+ const clue=state.secret?'<span class="case-secret-found">'+Qe("secret")+'</span>':'';
+ const historyHint=prior?'<div class="case-previous"><b>'+Qe("prior")+'</b> '+esc(T(prior.result))+'</div>':'';
+ const actions=sealed?
+  '<div class="reveal-cta"><button class="big-btn" type="button" data-twist>'+Qe("reveal")+' ✧</button></div>':
+  result?
+   '<div class="impact"><span>'+Qe("result")+'</span><p>'+esc(T(result.result))+'</p>'+badge(result.gain)+'<button class="big-btn" type="button" data-continue>'+(i===4?Qe("endingNext"):Qe("next"))+' →</button></div>':
+   '<div class="choices-label">'+Qe("choice")+'</div><div class="choices">'+s.choices.map((a,n)=>'<button class="choice" type="button" data-choice="'+n+'"><span class="choice-num">0'+(n+1)+'</span><strong>'+esc(T(a.title))+'</strong><span aria-hidden="true">↗</span>'+(i===4?'<small class="case-demand '+(state.scores[a.gain]>=1?'is-ready':'is-short')+'">'+Qe(a.gain)+' '+(state.scores[a.gain]+1)+'/2</small>':'')+'</button>').join("")+'</div>';
+ const cover=sealed?'<button class="twist-curtain" type="button" data-twist aria-label="'+Qe("reveal")+'"><span class="curtain-eye">✧</span><small>'+Qe("twist")+'</small><strong>'+Qe("reveal")+'</strong><span aria-hidden="true">↗</span></button>':'';
+ const secretButton=!sealed&&i>=2?'<button class="secret-pin '+(state.secret?"is-found":"")+'" type="button" data-secret aria-label="'+Qe("findSecret")+'" title="'+Qe("findSecret")+'">✦</button>':'';
+ const artTop='<div class="art-label"><span>'+esc(T(m.tag))+'</span><h2>'+esc(T(m.name))+'</h2></div>';
+ const chapterLabels=[0,1,2,3,4].map(n=>'<span class="'+(n<i?"is-done":n===i?"is-current":"")+'"></span>').join("");
+ $("#game").innerHTML='<div class="game-top"><button class="ghost-btn" type="button" data-home>← '+Qe("home")+'</button><span class="game-place">'+esc(T(m.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / 5</span>'+controls+'</div></div><div class="scene '+(isTwist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+m.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(m.id)+(isTwist?particles():"")+secretButton+artTop+cover+'</div><div class="scene-body"><div class="progress-track"><span style="width:'+((i+1)*20)+'%"></span></div><div class="moment-pips" aria-hidden="true">'+chapterLabels+'</div><div class="case-topline"><span class="scene-kicker">'+(i+1)+' / 05</span>'+counters()+'</div><p class="case-objective"><b>'+Qe("stake")+'</b> '+esc(T(story(state.id).objective))+'</p><h2>'+esc(T(sealed?Q.twist:s.title))+'</h2><p class="story-line">'+esc(T(sealed?Q.sealed:s.body))+'</p>'+(!sealed?historyHint:"")+clue+(i===4&&!sealed&&state.selected===null?'<p class="case-goal">'+Qe("goal")+'</p>':"")+actions+'</div></div>';
  window.DreamAudio?.sync();
- if(state.selected===null&&!state.seen[i]){
-  state.seen[i]=true;
-  track("chapter_view",{world:w.id,chapter:i+1});
- }
+ if(state.selected===null&&!state.seen[i]){state.seen[i]=true;track("chapter_view",{world:state.id,chapter:i+1})}
 }
 function revealTwist(){
- if(!state||![1,3].includes(state.stage)||state.revealed[state.stage])return;
+ if(!state||![2,4].includes(state.stage)||state.revealed[state.stage])return;
  state.revealed[state.stage]=true;
  renderStage();
- const scene=$("#game .scene");
- scene?.classList.add("twist-burst");
+ const el=$("#game .scene");el?.classList.add("twist-burst");
  window.DreamAudio?.fx("twist");
- window.setTimeout(()=>scene?.classList.remove("twist-burst"),1450);
+ window.setTimeout(()=>el?.classList.remove("twist-burst"),1450);
 }
 function makeChoice(n){
- if(!state||state.selected!==null||(!state.revealed[state.stage]&&[1,3].includes(state.stage))||!Number.isInteger(n)||n<0||n>2)return;
+ if(!state||state.selected!==null||(!state.revealed[state.stage]&&[2,4].includes(state.stage))||!Number.isInteger(n)||n<0||n>=3)return;
+ const act=node().choices[n];
+ if(!act)return;
+ if(state.stage===0)state.route=n;
  state.selected=n;
- const w=WORLDS.find(x=>x.id===state.id);
- state.history.push({stage:state.stage,index:n});
- track("choice_made",{world:w.id,chapter:state.stage+1,choice:n+1,routeVector:state.history.map(x=>x.index+1).join("-")});
- track("chapter_completed",{world:w.id,chapter:state.stage+1});window.DreamAudio?.fx("select");
- renderStage();
+ state.scores[act.gain]++;
+ state.history.push({stage:state.stage,index:n,title:act.title,result:act.result,gain:act.gain});
+ track("choice_made",{world:state.id,chapter:state.stage+1,choice:n+1,routeVector:state.history.map(c=>c.index+1).join("-")});
+ track("chapter_completed",{world:state.id,chapter:state.stage+1});
+ window.DreamAudio?.fx("select");renderStage();
 }
 function advance(){
  if(!state||state.selected===null)return;
- if(state.stage<WORLDS.find(x=>x.id===state.id).acts.length-1){state.stage++;state.selected=null;renderStage();window.scrollTo({top:0,behavior:"instant"})}else finish();
+ if(state.stage<4){state.stage++;state.selected=null;renderStage();closeToTop()}
+ else finish();
 }
 function finish(){
- const w=WORLDS.find(x=>x.id===state.id);
- // Hidden ending requires noticing the artwork and choosing the mystery route at least once.
- const rare=state.secret&&state.history[3]?.index===0;
- const n=rare?3:state.history[4].index;
- const ending=n===3?w.rare:w.endings[n],previous=Array.isArray(gallery[w.id])?gallery[w.id]:[];
- if(!previous.includes(n)){gallery[w.id]=[...previous,n];try{localStorage.setItem(COLL,JSON.stringify(gallery))}catch{}}
- if(!state.completed){window.DreamAudio?.fx("ending");track("life_completed",{world:w.id,routeVector:state.history.map(x=>x.index+1).join("-")});
- track("ending_view",{world:w.id,storyRoute:state.history[1].index,lifeDirection:n,routeVector:state.history.map(x=>x.index+1).join("-")});state.completed=true;}
- $("#game").hidden=true;$("#ending").hidden=false;
- $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+E("home")+'</button><span>'+esc(tr(w.place))+'</span><div class="game-tools"><span>'+E("all")+' '+Object.values(gallery).flat().length+'/24</span>'+(window.DreamAudio?.controls()||'')+'</div></div><div class="ending-art">'+art(w.id)+'<span>'+E("collected")+'</span></div><div class="ending-paper"><span class="kicker">'+E("ending")+'</span><h1>'+esc(tr(ending[0]))+'</h1><p>'+esc(tr(ending[1]))+'</p><p class="ending-echo">'+esc(tr(w.acts[3].choices[state.history[3].index][1]))+'</p><div class="footprints">'+state.history.map((d,j)=>'<span>'+esc(tr(w.acts[j].choices[d.index][0]))+'</span>').join('<b>→</b>')+'</div><div class="end-actions"><button class="big-btn" data-retry>'+E("restart")+' ↺</button><button class="outline-btn" data-random>'+E("another")+' ↗</button><button class="outline-btn" data-share>'+E("share")+'</button></div></div>';
- window.DreamAudio?.sync();window.scrollTo({top:0,behavior:"instant"});
+ if(!state||state.history.length!==5)return;
+ const m=meta(state.id),decision=resolve();
+ const key=decision.kind,winning=decision.quality!=="cost";
+ const copies=decision.quality==="perfect"?Qe("perfect"):decision.quality==="strong"?Qe("strong"):Qe("cost");
+ const result=winning?T(decision.entry[1]):T(decision.detail);
+ const past=Array.isArray(gallery[state.id])?gallery[state.id]:[];
+ if(winning&&!past.includes(decision.n)){gallery[state.id]=[...past,decision.n];try{localStorage.setItem(STORAGE,JSON.stringify(gallery))}catch{}}
+ if(!state.completed){
+  state.completed=true;
+  track("life_completed",{world:state.id,routeVector:state.history.map(c=>c.index+1).join("-"),outcome:decision.quality});
+  track("ending_view",{world:state.id,lifeDirection:decision.n,routeVector:state.history.map(c=>c.index+1).join("-"),outcome:decision.quality});
+  window.DreamAudio?.fx("ending");
+ }
+ const audit=state.history.slice(1).filter((c,i)=>i===1||i===3);
+ $("#home").hidden=true;$("#game").hidden=true;$("#ending").hidden=false;
+ $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+Qe("home")+'</button><span>'+esc(T(m.place))+'</span><div class="game-tools"><span> '+Qe("gallery")+' </span>'+(window.DreamAudio?.controls()||"")+'</div></div><div class="ending-art">'+art(m.id)+'<span>'+(winning?Qe("collected"):Qe("notCollected"))+'</span></div><div class="ending-paper case-report"><span class="case-grade '+decision.quality+'">'+copies+'</span><span class="kicker">'+Qe("ending")+'</span><h1>'+(winning?esc(T(decision.entry[0])):Qe("cost"))+'</h1><p>'+esc(result)+'</p><div class="case-verdict">'+esc(T(decision.quality==="cost"?decision.detail:decision.quality==="perfect"?Q.perfectBecause:Q.strongBecause))+'</div><div class="case-summary"><strong>'+Qe("earned")+'</strong>'+counters()+'<div class="case-key-actions"><span>'+Qe("recap")+'</span>'+audit.map(c=>'<p>• '+esc(T(c.title))+' — '+esc(T(c.result))+'</p>').join("")+'</div></div><div class="end-actions"><button class="big-btn" data-retry>'+Qe("replay")+' ↺</button><button class="outline-btn" data-random>'+Qe("another")+' ↗</button><button class="outline-btn" data-share>'+Qe("share")+'</button></div></div>';
+ window.DreamAudio?.sync();closeToTop();
 }
 async function share(){
- if(!state)return;
- const w=WORLDS.find(x=>x.id===state.id),n=state.secret&&state.history[3]?.index===0?3:state.history[4].index;
- const ending=n===3?w.rare:w.endings[n],url=location.origin+"/elsewhere/?world="+encodeURIComponent(w.id);
- const text=lang==="zh"?"我在《平行人生》活成了「"+tr(ending[0])+"」。如果是你，会走向什么结局？":'My alternate life in Elsewhere ended as "'+tr(ending[0])+'". What would yours be?';
- if(window.MorrowwishSocialShare?.open){window.MorrowwishSocialShare.open({title:lang==="zh"?"平行人生 · "+tr(ending[0]):"Elsewhere · "+tr(ending[0]),message:text,url,language:lang,meta:{game:"elsewhere",world:w.id},onShare:platform=>track("share_clicked",{world:w.id,platform})});return}
- track("share_clicked",{world:w.id});
- try{if(navigator.share){await navigator.share({title:tr(ending[0]),text,url});return}}catch(e){if(e?.name==="AbortError")return}
- try{await navigator.clipboard.writeText(text+" "+url);toast(lang==="zh"?"分享文案和链接已复制":"Share link copied")}catch{toast(url)}
+ if(!state||state.history.length!==5)return;
+ const d=resolve(),m=meta(state.id),url=location.origin+"/elsewhere/?world="+encodeURIComponent(state.id);
+ const message=d.quality==="cost"?(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇还差一步就能逆转。你会怎么选？":"I came close to winning "+T(m.name)+" in Elsewhere. What would you do?"):(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇，赢得了「"+T(d.entry[0])+"」这个结局。你能做得更好吗？":'I earned "'+T(d.entry[0])+'" in Elsewhere: '+T(m.name)+'. Can you beat my ending?');
+ track("share_clicked",{world:state.id,outcome:d.quality});
+ if(window.MorrowwishSocialShare?.open){window.MorrowwishSocialShare.open({title:T(d.entry[0]),message,url,language:lang,meta:{game:"elsewhere",world:state.id},onShare:platform=>track("share_clicked",{world:state.id,platform})});return}
+ try{if(navigator.share){await navigator.share({title:T(d.entry[0]),text:message,url});return}}catch(err){if(err?.name==="AbortError")return}
+ try{await navigator.clipboard.writeText(message+" "+url);toast(lang==="zh"?"已复制分享文案和链接":"Share link copied")}catch{toast(url)}
 }
-function toast(msg){$("#toast").textContent=msg;$("#toast").hidden=false;setTimeout(()=>$("#toast").hidden=true,2400)}
+function toast(msg){
+ $("#toast").textContent=msg;$("#toast").hidden=false;window.setTimeout(()=>{$("#toast").hidden=true},2300);
+}
 function setLanguage(l){
  if(l!=="zh"&&l!=="en")return;
  lang=l;document.documentElement.lang=l==="zh"?"zh-CN":"en";
- try{localStorage.setItem(LANG,l)}catch{}
- // Keep refreshes and shared deep links in the language the visitor selected.
- const params=new URLSearchParams(location.search);
- if(l==="zh")params.set("lang","zh");else params.delete("lang");
- const query=params.toString();
- history.replaceState(history.state||{},"",location.pathname+(query?"?"+query:"")+location.hash);
- document.querySelectorAll("[data-language]").forEach(button=>{
-  const selected=button.dataset.language===l;
-  button.classList.toggle("is-active",selected);
-  button.setAttribute("aria-pressed",String(selected));
+ try{localStorage.setItem("morrowwish.language",l)}catch{}
+ const url=new URLSearchParams(location.search);
+ if(l==="zh")url.set("lang","zh");else url.delete("lang");
+ history.replaceState(history.state||{},"",location.pathname+(url.toString()?"?"+url:"")+location.hash);
+ document.querySelectorAll("[data-language]").forEach(btn=>{
+  const active=btn.dataset.language===l;
+  btn.classList.toggle("is-active",active);
+  btn.setAttribute("aria-pressed",String(active));
  });
  $(".brand").innerHTML=(l==="zh"?"平行人生":"Elsewhere")+"<i>.</i>";
- $(".top-right span").textContent=l==="zh"?"MORROW WISH · 梦幻人生":"A MORROW WISH ADVENTURE";
- $(".footer-title").textContent=l==="zh"?"平行人生 · MORROW WISH · 每段人生都有另一扇门":"ELSEWHERE · MORROW WISH · EVERY LIFE HAS ANOTHER DOOR";
- if(state){if($("#ending").hidden)renderStage();else finish()}else renderHome();window.DreamAudio?.sync();
+ $(".top-right span").textContent=l==="zh"?"MORROW WISH · 平行人生":"A MORROW WISH ADVENTURE";
+ $(".footer-title").textContent=l==="zh"?"平行人生 · MORROW WISH":"ELSEWHERE · MORROW WISH";
+ if(!state)renderHome();else if($("#ending").hidden)renderStage();else finish();
+ window.DreamAudio?.sync();
 }
 document.addEventListener("click",e=>{
  const el=e.target.closest("button,a");if(!el)return;
@@ -369,12 +251,15 @@ document.addEventListener("click",e=>{
  else if(el.matches("[data-retry]"))openWorld(state.id,true);
  else if(el.matches("[data-choice]"))makeChoice(Number(el.dataset.choice));
  else if(el.matches("[data-continue]"))advance();
- else if(el.matches("[data-secret]")&&state&&!state.secret){state.secret=true;window.DreamAudio?.fx("secret");toast(tr(WORLDS.find(w=>w.id===state.id).secret));renderStage();}
+ else if(el.matches("[data-secret]")&&state&&!state.secret){
+  state.secret=true;state.scores.proof++;
+  window.DreamAudio?.fx("secret");toast(T(story(state.id).secret));renderStage();
+ }
  else if(el.matches("[data-share]"))share();
 });
 window.addEventListener("popstate",()=>{const id=new URLSearchParams(location.search).get("world");if(!id)renderHome();else if(!state||state.id!==id)openWorld(id,false,false)});
 const urlWorld=new URLSearchParams(location.search).get("world");
 setLanguage(lang);
-if(urlWorld&&WORLDS.some(w=>w.id===urlWorld))openWorld(urlWorld);
+if(urlWorld&&CASES[urlWorld])openWorld(urlWorld,false,false);
 if("serviceWorker" in navigator)navigator.serviceWorker.register("/elsewhere/sw.js").catch(()=>{});
 })();

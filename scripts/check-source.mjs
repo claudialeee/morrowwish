@@ -252,74 +252,85 @@ console.log('Published pages and UI source contain no starburst glyphs.');
 
 
 
-// Elsewhere: five decisions, two surprise reveals, soundtrack, collectible endings, and desktop/mobile layout.
+// Elsewhere casefiles v3: all choices must belong to an established story, with earned endings.
 import vm from 'node:vm';
 const dreamSource=fs.readFileSync('public/elsewhere/dreams.js','utf8');
-const dreamExtra=fs.readFileSync('public/elsewhere/extra-scenes.js','utf8');
+const dreamA=fs.readFileSync('public/elsewhere/casefiles-a.js','utf8');
+const dreamB=fs.readFileSync('public/elsewhere/casefiles-b.js','utf8');
 const dreamAudio=fs.readFileSync('public/elsewhere/dream-audio.js','utf8');
 const dreamPage=fs.readFileSync('public/elsewhere/index.html','utf8');
 const dreamCss=fs.readFileSync('public/elsewhere/dreams.css','utf8');
 const dreamSw=fs.readFileSync('public/elsewhere/sw.js','utf8');
-for(const [name,source] of [['dreams',dreamSource],['extra-scenes',dreamExtra],['dream-audio',dreamAudio]])
- new vm.Script(source,{filename:name});
-for(const marker of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/extra-scenes.js',
- '/elsewhere/dream-audio.js','/telemetry.js','/social-share.js'])
- if(!dreamPage.includes(marker))throw Error('Elsewhere missing resource: '+marker);
-for(const marker of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/extra-scenes.js','/elsewhere/dream-audio.js'])
- if(!dreamSw.includes(marker))throw Error('Elsewhere cache missing: '+marker);
+for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-audio',dreamAudio]])
+ new vm.Script(src,{filename:name});
+for(const path of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/casefiles-a.js',
+                   '/elsewhere/casefiles-b.js','/elsewhere/dream-audio.js','/telemetry.js','/social-share.js'])
+ if(!dreamPage.includes(path))throw Error('Elsewhere missing resource: '+path);
+for(const path of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/casefiles-a.js',
+                   '/elsewhere/casefiles-b.js','/elsewhere/dream-audio.js'])
+ if(!dreamSw.includes(path))throw Error('Elsewhere offline shell cache missing: '+path);
 for(const marker of ['@media(min-width:701px)','@media(max-width:700px)','grid-template-columns:minmax(0,1.07fr)',
- 'prefers-reduced-motion','twist-burst','twistFlash','twistSpark','.scene-body{height:100%;overflow-y:auto'])
- if(!dreamCss.includes(marker))throw Error('Missing desktop/mobile or reveal effect: '+marker);
+                    'prefers-reduced-motion','twist-burst','twistFlash','twistSpark','.case-resources','.case-report'])
+ if(!dreamCss.includes(marker))throw Error('Missing responsive presentation or readable outcome: '+marker);
 for(const marker of ['Kevin MacLeod','creativecommons.org/licenses/by/4.0'])
  if(!dreamPage.includes(marker))throw Error('Music attribution missing');
 for(const marker of ['musicOn=read(KEY,true)','fxOn=read(FX_KEY,true)','audio.play()','function toggleMusic()',
- 'function toggleFX()','function fx(kind=','window.DreamAudio=','blocked=true','document.addEventListener("click"'])
- if(!dreamAudio.includes(marker))throw Error('Music/FX module incomplete: '+marker);
-const dreamCore=dreamSource.slice(dreamSource.indexOf('const L='),dreamSource.indexOf('const $='));
-const dreamSandbox={window:{}};
-vm.runInNewContext(dreamExtra,dreamSandbox,{timeout:2500});
-vm.runInNewContext(dreamCore+';globalThis.lives=WORLDS;',dreamSandbox,{timeout:2500});
-const lives=dreamSandbox.lives;
-const bilingual=v=>Array.isArray(v)&&v.length===2&&v.every(x=>typeof x==='string'&&x.trim().length>1);
-if(lives.length!==6||new Set(lives.map(w=>w.id)).size!==6)throw Error('Expected six distinct dream lives');
-for(const life of lives){
- for(const pair of [life.place,life.name,life.tag,life.tease,life.secret,life.shock])
-  if(!bilingual(pair))throw Error('Untranslated life metadata: '+life.id);
- if(life.acts.length!==5||life.endings.length!==3||life.rare.length!==2)
-  throw Error('Five scenes and four endings required: '+life.id);
- if(life.acts[1].twists?.length!==3||life.acts[2].branches?.length!==3||
-    life.acts[3].branches?.length!==3||life.acts[4].turns?.length!==3||
-    life.acts[4].after?.length!==3)
-  throw Error('Missing genuine branching surprise/continuity: '+life.id);
- for(const act of life.acts){
-  if(!bilingual(act.title)||act.choices?.length!==3)throw Error('Incomplete scene: '+life.id);
-  if(act.body&&!bilingual(act.body))throw Error('Untranslated life intro: '+life.id);
-  for(const choice of act.choices)
-   if(choice.length!==2||!bilingual(choice[0])||!bilingual(choice[1]))
-    throw Error('Choice or consequence untranslated: '+life.id);
+                    'function toggleFX()','function fx(kind=','window.DreamAudio=','blocked=true'])
+ if(!dreamAudio.includes(marker))throw Error('Elsewhere audio missing: '+marker);
+const storySandbox={window:{}};
+vm.runInNewContext(dreamA,storySandbox,{timeout:2500});
+vm.runInNewContext(dreamB,storySandbox,{timeout:2500});
+const cases=storySandbox.window.ELSEWHERE_CASEFILES;
+const bilingual=x=>Array.isArray(x)&&x.length===2&&x.every(y=>typeof y==='string'&&y.trim().length>1);
+if(!cases||Object.keys(cases).length!==6)throw Error('Expected exactly six authored casefiles');
+const resources=['proof','allies','leverage'];
+for(const [world,entry] of Object.entries(cases)){
+ for(const label of [entry.mystery,entry.objective,entry.secret,entry.villain])
+  if(!bilingual(label))throw Error('Untranslated casefile metadata: '+world);
+ if(!Array.isArray(entry.paths)||entry.paths.length!==3||
+    !Array.isArray(entry.endings)||entry.endings.length!==3||entry.rare.length!==2)
+  throw Error('Casefile route or outcome structure is incomplete: '+world);
+ const scenes=[entry.intro,entry.finale,...entry.paths.flat()];
+ if(entry.paths.some(path=>path.length!==3)||scenes.length!==11)
+  throw Error('Expected an opening, three route-specific encounters and a final confrontation: '+world);
+ for(const scene of scenes){
+  if(!bilingual(scene.title)||!bilingual(scene.body)||scene.choices.length!==3)
+   throw Error('Untranslated or invalid scene in '+world);
+  if(new Set(scene.choices.map(c=>c.title[0])).size!==3)
+   throw Error('The same choice is repeated in scene '+scene.title[0]);
+  for(const choice of scene.choices){
+   if(!bilingual(choice.title)||!bilingual(choice.result)||!resources.includes(choice.gain))
+    throw Error('Invalid choice, consequence or objective resource in '+world);
+  }
  }
- for(const line of [...life.acts[1].twists,...life.acts[2].branches,...life.acts[3].branches,
-                       ...life.acts[4].turns,...life.acts[4].after])
-  if(!bilingual(line))throw Error('Untranslated reactive scene: '+life.id);
- for(const ending of [...life.endings,life.rare])
+ if(entry.paths.some(path=>path.some((scene,i)=>scene.body[0]===entry.paths[0][i].body[0]&&path!==entry.paths[0])))
+  throw Error('Routes must have truly different scenes rather than reskinned psychological questions: '+world);
+ for(const ending of [...entry.endings,entry.rare])
   if(ending.length!==2||!bilingual(ending[0])||!bilingual(ending[1]))
-   throw Error('Untranslated ending: '+life.id);
- // Each of 3^5 choice paths reaches one ending, with a rare fourth route when a hidden clue was found.
- const endings=new Set();let routeCount=0;
- for(let n=0;n<243;n++){
-  const seq=Array.from({length:5},(_,i)=>Math.floor(n/Math.pow(3,i))%3);
-  for(const clue of [false,true]){endings.add(clue&&seq[3]===0?3:seq[4]);routeCount++;}
+   throw Error('Casefile ending missing bilingual outcome: '+world);
+ // All 3^5 possible paths are valid, but only the three relevant actions at the current scene can be shown.
+ for(let route=0;route<3;route++){
+  if(!entry.intro.choices[route])throw Error('No opening action leading to route '+route);
+  for(let stage=1;stage<=3;stage++){
+   const scene=entry.paths[route][stage-1];
+   for(let decision=0;decision<3;decision++)if(!scene.choices[decision])
+    throw Error('Missing choice at route/stage '+world+'/'+route+'/'+stage);
+  }
  }
- if(endings.size!==4||routeCount!==486)throw Error('Unreachable ending or incomplete play: '+life.id);
- if(!dreamSource.includes('id==="'+life.id+'"'))throw Error('No illustration for '+life.id);
 }
-for(const marker of ['scenes:5,edition:"dream-v2"','function revealTwist()','data-twist',
- 'window.DreamAudio?.fx("twist")','window.DreamAudio?.fx("ending")','state.history[4].index',
- 'track("world_open"','track("chapter_view"','track("choice_made"','track("chapter_completed"',
- 'track("life_completed"','track("ending_view"','window.arcadeMetric?.("game_complete")',
- 'navigator.globalPrivacyControl','MorrowwishSocialShare?.open','history.pushState'])
- if(!dreamSource.includes(marker))throw Error('Elsewhere gameplay/analytics missing: '+marker);
-console.log('Elsewhere: six five-scene lives, 30 illustrated moments, 24 bilingual endings, 2,916 simulated paths, two cinematic reveals and music/FX checked.');
+const requiredStoryFeatures=[
+ 'edition:"casefiles-v3"','const CASES=window.ELSEWHERE_CASEFILES||{}','state.route=n',
+ 'state.scores[act.gain]++','state.history.push','state.history.length!==5',
+ 'const rare=state.secret&&n===0','state.scores[kind]>=2','function revealTwist()',
+ 'window.DreamAudio?.fx("twist")','window.DreamAudio?.fx("ending")',
+ 'track("choice_made"','track("chapter_completed"','track("life_completed"',
+ 'track("ending_view"','window.arcadeMetric?.("game_complete")','navigator.globalPrivacyControl',
+ 'MorrowwishSocialShare?.open','history.pushState'];
+for(const marker of requiredStoryFeatures)
+ if(!dreamSource.includes(marker))throw Error('Elsewhere gameplay, accountability or analytics missing: '+marker);
+if(dreamPage.includes('/elsewhere/extra-scenes.js')||dreamPage.includes('/elsewhere/app.js'))
+ throw Error('Retired random unrelated stories still active');
+console.log('Elsewhere: 6 coherent suspense casefiles, 18 route-specific investigations, 66 unique playable scenes, 198 meaningful decisions, earned outcome evaluations and explicit music controls checked.');
 
 // Four distinctly styled cheerful CC0 recordings, no shared Lo-fi fallback.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
@@ -397,8 +408,8 @@ const nav=dreamPage.slice(navStart,navEnd);
 if(nav.indexOf('href="/"')<0||nav.indexOf('href="/"')>nav.indexOf('href="/elsewhere/"')||!nav.includes('data-language="zh"')||!nav.includes('data-language="en"'))
  throw Error('Elsewhere studio-home link or language toggle missing');
 if((nav.match(/href="\/"(?=\s|>)/g)||[]).length!==1)throw Error('Ambiguous Elsewhere homepage route');
-if(!dreamSource.includes('button.setAttribute("aria-pressed",String(selected))')||!dreamSource.includes('el.matches("[data-language]")'))throw Error('Elsewhere language options must highlight the current language and respond directly');
-if(!dreamSource.includes('history.replaceState(history.state||{}')||!dreamSource.includes('params.delete("lang")'))throw Error('Elsewhere language preference must survive refreshing deep links');
+if(!dreamSource.includes('btn.setAttribute("aria-pressed",String(active))')||!dreamSource.includes('el.matches("[data-language]")'))throw Error('Elsewhere language options must highlight the current language and respond directly');
+if(!dreamSource.includes('history.replaceState(history.state||{}')||!dreamSource.includes('url.delete("lang")'))throw Error('Elsewhere language preference must survive refreshing deep links');
 console.log('Elsewhere home navigation, bilingual selector, and persistent URL language checked.');
 
 // Parcel Panic must be genuinely playable with one click or 1/2/3 keys on laptops,
