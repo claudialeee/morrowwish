@@ -24,6 +24,8 @@ class CatEntity {
     this.face = Math.random() < 0.5 ? -1 : 1;
     this.pose = 'idle';
     this.vx = 0; this.vy = 0;
+    this.walkVX = 0; this.walkVY = 0; // animated velocity eases into directions
+    this.motion = 0; this.stride = this.x * 0.03;
     this.timer = 1 + Math.random() * 2;
     this.t = Math.random() * 10;
     this.target = null;
@@ -57,7 +59,6 @@ class CatEntity {
       const ang = Math.random() * Math.PI * 2;
       const spd = 26 + Math.random() * 34;
       this.vx = Math.cos(ang) * spd; this.vy = Math.sin(ang) * spd * 0.55;
-      this.face = this.vx < 0 ? -1 : 1;
       this.timer = 1.8 + Math.random() * 3;
     } else if (r < 0.58) { this.pounceT = 1.2 + Math.random() * 0.8; this.setPose('play', this.pounceT); }
     else if (r < 0.72) { this.setPose('sit', 1.6 + Math.random() * 2.5); }
@@ -91,34 +92,46 @@ class CatEntity {
       if (Math.random() < 0.7) this.emote(pool[Math.floor(Math.random() * pool.length)], 2 + Math.random() * 1.5);
     }
 
-    // curiosity: when the cursor is nearby & moving, perk up and drift toward it
+    // Curious cats gradually turn and follow you rather than snapping or sliding.
     this.curious = false;
+    let desiredVX = this.pose === 'walk' ? this.vx : 0;
+    let desiredVY = this.pose === 'walk' ? this.vy : 0;
     if (mouse && mouse.active) {
-      const dmx = mouse.x - this.x, dmy = mouse.y - this.y;
-      const md = Math.hypot(dmx, dmy);
-      if (md < 170 && (this.pose === 'walk' || this.pose === 'idle' || this.pose === 'sit')) {
+      const dx = mouse.x - this.x, dy = mouse.y - this.y;
+      const dist = Math.hypot(dx,dy);
+      if (dist < 165 && ['walk','idle','sit'].includes(this.pose)) {
         this.curious = true;
-        this.face = dmx < 0 ? -1 : 1;
-        if (md > 46) {
-          // saunter toward cursor
+        if (dist > 55) {
           this.pose = 'walk';
-          this.x += (dmx / md) * 42 * dt;
-          this.y += (dmy / md) * 24 * dt;
+          desiredVX = (dx/dist)*43;
+          desiredVY = (dy/dist)*24;
         } else {
-          this.pose = 'play'; // pawing at the cursor
-          if (!this.bubble || this.bubble === '❓') this.emote('❗', 1);
+          this.pose = 'play';
+          desiredVX = desiredVY = 0;
+          if (!this.bubble || this.bubble === '❓') this.emote('❗',1);
         }
       }
     }
+    // Damped velocity gives a real ease-in/ease-out and curved turns.
+    // Clamp dt so background tabs do not make characters jump.
+    const step = Math.min(dt,.05);
+    const follow = 1-Math.exp(-(this.pose === 'walk' ? 5.3 : 9)*step);
+    this.walkVX += (desiredVX-this.walkVX)*follow;
+    this.walkVY += (desiredVY-this.walkVY)*follow;
+    this.x += this.walkVX*step;
+    this.y += this.walkVY*step;
 
-    const groundTop = this.H * 0.54;   // horizon of the painted meadow
-    if (this.pose === 'walk' && !this.curious) {
-      this.x += this.vx * dt; this.y += this.vy * dt;
-      if (this.x < 56 || this.x > this.W - 56) { this.vx *= -1; this.face *= -1; }
-      if (this.y < groundTop || this.y > this.H - 150) this.vy *= -1;
-    }
-    this.x = Math.max(56, Math.min(this.W - 56, this.x));
-    this.y = Math.max(groundTop, Math.min(this.H - 150, this.y));
+    const leftBound=Math.min(56,this.W*.22),rightBound=this.W-leftBound;
+    const groundTop=this.H*.54,groundBottom=Math.max(groundTop+32,this.H-145);
+    if(this.x<leftBound){this.x=leftBound;this.vx=Math.abs(this.vx);this.walkVX=Math.max(0,this.walkVX);}
+    if(this.x>rightBound){this.x=rightBound;this.vx=-Math.abs(this.vx);this.walkVX=Math.min(0,this.walkVX);}
+    if(this.y<groundTop){this.y=groundTop;this.vy=Math.abs(this.vy);this.walkVY=Math.max(0,this.walkVY);}
+    if(this.y>groundBottom){this.y=groundBottom;this.vy=-Math.abs(this.vy);this.walkVY=Math.min(0,this.walkVY);}
+    if(Math.abs(this.walkVX)>5)this.face=this.walkVX<0?-1:1;
+    const walkSpeed=Math.hypot(this.walkVX,this.walkVY);
+    this.motion+=(Math.min(1,walkSpeed/38)-this.motion)*(1-Math.exp(-8*step));
+    this.stride+=step*(2.6+walkSpeed*.11);
+
   }
   mood() {
     if (this.pettedGlow > 0) return 'love';
@@ -140,6 +153,7 @@ class CatEntity {
     }
     CatArt.drawCat(ctx, this.x, this.y, {
       species: sp, scale: depth, face: this.face, t: this.t,
+      motion: this.motion, stride: this.stride,
       pose: this.pose, mood: this.mood(),
       growth: window.Growth ? Growth.visual(this.cat) : null,
     });
@@ -322,6 +336,9 @@ class YardScene {
       lawn.addColorStop(0, '#96c464'); lawn.addColorStop(1, '#6fae4f');
       ctx.fillStyle = lawn; ctx.fillRect(0, horizon, W, H - horizon);
     }
+
+    // Illustrated edge flowerbeds, light pools and meadow details.
+    if(window.CatBondScenery)CatBondScenery.accentYard(ctx,W,H,t);
 
     // --- drifting clouds (gentle parallax over the painted sky) ---
     for (const c of this.clouds) {
