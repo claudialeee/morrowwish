@@ -274,6 +274,34 @@ try{
                  report.submissionForm.uploadProbe.afterSelectionFields=await inspectFields(page);
                  report.submissionForm.uploadProbe.afterSelectionButtons=await page.locator('button:visible').allTextContents().catch(()=>[]);
                  report.submissionForm.uploadProbe.afterSelectionPath=new URL(page.url()).pathname;
+                 // First-game preflight: fill actual production link and inspect Preview/QA.
+                 // Never click final Submit. No posting in this inspection workflow.
+                 const liveLink='https://morrowwish.vercel.app/flip-dash/?utm_source=crazygames&utm_medium=portal&utm_campaign=flip-dash-playtest';
+                 const urlField=page.locator('input[type="url"]').first();
+                 if(await urlField.count()){
+                   await urlField.fill(liveLink);
+                   const noSave=page.getByText('No, the game does not need progress save',{exact:true}).first();
+                   if(await noSave.count())await noSave.evaluate(el=>el.click()).catch(()=>{});
+                   await page.waitForTimeout(500);
+                   report.submissionForm.uploadProbe.readyForPreview={
+                      gameName:await page.locator('input[required][type="text"]').first().inputValue().catch(()=>null),
+                      iframeLink:await urlField.inputValue(),
+                      selectedRadioValues:await page.locator('input[type="radio"]:checked').count(),
+                      canPreview:await page.getByRole('button',{name:'Preview',exact:true}).isEnabled().catch(()=>false)
+                   };
+                   const preview=page.getByRole('button',{name:'Preview',exact:true});
+                   if(await preview.count() && await preview.isEnabled()){
+                     await preview.evaluate(el=>el.click());
+                     await page.waitForTimeout(2800);
+                     report.submissionForm.uploadProbe.previewStep={
+                       path:new URL(page.url()).pathname,
+                       text:safe(await page.locator('body').innerText().catch(()=>'' )).slice(-2800),
+                       fields:await inspectFields(page),
+                       buttons:(await page.locator('button:visible').allTextContents().catch(()=>[])).map(x=>safe(x.trim())).slice(0,35)
+                     };
+                   }
+                 }
+
                }
 
              }
