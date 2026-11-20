@@ -11,6 +11,7 @@ try{
   try{
     await coverPage.goto(origin+'/?lang=zh',{waitUntil:'domcontentloaded'});
     const cover=coverPage.locator('.bond-feature-card .feature-art img');
+    assert.ok((await cover.getAttribute('src')).startsWith('/art/cat-bond-cozy.webp'),'Homepage must show the actual generated Cat Bond image');
     await cover.scrollIntoViewIfNeeded();
     await coverPage.waitForFunction(()=>{
       const img=document.querySelector('.bond-feature-card .feature-art img');
