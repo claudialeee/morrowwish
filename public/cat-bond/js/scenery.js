@@ -23,9 +23,8 @@
     for(let i=0;i<count;i++){
       const sx=((i*139.7+t*(6+i%4)*(.7+a))%(W+50)+W+50)%(W+50)-25;
       const sy=((i*79.3+t*(11+i%3))%(H+60)+H+60)%(H+60)-30;
-      ctx.translate(sx,sy);ctx.rotate(t*.4+i);
-      circle(ctx,0,0,2.2+(i%3),1.3,'rgba(255,233,224,.55)');
-      ctx.setTransform(1,0,0,1,0,0);
+      ctx.save();ctx.translate(sx,sy);ctx.rotate(t*.4+i);
+      circle(ctx,0,0,2.2+(i%3),1.3,'rgba(255,233,224,.55)');ctx.restore();
     }
     ctx.restore();
   }
