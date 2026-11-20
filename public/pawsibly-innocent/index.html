@@ -199,42 +199,118 @@ html[lang="zh-CN"] .sidebar-en{display:none}
 .wrap>.board-layout{order:1;width:100%}
 .wrap>.explainer{order:2;margin-top:18px}
 @media(max-width:620px){.wrap>.explainer{margin-top:12px}}
-</style><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-cg-review-v3" defer></script><meta name="twitter:card" content="summary_large_image"></head>
+
+/* v4: a single game cockpit, compact collection shelf, and no redundant rules below. */
+.wrap{width:min(1200px,calc(100% - 24px));padding-bottom:28px}
+.heading{padding:4px 0 12px}.heading h1{font-size:clamp(27px,4vw,43px);line-height:1.08;margin:2px 0 4px}.heading .sub{font-size:12px}
+.board-layout{grid-template-columns:minmax(0,1fr) minmax(265px,292px)!important;gap:14px}
+.play-column{min-width:0}.stage{border-radius:20px;border-width:5px;box-shadow:0 10px 24px #a9767533}
+.stealth-actionbar{margin:0 0 8px!important;padding:9px 12px!important;gap:14px!important;min-height:74px;background:#fffaf9}
+.stealth-help{display:flex;flex-direction:column;align-items:flex-start;gap:3px;font-size:12px;min-width:0}
+.stealth-help>strong{font-size:13px;line-height:1.3}.yarn-hint{font-size:11px;color:#88738d}
+.guard-status{display:flex;align-items:center;gap:6px;font-weight:900;font-size:11px;color:#658d95}
+.guard-dot{width:8px;height:8px;border-radius:50%;background:#7cabb8;box-shadow:0 0 0 3px #7cabb822}
+.guard-status[data-mode=investigate] {color:#9660b6}.guard-status[data-mode=investigate] .guard-dot{background:#a66acc}
+.guard-status[data-mode=chase],.guard-status[data-mode=search] {color:#bd5764}
+.guard-status[data-mode=chase] .guard-dot,.guard-status[data-mode=search] .guard-dot{background:#e66a79}
+.guard-status[data-mode=distracted] {color:#3c9d7a}.guard-status[data-mode=distracted] .guard-dot{background:#59bf94}
+.guard-status[data-mode=sleep] .guard-dot{background:#b1a0cd}
+.stealth-actionbar .board-yarn{min-width:145px;min-height:46px;font-size:12px;padding:9px 12px}
+.bonus-dare{font-size:11px}
+.board-layout aside.panel{display:flex;flex-direction:column;gap:9px!important;padding:13px!important;align-self:stretch;min-width:0}
+.panel .sidebar-mission,.panel .sidebar-fish{margin:0}.panel .chapter{font-size:19px}.panel .chapter-sub{font-size:11px;margin-top:2px}
+.panel .mission{font-size:11px;line-height:1.35}.panel .stat{padding:6px 4px}.panel .stat strong{font-size:18px}
+.panel .sidebar-actions .button{font-size:11px;min-height:35px;padding:7px}
+.panel .collection-count{display:flex;gap:5px;justify-content:space-between;align-items:center;padding:8px 9px;border-radius:11px}
+.panel .collection-count strong{font-size:16px}.panel #achievementCount{font-size:10px;font-weight:850;color:#946b91;letter-spacing:0;text-align:right}
+.collection-preview{display:flex;align-items:center;gap:9px;font-size:12px;color:#755d73;line-height:1.3;font-weight:800;min-height:43px;padding:7px 9px;background:#fff3e8;border:1px solid #f1d8d4;border-radius:12px}
+.collection-preview .relic-glyph{font-size:25px;flex:0 0 auto}
+.collection-preview small{display:block;font-size:10px;color:#9d8191;font-weight:700;margin-top:3px}
+.panel details.relic-details,.panel details.achievement-details,.panel details.sidebar-extra{border:1px solid #eddde2;border-radius:12px;padding:0 9px;background:#fffaf6}
+.panel details>summary{cursor:pointer;padding:9px 4px;font-size:11px;font-weight:900;color:#785b79;list-style-position:inside}
+.relic-gallery,.achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0 0 11px}
+.relic-card,.achievement-card{background:#fff1e9;border:1px solid #f0ddd8;border-radius:10px;padding:8px;display:flex;align-items:flex-start;gap:7px;min-width:0}
+.relic-card.locked,.achievement-card.locked{opacity:.62;filter:saturate(.7)}
+.relic-card .glyph,.achievement-card .glyph{font-size:20px;flex:0 0 22px;text-align:center}
+.relic-card strong,.achievement-card strong{display:block;font-size:10px;line-height:1.3;color:#654e63}
+.relic-card small,.achievement-card small{display:block;font-size:9px;line-height:1.3;color:#8d7b85;margin-top:3px}
+.sidebar-extra .help-content h2{font-size:15px;margin:4px 0}
+.sidebar-extra .help-content p{font-size:11px;line-height:1.4;margin:7px 0}
+.sidebar-extra .sidebar-extra-body{padding:5px 4px 13px}
+.achievement-toast{position:absolute;z-index:5;left:50%;top:15%;transform:translateX(-50%);padding:10px 18px;border-radius:15px;background:#fff6e4;border:2px solid #eac27b;color:#80522f;box-shadow:0 8px 23px #6c405546;font-weight:900;font-size:13px;text-align:center;max-width:76%;pointer-events:none}
+.achievement-toast[hidden]{display:none}
+@media(max-width:1000px){.board-layout{grid-template-columns:minmax(0,1fr)!important}.board-layout aside.panel{max-width:none;align-self:auto}.panel .levels,.panel .clothes{display:block}.relic-gallery,.achievement-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.sitebar{padding:6px 12px}.heading{padding:2px 0 7px}.heading h1{font-size:30px}.heading .eyebrow{font-size:9px}.heading .sub{font-size:11px}.stealth-actionbar{padding:8px!important;gap:6px!important;flex-direction:row;align-items:center}.stealth-help>strong{font-size:11px}.stealth-actionbar .board-yarn{order:0;width:auto;min-width:110px;max-width:40%;min-height:44px;font-size:11px;padding:8px}.guard-status{font-size:10px}.yarn-hint{display:none}.board-layout aside.panel{margin:8px 0 0;padding:12px!important}.relic-gallery,.achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stage{border-width:4px;border-radius:14px}}
+/* Portal mode: keep a playable board and one concise mission column. */
+html.cg-play .board-layout{grid-template-columns:minmax(0,1fr) clamp(204px,27vw,290px)!important}
+html.cg-play .board-layout aside.panel{max-height:calc(100dvh - 9px);overflow:auto;align-self:start;padding:9px!important}
+html.cg-play .heading,html.cg-play .sitebar,html.cg-play .sidebar-extra,html.cg-play .panel .clothes,html.cg-play .achievement-details,html.cg-play .relic-details{display:none!important}
+html.cg-play .stealth-actionbar{min-height:0}
+@media(max-width:740px), (max-height:390px){html.cg-play .board-layout{grid-template-columns:1fr!important}html.cg-play .board-layout aside.panel{display:none!important}}
+</style><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-overhaul-v1" defer></script><meta name="twitter:card" content="summary_large_image"></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><a class="back" href="/" id="back">← Morrow Wish</a><div class="cat-header-right"><span class="brand">morrow<span>wish</span> <b id="studioByline">presents ♡</b></span><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></div></header>
-<main class="wrap"><div class="heading"><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h1 id="gameTitle">PAWSIBLY<br><span>INNOCENT!</span></h1><p class="sub" id="subtitle">Steal the snacks. Outsmart the human. Leave a little chaos.</p></div>
-<section class="explainer" aria-labelledby="howTitle"><div class="rules-heading"><div><span class="rules-kicker" id="rulesKicker">HOW TO PLAY</span><h2 id="howTitle">Three steps to a purrfect escape</h2></div><p id="howBody">The human moves after every step you take. Stay out of sight — you have three hearts.</p></div><div class="rule-steps">
-<div class="rule-step"><span class="rule-symbol" aria-hidden="true">👆</span><div><strong id="ruleStep1Title">1 · Tap to move</strong><p id="ruleStep1Text">Tap the floor or use arrow keys.</p></div></div>
-<div class="rule-step"><span class="rule-symbol" aria-hidden="true">🐟</span><div><strong id="ruleStep2Title">2 · Steal three fish</strong><p id="ruleStep2Text">Pink tiles show human sight; cardboard boxes hide you.</p></div></div>
-<div class="rule-step"><span class="rule-symbol" aria-hidden="true">🚪</span><div><strong id="ruleStep3Title">3 · Escape through the pink flap</strong><p id="ruleStep3Text">Reach the cat door with three fish to win.</p></div></div>
-</div><p class="rule-bonus" id="ruleBonus">🧶 Tap Toss yarn (or Space), then tap an open floor tile to choose where your yarn lands. Tap the button again to cancel.</p></section>
-<div class="board-layout"><div><div class="stealth-actionbar" aria-label="Yarn and stealth controls"><div class="stealth-help"><strong id="visionTip">Pink tiles = human sight. Cardboard boxes hide you.</strong><span id="yarnQuickHint">Throw yarn to lure the human away.</span><span class="bonus-dare" id="bonusDare" aria-live="polite">☆ BONUS DARE · Knock over a vase</span></div><button class="button yarn board-yarn" id="tool" type="button" aria-label="Toss yarn to distract the human">🧶 Toss yarn (Space)</button></div><div class="stage" id="stage"><canvas id="board" width="840" height="588" tabindex="0" aria-label="Cat mischief puzzle. Tap a destination or use arrow keys."></canvas><div id="heistStatus" class="heist-status" aria-label="Fish and lives">🐟 0/3 · ♥♥♥</div><div id="pawsAlert" class="paws-alert" hidden role="status" aria-live="polite">SPOTTED</div><div class="yarn-aim-banner" id="yarnAimBanner" hidden>🧶 Tap the floor to aim your yarn ball</div><div class="sticker"><small id="roomNum">ROOM 01 / 08</small><b id="roomTag">The Sunny Lounge</b></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="overlay" id="overlay" hidden><div class="modal"><div class="cat-medal" id="medal">🐱</div><div class="stars" id="stars">★★★</div><h2 id="resultTitle">Purrfect escape!</h2><p id="resultDesc"></p><p id="resultScore"></p><div class="buttons"><button class="button secondary" id="retryResult">Try again</button><button class="button" id="nextResult">Next room →</button><button class="button mint wide" id="shareResult">Share your chaos ♡</button></div></div></div></div>
-<div class="cat-legend" id="catLegend"><span>🐟 Fish = collect 3</span><span>🧶 Yarn = lure human</span><span>📦 Box = hide</span><span>🚪 Pink flap = escape</span></div></div>
-<aside class="panel" aria-label="Game progress and controls">
-  <section class="sidebar-mission">
-    <div class="row"><span class="mini-label" id="missionLabel">TODAY'S MISSION</span><span class="hearts" id="hearts" aria-label="3 hearts">♥ ♥ ♥</span></div>
-    <h2 class="chapter" id="chapter">The Sunny Lounge</h2>
-    <p class="chapter-sub" id="chapterSub">Nobody suspects the little orange menace.</p>
-  </section>
-  <section class="sidebar-fish">
-    <div class="meter-label"><span id="snackLabel">FISH ACQUIRED</span><b id="fishCount">0 / 3</b></div>
-    <div class="meter"><i id="meterFill"></i></div>
-    <p class="mission" id="mission">Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.</p>
-  </section>
-  <div class="collection-count"><span id="collectionLabel">KEEPSAKES</span><strong id="collection">0 / 8</strong></div>
-  <div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">STEPS</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
-  <div class="buttons sidebar-actions"><button class="button secondary" id="restart">↻ Retry</button></div>
-  <section class="levels sidebar-section"><span class="mini-label" id="roomLabel">CHOOSE A ROOM</span><div class="progress" id="levels"></div></section>
-  <section class="clothes sidebar-section"><span class="mini-label" id="closetLabel">YOUR LITTLE TROUBLEMAKER</span><div class="wardrobe" id="wardrobe"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock more cats.</p></section>
-  <details class="sidebar-extra">
-    <summary><span class="sidebar-en">Tips, souvenirs &amp; credits</span><span class="sidebar-zh">提示、纪念品与音乐署名</span></summary>
-    <div class="sidebar-extra-body">
-      <p class="yarn-explain" id="yarnExplain">🧶 Tap Toss yarn, then tap a floor tile to aim. The human follows the sound.</p>
-      <p class="ability" id="ability">Starts with a yarn ball</p>
-      <p class="collection-hint" id="collectionHint">Every room hides a souvenir. Collect it, then escape to keep it.</p>
-      <div class="souvenir-shelf" id="souvenirShelf" aria-label="Eight collectible room memories"></div>
-      <p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p>
+<main class="wrap">
+ <div class="heading"><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h1 id="gameTitle">PAWSIBLY <span>INNOCENT!</span></h1><p class="sub" id="subtitle">Steal three fish. Fool the human. Get away with it.</p></div>
+ <div class="board-layout">
+  <div class="play-column">
+   <div class="stealth-actionbar" aria-label="Live mission and stealth controls">
+    <div class="stealth-help">
+     <strong id="visionTip">Tap the fish next to your cat to begin.</strong>
+     <div class="guard-status" id="guardStatus" data-mode="patrol"><span class="guard-dot" aria-hidden="true"></span><span id="guardIntent">Owner: patrolling the room</span></div>
+     <span id="yarnQuickHint" class="yarn-hint">Toss yarn to distract the owner.</span>
+     <span class="bonus-dare" id="bonusDare">☆ Bonus: Knock over a vase</span>
     </div>
-  </details>
-</aside></div>
+    <button class="button yarn board-yarn" id="tool" type="button" aria-label="Toss yarn to distract the owner">🧶 Toss yarn</button>
+   </div>
+   <div class="stage" id="stage">
+    <canvas id="board" width="840" height="588" tabindex="0" aria-label="Cat stealth adventure. Tap to move, steal three fish, and escape."></canvas>
+    <div id="heistStatus" class="heist-status" aria-label="Fish and remaining lives">🐟 0/3 · ♥♥♥</div>
+    <div id="pawsAlert" class="paws-alert" hidden role="status">SPOTTED</div>
+    <div class="yarn-aim-banner" id="yarnAimBanner" hidden>Tap a tile to throw the yarn there</div>
+    <div class="sticker"><small id="roomNum">ROOM 01 / 08</small><b id="roomTag">The Sunny Lounge</b></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div id="achievementToast" class="achievement-toast" role="status" aria-live="polite" hidden></div>
+    <div class="overlay" id="overlay" hidden>
+     <div class="modal"><div class="cat-medal" id="medal">🐱</div><div class="stars" id="stars">★★★</div>
+      <h2 id="resultTitle">Purrfect escape!</h2><p id="resultDesc"></p><p id="resultScore"></p>
+      <div class="buttons"><button class="button secondary" id="retryResult">Try again</button><button class="button" id="nextResult">Next room →</button><button class="button mint wide" id="shareResult">Share your chaos ♡</button></div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <aside class="panel" aria-label="Room progress, collection and achievements">
+   <section class="sidebar-mission">
+    <div class="row"><span class="mini-label" id="missionLabel">CURRENT HEIST</span><span class="hearts" id="hearts" aria-label="3 hearts">♥ ♥ ♥</span></div>
+    <h2 class="chapter" id="chapter">The Sunny Lounge</h2><p class="chapter-sub" id="chapterSub">Grab the nearby fish first.</p>
+   </section>
+   <section class="sidebar-fish">
+    <div class="meter-label"><span id="snackLabel">FISH STOLEN</span><b id="fishCount">0 / 3</b></div>
+    <div class="meter"><i id="meterFill"></i></div><p class="mission" id="mission">Steal three fish and escape through the cat flap.</p>
+   </section>
+   <div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">MOVES</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
+   <div class="buttons sidebar-actions"><button class="button secondary" id="restart">↻ Retry this room</button></div>
+   <section class="levels sidebar-section"><span class="mini-label" id="roomLabel">ROOMS</span><div class="progress" id="levels"></div></section>
+   <div class="collection-count"><span id="collectionLabel">SOUVENIRS</span><strong id="collection">0 / 8</strong><span id="achievementCount">0 / 14 achievements</span></div>
+   <div class="collection-preview" id="collectionPreview" role="status">Secret treasures appear here as you discover them.</div>
+   <details class="relic-details"><summary id="relicSummary">View souvenir album</summary><div class="relic-gallery" id="relicGallery"></div></details>
+   <details class="achievement-details"><summary id="achievementSummary">View achievements</summary><div class="achievement-grid" id="achievementsGrid"></div></details>
+   <section class="clothes sidebar-section"><span class="mini-label" id="closetLabel">CHOOSE YOUR CAT</span><div class="wardrobe" id="wardrobe"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock cats with new skills.</p></section>
+   <details class="sidebar-extra"><summary><span class="sidebar-en">Controls &amp; credits</span><span class="sidebar-zh">玩法说明与署名</span></summary>
+    <div class="sidebar-extra-body">
+     <div class="help-content"><span class="rules-kicker" id="rulesKicker">HOW TO PLAY</span><h2 id="howTitle">Three moves to freedom</h2><p id="howBody">Each cat step moves the owner. Avoid pink tiles.</p>
+      <p><strong id="ruleStep1Title">Tap to move</strong> <span id="ruleStep1Text">Tap a tile or use the arrow keys.</span></p>
+      <p><strong id="ruleStep2Title">Steal three fish</strong> <span id="ruleStep2Text">Pink tiles show the owner's sight.</span></p>
+      <p><strong id="ruleStep3Title">Escape the room</strong> <span id="ruleStep3Text">Use the cat flap after stealing three fish.</span></p>
+      <p id="ruleBonus">Tap Toss yarn, then a floor tile. The owner follows the sound.</p>
+     </div>
+     <p class="yarn-explain" id="yarnExplain">🧶 Throw yarn to distract the human.</p>
+     <p class="ability" id="ability">Starts with a yarn ball.</p>
+     <p class="collection-hint" id="collectionHint">Find the room's unique collectible and escape to keep it.</p>
+     <div class="souvenir-shelf" id="souvenirShelf" aria-label="Room souvenir shortcuts"></div>
+     <p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p>
+    </div>
+   </details>
+  </aside>
+ </div>
 </main>
 <script src="/pawsibly-innocent/cat-music.js" defer></script><script src="/telemetry.js" defer></script><script src="/playtest-pulse.js" defer></script><script src="/audio-dock.js"></script><script src="/game-fullscreen.js?v=5" defer></script></body></html>
