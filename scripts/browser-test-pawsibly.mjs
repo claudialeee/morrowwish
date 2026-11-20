@@ -157,7 +157,7 @@ try{
   catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
   heroPitch:document.querySelector('.hero>p')?.innerText
  }));
- assert.deepEqual(homeEn.order,['pawsibly-innocent','elsewhere','tiny-town'],'English homepage should share the same first-game order');
+ assert.deepEqual(homeEn.order.slice(0,3),['pawsibly-innocent','elsewhere','tiny-town'],'English homepage should preserve the three flagship positions even when more games launch');
  assert.match(homeEn.catTitle,/Pawsibly\s*Innocent!/,'English heading must still show its original name');
  assert.match(homeEn.catPitch,/Three fish to steal/,'English promotional copy must be updated');
  assert.ok(homeEn.heroPitch.indexOf('mischievous cat')<homeEn.heroPitch.indexOf('life you never lived')&&homeEn.heroPitch.indexOf('life you never lived')<homeEn.heroPitch.indexOf('town where everyone is free'),'English hero copy must match cat, Elsewhere and town order');
