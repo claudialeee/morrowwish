@@ -35,17 +35,19 @@ try{
  console.log('Recorded cat song ready before user input:',JSON.stringify(preloaded));
  assert.equal(initial.loaded,true,'Game Javascript must initialize');
  const ruleLayout=await page.evaluate(()=>{
-  const intro=document.querySelector('.explainer'),board=document.getElementById('board'),steps=intro?.querySelectorAll('.rule-step')||[];
-  return{introTop:intro?.getBoundingClientRect().top,introBottom:intro?.getBoundingClientRect().bottom,
-    boardTop:board?.getBoundingClientRect().top,steps:steps.length,
-    ruleText:intro?.textContent,numberOfRules:document.querySelectorAll('.explainer').length,
-    strayTip:document.querySelectorAll('#tip').length};
+  const board=document.getElementById('board')?.getBoundingClientRect();
+  const action=document.getElementById('tool')?.getBoundingClientRect();
+  return {boardTop:board?.top,actionBottom:action?.bottom,duplicateRules:document.querySelectorAll('.explainer').length,
+   ownerState:!!document.getElementById('guardIntent'),
+   album:!!document.getElementById('relicGallery'),badges:!!document.getElementById('achievementsGrid'),
+   visibleBadges:!!document.getElementById('badgeHighlights'),
+   helpInsideSidebar:!!document.querySelector('aside.panel .sidebar-extra #howTitle')};
  });
- console.log('Above-board how-to guide:',JSON.stringify(ruleLayout));
- assert.equal(ruleLayout.numberOfRules,1,'Only one main rule guide should remain');
- assert.equal(ruleLayout.steps,3,'Rules must be grouped into three visible actions');
- assert.equal(ruleLayout.strayTip,0,'Do not duplicate the top three-step tutorial');
- assert.ok(ruleLayout.introBottom<ruleLayout.boardTop,'Game rules must be above the playable canvas');
+ console.log('Compact game cockpit:',JSON.stringify(ruleLayout));
+ assert.equal(ruleLayout.duplicateRules,0,'Duplicate rules must not appear below the game');
+ assert.ok(ruleLayout.actionBottom<=ruleLayout.boardTop,'The yarn action must remain directly above the board');
+ assert.ok(ruleLayout.ownerState&&ruleLayout.album&&ruleLayout.badges&&ruleLayout.visibleBadges&&ruleLayout.helpInsideSidebar,
+  'Owner status, named collection, achievements and optional help must all be integrated');
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
  assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
@@ -101,7 +103,7 @@ try{
   assert.match(room.label,/[\u4e00-\u9fff]/,'Room '+room.room+' must have a Chinese name');
   assert.deepEqual(room.untranslated,[],'No English strings in room '+room.room);
  }
- assert.match(await page.locator('.explainer').textContent(),/三步学会|偷到三条|粉色猫门/,'Chinese rules must be visible above the board');
+ assert.match(await page.locator('#howTitle').textContent(),/三步|猫猫|开溜/,'Chinese help should be available inside the optional sidebar details');
  for(const value of [zh.subtitle,zh.mission,zh.shelf,zh.hint,zh.instructions,zh.room])
   assert.match(value,/[\u4e00-\u9fff]/,'Chinese regions must be translated');
  await page.evaluate(()=>{
@@ -247,17 +249,35 @@ try{
  await page.locator('#tool').click();
  assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.isAiming()),true,'Toss yarn should enter target-select mode');
  assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),initialYarn,'Entering aim mode must not consume yarn');
+ const humanBefore=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().human}));
  const boardBox=await page.locator('#board').boundingBox();
- await page.locator('#board').click({position:{x:boardBox.width*8.5/10,y:boardBox.height*4.5/7}});
- await page.waitForTimeout(200);
+ await page.locator('#board').click({position:{x:boardBox.width*8.5/10,y:boardBox.height*1.5/7}});
+ await page.waitForTimeout(110);
  const tossed=await page.evaluate(()=>{
   const s=window.__PAWSIBLY_TEST__.getState();
-  return {yarn:s.yarn,noise:s.noise,trail:s.throwTrail,alert:s.alert,sound:window.MorrowwishAudio?.status()};
+  return {yarn:s.yarn,noise:s.noise,trail:s.throwTrail,alert:s.alert,human:{...s.human},
+   mode:s.guardMode,walking:s.yarnAnimating,sound:window.MorrowwishAudio?.status()};
  });
- console.log('Real yarn button and audio:',JSON.stringify(tossed));
- assert.equal(tossed.yarn,initialYarn-1,'Yarn ball should be consumed after pressing the button');
- assert.ok(tossed.noise&&tossed.trail,'A player-selected yarn landing spot should create a distraction');
- assert.deepEqual(tossed.noise,{x:8,y:4},'Yarn should land where the player taps');
+ console.log('Real multi-step yarn and audio:',JSON.stringify({before:humanBefore,after:tossed}));
+ assert.equal(tossed.yarn,initialYarn-1,'Throwing yarn must consume one ball');
+ assert.deepEqual(tossed.noise,{x:8,y:1},'Ball must land on the exact player-selected tile');
+ assert.ok(tossed.trail&&tossed.walking&&tossed.mode==='investigate',
+  'A long throw must visibly start a multi-step investigation');
+ assert.notDeepEqual(tossed.human,humanBefore,'The owner must immediately react to the ball');
+ await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:6500});
+ const settled=await page.evaluate(()=>{
+  const s=window.__PAWSIBLY_TEST__.getState();
+  return {human:{...s.human},mode:s.guardMode,turns:s.distractionTurns,achievements:JSON.parse(localStorage.getItem('pawsibly-innocent-save-v1')||'{}').achievements};
+ });
+ assert.deepEqual(settled.human,{x:8,y:1},'Owner must walk ALL the way to the yarn');
+ assert.equal(settled.mode,'distracted','Owner must stop at yarn to investigate');
+ assert.equal(settled.turns,4,'Player should have four turns to sneak past');
+ assert.equal(settled.achievements?.['yarn-lure'],true,'Real yarn use must unlock a saved achievement');
+ assert.match(await page.locator('#guardIntent').textContent(),/Distracted|yarn/i,'Owner state must be visible in the game');
+ assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.effects>0,'Cat yarn action must still play sound effects');
+ assert.equal(tossed.sound.playing,false,'Cat SFX must never synthesize a music loop');
+ assert.equal(tossed.sound.backgroundMusic,false,'Cat SFX subsystem must contain no BGM');
+ assert.equal(tossed.sound.loopSteps,0,'Cat game must never schedule a background music loop');
  assert.equal(await page.locator('[data-move]').count(),0,'Touch directional pad was removed');
  assert.ok(tossed.sound?.oscillators>0&&tossed.sound?.effects>0,'Cat yarn action must still play sound effects');
  assert.equal(tossed.sound.playing,false,'Cat SFX engine must never synthesize a music loop');
@@ -265,7 +285,7 @@ try{
  assert.equal(tossed.sound.loopSteps,0,'Cat game must never schedule a background music loop');
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
  assert.match(await page.locator('#yarnExplain').textContent(),/主人|毛线/,'Chinese explanation for yarn is clear');
- assert.match(await page.locator('#catLegend').textContent(),/纸箱|小鱼/,'Chinese prop legend is present');
+ assert.match(await page.locator('#guardIntent').textContent(),/巡逻|分心|调查|搜索|追猫/,'Owner AI behavior must be explained in Chinese');
  const audioButton=page.locator('#sound');
  await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
@@ -370,18 +390,18 @@ try{
     const r=document.getElementById('stage')?.getBoundingClientRect();
     const canvas=document.getElementById('board')?.getBoundingClientRect();
     return {stage:r&&{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height},
-      canvas:canvas&&{width:canvas.width,height:canvas.height},hud:document.getElementById('cgStealthHUD')?.textContent,
+      canvas:canvas&&{width:canvas.width,height:canvas.height},hud:document.getElementById('heistStatus')?.textContent,owner:document.getElementById('guardIntent')?.textContent,
       header:getComputedStyle(document.querySelector('.sitebar')).display,
-      rules:getComputedStyle(document.querySelector('.explainer')).display,
+      rules:document.querySelectorAll('.explainer').length,
       sidebar:getComputedStyle(document.querySelector('aside.panel')).display,
       fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
       totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
    assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
-   assert.equal(v.rules,'none','Gameplay must appear without a long text tutorial');
-   assert.equal(v.sidebar,'none','CrazyGames mode must keep controls inside the game view');
+   assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
+   assert.notEqual(v.sidebar,'none','CrazyGames mode should use the side space for compact mission, collection and badges');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
-   assert.ok(v.hud?.includes('FISH'),'Gameplay must show the three-fish goal inside the iframe');
+   assert.ok(v.hud?.includes('0/3')&&v.owner,'CrazyGames must show fish goal and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=475&&v.canvas.height>=330,
