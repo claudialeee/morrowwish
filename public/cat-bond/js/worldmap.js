@@ -572,6 +572,10 @@
     var w = world; if (!w) return;
     var W = game.W, H = game.H, th = w.region.theme, cam = w.cam;
 
+    // The explored regions share the illustrated garden art, with region-specific
+    // tint; retain the original thematic fallback for unsupported browsers.
+    var scenic=window.CatBondScenery&&CatBondScenery.drawRegion(ctx,W,H,t,th);
+    if(!scenic){
     // sky gradient (fixed to screen)
     var sky = ctx.createLinearGradient(0, 0, 0, H);
     sky.addColorStop(0, th.sky1); sky.addColorStop(1, th.sky2);
@@ -583,6 +587,7 @@
     gg.addColorStop(0, th.ground2); gg.addColorStop(1, th.ground);
     ctx.fillStyle = gg;
     ctx.fillRect(0, groundTop, W, H - groundTop + 200);
+    }
 
     // far parallax decor (layer 0.4)
     drawDecorLayer(ctx, 0.4, th);
