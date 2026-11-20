@@ -65,7 +65,7 @@ for(const id of ['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel
 for(const metric of ['flip_finished','flip_10s','flip_30s','parcel_sorted','parcel_missed','parcel_ten_sorted']){
  if(!telemetry.includes(metric))throw new Error('Missing game telemetry signal '+metric);
 }
-if(!arcadeSource.includes('event("parcel_sorted")')||!arcadeSource.includes('event("parcel_missed")'))
+if(!arcadeSource.includes('event("parcel_sorted",')||!arcadeSource.includes('event("parcel_missed",'))
  throw new Error('Parcel Panic outcome instrumentation missing');
 if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel')||dashboard.includes('j.byGameChannel'))
  throw new Error('Dashboard must use grouped acquisition-channel rollups');
@@ -224,7 +224,7 @@ new vm.Script(originalMusic,{filename:'public/studio-music.js'});
 const bgmTracks={
  'tiny-town':{hex:'5570626561742f48617070792057686973746c696e6720556b756c656c652e6d7033',title:'Happy Whistling Ukulele'},
  'flip-dash':{hex:'5570626561742f496e76656e74696e6720466c696768742e6d7033',title:'Inventing Flight'},
- 'parcel-panic':{hex:'436f6d6564792f42757379626f64792e6d7033',title:'Busybody'},
+ 'parcel-panic':{hex:'5570626561742f46756e7368696e652e6d7033',title:'Funshine'},
  'pocket-aquarium':{hex:'576f726c642f436f6e6e656374696e67205261696e626f77732e6d7033',title:'Connecting Rainbows'}
 };
 for(const [slug,{hex,title}] of Object.entries(bgmTracks)){
@@ -420,4 +420,25 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
     !translations.includes('按顺序分拣包裹')||
     !factory.includes('NEXT PARCEL'))throw Error('One-click onboarding copy missing');
  console.log('Parcel Panic: one-click, keyboard, touch drag, wrong/empty lane, combos and zh copy passed.');
+}
+
+
+// Nonintrusive, no-account feedback coverage for every published game.
+{
+ const pulse=fs.readFileSync('public/playtest-pulse.js','utf8');
+ new vm.Script(pulse,{filename:'public/playtest-pulse.js'});
+ const tracker=fs.readFileSync('public/telemetry.js','utf8');
+ const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
+ for(const id of ['pawsibly-innocent','flip-dash','parcel-panic','pocket-aquarium']){
+  const html=fs.readFileSync('public/'+id+'/index.html','utf8');
+  if(!html.includes('/playtest-pulse.js'))throw Error('Optional post-run feedback missing: '+id);
+  if(!pulse.includes("'"+id+"'"))throw Error('Feedback game route missing: '+id);
+ }
+ if(!tracker.includes('play_feedback_not_fun')||!dashboard.includes('feelPrefix')||
+    !dashboard.includes("play_feedback_"))throw Error('Game feedback signals are not in the unified dashboard');
+ if(!fs.readFileSync('public/tiny-town/index.html','utf8').includes('feedbackQuestion'))
+  throw Error('Tiny Town existing playtest feedback missing');
+ if(!fs.readFileSync('public/elsewhere/app.js','utf8').includes('ending_feedback'))
+  throw Error('Elsewhere existing ending feedback missing');
+ console.log('All six published games offer post-play feedback without any registration.');
 }
