@@ -61,7 +61,10 @@
   }
   async function enter(){
     scrollY=window.scrollY;
-    if(surface&&typeof surface.requestFullscreen==='function'){
+    // Touchscreen browsers can force an orientation change for native fullscreen.
+    // Keep gameplay upright using the reversible, element-only in-page mode.
+    const touchDevice=navigator.maxTouchPoints>0||window.matchMedia?.('(pointer:coarse)').matches;
+    if(!touchDevice&&surface&&typeof surface.requestFullscreen==='function'){
       try{
         // Fullscreen only the gameplay subtree. Important: not documentElement.
         await surface.requestFullscreen({navigationUI:'hide'});

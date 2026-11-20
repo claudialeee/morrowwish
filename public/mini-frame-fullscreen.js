@@ -7,7 +7,14 @@
   if(!['flip-dash','parcel-panic','pocket-aquarium'].includes(route))return;
 
   const root=document.documentElement;
-  let frame,button,fallback=false,wasActive=false,returnScroll=0;
+  let frame,button,fallback=false,wasActive=false,returnScroll=0,entryPortrait=false;
+  const touchDevice=()=>navigator.maxTouchPoints>0||window.matchMedia?.('(pointer:coarse)').matches;
+  function snapshotOrientation(){
+    const view=window.visualViewport;
+    const width=view?.width||window.innerWidth;
+    const height=view?.height||window.innerHeight;
+    entryPortrait=height>=width;
+  }
   const nativeActive=()=>document.fullscreenElement===frame;
   const active=()=>!!frame&&(fallback||nativeActive());
   const zh=()=>document.documentElement.lang.toLowerCase().startsWith('zh')||
@@ -22,7 +29,9 @@
     frame.style.setProperty('--mw-mini-fs-left',Math.round(view?.offsetLeft||0)+'px');
     frame.style.setProperty('--mw-mini-fs-top',Math.round(view?.offsetTop||0)+'px');
     if(route==='pocket-aquarium')return;
-    const portrait=active()&&(view?.height||window.innerHeight)>(view?.width||window.innerWidth)*1.12;
+    // Freeze the selected gameplay orientation until the player exits fullscreen.
+    // Browser chrome and gyroscope-driven viewport resizing must not flip the game.
+    const portrait=active()&&entryPortrait;
     const changed=frame.classList.contains('mw-mini-portrait')!==portrait;
     frame.classList.toggle('mw-mini-portrait',portrait);
     if(changed)window.dispatchEvent(new CustomEvent('morrowwish-mini-viewport-change',{detail:{portrait}}));
@@ -65,7 +74,10 @@
   }
   async function enter(){
     returnScroll=window.scrollY;
-    if(typeof frame.requestFullscreen==='function'){
+    snapshotOrientation();
+    // Native element fullscreen can force landscape on mobile browsers.
+    // Use in-page immersive fullscreen instead, preserving entry orientation.
+    if(!touchDevice()&&typeof frame.requestFullscreen==='function'){
       try{
         await frame.requestFullscreen({navigationUI:'hide'});
         fallback=false;

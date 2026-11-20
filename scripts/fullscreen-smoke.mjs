@@ -76,12 +76,62 @@ async function check(game,width,mobile){
     console.log('GAME SURFACE FULLSCREEN PASS',game,width,JSON.stringify(opened));
   } finally { await ctx.close(); }
 }
+// Both orientations must work independently, and sensor/viewport rotation during
+// one fullscreen session must never change the game's chosen layout.
+async function checkEntryOrientation(game,landscapeEntry){
+  const start=landscapeEntry?{width:844,height:390}:{width:390,height:844};
+  const rotated=landscapeEntry?{width:390,height:844}:{width:844,height:390};
+  const ctx=await browser.newContext({viewport:start,isMobile:true,hasTouch:true});
+  const page=await ctx.newPage();
+  try{
+    await page.goto(origin+'/'+game+'/?lang=zh',{waitUntil:'domcontentloaded',timeout:35000});
+    const surface=page.locator(game==='pocket-aquarium'?'.mw-mini-aquarium-frame':'.mw-mini-arcade-frame');
+    const button=page.locator('#mw-mini-fullscreen');
+    await button.waitFor({state:'visible'});
+    // Keep requestFullscreen available: the touchscreen path must avoid it.
+    await surface.evaluate(el=>el.requestFullscreen=()=>{throw Error('Mobile native fullscreen must not be called')});
+    await button.tap();
+    const dims=async()=>page.evaluate(()=>{
+      const c=document.querySelector('#game');
+      const f=document.querySelector('.mw-mini-arcade-frame,.mw-mini-aquarium-frame');
+      return {portrait:f.classList.contains('mw-mini-portrait'),
+       fallback:f.classList.contains('mw-mini-fullscreen-fallback'),
+       width:c?.width,height:c?.height,
+       frame:f.getBoundingClientRect().toJSON()};
+    });
+    const initial=await dims();
+    assert.ok(initial.fallback,'Touchscreen must use orientation-preserving fallback');
+    if(game!=='pocket-aquarium'){
+      assert.equal(initial.portrait,!landscapeEntry,game+' entry orientation');
+      assert.equal(initial.width,landscapeEntry?960:540,game+' entry canvas width');
+      assert.equal(initial.height,landscapeEntry?540:960,game+' entry canvas height');
+    }
+    await page.setViewportSize(rotated);
+    await page.waitForTimeout(160);
+    const after=await dims();
+    assert.ok(after.fallback,game+' should remain fullscreen');
+    if(game!=='pocket-aquarium'){
+      assert.equal(after.portrait,initial.portrait,game+' sensor rotation must not switch mode');
+      assert.equal(after.width,initial.width,game+' width must stay fixed');
+      assert.equal(after.height,initial.height,game+' height must stay fixed');
+    }
+    await button.tap();
+    await page.waitForFunction(()=>!document.documentElement.classList.contains('mw-mini-fullscreen-on'));
+    console.log('ORIENTATION LOCK PASS',game,landscapeEntry?'landscape':'portrait');
+  }finally{await ctx.close()}
+}
 try{
   for(const width of [390,320])for(const game of games){
     try{await check(game,width,true)}catch(e){failures.push(game+' '+width+': '+e.message);console.error('FULLSCREEN FAIL',failures.at(-1))}
   }
   for(const game of games){
     try{await check(game,1280,false)}catch(e){failures.push(game+' desktop: '+e.message);console.error('FULLSCREEN FAIL',failures.at(-1))}
+  }
+  for(const game of ['flip-dash','parcel-panic','pocket-aquarium'])for(const landscape of [false,true]){
+    try{await checkEntryOrientation(game,landscape)}catch(e){
+      failures.push(game+' '+(landscape?'landscape':'portrait')+' orientation: '+e.message);
+      console.error('FULLSCREEN ORIENTATION FAIL',failures.at(-1));
+    }
   }
 }finally{await browser.close()}
 if(failures.length){console.error('Fullscreen failures:\n'+failures.join('\n'));process.exitCode=1}

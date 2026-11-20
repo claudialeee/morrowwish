@@ -11,9 +11,11 @@ function txt(x,y,str,size=20,color="#eff7ff",align="center",weight=800){c.fillSt
 function bg(a="#09172d",b="#112b4d"){const palette=({["flip-dash"]:["#3e3157","#7b4e79"],["parcel-panic"]:["#4d355c","#805565"],["tower-tuck"]:["#403653","#765779"],["traffic-tangle"]:["#344e57","#61766a"]})[GAME];if(palette){a=palette[0];b=palette[1];}const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,a);g.addColorStop(1,b);c.fillStyle=g;c.fillRect(0,0,W,H);for(let i=0;i<25;i++){circ((i*167+53)%960,(i*131+27)%540,1+(i%3), "#ffffff12");}}
 function glow(x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,"transparent");c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
 let score=0,level=1,running=false,mode=null,last=performance.now(),elapsed=0,portrait=false;
-// Preserve the 16:9 desktop game, but render a real 9:16 canvas in portrait fullscreen.
+// Match the orientation chosen at fullscreen entry, not device rotation events.
+// The immersive controller owns the orientation snapshot for this play session.
 function syncCanvasViewport(){
- const next=document.documentElement.classList.contains("mw-mini-fullscreen-on")&&window.innerHeight>window.innerWidth*1.12;
+ const next=document.documentElement.classList.contains("mw-mini-fullscreen-on")&&
+  !!document.querySelector(".mw-mini-arcade-frame.mw-mini-portrait");
  if(next===portrait)return;
  portrait=next;cv.width=portrait?540:960;cv.height=portrait?960:540;
 }
@@ -66,7 +68,38 @@ let y=420,top=false,obs=[],gems=[],time=0,spawn=0,inv=0;
 return {init(){y=420;top=false;obs=[];gems=[];time=0;spawn=.30;inv=0;info("Tap / Space to flip gravity");},
 tick(dt){time+=dt;spawn-=dt;inv-=dt;const speed=310+Math.min(195,time*8);y+=( (top?125:415)-y)*Math.min(1,dt*10);if(spawn<=0){const side=rnd(2);obs.push({x:895,side,hit:false});if(Math.random()<.85)gems.push({x:980,y:side?125:415,got:false});spawn=Math.max(.65,1.04-time*.018);}for(let o of obs){o.x-=dt*speed;if(!o.hit&&Math.abs(o.x-210)<38&&Math.abs(y-(o.side?125:415))<70){o.hit=true;if(inv<=0){finish(false,"You survived "+Math.floor(time)+" seconds.");return;}}}for(let p of gems){p.x-=dt*speed;if(!p.got&&Math.abs(p.x-210)<31&&Math.abs(y-p.y)<43){p.got=true;add(20);}}obs=obs.filter(o=>o.x>-65);gems=gems.filter(o=>o.x>-30&&!o.got);if(Math.floor(time*2)>Math.floor((time-dt)*2))add(1);info(Math.floor(time)+" seconds alive  •  Speed "+Math.floor(speed));},
 down(){top=!top;},key(k){if(k===" "||k==="ArrowUp"||k==="ArrowDown")top=!top;},
-draw(){bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-26,yy,52,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");if(!portrait)txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
+draw(){if(portrait){
+ // An upright portrait runner, NOT the 16:9 game rotated 90 degrees.
+ // Existing physics stay in logical 960x540 coordinates, but lanes now
+ // run vertically down the phone and the player switches left/right.
+ const g=c.createLinearGradient(0,0,0,960);
+ g.addColorStop(0,"#3e3157");g.addColorStop(1,"#7b4e79");
+ c.fillStyle=g;c.fillRect(0,0,540,960);
+ glow(270,490,390,"#6640ec22");
+ box(82,0,13,960,"#56cfff");
+ box(445,0,13,960,"#56cfff");
+ for(let i=0;i<17;i++){
+  const yy=((i*75+time*150)%1040+1040)%1040;
+  line(94,yy,94,yy+31,"#7deaff33",5);
+  line(450,yy,450,yy+31,"#7deaff33",5);
+ }
+ for(const o of obs){
+  const lane=o.side?125:415,yy=960-o.x;
+  box(lane-33,yy-26,66,52,"#fd6486",8);
+  txt(lane,yy,"✦",29,"#681e3a");
+  glow(lane,yy,60,"#fb2c6922");
+ }
+ for(const p of gems)if(!p.got){
+  const yy=960-p.x;circ(p.y,yy,13,"#ffcf6e");
+  txt(p.y,yy,"✧",25,"#fff");
+ }
+ glow(y,750,65,"#53e2ff44");
+ circ(y,750,21,"#69eaff");
+ circ(y+9,744,5,"#142b50");
+ txt(270,53,"TAP TO SWITCH LANES",23,"#ffffffd8");
+ return;
+}
+bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-26,yy,52,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");if(!portrait)txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
 hud(){return "Every extra second increases the speed";}};
 };
 // 03 ORBIT ESCAPE: three linked orbital tracks.
@@ -170,7 +203,7 @@ function point(e){const a=cv.getBoundingClientRect();
  }
  if(portrait&&GAME==="flip-dash"){
   const x=(e.clientX-a.left)*540/a.width,y=(e.clientY-a.top)*960/a.height;
-  return{x:clamp(y,0,W),y:clamp(540-x,0,H)};
+  return{x:clamp(960-y,0,W),y:clamp(x,0,H)};
  }
  return{x:clamp((e.clientX-a.left)*W/a.width,0,W),y:clamp((e.clientY-a.top)*H/a.height,0,H)};
 }
@@ -186,10 +219,8 @@ goBtn.onclick=start;track("page_view");
 syncCanvasViewport();
 function frame(t){const dt=clamp((t-last)/1000,0,.033);last=t;
  if(running){elapsed+=dt;mode.tick(dt);}
- c.save();
- // Flip Dash: a vertical runner in portrait, with left/right lane switching.
- if(portrait&&GAME==="flip-dash")c.setTransform(0,1,-1,0,540,0);
- mode.draw();c.restore();
- if(portrait&&GAME==="flip-dash")txt(270,44,"TAP TO SWITCH SIDES",19,"#ffffffa6");
+ // Each game paints upright into the exact canvas orientation selected on entry.
+ // Do not rotate the drawing context in portrait mode.
+ mode.draw();
  requestAnimationFrame(frame);
 }requestAnimationFrame(frame);
