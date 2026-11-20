@@ -125,6 +125,35 @@ function syncUI(){updateDare();updateStealthHUD();$("fishCount").textContent=s.g
 function neighbors(p){return[[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).filter(q=>q.x>=0&&q.x<W&&q.y>=0&&q.y<H);}
 function pass(p,human=false){if(!p||p.x<0||p.y<0||p.x>=W||p.y>=H)return false;const t=s.grid[p.y][p.x];if(t==="#"||t==="S")return false;if(human&&(t==="E"||s.boxes.some(b=>equal(b,p))))return false;if(!human&&((s.vacuum&&equal(p,s.vacuum))||equal(p,s.human)))return false;return true}
 function pathTo(from,to,human=false){if(equal(from,to))return[];const q=[from],seen=new Set([key(from)]),prev=new Map();for(let i=0;i<q.length;i++){const p=q[i];if(equal(p,to)){const result=[];let t=key(p);while(t!==key(from)){const next=prev.get(t);result.unshift({x:Number(t.split(",")[0]),y:Number(t.split(",")[1])});t=next}return result}for(const n of neighbors(p)){if(!pass(n,human)||seen.has(key(n)))continue;seen.add(key(n));prev.set(key(n),key(p));q.push(n)}}return[]}
+// Click-to-move favors hiding and quiet routes. Manual arrows can still choose risky shortcuts.
+// A simple costed search is enough for the 10x7 grid and runs only when a target is tapped.
+function catPathTo(from,to){
+ const frontier=[{p:from,cost:0}],dist=new Map([[key(from),0]]),prev=new Map();
+ const risk=p=>{
+  let cost=1;if(visible(p))cost+=9;
+  const gap=Math.abs(p.x-s.human.x)+Math.abs(p.y-s.human.y);
+  if(gap<=2)cost+=5;
+  if(s.creak&&!s.creakTriggered&&equal(p,s.creak))cost+=6;
+  if(s.vacuum&&Math.abs(p.x-s.vacuum.x)+Math.abs(p.y-s.vacuum.y)<=1)cost+=4;
+  return cost;
+ };
+ while(frontier.length){
+  frontier.sort((a,b)=>a.cost-b.cost);
+  const {p,cost}=frontier.shift(),k=key(p);
+  if(cost!==dist.get(k))continue;
+  if(equal(p,to)){const found=[];let curr=k;
+   while(curr!==key(from)){const [x,y]=curr.split(",").map(Number);found.unshift({x,y});curr=prev.get(curr)}
+   return found;
+  }
+  for(const next of neighbors(p)){
+   if(!pass(next))continue;
+   const nk=key(next),nc=cost+risk(next);
+   if(nc<(dist.get(nk)??Infinity)){dist.set(nk,nc);prev.set(nk,k);frontier.push({p:next,cost:nc})}
+  }
+ }
+ return[];
+}
+
 const hidden=p=>s.boxes.some(b=>equal(b,p));
 function visible(p=s.cat){if(s.sleepTurns>0||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
@@ -262,7 +291,12 @@ metric(win?"game_complete":"game_over",{level:daily?9:stage+1,score:s.score,star
 $("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=tr(win?"winTitle":"loseTitle");$("resultDesc").textContent=win?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");
 $("resultScore").textContent=resultLine();
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(win?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share");$("overlay").hidden=false;}
-function command(x,y){if(!s||s.done)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=pathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}moveTo(p);if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null}},180)}}
+function command(x,y){if(!s||s.done)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=catPathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}
+ // Do not silently auto-walk straight onto a newly dangerous tile.
+ if(route.length>0&&s.exposure>0&&visible(p)&&Math.abs(p.x-s.human.x)+Math.abs(p.y-s.human.y)<=2){
+  route=[];clearInterval(movingTimer);movingTimer=null;popup("routeWarning");syncUI();return;
+ }
+ moveTo(p);if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null}},180)}}
 function single(dx,dy){if(!s||s.done)return;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
 function shape(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function round(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
@@ -307,6 +341,12 @@ if(night){round(0,0,840,588,0,"#6463a319");for(let i=0;i<12;i++){let x=30+i*67,y
 function draw(time){if(!s)return;const g=ctx.createLinearGradient(0,0,840,588);g.addColorStop(0,s.scene.wall);g.addColorStop(1,s.scene.floor[1]);ctx.fillStyle=g;ctx.fillRect(0,0,840,588);
 for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T,alt=(x+y)%2;round(px+2,py+2,T-4,T-4,10,s.scene.floor[alt?0:1]);round(px+7,py+7,T-14,T-14,7,s.scene.floor[alt?1:0]);if((x*11+y*13)%9===0){shape(px+15,py+17,2,"#efd9c8");shape(px+22,py+25,1.4,"#efd9c8")}if(s.grid[y][x]==="#"){round(px+4,py+2,T-8,T-8,12,"#9d97b0");round(px+9,py+5,T-18,T-22,10,"#cac1d4");}if(s.grid[y][x]==="S")sofaDraw(px+T/2,py+T/2)}
 roomDecor(time);
+ if(s.creak&&!s.creakTriggered){
+  const x=s.creak.x*T+8,y=s.creak.y*T+8;
+  round(x,y,T-16,T-16,13,"#f7bf7160");
+  ctx.save();ctx.strokeStyle="#ba8143";ctx.lineWidth=2;ctx.setLineDash([4,6]);ctx.strokeRect(x+4,y+4,T-24,T-24);ctx.restore();
+  label(s.index===5?"♧":"~",x+T/2-8,y+T/2+6,"bold 31px Nunito, system-ui","#a66f52");
+ }
  // Stealth heatmap uses exactly the same line-of-sight rule as the guard AI.
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   const p={x,y};if(!pass(p)||!visible(p))continue;
@@ -338,12 +378,21 @@ if(s.throwTrail&&time-s.throwTrail.at<950){const from=s.throwTrail.from,to=s.thr
 }
 if(s.alert>0||s.finalAlert){ellipse((s.human.x+.5)*T,(s.human.y+.5)*T+7,37,29,"#fa999744");label("!",(s.human.x+.5)*T+25,(s.human.y+.5)*T-33,"bold 26px Fredoka","#e76e7a")}
 const hu=s.human,ca=s.cat;
+ // Both the owner and cat use the same smooth animation window.
+ const catGlide=Math.min(1,Math.max(0,(time-(s.movedAt||0))/170));
+ const catEase=catGlide*catGlide*(3-2*catGlide);
+ const catX=(s.catFrom.x+(ca.x-s.catFrom.x)*catEase+.5)*T;
+ const catY=(s.catFrom.y+(ca.y-s.catFrom.y)*catEase+.5)*T;
+ const hop=(catGlide>0&&catGlide<1?Math.sin(catGlide*Math.PI)*7:0);
  // Brief in-between frames make the owner's reaction and chase readable.
  const glide=Math.min(1,Math.max(0,(time-(s.humanMovedAt||0))/190));
  const easing=glide*glide*(3-2*glide);
  const hx=(s.humanFrom.x+(hu.x-s.humanFrom.x)*easing+.5)*T;
  const hy=(s.humanFrom.y+(hu.y-s.humanFrom.y)*easing+.5)*T;
- humanDraw(hx,hy+10,time);if(!hidden(ca)){catDraw((ca.x+.5)*T,(ca.y+.5)*T+9+Math.sin(time*.007)*2,time)}else{catDraw((ca.x+.5)*T,(ca.y+.5)*T+17,time);round(ca.x*T+15,ca.y*T+45,54,27,5,"#e2b380");label("♡",(ca.x+.5)*T,ca.y*T+67,"19px system-ui","#c18395")}
+ humanDraw(hx,hy+10,time);
+ if(s.sleepTurns>0){label("Z z z",hx,hy-41+Math.sin(time*.004)*3,"bold 18px Nunito, system-ui","#816d9e");}
+ if(!hidden(ca)){catDraw(catX,catY+9+Math.sin(time*.007)*2-hop,time)}
+ else{catDraw(catX,catY+17-hop,time);round(ca.x*T+15,ca.y*T+45,54,27,5,"#e2b380");label("♡",(ca.x+.5)*T,ca.y*T+67,"19px system-ui","#c18395")}
 if(s.exposure>0&&!s.done){ctx.save();ctx.strokeStyle=s.exposure>=detectionLimit()-1?"#ed435e":"#f59b45";ctx.lineWidth=5;ctx.beginPath();ctx.arc((ca.x+.5)*T,(ca.y+.5)*T,34+Math.sin(time*.012)*4,0,Math.PI*2);ctx.stroke();ctx.restore()}
 if(!s.started&&!s.done){const x=Math.min(610,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,225,38,14,"#fffdf5ef");const first=s.index===0&&!daily;label(first?(lang==="zh"?"先点旁边的小鱼！":"Tap the nearby fish!") : tr("startHint"),x+112,y+25,"bold 15px Nunito, system-ui","#8a5773");}
 for(let i=fx.length-1;i>=0;i--){const p=fx[i];shape(p.x,p.y,Math.max(1,p.life/8),p.col);p.x+=p.dx;p.y+=p.dy;p.dy+=.07;p.life--;if(p.life<0)fx.splice(i,1)}requestAnimationFrame(draw)}
