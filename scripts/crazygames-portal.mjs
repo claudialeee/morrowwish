@@ -108,6 +108,23 @@ try{
       report.loginFormNotFound=true;
     }
  }
+
+ // Exactly one additional attempt on transient login redirect. Do not spin or
+ // defeat challenge/captcha; stop after second attempt if still unauthenticated.
+ if(isLogin(page)&&email&&password&&report.credentialLoginAttempted){
+   report.loginRetryAttempted=true;
+   await page.reload({waitUntil:'domcontentloaded',timeout:22000}).catch(()=>{});
+   await page.locator('input[type="password"]').first().waitFor({state:'visible',timeout:9000}).catch(()=>{});
+   const el=page.locator('input[placeholder*="@"]').first();
+   const pw2=page.locator('input[type="password"]').first();
+   if(await el.count()&&await pw2.count()){
+      await el.fill(email);await pw2.fill(password);
+      const submit2=page.getByRole('button',{name:/^log ?in$/i}).first();
+      if(await submit2.count())await submit2.click({timeout:4500}).catch(()=>{});
+      await page.waitForURL(u=>!isLogin({url:()=>u.toString()}),{timeout:8000}).catch(()=>{});
+      if(!isLogin(page))await page.waitForTimeout(2000);
+   }
+ }
  report.loginPostStatuses=loginPostStatuses;
  if(report.credentialLoginAttempted){
    const body=(await page.locator('body').innerText().catch(()=>'' )).toLowerCase();
