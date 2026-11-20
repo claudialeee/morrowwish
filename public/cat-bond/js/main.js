@@ -58,6 +58,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('intro-start').addEventListener('click', startGame);
   try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
+  try { paintIntroCatGallery(); } catch(error) { console.warn('Cat gallery unavailable',error); }
   window.__CAT_BOND_READY__=true;
 
   // dev screenshot harness: ?autodev seeds a lively yard & skips the intro
@@ -114,4 +115,46 @@ function startIntroStars() {
     requestAnimationFrame(frame);
   };
   frame();
+}
+
+
+// Intro artwork: show real, expressive in-game cat breeds rather than the
+// empty decorative canvas. Kept static to minimize battery use on phones.
+function paintIntroCatGallery() {
+  const canvas = document.getElementById('intro-cats');
+  if (!canvas || !window.CatArt || !window.GameData) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // A few hand-drawn meadow accents; never hide the cats behind UI.
+  const leaves = [
+    [38,132,16,-.35],[65,146,11,.35],[180,151,14,-.45],
+    [337,154,10,.3],[385,140,13,-.4],[523,151,12,.45],
+    [658,141,16,-.3],[699,150,9,.25]
+  ];
+  for (const [x,y,r,tilt] of leaves) {
+    ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
+    ctx.fillStyle='rgba(124,166,119,.27)';
+    ctx.beginPath();ctx.ellipse(0,0,r,r*.3,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  for (const [x,y,r] of [[73,67,3],[195,50,2.5],[352,68,3],[527,45,2],[653,74,3]]) {
+    ctx.fillStyle='rgba(223,165,121,.52)';
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+  const ids=['tangyuan','dundun','niuniu','yunduo'];
+  const xs=[114,278,442,606];
+  const poses=['sit','loaf','sit','sit'];
+  ids.forEach((id,i)=>{
+    const species=GameData.speciesById(id);
+    if (!species) return;
+    ctx.save();
+    CatArt.drawCat(ctx,xs[i],95,{
+      species,scale:i===1?1.55:1.72,face:i%2===0?1:-1,
+      pose:poses[i],mood:'happy',t:.5+i*.6
+    });
+    ctx.restore();
+  });
 }
