@@ -612,7 +612,7 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
    throw new Error('Missing complete Chinese story paragraph in '+world.id);
   count++;
  }
- if(count!==36)throw new Error('Expected 36 branched Elsewhere paragraphs, got '+count);
+ if(count!==40)throw new Error('Expected 40 branched Elsewhere paragraphs, got '+count);
  const page=fs.readFileSync('public/elsewhere/index.html','utf8');
  if(page.includes('id="narrate-voice"'))throw new Error('Duplicate iPhone speech voice menu has returned');
  console.log('Elsewhere: '+count+' full-length bilingual passages, curated narrator and no duplicate voice picker verified.');
