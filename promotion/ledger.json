@@ -88,7 +88,9 @@
           "scheduledAt": null,
           "utm_source": "google",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=google&utm_medium=organic&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=google&utm_medium=organic&utm_campaign=elsewhere-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
         },
         "bing": {
           "priority": "P1",
@@ -98,17 +100,26 @@
           "scheduledAt": null,
           "utm_source": "bing",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=bing&utm_medium=organic&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=bing&utm_medium=organic&utm_campaign=elsewhere-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
         },
         "bluesky": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-22T12:30:00",
           "utm_source": "bluesky",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=bluesky&utm_medium=social&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=bluesky&utm_medium=social&utm_campaign=elsewhere-playtest",
+          "scheduledPostId": "435175125",
+          "scheduledPostUuid": "-6698758501667025303",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "instagram": {
           "priority": "P2",
@@ -209,7 +220,9 @@
           "scheduledAt": null,
           "utm_source": "google",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=google&utm_medium=organic&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=google&utm_medium=organic&utm_campaign=tiny-town-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
         },
         "bing": {
           "priority": "P1",
@@ -219,17 +232,26 @@
           "scheduledAt": null,
           "utm_source": "bing",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=bing&utm_medium=organic&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=bing&utm_medium=organic&utm_campaign=tiny-town-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
         },
         "bluesky": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-23T12:30:00",
           "utm_source": "bluesky",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=bluesky&utm_medium=social&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=bluesky&utm_medium=social&utm_campaign=tiny-town-playtest",
+          "scheduledPostId": "435175142",
+          "scheduledPostUuid": "3571523986394140455",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "instagram": {
           "priority": "P2",
@@ -331,7 +353,9 @@
           "scheduledAt": null,
           "utm_source": "google",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=google&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=google&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
         },
         "bing": {
           "priority": "P1",
@@ -341,17 +365,26 @@
           "scheduledAt": null,
           "utm_source": "bing",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=bing&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=bing&utm_medium=organic&utm_campaign=pawsibly-innocent-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
         },
         "bluesky": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-21T12:30:00",
           "utm_source": "bluesky",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=bluesky&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=bluesky&utm_medium=social&utm_campaign=pawsibly-innocent-playtest",
+          "scheduledPostId": "435175099",
+          "scheduledPostUuid": "7431507669702624105",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "instagram": {
           "priority": "P2",
@@ -451,7 +484,9 @@
           "scheduledAt": null,
           "utm_source": "google",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=google&utm_medium=organic&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=google&utm_medium=organic&utm_campaign=flip-dash-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
         },
         "bing": {
           "priority": "P1",
@@ -461,17 +496,26 @@
           "scheduledAt": null,
           "utm_source": "bing",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=bing&utm_medium=organic&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=bing&utm_medium=organic&utm_campaign=flip-dash-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
         },
         "bluesky": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-24T12:30:00",
           "utm_source": "bluesky",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=bluesky&utm_medium=social&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=bluesky&utm_medium=social&utm_campaign=flip-dash-playtest",
+          "scheduledPostId": "435175154",
+          "scheduledPostUuid": "-5041114954126112910",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "instagram": {
           "priority": "P2",
@@ -572,7 +616,9 @@
           "scheduledAt": null,
           "utm_source": "google",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=google&utm_medium=organic&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=google&utm_medium=organic&utm_campaign=parcel-panic-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
         },
         "bing": {
           "priority": "P1",
@@ -582,17 +628,26 @@
           "scheduledAt": null,
           "utm_source": "bing",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=bing&utm_medium=organic&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=bing&utm_medium=organic&utm_campaign=parcel-panic-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
         },
         "bluesky": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-25T12:30:00",
           "utm_source": "bluesky",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=bluesky&utm_medium=social&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=bluesky&utm_medium=social&utm_campaign=parcel-panic-playtest",
+          "scheduledPostId": "435175167",
+          "scheduledPostUuid": "-2455852106785797895",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "instagram": {
           "priority": "P2",
@@ -693,7 +748,9 @@
           "scheduledAt": null,
           "utm_source": "google",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=google&utm_medium=organic&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=google&utm_medium=organic&utm_campaign=pocket-aquarium-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
         },
         "bing": {
           "priority": "P1",
@@ -703,17 +760,26 @@
           "scheduledAt": null,
           "utm_source": "bing",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=bing&utm_medium=organic&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=bing&utm_medium=organic&utm_campaign=pocket-aquarium-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
         },
         "bluesky": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-27T12:30:00",
           "utm_source": "bluesky",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=bluesky&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=bluesky&utm_medium=social&utm_campaign=pocket-aquarium-playtest",
+          "scheduledPostId": "435175186",
+          "scheduledPostUuid": "-7938132296443410982",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "instagram": {
           "priority": "P2",
@@ -738,7 +804,49 @@
       "slug": "cat-bond",
       "officialUrl": "https://morrowwish.vercel.app/cat-bond/",
       "campaign": "cat-bond-playtest",
-      "channels": {}
+      "channels": {
+        "bluesky": {
+          "priority": "P2",
+          "status": "scheduled",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": "2026-11-20T12:30:00",
+          "utm_source": "bluesky",
+          "utm_campaign": "cat-bond-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=bluesky&utm_medium=social&utm_campaign=cat-bond-playtest",
+          "scheduledPostId": "435175083",
+          "scheduledPostUuid": "-9005777504556397934",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
+        },
+        "google": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "google",
+          "utm_campaign": "cat-bond-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=google&utm_medium=organic&utm_campaign=cat-bond-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false
+        },
+        "bing": {
+          "priority": "P1",
+          "status": "crawlable-not-index-verified",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "bing",
+          "utm_campaign": "cat-bond-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=bing&utm_medium=organic&utm_campaign=cat-bond-playtest",
+          "listedInGeneratedSitemap": true,
+          "indexingVerified": false,
+          "indexNowConfigured": true,
+          "indexNowAcceptanceVerified": false
+        }
+      }
     }
   ],
   "excludedChannels": [
@@ -787,5 +895,32 @@
         "confirmationSource": "studio owner"
       }
     ]
+  },
+  "blueskyStudioLaunch": {
+    "status": "published",
+    "url": "https://bsky.app/profile/ruckusbutton.bsky.social/post/3n2pi7rs3hx2e",
+    "publishedAt": "2026-11-19T17:55:00",
+    "scheduler": "Metricool",
+    "scheduledPostId": "434997586",
+    "textScope": "Six-game homepage launch"
+  },
+  "searchDiscovery": {
+    "canonicalOrigin": "https://morrowwish.vercel.app",
+    "robotsUrl": "https://morrowwish.vercel.app/robots.txt",
+    "sitemapUrl": "https://morrowwish.vercel.app/sitemap.xml",
+    "sitemapCreatedAtBuild": true,
+    "expectedGameCount": 7,
+    "includesCatBond": true,
+    "google": {
+      "status": "sitemap-and-meta-configured-search-console-submission-unverified",
+      "searchConsoleEvidence": null
+    },
+    "bing": {
+      "status": "indexnow-configured-acceptance-not-yet-verified",
+      "notifyScript": "scripts/submit-indexnow.mjs",
+      "deployWorkflow": ".github/workflows/deploy-cloudflare.yml",
+      "verifiedResponse": null
+    },
+    "note": "The source sitemap now includes seven game URLs plus homepage. Auto-generating build and IndexNow notification are configured. Do not mark indexing or IndexNow acceptance confirmed without platform receipts."
   }
 }
