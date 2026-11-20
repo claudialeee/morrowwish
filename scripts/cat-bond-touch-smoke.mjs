@@ -107,7 +107,12 @@ try{
     await lp.locator('#intro-start').tap();
     await lp.locator('#panel.open .dex-cell').first().tap();
     await lp.locator('#fab-map').tap();
-    await lp.evaluate(()=>window.WorldMap.enterRegion('home'));
+    // Freeze random encounters only in this camera regression: a roaming
+    // wild cat otherwise intermittently switches the test into battle.
+    await lp.evaluate(()=>{
+      window.WorldMap.onEncounter(()=>{});
+      window.WorldMap.enterRegion('home');
+    });
     await lp.waitForTimeout(250);
     const start=await lp.evaluate(()=>window.WorldMap.view);
     const finger=async(type,x,y)=>{
@@ -127,6 +132,7 @@ try{
     await finger('touchend',400,180);
     const result=await lp.evaluate(()=>({mode:window.WorldMap.mode,view:window.WorldMap.view}));
     assert.equal(result.mode,'region','Drag accidentally exited grass region');
+    assert.equal(await lp.evaluate(()=>window.__game.scene),'map','Drag must keep the exploration scene active');
     assert.ok(result.view.panMode&&result.view.camX>walked.camX+50,'Background camera failed to pan: '+JSON.stringify({walked,result}));
     assert.deepEqual(errors,[],'Landscape page errors: '+errors.join(' | '));
     console.log('CAT BOND LANDSCAPE PASS: tap walk, drag grass, responsive controls');
