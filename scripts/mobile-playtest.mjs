@@ -58,6 +58,9 @@ try{
             assert.ok(Number(await page.locator('#score').textContent())>0,'Tap lane did not sort parcel');
           }
         }else if(game.slug==='pocket-aquarium'){
+          await page.locator('#zh').tap();
+          assert.equal(await page.locator('.heading h1').textContent(),'口袋水族馆','Chinese aquarium title missing');
+          assert.match(await page.title(),/口袋水族馆/,'Aquarium tab title must be localized');
           await page.locator('#start').tap();
           assert.equal(await page.locator('#overlay').isVisible(),false);
           await page.locator('.food').nth(1).tap();
@@ -80,11 +83,13 @@ try{
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.noise?.x),8,'Yarn must go to the tapped lane');
           assert.equal(await page.locator('[data-move]').count(),0,'On-screen D-pad should be removed');
         }else if(game.slug==='elsewhere'){
+          assert.equal(await page.locator('#narrate-voice').count(),1,'Voice alternative selector is missing');
           const start=page.locator('[data-random-world]').first();
           assert.equal(await start.isVisible(),true,'Story start not visible');
           await start.tap();
           assert.equal(await page.locator('#play-view').isVisible(),true,'Story did not open on tap');
         }else if(game.slug==='tiny-town'){
+          assert.equal(await page.locator('#incoming .tt-painted-newcomer svg').count(),4,'Four incoming residents need visible portraits');
           assert.ok(await page.locator('#board .tile').count()===16,'Town map unavailable');
           const choices=page.locator('#cards .choice');
           assert.ok(await choices.count()>0,'No venue choices on mobile');
