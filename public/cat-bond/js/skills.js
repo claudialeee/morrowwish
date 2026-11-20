@@ -399,50 +399,57 @@
       // higher-rarity cats can dabble in any non-signature element a bit later
       if (!elemOk && rIdx >= 2 && lvl >= 12) elemOk = true;
       if (!elemOk) continue;
-      // ult gate: need level + bond; signature ult needs max tier
+      // An owned rare kitten needs to FEEL different right away, not at Lv.20.
+      // N earns an ultimate by training; R earns it with some bonding; SR and
+      // SSR arrive with one innate signature or elemental ultimate.
       if (isUlt) {
-        if (sig) { if (tier < 5) continue; }
-        else if (lvl < 8 || tier < 2) continue;
+        const minLevel=[8,3,1,1][rIdx];
+        const minBond=[40,20,0,0][rIdx];
+        if(lvl<minLevel||bond<minBond)continue;
+        if(sig && rIdx<2 && bond<40)continue;
       }
-      // signature (even if not ult) only at top bond
-      if (sig && !isUlt && tier < 5) continue;
+      // Non-ultimate signature helpers become available through bonding.
+      if (sig && !isUlt && tier < 2 && rIdx < 2) continue;
       out.push(s);
     }
     return out;
   }
 
-  // defaultLoadout(cat) -> 4 skill ids: prefer own-element bread-and-butter +
-  // a utility (heal/buff) + an ult if unlocked.
-  function defaultLoadout(cat) {
-    const pool = learnableSkills(cat);
-    const el = elementOf(cat.species);
-    const own = pool.filter(s => s.element === el);
-    const pick = [];
-    const add = s => { if (s && !pick.includes(s.id) && pick.length < 4) pick.push(s.id); };
-    // 1-2 own-element attackers (projectile/melee/dash first)
-    own.filter(s => ['projectile', 'melee', 'dash'].includes(s.kind) && !s.ultCost).forEach(add);
-    // a utility: heal or buff from pool
-    add(pool.find(s => s.kind === 'heal' || s.kind === 'buff'));
-    // an ult if available (signature preferred)
-    const ult = pool.find(s => s.ultCost > 0 && SIGNATURE_SKILL[cat.species] === s.id)
-      || pool.find(s => s.ultCost > 0);
-    add(ult);
-    // backfill from anything else in pool
-    pool.forEach(s => add(s));
-    // last-resort: basic claw if pool somehow empty
-    if (!pick.length) pick.push('emberClaw');
-    return pick.slice(0, 4);
+  // Slots have strict gameplay meaning: [basic, Q, E, ultimate].
+  // Earlier builds filled the first four arbitrary skills and accidentally
+  // put an ultimate in Q/E; every cat then appeared to have the same attacks.
+  function defaultLoadout(cat){
+    const pool=learnableSkills(cat);
+    const own=pool.filter(sk=>sk.element===elementOf(cat.species)&&!sk.ultCost);
+    const regular=pool.filter(sk=>!sk.ultCost);
+    const attacks=regular.filter(sk=>['melee','projectile','dash'].includes(sk.kind));
+    const support=regular.filter(sk=>['buff','heal'].includes(sk.kind));
+    const basic=own.find(sk=>['melee','projectile'].includes(sk.kind))||attacks[0]||null;
+    const q=attacks.find(sk=>sk!==basic)||basic||null;
+    const e=support[0]||attacks.find(sk=>sk!==basic&&sk!==q)
+      ||(q!==basic?basic:null)||q||null;
+    const ult=pool.find(sk=>sk.ultCost>0&&SIGNATURE_SKILL[cat.species]===sk.id)
+      ||pool.find(sk=>sk.ultCost>0&&sk.element===elementOf(cat.species))
+      ||pool.find(sk=>sk.ultCost>0)||null;
+    return [basic?.id||null,q?.id||null,e?.id||null,ult?.id||null];
   }
 
-  // ensureLoadout(cat) -> cat.loadout guaranteed to be a valid 4-id array.
-  // Mutates only cat.loadout (battle expects to persist it); still pure w.r.t.
-  // the skill tables. Safe to call every time a menu/battle opens.
-  function ensureLoadout(cat) {
-    const valid = Array.isArray(cat.loadout)
-      && cat.loadout.length > 0
-      && cat.loadout.every(id => !!SKILL_BY_ID[id]);
-    if (!valid) cat.loadout = defaultLoadout(cat);
-    return cat.loadout;
+  // Keep valid player-chosen equipment; backfill new unlocks and safely migrate
+  // legacy 2/3-slot saves without erasing the rest of the user's progress.
+  function ensureLoadout(cat){
+    const available=new Set(learnableSkills(cat).map(sk=>sk.id));
+    const current=Array.isArray(cat.loadout)?cat.loadout:[];
+    const defaults=defaultLoadout(cat);
+    const next=Array.from({length:4},(_,i)=>{
+      const id=current[i];
+      const skill=id?skillById(id):null;
+      const kindValid=i===3?(skill&&skill.ultCost>0):(skill&&skill.ultCost===0);
+      return kindValid&&available.has(id)?id:defaults[i];
+    });
+    // Player may have learned an ultimate after the last save; empty slot
+    // should automatically reveal it when the level/bond prerequisite is met.
+    if(JSON.stringify(current)!==JSON.stringify(next))cat.loadout=next;
+    return cat.loadout||next;
   }
 
   // ==========================================================================
