@@ -355,7 +355,7 @@ class YardScene {
     ctx.lineTo(W, baseY + 300); ctx.lineTo(0, baseY + 300); ctx.closePath(); ctx.fill();
   }
   startHideAndSeek(spot) {
-    if (this.hide) return;
+    if (this.hide) return false;
     const first=(State.S.catchCount||0)===0;
     // A Golden Paw medal is a permanent exploration upgrade. Three unique
     // S-ranked breeds add one modest rarity-weight tier, even without lures.
@@ -391,6 +391,7 @@ class YardScene {
       :sp.rarity==='R'?'✨ 草丛里传来稀有猫咪的脚步声！'
       :'🌿 草丛里有只野猫在探头…点它！';
     this.game.toast(sighting);
+    return true;
   }
   // spawn the hiding wild cat at whichever bush is closest to (x,y)
   startHideAndSeekNear(x, y) {

@@ -12,8 +12,14 @@ const UI = {
     });
     // yard FABs
     document.getElementById('fab-seek').addEventListener('click', () => {
-      if (this.game.scene !== 'yard') return;
+      if(this.game.scene!=='yard')return;
+      if(this.game.yard.hide){
+        this.game.toast(window.MorrowwishI18n?.get?.()==='zh'
+          ?'野猫已经藏在草丛里了，慢慢找吧！':'A wild cat is already hiding in the grass!');
+        return;
+      }
       this.game.yard.startHideAndSeek();
+      window.arcadeMetric?.('bond_manual_seek');
     });
     document.getElementById('fab-feed').addEventListener('click', () => this.openFeed());
     document.getElementById('fab-play').addEventListener('click', () => this.openTease());
@@ -23,6 +29,14 @@ const UI = {
     document.getElementById('btn-flee').addEventListener('click', () => {
       if (this.game.battle) { this.game.battle.finish(false); }
     });
+    const helpButton=document.getElementById('battle-help-toggle');
+    if(helpButton)helpButton.addEventListener('click',()=>{
+      this.game.setBattleHelpVisible(!this.game.battleHelpOpen);
+    });
+    for(const id of ['battle-help-close','battle-help-start']){
+      const btn=document.getElementById(id);
+      if(btn)btn.addEventListener('click',()=>this.game.setBattleHelpVisible(false));
+    }
     document.getElementById('btn-auto').addEventListener('click', () => {
       if (!this.game.battle) return;
       const on = this.game.battle.toggleAuto();

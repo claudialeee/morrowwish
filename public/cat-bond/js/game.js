@@ -29,6 +29,12 @@ class Game {
     this.resize();
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
+    window.addEventListener('morrowwish-language-change',()=>{
+      if(this.scene==='battle'){
+        this.syncBattleControlHelp();this.syncBattleModeUI();
+        if(this.battleHelpOpen)this.renderBattleHelp();
+      }
+    });
   }
 
   resize() {
@@ -267,6 +273,7 @@ class Game {
     }
     else if (this.scene === 'map' && window.WorldMap) WorldMap.update(dt);
     else if (this.scene === 'battle' && this.battle) {
+      if(this.battleHelpOpen)return; // Pause while the player reads controls.
       this.battle.update(dt);
       this.updateBattleUI();
       if (this.battle.done) this.endBattle();
@@ -397,25 +404,14 @@ class Game {
     c.addEventListener('contextmenu', e => { if (this.scene === 'battle') e.preventDefault(); });
   }
 
-  // As the player sweeps the cursor over the yard, a wild cat gets curious and peeks
-  // from the nearest bush. Keep moving near it and it reveals; tap it to start capture.
-  maybeRevealWild(x, y) {
-    if (this.scene !== 'yard' || !this.yard) return;
-    const panelOpen = document.getElementById('panel').classList.contains('open');
-    if (panelOpen) return;
-    // if a wild cat is already hiding, nudge it to peek when cursor is close
-    if (this.yard.hide && !this.yard.hide.found) {
-      const h = this.yard.hide;
-      if (Math.hypot(x - h.spot.x, y - h.spot.y) < 120) { h.peeking = true; h.peekT = 0.6; }
-      return;
-    }
-    // throttle spawns; small chance per move once off cooldown
-    this._wildCd = (this._wildCd || 0);
-    const now = this.t;
-    if (now < this._wildCd) return;
-    if (Math.random() < 0.05) {
-      this._wildCd = now + 6;              // at most ~1 spawn / 6s from cursor
-      this.yard.startHideAndSeekNear(x, y);
+  // Wild cats are opt-in. Mouse moves and yard touching must never surprise
+  // a player with new encounters; only the first tutorial or the Seek button
+  // creates one. An active wild cat has no timer and remains until discovered.
+  maybeRevealWild(x,y){
+    if(this.scene!=='yard'||!this.yard?.hide||this.yard.hide.found)return;
+    const h=this.yard.hide;
+    if(Math.hypot(x-h.spot.x,y-h.spot.y)<120){
+      h.peeking=true;h.peekT=.6;
     }
   }
 
@@ -510,6 +506,8 @@ class Game {
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
+    this.battleHelpOpen=false;
+    this.setBattleHelpVisible(false);
     this.yard?.refreshYardSwitch();
     window.MorrowwishAudio?.effect?.('discover');
     document.body.classList.remove('cb-exploring');
@@ -585,13 +583,60 @@ class Game {
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const dodge=document.getElementById('mv-dodge');
     const hint=dodge?.querySelector('.mv-k');
-    if(hint)hint.textContent=this.isTouch?(english?'Tap':'点击'):'Space';
+    const dodgeKey=this.isTouch?(english?'Tap':'点按'):(english?'Space':'空格键');
+    if(hint&&hint.textContent!==dodgeKey)hint.textContent=dodgeKey;
     const dodgeTip=this.isTouch
       ?(english?'Tap to dodge attacks (brief invincibility)':'点击闪避攻击（短暂无敌）')
       :(english?'Dodge attacks (Space; brief invincibility)':'闪避攻击（空格键；短暂无敌）');
     if(dodge){dodge.title=dodgeTip;dodge.setAttribute('aria-label',dodgeTip);}
     const basic=document.getElementById('mv-basic')?.querySelector('.mv-k');
-    if(basic&&this.isTouch)basic.textContent=english?'Tap':'点击';
+    if(basic&&this.isTouch)basic.textContent=english?'Tap':'点按';
+    const helpBtn=document.getElementById('battle-help-toggle');
+    if(helpBtn){
+      const label=english?'? Controls':'? 操作';
+      if(helpBtn.textContent!==label)helpBtn.textContent=label;
+      helpBtn.setAttribute('aria-label',english?'Show battle controls':'查看手动战斗操作说明');
+    }
+    this.renderBattleHelp();
+  }
+
+  renderBattleHelp(){
+    const host=document.getElementById('battle-help-body');
+    if(!host)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const title=document.getElementById('battle-help-title');
+    if(title)title.textContent=en?'How to fight':'手动战斗怎么玩？';
+    const btn=document.getElementById('battle-help-start');
+    if(btn)btn.textContent=en?'Resume battle':'明白了，继续战斗';
+    host.innerHTML=en
+      ? `<section class="battle-help-section ${this.isTouch?'preferred':''}">
+        <b>Phone / touchscreen</b><p><strong>Move:</strong> drag anywhere on the left half.</p>
+        <p><strong>Attack:</strong> press and hold the right half; aims at the nearest enemy.</p>
+        <p><strong>Skills:</strong> tap the bottom skill buttons; tap Dodge to avoid a hit.</p>
+        <p><strong>Ultimate:</strong> tap the cyclone once the meter is full. Tap a teammate portrait to switch.</p></section>
+        <section class="battle-help-section ${!this.isTouch?'preferred':''}">
+        <b>Computer / keyboard</b><p><strong>Move:</strong> WASD or arrow keys; aim with mouse.</p>
+        <p><strong>Attack:</strong> hold left click or J; Q / E use skills; Space dodges.</p>
+        <p><strong>Ultimate:</strong> R; 1 / 2 / 3 switch cats; P toggles auto-battle.</p></section>
+        <p class="battle-help-note">Controls help pauses the fight. Auto mode moves, attacks and dodges for you.</p>`
+      : `<section class="battle-help-section ${this.isTouch?'preferred':''}">
+        <b>手机 / 触屏</b><p><strong>移动：</strong>在屏幕左半边按住滑动。</p>
+        <p><strong>攻击：</strong>在右半边按住，自动瞄准最近的野猫。</p>
+        <p><strong>技能：</strong>点击下方技能按钮；点击「闪避」躲攻击。</p>
+        <p><strong>必杀：</strong>能量满后点旋风；点队友头像切换猫咪。</p></section>
+        <section class="battle-help-section ${!this.isTouch?'preferred':''}">
+        <b>电脑 / 键鼠</b><p><strong>移动：</strong>WASD 或方向键；鼠标瞄准。</p>
+        <p><strong>攻击：</strong>按住鼠标左键或 J；Q / E 放技能；空格键闪避。</p>
+        <p><strong>必杀：</strong>R；1 / 2 / 3 换猫；P 切换自动战斗。</p></section>
+        <p class="battle-help-note">查看说明时战斗会暂停。自动模式会代替你移动、攻击和闪避。</p>`;
+  }
+  setBattleHelpVisible(show){
+    this.battleHelpOpen=!!show&&this.scene==='battle';
+    const el=document.getElementById('battle-help');
+    if(el)el.hidden=!this.battleHelpOpen;
+    const toggle=document.getElementById('battle-help-toggle');
+    if(toggle)toggle.setAttribute('aria-expanded',String(this.battleHelpOpen));
+    if(this.battleHelpOpen)this.renderBattleHelp();
   }
 
   syncBattleModeUI(){
@@ -655,6 +700,7 @@ class Game {
     if (!b) return;                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
     document.getElementById('battle-ui').classList.remove('on');
+    this.setBattleHelpVisible(false);
     // return to wherever we came from (yard normally, overworld region if exploring)
     const backToMap = this._returnScene === 'map' && window.WorldMap;
     this._returnScene = null;

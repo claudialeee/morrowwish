@@ -29,7 +29,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=visitor-qa-20261120" />
+  <link rel="stylesheet" href="css/style.css?v=controls-workshop-20261120" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=catbond-2" defer></script>
   <script src="/studio-music.js?v=catbond-1" defer></script>
@@ -60,7 +60,7 @@
       <!-- Yard floating actions -->
       <div id="yard-actions">
         <button class="fab" id="fab-map" title="探索世界">🗺️</button>
-        <button class="fab" id="fab-seek" title="捉迷藏">🌿</button>
+        <button class="fab" id="fab-seek" title="主动寻找野猫（不会自动刷新）" aria-label="主动寻找野猫">🌿</button>
         <button class="fab" id="fab-play" title="逗猫">🪶</button>
         <button class="fab" id="fab-feed" title="喂食">🍖</button>
       </div>
@@ -69,10 +69,19 @@
       <div id="battle-ui">
         <div class="battle-topbar">
           <span id="wild-name">野生猫猫</span>
+          <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看手动战斗操作说明">? 操作</button>
           <button class="btn ghost tiny-btn" id="btn-auto" type="button" aria-pressed="false" title="自动控制移动、攻击、技能及闪避">🤖 自动战斗：关</button>
           <button class="btn ghost tiny-btn" id="btn-flee">🏳️ 撤退</button>
         </div>
-        <div class="battle-hint" id="battle-hint">鼠标瞄准 · 左键猫爪 · 空格闪避 · P 自动战斗</div>
+        <div class="battle-hint" id="battle-hint">WASD 移动 · 鼠标瞄准 · 左键攻击 · 空格键闪避</div>
+        <div id="battle-help" class="battle-help-sheet" role="dialog" aria-modal="true" aria-labelledby="battle-help-title" hidden>
+          <div class="battle-help-content">
+            <button class="battle-help-close" id="battle-help-close" type="button" aria-label="关闭操作说明">×</button>
+            <h3 id="battle-help-title">战斗怎么操作？</h3>
+            <div id="battle-help-body"></div>
+            <button class="btn gold" id="battle-help-start" type="button">知道了，继续战斗</button>
+          </div>
+        </div>
 
         <!-- team slots (top-left) -->
         <div id="team-slots"></div>
@@ -88,7 +97,7 @@
           <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐾</span><span class="mv-k">左键/J</span></button>
           <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-k">Q</span></button>
           <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-k">E</span></button>
-          <button class="move" id="mv-dodge" data-move="dodge" title="闪避伤害，短暂无敌（空格键）" aria-label="闪避伤害，短暂无敌（空格键）"><span class="mv-icon">🌀</span><span class="mv-name">闪避</span><span class="mv-k">Space</span></button>
+          <button class="move" id="mv-dodge" data-move="dodge" title="闪避伤害，短暂无敌（空格键）" aria-label="闪避伤害，短暂无敌（空格键）"><span class="mv-icon">🌀</span><span class="mv-name">闪避</span><span class="mv-k">空格键</span></button>
           <button class="move ult" id="ult-btn" data-move="ult"><span class="mv-icon">🌪️</span><span class="mv-k">R</span></button>
         </div>
       </div>
@@ -140,11 +149,11 @@
   <script src="js/state.js?v=golden-paws-20261120"></script>
   <script src="js/raising.js?v=36"></script>
   <script src="js/scenery.js?v=4-meadow-pan"></script>
-  <script src="js/world.js?v=yard-visitors-20261120"></script>
+  <script src="js/world.js?v=wild-pacing-20261120"></script>
   <script src="js/worldmap.js?v=rare-balance-20261120"></script>
   <script src="js/battle.js?v=earned-grades-20261120"></script>
-  <script src="js/ui.js?v=reunion-20261120"></script>
-  <script src="js/game.js?v=reunion-20261120"></script>
+  <script src="js/ui.js?v=battle-guide-20261120"></script>
+  <script src="js/game.js?v=battle-guide-20261120"></script>
   <script src="js/main.js?v=first-catch-20261120"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=rank-mastery-20261120"></script>
