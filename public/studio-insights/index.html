@@ -175,6 +175,9 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  const finishRate=known&&x.starts>0&&x.ends<=x.starts?' <small>'+format(pct(x.ends,x.starts))+'%</small>':'';
  const finished=num('ends')+finishRate;
  const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url=x.game==="hub"?"/":"/"+encodeURIComponent(x.game)+"/";
+ // The homepage is not a game: show its pageviews only. Do not display
+ // gameplay counts, placeholder dashes or conversion rates in its row.
+ if(x.game==="hub")return '<tr><td><a class="game-name" href="/">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td></td><td></td><td></td></tr>';
  return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+num('starts')+startRate+'</td><td>'+finished+'</td><td>'+num('retries')+'</td></tr>';
 }).join("");
 const itchGames=Array.isArray(j.itch?.games)?j.itch.games:[],itchMap=new Map(itchGames.map(z=>[z.game,z]));
