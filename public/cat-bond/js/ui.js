@@ -377,6 +377,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
+      ${window.Skills?'<p class="cat-skill-roadmap">✨ '+Skills.progressionHint(cat)+'</p>':''}
       ${State.S.masteryBadges?.[sp.id]
         ?'<p class="mastery-detail">🏅 '+(window.MorrowwishI18n?.get?.()==='zh'
           ?'金爪徽章已解锁 · 每三枚提高永久寻猫运气':'Golden Paw earned · Every 3 improve rare-cat odds')+'</p>':''}
@@ -553,7 +554,7 @@ const UI = {
   openSkillEditor(cat) {
     const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
     S.ensureLoadout(cat);
-    const learn = S.learnableSkills(cat) || [];          // all skills this cat MAY slot
+    const learn = S.learnableSkills(cat) || [];          // skills actually unlocked
     const slots = [
       { i: 0, label: '普攻', kinds: ['melee', 'projectile'] },
       { i: 1, label: '技能1', kinds: ['melee', 'projectile', 'dash', 'buff', 'heal', 'aoe'] },
@@ -574,13 +575,15 @@ const UI = {
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2>📖 ${State.catName(cat)} · 技能搭配</h2>
-      <p class="sub">这只猫可装备 ${learn.length} 种技能。点击对应技能装配 Q / E / 必杀槽。</p>
+      <p class="sub">已解锁 ${learn.length} 种技能 · 点击替换 Q / E / 必杀。每只猫的元素与成长路线不同。</p>
+      <p class="skill-roadmap">✨ ${S.progressionHint(cat)}</p>
       <p class="skill-progression-note">普通猫通过升级与好感解锁元素必杀；SR / SSR 更早解锁专属必杀。能量充满后按 R 或点击右下角释放。</p>
       <div class="sk-list">${rows}</div>
       <div class="btn-row"><button class="btn gold" id="sk-back">← 返回</button></div>`);
     this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
       const slotI = +b.dataset.slot, skId = b.dataset.sk;
       cat.loadout = cat.loadout.slice(); cat.loadout[slotI] = skId;
+      cat.skillEdited=true;
       State.save(); this.openSkillEditor(cat);
       this.game.toast('已装备 ' + (S.skillById(skId) || {}).name);
     });
@@ -1037,7 +1040,7 @@ const UI = {
     };
   },
 
-  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null, reunion=false) {
+  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null, reunion=false, skillUnlock=null) {
     const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
@@ -1080,13 +1083,18 @@ const UI = {
       <p class="sub center">${totalText} · ${goalText}</p>
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small></div></div>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
+      ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
+        +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name
+        +' · '+skillUnlock.skill.desc+'</span><small>'+(english?'Equipped to E. Your kitten can now use a second element!'
+          :'已自动装备到 E 技能位！下场战斗就能使用不同元素。')+'</small></div>':''}
       ${masteryReward?'<div class="golden-paw-unlock"><strong>🏅 '+(english?'GOLDEN PAW UNLOCKED!':'金爪徽章解锁！')+'</strong><p>'+medalMessage+'</p><small>'
         +(english?'Medals':'已获徽章')+' '+mastery.medals+'/'+mastery.total+' · '
         +(english?'Permanent rare-weight boost':'永久稀有权重加成')+' +'+Math.round(mastery.luckBonus*100)+'%</small></div>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
-        <button class="btn ghost" id="cr-journey">${english?'What else can I do?':'还有什么可以玩？'}</button>
+        <button class="btn ghost" id="cr-journey">${english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊'}</button>
+        ${skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
         ${masteryReward?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
@@ -1098,6 +1106,8 @@ const UI = {
     };
     document.getElementById('cr-ok').onclick=dismiss;
     document.getElementById('cr-journey').onclick=()=>this.openJourney();
+    const newSkillBtn=document.getElementById('cr-newskill');
+    if(newSkillBtn&&skillUnlock)newSkillBtn.onclick=()=>this.openSkillEditor(skillUnlock.cat);
     const medalButton=document.getElementById('cr-medal');
     if(medalButton)medalButton.onclick=()=>this.openDex();
     document.getElementById('cr-next').onclick=()=>{
@@ -1182,7 +1192,7 @@ const UI = {
     </button>`).join('');
     const p = document.getElementById('panel');
     p.innerHTML = `<div class="card cat-highlight-card cat-starter-card"><h2 class="center">选择你的第一只猫猫</h2>
-      <p class="sub center">它会陪你一起去捕捉更多伙伴</p>
+      <p class="sub center">每只猫有自己的元素技能。收服第一位伙伴后，还会觉醒新招式！</p>
       <div class="dex-grid">${chips}</div></div>`;
     p.dataset.mandatory = 'true';
     p.classList.add('open');

@@ -29,7 +29,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=workshop-and-skills-20261120" />
+  <link rel="stylesheet" href="css/style.css?v=skill-reveal-20261120" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=catbond-2" defer></script>
   <script src="/studio-music.js?v=catbond-1" defer></script>
@@ -127,8 +127,14 @@
         </div>
         <h1 class="game-logo">猫猫纽带<span class="logo-en">Cat Bond</span></h1>
         <div class="intro-cat-gallery"><canvas id="intro-cats" width="720" height="172" role="img" aria-label="Four expressive cats from Cat Bond"></canvas><span class="intro-cat-glint" aria-hidden="true">✦</span></div>
-        <p>挑一只喜欢的小猫，找到藏在草丛里的新伙伴，把它带回自己的猫猫庭院。</p>
-        <div class="intro-guide"><strong>选猫 → 找发光草丛 → 收服伙伴</strong></div>
+        <p>领养心仪的小猫，和伙伴一起战斗、成长，探索更大的猫咪世界。</p>
+        <div class="intro-features" aria-label="猫猫纽带的四种玩法">
+          <span>🐾 收集 25 种猫</span>
+          <span>⚔️ 学新技能 · 挑战评级</span>
+          <span>🧶 工坊赚金币 · 培养猫</span>
+          <span>🗺️ 解锁地图 · 发现秘密</span>
+        </div>
+        <div class="intro-guide"><strong>开局只要一步：选一只小猫，寻找第一位伙伴</strong></div>
         <button class="btn gold" id="intro-start" style="padding:14px 34px;font-size:1.15rem">开始冒险 🐱</button>
         <p id="start-error" hidden role="alert"></p>
         <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
@@ -144,7 +150,7 @@
   <script src="js/breed-atlas.js?v=25-illustrated-cats-v2"></script>
   <script src="js/real-kittens.js?v=breed-art-audit-20261120"></script>
   <script src="js/data.js?v=rare-balance-20261120"></script>
-  <script src="js/skills.js?v=distinct-rare-skills-20261120"></script>
+  <script src="js/skills.js?v=progressive-abilities-20261120"></script>
   <script src="js/growth.js?v=36"></script>
   <script src="js/state.js?v=golden-paws-20261120"></script>
   <script src="js/raising.js?v=workshop-earn-20261120"></script>
@@ -152,11 +158,11 @@
   <script src="js/world.js?v=wild-pacing-20261120"></script>
   <script src="js/worldmap.js?v=rare-balance-20261120"></script>
   <script src="js/battle.js?v=distinct-rare-skills-20261120"></script>
-  <script src="js/ui.js?v=workshop-and-rare-20261120"></script>
-  <script src="js/game.js?v=distinct-rare-skills-20261120"></script>
+  <script src="js/ui.js?v=skill-reveal-20261120"></script>
+  <script src="js/game.js?v=skill-reveal-20261120"></script>
   <script src="js/main.js?v=first-catch-20261120"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
-  <script src="js/i18n.js?v=rank-mastery-20261120"></script>
+  <script src="js/i18n.js?v=skill-reveal-20261120"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js" defer></script>
 <script src="/game-fullscreen.js?v=6-catbond" defer></script></body>

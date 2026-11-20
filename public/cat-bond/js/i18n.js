@@ -46,8 +46,12 @@
     '把野猫斗志打空就能收服。喂养、培养、进化，建立更强的纽带。': "Drain a wild cat's morale to capture it. Feed, train and evolve to build stronger bonds.",
 
     // ---- frictionless first-time capture loop ----
-    '挑一只喜欢的小猫，找到藏在草丛里的新伙伴，把它带回自己的猫猫庭院。': 'Choose your first kitten. Find the wild cat hiding in the grass and bring it home.',
-    '选猫 → 找发光草丛 → 收服伙伴': 'Pick a cat → Find the glowing bush → Catch a friend',
+    '领养心仪的小猫，和伙伴一起战斗、成长，探索更大的猫咪世界。': 'Adopt a kitten, fight and grow together, and explore a bigger world of cats.',
+    '🐾 收集 25 种猫': '🐾 Collect 25 cat breeds',
+    '⚔️ 学新技能 · 挑战评级': '⚔️ Learn skills · Earn battle grades',
+    '🧶 工坊赚金币 · 培养猫': '🧶 Earn coins · Raise your cats',
+    '🗺️ 解锁地图 · 发现秘密': '🗺️ Unlock areas · Discover secrets',
+    '开局只要一步：选一只小猫，寻找第一位伙伴': 'Start with one kitten, then find your first new friend',
     '🌿 第一次收集：点击发光的草丛，找到新伙伴': '🌿 First capture: tap the glowing bush!',
     '🌿 第一次收集：点击右下角的草丛按钮寻找野猫': '🌿 First capture: tap the grass button to find a wild cat',
     '你的猫咪准备好出战啦！': 'Your kitten is ready to battle!',
@@ -370,7 +374,8 @@
 
     // ---- starter picker ----
     '选择你的第一只猫猫': 'Choose your first cat',
-    '它会陪你一起去捕捉更多伙伴': "It will join you to capture more companions",
+    '每只猫有自己的元素技能。收服第一位伙伴后，还会觉醒新招式！':
+      'Each kitten has unique elemental skills. Catch your first friend to unlock a new move!',
 
     // ---- rarities ----
     '普通': 'Common',

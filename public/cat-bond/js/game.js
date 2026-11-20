@@ -771,6 +771,11 @@ class Game {
       // reward: partner gains affinity + xp, coins
       b.partner.affinity = Math.min(100, b.partner.affinity + 6);
       State.addXp(b.partner, 25);
+      const firstSkill=(State.S.catchCount===1&&window.Skills?.awakenFirstSkill)
+        ?Skills.awakenFirstSkill(b.partner):null;
+      if(firstSkill){
+        metric('bond_skill_unlocked',{breed:b.partner.species,skill:firstSkill.id,source:'first_capture'});
+      }
       State.S.coins += 20 + (['N', 'R', 'SR', 'SSR'].indexOf(b.wild.rarity)) * 25;
       this.rebuildYard();
       State.save();
@@ -782,7 +787,8 @@ class Game {
       if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
       metric('bond_battle_grade',{grade:performance.grade,seconds:performance.seconds,
         combo:performance.combo,rarity:b.wild.rarity});
-      UI.openCatchResult(b.wild,newCat,milestoneRewards,performance,masteryReward,reunion);
+      UI.openCatchResult(b.wild,newCat,milestoneRewards,performance,masteryReward,reunion,
+        firstSkill?{cat:b.partner,skill:firstSkill}:null);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');

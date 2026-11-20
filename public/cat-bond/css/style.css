@@ -1027,3 +1027,23 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #panel .skill-progression-note,#panel .skill-discovery{font-size:11px;line-height:1.6;padding:7px 10px;border-radius:10px;background:#edf5e8;color:#536950;border:1px solid #cbdec8;margin:9px 0}
 #battle-ui #ult-btn .mv-name{font-size:11px;font-weight:900;color:#5b4b7e;display:block;max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:520px){#battle-ui #ult-btn .mv-name{font-size:10px;max-width:55px}#panel .workshop-row{padding:8px 6px}#panel .work-earn-header{padding:10px}}
+
+/* Present Cat Bond as a full adventure, not only a wild-cat-catching loop. */
+#intro .intro-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;max-width:440px;margin:12px auto 11px;text-align:left}
+#intro .intro-features span{padding:10px 12px;border-radius:12px;
+ background:#ffffff16;border:1px solid #ffffff30;color:#f4eade;
+ font-size:12px;font-weight:750;line-height:1.35}
+#intro .intro-guide{margin:10px auto 12px;font-size:12px;max-width:480px}
+#panel .cat-skill-roadmap,#panel .skill-roadmap{padding:9px 11px;margin:9px 0;
+ border-radius:11px;background:#f2f8e6;color:#576e44;
+ border:1px solid #c9d8ac;font-size:12px;line-height:1.55;font-weight:650}
+#panel .skill-reveal-card{display:grid;gap:5px;margin:10px auto;
+ max-width:440px;border:2px solid #d4b46b;padding:12px 14px;
+ border-radius:16px;text-align:center;
+ background:linear-gradient(130deg,#fff2c9,#e4f4e5);color:#6c5839}
+#panel .skill-reveal-card b{color:#a36b24;font-size:15px}
+#panel .skill-reveal-card span{font-size:13px;font-weight:800}
+#panel .skill-reveal-card small{font-size:11px;line-height:1.5}
+@media(max-width:390px){#intro .intro-features{gap:5px;margin:9px auto}
+ #intro .intro-features span{font-size:11px;padding:8px}}

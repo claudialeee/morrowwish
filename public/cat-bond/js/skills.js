@@ -393,10 +393,16 @@
     for (const s of SKILLS) {
       const isUlt = s.ultCost > 0;
       const sig = SIGNATURE_SKILL[cat.species] === s.id;
-      // element gate: own element always; splash from bond tier>=1 or rarity R+
+      // Progressive discovery: a beginner uses its own element first; its
+      // first successful capture reveals an extra element. Later growth works
+      // the same way even if that first capture used another teammate.
       let elemOk = (s.element === el);
-      if (!elemOk && s.element === splash) elemOk = (tier >= 1 || rIdx >= 1);
-      // higher-rarity cats can dabble in any non-signature element a bit later
+      if (!elemOk && s.element === splash)
+        elemOk = (rIdx>=1 || !!cat.skillAwakened || lvl>=4 || bond>=40
+          || (Array.isArray(cat.loadout)&&cat.loadout.includes(s.id))); // old saves
+      const third=SPLASH_ELEMENT[splash];
+      if (!elemOk && s.element===third && lvl>=10 && bond>=60)elemOk=true;
+      // Advanced rare cats eventually learn more than two elements.
       if (!elemOk && rIdx >= 2 && lvl >= 12) elemOk = true;
       if (!elemOk) continue;
       // An owned rare kitten needs to FEEL different right away, not at Lv.20.
@@ -421,13 +427,18 @@
   function defaultLoadout(cat){
     const pool=learnableSkills(cat);
     const own=pool.filter(sk=>sk.element===elementOf(cat.species)&&!sk.ultCost);
-    const regular=pool.filter(sk=>!sk.ultCost);
-    const attacks=regular.filter(sk=>['melee','projectile','dash'].includes(sk.kind));
-    const support=regular.filter(sk=>['buff','heal'].includes(sk.kind));
-    const basic=own.find(sk=>['melee','projectile'].includes(sk.kind))||attacks[0]||null;
-    const q=attacks.find(sk=>sk!==basic)||basic||null;
-    const e=support[0]||attacks.find(sk=>sk!==basic&&sk!==q)
-      ||(q!==basic?basic:null)||q||null;
+    const splash=pool.filter(sk=>sk.element===SPLASH_ELEMENT[elementOf(cat.species)]&&!sk.ultCost);
+    const attackKinds=['melee','projectile','dash'];
+    const basic=own.find(sk=>['melee','projectile'].includes(sk.kind))||own[0]||null;
+    const q=own.find(sk=>attackKinds.includes(sk.kind)&&sk!==basic)
+      ||pool.find(sk=>attackKinds.includes(sk.kind)&&sk!==basic)||basic||null;
+    // E should feel different from Q. Newly learned splash skills become the
+    // third move; before that, do not duplicate the same fireball in two slots.
+    const e=splash.find(sk=>sk.kind==='dash'||sk.kind==='melee')
+      ||splash.find(sk=>sk.kind==='buff'||sk.kind==='heal')
+      ||splash.find(sk=>sk!==q&&sk!==basic)
+      ||own.find(sk=>['buff','heal'].includes(sk.kind)&&sk!==basic&&sk!==q)
+      ||own.find(sk=>sk!==basic&&sk!==q)||null;
     const ult=pool.find(sk=>sk.ultCost>0&&SIGNATURE_SKILL[cat.species]===sk.id)
       ||pool.find(sk=>sk.ultCost>0&&sk.element===elementOf(cat.species))
       ||pool.find(sk=>sk.ultCost>0)||null;
@@ -450,6 +461,43 @@
     // should automatically reveal it when the level/bond prerequisite is met.
     if(JSON.stringify(current)!==JSON.stringify(next))cat.loadout=next;
     return cat.loadout||next;
+  }
+
+  // One intentional discovery moment after the first successful capture.
+  // Existing custom equipment is respected; new players get the fresh skill
+  // automatically in the E slot. This returns the actual unlocked ability.
+  function awakenFirstSkill(cat){
+    if(!cat||cat.skillAwakened)return null;
+    const previous=ensureLoadout(cat).slice();
+    const prevDefault=defaultLoadout(cat);
+    const known=new Set(learnableSkills(cat).map(sk=>sk.id));
+    cat.skillAwakened=true;
+    const candidates=learnableSkills(cat).filter(sk=>
+      sk.ultCost===0&&!known.has(sk.id)&&sk.element===SPLASH_ELEMENT[elementOf(cat.species)]);
+    const selected=candidates.find(sk=>sk.kind==='dash'||sk.kind==='melee')
+      ||candidates.find(sk=>sk.kind==='buff'||sk.kind==='heal')
+      ||candidates[0]||null;
+    if(!cat.skillEdited&&(previous[2]===prevDefault[2]||previous[2]==null)){
+      cat.loadout=previous;
+      if(selected)cat.loadout[2]=selected.id;
+    }
+    return selected;
+  }
+
+  function progressionHint(cat){
+    const sp=speciesOf(cat),rare=rarityIdx(sp?.rarity||'N');
+    const lv=cat.level||1,bond=cat.affinity||0;
+    if(rare===0&&!cat.skillAwakened&&lv<4&&bond<40)
+      return '首次收服伙伴后学会跨元素技能（也可提升至 Lv.4 或好感40）';
+    if(rare===0&&(lv<8||bond<40))
+      return '下一阶段：Lv.8 + 好感40 → 元素必杀技';
+    if(rare===1&&(lv<3||bond<20))
+      return '下一阶段：Lv.3 + 好感20 → 元素必杀技';
+    if(rare<2&&(lv<10||bond<60))
+      return '进阶修炼：Lv.10 + 好感60 → 第三种元素技能';
+    if(rare>=2&&lv<12)
+      return '天生掌握高级元素技能；Lv.12 可探索更多元素搭配';
+    return '继续提升等级与羁绊，尝试搭配不同元素连携';
   }
 
   // ==========================================================================
@@ -576,6 +624,7 @@
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---
     SIGNATURE_SKILL, SPLASH_ELEMENT, learnableSkills, defaultLoadout, ensureLoadout,
+    awakenFirstSkill, progressionHint,
     // --- bond ---
     BOND_BONUSES, bondTier, bondBonuses,
     // --- evolution ---
