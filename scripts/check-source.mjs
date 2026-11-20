@@ -36,6 +36,9 @@ for(const marker of ['game_start','game_complete','game_over','game_retry','cat_
  if(!bondGame.includes(marker))throw Error('Cat Bond missing gameplay/analytics: '+marker);
 }
 const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
+for(const asset of ['js/data.js?v=rare-balance-20261120','js/worldmap.js?v=rare-balance-20261120','js/battle.js?v=rare-balance-20261120']){
+ if(!bondHTML.includes(asset))throw Error('Cat Bond must use cache-busted rarity balance source: '+asset);
+}
 for(const marker of ['/telemetry.js','/lang.js','js/i18n.js','href="/"']){
  if(!bondHTML.includes(marker))throw Error('Cat Bond page missing shared integration: '+marker);
 }
