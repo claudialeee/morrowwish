@@ -87,12 +87,15 @@ const UI = {
   panel(html) {
     const p = document.getElementById('panel');
     p.innerHTML = `<div class="card">${html}</div>`;
+    p.dataset.mandatory = 'false';
     p.classList.add('open');
     // clicking backdrop closes
     p.onclick = e => { if (e.target === p) this.closeAll(); };
   },
   closeAll() {
-    document.getElementById('panel').classList.remove('open');
+    const panel=document.getElementById('panel');
+    panel.classList.remove('open');
+    delete panel.dataset.mandatory;
     this.openCatUid = null;
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'yard'));
   },
@@ -796,6 +799,7 @@ const UI = {
     p.innerHTML = `<div class="card"><h2 class="center">选择你的第一只猫猫</h2>
       <p class="sub center">它会陪你一起去捕捉更多伙伴</p>
       <div class="dex-grid">${chips}</div></div>`;
+    p.dataset.mandatory = 'true';
     p.classList.add('open');
     p.onclick = null;
     p.querySelectorAll('.dex-cell').forEach(cell => {
