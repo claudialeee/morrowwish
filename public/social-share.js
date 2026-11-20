@@ -10,9 +10,11 @@ const platforms=[
 ];
 let activeModal=null,previousFocus=null;
 const zh=opts=>opts.language==='zh'||opts.language==='zh-CN';
-const text=(opts,lang=zh(opts))=>lang
- ?'我在 '+opts.title+' 拿了 '+opts.score+' 分！你能打破我的纪录吗？'
- :'I scored '+opts.score+' in '+opts.title+'. Can you beat me?';
+// Story/strategy games provide their own truthful, localized invitation;
+ // score-based arcade games retain their existing personalized challenge text.
+const text=(opts,lang=zh(opts))=>opts.message||(
+ lang?'我在 '+opts.title+' 拿了 '+opts.score+' 分！你能打破我的纪录吗？'
+ :'I scored '+opts.score+' in '+opts.title+'. Can you beat me?');
 function shareLink(raw,platform){
  const url=new URL(raw,location.href);url.searchParams.set('utm_source',platform);
  url.searchParams.set('utm_medium','player_share');return url.toString();
@@ -29,28 +31,40 @@ function destination(id,opts){
  default:return link;
  }
 }
-function metric(platform,opts){window.arcadeMetric?.('share_click',{platform,score:opts.score||0});}
+function metric(platform,opts){
+ window.arcadeMetric?.('share_click',{platform,score:opts.score||0,...opts.meta});
+ try{opts.onShare?.(platform)}catch{}
+}
 function copyFallback(message){
  const input=document.createElement('textarea');input.value=message;input.setAttribute('readonly','');input.style.position='fixed';input.style.opacity='0';document.body.append(input);
  input.select();let ok=false;try{ok=document.execCommand('copy')}catch{}input.remove();return ok;
 }
 function render(holder,raw){
  if(!holder)return;
- const opts={title:String(raw.title||document.title),score:Math.max(0,Math.floor(Number(raw.score)||0)),url:String(raw.url||location.href),language:raw.language||'en'};
+ const opts={
+ title:String(raw.title||document.title),
+ score:Math.max(0,Math.floor(Number(raw.score)||0)),
+ url:String(raw.url||location.href),language:raw.language||'en',
+ message:typeof raw.message==='string'?raw.message.trim().slice(0,360):'',
+ meta:raw.meta&&typeof raw.meta==='object'?raw.meta:{},
+ onShare:typeof raw.onShare==='function'?raw.onShare:null
+};
  holder.replaceChildren();holder.classList.add('mw-social-share');
- const label=document.createElement('p');label.className='mw-social-heading';label.textContent=zh(opts)?'挑战朋友 · 分享到':'Challenge a friend · Share to';holder.append(label);
+ const label=document.createElement('p');label.className='mw-social-heading';label.textContent=opts.message
+ ?(zh(opts)?'分享给朋友 · 选择平台':'Share your story · Choose a platform')
+ :(zh(opts)?'挑战朋友 · 分享到':'Challenge a friend · Share to');holder.append(label);
  const links=document.createElement('div');links.className='mw-social-grid';holder.append(links);
  for(const platform of platforms){
   const a=document.createElement('a');a.textContent=platform.name;a.className='mw-social-platform mw-social-'+platform.id;
   a.href=destination(platform.id,opts);a.target='_blank';a.rel='noopener noreferrer';a.title=zh(opts)?'分享到 '+platform.name:'Share on '+platform.name;
   a.addEventListener('click',()=>metric(platform.id,opts));links.append(a);
  }
- const copy=document.createElement('button');copy.type='button';copy.className='mw-social-platform mw-social-copy';copy.textContent=zh(opts)?'复制挑战链接':'Copy challenge link';links.append(copy);
+ const copy=document.createElement('button');copy.type='button';copy.className='mw-social-platform mw-social-copy';copy.textContent=zh(opts)?'复制分享链接':'Copy share link';links.append(copy);
  const status=document.createElement('div');status.className='mw-social-status';status.setAttribute('role','status');holder.append(status);
  copy.onclick=async()=>{
   const url=shareLink(opts.url,'copy'),message=text(opts)+'\n'+url;
   let ok=false;try{await navigator.clipboard.writeText(message);ok=true}catch{ok=copyFallback(message)}
-  if(ok){metric('copy',opts);status.textContent=zh(opts)?'挑战信息已复制，可粘贴给朋友':'Copied! Paste it to challenge a friend.';}
+  if(ok){metric('copy',opts);status.textContent=zh(opts)?'分享内容已复制，可粘贴给朋友':'Copied! Paste it to a friend.';}
   else status.textContent=zh(opts)?'复制未成功，请使用下方地址':'Copy failed. Use this link: '+url;
   if(!ok){const link=document.createElement('a');link.href=url;link.textContent=url;link.rel='noopener';status.append(' ',link);}
  };
@@ -69,7 +83,7 @@ function onKey(event){if(event.key==='Escape')dismiss();}
 function open(raw){
  dismiss();previousFocus=document.activeElement;
  const overlay=document.createElement('div');overlay.className='mw-social-modal';overlay.setAttribute('role','presentation');
- const card=document.createElement('div');card.className='mw-social-dialog';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label',raw.language==='zh'?'分享挑战':'Share challenge');
+ const card=document.createElement('div');card.className='mw-social-dialog';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label',zh(raw)?'分享游戏':'Share game');
  const close=document.createElement('button');close.type='button';close.className='mw-social-close';close.textContent='×';close.setAttribute('aria-label',raw.language==='zh'?'关闭':'Close');
  close.onclick=dismiss;card.append(close);const inner=document.createElement('div');card.append(inner);
  overlay.append(card);overlay.addEventListener('pointerdown',e=>{if(e.target===overlay)dismiss()});
