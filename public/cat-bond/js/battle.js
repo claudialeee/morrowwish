@@ -1063,12 +1063,23 @@ class CaptureBattle {
   }
 
   hpTag(ctx, x, y, frac, color, label) {
-    const w = 54, h = 7;
-    ctx.fillStyle = 'rgba(20,12,30,0.8)'; rr(ctx, x - w / 2 - 2, y - 2, w + 4, h + 4, 4); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.15)'; rr(ctx, x - w / 2, y, w, h, 3); ctx.fill();
-    ctx.fillStyle = frac > 0.3 ? '#7ee787' : '#ff6b6b'; rr(ctx, x - w / 2, y, w * clamp(frac, 0, 1), h, 3); ctx.fill();
-    ctx.fillStyle = color; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(label, x, y - 6);
+    // Cream game-card label: more legible over the illustrated garden.
+    const w=86,h=6;
+    ctx.save();
+    ctx.fillStyle='rgba(255,250,239,.92)';
+    ctx.strokeStyle='rgba(114,124,101,.28)';
+    ctx.lineWidth=1;
+    rr(ctx,x-w/2-7,y-23,w+14,36,12);ctx.fill();ctx.stroke();
+    ctx.textAlign='center';ctx.font='700 11px system-ui, sans-serif';
+    ctx.fillStyle='#4d5b49';ctx.fillText(label,x,y-9);
+    ctx.fillStyle='rgba(112,132,110,.16)';
+    rr(ctx,x-w/2,y-3,w,h,3);ctx.fill();
+    const health=Math.max(0,Math.min(1,frac));
+    if(health>0){
+      ctx.fillStyle=health>.3?'#8fbb9d':'#e7a38d';
+      rr(ctx,x-w/2,y-3,w*health,h,3);ctx.fill();
+    }
+    ctx.restore();
   }
 }
 
