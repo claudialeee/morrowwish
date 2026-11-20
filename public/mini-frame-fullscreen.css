@@ -1,0 +1,199 @@
+/* Only the interactive rectangles of Flip Dash, Parcel Panic and Pocket Aquarium.
+   Preserve each game's original artwork, score elements and event listeners. */
+.mw-mini-fullscreen-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  flex:0 0 auto;min-height:42px;min-width:96px;padding:7px 11px;
+  border:1px solid #c9b5ce;border-radius:999px;
+  background:#fff9f3;color:#604b68;white-space:nowrap;
+  font:800 12px/1.1 system-ui,-apple-system,sans-serif;
+  cursor:pointer;touch-action:manipulation;position:relative;z-index:3;
+}
+.mw-mini-fullscreen-button[aria-pressed="true"]{background:#4a3958;color:#fff;border-color:#4a3958}
+.mw-mini-fullscreen-button:focus-visible{outline:3px solid #db9ebd;outline-offset:2px}
+html.mw-mini-fullscreen-on,html.mw-mini-fullscreen-on body{
+  overflow:hidden!important;overscroll-behavior:none!important;
+}
+.mw-mini-arcade-frame:fullscreen,
+.mw-mini-aquarium-frame:fullscreen{background:#453b60}
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback,
+.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback{
+  position:fixed!important;inset:0!important;z-index:2147483000!important;
+  isolation:isolate!important;
+}
+
+/* Two one-tap arcade games: in-frame live SCORE/BEST/HELP/RETRY, game, status. */
+.mw-mini-arcade-frame{display:flex;flex-direction:column;min-width:0;background:#453b60}
+.mw-mini-arcade-frame>.mw-mini-frame-hud{
+  box-sizing:border-box;display:flex;flex:0 0 auto;
+  align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px;
+  width:100%;padding:8px 10px;background:#fff9f3;
+  border-bottom:1px solid #ecdae4;
+}
+.mw-mini-arcade-frame .mw-mini-frame-hud .score-chip{
+  min-width:67px;padding:5px 10px;font-size:19px;box-shadow:none;
+}
+.mw-mini-arcade-frame .mw-mini-frame-hud .icon-btn{
+  min-height:42px;min-width:42px;padding:8px;
+}
+.mw-mini-arcade-frame .mw-mini-fullscreen-button{margin-left:auto}
+.mw-mini-arcade-frame>.mw-mini-playfield{
+  display:flex;position:relative;align-items:center;justify-content:center;
+  width:100%;min-height:0;min-width:0;flex:0 0 auto;overflow:hidden;
+  background:#453b60;
+}
+.mw-mini-arcade-frame .mw-mini-playfield canvas{
+  display:block!important;flex:0 0 auto;width:100%;max-width:100%;
+  height:auto;aspect-ratio:16/9;touch-action:none;
+}
+.mw-mini-arcade-frame .mw-mini-playfield>.game-overlay{
+  position:absolute!important;inset:0!important;min-height:0!important;
+  max-height:none!important;overflow-y:auto;z-index:2;
+}
+.mw-mini-arcade-frame .mw-mini-playfield>.game-overlay[hidden]{display:none!important}
+.mw-mini-arcade-frame>.mw-mini-frame-status{
+  margin:0;padding:7px 11px;background:#fff9f3;
+  border-top:1px solid #ecdae4;flex:0 0 auto;
+}
+.mw-mini-arcade-frame:fullscreen,
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback{
+  box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+  width:100vw!important;height:100dvh!important;max-width:none!important;
+  max-height:none!important;margin:0!important;border:0!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+.mw-mini-arcade-frame:fullscreen>.mw-mini-frame-hud,
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback>.mw-mini-frame-hud{
+  padding:calc(env(safe-area-inset-top,0px) + 7px)
+    max(9px,env(safe-area-inset-right,0px)) 7px max(9px,env(safe-area-inset-left,0px));
+}
+.mw-mini-arcade-frame:fullscreen>.mw-mini-playfield,
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback>.mw-mini-playfield{
+  flex:1 1 auto!important;min-height:0!important;height:auto!important;
+}
+.mw-mini-arcade-frame:fullscreen .mw-mini-playfield canvas,
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback .mw-mini-playfield canvas{
+  display:block!important;width:auto!important;height:auto!important;
+  max-width:100%!important;max-height:100%!important;
+  aspect-ratio:16/9!important;object-fit:contain!important;
+}
+.mw-mini-arcade-frame:fullscreen>.mw-mini-frame-status,
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback>.mw-mini-frame-status{
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 7px);
+}
+@media(max-width:600px){
+  .mw-mini-arcade-frame .mw-mini-frame-hud{gap:6px;padding:7px}
+  .mw-mini-arcade-frame .mw-mini-frame-hud .score-chip{
+    min-width:55px;padding:4px 7px;font-size:16px;
+  }
+  .mw-mini-arcade-frame .mw-mini-frame-hud .icon-btn{min-width:39px;min-height:40px}
+  .mw-mini-arcade-frame .mw-mini-fullscreen-button{min-width:85px;padding:7px 9px;font-size:11px}
+  .mw-mini-arcade-frame>.mw-mini-playfield:has(.game-overlay:not([hidden])){
+    min-height:315px;
+  }
+  .mw-mini-arcade-frame .mw-mini-playfield>.game-overlay{padding:9px!important}
+  .mw-mini-arcade-frame .mw-mini-playfield .overlay-panel{
+    max-height:100%;overflow-y:auto;padding:16px 12px;
+  }
+  .mw-mini-arcade-frame:fullscreen>.mw-mini-playfield:has(.game-overlay:not([hidden])),
+  .mw-mini-arcade-frame.mw-mini-fullscreen-fallback>.mw-mini-playfield:has(.game-overlay:not([hidden])){
+    min-height:0!important;
+  }
+}
+
+/* Pocket Aquarium: keep the actual underwater #tank as the fullscreen node.
+   Score, time, best, water quality, combo, food selectors and restart
+   stay INSIDE this rectangle in ordinary and fullscreen play. */
+.mw-mini-aquarium-frame{
+  box-sizing:border-box;position:relative;min-height:520px;
+  overflow:hidden;isolation:isolate;
+}
+.mw-mini-aquarium-frame>.mw-mini-aqua-top{
+  position:absolute;z-index:9;top:8px;left:10px;right:10px;
+  display:flex;align-items:center;gap:7px;pointer-events:none;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-top .scores{
+  flex:1 1 auto;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;margin:0;pointer-events:none;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-top .stat{
+  min-width:0;padding:5px 7px;background:#f8fffaee;
+  border:1px solid #d9e8dfcf;border-radius:12px;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-top .stat label{font-size:9px}
+.mw-mini-aquarium-frame .mw-mini-aqua-top .stat strong{font-size:20px}
+.mw-mini-aquarium-frame .mw-mini-fullscreen-button{
+  pointer-events:auto;background:#f5fff7eF;color:#275b51;border-color:#c9e5d5;
+}
+.mw-mini-aquarium-frame .mw-mini-fullscreen-button[aria-pressed="true"]{
+  background:#185b5b;color:white;
+}
+.mw-mini-aquarium-frame .in-water{
+  z-index:2;top:82px;max-width:calc(100% - 20px);
+}
+.mw-mini-aquarium-frame>.mw-mini-aqua-bottom{
+  position:absolute;z-index:5;bottom:8px;left:10px;right:10px;
+  pointer-events:none;display:flex;flex-direction:column;gap:6px;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .meters{
+  display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .meter{
+  min-width:0;padding:6px 8px;background:#f7fffaed;border-color:#d7e8dbe9;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .meter-track{height:6px;margin-top:4px}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .foods{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;margin:0;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .food{
+  min-width:0;min-height:42px;padding:6px 3px;
+  background:#fcfffaef;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .food.active{background:#dcf9e8}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom .under{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin:0;padding:2px 9px;
+  border-radius:9px;background:#e8f9f1ec;color:#235b52;
+}
+.mw-mini-aquarium-frame .mw-mini-aqua-bottom button{pointer-events:auto}
+.mw-mini-aquarium-frame>.overlay{z-index:6}
+.mw-mini-aquarium-frame:fullscreen,
+.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback{
+  width:100vw!important;height:100dvh!important;min-height:0!important;
+  max-width:none!important;max-height:none!important;
+  margin:0!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;background:#146f73!important;
+}
+.mw-mini-aquarium-frame:fullscreen>.mw-mini-aqua-top,
+.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback>.mw-mini-aqua-top{
+  top:calc(env(safe-area-inset-top,0px) + 8px);
+}
+.mw-mini-aquarium-frame:fullscreen>.mw-mini-aqua-bottom,
+.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback>.mw-mini-aqua-bottom{
+  bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
+}
+@media(max-width:600px){
+  .mw-mini-aquarium-frame{height:580px;min-height:580px}
+  .mw-mini-aquarium-frame>.mw-mini-aqua-top{left:6px;right:6px;gap:5px}
+  .mw-mini-aquarium-frame .mw-mini-aqua-top .stat{padding:4px 2px;border-radius:8px}
+  .mw-mini-aquarium-frame .mw-mini-aqua-top .stat label{font-size:8px;letter-spacing:0}
+  .mw-mini-aquarium-frame .mw-mini-aqua-top .stat strong{font-size:18px}
+  .mw-mini-aquarium-frame .mw-mini-fullscreen-button{
+    min-width:83px;min-height:40px;font-size:10px;padding:6px;
+  }
+  .mw-mini-aquarium-frame>.mw-mini-aqua-bottom{left:6px;right:6px;gap:5px}
+  .mw-mini-aquarium-frame .mw-mini-aqua-bottom .meter{padding:6px 7px}
+  .mw-mini-aquarium-frame .mw-mini-aqua-bottom .meter-top{font-size:9px}
+  .mw-mini-aquarium-frame .mw-mini-aqua-bottom .foods{gap:4px}
+  .mw-mini-aquarium-frame .mw-mini-aqua-bottom .food{
+    min-height:45px;gap:4px;padding:6px 3px;
+  }
+  .mw-mini-aquarium-frame .mw-mini-aqua-bottom .under{font-size:10px}
+  .mw-mini-aquarium-frame .in-water{top:76px;max-width:calc(100% - 12px)}
+}
+@media(max-height:500px){
+  .mw-mini-aquarium-frame:fullscreen .in-water,
+  .mw-mini-aquarium-frame.mw-mini-fullscreen-fallback .in-water{display:none}
+  .mw-mini-aquarium-frame:fullscreen .mw-mini-aqua-bottom .under,
+  .mw-mini-aquarium-frame.mw-mini-fullscreen-fallback .mw-mini-aqua-bottom .under{display:none}
+}
