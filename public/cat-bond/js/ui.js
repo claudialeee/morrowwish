@@ -679,6 +679,7 @@ const UI = {
   openCapturePrep(wildSp) {
     const cats = State.S.cats;
     const rar = GameData.RARITY[wildSp.rarity];
+    const firstCapture=(State.S.catchCount||0)===0;
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
       return;
@@ -699,12 +700,12 @@ const UI = {
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
-      <h3 style="margin:14px 0 6px;font-size:0.95rem">组建出战队伍（最多 3 只，点击选择）</h3>
-      <div class="roster" id="cp-roster">${chips}</div>
-      <p class="tiny">战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动</p>
+      <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
+      <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
+      <p class="tiny">${firstCapture?'电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！':'战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动'}</p>
       <div class="btn-row">
-        <button class="btn gold" id="cp-go">开始战斗</button>
-        <button class="btn" id="cp-ai">⚙️ AI策略</button>
+        <button class="btn gold" id="cp-go">${firstCapture?'出发！收服这只猫':'开始战斗'}</button>
+        <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">⚙️ AI策略</button>
         <button class="btn ghost" id="cp-cancel">放它走</button>
       </div>`);
     CatArt.renderCatThumb(document.getElementById('cp-wild'), wildSp);
@@ -787,17 +788,25 @@ const UI = {
   },
 
   openCatchResult(wildSp, newCat) {
+    const collected=Object.values(State.S.dex||{}).filter(v=>v>0).length;
+    const exploring=this.game.scene==='map';
     this.panel(`<span class="card-close">×</span>
-      <h2 class="center">🎉 捕捉成功！</h2>
+      <h2 class="center">🎉 新伙伴加入啦！</h2>
       <canvas id="cr" width="180" height="140" style="display:block;margin:8px auto"></canvas>
-      <p class="center"><b class="rarity-${wildSp.rarity}">${wildSp.name}</b> 加入了你的大家庭！</p>
-      <p class="sub center">${wildSp.desc}</p>
+      <p class="center"><b class="rarity-${wildSp.rarity}">${wildSp.name}</b> 已加入你的庭院</p>
+      <p class="sub center">猫咪图鉴 ${collected}/${GameData.SPECIES.length} · ${wildSp.desc}</p>
       <div class="btn-row" style="justify-content:center">
-        <button class="btn" id="cr-ok">太好了</button>
+        <button class="btn gold" id="cr-next">${exploring?'继续探索':'再找一只野猫'}</button>
+        <button class="btn" id="cr-ok">${exploring?'返回地图':'回庭院'}</button>
       </div>`);
-    CatArt.renderCatThumb(document.getElementById('cr'), wildSp);
-    // celebratory sparkle
-    document.getElementById('cr-ok').onclick = () => { this.closeAll(); document.getElementById('yard-actions').classList.remove('hidden'); };
+    CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
+    const dismiss=()=>{this.closeAll();if(this.game.scene==='yard')document.getElementById('yard-actions').classList.remove('hidden');};
+    document.getElementById('cr-ok').onclick=dismiss;
+    document.getElementById('cr-next').onclick=()=>{
+      dismiss();
+      if(this.game.scene==='yard'&&!this.game.yard.hide)this.game.yard.startHideAndSeek();
+      window.arcadeMetric?.('bond_continue_search');
+    };
   },
 
   // ---------- starter picker (first run) ----------

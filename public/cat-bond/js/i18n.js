@@ -45,6 +45,22 @@
     '③ 收服 & 养成': '③ Capture & raise',
     '把野猫斗志打空就能收服。喂养、培养、进化，建立更强的纽带。': "Drain a wild cat's morale to capture it. Feed, train and evolve to build stronger bonds.",
 
+    // ---- frictionless first-time capture loop ----
+    '挑一只喜欢的小猫，找到藏在草丛里的新伙伴，把它带回自己的猫猫庭院。': 'Choose your first kitten. Find the wild cat hiding in the grass and bring it home.',
+    '选猫 → 找发光草丛 → 收服伙伴': 'Pick a cat → Find the glowing bush → Catch a friend',
+    '🌿 第一次收集：点击发光的草丛，找到新伙伴': '🌿 First capture: tap the glowing bush!',
+    '🌿 第一次收集：点击右下角的草丛按钮寻找野猫': '🌿 First capture: tap the grass button to find a wild cat',
+    '你的猫咪准备好出战啦！': 'Your kitten is ready to battle!',
+    '电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！': 'Hold left mouse button to attack. On mobile, hold right to attack, move on left. Win to capture!',
+    '出发！收服这只猫': 'Battle to befriend this cat!',
+    '🎉 新伙伴加入啦！': '🎉 A new friend joined!',
+    '已加入你的庭院': 'has joined your yard',
+    '猫咪图鉴': 'Cat collection',
+    '再找一只野猫': 'Find another wild cat',
+    '继续探索': 'Keep exploring',
+    '返回地图': 'Return to map',
+    '回庭院': 'Back to yard',
+    '🌿 院子里藏着一只野猫！点击发光的草丛找到它。': '🌿 A wild cat is hiding here! Tap the glowing bush to find it.',
     // ---- HUD / tab bar / yard actions ----
     '🏡 庭院': '🏡 Yard',
     '庭院': 'Yard',
