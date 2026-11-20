@@ -41,14 +41,15 @@ firstSeen=localStorage.getItem("arcade-visitor-day-v2")||"";
 if(!/^[0-9a-f-]{20,64}$/i.test(visitor)){visitor=globalThis.crypto?.randomUUID?.()||"";firstSeen=day;localStorage.setItem("arcade-visitor-v2",visitor);localStorage.setItem("arcade-visitor-day-v2",firstSeen);}
 persistent=!!visitor;
 }}catch{}
-const eventCounts={starts:0,ends:0,retries:0,shares:0,clicks:0,completion:0};
-const lastSent={starts:0,ends:0,retries:0,shares:0,clicks:0,completion:0};
+const eventCounts={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
+const lastSent={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
 const signalCounts=Object.create(null),lastSignals=Object.create(null);
 function signal(id){if(!/^[a-z0-9_-]{2,40}$/.test(id))return;signalCounts[id]=(signalCounts[id]||0)+1;}
 let firstMs=-1,firstMsSent=false,level=0,score=0,lastClock=performance.now(),closed=false,flushSeq=0;
 function event(eventName,p={}){const n=String(eventName||"").toLowerCase();
 if(n==="run_start"||n==="game_start"||n==="town_started"||n==="town_started-game")eventCounts.starts++;
 if(["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n))eventCounts.ends++;
+if(n==="run_abandoned")eventCounts.abandons++;
 if(n.includes("instant_replay")||n.includes("retry")||n.includes("restart")||n==="town_replayed")eventCounts.retries++;
 if(["share_click","share_clicked","shared-link","town_shared-link"].includes(n))eventCounts.shares++;
 if(n==="next_game_click"||n==="next_game_clicked"||n==="game_open")eventCounts.clicks++;
@@ -83,7 +84,7 @@ if(game==="flip-dash"&&(n==="run_end"||n==="game_over")){signal("flip_finished")
 if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
 // Start/end/replay are essential: persist immediately instead of waiting for
 // pagehide, which is unreliable on mobile and inside game portal iframes.
-if(["run_start","game_start","run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose","town_started","town_started-game","game_retry"].includes(n)||n.startsWith("play_feedback_")||n.startsWith("town_feedback-")||n.startsWith("elsewhere_return_"))flush(true);
+if(["run_start","run_abandoned","game_start","run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose","town_started","town_started-game","game_retry"].includes(n)||n.startsWith("play_feedback_")||n.startsWith("town_feedback-")||n.startsWith("elsewhere_return_"))flush(true);
 }
 window.arcadeMetric=event;
 const onFirstAction=()=>{if(firstMs<0)firstMs=Math.round(performance.now()-start);};
@@ -119,7 +120,11 @@ send({kind:"session",seq:flushSeq++,seconds:deltaSec,firstMs:hasAction?firstMs:-
 for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;
 }
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else lastClock=performance.now();});
-window.addEventListener("pagehide",()=>{flush(true);closed=true;});
+window.addEventListener("pagehide",()=>{
+ // The mini games are endless; leaving before game-over is abandonment, not a clear.
+ if((game==="flip-dash"||game==="parcel-panic")&&window.__MWMiniActive){window.__MWMiniActive=false;event("run_abandoned",{reason:"exit"});}
+ flush(true);closed=true;
+});
 window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();}});
  // Keep engaged sessions visible during long mobile play without per-click writes.
  setInterval(()=>{if(!closed&&document.visibilityState==="visible")flush()},60000);

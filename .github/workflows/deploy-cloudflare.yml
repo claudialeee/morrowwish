@@ -208,11 +208,24 @@ jobs:
               echo "::error::D1 write failed for $game through $origin (HTTP $code)"
               exit 1
             fi
+            session_body=$(printf '{"kind":"session","game":"%s","viewId":"%s","visitor":"ci-smoke","smokeProbe":"mw-qa-v1","starts":1,"ends":1}' "$game" "$probe")
+            session_code=$(curl -sSL --max-time 18 -o /tmp/mw-qa-session.json -w '%{http_code}' -X POST \
+              -H 'Content-Type: text/plain' --data "$session_body" "$origin/api/session" || true)
+            if [ "$session_code" != 202 ]; then
+              echo "::error::D1 start/finish write failed for $game through $origin (HTTP $session_code)"
+              exit 1
+            fi
             check=$(curl -sSL --max-time 18 "$origin/api/diagnostic-check?probe=$probe" || true)
             if ! printf '%s' "$check" | grep -Fq '"recorded":true'; then
               echo "::error::D1 read-back failed for $game through $origin"
               exit 1
             fi
+            for key in sessionRecorded startRecorded endRecorded; do
+              if ! printf '%s' "$check" | grep -Fq "\"$key\":true"; then
+                echo "::error::D1 $key failed for $game through $origin"
+                exit 1
+              fi
+            done
             if ! printf '%s' "$check" | grep -Fq '"removed":true'; then
               echo "::error::D1 diagnostic cleanup failed for $game through $origin"
               exit 1

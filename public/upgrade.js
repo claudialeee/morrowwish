@@ -25,10 +25,10 @@ function refreshShare(){window.MorrowwishSocialShare?.render(extras.querySelecto
 window.addEventListener("morrowwish-language-change",()=>{if(!extras.hidden)refreshShare();});
 if(self===top){extras.querySelector("#lab-next").innerHTML='<a href="/'+next+'/" class="lab-next">TRY NEXT: '+names[next].toUpperCase()+' →</a>';extras.querySelector(".lab-next").onclick=()=>event("next_game_click");}
 const prevAdd=window.add;window.add=function(n){prevAdd(n);document.getElementById("best").textContent=Math.max(+(localStorage.getItem("arcade-high-"+id)||0),Math.floor(score));};window.track=function(name,props){previousTrack(name,props);if(name==="restart")event("restart_button");};
-function enter(){attempts++;runAt=performance.now();particles=[];flash=0;shake=0;combo=0;extras.hidden=true;goBtn.style.display="";localStorage.setItem("lab-seen-"+id,"1");event("run_start",{attempt:attempts});}
-window.start=function(){previousStart();enter();};goBtn.onclick=start;
+function enter(){attempts++;window.__MWMiniActive=true;runAt=performance.now();particles=[];flash=0;shake=0;combo=0;extras.hidden=true;goBtn.style.display="";localStorage.setItem("lab-seen-"+id,"1");event("run_start",{attempt:attempts});}
+window.start=function(){if(window.__MWMiniActive)event("run_abandoned",{reason:"restart"});previousStart();enter();};goBtn.onclick=start;
 function best(){const old=+(localStorage.getItem(dailyKey)||0),curr=Math.floor(score);if(curr>old)localStorage.setItem(dailyKey,String(curr));document.getElementById("best").textContent=Math.max(+(localStorage.getItem("arcade-high-"+id)||0),old,curr);if(curr>old)event("daily_best",{score:curr});}
-window.finish=function(w,msg,nextLevel){if(!running)return;const seconds=Math.round((performance.now()-runAt)/1000);event("run_end",{duration:seconds,score:Math.floor(score),won:w?1:0,retries:attempts-1,delivered:id==="parcel-panic"?(window.mwMiniDelivered||0):0});if(seconds>=60)event("over_60s");const k="lab-summary-"+id,prev=JSON.parse(localStorage.getItem(k)||"{}");prev.runs=(prev.runs||0)+1;prev.seconds=(prev.seconds||0)+seconds;prev.retries=(prev.retries||0)+(attempts>1?1:0);localStorage.setItem(k,JSON.stringify(prev));best();previousFinish(w,msg,nextLevel);extras.hidden=false;refreshShare();overPanel.classList.add("lab-completed");goBtn.style.display="none";const resultZh=language()==="zh";
+window.finish=function(w,msg,nextLevel){if(!running)return;window.__MWMiniActive=false;const seconds=Math.round((performance.now()-runAt)/1000);event("run_end",{duration:seconds,score:Math.floor(score),won:w?1:0,retries:attempts-1,delivered:id==="parcel-panic"?(window.mwMiniDelivered||0):0});if(seconds>=60)event("over_60s");const k="lab-summary-"+id,prev=JSON.parse(localStorage.getItem(k)||"{}");prev.runs=(prev.runs||0)+1;prev.seconds=(prev.seconds||0)+seconds;prev.retries=(prev.retries||0)+(attempts>1?1:0);localStorage.setItem(k,JSON.stringify(prev));best();previousFinish(w,msg,nextLevel);extras.hidden=false;refreshShare();overPanel.classList.add("lab-completed");goBtn.style.display="none";const resultZh=language()==="zh";
 extras.querySelector("#lab-meta").textContent=resultZh
  ?seconds+" 秒 · "+Math.floor(score)+" 分 · "+(beat?(score>=beat?"挑战成功！":"目标 "+beat+" 分"):"本局挑战")
  :seconds+"s PLAYED  •  "+Math.floor(score)+" POINTS  •  "+(beat?(score>=beat?"FRIEND BEATEN!":"TARGET "+beat):"TODAY'S CHALLENGE");
@@ -154,7 +154,7 @@ mode=G[id]();mode.init(1);document.getElementById("best").textContent=localStora
  // No countdown, falling parcels or hazards are advanced until START is clicked.
 function showReadyScreen(){
  const zh=language()==="zh";
- running=false;over.hidden=false;overPanel.classList.remove("lab-completed");
+ running=false;window.__MWMiniActive=false;over.hidden=false;overPanel.classList.remove("lab-completed");
  document.getElementById("overlay-kicker").textContent=zh?"玩法说明":"HOW TO PLAY";
  overTitle.textContent=names[id]||document.querySelector(".game-title")?.textContent||id;
  overDesc.textContent=zh?

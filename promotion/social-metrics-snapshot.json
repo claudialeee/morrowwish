@@ -4,7 +4,7 @@
   "nativeWindow": "2026-11-18 through 2026-11-20",
   "source": "Metricool Morrow Wish connected account",
   "refreshMode": "manual",
-  "note": "Native provider analytics are dated and may carry old-account history; null=unavailable, not zero. Previous promotional videos are old and blurry; do not reuse them.",
+  "note": "Manual provider snapshot as of 2026-11-20. Native platform view totals are not live; null=not retrieved. Old blurry videos must never be reused.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -64,11 +64,11 @@
     {
       "id": "bluesky",
       "priority": "P2",
-      "phase": "pending-new-account-post",
-      "published": null,
+      "phase": "published-new-account",
+      "published": 1,
       "failed": 0,
       "views": null,
-      "note": "Legacy Metricool post history may be attributed to newly connected account; new account has no confirmed published post. One text-only post scheduled for 2026-11-20 11:18 PDT."
+      "note": "New @morrowwishgames.bsky.social account has one verified public Cat Bond post on 2026-11-20; native post views unavailable. The previous ruckusbutton profile must not be mixed."
     },
     {
       "id": "search",

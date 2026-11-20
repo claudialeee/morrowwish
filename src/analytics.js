@@ -5,7 +5,7 @@ const tidy=(s,max=100)=>typeof s==="string"?s.slice(0,max):"";
 const uniq=(a)=>new Set(a.filter(Boolean)).size;
 function dateDays(n){const d=new Date();d.setUTCHours(0,0,0,0);const x=[];for(let i=n-1;i>=0;i--)x.push(new Date(d.getTime()-86400000*i).toISOString().slice(0,10));return x;}
 function params(req){const n=Number(new URL(req.url).searchParams.get("days"));return Number.isFinite(n)&&n>=1?Math.min(90,Math.floor(n)):7;}
-async function read(req,env,category){let days=params(req),dates=dateDays(days);const result=await env.DB.prepare("SELECT category,day,game,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND day>=? ORDER BY id DESC LIMIT 10000").bind(category,dates[0]).all();return {days,dates,rows:(result.results||[]).map(r=>({...r,data:JSON.parse(r.payload||"{}")})),partial:(result.results||[]).length>=10000};}
+async function read(req,env,category){let days=params(req),dates=dateDays(days);const result=await env.DB.prepare("SELECT category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND day>=? ORDER BY id DESC LIMIT 10000").bind(category,dates[0]).all();return {days,dates,rows:(result.results||[]).map(r=>({...r,data:JSON.parse(r.payload||"{}")})),partial:(result.results||[]).length>=10000};}
 function visitors(rows){return uniq(rows.map(r=>r.visitor||r.view_id));}
 function mainStats(x){
   const {rows,dates}=x,visits=rows.filter(r=>r.kind==="visit"),sessions=rows.filter(r=>r.kind==="session");
@@ -18,7 +18,7 @@ function mainStats(x){
     for(const r of sessionsOf)for(const [k,v] of Object.entries(r.data.signals||{})){
       if(/^[a-z0-9_-]{2,40}$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>0)signals[k]=(signals[k]||0)+Math.min(10000,Number(v));
     }
-    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals};
+    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
@@ -45,16 +45,17 @@ function mainStats(x){
     // Internal navigation is not an acquisition channel; new visits inherit
     // their first-party landing source through telemetry.js.
     if(source==="internal")continue;
-    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,starts:0,ends:0,seconds:0});
+    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,starts:0,ends:0,abandons:0,seconds:0});
     const z=channels.get(source);z.views++;
     const events=sessionsByView.get(r.view_id)||[];
     if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
     z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
     z.ends+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.ends)||0),0);
+    z.abandons+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.abandons)||0),0);
     z.seconds+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.seconds)||0),0);
   }
   const byChannel=[...channels.values()].map(z=>({
-    source:z.source,pageviews:z.views,startedViews:z.startedViews,starts:z.starts,ends:z.ends,
+    source:z.source,pageviews:z.views,startedViews:z.startedViews,starts:z.starts,ends:z.ends,abandons:z.abandons,
     startRate:pct(z.startedViews,z.views),
     seconds:z.seconds,avgSeconds:z.views?Math.round(z.seconds/z.views):0
   })).sort((a,b)=>b.pageviews-a.pageviews);
@@ -114,7 +115,7 @@ function mainStats(x){
     starts:itchGames.reduce((n,z)=>n+z.starts,0),games:itchGames};
   const total=score(rows.filter(r=>r.game!=="hub"));
   const all=score(rows);
-  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  return {days:x.days,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
  // Five-scene edition only. Legacy eight-scene records stay in D1 but are not mixed into this funnel.
@@ -190,7 +191,7 @@ export async function api(req,env){
   // Real gameplay and isolated deployment probes share the same D1 INSERT.
   // Probe rows live outside the arcade and story reporting categories.
   const qaGames=new Set(["pawsibly-innocent","tiny-town","elsewhere","flip-dash","parcel-panic","pocket-aquarium"]);
-  const smoke=category==="arcade"&&data.kind==="visit"&&data.smokeProbe==="mw-qa-v1"&&/^mw-qa-[0-9a-f-]{36}$/.test(viewId)&&qaGames.has(game);
+  const smoke=category==="arcade"&&(data.kind==="visit"||data.kind==="session")&&data.smokeProbe==="mw-qa-v1"&&/^mw-qa-[0-9a-f-]{36}$/.test(viewId)&&qaGames.has(game);
   const storageCategory=smoke?"diagnostic":category;
   await env.DB.prepare("INSERT INTO events(category,day,ts,game,visitor,view_id,run_id,event_name,kind,payload) VALUES(?,?,?,?,?,?,?,?,?,?)").bind(storageCategory,day,now,game,visitor,viewId,runId,tidy(data.event,48),tidy(data.kind,48),JSON.stringify(data)).run();
   return json({ok:true},202);
@@ -201,9 +202,12 @@ export async function api(req,env){
   if(req.method!=="GET")return json({error:"GET required"},405);
   const probe=new URL(req.url).searchParams.get("probe")||"";
   if(!/^mw-qa-[0-9a-f-]{36}$/.test(probe))return json({error:"Invalid diagnostic probe"},400);
-  const found=await env.DB.prepare("SELECT id FROM events WHERE category=? AND view_id=? LIMIT 1").bind("diagnostic",probe).first();
-  if(found)await env.DB.prepare("DELETE FROM events WHERE category=? AND view_id=?").bind("diagnostic",probe).run();
-  return json({recorded:!!found,removed:!!found});
+  const query=await env.DB.prepare("SELECT kind,payload FROM events WHERE category=? AND view_id=? ORDER BY id ASC LIMIT 4").bind("diagnostic",probe).all();
+  const results=query.results||[],visits=results.filter(r=>r.kind==="visit"),sessions=results.filter(r=>r.kind==="session");
+  const sawStart=sessions.some(r=>Number(JSON.parse(r.payload||"{}").starts)>=1);
+  const sawEnd=sessions.some(r=>Number(JSON.parse(r.payload||"{}").ends)>=1);
+  if(results.length)await env.DB.prepare("DELETE FROM events WHERE category=? AND view_id=?").bind("diagnostic",probe).run();
+  return json({recorded:visits.length>0,sessionRecorded:sessions.length>0,startRecorded:sawStart,endRecorded:sawEnd,removed:results.length>0});
  }
  if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(req.method!=="GET")return json({error:"GET required"},405);
