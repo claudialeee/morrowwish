@@ -82,6 +82,7 @@ for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souve
 const catHTML=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
 for(const id of ['id="tool"','id="collection"','id="ability"'])if(!catHTML.includes(id))throw Error('Cat interface missing '+id);
 if(!fs.readFileSync('public/art/pawsibly-scene.svg','utf8').includes('<svg'))throw Error('Featured cat art missing');
+if(!homepage.includes('/art/pawsibly-scene.svg?v=round-tabby-20261120')||!fs.readFileSync('public/art/pawsibly-scene.svg','utf8').includes('Round-faced gray-and-white tabby kitten'))throw Error('Pawsibly homepage must use the new clearly feline cover');
 
 if(!fs.readFileSync('src/analytics.js','utf8').includes('ARCADE_ANALYTICS_KEY'))throw Error('Missing Analytics authentication');
 for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js','public/studio-insights/index.html']){

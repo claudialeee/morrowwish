@@ -1,30 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 650" role="img" aria-labelledby="t d"><title id="t">Pawsibly Innocent — cozy cat chaos</title><desc id="d">Gentle smiling orange tabby in a cozy pastel living room with yarn, a stolen fish and pink flowers.</desc><defs><linearGradient id="wall" x2="1" y2="1"><stop stop-color="#fff8e7"/><stop offset=".65" stop-color="#ffe2db"/><stop offset="1" stop-color="#f4d9ee"/></linearGradient><linearGradient id="floor"><stop stop-color="#ecd8c9"/><stop offset="1" stop-color="#fff0dc"/></linearGradient><linearGradient id="fur" x2="0" y2="1"><stop stop-color="#ffcf87"/><stop offset="1" stop-color="#ed9c65"/></linearGradient><filter id="shade"><feDropShadow dy="8" stdDeviation="11" flood-color="#aa7d8e" flood-opacity=".20"/></filter></defs><rect width="960" height="650" fill="url(#wall)"/><path d="M0 455H960V650H0Z" fill="url(#floor)"/><path d="M0 457H960" stroke="#e8bead" stroke-width="9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 650" role="img" aria-labelledby="t d"><title id="t">Pawsibly Innocent — cozy cat chaos</title><desc id="d">A round-faced gray-and-white tabby kitten with whiskers and a pink nose in a pastel living room with a stolen fish, yarn and flowers.</desc><defs><linearGradient id="wall" x2="1" y2="1"><stop stop-color="#fff8e7"/><stop offset=".65" stop-color="#ffe2db"/><stop offset="1" stop-color="#f4d9ee"/></linearGradient><linearGradient id="floor"><stop stop-color="#ecd8c9"/><stop offset="1" stop-color="#fff0dc"/></linearGradient><linearGradient id="fur" x2="0" y2="1"><stop stop-color="#ffcf87"/><stop offset="1" stop-color="#ed9c65"/></linearGradient><filter id="shade"><feDropShadow dy="8" stdDeviation="11" flood-color="#aa7d8e" flood-opacity=".20"/></filter></defs><rect width="960" height="650" fill="url(#wall)"/><path d="M0 455H960V650H0Z" fill="url(#floor)"/><path d="M0 457H960" stroke="#e8bead" stroke-width="9"/>
 <g><rect x="36" y="29" width="282" height="251" rx="27" fill="#fffdf3" stroke="#e6c6bc" stroke-width="11"/><rect x="53" y="43" width="248" height="213" rx="20" fill="#b9e5de"/><circle cx="238" cy="91" r="44" fill="#ffefa6"/><path d="M53 209Q113 156 177 207T301 191V258H53Z" fill="#9bd4b2"/><path d="M175 44V256M53 153H301" stroke="#fff9e9" stroke-width="9"/><path d="M37 38Q83 76 66 245Q109 207 96 50Z" fill="#f8b7ba"/><path d="M319 38Q259 89 300 246Q266 218 265 50Z" fill="#f8b7ba"/></g>
 <g filter="url(#shade)"><rect x="626" y="226" width="294" height="226" rx="66" fill="#b6a0db"/><rect x="651" y="247" width="244" height="157" rx="43" fill="#dfcaf3"/><rect x="643" y="340" width="269" height="96" rx="30" fill="#ccb3e4"/><rect x="628" y="307" width="62" height="147" rx="29" fill="#a899d8"/><rect x="855" y="307" width="61" height="147" rx="29" fill="#a899d8"/><rect x="685" y="455" width="20" height="32" rx="9" fill="#8972ad"/><rect x="855" y="455" width="20" height="32" rx="9" fill="#8972ad"/><circle cx="832" cy="318" r="33" fill="#f5d9fa"/><path d="M704 300Q735 273 760 309Q734 355 704 300Z" fill="#ffeaf7"/></g>
 <ellipse cx="480" cy="580" rx="312" ry="90" fill="#e6cae9" opacity=".7"/><ellipse cx="479" cy="605" rx="220" ry="28" fill="#9d778a" opacity=".17"/>
 <g transform="translate(105 413)"><path d="M0 108V37" stroke="#a8827b" stroke-width="10" stroke-linecap="round"/><path d="M-16 19Q-53-27-10-48Q29-36-16 19Z" fill="#85b69d"/><path d="M20 25Q59-45 92-12Q80 44 20 25Z" fill="#72b59c"/><path d="M-2 0Q-11-67 29-79Q66-36-2 0Z" fill="#9ac89f"/><path d="M-2 54Q-72-18-101 44Q-70 91-2 54Z" fill="#a4cda4"/><path d="M0 113L-37 84L-29 147Q0 163 32 147L38 84Z" fill="#ebb0b9"/><ellipse cx="0" cy="87" rx="40" ry="8" fill="#ffd0d1"/></g>
-<g transform="translate(496 385)" filter="url(#shade)">
-<!-- A softer, smiling orange tabby, matching Cat Bond's storybook illustration style. -->
-<path d="M98 147C165 154 207 119 201 78C194 35 167 34 150 60" fill="none" stroke="#eba56f" stroke-width="36" stroke-linecap="round"/>
-<path d="M185 74C186 91 177 104 165 111" fill="none" stroke="#f7c799" stroke-width="12" stroke-linecap="round"/>
-<ellipse cx="4" cy="165" rx="120" ry="116" fill="#f6bc87"/>
-<path d="M-65 108C-45 78 15 64 69 107C91 131 85 190 61 255H-51C-79 216-96 143-65 108Z" fill="#fff4e8"/>
-<path d="M65 119C83 125 96 135 101 151M76 170C94 177 100 192 101 208M-103 139C-91 135-83 131-78 121" fill="none" stroke="#e8a36f" stroke-width="15" stroke-linecap="round" opacity=".72"/>
-<path d="M-108-51L-120-160Q-121-181-102-175L-27-117M108-52L120-161Q121-182 104-175L32-117" fill="#f4b985" stroke="#edaf7e" stroke-width="9" stroke-linejoin="round"/>
-<path d="M-101-113L-106-155L-62-119M59-119L106-157L100-110" fill="#f4a89b"/>
-<ellipse cx="0" cy="-15" rx="144" ry="124" fill="#f7bd88"/>
-<path d="M-99-40C-80-63-53-59-34-38M32-38C52-60 81-62 100-38" fill="none" stroke="#e5a16e" stroke-width="10" stroke-linecap="round" opacity=".78"/>
-<path d="M-14-99L-21-119M8-98L14-118" fill="none" stroke="#e6a173" stroke-width="10" stroke-linecap="round"/>
-<path d="M-123 25C-117 6-96-9-76-5C-40 1-17 30 0 46C17 30 39 1 76-5C98-9 118 7 123 25C113 81 63 103 0 101C-61 103-114 80-123 25Z" fill="#fff1e4"/>
-<path d="M-87-19Q-67-39-44-18M43-18Q68-40 89-18" fill="none" stroke="#87645f" stroke-width="7" stroke-linecap="round"/>
-<ellipse cx="-93" cy="18" rx="21" ry="12" fill="#f5ada8" opacity=".60"/>
-<ellipse cx="94" cy="18" rx="21" ry="12" fill="#f5ada8" opacity=".60"/>
-<path d="M-10 27Q0 21 10 27Q7 36 0 37Q-7 36-10 27Z" fill="#db938a"/>
-<path d="M0 37Q-8 59-28 45M0 37Q9 59 29 44" fill="none" stroke="#b88278" stroke-width="5" stroke-linecap="round"/>
-<path d="M-91 37L-152 30M-89 53L-152 62M91 37L153 30M90 53L152 62" stroke="#ddb59b" stroke-width="4" stroke-linecap="round"/>
-<path d="M-84 182C-85 208-95 227-80 245C-69 261-17 260-8 242C1 226-6 199-7 176" fill="#fff1e5"/>
-<path d="M45 179C34 209 32 233 51 245C74 260 111 258 119 238C124 218 102 198 90 179" fill="#fff1e5"/>
-<path d="M-78 241Q-67 246-53 243M69 246Q79 249 90 242" fill="none" stroke="#e9bd9d" stroke-width="4" stroke-linecap="round"/>
+<g transform="translate(492 391)" filter="url(#shade)">
+<!-- Round-faced gray-and-white tabby kitten: soft triangular cat ears, short muzzle, oval paws, whiskers and tabby stripes. -->
+<!-- Tail curls against the body rather than extending like a fox tail. -->
+<path d="M105 173C164 192 201 162 195 117C190 81 166 79 151 104" fill="none" stroke="#a49ba2" stroke-width="42" stroke-linecap="round"/>
+<path d="M188 136Q187 154 170 165" fill="none" stroke="#756d79" stroke-width="12" stroke-linecap="round"/>
+<ellipse cx="1" cy="159" rx="122" ry="115" fill="#aaa2a8"/>
+<path d="M-89 145Q-73 98-14 93Q62 89 90 143L79 252H-75Z" fill="#fff2e9"/>
+<path d="M-100 165Q-95 142-88 128M101 165Q93 145 84 129" fill="none" stroke="#77717c" stroke-width="12" stroke-linecap="round" opacity=".56"/>
+<!-- Small, broad-set feline ears with rounded points -->
+<path d="M-121-48L-124-125Q-124-151-104-148Q-64-145-37-108M120-48L124-125Q124-151 104-148Q64-145 37-108" fill="#a49ba4" stroke="#a49ba4" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-111-108Q-103-131-84-123L-60-102L-105-76ZM111-108Q103-131 84-123L60-102L105-76Z" fill="#f3b7b7"/>
+<!-- Rounded head and expressive kitten face -->
+<ellipse cx="0" cy="-2" rx="144" ry="128" fill="#b0a9b1"/>
+<!-- recognizable short dark tabby forehead M, with cheek stripes -->
+<path d="M-49-108Q-43-84-30-72M-16-116Q-10-89 0-78M19-116Q13-89 3-77M52-108Q46-84 33-72" fill="none" stroke="#77737e" stroke-width="10" stroke-linecap="round" opacity=".86"/>
+<path d="M-128-16Q-108-17-96-27M-130 8Q-113 4-99-8M128-16Q108-17 96-27M130 8Q113 4 99-8" fill="none" stroke="#7e7783" stroke-width="9" stroke-linecap="round" opacity=".72"/>
+<!-- White round cheeks and very short snout, not a pointed fox muzzle -->
+<path d="M-108 21Q-101-3-70-7Q-34-11 0 17Q34-11 70-7Q101-3 108 21Q107 94 0 101Q-107 94-108 21Z" fill="#fff5ed"/>
+<ellipse cx="-45" cy="36" rx="50" ry="38" fill="#fff8f0"/>
+<ellipse cx="45" cy="36" rx="50" ry="38" fill="#fff8f0"/>
+<!-- Large round curious cat eyes -->
+<ellipse cx="-60" cy="-24" rx="23" ry="29" fill="#fff6ec"/>
+<ellipse cx="60" cy="-24" rx="23" ry="29" fill="#fff6ec"/>
+<ellipse cx="-59" cy="-23" rx="15" ry="23" fill="#544d5a"/>
+<ellipse cx="59" cy="-23" rx="15" ry="23" fill="#544d5a"/>
+<circle cx="-54" cy="-32" r="6" fill="#fffdfa"/>
+<circle cx="65" cy="-32" r="6" fill="#fffdfa"/>
+<circle cx="-63" cy="-13" r="3" fill="#fffdfa" opacity=".8"/>
+<circle cx="55" cy="-13" r="3" fill="#fffdfa" opacity=".8"/>
+<ellipse cx="-102" cy="41" rx="16" ry="10" fill="#f5b8b3" opacity=".63"/>
+<ellipse cx="102" cy="41" rx="16" ry="10" fill="#f5b8b3" opacity=".63"/>
+<!-- Pink triangular cat nose and gentle small smile -->
+<path d="M-10 38Q0 32 10 38Q7 47 0 47Q-7 47-10 38Z" fill="#dc9699"/>
+<path d="M0 47V57M0 57Q-11 69-25 58M0 57Q11 69 25 58" fill="none" stroke="#a47780" stroke-width="4.5" stroke-linecap="round"/>
+<!-- Visible feline whiskers -->
+<path d="M-78 48L-142 35M-78 61L-145 63M-78 73L-131 88M78 48L142 35M78 61L145 63M78 73L131 88" fill="none" stroke="#ad9597" stroke-width="4" stroke-linecap="round"/>
+<!-- Rounded little white forepaws -->
+<ellipse cx="-74" cy="230" rx="49" ry="30" fill="#fff6ef"/>
+<ellipse cx="76" cy="230" rx="49" ry="30" fill="#fff6ef"/>
+<path d="M-90 229V242M-70 232V244M59 232V244M82 229V242" fill="none" stroke="#dfc6bd" stroke-width="3" stroke-linecap="round"/>
 </g>
 <g transform="translate(224 533)" filter="url(#shade)"><path d="M-40-8Q-10-39 30-12L44 6Q11 38-36 19Z" fill="#ffbd68" stroke="#d9956b" stroke-width="5"/><path d="M35-2L72-26L67 21Z" fill="#e6a166" stroke="#d9956b" stroke-width="4"/><circle cx="-19" cy="0" r="4" fill="#5e4c5b"/><path d="M-4-7L12-13M-1 13L15 7" stroke="#fff1ce" stroke-width="4" stroke-linecap="round"/></g>
 <g transform="translate(810 540)" filter="url(#shade)"><circle r="58" fill="#e8a5c2"/><path d="M-42-23Q-5-53 31-26M-46 4Q4-22 40 10M-33 31Q4 8 33 37" fill="none" stroke="#f8dfe9" stroke-width="11"/><path d="M37 34Q89 44 82 68" stroke="#a974a6" stroke-width="5" fill="none" stroke-linecap="round"/></g>
