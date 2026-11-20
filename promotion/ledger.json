@@ -769,12 +769,14 @@
       {
         "network": "tiktok",
         "url": "https://www.tiktok.com/@morrowwishgames/video/7710057296314780959",
-        "status": "published-needs-platform-deletion"
+        "status": "deleted-user-confirmed",
+        "confirmationSource": "studio owner"
       },
       {
         "network": "youtube",
         "url": "https://www.youtube.com/shorts/tH_qdYKdvW4",
-        "status": "published-needs-platform-deletion"
+        "status": "deleted-user-confirmed",
+        "confirmationSource": "studio owner"
       }
     ]
   }
