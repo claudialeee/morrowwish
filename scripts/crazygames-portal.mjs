@@ -262,7 +262,7 @@ try{
            if((await region.innerText()).includes('Game name')){
              report.submissionForm.uploadProbe.phase='game-name-found';
              const title=page.locator('input[type="text"][required]').first();
-             if(await title.count())await title.fill('Flip Dash');
+             if(await title.count())await title.fill('Pawsibly Innocent!');
              const radios=page.locator('input[type="radio"]');
              if(await radios.count())await radios.first().evaluate(e=>e.click());
              const mobile=page.locator('input[type="checkbox"]').first();
@@ -318,7 +318,7 @@ try{
                  report.submissionForm.uploadProbe.afterSelectionPath=new URL(page.url()).pathname;
                  // First-game preflight: fill actual production link and inspect Preview/QA.
                  // Never click final Submit. No posting in this inspection workflow.
-                 const liveLink='https://morrowwish.vercel.app/flip-dash/?utm_source=crazygames&utm_medium=portal&utm_campaign=flip-dash-playtest';
+                 const liveLink='https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=crazygames&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest';
                  const urlField=page.locator('input[type="url"]').first();
                  if(await urlField.count()){
                    await urlField.fill(liveLink);
