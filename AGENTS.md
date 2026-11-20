@@ -61,5 +61,12 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 - Do not push broken code; do not claim a deploy or analytics fix succeeded without verification.
 - The owner's collaborator authorization covers ordinary code edits and live game publishing, not infrastructure destruction or paid actions.
 
+## Reduce redundant CI runs and notification noise
+- Make related source changes and cache-version updates as **one coherent commit/push per task** whenever possible. Do not push one commit per edited game or file.
+- Run static checks before the push; let GitHub Actions test the completed batch, not intermediate half-finished states.
+- While another agent is editing the same repository, avoid repeated speculative pushes that cancel an in-progress deploy. Newer main revisions supersede older releases, but every push still creates Action run history.
+- Do not disable actual deployment or gameplay checks just to suppress errors. Fix obsolete assertions when the authored assets or requirements legitimately change.
+- Use the latest successful Cloudflare deploy as release evidence; standalone test failures and superseded/cancelled deploys are not evidence that the live site is down.
+
 ## Final report
 Report: files changed; game URLs and gameplay changes; `npm run check` results; bilingual and analytics checks; Git commit SHA; GitHub Actions run URL and conclusion; live URL checks; and any genuine remaining blocker.
