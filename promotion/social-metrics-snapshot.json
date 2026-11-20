@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-20",
+  "nativeWindow": "2026-11-18 through 2026-11-20",
+  "source": "Metricool Morrow Wish connected account",
+  "refreshMode": "manual",
+  "note": "Native views are distinct from website visits; null=unavailable, never zero. Provider published counts verified by Metricool and view totals may be delayed.",
+  "accounts": {
+    "bluesky": "morrowwishgames.bsky.social",
+    "instagram": "morrowwishgames",
+    "tiktok": "morrowwishgames",
+    "youtube": "UC9v31QGhSfBASDsbXMjch4Q"
+  },
+  "platforms": [
+    {
+      "id": "itch",
+      "priority": "P0",
+      "phase": "published",
+      "published": 7,
+      "failed": 0,
+      "views": null
+    },
+    {
+      "id": "crazygames",
+      "priority": "P0",
+      "phase": "quality-hold",
+      "published": null,
+      "failed": null,
+      "views": null
+    },
+    {
+      "id": "kongregate",
+      "priority": "P0",
+      "phase": "not-submitted",
+      "published": 0,
+      "failed": null,
+      "views": null
+    },
+    {
+      "id": "youtube",
+      "priority": "P1",
+      "phase": "testing",
+      "published": 7,
+      "failed": 0,
+      "views": null
+    },
+    {
+      "id": "tiktok",
+      "priority": "P1",
+      "phase": "testing",
+      "published": 5,
+      "failed": 2,
+      "views": null
+    },
+    {
+      "id": "instagram",
+      "priority": "P1",
+      "phase": "testing",
+      "published": 6,
+      "failed": 0,
+      "views": 273,
+      "reach": 247
+    },
+    {
+      "id": "bluesky",
+      "priority": "P2",
+      "phase": "testing",
+      "published": 1,
+      "failed": 0,
+      "views": null
+    },
+    {
+      "id": "search",
+      "priority": "P2",
+      "phase": "passive",
+      "published": null,
+      "failed": null,
+      "views": null
+    }
+  ]
+}
