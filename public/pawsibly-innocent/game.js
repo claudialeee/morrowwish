@@ -126,7 +126,7 @@ function neighbors(p){return[[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>({x:p.x+d
 function pass(p,human=false){if(!p||p.x<0||p.y<0||p.x>=W||p.y>=H)return false;const t=s.grid[p.y][p.x];if(t==="#"||t==="S")return false;if(human&&(t==="E"||s.boxes.some(b=>equal(b,p))))return false;if(!human&&((s.vacuum&&equal(p,s.vacuum))||equal(p,s.human)))return false;return true}
 function pathTo(from,to,human=false){if(equal(from,to))return[];const q=[from],seen=new Set([key(from)]),prev=new Map();for(let i=0;i<q.length;i++){const p=q[i];if(equal(p,to)){const result=[];let t=key(p);while(t!==key(from)){const next=prev.get(t);result.unshift({x:Number(t.split(",")[0]),y:Number(t.split(",")[1])});t=next}return result}for(const n of neighbors(p)){if(!pass(n,human)||seen.has(key(n)))continue;seen.add(key(n));prev.set(key(n),key(p));q.push(n)}}return[]}
 const hidden=p=>s.boxes.some(b=>equal(b,p));
-function visible(p=s.cat){if(hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
+function visible(p=s.cat){if(s.sleepTurns>0||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
 function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.dangerActive=false;s.patrol=0;}
 function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
@@ -177,11 +177,34 @@ function startYarnChase(){
  guardMove();
  syncUI();
 }
-function guardMove(){const h=s.human;let target=null;if(s.noise){target=s.noise;if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0}else s.alert--;}
-if(!target&&visible()){target={...s.cat};s.lastSeen=target;s.alert=3;}
-if(!target&&s.alert>0&&s.lastSeen){target=s.lastSeen;s.alert--;if(equal(h,target))s.lastSeen=null;}
-if(!target){const stops=s.room.patrol;if(equal(h,{x:stops[s.patrol][0],y:stops[s.patrol][1]}))s.patrol=(s.patrol+1)%stops.length;target={x:stops[s.patrol][0],y:stops[s.patrol][1]}}
-const steps=pathTo(h,target,true);s.humanFrom={...h};if(steps.length){s.human={...steps[0]};s.humanMovedAt=performance.now();}}
+function guardMove(){
+ const h=s.human;let target=null;
+ // A short sleeping-owner window adds a different stealth strategy in room 4.
+ if(s.sleepTurns>0&&!s.noise){
+  s.sleepTurns--;
+  if(s.sleepTurns===0)popup("wake");
+  return;
+ }
+ if(s.sleepTurns>0&&s.noise){s.sleepTurns=0;popup("wake")}
+ if(s.noise){
+  target=s.noise;
+  if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0}
+  else s.alert--;
+ }
+ if(!target&&visible()){
+  s.lastSeen={...s.cat};
+  // One full turn of visible warning before actively chasing the player.
+  if(s.exposure>0||s.finalAlert){target={...s.cat};s.alert=3}
+ }
+ if(!target&&s.alert>0&&s.lastSeen){target=s.lastSeen;s.alert--;if(equal(h,target))s.lastSeen=null}
+ if(!target){const stops=s.room.patrol;if(equal(h,{x:stops[s.patrol][0],y:stops[s.patrol][1]}))s.patrol=(s.patrol+1)%stops.length;target={x:stops[s.patrol][0],y:stops[s.patrol][1]}}
+ const steps=pathTo(h,target,true);s.humanFrom={...h};
+ if(steps.length){
+  // The guard must not collide with a completely unaware cat on a first sighting.
+  if(equal(steps[0],s.cat)&&s.exposure===0&&!s.finalAlert){s.alert=Math.max(2,s.alert);s.lastSeen={...s.cat};return}
+  s.human={...steps[0]};s.humanMovedAt=performance.now();
+ }
+}
 // Escalating alert: the first room teaches controls without instant vision penalties.
 // Later levels make sight, shadows, boxes and yarn meaningful choices.
 function detectionLimit(){return s.index===0&&!daily?4:s.index>=4?2:3}
@@ -210,6 +233,10 @@ function moveTo(p){if(s.done||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
 const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;s.score+=save.cat===4?135:100;audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":"fish");metric("cat_fish",{level:daily?9:stage+1,score:s.score});}
+if(s.creak&&!s.creakTriggered&&equal(s.creak,p)){
+ s.creakTriggered=true;s.noise={...p};s.alert=5;s.lastSeen=null;
+ audio("vase");throwStars(p,"#ffd89e");popup("creak");metric("cat_noisy_floor",{level:s.index+1});
+}
 const vase=s.vases.find(v=>equal(v,p));if(vase&&!s.broken.has(key(vase))){s.broken.add(key(vase));s.score+=35;s.noise={...p};s.alert=save.cat===3?11:6;s.lastSeen=null;audio("vase");throwStars(p,"#d4a8dc");popup("vase");metric("cat_vase",{level:daily?9:stage+1})}
 if(s.yarnBall&&equal(p,s.yarnBall)&&!s.itemsTaken.has("yarn")){s.itemsTaken.add("yarn");s.yarn++;s.score+=25;popup("yarn");audio("yarn");metric("cat_yarn",{level:s.index+1})}
 if(s.relic&&equal(p,s.relic)&&!s.itemsTaken.has("relic")){s.itemsTaken.add("relic");s.hasRelic=true;s.score+=90;popup("souvenir");audio("souvenir");throwStars(p,"#aeb0ee");metric("cat_souvenir",{level:s.index+1})}
@@ -217,8 +244,9 @@ if(s.milk&&equal(p,s.milk)&&!s.itemsTaken.has("milk")){s.itemsTaken.add("milk");
 if(s.light&&equal(p,s.light)&&!s.itemsTaken.has("light")){s.itemsTaken.add("light");s.lightTurns=8;s.score+=30;popup("light");audio("light");throwStars(p,"#fbd886")}
 if(hidden(p))popup("hide");
 if(equal(p,s.door)){if(s.got>=NEED){finish(true);return}else popup("closed")}
+if(s.index===7&&s.got>=NEED&&!s.finalAlert){s.finalAlert=true;s.alert=4;s.lastSeen={...s.cat};audio("bad");popup("finalAlert");metric("cat_finale_chase",{level:8})}
 guardMove();s.lightTurns=Math.max(0,s.lightTurns-1);
-if(s.vacuum&&s.steps%2===0){const a={x:s.vacuum.x+s.vacuumDir,y:s.vacuum.y};if(!pass(a,true)||equal(a,s.door)||equal(a,s.cat)){s.vacuumDir*=-1}else{s.vacuum=a}}
+if(s.vacuum&&(s.index===2||s.index===7||s.steps%2===0)){const a={x:s.vacuum.x+s.vacuumDir,y:s.vacuum.y};if(!pass(a,true)||equal(a,s.door)||equal(a,s.cat)){s.vacuumDir*=-1}else{s.vacuum=a}}
 if(equal(s.cat,s.human))hurt();
 else resolveDetection();
 if(!s.done&&s.vacuum&&equal(s.cat,s.vacuum)){popup("robot");s.vacuumDir*=-1;}
@@ -308,7 +336,7 @@ if(s.throwTrail&&time-s.throwTrail.at<950){const from=s.throwTrail.from,to=s.thr
  const x=sx+(ex-sx)*f,y=sy+(ey-sy)*f-65*Math.sin(f*Math.PI);
  yarnDraw(x,y,time);ctx.save();ctx.globalAlpha=.28;ctx.strokeStyle="#c785bc";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo((sx+ex)/2,(sy+ey)/2-110,ex,ey);ctx.stroke();ctx.restore();
 }
-if(s.alert>0){ellipse((s.human.x+.5)*T,(s.human.y+.5)*T+7,37,29,"#fa999744");label("!",(s.human.x+.5)*T+25,(s.human.y+.5)*T-33,"bold 26px Fredoka","#e76e7a")}
+if(s.alert>0||s.finalAlert){ellipse((s.human.x+.5)*T,(s.human.y+.5)*T+7,37,29,"#fa999744");label("!",(s.human.x+.5)*T+25,(s.human.y+.5)*T-33,"bold 26px Fredoka","#e76e7a")}
 const hu=s.human,ca=s.cat;
  // Brief in-between frames make the owner's reaction and chase readable.
  const glide=Math.min(1,Math.max(0,(time-(s.humanMovedAt||0))/190));
