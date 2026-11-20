@@ -27,7 +27,20 @@
       requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
     });
   };
+  // iOS Safari often has no element Fullscreen API. Match the visible viewport
+  // exactly, including address-bar changes and safe-area shifts, only for Cat Bond.
+  function syncCatBondViewport(){
+    if(route!=='cat-bond'||!surface)return;
+    const view=window.visualViewport;
+    const w=Math.round(view?.width||window.innerWidth);
+    const h=Math.round(view?.height||window.innerHeight);
+    root.style.setProperty('--mw-cb-width',w+'px');
+    root.style.setProperty('--mw-cb-height',h+'px');
+    root.style.setProperty('--mw-cb-left',Math.round(view?.offsetLeft||0)+'px');
+    root.style.setProperty('--mw-cb-top',Math.round(view?.offsetTop||0)+'px');
+  }
   function update(){
+    if(route==='cat-bond')syncCatBondViewport();
     const on=active();
     root.classList.toggle('mw-fs-active',on);
     if(surface)surface.classList.toggle('mw-immersive-fallback',fallback);
@@ -58,6 +71,7 @@
       }catch(_){ /* iOS and embedded portal frames may reject the request */ }
     }
     fallback=true;
+    if(route==='cat-bond')syncCatBondViewport();
     update();
     surface.scrollTop=0;
   }
@@ -98,6 +112,13 @@
       controls.appendChild(button);
     }
     installStyles();
+    if(route==='cat-bond'){
+      syncCatBondViewport();
+      window.addEventListener('resize',syncCatBondViewport,{passive:true});
+      window.addEventListener('orientationchange',syncCatBondViewport,{passive:true});
+      window.visualViewport?.addEventListener('resize',syncCatBondViewport,{passive:true});
+      window.visualViewport?.addEventListener('scroll',syncCatBondViewport,{passive:true});
+    }
     update();
   }
   function installStyles(){
@@ -181,8 +202,10 @@
       'html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-footer{display:none!important}',
 
       /* Cat Bond already renders its game HUD and actions inside #stage. */
-      'html.mw-fs-active[data-mw-fullscreen-game="cat-bond"] #stage{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;border-radius:0!important;box-shadow:none!important;background:#21152f!important;overflow:hidden!important}',
-      'html[data-mw-fullscreen-game="cat-bond"] #stage>.mw-fullscreen-toggle{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 69px)!important;right:calc(env(safe-area-inset-right,0px) + 8px)!important;z-index:2147483000!important;background:#30233e;color:#ffeef6;border-color:#8e75a0}',
+      'html.mw-fs-active[data-mw-fullscreen-game="cat-bond"] #stage{width:var(--mw-cb-width,100vw)!important;height:var(--mw-cb-height,100dvh)!important;max-width:none!important;max-height:none!important;border-radius:0!important;box-shadow:none!important;background:#e4ede0!important;overflow:hidden!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="cat-bond"] #stage.mw-immersive-fallback{top:var(--mw-cb-top,0px)!important;left:var(--mw-cb-left,0px)!important;right:auto!important;bottom:auto!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="cat-bond"] #stage:fullscreen{width:100vw!important;height:100dvh!important;top:0!important;left:0!important}',
+      'html[data-mw-fullscreen-game="cat-bond"] #stage>.mw-fullscreen-toggle{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 94px)!important;right:calc(env(safe-area-inset-right,0px) + 8px)!important;z-index:2147483000!important;min-width:0!important;min-height:38px!important;padding:7px 10px!important;background:rgba(255,251,242,.94)!important;color:#48624b!important;border-color:#b8cfb8!important;box-shadow:0 3px 12px rgba(49,80,52,.18)!important}',
 
       '@media(max-width:760px){',
       'html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .tt-playstage{display:flex!important;flex-direction:column!important}',
