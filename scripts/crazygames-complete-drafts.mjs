@@ -16,7 +16,7 @@ const targetSlugs=(process.env.CRAZYGAMES_TARGET_SLUGS||'pawsibly-innocent,elsew
 const file='.check/crazygames/submission-results.json';
 const copy={
  'pawsibly-innocent':{category:'Adventure',tags:['Cat','Cats','Animals','Cute','Adventure','Cozy'],title:'Pawsibly Innocent!',description:'Play as a mischievous little cat exploring eight illustrated rooms. Steal three fish, find souvenirs, and outsmart the humans in a cozy browser adventure.',controls:'Explore the rooms with keyboard and pointer controls. Interact with objects, use yarn to distract humans, collect three fish and escape unnoticed.'},
- 'elsewhere':{category:'Adventure',tags:['Story','Choices','Adventure','Narrative','Interactive Fiction'],title:'Elsewhere',description:'Live another life in a choice-driven interactive story. Explore illustrated alternate lives, face personal decisions, and discover where each path leads.',controls:'Read each scene and click one of the choices to shape your story and discover different endings.'},
+ 'elsewhere':{category:'Adventure',tags:['Story','Choices','Adventure','Narrative','Interactive Fiction','1 Player','2D','Brain'],title:'Elsewhere',description:'Live another life in a choice-driven interactive story. Explore illustrated alternate lives, face personal decisions, and discover where each path leads.',controls:'Read each scene and click one of the choices to shape your story and discover different endings.'},
  'tiny-town':{category:'Simulation',tags:['City Builder','City Building','Cozy','Management','Simulation','Strategy'],title:'No More Mondays: Tiny Town',description:'AI does all the work, so humans have unlimited free time. Build a small town, meet neighbors and discover how people choose to live in an eight-turn cozy strategy game.',controls:'Choose a venue and place it on the town map. Continue through the weeks and connect neighbors to unlock possibilities.'},
  'parcel-panic':{category:'Puzzle',tags:['Sorting','Puzzle','Arcade','Casual','Skill'],title:'Parcel Panic',description:'A quick, colorful parcel-sorting challenge. Match each package to the correct delivery lane, build streaks and beat your best score.',controls:'Click the matching delivery lane or press 1, 2, or 3 to sort the next parcel.'},
  'pocket-aquarium':{category:'Puzzle',tags:['Fish','Aquarium','Casual','Cozy','Puzzle'],title:'Pocket Aquarium',description:'Feed hungry fish in a tiny aquarium. Match the right food color, time your drops and see how many fish you can care for in sixty seconds.',controls:'Select the matching food color and feed each fish before its timer runs out. Keep the water clean.'},
@@ -182,7 +182,10 @@ async function details(page,slug,rec){
    rec.formAlerts=(await page.locator('[role=alert],.MuiFormHelperText-root').allTextContents().catch(()=>[])).slice(0,18);
    throw Error('Details cannot Continue to last step after uploading media; inspect validation');
  }
- await more.click({timeout:14000}).catch(e=>{throw Error('Details save failed: '+mask(e.message,180))});
+ // MUI snackbar notifications overlap the button on headless Chrome, even after
+  // all validation and media conversion succeed. Invoke the React button's native
+  // click handler directly to avoid interception by transient toast overlays.
+  await more.evaluate(el=>el.click()).catch(e=>{throw Error('Details save failed: '+mask(e.message,180))});
  await page.getByText(/submit|review|terms/i).first().waitFor({timeout:14000}).catch(()=>{});
  await sleep(2200);
  rec.finalStep=await readStage(page);
