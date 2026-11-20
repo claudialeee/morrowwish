@@ -251,12 +251,14 @@ const UI = {
     anim();
     document.getElementById('cd-pet').onclick = () => {
       cat.affinity = Math.min(100, cat.affinity + 3); cat.joy = Math.min(100, cat.joy + 4);
+      window.MorrowwishAudio?.effect?.('pet');
       State.addXp(cat, 4); State.save(); this.renderCatDetail(cat); this.game.toast('❤ 好感提升');
     };
     document.getElementById('cd-feed').onclick = () => {
       if (State.S.coins < feedCost) { this.game.toast('金币不足'); return; }
       State.S.coins -= feedCost; cat.hunger = Math.min(100, cat.hunger + 35); cat.joy = Math.min(100, cat.joy + 8);
       cat.affinity = Math.min(100, cat.affinity + 1); State.addXp(cat, 6);
+      window.MorrowwishAudio?.effect?.('feed');
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat); this.game.toast('🍖 吃得好开心');
     };
     document.getElementById('cd-tease').onclick = () => this.openTease(cat);
@@ -570,6 +572,7 @@ const UI = {
       if (State.S.coins < cost) { this.game.toast('金币不足'); return; }
       State.S.coins -= cost;
       cats.forEach(c => { c.hunger = Math.min(100, c.hunger + 35); c.joy = Math.min(100, c.joy + 6); State.addXp(c, 4); });
+      window.MorrowwishAudio?.effect?.('feed');
       State.save(); this.game.refreshHUD(); this.game.toast('🍖 全员吃饱啦'); this.closeAll();
     };
   },
