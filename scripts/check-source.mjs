@@ -56,6 +56,8 @@ const heroMarkup=homepage.match(/<p class="hero-copy">([\s\S]*?)<\/p>/)?.[1]||''
 if(!heroMarkup.includes('<span class="hero-zh-copy" lang="zh-CN">'+oneLineHero+'</span>')||/<(?:wbr|br)\b/i.test(heroMarkup))
   throw Error('Homepage Chinese hero must keep all four worlds together as one unbroken sentence');
 const homeStyles=fs.readFileSync('public/hub.css','utf8');
+if(!homeStyles.includes(".elsewhere-card h3{font-family:'Nunito'"))throw Error('Elsewhere heading must match other featured headings');
+if((homepage.match(/class="card-hit"/g)||[]).length!==4)throw Error('All featured cards must have full-card pointer targets');
 if(!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;'))
   throw Error('Homepage Chinese hero no-wrap style is missing');
 if(!homeStyles.includes('@media(max-width:700px)')||!homeStyles.includes('html[lang="zh-CN"] .hero>p.hero-copy{white-space:normal;overflow:visible;max-width:100%}')||!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{white-space:normal;overflow-wrap:break-word;'))
@@ -79,7 +81,7 @@ if(!featured.trimStart().startsWith('<article class="feature-card cat-feature-ca
 const zhCard=featured.match(/<article class="feature-card cat-feature-card">([\s\S]*?)<\/article>/)?.[1]||'';
 if(!zhCard.includes('猫猫绝对无辜！')||zhCard.includes('cat-original'))throw Error('Chinese homepage card must not display the English Pawsibly subtitle');
 if(!homepage.includes('Three fish to steal. One human to fool.'))throw Error('Cat game marketing hook is missing');
-if(!displayOrder.startsWith("'hub','pawsibly-innocent'"))throw Error('Studio dashboard game order must follow the homepage');
+if(!displayOrder.startsWith("'hub','pawsibly-innocent','tiny-town','cat-bond','elsewhere'"))throw Error('Studio dashboard game order must follow the homepage');
 if(minis.includes('href="/pawsibly-innocent/"')||minis.includes('href="/cat-bond/"'))throw Error('Cat worlds must not be in mini-games');
 for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souvenirs','function vacuumDraw','function roomDecor']){
  if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);

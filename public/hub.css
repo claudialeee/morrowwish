@@ -337,3 +337,14 @@ html[lang="zh-CN"] .hero>p.hero-copy{white-space:nowrap;max-width:100%;overflow:
 
 /* Approved Cat Bond garden art: preserve its soft, original illustration colours. */
 .bond-feature-card .feature-art img{filter:none;object-position:52% center}
+
+/* Homepage conversion test: unified title font, full-card pointer target, unchanged card sizes. */
+.elsewhere-card h3{font-family:'Nunito','DM Sans',system-ui,sans-serif;font-weight:900;font-size:clamp(28px,2.75vw,36px);line-height:1.07;letter-spacing:-.04em;margin:7px 0 9px}
+.feature-card{cursor:pointer}
+.feature-card>.card-hit{position:absolute;inset:0;display:block;z-index:3}
+.feature-card>.feature-content{z-index:4;pointer-events:none}
+.feature-card .card-button{position:relative;pointer-events:auto}
+.feature-card:focus-within{outline:3px solid #bd8cbd;outline-offset:2px}
+@media(max-width:900px){.elsewhere-card h3{font-size:33px;margin:6px 0 8px}}
+@media(max-width:700px){.elsewhere-card h3{font-size:clamp(25px,4.8vw,31px);margin:5px 0}}
+@media(max-width:430px){.elsewhere-card h3{font-size:25px}}

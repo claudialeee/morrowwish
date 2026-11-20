@@ -152,7 +152,7 @@ try{
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
  assert.equal(homeZh.catTitle?.trim(),'猫猫绝对无辜！','Chinese title must show no English Pawsibly subtitle');
  assert.doesNotMatch(homeZh.catTitle,/Pawsibly|Innocent/i,'Chinese title must not leak its English name');
- assert.deepEqual(homeZh.featureOrder.slice(0,4),['pawsibly-innocent','elsewhere','cat-bond','tiny-town'],'Four flagship worlds should follow the approved discovery-first order');
+ assert.deepEqual(homeZh.featureOrder.slice(0,4),['pawsibly-innocent','tiny-town','cat-bond','elsewhere'],'Featured worlds should test Tiny Town in second position');
  assert.match(homeZh.catPitch,/三条小鱼|毛线球|粉色猫门/,'New Chinese promotional copy should explain gameplay');
  assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
@@ -176,6 +176,12 @@ try{
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
  assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
+ const featuredChecks=await page.evaluate(()=>({
+  titles:[...document.querySelectorAll('.feature-grid>article h3')].map(x=>({font:getComputedStyle(x).fontFamily,weight:getComputedStyle(x).fontWeight})),
+  hits:[...document.querySelectorAll('.feature-grid>.feature-card')].map(x=>x.querySelector(':scope>.card-hit')?.getAttribute('href'))
+ }));
+ assert.ok(featuredChecks.titles.every(x=>x.font.includes('Nunito')&&x.weight==='900'),'All four featured titles need matching typography');
+ assert.deepEqual(featuredChecks.hits,['/pawsibly-innocent/','/tiny-town/','/cat-bond/','/elsewhere/'],'Card images and content must be clickable');
  // Desktop keeps the tagline on one line; 320/390px phones must show every character by wrapping.
  for(const phoneWidth of [390,320]){
    await page.setViewportSize({width:phoneWidth,height:844});
@@ -225,7 +231,7 @@ try{
   catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
   heroPitch:document.querySelector('.hero>p')?.innerText
  }));
- assert.deepEqual(homeEn.order.slice(0,4),['pawsibly-innocent','elsewhere','cat-bond','tiny-town'],'English homepage should share the deliberate four-world order');
+ assert.deepEqual(homeEn.order.slice(0,4),['pawsibly-innocent','tiny-town','cat-bond','elsewhere'],'English homepage should match tested four-world order');
  assert.match(homeEn.catTitle,/Pawsibly\s*Innocent!/,'English heading must still show its original name');
  assert.match(homeEn.catPitch,/Three fish to steal/,'English promotional copy must be updated');
  assert.ok(homeEn.heroPitch.indexOf('mischievous cat')<homeEn.heroPitch.indexOf('life you never lived')&&homeEn.heroPitch.indexOf('life you never lived')<homeEn.heroPitch.indexOf('town where everyone is free'),'English hero copy must match cat, Elsewhere and town order');
