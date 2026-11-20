@@ -36,6 +36,12 @@ const miniUpgrade=fs.readFileSync('public/upgrade.js','utf8');
 const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
+if(!miniUpgrade.includes('window.__MWMiniActive=true')||
+   !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
+   !telemetry.includes('window.__MWMiniActive')||
+   !analyticsSource.includes('abandons:sum(sessionsOf,"abandons")')||
+   !dashboard.includes('miniNoWin:')||
+   !dashboard.includes('const siteNum='))throw Error('Mini-game exit versus finish semantics and missing-channel display must remain accurate');
 if(!telemetry.includes('"town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++') ||
    !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
    !telemetry.includes('"level_complete"')) throw Error('Terminal gameplay events must be counted separately from clears');
