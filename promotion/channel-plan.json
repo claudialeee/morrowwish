@@ -436,5 +436,12 @@
       "launchType": "baseline-playtest",
       "noFakeGameplay": true
     }
-  ]
+  ],
+  "excludedChannels": [
+    "Newgrounds"
+  ],
+  "exclusionNotes": {
+    "Newgrounds": "Do not submit or monitor: studio has stopped pursuing this platform due to its policy on AI-generated content."
+  },
+  "videoSoundPolicy": "Every TikTok, YouTube Short and Instagram Reel must contain a verified audible audio stream (licensed CC0 music plus original gameplay sound where present). Never schedule silent footage."
 }
