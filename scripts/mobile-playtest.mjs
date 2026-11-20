@@ -76,8 +76,9 @@ try{
           assert.ok(positions.toolH>=44,'Yarn button touch target too small');
           await button.tap();
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Tapping the yarn button must enter aiming mode');
-          const b=await page.locator('#board').boundingBox();
-          await page.touchscreen.tap(b.x+b.width*8.5/10,b.y+b.height*4.5/7);
+          const board=page.locator('#board');
+          const b=await board.boundingBox();
+          await board.tap({position:{x:b.width*8.5/10,y:b.height*4.5/7}});
           const yarn=await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.yarn);
           assert.equal(yarn,0,'Tapping the desired landing tile must throw the starting yarn');
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.noise?.x),8,'Yarn must go to the tapped lane');
