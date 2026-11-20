@@ -201,9 +201,9 @@ const welcome = {
 };
 UI.openWelcomeBack(welcome);
 const welcomeHtml = document.getElementById('panel').innerHTML;
-assert.match(welcomeHtml, /<b>汤圆<\\/b> 来访 · 留下 🪙\\+12 🐟\\+1 🧶\\+3/, 'Visitor gifts should list resource icons and exact quantities');
-assert.match(welcomeHtml, /<b>豆豆<\\/b> 来访 · 留下 🪙\\+9 ✨稀客!/, 'Rare visitor gift should also render correctly');
-assert.match(welcomeHtml, /<b>小灰<\\/b> 来访<\\/div>/, 'Empty visitor gifts must not show a placeholder');
+assert.ok(welcomeHtml.includes('<b>汤圆</b> 来访 · 留下 🪙+12 🐟+1 🧶+3'), 'Visitor gifts should list resource icons and exact quantities');
+assert.ok(welcomeHtml.includes('<b>豆豆</b> 来访 · 留下 🪙+9 ✨稀客!'), 'Rare visitor gift should also render correctly');
+assert.ok(welcomeHtml.includes('<b>小灰</b> 来访</div>'), 'Empty visitor gifts must not show a placeholder');
 assert.ok(!welcomeHtml.includes('[object Object]'), 'Welcome-back panel must not display object Object');
 UI.closeAll();
 
