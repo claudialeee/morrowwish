@@ -11,6 +11,11 @@ const day=new Date().toISOString().slice(0,10);
 let source="direct",referrer="",utmSource="",utmMedium="",utmCampaign="";
 try{if(ref){const u=new URL(ref),host=u.hostname.toLowerCase();referrer=host.slice(0,110);source=["morrowwish.vercel.app","tiny-arcade-lab.vercel.app","after-work-tiny-town.vercel.app",location.hostname].includes(host)?"internal":"external";}}catch{}
 try{const q=new URLSearchParams(location.search);const clean=v=>(v||"").replace(/[^a-zA-Z0-9 _.-]/g,"").slice(0,45);utmSource=clean(q.get("utm_source"));utmMedium=clean(q.get("utm_medium"));utmCampaign=clean(q.get("utm_campaign"));}catch{}
+// Attribute itch.io iframe launches even when the game wrapper has no UTM
+// query parameters. Itch-hosted HTML5 frames can have an itch.zone referrer.
+if(!utmSource&&/(^|\.)itch\.(io|zone)$/i.test(referrer)){
+ utmSource="itch";utmMedium="portal";source="external";
+}
 // Preserve first campaign attribution on same-site hops (homepage -> game -> replay).
 // Avoid carrying stale campaigns into a completely separate visit.
 try{
