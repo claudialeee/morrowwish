@@ -165,6 +165,24 @@ assert.ok(game.yard.hide?.tutorial,'First find should be highlighted');
 assert.equal(game.yard.hide.species.rarity,'N','First cat should be learnable');
 assert.notEqual(game.yard.hide.species.id,'tangyuan','First catch should be a fresh breed');
 game.yard.hide=null;
+// New player discovery: duplicate common rolls must be diverted to unseen
+// commons while a rare roll remains untouched (no SSR inflation).
+const previousRoll=GameData.rollSpecies;
+State.S.dex['tangyuan']=1;
+State.S.catchCount=1;
+GameData.rollSpecies=()=>GameData.speciesById('tangyuan');
+game.yard.startHideAndSeek();
+assert.equal(game.yard.hide.species.rarity,'N');
+assert.ok(!State.S.dex[game.yard.hide.species.id],
+  'Early repeated common must become a new common sighting');
+game.yard.hide=null;
+GameData.rollSpecies=()=>GameData.speciesById('jinwu');
+game.yard.startHideAndSeek();
+assert.equal(game.yard.hide.species.id,'jinwu',
+  'Very rare encounters must NEVER be replaced by onboarding protections');
+game.yard.hide=null;
+GameData.rollSpecies=previousRoll;
+State.S.catchCount=0;State.S.repeatSightings=0;
 // Give the player a starter + a strong team, then run a real capture battle.
 State.S.cats = [];
 const starter = State.makeCat('tangyuan', { affinity: 60 });
@@ -206,6 +224,13 @@ game.endBattle();
 assert.equal(State.S.cats.length, before + 1, 'captured cat added to roster');
 assert.ok(events.some(e => e.name === 'game_complete'), 'game_complete analytics fired');
 assert.ok(events.some(e => e.name === 'cat_capture'), 'cat_capture analytics fired');
+assert.ok(events.some(e => e.name === 'bond_battle_grade'),'Battle grade event fired');
+assert.equal(game.gradeBattle({team:[{hp:100,maxhp:100}],t:12,comboBest:10,perfectDodges:1}).grade,'S',
+  'Swift, healthy, skillful battle merits S grade');
+assert.equal(game.gradeBattle({team:[{hp:5,maxhp:100}],t:150,comboBest:0,perfectDodges:0}).grade,'C',
+  'Slow battered capture without skill merits C grade');
+assert.ok(document.getElementById('panel').innerHTML.includes('battle-grade'),
+  'Capture result includes the earned grade and bonus');
 // One-time collection milestones reward actual new species, not repeated grinding.
 const priorCoins=State.S.coins, priorTreats=State.S.treats, priorMilestones=[...(State.S.collectionMilestones||[])];
 State.S.dex['xiaohui']=1;
