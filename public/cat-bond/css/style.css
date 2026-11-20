@@ -461,3 +461,148 @@ canvas { display: block; width: 100%; height: 100%; }
  #panel.open[data-mandatory="true"]{inset:0;z-index:70}
  #stage:has(#panel.open[data-mandatory="true"]) #tabbar{pointer-events:none;opacity:.45}
 }
+
+/* ===== Cat Bond: cozy garden visual system (isolated to this game) ===== */
+/* The previous violet UI fought the illustrated garden and made menus feel
+   like a separate game. Keep the existing mechanics and all cat artwork. */
+:root{
+  --bg:#eef2e9;
+  --panel:rgba(255,251,242,.95);
+  --panel-solid:#fffaf0;
+  --accent:#b8d9c4;
+  --accent2:#e7bdb0;
+  --gold:#d4a453;
+  --text:#3c463d;
+  --muted:#716f67;
+  --good:#4b9b73;
+  --warn:#ca7370;
+  --radius:20px;
+}
+html,body{background:#eaf1e8;color:var(--text)}
+#stage{background:#e3ead9;box-shadow:0 16px 50px rgba(67,77,52,.19),inset 0 0 0 1px rgba(89,102,75,.1)}
+/* Light, legible in-game information that doesn't cover the cats. */
+#hud{top:43px;gap:7px;justify-content:center}
+.hud-pill,.scene-title{
+  color:#4e5b4c;background:rgba(255,252,243,.92);
+  border:1px solid rgba(116,142,107,.19);
+  box-shadow:0 3px 12px rgba(69,91,69,.1);
+  backdrop-filter:blur(8px);
+}
+.hud-pill{font-weight:800}
+#tabbar{gap:6px;padding-bottom:max(10px,env(safe-area-inset-bottom,0px));}
+.tab{
+  color:#5d7160;background:rgba(255,252,244,.94);
+  border:1px solid rgba(104,137,112,.16);
+  box-shadow:0 4px 14px rgba(71,93,70,.13);
+  backdrop-filter:blur(9px);
+}
+.tab.active{background:linear-gradient(135deg,#d0e7d5,#f3ddd0);color:#3f604b;border-color:#aac9b5}
+.tab:focus-visible,.fab:focus-visible,.btn:focus-visible,.move:focus-visible,.dex-cell:focus-visible{outline:3px solid #578b6b;outline-offset:2px}
+.fab{
+  background:linear-gradient(145deg,#fffaf0,#e4efe1);
+  border:1.5px solid #d3dfcb;
+  color:#45664d;
+  box-shadow:0 5px 14px rgba(55,83,59,.19);
+}
+.fab:nth-child(2){background:#e5f1df}
+.fab:nth-child(3){background:#fff1e0}
+.fab:nth-child(4){background:#f6e1d9}
+.fab:active,.tab:active{transform:scale(.95)}
+.panel{background:rgba(50,67,53,.32);backdrop-filter:blur(5px)}
+.card{
+  background:linear-gradient(160deg,#fffdf7,#f8f3e8);
+  border:1px solid #e1dccb;
+  box-shadow:0 20px 55px rgba(46,59,44,.23);
+  color:var(--text);
+}
+.card h2{color:#475c48}
+.card .sub{color:#767268}
+.card-close{color:#647d69;min-height:34px;min-width:34px;text-align:center}
+.bar,.team-slot .slot-hp,.ult-track,.st-bar{background:rgba(111,139,105,.17)}
+.btn{background:linear-gradient(135deg,#d1e6d2,#e9d0bc);color:#37503f;border:1px solid rgba(90,127,93,.13)}
+.btn.gold{background:linear-gradient(135deg,#f6dca4,#e9bc79);color:#5a472f}
+.btn.ghost{background:#edf2e8;color:#4d6352;border:1px solid #d5dfd1}
+.dex-cell,.roster .chip,.gb-row,.st-row,.wb-visitor,.sk-slot{
+  background:rgba(232,239,224,.66);border:1px solid rgba(113,144,112,.14);
+}
+.dex-cell:hover{background:#eaf3e8;border-color:#98bba0}
+.dex-cell.locked{opacity:.64}
+.roster .chip.sel{border-color:#7faf88;background:#e0eddd}
+.rarity-N{color:#6e786e}
+.gb-tab,.sk-chip{background:#e8eee4;color:#536752}
+.gb-tab.sel,.sk-chip.on{background:#d9e9d6;color:#3f5b49;border-color:#8fb69b}
+.gb-row select{background:#fffdf6;color:#3b5144;border:1px solid #d7e1d3}
+.gb-del{background:#f5ded7;color:#ae5d56}
+.toast{color:#3c563f;border:1px solid #d5e2d2;box-shadow:0 4px 15px rgba(53,74,54,.16);max-width:90vw;white-space:normal;text-align:center}
+.battle-topbar,.team-slot{background:rgba(255,251,242,.94);color:#405441;border:1px solid #d5e1d3;box-shadow:0 5px 14px rgba(52,69,52,.14)}
+.battle-hint{background:rgba(255,252,243,.94);color:#506250;border:1px solid #d4ddcc}
+.ult-label{color:#755f33}
+.move{background:rgba(255,251,244,.96);border:1px solid #d2dfd0;color:#4d624f;box-shadow:0 3px 12px rgba(54,75,51,.2)}
+.move .mv-k{color:#6c7569}
+.move.ult{background:#ecdebd;color:#5d4b38;opacity:.76}
+.move.ult.ready{background:linear-gradient(135deg,#f6dba9,#eebf79);color:#59452c}
+.move .cd{background:rgba(58,77,61,.64)}
+.studio-stamp{color:rgba(64,77,57,.48);text-shadow:0 1px #fff}
+/* The opening screen now shares the yard's sage, cream, peach palette. */
+#intro{
+  background:radial-gradient(ellipse at 50% 10%,rgba(255,255,245,.94) 0,transparent 62%),
+    linear-gradient(180deg,#dbeedb 0%,#e7f1e8 42%,#f6efdd 100%);
+  color:#445849;
+}
+#intro p{color:#596b58;background:rgba(255,252,244,.72);box-shadow:0 2px 10px rgba(74,94,70,.06)}
+#intro p b{color:#668c69}
+#intro .intro-step p{padding:0;margin:0;background:transparent;box-shadow:none;backdrop-filter:none}
+.studio-text{color:#55705a}.studio-wish{color:#be9271}
+.studio-tag{color:#6a8268;letter-spacing:2px}
+.game-logo{
+  color:#4e6952;text-shadow:0 2px 0 #fff,0 5px 10px rgba(71,104,77,.12);
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  font-weight:900;letter-spacing:3px;
+}
+.game-logo::after{background:linear-gradient(90deg,transparent,#9fbfa0 20%,#d0e6c9 70%,transparent)}
+.game-logo .logo-en{color:#82917a;font-size:.78rem;letter-spacing:5px}
+.intro-cat-gallery{
+  background:linear-gradient(180deg,rgba(255,253,242,.6),rgba(215,231,204,.6));
+  border:1px solid rgba(132,169,128,.28);
+  box-shadow:0 9px 22px rgba(87,111,80,.09),inset 0 -8px 20px rgba(150,175,121,.12);
+}
+.intro-cat-glint{color:#8cad91;filter:none}
+.intro-guide{background:rgba(255,253,246,.76);border:1px solid #d8e6d3;box-shadow:0 4px 15px rgba(82,108,80,.07)}
+.intro-guide-title{color:#66876a}
+.intro-step b{color:#4a6550}
+#intro #intro-start{background:linear-gradient(135deg,#a7ceb1,#d7e8c9);border:1px solid #a4c5a4;color:#345640;box-shadow:0 5px 16px rgba(84,125,86,.18)}
+#intro #intro-reset{background:transparent;border-color:transparent;color:#6c7c6c;box-shadow:none}
+.cb-home{background:rgba(255,251,241,.92);color:#466049;border:1px solid #c8d9c7;box-shadow:0 3px 10px rgba(69,92,67,.13)}
+.cb-home:hover{background:#fffef6}
+@media(max-width:700px){
+ #stage{background:#e4ede0}
+ #hud{top:calc(env(safe-area-inset-top,0px) + 45px);padding:4px 7px;justify-content:flex-start;gap:4px}
+ #hud .hud-pill{padding:5px 6px;font-size:11px}
+ #tabbar{padding:5px max(5px,env(safe-area-inset-right,0px)) max(7px,env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(241,247,236,.68),transparent)}
+ #tabbar .tab{background:#fffaf0;color:#607461;min-height:46px;box-shadow:0 2px 8px rgba(56,86,57,.1)}
+ #tabbar .tab.active{background:#dcebd7;color:#3e614a}
+ #yard-actions{bottom:calc(62px + env(safe-area-inset-bottom,0px));gap:7px}
+ #intro{gap:9px;padding:calc(env(safe-area-inset-top,0px) + 15px) 15px calc(env(safe-area-inset-bottom,0px) + 20px)}
+ .studio-badge{margin:0}
+ .studio-moon{font-size:1.1rem}
+ .studio-text{font-size:.85rem}
+ .studio-tag{font-size:.55rem}
+ .game-logo{font-size:clamp(1.85rem,8.6vw,2.65rem);letter-spacing:1px;padding:0}
+ .game-logo .logo-en{font-size:.65rem;margin-top:4px}
+ .intro-cat-gallery{height:clamp(96px,18vh,132px);border-radius:22px;flex:0 0 auto}
+ #intro>p{font-size:.85rem;line-height:1.48;padding:7px 11px}
+ #intro .intro-guide{order:10;padding:10px 12px;margin:0;width:100%;flex:0 0 auto}
+ #intro #intro-start{order:9;width:min(100%,320px);min-height:48px;flex:0 0 auto}
+ #intro #intro-reset{order:11;font-size:.75rem;flex:0 0 auto}
+ .intro-steps{gap:6px}.intro-step{gap:7px}.intro-step-ico{width:23px}
+ #intro .intro-step p{font-size:.75rem;line-height:1.35}
+ .battle-topbar{top:calc(env(safe-area-inset-top,0px) + 9px);max-width:96%;gap:5px;padding:4px 7px 4px 9px;font-size:12px;white-space:nowrap}
+ #battle-ui .battle-hint{top:calc(env(safe-area-inset-top,0px) + 52px)}
+ #battle-ui .move-bar{bottom:max(15px,env(safe-area-inset-bottom,0px))}
+ #panel>.card{border-radius:20px}
+}
+@media(max-width:380px){
+ #hud .hud-pill{font-size:10px;padding:4px 5px}
+ #intro>p{font-size:.78rem}
+ .battle-topbar{gap:3px}
+}
