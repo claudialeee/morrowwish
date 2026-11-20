@@ -894,3 +894,39 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #panel .cat-starter-card .dex-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
 #panel .cat-starter-card .dex-cell{padding:9px 6px}
 @media(max-width:360px){#panel .cat-starter-card .dex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Golden Paw: first S per breed is a collectible, not another disposable coin.
+   Medal frames are permanently visible in the codex and owned-cat roster. */
+#panel .dex-cell.golden-paw{position:relative;
+  border:2px solid #c99b48!important;
+  background:linear-gradient(150deg,#fff7df,#f8e8c7 80%,#fdf5e6);
+  box-shadow:0 3px 0 #b78b3b2e,0 4px 16px #b78b3b27}
+#panel .dex-cell.golden-paw .name{color:#77511c;font-weight:900}
+#panel .golden-paw-stamp,#panel .battle-best-stamp{position:absolute;right:5px;top:5px;
+  display:block;padding:2px 7px;border-radius:999px;
+  background:linear-gradient(140deg,#ffdf83,#eeb661);color:#5a3a12;border:1px solid #d0a252;
+  box-shadow:0 2px 6px #89672a40;font:900 11px/1.4 system-ui,sans-serif;z-index:2}
+#panel .battle-best-stamp{background:#ecf3eb;color:#49695a;border-color:#bed1bf}
+#panel .mastery-summary{display:grid;gap:6px;margin:10px 0 14px;padding:12px 14px;
+  background:linear-gradient(135deg,#fff5d7,#eaf4e8);border:1px solid #dcc591;
+  border-radius:14px;color:#514c36}
+#panel .mastery-summary b{font-size:15px;color:#916526}
+#panel .mastery-summary span{font-size:12px;line-height:1.5}
+#panel .mastery-summary small{font-weight:850;font-size:11px;color:#59836c}
+#panel .mastery-detail{background:#f3e7ca;border:1px solid #cfb879;border-radius:12px;
+  color:#8c6428;font-weight:800;font-size:12px;padding:8px 11px;margin:9px 0}
+#panel .cat-highlight-card .golden-paw-unlock{margin:11px auto;max-width:450px;
+  padding:11px 15px;border:2px solid #ddb35c;border-radius:16px;
+  background:linear-gradient(130deg,#fff0b8,#ffe7c3,#f0f7d9);
+  color:#74511e;box-shadow:0 7px 17px #b9944933;text-align:center}
+#panel .golden-paw-unlock strong{font-weight:950;font-size:15px}
+#panel .golden-paw-unlock p{font-size:12px;margin:5px 0 6px;line-height:1.5}
+#panel .golden-paw-unlock small{font-size:11px;font-weight:800;color:#7f7752}
+#panel .journey-master-row{display:flex;align-items:center;gap:10px;justify-content:space-between;
+  padding:11px 12px;background:linear-gradient(110deg,#fff2cb,#e8f3dc);
+  border:1px solid #dbcc9d;border-radius:13px;color:#6f512a}
+#panel .journey-master-row b{font-size:13px}
+#panel .journey-master-row p{font-size:11px;line-height:1.5;margin:4px 0 0}
+#panel .journey-master-row .btn{flex:none;font-size:11px;padding:7px 11px}
+@media(max-width:480px){#panel .journey-master-row{gap:7px;padding:9px}
+ #panel .journey-master-row p{font-size:10px}#panel .mastery-summary{padding:9px 11px}}
