@@ -23,6 +23,100 @@
     calico:1,blue:3,ragdoll:4,siamese:4,maine:0,flame:0,cloud:4,
     mystic:5,goldShaded:0,apricot:0,cheese:0,norwegian:0,bengal:0
   };
+
+  // One deliberate look per catalogue species. The original watercolor kitten
+  // painting is always the underlying artwork; no vector/model replacement.
+  // [original illustrated kitten, target fur color, blend strength, coat traits]
+  const BREED_LOOKS={
+    tangyuan:[0,null,0,'orange-tabby'],
+    doudou:[3,'#ad8a69',.65,'brown-tabby'],
+    xiaohui:[3,'#d1d5dc',.27,'silver-tabby'],
+    moqiu:[5,null,0,'black'],
+    nainai:[4,'#f6f2ec',.82,'white'],
+    nietu:[0,'#ecd5b9',.78,'cream'],
+    niuniu:[2,null,0,'tuxedo'],
+    sanhua:[1,null,0,'calico'],
+    lixiao:[2,'#3e3544',.23,'formal-tuxedo'],
+    lanbao:[5,'#8c9bab',.72,'british-blue'],
+    dundun:[3,'#d6d1c5',.48,'silver-shaded'],
+    yunduo:[4,null,0,'ragdoll'],
+    zherdd:[4,'#e9d2b3',.62,'folded-cream'],
+    qisi:[1,'#e9a85e',.65,'orange-white'],
+    duanduan:[0,'#eebf86',.42,'short-legged'],
+    jinjc:[3,'#e1c28e',.74,'golden-shaded'],
+    xianluo:[4,'#dec8b0',.30,'seal-point'],
+    yinghua:[4,'#fbe4ed',.55,'cherry-pink'],
+    senlin:[4,'#b29374',.62,'maine-coon'],
+    youling:[5,'#8b78ac',.53,'spirit-purple'],
+    nuowei:[4,'#bdac97',.47,'norwegian-forest'],
+    baomao:[3,'#dbad65',.73,'bengal-rosettes'],
+    jinwu:[0,'#efa34d',.42,'flame-tabby'],
+    yuelian:[4,'#e5eafd',.61,'moon-point'],
+    xingchen:[5,'#8476b1',.61,'starry-black']
+  };
+  const breedCache=Object.create(null);
+  function breedFrame(o) {
+    const sp=o.species||{};
+    const id=sp.id||'';
+    const look=BREED_LOOKS[id];
+    if(!look)return {image:source,sx:indexOf(o)*w,sy:0,sw:w,sh:h};
+    if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:w,sh:h};
+    const canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    const c=canvas.getContext('2d',{willReadFrequently:true});
+    if(!c)return {image:source,sx:look[0]*w,sy:0,sw:w,sh:h};
+    c.clearRect(0,0,w,h);
+    c.drawImage(source,look[0]*w,0,w,h,0,0,w,h);
+    const [base,tone,strength,kind]=look;
+    if(tone && strength>0) {
+      const dst=c.getImageData(0,0,w,h),data=dst.data;
+      const col=[parseInt(tone.slice(1,3),16),parseInt(tone.slice(3,5),16),parseInt(tone.slice(5,7),16)];
+      const ref=[174,85,80,167,184,72][base];
+      for(let i=0;i<data.length;i+=4){
+        if(data[i+3]<28)continue;
+        const r=data[i],g=data[i+1],b=data[i+2];
+        const lum=r*.30+g*.59+b*.11;
+        const sat=Math.max(r,g,b)-Math.min(r,g,b);
+        let fur=false;
+        if(base===0)fur=r>g*1.08&&g>b*1.04&&g>65&&g>r*.43&&b<r*.89;
+        else if(base===1)fur=lum<128&&sat<95; // replace dark calico patches with ginger
+        else if(base===2)fur=sat<58&&lum>30;
+        else if(base===3)fur=sat<56&&b<r*1.18&&lum>40;
+        else if(base===4)fur=r>=g*.91&&g>b*.72&&!(r>g*1.27&&b>g*1.14)&&!(b>r*1.07&&b>g*1.12);
+        else fur=sat<55&&lum>28&&!(r>g*1.14&&g>b*1.12);
+        if(!fur)continue;
+        const factor=Math.max(.27,Math.min(1.53,Math.pow(lum/ref,.80)));
+        // Retain painted highlights, fur texture, dark linework and eye details.
+        const k=strength*Math.min(1,lum/45);
+        for(let ch=0;ch<3;ch++){
+          const t=Math.max(0,Math.min(255,col[ch]*factor));
+          data[i+ch]=Math.round(data[i+ch]*(1-k)+t*k);
+        }
+      }
+      c.putImageData(dst,0,0);
+    }
+    // Breed-specific coat markings stay below the face, so the original
+    // illustrated eyes, whiskers, expression and collars remain untouched.
+    if(kind==='bengal-rosettes'||kind==='maine-coon'||kind==='norwegian-forest'){
+      c.save();c.globalCompositeOperation='source-atop';
+      c.strokeStyle=kind==='bengal-rosettes'?'rgba(92,59,35,.33)':'rgba(91,70,53,.13)';
+      c.lineWidth=kind==='bengal-rosettes'?2.2:1.4;
+      const marks=[[w*.38,h*.63],[w*.63,h*.69],[w*.43,h*.79],[w*.62,h*.84]];
+      for(const [mx,my] of marks){c.beginPath();c.ellipse(mx,my,7,4,-.35,.3,Math.PI*1.75);c.stroke();}
+      c.restore();
+    }
+    if(kind==='cherry-pink'||kind==='starry-black'||kind==='moon-point'){
+      c.save();c.globalCompositeOperation='source-atop';
+      c.fillStyle=kind==='cherry-pink'?'rgba(245,148,177,.60)':'rgba(220,218,250,.70)';
+      for(const [x,y] of [[.25,.45],[.72,.69],[.5,.84]]){
+        c.font='14px system-ui';c.textAlign='center';c.fillText('✦',w*x,h*y);
+      }
+      c.restore();
+    }
+    breedCache[id]=canvas;
+    return {image:canvas,sx:0,sy:0,sw:w,sh:h};
+  }
+
   const fallbackDraw=drawing.drawCat;
   function indexOf(options){
     const sp=options.species||{};
@@ -71,7 +165,8 @@
     ctx.translate(0,-33);
     ctx.imageSmoothingEnabled=true;
     ctx.imageSmoothingQuality='high';
-    ctx.drawImage(source,indexOf(o)*w,0,w,h,-30,-55,60,90);
+    const art=breedFrame(o);
+    ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,-30,-55,60,90);
     if(mood==='love'){
       ctx.fillStyle='#ef8fa8';ctx.font='13px system-ui';
       ctx.fillText('♥',22,-38-Math.sin(t*3)*2);
@@ -99,6 +194,7 @@
   drawing.renderCatThumb=thumbnail;
   source.onload=()=>{
     loaded=source.naturalWidth===w*6&&source.naturalHeight===h;
+    for(const id of Object.keys(breedCache))delete breedCache[id];
     if(!loaded)return;
     // Intro uses a static canvas; repaint once the atlas is decoded.
     if(typeof window.paintIntroCatGallery==='function'){
