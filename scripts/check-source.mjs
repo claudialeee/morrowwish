@@ -26,6 +26,15 @@ if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status
  throw Error('CrazyGames scripts must fail closed if not individually QA-approved');
 
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
+const socialRouter=fs.readFileSync('src/worker.js','utf8');
+if(!socialRouter.includes('if(p.startsWith("/go/"))')||
+   !socialRouter.includes('utm_source')||
+   !socialRouter.includes('utm_campaign')||
+   !socialRouter.includes('Cache-Control')||
+   !dashboard.includes('acquisitionVisits:')||
+   !dashboard.includes("siteNum(homeFor(p.id),'visits')")||
+   !dashboard.includes("siteNum(z,'pageviews')"))
+ throw Error('Tracking links and homepage/game attribution data must be preserved');
 if(!dashboard.includes('if(x.game==="hub")return')||
    !dashboard.includes("num('pageviews')+'</td><td></td><td></td><td></td>"))
  throw Error('Homepage overview: show pageviews only and leave gameplay cells blank');
