@@ -1,846 +1,221 @@
 <!doctype html>
-<html lang="en"><head><link rel="preload" href="/studio-music.js" as="script"><link rel="preconnect" href="https://en.freepd.cn" crossorigin><link rel="preload" as="audio" href="https://en.freepd.cn/api/music/5570626561742f48617070792057686973746c696e6720556b756c656c652e6d7033" type="audio/mpeg"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>No More Mondays: Tiny Town — Free Online Strategy Game</title><meta name="description" content="AI now does every job. Humanity has unlimited free time. Help neighbors rediscover friendship, fun, and purpose in a free 8-turn town-building strategy game."><meta property="og:image" content="https://morrowwish.vercel.app/social/tiny-town.png"><meta name="twitter:image" content="https://morrowwish.vercel.app/social/tiny-town.png"><meta property="og:title" content="No More Mondays: Tiny Town"><meta property="og:description" content="AI handles the work. Everyone can live freely. Build a town full of things that matter."><link rel="canonical" href="https://morrowwish.vercel.app/tiny-town/"><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:type" content="website"><meta property="og:url" content="https://morrowwish.vercel.app/tiny-town/"><meta property="og:site_name" content="Morrow Wish"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="No More Mondays: Tiny Town — Free Browser Game"><meta name="twitter:description" content="AI took over every job. All the time in the world is yours. Now what?"><script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"No More Mondays: Tiny Town","url":"https://morrowwish.vercel.app/tiny-town/","description":"In a world where AI does all the work, people have endless free time. Build venues, form clubs, and help a tiny town rediscover joy, friendship, and purpose in eight turns.","genre":["Strategy","Puzzle","Casual"],"gamePlatform":"Web Browser","applicationCategory":"Game","operatingSystem":"Web","inLanguage":"en","isAccessibleForFree":true}</script><script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script><script defer src="/_vercel/insights/script.js"></script>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>No More Mondays: Wish Cascade — Free Online Game</title>
+<meta name="description" content="AI does all the work. Grant seven wild wishes, unlock surprising combinations, transform your tiny town, and reveal your illustrated ending. Free browser game.">
+<meta property="og:type" content="website"><meta property="og:title" content="No More Mondays: Wish Cascade"><meta property="og:description" content="Everyone is free. Grant seven wishes. What will your town become?">
+<meta property="og:image" content="https://morrowwish.vercel.app/social/tiny-town.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://morrowwish.vercel.app/social/tiny-town.png">
+<link rel="canonical" href="https://morrowwish.vercel.app/tiny-town/"><meta name="robots" content="index,follow,max-image-preview:large">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"No More Mondays: Wish Cascade","url":"https://morrowwish.vercel.app/tiny-town/","description":"AI does all the work. Make seven wishes and turn a tiny town into something impossible.","genre":["Strategy","Puzzle","Casual"],"gamePlatform":"Web Browser","operatingSystem":"Web","inLanguage":["en","zh"],"isAccessibleForFree":true}</script>
+<link rel="preload" href="/studio-music.js" as="script">
+<link rel="preconnect" href="https://en.freepd.cn" crossorigin>
+<link rel="preload" as="audio" href="https://en.freepd.cn/api/music/5570626561742f48617070792057686973746c696e6720556b756c656c652e6d7033" type="audio/mpeg">
 <style>
-:root{--bg:#f7f5f0;--ink:#2d3442;--muted:#647082;--accent:#675cf4;--mint:#c8f2dd;--card:#fffefa;--line:#e2e2df}*{box-sizing:border-box}body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);margin:0}.app{max-width:1190px;margin:auto;padding:22px 18px 42px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap}h1{font-size:30px;letter-spacing:-1px;margin:0}h1 span{font-size:13px;letter-spacing:0;color:var(--muted);font-weight:500}.sub{font-size:13px;color:var(--muted);margin:5px 0 0}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{background:white;border:1px solid #d7d8dc;border-radius:11px;color:#333b4a;padding:9px 12px;font-weight:700;cursor:pointer;font-size:12px}.btn:hover{border-color:var(--accent)}.btn:disabled{opacity:.4;cursor:not-allowed}.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 16px}.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 15px}.stat .k{font-size:11px;color:var(--muted)}.stat .v{font-size:24px;font-weight:800;line-height:1.35;font-variant-numeric:tabular-nums}.layout{display:grid;grid-template-columns:minmax(0,1fr) 328px;gap:16px;align-items:start}.panel{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;box-shadow:0 4px 14px rgba(45,52,66,.03)}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;font-weight:800;font-size:15px}.panel-sub{font-size:12px;color:var(--muted);font-weight:500}.map-wrap{margin:auto;max-width:590px;position:relative}.board{display:grid;grid-template-columns:repeat(4,1fr);aspect-ratio:1/1;gap:7px;position:relative}.tile{border:2px solid #d3e6d9;border-radius:15px;position:relative;background:linear-gradient(145deg,#def4e2,#cbe5d4);display:flex;align-items:center;justify-content:center;overflow:hidden;min-width:0;cursor:pointer;transition:transform .1s,border-color .1s}.tile:focus-visible{outline:3px solid var(--accent)}.tile:after{content:'';position:absolute;bottom:9%;left:8%;width:84%;height:5%;background:#a9cabb22;border-radius:100%}.tile:not(.blocked):hover{border-color:#8278f8;transform:translateY(-2px)}.tile.selected:hover{border-color:var(--accent);box-shadow:0 0 0 3px #b2adff77 inset}.tile.blocked{background:repeating-linear-gradient(45deg,#e6e6e4,#e6e6e4 7px,#dcdedc 7px,#dcdedc 14px);border-color:#e1e3e0;cursor:not-allowed}.rock{font-size:28px;opacity:.7}.building{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1;position:relative;transform-origin:bottom}.building.pop{animation:pop .42s ease-out}.building .roof{width:64px;height:11px;border-radius:10px 10px 1px 1px;background:#ffffff8a;border:2px solid #ffffffa8;transform:skewX(-9deg);max-width:82%}.building .body{background:var(--color);width:min(78px,90%);min-height:61px;border-radius:9px 9px 13px 13px;border-bottom:5px solid #35394520;box-shadow:inset -8px -5px 0 #00000009, 1px 4px 0 #3b494a1a;display:flex;align-items:center;justify-content:center;flex-direction:column}.building .emoji{font-size:27px;line-height:1.25;filter:drop-shadow(0 2px #fff6)}.building .name{font-size:10px;font-weight:900;white-space:nowrap}.building .level{position:absolute;right:-7px;top:0;background:#fff;color:#6255d6;border-radius:30px;padding:2px 4px;font-weight:900;font-size:9px}.visit{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:0;z-index:3}.visitor{font-size:15px;filter:drop-shadow(0 1px 1px #fff);animation:land .35s ease-out both}.club-pill{position:absolute;right:4px;top:3px;font-size:13px;z-index:3;background:#fff;border-radius:99px;padding:1px 5px;box-shadow:0 1px 3px #0001}.runner{position:absolute;z-index:40;font-size:21px;pointer-events:none;left:0;top:0;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 2px #2d344266);transition:left .75s cubic-bezier(.1,.5,.2,1),top .75s cubic-bezier(.1,.5,.2,1)}.feedback{position:absolute;z-index:45;top:42%;left:50%;transform:translate(-50%,-50%);border-radius:22px;padding:12px 18px;background:#fffefaed;box-shadow:0 9px 22px #0002;border:2px solid #e5dfbc;text-align:center;font-size:15px;font-weight:900;pointer-events:none;animation:feedback 1.8s ease-out both;max-width:92%;white-space:nowrap}.feedback small{display:block;color:#6b7180;font-size:11px;margin-top:3px}.hint{color:var(--muted);font-size:12px;line-height:1.5;margin-top:12px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{background:#f9f9fb;border:2px solid #ebeaf0;border-radius:13px;padding:10px 5px;cursor:pointer;text-align:center;min-width:0;transition:transform .12s,border-color .12s}.choice:hover{transform:translateY(-2px)}.choice.active{border-color:var(--accent);background:#f1efff}.choice .ico{font-size:28px}.choice .label{font-size:12px;font-weight:800;margin-top:2px}.choice .detail{font-size:10px;color:var(--muted);margin-top:3px}.side{display:flex;flex-direction:column;gap:12px}.section{font-size:12px;font-weight:800;margin-bottom:8px}.info{border-radius:12px;padding:11px;background:#f1f3f8;font-size:12px;min-height:58px;line-height:1.6;margin-top:10px}.upgrade{display:flex;width:100%;justify-content:center;margin-top:8px;gap:8px}.upgrade.active{background:#f1efff;border-color:var(--accent)}.residents{display:grid;grid-template-columns:1fr 1fr;gap:7px}.res{background:#f8f7f5;border-radius:10px;padding:7px;display:flex;align-items:center;gap:6px;border:1px solid transparent}.res.working{border-color:#abdfbf;background:#f3fcf5}.face{font-size:22px}.res b{font-size:11px}.res small{display:block;color:var(--muted);font-size:9px;margin-top:2px}.feed{min-height:58px;max-height:190px;overflow:auto;background:#f7f7f8;border-radius:10px;padding:8px 10px}.event{font-size:11px;padding:5px 0;border-bottom:1px solid #ebebee;line-height:1.5}.event:last-child{border-bottom:none}.goals{font-size:12px;line-height:1.8}.goals b{font-weight:900}.good{color:#168050}.bad{color:#b06747}.end{display:none;position:fixed;inset:0;background:#273249aa;z-index:100;align-items:center;justify-content:center;padding:16px}.end.show{display:flex}.end-card{background:white;padding:28px;border-radius:20px;max-width:425px;width:100%;text-align:center;box-shadow:0 25px 90px #171e3590}.end h2{margin:6px 0;font-size:27px}.end .big{font-size:50px}.end p{color:#616d78;font-size:14px;line-height:1.6}.end-buttons{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:16px}@keyframes pop{0%{transform:translateY(-24px) scale(.75);opacity:.2}70%{transform:translateY(3px) scale(1.08)}100%{transform:translateY(0) scale(1)}}@keyframes land{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}@keyframes feedback{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-100%) scale(1)}}@media(max-width:760px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(4,1fr);gap:5px}.stat{padding:9px}.stat .v{font-size:20px}.panel{padding:12px}.board{gap:5px}.building .roof{height:7px;width:50px}.building .body{width:min(64px,90%);min-height:49px}.building .emoji{font-size:22px}.building .name{font-size:9px}.residents{grid-template-columns:repeat(4,1fr)}.res{flex-direction:column;text-align:center}.res small{font-size:8px}h1{font-size:26px}}@media(max-width:390px){.residents{grid-template-columns:repeat(2,1fr)}.stat .v{font-size:18px}.building .name{font-size:8px}}
-
-/* V2.1 UI overlays: engine is unchanged */
-.tile.awReach{box-shadow:inset 0 0 0 3px #8f80f7aa}.tile.awHome{border-color:#604edf;box-shadow:inset 0 0 0 4px #8f80f7aa}.tile.awVenue{border-color:#128660}.awHouse{position:absolute;bottom:3px;left:3px;background:#ffffffdc;border-radius:6px;padding:1px 3px;font-size:10px;z-index:6}.awCoord{position:absolute;top:3px;left:5px;font-size:10px;font-weight:800;color:#597b66;z-index:6}.res{cursor:pointer;text-align:left}.res.awSelected{border-color:#7565ea;background:#eeeaff}.res.awNew{border-style:dashed}.res small{line-height:1.4}.awClub{padding:6px 0;border-bottom:1px solid #eee;font-size:11px}.awReason{font-size:11px;padding:3px 0}@media(max-width:760px){.residents{grid-template-columns:repeat(2,1fr)}.res{flex-direction:row;text-align:left}.res small{font-size:9px}}
-.seo-content{margin:15px 0 0;padding:20px 22px;background:#fffefa;border:1px solid #e2e2df;border-radius:15px;color:#2d3442;line-height:1.65}.seo-content h2{font-size:17px;margin:12px 0 5px}.seo-content h3{font-size:14px;margin:11px 0 3px}.seo-content p{font-size:13px;margin:5px 0 8px;color:#4d5b6e}.seo-content a{color:#564ada}.seo-content .seo-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
-/* V2.2: first-time play clarity, preserves deterministic gameplay */
-.top .sub{max-width:675px;font-size:14px;line-height:1.5}
-.aw-coach{background:linear-gradient(120deg,#f0eeff,#f5fff7);border:1px solid #d8d4f0;border-radius:15px;padding:13px 15px 12px;margin:0 0 11px}
-.aw-coach-kicker{display:block;color:#5c50b6;font-size:10px;font-weight:900;letter-spacing:.065em;margin-bottom:5px}
-.aw-coach strong{display:block;font-size:16px;line-height:1.35;color:#363956}
-.aw-coach p{font-size:12px;line-height:1.6;color:#576576;margin:5px 0 0}
-.aw-coach.aw-compact{padding:10px 13px;background:#f8f7ff}
-.aw-coach.aw-compact strong{font-size:13px}
-.aw-coach.aw-compact p{font-size:11px}
-.aw-resident-hint{font-size:11px!important;color:#798192}
-.tile.awPlaceable:not(.blocked){border-color:#2c9f68;box-shadow:inset 0 0 0 2px #53b78280;background:linear-gradient(145deg,#e9fbe9,#c6efd8)}
-.tile.awPlaceable:not(.blocked):hover,.tile.awPlaceable:not(.blocked):focus-visible{border-color:#6a5bef;box-shadow:inset 0 0 0 3px #7f73e76b}
-.aw-map-tip{font-size:12px;color:#367751;line-height:1.5;margin-top:10px}
-.aw-map-tip>span:last-child{color:#738090}
-.aw-tip-dot{display:inline-block;width:10px;height:10px;border:2px solid #24945d;border-radius:50%;background:#80d9a3;margin-right:4px}
-.aw-rule-details{margin-top:11px;border:1px solid #e5e7ee;background:#f9fafc;padding:10px 12px;border-radius:12px}
-.aw-rule-details summary{cursor:pointer;color:#5557a5;font-size:12px;font-weight:800}
-.aw-rule-details summary span{color:#8991a1;font-weight:500;margin-left:5px}
-.aw-rule-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:11px 0}
-.aw-rule-steps>div{background:white;border:1px solid #e8e8ef;border-radius:10px;padding:9px}
-.aw-rule-steps b{display:block;font-size:11px;color:#353852}
-.aw-rule-steps small{display:block;margin-top:4px;color:#647082;font-size:10px;line-height:1.4}
-.aw-rule-details p{font-size:11px;line-height:1.65;color:#576576;margin:5px 0 0}
-.aw-advanced{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.aw-advanced>summary{display:flex;align-items:center;gap:9px;padding:14px;font-weight:800;font-size:13px;cursor:pointer;list-style:none}
-.aw-advanced>summary::-webkit-details-marker{display:none}
-.aw-advanced>summary span{font-size:10px;color:#8991a1;font-weight:500;margin-left:auto}
-.aw-advanced>summary::after{content:'+';font-size:19px;line-height:1;color:#675cf4}
-.aw-advanced[open]>summary::after{content:'−'}
-.aw-advanced-body{border:0;border-radius:0;border-top:1px solid #ebebef;box-shadow:none}
-.aw-advanced-body .panel-title{font-size:13px}
-.aw-goal-panel{border-color:#e2d9f6;background:#fffefe}
-.aw-goal-panel .goals{font-size:13px;font-weight:650}
-.aw-goal-note{font-size:11px;font-weight:400;line-height:1.5;margin-top:8px;color:#77808d}
-.stats .stat:nth-child(3){background:#f8f6ff;border-color:#dfd6fb}
-.stats .stat:last-child{background:#fafafa;border-color:#ebedef}
-.stats .stat:last-child .v{font-size:20px;color:#7d8490}
-@media(max-width:760px){.aw-rule-steps{grid-template-columns:1fr}.aw-coach{padding:11px 12px}.aw-advanced>summary{padding:12px}.aw-map-tip{font-size:11px}}
-
-/* v2.2 quick-start game guide, visible before the map */
-.aw-quick-guide{background:#fffefa;border:1px solid #e2dff1;border-radius:15px;padding:13px 16px;margin:0 0 11px}
-.aw-qg-heading{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
-.aw-qg-heading strong{font-size:15px;color:#30394b}
-.aw-qg-heading span{font-size:11px;color:#788090}
-.aw-qg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.aw-qg-grid>div{display:flex;flex-direction:column;gap:3px;border-left:3px solid #b9b2f4;padding:1px 10px}
-.aw-qg-grid b{font-size:12px;color:#443c85}
-.aw-qg-grid span{font-size:11px;line-height:1.4;color:#586575}
-.aw-qg-goal{font-size:11px;line-height:1.5;margin-top:10px;padding-top:9px;border-top:1px solid #f0eef4;color:#566173}
-.aw-qg-goal b{color:#363a67}
-.aw-qg-goal span{color:#848b97;margin-left:5px}
-@media(max-width:760px){.aw-quick-guide{padding:11px 12px;margin-bottom:7px}.aw-qg-grid{grid-template-columns:1fr;gap:6px}.aw-qg-grid>div{display:block;padding:2px 8px}.aw-qg-grid b{font-size:11px;margin-right:5px}.aw-qg-grid span{font-size:11px}.aw-qg-heading{margin-bottom:7px}.aw-qg-goal{margin-top:7px;padding-top:7px}.aw-qg-goal span{display:none}}
-
-/* V2.3: complete game rules above the board; technical details folded */
-.aw-quick-guide{padding:14px 16px 12px}
-.aw-rule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}
-.aw-rule-box{border:1px solid #ebe8f2;background:#fbfaff;border-radius:12px;padding:10px 12px}
-.aw-rule-box>b{display:flex;align-items:center;gap:7px;color:#383a6c;font-size:12px;line-height:1.35}
-.aw-rule-num{flex:none;width:21px;height:21px;border-radius:50%;background:#e4dfff;color:#5043ad;font-weight:850;text-align:center;line-height:21px}
-.aw-rule-box p{margin:5px 0 0;font-size:11px;line-height:1.55;color:#536173}
-.aw-rule-box p strong{font-weight:750;color:#344653}
-.aw-rule-more{margin-top:11px;border-top:1px solid #eceaf0;padding-top:10px}
-.aw-rule-more>summary{cursor:pointer;font-size:12px;font-weight:800;color:#5047a2}
-.aw-rule-more>summary span{font-size:11px;font-weight:500;color:#8590a2;margin-left:5px}
-.aw-rule-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 17px;margin-top:11px}
-.aw-rule-more-grid>div{border-left:3px solid #d5cef2;padding-left:11px}
-.aw-rule-more-grid b{font-size:11px;color:#394058}
-.aw-rule-more-grid p{font-size:11px;line-height:1.55;color:#657185;margin:4px 0 0}
-@media(max-width:760px){
- .aw-rule-grid{grid-template-columns:1fr;gap:5px}
- .aw-rule-box{padding:8px 10px}
- .aw-rule-box p{font-size:11px;margin-top:3px}
- .aw-rule-more-grid{grid-template-columns:1fr;gap:11px}
+:root{--cream:#fff7ef;--ink:#51445d;--sub:#938497;--pink:#ffb4b5;--line:#f1ddd8;--card:#fffdf9;--purple:#8969b0}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 70% 0%,#fae1ee 0,transparent 44%),linear-gradient(160deg,#fffaf0,#fff4f0 70%,#f6eeff);color:var(--ink);font-family:Nunito,'Trebuchet MS',system-ui,-apple-system,sans-serif;font-size:14px}
+button{font:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:3px solid #9d82d0;outline-offset:3px}
+a{color:#87629e}
+.arcade-return{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:43px;padding:8px max(16px,calc((100vw - 1180px)/2));background:#fff6f1;border-bottom:1px solid #f0dadc;font-size:11px;font-weight:850;letter-spacing:.04em}
+.arcade-return a{text-decoration:none;color:#916d88}
+.arcade-return .more{opacity:.66}
+.app{max-width:1160px;margin:0 auto;padding:18px 16px 35px;position:relative;min-height:620px}
+.header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+h1{font-size:clamp(26px,3.8vw,39px);letter-spacing:-1.3px;line-height:1.08;margin:0;color:#5d4262}
+h1 small{font-size:12px;color:#ab8da4;font-weight:800;letter-spacing:.03em;white-space:nowrap}
+.tagline{font-size:13px;color:#886e85;margin:6px 0 0;line-height:1.5}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.button{border:1px solid #ebd7dd;border-radius:14px;background:#fffdfb;color:#795f83;padding:10px 15px;font-size:12px;font-weight:900;min-height:42px}
+.button:hover{transform:translateY(-1px);box-shadow:0 4px 14px #7b52791a}
+.button.primary{background:linear-gradient(110deg,#bd80ad,#9c84c5);border-color:#ab82ba;color:white;box-shadow:0 5px 15px #b17bb33a}
+.button.subtle{background:#fff8f7}
+.panel{background:rgba(255,253,248,.95);border:1px solid #f0e0d9;border-radius:22px;box-shadow:0 10px 32px #b08d9b10}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.stat{border-radius:16px;background:#fffefa;border:1px solid #eee0dc;padding:10px 12px;min-width:0}
+.stat .label{display:block;color:#958393;font-size:10px;letter-spacing:.035em;font-weight:850}
+.stat strong{display:block;font-size:22px;line-height:1.45;color:#665477;font-variant-numeric:tabular-nums}
+.stat:nth-child(2){background:#fff6e9}.stat:nth-child(3){background:#f6f7ea}
+.progress{height:5px;background:#eee3e6;border-radius:99px;overflow:hidden;margin:-4px 1px 13px}
+.progress div{height:100%;width:0%;background:linear-gradient(90deg,#efad9e,#b18ac8);transition:width .35s}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:13px;align-items:start}
+.map-panel{padding:15px;overflow:hidden}
+.panel-top{display:flex;justify-content:space-between;gap:6px;align-items:baseline;margin-bottom:10px}
+.panel-top strong{font-size:17px;color:#715576}
+.panel-top span{font-size:11px;color:#a591a0}
+.world{position:relative;overflow:hidden;isolation:isolate;border-radius:20px;padding:30px 17px 23px;background:linear-gradient(#d8e6f6 0 43%,#dff0dc 43% 100%);transition:background 1s}
+.world:before{content:'☁';position:absolute;top:-18px;left:15px;font-size:90px;color:#fff7;z-index:-1;line-height:1}
+.world:after{content:'✧';position:absolute;top:4px;right:38px;font-size:42px;color:#fff9;z-index:-1}
+.world[data-theme="cat"]{background:linear-gradient(#f9d6dc,#fce2b8 57%,#c4e5bf 57%)}
+.world[data-theme="party"]{background:linear-gradient(#7666b5,#d9b4d8 57%,#8cbdaf 57%)}
+.world[data-theme="sky"]{background:linear-gradient(#9698db,#e0c8ee 58%,#b2e3c7 58%)}
+.world[data-theme="calm"]{background:linear-gradient(#c9e7dc,#f8dfc4 57%,#b1d9af 57%)}
+.world[data-theme="art"]{background:linear-gradient(#f0c8dd,#fff0d3 57%,#aedcbe 57%)}
+.world[data-theme="chaos"]{background:linear-gradient(#745caa,#f0afac 57%,#d1c399 57%)}
+.world-magic{position:absolute;right:13px;top:3px;opacity:.82;letter-spacing:11px;font-size:16px;pointer-events:none}
+.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-width:515px;margin:auto;filter:drop-shadow(0 8px 8px #6d93792b)}
+.tile{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1;min-width:0;border:2px solid #b5d0aa;background:linear-gradient(145deg,#edf4d5,#c5e0b8);border-radius:15px;box-shadow:inset 0 -6px #8cad7d26,0 4px #769a7455;overflow:hidden;transition:transform .15s,background .18s}
+.tile[disabled]{cursor:default}
+.tile.house{background:#f4d4bb;border-color:#e0baa9}.tile.plaza{background:#e4cedc;border-color:#ccabc3}
+.tile.built{background:linear-gradient(160deg,#fff3de,#f1d5bc);border-color:#e9cbb9}
+.tile.target{background:linear-gradient(160deg,#e1f9d7,#afdcb4);border-color:#6cb78e;box-shadow:inset 0 0 0 2px #b8e9c9,0 4px #769a7455}
+.tile.jackpot{background:linear-gradient(145deg,#fff6be,#f9dab5);border-color:#e0aa55;box-shadow:0 0 0 2px #ffeda4a8,0 3px #c58b7659;animation:goldPulse 1.8s ease-in-out infinite}
+.tile.target:hover{transform:translateY(-4px)}
+.tile-icon{font-size:clamp(17px,3.9vw,40px);line-height:1.25;filter:drop-shadow(0 2px #fff6)}
+.tile-name{display:block;text-align:center;font-size:clamp(8px,1vw,12px);font-weight:900;line-height:1.15;margin-top:3px;max-width:96%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.target .tile-icon{font-size:27px;font-weight:900;color:#4d9c76}
+.combo-dot{position:absolute;right:2px;top:3px;background:#fffaf0;color:#a56f39;font-size:9px;font-weight:900;border-radius:8px;padding:2px 3px}
+@keyframes goldPulse{50%{box-shadow:0 0 0 4px #fff0a8,0 3px #c58b7659}}
+.caption{font-size:11px;text-align:center;color:#a18a9a;margin:10px 0 5px;line-height:1.5}
+.preview{font-size:12px;background:#fff4e9;border:1px solid #f2e3d7;border-radius:12px;padding:10px 12px;min-height:41px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.preview-gain{color:#ae6b35;background:#fff3c9;padding:4px 7px;border-radius:10px}
+.city-extras{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px}
+.micro-panel{background:#fcf8f4;border-radius:14px;padding:10px;min-height:91px}
+.micro-title{font-size:10px;font-weight:900;color:#8b7489;letter-spacing:.03em}
+.discoveries{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.discovery{font-size:11px;background:#f8ebd5;border:1px solid #f3dbb4;padding:6px 7px;border-radius:8px;color:#96724e;font-weight:800}
+.discover-empty{font-size:11px;color:#afa0ac;line-height:1.5}
+.news{margin-top:5px}.news p{margin:4px 0;font-size:11px;line-height:1.5;color:#796a7d}
+.sidebar{padding:15px}
+.sidebar-head{font-size:11px;font-weight:900;color:#a780a0;letter-spacing:.06em}
+.sidebar h2{margin:4px 0 5px;font-size:22px;letter-spacing:-.5px;color:#664c6d}
+.sidebar p{font-size:12px;line-height:1.5;margin:0 0 10px;color:#998a99}
+.cards{display:flex;flex-direction:column;gap:9px}
+.wish-card{width:100%;border:2px solid #f1e1e0;border-radius:16px;background:linear-gradient(120deg,#fffafa,#fff5ef);display:flex;align-items:center;gap:11px;padding:10px 12px;text-align:left;min-height:82px;transition:transform .14s,border-color .14s}
+.wish-card:hover{border-color:#dbb3d4;transform:translateX(-2px)}
+.wish-card.selected{border-color:#a778b8;box-shadow:0 0 0 3px #efe3f4;background:#fdf5ff}
+.wish-icon{font-size:32px;flex:none;width:45px;text-align:center}
+.wish-copy{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.wish-copy b{font-size:14px;color:#5b4b68}
+.wish-copy small{font-size:11px;color:#968698;line-height:1.3}
+.wish-next{font-size:24px;color:#d1b6c2}
+.pick-hint{text-align:center;margin:12px 0!important;color:#a18591!important}
+.tip-box{margin-top:13px;background:#fff5ec;border-radius:13px;padding:12px;font-size:12px;color:#8c7285;line-height:1.6}
+.tip-box b{display:block;margin-bottom:2px;color:#775d80}
+.tip-box small{display:block;margin-top:5px;font-size:10px;color:#a28b98}
+.overlay{position:fixed;inset:0;background:#403447a8;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.overlay.show{display:flex}
+.overlay[hidden]{display:none!important}
+.modal{width:min(100%,540px);background:linear-gradient(#fffefb,#fff8f0);border:1px solid #efdddb;border-radius:25px;padding:22px;box-shadow:0 24px 80px #42284c55;text-align:center;max-height:95dvh;overflow:auto}
+.kicker{color:#b889a6;font-weight:950;font-size:11px;letter-spacing:.08em}
+.modal h2{font-size:clamp(24px,4vw,32px);line-height:1.2;color:#5a426c;margin:10px 0}
+.modal p{line-height:1.6;font-size:14px;color:#806d83;margin:8px auto 15px;max-width:440px}
+.modal-choices{display:flex;flex-wrap:wrap;justify-content:center;gap:9px}
+.modal-choices .button{min-width:170px}
+.combination-reveal{display:flex;align-items:center;justify-content:center;gap:7px;padding:22px 5px;font-size:clamp(29px,7vw,49px);background:linear-gradient(110deg,#fff1ca,#f9e4fa);border-radius:18px;margin-bottom:13px;animation:revealPop .5s ease-out}
+.combination-reveal span{font-size:18px;color:#c99c9d}
+@keyframes revealPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.event-picture{padding:24px 7px;background:#f7ecfc;font-size:40px;letter-spacing:8px;border-radius:17px;margin:15px 0}
+.story-image svg{width:100%;display:block;border-radius:14px;max-height:260px}
+.end-modal{width:min(100%,760px)}
+.ending-art{margin:12px auto 0}
+.ending-art svg{width:100%;display:block;border-radius:15px;box-shadow:0 8px 25px #352f5633}
+.end-line{font-size:15px!important;color:#7d5d76!important;font-weight:750}
+.end-details{font-weight:750;color:#9b8294;font-size:12px!important}
+.end-goal{color:#9a7398!important;font-size:12px!important;margin:0 auto 16px!important}
+.feedback{border-top:1px solid #e9dce7;margin-top:14px;padding:13px 0 0}
+.feedback .question{font-size:11px;font-weight:850;color:#918094;margin-bottom:8px}
+.feedback-buttons{display:flex;justify-content:center;gap:6px}
+.feedback-buttons button{border:1px solid #e9dcea;background:#fffafa;border-radius:20px;color:#80688d;padding:7px 11px;font-size:11px}
+#feedbackQuestion[hidden],#feedbackThanks[hidden]{display:none}
+.intro-inner{background:linear-gradient(120deg,#fff4e2,#ffeaf4);padding:16px;border-radius:18px;margin:12px 0 17px;font-size:45px}
+.intro-inner span{display:block;color:#8f6b88;font-size:12px;line-height:1.65;margin-top:8px}
+html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:auto!important;padding:12px!important;height:100dvh!important}
+html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .header{margin-bottom:8px}
+html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
+@media(max-width:840px){.stage{grid-template-columns:1fr 260px}.app{padding:14px 10px}.sidebar{padding:12px}.map-panel{padding:11px}.board{gap:5px}.world{padding:26px 8px 15px}.city-extras{gap:6px}}
+@media(max-width:650px){
+ .header{align-items:flex-start;gap:8px}
+ .top-actions{justify-content:flex-end}
+ h1{font-size:29px}
+ h1 small{display:none}
+ .tagline{font-size:11px}
+ .top-actions .button{min-height:36px;padding:7px 10px;font-size:11px}
+ .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ .stat{padding:7px 6px;border-radius:11px}.stat .label{font-size:9px}.stat strong{font-size:18px}
+ .stage{grid-template-columns:1fr;display:flex;flex-direction:column}
+ .sidebar{order:-1;width:100%}
+ .map-panel{order:2;width:100%}
+ .sidebar h2{font-size:17px;margin:1px 0 4px}
+ .sidebar-head{font-size:10px}
+ .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .wish-card{min-height:96px;padding:8px 5px;display:flex;flex-direction:column;text-align:center;justify-content:center;gap:5px}
+ .wish-copy{align-items:center;gap:2px}.wish-icon{font-size:28px;width:auto}
+ .wish-copy b{font-size:11px;line-height:1.2}.wish-copy small{font-size:9px}
+ .wish-next{display:none}
+ .pick-hint{font-size:10px!important;margin:6px 0!important}
+ .tip-box{display:none}
+ .panel-top strong{font-size:14px}
+ .world{padding:18px 9px}
+ .board{width:min(100%,440px);gap:5px}
+ .tile{border-radius:10px;box-shadow:inset 0 -3px #8cad7d26,0 2px #769a7455}
+ .tile-icon{font-size:clamp(21px,7vw,35px)}
+ .tile-name{font-size:clamp(8px,2.4vw,11px)}
+ .combo-dot{font-size:8px}
+ .city-extras{grid-template-columns:1fr 1fr}
+ .micro-panel{min-height:75px}
+ .modal{padding:15px;border-radius:19px}.overlay{padding:10px}
+ .modal p{font-size:12px}
 }
-
-/* v2.4: prioritize the board; keep full mechanics available but collapsed */
-.aw-minimal-guide{padding:9px 14px;border-radius:12px;margin:0 0 9px}
-.aw-mini-main strong{font-size:14px;color:#383655;letter-spacing:-.1px}
-.aw-mini-steps{font-size:12px;color:#5c6679;line-height:1.4;margin:5px 0}
-.aw-mini-steps span{color:#6559d2;margin:0 4px;font-weight:900}
-.aw-mini-steps b{color:#28794d;font-weight:800}
-.aw-mini-rules{border-top:1px solid #efedf4;padding-top:5px;margin-top:6px}
-.aw-mini-rules>summary{font-size:11px;color:#6155c3;font-weight:750;cursor:pointer;width:max-content}
-.aw-mini-rule-list{padding:5px 1px 4px}
-.aw-mini-rule-list p{font-size:11px;line-height:1.5;color:#566074;margin:6px 0}
-.aw-mini-rule-list p b{color:#393950}
-.aw-mini-advanced{margin-top:8px;padding:8px 0 2px;border-top:1px solid #eeecf4}
-.aw-mini-advanced>summary{font-size:11px;font-weight:750;cursor:pointer;color:#6559b5}
-.aw-mini-advanced .aw-rule-more-grid{margin-top:10px}
-.aw-coach,.aw-coach.aw-compact{padding:8px 11px;margin-bottom:7px;background:#faf9ff;border-color:#eeeaf8}
-.aw-coach-kicker,.aw-coach p{display:none!important}
-.aw-coach strong,.aw-coach.aw-compact strong{font-size:12px}
-.aw-resident-hint{display:none}
-.aw-map-tip{margin:7px 0 0;color:#8790a0;font-size:10px}
-.aw-map-tip:empty{display:none}
-.aw-goal-note{display:none}
-.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
-.stats .stat:last-child{display:none}
-@media(max-width:760px){
- .aw-minimal-guide{padding:9px 11px}
- .aw-mini-main strong{font-size:13px}
- .aw-mini-steps{font-size:11px}
- .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-
-/* v2.5 clarity and feedback without rules changes */
-.aw-end-feedback{margin-top:16px;padding-top:12px;border-top:1px solid #eaeaf0;color:#7a8090;font-size:11px}
-.aw-feedback-buttons{display:flex;justify-content:center;gap:7px;margin-top:9px;flex-wrap:wrap}
-.aw-feedback-buttons button{border:1px solid #e5e3ed;border-radius:20px;padding:6px 11px;background:#faf9ff;font-size:11px;font-weight:750;color:#514c76;cursor:pointer}
-.aw-feedback-buttons button:hover{border-color:#aaa0ee;background:#f1eeff}
-#feedbackThanks[hidden],#feedbackQuestion[hidden]{display:none!important}
-
-#export[hidden],.aw-mobile-controls[hidden],.aw-week-receipt[hidden],.aw-active-note[hidden]{display:none!important}
-.aw-active-note{display:block;font-size:9px;line-height:1.15;color:#807c98;margin-top:3px}
-.aw-club-links{position:absolute;inset:0;z-index:12;pointer-events:none}
-.aw-club-links svg{width:100%;height:100%;display:block;overflow:visible}
-.aw-club-links svg text{font-family:system-ui, sans-serif;font-size:11px;font-weight:900;dominant-baseline:middle;text-anchor:middle;fill:#fff}
-.aw-week-receipt{margin:9px 0 0;padding:7px 10px;border:1px solid #e4e6eb;border-radius:10px;background:#fbfcfa}
-.aw-week-receipt>summary{font-size:11px;color:#4d6577;font-weight:750;cursor:pointer}
-.aw-week-receipt #weekReceiptBody{font-size:11px;line-height:1.55;color:#5f6878;padding:7px 0 2px}
-.aw-week-receipt #weekReceiptBody b{color:#3a485b}
-.aw-mobile-controls{margin:10px auto 0;display:flex;gap:8px;justify-content:center}
-.aw-mobile-controls .btn.primary{flex:1;font-size:13px;padding:10px 15px}
-.aw-map-tip{line-height:1.4}
-@media(max-width:760px){.aw-map-tip{font-size:10px}}
-</style><style>.arcade-return{background:#282d57;color:#effdff;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 16px;font:750 12px system-ui;position:relative;z-index:22}.arcade-return a{color:#9eefe1;text-decoration:none;font-weight:850}.arcade-return span{color:#d6e4f0;font-size:11px}@media(max-width:500px){.arcade-return span{display:none}}</style><style>
-:root{--bg:#fff8ef;--ink:#4f4254;--muted:#877887;--accent:#e68e8b;--mint:#d3ecd9;--card:#fffdf8;--line:#efddd4}
-body{background:radial-gradient(circle at 75% 0%,#f8dbe5,transparent 50%),#fff8ef;color:var(--ink);font-family:Nunito,system-ui,sans-serif}
-.arcade-return{background:#fff2eb!important;color:#8c6979!important;border-bottom:1px solid #efd8d2}.arcade-return a{color:#a66e81!important}.arcade-return span{color:#a98b91!important}
-.app{padding-top:28px}h1{font-size:clamp(29px,4vw,45px);color:#514557}h1 span{color:#a78b95}.sub{color:#8c7d8b}.btn{border-radius:999px;border-color:#e9d5d4;background:#fffdf8;color:#8a6b7e}.btn.primary{background:#e69d94;border-color:#e69d94;color:#fff}
-.stat,.panel{background:#fffdf8;border:1px solid #ecdad7;border-radius:21px;box-shadow:0 9px 27px #a6887e15}.stat .k{font-weight:800;color:#977b91}.stat .v{color:#64556f}
-.aw-quick-guide{background:#fff0da!important;border-radius:22px!important;border-color:#f2d8c8!important}.aw-mini-main strong{color:#8e6171!important}.aw-mini-steps{color:#8a727e!important}.aw-mini-steps span{color:#cf8d88!important}.aw-mini-rules summary{color:#b78181!important}
-.aw-coach{background:#fff1ea!important;border-color:#f0d6d0!important;color:#685665!important;border-radius:18px!important}.aw-coach strong{color:#655062!important}.aw-coach p{color:#8f7786!important}.quick-assist{display:inline-flex;margin-top:8px!important;background:#866c99!important;color:#fff!important;padding:10px 16px!important;border:0!important;font-weight:900;font-size:12px!important;box-shadow:0 4px 0 #d4c7db}
-.tile{border-radius:16px;background:linear-gradient(145deg,#e5f4dc,#d4eacb);border-color:#cee5c6}.tile.awPlaceable{box-shadow:0 0 0 2px #b0d9b6 inset}.tile.blocked{background:#f0e5d6;border-color:#e7dcc9}.choice{background:#fff8ef;border-color:#ecdfd8;border-radius:16px}.choice.active{background:#fae6e4;border-color:#e49a9a}.choice .label{color:#74606d}.info,.feed{background:#faf2ec}.panel-title,.goals{color:#665567}.end-card{background:#fffbf6;border-radius:24px}.end{background:#5a496d91}#upgrade[hidden]{display:none!important}
-@media(max-width:780px){.app{padding:13px 10px}.layout{display:flex;flex-direction:column}.side,.layout>.panel{width:100%}.side{display:contents}.side>.panel:first-child{order:-1}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:13px}}
-</style><style>
-.aw-zh{display:none}html[lang="zh-CN"] .aw-zh{display:block}html[lang="zh-CN"] .aw-en{display:none}
-.aw-club-guide{background:#fff9f1;border:1px solid #ead8cc;border-radius:14px;padding:10px 13px;margin:10px 0}
-.aw-club-guide strong{font-size:12px;color:#7b5d73}.aw-club-guide p{font-size:12px;color:#6a5b6c;line-height:1.7;margin:5px 0}.aw-club-guide small{font-size:10px;color:#98818a}
-.aw-expanded-heading{padding:13px 15px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:14px;font-weight:850;color:#725b74}
-.aw-expanded-heading span{font-size:11px;color:#978493;font-weight:550}
-.aw-advanced-body{padding-top:11px!important;border-top:1px solid #efe2dc!important}
-.awClub{margin-bottom:7px;border:1px solid #eadcda;background:#fffaf6;border-radius:12px;padding:9px!important;line-height:1.65}
-.awClub .aw-club-head{display:flex;justify-content:space-between;gap:7px;align-items:baseline}
-.awClub .aw-club-venues{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
-.awClub .aw-club-venues span{border-radius:7px;background:#f7eceb;padding:2px 6px;font-size:11px}
-.awClub .aw-club-state{font-size:11px;color:#846f83}
-.awClub .aw-club-state.ready{color:#25825b;font-weight:800}
-.aw-coach p{display:block!important}
-@media(max-width:540px){.aw-club-guide{padding:9px 10px}.aw-club-guide p{font-size:11px}}
-
-/* Compact v3 layout: action-focused side rail, always-visible resident/news panels below. */
-.aw-minimal-guide{padding:10px 14px!important}
-.aw-club-example{display:block;margin-top:8px;padding-top:9px;border-top:1px solid #eddcd1}
-.aw-club-example-tag{font-size:11px;font-weight:850;color:#916c7c}
-.aw-club-example .aw-en,.aw-club-example .aw-zh{font-size:12px}
-.aw-example-venues{display:inline-flex;gap:5px;align-items:center;margin:5px 10px 2px 0;vertical-align:middle}
-.aw-example-venues>span:not(.aw-example-plus){display:inline-block;border-radius:9px;background:#fffdf8;border:1px solid #e6d8d2;padding:4px 8px;font-size:11px;font-weight:750;white-space:nowrap}
-.aw-example-plus{font-weight:800;color:#ae8f91}
-.aw-club-example p{margin:4px 0 0;display:inline;font-size:11px;line-height:1.6;color:#796878}
-.aw-club-example p b{color:#745264}
-.layout{grid-template-columns:minmax(0,1fr) 298px;gap:14px}
-.side{gap:11px}
-.side>.panel{padding:12px 13px;border-radius:18px}
-.side .panel-title{font-size:13px;margin-bottom:8px}
-.side .panel-sub{font-size:10px}
-.side .aw-club-progress-panel .feed{max-height:266px;padding:3px;background:transparent;min-height:0}
-.aw-club-progress-panel .awClub{margin-bottom:6px;padding:7px 9px!important}
-.aw-club-progress-panel .aw-club-state{font-size:10px}
-.aw-picker-panel .choice{padding:8px 4px}
-.aw-picker-panel #preview{font-size:11px;line-height:1.5}
-.aw-lower-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(260px,1fr);gap:14px;margin-top:14px;align-items:start}
-.aw-lower-grid>.aw-advanced{border-radius:19px}
-.aw-lower-grid .aw-expanded-heading{padding:11px 13px;font-size:13px}
-.aw-lower-grid .aw-expanded-heading span{font-size:10px}
-.aw-lower-grid .aw-advanced-body{padding:10px 12px 12px!important;box-shadow:none;background:transparent}
-.aw-lower-grid .residents{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.aw-lower-grid .res{min-width:0;min-height:61px;padding:7px;display:flex;align-items:center;flex-direction:row;text-align:left;gap:6px;border:1px solid #efe5de;background:#fffaf5;border-radius:11px}
-.aw-lower-grid .res .face{flex:none;font-size:22px}
-.aw-lower-grid .res>div{min-width:0;flex:1}
-.aw-lower-grid .res b{font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.aw-lower-grid .res small{font-size:10px;line-height:1.4;display:block;color:#897889;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.aw-lower-grid .res .aw-attending{color:#287957}
-.aw-lower-grid #residentWhy{margin-top:9px;font-size:11px;line-height:1.5}
-#residentWhy[hidden],#awIncomingGroup[hidden]{display:none!important}
-.aw-incoming-heading{font-size:11px;font-weight:800;color:#a37b82;margin:10px 0 6px;border-top:1px solid #eee0d7;padding-top:9px}
-.aw-lower-grid .aw-news .feed{max-height:280px;min-height:145px;overflow:auto;border:0;background:transparent;padding:1px 3px}
-.aw-lower-grid .aw-news .event{font-size:11px;line-height:1.5}
-@media(max-width:960px){.aw-lower-grid{grid-template-columns:1fr}}
-@media(max-width:780px){.layout{display:flex;flex-direction:column;gap:10px}.side{display:contents}.side>.panel:first-child{order:-1}.aw-lower-grid{margin-top:11px}.aw-lower-grid .residents{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:540px){.aw-club-example p{display:block;font-size:11px}.aw-example-venues{display:flex;margin-top:5px;margin-bottom:5px}.aw-lower-grid .residents{grid-template-columns:repeat(2,minmax(0,1fr))}.aw-lower-grid .aw-news .feed{max-height:210px}.aw-expanded-heading span{display:none}}
-
-/* Guided playstage: residents, map and venue choices occupy one shared view. */
-.tt-journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 8px}
-.tt-journey-item{min-height:44px;display:flex;align-items:center;justify-content:center;gap:9px;background:#f3ece6;color:#9b8790;border:1px solid #f0e1da;border-radius:13px;padding:9px 7px;font-size:12px;font-weight:800;line-height:1.3;transition:background .15s,border-color .15s}
-.tt-step-num{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:#eae1df;color:#a08c95;font-size:12px}
-.tt-journey[data-step="1"] [data-phase="1"],.tt-journey[data-step="2"] [data-phase="2"],.tt-journey[data-step="3"] [data-phase="3"]{background:#fff0dc;border-color:#e6bfae;color:#794c65;box-shadow:0 3px 11px #bc9d7b20}
-.tt-journey[data-step="1"] [data-phase="1"] .tt-step-num,.tt-journey[data-step="2"] [data-phase="2"] .tt-step-num,.tt-journey[data-step="3"] [data-phase="3"] .tt-step-num{background:#de8f82;color:white}
-.tt-journey[data-step="2"] [data-phase="1"],.tt-journey[data-step="3"] [data-phase="1"],.tt-journey[data-step="3"] [data-phase="2"]{color:#53977e}
-.tt-journey[data-step="2"] [data-phase="1"] .tt-step-num,.tt-journey[data-step="3"] [data-phase="1"] .tt-step-num,.tt-journey[data-step="3"] [data-phase="2"] .tt-step-num{background:#d6efe1;color:#398668}
-.tt-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:7px 0 11px;max-width:none}
-.tt-stats .stat{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;padding:6px 10px;box-shadow:none;border-radius:12px}
-.tt-stats .stat .k{font-size:11px}.tt-stats .stat .v{font-size:17px;line-height:1.2}
-.tt-stats .stat small{width:100%;text-align:center}
-.tt-playstage{display:grid;grid-template-columns:218px minmax(0,1fr) 226px;gap:12px;align-items:start}
-.tt-playstage>.panel{padding:13px 12px;border-radius:19px;min-width:0;box-shadow:0 6px 25px #ab8b8216}
-.tt-rail-heading,.tt-map-heading{display:flex;align-items:baseline;justify-content:space-between;gap:7px;margin-bottom:6px;color:#705467;font-size:14px;font-weight:900}
-.tt-rail-heading>b,.tt-map-heading>b{font-size:14px}
-.tt-rail-heading>span,.tt-map-heading>span{font-size:10px;color:#988593;font-weight:550}
-.tt-rail-hint{font-size:11px;color:#8c7a86;line-height:1.45;margin:0 0 9px}
-.tt-resident-rail{max-height:620px;overflow:auto;scrollbar-width:thin}
-.tt-resident-rail .residents{display:flex;flex-direction:column;gap:5px}
-.tt-resident-rail .res{display:flex;align-items:center;flex-direction:row;text-align:left;gap:7px;min-height:43px;padding:5px 7px;background:#fff9f3;border:1px solid #f2e5df;border-radius:10px}
-.tt-resident-rail .res .face{font-size:22px;flex:none}
-.tt-resident-rail .res>div{min-width:0;flex:1}
-.tt-resident-rail .res b{font-size:11px;display:block;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tt-resident-rail .res small{font-size:10px;line-height:1.4;color:#8b7b86;display:block}
-.tt-resident-rail .res small.tt-resident-state{font-size:9px}
-.tt-resident-rail .res.awSelected{background:#f0eafb;border-color:#a59fd6}
-.tt-resident-rail .tt-resident-detail{font-size:10px;margin:8px 0;padding:8px;line-height:1.5;border:1px solid #eadce8}
-.tt-resident-detail[hidden]{display:none!important}
-.tt-incoming{border-top:1px solid #f1e6e2;margin-top:10px;padding-top:9px}
-.tt-incoming[hidden]{display:none!important}
-.tt-incoming-label{font-size:10px;color:#9a7a8b;font-weight:800;margin-bottom:6px}
-.tt-incoming .res{background:#faf7f4;border-style:dashed;opacity:.8}
-.tt-incoming .res small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tt-map-panel{position:relative}
-.tt-map-heading{margin-bottom:5px}
-.tt-map-panel .aw-coach,.tt-map-panel .aw-coach.aw-compact{margin:0 0 9px!important;padding:9px 11px!important;border-radius:12px!important}
-.tt-map-panel .aw-coach .aw-coach-kicker{display:none!important}
-.tt-map-panel .aw-coach strong{font-size:13px!important}
-.tt-map-panel .aw-coach p{display:block!important;font-size:11px!important;line-height:1.4;margin:3px 0 0}
-.tt-map-panel .map-wrap{max-width:510px;width:100%;margin:auto}
-.tt-map-panel .board{gap:5px}
-.tt-map-panel .tile{border-radius:11px}
-.tt-map-footer{margin:9px 0 5px;text-align:center;font-size:10px;color:#988390}
-.tt-map-panel .tt-preview{font-size:11px;line-height:1.5;min-height:0;padding:8px 10px;margin:6px 0 0}
-.tt-map-panel .aw-week-receipt{margin:6px 0 0}
-.tt-builder-rail .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-.tt-builder-rail .choice{min-height:87px;padding:9px 4px;border-radius:12px;line-height:1.3}
-.tt-builder-rail .choice .ico{font-size:27px;margin:0}
-.tt-builder-rail .choice .label{font-size:11px}
-.tt-builder-rail .choice .detail{font-size:10px}
-.tt-builder-rail .tt-auto{width:100%;margin:9px 0 0!important;font-size:11px!important;padding:9px 8px!important;box-shadow:none;justify-content:center}
-.tt-builder-rail .upgrade{display:block;width:100%;margin:8px 0 0}
-.tt-builder-rail .upgrade[hidden]{display:none!important}
-.tt-divider{height:1px;background:#efe3de;margin:12px 0}
-.tt-subheading{font-size:12px;font-weight:850;color:#745e72;margin-bottom:7px}
-.tt-goals{display:grid;gap:6px;font-size:11px;line-height:1.4}
-.tt-builder-rail .feed{min-height:0;max-height:176px;overflow:auto;background:transparent;padding:0}
-.tt-builder-rail .awClub{padding:7px!important;margin:0 0 6px}
-.tt-builder-rail .aw-club-venues{gap:4px}
-.tt-builder-rail .aw-club-venues span{font-size:10px;padding:2px 4px}
-.tt-builder-rail .aw-club-state{font-size:10px}
-.tt-club-example{border-radius:10px;background:#fff3e9;padding:8px;margin-top:9px;font-size:10px;color:#8c6e7e;line-height:1.5}
-.tt-news-panel{margin:12px 0 0;padding:11px 14px!important}
-.tt-news-heading{display:flex;gap:12px;align-items:baseline;font-size:13px;color:#795c6b;margin-bottom:6px}
-.tt-news-heading span{font-size:10px;color:#a08b93}
-.tt-news-panel .feed{min-height:0;max-height:115px;overflow:auto;background:transparent;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;padding:0}
-.tt-news-panel .event{font-size:11px;line-height:1.45;margin:0;background:#fff8f3;border:1px solid #f0e5e0;border-radius:9px;padding:6px 8px}
-.tt-journey .aw-zh,.tt-resident-rail .aw-zh,.tt-map-panel .aw-zh,.tt-builder-rail .aw-zh,.tt-news-panel .aw-zh{display:none}
-html[lang="zh-CN"] .tt-journey .aw-zh,html[lang="zh-CN"] .tt-resident-rail .aw-zh,html[lang="zh-CN"] .tt-map-panel .aw-zh,html[lang="zh-CN"] .tt-builder-rail .aw-zh,html[lang="zh-CN"] .tt-news-panel .aw-zh{display:inline}
-html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-en,html[lang="zh-CN"] .tt-map-panel .aw-en,html[lang="zh-CN"] .tt-builder-rail .aw-en,html[lang="zh-CN"] .tt-news-panel .aw-en{display:none}
-.tt-stats .stat:last-child{display:none}
-@media(min-width:1300px){.tt-playstage{grid-template-columns:240px minmax(0,1fr) 245px}}
-@media(max-width:1010px){.tt-playstage{grid-template-columns:190px minmax(0,1fr) 203px;gap:9px}.tt-playstage>.panel{padding:10px 8px}.tt-resident-rail .res{gap:4px;padding:4px 5px}.tt-journey-item{font-size:11px}.tt-builder-rail .choice{min-height:80px}}
-@media(max-width:780px){.tt-playstage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);grid-template-areas:"res map" "build map";gap:9px;align-items:start}.tt-resident-rail{grid-area:res;max-height:250px}.tt-map-panel{grid-area:map}.tt-builder-rail{grid-area:build}.tt-map-panel .map-wrap{width:100%}.tt-journey-item{min-height:40px;padding:5px;font-size:10px;gap:5px}.tt-step-num{width:20px;height:20px;font-size:10px}}
-@media(max-width:570px){.tt-playstage{grid-template-columns:1fr;grid-template-areas:"res" "build" "map";gap:8px}.tt-resident-rail{max-height:none}.tt-resident-rail .residents{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.tt-resident-rail .res{min-height:58px;flex-direction:column;text-align:center;padding:5px 2px;gap:2px}.tt-resident-rail .res .face{font-size:22px}.tt-resident-rail .res b{font-size:10px}.tt-resident-rail .res small{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tt-resident-rail .res .tt-resident-state{display:none}.tt-incoming .residents{grid-template-columns:repeat(4,minmax(0,1fr))}.tt-incoming .res{min-height:44px}.tt-rail-hint{margin-bottom:7px}.tt-journey{gap:4px;margin:7px 0}.tt-journey-item{font-size:9px;flex-direction:column;gap:3px;text-align:center;padding:5px 1px}.tt-journey-item .tt-step-num{width:18px;height:18px}.tt-stats{margin:5px 0 8px;gap:5px}.tt-stats .stat{padding:6px 4px;gap:3px}.tt-stats .stat .k{font-size:9px}.tt-stats .stat .v{font-size:15px}.tt-builder-rail .cards{grid-template-columns:repeat(3,minmax(0,1fr))}.tt-builder-rail .choice{min-height:66px;padding:5px}.tt-builder-rail .choice .ico{font-size:20px}.tt-builder-rail .tt-auto{margin:7px 0 0!important}.tt-builder-rail .tt-divider,.tt-builder-rail .tt-goals,.tt-builder-rail .tt-subheading,.tt-builder-rail #clubProgress,.tt-builder-rail .tt-club-example{display:none}.tt-map-panel .aw-coach{margin-bottom:7px!important}.tt-news-panel .feed{display:block;max-height:125px}.tt-news-panel .event{margin:4px 0}.tt-map-footer{font-size:9px}}
-
-/* Keep the board central, and scan primary/secondary interests at a glance. */
-.tt-map-panel .map-wrap{max-width:440px}
-.tt-resident-rail{max-height:585px}
-.tt-resident-rail .res small.tt-interests{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tt-resident-rail .res small.tt-interests b{font-weight:900;color:#745b84}
-.tt-journey[data-step="1"] ~ .tt-playstage .tt-builder-rail{border-color:#e4b09a;box-shadow:0 0 0 2px #f5d1ba70}
-.tt-journey[data-step="2"] ~ .tt-playstage .tt-map-panel{border-color:#e4b09a;box-shadow:0 0 0 2px #f5d1ba70}
-.tt-builder-rail .choice:disabled{opacity:.65;cursor:wait}
-.tt-playstage .aw-coach,.tt-playstage .aw-coach.aw-compact{background:#fff3e8!important;border:1px solid #ebd8cb!important}
-@media(max-width:570px){
- .tt-map-panel .map-wrap{max-width:440px}
- .tt-builder-rail .tt-divider{display:block;margin:8px 0}
- .tt-builder-rail .tt-goals{display:grid;font-size:10px;gap:3px}
- .tt-builder-rail .tt-subheading{display:block;font-size:11px}
- .tt-builder-rail #clubProgress{display:block;max-height:75px}
- .tt-builder-rail .tt-club-example{display:none}
- .tt-resident-rail .res small.tt-interests{font-size:8px}
- .tt-resident-rail .tt-rail-hint{font-size:10px}
- .tt-resident-rail .res b{font-size:9px}
-}
-.tt-builder-rail .choice.tt-favorite{background:#f1e8ff;border-color:#b2a2db}
-.tt-builder-rail .choice.tt-liked{background:#eef9f4;border-color:#a0d4bb}
-.tt-builder-rail .choice .tt-fit{margin-top:4px;font-size:9px;color:#82658c;font-weight:850;line-height:1.3}
-.tt-journey[data-step="3"] ~ .tt-playstage .tt-map-panel,.tt-journey[data-step="3"] ~ .tt-news-panel{border-color:#cfb0c6;box-shadow:0 0 0 2px #d7bad65a}
-
-/* Cohesive grouped households, original illustrated human SVG portraits. */
-.tt-playstage{grid-template-columns:248px minmax(0,1fr) 236px}
-.tt-resident-rail{max-height:none;overflow:visible}
-.tt-resident-rail .residents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-.tt-household{min-width:0;border:1px solid #eadbd6;background:linear-gradient(155deg,#fffaf6,#ffefea);border-radius:13px;padding:7px 5px;box-shadow:0 2px 5px #d9b4b21c}
-.tt-house-head{display:flex;align-items:center;justify-content:space-between;gap:3px;margin:0 2px 6px;font-size:11px;font-weight:900;color:#866d7b}
-.tt-house-head small{font-size:9px;color:#aa929d;font-weight:700}
-.tt-house-people{display:flex;justify-content:space-evenly;align-items:start;gap:3px;min-height:71px}
-.tt-resident-rail .tt-person{min-width:0;flex:1;padding:3px 1px;border:1px solid transparent;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:transparent;color:#69576b;text-align:center}
-.tt-resident-rail .tt-person:hover{background:#f7eae8}
-.tt-resident-rail .tt-person.awSelected{background:#eee6fa;border-color:#ac91d4}
-.tt-person .tt-portrait{width:40px;height:40px;max-width:100%;border-radius:12px;display:block;position:relative;overflow:hidden}
-.tt-person .tt-portrait svg{display:block;width:100%;height:100%}
-.tt-person b{display:block;font-size:10px;line-height:1.1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.tt-person small{font-size:10px;white-space:nowrap;color:#977885}
-.tt-person .tt-gender{position:absolute;right:0;bottom:0;border-radius:6px 0 9px 0;background:#fff9f4dd;font-size:9px;line-height:12px;padding:0 3px;color:#795b74;font-weight:900}
-.tt-person.is-active .tt-portrait{box-shadow:0 0 0 2px #9bdbc4}
-.tt-incoming{margin-top:10px}
-.tt-incoming .tt-household{background:#faf6f2;border-style:dashed;opacity:.8}
-.tt-builder-rail .cards{display:grid;grid-template-columns:1fr;gap:7px}
-.tt-builder-rail .choice{width:100%;display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:10px;min-height:56px;padding:7px 10px;text-align:left;border-radius:12px}
-.tt-builder-rail .choice .ico{font-size:26px;line-height:1.1;flex:none}
-.tt-builder-rail .choice .tt-card-copy{min-width:0;display:flex;flex-direction:column;gap:2px;flex:1}
-.tt-builder-rail .choice .label{font-size:12px;line-height:1.2;font-weight:900}
-.tt-builder-rail .choice .detail{font-size:10px;line-height:1.3}
-.tt-builder-rail .choice .tt-fit{font-size:9px;margin:0}
-.tt-builder-rail .choice .tt-card-arrow{color:#c8a3a7;font-size:16px;font-weight:900}
-.tt-builder-rail .choice.active .tt-card-arrow{color:#8a5c96}
-.tt-builder-rail .tt-club-example{font-size:10px;line-height:1.6}
-.tt-builder-rail .awClub .aw-club-venues span{font-size:10px}
-.tt-resident-detail{font-size:11px;line-height:1.5}
-.tile .tt-club-pending{position:absolute;right:2px;top:2px;font-size:9px;line-height:1.2;padding:3px 5px;background:#e9d8f8;color:#62518a;border-radius:8px;font-weight:850;z-index:10}
-.visitor svg{width:22px;height:22px;vertical-align:middle;border-radius:50%}
-.runner svg{width:27px;height:27px;vertical-align:middle}
-@media(max-width:1040px){.tt-playstage{grid-template-columns:218px minmax(0,1fr) 214px;gap:9px}.tt-person .tt-portrait{width:35px;height:35px}.tt-house-people{min-height:67px}}
-@media(max-width:780px){.tt-playstage{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}.tt-resident-rail .residents{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:570px){.tt-playstage{grid-template-columns:1fr}.tt-resident-rail .residents,.tt-incoming .residents{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.tt-person .tt-portrait{width:44px;height:44px}.tt-house-people{min-height:79px}.tt-builder-rail .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.tt-builder-rail .choice{min-width:0;height:89px;min-height:89px;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;padding:5px 3px}.tt-builder-rail .choice .ico{font-size:23px}.tt-builder-rail .choice .tt-card-copy{align-items:center;justify-content:start;gap:2px;flex:none}.tt-builder-rail .choice .label{font-size:10px}.tt-builder-rail .choice .detail{font-size:9px}.tt-builder-rail .choice .tt-card-arrow{display:none}.tt-builder-rail .choice .tt-fit{font-size:8px;line-height:1.1}.tt-resident-rail .tt-rail-hint{font-size:10px}}
-.tt-portrait .tt-painted{display:block;width:100%;height:100%;border-radius:12px;background-image:url("data:image/webp;base64,UklGRloRAABXRUJQVlA4IE4RAACQRwCdASrwAFAAPr1MnEqnJCKhsDjbqOAXiUAXWEFLI9QSU8I+DXzW/ULzuWnI0h/KF41flfDny3fNpURxv13SKsq3kjqEeyPPAgu9Kvu/QO9p/sfE/9n/YD4SWgL+mfVk/1PJn9e+wX/PP8D10fSbS3bz1GcmCG0JMd8gHB8q3uU0gqLfaXAnHhejI40oehndcV7axgg7RhWKEn+rgJ6/vWJ8fnuVZB9h/1bEiRT17GN1WzFOIyyu3eEv+okZ35KPA7Vy1+iOouiTHN7shrX6D3PFVKp+wQgITk25qbNk9dmccxOF8W0F02O9IDL+O0p7x6taNgfuM56qH3/yzUg93sd8DWg4XhL53zpIwqM3XS2/kPYw5J7QCSX8dB5XlAvslSr6sGvC5gh3t9LVQ6Og3Q5zYSX3jVbM56DHT6rCCvGtvTHQhYhZ3oyfiGOTpH83bd47yndG5uRxb3HYEGrMrjAcAu+meL6zzDagmwhonZvbGwKo7nNR1kzDpv+pvyUCkUqZUz4mSh0AV4r3w4bcreU6SrSNJDZggkcph7GVOJXmMVoe9EARYyY/7fNEgnK4g3F5CykRwT98LVtmYWHt3csRQUY3seKeuv3l+b7hKgBFkK6c5guRs3etQD8ZnbBr9V5aN4Df4LkZgVNqr8srWYeiYLbO9fdkI+Vsgr7XEY0N8kVcDh1vTQhV8JJ6yocs0JRGOcpIdy0PqZCMzaGdlffBuFpCYFd1TYDvl1sY8dvpIfE53nq08DTA5AtY7PzTPbOG8AD+9Tpq47n9qCGJGiMXnE3iohyJ6MLgIFmWJUF/i9wdlEQKuAFbsCZ6viifXLwPPAnMAu57n0gSktSDwjsCvao/vtBpa89sShxxdDhP+tE9v9xG2fpl9fDrDyxPVfhl/Bf5aC9t5mXrSgl7HmsRwsEwLRY1AxJumB/ikVO7/e5DF4XUmD5ZDJVUl3Px2pF5fNzccrdJDlfWHnMVklEu85q4p8A2iHkkYv7O1e/RKf1QE0sbXHx5TqYbB5/GqRC+HjwAjnjv3AG9nB7ZG913fPYOg6iuoiV9KCLV7Zugv8/wgL5pghLcoSnkdeKC1byRayRQFF6gP0o1r0VQWYQvCdBrw9P4ejwyBX+iTzJm1QdQKJaHSPdQTOSPbMQD0n8Thr1EU4mwnH3hVJdBx+0F6Muvy9yRC7amlL7nEQKSXnW1PoEMKLktPGfYo26+NkAPC7vmGe/tnW9qFrSt+vN6bn2dEp5TbjXe02HEsWiqCq/a+7b9svO2HaAN0j9e/fjPIZv3WvtpmtbBunV27Zxa6ZkvfjpkzLz1mK9C5b+u8EazHfwpYv8Pc5s0yuAfQp5lztMiHNdgssvPnt+ol5gaI9YWpJ5Ajd7Q569G1WaoDLnkgD0Wr7/cpgy5KbE0JHwQdtOE6mtWkT3EVA4oLg2HgxwhRfoN/hnOwVr1YiHxhh5PYbEEO/8zlJBcamKw10ggPCPxHkZ0ytq4Iuo1C2wYIK8S+rJWZk2IQOSFd62uk9a6oyaaW+xP0weh+A6U1kkVS6prrWiphdNL62zm177EWN5Uw/eewnSCYRG5SJ6lXfPirLVYbbGG5obGeZ5lZ4HAzTs/BbjSUg+PSFwScHwUBVIeoDtxDIy6CCN6NUv0Gxd1lq1OkuO4IlLFom9+h3r7Spbt8UkGK5fN4mbwtUSyUZY2mad5awEvtwf+e1yr16VLyhubzDBlwTL/HdMFSfDfdLwfJBQfGBDf9oX7m8gK270/lQEJoSXqOVhVqYztd6g56/5TdrPX/1tjUpqfI1o3lbJMFTX6cGKP9+rnOysQzy2/0+tR7Baxk7qLnRaRam4jptpL0me9Xrq1VRVDLEw67CEvX9z96PwCnaDoaAaIta8oDEIlSTn83NPJWPmdZ3ikE+kpLVSwyB6Hl7driAilXynko0bgkAHXKBQenOinD9tfxJuje9aRM7tK+smGedpgU/kMtlb7DCYlILSJs1nw8cLRJ0duVQkuSzcvZTtT4kDesUienCfXswKwVeZ+wzuEeRnbIFtBfjMKPcHQtqDVkfvqq0y9QDiL//aRLyKQlCCbnReQHH4EIB6RzfzgwJEk2YRy+lb5mpmib2AiMfScu1NhkHKaiKdFRqMQ5tXDWCUH02Kfs/cSkoUQG4VyKAqS2h+JEegzaB6BDKF73S10IfyBXbYm7jSxLnmXIIrvbXSy0jky9Ip4Wr/BbGOxJePCpWvkH9pof0JZkHjxLdxetgJtEip4Ftwh2n7TO1GQF7+oNTewDQ3Pd98PoS/Lgk27ob2xE8sSDiQoRHPwTCX3P/S28BK6a7nUKwYNxnXbD1rQTTY3dshJNKWe0yGUDCrdcxpAzUGWwZTUMBBVftqm0nhCqSujkFhnQBtTEeaezxRuRBBI1VfVboPBFQgL7jjMdRaQXbqJi9HQgNL6FA2kehk1DHgnv6w6l4I5rUb/TSt9PUosn9Intn+R9QWyr+mQh8m8T8tnSuH9lJcqj0WmYzN8N+qbLRf51ajMnWwjUGSWHSF47NVAR0Qdt1HeNXISc9Joi9BR64j5jD2hg9lmejYSJDNNYS4uNxGvOzDy8DycYO5G6GXlSbOEi1qL4txbskX52wy3AI7XpZipk1ZQGQeiSYykaha0I+z9IP45FdPjLjDOmx8G9NIKkAMz8z3jgL1UChOStupZc2QrM516dkRurX4BTkfEEo8mGy1yPKSL3Ry5h/jKTkovFWJYPBOcCLboh0WqV4xqN850onzNhCT4Kwx4RUCq3ExEaFuCO3Zvr/2zTs9YVPWOV5v5u31u5VT2CnYqktxO2pFG7r1S8JNThwBDllxuSmNDpEg5OYl5xHUk3VKA74GFw1+MxIuLaiJAASvHtgVOMf1CaEAmSr5EeYmc/Tirma+Dmec6zcC0Ib8BS1q5rsBOxY9RM5I6nUtsD7QkK0ONx/NwxRe+4RXqQORBgBDaCp9HaupyQEozyo38Y9z7FC84Y8BEp9mk7fJVPYgNg+QKm0O5LVeAnC8vqFIYqC7/Pj/3qo/ihNqMTz9ikldL7HGJpL6icyoA8pLuKYnqpXRsmyqDnuy+tZvWraooGh5OjXHtgTJELsQXphx1temxrmATlND2z5jYDOc+f4IC/RZI5QBrAEd5QKApsaeo3oK0DYn9mdbf3uGwkmzLuxhPZmUWqYAPzb7qI9/7VXwM3/yR/rd5FnM0Gsv16ejbyCfr+O6FiYQxTO8IhHlHb/5KhAmG2Y48vFdHNx5NbkCjOJM5eBpshPiorbsceXXUR4Ku66dXtj6HHNqtqPUQZGXErKiw239dkjNzqzai9Agk1Jpaucv8igpOzF6YmU7W2KL7gCOuMWkR8/0ZFf0vLckybNazfJz2pm3LCSoHPwKaN54+3n/S6Es5OVmkehjOSnqQBomx14lgnEWK/gXNbbIbQQXsuUjK/9lYdTbZaiK7KBTUlGHOjfapggPMViqEXH65xKIEYUXg4A1w3fuAIjtI8qFKEjmvbJ3ZEamqV4eIYWvFFiudFSmW66tcsNKRBcPygtf7FpylCSzxj0OKyLtNRkwOosrQE16iRH36HNAlVM7xzV4TttE6KwIcf5cBUrPg2KYKI+4bbhaHHhLeimZHDkXdyn/643YTqP+ZPs6/ACQo9D3b7RuorSbXQNaRX+vh4i3rKnj7mHIhajDh2ET2T8zLAimJwQm6a4hkQe9DIEtcXpuJ9R0jNAUwyIkx2vmO2TnsooCjoJvx4rTvOUQChcEsasx6/f1QSERMzV29+U23Y5n3O2phlx2WSsO0Yz+ncnsv1WfCy0dTa6f+q4jo5VYrDTlAROWNVrIjqbTs72oS0hwKj4inurGl8aqK9Q7NqnFPgOa/1zkWPxo6h3K5Or+zBGKmy76T1WxEKfwl7YQ29qamAw+FSCknreWbWWeQgSvbSxT95Db25+ZPLqAO0TqCmWkQ587/THP90SgVqH/GDyIDLyBsUYMr7Zc9wGiY5/vPqtzaeyeWG5mI9FXG37aFBQfueDtxuo2Aa4qHVag990+pm+/kChsJs+bB0oDBZ9hh1/eTsPdm4PSndpu7upCpAFI8Nonp56USN93sbSRQfAClKK6zA1DPZbrbgXYfRpfFk0A4WhZNIjL/PXEOcZxMc3TqRhu/KNGLQtKaUTY7k3U+88gd4UjFW6pn14c50Fc8fgzRgPE4sHHKj67JwTjsxkG1Mv12Gottr93a6+WBEsS05B/waocCjlZowlNv/glCElDwVa09IJY2l1jLVlqVfLmwtYV0X/wJUbcv68E6vMv9S36ZX+Y/PLf1goe+jHus3UDT27+A+lS8hi7uBhRsi+3WhRW+W9cok/6PBvZ1N17cGiHPcI3hfIXp1vscitUhRVKH77yPlGPAHr5qcJqaLY+QJnZuUsR0ZwIdoEiTpFUOvkm67F6H01DjnCLqRpw3YEfz8BU4qr2K8wNpw0NH7xT9bzjfKLmVlUapfP0P2YHnRhpCYOEMy14RPODd+JNonKrjKiNUNdiFA9cToEB/3+8iHO+p4z94YzcavhL4MaNjJoZJaIWD5gfEt6qe/gtlOyfqZDzqMzR/S7hvKnmKnqcCGrb1sC3NTAJPAOExtHnsId5I8TcFVhytSSodpGtkH47YRsP8EEb4tFhTx/efnfNAKQQ2w/NDIZVnkyeZLWmqN0QLrBkvNKvabA51bBs4nauoIuRINH1HdtCQDNLvoUedY7p+15xx9O3CO1AKafK1HaG2giiRYFMDJ7qGglFZyPtJaDjRAshP91mHjjedmL/PMmFlfNnvevqXk/lkpjmpZaMc9NRqQX5aK793H5pOjIlcSjXajIsjGjDFFfPgwQh6Kz4iNL/DK2GROnm5+qLLRsbPspxoE8UvWDrtQ3Px2W82fsIiAHV6fxElruPXNiMpSwG/ASL2P5d5gUPDoKxmXNhvvJ6bFf90U8vxm1/tPToQ9zblnjopIr9kufy6jn0L4rUuFpVabi7LN8HylpyXBIcReUc0v1loKGSGVnlDvzkqc/gEPH+ITi46BlfpMXQxlbI4JjkBMd0K6YIZC0mns2S+WcVkPbM5XAXWvXJcOwRozL7EDZRo0Rl2FBLMJ4QhbtdKt8yd1eU1W3ffWTWkrID7KuGBUI2LgOhnUnTOzsv46mm+2ZT6OT40fDj0Yt4/JHNY/MrLPMcwiMyR29c3U85Fzz2u1qo2CGUjKlGabB430ESTIjgfeZrLzsMF2ElOHYN802IsiwQKd29JA7fxKuClHSYoJBdoLLPCy5t8r/1bOciXpJBRS5bNvG8LtXIc10a96yYJtrEEfXPEm6Uz18DfhTrn2IwqhIzbwtacRfybYumCx0b/J/aoPtlKlIz274uUgpXjtBJ+7rXgtf2/WyLnpewncttyJp14Sla7yccSGiVwN1mjpfXM5UYwfR5u0DIQ5AVO0TqZNrIBTO8IajAN7c19Jyz1TdZ6KKqb5EeEo6XOiWssbW7IUQlR4BUtT+GQ22fzm1YSMI852jJOxv50V1oNwaI2/Fjp+DuisepUfsuRmUyxFpNxJY3bzLrXO7rQsLFo3DSv9V91QLyS1LYDpskZWRWM5x+AN8g5L7Ot7Owr+GV5IXMB/l5DkuSBPkPvBf/Khy5us9KADzVmp6gsMSuaYhwhCtMQLfOm8upvK+t4qJwWXa2orqPsBSpOMpBOeGwkdwTEqWUbewyI3ZUJiV8Dhk24mHQXLKKoOqpwtqGhNvmtbK0hX72LFIXYOpd0rcqAl7uanUzhDIh+/SYFJXpkq0gGd+7fb5b/yPcNz61I2BqITjBpW1E8kS5yrlZVUAW9+dEPlonIH9bEYsl8YI+XniM6gLdIL5A9/D98xRJ00jmalOXZSuDIch1n/j5UD742u2I/ei9X8NbTTFHxpQD4acXkXGdgAA==");background-size:600% 200%;background-repeat:no-repeat;filter:saturate(1.05)}.tt-person.awSelected .tt-painted{outline:2px solid #8d72bb;outline-offset:-1px}.tt-person .tt-portrait{border:1px solid #eadac8;box-shadow:inset 0 1px 2px #fff7,0 2px 5px #8c666620}.tt-builder-rail .choice .detail{font-size:10px;color:#7f7180}.tt-builder-rail .choice:hover{border-color:#dfaaa4;background:#fff5ef}.tt-person:hover .tt-painted{filter:saturate(1.1) brightness(1.02)}
-/* The news ticker is the first game element and stays compact, without hiding updates. */
-.tt-news-panel{display:grid;grid-template-columns:145px minmax(0,1fr);gap:10px;align-items:center;margin:7px 0 9px;padding:8px 10px!important;background:#fff9f2;border:1px solid #ecd9d1;border-radius:14px}
-.tt-news-heading{display:flex;flex-direction:column;gap:3px;margin:0;font-size:12px;min-width:0}
-.tt-news-heading b{font-size:13px}
-.tt-news-heading span{font-size:10px;line-height:1.3}
-.tt-news-panel .feed{display:flex;flex-wrap:nowrap;align-items:stretch;gap:7px;min-width:0;max-height:74px;min-height:44px;margin:0;padding:0 1px 2px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:thin;scroll-snap-type:x proximity}
-.tt-news-panel .event{flex:0 0 clamp(190px,48%,490px);align-self:stretch;min-width:0;padding:8px 10px!important;margin:0!important;display:flex;align-items:center;line-height:1.4;font-size:11px;scroll-snap-align:start}
-.tt-news-panel .event:first-child{border-color:#e3b3aa;background:#fff0e5;color:#744e63;font-weight:750}
-@media(max-width:650px){.tt-news-panel{grid-template-columns:1fr;gap:5px;padding:8px!important}.tt-news-heading{flex-direction:row;justify-content:space-between;align-items:baseline}.tt-news-heading span{font-size:9px}.tt-news-panel .feed{display:flex;max-height:68px;min-height:39px;overflow-x:auto;overflow-y:hidden}.tt-news-panel .event{flex:0 0 88%;padding:6px 9px!important;font-size:10px}}
-
-/* Phone play flow: choose a venue, tap the map, then explore neighbors. */
-@media(max-width:570px){
- .app{padding:13px 10px 30px}
- .tt-playstage{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"build" "map" "res";gap:11px}
- .tt-builder-rail,.tt-map-panel,.tt-resident-rail{min-width:0;width:100%}
- .tt-builder-rail .cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
- .tt-builder-rail .choice{min-height:88px}
- .tt-playstage .tt-map-panel .map-wrap{width:100%;max-width:none}
- .tt-playstage .tile{min-height:60px}
- .tt-resident-rail{max-height:340px;overflow:auto}
- .top-actions .btn,.tt-builder-rail .btn,.aw-mobile-controls .btn{min-height:44px}
- .tt-map-footer{font-size:11px}
-}
-
-/* Always show newcomer portrait artwork from the start, not blank sprite rows. */
-.tt-portrait .tt-painted-newcomer{background-image:none;display:block;overflow:hidden}
-.tt-portrait .tt-painted-newcomer svg{display:block;width:100%;height:100%;border-radius:11px}
-</style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
-<body><script src="/telemetry.js"></script><script src="/social-share.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
-  <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
-<section class="panel tt-news-panel" aria-label="Town news">
- <div class="tt-news-heading"><b class="aw-en">📰 Town news</b><b class="aw-zh">📰 小镇新闻</b><span class="aw-en">Updates as you build</span><span class="aw-zh">每周都有新动态</span></div>
- <div class="feed" id="feed" aria-live="polite" aria-relevant="additions"><div class="event">Your town story begins here.</div></div>
-</section>
-<div class="tt-journey" id="ttJourney" data-step="1" aria-label="Game steps">
- <div class="tt-journey-item" data-phase="1"><span class="tt-step-num">1</span><span class="aw-en">Check interests · pick a venue</span><span class="aw-zh">看兴趣，选场所</span></div>
- <div class="tt-journey-item" data-phase="2"><span class="tt-step-num">2</span><span class="aw-en">Choose a map square</span><span class="aw-zh">点击地图建造</span></div>
- <div class="tt-journey-item" data-phase="3"><span class="tt-step-num">3</span><span class="aw-en">Watch residents & clubs</span><span class="aw-zh">看居民与社团变化</span></div>
-</div>
-<div class="stats tt-stats">
- <div class="stat"><div class="k">Week</div><div class="v" id="turn">0 / 8</div></div>
- <div class="stat"><div class="k">Happy neighbors</div><div class="v" id="active">0 / 8</div><small class="aw-active-note" id="activeNote">4 join in Week 5</small></div>
- <div class="stat"><div class="k">Social clubs</div><div class="v" id="clubs">0 / 2</div></div>
- <div class="stat"><div class="k">Town joy</div><div class="v" id="score">0</div></div>
-</div>
-<div class="tt-playstage">
- <aside class="panel tt-resident-rail" aria-label="Residents and interests">
-  <div class="tt-rail-heading"><b class="aw-en">👥 Neighbors by home</b><b class="aw-zh">👥 邻居与同住的人</b><span id="ttResidentCount">8</span></div>
-  <p class="tt-rail-hint aw-en">Tap a portrait for hobbies and walking range.</p>
-  <p class="tt-rail-hint aw-zh">同住的人放在一起。点头像看兴趣和步行范围。</p>
-  <div class="residents" id="residents"></div>
-  <p class="hint aw-resident-hint" id="focusInfo" hidden></p>
-  <div class="info tt-resident-detail" id="residentWhy" hidden></div>
-  <div id="awIncomingGroup" class="tt-incoming">
-   <div class="tt-incoming-label"><span class="aw-en">+4 arrive in Week 5</span><span class="aw-zh">第 5 周还有 4 位新邻居</span></div>
-   <div class="residents" id="incoming"></div>
-  </div>
- </aside>
- <section class="panel tt-map-panel" aria-label="Town map">
-  <div class="tt-map-heading"><b class="aw-en">🌿 Your town</b><b class="aw-zh">🌿 你的小镇</b><span id="seed">Seed</span></div>
-  <div class="aw-coach" id="awCoach" aria-live="polite">
-   <span class="aw-coach-kicker" id="awCoachStep">START HERE</span>
-   <strong id="awCoachTitle">Choose a place to build</strong>
-   <p id="awCoachText">Look at neighbors' interests, then pick a venue on the right.</p>
-  </div>
-  <div class="map-wrap" id="mapWrap"><div class="board" id="board" aria-label="4 by 4 town map"></div></div>
-  <div class="aw-mobile-controls" id="awMobileControls" hidden><button type="button" class="btn primary" id="confirmMove">Confirm move</button><button type="button" class="btn" id="cancelMove">Cancel</button></div>
-  <div class="tt-map-footer"><span class="aw-en">Tap a resident on the left to highlight their walking area.</span><span class="aw-zh">点击左边居民，可查看他们能步行到达的格子。</span></div>
-  <div class="info tt-preview" id="preview"><span class="aw-en">Pick a venue first.</span><span class="aw-zh">先在右边选择一个场所。</span></div>
-  <details class="aw-week-receipt" id="weekReceipt" hidden><summary id="weekReceiptTitle">Weekly result</summary><div id="weekReceiptBody"></div></details>
- </section>
- <aside class="panel tt-builder-rail" aria-label="Build and track progress">
-  <div class="tt-rail-heading"><b class="aw-en">✿ Build this week</b><b class="aw-zh">✿ 本周建什么？</b></div>
-  <p class="tt-rail-hint aw-en">Choose one, then place it on a green square on the map.</p>
-  <p class="tt-rail-hint aw-zh">先选一种场所，再点地图上的绿色格子。</p>
-  <div class="cards" id="cards"></div>
-  <button class="btn upgrade" id="upgrade" hidden>⬆ Upgrade a venue (optional)</button>
-  <button type="button" class="btn quick-assist tt-auto" id="autoPlace">✦ Auto-build (uses 1 turn)</button>
-  <div class="tt-divider"></div>
-  <div class="tt-subheading"><span class="aw-en">♡ Your goal</span><span class="aw-zh">♡ 通关目标</span></div>
-  <div class="goals tt-goals"><div id="goalActive">○ Help 9 neighbors have fun</div><div id="goalClub">○ Form 2 different clubs</div></div>
-  <div class="tt-divider"></div>
-  <div class="tt-subheading"><span class="aw-en">🎉 Club progress</span><span class="aw-zh">🎉 社团进度</span></div>
-  <div class="feed" id="clubProgress"></div>
-  <div class="tt-club-example"><span class="aw-en">🎮 When the same 2 gaming fans visit an arcade two weeks in a row, they start a Gaming Club. No building adjacency needed.</span><span class="aw-zh">🎮 两位爱玩游戏的居民连续两周一起去街机厅，就会成立游戏社。不需要两个建筑挨在一起。</span></div>
- </aside>
-</div>
-
-</div>
-<div id="end" class="end" role="dialog" aria-modal="true"><div class="end-card"><div class="big" id="endIcon">🎉</div><h2 id="endTitle">Town complete</h2><p id="endText"></p><div class="end-buttons"><button class="btn primary" id="newAgain">New town</button><button class="btn" id="sameAgain">Replay same seed</button><button class="btn" id="closeEnd">View town</button></div>
-<div class="aw-end-feedback"><div id="feedbackQuestion"><span>How was this round?</span><div class="aw-feedback-buttons"><button id="feedbackFun" type="button">Fun</button><button id="feedbackConfusing" type="button">Confusing</button><button id="feedbackNotFun" type="button">Not fun</button></div></div><div id="feedbackThanks" hidden>Thanks for the feedback!</div></div>
-</div></div>
-<script>
-/* After Work: Tiny Town — deterministic, dependency-free rules engine.
-   Browser: window.AfterWorkEngine. Node: require('./engine').
-   Uses first-party anonymous Vercel Analytics; no user account or gameplay data upload.
-*/
-(function (root, factory) {
-  const e = factory();
-  if (typeof module === 'object' && module.exports) module.exports = e;
-  else root.AfterWorkEngine = e;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  'use strict';
-  const W = 4, TURNS = 8;
-  const TYPES = ['game','music','art','social'];
-  const INFO = {
-    game: {name:'Arcade',icon:'🎮',color:'#b5a1fc',capacity:3},
-    music:{name:'Music Studio',icon:'🎵',color:'#f8b0bc',capacity:2},
-    art:{name:'Art Workshop',icon:'🎨',color:'#f9c879',capacity:2},
-    social:{name:'Café',icon:'☕',color:'#9ddbc2',capacity:2}
-  };
-  const CLUBS = {
-    game: {name:'Gaming Club',icon:'🎮'},
-    music:{name:'Music Club',icon:'🎵'},
-    art:{name:'Art Club',icon:'🎨'},
-    social:{name:'Café Friends',icon:'☕'}
-  };
-  const NAMES = ['Leo','Mia','Kai','Lucy','Lulu','Bobby','Eva','David'];
-  const GENDERS = ['male','female','male','female','female','male','female','male'];
-  function hash(n) { n |= 0; n = Math.imul(n ^ n >>> 16, 0x7feb352d); n = Math.imul(n ^ n >>> 15, 0x846ca68b); return (n ^ n >>> 16) >>> 0; }
-  function rng(seed) {let v = seed>>>0;return function(){v=(v+0x6d2b79f5)>>>0;let t=v;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
-  function shuffle(a,rand){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-  function generate(seed) {
-    seed=(seed>>>0)||1;let r=rng(seed);
-    const obstacles=shuffle([0,3,12,15,5,6,9,10],r).slice(0,2).sort((a,b)=>a-b);
-    // Mixed interests; a primary and secondary interest for each resident.
-    const primaries=shuffle(['game','game','game','game','music','music','art','social'],r);
-    const freeHomes=Array.from({length:16},(_,p)=>p).filter(p=>!obstacles.includes(p));
-    const homes=shuffle(freeHomes,r); // Four pairs of housemates, then two new households in Week 5.
-    const residents=primaries.map((primary,i)=>{
-      let others=TYPES.filter(t=>t!==primary), secondary=others[Math.floor(r()*others.length)];
-      let home=homes[Math.floor(i/2)];
-      return {id:i,name:NAMES[i],gender:GENDERS[i],primary,secondary,home,reach:2+Math.floor(r()*3)};
-    });
-    // Announced newcomer wave at the start of week 5. This changes demand and forces capacity tradeoffs.
-    const incoming=shuffle(['game','game','music','art'],r).map((primary,i)=>{
-      const secondary=TYPES.filter(t=>t!==primary)[Math.floor(r()*3)];
-      const home=homes[4+Math.floor(i/2)];
-      return {id:i+8,name:['Nora','Ben','Zoe','Max'][i],gender:['female','male','female','male'][i],primary,secondary,home,reach:2+Math.floor(r()*3)};
-    });
-    const offers=Array.from({length:TURNS},()=>shuffle(TYPES,r).slice(0,3));
-    return {seed,turn:0,obstacles,residents,incoming,offers,buildings:[],clubStreak:{},last:null,totalScore:0};
-  }
-  const distance=(a,b)=>Math.abs(a%W-b%W)+Math.abs(Math.floor(a/W)-Math.floor(b/W));
-  function walkDist(a,b,obstacles){
-    if(obstacles.includes(a)||obstacles.includes(b))return 999;
-    let seen=new Set([a]),front=[a],dist=0;
-    while(front.length){if(front.includes(b))return dist;let next=[];
-      for(let pos of front)for(let q of [pos-1,pos+1,pos-4,pos+4]){
-        if(q<0||q>=16||distance(pos,q)!==1||obstacles.includes(q)||seen.has(q))continue;
-        seen.add(q);next.push(q);
-      }
-      front=next;dist++;
-    }
-    return 999;
-  }
-  const adjacent=(a,b)=>distance(a,b)===1;
-  function simulate(s){
-    let b=s.buildings;
-    let capacities=b.map(x=>INFO[x.type].capacity+(x.level-1));
-    let candidates=[];
-    for(let ri=0;ri<s.residents.length;ri++){
-      let resident=s.residents[ri];
-      for(let bi=0;bi<b.length;bi++){
-        let building=b[bi];
-        let interest=building.type===resident.primary?15:(building.type===resident.secondary?10:-100);
-        if(interest<0)continue;
-        let dist=walkDist(resident.home,building.pos,s.obstacles);
-        if(dist>resident.reach)continue;
-        let utility=interest-dist+building.level-1;
-        if(utility>=6)candidates.push({ri,bi,utility,rank:hash(s.seed*19+ri*31+building.pos*7)%100});
-      }
-    }
-    // Deterministic weighted greedy matching: one activity per resident/week.
-    candidates.sort((a,b)=>b.utility-a.utility||a.rank-b.rank||a.ri-b.ri);
-    let assignments=Array(s.residents.length).fill(-1),occupancy=b.map(()=>[]);
-    for(const c of candidates){if(assignments[c.ri]<0&&capacities[c.bi]>0){assignments[c.ri]=c.bi;occupancy[c.bi].push(c.ri);capacities[c.bi]--;}}
-    let active=assignments.filter(n=>n>=0).length;
-    // A club grows out of a *shared interest*, not two unrelated adjacent buildings.
-    // At least two of the same people must return to one matching venue in consecutive weeks.
-    // Once founded, the club stays founded even if attendance changes later.
-    let pending=[],streaks={},clubs=[];
-    for(let i=0;i<b.length;i++){
-      const venue=b[i],key='hobby:'+venue.type+':'+venue.pos;
-      const attendees=occupancy[i];
-      const prevAttendees=s.last?.occupancy?.[i]||[];
-      const returning=attendees.filter(ri=>prevAttendees.includes(ri));
-      const prior=s.clubStreak[key]||0;
-      let streak=0;
-      if(prior>=2)streak=prior; // Established clubs are persistent.
-      else if(attendees.length>=2)streak=prior===1&&returning.length>=2?2:1;
-      if(!streak)continue;
-      streaks[key]=streak;
-      const desc=CLUBS[venue.type];
-      const entity={key,type:venue.type,positions:[venue.pos],types:[venue.type],name:desc.name,icon:desc.icon,participants:attendees.length,members:attendees,returning,streak};
-      if(streak>=2)clubs.push(entity);else pending.push(entity);
-    }
-    // Each hobby counts as a single club category, even if several venues support it.
-    clubs=clubs.filter((c,i,all)=>all.findIndex(o=>o.type===c.type)===i);
-    pending=pending.filter(c=>!clubs.some(o=>o.type===c.type)).filter((c,i,all)=>all.findIndex(o=>o.type===c.type)===i);
-    const empty=b.filter((v,i)=>occupancy[i].length===0).length;
-    const attendedTypes=new Set(assignments.map((bi)=>bi<0?null:b[bi].type).filter(Boolean)).size;
-    const score=active*10+clubs.length*24+pending.length*6+attendedTypes*4-empty*5;
-    return {active,occupancy,assignments,clubs,pending,streaks,score,empty};
-  }
-  function moves(s){
-    if(s.turn>=TURNS)return [];
-    let out=[];
-    let occ=new Set([...s.obstacles,...s.buildings.map(b=>b.pos)]);
-    for(const card of s.offers[s.turn])for(let p=0;p<16;p++)if(!occ.has(p))out.push({action:'place',type:card,pos:p});
-    // Upgrading takes up the entire round; max level 2.
-    for(const b of s.buildings)if(b.level===1)out.push({action:'upgrade',pos:b.pos});
-    return out;
-  }
-  function step(s,m){
-    if(s.turn>=TURNS)throw Error('Game complete');
-    const legal=moves(s).some(x=>x.action===m.action&&x.pos===m.pos&&(x.type||'')===(m.type||''));
-    if(!legal)throw Error('Illegal move '+JSON.stringify(m));
-    const n={...s,turn:s.turn+1,buildings:s.buildings.map(x=>({...x})),clubStreak:{...s.clubStreak}};
-    if(n.turn===5)n.residents=s.residents.concat(s.incoming);
-    if(m.action==='place')n.buildings.push({type:m.type,pos:m.pos,level:1});
-    if(m.action==='upgrade')n.buildings.find(x=>x.pos===m.pos).level=2;
-    const result=simulate(n);
-    n.last={...result,previousClubs:s.last?s.last.clubs.map(c=>c.key):[]};
-    n.clubStreak=result.streaks;
-    n.totalScore=s.totalScore+result.score;
-    return n;
-  }
-  function outcome(s){
-    const v=s.last||{active:0,clubs:[],score:0};
-    const success=v.active>=9&&v.clubs.length>=2;
-    const grade=success?(s.totalScore>=1150?'S':s.totalScore>=1000?'A':'B'):'C';
-    return {success,grade,active:v.active,clubs:v.clubs.length,totalScore:s.totalScore,finalScore:v.score};
-  }
-  return {W,TURNS,TYPES,INFO,CLUBS,generate,simulate,moves,step,outcome,adjacent,distance,walkDist};
-});
-
-</script>
-<script>
-(function(){
-const E=window.AfterWorkEngine;const $=id=>document.getElementById(id);
-const board=$('board');let state,selected=null,hover=-1,busy=false,history=[],started,metrics,touchArmed=null,pendingMovePos=null,focusId=null,hasTrackedClub=false,gameEpoch=0;const touchMode=false;
-const icons=E.INFO;
-const explainKinds={game:'Gaming',music:'Music',art:'Art',social:'Social'};
-const zhVenues={game:'街机厅',music:'音乐工作室',art:'艺术工坊',social:'咖啡馆'};
-const zhKinds={game:'游戏',music:'音乐',art:'艺术',social:'社交'};
-const zhClubs={'Gaming Club':'游戏社','Music Club':'音乐社','Art Club':'美术社','Café Friends':'咖啡友邻会'};
-const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
-const L=(en,cn)=>zh()?cn:en;
-const venue=t=>L(icons[t]?.name||t,zhVenues[t]||t);
-const kind=t=>L(explainKinds[t]||t,zhKinds[t]||t);
-const club=n=>L(n,zhClubs[n]||n);
-const cell=p=>'ABCD'[p%4]+(Math.floor(p/4)+1);
-const all=()=>state.residents.concat(state.turn<5?state.incoming:[]);
-// Twelve original, friendly illustrated portraits — no smiley-face emoji and no external assets.
-function portrait(person){
- // Newcomers (IDs 8–11) receive their own illustrated vector portraits.
- // This avoids empty lower-row sprite cells before they arrive in Week 5.
- if(person.id>=8&&person.id<=11){
-  const characters=[
-   {skin:'#efba9d',hair:'#493340',shirt:'#9cb6a2',bg:'#ffe4cf',part:'M18 35Q15 8 36 10Q58 7 55 36Q48 25 36 24Q25 24 18 35Z'},
-   {skin:'#c78e72',hair:'#392c33',shirt:'#9da7d5',bg:'#e9e2f3',part:'M17 31Q18 10 36 11Q53 8 56 31Q43 22 29 27L17 31Z'},
-   {skin:'#f2c8aa',hair:'#80524d',shirt:'#d7a1af',bg:'#ffe2ec',part:'M18 36Q12 11 35 10Q60 10 54 40L50 22Q27 18 18 36Z'},
-   {skin:'#e3aa85',hair:'#4d3635',shirt:'#8cbdbb',bg:'#dff0e8',part:'M17 32Q17 11 37 10Q56 11 55 31Q44 20 17 32Z'}
-  ];
-  const p=characters[person.id-8];
-  return '<span class="tt-painted tt-painted-newcomer" aria-hidden="true"><svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="12" fill="'+p.bg+'"/><path d="M0 74Q6 53 36 53Q66 53 72 74Z" fill="'+p.shirt+'"/><ellipse cx="36" cy="35" rx="19" ry="23" fill="'+p.skin+'"/><path d="'+p.part+'" fill="'+p.hair+'"/><path d="M25 35h6M42 35h6" stroke="#43343c" stroke-linecap="round" stroke-width="2.7"/><path d="M32 45Q36 49 40 45" fill="none" stroke="#a66764" stroke-width="2" stroke-linecap="round"/></svg></span>';
- }
- const col=person.id%6,row=Math.floor(person.id/6);
- return '<span class="tt-painted" style="background-position:'+(col*20)+'% '+(row*100)+'%" aria-hidden="true"></span>';
-}
-function homesView(people,sim,isUpcoming=false){
- const groups=new Map();
- for(const person of people){if(!groups.has(person.home))groups.set(person.home,[]);groups.get(person.home).push(person);}
- return [...groups.entries()].sort((a,b)=>a[0]-b[0]).map(([home,members])=>
- '<div class="tt-household" data-home="'+home+'"><div class="tt-house-head"><span>🏠 '+cell(home)+'</span><small>'+members.length+L(' people',' 人')+'</small></div><div class="tt-house-people">'+members.map(p=>{
-  const idx=state.residents.findIndex(x=>x.id===p.id),isOut=!isUpcoming&&idx>=0&&sim.assignments[idx]>=0,chosen=p.id===focusId;
-  const label=p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Interests: ','兴趣：')+kind(p.primary)+' / '+kind(p.secondary);
-  return '<button type="button" class="tt-person'+(chosen?' awSelected':'')+(isOut?' is-active':'')+'" data-r="'+p.id+'" aria-label="'+safe(label)+'" title="'+safe(label)+'"><span class="tt-portrait">'+portrait(p)+'<span class="tt-gender">'+(p.gender==='female'?'♀':'♂')+'</span></span><b>'+safe(p.name)+'</b><small>'+icons[p.primary].icon+' · '+icons[p.secondary].icon+'</small></button>';
- }).join('')+'</div></div>'
- ).join('');
-}
-function reason(st,rs,i){
- const p=st.residents[i],bi=rs.assignments[i];
- if(bi>=0)return L('Attending '+icons[st.buildings[bi].type].name+' ('+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' steps)','正在参加'+venue(st.buildings[bi].type)+'（步行 '+E.walkDist(p.home,st.buildings[bi].pos,st.obstacles)+' 格）');
- const matches=st.buildings.filter(b=>b.type===p.primary||b.type===p.secondary);
- if(!matches.length)return L('No matching venue exists','没有符合兴趣的场所');
- if(!matches.some(b=>E.walkDist(p.home,b.pos,st.obstacles)<=p.reach))return L('Matching venues are too far away','喜欢的场所超出步行范围');
- return L('Nearby matching venues are full','附近喜欢的场所已经满员');
-}
-function statusUI(){
- const rs=state.last||E.simulate(state),p=all().find(q=>q.id===focusId),i=state.residents.findIndex(q=>q.id===focusId);
- $('focusInfo').textContent=p?L(p.name+' lives at '+cell(p.home)+'; the purple squares are within '+p.reach+' steps.',p.name+'住在'+cell(p.home)+'，紫色格子是步行可到达的位置。'):'';
- $('residentWhy').textContent=p?(p.name+' · '+L('Home ','住址 ')+cell(p.home)+' · '+L('Walking range ','步行 ')+p.reach+L(' tiles',' 格')+' · '+L('Likes ','喜欢 ')+kind(p.primary)+' / '+kind(p.secondary)+' · '+(i<0?L('Moves in Week 5','第 5 周入住'):reason(state,rs,i))):'';
- $('residentWhy').hidden=!p;
- const choices=[];
- for(let index=0;index<state.buildings.length;index++){
-  const building=state.buildings[index],key='hobby:'+building.type+':'+building.pos;
-  const attendance=rs.occupancy[index].length,streak=rs.streaks[key]||0;
-  const existing=choices.find(x=>x.type===building.type);
-  if(!existing||streak>existing.streak||(streak===existing.streak&&attendance>existing.attendance)){
-   if(existing)choices.splice(choices.indexOf(existing),1);
-   choices.push({type:building.type,pos:building.pos,attendance,streak});
-  }
- }
- choices.sort((a,b)=>b.streak-a.streak||b.attendance-a.attendance);
- $('clubProgress').innerHTML=choices.length?choices.map(c=>{
-  const name=club(E.CLUBS[c.type].name),isFounded=c.streak>=2;
-  const message=isFounded?L('✓ Club founded!','✓ 社团已成立！'):c.streak===1?L('1/2 weeks: bring back 2 of the same people next week.','已聚在一起 1/2 周：下周让其中至少 2 人再来。'):L('Invite '+Math.max(0,2-c.attendance)+' more hobby fan(s).','还需 '+Math.max(0,2-c.attendance)+' 位同好来参加活动。');
-  return '<div class="awClub"><div class="aw-club-head"><b>'+E.CLUBS[c.type].icon+' '+safe(name)+'</b><small>'+cell(c.pos)+'</small></div><div class="aw-club-venues"><span>'+safe(venue(c.type))+'</span><span>'+L('Visitors ','本周 ')+c.attendance+'</span></div><div class="aw-club-state'+(isFounded?' ready':'')+'">'+message+'</div></div>';
- }).join(''):'<div class="aw-club-state">'+L('Clubs start when two people with the same hobby keep meeting at one venue.','同好们在同一个场所连续两周相聚，就能组成社团。')+'</div>';
-}
-function positionCenter(pos){const rect=board.getBoundingClientRect(),cell=board.children[pos].getBoundingClientRect();return {x:cell.left-rect.left+cell.width/2,y:cell.top-rect.top+cell.height/2};}
-function safe(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function gameProgress(step){window.arcadeMetric?.('town_'+step,{game:'tiny-town'});}
-function timeBucket(ms){return ms<=15000?'under-15s':ms<=30000?'15-30s':ms<=60000?'30-60s':ms<=120000?'1-2m':ms<=300000?'2-5m':'over-5m';}
-function resetMobileConfirmation(){pendingMovePos=null;$('awMobileControls').hidden=true;}
-function clubTip(s){
- const rs=s.last||E.simulate(s);
- if(rs.pending.length)return L('Two neighbors met this week. Bring back at least two of the same people next week to start a club.','已经有同好聚在一起了！下周让至少两位相同居民再来一次，就能成立社团。');
- if(rs.clubs.length)return L(rs.clubs.length+' interest club(s) have formed.','已经成立 '+rs.clubs.length+' 类兴趣社团。');
- return L('Bring two residents with a shared hobby to the same place for two weeks in a row.','让至少两位有相同爱好的居民连续两周到同一个场所活动，就能成立社团。');
-}
-function updateReceipt(){
- const rs=state.last,box=$('weekReceipt');if(!rs){box.hidden=true;return;}
- box.hidden=false;
- $('weekReceiptTitle').textContent=L('Week ','第 ')+state.turn+L(' · ',' 周 · ')+rs.active+L(' active · ',' 位参加 · ')+rs.clubs.length+L(' clubs · +',' 个社团 · +')+rs.score;
- const usedTypes=new Set(rs.assignments.map(bi=>bi>=0?state.buildings[bi].type:null).filter(Boolean)).size;
- $('weekReceiptBody').innerHTML='<b>'+L('Vitality','活力')+':</b> '+rs.active+' × 10 + '+rs.clubs.length+' × 24 + '+rs.pending.length+' × 6 + '+usedTypes+' × 4 − '+rs.empty+' × 5.<br><b>'+L('Club tip','社团提示')+':</b> '+safe(clubTip(state));
-}
-
-function updateCoach(){
- const done=state.turn>=E.TURNS,step=busy?'3':selected?'2':'1';
- $('ttJourney').dataset.step=done?'3':step;
- let title='',tip='';
- if(done){title=L('Town complete!','小镇建成啦！');tip=L('See how your neighbors did, or try a new town.','看看居民们过得怎么样，或再建一座新小镇。');}
- else if(busy){title=L('Great! See who meets up','建好了！看看谁来玩');tip=L('Neighbors attend places that match their interests. Returning hobby groups can become clubs.','居民会去喜欢的场所。经常一起活动的同好可以成立社团。');}
- else if(!selected){title=L('Step 1 · Pick a venue','第 1 步 · 选择场所');tip=L('Look at the interests on the left, then select a venue on the right.','先看看左边的居民喜欢什么，再从右边选一种场所。');}
- else{title=L('Step 2 · Choose a square','第 2 步 · 选择建造位置');tip=L('Choose a green square near the homes of people who enjoy this activity.','点击绿色格子，尽量建在喜欢这项活动的居民家附近。');}
- $('awCoachStep').textContent=L('WEEK ','第 ')+Math.min(state.turn+1,E.TURNS)+' / '+E.TURNS+L('',' 周');
- $('awCoachTitle').textContent=title;$('awCoachText').textContent=tip;
- $('autoPlace').textContent=L('✦ Auto-build (uses 1 turn)','✦ 自动建造（消耗 1 回合）');
- $('autoPlace').disabled=busy||done;
- $('awCoach').classList.toggle('aw-compact',state.turn>0);
-}
-function start(seed){gameEpoch++;if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=null;focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='';addFeed('🟢 AI handles the work. Everyone has time to create and connect. Four neighbors arrive in Week 5.','🟢 AI 承担了所有工作，大家可以自由生活。第 5 周还会有四位新邻居入住。');render();}
-function renderingPreview(pos){
- if(busy||state.turn>=E.TURNS)return;
- const move=E.moves(state).find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
- if(!move){$('preview').textContent=selected?L('Choose a green-outlined tile.','请选择绿色边框的格子。'):L('First choose a venue on the right.','请先从右侧选择场所。');return;}
- const future=E.step(state,move),v=future.last,prev=state.last||E.simulate(state);
- const fresh=v.clubs.filter(c=>!prev.clubs.some(p=>p.key===c.key));
- const changes=[];
- for(let i=0;i<future.residents.length;i++){
-  const r=future.residents[i],old=i<state.residents.length?prev.assignments[i]:-1,now=v.assignments[i];
-  if(old<0&&now>=0)changes.push('<span class="good">✓ '+safe(r.name)+'</span>: '+safe(reason(future,v,i)));
-  else if(old>=0&&now<0)changes.push('<span class="bad">! '+safe(r.name)+'</span>: '+safe(reason(future,v,i)));
-  else if(old>=0&&now>=0&&state.buildings[old]?.pos!==future.buildings[now]?.pos)changes.push('↔ '+safe(r.name)+L(' changes venue',' 换了活动场所'));
- }
- $('preview').innerHTML='<b>'+L('Preview','预览')+'</b> · '+L('Active ','参加 ')+prev.active+' → <b>'+v.active+'</b> · '+L('Clubs ','社团 ')+prev.clubs.length+' → <b>'+v.clubs.length+'</b> · +'+v.score+L(' vitality',' 活力')+(fresh.length?'<div class="good">'+L('New club: ','新社团：')+safe(fresh.map(c=>club(c.name)).join('、'))+'</div>':'')+(v.pending.length?'<div>'+L('Club progress: ','社团进度：')+safe(v.pending.map(c=>club(c.name)+' '+c.streak+'/2').join('、'))+'</div>':'')+'<div class="awReason"><b>'+L('Club tip','社团提示')+':</b> '+safe(clubTip(future))+'</div>'+(changes.length?changes.slice(0,3).map(x=>'<div class="awReason">'+x+'</div>').join(''):'');
-}
-function render(){
-const validPlots=new Set(selected?E.moves(state).filter(m=>selected==='upgrade'?m.action==='upgrade':(m.action==='place'&&m.type===selected)).map(m=>m.pos):[]);
-updateCoach();
-$('ttResidentCount').textContent=String(state.residents.length);$('turn').textContent=state.turn+' / '+E.TURNS;$('active').textContent=(state.last?.active||0)+' / '+state.residents.length;$('clubs').textContent=(state.last?.clubs.length||0)+' / 2';$('score').textContent=state.totalScore;$('seed').textContent=L('Seed ','地图编号 ')+state.seed;$('activeNote').hidden=state.turn>=5;
-$('goalActive').innerHTML=(state.last?.active>=9?'✓':'○')+' '+L('Have 9 happy neighbors','让 9 位居民开心出门');$('goalActive').className=state.last?.active>=9?'good':'';
-$('goalClub').innerHTML=(state.last?.clubs.length>=2?'✓':'○')+' '+L('Two different clubs','建立两类不同社团');$('goalClub').className=state.last?.clubs.length>=2?'good':'';
-const currently=state.last?.occupancy||[];const people=all(),focused=people.find(p=>p.id===focusId),focusIndex=state.residents.findIndex(p=>p.id===focusId),homes=new Map();for(const p of people)homes.set(p.home,(homes.get(p.home)||0)+1);
-let establishedPositions=new Map();for(const club of(state.last?.clubs||[]))for(const pos of club.positions)establishedPositions.set(pos,club.icon);
-const formingPositions=new Set((state.last?.pending||[]).flatMap(c=>c.positions));
-board.innerHTML='';const buildings=new Map(state.buildings.map(b=>[b.pos,b]));
-for(let i=0;i<16;i++){
- let tile=document.createElement('button');const d=focused?E.walkDist(focused.home,i,state.obstacles):999,attend=focusIndex>=0&&state.last?.assignments[focusIndex]>=0&&state.buildings[state.last.assignments[focusIndex]].pos===i;tile.className='tile'+(state.obstacles.includes(i)?' blocked':'')+(d<=focused?.reach?' awReach':'')+(focused?.home===i?' awHome':'')+(attend?' awVenue':'')+(validPlots.has(i)?' awPlaceable':'');tile.type='button';tile.dataset.pos=i;
- let b=buildings.get(i);if(state.obstacles.includes(i)){tile.innerHTML='<span class="rock">🌳</span>';tile.disabled=true;}
- else if(b){const bi=state.buildings.findIndex(q=>q.pos===i);
-   tile.innerHTML=`<div class="building" style="--color:${icons[b.type].color}"><div class="roof"></div><div class="body"><div class="emoji">${icons[b.type].icon}</div><div class="name">${venue(b.type)}</div></div>${b.level>1?'<span class="level">Lv.2</span>':''}</div><div class="visit">${(currently[bi]||[]).map(ri=>'<span class="visitor" title="'+safe(state.residents[ri].name)+'">'+portrait(state.residents[ri])+'</span>').join('')}</div>${establishedPositions.has(i)?'<span class="club-pill">'+establishedPositions.get(i)+'</span>':formingPositions.has(i)?'<span class="tt-club-pending" title="'+L('One week of shared hobby visits','同好活动已持续 1 周')+'">1/2周</span>':''}`;
- }else{tile.innerHTML='<span style="color:#8cad96;font-weight:900;font-size:21px">+</span>';}
- tile.innerHTML+='<span class="awCoord">'+cell(i)+'</span>'+(homes.has(i)?'<span class="awHouse">🏠 '+homes.get(i)+'</span>':'');tile.title=cell(i)+(focused&&d<=focused.reach?L(' · '+d+' steps from '+focused.name,' · 距 '+focused.name+' '+d+' 格'):'')+(validPlots.has(i)?L(' · Ready to '+(selected==='upgrade'?'upgrade':'build'),' · 可以'+(selected==='upgrade'?'升级':'建造')):'');tile.addEventListener('pointerenter',()=>{hover=i;renderingPreview(i)});
- tile.addEventListener('pointerleave',()=>{hover=-1});
- tile.addEventListener('focus',()=>renderingPreview(i));
- tile.addEventListener('click',()=>act(i));board.appendChild(tile);
-}
-$('cards').innerHTML='';if(state.turn<E.TURNS){for(const type of state.offers[state.turn]){let button=document.createElement('button');const resident=all().find(p=>p.id===focusId),favorite=resident?.primary===type,liked=resident?.secondary===type,fans=state.residents.filter(p=>p.primary===type||p.secondary===type).length;button.className='choice'+(selected===type?' active':'')+(favorite?' tt-favorite':liked?' tt-liked':'');button.disabled=busy;button.innerHTML='<span class="ico">'+icons[type].icon+'</span><span class="tt-card-copy"><span class="label">'+venue(type)+'</span><span class="detail">'+L('Capacity ','容纳 ')+icons[type].capacity+L('',' 人')+' · '+fans+L(' fans',' 位居民感兴趣')+'</span>'+(favorite?'<span class="tt-fit">'+L('★ '+resident.name+' loves this','★ '+resident.name+' 最喜欢')+'</span>':liked?'<span class="tt-fit">'+L('✓ '+resident.name+' likes this','✓ '+resident.name+' 也喜欢')+'</span>':'')+'</span><span class="tt-card-arrow">›</span>';button.onclick=()=>{selected=type;touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Selected '+icons[type].name+'. Hover over the map to preview, then click a green square.','已选 '+venue(type)+'。移到地图上预览，点击绿色格子建造。');};$('cards').appendChild(button);}}
-$('upgrade').hidden=state.turn<5;$('upgrade').classList.toggle('active',selected==='upgrade');$('upgrade').disabled=busy||!state.buildings.some(b=>b.level<2)||state.turn>=E.TURNS;
-$('upgrade').onclick=()=>{selected='upgrade';touchArmed=null;resetMobileConfirmation();render();$('preview').textContent=L('Click a green Level 1 building to add one seat. An upgrade uses one turn.','点击绿色的 1 级建筑，增加一个座位；升级消耗一回合。');};
-const sim=state.last||E.simulate(state);
-$('residents').innerHTML=homesView(state.residents,sim);
-$('awIncomingGroup').hidden=state.turn>=5;
-$('incoming').innerHTML=state.turn<5?homesView(state.incoming,sim,true):'';
-statusUI();if(state.last)updateReceipt();refreshFeed();
-}
-$('residents').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
-$('incoming').addEventListener('click',e=>{const node=e.target.closest('[data-r]');if(node){focusId=Number(node.dataset.r);render();}});
-$('autoPlace').onclick=()=>{
- if(busy||state.turn>=E.TURNS)return;
- if(selected==='upgrade'||!selected)selected=state.offers[state.turn][0];
- const options=E.moves(state).filter(m=>m.action==='place'&&m.type===selected);
- let best=null,score=-Infinity;
- for(const m of options){const s=E.step(state,m);
- const quality=s.last.active*7+s.last.clubs.length*55+s.last.pending.length*12;
- if(quality>score){best=m;score=quality}}
- if(best){gameProgress('coach-used');act(best.pos,true)}
-};
-function newsText(el){
- const week=Number(el.dataset.week||0);
- const prefix=week?L('Week '+week+' · ','第 '+week+' 周 · '):L('Welcome · ','开局 · ');
- return prefix+L(el.dataset.en,el.dataset.cn||el.dataset.en);
-}
-function addFeed(en,cn=en){
- const el=document.createElement('div');el.className='event';
- el.dataset.en=en;el.dataset.cn=cn;el.dataset.week=String(state?.turn||0);
- el.textContent=newsText(el);$('feed').prepend(el);$('feed').scrollLeft=0;
- while($('feed').children.length>8)$('feed').lastChild.remove();
-}
-function refreshFeed(){for(const el of $('feed').children)if(el.dataset.en)el.textContent=newsText(el);}
-function float(msg,sub){const el=document.createElement('div');el.className='feedback';el.innerHTML=safe(msg)+(sub?'<small>'+safe(sub)+'</small>':'');$('mapWrap').appendChild(el);setTimeout(()=>el.remove(),1900);}
-
-function drawRunners(previous,current){const previousAssign=previous?.assignments||[];for(let ri=0;ri<current.assignments.length;ri++){
-let to=current.assignments[ri];if(to<0)continue;let dest=state.buildings[to].pos;let from=previousAssign[ri]>=0&&state.buildings[previousAssign[ri]]?state.buildings[previousAssign[ri]].pos:state.residents[ri].home;
-if(from===dest)continue;
-const p=positionCenter(from),q=positionCenter(dest),el=document.createElement('span');el.className='runner';el.innerHTML=portrait(state.residents[ri]);el.style.left=p.x+'px';el.style.top=p.y+'px';board.appendChild(el);requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.left=q.x+'px';el.style.top=q.y+'px';}));setTimeout(()=>el.remove(),850);
-}}
-function act(pos,confirmed=false){
- if(busy||state.turn>=E.TURNS)return;
- const move=E.moves(state).find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
- if(!move){resetMobileConfirmation();$('preview').innerHTML='<span class="bad">'+(selected?L('Choose a green-outlined tile.','请选择绿色边框的格子。'):L('First choose a venue on the right.','请先从右侧选择场所。'))+'</span>';return;}
- if(touchMode&&!confirmed){pendingMovePos=pos;renderingPreview(pos);$('awMobileControls').hidden=false;$('confirmMove').textContent=L('Confirm '+(selected==='upgrade'?'upgrade':'build')+' · '+cell(pos),'确认'+(selected==='upgrade'?'升级':'建造')+' · '+cell(pos));return;}
- resetMobileConfirmation();
- if(metrics.firstChoiceMs==null){metrics.firstChoiceMs=Math.round(performance.now()-started);gameProgress('started');gameProgress('first-place-'+timeBucket(metrics.firstChoiceMs));}
-const previous=state.last;const oldClubKeys=new Set(previous?.clubs.map(x=>x.key)||[]);state=E.step(state,move);history.push(move);metrics.actions.push({atMs:Math.round(performance.now()-started),move,active:state.last.active,clubs:state.last.clubs.length,roundScore:state.last.score});
-if([2,4,6].includes(state.turn))gameProgress('week-'+state.turn);
-if(move.action==='upgrade'&&history.filter(m=>m.action==='upgrade').length===1)gameProgress('first-upgrade');
-if(state.turn===E.TURNS)gameProgress(E.outcome(state).success?'completed-win':'completed-lose');
-busy=true;
-const newClubs=state.last.clubs.filter(x=>!oldClubKeys.has(x.key));const oldActive=previous?.active||0;
-if(newClubs.length&&!hasTrackedClub){hasTrackedClub=true;gameProgress('first-club');}
-selected=null;touchArmed=null;render();updateReceipt();
-if(move.action==='place'){
- const tile=board.children[move.pos];tile.querySelector('.building')?.classList.add('pop');
- addFeed(icons[move.type].icon+' Built '+icons[move.type].name+'. Residents found new places to meet.',icons[move.type].icon+' '+zhVenues[move.type]+'建好了，居民们又多了一个活动场所。');
-}else{
- const type=state.buildings.find(b=>b.pos===move.pos).type;
- addFeed('⬆ Upgraded '+icons[type].name+' for +1 capacity.','⬆ '+zhVenues[type]+'升级了，增加 1 个座位。');
-}
-if(state.last.empty)addFeed('🔎 '+state.last.empty+' building(s) empty this week.','🔎 本周有 '+state.last.empty+' 处场所无人参加活动。');
-if(state.turn===5)addFeed('🚚 Four newcomers moved in! The town now has 12 residents.','🚚 四位新邻居入住！现在小镇有 12 位居民。');
-if(state.last.active>oldActive)addFeed('✨ '+(state.last.active-oldActive)+' more residents are active this week.','✨ 本周又有 '+(state.last.active-oldActive)+' 位居民参加活动。');
-if(state.last.pending.length)addFeed('🌱 New club forming: '+state.last.pending.map(c=>c.name).join(', ')+' (needs another week).','🌱 社团正在形成：'+state.last.pending.map(c=>zhClubs[c.name]||c.name).join('、')+'（下周还需保持至少 2 人）。');
-if(newClubs.length)addFeed('🎊 Stable club founded: '+newClubs.map(c=>c.name).join(', ')+'!','🎊 新社团成立：'+newClubs.map(c=>zhClubs[c.name]||c.name).join('、')+'！');
-
-drawRunners(previous,state.last);
-if(newClubs.length)setTimeout(()=>float('🎉 '+club(newClubs[0].name),L('A new club is here!','新社团成立啦！')),870);
-else setTimeout(()=>float(L('Active ','参加活动 ')+state.last.active+' / '+state.residents.length,'+'+state.last.score+L(' vitality',' 活力')),800);
-$('preview').textContent=L('Week ','第 ')+state.turn+L(': ',' 周：')+state.last.active+L(' active, ',' 人参加活动，')+state.last.clubs.length+L(' club types, +',' 类社团，+')+state.last.score+L(' vitality.',' 活力。');
-
-const epoch=gameEpoch;setTimeout(()=>{if(epoch!==gameEpoch)return;busy=false;if(state.turn>=E.TURNS)endGame();else render();},1850);
-}
-function endGame(){
- metrics.completed=true;metrics.gameDurationMs=Math.round(performance.now()-started);
- const result=E.outcome(state);gameProgress('grade-'+result.grade.toLowerCase());gameProgress('duration-'+timeBucket(metrics.gameDurationMs));
- $('endIcon').textContent=result.success?'🎊':'🌱';
- $('endTitle').textContent=result.success?L('The town is thriving!','小镇越来越繁荣！'):L('Try a different layout','换个布局，再试一次');
- const nextTip=result.success?L('What new town will you create next?','下一座小镇会是什么模样？'):(result.clubs<2?L('Keep two hobby fans visiting the same venue for two consecutive weeks. ','让两位同好连续两周去同一个场所活动。'):'')+(result.active<9?L('Build within neighbors’ walking range.','把场所建在居民步行可达的范围内。'):'');
- $('endText').innerHTML=L('Grade ','评级 ')+'<b>'+result.grade+'</b> · '+L('Total vitality ','总活力 ')+'<b>'+result.totalScore+'</b><br>'+L('Happy neighbors ','快乐居民 ')+result.active+'/12 · '+L('Clubs ','社团 ')+result.clubs+'<br>'+safe(nextTip);
- $('end').classList.add('show');
-}
-
-$('same').onclick=()=>{gameProgress('retry-click');start(state.seed);};$('random').onclick=()=>{gameProgress('new-map-click');start((Date.now()>>>0)||13);};
-function answerFeedback(kind){if(!metrics||metrics.feedback)return;metrics.feedback=kind;gameProgress('feedback-'+kind);$('feedbackQuestion').hidden=true;$('feedbackThanks').hidden=false;}
-$('feedbackFun').onclick=()=>answerFeedback('fun');
-$('feedbackConfusing').onclick=()=>answerFeedback('confusing');
-$('feedbackNotFun').onclick=()=>answerFeedback('not-fun');
-$('confirmMove').onclick=()=>{if(pendingMovePos!==null)act(pendingMovePos,true);};
-$('cancelMove').onclick=()=>resetMobileConfirmation();
-if(typeof location!=='undefined'&&new URLSearchParams(location.search).has('debug'))$('export').hidden=false;
-if(typeof window.addEventListener==='function')window.addEventListener('pagehide',()=>{if(state&&state.turn>0&&state.turn<E.TURNS)gameProgress('exit-week-'+state.turn);});
-$('newAgain').onclick=()=>$('random').click();$('sameAgain').onclick=()=>$('same').click();$('closeEnd').onclick=()=>$('end').classList.remove('show');
-$('export').onclick=()=>{gameProgress('playtest-export');let result={version:'tiny-town-3.0',...metrics,gameOutcome:E.outcome(state),moves:history,generatedLocally:true,notice:'This optional debug log is downloaded locally. Anonymous playtest events are sent to the private Morrow Wish dashboard.'};let blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='afterwork-playtest-'+state.seed+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);};
-$('shareGame').onclick=()=>{
- const outcome=state&&state.turn>=E.TURNS?E.outcome(state):null;
- const message=outcome
-  ?L('My tiny town finished with '+outcome.totalScore+' vitality, grade '+outcome.grade+' and '+outcome.clubs+' clubs. What would yours look like?',
-     '我的自由小镇获得 '+outcome.totalScore+' 活力、'+outcome.grade+' 评级，成立了 '+outcome.clubs+' 个社团。你会怎么建设？')
-  :L('AI does all the work. What kind of town would you build with all that freedom?',
-     'AI 承担了所有工作，拥有无限自由后，你会建造怎样的小镇？');
- window.MorrowwishSocialShare.open({
-  title:L('No More Mondays: Tiny Town','Tiny Town：自由小镇'),
-  message,score:outcome?.totalScore||0,
-  language:zh()?'zh':'en',
-  url:'https://morrowwish.vercel.app/tiny-town/',
-  meta:{game:'tiny-town'},
-  onShare:()=>gameProgress('shared-link')
- });
-};
-window.addEventListener('morrowwish-language-change',()=>{
- if(!state)return;render();
- if($('end').classList.contains('show')){
-  const r=E.outcome(state);
-  $('endTitle').textContent=r.success?L('The town is thriving!','小镇越来越繁荣！'):L('Try a different layout','换个布局，再试一次');
-  $('endText').innerHTML=L('Grade ','评级 ')+'<b>'+r.grade+'</b> · '+L('Total vitality ','总活力 ')+'<b>'+r.totalScore+'</b><br>'+L('Happy neighbors ','快乐居民 ')+r.active+'/12 · '+L('Clubs ','社团 ')+r.clubs;
- }
-});
-start(1);
-})();
-</script><script src="/studio-audio.js"></script><script src="/studio-music.js"></script><script src="/audio-dock.js"></script><script src="/game-fullscreen.js?v=5" defer></script></body></html>
+@media(max-width:350px){.tile-icon{font-size:19px}.tile-name{font-size:8px}.header{flex-direction:column}.top-actions{justify-content:flex-start}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+<script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script>
+</head>
+<body>
+<script src="/telemetry.js"></script><script src="/social-share.js"></script>
+<nav class="arcade-return"><a href="/">← MORROW WISH</a><span class="more">A MORROW WISH GAME</span></nav>
+<main class="app">
+ <header class="header">
+  <div><h1>No More Mondays <small>· Tiny Town</small></h1><p class="tagline" data-en="AI does every job. You decide how free people live." data-zh="AI 包办了所有工作。自由之后，人类会怎么玩？">AI does every job. You decide how free people live.</p></div>
+  <div class="top-actions"><button type="button" class="button" id="retry" data-en="New town" data-zh="新小镇">New town</button><button type="button" class="button" id="shareGame" data-en="Share" data-zh="分享">Share</button></div>
+ </header>
+ <div class="stats" aria-label="Town progress">
+  <div class="stat"><span class="label"><span data-en="DAY" data-zh="第">DAY</span> <span data-en="" data-zh="天"></span></span><strong id="day">1 / 7</strong></div>
+  <div class="stat"><span class="label" data-en="WONDER" data-zh="奇想">WONDER</span><strong id="wonder">0</strong></div>
+  <div class="stat"><span class="label" data-en="HARMONY" data-zh="和谐">HARMONY</span><strong id="peace">6/10</strong></div>
+  <div class="stat"><span class="label" data-en="SURPRISES" data-zh="奇妙组合">SURPRISES</span><strong id="comboNum">0</strong></div>
+ </div>
+ <div class="progress" aria-hidden="true"><div id="progressFill"></div></div>
+ <div class="stage">
+  <section class="panel map-panel">
+   <div class="panel-top"><strong id="mapTitle">Your little town</strong><span data-en="Every decision changes the world" data-zh="每个选择都会改变世界">Every decision changes the world</span></div>
+   <div class="world" id="mapWrap" data-theme="normal"><span class="world-magic" aria-hidden="true">✧ ✦ ✧</span><div class="board" id="board" aria-label="Town map"></div></div>
+   <p class="caption" id="guide" aria-live="polite">Pick a wish, then pick a place.</p>
+   <div class="preview" id="preview"><span data-en="Find combinations by placing related wishes next to each other." data-zh="把相互关联的愿望建在一起，发现隐藏组合。">Find combinations by placing related wishes next to each other.</span></div>
+   <div class="city-extras">
+    <div class="micro-panel"><div class="micro-title" data-en="✦ DISCOVERED" data-zh="✦ 已发现">✦ DISCOVERED</div><div class="discoveries" id="discoveries"></div></div>
+    <div class="micro-panel"><div class="micro-title" data-en="☀ TOWN NEWS" data-zh="☀ 小镇新闻">☀ TOWN NEWS</div><div class="news" id="news"></div></div>
+   </div>
+  </section>
+  <aside class="panel sidebar">
+   <div class="sidebar-head" data-en="ONE WISH EACH DAY" data-zh="每天只能实现一个愿望">ONE WISH EACH DAY</div>
+   <h2 id="cardsTitle" data-en="What happens today?" data-zh="今天，实现什么愿望？">What happens today?</h2>
+   <p data-en="Choose one wild idea. Watch your town respond." data-zh="选一个大胆的主意，看看小镇会发生什么。">Choose one wild idea. Watch your town respond.</p>
+   <div class="cards" id="cards"></div>
+   <p class="pick-hint" id="pickHint"></p>
+   <div class="tip-box"><b data-en="Secret tip" data-zh="秘密提示">Secret tip</b><span data-en="Put related wishes beside each other. A small change may transform the entire town." data-zh="把相关愿望摆在一起，小小变化可能让整座城进化。">Put related wishes beside each other. A small change may transform the entire town.</span><small data-en="Complete 7 days. Discover 2 combos and keep harmony at 3+ for a dream ending." data-zh="完成 7 天，发现至少 2 种组合且和谐达到 3，即可达成梦想。">Complete 7 days. Discover 2 combos and keep harmony at 3+ for a dream ending.</small></div>
+  </aside>
+ </div>
+ <div id="intro" class="overlay show" role="dialog" aria-modal="true"><div class="modal">
+  <div class="kicker" data-en="7 DAYS · 7 WISHES · ONE IMPOSSIBLE TOWN" data-zh="7 天 · 7 个愿望 · 一座不可能的小镇">7 DAYS · 7 WISHES · ONE IMPOSSIBLE TOWN</div>
+  <h2 data-en="Everybody is finally free." data-zh="全人类，终于不用上班了。">Everybody is finally free.</h2>
+  <div class="intro-inner">🐈 🌸 🎸 🎈<span data-en="Place wishes on the map. Discover secret combos. Watch the entire town transform." data-zh="把愿望放进小镇，碰出隐藏组合，见证整个城市发生奇妙进化。">Place wishes on the map. Discover secret combos. Watch the entire town transform.</span></div>
+  <div class="modal-choices"><button type="button" class="button primary" id="introStart" data-en="Make my first wish" data-zh="实现第一个愿望">Make my first wish</button></div>
+ </div></div>
+ <div id="storyModal" class="overlay" role="dialog" aria-modal="true" aria-live="polite"><div class="modal">
+  <div class="kicker" id="storyKicker"></div><h2 id="storyTitle"></h2><div class="story-image" id="storyImage"></div>
+  <p id="storyBody"></p><div class="modal-choices" id="storyChoices"></div>
+ </div></div>
+ <div id="end" class="overlay" role="dialog" aria-modal="true"><div class="modal end-modal">
+  <div class="kicker" data-en="YOUR SEVEN-DAY STORY" data-zh="你独一无二的七日故事">YOUR SEVEN-DAY STORY</div>
+  <h2 id="endTitle"></h2><div class="ending-art" id="endArt"></div>
+  <p class="end-line" id="endLine"></p><p class="end-details" id="endDetail"></p><p class="end-goal" id="endGoal"></p>
+  <div class="modal-choices"><button type="button" class="button primary" id="newAgain" data-en="Try another town" data-zh="再建一座小镇">Try another town</button><button type="button" class="button" id="savePostcard" data-en="Save postcard" data-zh="保存结局插画">Save postcard</button><button type="button" class="button" id="shareEnding" data-en="Share" data-zh="分享">Share</button><button type="button" class="button" id="viewTown" data-en="View town" data-zh="查看小镇">View town</button></div>
+  <div class="feedback"><div id="feedbackQuestion"><div class="question" data-en="Was this town fun?" data-zh="这局好玩吗？">Was this town fun?</div><div class="feedback-buttons"><button type="button" id="feedbackFun" data-en="Fun" data-zh="好玩">Fun</button><button type="button" id="feedbackConfusing" data-en="Confusing" data-zh="没看懂">Confusing</button><button type="button" id="feedbackNotFun" data-en="Not fun" data-zh="不好玩">Not fun</button></div></div><div id="feedbackThanks" hidden data-en="Thanks for helping us improve!" data-zh="谢谢反馈！">Thanks for helping us improve!</div></div>
+ </div></div>
+</main>
+<script src="/tiny-town/game-v4.js"></script>
+<script src="/studio-audio.js"></script><script src="/studio-music.js"></script><script src="/audio-dock.js"></script><script src="/game-fullscreen.js?v=5" defer></script>
+</body></html>

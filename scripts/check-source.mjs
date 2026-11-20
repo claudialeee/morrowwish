@@ -69,9 +69,9 @@ if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    dashboard.includes('miniAbandoned:')||
    dashboard.includes('中途退出')||
    !dashboard.includes('const siteNum='))throw Error('Mini-game exit telemetry remains internal, never a player-facing dashboard metric');
-if(!telemetry.includes('"town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++') ||
+if(!telemetry.includes('"town_completed-win"||n==="town_completed-lose"') ||
    !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
-   !telemetry.includes('"level_complete"')) throw Error('Terminal gameplay events must be counted separately from clears');
+   !telemetry.includes('"level_complete"')) throw Error('Winning and losing Tiny Town runs must both be counted as finished');
 if(!analyticsSource.includes('z.ends+=events.reduce') ||
    !dashboard.includes('data-i18n="colEnds"')) throw Error('Unified and itch.io dashboard must show finished runs');
 
@@ -306,12 +306,17 @@ if(originalMusic.includes('aeris-cc0-music')||originalMusic.includes('createOsci
    originalMusic.includes('bedroom-window-vast.mp3')||originalMusic.includes('FALLBACK+track.file'))
  throw new Error('Retired dark/bass-heavy Lo-fi or synthesizer music is still configured');
 const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
-for(const marker of ['function portrait(person)','data:image/webp;base64,','function homesView(','fans=state.residents.filter(']){
- if(!tinyMusicPage.includes(marker))throw new Error('Tiny Town polish missing: '+marker);
+const townV4=fs.readFileSync('public/tiny-town/game-v4.js','utf8');
+new vm.Script(townV4,{filename:'public/tiny-town/game-v4.js'});
+for(const marker of ['src="/tiny-town/game-v4.js"','id="intro"','id="endArt"','id="savePostcard"','id="feedbackQuestion"']){
+ if(!tinyMusicPage.includes(marker))throw new Error('Tiny Town wish-cascade UI missing: '+marker);
+}
+for(const marker of ['function place(pos)','function newPairs(id,pos)','function chooseEvent(decision)','function illustrate(kind)','function finish()','town_completed-']){
+ if(!townV4.includes(marker))throw new Error('Tiny Town playable wish-cascade missing: '+marker);
 }
 if(!fs.readFileSync('public/studio-audio.js','utf8').includes('[data-mw-music]'))
  throw new Error('Music toggle must not trigger the sound effects button');
-console.log('Game music: 4 original profiles, independent bilingual controls, and 12 illustrated portraits checked.');
+console.log('Game music profiles, bilingual controls and Tiny Town wish-cascade engine checked.');
 
 // The new fast visual adventure intentionally supersedes the letter-heavy legacy game.
 if(dreamPage.includes('/elsewhere/app.js')||dreamPage.includes('/elsewhere/fast-story.js')||dreamPage.includes('/elsewhere/music.js'))
@@ -332,14 +337,13 @@ for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
  if(!html.includes('rel="preload" href="/studio-music.js" as="script"'))throw new Error('Music should preload: '+slug);
 }
 const newsTopPage=fs.readFileSync('public/tiny-town/index.html','utf8');
-const newsTopIndex=newsTopPage.indexOf('<section class="panel tt-news-panel"');
-const guideIndex=newsTopPage.indexOf('<div class="tt-journey"');
-if(newsTopIndex<0||guideIndex<0||newsTopIndex>guideIndex||
-   !newsTopPage.includes('function newsText(el)')||
-   !newsTopPage.includes('el.dataset.week=String(state?.turn||0)')||
-   !newsTopPage.includes("state.last.pending.map(c=>zhClubs[c.name]||c.name)"))
- throw new Error('Town News must appear above gameplay and update in both languages');
-console.log('Immediate music start and top-positioned bilingual Town News checked.');
+const townNewsEngine=fs.readFileSync('public/tiny-town/game-v4.js','utf8');
+if(!newsTopPage.includes('id="news"')||!newsTopPage.includes('id="discoveries"')||
+   !townNewsEngine.includes('function renderNews()')||
+   !townNewsEngine.includes('function translate()')||
+   !townNewsEngine.includes('function showOverlay()'))
+ throw new Error('Tiny Town bilingual news, discoveries and reactive events missing');
+console.log('Immediate music start and bilingual wish-cascade news checked.');
 
 
 // Elsewhere header returns home first and offers bilingual controls.
@@ -484,7 +488,7 @@ console.log('Elsewhere navigation and language toggle checked.');
     !helper.includes("opts.meta"))
    throw Error('Shared social dialog must support truthful story captions and game analytics');
  const pages=[
-  ['tiny-town','public/tiny-town/index.html','MorrowwishSocialShare.open({'],
+  ['tiny-town','public/tiny-town/index.html','/tiny-town/game-v4.js'],
   ['elsewhere','public/elsewhere/index.html','/elsewhere/dreams.js'],
   ['pawsibly-innocent','public/pawsibly-innocent/index.html','/pawsibly-innocent/game.js']
  ];
@@ -493,12 +497,12 @@ console.log('Elsewhere navigation and language toggle checked.');
   if(!html.includes('/social-share.js')||!html.includes(marker))
    throw Error(name+' must load the shared social modal');
  }
- const town=fs.readFileSync('public/tiny-town/index.html','utf8');
- const elsewhere=fs.readFileSync('public/elsewhere/dreams.js','utf8');
- const cat=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
- if(!town.includes('outcome?.totalScore||0')||
-    !town.includes("onShare:()=>gameProgress('shared-link')"))
-  throw Error('Tiny Town share must use real game score and preserve tracking');
+ const town=fs.readFileSync('public/tiny-town/game-v4.js','utf8');
+  const elsewhere=fs.readFileSync('public/elsewhere/app.js','utf8');
+  const cat=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
+  if(!town.includes('score=S.wonder+S.peace*4')||
+     !town.includes("onShare:()=>send('town_shared-link')"))
+   throw Error('Tiny Town share must include a real run score and tracking');
  if(!elsewhere.includes('MorrowwishSocialShare?.open')||
      !elsewhere.includes('onShare:platform=>track("share_clicked"')||
      !elsewhere.includes('encodeURIComponent(w.id)'))
