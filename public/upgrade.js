@@ -28,7 +28,7 @@ const prevAdd=window.add;window.add=function(n){prevAdd(n);document.getElementBy
 function enter(){attempts++;window.__MWMiniActive=true;runAt=performance.now();particles=[];flash=0;shake=0;combo=0;extras.hidden=true;goBtn.style.display="";localStorage.setItem("lab-seen-"+id,"1");event("run_start",{attempt:attempts});}
 window.start=function(){if(window.__MWMiniActive)event("run_abandoned",{reason:"restart"});previousStart();enter();};goBtn.onclick=start;
 function best(){const old=+(localStorage.getItem(dailyKey)||0),curr=Math.floor(score);if(curr>old)localStorage.setItem(dailyKey,String(curr));document.getElementById("best").textContent=Math.max(+(localStorage.getItem("arcade-high-"+id)||0),old,curr);if(curr>old)event("daily_best",{score:curr});}
-window.finish=function(w,msg,nextLevel){if(!running)return;window.__MWMiniActive=false;const seconds=Math.round((performance.now()-runAt)/1000);event("run_end",{duration:seconds,score:Math.floor(score),won:w?1:0,retries:attempts-1,delivered:id==="parcel-panic"?(window.mwMiniDelivered||0):0});if(seconds>=60)event("over_60s");const k="lab-summary-"+id,prev=JSON.parse(localStorage.getItem(k)||"{}");prev.runs=(prev.runs||0)+1;prev.seconds=(prev.seconds||0)+seconds;prev.retries=(prev.retries||0)+(attempts>1?1:0);localStorage.setItem(k,JSON.stringify(prev));best();previousFinish(w,msg,nextLevel);extras.hidden=false;refreshShare();overPanel.classList.add("lab-completed");goBtn.style.display="none";const resultZh=language()==="zh";
+window.finish=function(w,msg,nextLevel){if(!running)return;window.__MWMiniActive=false;const seconds=Math.round((performance.now()-runAt)/1000);event("run_end",{duration:seconds,score:Math.floor(score),won:w?1:0,retries:attempts-1,delivered:id==="parcel-panic"?(window.mwMiniDelivered||0):0,...(window.mwMiniStats||{})});if(seconds>=60)event("over_60s");const k="lab-summary-"+id,prev=JSON.parse(localStorage.getItem(k)||"{}");prev.runs=(prev.runs||0)+1;prev.seconds=(prev.seconds||0)+seconds;prev.retries=(prev.retries||0)+(attempts>1?1:0);localStorage.setItem(k,JSON.stringify(prev));best();previousFinish(w,msg,nextLevel);extras.hidden=false;refreshShare();overPanel.classList.add("lab-completed");goBtn.style.display="none";const resultZh=language()==="zh";
 extras.querySelector("#lab-meta").textContent=resultZh
  ?seconds+" 秒 · "+Math.floor(score)+" 分 · "+(beat?(score>=beat?"挑战成功！":"目标 "+beat+" 分"):"本局挑战")
  :seconds+"s PLAYED  •  "+Math.floor(score)+" POINTS  •  "+(beat?(score>=beat?"FRIEND BEATEN!":"TARGET "+beat):"TODAY'S CHALLENGE");
@@ -44,9 +44,9 @@ if(!first)localStorage.setItem("lab-first-"+id,dt);else if(first!==dt){const day
 if(beat)event("friend_challenge_open");
 G["flip-dash"]=()=>{
 let rnd=seeded(seed+"gravity");const tutorial=[0,1,0,1,1,0,0,1,0,1,1,0];let sec=0,side=0,py=410,haz=[],stars=[],sp=1.5,k=0;
-function switchLane(){side=1-side;burst(223,py,"#76eaff",8);shake=4;vibrate(9);tone(side?590:465);}
-return{init(){rnd=seeded(seed+"gravity");sec=0;side=0;py=410;haz=[];stars=[];sp=1.6;k=0;combo=0;info("TAP OR SPACE TO FLIP");},
-tick(dt){sec+=dt;const speed=248+Math.min(330,Math.max(0,sec-7)*5.5);sp-=dt;py+=(side?126-py:410-py)*Math.min(1,dt*16);if(sp<=0){const which=k<tutorial.length?tutorial[k]:Math.floor(rnd()*2);haz.push({x:1040,side:which,passed:false});if(k%2===0)stars.push({x:1145,side:1-which,got:false});k++;sp=Math.max(.62,1.68-Math.max(0,sec-8)*.029)+(rnd()-.5)*.1;}for(const p of haz){p.x-=speed*dt;if(!p.passed&&p.x<225){p.passed=true;if(Math.abs(py-(p.side?126:410))<78){shake=11;flash=1;finish(false,"You reached "+Math.floor(sec)+" seconds. Learn the pattern, then beat it.");return;}add(4);combo++;if(combo%4===0)winEffect(225,py);}}for(const g of stars){g.x-=speed*dt;if(!g.got&&Math.abs(g.x-225)<30&&Math.abs(py-(g.side?126:410))<50){g.got=true;add(22);winEffect(225,py);}}haz=haz.filter(v=>v.x>-60);stars=stars.filter(v=>v.x>-50&&!v.got);if(Math.floor(sec*3)>Math.floor((sec-dt)*3))add(1);info(Math.floor(sec)+"s  ·  STREAK "+combo+"  ·  SPEED "+Math.floor(speed));},
+function switchLane(){side=1-side;if(window.mwMiniStats)window.mwMiniStats.flips++;burst(223,py,"#76eaff",8);shake=4;vibrate(9);tone(side?590:465);}
+return{init(){rnd=seeded(seed+"gravity");sec=0;side=0;py=410;haz=[];stars=[];sp=1.6;k=0;combo=0;window.mwMiniStats={flips:0,dodges:0,gems:0};info("TAP OR SPACE TO FLIP");},
+tick(dt){sec+=dt;const speed=248+Math.min(330,Math.max(0,sec-7)*5.5);sp-=dt;py+=(side?126-py:410-py)*Math.min(1,dt*16);if(sp<=0){const which=k<tutorial.length?tutorial[k]:Math.floor(rnd()*2);haz.push({x:1040,side:which,passed:false});if(k%2===0)stars.push({x:1145,side:1-which,got:false});k++;sp=Math.max(.62,1.68-Math.max(0,sec-8)*.029)+(rnd()-.5)*.1;}for(const p of haz){p.x-=speed*dt;if(!p.passed&&p.x<225){p.passed=true;if(Math.abs(py-(p.side?126:410))<78){shake=11;flash=1;finish(false,"You reached "+Math.floor(sec)+" seconds. Learn the pattern, then beat it.");return;}add(4);window.mwMiniStats.dodges++;combo++;if(combo%4===0)winEffect(225,py);}}for(const g of stars){g.x-=speed*dt;if(!g.got&&Math.abs(g.x-225)<30&&Math.abs(py-(g.side?126:410))<50){g.got=true;window.mwMiniStats.gems++;add(22);winEffect(225,py);}}haz=haz.filter(v=>v.x>-60);stars=stars.filter(v=>v.x>-50&&!v.got);if(Math.floor(sec*3)>Math.floor((sec-dt)*3))add(1);info(Math.floor(sec)+"s  ·  STREAK "+combo+"  ·  SPEED "+Math.floor(speed));},
 down(){switchLane();},key(key){if([" ","ArrowUp","ArrowDown"].includes(key))switchLane();},
 draw(){bg("#101137","#202d5b");glow(490,265,320,"#676eff22");box(0,77,960,15,"#79ecff",6);box(0,455,960,15,"#79ecff",6);for(let i=0;i<17;i++){const x=(i*88-sec*140%1000+1000)%1000;line(x,97,x+40,97,"#85e9ff35",4);line(x,450,x+40,450,"#85e9ff35",4);}for(const o of haz){const y=o.side?126:410;glow(o.x,y,61,"#fb648850");box(o.x-27,y-43,54,86,"#fe7297",12,"#ffb6c8");txt(o.x,y,"✦",24,"#4c163d");}for(const g of stars){const y=g.side?126:410;glow(g.x,y,34,"#ffe88a44");circ(g.x,y,14,"#ffce65");txt(g.x,y,"✧",24,"#fff");}glow(225,py,78,"#4ce8fd66");circ(225,py,22,"#70fff0");circ(232,py-6,5,"#142c51");for(let i=0;i<4;i++)circ(180-i*14,py+(i%2?5:-5),5-i,"#65d9ff");txt(480,36,sec<6?"TAP TO FLIP GRAVITY":combo>3?"STREAK x"+combo:"KEEP MOVING",20,"#e0faff");if(sec<6)txt(480,268,"AVOID PINK BLOCKS",23,"#ffffff88");}
 };};
@@ -61,7 +61,7 @@ const speed=()=>Math.min(248,98+delivered*6.4+time*.38);
 function next(){if(boxes.length||spawn>0)return;const color=count<6?[0,1,2,0,2,1][count]:Math.floor(rnd()*3);boxes.push({x:480,y:108,color});count++;event("parcel_spawned");}
 function miss(p,wrong=false){
  const i=boxes.indexOf(p);if(i<0)return;
- boxes.splice(i,1);press=null;drag=null;spawn=.38;life--;combo=0;shake=8;
+ boxes.splice(i,1);press=null;drag=null;spawn=.38;life--;combo=0;window.mwMiniStats.misses++;window.mwMiniStats.streak=0;shake=8;
  event("parcel_missed",{cause:wrong?"wrong_lane":"timeout",color:p.color});
  burst(p.x,p.y,"#f67f97",13);tone(190);vibrate(22);
  feedback={x:480,y:286,text:wrong?L("TRY ANOTHER COLOR","颜色不对"):L("PACKAGE MISSED","超时未投递"),life:.9,good:false};
@@ -70,7 +70,7 @@ function miss(p,wrong=false){
 function send(target,input="click"){
  const b=boxes[0];if(!b||target<0)return false;
  if(target!==b.color){miss(b,true);return false}
- boxes.shift();press=null;drag=null;spawn=.18;delivered++;window.mwMiniDelivered=delivered;
+ boxes.shift();press=null;drag=null;spawn=.18;delivered++;window.mwMiniDelivered=delivered;window.mwMiniStats.delivered=delivered;window.mwMiniStats.streak++;window.mwMiniStats.maxStreak=Math.max(window.mwMiniStats.maxStreak,window.mwMiniStats.streak);if(delivered===5&&window.mwMiniStats.misses===0)window.mwMiniStats.clean5=1;if(delivered===10&&window.mwMiniStats.misses===0)window.mwMiniStats.clean10=1;
  event("parcel_sorted",{input,color:target,delivered});
  if(delivered===10)event("parcel_ten_sorted");
  const gain=14+Math.min(combo,12)*3;add(gain);winEffect(docks[target],449);
@@ -91,7 +91,7 @@ function release(x,y,gesture){
 return{
  init(){
   rnd=seeded(seed+"parcels");time=0;boxes=[];spawn=.42;life=5;count=0;delivered=0;window.mwMiniDelivered=0;
-  press=null;drag=null;feedback=null;combo=0;
+  press=null;drag=null;feedback=null;combo=0;window.mwMiniStats={delivered:0,streak:0,maxStreak:0,misses:0,clean5:0,clean10:0};
   info(L("Just click the matching color lane, or press 1 / 2 / 3.","看颜色，直接点击对应通道，或按 1 / 2 / 3。"));
  },
  tick(dt){

@@ -124,7 +124,7 @@ function endingFor(){return quality<40?'rest':score>=420&&fed>=9&&quality>=55?'f
 function gradeFor(){return score>=600&&quality>=60?'S':score>=400&&quality>=50?'A':score>=220?'B':score>=90||fed>=4?'C':'D';}
 function finish(){if(state!=='playing')return;state='done';lastGrade=gradeFor();lastEnding=endingFor();
  if(score>best){best=score;try{localStorage.setItem(bestKey,String(best))}catch(e){}}
- hud();modal('done');metric('game_complete',{score,best,grade:lastGrade,fed,quality:Math.round(quality),duration:Math.round(elapsed),reason:'time',ending:lastEnding});}
+ hud();modal('done');metric('game_complete',{score,best,grade:lastGrade,fed,maxCombo,quality:Math.round(quality),duration:Math.round(elapsed),reason:'time',ending:lastEnding});}
 function modal(mode){const end=ENDINGS[lastEnding];$('overlay').hidden=false;
  $('overlay').dataset.ending=mode==='done'?lastEnding:'';
  $('endIcon').textContent=mode==='start'?'🐠':end.icon;
@@ -175,4 +175,4 @@ window.addEventListener('keydown',e=>{if(['1','2','3'].includes(e.key))choose(Nu
 window.addEventListener('resize',size);document.addEventListener('visibilitychange',()=>{previous=performance.now()});
 size();init();language(lang);previous=performance.now();frameId=requestAnimationFrame(animate);
 })();
-</script><script src="/studio-audio.js"></script><script src="/studio-music.js"></script><script src="/social-share.js"></script><script src="/mini-achievements.js"></script><script src="/playtest-pulse.js" defer></script><script src="/audio-dock.js"></script><script src="/mini-frame-fullscreen.js?v=4" defer></script></body></html>
+</script><script src="/studio-audio.js"></script><script src="/studio-music.js"></script><script src="/social-share.js"></script><script src="/mini-achievements.js?v=2"></script><script src="/playtest-pulse.js" defer></script><script src="/audio-dock.js"></script><script src="/mini-frame-fullscreen.js?v=4" defer></script></body></html>
