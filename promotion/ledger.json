@@ -46,16 +46,6 @@
           "utm_campaign": "elsewhere-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=reddit&utm_medium=social&utm_campaign=elsewhere-playtest"
         },
-        "newgrounds": {
-          "priority": "P1",
-          "status": "not-submitted",
-          "platformId": null,
-          "publicUrl": null,
-          "scheduledAt": null,
-          "utm_source": "newgrounds",
-          "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=newgrounds&utm_medium=portal&utm_campaign=elsewhere-playtest"
-        },
         "youtube": {
           "priority": "P1",
           "status": "scheduled",
@@ -170,16 +160,6 @@
           "utm_source": "reddit",
           "utm_campaign": "tiny-town-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=reddit&utm_medium=social&utm_campaign=tiny-town-playtest"
-        },
-        "newgrounds": {
-          "priority": "P1",
-          "status": "not-submitted",
-          "platformId": null,
-          "publicUrl": null,
-          "scheduledAt": null,
-          "utm_source": "newgrounds",
-          "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=newgrounds&utm_medium=portal&utm_campaign=tiny-town-playtest"
         },
         "youtube": {
           "priority": "P1",
@@ -296,16 +276,6 @@
           "utm_campaign": "pawsibly-innocent-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=reddit&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
         },
-        "newgrounds": {
-          "priority": "P1",
-          "status": "not-submitted",
-          "platformId": null,
-          "publicUrl": null,
-          "scheduledAt": null,
-          "utm_source": "newgrounds",
-          "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=newgrounds&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest"
-        },
         "youtube": {
           "priority": "P1",
           "status": "scheduled",
@@ -421,16 +391,6 @@
           "utm_campaign": "flip-dash-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=reddit&utm_medium=social&utm_campaign=flip-dash-playtest"
         },
-        "newgrounds": {
-          "priority": "P1",
-          "status": "not-submitted",
-          "platformId": null,
-          "publicUrl": null,
-          "scheduledAt": null,
-          "utm_source": "newgrounds",
-          "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=newgrounds&utm_medium=portal&utm_campaign=flip-dash-playtest"
-        },
         "youtube": {
           "priority": "P1",
           "status": "scheduled",
@@ -541,16 +501,6 @@
           "utm_campaign": "parcel-panic-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=reddit&utm_medium=social&utm_campaign=parcel-panic-playtest"
         },
-        "newgrounds": {
-          "priority": "P1",
-          "status": "not-submitted",
-          "platformId": null,
-          "publicUrl": null,
-          "scheduledAt": null,
-          "utm_source": "newgrounds",
-          "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=newgrounds&utm_medium=portal&utm_campaign=parcel-panic-playtest"
-        },
         "youtube": {
           "priority": "P1",
           "status": "scheduled",
@@ -660,16 +610,6 @@
           "utm_source": "reddit",
           "utm_campaign": "pocket-aquarium-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=reddit&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
-        },
-        "newgrounds": {
-          "priority": "P1",
-          "status": "not-submitted",
-          "platformId": null,
-          "publicUrl": null,
-          "scheduledAt": null,
-          "utm_source": "newgrounds",
-          "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=newgrounds&utm_medium=portal&utm_campaign=pocket-aquarium-playtest"
         },
         "youtube": {
           "priority": "P1",
