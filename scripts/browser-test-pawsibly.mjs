@@ -237,6 +237,7 @@ try{
   assert.equal(await policyPage.locator('#musicPermission').isVisible(),true,'Autoplay block must show a clear music start prompt');
   await policyPage.locator('#musicPermission').click();
   await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing===true);
+  await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().blocked===false&&document.getElementById('musicPermission')?.hidden===true);
   assert.equal(await policyPage.locator('#musicPermission').isVisible(),false,'Prompt should disappear once music plays');
   console.log('Autoplay-block fallback: one click starts the recorded music');
  }finally{await policyPage.close()}
