@@ -112,7 +112,7 @@ function dareDone(){
 function updateDare(){
  if(!s)return;const done=dareDone(),el=$("bonusDare");
  if(el){el.textContent=(done?"✓ ":"☆ ")+(lang==="zh"?"额外挑战 · ":"BONUS DARE · ")+DARES[s.index][lang];el.classList.toggle("complete",done);}
- if(done&&!s.dareAnnounced){s.dareAnnounced=true;metric("cat_dare_completed",{level:s.index+1,kind:DARES[s.index].kind});if(!s.done){popup("bonusDone");throwStars(s.cat,"#ffd78a");audio("fish")}}
+ if(done&&!s.dareAnnounced){s.dareAnnounced=true;metric("cat_dare_completed",{level:s.index+1,kind:DARES[s.index].kind});if(!s.done){throwStars(s.cat,"#ffd78a");audio("fish")}}
 }
 function resultLine(){
  const bonus=s.winning?(dareDone()?(lang==="zh"?" · 额外挑战 ✓ +150":" · BONUS ✓ +150"):(lang==="zh"?" · 额外挑战未完成":" · Bonus missed")):"";
