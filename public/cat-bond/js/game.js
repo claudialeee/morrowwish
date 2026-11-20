@@ -31,6 +31,7 @@ class Game {
   }
 
   resize() {
+    const oldW=this.W,oldH=this.H;
     const rect = this.canvas.getBoundingClientRect();
     // Retina phones need three physical pixels per CSS pixel to show
     // the 220×330 kitten illustrations sharply. Cap total canvas pixels
@@ -43,6 +44,12 @@ class Game {
     this.ctx.setTransform(this.canvas.width/Math.max(1,this.W),0,0,this.canvas.height/Math.max(1,this.H),0,0);
     this.ctx.imageSmoothingEnabled=true;
     this.ctx.imageSmoothingQuality='high';
+    if(oldW>0&&oldH>0&&(Math.abs(oldW-this.W)>2||Math.abs(oldH-this.H)>2)){
+      this.yard?.onResize?.(oldW,oldH,this.W,this.H);
+      this.battle?.onResize?.(this.W,this.H);
+      this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};
+      this._worldTapCandidate=null;
+    }
   }
 
   start() {
@@ -79,6 +86,8 @@ class Game {
 
   openWorldMap() {
     this.scene = 'map';
+    document.getElementById('tabbar').classList.add('hidden');
+    document.getElementById('hud').classList.add('hidden');
     document.getElementById('yard-actions').classList.add('hidden');
     WorldMap.enterMap();
   }
@@ -134,7 +143,11 @@ class Game {
       const { x, y } = pos(e);
       this.mouse.x = x; this.mouse.y = y;
       if (this.scene === 'yard') this.yardTap(x, y);
-      else if (this.scene === 'map' && window.WorldMap) WorldMap.handleTap(x, y);
+      else if (this.scene === 'map' && window.WorldMap) {
+        const wasRegion=WorldMap.mode==='region';
+        const handled=WorldMap.handleTap(x,y);
+        if(wasRegion&&!handled)WorldMap.setDestination(x,y);
+      }
       else if (this.scene === 'battle') { this.mouse.down = true; e.preventDefault(); }
     };
     const move = e => {
@@ -166,7 +179,14 @@ class Game {
         } else {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
           if (this.scene === 'yard') this.yardTap(p.x, p.y);
-          else if (this.scene === 'map' && window.WorldMap) WorldMap.handleTap(p.x, p.y);
+          else if (this.scene === 'map' && window.WorldMap) {
+            const wasRegion=WorldMap.mode==='region';
+            const handled=WorldMap.handleTap(p.x,p.y);
+            if(wasRegion&&!handled&&!this.joystick.active){
+              this.joystick={active:true,ox:p.x,oy:p.y,dx:0,dy:0,id:t.identifier,context:'region'};
+              this._worldTapCandidate={id:t.identifier,moved:false};
+            }
+          }
         }
       }
     }, { passive: false });
@@ -179,6 +199,7 @@ class Game {
           const len = Math.hypot(dx, dy), max = 46;
           if (len > max) { dx = dx / len * max; dy = dy / len * max; }
           this.joystick.dx = dx / max; this.joystick.dy = dy / max;   // -1..1
+          if(this._worldTapCandidate?.id===t.identifier&&len>12)this._worldTapCandidate.moved=true;
         } else if (t.identifier === this._fireTouchId) {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
         } else if (this.scene !== 'battle') {
@@ -189,7 +210,12 @@ class Game {
     }, { passive: false });
     const endTouch = e => {
       for (const t of e.changedTouches) {
-        if (t.identifier === this.joystick.id) this.joystick = { active: false, ox: 0, oy: 0, dx: 0, dy: 0, id: null };
+        if(t.identifier===this.joystick.id){
+          if(e.type==='touchend'&&this.joystick.context==='region'&&!this._worldTapCandidate?.moved&&this.scene==='map'&&window.WorldMap?.mode==='region'){
+            const p=touchPos(t);WorldMap.setDestination(p.x,p.y);
+          }
+          this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
+        }
         if (t.identifier === this._fireTouchId) { this.mouse.down = false; this._fireTouchId = null; }
       }
     };
@@ -290,6 +316,7 @@ class Game {
   // team = array of up to 3 cat instances (or a single cat for back-compat)
   startBattle(team, wildSpecies) {
     this.keys = {}; this.mouse.down = false;
+    this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
     this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
@@ -405,7 +432,6 @@ class Game {
     if (!b) return;                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
     document.getElementById('battle-ui').classList.remove('on');
-    document.getElementById('hud').classList.remove('hidden');
     // return to wherever we came from (yard normally, overworld region if exploring)
     const backToMap = this._returnScene === 'map' && window.WorldMap;
     this._returnScene = null;
@@ -414,6 +440,7 @@ class Game {
       WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
       document.getElementById('tabbar').classList.remove('hidden');
+      document.getElementById('hud').classList.remove('hidden');
       this.scene = 'yard';
     }
     if (win) {
