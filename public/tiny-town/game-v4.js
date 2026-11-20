@@ -315,7 +315,10 @@ function showOverlay(){
  if(o.kind==='legend'){
   const l=o.legend;$('storyKicker').textContent=t('A CITY-SIZED MIRACLE!','城市级奇观诞生！');$('storyTitle').textContent=t(l.en,l.zh);
   $('storyBody').textContent=t(l.captionEn,l.captionZh)+'  +'+(65+(S.law==='dream'?30:0))+' '+t('wonder','奇想');
-  $('storyImage').innerHTML=illustrate(l.vibe);button(t('Explore the transformed town','探索全新小镇'),nextOverlay);
+  const scene={cat:'meadow',sky:'train',party:'festival',art:'meadow',calm:'sea',chaos:'stars'}[l.vibe]||'meadow';
+  $('storyImage').innerHTML='<div class="wonder-film" data-vibe="'+l.vibe+'">'+(window.TownFreedom?.svg?.(scene)||illustrate(l.vibe))+
+  '<span class="wonder-super-icon">'+l.icon+'</span><div class="wonder-particles" aria-hidden="true">✧ ✦ ✧ ✦</div></div>';
+  button(t('Explore the transformed town','探索全新小镇'),nextOverlay);
  }else if(o.kind==='revolt'){
   $('storyKicker').textContent=t('CITY HALL EMERGENCY','市政厅紧急会议');$('storyTitle').textContent=t('The town is dividing!','居民开始争论不休！');
   $('storyBody').textContent=t('You have granted incredible freedom, but some people feel left out. Make a genuine tradeoff.','你让城市变得不可思议，但有居民觉得自己被忽视。现在必须做出取舍。');
