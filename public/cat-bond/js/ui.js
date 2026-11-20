@@ -696,7 +696,13 @@ const UI = {
         <div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
       </div>`;
     }).join('');
+    const newBreed=!State.S.dex[wildSp.id];
+    const rareText=wildSp.rarity==='SSR'?'👑 传说邂逅'
+      :wildSp.rarity==='SR'?'🌟 史诗邂逅'
+      :wildSp.rarity==='R'?'✨ 稀有邂逅'
+      :newBreed?'🐾 新品种发现':'🐾 熟悉的朋友';
     this.panel(`<span class="card-close">×</span>
+      <div class="sighting-badge rarity-${wildSp.rarity}">${rareText}</div>
       <h2>发现野生 <span class="rarity-${wildSp.rarity}">${wildSp.name}</span></h2>
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
@@ -789,7 +795,7 @@ const UI = {
     document.getElementById('gb-back').onclick = () => this.openCapturePrep(wildSp);
   },
 
-  openCatchResult(wildSp, newCat, rewards=[]) {
+  openCatchResult(wildSp, newCat, rewards=[], performance=null) {
     const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
@@ -801,6 +807,12 @@ const UI = {
     const goalText=status.next===null
       ?(english?'Every breed discovered!':'全部品种已收集！')
       :(english?'Next goal: '+status.next+' breeds':'下一目标：收集 '+status.next+' 种猫咪');
+    const grade=performance?.grade||'C';
+    const gradeLabel=english?'Battle grade':'战斗评级';
+    const battleResult=performance
+      ?(english?'Bonus: +'+performance.bonusCoins+' coins'+(performance.bonusTreats?' · +'+performance.bonusTreats+' treats':'')
+        :'战斗奖励：+'+performance.bonusCoins+' 金币'+(performance.bonusTreats?' · +'+performance.bonusTreats+' 零食':''))
+      :'';
     const rewardText=rewards.length
       ?rewards.map(r=>english
         ?('Collection bonus: +'+r.coins+' coins, +'+r.treats+' treats')
@@ -811,6 +823,7 @@ const UI = {
       <canvas id="cr" width="180" height="140" style="display:block;margin:8px auto"></canvas>
       <p class="center"><b class="rarity-${wildSp.rarity}">${name}</b> ${english?'joined your yard':'已加入庭院'}</p>
       <p class="sub center">${totalText} · ${goalText}</p>
+      ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small></div></div>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
