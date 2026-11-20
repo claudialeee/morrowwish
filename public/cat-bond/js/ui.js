@@ -224,7 +224,9 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
-      ${State.S.masteryBadges?.[sp.id]?'<p class="mastery-detail">🏅 金爪徽章 · S 级精通 · 集齐三枚提升稀有猫发现机会</p>':''}
+      ${State.S.masteryBadges?.[sp.id]
+        ?'<p class="mastery-detail">🏅 '+(window.MorrowwishI18n?.get?.()==='zh'
+          ?'金爪徽章已解锁 · 每三枚提高永久寻猫运气':'Golden Paw earned · Every 3 improve rare-cat odds')+'</p>':''}
       <div style="display:flex;gap:16px;align-items:center;">
         <canvas id="cd-canvas" width="120" height="100" style="background:rgba(255,255,255,0.04);border-radius:12px;"></canvas>
         <div style="flex:1">
@@ -701,6 +703,14 @@ const UI = {
     const cats = State.S.cats;
     const rar = GameData.RARITY[wildSp.rarity];
     const firstCapture=(State.S.catchCount||0)===0;
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
+    const deadline=this.game.gradeTimeLimit(wildSp.rarity);
+    const masteryChallenge=english
+      ?('🏅 S challenge: Win in '+deadline+'s · Keep 70% HP · 6-hit combo or perfect dodge. '
+        +(hasMedal?'Golden Paw already earned.':'First S unlocks a permanent Golden Paw and a rare-cat lure.'))
+      :('🏅 S 评级：'+deadline+'秒内获胜 · 保持70%血量 · 6连击或完美闪避。'
+        +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁永久金爪徽章和稀有猫诱饵。'));
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
       return;
@@ -727,7 +737,7 @@ const UI = {
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
-      ${firstCapture?'':'<p class="center tiny capture-challenge">🏅 S评级挑战：40秒内获胜 · 血量保持70% · 6连击或完美闪避</p>'}
+      ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       <p class="tiny">${firstCapture?'电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！':'战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动'}</p>
