@@ -774,6 +774,24 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
   html.cb-cg #first-quest{top:56px;font-size:11px;padding:6px 10px}
 }
 
+/* Battle rank turns skillful captures into visible progression. */
+#panel .cat-highlight-card .battle-grade{display:flex;align-items:center;gap:12px;
+  border-radius:17px;padding:10px 15px;margin:10px auto;max-width:390px;
+  background:#e5eee3;border:1px solid #cbddca;color:#385d49;box-shadow:inset 0 1px 0 #fff8}
+#panel .cat-highlight-card .battle-grade>b{font:900 38px/.95 system-ui,sans-serif;
+  min-width:47px;text-align:center;color:#548568}
+#panel .cat-highlight-card .battle-grade strong{display:block;font-size:14px}
+#panel .cat-highlight-card .battle-grade small{display:block;font-size:12px;line-height:1.5;color:#607a69}
+#panel .cat-highlight-card .battle-grade.grade-S{background:linear-gradient(120deg,#fff0c3,#f5dbbd);border-color:#dabc72}
+#panel .cat-highlight-card .battle-grade.grade-S>b{color:#ac752c}
+#panel .cat-highlight-card .battle-grade.grade-A>b{color:#477f61}
+#panel .cat-highlight-card .sighting-badge{display:block;width:max-content;max-width:85%;
+  margin:0 auto 8px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:900;
+  color:#566c5b;background:#eaf2e7;border:1px solid #d1dfca}
+#panel .cat-highlight-card .sighting-badge.rarity-R{color:#317498;background:#e5f3fc}
+#panel .cat-highlight-card .sighting-badge.rarity-SR{color:#8856ab;background:#efe7fa}
+#panel .cat-highlight-card .sighting-badge.rarity-SSR{color:#906023;background:#fff0c1}
+
 /* A visible, reachable collection objective after the first wild cat. */
 #collection-goal{position:absolute;z-index:24;top:65px;left:50%;transform:translateX(-50%);
   max-width:min(92%,470px);width:max-content;padding:8px 14px;
