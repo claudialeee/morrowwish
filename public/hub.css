@@ -181,3 +181,6 @@ html[lang="zh-CN"] .hero h1 .period{display:none}
  .about-copy h2{font-size:26px}
  .about-copy p{font-size:13px}
 }
+
+/* Keep the studio introduction on one line on desktop in Chinese; allow natural wrapping on smaller screens. */
+@media(min-width:1001px){html[lang="zh-CN"] .about-copy p{max-width:none;white-space:nowrap;font-size:clamp(12px,1.12vw,14px)}}
