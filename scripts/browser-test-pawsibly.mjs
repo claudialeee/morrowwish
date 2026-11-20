@@ -231,10 +231,13 @@ try{
   catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
   heroPitch:document.querySelector('.hero>p')?.innerText
  }));
- assert.deepEqual(homeEn.order.slice(0,4),['pawsibly-innocent','tiny-town','cat-bond','elsewhere'],'English homepage should match tested four-world order');
+ assert.deepEqual(homeEn.order.slice(0,4),['cat-bond','pawsibly-innocent','tiny-town','elsewhere'],'English homepage should match Cat Bond-led four-world order');
  assert.match(homeEn.catTitle,/Pawsibly\s*Innocent!/,'English heading must still show its original name');
  assert.match(homeEn.catPitch,/Three fish to steal/,'English promotional copy must be updated');
- assert.ok(homeEn.heroPitch.indexOf('mischievous cat')<homeEn.heroPitch.indexOf('life you never lived')&&homeEn.heroPitch.indexOf('life you never lived')<homeEn.heroPitch.indexOf('town where everyone is free'),'English hero copy must match cat, Elsewhere and town order');
+ assert.ok(homeEn.heroPitch.indexOf('Befriend a yard')<homeEn.heroPitch.indexOf('mischievous cat')
+    &&homeEn.heroPitch.indexOf('mischievous cat')<homeEn.heroPitch.indexOf('town where everyone is free')
+    &&homeEn.heroPitch.indexOf('town where everyone is free')<homeEn.heroPitch.indexOf('life you never lived'),
+    'English hero introduction must follow Cat Bond, Pawsibly, Tiny Town, Elsewhere');
  // The cat's core distraction needs to work with real pointer input and clear feedback.
  await page.goto(url,{waitUntil:'load',timeout:40000});
  await page.evaluate(()=>window.MorrowwishI18n.set('en'));
