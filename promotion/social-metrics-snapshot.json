@@ -4,7 +4,7 @@
   "nativeWindow": "2026-11-18 through 2026-11-20",
   "source": "Metricool Morrow Wish connected account",
   "refreshMode": "manual",
-  "note": "Native views are distinct from website visits; null=unavailable, never zero. Provider published counts verified by Metricool and view totals may be delayed.",
+  "note": "Native provider analytics are dated and may carry old-account history; null=unavailable, not zero. Previous promotional videos are old and blurry; do not reuse them.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -64,10 +64,11 @@
     {
       "id": "bluesky",
       "priority": "P2",
-      "phase": "testing",
-      "published": 1,
+      "phase": "pending-new-account-post",
+      "published": null,
       "failed": 0,
-      "views": null
+      "views": null,
+      "note": "Legacy Metricool post history may be attributed to newly connected account; new account has no confirmed published post. One text-only post scheduled for 2026-11-20 11:18 PDT."
     },
     {
       "id": "search",
