@@ -420,28 +420,38 @@ const UI = {
     };
     anim();
     document.getElementById('cd-pet').onclick = () => {
+      const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
       cat.affinity = Math.min(100, cat.affinity + 3); cat.joy = Math.min(100, cat.joy + 4);
       window.MorrowwishAudio?.effect?.('pet');
-      State.addXp(cat, 4); State.save(); this.renderCatDetail(cat); this.game.toast('❤ 好感提升');
+      State.addXp(cat, 4);
+      const unlocked=this.announceSkillMilestone(cat,old);
+      State.save();this.renderCatDetail(cat);
+      this.game.toast(unlocked?'✨ 学会新技能：'+unlocked.name+'！':'❤ 好感提升');
     };
     document.getElementById('cd-feed').onclick = () => {
       if (State.S.coins < feedCost) { this.game.toast('金币不足'); return; }
       State.S.coins -= feedCost; cat.hunger = Math.min(100, cat.hunger + 35); cat.joy = Math.min(100, cat.joy + 8);
+      const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
       cat.affinity = Math.min(100, cat.affinity + 1); State.addXp(cat, 6);
       window.MorrowwishAudio?.effect?.('feed');
-      State.save(); this.game.refreshHUD(); this.renderCatDetail(cat); this.game.toast('🍖 吃得好开心');
+      const unlocked=this.announceSkillMilestone(cat,old);
+      State.save();this.game.refreshHUD();this.renderCatDetail(cat);
+      this.game.toast(unlocked?'✨ 学会新技能：'+unlocked.name+'！':'🍖 吃得好开心');
     };
     document.getElementById('cd-tease').onclick = () => this.openTease(cat);
     document.getElementById('cd-skills').onclick = () => this.openSkillEditor(cat);
     // 培养: fish → XP (scaled to level so it stays useful), yarn → permanent stats
     document.getElementById('cd-trainxp').onclick = () => {
       if (State.S.fish < 3) { this.game.toast('小鱼干不足（去钓鱼位产出）'); return; }
+      const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
       State.S.fish -= 3;
       const gain = 20 + cat.level * 12;        // scales so high-level cats still progress
       const lv = State.addXp(cat, gain);
       cat.hunger = Math.min(100, cat.hunger + 20);
-      State.save(); this.game.refreshHUD(); this.renderCatDetail(cat);
-      this.game.toast(lv ? `🎉 升到 Lv.${cat.level}！(+${gain}经验)` : `🐟 +${gain} 经验`);
+      const unlocked=this.announceSkillMilestone(cat,old);
+      State.save();this.game.refreshHUD();this.renderCatDetail(cat);
+      this.game.toast(unlocked?'✨ '+State.catName(cat)+' 学会 '+unlocked.name+'！'
+        :(lv?`🎉 升到 Lv.${cat.level}！(+${gain}经验)`:`🐟 +${gain} 经验`));
     };
     document.getElementById('cd-trainstat').onclick = () => {
       const yarn = (State.S.raising && State.S.raising.yarn) || 0;
@@ -551,6 +561,21 @@ const UI = {
     </div>`;
   },
   // ---- 技能搭配: learn & swap each loadout slot ----
+  // Reveal only actual NEW unlocks; regular XP and affection taps stay quiet.
+  // Automatic loadouts update when the player crosses a milestone, but
+  // custom player selections are never replaced.
+  announceSkillMilestone(cat,previous){
+    if(!window.Skills||!previous)return null;
+    const available=Skills.learnableSkills(cat);
+    const unlocked=available.filter(sk=>!previous.has(sk.id));
+    if(!unlocked.length)return null;
+    Skills.ensureLoadout(cat);
+    const chosen=unlocked.find(sk=>sk.ultCost>0)
+      ||unlocked.find(sk=>['dash','heal','buff'].includes(sk.kind))||unlocked[0];
+    window.arcadeMetric?.('bond_skill_unlocked',{breed:cat.species,skill:chosen.id,source:'growth'});
+    return chosen;
+  },
+
   openSkillEditor(cat) {
     const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
     S.ensureLoadout(cat);
@@ -1085,8 +1110,11 @@ const UI = {
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
         +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name
-        +' · '+(english?'New element unlocked for your next battle':skillUnlock.skill.desc)+'</span><small>'+(english?'Equipped to E. Your kitten can now use a second element!'
-          :'已自动装备到 E 技能位！下场战斗就能使用不同元素。')+'</small></div>':''}
+        +' · '+(english?'A new move for future battles':skillUnlock.skill.desc)+'</span><small>'
+        +(skillUnlock.skill.ultCost
+          ?(english?'Elemental ultimate unlocked — use R when the meter is full!':'元素必杀已解锁！能量满后按 R 释放。')
+          :(english?'A new E skill is ready. Open skill loadout to customize.':'新技能已可在 E 位使用；可打开技能搭配自由调整。'))
+        +'</small></div>':''}
       ${masteryReward?'<div class="golden-paw-unlock"><strong>🏅 '+(english?'GOLDEN PAW UNLOCKED!':'金爪徽章解锁！')+'</strong><p>'+medalMessage+'</p><small>'
         +(english?'Medals':'已获徽章')+' '+mastery.medals+'/'+mastery.total+' · '
         +(english?'Permanent rare-weight boost':'永久稀有权重加成')+' +'+Math.round(mastery.luckBonus*100)+'%</small></div>':''}
@@ -1192,9 +1220,12 @@ const UI = {
   // ---------- starter picker (first run) ----------
   openStarter(onPick) {
     const options = GameData.SPECIES.filter(s => s.rarity === 'N').slice(0, 3);
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
     const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${sp.name}">
       <canvas width="90" height="76"></canvas>
-      <div class="tiny starter-element">${this.game.elemIcon(Skills.elementOf(sp.id))} ${Skills.elementOf(sp.id)==='fire'?'火系':Skills.elementOf(sp.id)==='grass'?'草系':'水系'}</div>
+      <div class="tiny starter-element">${this.game.elemIcon(Skills.elementOf(sp.id))} ${english
+        ?({fire:'Fire',grass:'Nature',water:'Water'}[Skills.elementOf(sp.id)]||'Element')
+        :({fire:'火系',grass:'草系',water:'水系'}[Skills.elementOf(sp.id)]||'元素')}</div>
       <div class="name">${sp.name}</div>
       <div class="rarity rarity-N">普通</div>
       <div class="tiny">${sp.desc}</div>

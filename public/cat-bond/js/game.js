@@ -466,9 +466,12 @@ class Game {
     window.MorrowwishAudio?.effect?.('pet');
     this.yard.petEntity(entity);
     const cat = entity.cat;
+    const previous=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
     cat.affinity = Math.min(100, cat.affinity + 2);
     cat.joy = Math.min(100, cat.joy + 5);
     const lv = State.addXp(cat, 3);
+    const newSkill=UI.announceSkillMilestone?.(cat,previous);
+    if(newSkill)this.toast('✨ '+State.catName(cat)+' 学会 '+newSkill.name+'！');
     State.S.petCount=(State.S.petCount||0)+1;
     const rewards=this.grantBondingRewards();
     if(lv)this.toast(`${GameData.speciesById(cat.species).name} 升到 Lv.${cat.level}！`);
@@ -769,6 +772,7 @@ class Game {
       State.S.coins+=performance.bonusCoins;
       State.S.treats+=performance.bonusTreats;
       // reward: partner gains affinity + xp, coins
+      const skillsBefore=new Set(window.Skills?.learnableSkills(b.partner).map(sk=>sk.id)||[]);
       b.partner.affinity = Math.min(100, b.partner.affinity + 6);
       State.addXp(b.partner, 25);
       const firstSkill=(State.S.catchCount===1&&window.Skills?.awakenFirstSkill)
@@ -776,6 +780,7 @@ class Game {
       if(firstSkill){
         metric('bond_skill_unlocked',{breed:b.partner.species,skill:firstSkill.id,source:'first_capture'});
       }
+      const earnedSkill=firstSkill||UI.announceSkillMilestone?.(b.partner,skillsBefore)||null;
       State.S.coins += 20 + (['N', 'R', 'SR', 'SSR'].indexOf(b.wild.rarity)) * 25;
       this.rebuildYard();
       State.save();
@@ -788,7 +793,7 @@ class Game {
       metric('bond_battle_grade',{grade:performance.grade,seconds:performance.seconds,
         combo:performance.combo,rarity:b.wild.rarity});
       UI.openCatchResult(b.wild,newCat,milestoneRewards,performance,masteryReward,reunion,
-        firstSkill?{cat:b.partner,skill:firstSkill}:null);
+        earnedSkill?{cat:b.partner,skill:earnedSkill}:null);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
