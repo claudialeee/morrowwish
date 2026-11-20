@@ -65,6 +65,14 @@
     xingchen:[5,'#8476b1',.61,'starry-black']
   };
   const breedCache=Object.create(null);
+  // Early popups render before the high-detail AVIF atlas finishes decoding.
+  const pendingPortraits=new Map();
+  function replayPortraits(){
+    for(const [canvas,species] of pendingPortraits){
+      if(canvas?.isConnected!==false)thumbnail(canvas,species);
+    }
+    if(breedLoaded)pendingPortraits.clear();
+  }
   function breedFrame(o) {
     const sp=o.species||{};
     const id=sp.id||'';
@@ -211,12 +219,23 @@
   }
   function thumbnail(canvas,species){
     const ctx=canvas.getContext('2d');if(!ctx)return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    // The same real illustration is used in every thumbnail and card.
-    const scale=Math.min(canvas.width/63,canvas.height/90)*.88;
-    render(ctx,canvas.width/2,canvas.height*.57,{
-      species,scale,pose:'sit',mood:'neutral',t:0.6,motion:0
+    // Keep the visual size fixed and give phones 2-3 actual source pixels per
+    // CSS pixel. The old 160x120 backing was stretched and looked blurry.
+    const rect=canvas.getBoundingClientRect?.();
+    const logicalW=Number(canvas.dataset?.thumbW)||(rect?.width>8?rect.width:canvas.width);
+    const logicalH=Number(canvas.dataset?.thumbH)||(rect?.height>8?rect.height:canvas.height);
+    const ratio=Math.max(1,Math.min(3,window.devicePixelRatio||1));
+    const pw=Math.max(1,Math.round(logicalW*ratio)),ph=Math.max(1,Math.round(logicalH*ratio));
+    if(canvas.dataset){canvas.dataset.thumbW=String(logicalW);canvas.dataset.thumbH=String(logicalH);}
+    if(canvas.width!==pw)canvas.width=pw;
+    if(canvas.height!==ph)canvas.height=ph;
+    ctx.setTransform?.(ratio,0,0,ratio,0,0);
+    ctx.clearRect(0,0,logicalW,logicalH);
+    const scale=Math.min(logicalW/63,logicalH/90)*.94;
+    render(ctx,logicalW/2,logicalH*.58,{
+      species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
+    if(!breedLoaded)pendingPortraits.set(canvas,species);
   }
   drawing.drawCat=render;
   drawing.renderCatThumb=thumbnail;
@@ -228,6 +247,7 @@
     if(typeof window.paintIntroCatGallery==='function'){
       try{window.paintIntroCatGallery();}catch(_){}
     }
+    replayPortraits();
     window.dispatchEvent(new Event('cat-bond-illustrations-ready'));
   };
   source.onerror=()=>{
@@ -238,10 +258,11 @@
       &&breedSheet.naturalHeight===breedFrameSize.h*5;
     if(breedLoaded){
       try{window.paintIntroCatGallery?.()}catch(_){}
+      replayPortraits();
       window.dispatchEvent(new Event('cat-bond-illustrations-ready'));
     }
   };
-  breedSheet.onerror=()=>{console.warn('Breed illustrations unavailable; original cat sprites retained')};
+  breedSheet.onerror=()=>{pendingPortraits.clear();console.warn('Breed illustrations unavailable; original cat sprites retained')};
   if(window.CAT_BOND_BREED_ATLAS)breedSheet.src=window.CAT_BOND_BREED_ATLAS;
   source.src=window.CAT_BOND_KITTEN_ATLAS;
 })();

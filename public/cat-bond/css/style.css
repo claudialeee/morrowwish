@@ -799,3 +799,9 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #battle-ui #mv-dodge .mv-k{font-size:10px;color:#52758e}
 #battle-ui #mv-dodge.cooling{opacity:.65}
 @media(max-width:480px){#battle-ui #btn-auto{font-size:10px;padding:7px 8px}}
+
+/* Portrait dimensions are CSS pixels; real-kittens.js now draws a DPR backing. */
+#cp-wild{width:160px!important;height:120px!important;max-width:100%;object-fit:contain}
+#cr{width:180px!important;height:140px!important;max-width:100%;object-fit:contain}
+.roster .chip canvas{width:40px!important;height:34px!important;flex:none}
+#team-slots canvas{width:46px!important;height:40px!important}
