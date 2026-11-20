@@ -773,3 +773,15 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
   html.cb-cg #team-slots{top:45px}
   html.cb-cg #first-quest{top:56px;font-size:11px;padding:6px 10px}
 }
+
+/* A visible, reachable collection objective after the first wild cat. */
+#collection-goal{position:absolute;z-index:24;top:65px;left:50%;transform:translateX(-50%);
+  max-width:min(92%,470px);width:max-content;padding:8px 14px;
+  border:1px solid #dfc4a1;border-radius:999px;background:rgba(255,248,234,.93);
+  box-shadow:0 5px 16px #3a2a2622;color:#654632;font:800 12px/1.4 system-ui,sans-serif;
+  text-align:center;pointer-events:none}
+#collection-goal[hidden]{display:none!important}
+.collection-reward{margin:8px auto;color:#ffe79b;font-weight:800;line-height:1.6}
+@media(max-width:600px),(max-height:500px){
+  #collection-goal{top:62px;font-size:11px;padding:6px 10px}
+}

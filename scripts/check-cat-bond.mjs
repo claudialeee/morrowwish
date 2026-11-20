@@ -206,6 +206,19 @@ game.endBattle();
 assert.equal(State.S.cats.length, before + 1, 'captured cat added to roster');
 assert.ok(events.some(e => e.name === 'game_complete'), 'game_complete analytics fired');
 assert.ok(events.some(e => e.name === 'cat_capture'), 'cat_capture analytics fired');
+// One-time collection milestones reward actual new species, not repeated grinding.
+const priorCoins=State.S.coins, priorTreats=State.S.treats, priorMilestones=[...(State.S.collectionMilestones||[])];
+State.S.dex['xiaohui']=1;
+const milestones=game.grantCollectionMilestones();
+assert.equal(milestones.length,1,'Third distinct breed grants exactly one milestone');
+assert.equal(milestones[0].count,3);
+assert.equal(State.S.coins,priorCoins+60);
+assert.equal(State.S.treats,priorTreats+2);
+assert.equal(game.grantCollectionMilestones().length,0,'Collection rewards cannot be claimed twice');
+assert.equal(game.collectionStatus().next,5,'Next collection goal progresses');
+assert.ok(events.some(e=>e.name==='bond_collection_milestone'));
+delete State.S.dex['xiaohui'];State.S.coins=priorCoins;State.S.treats=priorTreats;
+State.S.collectionMilestones=priorMilestones;
 
 // ---- loss path fires game_over ----
 events.length = 0;

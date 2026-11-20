@@ -14,6 +14,7 @@ const DEFAULT_STATE = () => ({
   streak: 0,
   tutorialDone: false,
   catchCount: 0,
+  collectionMilestones: [], // one-time, cumulative codex discovery rewards
 });
 
 let S = DEFAULT_STATE();

@@ -787,20 +787,39 @@ const UI = {
     document.getElementById('gb-back').onclick = () => this.openCapturePrep(wildSp);
   },
 
-  openCatchResult(wildSp, newCat) {
-    const collected=Object.values(State.S.dex||{}).filter(v=>v>0).length;
+  openCatchResult(wildSp, newCat, rewards=[]) {
+    const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const name=wildSp.name;
+    const headline=english?'A new friend joined!':'新伙伴加入啦！';
+    const totalText=english
+      ?'Cat collection '+status.count+'/'+status.total
+      :'猫咪图鉴 '+status.count+'/'+status.total;
+    const goalText=status.next===null
+      ?(english?'Every breed discovered!':'全部品种已收集！')
+      :(english?'Next goal: '+status.next+' breeds':'下一目标：收集 '+status.next+' 种猫咪');
+    const rewardText=rewards.length
+      ?rewards.map(r=>english
+        ?('Collection bonus: +'+r.coins+' coins, +'+r.treats+' treats')
+        :('图鉴奖励：+'+r.coins+' 金币，+'+r.treats+' 零食')).join(' · ')
+      :'';
     this.panel(`<span class="card-close">×</span>
-      <h2 class="center">🎉 新伙伴加入啦！</h2>
+      <h2 class="center">🎉 ${headline}</h2>
       <canvas id="cr" width="180" height="140" style="display:block;margin:8px auto"></canvas>
-      <p class="center"><b class="rarity-${wildSp.rarity}">${wildSp.name}</b> 已加入你的庭院</p>
-      <p class="sub center">猫咪图鉴 ${collected}/${GameData.SPECIES.length} · ${wildSp.desc}</p>
+      <p class="center"><b class="rarity-${wildSp.rarity}">${name}</b> ${english?'joined your yard':'已加入庭院'}</p>
+      <p class="sub center">${totalText} · ${goalText}</p>
+      ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       <div class="btn-row" style="justify-content:center">
-        <button class="btn gold" id="cr-next">${exploring?'继续探索':'再找一只野猫'}</button>
-        <button class="btn" id="cr-ok">${exploring?'返回地图':'回庭院'}</button>
+        <button class="btn gold" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
+        <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
       </div>`);
     CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
-    const dismiss=()=>{this.closeAll();if(this.game.scene==='yard')document.getElementById('yard-actions').classList.remove('hidden');};
+    const dismiss=()=>{
+      this.closeAll();
+      if(this.game.scene==='yard')document.getElementById('yard-actions').classList.remove('hidden');
+      this.game.refreshCollectionGoal();
+    };
     document.getElementById('cr-ok').onclick=dismiss;
     document.getElementById('cr-next').onclick=()=>{
       dismiss();

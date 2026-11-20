@@ -102,6 +102,50 @@ class Game {
   }
 
   rebuildYard() { this.yard.rebuild(); }
+  collectionStatus(){
+    const count=Object.values(State.S.dex||{}).filter(v=>Number(v)>0).length;
+    const total=GameData.SPECIES.length;
+    const thresholds=[3,5,10,15,20,total];
+    return {count,total,next:thresholds.find(n=>count<n)??null};
+  }
+  grantCollectionMilestones(){
+    const milestones=[
+      {count:3,coins:60,treats:2},
+      {count:5,coins:100,treats:3},
+      {count:10,coins:180,treats:5},
+      {count:15,coins:260,treats:6},
+      {count:20,coins:350,treats:8},
+      {count:GameData.SPECIES.length,coins:500,treats:12},
+    ];
+    const S=State.S;
+    if(!Array.isArray(S.collectionMilestones))S.collectionMilestones=[];
+    const collected=this.collectionStatus().count;
+    const granted=[];
+    for(const m of milestones){
+      if(collected>=m.count&&!S.collectionMilestones.includes(m.count)){
+        S.collectionMilestones.push(m.count);
+        S.coins+=m.coins;S.treats+=m.treats;
+        granted.push(m);
+        metric('bond_collection_milestone',{species:collected,target:m.count});
+      }
+    }
+    return granted;
+  }
+  refreshCollectionGoal(){
+    const hint=document.getElementById('collection-goal');
+    if(!hint)return;
+    const status=this.collectionStatus();
+    const panelOpen=document.getElementById('panel')?.classList.contains('open');
+    hint.hidden=this.scene!=='yard'||status.count<2||!!panelOpen;
+    if(hint.hidden)return;
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const label=status.next===null
+      ?(english?'🏆 All 25 cat breeds discovered!':'🏆 25 种猫咪全部收集！')
+      :(english?'🐾 Cat collection '+status.count+'/'+status.next+' · Find another wild cat'
+        :'🐾 猫咪图鉴 '+status.count+'/'+status.next+' · 再找一只野猫');
+    if(hint.textContent!==label)hint.textContent=label;
+  }
+
   refreshFirstQuest(){
     const hint=document.getElementById('first-quest');
     if(!hint)return;
@@ -131,8 +175,14 @@ class Game {
   }
 
   update(dt) {
-    if (this.scene === 'yard') this.yard.update(dt);
-    if(this.scene==='yard'&&(State.S.catchCount||0)===0)this.refreshFirstQuest();
+    if(this.scene==='yard'){
+      this.yard.update(dt);
+      if(this.t>=(this._nextQuestTick||0)){
+        this._nextQuestTick=this.t+0.3;
+        this.refreshFirstQuest();
+        this.refreshCollectionGoal();
+      }
+    }
     else if (this.scene === 'map' && window.WorldMap) WorldMap.update(dt);
     else if (this.scene === 'battle' && this.battle) {
       this.battle.update(dt);
@@ -487,6 +537,7 @@ class Game {
       State.S.cats.push(newCat);
       State.S.dex[b.wild.id] = (State.S.dex[b.wild.id] || 0) + 1;
       State.S.catchCount++;
+      const milestoneRewards=this.grantCollectionMilestones();
       // reward: partner gains affinity + xp, coins
       b.partner.affinity = Math.min(100, b.partner.affinity + 6);
       State.addXp(b.partner, 25);
@@ -499,7 +550,7 @@ class Game {
       window.MorrowwishAudio?.effect?.('capture');
       metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity });
       if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
-      UI.openCatchResult(b.wild, newCat);
+      UI.openCatchResult(b.wild, newCat, milestoneRewards);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
@@ -520,6 +571,7 @@ class Game {
     if (yarnEl) yarnEl.textContent = (State.S.raising && State.S.raising.yarn) || 0;
     const dailyBtn = document.getElementById('daily-dot');
     if (dailyBtn) dailyBtn.classList.toggle('hidden', !State.dailyAvailable());
+    this.refreshCollectionGoal();
   }
 
   toast(msg) {
