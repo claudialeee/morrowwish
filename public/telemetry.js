@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent"]);
+const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent","cat-bond"]);
 const route=location.pathname.split("/").filter(Boolean)[0];
 const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
 const disabled=!!(route&&!allowed.has(route));
