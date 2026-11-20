@@ -174,7 +174,8 @@ html[lang="zh-CN"] .sidebar-en{display:none}
 @media(max-width:360px){.cat-sound-controls{gap:4px}.cat-sound-controls .button{font-size:9px;padding:8px 5px}}
 /* Compact first-play instructions and visible gameplay feedback, while preserving the studio art style. */
 .bonus-dare{display:block;font-weight:900;font-size:12px;color:#986390;line-height:1.35}
-.bonus-dare.complete{color:#2c906e}
+.bonus-dare.complete{color:#2c906e;animation:bonus-dare-pop .55s ease-out 1}
+@keyframes bonus-dare-pop{0%{transform:scale(.94)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
 .heist-status{position:absolute;z-index:3;right:9px;top:9px;max-width:43%;background:#42364fdc;color:#fffbf7;padding:7px 11px;border:1px solid #fff8e5a6;border-radius:12px;font:900 13px/1.2 Nunito,system-ui,sans-serif;pointer-events:none;text-align:center;box-shadow:0 4px 12px #40243b28}
 .paws-alert{position:absolute;z-index:3;right:9px;top:47px;max-width:43%;background:#a73d62e8;color:white;padding:7px 10px;border:1px solid #ffc6cd;border-radius:10px;font:900 12px/1.2 Nunito,system-ui,sans-serif;pointer-events:none;animation:paws-pulse .65s ease-in-out infinite alternate}
 .paws-alert[hidden]{display:none}
@@ -192,7 +193,7 @@ html[lang="zh-CN"] .sidebar-en{display:none}
 .paws-alert{top:34px;right:6px;padding:5px 7px;border-radius:8px;font-size:10px}
 .bonus-dare{font-size:11px}
 }
-</style><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-heist-v3" defer></script></head>
+</style><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-heist-v4" defer></script></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><a class="back" href="/" id="back">← Morrow Wish</a><div class="cat-header-right"><span class="brand">morrow<span>wish</span> <b id="studioByline">presents ♡</b></span><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></div></header>
 <main class="wrap"><div class="heading"><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h1 id="gameTitle">PAWSIBLY<br><span>INNOCENT!</span></h1><p class="sub" id="subtitle">Steal the snacks. Outsmart the human. Leave a little chaos.</p></div>
 <section class="explainer" aria-labelledby="howTitle"><div class="rules-heading"><div><span class="rules-kicker" id="rulesKicker">HOW TO PLAY</span><h2 id="howTitle">Three steps to a purrfect escape</h2></div><p id="howBody">The human moves after every step you take. Stay out of sight — you have three hearts.</p></div><div class="rule-steps">
