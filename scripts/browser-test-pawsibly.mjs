@@ -157,8 +157,25 @@ try{
  assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
  assert.ok(homeZh.heroPitch.indexOf('捣蛋小猫')<homeZh.heroPitch.indexOf('从未活过的人生')&&homeZh.heroPitch.indexOf('从未活过的人生')<homeZh.heroPitch.indexOf('自由的小镇'),'Hero copy must list cat, Elsewhere and town in their displayed order');
- assert.ok(homeZh.miniHeight>420&&homeZh.miniHeight<720,'The 02 game gallery must be comfortably sized');
- assert.ok(homeZh.aboutHeight>230&&homeZh.aboutHeight<420,'The 03 studio introduction should be medium-sized');
+ assert.ok(homeZh.miniHeight>270&&homeZh.miniHeight<480,'The 02 game gallery should be compact without hiding any games');
+ assert.ok(homeZh.aboutHeight>130&&homeZh.aboutHeight<260,'The 03 studio introduction should not consume a full screen');
+ const compactLayout=await page.evaluate(()=>{
+  const rect=s=>document.querySelector(s)?.getBoundingClientRect();
+  const copy=document.querySelector('.hero .hero-zh-copy');
+  const first=rect('.feature-card'),art=rect('.feature-card .feature-art'),content=rect('.feature-card .feature-content');
+  return {heroHeight:Math.round(rect('.hero')?.height||0),firstCardTop:Math.round(first?.top||0),
+    firstCardHeight:Math.round(first?.height||0),featureColumns:getComputedStyle(document.querySelector('.feature-grid')).gridTemplateColumns.split(' ').length,
+    heroWhiteSpace:getComputedStyle(copy).whiteSpace,doodles:getComputedStyle(document.querySelector('.hero-doodles')).display,
+    imageSeparate:!!art&&!!content&&content.right<=art.left+2};
+ });
+ console.log('Balanced compact homepage geometry:',JSON.stringify(compactLayout));
+ assert.equal(compactLayout.heroWhiteSpace,'nowrap','Chinese four-world sentence must stay on a single line');
+ assert.equal(compactLayout.doodles,'none','Decorations must not collide with the single-line hero');
+ assert.ok(compactLayout.heroHeight<190,'Top headline must leave room for the games');
+ assert.ok(compactLayout.firstCardTop<440,'First flagship game card must be visible near the top');
+ assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
+ assert.ok(compactLayout.firstCardHeight>=290&&compactLayout.firstCardHeight<=340,'Flagship game cards must be reduced from their old 480px height');
+ assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
  await page.evaluate(()=>window.MorrowwishI18n.set('en'));
  const homeEn=await page.evaluate(()=>({
   order:[...document.querySelectorAll('.feature-grid>article')].map(x=>x.querySelector('a[data-id]')?.dataset.id),
