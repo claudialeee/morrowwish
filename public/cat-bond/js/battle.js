@@ -383,6 +383,9 @@ class CaptureBattle {
     // 猫爪=近身快攻: short-lived projectile so it only reaches ~short range
     this.spawnProj(mx, my, aim, f.projSpeed, f.dmg, 'me', col, 5, 'claw', { element: f.element }, 0.45);
     this.vfx.muzzle(mx, my, aim, col);
+    if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
+      window.MorrowwishAudio?.effect?.('paw');this._lastPawSfx=this.t;
+    }
     this.gainUlt(2);
   }
   skillQ(f, aim) {
