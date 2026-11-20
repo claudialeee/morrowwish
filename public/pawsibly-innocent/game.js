@@ -2,7 +2,7 @@
 (()=>{"use strict";
 const W=10,H=7,T=84,NEED=3,$=id=>document.getElementById(id);
 const ROOMS=[
-{en:"The Sunny Lounge",zh:"阳光客厅",enSub:"Grab the nearby fish first. The human moves when you do.",zhSub:"先偷旁边的小鱼。你走一步，主人也走一步。",goal:29,patrol:[[6,4],[8,4],[8,2],[6,2]],rows:["..........",".....S....","...V......",".CF....F..","...S..H...","....B..F..","...F.....E"]},
+{en:"The Sunny Lounge",zh:"阳光客厅",enSub:"Grab the nearby fish first. The human moves when you do.",zhSub:"先偷旁边的小鱼。你走一步，主人也走一步。",goal:29,patrol:[[7,2],[8,2],[8,1],[7,1]],rows:["..........",".....S....","...V......",".CF....F..","...S..H...","....B..F..","...F.....E"]},
 {en:"Kitchen Caper",zh:"厨房偷吃计划",enSub:"Four fish in the kitchen. Can you steal every last one?",zhSub:"厨房里有四条鱼。你敢全部偷走吗？",goal:30,patrol:[[6,1],[8,1],[8,4],[6,4]],rows:[".....F....","..S...H...",".C...V...F","...##.....","..F...S...","..B...F...",".........E"]},
 {en:"The Laundry Incident",zh:"洗衣房事件",enSub:"The vacuum patrols the laundry. Watch its next move.",zhSub:"扫地机在洗衣房巡逻，留意它的移动方向。",goal:32,patrol:[[7,2],[9,2],[9,5],[7,5]],rows:["....V...F.",".C..S.....",".....B.H..","..###.....",".F.....S..","....F.....","...F.....E"]},
 {en:"A Very Loud Nap",zh:"午睡大骚动",enSub:"The owner is asleep. Keep the room quiet.",zhSub:"主人正在睡觉。轻手轻脚，别把人吵醒了。",goal:32,patrol:[[5,2],[7,2],[7,5],[5,5]],rows:["...F......",".C...S...F","..S..H....",".....##...","..B..F....","...V...F..",".........E"]},
@@ -305,10 +305,7 @@ $("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat
 $("resultScore").textContent=resultLine();
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(win?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share");$("overlay").hidden=false;}
 function command(x,y){if(!s||s.done)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=catPathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}
- // Do not silently auto-walk straight onto a newly dangerous tile.
- if(route.length>0&&s.exposure>0&&visible(p)&&Math.abs(p.x-s.human.x)+Math.abs(p.y-s.human.y)<=2){
-  route=[];clearInterval(movingTimer);movingTimer=null;popup("routeWarning");syncUI();return;
- }
+ // Risk-aware routing already avoids dangerous tiles; a tap must never deadlock movement.
  moveTo(p);if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null}},180)}}
 function single(dx,dy){if(!s||s.done)return;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
 function shape(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
