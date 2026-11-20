@@ -84,6 +84,69 @@ try{
        await page.waitForTimeout(650);
        report.detailsControls.firstMenu=(await page.locator('[role=option]').allTextContents().catch(()=>[])).map(x=>x.trim()).slice(0,70);
        report.detailsControls.menuBodyTail=redact(await page.locator('body').innerText().catch(()=>'' )).slice(-1500);
+       const categoryOption=page.getByRole('option',{name:'Adventure',exact:true}).first();
+       if(await categoryOption.count())await categoryOption.click();
+       const tagsCombo=page.getByRole('combobox').nth(1);
+       if(await tagsCombo.count()) {
+         await tagsCombo.click();
+         await page.waitForTimeout(600);
+         report.detailsControls.tagOptions=(await page.getByRole('option').allTextContents().catch(()=>[])).map(v=>v.trim()).slice(0,135);
+         const match=['Cat','Cats','Animals','Animal','Adventure','Cute','Cozy'].find(x=>report.detailsControls.tagOptions.includes(x));
+         if(match){
+           await page.getByRole('option',{name:match,exact:true}).first().click();
+           report.detailsControls.tagSelected=match;
+         }
+         await page.keyboard.press('Escape').catch(()=>{});
+       }
+       const toolsCombo=page.getByRole('combobox').nth(2);
+       if(await toolsCombo.count()){
+         await toolsCombo.click();
+         await page.waitForTimeout(550);
+         report.detailsControls.toolsOptions=(await page.getByRole('option').allTextContents().catch(()=>[])).map(v=>v.trim()).slice(0,135);
+         const tool=['JavaScript','HTML5','Custom engine','Custom','Other'].find(x=>report.detailsControls.toolsOptions.includes(x));
+         if(tool){
+           await page.getByRole('option',{name:tool,exact:true}).first().click();
+           report.detailsControls.toolSelected=tool;
+         }
+         await page.keyboard.press('Escape').catch(()=>{});
+       }
+       const editors=page.locator('.ql-editor[contenteditable=true]');
+       report.detailsControls.editorCount=await editors.count();
+       if(await editors.count()===2){
+         await editors.nth(0).fill('Play as a mischievous little cat exploring eight illustrated rooms. Steal three fish, find souvenirs, and outsmart the humans in a cozy browser adventure.');
+         await editors.nth(1).fill('Explore the rooms with keyboard and pointer controls. Interact with objects, use yarn to distract humans, collect three fish, and try to escape without being spotted.');
+       }
+       const mediaFiles=['cover-landscape.png','cover-portrait.png','cover-square.png','real-gameplay-landscape.mp4','real-gameplay-portrait.mp4'];
+       report.detailsControls.uploaded=[];
+       for(let i=0;i<5;i++){
+         const input=page.locator('input[type=file]').nth(i);
+         const src='public/promo/pawsibly-innocent/'+mediaFiles[i];
+         if(await input.count()&&fs.existsSync(src)){
+           await input.setInputFiles(src);
+           await page.waitForTimeout(1200);
+           report.detailsControls.uploaded.push(mediaFiles[i]);
+         }
+       }
+       await page.waitForTimeout(4500);
+       report.detailsControls.formStateBeforeNext={
+          body:redact(await page.locator('body').innerText().catch(()=>'')),
+          category:await page.getByRole('combobox').first().innerText().catch(()=>''),
+          tag:await page.getByRole('combobox').nth(1).innerText().catch(()=>''),
+          tool:await page.getByRole('combobox').nth(2).innerText().catch(()=>''),
+          continueEnabled:await page.getByRole('button',{name:'Continue to last step',exact:true}).isEnabled().catch(()=>false),
+          visibleErrors:await page.locator('[role=alert],.MuiFormHelperText-root').allTextContents().catch(()=>[])
+       };
+       const last=page.getByRole('button',{name:'Continue to last step',exact:true});
+       if(await last.isEnabled().catch(()=>false)){
+         await last.click({timeout:12000}).catch(e=>{report.detailsControls.lastClickError=e.message.slice(0,180)});
+         await page.waitForTimeout(2600);
+         report.detailsControls.lastStep={
+           path:new URL(page.url()).pathname,body:redact(await page.locator('body').innerText().catch(()=>'')),
+           buttons:await page.locator('button:visible').allTextContents().catch(()=>[]),
+           fields:await page.locator('input,textarea,select').evaluateAll(xs=>xs.map(x=>({tag:x.tagName,type:x.type,required:x.required})))
+         };
+       }
+
      }
    }
 
