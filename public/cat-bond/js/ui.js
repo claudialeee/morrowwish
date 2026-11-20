@@ -707,6 +707,7 @@ const UI = {
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
+      ${firstCapture?'':'<p class="center tiny capture-challenge">🏅 S评级挑战：40秒内获胜 · 血量保持70% · 6连击或完美闪避</p>'}
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       <p class="tiny">${firstCapture?'电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！':'战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动'}</p>
