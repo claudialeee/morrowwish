@@ -207,15 +207,18 @@ try{
              fields:stepFields,buttons:nextButtons.map(o=>({...o,text:safe(o.text)}))};
            // Populate only local upload-stage fields for the first game to discover
            // allowed engines / externally hosted URL mode, without submitting anything.
+           report.submissionForm.uploadProbe={phase:'checking-form',inputCount:await page.locator('input').count()};
            if((await region.innerText()).includes('Game name')){
+             report.submissionForm.uploadProbe.phase='game-name-found';
              const title=page.locator('input[type="text"][required]').first();
              if(await title.count())await title.fill('Flip Dash');
              const radios=page.locator('input[type="radio"]');
              if(await radios.count())await radios.first().evaluate(e=>e.click());
              const mobile=page.locator('input[type="checkbox"]').first();
              if(await mobile.count())await mobile.evaluate(e=>e.click());
-             const engine=page.locator('input[type="text"]').nth(1);
+             const engine=page.locator('input').nth(1);
              if(await engine.count()){
+               report.submissionForm.uploadProbe.phase='engine-control-found';
                await engine.evaluate(e=>e.click());
                await page.waitForTimeout(600);
                const menu=await page.locator('[role="option"],[role="listbox"],li').allTextContents().catch(()=>[]);
