@@ -1069,6 +1069,7 @@ const UI = {
     const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const firstAdventure=(State.S.catchCount||0)===1;
     const name=wildSp.name;
     const headline=reunion
       ?(english?'A familiar friend returns!':'老朋友又来啦！')
@@ -1118,11 +1119,15 @@ const UI = {
       ${masteryReward?'<div class="golden-paw-unlock"><strong>🏅 '+(english?'GOLDEN PAW UNLOCKED!':'金爪徽章解锁！')+'</strong><p>'+medalMessage+'</p><small>'
         +(english?'Medals':'已获徽章')+' '+mastery.medals+'/'+mastery.total+' · '
         +(english?'Permanent rare-weight boost':'永久稀有权重加成')+' +'+Math.round(mastery.luckBonus*100)+'%</small></div>':''}
+      ${firstAdventure?'<p class="first-adventure-tip">'+(english
+        ?'Your new skill is ready! Try a different move, earn workshop coins, or explore a new region before your next capture.'
+        :'新招式已经就绪！下一步可以试技能、经营工坊赚金币，或者去地图探索，不必一直抓猫。')+'</p>':''}
       <div class="btn-row" style="justify-content:center">
-        <button class="btn gold" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
+        ${firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'See my new skill':'查看刚解锁的新技能')+'</button>':''}
+        <button class="btn ${firstAdventure&&!skillUnlock?'gold':firstAdventure?'':'ghost'}" id="cr-journey">${firstAdventure?(english?'Choose my next adventure':'看看接下来能玩什么'):(english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊')}</button>
+        <button class="btn ${firstAdventure?'':'gold'}" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
-        <button class="btn ghost" id="cr-journey">${english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊'}</button>
-        ${skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
+        ${!firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
         ${masteryReward?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
@@ -1153,6 +1158,8 @@ const UI = {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const target=status.next||status.total;
     const petTarget=[3,10,25].find(n=>adv.pets<n)||25;
+    const starter=State.S.cats[0]||null;
+    const skillHint=starter&&window.Skills?.progressionHint?.(starter)||'';
     const exploreText=en
       ?(adv.unlocked<=1?'Explore 40% of Home to unlock Sakura Woods'
         :adv.unlocked+'/'+adv.totalRegions+' regions unlocked')
@@ -1179,6 +1186,12 @@ const UI = {
             <div class="journey-progress"><span style="width:${Math.min(100,adv.pets/petTarget*100)}%"></span></div>
           </div><button class="btn gold" id="journey-bond">${en?'Pet':'撸猫'}</button>
         </article>
+        ${starter?'<article class="journey-path">'
+          +'<div class="journey-icon">✨</div><div class="journey-copy"><b>'
+          +(en?'Learn new battle skills':'技能成长 · 学会新招式')
+          +'</b><p>'+skillHint+'</p></div>'
+          +'<button class="btn gold" id="journey-skills">'
+          +(en?'Skills':'看技能')+'</button></article>':''}
         <article class="journey-path">
           <div class="journey-icon">☀️</div>
           <div class="journey-copy"><b>${en?'Earn coins in the workshop':'让猫咪经营工坊赚钱'}</b>
@@ -1213,6 +1226,8 @@ const UI = {
       if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}
       this.game.toast(en?'Tap a cat in the yard to earn affection!':'点击庭院里的猫咪，提高好感并领取奖励！');
     };
+    const skillRoute=document.getElementById('journey-skills');
+    if(skillRoute&&starter)skillRoute.onclick=()=>this.openSkillEditor(starter);
     document.getElementById('journey-workshop').onclick=()=>this.openWorkshop();
     document.getElementById('journey-explore').onclick=()=>{this.closeAll();this.game.openWorldMap();};
   },

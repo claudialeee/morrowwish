@@ -8,10 +8,28 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Reset must never erase the player's progress in other Morrow Wish games.
   const resetBtn = document.getElementById('intro-reset');
-  if (resetBtn) resetBtn.addEventListener('click', () => {
-    try { localStorage.removeItem('catbond_save_v1'); } catch (e) {}
-    location.reload();
-  });
+  if(resetBtn){
+    let resetArmed=false,resetTimer=null;
+    const originalResetLabel=resetBtn.textContent;
+    resetBtn.addEventListener('click',()=>{
+      if(!resetArmed){
+        resetArmed=true;
+        resetBtn.classList.add('cb-reset-armed');
+        resetBtn.setAttribute('aria-live','polite');
+        resetBtn.textContent=window.MorrowwishI18n?.get?.()==='zh'
+          ?'⚠ 确认删除全部猫猫存档？再点一次'
+          :'⚠ Erase all Cat Bond progress? Tap again';
+        resetTimer=setTimeout(()=>{
+          resetArmed=false;resetBtn.classList.remove('cb-reset-armed');
+          resetBtn.textContent=originalResetLabel;
+        },5000);
+        return;
+      }
+      clearTimeout(resetTimer);
+      try{localStorage.removeItem('catbond_save_v1');}catch(e){}
+      location.reload();
+    });
+  }
 
   // Bind Start before any optional decorations, so mobile GPU issues cannot block play.
   let starting=false;

@@ -1028,13 +1028,15 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #battle-ui #ult-btn .mv-name{font-size:11px;font-weight:900;color:#5b4b7e;display:block;max-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:520px){#battle-ui #ult-btn .mv-name{font-size:10px;max-width:55px}#panel .workshop-row{padding:8px 6px}#panel .work-earn-header{padding:10px}}
 
-/* Present Cat Bond as a full adventure, not only a wild-cat-catching loop. */
+/* Cat Bond introduction: readable adventures, matching the light sage storybook palette.
+   The previous near-transparent cream cards and pale type were unreadable. */
 #intro .intro-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
- gap:8px;max-width:440px;margin:12px auto 11px;text-align:left}
-#intro .intro-features span{padding:10px 12px;border-radius:12px;
- background:#ffffff16;border:1px solid #ffffff30;color:#f4eade;
- font-size:12px;font-weight:750;line-height:1.35}
-#intro .intro-guide{margin:10px auto 12px;font-size:12px;max-width:480px}
+ gap:9px;width:min(440px,100%);max-width:440px;margin:8px auto 9px;text-align:left;flex:0 0 auto}
+#intro .intro-features span{display:flex;align-items:center;min-height:46px;padding:10px 13px;border-radius:13px;
+ background:rgba(255,253,246,.96);border:1.5px solid #a8c4ad;color:#284d38;
+ box-shadow:0 3px 10px rgba(56,91,57,.10);
+ font-size:14px;font-weight:850;line-height:1.45;letter-spacing:.01em;text-shadow:none}
+#intro .intro-guide{margin:7px auto 9px;font-size:13px;max-width:480px}
 #panel .cat-skill-roadmap,#panel .skill-roadmap{padding:9px 11px;margin:9px 0;
  border-radius:11px;background:#f2f8e6;color:#576e44;
  border:1px solid #c9d8ac;font-size:12px;line-height:1.55;font-weight:650}
@@ -1045,5 +1047,27 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #panel .skill-reveal-card b{color:#a36b24;font-size:15px}
 #panel .skill-reveal-card span{font-size:13px;font-weight:800}
 #panel .skill-reveal-card small{font-size:11px;line-height:1.5}
-@media(max-width:390px){#intro .intro-features{gap:5px;margin:9px auto}
- #intro .intro-features span{font-size:11px;padding:8px}}
+@media(max-width:700px){
+ #intro{padding-top:max(54px,calc(env(safe-area-inset-top,0px) + 44px));overflow-y:auto;justify-content:flex-start;overscroll-behavior:contain}
+ #intro .intro-features{width:100%;max-width:440px;gap:7px;margin:6px auto 7px}
+ #intro .intro-features span{font-size:13px;min-height:45px;padding:9px 10px}
+ #intro .intro-guide{order:8;margin:4px auto 6px;font-size:12px;line-height:1.5}
+ #intro #intro-start{order:9}
+ #intro #intro-reset{order:11}
+}
+@media(max-width:390px){#intro .intro-features{gap:6px;margin:5px auto}
+ #intro .intro-features span{font-size:12.5px;min-height:44px;padding:8px 9px}}
+@media(max-height:620px){#intro{overflow-y:auto;justify-content:flex-start;gap:7px}
+ #intro .intro-cat-gallery{height:clamp(74px,15vh,108px);flex:0 0 auto}
+ #intro .intro-features{margin-top:4px;margin-bottom:5px}}
+/* This is a real button, not a noninteractive hint: it opens the adventure routes. */
+#collection-goal{pointer-events:auto;cursor:pointer;touch-action:manipulation;white-space:normal;
+ border-width:2px;background:#fff9ea;color:#425f47;min-height:36px;
+ box-shadow:0 5px 16px #3a2a2622,0 0 0 2px #ffffffbb;transition:transform .15s,background .15s}
+#collection-goal:hover{background:#e7f2e4;transform:translateX(-50%) translateY(-2px)}
+#collection-goal:active{transform:translateX(-50%) scale(.98)}
+#collection-goal:focus-visible{outline:3px solid #357e58;outline-offset:3px}
+#intro #intro-reset{font-size:11px;min-height:36px;padding:7px 12px;opacity:.86}
+#intro #intro-reset.cb-reset-armed{opacity:1;background:#fff2df;border:1.5px solid #b45e44;color:#853c2c;font-weight:800}
+#panel .first-adventure-tip{border:1px solid #bfd7b8;background:#f0f7e9;color:#426349;
+ border-radius:12px;padding:9px 12px;font-weight:750;font-size:13px;line-height:1.55;margin:8px auto;max-width:410px}
