@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'scripts/crazygames-submit.mjs'
+      - 'scripts/crazygames-complete-drafts.mjs'
       - '.github/workflows/crazygames-submit.yml'
 
 permissions:
@@ -18,7 +18,7 @@ concurrency:
 jobs:
   submit-six:
     runs-on: ubuntu-latest
-    timeout-minutes: 22
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +37,7 @@ jobs:
           CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
           CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
           CRAZYGAMES_TARGET_SLUGS: pawsibly-innocent,elsewhere,tiny-town,parcel-panic,pocket-aquarium,flip-dash
-        run: node scripts/crazygames-submit.mjs
+        run: node scripts/crazygames-complete-drafts.mjs
       - name: Save platform feedback and evidence, even on a partial submission
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,10 +58,10 @@ jobs:
           for(const r of out.results){
             if(r.status!=='submitted-confirmed'||!r.platformId)continue;
             const g=l.games.find(x=>x.slug===r.slug);
-            if(!g||g.channels.crazygames.status!=='not-submitted')continue;
+            if(!g||g.channels.crazygames.status!=='draft')continue;
             g.channels.crazygames.status='submitted-for-review';
             g.channels.crazygames.platformId=r.platformId;
-            g.channels.crazygames.submittedAt=r.completedAt;
+            g.channels.crazygames.submittedAt=r.finishedAt;
             changed++;
           }
           if(changed)fs.writeFileSync(file,JSON.stringify(l,null,2)+'\n');
@@ -74,3 +74,16 @@ jobs:
           git commit -m 'Record CrazyGames developer portal verified submission IDs'
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Report unconfirmed submissions as unfinished work
+        if: always()
+        run: |
+          test -f .check/crazygames/submission-results.json || exit 1
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const {results}=JSON.parse(fs.readFileSync('.check/crazygames/submission-results.json','utf8'));
+          const ok=results.filter(x=>x.status==='submitted-confirmed');
+          const not=results.filter(x=>x.status!=='submitted-confirmed');
+          console.log('Confirmed review submissions: '+ok.map(x=>x.slug).join(', '));
+          for(const x of not)console.log('UNCONFIRMED '+x.slug+' '+x.status+' '+(x.reason||''));
+          if(not.length){process.exitCode=1;}
+          NODE
