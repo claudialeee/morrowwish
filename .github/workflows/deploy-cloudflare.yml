@@ -51,20 +51,25 @@ jobs:
       - name: Fetch CC0 recorded cat soundtrack
         run: bash scripts/fetch-cat-music.sh
       - name: Install ffmpeg for promotional video audio
+        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
         run: |
           if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
             sudo apt-get update -qq
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg >/dev/null
           fi
       - name: Add CC0 audio to six social promotion video clips
+        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
         run: bash scripts/add-promo-audio.sh
       - name: Install Chromium to capture authentic Cat Bond play
+        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
         run: |
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
       - name: Record Cat Bond in the actual browser game
+        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
         run: node scripts/record-cat-bond-social.mjs
       - name: Render seven polished mobile-first gameplay trailers
+        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
         run: bash scripts/render-social-v2.sh
       - name: Verify source, game ordering, and D1 binding
         run: |
@@ -149,6 +154,7 @@ jobs:
           done
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
       - name: Verify seven real-gameplay promotion assets are live (not HTML fallbacks)
+        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
         run: |
           set -eu
           for game in elsewhere tiny-town pawsibly-innocent cat-bond flip-dash parcel-panic pocket-aquarium; do
@@ -194,6 +200,7 @@ jobs:
           path: release-kit/
           retention-days: 30
       - name: Publish new game to connected studio social account
+        if: github.event_name == 'workflow_dispatch' # hold automatic promotion during gameplay QA
         continue-on-error: true
         env:
           MORROW_BLUESKY_HANDLE: ${{ secrets.MORROW_BLUESKY_HANDLE }}
