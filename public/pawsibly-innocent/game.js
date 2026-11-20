@@ -48,6 +48,34 @@ const DARES=[
  {kind:"vase",en:"Knock over a vase",zh:"打翻一个花瓶"},
  {kind:"allfish",en:"Steal all four fish",zh:"偷走全部四条小鱼"},
  {kind:"relic",en:"Find the secret keepsake",zh:"找到隐藏的纪念品"}];
+const RELICS=[
+ {glyph:"🎀",en:"Curtain tassel",zh:"窗帘流苏",enDesc:"The only clue left at the crime scene.",zhDesc:"案发现场唯一留下的线索。"},
+ {glyph:"🔔",en:"Chef's bell",zh:"大厨的小铃铛",enDesc:"The kitchen will never be quiet again.",zhDesc:"厨房再也别想安静了。"},
+ {glyph:"🧦",en:"Polka-dot sock",zh:"圆点袜子",enDesc:"The best treasure in the laundry basket.",zhDesc:"洗衣篮里的镇篮之宝。"},
+ {glyph:"🌙",en:"Sleepy ribbon",zh:"晚安丝带",enDesc:"Acquired without waking the human... hopefully.",zhDesc:"希望主人没发现这条丝带不见了。"},
+ {glyph:"📚",en:"Golden bookmark",zh:"金色书签",enDesc:"No paws allowed between the pages.",zhDesc:"书页间当然没有猫爪印啦。"},
+ {glyph:"🪴",en:"Tiny flowerpot",zh:"迷你花盆",enDesc:"The garden's new ruler has spoken.",zhDesc:"花园的新主人已经登基。"},
+ {glyph:"⭐",en:"Midnight star",zh:"午夜星星",enDesc:"A stolen piece of midnight.",zhDesc:"从午夜偷偷摘下的一颗星。"},
+ {glyph:"👑",en:"Paper crown",zh:"纸做的皇冠",enDesc:"Official proof of ultimate innocence.",zhDesc:"证明小猫绝对无辜的王冠。"}
+];
+const BADGES=[
+ {id:"first-fish",glyph:"🐟",en:"First snack",zh:"第一口鱼",enDesc:"Steal your first fish",zhDesc:"偷到第一条小鱼",ok:()=>save.stats.fish>=1},
+ {id:"first-escape",glyph:"🚪",en:"Clean getaway",zh:"第一次开溜",enDesc:"Escape any room",zhDesc:"首次成功逃脱",ok:()=>save.stats.wins>=1||roomsWon()>=1},
+ {id:"yarn-lure",glyph:"🧶",en:"Master of distraction",zh:"毛球诱敌大师",enDesc:"Make the owner investigate your yarn",zhDesc:"成功用毛球引走主人",ok:()=>save.stats.lures>=1},
+ {id:"three-vases",glyph:"🏺",en:"Not my vase",zh:"花瓶不是我打的",enDesc:"Knock over 3 vases",zhDesc:"累计打翻三个花瓶",ok:()=>save.stats.vases>=3},
+ {id:"near-miss",glyph:"💨",en:"Nine lives",zh:"险中逃生",enDesc:"Break line of sight after detection",zhDesc:"被发现后成功甩掉主人",ok:()=>save.stats.nearMisses>=1},
+ {id:"three-star",glyph:"🌟",en:"Purrfectionist",zh:"喵喵完美主义",enDesc:"Earn 3 stars in one room",zhDesc:"任一房间获得三星",ok:()=>Object.values(save.best).some(v=>Number(v?.stars)===3)},
+ {id:"ghost",glyph:"🌫️",en:"Invisible paws",zh:"隐身猫爪",enDesc:"Escape without being spotted",zhDesc:"全程不被发现并成功逃脱",ok:()=>save.stats.ghostWins>=1},
+ {id:"souvenir-one",glyph:"🎁",en:"Little souvenir",zh:"第一次藏宝",enDesc:"Bring home a room souvenir",zhDesc:"成功收藏第一件纪念品",ok:()=>relicCount()>=1},
+ {id:"souvenir-four",glyph:"🗃️",en:"Cat's cabinet",zh:"猫猫藏宝柜",enDesc:"Collect 4 different souvenirs",zhDesc:"收藏四件不同纪念品",ok:()=>relicCount()>=4},
+ {id:"souvenir-eight",glyph:"🏛️",en:"House of treasures",zh:"满屋藏宝",enDesc:"Collect all 8 souvenirs",zhDesc:"集齐八件纪念品",ok:()=>relicCount()>=8},
+ {id:"four-rooms",glyph:"🗝️",en:"House explorer",zh:"半个家都是我的",enDesc:"Clear 4 different rooms",zhDesc:"通关四个不同房间",ok:()=>roomsWon()>=4},
+ {id:"all-rooms",glyph:"🏠",en:"The grand alibi",zh:"猫猫绝对无辜",enDesc:"Clear all 8 rooms",zhDesc:"通关全部八个房间",ok:()=>roomsWon()>=8},
+ {id:"daily",glyph:"☀️",en:"Daily trouble",zh:"今日捣蛋王",enDesc:"Win a daily challenge",zhDesc:"成功完成每日挑战",ok:()=>save.stats.dailyWins>=1},
+ {id:"cat-crew",glyph:"🐈",en:"Cat club",zh:"猫猫小队",enDesc:"Unlock at least 3 cats",zhDesc:"解锁至少三只猫",ok:()=>fur.filter(f=>allStars()>=f[3]).length>=3},
+ {id:"cat-team",glyph:"🐾",en:"Full cat crew",zh:"猫猫全家福",enDesc:"Unlock all 5 cats",zhDesc:"解锁全部五只猫",ok:()=>fur.filter(f=>allStars()>=f[3]).length===5},
+ {id:"fish-20",glyph:"🍣",en:"Fish enthusiast",zh:"小鱼鉴赏家",enDesc:"Steal 20 fish across runs",zhDesc:"累计偷到二十条鱼",ok:()=>save.stats.fish>=20}
+];
 const TX={
 en:{startHint:"Tap a tile to walk",back:"← Morrow Wish",eyebrow:"A LITTLE CAT. A LOT OF TROUBLE.",subtitle:"Steal the snacks. Outsmart the human. Leave a little chaos.",missionLabel:"TODAY'S MISSION",snackLabel:"FISH ACQUIRED",scoreLabel:"SCORE",moveLabel:"STEPS",starLabel:"STARS",roomLabel:"CHOOSE A ROOM",closetLabel:"YOUR LITTLE TROUBLEMAKER",skinHint:"Earn 1–3 stars per room to unlock new cats.",retry:"↻ Retry",soundOn:"🔊 Sound effects: On",soundOff:"🔇 Sound effects: Off",rulesKicker:"HOW TO PLAY · 30 SECOND GUIDE",howTitle:"Three steps to a purrfect escape",howBody:"Every cat step moves the human. Stay out of pink sight zones; if spotted, hide behind a box or throw yarn to distract the guard.",ruleStep1Title:"1 · Tap to move",ruleStep1Text:"Tap the floor or use arrow keys.",ruleStep2Title:"2 · Steal three fish",ruleStep2Text:"Pink means visible. Hide before the alert fills! Boxes conceal you.",ruleStep3Title:"3 · Escape through the pink flap",ruleStep3Text:"Reach the cat door with three fish to win.",ruleBonus:"🧶 Tap Toss yarn (or Space), then tap an open floor tile to choose where the yarn lands. Tap the button again to cancel.",tip:"<span><strong>①</strong> Tap floor to walk</span><span><strong>②</strong> Collect 3 fish</span><span><strong>③</strong> Reach pink cat flap</span>",mission:"Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.",daily:"☼ Daily",room:"ROOM",dailyRoom:"DAILY CHAOS",closed:"Grab three fish first!",blocked:"Something is blocking the way!",caught:"Caught! Try a different hiding spot.",closeCall:"Narrow escape! +40",bonusDone:"Bonus dare cleared! Escape for +150.",spotted:"SPOTTED! Break line of sight!",last:"Last life! Be sneaky.",fish:"Fish acquired! Delicious.",ready:"The cat flap is open. Run for it!",vase:"CRASH! The human heard that.",box:"A cardboard box! The perfect hiding place.",hide:"The human can't see inside the box.",winTitle:"Purrfect escape!",win:"Fish stolen, chaos delivered. The human is absolutely baffled.",loseTitle:"Caught red-pawed!",lose:"A small setback for a very ambitious cat. Try a different route.",tryAgain:"Try again",nextRoom:"Next room →",again:"Play again →",share:"Share your chaos ♡",shared:"Challenge link copied!",shareText:"I escaped in Pawsibly Innocent! Can you steal three fish without getting caught?",locked:"Earn {n} stars to unlock",dailyName:"Daily House Remix",dailySub:"A familiar house with a fresh secret snack stash.",skinNames:["Marmalade","Mochi","Shadow","Peaches","Blueberry"]},
 zh:{startHint:"点地板，小猫就会走",back:"← Morrow Wish 首页",eyebrow:"一只小猫，搞出天大的动静。",subtitle:"偷零食、躲主人，顺便把家里闹个天翻地覆。",missionLabel:"本关任务",snackLabel:"偷到的小鱼",scoreLabel:"得分",moveLabel:"步数",starLabel:"星星",roomLabel:"选择房间",closetLabel:"你的捣蛋小猫",skinHint:"每关可得 1–3 星，累计星星解锁新猫。",retry:"↻ 重玩",soundOn:"🔊 音效：开",soundOff:"🔇 音效：关",rulesKicker:"游戏规则 · 30 秒看懂",howTitle:"三步学会猫猫大捣蛋",howBody:"小猫走一步，主人也走一步。粉色代表主人视野，持续暴露会被抓。躲进纸箱或扔毛球引开主人！",ruleStep1Title:"① 点击地板移动",ruleStep1Text:"点地板或按方向键，让小猫走过去。",ruleStep2Title:"② 偷到三条小鱼",ruleStep2Text:"粉色是主人视野！连续暴露会被抓，赶快躲进纸箱。",ruleStep3Title:"③ 从粉色猫门逃走",ruleStep3Text:"带着三条小鱼走到猫门，就成功过关。",ruleBonus:"🧶 点击「扔毛球」（电脑可按空格），再点地图上的地板选择落点。再次点击按钮可取消。",tip:"<span><strong>①</strong> 点击地板移动</span><span><strong>②</strong> 收集 3 条小鱼</span><span><strong>③</strong> 走进粉色猫门</span>",mission:"偷到三条鱼，再从粉色猫门溜走。经过花瓶就能把它打翻，引开主人。",daily:"☼ 每日挑战",room:"房间",dailyRoom:"每日捣蛋",closed:"先偷够三条鱼！",blocked:"有东西挡住路啦！",caught:"糟糕，被主人抓到了！",closeCall:"差点被抓！+40 分",bonusDone:"额外挑战完成！逃脱后加 150 分。",spotted:"被发现啦！快躲进纸箱！",last:"只剩一颗心了，轻手轻脚！",fish:"小鱼到手！好吃！",ready:"猫门打开了！快溜！",vase:"哐当！主人听见了。",box:"纸箱！躲猫猫的好地方。",hide:"主人看不见纸箱里的猫。",winTitle:"完美开溜！",win:"小鱼到手，家里一团乱，主人还没回过神。",loseTitle:"当场抓包！",lose:"捣蛋事业暂时受挫。换条路线再试一次！",tryAgain:"再试一次",nextRoom:"下一间 →",again:"再玩一局 →",share:"分享战绩 ♡",shared:"挑战链接已复制！",shareText:"我在《猫猫绝对无辜！》成功偷鱼逃脱！来看看你能不能骗过主人。",locked:"累计 {n} 星解锁",dailyName:"每日猫猫大捣蛋",dailySub:"熟悉的房间，小鱼藏在了新地方。",skinNames:["橘子糖","糯米","小黑","蜜桃","蓝莓"]}
@@ -67,6 +95,25 @@ function fitCanvasPixels(){
 let lang=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 let save={unlocked:0,best:{},cat:0,souvenirs:{}};try{const s=JSON.parse(localStorage.getItem("pawsibly-innocent-save-v1")||"{}");if(s&&typeof s==="object"){save={...save,...s};save.best=s.best||{};save.souvenirs=s.souvenirs||{};}}catch{}
 save.unlocked=Math.min(7,Math.max(0,Number(save.unlocked)||0));save.cat=Math.max(0,Math.min(4,Number(save.cat)||0));
+save.stats={fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,...(save.stats&&typeof save.stats==="object"?save.stats:{})};
+save.achievements=save.achievements&&typeof save.achievements==="object"?save.achievements:{};
+const relicCount=()=>Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length;
+const roomsWon=()=>Object.keys(save.best).filter(k=>/^room-[0-7]$/.test(k)&&Number(save.best[k]?.stars)>0).length;
+let badgeTimer=null;
+function badgeToast(names){
+ const el=$("achievementToast");if(!el||!names.length)return;
+ el.textContent=names.length===1?"🏅 "+names[0]:(lang==="zh"?"🏅 解锁了 "+names.length+" 个新成就！":"🏅 "+names.length+" achievements unlocked!");
+ el.hidden=false;clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true},2500);
+}
+function checkBadges(quiet=false){
+ const earned=[];
+ for(const badge of BADGES)if(!save.achievements[badge.id]&&badge.ok()){
+  save.achievements[badge.id]=true;earned.push(badge[lang==="zh"?"zh":"en"]);
+  if(!quiet)metric("cat_achievement_unlocked",{achievement:badge.id,level:s?.index+1||1});
+ }
+ if(earned.length){saveGame();if(!quiet){badgeToast(earned);audio("win")}}
+}
+function addStat(name,n=1){save.stats[name]=(Number(save.stats[name])||0)+n;saveGame();checkBadges()}
 const YARN_LEGEND={
 en:{ready:"🧶 Tap Toss yarn (or Space), then tap a floor tile to aim. The human walks toward the sound.",empty:"🧶 Walk onto a pink yarn ball to pick it up, then use the purple button above the board.",legend:["🐟 Fish = collect 3","🧶 Yarn = lure human","📦 Box = hide","🤖 Vacuum = blocked","🚪 Pink flap = escape"],tool:"🧶 Toss yarn (Space)",need:"🧶 Find yarn first",vision:"Pink = visible · Red = near the human · Avoid the labeled robot vacuum",quickReady:"1. Tap Toss yarn.  2. Tap an open floor tile to throw there.",quickAim:"Tap the destination tile. The human follows the sound.",quickChase:"The owner is walking to the yarn. Sneak past when they stop!",cancel:"✕ Cancel throw",aim:"🧶 Tap an open floor tile to choose the yarn landing spot (or cancel).",badTarget:"Choose an open tile the human can reach.",quickEmpty:"Pick up the pink yarn ball on the floor to enable this button."},
 zh:{ready:"🧶 点击「扔毛球」（电脑可按空格），再点地板决定落点，主人会循声走过去。",empty:"🧶 先让小猫走到地板上的粉色毛线球，捡到后再点击上方的紫色按钮。",legend:["🐟 小鱼＝收集三条","🧶 毛线＝引开主人","📦 纸箱＝躲藏","🤖 扫地机＝绕开","🚪 粉色猫门＝逃走"],tool:"🧶 扔毛球（空格键）",need:"🧶 先捡毛球",vision:"粉色＝主人视野 · 红色＝距离很近 · 标有「扫地机」的格子不能进入",quickReady:"① 点击「扔毛球」 ② 点地板选择落点，引开主人。",quickAim:"点击想让毛球落下的空地板，主人会循声走过去。",quickChase:"主人正在走向毛球。等他停下，趁机从另一边溜走！",cancel:"✕ 取消投掷",aim:"🧶 点击地图上的空地板选择毛球落点（或取消）。",badTarget:"请选择主人能走到的空地板。",quickEmpty:"先走到地板上的粉色毛线球，捡起来才能扔。"}
@@ -95,7 +142,7 @@ if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),que
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
 return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
-function init(index=0,isDaily=false){clearTimeout(msgTimer);stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
+function init(index=0,isDaily=false){clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY<br><span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
@@ -108,8 +155,34 @@ $("chapter").textContent=daily?tr("dailyName"):s.room[lang==="zh"?"zh":"en"];
 $("chapterSub").textContent=daily?tr("dailySub"):s.room[lang==="zh"?"zhSub":"enSub"];
 const lv=$("levels");lv.innerHTML="";ROOMS.forEach((r,i)=>{const b=document.createElement("button");b.className="level-btn";b.disabled=i>save.unlocked;b.textContent=i+1;b.title=r[lang==="zh"?"zh":"en"];b.setAttribute("aria-current",String(!daily&&stage===i));b.onclick=()=>init(i,false);lv.appendChild(b)});
 const dailyB=document.createElement("button");dailyB.className="level-btn daily";dailyB.textContent=tr("daily");dailyB.setAttribute("aria-current",String(daily));dailyB.onclick=()=>init(0,true);lv.appendChild(dailyB);
-const shelf=$("souvenirShelf");if(shelf){shelf.innerHTML="";const glyphs=["☀","✿","♡","☾","✦","❀","★","♛"];glyphs.forEach((glyph,i)=>{const b=document.createElement("button");b.className="souvenir-stamp"+(save.souvenirs[i]?" found":"");b.disabled=i>save.unlocked;b.textContent=save.souvenirs[i]?glyph:"·";b.type="button";b.title=ROOMS[i][lang==="zh"?"zh":"en"]+" · "+(save.souvenirs[i]?et("found"):et("missing"));b.onclick=()=>init(i,false);shelf.appendChild(b)})}
+const shelf=$("souvenirShelf");if(shelf){shelf.innerHTML="";RELICS.forEach((relic,i)=>{const b=document.createElement("button");b.className="souvenir-stamp"+(save.souvenirs[i]?" found":"");b.disabled=i>save.unlocked;b.textContent=save.souvenirs[i]?relic.glyph:"?";b.type="button";b.title=(save.souvenirs[i]?relic[lang==="zh"?"zh":"en"]:"???")+" · "+ROOMS[i][lang==="zh"?"zh":"en"];b.onclick=()=>init(i,false);shelf.appendChild(b)})}
 const wd=$("wardrobe");wd.innerHTML="";fur.forEach((f,i)=>{const b=document.createElement("button");b.className="skin"+(save.cat===i?" active":"");b.disabled=allStars()<f[3];b.style.background="#fff5f1";b.style.setProperty("--cat-fur",f[0]);b.style.setProperty("--cat-detail",f[1]);b.innerHTML='<span class="cat-portrait"><b>•ᴗ•</b></span>';b.title=TX[lang].skinNames[i]+(b.disabled?" · "+tr("locked").replace("{n}",f[3]):"");b.setAttribute("aria-label",b.title);b.onclick=()=>{save.cat=i;saveGame();s.yarn=i===0?Math.max(1,s.yarn):s.yarn;translateUI();syncUI();audio("fish")};if(b.disabled){const span=document.createElement("span");span.className="lock";span.textContent="🔒";b.appendChild(span)}wd.appendChild(b)});
+}
+function renderCollections(){
+ const count=relicCount(),earned=BADGES.filter(b=>save.achievements[b.id]).length;
+ const prev=$("collectionPreview"),gallery=$("relicGallery"),grid=$("achievementsGrid");
+ if($("achievementCount"))$("achievementCount").textContent=(lang==="zh"?"成就 ":"Badges ")+earned+" / "+BADGES.length;
+ if($("relicSummary"))$("relicSummary").textContent=(lang==="zh"?"查看八件纪念品":"Souvenir album")+" · "+count+"/8";
+ if($("achievementSummary"))$("achievementSummary").textContent=(lang==="zh"?"查看成就徽章":"Achievement badges")+" · "+earned+"/"+BADGES.length;
+ if(prev){
+  const idx=s?.hasRelic?s.index:RELICS.findLastIndex((_,i)=>save.souvenirs[i]);
+  if(idx>=0){
+   const item=RELICS[idx],pending=s?.hasRelic&&!save.souvenirs[s.index];
+   prev.innerHTML='<span class="relic-glyph">'+item.glyph+'</span><span><strong>'+item[lang==="zh"?"zh":"en"]+'</strong><small>'+(pending?(lang==="zh"?"刚找到！逃脱即可收藏":"Found! Escape to keep it"):(lang==="zh"?"已收藏 · "+item.zhDesc:"Saved · "+item.enDesc))+'</small></span>';
+  }else prev.textContent=lang==="zh"?"在房间找到纪念品，再成功逃脱，就能收入图鉴。":"Find a room keepsake and escape to add it to the album.";
+ }
+ if(gallery)gallery.innerHTML=RELICS.map((item,i)=>{
+  const unlocked=!!save.souvenirs[i],pending=s?.hasRelic&&s.index===i&&!unlocked;
+  return '<div class="relic-card '+(unlocked?'':'locked')+'"><span class="glyph">'+(unlocked||pending?item.glyph:"🔒")+'</span><span><strong>'+(unlocked||pending?item[lang==="zh"?"zh":"en"]:"???")+'</strong><small>'+(unlocked?item[lang==="zh"?"zhDesc":"enDesc"]:(pending?(lang==="zh"?"本局找到，待逃脱保存":"Found now; escape to save"):(lang==="zh"?"第 "+(i+1)+" 关 · 尚未收藏":"Room "+(i+1)+" · not found")))+'</small></span></div>';
+ }).join("");
+ if(grid)grid.innerHTML=BADGES.map(b=>{
+  const got=!!save.achievements[b.id];return '<div class="achievement-card '+(got?'':'locked')+'"><span class="glyph">'+(got?b.glyph:"🔒")+'</span><span><strong>'+b[lang==="zh"?"zh":"en"]+'</strong><small>'+b[lang==="zh"?"zhDesc":"enDesc"]+(got?(lang==="zh"?" · 已获得":" · Unlocked"):"")+'</small></span></div>';
+ }).join("");
+}
+function guardLabel(){
+ const mode=s?.guardMode||"patrol",zh=lang==="zh";
+ const modes={patrol:zh?"巡逻：按固定路线移动":"Patrol: following a set route",investigate:zh?"调查：正在走向毛球／声音":"Investigating: following a sound",chase:zh?"追猫：已经看见你！":"Chasing: the owner spotted you!",search:zh?"搜索：前往最后看见猫的位置":"Searching: last known cat position",distracted:zh?"分心：围着毛球发呆（剩 "+s.distractionTurns+" 步）":"Distracted by yarn ("+s.distractionTurns+" turns)",sleep:zh?"睡觉：主人还没醒":"Sleeping: owner is unaware"};
+ return modes[mode]||modes.patrol;
 }
 function dareDone(){
  if(!s)return false;
@@ -145,7 +218,10 @@ function contextualHint(){
  if(s.finalAlert)return lang==="zh"?"主人发现异样了，快去猫门！":"The owner is suspicious. Make your escape!";
  return YARN_LEGEND[lang].vision;
 }
-function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+NEED;$("meterFill").style.width=100*s.got/NEED+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+NEED+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
+function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();
+ if($("guardIntent"))$("guardIntent").textContent=guardLabel();
+ if($("guardStatus"))$("guardStatus").setAttribute("data-mode",s?.guardMode||"patrol");
+ renderCollections();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+NEED;$("meterFill").style.width=100*s.got/NEED+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+NEED+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
 function neighbors(p){return[[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).filter(q=>q.x>=0&&q.x<W&&q.y>=0&&q.y<H);}
 function pass(p,human=false){if(!p||p.x<0||p.y<0||p.x>=W||p.y>=H)return false;const t=s.grid[p.y][p.x];if(t==="#"||t==="S")return false;if(human&&(t==="E"||s.boxes.some(b=>equal(b,p))))return false;if(!human&&((s.vacuum&&equal(p,s.vacuum))||equal(p,s.human)))return false;return true}
 function pathTo(from,to,human=false){if(equal(from,to))return[];const q=[from],seen=new Set([key(from)]),prev=new Map();for(let i=0;i<q.length;i++){const p=q[i];if(equal(p,to)){const result=[];let t=key(p);while(t!==key(from)){const next=prev.get(t);result.unshift({x:Number(t.split(",")[0]),y:Number(t.split(",")[1])});t=next}return result}for(const n of neighbors(p)){if(!pass(n,human)||seen.has(key(n)))continue;seen.add(key(n));prev.set(key(n),key(p));q.push(n)}}return[]}
