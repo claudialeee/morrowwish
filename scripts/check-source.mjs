@@ -9,6 +9,22 @@ for (const file of [
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
+// CrazyGames approval is an intentional per-game editorial release, never a batch.
+const cgApproval=JSON.parse(fs.readFileSync('promotion/crazygames-quality-gate.json','utf8'));
+const cgManual=fs.readFileSync('.github/workflows/crazygames-submit.yml','utf8');
+const cgAuto=fs.readFileSync('.github/workflows/auto-publish-portals.yml','utf8');
+const cgDirect=fs.readFileSync('scripts/crazygames-complete-drafts.mjs','utf8');
+const cgAlternate=fs.readFileSync('scripts/auto-publish-crazygames.mjs','utf8');
+if(!['hold','approved'].includes(cgApproval.status)||!Array.isArray(cgApproval.candidates)||cgApproval.candidates.length!==7)
+ throw Error('CrazyGames quality gate must document exactly seven candidates and a valid hold/approved state');
+if(!cgManual.includes('Enforce single-game external QA signoff')||!cgManual.includes('CRAZYGAMES_TARGET_SLUGS: ${{ inputs.slug }}')||cgManual.includes("    - cron:"))
+ throw Error('CrazyGames manual workflow must enforce one QA-approved game and must not auto-run');
+if(cgAuto.includes('run: node scripts/auto-publish-crazygames.mjs'))
+ throw Error('CrazyGames automatic submission must stay disabled while quality QA is pending');
+if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status!=='approved'")||
+   !cgAlternate.includes("qualityGate.status!=='approved'"))
+ throw Error('CrazyGames scripts must fail closed if not individually QA-approved');
+
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 const config=JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc','utf8'));
