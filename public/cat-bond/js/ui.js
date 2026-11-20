@@ -514,17 +514,33 @@ const UI = {
       const sp = GameData.speciesById(cell.dataset.id);
       if (!cell.classList.contains('locked')) CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
       cell.addEventListener('click', () => {
-        if (State.S.dex[sp.id]) this.panel(`<span class="card-close">×</span>
+        if(!State.S.dex[sp.id])return;
+        const canRematch=State.S.cats.some(cat=>cat.species===sp.id);
+        const best=State.S.bestGrades?.[sp.id]||'—';
+        this.panel(`<span class="card-close">×</span>
           <h2>${sp.name} <span class="rarity-${sp.rarity}">◆${GameData.RARITY[sp.rarity].name}</span></h2>
           <p class="sub">${sp.desc}</p>
           <p class="mastery-detail">${State.S.masteryBadges?.[sp.id]
             ?(en?'🏅 Golden Paw earned · S rank':'🏅 金爪徽章已解锁 · S 评级')
-            :(en?'Best: '+(State.S.bestGrades?.[sp.id]||'—')+' · Earn S to unlock the Golden Paw'
-              :'最佳战绩：'+(State.S.bestGrades?.[sp.id]||'暂无')+' · 达到 S 评级可获得金爪徽章')}</p>
-          <canvas id="dx" width="160" height="130" style="display:block;margin:10px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
-          <p class="tiny center">已捕获 ${State.S.dex[sp.id]} 只 · 基础 力${sp.base.pow}/敏${sp.base.agi}/体${sp.base.vit}/魅${sp.base.cha}</p>
-          <div class="btn-row" style="justify-content:center"><button class="btn ghost" onclick="UI.openDex()">返回图鉴</button></div>`),
-          CatArt.renderCatThumb(document.getElementById('dx'), sp);
+            :(en?'Best grade '+best+' · Earn S to win the Golden Paw'
+              :'历史最佳 '+best+' 级 · 挑战 S 级可解锁金爪徽章')}</p>
+          <canvas id="dx" width="160" height="130" style="display:block;margin:10px auto;border-radius:12px"></canvas>
+          <p class="tiny center">${en?'Captured':'已捕获'} ${State.S.dex[sp.id]} ·
+             ${en?'S goal':'S级挑战'} ${this.game.gradeTimeLimit(sp.rarity)}s ·
+             ${en?'70% HP, 6-hit combo or perfect dodge':'保留70%血量，6连击或完美闪避'}</p>
+          <div class="btn-row" style="justify-content:center">
+            <button class="btn gold" id="dx-rematch" ${canRematch?'':'disabled'}>${en?'⚔️ Try for S rank':'⚔️ 重战挑战 S 级'}</button>
+            <button class="btn ghost" id="dx-back">${en?'Back to codex':'返回图鉴'}</button>
+          </div>
+          <p class="tiny center">${en?'Rank challenge: no duplicate cats or repeat capture rewards.'
+            :'评级挑战不会重复捕捉猫咪，也不会重复领取金币。'}</p>`);
+        document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
+        CatArt.renderCatThumb(document.getElementById('dx'),sp);
+        document.getElementById('dx-back').onclick=()=>this.openDex();
+        const fight=document.getElementById('dx-rematch');
+        if(fight&&canRematch)fight.onclick=()=>{
+          this.closeAll();this.game.startMasteryChallenge(sp);
+        };
       });
     });
   },
@@ -824,6 +840,38 @@ const UI = {
     document.getElementById('gb-add').onclick = () => { cat.gambits.push({ cond: 'always', act: 'basic' }); State.save(); this.openGambitEditor(wildSp); };
     document.getElementById('gb-reset').onclick = () => { cat.gambits = S.defaultGambits(cat).slice(); State.save(); this.openGambitEditor(wildSp); };
     document.getElementById('gb-back').onclick = () => this.openCapturePrep(wildSp);
+  },
+
+  // Repeatable *skill* challenge, deliberately separate from capturing cats.
+  openMasteryChallengeResult(wildSp,performance,reward,won){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const grade=performance?.grade||'—';
+    const best=State.S.bestGrades?.[wildSp.id]||'—';
+    const note=!won?(en?'Challenge lost · your medal progress is safe.':'本次挑战失败 · 已获得的徽章不会丢失。')
+      :reward?(en?'🏅 First S! Golden Paw earned · +1 rare lure · +15 affinity'
+        :'🏅 首次 S！解锁金爪徽章 · +1 稀有诱饵 · 好感 +15')
+      :(en?'Best rank saved. Earn S once per breed for a Golden Paw. No repeat rewards.'
+        :'已记录最佳评级。每个品种首次 S 可得金爪徽章，不重复发奖。');
+    this.panel(`<span class="card-close">×</span>
+      <h2 class="center">${en?'Golden Paw Challenge':'金爪评级挑战'} · ${wildSp.name}</h2>
+      <canvas id="mc-cat" width="180" height="140" style="display:block;margin:6px auto"></canvas>
+      <div class="battle-grade grade-${grade}"><b>${grade}</b>
+        <div><strong>${en?'Battle result':'挑战结果'}</strong><small>${en?'Best record':'历史最佳'} ${best}
+          · ${en?'Medals':'金爪徽章'} ${this.game.masteryStatus().medals}/${GameData.SPECIES.length}</small></div>
+      </div>
+      <p class="center mastery-challenge-note">${note}</p>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn gold" id="mc-retry">${en?'Challenge again':'再次挑战'}</button>
+        <button class="btn" id="mc-dex">${en?'View medals':'查看图鉴'}</button>
+        <button class="btn ghost" id="mc-exit">${en?'Back to yard':'回庭院'}</button>
+      </div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
+    CatArt.renderCatThumb(document.getElementById('mc-cat'),wildSp);
+    document.getElementById('mc-retry').onclick=()=>{this.closeAll();this.game.startMasteryChallenge(wildSp);};
+    document.getElementById('mc-dex').onclick=()=>this.openDex();
+    document.getElementById('mc-exit').onclick=()=>{
+      this.closeAll();document.getElementById('yard-actions').classList.remove('hidden');
+    };
   },
 
   openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null) {
