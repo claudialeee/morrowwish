@@ -12,7 +12,17 @@ const email=process.env.CRAZYGAMES_STUDIO_EMAIL||'';
 const password=process.env.CRAZYGAMES_STUDIO_PASSWORD||'';
 const ledger=JSON.parse(fs.readFileSync('promotion/ledger.json','utf8'));
 const catalog=publishedGames();
-const targetSlugs=(process.env.CRAZYGAMES_TARGET_SLUGS||'pawsibly-innocent,elsewhere,tiny-town,parcel-panic,pocket-aquarium,flip-dash').split(',').filter(Boolean);
+// Fail closed: neither CI nor a direct script run may submit a batch.
+const targetSlugs=(process.env.CRAZYGAMES_TARGET_SLUGS||'').split(',').map(x=>x.trim()).filter(Boolean);
+if(targetSlugs.length!==1||!/^[a-z][a-z0-9-]+$/.test(targetSlugs[0]))
+  throw Error('Exactly ONE CrazyGames game must be selected. Bulk submissions are disabled.');
+const gate=JSON.parse(fs.readFileSync('promotion/crazygames-quality-gate.json','utf8'));
+if(gate.status!=='approved'||gate.approvedSlug!==targetSlugs[0])
+  throw Error('CrazyGames quality HOLD: finish documented game and player QA before any portal login.');
+for(const field of ['gameplayTest','firstTimePlayers','visualReview','technicalPreview','contentAndRights']){
+  if(typeof gate.evidence?.[field]!=='string'||gate.evidence[field].trim().length<12)
+    throw Error('CrazyGames quality HOLD: missing '+field+' evidence.');
+}
 const file='.check/crazygames/submission-results.json';
 const copy={
  'pawsibly-innocent':{category:'Adventure',tags:['Cat','Cats','Animals','Cute','Adventure','Cozy'],title:'Pawsibly Innocent!',description:'Play as a mischievous little cat exploring eight illustrated rooms. Steal three fish, find souvenirs, and outsmart the humans in a cozy browser adventure.',controls:'Explore the rooms with keyboard and pointer controls. Interact with objects, use yarn to distract humans, collect three fish and escape unnoticed.'},
