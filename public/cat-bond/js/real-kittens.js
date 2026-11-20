@@ -7,7 +7,10 @@
   const drawing=window.CatArt;
   const source=new Image();
   let loaded=false;
-  const w=60,h=90;
+  // New illustrated atlas keeps the original six breeds but supplies over
+  // four times as many source pixels per character.
+  const frame=window.CAT_BOND_KITTEN_FRAME||{w:60,h:90};
+  const w=frame.w,h=frame.h;
   const indices={
     // Six original kitten illustrations, in the same order as the reference.
     tangyuan:0,doudou:3,xiaohui:3,moqiu:5,nainai:4,nietu:4,niuniu:2,
@@ -34,15 +37,22 @@
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
-    const hop=pose==='play'?Math.abs(Math.sin(t*7))*5:0;
-    const sway=pose==='walk'?Math.sin(t*8)*.055:
-      pose==='sleep'?Math.sin(t*1.5)*.012:
-      pose==='belly'?Math.sin(t*4)*.10:
-      Math.sin(t*1.5)*.022;
-    const bob=pose==='walk'?Math.abs(Math.sin(t*8))*2:
-      Math.sin(t*2)*.55;
+    // Ease the sprite with a planted-feet pivot. A side-to-side nudge, gentle
+    // stretch/compression and stride-dependent lean mimic shifting weight,
+    // rather than spinning the entire illustration rigidly around its center.
+    const movement=pose==='walk' ? Math.max(.12,Math.min(1,o.motion??.8)) : 0;
+    const phase=o.stride===undefined?t*7:o.stride;
+    const footfall=Math.sin(phase),lift=Math.max(0,Math.sin(phase*2));
+    const hop=pose==='play'?Math.pow(Math.abs(Math.sin(t*5.2)),1.5)*9:0;
+    const breathing=Math.sin(t*1.65)*.008;
+    const sway=pose==='walk'?footfall*.019*movement:
+      pose==='sleep'?Math.sin(t*1.5)*.008:
+      pose==='belly'?Math.sin(t*4)*.09:Math.sin(t*1.6)*.012;
+    const bob=movement*(.7+2.1*lift)+hop+(pose==='idle'?Math.sin(t*2)*.32:0);
+    const stretchX=1+movement*(.025*Math.cos(phase*2)) - (pose==='play'?hop*.0014:0);
+    const stretchY=1+breathing-movement*(.032*Math.cos(phase*2)) +(pose==='play'?hop*.002:0);
     ctx.save();
-    ctx.translate(x,y-hop-bob);
+    ctx.translate(x,y);
     ctx.scale(face*scale,scale);
     if(gr?.aura){
       const aura=ctx.createRadialGradient(0,0,3,0,0,55);
@@ -51,11 +61,16 @@
       aura.addColorStop(1,gr.aura+'00');
       ctx.fillStyle=aura;ctx.beginPath();ctx.ellipse(0,0,55,45,0,0,Math.PI*2);ctx.fill();
     }
-    ctx.rotate(sway);
-    // A subtle, transparent shadow anchors the photographed character to
-    // the painted yard; no rectangular backgrounds or vector replacement.
+    // Shadow stays on the ground even while the kitten is hopping.
     ctx.fillStyle='rgba(73,63,51,.12)';
-    ctx.beginPath();ctx.ellipse(0,33,27,4.3,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(0,33,27-hop*.2,4.3-hop*.13,0,0,Math.PI*2);ctx.fill();
+    ctx.translate(footfall*movement*.95,-bob);
+    ctx.translate(0,33);
+    ctx.rotate(sway);
+    ctx.scale(stretchX,stretchY);
+    ctx.translate(0,-33);
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality='high';
     ctx.drawImage(source,indexOf(o)*w,0,w,h,-30,-55,60,90);
     if(mood==='love'){
       ctx.fillStyle='#ef8fa8';ctx.font='13px system-ui';
@@ -77,7 +92,7 @@
     // The same real illustration is used in every thumbnail and card.
     const scale=Math.min(canvas.width/63,canvas.height/90)*.88;
     render(ctx,canvas.width/2,canvas.height*.57,{
-      species,scale,pose:'sit',mood:'neutral',t:0.6
+      species,scale,pose:'sit',mood:'neutral',t:0.6,motion:0
     });
   }
   drawing.drawCat=render;
