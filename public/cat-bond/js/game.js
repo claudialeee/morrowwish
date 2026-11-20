@@ -300,6 +300,7 @@ class Game {
       // found the hiding wild cat → open capture prep
       const sp = this.yard.hide.species;
       this.yard.hide.found = true;
+      window.MorrowwishAudio?.effect?.('discover');
       this.spawnFoundFx(this.yard.hide.spot);
       this.yard.hide = null;
       UI.openCapturePrep(sp);
@@ -319,6 +320,7 @@ class Game {
   }
 
   petCat(entity) {
+    window.MorrowwishAudio?.effect?.('pet');
     this.yard.petEntity(entity);
     const cat = entity.cat;
     cat.affinity = Math.min(100, cat.affinity + 2);
@@ -339,6 +341,7 @@ class Game {
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
+    window.MorrowwishAudio?.effect?.('discover');
     document.body.classList.remove('cb-exploring');
     // Unified Morrow Wish analytics: a capture battle is a game "run". If the
     // previous run ended in a loss, count this fresh attempt as a retry too.
