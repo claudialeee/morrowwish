@@ -28,6 +28,13 @@ try{
             h:document.body.scrollHeight,buttons:[...document.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).length};
         });
         console.log('MOBILE '+game.slug+' '+width+'px: '+JSON.stringify(metrics));
+        if(metrics.scrollWidth>metrics.width+3){
+          const offenders=await page.evaluate(()=>[...document.body.querySelectorAll('*')].map(e=>({element:e.tagName.toLowerCase()+(e.id?'#'+e.id:e.className&&typeof e.className==='string'?'.'+e.className.replace(/\\s+/g,'.'):''),
+            left:Math.round(e.getBoundingClientRect().left),right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width)}))
+            .filter(e=>e.right>document.documentElement.clientWidth+3||e.left< -3)
+            .sort((a,b)=>b.right-a.right).slice(0,12));
+          console.log('MOBILE OVERFLOW ELEMENTS '+game.slug+' '+width+': '+JSON.stringify(offenders));
+        }
         assert.ok(metrics.scrollWidth<=metrics.width+3,game.slug+' has horizontal overflow at '+width+'px: '+JSON.stringify(metrics));
         assert.ok(metrics.buttons>0,game.slug+' has no usable buttons');
         if(width!==390)continue;
