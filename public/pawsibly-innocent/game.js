@@ -68,8 +68,8 @@ let lang=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 let save={unlocked:0,best:{},cat:0,souvenirs:{}};try{const s=JSON.parse(localStorage.getItem("pawsibly-innocent-save-v1")||"{}");if(s&&typeof s==="object"){save={...save,...s};save.best=s.best||{};save.souvenirs=s.souvenirs||{};}}catch{}
 save.unlocked=Math.min(7,Math.max(0,Number(save.unlocked)||0));save.cat=Math.max(0,Math.min(4,Number(save.cat)||0));
 const YARN_LEGEND={
-en:{ready:"🧶 Tap Toss yarn (or Space), then tap a floor tile to aim. The human walks toward the sound.",empty:"🧶 Walk onto a pink yarn ball to pick it up, then use the purple button above the board.",legend:["🐟 Fish = collect 3","🧶 Yarn = lure human","📦 Box = hide","🤖 Vacuum = blocked","🚪 Pink flap = escape"],tool:"🧶 Toss yarn (Space)",need:"🧶 Find yarn first",vision:"Pink = visible · Red = near the human · Avoid the labeled robot vacuum",quickReady:"1. Tap Toss yarn.  2. Tap an open floor tile to throw there.",quickAim:"Tap the destination tile. The human follows the sound.",quickChase:"The human moved toward the yarn. Each of your steps moves the human one tile.",cancel:"✕ Cancel throw",aim:"🧶 Tap an open floor tile to choose the yarn landing spot (or cancel).",badTarget:"Choose an open tile the human can reach.",quickEmpty:"Pick up the pink yarn ball on the floor to enable this button."},
-zh:{ready:"🧶 点击「扔毛球」（电脑可按空格），再点地板决定落点，主人会循声走过去。",empty:"🧶 先让小猫走到地板上的粉色毛线球，捡到后再点击上方的紫色按钮。",legend:["🐟 小鱼＝收集三条","🧶 毛线＝引开主人","📦 纸箱＝躲藏","🤖 扫地机＝绕开","🚪 粉色猫门＝逃走"],tool:"🧶 扔毛球（空格键）",need:"🧶 先捡毛球",vision:"粉色＝主人视野 · 红色＝距离很近 · 标有「扫地机」的格子不能进入",quickReady:"① 点击「扔毛球」 ② 点地板选择落点，引开主人。",quickAim:"点击想让毛球落下的空地板，主人会循声走过去。",quickChase:"主人已经朝毛球移动！你每走一步，主人也走一步，趁机绕开它。",cancel:"✕ 取消投掷",aim:"🧶 点击地图上的空地板选择毛球落点（或取消）。",badTarget:"请选择主人能走到的空地板。",quickEmpty:"先走到地板上的粉色毛线球，捡起来才能扔。"}
+en:{ready:"🧶 Tap Toss yarn (or Space), then tap a floor tile to aim. The human walks toward the sound.",empty:"🧶 Walk onto a pink yarn ball to pick it up, then use the purple button above the board.",legend:["🐟 Fish = collect 3","🧶 Yarn = lure human","📦 Box = hide","🤖 Vacuum = blocked","🚪 Pink flap = escape"],tool:"🧶 Toss yarn (Space)",need:"🧶 Find yarn first",vision:"Pink = visible · Red = near the human · Avoid the labeled robot vacuum",quickReady:"1. Tap Toss yarn.  2. Tap an open floor tile to throw there.",quickAim:"Tap the destination tile. The human follows the sound.",quickChase:"The owner is walking to the yarn. Sneak past when they stop!",cancel:"✕ Cancel throw",aim:"🧶 Tap an open floor tile to choose the yarn landing spot (or cancel).",badTarget:"Choose an open tile the human can reach.",quickEmpty:"Pick up the pink yarn ball on the floor to enable this button."},
+zh:{ready:"🧶 点击「扔毛球」（电脑可按空格），再点地板决定落点，主人会循声走过去。",empty:"🧶 先让小猫走到地板上的粉色毛线球，捡到后再点击上方的紫色按钮。",legend:["🐟 小鱼＝收集三条","🧶 毛线＝引开主人","📦 纸箱＝躲藏","🤖 扫地机＝绕开","🚪 粉色猫门＝逃走"],tool:"🧶 扔毛球（空格键）",need:"🧶 先捡毛球",vision:"粉色＝主人视野 · 红色＝距离很近 · 标有「扫地机」的格子不能进入",quickReady:"① 点击「扔毛球」 ② 点地板选择落点，引开主人。",quickAim:"点击想让毛球落下的空地板，主人会循声走过去。",quickChase:"主人正在走向毛球。等他停下，趁机从另一边溜走！",cancel:"✕ 取消投掷",aim:"🧶 点击地图上的空地板选择毛球落点（或取消）。",badTarget:"请选择主人能走到的空地板。",quickEmpty:"先走到地板上的粉色毛线球，捡起来才能扔。"}
 };
 const tr=k=>TX[lang][k]||k;
 const EXTRA_WORDS={en:{yarn:"Yarn acquired — lure the human!",souvenir:"A secret keepsake! Finish the room to keep it.",milk:"A little milk. One heart restored!",light:"Lights off! Sneak through the shadows.",robot:"Robot vacuum ahead! Go around it — no heart lost.",noYarn:"Find a yarn ball first.",creak:"CREAK! The owner heard that floorboard.",wake:"The owner woke up! Stay sneaky.",finalAlert:"The owner is onto you! Escape!",routeWarning:"Careful! The owner is nearby. Pick your next step.",lured:"The human heard your yarn! Sneak away.",tool:"◉ Toss yarn",toolEmpty:"◉ Find yarn",bonus:"Secret keepsake",found:"Found",missing:"Not found",album:"Keepsakes",ability:["Starts with a yarn ball","Quieter paws: shorter sight range","Shadow stealth: extra cover in dim light","Vase master: longer distractions","Snack hunter: extra fish points"],finished:"Keepsake saved to your album!",vacuum:"The roaming vacuum is watching!",tip:"Pick up yarn and toss it to distract the human."},zh:{yarn:"拿到毛线球！可以引开主人了。",souvenir:"发现秘密纪念品！通关后就能收藏。",milk:"喝点牛奶，恢复一颗心！",light:"灯关了！趁着昏暗偷偷溜走。",robot:"前面是扫地机器人！请绕路，不会扣生命。",noYarn:"先找到毛线球！",creak:"嘎吱！主人听到了地板的声音！",wake:"主人醒了！快躲起来。",finalAlert:"主人起疑了！快逃走！",routeWarning:"主人就在附近！下一步要小心。",lured:"主人被毛线球吸引了，快溜！",tool:"◉ 扔毛线球",toolEmpty:"◉ 寻找毛线球",bonus:"秘密纪念品",found:"已找到",missing:"未找到",album:"猫咪收藏",ability:["开局自带一个毛线球","脚步轻：主人视野更短","暗影潜行：关灯后更难被发现","花瓶专家：引开主人更久","零食猎手：偷鱼分数更多"],finished:"纪念品已经收入猫咪收藏！",vacuum:"扫地机器人正在巡逻！",tip:"捡起毛线球，投出去引开主人。"}};
@@ -85,20 +85,23 @@ const seedDay=Number(today.replaceAll("-",""));
 function randomRoom(){return Math.floor(rnd(seedDay)()*ROOMS.length)}
 function popup(k){const el=$("toast");el.textContent=TX[lang][k]||EXTRA_WORDS[lang][k]||k;el.classList.add("on");clearTimeout(msgTimer);msgTimer=setTimeout(()=>el.classList.remove("on"),1450);}
 function audio(type){window.MorrowwishAudio?.effect(type)}
-function stopYarnChase(){if(yarnChaseTimer!==null){clearInterval(yarnChaseTimer);yarnChaseTimer=null}}
+function stopYarnChase(){
+ if(yarnChaseTimer!==null){clearInterval(yarnChaseTimer);yarnChaseTimer=null}
+ if(s)s.yarnAnimating=false;
+}
 function readRoom(){const index=daily?randomRoom():stage,room=ROOMS[index],extras=EXTRAS[index],grid=room.rows.map(r=>r.split("")),fish=[],vases=[],boxes=[];let cat=null,human=null,door=null;
 for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y};grid[y][x]="."}if(t==="H"){human={x,y};grid[y][x]="."}if(t==="F"){fish.push({x,y});grid[y][x]="."}if(t==="V"){vases.push({x,y});grid[y][x]="."}if(t==="B"){boxes.push({x,y});grid[y][x]="."}if(t==="E")door={x,y}}
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){clearTimeout(msgTimer);stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY<br><span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
 document.title=lang==="zh"?"猫猫绝对无辜！— Morrow Wish":"Pawsibly Innocent! — A Little Cat, A Lot of Trouble | Morrow Wish";
 const ids={back:"back",eyebrow:"eyebrow",subtitle:"subtitle",missionLabel:"missionLabel",snackLabel:"snackLabel",scoreLabel:"scoreLabel",moveLabel:"moveLabel",starLabel:"starLabel",roomLabel:"roomLabel",closetLabel:"closetLabel",skinHint:"skinHint",restart:"retry",rulesKicker:"rulesKicker",howTitle:"howTitle",ruleStep1Title:"ruleStep1Title",ruleStep1Text:"ruleStep1Text",ruleStep2Title:"ruleStep2Title",ruleStep2Text:"ruleStep2Text",ruleStep3Title:"ruleStep3Title",ruleStep3Text:"ruleStep3Text",ruleBonus:"ruleBonus",mission:"mission"};for(const [id,k]of Object.entries(ids))$(id).textContent=tr(k);
-$("howBody").textContent=tr("howBody");if($("visionTip"))$("visionTip").textContent=YARN_LEGEND[lang].vision;if($("yarnAimBanner"))$("yarnAimBanner").textContent=YARN_LEGEND[lang].aim;c.setAttribute("aria-label",lang==="zh"?"猫猫捣蛋游戏。点击地板移动，收集三条鱼，再从粉色猫门逃走。":"Cat stealth adventure. Tap a floor tile to move. Collect three fish and reach the pink cat flap.");if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.noise&&yarnChaseTimer!==null?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("catLegend"))$("catLegend").querySelectorAll("span").forEach((v,i)=>v.textContent=YARN_LEGEND[lang].legend[i]);if($("collectionLabel"))$("collectionLabel").textContent=et("album");if($("collectionHint"))$("collectionHint").textContent=lang==="zh"?"每个房间都藏着一件纪念品，成功逃脱才能收藏。":"Each room hides a souvenir. Escape to add it to your album.";if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";if($("ability"))$("ability").textContent=et("ability")[save.cat];const total=allStars(),nextCat=fur.findIndex((f,i)=>i>0&&total<f[3]);if($("skinHint"))$("skinHint").textContent=nextCat<0?(lang==="zh"?"全部 5 只小猫已解锁！":"All 5 cats unlocked!"):(lang==="zh"?"累计 "+total+" 星 · 再得 "+(fur[nextCat][3]-total)+" 星解锁「"+TX.zh.skinNames[nextCat]+"」":total+" stars · "+(fur[nextCat][3]-total)+" more to unlock "+TX.en.skinNames[nextCat]);if($("tool"))$("tool").setAttribute("aria-label",aimingYarn?YARN_LEGEND[lang].cancel:YARN_LEGEND[lang].tool);$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff");
+$("howBody").textContent=tr("howBody");if($("visionTip"))$("visionTip").textContent=YARN_LEGEND[lang].vision;if($("yarnAimBanner"))$("yarnAimBanner").textContent=YARN_LEGEND[lang].aim;c.setAttribute("aria-label",lang==="zh"?"猫猫捣蛋游戏。点击地板移动，收集三条鱼，再从粉色猫门逃走。":"Cat stealth adventure. Tap a floor tile to move. Collect three fish and reach the pink cat flap.");if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("catLegend"))$("catLegend").querySelectorAll("span").forEach((v,i)=>v.textContent=YARN_LEGEND[lang].legend[i]);if($("collectionLabel"))$("collectionLabel").textContent=et("album");if($("collectionHint"))$("collectionHint").textContent=lang==="zh"?"每个房间都藏着一件纪念品，成功逃脱才能收藏。":"Each room hides a souvenir. Escape to add it to your album.";if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";if($("ability"))$("ability").textContent=et("ability")[save.cat];const total=allStars(),nextCat=fur.findIndex((f,i)=>i>0&&total<f[3]);if($("skinHint"))$("skinHint").textContent=nextCat<0?(lang==="zh"?"全部 5 只小猫已解锁！":"All 5 cats unlocked!"):(lang==="zh"?"累计 "+total+" 星 · 再得 "+(fur[nextCat][3]-total)+" 星解锁「"+TX.zh.skinNames[nextCat]+"」":total+" stars · "+(fur[nextCat][3]-total)+" more to unlock "+TX.en.skinNames[nextCat]);if($("tool"))$("tool").setAttribute("aria-label",aimingYarn?YARN_LEGEND[lang].cancel:YARN_LEGEND[lang].tool);$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff");
 $("roomNum").textContent=daily?tr("dailyRoom"):tr("room")+" "+String(stage+1).padStart(2,"0")+" / 08";
 $("roomTag").textContent=daily?tr("dailyName"):s.room[lang==="zh"?"zh":"en"];
 $("chapter").textContent=daily?tr("dailyName"):s.room[lang==="zh"?"zh":"en"];
@@ -142,7 +145,7 @@ function contextualHint(){
  if(s.finalAlert)return lang==="zh"?"主人发现异样了，快去猫门！":"The owner is suspicious. Make your escape!";
  return YARN_LEGEND[lang].vision;
 }
-function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+NEED;$("meterFill").style.width=100*s.got/NEED+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.noise&&yarnChaseTimer!==null?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+NEED+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
+function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+NEED;$("meterFill").style.width=100*s.got/NEED+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+NEED+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
 function neighbors(p){return[[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).filter(q=>q.x>=0&&q.x<W&&q.y>=0&&q.y<H);}
 function pass(p,human=false){if(!p||p.x<0||p.y<0||p.x>=W||p.y>=H)return false;const t=s.grid[p.y][p.x];if(t==="#"||t==="S")return false;if(human&&(t==="E"||s.boxes.some(b=>equal(b,p))))return false;if(!human&&((s.vacuum&&equal(p,s.vacuum))||equal(p,s.human)))return false;return true}
 function pathTo(from,to,human=false){if(equal(from,to))return[];const q=[from],seen=new Set([key(from)]),prev=new Map();for(let i=0;i<q.length;i++){const p=q[i];if(equal(p,to)){const result=[];let t=key(p);while(t!==key(from)){const next=prev.get(t);result.unshift({x:Number(t.split(",")[0]),y:Number(t.split(",")[1])});t=next}return result}for(const n of neighbors(p)){if(!pass(n,human)||seen.has(key(n)))continue;seen.add(key(n));prev.set(key(n),key(p));q.push(n)}}return[]}
@@ -178,7 +181,7 @@ function catPathTo(from,to){
 const hidden=p=>s.boxes.some(b=>equal(b,p));
 function visible(p=s.cat){if(s.sleepTurns>0||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
-function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.dangerActive=false;s.patrol=0;}
+function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.dangerActive=false;s.patrol=0;}
 function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
  aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
@@ -190,68 +193,86 @@ function setYarnAim(on){
  syncUI();
 }
 function throwYarn(){
- if(!s||s.done)return;
+ if(!s||s.done||s.yarnAnimating)return;
  if(aimingYarn){setYarnAim(false);return}
  if(s.yarn<=0){popup("noYarn");return}
  route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}
  setYarnAim(true);
 }
 function throwYarnTo(p){
- if(!aimingYarn||!s||s.done)return false;
+ if(!aimingYarn||!s||s.done||s.yarnAnimating)return false;
  if(!yarnTarget(p)){popup(YARN_LEGEND[lang].badTarget);return false}
- s.noise={...p};s.yarnThrows++;s.throwTrail={from:{...s.cat},to:{...p},at:performance.now()};
+ s.noise={...p};s.yarnDestination={...p};s.distractionTurns=0;s.yarnThrows++;s.throwTrail={from:{...s.cat},to:{...p},at:performance.now()};
  s.alert=Math.max(7,pathTo(s.human,p,true).length+3);s.lastSeen=null;s.yarn--;s.steps++;
  setYarnAim(false);
  throwStars(s.noise,"#db9fef");audio("yarn");startYarnChase();popup("lured");
  metric("cat_yarn_toss",{level:s.index+1,target_x:p.x,target_y:p.y});
  if(equal(s.cat,s.human))hurt();syncUI();return true;
 }
-// Yarn distractions cause immediate, visible autonomous movement: the player
-// no longer has to take a cat turn to make the human react.
+// The owner visibly investigates the ball over a short animation.
+// Cat movement is paused during the investigation, then the owner lingers four player turns.
+function finishYarnInvestigation(){
+ stopYarnChase();
+ if(!s||s.done)return;
+ s.noise=null;s.alert=0;s.lastSeen=null;s.yarnDestination=null;
+ s.distractionTurns=4;s.guardMode="distracted";s.guardTarget={...s.human};
+ audio("yarn");syncUI();
+ metric("cat_yarn_distracted",{level:s.index+1,turns:4});
+}
 function advanceYarnChase(){
- if(!s||s.done||!s.noise){stopYarnChase();return}
- if(equal(s.human,s.noise)){s.noise=null;s.alert=0;stopYarnChase();syncUI();return}
+ if(!s||s.done||!s.yarnAnimating)return;
+ if(!s.noise||equal(s.human,s.noise)){finishYarnInvestigation();return}
+ const previous={...s.human};
  guardMove();
- if(equal(s.cat,s.human)||
-   (s.invincible===0&&!hidden(s.cat)&&
-    Math.abs(s.cat.x-s.human.x)+Math.abs(s.cat.y-s.human.y)===1&&visible()))hurt();
- if(!s||s.done){stopYarnChase();return}
- if(s.noise&&equal(s.human,s.noise)){s.noise=null;s.alert=0;stopYarnChase()}
- if(!s.noise)stopYarnChase();
+ if(equal(previous,s.human)||!s.noise||equal(s.human,s.noise)){
+  finishYarnInvestigation();return
+ }
  syncUI();
 }
 function startYarnChase(){
- // Immediate reaction, then exactly one human step per cat step. No real-time
- // chase timer: players get time to read the board and plan their escape.
  stopYarnChase();
- guardMove();
+ if(!s?.noise)return;
+ s.yarnAnimating=true;s.guardMode="investigate";s.guardTarget={...s.noise};
+ advanceYarnChase(); // Visible immediate reaction.
+ if(s.yarnAnimating)yarnChaseTimer=setInterval(advanceYarnChase,240);
  syncUI();
 }
 function guardMove(){
  const h=s.human;let target=null;
- // A short sleeping-owner window adds a different stealth strategy in room 4.
  if(s.sleepTurns>0&&!s.noise){
-  s.sleepTurns--;
+  s.sleepTurns--;s.guardMode="sleep";s.guardTarget=null;
   if(s.sleepTurns===0)popup("wake");
   return;
  }
  if(s.sleepTurns>0&&s.noise){s.sleepTurns=0;popup("wake")}
+ if(s.distractionTurns>0&&!s.noise){
+  s.distractionTurns--;s.guardMode="distracted";s.guardTarget={...h};return;
+ }
  if(s.noise){
-  target=s.noise;
-  if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0}
+  target={...s.noise};s.guardMode="investigate";
+  if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0;target=null}
   else s.alert--;
  }
  if(!target&&visible()){
   s.lastSeen={...s.cat};
-  // One full turn of visible warning before actively chasing the player.
-  if(s.exposure>0||s.finalAlert){target={...s.cat};s.alert=3}
+  if(s.exposure>0||s.finalAlert){target={...s.cat};s.alert=3;s.guardMode="chase"}
  }
- if(!target&&s.alert>0&&s.lastSeen){target=s.lastSeen;s.alert--;if(equal(h,target))s.lastSeen=null}
- if(!target){const stops=s.room.patrol;if(equal(h,{x:stops[s.patrol][0],y:stops[s.patrol][1]}))s.patrol=(s.patrol+1)%stops.length;target={x:stops[s.patrol][0],y:stops[s.patrol][1]}}
+ if(!target&&s.alert>0&&s.lastSeen){
+  target={...s.lastSeen};s.guardMode="search";s.alert--;
+  if(equal(h,target))s.lastSeen=null;
+ }
+ if(!target){
+  const stops=s.room.patrol;
+  if(equal(h,{x:stops[s.patrol][0],y:stops[s.patrol][1]}))s.patrol=(s.patrol+1)%stops.length;
+  target={x:stops[s.patrol][0],y:stops[s.patrol][1]};s.guardMode="patrol";
+ }
+ s.guardTarget={...target};
  const steps=pathTo(h,target,true);s.humanFrom={...h};
  if(steps.length){
-  // The guard must not collide with a completely unaware cat on a first sighting.
-  if(equal(steps[0],s.cat)&&s.exposure===0&&!s.finalAlert){s.alert=Math.max(2,s.alert);s.lastSeen={...s.cat};return}
+  if(equal(steps[0],s.cat)&&(s.guardMode==="investigate"||(s.exposure===0&&!s.finalAlert))){
+   if(s.guardMode==="investigate")return;
+   s.alert=Math.max(2,s.alert);s.lastSeen={...s.cat};return;
+  }
   s.human={...steps[0]};s.humanMovedAt=performance.now();
  }
 }
@@ -279,7 +300,7 @@ function resolveDetection(){
  if(s.exposure>=limit&&s.invincible===0){hurt();return}
  if(before===0&&limit<99)popup("spotted");
 }
-function moveTo(p){if(s.done||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
+function moveTo(p){if(s.done||s.yarnAnimating||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
 const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;s.score+=save.cat===4?135:100;audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":"fish");metric("cat_fish",{level:daily?9:stage+1,score:s.score});}
@@ -312,10 +333,10 @@ metric(win?"game_complete":"game_over",{level:daily?9:stage+1,score:s.score,star
 $("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=tr(win?"winTitle":"loseTitle");$("resultDesc").textContent=win?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");
 $("resultScore").textContent=resultLine();
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(win?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share");$("overlay").hidden=false;}
-function command(x,y){if(!s||s.done)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=catPathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}
+function command(x,y){if(!s||s.done||s.yarnAnimating)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=catPathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}
  // Risk-aware routing already avoids dangerous tiles; a tap must never deadlock movement.
  moveTo(p);if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null}},180)}}
-function single(dx,dy){if(!s||s.done)return;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
+function single(dx,dy){if(!s||s.done||s.yarnAnimating)return;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
 function shape(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function round(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
 function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill()}
@@ -415,7 +436,7 @@ if(s.exposure>0&&!s.done){ctx.save();ctx.strokeStyle=s.exposure>=detectionLimit(
 if(!s.started&&!s.done){const x=Math.min(610,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,225,38,14,"#fffdf5ef");const first=s.index===0&&!daily;label(first?(lang==="zh"?"先点旁边的小鱼！":"Tap the nearby fish!") : tr("startHint"),x+112,y+25,"bold 15px Nunito, system-ui","#8a5773");}
 for(let i=fx.length-1;i>=0;i--){const p=fx[i];shape(p.x,p.y,Math.max(1,p.life/8),p.col);p.x+=p.dx;p.y+=p.dy;p.dy+=.07;p.life--;if(p.life<0)fx.splice(i,1)}requestAnimationFrame(draw)}
 function canvasTile(e){const rect=c.getBoundingClientRect();return {x:Math.floor((e.clientX-rect.left)/rect.width*W),y:Math.floor((e.clientY-rect.top)/rect.height*H)}}
-function onClick(e){if(s.done)return;const p=canvasTile(e);if(p.x<0||p.x>=W||p.y<0||p.y>=H)return;if(aimingYarn)throwYarnTo(p);else command(p.x,p.y)}
+function onClick(e){if(s.done||s.yarnAnimating)return;const p=canvasTile(e);if(p.x<0||p.x>=W||p.y<0||p.y>=H)return;if(aimingYarn)throwYarnTo(p);else command(p.x,p.y)}
 function share(){
  const room=daily?9:stage+1;
  const score=Math.max(0,Math.floor(Number(s?.score)||0));
