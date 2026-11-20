@@ -349,19 +349,23 @@
     $('#chapter-content').innerHTML='<div class="ending-illustration"><img src="'+image+'" alt="'+title+'" fetchpriority="high"></div><div class="ending-title-panel"><span>'+(zh?'你走出的结局':'THE ENDING YOU SHAPED')+'</span><h1>'+title+'</h1></div><div class="scene-content ending-content">'+rare+gallery+'<div class="micro-label">'+(zh?'你的人生，你的选择':'A LIFE YOU SHAPED')+'</div><h2>'+sub+'</h2><p>'+detail+'</p><div class="ending-consequence"><span class="micro-label">'+(zh?'一路走来的决定':'HOW YOU GOT HERE')+'</span>'+memory+'</div>'+turns+(result.secret?'':'<p class="mystery-whisper">'+escapeStory(localizeStory(window.ELSEWHERE_MYSTERIES?.[active.world]?.closing||['Another path waits.','还有另一条路。']))+'</p>')+'<div class="ending-actions"><button type="button" class="next-btn" id="ending-share">'+(zh?'分享这个结局 ↗':'Share this ending ↗')+'</button><button type="button" class="outline-btn" id="ending-again">'+(zh?'换一种方式再活一次 ↺':'Live it differently ↺')+'</button></div><div class="ending-feedback"><span>'+(zh?'你还想体验另一段人生吗？':'Would you come back to live another life?')+'</span>'+(active.feedback?'<p>'+(zh?'谢谢你的反馈。':'Thank you for sharing your thoughts.')+'</p>':'<div class="feedback-actions"><button type="button" data-feedback="yes">'+(zh?'当然':'Absolutely')+'</button><button type="button" data-feedback="maybe">'+(zh?'也许':'Maybe')+'</button><button type="button" data-feedback="no">'+(zh?'暂时不会':'Not yet')+'</button></div>')+'</div><div class="ending-actions"><button type="button" class="outline-btn" id="ending-home">'+(zh?'探索另一段人生 →':'Explore another life →')+'</button></div></div>';
   }
   function shareWorld() {
-    if(!active)return;
-    const w=WORLD_BY_ID[active.world];
-    const link=new URL(location.origin+location.pathname);link.searchParams.set('world',w.id);
-    const chosenEnding=resolveEnding()?.finale;
-    const zh=window.MorrowwishI18n?.get()==='zh';
+    const w=active?WORLD_BY_ID[active.world]:null;
+    const link=new URL(location.origin+location.pathname);
+    if(w)link.searchParams.set('world',w.id);
+    const chosenEnding=active?.finished?resolveEnding()?.finale:null;
+    const zh=window.MorrowwishI18n?.get?.()==='zh';
     const message=zh
-      ?(active.finished&&chosenEnding?'我在另一段人生里，走到了「'+localizeStory(chosenEnding.title)+'」。换作是你，会走到哪里？':'如果人生可以重来，你会选择哪条路？来试试《平行人生》。')
-      :(active.finished&&chosenEnding?'I discovered the ending “'+localizeStory(chosenEnding.title)+'” in Elsewhere. Which life will you live?':'I lived another life in “'+w.title+'.” What would you choose?');
-    track('share_clicked',{world:w.id,finished:active.finished});
-    if(navigator.share){navigator.share({title:`${w.title} · Elsewhere`,text:message,url:link.toString()}).catch(()=>{});return;}
-    const text=message+' '+link.toString();
-    if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>notify('Invitation copied — share it with someone curious.')).catch(()=>notify('You can copy the link from your address bar.'));}
-    else{notify('Copy the link from your address bar to share.');}
+      ?(chosenEnding?'我在《平行人生》走到了「'+localizeStory(chosenEnding.title)+'」这个结局。你的另一段人生会怎样？':
+         '如果人生可以重来，你会选择哪条路？来试试《平行人生》。')
+      :(chosenEnding?'I discovered the ending “'+localizeStory(chosenEnding.title)+'” in Elsewhere. Where would your life lead?':
+         w?'I stepped into '+w.title+' in Elsewhere. What would your choices be?':
+           'What if you lived another life? Step into Elsewhere and find out.');
+    window.MorrowwishSocialShare.open({
+      title:zh?'平行人生 · Elsewhere':'Elsewhere · Live Another Life',
+      message,url:link.toString(),language:zh?'zh':'en',
+      meta:{game:'elsewhere',world:w?.id||''},
+      onShare:platform=>track('share_clicked',{world:w?.id||'',finished:!!active?.finished,platform})
+    });
   }
   function narrate() {
     if(!('speechSynthesis' in window)){notify('Read-aloud is not available in this browser.');return;}

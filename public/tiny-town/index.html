@@ -349,7 +349,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
 .tt-news-panel .event:first-child{border-color:#e3b3aa;background:#fff0e5;color:#744e63;font-weight:750}
 @media(max-width:650px){.tt-news-panel{grid-template-columns:1fr;gap:5px;padding:8px!important}.tt-news-heading{flex-direction:row;justify-content:space-between;align-items:baseline}.tt-news-heading span{font-size:9px}.tt-news-panel .feed{display:flex;max-height:68px;min-height:39px;overflow-x:auto;overflow-y:hidden}.tt-news-panel .event{flex:0 0 88%;padding:6px 9px!important;font-size:10px}}
 </style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
-<body><script src="/telemetry.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
+<body><script src="/telemetry.js"></script><script src="/social-share.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
   <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
 <section class="panel tt-news-panel" aria-label="Town news">
  <div class="tt-news-heading"><b class="aw-en">📰 Town news</b><b class="aw-zh">📰 小镇新闻</b><span class="aw-en">Updates as you build</span><span class="aw-zh">每周都有新动态</span></div>
@@ -787,12 +787,21 @@ if(typeof location!=='undefined'&&new URLSearchParams(location.search).has('debu
 if(typeof window.addEventListener==='function')window.addEventListener('pagehide',()=>{if(state&&state.turn>0&&state.turn<E.TURNS)gameProgress('exit-week-'+state.turn);});
 $('newAgain').onclick=()=>$('random').click();$('sameAgain').onclick=()=>$('same').click();$('closeEnd').onclick=()=>$('end').classList.remove('show');
 $('export').onclick=()=>{gameProgress('playtest-export');let result={version:'prototype-0.1',...metrics,gameOutcome:E.outcome(state),moves:history,generatedLocally:true,notice:'This optional debug log is downloaded locally. Anonymous usage events are sent to Vercel Analytics.'};let blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='afterwork-playtest-'+state.seed+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);};
-$('shareGame').onclick=async()=>{
- const shareUrl='https://morrowwish.vercel.app/tiny-town/',data={title:'No More Mondays: Tiny Town',text:L('AI handles the work. Everyone is free to build a meaningful life.','AI 承担了所有工作，人们可以自由生活。快来建造你的小镇！'),url:shareUrl};
- try{if(navigator.share){await navigator.share(data);gameProgress('shared-link');}
- else if(navigator.clipboard){await navigator.clipboard.writeText(shareUrl);$('shareGame').textContent=L('Link copied ✓','链接已复制 ✓');gameProgress('shared-link');}
- else{window.prompt(L('Copy game URL:','复制游戏链接：'),shareUrl);}}
- catch(e){if(e?.name!=='AbortError')window.prompt(L('Copy game URL:','复制游戏链接：'),shareUrl);}
+$('shareGame').onclick=()=>{
+ const outcome=state&&state.turn>=E.TURNS?E.outcome(state):null;
+ const message=outcome
+  ?L('My tiny town finished with '+outcome.totalScore+' vitality, grade '+outcome.grade+' and '+outcome.clubs+' clubs. What would yours look like?',
+     '我的自由小镇获得 '+outcome.totalScore+' 活力、'+outcome.grade+' 评级，成立了 '+outcome.clubs+' 个社团。你会怎么建设？')
+  :L('AI does all the work. What kind of town would you build with all that freedom?',
+     'AI 承担了所有工作，拥有无限自由后，你会建造怎样的小镇？');
+ window.MorrowwishSocialShare.open({
+  title:L('No More Mondays: Tiny Town','Tiny Town：自由小镇'),
+  message,score:outcome?.totalScore||0,
+  language:zh()?'zh':'en',
+  url:'https://morrowwish.vercel.app/tiny-town/',
+  meta:{game:'tiny-town'},
+  onShare:()=>gameProgress('shared-link')
+ });
 };
 window.addEventListener('morrowwish-language-change',()=>{
  if(!state)return;render();
