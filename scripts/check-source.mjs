@@ -44,12 +44,23 @@ if(!dashboard.includes('id="game-details"')||!dashboard.includes('data-i18n="gam
    !dashboard.includes('syncPending:')||
    !dashboard.includes('game!=="hub"'))
  throw Error('Dashboard must prioritize honest game starts, normal finishes and replays with provider sync status');
+// Primary dashboard must preserve visit-to-start and start-to-finish context
+// and not show unsupported portals as native social-view channels.
+if(!dashboard.includes("num('pageviews')")||
+   !dashboard.includes("const finishRate=")||
+   !dashboard.includes("const startRate=")||
+   !dashboard.includes("snapshotPlatforms.filter(p=>platformIds.has(p.id))")||
+   !dashboard.includes("blueskyPublished:")||
+   !dashboard.includes("3n2rchppku32o")||
+   social.platforms.find(p=>p.id==='bluesky')?.published!==1)
+ throw Error('Dashboard must retain conversion context, hide N/A sources and show the actual Bluesky post');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
    !telemetry.includes('window.__MWMiniActive')||
    !analyticsSource.includes('abandons:sum(sessionsOf,"abandons")')||
-   !dashboard.includes('miniNoWin:')||
-   !dashboard.includes('const siteNum='))throw Error('Mini-game exit versus finish semantics and missing-channel display must remain accurate');
+   dashboard.includes('miniAbandoned:')||
+   dashboard.includes('中途退出')||
+   !dashboard.includes('const siteNum='))throw Error('Mini-game exit telemetry remains internal, never a player-facing dashboard metric');
 if(!telemetry.includes('"town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++') ||
    !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
    !telemetry.includes('"level_complete"')) throw Error('Terminal gameplay events must be counted separately from clears');
