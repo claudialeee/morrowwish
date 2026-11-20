@@ -10,7 +10,15 @@ function line(x,y,X,Y,color="#fff",wid=3){c.strokeStyle=color;c.lineWidth=wid;c.
 function txt(x,y,str,size=20,color="#eff7ff",align="center",weight=800){c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";c.font=weight+" "+size+"px system-ui,Segoe UI,sans-serif";c.fillText(str,x,y);}
 function bg(a="#09172d",b="#112b4d"){const palette=({["flip-dash"]:["#3e3157","#7b4e79"],["parcel-panic"]:["#4d355c","#805565"],["tower-tuck"]:["#403653","#765779"],["traffic-tangle"]:["#344e57","#61766a"]})[GAME];if(palette){a=palette[0];b=palette[1];}const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,a);g.addColorStop(1,b);c.fillStyle=g;c.fillRect(0,0,W,H);for(let i=0;i<25;i++){circ((i*167+53)%960,(i*131+27)%540,1+(i%3), "#ffffff12");}}
 function glow(x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,"transparent");c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
-let score=0,level=1,running=false,mode=null,last=performance.now(),elapsed=0;
+let score=0,level=1,running=false,mode=null,last=performance.now(),elapsed=0,portrait=false;
+// Preserve the 16:9 desktop game, but render a real 9:16 canvas in portrait fullscreen.
+function syncCanvasViewport(){
+ const next=document.documentElement.classList.contains("mw-mini-fullscreen-on")&&window.innerHeight>window.innerWidth*1.12;
+ if(next===portrait)return;
+ portrait=next;cv.width=portrait?540:960;cv.height=portrait?960:540;
+}
+window.addEventListener("morrowwish-mini-viewport-change",syncCanvasViewport);
+window.addEventListener("resize",syncCanvasViewport);
 const over=document.getElementById("overlay"),overTitle=document.getElementById("overlay-title"),overDesc=document.getElementById("overlay-desc"),goBtn=document.getElementById("play-btn");
 function track(name,data){try{const k="arcade-metrics-"+GAME,m=JSON.parse(localStorage.getItem(k)||"{}");m[name]=(m[name]||0)+1;m.last=Date.now();localStorage.setItem(k,JSON.stringify(m));if(typeof window.va==="function")window.va("event",{name:"arcade_"+name,game:GAME,...(data||{})});}catch(e){}}
 function add(n){score+=n;document.getElementById("score").textContent=Math.floor(score);const k="arcade-high-"+GAME,h=+(localStorage.getItem(k)||0);if(score>h){localStorage.setItem(k,String(Math.floor(score)));document.getElementById("best").textContent=Math.floor(score);}}
@@ -27,7 +35,29 @@ return {init(){parcels=[];t=0;spawn=.6;lives=5;chain=0;sel=null;delivered=0;info
 tick(dt){t+=dt;spawn-=dt;if(spawn<=0){const color=rnd(3),lane=rnd(3);parcels.push({x:bins[lane],y:45,color,vel:92+Math.min(130,t*1.35),seed:Math.random()});spawn=Math.max(.64,1.85-t*.008);}
 for(let i=parcels.length-1;i>=0;i--){let p=parcels[i];p.y+=p.vel*dt;if(p.y>436){const nearest=bins.findIndex(b=>Math.abs(p.x-b)<84);if(nearest===p.color){chain++;delivered++;add(12+Math.min(50,chain*3));}else{chain=0;lives--;if(lives<=0){finish(false,"The delivery docks overflowed. Deliveries: "+delivered);return;}}parcels.splice(i,1);}}info("Lives: "+lives+"  |  Streak: "+chain+"  |  Delivered: "+delivered);},
 down(x,y){for(let i=parcels.length-1;i>=0;i--){const p=parcels[i];if(Math.abs(x-p.x)<50&&Math.abs(y-p.y)<42){sel=p;break;}}},move(x,y){if(sel)sel.x=clamp(x,145,815);},up(){sel=null;},
-draw(){bg("#0b1830","#18264c");for(let i=0;i<3;i++){const x=bins[i];box(x-79,80,158,390,"#142544",15,"#284366");for(let y=96;y<435;y+=45)line(x-68,y,x+68,y,"#ffffff08",2);box(x-84,433,168,76,colors[i]+"33",17,colors[i]);txt(x,465,["CYAN","GOLD","PINK"][i],19,colors[i]);txt(x,490,"DOCK "+(i+1),11,"#a9c0df");}for(let p of parcels){const col=colors[p.color];box(p.x-39,p.y-29,78,58,col,11,"#ffffff99");box(p.x-23,p.y-19,46,38,"#ffffff28",6);txt(p.x,p.y,["C","G","P"][p.color],22,"#10263a");}box(308,12,344,33,"#1d3354",14);txt(480,30,"DRAG PACKAGES INTO MATCHING DOCKS",13,"#d5e4fa");},
+draw(){if(portrait){
+ // Three tall docks: preserve the original game simulation and hit coordinates.
+ const g=c.createLinearGradient(0,0,0,960);g.addColorStop(0,"#4d355c");g.addColorStop(1,"#805565");
+ c.fillStyle=g;c.fillRect(0,0,540,960);
+ for(let i=0;i<3;i++){
+  const x=100+i*170,col=colors[i];
+  box(x-66,102,132,690,"#342945",17,"#9a7895");
+  for(let y=145;y<784;y+=55)line(x-50,y,x+50,y,"#ffffff14",2);
+  box(x-73,793,146,93,col+"48",15,col);
+  txt(x,829,["CYAN","GOLD","PINK"][i],19,col);
+  txt(x,859,"DOCK "+(i+1),15,"#ffebed");
+ }
+ for(const p of parcels){
+  const x=p.x*170/275-26.7272727,y=120+(p.y-45)*1.7,col=colors[p.color];
+  box(x-28,y-33,56,66,col,10,"#ffffffb0");
+  box(x-21,y-25,42,48,"#ffffff30",6);
+  txt(x,y,["C","G","P"][p.color],23,"#322344");
+ }
+ box(27,23,486,54,"#352841",18,"#bb91ae");
+ txt(270,49,"MATCH COLORS · DRAG TO DOCKS",18,"#fff1f2");
+ return;
+}
+bg("#0b1830","#18264c");for(let i=0;i<3;i++){const x=bins[i];box(x-79,80,158,390,"#142544",15,"#284366");for(let y=96;y<435;y+=45)line(x-68,y,x+68,y,"#ffffff08",2);box(x-84,433,168,76,colors[i]+"33",17,colors[i]);txt(x,465,["CYAN","GOLD","PINK"][i],19,colors[i]);txt(x,490,"DOCK "+(i+1),11,"#a9c0df");}for(let p of parcels){const col=colors[p.color];box(p.x-39,p.y-29,78,58,col,11,"#ffffff99");box(p.x-23,p.y-19,46,38,"#ffffff28",6);txt(p.x,p.y,["C","G","P"][p.color],22,"#10263a");}box(308,12,344,33,"#1d3354",14);txt(480,30,"DRAG PACKAGES INTO MATCHING DOCKS",13,"#d5e4fa");},
 hud(){return "Sort accurately to build a score multiplier";}};
 };
 // 02 FLIP DASH: endless one-button side switch.
@@ -36,7 +66,7 @@ let y=420,top=false,obs=[],gems=[],time=0,spawn=0,inv=0;
 return {init(){y=420;top=false;obs=[];gems=[];time=0;spawn=.30;inv=0;info("Tap / Space to flip gravity");},
 tick(dt){time+=dt;spawn-=dt;inv-=dt;const speed=310+Math.min(195,time*8);y+=( (top?125:415)-y)*Math.min(1,dt*10);if(spawn<=0){const side=rnd(2);obs.push({x:895,side,hit:false});if(Math.random()<.85)gems.push({x:980,y:side?125:415,got:false});spawn=Math.max(.65,1.04-time*.018);}for(let o of obs){o.x-=dt*speed;if(!o.hit&&Math.abs(o.x-210)<38&&Math.abs(y-(o.side?125:415))<70){o.hit=true;if(inv<=0){finish(false,"You survived "+Math.floor(time)+" seconds.");return;}}}for(let p of gems){p.x-=dt*speed;if(!p.got&&Math.abs(p.x-210)<31&&Math.abs(y-p.y)<43){p.got=true;add(20);}}obs=obs.filter(o=>o.x>-65);gems=gems.filter(o=>o.x>-30&&!o.got);if(Math.floor(time*2)>Math.floor((time-dt)*2))add(1);info(Math.floor(time)+" seconds alive  •  Speed "+Math.floor(speed));},
 down(){top=!top;},key(k){if(k===" "||k==="ArrowUp"||k==="ArrowDown")top=!top;},
-draw(){bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-26,yy,52,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
+draw(){bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-26,yy,52,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");if(!portrait)txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
 hud(){return "Every extra second increases the speed";}};
 };
 // 03 ORBIT ESCAPE: three linked orbital tracks.
@@ -133,7 +163,17 @@ down(x,y){if(y>443){if(x<340&&pearls>=fishCost()){pearls-=fishCost();fish++;spaw
 draw(){bg("#052a46","#086080");glow(500,140,380,"#15ffe516");for(let i=0;i<20;i++){const x=i*59+22,y=(((i*61-sec*(10+i%4*9))%390)+390)%390+32;circ(x,y,3+i%4,"#b9f9ff33");}box(0,405,960,40,"#225f64");for(let i=0;i<22;i++)circ((i*83+17)%960,420+rnd(0),rand(1,1)+10+i%5,colors[(i+decor)%6]+"77");for(let i=0;i<Math.min(decor,7);i++){const x=85+i*140;line(x,410,x-14,370,"#ffa6c8",7);line(x,410,x+18,359,"#ec7eab",6);}for(let f of swimmers){c.save();c.translate(f.x,f.y);c.scale(Math.sign(f.v),1);c.fillStyle=f.color;c.beginPath();c.ellipse(0,0,f.size*1.5,f.size,0,0,TAU);c.fill();c.beginPath();c.moveTo(-f.size,0);c.lineTo(-f.size*2,-f.size);c.lineTo(-f.size*2,f.size);c.fill();circ(f.size*.65,-f.size*.2,3,"#153958");c.restore();}for(let p of feedFx){glow(p.x,p.y,27*p.life,"#ffee9577");txt(p.x,p.y-p.life*30,"+1",21,"#fbed92");}box(12,450,290,73,"#19465c",14,"#578c99");box(335,450,290,73,"#19465c",14,"#578c99");box(658,450,290,73,"#19465c",14,"#578c99");txt(157,475,"NEW FISH",20,"#acfcf6");txt(157,502,fishCost()+" pearls",14,"#f9ec9b");txt(480,475,"BETTER FILTER",20,"#acfcf6");txt(480,502,filterCost()+" pearls",14,"#f9ec9b");txt(803,475,"GLOWING CORAL",20,"#acfcf6");txt(803,502,decorCost()+" pearls",14,"#f9ec9b");txt(480,33,"CLICK WATER TO FEED • BUILD YOUR REEF",17,"#aff7f6");},
 hud(){return "Your aquarium progress is saved in this browser";}};
 };
-function point(e){const a=cv.getBoundingClientRect();return{x:clamp((e.clientX-a.left)*W/a.width,0,W),y:clamp((e.clientY-a.top)*H/a.height,0,H)};}
+function point(e){const a=cv.getBoundingClientRect();
+ if(portrait&&GAME==="parcel-panic"){
+  const x=(e.clientX-a.left)*540/a.width,y=(e.clientY-a.top)*960/a.height;
+  return{x:clamp((x+26.7272727)*275/170,0,W),y:clamp(45+(y-120)/1.7,0,H)};
+ }
+ if(portrait&&GAME==="flip-dash"){
+  const x=(e.clientX-a.left)*540/a.width,y=(e.clientY-a.top)*960/a.height;
+  return{x:clamp(y,0,W),y:clamp(540-x,0,H)};
+ }
+ return{x:clamp((e.clientX-a.left)*W/a.width,0,W),y:clamp((e.clientY-a.top)*H/a.height,0,H)};
+}
 let held=false;cv.addEventListener("pointerdown",e=>{if(!running)return;held=true;cv.setPointerCapture(e.pointerId);const p=point(e);mode.down?.(p.x,p.y);});
 cv.addEventListener("pointermove",e=>{if(!running||!held)return;const p=point(e);mode.move?.(p.x,p.y);});
 cv.addEventListener("pointerup",e=>{if(!running)return;held=false;const p=point(e);mode.up?.(p.x,p.y);});
@@ -143,4 +183,13 @@ document.getElementById("best").textContent=localStorage.getItem("arcade-high-"+
 document.getElementById("restart").onclick=()=>{track("restart");start();};
 document.getElementById("help").onclick=()=>showInfo();
 goBtn.onclick=start;track("page_view");
-function frame(t){const dt=clamp((t-last)/1000,0,.033);last=t;if(running){elapsed+=dt;mode.tick(dt);}mode.draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
+syncCanvasViewport();
+function frame(t){const dt=clamp((t-last)/1000,0,.033);last=t;
+ if(running){elapsed+=dt;mode.tick(dt);}
+ c.save();
+ // Flip Dash: a vertical runner in portrait, with left/right lane switching.
+ if(portrait&&GAME==="flip-dash")c.setTransform(0,1,-1,0,540,0);
+ mode.draw();c.restore();
+ if(portrait&&GAME==="flip-dash")txt(270,44,"TAP TO SWITCH SIDES",19,"#ffffffa6");
+ requestAnimationFrame(frame);
+}requestAnimationFrame(frame);

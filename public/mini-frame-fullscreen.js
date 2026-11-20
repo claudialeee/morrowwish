@@ -14,13 +14,24 @@
     window.MorrowwishI18n?.get?.()==='zh';
 
   function fitArcadeCanvas(){
-    if(!frame||route==='pocket-aquarium')return;
+    if(!frame)return;
+    // iPhone Safari may shrink the visible viewport as browser chrome changes.
+    const view=window.visualViewport;
+    frame.style.setProperty('--mw-mini-fs-width',Math.round(view?.width||window.innerWidth)+'px');
+    frame.style.setProperty('--mw-mini-fs-height',Math.round(view?.height||window.innerHeight)+'px');
+    frame.style.setProperty('--mw-mini-fs-left',Math.round(view?.offsetLeft||0)+'px');
+    frame.style.setProperty('--mw-mini-fs-top',Math.round(view?.offsetTop||0)+'px');
+    if(route==='pocket-aquarium')return;
+    const portrait=active()&&(view?.height||window.innerHeight)>(view?.width||window.innerWidth)*1.12;
+    const changed=frame.classList.contains('mw-mini-portrait')!==portrait;
+    frame.classList.toggle('mw-mini-portrait',portrait);
+    if(changed)window.dispatchEvent(new CustomEvent('morrowwish-mini-viewport-change',{detail:{portrait}}));
     const area=frame.querySelector('.mw-mini-playfield');
     if(!area)return;
     if(!active()){frame.style.removeProperty('--mw-mini-canvas-width');return;}
     const rect=area.getBoundingClientRect();
-    // Preserve 16:9 and pointer coordinates, including portrait phone screens.
-    const width=Math.max(1,Math.floor(Math.min(rect.width,rect.height*16/9)));
+    const aspect=portrait?9/16:16/9;
+    const width=Math.max(1,Math.floor(Math.min(rect.width,rect.height*aspect)));
     frame.style.setProperty('--mw-mini-canvas-width',width+'px');
   }
   function sizeChanged(){
@@ -38,6 +49,7 @@
     const on=active();
     root.classList.toggle('mw-mini-fullscreen-on',on);
     frame.classList.toggle('mw-mini-fullscreen-fallback',fallback);
+    fitArcadeCanvas();
     if(button){
       const label=on?(zh()?'退出全屏':'Exit fullscreen'):(zh()?'全屏游戏':'Fullscreen game');
       button.textContent=(on?'↙ ':'⛶ ')+label;
@@ -138,6 +150,9 @@
     if(event.key==='Escape'&&fallback){event.preventDefault();leave();}
   });
   window.addEventListener('resize',fitArcadeCanvas);
+  window.addEventListener('orientationchange',sizeChanged);
+  window.visualViewport?.addEventListener('resize',sizeChanged);
+  window.visualViewport?.addEventListener('scroll',fitArcadeCanvas);
   window.addEventListener('morrowwish-language-change',update);
   window.addEventListener('pageshow',update);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});

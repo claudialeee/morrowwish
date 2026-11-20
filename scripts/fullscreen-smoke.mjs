@@ -43,6 +43,16 @@ async function check(game,width,mobile){
     assert.ok(opened.h<=opened.vh+5,'Game surface should not exceed viewport: '+JSON.stringify(opened));
     if(mobile)assert.ok(opened.fallback&&!opened.native,'iPhone fallback must apply only to game stage: '+JSON.stringify(opened));
     if(mobile&&width===390){
+      if(game==='flip-dash'||game==='parcel-panic'){
+        const coverage=await page.locator('#game').evaluate(canvas=>{
+          const r=canvas.getBoundingClientRect();
+          return{width:canvas.width,height:canvas.height,w:r.width,h:r.height};
+        });
+        assert.equal(coverage.width,540,'Portrait fullscreen needs a 540px backing canvas');
+        assert.equal(coverage.height,960,'Portrait fullscreen needs a 960px backing canvas');
+        assert.ok(coverage.h>coverage.w*1.6,'Canvas must be portrait: '+JSON.stringify(coverage));
+        assert.ok(coverage.h>500,'Canvas must fill the phone, not a letterboxed strip: '+JSON.stringify(coverage));
+      }
       if(game==='pawsibly-innocent'){
         const yarn=page.locator('#tool');
         assert.ok(await yarn.isVisible(),'Yarn gameplay control must stay in fullscreen');

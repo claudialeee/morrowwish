@@ -17,8 +17,11 @@ html.mw-mini-fullscreen-on,html.mw-mini-fullscreen-on body{
 .mw-mini-aquarium-frame:fullscreen{background:#453b60}
 .mw-mini-arcade-frame.mw-mini-fullscreen-fallback,
 .mw-mini-aquarium-frame.mw-mini-fullscreen-fallback{
-  position:fixed!important;inset:0!important;z-index:2147483000!important;
-  isolation:isolate!important;
+  position:fixed!important;inset:auto!important;
+  left:var(--mw-mini-fs-left,0px)!important;top:var(--mw-mini-fs-top,0px)!important;
+  width:var(--mw-mini-fs-width,100vw)!important;
+  height:var(--mw-mini-fs-height,100dvh)!important;
+  z-index:2147483000!important;isolation:isolate!important;
 }
 
 /* Two one-tap arcade games: in-frame live SCORE/BEST/HELP/RETRY, game, status. */
@@ -61,6 +64,10 @@ html.mw-mini-fullscreen-on,html.mw-mini-fullscreen-on body{
   max-height:none!important;margin:0!important;border:0!important;
   border-radius:0!important;box-shadow:none!important;
 }
+.mw-mini-arcade-frame.mw-mini-fullscreen-fallback{
+  width:var(--mw-mini-fs-width,100vw)!important;
+  height:var(--mw-mini-fs-height,100dvh)!important;
+}
 .mw-mini-arcade-frame:fullscreen>.mw-mini-frame-hud,
 .mw-mini-arcade-frame.mw-mini-fullscreen-fallback>.mw-mini-frame-hud{
   padding:calc(env(safe-area-inset-top,0px) + 7px)
@@ -75,6 +82,11 @@ html.mw-mini-fullscreen-on,html.mw-mini-fullscreen-on body{
   display:block!important;width:var(--mw-mini-canvas-width,100%)!important;height:auto!important;
   max-width:100%!important;max-height:100%!important;
   aspect-ratio:16/9!important;object-fit:contain!important;
+}
+/* Native portrait canvas fills the phone's long edge without distortion. */
+.mw-mini-arcade-frame.mw-mini-portrait:fullscreen .mw-mini-playfield canvas,
+.mw-mini-arcade-frame.mw-mini-portrait.mw-mini-fullscreen-fallback .mw-mini-playfield canvas{
+  aspect-ratio:9/16!important;
 }
 .mw-mini-arcade-frame:fullscreen>.mw-mini-frame-status,
 .mw-mini-arcade-frame.mw-mini-fullscreen-fallback>.mw-mini-frame-status{
@@ -163,6 +175,10 @@ html.mw-mini-fullscreen-on,html.mw-mini-fullscreen-on body{
   max-width:none!important;max-height:none!important;
   margin:0!important;border:0!important;border-radius:0!important;
   box-shadow:none!important;background:#146f73!important;
+}
+.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback{
+  width:var(--mw-mini-fs-width,100vw)!important;
+  height:var(--mw-mini-fs-height,100dvh)!important;
 }
 .mw-mini-aquarium-frame:fullscreen>.mw-mini-aqua-top,
 .mw-mini-aquarium-frame.mw-mini-fullscreen-fallback>.mw-mini-aqua-top{
