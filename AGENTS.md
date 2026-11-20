@@ -53,7 +53,7 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 - Promote real browser gameplay, not follower/like/impression vanity metrics. Judge channel ROI on attributable game starts, finished runs and repeat play.
 - Never submit to Newgrounds, r/playmygame or r/Games. Do not target r/IndieGaming unless its current rules explicitly permit this AI-assisted work and developer self-promotion.
 - Do not auto-generate or auto-publish Reddit submissions; vet each subreddit for AI-use disclosures and promotional-post rules, including recent moderation examples, first.
-- Do not create new routine Instagram or Bluesky posts. Bluesky automated posting requires explicit `MORROW_BLUESKY_PROMO_ENABLED=true` and separate authorized studio credentials.
+- Do not create new routine Instagram posts. Bluesky P2 testing may use only the new studio account `morrowwishgames` after verifying its exact handle, never the retired `ruckusbutton.bsky.social`. Metricool still connects the old account. Automatic publication stays disabled unless explicitly enabled with `MORROW_BLUESKY_PROMO_ENABLED=true` and new-account credentials.
 - CrazyGames is on a single-game quality hold; Poki is conditional on originality and cold-player QA. itch.io is live but avoid bulk announcements, AI disclosure omissions and reposting to refresh discovery ranking.
 - Existing scheduled social posts do not prove publication, clicks or gameplay. Do not change historical status to published without provider-issued evidence.
 
