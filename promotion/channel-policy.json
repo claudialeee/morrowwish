@@ -9,7 +9,8 @@
     "lowValueCampaigns": "Do not create new routine promotion on paused channels; already scheduled posts are not proof of publication or acquisition.",
     "qualityGate": "Only one individually reviewed CrazyGames candidate; Poki after quality, originality and first-time-player tests.",
     "conversionMetric": "Prioritize start_events and completed_runs, not views, likes, or follows.",
-    "stopRule": "After at least 14 days and 3 distinct posts per test channel, stop if no attributed game starts, unless data ingestion was unavailable."
+    "stopRule": "After at least 14 days and 3 distinct posts per test channel, stop if no attributed game starts, unless data ingestion was unavailable.",
+    "blueskyAccount": "Only the new `morrowwishgames` Bluesky identity may be promoted. Metricool still connects old `ruckusbutton.bsky.social`; do not publish until new account is connected. Existing seven old-account posts are drafts, not auto-published."
   },
   "channels": [
     {
@@ -62,9 +63,9 @@
     },
     {
       "name": "Bluesky",
-      "priority": "PAUSED",
-      "state": "no-new-routine-content",
-      "reason": "No measured first-party game-start lift to justify extra operations."
+      "priority": "P2",
+      "state": "limited-new-account-only",
+      "reason": "Indie game and creative audiences; test tracked links on the new studio account, not the retired ruckusbutton identity. Native post view counts (beta) are owner-only, not public API analytics."
     },
     {
       "name": "Reddit",
