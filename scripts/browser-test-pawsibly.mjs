@@ -176,6 +176,16 @@ try{
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
  assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
+ const typeSizes=await page.evaluate(()=>({
+  title:parseFloat(getComputedStyle(document.querySelector('.cat-feature-card h3')).fontSize),
+  copy:parseFloat(getComputedStyle(document.querySelector('.cat-feature-card .feature-content>p')).fontSize),
+  cta:parseFloat(getComputedStyle(document.querySelector('.cat-feature-card .card-button')).fontSize),
+  eyebrow:parseFloat(getComputedStyle(document.querySelector('.cat-feature-card .card-eyebrow')).fontSize),
+  miniTitle:parseFloat(getComputedStyle(document.querySelector('.mini-game .mini-copy strong')).fontSize)
+ }));
+ console.log('Readable typography:',JSON.stringify(typeSizes));
+ assert.ok(typeSizes.title>=33&&typeSizes.copy>=13&&typeSizes.cta>=12,'Featured card text must be larger and readable');
+ assert.ok(typeSizes.eyebrow>=10&&typeSizes.miniTitle>=20,'All card labels and mini-game titles must be larger');
  const bondImage=page.locator('.bond-feature-card .feature-art img');
  assert.ok((await bondImage.getAttribute('src'))?.startsWith('/art/cat-bond-home.webp'), 'Cat Bond should use the approved friendship illustration');
  await bondImage.scrollIntoViewIfNeeded();
