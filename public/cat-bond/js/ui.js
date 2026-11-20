@@ -183,7 +183,8 @@ const UI = {
     if (cats.length === 0) { this.panel(`<span class="card-close">×</span><h2>我的猫猫</h2><p class="sub">还没有猫猫，去庭院捉迷藏找一只吧！</p>`); return; }
     const chips = cats.map(c => {
       const sp = GameData.speciesById(c.species);
-      return `<div class="dex-cell" data-uid="${c.uid}">
+      return `<div class="dex-cell ${State.S.masteryBadges?.[c.species]?'golden-paw':''}" data-uid="${c.uid}">
+        ${State.S.masteryBadges?.[c.species]?'<span class="golden-paw-stamp" title="Golden Paw · S rank">🏅 S</span>':''}
         <canvas width="90" height="76"></canvas>
         <div class="name">${State.catName(c)} <span class="tiny">Lv.${c.level}</span></div>
         <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
@@ -223,6 +224,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
+      ${State.S.masteryBadges?.[sp.id]?'<p class="mastery-detail">🏅 金爪徽章 · S 级精通 · 已永久提升稀有猫发现能力</p>':''}
       <div style="display:flex;gap:16px;align-items:center;">
         <canvas id="cd-canvas" width="120" height="100" style="background:rgba(255,255,255,0.04);border-radius:12px;"></canvas>
         <div style="flex:1">
@@ -476,10 +478,16 @@ const UI = {
 
   // ---------- collection / dex ----------
   openDex() {
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const mastery=this.game.masteryStatus();
     const cells = GameData.SPECIES.map(sp => {
       const count = State.S.dex[sp.id] || 0;
       const locked = count === 0;
-      return `<div class="dex-cell ${locked ? 'locked' : ''}" data-id="${sp.id}">
+      const mastered=!!State.S.masteryBadges?.[sp.id];
+      const best=State.S.bestGrades?.[sp.id];
+      return `<div class="dex-cell ${locked ? 'locked' : ''} ${mastered?'golden-paw':''}" data-id="${sp.id}">
+        ${mastered?'<span class="golden-paw-stamp" title="Golden Paw · S rank">🏅 S</span>'
+          :best?'<span class="battle-best-stamp">'+best+'</span>':''}
         ${count > 1 ? `<div class="badge-count">×${count}</div>` : ''}
         <canvas width="90" height="76"></canvas>
         <div class="name">${locked ? '？？？' : sp.name}</div>
@@ -490,8 +498,16 @@ const UI = {
     const owned = GameData.SPECIES.filter(s => State.S.dex[s.id]).length;
     this.panel(`<span class="card-close">×</span>
       <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
-      <p class="sub">收集所有猫猫，解锁隐藏传说种！</p>
+      <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
+        :'发现不同猫咪，为每个品种挑战 S 级「金爪徽章」。'}</p>
+      <div class="mastery-summary">
+        <b>🏅 ${en?'Golden Paws':'金爪徽章'} ${mastery.medals}/${mastery.total}</b>
+        <span>${en?'Every 3 medals permanently improve rare-encounter odds.'
+          :'每获得 3 枚徽章，永久增加稀有猫的遭遇机会。'}</span>
+        <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
+      </div>
       <div class="dex-grid">${cells}</div>`);
+    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
       const sp = GameData.speciesById(cell.dataset.id);
       if (!cell.classList.contains('locked')) CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
@@ -499,6 +515,10 @@ const UI = {
         if (State.S.dex[sp.id]) this.panel(`<span class="card-close">×</span>
           <h2>${sp.name} <span class="rarity-${sp.rarity}">◆${GameData.RARITY[sp.rarity].name}</span></h2>
           <p class="sub">${sp.desc}</p>
+          <p class="mastery-detail">${State.S.masteryBadges?.[sp.id]
+            ?(en?'🏅 Golden Paw earned · S rank':'🏅 金爪徽章已解锁 · S 评级')
+            :(en?'Best: '+(State.S.bestGrades?.[sp.id]||'—')+' · Earn S to unlock the Golden Paw'
+              :'最佳战绩：'+(State.S.bestGrades?.[sp.id]||'暂无')+' · 达到 S 评级可获得金爪徽章')}</p>
           <canvas id="dx" width="160" height="130" style="display:block;margin:10px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
           <p class="tiny center">已捕获 ${State.S.dex[sp.id]} 只 · 基础 力${sp.base.pow}/敏${sp.base.agi}/体${sp.base.vit}/魅${sp.base.cha}</p>
           <div class="btn-row" style="justify-content:center"><button class="btn ghost" onclick="UI.openDex()">返回图鉴</button></div>`),
