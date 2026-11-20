@@ -17,6 +17,7 @@ const DEFAULT_STATE = () => ({
   petCount: 0, // real taps on living cats, across sessions
   bondingRewards: [], // claimed bonding milestones
   collectionMilestones: [], // one-time, cumulative codex discovery rewards
+  repeatSightings: 0, // repeated already-owned species encountered while searching
 });
 
 let S = DEFAULT_STATE();
