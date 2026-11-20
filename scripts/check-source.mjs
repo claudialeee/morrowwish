@@ -112,11 +112,14 @@ for(const link of ['href="/pawsibly-innocent/"','href="/elsewhere/"','href="/tin
  if(!featured.includes(link))throw Error('Missing signature world featured card: '+link);
 }
 if((featured.match(/class="feature-card/g)||[]).length!==4)throw Error('Four signature games required');
-if(!featured.trimStart().startsWith('<article class="feature-card cat-feature-card">'))throw Error('Cat must be the first featured game');
+if(!featured.trimStart().startsWith('<article class="feature-card bond-feature-card">'))throw Error('Cat Bond must be the first featured game');
+const featuredIds=[...featured.matchAll(/class="card-hit" href="\/[^"]+" data-id="([^"]+)"/g)].map(m=>m[1]);
+if(JSON.stringify(featuredIds)!==JSON.stringify(['cat-bond','pawsibly-innocent','tiny-town','elsewhere']))
+ throw Error('Featured games must follow the current Cat Bond-led homepage order');
 const zhCard=featured.match(/<article class="feature-card cat-feature-card">([\s\S]*?)<\/article>/)?.[1]||'';
 if(!zhCard.includes('猫猫绝对无辜！')||zhCard.includes('cat-original'))throw Error('Chinese homepage card must not display the English Pawsibly subtitle');
 if(!homepage.includes('Three fish to steal. One human to fool.'))throw Error('Cat game marketing hook is missing');
-if(!displayOrder.startsWith("'hub','pawsibly-innocent','tiny-town','cat-bond','elsewhere'"))throw Error('Studio dashboard game order must follow the homepage');
+if(!displayOrder.startsWith("'hub','cat-bond','pawsibly-innocent','tiny-town','elsewhere'"))throw Error('Studio dashboard game order must follow the homepage');
 if(minis.includes('href="/pawsibly-innocent/"')||minis.includes('href="/cat-bond/"'))throw Error('Cat worlds must not be in mini-games');
 for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souvenirs','function vacuumDraw','function roomDecor']){
  if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);

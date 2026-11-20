@@ -161,7 +161,7 @@ $("stats").innerHTML=[
  ].join("");
 const max=Math.max(1,...days.map(d=>Number(d.pageviews)||0));
 $("graph").innerHTML=days.map(d=>{const day=escapeHTML(String(d.day||"").slice(5)),pv=Math.max(2,Math.min(140,Math.round((Number(d.pageviews)||0)/max*140))),vis=Math.max(2,Math.min(140,Math.round((Number(d.visitors)||0)/max*140)));return '<div class="day-col"><div class="day-count">'+format(d.pageviews)+'</div><div class="bars"><div class="bar pv" style="height:'+pv+'px" title="'+escapeHTML(t("pvLabel"))+' '+format(d.pageviews)+'"></div><div class="bar vis" style="height:'+vis+'px" title="'+escapeHTML(t("uniqueLabel"))+' '+format(d.visitors)+'"></div></div><div class="day-date">'+day+'</div></div>';}).join("");
-const displayOrder=['hub','pawsibly-innocent','tiny-town','cat-bond','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
+const displayOrder=['hub','cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
  // Elsewhere uses the same complete unified metrics as all other games.

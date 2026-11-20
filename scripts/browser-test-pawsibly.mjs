@@ -152,7 +152,7 @@ try{
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
  assert.equal(homeZh.catTitle?.trim(),'猫猫绝对无辜！','Chinese title must show no English Pawsibly subtitle');
  assert.doesNotMatch(homeZh.catTitle,/Pawsibly|Innocent/i,'Chinese title must not leak its English name');
- assert.deepEqual(homeZh.featureOrder.slice(0,4),['pawsibly-innocent','tiny-town','cat-bond','elsewhere'],'Featured worlds should test Tiny Town in second position');
+ assert.deepEqual(homeZh.featureOrder.slice(0,4),['cat-bond','pawsibly-innocent','tiny-town','elsewhere'],'Featured worlds should place Cat Bond first');
  assert.match(homeZh.catPitch,/三条小鱼|毛线球|粉色猫门/,'New Chinese promotional copy should explain gameplay');
  assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
