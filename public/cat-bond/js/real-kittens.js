@@ -239,6 +239,12 @@
   }
   drawing.drawCat=render;
   drawing.renderCatThumb=thumbnail;
+  // Surface decoding state for the automated 25-breed art audit.
+  window.CatBondArtworkStatus={
+    get breedsLoaded(){return breedLoaded;},
+    get originalLoaded(){return loaded;},
+    breedCount:BREED_ORDER.length,
+  };
   source.onload=()=>{
     loaded=source.naturalWidth===w*6&&source.naturalHeight===h;
     for(const id of Object.keys(breedCache))delete breedCache[id];

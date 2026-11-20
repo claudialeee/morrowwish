@@ -13,6 +13,23 @@ try{
       await page.goto(origin+'/cat-bond/?platform=crazygames&lang=en',{waitUntil:'load',timeout:40000});
       await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
       await page.waitForSelector('#panel.open .dex-cell',{timeout:12000});
+      if(width===907){
+        await page.waitForFunction(()=>window.CatBondArtworkStatus?.breedsLoaded===true,
+          null,{timeout:18000});
+        const artAudit=await page.evaluate(()=>{
+          const portraits=GameData.SPECIES.map(sp=>{
+            const canvas=document.createElement('canvas');
+            canvas.width=170;canvas.height=125;
+            CatArt.renderCatThumb(canvas,sp);
+            return canvas.toDataURL('image/png');
+          });
+          return {total:portraits.length,unique:new Set(portraits).size};
+        });
+        assert.equal(artAudit.total,25,'All catalog breeds must have artwork');
+        assert.equal(artAudit.unique,25,
+          'Different breeds must not share identical final portrait artwork: '+JSON.stringify(artAudit));
+        console.log('CAT BOND 25-BREED ART PASS',JSON.stringify(artAudit));
+      }
       await page.waitForTimeout(80); // MutationObserver's ZH→EN DOM pass
       const starterCopy=await page.locator('#panel.open').innerText();
       assert.doesNotMatch(starterCopy,/[\u4e00-\u9fff]/,
@@ -129,6 +146,33 @@ try{
         await page.locator('#journey-explore').click();
         assert.equal(await page.evaluate(()=>window.__game.scene),'map',
           'Explore CTA should actually open the explorable world');
+        // Production-like mature save: dozens of owned cats, many duplicates.
+        // The garden should remain inviting and every individual accessible.
+        const mature=await page.evaluate(()=>{
+          const base=GameData.SPECIES.slice(0,12);
+          for(const sp of base)for(let i=0;i<3;i++)State.S.cats.push(State.makeCat(sp.id));
+          const game=window.__game;game.scene='yard';game.showYardChrome();game.rebuildYard();
+          return {owned:State.S.cats.length,visible:game.yard.entities.length,
+            uniqueGarden:new Set(game.yard.entities.map(e=>e.cat.species)).size,
+            uniqueOwned:new Set(State.S.cats.map(e=>e.species)).size,
+            pages:game.yard.pageCount};
+        });
+        assert.ok(mature.owned>=35,'Mature save must include many kittens');
+        assert.ok(mature.visible<=6,'Only a handful of cats may roam the garden');
+        assert.equal(mature.visible,mature.uniqueGarden,'No duplicate breeds visible together');
+        assert.ok(mature.pages>=2,'More breeds must rotate using a visible control');
+        await page.locator('#yard-cat-switch').click();
+        const gardenAfterRotate=await page.evaluate(()=>window.__game.yard.page);
+        assert.equal(gardenAfterRotate,1,'Visitors switch on demand');
+        await page.evaluate(()=>UI.openRoster());
+        assert.equal(await page.locator('.breed-group').count(),mature.uniqueOwned,
+          'Roster must group all duplicate individuals by breed');
+        await page.locator('.breed-group').first().click();
+        assert.ok((await page.locator('.breed-member').count())>=2,
+          'Grouped breed still provides access to individual saved cats');
+        await page.locator('.breed-member').first().click();
+        await page.waitForSelector('#cat-detail');
+        console.log('CAT BOND MATURE ROSTER PASS',JSON.stringify(mature));
       }
       assert.deepEqual(exceptions,[],'Portal runtime errors: '+exceptions.join(' | '));
       console.log('CRAZYGAMES CAT BOND PASS',width+'x'+height,JSON.stringify({stage:layout.stage,starter:state.species}));

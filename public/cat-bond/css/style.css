@@ -966,3 +966,9 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
  border-radius:12px;font-weight:750;font-size:12px;line-height:1.6}
 @media(max-width:450px){#panel .breed-member{gap:7px;padding:5px 8px}
  #panel .breed-member canvas{width:57px;height:47px;flex-basis:57px}}
+
+/* Mastery challenge results use the illustrated cat-card style throughout. */
+#panel .mastery-challenge-note{font-size:12px;line-height:1.6;
+ color:#516b56;background:#eef5e9;border:1px solid #d4e1d0;
+ padding:10px 13px;border-radius:12px;margin:9px auto;max-width:440px}
+#panel #mc-cat{width:180px;height:140px;max-width:100%;object-fit:contain}
