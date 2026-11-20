@@ -19,7 +19,13 @@ try{
  await page.getByRole('button',{name:/log ?in/i}).first().click();
  await page.waitForURL(url=>!url.pathname.includes('/login'),{timeout:12000}).catch(()=>{});
  await page.goto(root+'/games',{waitUntil:'domcontentloaded',timeout:30000});
- await page.waitForTimeout(1800);
+ const draft=page.getByText('Pawsibly Innocent!',{exact:true}).first();
+ await draft.waitFor({state:'visible',timeout:12000}).catch(()=>{});
+ if(!(await draft.count())){
+   await page.reload({waitUntil:'domcontentloaded',timeout:20000}).catch(()=>{});
+   await draft.waitFor({state:'visible',timeout:12000}).catch(()=>{});
+ }
+ await page.waitForTimeout(1300);
  report.dashboardText=redact(await page.locator('body').innerText().catch(()=>'' )).slice(-1700);
  report.dashboardLinks=await page.locator('a[href]').evaluateAll(as=>as.filter(a=>/game|submit|draft|pawsibly/i.test(a.innerText||'')).map(a=>({
    label:(a.innerText||'').trim().slice(0,90),path:new URL(a.href).pathname
