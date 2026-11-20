@@ -6,7 +6,7 @@
     "https://github.com/claudialeee/morrowwish/tree/main",
     "https://morrowwish.vercel.app/games.json"
   ],
-  "notes": "This is a verified-state ledger, not proof of submission. Never set scheduled/published without platform-issued ID or verified public URL. For platform-native gameplay, use portal analytics, not website UTM alone.",
+  "notes": "Platform-issued ID or verified public URL is required to mark a portal publication verified. As of 2026-11-19 the studio reports six itch.io games published at https://morrowwishgames.itch.io/; individual project URLs were not independently verified. CrazyGames statuses were inspected on the logged-in developer portal.",
   "games": [
     {
       "slug": "elsewhere",
@@ -28,13 +28,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "studio-reported-live-unverified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=itch&utm_medium=portal&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=itch&utm_medium=portal&utm_campaign=elsewhere-playtest",
+          "studioPage": "https://morrowwishgames.itch.io/"
         },
         "reddit": {
           "priority": "P0",
@@ -160,13 +161,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "studio-reported-live-unverified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=itch&utm_medium=portal&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=itch&utm_medium=portal&utm_campaign=tiny-town-playtest",
+          "studioPage": "https://morrowwishgames.itch.io/"
         },
         "reddit": {
           "priority": "P0",
@@ -293,13 +295,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "studio-reported-live-unverified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=itch&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=itch&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest",
+          "studioPage": "https://morrowwishgames.itch.io/"
         },
         "reddit": {
           "priority": "P0",
@@ -424,13 +427,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "studio-reported-live-unverified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=itch&utm_medium=portal&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=itch&utm_medium=portal&utm_campaign=flip-dash-playtest",
+          "studioPage": "https://morrowwishgames.itch.io/"
         },
         "reddit": {
           "priority": "P0",
@@ -556,13 +560,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "studio-reported-live-unverified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=itch&utm_medium=portal&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=itch&utm_medium=portal&utm_campaign=parcel-panic-playtest",
+          "studioPage": "https://morrowwishgames.itch.io/"
         },
         "reddit": {
           "priority": "P0",
@@ -688,13 +693,14 @@
         },
         "itch": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "studio-reported-live-unverified",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "itch",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=itch&utm_medium=portal&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=itch&utm_medium=portal&utm_campaign=pocket-aquarium-playtest",
+          "studioPage": "https://morrowwishgames.itch.io/"
         },
         "reddit": {
           "priority": "P0",
@@ -845,6 +851,27 @@
           "indexingVerified": false,
           "indexNowConfigured": true,
           "indexNowAcceptanceVerified": false
+        },
+        "crazygames": {
+          "priority": "P0",
+          "status": "not-created",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "crazygames",
+          "utm_campaign": "cat-bond-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-playtest",
+          "reviewSubmittedAt": null
+        },
+        "itch": {
+          "priority": "P0",
+          "status": "not-submitted",
+          "platformId": null,
+          "publicUrl": null,
+          "scheduledAt": null,
+          "utm_source": "itch",
+          "utm_campaign": "cat-bond-playtest",
+          "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=itch&utm_medium=portal&utm_campaign=cat-bond-playtest"
         }
       }
     }
