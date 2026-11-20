@@ -50,8 +50,10 @@ try{
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
  assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
  const before=initial.position;
- const clicked=await page.evaluate(()=>{const s=window.__PAWSIBLY_TEST__.getState(),b=document.getElementById('board').getBoundingClientRect();return {x:b.x+(s.cat.x+1.5)*b.width/10,y:b.y+(s.cat.y+.5)*b.height/7};});
- await page.mouse.click(clicked.x,clicked.y);await page.waitForTimeout(420);
+ const clicked=await page.evaluate(()=>{const s=window.__PAWSIBLY_TEST__.getState();return {x:s.cat.x+1.5,y:s.cat.y+.5};});
+ // The canvas may be below the first fold; locator.click scrolls it into view.
+ const canvasRect=await page.locator('#board').boundingBox();
+ await page.locator('#board').click({position:{x:clicked.x*canvasRect.width/10,y:clicked.y*canvasRect.height/7}});await page.waitForTimeout(420);
  const after=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().cat}));
  console.log('Click movement:',JSON.stringify({before,after}));
  assert.notDeepEqual(after,before,'Mouse click must move the cat');
