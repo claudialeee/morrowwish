@@ -341,6 +341,20 @@ try{
                        fields:await inspectFields(page),
                        buttons:(await page.locator('button:visible').allTextContents().catch(()=>[])).map(x=>safe(x.trim())).slice(0,35)
                      };
+                     const qaContinue=page.getByRole('button',{name:'Continue',exact:true}).first();
+                     report.submissionForm.uploadProbe.previewStep.qaContinueCount=await qaContinue.count();
+                     report.submissionForm.uploadProbe.previewStep.qaContinueEnabled=await qaContinue.isEnabled().catch(()=>false);
+                     if(await qaContinue.isEnabled().catch(()=>false)){
+                       await qaContinue.evaluate(b=>b.click());
+                       await page.waitForTimeout(3000);
+                       report.submissionForm.uploadProbe.afterQA={
+                         path:new URL(page.url()).pathname,
+                         text:safe(await page.locator('body').innerText().catch(()=>'' )).slice(-2750),
+                         fields:await inspectFields(page),
+                         buttons:(await page.locator('button:visible').allTextContents().catch(()=>[])).map(x=>safe(x.trim())).slice(-45)
+                       };
+                     }
+
                    }
                  }
 
