@@ -12,6 +12,8 @@ const STUDIO='morrowwishgames';
 const HOST='https://'+STUDIO+'.itch.io';
 const STATE=process.env.ITCH_STORAGE_STATE_B64||'';
 const report=[];
+const LEDGER=JSON.parse(fs.readFileSync('promotion/ledger.json','utf8'));
+const alreadyVerified=new Set(LEDGER.games.filter(g=>g.channels?.itch?.status==='published' && g.channels.itch.publicUrl).map(g=>g.slug));
 const write=(status,game,details)=>{report.push({status,slug:game.slug,details});console.log('itch.io '+game.slug+': '+status+' — '+details);};
 const short=s=>String(s).replace(/[\n\r]+/g,' ').replace(/\s+/g,' ').trim();
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
@@ -68,7 +70,8 @@ async function projectExists(page,slug){
 }
 async function publish(browser,ctx,page,g,tmp){
   const target=HOST+'/'+g.slug;
-  if(await projectExists(page,g.slug)){write('already-live',g,target);return;}
+  if(alreadyVerified.has(g.slug)){write('already-live',g,target);return;}
+  if(await projectExists(page,g.slug)){write('project-exists',g,'A private or public project with this URL already exists; do not create a duplicate. Check visibility: '+target);return;}
   const cover=await coverFor(browser,g,tmp);
   const html=createEmbeddedHTML(g,tmp);
   await page.goto('https://itch.io/game/new',{waitUntil:'domcontentloaded',timeout:30000});
@@ -78,9 +81,9 @@ async function publish(browser,ctx,page,g,tmp){
   await fill(page,['#game_short_text','input[name="game[short_text]"]','textarea[name="game[short_text]"]'],short(g.description).slice(0,180));
   // The two dropdowns have different semantics: classification=game, kind=HTML5.
   const type=await first(page,['select[name="game[classification]"]','select[name="game[type]"]','#game_classification']);
-  if(type)await type.selectOption({label:/game/i}).catch(()=>{});
+  if(type){const opts=await type.locator('option').evaluateAll(xs=>xs.map(x=>({v:x.value,t:x.textContent})));const o=opts.find(x=>/^game$/i.test(x.t.trim()));if(o)await type.selectOption(o.v);}
   const kind=await first(page,['select[name="game[kind]"]','#game_kind','select[name="game[embed_type]"]']);
-  if(kind)await kind.selectOption({label:/html/i}).catch(()=>{});
+  if(kind){const opts=await kind.locator('option').evaluateAll(xs=>xs.map(x=>({v:x.value,t:x.textContent})));const o=opts.find(x=>/html/i.test(x.t));if(o)await kind.selectOption(o.v);}
   await clickAny(page,['label:has-text("HTML"),text="HTML — You have a ZIP or HTML file"'],false);
   await fill(page,['textarea[name="game[description]"]','#game_description'],'Raise adorable cats, build friendships and explore a world full of feline companions.\n\nPlay free in your browser. No account required.\n\nOfficial website: '+g.url);
   const upload=await first(page,[
