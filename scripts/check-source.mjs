@@ -26,6 +26,10 @@ if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status
  throw Error('CrazyGames scripts must fail closed if not individually QA-approved');
 
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
+if(!dashboard.includes('if(x.game==="hub")return')||
+   !dashboard.includes("num('pageviews')+'</td><td></td><td></td><td></td>"))
+ throw Error('Homepage overview: show pageviews only and leave gameplay cells blank');
+
 const social=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 if(social.schemaVersion!==1||social.platforms.find(x=>x.id==='instagram')?.views!==273)throw Error('Provider metrics snapshot must preserve available and unknown native metrics');
 if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
