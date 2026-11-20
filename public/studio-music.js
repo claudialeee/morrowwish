@@ -21,6 +21,12 @@
      url:'https://en.freepd.cn/api/music/5570626561742f46756e7368696e652e6d7033',
      volume:.09
    },
+   'cat-bond': {
+     title:'My Giant Bunny Friend',zh:'小动物的欢乐庭院',genre:'gentle playful acoustic',
+     // Recorded CC0 track (Comedy collection); distinct from the other games.
+     url:'https://en.freepd.cn/api/music/436f6d6564792f4d79204769616e742042756e6e7920467269656e642e6d7033',
+     volume:.10
+   },
    'pocket-aquarium': {
      title:'Connecting Rainbows',zh:'彩虹相连',genre:'gentle world music',
      url:'https://en.freepd.cn/api/music/576f726c642f436f6e6e656374696e67205261696e626f77732e6d7033',
@@ -60,7 +66,13 @@
   audio.addEventListener('playing',()=>{blocked=false;unavailable=false;sync()});
   audio.addEventListener('pause',()=>{if(enabled&&!document.hidden&&!audio.ended){blocked=!audio.error;sync()}});
   audio.addEventListener('error',()=>{
-   // Never fall back to the disliked Lo-fi recordings.
+   // Optional local recorded-CC0 fallback for Cat Bond if the CDN is offline.
+   if(slug==='cat-bond'&&!audio.dataset.catBondFallback){
+     audio.dataset.catBondFallback='1';
+     audio.src='/audio/cat-happy-clappy.ogg';
+     audio.load();if(enabled&&gestureSeen)play();
+     return;
+   }
    unavailable=true;blocked=false;sync();
   });
   return audio;
@@ -101,7 +113,8 @@
   const css=document.createElement('style');
   css.textContent='.mw-music-toggle{font:750 12px/1.3 system-ui,sans-serif;background:#f7e9f2;color:#6c5077;border:1px solid #dec6db;border-radius:999px;padding:8px 12px;min-height:35px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px #8a708619}.mw-music-toggle:hover{background:#f0dfed}.mw-music-toggle:focus-visible{outline:3px solid #bca1e0;outline-offset:2px}.mw-music-toggle.mw-music-off{background:#f6f4f2;color:#8b8187;border-color:#e6dedf}@media(max-width:620px){.mw-music-toggle{font-size:10px;padding:7px 9px}}';
   document.head.appendChild(css);
-  const holder=slug==='tiny-town'?document.querySelector('.top-actions'):
+  const holder=slug==='cat-bond'?document.querySelector('#stage'):
+    slug==='tiny-town'?document.querySelector('.top-actions'):
     slug==='pocket-aquarium'?document.querySelector('header'):document.querySelector('.scoreboard');
   if(holder)holder.appendChild(button);
   else{button.classList.add('mw-music-fixed');css.textContent+='.mw-music-fixed{position:fixed;bottom:100px;right:12px;z-index:9999}';document.body.appendChild(button)}
