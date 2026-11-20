@@ -91,7 +91,7 @@ const BREED_SECONDS = 2 * 3600;   // 2h egg timer (advances via tick, offline to
 const STATION_TYPES = {
   fishing: { name: '钓鱼位',   icon: '🎣', res: 'fish',  base: 2.5, cap: 20,  desc: '派猫钓鱼，攒小鱼干。' },
   yarn:    { name: '毛线坊',   icon: '🧶', res: 'yarn',  base: 9,   cap: 60,  desc: '织毛线团，升级站点的材料。' },
-  sun:     { name: '晒太阳位', icon: '☀️', res: 'coins', base: 14,  cap: 120, desc: '晒太阳的猫心情超好，还会捡到金币。' },
+  sun:     { name: '晒太阳位', icon: '☀️', res: 'coins', base: 90,  cap: 270, desc: '持续赚金币：派猫上岗后约每分钟赚 1 枚，离线也继续生产；回工坊点收取到账。' },
   watch:   { name: '瞭望台',   icon: '🔭', res: 'luck',  base: 0.5, cap: 5,   desc: '瞭望远方，积攒好运（提升野猫稀有度）。' },
   nursery: { name: '暖窝',     icon: '🥚', res: null,    base: 0,   cap: 0,   desc: '把两只猫放进暖窝，孵化小猫。' },
 };
@@ -328,10 +328,10 @@ function stationsView() {
     const cap = stationCap(st);
     return {
       id: st.id, type: st.type, name: t.name, icon: t.icon, res: t.res,
-      level: st.level, stored: Math.floor(st.stored), cap,
+      level: st.level, stored: Math.floor(st.stored), storedExact: st.stored, cap,
       pct: cap ? clamp(st.stored / cap, 0, 1) : 0,
       ratePerHour: Math.round(stationRate(st) * 10) / 10,
-      catName: cat ? speciesName(cat) : null,
+      catName: cat ? speciesName(cat) : null, active: !!cat,
       assignedUid: st.assignedUid || null,
       desc: t.desc,
     };
