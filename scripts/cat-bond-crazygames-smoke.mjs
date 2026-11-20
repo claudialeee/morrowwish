@@ -142,6 +142,30 @@ try{
           'S medals must be permanently represented on the cat codex');
         assert.doesNotMatch(await page.locator('#panel.open').innerText(),/解锁隐藏传说种/,
           'No fake legendary unlock claim');
+        // A real user must be able to challenge a specific breed from the
+        // codex without winning another duplicate and farming resources.
+        await page.locator('#panel .dex-cell.golden-paw').first().click();
+        await page.waitForSelector('#dx-rematch');
+        const beforeRematch=await page.evaluate(()=>({
+          cats:State.S.cats.length,captures:State.S.catchCount,
+          coins:State.S.coins,dex:JSON.stringify(State.S.dex)
+        }));
+        await page.locator('#dx-rematch').click();
+        await page.waitForFunction(()=>window.__game.scene==='battle');
+        await page.evaluate(()=>{
+          const g=window.__game,b=g.battle;
+          if(!b.masteryChallenge)throw Error('Codex rematch entered normal capture');
+          b.team.forEach(f=>{f.hp=f.maxhp;});
+          b.t=10;b.comboBest=8;
+          b.finish(true);g.endBattle();
+        });
+        await page.waitForSelector('#mc-retry');
+        const afterRematch=await page.evaluate(()=>({
+          cats:State.S.cats.length,captures:State.S.catchCount,
+          coins:State.S.coins,dex:JSON.stringify(State.S.dex)
+        }));
+        assert.deepEqual(afterRematch,beforeRematch,
+          'Rank rematches cannot clone kittens, alter capture count or farm coins');
         await page.evaluate(()=>UI.openJourney());
         await page.locator('#journey-explore').click();
         assert.equal(await page.evaluate(()=>window.__game.scene),'map',
