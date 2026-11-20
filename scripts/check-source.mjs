@@ -27,6 +27,18 @@ if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status
 
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
+// Arcade stats instrumentation must record both gameplay endings and successful clears.
+const miniGameSource=fs.readFileSync('public/game.js','utf8');
+const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
+if(!miniGameSource.includes('window.arcadeMetric?.(canonical') ||
+   !miniGameSource.includes('level_complete:"level_complete"') ||
+   !miniGameSource.includes('game_over:"game_over"')) throw Error('Mini games must send real gameplay events to D1');
+if(!telemetry.includes('"town_completed-win")eventCounts.completion++') ||
+   !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
+   !telemetry.includes('"level_complete"')) throw Error('Terminal gameplay events must be counted separately from clears');
+if(!analyticsSource.includes('z.ends+=events.reduce') ||
+   !dashboard.includes('data-i18n="colEnds"')) throw Error('Unified and itch.io dashboard must show finished runs');
+
 const config=JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc','utf8'));
 if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
 if(config.d1_databases?.[0]?.database_name!=='morrowwish-analytics')throw Error('Wrong D1 database');
