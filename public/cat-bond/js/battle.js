@@ -159,6 +159,7 @@ class CaptureBattle {
       r: 20, inv: 0, dashT: 0,
       speed: 150 + s.agi * 3.5,
       dmg: (6 + s.pow * 0.7 + cat.level * 0.3) * (bond.dmgMult || 1),
+      shieldT:0,damageBoostT:0,
       projSpeed: 300 + s.agi * 5,
       cd: { basic: 0, q: 0, e: 0 },
       // the two active skills this cat actually knows (from its element loadout)
@@ -503,7 +504,7 @@ class CaptureBattle {
     const f = this.me();
     const e = this.nearestEnemy(f.x, f.y);
     if (e) this.aim = Math.atan2(e.y - f.y, e.x - f.x);
-    if (key === 'basic') this.fireBasic(true);
+    if (key === 'basic') this.fireBasic();
     else if (key === 'q') this.skillQ();
     else if (key === 'e') this.skillE();
     else if (key === 'ult') this.ultimate();
@@ -517,20 +518,52 @@ class CaptureBattle {
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
     // 猫爪=近身快攻: short-lived projectile so it only reaches ~short range
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg, 'me', col, 5, 'claw', { element: f.element }, 0.45);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1), 'me', col, 5, 'claw', { element: f.element }, 0.45);
     this.vfx.muzzle(mx, my, aim, col);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
       window.MorrowwishAudio?.effect?.('paw');this._lastPawSfx=this.t;
     }
     this.gainUlt(2);
   }
+  // Native skill semantics for heal/buff (formerly mis-cast as damage or dash).
+  // Returns whether anything was actually used, for smart AI priorities.
+  castSupportSkill(f,sk){
+    if(!sk)return false;
+    if(sk.kind==='heal'){
+      if(f.hp>=f.maxhp-.5)return false;
+      const amount=Math.min(f.maxhp-f.hp,Math.max(14,f.maxhp*.34));
+      f.hp=Math.min(f.maxhp,f.hp+amount);
+      this.vfx.ring(f.x,f.y,{r0:5,vr:225,life:.42,color:'#a8e9b4',width:4});
+      this.vfx.text(f.x,f.y-33,'+'+Math.round(amount),'#93dca1',15);
+    }else if(sk.kind==='buff'){
+      const shield=sk.tags?.includes('shield');
+      if(shield){
+        if(f.shieldT>.25)return false;
+        f.shieldT=4.8;
+      }else{
+        if(f.damageBoostT>.3)return false;
+        f.damageBoostT=6;
+      }
+      this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:shield?'#9dd8ff':'#ffd9a0',width:4});
+      this.vfx.text(f.x,f.y-34,shield?'护盾':'强化','#f8eab8',14);
+    }else return false;
+    this.gainUlt(6);
+    if(f===this.me())this.game.toast('✨ '+sk.name+'！');
+    return true;
+  }
+
   skillQ(f, aim) {
-    f = f || this.me(); if (f.cd.q > 0) return;
+    f = f || this.me(); if (f.cd.q > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
     const sk = f.qSkill;
+    if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
+      if(!this.castSupportSkill(f,sk))return false;
+      f.cd.q=sk.cd*(f.bond.cdReduction||1);
+      return true;
+    }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1);
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 0.8);
+    const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1);
     const kind = sk ? sk.kind : 'projectile';
     if (kind === 'melee') {
       // 近战: short-range arc slash — only hits enemies within MELEE_RANGE, big damage
@@ -543,6 +576,7 @@ class CaptureBattle {
     }
     this.gainUlt(8);
     if (f === this.me()) this.game.toast('🧶 ' + (sk ? sk.name : '毛球散射') + '！');
+    return true;
   }
 
   // smallest signed angle between two headings
@@ -565,21 +599,34 @@ class CaptureBattle {
     if (hit) this.shakeT = Math.max(this.shakeT, 0.1);
   }
   skillE(f, aim) {
-    f = f || this.me(); if (f.cd.e > 0) return;
+    f = f || this.me(); if (f.cd.e > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
     const sk = f.eSkill;
+    if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
+      if(!this.castSupportSkill(f,sk))return false;
+      f.cd.e=sk.cd*(f.bond.cdReduction||1);
+      return true;
+    }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1);
     const col = this.elemColor(sk ? sk.element : f.element);
-    f.dashT = 0.26; f.inv = 0.3;
-    f.pounce = true; f._dashAim = aim;
-    f._pounceSkill = sk;
-    this.vfx.shockwave(f.x, f.y, col);
-    this.vfx.burst(f.x, f.y, { count: 12, color: col, angle: aim + Math.PI, spread: 1.2, speed: 220 });
+    if(sk&&sk.kind==='projectile'){
+      for(let i=-1;i<=1;i++)
+        this.spawnProj(f.x,f.y,aim+i*.12,f.projSpeed*.93,f.dmg*sk.power*(f.damageBoostT>0?1.25:1),'me',col,7,'fur',sk);
+      this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim,spread:.8,speed:155,life:.3});
+    }else if(sk&&sk.kind==='melee'){
+      this.meleeStrike(f,aim,sk,f.dmg*sk.power*(f.damageBoostT>0?1.25:1),col);
+    }else{
+      f.dashT=.26;f.inv=.3;
+      f.pounce=true;f._dashAim=aim;f._pounceSkill=sk;
+      this.vfx.shockwave(f.x,f.y,col);
+      this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
+    }
     this.gainUlt(6);
-    if (f === this.me()) this.game.toast('💨 ' + (sk ? sk.name : '疾扑冲刺') + '！');
+    if(f===this.me())this.game.toast('💨 '+(sk?sk.name:'疾扑冲刺')+'！');
+    return true;
   }
   dodge(f) {
-    f = f || this.me(); if (f.dodgeCd > 0) return;
+    f = f || this.me(); if (f.dodgeCd > 0) return false;
     f.dodgeCd = 1.1; f.dashT = 0.2; f.inv = 0.38;
     // PERFECT DODGE: an enemy shot within ~36px when you dodge → bullet-time reward
     let perfect = false;
@@ -598,9 +645,10 @@ class CaptureBattle {
       this.vfx.ring(f.x, f.y, { r0: 6, vr: 240, life: 0.3, color: '#ffffff', width: 2 });
       this.vfx.burst(f.x, f.y, { count: 6, color: '#ffffff', speed: 150, life: 0.3, r: 2 });
     }
+    return true;
   }
   ultimate() {
-    if (this.ult < 100) { this.game.toast('必杀能量不足'); return; }
+    if (this.ult < 100) { this.game.toast('必杀能量不足'); return false; }
     const f = this.me(); this.ult = 0;
     for (let i = 0; i < 16; i++) this.spawnProj(f.x, f.y, (i / 16) * Math.PI * 2, f.projSpeed * 0.9, f.dmg * 1.3, 'me', '#9d7bff', 8, 'star');
     f.inv = 0.6; this.shakeT = 0.5; this.flash = 0.4;
@@ -611,6 +659,7 @@ class CaptureBattle {
     this.vfx.burst(f.x, f.y, { count: 18, color: '#ffd36b', speed: 220, life: 0.5, r: 3 });
     this.vfx.text(f.x, f.y - 40, '喵之怒涛!', '#ffd36b', 22);
     this.game.toast('🌪️ 必杀·喵之怒涛！');
+    return true;
   }
   switchTo(i) {
     if (i === this.active || !this.team[i] || !this.team[i].alive) return;
@@ -675,6 +724,8 @@ class CaptureBattle {
       if (f.inv > 0) f.inv -= dt;
       if (f.dashT > 0) f.dashT -= dt; else f.pounce = false;
       if (f.dodgeCd > 0) f.dodgeCd -= dt;
+      if (f.shieldT > 0) f.shieldT=Math.max(0,f.shieldT-dt);
+      if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
       if (f.hitFlash > 0) f.hitFlash -= dt;
     }
     const me = this.me();
@@ -692,7 +743,7 @@ class CaptureBattle {
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + 22) {
-          const dmg = this.applyHitEffects(e, f._pounceSkill, f.dmg * 1.6, e.x, e.y);
+          const dmg = this.applyHitEffects(e, f._pounceSkill, f.dmg * 1.6 * (f.damageBoostT>0?1.25:1), e.x, e.y);
           this.hurtEnemy(e, dmg, f.x, f.y);
           this.vfx.impact(e.x, e.y, this.elemColor(f.element));
           f.pounce = false;
@@ -1003,6 +1054,7 @@ class CaptureBattle {
   hurtMe(dmg, fx, fy, f) {
     f = f || this.me();
     if (!f.alive) return;
+    dmg*=f.shieldT>0?.55:1;
     f.hp = Math.max(0, f.hp - dmg);
     f.hitFlash = 0.14; f.inv = 0.3;
     if (f === this.me()) this.shakeT = 0.18;
