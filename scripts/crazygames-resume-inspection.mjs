@@ -109,6 +109,18 @@ try{
                       type:el.type,placeholder:el.placeholder,required:el.required
                    })).slice(0,40))
                  };
+                 await next.getByText(/description|cover image|thumbnail|game details/i).first().waitFor({state:'visible',timeout:15000}).catch(()=>{});
+                 await next.waitForTimeout(4500);
+                 report.qaNavigation.loadedDetails={
+                    path:new URL(next.url()).pathname,
+                    body:redact(await next.locator('body').innerText().catch(()=>'' )),
+                    fields:await next.locator('input,textarea,select').evaluateAll(xs=>xs.map(el=>({
+                      tag:el.tagName,type:el.type,name:el.name,placeholder:el.placeholder,required:el.required,
+                      ariaLabel:el.getAttribute('aria-label'),accept:el.accept||null
+                    })).slice(0,65)),
+                    buttons:await next.locator('button:visible').allTextContents().catch(()=>[])
+                 };
+
                }
              }
            }
