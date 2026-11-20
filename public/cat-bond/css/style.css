@@ -606,3 +606,83 @@ html,body{background:#eaf1e8;color:var(--text)}
  #intro>p{font-size:.78rem}
  .battle-topbar{gap:3px}
 }
+
+
+/* Cat Bond illustrated battle layout polish v41 */
+#battle-ui .battle-topbar{
+  background:rgba(255,250,240,.96);
+  color:#415d47;
+  border:1px solid rgba(125,157,125,.3);
+  box-shadow:0 8px 28px rgba(74,91,73,.16);
+  padding:8px 12px;
+  min-height:46px;
+  backdrop-filter:blur(12px);
+}
+#battle-ui #wild-name{font-size:clamp(12px,1.7vw,17px);color:#435f4b;font-weight:900}
+#battle-ui #btn-auto{background:#e6efdc;color:#46704f;border:1px solid #c2d8bc}
+#battle-ui #btn-flee{background:#f7e4d6;color:#805f50;border:1px solid #ead0be}
+#battle-ui .battle-hint{
+  background:rgba(255,251,242,.84);
+  border:1px solid rgba(131,153,125,.18);
+  box-shadow:0 3px 12px rgba(83,91,73,.09);
+  color:#576a54;
+  backdrop-filter:blur(8px);
+  text-align:center;
+  max-width:85%;
+  padding:5px 12px;
+}
+#battle-ui .team-slot{
+  background:rgba(255,251,242,.91);
+  border:1px solid #cddbc7;
+  box-shadow:0 5px 15px rgba(66,88,65,.15);
+  border-radius:15px;
+}
+#battle-ui .team-slot.active{border:2px solid #86ba9d;box-shadow:0 0 0 3px rgba(132,188,154,.19)}
+#battle-ui .team-slot .slot-key{color:#568368}
+#battle-ui .team-slot .slot-hp{background:rgba(100,143,110,.17)}
+#battle-ui #ult-wrap{
+  background:rgba(255,251,240,.92);
+  border:1px solid #d7dfc8;
+  border-radius:13px;
+  padding:7px 9px;
+  box-shadow:0 4px 13px rgba(68,83,62,.1);
+}
+#battle-ui #ult-bar{background:linear-gradient(90deg,#9bcba7,#e4b86d)}
+#battle-ui .move{
+  background:rgba(255,251,243,.97);
+  border:1.5px solid #d6dfcd;
+  border-radius:17px;
+  box-shadow:0 5px 16px rgba(74,86,69,.16);
+  transition:transform .12s,box-shadow .16s,background .16s;
+  color:#405744;
+}
+#battle-ui .move:hover{box-shadow:0 8px 20px rgba(67,94,72,.22)}
+#battle-ui .move:active{transform:scale(.91)}
+#battle-ui .move .mv-k{font-size:clamp(9px,1vw,11px);font-weight:800;color:#6c7466}
+#battle-ui .move .mv-icon{font-size:clamp(19px,2vw,25px)}
+#battle-ui .move.ult{background:linear-gradient(160deg,#f6e3b7,#edd2a3);border-color:#e0c9a0}
+#battle-ui .move.ult.ready{background:linear-gradient(145deg,#f5d58d,#ebbb75);border-color:#dba75c}
+#battle-ui .move.cooling{filter:saturate(.55);opacity:.75}
+@media(max-width:700px){
+ #battle-ui .battle-topbar{
+  width:auto;max-width:calc(100% - 20px);
+  top:calc(env(safe-area-inset-top,0px) + 7px);
+  padding:6px 8px;gap:5px;min-height:41px;
+ }
+ #battle-ui #wild-name{font-size:12px}
+ #battle-ui .battle-topbar .tiny-btn{font-size:11px;padding:5px 7px;min-height:32px}
+ #battle-ui .battle-hint{top:calc(env(safe-area-inset-top,0px) + 49px);font-size:10px;max-width:92%}
+ #battle-ui #team-slots{left:6px;top:calc(env(safe-area-inset-top,0px) + 100px);gap:4px}
+ #battle-ui .team-slot{width:48px;padding:3px}
+ #battle-ui .team-slot canvas{width:40px;height:34px}
+ #battle-ui #ult-wrap{right:5px;top:calc(env(safe-area-inset-top,0px) + 101px);width:108px}
+ #battle-ui .move-bar{width:min(92%,400px);gap:6px;right:7px;left:auto;transform:none;justify-content:flex-end}
+ #battle-ui .move{width:clamp(44px,12vw,57px);height:clamp(50px,13vw,60px);flex:0 0 auto}
+}
+@media(max-height:530px) and (orientation:landscape){
+ #battle-ui .battle-hint{display:none}
+ #battle-ui .team-slot{width:42px}
+ #battle-ui .team-slot canvas{width:34px;height:30px}
+ #battle-ui .move-bar{bottom:6px}
+ #battle-ui .move{width:47px;height:47px}
+}
