@@ -75,6 +75,7 @@ if(n==="town_completed-win")signal("town_win");
 if(n==="town_completed-lose")signal("town_lose");
 if(n.startsWith("town_feedback-")){const v=n.slice(14);if(["fun","confusing","not-fun"].includes(v))signal("town_feedback_"+v);}
 if(["play_feedback_fun","play_feedback_confusing","play_feedback_not_fun"].includes(n))signal(n);
+if(["elsewhere_return_yes","elsewhere_return_maybe","elsewhere_return_no"].includes(n))signal(n);
 if(/^town_exit-week-[1-8]$/.test(n))signal(n.replaceAll("-","_"));
 if(["feed_success","feed_drop"].includes(n)&&game==="pocket-aquarium")signal(n);
 if(n==="game_complete"&&game==="pocket-aquarium"){signal("aquarium_completed");const outcome=String(p?.ending||"");if(["festival","clear","friends","rest","calm"].includes(outcome))signal("aquarium_ending_"+outcome);const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
