@@ -481,10 +481,12 @@ class Game {
       this.refreshHUD();
       // Unified analytics: a won capture completes the run; also a capture event.
       metric('game_complete', { level: State.S.catchCount, rarity: b.wild.rarity, score: State.S.catchCount });
+      window.MorrowwishAudio?.effect?.('capture');
       metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity });
       UI.openCatchResult(b.wild, newCat);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
+      window.MorrowwishAudio?.effect?.('end_fail');
       metric('game_over', { level: (State.S.catchCount || 0) + 1, rarity: b.wild.rarity });
       this._lastBattleLost = true;   // a subsequent battle counts as a retry
       this.toast('💨 野生猫猫跑掉了…下次再来！');
