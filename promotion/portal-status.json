@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-19",
-  "explanation": "Six existing itch.io game pages were verified on the logged-in Morrow Wish studio profile. Cat Bond not present as of 2026-11-19. CrazyGames entries reflect its portal, while GitHub issue #23 is internal tracking only.",
+  "updatedAt": "2026-11-20",
+  "explanation": "CrazyGames status: the owner reported a submission rejected on 2026-11-20 with 'The overall quality of the game does not yet meet the expectations of our platform.' The previously submitted Pawsibly Innocent! is the known candidate, but the exact portal record was not independently re-fetched. Six itch.io game pages previously verified; Cat Bond listing must be separately verified.",
   "submissionPolicy": {
     "crazygamesMaxPerReviewCycle": 1,
     "source": "Morrow Wish conservative quality-first policy (not a claimed CrazyGames platform limit)",
-    "afterSubmit": "Wait for portal status/QA feedback before starting the next submission.",
+    "afterSubmit": "Review only one QA-approved game at a time; no automatic submissions or retries, especially after quality rejection.",
     "onNewPublicGame": "Queue for both platforms after Cloudflare deployment succeeds; do not mistake a queue issue for a platform submission."
   },
   "crazygames": [
     {
       "slug": "pawsibly-innocent",
       "priority": 1,
-      "status": "awaiting-review",
-      "readiness": "submitted",
-      "notes": "Portal confirmed awaiting review; do not duplicate"
+      "status": "rejected-reported-by-owner",
+      "readiness": "rework-required",
+      "notes": "Owner-reported rejection for overall game quality; not independently revalidated in CrazyGames developer portal. Do not resubmit without substantive redesign plus explicit QA gate."
     },
     {
       "slug": "cat-bond",
