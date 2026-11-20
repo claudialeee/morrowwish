@@ -174,94 +174,229 @@ class CaptureBattle {
 
   toggleAuto() {
     this.autoMode = !this.autoMode;
+    this._autoLastAction=null;
+    this.commandTarget=null;
     this.game.toast(this.autoMode ? '🤖 自动战斗 开启（你当指挥官）' : '🎮 手动操控 开启');
     return this.autoMode;
   }
 
-  // ---------------- AI driver: runs the active cat when in auto/commander mode ----------------
-  // Player's job in auto mode = commander: set focus target + trigger ult/retreat.
-  autoDrive(dt) {
-    const f = this.me();
-    // target: commander's focus marker, else the nearest live enemy
-    const tgt = this.commandTarget ? this.nearestEnemy(this.commandTarget.x, this.commandTarget.y) : this.nearestEnemy(f.x, f.y);
-    if (!tgt) return;
-    const tx = tgt.x, ty = tgt.y;
-    const dx = tx - f.x, dy = ty - f.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    this.aim = Math.atan2(dy, dx);
-    // kite at a preferred range; dodge incoming shots (reuse the same perpendicular juke)
-    let mx = 0, my = 0;
-    const want = this.commandTarget ? 0 : 230;         // if commander says "go here", approach it
-    const goal = this.commandTarget || { x: f.x + dx / dist * (dist - want), y: f.y + dy / dist * (dist - want) };
-    // flee from nearest wild projectile
-    let near = null, nd = 1e9;
-    for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < nd) { nd = d; near = p; } }
-    if (near && nd < 90 && f.dodgeCd <= 0) { this.dodge(); }
-    if (near && nd < 110) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; }
-    else { const gx = goal.x - f.x, gy = goal.y - f.y, gl = Math.hypot(gx, gy) || 1; if (gl > 24) { mx = gx / gl; my = gy / gl; } else { mx = -dy / dist * 0.6; my = dx / dist * 0.6; } }
-    const spd = f.dashT > 0 ? f.speed * 3 : f.speed;
-    f.x = clamp(f.x + mx * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-    f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
-    f.face = Math.cos(this.aim) < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
-    // ACTIONS decided by the cat's gambit rules (player-editable; see evalGambits)
-    this.evalGambits(f, tgt, dist, near, nd);
+  // ---------------- TACTICAL AUTO BATTLE ----------------
+  // Default preset is adaptive. Hand-edited gambits remain respected, so a
+  // player's saved custom priorities are not overwritten by game upgrades.
+  isDefaultGambit(cat) {
+    const rules=cat?.gambits;
+    if(!Array.isArray(rules)||!rules.length)return true;
+    const sig=a=>a.map(r=>r.cond+':'+r.act).join('|');
+    const current=window.Skills?.defaultGambits?.(cat)||[];
+    if(sig(rules)===sig(current))return true;
+    // Early versions accidentally saved a truncated preset with no Q/E skills.
+    const old=[
+      ['selfHpBelow25','heal'],['selfHpBelow40','retreat'],['incomingProj','dodge'],
+      ['enemyHpBelow30','ult'],['comboPrimed','finisher'],['enemyHasTag','combo'],
+      ['enemyFar','skillQ'],['enemyClose','basic'],['always','basic']
+    ];
+    for(let n=4;n<=8;n++){
+      const legacy=old.slice(0,n).concat([old[8]]);
+      if(sig(rules)===legacy.map(v=>v.join(':')).join('|'))return true;
+    }
+    return false;
   }
 
-  // Evaluate a fighter's gambit list top-down each frame; fire the first ready
-  // action whose condition is true. Always fires basic as a fallback so the cat
-  // is never idle. Rules come from cat.gambits (editable) or Skills.defaultGambits.
-  evalGambits(f, tgt, dist, nearProj, nd) {
-    const rules = (f.cat.gambits && f.cat.gambits.length) ? f.cat.gambits
-      : (window.Skills && Skills.defaultGambits ? Skills.defaultGambits(f.cat) : [{ cond: 'always', act: 'basic' }]);
-    const tgtTags = (tgt && tgt.tags) || [];
-    const cond = (k) => {
-      switch (k) {
-        case 'always': return true;
-        case 'enemyHpBelow30': return tgt && tgt.hp / tgt.maxhp < 0.30;
-        case 'enemyHpBelow50': return tgt && tgt.hp / tgt.maxhp < 0.50;
-        case 'selfHpBelow40': return f.hp / f.maxhp < 0.40;
-        case 'selfHpBelow25': return f.hp / f.maxhp < 0.25;
-        case 'ultReady': return this.ult >= 100;
-        case 'comboPrimed': return tgtTags.length > 0;
-        case 'enemyHasTag': return tgtTags.length > 0;
-        case 'enemyClose': return dist < 150;
-        case 'enemyFar': return dist > 320;
-        case 'incomingProj': return nearProj && nd < 110;
-        case 'bondHigh': return (f.cat.affinity || 0) >= 60;
-        default: return false;
-      }
-    };
-    const ready = (act) => {
-      switch (act) {
-        case 'ult': return this.ult >= 100;
-        case 'skillQ': case 'combo': case 'finisher': return f.cd.q <= 0;
-        case 'skillE': case 'approach': return f.cd.e <= 0;
-        case 'dodge': return f.dodgeCd <= 0;
-        case 'heal': return f.cd.q <= 0;   // heal mapped onto a skill slot if present
-        case 'basic': return f.cd.basic <= 0;
-        case 'retreat': return true;
-        default: return false;
-      }
-    };
-    // aim this fighter toward its target so attacks connect
-    const aim = tgt ? Math.atan2(tgt.y - f.y, tgt.x - f.x) : (f === this.me() ? this.aim : (f._aim || 0));
-    f._aim = aim;
-    const run = (act) => {
-      switch (act) {
-        case 'ult': if (f === this.me()) { this.ultimate(); return true; } return false; // ult only for active (shared meter)
-        case 'skillQ': case 'combo': case 'finisher': case 'heal': this.skillQ(f, aim); return true;
-        case 'skillE': case 'approach': this.skillE(f, aim); return true;
-        case 'dodge': this.dodge(f); return true;
-        case 'retreat': return true;       // movement already handles spacing
-        case 'basic': this.fireBasic(f, aim); return true;
-        default: return false;
-      }
-    };
-    let acted = false;
-    for (const r of rules) {
-      if (cond(r.cond) && ready(r.act)) { if (run(r.act)) { acted = true; break; } }
+  // Predict projectile collision, not merely projectile proximity. A shot
+  // traveling away does not waste an evasive cooldown.
+  incomingThreat(f) {
+    let nearest=null, best=Infinity;
+    for(const p of this.projectiles){
+      if(p.owner!=='wild'||p.life<=0)continue;
+      const speed2=p.vx*p.vx+p.vy*p.vy;
+      const dx=f.x-p.x,dy=f.y-p.y;
+      const eta=speed2>1?(dx*p.vx+dy*p.vy)/speed2:0;
+      if(eta<-.04||eta>.45)continue;
+      const t=Math.max(0,eta);
+      const miss=Math.hypot(p.x+p.vx*t-f.x,p.y+p.vy*t-f.y);
+      if(miss<(p.r||7)+f.r*.8+13 && eta<best){nearest={p,d:Math.hypot(dx,dy),eta};best=eta;}
     }
-    if (!acted && f.cd.basic <= 0) this.fireBasic(f, aim);
+    return nearest;
+  }
+
+  // Only a support skill can actually heal or buff. "Heal" gambits never
+  // blindly cast an offensive skill just because its cooldown is ready.
+  supportSlot(f,kind) {
+    for(const [slot,sk,cd] of [['e',f.eSkill,f.cd.e],['q',f.qSkill,f.cd.q]]){
+      if(!sk||cd>0)continue;
+      if(kind==='heal'&&sk.kind==='heal')return slot;
+      if(kind==='shield'&&sk.kind==='buff'&&(!f.shieldT||f.shieldT<.25))return slot;
+      if(kind==='buff'&&sk.kind==='buff'&&(!f.damageBoostT||f.damageBoostT<.3))return slot;
+    }
+    return null;
+  }
+
+  castSlot(f,slot,aim) {
+    return slot==='q'?this.skillQ(f,aim):slot==='e'?this.skillE(f,aim):false;
+  }
+
+  markAutoAction(f,what) {
+    if(f!==this.me())return;
+    this._autoLastAction=what;
+    this._autoLastAt=this.t;
+  }
+
+  // Movement and action selection share the same engagement distance, so an
+  // autopilot won't stand outside the range of its own basic attack.
+  autoDrive(dt) {
+    if(!this.me()?.alive)return;
+    if(this.t-(this._autoLastSwitch||-20)>5){
+      const f=this.me();
+      const replacement=this.team
+        .map((cat,i)=>({cat,i}))
+        .filter(({cat,i})=>i!==this.active&&cat.alive&&cat.hp/cat.maxhp>.52)
+        .sort((a,b)=>b.cat.hp/b.cat.maxhp-a.cat.hp/a.cat.maxhp)[0];
+      if(replacement&&f.hp/f.maxhp<.24){
+        this.switchTo(replacement.i);
+        this._autoLastSwitch=this.t;
+        this.markAutoAction(this.me(),'低血量换猫');
+      }
+    }
+    const f=this.me();
+    const tgt=this.commandTarget
+      ?this.nearestEnemy(this.commandTarget.x,this.commandTarget.y)
+      :this.nearestEnemy(f.x,f.y);
+    if(!tgt)return;
+    const dx=tgt.x-f.x,dy=tgt.y-f.y,dist=Math.hypot(dx,dy)||1;
+    const aim=Math.atan2(dy,dx);this.aim=aim;f._aim=aim;
+    const threat=this.incomingThreat(f);
+    const basicRange=Math.min(170,f.projSpeed*.45+20);
+    const ideal=Math.min(115,basicRange-22);
+    const danger=f.hp/f.maxhp<.34;
+    let mx=0,my=0;
+    if(threat){
+      const p=threat.p,sp=Math.hypot(p.vx,p.vy)||1;
+      const side=f.i%2?-1:1;
+      mx=-p.vy/sp*side;my=p.vx/sp*side;
+    }else if(danger&&dist<165){
+      mx=-dx/dist;my=-dy/dist;
+    }else if(this.commandTarget){
+      const gx=this.commandTarget.x-f.x,gy=this.commandTarget.y-f.y;
+      const gd=Math.hypot(gx,gy);
+      if(gd>35){mx=gx/gd;my=gy/gd;}
+      else if(dist>ideal+25){mx=dx/dist;my=dy/dist;}
+    }else if(dist>ideal+18){mx=dx/dist;my=dy/dist;}
+    else if(dist<Math.max(62,ideal-45)){mx=-dx/dist;my=-dy/dist;}
+    else{
+      mx=-dy/dist*.24;my=dx/dist*.24;
+    }
+    const mag=Math.hypot(mx,my);
+    if(mag>0.04){
+      const spd=f.dashT>0?f.speed*3:f.speed;
+      f.x=clamp(f.x+mx/mag*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+      f.y=clamp(f.y+my/mag*spd*dt,this.topMargin,this.H-this.bottomMargin);
+      f.face=mx<0?-1:mx>0?1:f.face;
+      f.moving=true;
+    }else f.moving=false;
+    const near=threat?.p||null;
+    this.evalGambits(f,tgt,Math.hypot(tgt.x-f.x,tgt.y-f.y),near,threat?.d??Infinity);
+  }
+
+  // Context-sensitive default planner: defence, sustain, burst, elemental
+  // skills, pounce and basic attacks. Never spend heals at full HP or melee
+  // skills outside their hit radius.
+  smartAutoAction(f,tgt,dist,threat) {
+    if(!tgt||!f.alive)return;
+    const aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+    f._aim=aim;
+    if(threat&&f.dodgeCd<=0){
+      if(this.dodge(f)!==false){this.markAutoAction(f,'闪避危险弹幕');return;}
+    }
+    const hp=f.hp/f.maxhp;
+    const heal=this.supportSlot(f,'heal');
+    if(hp<.62&&heal){
+      if(this.castSlot(f,heal,aim)!==false){this.markAutoAction(f,'恢复斗志');return;}
+    }
+    const shield=this.supportSlot(f,'shield');
+    if(shield&&(hp<.70||dist<145)){
+      if(this.castSlot(f,shield,aim)!==false){this.markAutoAction(f,'展开护盾');return;}
+    }
+    if(f===this.me()&&this.ult>=100&&dist<370){
+      if(this.ultimate()!==false){this.markAutoAction(f,'释放必杀技');return;}
+    }
+    const offensive=(sk,slot)=>{
+      if(!sk)return slot==='q'&&dist<310;
+      if(sk.kind==='heal'||sk.kind==='buff')return false;
+      if(sk.kind==='melee')return dist<=106;
+      if(sk.kind==='dash')return dist>65&&dist<240;
+      return dist<460;
+    };
+    if(f.cd.q<=0&&offensive(f.qSkill,'q')){
+      if(this.skillQ(f,aim)!==false){this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射'));return;}
+    }
+    if(f.cd.e<=0&&offensive(f.eSkill,'e')){
+      if(this.skillE(f,aim)!==false){this.markAutoAction(f,'技能：'+(f.eSkill?.name||'疾扑'));return;}
+    }
+    const buff=this.supportSlot(f,'buff');
+    if(buff&&dist<290){
+      if(this.castSlot(f,buff,aim)!==false){this.markAutoAction(f,'强化自身');return;}
+    }
+    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)){
+      this.fireBasic(f,aim);
+      // Basic attack intentionally does not overwrite the last skill label.
+    }
+  }
+
+  // Custom gambits are strictly top-down; default and legacy presets use the
+  // smarter contextual planner. Custom conditions do not silently change.
+  evalGambits(f,tgt,dist,nearProj,nd) {
+    if(!tgt)return;
+    const threat=this.incomingThreat(f);
+    if(this.isDefaultGambit(f.cat)){
+      this.smartAutoAction(f,tgt,dist,threat);
+      return;
+    }
+    const rules=f.cat.gambits;
+    const tags=tgt.tags||[];
+    const aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+    f._aim=aim;
+    const condition=k=>{
+      switch(k){
+        case 'always':return true;
+        case 'enemyHpBelow30':return tgt.hp/tgt.maxhp<.30;
+        case 'enemyHpBelow50':return tgt.hp/tgt.maxhp<.50;
+        case 'selfHpBelow40':return f.hp/f.maxhp<.40;
+        case 'selfHpBelow25':return f.hp/f.maxhp<.25;
+        case 'ultReady':return this.ult>=100;
+        case 'comboPrimed':case 'enemyHasTag':return tags.length>0;
+        case 'enemyClose':return dist<145;
+        case 'enemyFar':return dist>260;
+        case 'incomingProj':return !!threat;
+        case 'bondHigh':return (f.cat.affinity||0)>=60;
+        default:return false;
+      }
+    };
+    const action=act=>{
+      switch(act){
+        case 'ult':return f===this.me()&&this.ult>=100?this.ultimate():false;
+        case 'heal':{
+          const slot=this.supportSlot(f,'heal')||this.supportSlot(f,'shield');
+          return slot?this.castSlot(f,slot,aim):false;
+        }
+        case 'dodge':return this.dodge(f);
+        case 'skillQ':case 'combo':case 'finisher':
+          if(f.cd.q>0||f.qSkill?.kind==='melee'&&dist>106)return false;
+          return this.skillQ(f,aim);
+        case 'skillE':case 'approach':
+          if(f.cd.e>0)return false;
+          if(f.eSkill?.kind==='dash'&&(dist<60||dist>260))return false;
+          return this.skillE(f,aim);
+        case 'retreat':return f.hp/f.maxhp<.4?true:false; // spacing owned by movement AI
+        case 'basic':
+          if(dist>Math.min(175,f.projSpeed*.45+25)||f.cd.basic>0)return false;
+          this.fireBasic(f,aim);return true;
+        default:return false;
+      }
+    };
+    for(const r of rules){
+      if(condition(r.cond)&&action(r.act)!==false)return;
+    }
+    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25))this.fireBasic(f,aim);
   }
 
   // Ally AI: a non-active team cat fights on its own — flanks near the player,
@@ -277,7 +412,7 @@ class CaptureBattle {
     if (near && nd < 100) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; }
     else {
       // keep a mid range, orbit a bit so allies spread out
-      const want = 200;
+      const want = 125;
       if (dist > want + 30) { mx = dx / dist; my = dy / dist; }
       else if (dist < want - 30) { mx = -dx / dist; my = -dy / dist; }
       mx += -dy / dist * 0.4 * (f.i % 2 ? 1 : -1); my += dx / dist * 0.4 * (f.i % 2 ? 1 : -1);
@@ -290,6 +425,7 @@ class CaptureBattle {
       f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
       f.face = dx < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
     }
+    if(near && this.incomingThreat(f) && f.dodgeCd<=0) this.dodge(f);
     this.evalGambits(f, tgt, dist, near, nd);
   }
 
@@ -607,7 +743,7 @@ class CaptureBattle {
     const live = this.liveEnemies();
     this.captureReady = live.some(e => e.hp / e.maxhp < 0.28);
     const packN = this.enemies.length;
-    this.hint = this.autoMode ? '🤖 自动战斗中 · 点击设集火点 · R 必杀 · 1/2/3 换猫'
+    this.hint = this.autoMode ? (this._autoLastAction&&this.t-(this._autoLastAt||0)<2.5 ? '🤖 智能自动 · '+this._autoLastAction : '🤖 智能自动 · 自动放技能、闪避、必杀 · 点击集火')
       : (this.captureReady ? '野猫斗志快耗尽了，收服它！'
       : (this.ult >= 100 ? '必杀能量已满！按 R 释放'
       : (packN > 1 ? `野猫群 ${live.length}/${packN} 只 · 鼠标瞄准 · Q/E 技能` : '鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避')));
