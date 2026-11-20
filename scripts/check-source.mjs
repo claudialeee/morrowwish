@@ -354,10 +354,11 @@ console.log('Immediate music start and bilingual wish-cascade news checked.');
 const navStart=dreamPage.indexOf('<header class="top">'),navEnd=dreamPage.indexOf('</header>',navStart);
 if(navStart<0||navEnd<0)throw Error('Missing Elsewhere header');
 const nav=dreamPage.slice(navStart,navEnd);
-if(nav.indexOf('href="/"')<0||nav.indexOf('href="/"')>nav.indexOf('href="/elsewhere/"')||!nav.includes('id="language"'))
+if(nav.indexOf('href="/"')<0||nav.indexOf('href="/"')>nav.indexOf('href="/elsewhere/"')||!nav.includes('data-language="zh"')||!nav.includes('data-language="en"'))
  throw Error('Elsewhere studio-home link or language toggle missing');
 if((nav.match(/href="\/"(?=\s|>)/g)||[]).length!==1)throw Error('Ambiguous Elsewhere homepage route');
-console.log('Elsewhere navigation and language toggle checked.');
+if(!dreamSource.includes('button.setAttribute("aria-pressed",String(selected))')||!dreamSource.includes('el.matches("[data-language]")'))throw Error('Elsewhere language options must highlight the current language and respond directly');
+console.log('Elsewhere home navigation and two-option language selector checked.');
 
 // Parcel Panic must be genuinely playable with one click or 1/2/3 keys on laptops,
 // while retaining touch drag and the old analytics/achievements event contracts.

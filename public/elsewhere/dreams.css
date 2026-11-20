@@ -14,7 +14,11 @@ a{color:inherit}
 .brand i{color:var(--rose);font-style:normal}
 .top-right{display:flex;align-items:center;gap:16px}
 .top-right span{font-size:11px;letter-spacing:.13em;color:#82909c}
-.lang-btn{background:white;border:1px solid #dedce0;color:#475565;padding:7px 12px;font-weight:700;border-radius:40px;min-width:59px}
+.language-switch{display:inline-flex;gap:3px;padding:3px;background:#eee9e5;border:1px solid #e1d9d3;border-radius:12px;flex-shrink:0}
+.language-option{border:0;border-radius:9px;background:transparent;color:#667382;font-size:13px;line-height:1.2;padding:9px 13px;font-weight:700;min-height:36px;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s}
+.language-option:hover:not(.is-active){background:rgba(255,255,255,.65);color:#334253}
+.language-option.is-active{background:#fff;color:#233d50;box-shadow:0 1px 5px rgba(43,44,55,.13)}
+@media(max-width:390px){.language-option{padding:8px 9px;font-size:12px}.language-switch{gap:1px;padding:2px}.top-right{gap:3px}}
 main{max-width:1170px;margin:auto;padding:0 24px}
 .intro{padding:54px 0 26px;position:relative}
 .kicker,.place,.scene-kicker{font-size:11px;letter-spacing:.12em;font-weight:750;color:#a16c7d}

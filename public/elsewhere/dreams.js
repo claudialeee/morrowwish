@@ -303,7 +303,11 @@ function toast(msg){$("#toast").textContent=msg;$("#toast").hidden=false;setTime
 function setLanguage(l){
  lang=l;document.documentElement.lang=l==="zh"?"zh-CN":"en";
  try{localStorage.setItem(LANG,l)}catch{}
- $("#language").textContent=l==="zh"?"EN":"中文";
+ document.querySelectorAll("[data-language]").forEach(button=>{
+  const selected=button.dataset.language===l;
+  button.classList.toggle("is-active",selected);
+  button.setAttribute("aria-pressed",String(selected));
+ });
  $(".brand").innerHTML=(l==="zh"?"平行人生":"Elsewhere")+"<i>.</i>";
  $(".top-right span").textContent=l==="zh"?"MORROW WISH · 梦幻人生":"A MORROW WISH ADVENTURE";
  $(".footer").textContent=l==="zh"?"平行人生 · MORROW WISH · 每段人生都有另一扇门":"ELSEWHERE · MORROW WISH · EVERY LIFE HAS ANOTHER DOOR";
@@ -311,7 +315,8 @@ function setLanguage(l){
 }
 document.addEventListener("click",e=>{
  const el=e.target.closest("button,a");if(!el)return;
- if(el.matches("[data-world]"))openWorld(el.dataset.world);
+ if(el.matches("[data-language]"))setLanguage(el.dataset.language);
+ else if(el.matches("[data-world]"))openWorld(el.dataset.world);
  else if(el.matches("[data-random]"))randomWorld();
  else if(el.matches("[data-home]"))renderHome();
  else if(el.matches("[data-retry]"))openWorld(state.id,true);
@@ -320,7 +325,6 @@ document.addEventListener("click",e=>{
  else if(el.matches("[data-secret]")&&state&&!state.secret){state.secret=true;toast(tr(WORLDS.find(w=>w.id===state.id).secret));renderStage();}
  else if(el.matches("[data-share]"))share();
 });
-$("#language").addEventListener("click",()=>setLanguage(lang==="zh"?"en":"zh"));
 window.addEventListener("popstate",()=>{const id=new URLSearchParams(location.search).get("world");if(!id)renderHome();else if(!state||state.id!==id)openWorld(id,false,false)});
 const urlWorld=new URLSearchParams(location.search).get("world");
 setLanguage(lang);
