@@ -60,7 +60,7 @@ const rnd=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^(seed>>
 const allStars=()=>Object.values(save.best).reduce((sum,v)=>sum+Math.min(3,Math.max(0,Number(v.stars)||0)),0);
 function saveGame(){try{localStorage.setItem("pawsibly-innocent-save-v1",JSON.stringify(save))}catch{}}
 function metric(name,p={}){window.arcadeMetric?.(name,p)}
-let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,fx=[],entered=false,aimingYarn=false,yarnPreview=null;
+let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,fx=[],entered=false,aimingYarn=false,yarnPreview=null,yarnTargets=new Set();
 const seedDay=Number(today.replaceAll("-",""));
 function randomRoom(){return Math.floor(rnd(seedDay)()*ROOMS.length)}
 function popup(k){const el=$("toast");el.textContent=TX[lang][k]||EXTRA_WORDS[lang][k]||k;el.classList.add("on");clearTimeout(msgTimer);msgTimer=setTimeout(()=>el.classList.remove("on"),1450);}
@@ -71,7 +71,7 @@ if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),que
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
 return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,started:false,done:false,winning:false,invincible:0,catFrom:{...cat},humanFrom:{...human},movedAt:0};}
-function init(index=0,isDaily=false){if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
+function init(index=0,isDaily=false){if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY<br><span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
@@ -95,9 +95,12 @@ const hidden=p=>s.boxes.some(b=>equal(b,p));
 function visible(p=s.cat){if(hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
 function hurt(){if(s.invincible>0)return;s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.patrol=0;}
-function yarnTarget(p){return !!s&&pass(p,true)&&!equal(p,s.human)&&!equal(p,s.cat)&&pathTo(s.human,p,true).length>0}
+function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
- aimingYarn=!!on;yarnPreview=null;
+ aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
+ if(aimingYarn)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const p={x,y};if(pass(p,true)&&!equal(p,s.human)&&!equal(p,s.cat)&&pathTo(s.human,p,true).length>0)yarnTargets.add(key(p));
+ }
  $("stage").classList.toggle("yarn-aiming",aimingYarn);
  if($("yarnAimBanner"))$("yarnAimBanner").hidden=!aimingYarn;
  syncUI();
