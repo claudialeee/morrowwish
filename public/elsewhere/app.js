@@ -196,22 +196,43 @@
     const zh=window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh');
     return '<span aria-hidden="true">'+(active?'■':'◌')+'</span> '+(zh?(active?'停止朗读':'朗读'):(active?'Stop':'Listen'));
   }
+  const NARRATOR_VOICE_KEY='elsewhere.narrator.voice.v1';
+  function narrationScore(v,language){
+    const name=v.name||'',loc=(v.lang||'').toLowerCase();
+    return (/premium|enhanced|natural|neural/i.test(name)?100:0)+
+      (/ava|zoe|jenny|xiaoxiao|tingting|mei-jia|samantha|google.*english|google.*中文/i.test(name)?35:0)+
+      (/google|apple|microsoft/i.test(name)?12:0)+
+      (loc===language.toLowerCase()?15:0)+(v.localService?4:0)-
+      (/compact|espeak|festival|fred|albert/i.test(name)?80:0);
+  }
+  function narrationVoices(language){
+    return (window.speechSynthesis?.getVoices?.()||[])
+      .filter(v=>(v.lang||'').toLowerCase().startsWith(language.slice(0,2).toLowerCase()))
+      .sort((a,b)=>narrationScore(b,language)-narrationScore(a,language));
+  }
+  function narrationLanguage(){
+    return window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh')?'zh-CN':'en-US';
+  }
   function chooseNarrationVoice(language){
-    const available=window.speechSynthesis?.getVoices?.()||[];
-    const prefix=language.slice(0,2).toLowerCase();
-    const candidates=available.filter(v=>(v.lang||'').toLowerCase().startsWith(prefix));
-    candidates.sort((a,b)=>{
-      const score=v=>{
-        const name=v.name||'',loc=(v.lang||'').toLowerCase();
-        return (/premium|enhanced|natural|neural/i.test(name)?100:0)+
-         (/ava|zoe|jenny|xiaoxiao|tingting|mei-jia|samantha|google.*english|google.*中文/i.test(name)?35:0)+
-         (/google|apple|microsoft/i.test(name)?12:0)+
-         (loc===language.toLowerCase()?15:0)+(v.localService?4:0)-
-         (/compact|espeak|festival|fred|albert/i.test(name)?80:0);
-      };
-      return score(b)-score(a);
-    });
-    return candidates[0]||null;
+    const candidates=narrationVoices(language);
+    let picked='';try{picked=localStorage.getItem(NARRATOR_VOICE_KEY+language)||''}catch{}
+    return candidates.find(v=>v.name===picked)||candidates[0]||null;
+  }
+  function refreshNarrationVoices(){
+    const selector=$('#narrate-voice');if(!selector)return;
+    const language=narrationLanguage(),voices=narrationVoices(language).slice(0,8);
+    selector.replaceChildren();
+    if(voices.length<2){selector.hidden=true;return}
+    for(const v of voices){
+      const o=document.createElement('option');
+      o.value=v.name;o.textContent=v.name+(narrationScore(v,language)>80?' ★':'');
+      selector.append(o);
+    }
+    selector.value=chooseNarrationVoice(language)?.name||voices[0].name;
+    selector.hidden=false;
+    const zh=language==='zh-CN';
+    selector.setAttribute('aria-label',zh?'选择朗读声音':'Choose narration voice');
+    selector.title=zh?'切换朗读声音（取决于设备已安装的语音）':'Change narration voice (depends on device voices)';
   }
   function stopSpeech() {
     speechToken++;
@@ -398,7 +419,7 @@
     const ch=resolvedChapter(),prev=active.decisions[active.chapter-1];
     const recall=(prev&&ch.recall?.[prev.tag])||'';
     const translate=window.MorrowwishI18n?.t||((s)=>s);
-    const language=window.MorrowwishI18n?.get?.()==='zh'?'zh-CN':'en-US';
+    const language=narrationLanguage();
     const voice=chooseNarrationVoice(language);
     const passages=[ch.scene,ch.dialogue,ch.echo,recall,active.selected!==null?ch.choices[active.selected].reply:'']
       .filter(Boolean).map(text=>translate(String(text)).trim()).filter(Boolean);
@@ -448,6 +469,14 @@
     if(event.target.closest('#about-btn')||event.target.closest('#footer-about')){openAbout();return;}
     if(event.target.closest('#dialog-close')){$('#about-dialog').close();return;}
   });
+  const narratorSelector=$('#narrate-voice');
+  narratorSelector?.addEventListener('change',()=>{
+    try{localStorage.setItem(NARRATOR_VOICE_KEY+narrationLanguage(),narratorSelector.value)}catch{}
+    if(speaking)stopSpeech();
+  });
+  window.speechSynthesis?.addEventListener?.('voiceschanged',refreshNarrationVoices);
+  window.addEventListener('morrowwish-language-change',refreshNarrationVoices);
+  refreshNarrationVoices();
   $('#about-dialog').addEventListener('click',event=>{if(event.target===$('#about-dialog'))$('#about-dialog').close();});
   $('#brand').addEventListener('click',e=>{e.preventDefault();goHome();});
   window.addEventListener('popstate',()=>{const id=new URLSearchParams(location.search).get('world');if(id&&WORLD_BY_ID[id])openWorld(id,{push:false});else goHome(false);});
