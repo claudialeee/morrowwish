@@ -4,7 +4,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 try{
   for(const [width,height] of [[907,510],[821,462],[800,450],[1366,768]]){
-    const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1});
+    const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:width===907?2:1});
     const page=await context.newPage();
     const exceptions=[];
     page.on('pageerror',err=>exceptions.push(err.message));
@@ -61,8 +61,25 @@ try{
       assert.doesNotMatch(battlePrepCopy,/[\u4e00-\u9fff]/,
         'CrazyGames English battle prep has untranslated Chinese: '+battlePrepCopy);
 
+      if(width===907){
+        const art=await page.locator('#cp-wild').evaluate(canvas=>{
+          const rect=canvas.getBoundingClientRect();
+          return {px:canvas.width,css:rect.width};
+        });
+        assert.ok(art.css>80&&art.px/art.css>=1.8,
+          'Cat portraits must render sharply on retina devices: '+JSON.stringify(art));
+      }
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
+      const auto=page.locator('#btn-auto');
+      assert.equal(await auto.getAttribute('aria-pressed'),'false','Start in explicit manual mode');
+      assert.ok((await page.locator('#mv-dodge').innerText()).match(/Dodge|闪避/),
+        'Dodge button must explain its function instead of only showing Space');
+      await auto.click();
+      assert.equal(await auto.getAttribute('aria-pressed'),'true','Click must turn automatic battle ON');
+      assert.match(await auto.innerText(),/ON|开/,'Button must show CURRENT active mode');
+      await auto.click();
+      assert.equal(await auto.getAttribute('aria-pressed'),'false','Click must turn automatic battle OFF');
       if(width===907){
         // Simulate earned win through the real battle completion logic.
         await page.evaluate(()=>{
@@ -79,6 +96,13 @@ try{
         assert.equal(await page.evaluate(()=>State.S.cats.length),2);
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
+        await page.locator('#collection-goal').click();
+        await page.waitForSelector('#journey-collect');
+        assert.equal(await page.locator('.journey-path').count(),3,
+          'Collection, bonding and exploration should all be discoverable');
+        await page.locator('#journey-explore').click();
+        assert.equal(await page.evaluate(()=>window.__game.scene),'map',
+          'Explore CTA should actually open the explorable world');
       }
       assert.deepEqual(exceptions,[],'Portal runtime errors: '+exceptions.join(' | '));
       console.log('CRAZYGAMES CAT BOND PASS',width+'x'+height,JSON.stringify({stage:layout.stage,starter:state.species}));
