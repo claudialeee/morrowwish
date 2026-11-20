@@ -125,6 +125,27 @@ for(const p of [{x:2,y:4},{x:6,y:5},{x:9,y:5},{x:9,y:6}]){
 }
 assert.equal(test.getState().winning,true,'Kitchen must be playable by following a short, intuitive route');
 assert.equal(test.getState().lives,3,'Early kitchen should not punish an ordinary path with an unfair capture');
+// Collect a REAL room souvenir and verify its name, preview, and permanent album entry.
+test.choose(0,false);
+let relicMoves=0;
+while(!test.getState().done&&!test.getState().hasRelic&&relicMoves++<40){
+ const room=test.getState(),next=path(room,room.cat,room.relic)?.[0];
+ assert.ok(next,'Souvenir must remain reachable');
+ test.move(next.x-room.cat.x,next.y-room.cat.y);
+}
+assert.equal(test.getState().hasRelic,true,'Touching the souvenir must pick it up');
+assert.ok(nodes.get('collectionPreview').innerHTML.includes('窗帘流苏'),
+ 'Collection preview should NAME the actual found object in Chinese');
+assert.ok(nodes.get('relicGallery').innerHTML.includes('窗帘流苏'),
+ 'The collection gallery must identify the acquired item');
+const finalRoom=test.getState();
+finalRoom.got=3;finalRoom.cat={x:8,y:6};
+test.move(1,0);
+assert.equal(test.getState().winning,true,'A found souvenir must be banked on a successful escape');
+const relicSave=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
+assert.equal(relicSave.souvenirs[0],true,'The collected object must persist across sessions');
+assert.ok(nodes.get('relicGallery').innerHTML.includes('已收藏'),
+ 'The album must mark an escaped-with souvenir as saved');
 assert.ok(source.includes('const RELICS=[')&&source.includes('const BADGES=['),
  'Named souvenirs and persistent achievements must remain wired');
 assert.ok(reviewStyle.includes('id="achievementCount"')&&reviewStyle.includes('id="relicGallery"')&&reviewStyle.includes('id="guardIntent"'),
