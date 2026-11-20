@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="scene">
+<title id="scene">A friendly watercolor parcel-sorting room with sky-blue, sunny yellow and soft-pink delivery lanes and matching packages</title>
+<defs>
+ <linearGradient id="room" x2=".15" y2="1"><stop stop-color="#cce4e0"/><stop offset=".55" stop-color="#e9dfcf"/><stop offset="1" stop-color="#f2dfca"/></linearGradient>
+ <linearGradient id="floor" x2=".08" y2="1"><stop stop-color="#f0dcca"/><stop offset="1" stop-color="#d5c6bd"/></linearGradient>
+ <linearGradient id="cyan" x2=".12" y2="1"><stop stop-color="#bde8e6"/><stop offset="1" stop-color="#74b9c5"/></linearGradient>
+ <linearGradient id="gold" x2=".12" y2="1"><stop stop-color="#f8e6ad"/><stop offset="1" stop-color="#e7bf7e"/></linearGradient>
+ <linearGradient id="rose" x2=".12" y2="1"><stop stop-color="#f8d5cc"/><stop offset="1" stop-color="#df9fa6"/></linearGradient>
+ <linearGradient id="box" x2=".1" y2="1"><stop stop-color="#f9e7c8"/><stop offset=".65" stop-color="#e9c9a0"/><stop offset="1" stop-color="#d4b48e"/></linearGradient>
+ <linearGradient id="belt" x2=".1" y2="1"><stop stop-color="#9caaa8"/><stop offset=".5" stop-color="#aab7b2"/><stop offset="1" stop-color="#7a989c"/></linearGradient>
+ <radialGradient id="lamp"><stop stop-color="#fff6df" stop-opacity=".68"/><stop offset="1" stop-color="#fff6df" stop-opacity="0"/></radialGradient>
+ <filter id="paper" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".018" numOctaves="3" seed="8" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".11"/></feComponentTransfer></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="11"/></filter>
+</defs>
+<path fill="url(#room)" d="M0 0H1200V600H0Z"/>
+<!-- Diffused daylit windows -->
+<rect x="86" y="45" width="235" height="245" rx="22" fill="#b4d7d0" opacity=".28" stroke="#fff7e9" stroke-width="12"/>
+<path d="M204 56v221M99 158h209" fill="none" stroke="#fff4df" stroke-width="11" opacity=".7"/>
+<g fill="#aacac0" opacity=".45"><path d="M98 248q65-114 130-16l79-73v118H98Z"/><path d="M98 263q99-58 209-4v18H98Z" fill="#93bdab"/></g>
+<rect x="950" y="54" width="187" height="240" rx="22" fill="#c1d7d9" opacity=".34" stroke="#fff7e9" stroke-width="12"/>
+<path d="M1044 60v219M957 172h167" fill="none" stroke="#fff4df" stroke-width="10"/>
+<ellipse cx="560" cy="184" rx="390" ry="230" fill="url(#lamp)" opacity=".52"/>
+<!-- Small broad-leaf plants bring the same organic illustrated vocabulary as Aquarium -->
+<g stroke="#659a80" stroke-width="7" stroke-linecap="round" fill="none"><path d="M24 570q26-177-5-311"/><path d="M68 570q33-134 87-205"/><path d="M1170 568q-12-195 19-277"/><path d="M1150 565q-77-174-86-242"/></g>
+<g stroke="#75a58c" stroke-width="3" fill="#9fc9a4">
+<path d="M30 354Q-15 340 0 287q40 24 30 67Z"/><path d="M56 457q59-83 93-82-20 67-93 82Z"/><path d="M37 500Q-3 479 2 418q51 22 35 82Z"/>
+<path d="M1174 402q-67-32-75-88 68 14 75 88Z"/><path d="M1163 486q30-63 86-79-19 69-86 79Z"/>
+</g>
+<!-- Receding warm warehouse wall and shelving -->
+<path d="M0 315q211-16 407-14 304-10 425 4t368 2v293H0Z" fill="#f0dfd0" opacity=".43"/>
+<g stroke="#bcb5ac" stroke-width="5" opacity=".47"><path d="M0 318h1200"/><path d="M362 0v314M840 0v314"/></g>
+<path d="M0 490q305-25 604 8t596-18v120H0Z" fill="url(#floor)"/>
+<g stroke="#c8baae" stroke-width="3" opacity=".35"><path d="M0 550q305-36 602 0t598-16"/><path d="M0 589q306-30 599-2t601-14"/></g>
+<!-- Three colorful sorting arches, central to the actual one-click sorting game -->
+<g stroke-linecap="round" stroke-linejoin="round" stroke-width="7">
+ <path d="M166 390V215Q168 126 259 126q95 0 97 89v175Z" fill="url(#cyan)" stroke="#659ea8"/>
+ <path d="M443 390V215q2-89 95-89 94 0 96 89v175Z" fill="url(#gold)" stroke="#c5a578"/>
+ <path d="M720 390V215q1-89 96-89t96 89v175Z" fill="url(#rose)" stroke="#c28a94"/>
+ <path d="M195 373V224q0-66 64-66 66 0 66 66v149Z" fill="#588e9a" stroke="#8eb8bb"/>
+ <path d="M472 373V224q0-66 65-66 66 0 66 66v149Z" fill="#b39567" stroke="#e8cd98"/>
+ <path d="M748 373V224q0-66 68-66 68 0 68 66v149Z" fill="#ab7884" stroke="#e3b3b2"/>
+</g>
+<g fill="#fef9eb" opacity=".16"><path d="M198 361V238q6-70 45-70l-3 190Z"/><path d="M477 363V238q4-69 44-68l-5 190Z"/><path d="M754 361V238q3-70 45-70l-4 190Z"/></g>
+<g fill="#fff3df" opacity=".45"><ellipse cx="258" cy="126" rx="56" ry="11"/><ellipse cx="538" cy="126" rx="56" ry="11"/><ellipse cx="815" cy="126" rx="55" ry="11"/></g>
+<!-- Curved pastel conveyor lane, split into three neat delivery paths -->
+<g fill="none" stroke-linecap="round">
+ <path d="M83 568q94-98 166-178" stroke="#8aa9ad" stroke-width="68"/>
+ <path d="M368 568q85-105 155-176" stroke="#b4a08c" stroke-width="68"/>
+ <path d="M652 568q83-102 147-175" stroke="#bb9a9b" stroke-width="68"/>
+ <path d="M83 568q94-98 166-178" stroke="#b4d8d6" stroke-width="49"/>
+ <path d="M368 568q85-105 155-176" stroke="#e2d2b1" stroke-width="49"/>
+ <path d="M652 568q83-102 147-175" stroke="#f1cdc4" stroke-width="49"/>
+</g>
+<g stroke="#fdf4e6" stroke-width="4" opacity=".62" stroke-linecap="round">
+<path d="M157 498l44 42M202 444l45 37M438 490l43 44M488 441l43 37M718 492l46 41M768 440l43 40"/></g>
+<!-- Central small sorting belt, on which colored packages can be sent with a click -->
+<path d="M865 580q-20-54-10-121t73-121q39-22 77-23h206v231q-117 2-183 29Z" fill="#bdada4" opacity=".38"/>
+<path d="M834 600q-16-93 57-171 67-60 147-59h174v114q-123-15-190 49-35 36-39 67Z" fill="url(#belt)" stroke="#6d999e" stroke-width="7"/>
+<g stroke="#c6d6cd" stroke-width="5" opacity=".7"><path d="M891 561q36-107 150-119"/><path d="M919 586q52-95 157-106"/><path d="M978 593q72-72 157-72"/></g>
+<!-- Crates with different colored ribbons, no logos or lettering -->
+<g stroke-linejoin="round" stroke-linecap="round" stroke-width="4">
+ <g transform="translate(179 480) rotate(-8)"><path d="M-52-33h105l19 17v74h-110l-14-15Z" fill="url(#box)" stroke="#b99b83"/><path d="M-52-33l12 18h112l-19-18Z" fill="#f7e7cd" stroke="#bd9e81"/><path d="M-4-33h25v90H-4Z" fill="#91cfd0" stroke="#6fabaf"/><path d="M-40-14h109" fill="none" stroke="#b99b83"/></g>
+ <g transform="translate(478 470) rotate(6)"><path d="M-51-33H54l17 18v73H-40l-13-15Z" fill="url(#box)" stroke="#b99b83"/><path d="M-51-33l12 18H71L54-33Z" fill="#f7e7cd" stroke="#bd9e81"/><path d="M-1-32h25v90H-1Z" fill="#f4d183" stroke="#d3b26b"/><path d="M-40-14h109" fill="none" stroke="#b99b83"/></g>
+ <g transform="translate(755 463) rotate(-5)"><path d="M-52-33h105l19 17v74h-110l-14-15Z" fill="url(#box)" stroke="#b99b83"/><path d="M-52-33l12 18h112l-19-18Z" fill="#f7e7cd" stroke="#bd9e81"/><path d="M-4-33h25v90H-4Z" fill="#e7abb4" stroke="#cc929e"/><path d="M-40-14h109" fill="none" stroke="#b99b83"/></g>
+ <g transform="translate(1048 450) rotate(6)"><path d="M-64-41h126l20 20v95H-54l-13-17Z" fill="url(#box)" stroke="#b99b83"/><path d="M-64-41l10 19H82L62-41Z" fill="#f8e8d0" stroke="#bd9e81"/><path d="M-4-41h29v114H-4Z" fill="#91cfd0" stroke="#6fabaf"/><path d="M-52-21H80" fill="none" stroke="#b99b83"/></g>
+</g>
+<!-- Soft daylight and small confetti paper specks -->
+<g fill="#fff6d9" opacity=".75"><circle cx="399" cy="143" r="5"/><circle cx="676" cy="119" r="4"/><circle cx="981" cy="194" r="5"/><circle cx="83" cy="417" r="4"/><circle cx="938" cy="273" r="5"/></g>
+<g fill="none" stroke="#fdf6e4" opacity=".75" stroke-width="4" stroke-linecap="round"><path d="M397 232v17m-8-8h16"/><path d="M974 137v21m-10-10h20"/><path d="M81 347v15m-8-7h16"/></g>
+<rect width="1200" height="600" fill="#fffaf1" opacity=".30" filter="url(#paper)"/>
+</svg>
