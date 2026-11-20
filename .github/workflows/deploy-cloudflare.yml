@@ -56,6 +56,8 @@ jobs:
           fi
       - name: Add CC0 audio to six social promotion video clips
         run: bash scripts/add-promo-audio.sh
+      - name: Render six polished mobile-first gameplay trailers
+        run: bash scripts/render-social-v2.sh
       - name: Verify source, game ordering, and D1 binding
         run: |
           npm run check
