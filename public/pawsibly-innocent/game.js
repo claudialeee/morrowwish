@@ -161,7 +161,12 @@ const dailyB=document.createElement("button");dailyB.className="level-btn daily"
 const shelf=$("souvenirShelf");if(shelf){shelf.innerHTML="";RELICS.forEach((relic,i)=>{const b=document.createElement("button");b.className="souvenir-stamp"+(save.souvenirs[i]?" found":"");b.disabled=i>save.unlocked;b.textContent=save.souvenirs[i]?relic.glyph:"?";b.type="button";b.title=(save.souvenirs[i]?relic[lang==="zh"?"zh":"en"]:"???")+" · "+ROOMS[i][lang==="zh"?"zh":"en"];b.onclick=()=>init(i,false);shelf.appendChild(b)})}
 const wd=$("wardrobe");wd.innerHTML="";fur.forEach((f,i)=>{const b=document.createElement("button");b.className="skin"+(save.cat===i?" active":"");b.disabled=allStars()<f[3];b.style.background="#fff5f1";b.style.setProperty("--cat-fur",f[0]);b.style.setProperty("--cat-detail",f[1]);b.innerHTML='<span class="cat-portrait"><b>•ᴗ•</b></span>';b.title=TX[lang].skinNames[i]+(b.disabled?" · "+tr("locked").replace("{n}",f[3]):"");b.setAttribute("aria-label",b.title);b.onclick=()=>{save.cat=i;saveGame();s.yarn=i===0?Math.max(1,s.yarn):s.yarn;translateUI();syncUI();audio("fish")};if(b.disabled){const span=document.createElement("span");span.className="lock";span.textContent="🔒";b.appendChild(span)}wd.appendChild(b)});
 }
+let collectionPaintKey="";
 function renderCollections(){
+ const signature=lang+"|"+RELICS.map((_,i)=>save.souvenirs[i]?"1":"0").join("")+"|"+
+  BADGES.map(b=>save.achievements[b.id]?"1":"0").join("")+"|"+(s?.hasRelic?s.index:"none");
+ if(signature===collectionPaintKey)return;
+ collectionPaintKey=signature;
  const count=relicCount(),earned=BADGES.filter(b=>save.achievements[b.id]).length;
  const prev=$("collectionPreview"),gallery=$("relicGallery"),grid=$("achievementsGrid");
  if($("achievementCount"))$("achievementCount").textContent=(lang==="zh"?"成就 ":"Badges ")+earned+" / "+BADGES.length;
@@ -526,7 +531,11 @@ if(s.guardTarget&&!equal(s.guardTarget,s.human)&&!["sleep","distracted"].include
  const tint=s.guardMode==="investigate"?"#a779d0aa":(s.guardMode==="chase"||s.guardMode==="search"?"#e76c81aa":"#67b7b1aa");
  pursuit.forEach((p,i)=>{shape((p.x+.5)*T,(p.y+.5)*T,Math.max(4,9-i),tint)});
 }
-if(s.alert>0||s.finalAlert){ellipse((s.human.x+.5)*T,(s.human.y+.5)*T+7,37,29,"#fa999744");label("!",(s.human.x+.5)*T+25,(s.human.y+.5)*T-33,"bold 26px Fredoka","#e76e7a")}
+if(s.alert>0||s.finalAlert){
+ const listening=s.guardMode==="investigate";
+ ellipse((s.human.x+.5)*T,(s.human.y+.5)*T+7,37,29,listening?"#b490d944":"#fa999744");
+ label(listening?"?":"!",(s.human.x+.5)*T+25,(s.human.y+.5)*T-33,"bold 26px Fredoka",listening?"#9b66b8":"#e76e7a");
+}
 const hu=s.human,ca=s.cat;
  // Both the owner and cat use the same smooth animation window.
  const catGlide=Math.min(1,Math.max(0,(time-(s.movedAt||0))/170));
