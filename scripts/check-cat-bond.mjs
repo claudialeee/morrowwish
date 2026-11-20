@@ -190,8 +190,30 @@ while (!b2.done && g2++ < 20000) {
 game.endBattle();
 assert.ok(events.some(e => e.name === 'game_over'), 'game_over analytics fired on loss');
 
+// ---- offline visitor gifts: never stringify an object into [object Object] ----
+const welcome = {
+  minutes: 120, capped: false, produced: {}, gains: { coins: 21, fish: 1, yarn: 3 },
+  visitors: [
+    { name: '汤圆', gift: { coins: 12, fish: 1, yarn: 3 }, rare: false },
+    { name: '豆豆', gift: { coins: 9 }, rare: true },
+    { name: '小灰', gift: {}, rare: false },
+  ],
+};
+UI.openWelcomeBack(welcome);
+const welcomeHtml = document.getElementById('panel').innerHTML;
+assert.match(welcomeHtml, /<b>汤圆<\\/b> 来访 · 留下 🪙\\+12 🐟\\+1 🧶\\+3/, 'Visitor gifts should list resource icons and exact quantities');
+assert.match(welcomeHtml, /<b>豆豆<\\/b> 来访 · 留下 🪙\\+9 ✨稀客!/, 'Rare visitor gift should also render correctly');
+assert.match(welcomeHtml, /<b>小灰<\\/b> 来访<\\/div>/, 'Empty visitor gifts must not show a placeholder');
+assert.ok(!welcomeHtml.includes('[object Object]'), 'Welcome-back panel must not display object Object');
+UI.closeAll();
+
 // ---- bilingual layer: representative ZH strings must resolve to pure English ----
 const tr = sandbox.window.CatBondI18n.translate;
+const enVisit=tr('汤圆 来访 · 留下 🪙+12 🐟+1 🧶+3');
+assert.match(enVisit, /Tangyuan/, 'Visitor name translates into English');
+assert.match(enVisit, /visited|left/, 'Visitor action translates into English');
+assert.ok(enVisit.includes('🪙+12') && enVisit.includes('🐟+1') && enVisit.includes('🧶+3'), 'Gift amounts survive English conversion');
+
 const HAN = /[一-鿿]/;
 for (const [zh, mustInclude] of [
   ['庭院', 'Yard'],

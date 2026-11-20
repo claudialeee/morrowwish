@@ -67,7 +67,10 @@ const UI = {
     const gains = r.gains || {};
     const prodStr = Object.entries(prod).filter(([, v]) => v > 0).map(([k, v]) => `${this.resIcon(k)}+${v}`).join(' ');
     const gainStr = Object.entries(gains).filter(([, v]) => v > 0).map(([k, v]) => `${this.resIcon(k)}+${v}`).join(' ');
-    const visitors = (r.visitors || []).map(v => `<div class="wb-visitor ${v.rare ? 'rare' : ''}"><b>${v.name}</b> 来访${v.gift ? ' · 留下 ' + v.gift : ''}${v.rare ? ' ✨稀客!' : ''}</div>`).join('');
+    const visitors = (r.visitors || []).map(v => {
+      const giftText = this.formatVisitorGift(v.gift);
+      return `<div class="wb-visitor ${v.rare ? 'rare' : ''}"><b>${v.name}</b> 来访${giftText ? ' · 留下 ' + giftText : ''}${v.rare ? ' ✨稀客!' : ''}</div>`;
+    }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">😺 欢迎回来</h2>
       <p class="sub center">你离开了约 ${r.minutes} 分钟${r.capped ? '（已达上限）' : ''}</p>
@@ -82,7 +85,15 @@ const UI = {
       State.save(); this.game.refreshHUD(); this.closeAll();
     };
   },
-  resIcon(k) { return ({ coins: '🪙', fish: '🐟', yarn: '🧶', luck: '🍀', xp: '✨' })[k] || ''; },
+  // Visitor gifts are resource dictionaries (e.g. {coins: 12, fish: 1}), not printable strings.
+  formatVisitorGift(gift) {
+    if (!gift || typeof gift !== 'object' || Array.isArray(gift)) return '';
+    return Object.entries(gift)
+      .filter(([, amount]) => Number.isFinite(amount) && amount > 0)
+      .map(([resource, amount]) => `${this.resIcon(resource) || resource}+${amount}`)
+      .join(' ');
+  },
+  resIcon(k) { return ({ coins: '🪙', fish: '🐟', yarn: '🧶', luck: '🍀', xp: '✨', treats: '🍖' })[k] || ''; },
 
   panel(html) {
     const p = document.getElementById('panel');
