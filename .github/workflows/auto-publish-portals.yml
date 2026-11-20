@@ -1,0 +1,54 @@
+name: Auto-publish Morrow Wish to game portals
+
+on:
+  workflow_run:
+    workflows:
+      - Deploy Morrow Wish to Cloudflare Pages
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 15 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: morrowwish-portal-publishing
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ITCH_STORAGE_STATE_B64: ${{ secrets.ITCH_STORAGE_STATE_B64 }}
+      CRAZY_STORAGE_STATE_B64: ${{ secrets.CRAZY_STORAGE_STATE_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Check publishing authorization availability
+        id: auth
+        env:
+          HAS_ITCH: ${{ secrets.ITCH_STORAGE_STATE_B64 != '' }}
+          HAS_CRAZY: ${{ secrets.CRAZY_STORAGE_STATE_B64 != '' }}
+        run: |
+          if [ "$HAS_ITCH" = true ] || [ "$HAS_CRAZY" = true ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Portal auto-publishing is not active yet. Run the one-time authorization scripts.'
+          fi
+      - name: Prepare authenticated browser environment
+        if: steps.auth.outputs.available == 'true'
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Publish missing itch.io projects
+        if: steps.auth.outputs.available == 'true' && env.ITCH_STORAGE_STATE_B64 != ''
+        run: node scripts/auto-publish-itch.mjs
+      - name: Submit next CrazyGames eligible game
+        if: ${{ always() && steps.auth.outputs.available == 'true' && env.CRAZY_STORAGE_STATE_B64 != '' }}
+        run: node scripts/auto-publish-crazygames.mjs
