@@ -77,6 +77,7 @@ jobs:
         run: |
           npm run check
           node scripts/test-analytics-integrity.mjs
+          node scripts/test-attribution-links.mjs
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const config = JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc', 'utf8'));
@@ -196,6 +197,31 @@ jobs:
           verify_live /pawsibly-innocent/ /tmp/morrowwish-live-cat.html 'PAWSIBLY'
           verify_live /pawsibly-innocent/game.js /tmp/morrowwish-live-game.js 'function throwYarn'
           echo 'Public homepage slogan, cat link, and playable game markup verified.'
+      - name: Verify live platform tracking links on both domains
+        run: |
+          set -eu
+          for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
+            for platform in youtube tiktok instagram bluesky; do
+              verified=0
+              for attempt in 1 2 3 4; do
+                response=$(curl -sS --max-time 18 -o /dev/null -w '%{http_code}|%{redirect_url}' "$origin/go/$platform" || true)
+                case "$response" in
+                  302*utm_source=$platform*) verified=1; break ;;
+                esac
+                sleep 3
+              done
+              if [ "$verified" -ne 1 ]; then
+                echo "::error::Tracking link failed for $platform via $origin (response: $response)"
+                exit 1
+              fi
+              echo "Verified attributed redirect: $origin/go/$platform"
+            done
+            game_link=$(curl -sS --max-time 18 -o /dev/null -w '%{http_code}|%{redirect_url}' "$origin/go/youtube/cat-bond" || true)
+            case "$game_link" in
+              302*/cat-bond/*utm_source=youtube*utm_medium=post*utm_campaign=cat-bond*) ;;
+              *) echo "::error::Game-specific campaign redirect failed: $origin"; exit 1 ;;
+            esac
+          done
       - name: Verify live D1 telemetry ingestion for six games without adding player stats
         run: |
           set -eu
