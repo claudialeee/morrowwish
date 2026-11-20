@@ -181,7 +181,7 @@ try{
   hits:[...document.querySelectorAll('.feature-grid>.feature-card')].map(x=>x.querySelector(':scope>.card-hit')?.getAttribute('href'))
  }));
  assert.ok(featuredChecks.titles.every(x=>x.font.includes('Nunito')&&x.weight==='900'),'All four featured titles need matching typography');
- assert.deepEqual(featuredChecks.hits,['/pawsibly-innocent/','/tiny-town/','/cat-bond/','/elsewhere/'],'Card images and content must be clickable');
+ assert.deepEqual(featuredChecks.hits,['/cat-bond/','/pawsibly-innocent/','/tiny-town/','/elsewhere/'],'All featured cards must remain clickable in Cat Bond-led order');
  // Desktop keeps the tagline on one line; 320/390px phones must show every character by wrapping.
  for(const phoneWidth of [390,320]){
    await page.setViewportSize({width:phoneWidth,height:844});
