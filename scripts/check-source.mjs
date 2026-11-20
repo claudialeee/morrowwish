@@ -561,9 +561,14 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
   throw new Error('Secondary cat-game instructions and souvenirs must fold away by default');
  const above=aside.slice(0,extra);
  for(const id of ['hearts','chapter','fishCount','meterFill','mission','collection',
-                   'score','moves','starTotal','restart','sound','music','levels','wardrobe','skinHint']){
+                   'score','moves','starTotal','restart','levels','wardrobe','skinHint']){
   if(!above.includes('id="'+id+'"'))throw new Error('Essential cat game control hidden in detail: '+id);
  }
+ // Music and effects now live at the top-right of the game, not in the sidebar.
+ const top=html.slice(html.indexOf('<header class="sitebar">'),html.indexOf('</header>')+9);
+ for(const id of ['sound','music'])if(!top.includes('id="'+id+'"'))
+  throw new Error('Audio control missing from cat header: '+id);
+ if(html.includes('data-move="'))throw new Error('On-screen D-pad must not crowd the cat board');
  // The yarn button is a primary gameplay action above the board, not inside the sidebar.
  const yarnAction=html.indexOf('id="tool"'),canvas=html.indexOf('id="board"');
  if(yarnAction<0||canvas<0||yarnAction>canvas||yarnAction>start)
