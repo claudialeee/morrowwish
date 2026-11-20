@@ -32,10 +32,17 @@ class Game {
 
   resize() {
     const rect = this.canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    this.W = rect.width; this.H = rect.height;
-    this.canvas.width = this.W * dpr; this.canvas.height = this.H * dpr;
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // Retina phones need three physical pixels per CSS pixel to show
+    // the 220×330 kitten illustrations sharply. Cap total canvas pixels
+    // to avoid stuttering on older devices and large desktop windows.
+    const pixels=Math.max(1,rect.width*rect.height);
+    const dpr=Math.min(window.devicePixelRatio||1,3,Math.sqrt(4400000/pixels));
+    this.W=rect.width;this.H=rect.height;
+    this.canvas.width=Math.max(1,Math.round(this.W*dpr));
+    this.canvas.height=Math.max(1,Math.round(this.H*dpr));
+    this.ctx.setTransform(this.canvas.width/Math.max(1,this.W),0,0,this.canvas.height/Math.max(1,this.H),0,0);
+    this.ctx.imageSmoothingEnabled=true;
+    this.ctx.imageSmoothingQuality='high';
   }
 
   start() {
