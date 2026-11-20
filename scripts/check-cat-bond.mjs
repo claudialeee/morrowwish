@@ -135,6 +135,15 @@ assert.ok(sandbox.window.Skills, 'Skills global present');
 assert.ok(sandbox.window.Battle, 'Battle global present');
 assert.ok(sandbox.window.CatBondI18n, 'Cat Bond i18n layer present');
 assert.equal(sandbox.window.GameData.SPECIES.length, 25, '25 cat species');
+const weights = sandbox.window.GameData.RARITY;
+assert.deepEqual(['N', 'R', 'SR', 'SSR'].map(k => weights[k].weight), [68,24,7,1],
+  'Base rare-cat odds should be intentionally lower than before');
+assert.equal(['N', 'R', 'SR', 'SSR'].reduce((sum, k) => sum + weights[k].weight, 0), 100,
+  'Rarity weights should sum to 100 for predictable base odds');
+assert.equal(sandbox.window.Raising.config.PITY_CAP, 40, '40-pull SR pity protection must remain');
+const worldMapSource = fs.readFileSync(DIR+'js/worldmap.js','utf8');
+assert.ok(worldMapSource.includes('sp: rollRegionCat()'),
+  'Region spawns should use rarity-weighted encounters, not uniform legendary encounters');
 
 // ---- boot the game the way main.js does (fire DOMContentLoaded) ----
 const boot = listeners['win:DOMContentLoaded'];
@@ -164,6 +173,19 @@ assert.ok(events.some(e => e.name === 'game_start'), 'game_start analytics fired
 // Drive the battle: force-defeat the wild pack, then let the loop end it.
 const b = game.battle;
 assert.ok(b && b.enemies.length >= 1, 'wild pack built');
+const normalEnemy=b.enemies[0];
+const normalScale=1+(normalEnemy.level-1)*0.08;
+assert.equal(normalEnemy.maxhp, Math.round((140+wild.base.vit*7)*normalScale),
+  'Normal battle HP must remain unchanged');
+const eliteSpecies=GameData.speciesById('jinwu');
+const eliteBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],eliteSpecies);
+const eliteLead=eliteBattle.enemies[0];
+const eliteScale=1+(eliteLead.level-1)*0.08;
+assert.equal(eliteLead.maxhp,
+  Math.round((140+eliteSpecies.base.vit*7)*(1+3*0.6)*eliteScale*1.22),
+  'Legendary cat encounter should have extra defensive challenge');
+assert.ok(eliteLead.dmg>(5+3*2.2)*eliteScale,
+  'Legendary cat should hit harder than before');
 let guard = 0;
 while (!b.done && guard++ < 10000) {
   for (const e of b.enemies) { e.hp = 0; e.alive = false; }

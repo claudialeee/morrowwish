@@ -257,12 +257,27 @@
     // seeded-ish scatter (Math.random is fine; layout only lives per-visit)
     var spawns = [], nodes = [], decor = [];
     var pool = r.speciesPool;
+    // A region defines WHICH cats live here, but does not guarantee that every
+    // listed species (especially legendary cats) spawns at the same rate.
+    var candidates = pool.map(function (id) {
+      var species = window.GameData.speciesById(id);
+      return { id: id, weight: species ? (window.GameData.RARITY[species.rarity].weight || 1) : 1 };
+    });
+    var totalWeight = candidates.reduce(function (sum, item) { return sum + item.weight; }, 0);
+    function rollRegionCat() {
+      var roll = Math.random() * totalWeight;
+      for (var j = 0; j < candidates.length; j++) {
+        roll -= candidates[j].weight;
+        if (roll < 0) return candidates[j].id;
+      }
+      return candidates[candidates.length - 1].id;
+    }
     var nSpawn = 5 + r.difficulty;           // more wild cats in harder regions
     for (var i = 0; i < nSpawn; i++) {
       spawns.push({
         x: 180 + Math.random() * (WORLD_W - 360),
         y: 180 + Math.random() * (WORLD_H - 360),
-        sp: pool[Math.floor(Math.random() * pool.length)],
+        sp: rollRegionCat(),
         cd: 0,                                // encounter cooldown after trigger
         bob: Math.random() * 6.28,
       });

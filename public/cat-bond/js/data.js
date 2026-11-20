@@ -1,10 +1,12 @@
 // data.js — static game data: species catalogue + rarity config.
 
 const RARITY = {
-  N:   { key: 'N',   name: '普通', weight: 52, color: '#c9c9c9', statMul: 1.0,  bondReq: 100, guardSpeed: 1.0 },
-  R:   { key: 'R',   name: '稀有', weight: 29, color: '#7ab8ff', statMul: 1.25, bondReq: 130, guardSpeed: 1.25 },
-  SR:  { key: 'SR',  name: '史诗', weight: 14, color: '#c08bff', statMul: 1.6,  bondReq: 165, guardSpeed: 1.55 },
-  SSR: { key: 'SSR', name: '传说', weight: 5,  color: '#ffd36b', statMul: 2.1,  bondReq: 210, guardSpeed: 1.9 },
+  // Base encounter / draw percentages before luck boosts. High-tier cats are trophies,
+  // while the 40-pull SR pity in Raising stays intact.
+  N:   { key: 'N',   name: '普通', weight: 68, color: '#c9c9c9', statMul: 1.0,  bondReq: 100, guardSpeed: 1.0 },
+  R:   { key: 'R',   name: '稀有', weight: 24, color: '#7ab8ff', statMul: 1.25, bondReq: 130, guardSpeed: 1.25 },
+  SR:  { key: 'SR',  name: '史诗', weight: 7,  color: '#c08bff', statMul: 1.6,  bondReq: 165, guardSpeed: 1.55 },
+  SSR: { key: 'SSR', name: '传说', weight: 1,  color: '#ffd36b', statMul: 2.1,  bondReq: 210, guardSpeed: 1.9 },
 };
 
 // species fields:

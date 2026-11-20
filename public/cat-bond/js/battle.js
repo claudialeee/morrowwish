@@ -122,7 +122,10 @@ class CaptureBattle {
     // this enemy's level = pack level, companions a touch lower than the lead
     const level = Math.max(1, this.wildLevel - (i === 0 ? 0 : 1 + Math.floor(Math.random() * 2)));
     const lvScale = 1 + (level - 1) * 0.08;               // +8% stats per level
-    const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale);
+    // Only SR/SSR receive an extra challenge: normal and R encounters remain
+    // accessible early. Existing roster levels and cat stats are untouched.
+    const eliteFactor = rIdx === 3 ? 1.22 : rIdx === 2 ? 1.12 : 1;
+    const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor);
     // spread the pack across the right half of the arena
     const col = total === 1 ? 0.7 : 0.58 + (i / Math.max(1, total - 1)) * 0.26;
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(sp.id) : null;
@@ -134,7 +137,7 @@ class CaptureBattle {
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
       specialCd: 5 - rIdx * 0.6, telegraph: 0, telegraphKind: null, inv: 0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
-      dmg: (5 + rIdx * 2.2) * lvScale, speed: 92 + rIdx * 22, fireRate: Math.max(0.4, 1.1 - rIdx * 0.18),
+      dmg: (5 + rIdx * 2.2) * lvScale * (rIdx === 3 ? 1.10 : rIdx === 2 ? 1.06 : 1), speed: 92 + rIdx * 22, fireRate: Math.max(0.4, 1.1 - rIdx * 0.18),
       skill: this.pickWildSkillFor(element, rIdx),
       tags: [], alive: true,
     };
