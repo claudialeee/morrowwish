@@ -11,11 +11,14 @@ on:
       - 'public/flip-dash/index.html'
       - 'public/parcel-panic/index.html'
       - 'public/pocket-aquarium/index.html'
+      - 'public/cat-bond/index.html'
+      - 'public/game-fullscreen.js'
       - 'public/upgrade.js'
       - 'public/lang.js'
       - 'public/index.html'
       - 'scripts/browser-test-pawsibly.mjs'
       - 'scripts/mobile-playtest.mjs'
+      - 'scripts/fullscreen-smoke.mjs'
       - '.github/workflows/browser-test-pawsibly.yml'
   workflow_dispatch:
 # Only the most recent source revision needs a browser test.
@@ -46,3 +49,4 @@ jobs:
           sleep 2
           node scripts/browser-test-pawsibly.mjs
           node scripts/mobile-playtest.mjs
+          node scripts/fullscreen-smoke.mjs
