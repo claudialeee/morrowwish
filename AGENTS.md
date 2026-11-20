@@ -48,6 +48,15 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 - Keep game and homepage metadata consistent. The unified Analytics dashboard includes UTM-attributed channel quality; use `utm_source`, `utm_medium` and `utm_campaign` in promotion links.
 - Do not assume social posts or portal listings exist merely because release kits were generated. Platform submission/review or account authorization may still be required. No TinyFish, personal social accounts, spam posts or paid promotional tools.
 
+## Platform targeting and AI-promotion safety (2026-11-20)
+- Read `promotion/channel-policy.json` before any platform application, post, automation, or new channel work.
+- Promote real browser gameplay, not follower/like/impression vanity metrics. Judge channel ROI on attributable game starts, finished runs and repeat play.
+- Never submit to Newgrounds, r/playmygame or r/Games. Do not target r/IndieGaming unless its current rules explicitly permit this AI-assisted work and developer self-promotion.
+- Do not auto-generate or auto-publish Reddit submissions; vet each subreddit for AI-use disclosures and promotional-post rules, including recent moderation examples, first.
+- Do not create new routine Instagram or Bluesky posts. Bluesky automated posting requires explicit `MORROW_BLUESKY_PROMO_ENABLED=true` and separate authorized studio credentials.
+- CrazyGames is on a single-game quality hold; Poki is conditional on originality and cold-player QA. itch.io is live but avoid bulk announcements, AI disclosure omissions and reposting to refresh discovery ranking.
+- Existing scheduled social posts do not prove publication, clicks or gameplay. Do not change historical status to published without provider-issued evidence.
+
 ## Editing an existing game, homepage, or dashboard
 - Locate the canonical source file(s), understand the current behavior, and make targeted changes without silently replacing other games or translations.
 - For game changes, test the full playable loop and instrumentation.
