@@ -27,13 +27,13 @@ if(!cgDirect.includes('targetSlugs.length!==1')||!cgDirect.includes("gate.status
 
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
-// Arcade stats instrumentation must record both gameplay endings and successful clears.
-const miniGameSource=fs.readFileSync('public/game.js','utf8');
+// The mini-game upgrade already emits run_start/run_end. Do not count
+// duplicate local game.js tracking events as extra sessions.
+const miniUpgrade=fs.readFileSync('public/upgrade.js','utf8');
 const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
-if(!miniGameSource.includes('window.arcadeMetric?.(canonical') ||
-   !miniGameSource.includes('level_complete:"level_complete"') ||
-   !miniGameSource.includes('game_over:"game_over"')) throw Error('Mini games must send real gameplay events to D1');
-if(!telemetry.includes('"town_completed-win")eventCounts.completion++') ||
+if(!miniUpgrade.includes('event("run_start"') ||
+   !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
+if(!telemetry.includes('"town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++') ||
    !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
    !telemetry.includes('"level_complete"')) throw Error('Terminal gameplay events must be counted separately from clears');
 if(!analyticsSource.includes('z.ends+=events.reduce') ||
