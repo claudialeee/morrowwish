@@ -164,3 +164,10 @@ body{background:#fff8f1}
 
 /* Keep full CC BY music credits legible without dominating the story letter. */
 .music-credit .music-titles{display:block;font-size:10px;line-height:1.7;color:#a8a0a8;margin-top:3px;letter-spacing:.005em}
+
+/* Reader voice selection: present only when the device offers alternatives. */
+.narrate-voice{max-width:140px;min-width:85px;min-height:38px;padding:5px 9px;border-radius:9px;border:1px solid #b8a6ad;background:#fff6f2;color:#745c6b;font:600 11px/1.3 system-ui,sans-serif;cursor:pointer}
+.narrate-voice[hidden]{display:none!important}
+.narrate-voice:focus-visible{outline:3px solid #c990b3;outline-offset:2px}
+.play-utilities{flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:430px){.narrate-voice{max-width:100px;min-width:72px;font-size:10px}.play-utilities{gap:6px}}
