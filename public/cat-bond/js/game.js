@@ -477,6 +477,20 @@ class Game {
   }
 
   // ---------- battle flow ----------
+  startMasteryChallenge(species){
+    // A targeted S-rank rematch is a training challenge, NOT another capture.
+    // Replaying cannot duplicate cats, grow the dex or farm capture currency.
+    const owned=State.S.cats.filter(cat=>cat.species===species.id);
+    if(!owned.length){
+      this.toast('先收服这个品种，才能挑战金爪评级。');return false;
+    }
+    const team=State.S.cats.slice().sort((a,b)=>State.catPower(b)-State.catPower(a)).slice(0,3);
+    this.startBattle(team,species);
+    this.battle.masteryChallenge=true;
+    metric('bond_mastery_rematch_start',{breed:species.id,rarity:species.rarity});
+    return true;
+  }
+
   // team = array of up to 3 cat instances (or a single cat for back-compat)
   startBattle(team, wildSpecies) {
     this.keys = {}; this.mouse.down = false;
@@ -640,6 +654,25 @@ class Game {
       document.getElementById('tabbar').classList.remove('hidden');
       document.getElementById('hud').classList.remove('hidden');
       this.scene = 'yard';
+    }
+    if(b.masteryChallenge){
+      // Challenge rewards are *only* personal-best improvement and a first S
+      // medal. Never add another cat or pay repeat capture resources here.
+      const performance=win?this.gradeBattle(b):null;
+      const ownedCat=State.S.cats.find(cat=>cat.species===b.wild.id)||b.partner;
+      const reward=win?this.recordBattleMastery(b.wild,performance,ownedCat):null;
+      if(win){
+        metric('game_complete',{practice:true,rarity:b.wild.rarity,grade:performance.grade});
+        metric('bond_mastery_rematch_complete',{breed:b.wild.id,grade:performance.grade});
+      }else{
+        metric('game_over',{practice:true,rarity:b.wild.rarity});
+        this._lastBattleLost=true;
+      }
+      State.save();this.refreshHUD();
+      if(!backToMap)document.getElementById('yard-actions').classList.remove('hidden');
+      this.battle=null;
+      UI.openMasteryChallengeResult(b.wild,performance,reward,win);
+      return;
     }
     if (win) {
       const newCat = State.makeCat(b.wild.id);
