@@ -37,6 +37,25 @@ for(let i=0;i<8;i++){
  assert.ok(s.fish.length>=3&&s.fish.every(p=>path(s,s.cat,p)!==null));
  assert.ok(path(s,s.cat,s.door)!==null);
 }
+// Review-gate regressions: distinct room mechanics must be real, not descriptions.
+test.choose(3,false);
+let special=test.getState(),sleeper={...special.human};
+assert.equal(special.sleepTurns,9,'Room 4 must start with a sleeping owner');
+test.move(1,0);
+special=test.getState();
+assert.equal(special.sleepTurns,8,'Owner should wake after meaningful time');
+assert.deepEqual(JSON.parse(JSON.stringify(special.human)),sleeper,'Sleeping owner must remain still');
+test.choose(4,false);
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().creak)),{x:2,y:1},'Library has a visible squeaky tile');
+test.move(1,0);
+assert.equal(test.getState().creakTriggered,true,'Stepping on squeaky floor must cause a noise');
+assert.ok(events.some(e=>e.name==='cat_noisy_floor'),'Noisy-floor analytics missing');
+test.choose(6,false);
+assert.equal(test.getState().lightTurns,8,'Midnight room must offer temporary shadows');
+test.choose(7,false);
+test.getState().got=3;test.move(1,0);
+assert.equal(test.getState().finalAlert,true,'Final room should escalate when fish goal is reached');
+assert.ok(events.some(e=>e.name==='cat_finale_chase'),'Finale chase analytics missing');
 test.choose(0,false);
 const startingHuman={...test.getState().human};
 const stationaryCat={...test.getState().cat};
@@ -78,4 +97,11 @@ assert.equal(events.filter(e=>e.name==='game_complete').length,1,'Exactly one co
 listeners['morrowwish-language-change']({detail:{lang:'zh'}});
 assert.ok(nodes.get('subtitle').textContent.includes('偷零食'),'Chinese gameplay copy switches correctly');
 assert.ok(frames>=1,'Canvas art rendered');
-console.log('Pawsibly Innocent: all 8 room routes/items, yarn, first-room escape, telemetry, canvas and bilingual text PASS.');
+const reviewStyle=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
+assert.ok(reviewStyle.includes('cg-review-v1')&&reviewStyle.includes('heistStatus'),
+ 'CrazyGames build should show new board HUD with an uncached script');
+assert.ok(source.includes('grid-template-columns:minmax(0,1fr) clamp(204px'),
+ 'CrazyGames embed should use a readable mission panel beside the game');
+assert.ok(source.includes('fitCanvasPixels')&&source.includes('catPathTo'),
+ 'High-DPI canvas and risk-aware click routing must remain in the review build');
+console.log('Pawsibly Innocent: QA review checks passed (8 rooms, fair introductory route, distinct mechanics, bilingual state, iframe UI, and telemetry).');
