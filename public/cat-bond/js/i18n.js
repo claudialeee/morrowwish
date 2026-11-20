@@ -68,6 +68,16 @@
     '🤖 自动战斗：开':'🤖 Auto Battle: ON',
     '猫猫冒险手册':'Cat Adventure Guide',
     '还有什么可以玩？':'What else can I do?',
+    // ---- wild-cat discovery / skill-based battle results ----
+    '传说邂逅':'Legendary encounter',
+    '史诗邂逅':'Epic encounter',
+    '稀有邂逅':'Rare encounter',
+    '新品种发现':'New breed discovered',
+    '熟悉的朋友':'Familiar friend',
+    '战斗评级':'Battle grade',
+    '最高连击':'Best combo',
+    '战斗奖励':'Battle bonus',
+    '野猫快被收服了':'The wild cat is almost tamed',
     // ---- HUD / tab bar / yard actions ----
     '🏡 庭院': '🏡 Yard',
     '庭院': 'Yard',
