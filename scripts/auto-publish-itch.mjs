@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import {execFileSync} from 'node:child_process';
 import {publishedGames, trackedLink} from './discovery.mjs';
 import {chromium} from 'playwright';
 
@@ -44,7 +45,12 @@ function createEmbeddedHTML(g,tmp){
   // host. This preserves dynamic game updates and existing telemetry, not a static image.
   const url=trackedLink(g,'itch','portal');
   const content='<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>'+htmlEsc(mappedName(g))+'</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#151b20}iframe{border:0;display:block;width:100%;height:100%;background:#151b20}</style></head><body><iframe src="'+htmlEsc(url)+'" title="'+htmlEsc(mappedName(g))+'" allow="fullscreen; autoplay; gamepad" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></body></html>';
-  const file=path.join(tmp,g.slug+'.html');fs.writeFileSync(file,content);return file;
+  const dir=path.join(tmp,g.slug);fs.mkdirSync(dir,{recursive:true});
+  const file=path.join(dir,'index.html');fs.writeFileSync(file,content);
+  // itch.io HTML Game projects expect an uploadable ZIP with index.html at its root.
+  const zip=path.join(tmp,g.slug+'.zip');
+  execFileSync('zip',['-q','-j',zip,'index.html'],{cwd:dir});
+  return zip;
 }
 async function first(page,selectors){
   for(const s of selectors){const l=page.locator(s).first();if(await l.count())return l;}
