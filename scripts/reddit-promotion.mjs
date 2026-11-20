@@ -6,7 +6,10 @@ import fs from 'node:fs';
 
 const policy=JSON.parse(fs.readFileSync('promotion/channel-policy.json','utf8'));
 const reddit=policy.channels.find(x=>x.name==='Reddit');
-if(reddit?.state!=='manual-reviewed-only')throw Error('Unexpected Reddit policy; review before changing community outreach.');
+// Both labels mean the same conservative hold: no Reddit posting unless a
+// community has been checked and an individual submission approved.
+if(!['manual-reviewed-only','review-only'].includes(reddit?.state))
+ throw Error('Unexpected Reddit policy; review before changing community outreach.');
 const blocked=new Set(policy.blocked.map(x=>x.name.toLowerCase()));
 if(!blocked.has('r/playmygame')||!blocked.has('r/games'))
  throw Error('Restricted subreddit denylist was changed without review.');
