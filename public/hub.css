@@ -227,3 +227,60 @@ html[lang="en"] .hero>p strong{display:block;white-space:nowrap;margin-top:4px}
 .bond-button:hover{background:linear-gradient(100deg,#60408b,#825192)}
 .bond-sticker{background:#e9b7cd;color:#744d79;border-color:#fff9f0;transform:rotate(-8deg)}
 @media(max-width:780px){.bond-feature-card .feature-art{height:47%}}
+
+/* Compact homepage and preserve the entire Chinese four-world promise in one line. */
+.nav-row{min-height:65px;gap:22px}
+.wordmark img{width:38px;height:38px}
+.hero{padding:21px 0 19px}
+.hero h1{font-size:clamp(41px,4.8vw,59px);line-height:1.02;margin:9px 0 13px}
+.hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{max-width:1100px;font-size:14px;line-height:1.5;margin:0 auto}
+.hero .hero-en-copy{display:block}
+.hero .hero-zh-copy{display:none}
+html[lang="zh-CN"] .hero .hero-en-copy{display:none}
+html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;letter-spacing:-.015em}
+html[lang="zh-CN"] .hero>p.hero-copy{max-width:100%;white-space:nowrap;overflow-x:auto;overscroll-behavior-x:contain}
+.hero-promise{margin:12px auto 0;gap:8px}
+.hero-promise span{padding:5px 10px;font-size:10px}
+.doodle.sun{font-size:33px}.doodle.spark{font-size:41px}.doodle.flower{font-size:27px}.doodle.smile{font-size:28px}
+.featured-section .section-intro{margin-bottom:14px}
+.featured-section .section-intro>p{display:none}
+.section-intro h2{font-size:clamp(25px,2.8vw,34px);margin-top:4px}
+.feature-grid{gap:17px}
+.feature-card{min-height:480px;border-radius:25px}
+.feature-content{padding:21px 25px 0}
+.feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:clamp(30px,3vw,39px);margin:10px 0}
+.elsewhere-card h3{font-size:clamp(41px,4vw,53px);margin-top:17px}
+.feature-content>p{font-size:12.5px;line-height:1.5;margin-bottom:11px}
+.feature-chips{gap:5px}
+.feature-chips span{padding:5px 8px}
+.card-button{padding:10px 16px;margin-top:11px;font-size:12px}
+.feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{height:38%}
+.featured-section{padding-bottom:42px}
+@media(max-width:780px){
+  .hero{padding:21px 0 17px}
+  .hero h1{font-size:clamp(40px,6.9vw,53px)}
+  .feature-grid{max-width:550px}
+  .feature-card{min-height:485px}
+  .feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{height:37%}
+}
+@media(max-width:540px){
+  .nav-row{min-height:60px}
+  .wordmark img{width:32px;height:32px}
+  .hero{padding:16px 0 15px}
+  .hero .eyebrow{font-size:9px;letter-spacing:.11em}
+  .hero h1{font-size:clamp(33px,9vw,43px);line-height:1.03;margin:7px 0 10px}
+  .hero>p.hero-copy,html[lang="en"] .hero>p.hero-copy{font-size:11px;line-height:1.45}
+  .hero-promise{margin-top:9px;gap:5px}
+  .hero-promise span{padding:4px 7px;font-size:8px}
+  .hero-doodles{display:none}
+  .section-intro h2{font-size:26px}
+  .featured-section .section-intro{margin-bottom:10px}
+  .feature-card{min-height:465px;border-radius:22px}
+  .feature-content{padding:18px 19px 0}
+  .feature-card h3,.cat-feature-card h3,.bond-feature-card h3{font-size:35px;margin:7px 0}
+  .elsewhere-card h3{font-size:45px;margin-top:12px}
+  .feature-content>p{font-size:12px;line-height:1.45;margin-bottom:9px}
+  .feature-chips span{font-size:8px;padding:4px 6px}
+  .card-button{margin-top:10px;padding:9px 14px}
+  .feature-art,.cat-feature-card .feature-art,.bond-feature-card .feature-art{height:34%}
+}

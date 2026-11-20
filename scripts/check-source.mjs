@@ -48,6 +48,14 @@ for(const marker of ['game_start','game_complete','game_retry','cat_level_won','
  if(!catGame.includes(marker))throw Error('Pawsibly Innocent missing gameplay/analytics: '+marker);
 }
 const homepage=fs.readFileSync('public/index.html','utf8');
+const oneLineHero='化身捣蛋小猫偷三条鱼，和满院子的猫咪成为朋友，体验一段从未活过的人生，或建造人人自由的小镇。';
+const heroMarkup=homepage.match(/<p class="hero-copy">([\s\S]*?)<\/p>/)?.[1]||'';
+if(!heroMarkup.includes('<span class="hero-zh-copy" lang="zh-CN">'+oneLineHero+'</span>')||/<(?:wbr|br)\b/i.test(heroMarkup))
+  throw Error('Homepage Chinese hero must keep all four worlds together as one unbroken sentence');
+const homeStyles=fs.readFileSync('public/hub.css','utf8');
+if(!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;'))
+  throw Error('Homepage Chinese hero no-wrap style is missing');
+
 const featured=homepage.match(/<div class="feature-grid">([\s\S]*?)<\/div><\/section>/)?.[1]||'';
 const minis=homepage.match(/<div class="mini-grid">([\s\S]*?)<\/div><\/div><\/section>/)?.[1]||'';
 for(const link of ['href="/pawsibly-innocent/"','href="/elsewhere/"','href="/tiny-town/"','href="/cat-bond/"']){
