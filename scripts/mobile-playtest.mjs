@@ -84,11 +84,13 @@ try{
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.noise?.x),8,'Yarn must go to the tapped lane');
           assert.equal(await page.locator('[data-move]').count(),0,'On-screen D-pad should be removed');
         }else if(game.slug==='elsewhere'){
-          assert.equal(await page.locator('#narrate-voice').count(),1,'Voice alternative selector is missing');
+          assert.equal(await page.locator('#narrate-voice').count(),0,'Duplicate browser voice selector should not appear');
           const start=page.locator('[data-random-world]').first();
           assert.equal(await start.isVisible(),true,'Story start not visible');
           await start.tap();
           assert.equal(await page.locator('#play-view').isVisible(),true,'Story did not open on tap');
+          assert.ok((await page.locator('#narration-text').textContent()).trim().length>75,'Story narrative must show full paragraphs, not a stray character');
+          assert.equal(await page.locator('#narrate-btn').isVisible(),true,'Curated read-aloud action unavailable');
         }else if(game.slug==='tiny-town'){
           assert.equal(await page.locator('#incoming .tt-painted-newcomer svg').count(),4,'Four incoming residents need visible portraits');
           assert.ok(await page.locator('#board .tile').count()===16,'Town map unavailable');
