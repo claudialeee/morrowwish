@@ -224,7 +224,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
-      ${State.S.masteryBadges?.[sp.id]?'<p class="mastery-detail">🏅 金爪徽章 · S 级精通 · 已永久提升稀有猫发现能力</p>':''}
+      ${State.S.masteryBadges?.[sp.id]?'<p class="mastery-detail">🏅 金爪徽章 · S 级精通 · 集齐三枚提升稀有猫发现机会</p>':''}
       <div style="display:flex;gap:16px;align-items:center;">
         <canvas id="cd-canvas" width="120" height="100" style="background:rgba(255,255,255,0.04);border-radius:12px;"></canvas>
         <div style="flex:1">
@@ -816,7 +816,7 @@ const UI = {
     document.getElementById('gb-back').onclick = () => this.openCapturePrep(wildSp);
   },
 
-  openCatchResult(wildSp, newCat, rewards=[], performance=null) {
+  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null) {
     const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
@@ -829,6 +829,11 @@ const UI = {
       ?(english?'Every breed discovered!':'全部品种已收集！')
       :(english?'Next goal: '+status.next+' breeds':'下一目标：收集 '+status.next+' 种猫咪');
     const grade=performance?.grade||'C';
+    const mastery=this.game.masteryStatus();
+    const medalMessage=masteryReward
+      ?(english?'First S on this breed! +1 rare-cat lure · +15 new cat affection'
+        :'该品种首次达成 S 级！+1 幸运诱饵 · 新猫好感 +15')
+      :'';
     const gradeLabel=english?'Battle grade':'战斗评级';
     const battleResult=performance
       ?(english?'Bonus: +'+performance.bonusCoins+' coins'+(performance.bonusTreats?' · +'+performance.bonusTreats+' treats':'')
@@ -846,10 +851,14 @@ const UI = {
       <p class="sub center">${totalText} · ${goalText}</p>
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small></div></div>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
+      ${masteryReward?'<div class="golden-paw-unlock"><strong>🏅 '+(english?'GOLDEN PAW UNLOCKED!':'金爪徽章解锁！')+'</strong><p>'+medalMessage+'</p><small>'
+        +(english?'Medals':'已获徽章')+' '+mastery.medals+'/'+mastery.total+' · '
+        +(english?'Permanent rare-weight boost':'永久稀有权重加成')+' +'+Math.round(mastery.luckBonus*100)+'%</small></div>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
         <button class="btn ghost" id="cr-journey">${english?'What else can I do?':'还有什么可以玩？'}</button>
+        ${masteryReward?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
@@ -860,6 +869,8 @@ const UI = {
     };
     document.getElementById('cr-ok').onclick=dismiss;
     document.getElementById('cr-journey').onclick=()=>this.openJourney();
+    const medalButton=document.getElementById('cr-medal');
+    if(medalButton)medalButton.onclick=()=>this.openDex();
     document.getElementById('cr-next').onclick=()=>{
       dismiss();
       if(this.game.scene==='yard'&&!this.game.yard.hide)this.game.yard.startHideAndSeek();
@@ -870,6 +881,7 @@ const UI = {
   // Show meaningful next activities instead of keeping players in a catch-only loop.
   openJourney(){
     const status=this.game.collectionStatus();
+    const mastery=this.game.masteryStatus();
     const adv=this.game.adventureStatus();
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const target=status.next||status.total;
@@ -907,8 +919,16 @@ const UI = {
             <div class="journey-progress"><span style="width:${Math.min(100,adv.unlocked<=1?adv.homeExplored/40*100:adv.unlocked/adv.totalRegions*100)}%"></span></div>
           </div><button class="btn gold" id="journey-explore">${en?'Explore':'探索'}</button>
         </article>
+      <div class="journey-master-row">
+        <div><b>🏅 ${en?'Golden Paw challenge':'金爪评级挑战'} ${mastery.medals}/${mastery.total}</b>
+          <p>${en?'Earn 3 S medals to permanently improve rare-cat odds. Boost: +'
+            :'每 3 枚 S 级徽章永久提升遇稀有猫机会 · 当前稀有权重 +'}${Math.round(mastery.luckBonus*100)}%${en?' rare weight':''}</p>
+        </div>
+        <button class="btn gold" id="journey-mastery">${en?'Medals':'看徽章'}</button>
+      </div>
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
+    document.getElementById('journey-mastery').onclick=()=>this.openDex();
     document.getElementById('journey-collect').onclick=()=>{
       this.closeAll();
       if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}
