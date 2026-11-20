@@ -84,12 +84,27 @@ try{
         // Simulate earned win through the real battle completion logic.
         await page.evaluate(()=>{
           const b=window.__game.battle;
+          // Simulate a genuinely high-performing result to exercise the
+          // entire S-rank achievement path, not only generic battle victory.
           for(const e of b.enemies){e.hp=0;e.alive=false;}
+          b.team.forEach(cat=>{cat.hp=cat.maxhp;});
+          b.t=10;b.comboBest=8;
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
         const rank=await page.locator('.battle-grade b').innerText();
-        assert.match(rank,/^[SABC]$/,'Capturing a cat must earn a battle grade');
+        assert.equal(rank,'S','Good play earns an S rank and a permanent species medal');
+        await page.waitForSelector('.golden-paw-unlock',{timeout:5000});
+        assert.equal(await page.locator('#cr-medal').count(),1,
+          'First S unlock must offer a direct route into the Golden Paw codex');
+        const medalState=await page.evaluate(()=>({
+          count:window.__game.masteryStatus().medals,
+          lure:State.S.luckLure,
+          newCatBond:State.S.cats.at(-1).affinity
+        }));
+        assert.equal(medalState.count,1);
+        assert.equal(medalState.lure,1);
+        assert.ok(medalState.newCatBond>=15);
         const bonusText=await page.locator('.battle-grade').innerText();
         assert.match(bonusText,/Bonus|奖励/,'Players should see a reward tied to battle performance');
         await page.waitForTimeout(80);
@@ -104,6 +119,13 @@ try{
         await page.waitForSelector('#journey-collect');
         assert.equal(await page.locator('.journey-path').count(),3,
           'Collection, bonding and exploration should all be discoverable');
+        await page.locator('#journey-mastery').click();
+        await page.waitForSelector('.golden-paw-stamp');
+        assert.ok((await page.locator('.golden-paw-stamp').count())>=1,
+          'S medals must be permanently represented on the cat codex');
+        assert.doesNotMatch(await page.locator('#panel.open').innerText(),/解锁隐藏传说种/,
+          'No fake legendary unlock claim');
+        await page.evaluate(()=>UI.openJourney());
         await page.locator('#journey-explore').click();
         assert.equal(await page.evaluate(()=>window.__game.scene),'map',
           'Explore CTA should actually open the explorable world');
