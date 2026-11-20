@@ -128,44 +128,119 @@ const UI = {
 
   // ---------- roster ----------
   // ---- 工坊: 派工生产 + 繁育 (idle/placement economy) ----
+  // Explain economy on its first screen: passive money is earned by the
+  // staffed Sun station, stored locally, then manually collected to the wallet.
   openWorkshop() {
-    if (!window.Raising) { this.panel(`<span class="card-close">×</span><h2>工坊</h2><p class="sub">加载中…</p>`); return; }
-    const stations = Raising.stationsView();
-    const yarn = (State.S.raising && State.S.raising.yarn) || 0;
-    const breeding = Raising.breedingView ? Raising.breedingView() : { active: false };
-    const stRows = stations.map(s => {
-      const pct = Math.round((s.pct || 0) * 100);
-      return `<div class="st-row" data-id="${s.id}">
-        <div class="st-ico">${s.icon || '🏭'}</div>
+    if(!window.Raising){this.panel('<span class="card-close">×</span><h2>工坊</h2><p>加载中…</p>');return;}
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const stations=Raising.stationsView().filter(st=>st.res)
+      .sort((a,b)=>['sun','fishing','yarn','watch'].indexOf(a.type)-['sun','fishing','yarn','watch'].indexOf(b.type));
+    const sun=stations.find(st=>st.type==='sun');
+    const rate=Number(sun?.ratePerHour||0);
+    const pending=stations.reduce((n,st)=>n+st.stored,0);
+    const descriptions={
+      sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on food, treats and upgrades':'金币用于喂猫、买零食、升级工坊'],
+      fishing:[en?'Catch fish':'钓小鱼干',en?'Train cat levels and buy rare-cat lures':'小鱼干用于练级、买稀有诱饵'],
+      yarn:[en?'Make yarn':'织毛线',en?'Increase stats and upgrade stations':'毛线用于猫咪属性特训与升级'],
+      watch:[en?'Collect luck':'瞭望好运',en?'Boost the next rare-cat sighting':'好运用于提高下一次野猫的稀有机会'],
+    };
+    const cards=stations.map(st=>{
+      const cost=Raising.upgradeCost(st.id);
+      const [name,usage]=descriptions[st.type]||[st.name,st.desc];
+      const unit=st.res==='coins'?'🪙':this.resIcon(st.res);
+      const wait=st.active&&st.stored<1&&st.ratePerHour>0
+        ?(en?' · First unit in ~':' · 约')+Math.ceil(60/st.ratePerHour)+(en?' min':' 分钟得到首份资源'):'';
+      return `<div class="st-row workshop-row ${st.type==='sun'?'work-money':''}" data-id="${st.id}">
+        <div class="st-ico">${st.icon}</div>
         <div class="st-main">
-          <div class="st-name">${s.name} <span class="tiny">Lv.${s.level}</span></div>
-          <div class="st-bar"><span style="width:${pct}%"></span></div>
-          <div class="tiny">${s.catName ? '👷 ' + s.catName : '空缺（点猫派工）'} · ${s.stored}/${s.cap} ${this.resIcon(s.res)} · ${s.ratePerHour}/时</div>
+          <div class="st-name">${name} <span class="tiny">Lv.${st.level}</span></div>
+          <p class="work-usage">${usage}</p>
+          <div class="work-income">${en?'Production':'产出'}：<b>${Number(st.ratePerHour||0).toFixed(1)} ${unit}/${en?'hour':'小时'}</b></div>
+          <div class="work-employee">${st.active
+            ?(en?'Working cat: ':'上班猫咪：')+st.catName
+            :(en?'No cat assigned — Assign one to start':'还没派猫上岗，点击「派猫」才会开始赚钱')}
+            ${wait}</div>
+          <div class="st-bar"><span style="width:${Math.round(st.pct*100)}%"></span></div>
+          <div class="work-pending">${en?'Uncollected':'待收取'}：<b>${st.stored} ${unit}</b> / ${st.cap}</div>
         </div>
         <div class="st-btns">
-          <button class="btn gold tiny-btn" data-act="collect" data-id="${s.id}">收取</button>
-          <button class="btn ghost tiny-btn" data-act="assign" data-id="${s.id}">派工</button>
-          <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${s.id}">升级</button>
+          <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
+          <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
+          <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙+${cost.yarn}🧶</small></button>
         </div>
       </div>`;
     }).join('');
-    const breedBox = breeding.active
-      ? `<div class="st-row"><div class="st-ico">🥚</div><div class="st-main"><div class="st-name">暖窝孵化中 <span class="tiny">${breeding.parents ? breeding.parents.join(' + ') : ''}</span></div><div class="st-bar"><span style="width:${Math.round((breeding.pct || 0) * 100)}%"></span></div></div><div class="st-btns">${breeding.ready ? '<button class="btn gold tiny-btn" data-act="egg">抱回小猫</button>' : '<span class="tiny">孵化中…</span>'}</div></div>`
-      : `<div class="st-row"><div class="st-ico">🥚</div><div class="st-main"><div class="st-name">暖窝（繁育）</div><div class="tiny">选两只猫繁育，可能产出继承花色+变异的小猫</div></div><div class="st-btns"><button class="btn ghost tiny-btn" data-act="breed">开始繁育</button></div></div>`;
+    const breeding=Raising.breedingView?.()||{active:false};
+    const breedBox=breeding.active
+      ?`<div class="st-row"><div class="st-ico">🥚</div><div class="st-main"><div class="st-name">${en?'Kitten nursery':'暖窝孵化中'}</div>
+       <p class="work-usage">${(breeding.parents||[]).join(' + ')} · ${Math.round((breeding.pct||0)*100)}%</p>
+       <div class="st-bar"><span style="width:${Math.round((breeding.pct||0)*100)}%"></span></div></div>
+       <div class="st-btns">${breeding.ready?'<button class="btn gold tiny-btn" data-act="egg">'+(en?'Welcome kitten':'抱回小猫')+'</button>':''}</div></div>`
+      :`<div class="st-row"><div class="st-ico">🥚</div><div class="st-main"><div class="st-name">${en?'Kitten nursery':'暖窝繁育'}</div>
+       <p class="work-usage">${en?'Breed kittens here; this station does not earn coins.':'让两只猫繁育小猫；暖窝不产金币。'}</p></div>
+       <div class="st-btns"><button class="btn ghost tiny-btn" data-act="breed">${en?'Breed':'繁育'}</button></div></div>`;
     this.panel(`<span class="card-close">×</span>
-      <h2>🧶 工坊 <span class="tiny">派猫咪上工，离线也产出</span></h2>
-      <p class="sub">毛线 🧶 ${yarn} · 把猫派到工位生产资源，等级越高产量/容量越大</p>
-      <div class="st-list">${stRows}${breedBox}</div>`);
-    const host = document.getElementById('panel');
-    host.querySelectorAll('[data-act]').forEach(b => b.onclick = () => this.workshopAct(b.dataset.act, b.dataset.id));
+      <h2>☀️ ${en?'Kitten Workshop':'猫猫工坊'}</h2>
+      <div class="work-earn-header">
+        <strong>${en?'How do I earn coins?':'工坊怎么赚钱？'}</strong>
+        <p>${en
+          ?'1. Assign a cat to the Sun station. 2. Coins grow online or offline. 3. Collect to move them into your wallet.'
+          :'① 派猫去「晒太阳位」上班 → ② 在线、离线都积攒金币 → ③ 点击「收取」，金币才进入钱包。'}</p>
+        <div class="work-earn-stats">
+          <span>${en?'Income':'金币速度'} <b>${rate.toFixed(1)} 🪙/${en?'hour':'小时'}</b></span>
+          <span>${en?'Wallet':'钱包'} <b>${State.S.coins} 🪙</b></span>
+          <span>${en?'Uncollected':'待收'} <b>${sun?.stored||0} 🪙</b></span>
+        </div>
+        ${sun&&!sun.active&&State.S.cats.length?'<button class="btn gold" id="work-quick-start">'
+          +(en?'Assign a cat and start earning':'一键派猫，开始赚钱')+'</button>':''}
+        <button class="btn gold" data-act="collect-all" ${pending<1?'disabled':''}>${en?'Collect all ready resources':'一键收取全部收益'}</button>
+      </div>
+      <p class="work-section-intro">${en
+        ?'The other stations produce training supplies — not coins. Every station needs its own working cat.'
+        :'其他工位产出培养材料，不是金币；每个生产工位都需要一只上班猫。'}</p>
+      <div class="st-list">${cards}<h3 class="work-nursery-title">${en?'Kitten nursery':'繁育暖窝'}</h3>${breedBox}</div>`);
+    const host=document.getElementById('panel');
+    host.querySelectorAll('[data-act]').forEach(btn=>btn.onclick=()=>this.workshopAct(btn.dataset.act,btn.dataset.id));
+    const quick=document.getElementById('work-quick-start');
+    if(quick)quick.onclick=()=>this.workshopAct('quick-start');
   },
-  workshopAct(act, id) {
-    const R = window.Raising; if (!R) return;
-    if (act === 'collect') { R.collect(id); State.save(); this.game.refreshHUD(); this.openWorkshop(); }
-    else if (act === 'upgrade') { const r = R.upgrade(id); this.game.toast(r && r.ok ? '升级成功！' : (r && r.msg) || '资源不足'); State.save(); this.game.refreshHUD(); this.openWorkshop(); }
-    else if (act === 'assign') { this.openCatPicker('选择上工的猫', uid => { R.assignCat(id, uid); State.save(); this.openWorkshop(); }); }
-    else if (act === 'breed') { this.openBreedPicker(); }
-    else if (act === 'egg') { const r = R.collectEgg(); if (r && r.ok) { if (r.cat) { State.S.cats.push(r.cat); State.S.dex[r.cat.species] = (State.S.dex[r.cat.species] || 0) + 1; } State.save(); this.game.rebuildYard(); this.game.toast('🐱 ' + (r.parents ? r.parents.join('+') : '') + ' 的小猫诞生了！' + (r.shiny ? ' ✨闪光!' : '')); } this.openWorkshop(); }
+  workshopAct(act,id){
+    const R=window.Raising;if(!R)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    if(act==='collect'||act==='collect-all'){
+      const got=act==='collect-all'?R.collectAll():R.collect(id);
+      const total=act==='collect-all'?Object.values(got).reduce((n,v)=>n+v,0):(got?.amount||0);
+      this.game.toast(total>0?(en?'Collected '+total+' resources':'已收取 '+total+' 份资源')
+        :(en?'Nothing ready to collect yet':'还没产出整份资源，可以先去探索。'));
+      State.save();this.game.refreshHUD();this.openWorkshop();
+    }else if(act==='quick-start'){
+      const sun=R.stationsView().find(st=>st.type==='sun');
+      const free=State.S.cats.find(cat=>!R.isBusy(cat.uid));
+      if(!sun||!free){this.game.toast(en?'No free cat available':'没有空闲猫咪，先从其他工位调出一只。');return;}
+      const outcome=R.assignCat(sun.id,free.uid);
+      this.game.toast(outcome?.ok?(en?'Your first cat is earning coins!':'派工成功！金币已经开始积攒。')
+        :(outcome?.msg||'派工失败'));
+      State.save();this.openWorkshop();
+    }else if(act==='upgrade'){
+      const x=R.upgrade(id);
+      this.game.toast(x?.ok?(en?'Upgrade complete!':'升级成功！'):(x?.msg||'资源不足'));
+      State.save();this.game.refreshHUD();this.openWorkshop();
+    }else if(act==='assign'){
+      this.openCatPicker(en?'Choose a working cat':'选择上工的猫',uid=>{
+        const x=R.assignCat(id,uid);
+        this.game.toast(x?.ok?(en?'Working cat assigned':'派工成功'):(x?.msg||'派工失败'));
+        State.save();this.openWorkshop();
+      });
+    }else if(act==='breed')this.openBreedPicker();
+    else if(act==='egg'){
+      const x=R.collectEgg();
+      if(x?.ok){
+        if(x.cat){State.S.cats.push(x.cat);State.S.dex[x.cat.species]=(State.S.dex[x.cat.species]||0)+1;}
+        State.save();this.game.rebuildYard();
+        this.game.toast('🐱 '+(x.parents?x.parents.join('+'):'')+' 的小猫诞生了！'+(x.shiny?' ✨闪光!':''));
+      }
+      this.openWorkshop();
+    }
   },
   openCatPicker(title, onPick) {
     const cats = State.S.cats;
