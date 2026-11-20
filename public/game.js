@@ -64,9 +64,45 @@ hud(){return "Sort accurately to build a score multiplier";}};
 };
 // 02 FLIP DASH: endless one-button side switch.
 G["flip-dash"]=()=>{
-let y=420,top=false,obs=[],gems=[],time=0,spawn=0,inv=0;
-return {init(){y=420;top=false;obs=[];gems=[];time=0;spawn=.30;inv=0;info("Tap / Space to flip gravity");},
-tick(dt){time+=dt;spawn-=dt;inv-=dt;const speed=310+Math.min(195,time*8);y+=( (top?125:415)-y)*Math.min(1,dt*10);if(spawn<=0){const side=rnd(2);obs.push({x:895,side,hit:false});if(Math.random()<.85)gems.push({x:980,y:side?125:415,got:false});spawn=Math.max(.65,1.04-time*.018);}for(let o of obs){o.x-=dt*speed;if(!o.hit&&Math.abs(o.x-210)<38&&Math.abs(y-(o.side?125:415))<70){o.hit=true;if(inv<=0){finish(false,"You survived "+Math.floor(time)+" seconds.");return;}}}for(let p of gems){p.x-=dt*speed;if(!p.got&&Math.abs(p.x-210)<31&&Math.abs(y-p.y)<43){p.got=true;add(20);}}obs=obs.filter(o=>o.x>-65);gems=gems.filter(o=>o.x>-30&&!o.got);if(Math.floor(time*2)>Math.floor((time-dt)*2))add(1);info(Math.floor(time)+" seconds alive  •  Speed "+Math.floor(speed));},
+let y=420,top=false,obs=[],gems=[],time=0,spawn=0,lastSide=-1,repeats=0;
+return {init(){
+ y=420;top=false;obs=[];gems=[];time=0;spawn=.30;lastSide=-1;repeats=0;
+ info("Tap / Space to flip gravity");
+},
+tick(dt){
+ time+=dt;spawn-=dt;
+ const speed=340+Math.min(310,time*10);
+ y+=((top?125:415)-y)*Math.min(1,dt*10);
+ if(spawn<=0){
+  // Favor switches; never repeat a hazard lane more than twice.
+  let side=rnd(2);
+  if(lastSide!==-1){
+   const repeat=Math.random()<(time<6?.35:.18)&&repeats<1;
+   side=repeat?lastSide:1-lastSide;
+  }
+  repeats=side===lastSide?repeats+1:0;lastSide=side;
+  // Wider obstacles enter later, so players can learn the core action first.
+  const wide=time>10&&Math.random()<Math.min(.45,(time-10)*.025);
+  obs.push({x:895,side,w:wide?76:52,hit:false});
+  if(Math.random()<.80)gems.push({x:980,y:side?125:415,got:false});
+  // Alternating rush periods are challenging but preserve flip time.
+  const rush=time>12&&Math.sin(time*.48)>.65;
+  spawn=Math.max(.47,1.07-time*.018-(rush?.12:0));
+ }
+ for(const o of obs){
+  o.x-=dt*speed;
+  if(!o.hit&&Math.abs(o.x-210)<o.w/2+12&&Math.abs(y-(o.side?125:415))<70){
+   o.hit=true;finish(false,"You survived "+Math.floor(time)+" seconds.");return;
+  }
+ }
+ for(const p of gems){
+  p.x-=dt*speed;
+  if(!p.got&&Math.abs(p.x-210)<31&&Math.abs(y-p.y)<43){p.got=true;add(20);}
+ }
+ obs=obs.filter(o=>o.x>-75);gems=gems.filter(p=>p.x>-30&&!p.got);
+ if(Math.floor(time*2)>Math.floor((time-dt)*2))add(1);
+ info(Math.floor(time)+" seconds alive  •  Speed "+Math.floor(speed));
+},
 down(){top=!top;},key(k){if(k===" "||k==="ArrowUp"||k==="ArrowDown")top=!top;},
 draw(){if(portrait){
  // An upright portrait runner, NOT the 16:9 game rotated 90 degrees.
@@ -85,7 +121,7 @@ draw(){if(portrait){
  }
  for(const o of obs){
   const lane=o.side?125:415,yy=960-o.x;
-  box(lane-33,yy-26,66,52,"#fd6486",8);
+  box(lane-33,yy-o.w/2,66,o.w,"#fd6486",8);
   txt(lane,yy,"✦",29,"#681e3a");
   glow(lane,yy,60,"#fb2c6922");
  }
@@ -99,7 +135,7 @@ draw(){if(portrait){
  txt(270,53,"TAP TO SWITCH LANES",23,"#ffffffd8");
  return;
 }
-bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-26,yy,52,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");if(!portrait)txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
+bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-o.w/2,yy,o.w,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");if(!portrait)txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
 hud(){return "Every extra second increases the speed";}};
 };
 // 03 ORBIT ESCAPE: three linked orbital tracks.
