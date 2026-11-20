@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-11-20",
+  "objective": "Acquire real anonymous game starts and retained players, not social impressions or raw clicks.",
+  "guardrails": {
+    "aiDisclosure": "Accurately disclose generative AI use wherever platform rules require; never conceal AI use to evade moderation.",
+    "externalPosts": "Never auto-submit to an unapproved subreddit or forum. Verify current community rules and moderation precedents before a one-off human-approved post.",
+    "bulkPosts": "Do not submit seven launch announcements at once or repost to circumvent deletion.",
+    "lowValueCampaigns": "Do not create new routine promotion on paused channels; already scheduled posts are not proof of publication or acquisition.",
+    "qualityGate": "Only one individually reviewed CrazyGames candidate; Poki after quality, originality and first-time-player tests.",
+    "conversionMetric": "Prioritize start_events and completed_runs, not views, likes, or follows.",
+    "stopRule": "After at least 14 days and 3 distinct posts per test channel, stop if no attributed game starts, unless data ingestion was unavailable."
+  },
+  "channels": [
+    {
+      "name": "CrazyGames",
+      "priority": "P0",
+      "state": "hold-quality-rework",
+      "reason": "Native browser-game audience; existing submission rejected for quality; reapply only after gameplay QA."
+    },
+    {
+      "name": "itch.io",
+      "priority": "P0",
+      "state": "published-7",
+      "reason": "All seven games live; improve discoverability, honest AI disclosure, thumbnails and first 30 seconds rather than mass relisting."
+    },
+    {
+      "name": "itch.io Release Announcements",
+      "priority": "P1",
+      "state": "limited-one-off",
+      "reason": "Explicit self-promotion board; image/video plus genuine game description required; space out posts."
+    },
+    {
+      "name": "Poki",
+      "priority": "P1",
+      "state": "not-ready",
+      "reason": "AI tools can be used thoughtfully; strict originality/playtest requirements; only after proven game quality."
+    },
+    {
+      "name": "YouTube Shorts",
+      "priority": "P2",
+      "state": "limited-test",
+      "reason": "Test with direct tracked links and game starts; video views alone are not a success signal."
+    },
+    {
+      "name": "TikTok",
+      "priority": "P2",
+      "state": "limited-test",
+      "reason": "Same limited test and attribution requirements as Shorts."
+    },
+    {
+      "name": "Google / Bing",
+      "priority": "P3",
+      "state": "passive-discovery",
+      "reason": "Sitemap/IndexNow maintenance only; do not spend time on repetitive promotion."
+    },
+    {
+      "name": "Instagram",
+      "priority": "PAUSED",
+      "state": "no-new-routine-content",
+      "reason": "No measured first-party game-start lift to justify extra operations."
+    },
+    {
+      "name": "Bluesky",
+      "priority": "PAUSED",
+      "state": "no-new-routine-content",
+      "reason": "No measured first-party game-start lift to justify extra operations."
+    },
+    {
+      "name": "Reddit",
+      "priority": "PAUSED",
+      "state": "manual-reviewed-only",
+      "reason": "AI restrictions and self-promotion enforcement vary by subreddit; no automatically generated submission links until individually approved."
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Newgrounds",
+      "reason": "Official game guidelines discourage prompt-generated games and warn AI-dependent submissions may be removed."
+    },
+    {
+      "name": "r/playmygame",
+      "reason": "Does not allow fully AI-generated games; excludes games with substantial generative AI."
+    },
+    {
+      "name": "r/Games",
+      "reason": "Promotion account-history restrictions make a new promotional studio account high risk."
+    },
+    {
+      "name": "r/IndieGaming",
+      "reason": "GenAI disclosure and self-promotion enforcement; skip until explicit eligibility confirmed."
+    }
+  ],
+  "officialPolicyLinks": [
+    "https://www.newgrounds.com/wiki/help-information/terms-of-use/game-guidelines",
+    "https://itch.io/docs/creators/quality-guidelines",
+    "https://itch.io/board/10022/release-announcements",
+    "https://developers.poki.com/guide/content-player-safety",
+    "https://docs.crazygames.com/requirements/quality/"
+  ]
+}

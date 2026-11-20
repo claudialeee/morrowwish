@@ -2,6 +2,10 @@
 // identity has been explicitly configured in GitHub Actions secrets.
 // No user accounts or passwords are committed to Git.
 import fs from 'node:fs';
+if(process.env.MORROW_BLUESKY_PROMO_ENABLED!=='true'){
+ console.log('Bluesky promotion paused by channel policy; no new automated posts.');
+ process.exit(0);
+}
 const {newGames=[]}=JSON.parse(fs.readFileSync('release-kit/new-launches.json','utf8'));
 if(!newGames.length){ console.log('No newly launched games to announce.'); process.exit(0); }
 const identifier=process.env.MORROW_BLUESKY_HANDLE;
