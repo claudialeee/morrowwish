@@ -539,25 +539,19 @@
     { key: 'skillE',    label: '技能2' },         // fire loadout[2]
   ];
 
-  // defaultGambits(cat) -> ordered rules. Count capped by bond's extraGambitSlots
-  // (base 4 rules + extra). Higher bond = smarter auto-pilot.
+  // Editable starter preset. The adaptive AI interprets this preset using
+  // actual HP, range, projectiles and cooldowns; user-edited rules are executed
+  // strictly in their own chosen order.
   function defaultGambits(cat) {
-    const base = [
-      { cond: 'selfHpBelow25',  act: 'heal' },
-      { cond: 'selfHpBelow40',  act: 'retreat' },
-      { cond: 'incomingProj',   act: 'dodge' },
-      { cond: 'enemyHpBelow30', act: 'ult' },
-      { cond: 'comboPrimed',    act: 'finisher' },
-      { cond: 'enemyHasTag',    act: 'combo' },
-      { cond: 'enemyFar',       act: 'skillQ' },
-      { cond: 'enemyClose',     act: 'basic' },
-      { cond: 'always',         act: 'basic' },
+    return [
+      { cond: 'selfHpBelow40', act: 'heal' },
+      { cond: 'incomingProj', act: 'dodge' },
+      { cond: 'ultReady', act: 'ult' },
+      { cond: 'enemyHasTag', act: 'combo' },
+      { cond: 'enemyClose', act: 'skillQ' },
+      { cond: 'enemyFar', act: 'skillE' },
+      { cond: 'always', act: 'basic' },
     ];
-    const extra = bondBonuses(bondTier(cat.affinity || 0)).extraGambitSlots;
-    // base auto-pilot gets 4 rules; bond unlocks more nuanced ones (keep 'always' last)
-    const core = base.slice(0, 4 + extra);
-    if (core[core.length - 1].cond !== 'always') core.push({ cond: 'always', act: 'basic' });
-    return core;
   }
 
   // ==========================================================================
