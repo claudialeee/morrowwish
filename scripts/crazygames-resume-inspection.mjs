@@ -84,6 +84,35 @@ try{
                .map(el=>({type:el.type,name:el.name,placeholder:el.placeholder,required:el.required})).slice(0,45)),
              fileInputs:await next.locator('input[type=file]').count()
            };
+           if(t.includes('QA Results')&&t.includes('Complies to Gameplay requirements')){
+             const yes=next.getByText('Yes',{exact:true}),no=next.getByText('No',{exact:true});
+             report.qaNavigation.qaControls={yes:await yes.count(),no:await no.count(),
+               radios:await next.locator('input[type=radio]').count(),checkboxes:await next.locator('input[type=checkbox]').count()};
+             if(await yes.count()===6 && await no.count()===6){
+               for(let i=0;i<5;i++){
+                 await yes.nth(i).evaluate(el=>(el.closest('button')||el.closest('label')||el).click());
+                 await next.waitForTimeout(100);
+               }
+               await no.nth(5).evaluate(el=>(el.closest('button')||el.closest('label')||el).click());
+               const confirm=next.locator('input[type=checkbox]').first();
+               if(await confirm.count())await confirm.evaluate(el=>{if(!el.checked)el.click()});
+               report.qaNavigation.qaControls.selectedRadios=await next.locator('input[type=radio]:checked').count();
+               report.qaNavigation.qaControls.checkedConfirm=await confirm.isChecked().catch(()=>false);
+               report.qaNavigation.qaControls.continueEnabled=await next.getByRole('button',{name:'Continue',exact:true}).isEnabled().catch(()=>false);
+               if(report.qaNavigation.qaControls.continueEnabled && report.qaNavigation.qaControls.checkedConfirm){
+                 await next.getByRole('button',{name:'Continue',exact:true}).evaluate(el=>el.click());
+                 await next.waitForTimeout(2800);
+                 report.qaNavigation.afterQAConfirmation={
+                   path:new URL(next.url()).pathname,text:redact(await next.locator('body').innerText().catch(()=>'')),
+                   buttons:await next.locator('button:visible').allTextContents().catch(()=>[]),
+                   inputs:await next.locator('input,textarea,select').evaluateAll(xs=>xs.map(el=>({
+                      type:el.type,placeholder:el.placeholder,required:el.required
+                   })).slice(0,40))
+                 };
+               }
+             }
+           }
+
          }
 
        }
