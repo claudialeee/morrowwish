@@ -58,15 +58,18 @@ const afterStep={...test.getState().human};
 assert.ok(Math.abs(afterStep.x-8)+Math.abs(afterStep.y-4) < Math.abs(afterYarn.x-8)+Math.abs(afterYarn.y-4),'Human follows the yarn target while the cat moves');
 assert.equal(test.isChasing(),false,'One cat action must never start a forced fast chase');
 test.choose(0,false);
-const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-let attempts=0;
-while(!test.getState().done&&attempts++<95){
- const s=test.getState(),fish=s.fish.filter(p=>!s.taken.has(key(p)));
- const target=s.got>=3?s.door:fish.sort((a,b)=>distance(a,s.cat)-distance(b,s.cat))[0];
- const step=path(s,s.cat,target)?.[0];
- assert.ok(step,'Expected a reachable move');
- test.move(step.x-s.cat.x,step.y-s.cat.y);
+// Exercise an intentional stealth route, not a nearest-fish bot that walks straight into the guard.
+// Players can clear room one without yarn or purchased cat powers, and may topple its vase for a bonus.
+const safeRoute=[
+ [1,0],[1,0],[0,-1],[-1,0],[0,1],[0,1],[0,1],[0,1],
+ [1,0],[1,0],[1,0],[1,0],[1,0],[0,-1],[0,1],[1,0],[1,0]
+];
+for(const [dx,dy] of safeRoute){
+ if(test.getState().done)break;
+ test.move(dx,dy);
 }
+assert.equal(test.getState().got,3,'First room must award three fish on the escape route');
+assert.ok(test.getState().dareAnnounced,'The optional vase dare should visibly complete');
 assert.ok(test.getState().winning,'First room should be winnable without special tools');
 const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
 assert.ok(earned.best?.['room-0']?.stars>=1&&earned.best?.['room-0']?.stars<=3,'Winning a room must save real stars toward new cats');
