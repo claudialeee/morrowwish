@@ -20,7 +20,7 @@
   let surface,button,fallback=false,wasActive=false,scrollY=0;
   const nativeActive=()=>!!surface&&document.fullscreenElement===surface;
   const active=()=>nativeActive()||fallback;
-  const zh=()=>window.MorrowwishI18n?.get?.()==='zh'||root.lang.toLowerCase().startsWith('zh')||localStorage.getItem('morrowwish-lang')==='zh';
+  const zh=()=>window.MorrowwishI18n?.get?.()==='zh'||root.lang.toLowerCase().startsWith('zh');
   const notifyResize=()=>{
     requestAnimationFrame(()=>{
       window.dispatchEvent(new Event('resize'));
