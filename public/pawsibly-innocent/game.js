@@ -141,7 +141,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY<br><span>INNOCENT!</span>";
@@ -569,7 +569,7 @@ if(cgEmbed&&document.head){
  html.cg-play .stealth-actionbar{height:57px;max-width:100%;width:min(100%,calc((100dvh - 74px)*10/7));margin:0 auto 4px!important;padding:5px 8px!important;gap:7px!important;min-height:0}
  html.cg-play .stealth-actionbar .stealth-help{font-size:11px!important;min-width:0;line-height:1.2}
  html.cg-play .stealth-actionbar .stealth-help strong{font-size:11px;line-height:1.15}
- html.cg-play .stealth-actionbar .stealth-help span:not(.bonus-dare){display:none}
+ html.cg-play .stealth-actionbar .stealth-help .yarn-hint{display:none}
  html.cg-play .stealth-actionbar .board-yarn{min-width:122px;min-height:38px;padding:7px 9px;font-size:11px;box-shadow:0 3px 0 #773b91}
  html.cg-play .bonus-dare{font-size:11px!important;line-height:1.15}
  html.cg-play #stage{width:min(100%,calc((100dvh - 74px)*10/7))!important;max-width:none;max-height:calc(100dvh - 66px);margin:0 auto;border:4px solid #fff7ea;border-radius:14px}
@@ -580,8 +580,8 @@ if(cgEmbed&&document.head){
  html.cg-play .stage .overlay{padding:5px}
  html.cg-play .modal{max-height:100%;padding:10px;overflow:auto}
  html.cg-play .modal h2{font-size:27px}
- html.cg-play .board-layout aside.panel{display:flex!important;flex-direction:column!important;gap:7px;padding:10px 11px!important;margin:0!important;max-width:none!important;max-height:calc(100dvh - 9px);overflow:hidden;box-shadow:none;border-radius:13px;align-self:start}
- html.cg-play .panel .sidebar-extra,html.cg-play .panel .clothes,html.cg-play .panel .collection-count{display:none!important}
+ html.cg-play .board-layout aside.panel{display:flex!important;flex-direction:column!important;gap:7px;padding:10px 11px!important;margin:0!important;max-width:none!important;max-height:calc(100dvh - 9px);overflow:auto;box-shadow:none;border-radius:13px;align-self:start}
+ html.cg-play .panel .sidebar-extra,html.cg-play .panel .clothes{display:none!important}
  html.cg-play .panel .sidebar-mission,html.cg-play .panel .sidebar-fish,html.cg-play .panel .stats,html.cg-play .panel .sidebar-actions,html.cg-play .panel .levels{display:block;min-width:0}
  html.cg-play .panel .chapter{font-size:19px;line-height:1.1;margin:3px 0}
  html.cg-play .panel .chapter-sub,html.cg-play .panel .mission{font-size:11px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
