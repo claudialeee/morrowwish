@@ -36,6 +36,14 @@ const miniUpgrade=fs.readFileSync('public/upgrade.js','utf8');
 const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
+if(!dashboard.includes('id="game-details"')||!dashboard.includes('data-i18n="gameMore"')||
+   !dashboard.includes('data-i18n="playtestGuide"')||
+   !dashboard.includes('metricCard(t("statFinished")')||
+   dashboard.includes('data-i18n="colDone"')||
+   dashboard.includes('data-i18n="nativePublished"')||
+   !dashboard.includes('syncPending:')||
+   !dashboard.includes('game!=="hub"'))
+ throw Error('Dashboard must prioritize honest game starts, normal finishes and replays with provider sync status');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
    !telemetry.includes('window.__MWMiniActive')||
