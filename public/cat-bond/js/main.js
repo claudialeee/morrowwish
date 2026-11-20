@@ -6,10 +6,10 @@ window.addEventListener('DOMContentLoaded', () => {
   window.__game = game;
   UI.init(game);
 
-  // Reset button: wipe save + reload. The escape hatch for any stuck state.
+  // Reset must never erase the player's progress in other Morrow Wish games.
   const resetBtn = document.getElementById('intro-reset');
   if (resetBtn) resetBtn.addEventListener('click', () => {
-    try { localStorage.clear(); } catch (e) {}
+    try { localStorage.removeItem('catbond_save_v1'); } catch (e) {}
     location.reload();
   });
 
@@ -62,6 +62,12 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   document.getElementById('intro-start').addEventListener('click', startGame);
+  // CrazyGames asks users to reach real gameplay immediately; skip the full
+  // studio intro and present the starter choice as the first interactive action.
+  if(window.CatBondPlatform?.crazygames){
+    document.getElementById('cb-home')?.remove();
+    startGame();
+  }
   try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
   try { paintIntroCatGallery(); } catch(error) { console.warn('Cat gallery unavailable',error); }
   window.__CAT_BOND_READY__=true;

@@ -755,3 +755,21 @@ html,body{background:#eaf1e8;color:var(--text)}
 #first-quest{position:absolute;z-index:25;top:66px;left:50%;transform:translateX(-50%);width:max-content;max-width:min(92%,450px);padding:9px 14px;border:2px solid #f1d5a3;border-radius:999px;background:rgba(255,251,235,.95);box-shadow:0 5px 18px #4a332c30;color:#654632;font:800 13px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none}
 #first-quest[hidden]{display:none!important}
 @media(max-width:600px){#first-quest{top:max(62px,env(safe-area-inset-top));font-size:12px;padding:7px 10px}#intro{gap:9px;padding:14px}#intro .intro-guide{font-size:.8rem}}
+
+/* CrazyGames-specific iframe: only the playable game, not a portal to our site.
+   Fullscreen belongs to the host. The ordinary Morrow Wish page is unchanged. */
+html.cb-cg,html.cb-cg body{width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;overscroll-behavior:none}
+html.cb-cg #game-root{width:100%;height:100%;height:100dvh}
+html.cb-cg #stage{width:100%;height:100%;border-radius:0;box-shadow:none}
+html.cb-cg .cb-home,html.cb-cg #mw-fullscreen-toggle{display:none!important}
+html.cb-cg .panel{padding:clamp(6px,2vh,14px)}
+html.cb-cg .card{max-height:94%;max-width:min(540px,98%);padding:clamp(10px,2vh,22px);overscroll-behavior:contain}
+html.cb-cg #intro{display:none!important}
+html.cb-cg .mw-language-float{z-index:22!important;top:6px!important;right:6px!important}
+html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!important}
+@media(max-height:500px){
+  html.cb-cg .battle-hint{top:45px;font-size:11px;max-width:70vw;overflow:hidden;text-overflow:ellipsis}
+  html.cb-cg .battle-topbar{top:4px;padding:4px 10px;max-width:95vw}
+  html.cb-cg #team-slots{top:45px}
+  html.cb-cg #first-quest{top:56px;font-size:11px;padding:6px 10px}
+}

@@ -16,7 +16,19 @@
   <meta property="og:description" content="Raise a yard of cats, hunt wild ones in a real-time arena, and build unbreakable bonds. A free cozy game from Morrow Wish." />
   <meta property="og:image" content="https://morrowwish.vercel.app/art/cat-bond-cozy.webp?v=2" />
   <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
-  <link rel="stylesheet" href="css/style.css?v=first-loop-20261120" />
+  <script>
+  // Identical game, platform-specific presentation: no Morrow Wish exit link or
+  // in-game fullscreen when embedded by CrazyGames.
+  (() => {
+    const params = new URLSearchParams(location.search);
+    let fromPortal = false;
+    try { fromPortal = /(^|\\.)crazygames\\.com$/i.test(new URL(document.referrer).hostname); } catch (_) {}
+    const crazygames = fromPortal || params.get('platform') === 'crazygames' || params.get('isCrazyGames') === 'true';
+    window.CatBondPlatform = { crazygames };
+    if (crazygames) document.documentElement.classList.add('cb-cg');
+  })();
+  </script>
+  <link rel="stylesheet" href="css/style.css?v=release-qa-1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=catbond-2" defer></script>
   <script src="/studio-music.js?v=catbond-1" defer></script>
