@@ -128,7 +128,7 @@ function renderSignals(gameRows){
   {id:'tiny-town',fields:[['townWin','town_win'],['townLose','town_lose'],['townConfusing','town_feedback_confusing']]},
   {id:'flip-dash',fields:[['flipRuns','flip_finished'],['flip10','flip_10s'],['flip30','flip_30s']]},
   {id:'parcel-panic',fields:[['parcelSorted','parcel_sorted'],['parcelMissed','parcel_missed'],['parcel10','parcel_ten_sorted']]},
-  {id:'pocket-aquarium',fields:[['fishGood','aquarium_grade_good'],['fishFed','feed_success'],['fishDirty','aquarium_dirty_end']]}
+  {id:'pocket-aquarium',fields:[['fishGood','aquarium_grade_good'],['fishFed','feed_success'],['fishFinished','aquarium_completed']]}
  ];
  $('signal-grid').innerHTML=cards.map(g=>{
   const nm=gameNames[g.id],name=nm?.[lang]||g.id,metrics=signalFor(g.id);
