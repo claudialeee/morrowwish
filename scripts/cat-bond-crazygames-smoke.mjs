@@ -88,6 +88,10 @@ try{
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
+        const rank=await page.locator('.battle-grade b').innerText();
+        assert.match(rank,/^[SABC]$/,'Capturing a cat must earn a battle grade');
+        const bonusText=await page.locator('.battle-grade').innerText();
+        assert.match(bonusText,/Bonus|奖励/,'Players should see a reward tied to battle performance');
         await page.waitForTimeout(80);
         const catchCopy=await page.locator('#panel.open').innerText();
         assert.doesNotMatch(catchCopy,/[\u4e00-\u9fff]/,
