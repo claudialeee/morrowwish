@@ -694,3 +694,58 @@ html,body{background:#eaf1e8;color:var(--text)}
   body.cb-exploring .mw-audio-fixed { display:none!important; }
   #game-root,#stage { width:100vw;height:100dvh; }
 }
+
+
+/* Cat Bond: shared music / effects dock inside the playable stage. */
+#stage>.mw-audio-dock{
+  position:absolute!important;
+  top:calc(env(safe-area-inset-top,0px) + 52px)!important;
+  right:max(9px,env(safe-area-inset-right,0px))!important;
+  left:auto!important;
+  bottom:auto!important;
+  display:flex!important;
+  width:auto!important;
+  max-width:calc(100% - 24px)!important;
+  z-index:130!important;
+  align-items:center!important;
+  gap:6px!important;
+  margin:0!important;
+}
+#stage>.mw-audio-dock button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:999px!important;
+  min-height:36px!important;
+  white-space:nowrap!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  padding:7px 10px!important;
+  background:rgba(255,250,240,.96)!important;
+  color:#506852!important;
+  border:1px solid #c5d6bf!important;
+  box-shadow:0 3px 12px rgba(58,80,60,.13)!important;
+  pointer-events:auto;
+}
+#stage>.mw-audio-dock button[aria-pressed="false"]{
+  opacity:.72!important;background:rgba(240,239,229,.94)!important;
+}
+#stage>.mw-audio-dock button:focus-visible{
+  outline:3px solid #6d9e83!important;outline-offset:2px!important;
+}
+@media(max-width:700px){
+ #stage>.mw-audio-dock{
+   top:calc(env(safe-area-inset-top,0px) + 83px)!important;
+   right:max(8px,env(safe-area-inset-right,0px))!important;
+   gap:4px!important;
+ }
+ #stage>.mw-audio-dock button{
+   font-size:10px!important;min-height:35px!important;padding:6px 8px!important;
+ }
+}
+@media(orientation:landscape) and (max-height:530px){
+ #stage>.mw-audio-dock{
+   top:calc(env(safe-area-inset-top,0px) + 45px)!important;
+ }
+ #stage>.mw-audio-dock button{font-size:10px!important;min-height:32px!important;padding:5px 7px!important}
+}
