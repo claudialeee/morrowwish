@@ -61,6 +61,14 @@ main{max-width:1080px;margin:auto;padding:10px 22px 38px}.heading{text-align:cen
  .foods .food{gap:4px}
  .under{flex-wrap:wrap}
 }
+
+/* Mobile header: the injected music control must wrap instead of overflowing. */
+@media(max-width:600px){
+ header{flex-wrap:wrap;gap:8px 10px;min-width:0}
+ header .brand{min-width:0;margin-right:auto}
+ header .languages{flex:0 0 auto}
+ header>.mw-music-toggle{flex:0 0 auto;margin-left:auto;max-width:100%;min-height:44px}
+}
 </style>
 </head>
 <body data-game="pocket-aquarium">
