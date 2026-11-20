@@ -15,13 +15,16 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=crazygames&utm_medium=portal&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=crazygames&utm_medium=portal&utm_campaign=elsewhere-playtest",
+          "draftPreviewId": "bc28ea71-0136-434b-808a-017b70e19dba",
+          "draftVerifiedAt": "2026-11-20T00:32:15Z",
+          "reviewSubmittedAt": null
         },
         "itch": {
           "priority": "P0",
@@ -137,13 +140,16 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=crazygames&utm_medium=portal&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=crazygames&utm_medium=portal&utm_campaign=tiny-town-playtest",
+          "draftPreviewId": "70964469-f40d-4f87-9775-373452999bff",
+          "draftVerifiedAt": "2026-11-20T00:32:15Z",
+          "reviewSubmittedAt": null
         },
         "itch": {
           "priority": "P0",
@@ -259,13 +265,16 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=crazygames&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=crazygames&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest",
+          "draftPreviewId": "6d2e15dc-74a7-4ce9-8a37-d2775008339c",
+          "draftVerifiedAt": "2026-11-20T00:32:15Z",
+          "reviewSubmittedAt": null
         },
         "itch": {
           "priority": "P0",
@@ -381,13 +390,16 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=crazygames&utm_medium=portal&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=crazygames&utm_medium=portal&utm_campaign=flip-dash-playtest",
+          "draftPreviewId": "b6f2c426-6ff5-4481-8adf-4d18084f3a51",
+          "draftVerifiedAt": "2026-11-20T00:32:15Z",
+          "reviewSubmittedAt": null
         },
         "itch": {
           "priority": "P0",
@@ -498,13 +510,16 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=crazygames&utm_medium=portal&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=crazygames&utm_medium=portal&utm_campaign=parcel-panic-playtest",
+          "draftPreviewId": "7f517cc3-57a3-49a0-a460-11d0c33ddab3",
+          "draftVerifiedAt": "2026-11-20T00:32:15Z",
+          "reviewSubmittedAt": null
         },
         "itch": {
           "priority": "P0",
@@ -615,13 +630,16 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "not-submitted",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=crazygames&utm_medium=portal&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=crazygames&utm_medium=portal&utm_campaign=pocket-aquarium-playtest",
+          "draftPreviewId": "40a2c7a0-f0da-433b-92c4-2f88fed763d9",
+          "draftVerifiedAt": "2026-11-20T00:32:15Z",
+          "reviewSubmittedAt": null
         },
         "itch": {
           "priority": "P0",
