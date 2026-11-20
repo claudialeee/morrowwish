@@ -202,6 +202,19 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
 .wish-copy em{display:block;font-style:normal;font-size:9px;font-weight:850;color:#ac7b91;margin-top:2px}
 .legend-counter{margin:5px 0 0;font-size:10px;color:#92758d;font-weight:850}
 @media(max-width:650px){
+ /* Map-first phone flow: today's choice -> playable map -> optional town details. */
+ .stage{display:flex;flex-direction:column;gap:8px}
+ .sidebar{display:contents}
+ .sidebar-head{display:none}
+ .sidebar h2{order:-5;width:100%;padding:0 4px;margin:0}
+ .sidebar>p:not(.pick-hint){display:none}
+ .sidebar .cards{order:-4;width:100%}
+ .sidebar .pick-hint{order:-3;margin:0!important}
+ .stage .map-panel{order:0}
+ .sidebar .citizen-panel{order:1;width:100%}
+ .sidebar .petition{order:2;width:100%}
+ .sidebar #moveWish{order:3}
+ .sidebar .tip-box{display:none}
  .charter{font-size:10px;padding:7px 3px}.charter small{display:none}
  .citizen-panel{padding:7px 8px;margin:7px 0}.citizens{gap:3px}
  .citizen .portrait{font-size:19px}
