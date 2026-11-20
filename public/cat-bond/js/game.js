@@ -102,6 +102,23 @@ class Game {
   }
 
   rebuildYard() { this.yard.rebuild(); }
+  gradeBattle(b){
+    // Reward three understandable goals: finish quickly, protect the cats,
+    // and land a combo or perfect dodge. Auto-battle remains eligible.
+    const fighters=b.team||[];
+    const maxHP=fighters.reduce((n,f)=>n+(f.maxhp||0),0);
+    const remaining=fighters.reduce((n,f)=>n+Math.max(0,f.hp||0),0);
+    const healthy=maxHP>0&&remaining/maxHP>=.7;
+    const swift=(b.t||0)<=40;
+    const clever=(b.comboBest||0)>=6||(b.perfectDodges||0)>=1;
+    const points=Number(healthy)+Number(swift)+Number(clever);
+    const grade=points===3?'S':points===2?'A':points===1?'B':'C';
+    const bonuses={S:[42,2],A:[24,1],B:[14,0],C:[8,0]};
+    const [bonusCoins,bonusTreats]=bonuses[grade];
+    return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
+      combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
+      healthy,swift,clever};
+  }
   collectionStatus(){
     const count=Object.values(State.S.dex||{}).filter(v=>Number(v)>0).length;
     const total=GameData.SPECIES.length;
@@ -599,6 +616,9 @@ class Game {
       State.S.dex[b.wild.id] = (State.S.dex[b.wild.id] || 0) + 1;
       State.S.catchCount++;
       const milestoneRewards=this.grantCollectionMilestones();
+      const performance=this.gradeBattle(b);
+      State.S.coins+=performance.bonusCoins;
+      State.S.treats+=performance.bonusTreats;
       // reward: partner gains affinity + xp, coins
       b.partner.affinity = Math.min(100, b.partner.affinity + 6);
       State.addXp(b.partner, 25);
@@ -611,7 +631,9 @@ class Game {
       window.MorrowwishAudio?.effect?.('capture');
       metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity });
       if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
-      UI.openCatchResult(b.wild, newCat, milestoneRewards);
+      metric('bond_battle_grade',{grade:performance.grade,seconds:performance.seconds,
+        combo:performance.combo,rarity:b.wild.rarity});
+      UI.openCatchResult(b.wild, newCat, milestoneRewards, performance);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
