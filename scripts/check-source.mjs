@@ -356,6 +356,27 @@ if(originalMusic.includes('aeris-cc0-music')||originalMusic.includes('createOsci
 const tinyMusicPage=fs.readFileSync('public/tiny-town/index.html','utf8');
 const townV4=fs.readFileSync('public/tiny-town/game-v4.js','utf8');
 new vm.Script(townV4,{filename:'public/tiny-town/game-v4.js'});
+const townFreedom=fs.readFileSync('public/tiny-town/freedom-scenes.js','utf8');
+const townFreedomCss=fs.readFileSync('public/tiny-town/freedom-scenes.css','utf8');
+new vm.Script(townFreedom,{filename:'public/tiny-town/freedom-scenes.js'});
+if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||
+   tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')>tinyMusicPage.indexOf('src="/tiny-town/game-v4.js"')||
+   !tinyMusicPage.includes('href="/tiny-town/freedom-scenes.css?v=1"')||
+   !townFreedomCss.includes('/art/tiny-town-scene.svg'))
+ throw Error('Free Days illustrated scenery assets must load before the game engine');
+for(const marker of ['id="freedomModal"','id="worldIllustration"','id="journeyPassport"','id="endArt"']){
+ if(!tinyMusicPage.includes(marker))throw Error('Free Days interactive scenery UI missing: '+marker);
+}
+for(const marker of ['function play(opts,onDone)','function stage(id)','freedom-collect','freedom-skip','A Day of Doing Nothing']){
+ if(!townFreedom.includes(marker))throw Error('Free Days choice and collectible scene missing: '+marker);
+}
+for(const marker of ["overlays.push({kind:'journey'",'S.journeys.push(memory.id)','function renderScenery()','end-hero-art','function postcard()','my-free-town-']){
+ if(!townV4.includes(marker))throw Error('Free Days story, visits or end postcard missing: '+marker);
+}
+if(townV4.includes('A promise was forgotten. Your neighbors are disappointed.'))
+ throw Error('Optional free-life wishes must not punish players');
+console.log('Tiny Town Free Days: illustrated journeys, optional rest, living map, and postcard integration checked.');
+
 for(const marker of ['const residents=[','const legends=[','function connectedLegend(','function discoverLegends()','function processResidents(','function relocate(pos)','function updatePromise(','function finalLayers()']){
  if(!townV4.includes(marker))throw Error('Tiny Town strategic gameplay missing: '+marker);
 }

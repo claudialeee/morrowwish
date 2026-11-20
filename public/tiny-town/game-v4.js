@@ -14,7 +14,11 @@ const data=[
 ['star','🔭','观星塔','Stargazing Tower','把星星分给所有人','Share the night sky',11,1,'sky'],
 ['tower','🎈','气球塔','Balloon Tower','让城市慢慢升空','Take the town higher',13,-1,'sky'],
 ['pond','🪷','月光湖','Moonlit Lake','在屋顶造一片湖','A lake among rooftops',9,2,'calm'],
-['arcade','🕹️','无限游戏厅','Infinite Arcade','一玩就是一整夜','Play all night long',13,-1,'party']
+['arcade','🕹️','无限游戏厅','Infinite Arcade','一玩就是一整夜','Play all night long',13,-1,'party'],
+['beach','🏖️','永久假日海滩','Forever Beach','每个人都有自己的海边假期','Every day is your own holiday',11,2,'calm'],
+['voyage','🚂','说走就走的列车','Anywhere Express','没有终点，也没有误车','No final stop and no missed train',14,1,'sky'],
+['flight','🪁','飞行自由日','The Day of Flying','想飞就飞，天空向所有人开放','The sky belongs to everyone',13,0,'sky'],
+['picnic','🧺','永远的野餐日','The Endless Picnic','找个喜欢的地方，就这样过一天','A whole afternoon with nowhere to be',10,2,'calm']
 ].map(a=>({id:a[0],icon:a[1],zh:a[2],en:a[3],descZh:a[4],descEn:a[5],joy:a[6],peace:a[7],vibe:a[8]}));
 const byId=Object.fromEntries(data.map(c=>[c.id,c]));
 const combinations=[
@@ -26,7 +30,12 @@ const combinations=[
 ['garden','pond','云上瀑布','Cloud Waterfall','sky'],['star','pond','银河湖','Galaxy Lake','sky'],
 ['library','art','会呼吸的故事书','Living Storybook','art'],['park','pond','午睡天堂','World of Naps','calm'],
 ['cafe','art','彩绘街道','Painted Street','art'],['library','star','星星图书馆','Library of Stars','sky'],
-['cats','park','猫咪野餐节','Cat Picnic Festival','cat'],['arcade','art','游戏美术馆','Playable Museum','art']
+['cats','park','猫咪野餐节','Cat Picnic Festival','cat'],['arcade','art','游戏美术馆','Playable Museum','art'],
+['beach','pond','海边的秘密花园','Secret Tide Garden','calm'],['beach','music','海岸露天演出','Oceanfront Concert','party'],
+['beach','park','无人催促的假期','The Unhurried Holiday','calm'],['voyage','star','银河铁路','The Galaxy Express','sky'],
+['voyage','tower','飞往世界的列车','Worldbound Sky Train','sky'],['flight','garden','自由飞翔的花园','A Flying Garden','sky'],
+['flight','music','云上演唱会','Concert Above the Clouds','party'],['picnic','cats','猫咪野餐大会','Cat Picnic Paradise','cat'],
+['picnic','art','野外创作日','Art Without Walls','art'],['picnic','park','无限悠闲下午','An Endless Afternoon','calm']
 ].map((a,i)=>({a:a[0],b:a[1],zh:a[2],en:a[3],vibe:a[4],bonus:18+(i%4)*2,key:[a[0],a[1]].sort().join('+')}));
 const endings={
 cat:['猫咪自治共和国','The Cats Elected a Mayor','人类终于自由了。除了铲猫砂。','Humanity is finally free. Except for scooping litter.'],
@@ -50,11 +59,11 @@ function pair(a,b){return combinations.find(x=>x.key===[a,b].sort().join('+'));}
 /* Wish Cascade 4.5: dramatic triplet wonders, citizens, meaningful town charter,
    daily promises, one repair move, and consequences beyond arbitrary points. */
 const residents=[
- {name:'Mia',face:'👩🏻‍🎨',en:'The quiet dreamer',zh:'喜欢安静的梦想家',likes:['library','garden','pond','park'],dislikes:['night','arcade','music']},
- {name:'Leo',face:'🧑🏽‍🎤',en:'The festival starter',zh:'永远不嫌热闹的乐手',likes:['music','night','arcade','cafe'],dislikes:['pond','library']},
- {name:'Lulu',face:'👩🏼‍🌾',en:'The cat rescuer',zh:'想照顾所有小猫的人',likes:['cats','cafe','park'],dislikes:['night','arcade']},
- {name:'Nora',face:'👩🏾‍🚀',en:'The sky explorer',zh:'梦想在云上生活',likes:['garden','tower','star','pond'],dislikes:['arcade']},
- {name:'Kai',face:'🧑🏻‍🎨',en:'The street artist',zh:'想把街道变成画布',likes:['art','cafe','library','music'],dislikes:['night']}
+ {name:'Mia',face:'👩🏻‍🎨',en:'The quiet dreamer',zh:'喜欢安静的梦想家',likes:['library','garden','pond','park','beach','picnic'],dislikes:['night','arcade','music']},
+ {name:'Leo',face:'🧑🏽‍🎤',en:'The festival starter',zh:'永远不嫌热闹的乐手',likes:['music','night','arcade','cafe','voyage','flight'],dislikes:['pond','library']},
+ {name:'Lulu',face:'👩🏼‍🌾',en:'The cat rescuer',zh:'想照顾所有小猫的人',likes:['cats','cafe','park','picnic','beach'],dislikes:['night','arcade']},
+ {name:'Nora',face:'👩🏾‍🚀',en:'The sky explorer',zh:'梦想在云上生活',likes:['garden','tower','star','pond','voyage','flight'],dislikes:['arcade']},
+ {name:'Kai',face:'🧑🏻‍🎨',en:'The street artist',zh:'想把街道变成画布',likes:['art','cafe','library','music','picnic','beach'],dislikes:['night']}
 ];
 const legends=[
  {ids:['cats','cafe','library'],zh:'猫咪当选市长！',en:'A CAT WAS ELECTED MAYOR!',vibe:'cat',icon:'🐈',captionZh:'图书馆被改造成喵喵市政厅。',captionEn:'The library is now the Feline City Hall.'},
@@ -65,7 +74,11 @@ const legends=[
  {ids:['garden','star','pond'],zh:'天空中出现了一整片银河！',en:'A GALAXY APPEARED OVER TOWN!',vibe:'sky',icon:'🌌',captionZh:'湖面倒映繁星，水流从云端倾泻而下。',captionEn:'The lake becomes a river through the stars.'},
  {ids:['library','art','park'],zh:'故事书里的世界成真了！',en:'THE STORYBOOK COMES ALIVE!',vibe:'art',icon:'🦋',captionZh:'书中的角色与居民一起走上街头。',captionEn:'Characters walk out of books and into town.'},
  {ids:['library','art','cafe'],zh:'整个小镇都变成艺术品！',en:'THE TOWN BECOMES AN ARTWORK!',vibe:'art',icon:'🎭',captionZh:'每面墙都开始创作，每个人都能留下痕迹。',captionEn:'Every wall becomes a canvas.'},
- {ids:['park','pond','library'],zh:'史上最盛大的集体午睡！',en:'THE GREAT TOWN NAP!',vibe:'calm',icon:'🛌',captionZh:'街道铺满吊床，终于无人安排任何事。',captionEn:'Hammocks everywhere. Absolutely no schedule.'}
+ {ids:['park','pond','library'],zh:'史上最盛大的集体午睡！',en:'THE GREAT TOWN NAP!',vibe:'calm',icon:'🛌',captionZh:'街道铺满吊床，终于无人安排任何事。',captionEn:'Hammocks everywhere. Absolutely no schedule.'},
+ {ids:['beach','park','pond'],zh:'整个小镇搬到了海边！',en:'THE WHOLE TOWN MOVES TO THE BEACH!',vibe:'calm',icon:'🏝️',captionZh:'从此每天醒来都听得见海浪。',captionEn:'Now everyone wakes to the sound of waves.'},
+ {ids:['voyage','star','tower'],zh:'一条铁路驶入银河！',en:'THE RAILWAY THROUGH THE STARS!',vibe:'sky',icon:'🚂',captionZh:'列车没有终点，窗外却有无数个世界。',captionEn:'No final stop. Countless worlds outside the window.'},
+ {ids:['flight','garden','tower'],zh:'花园有了自己的翅膀！',en:'GARDENS LEARNED TO FLY!',vibe:'sky',icon:'🪽',captionZh:'居民可以坐在花丛里飞越城市。',captionEn:'People can soar above the town in a garden.'},
+ {ids:['beach','music','cafe'],zh:'海边举办了永不落幕的音乐节！',en:'THE BEACH FESTIVAL NEVER ENDS!',vibe:'party',icon:'🌅',captionZh:'海风、吉他、晚霞，谁也不着急回家。',captionEn:'Sea breeze and guitars. Nobody needs to go home.'}
 ];
 const charters=[
  {id:'wonder',icon:'🎲',en:'Unrestricted experiments',zh:'放飞想象',descEn:'Wild wishes score +6, but harmony drops faster.',descZh:'大胆的愿望 +6 奇想，但更容易产生冲突。'},
@@ -73,9 +86,9 @@ const charters=[
  {id:'dream',icon:'✨',en:'Dream bigger',zh:'大胆造梦',descEn:'Epic three-wish wonders gain +30 bonus.',descZh:'三个愿望形成大型奇观时，额外获得 30 奇想。'}
 ];
 const petitions={
- 2:{zh:'居民期待：今天发现第一个组合',en:'Town request: Discover your first combo today',passes:()=>S.found.length>=1},
- 4:{zh:'居民期待：至少发现 2 种组合',en:'Town request: Create two different combos',passes:()=>S.found.length>=2},
- 6:{zh:'居民期待：发现一座大型奇观',en:'Town request: Create an epic three-wish wonder',passes:()=>S.legends.length>=1}
+ 2:{zh:'Mia 想看看某种新奇的组合',en:'Mia hopes to see an unexpected combination',passes:()=>S.found.length>=1},
+ 4:{zh:'Leo 想举办更有趣的活动',en:'Leo dreams of two surprising discoveries',passes:()=>S.found.length>=2},
+ 6:{zh:'Nora 想看看一座真正的奇观',en:'Nora hopes to witness a breathtaking wonder',passes:()=>S.legends.length>=1}
 };
 function shouldPromise(day){return petitions[day]||null;}
 function connectedLegend(legend){
@@ -118,7 +131,7 @@ function updatePromise(day){
  const p=shouldPromise(day);if(!p)return;
  const success=p.passes();S.promiseHistory.push({day,success});
  if(success){S.wonder+=17;S.peace=Math.min(10,S.peace+1);news('The town kept its promise. +17 wonder!','兑现了全体居民的小愿望！奇想 +17。');send('town_petition_met',{week:day});}
- else{S.peace=Math.max(0,S.peace-1);news('A promise was forgotten. Your neighbors are disappointed.','今天的居民期待落空了，大家有点失望。');send('town_petition_missed',{week:day});}
+ else{news('A dream for another day. Tomorrow is still yours.','没实现也没关系。自由的日子还有很多。');send('town_petition_missed',{week:day});}
 }
 function renderPeople(){
  const el=$('citizens');if(!el)return;
@@ -128,7 +141,7 @@ function renderPeople(){
   return '<div class="citizen '+level+'" title="'+esc(t(r.en,r.zh))+'"><span class="portrait">'+r.face+'</span><span class="citizen-name">'+r.name+'</span><span class="citizen-mood">'+mood+'</span></div>';
  }).join('');
  const p=shouldPromise(S.day);
- $('petition').innerHTML=p?'<b>🎯 '+t('The town has a request','居民的小小请求')+'</b><span>'+t(p.en,p.zh)+'</span><small>'+t('Succeed: +17 wonder and +1 harmony. Miss: −1 harmony.','完成：奇想 +17、和谐 +1；失败：和谐 −1。')+'</small>':'<b>✨ '+t('Build a town with personality','打造有自己性格的小镇')+'</b><span>'+t('Your neighbors have feelings and opinions.','居民会对每个愿望做出不同反应。')+'</span>';
+ $('petition').innerHTML=p?'<b>💌 '+t('A neighbor has a dream','邻居的自由心愿')+'</b><span>'+t(p.en,p.zh)+'</span><small>'+t('Make it happen for a bonus. Or follow your own dream.','实现会有额外惊喜；不做也没关系。')+'</small>':'<b>✨ '+t('Build a town with personality','打造有自己性格的小镇')+'</b><span>'+t('Your neighbors have feelings and opinions.','居民会对每个愿望做出不同反应。')+'</span>';
  $('moveWish').hidden=S.day<3||S.ended||S.relocateUsed;
  $('moveWish').textContent=S.relocateFrom===null?t('↔ Move one building (once per town)','↔ 免费搬迁一次建筑'):t('Choose an empty plot to move here','点击空地完成搬迁');
  $('moveWish').classList.toggle('chosen',selected==='relocate');
@@ -171,26 +184,44 @@ function finalLayers(){
  return collections+scenic;
 }
 
-function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
+function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
 function offers(){
- if(S.day===1)return ['cats','music','garden'];
+ if(S.day===1)return ['beach','voyage','garden'];
  const used=new Set(S.places.map(p=>p.id)),last=S.places[S.places.length-1].id,available=data.filter(c=>!used.has(c.id)).map(c=>c.id);
  const related=sample(available.filter(id=>pair(id,last)),S.seed+S.day*47);
+ const recent=S.journeys[S.journeys.length-1];
+ const routes={sea:['beach','pond','park'],mountain:['garden','tower','park'],train:['voyage','tower','star'],stars:['star','library','tower'],festival:['music','night','cafe'],meadow:['park','garden','picnic'],rest:['park','picnic','library']};
+ const hinted=recent?sample((routes[recent]||[]).filter(id=>available.includes(id)),S.seed+S.day*37):[];
  const almost=legends.filter(l=>l.ids.filter(id=>used.has(id)).length===2).flatMap(l=>l.ids.filter(id=>available.includes(id)));
- return [...new Set(almost.concat(related,sample(available,S.seed+S.day*113)))].slice(0,3);
+ return [...new Set(almost.slice(0,1).concat(hinted.slice(0,1),related,sample(available,S.seed+S.day*113)))].slice(0,3);
 }
 function newPairs(id,pos){return S.places.filter(p=>adjacent(pos,p.pos)).map(p=>pair(id,p.id)).filter(c=>c&&!S.found.some(f=>f.key===c.key));}
-function type(){const totals={cat:0,sky:0,party:0,art:0,calm:0};S.places.forEach(p=>totals[byId[p.id].vibe]+=2);S.found.forEach(f=>totals[f.vibe]+=4);S.legends.forEach(l=>totals[l.vibe]+=24);if(S.places.length)totals[byId[S.places[0].id].vibe]+=14;if(S.peace<=2&&S.found.length)return 'chaos';return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0];}
+function type(){const totals={cat:0,sky:0,party:0,art:0,calm:0};S.places.forEach(p=>totals[byId[p.id].vibe]+=2);S.found.forEach(f=>totals[f.vibe]+=4);S.legends.forEach(l=>totals[l.vibe]+=24); if(S.journeys.length){const scenic={sea:'calm',mountain:'calm',train:'sky',stars:'sky',festival:'party',meadow:'calm',rest:'calm'};totals[scenic[S.journeys.at(-1)]]+=5;}if(S.places.length)totals[byId[S.places[0].id].vibe]+=14;if(S.peace<=2&&S.found.length)return 'chaos';return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0];}
 function goal(){return S.legends.length>=1&&S.peace>=3;}
 function translate(){document.querySelectorAll('[data-en][data-zh]').forEach(el=>el.textContent=t(el.dataset.en,el.dataset.zh));document.title=t('No More Mondays: Wish Cascade','自由小镇：愿望连锁反应');}
 function render(){
  translate();if(!S)return;
  $('day').textContent=S.day+' / 7';$('wonder').textContent=S.wonder;$('peace').textContent=S.peace+'/10';$('comboNum').textContent=S.found.length;
  $('progressFill').style.width=((S.ended?7:S.day-1)/7*100)+'%';
- $('mapTitle').textContent=S.mutation?t('Your town is transforming','小镇正在发生奇妙变化'):t('Your little town','你的小镇');
+ $('mapTitle').textContent=S.mutation?t('A world you made possible','你亲手创造的奇妙世界'):t('Make a life worth remembering','创造你真正想过的生活');
  $('mapWrap').dataset.theme=S.mutation||'normal';
- $('guide').textContent=selected?t('Tap a glowing plot. Gold means a secret combination!','点击发光的空地。金色代表有隐藏组合！'):t('Pick a wish, then pick a place.','选择愿望，再挑个地方实现它。');
- renderBoard();renderCards();renderNews();renderPeople();
+ $('guide').textContent=selected?t('Choose where your dream comes alive. Gold means a surprise.','选一个让梦想发生的地方。金光代表惊喜！'):t('Choose a dream. Every small decision changes the scenery.','今天做什么，由你决定。每个小愿望都会改变风景。');
+ renderBoard();renderCards();renderNews();renderPeople();renderScenery();
+}
+function renderScenery(){
+ const art=$('worldIllustration');
+ if(!art)return;
+ const scenicForWish={beach:'sea',voyage:'train',flight:'train',garden:'meadow',star:'stars',music:'festival',night:'festival',park:'meadow',picnic:'meadow',cats:'meadow',tower:'train',pond:'sea',cafe:'festival',art:'meadow',library:'mountain',arcade:'festival'};
+ const current=S.journeys.length?S.scenic:(scenicForWish[S.places[S.places.length-1]?.id]||'meadow');
+ const first=S.places[0]?.id;
+ const theme=first&&S.journeys.length===0?scenicForWish[first]:current;
+ if(art.dataset.current!==theme){
+  art.dataset.current=theme;
+  art.innerHTML=window.TownFreedom?.svg?.(theme)||'';
+ }
+ $('mapWrap').dataset.destination=theme;
+ const passports=$('journeyPassport');
+ if(passports)passports.innerHTML=S.journeys.length?S.journeys.map(j=>'<span class="passport-stamp">'+(window.TownFreedom?.DATA?.[j]?.icon||'✦')+' '+esc(t(window.TownFreedom?.DATA?.[j]?.en||j,window.TownFreedom?.DATA?.[j]?.zh||j))+'</span>').join(''):'<span class="passport-empty">'+t('Your adventure memories will appear here.','走出去看看世界，回忆就会留在这里。')+'</span>';
 }
 function renderBoard(){
  const board=$('board');board.innerHTML='';
@@ -214,7 +245,7 @@ function renderCards(){
   b.onclick=()=>{selected=id;send('town_wish_selected',{week:S.day});render();preview(-1);};
   el.appendChild(b);
  }
- $('pickHint').textContent=selected?t('Choose a plot on the map.','点击地图选位置。'):t('Three possibilities. One choice.','三个可能，只能实现一个。');
+ $('pickHint').textContent=selected?t('Touch the landscape to bring it to life.','点击地图，让这个愿望成为现实。'):t('Three beautiful possibilities. Which sounds like you?','三种美好的生活，你更想体验哪一种？');
 }
 function renderNews(){
  $('news').innerHTML=S.news.length?S.news.map(n=>'<p>'+esc(t(n.en,n.zh))+'</p>').join(''):'<p>'+t('No one needs to work. What should everyone do tomorrow?','不需要再上班了。那么，明天做什么？')+'</p>';
@@ -232,11 +263,28 @@ function place(pos){
  send('town_week-'+S.day,{week:S.day,score:S.wonder});
  if(S.day===2)send('town_second-wish',{week:2});
  processCombos(card,pos);
- if(!matches.length){const happy=residents.find(r=>r.likes.includes(card.id));news((happy?happy.face+' '+happy.name+': ':'')+card.en+' changed the town.',(happy?happy.face+' '+happy.name+'：':'')+card.zh+'让小镇有了新变化。');}
+ if(!matches.length){
+  const happy=residents.find(r=>r.likes.includes(card.id));
+  const scenes={
+   beach:['Nobody checked the time. The sea was enough.','所有人都忘了看时间，光是海风就让人开心。'],
+   voyage:['The first train departed with no return date.','第一趟列车出发了，没有人问什么时候回来。'],
+   flight:['The sky became a place to play.','天空从此不只是用来仰望的。'],
+   picnic:['A whole afternoon passed without a single plan.','一个下午就这样过去，谁也没觉得浪费。'],
+   garden:['Someone held their first picnic among the flowers.','屋顶开满了花，邻居在花丛里野餐。'],
+   cats:['A neighborhood cat found five new favorite homes.','一只小猫找到了五个喜欢的新家。'],
+   music:['The first concert started before anyone asked for tickets.','第一场音乐会开始了，没有人需要买门票。'],
+   park:['Mia stayed in the park until sunset, doing nothing.','Mia 在公园里发了一下午呆，看着太阳落山。'],
+   night:['The lanterns went on. No one had a last train to catch.','街灯亮了，没有人需要赶末班车。'],
+   art:['The walls turned into a shared canvas.','街道变成画布，谁都可以留下自己的颜色。']
+  };
+  const line=scenes[card.id]||[card.en+' found its place in town.',card.zh+'在小镇有了自己的位置。'];
+  news((happy?happy.face+' ':'')+line[0],(happy?happy.face+' ':'')+line[1]);
+ }
  const gained=discoverLegends();
  gained.forEach(l=>overlays.push({kind:'legend',legend:l}));
  updatePromise(S.day);
  if(S.day===3||S.day===5)overlays.push({kind:'event',day:S.day});
+ if(S.day===2||S.day===5)overlays.push({kind:'journey',day:S.day});
  runAnomaly();
  selected='';S.advanceAfterOverlay=true;render();if(overlays.length)showOverlay();else advance();
 }
@@ -246,6 +294,24 @@ function button(text,callback,secondary){
 function showOverlay(){
  const o=overlays[0];if(!o)return;
  $('storyModal').classList.add('show');$('storyChoices').innerHTML='';
+ if(o.kind==='journey'){
+  $('storyModal').classList.remove('show');
+  const finish=memory=>{
+    if(S.journeys.includes(memory.id)){nextOverlay();return;}
+    S.journeys.push(memory.id);S.scenic=memory.id==='rest'?'meadow':memory.id;
+    if(memory.bless==='peace'){S.peace=Math.min(10,S.peace+memory.amount);S.wonder+=12;}
+    else{S.wonder+=memory.amount;S.peace=Math.min(10,S.peace+1);}
+    S.moods=S.moods.map(v=>Math.min(6,v+1));
+    const destination=window.TownFreedom?.DATA?.[memory.id];
+    news('A whole day of freedom: '+(destination?.en||memory.id)+'.','自由的一天：'+(destination?.zh||memory.id)+'。');
+    send('town_free_day',{week:S.day});
+    send('town_free_'+memory.id,{week:S.day});
+    nextOverlay();
+  };
+  if(window.TownFreedom?.play)window.TownFreedom.play({day:o.day,zh:chinese(),seed:S.seed},finish);
+  else finish({id:o.day===2?'sea':'stars',bless:'peace',amount:2});
+  return;
+ }
  if(o.kind==='legend'){
   const l=o.legend;$('storyKicker').textContent=t('A CITY-SIZED MIRACLE!','城市级奇观诞生！');$('storyTitle').textContent=t(l.en,l.zh);
   $('storyBody').textContent=t(l.captionEn,l.captionZh)+'  +'+(65+(S.law==='dream'?30:0))+' '+t('wonder','奇想');
@@ -288,15 +354,22 @@ function finish(){
  S.ended=true;S.ending=type();S.grade=S.legends.length>=2&&S.peace>=4?'S':S.legends.length>=1&&S.peace>=3?'A':S.found.length>=2?'B':'C';
  send('town_completed-'+(goal()?'win':'lose'),{week:7,score:S.wonder+S.peace*4,grade:S.grade});
  send('town_ending_'+S.ending);
- $('endArt').innerHTML=illustrate(S.ending);endingText();$('end').classList.add('show');
+ const cover=window.TownFreedom?.DATA?.[S.scenic]||{icon:'🌺'};
+ const eicon={cat:'🐈',sky:'🏝️',party:'🎆',art:'🎨',calm:'🌺',chaos:'🌈'}[S.ending]||'✦';
+ $('endArt').innerHTML='<div class="end-hero-art" data-theme="'+S.ending+'"><img class="end-landscape" src="/art/tiny-town-scene.svg" alt="">'+
+ '<span class="end-centerpiece">'+(S.celebration||eicon)+'</span><div class="end-stamp">NO<br>MORE<br>MONDAYS</div><div class="end-memories">'+
+ S.journeys.map(j=>'<span>'+(window.TownFreedom?.DATA?.[j]?.icon||'✦')+' '+esc(t(window.TownFreedom?.DATA?.[j]?.en||j,window.TownFreedom?.DATA?.[j]?.zh||j))+'</span>').join('')+'</div><div class="end-sky-portal">'+(window.TownFreedom?.svg?.(S.scenic)||'')+'</div></div>'+
+ '<div hidden>'+illustrate(S.ending)+'</div>';
+ endingText();$('end').classList.add('show');
  $('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;render();
 }
 function endingText(){
  if(!S?.ending)return;const e=endings[S.ending];
  const happiest=residents.map((r,i)=>({...r,m:S.moods[i]})).sort((a,b)=>b.m-a.m)[0],last=S.legends[S.legends.length-1];
- $('endStory').textContent=t(happiest.name+' found their place in this town. '+(last?last.captionEn:'Every odd little wish changed the people who live here.'),happiest.name+'在这里找到了最喜欢的生活。'+(last?last.captionZh:'每个小愿望，都悄悄改变了这里的人。'));$('endTitle').textContent=t(e[1],e[0]);$('endLine').textContent=t(e[3],e[2]);
- $('endDetail').textContent=t('7 wishes · ','7 个愿望 · ')+S.found.length+t(' combos · ',' 种组合 · ')+S.legends.length+t(' epic wonders · ',' 大奇观 · ')+S.wonder+t(' wonder · Grade ',' 奇想 · 评级 ')+S.grade;
- $('endGoal').textContent=goal()?t('✓ Town dream fulfilled','✓ 小镇梦想实现'):t('◇ A surprising town, even without the perfect ending','◇ 没达成目标，却建成了意想不到的小镇');
+ const trip=S.journeys.length?window.TownFreedom?.DATA?.[S.journeys.at(-1)]:null;
+ $('endStory').textContent=t(happiest.name+' found their place here. '+(trip?'You also escaped to '+trip.en+'. ':'')+(last?last.captionEn:'Life finally feels like your own.'),happiest.name+'在这里找到了喜欢的生活。'+(trip?'你还去过'+trip.zh+'。':'')+(last?last.captionZh:'每一天，都真正属于自己。'));$('endTitle').textContent=t(e[1],e[0]);$('endLine').textContent=t(e[3],e[2]);
+ $('endDetail').textContent=t('7 wishes · ','7 个愿望 · ')+S.found.length+t(' discoveries · ',' 个惊喜 · ')+S.journeys.length+t(' adventures · ',' 段自由时光 · ')+S.legends.length+t(' wonders',' 座奇观');
+ $('endGoal').textContent=goal()?t('✦ You found your own kind of freedom.','✦ 你创造了自己向往的生活。'):t('✦ Every kind of freedom deserves to be celebrated.','✦ 每一种自由，都值得好好庆祝。');
 }
 function illustrate(kind){
  const pal=palettes[kind]||palettes.calm,night=['sky','party','chaos'].includes(kind);
@@ -314,20 +387,36 @@ function illustrate(kind){
 }
 function share(){
  const end=S.ending||type(),e=endings[end],score=S.wonder+S.peace*4;
- const message=t('My wish-powered town became '+e[1]+'! What would yours become?','我的自由小镇变成了「'+e[0]+'」！你会建出什么？');
+ const last=S.journeys.at(-1),trip=last?window.TownFreedom?.DATA?.[last]:null;
+ const message=t('Seven free days made '+e[1]+'! '+(trip?'I went to '+trip.en+'. ':'')+'What life would you choose?','七天自由生活，我建成了「'+e[0]+'」！'+(trip?'还去过'+trip.zh+'。':'')+'你想过怎样的生活？');
  if(window.MorrowwishSocialShare?.open)window.MorrowwishSocialShare.open({title:t('No More Mondays: Wish Cascade','自由小镇：愿望连锁'),message,score,language:chinese()?'zh':'en',url:'https://morrowwish.vercel.app/tiny-town/',meta:{game:'tiny-town',ending:end},onShare:()=>send('town_shared-link')});
 }
 function postcard(){
- if(!S.ended)return;const svg=$('endArt').querySelector('svg');if(!svg)return;
- const canvas=document.createElement('canvas');canvas.width=1260;canvas.height=740;const ctx=canvas.getContext('2d'),img=new Image();
- img.onload=()=>{
-  ctx.fillStyle='#fffaf5';ctx.fillRect(0,0,1260,740);ctx.drawImage(img,25,25,1210,660);
-  ctx.fillStyle='#443851';ctx.font='bold 34px system-ui';ctx.fillText(t(endings[S.ending][1],endings[S.ending][0]),43,719);
-  ctx.font='21px system-ui';ctx.fillText('MORROW WISH',1050,717);
-  canvas.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='wish-town-'+S.ending+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);},'image/png');
+ if(!S.ended)return;
+ const canvas=document.createElement('canvas');canvas.width=1260;canvas.height=740;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ const picture=new Image();
+ const draw=()=>{
+  try{
+   ctx.fillStyle='#fff8ed';ctx.fillRect(0,0,1260,740);
+   const filter={cat:'saturate(1.18)',sky:'saturate(1.25) hue-rotate(12deg)',party:'saturate(1.4) hue-rotate(108deg)',art:'saturate(1.2) hue-rotate(295deg)',calm:'brightness(1.08)',chaos:'saturate(1.5) hue-rotate(210deg)'};
+   ctx.save();ctx.filter=filter[S.ending]||'none';
+   ctx.drawImage(picture,20,20,1220,628);ctx.restore();
+   ctx.fillStyle='#2c23457a';ctx.fillRect(20,522,1220,126);
+   ctx.font='110px system-ui';ctx.textAlign='center';
+   ctx.fillText(S.celebration||{cat:'🐈',sky:'🏝️',party:'🎆',calm:'🌺',art:'🎨',chaos:'🌈'}[S.ending]||'🌟',630,336);
+   ctx.font='bold 39px system-ui';ctx.fillStyle='#fff7e9';ctx.fillText(t(endings[S.ending][1],endings[S.ending][0]),630,584);
+   ctx.font='25px system-ui';ctx.fillText(t('The life I chose · '+S.journeys.length+' adventures','我的自由生活 · '+S.journeys.length+' 段旅程'),630,626);
+   ctx.textAlign='left';ctx.fillStyle='#514063';ctx.font='bold 28px system-ui';
+   ctx.fillText('MORROW WISH',36,705);
+   ctx.textAlign='right';ctx.font='19px system-ui';ctx.fillText('NO MORE MONDAYS',1220,704);
+   canvas.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='my-free-town-'+S.ending+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);},'image/png');
+  }catch(err){alert(t('Could not save this postcard in your browser.','此浏览器暂时无法保存这张明信片。'));}
  };
- img.onerror=()=>alert(t('Sorry, this browser cannot render the postcard.','此浏览器无法生成明信片。'));
- img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(svg));send('town_postcard_clicked');
+ picture.onload=draw;
+ picture.onerror=()=>alert(t('Could not load the postcard artwork.','结局插画暂时无法载入。'));
+ picture.src='/art/tiny-town-scene.svg';
+ send('town_postcard_clicked');
 }
 function start(){S.law=document.querySelector('[data-law].active')?.dataset.law||'care';S.started=true;$('intro').hidden=true;send('town_charter_'+S.law);render();}
 function restart(){

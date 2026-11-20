@@ -1,0 +1,154 @@
+/* Tiny Town: freedom-first art direction and immersive free days */
+:root{--tt-dark:#453a66;--tt-gold:#ffdd94}
+body{background:radial-gradient(circle at 12% -6%,#ffdaf0 0%,transparent 33%),radial-gradient(circle at 85% 9%,#cceafa 0%,transparent 29%),linear-gradient(165deg,#fff6eb,#f6efff 73%,#fff3ee);color:var(--tt-dark)}
+.app{max-width:1230px}
+.header{margin-bottom:10px}
+.header h1{background:linear-gradient(110deg,#65487b,#b76c8c);background-clip:text;-webkit-background-clip:text;color:transparent}
+.tagline{font-weight:750;color:#886789}
+.stats{gap:7px;margin-bottom:9px}
+.stat{padding:8px 13px;background:linear-gradient(155deg,#fffefc,#fff7f0);box-shadow:0 6px 15px #d5b0b412}
+.stat strong{font-size:21px}
+.panel{border-color:#f0ddd8;box-shadow:0 10px 28px #9c739c17}
+.map-panel{background:linear-gradient(172deg,#fffefa,#fff8f2)}
+.world{min-height:470px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -14px 50px #6b8aaa26,0 9px 25px #7f8fa922;border:5px solid #fff9ef;
+background:linear-gradient(165deg,#fffaee33,#c5e6ef3b),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important;transition:filter 1s,background 1s}
+.world[data-destination=sea]{filter:saturate(1.16) hue-rotate(5deg)}
+.world[data-destination=mountain]{filter:saturate(1.09) hue-rotate(31deg)}
+.world[data-destination=train]{filter:saturate(1.13) hue-rotate(58deg)}
+.world[data-destination=stars]{filter:saturate(1.05) hue-rotate(176deg) brightness(.86)}
+.world[data-destination=festival]{filter:saturate(1.5) hue-rotate(244deg) brightness(.89)}
+.world[data-destination=meadow]{filter:saturate(1.2) hue-rotate(340deg)}
+.world:before{content:'';inset:0;position:absolute;z-index:0;pointer-events:none;background:linear-gradient(180deg,#ffffff25 0%,transparent 28%,#103f3850 100%);animation:none}
+.world:after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 35%,#fff9d912,transparent 80%);animation:worldGlow 8s ease-in-out infinite}
+@keyframes worldGlow{50%{opacity:.28;transform:scale(1.1)}}
+.world[data-theme=cat]:after{content:'🐾';font-size:48px;left:auto;right:25px;top:12px;inset:auto 22px auto auto}
+.world[data-theme=party]:after{content:'🎆';font-size:44px;left:auto;right:25px;top:12px;inset:auto 22px auto auto}
+.world[data-theme=sky]:after{content:'☁';font-size:65px;left:auto;right:30px;top:3px;inset:auto 25px auto auto}
+.world[data-theme=calm]:after{content:'🌸';font-size:44px;inset:auto 24px auto auto}
+.world[data-theme=art]:after{content:'🦋';font-size:44px;inset:auto 24px auto auto}
+.world[data-theme=chaos]:after{content:'🌈';font-size:44px;inset:auto 24px auto auto}
+.world-magic{z-index:1;color:#fff8de;text-shadow:0 1px 9px #ad80b3;font-size:17px;animation:magicRise 5s ease-in-out infinite}
+@keyframes magicRise{50%{transform:translateY(-13px);opacity:.3}}
+.board{width:min(100%,515px);position:relative;z-index:2;gap:8px;filter:drop-shadow(0 10px 16px #3c62594c);perspective:700px}
+.tile{border-radius:15px;background:#fffbee22!important;border:1.5px solid #f8f7dc4d!important;box-shadow:0 3px 9px #32574b30!important;backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);transition:transform .18s,background .18s,border-color .18s,box-shadow .18s}
+.tile:not(.built):not(.target):not(.house):not(.plaza){background:#ffffff10!important;border-color:#e4f3da20!important}
+.tile.house,.tile.plaza{background:#fff2e2cc!important;border:2px solid #fffef0c4!important;box-shadow:0 6px 10px #57484b60!important;backdrop-filter:blur(5px)}
+.tile.built{background:linear-gradient(150deg,#fff8ebec,#f2d1bef2)!important;border:2px solid #fff3dda8!important;box-shadow:0 6px 11px #57484b70!important;backdrop-filter:blur(4px);transform:translateY(-2px)}
+.tile.target{background:#a7dbbf69!important;border:2px solid #fffde5af!important;box-shadow:0 0 0 2px #c3ffcb59,0 5px 9px #32574b40!important}
+.tile.jackpot{background:#ffe9a5b8!important;border-color:#fff0b1!important;box-shadow:0 0 0 2px #ffe7a6ad,0 3px 14px #f7d6848c!important}
+.tile.target:hover{transform:translateY(-6px) scale(1.03)}
+.tile-icon{font-size:clamp(21px,3.8vw,40px);filter:drop-shadow(0 2px 2px #4d64774d)}
+.tile-name{color:#4b4261;font-weight:950;text-shadow:0 1px #fff8}
+.tile:not(.built):not(.house):not(.plaza) .tile-icon{opacity:.7}
+.city-landmark{z-index:4;top:-20px;filter:drop-shadow(0 12px 10px #493c7355)}
+.tile-people{font-size:clamp(11px,2vw,16px)}
+#dayLabel,#daySuffix{display:none}
+.sidebar{background:linear-gradient(170deg,#fffefc,#fff6f4)}
+.wish-card{box-shadow:0 5px 14px #d9b8c218;min-height:79px}
+.wish-card.selected{box-shadow:0 0 0 3px #efddf6,0 6px 15px #9a78ab36}
+.wish-icon{filter:drop-shadow(0 2px 2px #ffffff)}
+.wish-copy small{font-size:11px}
+.wish-copy em{color:#8f7784}
+#journeyPassport{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.passport-stamp{border:1px solid #f5cead;color:#865e6c;padding:6px 8px;border-radius:12px;background:#fff1df;font-size:11px;font-weight:800}
+.passport-empty{color:#9e8c9c;font-size:11px}
+#freedomModal{position:fixed;inset:0;display:none;z-index:1500;align-items:center;justify-content:center;background:#312847d6;padding:12px;overflow:auto;backdrop-filter:blur(8px)}
+#freedomModal[hidden]{display:none!important}#freedomModal.show{display:flex}
+.freedom-shell{max-height:calc(100dvh - 24px);width:min(1020px,100%);overflow:auto;border:1px solid #ffffffa6;border-radius:25px;background:linear-gradient(135deg,#fff9ec,#faecf8);padding:18px;box-shadow:0 25px 80px #211a425c;animation:sceneAppear .45s both}
+@keyframes sceneAppear{from{transform:translateY(22px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.freedom-head{text-align:center;padding:5px 0 14px}
+.freedom-eyebrow{letter-spacing:.18em;font-weight:900;color:#b084a4;font-size:10px}
+.freedom-head h2{font-size:clamp(24px,3.5vw,36px);letter-spacing:-.03em;margin:7px 0;color:#59436d}
+.freedom-head p{font-size:13px;color:#907b8e;margin:5px 0}
+.freedom-options{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.freedom-option{padding:0;display:flex;flex-direction:column;gap:5px;background:#ffffff;border:2px solid #f0dce6;border-radius:17px;text-align:left;overflow:hidden;box-shadow:0 7px 20px #5e477a1c;min-width:0;transition:transform .15s,box-shadow .2s}
+.freedom-option:hover,.freedom-option:focus-visible{transform:translateY(-5px);box-shadow:0 10px 32px #9b6da751}
+.freedom-preview{display:block;aspect-ratio:1.4;overflow:hidden;background:#f1e4df}
+.freedom-preview svg{width:100%;height:100%;display:block}
+.freedom-option b{padding:2px 12px;color:#664c72;font-size:15px}
+.freedom-option small{padding:0 12px 13px;color:#927e91;font-size:11px;line-height:1.35}
+.freedom-adventure[hidden],.freedom-options[hidden]{display:none!important}
+.freedom-paint{position:relative;width:100%;height:min(52dvh,470px);border-radius:18px;overflow:hidden;background:#e7d9e8;box-shadow:0 12px 23px #654d7c2f;isolation:isolate}
+.freedom-paint>svg{width:100%;height:100%;object-fit:cover;display:block;animation:sceneDrift 15s ease-in-out infinite alternate}
+@keyframes sceneDrift{to{transform:scale(1.07) translateY(-8px)}}
+.freedom-hotspots{position:absolute;inset:0;z-index:5}
+.freedom-collect{position:absolute;display:grid;place-items:center;width:clamp(63px,10vw,100px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fff9e8e9,#ffffff59 54%,transparent 70%);border:2px solid #fff5cb8c;box-shadow:0 0 24px #fbedc2aa;font-size:clamp(30px,5vw,49px);animation:floatOne 3s ease-in-out infinite;color:#514a70}
+.freedom-collect span{filter:drop-shadow(0 2px 6px #4f426688)}
+.freedom-collect.c0{left:12%;top:38%}.freedom-collect.c1{left:45%;top:14%;animation-delay:.8s}.freedom-collect.c2{right:12%;top:48%;animation-delay:1.6s}
+.freedom-collect.found{opacity:.3;transform:scale(.7);animation:none;pointer-events:none;filter:grayscale(.5)}
+@keyframes floatOne{50%{transform:translateY(-11px) scale(1.1)}}
+.freedom-glow{position:absolute;inset:0;pointer-events:none;z-index:4;opacity:0}
+.freedom-glow.burst{background:radial-gradient(circle,#fff1a378 0%,transparent 62%);animation:glowBurst 1.3s both}
+@keyframes glowBurst{0%{opacity:0;transform:scale(.55)}40%{opacity:1}100%{opacity:.45;transform:scale(1.15)}}
+.freedom-finding{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:8px 6px;font-size:12px;color:#816d85}
+.freedom-finding strong{color:#8f5a92;white-space:nowrap}
+.freedom-finish{display:block;margin:6px auto 0;background:linear-gradient(115deg,#b480c2,#8d91cf);color:white;border:0;border-radius:99px;padding:13px 28px;font-weight:850;min-height:46px;box-shadow:0 5px 18px #976eb45c}
+.freedom-finish[hidden]{display:none}
+.end-modal{width:min(890px,100%);background:linear-gradient(#fffbf7,#fff4ee)}
+.end-hero-art{position:relative;overflow:hidden;border-radius:17px;aspect-ratio:1.85;box-shadow:0 12px 30px #5d497a3d;margin:10px 0}
+.end-hero-art:before{content:'';position:absolute;inset:0;background:linear-gradient(10deg,#1f245b3f,transparent 70%);z-index:1;pointer-events:none}
+.end-hero-art .end-landscape{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(1.23) contrast(1.08)}
+.end-hero-art[data-theme=cat] .end-landscape{filter:saturate(1.2) hue-rotate(-12deg)}
+.end-hero-art[data-theme=sky] .end-landscape{filter:saturate(1.25) hue-rotate(9deg)}
+.end-hero-art[data-theme=party] .end-landscape{filter:saturate(1.5) hue-rotate(108deg) brightness(.8)}
+.end-hero-art[data-theme=art] .end-landscape{filter:saturate(1.3) hue-rotate(294deg)}
+.end-hero-art[data-theme=calm] .end-landscape{filter:saturate(1.1) brightness(1.07)}
+.end-hero-art[data-theme=chaos] .end-landscape{filter:saturate(1.55) hue-rotate(205deg)}
+.end-hero-art .end-centerpiece{position:absolute;left:50%;top:39%;font-size:clamp(52px,10vw,120px);transform:translate(-50%,-50%);filter:drop-shadow(0 9px 17px #4f3f6b88);z-index:2;animation:townMiracle 1.5s both}
+.end-hero-art .end-memories{position:absolute;z-index:2;left:14px;bottom:14px;display:flex;gap:8px;flex-wrap:wrap}
+.end-hero-art .end-memories span{background:#fff8e6e5;border:1px solid #fff9;padding:5px 9px;border-radius:99px;font-size:12px;color:#635574;font-weight:900}
+.end-hero-art .end-stamp{position:absolute;top:17px;right:17px;z-index:2;border:3px solid #fffaf7ae;border-radius:50%;width:77px;height:77px;display:grid;place-items:center;transform:rotate(12deg);background:#ae76a268;color:#fff8e4;font-size:10px;line-height:1.15;font-weight:900;text-align:center}
+#endArt svg{display:none}
+.intro-inner{height:clamp(150px,26vh,260px);display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:hidden;border:3px solid #fff6e9;background:linear-gradient(180deg,#bce5f34d,#ffefbf2a),url('/art/tiny-town-scene.svg') center/cover no-repeat;font-size:0;box-shadow:0 8px 18px #785b7324;margin:10px 0 14px}
+.intro-inner span{display:block;width:100%;background:linear-gradient(transparent,#42334cba);padding:30px 12px 12px;color:#fff9e6;font-size:12px;line-height:1.45;font-weight:850;text-shadow:0 1px 4px #413153}
+#intro .modal{width:min(620px,100%);padding:17px}
+#intro .modal h2{margin:7px 0;font-size:clamp(25px,4.2vw,36px)}
+.story-image:has(svg) svg{max-height:275px}
+@media(max-width:840px){.world{min-height:380px}.board{gap:5px}}
+@media(max-width:650px){
+ .app{padding:10px 9px 28px}
+ .header h1{font-size:27px}
+ .world{min-height:300px;padding:13px 6px 8px;aspect-ratio:1.12}
+ .board{gap:5px}
+ .tile{border-radius:9px}
+ .tile-icon{font-size:clamp(22px,7vw,36px)}
+ .tile-name{font-size:clamp(7px,2.1vw,10px)}
+ .freedom-shell{padding:12px;border-radius:19px}
+ .freedom-options{gap:6px}
+ .freedom-option b{padding:2px 6px;font-size:12px}
+ .freedom-option small{padding:0 6px 9px;font-size:10px}
+ .freedom-preview{aspect-ratio:.9}
+ .freedom-paint{height:min(52dvh,390px)}
+ .freedom-head h2{font-size:clamp(22px,6vw,30px)}
+ .freedom-head p{font-size:11px}
+ .freedom-finding{flex-direction:column;text-align:center}
+ .end-hero-art{aspect-ratio:1.3}
+ .end-hero-art .end-stamp{width:55px;height:55px;top:8px;right:8px;font-size:8px}
+ .end-hero-art .end-memories{left:8px;bottom:8px;gap:4px}
+ .end-hero-art .end-memories span{padding:3px 6px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.freedom-option,.freedom-paint>svg,.freedom-collect,.freedom-glow,.intro-inner,.city-landmark{animation:none!important;transition:none!important}}
+
+.world-illustration{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;border-radius:14px;opacity:.65;animation:sceneEnter .8s ease-out both}
+.world-illustration svg{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.17);animation:worldPan 17s ease-in-out infinite alternate}
+@keyframes sceneEnter{from{opacity:0;transform:scale(1.08)}to{opacity:.65;transform:scale(1)}}
+@keyframes worldPan{to{transform:scale(1.06) translate(0,-8px)}}
+.world-illustration:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#fff5e81a,#5b446b05 40%,#203e4c1e);pointer-events:none}
+.world>.board{position:relative;z-index:2}
+.world-illustration~.board .tile:not(.built):not(.house):not(.plaza):not(.target){background:transparent!important;box-shadow:none!important}
+.journey-passport{padding:4px 0 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:32px}
+@media(max-width:650px){.world-illustration svg{animation:none}.journey-passport{margin-top:3px}}
+
+.freedom-skip{display:block;margin:15px auto 0;padding:9px 15px;border-radius:999px;border:1px solid #decad9;background:#ffffffbb;color:#88708d;font-size:12px;font-weight:850;min-height:42px}
+.freedom-skip:hover{background:#fff1eb;color:#614a73}
+.freedom-skip[hidden]{display:none}
+.end-sky-portal{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.32;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 40%,#000 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 40%,#000 100%)}
+.end-sky-portal svg{width:100%;height:100%;object-fit:cover;display:block}
+.end-hero-art .end-centerpiece,.end-hero-art .end-stamp,.end-hero-art .end-memories{z-index:2}
+@media(max-width:650px){.freedom-skip{margin-top:9px;font-size:11px}.end-sky-portal{opacity:.24}}
+
+/* Keep detailed town illustration legible below the journey atmosphere. */
+.world-illustration svg{mix-blend-mode:soft-light}
+.world[data-destination=stars] .world-illustration svg,.world[data-destination=festival] .world-illustration svg{mix-blend-mode:multiply;opacity:.73}
+.freedom-paint{background:linear-gradient(#ffffff24,#351c5573),url('/art/tiny-town-scene.svg') center/cover}
+.freedom-paint>svg{opacity:.92}
