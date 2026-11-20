@@ -192,7 +192,23 @@ const hu=s.human,ca=s.cat;humanDraw((hu.x+.5)*T,(hu.y+.5)*T+10,time);if(!hidden(
 if(!s.started&&!s.done){const x=Math.min(680,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,208,38,14,"#fffdf5ef");label(tr("startHint"),x+104,y+25,"bold 15px Nunito, system-ui","#8a5773");const next={x:s.cat.x+1,y:s.cat.y};if(pass(next)){ctx.strokeStyle="#d887ac";ctx.lineWidth=4;ctx.setLineDash([5,7]);ctx.beginPath();ctx.arc((next.x+.5)*T,(next.y+.5)*T,25+Math.sin(time*.005)*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}}
 for(let i=fx.length-1;i>=0;i--){const p=fx[i];shape(p.x,p.y,Math.max(1,p.life/8),p.col);p.x+=p.dx;p.y+=p.dy;p.dy+=.07;p.life--;if(p.life<0)fx.splice(i,1)}requestAnimationFrame(draw)}
 function onClick(e){if(s.done)return;const rect=c.getBoundingClientRect(),x=Math.floor((e.clientX-rect.left)/rect.width*W),y=Math.floor((e.clientY-rect.top)/rect.height*H);if(x>=0&&x<W&&y>=0&&y<H)command(x,y)}
-function share(){const text=tr("shareText")+" https://morrowwish.vercel.app/pawsibly-innocent/";metric("share_click",{level:daily?9:stage+1});if(navigator.share){navigator.share({title:"Pawsibly Innocent!",text:tr("shareText"),url:"https://morrowwish.vercel.app/pawsibly-innocent/"}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>popup("shared")).catch(()=>{})}else if(typeof window.prompt==="function"){window.prompt(tr("shareText"),text)}}
+function share(){
+ const room=daily?9:stage+1;
+ const score=Math.max(0,Math.floor(Number(s?.score)||0));
+ const isWin=!!s?.winning;
+ const message=lang==="zh"
+  ?(isWin?'我在《猫猫绝对无辜！》第 '+room+' 关成功偷鱼，拿了 '+score+' 分！你能比我更调皮吗？':
+           '我在《猫猫绝对无辜！》第 '+room+' 关挑战了 '+score+' 分。来试试能不能偷走三条鱼！')
+  :(isWin?'I stole the fish in room '+room+' of Pawsibly Innocent! and scored '+score+'. Can you beat my escape?':
+           'I scored '+score+' in room '+room+' of Pawsibly Innocent! Can you sneak out with three fish?');
+ window.MorrowwishSocialShare.open({
+  title:lang==="zh"?'猫猫绝对无辜！':'Pawsibly Innocent!',
+  message,score,language:lang,
+  url:'https://morrowwish.vercel.app/pawsibly-innocent/',
+  meta:{game:'pawsibly-innocent',level:room}
+ });
+}
+
 c.addEventListener("pointerdown",onClick);window.addEventListener("keydown",e=>{if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 document.querySelectorAll("[data-move]").forEach(b=>b.onclick=()=>single(...b.dataset.move.split(",").map(Number)));
 $("restart").onclick=()=>{metric("game_retry");init(stage,daily)};
