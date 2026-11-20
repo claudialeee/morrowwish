@@ -195,11 +195,25 @@ async function details(page,slug,rec){
    rec.formAlerts=(await page.locator('[role=alert],.MuiFormHelperText-root').allTextContents().catch(()=>[])).slice(0,18);
    throw Error('Details cannot Continue to last step after uploading media; inspect validation');
  }
+ rec.networkDiagnostics=[];
+ const captureResponse=async(response)=>{
+   try{
+     const u=new URL(response.url());
+     if(u.origin!==ROOT)return;
+     const request=response.request();
+     if(request.method()==='GET'&&response.status()<400)return;
+     const contentType=response.headers()['content-type']||'';
+     const raw=/json|text/.test(contentType)?await response.text().catch(()=>''):'';
+     rec.networkDiagnostics.push({method:request.method(),path:u.pathname,status:response.status(),body:mask(raw,750)});
+     rec.networkDiagnostics=rec.networkDiagnostics.slice(-20);
+   }catch{}
+ };
+ page.on('response',captureResponse);
  // MUI snackbar notifications overlap the button on headless Chrome, even after
   // all validation and media conversion succeed. Invoke the React button's native
   // click handler directly to avoid interception by transient toast overlays.
   await more.evaluate(el=>el.click()).catch(e=>{throw Error('Details save failed: '+mask(e.message,180))});
-  await sleep(900);
+  await sleep(1900);
   rec.validationDiagnostics=await page.evaluate(()=>{
     const fields=[...document.querySelectorAll('input,textarea,[role="combobox"],[contenteditable="true"]')];
     const errors=[...document.querySelectorAll('[aria-invalid="true"], .Mui-error, .MuiFormHelperText-root, [role="alert"], .MuiSnackbar-root')];
@@ -285,7 +299,7 @@ async function main(){
       const current=await toDetails(page,ctx,ref,rec.stages);rec.status='details-open';save();
       await details(current,slug,rec);rec.status='ready-for-final-submit';save();
       await finalSubmit(current,ref,rec);
-       if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_DIAGNOSTIC_FIRST_FAILURE '+JSON.stringify(rec.validationDiagnostics)); break;}
+       if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_DIAGNOSTIC_FIRST_FAILURE '+JSON.stringify({network:rec.networkDiagnostics,form:rec.validationDiagnostics,stage:rec.finalStep})); break;}
     }catch(e){rec.status='blocked';rec.reason=mask(e.message,270);}
     finally{rec.finishedAt=time();save();console.log(JSON.stringify({slug,status:rec.status,platformId:rec.platformId||null,reason:rec.reason||null,stages:rec.stages}));}
   }
