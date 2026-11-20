@@ -9,12 +9,14 @@
 // Your whole队伍 fainting → 野猫逃走 (flee). Up to 3 cats per team; a fainted
 // active cat auto-swaps to the next alive one.
 
-const BATTLE_MARGIN = { top: 150, bottom: 150, side: 46 };
+const BATTLE_MARGIN = { side: 46 }; // vertical bounds follow the visible paved stage
 
 class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
     this.game = game;
     this.W = game.W; this.H = game.H;
+    this.topMargin = Math.max(85,Math.min(238,this.H*0.40));
+    this.bottomMargin = Math.max(54,Math.min(112,this.H*0.16));
     this.wild = wildSpecies;
     this.rar = GameData.RARITY[wildSpecies.rarity];
     this.rarIdx = ['N', 'R', 'SR', 'SSR'].indexOf(wildSpecies.rarity);
@@ -30,7 +32,7 @@ class CaptureBattle {
     this.partner = cats[0];              // for reward bookkeeping in game.js
 
     // --- player runtime state: spread the whole team on the LEFT so all fight ---
-    this.team.forEach((f, i) => { f.x = this.W * (0.18 + (i % 2) * 0.1); f.y = this.H * (0.42 + i * 0.16); });
+    this.team.forEach((f,i)=>{f.x=this.W*(.18+(i%2)*.1);f.y=this.H*(.55+i*.085);});
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
@@ -110,7 +112,7 @@ class CaptureBattle {
     return {
       sp, i, element, rIdx, level,
       maxhp, hp: maxhp,
-      x: this.W * col, y: this.H * (0.3 + (i % 2) * 0.22), vx: 0, vy: 0,
+      x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
       specialCd: 5 - rIdx * 0.6, telegraph: 0, telegraphKind: null, inv: 0,
@@ -182,7 +184,7 @@ class CaptureBattle {
     else { const gx = goal.x - f.x, gy = goal.y - f.y, gl = Math.hypot(gx, gy) || 1; if (gl > 24) { mx = gx / gl; my = gy / gl; } else { mx = -dy / dist * 0.6; my = dx / dist * 0.6; } }
     const spd = f.dashT > 0 ? f.speed * 3 : f.speed;
     f.x = clamp(f.x + mx * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-    f.y = clamp(f.y + my * spd * dt, BATTLE_MARGIN.top, this.H - BATTLE_MARGIN.bottom);
+    f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
     f.face = Math.cos(this.aim) < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
     // ACTIONS decided by the cat's gambit rules (player-editable; see evalGambits)
     this.evalGambits(f, tgt, dist, near, nd);
@@ -268,7 +270,7 @@ class CaptureBattle {
     if (f.dashT <= 0) {
       const spd = f.speed * 0.9;
       f.x = clamp(f.x + mx * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-      f.y = clamp(f.y + my * spd * dt, BATTLE_MARGIN.top, this.H - BATTLE_MARGIN.bottom);
+      f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
       f.face = dx < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
     }
     this.evalGambits(f, tgt, dist, near, nd);
@@ -326,7 +328,7 @@ class CaptureBattle {
     // if dashing without input, continue dash in aim dir
     if (f.dashT > 0 && !mx && !my) { f.x += Math.cos(this.aim) * f.speed * 3 * dt; f.y += Math.sin(this.aim) * f.speed * 3 * dt; }
     f.x = clamp(f.x, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-    f.y = clamp(f.y, BATTLE_MARGIN.top, this.H - BATTLE_MARGIN.bottom);
+    f.y = clamp(f.y, this.topMargin, this.H - this.bottomMargin);
 
     // edge-triggered actions
     const pressed = k => K[k] && !this._prevKeys[k];
@@ -528,7 +530,7 @@ class CaptureBattle {
       if (f.dashT > 0 && f.pounce) {
         const aim = (f === me) ? (f._dashAim != null ? f._dashAim : this.aim) : (f._dashAim || f._aim || 0);
         f.x = clamp(f.x + Math.cos(aim) * f.speed * 3 * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-        f.y = clamp(f.y + Math.sin(aim) * f.speed * 3 * dt, BATTLE_MARGIN.top, this.H - BATTLE_MARGIN.bottom);
+        f.y = clamp(f.y + Math.sin(aim) * f.speed * 3 * dt, this.topMargin, this.H - this.bottomMargin);
       }
       // pounce contact damage on nearest enemy
       if (f.pounce) {
@@ -665,7 +667,7 @@ class CaptureBattle {
     }
     const spd = e.speed * (1 + e.aggro * 0.4) * (e.slowed ? 0.5 : 1);   // 感电减速
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-    e.y = clamp(e.y + ay * spd * dt, BATTLE_MARGIN.top, this.H - BATTLE_MARGIN.bottom);
+    e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
     if (e.pose !== 'play') e.pose = (ax || ay) ? 'walk' : 'idle';
 
     // telegraphed special (staggered: only one enemy charges a nova at a time)
