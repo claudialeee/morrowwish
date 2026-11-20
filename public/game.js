@@ -22,11 +22,19 @@ function syncCanvasViewport(){
 window.addEventListener("morrowwish-mini-viewport-change",syncCanvasViewport);
 window.addEventListener("resize",syncCanvasViewport);
 const over=document.getElementById("overlay"),overTitle=document.getElementById("overlay-title"),overDesc=document.getElementById("overlay-desc"),goBtn=document.getElementById("play-btn");
-function track(name,data){try{const k="arcade-metrics-"+GAME,m=JSON.parse(localStorage.getItem(k)||"{}");m[name]=(m[name]||0)+1;m.last=Date.now();localStorage.setItem(k,JSON.stringify(m));if(typeof window.va==="function")window.va("event",{name:"arcade_"+name,game:GAME,...(data||{})});}catch(e){}}
+function track(name,data){
+ // The local high-score/Vercel counter is not the unified D1 game tracker.
+ // Forward canonical run events independently, even if localStorage is blocked.
+ try{const k="arcade-metrics-"+GAME,m=JSON.parse(localStorage.getItem(k)||"{}");m[name]=(m[name]||0)+1;m.last=Date.now();localStorage.setItem(k,JSON.stringify(m));}catch(e){}
+ try{if(typeof window.va==="function")window.va("event",{name:"arcade_"+name,game:GAME,...(data||{})});}catch(e){}
+ const canonical={start:"game_start",level_start:"game_start",level_complete:"level_complete",game_over:"game_over",restart:"game_retry",
+  parcel_sorted:"parcel_sorted",parcel_missed:"parcel_missed",parcel_ten_sorted:"parcel_ten_sorted"}[name];
+ if(canonical)try{window.arcadeMetric?.(canonical,{level,score:Math.floor(score),...(data||{})});}catch(e){}
+}
 function add(n){score+=n;document.getElementById("score").textContent=Math.floor(score);const k="arcade-high-"+GAME,h=+(localStorage.getItem(k)||0);if(score>h){localStorage.setItem(k,String(Math.floor(score)));document.getElementById("best").textContent=Math.floor(score);}}
 function info(s){document.getElementById("status").textContent=s;}
 function start(){score=0;level=1;elapsed=0;document.getElementById("score").textContent="0";mode.init(level);running=true;over.hidden=true;track("start");}
-function finish(w,msg,next=false){if(!running)return;running=false;track(w?"level_complete":"game_over",{level});over.hidden=false;document.getElementById("overlay-kicker").textContent=w?"LEVEL COMPLETE":"GAME OVER";overTitle.textContent=w?"Nice work!":"One more try?";overDesc.textContent=msg+"  •  Score: "+Math.floor(score);goBtn.textContent=next?"NEXT LEVEL":"PLAY AGAIN";goBtn.onclick=()=>{if(next){level++;elapsed=0;mode.init(level);running=true;over.hidden=true;track("level_start",{level});}else start();};}
+function finish(w,msg,next=false){if(!running)return;running=false;track(w?"level_complete":"game_over",{level,duration:Math.round(elapsed)});over.hidden=false;document.getElementById("overlay-kicker").textContent=w?"LEVEL COMPLETE":"GAME OVER";overTitle.textContent=w?"Nice work!":"One more try?";overDesc.textContent=msg+"  •  Score: "+Math.floor(score);goBtn.textContent=next?"NEXT LEVEL":"PLAY AGAIN";goBtn.onclick=()=>{if(next){level++;elapsed=0;mode.init(level);running=true;over.hidden=true;track("level_start",{level});}else start();};}
 function showInfo(){over.hidden=false;document.getElementById("overlay-kicker").textContent="HOW TO PLAY";overTitle.textContent=document.querySelector(".game-title").textContent;overDesc.textContent=document.body.dataset.instructions;goBtn.textContent=running?"RESUME":"PLAY NOW";const was=running;running=false;goBtn.onclick=()=>{if(was){running=true;over.hidden=true;}else start();};}
 const G={};
 // 01 PARCEL PANIC: drag packages to color-coded chutes.
@@ -35,7 +43,7 @@ let parcels=[],t=0,spawn=0,lives=5,chain=0,sel=null,delivered=0;
 const bins=[205,480,755];
 return {init(){parcels=[];t=0;spawn=.6;lives=5;chain=0;sel=null;delivered=0;info("5 chances • drag boxes to the same color dock");},
 tick(dt){t+=dt;spawn-=dt;if(spawn<=0){const color=rnd(3),lane=rnd(3);parcels.push({x:bins[lane],y:45,color,vel:92+Math.min(130,t*1.35),seed:Math.random()});spawn=Math.max(.64,1.85-t*.008);}
-for(let i=parcels.length-1;i>=0;i--){let p=parcels[i];p.y+=p.vel*dt;if(p.y>436){const nearest=bins.findIndex(b=>Math.abs(p.x-b)<84);if(nearest===p.color){chain++;delivered++;add(12+Math.min(50,chain*3));}else{chain=0;lives--;if(lives<=0){finish(false,"The delivery docks overflowed. Deliveries: "+delivered);return;}}parcels.splice(i,1);}}info("Lives: "+lives+"  |  Streak: "+chain+"  |  Delivered: "+delivered);},
+for(let i=parcels.length-1;i>=0;i--){let p=parcels[i];p.y+=p.vel*dt;if(p.y>436){const nearest=bins.findIndex(b=>Math.abs(p.x-b)<84);if(nearest===p.color){chain++;delivered++;add(12+Math.min(50,chain*3));track("parcel_sorted");if(delivered===10)track("parcel_ten_sorted");}else{chain=0;lives--;track("parcel_missed");if(lives<=0){finish(false,"The delivery docks overflowed. Deliveries: "+delivered);return;}}parcels.splice(i,1);}}info("Lives: "+lives+"  |  Streak: "+chain+"  |  Delivered: "+delivered);},
 down(x,y){for(let i=parcels.length-1;i>=0;i--){const p=parcels[i];if(Math.abs(x-p.x)<50&&Math.abs(y-p.y)<42){sel=p;break;}}},move(x,y){if(sel)sel.x=clamp(x,145,815);},up(){sel=null;},
 draw(){if(portrait){
  // Three tall docks: preserve the original game simulation and hit coordinates.
