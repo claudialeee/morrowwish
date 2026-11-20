@@ -17,9 +17,9 @@
      volume:.13
    },
    'parcel-panic': {
-     title:'Busybody',zh:'忙碌的小滑稽',genre:'playful comedy',
-     url:'https://en.freepd.cn/api/music/436f6d6564792f42757379626f64792e6d7033',
-     volume:.14
+     title:'Funshine',zh:'阳光好心情',genre:'light upbeat',
+     url:'https://en.freepd.cn/api/music/5570626561742f46756e7368696e652e6d7033',
+     volume:.09
    },
    'pocket-aquarium': {
      title:'Connecting Rainbows',zh:'彩虹相连',genre:'gentle world music',

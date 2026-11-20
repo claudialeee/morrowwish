@@ -42,25 +42,102 @@ down(){switchLane();},key(key){if([" ","ArrowUp","ArrowDown"].includes(key))swit
 draw(){bg("#101137","#202d5b");glow(490,265,320,"#676eff22");box(0,77,960,15,"#79ecff",6);box(0,455,960,15,"#79ecff",6);for(let i=0;i<17;i++){const x=(i*88-sec*140%1000+1000)%1000;line(x,97,x+40,97,"#85e9ff35",4);line(x,450,x+40,450,"#85e9ff35",4);}for(const o of haz){const y=o.side?126:410;glow(o.x,y,61,"#fb648850");box(o.x-27,y-43,54,86,"#fe7297",12,"#ffb6c8");txt(o.x,y,"✦",24,"#4c163d");}for(const g of stars){const y=g.side?126:410;glow(g.x,y,34,"#ffe88a44");circ(g.x,y,14,"#ffce65");txt(g.x,y,"✧",24,"#fff");}glow(225,py,78,"#4ce8fd66");circ(225,py,22,"#70fff0");circ(232,py-6,5,"#142c51");for(let i=0;i<4;i++)circ(180-i*14,py+(i%2?5:-5),5-i,"#65d9ff");txt(480,36,sec<6?"TAP TO FLIP GRAVITY":combo>3?"STREAK x"+combo:"KEEP MOVING",20,"#e0faff");if(sec<6)txt(480,268,"AVOID PINK BLOCKS",23,"#ffffff88");}
 };};
 G["parcel-panic"]=()=>{
-let rnd=seeded(seed+"parcels");const docks=[190,480,770],labels=["CYAN","GOLD","PINK"];let time=0,boxes=[],spawn=1.2,life=5,count=0,delivered=0,drag=null,feedback=null;
+let rnd=seeded(seed+"parcels");
+const docks=[190,480,770],labels=["CYAN","GOLD","PINK"],zhLabels=["青色","黄色","粉色"];
+let time=0,boxes=[],spawn=.42,life=5,count=0,delivered=0,press=null,drag=null,feedback=null;
 const zh=()=>window.MorrowwishI18n?.get?.()==="zh"||document.documentElement.lang.startsWith("zh");
-const message=(en,cn)=>zh()?cn:en;
-function miss(p){const i=boxes.indexOf(p);if(i<0)return;boxes.splice(i,1);event("parcel_missed");life--;combo=0;shake=9;burst(p.x,p.y,"#fe7f94",13);tone(180);vibrate(35);feedback={x:p.x,y:380,text:message("WRONG COLOR","颜色不对"),life:.7,good:false};if(!life)finish(false,"You sorted "+delivered+" parcels. Chase a bigger streak.");}
-return{init(){rnd=seeded(seed+"parcels");time=0;boxes=[];spawn=1.3;life=5;count=0;delivered=0;window.mwMiniDelivered=0;drag=null;feedback=null;combo=0;info(message("Drag boxes to their matching color lanes.","把包裹拖进同色通道，松手就得分。"));},
-tick(dt){time+=dt;spawn-=dt;if(feedback){feedback.life-=dt;if(feedback.life<=0)feedback=null;}const speed=85+Math.min(295,Math.max(0,time-7)*6.8);if(spawn<=0){const color=count<6?[0,1,2,0,2,1][count]:Math.floor(rnd()*3);boxes.push({x:470+(rnd()-.5)*120,y:70,color});count++;spawn=Math.max(.43,1.72-Math.max(0,time-8)*.035);}for(const b of boxes.slice()){if(b!==drag)b.y+=speed*dt;if(b.y>430)miss(b);}info(message(life+" LIVES · "+delivered+" DELIVERED · STREAK "+combo,"剩余 "+life+" 次 · 已送达 "+delivered+" 件 · 连击 "+combo));},
-down(x,y){for(let i=boxes.length-1;i>=0;i--){const b=boxes[i];if(Math.abs(x-b.x)<53&&Math.abs(y-b.y)<42){drag=b;break;}}},move(x,y){if(drag){drag.x=clamp(x,95,865);drag.y=clamp(y,90,510);}},
-up(x,y){if(!drag)return;const b=drag;drag=null;
- // Match the lane under the actual released pointer, never a stale pointermove.
- const target=docks.findIndex(X=>Math.abs(x-X)<=90);
- const inside=target>=0&&y>=90&&y<=516;
- if(inside){if(target===b.color){
-  const i=boxes.indexOf(b);if(i<0)return;boxes.splice(i,1);delivered++;window.mwMiniDelivered=delivered;event("parcel_sorted");if(delivered===10)event("parcel_ten_sorted");
-  const gain=14+Math.min(combo,12)*3;add(gain);winEffect(docks[target],447);
-  feedback={x:docks[target],y:376,text:"+"+gain,life:.9,good:true};
- }else miss(b);
- }else{b.x=clamp(x,95,865);b.y=Math.min(350,clamp(y,90,510));}
-},
-draw(){bg("#0c1c36","#1c3355");for(let i=0;i<3;i++){const x=docks[i],hover=drag&&Math.abs(drag.x-x)<=90&&drag.y>=90&&drag.y<=516;box(x-90,85,180,429,hover?colors[i]+"55":colors[i]+"20",16,hover?colors[i]:colors[i]+"77");for(let yy=110;yy<412;yy+=39)line(x-78,yy,x+78,yy,"#ffffff0c",2);box(x-87,431,174,85,colors[i]+"47",14,colors[i]);txt(x,465,zh()?["青色","黄色","粉色"][i]:labels[i],22,colors[i]);txt(x,495,message("DROP HERE","松手投递"),12,"#dfedff");}for(const b of boxes){glow(b.x,b.y,51,colors[b.color]+"44");box(b.x-42,b.y-32,84,64,colors[b.color],11,"#ffffff66");box(b.x-24,b.y-17,48,34,"#ffffff28",5);txt(b.x,b.y,"CGP"[b.color],24,"#15344c");}box(230,12,500,42,"#1b365a",14);txt(480,34,message("RELEASE ANYWHERE IN THE MATCHING COLOR","拖到同色通道内松手即可得分"),16,"#edffff");for(let i=0;i<5;i++)circ(35+i*22,37,7,i<life?"#ff7192":"#415171");if(!delivered)txt(480,259,message("GRAB • DRAG • RELEASE","拿起 → 拖到同色 → 松手"),22,"#ffffff88");if(feedback)txt(feedback.x,feedback.y-(1-feedback.life)*26,feedback.text,28,feedback.good?"#93f8bf":"#ff96a9");}
+const L=(en,cn)=>zh()?cn:en;
+const lane=x=>docks.findIndex(X=>Math.abs(x-X)<=104);
+const speed=()=>Math.min(248,98+delivered*6.4+time*.38);
+function next(){if(boxes.length||spawn>0)return;const color=count<6?[0,1,2,0,2,1][count]:Math.floor(rnd()*3);boxes.push({x:480,y:108,color});count++;event("parcel_spawned");}
+function miss(p,wrong=false){
+ const i=boxes.indexOf(p);if(i<0)return;
+ boxes.splice(i,1);press=null;drag=null;spawn=.38;life--;combo=0;shake=8;
+ event("parcel_missed",{cause:wrong?"wrong_lane":"timeout",color:p.color});
+ burst(p.x,p.y,"#f67f97",13);tone(190);vibrate(22);
+ feedback={x:480,y:286,text:wrong?L("TRY ANOTHER COLOR","颜色不对"):L("PACKAGE MISSED","超时未投递"),life:.9,good:false};
+ if(!life)finish(false,L("You sorted "+delivered+" parcels. Try for a longer streak!","送达 "+delivered+" 件，下一局冲击更高连击！"));
+}
+function send(target,input="click"){
+ const b=boxes[0];if(!b||target<0)return false;
+ if(target!==b.color){miss(b,true);return false}
+ boxes.shift();press=null;drag=null;spawn=.18;delivered++;window.mwMiniDelivered=delivered;
+ event("parcel_sorted",{input,color:target,delivered});
+ if(delivered===10)event("parcel_ten_sorted");
+ const gain=14+Math.min(combo,12)*3;add(gain);winEffect(docks[target],449);
+ feedback={x:docks[target],y:354,text:"+"+gain,life:.85,good:true};
+ return true;
+}
+function release(x,y,gesture){
+ if(!gesture)return;
+ const target=lane(x);
+ if(gesture.dragged){
+  // Drag-to-sort remains available for touch users.
+  if(target>=0&&y>=95&&y<=520)send(target,"drag");
+  else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,380)}
+ }else if(gesture.fromParcel){
+  info(L("No need to grab it — just click a color lane!","不需要拿起包裹，直接点击颜色通道即可！"));
+ }else if(target>=0&&y>=85&&y<=520)send(target,"click");
+}
+return{
+ init(){
+  rnd=seeded(seed+"parcels");time=0;boxes=[];spawn=.42;life=5;count=0;delivered=0;window.mwMiniDelivered=0;
+  press=null;drag=null;feedback=null;combo=0;
+  info(L("Just click the matching color lane, or press 1 / 2 / 3.","看颜色，直接点击对应通道，或按 1 / 2 / 3。"));
+ },
+ tick(dt){
+  time+=dt;spawn-=dt;
+  if(feedback){feedback.life-=dt;if(feedback.life<=0)feedback=null}
+  next();
+  if(boxes[0]&&!drag){
+   boxes[0].y+=speed()*dt;
+   if(boxes[0].y>433)miss(boxes[0]);
+  }
+  info(L(life+" LIVES · "+delivered+" DELIVERED · STREAK "+combo,life+" 次机会 · 已送达 "+delivered+" 件 · 连击 "+combo));
+ },
+ down(x,y){
+  const b=boxes[0];press={x,y,fromParcel:!!b&&Math.abs(x-b.x)<52&&Math.abs(y-b.y)<42,dragged:false};
+ },
+ move(x,y){
+  if(!press||!press.fromParcel||!boxes[0])return;
+  if(Math.hypot(x-press.x,y-press.y)>15)press.dragged=true;
+  if(press.dragged){drag=boxes[0];drag.x=clamp(x,95,865);drag.y=clamp(y,90,508)}
+ },
+ up(x,y){const gesture=press;press=null;release(x,y,gesture);drag=null},
+ key(k){
+  if(k==="1"||k==="2"||k==="3"){send(Number(k)-1,"keyboard");return}
+  if(k==="ArrowLeft")send(0,"keyboard");else if(k==="ArrowDown")send(1,"keyboard");else if(k==="ArrowRight")send(2,"keyboard");
+ },
+ draw(){
+  bg("#182b49","#283f61");
+  for(let i=0;i<3;i++){
+   const x=docks[i],selected=press&&lane(press.x)===i,hover=drag&&lane(drag.x)===i;
+   box(x-108,111,216,403,hover||selected?colors[i]+"56":colors[i]+"19",20,hover||selected?colors[i]:colors[i]+"79");
+   box(x-99,399,198,110,colors[i]+"46",15,colors[i]);
+   for(let yy=143;yy<369;yy+=43)line(x-88,yy,x+88,yy,colors[i]+"24",2);
+   txt(x,442,"123"[i],29,"#ffffff");
+   txt(x,472,zh()?zhLabels[i]:labels[i],20,colors[i]);
+   txt(x,497,L("CLICK","点击"),13,"#e8efff");
+  }
+  box(206,12,548,60,"#213c63",15,"#557497");
+  txt(480,35,L("NEXT PARCEL → CLICK ITS COLOR","看包裹颜色 → 点击对应通道"),18,"#f2f5ff");
+  txt(480,55,L("Also: keyboard 1 / 2 / 3","也可按键盘 1 / 2 / 3"),12,"#cadcf3");
+  for(let i=0;i<5;i++)circ(34+i*22,38,7,i<life?"#ff859c":"#59718d");
+  const b=boxes[0];
+  if(b){
+   glow(b.x,b.y,64,colors[b.color]+"4e");box(b.x-52,b.y-39,104,78,colors[b.color],15,"#ffffffa0");
+   box(b.x-30,b.y-20,60,40,"#ffffff55",7);
+   txt(b.x,b.y-2,L("NEXT","下一件"),13,"#223652");
+   txt(b.x,b.y+18,zh()?zhLabels[b.color]:labels[b.color],20,"#243755");
+   // Time pressure increases gradually, not through complicated gestures.
+   const ratio=Math.max(0,Math.min(1,(433-b.y)/(433-108)));
+   box(323,81,314,9,"#54708c",5);
+   box(323,81,314*ratio,9,colors[b.color],5);
+  }else{
+   txt(480,251,L("Next parcel incoming…","下一件快递马上到！"),19,"#e6f0ff");
+  }
+  if(feedback)txt(feedback.x,feedback.y-(.9-feedback.life)*27,feedback.text,26,feedback.good?"#a6f5c5":"#ff9aad");
+ }
 };};
 const factory=G[id];G[id]=()=>{const m=factory();return{init(l){m.init(l);},tick(d){fxTick(d);m.tick(d);},draw(){if(shake){c.save();c.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);}m.draw();fxDraw();if(shake)c.restore();},down(x,y){m.down?.(x,y);},up(x,y){m.up?.(x,y);},move(x,y){m.move?.(x,y);},key(k){m.key?.(k);}};};
 mode=G[id]();mode.init(1);document.getElementById("best").textContent=localStorage.getItem("arcade-high-"+id)||"0";document.querySelector(".score-chip:last-of-type span")?.textContent;
