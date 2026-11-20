@@ -18,7 +18,7 @@ function mainStats(x){
     for(const r of sessionsOf)for(const [k,v] of Object.entries(r.data.signals||{})){
       if(/^[a-z0-9_-]{2,40}$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>0)signals[k]=(signals[k]||0)+Math.min(10000,Number(v));
     }
-    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals};
+    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
@@ -45,16 +45,17 @@ function mainStats(x){
     // Internal navigation is not an acquisition channel; new visits inherit
     // their first-party landing source through telemetry.js.
     if(source==="internal")continue;
-    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,starts:0,ends:0,seconds:0});
+    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,starts:0,ends:0,abandons:0,seconds:0});
     const z=channels.get(source);z.views++;
     const events=sessionsByView.get(r.view_id)||[];
     if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
     z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
     z.ends+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.ends)||0),0);
+    z.abandons+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.abandons)||0),0);
     z.seconds+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.seconds)||0),0);
   }
   const byChannel=[...channels.values()].map(z=>({
-    source:z.source,pageviews:z.views,startedViews:z.startedViews,starts:z.starts,ends:z.ends,
+    source:z.source,pageviews:z.views,startedViews:z.startedViews,starts:z.starts,ends:z.ends,abandons:z.abandons,
     startRate:pct(z.startedViews,z.views),
     seconds:z.seconds,avgSeconds:z.views?Math.round(z.seconds/z.views):0
   })).sort((a,b)=>b.pageviews-a.pageviews);
