@@ -155,13 +155,15 @@ async function details(page,slug,rec){
  // CrazyGames marks the extra free-text field as invalid when AI tools = Other.
  // The portal's generic mandatory-fields message hides this conditional requirement.
  if((await page.getByRole('combobox').nth(2).innerText()).includes('Other')){
-   const otherTool=page.locator('input[type="text"][aria-invalid="true"]').first();
-   if(!await otherTool.count())throw Error('Other selected but its required explanation field was not found');
+   // The conditional textbox exists before validation, but aria-invalid=true
+   // is added only AFTER a failed Save. Select the first text input following
+   // the tool combobox instead, verified by real portal DOM diagnostics.
+   const otherTool=page.getByRole('combobox').nth(2).locator('xpath=following::input[@type="text"][1]');
+   if(!await otherTool.count())throw Error('Other selected but its explanatory input is missing');
    await otherTool.fill('Custom HTML5, JavaScript and CSS; AI-assisted development with ChatGPT and Claude.');
    await otherTool.press('Tab');
-   rec.otherToolDetailsProvided=true;
-   if((await otherTool.getAttribute('aria-invalid'))==='true')
-     throw Error('CrazyGames still marks Other tool explanation invalid');
+   rec.otherToolDetailsProvided=(await otherTool.inputValue()).length>10;
+   if(!rec.otherToolDetailsProvided)throw Error('Other tool explanation could not be retained');
  }
  const editors=page.locator('.ql-editor[contenteditable=true]');
  if(await editors.count()!==2)throw Error('Expected two Quill editors for description and controls');
