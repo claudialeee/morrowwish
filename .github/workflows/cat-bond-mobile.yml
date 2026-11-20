@@ -1,0 +1,31 @@
+name: Cat Bond mobile playable test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/**'
+      - 'public/game-fullscreen.js'
+      - 'scripts/cat-bond-touch-smoke.mjs'
+      - '.github/workflows/cat-bond-mobile.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cat-bond-phone:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Verify real phone taps and Cat Bond play area
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-touch-smoke.mjs
