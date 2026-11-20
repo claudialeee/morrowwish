@@ -588,3 +588,32 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
   throw new Error('Active level and cat selection cannot be hidden by default');
  console.log('Compact cat sidebar: every active control fits above folded extras; responsive and all IDs intact.');
 }
+
+// Elsewhere regression: all story text must remain full paragraphs, never
+// the first character of a string (the previous fast-story destructuring bug).
+{
+ const vm=await import('node:vm');
+ const context={window:{
+   MORROW_ZH_STORIES:{},
+   ELSEWHERE_CONTINUITY:{beats:{},hints:{},overrides:{}},
+   ELSEWHERE_MYSTERIES:{},ELSEWHERE_ENDINGS:{}
+ },structuredClone};
+ vm.runInNewContext(fs.readFileSync('public/elsewhere/season.js','utf8'),context);
+ vm.runInNewContext(fs.readFileSync('public/elsewhere/fast-story.js','utf8'),context);
+ const worlds=context.window.ELSEWHERE_SEASON;
+ if(worlds.length!==4||worlds.some(w=>w.acts.length!==5))
+  throw new Error('Elsewhere must have four five-scene lives');
+ let count=0;
+ for(const world of worlds)for(const act of world.acts)for(const paragraph of act.n){
+  if(typeof paragraph!=='string'||paragraph.length<75)
+   throw new Error('Truncated Elsewhere paragraph in '+world.id+': '+paragraph);
+  const zh=context.window.MORROW_ZH_STORIES[paragraph];
+  if(typeof zh!=='string'||zh.length<40||!/[\u4e00-\u9fff]/.test(zh))
+   throw new Error('Missing complete Chinese story paragraph in '+world.id);
+  count++;
+ }
+ if(count!==36)throw new Error('Expected 36 branched Elsewhere paragraphs, got '+count);
+ const page=fs.readFileSync('public/elsewhere/index.html','utf8');
+ if(page.includes('id="narrate-voice"'))throw new Error('Duplicate iPhone speech voice menu has returned');
+ console.log('Elsewhere: '+count+' full-length bilingual passages, curated narrator and no duplicate voice picker verified.');
+}
