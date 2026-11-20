@@ -93,6 +93,25 @@ try{
           g.startBattle(State.S.cats.slice(0,1),GameData.SPECIES[1]);
         });
         await page.waitForFunction(()=>window.__game.scene==='battle');
+        await page.waitForFunction(()=>document.getElementById('battle-hint').textContent.includes('左侧滑动'),
+          null,{timeout:5000});
+        const phoneBattle=await page.evaluate(()=>{
+          const title=document.getElementById('battle-hint').textContent;
+          const dodge=document.getElementById('mv-dodge').innerText;
+          const dodgeHelp=document.querySelector('#mv-dodge .mv-k').textContent;
+          const buttons=['btn-auto','btn-flee'].map(id=>{
+            const r=document.getElementById(id).getBoundingClientRect();
+            return {id,left:r.left,right:r.right,top:r.top,bottom:r.bottom};
+          });
+          return {title,dodge,dodgeHelp,buttons};
+        });
+        assert.ok(phoneBattle.title.includes('右侧按住攻击'),
+          'Phone tutorial must describe touch controls, not mouse controls: '+JSON.stringify(phoneBattle));
+        assert.ok(phoneBattle.dodge.includes('闪避')&&phoneBattle.dodgeHelp==='点击',
+          'Phone dodge needs a meaningful on-screen label: '+JSON.stringify(phoneBattle));
+        assert.ok(phoneBattle.buttons.every(b=>b.left>=-2&&b.right<=width+2),
+          'Battle top controls must fit small phone widths: '+JSON.stringify(phoneBattle));
+
         const values=await page.evaluate(()=>{
           const c=document.getElementById('scene'),r=c.getBoundingClientRect();
           const start=new Touch({identifier:21,target:c,clientX:r.left+85,clientY:r.top+r.height*0.55});
