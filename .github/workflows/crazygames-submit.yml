@@ -2,6 +2,10 @@ name: Submit all six Morrow Wish games to CrazyGames (live iframe)
 
 on:
   workflow_dispatch:
+  schedule:
+    # CrazyGames allows only one game awaiting review at a time.
+    # Retry the remaining saved drafts as soon as the review slot opens.
+    - cron: '15 */6 * * *'
   push:
     branches: [main]
     paths:
@@ -82,8 +86,12 @@ jobs:
           import fs from 'node:fs';
           const {results}=JSON.parse(fs.readFileSync('.check/crazygames/submission-results.json','utf8'));
           const ok=results.filter(x=>x.status==='submitted-confirmed');
-          const not=results.filter(x=>x.status!=='submitted-confirmed');
-          console.log('Confirmed review submissions: '+ok.map(x=>x.slug).join(', '));
-          for(const x of not)console.log('UNCONFIRMED '+x.slug+' '+x.status+' '+(x.reason||''));
-          if(not.length){process.exitCode=1;}
+          const waiting=results.filter(x=>x.status==='waiting-platform-review');
+          const skipped=results.filter(x=>x.status==='already-submitted');
+          const errors=results.filter(x=>!['submitted-confirmed','already-submitted','waiting-platform-review'].includes(x.status));
+          console.log('New confirmed review submissions: '+ok.map(x=>x.slug).join(', '));
+          console.log('Previously submitted: '+skipped.map(x=>x.slug).join(', '));
+          for(const x of waiting)console.log('PLATFORM REVIEW SLOT OCCUPIED: '+x.slug+'; auto-retry on next cron');
+          for(const x of errors)console.log('ERROR '+x.slug+' '+x.status+' '+(x.reason||''));
+          if(errors.length)process.exitCode=1;
           NODE
