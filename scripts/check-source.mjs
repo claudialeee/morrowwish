@@ -503,7 +503,7 @@ console.log('Elsewhere home navigation and two-option language selector checked.
    throw Error(name+' must load the shared social modal');
  }
  const town=fs.readFileSync('public/tiny-town/game-v4.js','utf8');
-  const elsewhere=fs.readFileSync('public/elsewhere/app.js','utf8');
+  const elsewhere=fs.readFileSync('public/elsewhere/dreams.js','utf8');
   const cat=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
   if(!town.includes('score=S.wonder+S.peace*4')||
      !town.includes("onShare:()=>send('town_shared-link')"))
