@@ -13,6 +13,14 @@ const sites={
   crazy:{url:'https://developer.crazygames.com/games',secret:'CRAZY_STORAGE_STATE_B64',expected:'Morrow Wish'}
 };
 if(!sites[portal]){console.error('Usage: node scripts/authorize-portals.mjs itch|crazy');process.exit(2);}
+if(portal==='itch'){
+  console.log('itch.io is currently blocking automated Chrome login via anti-bot verification.');
+  console.log('Do not retry this Playwright login flow. Use your regular browser for account login.');
+  console.log('Open: https://itch.io/dashboard');
+  console.log('For existing-project build updates, use the supported itch.io Butler credentials: https://itch.io/docs/butler/login.html');
+  console.log('Official Butler cannot create new itch.io game project pages.');
+  process.exit(0);
+}
 const info=sites[portal];
 const browser=await chromium.launch({headless:false,channel:'chrome'});
 const context=await browser.newContext();
