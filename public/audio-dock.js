@@ -1,14 +1,15 @@
 /* Morrow Wish: one predictable top-right location for music and sound effects across every game. */
 (()=>{'use strict';
  const route=location.pathname.split('/').filter(Boolean)[0];
- const games=['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
+ const games=['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium','cat-bond'];
  if(!games.includes(route))return;
  function mount(){
   if(document.getElementById('mw-audio-dock'))return;
   const music=document.querySelector('#music,.elsewhere-music,[data-mw-music]');
   const effects=document.querySelector('#sound,[data-mw-audio],.lab-mute');
   if(!music||!effects)return;
-  const header=route==='tiny-town'?document.querySelector('.top'):
+  const header=route==='cat-bond'?document.querySelector('#stage'):
+    route==='tiny-town'?document.querySelector('.top'):
     route==='elsewhere'?document.querySelector('.topbar'):
     route==='pawsibly-innocent'?document.querySelector('.sitebar'):
     route==='pocket-aquarium'?document.querySelector('body>header'):
