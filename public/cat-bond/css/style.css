@@ -1071,3 +1071,42 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #intro #intro-reset.cb-reset-armed{opacity:1;background:#fff2df;border:1.5px solid #b45e44;color:#853c2c;font-weight:800}
 #panel .first-adventure-tip{border:1px solid #bfd7b8;background:#f0f7e9;color:#426349;
  border-radius:12px;padding:9px 12px;font-weight:750;font-size:13px;line-height:1.55;margin:8px auto;max-width:410px}
+
+/* Cat Bond's signature friendship mechanic and optional story discoveries. */
+#yard-surprise{position:absolute;z-index:26;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));
+ transform:translateX(-50%);max-width:88%;min-height:42px;white-space:normal;cursor:pointer;
+ border:2px solid #c99861;border-radius:999px;background:#fff7da;color:#5f4c2c;
+ box-shadow:0 5px 20px #46392735;padding:9px 15px;font:850 13px/1.35 system-ui,sans-serif;pointer-events:auto}
+#yard-surprise[hidden],#duo-burst[hidden]{display:none!important}
+#duo-burst{position:absolute;z-index:22;right:14px;bottom:101px;max-width:min(45vw,240px);min-height:42px;
+ padding:8px 13px;border:2px solid #d3b1db;border-radius:15px;background:linear-gradient(135deg,#fff4df,#edddf1);
+ color:#694a76;box-shadow:0 4px 16px #28203950;font:850 12px/1.4 system-ui,sans-serif;
+ pointer-events:auto;touch-action:manipulation;cursor:pointer;white-space:normal}
+#duo-burst:disabled{opacity:.75}#duo-burst.ready{border-color:#a764a3;
+ background:linear-gradient(135deg,#ffd0aa,#e8b4e9);color:#56305c;animation:duoPulse 1.1s ease-in-out infinite}
+@keyframes duoPulse{50%{box-shadow:0 0 22px #edb9e799;transform:translateY(-2px)}}
+#duo-burst:focus-visible,#yard-surprise:focus-visible{outline:3px solid #287a51;outline-offset:3px}
+.duo-adventure,.duo-unlock,.work-first-pay{margin:10px auto;padding:12px;border-radius:14px;border:2px solid #dcb68e;
+ background:linear-gradient(115deg,#fff1d8,#f4edff);color:#65523a;line-height:1.5}
+.duo-adventure{display:flex;justify-content:space-between;align-items:center;gap:9px}
+.duo-unlock p{font-size:13px;line-height:1.55;margin:6px 0;color:#65523a}
+.work-first-pay p{font-size:13px;line-height:1.5;margin:6px 0}
+.yard-surprise-story{max-width:450px;margin:auto;text-align:center;display:grid;gap:10px;color:#4b604d}
+.yard-surprise-story p{font-size:15px;line-height:1.6}
+.yard-surprise-icon{font-size:65px;line-height:1.3;filter:drop-shadow(0 5px 9px #5d524044)}
+.secret-reward{padding:10px;border:1px solid #d2c79b;background:#fff9e6;border-radius:11px;font-weight:850}
+.duo-panel{display:grid;gap:10px;max-width:490px;margin:auto;color:#4b604d}
+.duo-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.duo-picker label{font-size:13px;font-weight:800;min-width:0}
+.duo-picker select{display:block;width:100%;margin-top:6px;min-width:0;padding:10px 8px;
+ border:1.5px solid #bbcfb5;border-radius:9px;background:#fffaf0;color:#3e5b45;font-size:14px}
+.duo-relation{display:grid;gap:7px;text-align:center;padding:12px;border-radius:14px;
+ background:#fdf3e5;border:1px solid #e5d6b9;color:#634f3d}
+.duo-relation strong{font-size:19px;color:#875e8c}
+.duo-meter{height:13px;background:#eadcdb;border-radius:99px;overflow:hidden}
+.duo-meter span{display:block;height:100%;background:linear-gradient(90deg,#efb77d,#b48bd9);border-radius:99px}
+@media(max-width:600px){#duo-burst{right:8px;bottom:max(91px,calc(env(safe-area-inset-bottom,0px) + 83px));
+ font-size:11px;min-height:39px;padding:7px 10px;max-width:46vw}
+ #yard-surprise{bottom:max(92px,calc(env(safe-area-inset-bottom,0px) + 86px));font-size:12px}}
+@media(orientation:landscape) and (max-height:530px){#duo-burst{bottom:65px;right:8px;min-height:32px;padding:5px 9px;font-size:10px}
+ #yard-surprise{bottom:57px;left:49%;max-width:44%}}

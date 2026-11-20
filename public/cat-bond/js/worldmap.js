@@ -128,6 +128,13 @@
       desc: '月光笼罩的古老遗迹，最稀有的传说猫沉眠在星河之中。',
     },
   ];
+  var DISCOVERIES={
+    home:{icon:'🧶',name:'旧院子的毛线盒',en:'The old yarn box',story:'木凳下藏着一盒毛线，像是为新猫咪准备的礼物。',storyEn:'A hidden box of yarn welcomes your kitten.',reward:{coins:12,yarn:2}},
+    sakura:{icon:'🌸',name:'樱花的许愿信',en:'A wish in the blossoms',story:'信上写着：愿每只流浪小猫都找到自己的家。',storyEn:'A note wishes that every stray cat finds a home.',reward:{treats:4,coins:18}},
+    creek:{icon:'🐚',name:'溪谷的蓝贝壳',en:'The blue creek shell',story:'溪水里的贝壳闪闪发亮，里面藏着小鱼干。',storyEn:'A sparkling shell holds a stash of fish.',reward:{fish:3,coins:20}},
+    volcano:{icon:'🔥',name:'火山暖光石',en:'The warm ember stone',story:'温暖的石头带来了寻找稀有猫咪的好运。',storyEn:'A warm stone brings luck for the next rare friend.',reward:{luck:2,coins:30}},
+    ruins:{icon:'🌙',name:'月影星光匣',en:'The moonlit star box',story:'古老的匣子为一路冒险到这里的猫咪留下祝福。',storyEn:'An ancient chest rewards cats that made it this far.',reward:{luck:3,fish:3,coins:40}}
+  };
   function regionById(id) { for (var i = 0; i < REGIONS.length; i++) if (REGIONS[i].id === id) return REGIONS[i]; return null; }
 
   // ---- module-internal state ----
@@ -290,6 +297,9 @@
         taken: prog.nodes.indexOf(nid) >= 0, kind: Math.random() < 0.3 ? 'rare' : 'coin', bob: Math.random() * 6.28,
       });
     }
+    const secretId=id+'_secret';
+    nodes.push({id:secretId,x:WORLD_W*.22,y:WORLD_H*.5+(r.difficulty-3)*23,
+      taken:prog.nodes.includes(secretId),kind:'secret',bob:0});
     // parallax decor blobs (themed shrubs / rocks / crystals)
     for (var k = 0; k < 40; k++) {
       decor.push({
@@ -451,7 +461,10 @@
     if (prog.nodes.indexOf(n.id) < 0) prog.nodes.push(n.id);
     var d = world.region.difficulty;
     var reward;
-    if (n.kind === 'rare') {
+    if(n.kind==='secret'){
+      var disc=DISCOVERIES[world.region.id];
+      reward=Object.assign({discovery:Object.assign({id:world.region.id},disc)},disc.reward);
+    }else if (n.kind === 'rare') {
       reward = { coins: 10 + d * 6, fish: 1, label: '发现珍稀补给 (+' + (10 + d * 6) + '🪙 +1🐠)' };
     } else {
       reward = { coins: 12 + d * 8, treats: 1, label: '拾获补给 (+' + (12 + d * 8) + '🪙 +1🐟)' };
@@ -665,10 +678,12 @@
       var n = w.nodes[j];
       if (n.taken) continue;
       var ny = n.y + Math.sin(t * 2 + n.bob) * 4;
-      var col = n.kind === 'rare' ? PURPLE : GOLD;
-      glowDot(ctx, n.x, ny, 26, col, 0.6);
-      ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(n.kind === 'rare' ? '💎' : '📦', n.x, ny);
+      var secret=n.kind==='secret',col=secret?w.region.theme.accent:(n.kind==='rare'?PURPLE:GOLD);
+      glowDot(ctx,n.x,ny,secret?46:26,col,secret?.85:.6);
+      ctx.font=secret?'28px serif':'20px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(secret?DISCOVERIES[w.region.id].icon:(n.kind==='rare'?'💎':'📦'),n.x,ny);
+      if(secret){ctx.font='700 12px system-ui';ctx.fillStyle='#fff';
+        ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'神秘发现':'Secret',n.x,ny+30);}
     }
 
     // wild-cat spawn markers (draw as tiny cats via CatArt)

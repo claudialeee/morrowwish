@@ -92,8 +92,15 @@ class Game {
       if (reward.coins) State.S.coins += reward.coins;
       if (reward.treats) State.S.treats += reward.treats;
       if (reward.fish) State.S.fish += reward.fish;
+      if(reward.yarn){Raising.init();State.S.raising.yarn+=reward.yarn;}
+      if(reward.luck)State.S.luckLure=(State.S.luckLure||0)+reward.luck;
+      if(reward.discovery){const pair=window.CatRelations?.chosen?.()||[];
+        if(pair.length===2)CatRelations.grow(pair[0],pair[1],5);
+        metric('bond_region_secret_found',{region:reward.discovery.id});
+      }
       State.save(); this.refreshHUD();
-      this.toast('📦 ' + (reward.label || '拾获补给'));
+      if(reward.discovery)UI.openRegionSecret(reward);
+      else this.toast('📦 ' + (reward.label || '拾获补给'));
     });
     WorldMap.onExit(() => { this.scene = 'yard'; this.showYardChrome(); });
   }
@@ -238,7 +245,34 @@ class Game {
     return rewards;
   }
 
+  tryYardSurprise(cat){
+    const d=State.S.yardStory||(State.S.yardStory={taps:0,count:0,at:0,pending:null});
+    if(d.pending)return;
+    d.taps++;
+    if(d.taps<(d.count?7:3)||(d.count&&Date.now()-d.at<90000))return;
+    d.pending={kind:d.count%3,uid:cat.uid};
+    d.at=Date.now();d.count++;d.taps=0;
+    this.toast(window.MorrowwishI18n?.get?.()==='zh'?'✨ 猫咪有个小秘密！':'✨ Your kitten found a secret!');
+    metric('bond_yard_surprise_found',{kind:d.pending.kind});
+    this.refreshYardSurprise();
+  }
+  refreshYardSurprise(){
+    const el=document.getElementById('yard-surprise');if(!el)return;
+    el.hidden=this.scene!=='yard'||!State.S.yardStory?.pending||!!document.getElementById('panel')?.classList.contains('open');
+    if(!el.hidden)el.textContent=window.MorrowwishI18n?.get?.()==='zh'?'✨ 猫咪小秘密 · 点击发现':'✨ Cat surprise · Open';
+  }
+  claimYardSurprise(choice){
+    const d=State.S.yardStory;if(!d?.pending||![0,1].includes(choice))return false;
+    const kind=d.pending.kind;d.pending=null;
+    const rewards=[[{coins:24},{treats:2}],[{fish:2},{coins:28}],[{yarn:3},{treats:3}]][kind];
+    const r=rewards[choice];
+    State.S.coins+=(r.coins||0);State.S.treats+=(r.treats||0);State.S.fish+=(r.fish||0);
+    if(r.yarn){Raising.init();State.S.raising.yarn+=r.yarn;}
+    State.save();this.refreshHUD();metric('bond_yard_surprise_claimed',{kind,choice});
+    return true;
+  }
   refreshFirstQuest(){
+    this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
     const first=State.S.cats.length>0&&(State.S.catchCount||0)===0;
@@ -477,6 +511,9 @@ class Game {
     const newSkill=UI.announceSkillMilestone?.(cat,previous);
     if(newSkill)this.toast('✨ '+State.catName(cat)+' 学会 '+newSkill.name+'！');
     State.S.petCount=(State.S.petCount||0)+1;
+    const closer=window.CatRelations?.pet(cat);
+    if(closer?.levelUp)this.toast(window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫关系升级！':'💞 Your duo grew closer!');
+    this.tryYardSurprise(cat);
     const rewards=this.grantBondingRewards();
     if(lv)this.toast(`${GameData.speciesById(cat.species).name} 升到 Lv.${cat.level}！`);
     if(rewards.length){
@@ -680,6 +717,16 @@ class Game {
     document.getElementById('ult-btn').classList.toggle('ready', b.ult >= 100);
     const hint = document.getElementById('battle-hint');
     if (hint && hint.textContent !== b.hint) hint.textContent = b.hint;
+    const duoButton=document.getElementById('duo-burst');
+    if(duoButton){
+      duoButton.hidden=!b.duo;
+      if(b.duo){
+        duoButton.disabled=!b.duoReady();
+        duoButton.classList.toggle('ready',b.duoReady());
+        duoButton.textContent=b.duoReady()?'💞 '+b.duo.name+'！'
+          :'💞 '+(window.MorrowwishI18n?.get?.()==='zh'?'双猫默契 ':'Duo charge ')+Math.floor(b.duoCharge)+'%';
+      }
+    }
     // move cooldowns; refresh labels if active cat changed
     const f = b.me();
     if (this._lastActiveIdx !== b.active) { this._lastActiveIdx = b.active; this.updateSkillLabels(); }
@@ -717,6 +764,7 @@ class Game {
     if (!b) return;                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
     document.getElementById('battle-ui').classList.remove('on');
+    const duoButton=document.getElementById('duo-burst');if(duoButton)duoButton.hidden=true;
     this.setBattleHelpVisible(false);
     // return to wherever we came from (yard normally, overworld region if exploring)
     const backToMap = this._returnScene === 'map' && window.WorldMap;
@@ -785,6 +833,15 @@ class Game {
         metric('bond_skill_unlocked',{breed:b.partner.species,skill:firstSkill.id,source:'first_capture'});
       }
       const earnedSkill=firstSkill||UI.announceSkillMilestone?.(b.partner,skillsBefore)||null;
+      let firstDuo=null;
+      if(!reunion&&window.CatRelations&&b.partner.uid!==newCat.uid){
+        CatRelations.grow(b.partner,newCat,State.S.catchCount===1?26:7);
+        if(State.S.catchCount===1){CatRelations.choose(b.partner,newCat);
+          firstDuo={...CatRelations.title(b.partner,newCat),value:26};
+          metric('bond_duo_unlocked',{elementPair:firstDuo.elementPair});
+        }
+      }
+      if(b.duo&&window.CatRelations)CatRelations.grow(b.duo.a,b.duo.b,4);
       State.S.coins += 20 + (['N', 'R', 'SR', 'SSR'].indexOf(b.wild.rarity)) * 25;
       this.rebuildYard();
       State.save();
@@ -797,7 +854,7 @@ class Game {
       metric('bond_battle_grade',{grade:performance.grade,seconds:performance.seconds,
         combo:performance.combo,rarity:b.wild.rarity});
       UI.openCatchResult(b.wild,newCat,milestoneRewards,performance,masteryReward,reunion,
-        earnedSkill?{cat:b.partner,skill:earnedSkill}:null);
+        earnedSkill?{cat:b.partner,skill:earnedSkill}:null,firstDuo);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
@@ -819,6 +876,7 @@ class Game {
     const dailyBtn = document.getElementById('daily-dot');
     if (dailyBtn) dailyBtn.classList.toggle('hidden', !State.dailyAvailable());
     this.refreshCollectionGoal();
+    this.refreshYardSurprise();
   }
 
   toast(msg) {

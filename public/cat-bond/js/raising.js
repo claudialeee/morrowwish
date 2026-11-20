@@ -174,6 +174,7 @@ function defaultRaising() {
     breeding: null,
     butterfly: { active: false, spawnAt: 0 },
     mementos: {},
+    firstSunPay:false,
   };
 }
 
@@ -190,6 +191,7 @@ function init() {
   if (r.offlineCapH == null) r.offlineCapH = OFFLINE_CAP_H;
   if (!('breeding' in r)) r.breeding = null;
   if (!r.mementos) r.mementos = {};
+  if(r.firstSunPay==null)r.firstSunPay=!!(r.stations||[]).find(st=>st.type==='sun'&&(st.assignedUid||st.stored));
   (State.S.cats || []).forEach(ensureCatFields);
   return r;
 }
@@ -261,7 +263,12 @@ function assignCat(stationId, uid) {
   // a cat only works one place — pull it off any other station first
   raising().stations.forEach(s => { if (s.assignedUid === uid) s.assignedUid = null; });
   st.assignedUid = uid;
-  return { ok: true };
+  let firstPay=0;
+  if(st.type==='sun'&&!raising().firstSunPay){
+    firstPay=Math.min(12,Math.max(0,stationCap(st)-st.stored));
+    st.stored+=firstPay;raising().firstSunPay=true;
+  }
+  return {ok:true,firstPay};
 }
 
 function unassignCat(stationId) {

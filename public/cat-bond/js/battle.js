@@ -30,6 +30,8 @@ class CaptureBattle {
     this.team = cats.slice(0, 3).map((c, i) => this.makeFighter(c, i));
     this.active = 0;
     this.partner = cats[0];              // for reward bookkeeping in game.js
+    this.duo=window.CatRelations?.active(cats)||null;
+    this.duoCharge=this.duo?22:0;this.duoCd=0;this.duoUses=0;
 
     // --- player runtime state: spread the whole team on the LEFT so all fight ---
     this.team.forEach((f,i)=>{f.x=this.W*(.18+(i%2)*.1);f.y=this.H*(.55+i*.085);});
@@ -75,6 +77,34 @@ class CaptureBattle {
     ];
   }
 
+  duoReady(){
+    return !!(this.duo&&this.duoCharge>=100&&this.duoCd<=0&&
+      [this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)));
+  }
+  castDuo(){
+    if(!this.duoReady())return false;
+    const d=this.duo,fs=this.team.filter(f=>f.alive&&[d.a.uid,d.b.uid].includes(f.cat.uid));
+    this.duoCharge=0;this.duoCd=18;this.duoUses++;
+    const x=(fs[0].x+fs[1].x)/2,y=(fs[0].y+fs[1].y)/2;
+    this.flash=.38;this.shakeT=.4;
+    fs.forEach(f=>{const col=this.elemColor(f.element);f.inv=Math.max(f.inv,.6);
+      this.vfx.ring(f.x,f.y,{r0:9,vr:400,life:.55,color:col,width:7});
+      this.vfx.burst(f.x,f.y,{count:20,color:col,speed:230,life:.6,r:4});
+    });
+    this.vfx.shockwave(x,y,this.elemColor(fs[0].element));
+    this.vfx.ring(x,y,{r0:20,vr:650,life:.7,color:this.elemColor(fs[1].element),width:9});
+    this.vfx.text(x,y-52,d.name+'!',this.elemColor(fs[1].element),23);
+    let hits=0;
+    for(const e of this.liveEnemies().slice()){
+      const damage=Math.min(e.maxhp*(.18+(d.tier-1)*.035),(fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
+      this.hurtEnemy(e,damage,e.x,e.y,true);
+      this.vfx.impact(e.x,e.y,this.elemColor(fs[hits%2].element));hits++;
+    }
+    this.gainUlt(18);
+    this.game.toast((window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫合击 · ':'💞 Duo attack · ')+d.name+'！');
+    window.arcadeMetric?.('bond_duo_attack',{elementPair:d.elementPair,tier:d.tier,hits});
+    return true;
+  }
   // Keep the combat field available when a phone is rotated mid-encounter.
   onResize(W,H){
     const oldW=this.W||W,oldH=this.H||H;this.W=W;this.H=H;
@@ -449,6 +479,7 @@ class CaptureBattle {
       this.autoDrive(dt);
       const pressedC = k => K[k] && !this._prevKeys[k];
       if (pressedC('r')) this.ultimate();
+      if (pressedC('f')) this.castDuo();
       if (pressedC('1')) this.switchTo(0);
       if (pressedC('2')) this.switchTo(1);
       if (pressedC('3')) this.switchTo(2);
@@ -497,6 +528,7 @@ class CaptureBattle {
     if (pressed('e')) this.skillE();
     if (pressed(' ')) this.dodge();
     if (pressed('r')) this.ultimate();
+    if (pressed('f')) this.castDuo();
     if (pressed('1')) this.switchTo(0);
     if (pressed('2')) this.switchTo(1);
     if (pressed('3')) this.switchTo(2);
@@ -509,6 +541,7 @@ class CaptureBattle {
     const f = this.me();
     const e = this.nearestEnemy(f.x, f.y);
     if (e) this.aim = Math.atan2(e.y - f.y, e.x - f.x);
+    if(key==='duo')return this.castDuo();
     if (key === 'basic') this.fireBasic();
     else if (key === 'q') this.skillQ();
     else if (key === 'e') this.skillE();
@@ -743,11 +776,17 @@ class CaptureBattle {
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
+    if(this.duo){
+      this.duoCd=Math.max(0,this.duoCd-dt);
+      if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
+        this.duoCharge=Math.min(100,this.duoCharge+dt*6);
+    }
     // combo chain decays if you stop landing hits (需持续操作维持)
     if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0 && this.combo > 0) this.breakCombo(); }
     this.gainUlt(12 * dt);                 // ult builds over time
 
     this.readInput(dt);
+    if(this.autoMode&&this.duoReady())this.castDuo();
 
     // tick player cooldowns & timers
     for (const f of this.team) {
@@ -1085,7 +1124,10 @@ class CaptureBattle {
 
   hurtEnemy(e, dmg, fx, fy, isDot) {
     // a direct player hit extends the combo and gets the combo damage multiplier
-    if (!isDot) { dmg *= this.comboMult(); this.addCombo(1); }
+    if (!isDot) {
+      dmg *= this.comboMult(); this.addCombo(1);
+      if(this.duo)this.duoCharge=Math.min(100,this.duoCharge+11);
+    }
     // vulnerability debuffs amplify incoming damage (破绽/破甲)
     const TAG = (window.Skills && Skills.TAG_INFO) || {};
     if (e.status) for (const tg in e.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }

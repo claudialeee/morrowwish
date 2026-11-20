@@ -45,6 +45,8 @@ const UI = {
     });
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
+    document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
+    document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -74,6 +76,69 @@ const UI = {
     else if (tab === 'dex') this.openDex();
     else if (tab === 'daily') this.openDaily();
     else if (tab === 'shop') this.openShop();
+  },
+
+  // An actual choice, not a random reward notification.
+  openYardSurprise(){
+    const d=State.S.yardStory?.pending;if(!d)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const events=[
+      ['🔔','草丛的小铃铛','A bell in the grass','带走铃铛','Take the bell','一起玩铃铛','Play with the bell'],
+      ['🦋','蝴蝶的秘密路线','Follow the butterfly','寻找鱼干','Find fish','在花丛打滚','Play in the flowers'],
+      ['🧶','猫咪的宝藏','A kitten treasure','保存毛线','Keep yarn','交换零食','Trade for treats']
+    ];
+    const e=events[d.kind]||events[0];
+    this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
+      <div class="yard-surprise-icon">${e[0]}</div><h2>${en?e[2]:e[1]}</h2>
+      <p>${en?'Your cat found something unexpected. What should you do?':'猫猫意外发现了一件小宝贝，你想怎么做？'}</p>
+      <div class="btn-row"><button class="btn gold" id="surprise-a">${en?e[4]:e[3]}</button>
+      <button class="btn" id="surprise-b">${en?e[6]:e[5]}</button></div></div>`);
+    for(const [id,choice] of [['surprise-a',0],['surprise-b',1]])document.getElementById(id).onclick=()=>{
+      if(this.game.claimYardSurprise(choice)){this.closeAll();this.game.toast(en?'🎁 Surprise claimed!':'🎁 收下猫猫的礼物！');}
+    };
+  },
+  openRegionSecret(reward){
+    const d=reward.discovery,en=window.MorrowwishI18n?.get?.()!=='zh';
+    const items=['coins','fish','treats','yarn','luck'].filter(k=>reward[k]).map(k=>'+'+reward[k]+' '+({coins:'🪙',fish:'🐠',treats:'🐟',yarn:'🧶',luck:'✨'}[k])).join(' · ');
+    this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
+      <div class="yard-surprise-icon">${d.icon}</div><h2>${en?d.en:d.name}</h2>
+      <p>${en?d.storyEn:d.story}</p><p class="secret-reward">${en?'Unique discovery':'地区专属发现'} · ${items}</p>
+      <div class="btn-row"><button class="btn gold" id="secret-close">${en?'Explore more':'继续探索'}</button></div></div>`);
+    document.getElementById('secret-close').onclick=()=>this.closeAll();
+  },
+  openBondPanel(){
+    const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
+    if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
+    const picked=this._duoPicked||CatRelations.chosen().map(c=>c.uid);
+    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked.splice(0,picked.length,cats[0].uid,cats[1].uid);
+    const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
+    const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
+    const name=ok?CatRelations.title(a,b).name:'—';
+    const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
+    const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
+    this.panel(`<span class="card-close">×</span><div class="duo-panel">
+      <h2>💞 ${en?'Your Cat Duo':'双猫纽带'}</h2>
+      <p>${en?'Pair two cats. Pet and play to raise trust, then take both into battle for a team attack.':'选择两只搭档，撸猫和一起玩耍提升默契，组队出战释放元素合击。'}</p>
+      <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
+      <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
+      <div class="duo-relation"><strong>${name}</strong><span>${en?'Trust':'默契'} ${p}/100</span>
+        <div class="duo-meter"><span style="width:${p}%"></span></div>
+        <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small></div>
+      <div class="btn-row">
+        <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${en?'Set active pair':'设为搭档'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
+      <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
+      <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
+    for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
+      const ids=picked.slice();ids[i]=e.target.value;this._duoPicked=ids;this.openBondPanel();
+    };
+    document.getElementById('duo-choose').onclick=()=>{CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];this.openBondPanel();};
+    document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
+      if(v.ok){this.game.toast(en?'💞 Friendship +13!':'💞 双猫默契 +13！');this.game.refreshHUD();}
+      this._duoPicked=[a.uid,b.uid];this.openBondPanel();
+    };
+    document.getElementById('duo-return').onclick=()=>this.openJourney();
   },
 
   // ---- 欢迎回来 (offline raising report) ----
@@ -138,6 +203,7 @@ const UI = {
     const sun=stations.find(st=>st.type==='sun');
     const rate=Number(sun?.ratePerHour||0);
     const pending=stations.reduce((n,st)=>n+st.stored,0);
+    const firstPay=!!(State.S.raising?.firstSunPay&&sun?.stored>0);
     const descriptions={
       sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on food, treats and upgrades':'金币用于喂猫、买零食、升级工坊'],
       fishing:[en?'Catch fish':'钓小鱼干',en?'Train cat levels and buy rare-cat lures':'小鱼干用于练级、买稀有诱饵'],
@@ -181,6 +247,9 @@ const UI = {
        <div class="st-btns"><button class="btn ghost tiny-btn" data-act="breed">${en?'Breed':'繁育'}</button></div></div>`;
     this.panel(`<span class="card-close">×</span>
       <h2>☀️ ${en?'Kitten Workshop':'猫猫工坊'}</h2>
+      ${firstPay?'<div class="work-first-pay"><b>'+(en?'🎉 First shift earnings ready!':'🎉 首班工资到账！')
+        +'</b><p>'+(en?'Coins are waiting at the Sun station. Collect them now!':'晒太阳位已有金币，可以马上收取。')+'</p>'
+        +'<button class="btn gold" data-act="collect" data-id="st_sun">'+(en?'Collect':'领取金币')+'</button></div>':''}
       <div class="work-earn-header">
         <strong>${en?'How do I earn coins?':'工坊怎么赚钱？'}</strong>
         <p>${en
@@ -218,7 +287,9 @@ const UI = {
       const free=State.S.cats.find(cat=>!R.isBusy(cat.uid));
       if(!sun||!free){this.game.toast(en?'No free cat available':'没有空闲猫咪，先从其他工位调出一只。');return;}
       const outcome=R.assignCat(sun.id,free.uid);
-      this.game.toast(outcome?.ok?(en?'Your first cat is earning coins!':'派工成功！金币已经开始积攒。')
+      this.game.toast(outcome?.ok
+        ?(outcome.firstPay?(en?'First wages: +12 coins ready!':'首班工资 +12 金币！现在就能领取！')
+          :(en?'Your cat is earning coins!':'派工成功，金币正在积攒！'))
         :(outcome?.msg||'派工失败'));
       State.save();this.openWorkshop();
     }else if(act==='upgrade'){
@@ -228,7 +299,9 @@ const UI = {
     }else if(act==='assign'){
       this.openCatPicker(en?'Choose a working cat':'选择上工的猫',uid=>{
         const x=R.assignCat(id,uid);
-        this.game.toast(x?.ok?(en?'Working cat assigned':'派工成功'):(x?.msg||'派工失败'));
+        this.game.toast(x?.ok
+          ?(x.firstPay?(en?'First wages +12 coins!':'首班工资 +12 金币！'):(en?'Assigned!':'派工成功！'))
+          :(x?.msg||'派工失败'));
         State.save();this.openWorkshop();
       });
     }else if(act==='breed')this.openBreedPicker();
@@ -1065,7 +1138,7 @@ const UI = {
     };
   },
 
-  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null, reunion=false, skillUnlock=null) {
+  openCatchResult(wildSp, newCat, rewards=[], performance=null, masteryReward=null, reunion=false, skillUnlock=null, duoUnlock=null) {
     const status=this.game.collectionStatus();
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
@@ -1119,10 +1192,14 @@ const UI = {
       ${masteryReward?'<div class="golden-paw-unlock"><strong>🏅 '+(english?'GOLDEN PAW UNLOCKED!':'金爪徽章解锁！')+'</strong><p>'+medalMessage+'</p><small>'
         +(english?'Medals':'已获徽章')+' '+mastery.medals+'/'+mastery.total+' · '
         +(english?'Permanent rare-weight boost':'永久稀有权重加成')+' +'+Math.round(mastery.luckBonus*100)+'%</small></div>':''}
+      ${duoUnlock?'<div class="duo-unlock"><b>💞 '+(english?'FIRST DUO UNLOCKED!':'第一对双猫搭档！')+'</b><p>'
+        +(english?('Your cats unlocked '+duoUnlock.name+'! Bring them both into the next battle.')
+          :('两只猫建立了纽带，解锁「'+duoUnlock.name+'」！下一场组队战斗就能使用合击。'))+'</p></div>':''}
       ${firstAdventure?'<p class="first-adventure-tip">'+(english
         ?'Your new skill is ready! Try a different move, earn workshop coins, or explore a new region before your next capture.'
         :'新招式已经就绪！下一步可以试技能、经营工坊赚金币，或者去地图探索，不必一直抓猫。')+'</p>':''}
       <div class="btn-row" style="justify-content:center">
+        ${duoUnlock?'<button class="btn gold" id="cr-duo">'+(english?'See duo skills':'查看双猫纽带')+'</button>':''}
         ${firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'See my new skill':'查看刚解锁的新技能')+'</button>':''}
         <button class="btn ${firstAdventure&&!skillUnlock?'gold':firstAdventure?'':'ghost'}" id="cr-journey">${firstAdventure?(english?'Choose my next adventure':'看看接下来能玩什么'):(english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊')}</button>
         <button class="btn ${firstAdventure?'':'gold'}" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
@@ -1139,6 +1216,7 @@ const UI = {
     };
     document.getElementById('cr-ok').onclick=dismiss;
     document.getElementById('cr-journey').onclick=()=>this.openJourney();
+    if(document.getElementById('cr-duo'))document.getElementById('cr-duo').onclick=()=>this.openBondPanel();
     const newSkillBtn=document.getElementById('cr-newskill');
     if(newSkillBtn&&skillUnlock)newSkillBtn.onclick=()=>this.openSkillEditor(skillUnlock.cat);
     const medalButton=document.getElementById('cr-medal');
@@ -1169,6 +1247,8 @@ const UI = {
       <h2 class="center">${en?'🧭 Your Cat Adventure':'🧭 猫猫冒险手册'}</h2>
       <p class="sub center">${en?'Collect friends, unlock skills, earn workshop coins and explore new places.'
         :'收集新伙伴、觉醒技能、经营工坊、探索新地区——每条路线都有成长目标。'}</p>
+      <div class="duo-adventure">💞 <b>${en?'Cat Duos · Unique Team Attacks':'双猫纽带 · 专属合击'}</b>
+        <button class="btn gold" id="journey-duo">${en?'Meet duos':'查看搭档'}</button></div>
       <div class="journey-paths">
         <article class="journey-path">
           <div class="journey-icon">🐾</div>
@@ -1216,6 +1296,7 @@ const UI = {
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.getElementById('journey-mastery').onclick=()=>this.openDex();
+    document.getElementById('journey-duo').onclick=()=>this.openBondPanel();
     document.getElementById('journey-collect').onclick=()=>{
       this.closeAll();
       if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}

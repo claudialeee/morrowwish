@@ -141,7 +141,12 @@ assert.deepEqual(['N', 'R', 'SR', 'SSR'].map(k => weights[k].weight), [68,24,7,1
 assert.equal(['N', 'R', 'SR', 'SSR'].reduce((sum, k) => sum + weights[k].weight, 0), 100,
   'Rarity weights should sum to 100 for predictable base odds');
 assert.equal(sandbox.window.Raising.config.PITY_CAP, 40, '40-pull SR pity protection must remain');
+const duoSource=fs.readFileSync(DIR+'js/cat-relationships.js','utf8');
+new vm.Script(duoSource,{filename:'cat-relationships.js'});
+vm.runInContext(duoSource,sandbox,{filename:'cat-relationships.js'});
+assert.ok(sandbox.window.CatRelations,'Signature relationship system loads');
 const worldMapSource = fs.readFileSync(DIR+'js/worldmap.js','utf8');
+assert.ok(worldMapSource.includes("kind:'secret'"),'Each region has a unique one-time landmark');
 assert.ok(worldMapSource.includes('sp: rollRegionCat()'),
   'Region spawns should use rarity-weighted encounters, not uniform legendary encounters');
 
