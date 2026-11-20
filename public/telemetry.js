@@ -52,7 +52,7 @@ if(["run_end","game_complete","game_over","level_complete","town_completed-win",
 if(n.includes("instant_replay")||n.includes("retry")||n.includes("restart")||n==="town_replayed")eventCounts.retries++;
 if(["share_click","share_clicked","shared-link","town_shared-link"].includes(n))eventCounts.shares++;
 if(n==="next_game_click"||n==="next_game_clicked"||n==="game_open")eventCounts.clicks++;
-if(n==="level_complete"||n==="game_complete"||n==="town_completed-win")eventCounts.completion++;
+if(n==="level_complete"||n==="game_complete"||n==="town_completed-win"||(n==="run_end"&&Number(p?.won)===1))eventCounts.completion++;
 if(n.startsWith("town_week-"))level=Math.max(level,Number(n.split("-").at(-1))||0);
 if(Number.isFinite(Number(p?.level||p?.week)))level=Math.max(level,Number(p.level||p.week));
 if(p?.score!==undefined&&Number.isFinite(Number(p.score)))score=Math.max(score,Math.min(10000000,Number(p.score)));
