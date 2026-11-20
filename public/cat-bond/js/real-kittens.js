@@ -6,7 +6,17 @@
   if (!window.CatArt || !window.CAT_BOND_KITTEN_ATLAS) return;
   const drawing=window.CatArt;
   const source=new Image();
-  let loaded=false;
+  const breedSheet=new Image();
+  let loaded=false,breedLoaded=false;
+  // One illustrated frame per species, matching the order in data.js.
+  const BREED_ORDER=[
+    'tangyuan','doudou','xiaohui','moqiu','nainai',
+    'nietu','niuniu','sanhua','lixiao','lanbao',
+    'dundun','yunduo','zherdd','qisi','duanduan',
+    'jinjc','xianluo','yinghua','senlin','youling',
+    'nuowei','baomao','jinwu','yuelian','xingchen'
+  ];
+  const breedFrameSize=window.CAT_BOND_BREED_FRAME||{w:200,h:300,cols:5,rows:5};
   // New illustrated atlas keeps the original six breeds but supplies over
   // four times as many source pixels per character.
   const frame=window.CAT_BOND_KITTEN_FRAME||{w:60,h:90};
@@ -58,6 +68,14 @@
   function breedFrame(o) {
     const sp=o.species||{};
     const id=sp.id||'';
+    // Use the 25-frame illustrated atlas first; fallback keeps playability on
+    // older AVIF decoders or while the image is loading.
+    const slot=BREED_ORDER.indexOf(id);
+    if(breedLoaded&&slot>=0){
+      return {image:breedSheet,sx:(slot%5)*breedFrameSize.w,
+        sy:Math.floor(slot/5)*breedFrameSize.h,
+        sw:breedFrameSize.w,sh:breedFrameSize.h};
+    }
     const look=BREED_LOOKS[id];
     if(!look)return {image:source,sx:indexOf(o)*w,sy:0,sw:w,sh:h};
     if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:w,sh:h};
@@ -127,7 +145,7 @@
     const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded){fallbackDraw(ctx,x,y,o);return;}
+    if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -215,5 +233,15 @@
   source.onerror=()=>{
     console.warn('Cat Bond kitten art failed to load; retaining playable fallback.');
   };
+  breedSheet.onload=()=>{
+    breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*5
+      &&breedSheet.naturalHeight===breedFrameSize.h*5;
+    if(breedLoaded){
+      try{window.paintIntroCatGallery?.()}catch(_){}
+      window.dispatchEvent(new Event('cat-bond-illustrations-ready'));
+    }
+  };
+  breedSheet.onerror=()=>{console.warn('Breed illustrations unavailable; original cat sprites retained')};
+  if(window.CAT_BOND_BREED_ATLAS)breedSheet.src=window.CAT_BOND_BREED_ATLAS;
   source.src=window.CAT_BOND_KITTEN_ATLAS;
 })();
