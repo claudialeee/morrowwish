@@ -78,7 +78,7 @@ const ENDINGS={
   zhDesc:'悠闲的一天过去了，鱼儿还在水里轻轻游动。下次再来看看吧。'}
 };
 function endingFor(){return quality<40?'rest':score>=420&&fed>=9&&quality>=55?'festival':quality>=78&&fed>=4?'clear':fed>=4||score>=110?'friends':'calm';}
-function gradeFor(){return score>=710&&quality>=60?'S':score>=480&&quality>=55?'A':score>=290?'B':score>=130?'C':'D';}
+function gradeFor(){return score>=600&&quality>=60?'S':score>=400&&quality>=50?'A':score>=220?'B':score>=90||fed>=4?'C':'D';}
 function finish(){if(state!=='playing')return;state='done';lastGrade=gradeFor();lastEnding=endingFor();
  if(score>best){best=score;try{localStorage.setItem(bestKey,String(best))}catch(e){}}
  hud();modal('done');metric('game_complete',{score,best,grade:lastGrade,fed,quality:Math.round(quality),duration:Math.round(elapsed),reason:'time',ending:lastEnding});}
