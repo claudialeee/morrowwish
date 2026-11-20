@@ -205,6 +205,28 @@ try{
            })).filter(x=>x.text.length<100).slice(0,40)).catch(()=>[]);
            report.submissionForm.nextStep={path:new URL(page.url()).pathname,text:safe(await region.innerText().catch(()=>'')),
              fields:stepFields,buttons:nextButtons.map(o=>({...o,text:safe(o.text)}))};
+           // Populate only local upload-stage fields for the first game to discover
+           // allowed engines / externally hosted URL mode, without submitting anything.
+           if((await region.innerText()).includes('Game name')){
+             const title=page.locator('input[type="text"][required]').first();
+             if(await title.count())await title.fill('Flip Dash');
+             const radios=page.locator('input[type="radio"]');
+             if(await radios.count())await radios.first().evaluate(e=>e.click());
+             const mobile=page.locator('input[type="checkbox"]').first();
+             if(await mobile.count())await mobile.evaluate(e=>e.click());
+             const engine=page.locator('input[type="text"]').nth(1);
+             if(await engine.count()){
+               await engine.evaluate(e=>e.click());
+               await page.waitForTimeout(600);
+               const menu=await page.locator('[role="option"],[role="listbox"],li').allTextContents().catch(()=>[]);
+               report.submissionForm.uploadProbe={
+                 engineMenu:menu.map(x=>safe(x.trim().slice(0,110))).filter(Boolean).slice(0,35),
+                 visibleMenuText:safe(await page.locator('body').innerText().catch(()=>'' )).slice(-1600),
+                 inputFields:await inspectFields(page)
+               };
+             }
+           }
+
            report.note='Advanced eligibility checkboxes to inspect game form; no game submitted.';
          }
        }
