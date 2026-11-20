@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "reviewedAt": "2026-11-20",
-  "objective": "Acquire real anonymous game starts and retained players, not social impressions or raw clicks.",
+  "objective": "Run fast cold-player tests on current playable versions while polishing one flagship game, using verified game starts/ends and new clear gameplay clips.",
   "guardrails": {
     "aiDisclosure": "Accurately disclose generative AI use wherever platform rules require; never conceal AI use to evade moderation.",
     "externalPosts": "Never auto-submit to an unapproved subreddit or forum. Verify current community rules and moderation precedents before a one-off human-approved post.",
@@ -10,69 +10,100 @@
     "qualityGate": "Only one individually reviewed CrazyGames candidate; Poki after quality, originality and first-time-player tests.",
     "conversionMetric": "Prioritize start_events and completed_runs, not views, likes, or follows.",
     "stopRule": "After at least 14 days and 3 distinct posts per test channel, stop if no attributed game starts, unless data ingestion was unavailable.",
-    "blueskyAccount": "Only the new `morrowwishgames` Bluesky identity may be promoted. Metricool still connects old `ruckusbutton.bsky.social`; do not publish until new account is connected. Existing seven old-account posts are drafts, not auto-published.",
-    "socialCrossposting": "YouTube Shorts, TikTok and Instagram Reels are active P2 tests. Reuse the same approved gameplay clips and measure native views separately from first-party website visits and game starts. Facebook crossposting is optional only if a connected authorized business Page and no extra asset production."
+    "blueskyAccount": "Metricool is now connected to @morrowwishgames.bsky.social. The retired ruckusbutton account must not receive any new promotion.",
+    "socialCrossposting": "Never recycle previously published old-version blurry video. Produce new high-definition recordings of current verified gameplay before any new YouTube Shorts/TikTok/Instagram Reels upload. Do not delete existing public videos unless misleading, broken, or user specifically directs.",
+    "testingCadence": "Two parallel tracks: keep seven itch.io games playable and polish Cat Bond; test freshly recorded sharp footage in P1 short-form platforms. Fix one high-friction obstacle each 3-4 days; aim for about 20 verified cold-player test sessions before CrazyGames re-review."
   },
   "channels": [
-    {
-      "name": "CrazyGames",
-      "priority": "P0",
-      "state": "hold-quality-rework",
-      "reason": "Native browser-game audience; existing submission rejected for quality; reapply only after gameplay QA."
-    },
     {
       "name": "itch.io",
       "priority": "P0",
       "state": "published-7",
-      "reason": "All seven games live; improve discoverability, honest AI disclosure, thumbnails and first 30 seconds rather than mass relisting."
+      "reason": "All seven games available; improve listing discoverability and first 30 seconds."
     },
     {
-      "name": "itch.io Release Announcements",
-      "priority": "P1",
-      "state": "limited-one-off",
-      "reason": "Explicit self-promotion board; image/video plus genuine game description required; space out posts."
+      "name": "CrazyGames",
+      "priority": "P0",
+      "state": "quality-hold",
+      "reason": "One game at a time after user-experience QA; do not rush low-quality re-submission."
     },
     {
-      "name": "Poki",
-      "priority": "P1",
-      "state": "not-ready",
-      "reason": "AI tools can be used thoughtfully; strict originality/playtest requirements; only after proven game quality."
+      "name": "Kongregate",
+      "priority": "P0",
+      "state": "not-submitted",
+      "reason": "Browser-game distribution candidate; confirm AI disclosure and acceptance before applying."
     },
     {
       "name": "YouTube Shorts",
-      "priority": "P2",
-      "state": "limited-test",
-      "reason": "Test with direct tracked links and game starts; video views alone are not a success signal."
+      "priority": "P1",
+      "state": "fresh-video-needed",
+      "reason": "Already gains native views, but all current promotional clips are obsolete/blurry; only post fresh real gameplay."
     },
     {
       "name": "TikTok",
-      "priority": "P2",
-      "state": "limited-test",
-      "reason": "Same limited test and attribution requirements as Shorts."
-    },
-    {
-      "name": "Google / Bing",
-      "priority": "P3",
-      "state": "passive-discovery",
-      "reason": "Sitemap/IndexNow maintenance only; do not spend time on repetitive promotion."
+      "priority": "P1",
+      "state": "fresh-video-needed",
+      "reason": "Avoid reusing old assets; new clear gameplay and shorter hook, then track conversion."
     },
     {
       "name": "Instagram",
-      "priority": "P2",
-      "state": "limited-crosspost-test",
-      "reason": "New Reels already earn organic exposure (Metricool: six reels, 273 views in observed period). Reuse the same gameplay clips as Shorts/TikTok; evaluate attributable game starts before expanding effort."
+      "priority": "P1",
+      "state": "fresh-video-needed",
+      "reason": "Previously verified 273 views over six reels; next uploads must show current-version sharp gameplay."
     },
     {
       "name": "Bluesky",
       "priority": "P2",
-      "state": "limited-new-account-only",
-      "reason": "Indie game and creative audiences; test tracked links on the new studio account, not the retired ruckusbutton identity. Native post view counts (beta) are owner-only, not public API analytics."
+      "state": "new-account-scheduled",
+      "reason": "New studio account connected. One new non-video Cat Bond announcement scheduled via Metricool for 2026-11-20 11:18 Pacific."
+    },
+    {
+      "name": "Google / Bing",
+      "priority": "P2",
+      "state": "passive",
+      "reason": "Sitemap/IndexNow configured; track indexing without extra routine posting."
+    },
+    {
+      "name": "itch.io Release Announcements",
+      "priority": "P2",
+      "state": "manual-reviewed",
+      "reason": "Only genuinely newsworthy updates with accurate AI disclosure, no mass-posting."
+    },
+    {
+      "name": "Poki",
+      "priority": "P3",
+      "state": "quality-gate",
+      "reason": "Originality and cold-player polish required."
+    },
+    {
+      "name": "GamePix",
+      "priority": "P3",
+      "state": "special-build",
+      "reason": "Portal-specific distribution requirements before submission."
+    },
+    {
+      "name": "GameDistribution",
+      "priority": "P3",
+      "state": "sdk-required",
+      "reason": "Ad SDK and portal-specific build requirements."
+    },
+    {
+      "name": "Facebook",
+      "priority": "PAUSED",
+      "state": "not-using",
+      "reason": "No connected brand Facebook page; avoid incremental operations."
+    },
+    {
+      "name": "X",
+      "priority": "PAUSED",
+      "state": "not-using",
+      "reason": "No evidence to justify a new promotional account."
     },
     {
       "name": "Reddit",
       "priority": "PAUSED",
-      "state": "manual-reviewed-only",
-      "reason": "AI restrictions and self-promotion enforcement vary by subreddit; no automatically generated submission links until individually approved."
+      "state": "review-only",
+      "reason": "Subreddit restrictions on AI-assisted works and self-promotion; avoid automated posts."
     }
   ],
   "blocked": [
