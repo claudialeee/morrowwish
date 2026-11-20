@@ -9,6 +9,7 @@ import {publishedGames,trackedLink} from './discovery.mjs';
 const STATE=process.env.CRAZY_STORAGE_STATE_B64||'';
 const portal='https://developer.crazygames.com';
 const policy=JSON.parse(fs.readFileSync('promotion/portal-status.json','utf8'));
+const qualityGate=JSON.parse(fs.readFileSync('promotion/crazygames-quality-gate.json','utf8'));
 const names={'pawsibly-innocent':'Pawsibly Innocent!','cat-bond':'Cat Bond','tiny-town':'No More Mondays: Tiny Town','elsewhere':'Elsewhere','parcel-panic':'Parcel Panic','flip-dash':'Flip Dash','pocket-aquarium':'Pocket Aquarium'};
 const published=new Map(publishedGames().map(g=>[g.slug,g]));
 function log(msg){console.log('CrazyGames: '+msg);if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'\n- CrazyGames: '+msg+'\n');}
@@ -31,6 +32,17 @@ function readyAssets(slug){
   return ['cover-landscape.png','cover-square.png'].every(name=>fs.existsSync(path.join(dir,name)));
 }
 async function run(){
+  // Never infer approval from a draft or three truthy booleans in a game asset file.
+  // The studio requires a quality signoff AND an explicitly selected single game.
+  const selected=process.env.CRAZYGAMES_TARGET_SLUG||'';
+  if(qualityGate.status!=='approved'||!qualityGate.approvedSlug||selected!==qualityGate.approvedSlug){
+    log('Quality hold: no individually QA-approved game selected; no portal submission attempted.');return;
+  }
+  for(const field of ['gameplayTest','firstTimePlayers','visualReview','technicalPreview','contentAndRights']){
+    if(typeof qualityGate.evidence?.[field]!=='string'||qualityGate.evidence[field].trim().length<12){
+      log('Quality hold: required evidence missing: '+field);return;
+    }
+  }
   if(!STATE){log('Authentication secret CRAZY_STORAGE_STATE_B64 missing. Not submitted.');return;}
   const browser=await chromium.launch({headless:true});
   const ctx=await browser.newContext({storageState:JSON.parse(Buffer.from(STATE,'base64').toString('utf8'))});
@@ -43,8 +55,8 @@ async function run(){
     const priorities=policy.crazygames.slice().sort((a,b)=>(a.priority||99)-(b.priority||99));
     // Portal status wins over our internal ledger. Wait until any existing QA is resolved.
     if(/Awaiting review|Under review|In review/i.test(content)){log('Existing game awaiting platform review. Queue held; no additional submissions.');return;}
-    const candidate=priorities.find(x=>published.has(x.slug)&&!['submitted-for-review','published','awaiting-review'].includes(x.status)) ||
-      [...published.values()].filter(g=>!priorities.some(p=>p.slug===g.slug)).map(g=>({slug:g.slug,status:'not-created'}))[0];
+    const candidate=priorities.find(x=>x.slug===selected&&published.has(x.slug)&&
+      !['submitted-for-review','published','awaiting-review'].includes(x.status));
     if(!candidate){log('No eligible new game pending.');return;}
     const game=published.get(candidate.slug);
     const name=names[game.slug]||game.title;

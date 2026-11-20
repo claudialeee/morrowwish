@@ -1,4 +1,4 @@
-name: Auto-publish Morrow Wish to game portals
+name: Auto-publish Morrow Wish itch.io (CrazyGames QA HOLD)
 
 on:
   workflow_run:
@@ -23,7 +23,6 @@ jobs:
     timeout-minutes: 25
     env:
       ITCH_STORAGE_STATE_B64: ${{ secrets.ITCH_STORAGE_STATE_B64 }}
-      CRAZY_STORAGE_STATE_B64: ${{ secrets.CRAZY_STORAGE_STATE_B64 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,9 +31,8 @@ jobs:
         id: auth
         env:
           HAS_ITCH: ${{ secrets.ITCH_STORAGE_STATE_B64 != '' }}
-          HAS_CRAZY: ${{ secrets.CRAZY_STORAGE_STATE_B64 != '' }}
         run: |
-          if [ "$HAS_ITCH" = true ] || [ "$HAS_CRAZY" = true ]; then
+          if [ "$HAS_ITCH" = true ]; then
             echo 'available=true' >> "$GITHUB_OUTPUT"
           else
             echo 'available=false' >> "$GITHUB_OUTPUT"
@@ -49,6 +47,3 @@ jobs:
       - name: Publish missing itch.io projects
         if: steps.auth.outputs.available == 'true' && env.ITCH_STORAGE_STATE_B64 != ''
         run: node scripts/auto-publish-itch.mjs
-      - name: Submit next CrazyGames eligible game
-        if: ${{ always() && steps.auth.outputs.available == 'true' && env.CRAZY_STORAGE_STATE_B64 != '' }}
-        run: node scripts/auto-publish-crazygames.mjs
