@@ -183,6 +183,41 @@ assert.equal(game.yard.hide.species.id,'jinwu',
 game.yard.hide=null;
 GameData.rollSpecies=previousRoll;
 State.S.catchCount=0;State.S.repeatSightings=0;
+// Full cat rosters must NOT fill the yard or repeat species on screen.
+// This also confirms every pre-existing individual is retained in its save.
+const initialRoster=State.S.cats.slice();
+const many=GameData.SPECIES.slice(0,11).flatMap(sp=>[
+  State.makeCat(sp.id),State.makeCat(sp.id),State.makeCat(sp.id)
+]);
+State.S.cats=many;
+game.yard.page=0;game.yard.rebuild();
+assert.equal(State.S.cats.length,33,'Collecting duplicates does not erase saved individuals');
+assert.ok(game.yard.entities.length<=6,'Desktop yard must show no more than six kittens');
+assert.equal(new Set(game.yard.entities.map(e=>e.cat.species)).size,game.yard.entities.length,
+  'Only one representative per breed appears in each yard batch');
+assert.ok(game.yard.pageCount>=2,'Large collections use switchable visitor batches');
+assert.equal(document.getElementById('yard-cat-switch').hidden,false,
+  'Yard visitor rotation must be discoverable');
+const oldFirst=game.yard.entities[0].cat.species;
+game.yard.nextPage();
+assert.notEqual(game.yard.entities[0].cat.species,oldFirst,'Next batch shows new breeds');
+UI.openRoster();
+const cardsHTML=document.getElementById('panel').innerHTML;
+assert.equal((cardsHTML.match(/data-breed=/g)||[]).length,11,
+  'Owned-cat menu groups duplicates into one card per breed');
+UI.openBreedRoster(GameData.SPECIES[0]);
+assert.ok(document.getElementById('panel').innerHTML.includes('data-cat-uid'),
+  'Opening a breed still exposes individual cats for feeding, training and breeding');
+UI.closeAll();
+// Portrait capacity is stricter; mobile must not fill the entire canvas.
+const origW=game.W,origH=game.H;
+game.W=390;game.H=844;game.yard.page=0;game.yard.rebuild();
+assert.ok(game.yard.entities.length<=4,'Portrait garden must display at most four kittens');
+assert.ok(game.yard.entities.every(e=>e.x>=0&&e.x<=game.W&&e.y<=game.H),
+  'Visitors must remain within the portrait canvas');
+game.W=origW;game.H=origH;
+State.S.cats=initialRoster;game.yard.page=0;game.yard.rebuild();
+
 // Give the player a starter + a strong team, then run a real capture battle.
 State.S.cats = [];
 const starter = State.makeCat('tangyuan', { affinity: 60 });
@@ -275,6 +310,44 @@ game.yard.hide=null;
 GameData.rollSpecies=originalRoll;
 S.masteryBadges=priorBadges;S.bestGrades=priorBest;S.luckLure=priorLures;
 S.catchCount=priorCatchCount;
+
+// Golden Paw rematch is an intentional challenge, not an unlimited
+// source of duplicate cats or currency.
+const targetBreed=GameData.speciesById('doudou');
+const beforeMasteryRoster=State.S.cats.length;
+const beforeMasteryCatches=State.S.catchCount;
+const beforeMasteryCoins=State.S.coins;
+const beforeMasteryDex=State.S.dex.doudou;
+assert.equal(game.startMasteryChallenge(targetBreed),true);
+assert.equal(game.battle.masteryChallenge,true);
+const masteryBattle=game.battle;
+masteryBattle.team.forEach(f=>{f.hp=f.maxhp;});
+masteryBattle.t=10;masteryBattle.comboBest=8;
+masteryBattle.finish(true);game.endBattle();
+assert.equal(State.S.cats.length,beforeMasteryRoster,'Rematch does not add duplicate cats');
+assert.equal(State.S.catchCount,beforeMasteryCatches,'Rematch must not count as another capture');
+assert.equal(State.S.dex.doudou,beforeMasteryDex,'Rematch does not inflate codex');
+assert.equal(State.S.coins,beforeMasteryCoins,'Rematch does not farm normal capture coins');
+assert.ok(document.getElementById('panel').innerHTML.includes('mc-retry'),
+  'Victory shows a replay button, so S-rank medals are attainable without RNG');
+UI.closeAll();
+// Later encounters of a breed with two residents become helpful reunions.
+State.S.cats.push(State.makeCat('doudou'));
+const previousDupRoster=State.S.cats.length;
+const prevTreats=State.S.treats;
+game.startBattle([starter],targetBreed);
+const duplicateBattle=game.battle;
+duplicateBattle.team.forEach(f=>{f.hp=f.maxhp;});
+duplicateBattle.t=30;duplicateBattle.comboBest=1;
+duplicateBattle.finish(true);game.endBattle();
+assert.equal(State.S.cats.length,previousDupRoster,
+  'After two residents, repeat capture should nurture them, not add another clone');
+assert.ok(document.getElementById('panel').innerHTML.includes('reunion-reward'),
+  'Repeat catch result should communicate the useful bonding reward');
+assert.ok(State.S.treats>=prevTreats+2,'Repeated catch awards treats instead of clutter');
+assert.ok(events.some(e=>e.name==='bond_repeat_reunion'),
+  'Reunion analytics distinguishes real new catches from duplicates');
+UI.closeAll();
 
 // One-time collection milestones reward actual new species, not repeated grinding.
 const priorCoins=State.S.coins, priorTreats=State.S.treats, priorMilestones=[...(State.S.collectionMilestones||[])];
