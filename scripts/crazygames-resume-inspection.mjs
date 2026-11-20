@@ -48,6 +48,29 @@ try{
      links:await page.locator('a[href]').evaluateAll(xs=>xs.map(x=>({label:(x.innerText||'').trim().slice(0,70),path:new URL(x.href).pathname}))
       .filter(x=>/edit|qa|submit|draft|game/i.test(x.label)).slice(0,25))
    };
+   const go=page.getByRole('button',{name:'Go to QA',exact:true}).first();
+   report.goToQAFound=await go.count();
+   if(await go.isEnabled().catch(()=>false)){
+     await go.evaluate(e=>e.click());
+     await page.waitForTimeout(3000);
+     report.qaNavigation={developerPagePath:new URL(page.url()).pathname,
+       openPages:context.pages().map(p=>({origin:new URL(p.url()).origin,path:new URL(p.url()).pathname}))};
+     const qa=context.pages().find(p=>p.url().includes('crazygames.com/preview/'));
+     if(qa){
+       const btn=qa.getByRole('button',{name:'Continue',exact:true}).last();
+       report.qaNavigation.qaBody=redact(await qa.locator('body').innerText().catch(()=>'' )).slice(-1000);
+       report.qaNavigation.continueCount=await btn.count();
+       if(await btn.isEnabled().catch(()=>false)){
+         await btn.click({timeout:5000}).catch(e=>{report.qaNavigation.clickError=redact(e.message).slice(0,200)});
+         await page.waitForTimeout(3000);
+         report.qaNavigation.afterContinuePages=await Promise.all(context.pages().map(async p=>({
+            origin:new URL(p.url()).origin,path:new URL(p.url()).pathname,
+            body:redact(await p.locator('body').innerText().catch(()=>'' )).slice(-1300)
+         })));
+       }
+     }
+   }
+
  }
 
  if(report.draftDetail)throw new Error('draft-inspection-complete');
