@@ -1,0 +1,76 @@
+name: Submit all six Morrow Wish games to CrazyGames (live iframe)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/crazygames-submit.mjs'
+      - '.github/workflows/crazygames-submit.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crazygames-studio-submission
+  cancel-in-progress: false
+
+jobs:
+  submit-six:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install free Playwright driver (runner Chrome is preinstalled)
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+      - name: Sign in to authorized Morrow Wish studio account, submit external live URLs
+        env:
+          CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
+          CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
+          CRAZYGAMES_TARGET_SLUGS: pawsibly-innocent,elsewhere,tiny-town,parcel-panic,pocket-aquarium,flip-dash
+        run: node scripts/crazygames-submit.mjs
+      - name: Save platform feedback and evidence, even on a partial submission
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crazygames-six-submission-results
+          path: .check/crazygames/submission-results.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Persist only verified CrazyGames submission IDs to dedupe ledger
+        if: always()
+        run: |
+          if [ ! -f .check/crazygames/submission-results.json ]; then exit 0; fi
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const out=JSON.parse(fs.readFileSync('.check/crazygames/submission-results.json','utf8'));
+          const file='promotion/ledger.json',l=JSON.parse(fs.readFileSync(file,'utf8'));
+          let changed=0;
+          for(const r of out.results){
+            if(r.status!=='submitted-confirmed'||!r.platformId)continue;
+            const g=l.games.find(x=>x.slug===r.slug);
+            if(!g||g.channels.crazygames.status!=='not-submitted')continue;
+            g.channels.crazygames.status='submitted-for-review';
+            g.channels.crazygames.platformId=r.platformId;
+            g.channels.crazygames.submittedAt=r.completedAt;
+            changed++;
+          }
+          if(changed)fs.writeFileSync(file,JSON.stringify(l,null,2)+'\n');
+          console.log('New verified CrazyGames submissions: '+changed);
+          NODE
+          git add promotion/ledger.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name morrowwish-promo-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'Record CrazyGames developer portal verified submission IDs'
+          git pull --rebase origin main
+          git push origin HEAD:main
