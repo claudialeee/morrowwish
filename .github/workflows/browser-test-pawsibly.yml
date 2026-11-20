@@ -15,6 +15,7 @@ on:
       - 'public/lang.js'
       - 'public/index.html'
       - 'scripts/browser-test-pawsibly.mjs'
+      - 'scripts/mobile-playtest.mjs'
       - '.github/workflows/browser-test-pawsibly.yml'
   workflow_dispatch:
 # Only the most recent source revision needs a browser test.
@@ -44,3 +45,4 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-local.log 2>&1 &
           sleep 2
           node scripts/browser-test-pawsibly.mjs
+          node scripts/mobile-playtest.mjs
