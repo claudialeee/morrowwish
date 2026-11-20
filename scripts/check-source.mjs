@@ -486,3 +486,46 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
    throw Error('Aquarium 60-second completion telemetry missing from unified dashboard');
  console.log('Five aquarium endings and click-to-start arcade flow verified.');
 }
+
+
+// Three flagship games must offer direct share destinations, not clipboard-only buttons.
+{
+ const helper=fs.readFileSync('public/social-share.js','utf8');
+ new vm.Script(helper,{filename:'public/social-share.js'});
+ for(const host of [
+  'twitter.com/intent/tweet','facebook.com/sharer/sharer.php',
+  'reddit.com/submit','api.whatsapp.com/send',
+  'bsky.app/intent/compose','t.me/share/url'
+ ]){
+  if(!helper.includes(host))throw Error('Missing social share destination: '+host);
+ }
+ if(!helper.includes('message:typeof raw.message')||
+    !helper.includes('onShare:typeof raw.onShare')||
+    !helper.includes("opts.onShare?.(platform)")||
+    !helper.includes("opts.meta"))
+   throw Error('Shared social dialog must support truthful story captions and game analytics');
+ const pages=[
+  ['tiny-town','public/tiny-town/index.html','MorrowwishSocialShare.open({'],
+  ['elsewhere','public/elsewhere/index.html','/elsewhere/app.js'],
+  ['pawsibly-innocent','public/pawsibly-innocent/index.html','/pawsibly-innocent/game.js']
+ ];
+ for(const [name,path,marker] of pages){
+  const html=fs.readFileSync(path,'utf8');
+  if(!html.includes('/social-share.js')||!html.includes(marker))
+   throw Error(name+' must load the shared social modal');
+ }
+ const town=fs.readFileSync('public/tiny-town/index.html','utf8');
+ const elsewhere=fs.readFileSync('public/elsewhere/app.js','utf8');
+ const cat=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
+ if(!town.includes('outcome?.totalScore||0')||
+    !town.includes("onShare:()=>gameProgress('shared-link')"))
+  throw Error('Tiny Town share must use real game score and preserve tracking');
+ if(!elsewhere.includes("link.searchParams.set('world',w.id)")||
+    !elsewhere.includes("localizeStory(chosenEnding.title)")||
+    !elsewhere.includes("onShare:platform=>track('share_clicked'"))
+  throw Error('Elsewhere share must preserve playable world deep links and ending');
+ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
+    !cat.includes("meta:{game:'pawsibly-innocent',level:room}"))
+  throw Error('Cat share must include real score and room');
+ console.log('All three flagship game share menus: 6 social sites, localized messages, active scores and deep links.');
+}
