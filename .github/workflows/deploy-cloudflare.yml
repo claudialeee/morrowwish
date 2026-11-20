@@ -48,6 +48,12 @@ jobs:
         run: npm ci
       - name: Fetch CC0 recorded cat soundtrack
         run: bash scripts/fetch-cat-music.sh
+      - name: Install ffmpeg for promotional video audio
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg >/dev/null
+          fi
       - name: Add CC0 audio to six social promotion video clips
         run: bash scripts/add-promo-audio.sh
       - name: Verify source, game ordering, and D1 binding
