@@ -84,10 +84,33 @@ function effect(kind='tap'){
  // Cat Bond's gentle layered gestures avoid beeps on every canvas movement.
  if(route==='cat-bond'&&['pet','rustle','paw','discover'].includes(kind)){
    if(!enabled||!unlocked||!ctx)return;
-   const t=ctx.currentTime+.008;
-   const notes={pet:[67,71],rustle:[70,74],paw:[61,68],discover:[74,79,83]}[kind];
-   const base=kind==='rustle'?'sine':'triangle';
-   notes.forEach((n,i)=>tone(n,t+i*.055,kind==='discover'?.18:.075,base,kind==='discover'?.016:.007));
+   const now=ctx.currentTime+.008;
+   // Soft filtered air/brush noises — not a continuous set of beeping notes.
+   const brush=(duration,frequency,level,filterType='lowpass')=>{
+     try{
+       const length=Math.max(1,Math.floor(ctx.sampleRate*duration));
+       const buffer=ctx.createBuffer(1,length,ctx.sampleRate);
+       const arr=buffer.getChannelData(0);
+       for(let i=0;i<length;i++)arr[i]=(Math.random()*2-1);
+       const src=ctx.createBufferSource();src.buffer=buffer;
+       const filter=ctx.createBiquadFilter();filter.type=filterType;filter.frequency.value=frequency;
+       const gain=ctx.createGain();gain.gain.setValueAtTime(.0001,now);
+       gain.gain.linearRampToValueAtTime(level,now+.012);
+       gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+       src.connect(filter);filter.connect(gain);gain.connect(master);
+       src.start(now);src.stop(now+duration+.005);
+     }catch{}
+   };
+   if(kind==='rustle'){brush(.19,1200,.065,'bandpass');brush(.12,2200,.022,'highpass');}
+   else if(kind==='paw'){brush(.10,360,.045);tone(61,now,.09,'triangle',.009);}
+   else if(kind==='pet'){
+     brush(.19,520,.018);
+     tone(52,now,.16,'sine',.010);tone(57,now+.075,.20,'triangle',.009);
+   }else{
+     tone(74,now,.12,'triangle',.014);
+     tone(79,now+.075,.18,'sine',.014);
+     tone(83,now+.15,.25,'sine',.012);
+   }
    effects++;return;
  }
  const [n,s]=mappings[kind]||mappings.tap;sfx(n,s);
