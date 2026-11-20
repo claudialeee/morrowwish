@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Intro starfield + floating paw motes (Morrow Wish ambience)
   startIntroStars();
+  drawIntroCats();
 
   const startGame = () => {
     document.getElementById('intro').classList.add('hide');
@@ -89,4 +90,34 @@ function startIntroStars() {
     requestAnimationFrame(frame);
   };
   frame();
+}
+
+// Draw four distinct members of the cast using the same original cat renderer
+// as the actual yard and battle. This avoids a generic decorative stock image.
+function drawIntroCats(){
+ const canvas=document.getElementById('intro-cats');
+ if(!canvas||!window.CatArt?.drawCat)return;
+ const ctx=canvas.getContext('2d');
+ if(!ctx)return;
+ const W=canvas.width,H=canvas.height;
+ ctx.clearRect(0,0,W,H);
+ const cats=[
+  {x:123,scale:1.34,palette:'orange',pattern:'tabby',pose:'sit',mood:'happy'},
+  {x:283,scale:1.58,palette:'tux',pattern:'tuxedo',pose:'sit',mood:'happy'},
+  {x:453,scale:1.48,palette:'silver',pattern:'tabby',pose:'sit',mood:'neutral'},
+  {x:610,scale:1.30,palette:'calico',pattern:'calico',pose:'sit',mood:'happy'}
+ ];
+ for(let i=0;i<cats.length;i++){
+  const c=cats[i],x=c.x,y=111;
+  const g=ctx.createRadialGradient(x,y-20,6,x,y-20,74);
+  g.addColorStop(0,['#ffe1aa88','#f7c5df77','#d8ddff77','#d0eddc77'][i]);
+  g.addColorStop(1,'#ffffff00');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y-20,74,0,Math.PI*2);ctx.fill();
+  CatArt.drawCat(ctx,x,y,{...c,face:i%2===0?1:-1,t:1.1});
+ }
+ // Small illustrated meadow under the cats rather than a disconnected row of icons.
+ ctx.fillStyle='#d7bfa050';ctx.beginPath();ctx.ellipse(W/2,158,340,10,0,0,Math.PI*2);ctx.fill();
+ for(const [x,y,r] of [[46,85,3],[212,36,2],[374,42,3],[549,27,2],[689,102,3]]){
+  ctx.fillStyle='#fff4c9';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ }
 }
