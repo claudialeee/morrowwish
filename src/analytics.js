@@ -118,16 +118,16 @@ function mainStats(x){
   return {days:x.days,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
- // Dream-life edition only. Previous five- and eight-scene records remain in D1, excluded from this new funnel.
- const rows=x.rows.filter(r=>Number(r.data.scenes)===3),runsById=new Map(),worlds=["amalfi","paris","tokyo","iceland","maldives","swiss"];
+ // Filter on explicit edition: historic five-scene records must not contaminate this reworked five-scene adventure.
+ const rows=x.rows.filter(r=>r.data.edition==="dream-v2"&&Number(r.data.scenes)===5),runsById=new Map(),worlds=["amalfi","paris","tokyo","iceland","maldives","swiss"];
  for(const r of rows){
    const id=r.run_id||r.data.runId||r.visitor+"-"+(r.data.session||"na");
    if(!runsById.has(id))runsById.set(id,{world:r.data.world||"no-work",visitor:r.visitor||id,opened:false,views:new Set(),completed:new Set(),finished:false,restarted:0});
    const z=runsById.get(id),ev=r.event_name||r.data.event||"",ch=Number(r.data.chapter);
    z.world=r.data.world||z.world;
    if(ev==="world_open")z.opened=true;
-   if(ev==="chapter_view"&&ch>=1&&ch<=3)z.views.add(ch);
-   if(ev==="chapter_completed"&&ch>=1&&ch<=3)z.completed.add(ch);
+   if(ev==="chapter_view"&&ch>=1&&ch<=5)z.views.add(ch);
+   if(ev==="chapter_completed"&&ch>=1&&ch<=5)z.completed.add(ch);
    if(ev==="life_completed")z.finished=true;
    if(ev==="life_restarted")z.restarted++;
  }
@@ -136,10 +136,10 @@ function elsewhereStats(x){
  const visitorGroups=new Map();
  for(const r of opened){if(!visitorGroups.has(r.visitor))visitorGroups.set(r.visitor,[]);visitorGroups.get(r.visitor).push(r);}
  const replayVisitors=[...visitorGroups.values()].filter(a=>a.length>=2||a.some(r=>r.restarted>0)).length;
- const continueRates=Array.from({length:2},(_,i)=>{const from=i+1,eligible=has(from,"completed"),continued=runs.filter(r=>r.completed.has(from)&&r.views.has(from+1)).length;return {from,to:from+1,eligible,continued,rate:pct(continued,eligible)};});
+ const continueRates=Array.from({length:4},(_,i)=>{const from=i+1,eligible=has(from,"completed"),continued=runs.filter(r=>r.completed.has(from)&&r.views.has(from+1)).length;return {from,to:from+1,eligible,continued,rate:pct(continued,eligible)};});
  const dropoff=continueRates.filter(r=>r.eligible>0).sort((a,b)=>(b.eligible-b.continued)-(a.eligible-a.continued)||a.from-b.from)[0];
  const worldSummary=worlds.map(world=>{const a=opened.filter(r=>r.world===world),done=a.filter(r=>r.finished).length;return {world,starts:a.length,ends:done,fullRate:pct(done,a.length)};});
- return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,trackingVersion:6,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:3},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
+ return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,trackingVersion:7,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:5},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
 }
 const cookieName="morrowwish_studio_auth", ttl=30*24*60*60;
 async function signSession(exp,keyText){

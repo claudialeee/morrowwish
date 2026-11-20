@@ -165,6 +165,13 @@ const WORLDS=[
  [L("没有终点的幸福","The Train That Never Ends"),L("你不再寻找所谓正确的人生，只享受一路经过的风景。","You stop searching for the right life and love the journey.")]],
  rare:[L("最后一张黄金车票","The Golden Ticket"),L("金色车票写着：你随时都可以重新出发。它永远有效。","The golden ticket never expires. Another beginning is always possible.")]}
 ];
+const EXTRA=window.ELSEWHERE_EXTRA_SCENES||{};
+for(const world of WORLDS){
+ const additional=EXTRA[world.id];if(!additional)throw Error("Missing five-scene expansion: "+world.id);
+ const finalAct=world.acts[2];finalAct.after=additional.after;
+ world.shock=additional.shock;
+ world.acts=[world.acts[0],world.acts[1],additional.bridge,additional.storm,finalAct];
+}
 const $=s=>document.querySelector(s);
 const S=(k,def)=>{try{return JSON.parse(localStorage.getItem(k)||"null")??def}catch{return def}};
 const SAVE="elsewhere_dream_v1",COLL="elsewhere_dream_gallery_v1",LANG="morrowwish.language";
@@ -179,7 +186,7 @@ const labels={
  hero:L("你想体验哪一种人生？","Which life would you dare to live?"),
  intro:L("醒来，你已经拥有了梦寐以求的一切。然后，意外发生了。","You wake up with everything you ever wanted. Then something unexpected happens."),
  random:L("命运随机开局","Surprise me"),explore:L("选择你的梦幻人生","Pick your dream life"),
- tiny:L("6 段人生 · 每局约 2 分钟 · 24 种结局","6 DREAM LIVES · ABOUT 2 MINUTES · 24 ENDINGS"),
+ tiny:L("6 段人生 · 五幕冒险 · 24 种结局","6 DREAM LIVES · FIVE MOMENTS · 24 ENDINGS"),
  gallery:L("人生收藏册","Your life collection"),saved:L("已解锁","discovered"),noSave:L("还没有开启。试试第一段人生。","Your first adventure is waiting."),
  restart:L("换条路再活一次","Try a different fate"),home:L("其他人生","All lives"),next:L("继续这段人生","See what happens next"),
  ending:L("这一生，你活成了……","THIS IS THE LIFE YOU LIVED"),another:L("再体验另一段人生","Live another life"),
@@ -189,7 +196,8 @@ const labels={
  consequence:L("你改变了故事","YOUR CHOICE CHANGED THINGS"),all:L("已收藏结局","Endings discovered"),
  return:L("返回主页","Back to Morrow Wish"),lang:L("中文 / EN","中文 / EN"),
  collected:L("你解锁了一张人生明信片","YOU UNLOCKED A LIFE POSTCARD"),
- reveal:L("发现隐藏细节","Discover a hidden detail")
+ reveal:L("发现隐藏细节","Discover a hidden detail"),
+ shock:L("命运突然转弯","THE STORY JUST TURNED"),openTwist:L("揭开意外","Reveal the surprise"),sealed:L("你以为这一生会照着计划进行……","You thought this life would go according to plan…"),endingNext:L("揭晓我的人生结局","Reveal my ending")
 };
 function E(key){return esc(tr(labels[key]))}
 function track(event,data={}){
@@ -198,7 +206,7 @@ function track(event,data={}){
  if(event==="life_completed")window.arcadeMetric?.("game_complete");
  if(event==="life_restarted")window.arcadeMetric?.("retry");
  if(event==="share_clicked")window.arcadeMetric?.("share_clicked");
- let payload={event,world:state?.id||"",scenes:3,visitor,session:state?.session||"",runId:state?.runId||"",...data};
+ let payload={event,world:state?.id||"",scenes:5,edition:"dream-v2",visitor,session:state?.session||"",runId:state?.runId||"",...data};
  try{const body=JSON.stringify(payload);if(visitor){const blob=new Blob([body],{type:"text/plain;charset=UTF-8"});if(!navigator.sendBeacon?.("/api/elsewhere-collect",blob))fetch("/api/elsewhere-collect",{method:"POST",headers:{"Content-Type":"text/plain"},body,keepalive:true}).catch(()=>{})}}catch{}
 }
 const sky=(a,b)=>'<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#71d5d5"/><stop offset="1" stop-color="#196f9c"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="22"/></filter></defs><rect width="900" height="540" fill="url(#sky)"/>';
@@ -235,18 +243,18 @@ function art(id){
  return '<svg class="dream-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+unique+'</svg>';
 }
 function renderHome(){
- state=null;history.replaceState({}, "", "/elsewhere/"+(lang==="zh"?"?lang=zh":""))
+ state=null;history.replaceState({}, "", "/elsewhere/"+(lang==="zh"?"?lang=zh":""));window.DreamAudio?.setWorld("home")
  $("#home").hidden=false;$("#game").hidden=true;$("#ending").hidden=true;
  const explored=Object.values(gallery).flat().length;
- $("#home").innerHTML='<div class="intro"><span class="kicker">ELSEWHERE · PARALLEL LIVES</span><h1>'+E("hero")+'</h1><p>'+E("intro")+'</p><div class="intro-actions"><button class="big-btn" data-random>'+E("random")+' ↗</button><a class="soft-link" href="#lives">'+E("explore")+' ↓</a></div><small>'+E("tiny")+'</small></div><div id="lives" class="life-grid">'+WORLDS.map(w=>'<button class="life-card" data-world="'+w.id+'" style="--accent:'+w.color+'"><div class="card-image">'+art(w.id)+'</div><span class="place">'+esc(tr(w.place))+'</span><strong>'+esc(tr(w.name))+'</strong><span class="tease">'+esc(tr(w.tease))+'</span><span class="card-foot">'+esc(tr(w.tag))+' <b>↗</b></span></button>').join("")+'</div><section class="album"><div class="album-head"><h2>'+E("gallery")+'</h2><span>'+explored+' / 24 '+E("saved")+'</span></div><div class="album-cards">'+(explored?Object.entries(gallery).flatMap(([id,nums])=>nums.map(n=>{let w=WORLDS.find(x=>x.id===id);if(!w)return "";let ending=n===3?w.rare:w.endings[n];return '<div class="album-card"><span>'+esc(tr(w.place))+'</span><strong>'+esc(tr(ending[0]))+'</strong></div>'})).join(""):'<p>'+E("noSave")+'</p>')+'</div></section>';
- document.title=(lang==="zh"?"平行人生 — Morrow Wish":"Elsewhere — Morrow Wish");
+ $("#home").innerHTML='<div class="intro"><span class="kicker">ELSEWHERE · PARALLEL LIVES</span><h1>'+E("hero")+'</h1><p>'+E("intro")+'</p><div class="intro-actions"><button class="big-btn" data-random>'+E("random")+' ↗</button><a class="soft-link" href="#lives">'+E("explore")+' ↓</a></div><small>'+E("tiny")+'</small><div class="home-audio">'+(window.DreamAudio?.controls()||'')+'</div></div><div id="lives" class="life-grid">'+WORLDS.map(w=>'<button class="life-card" data-world="'+w.id+'" style="--accent:'+w.color+'"><div class="card-image">'+art(w.id)+'</div><span class="place">'+esc(tr(w.place))+'</span><strong>'+esc(tr(w.name))+'</strong><span class="tease">'+esc(tr(w.tease))+'</span><span class="card-foot">'+esc(tr(w.tag))+' <b>↗</b></span></button>').join("")+'</div><section class="album"><div class="album-head"><h2>'+E("gallery")+'</h2><span>'+explored+' / 24 '+E("saved")+'</span></div><div class="album-cards">'+(explored?Object.entries(gallery).flatMap(([id,nums])=>nums.map(n=>{let w=WORLDS.find(x=>x.id===id);if(!w)return "";let ending=n===3?w.rare:w.endings[n];return '<div class="album-card"><span>'+esc(tr(w.place))+'</span><strong>'+esc(tr(ending[0]))+'</strong></div>'})).join(""):'<p>'+E("noSave")+'</p>')+'</div></section>';
+ document.title=(lang==="zh"?"平行人生 — Morrow Wish":"Elsewhere — Morrow Wish");window.DreamAudio?.sync();
 }
 function randomWorld(){
  const pool=WORLDS.filter(w=>w.id!==lastWorld);const w=pool[Math.floor(Math.random()*pool.length)]||WORLDS[0];openWorld(w.id);
 }
 function openWorld(id,retry=false,push=true){
  const w=WORLDS.find(x=>x.id===id);if(!w)return;
- lastWorld=id;state={id,stage:0,selected:null,history:[],secret:false,runId:uid(),session:uid(),start:Date.now()};
+ lastWorld=id;state={id,stage:0,selected:null,history:[],revealed:{},seen:{},secret:false,runId:uid(),session:uid(),start:Date.now()};window.DreamAudio?.setWorld(id);
  if(retry)track("life_restarted",{world:id});
  track("world_open",{world:id,resume:false});
  $("#home").hidden=true;$("#game").hidden=false;$("#ending").hidden=true;
@@ -254,44 +262,76 @@ function openWorld(id,retry=false,push=true){
  renderStage();window.scrollTo({top:0,behavior:"instant"});
  document.title=tr(w.name)+" — Elsewhere";
 }
+function sceneBody(act,i){
+ if(i===0)return act.body;
+ if(i===1)return act.twists[state.history[0]?.index??0];
+ if(i===2)return act.branches[state.history[1]?.index??0];
+ if(i===3)return act.branches[state.history[2]?.index??0];
+ return act.turns[state.history[1]?.index??0];
+}
 function renderStage(){
- const w=WORLDS.find(x=>x.id===state.id),i=state.stage,act=w.acts[i],prior=state.history[i-1],body=i===0?act.body:i===1?act.twists[state.history[0]?.index??0]:act.turns[state.history[1]?.index??0];
+ if(!state)return;
+ const w=WORLDS.find(x=>x.id===state.id),i=state.stage,act=w.acts[i],total=w.acts.length;
+ const twist=i===1||i===3;
+ const sealed=twist&&!state.revealed[i]&&state.selected===null;
  const impact=state.selected!==null?act.choices[state.selected][1]:null;
- const choiceHTML=state.selected===null?
- '<div class="choices-label">'+E("choice")+'</div><div class="choices">'+act.choices.map((c,j)=>'<button class="choice" data-choice="'+j+'"><span class="choice-num">0'+(j+1)+'</span><strong>'+esc(tr(c[0]))+'</strong><span>↗</span></button>').join("")+'</div>':
- '<div class="impact"><span>'+E("consequence")+'</span><p>'+esc(tr(impact))+'</p><button class="big-btn" data-continue>'+E("next")+' →</button></div>';
- $("#game").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+E("home")+'</button><span>'+esc(tr(w.place))+'</span><span class="count">'+(i+1)+' / 3</span></div><div class="scene"><div class="scene-picture" data-phase="'+i+'">'+art(w.id)+'<button class="secret-pin '+(state.secret?"is-found":"")+'" aria-label="'+E("reveal")+'" title="'+E("secret")+'" data-secret>✦</button><div class="art-label"><span>'+esc(tr(w.tag))+'</span><h2>'+esc(tr(w.name))+'</h2></div></div><div class="scene-body"><div class="progress-track"><span style="width:'+Math.round(((i+1)/3)*100)+'%"></span></div><span class="scene-kicker">'+E("progress")+' '+String(i+1).padStart(2,"0")+' / 03</span><h2>'+esc(tr(act.title))+'</h2><p class="story-line">'+esc(tr(body))+'</p>'+(state.secret?'<div class="found-clue">✦ '+E("secretFound")+'</div>':'')+choiceHTML+'</div></div>';
- if(state.selected===null)track("chapter_view",{world:w.id,chapter:i+1});
+ const body=sceneBody(act,i);
+ const after=i===4?act.after?.[state.history[3]?.index??0]:null;
+ const showBody=sealed?labels.sealed:body;
+ const choices=sealed?'<div class="reveal-cta"><button class="big-btn" data-twist type="button">'+E("openTwist")+' ✧</button></div>':
+  state.selected===null?
+   '<div class="choices-label">'+E("choice")+'</div><div class="choices">'+act.choices.map((c,j)=>'<button type="button" class="choice" data-choice="'+j+'"><span class="choice-num">0'+(j+1)+'</span><strong>'+esc(tr(c[0]))+'</strong><span aria-hidden="true">↗</span></button>').join("")+'</div>':
+   '<div class="impact"><span>'+E("consequence")+'</span><p>'+esc(tr(impact))+'</p><button class="big-btn" type="button" data-continue>'+ (i===total-1?E("endingNext"):E("next")) +' →</button></div>';
+ const particles=twist?'<div class="surprise-particles" aria-hidden="true">'+Array.from({length:15},(_,n)=>'<i style="--n:'+n+';--x:'+Math.round(Math.cos(n*2.399)* (95+n*10))+'px;--y:'+Math.round(Math.sin(n*2.399)*(90+n*9))+'px"></i>').join("")+'</div>':'';
+ const cover=sealed?'<button type="button" class="twist-curtain" data-twist aria-label="'+E("openTwist")+'"><span class="curtain-eye">✧</span><small>'+E("shock")+'</small><strong>'+E("openTwist")+'</strong><span aria-hidden="true">↗</span></button>':'';
+ const subtitle=sealed?E("shock"):esc(tr(w.tag));
+ const title=sealed?E("shock"):esc(tr(w.name));
+ const audioControls=window.DreamAudio?.controls()||"";
+ $("#game").innerHTML='<div class="game-top"><button type="button" class="ghost-btn" data-home>← '+E("home")+'</button><span class="game-place">'+esc(tr(w.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / '+total+'</span>'+audioControls+'</div></div><div class="scene '+(twist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+w.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(w.id)+particles+(!sealed?'<button type="button" class="secret-pin '+(state.secret?"is-found":"")+'" aria-label="'+E("reveal")+'" title="'+E("secret")+'" data-secret>✦</button>':'')+'<div class="art-label"><span>'+subtitle+'</span><h2>'+title+'</h2></div>'+cover+'</div><div class="scene-body"><div class="progress-track" aria-hidden="true"><span style="width:'+Math.round(((i+1)/total)*100)+'%"></span></div><div class="moment-pips" aria-label="'+(lang==="zh"?"故事进度":"Story progress")+'">'+w.acts.map((_,n)=>'<span class="'+(n<i?"is-done":n===i?"is-current":"")+'"></span>').join("")+'</div><span class="scene-kicker">'+E("progress")+' '+String(i+1).padStart(2,"0")+' / '+String(total).padStart(2,"0")+'</span><h2>'+(sealed?E("shock"):esc(tr(act.title)))+'</h2><p class="story-line">'+esc(tr(showBody))+'</p>'+(after&&!sealed?'<p class="story-echo">'+esc(tr(after))+'</p>':'')+(state.secret?'<div class="found-clue">✦ '+E("secretFound")+'</div>':'')+choices+'</div></div>';
+ window.DreamAudio?.sync();
+ if(state.selected===null&&!state.seen[i]){
+  state.seen[i]=true;
+  track("chapter_view",{world:w.id,chapter:i+1});
+ }
+}
+function revealTwist(){
+ if(!state||![1,3].includes(state.stage)||state.revealed[state.stage])return;
+ state.revealed[state.stage]=true;
+ renderStage();
+ const scene=$("#game .scene");
+ scene?.classList.add("twist-burst");
+ window.DreamAudio?.fx("twist");
+ window.setTimeout(()=>scene?.classList.remove("twist-burst"),1450);
 }
 function makeChoice(n){
- if(!state||state.selected!==null||!Number.isInteger(n)||n<0||n>2)return;
+ if(!state||state.selected!==null||(!state.revealed[state.stage]&&[1,3].includes(state.stage))||!Number.isInteger(n)||n<0||n>2)return;
  state.selected=n;
  const w=WORLDS.find(x=>x.id===state.id);
  state.history.push({stage:state.stage,index:n});
  track("choice_made",{world:w.id,chapter:state.stage+1,choice:n+1,routeVector:state.history.map(x=>x.index+1).join("-")});
- track("chapter_completed",{world:w.id,chapter:state.stage+1});
+ track("chapter_completed",{world:w.id,chapter:state.stage+1});window.DreamAudio?.fx("select");
  renderStage();
 }
 function advance(){
  if(!state||state.selected===null)return;
- if(state.stage<2){state.stage++;state.selected=null;renderStage();window.scrollTo({top:0,behavior:"smooth"})}else finish();
+ if(state.stage<WORLDS.find(x=>x.id===state.id).acts.length-1){state.stage++;state.selected=null;renderStage();window.scrollTo({top:0,behavior:"instant"})}else finish();
 }
 function finish(){
  const w=WORLDS.find(x=>x.id===state.id);
  // Hidden ending requires noticing the artwork and choosing the mystery route at least once.
- const rare=state.secret&&state.history.some(x=>x.index===0);
- const n=rare?3:state.history[2].index;
+ const rare=state.secret&&state.history[3]?.index===0;
+ const n=rare?3:state.history[4].index;
  const ending=n===3?w.rare:w.endings[n],previous=Array.isArray(gallery[w.id])?gallery[w.id]:[];
  if(!previous.includes(n)){gallery[w.id]=[...previous,n];try{localStorage.setItem(COLL,JSON.stringify(gallery))}catch{}}
- if(!state.completed){track("life_completed",{world:w.id,routeVector:state.history.map(x=>x.index+1).join("-")});
+ if(!state.completed){window.DreamAudio?.fx("ending");track("life_completed",{world:w.id,routeVector:state.history.map(x=>x.index+1).join("-")});
  track("ending_view",{world:w.id,storyRoute:state.history[1].index,lifeDirection:n,routeVector:state.history.map(x=>x.index+1).join("-")});state.completed=true;}
  $("#game").hidden=true;$("#ending").hidden=false;
- $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+E("home")+'</button><span>'+esc(tr(w.place))+'</span><span>'+E("all")+' '+Object.values(gallery).flat().length+'/24</span></div><div class="ending-art">'+art(w.id)+'<span>'+E("collected")+'</span></div><div class="ending-paper"><span class="kicker">'+E("ending")+'</span><h1>'+esc(tr(ending[0]))+'</h1><p>'+esc(tr(ending[1]))+'</p><div class="footprints">'+state.history.map((d,j)=>'<span>'+esc(tr(w.acts[j].choices[d.index][0]))+'</span>').join('<b>→</b>')+'</div><div class="end-actions"><button class="big-btn" data-retry>'+E("restart")+' ↺</button><button class="outline-btn" data-random>'+E("another")+' ↗</button><button class="outline-btn" data-share>'+E("share")+'</button></div></div>';
- window.scrollTo({top:0,behavior:"smooth"});
+ $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+E("home")+'</button><span>'+esc(tr(w.place))+'</span><div class="game-tools"><span>'+E("all")+' '+Object.values(gallery).flat().length+'/24</span>'+(window.DreamAudio?.controls()||'')+'</div></div><div class="ending-art">'+art(w.id)+'<span>'+E("collected")+'</span></div><div class="ending-paper"><span class="kicker">'+E("ending")+'</span><h1>'+esc(tr(ending[0]))+'</h1><p>'+esc(tr(ending[1]))+'</p><p class="ending-echo">'+esc(tr(w.acts[3].choices[state.history[3].index][1]))+'</p><div class="footprints">'+state.history.map((d,j)=>'<span>'+esc(tr(w.acts[j].choices[d.index][0]))+'</span>').join('<b>→</b>')+'</div><div class="end-actions"><button class="big-btn" data-retry>'+E("restart")+' ↺</button><button class="outline-btn" data-random>'+E("another")+' ↗</button><button class="outline-btn" data-share>'+E("share")+'</button></div></div>';
+ window.DreamAudio?.sync();window.scrollTo({top:0,behavior:"instant"});
 }
 async function share(){
  if(!state)return;
- const w=WORLDS.find(x=>x.id===state.id),n=state.secret&&state.history.some(x=>x.index===0)?3:state.history[2].index;
+ const w=WORLDS.find(x=>x.id===state.id),n=state.secret&&state.history[3]?.index===0?3:state.history[4].index;
  const ending=n===3?w.rare:w.endings[n],url=location.origin+"/elsewhere/?world="+encodeURIComponent(w.id);
  const text=lang==="zh"?"我在《平行人生》活成了「"+tr(ending[0])+"」。如果是你，会走向什么结局？":'My alternate life in Elsewhere ended as "'+tr(ending[0])+'". What would yours be?';
  if(window.MorrowwishSocialShare?.open){window.MorrowwishSocialShare.open({title:lang==="zh"?"平行人生 · "+tr(ending[0]):"Elsewhere · "+tr(ending[0]),message:text,url,language:lang,meta:{game:"elsewhere",world:w.id},onShare:platform=>track("share_clicked",{world:w.id,platform})});return}
@@ -316,19 +356,20 @@ function setLanguage(l){
  });
  $(".brand").innerHTML=(l==="zh"?"平行人生":"Elsewhere")+"<i>.</i>";
  $(".top-right span").textContent=l==="zh"?"MORROW WISH · 梦幻人生":"A MORROW WISH ADVENTURE";
- $(".footer").textContent=l==="zh"?"平行人生 · MORROW WISH · 每段人生都有另一扇门":"ELSEWHERE · MORROW WISH · EVERY LIFE HAS ANOTHER DOOR";
- if(state){if($("#ending").hidden)renderStage();else finish()}else renderHome();
+ $(".footer-title").textContent=l==="zh"?"平行人生 · MORROW WISH · 每段人生都有另一扇门":"ELSEWHERE · MORROW WISH · EVERY LIFE HAS ANOTHER DOOR";
+ if(state){if($("#ending").hidden)renderStage();else finish()}else renderHome();window.DreamAudio?.sync();
 }
 document.addEventListener("click",e=>{
  const el=e.target.closest("button,a");if(!el)return;
- if(el.matches("[data-language]"))setLanguage(el.dataset.language);
+ if(el.matches("[data-twist]"))revealTwist();
+ else if(el.matches("[data-language]"))setLanguage(el.dataset.language);
  else if(el.matches("[data-world]"))openWorld(el.dataset.world);
  else if(el.matches("[data-random]"))randomWorld();
  else if(el.matches("[data-home]"))renderHome();
  else if(el.matches("[data-retry]"))openWorld(state.id,true);
  else if(el.matches("[data-choice]"))makeChoice(Number(el.dataset.choice));
  else if(el.matches("[data-continue]"))advance();
- else if(el.matches("[data-secret]")&&state&&!state.secret){state.secret=true;toast(tr(WORLDS.find(w=>w.id===state.id).secret));renderStage();}
+ else if(el.matches("[data-secret]")&&state&&!state.secret){state.secret=true;window.DreamAudio?.fx("secret");toast(tr(WORLDS.find(w=>w.id===state.id).secret));renderStage();}
  else if(el.matches("[data-share]"))share();
 });
 window.addEventListener("popstate",()=>{const id=new URLSearchParams(location.search).get("world");if(!id)renderHome();else if(!state||state.id!==id)openWorld(id,false,false)});
