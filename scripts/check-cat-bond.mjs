@@ -220,6 +220,26 @@ assert.ok(events.some(e=>e.name==='bond_collection_milestone'));
 delete State.S.dex['xiaohui'];State.S.coins=priorCoins;State.S.treats=priorTreats;
 State.S.collectionMilestones=priorMilestones;
 
+// Bonding milestones require actual affection interactions and only pay once.
+const oldPets=State.S.petCount,oldBond=State.S.bondingRewards?.slice()||[];
+const bondCoins=State.S.coins,bondTreats=State.S.treats;
+State.S.petCount=3;
+const bondRewards=game.grantBondingRewards();
+assert.equal(bondRewards.length,1,'Three real pet interactions grant first bonding reward');
+assert.equal(bondRewards[0].coins,35);
+assert.equal(State.S.coins,bondCoins+35);
+assert.equal(State.S.treats,bondTreats+2);
+assert.equal(game.grantBondingRewards().length,0,'Bonding milestone can only be claimed once');
+const adventure=game.adventureStatus();
+assert.ok(adventure.totalRegions>=5&&adventure.unlocked>=1,'Explore track uses real world unlocks');
+UI.openJourney();
+const journeyHTML=document.getElementById('panel').innerHTML;
+assert.ok(['journey-collect','journey-bond','journey-explore'].every(x=>journeyHTML.includes(x)),
+  'Adventures must offer collecting, bonding and exploration actions');
+UI.closeAll();
+State.S.petCount=oldPets;State.S.bondingRewards=oldBond;
+State.S.coins=bondCoins;State.S.treats=bondTreats;
+
 // ---- loss path fires game_over ----
 events.length = 0;
 const weak = State.makeCat('nainai', { affinity: 0 });

@@ -61,6 +61,13 @@
     '返回地图': 'Return to map',
     '回庭院': 'Back to yard',
     '🌿 院子里藏着一只野猫！点击发光的草丛找到它。': '🌿 A wild cat is hiding here! Tap the glowing bush to find it.',
+    // Battle mode and dodge: fully localized controls, including tooltips.
+    '自动控制移动、攻击、技能及闪避':'Automatically moves, attacks, uses skills and dodges',
+    '闪避伤害，短暂无敌（空格键）':'Dodge incoming damage with brief invincibility (Space)',
+    '🤖 自动战斗：关':'🤖 Auto Battle: OFF',
+    '🤖 自动战斗：开':'🤖 Auto Battle: ON',
+    '猫猫冒险手册':'Cat Adventure Guide',
+    '还有什么可以玩？':'What else can I do?',
     // ---- HUD / tab bar / yard actions ----
     '🏡 庭院': '🏡 Yard',
     '庭院': 'Yard',
