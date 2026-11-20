@@ -8,7 +8,33 @@
   if(!games.has(route))return;
   const root=document.documentElement;
   root.dataset.mwFullscreenGame=route;
-  let fallback=false,previousScroll=0,button=null,modeWasActive=false;
+  let fallback=false,previousScroll=0,button=null,modeWasActive=false,originalContainer=null;
+  const gameRegion=()=>{
+    const selector={
+      'pawsibly-innocent':'.board-layout',
+      'tiny-town':'.tt-playstage',
+      'cat-bond':'#stage',
+      'flip-dash':'.game-frame',
+      'parcel-panic':'.game-frame',
+      'pocket-aquarium':'body>main',
+      'elsewhere':'#play-view:not([hidden])'
+    }[route];
+    return document.querySelector(selector)||
+      document.querySelector(route==='elsewhere'?'.site-wrap':route==='tiny-town'?'.app':route==='pocket-aquarium'?'body>main':'.game-shell');
+  };
+  function placeToggle(inGame){
+    if(!button)return;
+    const region=gameRegion();
+    if(inGame&&region){
+      if(!originalContainer)originalContainer=button.parentElement;
+      region.classList.add('mw-fs-region');
+      region.appendChild(button);
+      button.classList.add('mw-fs-in-game');
+    }else{
+      button.classList.remove('mw-fs-in-game');
+      if(originalContainer?.isConnected)originalContainer.appendChild(button);
+    }
+  }
   const zh=()=>window.MorrowwishI18n?.get?.()==='zh'||root.lang.toLowerCase().startsWith('zh');
   const nativeActive=()=>!!document.fullscreenElement;
   const active=()=>fallback||nativeActive();
@@ -36,6 +62,7 @@
     }else if(!on&&modeWasActive){
       requestAnimationFrame(()=>window.scrollTo(0,previousScroll));
     }
+    if(!on&&button?.classList.contains('mw-fs-in-game'))placeToggle(false);
     if(on!==modeWasActive){
       modeWasActive=on;
       window.dispatchEvent(new Event('resize'));
@@ -44,14 +71,17 @@
   }
   async function enter(){
     previousScroll=window.scrollY;
-    if(typeof root.requestFullscreen==='function'){
+    const region=gameRegion();
+    if(!region)return;
+    placeToggle(true);
+    if(typeof region.requestFullscreen==='function'){
       try{
-        // Called from the user's click handler: retains browser gesture permission.
-        await root.requestFullscreen({navigationUI:'hide'});
+        // Fullscreen the actual play surface, NOT the entire website document.
+        await region.requestFullscreen({navigationUI:'hide'});
         fallback=false;
         sync();
         return;
-      }catch(_){ /* Mobile browsers can reject fullscreen despite exposing the API. */ }
+      }catch(_){ /* iOS Safari may reject even if it exposes the API. */ }
     }
     fallback=true;
     sync();
@@ -61,6 +91,7 @@
     if(nativeActive()){
       try{await document.exitFullscreen()}catch(_){}
     }
+    placeToggle(false);
     sync();
   }
   function style(){
@@ -68,6 +99,21 @@
     const node=document.createElement('style');
     node.id='mw-fullscreen-styles';
     node.textContent=`
+
+      /* Only the gameplay area gets the fullscreen presentation. The normal site design is untouched. */
+      .mw-fs-in-game{position:fixed!important;top:max(8px,env(safe-area-inset-top,0px))!important;right:max(8px,env(safe-area-inset-right,0px))!important;left:auto!important;bottom:auto!important;z-index:2147483000!important;opacity:.93}
+      .mw-fs-region:fullscreen{box-sizing:border-box;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:auto;overscroll-behavior:contain;border-radius:0!important;background:#f6f1eb}
+      html.mw-fs-active .mw-fs-region{position:fixed!important;inset:0!important;box-sizing:border-box;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;border-radius:0!important;overflow:auto;overscroll-behavior:contain;z-index:2147482000}
+      html.mw-fs-active[data-mw-fullscreen-game="cat-bond"] #stage,
+      html[data-mw-fullscreen-game="cat-bond"] #stage:fullscreen{background:#1b1026}
+      html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout{padding:58px 12px 20px;align-items:start;background:#fbf3ea}
+      html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .tt-playstage{padding:55px 12px 20px;background:#f7f3ed}
+      html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view{padding:58px 12px 24px;background:#fcf8f2}
+      html.mw-fs-active[data-mw-fullscreen-game="flip-dash"] .game-frame,
+      html.mw-fs-active[data-mw-fullscreen-game="parcel-panic"] .game-frame{display:grid;place-items:center;padding:54px 8px 12px;background:#1c1928}
+      html.mw-fs-active[data-mw-fullscreen-game="flip-dash"] .game-frame canvas,
+      html.mw-fs-active[data-mw-fullscreen-game="parcel-panic"] .game-frame canvas{height:auto!important;max-height:calc(100dvh - 90px);object-fit:contain}
+      html.mw-fs-active[data-mw-fullscreen-game="pocket-aquarium"] body>main{padding:54px 10px 25px;background:#fbf5ef}
       .mw-fullscreen-toggle{display:inline-flex;gap:5px;align-items:center;justify-content:center;min-height:44px;min-width:80px;padding:8px 12px;
         border:1px solid #b8a8ba;border-radius:999px;background:#fffaf7;color:#624d68;
         font:750 12px/1.1 system-ui,-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;cursor:pointer;touch-action:manipulation;z-index:50}
