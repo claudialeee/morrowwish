@@ -153,7 +153,7 @@ const steps=pathTo(h,target,true);s.humanFrom={...h};if(steps.length){s.human={.
 // Later levels make sight, shadows, boxes and yarn meaningful choices.
 function detectionLimit(){return s.index===0&&!daily?99:s.index>=4?2:3}
 function updateStealthHUD(){
- const hud=document.querySelector("#cgStealthHUD");if(!hud||!s)return;
+ const hud=document.querySelector?.("#cgStealthHUD");if(!hud||!s)return;
  const seen=s.exposure>0;
  hud.textContent=lang==="zh"?(seen?"被发现！快躲起来":"潜行中")+" · 小鱼 "+s.got+"/"+NEED
   :(seen?"SPOTTED — HIDE!":"SNEAK MODE")+" · FISH "+s.got+"/"+NEED;
