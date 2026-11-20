@@ -65,9 +65,10 @@ async function authenticated(page){
 async function readStage(p){return {path:new URL(p.url()).pathname,txt:mask(await body(p),2350),buttons:(await p.locator('button:visible').allTextContents().catch(()=>[])).map(x=>x.trim()).filter(Boolean).slice(-20)};}
 async function toDetails(page,ctx,id,log){
  await page.goto(ROOT+'/games/'+id,{waitUntil:'domcontentloaded',timeout:35000});
- await page.getByText(/Upload your game|Game details|QA Results/i).first().waitFor({timeout:15000}).catch(()=>{});
+ await page.getByText(/Upload your game|Game details|QA Results|Finalize submission/i).first().waitFor({timeout:15000}).catch(()=>{});
  await sleep(1300);
  let text=await body(page);
+ if(text.includes('Finalize submission')&&text.includes('Ready to submit?'))return page;
  if(text.includes('Game details') && text.includes('Cover images'))return page;
  if(!/Upload your game|Game name/.test(text))throw Error('Draft editing view unavailable: '+mask(text,250));
  const go=await button(page,'Go to QA');
@@ -244,12 +245,12 @@ async function finalSubmit(page,id,rec){
    rec.finalCheckboxLabels=descriptions;
    for(let i=0;i<descriptions.length;i++){
      const s=descriptions[i].toLowerCase();
-     if(/rights|terms of service|review|agree|acknowledge|confirm/.test(s)&&!(/pay|purchase|subscribe|billing|marketing opt.in/.test(s))){
+     if(/rights|terms|review|agree|acknowledge|confirm|appropriate for players aged 12\+|pegi 12/.test(s)&&!(/pay|purchase|subscribe|billing|marketing opt.in/.test(s))){
        await confirm.nth(i).evaluate(el=>{if(!el.checked)el.click()});
      }
    }
  }
- const btns=page.getByRole('button',{name:/^submit(?: game)?$|^submit for review$|^send to review$|^send to qa$/i});
+ const btns=page.getByRole('button',{name:/^submit(?: game)?$|^submit for approval$|^submit for review$|^send to review$|^send to qa$/i});
  rec.submitButtonCount=await btns.count();
  const submit=btns.last();
  if(!(await submit.count())||!(await submit.isEnabled().catch(()=>false))){
@@ -296,10 +297,11 @@ async function main(){
       if(url.origin!=='https://morrowwish.vercel.app'||url.pathname!==new URL(g.url).pathname||url.searchParams.get('utm_source')!=='crazygames'||url.searchParams.get('utm_medium')!=='portal')
         throw Error('Iframe URL/UTM does not match canonical catalog');
       rec.platformDraftId=ref;rec.stages=[];
-      const current=await toDetails(page,ctx,ref,rec.stages);rec.status='details-open';save();
-      await details(current,slug,rec);rec.status='ready-for-final-submit';save();
+      const current=await toDetails(page,ctx,ref,rec.stages);
+      if((await body(current)).includes('Finalize submission')){rec.status='ready-for-final-submit';rec.stages.push('existing-final-step');save();}
+      else{rec.status='details-open';save();await details(current,slug,rec);rec.status='ready-for-final-submit';save();}
       await finalSubmit(current,ref,rec);
-       if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_DIAGNOSTIC_FIRST_FAILURE '+JSON.stringify({network:rec.networkDiagnostics,form:rec.validationDiagnostics,stage:rec.finalStep})); break;}
+       if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_SUBMIT_BLOCKER '+JSON.stringify({slug,stage:rec.finalStep,checkboxes:rec.finalCheckboxLabels}));}
     }catch(e){rec.status='blocked';rec.reason=mask(e.message,270);}
     finally{rec.finishedAt=time();save();console.log(JSON.stringify({slug,status:rec.status,platformId:rec.platformId||null,reason:rec.reason||null,stages:rec.stages}));}
   }
