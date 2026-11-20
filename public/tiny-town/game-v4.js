@@ -54,7 +54,7 @@ function offers(){
  return [...new Set(related.concat(sample(available,S.seed+S.day*113)))].slice(0,3);
 }
 function newPairs(id,pos){return S.places.filter(p=>adjacent(pos,p.pos)).map(p=>pair(id,p.id)).filter(c=>c&&!S.found.some(f=>f.key===c.key));}
-function type(){const totals={cat:0,sky:0,party:0,art:0,calm:0};S.places.forEach(p=>totals[byId[p.id].vibe]+=2);S.found.forEach(f=>totals[f.vibe]+=4);if(S.peace<=2&&S.found.length)return 'chaos';return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0];}
+function type(){const totals={cat:0,sky:0,party:0,art:0,calm:0};S.places.forEach(p=>totals[byId[p.id].vibe]+=2);S.found.forEach(f=>totals[f.vibe]+=4);if(S.places.length)totals[byId[S.places[0].id].vibe]+=14;if(S.peace<=2&&S.found.length)return 'chaos';return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0];}
 function goal(){return S.found.length>=2&&S.peace>=3;}
 function translate(){document.querySelectorAll('[data-en][data-zh]').forEach(el=>el.textContent=t(el.dataset.en,el.dataset.zh));document.title=t('No More Mondays: Wish Cascade','自由小镇：愿望连锁反应');}
 function render(){
@@ -110,7 +110,7 @@ function place(pos){
   news('✨ '+matches.map(c=>c.en).join(' + ')+'!','✨ '+matches.map(c=>c.zh).join(' + ')+'！');
   send('town_combo_found',{week:S.day});
   if(S.found.length===matches.length)send('town_first-club');
-  overlays.push({kind:'combo',match:matches[0]});
+  if(S.found.length<=2)overlays.push({kind:'combo',match:matches[0]});
  }else news(card.icon+' '+card.en+' changed the town.','新愿望实现：'+card.zh+'。');
  if(S.found.length>=2&&!S.mutation){S.mutation=type();S.wonder+=20;overlays.push({kind:'mutation',type:S.mutation});send('town_city_mutation',{week:S.day});}
  if(S.day===3||S.day===5)overlays.push({kind:'event',day:S.day});
