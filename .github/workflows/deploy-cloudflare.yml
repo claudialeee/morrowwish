@@ -29,9 +29,10 @@ permissions:
 
 concurrency:
   group: morrowwish-cloudflare-pages-production
-  # A newer main commit supersedes queued or in-progress older deploys.
-  # Prevent stale source checks from producing failure notifications.
-  cancel-in-progress: true
+  # Finish the active deployment even when collaborators push at the same time.
+  # GitHub keeps only the newest pending run, which will deploy after this one.
+  # Avoid endless cancellation of slow installs and loss of release verification.
+  cancel-in-progress: false
 
 jobs:
   deploy:
