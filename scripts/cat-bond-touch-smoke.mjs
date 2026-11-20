@@ -98,6 +98,40 @@ try{
       failures.push(width+'px: '+e.message);console.error('CAT BOND PHONE FAIL',failures.at(-1));
     }finally{await context.close();}
   }
+  // Real landscape touch regression for the region camera.
+  const landscape=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+  const lp=await landscape.newPage();
+  try{
+    const errors=[];lp.on('pageerror',e=>errors.push(e.message));
+    await lp.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
+    await lp.locator('#intro-start').tap();
+    await lp.locator('#panel.open .dex-cell').first().tap();
+    await lp.locator('#fab-map').tap();
+    await lp.evaluate(()=>window.WorldMap.enterRegion('home'));
+    await lp.waitForTimeout(250);
+    const start=await lp.evaluate(()=>window.WorldMap.view);
+    const finger=async(type,x,y)=>{
+      await lp.evaluate(({type,x,y})=>{
+        const cv=document.querySelector('#scene'),r=cv.getBoundingClientRect();
+        const touch=new Touch({identifier:42,target:cv,clientX:r.left+x,clientY:r.top+y});
+        cv.dispatchEvent(new TouchEvent(type,{touches:type==='touchend'?[]:[touch],targetTouches:type==='touchend'?[]:[touch],changedTouches:[touch],bubbles:true,cancelable:true}));
+      },{type,x,y});
+    };
+    await finger('touchstart',680,195);await finger('touchend',680,195);
+    await lp.waitForTimeout(300);
+    const walked=await lp.evaluate(()=>window.WorldMap.view);
+    assert.ok(walked.px>start.px+8,'Tap did not move the cat: '+JSON.stringify({start,walked}));
+    await finger('touchstart',650,180);
+    await finger('touchmove',520,180);
+    await finger('touchmove',400,180);
+    await finger('touchend',400,180);
+    const result=await lp.evaluate(()=>({mode:window.WorldMap.mode,view:window.WorldMap.view}));
+    assert.equal(result.mode,'region','Drag accidentally exited grass region');
+    assert.ok(result.view.panMode&&result.view.camX>walked.camX+50,'Background camera failed to pan: '+JSON.stringify({walked,result}));
+    assert.deepEqual(errors,[],'Landscape page errors: '+errors.join(' | '));
+    console.log('CAT BOND LANDSCAPE PASS: tap walk, drag grass, responsive controls');
+  }catch(e){failures.push('landscape: '+e.message);console.error('CAT BOND LANDSCAPE FAIL',failures.at(-1))}
+  finally{await landscape.close()}
 }finally{await browser.close();}
 if(failures.length){console.error(failures.join('\n'));process.exitCode=1}
 else console.log('Cat Bond passes two phone sizes and gameplay-only fullscreen test.');

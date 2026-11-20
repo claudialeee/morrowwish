@@ -312,8 +312,18 @@
 
   function setDestination(sx,sy){
     if(mode!=='region'||!world||!game)return false;
+    world.panMode=false;
     world.target={x:Math.max(60,Math.min(WORLD_W-60,world.cam.x+sx)),
       y:Math.max(60,Math.min(WORLD_H-60,world.cam.y+sy))};
+    return true;
+  }
+
+  // Physically pan the 1800x1300 meadow; stop following the avatar until tapped.
+  function panBy(dx,dy){
+    if(mode!=='region'||!world||!game)return false;
+    world.panMode=true;world.target=null;world.pvx=0;world.pvy=0;world.moving=false;
+    world.cam.x=Math.max(0,Math.min(Math.max(0,WORLD_W-game.W),world.cam.x-dx));
+    world.cam.y=Math.max(0,Math.min(Math.max(0,WORLD_H-game.H),world.cam.y-dy));
     return true;
   }
 
@@ -354,12 +364,14 @@
     w.px = Math.max(60, Math.min(WORLD_W - 60, w.px + w.pvx * dt));
     w.py = Math.max(60, Math.min(WORLD_H - 60, w.py + w.pvy * dt));
 
-    // ---- camera follows, clamped to world ----
-    var tx = w.px - game.W / 2, ty = w.py - game.H / 2;
-    w.cam.x += (tx - w.cam.x) * Math.min(1, dt * 6);
-    w.cam.y += (ty - w.cam.y) * Math.min(1, dt * 6);
-    w.cam.x = Math.max(0, Math.min(WORLD_W - game.W, w.cam.x));
-    w.cam.y = Math.max(0, Math.min(WORLD_H - game.H, w.cam.y));
+    // Dragging locks the view. Walking resumes smooth follow.
+    if(!w.panMode){
+      var tx = w.px - game.W / 2, ty = w.py - game.H / 2;
+      w.cam.x += (tx - w.cam.x) * Math.min(1, dt * 6);
+      w.cam.y += (ty - w.cam.y) * Math.min(1, dt * 6);
+    }
+    w.cam.x = Math.max(0, Math.min(Math.max(0,WORLD_W - game.W), w.cam.x));
+    w.cam.y = Math.max(0, Math.min(Math.max(0,WORLD_H - game.H), w.cam.y));
 
     // ---- fog-of-exploration: mark the grid cell under the player ----
     var gx = Math.floor((w.px / WORLD_W) * GRID_C);
@@ -436,6 +448,13 @@
   // ================================================================
   // INPUT (map-view clicks; region taps for portal convenience)
   // ================================================================
+  function backBounds(){
+    var compact=game&&game.isTouch&&game.W>game.H&&game.H<520;
+    return {x:compact?64:20,y:game.H-(compact?50:56),w:compact?100:128,h:compact?36:40};
+  }
+  function inBackButton(x,y){
+    var b=backBounds();return x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h;
+  }
   function handleTap(x, y) {
     if (mode === 'map') {
       for (var i = 0; i < mapNodes.length; i++) {
@@ -447,16 +466,14 @@
         }
       }
       // tap the back-to-yard button (bottom-left) to leave the overworld
-      if (x >= 20 && x <= 148 && y >= game.H - 56 && y <= game.H - 16) { if (cbExit) cbExit(); return true; }
+      if (inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
       return false;
     }
     // region mode: tapping near the portal glyph returns to the node map
     if (world) {
       var sx = world.portal.x - world.cam.x, sy = world.portal.y - world.cam.y;
-      if (Math.hypot(x - sx, y - sy) < 60) { enterMap(); return true; }
-      // bottom-left "回地图" button
-      if (x >= 20 && x <= 148 && y >= game.H - 56 && y <= game.H - 16) { enterMap(); return true; }
-      if (x < 110 && y < 56) { enterMap(); return true; }
+      if (Math.hypot(x - sx, y - sy) < 34) { enterMap(); return true; }
+      if (inBackButton(x,y)) { enterMap(); return true; }
     }
     return false;
   }
@@ -572,7 +589,7 @@
     }
 
     // back-to-yard button (bottom-left, clear of the HUD pills)
-    var bbx = 20, bby = game.H - 56, bbw = 128, bbh = 40;
+    var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
     ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
     ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -595,7 +612,7 @@
 
     // The explored regions share the illustrated garden art, with region-specific
     // tint; retain the original thematic fallback for unsupported browsers.
-    var scenic=window.CatBondScenery&&CatBondScenery.drawRegion(ctx,W,H,t,th);
+    var scenic=window.CatBondScenery&&CatBondScenery.drawRegion(ctx,W,H,t,th,cam,{width:WORLD_W,height:WORLD_H});
     if(!scenic){
     // sky gradient (fixed to screen)
     var sky = ctx.createLinearGradient(0, 0, 0, H);
@@ -672,23 +689,14 @@
     }
 
     drawRegionHUD(ctx);
-    if(game.isTouch){
-      var joy=game.joystick;
+    if(game.isTouch&&w.t<12){
       ctx.save();
-      if(joy&&joy.active&&joy.context==='region'){
-        ctx.lineWidth=2;ctx.strokeStyle='rgba(255,251,239,.92)';
-        ctx.fillStyle='rgba(76,102,77,.25)';
-        ctx.beginPath();ctx.arc(joy.ox,joy.oy,46,0,Math.PI*2);ctx.fill();ctx.stroke();
-        ctx.fillStyle='rgba(255,251,239,.95)';
-        ctx.beginPath();ctx.arc(joy.ox+joy.dx*46,joy.oy+joy.dy*46,17,0,Math.PI*2);ctx.fill();
-      }else if(w.t<12){
-        const hint='按住拖动移动猫咪 · 轻点地面自动前往';
-        ctx.font='700 12px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-        const hw=Math.min(W-16,ctx.measureText(hint).width+24),hx=W/2,hy=Math.max(95,H-94);
-        ctx.fillStyle='rgba(255,252,242,.9)';
-        roundRect(ctx,hx-hw/2,hy-14,hw,29,13);ctx.fill();
-        ctx.fillStyle='#516754';ctx.fillText(hint,hx,hy,Math.max(50,hw-14));
-      }
+      const hint='轻点草坪让猫咪前往 · 拖动草坪查看周围';
+      ctx.font='700 12px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      const hw=Math.min(W-16,ctx.measureText(hint).width+24),hx=W/2,hy=Math.max(95,H-74);
+      ctx.fillStyle='rgba(255,252,242,.92)';
+      roundRect(ctx,hx-hw/2,hy-14,hw,29,13);ctx.fill();
+      ctx.fillStyle='#516754';ctx.fillText(hint,hx,hy,Math.max(50,hw-14));
       ctx.restore();
     }
   }
@@ -716,32 +724,32 @@
   function drawRegionHUD(ctx) {
     var W = game.W, w = world;
     var prog = ensureSave().regions[w.region.id];
-    // top banner
+    // Compact safe-side HUD for landscape phone screens.
+    var compact=game.isTouch&&W>game.H&&game.H<520;
+    var hx=compact?64:12,hy=compact?8:14,hw=compact?180:220,hh=compact?46:56;
     ctx.fillStyle = 'rgba(27,16,38,0.6)';
-    roundRect(ctx, 12, 14, 220, 56, 12); ctx.fill();
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.font = '700 18px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText(w.region.name, 24, 22);
-    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = w.region.theme.accent;
-    ctx.fillText(w.region.sub + ' · ' + '★'.repeat(w.region.difficulty), 24, 44);
-
-    // explored bar
-    var bx = 24, by = 78, bw = 196;
+    roundRect(ctx,hx,hy,hw,hh,12);ctx.fill();
+    ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.font=compact?'700 14px system-ui,sans-serif':'700 18px system-ui,sans-serif';ctx.fillStyle='#fff';
+    ctx.fillText(w.region.name,hx+12,hy+6);
+    ctx.font=compact?'10px system-ui,sans-serif':'12px system-ui,sans-serif';ctx.fillStyle=w.region.theme.accent;
+    ctx.fillText(w.region.sub+' · '+'★'.repeat(w.region.difficulty),hx+12,hy+(compact?28:30),hw-20);
+    var bx=hx+12,by=hy+hh+8,bw=hw-24;
     ctx.fillStyle = 'rgba(0,0,0,0.4)'; roundRect(ctx, bx, by, bw, 10, 5); ctx.fill();
     ctx.fillStyle = w.region.theme.accent;
     roundRect(ctx, bx, by, bw * Math.max(0, Math.min(1, prog.explored)), 10, 5); ctx.fill();
     ctx.font = '11px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
     ctx.fillText('探索度 ' + Math.round(prog.explored * 100) + '%', bx, by + 14);
 
-    // control hint (bottom center)
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(27,16,38,0.6)';
-    roundRect(ctx, W / 2 - 170, game.H - 46, 340, 32, 10); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '13px system-ui, sans-serif';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('WASD/方向键移动 · 靠近🐾遇敌 · 走到🏠返回地图', W / 2, game.H - 30);
+    // Keyboard help is not useful on phones and overlapped the controls.
+    if(!game.isTouch&&game.H>=530){
+      ctx.textAlign='center';ctx.fillStyle='rgba(27,16,38,0.6)';
+      roundRect(ctx,W/2-170,game.H-46,340,32,10);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='13px system-ui,sans-serif';ctx.textBaseline='middle';
+      ctx.fillText('WASD/方向键移动 · 靠近🐾遇敌 · 走到🏠返回地图',W/2,game.H-30);
+    }
     // back-to-map button (bottom-left)
-    var bbx = 20, bby = game.H - 56, bbw = 128, bbh = 40;
+    var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
     ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
     ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -761,6 +769,8 @@
     draw: draw,
     handleTap: handleTap,
     setDestination: setDestination,
+    panBy: panBy,
+    get view(){return world&&{camX:world.cam.x,camY:world.cam.y,px:world.px,py:world.py,panMode:!!world.panMode,target:!!world.target};},
     onEncounter: onEncounter,
     onCollect: onCollect,
     onExit: onExit,

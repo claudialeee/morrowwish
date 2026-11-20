@@ -66,8 +66,13 @@
     petals(ctx,W,H,t,16);
     return true;
   }
-  function drawRegion(ctx,W,H,t,theme){
-    if(!cover(ctx,W,H))fallback(ctx,W,H,t);
+  function drawRegion(ctx,W,H,t,theme,cam,worldSize){
+    // The painted garden must move with the game world, not the phone screen.
+    if(cam&&worldSize){
+      ctx.save();ctx.translate(-cam.x,-cam.y);
+      if(!cover(ctx,worldSize.width,worldSize.height))fallback(ctx,worldSize.width,worldSize.height,t);
+      ctx.restore();
+    }else if(!cover(ctx,W,H))fallback(ctx,W,H,t);
     const faded=ctx.createLinearGradient(0,0,0,H);
     faded.addColorStop(0,'rgba(237,226,214,.08)');
     faded.addColorStop(1,'rgba(128,160,125,.08)');

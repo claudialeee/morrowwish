@@ -25,6 +25,7 @@ class Game {
     this.isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     // virtual joystick (battle movement on touch): {active, ox,oy, dx,dy}
     this.joystick = { active: false, ox: 0, oy: 0, dx: 0, dy: 0, id: null };
+    this._worldTouch = null; // map: tap to walk / drag to pan
     this.resize();
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
@@ -49,6 +50,7 @@ class Game {
       this.battle?.onResize?.(this.W,this.H);
       this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};
       this._worldTapCandidate=null;
+      this._worldTouch=null;
     }
   }
 
@@ -86,12 +88,14 @@ class Game {
 
   openWorldMap() {
     this.scene = 'map';
+    document.body.classList.add('cb-exploring');
     document.getElementById('tabbar').classList.add('hidden');
     document.getElementById('hud').classList.add('hidden');
     document.getElementById('yard-actions').classList.add('hidden');
     WorldMap.enterMap();
   }
   showYardChrome() {
+    document.body.classList.remove('cb-exploring');
     document.getElementById('yard-actions').classList.remove('hidden');
     document.getElementById('tabbar').classList.remove('hidden');
     document.getElementById('hud').classList.remove('hidden');
@@ -180,12 +184,11 @@ class Game {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
           if (this.scene === 'yard') this.yardTap(p.x, p.y);
           else if (this.scene === 'map' && window.WorldMap) {
-            const wasRegion=WorldMap.mode==='region';
-            const handled=WorldMap.handleTap(p.x,p.y);
-            if(wasRegion&&!handled&&!this.joystick.active){
-              this.joystick={active:true,ox:p.x,oy:p.y,dx:0,dy:0,id:t.identifier,context:'region'};
-              this._worldTapCandidate={id:t.identifier,moved:false};
-            }
+            if(WorldMap.mode==='region'){
+              // Handle taps on release so dragging near the portal does not exit.
+              if(!this._worldTouch)
+                this._worldTouch={id:t.identifier,x:p.x,y:p.y,lastX:p.x,lastY:p.y,moved:false};
+            }else WorldMap.handleTap(p.x,p.y);
           }
         }
       }
@@ -194,7 +197,14 @@ class Game {
       e.preventDefault();
       for (const t of e.changedTouches) {
         const p = touchPos(t);
-        if (this.joystick.active && t.identifier === this.joystick.id) {
+        if(this.scene==='map'&&this._worldTouch?.id===t.identifier){
+          const touch=this._worldTouch;
+          if(Math.hypot(p.x-touch.x,p.y-touch.y)>10)touch.moved=true;
+          if(touch.moved&&window.WorldMap?.mode==='region')
+            WorldMap.panBy(p.x-touch.lastX,p.y-touch.lastY);
+          touch.lastX=p.x;touch.lastY=p.y;
+          this.mouse.x=p.x;this.mouse.y=p.y;this.mouse.active=true;
+        }else if (this.joystick.active && t.identifier === this.joystick.id) {
           let dx = p.x - this.joystick.ox, dy = p.y - this.joystick.oy;
           const len = Math.hypot(dx, dy), max = 46;
           if (len > max) { dx = dx / len * max; dy = dy / len * max; }
@@ -210,6 +220,14 @@ class Game {
     }, { passive: false });
     const endTouch = e => {
       for (const t of e.changedTouches) {
+        if(this._worldTouch?.id===t.identifier){
+          if(e.type==='touchend'&&this.scene==='map'&&window.WorldMap?.mode==='region'&&!this._worldTouch.moved){
+            const p=touchPos(t);
+            if(!WorldMap.handleTap(p.x,p.y)&&WorldMap.mode==='region')
+              WorldMap.setDestination(p.x,p.y);
+          }
+          this._worldTouch=null;
+        }
         if(t.identifier===this.joystick.id){
           if(e.type==='touchend'&&this.joystick.context==='region'&&!this._worldTapCandidate?.moved&&this.scene==='map'&&window.WorldMap?.mode==='region'){
             const p=touchPos(t);WorldMap.setDestination(p.x,p.y);
@@ -321,6 +339,7 @@ class Game {
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
+    document.body.classList.remove('cb-exploring');
     // Unified Morrow Wish analytics: a capture battle is a game "run". If the
     // previous run ended in a loss, count this fresh attempt as a retry too.
     if (this._lastBattleLost) { metric('game_retry', { rarity: wildSpecies.rarity }); this._lastBattleLost = false; }
@@ -437,6 +456,7 @@ class Game {
     this._returnScene = null;
     if (backToMap) {
       this.scene = 'map';
+      document.body.classList.add('cb-exploring');
       WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
       document.getElementById('tabbar').classList.remove('hidden');

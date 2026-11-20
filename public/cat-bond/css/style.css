@@ -686,3 +686,11 @@ html,body{background:#eaf1e8;color:var(--text)}
  #battle-ui .move-bar{bottom:6px}
  #battle-ui .move{width:47px;height:47px}
 }
+
+/* Keep landscape meadow controls clear of links and side safe-area notches. */
+@media (orientation:landscape) and (max-height:520px) {
+  body.cb-exploring .cb-home,
+  body.cb-exploring .mw-language-float,
+  body.cb-exploring .mw-audio-fixed { display:none!important; }
+  #game-root,#stage { width:100vw;height:100dvh; }
+}
