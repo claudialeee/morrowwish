@@ -68,6 +68,7 @@ async function toDetails(page,ctx,id,log){
  await page.getByText(/Upload your game|Game details|QA Results|Finalize submission/i).first().waitFor({timeout:15000}).catch(()=>{});
  await sleep(1300);
  let text=await body(page);
+ if(/You already have a game waiting for review/i.test(text))throw Error('CRAZYGAMES_REVIEW_SLOT_OCCUPIED');
  if(text.includes('Finalize submission')&&text.includes('Ready to submit?'))return page;
  if(text.includes('Game details') && text.includes('Cover images'))return page;
  if(!/Upload your game|Game name/.test(text))throw Error('Draft editing view unavailable: '+mask(text,1500));
@@ -304,8 +305,14 @@ async function main(){
       else{rec.status='details-open';save();await details(current,slug,rec);rec.status='ready-for-final-submit';save();}
       await finalSubmit(current,ref,rec);
        if(rec.status==='final-step-incomplete'){console.log('CRAZYGAMES_SUBMIT_BLOCKER '+JSON.stringify({slug,stage:rec.finalStep,checkboxes:rec.finalCheckboxLabels}));}
-    }catch(e){rec.status='blocked';rec.reason=mask(e.message,2000);}
+    }catch(e){
+      if(e.message==='CRAZYGAMES_REVIEW_SLOT_OCCUPIED'){
+        rec.status='waiting-platform-review';
+        rec.reason='CrazyGames permits only one game awaiting review; the existing pending game must be reviewed before another submission.';
+      } else {rec.status='blocked';rec.reason=mask(e.message,2000);}
+    }
     finally{rec.finishedAt=time();save();console.log(JSON.stringify({slug,status:rec.status,platformId:rec.platformId||null,reason:rec.reason||null,stages:rec.stages}));}
+    if(rec.status==='waiting-platform-review')break;
   }
   await ctx.close();
  }finally {await browser.close();}
