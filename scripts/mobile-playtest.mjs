@@ -37,6 +37,11 @@ try{
         }
         assert.ok(metrics.scrollWidth<=metrics.width+3,game.slug+' has horizontal overflow at '+width+'px: '+JSON.stringify(metrics));
         assert.ok(metrics.buttons>0,game.slug+' has no usable buttons');
+        const dock=page.locator('#mw-audio-dock');
+        assert.equal(await dock.count(),1,game.slug+' missing unified audio controls');
+        assert.equal(await dock.locator('button').count(),2,game.slug+' should offer music and sound switches');
+        const audioBox=await dock.boundingBox();
+        assert.ok(audioBox&&audioBox.x+audioBox.width<=width+3,game.slug+' audio controls overflow the phone');
         if(width!==390)continue;
         if(game.slug==='flip-dash'||game.slug==='parcel-panic'){
           const play=page.locator('#play-btn');assert.equal(await play.isVisible(),true,'PLAY NOW clipped');
@@ -67,8 +72,13 @@ try{
           assert.ok(positions.toolBottom<positions.boardTop,'Yarn button must appear above board');
           assert.ok(positions.toolH>=44,'Yarn button touch target too small');
           await button.tap();
+          assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Tapping the yarn button must enter aiming mode');
+          const b=await page.locator('#board').boundingBox();
+          await page.touchscreen.tap(b.x+b.width*8.5/10,b.y+b.height*4.5/7);
           const yarn=await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.yarn);
-          assert.equal(yarn,0,'Tapping yarn button must throw the starting yarn');
+          assert.equal(yarn,0,'Tapping the desired landing tile must throw the starting yarn');
+          assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.noise?.x),8,'Yarn must go to the tapped lane');
+          assert.equal(await page.locator('[data-move]').count(),0,'On-screen D-pad should be removed');
         }else if(game.slug==='elsewhere'){
           const start=page.locator('[data-random-world]').first();
           assert.equal(await start.isVisible(),true,'Story start not visible');
