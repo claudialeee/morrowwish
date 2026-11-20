@@ -227,6 +227,24 @@ try{
                  visibleMenuText:safe(await page.locator('body').innerText().catch(()=>'' )).slice(-1600),
                  inputFields:await inspectFields(page)
                };
+               // The portal uses a custom engine-select control. Clicking the
+               // visible "Select" text bubbles through its React button wrapper.
+               const selectText=page.getByText('Select',{exact:true}).first();
+               if(await selectText.count())await selectText.evaluate(el=>el.click()).catch(()=>{});
+               await page.waitForTimeout(500);
+               const options=await page.locator('[role="option"],[role="menuitem"],li').allTextContents().catch(()=>[]);
+               report.submissionForm.uploadProbe.afterOpenOptions=options.map(t=>safe(t.trim())).filter(Boolean).slice(0,30);
+               report.submissionForm.uploadProbe.afterOpenText=safe(await page.locator('body').innerText().catch(()=>'' )).slice(-1400);
+               const html5=page.getByRole('option',{name:/^html5$/i}).first();
+               const fallback=page.getByText('HTML5',{exact:true}).first();
+               const target=await html5.count()?html5:fallback;
+               if(await target.count()&&await target.isVisible().catch(()=>false)){
+                 await target.evaluate(el=>el.click());
+                 await page.waitForTimeout(450);
+                 report.submissionForm.uploadProbe.selectedEngine='HTML5';
+                 report.submissionForm.uploadProbe.afterSelect=safe(await page.locator('main').innerText().catch(()=>'' )).slice(-1100);
+               }
+
              }
            }
 
