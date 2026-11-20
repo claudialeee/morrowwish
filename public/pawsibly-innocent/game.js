@@ -225,7 +225,7 @@ function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();
  renderCollections();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+NEED;$("meterFill").style.width=100*s.got/NEED+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+NEED+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
 function neighbors(p){return[[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).filter(q=>q.x>=0&&q.x<W&&q.y>=0&&q.y<H);}
 function pass(p,human=false){if(!p||p.x<0||p.y<0||p.x>=W||p.y>=H)return false;const t=s.grid[p.y][p.x];if(t==="#"||t==="S")return false;if(human&&(t==="E"||s.boxes.some(b=>equal(b,p))))return false;if(!human&&((s.vacuum&&equal(p,s.vacuum))||equal(p,s.human)))return false;return true}
-function pathTo(from,to,human=false){if(equal(from,to))return[];const q=[from],seen=new Set([key(from)]),prev=new Map();for(let i=0;i<q.length;i++){const p=q[i];if(equal(p,to)){const result=[];let t=key(p);while(t!==key(from)){const next=prev.get(t);result.unshift({x:Number(t.split(",")[0]),y:Number(t.split(",")[1])});t=next}return result}for(const n of neighbors(p)){if(!pass(n,human)||seen.has(key(n)))continue;seen.add(key(n));prev.set(key(n),key(p));q.push(n)}}return[]}
+function pathTo(from,to,human=false,avoidCat=false){if(equal(from,to))return[];const q=[from],seen=new Set([key(from)]),prev=new Map();for(let i=0;i<q.length;i++){const p=q[i];if(equal(p,to)){const result=[];let t=key(p);while(t!==key(from)){const next=prev.get(t);result.unshift({x:Number(t.split(",")[0]),y:Number(t.split(",")[1])});t=next}return result}for(const n of neighbors(p)){if(!pass(n,human)||(avoidCat&&equal(n,s.cat))||seen.has(key(n)))continue;seen.add(key(n));prev.set(key(n),key(p));q.push(n)}}return[]}
 // Click-to-move favors hiding and quiet routes. Manual arrows can still choose risky shortcuts.
 // A simple costed search is enough for the 10x7 grid and runs only when a target is tapped.
 function catPathTo(from,to){
@@ -263,7 +263,7 @@ function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
  aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
  if(aimingYarn)for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-  const p={x,y};if(pass(p,true)&&!equal(p,s.human)&&!equal(p,s.cat)&&pathTo(s.human,p,true).length>0)yarnTargets.add(key(p));
+  const p={x,y};if(pass(p,true)&&!equal(p,s.human)&&!equal(p,s.cat)&&pathTo(s.human,p,true,true).length>0)yarnTargets.add(key(p));
  }
  $("stage").classList.toggle("yarn-aiming",aimingYarn);
  if($("yarnAimBanner"))$("yarnAimBanner").hidden=!aimingYarn;
@@ -345,7 +345,7 @@ function guardMove(){
   target={x:stops[s.patrol][0],y:stops[s.patrol][1]};s.guardMode="patrol";
  }
  s.guardTarget={...target};
- const steps=pathTo(h,target,true);s.humanFrom={...h};
+ const steps=pathTo(h,target,true,s.guardMode==="investigate");s.humanFrom={...h};
  if(steps.length){
   if(equal(steps[0],s.cat)&&(s.guardMode==="investigate"||(s.exposure===0&&!s.finalAlert))){
    if(s.guardMode==="investigate")return;
@@ -503,7 +503,7 @@ if(s.throwTrail&&time-s.throwTrail.at<950){const from=s.throwTrail.from,to=s.thr
  yarnDraw(x,y,time);ctx.save();ctx.globalAlpha=.28;ctx.strokeStyle="#c785bc";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo((sx+ex)/2,(sy+ey)/2-110,ex,ey);ctx.stroke();ctx.restore();
 }
 if(s.guardTarget&&!equal(s.guardTarget,s.human)&&!["sleep","distracted"].includes(s.guardMode)){
- const pursuit=pathTo(s.human,s.guardTarget,true).slice(0,5);
+ const pursuit=pathTo(s.human,s.guardTarget,true,s.guardMode==="investigate").slice(0,5);
  const tint=s.guardMode==="investigate"?"#a779d0aa":(s.guardMode==="chase"||s.guardMode==="search"?"#e76c81aa":"#67b7b1aa");
  pursuit.forEach((p,i)=>{shape((p.x+.5)*T,(p.y+.5)*T,Math.max(4,9-i),tint)});
 }
