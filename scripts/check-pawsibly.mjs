@@ -62,20 +62,30 @@ const stationaryCat={...test.getState().cat};
 const original=test.getState().yarn;
 test.throwYarn();
 assert.equal(test.isAiming(),true,'Pressing yarn should enter aim mode');
-assert.equal(test.getState().yarn,original,'Aiming must not consume the yarn');
-assert.equal(test.throwYarnTo({x:8,y:4}),true,'Player can choose a reachable landing tile');
-assert.equal(test.getState().yarn,original-1);
-assert.deepEqual(JSON.parse(JSON.stringify(test.getState().noise)),{x:8,y:4});
-assert.notDeepEqual(JSON.parse(JSON.stringify(test.getState().human)),startingHuman,'Human must react in the same frame as yarn throw');
-assert.equal(test.isChasing(),false,'Turn-based chase must never run an uncontrolled real-time timer');
-const afterYarn={...test.getState().human};
+assert.equal(test.getState().yarn,original,'Aiming must not consume yarn');
+const target={x:8,y:1};
+assert.equal(test.throwYarnTo(target),true,'Yarn should be throwable into reachable open space');
+assert.equal(test.getState().yarn,original-1,'The throw costs one yarn');
+assert.notDeepEqual(JSON.parse(JSON.stringify(test.getState().human)),startingHuman,'Human must visibly move at once');
+assert.equal(test.isChasing(),true,'Human should be actively walking toward distant yarn');
+assert.equal(test.getState().guardMode,'investigate','Human should investigate yarn, not silently chase the cat');
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().cat)),stationaryCat,'Throwing yarn must not move the cat');
+let guardSteps=1;
+while(test.isChasing()&&guardSteps++<25){
+ for(const [id,fn] of [...pendingIntervals.entries()])if(pendingIntervals.has(id))fn();
+}
+assert.equal(test.isChasing(),false,'Investigation should finish rather than running forever');
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),target,'Owner must actually reach the yarn target');
+assert.equal(test.getState().distractionTurns,4,'Yarn should grant four distracted player steps');
+assert.equal(test.getState().guardMode,'distracted','Owner state should explain why they are stationary');
+assert.ok(guardSteps>2,'Human must take several visible steps toward yarn');
+assert.equal(test.getState().yarnAnimating,false,'Control should return to the cat after investigation');
+assert.equal(JSON.parse(saved['pawsibly-innocent-save-v1']||'{}').achievements?.['yarn-lure'],true,
+ 'Successfully distracting the owner should unlock a real persistent achievement');
 test.move(0,-1);
-assert.deepEqual(JSON.parse(JSON.stringify(test.getState().cat)),{x:1,y:2},'Cat moves one tile');
-assert.notDeepEqual(JSON.parse(JSON.stringify(test.getState().human)),afterYarn,'Human must take a step with every cat move');
-const afterStep={...test.getState().human};
-assert.ok(Math.abs(afterStep.x-8)+Math.abs(afterStep.y-4) < Math.abs(afterYarn.x-8)+Math.abs(afterYarn.y-4),'Human follows the yarn target while the cat moves');
-assert.equal(test.isChasing(),false,'One cat action must never start a forced fast chase');
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),target,'Distracted human must stay at the yarn for several player steps');
+assert.equal(test.getState().distractionTurns,3,'Lure pause must consume one step at a time');
+assert.equal(test.getState().cat.y,2,'The player can sneak past while the guard is distracted');
 test.choose(0,false);
 // Exercise an intentional stealth route, not a nearest-fish bot that walks straight into the guard.
 // Players can clear room one without yarn or purchased cat powers, and may topple its vase for a bonus.
@@ -115,4 +125,10 @@ for(const p of [{x:2,y:4},{x:6,y:5},{x:9,y:5},{x:9,y:6}]){
 }
 assert.equal(test.getState().winning,true,'Kitchen must be playable by following a short, intuitive route');
 assert.equal(test.getState().lives,3,'Early kitchen should not punish an ordinary path with an unfair capture');
-console.log('Pawsibly Innocent: QA review checks passed (8 rooms, first-two-room playability, distinct stealth mechanics, iframe UI, and analytics).');
+assert.ok(source.includes('const RELICS=[')&&source.includes('const BADGES=['),
+ 'Named souvenirs and persistent achievements must remain wired');
+assert.ok(reviewStyle.includes('id="achievementCount"')&&reviewStyle.includes('id="relicGallery"')&&reviewStyle.includes('id="guardIntent"'),
+ 'The game must show collectible names, earned badges and the owner state');
+assert.ok(!reviewStyle.includes('<section class="explainer"'),
+ 'The duplicate how-to-play section must not reappear below the game');
+console.log('Pawsibly Innocent: QA PASS (8 rooms, real multi-step yarn lure, persistent achievements, named collectibles, compact UI, first-two-room playability).');
