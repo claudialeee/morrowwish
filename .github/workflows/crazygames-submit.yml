@@ -1,16 +1,9 @@
 name: Submit all six Morrow Wish games to CrazyGames (live iframe)
 
+# QA hold: Do NOT auto-submit new or rejected builds until a human confirms the
+# gameplay quality checklist has passed. Explicit workflow_dispatch only.
 on:
   workflow_dispatch:
-  schedule:
-    # CrazyGames allows only one game awaiting review at a time.
-    # Retry the remaining saved drafts as soon as the review slot opens.
-    - cron: '15 */6 * * *'
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/crazygames-complete-drafts.mjs'
-      - '.github/workflows/crazygames-submit.yml'
 
 permissions:
   contents: write
