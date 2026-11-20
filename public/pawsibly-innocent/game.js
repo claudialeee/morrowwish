@@ -56,6 +56,14 @@ const fur=[["#f5b46d","#ce8952","#fff1cc",0],["#f5eeec","#c5a8a6","#fff",3],["#5
 const entryParams=new URLSearchParams(location.search),entryRoomRaw=Number(entryParams.get("room")),entryRoom=entryParams.has("room")&&Number.isInteger(entryRoomRaw)&&entryRoomRaw>=1&&entryRoomRaw<=8?entryRoomRaw-1:0,entryDaily=entryParams.get("daily")==="1",challengeGoal=Math.max(0,Math.min(9999999,Number(entryParams.get("beat"))||0));
 const c=$("board"),ctx=c.getContext("2d"),today=new Date().toISOString().slice(0,10),dpr=Math.min(2,window.devicePixelRatio||1);
 c.width=840*dpr;c.height=588*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+function fitCanvasPixels(){
+ const rect=c.getBoundingClientRect();
+ const cssWidth=Number(rect?.width)||840;
+ const scale=Math.max(1,Math.min(2.5,cssWidth/840*(window.devicePixelRatio||1)));
+ const w=Math.round(840*scale),h=Math.round(588*scale);
+ if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+ ctx.setTransform(scale,0,0,scale,0,0);
+}
 let lang=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 let save={unlocked:0,best:{},cat:0,souvenirs:{}};try{const s=JSON.parse(localStorage.getItem("pawsibly-innocent-save-v1")||"{}");if(s&&typeof s==="object"){save={...save,...s};save.best=s.best||{};save.souvenirs=s.souvenirs||{};}}catch{}
 save.unlocked=Math.min(7,Math.max(0,Number(save.unlocked)||0));save.cat=Math.max(0,Math.min(4,Number(save.cat)||0));
@@ -498,5 +506,6 @@ $("sound").onclick=()=>{window.MorrowwishAudio?.toggle?.();$("sound").textConten
 window.addEventListener("morrowwish-language-change",e=>{lang=e.detail.lang==="zh"?"zh":"en";translateUI();syncUI();if(s.done)finishOverlayTranslate()});
 function finishOverlayTranslate(){$("resultTitle").textContent=tr(s.winning?"winTitle":"loseTitle");$("resultDesc").textContent=s.winning?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");$("resultScore").textContent=resultLine();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(s.winning?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share")}
 window.__PAWSIBLY_TEST__={getState:()=>s,move:single,choose:init,throwYarn,throwYarnTo,advanceYarnChase,isChasing:()=>yarnChaseTimer!==null,isAiming:()=>aimingYarn,rooms:ROOMS};
-init(entryRoom,entryDaily);requestAnimationFrame(draw);
+window.addEventListener("resize",fitCanvasPixels);
+fitCanvasPixels();init(entryRoom,entryDaily);requestAnimationFrame(draw);
 })();
