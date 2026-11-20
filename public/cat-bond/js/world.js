@@ -301,9 +301,20 @@ class YardScene {
     const first=(State.S.catchCount||0)===0;
     const luck=Math.min(0.9,State.S.luckLure*0.25);
     const beginnerPool=GameData.SPECIES.filter(sp=>sp.rarity==='N' && sp.id!==State.S.cats[0]?.species);
-    const sp=first&&beginnerPool.length
+    let sp=first&&beginnerPool.length
       ? beginnerPool[Math.floor(Math.random()*beginnerPool.length)]
       : GameData.rollSpecies(luck);
+    // Onboarding: the first three captures should introduce variety.
+    // Late game: three repeated sightings unlock an unseen common clue.
+    // Do NOT tamper with any R/SR/SSR roll; rarity odds remain unchanged.
+    const unseenCommon=beginnerPool.filter(cat=>!State.S.dex[cat.id]);
+    const repeatedCommon=sp.rarity==='N'&&!!State.S.dex[sp.id];
+    const streak=State.S.repeatSightings||0;
+    if(!first&&repeatedCommon&&unseenCommon.length&&
+      (State.S.catchCount<3||streak>=3)){
+      sp=unseenCommon[Math.floor(Math.random()*unseenCommon.length)];
+    }
+    State.S.repeatSightings=State.S.dex[sp.id]?(streak+1):0;
     if(!first&&State.S.luckLure>0)State.S.luckLure--;
     spot=spot||(first?this.bushes[Math.floor(this.bushes.length/2)]
       :this.bushes[Math.floor(Math.random()*this.bushes.length)]);
@@ -311,9 +322,14 @@ class YardScene {
       species:sp,spot,found:false,revealT:0,
       tutorial:first,peekT:first?999:0.4+Math.random()*1.2,peeking:true,
     };
-    window.arcadeMetric?.('bond_wild_spawned',{rarity:sp.rarity});
+    window.arcadeMetric?.('bond_wild_spawned',{rarity:sp.rarity,newBreed:!State.S.dex[sp.id]});
+    if(!first)State.save();
     window.MorrowwishAudio?.effect?.('rustle');
-    this.game.toast(`🌿 草丛里有只野猫在探头…点它！`);
+    const sighting=sp.rarity==='SSR'?'👑 传说气息！草丛里出现了极罕见的猫！'
+      :sp.rarity==='SR'?'🌟 不寻常的闪光！有史诗猫咪藏在草丛里！'
+      :sp.rarity==='R'?'✨ 草丛里传来稀有猫咪的脚步声！'
+      :'🌿 草丛里有只野猫在探头…点它！';
+    this.game.toast(sighting);
   }
   // spawn the hiding wild cat at whichever bush is closest to (x,y)
   startHideAndSeekNear(x, y) {
