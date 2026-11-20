@@ -15,8 +15,8 @@ class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
     this.game = game;
     this.W = game.W; this.H = game.H;
-    this.topMargin = Math.max(85,Math.min(238,this.H*0.40));
-    this.bottomMargin = Math.max(54,Math.min(112,this.H*0.16));
+    this.topMargin = this.H<540&&this.W>this.H ? Math.max(58,Math.min(105,this.H*.26)) : Math.max(85,Math.min(238,this.H*.40));
+    this.bottomMargin = this.H<540&&this.W>this.H ? Math.max(38,Math.min(64,this.H*.15)) : Math.max(54,Math.min(112,this.H*.16));
     this.wild = wildSpecies;
     this.rar = GameData.RARITY[wildSpecies.rarity];
     this.rarIdx = ['N', 'R', 'SR', 'SSR'].indexOf(wildSpecies.rarity);
@@ -72,6 +72,23 @@ class CaptureBattle {
       { key: 'e',     name: '疾扑冲刺', hot: 'E', cd: 5.5 },
       { key: 'ult',   name: '喵之怒涛', hot: 'R', cd: 0, ult: true },
     ];
+  }
+
+  // Keep the combat field available when a phone is rotated mid-encounter.
+  onResize(W,H){
+    const oldW=this.W||W,oldH=this.H||H;this.W=W;this.H=H;
+    const shortLandscape=H<540&&W>H;
+    this.topMargin=shortLandscape?Math.max(58,Math.min(105,H*.26)):Math.max(85,Math.min(238,H*.40));
+    this.bottomMargin=shortLandscape?Math.max(38,Math.min(64,H*.15)):Math.max(54,Math.min(112,H*.16));
+    if(this.topMargin+this.bottomMargin>H-96)this.topMargin=Math.max(36,H-this.bottomMargin-96);
+    const minX=Math.min(BATTLE_MARGIN.side,W*.15),maxX=Math.max(minX,W-minX);
+    for(const f of [...this.team,...this.enemies]){
+      f.x=clamp(f.x*W/oldW,minX,maxX);
+      f.y=clamp(f.y*H/oldH,this.topMargin,Math.max(this.topMargin,H-this.bottomMargin));
+    }
+    for(const p of this.projectiles){p.x*=W/oldW;p.y*=H/oldH;}
+    if(this.commandTarget){this.commandTarget.x*=W/oldW;this.commandTarget.y*=H/oldH;}
+    this._stars=null;this._motes=null;
   }
 
   // Wild level tracks player strength so fights stay meaningful, never trivial.
