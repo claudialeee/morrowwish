@@ -34,6 +34,12 @@ class CaptureBattle {
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
+    // --- COMBO system: hits chain a multiplier; drops after a gap (需要操作维持) ---
+    this.combo = 0;                       // current chain count
+    this.comboT = 0;                      // seconds until the chain drops
+    this.comboBest = 0;                   // best this battle
+    this.comboFlash = 0;                  // milestone pop timer
+    this.slowmo = 0;                      // perfect-dodge bullet-time timer
 
     // --- wild cat PACK: 1~3 enemies (rarer / commander-seeded = bigger packs) ---
     // The pack can be passed in via opts.pack (array of species); otherwise we
@@ -59,7 +65,7 @@ class CaptureBattle {
 
     // move definitions (cooldowns live on the active fighter)
     this.moves = [
-      { key: 'basic', name: '猫爪', hot: '左键/J', cd: 0.34 },
+      { key: 'basic', name: '猫爪', hot: '左键/J', cd: 0.6 },
       { key: 'q',     name: '毛球散射', hot: 'Q', cd: 4.5 },
       { key: 'e',     name: '疾扑冲刺', hot: 'E', cd: 5.5 },
       { key: 'ult',   name: '喵之怒涛', hot: 'R', cd: 0, ult: true },
@@ -293,15 +299,22 @@ class CaptureBattle {
       return;
     }
 
-    // aim toward mouse
-    this.aim = Math.atan2(m.y - f.y, m.x - f.x);
+    // aim: toward mouse on desktop; on touch, auto-aim the nearest enemy
+    const joy = this.game.joystick;
+    if (this.game.isTouch) {
+      const tgt = this.nearestEnemy ? this.nearestEnemy(f.x, f.y) : null;
+      if (tgt) this.aim = Math.atan2(tgt.y - f.y, tgt.x - f.x);
+    } else {
+      this.aim = Math.atan2(m.y - f.y, m.x - f.x);
+    }
 
-    // movement
+    // movement: WASD/arrows OR the virtual joystick
     let mx = 0, my = 0;
     if (K['w'] || K['arrowup']) my -= 1;
     if (K['s'] || K['arrowdown']) my += 1;
     if (K['a'] || K['arrowleft']) mx -= 1;
     if (K['d'] || K['arrowright']) mx += 1;
+    if (joy && joy.active && (Math.abs(joy.dx) > 0.15 || Math.abs(joy.dy) > 0.15)) { mx += joy.dx; my += joy.dy; }
     if (mx || my) {
       const l = Math.hypot(mx, my);
       const spd = f.dashT > 0 ? f.speed * 3 : f.speed;
@@ -348,7 +361,8 @@ class CaptureBattle {
     f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg, 'me', col, 5, 'claw', { element: f.element });
+    // 猫爪=近身快攻: short-lived projectile so it only reaches ~short range
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg, 'me', col, 5, 'claw', { element: f.element }, 0.45);
     this.vfx.muzzle(mx, my, aim, col);
     this.gainUlt(2);
   }
@@ -359,11 +373,38 @@ class CaptureBattle {
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1);
     const col = this.elemColor(sk ? sk.element : f.element);
     const pow = (sk ? sk.power : 0.8);
-    for (let i = -2; i <= 2; i++) this.spawnProj(f.x, f.y, aim + i * 0.18, f.projSpeed * 0.8, f.dmg * pow, 'me', col, 7, 'fur', sk);
-    this.vfx.muzzle(f.x, f.y, aim, col);
-    this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
+    const kind = sk ? sk.kind : 'projectile';
+    if (kind === 'melee') {
+      // 近战: short-range arc slash — only hits enemies within MELEE_RANGE, big damage
+      this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
+    } else {
+      // 远程: projectile fan that flies the full arena
+      for (let i = -2; i <= 2; i++) this.spawnProj(f.x, f.y, aim + i * 0.18, f.projSpeed * 0.8, f.dmg * pow, 'me', col, 7, 'fur', sk);
+      this.vfx.muzzle(f.x, f.y, aim, col);
+      this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
+    }
     this.gainUlt(8);
     if (f === this.me()) this.game.toast('🧶 ' + (sk ? sk.name : '毛球散射') + '！');
+  }
+
+  // smallest signed angle between two headings
+  angleDiff(a, b) { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; }
+  // 近战范围攻击: an instant arc in front of the caster, hitting enemies within range
+  meleeStrike(f, aim, skill, dmg, col) {
+    const RANGE = 90, ARC = 1.1;
+    this.vfx.ring(f.x, f.y, { r0: RANGE * 0.4, vr: 520, life: 0.22, color: col, width: 7 });
+    // slash arc VFX
+    for (let i = -2; i <= 2; i++) this.vfx.burst(f.x + Math.cos(aim) * 40, f.y + Math.sin(aim) * 40, { count: 2, color: col, angle: aim + i * 0.3, spread: 0.3, speed: 180, life: 0.25 });
+    let hit = false;
+    for (const e of this.liveEnemies()) {
+      const d = Math.hypot(e.x - f.x, e.y - f.y);
+      if (d > RANGE + 22) continue;
+      const ang = Math.atan2(e.y - f.y, e.x - f.x);
+      if (Math.abs(this.angleDiff(ang, aim)) > ARC) continue;   // must be in the frontal arc
+      const dd = this.applyHitEffects(e, skill, dmg, e.x, e.y);
+      this.hurtEnemy(e, dd, e.x, e.y); this.vfx.impact(e.x, e.y, col); hit = true;
+    }
+    if (hit) this.shakeT = Math.max(this.shakeT, 0.1);
   }
   skillE(f, aim) {
     f = f || this.me(); if (f.cd.e > 0) return;
@@ -382,8 +423,23 @@ class CaptureBattle {
   dodge(f) {
     f = f || this.me(); if (f.dodgeCd > 0) return;
     f.dodgeCd = 1.1; f.dashT = 0.2; f.inv = 0.38;
-    this.vfx.ring(f.x, f.y, { r0: 6, vr: 240, life: 0.3, color: '#ffffff', width: 2 });
-    this.vfx.burst(f.x, f.y, { count: 6, color: '#ffffff', speed: 150, life: 0.3, r: 2 });
+    // PERFECT DODGE: an enemy shot within ~36px when you dodge → bullet-time reward
+    let perfect = false;
+    for (const p of this.projectiles) {
+      if (p.owner !== 'wild') continue;
+      if (Math.hypot(p.x - f.x, p.y - f.y) < 40) { perfect = true; break; }
+    }
+    if (perfect && f === this.me()) {
+      this.slowmo = 0.9; this.flash = 0.25; f.inv = 0.7;
+      this.gainUlt(18);
+      this.addCombo(3);                                  // reward precise timing with chain
+      this.vfx.ring(f.x, f.y, { r0: 8, vr: 520, life: 0.5, color: '#9d7bff', width: 6 });
+      this.vfx.text(f.x, f.y - 46, '完美闪避!', '#9d7bff', 18);
+      this.game.toast('✨ 完美闪避！子弹时间 + 充能');
+    } else {
+      this.vfx.ring(f.x, f.y, { r0: 6, vr: 240, life: 0.3, color: '#ffffff', width: 2 });
+      this.vfx.burst(f.x, f.y, { count: 6, color: '#ffffff', speed: 150, life: 0.3, r: 2 });
+    }
   }
   ultimate() {
     if (this.ult < 100) { this.game.toast('必杀能量不足'); return; }
@@ -405,25 +461,51 @@ class CaptureBattle {
     this.active = i;
     this.vfx.ring(old.x, old.y, { r0: 8, vr: 280, life: 0.35, color: '#9be7c4', width: 3 });
     this.vfx.burst(old.x, old.y, { count: 10, color: '#9be7c4', speed: 180, life: 0.4 });
-    this.game.toast(`切换到 ${GameData.speciesById(this.team[i].cat.species).name}！`);
+    this.game.toast(`切换到 ${State.catName(this.team[i].cat)}！`);
   }
 
   gainUlt(n) { this.ult = Math.min(100, this.ult + n); }
 
-  spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill) {
-    this.projectiles.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, kind, life: 2.2, ang, skill: skill || null });
+  // ---- COMBO: every hit extends the chain; higher chain = more dmg + ult ----
+  comboMult() { return 1 + Math.min(this.combo, 50) * 0.03; }   // up to ×2.5 at 50 hits
+  addCombo(n) {
+    this.combo += (n || 1);
+    this.comboT = 1.3;                                          // drop window (需持续命中)
+    if (this.combo > this.comboBest) this.comboBest = this.combo;
+    // milestones: juice ramps with the chain (Balatro-style crescendo)
+    if (this.combo > 0 && this.combo % 10 === 0) {
+      this.comboFlash = 0.5; this.shakeT = Math.max(this.shakeT, 0.15);
+      this.gainUlt(6);                                          // chains feed the ult
+      const me = this.me();
+      this.vfx.text(me.x, me.y - 60, this.combo + ' 连击!', '#ffd36b', 20);
+      this.vfx.ring(me.x, me.y, { r0: 10, vr: 420, life: 0.4, color: '#ffd36b', width: 4 });
+      this.game.toast('🔥 ' + this.combo + ' 连击！伤害 ×' + this.comboMult().toFixed(2));
+    }
+  }
+  breakCombo() {
+    if (this.combo >= 10) { const me = this.me(); this.vfx.text(me.x, me.y - 40, '连击中断…', '#9aa8ba', 13); }
+    this.combo = 0; this.comboT = 0;
+  }
+
+  spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill, life) {
+    this.projectiles.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, kind, life: life || 2.2, ang, skill: skill || null });
   }
   spawnBurst(x, y, ch, color, n) {
     for (let i = 0; i < n; i++) this.particles.push({ x, y, vx: Math.random() * 120 - 60, vy: -40 - Math.random() * 70, life: 0.7, ch, color, size: 11 + Math.random() * 8 });
   }
-  floater(x, y, text, color) { this.floaters.push({ x, y, text, color, life: 0.9 }); }
+  floater(x, y, text, color, size) { this.floaters.push({ x, y, text, color, life: 0.9, size: size || 15 }); }
 
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
+    // perfect-dodge bullet-time: slow the WORLD but keep input responsive
+    if (this.slowmo > 0) { this.slowmo -= dt; dt *= 0.35; }
     this.t += dt;
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
+    if (this.comboFlash > 0) this.comboFlash -= dt;
+    // combo chain decays if you stop landing hits (需持续操作维持)
+    if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0 && this.combo > 0) this.breakCombo(); }
     this.gainUlt(12 * dt);                 // ult builds over time
 
     this.readInput(dt);
@@ -464,7 +546,11 @@ class CaptureBattle {
 
     // ---- each enemy in the pack runs its own AI (they coordinate; see updateEnemyAI) ----
     for (const e of this.enemies) { if (e.flash > 0) e.flash -= dt; }
-    for (const e of this.liveEnemies()) this.updateEnemyAI(dt, e, me);
+    for (const e of this.liveEnemies()) {
+      const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
+      if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
+      else if (e.alive) { e.pose = 'idle'; }           // frozen: stand still, no attacks
+    }
 
     // ---- projectiles ----
     for (const p of this.projectiles) {
@@ -577,7 +663,7 @@ class CaptureBattle {
         if (sd < 70) { ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
       }
     }
-    const spd = e.speed * (1 + e.aggro * 0.4);
+    const spd = e.speed * (1 + e.aggro * 0.4) * (e.slowed ? 0.5 : 1);   // 感电减速
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, BATTLE_MARGIN.top, this.H - BATTLE_MARGIN.bottom);
     if (e.pose !== 'play') e.pose = (ax || ay) ? 'walk' : 'idle';
@@ -603,13 +689,15 @@ class CaptureBattle {
     // normal aimed fire (leads the player)
     e.fireCd -= dt;
     if (e.fireCd <= 0) {
-      e.fireCd = e.fireRate * (1 - e.aggro * 0.35);
-      const lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
+      e.fireCd = e.fireRate * (1 - e.aggro * 0.35) * (e.slowed ? 1.8 : 1);   // 感电降攻速
+      let lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
+      if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
-      this.spawnProj(e.x, e.y, lead, 240 + e.rIdx * 40, e.dmg, 'wild', wc, 7, 'ball');
+      const dd = e.dmg * (e.status && e.status.weaken ? 0.5 : 1);            // 虚弱→伤害减半
+      this.spawnProj(e.x, e.y, lead, 240 + e.rIdx * 40, dd, 'wild', wc, 7, 'ball');
       if (e.rIdx >= 2) {
-        this.spawnProj(e.x, e.y, lead + 0.22, 230, e.dmg * 0.8, 'wild', wc, 6, 'ball');
-        this.spawnProj(e.x, e.y, lead - 0.22, 230, e.dmg * 0.8, 'wild', wc, 6, 'ball');
+        this.spawnProj(e.x, e.y, lead + 0.22, 230, dd * 0.8, 'wild', wc, 6, 'ball');
+        this.spawnProj(e.x, e.y, lead - 0.22, 230, dd * 0.8, 'wild', wc, 6, 'ball');
       }
     }
   }
@@ -670,28 +758,86 @@ class CaptureBattle {
   applyHitEffects(e, skill, baseDmg, x, y) {
     let dmg = baseDmg;
     if (!window.Skills || !skill) return dmg;
-    e.tags = e.tags || [];
+    e.tags = e.tags || [];        // live tag list (for combo checks)
+    e.status = e.status || {};    // tag -> remaining seconds (timed effects)
+    const TAG = Skills.TAG_INFO || {};
+    // combo: existing tag + this skill → amplified burst
     const combo = Skills.checkCombo ? Skills.checkCombo(e.tags, skill) : null;
     if (combo) {
       dmg *= combo.bonusMult || 1;
-      this.vfx.ring(e.x, e.y, { r0: 8, vr: 420, life: 0.4, color: this.elemColor(skill.element), width: 5 });
+      this.vfx.ring(e.x, e.y, { r0: 8, vr: 460, life: 0.45, color: this.elemColor(skill.element), width: 6 });
       this.vfx.text(e.x, e.y - 50, combo.name || '连携!', '#ffd36b', 18);
       this.game.toast('✨ 连携 ' + (combo.name || '') + '！');
-      if (combo.consumes && e.tags.includes(combo.tag)) e.tags = e.tags.filter(t => t !== combo.tag);
+      if (combo.consumes && e.tags.includes(combo.tag)) { e.tags = e.tags.filter(t => t !== combo.tag); delete e.status[combo.tag]; }
     }
+    // element effectiveness
     const mult = this.elemMult(skill.element, e.sp.id);
-    if (mult !== 1) { dmg *= mult; if (mult > 1) this.vfx.text(x, y - 14, '效果拔群!', '#ff7b9c', 13); }
+    if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果拔群!', '#ff7b9c', 13); }
+    else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果一般', '#9aa8ba', 11); }
+    // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
       const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
-      for (const tg of tags) if (!e.tags.includes(tg)) e.tags.push(tg);
+      for (const tg of tags) {
+        if (!e.tags.includes(tg)) e.tags.push(tg);
+        const info = TAG[tg];
+        e.status[tg] = info ? info.ttl : 3;
+        const nm = info ? info.name : tg;
+        this.vfx.text(e.x + (Math.random() * 20 - 10), e.y - 30, nm, info ? info.color : '#fff', 12);
+      }
     }
     return dmg;
   }
 
-  hurtEnemy(e, dmg, fx, fy) {
-    e.hp = Math.max(0, e.hp - dmg);
+  // per-enemy status tick: DoT (burn/bleed/shock), crowd-control (chill/bind/dizzy),
+  // and debuffs (blind lowers its accuracy). Returns false if the enemy is frozen.
+  tickStatus(e, dt) {
+    // record HP history (~3s ring) so 回溯 can roll the enemy BACK to its past HP
+    e._hpHist = e._hpHist || [];
+    e._hpHist.push({ t: this.t, hp: e.hp });
+    while (e._hpHist.length && e._hpHist[0].t < this.t - 3) e._hpHist.shift();
+    if (!e.status) return true;
+    const TAG = (window.Skills && Skills.TAG_INFO) || {};
+    let frozen = false;
+    for (const tg in e.status) {
+      e.status[tg] -= dt;
+      if (e.status[tg] <= 0) { delete e.status[tg]; e.tags = (e.tags || []).filter(t => t !== tg); continue; }
+      const info = TAG[tg]; if (!info) continue;
+      // 回溯 time-rewind (offensive): snap enemy HP to the LOWEST it hit in the
+      // last ~3s — re-applying its best recent damage like rewinding a clock.
+      if (info.rewind) {
+        let lo = e.hp; for (const h of e._hpHist) if (h.hp < lo) lo = h.hp;
+        if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
+        delete e.status[tg]; e.tags = (e.tags || []).filter(t => t !== tg); continue;
+      }
+      // damage-over-time
+      if (info.dps) {
+        const d = e.maxhp * info.dps * dt;
+        e.hp = Math.max(0, e.hp - d);
+        if (Math.random() < dt * 3) this.vfx.text(e.x + (Math.random() * 16 - 8), e.y - 18, '-' + Math.max(1, Math.round(e.maxhp * info.dps)), info.color, 10);
+        if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', info.color, 10); this.game.toast(e.sp.name + ' 倒下了！'); }
+      }
+      // crowd control: chill/bind/dizzy stop the enemy acting/moving
+      if (tg === 'chill' || tg === 'bind' || tg === 'dizzy') frozen = true;
+    }
+    e.frozen = frozen;
+    // shock/blind flags for the AI to read
+    e.slowed = !!(e.status.shock);
+    e.blinded = !!(e.status.blind);
+    return !frozen;
+  }
+
+  hurtEnemy(e, dmg, fx, fy, isDot) {
+    // a direct player hit extends the combo and gets the combo damage multiplier
+    if (!isDot) { dmg *= this.comboMult(); this.addCombo(1); }
+    // vulnerability debuffs amplify incoming damage (破绽/破甲)
+    const TAG = (window.Skills && Skills.TAG_INFO) || {};
+    if (e.status) for (const tg in e.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
+    const scaled = dmg;
+    e.hp = Math.max(0, e.hp - scaled);
     e.flash = 0.08;
-    this.floater(e.x, e.y - 24, '-' + Math.round(dmg), '#fff');
+    // bigger, brighter number as the combo climbs (crescendo feel)
+    const big = this.combo >= 15 ? 18 : this.combo >= 6 ? 15 : 13;
+    this.floater(e.x, e.y - 24, '-' + Math.round(scaled), this.combo >= 15 ? '#ffd36b' : '#fff', big);
     this.spawnBurst(fx, fy, '✦', '#ffd36b', 3);
     this.gainUlt(3);
     if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', '#ffd36b', 12); this.game.toast(e.sp.name + ' 斗志耗尽！'); }
@@ -721,7 +867,7 @@ class CaptureBattle {
     this.spawnBurst(f.x, f.y, '💫', '#c9b6ff', 10);
     const anyAlive = this.team.some(t => t.alive);
     if (!anyAlive) { this.finish(false); return; }
-    this.game.toast(`${GameData.speciesById(f.cat.species).name} 累瘫了！`);
+    this.game.toast(`${State.catName(f.cat)} 累瘫了！`);
     // if the ACTIVE cat fainted, hand control to another living cat
     if (f === this.me()) {
       const next = this.team.findIndex(t => t.alive);
@@ -837,10 +983,20 @@ class CaptureBattle {
       }
       ctx.save();
       if (e.flash > 0) ctx.globalAlpha = 0.6;
-      CatArt.drawCat(ctx, e.x, e.y, { species: e.sp, scale: 1.1, face: e.face, t: e.t, pose: e.pose, mood: (e.hp / e.maxhp < 0.28) ? 'sleepy' : 'alert' });
+      // status color wash (frozen=blue tint, burn=orange, etc.) via a soft overlay ring
+      if (e.status) { const k = Object.keys(e.status); if (k.length) { const info = (Skills.TAG_INFO || {})[k[0]]; if (info) { ctx.save(); ctx.globalAlpha = 0.25 + 0.15 * Math.sin(this.t * 6); ctx.fillStyle = info.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + 6, 24, 30, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } }
+      CatArt.drawCat(ctx, e.x, e.y, { species: e.sp, scale: 1.1, face: e.face, t: e.t, pose: e.frozen ? 'idle' : e.pose, mood: e.frozen ? 'sleepy' : ((e.hp / e.maxhp < 0.28) ? 'sleepy' : 'alert') });
       ctx.restore();
       const elemSym = this.elemSymbol(e.element);
       this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color, `${elemSym} ${e.sp.name} Lv.${e.level}`);
+      // status icons row under the HP tag
+      if (e.status) {
+        const keys = Object.keys(e.status); const TAG = Skills.TAG_INFO || {};
+        const icons = { burn: '🔥', soak: '💧', shock: '⚡', oil: '🛢️', chill: '❄️', dizzy: '💫', bleed: '🩸', blind: '🌀', bind: '🌿' };
+        ctx.save(); ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        keys.slice(0, 5).forEach((tg, i) => { ctx.fillText(icons[tg] || '●', e.x - (keys.length - 1) * 7 + i * 14, e.y - 50); });
+        ctx.restore();
+      }
     }
 
     // ALL alive team cats on the field (active highlighted, allies slightly dimmer)
@@ -858,12 +1014,49 @@ class CaptureBattle {
       CatArt.drawCat(ctx, tf.x, tf.y, { species: sp2, scale: 1.1, face: (Math.cos(fAim) < 0 ? -1 : 1), t: tf.t != null ? tf.t : this.t, pose: tf.pounce ? 'play' : (tf.moving ? 'walk' : 'idle'), mood: 'happy' });
       ctx.restore();
       const sym = this.elemSymbol(tf.element);
-      this.hpTag(ctx, tf.x, tf.y - 42, tf.hp / tf.maxhp, isMe ? '#ffd36b' : '#9be7c4', `${sym} ${sp2.name}${isMe ? ' ◀' : ''}`);
+      this.hpTag(ctx, tf.x, tf.y - 42, tf.hp / tf.maxhp, isMe ? '#ffd36b' : '#9be7c4', `${sym} ${State.catName(tf.cat)}${isMe ? ' ◀' : ''}`);
     }
 
     // particles & floaters
     for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
-    for (const fl of this.floaters) { ctx.save(); ctx.globalAlpha = Math.max(0, fl.life); ctx.fillStyle = fl.color; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(fl.text, fl.x, fl.y); ctx.restore(); }
+    for (const fl of this.floaters) { ctx.save(); ctx.globalAlpha = Math.max(0, fl.life); ctx.fillStyle = fl.color; ctx.font = 'bold ' + (fl.size || 15) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.strokeText(fl.text, fl.x, fl.y); ctx.fillText(fl.text, fl.x, fl.y); ctx.restore(); }
+
+    // ---- COMBO counter (top-center, grows & heats up with the chain) ----
+    if (this.combo >= 2) {
+      ctx.save();
+      const cx = W / 2, cy = 128;
+      const heat = Math.min(1, this.combo / 40);
+      const pop = 1 + (this.comboFlash > 0 ? this.comboFlash * 0.6 : 0);
+      const col = heat > 0.6 ? '#ff6b3c' : heat > 0.3 ? '#ffd36b' : '#fff1a8';
+      ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.5 + 0.5 * Math.min(1, this.comboT / 1.3);  // dim as it's about to drop
+      ctx.font = `900 ${Math.round((34 + heat * 20) * pop)}px system-ui, sans-serif`;
+      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(20,10,30,0.6)';
+      ctx.strokeText(this.combo + '', cx, cy); ctx.fillStyle = col; ctx.fillText(this.combo + '', cx, cy);
+      ctx.font = '700 14px system-ui, sans-serif'; ctx.fillStyle = col;
+      ctx.fillText('连击 ×' + this.comboMult().toFixed(2), cx, cy + 20);
+      // drop timer bar
+      ctx.globalAlpha = 0.8; ctx.fillStyle = col;
+      const bw = 70 * Math.max(0, this.comboT / 1.3);
+      ctx.fillRect(cx - bw / 2, cy + 28, bw, 3);
+      ctx.restore();
+    }
+
+    // ---- virtual joystick (touch) ----
+    const joy = this.game.joystick;
+    if (joy && joy.active) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(joy.ox, joy.oy, 46, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,211,107,0.55)';
+      ctx.beginPath(); ctx.arc(joy.ox + joy.dx * 46, joy.oy + joy.dy * 46, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    } else if (this.game.isTouch && this.combo < 2) {
+      // hint on touch devices
+      ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('← 左侧拖动移动  ·  右侧按住攻击 →', W / 2, H - 76);
+      ctx.restore();
+    }
 
     ctx.restore();
   }

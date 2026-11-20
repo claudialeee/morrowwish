@@ -22,8 +22,12 @@ class Game {
     this._toastTimer = null;
     this.mouse = { x: 0, y: 0, active: false, idle: 0, down: false };
     this.keys = {};
+    this.isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    // virtual joystick (battle movement on touch): {active, ox,oy, dx,dy}
+    this.joystick = { active: false, ox: 0, oy: 0, dx: 0, dy: 0, id: null };
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
   }
 
   resize() {
@@ -88,7 +92,7 @@ class Game {
     // decay cursor "activity" so cats lose interest when the mouse stops
     if (this.mouse.active) { this.mouse.idle += dt; if (this.mouse.idle > 1.2) this.mouse.active = false; }
     // idle/placement economy tick (online == offline). butterfly flag → yard event
-    if (window.Raising) { try { const d = Raising.tick(dt); if (d && d.butterfly) this._butterflyOut = true; } catch (e) {} }
+    if (window.Raising) { try { const rush = (State.S.rushUntil && Date.now() < State.S.rushUntil) ? 2 : 1; const d = Raising.tick(dt * rush); if (d && d.butterfly) this._butterflyOut = true; } catch (e) {} }
     try { this.update(dt); } catch (e) { console.error('update error', e); }
     try { this.draw(); } catch (e) { console.error('draw error', e); }
   }
@@ -137,9 +141,53 @@ class Game {
     c.addEventListener('mousedown', down);
     c.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
-    c.addEventListener('touchstart', e => { down(e); this.mouse.active = true; e.preventDefault(); }, { passive: false });
-    c.addEventListener('touchmove', e => { const p = pos(e); this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true; if (this.scene === 'battle') e.preventDefault(); }, { passive: false });
-    c.addEventListener('touchend', up);
+
+    // ---- touch: multi-touch aware. In battle, LEFT half = virtual joystick (move),
+    //      RIGHT half = hold-to-fire (auto-aims nearest enemy). Elsewhere = tap. ----
+    const touchPos = t => { const r = c.getBoundingClientRect(); return { x: t.clientX - r.left, y: t.clientY - r.top }; };
+    c.addEventListener('touchstart', e => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        const p = touchPos(t);
+        if (this.scene === 'battle') {
+          if (p.x < this.W * 0.5 && !this.joystick.active) {
+            this.joystick = { active: true, ox: p.x, oy: p.y, dx: 0, dy: 0, id: t.identifier };
+          } else {
+            this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
+            this.mouse.down = true; this._fireTouchId = t.identifier;
+          }
+        } else {
+          this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
+          if (this.scene === 'yard') this.yardTap(p.x, p.y);
+          else if (this.scene === 'map' && window.WorldMap) WorldMap.handleTap(p.x, p.y);
+        }
+      }
+    }, { passive: false });
+    c.addEventListener('touchmove', e => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        const p = touchPos(t);
+        if (this.joystick.active && t.identifier === this.joystick.id) {
+          let dx = p.x - this.joystick.ox, dy = p.y - this.joystick.oy;
+          const len = Math.hypot(dx, dy), max = 46;
+          if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+          this.joystick.dx = dx / max; this.joystick.dy = dy / max;   // -1..1
+        } else if (t.identifier === this._fireTouchId) {
+          this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
+        } else if (this.scene !== 'battle') {
+          this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
+          if (this.scene === 'yard') this.maybeRevealWild(p.x, p.y);
+        }
+      }
+    }, { passive: false });
+    const endTouch = e => {
+      for (const t of e.changedTouches) {
+        if (t.identifier === this.joystick.id) this.joystick = { active: false, ox: 0, oy: 0, dx: 0, dy: 0, id: null };
+        if (t.identifier === this._fireTouchId) { this.mouse.down = false; this._fireTouchId = null; }
+      }
+    };
+    c.addEventListener('touchend', endTouch);
+    c.addEventListener('touchcancel', endTouch);
 
     // real-time key polling for the action battle (held keys stay down)
     const keyName = e => (e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
@@ -179,7 +227,22 @@ class Game {
     if (!hit) return;
     if (hit.type === 'loot') {
       const r = this.yard.collectLoot(hit.bubble, hit.idx);
-      if (r.amount > 0) { State.save(); this.refreshHUD(); this.toast(`${r.icon || ''} +${r.amount}`); }
+      if (r.amount > 0) {
+        // combo: quick successive collects stack a multiplier readout
+        const now = this.t;
+        if (now - (this._lootComboT || -9) < 2) this._lootCombo = (this._lootCombo || 1) + 1; else this._lootCombo = 1;
+        this._lootComboT = now;
+        this.yard.spawnFloat(hit.bubble.x, hit.bubble.y, `${r.icon || ''}+${r.amount}`, '#ffe08a');
+        if (this._lootCombo >= 3) this.yard.spawnFloat(hit.bubble.x, hit.bubble.y - 22, `连击 ×${this._lootCombo}!`, '#ff9db0');
+        State.save(); this.refreshHUD();
+      }
+      return;
+    }
+    if (hit.type === 'golden') {
+      this.yard.collectGolden();
+      State.S.rushUntil = Date.now() + 15 * 60 * 1000;   // 15-min 2x production
+      State.save();
+      this.toast('🌟 金运喵眷顾！双倍产出 15 分钟');
       return;
     }
     if (hit.type === 'hide') {
@@ -250,18 +313,30 @@ class Game {
     const eBtn = document.getElementById('mv-e');
     if (qBtn) {
       const sk = f.qSkill;
-      qBtn.querySelector('.mv-icon').textContent = sk ? this.elemIcon(sk.element) : '🧶';
+      qBtn.querySelector('.mv-icon').textContent = sk ? this.skillIcon(sk) : '🧶';
       qBtn.querySelector('.mv-k').textContent = sk ? sk.name : 'Q';
     }
     if (eBtn) {
       const sk = f.eSkill;
-      eBtn.querySelector('.mv-icon').textContent = sk ? this.elemIcon(sk.element) : '💨';
+      eBtn.querySelector('.mv-icon').textContent = sk ? this.skillIcon(sk) : '💨';
       eBtn.querySelector('.mv-k').textContent = sk ? sk.name : 'E';
     }
   }
 
   elemIcon(el) {
     return ({ fire: '🔥', water: '💧', grass: '🌿', elec: '⚡', dark: '🌑', light: '✨' })[el] || '🐾';
+  }
+  // distinct icon per skill id (so two fire skills don't both show 🔥)
+  skillIcon(sk) {
+    const byId = {
+      emberClaw: '🐾', fireballMeow: '🔥', sunflare: '☀️',
+      waterLash: '🌊', bubbleVeil: '🫧', tsunamiPaw: '💧',
+      leafDart: '🍃', thornCoil: '🌿', photosynth: '🌱',
+      staticPounce: '⚡', boltArc: '🔌', thunderYowl: '🌩️',
+      shadowSwipe: '🌑', hex: '🔮', voidMaw: '🕳️',
+      prismBeam: '🌈', blessFur: '✨', dawnHeal: '💖', moonlitHalo: '🌙',
+    };
+    return byId[sk.id] || this.elemIcon(sk.element);
   }
 
   buildTeamSlots() {
@@ -347,7 +422,7 @@ class Game {
       this.rebuildYard();
       State.save();
       this.refreshHUD();
-      // Unified analytics: a won capture completes the run; also a game-specific capture event.
+      // Unified analytics: a won capture completes the run; also a capture event.
       metric('game_complete', { level: State.S.catchCount, rarity: b.wild.rarity, score: State.S.catchCount });
       metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity });
       UI.openCatchResult(b.wild, newCat);

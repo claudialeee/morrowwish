@@ -238,13 +238,13 @@
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
-    { id: 'hex',        name: '猫咒',     element: 'dark',  kind: 'projectile', power: 0.9, cd: 3.0, ultCost: 0,  tags: ['dizzy','curse'], appliesTag: 'dizzy', vfx: 'orb',       desc: '诅咒之球令目标眩晕。' },
-    { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult'],   appliesTag: 'dizzy', vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬一切。' },
+    { id: 'hex',        name: '猫咒',     element: 'dark',  kind: 'projectile', power: 0.9, cd: 3.0, ultCost: 0,  tags: ['expose','curse'], appliesTag: 'expose', vfx: 'orb',       desc: '诅咒之球暴露破绽，使目标受到的伤害提高40%。' },
+    { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
     { id: 'prismBeam',  name: '棱光束',   element: 'light', kind: 'projectile', power: 1.2, cd: 2.6, ultCost: 0,  tags: ['ranged','blind'],appliesTag: 'blind', vfx: 'beam',      desc: '聚焦光束灼目，可致短暂失明。' },
     { id: 'blessFur',   name: '祝福绒',   element: 'light', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','regen'],  appliesTag: null,    vfx: 'orb',       desc: '圣洁绒光提升自身伤害。' },
     { id: 'dawnHeal',   name: '曙光愈',   element: 'light', kind: 'heal',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '沐浴晨光回复斗志。' },
-    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.1, cd: 0,   ultCost: 60, tags: ['buff','ult'],    appliesTag: 'blind', vfx: 'ring',      desc: '【必杀】月华绽放，净化并反击。' },
+    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.1, cd: 0,   ultCost: 60, tags: ['buff','ult','weaken'],    appliesTag: ['blind','weaken'], vfx: 'ring',      desc: '【必杀】月华绽放，致盲并削弱——敌人伤害减半。' },
   ];
   const SKILL_BY_ID = {};
   SKILLS.forEach(s => { SKILL_BY_ID[s.id] = s; });
@@ -263,6 +263,11 @@
     bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
     blind: { name: '失明', ttl: 2.0, dps: 0,    color: '#ffe9a8' },
     bind:  { name: '束缚', ttl: 2.5, dps: 0,    color: '#6fcf5f' },
+    // --- advanced debuffs ---
+    expose:{ name: '破绽', ttl: 5.0, dps: 0,    color: '#ff5a8a', dmgTaken: 1.4 },   // 增伤: 受到伤害 ×1.4
+    weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5
+    rust:  { name: '破甲', ttl: 6.0, dps: 0.01, color: '#c98a4a', dmgTaken: 1.25 },  // 减防+轻微掉血
+    rewind:{ name: '回溯', ttl: 0.1, dps: 0,    color: '#9d7bff', rewind: true },    // 时间倒流: 回退到数秒前的血量
   };
 
   // ==========================================================================
@@ -356,10 +361,12 @@
   const RARITY_ORDER = ['N', 'R', 'SR', 'SSR'];
   function rarityIdx(r) { return Math.max(0, RARITY_ORDER.indexOf(r)); }
 
-  // A small "splash" element each element can also dip into (for variety).
+  // Each element can also dip into ONE "splash" element for variety. A balanced
+  // ring so every element is both a source and a target exactly once (all 6 are
+  // reachable — no orphan element): fire→grass→water→elec→dark→light→fire.
   const SPLASH_ELEMENT = {
-    fire: 'dark', water: 'grass', grass: 'light',
-    elec: 'water', dark: 'fire', light: 'water',
+    fire: 'grass', grass: 'water', water: 'elec',
+    elec: 'dark', dark: 'light', light: 'fire',
   };
 
   // Which species owns which signature ult (unlocked at max bond).

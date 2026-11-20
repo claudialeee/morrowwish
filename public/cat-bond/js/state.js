@@ -27,6 +27,7 @@ function makeCat(speciesId, opts = {}) {
   return {
     uid: 'c' + (_uid++) + '_' + Math.floor(Math.random() * 9999),
     species: speciesId,
+    nickname: '',     // player-given name; falls back to species name
     level: 1,
     xp: 0,
     affinity: opts.affinity || 0,     // 0..100 bond
@@ -39,10 +40,20 @@ function makeCat(speciesId, opts = {}) {
     hunger: 70,       // 0..100, decays over time
     joy: 70,          // 0..100
     caughtAt: opts.caughtAt || Date.now(),
+    // ---- growth forms (universal evolution; every cat can reach 灵) ----
+    stage: 0,         // 0=幼 1=成 2=灵(觉醒)
+    awaken: null,     // 'pow'|'agi'|'cha' aura branch chosen at stage 2
   };
 }
 
 function xpToNext(level) { return 20 + level * level * 8; }
+
+// display name: player nickname if set, else species name
+function catName(cat) {
+  if (cat && cat.nickname) return cat.nickname;
+  const sp = cat && GameData.speciesById(cat.species);
+  return sp ? sp.name : '猫猫';
+}
 
 function addXp(cat, amount) {
   cat.xp += amount;
@@ -128,6 +139,6 @@ function claimDaily() {
 
 window.State = {
   get S() { return S; },
-  makeCat, addXp, xpToNext, catPower, bondTier,
+  makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
 };

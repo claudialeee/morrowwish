@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','skills','state','raising','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','skills','growth','state','raising','world','worldmap','battle','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -86,6 +86,8 @@ const windowObj = {
   setTimeout: (fn) => { try { fn(); } catch (e) {} return 1; },
   clearTimeout: nop, setInterval: () => 1, clearInterval: nop,
   CanvasRenderingContext2D: function () {},
+  // v36 world.js loads a watercolor backdrop via new Image(); stub it (never "loads").
+  Image: function () { return { width: 0, height: 0, set src(v) {}, get src() { return ''; }, onload: null, onerror: null }; },
   MutationObserver: function () { return { observe: nop, disconnect: nop }; },
   NodeFilter: { SHOW_TEXT: 4, SHOW_ELEMENT: 1 },
   MorrowwishI18n: { get: () => 'en' },
@@ -102,7 +104,7 @@ const sandbox = {
   setTimeout: windowObj.setTimeout, clearTimeout: nop, setInterval: () => 1, clearInterval: nop,
   localStorage: windowObj.localStorage, navigator: windowObj.navigator, location: windowObj.location,
   performance: windowObj.performance, CanvasRenderingContext2D: windowObj.CanvasRenderingContext2D,
-  MutationObserver: windowObj.MutationObserver, NodeFilter: windowObj.NodeFilter,
+  MutationObserver: windowObj.MutationObserver, NodeFilter: windowObj.NodeFilter, Image: windowObj.Image,
 };
 vm.createContext(sandbox);
 // In a browser, `window.Foo = x` also creates the bare global `Foo`. Emulate
@@ -225,4 +227,4 @@ render();                                   // toggle back restores Chinese
 assert.equal(zhNode.nodeValue, '🏡 庭院', 'toggling back to Chinese restores the original text');
 sandbox.window.MorrowwishI18n.get = () => 'en';
 
-console.log('Cat Bond: 12 modules loaded, starter + capture win/loss driven, game_start/complete/over/cat_capture analytics, and bilingual ZH->EN layer (incl. live zh<->en toggle) PASS.');
+console.log('Cat Bond: 13 modules loaded, starter + capture win/loss driven, game_start/complete/over/cat_capture analytics, and bilingual ZH->EN layer (incl. live zh<->en toggle) PASS.');

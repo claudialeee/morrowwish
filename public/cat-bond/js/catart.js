@@ -76,8 +76,21 @@ function drawCat(ctx, x, y, opts) {
   const L = look(o);
   const pal = L.pal, pattern = L.pattern, fluffy = L.fluffy, ears = L.ears, short = L.short;
   const point = L.point || pal.point;
-  const s = o.scale || 1, face = o.face || 1, t = o.t || 0;
+  const gr = o.growth || null;          // growth-form visual descriptor (js/growth.js)
+  const s = (o.scale || 1) * (gr ? gr.scale : 1), face = o.face || 1, t = o.t || 0;
   const pose = o.pose || 'idle', mood = o.mood || 'neutral';
+
+  // ---- growth aura (drawn in world space, behind the cat) ----
+  if (gr && gr.aura) {
+    ctx.save();
+    const pulse = 0.5 + 0.5 * Math.sin(t * 2.5);
+    const ag = ctx.createRadialGradient(x, y - 4, 4, x, y - 4, 46 + pulse * 6);
+    ag.addColorStop(0, withA(gr.aura, 0.0));
+    ag.addColorStop(0.6, withA(gr.aura, 0.18 + pulse * 0.12));
+    ag.addColorStop(1, withA(gr.aura, 0));
+    ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(x, y - 4, 46 + pulse * 6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
 
   ctx.save();
   ctx.translate(x, y);
@@ -155,6 +168,26 @@ function drawCat(ctx, x, y, opts) {
 
   if (mood === 'love') { ctx.fillStyle = '#ff7b9c'; heart(ctx, hcx + 18, hcy - 15 - Math.sin(t * 3) * 2, 4.5); }
   else if (mood === 'sleepy') { ctx.fillStyle = 'rgba(150,170,210,0.85)'; ctx.font = 'bold 10px sans-serif'; ctx.save(); ctx.scale(face, 1); ctx.fillText('z', face * (hcx + 14), hcy - 15); ctx.restore(); }
+
+  // ---- growth-form adornments (gem badge + orbiting sparkles) ----
+  if (gr && gr.gem) {
+    ctx.save(); ctx.scale(face, 1);             // un-mirror so the gem isn't flipped
+    const gx = face * (hcx + 14), gy = hcy - hr - 6;
+    ctx.fillStyle = gr.gemColor || '#cbd4ff';
+    // little diamond gem
+    ctx.beginPath(); ctx.moveTo(gx, gy - 5); ctx.lineTo(gx + 4, gy); ctx.lineTo(gx, gy + 5); ctx.lineTo(gx - 4, gy); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(gx - 1, gy - 1, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  if (gr && gr.sparkle) {
+    for (let i = 0; i < 3; i++) {
+      const a = t * 1.6 + i * (Math.PI * 2 / 3);
+      const sx2 = Math.cos(a) * 22, sy2 = Math.sin(a) * 16 - 4;
+      ctx.fillStyle = withA(gr.aura || '#ffd36b', 0.9);
+      ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('✦', sx2, sy2);
+    }
+  }
 
   ctx.restore();
 }

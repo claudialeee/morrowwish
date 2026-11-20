@@ -140,7 +140,7 @@ const UI = {
   },
   openCatPicker(title, onPick) {
     const cats = State.S.cats;
-    const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const busy = window.Raising && Raising.isBusy && Raising.isBusy(c.uid); return `<div class="chip ${busy ? 'busy' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${sp.name}</div><div class="tiny">${busy ? '工作中' : 'Lv.' + c.level}</div></div></div>`; }).join('');
+    const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const busy = window.Raising && Raising.isBusy && Raising.isBusy(c.uid); return `<div class="chip ${busy ? 'busy' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">${busy ? '工作中' : 'Lv.' + c.level}</div></div></div>`; }).join('');
     this.panel(`<span class="card-close">×</span><h2>${title}</h2><div class="roster">${chips}</div>`);
     document.querySelectorAll('#panel .chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
@@ -170,7 +170,7 @@ const UI = {
       const sp = GameData.speciesById(c.species);
       return `<div class="dex-cell" data-uid="${c.uid}">
         <canvas width="90" height="76"></canvas>
-        <div class="name">${sp.name} <span class="tiny">Lv.${c.level}</span></div>
+        <div class="name">${State.catName(c)} <span class="tiny">Lv.${c.level}</span></div>
         <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
         <div class="tiny">❤ ${Math.round(c.affinity)}</div>
       </div>`;
@@ -203,8 +203,10 @@ const UI = {
     const tier = State.bondTier(cat);
     const tierText = ['路人', '熟悉', '亲密', '灵魂纽带'][tier];
     const feedCost = 5, playCost = 0;
+    const dispName = State.catName(cat);
+    const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${sp.name}</span>` : '';
     host.innerHTML = `
-      <h2>${sp.name} <span class="rarity-${sp.rarity}">◆${rar.name}</span></h2>
+      <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
       <div style="display:flex;gap:16px;align-items:center;">
         <canvas id="cd-canvas" width="120" height="100" style="background:rgba(255,255,255,0.04);border-radius:12px;"></canvas>
@@ -228,9 +230,10 @@ const UI = {
         <button class="btn" id="cd-trainstat">🧶 毛线特训 (×8🧶 → 全属性+)</button>
       </div>
       <div class="btn-row">
-        <button class="btn ghost" id="cd-pet">🤲 撸猫 (+好感)</button>
+        <button class="btn" id="cd-skills">📖 技能搭配</button>
+        <button class="btn ghost" id="cd-pet">🤲 撸猫</button>
         <button class="btn ghost" id="cd-feed">🍖 喂食 (${feedCost}🪙)</button>
-        <button class="btn ghost" id="cd-tease">🪶 逗猫游戏</button>
+        <button class="btn ghost" id="cd-tease">🪶 逗猫</button>
       </div>`;
     // animated preview
     const cv = document.getElementById('cd-canvas');
@@ -239,7 +242,7 @@ const UI = {
     const anim = () => {
       if (this.openCatUid !== cat.uid) return;
       tt += 0.03; cx.clearRect(0, 0, 120, 100);
-      CatArt.drawCat(cx, 60, 70, { species: sp, scale: 1.15, face: 1, t: tt, pose: 'play', mood: cat.joy > 60 ? 'happy' : 'neutral' });
+      CatArt.drawCat(cx, 60, 70, { species: sp, scale: 1.15, face: 1, t: tt, pose: 'play', mood: cat.joy > 60 ? 'happy' : 'neutral', growth: window.Growth ? Growth.visual(cat) : null });
       requestAnimationFrame(anim);
     };
     anim();
@@ -254,6 +257,7 @@ const UI = {
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat); this.game.toast('🍖 吃得好开心');
     };
     document.getElementById('cd-tease').onclick = () => this.openTease(cat);
+    document.getElementById('cd-skills').onclick = () => this.openSkillEditor(cat);
     // 培养: fish → XP (scaled to level so it stays useful), yarn → permanent stats
     document.getElementById('cd-trainxp').onclick = () => {
       if (State.S.fish < 3) { this.game.toast('小鱼干不足（去钓鱼位产出）'); return; }
@@ -272,12 +276,87 @@ const UI = {
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat);
       this.game.toast('🧶 特训完成！全属性 +1');
     };
+    const renameBtn = document.getElementById('cd-rename');
+    if (renameBtn) renameBtn.onclick = () => {
+      const cur = cat.nickname || '';
+      const name = (window.prompt('给它起个名字吧（最多6字）', cur) || '').trim().slice(0, 6);
+      if (name !== null && name !== cur) { cat.nickname = name; State.save(); this.renderCatDetail(cat); this.game.toast(name ? '💛 ' + name + '，就是你啦！' : '已还原名字'); }
+    };
     const evoBtn = document.getElementById('cd-evolve');
     if (evoBtn) evoBtn.onclick = () => this.doEvolve(cat);
+    const growBtn = document.getElementById('cd-grow');
+    if (growBtn) growBtn.onclick = () => this.doGrow(cat, null);
+    document.querySelectorAll('#cat-detail [data-awaken]').forEach(b => b.onclick = () => this.doGrow(cat, b.dataset.awaken));
+  },
+  doGrow(cat, awakenKey) {
+    const G = window.Growth; if (!G) return;
+    const before = cat.stage || 0;
+    const r = G.advance(cat, awakenKey);
+    if (!r.ok) { this.game.toast('条件不足'); return; }
+    State.save(); this.game.rebuildYard(); this.game.refreshHUD();
+    const name = G.stageName(cat);
+    if (cat.stage >= 2) this.openGrowthAnim(cat, name);
+    else { this.renderCatDetail(cat); this.game.toast('🌟 成长为 ' + name + '！'); }
+  },
+  openGrowthAnim(cat, name) {
+    const sp = GameData.speciesById(cat.species);
+    const aw = window.Growth.AWAKEN[cat.awaken];
+    const col = aw ? aw.color : '#ffd36b';
+    this.panel(`<span class="card-close">×</span>
+      <h2 class="center">★ 觉醒！</h2>
+      <canvas id="evo-cv" width="200" height="170" style="display:block;margin:10px auto"></canvas>
+      <p class="center">${sp.name} 觉醒为 <b style="color:${col}">${name}</b>！</p>
+      <p class="sub center">${aw ? aw.desc : ''}</p>
+      <div class="btn-row" style="justify-content:center"><button class="btn gold" onclick="UI.closeAll()">太棒了</button></div>`);
+    const cv = document.getElementById('evo-cv'); const cx = cv.getContext('2d'); let tt = 0;
+    const anim = () => {
+      if (!document.getElementById('evo-cv')) return;
+      tt += 0.04; cx.clearRect(0, 0, 200, 170);
+      cx.save(); cx.translate(100, 95); cx.globalAlpha = 0.5;
+      for (let i = 0; i < 14; i++) { cx.rotate(Math.PI / 7 + tt * 0.6); cx.fillStyle = withA2(col, 0.3); cx.fillRect(0, -3, 120, 6); }
+      cx.restore();
+      CatArt.drawCat(cx, 100, 105, { species: sp, scale: 1.3, face: 1, t: tt, pose: 'sit', mood: 'happy', growth: window.Growth.visual(cat) });
+      requestAnimationFrame(anim);
+    };
+    anim();
   },
 
-  // evolution row shown in cat detail
+  // growth-form (成长形态) row + optional species 蜕变 row
   evoRowHtml(cat) {
+    let html = this.growthRowHtml(cat);
+    html += this.speciesEvoRowHtml(cat);
+    return html;
+  },
+  // universal growth-form advancement (幼→成→灵觉醒)
+  growthRowHtml(cat) {
+    const G = window.Growth; if (!G) return '';
+    const st = cat.stage || 0;
+    const stageName = G.stageName(cat);
+    if (st >= 2) {
+      const aw = G.AWAKEN[cat.awaken];
+      return `<div class="evo-row ready"><div class="evo-info">★ 已觉醒 <b style="color:${aw ? aw.color : '#ffd36b'}">${stageName}</b><div class="tiny">${aw ? aw.desc : ''} · 最终形态</div></div></div>`;
+    }
+    const chk = G.canAdvance(cat);
+    const nextName = st === 0 ? '成形态' : '灵·觉醒';
+    const reqStr = chk.ok ? '条件已满足！' : ('还需 ' + chk.missing.join(' · '));
+    if (st === 1) {
+      // awakening choice buttons
+      return `<div class="evo-row ${chk.ok ? 'ready' : ''}">
+        <div class="evo-info">★ 可觉醒为 <b>灵形态</b><div class="tiny">${reqStr}${chk.ok ? ' · 选择觉醒之路：' : ''}</div></div>
+        ${chk.ok ? `<div class="awaken-pick">
+          <button class="btn gold tiny-btn" data-awaken="pow">💪力</button>
+          <button class="btn gold tiny-btn" data-awaken="agi">⚡速</button>
+          <button class="btn gold tiny-btn" data-awaken="cha">💖心</button>
+        </div>` : ''}
+      </div>`;
+    }
+    return `<div class="evo-row ${chk.ok ? 'ready' : ''}">
+      <div class="evo-info">${G.stageTag(cat) || '🐣'} 当前 <b>${stageName}</b> · 可成长为 <b>${nextName}</b><div class="tiny">${reqStr}</div></div>
+      <button class="btn ${chk.ok ? 'gold' : ''}" id="cd-grow" ${chk.ok ? '' : 'disabled'}>成长</button>
+    </div>`;
+  },
+  // species 蜕变 (the rarer, flavor evolution that swaps species)
+  speciesEvoRowHtml(cat) {
     const S = window.Skills; if (!S || !S.evolutionOf) return '';
     const evo = S.evolutionOf(cat.species); if (!evo) return '';
     const toSp = GameData.speciesById(evo.evolvesTo);
@@ -292,9 +371,45 @@ const UI = {
       req.item ? `${req.item}×1${itemOk ? '✓' : '(缺)'}` : null,
     ].filter(Boolean).join(' · ');
     return `<div class="evo-row ${ready ? 'ready' : ''}">
-      <div class="evo-info">✨ 可进化为 <b>${toSp.name}</b><div class="tiny">${reqStr}</div></div>
-      <button class="btn ${ready ? 'gold' : ''}" id="cd-evolve" ${ready ? '' : 'disabled'}>进化</button>
+      <div class="evo-info">🦋 可蜕变为 <b>${toSp.name}</b><div class="tiny">特殊变身 · ${reqStr}</div></div>
+      <button class="btn ${ready ? 'gold' : ''}" id="cd-evolve" ${ready ? '' : 'disabled'}>蜕变</button>
     </div>`;
+  },
+  // ---- 技能搭配: learn & swap each loadout slot ----
+  openSkillEditor(cat) {
+    const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
+    S.ensureLoadout(cat);
+    const learn = S.learnableSkills(cat) || [];          // all skills this cat MAY slot
+    const slots = [
+      { i: 0, label: '普攻', kinds: ['melee', 'projectile'] },
+      { i: 1, label: '技能1', kinds: ['melee', 'projectile', 'dash', 'buff', 'heal', 'aoe'] },
+      { i: 2, label: '技能2', kinds: ['melee', 'projectile', 'dash', 'buff', 'heal', 'aoe'] },
+      { i: 3, label: '必杀', kinds: ['aoe'], ult: true },
+    ];
+    const icon = sk => this.game.skillIcon ? this.game.skillIcon(sk) : '🐾';
+    const kindName = { melee: '近战', projectile: '远程', dash: '突进', buff: '增益', heal: '治疗', aoe: '范围' };
+    const rows = slots.map(slot => {
+      const cur = S.skillById(cat.loadout[slot.i]);
+      // candidates: learnable, matching the slot's allowed kinds, ult-slot only ults
+      const opts = learn.filter(s => (slot.ult ? s.ultCost > 0 : s.ultCost === 0) && slot.kinds.indexOf(s.kind) >= 0);
+      const chips = opts.map(s => {
+        const on = cur && s.id === cur.id;
+        return `<button class="sk-chip ${on ? 'on' : ''}" data-slot="${slot.i}" data-sk="${s.id}" title="${s.desc || ''}">${icon(s)} ${s.name}<span class="tiny">${kindName[s.kind] || ''}·${this.game.elemIcon(s.element)}</span></button>`;
+      }).join('') || '<span class="tiny">暂无可选（提升等级/好感解锁）</span>';
+      return `<div class="sk-slot"><div class="sk-slot-label">${slot.label}<div class="tiny">${cur ? cur.name : '空'}</div></div><div class="sk-opts">${chips}</div></div>`;
+    }).join('');
+    this.panel(`<span class="card-close">×</span>
+      <h2>📖 ${State.catName(cat)} · 技能搭配</h2>
+      <p class="sub">点击学习/切换每个槽位的技能。元素克制、连招、状态都看搭配！可学范围随等级与好感解锁。</p>
+      <div class="sk-list">${rows}</div>
+      <div class="btn-row"><button class="btn gold" id="sk-back">← 返回</button></div>`);
+    this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
+      const slotI = +b.dataset.slot, skId = b.dataset.sk;
+      cat.loadout = cat.loadout.slice(); cat.loadout[slotI] = skId;
+      State.save(); this.openSkillEditor(cat);
+      this.game.toast('已装备 ' + (S.skillById(skId) || {}).name);
+    });
+    document.getElementById('sk-back').onclick = () => this.openCatDetail(cat);
   },
   doEvolve(cat) {
     const S = window.Skills;
@@ -559,7 +674,7 @@ const UI = {
       const sel = this.teamUids.includes(c.uid);
       return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}">
         <canvas width="44" height="38"></canvas>
-        <div><div style="font-weight:700">${sp.name}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
+        <div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
       </div>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
@@ -695,5 +810,6 @@ function statLine(label, val) {
   const pct = Math.min(100, val * 3);
   return `<div class="stat-row"><span class="label">${label}</span><div class="bar xp"><span style="width:${pct}%"></span></div><span class="val">${val}</span></div>`;
 }
+function withA2(h, a) { if (!h || h[0] !== '#') return h || '#fff'; const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
 
 window.UI = UI;
