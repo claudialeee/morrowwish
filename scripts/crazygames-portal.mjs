@@ -235,6 +235,25 @@ try{
                const options=await page.locator('[role="option"],[role="menuitem"],li').allTextContents().catch(()=>[]);
                report.submissionForm.uploadProbe.afterOpenOptions=options.map(t=>safe(t.trim())).filter(Boolean).slice(0,30);
                report.submissionForm.uploadProbe.afterOpenText=safe(await page.locator('body').innerText().catch(()=>'' )).slice(-1400);
+               const combo=page.getByRole('combobox').first();
+               const select=page.getByText('Select',{exact:true}).first();
+               report.submissionForm.uploadProbe.comboCount=await page.getByRole('combobox').count();
+               report.submissionForm.uploadProbe.selectTextCount=await page.getByText('Select',{exact:true}).count();
+               report.submissionForm.uploadProbe.engineInputInfo=await engine.evaluate(el=>{
+                 const attrs=e=>e?{tag:e.tagName,role:e.getAttribute('role'),className:String(e.className).slice(0,140),
+                    ariaExpanded:e.getAttribute('aria-expanded'),ariaHaspopup:e.getAttribute('aria-haspopup'),
+                    readOnly:e.readOnly,tabIndex:e.tabIndex}:null;
+                 return {self:attrs(el),parent:attrs(el.parentElement),grandparent:attrs(el.parentElement?.parentElement)};
+               });
+               const el=await combo.count()?combo:await select.count()?select:engine;
+               const bounds=await el.boundingBox().catch(()=>null);
+               if(bounds)await page.mouse.click(bounds.x+bounds.width/2,bounds.y+bounds.height/2).catch(()=>{});
+               await page.waitForTimeout(750);
+               report.submissionForm.uploadProbe.afterPhysicalClickOptions=
+                 (await page.locator('[role="option"],[role="menuitem"],[role="listbox"]').allTextContents().catch(()=>[]))
+                 .map(t=>safe(t.trim())).filter(Boolean).slice(0,30);
+               report.submissionForm.uploadProbe.afterPhysicalClickText=safe(await page.locator('body').innerText().catch(()=>'' )).slice(-1450);
+
                const html5=page.getByRole('option',{name:/^html5$/i}).first();
                const fallback=page.getByText('HTML5',{exact:true}).first();
                const target=await html5.count()?html5:fallback;
