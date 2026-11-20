@@ -54,7 +54,7 @@ try{
       assert.equal(await page.evaluate(()=>window.State.S.cats.length),1,'Selecting a starter must work with a finger');
       assert.equal(await page.locator('#panel.open').count(),0,'Starter picker must close after selecting a cat');
       if (width === 390) {
-        await page.evaluate(() => window.UI.openWelcomeBack({
+        await page.evaluate(() => UI.openWelcomeBack({
           minutes: 120, capped: false, produced: {}, gains: { coins: 12 },
           visitors: [{ name: '汤圆', gift: { coins: 12, fish: 1, yarn: 3 }, rare: false }],
         }));
@@ -62,7 +62,7 @@ try{
         assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+12') && reportText.includes('🐟+1') && reportText.includes('🧶+3'),
           'Real visitor popup must show Tangyuan and each numeric resource reward: ' + reportText);
         assert.ok(!reportText.includes('[object Object]'), 'Real visitor popup must never stringify rewards as [object Object]');
-        await page.evaluate(() => window.UI.closeAll());
+        await page.evaluate(() => UI.closeAll());
       }
       const tabs=page.locator('#tabbar .tab');
       assert.equal(await tabs.count(),6,'All six cat game tabs must be present');
