@@ -211,3 +211,19 @@ html[lang="en"] .hero>p strong{display:block;white-space:nowrap;margin-top:4px}
   html[lang="en"] .hero>p{max-width:36ch}
   html[lang="en"] .hero>p strong{display:block;white-space:normal}
 }
+
+
+/* Cat Bond's spot in the featured grid: warm, character-led and visually distinct. */
+.bond-feature-card{background:radial-gradient(ellipse at 93% 0,#fff0daaa,transparent 52%),linear-gradient(145deg,#f7e9fa,#eddbf1 60%,#d9e9e8);border-color:#dfc4e7}
+.bond-feature-card .feature-content{position:relative;z-index:2}
+.bond-feature-card .feature-content>p{color:#66586e}
+.bond-feature-card .feature-art{height:47%;bottom:-5px}
+.bond-feature-card .feature-art:before{height:48px;background:linear-gradient(180deg,#eedff1,transparent)}
+.bond-feature-card .feature-art img{object-fit:cover;object-position:center 54%;filter:saturate(1.10) contrast(1.03)}
+.bond-feature-card .card-eyebrow{color:#846394}
+.bond-feature-card h3{color:#674b81;text-shadow:0 2px 0 #fff8fe8a}
+.bond-feature-card .feature-chips span{background:#ffffffa8;border-color:#cdb3d6;color:#745180}
+.bond-button{background:linear-gradient(100deg,#714ba2,#9662a7);box-shadow:0 6px 14px #714ba23b}
+.bond-button:hover{background:linear-gradient(100deg,#60408b,#825192)}
+.bond-sticker{background:#e9b7cd;color:#744d79;border-color:#fff9f0;transform:rotate(-8deg)}
+@media(max-width:780px){.bond-feature-card .feature-art{height:47%}}
