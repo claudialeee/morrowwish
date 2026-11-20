@@ -263,14 +263,17 @@ try{
                  .map(t=>safe(t.trim())).filter(Boolean).slice(0,30);
                report.submissionForm.uploadProbe.afterPhysicalClickText=safe(await page.locator('body').innerText().catch(()=>'' )).slice(-1450);
 
-               const html5=page.getByRole('option',{name:/^html5$/i}).first();
-               const fallback=page.getByText('HTML5',{exact:true}).first();
-               const target=await html5.count()?html5:fallback;
+               const external=page.getByRole('option',{name:/externally hosted/i}).first();
+               const fallback=page.getByText('Externally hosted (iframe)',{exact:true}).first();
+               const target=await external.count()?external:fallback;
                if(await target.count()&&await target.isVisible().catch(()=>false)){
                  await target.evaluate(el=>el.click());
-                 await page.waitForTimeout(450);
-                 report.submissionForm.uploadProbe.selectedEngine='HTML5';
-                 report.submissionForm.uploadProbe.afterSelect=safe(await page.locator('main').innerText().catch(()=>'' )).slice(-1100);
+                 await page.waitForTimeout(1800);
+                 report.submissionForm.uploadProbe.selectedEngine='Externally hosted (iframe)';
+                 report.submissionForm.uploadProbe.afterSelect=safe(await page.locator('body').innerText().catch(()=>'' )).slice(-2200);
+                 report.submissionForm.uploadProbe.afterSelectionFields=await inspectFields(page);
+                 report.submissionForm.uploadProbe.afterSelectionButtons=await page.locator('button:visible').allTextContents().catch(()=>[]);
+                 report.submissionForm.uploadProbe.afterSelectionPath=new URL(page.url()).pathname;
                }
 
              }
