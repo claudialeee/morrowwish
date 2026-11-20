@@ -29,6 +29,8 @@ const UI = {
       this.game.syncBattleModeUI();
       window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
+    const journey=document.getElementById('collection-goal');
+    if(journey)journey.addEventListener('click',()=>this.openJourney());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -812,6 +814,7 @@ const UI = {
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
+        <button class="btn ghost" id="cr-journey">${english?'What else can I do?':'还有什么可以玩？'}</button>
       </div>`);
     CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
     const dismiss=()=>{
@@ -820,11 +823,66 @@ const UI = {
       this.game.refreshCollectionGoal();
     };
     document.getElementById('cr-ok').onclick=dismiss;
+    document.getElementById('cr-journey').onclick=()=>this.openJourney();
     document.getElementById('cr-next').onclick=()=>{
       dismiss();
       if(this.game.scene==='yard'&&!this.game.yard.hide)this.game.yard.startHideAndSeek();
       window.arcadeMetric?.('bond_continue_search');
     };
+  },
+
+  // Show meaningful next activities instead of keeping players in a catch-only loop.
+  openJourney(){
+    const status=this.game.collectionStatus();
+    const adv=this.game.adventureStatus();
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const target=status.next||status.total;
+    const petTarget=[3,10,25].find(n=>adv.pets<n)||25;
+    const exploreText=en
+      ?(adv.unlocked<=1?'Explore 40% of Home to unlock Sakura Woods'
+        :adv.unlocked+'/'+adv.totalRegions+' regions unlocked')
+      :(adv.unlocked<=1?'探索庭院地区 40%，解锁樱花林'
+        :'已解锁 '+adv.unlocked+'/'+adv.totalRegions+' 个探索区域');
+    this.panel(`<span class="card-close">×</span>
+      <h2 class="center">${en?'🧭 Your Cat Adventure':'🧭 猫猫冒险手册'}</h2>
+      <p class="sub center">${en?'Collect new friends, build bonds and unlock hidden places.'
+        :'收集新朋友、培养感情、探索更广阔的猫咪世界。'}</p>
+      <div class="journey-paths">
+        <article class="journey-path">
+          <div class="journey-icon">🐾</div>
+          <div class="journey-copy"><b>${en?'Collect cats':'猫咪图鉴'}</b>
+            <p>${en?'Discovered '+status.count+'/'+status.total+' · Next bonus at '+target
+              :'已发现 '+status.count+'/'+status.total+' 种 · '+target+' 种时可领取奖励'}</p>
+            <div class="journey-progress"><span style="width:${Math.min(100,status.count/target*100)}%"></span></div>
+          </div><button class="btn gold" id="journey-collect">${en?'Find':'寻找'}</button>
+        </article>
+        <article class="journey-path">
+          <div class="journey-icon">💞</div>
+          <div class="journey-copy"><b>${en?'Bond with your cats':'和猫咪培养感情'}</b>
+            <p>${en?'Pet your cats '+adv.pets+'/'+petTarget+' times to earn rewards'
+              :'撸猫 '+adv.pets+'/'+petTarget+' 次可获得亲密奖励'}</p>
+            <div class="journey-progress"><span style="width:${Math.min(100,adv.pets/petTarget*100)}%"></span></div>
+          </div><button class="btn gold" id="journey-bond">${en?'Pet':'撸猫'}</button>
+        </article>
+        <article class="journey-path">
+          <div class="journey-icon">🗺️</div>
+          <div class="journey-copy"><b>${en?'Explore new places':'探索新区域'}</b>
+            <p>${exploreText}</p>
+            <div class="journey-progress"><span style="width:${Math.min(100,adv.unlocked<=1?adv.homeExplored/40*100:adv.unlocked/adv.totalRegions*100)}%"></span></div>
+          </div><button class="btn gold" id="journey-explore">${en?'Explore':'探索'}</button>
+        </article>
+      </div>`);
+    document.getElementById('journey-collect').onclick=()=>{
+      this.closeAll();
+      if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}
+      if(!this.game.yard.hide)this.game.yard.startHideAndSeek();
+    };
+    document.getElementById('journey-bond').onclick=()=>{
+      this.closeAll();
+      if(this.game.scene==='map'){this.game.scene='yard';this.game.showYardChrome();}
+      this.game.toast(en?'Tap a cat in the yard to earn affection!':'点击庭院里的猫咪，提高好感并领取奖励！');
+    };
+    document.getElementById('journey-explore').onclick=()=>{this.closeAll();this.game.openWorldMap();};
   },
 
   // ---------- starter picker (first run) ----------

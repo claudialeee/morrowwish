@@ -14,6 +14,8 @@ const DEFAULT_STATE = () => ({
   streak: 0,
   tutorialDone: false,
   catchCount: 0,
+  petCount: 0, // real taps on living cats, across sessions
+  bondingRewards: [], // claimed bonding milestones
   collectionMilestones: [], // one-time, cumulative codex discovery rewards
 });
 

@@ -140,10 +140,32 @@ class Game {
     if(hint.hidden)return;
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const label=status.next===null
-      ?(english?'🏆 All 25 cat breeds discovered!':'🏆 25 种猫咪全部收集！')
-      :(english?'🐾 Cat collection '+status.count+'/'+status.next+' · Find another wild cat'
-        :'🐾 猫咪图鉴 '+status.count+'/'+status.next+' · 再找一只野猫');
+      ?(english?'🏆 Cat Adventure · All 25 breeds! ›':'🏆 猫猫冒险 · 25 种全部收集 ›')
+      :(english?'🧭 Cat Adventure · '+status.count+'/'+status.next+' breeds · Goals ›'
+        :'🧭 猫猫冒险 · 图鉴 '+status.count+'/'+status.next+' · 查看目标 ›');
     if(hint.textContent!==label)hint.textContent=label;
+  }
+
+  adventureStatus(){
+    const regions=window.WorldMap?.REGIONS||[];
+    const unlocked=regions.filter(r=>WorldMap.isUnlocked(r.id)).length;
+    const homeExplored=Math.round((State.S.worldmap?.regions?.home?.explored||0)*100);
+    return {pets:State.S.petCount||0,unlocked,totalRegions:regions.length,homeExplored};
+  }
+  grantBondingRewards(){
+    const S=State.S;
+    if(!Array.isArray(S.bondingRewards))S.bondingRewards=[];
+    const goals=[{n:3,coins:35,treats:2},{n:10,coins:100,treats:3},{n:25,coins:250,treats:5}];
+    const rewards=[];
+    for(const g of goals){
+      if((S.petCount||0)>=g.n&&!S.bondingRewards.includes(g.n)){
+        S.bondingRewards.push(g.n);
+        S.coins+=g.coins;S.treats+=g.treats;
+        metric('bond_bonding_milestone',{pets:S.petCount,target:g.n});
+        rewards.push(g);
+      }
+    }
+    return rewards;
   }
 
   refreshFirstQuest(){
@@ -391,7 +413,15 @@ class Game {
     cat.affinity = Math.min(100, cat.affinity + 2);
     cat.joy = Math.min(100, cat.joy + 5);
     const lv = State.addXp(cat, 3);
-    if (lv) this.toast(`${GameData.speciesById(cat.species).name} 升到 Lv.${cat.level}！`);
+    State.S.petCount=(State.S.petCount||0)+1;
+    const rewards=this.grantBondingRewards();
+    if(lv)this.toast(`${GameData.speciesById(cat.species).name} 升到 Lv.${cat.level}！`);
+    if(rewards.length){
+      const coins=rewards.reduce((n,r)=>n+r.coins,0);
+      this.toast((window.MorrowwishI18n?.get?.()==='zh'
+        ?'💞 亲密互动奖励：+':'💞 Bonding reward: +')+coins+' 🪙');
+      this.refreshHUD();
+    }
     State.save();
     // if a detail panel is open for this cat, refresh it
     if (UI.openCatUid === cat.uid) UI.renderCatDetail(cat);
