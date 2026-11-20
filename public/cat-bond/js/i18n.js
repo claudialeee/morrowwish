@@ -68,6 +68,9 @@
     '🤖 自动战斗：开':'🤖 Auto Battle: ON',
     '猫猫冒险手册':'Cat Adventure Guide',
     '还有什么可以玩？':'What else can I do?',
+    // ---- optional battle mastery objective for returning players ----
+    'S评级挑战：40秒内获胜 · 血量保持70% · 6连击或完美闪避':
+      'S challenge: Win in 40s · Keep 70% HP · 6-hit combo or perfect dodge',
     // ---- wild-cat discovery / skill-based battle results ----
     '传说邂逅':'Legendary encounter',
     '史诗邂逅':'Epic encounter',
