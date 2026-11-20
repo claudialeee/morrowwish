@@ -31,6 +31,17 @@ main{max-width:1080px;margin:auto;padding:10px 22px 38px}.heading{text-align:cen
 .overlay[data-ending="friends"]{background:linear-gradient(150deg,#426a85ef,#3c817cfa)}
 .overlay[data-ending="rest"],.overlay[data-ending="calm"]{background:linear-gradient(150deg,#3d6a77ef,#487d77fa)}
 .overlay[data-ending]:not([data-ending=""]) .fish-icon{font-size:64px;filter:drop-shadow(0 5px 9px #0b373640)}
+
+/* Phone tap targets and safe-area padding for one-handed play. */
+@media(max-width:600px){
+ header{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .languages button{min-height:44px;min-width:44px}
+ .foods .food{min-height:48px;padding:10px 5px}
+ .play{min-height:48px}
+ .restart{min-height:44px;padding:8px 4px}
+ .overlay{padding:12px}
+ .dialog{max-height:100%;overflow-y:auto}
+}
 </style>
 </head>
 <body data-game="pocket-aquarium">
