@@ -5,6 +5,29 @@ const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const failures=[];
 try{
+  // Render the exact homepage thumbnail, including its embedded watercolor WebP.
+  // A broken SVG/data URI can have a URL and still render an empty tile.
+  const coverPage=await browser.newPage();
+  try{
+    await coverPage.goto(origin+'/?lang=zh',{waitUntil:'domcontentloaded'});
+    const cover=coverPage.locator('.bond-feature-card .feature-art img');
+    await cover.scrollIntoViewIfNeeded();
+    await coverPage.waitForFunction(()=>{
+      const img=document.querySelector('.bond-feature-card .feature-art img');
+      return img&&img.complete&&img.naturalWidth>=600;
+    },null,{timeout:10000});
+    const pixels=await cover.evaluate(img=>{
+      const cv=document.createElement('canvas');
+      cv.width=150;cv.height=90;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0,150,90);
+      return [ctx.getImageData(52,46,1,1).data,ctx.getImageData(105,35,1,1).data].map(x=>[...x]);
+    });
+    assert.ok(pixels.every(x=>x[3]===255),'Thumbnail image did not render opaque artwork: '+JSON.stringify(pixels));
+    assert.ok(pixels.some(x=>x[0]<225||x[1]<205||x[2]<205),'Thumbnail renders blank: '+JSON.stringify(pixels));
+    console.log('CAT BOND COVER PASS: artwork loads and paints');
+  }catch(e){failures.push('homepage cover: '+e.message);console.error('CAT BOND COVER FAIL',failures.at(-1))}
+  finally{await coverPage.close()}
   for(const width of [390,320]){
     const context=await browser.newContext({viewport:{width,height:780},isMobile:true,hasTouch:true,deviceScaleFactor:2});
     const page=await context.newPage();
