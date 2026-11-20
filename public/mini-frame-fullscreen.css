@@ -13,6 +13,12 @@
 html.mw-mini-fullscreen-on,html.mw-mini-fullscreen-on body{
   overflow:hidden!important;overscroll-behavior:none!important;
 }
+/* Prevent floating site controls from covering the in-game exit button
+   after device rotation. The game-level controls remain available. */
+html.mw-mini-fullscreen-on #mw-language,
+html.mw-mini-fullscreen-on .mw-language-float{
+  display:none!important;pointer-events:none!important;
+}
 .mw-mini-arcade-frame:fullscreen,
 .mw-mini-aquarium-frame:fullscreen{background:#453b60}
 .mw-mini-arcade-frame.mw-mini-fullscreen-fallback,

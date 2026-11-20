@@ -137,6 +137,7 @@
       '.mw-immersive-target:fullscreen,.mw-immersive-target.mw-immersive-fallback{box-sizing:border-box!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;border-radius:0!important;background:#fff8f0;overscroll-behavior:contain}',
       '.mw-immersive-target.mw-immersive-fallback{position:fixed!important;inset:0!important;z-index:2147482000!important;isolation:isolate!important}',
       'html.mw-fs-active #mw-audio-dock{display:none!important}',
+      'html.mw-fs-active #mw-language,html.mw-fs-active .mw-language-float{display:none!important;pointer-events:none!important}',
 
       /* Flip Dash and Parcel Panic: keep original live score, best, restart
          and status inside the stage; no duplicated values or stale HUD. */

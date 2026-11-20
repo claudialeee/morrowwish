@@ -108,6 +108,9 @@ async function checkEntryOrientation(game,landscapeEntry){
     }
     await page.setViewportSize(rotated);
     await page.waitForTimeout(160);
+    // Global controls must never float over the fullscreen exit control.
+    assert.equal(await page.locator('#mw-language').isVisible(),false,
+      game+' language overlay must not block the fullscreen exit button');
     const after=await dims();
     assert.ok(after.fallback,game+' should remain fullscreen');
     if(game!=='pocket-aquarium'){
