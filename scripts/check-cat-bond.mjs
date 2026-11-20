@@ -156,6 +156,41 @@ assert.equal(typeof game.refreshFirstQuest,'function','First session has a visib
 // start screen -> start the game (the intro-start click handler)
 game.start();
 const State = sandbox.window.State, UI = sandbox.window.UI, GameData = sandbox.window.GameData;
+// Skill design: first battle is simple, first capture guarantees a new move.
+// Ordinary and rare cats must not all start with the same fireball loadout.
+const Skills=sandbox.window.Skills;
+for(const id of ['tangyuan','doudou','xiaohui']){
+  const kitten=State.makeCat(id,{affinity:20});
+  const ownElement=Skills.elementOf(id);
+  const before=Skills.learnableSkills(kitten);
+  assert.ok(before.every(sk=>sk.element===ownElement),
+    'Starter '+id+' begins with understandable own-element skills');
+  Skills.ensureLoadout(kitten);
+  const discovered=Skills.awakenFirstSkill(kitten);
+  assert.ok(discovered,'First successful capture must reveal a new skill for '+id);
+  assert.equal(discovered.element,Skills.SPLASH_ELEMENT[ownElement],
+    'Skill discovery must reveal a DIFFERENT element');
+  assert.equal(kitten.loadout[2],discovered.id,
+    'The first discovered ability is already equipped to E');
+  assert.equal(Skills.awakenFirstSkill(kitten),null,
+    'The first-capture reward must be awarded only once per cat');
+  assert.ok(Skills.progressionHint(kitten).length>5,'Next unlock must be visible');
+}
+const ordinary=State.makeCat('tangyuan',{affinity:40});
+ordinary.level=8;Skills.ensureLoadout(ordinary);
+assert.ok(Skills.skillById(ordinary.loadout[3])?.ultCost>0,
+  'Lv8 + bond40 must unlock the ordinary cat elemental ultimate');
+const legendary=State.makeCat('jinwu');
+Skills.ensureLoadout(legendary);
+assert.equal(legendary.loadout[3],'sunflare',
+  'Legendary Fire cat must start with signature ultimate');
+const legendaryThunder=State.makeCat('xianluo');
+Skills.ensureLoadout(legendaryThunder);
+assert.equal(legendaryThunder.loadout[3],'thunderYowl',
+  'Epic electric cat must have unique elemental ultimate');
+assert.notEqual(legendary.loadout[0],legendaryThunder.loadout[0],
+  'Legendary and epic cats should have distinct normal attacks');
+
 
 const earlyState=sandbox.window.State;
 earlyState.S.cats=[earlyState.makeCat('tangyuan')];
