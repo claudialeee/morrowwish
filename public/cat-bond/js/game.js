@@ -109,9 +109,11 @@ class Game {
     const panelOpen=document.getElementById('panel')?.classList.contains('open');
     hint.hidden=!first||this.scene!=='yard'||!!panelOpen;
     if(hint.hidden)return;
-    hint.textContent=this.yard?.hide
-      ? '🌿 第一次收集：点击发光的草丛，找到新伙伴'
-      : '🌿 第一次收集：点击右下角的草丛按钮寻找野猫';
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const label=this.yard?.hide
+      ? (english?'🌿 First capture: tap the glowing bush!':'🌿 第一次收集：点击发光的草丛，找到新伙伴')
+      : (english?'🌿 First capture: tap the grass button to find a wild cat':'🌿 第一次收集：点击右下角的草丛按钮寻找野猫');
+    if(hint.textContent!==label)hint.textContent=label;
   }
 
   loop(ts) {
