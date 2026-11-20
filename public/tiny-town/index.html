@@ -362,6 +362,10 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
  .top-actions .btn,.tt-builder-rail .btn,.aw-mobile-controls .btn{min-height:44px}
  .tt-map-footer{font-size:11px}
 }
+
+/* Always show newcomer portrait artwork from the start, not blank sprite rows. */
+.tt-portrait .tt-painted-newcomer{background-image:none;display:block;overflow:hidden}
+.tt-portrait .tt-painted-newcomer svg{display:block;width:100%;height:100%;border-radius:11px}
 </style><script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script></head>
 <body><script src="/telemetry.js"></script><script src="/social-share.js"></script><nav class="arcade-return"><a href="/">← MORROW WISH · OUR WORLDS</a><span>A MORROW WISH GAME</span><a href="/elsewhere/">EXPLORE ELSEWHERE →</a></nav><div class="app">
   <div class="top"><div><h1>No More Mondays <span>· Tiny Town v3.0</span></h1><p class="sub">AI does all the work. Every day is free. What will people live for?</p></div><div class="top-actions"><button id="same" class="btn">Retry this map</button><button id="random" class="btn">New map</button><button id="export" class="btn" hidden>Export playtest log</button><button id="shareGame" class="btn">Share game</button></div></div>
@@ -591,6 +595,18 @@ const cell=p=>'ABCD'[p%4]+(Math.floor(p/4)+1);
 const all=()=>state.residents.concat(state.turn<5?state.incoming:[]);
 // Twelve original, friendly illustrated portraits — no smiley-face emoji and no external assets.
 function portrait(person){
+ // Newcomers (IDs 8–11) receive their own illustrated vector portraits.
+ // This avoids empty lower-row sprite cells before they arrive in Week 5.
+ if(person.id>=8&&person.id<=11){
+  const characters=[
+   {skin:'#efba9d',hair:'#493340',shirt:'#9cb6a2',bg:'#ffe4cf',part:'M18 35Q15 8 36 10Q58 7 55 36Q48 25 36 24Q25 24 18 35Z'},
+   {skin:'#c78e72',hair:'#392c33',shirt:'#9da7d5',bg:'#e9e2f3',part:'M17 31Q18 10 36 11Q53 8 56 31Q43 22 29 27L17 31Z'},
+   {skin:'#f2c8aa',hair:'#80524d',shirt:'#d7a1af',bg:'#ffe2ec',part:'M18 36Q12 11 35 10Q60 10 54 40L50 22Q27 18 18 36Z'},
+   {skin:'#e3aa85',hair:'#4d3635',shirt:'#8cbdbb',bg:'#dff0e8',part:'M17 32Q17 11 37 10Q56 11 55 31Q44 20 17 32Z'}
+  ];
+  const p=characters[person.id-8];
+  return '<span class="tt-painted tt-painted-newcomer" aria-hidden="true"><svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg"><rect width="72" height="72" rx="12" fill="'+p.bg+'"/><path d="M0 74Q6 53 36 53Q66 53 72 74Z" fill="'+p.shirt+'"/><ellipse cx="36" cy="35" rx="19" ry="23" fill="'+p.skin+'"/><path d="'+p.part+'" fill="'+p.hair+'"/><path d="M25 35h6M42 35h6" stroke="#43343c" stroke-linecap="round" stroke-width="2.7"/><path d="M32 45Q36 49 40 45" fill="none" stroke="#a66764" stroke-width="2" stroke-linecap="round"/></svg></span>';
+ }
  const col=person.id%6,row=Math.floor(person.id/6);
  return '<span class="tt-painted" style="background-position:'+(col*20)+'% '+(row*100)+'%" aria-hidden="true"></span>';
 }
