@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateDiscovery } from './discovery.mjs';
+import { generateSocialCards } from './render-social-cards.mjs';
 import { execFileSync } from 'node:child_process';
 
 const base = process.cwd();
@@ -25,4 +26,5 @@ if (!analytics.includes('async function api') || !router.includes('ASSETS.fetch'
 fs.writeFileSync(path.join(out, '_worker.js'), analytics + '\n' + router);
 console.log('Built Cloudflare Pages assets from canonical public/ and src/.');
 
+await generateSocialCards(out);
 generateDiscovery(out);

@@ -16,7 +16,7 @@ const text=(opts,lang=zh(opts))=>opts.message||(
  lang?'我在 '+opts.title+' 拿了 '+opts.score+' 分！你能打破我的纪录吗？'
  :'I scored '+opts.score+' in '+opts.title+'. Can you beat me?');
 function shareLink(raw,platform){
- const url=new URL(raw,location.href);url.searchParams.set('utm_source',platform);
+ const url=new URL(raw,location.href);url.searchParams.set('share_v','20261120');url.searchParams.set('utm_source',platform);
  url.searchParams.set('utm_medium','player_share');return url.toString();
 }
 function destination(id,opts){

@@ -48,6 +48,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Install image renderer for refreshed share cards
+        run: npm install --no-save --no-package-lock sharp@0.34.5
       - name: Fetch CC0 recorded cat soundtrack
         run: bash scripts/fetch-cat-music.sh
       - name: Install ffmpeg for promotional video audio
