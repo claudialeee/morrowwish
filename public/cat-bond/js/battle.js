@@ -879,6 +879,7 @@ class CaptureBattle {
 
   // themed battle backdrop; recolors per world-map region (this.theme)
   drawArenaBackground(ctx, W, H) {
+    if(window.CatBondScenery && CatBondScenery.drawBattle(ctx,W,H,this.t,this.theme))return;
     const t = this.t, horizon = H * 0.34;
     const th = this.theme || {};
     const sky1 = th.sky1 || '#271a46', sky2 = th.sky2 || '#4a3570';
