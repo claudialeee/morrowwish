@@ -287,7 +287,7 @@ class CaptureBattle {
       mx=-dy/dist*.24;my=dx/dist*.24;
     }
     const mag=Math.hypot(mx,my);
-    if(mag>0.04){
+    if(mag>0.04 && !(f.dashT>0&&f.pounce)){
       const spd=f.dashT>0?f.speed*3:f.speed;
       f.x=clamp(f.x+mx/mag*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
       f.y=clamp(f.y+my/mag*spd*dt,this.topMargin,this.H-this.bottomMargin);
@@ -324,7 +324,7 @@ class CaptureBattle {
       if(!sk)return slot==='q'&&dist<310;
       if(sk.kind==='heal'||sk.kind==='buff')return false;
       if(sk.kind==='melee')return dist<=106;
-      if(sk.kind==='dash')return dist>65&&dist<240;
+      if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
       return dist<460;
     };
     if(f.cd.q<=0&&offensive(f.qSkill,'q')){
