@@ -309,19 +309,19 @@
         "tiktok": {
           "priority": "P1",
           "status": "published",
-          "platformId": "7710057296314780959",
-          "publicUrl": "https://www.tiktok.com/@morrowwishgames/video/7710057296314780959",
-          "scheduledAt": "2026-11-19T17:20:00",
+          "platformId": "7710064497150496014",
+          "publicUrl": "https://www.tiktok.com/@morrowwishgames/video/7710064497150496014",
+          "scheduledAt": "2026-11-19T17:48:00",
           "utm_source": "tiktok",
           "utm_campaign": "pawsibly-innocent-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=tiktok&utm_medium=video&utm_campaign=pawsibly-innocent-playtest",
-          "scheduledPostId": "434984295",
-          "scheduledPostUuid": "-7961872703183896183",
+          "scheduledPostId": "435012892",
+          "scheduledPostUuid": "5330988901130978532",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
-          "publishedAt": "2026-11-19T17:20:00",
-          "audioFix": "original-possibly-silent-cannot-replace-in-place"
+          "publishedAt": "2026-11-19T17:48:00",
+          "audioFix": "embedded-cc0-verified"
         },
         "google": {
           "priority": "P1",
@@ -752,7 +752,8 @@
         "scheduledAt": "2026-11-19T17:48:00",
         "timezone": "America/Los_Angeles",
         "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place",
-        "status": "scheduled"
+        "status": "published",
+        "publicUrl": "https://www.tiktok.com/@morrowwishgames/video/7710064497150496014"
       },
       {
         "game": "pawsibly-innocent",
