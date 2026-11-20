@@ -1,0 +1,23 @@
+{
+  "name": "猫猫纽带 · Cat Bond",
+  "short_name": "Cat Bond",
+  "description": "在温柔的小庭院里与猫咪建立纽带。",
+  "start_url": "/cat-bond/",
+  "scope": "/cat-bond/",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#e4ede0",
+  "theme_color": "#e4ede0",
+  "icons": [
+    {
+      "src": "/icons/cat-bond.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
