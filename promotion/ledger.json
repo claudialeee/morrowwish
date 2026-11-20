@@ -292,19 +292,19 @@
         "youtube": {
           "priority": "P1",
           "status": "published",
-          "platformId": "tH_qdYKdvW4",
-          "publicUrl": "https://www.youtube.com/shorts/tH_qdYKdvW4",
-          "scheduledAt": "2026-11-19T17:30:00",
+          "platformId": "dTMkpzwRS7Q",
+          "publicUrl": "https://www.youtube.com/shorts/dTMkpzwRS7Q",
+          "scheduledAt": "2026-11-19T17:50:00",
           "utm_source": "youtube",
           "utm_campaign": "pawsibly-innocent-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=youtube&utm_medium=video&utm_campaign=pawsibly-innocent-playtest",
-          "scheduledPostId": "434984318",
-          "scheduledPostUuid": "-1540544710278626802",
+          "scheduledPostId": "435012910",
+          "scheduledPostUuid": "-6568402882065120978",
           "scheduler": "Metricool",
           "timezone": "America/Los_Angeles",
           "autoPublish": true,
-          "publishedAt": "2026-11-19T17:30:00",
-          "audioFix": "original-possibly-silent-cannot-replace-in-place"
+          "publishedAt": "2026-11-19T17:50:00",
+          "audioFix": "embedded-cc0-verified"
         },
         "tiktok": {
           "priority": "P1",
@@ -763,7 +763,8 @@
         "scheduledAt": "2026-11-19T17:50:00",
         "timezone": "America/Los_Angeles",
         "purpose": "corrected-with-audio follow-up; original platform post cannot be replaced in place",
-        "status": "scheduled"
+        "status": "published",
+        "publicUrl": "https://www.youtube.com/shorts/dTMkpzwRS7Q"
       }
     ],
     "oldSilentPosts": [
