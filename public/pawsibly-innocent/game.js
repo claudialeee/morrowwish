@@ -181,7 +181,7 @@ function renderCollections(){
  }
  if(gallery)gallery.innerHTML=RELICS.map((item,i)=>{
   const unlocked=!!save.souvenirs[i],pending=s?.hasRelic&&s.index===i&&!unlocked;
-  return '<div class="relic-card '+(unlocked?'':'locked')+'"><span class="glyph">'+(unlocked||pending?item.glyph:"🔒")+'</span><span><strong>'+(unlocked||pending?item[lang==="zh"?"zh":"en"]:"???")+'</strong><small>'+(unlocked?item[lang==="zh"?"zhDesc":"enDesc"]:(pending?(lang==="zh"?"本局找到，待逃脱保存":"Found now; escape to save"):(lang==="zh"?"第 "+(i+1)+" 关 · 尚未收藏":"Room "+(i+1)+" · not found")))+'</small></span></div>';
+  return '<div class="relic-card '+(unlocked?'':'locked')+'"><span class="glyph">'+(unlocked||pending?item.glyph:"🔒")+'</span><span><strong>'+(unlocked||pending?item[lang==="zh"?"zh":"en"]:"???")+'</strong><small>'+(unlocked?(item[lang==="zh"?"zhDesc":"enDesc"]+(lang==="zh"?" · 已收藏":" · Collected")):(pending?(lang==="zh"?"本局找到，待逃脱保存":"Found now; escape to save"):(lang==="zh"?"第 "+(i+1)+" 关 · 尚未收藏":"Room "+(i+1)+" · not found")))+'</small></span></div>';
  }).join("");
  const chipbar=$("badgeHighlights");
  if(chipbar){
