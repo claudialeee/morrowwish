@@ -21,6 +21,7 @@ const DB={prepare(sql){
    return rows.find(r=>r.category===args[0]&&r.view_id===args[1])||null;
   },
   async all(){
+   if(sql.startsWith('SELECT kind,payload FROM events'))return {results:rows.filter(r=>r.category===args[0]&&r.view_id===args[1]).sort((a,b)=>a.id-b.id)};
    assert.match(sql,/SELECT category,day,game/);
    return {results:rows.filter(r=>r.category===args[0]&&r.day>=args[1]).sort((a,b)=>b.id-a.id)};
   }
@@ -43,8 +44,10 @@ for(let i=0;i<games.length;i++){
  const smoke=await api(req('/api/session',{kind:'visit',game:g,viewId:probe,visitor:'qa',smokeProbe:'mw-qa-v1'}),env);
  assert.equal(smoke.status,202,g+' probe write');
  assert.equal(rows.find(x=>x.view_id===probe).category,'diagnostic',g+' isolated');
+ const smokeFinish=await api(req('/api/session',{kind:'session',game:g,viewId:probe,visitor:'qa',smokeProbe:'mw-qa-v1',starts:1,ends:1}),env);
+ assert.equal(smokeFinish.status,202,g+' diagnostic start and finish write');
  const checked=await api(new Request('https://morrowwish.pages.dev/api/diagnostic-check?probe='+probe),env);
- assert.deepEqual(await checked.json(),{recorded:true,removed:true},g+' read and clean');
+ assert.deepEqual(await checked.json(),{recorded:true,sessionRecorded:true,startRecorded:true,endRecorded:true,removed:true},g+' completed run read and clean');
  assert.equal(rows.find(x=>x.view_id===probe),undefined,g+' probe cleanup');
 }
 for(const g of ['flip-dash','parcel-panic']){
