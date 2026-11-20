@@ -299,7 +299,10 @@ class YardScene {
   startHideAndSeek(spot) {
     if (this.hide) return;
     const first=(State.S.catchCount||0)===0;
-    const luck=Math.min(0.9,State.S.luckLure*0.25);
+    // A Golden Paw medal is a permanent exploration upgrade. Three unique
+    // S-ranked breeds add one modest rarity-weight tier, even without lures.
+    const masteryLuck=this.game.masteryStatus?.().luckBonus||0;
+    const luck=Math.min(0.9,(State.S.luckLure||0)*0.25+masteryLuck);
     const beginnerPool=GameData.SPECIES.filter(sp=>sp.rarity==='N' && sp.id!==State.S.cats[0]?.species);
     let sp=first&&beginnerPool.length
       ? beginnerPool[Math.floor(Math.random()*beginnerPool.length)]
