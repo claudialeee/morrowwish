@@ -191,7 +191,7 @@ export async function api(req,env){
   // Real gameplay and isolated deployment probes share the same D1 INSERT.
   // Probe rows live outside the arcade and story reporting categories.
   const qaGames=new Set(["pawsibly-innocent","tiny-town","elsewhere","flip-dash","parcel-panic","pocket-aquarium"]);
-  const smoke=category==="arcade"&&data.kind==="visit"&&data.smokeProbe==="mw-qa-v1"&&/^mw-qa-[0-9a-f-]{36}$/.test(viewId)&&qaGames.has(game);
+  const smoke=category==="arcade"&&(data.kind==="visit"||data.kind==="session")&&data.smokeProbe==="mw-qa-v1"&&/^mw-qa-[0-9a-f-]{36}$/.test(viewId)&&qaGames.has(game);
   const storageCategory=smoke?"diagnostic":category;
   await env.DB.prepare("INSERT INTO events(category,day,ts,game,visitor,view_id,run_id,event_name,kind,payload) VALUES(?,?,?,?,?,?,?,?,?,?)").bind(storageCategory,day,now,game,visitor,viewId,runId,tidy(data.event,48),tidy(data.kind,48),JSON.stringify(data)).run();
   return json({ok:true},202);
@@ -202,9 +202,12 @@ export async function api(req,env){
   if(req.method!=="GET")return json({error:"GET required"},405);
   const probe=new URL(req.url).searchParams.get("probe")||"";
   if(!/^mw-qa-[0-9a-f-]{36}$/.test(probe))return json({error:"Invalid diagnostic probe"},400);
-  const found=await env.DB.prepare("SELECT id FROM events WHERE category=? AND view_id=? LIMIT 1").bind("diagnostic",probe).first();
-  if(found)await env.DB.prepare("DELETE FROM events WHERE category=? AND view_id=?").bind("diagnostic",probe).run();
-  return json({recorded:!!found,removed:!!found});
+  const query=await env.DB.prepare("SELECT kind,payload FROM events WHERE category=? AND view_id=? ORDER BY id ASC LIMIT 4").bind("diagnostic",probe).all();
+  const results=query.results||[],visits=results.filter(r=>r.kind==="visit"),sessions=results.filter(r=>r.kind==="session");
+  const sawStart=sessions.some(r=>Number(JSON.parse(r.payload||"{}").starts)>=1);
+  const sawEnd=sessions.some(r=>Number(JSON.parse(r.payload||"{}").ends)>=1);
+  if(results.length)await env.DB.prepare("DELETE FROM events WHERE category=? AND view_id=?").bind("diagnostic",probe).run();
+  return json({recorded:visits.length>0,sessionRecorded:sessions.length>0,startRecorded:sawStart,endRecorded:sawEnd,removed:results.length>0});
  }
  if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(req.method!=="GET")return json({error:"GET required"},405);
