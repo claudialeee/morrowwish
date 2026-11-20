@@ -196,43 +196,35 @@
     const zh=window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh');
     return '<span aria-hidden="true">'+(active?'■':'◌')+'</span> '+(zh?(active?'停止朗读':'朗读'):(active?'Stop':'Listen'));
   }
-  const NARRATOR_VOICE_KEY='elsewhere.narrator.voice.v1';
-  function narrationScore(v,language){
-    const name=v.name||'',loc=(v.lang||'').toLowerCase();
-    return (/premium|enhanced|natural|neural/i.test(name)?100:0)+
-      (/ava|zoe|jenny|xiaoxiao|tingting|mei-jia|samantha|google.*english|google.*中文/i.test(name)?35:0)+
-      (/google|apple|microsoft/i.test(name)?12:0)+
-      (loc===language.toLowerCase()?15:0)+(v.localService?4:0)-
-      (/compact|espeak|festival|fred|albert/i.test(name)?80:0);
-  }
-  function narrationVoices(language){
-    return (window.speechSynthesis?.getVoices?.()||[])
-      .filter(v=>(v.lang||'').toLowerCase().startsWith(language.slice(0,2).toLowerCase()))
-      .sort((a,b)=>narrationScore(b,language)-narrationScore(a,language));
-  }
+  // Curated narrator: prefer studio-quality neural/enhanced voices where the
+  // browser exposes them. A web page cannot install extra iOS system voices.
   function narrationLanguage(){
     return window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh')?'zh-CN':'en-US';
   }
-  function chooseNarrationVoice(language){
-    const candidates=narrationVoices(language);
-    let picked='';try{picked=localStorage.getItem(NARRATOR_VOICE_KEY+language)||''}catch{}
-    return candidates.find(v=>v.name===picked)||candidates[0]||null;
+  function narrationScore(v,language){
+    const name=(v.name||'').toLowerCase(),uri=(v.voiceURI||'').toLowerCase(),loc=(v.lang||'').toLowerCase();
+    const premium=/premium|enhanced|natural|neural|high quality|siri/i.test(name+' '+uri);
+    const en=/ava|jenny|aria|serena|samantha|zoe|allison|google us english/i.test(name);
+    const zh=/xiaoxiao|xiaoyi|yunxi|ting.?ting|mei.?jia|zhiyu|xiaohan|xiaoyan/i.test(name);
+    const robotic=/compact|espeak|festival|eloquence|fred|albert|bahh|bubbles|bad news|boing|trinoids|whisper/i.test(name);
+    return (premium?120:0)+((language==='zh-CN'?zh:en)?55:0)+
+      (/microsoft|apple|google/i.test(name+' '+uri)?14:0)+
+      (loc===language.toLowerCase()?24:0)+(v.localService?3:0)-(robotic?150:0);
   }
-  function refreshNarrationVoices(){
-    const selector=$('#narrate-voice');if(!selector)return;
-    const language=narrationLanguage(),voices=narrationVoices(language).slice(0,8);
-    selector.replaceChildren();
-    if(voices.length<2){selector.hidden=true;return}
-    for(const v of voices){
-      const o=document.createElement('option');
-      o.value=v.name;o.textContent=v.name+(narrationScore(v,language)>80?' ★':'');
-      selector.append(o);
+  function narrationVoices(language){
+    const voices=window.speechSynthesis?.getVoices?.()||[];
+    const selected=voices.filter(v=>(v.lang||'').toLowerCase().startsWith(language.slice(0,2).toLowerCase()));
+    const unique=new Map();
+    for(const voice of selected){
+      const key=(voice.voiceURI||voice.name||'').trim().toLowerCase()+'|'+(voice.lang||'').toLowerCase();
+      if(!unique.has(key)||narrationScore(voice,language)>narrationScore(unique.get(key),language))unique.set(key,voice);
     }
-    selector.value=chooseNarrationVoice(language)?.name||voices[0].name;
-    selector.hidden=false;
-    const zh=language==='zh-CN';
-    selector.setAttribute('aria-label',zh?'选择朗读声音':'Choose narration voice');
-    selector.title=zh?'切换朗读声音（取决于设备已安装的语音）':'Change narration voice (depends on device voices)';
+    return [...unique.values()].sort((a,b)=>narrationScore(b,language)-narrationScore(a,language));
+  }
+  function chooseNarrationVoice(language){
+    // The previous dropdown exposed duplicate names and allowed low-quality
+    // system voices. Pick the highest quality available voice automatically.
+    return narrationVoices(language)[0]||null;
   }
   function stopSpeech() {
     speechToken++;
@@ -435,10 +427,10 @@
       if(index>=lines.length){stopSpeech();return;}
       const utterance=new SpeechSynthesisUtterance(lines[index++]);
       utterance.lang=language;
-      utterance.rate=language==='zh-CN'?.94:.98;
-      utterance.pitch=1.02;
+      utterance.rate=language==='zh-CN'?.93:.96;
+      utterance.pitch=1;
       if(voice)utterance.voice=voice;
-      utterance.onend=()=>{if(token===speechToken)speechDelay=setTimeout(advance,190)};
+      utterance.onend=()=>{if(token===speechToken)speechDelay=setTimeout(advance,280)};
       utterance.onerror=e=>{if(token===speechToken){
         if(e.error==='canceled'||e.error==='interrupted')return;
         stopSpeech();notify(language==='zh-CN'?'朗读暂不可用，请尝试更换设备语音。':'Read-aloud is unavailable with this device voice.');
@@ -469,14 +461,6 @@
     if(event.target.closest('#about-btn')||event.target.closest('#footer-about')){openAbout();return;}
     if(event.target.closest('#dialog-close')){$('#about-dialog').close();return;}
   });
-  const narratorSelector=$('#narrate-voice');
-  narratorSelector?.addEventListener('change',()=>{
-    try{localStorage.setItem(NARRATOR_VOICE_KEY+narrationLanguage(),narratorSelector.value)}catch{}
-    if(speaking)stopSpeech();
-  });
-  window.speechSynthesis?.addEventListener?.('voiceschanged',refreshNarrationVoices);
-  window.addEventListener('morrowwish-language-change',refreshNarrationVoices);
-  refreshNarrationVoices();
   $('#about-dialog').addEventListener('click',event=>{if(event.target===$('#about-dialog'))$('#about-dialog').close();});
   $('#brand').addEventListener('click',e=>{e.preventDefault();goHome();});
   window.addEventListener('popstate',()=>{const id=new URLSearchParams(location.search).get('world');if(id&&WORLD_BY_ID[id])openWorld(id,{push:false});else goHome(false);});
