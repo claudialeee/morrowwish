@@ -169,6 +169,7 @@ class CaptureBattle {
       // the two active skills this cat actually knows (from its element loadout)
       qSkill: loadout ? skillOf(loadout[1]) : null,
       eSkill: loadout ? skillOf(loadout[2]) : null,
+      ultSkill: loadout ? skillOf(loadout[3]) : null,
       revived: false,
       alive: true,
       hitFlash: 0,
@@ -652,18 +653,44 @@ class CaptureBattle {
     }
     return true;
   }
-  ultimate() {
-    if (this.ult < 100) { this.game.toast('必杀能量不足'); return false; }
-    const f = this.me(); this.ult = 0;
-    for (let i = 0; i < 16; i++) this.spawnProj(f.x, f.y, (i / 16) * Math.PI * 2, f.projSpeed * 0.9, f.dmg * 1.3, 'me', '#9d7bff', 8, 'star');
-    f.inv = 0.6; this.shakeT = 0.5; this.flash = 0.4;
-    // big layered VFX
-    this.vfx.shockwave(f.x, f.y, '#ffd36b');
-    this.vfx.ring(f.x, f.y, { r0: 10, vr: 620, life: 0.5, color: '#9d7bff', width: 8 });
-    this.vfx.burst(f.x, f.y, { count: 30, color: '#9d7bff', speed: 300, life: 0.6, r: 4 });
-    this.vfx.burst(f.x, f.y, { count: 18, color: '#ffd36b', speed: 220, life: 0.5, r: 3 });
-    this.vfx.text(f.x, f.y - 40, '喵之怒涛!', '#ffd36b', 22);
-    this.game.toast('🌪️ 必杀·喵之怒涛！');
+  ultimate(){
+    if(this.ult<100){this.game.toast('必杀能量不足');return false;}
+    const f=this.me(),skill=f.ultSkill;
+    this.ult=0;
+    f.inv=.65;this.shakeT=.5;this.flash=.4;
+    if(skill&&skill.ultCost>0){
+      // A learned elemental ultimate is an actual different attack, not just
+      // a renamed purple projectile. Hit nearby enemies, apply its status and
+      // element strengths, then draw its own colored burst.
+      const color=this.elemColor(skill.element);
+      const radius=skill.element==='dark'?340:skill.element==='water'?310:290;
+      let hits=0;
+      for(const e of this.liveEnemies().slice()){
+        if(Math.hypot(e.x-f.x,e.y-f.y)>radius)continue;
+        const dmg=this.applyHitEffects(e,skill,f.dmg*skill.power*.85,e.x,e.y);
+        this.hurtEnemy(e,dmg,e.x,e.y);
+        hits++;
+      }
+      this.vfx.shockwave(f.x,f.y,color);
+      this.vfx.ring(f.x,f.y,{r0:18,vr:Math.max(450,radius*2),life:.65,color,width:9});
+      this.vfx.burst(f.x,f.y,{count:28,color,speed:280,life:.65,r:5});
+      this.vfx.text(f.x,f.y-48,skill.name+'!',color,22);
+      this.game.toast(this.elemSymbol(skill.element)+' 必杀 · '+skill.name+'！');
+      this.lastUltimate={skill:skill.id,element:skill.element,hits};
+      window.arcadeMetric?.('bond_signature_ultimate',{skill:skill.id,rarity:GameData.speciesById(f.cat.species).rarity});
+    }else{
+      // New ordinary cats still have a useful basic ultimate until their own
+      // level and affinity unlock an elemental one.
+      for(let i=0;i<16;i++)
+        this.spawnProj(f.x,f.y,(i/16)*Math.PI*2,f.projSpeed*.9,
+          f.dmg*1.3,'me','#9d7bff',8,'star');
+      this.vfx.shockwave(f.x,f.y,'#ffd36b');
+      this.vfx.ring(f.x,f.y,{r0:10,vr:620,life:.5,color:'#9d7bff',width:8});
+      this.vfx.burst(f.x,f.y,{count:30,color:'#9d7bff',speed:300,life:.6,r:4});
+      this.vfx.text(f.x,f.y-40,'喵之怒涛!','#ffd36b',22);
+      this.game.toast('🌪️ 必杀·喵之怒涛！');
+      this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:0};
+    }
     return true;
   }
   switchTo(i) {
