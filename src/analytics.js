@@ -95,11 +95,12 @@ function mainStats(x){
     if(utm!=="itch"&&utm!=="itch.io"&&!/(^|\.)itch\.(io|zone)$/.test(ref))continue;
     const id=v.game+":"+(v.view_id||v.visitor+"-"+v.day);
     if(itchSeen.has(id))continue;itchSeen.add(id);
-    if(!itchByGame.has(v.game))itchByGame.set(v.game,{game:v.game,pageviews:0,startedViews:0,starts:0,completions:0,seconds:0});
+    if(!itchByGame.has(v.game))itchByGame.set(v.game,{game:v.game,pageviews:0,startedViews:0,starts:0,ends:0,completions:0,seconds:0});
     const z=itchByGame.get(v.game),events=sessionsByView.get(v.view_id)||[];
     z.pageviews++;
     if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
     z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
+    z.ends+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.ends)||0),0);
     z.completions+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.completion)||0),0);
     z.seconds+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.seconds)||0),0);
   }
