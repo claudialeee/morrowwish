@@ -352,6 +352,47 @@ try{
   console.log('Cat unlock and persistent selection checked at thresholds:',JSON.stringify({thresholds,selected}));
  }finally{await unlock.close()}
 
+ // Verify the CrazyGames iframe loads directly into a clean, usable game stage
+ // at their documented DPR=1 embed dimensions (not the oversized studio webpage).
+ for(const [w,h] of [[907,510],[800,450]]){
+  const iframe=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:1});
+  await iframe.route('**/api/session',route=>route.fulfill({status:204,body:''}));
+  const iframeErrors=[];iframe.on('pageerror',e=>iframeErrors.push(e.message));
+  try{
+   const playUrl=new URL(url);
+   playUrl.searchParams.set('platform','crazygames');
+   await iframe.goto(playUrl.toString(),{waitUntil:'load',timeout:40000});
+   await iframe.waitForTimeout(300);
+   const v=await iframe.evaluate(()=>{
+    const r=document.getElementById('stage')?.getBoundingClientRect();
+    const canvas=document.getElementById('board')?.getBoundingClientRect();
+    return {stage:r&&{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height},
+      canvas:canvas&&{width:canvas.width,height:canvas.height},hud:document.getElementById('cgStealthHUD')?.textContent,
+      header:getComputedStyle(document.querySelector('.sitebar')).display,
+      rules:getComputedStyle(document.querySelector('.explainer')).display,
+      sidebar:getComputedStyle(document.querySelector('aside.panel')).display,
+      fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
+      totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
+   });
+   assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
+   assert.equal(v.rules,'none','Gameplay must appear without a long text tutorial');
+   assert.equal(v.sidebar,'none','CrazyGames mode must keep controls inside the game view');
+   assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
+   assert.ok(v.hud?.includes('FISH'),'Gameplay must show the three-fish goal inside the iframe');
+   assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
+     'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
+   assert.ok(v.canvas.width>=475&&v.canvas.height>=330,
+     'Gameplay must remain large and legible at DPR 1: '+JSON.stringify(v));
+   assert.ok(v.totalWidth<=w+2&&v.totalHeight<=h+2,
+     'CrazyGames iframe must not require page scrolling: '+JSON.stringify(v));
+   const before=await iframe.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().cat}));
+   await iframe.locator('#board').click({position:{x:v.canvas.width*.28,y:v.canvas.height*.3}});
+   await iframe.waitForTimeout(450);
+   assert.ok(!iframeErrors.length,'CrazyGames iframe JS errors: '+iframeErrors.join(','));
+   console.log('CRAZYGAMES IFRAME PASS',w,h,JSON.stringify({hud:v.hud,stage:v.stage,from:before}));
+  }finally{await iframe.close();}
+ }
+
  // Five non-cat studio games remain effects-only; never synthesize melodies.
  const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
  const noMusicAudit=[];
