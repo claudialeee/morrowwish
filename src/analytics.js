@@ -26,7 +26,7 @@ function mainStats(x){
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
-  const eligible=new Set(["pawsibly-innocent","elsewhere","tiny-town","flip-dash","parcel-panic","pocket-aquarium"]);
+  const eligible=new Set(["pawsibly-innocent","cat-bond","elsewhere","tiny-town","flip-dash","parcel-panic","pocket-aquarium"]);
   const sessionsByView=new Map();
   for(const r of sessions){
     if(!r.view_id||!eligible.has(r.game))continue;
@@ -55,9 +55,40 @@ function mainStats(x){
     startRate:pct(z.startedViews,z.views),
     seconds:z.seconds,avgSeconds:z.views?Math.round(z.seconds/z.views):0
   })).sort((a,b)=>b.pageviews-a.pageviews);
+  // Click-attribution is opt-in by telemetry version, so historical visits do
+  // not distort this new conversion baseline (no invented 0-click sessions).
+  const featuredIds=["pawsibly-innocent","tiny-town","cat-bond","elsewhere"];
+  const homeSessions=new Map();
+  for(const s of sessions.filter(s=>s.game==="hub"&&s.view_id)){
+    if(!homeSessions.has(s.view_id))homeSessions.set(s.view_id,[]);
+    homeSessions.get(s.view_id).push(s);
+  }
+  const homeBySource=new Map(),homeClickCounts=Object.fromEntries(featuredIds.map(id=>[id,0])),seenHomeViews=new Set();
+  for(const v of visits.filter(v=>v.game==="hub"&&v.data.hubClickVersion===1)){
+    const id=v.view_id||v.visitor+"-"+v.day;
+    if(seenHomeViews.has(id))continue;seenHomeViews.add(id);
+    const d=v.data||{};
+    const source=tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct");
+    if(source==="internal")continue;
+    if(!homeBySource.has(source))homeBySource.set(source,{source,visits:0,clickedViews:0,clicks:0});
+    const z=homeBySource.get(source);z.visits++;
+    const signals={};
+    for(const s of homeSessions.get(v.view_id)||[]){
+      for(const [key,value] of Object.entries(s.data.signals||{})){
+        if(!key.startsWith("hub_card_")||!Number.isFinite(Number(value))||Number(value)<=0)continue;
+        signals[key]=(signals[key]||0)+Math.min(100,Number(value));
+      }
+    }
+    const clicks=Object.values(signals).reduce((n,x)=>n+x,0);
+    if(clicks>0)z.clickedViews++;z.clicks+=clicks;
+    for(const gameId of featuredIds)homeClickCounts[gameId]+=(signals["hub_card_"+gameId.replaceAll("-","_")]||0);
+  }
+  const homeSources=[...homeBySource.values()].map(z=>({...z,clickRate:pct(z.clickedViews,z.visits)})).sort((a,b)=>b.visits-a.visits);
+  const homeViews=homeSources.reduce((n,z)=>n+z.visits,0),homeClickedViews=homeSources.reduce((n,z)=>n+z.clickedViews,0);
+  const homeFunnel={visits:homeViews,clickedViews:homeClickedViews,clickRate:pct(homeClickedViews,homeViews),byGame:homeClickCounts,bySource:homeSources};
   const total=score(rows.filter(r=>r.game!=="hub"));
   const all=score(rows);
-  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  return {days:x.days,updated:new Date().toISOString(),partial:x.partial,records:rows.length,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
  // Five-scene edition only. Legacy eight-scene records stay in D1 but are not mixed into this funnel.

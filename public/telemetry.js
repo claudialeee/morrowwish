@@ -70,10 +70,19 @@ if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n===
 window.arcadeMetric=event;
 const onFirstAction=()=>{if(firstMs<0)firstMs=Math.round(performance.now()-start);};
 window.addEventListener("pointerdown",onFirstAction,{once:true,passive:true});window.addEventListener("keydown",onFirstAction,{once:true,passive:true});
-document.addEventListener("click",e=>{if(e.target?.closest?.("a[href]"))event("game_open");},true);
+document.addEventListener("click",e=>{
+ const link=e.target?.closest?.("a[href]");
+ if(!link)return;
+ event("game_open");
+ if(game!=="hub")return;
+ const dest=String(link.dataset?.id||"");
+ if(!allowed.has(dest)||!link.closest(".feature-card,.mini-game"))return;
+ signal("hub_card_"+dest.replaceAll("-","_"));
+ flush(true);
+},true);
 const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign};
 function send(data){if(disabled)return;try{const body=JSON.stringify({...shared,...data});const blob=new Blob([body],{type:"text/plain;charset=UTF-8"});if(navigator.sendBeacon&&navigator.sendBeacon(collector,blob))return;fetch(collector,{method:"POST",headers:{"Content-Type":"text/plain"},mode:"cors",body,keepalive:true}).catch(()=>{});}catch{}}
-send({kind:"visit"});
+send({kind:"visit",hubClickVersion:game==="hub"?1:undefined});
 function flush(force=false){if(closed)return;const now=performance.now(),deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
 let changed=deltaSec>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
 const signals={};for(const [k,v] of Object.entries(signalCounts)){const delta=v-(lastSignals[k]||0);if(delta>0){signals[k]=delta;changed=true;}}

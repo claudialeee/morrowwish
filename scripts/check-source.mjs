@@ -99,6 +99,10 @@ for(const file of ['README.md','CLAUDE.md','public/lang.js','public/telemetry.js
 }
 // Keep the marketing dashboard compact and make sure all six live games are monitored.
 const trackerSource=fs.readFileSync('src/analytics.js','utf8');
+if(!telemetry.includes('hubClickVersion:game==="hub"?1')||!telemetry.includes('signal("hub_card_"')||!trackerSource.includes('const homeFunnel='))throw Error('Homepage click attribution must be instrumented, versioned and private');
+if(!trackerSource.includes('"cat-bond","elsewhere"'))throw Error('Cat Bond acquisition must be included in reporting');
+if(!dashboard.includes('id="hub-funnel"'))throw Error('Homepage conversion data must appear in compact dashboard');
+
 const arcadeSource=fs.readFileSync('public/upgrade.js','utf8');
 for(const id of ['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
  if(!dashboard.includes("id:'"+id+"'"))throw new Error('Gameplay insight missing published game '+id);
