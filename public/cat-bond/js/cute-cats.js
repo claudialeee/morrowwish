@@ -29,6 +29,7 @@
   function curve(ctx,pts,color,width) {
     ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';
     ctx.beginPath();ctx.moveTo(pts[0],pts[1]);
+    if(pts.length===6)ctx.quadraticCurveTo(pts[2],pts[3],pts[4],pts[5]);
     for(let i=2;i+5<pts.length;i+=6)ctx.bezierCurveTo(pts[i],pts[i+1],pts[i+2],pts[i+3],pts[i+4],pts[i+5]);
     ctx.stroke();
   }
