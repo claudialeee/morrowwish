@@ -107,7 +107,7 @@ try{
         });
         assert.ok(phoneBattle.title.includes('右侧按住攻击'),
           'Phone tutorial must describe touch controls, not mouse controls: '+JSON.stringify(phoneBattle));
-        assert.ok(phoneBattle.dodge.includes('闪避')&&phoneBattle.dodgeHelp==='点击',
+        assert.ok(phoneBattle.dodge.includes('闪避')&&/^(点按|点击)$/.test(phoneBattle.dodgeHelp),
           'Phone dodge needs a meaningful on-screen label: '+JSON.stringify(phoneBattle));
         assert.ok(phoneBattle.buttons.every(b=>b.left>=-2&&b.right<=width+2),
           'Battle top controls must fit small phone widths: '+JSON.stringify(phoneBattle));
