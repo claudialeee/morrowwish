@@ -512,7 +512,13 @@ const UI = {
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
       const sp = GameData.speciesById(cell.dataset.id);
-      if (!cell.classList.contains('locked')) CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
+      if (!cell.classList.contains('locked')) {
+        CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
+        cell.tabIndex=0;cell.setAttribute('role','button');
+        cell.addEventListener('keydown',e=>{
+          if(e.key==='Enter'||e.key===' '){e.preventDefault();cell.click();}
+        });
+      }
       cell.addEventListener('click', () => {
         if(!State.S.dex[sp.id])return;
         const canRematch=State.S.cats.some(cat=>cat.species===sp.id);
