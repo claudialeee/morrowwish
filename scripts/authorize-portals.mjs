@@ -1,6 +1,6 @@
 // One-time local setup for unattended GitHub Actions publishing.
 // Opens a normal interactive Chromium session. Never prints or commits cookies.
-// Requires: npm install --no-save playwright@1.56.1 ; npx playwright install chromium
+// Requires: npm install --no-save playwright@1.56.1 ; uses the already-installed Google Chrome (no Playwright Chromium download)
 // Also requires GitHub CLI "gh" authenticated with permission to edit repo secrets.
 import {chromium} from 'playwright';
 import {spawnSync} from 'node:child_process';
@@ -14,7 +14,7 @@ const sites={
 };
 if(!sites[portal]){console.error('Usage: node scripts/authorize-portals.mjs itch|crazy');process.exit(2);}
 const info=sites[portal];
-const browser=await chromium.launch({headless:false});
+const browser=await chromium.launch({headless:false,channel:'chrome'});
 const context=await browser.newContext();
 const page=await context.newPage();
 try{
