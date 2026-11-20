@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-11-19",
+  "explanation": "Operational queue. Status does not become submitted or published until confirmed in the developer portal/public project page. itch statuses are reported by the studio, not independently verified.",
+  "submissionPolicy": {
+    "crazygamesMaxPerReviewCycle": 1,
+    "source": "Morrow Wish conservative quality-first policy (not a claimed CrazyGames platform limit)",
+    "afterSubmit": "Wait for portal status/QA feedback before starting the next submission.",
+    "onNewPublicGame": "Queue for both platforms after Cloudflare deployment succeeds; do not mistake a queue issue for a platform submission."
+  },
+  "crazygames": [
+    {
+      "slug": "pawsibly-innocent",
+      "priority": 1,
+      "status": "awaiting-review",
+      "readiness": "submitted",
+      "notes": "Portal confirmed awaiting review; do not duplicate"
+    },
+    {
+      "slug": "cat-bond",
+      "priority": 2,
+      "status": "not-created",
+      "readiness": "qa-needed",
+      "notes": "Validate mobile landscape panning/fullscreen and gameplay before review submission"
+    },
+    {
+      "slug": "tiny-town",
+      "priority": 3,
+      "status": "draft",
+      "readiness": "qa-needed",
+      "notes": "Validate first-30-second onboarding and touch layout"
+    },
+    {
+      "slug": "elsewhere",
+      "priority": 4,
+      "status": "draft",
+      "readiness": "qa-needed",
+      "notes": "Validate small-screen text readability and meaningful choices"
+    },
+    {
+      "slug": "parcel-panic",
+      "priority": 5,
+      "status": "draft",
+      "readiness": "qa-needed",
+      "notes": "Validate click/tap sorting and restart UX"
+    },
+    {
+      "slug": "flip-dash",
+      "priority": 6,
+      "status": "draft",
+      "readiness": "qa-needed",
+      "notes": "Validate touch controls, replay and difficulty ramp"
+    },
+    {
+      "slug": "pocket-aquarium",
+      "priority": 7,
+      "status": "draft",
+      "readiness": "qa-needed",
+      "notes": "Validate feeding mechanic, distinct endings and retry flow"
+    }
+  ],
+  "itch": {
+    "studioUrl": "https://morrowwishgames.itch.io/",
+    "games": [
+      {
+        "slug": "pawsibly-innocent",
+        "status": "studio-reported-live"
+      },
+      {
+        "slug": "elsewhere",
+        "status": "studio-reported-live"
+      },
+      {
+        "slug": "tiny-town",
+        "status": "studio-reported-live"
+      },
+      {
+        "slug": "flip-dash",
+        "status": "studio-reported-live"
+      },
+      {
+        "slug": "parcel-panic",
+        "status": "studio-reported-live"
+      },
+      {
+        "slug": "pocket-aquarium",
+        "status": "studio-reported-live"
+      },
+      {
+        "slug": "cat-bond",
+        "status": "not-created"
+      }
+    ]
+  },
+  "excluded": [
+    "reddit",
+    "newgrounds"
+  ]
+}
