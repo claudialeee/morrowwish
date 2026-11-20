@@ -13,6 +13,7 @@ const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element(id));r
 const window={MorrowwishI18n:{get:()=>'en'},arcadeMetric:(name,payload)=>events.push({name,payload}),addEventListener(name,handler){listeners[name]=handler}};
 let frames=0;
 vm.runInNewContext(source,{window,document,performance:{now:()=>1000},navigator:{},Date,Math,console,
+ URLSearchParams,location:{search:''},
  localStorage:{getItem:key=>saved[key]??null,setItem:(key,value)=>saved[key]=value},
  requestAnimationFrame:fn=>{if(frames++===0)fn(1250)},setInterval:()=>1,clearInterval:nop,setTimeout:()=>1,clearTimeout:nop},{timeout:2500});
 const test=window.__PAWSIBLY_TEST__;
