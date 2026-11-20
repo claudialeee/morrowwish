@@ -1,0 +1,578 @@
+// skills.js — DATA + PURE LOGIC skill / combo / element / evolution / bond system.
+// No DOM, no canvas, no reading the live battle. battle.js consumes these tables
+// and functions to decide damage, status, combos, AI, learning and evolution.
+//
+// ============================================================================
+// INTEGRATION GUIDE  (read this first — the integrator has NOT seen the code)
+// ============================================================================
+//
+// Load order: AFTER data.js (needs window.GameData), BEFORE battle.js. Exposes a
+// single global `window.Skills`. Everything here is pure: same inputs -> same
+// outputs, no side effects. battle.js owns all mutable state and VFX.
+//
+// ----------------------------------------------------------------------------
+// (A) ELEMENT MATCHUPS — how to multiply damage
+// ----------------------------------------------------------------------------
+// Every SPECIES id maps to one of 6 elements (火 水 草 电 暗 光). A skill also
+// carries `element`. On any damaging hit:
+//
+//   const atkEl = skill.element;                      // element of the skill
+//   const defEl = Skills.elementOf(wild.species.id);  // element of the target
+//   const mult  = Skills.effectiveness(atkEl, defEl); // 0.5 | 1 | 1.5 | 2
+//   dmg *= mult;
+//
+// Additionally a cat gets STAB (same-type-attack-bonus) when its own element
+// matches the skill it fires: multiply by Skills.STAB (1.2) — helper:
+//   dmg *= Skills.stabBonus(cat, skill);              // 1.2 or 1
+// Show `Skills.effectivenessLabel(mult)` ("效果拔群!" etc.) as a floater.
+//
+// ----------------------------------------------------------------------------
+// (B) APPLYING A SKILL — the shape battle.js fires
+// ----------------------------------------------------------------------------
+// Look a skill up with Skills.skillById(id). Fields:
+//   id        unique key
+//   name      zh-CN display name
+//   element   one of Skills.ELEMENTS keys
+//   kind      'projectile'|'melee'|'dash'|'aoe'|'buff'|'heal'  (how to spawn)
+//   power     damage multiplier applied to fighter.dmg (buffs/heals may be 0)
+//   cd        cooldown seconds (store on fighter.cd[skillId])
+//   ultCost   0 = normal skill; >0 = costs that much ult meter to fire
+//   tags      descriptive role tags (for AI / UI filtering)
+//   appliesTag  status tag this skill INFLICTS on the target (or null); push it
+//               onto target.tags so later skills can combo off it. May be an
+//               array for multi-status skills.
+//   vfx       a VFX method key — battle already has: 'muzzle','burst','ring',
+//             'shockwave','trail','impact','text','orb','beam'. Map 1:1.
+//   desc      zh-CN tooltip.
+//
+// Suggested apply flow in battle.js:
+//   1. if (skill.ultCost) require this.ult >= skill.ultCost, then subtract.
+//   2. base = fighter.dmg * skill.power.
+//   3. base *= effectiveness(skill.element, elementOf(target)) * stabBonus(cat,skill).
+//   4. combo = Skills.checkCombo(target.tags, skill); if (combo) base *= combo.bonusMult
+//      and apply combo.effect (see C). Clear the consumed tag if combo.consumes.
+//   5. deal `base`, then if (skill.appliesTag) add it to target.tags with a TTL.
+//   6. fire this.vfx[skill.vfx](...) for the look.
+// Status tags are just strings living on target.tags (array). Give each a
+// timer; Skills.TAG_INFO[tag] provides {name, ttl, dps} hints for ticking.
+//
+// ----------------------------------------------------------------------------
+// (C) COMBOS ("1+1=3") — detect + trigger
+// ----------------------------------------------------------------------------
+// Before dealing a skill's damage, call:
+//   const c = Skills.checkCombo(target.tags, skill);
+//   if (c) { dmg *= c.bonusMult; triggerComboEffect(c.effect, ...); toast(c.name); }
+// Returns null if no combo, else {name, bonusMult, effect, consumes}. `effect`
+// is a string key YOU interpret, e.g.:
+//   'explode'  -> big aoe burst + radial damage around target
+//   'chainAll' -> arc lightning to ALL enemies (here just the one wild cat × mult)
+//   'shatter'  -> guaranteed crit, remove 'chill'
+//   'bloom'    -> spread tags to nearby / heal-drain
+//   'blind'    -> target's next attack misses (set wild_telegraph miss flag)
+// `consumes:true` means remove the matched existing tag after the combo fires.
+//
+// ----------------------------------------------------------------------------
+// (D) RISKY COMBO-CHAIN STATE MACHINE (signature mechanic)
+// ----------------------------------------------------------------------------
+// A cat can pre-queue a chain A->B->C (e.g. from its loadout / a gambit). Each
+// link escalates damage but raises vulnerability and, if interrupted, backfires.
+// battle.js runs this state machine on the active fighter:
+//
+//   state: { chain:[skillIds], link:0, windup:0, committed:false }
+//   - To advance a link: fighter takes damage multiplier Skills.chainMultiplier(link)
+//     on that link's hit.
+//   - While winding up link i, fighter.vulnMult = Skills.chainVulnerability(i):
+//     multiply INCOMING damage by this and DISABLE dodge i-frames (can't dodge
+//     during windup). So a chain is a high-risk damage race.
+//   - If the fighter is HIT (or the player cancels) before the link resolves,
+//     call Skills.backfireDamage(linkBaseDmg, link) and apply it to the fighter
+//     as self-damage ("反噬"), then reset link=0. Use Skills.CHAIN for tuning +
+//     Skills.chainState() to get a fresh state object and Skills.advanceChain().
+//   - Completing the final link grants Skills.CHAIN.finisherUltRefund ult.
+//
+// ----------------------------------------------------------------------------
+// (E) BOND (纽带 / affinity 0..100) — qualitative unlocks
+// ----------------------------------------------------------------------------
+//   const tier = Skills.bondTier(cat.affinity);     // 0..5
+//   const b    = Skills.bondBonuses(tier);
+//   b.dmgMult         -> multiply all outgoing damage
+//   b.cdReduction     -> multiply cooldowns (e.g. 0.85 = 15% faster)
+//   b.extraGambitSlots-> allow this many extra gambit rules in auto-battle
+//   b.reviveOnce      -> on faint, revive once at 40% hp (consume a per-battle flag)
+//   b.unlockSignature -> cat may slot/learn its signature & run combo-chains
+// Apply dmgMult/cdReduction wherever you compute dmg / set fighter.cd[...].
+//
+// ----------------------------------------------------------------------------
+// (F) LOADOUT / LEARNING
+// ----------------------------------------------------------------------------
+// A cat's active 4 skills live in `cat.loadout` (array of skill ids). Call
+// Skills.ensureLoadout(cat) once when a battle/menu opens — it fills a missing
+// or invalid loadout from Skills.defaultLoadout(cat). Skills.learnableSkills(cat)
+// is the full pool it is ALLOWED to pick from (menu UI). battle.js reads
+// cat.loadout[slot] to know what Q/E/etc. fire.
+//
+// ----------------------------------------------------------------------------
+// (G) EVOLUTION
+// ----------------------------------------------------------------------------
+//   if (Skills.canEvolve(cat)) { const r = Skills.evolveResult(cat); /* r.to */ }
+// Pure data only: evolveResult returns {to, toSpecies, req}. The integrator does
+// the actual species swap, stat recomputation, and VFX.
+//
+// ----------------------------------------------------------------------------
+// (H) GAMBITS (auto-battle commander AI)
+// ----------------------------------------------------------------------------
+// Skills.GAMBIT_CONDITIONS / GAMBIT_ACTIONS are building blocks. A gambit is
+// {cond, act} where cond is a condition KEY (see GAMBIT_CONDITIONS[].key) battle
+// evaluates each tick top-to-bottom; first true -> perform its action. Use
+// Skills.defaultGambits(cat) for a sane preset. Condition meanings are documented
+// in GAMBIT_CONDITIONS; action meanings in GAMBIT_ACTIONS.
+// ============================================================================
+
+(function () {
+  'use strict';
+
+  // ---- numeric helper (self-contained; do not rely on battle's clamp) ----
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  // ==========================================================================
+  // 1. ELEMENT TYPE SYSTEM (宝可梦式克制)
+  // ==========================================================================
+  // 6 elements. matchup table encodes attacker -> defender multiplier. Cycle:
+  //   火>草>水>火 (classic), 电>水, 草>电(grounded), 暗<->光 mutual 2x, both
+  //   neutral/weak into the elemental trio.
+  const ELEMENTS = {
+    fire:  { key: 'fire',  name: '火', color: '#ff7a3c' },
+    water: { key: 'water', name: '水', color: '#4aa8ff' },
+    grass: { key: 'grass', name: '草', color: '#6fcf5f' },
+    elec:  { key: 'elec',  name: '电', color: '#ffd23c' },
+    dark:  { key: 'dark',  name: '暗', color: '#8a6bff' },
+    light: { key: 'light', name: '光', color: '#ffe9a8' },
+  };
+  const ELEMENT_ORDER = ['fire', 'water', 'grass', 'elec', 'dark', 'light'];
+
+  // EFFECT[atk][def] = multiplier. Missing pair defaults to 1.
+  const EFFECT = {
+    fire:  { grass: 2,   water: 0.5, fire: 0.5, elec: 1,   dark: 1,   light: 1 },
+    water: { fire: 2,    grass: 0.5, water: 0.5, elec: 0.5, dark: 1,   light: 1 },
+    grass: { water: 2,   elec: 1.5,  fire: 0.5, grass: 0.5, dark: 1,   light: 1 },
+    elec:  { water: 2,   light: 1.5, grass: 0.5, elec: 0.5, dark: 1,   fire: 1 },
+    dark:  { light: 2,   grass: 1.5, dark: 0.5, fire: 1,   water: 1,   elec: 1 },
+    light: { dark: 2,    fire: 1.5,  light: 0.5, grass: 1,  water: 1,   elec: 1 },
+  };
+  const STAB = 1.2; // same-type-attack-bonus
+
+  // Assign an element to every existing species by flavor / palette.
+  const SPECIES_ELEMENT = {
+    // N
+    tangyuan: 'fire',   // 橘猫，暖色
+    doudou:   'grass',  // 狸花，野外机灵
+    xiaohui:  'water',  // 银灰，雨天窗台
+    moqiu:    'dark',   // 纯黑夜猫
+    nainai:   'light',  // 奶白初雪
+    nietu:    'grass',  // 奶油踩奶
+    niuniu:   'elec',   // 话痨跳脱
+    // R
+    sanhua:   'light',  // 招福三花
+    lixiao:   'dark',   // 燕尾服绅士
+    lanbao:   'water',  // 英短蓝猫
+    dundun:   'water',  // 银渐层
+    yunduo:   'light',  // 布偶云朵
+    zherdd:   'grass',  // 折耳佛系
+    qisi:     'fire',   // 起司橘白，暖色贪吃
+    duanduan: 'elec',   // 曼基康矮脚，小电球冲刺
+    jinjc:    'light',  // 金渐层华贵金光
+    nuowei:   'grass',  // 挪威森林山林王者
+    baomao:   'dark',   // 豹猫野性爆发
+    // SR
+    xianluo:  'elec',   // 暹罗大嗓门
+    yinghua:  'light',  // 粉樱梦幻
+    senlin:   'grass',  // 缅因森林巨猫
+    youling:  'dark',   // 紫雾幽灵
+    // SSR
+    jinwu:    'fire',   // 火焰金乌
+    yuelian:  'light',  // 踏月仙猫
+    xingchen: 'dark',   // 星河梦境
+  };
+
+  function elementOf(speciesId) { return SPECIES_ELEMENT[speciesId] || 'light'; }
+
+  // 0.5 | 1 | 1.5 | 2
+  function effectiveness(atkEl, defEl) {
+    const row = EFFECT[atkEl];
+    if (!row) return 1;
+    const m = row[defEl];
+    return (m == null) ? 1 : m;
+  }
+  function effectivenessLabel(mult) {
+    if (mult >= 2) return '效果绝佳!!';
+    if (mult >= 1.5) return '效果拔群!';
+    if (mult <= 0.5) return '效果不佳…';
+    return '';
+  }
+  // STAB: cat firing a skill of its own element hits 20% harder.
+  function stabBonus(cat, skill) {
+    const sp = cat && cat.species;
+    return (sp && elementOf(sp) === skill.element) ? STAB : 1;
+  }
+
+  // ==========================================================================
+  // 2. SKILL LIBRARY (~18 skills across elements + roles)
+  // ==========================================================================
+  // power = multiplier of fighter.dmg. appliesTag seeds the combo system.
+  const SKILLS = [
+    // ---- 火 fire ----
+    { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 1.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
+    { id: 'fireballMeow', name: '喵火球', element: 'fire',  kind: 'projectile', power: 1.1, cd: 3.0, ultCost: 0,  tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '吐出滚烫火球，命中后持续灼烧。' },
+    { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
+    // ---- 水 water ----
+    { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.0, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
+    { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff',       power: 0,   cd: 7.0, ultCost: 0,  tags: ['shield','soak'], appliesTag: null,    vfx: 'ring',      desc: '展开泡泡护盾，短时减伤。' },
+    { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
+    // ---- 草 grass ----
+    { id: 'leafDart',   name: '叶刃',     element: 'grass', kind: 'projectile', power: 1.0, cd: 1.6, ultCost: 0,  tags: ['ranged'],        appliesTag: null,    vfx: 'muzzle',    desc: '锋利草叶高速飞射。' },
+    { id: 'thornCoil',  name: '荆缠',     element: 'grass', kind: 'melee',      power: 1.1, cd: 3.5, ultCost: 0,  tags: ['bind','bleed'],  appliesTag: 'bleed', vfx: 'impact',    desc: '荆棘缠绕撕裂，造成流血。' },
+    { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'orb',       desc: '吸收日光回复自身斗志。' },
+    // ---- 电 elec ----
+    { id: 'staticPounce', name: '静电扑', element: 'elec',  kind: 'dash',       power: 1.4, cd: 4.0, ultCost: 0,  tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',      desc: '带电冲刺，命中麻痹目标。' },
+    { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'projectile', power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，附加感电。' },
+    { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
+    // ---- 暗 dark ----
+    { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
+    { id: 'hex',        name: '猫咒',     element: 'dark',  kind: 'projectile', power: 0.9, cd: 3.0, ultCost: 0,  tags: ['dizzy','curse'], appliesTag: 'dizzy', vfx: 'orb',       desc: '诅咒之球令目标眩晕。' },
+    { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult'],   appliesTag: 'dizzy', vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬一切。' },
+    // ---- 光 light ----
+    { id: 'prismBeam',  name: '棱光束',   element: 'light', kind: 'projectile', power: 1.2, cd: 2.6, ultCost: 0,  tags: ['ranged','blind'],appliesTag: 'blind', vfx: 'beam',      desc: '聚焦光束灼目，可致短暂失明。' },
+    { id: 'blessFur',   name: '祝福绒',   element: 'light', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','regen'],  appliesTag: null,    vfx: 'orb',       desc: '圣洁绒光提升自身伤害。' },
+    { id: 'dawnHeal',   name: '曙光愈',   element: 'light', kind: 'heal',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '沐浴晨光回复斗志。' },
+    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.1, cd: 0,   ultCost: 60, tags: ['buff','ult'],    appliesTag: 'blind', vfx: 'ring',      desc: '【必杀】月华绽放，净化并反击。' },
+  ];
+  const SKILL_BY_ID = {};
+  SKILLS.forEach(s => { SKILL_BY_ID[s.id] = s; });
+  function skillById(id) { return SKILL_BY_ID[id] || null; }
+  function skillsByElement(el) { return SKILLS.filter(s => s.element === el); }
+
+  // Status-tag metadata so battle.js can tick them uniformly.
+  // dps = fraction of target maxhp per second (0 for crowd-control tags).
+  const TAG_INFO = {
+    burn:  { name: '灼烧', ttl: 4.0, dps: 0.03, color: '#ff7a3c' },
+    soak:  { name: '淋湿', ttl: 5.0, dps: 0,    color: '#4aa8ff' },
+    shock: { name: '感电', ttl: 3.0, dps: 0.02, color: '#ffd23c' },
+    oil:   { name: '浸油', ttl: 6.0, dps: 0,    color: '#8a6bff' },
+    chill: { name: '冰冻', ttl: 3.5, dps: 0,    color: '#9ec8ff' },
+    dizzy: { name: '眩晕', ttl: 1.6, dps: 0,    color: '#c9b6ff' },
+    bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
+    blind: { name: '失明', ttl: 2.0, dps: 0,    color: '#ffe9a8' },
+    bind:  { name: '束缚', ttl: 2.5, dps: 0,    color: '#6fcf5f' },
+  };
+
+  // ==========================================================================
+  // 3. STATUS-TAG COMBO TABLE ("1+1=3")
+  // ==========================================================================
+  // Keyed as `${existingTag}|${incomingElement}` OR `${existingTag}|@${skillId}`
+  // for skill-specific combos. checkCombo scans the target's current tags.
+  const COMBO = {
+    // soak(淋湿) + 电 = 全体连锁 ×3
+    'soak|elec':   { name: '导电连锁!', bonusMult: 3.0, effect: 'chainAll', consumes: true },
+    // oil(浸油) + 火 = 爆炸
+    'oil|fire':    { name: '浸油爆燃!', bonusMult: 2.6, effect: 'explode',  consumes: true },
+    // soak(淋湿) + 火 = 蒸发(减伤, 清除淋湿)
+    'soak|fire':   { name: '蒸发…',     bonusMult: 0.6, effect: 'steam',    consumes: true },
+    // chill(冰冻) + 扑击(dash) = 碎冰暴击
+    'chill|@staticPounce': { name: '碎冰暴击!', bonusMult: 2.75, effect: 'shatter', consumes: true },
+    'chill|@thornCoil':    { name: '碎冰缠绕!', bonusMult: 2.2,  effect: 'shatter', consumes: true },
+    // burn(灼烧) + 草 = 野火蔓延
+    'burn|grass':  { name: '野火蔓延!', bonusMult: 1.8, effect: 'bloom',    consumes: false },
+    // shock(感电) + 水 = 过载
+    'shock|water': { name: '电解过载!', bonusMult: 2.2, effect: 'chainAll', consumes: true },
+    // bleed(流血) + 暗 = 嗜血
+    'bleed|dark':  { name: '嗜血突袭!', bonusMult: 2.0, effect: 'bloom',    consumes: false },
+    // dizzy(眩晕) + 任意近战重击(光) = 制裁
+    'dizzy|light': { name: '圣光制裁!', bonusMult: 2.3, effect: 'shatter', consumes: true },
+    // blind(失明) + 暗 = 处决(目标下次攻击必失手)
+    'blind|dark':  { name: '暗影处决!', bonusMult: 1.9, effect: 'blind',    consumes: false },
+  };
+
+  // checkCombo(targetTags, skill) -> null | {name, bonusMult, effect, consumes, tag}
+  // Scans existing tags; skill-specific (@id) keys win over element keys.
+  function checkCombo(targetTags, skill) {
+    if (!targetTags || !targetTags.length || !skill) return null;
+    let elHit = null;
+    for (const tag of targetTags) {
+      const bySkill = COMBO[tag + '|@' + skill.id];
+      if (bySkill) return Object.assign({ tag }, bySkill);
+      const byEl = COMBO[tag + '|' + skill.element];
+      if (byEl && !elHit) elHit = Object.assign({ tag }, byEl);
+    }
+    return elHit;
+  }
+
+  // ==========================================================================
+  // 4. RISKY COMBO-CHAIN (signature mechanic) — pure helpers + tuning
+  // ==========================================================================
+  // A chain is a pre-queued A->B->C. Each link multiplies damage AND raises the
+  // caster's incoming-damage vulnerability while winding up. Getting interrupted
+  // mid-link backfires self-damage. battle.js runs the state machine.
+  const CHAIN = {
+    maxLinks: 3,
+    windupPerLink: 0.5,     // seconds of vulnerable windup before a link resolves
+    dmgStep: 0.6,           // each link adds +0.6x damage
+    vulnStep: 0.35,         // each link adds +0.35x incoming damage
+    backfireBase: 0.25,     // interrupted link i backfires (0.25*(i+1)) of link dmg
+    finisherUltRefund: 35,  // completing the final link refunds this much ult
+  };
+
+  // link 0 -> 1.0x, link 1 -> 1.6x, link 2 -> 2.2x ...
+  function chainMultiplier(linkIndex) {
+    return 1 + clamp(linkIndex, 0, CHAIN.maxLinks - 1) * CHAIN.dmgStep;
+  }
+  // link 0 -> 1.0x incoming, link 1 -> 1.35x, link 2 -> 1.7x (can't dodge too)
+  function chainVulnerability(linkIndex) {
+    return 1 + clamp(linkIndex, 0, CHAIN.maxLinks - 1) * CHAIN.vulnStep;
+  }
+  // interrupted while on link i: self-damage scales with how deep the chain was.
+  function backfireDamage(baseDmg, linkIndex) {
+    return baseDmg * CHAIN.backfireBase * (clamp(linkIndex, 0, CHAIN.maxLinks - 1) + 1);
+  }
+  // fresh state object for battle.js to carry on the active fighter.
+  function chainState(skillIds) {
+    return { chain: (skillIds || []).slice(0, CHAIN.maxLinks), link: 0, windup: 0, committed: false };
+  }
+  // advance after a link resolves cleanly; returns {done, link, refund}.
+  function advanceChain(state) {
+    if (!state) return { done: true, link: 0, refund: 0 };
+    state.link += 1;
+    state.windup = 0;
+    const done = state.link >= Math.min(CHAIN.maxLinks, state.chain.length);
+    return { done, link: state.link, refund: done ? CHAIN.finisherUltRefund : 0 };
+  }
+
+  // ==========================================================================
+  // 5. SKILL LEARNING / LOADOUTS
+  // ==========================================================================
+  // Gates: level, bond(affinity) and rarity decide the learnable pool. A cat can
+  // ALWAYS use skills of its own element; it unlocks a second (splash) element as
+  // bond/rarity grow, and ult skills unlock with level + bond. Signature ult is
+  // gated behind max bond (see bondBonuses.unlockSignature).
+  const RARITY_ORDER = ['N', 'R', 'SR', 'SSR'];
+  function rarityIdx(r) { return Math.max(0, RARITY_ORDER.indexOf(r)); }
+
+  // A small "splash" element each element can also dip into (for variety).
+  const SPLASH_ELEMENT = {
+    fire: 'dark', water: 'grass', grass: 'light',
+    elec: 'water', dark: 'fire', light: 'water',
+  };
+
+  // Which species owns which signature ult (unlocked at max bond).
+  const SIGNATURE_SKILL = {
+    jinwu: 'sunflare', yuelian: 'moonlitHalo', xingchen: 'voidMaw',
+    xianluo: 'thunderYowl', yinghua: 'moonlitHalo', senlin: 'photosynth',
+    youling: 'voidMaw', lanbao: 'tsunamiPaw',
+  };
+
+  function speciesOf(cat) {
+    return (window.GameData && window.GameData.speciesById)
+      ? window.GameData.speciesById(cat.species) : null;
+  }
+
+  // learnableSkills(cat) -> array of skill objects the cat is allowed to slot.
+  function learnableSkills(cat) {
+    const el = elementOf(cat.species);
+    const splash = SPLASH_ELEMENT[el];
+    const lvl = cat.level || 1;
+    const bond = cat.affinity || 0;
+    const rIdx = rarityIdx((speciesOf(cat) || {}).rarity || cat.rarity || 'N');
+    const tier = bondTier(bond);
+    const out = [];
+    for (const s of SKILLS) {
+      const isUlt = s.ultCost > 0;
+      const sig = SIGNATURE_SKILL[cat.species] === s.id;
+      // element gate: own element always; splash from bond tier>=1 or rarity R+
+      let elemOk = (s.element === el);
+      if (!elemOk && s.element === splash) elemOk = (tier >= 1 || rIdx >= 1);
+      // higher-rarity cats can dabble in any non-signature element a bit later
+      if (!elemOk && rIdx >= 2 && lvl >= 12) elemOk = true;
+      if (!elemOk) continue;
+      // ult gate: need level + bond; signature ult needs max tier
+      if (isUlt) {
+        if (sig) { if (tier < 5) continue; }
+        else if (lvl < 8 || tier < 2) continue;
+      }
+      // signature (even if not ult) only at top bond
+      if (sig && !isUlt && tier < 5) continue;
+      out.push(s);
+    }
+    return out;
+  }
+
+  // defaultLoadout(cat) -> 4 skill ids: prefer own-element bread-and-butter +
+  // a utility (heal/buff) + an ult if unlocked.
+  function defaultLoadout(cat) {
+    const pool = learnableSkills(cat);
+    const el = elementOf(cat.species);
+    const own = pool.filter(s => s.element === el);
+    const pick = [];
+    const add = s => { if (s && !pick.includes(s.id) && pick.length < 4) pick.push(s.id); };
+    // 1-2 own-element attackers (projectile/melee/dash first)
+    own.filter(s => ['projectile', 'melee', 'dash'].includes(s.kind) && !s.ultCost).forEach(add);
+    // a utility: heal or buff from pool
+    add(pool.find(s => s.kind === 'heal' || s.kind === 'buff'));
+    // an ult if available (signature preferred)
+    const ult = pool.find(s => s.ultCost > 0 && SIGNATURE_SKILL[cat.species] === s.id)
+      || pool.find(s => s.ultCost > 0);
+    add(ult);
+    // backfill from anything else in pool
+    pool.forEach(s => add(s));
+    // last-resort: basic claw if pool somehow empty
+    if (!pick.length) pick.push('emberClaw');
+    return pick.slice(0, 4);
+  }
+
+  // ensureLoadout(cat) -> cat.loadout guaranteed to be a valid 4-id array.
+  // Mutates only cat.loadout (battle expects to persist it); still pure w.r.t.
+  // the skill tables. Safe to call every time a menu/battle opens.
+  function ensureLoadout(cat) {
+    const valid = Array.isArray(cat.loadout)
+      && cat.loadout.length > 0
+      && cat.loadout.every(id => !!SKILL_BY_ID[id]);
+    if (!valid) cat.loadout = defaultLoadout(cat);
+    return cat.loadout;
+  }
+
+  // ==========================================================================
+  // 6. BOND (纽带 / affinity 0..100) SCALING — qualitative unlocks
+  // ==========================================================================
+  // Tiers are breakpoints; each tier adds new verbs, not just +stat.
+  function bondTier(affinity) {
+    const a = clamp(affinity || 0, 0, 100);
+    if (a >= 100) return 5;
+    if (a >= 80) return 4;
+    if (a >= 60) return 3;
+    if (a >= 40) return 2;
+    if (a >= 20) return 1;
+    return 0;
+  }
+  // bondBonuses(tier) -> qualitative + quantitative perks.
+  //  0 陌生 / 1 熟悉 / 2 信赖 / 3 默契 / 4 羁绊 / 5 生死与共
+  const BOND_BONUSES = [
+    { tier: 0, name: '陌生',     dmgMult: 1.00, cdReduction: 1.00, extraGambitSlots: 0, reviveOnce: false, unlockSignature: false },
+    { tier: 1, name: '熟悉',     dmgMult: 1.05, cdReduction: 0.96, extraGambitSlots: 0, reviveOnce: false, unlockSignature: false },
+    { tier: 2, name: '信赖',     dmgMult: 1.12, cdReduction: 0.92, extraGambitSlots: 1, reviveOnce: false, unlockSignature: false },
+    { tier: 3, name: '默契',     dmgMult: 1.20, cdReduction: 0.88, extraGambitSlots: 1, reviveOnce: false, unlockSignature: false },
+    { tier: 4, name: '羁绊',     dmgMult: 1.30, cdReduction: 0.84, extraGambitSlots: 2, reviveOnce: true,  unlockSignature: false },
+    { tier: 5, name: '生死与共', dmgMult: 1.45, cdReduction: 0.80, extraGambitSlots: 3, reviveOnce: true,  unlockSignature: true },
+  ];
+  function bondBonuses(tier) { return BOND_BONUSES[clamp(tier, 0, 5)]; }
+
+  // ==========================================================================
+  // 7. EVOLUTION CHAINS
+  // ==========================================================================
+  // {evolvesTo, req:{level?,bond?,item?}}. Pure data; integrator swaps species.
+  const EVOLUTION = {
+    tangyuan: { evolvesTo: 'senlin',  req: { level: 16, bond: 40 } },               // 橘猫 -> 缅因巨猫
+    doudou:   { evolvesTo: 'youling', req: { level: 18, bond: 50, item: '夜影石' } },// 狸花 -> 幽灵
+    lanbao:   { evolvesTo: 'yuelian', req: { level: 22, bond: 80, item: '月华露' } },// 蓝猫 -> 月莲
+    xianluo:  { evolvesTo: 'jinwu',   req: { level: 24, bond: 80, item: '赤焰晶' } },// 暹罗 -> 金乌
+    xiaohui:  { evolvesTo: 'dundun',  req: { level: 10, bond: 20 } },               // 小灰 -> 墩墩
+    yunduo:   { evolvesTo: 'yuelian', req: { level: 20, bond: 70 } },               // 云朵 -> 月莲
+  };
+  function evolutionOf(speciesId) { return EVOLUTION[speciesId] || null; }
+  // canEvolve(cat) -> bool (item requirement reported but NOT auto-consumed here;
+  // integrator checks inventory. We treat missing item as "needs item" -> false
+  // unless cat.items includes it).
+  function canEvolve(cat) {
+    const evo = EVOLUTION[cat.species];
+    if (!evo) return false;
+    const r = evo.req || {};
+    if (r.level && (cat.level || 1) < r.level) return false;
+    if (r.bond && (cat.affinity || 0) < r.bond) return false;
+    if (r.item) {
+      const inv = cat.items || (window.GameState && window.GameState.items) || [];
+      if (!Array.isArray(inv) || !inv.includes(r.item)) return false;
+    }
+    return true;
+  }
+  // evolveResult(cat) -> {to, toSpecies, req} or null. No mutation.
+  function evolveResult(cat) {
+    const evo = EVOLUTION[cat.species];
+    if (!evo) return null;
+    const toSpecies = (window.GameData && window.GameData.speciesById)
+      ? window.GameData.speciesById(evo.evolvesTo) : null;
+    return { to: evo.evolvesTo, toSpecies, req: evo.req || {} };
+  }
+
+  // ==========================================================================
+  // 8. GAMBIT PRESETS (auto-battle / commander AI)
+  // ==========================================================================
+  // Conditions are KEYS battle.js evaluates against live state each tick, top to
+  // bottom; first true fires its action. Documented meanings below.
+  const GAMBIT_CONDITIONS = [
+    { key: 'always',         label: '总是' },                       // fallback catch-all
+    { key: 'enemyHpBelow30', label: '敌斗志<30%' },                 // wild_hp/maxhp < 0.30
+    { key: 'enemyHpBelow50', label: '敌斗志<50%' },
+    { key: 'selfHpBelow40',  label: '我方斗志<40%' },               // active fighter hp frac < 0.40
+    { key: 'selfHpBelow25',  label: '我方斗志<25%' },
+    { key: 'ultReady',       label: '必杀能量满' },                 // this.ult >= 100 (or skill.ultCost met)
+    { key: 'comboPrimed',    label: '连携已就绪' },                 // target.tags has a tag that checkCombo would trigger w/ a loadout skill
+    { key: 'enemyHasTag',    label: '敌身中异常' },                 // target.tags.length > 0
+    { key: 'enemyClose',     label: '敌在近身' },                   // dist(me, wild) < 120
+    { key: 'enemyFar',       label: '敌在远处' },                   // dist(me, wild) > 260
+    { key: 'incomingProj',   label: '有弹幕来袭' },                 // a 'wild' projectile heading at me within ~0.3s
+    { key: 'bondHigh',       label: '高羁绊' },                     // bondTier(cat.affinity) >= 4
+  ];
+  const GAMBIT_ACTIONS = [
+    { key: 'ult',       label: '放必杀' },        // cast the loadout ult if affordable
+    { key: 'finisher',  label: '连携终结' },      // start/continue the risky combo-chain
+    { key: 'combo',     label: '打连携' },        // cast the loadout skill that triggers checkCombo
+    { key: 'heal',      label: '治疗' },          // cast a heal/buff skill from loadout
+    { key: 'retreat',   label: '拉开距离' },      // kite: move away from wild, dodge if able
+    { key: 'dodge',     label: '闪避' },          // spend dodge i-frames
+    { key: 'approach',  label: '贴近突进' },      // dash/dash-skill toward wild
+    { key: 'basic',     label: '普攻' },          // default poke
+    { key: 'skillQ',    label: '技能1' },         // fire loadout[1]
+    { key: 'skillE',    label: '技能2' },         // fire loadout[2]
+  ];
+
+  // defaultGambits(cat) -> ordered rules. Count capped by bond's extraGambitSlots
+  // (base 4 rules + extra). Higher bond = smarter auto-pilot.
+  function defaultGambits(cat) {
+    const base = [
+      { cond: 'selfHpBelow25',  act: 'heal' },
+      { cond: 'selfHpBelow40',  act: 'retreat' },
+      { cond: 'incomingProj',   act: 'dodge' },
+      { cond: 'enemyHpBelow30', act: 'ult' },
+      { cond: 'comboPrimed',    act: 'finisher' },
+      { cond: 'enemyHasTag',    act: 'combo' },
+      { cond: 'enemyFar',       act: 'skillQ' },
+      { cond: 'enemyClose',     act: 'basic' },
+      { cond: 'always',         act: 'basic' },
+    ];
+    const extra = bondBonuses(bondTier(cat.affinity || 0)).extraGambitSlots;
+    // base auto-pilot gets 4 rules; bond unlocks more nuanced ones (keep 'always' last)
+    const core = base.slice(0, 4 + extra);
+    if (core[core.length - 1].cond !== 'always') core.push({ cond: 'always', act: 'basic' });
+    return core;
+  }
+
+  // ==========================================================================
+  // PUBLIC API
+  // ==========================================================================
+  window.Skills = {
+    // --- elements ---
+    ELEMENTS, ELEMENT_ORDER, EFFECT, STAB, SPECIES_ELEMENT,
+    elementOf, effectiveness, effectivenessLabel, stabBonus,
+    // --- skills & status ---
+    SKILLS, TAG_INFO, skillById, skillsByElement,
+    // --- combos ---
+    COMBO, checkCombo,
+    // --- risky combo-chain ---
+    CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
+    // --- learning / loadouts ---
+    SIGNATURE_SKILL, SPLASH_ELEMENT, learnableSkills, defaultLoadout, ensureLoadout,
+    // --- bond ---
+    BOND_BONUSES, bondTier, bondBonuses,
+    // --- evolution ---
+    EVOLUTION, evolutionOf, canEvolve, evolveResult,
+    // --- gambits ---
+    GAMBIT_CONDITIONS, GAMBIT_ACTIONS, defaultGambits,
+  };
+})();

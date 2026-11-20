@@ -11,7 +11,8 @@ Vercel is ONLY the fixed public URL and reverse proxy. Its project-level rewrite
 
 - `public/` contains the homepage, games, language switch and unified dashboard.
 - `public/pawsibly-innocent/` contains Pawsibly Innocent!, an original cat stealth-puzzle game with eight themed rooms, yarn lures, collectible souvenirs, light stealth, roaming vacuums, five cats with perks, a daily remix, and bilingual text.
-- `public/index.html`: three signature featured worlds (Elsewhere, Tiny Town, Pawsibly Innocent!) plus a separate section for quick mini-games.
+- `public/cat-bond/` contains Cat Bond (猫猫纽带), a cozy cat collector: raise a yard of cats, play hide-and-seek to find wild ones, and capture them in a real-time battle arena, with a workshop (idle stations + breeding), a world map, evolution, a 25-cat codex, daily check-in and shop. Authored in Chinese with a `js/i18n.js` display layer that renders full English via the shared `morrowwish-language-change` switch.
+- `public/index.html`: four signature featured worlds (Elsewhere, Tiny Town, Pawsibly Innocent!, Cat Bond) plus a separate section for quick mini-games.
 - `public/telemetry.js`: game analytics events and supported game IDs.
 - `public/lang.js`: shared Chinese and English interface.
 - `public/studio-insights/index.html`: single Analytics dashboard and ordering.

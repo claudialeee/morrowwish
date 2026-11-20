@@ -103,7 +103,7 @@ statPv:"Pageviews · PV",statPvNote:"All games and homepage",statVisitors:"Uniqu
 seconds:"{n} sec",none:"No data yet",headHome:"Homepage",empty:"—",coverageDays:"Last {days} days; {records} anonymous records read.",coveragePartial:"The read limit was reached; some data may be excluded.",coverageOld:"{n} legacy sessions lack a stable visitor ID. They count toward pageviews/sessions, but not unique browsers.",coverageDetails:"Page loads count as pageviews. Game durations and gameplay signals are aggregated on tab hide or exit; newly added metrics are not backfilled.",
 direct:"Direct",internal:"Internal navigation",external:"External website",mobile:"Mobile",tablet:"Tablet",desktop:"Desktop",arcade:"Morrow Wish",legacy:"Legacy tracking events",direct_no_referrer:"Direct (no referring site)",unknown:"Not provided",failGeneric:"Service temporarily unavailable"
 }};
-const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"},"pawsibly-innocent":{zh:"猫猫绝对无辜！",en:"Pawsibly Innocent!"}};
+const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"},"pawsibly-innocent":{zh:"猫猫绝对无辜！",en:"Pawsibly Innocent!"},"cat-bond":{zh:"猫猫纽带",en:"Cat Bond"}};
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
@@ -153,7 +153,7 @@ $("stats").innerHTML=[
  ].join("");
 const max=Math.max(1,...days.map(d=>Number(d.pageviews)||0));
 $("graph").innerHTML=days.map(d=>{const day=escapeHTML(String(d.day||"").slice(5)),pv=Math.max(2,Math.min(140,Math.round((Number(d.pageviews)||0)/max*140))),vis=Math.max(2,Math.min(140,Math.round((Number(d.visitors)||0)/max*140)));return '<div class="day-col"><div class="day-count">'+format(d.pageviews)+'</div><div class="bars"><div class="bar pv" style="height:'+pv+'px" title="'+escapeHTML(t("pvLabel"))+' '+format(d.pageviews)+'"></div><div class="bar vis" style="height:'+vis+'px" title="'+escapeHTML(t("uniqueLabel"))+' '+format(d.visitors)+'"></div></div><div class="day-date">'+day+'</div></div>';}).join("");
-const displayOrder=['hub','pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
+const displayOrder=['hub','pawsibly-innocent','elsewhere','tiny-town','cat-bond','flip-dash','parcel-panic','pocket-aquarium'];
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
  // Elsewhere uses the same complete unified metrics as all other games.

@@ -5,6 +5,7 @@ for (const file of [
   'public/elsewhere/app.js','public/telemetry.js','public/lang.js',
   'public/zh-site.js','public/zh-stories.js','public/zh-polish.js',
   'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/pawsibly-innocent/index.html','public/pawsibly-innocent/game.js','public/icons/pawsibly-innocent.svg',
+  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
@@ -15,7 +16,7 @@ if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
 if(config.d1_databases?.[0]?.database_name!=='morrowwish-analytics')throw Error('Wrong D1 database');
 if(!dashboard.includes('zh:"平行人生",en:"Elsewhere"'))throw Error('Dashboard must show 平行人生 in Chinese and Elsewhere in English');
 const displayOrder=dashboard.match(/const displayOrder=\[([^\]]+)\];/)?.[1]||'';
-for(const name of ['hub','elsewhere','tiny-town','pawsibly-innocent','flip-dash','parcel-panic','pocket-aquarium']){
+for(const name of ['hub','elsewhere','tiny-town','pawsibly-innocent','cat-bond','flip-dash','parcel-panic','pocket-aquarium']){
  if(!displayOrder.includes("'"+name+"'"))throw Error('Dashboard missing visible game: '+name);
 }
 if(!dashboard.includes("'pocket-aquarium'"))throw Error('Pocket Aquarium must remain in dashboard order');
@@ -27,6 +28,21 @@ for(const marker of ["metric('game_start'","metric('game_complete'","metric('gam
 
 if(!telemetry.includes('"elsewhere"'))throw Error('Missing Elsewhere telemetry');
 if(!telemetry.includes('"pawsibly-innocent"'))throw Error('Missing Pawsibly Innocent telemetry');
+if(!telemetry.includes('"cat-bond"'))throw Error('Missing Cat Bond telemetry');
+// Cat Bond: bilingual real-time cat collector. Verify it is wired to unified
+// analytics, keeps a complete ZH->EN layer, and loads the shared site scripts.
+const bondGame=fs.readFileSync('public/cat-bond/js/game.js','utf8');
+for(const marker of ['game_start','game_complete','game_over','game_retry','cat_capture']){
+ if(!bondGame.includes(marker))throw Error('Cat Bond missing gameplay/analytics: '+marker);
+}
+const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
+for(const marker of ['/telemetry.js','/lang.js','js/i18n.js','href="/"']){
+ if(!bondHTML.includes(marker))throw Error('Cat Bond page missing shared integration: '+marker);
+}
+const bondI18n=fs.readFileSync('public/cat-bond/js/i18n.js','utf8');
+for(const marker of ['morrowwish-language-change','var DICT','猫猫纽带','Cat Bond']){
+ if(!bondI18n.includes(marker))throw Error('Cat Bond bilingual layer incomplete: '+marker);
+}
 const catGame=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 for(const marker of ['game_start','game_complete','game_retry','cat_level_won','guardMove','morrowwish-language-change']){
  if(!catGame.includes(marker))throw Error('Pawsibly Innocent missing gameplay/analytics: '+marker);
@@ -34,16 +50,16 @@ for(const marker of ['game_start','game_complete','game_retry','cat_level_won','
 const homepage=fs.readFileSync('public/index.html','utf8');
 const featured=homepage.match(/<div class="feature-grid">([\s\S]*?)<\/div><\/section>/)?.[1]||'';
 const minis=homepage.match(/<div class="mini-grid">([\s\S]*?)<\/div><\/div><\/section>/)?.[1]||'';
-for(const link of ['href="/pawsibly-innocent/"','href="/elsewhere/"','href="/tiny-town/"']){
+for(const link of ['href="/pawsibly-innocent/"','href="/elsewhere/"','href="/tiny-town/"','href="/cat-bond/"']){
  if(!featured.includes(link))throw Error('Missing signature world featured card: '+link);
 }
-if((featured.match(/class="feature-card/g)||[]).length!==3)throw Error('Three signature games required');
+if((featured.match(/class="feature-card/g)||[]).length!==4)throw Error('Four signature games required');
 if(!featured.trimStart().startsWith('<article class="feature-card cat-feature-card">'))throw Error('Cat must be the first featured game');
 const zhCard=featured.match(/<article class="feature-card cat-feature-card">([\s\S]*?)<\/article>/)?.[1]||'';
 if(!zhCard.includes('猫猫绝对无辜！')||zhCard.includes('cat-original'))throw Error('Chinese homepage card must not display the English Pawsibly subtitle');
 if(!homepage.includes('Three fish to steal. One human to fool.'))throw Error('Cat game marketing hook is missing');
 if(!displayOrder.startsWith("'hub','pawsibly-innocent'"))throw Error('Studio dashboard game order must follow the homepage');
-if(minis.includes('href="/pawsibly-innocent/"'))throw Error('Cat world must not be in mini-games');
+if(minis.includes('href="/pawsibly-innocent/"')||minis.includes('href="/cat-bond/"'))throw Error('Cat worlds must not be in mini-games');
 for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souvenirs','function vacuumDraw','function roomDecor']){
  if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);
 }
@@ -77,6 +93,7 @@ console.log('Six game analytics cards, compact acquisition channels and actionab
 
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
 await import('./check-pawsibly.mjs');
+await import('./check-cat-bond.mjs');
 
 // Prevent decorative starburst glyphs from leaking back into any published page,
 // SVG social card, dynamically generated game copy, or language map.

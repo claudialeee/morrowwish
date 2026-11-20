@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b1026" />
+  <title>Cat Bond — Raise cats, capture wild ones | Morrow Wish</title>
+  <meta name="description" content="Cat Bond is a cozy cat collector. Pet and raise your cats, play hide-and-seek to find wild cats, then capture them in a real-time battle arena. Free, bilingual, no sign-up." />
+  <link rel="canonical" href="https://morrowwish.vercel.app/cat-bond/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Cat Bond — Raise cats, capture wild ones" />
+  <meta property="og:description" content="Raise a yard of cats, hunt wild ones in a real-time arena, and build unbreakable bonds. A free cozy game from Morrow Wish." />
+  <meta property="og:image" content="https://morrowwish.vercel.app/art/cat-bond-scene.svg" />
+  <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="/lang.js" defer></script>
+  <script src="/studio-audio.js" defer></script>
+</head>
+<body>
+  <a class="cb-home" href="/" id="cb-home" aria-label="Back to Morrow Wish">← Morrow Wish</a>
+  <div id="game-root">
+    <div id="stage">
+      <canvas id="scene"></canvas>
+
+      <!-- Top HUD -->
+      <div id="hud">
+        <div class="hud-pill"><span class="ico">🪙</span><span id="coins">0</span></div>
+        <div class="hud-pill"><span class="ico">🐟</span><span id="treats">0</span></div>
+        <div class="hud-pill"><span class="ico">🐠</span><span id="fish">0</span></div>
+        <div class="hud-pill"><span class="ico">🧶</span><span id="yarn">0</span></div>
+        <div class="hud-spacer"></div>
+        <div class="scene-title">🏡 庭院</div>
+      </div>
+
+      <!-- Toasts -->
+      <div id="toasts"></div>
+
+      <!-- Yard floating actions -->
+      <div id="yard-actions">
+        <button class="fab" id="fab-map" title="探索世界">🗺️</button>
+        <button class="fab" id="fab-seek" title="捉迷藏">🌿</button>
+        <button class="fab" id="fab-play" title="逗猫">🪶</button>
+        <button class="fab" id="fab-feed" title="喂食">🍖</button>
+      </div>
+
+      <!-- Battle UI (real-time arena) -->
+      <div id="battle-ui">
+        <div class="battle-topbar">
+          <span id="wild-name">野生猫猫</span>
+          <button class="btn ghost tiny-btn" id="btn-auto">🤖 自动</button>
+          <button class="btn ghost tiny-btn" id="btn-flee">🏳️ 撤退</button>
+        </div>
+        <div class="battle-hint" id="battle-hint">鼠标瞄准 · 左键猫爪 · 空格闪避 · P 自动战斗</div>
+
+        <!-- team slots (top-left) -->
+        <div id="team-slots"></div>
+
+        <!-- ultimate meter -->
+        <div id="ult-wrap">
+          <span class="ult-label">必杀</span>
+          <div class="ult-track"><span id="ult-bar"></span></div>
+        </div>
+
+        <!-- move bar (bottom) -->
+        <div class="move-bar">
+          <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐾</span><span class="mv-k">左键/J</span></button>
+          <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-k">Q</span></button>
+          <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-k">E</span></button>
+          <button class="move" id="mv-dodge" data-move="dodge"><span class="mv-icon">🌀</span><span class="mv-k">空格</span></button>
+          <button class="move ult" id="ult-btn" data-move="ult"><span class="mv-icon">🌪️</span><span class="mv-k">R</span></button>
+        </div>
+      </div>
+
+      <!-- Bottom tabs -->
+      <div id="tabbar">
+        <button class="tab active" data-tab="yard"><span class="ico">🏡</span>庭院</button>
+        <button class="tab" data-tab="cats"><span class="ico">🐾</span>猫猫</button>
+        <button class="tab" data-tab="work"><span class="ico">🧶</span>工坊</button>
+        <button class="tab" data-tab="dex"><span class="ico">📖</span>图鉴</button>
+        <button class="tab" data-tab="daily"><span class="ico" style="position:relative">🎁<span id="daily-dot" class="hidden" style="position:absolute;top:-2px;right:-4px;width:8px;height:8px;background:#ff5a5a;border-radius:50%"></span></span>签到</button>
+        <button class="tab" data-tab="shop"><span class="ico">🛒</span>商店</button>
+      </div>
+
+      <!-- Overlay panel host -->
+      <div id="panel" class="panel"></div>
+
+      <div class="studio-stamp">🌙 MORROW·WISH</div>
+
+      <!-- Intro -->
+      <div id="intro">
+        <canvas id="intro-stars"></canvas>
+        <div class="studio-badge">
+          <span class="studio-moon">🌙</span>
+          <span class="studio-text">MORROW·<span class="studio-wish">WISH</span></span>
+          <span class="studio-tag">STUDIO 工作室 呈现</span>
+        </div>
+        <h1 class="game-logo">猫猫纽带<span class="logo-en">Cat Bond</span></h1>
+        <p>一群会思考的小猫咪住在你的庭院里。陪它们玩耍、喂养、建立<b>好感纽带</b>，
+          然后带上最亲密的伙伴，去草丛里<b>捉迷藏</b>，在即时竞技场里收服更多野生猫猫。</p>
+        <p class="tiny">💡 点猫=撸猫 · 🌿=找野猫 · 战斗：WASD移动 · 鼠标瞄准 · Q/E技能 · 空格闪避 · R必杀</p>
+        <button class="btn gold" id="intro-start" style="padding:14px 34px;font-size:1.15rem">开始冒险 🐱</button>
+        <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ?v= cache-buster: bump this number whenever JS changes so the browser can't serve stale code -->
+  <script src="js/vfx.js?v=28"></script>
+  <script src="js/catart.js?v=28"></script>
+  <script src="js/data.js?v=28"></script>
+  <script src="js/skills.js?v=28"></script>
+  <script src="js/state.js?v=28"></script>
+  <script src="js/raising.js?v=28"></script>
+  <script src="js/world.js?v=28"></script>
+  <script src="js/worldmap.js?v=28"></script>
+  <script src="js/battle.js?v=28"></script>
+  <script src="js/ui.js?v=28"></script>
+  <script src="js/game.js?v=28"></script>
+  <script src="js/main.js?v=28"></script>
+  <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
+  <script src="js/i18n.js?v=28"></script>
+  <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
+  <script src="/telemetry.js" defer></script>
+</body>
+</html>
