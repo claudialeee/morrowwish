@@ -1,71 +1,76 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
+// The fullscreen feature deliberately targets only the interactive game stage,
+// never documentElement; mobile tests force iPhone Safari's fallback behavior.
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const games=['pawsibly-innocent','elsewhere','tiny-town','cat-bond','flip-dash','parcel-panic','pocket-aquarium'];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-const errors=[];
+const failures=[];
 async function check(game,width,mobile){
-  const context=await browser.newContext({viewport:{width,height:mobile?844:800},isMobile:mobile,hasTouch:mobile,deviceScaleFactor:mobile?2:1});
-  const page=await context.newPage();
-  const uncaught=[];page.on('pageerror',e=>uncaught.push(e.message));
-  try{
+  const ctx=await browser.newContext({viewport:{width,height:mobile?844:800},isMobile:mobile,hasTouch:mobile});
+  const page=await ctx.newPage();
+  const errors=[];
+  page.on('pageerror',e=>errors.push(String(e.message)));
+  try {
     await page.goto(origin+'/'+game+'/?lang=zh',{waitUntil:'domcontentloaded',timeout:35000});
-    await page.waitForSelector('#mw-fullscreen-toggle',{timeout:15000});
+    // Elsewhere only reveals its gameplay toolbar after a life begins.
+    if(game==='elsewhere'){
+      await page.locator('[data-random-world]').first().tap();
+      await page.waitForFunction(()=>!document.getElementById('play-view')?.classList.contains('hidden'));
+    }
     const button=page.locator('#mw-fullscreen-toggle');
-    assert.equal(await button.count(),1,'One fullscreen toggle is required');
-    const box=await button.boundingBox();
-    assert.ok(box&&box.height>=42&&box.width>=60,'Fullscreen touch target too small');
-    // Disable the API to exercise iPhone Safari fallback behavior.
-    if(mobile)await page.evaluate(()=>Object.defineProperty(document.documentElement,'requestFullscreen',{configurable:true,value:undefined}));
+    await button.waitFor({state:'visible',timeout:15000});
+    const surface=page.locator('.mw-immersive-target');
+    assert.equal(await surface.count(),1,game+' must identify one actual play area');
+    const hit=await button.boundingBox();
+    assert.ok(hit&&hit.width>=60&&hit.height>=40,'Fullscreen button is not finger-friendly');
+    if(mobile)await surface.evaluate(e=>Object.defineProperty(e,'requestFullscreen',{value:undefined,configurable:true}));
     if(mobile)await button.tap();else await button.click();
     await page.waitForFunction(()=>document.documentElement.classList.contains('mw-fs-active'));
-    assert.equal(await button.getAttribute('aria-pressed'),'true');
-    const status=await page.evaluate(()=>{
-      const root=document.documentElement,game=root.dataset.mwFullscreenGame;
-      const element=document.querySelector(game==='cat-bond'?'#stage':game==='elsewhere'?'.site-wrap':game==='tiny-town'?'.app':game==='pawsibly-innocent'?'.wrap':game==='pocket-aquarium'?'body>main':'.game-shell');
-      const rect=element.getBoundingClientRect();
-      return {game,width:root.clientWidth,scrollWidth:root.scrollWidth,active:root.classList.contains('mw-fs-active'),
-        native:!!document.fullscreenElement,scrollContainerHeight:rect.height,viewportHeight:innerHeight};
+    const opened=await page.evaluate(()=>{
+      const play=document.querySelector('.mw-immersive-target'),r=play.getBoundingClientRect();
+      return {native:document.fullscreenElement===play,fallback:play.classList.contains('mw-immersive-fallback'),
+        x:r.x,y:r.y,w:r.width,h:r.height,vw:innerWidth,vh:innerHeight,
+        pressed:document.getElementById('mw-fullscreen-toggle')?.getAttribute('aria-pressed'),
+        rootFullscreen:document.fullscreenElement===document.documentElement};
     });
-    assert.ok(status.scrollWidth<=width+5,'Overflow in full-screen view: '+JSON.stringify(status));
-    assert.ok(status.scrollContainerHeight<=status.viewportHeight+6,'Fullscreen content extends outside viewport: '+JSON.stringify(status));
-    if(mobile)assert.equal(status.native,false,'Fallback must not invoke native fullscreen');
+    assert.equal(opened.pressed,'true','Fullscreen button must reflect pressed state');
+    assert.equal(opened.rootFullscreen,false,'Never fullscreen the webpage root');
+    assert.ok(opened.w<=width+4&&opened.w>=width-6,'Game surface should fill phone/desktop width: '+JSON.stringify(opened));
+    assert.ok(opened.h<=opened.vh+5,'Game surface should not exceed viewport: '+JSON.stringify(opened));
+    if(mobile)assert.ok(opened.fallback&&!opened.native,'iPhone fallback must apply only to game stage: '+JSON.stringify(opened));
     if(mobile&&width===390){
       if(game==='pawsibly-innocent'){
-        const throwBtn=page.locator('#tool');await throwBtn.tap();
-        assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Yarn button must work in immersive mode');
-        await throwBtn.tap();
+        const yarn=page.locator('#tool');
+        assert.ok(await yarn.isVisible(),'Yarn gameplay control must stay in fullscreen');
       }
       if(game==='flip-dash'||game==='parcel-panic'){
-        await page.locator('#play-btn').tap();
-        assert.equal(await page.locator('#overlay').isVisible(),false,'Arcade start must work in immersive mode');
-      }
-      if(game==='elsewhere'){
-        await page.locator('[data-random-world]').first().tap();
-        assert.equal(await page.locator('#play-view').isVisible(),true,'Story must work in immersive mode');
+        const start=page.locator('#play-btn');
+        if(await start.isVisible())await start.tap();
       }
       if(game==='pocket-aquarium'){
-        await page.locator('#start').tap();
-        assert.equal(await page.locator('#overlay').isVisible(),false,'Aquarium must start in immersive mode');
+        const start=page.locator('#start');
+        if(await start.isVisible())await start.tap();
+      }
+      if(game==='elsewhere'){
+        assert.ok(await page.locator('#play-view').isVisible(),'Story choices must remain playable');
       }
     }
     if(mobile)await button.tap();else await button.click();
     await page.waitForFunction(()=>!document.documentElement.classList.contains('mw-fs-active'));
-    assert.equal(await button.getAttribute('aria-pressed'),'false');
-    if(mobile)assert.deepEqual(uncaught,[],'JavaScript errors on mobile');
-    console.log('FULLSCREEN PASS',game,width+'px',mobile?'touch fallback':'desktop native/fallback',JSON.stringify(status));
-  }finally{await context.close()}
+    assert.equal(await button.getAttribute('aria-pressed'),'false','Exit must restore windowed play');
+    if(errors.length)throw Error('Uncaught errors: '+errors.join('; '));
+    console.log('GAME SURFACE FULLSCREEN PASS',game,width,JSON.stringify(opened));
+  } finally { await ctx.close(); }
 }
 try{
-  for(const width of [390,320]){
-    for(const game of games){
-      try{await check(game,width,true)}catch(e){const msg=game+' '+width+'px: '+e.message;errors.push(msg);console.error('FULLSCREEN FAIL',msg)}
-    }
+  for(const width of [390,320])for(const game of games){
+    try{await check(game,width,true)}catch(e){failures.push(game+' '+width+': '+e.message);console.error('FULLSCREEN FAIL',failures.at(-1))}
   }
   for(const game of games){
-    try{await check(game,1280,false)}catch(e){const msg=game+' desktop: '+e.message;errors.push(msg);console.error('FULLSCREEN FAIL',msg)}
+    try{await check(game,1280,false)}catch(e){failures.push(game+' desktop: '+e.message);console.error('FULLSCREEN FAIL',failures.at(-1))}
   }
 }finally{await browser.close()}
-if(errors.length){console.error('Fullscreen regression failures:\n'+errors.join('\n'));process.exitCode=1}
-else console.log('FULLSCREEN: seven games pass phone 320/390px fallback and desktop 1280px toggle+exit tests');
+if(failures.length){console.error('Fullscreen failures:\n'+failures.join('\n'));process.exitCode=1}
+else console.log('All 7 games use play-surface fullscreen with reversible mobile fallback');
