@@ -558,7 +558,7 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
  if(!html.includes('max-width:1110px')||!html.includes('max-width:620px')||
     !html.includes('.panel .sidebar-actions')||!html.includes('.panel .level-btn'))
   throw new Error('Compact cat sidebar responsiveness missing');
- if(html.indexOf('id="levels"')>extra||html.indexOf('id="wardrobe"')>extra)
+ if(aside.indexOf('id="levels"')>extra||aside.indexOf('id="wardrobe"')>extra)
   throw new Error('Active level and cat selection cannot be hidden by default');
  console.log('Compact cat sidebar: every active control fits above folded extras; responsive and all IDs intact.');
 }
