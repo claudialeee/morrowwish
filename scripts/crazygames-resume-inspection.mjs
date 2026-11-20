@@ -21,6 +21,30 @@ try{
  await page.goto(root+'/games',{waitUntil:'domcontentloaded',timeout:30000});
  await page.waitForTimeout(1800);
  report.dashboardText=redact(await page.locator('body').innerText().catch(()=>'' )).slice(-1700);
+ report.dashboardLinks=await page.locator('a[href]').evaluateAll(as=>as.filter(a=>/game|submit|draft|pawsibly/i.test(a.innerText||'')).map(a=>({
+   label:(a.innerText||'').trim().slice(0,90),path:new URL(a.href).pathname
+ })).slice(0,25));
+ report.dashboardRows=await page.locator('tr').evaluateAll(rows=>rows.map(r=>({
+    text:(r.innerText||'').trim().replace(/\s+/g,' ').slice(0,160),
+    clickables:[...r.querySelectorAll('a[href],button')].map(el=>({tag:el.tagName,text:(el.innerText||'').trim().slice(0,60),href:el.getAttribute('href')}))
+ })).filter(x=>/Draft|Pawsibly|Flip Dash/i.test(x.text)).slice(0,12));
+ const game=page.getByText('Pawsibly Innocent!',{exact:true}).first();
+ report.draftFound=await game.count();
+ if(await game.count()){
+   await game.click({timeout:5000}).catch(e=>{report.draftClickError=redact(e.message).slice(0,230)});
+   await page.waitForTimeout(2700);
+   report.draftDetail={
+     path:new URL(page.url()).pathname,
+     text:redact(await page.locator('body').innerText().catch(()=>'' )),
+     buttons:await page.locator('button:visible').allTextContents().catch(()=>[]),
+     fields:await page.locator('input,textarea,select').evaluateAll(xs=>xs.filter(x=>x.getBoundingClientRect().width>0)
+       .map(x=>({type:x.type,name:x.name,placeholder:x.placeholder,required:x.required})).slice(0,45)),
+     links:await page.locator('a[href]').evaluateAll(xs=>xs.map(x=>({label:(x.innerText||'').trim().slice(0,70),path:new URL(x.href).pathname}))
+      .filter(x=>/edit|qa|submit|draft|game/i.test(x.label)).slice(0,25))
+   };
+ }
+
+ if(report.draftDetail)throw new Error('draft-inspection-complete');
  const preview=await context.newPage();
  preview.on('popup',p=>report.events.push({kind:'popup',urlPath:new URL(p.url()).pathname}));
  preview.on('close',()=>report.events.push({kind:'preview-closed'}));
@@ -46,7 +70,7 @@ try{
   report.pages.push({path:new URL(p.url()).pathname,origin:new URL(p.url()).origin,closed:p.isClosed(),
    body:!p.isClosed()?redact(await p.locator('body').innerText().catch(()=>'' )).slice(-1250):''});
  }
-}catch(e){report.error=redact(e.message).slice(0,400)}
+}catch(e){if(e.message!=='draft-inspection-complete')report.error=redact(e.message).slice(0,400)}
 finally{
  if(context)await context.close().catch(()=>{});await browser.close();
  fs.mkdirSync('.check/crazygames',{recursive:true});
