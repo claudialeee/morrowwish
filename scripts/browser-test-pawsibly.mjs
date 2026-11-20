@@ -150,7 +150,7 @@ try{
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
  assert.equal(homeZh.catTitle?.trim(),'猫猫绝对无辜！','Chinese title must show no English Pawsibly subtitle');
  assert.doesNotMatch(homeZh.catTitle,/Pawsibly|Innocent/i,'Chinese title must not leak its English name');
- assert.deepEqual(homeZh.featureOrder.slice(0,3),['pawsibly-innocent','elsewhere','tiny-town'],'The three flagship games must stay in their approved order');
+ assert.deepEqual(homeZh.featureOrder.slice(0,4),['pawsibly-innocent','elsewhere','cat-bond','tiny-town'],'Four flagship worlds should follow the approved discovery-first order');
  assert.match(homeZh.catPitch,/三条小鱼|毛线球|粉色猫门/,'New Chinese promotional copy should explain gameplay');
  assert.match(homeZh.catCTA,/偷鱼开溜/,'Chinese CTA should be action-focused');
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
@@ -164,7 +164,7 @@ try{
   catPitch:document.querySelector('.cat-feature-card .feature-content>p')?.innerText,
   heroPitch:document.querySelector('.hero>p')?.innerText
  }));
- assert.deepEqual(homeEn.order.slice(0,3),['pawsibly-innocent','elsewhere','tiny-town'],'English homepage should preserve the three flagship positions even when more games launch');
+ assert.deepEqual(homeEn.order.slice(0,4),['pawsibly-innocent','elsewhere','cat-bond','tiny-town'],'English homepage should share the deliberate four-world order');
  assert.match(homeEn.catTitle,/Pawsibly\s*Innocent!/,'English heading must still show its original name');
  assert.match(homeEn.catPitch,/Three fish to steal/,'English promotional copy must be updated');
  assert.ok(homeEn.heroPitch.indexOf('mischievous cat')<homeEn.heroPitch.indexOf('life you never lived')&&homeEn.heroPitch.indexOf('life you never lived')<homeEn.heroPitch.indexOf('town where everyone is free'),'English hero copy must match cat, Elsewhere and town order');
