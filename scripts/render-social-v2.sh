@@ -7,7 +7,7 @@ command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null
 test -f "$FONT"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-for slug in pawsibly-innocent elsewhere tiny-town flip-dash parcel-panic pocket-aquarium; do
+for slug in pawsibly-innocent cat-bond elsewhere tiny-town flip-dash parcel-panic pocket-aquarium; do
   src="public/promo/$slug/real-gameplay-portrait.mp4"
   dest="public/promo/$slug/social-v2.mp4"
   cover="public/promo/$slug/social-v2-cover.jpg"
@@ -21,6 +21,15 @@ for slug in pawsibly-innocent elsewhere tiny-town flip-dash parcel-panic pocket-
       beat2="DISTRACT. SNEAK. ESCAPE."
       beat3="CAN YOU STEAL ALL THREE?"
       cta="PLAY THE CAT HEIST"
+      ;;
+    cat-bond)
+      accent=FFB6D2
+      hook="25 CATS. WHO'S YOUR FAVORITE?"
+      sub="SOME ARE MUCH HARDER TO FIND."
+      beat1="MEET YOUR FIRST CAT."
+      beat2="EXPLORE. BATTLE. MAKE FRIENDS."
+      beat3="CAN YOU FIND THE RAREST?"
+      cta="MEET YOUR NEW CAT FRIENDS"
       ;;
     elsewhere)
       accent=C9B5FB
