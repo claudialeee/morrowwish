@@ -119,6 +119,32 @@ class Game {
       combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
       healthy,swift,clever};
   }
+  masteryStatus(){
+    const badges=State.S.masteryBadges||{};
+    const medals=Object.values(badges).filter(Boolean).length;
+    // Each three distinct S-ranked breeds raises the *rarity weight*, not
+    // a guaranteed rare roll. Cap it to keep SSR genuinely collectible.
+    const luckBonus=Math.min(.48,Math.floor(medals/3)*.12);
+    return {medals,total:GameData.SPECIES.length,next:medals>=GameData.SPECIES.length
+      ?null:Math.min(GameData.SPECIES.length,(Math.floor(medals/3)+1)*3),luckBonus};
+  }
+  recordBattleMastery(wild,performance,newCat){
+    const S=State.S;
+    if(!S.bestGrades||typeof S.bestGrades!=='object')S.bestGrades={};
+    if(!S.masteryBadges||typeof S.masteryBadges!=='object')S.masteryBadges={};
+    const order={C:0,B:1,A:2,S:3};
+    const previous=S.bestGrades[wild.id];
+    performance.newRecord=order[performance.grade]>=(previous==null?0:order[previous]+.5);
+    if(performance.newRecord)S.bestGrades[wild.id]=performance.grade;
+    if(performance.grade!=='S'||S.masteryBadges[wild.id])return null;
+    // Once per *breed*, not once per battle or per duplicate cat.
+    S.masteryBadges[wild.id]=true;
+    S.luckLure=(S.luckLure||0)+1; // one enhanced encounter right away
+    newCat.affinity=Math.min(100,(newCat.affinity||0)+15);
+    const status=this.masteryStatus();
+    metric('bond_mastery_unlocked',{breed:wild.id,medals:status.medals,luckBonus:status.luckBonus});
+    return {breed:wild.id,status,lure:1,affinity:15};
+  }
   collectionStatus(){
     const count=Object.values(State.S.dex||{}).filter(v=>Number(v)>0).length;
     const total=GameData.SPECIES.length;
@@ -617,6 +643,7 @@ class Game {
       State.S.catchCount++;
       const milestoneRewards=this.grantCollectionMilestones();
       const performance=this.gradeBattle(b);
+      const masteryReward=this.recordBattleMastery(b.wild,performance,newCat);
       State.S.coins+=performance.bonusCoins;
       State.S.treats+=performance.bonusTreats;
       // reward: partner gains affinity + xp, coins
@@ -633,7 +660,7 @@ class Game {
       if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
       metric('bond_battle_grade',{grade:performance.grade,seconds:performance.seconds,
         combo:performance.combo,rarity:b.wild.rarity});
-      UI.openCatchResult(b.wild, newCat, milestoneRewards, performance);
+      UI.openCatchResult(b.wild, newCat, milestoneRewards, performance, masteryReward);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
