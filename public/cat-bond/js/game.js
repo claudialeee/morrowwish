@@ -58,6 +58,12 @@ class Game {
     State.load();
     // ensure first-time player gets a starter choice handled by main.js
     this.yard = new World.YardScene(this);
+    const switchCats=document.getElementById('yard-cat-switch');
+    if(switchCats)switchCats.addEventListener('click',()=>{
+      if(this.scene!=='yard')return;
+      if(this.yard.pageCount>1)this.yard.nextPage();
+      else UI.openRoster();
+    });
     this.bindInput();
     this.refreshHUD();
     this.initWorldMap();
@@ -92,6 +98,7 @@ class Game {
     document.getElementById('tabbar').classList.add('hidden');
     document.getElementById('hud').classList.add('hidden');
     document.getElementById('yard-actions').classList.add('hidden');
+    this.yard?.refreshYardSwitch();
     WorldMap.enterMap();
   }
   showYardChrome() {
@@ -99,9 +106,13 @@ class Game {
     document.getElementById('yard-actions').classList.remove('hidden');
     document.getElementById('tabbar').classList.remove('hidden');
     document.getElementById('hud').classList.remove('hidden');
+    this.yard?.refreshYardSwitch();
   }
 
-  rebuildYard() { this.yard.rebuild(); }
+  rebuildYard() {
+    this.yard.page=0; // Newly caught breeds become visible immediately.
+    this.yard.rebuild();
+  }
   gradeTimeLimit(rarity){
     // Rarer cats have substantially higher defense and often arrive in packs.
     // A fixed 40s S requirement was unfair to players who found a legend.
@@ -499,6 +510,7 @@ class Game {
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
+    this.yard?.refreshYardSwitch();
     window.MorrowwishAudio?.effect?.('discover');
     document.body.classList.remove('cb-exploring');
     // Unified Morrow Wish analytics: a capture battle is a game "run". If the
@@ -655,6 +667,7 @@ class Game {
       document.getElementById('hud').classList.remove('hidden');
       this.scene = 'yard';
     }
+    this.yard?.refreshYardSwitch();
     if(b.masteryChallenge){
       // Challenge rewards are *only* personal-best improvement and a first S
       // medal. Never add another cat or pay repeat capture resources here.

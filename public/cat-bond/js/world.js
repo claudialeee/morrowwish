@@ -284,12 +284,70 @@ class YardScene {
       const top=Math.min(H*.58,H-90),bottom=Math.max(top+10,H-74);
       b.y=Math.max(top,Math.min(bottom,b.y));
     }
+    // Portrait/landscape rotation changes how many cats fit in the yard.
+    this.rebuild();
   }
-  // Rebuild ONLY the cat entities from the current roster; scenery is left intact.
+  // Display a small, species-diverse visiting group, not all captured cats.
+  // ALL cat instances remain available in the roster, workshop and save.
+  yardCapacity(){
+    const {W,H}=this.game;
+    return H>W*1.1||W<=480?4:6;
+  }
   rebuild() {
-    const { W, H } = this.game;
-    if (!this.bushes || this.bushes.length === 0) this.buildScenery();
-    this.entities = State.S.cats.map(c => new CatEntity(c, W, H));
+    const {W,H}=this.game;
+    if(!this.bushes||this.bushes.length===0)this.buildScenery();
+    const roster=State.S.cats||[];
+    const representatives=new Map();
+    // Recently captured breed first; one portrait per species in the yard.
+    for(let i=roster.length-1;i>=0;i--){
+      const cat=roster[i];
+      if(!representatives.has(cat.species))representatives.set(cat.species,cat);
+    }
+    this.uniqueBreeds=representatives.size;
+    this.totalCats=roster.length;
+    this.capacity=this.yardCapacity();
+    const candidates=[...representatives.values()];
+    this.pageCount=Math.max(1,Math.ceil(candidates.length/this.capacity));
+    this.page=Math.min(this.page||0,this.pageCount-1);
+    const selection=candidates.slice(this.page*this.capacity,(this.page+1)*this.capacity);
+    this.entities=selection.map(cat=>new CatEntity(cat,W,H));
+    // Place resident visitors in two roomy rows (one on short landscape
+    // screens) so first render never forms a pile of overlapping portraits.
+    const rows=H<435?1:2;
+    const cols=Math.max(1,Math.ceil(selection.length/rows));
+    const top=Math.min(H*.54,H-88),bottom=Math.max(top+20,H-72);
+    const minX=Math.max(40,Math.min(88,W*.14));
+    const usableX=Math.max(0,W-minX*2);
+    this.entities.forEach((entity,i)=>{
+      const col=i%cols,row=Math.floor(i/cols);
+      const rowCount=Math.min(cols,selection.length-row*cols);
+      entity.x=minX+usableX*(col+1)/(rowCount+1);
+      entity.y=top+(bottom-top)*(rows===1?.52:(row===0?.28:.72));
+      entity.face=col%2===0?1:-1;
+    });
+    this.refreshYardSwitch();
+  }
+  nextPage(){
+    if(this.pageCount<=1)return;
+    this.page=(this.page+1)%this.pageCount;
+    this.rebuild();
+    window.arcadeMetric?.('bond_yard_page',{page:this.page+1,pages:this.pageCount});
+  }
+  refreshYardSwitch(){
+    const button=document.getElementById('yard-cat-switch');
+    if(!button)return;
+    const total=this.totalCats||0,shown=this.entities.length;
+    const extra=total>shown;
+    button.hidden=!extra||this.game.scene!=='yard';
+    if(button.hidden)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const rotate=this.pageCount>1;
+    const text=en
+      ?('🐈 '+shown+'/'+total+' · '+(rotate?'Next visitors '+(this.page+1)+'/'+this.pageCount:'Open roster'))
+      :('🐈 庭院 '+shown+'/'+total+' · '+(rotate?'换一批 '+(this.page+1)+'/'+this.pageCount:'查看猫猫'));
+    button.textContent=text;
+    button.title=en?'Only one cat per breed visits the yard; all cats remain in your roster.'
+      :'庭院每个品种只展示一只，其余猫咪都保留在「我的猫猫」';
   }
   hillBand(ctx, W, baseY, amp, freq) {
     ctx.beginPath(); ctx.moveTo(0, baseY);
