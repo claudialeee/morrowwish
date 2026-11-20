@@ -6,7 +6,7 @@ const source=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 new vm.Script(source,{filename:'game.js'});
 const nop=()=>{},nodes=new Map(),events=[],listeners={},saved={};
 const ctx=new Proxy({createLinearGradient:()=>({addColorStop:nop})},{get(o,k){return o[k]??nop}});
-function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop},hidden:false,appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
+function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop,toggle:nop},hidden:false,appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
 addEventListener(type,callback){listeners[id+':'+type]=callback},getContext:()=>ctx,
 getBoundingClientRect:()=>({left:0,top:0,width:840,height:588})}}
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id)},createElement:element,querySelectorAll:()=>[]};
@@ -39,8 +39,11 @@ for(let i=0;i<8;i++){
 test.choose(0,false);
 const original=test.getState().yarn;
 test.throwYarn();
+assert.equal(test.isAiming(),true,'Pressing yarn should enter aim mode');
+assert.equal(test.getState().yarn,original,'Aiming must not consume the yarn');
+assert.equal(test.throwYarnTo({x:8,y:4}),true,'Player can choose a reachable landing tile');
 assert.equal(test.getState().yarn,original-1);
-assert.ok(test.getState().noise);
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().noise)),{x:8,y:4});
 test.choose(0,false);
 const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 let attempts=0;
