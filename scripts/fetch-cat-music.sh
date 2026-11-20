@@ -9,11 +9,21 @@ target="public/audio/cat-happy-clappy.ogg"
 mkdir -p public/audio
 valid_audio() {
   [ -s "$1" ] || return 1
-  command -v ffprobe >/dev/null 2>&1 || return 1
-  ffprobe -v error -show_entries stream=codec_name -of default=noprint_wrappers=1 "$1" | grep -q opus || return 1
-  test "$(wc -c < "$1")" -gt 40000 || return 1
-  duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$1")
-  awk -v seconds="$duration" 'BEGIN{exit(seconds>5?0:1)}'
+  # Verify the Ogg/Opus structure and duration using Python's standard library.
+  # This works on clean GitHub runners without apt-get, ffprobe or ffmpeg.
+  python3 - "$1" <<'PY'
+from pathlib import Path
+import sys
+try:
+    data = Path(sys.argv[1]).read_bytes()
+    last = data.rfind(b'OggS')
+    assert len(data) > 40000
+    assert data.startswith(b'OggS') and b'OpusHead' in data[:256]
+    assert last > 100 and len(data) >= last + 14
+    assert int.from_bytes(data[last+6:last+14], "little") > 5*48000
+except Exception:
+    sys.exit(1)
+PY
 }
 if valid_audio "$target"; then
   echo "Verified recorded CC0 cat soundtrack already present."
@@ -30,7 +40,7 @@ for url in \
   'https://morrowwish.pages.dev/audio/cat-happy-clappy.ogg'
 do
   echo "Checking verified production CC0 music mirror..."
-  if curl -fLsS --connect-timeout 7 --max-time 25 --retry 1 --retry-delay 1 "$url" -o "$temp" && valid_audio "$temp"; then
+  if curl -fLsS --connect-timeout 5 --max-time 18 --retry 0 "$url" -o "$temp" && valid_audio "$temp"; then
     mv "$temp" "$target"
     echo "Reused verified CC0 Opus recording from $url (no conversion needed)."
     exit 0
@@ -52,7 +62,7 @@ for url in \
   'https://opengameart.org/sites/default/files/HappyClappyLoop.wav' \
   'https://opengameart.org/sites/default/files/HappyClappyLoop_0.wav'
 do
-  if curl -fLsS --connect-timeout 7 --max-time 25 --retry 1 --retry-delay 1 \
+  if curl -fLsS --connect-timeout 5 --max-time 18 --retry 0 \
     -A 'Mozilla/5.0 (compatible; MorrowWishAssetImporter/1.0)' "$url" -o "$src" && \
     ffprobe -v error -show_entries stream=codec_name -of default=noprint_wrappers=1 "$src" | grep -Eq 'pcm_|wavpack'; then
     ffmpeg -nostdin -y -v error -i "$src" -map 0:a:0 -vn -c:a libopus -b:a 72k -ar 48000 "$target"
