@@ -22,6 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
       game.start();
       document.getElementById('intro').classList.add('hide');
       window.__CAT_BOND_STARTED__=true;
+      window.arcadeMetric?.('bond_entered');
     } catch(error) {
       starting=false;
       console.error('Cat Bond start failed',error);
@@ -43,7 +44,11 @@ window.addEventListener('DOMContentLoaded', () => {
         State.save();
         game.rebuildYard();
         game.refreshHUD();
-        game.toast('👋 点击猫猫撸它，点右下🌿开始捉迷藏！');
+        window.arcadeMetric?.('bond_starter_chosen',{starter:id});
+        // Immediate discovery after selecting a first cat: no six-tab tutorial detour.
+        game.yard.startHideAndSeek();
+        game.refreshFirstQuest?.();
+        game.toast('🌿 院子里藏着一只野猫！点击发光的草丛找到它。');
       });
     } else {
       // returning player: offline raising report (replaces State.applyIdle)

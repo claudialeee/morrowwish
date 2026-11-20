@@ -60,6 +60,12 @@ if(p?.score!==undefined&&Number.isFinite(Number(p.score)))score=Math.max(score,M
 if(n==="cat_level_won"&&Number(p?.level)>=1&&Number(p?.level)<=9)signal("cat_room_"+Math.floor(Number(p.level)));
 if(n==="cat_caught")signal("cat_caught");
 if(n==="cat_fish")signal("cat_fish");
+if(n==="bond_entered")signal("bond_enter");
+if(n==="bond_starter_chosen")signal("bond_starter");
+if(n==="bond_wild_spawned")signal("bond_wild_spawn");
+if(n==="bond_first_wild_found")signal("bond_wild_found");
+if(n==="bond_first_capture")signal("bond_first_capture");
+if(n==="bond_continue_search")signal("bond_continue");
 if(n==="cat_souvenir")signal("cat_souvenir");
 if(n==="town_first-club")signal("town_club");
 if(n==="town_completed-win")signal("town_win");

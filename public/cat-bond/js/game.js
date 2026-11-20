@@ -102,6 +102,17 @@ class Game {
   }
 
   rebuildYard() { this.yard.rebuild(); }
+  refreshFirstQuest(){
+    const hint=document.getElementById('first-quest');
+    if(!hint)return;
+    const first=State.S.cats.length>0&&(State.S.catchCount||0)===0;
+    const panelOpen=document.getElementById('panel')?.classList.contains('open');
+    hint.hidden=!first||this.scene!=='yard'||!!panelOpen;
+    if(hint.hidden)return;
+    hint.textContent=this.yard?.hide
+      ? '🌿 第一次收集：点击发光的草丛，找到新伙伴'
+      : '🌿 第一次收集：点击右下角的草丛按钮寻找野猫';
+  }
 
   loop(ts) {
     // Schedule the NEXT frame first, so a thrown error in update/draw can never
@@ -119,6 +130,7 @@ class Game {
 
   update(dt) {
     if (this.scene === 'yard') this.yard.update(dt);
+    if(this.scene==='yard'&&(State.S.catchCount||0)===0)this.refreshFirstQuest();
     else if (this.scene === 'map' && window.WorldMap) WorldMap.update(dt);
     else if (this.scene === 'battle' && this.battle) {
       this.battle.update(dt);
@@ -303,6 +315,7 @@ class Game {
       window.MorrowwishAudio?.effect?.('discover');
       this.spawnFoundFx(this.yard.hide.spot);
       this.yard.hide = null;
+      window.arcadeMetric?.('bond_first_wild_found',{rarity:sp.rarity});
       UI.openCapturePrep(sp);
     } else if (hit.type === 'cat') {
       this.petCat(hit.entity);
@@ -483,6 +496,7 @@ class Game {
       metric('game_complete', { level: State.S.catchCount, rarity: b.wild.rarity, score: State.S.catchCount });
       window.MorrowwishAudio?.effect?.('capture');
       metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity });
+      if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
       UI.openCatchResult(b.wild, newCat);
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.

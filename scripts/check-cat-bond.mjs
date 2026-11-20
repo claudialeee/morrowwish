@@ -151,11 +151,20 @@ assert.ok(typeof boot === 'function', 'main.js registered DOMContentLoaded');
 boot();
 const game = sandbox.window.__game;
 assert.ok(game, 'Game instance created');
+assert.equal(typeof game.refreshFirstQuest,'function','First session has a visible objective hint');
 
 // start screen -> start the game (the intro-start click handler)
 game.start();
 const State = sandbox.window.State, UI = sandbox.window.UI, GameData = sandbox.window.GameData;
 
+const earlyState=sandbox.window.State;
+earlyState.S.cats=[earlyState.makeCat('tangyuan')];
+earlyState.S.catchCount=0;
+game.yard.startHideAndSeek();
+assert.ok(game.yard.hide?.tutorial,'First find should be highlighted');
+assert.equal(game.yard.hide.species.rarity,'N','First cat should be learnable');
+assert.notEqual(game.yard.hide.species.id,'tangyuan','First catch should be a fresh breed');
+game.yard.hide=null;
 // Give the player a starter + a strong team, then run a real capture battle.
 State.S.cats = [];
 const starter = State.makeCat('tangyuan', { affinity: 60 });

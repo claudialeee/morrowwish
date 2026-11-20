@@ -298,14 +298,20 @@ class YardScene {
   }
   startHideAndSeek(spot) {
     if (this.hide) return;
-    const luck = Math.min(0.9, State.S.luckLure * 0.25);
-    const sp = GameData.rollSpecies(luck);
-    if (State.S.luckLure > 0) State.S.luckLure--;
-    spot = spot || this.bushes[Math.floor(Math.random() * this.bushes.length)];
-    this.hide = {
-      species: sp, spot, found: false, revealT: 0,
-      peekT: 0.4 + Math.random() * 1.2, peeking: true,
+    const first=(State.S.catchCount||0)===0;
+    const luck=Math.min(0.9,State.S.luckLure*0.25);
+    const beginnerPool=GameData.SPECIES.filter(sp=>sp.rarity==='N' && sp.id!==State.S.cats[0]?.species);
+    const sp=first&&beginnerPool.length
+      ? beginnerPool[Math.floor(Math.random()*beginnerPool.length)]
+      : GameData.rollSpecies(luck);
+    if(!first&&State.S.luckLure>0)State.S.luckLure--;
+    spot=spot||(first?this.bushes[Math.floor(this.bushes.length/2)]
+      :this.bushes[Math.floor(Math.random()*this.bushes.length)]);
+    this.hide={
+      species:sp,spot,found:false,revealT:0,
+      tutorial:first,peekT:first?999:0.4+Math.random()*1.2,peeking:true,
     };
+    window.arcadeMetric?.('bond_wild_spawned',{rarity:sp.rarity});
     window.MorrowwishAudio?.effect?.('rustle');
     this.game.toast(`🌿 草丛里有只野猫在探头…点它！`);
   }
@@ -500,8 +506,21 @@ class YardScene {
     ctx.restore();
   }
   drawHide(ctx, hide) {
+    // First find is a highlighted target; later encounters keep the mystery.
+    if(hide.tutorial){
+      const pulse=Math.sin(this.game.t*5)*4;
+      ctx.save();
+      ctx.strokeStyle='#fff9d7';ctx.lineWidth=5;
+      ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y,40+pulse,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle='#dba85e';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y,49+pulse,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle='#fff8e8';ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y-55,17,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#84624d';ctx.font='bold 20px system-ui';ctx.textAlign='center';
+      ctx.fillText('↓',hide.spot.x,hide.spot.y-47);
+      ctx.restore();
+    }
     // peeking eyes / ear tips above the bush when peeking
-    if (!hide.peeking) {
+    if (!hide.peeking && !hide.tutorial) {
       ctx.fillStyle = 'rgba(255,255,255,0.15)';
       ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('?', hide.spot.x, hide.spot.y - 30 + Math.sin(this.game.t * 3) * 2);
