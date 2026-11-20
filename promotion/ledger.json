@@ -55,23 +55,33 @@
         },
         "youtube": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-23T16:00:00",
           "utm_source": "youtube",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=youtube&utm_medium=video&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=youtube&utm_medium=video&utm_campaign=elsewhere-playtest",
+          "scheduledPostId": "434913055",
+          "scheduledPostUuid": "8085780472905944123",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "tiktok": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-23T18:00:00",
           "utm_source": "tiktok",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=tiktok&utm_medium=video&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=tiktok&utm_medium=video&utm_campaign=elsewhere-playtest",
+          "scheduledPostId": "434912998",
+          "scheduledPostUuid": "8004744522659481391",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "google": {
           "priority": "P1",
@@ -105,13 +115,18 @@
         },
         "instagram": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-30T10:00:00",
           "utm_source": "instagram",
           "utm_campaign": "elsewhere-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=instagram&utm_medium=social&utm_campaign=elsewhere-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/elsewhere/?utm_source=instagram&utm_medium=social&utm_campaign=elsewhere-playtest",
+          "scheduledPostId": "434913852",
+          "scheduledPostUuid": "2216267029056079058",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         }
       }
     },
@@ -162,23 +177,33 @@
         },
         "youtube": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-24T16:00:00",
           "utm_source": "youtube",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=youtube&utm_medium=video&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=youtube&utm_medium=video&utm_campaign=tiny-town-playtest",
+          "scheduledPostId": "434913208",
+          "scheduledPostUuid": "-8649949822923290602",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "tiktok": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-24T18:00:00",
           "utm_source": "tiktok",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=tiktok&utm_medium=video&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=tiktok&utm_medium=video&utm_campaign=tiny-town-playtest",
+          "scheduledPostId": "434913153",
+          "scheduledPostUuid": "410100811236852862",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "google": {
           "priority": "P1",
@@ -212,13 +237,18 @@
         },
         "instagram": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-28T10:00:00",
           "utm_source": "instagram",
           "utm_campaign": "tiny-town-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=instagram&utm_medium=social&utm_campaign=tiny-town-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/tiny-town/?utm_source=instagram&utm_medium=social&utm_campaign=tiny-town-playtest",
+          "scheduledPostId": "434913811",
+          "scheduledPostUuid": "-674668279028496756",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         }
       }
     },
@@ -269,23 +299,33 @@
         },
         "youtube": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-20T16:00:00",
           "utm_source": "youtube",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=youtube&utm_medium=video&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=youtube&utm_medium=video&utm_campaign=pawsibly-innocent-playtest",
+          "scheduledPostId": "434911872",
+          "scheduledPostUuid": "-1540544710278626802",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "tiktok": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-20T09:00:00",
           "utm_source": "tiktok",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=tiktok&utm_medium=video&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=tiktok&utm_medium=video&utm_campaign=pawsibly-innocent-playtest",
+          "scheduledPostId": "434916393",
+          "scheduledPostUuid": "-7961872703183896183",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "google": {
           "priority": "P1",
@@ -319,13 +359,18 @@
         },
         "instagram": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-26T10:00:00",
           "utm_source": "instagram",
           "utm_campaign": "pawsibly-innocent-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=instagram&utm_medium=social&utm_campaign=pawsibly-innocent-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=instagram&utm_medium=social&utm_campaign=pawsibly-innocent-playtest",
+          "scheduledPostId": "434913765",
+          "scheduledPostUuid": "7214865643646895270",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         }
       }
     },
@@ -376,23 +421,33 @@
         },
         "youtube": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-21T16:00:00",
           "utm_source": "youtube",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=youtube&utm_medium=video&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=youtube&utm_medium=video&utm_campaign=flip-dash-playtest",
+          "scheduledPostId": "434912466",
+          "scheduledPostUuid": "-1634901404581541420",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "tiktok": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-21T10:00:00",
           "utm_source": "tiktok",
           "utm_campaign": "flip-dash-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=tiktok&utm_medium=video&utm_campaign=flip-dash-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/flip-dash/?utm_source=tiktok&utm_medium=video&utm_campaign=flip-dash-playtest",
+          "scheduledPostId": "434912421",
+          "scheduledPostUuid": "4018507422203006545",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "google": {
           "priority": "P1",
@@ -483,23 +538,33 @@
         },
         "youtube": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-22T16:00:00",
           "utm_source": "youtube",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=youtube&utm_medium=video&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=youtube&utm_medium=video&utm_campaign=parcel-panic-playtest",
+          "scheduledPostId": "434912568",
+          "scheduledPostUuid": "-2048928823279795681",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "tiktok": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-22T18:00:00",
           "utm_source": "tiktok",
           "utm_campaign": "parcel-panic-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=tiktok&utm_medium=video&utm_campaign=parcel-panic-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/parcel-panic/?utm_source=tiktok&utm_medium=video&utm_campaign=parcel-panic-playtest",
+          "scheduledPostId": "434912509",
+          "scheduledPostUuid": "8352781171488804216",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "google": {
           "priority": "P1",
@@ -590,23 +655,33 @@
         },
         "youtube": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-25T16:00:00",
           "utm_source": "youtube",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=youtube&utm_medium=video&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=youtube&utm_medium=video&utm_campaign=pocket-aquarium-playtest",
+          "scheduledPostId": "434913321",
+          "scheduledPostUuid": "-3789237008001971261",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "tiktok": {
           "priority": "P1",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-11-25T18:00:00",
           "utm_source": "tiktok",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=tiktok&utm_medium=video&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=tiktok&utm_medium=video&utm_campaign=pocket-aquarium-playtest",
+          "scheduledPostId": "434913266",
+          "scheduledPostUuid": "-4682759542259038634",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         },
         "google": {
           "priority": "P1",
@@ -640,13 +715,18 @@
         },
         "instagram": {
           "priority": "P2",
-          "status": "not-submitted",
+          "status": "scheduled",
           "platformId": null,
           "publicUrl": null,
-          "scheduledAt": null,
+          "scheduledAt": "2026-12-02T10:00:00",
           "utm_source": "instagram",
           "utm_campaign": "pocket-aquarium-playtest",
-          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=instagram&utm_medium=social&utm_campaign=pocket-aquarium-playtest"
+          "trackedUrl": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=instagram&utm_medium=social&utm_campaign=pocket-aquarium-playtest",
+          "scheduledPostId": "434913897",
+          "scheduledPostUuid": "-7860263750927892380",
+          "scheduler": "Metricool",
+          "timezone": "America/Los_Angeles",
+          "autoPublish": true
         }
       }
     }
