@@ -26,9 +26,8 @@ const UI = {
     document.getElementById('btn-auto').addEventListener('click', () => {
       if (!this.game.battle) return;
       const on = this.game.battle.toggleAuto();
-      const b = document.getElementById('btn-auto');
-      b.textContent = on ? '🎮 手动' : '🤖 自动';
-      b.classList.toggle('gold', on);
+      this.game.syncBattleModeUI();
+      window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {

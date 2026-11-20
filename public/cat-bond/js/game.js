@@ -422,9 +422,8 @@ class Game {
     this.buildTeamSlots();
     this.updateSkillLabels();
     this.updateBattleUI();
-    // reset auto button text
-    const ab = document.getElementById('btn-auto');
-    if (ab) { ab.textContent = '🤖 自动'; ab.classList.remove('gold'); }
+    // Display current battle state, including keyboard P toggles.
+    this.syncBattleModeUI();
   }
 
   updateSkillLabels() {
@@ -476,8 +475,25 @@ class Game {
     });
   }
 
+  syncBattleModeUI(){
+    const btn=document.getElementById('btn-auto');
+    if(!btn||!this.battle)return;
+    const on=!!this.battle.autoMode;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const label=en?(on?'🤖 Auto Battle: ON':'🤖 Auto Battle: OFF')
+      :(on?'🤖 自动战斗：开':'🤖 自动战斗：关');
+    if(btn.textContent!==label)btn.textContent=label;
+    btn.setAttribute('aria-pressed',String(on));
+    btn.setAttribute('aria-label',en?(on?'Disable automatic battle':'Enable automatic battle')
+      :(on?'关闭自动战斗':'开启自动战斗'));
+    btn.classList.toggle('is-auto',on);
+    btn.classList.toggle('gold',on);
+    document.getElementById('battle-hint')?.classList.toggle('auto-active',on);
+  }
+
   updateBattleUI() {
     const b = this.battle; if (!b) return;
+    this.syncBattleModeUI();
     // wild HP + player active HP shown on canvas; here we update the control bar
     document.getElementById('ult-bar').style.width = b.ult + '%';
     document.getElementById('ult-btn').classList.toggle('ready', b.ult >= 100);
@@ -489,6 +505,7 @@ class Game {
     this.renderCd('mv-basic', f.cd.basic);
     this.renderCd('mv-q', f.cd.q);
     this.renderCd('mv-e', f.cd.e);
+    this.renderCd('mv-dodge', f.dodgeCd);
     // team slots: hp + active highlight
     const host = document.getElementById('team-slots');
     if (host) [...host.children].forEach((el, i) => {
