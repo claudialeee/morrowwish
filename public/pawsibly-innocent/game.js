@@ -71,7 +71,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,started:false,done:false,winning:false,invincible:0,catFrom:{...cat},humanFrom:{...human},movedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,started:false,done:false,winning:false,invincible:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY<br><span>INNOCENT!</span>";
@@ -148,7 +148,7 @@ function guardMove(){const h=s.human;let target=null;if(s.noise){target=s.noise;
 if(!target&&visible()){target={...s.cat};s.lastSeen=target;s.alert=3;}
 if(!target&&s.alert>0&&s.lastSeen){target=s.lastSeen;s.alert--;if(equal(h,target))s.lastSeen=null;}
 if(!target){const stops=s.room.patrol;if(equal(h,{x:stops[s.patrol][0],y:stops[s.patrol][1]}))s.patrol=(s.patrol+1)%stops.length;target={x:stops[s.patrol][0],y:stops[s.patrol][1]}}
-const steps=pathTo(h,target,true);s.humanFrom={...h};if(steps.length)s.human={...steps[0]};}
+const steps=pathTo(h,target,true);s.humanFrom={...h};if(steps.length){s.human={...steps[0]};s.humanMovedAt=performance.now();}}
 function moveTo(p){if(s.done||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
 if(!s.started){s.started=true;metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
@@ -238,7 +238,13 @@ if(s.throwTrail&&time-s.throwTrail.at<950){const from=s.throwTrail.from,to=s.thr
  yarnDraw(x,y,time);ctx.save();ctx.globalAlpha=.28;ctx.strokeStyle="#c785bc";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo((sx+ex)/2,(sy+ey)/2-110,ex,ey);ctx.stroke();ctx.restore();
 }
 if(s.alert>0){ellipse((s.human.x+.5)*T,(s.human.y+.5)*T+7,37,29,"#fa999744");label("!",(s.human.x+.5)*T+25,(s.human.y+.5)*T-33,"bold 26px Fredoka","#e76e7a")}
-const hu=s.human,ca=s.cat;humanDraw((hu.x+.5)*T,(hu.y+.5)*T+10,time);if(!hidden(ca)){catDraw((ca.x+.5)*T,(ca.y+.5)*T+9+Math.sin(time*.007)*2,time)}else{catDraw((ca.x+.5)*T,(ca.y+.5)*T+17,time);round(ca.x*T+15,ca.y*T+45,54,27,5,"#e2b380");label("♡",(ca.x+.5)*T,ca.y*T+67,"19px system-ui","#c18395")}
+const hu=s.human,ca=s.cat;
+ // Brief in-between frames make the owner's reaction and chase readable.
+ const glide=Math.min(1,Math.max(0,(time-(s.humanMovedAt||0))/190));
+ const easing=glide*glide*(3-2*glide);
+ const hx=(s.humanFrom.x+(hu.x-s.humanFrom.x)*easing+.5)*T;
+ const hy=(s.humanFrom.y+(hu.y-s.humanFrom.y)*easing+.5)*T;
+ humanDraw(hx,hy+10,time);if(!hidden(ca)){catDraw((ca.x+.5)*T,(ca.y+.5)*T+9+Math.sin(time*.007)*2,time)}else{catDraw((ca.x+.5)*T,(ca.y+.5)*T+17,time);round(ca.x*T+15,ca.y*T+45,54,27,5,"#e2b380");label("♡",(ca.x+.5)*T,ca.y*T+67,"19px system-ui","#c18395")}
 if(!s.started&&!s.done){const x=Math.min(680,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,208,38,14,"#fffdf5ef");label(tr("startHint"),x+104,y+25,"bold 15px Nunito, system-ui","#8a5773");const next={x:s.cat.x+1,y:s.cat.y};if(pass(next)){ctx.strokeStyle="#d887ac";ctx.lineWidth=4;ctx.setLineDash([5,7]);ctx.beginPath();ctx.arc((next.x+.5)*T,(next.y+.5)*T,25+Math.sin(time*.005)*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([])}}
 for(let i=fx.length-1;i>=0;i--){const p=fx[i];shape(p.x,p.y,Math.max(1,p.life/8),p.col);p.x+=p.dx;p.y+=p.dy;p.dy+=.07;p.life--;if(p.life<0)fx.splice(i,1)}requestAnimationFrame(draw)}
 function canvasTile(e){const rect=c.getBoundingClientRect();return {x:Math.floor((e.clientX-rect.left)/rect.width*W),y:Math.floor((e.clientY-rect.top)/rect.height*H)}}
