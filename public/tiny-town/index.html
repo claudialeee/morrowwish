@@ -580,7 +580,7 @@ html[lang="zh-CN"] .tt-journey .aw-en,html[lang="zh-CN"] .tt-resident-rail .aw-e
 <script>
 (function(){
 const E=window.AfterWorkEngine;const $=id=>document.getElementById(id);
-const board=$('board');let state,selected=null,hover=-1,busy=false,history=[],started,metrics,touchArmed=null,pendingMovePos=null,focusId=null,hasTrackedClub=false;const touchMode=false;
+const board=$('board');let state,selected=null,hover=-1,busy=false,history=[],started,metrics,touchArmed=null,pendingMovePos=null,focusId=null,hasTrackedClub=false,gameEpoch=0;const touchMode=false;
 const icons=E.INFO;
 const explainKinds={game:'Gaming',music:'Music',art:'Art',social:'Social'};
 const zhVenues={game:'街机厅',music:'音乐工作室',art:'艺术工坊',social:'咖啡馆'};
@@ -684,7 +684,7 @@ function updateCoach(){
  $('autoPlace').disabled=busy||done;
  $('awCoach').classList.toggle('aw-compact',state.turn>0);
 }
-function start(seed){if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=null;focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='';addFeed('🟢 AI handles the work. Everyone has time to create and connect. Four neighbors arrive in Week 5.','🟢 AI 承担了所有工作，大家可以自由生活。第 5 周还会有四位新邻居入住。');render();}
+function start(seed){gameEpoch++;if(state&&state.turn>0)gameProgress(state.turn>=E.TURNS?'replayed':'restarted-early');hasTrackedClub=false;state=E.generate(seed);selected=null;focusId=null;hover=-1;touchArmed=null;resetMobileConfirmation();busy=false;history=[];started=performance.now();metrics={seed,firstChoiceMs:null,actions:[],completed:false,feedback:null};$('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;$('weekReceipt').hidden=true;$('end').classList.remove('show');$('feed').innerHTML='';addFeed('🟢 AI handles the work. Everyone has time to create and connect. Four neighbors arrive in Week 5.','🟢 AI 承担了所有工作，大家可以自由生活。第 5 周还会有四位新邻居入住。');render();}
 function renderingPreview(pos){
  if(busy||state.turn>=E.TURNS)return;
  const move=E.moves(state).find(m=>m.action===(selected==='upgrade'?'upgrade':'place')&&m.pos===pos&&(selected==='upgrade'||m.type===selected));
@@ -794,7 +794,7 @@ if(newClubs.length)setTimeout(()=>float('🎉 '+club(newClubs[0].name),L('A new 
 else setTimeout(()=>float(L('Active ','参加活动 ')+state.last.active+' / '+state.residents.length,'+'+state.last.score+L(' vitality',' 活力')),800);
 $('preview').textContent=L('Week ','第 ')+state.turn+L(': ',' 周：')+state.last.active+L(' active, ',' 人参加活动，')+state.last.clubs.length+L(' club types, +',' 类社团，+')+state.last.score+L(' vitality.',' 活力。');
 
-setTimeout(()=>{busy=false;if(state.turn>=E.TURNS)endGame();else render();},1850);
+const epoch=gameEpoch;setTimeout(()=>{if(epoch!==gameEpoch)return;busy=false;if(state.turn>=E.TURNS)endGame();else render();},1850);
 }
 function endGame(){
  metrics.completed=true;metrics.gameDurationMs=Math.round(performance.now()-started);
@@ -816,7 +816,7 @@ $('cancelMove').onclick=()=>resetMobileConfirmation();
 if(typeof location!=='undefined'&&new URLSearchParams(location.search).has('debug'))$('export').hidden=false;
 if(typeof window.addEventListener==='function')window.addEventListener('pagehide',()=>{if(state&&state.turn>0&&state.turn<E.TURNS)gameProgress('exit-week-'+state.turn);});
 $('newAgain').onclick=()=>$('random').click();$('sameAgain').onclick=()=>$('same').click();$('closeEnd').onclick=()=>$('end').classList.remove('show');
-$('export').onclick=()=>{gameProgress('playtest-export');let result={version:'prototype-0.1',...metrics,gameOutcome:E.outcome(state),moves:history,generatedLocally:true,notice:'This optional debug log is downloaded locally. Anonymous usage events are sent to Vercel Analytics.'};let blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='afterwork-playtest-'+state.seed+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);};
+$('export').onclick=()=>{gameProgress('playtest-export');let result={version:'tiny-town-3.0',...metrics,gameOutcome:E.outcome(state),moves:history,generatedLocally:true,notice:'This optional debug log is downloaded locally. Anonymous playtest events are sent to the private Morrow Wish dashboard.'};let blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='afterwork-playtest-'+state.seed+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1200);};
 $('shareGame').onclick=()=>{
  const outcome=state&&state.turn>=E.TURNS?E.outcome(state):null;
  const message=outcome
