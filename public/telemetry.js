@@ -63,7 +63,7 @@ if(n.startsWith("town_feedback-")){const v=n.slice(14);if(["fun","confusing","no
 if(["play_feedback_fun","play_feedback_confusing","play_feedback_not_fun"].includes(n))signal(n);
 if(/^town_exit-week-[1-8]$/.test(n))signal(n.replaceAll("-","_"));
 if(["feed_success","feed_drop"].includes(n)&&game==="pocket-aquarium")signal(n);
-if(n==="game_complete"&&game==="pocket-aquarium"){const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
+if(n==="game_complete"&&game==="pocket-aquarium"){signal("aquarium_completed");const outcome=String(p?.ending||"");if(["festival","clear","friends","rest","calm"].includes(outcome))signal("aquarium_ending_"+outcome);const grade=String(p?.grade||"").toUpperCase();if(["S","A","B","C","D"].includes(grade))signal("aquarium_grade_"+grade.toLowerCase());if(p?.reason==="dirty")signal("aquarium_dirty_end");}
 if(game==="flip-dash"&&n==="run_end"){signal("flip_finished");const duration=Number(p?.duration)||0;if(duration>=10)signal("flip_10s");if(duration>=30)signal("flip_30s");}
 if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
 }
