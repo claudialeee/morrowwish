@@ -543,10 +543,14 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
  if(extra<0||!aside.includes('<summary>')||!aside.includes('sidebar-extra-body'))
   throw new Error('Secondary cat-game instructions and souvenirs must fold away by default');
  const above=aside.slice(0,extra);
- for(const id of ['hearts','chapter','fishCount','meterFill','mission','tool','collection',
+ for(const id of ['hearts','chapter','fishCount','meterFill','mission','collection',
                    'score','moves','starTotal','restart','sound','music','levels','wardrobe','skinHint']){
   if(!above.includes('id="'+id+'"'))throw new Error('Essential cat game control hidden in detail: '+id);
  }
+ // The yarn button is a primary gameplay action above the board, not inside the sidebar.
+ const yarnAction=html.indexOf('id="tool"'),canvas=html.indexOf('id="board"');
+ if(yarnAction<0||canvas<0||yarnAction>canvas||yarnAction>start)
+  throw new Error('Yarn action must be visible immediately above the board');
  for(const id of ['yarnExplain','ability','collectionHint','souvenirShelf','musicCredit']){
   if(!aside.slice(extra).includes('id="'+id+'"'))throw new Error('Optional cat section missing '+id);
  }
