@@ -18,8 +18,10 @@ try{
     await cover.scrollIntoViewIfNeeded();
     await coverPage.waitForFunction(()=>{
       const img=document.querySelector('.bond-feature-card .feature-art img');
-      return img&&img.complete&&img.naturalWidth>=600;
+      return img&&img.complete&&img.naturalWidth>=512&&img.naturalHeight>=288;
     },null,{timeout:10000});
+    // The current 560 × 324 WebP is a real cover, not a 600px-wide asset.
+    // Ensure meaningful size and nonblank opaque pixels instead.
     const pixels=await cover.evaluate(img=>{
       const cv=document.createElement('canvas');
       cv.width=150;cv.height=90;
