@@ -15,3 +15,26 @@
 .overlay-copy{color:#756777;line-height:1.65;font-size:14px;margin:0 auto 22px;max-width:370px}.play-btn{border:0;border-radius:999px;padding:14px 33px;background:#f49c92;color:#4f334d;font-weight:900;box-shadow:0 6px 0 #debcb3}.play-btn:hover{transform:translateY(-2px)}
 .game-foot{margin-top:15px;display:flex;justify-content:space-between;gap:15px;align-items:center;color:#887887;font-size:12px}.game-foot strong{color:#6a8577}.pulse{display:inline-block;width:9px;height:9px;background:#9bcaa7;border-radius:100%;margin-right:7px}
 @media(max-width:600px){.game-shell{width:100%;padding:20px 9px 30px}.game-top{gap:9px;align-items:flex-start}.score-chip{min-width:55px;padding:5px 7px;font-size:17px}.icon-btn{padding:10px;font-size:12px}.game-title{font-size:28px}.game-sub{font-size:11px}.game-frame{border-width:4px;border-radius:16px}.game-foot{font-size:10px}.overlay-panel{min-width:0;padding:22px 17px}.overlay-copy{font-size:12px}}
+
+/* Phone-first arcade: controls remain tappable and PLAY NOW is never clipped. */
+@media(max-width:600px){
+ .game-shell{width:min(100%,480px);padding:12px 10px 30px}
+ .game-shell:before{margin-bottom:8px;font-size:9px}
+ .game-top{flex-direction:column;align-items:stretch;gap:8px;margin-bottom:12px}
+ .game-top>div:first-child{min-width:0}
+ .game-sub{max-width:none;line-height:1.4}
+ .scoreboard{display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-wrap:wrap}
+ .score-chip{min-width:70px;padding:5px 10px}
+ .scoreboard .icon-btn{min-height:44px;min-width:44px;padding:9px}
+ .game-frame{min-width:0}
+ .game-frame canvas{height:auto;aspect-ratio:16/9}
+ .game-frame:has(.game-overlay:not([hidden])) canvas{display:none}
+ .game-overlay{position:relative;inset:auto;min-height:290px;max-height:none;padding:17px 13px}
+ .game-overlay[hidden]{display:none}
+ .overlay-panel{max-width:100%;width:100%;max-height:none;min-width:0;padding:20px 16px}
+ .overlay-title{font-size:clamp(26px,8vw,38px)}
+ .overlay-copy{margin-bottom:15px;line-height:1.5}
+ .play-btn{min-height:48px;min-width:155px;padding:12px 20px}
+ .game-foot{gap:5px;flex-wrap:wrap}
+}
+@media(max-width:360px){.game-title{font-size:26px}.score-chip{min-width:62px}}
