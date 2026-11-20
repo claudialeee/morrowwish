@@ -120,12 +120,20 @@ async function selectCombo(page,i,desired){
  if(!await combo.count())throw Error('Missing combobox index '+i);
  const current=(await combo.innerText()).trim();
  if(current && current!=='​' && current!=='Select')return {selected:current,alreadySet:true};
- const box=await combo.boundingBox();
- if(box)await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
- else await combo.evaluate(e=>e.click());
- await sleep(500);
- const vals=(await page.getByRole('option').allTextContents().catch(()=>[])).map(v=>v.trim()).filter(Boolean);
- if(!vals.length)throw Error('No options for dropdown '+i);
+ // MUI multiselect controls require a DOM click rather than physical mouse
+ // clicks in the headless runner (verified on the portal's real Tags menu).
+ let vals=[];
+ for(let attempt=0;attempt<3 && !vals.length;attempt++){
+   if(attempt===0)await combo.click({timeout:5000}).catch(()=>{});
+   else if(attempt===1)await combo.evaluate(el=>el.click()).catch(()=>{});
+   else{
+     const box=await combo.boundingBox();
+     if(box)await page.mouse.click(box.x+box.width/2,box.y+box.height/2).catch(()=>{});
+   }
+   await sleep(750);
+   vals=(await page.getByRole('option').allTextContents().catch(()=>[])).map(v=>v.trim()).filter(Boolean);
+ }
+ if(!vals.length)throw Error('No options for dropdown '+i+'; combo: '+mask(await combo.evaluate(x=>x.outerHTML).catch(()=>''),180));
  let chosen=desired.find(x=>vals.some(v=>v.toLowerCase()===x.toLowerCase()));
  if(!chosen)chosen=desired.find(x=>vals.some(v=>v.toLowerCase().includes(x.toLowerCase())));
  const actual=chosen?vals.find(v=>v.toLowerCase()===chosen.toLowerCase())||vals.find(v=>v.toLowerCase().includes(chosen.toLowerCase())):null;
