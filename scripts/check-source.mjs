@@ -529,3 +529,36 @@ console.log('Elsewhere top-left homepage navigation, internal life picker and mo
   throw Error('Cat share must include real score and room');
  console.log('All three flagship game share menus: 6 social sites, localized messages, active scores and deep links.');
 }
+
+
+// Compact cat sidebar: all essential gameplay remains above its optional details.
+{
+ const html=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
+ const script=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
+ const start=html.indexOf('<aside class="panel"');
+ const end=html.indexOf('</aside>',start);
+ if(start<0||end<0)throw new Error('Cat compact sidebar missing');
+ const aside=html.slice(start,end);
+ const extra=aside.indexOf('<details class="sidebar-extra">');
+ if(extra<0||!aside.includes('<summary>')||!aside.includes('sidebar-extra-body'))
+  throw new Error('Secondary cat-game instructions and souvenirs must fold away by default');
+ const above=aside.slice(0,extra);
+ for(const id of ['hearts','chapter','fishCount','meterFill','mission','tool','collection',
+                   'score','moves','starTotal','restart','sound','music','levels','wardrobe','skinHint']){
+  if(!above.includes('id="'+id+'"'))throw new Error('Essential cat game control hidden in detail: '+id);
+ }
+ for(const id of ['yarnExplain','ability','collectionHint','souvenirShelf','musicCredit']){
+  if(!aside.slice(extra).includes('id="'+id+'"'))throw new Error('Optional cat section missing '+id);
+ }
+ for(const id of [...new Set([...script.matchAll(/\$\("([^"]+)"\)/g)].map(x=>x[1]))]){
+  if(!html.includes('id="'+id+'"'))throw new Error('Cat game script references missing DOM control '+id);
+ }
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
+ if(ids.some((id,i)=>ids.indexOf(id)!==i))throw new Error('Duplicate cat-game DOM ID');
+ if(!html.includes('max-width:1110px')||!html.includes('max-width:620px')||
+    !html.includes('.panel .sidebar-actions')||!html.includes('.panel .level-btn'))
+  throw new Error('Compact cat sidebar responsiveness missing');
+ if(aside.indexOf('id="levels"')>extra||aside.indexOf('id="wardrobe"')>extra)
+  throw new Error('Active level and cat selection cannot be hidden by default');
+ console.log('Compact cat sidebar: every active control fits above folded extras; responsive and all IDs intact.');
+}
