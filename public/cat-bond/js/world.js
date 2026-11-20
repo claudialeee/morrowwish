@@ -19,7 +19,8 @@ class CatEntity {
     this.cat = cat;                 // reference to state cat instance
     this.x = 80 + Math.random() * (W - 160);
     // spawn in the painted meadow (below the horizon), not floating in the sky
-    this.y = H * 0.56 + Math.random() * (H * 0.34);
+    const top=Math.min(H*.56,H-88),bottom=Math.max(top+10,H-72);
+    this.y = top + Math.random() * (bottom-top);
     this.W = W; this.H = H;
     this.face = Math.random() < 0.5 ? -1 : 1;
     this.pose = 'idle';
@@ -122,7 +123,7 @@ class CatEntity {
     this.y += this.walkVY*step;
 
     const leftBound=Math.min(56,this.W*.22),rightBound=this.W-leftBound;
-    const groundTop=this.H*.54,groundBottom=Math.max(groundTop+32,this.H-145);
+    const groundTop=Math.min(this.H*.54,this.H-88),groundBottom=Math.max(groundTop+20,this.H-72);
     if(this.x<leftBound){this.x=leftBound;this.vx=Math.abs(this.vx);this.walkVX=Math.max(0,this.walkVX);}
     if(this.x>rightBound){this.x=rightBound;this.vx=-Math.abs(this.vx);this.walkVX=Math.min(0,this.walkVX);}
     if(this.y<groundTop){this.y=groundTop;this.vy=Math.abs(this.vy);this.walkVY=Math.max(0,this.walkVY);}
@@ -233,7 +234,7 @@ class YardScene {
     const spots = 6;
     // keep bushes down in the painted meadow (below the horizon) so they never
     // float in the sky or sit on the lake — y from ~58% down to the foreground.
-    const bushTop = H * 0.58, bushBot = H - 150;
+    const bushTop = Math.min(H*.58,H-90), bushBot = Math.max(bushTop+10,H-74);
     for (let i = 0; i < spots; i++) {
       this.bushes.push({
         x: 70 + (W - 140) * (i / (spots - 1)) + (Math.random() * 40 - 20),
@@ -265,6 +266,24 @@ class YardScene {
       x: Math.random() * W, y: H * 0.45 + Math.random() * (H * 0.5),
       bx: Math.random() * W, by: H * 0.45 + Math.random() * (H * 0.5), ph: Math.random() * 6,
     }));
+  }
+  // Rotate/reflow in place, preserving the active hidden cat's bush reference.
+  onResize(oldW,oldH,W,H){
+    const fx=W/Math.max(1,oldW),fy=H/Math.max(1,oldH);
+    const move=(items)=>{for(const v of items||[]){v.x*=fx;v.y*=fy;}};
+    move(this.bushes);move(this.butterflies);move(this.clouds);
+    move(this.flowers);move(this.petals);move(this.fireflies);
+    move(this.lootBubbles);move(this.petParticles);move(this.floatTexts);
+    if(this.golden){this.golden.x*=fx;this.golden.y*=fy;}
+    for(const e of this.entities){
+      e.W=W;e.H=H;e.x=Math.min(W-40,Math.max(40,e.x*fx));
+      const top=Math.min(H*.54,H-88),bottom=Math.max(top+20,H-72);
+      e.y=Math.max(top,Math.min(bottom,e.y*fy));
+    }
+    for(const b of this.bushes){
+      const top=Math.min(H*.58,H-90),bottom=Math.max(top+10,H-74);
+      b.y=Math.max(top,Math.min(bottom,b.y));
+    }
   }
   // Rebuild ONLY the cat entities from the current roster; scenery is left intact.
   rebuild() {
