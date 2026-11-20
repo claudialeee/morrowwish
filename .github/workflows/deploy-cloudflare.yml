@@ -9,6 +9,8 @@ on:
       # Only scripts that affect the deployed site or release automation.
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
+      - 'scripts/render-social-v2.sh'
+      - 'scripts/record-cat-bond-social.mjs'
       - 'scripts/fetch-cat-music.sh'
       - 'scripts/discovery.mjs'
       - 'scripts/detect-new-games.mjs'
@@ -56,7 +58,13 @@ jobs:
           fi
       - name: Add CC0 audio to six social promotion video clips
         run: bash scripts/add-promo-audio.sh
-      - name: Render six polished mobile-first gameplay trailers
+      - name: Install Chromium to capture authentic Cat Bond play
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Record Cat Bond in the actual browser game
+        run: node scripts/record-cat-bond-social.mjs
+      - name: Render seven polished mobile-first gameplay trailers
         run: bash scripts/render-social-v2.sh
       - name: Verify source, game ordering, and D1 binding
         run: |
@@ -140,10 +148,10 @@ jobs:
             test "$ready" = 1 || { echo "::error::Mystery art $asset not live after retries (HTTP $code)"; exit 1; }
           done
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
-      - name: Verify six real-gameplay promotion assets are live (not HTML fallbacks)
+      - name: Verify seven real-gameplay promotion assets are live (not HTML fallbacks)
         run: |
           set -eu
-          for game in elsewhere tiny-town pawsibly-innocent flip-dash parcel-panic pocket-aquarium; do
+          for game in elsewhere tiny-town pawsibly-innocent cat-bond flip-dash parcel-panic pocket-aquarium; do
             for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
               url="$origin/promo/$game/real-gameplay-portrait.mp4?deploy=$GITHUB_SHA"
               type=$(curl -sSLI --max-time 20 "$url" | tr -d '\r' | grep -i '^content-type:' | tail -1 || true)
@@ -153,7 +161,7 @@ jobs:
               case "$type" in *image/png*) ;; *) echo "::error::Expected PNG cover but received $type: $cover"; exit 1 ;; esac
             done
           done
-          echo 'All six real-gameplay media assets are public and use correct content types.'
+          echo 'All seven real-gameplay media assets are public and use correct content types.'
       - name: Verify public Morrow Wish game URLs via Vercel proxy
         run: |
           set -eu
