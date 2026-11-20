@@ -5,7 +5,7 @@
   "basis": "promotion/ledger.json",
   "priority": [
     "CrazyGames/itch.io/Reddit",
-    "Newgrounds/YouTube Shorts/TikTok/Google+Bing",
+    "YouTube Shorts/TikTok/Google+Bing",
     "Bluesky/Instagram"
   ],
   "notice": "Material is prepared; no platform submission, publication or posting is inferred. Reddit requires current rule verification and studio account. Do not post identical text across communities.",
@@ -38,12 +38,6 @@
           "officialURL": "https://morrowwish.vercel.app/elsewhere/",
           "trackedURL": "https://morrowwish.vercel.app/elsewhere/?utm_source=reddit&utm_medium=social&utm_campaign=elsewhere-playtest",
           "utmSource": "reddit",
-          "utmCampaign": "elsewhere-playtest"
-        },
-        "newgrounds": {
-          "officialURL": "https://morrowwish.vercel.app/elsewhere/",
-          "trackedURL": "https://morrowwish.vercel.app/elsewhere/?utm_source=newgrounds&utm_medium=portal&utm_campaign=elsewhere-playtest",
-          "utmSource": "newgrounds",
           "utmCampaign": "elsewhere-playtest"
         },
         "youtube": {
@@ -117,12 +111,6 @@
           "utmSource": "reddit",
           "utmCampaign": "tiny-town-playtest"
         },
-        "newgrounds": {
-          "officialURL": "https://morrowwish.vercel.app/tiny-town/",
-          "trackedURL": "https://morrowwish.vercel.app/tiny-town/?utm_source=newgrounds&utm_medium=portal&utm_campaign=tiny-town-playtest",
-          "utmSource": "newgrounds",
-          "utmCampaign": "tiny-town-playtest"
-        },
         "youtube": {
           "officialURL": "https://morrowwish.vercel.app/tiny-town/",
           "trackedURL": "https://morrowwish.vercel.app/tiny-town/?utm_source=youtube&utm_medium=video&utm_campaign=tiny-town-playtest",
@@ -192,12 +180,6 @@
           "officialURL": "https://morrowwish.vercel.app/pawsibly-innocent/",
           "trackedURL": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=reddit&utm_medium=social&utm_campaign=pawsibly-innocent-playtest",
           "utmSource": "reddit",
-          "utmCampaign": "pawsibly-innocent-playtest"
-        },
-        "newgrounds": {
-          "officialURL": "https://morrowwish.vercel.app/pawsibly-innocent/",
-          "trackedURL": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=newgrounds&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest",
-          "utmSource": "newgrounds",
           "utmCampaign": "pawsibly-innocent-playtest"
         },
         "youtube": {
@@ -271,12 +253,6 @@
           "utmSource": "reddit",
           "utmCampaign": "flip-dash-playtest"
         },
-        "newgrounds": {
-          "officialURL": "https://morrowwish.vercel.app/flip-dash/",
-          "trackedURL": "https://morrowwish.vercel.app/flip-dash/?utm_source=newgrounds&utm_medium=portal&utm_campaign=flip-dash-playtest",
-          "utmSource": "newgrounds",
-          "utmCampaign": "flip-dash-playtest"
-        },
         "youtube": {
           "officialURL": "https://morrowwish.vercel.app/flip-dash/",
           "trackedURL": "https://morrowwish.vercel.app/flip-dash/?utm_source=youtube&utm_medium=video&utm_campaign=flip-dash-playtest",
@@ -348,12 +324,6 @@
           "utmSource": "reddit",
           "utmCampaign": "parcel-panic-playtest"
         },
-        "newgrounds": {
-          "officialURL": "https://morrowwish.vercel.app/parcel-panic/",
-          "trackedURL": "https://morrowwish.vercel.app/parcel-panic/?utm_source=newgrounds&utm_medium=portal&utm_campaign=parcel-panic-playtest",
-          "utmSource": "newgrounds",
-          "utmCampaign": "parcel-panic-playtest"
-        },
         "youtube": {
           "officialURL": "https://morrowwish.vercel.app/parcel-panic/",
           "trackedURL": "https://morrowwish.vercel.app/parcel-panic/?utm_source=youtube&utm_medium=video&utm_campaign=parcel-panic-playtest",
@@ -423,12 +393,6 @@
           "officialURL": "https://morrowwish.vercel.app/pocket-aquarium/",
           "trackedURL": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=reddit&utm_medium=social&utm_campaign=pocket-aquarium-playtest",
           "utmSource": "reddit",
-          "utmCampaign": "pocket-aquarium-playtest"
-        },
-        "newgrounds": {
-          "officialURL": "https://morrowwish.vercel.app/pocket-aquarium/",
-          "trackedURL": "https://morrowwish.vercel.app/pocket-aquarium/?utm_source=newgrounds&utm_medium=portal&utm_campaign=pocket-aquarium-playtest",
-          "utmSource": "newgrounds",
           "utmCampaign": "pocket-aquarium-playtest"
         },
         "youtube": {
