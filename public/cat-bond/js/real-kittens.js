@@ -166,7 +166,17 @@
     ctx.imageSmoothingEnabled=true;
     ctx.imageSmoothingQuality='high';
     const art=breedFrame(o);
-    ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,-30,-55,60,90);
+    // Mild breed silhouettes; retain the illustrated face, texture, and
+    // foot anchoring so existing movement and collision remain unchanged.
+    const build=BREED_LOOKS[o.species?.id]?.[3]||'';
+    const dest=build==='short-legged'?[-30,-46,60,79]:
+      build==='seal-point'?[-27,-55,54,90]:
+      build==='british-blue'?[-33,-53,66,86]:
+      build==='maine-coon'?[-33,-57,66,92]:
+      build==='norwegian-forest'?[-32,-56,64,91]:
+      build==='folded-cream'?[-30,-52,60,87]:
+      [-30,-55,60,90];
+    ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
     if(mood==='love'){
       ctx.fillStyle='#ef8fa8';ctx.font='13px system-ui';
       ctx.fillText('♥',22,-38-Math.sin(t*3)*2);
