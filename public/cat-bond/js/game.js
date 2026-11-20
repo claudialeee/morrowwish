@@ -102,6 +102,11 @@ class Game {
   }
 
   rebuildYard() { this.yard.rebuild(); }
+  gradeTimeLimit(rarity){
+    // Rarer cats have substantially higher defense and often arrive in packs.
+    // A fixed 40s S requirement was unfair to players who found a legend.
+    return ({N:40,R:55,SR:75,SSR:100})[rarity]||40;
+  }
   gradeBattle(b){
     // Reward three understandable goals: finish quickly, protect the cats,
     // and land a combo or perfect dodge. Auto-battle remains eligible.
@@ -109,7 +114,8 @@ class Game {
     const maxHP=fighters.reduce((n,f)=>n+(f.maxhp||0),0);
     const remaining=fighters.reduce((n,f)=>n+Math.max(0,f.hp||0),0);
     const healthy=maxHP>0&&remaining/maxHP>=.7;
-    const swift=(b.t||0)<=40;
+    const timeLimit=this.gradeTimeLimit(b.wild?.rarity);
+    const swift=(b.t||0)<=timeLimit;
     const clever=(b.comboBest||0)>=6||(b.perfectDodges||0)>=1;
     const points=Number(healthy)+Number(swift)+Number(clever);
     const grade=points===3?'S':points===2?'A':points===1?'B':'C';
@@ -117,7 +123,7 @@ class Game {
     const [bonusCoins,bonusTreats]=bonuses[grade];
     return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
       combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
-      healthy,swift,clever};
+      healthy,swift,clever,timeLimit};
   }
   masteryStatus(){
     const badges=State.S.masteryBadges||{};
