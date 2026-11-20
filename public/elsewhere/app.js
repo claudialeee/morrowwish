@@ -403,7 +403,7 @@
     const passages=[ch.scene,ch.dialogue,ch.echo,recall,active.selected!==null?ch.choices[active.selected].reply:'']
       .filter(Boolean).map(text=>translate(String(text)).trim()).filter(Boolean);
     // Separate story beats so the voice can breathe instead of reading a dense paragraph in one robotic monotone.
-    const lines=passages.flatMap(p=>p.split(language==='zh-CN'?/(?<=[。！？；])/:/(?<=[.!?])\\s+/).map(t=>t.trim()).filter(Boolean));
+    const lines=passages.flatMap(p=>p.split(language==='zh-CN'?/(?<=[。！？；])/:/(?<=[.!?])\s+/).map(t=>t.trim()).filter(Boolean));
     if(!lines.length)return;
     const token=++speechToken;
     speaking=true;$('#narrate-btn').innerHTML=speechLabel(true);
