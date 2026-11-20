@@ -16,7 +16,8 @@ async function check(game,width,mobile){
     await page.goto(origin+'/'+game+'/?lang=zh',{waitUntil:'domcontentloaded',timeout:35000});
     // Elsewhere only reveals its gameplay toolbar after a life begins.
     if(game==='elsewhere'){
-      await page.locator('[data-random-world]').first().tap();
+      if(mobile)await page.locator('[data-random-world]').first().tap();
+      else await page.locator('[data-random-world]').first().click();
       await page.waitForFunction(()=>!document.getElementById('play-view')?.classList.contains('hidden'));
     }
     const button=page.locator('#mw-fullscreen-toggle');
