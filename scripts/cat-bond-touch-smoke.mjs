@@ -18,10 +18,10 @@ try{
     await cover.scrollIntoViewIfNeeded();
     await coverPage.waitForFunction(()=>{
       const img=document.querySelector('.bond-feature-card .feature-art img');
-      return img&&img.complete&&img.naturalWidth>=512&&img.naturalHeight>=288;
+      return img&&img.complete&&img.naturalWidth>=400&&img.naturalHeight>=300;
     },null,{timeout:10000});
-    // The current 560 × 324 WebP is a real cover, not a 600px-wide asset.
-    // Ensure meaningful size and nonblank opaque pixels instead.
+    // The approved 480 × 360 Cat Bond garden WebP is optimized for a small card.
+    // Verify the real picture has enough pixels and is not a blank placeholder.
     const pixels=await cover.evaluate(img=>{
       const cv=document.createElement('canvas');
       cv.width=150;cv.height=90;
