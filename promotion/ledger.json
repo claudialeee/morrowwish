@@ -245,8 +245,8 @@
       "channels": {
         "crazygames": {
           "priority": "P0",
-          "status": "draft",
-          "platformId": null,
+          "status": "submitted-for-review",
+          "platformId": "6d2e15dc-74a7-4ce9-8a37-d2775008339c",
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
@@ -254,7 +254,8 @@
           "trackedUrl": "https://morrowwish.vercel.app/pawsibly-innocent/?utm_source=crazygames&utm_medium=portal&utm_campaign=pawsibly-innocent-playtest",
           "draftPreviewId": "6d2e15dc-74a7-4ce9-8a37-d2775008339c",
           "draftVerifiedAt": "2026-11-20T00:32:15Z",
-          "reviewSubmittedAt": null
+          "reviewSubmittedAt": null,
+          "submittedAt": "2026-11-20T01:36:07.376Z"
         },
         "itch": {
           "priority": "P0",
