@@ -194,3 +194,11 @@ html[lang="en"] .hero>p strong{display:inline-block;white-space:nowrap}
   html[lang="en"] .hero .hero-sentence,
   html[lang="en"] .hero>p strong{display:inline;white-space:normal}
 }
+
+/* Hero call-to-action occupies its own second line. */
+html[lang="en"] .hero>p{max-width:1100px}
+html[lang="en"] .hero>p strong{display:block;white-space:nowrap;margin-top:4px}
+@media(max-width:640px){
+  html[lang="en"] .hero>p{max-width:36ch}
+  html[lang="en"] .hero>p strong{display:block;white-space:normal}
+}
