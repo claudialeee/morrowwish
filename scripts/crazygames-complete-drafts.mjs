@@ -157,15 +157,26 @@ async function details(page,slug,rec){
  }
  const full=page.getByText('The game works well in fullscreen',{exact:true}).first();
  if(await full.count())await full.evaluate(el=>(el.closest('label')||el).click());
- await sleep(4800);
- rec.beforeFinal=await readStage(page);
- const more=await button(page,'Continue to last step');
- if(!more||!await more.isEnabled().catch(()=>false)){
-   rec.formAlerts=(await page.locator('[role=alert],.MuiFormHelperText-root').allTextContents().catch(()=>[])).slice(0,18);
-   throw Error('Details cannot Continue to last step; inspect mandatory fields/media validation');
+ // Videos are converted server-side and the button changes its label while saving.
+ // Wait for actual completed conversion instead of treating an inactive button as a failure.
+ let more=null;
+ for(let attempt=0;attempt<75;attempt++){
+   await sleep(2000);
+   more=page.getByRole('button',{name:/^(save and )?continue to last step$/i}).first();
+   if(await more.count() && await more.isEnabled().catch(()=>false)){
+     const b=await body(page);
+     if(!/converting\.\.\.|processing media/i.test(b))break;
+   }
+   if(attempt%10===0)rec.mediaConversionCheck={at:time(),bodyTail:mask(await body(page),480),buttonText:await more.innerText().catch(()=>'')};
  }
- await more.evaluate(e=>e.click());
- await sleep(3200);
+ rec.beforeFinal=await readStage(page);
+ if(!more||!(await more.count())||!(await more.isEnabled().catch(()=>false))){
+   rec.formAlerts=(await page.locator('[role=alert],.MuiFormHelperText-root').allTextContents().catch(()=>[])).slice(0,18);
+   throw Error('Details cannot Continue to last step after uploading media; inspect validation');
+ }
+ await more.click({timeout:14000}).catch(e=>{throw Error('Details save failed: '+mask(e.message,180))});
+ await page.getByText(/submit|review|terms/i).first().waitFor({timeout:14000}).catch(()=>{});
+ await sleep(2200);
  rec.finalStep=await readStage(page);
  return page;
 }
@@ -196,8 +207,13 @@ async function finalSubmit(page,id,rec){
  if(!(await submit.count())||!(await submit.isEnabled().catch(()=>false))){
     rec.status='final-step-incomplete';return;
  }
- await submit.evaluate(el=>el.click());
- await sleep(3200);
+ await submit.click({timeout:14000}).catch(e=>{throw Error('Final submit click failed: '+mask(e.message,250))});
+ await sleep(2400);
+ const confirmation=page.getByRole('button',{name:/^confirm(?: submission)?$|^yes,? submit$|^submit game$/i});
+ if(await confirmation.count() && await confirmation.last().isVisible().catch(()=>false)){
+   await confirmation.last().click({timeout:7000});
+   await sleep(2600);
+ }
  rec.submitResult=await readStage(page);
  await page.goto(ROOT+'/games',{waitUntil:'domcontentloaded',timeout:30000});
  await page.getByText(copy[rec.slug].title,{exact:true}).first().waitFor({timeout:12000}).catch(()=>{});
