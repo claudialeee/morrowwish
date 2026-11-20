@@ -74,7 +74,7 @@ for slug in pawsibly-innocent elsewhere tiny-town flip-dash parcel-panic pocket-
   printf '%s' "$beat2" > "$work/beat2.txt"
   printf '%s' "$beat3" > "$work/beat3.txt"
   printf '%s' "$cta" > "$work/cta.txt"
-  printf '%s' "MORROW WISH  /  PLAY FREE" > "$work/brand.txt"
+  printf '%s' "morrowwish.vercel.app  /  PLAY FREE" > "$work/brand.txt"
   vf="[0:v]fps=30,scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:2,eq=brightness=-0.22:saturation=0.65[bg];"
   vf="$vf[0:v]fps=30,scale=980:1310:force_original_aspect_ratio=decrease,pad=980:1310:(ow-iw)/2:(oh-ih)/2:color=0x101922,setsar=1[game];"
   vf="$vf[bg][game]overlay=50:305:shortest=1,"
