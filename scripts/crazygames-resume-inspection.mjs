@@ -50,6 +50,22 @@ try{
    };
    const go=page.getByRole('button',{name:'Go to QA',exact:true}).first();
    report.goToQAFound=await go.count();
+   const uploadContinue=page.getByRole('button',{name:'Continue',exact:true}).first();
+   if(!(await go.isEnabled().catch(()=>false)) && await uploadContinue.isEnabled().catch(()=>false)){
+     await uploadContinue.evaluate(e=>e.click());
+     await page.waitForTimeout(3500);
+     await page.getByText(/description|cover|game details|QA Results/i).first().waitFor({timeout:8000}).catch(()=>{});
+     await page.waitForTimeout(2100);
+     report.uploadContinue={
+       path:new URL(page.url()).pathname,
+       body:redact(await page.locator('body').innerText().catch(()=>'')),
+       fields:await page.locator('input,textarea,select').evaluateAll(xs=>xs.map(x=>({
+         tag:x.tagName,type:x.type,name:x.name,placeholder:x.placeholder,accept:x.accept,required:x.required
+       })).slice(0,55)),
+       buttons:await page.locator('button:visible').allTextContents().catch(()=>[])
+     };
+   }
+
    if(await go.isEnabled().catch(()=>false)){
      await go.evaluate(e=>e.click());
      await page.waitForTimeout(3000);
