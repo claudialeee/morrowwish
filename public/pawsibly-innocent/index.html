@@ -87,6 +87,66 @@ html[lang="zh-CN"] .heading h1{font-family:system-ui,-apple-system,"PingFang SC"
 .music-permission{position:fixed;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:90;padding:12px 22px;border:2px solid #fff9f5;border-radius:999px;color:#fff;background:#af6680;box-shadow:0 6px 20px #49263e40;font:800 14px/1.3 Nunito,system-ui,sans-serif;white-space:nowrap;cursor:pointer}
 .music-permission[hidden]{display:none}
 .music-permission:focus-visible{outline:3px solid #ad74ba;outline-offset:3px}
+
+/* Compact desktop play panel: essential actions fit alongside the game board. */
+.board-layout{grid-template-columns:minmax(0,830px) minmax(285px,322px);gap:16px}
+.board-layout>.panel{align-self:start}
+.board-layout .panel{display:flex;flex-direction:column;gap:8px;padding:13px 14px 14px}
+.panel .mini-label{font-size:9px;letter-spacing:.075em}
+.panel .hearts{font-size:20px;line-height:1}
+.panel .chapter{font-size:19px;line-height:1.1;margin:2px 0 0}
+.panel .sidebar-mission .chapter-sub{font-size:10px;line-height:1.25;margin:3px 0 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.panel .meter-label{font-size:11px}
+.panel .meter{height:10px;margin-top:5px}
+.panel .mission{font-size:11px;line-height:1.35;margin:5px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.panel .mischief-tools{gap:6px}
+.panel .mischief-tools .yarn{min-height:39px;padding:7px 9px;font-size:10px;line-height:1.24}
+.panel .collection-count{min-width:72px;padding:4px 6px;border-radius:12px}
+.panel .collection-count span{font-size:8px;letter-spacing:.04em}
+.panel .collection-count strong{font-size:17px}
+.panel .stats{gap:6px}
+.panel .stat{padding:5px 3px;border-radius:11px}
+.panel .stat strong{font-size:18px}
+.panel .stat small{font-size:9px}
+.panel .sidebar-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.panel .sidebar-actions .button{padding:6px 4px;min-height:42px;font-size:10px;line-height:1.2;border-radius:11px;overflow-wrap:anywhere;box-shadow:0 3px 0 #e0ced5}
+.panel .sidebar-actions .wide{grid-column:auto}
+.panel .sidebar-section{min-width:0}
+.panel .progress{margin-top:5px;gap:4px}
+.panel .level-btn{width:30px;height:30px;border-radius:9px;font-size:12px;box-shadow:0 2px 0 #eed7d6}
+.panel .level-btn.daily{width:auto;min-width:54px;padding:0 7px;font-size:11px}
+.panel .wardrobe{margin-top:6px;gap:6px}
+.panel .skin{width:34px;height:35px;border-radius:11px}
+.panel .cat-portrait{transform:scale(.82)}
+.panel #skinHint{margin:4px 0 0;font-size:10px;line-height:1.3}
+.panel .sidebar-extra{border-top:1px solid #eedfdd;padding-top:5px}
+.panel .sidebar-extra summary{cursor:pointer;list-style:revert;color:#846e82;font-size:10px;font-weight:900;line-height:1.3}
+.panel .sidebar-extra summary:focus-visible{outline:2px solid #c07ac0;outline-offset:2px}
+.panel .sidebar-extra-body{padding-top:9px}
+.panel .sidebar-extra-body .yarn-explain{margin:0 0 8px;padding:8px;font-size:11px}
+.panel .sidebar-extra-body .ability{margin:4px 0 8px}
+.panel .sidebar-extra-body .collection-hint{margin:4px 0}
+.panel .sidebar-extra-body .souvenir-shelf{margin-top:6px}
+.panel .sidebar-extra-body .music-credit{margin:12px 0 0}
+.sidebar-zh{display:none}
+html[lang="zh-CN"] .sidebar-zh{display:inline}
+html[lang="zh-CN"] .sidebar-en{display:none}
+@media(max-width:1110px){
+ .board-layout{grid-template-columns:1fr}
+ .board-layout .panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+ .board-layout .sidebar-mission,.board-layout .sidebar-fish{grid-column:span 1}
+ .board-layout .mischief-tools,.board-layout .stats,.board-layout .sidebar-actions{grid-column:span 1}
+ .board-layout .levels,.board-layout .clothes{grid-column:span 1}
+ .board-layout .sidebar-extra{grid-column:1/-1}
+ .board-layout .panel .mission{-webkit-line-clamp:3}
+}
+@media(max-width:620px){
+ .board-layout .panel{display:flex;gap:9px;padding:14px;margin:8px 6px}
+ .panel .sidebar-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .panel .sidebar-actions .wide{grid-column:1/-1}
+ .panel .level-btn{width:32px;height:32px}
+ .panel .skin{width:36px;height:37px}
+}
 </style><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js" defer></script></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><a class="back" href="/" id="back">← Morrow Wish</a><span class="brand">morrow<span>wish</span> <b id="studioByline">presents ♡</b></span></header>
 <main class="wrap"><div class="heading"><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h1 id="gameTitle">PAWSIBLY<br><span>INNOCENT!</span></h1><p class="sub" id="subtitle">Steal the snacks. Outsmart the human. Leave a little chaos.</p></div>
@@ -97,9 +157,32 @@ html[lang="zh-CN"] .heading h1{font-family:system-ui,-apple-system,"PingFang SC"
 </div><p class="rule-bonus" id="ruleBonus">🧶 Toss yarn to lure the human away. Optional: collect room keepsakes, turn off lamps and dodge the robot vacuum.</p></section>
 <div class="board-layout"><div><div class="stage" id="stage"><canvas id="board" width="840" height="588" tabindex="0" aria-label="Cat mischief puzzle. Tap a destination or use arrow keys."></canvas><div class="sticker"><small id="roomNum">ROOM 01 / 08</small><b id="roomTag">The Sunny Lounge</b></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="overlay" id="overlay" hidden><div class="modal"><div class="cat-medal" id="medal">🐱</div><div class="stars" id="stars">★★★</div><h2 id="resultTitle">Purrfect escape!</h2><p id="resultDesc"></p><p id="resultScore"></p><div class="buttons"><button class="button secondary" id="retryResult">Try again</button><button class="button" id="nextResult">Next room →</button><button class="button mint wide" id="shareResult">Share your chaos ♡</button></div></div></div></div>
 <div class="cat-legend" id="catLegend"><span>🐟 Fish = collect 3</span><span>🧶 Yarn = lure human</span><span>📦 Box = hide</span><span>🚪 Pink flap = escape</span></div><div class="mobile-pad"><div class="pad-group"><button class="pad" data-move="0,-1" aria-label="Up">↑</button><button class="pad" data-move="-1,0" aria-label="Left">←</button><button class="pad" data-move="0,1" aria-label="Down">↓</button><button class="pad" data-move="1,0" aria-label="Right">→</button></div></div></div>
-<aside class="panel"><div><div class="row"><span class="mini-label" id="missionLabel">TODAY'S MISSION</span><span class="hearts" id="hearts" aria-label="3 hearts">♥ ♥ ♥</span></div><h2 class="chapter" id="chapter">The Sunny Lounge</h2><p class="chapter-sub" id="chapterSub">Nobody suspects the little orange menace.</p></div><div class="divider"></div>
-<div><div class="meter-label"><span id="snackLabel">FISH ACQUIRED</span><b id="fishCount">0 / 3</b></div><div class="meter"><i id="meterFill"></i></div><p class="mission" id="mission">Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.</p></div><div class="mischief-tools"><button class="button yarn" id="tool" type="button" aria-label="Toss yarn to distract the human">🧶 Toss yarn → distract human</button><div class="collection-count"><span id="collectionLabel">KEEPSAKES</span><strong id="collection">0 / 8</strong></div></div><p class="yarn-explain" id="yarnExplain">🧶 Toss yarn far away. The human follows the sound, so sneak past them!</p><p class="ability" id="ability">Starts with a yarn ball</p><div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">STEPS</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
-<div class="buttons"><button class="button secondary" id="restart">↻ Retry</button><button class="button mint" id="sound">🔊 Sound effects: On</button><button class="button music-button wide" id="music" type="button" aria-pressed="true">♫ Music: On</button></div><p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p><div class="divider"></div><div class="levels"><span class="mini-label" id="roomLabel">CHOOSE A ROOM</span><div class="progress" id="levels" style="margin-top:10px"></div></div>
-<div class="divider"></div><div class="clothes"><span class="mini-label" id="closetLabel">YOUR LITTLE TROUBLEMAKER</span><div class="wardrobe" id="wardrobe" style="margin-top:10px"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock more cats.</p><p class="collection-hint" id="collectionHint">Every room hides a souvenir. Collect it, then escape to keep it.</p><div class="souvenir-shelf" id="souvenirShelf" aria-label="Eight collectible room memories"></div></div></aside></div>
+<aside class="panel" aria-label="Game progress and controls">
+  <section class="sidebar-mission">
+    <div class="row"><span class="mini-label" id="missionLabel">TODAY'S MISSION</span><span class="hearts" id="hearts" aria-label="3 hearts">♥ ♥ ♥</span></div>
+    <h2 class="chapter" id="chapter">The Sunny Lounge</h2>
+    <p class="chapter-sub" id="chapterSub">Nobody suspects the little orange menace.</p>
+  </section>
+  <section class="sidebar-fish">
+    <div class="meter-label"><span id="snackLabel">FISH ACQUIRED</span><b id="fishCount">0 / 3</b></div>
+    <div class="meter"><i id="meterFill"></i></div>
+    <p class="mission" id="mission">Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.</p>
+  </section>
+  <div class="mischief-tools"><button class="button yarn" id="tool" type="button" aria-label="Toss yarn to distract the human">🧶 Toss yarn → distract human</button><div class="collection-count"><span id="collectionLabel">KEEPSAKES</span><strong id="collection">0 / 8</strong></div></div>
+  <div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">STEPS</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
+  <div class="buttons sidebar-actions"><button class="button secondary" id="restart">↻ Retry</button><button class="button mint" id="sound">🔊 Sound effects: On</button><button class="button music-button wide" id="music" type="button" aria-pressed="true">♫ Music: On</button></div>
+  <section class="levels sidebar-section"><span class="mini-label" id="roomLabel">CHOOSE A ROOM</span><div class="progress" id="levels"></div></section>
+  <section class="clothes sidebar-section"><span class="mini-label" id="closetLabel">YOUR LITTLE TROUBLEMAKER</span><div class="wardrobe" id="wardrobe"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock more cats.</p></section>
+  <details class="sidebar-extra">
+    <summary><span class="sidebar-en">Tips, souvenirs &amp; credits</span><span class="sidebar-zh">提示、纪念品与音乐署名</span></summary>
+    <div class="sidebar-extra-body">
+      <p class="yarn-explain" id="yarnExplain">🧶 Toss yarn far away. The human follows the sound, so sneak past them!</p>
+      <p class="ability" id="ability">Starts with a yarn ball</p>
+      <p class="collection-hint" id="collectionHint">Every room hides a souvenir. Collect it, then escape to keep it.</p>
+      <div class="souvenir-shelf" id="souvenirShelf" aria-label="Eight collectible room memories"></div>
+      <p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p>
+    </div>
+  </details>
+</aside></div>
 </main>
 <script src="/pawsibly-innocent/cat-music.js" defer></script><script src="/telemetry.js" defer></script><script src="/playtest-pulse.js" defer></script></body></html>
