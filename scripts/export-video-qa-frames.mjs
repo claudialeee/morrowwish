@@ -1,3 +1,4 @@
+// V3 revision 2: refreshed first/last frame inspection after removal of cluttered menus.
 // Export only seven small review frames as base64 TEXT. This allows a human
 // editor to inspect actual rendered pixels, not merely declare ffprobe PASS.
 // Never used as promotional gameplay or published social content.
