@@ -8,7 +8,7 @@ const ROOT="https://incompetech.com/music/royalty-free/mp3-royaltyfree/";
 const FALLBACK="https://static.incompetech.com/music/royalty-free/mp3-royaltyfree/";
 const tracks={home:"Carefree.mp3",amalfi:"Bossa Antigua.mp3",paris:"Easy Lemon.mp3",
  tokyo:"Life of Riley.mp3",iceland:"Porch Swing Days - slower.mp3",
- maldives:"Carefree.mp3",swiss:"Bossa Antigua.mp3"};
+ maldives:"Carefree.mp3",swiss:"Bossa Antigua.mp3",moon:"Porch Swing Days - slower.mp3",monday:"Life of Riley.mp3"};
 const read=(key,defaultOn)=>{try{let v=localStorage.getItem(key);return v===null?defaultOn:v==="1"}catch{return defaultOn}};
 let musicOn=read(KEY,true),fxOn=read(FX_KEY,true),world="home",blocked=false,unavailable=false,usingFallback=false,ctx=null;
 const audio=new Audio();

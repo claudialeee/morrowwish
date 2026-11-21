@@ -325,3 +325,19 @@ main{max-width:1170px;margin:auto;padding:0 24px}
 @media(max-width:959px){
  .intro p{white-space:normal;overflow-wrap:anywhere}
 }
+
+/* Compact, browsable 80-ending collector; each route is a separate, accessible record. */
+.album .album-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.album-world{min-width:0;border:1px solid #e8dde2;background:#fffdfa;border-radius:13px;overflow:hidden;box-shadow:0 3px 12px rgba(40,43,60,.04)}
+.album-world[open]{grid-column:1/-1}
+.album-world summary{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;font-size:13px;font-weight:750;color:#394358;list-style:none}
+.album-world summary::-webkit-details-marker{display:none}
+.album-world summary span{min-width:0}
+.album-world summary b{white-space:nowrap;color:#996c87;font-weight:700;font-size:12px}
+.album-world summary:focus-visible{outline:3px solid #6394a7;outline-offset:-3px}
+.album-world[open] summary{border-bottom:1px solid #eee8e4}
+.album-world-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:12px}
+.ending-route-label{font-size:11px;color:#8d6d81;margin:5px 0 13px;letter-spacing:.035em;font-weight:750}
+.ending-art{background:#495a77}
+.ending-art:after{content:"";pointer-events:none;position:absolute;inset:55% 0 0;background:linear-gradient(transparent,color-mix(in srgb,var(--ending-accent),#182232 72%));opacity:.35}
+@media(max-width:700px){.album .album-cards{grid-template-columns:1fr}.album-world-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.album-world summary{padding:12px 13px}.ending-route-label{font-size:10px}}

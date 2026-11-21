@@ -6,6 +6,8 @@ const META=[
  {id:"amalfi",name:L("继承阿马尔菲海岸的豪宅","An Amalfi Villa Is Yours"),place:L("意大利 · 阿马尔菲","ITALY · AMALFI"),tag:L("奢华 · 反转","LUXURY · REVERSAL"),color:"#cf7c51"},
  {id:"paris",name:L("巴黎：邂逅全新恋情","A New Love Story in Paris"),place:L("法国 · 巴黎","FRANCE · PARIS"),tag:L("浪漫 · 新邂逅","ROMANCE · NEW LOVE"),color:"#be7591"},
  {id:"tokyo",name:L("今晚，夺回你的巨星人生","Take Back Your Superstar Life"),place:L("日本 · 东京","JAPAN · TOKYO"),tag:L("巨星 · 逆袭","STARDOM · COMEBACK"),color:"#8e70c8"},
+ {id:"moon",name:L("我在月球开五星级酒店","I Own a Five-Star Hotel on the Moon"),place:L("月球 · 地球观景酒店","THE MOON · EARTH-VIEW HOTEL"),tag:L("宇宙 · 离谱奢华","COSMIC · ABSURD LUXURY"),color:"#7b79c8"},
+ {id:"monday",name:L("我买下了全城的星期一","I Bought the City's Monday"),place:L("童话城 · 魔法星期一","FAIRYTALE CITY · MAGIC MONDAY"),tag:L("荒诞 · 魔法喜剧","SURREAL · MAGIC COMEDY"),color:"#c779a0"},
  {id:"iceland",name:L("极光之夜，收到失踪者的求救","An SOS Beneath the Aurora"),place:L("冰岛 · 极光之夜","ICELAND · NORTHERN LIGHTS"),tag:L("极光 · 惊险","AURORA · THRILLER"),color:"#568f99"},
  {id:"maldives",name:L("一觉醒来，继承私人海岛","You Wake Up Owning an Island"),place:L("马尔代夫 · 私人海岛","MALDIVES · PRIVATE ISLAND"),tag:L("海岛 · 反击","PARADISE · COMEBACK"),color:"#4c9e9b"},
  {id:"swiss",name:L("雪山豪华列车的秘密拍卖","A Secret Auction on the Alpine Express"),place:L("瑞士 · 阿尔卑斯山","SWITZERLAND · THE ALPS"),tag:L("豪华列车 · 悬疑","LUXURY TRAIN · MYSTERY"),color:"#7495c0"}
@@ -48,7 +50,7 @@ const Q={
 Object.assign(Q,{
  hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end."),
  intro:L("在巴黎开启全新恋情，住进海边豪宅享受自由，也可以成为万人追捧的巨星。换一段人生，尽情去活。","Fall in love for the first time in Paris, enjoy your own Amalfi villa, or live as a superstar. A new life is yours."),
- tiny:L("六种人生 · 五个精彩瞬间 · 24 种结局","6 DREAM LIVES · 5 MOMENTS · 24 ENDINGS"),
+ tiny:L("八种人生 · 五个精彩瞬间 · 80 种结局","8 DREAM LIVES · 5 MOMENTS · 80 ENDINGS"),
  choice:L("接下来，你想怎么活？","WHAT HAPPENS NEXT?"),
  stake:L("这一生的心愿","THE LIFE YOU WANT"),
  next:L("接下来会怎样","See what happens next"),
@@ -67,7 +69,7 @@ Object.assign(Q,{
  perfect:L("传奇人生","A Legendary Life"),
  recap:L("你亲手创造的瞬间","MOMENTS YOU CREATED"),
  replay:L("换条路再活一次","Live it differently"),
- galleryNote:L("每段人生都有四种结局，换条路还有新惊喜。","Each life has four endings, with new surprises on other paths."),
+ galleryNote:L("每段人生有 10 种结局，改变开局路线，才会遇到真正不同的故事。","Each life has 10 endings. Different openings lead to genuinely different stories."),
  collected:L("你解锁了这一生的结局","ENDING UNLOCKED")
 });
 let lang=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en"){try{localStorage.setItem("morrowwish.language",q)}catch{}return q}
@@ -75,7 +77,7 @@ try{const x=localStorage.getItem("morrowwish.language");if(x==="zh"||x==="en")re
 const T=v=>Array.isArray(v)?v[lang==="zh"?0:1]:v;
 const esc=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
 const Qe=k=>esc(T(Q[k])), $=s=>document.querySelector(s);
-const STORAGE="elsewhere_life_gallery_v4";
+const STORAGE="elsewhere_life_gallery_v5";
 let gallery=(()=>{try{return JSON.parse(localStorage.getItem(STORAGE)||"{}")}catch{return {}}})();
 if(!gallery||typeof gallery!=="object"||Array.isArray(gallery))gallery={};
 let state=null,lastWorld=null;
@@ -88,7 +90,7 @@ function track(event,data={}){
  if(event==="life_completed")window.arcadeMetric?.("game_complete");
  if(event==="life_restarted")window.arcadeMetric?.("retry");
  if(event==="share_clicked")window.arcadeMetric?.("share_clicked");
- const payload={event,world:state?.id||"",edition:"life-v4",scenes:5,visitor,runId:state?.runId||"",session:state?.session||"",...data};
+ const payload={event,world:state?.id||"",edition:"life-v5",scenes:5,visitor,runId:state?.runId||"",session:state?.session||"",...data};
  if(!visitor)return;
  try{
   const body=JSON.stringify(payload);
@@ -105,23 +107,25 @@ function node(){
  if(state.stage===4)return c.finale;
  return c.paths[state.route][state.stage-1];
 }
-function isDream(id=state?.id){return story(id)?.mode!=="comeback"}
+function isDream(id=state?.id){return !!story(id)}
 function localResource(kind){return window.ELSEWHERE_VIBES?.[state?.id]?.stats?.[kind]||Q[kind]}
 function resolve(){
  if(!state||state.history.length!==5)return null;
- const last=state.history[4],kind=last.gain,n=types.indexOf(kind),dream=isDream();
- const rare=state.secret&&(state.id==="amalfi"||state.id==="paris"||(state.scores.proof>=2&&state.scores.allies>=2&&(dream||n===0)));
- const quality=rare?"perfect":dream?"strong":state.scores[kind]>=2?"strong":"cost";
- const entry=rare?story(state.id).rare:story(state.id).endings[n];
+ const last=state.history[4],kind=last.gain,choice=types.indexOf(kind),route=state.route;
+ const endings=window.ELSEWHERE_ROUTE_ENDINGS?.[state.id];
+ if(!Array.isArray(endings?.[route])||!endings[route][choice])throw Error("Missing unique ending for "+state.id+"/"+route+"/"+choice);
+ const rare=state.secret&&(state.id!=="tokyo"||(state.scores.proof>=2&&state.scores.allies>=2));
+ const quality=rare?"perfect":"strong",n=rare?9:route*3+choice;
+ const entry=rare?story(state.id).rare:endings[route][choice];
  const vibe=window.ELSEWHERE_VIBES?.[state.id];
- const detail=quality==="cost"?Q["missing"+kind[0].toUpperCase()+kind.slice(1)]:quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
- return {n:rare?3:n,kind,quality,entry,detail};
+ const detail=quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
+ return {n,kind,quality,entry,detail,route,choice};
 }
 function badge(kind){
  return '<span class="case-gain '+kind+'">'+esc(T(localResource(kind)))+(["amalfi","paris"].includes(state?.id)?"":" +1")+'</span>';
 }
 function counters(){
- if(["amalfi","paris"].includes(state?.id))return "";
+ if(["amalfi","paris","moon","monday","tokyo"].includes(state?.id))return "";
  return '<div class="case-resources" aria-label="'+(lang==="zh"?"人生收获":"Life experiences")+'">'+types.map(t=>'<span>'+esc(T(localResource(t)))+' <b>'+state.scores[t]+'</b></span>').join("")+'</div>';
 }
 function closeToTop(){window.scrollTo({top:0,behavior:"instant"})}
@@ -155,6 +159,21 @@ function art(id){
  defs=sky("#84bbdc","#fff1d5");
  s='<circle cx="733" cy="112" r="67" fill="#fff6c6"/><path d="M0 384L151 140l105 145 148-215 172 274 124-218 200 259v155H0Z" fill="#dce9ec"/><path d="M0 411l180-200 99 144 125-212 165 229 127-176 204 224v120H0Z" fill="#7aa4b5"/><path d="M0 450Q240 386 430 442T900 410V540H0Z" fill="#8ab6a7"/><path d="M0 490q270-51 510-3t390-33v86H0Z" fill="#577e83"/><path d="M40 381q370-30 820-56" fill="none" stroke="#735e62" stroke-width="31"/><path d="M40 381q370-30 820-56" fill="none" stroke="#e6d6c3" stroke-width="10"/><path d="M156 362L235 302h404l84 44v56H156Z" fill="#ab4047"/><rect x="232" y="322" width="385" height="42" fill="#f1c57f"/><g fill="#416a86">'+Array.from({length:7},(_,i)=>'<rect x="'+(244+i*55)+'" y="327" width="40" height="28" rx="4"/>').join("")+'</g><path d="M156 399h567" stroke="#593f52" stroke-width="19"/><path d="M0 520q260-58 540-8t360-19" fill="none" stroke="#a9d2a5" stroke-width="18"/>';
  }
+
+ if(id==="moon"){
+  defs=sky("#101b3f","#3d4c87");
+  s='<circle cx="701" cy="127" r="85" fill="#2e70b5" stroke="#a1dfed" stroke-width="5"/><path d="M669 71q40-20 55 18l-13 27q-33-3-31 25l-35-8q-30-48 24-62" fill="#6ec4a0" opacity=".95"/><path d="M733 167q-37 34-62 14l-12-32 36-3 35 12" fill="#81cba5"/><circle cx="679" cy="97" r="19" fill="#e7fbff" opacity=".8"/><path d="M0 385Q245 314 460 370T900 339V540H0Z" fill="#b3b7cf"/><path d="M0 445Q275 395 505 459T900 408V540H0Z" fill="#8e94b8"/><path d="M38 490q180-55 334-6t360-13" fill="none" stroke="#d8d5e2" stroke-width="15"/>';
+  for(let i=0;i<32;i++){let x=(i*113+47)%900,y=(i*59+17)%260;s+='<circle cx="'+x+'" cy="'+y+'" r="'+(i%4===0?2.6:1.3)+'" fill="#eff7ff" opacity="'+(.55+(i%3)*.13)+'"/>'}
+  s+='<path d="M140 399q5-143 146-143 145 0 149 143" fill="#9bcbec" opacity=".85" stroke="#e3f2ff" stroke-width="9"/><rect x="140" y="387" width="298" height="72" rx="8" fill="#fff2df"/><path d="M187 385q7-97 95-97 91 0 100 97" fill="#c8edf5" stroke="#f2fbfe" stroke-width="6"/><rect x="240" y="388" width="62" height="71" fill="#85a3c6"/><rect x="247" y="400" width="47" height="50" fill="#e4f5fa"/><path d="M435 440l115-86 90 85" fill="#ffdfbd" stroke="#eef4ff" stroke-width="6"/><rect x="488" y="396" width="113" height="61" rx="7" fill="#f2e4d6"/><rect x="509" y="408" width="72" height="24" rx="5" fill="#a1d8e2"/><path d="M0 500Q420 474 900 515" fill="none" stroke="#e5e1ed" stroke-width="12"/>';
+ }
+ if(id==="monday"){
+  defs=sky("#8b8bd2","#f8c9de");
+  s='<circle cx="757" cy="114" r="69" fill="#ffe8a3"/><path d="M0 394Q228 344 460 388T900 356V540H0Z" fill="#acbaaf"/><path d="M0 442Q235 404 505 457T900 419V540H0Z" fill="#8aa79a"/>';
+  for(let i=0;i<13;i++){let x=(i*181+38)%900,y=(i*61+32)%270;s+='<circle cx="'+x+'" cy="'+y+'" r="'+(i%3===0?3:1.3)+'" fill="#fff4d8"/>'}
+  for(let i=0;i<4;i++){let x=14+i*192;let y=340+(i%2)*20;s+='<rect x="'+x+'" y="'+(y-120)+'" width="140" height="235" rx="5" fill="'+["#e8afbd","#b6c9d8","#eacb9c","#b2b3d6"][i]+'"/><path d="M'+(x-10)+' '+(y-120)+'l80-78 80 78z" fill="'+["#ad6f94","#6f96a9","#c78590","#8177b3"][i]+'"/><rect x="'+(x+55)+'" y="'+(y+33)+'" width="30" height="80" rx="12" fill="#6e6783"/>'+[0,1,2,3].map(j=>'<rect x="'+(x+20+(j%2)*65)+'" y="'+(y-93+Math.floor(j/2)*72)+'" width="35" height="49" rx="12" fill="#fff0c0"/>').join("")}
+  s+='<path d="M734 400V215" stroke="#6f6381" stroke-width="13"/><circle cx="734" cy="219" r="92" fill="#fff6dd" stroke="#c07d9c" stroke-width="16"/><path d="M734 161v57l37 22" fill="none" stroke="#726c93" stroke-width="13" stroke-linecap="round"/><circle cx="734" cy="218" r="9" fill="#c8839b"/><path d="M0 500q255-50 510-10t390-22" fill="none" stroke="#fce5ce" stroke-width="21"/>';
+  s+='<g fill="#faf5fd" opacity=".95"><ellipse cx="176" cy="104" rx="99" ry="36"/><ellipse cx="223" cy="81" rx="56" ry="42"/><ellipse cx="136" cy="80" rx="55" ry="38"/></g><path d="M145 112h95" stroke="#efabd2" stroke-width="8"/>';
+ }
  const unique=(defs+s).replaceAll('id="sky"','id="sky-'+id+'"').replaceAll("url(#sky)","url(#sky-"+id+")").replaceAll('id="sea"','id="sea-'+id+'"').replaceAll("url(#sea)","url(#sea-"+id+")");
  return '<svg class="dream-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+unique+'</svg>';
 }
@@ -163,8 +182,16 @@ function renderHome(){
  state=null;window.DreamAudio?.setWorld("home");
  history.replaceState({}, "", "/elsewhere/"+(lang==="zh"?"?lang=zh":""));
  $("#home").hidden=false;$("#game").hidden=true;$("#ending").hidden=true;
- const unlocked=Object.values(gallery).filter(Array.isArray).reduce((n,v)=>n+v.length,0);
- $("#home").innerHTML='<div class="intro"><span class="kicker">ELSEWHERE · LIVE ANOTHER LIFE</span><h1>'+Qe("hero")+'</h1><p>'+Qe("intro")+'</p><div class="intro-actions"><button class="big-btn" data-random>'+Qe("random")+' ↗</button><a class="soft-link" href="#lives">'+Qe("explore")+' ↓</a></div><small>'+Qe("tiny")+'</small><div class="home-audio">'+(window.DreamAudio?.controls()||"")+'</div></div><div class="life-grid" id="lives">'+META.map(m=>'<button type="button" class="life-card" data-world="'+m.id+'" style="--accent:'+m.color+'"><div class="card-image">'+art(m.id)+'</div><span class="place">'+esc(T(m.place))+'</span><strong>'+esc(T(m.name))+'</strong><span class="tease">'+esc(T(story(m.id).mystery))+'</span><span class="card-foot">'+esc(T(m.tag))+' <b>↗</b></span></button>').join("")+'</div><section class="album"><div class="album-head"><h2>'+Qe("gallery")+'</h2><span>'+unlocked+' / 24 '+Qe("saved")+'</span></div><div class="album-cards">'+(unlocked?Object.entries(gallery).flatMap(([id,nums])=>(nums||[]).map(n=>{if(!story(id))return "";const end=n===3?story(id).rare:story(id).endings[n];return end?'<div class="album-card"><span>'+esc(T(meta(id).place))+'</span><strong>'+esc(T(end[0]))+'</strong></div>':""})).join(""):'<p>'+Qe("none")+'</p>')+'</div><p class="case-gallery-note">'+Qe("galleryNote")+'</p></section>';
+ const unlocked=Object.entries(gallery).reduce((n,[id,v])=>n+(story(id)&&Array.isArray(v)?v.filter(x=>Number.isInteger(x)&&x>=0&&x<=9).length:0),0);
+ const galleryHtml=META.map(m=>{
+  const nums=[...new Set(Array.isArray(gallery[m.id])?gallery[m.id]:[])].filter(x=>Number.isInteger(x)&&x>=0&&x<=9).sort((a,b)=>a-b);
+  if(!nums.length)return "";
+  return '<details class="album-world"><summary><span>'+esc(T(m.name))+'</span><b>'+nums.length+' / 10</b></summary><div class="album-world-cards">'+nums.map(n=>{
+   const ending=n===9?story(m.id).rare:window.ELSEWHERE_ROUTE_ENDINGS?.[m.id]?.[Math.floor(n/3)]?.[n%3];
+   return ending?'<div class="album-card"><span>'+esc(T(m.place))+' · '+(n===9?Qe("perfect"):('#'+String(n+1)))+'</span><strong>'+esc(T(ending[0]))+'</strong></div>':"";
+  }).join("")+'</div></details>';
+ }).join("");
+ $("#home").innerHTML='<div class="intro"><span class="kicker">ELSEWHERE · LIVE ANOTHER LIFE</span><h1>'+Qe("hero")+'</h1><p>'+Qe("intro")+'</p><div class="intro-actions"><button class="big-btn" data-random>'+Qe("random")+' ↗</button><a class="soft-link" href="#lives">'+Qe("explore")+' ↓</a></div><small>'+Qe("tiny")+'</small><div class="home-audio">'+(window.DreamAudio?.controls()||"")+'</div></div><div class="life-grid" id="lives">'+META.map(m=>'<button type="button" class="life-card" data-world="'+m.id+'" style="--accent:'+m.color+'"><div class="card-image">'+art(m.id)+'</div><span class="place">'+esc(T(m.place))+'</span><strong>'+esc(T(m.name))+'</strong><span class="tease">'+esc(T(story(m.id).mystery))+'</span><span class="card-foot">'+esc(T(m.tag))+' <b>↗</b></span></button>').join("")+'</div><section class="album"><div class="album-head"><h2>'+Qe("gallery")+'</h2><span>'+unlocked+' / 80 '+Qe("saved")+'</span></div><div class="album-cards">'+(unlocked?galleryHtml:'<p>'+Qe("none")+'</p>')+'</div><p class="case-gallery-note">'+Qe("galleryNote")+'</p></section>';
  document.title=lang==="zh"?"平行人生 — Morrow Wish":"Elsewhere — Morrow Wish";window.DreamAudio?.sync();
 }
 function openWorld(id,retry=false,push=true){
@@ -247,15 +274,16 @@ function finish(){
   window.DreamAudio?.fx("ending");
  }
  const audit=state.history.filter((c,i)=>i===0||i===2||i===4);
+ const pathTitle=story(state.id).paths[decision.route][0].title;
  $("#home").hidden=true;$("#game").hidden=true;$("#ending").hidden=false;
- $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+Qe("home")+'</button><span>'+esc(T(m.place))+'</span><div class="game-tools"><span> '+Qe("gallery")+' </span>'+(window.DreamAudio?.controls()||"")+'</div></div><div class="ending-art">'+art(m.id)+'<span>'+(winning?Qe("collected"):Qe("notCollected"))+'</span></div><div class="ending-paper case-report"><span class="case-grade '+decision.quality+'">'+copies+'</span><span class="kicker">'+Qe("ending")+'</span><h1>'+(winning?esc(T(decision.entry[0])):Qe("cost"))+'</h1><p>'+esc(result)+'</p><div class="case-verdict">'+esc(T(decision.detail))+'</div><div class="case-summary"><strong>'+Qe("earned")+'</strong>'+counters()+'<div class="case-key-actions"><span>'+Qe("recap")+'</span>'+audit.map(c=>'<p>• '+esc(T(c.title))+' — '+esc(T(c.result))+'</p>').join("")+'</div></div><div class="end-actions"><button class="big-btn" data-retry>'+Qe("replay")+' ↺</button><button class="outline-btn" data-random>'+Qe("another")+' ↗</button><button class="outline-btn" data-share>'+Qe("share")+'</button></div></div>';
+ $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+Qe("home")+'</button><span>'+esc(T(m.place))+'</span><div class="game-tools"><span> '+Qe("gallery")+' </span>'+(window.DreamAudio?.controls()||"")+'</div></div><div class="ending-art" style="--ending-accent:'+m.color+'">'+art(m.id)+'<span>'+(winning?Qe("collected"):Qe("notCollected"))+'</span></div><div class="ending-paper case-report"><span class="case-grade '+decision.quality+'">'+copies+'</span><span class="kicker">'+Qe("ending")+'</span><h1>'+(winning?esc(T(decision.entry[0])):Qe("cost"))+'</h1><div class="ending-route-label">'+(lang==="zh"?"你选择的旅程 · ":"YOUR JOURNEY · ")+esc(T(pathTitle))+'</div><p>'+esc(result)+'</p><div class="case-verdict">'+esc(T(decision.detail))+'</div><div class="case-summary"><strong>'+Qe("earned")+'</strong>'+counters()+'<div class="case-key-actions"><span>'+Qe("recap")+'</span>'+audit.map(c=>'<p>• '+esc(T(c.title))+' — '+esc(T(c.result))+'</p>').join("")+'</div></div><div class="end-actions"><button class="big-btn" data-retry>'+Qe("replay")+' ↺</button><button class="outline-btn" data-random>'+Qe("another")+' ↗</button><button class="outline-btn" data-share>'+Qe("share")+'</button></div></div>';
  window.DreamAudio?.sync();closeToTop();
 }
 async function share(){
  if(!state||state.history.length!==5)return;
  const d=resolve(),m=meta(state.id),url=location.origin+"/elsewhere/?world="+encodeURIComponent(state.id);
  const shareTitle=d.quality==="cost"?T(Q.cost):T(d.entry[0]);
- const message=d.quality==="cost"?(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇还差一步就能逆转。你会怎么选？":"I came close to winning "+T(m.name)+" in Elsewhere. What would you do?"):(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇，赢得了「"+T(d.entry[0])+"」这个结局。你能做得更好吗？":'I earned "'+T(d.entry[0])+'" in Elsewhere: '+T(m.name)+'. Can you beat my ending?');
+ const message=d.quality==="cost"?(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇还差一步就能逆转。你会怎么选？":"I came close to winning "+T(m.name)+" in Elsewhere. What would you do?"):(lang==="zh"?"我在《平行人生》的「"+T(m.name)+"」篇，经历了「"+T(d.entry[0])+"」这个结局。你的平行人生会怎样？":'I discovered "'+T(d.entry[0])+'" in Elsewhere: '+T(m.name)+'. What life will you live?');
  track("share_clicked",{world:state.id,outcome:d.quality});
  if(window.MorrowwishSocialShare?.open){window.MorrowwishSocialShare.open({title:shareTitle,message,url,language:lang,meta:{game:"elsewhere",world:state.id},onShare:platform=>track("share_clicked",{world:state.id,platform})});return}
  try{if(navigator.share){await navigator.share({title:shareTitle,text:message,url});return}}catch(err){if(err?.name==="AbortError")return}

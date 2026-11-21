@@ -252,21 +252,24 @@ console.log('Published pages and UI source contain no starburst glyphs.');
 
 
 
-// Elsewhere: 6 separate genres, explicit continuity, three routes per life, and functioning audio.
+// Elsewhere: 8 distinct genres, 80 route-sensitive endings, consistent surreal worlds and real progress tracking.
 import vm from 'node:vm';
 const dreamSource=fs.readFileSync('public/elsewhere/dreams.js','utf8');
 const dreamA=fs.readFileSync('public/elsewhere/casefiles-a.js','utf8');
 const dreamB=fs.readFileSync('public/elsewhere/casefiles-b.js','utf8');
 const dreamMoods=fs.readFileSync('public/elsewhere/dream-lives.js','utf8');
 const dreamFresh=fs.readFileSync('public/elsewhere/fresh-start.js','utf8');
+const dreamAbsurd=fs.readFileSync('public/elsewhere/absurd-worlds.js','utf8');
+const dreamEndings=fs.readFileSync('public/elsewhere/route-endings.js','utf8');
 const dreamAudio=fs.readFileSync('public/elsewhere/dream-audio.js','utf8');
 const dreamPage=fs.readFileSync('public/elsewhere/index.html','utf8');
 const dreamCss=fs.readFileSync('public/elsewhere/dreams.css','utf8');
 const dreamSw=fs.readFileSync('public/elsewhere/sw.js','utf8');
-for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-lives',dreamMoods],['fresh-start',dreamFresh],['dream-audio',dreamAudio]])
+for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-lives',dreamMoods],['fresh-start',dreamFresh],['absurd-worlds',dreamAbsurd],['route-endings',dreamEndings],['dream-audio',dreamAudio]])
  new vm.Script(src,{filename:name});
 for(const path of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/casefiles-a.js',
-                   '/elsewhere/casefiles-b.js','/elsewhere/dream-lives.js','/elsewhere/fresh-start.js','/elsewhere/dream-audio.js',
+                   '/elsewhere/casefiles-b.js','/elsewhere/dream-lives.js','/elsewhere/fresh-start.js',
+                   '/elsewhere/absurd-worlds.js','/elsewhere/route-endings.js','/elsewhere/dream-audio.js',
                    '/telemetry.js','/social-share.js']){
  if(!dreamPage.includes(path))throw Error('Elsewhere missing resource: '+path);
  if(!path.startsWith('/telemetry')&&!path.startsWith('/social-share')&&!dreamSw.includes(path))
@@ -281,12 +284,12 @@ for(const marker of ['musicOn=read(KEY,true)','fxOn=read(FX_KEY,true)','audio.pl
                     'function toggleFX()','window.DreamAudio=','blocked=true'])
  if(!dreamAudio.includes(marker))throw Error('Elsewhere music/FX wiring missing');
 const storySandbox={window:{}};
-for(const src of [dreamA,dreamB,dreamMoods,dreamFresh])vm.runInNewContext(src,storySandbox,{timeout:2500});
-const cases=storySandbox.window.ELSEWHERE_CASEFILES, vibes=storySandbox.window.ELSEWHERE_VIBES;
+for(const src of [dreamA,dreamB,dreamMoods,dreamFresh,dreamAbsurd,dreamEndings])vm.runInNewContext(src,storySandbox,{timeout:2500});
+const cases=storySandbox.window.ELSEWHERE_CASEFILES, vibes=storySandbox.window.ELSEWHERE_VIBES, routeEndings=storySandbox.window.ELSEWHERE_ROUTE_ENDINGS;
 const bilingual=x=>Array.isArray(x)&&x.length===2&&x.every(y=>typeof y==='string'&&y.trim().length>1);
-const expectedModes={paris:'romance',maldives:'wild',iceland:'wonder',swiss:'spectacle',tokyo:'comeback',amalfi:'luxury'};
+const expectedModes={paris:'romance',maldives:'wild',iceland:'wonder',swiss:'spectacle',tokyo:'comeback',amalfi:'luxury',moon:'cosmic',monday:'surreal'};
 const moodNames=new Set();
-if(!cases||Object.keys(cases).length!==6||Object.keys(vibes||{}).length!==6)
+if(!cases||Object.keys(cases).length!==8||Object.keys(vibes||{}).length!==8)
  throw Error('All six dream lives must be fully configured');
 for(const [world,life] of Object.entries(cases)){
  if(life.mode!==expectedModes[world])throw Error('Wrong/missing dream genre for '+world);
@@ -313,16 +316,16 @@ for(const [world,life] of Object.entries(cases)){
  for(const kind of ['proof','allies','leverage'])
   if(!bilingual(vibes[world].stats[kind]))throw Error('Generic investigation score still present in '+world);
 }
-if(moodNames.size!==6)throw Error('All dreams still play like the same mystery game');
+if(moodNames.size!==8)throw Error('All dreams still play like the same mystery game');
 for(const marker of [
- 'edition:"life-v4"','state.route=n','state.scores[act.gain]++','state.history.push',
- 'prior.title','prior.result','function isDream','dream?"strong"','window.ELSEWHERE_VIBES',
+ 'edition:"life-v5"','state.route=n','state.scores[act.gain]++','state.history.push',
+ 'prior.title','prior.result','function isDream','const quality=rare?"perfect":"strong"','window.ELSEWHERE_VIBES',
  'i===4&&!dream','function revealTwist()','window.DreamAudio?.fx("twist")',
  'window.DreamAudio?.fx("ending")','track("choice_made"','track("chapter_completed"',
  'track("life_completed"','track("ending_view"','window.arcadeMetric?.("game_complete")',
  'navigator.globalPrivacyControl','MorrowwishSocialShare?.open','history.pushState'
 ])if(!dreamSource.includes(marker))throw Error('Elsewhere progression or instrumentation missing: '+marker);
-const requiredNewArcs=['paris','amalfi'];
+const requiredNewArcs=['paris','amalfi','moon','monday'];
 for(const id of requiredNewArcs){
  const w=cases[id];
  if(!Array.isArray(w.finale.routeBodies)||w.finale.routeBodies.length!==3||w.finale.routeBodies.some(x=>!bilingual(x)))
@@ -348,11 +351,40 @@ if(!dreamSource.includes('hero:L("醒来，活一种舍不得结束的人生。"
  throw Error('Single-line headline changed unexpectedly');
 if(!dreamSource.includes('s.routeBodies?.[state.route]')||!dreamSource.includes('s.links?.[prior.index]'))
  throw Error('Meaningful scene continuation missing');
-if(!dreamSource.includes('state.id==="amalfi"||state.id==="paris"'))
+if(!dreamSource.includes('state.id!=="tokyo"'))
  throw Error('Romance and luxury endings should be achievable without score pressure');
+
+// Endings differ because BOTH the first route and final choice matter, not just a final score.
+if(!routeEndings||Object.keys(routeEndings).length!==8)throw Error('All eight dream lives need route-specific epilogues');
+let endingCount=0;
+for(const [id,life] of Object.entries(cases)){
+ const routes=routeEndings[id];
+ if(!Array.isArray(routes)||routes.length!==3)throw Error('Wrong ending route count for '+id);
+ const titles=new Set();
+ for(const route of routes){
+  if(!Array.isArray(route)||route.length!==3)throw Error('Each opening needs three endings: '+id);
+  for(const entry of route){
+   if(!Array.isArray(entry)||entry.length!==2||!bilingual(entry[0])||!bilingual(entry[1]))throw Error('Untranslated ending '+id);
+   if(entry[1][0].length<38||entry[1][1].length<70)throw Error('Ending lacks a complete story '+id);
+   if(titles.has(entry[0][0]))throw Error('Duplicate ending in '+id+': '+entry[0][0]);
+   titles.add(entry[0][0]);endingCount++;
+  }
+ }
+ if(!bilingual(life.rare[0])||!bilingual(life.rare[1]))throw Error('Missing rare ending '+id);
+ endingCount++;
+}
+if(endingCount!==80)throw Error('Expected 80 distinct endings, got '+endingCount);
+if(!dreamSource.includes('n=rare?9:route*3+choice')||!dreamSource.includes('galleryHtml')||!dreamSource.includes(' / 80 '))
+ throw Error('Route endings not wired to progress collector');
+if(!dreamSource.includes('id:"moon"')||!dreamSource.includes('id:"monday"')||!dreamSource.includes('if(id==="moon")')||!dreamSource.includes('if(id==="monday")'))
+ throw Error('Surreal-world cards or artwork missing');
+if(!dreamSource.includes('elsewhere_life_gallery_v5')||!dreamSource.includes('edition:"life-v5"'))
+ throw Error('Updated edition and collector persistence required');
+if(!dreamPage.includes('absurd-worlds.js')||!dreamPage.includes('route-endings.js')||!dreamCss.includes('album-world'))
+ throw Error('New playable worlds and 80-ending gallery not available');
 if(dreamPage.includes('/elsewhere/extra-scenes.js')||dreamPage.includes('/elsewhere/app.js'))
  throw Error('Retired disconnected story still active');
-console.log('Elsewhere: 6 distinct genres, 18 route-specific arcs, 66 authored scenes and 198 context-tied decisions, bilingual outcomes, and functioning sound wiring checked.');
+console.log('Elsewhere: 8 distinct genres, 24 story arcs, 88 authored scenes, 264 narrative choices and 80 bilingual outcomes checked.');
 
 // Four distinctly styled cheerful CC0 recordings, no shared Lo-fi fallback.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
