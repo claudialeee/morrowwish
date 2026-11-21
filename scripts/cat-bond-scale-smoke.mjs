@@ -30,15 +30,19 @@ try{
    });
    const mapStats=await page.evaluate(()=>{
     const g=window.__game,calls=[];
-    const old=window.CatMotion.draw;
+    const old=window.CatMotion.draw,real=window.CatArt.drawCat,actual=[];
     window.CatMotion.draw=function(ctx,x,y,o){
      calls.push({species:o.species?.id,scale:o.scale,x,y});
      return old.apply(this,arguments);
     };
+    window.CatArt.drawCat=function(ctx,x,y,o){
+      actual.push(o.scale);return real.apply(this,arguments);
+    };
     WorldMap.draw(g.ctx);
-    window.CatMotion.draw=old;
+    window.CatMotion.draw=old;window.CatArt.drawCat=real;
     const scales=calls.map(q=>q.scale);
-    return {count:calls.length,
+    return {count:calls.length,actualLead:actual.at(-1),
+      actualWild:actual.slice(0,-1),
       lead:scales.at(-1),wild:scales.slice(0,-1),
       x:WorldMap.view.px,y:WorldMap.view.py,
       canvasWidth:g.W,canvasHeight:g.H};
@@ -55,16 +59,21 @@ try{
      manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
     g.startBattle(State.S.cats.slice(0,3),GameData.speciesById('moqiu'));
     const b=g.battle;
-    const canv=[];
-    const original=window.CatMotion.draw;
-    window.CatMotion.draw=function(ctx,x,y,o){canv.push({species:o.species?.id,scale:o.scale,x,y});return original.apply(this,arguments)};
+    const canv=[],actual=[];
+    const original=window.CatMotion.draw,actualRender=window.CatArt.drawCat;
+    window.CatMotion.draw=function(ctx,x,y,o){
+      canv.push({species:o.species?.id,scale:o.scale,x,y});return original.apply(this,arguments)
+    };
+    window.CatArt.drawCat=function(ctx,x,y,o){
+      actual.push(o.scale);return actualRender.apply(this,arguments)
+    };
     g.draw();
-    window.CatMotion.draw=original;
+    window.CatMotion.draw=original;window.CatArt.drawCat=actualRender;
     const rect=(id)=>{let el=document.getElementById(id);if(!el)return null;
       let b=el.getBoundingClientRect();return {x:b.left,y:b.top,w:b.width,h:b.height}};
     const skillBtns=[...document.querySelectorAll('.move-bar .move')].filter(el=>getComputedStyle(el).display!=='none');
     return {roleScales:{active:b.catScale('active'),ally:b.catScale('ally'),enemy:b.catScale('enemy')},
-      renderedScales:canv.map(o=>o.scale),
+      renderedScales:canv.map(o=>o.scale),actualScales:actual,actualMax:Math.max(...actual),
       buttons:skillBtns.map(el=>({id:el.id,w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})),
       benchOpen:document.getElementById('bench-slots')?.classList.contains('is-open'),
       benchLabel:rect('bench-slots'),
@@ -78,7 +87,12 @@ try{
    assert.ok(battleStats.roleScales.active>battleStats.roleScales.ally,
      'Players must be able to distinguish the controlled kitten');
    assert.ok(battleStats.renderedScales.some(s=>s>=battleStats.roleScales.active-.01),
-     'The real canvas must render the new scale, not only report it');
+     'The real canvas must receive the new scale');
+   assert.ok(battleStats.actualMax>=mapStats.actualLead*.94,
+     'Rendered battle hero must be comparable in size to the rendered map hero: '+
+       JSON.stringify({map:mapStats.actualLead,battle:battleStats.actualMax}));
+   assert.ok(battleStats.actualScales.every(s=>s>=mapStats.actualWild[0]*.88),
+     'Final painted combat bodies should not shrink dramatically versus map cats');
    if(spec.touch){
     const threshold=spec.height<470?47:49;
     assert.ok(battleStats.buttons.every(btn=>btn.w>=threshold&&btn.h>=threshold),

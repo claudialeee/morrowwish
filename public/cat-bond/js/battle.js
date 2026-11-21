@@ -639,9 +639,12 @@ class CaptureBattle {
     // Boost whole-body readability while keeping room for dodge telegraphs.
     const diag=Math.hypot(this.W||1100,this.H||720);
     const ratio=Math.sqrt(diag/Math.hypot(1100,720));
-    const readable=clamp(.79*ratio,.72,.92);
-    if(role==='active')return Math.min(.96,readable*1.10);
-    if(role==='enemy')return readable*.96;
+    // CatMotion.draw applies a further 0.70 watercolor-art scale. Compare
+    // the VISIBLE cat against the exploration lead (1.0 * .70), not against
+    // the input number here: combat hero should be ~0.98 of map hero.
+    const readable=clamp(.93*ratio,.87,1.04);
+    if(role==='active')return Math.min(1.10,readable*1.12);
+    if(role==='enemy')return readable*.95;
     return readable;
   }
 
