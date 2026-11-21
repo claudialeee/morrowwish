@@ -2016,12 +2016,16 @@ class CaptureBattle {
     // Energy dissipates as physical impact sparks, never floating emoji stickers.
     this.vfx.burst(x,y,{count:n||12,color:color||'#ffd36b',speed:150,life:.45,r:3});
   }
-  floater(x,y,text,color,size){
-    // Keep at most five damage/heal numerals on screen at once.
-    if(this.floaters.length>=5)this.floaters.shift();
-    // Cap generously (not 13) so the combo-crescendo tiers (13/15/18) actually
-    // render as distinct sizes instead of all collapsing to the same number.
-    this.floaters.push({x,y,text,color,life:.62,size:Math.min(22,size||12)});
+  floater(x,y,text,color,size,prio){
+    // Cap on-screen numerals. When full, drop the oldest NON-priority entry first so
+    // important numbers (damage taken on YOUR cats — incl. allies) are never shifted
+    // out by the active cat's own outgoing-damage spam. (Ally hits showed no number.)
+    const CAP=8;
+    if(this.floaters.length>=CAP){
+      let i=this.floaters.findIndex(fl=>!fl.prio);
+      this.floaters.splice(i<0?0:i,1);
+    }
+    this.floaters.push({x,y,text,color,life:.62,size:Math.min(22,size||12),prio:!!prio});
   }
 
   // Persistent animated strokes make each elemental spell recognizable in motion.
@@ -3105,7 +3109,9 @@ class CaptureBattle {
     if (this._obs) this._obs.dmgTaken += dmg;            // anti-stomp signal (see commitAiProfile)
     f.hitFlash = 0.14; f.inv = 0.3;
     if (f === this.me()) this.shakeT = 0.18;
-    this.floater(f.x, f.y - 24, '-' + Math.round(dmg), '#ff6b8a');
+    // priority floater so damage taken on ANY of your cats (active or ally) is never
+    // dropped by the active cat's own outgoing-number spam. Slightly larger + red.
+    this.floater(f.x, f.y - 26, '-' + Math.round(dmg), '#ff5a7a', 15, true);
     this.gainUlt(4);
     if (f.hp <= 0) {
       if (f.bond && f.bond.reviveOnce && !f.revived) {
