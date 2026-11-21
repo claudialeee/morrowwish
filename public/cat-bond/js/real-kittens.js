@@ -126,39 +126,43 @@
     // the outermost image edge indicates the illustration was tiled mid-cat.
     const occupied=(x)=>{
       let count=0;
-      for(let y=Math.round(ch*.22);y<Math.round(ch*.89);y++){
-        if(d[px(x,y)+3]>150)count++;
+      // Only count the head/upper chest. A naturally extended tail at the
+      // bottom of a full illustration must never trigger face reconstruction.
+      for(let y=Math.round(ch*.13);y<Math.round(ch*.62);y++){
+        if(d[px(x,y)+3]>160)count++;
       }
       return count;
     };
-    const cutoff=Math.round(ch*.085);
-    const right=occupied(cw-1)>cutoff,left=occupied(0)>cutoff;
+    const cutoff=Math.round(ch*.085),right=occupied(cw-1)>cutoff,left=occupied(0)>cutoff;
     if(right||left){
-      const extend=margin;
-      out.save();
-      if(right){
-        // Reflect the existing edge-adjacent painted pixels into the missing
-        // strip, keeping the seam continuous and tapered at the new silhouette.
-        out.translate(margin+cw*2,0);out.scale(-1,1);
-        out.drawImage(scratch,cw-extend,0,extend,ch,cw-extend,0,extend,ch);
-        out.setTransform(1,0,0,1,0,0);
-        out.globalCompositeOperation='destination-out';
-        const fade=out.createLinearGradient(margin+cw,0,margin+cw+extend,0);
-        fade.addColorStop(0,'rgba(0,0,0,0)');
-        fade.addColorStop(1,'rgba(0,0,0,1)');
-        out.fillStyle=fade;out.fillRect(margin+cw,0,extend,ch);
+      // Rebuild the missing HALF of a frontal face from its intact painted
+      // half. A few extra reflected edge pixels alone leave a flat, cut cheek.
+      // Blend across the nose/forehead so the intact original art is preserved
+      // on one side and the repaired art has an organic full silhouette.
+      const repairRight=right&&(!left||occupied(cw-1)>=occupied(0));
+      const axis=repairRight?cw*.62:cw*.38;
+      const mirror=document.createElement('canvas');
+      mirror.width=output.width;mirror.height=ch;
+      const mc=mirror.getContext('2d');
+      mc.translate(2*(margin+axis),0);mc.scale(-1,1);
+      mc.drawImage(scratch,margin,0);
+      mc.setTransform(1,0,0,1,0,0);
+      mc.globalCompositeOperation='destination-in';
+      const blend=mc.createLinearGradient(0,0,output.width,0);
+      const lo=(margin+axis-14)/output.width,hi=(margin+axis+16)/output.width;
+      if(repairRight){
+        blend.addColorStop(0,'rgba(0,0,0,0)');
+        blend.addColorStop(lo,'rgba(0,0,0,0)');
+        blend.addColorStop(hi,'rgba(0,0,0,1)');
+        blend.addColorStop(1,'rgba(0,0,0,1)');
+      }else{
+        blend.addColorStop(0,'rgba(0,0,0,1)');
+        blend.addColorStop(lo,'rgba(0,0,0,1)');
+        blend.addColorStop(hi,'rgba(0,0,0,0)');
+        blend.addColorStop(1,'rgba(0,0,0,0)');
       }
-      if(left){
-        out.globalCompositeOperation='source-over';
-        out.save();out.translate(margin*2,0);out.scale(-1,1);
-        out.drawImage(scratch,0,0,extend,ch,margin,0,extend,ch);out.restore();
-        out.globalCompositeOperation='destination-out';
-        const fade=out.createLinearGradient(0,0,margin,0);
-        fade.addColorStop(0,'rgba(0,0,0,1)');
-        fade.addColorStop(1,'rgba(0,0,0,0)');
-        out.fillStyle=fade;out.fillRect(0,0,margin,ch);
-      }
-      out.restore();
+      mc.fillStyle=blend;mc.fillRect(0,0,output.width,ch);
+      out.drawImage(mirror,0,0);
     }
     framedBreedCache[slot]=output;
     return output;
