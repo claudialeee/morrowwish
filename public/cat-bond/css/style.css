@@ -1658,3 +1658,105 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
 .keep-cat canvas{width:54px;height:46px}
 .keep-cat .keep-name{font:700 12px/1.2 system-ui,sans-serif;color:#6a4a2a}
 .keep-cat .keep-hp{font:600 11px/1.2 system-ui,sans-serif;color:#9a7a55}
+
+/* Paired-kitten expedition journal, compact even on landscape phones. */
+.duo-memory-album{margin:14px 0 4px;padding:12px 14px;border:1px solid rgba(220,167,180,.42);background:linear-gradient(130deg,rgba(255,244,235,.10),rgba(235,206,230,.12));border-radius:14px}
+.duo-memory-album>strong{display:block;font-size:14px;line-height:1.5}
+.duo-memory-album>.tiny{margin:6px 0 10px;line-height:1.5}
+.duo-memory-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.duo-memory-stamp{display:flex;min-width:0;min-height:54px;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(204,180,186,.4);border-radius:11px;background:rgba(255,247,238,.12);font-size:19px}
+.duo-memory-stamp.found{border-color:rgba(255,216,142,.8);background:rgba(255,219,160,.18)}
+.duo-memory-stamp.missing{color:#bcaab5;opacity:.66}
+.duo-memory-stamp small{font-size:10px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 1px;text-align:center}
+.duo-discovery-names{font-weight:700;color:#f4c0d0}
+@media (max-width:540px){.duo-memory-album{padding:9px}.duo-memory-grid{gap:4px}.duo-memory-stamp{min-height:46px;font-size:17px}.duo-memory-stamp small{font-size:9px}}
+
+/* Duo lineup clarity and tactical bench, November 2026. */
+#battle-ui #team-slots{display:flex!important;flex-direction:row!important;
+ align-items:flex-start!important;gap:8px!important;left:10px!important;
+ top:calc(env(safe-area-inset-top,0px) + 99px)!important;
+ max-width:calc(100% - 132px)!important;width:auto!important;z-index:6!important}
+#battle-ui .team-slot{width:78px!important;min-width:78px!important;max-width:78px!important;
+ height:auto!important;padding:5px 5px 6px!important;box-sizing:border-box!important;
+ border:2px solid #bfd4b9!important;border-radius:14px!important;
+ background:#fffaf0f5!important;color:#345042!important;display:flex!important;
+ flex-direction:column!important;align-items:center!important;gap:2px!important;
+ box-shadow:0 4px 12px #37564728!important;touch-action:manipulation}
+#battle-ui .team-slot canvas{width:64px!important;height:53px!important;
+ object-fit:contain!important;flex-shrink:0!important}
+#battle-ui .team-slot .slot-key{font-size:11px!important;line-height:1.2;
+ padding:1px 4px;background:#fff3cf;border-radius:6px;z-index:1}
+#battle-ui .team-slot .slot-name{display:block;font:800 11px/1.2 system-ui,sans-serif;
+ max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#battle-ui .team-slot .slot-hp{display:block;width:100%!important;height:9px!important;
+ margin-top:2px!important;border:1px solid #a6bdad;border-radius:7px;background:#dce4d9}
+#battle-ui .team-slot .slot-hp-value{display:block!important;
+ font:800 10px/1.15 system-ui,sans-serif;color:#496355}
+#battle-ui .team-slot .slot-ult{display:none!important}
+#battle-ui .team-slot.active{border-color:#dba755!important;
+ box-shadow:0 0 0 2px #f8d78d,0 5px 13px #6146283d!important}
+#battle-ui .team-slot:focus-visible,#battle-ui .bench-slot:focus-visible{
+ outline:3px solid #387753;outline-offset:2px}
+#battle-ui #bench-slots{position:absolute;z-index:6;pointer-events:auto;display:flex;
+ align-items:center;gap:6px;top:calc(env(safe-area-inset-top,0px) + 208px);
+ left:10px;max-width:calc(100% - 125px)}
+#battle-ui #bench-slots[hidden]{display:none!important}
+#battle-ui #bench-slots .bench-caption{font:900 10px/1.1 system-ui;color:#335a49;
+ padding:3px 5px;background:#fff9e8ed;border:1px solid #c4d7bd;border-radius:6px}
+#battle-ui .bench-slot{position:relative;width:43px;height:55px;min-width:43px;
+ display:flex;flex-direction:column;align-items:center;gap:0;border-radius:10px;
+ padding:3px 2px 2px;touch-action:manipulation;cursor:pointer;
+ border:1px solid #bbd4bb;background:#fffaf0ee;box-shadow:0 2px 8px #254f4b26}
+#battle-ui .bench-slot canvas{width:37px;height:34px;display:block}
+#battle-ui .bench-slot .bench-number{position:absolute;top:-4px;left:-3px;
+ font:900 9px/1.2 system-ui;color:#4a5f51;background:#fdf0ce;
+ padding:1px 3px;border-radius:6px}
+#battle-ui .bench-slot .bench-health{font:800 9px/1.1 system-ui;color:#355d43}
+#battle-ui .bench-slot.cooling{opacity:.76}
+#battle-ui #ult-wrap{z-index:5!important}
+.battle-order{margin:10px 0 14px;padding:11px;border:1px solid #b8d2bb;
+ border-radius:14px;background:#f3f8ef;color:#385446}
+.battle-order>strong{font-size:14px}.battle-order>p{font-size:12px;line-height:1.4;
+ margin:5px 0 9px;color:#627469}
+.battle-order-items{display:flex;flex-direction:column;gap:4px}
+.battle-order-item{display:flex;align-items:center;gap:7px;min-height:34px;
+ background:#fff;border:1px solid #d8e3d4;border-radius:9px;padding:3px 6px}
+.battle-order-item.field{background:#fff8df;border-color:#e8d39d}
+.battle-order-role{font:900 11px/1.1 system-ui;min-width:64px;color:#57745b}
+.battle-order-name{font:800 12px/1.2 system-ui;flex:1;min-width:0;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.battle-order-item button{min-width:30px;min-height:29px;border:1px solid #b9d0ba;
+ background:#f6f8f3;border-radius:7px;cursor:pointer}
+.battle-order-item button:disabled{opacity:.3;cursor:default}
+#cp-roster .chip.sel{position:relative}
+#cp-roster .chip.sel::after{content:attr(data-order-role);position:absolute;
+ top:1px;right:3px;font:800 10px/1.2 system-ui;background:#fff0b4;
+ color:#665334;border-radius:5px;padding:2px 4px;pointer-events:none}
+@media(max-width:700px),(pointer:coarse){
+ #battle-ui #team-slots{left:7px!important;gap:5px!important;
+  top:calc(env(safe-area-inset-top,0px) + 99px)!important;
+  max-width:calc(100% - 106px)!important}
+ #battle-ui .team-slot{width:66px!important;min-width:66px!important;max-width:66px!important;
+  padding:4px!important;gap:1px!important}
+ #battle-ui .team-slot canvas{width:54px!important;height:46px!important}
+ #battle-ui .team-slot .slot-hp{height:8px!important}
+ #battle-ui .team-slot .slot-hp-value{font-size:9px!important}
+ #battle-ui #bench-slots{top:calc(env(safe-area-inset-top,0px) + 196px);
+  left:7px;gap:4px;max-width:calc(100% - 107px)}
+ #battle-ui .bench-slot{width:39px;min-width:39px;height:51px}
+ #battle-ui .bench-slot canvas{width:34px;height:31px}
+ #battle-ui #ult-wrap{right:7px!important;width:95px!important}
+}
+@media(max-height:530px) and (orientation:landscape){
+ #battle-ui #team-slots{top:calc(env(safe-area-inset-top,0px) + 84px)!important}
+ #battle-ui .team-slot{width:59px!important;min-width:59px!important;max-width:59px!important}
+ #battle-ui .team-slot canvas{width:48px!important;height:36px!important}
+ #battle-ui .team-slot .slot-name{font-size:9px}
+ #battle-ui #bench-slots{top:calc(env(safe-area-inset-top,0px) + 171px)}
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
+ top:calc(env(safe-area-inset-top,0px) + 99px)!important}
+@media(max-height:530px) and (orientation:landscape){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
+  top:calc(env(safe-area-inset-top,0px) + 84px)!important}
+}

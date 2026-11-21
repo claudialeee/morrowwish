@@ -104,7 +104,7 @@ function node(){
  if(!state)return null;
  const c=story(state.id);
  if(state.stage===0)return c.intro;
- if(state.stage===4)return c.finale;
+ if(state.stage===4)return {...c.finale,choices:c.finale.routeChoices?.[state.route]||c.finale.choices};
  return c.paths[state.route][state.stage-1];
 }
 function isDream(id=state?.id){return !!story(id)}
@@ -217,20 +217,27 @@ function renderStage(){
  const m=meta(state.id),s=node(),i=state.stage,dream=isDream(),isTwist=[2,4].includes(i),sealed=isTwist&&!state.revealed[i]&&state.selected===null;
  const result=state.selected===null?null:s.choices[state.selected];
  const prior=state.history[i-1],controls=window.DreamAudio?.controls()||"";
- const chapterBody=i===4&&s.routeBodies?.[state.route]?s.routeBodies[state.route]:s.body;
- const continuity=i>=2&&i<=3&&prior&&s.links?.[prior.index]?s.links[prior.index]:null;
+ const chapterBody=i===4&&s.routeBodies?.[state.route]?s.routeBodies[state.route]:
+  i>=2&&i<=3&&prior&&s.bodyByPrior?.[prior.index]?s.bodyByPrior[prior.index]:s.body;
+ const continuity=prior?(s.links?.[prior.index]||prior.result):null;
+ const storyBridge=!sealed&&continuity?'<p class="story-link life-causal-bridge"><b>'+(lang==='zh'?'你刚刚选择：':'YOUR LAST CHOICE:')+' '+esc(T(prior.title))+'</b> '+esc(T(continuity))+'</p>':'';
+ const sceneQuestion=esc(T(s.prompt||Q.choice));
  const clue=state.secret?'<span class="case-secret-found">'+Qe("secret")+' · '+esc(T(story(state.id).secret))+'</span>':'';
- const historyHint=prior?'<div class="case-previous"><b>'+Qe("prior")+'</b> <span>'+esc(T(prior.title))+'</span><em>'+esc(T(prior.result))+'</em></div>':'';
+ const historyHint=''; // One causal bridge supersedes repetitive recaps
  const actions=sealed?
   '<div class="reveal-cta"><button class="big-btn" type="button" data-twist>'+Qe("reveal")+' ✧</button></div>':
   result?
-   '<div class="impact"><span>'+Qe("result")+'</span><p>'+esc(T(result.result))+'</p>'+badge(result.gain)+'<button class="big-btn" type="button" data-continue>'+(i===4?Qe("endingNext"):Qe("next"))+' →</button></div>':
-   '<div class="choices-label">'+Qe("choice")+'</div><div class="choices">'+s.choices.map((a,n)=>'<button class="choice" type="button" data-choice="'+n+'"><span class="choice-num">0'+(n+1)+'</span><strong>'+esc(T(a.title))+'</strong><span aria-hidden="true">↗</span>'+(i===4&&!dream?'<small class="case-demand '+(state.scores[a.gain]>=1?'is-ready':'is-short')+'">'+esc(T(localResource(a.gain)))+' '+(state.scores[a.gain]+1)+'/2</small>':'')+'</button>').join("")+'</div>';
+   '<div class="impact"><span>'+Qe("result")+'</span><strong class="life-choice-made">'+esc(T(result.title))+'</strong><p>'+esc(T(result.result))+'</p>'+badge(result.gain)+'<button class="big-btn" type="button" data-continue>'+(i===4?Qe("endingNext"):Qe("next"))+' →</button></div>':
+   '<div class="choices-label life-specific-question">'+sceneQuestion+'</div><div class="choices">'+s.choices.map((a,n)=>'<button class="choice" type="button" data-choice="'+n+'"><span class="choice-num">0'+(n+1)+'</span><strong>'+esc(T(a.title))+'</strong><span aria-hidden="true">↗</span>'+(i===4&&!dream?'<small class="case-demand '+(state.scores[a.gain]>=1?'is-ready':'is-short')+'">'+esc(T(localResource(a.gain)))+' '+(state.scores[a.gain]+1)+'/2</small>':'')+'</button>').join("")+'</div>';
  const cover=sealed?'<button class="twist-curtain" type="button" data-twist aria-label="'+Qe("reveal")+'"><span class="curtain-eye">✧</span><small>'+Qe("twist")+'</small><strong>'+Qe("reveal")+'</strong><span aria-hidden="true">↗</span></button>':'';
  const secretButton=!sealed&&i>=2?'<button class="secret-pin '+(state.secret?"is-found":"")+'" type="button" data-secret aria-label="'+Qe("findSecret")+'" title="'+Qe("findSecret")+'">✦</button>':'';
  const artTop='<div class="art-label"><span>'+esc(T(m.tag))+'</span><h2>'+esc(T(m.name))+'</h2></div>';
  const chapterLabels=[0,1,2,3,4].map(n=>'<span class="'+(n<i?"is-done":n===i?"is-current":"")+'"></span>').join("");
- $("#game").innerHTML='<div class="game-top"><button class="ghost-btn" type="button" data-home>← '+Qe("home")+'</button><span class="game-place">'+esc(T(m.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / 5</span>'+controls+'</div></div><div class="scene '+(isTwist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+m.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(m.id)+(isTwist?particles():"")+secretButton+artTop+cover+'</div><div class="scene-body"><div class="progress-track"><span style="width:'+((i+1)*20)+'%"></span></div><div class="moment-pips" aria-hidden="true">'+chapterLabels+'</div><div class="case-topline"><span class="scene-kicker">'+(i+1)+' / 05 · '+esc(T(window.ELSEWHERE_VIBES?.[state.id]?.genre||m.tag))+'</span>'+counters()+'</div><p class="case-objective"><b>'+Qe("stake")+'</b> '+esc(T(story(state.id).objective))+'</p><h2>'+esc(T(sealed?Q.twist:s.title))+'</h2>'+(!sealed?historyHint:"")+(!sealed&&continuity?'<p class="story-link">'+esc(T(continuity))+'</p>':"")+'<p class="story-line">'+esc(T(sealed?Q.sealed:chapterBody))+'</p>'+clue+(i===4&&!dream&&!sealed&&state.selected===null?'<p class="case-goal">'+Qe("goal")+'</p>':"")+actions+'</div></div>';
+ $("#game").innerHTML='<div class="game-top"><button class="ghost-btn" type="button" data-home>← '+Qe("home")+'</button><span class="game-place">'+esc(T(m.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / 5</span>'+controls+'</div></div><div class="scene '+(isTwist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+m.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(m.id)+(isTwist?particles():"")+secretButton+artTop+cover+'</div><div class="scene-body"><div class="progress-track"><span style="width:'+((i+1)*20)+'%"></span></div><div class="moment-pips" aria-hidden="true">'+chapterLabels+'</div><div class="case-topline"><span class="scene-kicker">'+(i+1)+' / 05 · '+esc(T(window.ELSEWHERE_VIBES?.[state.id]?.genre||m.tag))+'</span>'+counters()+'</div><p class="case-objective"><b>'+Qe("stake")+'</b> '+esc(T(story(state.id).objective))+'</p><h2>'+esc(T(sealed?Q.twist:s.title))+'</h2>'+storyBridge+'<p class="story-line">'+esc(T(sealed?Q.sealed:chapterBody))+'</p>'+clue+(i===4&&!dream&&!sealed&&state.selected===null?'<p class="case-goal">'+Qe("goal")+'</p>':"")+actions+'</div></div>';
+ // Repeating the same lifelong mission on all five scenes made even
+ // lighthearted routes read like a checklist. Show it only at the opening.
+ const mission=document.querySelector('#game .case-objective');
+ if(mission)mission.hidden=i!==0;
  window.DreamAudio?.sync();
  if(state.selected===null&&!state.seen[i]){state.seen[i]=true;track("chapter_view",{world:state.id,chapter:i+1})}
 }
@@ -274,9 +281,12 @@ function finish(){
   window.DreamAudio?.fx("ending");
  }
  const audit=state.history.filter((c,i)=>i===0||i===2||i===4);
+ const livedMoments=state.history.slice(1,4).filter(Boolean);
+ const personalEnding='<div class="life-ending-moments"><strong>'+(lang==='zh'?'只有你的选择，才有的这些瞬间':'THE MOMENTS YOUR CHOICES CREATED')+'</strong>'+
+  livedMoments.map(c=>'<p>✦ '+esc(T(c.result))+'</p>').join('')+'</div>';
  const pathTitle=story(state.id).paths[decision.route][0].title;
  $("#home").hidden=true;$("#game").hidden=true;$("#ending").hidden=false;
- $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+Qe("home")+'</button><span>'+esc(T(m.place))+'</span><div class="game-tools"><span> '+Qe("gallery")+' </span>'+(window.DreamAudio?.controls()||"")+'</div></div><div class="ending-art" style="--ending-accent:'+m.color+'">'+art(m.id)+'<span>'+(winning?Qe("collected"):Qe("notCollected"))+'</span></div><div class="ending-paper case-report"><span class="case-grade '+decision.quality+'">'+copies+'</span><span class="kicker">'+Qe("ending")+'</span><h1>'+(winning?esc(T(decision.entry[0])):Qe("cost"))+'</h1><div class="ending-route-label">'+(lang==="zh"?"你选择的旅程 · ":"YOUR JOURNEY · ")+esc(T(pathTitle))+'</div><p>'+esc(result)+'</p><div class="case-verdict">'+esc(T(decision.detail))+'</div><div class="case-summary"><strong>'+Qe("earned")+'</strong>'+counters()+'<div class="case-key-actions"><span>'+Qe("recap")+'</span>'+audit.map(c=>'<p>• '+esc(T(c.title))+' — '+esc(T(c.result))+'</p>').join("")+'</div></div><div class="end-actions"><button class="big-btn" data-retry>'+Qe("replay")+' ↺</button><button class="outline-btn" data-random>'+Qe("another")+' ↗</button><button class="outline-btn" data-share>'+Qe("share")+'</button></div></div>';
+ $("#ending").innerHTML='<div class="game-top"><button class="ghost-btn" data-home>← '+Qe("home")+'</button><span>'+esc(T(m.place))+'</span><div class="game-tools"><span> '+Qe("gallery")+' </span>'+(window.DreamAudio?.controls()||"")+'</div></div><div class="ending-art" style="--ending-accent:'+m.color+'">'+art(m.id)+'<span>'+(winning?Qe("collected"):Qe("notCollected"))+'</span></div><div class="ending-paper case-report"><span class="case-grade '+decision.quality+'">'+copies+'</span><span class="kicker">'+Qe("ending")+'</span><h1>'+(winning?esc(T(decision.entry[0])):Qe("cost"))+'</h1><div class="ending-route-label">'+(lang==="zh"?"你选择的旅程 · ":"YOUR JOURNEY · ")+esc(T(pathTitle))+'</div><p>'+esc(result)+'</p>'+personalEnding+'<div class="case-verdict">'+esc(T(decision.detail))+'</div><div class="case-summary"><strong>'+Qe("earned")+'</strong>'+counters()+'<div class="case-key-actions"><span>'+Qe("recap")+'</span>'+audit.map(c=>'<p>• '+esc(T(c.title))+' — '+esc(T(c.result))+'</p>').join("")+'</div></div><div class="end-actions"><button class="big-btn" data-retry>'+Qe("replay")+' ↺</button><button class="outline-btn" data-random>'+Qe("another")+' ↗</button><button class="outline-btn" data-share>'+Qe("share")+'</button></div></div>';
  window.DreamAudio?.sync();closeToTop();
 }
 async function share(){

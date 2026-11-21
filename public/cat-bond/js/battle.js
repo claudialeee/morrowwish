@@ -64,7 +64,10 @@ class CaptureBattle {
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
     this.FIELD_CAP = 2;                          // only 2 cats fight on the field at once
     this.team = cats.slice(0, this.FIELD_CAP).map((c, i) => this.makeFighter(c, i));
-    this.reserve = cats.slice(this.FIELD_CAP);   // deeper bench: subs in when a field cat faints
+    this.reserve = cats.slice(this.FIELD_CAP);   // ordered bench chosen explicitly by the player
+    this._benchFighters = new Map();             // preserve HP, skills and cooldowns across tactical swaps
+    this.reserveSwapReadyAt = 0;                 // real-time tactical swap cooldown
+    this._cinematicPortraits = new Map();
     this.reinforceT = 0;                         // >0 while a temp 3rd cat is on the field
     this.active = 0;
     this.partner = cats[0];              // for reward bookkeeping in game.js
@@ -252,7 +255,10 @@ class CaptureBattle {
     this.duoCinematic={t:2.75,max:2.75,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
-    const target=this.liveEnemies()[0]||{x,y};
+    const target=this.lockedEnemy()||this.nearestEnemy(x,y)||{x,y};
+    if(target.i!=null)this._lockIdx=target.i; // lock the pair's focus through the opening strike
+    this.duoCinematic.targetUid=target.i;
+    this.duoCinematic.catUids=fs.map(f=>f.cat.uid);
     this.duoCinematic.x=target.x;this.duoCinematic.y=target.y;
     // The resonance should surround enemies, not the point where the two cats stood.
     this.duoField.x=target.x;this.duoField.y=target.y;
@@ -340,7 +346,9 @@ class CaptureBattle {
     const already=new Set(this.team.map(f=>f.cat.uid));
     const pick=(this.reserve||[]).find(c=>c&&!already.has(c.uid));
     if(!pick)return false;
-    const r=this.makeFighter(pick,this.team.length);
+    const r=this._benchFighters.get(pick.uid)||this.makeFighter(pick,this.team.length);
+    this._benchFighters.delete(pick.uid);
+    r.i=this.team.length;
     r._reinforcement=true;
     const me=this.me();
     r.x=clamp((me?me.x:this.W*0.3)+40,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
@@ -363,6 +371,7 @@ class CaptureBattle {
     const idx=this.team.findIndex(f=>f._reinforcement);
     if(idx<0)return;
     const r=this.team[idx];
+    if(r.alive&&this.reserve.some(c=>c.uid===r.cat.uid))this._benchFighters.set(r.cat.uid,r);
     this.vfx.ring(r.x,r.y,{r0:6,vr:260,life:.4,color:'#ffd36b',width:4});
     this.vfx.burst(r.x,r.y,{count:10,color:'#ffd36b',speed:150,life:.4,r:2});
     this.team.splice(idx,1);
@@ -1757,6 +1766,12 @@ class CaptureBattle {
       return false;
     }
     const f=this.me(),skill=f.ultSkill;
+    const locked=this.lockedEnemy()||this.nearestEnemy(f.x,f.y);
+    if(locked){
+      this._lockIdx=locked.i;
+      this.aim=Math.atan2(locked.y-f.y,locked.x-f.x);
+      f._aim=this.aim;
+    }
     this.ult=0;
     this._ultAnnounced=false; this._ultReadyT=0; this._ultRemindT=0; this._ultAutoFired=false;   // re-arm reminder for the next charge
     this.ultCd=ULT_COOLDOWN_SECONDS;
@@ -1764,6 +1779,9 @@ class CaptureBattle {
     // which plays on its OWN timeline (no arena-freeze cinematic) and deals its
     // damage across the sweep rather than in one deferred detonation.
     if(skill&&skill.ultCost>0&&skill.element==='dark'){
+      this.spotlightCinematic={endsAt:Date.now()+1350,max:1.35,uid:f.cat.uid,
+        name:window.CatBondI18n?.translate?.(skill.name)||skill.name,
+        color:this.elemColor(skill.element),targetUid:locked?.i};
       return this.castDeathRay(f,skill);
     }
     // SINGLE-CAT ult: fires IN PLACE immediately — NO arena-freeze, NO full-screen
@@ -2093,6 +2111,38 @@ class CaptureBattle {
       ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(ox+Math.cos(fr.ang)*fr.L,oy+Math.sin(fr.ang)*fr.L); ctx.stroke(); ctx.restore();
     }
   }
+  // Two active cats + an explicitly ordered bench. Trading places preserves
+  // that cat's real battle HP, skills and cooldowns (no free healing).
+  rotateReserve(index) {
+    if(this.done||this.ultCinematic||this.duoCinematic?.t>0)return false;
+    if(this.active>=this.FIELD_CAP)return false; // temporary reinforcement stays temporary
+    const pick=this.reserve[index],out=this.me();
+    if(!pick||!out||!out.alive)return false;
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const wait=(this.reserveSwapReadyAt-Date.now())/1000;
+    if(wait>0){
+      this.game.toast(english?'Switch ready in '+Math.ceil(wait)+'s':'换猫还需 '+Math.ceil(wait)+' 秒');
+      return false;
+    }
+    const incoming=this._benchFighters.get(pick.uid)||this.makeFighter(pick,this.active);
+    if(!incoming.alive)return false;
+    this._benchFighters.delete(pick.uid);
+    out._reinforcement=false;
+    this._benchFighters.set(out.cat.uid,out);
+    this.reserve[index]=out.cat;
+    incoming.i=this.active;incoming._reinforcement=false;
+    incoming.x=out.x;incoming.y=out.y;incoming.moving=false;
+    incoming.inv=Math.max(incoming.inv||0,0.8);
+    this.team[this.active]=incoming;
+    this.reserveSwapReadyAt=Date.now()+6000;
+    this.vfx.ring(incoming.x,incoming.y,{r0:9,vr:270,life:.38,color:'#b6e3bf',width:4});
+    this.game.buildTeamSlots?.();
+    this.game.updateSkillLabels?.();
+    this.game.toast(english?State.catName(incoming.cat)+' joins the duo!':State.catName(incoming.cat)+' 换上场！');
+    window.arcadeMetric?.('bond_tactical_swap',{});
+    return true;
+  }
+
   switchTo(i) {
     if (i === this.active || !this.team[i] || !this.team[i].alive) return;
     // Take control of the chosen cat WHERE IT ALREADY STANDS — do not relocate its
@@ -2103,7 +2153,7 @@ class CaptureBattle {
     this.active = i;
     this.vfx.ring(nf.x, nf.y, { r0: 8, vr: 280, life: 0.35, color: '#9be7c4', width: 3 });
     this.vfx.burst(nf.x, nf.y, { count: 10, color: '#9be7c4', speed: 180, life: 0.4 });
-    this.game.toast(`切换到 ${State.catName(nf.cat)}！`);
+    this.game.toast((window.MorrowwishI18n?.get?.()==='zh'?'切换到 ':'Switched to ')+State.catName(nf.cat)+'！');
   }
 
   gainUlt(n) {
@@ -3487,12 +3537,16 @@ class CaptureBattle {
     const pick = (this.reserve || []).find(c => c && !onField.has(c.uid) && (c._hpFrac == null || c._hpFrac > 0.1));
     if (!pick) return false;
     const idx = this.team.indexOf(f);
-    const sub = this.makeFighter(pick, idx >= 0 ? idx : this.team.length);
+    const wasActive = idx === this.active;
+    const sub = this._benchFighters.get(pick.uid)||this.makeFighter(pick, idx >= 0 ? idx : this.team.length);
+    this._benchFighters.delete(pick.uid);
+    sub.i=idx >= 0 ? idx : this.team.length;
+    sub._reinforcement=false;
     sub.x = f.x; sub.y = f.y; sub.inv = 1.0;
     this.reserve = this.reserve.filter(c => c !== pick);
     if (idx >= 0) this.team[idx] = sub; else this.team.push(sub);
     this.game.buildTeamSlots?.();
-    if (f === this.me() || !this.me()?.alive) this.active = this.team.indexOf(sub);
+    if (wasActive || !this.me()?.alive) this.active = this.team.indexOf(sub);
     this.vfx.ring(sub.x, sub.y, { r0: 8, vr: 320, life: 0.5, color: '#9be7c4', width: 5 });
     this.vfx.burst(sub.x, sub.y, { count: 12, color: '#9be7c4', speed: 190, life: 0.45, r: 3 });
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
@@ -3967,6 +4021,7 @@ class CaptureBattle {
       ctx.restore();
     }
 
+    this.drawCatCutin(ctx,W,H);
     ctx.restore();
   }
 
@@ -4044,6 +4099,90 @@ class CaptureBattle {
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -6); ctx.lineTo(-12, 6); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
+  }
+
+  // Hero portraits reuse actual breed artwork; no floating stickers or generic globes.
+  cinematicPortrait(uid) {
+    if(!uid)return null;
+    if(this._cinematicPortraits.has(uid))return this._cinematicPortraits.get(uid);
+    const fighter=this.team.find(f=>f.cat.uid===uid)||this._benchFighters.get(uid);
+    const cat=fighter?.cat||this.reserve.find(c=>c.uid===uid);
+    const species=cat&&GameData.speciesById(cat.species);
+    if(!species||!window.CatArt?.renderCatThumb)return null;
+    const canvas=document.createElement('canvas');
+    canvas.width=200;canvas.height=180;
+    CatArt.renderCatThumb(canvas,species);
+    this._cinematicPortraits.set(uid,canvas);
+    return canvas;
+  }
+  drawCatCutin(ctx,W,H){
+    let c=this.ultCinematic,duo=false;
+    if(!c&&this.duoCinematic?.t>0){c=this.duoCinematic;duo=true;}
+    if(!c&&this.spotlightCinematic&&Date.now()<this.spotlightCinematic.endsAt)
+      c={...this.spotlightCinematic,t:(this.spotlightCinematic.endsAt-Date.now())/1000};
+    if(!c)return;
+    const progress=Math.max(0,Math.min(1,1-c.t/c.max));
+    const opacity=Math.min(1,progress*7,(1-progress)*3.5);
+    if(opacity<=.02)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const bandY=Math.max(this.topMargin*.65,H*.18),bandH=Math.min(H*.55,290);
+    const artSize=Math.min(duo?W*.32:W*.43,bandH*.83,duo?188:236);
+    ctx.save();ctx.globalAlpha=opacity;
+    const grad=ctx.createLinearGradient(0,bandY,W,bandY+bandH);
+    grad.addColorStop(0,'rgba(31,54,58,.94)');
+    grad.addColorStop(.55,'rgba(63,62,91,.90)');
+    grad.addColorStop(1,'rgba(27,65,62,.94)');
+    ctx.fillStyle=grad;
+    ctx.beginPath();ctx.roundRect(W*.035,bandY,W*.93,bandH,Math.min(22,W*.05));ctx.fill();
+    ctx.strokeStyle=c.first||c.color||'#f9dd9f';ctx.lineWidth=3;
+    ctx.strokeRect(W*.06,bandY+8,W*.88,bandH-16);
+    const drawPortrait=(uid,x,flip=false)=>{
+      const art=this.cinematicPortrait(uid);if(!art)return;
+      const centerY=bandY+bandH*.43;
+      ctx.save();ctx.translate(x,centerY);
+      if(flip)ctx.scale(-1,1);
+      const radius=artSize*.58;
+      ctx.fillStyle='rgba(248,242,222,.94)';
+      ctx.beginPath();ctx.ellipse(0,0,radius,radius*.90,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=c.color||c.first||'#f7cfa5';ctx.lineWidth=4;
+      ctx.beginPath();ctx.ellipse(0,0,radius,radius*.90,0,0,Math.PI*2);ctx.stroke();
+      ctx.drawImage(art,-artSize*.5,-artSize*.48,artSize,artSize*.9);
+      ctx.restore();
+    };
+    if(duo){
+      drawPortrait(c.catUids?.[0],W*.27);
+      drawPortrait(c.catUids?.[1],W*.73,true);
+      // Two cats crouch, cross their paths, then pounce together.
+      const leap=Math.max(0,Math.min(1,progress*2.5));
+      ctx.strokeStyle=c.second||'#e7bafb';ctx.lineWidth=4;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(W*.39,bandY+bandH*.53);
+      ctx.quadraticCurveTo(W*.5,bandY+bandH*(.12+.1*leap),W*.61,bandY+bandH*.53);ctx.stroke();
+      ctx.fillStyle='#fce9c6';ctx.font='900 '+Math.round(Math.min(32,W*.08))+'px system-ui';
+      ctx.textAlign='center';ctx.fillText('×',W*.5,bandY+bandH*.49);
+    }else{
+      drawPortrait(c.uid,W*.32);
+      const target=this.liveEnemies().find(e=>e.i===c.targetUid);
+      const tx=W*.73,ty=bandY+bandH*.43,rad=Math.min(29,W*.08);
+      ctx.strokeStyle='#ffe4a1';ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(tx,ty,rad,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(tx-rad-10,ty);ctx.lineTo(tx-rad+8,ty);
+      ctx.moveTo(tx+rad-8,ty);ctx.lineTo(tx+rad+10,ty);
+      ctx.moveTo(tx,ty-rad-10);ctx.lineTo(tx,ty-rad+8);
+      ctx.moveTo(tx,ty+rad-8);ctx.lineTo(tx,ty+rad+10);ctx.stroke();
+      if(target){ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff2d4';
+        ctx.fillText(en?'TARGET LOCK':'目标锁定',tx,ty+rad+22);}
+    }
+    const label=duo?(en?'DUO BOND · DOUBLE POUNCE':'双猫默契 · 合力飞扑')
+      :(en?'ULTIMATE · PAW POWER':'必杀 · 猫爪出击');
+    const title=c.name||label;
+    ctx.textAlign='center';ctx.shadowColor=c.color||c.first||'#f9dba8';
+    ctx.shadowBlur=12;ctx.fillStyle='#fff9ef';
+    ctx.font='900 '+Math.round(Math.min(duo?22:28,W*.055))+'px system-ui';
+    ctx.fillText(title,W*.5,bandY+bandH*.89,W*.82);
+    ctx.shadowBlur=0;ctx.fillStyle='#edd6a5';
+    ctx.font='800 '+Math.round(Math.min(13,W*.033))+'px system-ui';
+    ctx.fillText(label,W*.5,bandY+bandH*.97,W*.82);
+    ctx.restore();
   }
 
   // Full-screen ultimate cinematic: letterbox + radial zoom lines + element-themed

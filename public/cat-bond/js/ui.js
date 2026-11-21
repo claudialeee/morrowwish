@@ -130,15 +130,45 @@ const UI = {
       seen.add(c.uid);return true;
     }).slice(0,5);
   },
+  // Chosen first two start together; remaining chosen cats form an ordered bench.
+  squadOrderMarkup(){
+    return '<div class="battle-order" role="group"></div>';
+  },
+  refreshSquadOrder(selected,onReorder){
+    const host=document.querySelector('#panel .battle-order');
+    if(!host)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const cats=new Map((State.S.cats||[]).map(c=>[c.uid,c]));
+    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const role=i=>i<2?(en?'START '+(i+1):'首发 '+(i+1)):(en?'BENCH '+(i-1):'替补 '+(i-1));
+    host.innerHTML='<strong>'+(en?'Your lineup · reorder with arrows':'双猫首发与替补顺序')+'</strong>'
+      +'<p>'+(en?'Two cats fight together; use arrows to choose who starts. Bench cats can swap in (6s cooldown).':'两只猫并肩战斗。用箭头指定首发与替补；战斗中可主动换猫（冷却 6 秒）。')+'</p>'
+      +'<div class="battle-order-items">'+selected.map((uid,i)=>{
+        const name=State.catName(cats.get(uid)||{species:uid});
+        return '<div class="battle-order-item '+(i<2?'field':'bench')+'"><span class="battle-order-role">'+role(i)+'</span>'
+          +'<span class="battle-order-name">'+esc(name)+'</span>'
+          +'<button type="button" data-order-shift="-1" data-order-index="'+i+'" '+(i===0?'disabled':'')+' aria-label="'+(en?'Move up':'上移')+'">↑</button>'
+          +'<button type="button" data-order-shift="1" data-order-index="'+i+'" '+(i===selected.length-1?'disabled':'')+' aria-label="'+(en?'Move down':'下移')+'">↓</button></div>';
+      }).join('')+'</div>';
+    host.querySelectorAll('[data-order-shift]').forEach(btn=>{
+      btn.onclick=()=>{
+        const i=Number(btn.dataset.orderIndex),j=i+Number(btn.dataset.orderShift);
+        if(j<0||j>=selected.length)return;
+        [selected[i],selected[j]]=[selected[j],selected[i]];
+        this.refreshSquadOrder(selected,onReorder);
+        onReorder?.();
+      };
+    });
+  },
   squadPickerMarkup(selected){
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const cats=[...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a));
-    return '<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to three cats':'选择最多三只出战猫咪')+'">'
+    return '<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
       +cats.map(c=>'<button type="button" class="map-squad-choice '+(selected.includes(c.uid)?'sel':'')+'" data-uid="'+esc(c.uid)+'" aria-pressed="'+selected.includes(c.uid)+'">'
         +'<canvas width="58" height="50" aria-hidden="true"></canvas><span><strong>'+esc(State.catName(c))+'</strong>'
         +'<small>'+(en?'Power ':'战力 ')+State.catPower(c)+' · '+(en?'Bond ':'默契 ')+Math.round(c.affinity||0)+'</small></span></button>').join('')
-      +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>';
+      +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'+this.squadOrderMarkup();
   },
   bindSquadPicker(selected){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats||[];
@@ -151,6 +181,7 @@ const UI = {
       });
       const count=document.querySelector('#panel .map-squad-count');
       if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只');
+      this.refreshSquadOrder(selected,refresh);
     };
     buttons.forEach(btn=>{
       const cat=cats.find(c=>c.uid===btn.dataset.uid);
@@ -256,10 +287,14 @@ const UI = {
   },
   openRegionSecret(reward){
     const d=reward.discovery,en=window.MorrowwishI18n?.get?.()!=='zh';
+    const duoNames=reward.duoNames||[];
+    const duoLabel=reward.duoMemory
+      ?'<p class="duo-discovery-names">'+duoNames.map(n=>String(n).replace(/[&<>"']/g,'')).join(' + ')+
+        ' · '+(en?'Trust +12':'默契 +12')+'</p>':'';
     const items=['coins','fish','treats','yarn','luck'].filter(k=>reward[k]).map(k=>'+'+reward[k]+' '+({coins:'🪙',fish:'🐠',treats:'🐟',yarn:'🧶',luck:'✨'}[k])).join(' · ');
     this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
       <div class="yard-surprise-icon">${d.icon}</div><h2>${en?d.en:d.name}</h2>
-      <p>${en?d.storyEn:d.story}</p><p class="secret-reward">${en?'Unique discovery':'地区专属发现'} · ${items}</p>
+      <p>${en?d.storyEn:d.story}</p>${duoLabel}<p class="secret-reward">${reward.duoMemory?(en?'Duo expedition memory':'双猫旅行回忆'):(en?'Unique discovery':'地区专属发现')} · ${items}</p>
       <div class="btn-row"><button class="btn gold" id="secret-close">${en?'Explore more':'继续探索'}</button></div></div>`);
     document.getElementById('secret-close').onclick=()=>this.closeAll();
   },
@@ -306,9 +341,17 @@ const UI = {
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
     const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
+    const memories=ok?CatRelations.memoryList(a,b):[];
+    const journey=window.WorldMap?.REGIONS||[];
+    const album=journey.map(r=>{
+      const found=memories.includes(r.id);
+      const icon=({sakura:'🌸',home:'🏡',creek:'🐚',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
+      return '<span class="duo-memory-stamp '+(found?'found':'missing')+'" title="'+esc(en?r.sub:r.name)+'">'+
+        (found?icon:'?')+'<small>'+esc(en?r.sub:r.name)+'</small></span>';
+    }).join('');
     this.panel(`<span class="card-close">×</span><div class="duo-panel">
       <h2>💞 ${en?'Your Cat Duo':'双猫纽带'}</h2>
-      <p>${en?'Pair two cats. Pet and play to raise trust, then take both into battle for a team attack.':'选择两只搭档，撸猫和一起玩耍提升默契，组队出战释放元素合击。'}</p>
+      <p>${en?'Raise two best friends: explore together, collect shared memories and unlock powerful duo moves.':'让两只小猫从陌生到形影不离：一起探索、收集专属回忆、解锁强力合击。'}</p>
       ${mood==='sulky'?'<section class="duo-quarrel-alert" role="status"><strong>💢 '+(en?'Time to make up':'闹别扭啦')+'</strong><p>'+
         (en?State.catName(a)+' and '+State.catName(b)+' are upset. Make up for free to gain +6 trust.':
           State.catName(a)+' 和 '+State.catName(b)+' 闹别扭了，点下面的按钮免费和好，还能增加 6 点默契。')+
@@ -327,7 +370,12 @@ const UI = {
         ${p>=90?'<p class="duo-secret-story">🌙 '+(en?'SECRET PROMISE':'最终的约定')+'<span>'
           +(en?'Even in the fullest garden, these two will always find each other. Their team move has reached its final form.'
             :'即使庭院住满了小猫，它们也能一眼找到彼此。双猫合击终于达到最终形态。')
-          +'</span></p>':''}</div>
+          +'</span></p>':''}
+        <section class="duo-memory-album" aria-label="${en?'Travel memories':'双猫旅行回忆'}">
+          <strong>${en?'🐾 Travel memories':'🐾 双猫旅行回忆'} · ${memories.length}/5</strong>
+          <p class="tiny">${en?'Bring this duo to different regions. Trust 20 unlocks each shared memory.':'带上这组搭档探索不同地图，默契达到20就能解锁各地区的双猫回忆。'}</p>
+          <div class="duo-memory-grid">${album}</div>
+        </section></div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
@@ -1445,7 +1493,7 @@ const UI = {
     const duo=preferred.length===2?preferred.filter(c=>sorted.some(t=>t.uid===c.uid)):[];
     const saved=this.getPreferredBattleTeam().filter(c=>sorted.some(t=>t.uid===c.uid));
     const selection=State.S.battlePrefs?.teamUids?.length&&saved.length?saved:[...saved,...duo,...sorted];
-    this.teamUids=selection.filter((c,i,arr)=>arr.findIndex(x=>x.uid===c.uid)===i).slice(0,3).map(c=>c.uid);
+    this.teamUids=selection.filter((c,i,arr)=>arr.findIndex(x=>x.uid===c.uid)===i).slice(0,5).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
@@ -1470,9 +1518,10 @@ const UI = {
       <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
       ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
       ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
-      <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
+      <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建双猫队伍（首发 2 只 + 替补最多 3 只，点击选择）'}</h3>
       ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
+      ${this.squadOrderMarkup()}
       <fieldset class="capture-mode-picker" aria-label="${english?'Battle control':'选择战斗方式'}">
         <legend>${english?'How would you like to fight?':'这场战斗怎么打？'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${english?'Battle control':'战斗方式'}">
@@ -1497,7 +1546,14 @@ const UI = {
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     CatArt.renderCatThumb(document.getElementById('cp-wild'), wildSp);
     const roster = document.getElementById('cp-roster');
-    const refreshSel = () => roster.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('sel', this.teamUids.includes(ch.dataset.uid)));
+    const refreshSel = () => {
+      roster.querySelectorAll('.chip').forEach(ch => {
+        const order=this.teamUids.indexOf(ch.dataset.uid);
+        ch.classList.toggle('sel',order>=0);
+        ch.dataset.orderRole=order<0?'':(order<2?(english?'START '+(order+1):'首发 '+(order+1)):(english?'BENCH '+(order-1):'替补 '+(order-1)));
+      });
+      this.refreshSquadOrder(this.teamUids,refreshSel);
+    };
     roster.querySelectorAll('.chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
       CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
@@ -1505,10 +1561,11 @@ const UI = {
         const uid = chip.dataset.uid;
         const idx = this.teamUids.indexOf(uid);
         if (idx >= 0) { if (this.teamUids.length > 1) this.teamUids.splice(idx, 1); }  // keep at least 1
-        else { if (this.teamUids.length >= 3) this.teamUids.shift(); this.teamUids.push(uid); }
+        else { if (this.teamUids.length >= 5) this.teamUids.shift(); this.teamUids.push(uid); }
         refreshSel();
       };
     });
+    refreshSel();
     const changeBattleMode=auto=>{
       this.prepAutoBattle=auto;
       document.querySelectorAll('#panel .capture-mode-option').forEach(btn=>{
@@ -1733,7 +1790,7 @@ const UI = {
   // 2-cat field cap, prompt the player to keep exactly 2. Returns true if it
   // opened a chooser (caller should stop), false to proceed normally.
   _chooseRunSquad(newCat){
-    const FIELD_CAP=5;   // the expedition roster cap (3 field + up to 2 bench)
+    const FIELD_CAP=5;   // two active field cats + up to three chosen bench cats
     const byUid=new Map((State.S.cats||[]).map(c=>[c.uid,c]));
     // run roster = prior expedition team + the freshly caught cat
     const prior=(State.S.battlePrefs?.teamUids||[]).map(uid=>byUid.get(uid)).filter(Boolean);
@@ -1757,8 +1814,8 @@ const UI = {
     };
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">${en?'Keep which cats?':'留下哪些猫？'}</h2>
-      <p class="sub center">${en?`Your expedition field team holds ${FIELD_CAP}. Pick ${FIELD_CAP} to keep exploring with; the rest head home (still yours).`
-        :`探索队伍场上最多 ${FIELD_CAP} 只。选 ${FIELD_CAP} 只继续探索，其余自动送回家（仍归你所有）。`}</p>
+      <p class="sub center">${en?`Your expedition takes up to ${FIELD_CAP} cats: 2 active and 3 bench. Choose who continues; the rest head home (still yours).`
+        :`探索队伍最多带 ${FIELD_CAP} 只：2 只首发、3 只替补。选好继续冒险的猫，其余回家（仍归你所有）。`}</p>
       <div class="keep-grid">${roster.map(cardFor).join('')}</div>
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="keep-go" disabled>${en?'Keep exploring':'继续探索'}</button>

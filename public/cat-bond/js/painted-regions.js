@@ -82,7 +82,12 @@ function base(c,w,h,id){
  return r;
 }
 function home(c,w,h,p,r){
- flagstones(c,[[850,1260],[910,1020],[730,790],[870,570],[1130,370],[1310,85]],r,p);
+ // Cottage garden: curving courtyard paths, side picnic lawn, and flower beds.
+ // The opening zone has several rooms, not a straight path through trees.
+ oval(c,560,810,490,320,'#b6cba9');
+ polygon(c,[[260,1300],[300,1150],[440,945],[650,760],[740,600],[805,580],[830,665],[760,830],[555,1015],[480,1300]],'#e4ceb0');
+ polygon(c,[[490,805],[680,740],[880,760],[1090,720],[1350,830],[1330,940],[1060,845],[810,875],[625,865]],'#ead8bb');
+ for(let i=0;i<14;i++)stone(c,275+(i%5)*82,680+Math.floor(i/5)*110,14,7,'rgba(246,230,198,.52)');
  // Real courtyard structure: cottage, timber fence, covered garden arch,
  // flower beds, wicker bench and distinct living zones.
  polygon(c,[[105,130],[487,125],[510,458],[113,467]],'#f5e9d4','#cebda5');
@@ -105,7 +110,18 @@ function home(c,w,h,p,r){
  for(let i=0;i<7;i++)foliage(c,237+i*30,934,22,['#689470','#7daa85','#9bc8a0'],500+i);
 }
 function sakura(c,w,h,p,r){
- flagstones(c,[[102,1240],[300,1090],[610,980],[760,720],[1060,590],[1460,340],[1670,140]],r,p);
+ // Opening hero map: terraced pink forest with a shrine on high ground.
+ // Stepped ascent + hidden side grove replaces the previous linear road.
+ polygon(c,[[0,970],[270,835],[630,795],[900,680],[1240,590],[1710,320],[1800,320],[1800,1300],[0,1300]],'#aec3ad');
+ polygon(c,[[0,1090],[360,960],[740,910],[1040,790],[1400,660],[1800,530],[1800,1300],[0,1300]],'#c7c5aa');
+ for(let i=0;i<18;i++){
+   const x=240+i*75,y=1190-i*49;
+   polygon(c,[[x-35,y],[x+36,y-10],[x+64,y+18],[x-28,y+29]],i%2?'#f7e8db':'#e8dace','#cbb5aa');
+ }
+ for(let i=0;i<35;i++){
+   const x=(i*157+47)%w,y=(i*133+99)%h;
+   if(i%2===0)bloom(c,x,y,5+r()*7,'#f7c8dc',500+i);
+ }
  for(const [x,y,s] of [[190,540,1.18],[640,280,1.28],[1230,770,1.15],[1530,400,.94]])
   tree(c,x,y,s,['#f3c9d9','#ebacc5','#f8ddea','#fff1e7'],x+y,true);
  for(let i=0;i<12;i++){const x=r()*w,y=r()*h;
@@ -119,12 +135,19 @@ function sakura(c,w,h,p,r){
   oval(c,x,y-23,17,12,'#fbebc8');oval(c,x,y-23,11,7,'#ffd4a4');}
 }
 function creek(c,w,h,p,r){
- flagstones(c,[[140,1170],[480,970],[680,830],[900,570],[1280,310],[1620,110]],r,p);
+ // River valley: opposing banks, gravel islets and a true bridge.
+ polygon(c,[[0,900],[280,870],[450,710],[560,670],[700,800],[740,1300],[0,1300]],'#bcd5ad');
+ polygon(c,[[1120,0],[1800,0],[1800,560],[1470,650],[1320,560],[1180,380]],'#93b8a4');
  const river=[[0,370],[370,490],[700,570],[850,780],[1100,900],[1510,1010],[1800,1120]];
  path(c,river,228,'#58887d');path(c,river,210,'#b0dbd0');path(c,river,190,'#6fbbba');
  path(c,river,148,'#7dc6c9');path(c,river,9,'rgba(246,255,248,.54)');
  for(let i=0;i<31;i++){let x=r()*w,y=480+x*.34+Math.sin(x*.005)*140; // highlights along stream
    path(c,[[x,y],[x+20+r()*40,y-5]],2,'rgba(255,255,248,.4)');}
+ // Water lilies and shoreline stepping stones are unique to this map.
+ for(let i=0;i<18;i++){
+   const x=130+i*90,y=500+Math.sin(i*.76)*205;
+   if(i%2===0)stone(c,x,y,15+r()*12,8+r()*5,'#e7e6d8');
+ }
  // Solid wooden foot bridge across the actual curved water channel.
  c.save();c.translate(850,690);c.rotate(.62);
  c.fillStyle='#826a58';c.fillRect(-142,-42,284,84);
@@ -135,7 +158,15 @@ function creek(c,w,h,p,r){
  for(let i=0;i<32;i++)stone(c,r()*w,r()*h,8+r()*27,5+r()*13,i%2?'#c9c7b1':'#e6e4cf');
 }
 function volcano(c,w,h,p,r){
- flagstones(c,[[160,1170],[520,1010],[650,760],[930,605],[1180,350],[1690,110]],r,p);
+ // Volcano: imposing dark basalt ridges and an irregular safe plateau.
+ // No shared path or grassy hills; traversal follows cooled stone islands.
+ polygon(c,[[0,0],[450,0],[350,460],[570,700],[360,1050],[0,1170]],'#544b53','#453c45');
+ polygon(c,[[1800,0],[1480,0],[1360,270],[1600,620],[1410,930],[1800,1200]],'#585057','#453b44');
+ polygon(c,[[390,1300],[520,1050],[720,930],[820,720],[1000,640],[1240,480],[1390,290],[1650,185],[1540,420],[1320,620],[1150,900],[940,1080],[850,1300]],'#98847c','#5c5154');
+ for(let i=0;i<24;i++){
+   const x=410+i*48,y=1040-i*27;
+   if(i%2===0)stone(c,x,y,23+r()*20,11+r()*6,'#ba9c86');
+ }
  polygon(c,[[0,235],[250,85],[420,245],[590,120],[820,300],[980,0],[1260,230],[1490,65],[1800,280],[1800,0],[0,0]],'#665b60');
  polygon(c,[[770,286],[980,30],[1220,280]],'#94716c');
  polygon(c,[[922,75],[980,30],[1042,72]],'#e7cab4');
@@ -157,7 +188,20 @@ function volcano(c,w,h,p,r){
  }
 }
 function ruins(c,w,h,p,r){
- flagstones(c,[[110,1190],[340,970],[610,840],[880,680],[1220,470],[1630,190]],r,p);
+ // Ruins: circular astronomical plaza, disconnected courts and arches.
+ // The layout is radial instead of another road between trees.
+ oval(c,990,590,430,365,'#737f9e');
+ oval(c,990,590,360,310,'#a8adbf');
+ oval(c,990,590,285,245,'#d2cad1');
+ for(let i=0;i<9;i++){
+   const a=i*Math.PI*2/9,x=990+Math.cos(a)*454,y=590+Math.sin(a)*376;
+   oval(c,x,y,69,43,i%2?'#9ba1b6':'#bbb4c4');
+   stone(c,x,y-12,24,14,'#d4cfda');
+ }
+ for(let i=0;i<12;i++){
+   const a=i*Math.PI/6;
+   path(c,[[990+Math.cos(a)*125,590+Math.sin(a)*125],[990+Math.cos(a)*370,590+Math.sin(a)*300]],5,'rgba(249,225,228,.33)');
+ }
  // Astral stone observatory, complex concentric paving, ruined arches and
  // moonlit overgrowth — visually and spatially unlike the other four maps.
  for(let rad=270;rad>=180;rad-=43){c.strokeStyle=rad%2?'rgba(239,226,234,.3)':'rgba(68,76,113,.46)';

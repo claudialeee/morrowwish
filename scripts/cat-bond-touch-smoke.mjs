@@ -152,7 +152,7 @@ try{
     // wild cat otherwise intermittently switches the test into battle.
     await lp.evaluate(()=>{
       window.WorldMap.onEncounter(()=>{});
-      window.WorldMap.enterRegion('home');
+      window.WorldMap.enterRegion(window.WorldMap.REGIONS.find(r=>window.WorldMap.isUnlocked(r.id)).id);
     });
     await lp.waitForTimeout(250);
     const start=await lp.evaluate(()=>window.WorldMap.view);

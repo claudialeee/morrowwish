@@ -1,6 +1,6 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T19:52:49.506Z",
+  "createdAt": "2026-11-21T21:02:53.120Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -15,7 +15,7 @@
         "/promo/cat-bond/v7-review-2.jpg",
         "/promo/cat-bond/v7-review-3.jpg"
       ],
-      "duration": 39.6,
+      "duration": 46.6,
       "shots": [
         {
           "source": "broll",
@@ -28,6 +28,18 @@
           "scene": "raising",
           "caption": "RAISE YOUR OWN CAT TEAM.",
           "seconds": 3.7
+        },
+        {
+          "source": "broll",
+          "scene": "cat-upgrade",
+          "caption": "LEVEL UP YOUR CATS.",
+          "seconds": 3.7
+        },
+        {
+          "source": "broll",
+          "scene": "duo-partners",
+          "caption": "BUILD YOUR CAT DUO.",
+          "seconds": 4.1
         },
         {
           "source": "broll",
@@ -63,7 +75,7 @@
           "source": "broll",
           "scene": "battle-intro",
           "caption": "FIGHT AS A CAT TEAM.",
-          "seconds": 3.3
+          "seconds": 2.5
         },
         {
           "source": "broll",
@@ -100,19 +112,31 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 23.4,
+      "duration": 28,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.135
+          "seconds": 14.151
+        },
+        {
+          "source": "broll",
+          "scene": "narrow-pursuit",
+          "caption": "SPOTTED! CAN IT ESCAPE?",
+          "seconds": 2.501000000000001
+        },
+        {
+          "source": "broll",
+          "scene": "narrow-achievement",
+          "caption": "NINE LIVES · ACHIEVEMENT!",
+          "seconds": 2
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.336999999999999
+          "seconds": 7.378999999999999
         },
         {
           "source": "cover",
@@ -216,91 +240,85 @@
         "/promo/elsewhere/v7-review-2.jpg",
         "/promo/elsewhere/v7-review-3.jpg"
       ],
-      "duration": 44.6,
+      "duration": 36.9,
       "shots": [
         {
           "source": "broll",
           "scene": "choose-life",
-          "caption": "WAKE UP TO A BRAND NEW LIFE.",
-          "seconds": 4
+          "caption": "",
+          "seconds": 2.8
+        },
+        {
+          "source": "broll",
+          "scene": "amalfi",
+          "caption": "A VILLA ON THE AMALFI COAST.",
+          "seconds": 2.35
+        },
+        {
+          "source": "broll",
+          "scene": "tokyo",
+          "caption": "BE A SUPERSTAR TONIGHT.",
+          "seconds": 2.35
+        },
+        {
+          "source": "broll",
+          "scene": "moon-opening",
+          "caption": "OR OWN A HOTEL ON THE MOON.",
+          "seconds": 2.5
+        },
+        {
+          "source": "broll",
+          "scene": "moon-surprise",
+          "caption": "SURPRISES IN EVERY LIFE.",
+          "seconds": 2.55
         },
         {
           "source": "broll",
           "scene": "paris",
-          "caption": "A NEW ROMANCE IN PARIS.",
+          "caption": "A NEW LOVE STORY IN PARIS.",
           "seconds": 3.15
         },
         {
           "source": "broll",
           "scene": "paris-result",
           "caption": "",
-          "seconds": 1.9
+          "seconds": 1.8
         },
         {
           "source": "broll",
-          "scene": "amalfi",
-          "caption": "YOUR OWN SEASIDE VILLA.",
-          "seconds": 3.15
+          "scene": "paris-romance",
+          "caption": "MEET SOMEONE WHO GETS YOU.",
+          "seconds": 3.65
         },
         {
           "source": "broll",
-          "scene": "amalfi-result",
-          "caption": "",
-          "seconds": 1.9
+          "scene": "paris-love-moment",
+          "caption": "ONE UNFORGETTABLE DATE.",
+          "seconds": 2.3
         },
         {
           "source": "broll",
-          "scene": "tokyo",
-          "caption": "LIVE AS A SUPERSTAR.",
-          "seconds": 3.15
+          "scene": "paris-chapter-3",
+          "caption": "THE ROMANCE CONTINUES.",
+          "seconds": 2.75
         },
         {
           "source": "broll",
-          "scene": "tokyo-result",
-          "caption": "",
-          "seconds": 1.9
+          "scene": "paris-chapter-4",
+          "caption": "A MOMENT WORTH KEEPING.",
+          "seconds": 2.6
         },
         {
           "source": "broll",
-          "scene": "moon-opening",
-          "caption": "OR LIVE ON THE MOON.",
-          "seconds": 3.35
+          "scene": "paris-finale",
+          "caption": "CHOOSE YOUR OWN LOVE STORY.",
+          "seconds": 2.45
         },
         {
           "source": "broll",
-          "scene": "moon-choice",
-          "caption": "EVERY DECISION CHANGES YOU.",
-          "seconds": 3
-        },
-        {
-          "source": "broll",
-          "scene": "moon-surprise",
-          "caption": "A HIDDEN SURPRISE APPEARS.",
-          "seconds": 3.55
-        },
-        {
-          "source": "broll",
-          "scene": "moon-consequence",
-          "caption": "YOUR LIFE KEEPS UNFOLDING.",
-          "seconds": 3
-        },
-        {
-          "source": "broll",
-          "scene": "moon-finale-surprise",
-          "caption": "ONE FINAL UNEXPECTED TWIST.",
-          "seconds": 3.55
-        },
-        {
-          "source": "broll",
-          "scene": "moon-last-result",
-          "caption": "",
-          "seconds": 1.45
-        },
-        {
-          "source": "broll",
-          "scene": "moon-ending",
-          "caption": "A REAL ENDING YOU EARNED.",
-          "seconds": 5.6
+          "scene": "paris-ending",
+          "caption": "YOUR CHOICES. YOUR ENDING.",
+          "seconds": 3.65
         },
         {
           "source": "cover",
@@ -325,25 +343,31 @@
         "/promo/flip-dash/v7-review-2.jpg",
         "/promo/flip-dash/v7-review-3.jpg"
       ],
-      "duration": 18.8,
+      "duration": 17,
       "shots": [
         {
           "source": "broll",
-          "scene": "survival",
-          "caption": "DODGE. DO NOT SPAM TAPS.",
-          "seconds": 12.4
+          "scene": "first-coin",
+          "caption": "GRAB GOLD FROM THE START!",
+          "seconds": 3.12
+        },
+        {
+          "source": "broll",
+          "scene": "coin-collect",
+          "caption": "COLLECT GOLD. DODGE PINK.",
+          "seconds": 9.952
         },
         {
           "source": "broll",
           "scene": "danger",
           "caption": "ONE WRONG MOVE IS ENOUGH.",
-          "seconds": 2.25
+          "seconds": 0.4830000000000002
         },
         {
           "source": "broll",
           "scene": "crash",
           "caption": "CAN YOU LAST LONGER?",
-          "seconds": 2.2
+          "seconds": 1.5
         },
         {
           "source": "cover",
@@ -374,13 +398,13 @@
           "source": "broll",
           "scene": "deliveries",
           "caption": "MATCH THE PARCEL COLOR.",
-          "seconds": 8.145
+          "seconds": 8.15
         },
         {
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.7090000000000005
+          "seconds": 4.694999999999999
         },
         {
           "source": "broll",
@@ -417,13 +441,13 @@
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.2359999999999998
+          "seconds": 3.2449999999999997
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.187
+          "seconds": 4.235
         },
         {
           "source": "broll",

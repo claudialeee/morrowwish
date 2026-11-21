@@ -88,20 +88,20 @@
   // ---------------------------------------------------------------
   var REGIONS = [
     {
-      id: 'home', name: '庭院', sub: 'Home',
-      node: { x: 0.16, y: 0.74 }, difficulty: 1,
-      theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
-      speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
-      unlock: null, // always open
-      desc: '熟悉的后院，新手猫猫的乐园。',
-    },
-    {
       id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
-      node: { x: 0.37, y: 0.52 }, difficulty: 2,
+      node: { x: 0.16, y: 0.74 }, difficulty: 1,
       theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
       speciesPool: ['nainai', 'moqiu', 'sanhua', 'yunduo', 'yinghua'],
-      unlock: { after: 'home', explore: 0.4 },
+      unlock: null, // cinematic opening region
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
+    },
+    {
+      id: 'home', name: '庭院', sub: 'Home',
+      node: { x: 0.37, y: 0.52 }, difficulty: 2,
+      theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
+      speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
+      unlock: { after: 'sakura', explore: 0.3 },
+      desc: '熟悉的后院，新手猫猫的乐园。',
     },
     {
       id: 'creek', name: '溪谷', sub: 'Creek Valley',
@@ -135,6 +135,16 @@
     volcano:{icon:'🔥',name:'火山暖光石',en:'The warm ember stone',story:'温暖的石头带来了寻找稀有猫咪的好运。',storyEn:'A warm stone brings luck for the next rare friend.',reward:{luck:2,coins:30}},
     ruins:{icon:'🌙',name:'月影星光匣',en:'The moonlit star box',story:'古老的匣子为一路冒险到这里的猫咪留下祝福。',storyEn:'An ancient chest rewards cats that made it this far.',reward:{luck:3,fish:3,coins:40}}
   };
+  // Native physical finds for each region; old saved node IDs stay stable.
+  var REGION_FINDS={"home":[["forage","窗台猫薄荷","Catnip on the windowsill",{"treats":2,"yarn":1}],["play","午后的晒太阳角","The sunny corner",{"coins":14,"yarn":2}],["cache","花盆下的零钱","Coins beneath a planter",{"coins":28}],["forage","厨房掉落的小鱼干","A fish treat by the kitchen",{"fish":2,"treats":1}],["rare","幸运许愿铃","The lucky wishing bell",{"luck":1,"coins":18}],["play","篱笆边的毛线球","Yarn by the garden fence",{"yarn":3}]],"sakura":[["forage","樱花蜜糖","Blossom nectar",{"treats":3}],["play","飘落的发光花瓣","Glowing falling petals",{"yarn":2,"coins":20}],["cache","神社祈愿签","Shrine fortune slip",{"luck":1,"coins":22}],["forage","樱树根下的鱼干","Fish beneath the cherry tree",{"fish":2}],["rare","樱色琥珀","Cherry blossom amber",{"luck":2,"coins":28}],["play","小猫的花环","A kitten flower crown",{"treats":2,"yarn":2}]],"creek":[["forage","小溪里的银鱼","Silver minnows",{"fish":3}],["play","石头跳跳乐","Stepping-stone game",{"coins":25,"treats":1}],["cache","水车边的宝贝","Waterwheel keepsake",{"yarn":2,"fish":1}],["forage","苔藓里的猫薄荷","Catnip in the moss",{"treats":3}],["rare","月光珍珠","Moonwater pearl",{"luck":2,"fish":2}],["play","贝壳寻宝","Shell treasure hunt",{"coins":34,"fish":1}]],"volcano":[["forage","暖石上的零食","Treats on warm stone",{"treats":4}],["play","火山温泉","Volcanic hot spring",{"coins":36,"yarn":2}],["cache","矿工遗落的金币","Forgotten prospector coins",{"coins":50}],["forage","岩洞秘密鱼干","Hidden cave fish",{"fish":3}],["rare","余烬晶石","Ember crystal",{"luck":3,"coins":22}],["play","火山流星雨","Ember meteor shower",{"luck":1,"treats":2}]],"ruins":[["forage","星光小鱼干","Starlit fish",{"fish":3}],["play","月光下的约定","A promise in moonlight",{"yarn":3,"coins":32}],["cache","遗迹古币","Ancient coins",{"coins":60}],["forage","夜花蜜露","Nightflower nectar",{"treats":4}],["rare","星河碎片","Stardust fragment",{"luck":3,"fish":2}],["play","旋转的星盘","The turning astrolabe",{"luck":2,"yarn":2}]]};
+  var DUO_MEMORIES={"home":["☀️","暖阳里的好朋友","Sunbeam Friends","两只小猫挤进同一缕阳光，谁都不愿先离开。","Two kittens squeeze into one sunbeam, and neither wants to leave."],"sakura":["🌸","花瓣下的双猫约定","Promise Under Petals","花瓣落在它们的耳朵上，它们约好来年春天还一起回来。","Petals land on their ears; they promise to return together next spring."],"creek":["🐚","一起越过小溪","Across the Creek Together","一只猫伸出小爪子，另一只已经在石头上等着它。","One kitten stretches out a paw; the other waits patiently on the stepping stone."],"volcano":["🔥","并肩的勇气","Brave Little Paws","面对炙热的石头，两只猫紧紧相随，找到了安全的路。","Side by side, the kittens find a safe way through the hot stones."],"ruins":["🌙","双猫星座","Two-Cat Constellation","古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。","Two new stars appear on the old astrolabe, carrying their names side by side."]};
+  var SPOT_COORDS=[[330,610],[590,345],[875,475],[1150,950],[1490,445],[1360,1070]];
+  function activeDuo(){
+    const cats=window.CatRelations?.chosen?.()||[];
+    if(cats.length!==2)return null;
+    const trust=window.CatRelations?.pair(cats[0],cats[1])?.value||0;
+    return {cats,trust,ready:trust>=20&&window.CatRelations?.mood(cats[0],cats[1])!=='sulky'};
+  }
   function regionById(id) { for (var i = 0; i < REGIONS.length; i++) if (REGIONS[i].id === id) return REGIONS[i]; return null; }
 
   // ---- module-internal state ----
@@ -156,16 +166,16 @@
   // ================================================================
   function ensureSave() {
     var S = window.State.S;
-    if (!S.worldmap) S.worldmap = { current: 'home', unlocked: {}, regions: {} };
+    if (!S.worldmap) S.worldmap = { current: 'sakura', unlocked: {}, regions: {} };
     var wm = S.worldmap;
     if (!wm.unlocked) wm.unlocked = {};
     if (!wm.regions) wm.regions = {};
-    wm.unlocked.home = true;       // home is always open
+    wm.unlocked.sakura = true;     // the cherry-blossom forest is the new opening map
     for (var i = 0; i < REGIONS.length; i++) {
       var id = REGIONS[i].id;
       if (!wm.regions[id]) wm.regions[id] = { explored: 0, nodes: [], cleared: false };
     }
-    if (!wm.current) wm.current = 'home';
+    if (!wm.current) wm.current = 'sakura';
     return wm;
   }
 
@@ -219,7 +229,7 @@
   function init(g) {
     game = g;
     ensureSave();
-    cur = window.State.S.worldmap.current || 'home';
+    cur = window.State.S.worldmap.current || 'sakura';
     refreshUnlocks();
   }
   function onEncounter(fn) { cbEncounter = fn; }
@@ -262,7 +272,8 @@
   function playerSpecies() {
     var cats = window.State.S.cats || [];
     if (cats.length) {
-      var leader=cats.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||cats[0];
+      var leader=(window.CatRelations?.chosen?.()||[])[0]||
+        cats.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||cats[0];
       var sp=window.GameData.speciesById(leader.species);
       if (sp) return sp;
     }
@@ -305,17 +316,26 @@
     }
     // Patrols are bound to a den, not screen-space icons.
     for(const kitten of spawns){kitten.homeX=kitten.x;kitten.homeY=kitten.y;}
-    var nNode = 6;
-    for (var j = 0; j < nNode; j++) {
-      var nid = id + '_n' + j;
-      nodes.push({
-        id: nid, x: 160 + Math.random() * (WORLD_W - 320), y: 160 + Math.random() * (WORLD_H - 320),
-        taken: prog.nodes.indexOf(nid) >= 0, kind: Math.random() < 0.3 ? 'rare' : 'coin', bob: Math.random() * 6.28,
-      });
+    // Place local finds at recognizable permanent spots; no boxes randomly
+    // reshuffled between visits. A later visit keeps the same landmarks.
+    var nativeFinds=REGION_FINDS[id]||REGION_FINDS.home;
+    for (var j = 0; j < nativeFinds.length; j++) {
+      const spot=SPOT_COORDS[j], shift=(r.difficulty-1)*28;
+      nodes.push({id:id+'_n'+j,
+        x:Math.max(90,Math.min(WORLD_W-90,spot[0]+(j%2?shift:-shift*.3))),
+        y:Math.max(90,Math.min(WORLD_H-90,spot[1]+(j%3-1)*shift)),
+        taken:prog.nodes.includes(id+'_n'+j),
+        kind:nativeFinds[j][0],find:nativeFinds[j],bob:j*.85});
     }
     const secretId=id+'_secret';
     nodes.push({id:secretId,x:WORLD_W*.22,y:WORLD_H*.5+(r.difficulty-3)*23,
       taken:prog.nodes.includes(secretId),kind:'secret',bob:0});
+    // A different duo memory in every region, unlocked by friendship.
+    const duoId=id+'_duo';
+    const expeditionPair=activeDuo()?.cats;
+    const remembered=expeditionPair&&window.CatRelations?.memoryList?.(expeditionPair[0],expeditionPair[1])||[];
+    nodes.push({id:duoId,x:WORLD_W*.42,y:WORLD_H*.77,
+      taken:remembered.includes(id),kind:'duo',bob:1.8});
     // parallax decor blobs (themed shrubs / rocks / crystals)
     for (var k = 0; k < 40; k++) {
       decor.push({
@@ -444,7 +464,16 @@
     for (var j = 0; j < w.nodes.length; j++) {
       var n = w.nodes[j];
       if (n.taken) continue;
-      if (Math.hypot(w.px - n.x, w.py - n.y) < 48) collectNode(n);
+      if (Math.hypot(w.px - n.x, w.py - n.y) < 48) {
+        if(n.kind==='duo'&&activeDuo()?.cats&&window.CatRelations?.memoryList?.(...activeDuo().cats)?.includes(w.region.id))n.taken=true;
+        else if(n.kind==='duo'&&!activeDuo()?.ready){
+          if(toastCd<=0&&game?.toast){
+            const en=window.MorrowwishI18n?.get?.()!=='zh';
+            game.toast(en?'Pair two cats and reach 20 trust to discover this memory':'双猫搭档默契达到20，才能发现这段回忆');
+            toastCd=4;
+          }
+        }else collectNode(n);
+      }
     }
 
     // ---- return portal ----
@@ -484,16 +513,25 @@
     world.flash = 0.4;
     var wm = ensureSave();
     var prog = wm.regions[world.region.id];
-    if (prog.nodes.indexOf(n.id) < 0) prog.nodes.push(n.id);
+    if(n.kind!=='duo'&&prog.nodes.indexOf(n.id)<0)prog.nodes.push(n.id);
     var d = world.region.difficulty;
     var reward;
     if(n.kind==='secret'){
-      var disc=DISCOVERIES[world.region.id];
+      const disc=DISCOVERIES[world.region.id];
       reward=Object.assign({discovery:Object.assign({id:world.region.id},disc)},disc.reward);
-    }else if (n.kind === 'rare') {
-      reward = { coins: 10 + d * 6, fish: 1, label: '发现珍稀补给 (+' + (10 + d * 6) + '🪙 +1🐠)' };
-    } else {
-      reward = { coins: 12 + d * 8, treats: 1, label: '拾获补给 (+' + (12 + d * 8) + '🪙 +1🐟)' };
+    }else if(n.kind==='duo'){
+      const entry=DUO_MEMORIES[world.region.id],duo=activeDuo();
+      const disc={id:world.region.id+'_duo',icon:entry[0],name:entry[1],en:entry[2],
+        story:entry[3],storyEn:entry[4]};
+      const extra=({home:{yarn:3,coins:20},sakura:{treats:3,coins:22},
+        creek:{fish:3},volcano:{luck:2,coins:25},ruins:{luck:2,fish:2}})[world.region.id];
+      reward=Object.assign({discovery:disc,duoMemory:true,duoTrust:12,
+        duoNames:duo?.cats.map(c=>window.State.catName(c))||[]},extra);
+      window.arcadeMetric?.('bond_duo_map_memory',{region:world.region.id});
+    }else{
+      const en=window.MorrowwishI18n?.get?.()!=='zh',info=n.find;
+      reward=Object.assign({},info?info[3]:{coins:12+d*8},
+        {label:info?(en?info[2]:info[1]):(en?'Found a treasure':'发现宝贝'),kind:n.kind});
     }
     window.State.save();
     if (cbCollect) cbCollect(reward);
@@ -693,17 +731,81 @@
         ctx.beginPath();ctx.arc(x,y-3,12,-2.1,1.4);ctx.stroke();
         ctx.fillStyle='#faf1d4';ctx.beginPath();ctx.arc(x+3,y-5,3,0,Math.PI*2);ctx.fill();
       }
+    }else if(node.kind==='duo'){
+      // Paired stone kittens physically inhabit the memory site.
+      for(const side of [-1,1]){
+        const xx=x+side*15;
+        ctx.fillStyle='#b9a69e';ctx.beginPath();ctx.ellipse(xx,y+5,12,17,0,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.moveTo(xx-11,y-8);ctx.lineTo(xx-8,y-25);ctx.lineTo(xx,y-13);
+        ctx.lineTo(xx+8,y-25);ctx.lineTo(xx+11,y-8);ctx.fill();
+        ctx.fillStyle='#fff1d9';ctx.beginPath();ctx.arc(xx-side*3,y-1,2,0,Math.PI*2);ctx.fill();
+      }
+      ctx.strokeStyle='#e4b7c1';ctx.lineWidth=4;ctx.beginPath();
+      ctx.moveTo(x-13,y-18);ctx.quadraticCurveTo(x,y-38,x+13,y-18);ctx.stroke();
+      ctx.fillStyle='#ffefd0';ctx.beginPath();ctx.arc(x,y-28,5,0,Math.PI*2);ctx.fill();
     }else if(rare){
-      ctx.fillStyle='#8b9aac';ctx.beginPath();ctx.moveTo(x-9,y+18);ctx.lineTo(x-17,y-6);
+      ctx.fillStyle=({home:'#c39f73',sakura:'#f0b8d0',creek:'#91cfdb',volcano:'#b77c61',ruins:'#aaa4d6'})[region]||'#8b9aac';ctx.beginPath();ctx.moveTo(x-9,y+18);ctx.lineTo(x-17,y-6);
       ctx.lineTo(x,y-27);ctx.lineTo(x+19,y-6);ctx.lineTo(x+8,y+18);ctx.closePath();ctx.fill();
       ctx.fillStyle='#d7ebec';ctx.beginPath();ctx.moveTo(x,y-26);ctx.lineTo(x+18,y-6);
       ctx.lineTo(x+4,y+5);ctx.closePath();ctx.fill();
+    }else if(node.kind==='forage'){
+      // A living herb or plant clump; creek forage becomes a silvery fish.
+      if(region==='creek'||region==='ruins'){
+        ctx.fillStyle=region==='creek'?'#d9eff0':'#e1d8fa';
+        ctx.beginPath();ctx.ellipse(x,y,21,11,0,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.moveTo(x-16,y);ctx.lineTo(x-29,y-11);ctx.lineTo(x-29,y+11);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#617a89';ctx.beginPath();ctx.arc(x+11,y-3,2.2,0,Math.PI*2);ctx.fill();
+      }else{
+        ctx.strokeStyle='#699a6b';ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(x,y+19);ctx.lineTo(x,y-21);ctx.stroke();
+        for(const side of [-1,1])for(let i=0;i<3;i++){
+          ctx.fillStyle=region==='volcano'?'#d0a66c':region==='sakura'?'#f3adc7':'#87b78c';
+          ctx.beginPath();ctx.ellipse(x+side*(8+i*3),y-12+i*12,12,6,side*.6,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }else if(node.kind==='play'){
+      // A toy with wrapped thread, not a treasure chest.
+      ctx.fillStyle=region==='volcano'?'#e7b990':region==='ruins'?'#c6bde3':
+        region==='creek'?'#a8d6d8':region==='sakura'?'#f9c2d0':'#deb49a';
+      ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#fff3df';ctx.lineWidth=2;
+      for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(x,y,7+i*3,-1.7,1.8);ctx.stroke();}
+      ctx.strokeStyle='#dbc99e';ctx.lineWidth=2;ctx.beginPath();
+      ctx.moveTo(x+10,y+10);ctx.quadraticCurveTo(x+26,y+23,x+31,y+8);ctx.stroke();
+    }else if(node.kind==='cache'){
+      // Small coin pouch or shrine offering, visually different from plants/toys.
+      ctx.fillStyle=region==='volcano'?'#8e6960':region==='ruins'?'#8e8ba6':'#a58a6f';
+      ctx.beginPath();ctx.moveTo(x-16,y-15);ctx.lineTo(x+16,y-15);
+      ctx.quadraticCurveTo(x+28,y+12,x,y+21);ctx.quadraticCurveTo(x-28,y+12,x-16,y-15);ctx.fill();
+      ctx.strokeStyle='#f4d39a';ctx.lineWidth=3;ctx.beginPath();
+      ctx.moveTo(x-12,y-13);ctx.quadraticCurveTo(x,y-5,x+12,y-13);ctx.stroke();
+      ctx.fillStyle='#f5d384';ctx.beginPath();ctx.arc(x,y+5,7,0,Math.PI*2);ctx.fill();
     }else{
-      ctx.fillStyle='#a27d5f';ctx.fillRect(x-20,y-4,40,22);
-      ctx.fillStyle='#d1aa80';ctx.fillRect(x-23,y-12,46,10);
-      ctx.strokeStyle='#eed4a0';ctx.lineWidth=3;
-      ctx.strokeRect(x-13,y-11,26,29);
-      ctx.fillStyle='#e5bd68';ctx.fillRect(x-3,y-7,6,11);
+      // Visual reward identity depends on the biome, never the same box.
+      if(region==='sakura'){
+        ctx.strokeStyle='#a17681';ctx.lineWidth=4;ctx.beginPath();
+        ctx.moveTo(x-18,y+15);ctx.lineTo(x+6,y-12);ctx.stroke();
+        for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ctx.fillStyle=i%2?'#f3b5cd':'#ffedf0';
+          ctx.beginPath();ctx.ellipse(x+6+Math.cos(a)*12,y-12+Math.sin(a)*11,9,5,a,0,Math.PI*2);ctx.fill();}
+        ctx.fillStyle='#fff0a5';ctx.beginPath();ctx.arc(x+6,y-12,4,0,Math.PI*2);ctx.fill();
+      }else if(region==='creek'){
+        ctx.fillStyle='#f0e4d0';ctx.beginPath();ctx.ellipse(x,y+6,21,15,0,Math.PI,0);ctx.closePath();ctx.fill();
+        for(let i=-2;i<=2;i++){ctx.strokeStyle='#9cc5bd';ctx.lineWidth=2;ctx.beginPath();
+          ctx.moveTo(x,y+19);ctx.lineTo(x+i*8,y-9);ctx.stroke();}
+      }else if(region==='volcano'){
+        ctx.fillStyle='#64565a';ctx.beginPath();ctx.moveTo(x-22,y+18);ctx.lineTo(x-14,y-6);
+        ctx.lineTo(x+7,y-28);ctx.lineTo(x+23,y+18);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#f3ae70';ctx.lineWidth=5;ctx.beginPath();
+        ctx.moveTo(x+7,y-25);ctx.lineTo(x-5,y-1);ctx.lineTo(x+8,y+14);ctx.stroke();
+      }else if(region==='ruins'){
+        ctx.fillStyle='#a4a7c5';ctx.beginPath();ctx.ellipse(x,y,19,20,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#eee4be';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,10,-2.1,1.5);ctx.stroke();
+        ctx.fillStyle='#fff7dc';ctx.beginPath();ctx.arc(x+8,y-6,3,0,Math.PI*2);ctx.fill();
+      }else{
+        ctx.fillStyle='#b68e70';ctx.beginPath();ctx.ellipse(x,y+4,21,16,0,0,Math.PI*2);ctx.fill();
+        for(let i=0;i<4;i++){ctx.strokeStyle='#f8d8a6';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(x,y+4,7+i*4,-2,2);ctx.stroke();}
+      }
     }
     // Discovery sparkle clings to the object and does not float as a sticker.
     const glint=Math.max(0,Math.sin(t*3+node.bob))*5;
@@ -790,6 +892,23 @@
       }
     }
 
+    // An actual duo expedition shows both kittens, with the second
+    // following just behind the leader. This isn't a floating HUD sticker.
+    const members=window.CatRelations?.chosen?.()||[];
+    const leadCat=members[0]||
+      window.State.S.cats?.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||
+      window.State.S.cats?.[0];
+    const companion=members.length===2?members.find(c=>c.uid!==leadCat?.uid):null;
+    if(companion&&(window.CatMotion||window.CatArt)){
+      const partnerSpecies=window.GameData.speciesById(companion.species);
+      const render=window.CatMotion?.draw||window.CatArt?.drawCat;
+      if(partnerSpecies&&render){
+        try{render(ctx,w.px-(w.face||1)*54,w.py+26,{
+          species:partnerSpecies,scale:.83,face:w.face,t:w.t,
+          stride:w.walkT*11,motion:w.moving?.85:0,pose:w.moving?'walk':'idle',mood:'happy'
+        });}catch(e){}
+      }
+    }
     // player avatar (lead cat) + shadow
     var pose = w.moving ? 'walk' : 'idle';
     if (window.CatArt) {
