@@ -59,6 +59,11 @@ const UI = {
       btn.addEventListener('click', () => {
         const b = this.game.battle; if (!b || this.game.battleHelpOpen) return;
         const m = btn.dataset.move;
+        if(m==='lock'){
+          b.cycleTarget();
+          this.game.syncTouchBattleUI();
+          return;
+        }
         if(m==='basic'&&this.game.isTouch&&!b.autoMode){
           this.game.touchAutoFire=!this.game.touchAutoFire;
           this.game.syncTouchBattleUI();
