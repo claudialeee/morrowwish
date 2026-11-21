@@ -954,7 +954,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbBattle.includes('State.S.battlePrefs.autoBattle=this.autoMode')||
     !cbState.includes('battlePrefs: { autoBattle: false }'))
    throw Error('Cat Bond overlays, sound controls, and saved combat-mode regression');
- const artPairs=[...cbRel.matchAll(/^ '([a-z]+\\+[a-z]+)':\\[/gm)].map(m=>m[1]);
+ const artPairs=[...cbRel.matchAll(/^ '([a-z]+\+[a-z]+)':\[/gm)].map(m=>m[1]);
  if(new Set(artPairs).size!==21||
     !cbBattle.includes('art.secondStatus')||
     !cbBattle.includes("const support=art.support||'shield'")||
