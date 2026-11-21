@@ -1864,3 +1864,22 @@ body.cb-exploring #hud,
 body.cb-exploring #tabbar{
  display:none!important;
 }
+
+/* Map navigation goes below the permanent studio toolbar instead of hiding
+   beneath fullscreen, language and audio buttons. The region HUD is drawn
+   at a separately calculated safe height in worldmap.js. */
+body.cb-exploring #map-index{
+ top:calc(env(safe-area-inset-top,0px) + 58px)!important;
+ right:8px!important;min-height:40px;
+}
+body.cb-exploring #map-squad{
+ top:calc(env(safe-area-inset-top,0px) + 58px)!important;
+ min-height:40px;
+}
+@media(max-height:530px) and (orientation:landscape){
+ body.cb-exploring #map-index,
+ body.cb-exploring #map-squad{
+   top:calc(env(safe-area-inset-top,0px) + 57px)!important;
+   min-height:36px;
+ }
+}
