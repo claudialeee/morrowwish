@@ -25,6 +25,7 @@ const CSS=`
 @media(max-width:450px){#mw-game-settings{top:max(5px,env(safe-area-inset-top))!important;right:max(5px,env(safe-area-inset-right))!important;gap:3px!important;padding:3px!important}#mw-game-settings button{width:33px!important;min-width:33px!important;height:35px!important;min-height:35px!important}#mw-game-settings .mw-settings-language{width:39px!important;min-width:39px!important}}
 /* The old floating language and audio docks must not overlap the new controls. */
 #mw-language,#mw-audio-dock,.mw-language-float{display:none!important}
+body [data-mw-music],body [data-mw-audio],body .lab-mute,body #music,body #sound,body .elsewhere-music{display:none!important}
 `;
 let dock,btnLang,btnMusic,btnSfx;
 const hiddenMenuControls=()=>route==='pawsibly-innocent';
