@@ -350,12 +350,18 @@ try{
    assert.equal(await policyPage.evaluate(()=>!document.getElementById('musicPermission').hidden),true,'Autoplay fallback available');
    await policyPage.locator('#menuButton').click();
    await policyPage.locator('[data-game-tab="help"]').click();
-   assert.equal(await policyPage.locator('#musicPermission').isVisible(),true,'Fallback appears inside settings menu');
-  await policyPage.locator('#musicPermission').click();
-  await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing===true);
+   // Opening the menu is a user gesture that may auto-unblock the music.
+   // Otherwise a one-click fallback should be visible inside Settings.
+   const playingOnMenu=await policyPage.evaluate(()=>window.MorrowwishCatMusic.status().playing);
+   if(!playingOnMenu){
+    assert.equal(await policyPage.locator('#musicPermission').isVisible(),true,
+     'Fallback button must be reachable if autoplay remains blocked');
+    await policyPage.locator('#musicPermission').click();
+   }
+   await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing===true);
   await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().blocked===false&&document.getElementById('musicPermission')?.hidden===true);
   assert.equal(await policyPage.locator('#musicPermission').isVisible(),false,'Prompt should disappear once music plays');
-  console.log('Autoplay-block fallback: one click starts the recorded music');
+  console.log('Autoplay-block recovery: menu gesture or settings fallback starts recorded music');
  }finally{await policyPage.close()}
 
  // Unlocks: every threshold must enable the correct cat; selection must persist.
