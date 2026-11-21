@@ -3,7 +3,7 @@
    battles, saves, progression and collision systems remain untouched. */
 (()=>{
   'use strict';
-  if (!window.CatArt || !window.CAT_BOND_KITTEN_ATLAS) return;
+  if (!window.CatArt) return;
   const drawing=window.CatArt;
   const source=new Image();
   const breedSheet=new Image();
@@ -265,6 +265,9 @@
     if(breedLoaded)pendingPortraits.clear();
   }
   function breedFrame(o) {
+    // All 25 identities now use complete transparent portraits, not a tiled
+    // AVIF that cuts through faces or bakes a white rectangle into the art.
+    if(window.CatBondCompleteKittens)return window.CatBondCompleteKittens.frameFor(o.species);
     const sp=o.species||{};
     const id=sp.id||'';
     // Use the 25-frame illustrated atlas first; fallback keeps playability on
@@ -343,7 +346,7 @@
     const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
+    if(!loaded&&!breedLoaded&&!window.CatBondCompleteKittens){fallbackDraw(ctx,x,y,o);return;}
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -394,7 +397,7 @@
       build==='norwegian-forest'?[-32,-56,64,91]:
       build==='folded-cream'?[-30,-52,60,87]:
       [-30,-55,60,90];
-    if(pose==='walk'&&movement>.075){
+    if(!window.CatBondCompleteKittens&&pose==='walk'&&movement>.075){
       paintArticulatedCat(ctx,art,dest,o,movement,phase);
     }else{
       ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
@@ -430,13 +433,13 @@
     render(ctx,logicalW/2,logicalH*.60,{
       species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
-    if(!breedLoaded)pendingPortraits.set(canvas,species);
+    if(!window.CatBondCompleteKittens&&!breedLoaded)pendingPortraits.set(canvas,species);
   }
   drawing.drawCat=render;
   drawing.renderCatThumb=thumbnail;
   // Surface decoding state for the automated 25-breed art audit.
   window.CatBondArtworkStatus={
-    get breedsLoaded(){return breedLoaded;},
+    get breedsLoaded(){return breedLoaded||!!window.CatBondCompleteKittens;},
     get originalLoaded(){return loaded;},
     get gaitLayersBuilt(){return gaitLayersBuilt;},
     breedCount:BREED_ORDER.length,
