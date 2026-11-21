@@ -2160,7 +2160,10 @@ class CaptureBattle {
     const TAG = (window.Skills && Skills.TAG_INFO) || {};
     if (e.status) for (const tg in e.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
     const scaled = dmg;
-    e.hp = Math.max(0, e.hp - scaled);
+    // Let the player finish movement/attack/skill/dodge practice before
+    // an allied AI cat can accidentally end the only guided encounter.
+    const lessonPending=this.coach&&this.coach.steps[this.coach.i]?.key!=='finish';
+    e.hp = Math.max(lessonPending?1:0, e.hp - scaled);
     e.flash = 0.16;
     // Weighty impact on DIRECT hits only (DoT ticks stay quiet to avoid noise):
     // a short damage-scaled hitstop + a micro screen-shake that grows with combo heat.
