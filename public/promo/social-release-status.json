@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-21T06:50:42.437Z",
+  "updatedAt": "2026-11-21T06:58:35.498Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "Previous render pipeline passed technical encoding checks but failed human review. Its 25 Metricool posts were all confirmed PAUSED as drafts with autoPublish:false. Original files are retained as historical source only, not approved for release.",
+  "accuracyNote": "All 25 previous unapproved video posts are stopped as drafts. Old posts/playbacks are not counted in the new video campaign dashboard. Individual licensed music tracks have been verified for future recuts, but the video visuals and storytelling still require redesign and approval.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -193,8 +193,20 @@
     "verifiedMontageVideos": 0,
     "scheduledAutomaticPosts": 0,
     "publishedPostsInThisCampaign": 0,
-    "verification": "Metricool getScheduledPosts cross-checked all 25 post IDs; each PENDING, non-draft, autoPublish=true. Posts must publish before reporting reach or conversions.",
+    "verification": "All 25 rejected 2026-11-21–28 posts were verified in Metricool as draft=true and autoPublish=false; historical published shorts are explicitly excluded from the new campaign video totals.",
     "pausedDraftPosts": 25,
     "blockedReason": "Owner rejected video quality: distorted gameplay, illegible captions, no stakes/outcomes, English/Chinese mix. All 25 posts checked as draft:true autoPublish:false in Metricool."
+  },
+  "metricScope": {
+    "approvedCurrentVideosOnly": true,
+    "excludePriorPublicShorts": true,
+    "excludeOwnerRejectedDrafts": true,
+    "previousPlatformViewsAndPublishedTotals": "excluded"
+  },
+  "musicQA": {
+    "status": "verified-seven-unique-recordings-for-next-recut",
+    "workflowRun": 44877966871,
+    "trackCount": 7,
+    "note": "Distinct licensed recordings were downloaded, probed and hash-checked. This does NOT mean the owner-rejected video cuts are approved."
   }
 }
