@@ -320,6 +320,7 @@ const UI = {
   resIcon(k) { return ({ coins: '🪙', fish: '🐟', yarn: '🧶', luck: '🍀', xp: '✨', treats: '🍖' })[k] || ''; },
 
   panel(html) {
+    this._teaseStop?.();
     const p = document.getElementById('panel');
     p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
     p.dataset.mandatory = 'false';
@@ -329,6 +330,7 @@ const UI = {
     p.onclick = e => { if (e.target === p) this.closeAll(); };
   },
   closeAll() {
+    this._teaseStop?.();
     const panel=document.getElementById('panel');
     panel.classList.remove('open');
     delete panel.dataset.mandatory;
@@ -1094,6 +1096,14 @@ const UI = {
     const scoreEl = document.getElementById('tz-score');
 
     const area = document.getElementById('tease-area');
+    let frameId=0;
+    const stop=()=>{
+      active=false;
+      if(frameId)cancelAnimationFrame(frameId);
+      area.removeEventListener('pointerdown',tap);
+      if(this._teaseStop===stop)this._teaseStop=null;
+    };
+    this._teaseStop=stop;
     const tap = e => {
       if (!active) return;
       const r = cv.getBoundingClientRect();
@@ -1111,24 +1121,35 @@ const UI = {
       tx = Math.max(20, Math.min(W - 20, mx));
       ty = Math.max(20, Math.min(H - 60, my));
     };
-    area.addEventListener('mousedown', tap);
-    area.addEventListener('touchstart', e => { tap(e); e.preventDefault(); }, { passive: false });
+    // One pointer event per gesture on mobile and desktop, never duplicate
+    // mouse+touch events that can award two scores for a single tap.
+    area.addEventListener('pointerdown',tap);
 
     const finish = () => {
       if (!active) return;
-      active = false;
-      const gain = 3 + score;
-      cat.affinity = Math.min(100, cat.affinity + gain * 0.8);
-      cat.joy = Math.min(100, cat.joy + gain);
-      State.addXp(cat, gain * 2);
-      State.save(); this.game.refreshHUD();
-      this.game.toast(`逗猫结束！好感 +${Math.round(gain * 0.8)}`);
-      if (this.openCatUid === cat.uid) this.renderCatDetail(cat);
+      const fromCatDetail=this.openCatUid===cat.uid;
+      stop();
+      const gain=3+score;
+      cat.affinity=Math.min(100,cat.affinity+gain*.8);
+      cat.joy=Math.min(100,cat.joy+gain);
+      State.addXp(cat,gain*2);
+      State.save();this.game.refreshHUD();
+      // An explicit 'Finish' must always dismiss the teaser. Previously it
+      // only refreshed a cat-detail view if one had opened the mini-game;
+      // entering from the garden left the same inert screen visible.
+      this.closeAll();
+      if(fromCatDetail)this.openCatDetail(cat);
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      this.game.toast(en?'Teasing finished! Affection +'+Math.round(gain*.8):
+        '逗猫结束！好感 +'+Math.round(gain*.8));
+      window.arcadeMetric?.('bond_tease_complete',{score,cat:cat.species});
     };
-    document.getElementById('tz-done').onclick = finish;
+    document.getElementById('tz-done').addEventListener('click', e=>{
+      e.preventDefault();e.stopPropagation();finish();
+    });
 
     const anim = () => {
-      if (!document.getElementById('tz')) { active = false; return; }
+      if (!active||document.getElementById('tz')!==cv){stop();return;}
       tt += 0.03;
       // toy drifts a little + auto-wanders if not moved
       moveTimer -= 0.03;
@@ -1150,7 +1171,7 @@ const UI = {
       ctx.fillStyle = '#ff7b9c'; ctx.font = '20px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('🪶', 0, 0);
       ctx.restore();
-      if (active) requestAnimationFrame(anim);
+      if(active)frameId=requestAnimationFrame(anim);
     };
     anim();
   },
