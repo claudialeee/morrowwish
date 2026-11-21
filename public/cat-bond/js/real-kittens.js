@@ -16,7 +16,7 @@
     'jinjc','xianluo','yinghua','senlin','youling',
     'nuowei','baomao','jinwu','yuelian','xingchen'
   ];
-  const breedFrameSize=window.CAT_BOND_BREED_FRAME||{w:200,h:300,cols:5,rows:5};
+  const breedFrameSize={w:110,h:130,cols:3,rows:1};
   // New illustrated atlas keeps the original six breeds but supplies over
   // four times as many source pixels per character.
   const frame=window.CAT_BOND_KITTEN_FRAME||{w:60,h:90};
@@ -37,64 +37,49 @@
   // One deliberate look per catalogue species. The original watercolor kitten
   // painting is always the underlying artwork; no vector/model replacement.
   // [original illustrated kitten, target fur color, blend strength, coat traits]
+  // Three COMPLETE hand-painted, transparent kittens. Individual breeds get
+  // characteristic coat colors and markings without mirrored or sliced faces.
+  // Values: [source kitten, fur tint, tint amount, anatomy/coat cues]
   const BREED_LOOKS={
     tangyuan:[0,null,0,'orange-tabby'],
-    doudou:[3,'#ad8a69',.65,'brown-tabby'],
-    xiaohui:[3,'#d1d5dc',.27,'silver-tabby'],
-    moqiu:[5,null,0,'black'],
-    nainai:[4,'#f6f2ec',.82,'white'],
-    nietu:[0,'#ecd5b9',.78,'cream'],
-    niuniu:[2,null,0,'tuxedo'],
-    sanhua:[1,null,0,'calico'],
-    lixiao:[2,'#3e3544',.23,'formal-tuxedo'],
-    lanbao:[5,'#8c9bab',.72,'british-blue'],
-    dundun:[3,'#d6d1c5',.48,'silver-shaded'],
-    yunduo:[4,null,0,'ragdoll'],
-    zherdd:[4,'#e9d2b3',.62,'folded-cream'],
-    qisi:[1,'#e9a85e',.65,'orange-white'],
-    duanduan:[0,'#eebf86',.42,'short-legged'],
-    jinjc:[3,'#e1c28e',.74,'golden-shaded'],
-    xianluo:[4,'#dec8b0',.30,'seal-point'],
-    yinghua:[4,'#fbe4ed',.55,'cherry-pink'],
-    senlin:[4,'#b29374',.62,'maine-coon'],
-    youling:[5,'#8b78ac',.53,'spirit-purple'],
-    nuowei:[4,'#bdac97',.47,'norwegian-forest'],
-    baomao:[3,'#dbad65',.73,'bengal-rosettes'],
-    jinwu:[0,'#efa34d',.42,'flame-tabby'],
-    yuelian:[4,'#e5eafd',.61,'moon-point'],
-    xingchen:[5,'#8476b1',.61,'starry-black']
+    doudou:[0,'#ac7953',.72,'brown-tabby'],
+    xiaohui:[1,null,0,'silver-tabby'],
+    moqiu:[1,'#332f43',.91,'black'],
+    nainai:[2,'#f9f8f0',.84,'white'],
+    nietu:[2,'#f4d6ae',.46,'cream'],
+    niuniu:[1,'#33303c',.78,'tuxedo'],
+    sanhua:[2,'#d5ad84',.25,'calico'],
+    lixiao:[1,'#4c4351',.68,'formal-tuxedo'],
+    lanbao:[1,'#8a9eb8',.72,'british-blue'],
+    dundun:[1,'#d0c6b9',.43,'silver-shaded'],
+    yunduo:[2,null,0,'ragdoll'],
+    zherdd:[2,'#edcaaf',.44,'folded-cream'],
+    qisi:[0,'#e4ad83',.37,'orange-white'],
+    duanduan:[0,'#f4cf9a',.55,'short-legged'],
+    jinjc:[0,'#d2ac58',.76,'golden-shaded'],
+    xianluo:[2,'#bfa18c',.52,'seal-point'],
+    yinghua:[2,'#f5d6df',.65,'cherry-pink'],
+    senlin:[0,'#987b6c',.75,'maine-coon'],
+    youling:[1,'#75638f',.76,'spirit-purple'],
+    nuowei:[1,'#af978a',.66,'norwegian-forest'],
+    baomao:[0,'#bf935e',.64,'bengal-rosettes'],
+    jinwu:[0,'#ffb65b',.39,'flame-tabby'],
+    yuelian:[2,'#dce2ee',.57,'moon-point'],
+    xingchen:[1,'#5d557e',.86,'starry-black']
   };
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
   const animatedRigCache=Object.create(null);
-  // Restore the original painterly 25-cat artwork, not the flat Canvas
-  // replacement. The published 5x5 atlas is severed around column 173
-  // INSIDE each 200px tile. Its blank right edge cannot be restored by
-  // padding or CSS. Instead use the complete painted left half as the source
-  // for BOTH sides of a centered, transparent 326x300 kitten sprite.
-  // Source transparency is preserved: no white garden rectangles.
+  // Never mirror a half-cat. Every source contains a whole face, paws and tail.
   function framedBreed(slot){
     if(framedBreedCache[slot])return framedBreedCache[slot];
-    const cw=breedFrameSize.w,ch=breedFrameSize.h;
-    const half=Math.round(cw*.755),pad=12;
-    const sourceTile=document.createElement('canvas');
-    sourceTile.width=cw;sourceTile.height=ch;
-    const sc=sourceTile.getContext('2d');
-    sc.drawImage(breedSheet,(slot%5)*cw,Math.floor(slot/5)*ch,cw,ch,0,0,cw,ch);
-    const full=document.createElement('canvas');
-    full.width=2*(half+pad);full.height=ch;
-    const out=full.getContext('2d');
-    // Uncropped original watercolor on the left.
-    out.drawImage(sourceTile,0,0,half+1,ch,pad,0,half+1,ch);
-    // Reconstruct the missing face, ear, chest, paw and tail as one coherent
-    // silhouette. Matching the SAME midline pixel avoids a hard join.
-    out.save();
-    out.translate(2*(half+pad),0);
-    out.scale(-1,1);
-    out.drawImage(sourceTile,0,0,half+1,ch,pad,0,half+1,ch);
-    out.restore();
-    framedBreedCache[slot]=full;
-    return full;
+    const frame=document.createElement('canvas');
+    frame.width=breedFrameSize.w;frame.height=breedFrameSize.h;
+    const ctx=frame.getContext('2d');
+    ctx.drawImage(breedSheet,slot*breedFrameSize.w,0,
+      breedFrameSize.w,breedFrameSize.h,0,0,frame.width,frame.height);
+    framedBreedCache[slot]=frame;
+    return frame;
   }
   let gaitLayersBuilt=0;
   // Paint an entire illustrated cat into each complete gait frame. This
@@ -193,75 +178,56 @@
     }
     if(breedLoaded)pendingPortraits.clear();
   }
-  function breedFrame(o) {
-    const sp=o.species||{};
-    const id=sp.id||'';
-    // Use the 25-frame illustrated atlas first; fallback keeps playability on
-    // older AVIF decoders or while the image is loading.
-    const slot=BREED_ORDER.indexOf(id);
-    if(breedLoaded&&slot>=0){
-      const complete=framedBreed(slot);
-      return {image:complete,sx:0,sy:0,sw:complete.width,sh:complete.height};
-    }
-    const look=BREED_LOOKS[id];
-    if(!look)return {image:source,sx:indexOf(o)*w,sy:0,sw:w,sh:h};
-    if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:w,sh:h};
+  function breedFrame(o){
+    const species=o.species||{},id=species.id||'tangyuan';
+    if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
+    if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:breedFrameSize.w,sh:breedFrameSize.h};
+    const [base,tone,strength,kind]=BREED_LOOKS[id]||BREED_LOOKS.tangyuan;
     const canvas=document.createElement('canvas');
-    canvas.width=w;canvas.height=h;
-    const c=canvas.getContext('2d',{willReadFrequently:true});
-    if(!c)return {image:source,sx:look[0]*w,sy:0,sw:w,sh:h};
-    c.clearRect(0,0,w,h);
-    c.drawImage(source,look[0]*w,0,w,h,0,0,w,h);
-    const [base,tone,strength,kind]=look;
-    if(tone && strength>0) {
-      const dst=c.getImageData(0,0,w,h),data=dst.data;
-      const col=[parseInt(tone.slice(1,3),16),parseInt(tone.slice(3,5),16),parseInt(tone.slice(5,7),16)];
-      const ref=[174,85,80,167,184,72][base];
+    canvas.width=breedFrameSize.w;canvas.height=breedFrameSize.h;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(framedBreed(base),0,0);
+    if(tone&&strength>0){
+      const image=ctx.getImageData(0,0,canvas.width,canvas.height),data=image.data;
+      const target=[1,3,5].map(i=>parseInt(tone.slice(i,i+2),16));
+      const ref=[154,173,190][base];
       for(let i=0;i<data.length;i+=4){
-        if(data[i+3]<28)continue;
-        const r=data[i],g=data[i+1],b=data[i+2];
-        const lum=r*.30+g*.59+b*.11;
+        if(data[i+3]<24)continue;
+        const r=data[i],g=data[i+1],b=data[i+2],lum=r*.3+g*.59+b*.11;
         const sat=Math.max(r,g,b)-Math.min(r,g,b);
-        let fur=false;
-        if(base===0)fur=r>g*1.08&&g>b*1.04&&g>65&&g>r*.43&&b<r*.89;
-        else if(base===1)fur=lum<128&&sat<95; // replace dark calico patches with ginger
-        else if(base===2)fur=sat<58&&lum>30;
-        else if(base===3)fur=sat<56&&b<r*1.18&&lum>40;
-        else if(base===4)fur=r>=g*.91&&g>b*.72&&!(r>g*1.27&&b>g*1.14)&&!(b>r*1.07&&b>g*1.12);
-        else fur=sat<55&&lum>28&&!(r>g*1.14&&g>b*1.12);
+        // Fur-only recoloring: retain eyes, mouth, blue ribbon, red bell,
+        // painted shadows and facial expression from the source illustration.
+        const fur=base===0?(r>g*1.07&&g>b*1.09&&g>56):
+          base===1?(sat<64&&lum>56&&b<r*1.25):
+          (lum>91&&r>=g*.83&&g>=b*.82&&!(b>g*1.27));
         if(!fur)continue;
-        const factor=Math.max(.27,Math.min(1.53,Math.pow(lum/ref,.80)));
-        // Retain painted highlights, fur texture, dark linework and eye details.
-        const k=strength*Math.min(1,lum/45);
+        const factor=Math.max(.30,Math.min(1.5,Math.pow(lum/ref,.82)));
+        const k=strength*Math.min(1,lum/64);
         for(let ch=0;ch<3;ch++){
-          const t=Math.max(0,Math.min(255,col[ch]*factor));
-          data[i+ch]=Math.round(data[i+ch]*(1-k)+t*k);
+          const tr=Math.min(255,Math.max(0,target[ch]*factor));
+          data[i+ch]=Math.round(data[i+ch]*(1-k)+tr*k);
         }
       }
-      c.putImageData(dst,0,0);
+      ctx.putImageData(image,0,0);
     }
-    // Breed-specific coat markings stay below the face, so the original
-    // illustrated eyes, whiskers, expression and collars remain untouched.
-    if(kind==='bengal-rosettes'||kind==='maine-coon'||kind==='norwegian-forest'){
-      c.save();c.globalCompositeOperation='source-atop';
-      c.strokeStyle=kind==='bengal-rosettes'?'rgba(92,59,35,.33)':'rgba(91,70,53,.13)';
-      c.lineWidth=kind==='bengal-rosettes'?2.2:1.4;
-      const marks=[[w*.38,h*.63],[w*.63,h*.69],[w*.43,h*.79],[w*.62,h*.84]];
-      for(const [mx,my] of marks){c.beginPath();c.ellipse(mx,my,7,4,-.35,.3,Math.PI*1.75);c.stroke();}
-      c.restore();
-    }
-    if(kind==='cherry-pink'||kind==='starry-black'||kind==='moon-point'){
-      c.save();c.globalCompositeOperation='source-atop';
-      c.fillStyle=kind==='cherry-pink'?'rgba(245,148,177,.60)':'rgba(220,218,250,.70)';
-      for(const [x,y] of [[.25,.45],[.72,.69],[.5,.84]]){
-        c.font='14px system-ui';c.textAlign='center';c.fillText('✦',w*x,h*y);
+    if(['bengal-rosettes','maine-coon','norwegian-forest','brown-tabby'].includes(kind)){
+      ctx.save();ctx.globalCompositeOperation='source-atop';
+      ctx.strokeStyle=kind==='bengal-rosettes'?'#79533f80':'#97785b55';
+      ctx.lineWidth=kind==='bengal-rosettes'?2.3:1.4;
+      for(const [x,y] of [[39,93],[78,100],[46,115],[72,119]]){
+        ctx.beginPath();ctx.ellipse(x,y,7,3,-.27,.3,Math.PI*1.9);ctx.stroke();
       }
-      c.restore();
+      ctx.restore();
+    }
+    if(['cherry-pink','starry-black','moon-point'].includes(kind)){
+      ctx.save();ctx.globalCompositeOperation='source-atop';
+      ctx.fillStyle='#fbebadbb';ctx.font='11px system-ui';ctx.textAlign='center';
+      for(const [x,y] of [[28,59],[80,85]])ctx.fillText('✧',x,y);
+      ctx.restore();
     }
     breedCache[id]=canvas;
-    return {image:canvas,sx:0,sy:0,sw:w,sh:h};
+    return {image:canvas,sx:0,sy:0,sw:canvas.width,sh:canvas.height};
   }
-
   const fallbackDraw=drawing.drawCat;
   function indexOf(options){
     const sp=options.species||{};
@@ -328,7 +294,7 @@
     // the old, narrow half-cat rectangle. Keep feet planted at +35 and limit
     // the width so mobile garden/battle cats are still compact.
     const dest=breedLoaded?(()=>{
-      const width=Math.min(83,originalDest[2]*1.24);
+      const width=Math.min(81,originalDest[2]*1.22);
       const height=width*(art.sh/art.sw);
       const feetY=originalDest[1]+originalDest[3];
       return [-width/2,feetY-height,width,height];
@@ -396,8 +362,8 @@
     console.warn('Cat Bond kitten art failed to load; retaining playable fallback.');
   };
   breedSheet.onload=()=>{
-    breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*5
-      &&breedSheet.naturalHeight===breedFrameSize.h*5;
+    breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*3
+      &&breedSheet.naturalHeight===breedFrameSize.h;
     if(breedLoaded){
       for(const key of Object.keys(framedBreedCache))delete framedBreedCache[key];
       for(const key of Object.keys(animatedRigCache))delete animatedRigCache[key];
@@ -407,6 +373,6 @@
     }
   };
   breedSheet.onerror=()=>{pendingPortraits.clear();console.warn('Breed illustrations unavailable; original cat sprites retained')};
-  if(window.CAT_BOND_BREED_ATLAS)breedSheet.src=window.CAT_BOND_BREED_ATLAS;
-  if(window.CAT_BOND_KITTEN_ATLAS)source.src=window.CAT_BOND_KITTEN_ATLAS;
+  breedSheet.src='/cat-bond/assets/watercolor-cats-v2.webp';
+  
 })();
