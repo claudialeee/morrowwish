@@ -913,16 +913,28 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
   throw Error('Portrait parcel lane taps/keyboard and full two-lane runner must be preserved');
  const kitten=fs.readFileSync('public/cat-bond/js/real-kittens.js','utf8');new Function(kitten);
  const bond=fs.readFileSync('public/cat-bond/index.html','utf8');
- // Preserve the approved painterly coats; never serve flat procedural cartoon
- // kittens or clipped right-hand atlas cells.
- if(!bond.includes('js/breed-atlas.js?v=')||
-    !bond.includes('js/kitten-illustrations.js?v=')||
-    bond.includes('js/complete-kittens.js')||
-    !kitten.includes('full.width=2*(half+pad)')||
-    !kitten.includes('out.scale(-1,1)')||
-    !kitten.includes('framedBreed(slot)')||
-    kitten.includes('CatBondCompleteKittens.frameFor'))
-  throw Error('Cat Bond must show full transparent watercolor kittens from the original illustrated 25-cat source');
+ // Source must be complete transparent watercolor sprites, not a
+ // broken 25-piece atlas, horizontal clipping or doubled mirrored faces.
+ if(!bond.includes('js/real-kittens.js?v=complete-watercolor-v2')||
+    bond.includes('src="js/breed-atlas.js')||
+    bond.includes('src="js/kitten-illustrations.js')||
+    bond.includes('src="js/complete-kittens.js')||
+    !kitten.includes('watercolor-cats-v2.webp')||
+    !kitten.includes('const breedFrameSize={w:110,h:130,cols:3,rows:1}')||
+    !kitten.includes('frame.width=breedFrameSize.w')||
+    kitten.includes('full.width=2*(half+pad)')||
+    kitten.includes('out.scale(-1,1)')||
+    !fs.existsSync('public/cat-bond/assets/watercolor-cats-v2.webp')||
+    fs.statSync('public/cat-bond/assets/watercolor-cats-v2.webp').size<6000)
+   throw Error('Cat Bond must use complete transparent watercolor assets without mirroring');
+ if(!settings.includes('mw-settings-share')||
+    !fs.readFileSync('public/social-share.js','utf8').includes('activeShareHost()'))
+   throw Error('Fullscreen share toolbar and modal must remain available');
+ const mischief=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
+ if(!mischief.includes("if(!s.yarnAnimating)guardMove()")||
+    !mischief.includes('s.decoyAwareness')||
+    !mischief.includes('setInterval(advanceYarnChase,470)'))
+   throw Error('Cat mischief yarn must redirect owner while cat keeps moving');
  const upgraded=fs.readFileSync('public/upgrade.js','utf8');new Function(upgraded);
  // The upgraded game factories replace the base Flip Dash/Parcel Panic
  // renderers. Guard their own portrait painting and hit targets.
