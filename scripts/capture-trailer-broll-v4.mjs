@@ -89,6 +89,10 @@ try{
   });
   if(!assigned)throw Error('V5 proof missing: actual cat assigned to earning station');
   await mark('work-after',2550);
+  // Promo-only teaser framing. The native phone panel is stretched almost
+  // full-screen and leaves a giant white blank below the tiny cat.
+  // Fit it to actual live controls so the yard remains visible in the shot.
+  await page.addStyleTag({content:'#panel.open:has(#tease-area){top:50px!important;bottom:59px!important;align-items:center!important;justify-content:center!important;padding:12px!important}#panel.open>.card:has(#tease-area){height:auto!important;min-height:0!important;max-height:510px!important;flex:0 0 auto!important;overflow:hidden!important;align-self:center!important}#panel.open .card:has(#tease-area) #tease-area{height:220px!important}'});
   await page.evaluate(()=>{UI.closeAll();UI.openTease()});
   await page.waitForSelector('#tease-area canvas');
   const playStart=stamp();
