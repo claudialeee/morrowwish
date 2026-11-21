@@ -134,22 +134,27 @@ class Game {
     return ({N:40,R:55,SR:75,SSR:100})[rarity]||40;
   }
   gradeBattle(b){
-    // Reward three understandable goals: finish quickly, protect the cats,
-    // and land a combo or perfect dodge. Auto-battle remains eligible.
+    // S is demanding but attainable on both manual and automatic runs.
+    // Switching auto off at the end cannot hide the assist used earlier.
     const fighters=b.team||[];
     const maxHP=fighters.reduce((n,f)=>n+(f.maxhp||0),0);
     const remaining=fighters.reduce((n,f)=>n+Math.max(0,f.hp||0),0);
-    const healthy=maxHP>0&&remaining/maxHP>=.7;
+    const hpRatio=maxHP>0?remaining/maxHP:0;
+    const seconds=b.t||0,combo=b.comboBest||0;
     const timeLimit=this.gradeTimeLimit(b.wild?.rarity);
-    const swift=(b.t||0)<=timeLimit;
-    const clever=(b.comboBest||0)>=6||(b.perfectDodges||0)>=1;
+    const healthy=hpRatio>=.8,swift=seconds<=timeLimit;
+    const clever=combo>=8||(b.perfectDodges||0)>=1;
     const points=Number(healthy)+Number(swift)+Number(clever);
-    const grade=points===3?'S':points===2?'A':points===1?'B':'C';
+    const autoUsed=!!b.autoUsed;
+    const autoExceptional=hpRatio>=.95&&seconds<=timeLimit*.6&&combo>=16
+      &&fighters.every(f=>f.alive!==false&&f.hp>0);
+    const grade=points===3&&(!autoUsed||autoExceptional)?'S'
+      :points>=2?'A':points===1?'B':'C';
     const bonuses={S:[42,2],A:[24,1],B:[14,0],C:[8,0]};
     const [bonusCoins,bonusTreats]=bonuses[grade];
     return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
       combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
-      healthy,swift,clever,timeLimit};
+      healthy,swift,clever,timeLimit,autoUsed,autoExceptional,hpRatio};
   }
   masteryStatus(){
     const badges=State.S.masteryBadges||{};
@@ -364,10 +369,11 @@ class Game {
       const { x, y } = pos(e);
       this.mouse.x = x; this.mouse.y = y;
       if (this.scene === 'yard') this.yardTap(x, y);
-      else if (this.scene === 'map' && window.WorldMap) {
-        const wasRegion=WorldMap.mode==='region';
-        const handled=WorldMap.handleTap(x,y);
-        if(wasRegion&&!handled)WorldMap.setDestination(x,y);
+      else if(this.scene==='map'&&window.WorldMap){
+        if(WorldMap.mode==='region'){
+          this._mapMouseDrag={x,y,lastX:x,lastY:y,moved:false};
+        }else WorldMap.handleTap(x,y);
+        e.preventDefault();
       }
       else if (this.scene === 'battle') { this.mouse.down = true; e.preventDefault(); }
     };
@@ -375,13 +381,29 @@ class Game {
       const { x, y } = pos(e);
       // always track the cursor (yard reactions + battle aim)
       this.mouse.x = x; this.mouse.y = y; this.mouse.active = true; this.mouse.idle = 0;
+      if(this.scene==='map'&&this._mapMouseDrag&&WorldMap?.mode==='region'){
+        const drag=this._mapMouseDrag;
+        if(Math.hypot(x-drag.x,y-drag.y)>7)drag.moved=true;
+        if(drag.moved)WorldMap.panBy(x-drag.lastX,y-drag.lastY);
+        drag.lastX=x;drag.lastY=y;e.preventDefault();
+      }
       if (this.scene === 'yard') this.maybeRevealWild(x, y);
       if (this.scene === 'battle') e.preventDefault();
     };
-    const up = () => { this.mouse.down = false; };
+    const up = e => {
+      this.mouse.down=false;
+      if(this._mapMouseDrag){
+        const drag=this._mapMouseDrag;this._mapMouseDrag=null;
+        if(this.scene==='map'&&window.WorldMap?.mode==='region'&&!drag.moved&&e?.type==='mouseup'){
+          if(!WorldMap.handleTap(drag.lastX,drag.lastY)&&WorldMap.mode==='region')
+            WorldMap.setDestination(drag.lastX,drag.lastY);
+        }
+      }
+    };
     c.addEventListener('mousedown', down);
     c.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
+    c.addEventListener('dragstart',e=>e.preventDefault());
 
     // ---- touch: multi-touch aware. In battle, LEFT half = virtual joystick (move),
     //      RIGHT half = hold-to-fire (auto-aims nearest enemy). Elsewhere = tap. ----

@@ -724,9 +724,11 @@
     }
 
     drawRegionHUD(ctx);
-    if(game.isTouch&&w.t<12){
+    if(w.t<12){
       ctx.save();
-      const hint='轻点草坪让猫咪前往 · 拖动草坪查看周围';
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      const hint=game.isTouch?(en?'Tap to walk · Drag to pan':'轻点草坪行走 · 手指拖动平移地图')
+        :(en?'Click to walk · Mouse drag to pan':'点击草坪行走 · 鼠标拖拽查看周围');
       ctx.font='700 12px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
       const hw=Math.min(W-16,ctx.measureText(hint).width+24),hx=W/2,hy=Math.max(95,H-74);
       ctx.fillStyle='rgba(255,252,242,.92)';
@@ -781,7 +783,7 @@
       ctx.textAlign='center';ctx.fillStyle='rgba(27,16,38,0.6)';
       roundRect(ctx,W/2-170,game.H-46,340,32,10);ctx.fill();
       ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='13px system-ui,sans-serif';ctx.textBaseline='middle';
-      ctx.fillText('WASD/方向键移动 · 靠近🐾遇敌 · 走到🏠返回地图',W/2,game.H-30);
+      ctx.fillText('点击行走 · 按住鼠标拖拽视角 · WASD也可移动',W/2,game.H-30);
     }
     // back-to-map button (bottom-left)
     var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;

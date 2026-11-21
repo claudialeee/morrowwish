@@ -42,7 +42,8 @@ class CaptureBattle {
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
     this.comboBest = 0;                   // best this battle
-    this.perfectDodges = 0;               // earns tactical capture rankings
+    this.perfectDodges = 0;
+    this.autoUsed=false;               // earns tactical capture rankings
     this.comboFlash = 0;                  // milestone pop timer
     this.slowmo = 0;                      // perfect-dodge bullet-time timer
 
@@ -243,6 +244,7 @@ class CaptureBattle {
 
   toggleAuto() {
     this.autoMode = !this.autoMode;
+    if(this.autoMode)this.autoUsed=true;
     this._autoLastAction=null;
     this.commandTarget=null;
     this.game.toast(this.autoMode ? '🤖 自动战斗 开启（你当指挥官）' : '🎮 手动操控 开启');

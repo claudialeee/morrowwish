@@ -1184,3 +1184,5 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #panel .map-chooser>p{margin-bottom:5px}
 #panel .map-instructions{padding:5px;margin:5px 0;font-size:10px}
 #panel .map-chooser .btn-row{margin-top:5px}}
+
+#panel .grade-explain,#panel .mastery-grade-hint{display:block;color:#556955;font:700 11px/1.5 system-ui;margin-top:5px}
