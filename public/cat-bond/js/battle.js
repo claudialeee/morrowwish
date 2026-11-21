@@ -1747,21 +1747,15 @@ class CaptureBattle {
     if(skill&&skill.ultCost>0&&skill.element==='dark'){
       return this.castDeathRay(f,skill);
     }
-    f.inv=2.2;                                   // invulnerable through the whole cinematic
-    // FULL-SCREEN ULTIMATE CINEMATIC: freeze the arena, play a 3s element-themed
-    // sequence, and detonate at the climax. The heavy lifting (damage) still runs
-    // through the same code below, deferred to the impact beat so it reads as one
-    // big synchronized hit instead of a quiet poke.
-    const color = skill && skill.ultCost>0 ? this.elemColor(skill.element) : '#ffd36b';
-    this.ultCinematic = {
-      t: 3.0, max: 3.0, impactAt: 1.15, impacted: false,
-      name: skill && skill.ultCost>0 ? (window.CatBondI18n?.translate?.(skill.name) || skill.name) : (window.MorrowwishI18n?.get?.()==='zh' ? '喵爪旋风' : 'Claw Cyclone'),
-      element: skill && skill.ultCost>0 ? skill.element : 'neutral',
-      color, x: f.x, y: f.y, uid: f.cat.uid,
-    };
-    this.slowmo = Math.max(this.slowmo, 0.5);     // world crawls as it winds up
+    // SINGLE-CAT ult: fires IN PLACE immediately — NO arena-freeze, NO full-screen
+    // cinematic (only the 合体技/duo combo does that). Keep a short i-frame + a punchy
+    // flash/shake so it still feels big, then run the elemental payload right now.
+    f.inv = 1.0;
+    this.flash = Math.max(this.flash, 0.3);
+    this.slowmo = Math.max(this.slowmo, 0.18);     // a brief hit-stop beat, not a lockout
     window.MorrowwishAudio?.effect?.('ultimate');
-    this._pendingUlt = { f, skill };              // fired by tickUltCinematic at impactAt
+    this._pendingUlt = { f, skill };
+    this.fireUltimatePayload();                    // detonate immediately, in place
     return true;
   }
   // Deferred ultimate payload — the real damage/VFX, run at the cinematic's climax.
