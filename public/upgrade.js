@@ -207,7 +207,20 @@ return{
   if(feedback)txt(feedback.x,feedback.y-(.9-feedback.life)*27,feedback.text,26,feedback.good?"#a6f5c5":"#ff9aad");
  }
 };};
-const factory=G[id];G[id]=()=>{const m=factory();return{init(l){m.init(l);},tick(d){fxTick(d);m.tick(d);},draw(){if(shake){c.save();c.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);}m.draw();fxDraw();if(shake)c.restore();},down(x,y){m.down?.(x,y);},up(x,y){m.up?.(x,y);},move(x,y){m.move?.(x,y);},key(k){m.key?.(k);}};};
+const factory=G[id];G[id]=()=>{const m=factory();return{init(l){m.init(l);},tick(d){fxTick(d);m.tick(d);},draw(){if(shake){c.save();c.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);}m.draw();
+  if(portrait&&(id==="flip-dash"||id==="parcel-panic")){
+    c.save();
+    if(id==="flip-dash"){
+      // Transform landscape gameplay particles into the upright course.
+      const ratio=250/284;
+      c.transform(0,-1,ratio,0,145-ratio*126,960);
+    }else{
+      const ratio=170/290;
+      c.transform(ratio,0,0,1.64,100-ratio*190,144-1.64*108);
+    }
+    fxDraw();c.restore();
+  }else fxDraw();
+  if(shake)c.restore();},down(x,y){m.down?.(x,y);},up(x,y){m.up?.(x,y);},move(x,y){m.move?.(x,y);},key(k){m.key?.(k);}};};
 mode=G[id]();mode.init(1);document.getElementById("best").textContent=localStorage.getItem("arcade-high-"+id)||"0";document.querySelector(".score-chip:last-of-type span")?.textContent;
 // Always show the instructions first, even for returning players.
  // No countdown, falling parcels or hazards are advanced until START is clicked.
