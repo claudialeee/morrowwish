@@ -341,3 +341,7 @@ main{max-width:1170px;margin:auto;padding:0 24px}
 .ending-art{background:#495a77}
 .ending-art:after{content:"";pointer-events:none;position:absolute;inset:55% 0 0;background:linear-gradient(transparent,color-mix(in srgb,var(--ending-accent),#182232 72%));opacity:.35}
 @media(max-width:700px){.album .album-cards{grid-template-columns:1fr}.album-world-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.album-world summary{padding:12px 13px}.ending-route-label{font-size:10px}}
+
+/* Eight stories: use a balanced four-by-two desktop gallery, with no lonely
+   two-card final row. Small screens retain two columns for easy browsing. */
+@media(min-width:851px){.life-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.life-card>strong{font-size:clamp(16px,1.5vw,19px);min-height:52px}.life-card .tease{min-height:66px}.life-card .place{font-size:10px}.life-card .card-image{aspect-ratio:1.55}}
