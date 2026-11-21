@@ -274,11 +274,20 @@ class Game {
     const duoEl=document.getElementById('yard-duo-status');
     if(duoEl){
       const members=window.CatRelations?.chosen?.()||[];
-      duoEl.hidden=this.scene!=='yard'||members.length!==2||!!document.getElementById('panel')?.classList.contains('open');
+      const pending=window.CatRelations?.unresolved?.()[0]||null;
+      duoEl.hidden=this.scene!=='yard'||(!pending&&members.length!==2)||
+        !!document.getElementById('panel')?.classList.contains('open');
+      duoEl.classList.toggle('needs-reconcile',!!pending);
       if(!duoEl.hidden){
         const en=window.MorrowwishI18n?.get?.()!=='zh';
-        const val=CatRelations.pair(members[0],members[1])?.value||0;
-        duoEl.textContent='💞 '+members.map(c=>State.catName(c)).join(' + ')+' · '+(en?'Bond ':'默契 ')+val;
+        const val=members.length===2?(CatRelations.pair(members[0],members[1])?.value||0):0;
+        duoEl.textContent=pending
+          ?'💢 '+State.catName(pending.a)+' + '+State.catName(pending.b)+
+            (en?' · Tap to make up':' · 点击哄一哄')
+          :'💞 '+members.map(c=>State.catName(c)).join(' + ')+' · '+(en?'Trust ':'默契 ')+val;
+        duoEl.setAttribute('aria-label',pending
+          ?(en?'Open the duo disagreement and reconcile':'查看双猫闹别扭事件并和好')
+          :(en?'Open cat duo':'查看双猫搭档'));
       }
     }
     const el=document.getElementById('yard-surprise');if(!el)return;
@@ -572,9 +581,12 @@ class Game {
     const closer=window.CatRelations?.pet(cat);
     if(closer?.levelUp)this.toast(window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫关系升级！':'💞 Your duo grew closer!');
     if(closer?.quirk==='sulky'){
-      CatRelations.chosen().forEach(c=>this.yard.entities.find(e=>e.cat.uid===c.uid)?.emote('💢',2.5));
-      this.toast(window.MorrowwishI18n?.get?.()==='zh'
-        ?'💢 猫咪闹别扭了！去搭档面板哄一哄。':'💢 Your duo is sulking. Help them make up!');
+      const pair=CatRelations.chosen();
+      pair.forEach(c=>this.yard.entities.find(e=>e.cat.uid===c.uid)?.emote('💢',2.5));
+      // An important event is NOT a transient toast: explain how to resolve
+      // it in a panel, and leave an actionable reminder in the garden.
+      this.refreshYardSurprise();
+      if(pair.length===2)UI.openDuoQuarrel(pair[0],pair[1]);
     }
     this.tryYardSurprise(cat);
     const rewards=this.grantBondingRewards();
@@ -586,6 +598,7 @@ class Game {
       this.refreshHUD();
     }
     State.save();
+    this.refreshYardSurprise();
     // if a detail panel is open for this cat, refresh it
     if (UI.openCatUid === cat.uid) UI.renderCatDetail(cat);
   }
