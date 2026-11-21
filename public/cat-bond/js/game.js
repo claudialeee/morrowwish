@@ -752,18 +752,39 @@ class Game {
   }
 
   buildTeamSlots() {
-    const b = this.battle;
-    const host = document.getElementById('team-slots');
-    if (!host) return;
-    host.innerHTML = '';
-    b.team.forEach((f, i) => {
-      const sp = GameData.speciesById(f.cat.species);
-      const el = document.createElement('div');
-      el.className = 'team-slot';
-      el.innerHTML = `<canvas width="46" height="40"></canvas><span class="slot-key">${i + 1}</span><div class="slot-hp"><span></span></div><div class="slot-ult"><span></span></div>`;
+    const b=this.battle,host=document.getElementById('team-slots');
+    const bench=document.getElementById('bench-slots');
+    if(!b||!host)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    host.innerHTML='';
+    b.team.forEach((f,i)=>{
+      const el=document.createElement('button');
+      el.type='button';el.className='team-slot';
+      el.innerHTML='<span class="slot-key"></span><canvas width="140" height="116" aria-hidden="true"></canvas><span class="slot-name"></span><div class="slot-hp"><span></span></div><span class="slot-hp-value"></span><div class="slot-ult"><span></span></div>';
+      el.querySelector('.slot-key').textContent=f._reinforcement?'★':String(i+1);
+      el.querySelector('.slot-name').textContent=State.catName(f.cat);
+      el.title=en?'Tap to control '+State.catName(f.cat):'点击控制 '+State.catName(f.cat);
+      el.setAttribute('aria-label',el.title);
       host.appendChild(el);
-      CatArt.renderCatThumb(el.querySelector('canvas'), sp);
-      el.addEventListener('click', () => b.switchTo(i));
+      CatArt.renderCatThumb(el.querySelector('canvas'),GameData.speciesById(f.cat.species));
+      el.addEventListener('click',()=>{b.switchTo(i);this.updateBattleUI();});
+    });
+    if(!bench)return;
+    bench.innerHTML='';
+    if(!b.reserve.length){bench.hidden=true;return;}
+    bench.hidden=false;
+    const label=document.createElement('span');label.className='bench-caption';
+    label.textContent=en?'SWAP':'替补';bench.appendChild(label);
+    b.reserve.forEach((cat,i)=>{
+      const btn=document.createElement('button');btn.type='button';
+      btn.className='bench-slot';btn.title=(en?'Swap active cat with ':'替换当前出战猫：')+State.catName(cat);
+      btn.setAttribute('aria-label',btn.title);
+      btn.innerHTML='<span class="bench-number"></span><canvas width="88" height="78" aria-hidden="true"></canvas><span class="bench-health"></span>';
+      btn.querySelector('.bench-number').textContent=String(i+1);
+      btn.dataset.benchIndex=String(i);
+      CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species));
+      bench.appendChild(btn);
+      btn.addEventListener('click',()=>b.rotateReserve(i));
     });
   }
 
@@ -1036,11 +1057,20 @@ class Game {
         hp.style.background = frac > 0.5 ? '#7ee787' : frac > 0.25 ? '#ffd36b' : '#ff6b6b';
       }
       el.classList.toggle('low-hp', fi.alive && frac <= 0.25);
+      const value=el.querySelector('.slot-hp-value');
+      if(value)value.textContent=Math.ceil(fi.hp)+' / '+fi.maxhp;
       // the ult meter is a SHARED team resource — show the same fill on every
       // slot so it's clear any cat can spend it, not just the active one.
       const ult = el.querySelector('.slot-ult > span');
       if (ult) ult.style.width = (fi.alive ? b.ult : 0) + '%';
       el.classList.toggle('ult-ready', fi.alive && b.ult >= 100);
+    });
+    const bench=document.getElementById('bench-slots');
+    if(bench)bench.querySelectorAll('.bench-slot').forEach((el,i)=>{
+      const cat=b.reserve[i],f=cat&&b._benchFighters?.get(cat.uid);
+      const hp=f?Math.max(0,Math.round(f.hp/f.maxhp*100)):(cat?Math.round((cat._hpFrac??1)*100):100);
+      const label=el.querySelector('.bench-health');if(label)label.textContent=hp+'%';
+      el.classList.toggle('cooling',Date.now()<(b.reserveSwapReadyAt||0));
     });
   }
 
@@ -1072,7 +1102,7 @@ class Game {
     // loss, flee) clears it so those start fresh.
     try {
       if (win && fromMap && Array.isArray(b.team)) {
-        for (const f of b.team) {
+        for (const f of [...b.team,...(b._benchFighters?.values()||[])]) {
           if (!f || !f.cat || f._reinforcement) continue;   // temp reinforcements don't persist
           const frac = f.alive ? Math.max(0, Math.min(1, f.hp / f.maxhp)) : 0.15;
           f.cat._hpFrac = frac + (1 - frac) * 0.5;           // heal half the lost HP
