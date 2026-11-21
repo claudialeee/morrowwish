@@ -1957,6 +1957,10 @@ class CaptureBattle {
         if (b.life <= 0 || b.burst || b._clashImmune) continue;
         if (a.owner === b.owner) continue;                 // only cross-side shots clash
         if ((a.owner !== 'me' && a.owner !== 'wild') || (b.owner !== 'me' && b.owner !== 'wild')) continue;
+        // BASICS DON'T CLASH: a held basic-attack shouldn't act as a free bullet-cancel
+        // wall (playtest: that let a masher face zero incoming damage). Only real SKILL
+        // shots wave-clash; basics fly through and must be dodged/out-spaced.
+        if ((a.skill && a.skill.isBasic) || (b.skill && b.skill.isBasic)) continue;
         if (Math.hypot(a.x - b.x, a.y - b.y) > a.r + b.r + 4) continue;
         // clash power, tilted by element advantage of each shot over the other
         const ael = (a.skill && a.skill.element) || a.element || 'light';
@@ -2077,26 +2081,55 @@ class CaptureBattle {
           ctx.beginPath();ctx.arc(v.x+Math.cos(ang)*rad,v.y+Math.sin(ang)*rad,5*k+1,0,Math.PI*2);ctx.fill();
         }
       }else if(v.kind==='giantSlam'){
-        // 泰山压顶: a huge translucent cat drops from above and SLAMS the target.
-        const drop=p<0.55?(p/0.55):1;                    // 0→1 descent, then held
-        const yOff=-260*(1-drop);                        // starts high, lands at v.y
-        const scale=1.0+0.25*drop;
-        ctx.translate(v.x,v.y+yOff);
-        ctx.globalAlpha=Math.min(1,k*1.2)*0.82;
-        // body (big ellipse) + head + two ears, in the duo's blended color
-        const col=v.firstColor;
-        ctx.fillStyle=col; ctx.strokeStyle=v.secondColor; ctx.lineWidth=4;
-        ctx.beginPath(); ctx.ellipse(0,0,70*scale,54*scale,0,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(0,-46*scale,34*scale,0,Math.PI*2); ctx.fill();   // head
-        ctx.beginPath(); // ears
-        ctx.moveTo(-30*scale,-66*scale); ctx.lineTo(-14*scale,-92*scale); ctx.lineTo(-4*scale,-64*scale);
-        ctx.moveTo(30*scale,-66*scale); ctx.lineTo(14*scale,-92*scale); ctx.lineTo(4*scale,-64*scale); ctx.fill();
-        // glowing eyes
-        ctx.globalAlpha=Math.min(1,k*1.4); ctx.fillStyle='#fff';
-        ctx.beginPath(); ctx.arc(-12*scale,-48*scale,5*scale,0,Math.PI*2); ctx.arc(12*scale,-48*scale,5*scale,0,Math.PI*2); ctx.fill();
-        // impact shock ring once it lands
-        if(drop>=1){ ctx.globalAlpha=k*0.8; ctx.strokeStyle='#fff'; ctx.lineWidth=6*k;
-          ctx.beginPath(); ctx.arc(0,30*scale,40+p*160,0,Math.PI*2); ctx.stroke(); }
+        // 泰山压顶 — MOUNTAIN-GIANT BOULDER THROW: a huge craggy rock is hurled in
+        // from above-left, spins down along an arc, and SLAMS the target with a dust
+        // shock + flying debris + a cracked crater. (No translucent cat.)
+        const drop=p<0.5?(p/0.5):1;                      // 0→1 descent along the throw arc
+        const landed=p>=0.5;
+        // arc: comes from up-and-left, lands on the target
+        const sx=v.x-230, sy=v.y-300;
+        const bx=sx+(v.x-sx)*drop, by=sy+(v.y-sy)*drop - Math.sin(drop*Math.PI)*40; // slight lob
+        const R=46;
+        // motion streak behind the incoming rock
+        if(!landed){
+          ctx.save();ctx.globalAlpha=k*0.5;ctx.strokeStyle='#b7a893';ctx.lineWidth=R*1.1;ctx.lineCap='round';
+          ctx.beginPath();ctx.moveTo(bx-(v.x-sx)*0.12,by-(v.y-sy)*0.12);ctx.lineTo(bx,by);ctx.stroke();ctx.restore();
+        }
+        if(!landed){
+          // the boulder: a lumpy dark-rock polygon, spinning as it falls
+          ctx.save();ctx.translate(bx,by);ctx.rotate(drop*5.5);
+          ctx.globalAlpha=Math.min(1,k*1.3);
+          const rock=ctx.createRadialGradient(-R*0.3,-R*0.3,R*0.2,0,0,R);
+          rock.addColorStop(0,'#8d8275');rock.addColorStop(1,'#4b4038');
+          ctx.fillStyle=rock;ctx.strokeStyle='#2f2823';ctx.lineWidth=3;
+          ctx.beginPath();
+          const facets=9;
+          for(let i=0;i<facets;i++){const a=i/facets*Math.PI*2;const rr=R*(0.82+0.22*Math.sin(i*2.3));
+            const px=Math.cos(a)*rr,py=Math.sin(a)*rr;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+          ctx.closePath();ctx.fill();ctx.stroke();
+          // a couple of cracks/facets for craggy read
+          ctx.globalAlpha=k*0.5;ctx.strokeStyle='#2f2823';ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(-R*0.4,-R*0.2);ctx.lineTo(R*0.1,R*0.1);ctx.lineTo(R*0.5,-R*0.1);ctx.stroke();
+          ctx.restore();
+        }else{
+          // IMPACT: cracked crater + dust shock ring + flying rock debris
+          const ip=(p-0.5)/0.5;                          // 0→1 after landing
+          ctx.save();ctx.translate(v.x,v.y);
+          // dust shock ring
+          ctx.globalAlpha=k*0.9;ctx.strokeStyle='#d8c9b0';ctx.lineWidth=7*k;
+          ctx.beginPath();ctx.arc(0,0,30+ip*150,0,Math.PI*2);ctx.stroke();
+          ctx.globalAlpha=k*0.6;ctx.strokeStyle='#fff';ctx.lineWidth=3*k;
+          ctx.beginPath();ctx.arc(0,0,20+ip*120,0,Math.PI*2);ctx.stroke();
+          // cracked crater lines radiating out
+          ctx.globalAlpha=k*0.7;ctx.strokeStyle='#3a322b';ctx.lineWidth=3;
+          for(let i=0;i<8;i++){const a=i*Math.PI/4+0.3;const r0=12,r1=24+ip*34;
+            ctx.beginPath();ctx.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);ctx.lineTo(Math.cos(a)*r1,Math.sin(a)*r1);ctx.stroke();}
+          // flying debris chunks
+          ctx.globalAlpha=k;ctx.fillStyle='#6a5e4f';
+          for(let i=0;i<10;i++){const a=i*0.63;const d=30+ip*120;const s=4*k+1.5;
+            ctx.beginPath();ctx.arc(Math.cos(a)*d,Math.sin(a)*d-ip*30,s,0,Math.PI*2);ctx.fill();}
+          ctx.restore();
+        }
       }else if(v.kind==='duoImpact'){
         ctx.translate(v.x,v.y);
         const element=v.elements||'',rad=24+p*96;
