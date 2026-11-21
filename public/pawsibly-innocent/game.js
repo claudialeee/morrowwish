@@ -114,7 +114,7 @@ function refreshBadgeToast(){
   const badge=badges[0],zh=lang==="zh";
   // The badge is a real in-game reward, not an advertising subtitle.
   // Keep the original icon, name, and how it was earned together.
-  el.replaceChildren();
+  el.textContent='';
   const icon=document.createElement("span");icon.className="award-icon";
   icon.textContent=badge.glyph;
   const info=document.createElement("span");info.className="award-copy";
@@ -124,7 +124,8 @@ function refreshBadgeToast(){
   title.textContent=badge[zh?"zh":"en"];
   const desc=document.createElement("small");desc.className="award-desc";
   desc.textContent=badge[zh?"zhDesc":"enDesc"];
-  info.append(label,title,desc);el.append(icon,info);
+  info.appendChild(label);info.appendChild(title);info.appendChild(desc);
+  el.appendChild(icon);el.appendChild(info);
  }else{
   el.textContent=lang==="zh"?"🏅 解锁了 "+badges.length+" 个新成就！":"🏅 "+badges.length+" achievements unlocked!";
  }
