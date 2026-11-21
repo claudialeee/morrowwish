@@ -845,8 +845,25 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !quick.includes('next.color===lane'))
   throw Error('Portrait parcel lane taps/keyboard and full two-lane runner must be preserved');
  const kitten=fs.readFileSync('public/cat-bond/js/real-kittens.js','utf8');new Function(kitten);
- if(!kitten.includes('getImageData')||!kitten.includes('putImageData')||
-    !kitten.includes('framedBreed(slot)'))
-  throw Error('Cat artwork must be alpha-cleaned rather than drawn on a white rectangle');
+ const complete=fs.readFileSync('public/cat-bond/js/complete-kittens.js','utf8');new Function(complete);
+ const bond=fs.readFileSync('public/cat-bond/index.html','utf8');
+ if(!bond.includes('js/complete-kittens.js?v=')||bond.includes('js/breed-atlas.js')||bond.includes('js/kitten-illustrations.js')||
+    !kitten.includes('CatBondCompleteKittens.frameFor')||
+    !complete.includes('const cache=new Map(),W=240,H=280')||
+    !complete.includes('ctx.clearRect(0,0,W,H)'))
+  throw Error('Cat Bond must load ONLY padded transparent full kitten artwork, never the damaged atlas');
+ const miniJs=fs.readFileSync('public/mini-frame-fullscreen.js','utf8');new Function(miniJs);
+ for(const slug of ['flip-dash','parcel-panic','orbit-escape','tower-tuck',
+   'traffic-tangle','color-current','perfect-pour','grid-glider','mirror-mosaic','echo-heist']){
+   const page=fs.readFileSync('public/'+slug+'/index.html','utf8');
+   if(!page.includes('/mini-frame-fullscreen.js?v=')||!page.includes('/mini-frame-fullscreen.css?v='))
+    throw Error('Uncropped mobile mini fullscreen missing: '+slug);
+ }
+ if(!miniJs.includes("route==='flip-dash'||route==='parcel-panic'")||
+    !miniJs.includes("classList.toggle('mw-mini-screen-portrait'"))
+  throw Error('Portrait mini-games must keep all interactive content in view');
+ if(!settings.includes("['#stageControls','.in-game-controls']")||
+    !settings.includes("['.mw-mini-frame-hud'")||!settings.includes("['.top-actions','.header']"))
+  throw Error('Language/music/SFX controls must live inside the original toolbar');
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }
