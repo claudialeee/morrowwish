@@ -674,6 +674,43 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
 }
 
 
+// Reflex balancing: exercise the active upgraded factory, not the unused base.
+{
+ const src=fs.readFileSync('public/upgrade.js','utf8');
+ const start=src.indexOf('G["flip-dash"]=()=>{'),end=src.indexOf('G["parcel-panic"]=()=>{',start);
+ if(start<0||end<start)throw Error('Upgraded Flip Dash factory missing');
+ const factory=src.slice(start,end);
+ function simulate(flipAt=[]){
+  const G={},window={mwMiniStats:null};let points=0,finished=null;
+  const ctx={G,window,seed:'reflex-test',seeded:()=>()=>.5,
+   info:()=>{},add:n=>points+=n,burst:()=>{},tone:()=>{},
+   vibrate:()=>{},winEffect:()=>{},shake:0,flash:0,combo:0,
+   finish:(won,message)=>{finished={won,message}},
+   glow:()=>{},box:()=>{},line:()=>{},circ:()=>{},txt:()=>{},bg:()=>{},
+   c:{createLinearGradient:()=>({addColorStop:()=>{}})}
+  };
+  const game=new Function(...Object.keys(ctx),factory+'return G["flip-dash"]();')(...Object.values(ctx));
+  game.init();let t=0,at=0;
+  while(!finished&&t<6.4){
+   if(at<flipAt.length&&t>=flipAt[at]){game.down();at++}
+   game.tick(.02);t+=.02;
+  }
+  return {t,finished,dodges:window.mwMiniStats.dodges,flips:window.mwMiniStats.flips,points};
+ }
+ const noFlip=simulate();
+ if(!noFlip.finished||noFlip.finished.won||noFlip.t<2.25||noFlip.t>4.1)
+  throw Error('Flip Dash must challenge quickly, not offer five seconds of empty track: '+JSON.stringify(noFlip));
+ const firstDodge=simulate([2.4]);
+ if(firstDodge.dodges<1||firstDodge.flips!==1||!firstDodge.finished||firstDodge.t<=noFlip.t)
+  throw Error('Flip Dash must reward a correctly timed first dodge: '+JSON.stringify(firstDodge));
+ if(!src.includes('doubleBeat=k>=5')||!src.includes('lastHazSide')||!src.includes('Math.max(.43'))
+  throw Error('Flip Dash rapid alternating/repeated beat logic missing');
+ const parcel=src.slice(src.indexOf('G["parcel-panic"]=()=>{'),src.indexOf('const factory=G[id]'));
+ if(!parcel.includes('life=4')||!parcel.includes('Math.min(355,145+delivered*10.5'))
+  throw Error('Parcel Panic difficulty and reaction window regressed');
+ console.log('Reflex challenge: faster opening, earned dodges, mixed hazard waves, tougher four-life sorting verified.');
+}
+
 // Nonintrusive, no-account feedback coverage for every published game.
 {
  const pulse=fs.readFileSync('public/playtest-pulse.js','utf8');
