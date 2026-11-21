@@ -78,10 +78,17 @@ try{
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Tapping the yarn button must enter aiming mode');
           const board=page.locator('#board');
           const b=await board.boundingBox();
-          await board.tap({position:{x:b.width*8.5/10,y:b.height*4.5/7}});
-          const yarn=await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.yarn);
-          assert.equal(yarn,0,'Tapping the desired landing tile must throw the starting yarn');
-          assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.getState()?.noise?.x),8,'Yarn must go to the tapped lane');
+          await board.tap({position:{x:b.width*8.5/10,y:b.height*1.5/7}});
+          const inFlight=await page.evaluate(()=>{const s=window.__PAWSIBLY_TEST__?.getState();return{yarn:s?.yarn,mode:s?.guardMode,walking:s?.yarnAnimating,noise:s?.noise};});
+          assert.equal(inFlight.yarn,0,'Tapping the desired landing tile must throw the starting yarn');
+          assert.deepEqual(inFlight.noise,{x:8,y:1},'The yarn must land at the tapped tile');
+          assert.equal(inFlight.mode,'investigate','The owner must visibly start investigating the yarn');
+          assert.equal(inFlight.walking,true,'A long yarn throw must launch an animated pursuit');
+          await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:6000});
+          const owner=await page.evaluate(()=>{const s=window.__PAWSIBLY_TEST__.getState();return{pos:s.human,mode:s.guardMode,turns:s.distractionTurns};});
+          assert.deepEqual(owner.pos,{x:8,y:1},'Owner must reach yarn even on a touch screen');
+          assert.equal(owner.mode,'distracted','Yarn must create a real safe opening');
+          assert.equal(owner.turns,4,'Four distracted turns should remain');
           assert.equal(await page.locator('[data-move]').count(),0,'On-screen D-pad should be removed');
         }else if(game.slug==='elsewhere'){
           assert.equal(await page.locator('#narrate-voice').count(),0,'Duplicate browser voice selector should not appear');
