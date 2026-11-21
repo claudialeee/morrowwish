@@ -1494,3 +1494,92 @@ body.cb-exploring #scene{cursor:grab}
  #battle-ui #team-slots .team-slot{width:39px!important;min-width:39px!important}
  #battle-ui #team-slots .team-slot canvas{width:33px!important;height:28px!important}
 }
+
+
+/* Battle HUD v2 — no stacked banners over the fighting area. The site tools
+   occupy row one; a compact, single-line fight header occupies row two.
+   Health is visible in the fight header, not under unrelated garden UI. */
+#stage:has(#battle-ui.on) #hud,
+#stage:has(#battle-ui.on) #collection-goal,
+#stage:has(#battle-ui.on) #first-quest,
+#stage:has(#battle-ui.on) #yard-duo-status,
+#stage:has(#battle-ui.on) #yard-surprise,
+#stage:has(#battle-ui.on) #yard-cat-switch,
+#stage:has(#battle-ui.on) #map-index,
+#stage:has(#battle-ui.on) #yard-actions{display:none!important}
+#battle-ui .battle-topbar{
+  left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 48px);
+  transform:none;width:auto;max-width:none;box-sizing:border-box;
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;
+  align-items:center;gap:6px;padding:4px 6px 4px 10px;
+  min-height:39px;border-radius:13px;
+}
+#battle-ui .battle-enemy-summary{min-width:0;max-width:100%;display:flex;flex-direction:column;gap:4px}
+#battle-ui #wild-name{font-size:12px;line-height:1.1;display:block;max-width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#battle-ui .battle-enemy-track{height:7px;background:#d3dfd1;border-radius:999px;overflow:hidden;
+  border:1px solid #bccdb8;min-width:52px;max-width:100%;box-sizing:border-box}
+#battle-ui #battle-enemy-hp-fill{height:100%;width:100%;display:block;
+  background:linear-gradient(90deg,#e67d72,#edae84);transition:width .16s}
+#battle-ui .battle-topbar .tiny-btn{min-height:32px;max-width:none;white-space:nowrap;
+  padding:4px 7px;font:800 11px/1.15 system-ui,sans-serif}
+#battle-ui .battle-help-trigger{min-width:33px;max-width:45px}
+#battle-ui .battle-hint{display:none!important}
+#battle-ui #team-slots{
+  display:flex;flex-direction:row;align-items:flex-start;gap:5px;
+  left:9px;right:auto;top:calc(env(safe-area-inset-top,0px) + 100px);
+  width:auto;max-width:calc(100% - 132px);z-index:2
+}
+#battle-ui .team-slot{width:42px;min-width:42px;max-width:42px;padding:2px;box-sizing:border-box;
+  border-radius:9px;display:flex;flex-direction:column}
+#battle-ui .team-slot canvas{width:34px!important;height:29px!important}
+#battle-ui .team-slot .slot-hp{height:5px;margin-top:2px}
+#battle-ui .team-slot .slot-key{font-size:9px;top:1px;left:2px}
+#battle-ui #ult-wrap{
+  top:calc(env(safe-area-inset-top,0px) + 100px);
+  right:9px;left:auto;width:103px;
+  padding:4px 7px;box-sizing:border-box;
+  border-radius:9px;z-index:2;line-height:1.1
+}
+#battle-ui #ult-wrap .ult-track{height:6px;margin-top:3px}
+#battle-ui #ult-wrap .ult-label{font-size:10px}
+@media(max-width:700px),(pointer:coarse){
+ #battle-ui .battle-topbar{
+   left:6px!important;right:6px!important;
+   top:calc(env(safe-area-inset-top,0px) + 48px)!important;
+   max-width:none!important;width:auto!important;
+   grid-template-columns:minmax(0,1fr) auto auto auto!important;
+   padding:3px 5px 3px 8px!important;gap:4px!important;
+   min-height:38px!important
+ }
+ #battle-ui #wild-name{font-size:11px!important}
+ #battle-ui .battle-topbar .tiny-btn{
+   font-size:10px!important;padding:5px 6px!important;
+   min-height:32px!important;max-width:80px
+ }
+ #battle-ui #team-slots{
+   top:calc(env(safe-area-inset-top,0px) + 95px)!important;
+   left:7px!important;display:flex!important;flex-direction:row!important;
+   max-width:calc(100% - 117px)!important;gap:3px!important
+ }
+ #battle-ui #ult-wrap{
+   top:calc(env(safe-area-inset-top,0px) + 95px)!important;
+   right:7px!important;left:auto!important;width:95px!important
+ }
+}
+@media(max-height:530px) and (orientation:landscape){
+ #battle-ui .battle-topbar{top:calc(env(safe-area-inset-top,0px) + 43px)!important;
+   min-height:34px!important}
+ #battle-ui #team-slots{top:calc(env(safe-area-inset-top,0px) + 84px)!important}
+ #battle-ui #ult-wrap{top:calc(env(safe-area-inset-top,0px) + 84px)!important}
+ #battle-ui .team-slot{width:35px;min-width:35px;max-width:35px}
+ #battle-ui .team-slot canvas{width:28px!important;height:25px!important}
+ #battle-ui #battle-help-toggle{min-width:30px!important}
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui .battle-topbar{
+ top:calc(env(safe-area-inset-top,0px) + 48px)!important
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots,
+html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
+ top:calc(env(safe-area-inset-top,0px) + 95px)!important
+}
