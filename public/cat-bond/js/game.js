@@ -118,6 +118,7 @@ class Game {
     UI.openMapChooser();
   }
   showYardChrome() {
+    if(this.scene!=='yard')return;
     document.body.classList.remove('cb-exploring');
     document.getElementById('yard-actions').classList.remove('hidden');
     document.getElementById('tabbar').classList.remove('hidden');
@@ -930,9 +931,10 @@ class Game {
       document.body.classList.add('cb-exploring');
       WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
-      document.getElementById('tabbar').classList.remove('hidden');
-      document.getElementById('hud').classList.remove('hidden');
       this.scene = 'yard';
+      // One canonical restore path: no exit (victory, defeat, flee, replay,
+      // panel dismissal) may strand the leaf/seek, feed or map buttons hidden.
+      this.showYardChrome();
     }
     this.yard?.refreshYardSwitch();
     this.refreshCollectionGoal();
