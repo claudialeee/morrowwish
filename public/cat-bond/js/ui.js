@@ -1102,6 +1102,61 @@ const UI = {
     anim();
   },
 
+  // Region encounters and grade rematches do not use the capture roster.
+  // They must still ask BEFORE launching the real-time encounter.
+  openBattleModePrompt(team,wildSp,opts={}){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const prefs=State.S.battlePrefs||{};
+    let auto=prefs.modeChosen?!!prefs.autoBattle:
+      ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
+    const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
+      :(en?'Wild cat encounter':'发现野生猫咪');
+    this.panel(`<span class="card-close">×</span>
+      <h2>${label}</h2><p class="sub">${en?'Choose how your team will fight before entering the arena.':'进入战场前，先决定让猫咪自动作战，还是亲自操作。'}</p>
+      <fieldset class="capture-mode-picker">
+        <legend>${en?'Control mode':'战斗方式'}</legend>
+        <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Battle mode':'战斗模式'}">
+          <button type="button" class="capture-mode-option ${auto?'selected':''}" role="radio" data-battle-auto="true" aria-checked="${auto}">
+            <strong>${en?'🤖 Auto battle':'🤖 自动战斗'}</strong>
+            <span>${en?'Cats move, attack, use skills and dodge for you.':'猫咪自动移动、攻击、释放技能和闪避。'}</span>
+          </button>
+          <button type="button" class="capture-mode-option ${auto?'':'selected'}" role="radio" data-battle-auto="false" aria-checked="${!auto}">
+            <strong>${en?'🎮 Manual control':'🎮 手动操作'}</strong>
+            <span>${en?'Control the cat yourself; switch to auto whenever needed.':'自己控制小猫，也可以随时改成自动。'}</span>
+          </button>
+        </div>
+        <p class="capture-mode-note">${(State.S.catchCount||0)===0&&!prefs.tutorialSeen?
+          (en?'First encounter includes a skippable tutorial.':'首次战斗附带可跳过的新手教学。'):
+          (en?'The game remembers your last selection.':'系统会记住上一次选择。')}</p>
+      </fieldset>
+      <div class="btn-row"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
+      <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
+    const options=[...document.querySelectorAll('#panel .capture-mode-option')];
+    for(const button of options){
+      button.onclick=()=>{
+        auto=button.dataset.battleAuto==='true';
+        for(const opt of options){
+          const selected=(opt.dataset.battleAuto==='true')===auto;
+          opt.classList.toggle('selected',selected);
+          opt.setAttribute('aria-checked',String(selected));
+        }
+      };
+    }
+    document.getElementById('bp-cancel').onclick=()=>{
+      this.closeAll();
+      if(opts.mastery)this.openDex();
+    };
+    document.getElementById('bp-go').onclick=()=>{
+      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true};
+      State.save();this.closeAll();
+      if(opts.mastery){this.game.startMasteryChallenge(wildSp,true);return;}
+      if(opts.origin==='map'){
+        this.game._returnScene='map';this.game._battleTheme=opts.theme||null;
+      }
+      this.game.startBattle(team,wildSp);
+    };
+  },
+
   // ---------- capture prep ----------
   openCapturePrep(wildSp) {
     const cats = State.S.cats;
