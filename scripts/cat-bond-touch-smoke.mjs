@@ -83,8 +83,12 @@ try{
         const fullscreen=page.locator('#mw-fullscreen-toggle');
         await fullscreen.tap();
         await page.waitForFunction(()=>document.documentElement.classList.contains('mw-fs-active'));
-        assert.equal(await page.evaluate(()=>document.querySelector('#mw-fullscreen-toggle').parentElement.id),'stage',
-          'Fullscreen toggle must move inside the PLAY AREA, not the entire webpage');
+        assert.equal(await page.evaluate(()=>{
+          const stage=document.getElementById('stage'),button=document.getElementById('mw-fullscreen-toggle');
+          const actionRow=document.getElementById('cb-header-actions');
+          return !!(stage&&button&&stage.contains(button)&&actionRow?.contains(button));
+        }),true,
+          'Fullscreen toggle must stay inside the play area unified header, not the webpage');
         await fullscreen.tap();
         await page.waitForFunction(()=>!document.documentElement.classList.contains('mw-fs-active'));
         // Simulate battle input: touch joystick and verify it drives the fighter.
