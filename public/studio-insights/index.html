@@ -44,6 +44,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 .device-summary{max-width:430px;margin:8px 0}.device-details{margin-top:10px}
 @media(max-width:540px){.compact-channels th,.compact-channels td{padding:10px 7px;font-size:11px}}
 @media(max-width:800px){.signal-grid{grid-template-columns:1fr}.ew-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.table th.sortable{padding:0}.table .sort-trigger{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;min-height:37px;width:100%;padding:10px 7px;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;text-align:right;cursor:pointer;white-space:normal}.table th:first-child .sort-trigger{justify-content:flex-start;text-align:left}.table .sort-trigger:hover{background:#fff0e9;color:#9b597e}.table .sort-trigger:focus-visible{outline:2px solid #ad829d;outline-offset:-2px;border-radius:5px}.table .sort-arrow{font-size:10px;flex:none;color:#a18a9b}.table th[aria-sort="ascending"] .sort-arrow,.table th[aria-sort="descending"] .sort-arrow{color:#925575}@media(max-width:540px){.table .sort-trigger{padding:9px 4px;gap:2px}}
 </style></head><body><main class="wrap">
 <div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
 <div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><select id="days" aria-label="Date range / 日期范围"><option value="1" data-i18n="today"></option><option value="3" data-i18n="day3"></option><option value="7" data-i18n="day7" selected></option><option value="14" data-i18n="day14"></option></select><button id="reload" type="button" data-i18n="refresh"></button></div></div>
@@ -118,6 +119,60 @@ let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
 try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
 const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
+const tableSorts=new Map(),sortableBodies=new Set(["games","itch-rows","channel-rows","ew-worlds"]);
+function sortCellValue(row,index,id){
+ const cell=row.cells[index];if(!cell)return null;
+ const value=(cell.dataset.sortValue!==undefined?cell.dataset.sortValue:cell.textContent).trim();
+ if(!value||["—","待同步","未获取","Sync pending","Unavailable"].includes(value))return null;
+ if(index===0||(id==="channel-rows"&&index===1))return value;
+ const m=/^-?\\d+(?:\\.\\d+)?/.exec(value.replaceAll(",","").replaceAll(" ",""));
+ return m?Number(m[0]):null;
+}
+function sortDataTable(table){
+ const body=table.tBodies[0],id=body?.id,state=tableSorts.get(id);
+ if(!sortableBodies.has(id))return;
+ Array.from(table.tHead?.rows[0]?.cells||[]).forEach((th,i)=>{
+  const active=state&&state.index===i;
+  th.setAttribute("aria-sort",active?(state.direction==="asc"?"ascending":"descending"):"none");
+  const arrow=th.querySelector(".sort-arrow");
+  if(arrow)arrow.textContent=active?(state.direction==="asc"?"▲":"▼"):"↕";
+ });
+ if(!state)return;
+ const collator=new Intl.Collator(lang==="zh"?"zh-CN":"en-US",{numeric:true,sensitivity:"base"});
+ const rows=Array.from(body.rows).map((row,order)=>({row,order,value:sortCellValue(row,state.index,id)}));
+ rows.sort((a,b)=>{
+  if(a.value===null&&b.value!==null)return 1;
+  if(b.value===null&&a.value!==null)return -1;
+  if(a.value===null)return a.order-b.order;
+  const delta=typeof a.value==="number"&&typeof b.value==="number"?a.value-b.value:collator.compare(String(a.value),String(b.value));
+  return delta?(state.direction==="asc"?delta:-delta):a.order-b.order;
+ });
+ body.append(...rows.map(x=>x.row));
+}
+function enhanceSortableTables(){
+ for(const table of document.querySelectorAll("#report table.table")){
+  const id=table.tBodies[0]?.id;if(!sortableBodies.has(id))continue;
+  Array.from(table.tHead?.rows[0]?.cells||[]).forEach((th,index)=>{
+   const label=th.dataset.i18n?t(th.dataset.i18n):th.dataset.ew?ewText(th.dataset.ew):th.textContent.replace(/[↕▲▼]$/,"").trim();
+   const button=document.createElement("button");button.type="button";button.className="sort-trigger";button.dataset.index=String(index);
+   button.setAttribute("aria-label",(lang==="zh"?"按":"Sort by ")+label+(lang==="zh"?"排序":""));
+   const name=document.createElement("span");name.textContent=label;
+   const arrow=document.createElement("span");arrow.className="sort-arrow";arrow.setAttribute("aria-hidden","true");
+   button.append(name,arrow);th.classList.add("sortable");th.replaceChildren(button);
+  });
+  if(!table.dataset.sortBound){
+   table.addEventListener("click",event=>{
+    const button=event.target.closest?.("button.sort-trigger");if(!button||!table.contains(button))return;
+    const index=Number(button.dataset.index),old=tableSorts.get(id);
+    const numeric=index>0&&!(id==="channel-rows"&&index===1);
+    tableSorts.set(id,{index,direction:old?.index===index?(old.direction==="asc"?"desc":"asc"):(numeric?"desc":"asc")});
+    sortDataTable(table);
+   });
+   table.dataset.sortBound="1";
+  }
+  sortDataTable(table);
+ }
+}
 function dateFormat(x){return new Date(x).toLocaleString(lang==="zh"?"zh-CN":"en-US");}
 function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lang==="zh"?t("failGeneric"):lastError});}else status.textContent=t(kind);}
 function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
@@ -241,7 +296,7 @@ breakdown("devices",j.devices);
 renderSignals(games);
 const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)}),
  j.lastEventAt?t("lastEventLabel",{when:new Date(j.lastEventAt).toLocaleString(lang==="zh"?"zh-CN":"en-US")}):t("lastEventMissing")];
-if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=chunks.join(" ");$("report").hidden=false;}
+if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=chunks.join(" ");$("report").hidden=false;enhanceSortableTables();}
 
 let elsewhereData=null;
 const EW={
@@ -262,7 +317,7 @@ function renderElsewhere(j){
  $('ew-continue').innerHTML=rates.map(x=>'<div class="ew-continue-row"><span>'+escapeHTML(ewText('chapter',{n:x.from}))+' → '+escapeHTML(ewText('chapter',{n:x.to}))+'</span><b>'+escapeHTML(ewPct(x.rate))+'</b></div>').join('');
  $('ew-worlds').innerHTML=worlds.map(x=>'<tr><td>'+escapeHTML(worldName(x.world))+'</td><td>'+format(x.starts)+'</td><td>'+format(x.ends)+'</td><td>'+escapeHTML(ewPct(x.fullRate))+'</td></tr>').join('');
  $('ew-coverage').textContent=ewText('coverage',{n:format(j.records)})+(j.partial?ewText('partial'):'');
- $('ew-state').hidden=true;$('ew-report').hidden=false;
+ $('ew-state').hidden=true;$('ew-report').hidden=false;enhanceSortableTables();
 }
 async function loadElsewhere(){
  elsewhereData=null;if(lastData)renderSignals(lastData.byGame||[]);
@@ -275,7 +330,7 @@ try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
-if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();setStatus(statusKind,lastError);
+if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();enhanceSortableTables();setStatus(statusKind,lastError);
 }
 async function load(){setStatus("loading");$("reload").disabled=true;
 try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
