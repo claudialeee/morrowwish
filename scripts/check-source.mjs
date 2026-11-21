@@ -404,7 +404,7 @@ for(const marker of ['function wishEffect(card)','lastComfortDay:-1','if(effect.
  if(!townV4.includes(marker))throw Error('Distinct starting-style gameplay is missing: '+marker);
 }
 if(townV4.includes("S.law='care';news(")||townV4.includes("S.law='wonder';news("))
- throw Error('Random story events cannot override the player's opening playstyle');
+ throw Error("Random story events cannot override the player\'s opening playstyle");
 if(!townCompactCss.includes('#intro .charter .charter-bonus')||
    !townCompactCss.includes('#intro .charter .charter-flavor'))
  throw Error('Starting choice effects must be visible on mobile and desktop');
