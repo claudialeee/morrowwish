@@ -2,12 +2,45 @@
 // A single VFX layer owns a pool of effect objects; battle.js spawns into it.
 
 class VFX {
-  constructor() { this.fx = []; }
+  constructor() { this.fx = []; this._t = 0; }
   clear() { this.fx.length = 0; }
+
+  // Midpoint-displacement lightning path between two points. Seeded + time-quantized
+  // so it re-rolls a few times per second (flicker) without being noisy every frame.
+  _bolt(x1, y1, x2, y2, seed) {
+    const step = Math.floor(this._t * 18);               // reseed ~18x/sec
+    let rnd = (Math.sin((seed + step) * 12.9898) * 43758.5453) % 1; if (rnd < 0) rnd += 1;
+    const rand = () => { rnd = (Math.sin(rnd * 78.233 + 1) * 43758.5453) % 1; return rnd < 0 ? rnd + 1 : rnd; };
+    let pts = [{ x: x1, y: y1 }, { x: x2, y: y2 }];
+    let offset = Math.hypot(x2 - x1, y2 - y1) * 0.18;
+    for (let pass = 0; pass < 5 && offset > 3; pass++) {
+      const out = [];
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1];
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        const nx = -(b.y - a.y), ny = (b.x - a.x), nl = Math.hypot(nx, ny) || 1;
+        const d = (rand() - 0.5) * offset;
+        out.push(a, { x: mx + nx / nl * d, y: my + ny / nl * d });
+      }
+      out.push(pts[pts.length - 1]);
+      pts = out; offset *= 0.55;
+    }
+    return pts;
+  }
+
+  // How many throwaway particles (sparks/fades) are live right now. Used to keep
+  // the screen legible: once the field is busy, new bursts spawn fewer motes so a
+  // flurry of skills never buries the cats under confetti. (Player clutter fix.)
+  _noise() { let n = 0; for (const e of this.fx) if (e.type === 'spark' || e.type === 'fade') n++; return n; }
 
   // ---- spawners ----
   burst(x, y, opts = {}) {
-    const n = opts.count || 14;
+    // Clarity budget: fade the requested particle count toward 0 as the screen
+    // fills, and hard-stop once we're saturated. Rings/text/beams are unaffected.
+    const noise = this._noise();
+    if (noise > 150) return;
+    const scale = noise > 80 ? Math.max(0.3, 1 - (noise - 80) / 100) : 1;
+    const n = Math.max(3, Math.round((opts.count || 14) * scale));
     const color = opts.color || '#ffd36b';
     const spd = opts.speed || 180;
     for (let i = 0; i < n; i++) {
@@ -29,6 +62,7 @@ class VFX {
   }
   // persistent-ish glowing trail dot (call each frame behind a projectile)
   trail(x, y, color, r) {
+    if (this._noise() > 120) return;                 // don't pile trails onto a saturated screen
     this.fx.push({ type: 'fade', x, y, r: r || 4, life: 0.26, max: 0.26, color: color || '#ffd36b' });
   }
   impact(x, y, color) {
@@ -54,7 +88,7 @@ class VFX {
   }
   // lightning-ish zigzag beam between two points (for combo / ult)
   beam(x1, y1, x2, y2, color) {
-    this.fx.push({ type: 'beam', x1, y1, x2, y2, life: 0.2, max: 0.2, color: color || '#ffd36b', seed: (x1 * 13 + y2 * 7) % 100 });
+    this.fx.push({ type: 'beam', x1, y1, x2, y2, life: 0.28, max: 0.28, color: color || '#ffd36b', seed: (x1 * 13 + y2 * 7) % 100 });
   }
   // sweeping curved slash blade in front of the caster (melee signature VFX).
   // Draws a crescent along `radius` spanning ±arc around `aim`, that wipes from
@@ -64,6 +98,7 @@ class VFX {
   }
 
   update(dt) {
+    this._t += dt;                        // drives lightning flicker/reseed
     for (const e of this.fx) {
       e.life -= dt;
       if (e.type === 'spark' || e.type === 'fade') {
@@ -106,17 +141,25 @@ class VFX {
         ctx.strokeStyle=e.color;ctx.lineWidth=2*k+1;ctx.beginPath();
         ctx.moveTo(x,y-6);ctx.lineTo(x+4,y);ctx.lineTo(x,y+6);ctx.lineTo(x-4,y);ctx.closePath();ctx.stroke();
       } else if (e.type === 'beam') {
-        ctx.strokeStyle = e.color; ctx.lineWidth = 3 * k + 1; ctx.globalAlpha = k;
-        ctx.beginPath(); ctx.moveTo(e.x1, e.y1);
-        const segs = 6;
-        for (let i = 1; i < segs; i++) {
-          const tt = i / segs;
-          const mx = e.x1 + (e.x2 - e.x1) * tt, my = e.y1 + (e.y2 - e.y1) * tt;
-          const off = Math.sin(e.seed + i * 2) * 10 * (1 - tt);
-          const nx = -(e.y2 - e.y1), ny = (e.x2 - e.x1); const nl = Math.hypot(nx, ny) || 1;
-          ctx.lineTo(mx + nx / nl * off, my + ny / nl * off);
+        // Forked lightning bolt: midpoint-displacement jagged path + additive
+        // core/halo glow (wide-to-narrow) + per-frame flicker. Reads as live
+        // electricity instead of a flat zig-zag. (VFX research.)
+        const pts = this._bolt(e.x1, e.y1, e.x2, e.y2, e.seed);
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';         // overlaps sum toward white = neon glow
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        const flick = 0.75 + 0.25 * Math.abs(Math.sin(e.seed + this._t * 40));
+        const passes = [[9 * k + 2, 0.22], [4 * k + 1, 0.55], [1.6, 0.95]];  // halo → mid → white core
+        for (let pi = 0; pi < passes.length; pi++) {
+          const [w, a] = passes[pi];
+          ctx.globalAlpha = k * a * flick;
+          ctx.strokeStyle = pi === passes.length - 1 ? '#ffffff' : e.color;
+          ctx.lineWidth = w;
+          ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+          ctx.stroke();
         }
-        ctx.lineTo(e.x2, e.y2); ctx.stroke();
+        ctx.restore();
       } else if (e.type === 'slash') {
         // a crescent blade that wipes across the frontal arc as it fades
         const sweep = 1 - k;                                   // 0→1 over life

@@ -78,7 +78,10 @@ const mappings={
  pet:[72,'bounce'],rustle:[69,'quiet'],paw:[74,'quiet'],discover:[79,'success'],capture:[77,'success'],
  tap:[71,'quiet'],select:[72,'quiet'],step:[71,'quiet'],flip:[75,'bounce'],sort:[69,'pop'],
  bubble:[79,'pop'],page:[69,'quiet'],feed:[77,'pop'],combo:[81,'success'],build:[72,'success'],
- complete:[74,'success'],fail:[52,'fail'],end_fail:[65,'gameover'],retry:[67,'quiet'],start:[69,'quiet']
+ complete:[74,'success'],fail:[52,'fail'],end_fail:[65,'gameover'],retry:[67,'quiet'],start:[69,'quiet'],
+ // Cat Bond combat beats: a heavy ultimate boom, a bright "ult ready" chime, and a
+ // soft channel hiss — previously these keys fell through to the quiet UI blip.
+ ultimate:[48,'crash'],ready:[84,'success'],beam:[66,'quiet'],charge:[60,'bounce']
 };
 function effect(kind='tap'){
  // Cat Bond's gentle layered gestures avoid beeps on every canvas movement.

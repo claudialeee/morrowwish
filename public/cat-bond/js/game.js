@@ -46,7 +46,9 @@ class Game {
     // the 220×330 kitten illustrations sharply. Cap total canvas pixels
     // to avoid stuttering on older devices and large desktop windows.
     const pixels=Math.max(1,rect.width*rect.height);
-    const dpr=Math.min(window.devicePixelRatio||1,3,Math.sqrt(4400000/pixels));
+    // Cap total backing-store pixels so the larger desktop stage doesn't tank the
+    // frame rate (a slow frame makes the dt-clamped sim crawl → enemies look frozen).
+    const dpr=Math.min(window.devicePixelRatio||1,2.5,Math.sqrt(2800000/pixels));
     this.W=rect.width;this.H=rect.height;
     this.canvas.width=Math.max(1,Math.round(this.W*dpr));
     this.canvas.height=Math.max(1,Math.round(this.H*dpr));
@@ -750,7 +752,7 @@ class Game {
       const sp = GameData.speciesById(f.cat.species);
       const el = document.createElement('div');
       el.className = 'team-slot';
-      el.innerHTML = `<canvas width="46" height="40"></canvas><span class="slot-key">${i + 1}</span><div class="slot-hp"><span></span></div>`;
+      el.innerHTML = `<canvas width="46" height="40"></canvas><span class="slot-key">${i + 1}</span><div class="slot-hp"><span></span></div><div class="slot-ult"><span></span></div>`;
       host.appendChild(el);
       CatArt.renderCatThumb(el.querySelector('canvas'), sp);
       el.addEventListener('click', () => b.switchTo(i));
@@ -1018,8 +1020,19 @@ class Game {
       const fi = b.team[i];
       el.classList.toggle('active', i === b.active);
       el.classList.toggle('fainted', !fi.alive);
+      const frac = fi.hp / fi.maxhp;
       const hp = el.querySelector('.slot-hp > span');
-      if (hp) hp.style.width = (fi.hp / fi.maxhp * 100) + '%';
+      if (hp) {
+        hp.style.width = (frac * 100) + '%';
+        // HP colour shifts green→amber→red; low HP pulses so danger reads instantly.
+        hp.style.background = frac > 0.5 ? '#7ee787' : frac > 0.25 ? '#ffd36b' : '#ff6b6b';
+      }
+      el.classList.toggle('low-hp', fi.alive && frac <= 0.25);
+      // the ult meter is a SHARED team resource — show the same fill on every
+      // slot so it's clear any cat can spend it, not just the active one.
+      const ult = el.querySelector('.slot-ult > span');
+      if (ult) ult.style.width = (fi.alive ? b.ult : 0) + '%';
+      el.classList.toggle('ult-ready', fi.alive && b.ult >= 100);
     });
   }
 
@@ -1041,9 +1054,25 @@ class Game {
     const b = this.battle;
     if (!b) return;                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
+    const fromMap = this._returnScene === 'map';
     // Fold this battle's observations into the persistent adaptive-AI profile so
     // enemies evolve to the player's habits over time. (Save happens below.)
     try { b.commitAiProfile(win); } catch (e) {}
+    // ROGUELIKE ATTRITION: on an EXPLORE win, each field cat carries its wounds to
+    // the next battle, healing only HALF the HP it lost (not a full refill). Stored
+    // as cat._hpFrac, read by makeFighter next fight. Any other exit (yard fight,
+    // loss, flee) clears it so those start fresh.
+    try {
+      if (win && fromMap && Array.isArray(b.team)) {
+        for (const f of b.team) {
+          if (!f || !f.cat || f._reinforcement) continue;   // temp reinforcements don't persist
+          const frac = f.alive ? Math.max(0, Math.min(1, f.hp / f.maxhp)) : 0.15;
+          f.cat._hpFrac = frac + (1 - frac) * 0.5;           // heal half the lost HP
+        }
+      } else {
+        for (const c of State.S.cats) if (c && c._hpFrac != null) delete c._hpFrac;
+      }
+    } catch (e) {}
     document.getElementById('battle-ui').classList.remove('on');
     const duoButton=document.getElementById('duo-burst');if(duoButton)duoButton.hidden=true;
     this.setBattleHelpVisible(false);
@@ -1053,7 +1082,10 @@ class Game {
     if (backToMap) {
       this.scene = 'map';
       document.body.classList.add('cb-exploring');
-      WorldMap.enterRegion(WorldMap.currentRegion);
+      // Resume the region at the exact spot the player left for the fight, instead
+      // of rebuilding it and snapping back to the portal entry.
+      if (WorldMap.resumeRegion) WorldMap.resumeRegion();
+      else WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
       this.scene = 'yard';
       // One canonical restore path: no exit (victory, defeat, flee, replay,

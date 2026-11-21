@@ -35,6 +35,7 @@ function makeEl(id) {
     get innerHTML() { return this._html; }, set innerHTML(v) { this._html = String(v); this.children = []; },
     appendChild(c) { this.children.push(c); this.childNodes.push(c); if (c && typeof c === 'object') c.parentNode = this; return c; },
     removeChild: nop, remove: nop, insertBefore: (c) => c, prepend: nop,
+    replaceChildren() { this.children = []; this.childNodes = []; },
     setAttribute(k, v) { this.attributes[k] = String(v); }, getAttribute(k) { return this.attributes[k] ?? null; },
     hasAttribute(k) { return k in this.attributes; }, removeAttribute(k) { delete this.attributes[k]; },
     addEventListener(t, cb) { listeners[id + ':' + t] = cb; }, removeEventListener: nop,

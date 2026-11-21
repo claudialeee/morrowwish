@@ -893,7 +893,7 @@ const UI = {
       { i: 3, label: '必杀', kinds: ['aoe'], ult: true },
     ];
     const icon = sk => this.game.skillIcon ? this.game.skillIcon(sk) : '🐾';
-    const kindName = { melee: '近战', projectile: '远程', dash: '突进', buff: '增益', heal: '治疗', aoe: '范围' };
+    const kindName = { melee: '近战', projectile: '远程', dash: '突进', leap: '跃击', pounce: '飞扑', chain: '连锁', beam: '持续', buff: '增益', heal: '治疗', aoe: '范围' };
     const rows = slots.map(slot => {
       const cur = S.skillById(cat.loadout[slot.i]);
       // candidates: learnable, matching the slot's allowed kinds, ult-slot only ults
@@ -1650,10 +1650,83 @@ const UI = {
     const medalButton=document.getElementById('cr-medal');
     if(medalButton)medalButton.onclick=()=>this.openDex();
     document.getElementById('cr-next').onclick=()=>{
+      // Keep-which-cat: on an explore run, your field squad is capped at 2. After a
+      // capture the run roster (prior field cats + the new cat) may exceed that, so
+      // let the player choose which 2 continue; the rest are "sent home" (still
+      // owned, just benched from the current expedition).
+      if(exploring&&!reunion&&this._chooseRunSquad(newCat)){return;}  // chooser took over
       dismiss();
       if(this.game.scene==='yard'&&!this.game.yard.hide)this.game.yard.startHideAndSeek();
       window.arcadeMetric?.('bond_continue_search');
     };
+  },
+
+  // After an explore capture, if the continuing field squad would exceed the
+  // 2-cat field cap, prompt the player to keep exactly 2. Returns true if it
+  // opened a chooser (caller should stop), false to proceed normally.
+  _chooseRunSquad(newCat){
+    const FIELD_CAP=2;
+    const byUid=new Map((State.S.cats||[]).map(c=>[c.uid,c]));
+    // run roster = prior expedition team + the freshly caught cat
+    const prior=(State.S.battlePrefs?.teamUids||[]).map(uid=>byUid.get(uid)).filter(Boolean);
+    const roster=[];const seen=new Set();
+    for(const c of [...prior,newCat]){ if(c&&!seen.has(c.uid)){seen.add(c.uid);roster.push(c);} }
+    if(roster.length<=FIELD_CAP){
+      // fits — just make sure the new cat is on the field team
+      const uids=roster.map(c=>c.uid).slice(0,FIELD_CAP);
+      State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:uids};State.save();
+      return false;
+    }
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const keep=new Set(roster.slice(0,FIELD_CAP).map(c=>c.uid));   // default: drop the oldest extra
+    const cardFor=c=>{
+      const hpPct=c._hpFrac!=null?Math.round(c._hpFrac*100):100;
+      const nm=State.catName?State.catName(c):(c.species||'');
+      return `<button type="button" class="keep-cat" data-uid="${c.uid}" aria-pressed="${keep.has(c.uid)}">
+        <canvas width="54" height="46" data-sp="${c.species}"></canvas>
+        <span class="keep-name">${nm}${c.uid===newCat.uid?' ✨':''}</span>
+        <span class="keep-hp">HP ${hpPct}%</span></button>`;
+    };
+    this.panel(`<span class="card-close">×</span>
+      <h2 class="center">${en?'Keep which cats?':'留下哪些猫？'}</h2>
+      <p class="sub center">${en?`Your expedition field team holds ${FIELD_CAP}. Pick ${FIELD_CAP} to keep exploring with; the rest head home (still yours).`
+        :`探索队伍场上最多 ${FIELD_CAP} 只。选 ${FIELD_CAP} 只继续探索，其余自动送回家（仍归你所有）。`}</p>
+      <div class="keep-grid">${roster.map(cardFor).join('')}</div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn gold" id="keep-go" disabled>${en?'Keep exploring':'继续探索'}</button>
+        <button class="btn ghost" id="keep-home">${en?'Send all home · back to map':'全部送回家 · 返回地图'}</button>
+      </div>`);
+    // render thumbnails
+    document.querySelectorAll('.keep-cat canvas').forEach(cv=>{
+      const sp=window.GameData?.speciesById?.(cv.dataset.sp); if(sp&&window.CatArt?.renderCatThumb)CatArt.renderCatThumb(cv,sp);
+    });
+    const goBtn=document.getElementById('keep-go');
+    const sync=()=>{
+      document.querySelectorAll('.keep-cat').forEach(btn=>{
+        const on=keep.has(btn.dataset.uid);btn.setAttribute('aria-pressed',String(on));btn.classList.toggle('on',on);
+      });
+      if(goBtn){goBtn.disabled=keep.size!==FIELD_CAP;}
+    };
+    document.querySelectorAll('.keep-cat').forEach(btn=>{
+      btn.onclick=()=>{
+        const uid=btn.dataset.uid;
+        if(keep.has(uid))keep.delete(uid);
+        else{ if(keep.size>=FIELD_CAP){const first=keep.values().next().value;keep.delete(first);} keep.add(uid); }
+        sync();
+      };
+    });
+    sync();
+    const resume=(uids)=>{
+      State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:uids};State.save();
+      this.closeAll();
+      window.arcadeMetric?.('bond_run_squad_kept',{kept:uids.length,roster:roster.length});
+    };
+    if(goBtn)goBtn.onclick=()=>resume([...keep]);
+    document.getElementById('keep-home').onclick=()=>{
+      // keep the default top-2 but go back to the map rather than chaining a search
+      resume(roster.slice(0,FIELD_CAP).map(c=>c.uid));
+    };
+    return true;
   },
 
   // Show meaningful next activities instead of keeping players in a catch-only loop.

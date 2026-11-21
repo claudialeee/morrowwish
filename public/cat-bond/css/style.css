@@ -36,8 +36,10 @@ html, body {
 
 #stage {
   position: relative;
-  width: min(100vw, 1100px);
-  height: min(100vh, 720px);
+  /* Fill most of the browser on desktop (was capped at 1100x720 ≈ 60% of a big
+     monitor). Larger caps + near-viewport sizing make the game use the window. */
+  width: min(94vw, 1366px);
+  height: min(92vh, 900px);
   background: linear-gradient(180deg, #23163a, #19102a);
   border-radius: 18px;
   overflow: hidden;
@@ -274,7 +276,16 @@ canvas { display: block; width: 100%; height: 100%; }
 .team-slot.fainted { filter: grayscale(1); opacity: 0.4; }
 .team-slot .slot-key { position: absolute; top: 2px; left: 4px; font-size: 0.7rem; font-weight: 800; color: var(--gold); }
 .team-slot .slot-hp { height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; margin-top: 2px; }
-.team-slot .slot-hp > span { display: block; height: 100%; background: #7ee787; transition: width 0.2s; }
+.team-slot .slot-hp > span { display: block; height: 100%; background: #7ee787; transition: width 0.2s, background 0.2s; }
+/* thin ult meter under the HP bar; glows gold when full */
+.team-slot .slot-ult { height: 3px; background: rgba(255,255,255,0.12); border-radius: 3px; overflow: hidden; margin-top: 2px; }
+.team-slot .slot-ult > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#9d7bff,#ffd36b); transition: width 0.15s; }
+.team-slot.ult-ready { box-shadow: 0 0 10px rgba(255,211,107,0.7); }
+.team-slot.ult-ready .slot-ult > span { animation: ultGlow 0.8s ease-in-out infinite; }
+@keyframes ultGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.6); } }
+/* low HP: urgent pulse so you notice a cat about to faint */
+.team-slot.low-hp { animation: lowHpPulse 0.7s ease-in-out infinite; }
+@keyframes lowHpPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,107,0); } 50% { box-shadow: 0 0 10px 2px rgba(255,107,107,0.7); } }
 
 /* ultimate meter */
 #ult-wrap { position: absolute; top: 56px; right: 14px; width: 130px; pointer-events: none; text-align: right; }
@@ -429,7 +440,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
 /* Touch usability ONLY for Cat Bond; existing game artwork and other games are unchanged. */
 #game-root{height:100dvh}
-#stage{height:min(100dvh,720px)}
+#stage{height:min(92dvh,900px)}   /* match the enlarged desktop stage (was 720px) */
 #scene{touch-action:none;-webkit-user-select:none;user-select:none}
 #intro-stars{pointer-events:none}
 #intro-start,.dex-cell,#tabbar button,#yard-actions button,.move-bar button{touch-action:manipulation}
@@ -1637,3 +1648,13 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
 @media(max-height:530px) and (orientation:landscape){
  #battle-ui .battle-hint.coach-hint{top:calc(env(safe-area-inset-top,0px) + 133px)!important;
   max-width:68%!important;font-size:12px!important;padding:5px 8px}}
+
+/* Keep-which-cat chooser (post-explore-win squad trim) */
+.keep-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}
+.keep-cat{display:flex;flex-direction:column;align-items:center;gap:2px;width:92px;padding:8px 6px;
+ border-radius:14px;border:2px solid #d9c3b0;background:#fff7ef;cursor:pointer;transition:transform .1s,border-color .1s,box-shadow .1s}
+.keep-cat:hover{transform:translateY(-2px)}
+.keep-cat.on{border-color:#ffb43c;box-shadow:0 0 0 2px #ffd36b88,0 6px 16px #d9992a44;background:#fff2db}
+.keep-cat canvas{width:54px;height:46px}
+.keep-cat .keep-name{font:700 12px/1.2 system-ui,sans-serif;color:#6a4a2a}
+.keep-cat .keep-hp{font:600 11px/1.2 system-ui,sans-serif;color:#9a7a55}

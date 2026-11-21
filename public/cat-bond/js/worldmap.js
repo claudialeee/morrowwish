@@ -245,6 +245,17 @@
     return true;
   }
 
+  // Resume the region the player left for a battle WITHOUT rebuilding it — keeps
+  // their explored position, camera and entities exactly where they were, instead
+  // of snapping back to the portal. The den that triggered the fight goes on a
+  // short cooldown so you don't instantly re-encounter it on the same tile.
+  function resumeRegion() {
+    if (!world || !world.region) return enterRegion(cur);   // nothing to resume → fresh enter
+    if (world._lastEncounter) { world._lastEncounter.cd = 2.5; world._lastEncounter = null; }
+    mode = 'region';
+    return true;
+  }
+
   // ================================================================
   // REGION RUNTIME
   // ================================================================
@@ -456,6 +467,7 @@
   }
 
   function triggerEncounter(s) {
+    if (world) world._lastEncounter = s;        // remember which den triggered, to cool it down on resume
     var sp = window.GameData.speciesById(s.sp);
     if (!sp) {
       // fall back to a region-pool roll if the id went missing
@@ -876,6 +888,7 @@
     init: init,
     enterMap: enterMap,
     enterRegion: enterRegion,
+    resumeRegion: resumeRegion,
     update: update,
     draw: draw,
     handleTap: handleTap,

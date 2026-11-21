@@ -72,7 +72,13 @@ window.addEventListener('DOMContentLoaded', () => {
       const report = window.Raising ? Raising.applyOffline(Date.now()) : State.applyIdle();
       game.rebuildYard();
       game.refreshHUD();
-      if (report && (report.minutes >= 1)) {
+      // Only greet with the welcome-back report if something actually accumulated
+      // (workshop output, auto-gains, or a visitor). Don't pop an empty "collect"
+      // modal when there's nothing to collect.
+      const has = o => o && Object.values(o).some(v => v > 0);
+      const worthShowing = report && report.minutes >= 1 &&
+        (has(report.produced) || has(report.gains) || (report.visitors && report.visitors.length));
+      if (worthShowing) {
         setTimeout(() => UI.openWelcomeBack(report), 400);
       }
     }

@@ -12,6 +12,9 @@
 const BATTLE_MARGIN = { side: 46 }; // vertical bounds follow the visible paved stage
 // Real seconds: unaffected by combat slow-motion and cinematic hitstop.
 const ULT_COOLDOWN_SECONDS = 18;
+// Global skill-cadence knob: >1 lengthens every Q/E cooldown so skills can't be
+// spammed back-to-back (they were firing a touch too fast). One place to tune.
+const SKILL_CD_MULT = 1.3;
 
 class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
@@ -27,9 +30,38 @@ class CaptureBattle {
     // Lv.1-3 and late-game packs scale to match a strong roster.
     this.wildLevel = this.computeWildLevel(teamOrCat);
 
-    // --- build the player team (array of up to 3 fighters) ---
+    // --- LEVEL GAP (bidirectional: suppression when over-leveled, threat when under) ---
+    // The level difference between your squad and the wild pack must MATTER. Two
+    // factors derived from (avgLv - wildLevel):
+    //   levelSuppression — multiplies YOUR outgoing damage
+    //   enemyLevelMult   — multiplies the ENEMY's outgoing damage
+    // Over-leveled (羁绊之旅 等级压制限制): your damage is softly capped so skill, not
+    // raw stats, wins. Under-leveled: the stronger wild cat genuinely hits harder
+    // and shrugs off more of your damage — fighting up a level should be dangerous.
+    {
+      const cats0 = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
+      const avgLv = cats0.length ? cats0.reduce((s, c) => s + (c.level || 1), 0) / cats0.length : 1;
+      const gap = avgLv - this.wildLevel;                  // + = you out-level; − = wild out-levels you
+      if (gap >= 0) {
+        // over-leveled: no penalty up to +3, then shave ~6%/lv to a 0.6 floor; enemy unchanged
+        this.levelSuppression = gap <= 3 ? 1 : Math.max(0.6, 1 - (gap - 3) * 0.06);
+        this.enemyLevelMult = 1;
+      } else {
+        // UNDER-leveled: you deal ~8%/lv less (floor 0.55) and the wild hits
+        // ~14%/lv harder (cap +120%) — a real wall that rewards leveling/skill.
+        const under = -gap;
+        this.levelSuppression = Math.max(0.55, 1 - under * 0.08);
+        this.enemyLevelMult = Math.min(2.2, 1 + under * 0.14);
+      }
+    }
+
+    // --- build the player team — up to 2 cats ON FIELD (roguelike squad cap). A
+    // bond ult can summon a temporary 3rd reinforcement mid-fight (see castDuo). ---
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
-    this.team = cats.slice(0, 3).map((c, i) => this.makeFighter(c, i));
+    this.FIELD_CAP = 2;
+    this.team = cats.slice(0, this.FIELD_CAP).map((c, i) => this.makeFighter(c, i));
+    this.reserve = cats.slice(this.FIELD_CAP);   // benched cats a bond ult can call in
+    this.reinforceT = 0;                         // >0 while a temp 3rd cat is on the field
     this.active = 0;
     this.partner = cats[0];              // for reward bookkeeping in game.js
     this.duo=window.CatRelations?.active(cats)||null;
@@ -57,11 +89,14 @@ class CaptureBattle {
     // --- adaptive AI: read the learned player profile, derive this battle's knobs ---
     this.aiP = this.normalizeAiProfile(window.State && State.S && State.S.aiProfile);
     this._aiConf = clamp(this.aiP.battles / 8, 0, 1);       // ramps in over ~8 fights
-    this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0 };
+    this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
+    // stompStreak (flawless-win count) tightens the knobs: snappier windups, less
+    // aim slop, fuller lead — so a player who keeps stomping faces a sharper foe.
+    this._stomp = clamp((this.aiP.stompStreak || 0) / 5, 0, 1);
     if (this.aiP.adapt) {                                   // optional adaptive difficulty (timing/accuracy ONLY)
-      const sk = this.aiP.skill;
-      this.aiReact = clamp(1.15 - 0.3 * sk, 0.90, 1.15);    // ×windup / dodge timers
-      this.aiJitter = clamp(0.18 - 0.16 * sk, 0.02, 0.18);  // aim slop (never 0)
+      const sk = clamp(this.aiP.skill + this._stomp * 0.5, 0, 1);   // stomps read as higher effective skill
+      this.aiReact = clamp(1.15 - 0.3 * sk - 0.1 * this._stomp, 0.78, 1.15);   // ×windup / dodge timers
+      this.aiJitter = clamp(0.18 - 0.16 * sk - 0.04 * this._stomp, 0.015, 0.18);// aim slop (never 0)
       this.aiLeadConf = clamp(0.4 + 0.6 * sk, 0.40, 1.00);  // how much predicted lead to apply
     } else { this.aiReact = 1; this.aiJitter = 0.06; this.aiLeadConf = 1; }
 
@@ -77,6 +112,8 @@ class CaptureBattle {
 
     // --- shared ---
     this.projectiles = [];               // {x,y,vx,vy,r,dmg,owner,life,color,kind}
+    this.beams = [];                     // channeled beam skills (水枪/flamethrower): continuous line damage
+    this.fields = [];                    // lingering elemental ground zones (Terraformer): apply tags, can be detonated
     this.skillStrokes=[]; // Short-lived authored 2D spell shapes (not recolored bullets)
     this.duoField=null; // Elemental field lasting through several combat seconds
     this.particles = [];
@@ -87,6 +124,10 @@ class CaptureBattle {
     this.shakeT = 0; this.flash = 0;
     this.hint = '鼠标瞄准 · 左键猫爪 · 空格闪避 · 斗志清零即收服';
     this.captureReady = false;
+    this._ultAnnounced = false; this._ultReadyBanner = 0; this._captureBanner = 0;
+    this._ultResultBanner = 0; this._ultResultText = ''; this._ultResultColor = '#ffd36b';
+    this.pendingCasts = [];              // heavy-skill wind-ups in progress
+    this._pressure = 0;                  // within-fight escalation rubber-band (0..1)
     this._prevKeys = {};
 
     // move definitions (cooldowns live on the active fighter)
@@ -148,6 +189,12 @@ class CaptureBattle {
     }
     const step = c.steps[c.i];
     if (!step) return;
+    // Anti-stall: never let a gated step hold the fight hostage. If the player
+    // hasn't satisfied a step within ~12s, auto-advance it so enemies (which are
+    // held during move/attack/skill) resume instead of standing frozen forever.
+    c._stepT = (c._stepStarted === c.i) ? (c._stepT || 0) + dt : 0;
+    c._stepStarted = c.i;
+    if (step.key !== 'finish' && c._stepT > 12) { c.i++; c._stepStarted = -1; return; }
     if (step.key === 'finish' && !c._finishStamped) { this._coachFinishAt = this.t; c._finishStamped = true; }
     // show the coaching line + highlight the relevant control
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
@@ -219,6 +266,10 @@ class CaptureBattle {
     }
     this.skillStrokes.push({kind:'duoImpact',x:target.x,y:target.y,
       firstColor,secondColor,elements:mix,life:2.55,max:2.55});
+    // 泰山压顶: a giant translucent cat silhouette body-slams the target as the
+    // duo's signature finisher — drops from above, lands with a shock ring.
+    this.skillStrokes.push({kind:'giantSlam',x:target.x,y:target.y,
+      firstColor,secondColor,life:1.1,max:1.1});
     this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
     this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
     let hits=0;
@@ -267,10 +318,51 @@ class CaptureBattle {
     }
     if(support==='charge')this.gainUlt(11+8*d.tier);
     this.gainUlt(16);
+    // BOND REINFORCEMENT (羁绊支援): the bond ult temporarily calls a benched cat
+    // onto the field to fight alongside the duo for a short window (~12s), then it
+    // leaves. The exception to the 2-on-field cap.
+    this.summonReinforcement(12 + d.tier * 1.5);
     window.MorrowwishAudio?.effect?.('capture');
     // The unique lingering field and restrained title make the special visible; avoid a second toast.
     window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     return true;
+  }
+  // Bring a benched reserve cat onto the field as a timed reinforcement. It fights
+  // as a normal ally for `secs`, then withdraws. No-op if there's no reserve or one
+  // is already in. Flagged _reinforcement so tick/cleanup can retire it.
+  summonReinforcement(secs){
+    if(this.reinforceT>0)return false;                 // one at a time
+    const already=new Set(this.team.map(f=>f.cat.uid));
+    const pick=(this.reserve||[]).find(c=>c&&!already.has(c.uid));
+    if(!pick)return false;
+    const r=this.makeFighter(pick,this.team.length);
+    r._reinforcement=true;
+    const me=this.me();
+    r.x=clamp((me?me.x:this.W*0.3)+40,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+    r.y=clamp((me?me.y:this.H*0.6)+30,this.topMargin,this.H-this.bottomMargin);
+    r.inv=1.0;
+    this.team.push(r);
+    this.reinforceT=secs;
+    this.game.buildTeamSlots?.();                  // show the temp 3rd slot
+    this.vfx.ring(r.x,r.y,{r0:8,vr:320,life:.5,color:'#ffd36b',width:5});
+    this.vfx.burst(r.x,r.y,{count:14,color:'#ffd36b',speed:200,life:.45,r:3});
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    this.vfx.text(r.x,r.y-46,en?'REINFORCEMENT!':'羁绊支援!','#ffd36b',16);
+    this.game.toast(en?(State.catName?State.catName(pick):'A friend')+' joins the fight!':(State.catName?State.catName(pick):'伙伴')+' 加入战斗！');
+    return true;
+  }
+  // The timed reinforcement withdraws: fade it out and drop it from the field. If
+  // the player was controlling it (edge case), hand control back to a core cat.
+  retireReinforcement(){
+    this.reinforceT=0;
+    const idx=this.team.findIndex(f=>f._reinforcement);
+    if(idx<0)return;
+    const r=this.team[idx];
+    this.vfx.ring(r.x,r.y,{r0:6,vr:260,life:.4,color:'#ffd36b',width:4});
+    this.vfx.burst(r.x,r.y,{count:10,color:'#ffd36b',speed:150,life:.4,r:2});
+    this.team.splice(idx,1);
+    if(this.active>=this.team.length)this.active=0;      // never point at a removed slot
+    this.game.buildTeamSlots?.();                        // drop the temp slot
   }
   // Five-plus seconds of distinct elemental resonance. The opening duo
   // strike is strongest; follow-up pulses are restrained and readable.
@@ -422,7 +514,9 @@ class CaptureBattle {
     const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor);
     // First two battles teach controls; later battles ask for dodging and team skill timing.
     const captures=State.S.catchCount||0;
-    const challenge=captures<2?0:Math.min(1.8,(captures-1)*.11);
+    // Base challenge ramps with collection progress; flawless-win streak (_stomp,
+    // 0..1) adds up to +0.8 so dominators face tougher wild cats (anti-stomp).
+    const challenge=(captures<2?0:Math.min(1.8,(captures-1)*.11))+(this._stomp||0)*0.8;
     const col = total === 1 ? 0.7 : 0.58 + (i / Math.max(1, total - 1)) * 0.26;
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(sp.id) : null;
     return {
@@ -432,13 +526,17 @@ class CaptureBattle {
       maxhp, hp: maxhp,
       x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
-      shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,
+      shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,swipeCd:1,
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
       dmg:(5+rIdx*2.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*(1+challenge*.12),
       speed:92+rIdx*22+challenge*14,fireRate:Math.max(.43,1.1-rIdx*.18-challenge*.12),
       skill: this.pickWildSkillFor(element, rIdx),
+      // POISE/韧性: filled only by SKILL/combo/beam/ult hits. When it breaks, the
+      // enemy staggers into a 虚弱 window taking ~2x damage. Unmarked basics barely
+      // dent it, so pure mashing can't crack a tough cat — you must use skills.
+      poise: Math.round(maxhp * 0.6), poiseMax: Math.round(maxhp * 0.6), staggerT: 0,
       tags: [], alive: true,
     };
   }
@@ -458,16 +556,20 @@ class CaptureBattle {
     const skillOf = id => (window.Skills && Skills.skillById) ? Skills.skillById(id) : null;
     // bond(纽带) bonuses — higher affinity = more damage, shorter cd, revive
     const bond = (window.Skills && Skills.bondBonuses) ? Skills.bondBonuses(Skills.bondTier(cat.affinity || 0)) : { dmgMult: 1, cdReduction: 1, reviveOnce: false };
+    // Roguelike attrition: a cat carries its wounded HP between field battles via
+    // cat._hpFrac (set by game.js after each explore win). Full HP if unset (yard
+    // fights, fresh runs). Dead-on-arrival is avoided with a small floor.
+    const carried = (typeof cat._hpFrac === 'number') ? Math.max(0.15, Math.min(1, cat._hpFrac)) : 1;
     return {
       cat, i, element, bond,
-      hp: maxhp, maxhp,
+      hp: Math.round(maxhp * carried), maxhp,
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
-      speed: 150 + s.agi * 3.5,
+      speed: 120 + s.agi * 2.8,            // trimmed ~20%: cats were a touch too zippy to control
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1),
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
-      projSpeed: 300 + s.agi * 5,
+      projSpeed: 250 + s.agi * 4,          // trimmed ~17%: projectiles read calmer/more dodgeable
       // Opening cooldowns: skills start on cooldown so a fight can't open with an
       // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
       cd: { basic: 0, q: 1.6, e: 2.4 },
@@ -482,6 +584,16 @@ class CaptureBattle {
     };
   }
   me() { return this.team[this.active]; }
+
+  // Combat cat draw scale, relative to the ARENA size so cats look consistent
+  // whether the stage is a small window or a big desktop canvas. Baseline is the
+  // old fixed 0.62 at the reference 1100x720 stage; it grows/shrinks with the
+  // arena diagonal, clamped so cats never get tiny or cartoonishly huge.
+  catScale() {
+    const base = 0.62, refDiag = Math.hypot(1100, 720);
+    const diag = Math.hypot(this.W || refDiag, this.H || refDiag);
+    return Math.max(0.5, Math.min(0.92, base * (diag / refDiag)));
+  }
 
   toggleAuto() {
     this.autoMode = !this.autoMode;
@@ -544,6 +656,18 @@ class CaptureBattle {
     return nearest;
   }
 
+  // Is this cat standing inside (or near the edge of) a telegraphed must-dodge
+  // smash disc that hasn't gone off yet? Returns the disc center so the auto-AI
+  // can flee straight out, same as a human reading the red circle.
+  incomingSmash(f) {
+    const R = 86;
+    for (const e of this.liveEnemies()) {
+      if (e.telegraphKind !== 'smash' || e.telegraph <= 0 || !e.smashTarget) continue;
+      if (Math.hypot(f.x - e.smashTarget.x, f.y - e.smashTarget.y) <= R + 18) return e.smashTarget;
+    }
+    return null;
+  }
+
   // Only a support skill can actually heal or buff. "Heal" gambits never
   // blindly cast an offensive skill just because its cooldown is ready.
   supportSlot(f,kind) {
@@ -587,30 +711,47 @@ class CaptureBattle {
     if(!tgt)return;
     const dx=tgt.x-f.x,dy=tgt.y-f.y,dist=Math.hypot(dx,dy)||1;
     const aim=Math.atan2(dy,dx);this.aim=aim;f._aim=aim;
-    const threat=this.incomingThreat(f);
+    let threat=this.incomingThreat(f);
     const basicRange=Math.min(170,f.projSpeed*.45+20);
     const ideal=Math.min(115,basicRange-22);
     const danger=f.hp/f.maxhp<.34;
-    let mx=0,my=0;
+    // Don't juke away from EVERY shot — a per-threat roll (sticky for the threat's
+    // life) so the squad eats some hits instead of ping-ponging untouchably.
     if(threat){
+      if(this._sidestepUntil==null||this.t>this._sidestepUntil){
+        this._sidestep=Math.random()<this.autoDodgeChance(f); this._sidestepUntil=this.t+0.35;
+      }
+      if(!this._sidestep)threat=null;
+    }
+    let mx=0,my=0;
+    // TOP PRIORITY: get out of a telegraphed must-dodge smash disc (auto-mode must
+    // respect the same forcing function the player does) — flee straight out of it.
+    const smash=this.incomingSmash(f);
+    if(smash){
+      const ddx=f.x-smash.x,ddy=f.y-smash.y,dd=Math.hypot(ddx,ddy)||1;
+      mx=ddx/dd;my=ddy/dd;
+    }else if(threat){
       const p=threat.p,sp=Math.hypot(p.vx,p.vy)||1;
       const side=f.i%2?-1:1;
       mx=-p.vy/sp*side;my=p.vx/sp*side;
     }else if(danger&&dist<165){
       mx=-dx/dist;my=-dy/dist;
     }else if(this.commandTarget){
-      const gx=this.commandTarget.x-f.x,gy=this.commandTarget.y-f.y;
-      const gd=Math.hypot(gx,gy);
-      if(gd>35){mx=gx/gd;my=gy/gd;}
-      else if(dist>ideal+25){mx=dx/dist;my=dy/dist;}
+      // Focus-fire: chase the LIVE targeted enemy (tgt already tracks the marker's
+      // nearest enemy), not the stale click point — otherwise the cat freezes on an
+      // empty spot once the marked enemy walks away. Approach to firing range, then
+      // orbit a little instead of standing dead still.
+      if(dist>ideal+18){mx=dx/dist;my=dy/dist;}
+      else if(dist<Math.max(62,ideal-45)){mx=-dx/dist;my=-dy/dist;}
+      else{mx=-dy/dist*.22;my=dx/dist*.22;}
     }else if(dist>ideal+18){mx=dx/dist;my=dy/dist;}
     else if(dist<Math.max(62,ideal-45)){mx=-dx/dist;my=-dy/dist;}
     else{
       mx=-dy/dist*.24;my=dx/dist*.24;
     }
     const mag=Math.hypot(mx,my);
-    if(mag>0.04 && !(f.dashT>0&&f.pounce) && f.rootT<=0){
-      const spd=(f.dashT>0?f.speed*3:f.speed)*(f.slowed?0.55:1);
+    if(mag>0.04 && !(f.dashT>0&&f.pounce) && !(f._leapT>0) && f.rootT<=0 && !(f._beamRoot>0) && !(f._castRoot>0)){
+      const spd=(f.dashT>0?f.speed*3:f.speed)*this.moveMul(f);
       f.x=clamp(f.x+mx/mag*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
       f.y=clamp(f.y+my/mag*spd*dt,this.topMargin,this.H-this.bottomMargin);
       f.face=mx<0?-1:mx>0?1:f.face;
@@ -635,7 +776,10 @@ class CaptureBattle {
     if(!tgt||!f.alive)return;
     const aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
     f._aim=aim;
-    if(threat&&f.dodgeCd<=0){
+    // Auto-battle dodges like a competent human, NOT a frame-perfect robot: it only
+    // reacts to ~55% of threats (less when it's cruising unhurt), so the player still
+    // takes hits and the fight has stakes. (Playtest: auto evasion was too strong.)
+    if(threat&&f.dodgeCd<=0&&Math.random()<this.autoDodgeChance(f)){
       if(this.dodge(f)!==false){this.markAutoAction(f,'闪避危险弹幕');return;}
     }
     const hp=f.hp/f.maxhp;
@@ -655,6 +799,8 @@ class CaptureBattle {
       if(sk.kind==='heal'||sk.kind==='buff')return false;
       if(sk.kind==='melee')return dist<=106;
       if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
+      if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
+      if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
       return dist<460;
     };
     if(f.cd.q<=0&&offensive(f.qSkill,'q')){
@@ -748,7 +894,11 @@ class CaptureBattle {
     let near = null, nd = 1e9;
     for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < nd) { nd = d; near = p; } }
     let mx = 0, my = 0;
-    if (near && nd < 100) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; }
+    // allies also only juke SOME incoming shots (per-ally sticky roll), not all.
+    if (near && (f._allyStepUntil == null || this.t > f._allyStepUntil)) { f._allyStep = Math.random() < this.autoDodgeChance(f); f._allyStepUntil = this.t + 0.35; }
+    const allySmash = this.incomingSmash(f);
+    if (allySmash) { const ax = f.x - allySmash.x, ay = f.y - allySmash.y, ad = Math.hypot(ax, ay) || 1; mx = ax / ad; my = ay / ad; }  // flee the smash disc first
+    else if (near && nd < 100 && f._allyStep) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; }
     else {
       // keep a mid range, orbit a bit so allies spread out
       const want = 125;
@@ -759,12 +909,12 @@ class CaptureBattle {
       for (const o of this.team) { if (o === f || !o.alive) continue; const sx = f.x - o.x, sy = f.y - o.y, sd = Math.hypot(sx, sy) || 1; if (sd < 60) { mx += sx / sd * 0.6; my += sy / sd * 0.6; } }
     }
     if (f.dashT <= 0 && f.rootT <= 0) {
-      const spd = f.speed * 0.9 * (f.slowed ? 0.55 : 1);   // same soft-CC slow as the active cat
+      const spd = f.speed * 0.9 * this.moveMul(f);   // same soft-CC slow as the active cat
       f.x = clamp(f.x + mx * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
       f.face = dx < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
     }
-    if(near && this.incomingThreat(f) && f.dodgeCd<=0) this.dodge(f);
+    if(near && this.incomingThreat(f) && f.dodgeCd<=0 && Math.random()<this.autoDodgeChance(f)) this.dodge(f);
     this.evalGambits(f, tgt, dist, near, nd);
   }
 
@@ -826,11 +976,11 @@ class CaptureBattle {
     if (K['a'] || K['arrowleft']) mx -= 1;
     if (K['d'] || K['arrowright']) mx += 1;
     if (joy && joy.active && (Math.abs(joy.dx) > 0.15 || Math.abs(joy.dy) > 0.15)) { mx += joy.dx; my += joy.dy; }
-    if (f.rootT > 0) { mx = 0; my = 0; }                 // Reflect wall roots the caster
+    if (f.rootT > 0 || (f._beamRoot > 0) || (f._castRoot > 0)) { mx = 0; my = 0; }   // Reflect wall / beam / skill wind-up anchors the caster
     f._mvx = mx; f._mvy = my;                            // remember input so dodge can flee the right way
     if (mx || my) {
       const l = Math.hypot(mx, my);
-      const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * (f.slowed ? 0.55 : 1);   // 冰冻/束缚/感电 减速
+      const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * this.moveMul(f);   // 冰冻/束缚/感电 减速
       f.x += (mx / l) * spd * dt;
       f.y += (my / l) * spd * dt;
       f.face = mx < 0 ? -1 : (mx > 0 ? 1 : f.face);
@@ -882,7 +1032,10 @@ class CaptureBattle {
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
     // 猫爪=近身快攻: short-lived projectile so it only reaches ~short range
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 5, 'claw', { element: f.element }, 0.45);
+    // basic marks itself (isBasic) so applyHitEffects can make it a FINISHER on
+    // status-marked targets and weaker on un-marked ones — pushing players to prime
+    // with Q/E skills. (Playtest P1: basic was a self-sufficient win condition.)
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 5, 'claw', { element: f.element, isBasic: true }, 0.45);
     this.vfx.muzzle(mx, my, aim, col);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
       window.MorrowwishAudio?.effect?.('paw');this._lastPawSfx=this.t;
@@ -1035,12 +1188,13 @@ class CaptureBattle {
   }
   // ---- adaptive AI profile (tiny online statistics, all clamped) ----
   normalizeAiProfile(p) {
-    const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true };
+    const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true, stompStreak: 0 };
     p = Object.assign({}, d, p || {});
     p.elemLead = Object.assign({}, p.elemLead);
     p.dodgeDir = clamp(p.dodgeDir, -1, 1); p.favRange = clamp(p.favRange, 0, 1);
     p.evasive = clamp(p.evasive, 0.05, 0.95); p.aggression = clamp(p.aggression, 0, 1);
     p.skill = clamp(p.skill, 0, 1); p.battles = clamp(p.battles | 0, 0, 9999);
+    p.stompStreak = clamp(p.stompStreak | 0, 0, 5);    // consecutive flawless wins → tougher enemies
     return p;
   }
   // Fold this battle's observations into the persisted EMAs. Called at battle end.
@@ -1057,6 +1211,11 @@ class CaptureBattle {
     const hpFrac = this.team.reduce((n, f) => n + Math.max(0, f.hp), 0) / Math.max(1, this.team.reduce((n, f) => n + f.maxhp, 0));
     const perf = clamp(0.3 * (won ? 1 : 0) + 0.25 * (hpFrac >= 0.6 ? 1 : 0) + 0.25 * Math.min(1, (this.perfectDodges + this.comboBest / 10) / 2) + 0.2 * (this.t <= 60 ? 1 : 0), 0, 1);
     p.skill = clamp(lerp(p.skill, perf, 0.25), 0, 1);
+    // Anti-stomp: a flawless win (won, took ZERO damage) ramps the challenge next
+    // time; getting touched at all resets it. Keeps dominators honest instead of
+    // the old backwards contract that made enemies EASIER against them.
+    if (won && (o.dmgTaken || 0) <= 0) p.stompStreak = clamp((p.stompStreak | 0) + 1, 0, 5);
+    else p.stompStreak = 0;
     State.S.aiProfile = p;
   }
 
@@ -1100,11 +1259,11 @@ class CaptureBattle {
     const sk = f.qSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk,aim))return false;
-      f.cd.q=sk.cd*(f.bond.cdReduction||1);
+      f.cd.q=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT;
       this.markMoveSeen(f,sk);
       return true;
     }
-    f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1);
+    f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
     const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
     this.castOffensiveSkill(f, aim, sk, pow, col);
@@ -1139,7 +1298,19 @@ class CaptureBattle {
   // Shared by skillQ/skillE (and reusable by enemy AI). Each kind has honest hit
   // geometry: projectile=flying fan, melee=arc, aoe=slow placed lob, dash=lunge,
   // chain=jump. Support kinds (heal/buff) are handled by the callers before this.
-  castOffensiveSkill(f, aim, sk, pow, col) {
+  castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
+    // WIND-UP (前摇): heavy skills charge for sk.windup seconds before firing — a
+    // brief commit that roots the caster and shows a growing charge ring, so big
+    // moves have weight and can be read/punished (mirrors enemy telegraph).
+    if (sk && sk.windup && !_nowind) {
+      this.pendingCasts = this.pendingCasts || [];
+      f._castRoot = sk.windup;
+      this.pendingCasts.push({ f, aim, sk, pow, col, t: sk.windup, max: sk.windup });
+      window.MorrowwishAudio?.effect?.('charge');
+      return;
+    }
+    // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
+    if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
     if (kind === 'melee') {
       this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
@@ -1147,8 +1318,14 @@ class CaptureBattle {
       this.lobAoe(f, aim, sk, f.dmg * pow, col);
     } else if (kind === 'dash') {
       this.dashLunge(f, aim, sk, f.dmg * pow * 1.5, col);
+    } else if (kind === 'leap') {
+      this.leapSlam(f, aim, sk, f.dmg * pow * 1.7, col);
+    } else if (kind === 'pounce') {
+      this.flyingPounce(f, aim, sk, f.dmg * pow * 1.5, col);
     } else if (kind === 'chain') {
       this.chainBolt(f, aim, sk, f.dmg * pow, col);
+    } else if (kind === 'beam') {
+      this.castBeam(f, aim, sk, f.dmg * pow, col);
     } else if (!this.castDistinctProjectile(f, sk, aim, col, f.dmg * pow)) {
       // Owner's per-skill elemental geometry (lances/fireball/hex/etc.) takes
       // priority; fall back to a directional projectile fan for plain skills.
@@ -1192,6 +1369,71 @@ class CaptureBattle {
       for (const tf of this.team) if (tf.alive && Math.hypot(tf.x - b.tx, tf.y - b.ty) <= b.r) this.resolveHit(tf, 'wild', b.skill, b.dmg, tf.x, tf.y);
     }
     this.shakeT = Math.max(this.shakeT, this.game.isTouch ? 0.08 : 0.14);
+    // TERRAFORMER: a lob skill flagged with `field` leaves a lingering elemental
+    // ground zone where it landed — anyone standing in it keeps getting its tag,
+    // and the zone can be DETONATED by a reacting element for a big combo.
+    const sk = b.skill;
+    if (sk && sk.field) this.spawnField(b.tx, b.ty, b.r * 0.95, sk.field, this.elemColor(sk.element), side, sk);
+  }
+  // Create / refresh a lingering elemental field. element = the field's reaction
+  // element (what it reacts WITH); tag = the status it drips onto units inside.
+  spawnField(x, y, r, spec, col, side, sk) {
+    this.fields.push({
+      x, y, r, side: side || 'me', col,
+      element: spec.element || sk?.element,      // what this field IS (fire/water/elec…)
+      tag: spec.tag,                             // status it drips to units standing inside
+      dps: spec.dps || 0,                        // optional small ground damage
+      t: spec.life || 5, max: spec.life || 5, _drip: 0, skill: sk || null,
+    });
+  }
+  // Tick fields: drip tags/damage to units inside; check for a reacting projectile
+  // passing through to DETONATE (field element + reactor element → combo over all inside).
+  tickFields(dt) {
+    if (!this.fields.length) return;
+    const REACT = { water: 'elec', elec: 'water', fire: 'grass', grass: 'fire', dark: 'light', light: 'dark' };
+    for (const fld of this.fields) {
+      fld.t -= dt; fld._drip += dt;
+      const targets = fld.side === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
+      // drip the field's status + tiny damage ~3x/sec to anyone standing inside
+      if (fld._drip >= 0.33) {
+        fld._drip = 0;
+        for (const u of targets) {
+          if (Math.hypot(u.x - fld.x, u.y - fld.y) > fld.r) continue;
+          if (fld.tag) { u.tags = u.tags || []; u.status = u.status || {}; if (!u.tags.includes(fld.tag)) u.tags.push(fld.tag); const info = (window.Skills?.TAG_INFO || {})[fld.tag]; u.status[fld.tag] = info ? info.ttl : 2; }
+          if (fld.dps && fld.side === 'me') this.hurtEnemy(u, u.maxhp * fld.dps * 0.33, u.x, u.y, true);
+        }
+      }
+      // DETONATION: a friendly projectile of the reacting element flying through the
+      // field ignites it — every unit inside takes a combo burst, field consumed.
+      if (fld.side === 'me') {
+        const want = REACT[fld.element];
+        for (const p of this.projectiles) {
+          if (p.owner !== 'me' || p.burst) continue;
+          const pel = (p.skill && p.skill.element) || p.element;
+          if (pel !== want) continue;
+          if (Math.hypot(p.x - fld.x, p.y - fld.y) > fld.r) continue;
+          this.detonateField(fld, p); fld.t = 0; break;
+        }
+      }
+    }
+    this.fields = this.fields.filter(f => f.t > 0);
+  }
+  detonateField(fld, proj) {
+    const col = '#fff';
+    this.vfx.shockwave(fld.x, fld.y, fld.col);
+    this.vfx.ring(fld.x, fld.y, { r0: 10, vr: fld.r * 7, life: 0.5, color: fld.col, width: 8 });
+    this.vfx.ring(fld.x, fld.y, { r0: 20, vr: fld.r * 5, life: 0.4, color: col, width: 3 });
+    this.shakeT = Math.max(this.shakeT, 0.25); this.hitstop = Math.max(this.hitstop, 0.07);
+    const en = window.MorrowwishI18n?.get?.() !== 'zh';
+    this.vfx.text(fld.x, fld.y - 40, en ? 'REACTION!' : '元素反应!', '#ffd36b', 16);
+    window.MorrowwishAudio?.effect?.('crash');
+    const dmg = (proj?.dmg || 20) * 2.2;                 // big reaction payoff
+    for (const e of this.liveEnemies()) {
+      if (Math.hypot(e.x - fld.x, e.y - fld.y) > fld.r) continue;
+      this.resolveHit(e, 'me', { element: fld.element }, dmg, e.x, e.y);
+      // chain-lightning look when the reaction is electric
+      if (fld.element === 'elec' || (proj?.skill?.element) === 'elec') this.vfx.beam(fld.x, fld.y, e.x, e.y, fld.col);
+    }
   }
   // Dash lunge: the caster leaps along aim; enemies crossed along the lunge line
   // are struck once. A gap-closer, not a ranged poke.
@@ -1205,6 +1447,50 @@ class CaptureBattle {
       const d = this.pointToSeg(e.x, e.y, f.x, f.y, x2, y2);
       if (d <= 34 && !hitThisLunge.has(e.i)) { hitThisLunge.add(e.i); this.resolveHit(e, 'me', sk, dmg, e.x, e.y); }
     }
+  }
+  // 泰山压顶 — LEAP SLAM: the cat springs into the air (brief i-frames, rooted-in-
+  // flight) and crashes down on a target point for a punchy small-radius AOE that
+  // staggers everyone caught under it. A committed, readable mid-range gap-closer:
+  // the arc telegraphs where it lands, so it rewards good spacing, not spam.
+  leapSlam(f, aim, sk, dmg, col) {
+    let tx, ty;
+    if (f === this.me() && !this.game.isTouch) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
+    else { const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (t) { tx = t.x; ty = t.y; } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; } }
+    // cap leap range so it stays a reach, not a teleport
+    const d = Math.hypot(tx - f.x, ty - f.y), max = 240;
+    if (d > max) { const a = Math.atan2(ty - f.y, tx - f.x); tx = f.x + Math.cos(a) * max; ty = f.y + Math.sin(a) * max; }
+    f._leapT = 0.44; f._leapMax = 0.44; f._leapFrom = { x: f.x, y: f.y }; f._leapTo = { x: tx, y: ty };
+    f._leapSkill = sk; f._leapDmg = dmg; f._leapCol = col; f.inv = 0.46; f._leapR = 78;
+    this.vfx.ring(tx, ty, { r0: f._leapR, vr: -120, life: 0.44, color: col, width: 3 });   // shrinking target reticle
+    window.MorrowwishAudio?.effect?.('charge');
+  }
+  // land the leap: AOE slam + stagger under the impact point
+  leapLand(f) {
+    const tx = f._leapTo.x, ty = f._leapTo.y, R = f._leapR || 78, col = f._leapCol || '#fff';
+    f.x = clamp(tx, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+    f.y = clamp(ty, this.topMargin, this.H - this.bottomMargin);
+    f._hop = 0;
+    this.vfx.shockwave(tx, ty, col);
+    this.vfx.ring(tx, ty, { r0: 8, vr: R * 7, life: 0.34, color: col, width: 6 });
+    this.vfx.burst(tx, ty, { count: this.game.isTouch ? 10 : 16, color: col, speed: 230, life: 0.42, r: 4, grav: 260 });
+    this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.05);
+    for (const e of this.liveEnemies()) {
+      if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
+      this.resolveHit(e, 'me', f._leapSkill || { element: f.element }, f._leapDmg, e.x, e.y);
+      e.staggerT = Math.max(e.staggerT || 0, 1.2);        // landing briefly rattles the target
+    }
+    window.MorrowwishAudio?.effect?.('crash');
+    f._leapT = 0; f._leapSkill = null;
+  }
+  // 飞扑 — FLYING POUNCE: a fast, flat lunge toward the aim; first enemy contacted
+  // takes a hard hit + knockback. Shares the pounce travel/contact machinery but
+  // reaches farther and hits harder than the default dash leap.
+  flyingPounce(f, aim, sk, dmg, col) {
+    f.dashT = 0.34; f.inv = 0.36; f.pounce = true; f._dashAim = aim; f._pounceSkill = sk;
+    f._pounceDmg = dmg;
+    this.vfx.trail(f.x, f.y, col, 11);
+    this.vfx.beam(f.x, f.y, f.x + Math.cos(aim) * 150, f.y + Math.sin(aim) * 150, col);
+    this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim + Math.PI, spread: 1.0, speed: 230 });
   }
   // Chain lightning: hit the aimed/nearest enemy, then jump to the nearest
   // not-yet-hit enemy within jumpR, up to N jumps. Only chain nodes are hit.
@@ -1227,6 +1513,69 @@ class CaptureBattle {
       node = best; n++;
     }
   }
+  // Channeled BEAM (水枪 / flamethrower): a sustained line from the caster that
+  // ticks continuous damage to everything along it for a short channel. The caster
+  // is anchored (can't move) while channeling, so it's a commit. One beam per caster.
+  castBeam(f, aim, sk, dmgPerSec, col) {
+    if (this.beams.some(b => b.uid === f.cat.uid)) return;      // already channeling
+    const dur = sk?.channel || 1.1, len = sk?.reach || 300, width = sk?.width || 26;
+    f._beamRoot = dur;                                          // anchors movement (see readInput/autoDrive)
+    this.beams.push({
+      uid: f.cat.uid, owner: 'me', f, sk, col,
+      aim, len, width, dps: Math.max(1, dmgPerSec), t: dur, max: dur,
+      tickAcc: 0, element: sk?.element,
+    });
+    window.MorrowwishAudio?.effect?.('beam');
+  }
+  // Tick all active beams: damage ~8×/sec along the line, decay the channel.
+  // Advance heavy-skill wind-ups; fire the skill when the charge completes.
+  tickPendingCasts(dt) {
+    if (!this.pendingCasts || !this.pendingCasts.length) return;
+    for (const c of this.pendingCasts) {
+      const f = c.f;
+      if (!f || !f.alive) { c.t = 0; continue; }
+      c.t -= dt;
+      if (f._castRoot != null) f._castRoot = Math.max(0, c.t);   // stay rooted while charging
+      // the cast follows the live aim of the active cat (you can steer during windup)
+      const aim = (f === this.me()) ? this.aim : (f._aim ?? c.aim);
+      c.aim = aim;
+      // growing charge ring at the caster
+      const k = 1 - Math.max(0, c.t) / c.max;
+      this.vfx.ring(f.x, f.y, { r0: 34 * (1 - k) + 6, vr: 0, life: 0.06, color: c.col, width: 3 });
+      if (c.t <= 0) { f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true); }
+    }
+    this.pendingCasts = this.pendingCasts.filter(c => c.t > 0);
+  }
+  tickBeams(dt) {
+    if (!this.beams.length) return;
+    for (const b of this.beams) {
+      b.t -= dt;
+      const f = b.f;
+      if (!f || !f.alive) { b.t = 0; continue; }
+      // beam follows the live aim of the active cat (feels like you're sweeping it)
+      if (f === this.me()) b.aim = this.aim;
+      if (f._beamRoot != null) f._beamRoot = Math.max(0, b.t);  // stay anchored while it lasts
+      const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
+      const ex = ox + Math.cos(b.aim) * b.len, ey = oy + Math.sin(b.aim) * b.len;
+      b._ox = ox; b._oy = oy; b._ex = ex; b._ey = ey;
+      b.tickAcc += dt;
+      const STEP = 1 / 8;                                        // 8 damage ticks/sec
+      while (b.tickAcc >= STEP) {
+        b.tickAcc -= STEP;
+        const hitDmg = b.dps * STEP;
+        const list = b.owner === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
+        for (const e of list) {
+          if (this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5) {
+            this.resolveHit(e, b.owner, b.sk || { element: b.element }, hitDmg, e.x, e.y);
+          }
+        }
+        // sparks along the beam so it reads as a continuous stream
+        const sx = ox + (ex - ox) * Math.random(), sy = oy + (ey - oy) * Math.random();
+        this.vfx.trail(sx, sy, b.col, 3);
+      }
+    }
+    this.beams = this.beams.filter(b => b.t > 0);
+  }
   // perpendicular distance from point (px,py) to segment (ax,ay)-(bx,by)
   pointToSeg(px, py, ax, ay, bx, by) {
     const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
@@ -1240,11 +1589,11 @@ class CaptureBattle {
     const sk = f.eSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk,aim))return false;
-      f.cd.e=sk.cd*(f.bond.cdReduction||1);
+      f.cd.e=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT;
       this.markMoveSeen(f,sk);
       return true;
     }
-    f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1);
+    f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
     const pow = (sk ? sk.power : 1) * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
     if (sk) {
@@ -1315,6 +1664,22 @@ class CaptureBattle {
     }
     return true;
   }
+  // How likely auto-battle is to evade a given incoming threat. Deliberately NOT
+  // 100%: a cruising, unhurt squad dodges LESS (so flawless runs still take hits and
+  // the fight has stakes); a hurt squad defends harder. Keeps auto play from being
+  // an untouchable robot that strafes every shot. (Playtest + owner feedback.)
+  autoDodgeChance(f){
+    const hp = f && f.maxhp ? f.hp / f.maxhp : 1;
+    // 0.45 while healthy → up to ~0.8 when badly hurt
+    return hp > 0.6 ? 0.45 : hp > 0.3 ? 0.62 : 0.8;
+  }
+  // Combined movement multiplier: soft-CC slow (冰冻/束缚/感电) AND the post-cast
+  // 后遗症 recovery slow left after a heavy skill. Shared by player + enemy movement.
+  moveMul(f){
+    let m = f.slowed ? 0.55 : 1;
+    if (f._castSlow > 0) m *= 0.5;          // sluggish recovery after a heavy cast
+    return m;
+  }
   canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
   ultimate(){
     if(this.ultCd>0||this.ultCinematic){
@@ -1331,6 +1696,7 @@ class CaptureBattle {
     }
     const f=this.me(),skill=f.ultSkill;
     this.ult=0;
+    this._ultAnnounced=false; this._ultReadyT=0; this._ultRemindT=0; this._ultAutoFired=false;   // re-arm reminder for the next charge
     this.ultCd=ULT_COOLDOWN_SECONDS;
     f.inv=2.2;                                   // invulnerable through the whole cinematic
     // FULL-SCREEN ULTIMATE CINEMATIC: freeze the arena, play a 3s element-themed
@@ -1350,49 +1716,134 @@ class CaptureBattle {
     return true;
   }
   // Deferred ultimate payload — the real damage/VFX, run at the cinematic's climax.
+  // Per-ELEMENT ultimate archetypes. Each is a distinct attack shape so different
+  // cats' ultimates look and play differently; all funnel damage through resolveHit
+  // and return {total,kos,hits} for the shared consequence/banner logic.
+  ultArchetype(f, skill, color, dmg) {
+    let total = 0, kos = 0, hits = 0;
+    const strike = (e, mult, px, py) => {
+      if (!e.alive) return;
+      const before = e.alive;
+      const r = this.resolveHit(e, 'me', skill, dmg * (mult || 1), px != null ? px : e.x, py != null ? py : e.y);
+      if (r.dealt > 0) { hits++; total += r.dealt; }
+      if (before && !e.alive) kos++;
+      this.vfx.impact(e.x, e.y, color);
+    };
+    const diag = Math.hypot(this.W, this.H);
+    const el = skill.element;
+    const aim = (f === this.me()) ? this.aim : (f._aim || 0);
+    if (el === 'fire') {
+      // 烈焰喷涌: a forward blaze CONE — hits enemies in a wide arc ahead, big on-aim.
+      const half = 0.6, reach = diag * 0.5;
+      for (const e of this.liveEnemies().slice()) {
+        const d = Math.hypot(e.x - f.x, e.y - f.y); if (d > reach) continue;
+        let da = Math.atan2(e.y - f.y, e.x - f.x) - aim; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
+        if (Math.abs(da) > half) continue;
+        strike(e, 1.15);
+      }
+      for (let i = 0; i < 26; i++) { const a = aim + (Math.random() - 0.5) * half * 2, r = 40 + Math.random() * reach; this.vfx.burst(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r, { count: 2, color, speed: 120, life: 0.5, r: 4, grav: -40 }); }
+      this.vfx.shockwave(f.x, f.y, color);
+    } else if (el === 'water') {
+      // 汹涌怒涛: a giant expanding tidal RING — everyone on the field is swept, soaked.
+      const R = diag * 0.55;
+      for (const e of this.liveEnemies().slice()) { if (Math.hypot(e.x - f.x, e.y - f.y) <= R) strike(e, 1.0); }
+      this.vfx.ring(f.x, f.y, { r0: 20, vr: R * 2.6, life: 0.7, color, width: 14 });
+      this.vfx.ring(f.x, f.y, { r0: 40, vr: R * 2.2, life: 0.6, color: '#fff', width: 4 });
+      this.vfx.burst(f.x, f.y, { count: 26, color, speed: 340, life: 0.6, r: 3 });
+    } else if (el === 'elec') {
+      // 雷霆万钧: chain LIGHTNING that forks to every enemy on the field.
+      for (const e of this.liveEnemies().slice()) { this.vfx.beam(f.x, f.y, e.x, e.y, color); strike(e, 1.1); }
+      this.vfx.ring(f.x, f.y, { r0: 14, vr: diag * 1.4, life: 0.4, color, width: 6 });
+      this.shakeT = Math.max(this.shakeT, 0.5);
+    } else if (el === 'grass') {
+      // 万木丛生: a huge lingering OVERGROWTH field — hits now + leaves a bind zone.
+      const R = diag * 0.4;
+      for (const e of this.liveEnemies().slice()) { if (Math.hypot(e.x - f.x, e.y - f.y) <= R) strike(e, 0.9); }
+      if (this.spawnField) this.spawnField(f.x, f.y, R, { element: 'grass', tag: 'bind', life: 5 }, color, 'me', skill);
+      this.vfx.ring(f.x, f.y, { r0: 16, vr: R * 2.2, life: 0.6, color, width: 10 });
+      for (let i = 0; i < 20; i++) { const a = Math.random() * Math.PI * 2, r = Math.random() * R; this.vfx.burst(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r, { count: 2, color, speed: 60, life: 0.7, r: 3, grav: -30 }); }
+    } else if (el === 'dark') {
+      // 噬影漩涡: a VORTEX that drags enemies inward, then detonates (big single pull).
+      const R = diag * 0.52;
+      for (const e of this.liveEnemies().slice()) {
+        const d = Math.hypot(e.x - f.x, e.y - f.y); if (d > R) continue;
+        // pull toward the caster for a brief gather before the hit
+        if (d > 30) { const a = Math.atan2(f.y - e.y, f.x - e.x); e.kbx = (e.kbx || 0) + Math.cos(a) * 320; e.kby = (e.kby || 0) + Math.sin(a) * 320; }
+        strike(e, 1.2);
+      }
+      this.vfx.ring(f.x, f.y, { r0: R, vr: -R * 1.8, life: 0.5, color, width: 10 });    // imploding ring
+      this.vfx.burst(f.x, f.y, { count: 28, color, speed: 300, life: 0.55, r: 3 });
+    } else {
+      // light (and any fallback): 圣耀爆发: radiant NOVA around the caster.
+      const R = diag * 0.42;
+      for (const e of this.liveEnemies().slice()) { if (Math.hypot(e.x - f.x, e.y - f.y) <= R) strike(e, 1.05); }
+      this.vfx.ring(f.x, f.y, { r0: 18, vr: R * 2.6, life: 0.6, color, width: 12 });
+      this.vfx.ring(f.x, f.y, { r0: 30, vr: R * 2.2, life: 0.5, color: '#fff', width: 4 });
+      this.vfx.burst(f.x, f.y, { count: 24, color, speed: 320, life: 0.55, r: 3 });
+    }
+    return { total, kos, hits };
+  }
+
   fireUltimatePayload(){
     const p=this._pendingUlt; if(!p)return; this._pendingUlt=null;
     const f=p.f, skill=p.skill;
     if(!f||!f.alive)return;
     this.shakeT=.6;this.flash=.5;
     if(skill&&skill.ultCost>0){
-      // A learned elemental ultimate is an actual different attack, not just
-      // a renamed purple projectile. Hit nearby enemies, apply its status and
-      // element strengths, then draw its own colored burst.
+      // Each ELEMENT's ultimate is a genuinely different attack shape (not one AOE
+      // recolored): fire = forward blaze cone, water = giant tidal wave ring, elec =
+      // chain lightning to all, grass = lingering overgrowth field, dark = pull
+      // vortex, light = radiant nova. Damage/tally/consequence/toast are shared.
       const color=this.elemColor(skill.element);
-      const radius=skill.element==='dark'?340:skill.element==='water'?310:290;
-      let hits=0;
-      for(const e of this.liveEnemies().slice()){
-        if(Math.hypot(e.x-f.x,e.y-f.y)>radius)continue;
-        const r=this.resolveHit(e,'me',skill,f.dmg*skill.power*.62,e.x,e.y);
-        if(r.dealt>0)hits++;
-      }
-      this.vfx.shockwave(f.x,f.y,color);
-      this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,
-        color,life:.92,max:.92});
-      this.vfx.ring(f.x,f.y,{r0:18,vr:Math.max(450,radius*2),life:.65,color,width:9});
-      this.vfx.burst(f.x,f.y,{count:14,color,speed:245,life:.55,r:3});
-      // Distinct attack animation already communicates the move; avoid a giant skill-name label.
+      const dmg=f.dmg*skill.power*.42;                    // shared per-target base
+      const {total,kos,hits}=this.ultArchetype(f,skill,color,dmg);
+      this._ultConsequence(f,skill,color,total,kos,hits);
+      this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,color,life:.92,max:.92});
       this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
       this.game.toast(this.elemSymbol(skill.element)+' '+(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · ':'Ultimate · ')+(window.CatBondI18n?.translate?.(skill.name)||skill.name)+(window.MorrowwishI18n?.get?.()==='zh'?'！':'!'));
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
       this.markMoveSeen(f,skill);
       window.arcadeMetric?.('bond_signature_ultimate',{skill:skill.id,rarity:GameData.speciesById(f.cat.species).rarity});
     }else{
-      // The ordinary ultimate is an actual screen-space claw cyclone,
-      // not sixteen low-quality purple balls emitted in a circle.
-      const range=215;
-      const targets=this.liveEnemies().filter(e=>Math.hypot(e.x-f.x,e.y-f.y)<=range);
-      for(const e of targets.slice()){
-        this.hurtEnemy(e,f.dmg*1.25,e.x,e.y,true);
+      // The ordinary ultimate is a large claw cyclone (~32% arena) around the caster.
+      const ultR=Math.hypot(this.W,this.H)*0.32;
+      const targets=this.liveEnemies().filter(e=>Math.hypot(e.x-f.x,e.y-f.y)<=ultR);
+      let total=0,kos=0;
+      for(const e of targets){
+        const before=e.hp,aliveBefore=e.alive;
+        this.hurtEnemy(e,f.dmg*0.85,e.x,e.y,true);   // basic ult dmg trimmed (was 1.25)
+        total+=Math.max(0,before-e.hp);
+        if(aliveBefore&&!e.alive)kos++;
         this.vfx.impact(e.x,e.y,'#e7c7a7');
       }
       this.skillStrokes.push({kind:'furStorm',x:f.x,y:f.y,
         color:'#f7d6a2',life:.7,max:.7});
       this.vfx.burst(f.x,f.y,{count:9,color:'#ffedca',speed:185,life:.35,r:2});
       this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · 喵爪旋风！':'Ultimate · Claw Cyclone!');
+      this._ultConsequence(f,{name:'喵爪旋风'},'#f7d6a2',total,kos,targets.length);
       this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:targets.length};
     }
+  }
+  // Scale the ultimate's PAYOFF to what it actually did: a bold element-colored
+  // result banner ("技能名 -总伤 · 收服×N"), and reshape shake/flash + the
+  // remaining cinematic length by consequence — a crisp hard cut on an overkill
+  // of one chip-tickled enemy, a lingering kill-cam when it deletes the pack.
+  // (Playtest: the ult felt identical whether it wiped the field or did nothing.)
+  _ultConsequence(f,skill,color,total,kos,hits){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const nm=window.CatBondI18n?.translate?.(skill.name)||skill.name;
+    let txt=(skill.name?nm+'  ':'')+'-'+Math.round(total);
+    if(kos>0) txt+=(en?'   KO ×':'   收服×')+kos;
+    this._ultResultBanner=kos>0?2.0:1.4; this._ultResultText=txt; this._ultResultColor=color;
+    // Consequence-scaled juice + cinematic pacing.
+    const big=kos>=2|| (hits>=3);
+    this.shakeT=Math.max(this.shakeT, big?0.75:hits>0?0.5:0.3);
+    this.flash=Math.max(this.flash, big?0.6:0.4);
+    if(this.ultCinematic){
+      if(kos>0){ this.ultCinematic.t=Math.max(this.ultCinematic.t, kos>=2?1.9:1.4); } // lingering kill-cam
+      else { this.ultCinematic.t=Math.min(this.ultCinematic.t, 1.0); }                // snappy cut when it fizzled
+    }
+    if(kos>0) window.MorrowwishAudio?.effect?.('crash');
   }
   // Advance the ultimate cinematic; detonate at the impact beat, end after 3s.
   tickUltCinematic(dt){
@@ -1412,7 +1863,37 @@ class CaptureBattle {
     this.game.toast(`切换到 ${State.catName(this.team[i].cat)}！`);
   }
 
-  gainUlt(n) { this.ult = Math.min(100, this.ult + n); }
+  gainUlt(n) {
+    const before = this.ult;
+    this.ult = Math.min(100, this.ult + n);
+    // Rising edge: the instant the meter first fills, announce it (banner + sting +
+    // button pulse) so players actually press R. (Playtest P2: 0 ults fired in 8
+    // battles because reaching 100 was silent.) Once per battle.
+    if (before < 100 && this.ult >= 100 && !this._ultAnnounced) {
+      this._ultAnnounced = true; this._ultReadyBanner = 1.4;   // #ult-btn already pulses via .ready in updateBattleUI
+      this._ultReadyT = 0;                                     // start the unused-timer for re-arm + failsafe
+      window.MorrowwishAudio?.effect?.('ready');
+    }
+  }
+  // Nudge players who fill the meter but never press R (the panicky/impatient
+  // cohort fired 0 ults). While full & manual: re-flash the ready banner every
+  // few seconds, and after a longer idle auto-cast it once so they SEE the payoff.
+  tickUltReminder(dt){
+    if(this.autoMode||this.ultCinematic){ this._ultReadyT=0; this._ultRemindT=0; return; }
+    if(this.ult<100){ this._ultReadyT=0; this._ultRemindT=0; return; }
+    this._ultReadyT=(this._ultReadyT||0)+dt;        // total idle-while-ready (drives the failsafe)
+    this._ultRemindT=(this._ultRemindT||0)+dt;      // cadence counter for re-flashing the prompt
+    if(this._ultRemindT>=3 && this._ultReadyBanner<=0){     // re-arm the prompt periodically
+      this._ultReadyBanner=1.2; this._ultRemindT=0;
+      window.MorrowwishAudio?.effect?.('ready');
+    }
+    if(this._ultReadyT>=9 && !this._ultAutoFired){          // failsafe auto-cast so the payoff is never missed
+      this._ultAutoFired=true;
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      this.game.toast(en?'Auto-unleashing your ultimate!':'自动释放必杀技！');
+      this.ultimate();
+    }
+  }
 
   // ---- COMBO: every hit extends the chain; higher chain = more dmg + ult ----
   // Combo bonus with DIMINISHING returns so it can't stack multiplicatively with
@@ -1439,7 +1920,63 @@ class CaptureBattle {
   }
 
   spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill, life) {
-    this.projectiles.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, kind, life: life || 2.2, ang, skill: skill || null });
+    const L = life || 2.2;
+    const p = { x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, r0: r, kind, life: L, maxLife: L, ang, skill: skill || null };
+    // Optional projectile behaviours carried from the skill:
+    //  grow  — radius expands over flight (bigger area the longer it travels)
+    //  homing— turns toward the owner's target each frame, up to homingTurn rad/s
+    //  maxLife— hard flight-time cap (homing shots expire so they can't orbit forever)
+    if (skill) {
+      if (skill.grow) p.grow = skill.grow;                 // radius multiplier at end of life
+      if (skill.homing) { p.homing = skill.homing; p.spd = spd; }
+    }
+    this.projectiles.push(p);
+    return p;
+  }
+
+  // 对波 — PROJECTILE CLASH. When a player shot and a wild shot overlap mid-air
+  // they collide instead of flying through each other (the anime "wave clash").
+  // Each shot's clash POWER = dmg × radius, and the attacker's element can win the
+  // exchange: a water jet overpowers an electric bolt, etc. Outcomes:
+  //   • power within ~30% → MUTUAL cancel (both pop)
+  //   • clear winner → loser pops, winner survives but shrinks/weakens
+  // Lobbed AOEs (p.burst), beams and already-dead shots never clash.
+  tickProjectileClash(dt) {
+    const E = window.Skills;
+    const ps = this.projectiles;
+    for (let i = 0; i < ps.length; i++) {
+      const a = ps[i];
+      if (a.life <= 0 || a.burst || a._clashImmune) continue;
+      for (let j = i + 1; j < ps.length; j++) {
+        const b = ps[j];
+        if (b.life <= 0 || b.burst || b._clashImmune) continue;
+        if (a.owner === b.owner) continue;                 // only cross-side shots clash
+        if ((a.owner !== 'me' && a.owner !== 'wild') || (b.owner !== 'me' && b.owner !== 'wild')) continue;
+        if (Math.hypot(a.x - b.x, a.y - b.y) > a.r + b.r + 4) continue;
+        // clash power, tilted by element advantage of each shot over the other
+        const ael = (a.skill && a.skill.element) || a.element || 'light';
+        const bel = (b.skill && b.skill.element) || b.element || 'light';
+        const aEff = E && E.effectiveness ? E.effectiveness(ael, bel) : 1;
+        const bEff = E && E.effectiveness ? E.effectiveness(bel, ael) : 1;
+        const aPow = a.dmg * a.r * aEff;
+        const bPow = b.dmg * b.r * bEff;
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        this.vfx.shockwave(mx, my, '#fff');
+        this.vfx.burst(mx, my, { count: 8, color: a.color, speed: 150, life: 0.3, r: 2 });
+        this.vfx.burst(mx, my, { count: 8, color: b.color, speed: 150, life: 0.3, r: 2 });
+        window.MorrowwishAudio?.note?.(520);
+        const ratio = aPow / Math.max(1e-3, bPow);
+        if (ratio > 1.3) {                                  // a overpowers b
+          b.life = 0; a.dmg *= 0.6; a.r = Math.max(4, a.r * 0.8);
+        } else if (ratio < 1 / 1.3) {                       // b overpowers a
+          a.life = 0; b.dmg *= 0.6; b.r = Math.max(4, b.r * 0.8);
+          break;                                            // a is gone; stop pairing it
+        } else {                                            // even → mutual cancel
+          a.life = 0; b.life = 0;
+          break;
+        }
+      }
+    }
   }
   spawnBurst(x,y,_symbol,color,n){
     // Energy dissipates as physical impact sparks, never floating emoji stickers.
@@ -1448,10 +1985,57 @@ class CaptureBattle {
   floater(x,y,text,color,size){
     // Keep at most five damage/heal numerals on screen at once.
     if(this.floaters.length>=5)this.floaters.shift();
-    this.floaters.push({x,y,text,color,life:.62,size:Math.min(13,size||12)});
+    // Cap generously (not 13) so the combo-crescendo tiers (13/15/18) actually
+    // render as distinct sizes instead of all collapsing to the same number.
+    this.floaters.push({x,y,text,color,life:.62,size:Math.min(22,size||12)});
   }
 
   // Persistent animated strokes make each elemental spell recognizable in motion.
+  // Draw channeled beams (水枪/flamethrower): a glowing tapered stream from the
+  // caster to its reach, with a wavering core so it reads as a live spray.
+  // Lingering elemental ground zones (Terraformer): a soft pulsing puddle/patch so
+  // the player can see where a reaction can be set up and detonated.
+  drawFields(ctx){
+    for(const fld of this.fields){
+      const k=Math.max(0,fld.t/fld.max), pulse=0.5+0.5*Math.sin(this.t*4);
+      ctx.save();
+      ctx.globalAlpha=0.16*k+0.06*pulse*k;
+      ctx.fillStyle=fld.col;
+      ctx.beginPath(); ctx.ellipse(fld.x,fld.y+6,fld.r,fld.r*0.5,0,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=0.4*k; ctx.strokeStyle=fld.col; ctx.lineWidth=2;
+      ctx.setLineDash([6,6]); ctx.lineDashOffset=-(this.t*30)%12;
+      ctx.beginPath(); ctx.ellipse(fld.x,fld.y+6,fld.r,fld.r*0.5,0,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+  drawBeams(ctx){
+    for(const b of this.beams){
+      if(b._ox==null)continue;
+      const k=Math.max(0,b.t/b.max);
+      // Additive gradient stream (VFX research): overlaps sum to white, a prism
+      // gradient flows along the axis, a dashed inner core streams toward the target.
+      const grad=ctx.createLinearGradient(b._ox,b._oy,b._ex,b._ey);
+      grad.addColorStop(0,'#ffffff'); grad.addColorStop(0.35,b.col); grad.addColorStop(1,b.col);
+      const nx=-(b._ey-b._oy), ny=(b._ex-b._ox), nl=Math.hypot(nx,ny)||1;
+      ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+      for(const [w,a] of [[b.width*1.9,0.14*k],[b.width*1.0,0.3*k],[b.width*0.55,0.75*k]]){
+        ctx.globalAlpha=a; ctx.lineWidth=w; ctx.strokeStyle=grad;
+        ctx.beginPath(); ctx.moveTo(b._ox,b._oy);
+        const seg=10;
+        for(let i=1;i<=seg;i++){ const tt=i/seg; const mx=b._ox+(b._ex-b._ox)*tt, my=b._oy+(b._ey-b._oy)*tt;
+          const wv=Math.sin(this.t*22+i)*4*(1-tt); ctx.lineTo(mx+nx/nl*wv,my+ny/nl*wv); }
+        ctx.stroke();
+      }
+      // streaming dashed packets
+      ctx.globalAlpha=0.85*k; ctx.lineWidth=b.width*0.3; ctx.strokeStyle='#fff';
+      ctx.setLineDash([14,10]); ctx.lineDashOffset=-(this.t*180)%24;
+      ctx.beginPath(); ctx.moveTo(b._ox,b._oy); ctx.lineTo(b._ex,b._ey); ctx.stroke(); ctx.setLineDash([]);
+      // white-hot nozzle
+      ctx.globalAlpha=k; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(b._ox,b._oy,b.width*0.4,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
   drawSkillStrokes(ctx){
     for(const v of this.skillStrokes){
       const k=Math.max(0,v.life/v.max),p=1-k;
@@ -1487,6 +2071,27 @@ class CaptureBattle {
           ctx.fillStyle=i%2?'#ff7f38':'#ffe29a';
           ctx.beginPath();ctx.arc(v.x+Math.cos(ang)*rad,v.y+Math.sin(ang)*rad,5*k+1,0,Math.PI*2);ctx.fill();
         }
+      }else if(v.kind==='giantSlam'){
+        // 泰山压顶: a huge translucent cat drops from above and SLAMS the target.
+        const drop=p<0.55?(p/0.55):1;                    // 0→1 descent, then held
+        const yOff=-260*(1-drop);                        // starts high, lands at v.y
+        const scale=1.0+0.25*drop;
+        ctx.translate(v.x,v.y+yOff);
+        ctx.globalAlpha=Math.min(1,k*1.2)*0.82;
+        // body (big ellipse) + head + two ears, in the duo's blended color
+        const col=v.firstColor;
+        ctx.fillStyle=col; ctx.strokeStyle=v.secondColor; ctx.lineWidth=4;
+        ctx.beginPath(); ctx.ellipse(0,0,70*scale,54*scale,0,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0,-46*scale,34*scale,0,Math.PI*2); ctx.fill();   // head
+        ctx.beginPath(); // ears
+        ctx.moveTo(-30*scale,-66*scale); ctx.lineTo(-14*scale,-92*scale); ctx.lineTo(-4*scale,-64*scale);
+        ctx.moveTo(30*scale,-66*scale); ctx.lineTo(14*scale,-92*scale); ctx.lineTo(4*scale,-64*scale); ctx.fill();
+        // glowing eyes
+        ctx.globalAlpha=Math.min(1,k*1.4); ctx.fillStyle='#fff';
+        ctx.beginPath(); ctx.arc(-12*scale,-48*scale,5*scale,0,Math.PI*2); ctx.arc(12*scale,-48*scale,5*scale,0,Math.PI*2); ctx.fill();
+        // impact shock ring once it lands
+        if(drop>=1){ ctx.globalAlpha=k*0.8; ctx.strokeStyle='#fff'; ctx.lineWidth=6*k;
+          ctx.beginPath(); ctx.arc(0,30*scale,40+p*160,0,Math.PI*2); ctx.stroke(); }
       }else if(v.kind==='duoImpact'){
         ctx.translate(v.x,v.y);
         const element=v.elements||'',rad=24+p*96;
@@ -1583,6 +2188,7 @@ class CaptureBattle {
     // Ultimate cinematic: the arena nearly freezes so the full-screen sequence
     // reads as a dramatic beat. Ticks on REAL dt (pre-freeze) so it always lasts 3s.
     if (this.ultCinematic) { this.tickUltCinematic(dt); dt *= 0.06; }
+    else this.tickUltReminder(dt);     // re-arm "press R" + failsafe auto-cast (not during the cinematic)
     // perfect-dodge bullet-time: slow the WORLD but keep input responsive
     if (this.slowmo > 0) { this.slowmo -= dt; dt *= 0.35; }
     // hitstop: a few frames of near-freeze on a solid hit makes impacts feel weighty.
@@ -1623,27 +2229,45 @@ class CaptureBattle {
       if (f.dodgeCd > 0) f.dodgeCd -= dt;
       if (f.shieldT > 0) f.shieldT=Math.max(0,f.shieldT-dt);
       if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
+      if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
       this.tickWards(f, dt);
       this.tickCatStatus(f, dt);              // DoT + soft-CC (slow) the enemy inflicted
       if (f.hitFlash > 0) f.hitFlash -= dt;
+    }
+    // Retire a timed bond reinforcement when its window ends.
+    if (this.reinforceT > 0) {
+      this.reinforceT -= dt;
+      if (this.reinforceT <= 0) this.retireReinforcement();
     }
     const me = this.me();
 
     // ALL your cats are on the field: you control the active one, allies auto-fight.
     for (const f of this.team) {
       if (!f.alive) continue;
+      // 泰山压顶 leap travel: follow the arc from launch to landing, then slam
+      if (f._leapT > 0) {
+        f._leapT -= dt;
+        const k = 1 - Math.max(0, f._leapT) / f._leapMax;             // 0→1 flight progress
+        f.x = f._leapFrom.x + (f._leapTo.x - f._leapFrom.x) * k;
+        f.y = f._leapFrom.y + (f._leapTo.y - f._leapFrom.y) * k;
+        f._hop = Math.sin(k * Math.PI) * 58;                          // visual arc height (drawn as y-offset)
+        if (f._leapT <= 0) this.leapLand(f);
+      }
       // dash-pounce travel (active or ally)
       if (f.dashT > 0 && f.pounce) {
         const aim = (f === me) ? (f._dashAim != null ? f._dashAim : this.aim) : (f._dashAim || f._aim || 0);
-        f.x = clamp(f.x + Math.cos(aim) * f.speed * 3 * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-        f.y = clamp(f.y + Math.sin(aim) * f.speed * 3 * dt, this.topMargin, this.H - this.bottomMargin);
+        const spd = f._pounceSkill ? f.speed * 3.6 : f.speed * 3;     // flying pounce travels faster/farther
+        f.x = clamp(f.x + Math.cos(aim) * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+        f.y = clamp(f.y + Math.sin(aim) * spd * dt, this.topMargin, this.H - this.bottomMargin);
       }
       // pounce contact damage on nearest enemy
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + 22) {
-          this.resolveHit(e, 'me', f._pounceSkill || { element: f.element }, f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), e.x, e.y);
-          f.pounce = false;
+          const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
+          this.resolveHit(e, 'me', f._pounceSkill || { element: f.element }, dmg, e.x, e.y);
+          this.hurtEnemy && (e.kbx = (e.kbx||0) + Math.cos(f._dashAim||0) * 260, e.kby = (e.kby||0) + Math.sin(f._dashAim||0) * 260);  // knockback
+          f.pounce = false; f._pounceDmg = null;
         }
       }
       // non-active alive cats fight autonomously via their gambits
@@ -1676,6 +2300,13 @@ class CaptureBattle {
     // now. (The old manual counter leaked — if a telegraphing enemy was frozen or
     // died mid-windup it never released the lock, permanently stalling pack specials.)
     this._novaLock = this.liveEnemies().some(e => e.telegraph > 0) ? 1 : 0;
+    // WITHIN-FIGHT ESCALATION (live rubber-band): if the squad is cruising near-full
+    // HP after a few seconds, the wild cats "grow desperate" THIS fight — faster
+    // fire, two can telegraph at once, less manual breathing room. Threat you feel
+    // now, not a +10% statline next run. 0 → 1 as the stomp drags on.
+    const teamHpFrac = this.team.reduce((n,f)=>n+Math.max(0,f.hp),0)/Math.max(1,this.team.reduce((n,f)=>n+f.maxhp,0));
+    this._pressure = (!this.coach && this.t > 6 && teamHpFrac > 0.92)
+      ? Math.min(1, (this._pressure || 0) + dt * 0.25) : Math.max(0, (this._pressure || 0) - dt * 0.5);
     // First-fight coach: while teaching move/attack/skill, enemies stand down so a
     // brand-new player can learn the controls without taking damage.
     const coachHold = this.coachHoldsEnemies();
@@ -1683,6 +2314,8 @@ class CaptureBattle {
     for (const e of this.liveEnemies()) {
       this.tickWards(e, dt);                           // protect/reflect/barrier timers
       if (e.wardCd > 0) e.wardCd -= dt;
+      if (e.lobCd > 0) e.lobCd -= dt;                  // per-enemy AOE throttle
+      if (e.smashCd > 0) e.smashCd -= dt;              // per-enemy must-dodge-heavy throttle
       // apply + decay hit knockback (independent of AI so even a frozen/casting enemy flies back)
       if (e.kbx || e.kby) {
         e.x = clamp(e.x + e.kbx * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
@@ -1690,15 +2323,46 @@ class CaptureBattle {
         const decay = Math.exp(-9 * dt); e.kbx *= decay; e.kby *= decay;
         if (Math.abs(e.kbx) < 4 && Math.abs(e.kby) < 4) { e.kbx = 0; e.kby = 0; }
       }
+      // CONTACT SWIPE: a wild cat that gets right on top of a cat claws it (short
+      // cd), routed through resolveHit so dodge i-frames and shields fully negate.
+      // Makes melee range genuinely dangerous — you can't just stand in the pack.
+      if (e.swipeCd > 0) e.swipeCd -= dt;
+      if (!coachHold && e.swipeCd <= 0) {
+        for (const tf of this.team) {
+          if (!tf.alive || tf.inv > 0) continue;
+          if (Math.hypot(tf.x - e.x, tf.y - e.y) < (e.r || 20) + (tf.r || 20) + 8) {
+            this.resolveHit(tf, 'wild', { element: e.element }, e.dmg * 0.9, (e.x + tf.x) / 2, (e.y + tf.y) / 2);
+            e.swipeCd = 0.8; this.vfx.slash(tf.x, tf.y, Math.atan2(tf.y - e.y, tf.x - e.x), '#ff6b8a', 40, 0.9);
+            break;
+          }
+        }
+      }
+      if (e.staggerT > 0) e.staggerT = Math.max(0, e.staggerT - dt);   // 虚弱 window decay
+      if (e._castSlow > 0) e._castSlow = Math.max(0, e._castSlow - dt); // 后遗症 recovery after a special
+      else if (e.poise < e.poiseMax) e.poise = Math.min(e.poiseMax, e.poise + e.poiseMax * 0.12 * dt);  // poise slowly regenerates when not staggered
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
       else if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
       else if (e.alive) { e.pose = 'idle'; e.telegraph = 0; }  // frozen: drop any windup, stand still
     }
 
+    // ---- 对波: opposing projectiles clash mid-field (signature 羁绊之旅 feel) ----
+    this.tickProjectileClash(dt);
     // ---- projectiles ----
     for (const p of this.projectiles) {
+      // HOMING: steer toward the nearest valid target, capped turn rate, keep speed.
+      if (p.homing) {
+        const tgt = p.owner === 'me' ? this.nearestEnemy(p.x, p.y) : this.nearestEnemyTeamCat({ x: p.x, y: p.y });
+        if (tgt) {
+          const want = Math.atan2(tgt.y - p.y, tgt.x - p.x);
+          let d = want - p.ang; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+          const turn = Math.max(-p.homing * dt, Math.min(p.homing * dt, d));
+          p.ang += turn; p.vx = Math.cos(p.ang) * p.spd; p.vy = Math.sin(p.ang) * p.spd;
+        }
+      }
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+      // GROW: radius swells over flight for a widening hitbox / bigger area coverage.
+      if (p.grow) { const age = 1 - Math.max(0, p.life) / (p.maxLife || 2.2); p.r = p.r0 * (1 + (p.grow - 1) * age); }
       p._tc = (p._tc || 0) + dt;
       if (p._tc > 0.02) { p._tc = 0; this.vfx.trail(p.x, p.y, p.color, p.r * 0.8); }
       // A lobbed AOE flies OVER enemies to its landing point, then bursts (it does
@@ -1742,6 +2406,10 @@ class CaptureBattle {
     }
     this.projectiles = this.projectiles.filter(p => p.life > 0 && p.x > -20 && p.x < this.W + 20 && p.y > -20 && p.y < this.H + 20);
 
+    this.tickPendingCasts(dt);           // heavy-skill wind-up (前摇) before the cast fires
+    this.tickBeams(dt);                  // channeled 水枪/flamethrower continuous damage
+    this.tickFields(dt);                 // Terraformer elemental ground zones (drip + detonate)
+
     this.vfx.update(dt);
     for (const q of this.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 60 * dt; q.life -= dt; }
     this.particles = this.particles.filter(q => q.life > 0);
@@ -1750,7 +2418,22 @@ class CaptureBattle {
 
     // win when the whole pack is down; "captureReady" when any enemy is low
     const live = this.liveEnemies();
+    const wasReady = this.captureReady;
     this.captureReady = live.some(e => e.hp / e.maxhp < 0.28);
+    // Finisher beat: the first frame a wild cat drops into capture range, punch a
+    // brief slowmo + flash + banner so the "收服它！" moment actually lands (it used
+    // to be a silent toast). Fires once per ready-transition, not every frame.
+    if (this.captureReady && !wasReady) {
+      this.slowmo = Math.max(this.slowmo, 0.4); this.flash = Math.max(this.flash, 0.3);
+      this.shakeT = Math.max(this.shakeT, 0.15);
+      const low = live.find(e => e.hp / e.maxhp < 0.28);
+      if (low) this.vfx.ring(low.x, low.y, { r0: 10, vr: 420, life: 0.5, color: '#ffd36b', width: 7 });
+      this._captureBanner = 1.2;
+      window.MorrowwishAudio?.effect?.('ready');
+    }
+    if (this._captureBanner > 0) this._captureBanner -= dt;
+    if (this._ultReadyBanner > 0) this._ultReadyBanner -= dt;
+    if (this._ultResultBanner > 0) this._ultResultBanner -= dt;
     const packN = this.enemies.length;
     // Each control scheme gets its own legible instruction. Mobile users
     // should never be told to use a mouse or Space key.
@@ -1891,7 +2574,7 @@ class CaptureBattle {
         if (sd < 70) { ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
       }
     }
-    const spd=e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1);   // 感电减速
+    const spd=e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1)*(e._castSlow>0?.5:1);   // 感电减速 + 后遗症
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
     if(Math.abs(ax)>.07)e.face=ax<0?-1:1;
@@ -1905,6 +2588,12 @@ class CaptureBattle {
     }
     // telegraphed special (staggered: only ONE enemy telegraphs at a time, pack-wide)
     if (e.telegraph > 0) {
+      // INTERRUPT: enough burst damage during a heavy windup CANCELS the cast and
+      // staggers the enemy — the payoff for reading the telegraph and committing.
+      if (e.castInterruptible && (e.castDmgTaken || 0) >= (e.castDmgBudget || Infinity)) {
+        this.interruptEnemyCast(e);
+        return;
+      }
       e.telegraph -= dt;
       if (Math.random() < 0.5) this.vfx.burst(e.x, e.y, { count: 1, color: '#ff4d6d', speed: 40, life: 0.3 });
       if (e.telegraph <= 0) { this.unleashEnemySpecial(e, me); }   // lock auto-clears next frame (recomputed)
@@ -1915,20 +2604,47 @@ class CaptureBattle {
     // close leap, barrage is mid-range, AoE-lob reaches out. Pick the kind that
     // fits the CURRENT distance instead of casting from across the arena. Only one
     // enemy telegraphs at a time.
-    if (e.special <= 0 && (this._novaLock || 0) === 0) {
+    // Under high within-fight pressure a SECOND enemy may telegraph at once.
+    const lockCap = (this._pressure || 0) > 0.6 ? 2 : 1;
+    if (e.special <= 0 && (this._novaLock || 0) < lockCap) {
       let kind = null;
-      if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
+      // MUST-DODGE HEAVY (重击): when the player is dominating — either across fights
+      // (stompStreak) or cruising untouched within THIS fight (_pressure) — a wild cat
+      // winds up a big, slow, UNBLOCKABLE smash on a clearly-drawn danger disc. Shields
+      // only chip it; the answer is to physically leave the circle (dodge/move). This is
+      // the defensive forcing function the combat lacked. Generous windup = a reaction
+      // test, not a reflex check. Own cooldown so it never spams.
+      const dominating = (this._stomp || 0) >= 0.4 || (this._pressure || 0) >= 0.6;
+      if (dominating && dist < 300 && (e.smashCd || 0) <= 0 && e.rIdx >= 1) kind = 'smash';
+      else if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
-      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && Math.random() < 0.5) ? 'lob' : 'barrage';
+      // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
+      // screen isn't constantly full of ground bursts; mostly a focused barrage.
+      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && (e.lobCd||0) <= 0 && Math.random() < 0.3) ? 'lob' : 'barrage';
       else if (dist < 320) kind = 'barrage';
       if (kind) {
+        if (kind === 'lob') e.lobCd = 7 + Math.random() * 3;                             // per-enemy AOE throttle
+        if (kind === 'smash') {
+          e.smashCd = 9 + Math.random() * 3;                                             // per-enemy heavy throttle
+          // land the smash where the player IS NOW (predictive but generous) so there's
+          // time to walk out of the telegraphed disc.
+          e.smashTarget = { x: me.x, y: me.y };
+        }
         e.special = Math.max(2.6, e.specialCd - e.aggro * 1.5) + Math.random();          // +recovery floor
         e.telegraphKind = kind;
         this._novaLock = 1;                                   // pack cast-lock: others keep basic-firing
-        e.telegraph = Math.min(1.2, 0.8 + e.rIdx * 0.1) * (this.aiReact || 1);
+        // the heavy winds up longer (readable) than ordinary specials
+        e.telegraph = (kind === 'smash' ? 1.4 : Math.min(1.2, 0.8 + e.rIdx * 0.1)) * (this.aiReact || 1);
         e.telegraphMax = e.telegraph;
+        // INTERRUPT WINDOW: the heavy casts (nova + smash) can be CANCELLED if you
+        // burst the enemy hard enough during the windup — a read-and-punish, not just
+        // a dodge. Budget ~22% of max HP of raw damage during the telegraph.
+        e.castInterruptible = (kind === 'nova' || kind === 'smash');
+        e.castDmgBudget = e.maxhp * 0.22;
+        e.castDmgTaken = 0;
         e.telegraphAim = this.leadAngle(e, me, 300);          // predictive lead (see leadAngle)
         if (kind === 'nova') this.game.toast('⚠️ 野猫在蓄力大招！');
+        else if (kind === 'smash') this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'⚠️ 重击来袭 — 离开红圈！':'⚠️ Heavy smash — leave the red circle!');
         return;
       }
     }
@@ -1939,16 +2655,17 @@ class CaptureBattle {
     if (e.fireCd <= 0 && dist < 340) {
       // Manual play is harder than letting the AI dodge for you, so give a human
       // pilot ~25% more breathing room between enemy shots (auto mode stays brisk).
-      const manualEase = this.autoMode ? 1 : 1.25;
+      // Within-fight pressure tapers that ease away and speeds fire as a stomp drags.
+      const manualEase = (this.autoMode ? 1 : 1.25) - (this._pressure || 0) * 0.3;
       e.fireCd = Math.max(0.5, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
       let lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
       if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
       const dd = e.dmg * (e.status && e.status.weaken ? 0.5 : 1);            // 虚弱→伤害减半
-      this.spawnProj(e.x, e.y, lead, 240 + e.rIdx * 40, dd, 'wild', wc, 7, 'ball');
+      this.spawnProj(e.x, e.y, lead, 200 + e.rIdx * 34, dd, 'wild', wc, 7, 'ball');
       if (e.rIdx >= 2) {
-        this.spawnProj(e.x, e.y, lead + 0.22, 230, dd * 0.8, 'wild', wc, 6, 'ball');
-        this.spawnProj(e.x, e.y, lead - 0.22, 230, dd * 0.8, 'wild', wc, 6, 'ball');
+        this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball');
+        this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball');
       }
     }
   }
@@ -1967,8 +2684,32 @@ class CaptureBattle {
       px += Math.cos(perp) * k; py += Math.sin(perp) * k;
     }
     let ang = Math.atan2(py, px);
-    if (this.aiJitter) ang += (Math.random() * 2 - 1) * this.aiJitter;  // human slop / difficulty
+    // Aim slop scales with the TARGET's movement, not the player's profiled skill.
+    // A cat standing still gets shot near-dead-on (punishes passivity); a juking
+    // player keeps the evasion payoff. (Playtest P0: standing still used to be the
+    // SAFEST play because low-skill jitter widened as the target got easier to hit.)
+    if (this.aiJitter) {
+      const mv = clamp(Math.hypot(me._vx || 0, me._vy || 0) / (me.speed || 150), 0, 1);
+      ang += (Math.random() * 2 - 1) * this.aiJitter * (0.25 + 0.75 * mv);
+    }
     return ang;
+  }
+
+  // Cancel a heavy enemy cast mid-windup (the player bursted it in time) and leave
+  // the enemy staggered/open — the reward for reading and punishing the telegraph.
+  interruptEnemyCast(e) {
+    e.telegraph = 0; e.telegraphKind = null; e.castInterruptible = false;
+    e.smashTarget = null;
+    e.staggerT = Math.max(e.staggerT || 0, 1.6);         // 虚弱: open to follow-up
+    e.special = Math.max(e.special, 1.4);                // brief recovery before it can try again
+    this._novaLock = 0;                                  // free the pack cast-lock
+    const en = window.MorrowwishI18n?.get?.() !== 'zh';
+    this.vfx.ring(e.x, e.y, { r0: 10, vr: 420, life: 0.5, color: '#ffd36b', width: 6 });
+    this.vfx.burst(e.x, e.y, { count: 14, color: '#ffd36b', speed: 220, life: 0.45, r: 3 });
+    this.vfx.text(e.x, e.y - 46, en ? 'INTERRUPTED!' : '打断!', '#ffd36b', 16);
+    this.shakeT = Math.max(this.shakeT, 0.22); this.hitstop = Math.max(this.hitstop, 0.07);
+    window.MorrowwishAudio?.effect?.('crash');
+    this.game.toast(en ? 'Cast interrupted!' : '蓄力被打断！');
   }
 
   unleashEnemySpecial(e, me) {
@@ -1997,13 +2738,33 @@ class CaptureBattle {
       }
       return;
     }
+    if (e.telegraphKind === 'smash') {
+      // MUST-DODGE HEAVY: a big hit on the telegraphed disc. UNBLOCKABLE (shields only
+      // chip it) but fully escapable — anyone still inside the circle at release eats a
+      // punishing % of max HP; anyone who walked out (or dodged for i-frames) is safe.
+      const tx = (e.smashTarget && e.smashTarget.x) || me.x, ty = (e.smashTarget && e.smashTarget.y) || me.y;
+      const R = 86;
+      this.vfx.shockwave(tx, ty, col);
+      this.vfx.ring(tx, ty, { r0: 12, vr: R * 7, life: 0.4, color: col, width: 8 });
+      this.vfx.ring(tx, ty, { r0: 20, vr: R * 5, life: 0.33, color: '#fff', width: 3 });
+      this.vfx.burst(tx, ty, { count: this.game.isTouch ? 12 : 20, color: col, speed: 260, life: 0.5, r: 4, grav: 220 });
+      this.shakeT = Math.max(this.shakeT, 0.28); this.hitstop = Math.max(this.hitstop, 0.05);
+      window.MorrowwishAudio?.effect?.('crash');
+      for (const f of this.team.filter(f => f.alive)) {
+        if (Math.hypot(f.x - tx, f.y - ty) > R) continue;      // walked out of the circle → safe
+        const heavy = Math.max(e.dmg * 1.6, f.maxhp * 0.26);   // a real, punishing hit
+        this.resolveHit(f, 'wild', { element: e.element, unblockable: true }, heavy, tx, ty);
+      }
+      e.inv = 0.3; e._castSlow = 1.3;                          // 后遗症: the heavy leaves the caster open
+      return;
+    }
     if (e.telegraphKind === 'nova') {
       const n = 12 + e.rIdx * 4;
       const off = Math.random() * Math.PI;
       for (let i = 0; i < n; i++) this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 200, e.dmg * pow, 'wild', col, 7, 'ball', sk);
       this.vfx.shockwave(e.x, e.y, col);
       this.vfx.ring(e.x, e.y, { r0: 10, vr: 520, life: 0.45, color: col, width: 6 });
-      e.inv = 0.25;
+      e.inv = 0.25; e._castSlow = 1.2;                    // 后遗症: sluggish after the big nova — a punish window
     } else if (e.telegraphKind === 'lob') {
       this.enemyLobAoe(e, me, col);
     } else {
@@ -2091,6 +2852,14 @@ class CaptureBattle {
     const mult = this.elemMult(skill.element, e.sp.id);
     if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '↑', '#ff7b9c', 12); }
     else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11); }
+    // BASIC-ATTACK TENSION: the basic poke rewards SKILL SETUP. It applies no tags
+    // itself, but roars on a target already afflicted (+45% per active status tag)
+    // and lands softer on an un-marked target — so Q/E priming carries the fight.
+    if (skill.isBasic) {
+      const nTags = e.tags.length;
+      if (nTags > 0) dmg *= 1 + 0.45 * nTags;
+      else dmg *= 0.7;
+    }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
       const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
@@ -2170,6 +2939,10 @@ class CaptureBattle {
   }
 
   hurtEnemy(e, dmg, fx, fy, isDot) {
+    // LEVEL SUPPRESSION: an over-leveled squad's raw damage is softly capped so a
+    // fight can't be won by stats alone (see constructor). Applied to ALL player
+    // damage (direct + DoT) at this single chokepoint; 1 when near/under level.
+    if (this.levelSuppression && this.levelSuppression < 1) dmg *= this.levelSuppression;
     // a direct player hit extends the combo and gets the combo damage multiplier
     if (!isDot) {
       dmg *= this.comboMult(); this.addCombo(1);
@@ -2178,11 +2951,19 @@ class CaptureBattle {
     // vulnerability debuffs amplify incoming damage (破绽/破甲)
     const TAG = (window.Skills && Skills.TAG_INFO) || {};
     if (e.status) for (const tg in e.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
+    // EXECUTE PHASE: once a wild cat is low (斗志将尽), direct hits escalate hard so
+    // the decided fight actually ENDS instead of a slow 40s whittle. ×1.5 at 28% HP
+    // ramping toward ×2.5 under 12%. (Playtest P1: there was no closer.)
+    const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
+    if (!isDot && frac0 < 0.28) dmg *= 1.5 + (1 - clamp(frac0 / 0.28, 0, 1)) * 1.0;
     const scaled = dmg;
     // Let the player finish movement/attack/skill/dodge practice before
     // an allied AI cat can accidentally end the only guided encounter.
     const lessonPending=this.coach&&this.coach.steps[this.coach.i]?.key!=='finish';
     e.hp = Math.max(lessonPending?1:0, e.hp - scaled);
+    // CAST-INTERRUPT accumulator: damage dealt while an enemy is winding up a heavy
+    // counts toward cancelling it (checked in the AI telegraph tick).
+    if (e.castInterruptible && e.telegraph > 0) e.castDmgTaken = (e.castDmgTaken || 0) + scaled;
     e.flash = 0.16;
     // Weighty impact on DIRECT hits only (DoT ticks stay quiet to avoid noise):
     // a short damage-scaled hitstop + a micro screen-shake that grows with combo heat.
@@ -2199,6 +2980,14 @@ class CaptureBattle {
       const power = (90 + 240 * frac) / (1 + e.rIdx * 0.6);
       e.kbx = (e.kbx || 0) + (kx / kl) * power;
       e.kby = (e.kby || 0) + (ky / kl) * power;
+      // CONNECT TICK: a short, combo-pitched pop so every landed hit is audible
+      // (previously only the swing had sound → players couldn't tell a hit landed).
+      // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
+      if ((this.t - (this._lastHitSfx || -1)) > 0.07) {
+        this._lastHitSfx = this.t;
+        const freq = 440 * Math.pow(2, Math.min(18, this.combo) / 24);   // climbs up ~1.7 octave
+        window.MorrowwishAudio?.note?.(freq);
+      }
     }
     // bigger, brighter number as the combo climbs (crescendo feel)
     const big = this.combo >= 15 ? 18 : this.combo >= 6 ? 15 : 13;
@@ -2210,12 +2999,15 @@ class CaptureBattle {
   hurtMe(dmg, fx, fy, f) {
     f = f || this.me();
     if (!f.alive) return;
+    // LEVEL GAP: a higher-level wild pack hits genuinely harder (see constructor).
+    if (this.enemyLevelMult && this.enemyLevelMult !== 1) dmg *= this.enemyLevelMult;
     // First-fight coach: a beginner can take hits to learn, but never dies during
     // the tutorial — damage is gentled and HP floored so the first fight is safe.
     if (this.coach) dmg *= 0.35;
     // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
     // routes through. hurtMe lands the (already shield-adjusted) damage.
     f.hp = Math.max(this.coach ? 1 : 0, f.hp - dmg);
+    if (this._obs) this._obs.dmgTaken += dmg;            // anti-stomp signal (see commitAiProfile)
     f.hitFlash = 0.14; f.inv = 0.3;
     if (f === this.me()) this.shakeT = 0.18;
     this.floater(f.x, f.y - 24, '-' + Math.round(dmg), '#ff6b8a');
@@ -2259,11 +3051,39 @@ class CaptureBattle {
       return { blocked: false, reflected: true, dealt: 0 };
     }
     // 3) BARRIER (护盾): percentage damage reduction (keeps the existing 55%).
-    if ((target.shieldT || 0) > 0) dmg *= 0.55;
+    //    An UNBLOCKABLE heavy (must-dodge smash) ignores the shield's big cut — a
+    //    barrier only chips it (0.85) so standing in the circle behind a shield still
+    //    hurts; the real answer is to leave the telegraphed disc / dodge for i-frames.
+    if ((target.shieldT || 0) > 0) dmg *= (skill && skill.unblockable) ? 0.85 : 0.55;
     // VULNERABLE after a Protect drops (后遗症): takes extra damage briefly.
     if ((target.vulnerableT || 0) > 0) dmg *= 1.3;
     // land it
     if (side === 'me') {
+      // ---- POISE / 虚弱 (forcing function) ----
+      // SKILLS/combos/beam/ult drain the enemy's poise; breaking it staggers the
+      // enemy into a 虚弱 window (2x damage). Unmarked BASICS barely touch poise AND
+      // can't push a non-staggered enemy below a floor — so you must use skills to
+      // actually finish a fight, not just hold attack.
+      const isBasic = skill && skill.isBasic;
+      if (target.poiseMax) {
+        if (target.staggerT > 0) dmg *= 2;                 // hitting a staggered enemy = big
+        if (!isBasic) {                                    // skills/combos/ult/beam crack poise
+          target.poise = Math.max(0, (target.poise ?? target.poiseMax) - dmg);
+          if (target.poise <= 0 && target.staggerT <= 0) {
+            target.staggerT = 2.2; target.poise = target.poiseMax;   // break → 虚弱 window
+            this.vfx.ring(target.x, target.y, { r0: 10, vr: 420, life: 0.5, color: '#ffd36b', width: 6 });
+            this.vfx.text(target.x, target.y - 46, window.MorrowwishI18n?.get?.()==='zh'?'虚弱!':'STAGGER!', '#ffd36b', 16);
+            this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.08);
+            window.MorrowwishAudio?.effect?.('crash');
+          }
+        }
+        // mash-wall: an unmarked basic can't drop a healthy, un-staggered enemy below
+        // ~12% HP — the last chunk requires a skill/combo/stagger to finish.
+        if (isBasic && target.staggerT <= 0 && target.tags.length === 0) {
+          const floor = target.maxhp * 0.12;
+          if (target.hp - dmg < floor) dmg = Math.max(0, target.hp - floor);
+        }
+      }
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       this.hurtEnemy(target, dealt, x, y);
       this.vfx.impact(x, y, col);
@@ -2444,9 +3264,11 @@ class CaptureBattle {
       }
     }
 
+    this.drawFields(ctx);                // elemental ground zones, beneath the action
     // vfx under-layer (trails, rings, muzzle)
     this.vfx.draw(ctx);
     this.drawSkillStrokes(ctx);
+    this.drawBeams(ctx);
 
     // projectiles with glow
     for (const p of this.projectiles) {
@@ -2524,7 +3346,18 @@ class CaptureBattle {
         const k = Math.max(0, Math.min(1, 1 - e.telegraph / (e.telegraphMax || 0.8)));  // 0→1 charge
         const pulse = 0.45 + 0.4 * Math.abs(Math.sin(this.t * 14));
         ctx.save();
-        if (e.telegraphKind === 'nova') {
+        if (e.telegraphKind === 'smash') {
+          // MUST-DODGE heavy: a fixed-radius red danger disc on the ground where the
+          // hit will land, with a shrinking inner reticle that converges at release so
+          // the timing is readable. Leave the circle before it closes.
+          const tx = (e.smashTarget && e.smashTarget.x) || e.x, ty = (e.smashTarget && e.smashTarget.y) || e.y, R = 86;
+          ctx.globalAlpha = pulse * 0.26; ctx.fillStyle = '#ff2d55';
+          ctx.beginPath(); ctx.arc(tx, ty, R, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = Math.min(1, pulse + 0.3); ctx.strokeStyle = '#ff2d55'; ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.arc(tx, ty, R, 0, Math.PI * 2); ctx.stroke();
+          ctx.globalAlpha = pulse; ctx.lineWidth = 3;          // converging inner reticle
+          ctx.beginPath(); ctx.arc(tx, ty, R * (1 - k), 0, Math.PI * 2); ctx.stroke();
+        } else if (e.telegraphKind === 'nova') {
           const R = 34 + k * 30;
           ctx.globalAlpha = pulse * 0.3;                       // filled danger disc
           ctx.fillStyle = '#ff4d6d';
@@ -2559,12 +3392,22 @@ class CaptureBattle {
       // status color wash (frozen=blue tint, burn=orange, etc.) via a soft overlay ring
       if (e.status) { const k = Object.keys(e.status); if (k.length) { const info = (Skills.TAG_INFO || {})[k[0]]; if (info) { ctx.save(); ctx.globalAlpha = 0.25 + 0.15 * Math.sin(this.t * 6); ctx.fillStyle = info.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + 6, 24, 30, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } }
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
-        species:e.sp,scale:1.05,face:e.face,t:e.t,
+        species:e.sp,scale:this.catScale(),face:e.face,t:e.t,
         stride:e.stride,motion:e.motion||0,
         pose:e.frozen?'idle':e.pose,
         mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
       });
       this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
+      // 虚弱 stagger: a pulsing gold ring + dizzy mark so the open window reads clearly
+      if (e.staggerT > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 10));
+        ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(e.x, e.y, 30 + 3 * Math.sin(this.t * 10), 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#ffd36b'; ctx.font = '13px system-ui'; ctx.textAlign = 'center';
+        ctx.fillText('💫', e.x, e.y - 48);
+        ctx.restore();
+      }
       ctx.restore();
       // locked-target reticle: show who you're focusing (rotates for life)
       if (this._lockIdx === e.i) {
@@ -2614,7 +3457,8 @@ class CaptureBattle {
       const sp2 = GameData.speciesById(tf.cat.species);
       const fAim = isMe ? this.aim : (tf._aim || 0);
       const route=this.duoRun?.runners.find(r=>r.uid===tf.cat.uid);
-      let visualX=tf.x,visualY=tf.y,visualPose=tf.pounce?'play':(tf.moving?'walk':'idle');
+      let visualX=tf.x,visualY=tf.y,visualPose=(tf.pounce||tf._leapT>0)?'play':(tf.moving?'walk':'idle');
+      const hop=tf._hop||0;                                   // 泰山压顶 arc lift (body rises, shadow stays)
       if(route){
         const pct=Math.min(1,this.duoRun.age/this.duoRun.duration);
         // Outbound full-speed sprint, a contact leap, then a planted return.
@@ -2633,22 +3477,62 @@ class CaptureBattle {
       if (tf.hitFlash > 0) ctx.globalAlpha = 0.5;
       // active cat gets a soft golden ground ring so you know who you control
       if (isMe) { ctx.fillStyle = 'rgba(255,211,107,0.13)'; ctx.beginPath(); ctx.ellipse(visualX,visualY+3,27,7,0,0,Math.PI*2);ctx.fill(); }
+      // airborne shadow for a leap: a shrinking blob under the rising cat
+      if (hop>1) { const s=Math.max(0.3,1-hop/70); ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.beginPath(); ctx.ellipse(visualX,visualY+5,20*s,5*s,0,0,Math.PI*2); ctx.fill(); }
       const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.70?1:-1)<0?-1:1
         :(tf.face||(Math.cos(fAim)<0?-1:1));
+      visualY-=hop;
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
-        species:sp2,scale:1.04,face:visualFace,t:tf.t||this.t,
+        species:sp2,scale:this.catScale(),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
         stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
       });
       ctx.restore();
-      const sym = this.elemSymbol(tf.element);
-      this.hpTag(ctx, tf.x, tf.y - 42, tf.hp / tf.maxhp, isMe ? '#ffd36b' : '#9be7c4', `${sym} ${State.catName(tf.cat)}${isMe ? ' ◀' : ''}`);
+      // Player HP/ult now live in the sleek top-left squad panel (drawSquadPanel),
+      // not floating over the cat. Keep only a tiny active-cat chevron so you can
+      // tell at a glance which kitten you're driving.
+      if (isMe) {
+        ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd36b'; ctx.textAlign = 'center';
+        ctx.font = '12px system-ui, sans-serif';
+        ctx.fillText('▾', tf.x, tf.y - 40 + 2 * Math.sin(this.t * 4));
+        ctx.restore();
+      }
     }
 
     // particles & floaters
     for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
     for (const fl of this.floaters) { ctx.save(); ctx.globalAlpha = Math.max(0, fl.life); ctx.fillStyle = fl.color; ctx.font = 'bold ' + (fl.size || 15) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.strokeText(fl.text, fl.x, fl.y); ctx.fillText(fl.text, fl.x, fl.y); ctx.restore(); }
 
+    // Capture-ready finisher banner (one-time pop when a wild cat enters subdue range).
+    if(this._captureBanner>0){
+      const k=Math.min(1,this._captureBanner/1.2),pop=1+0.2*Math.sin((1-k)*Math.PI);
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      ctx.save(); ctx.globalAlpha=Math.min(1,k*1.3); ctx.textAlign='center';
+      ctx.font='900 '+((this.game.isTouch?26:36)*pop)+'px system-ui, sans-serif';
+      ctx.fillStyle='#ffd36b'; ctx.shadowColor='#ff9b3c'; ctx.shadowBlur=18;
+      ctx.fillText(en?'FINISH IT!':'收服它！',W/2,this.topMargin+70);
+      ctx.restore();
+    }
+    // Ult-ready announcement banner (one-time when the meter first fills).
+    if(this._ultReadyBanner>0){
+      const k=Math.min(1,this._ultReadyBanner/1.4);
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      ctx.save(); ctx.globalAlpha=Math.min(1,k*1.4); ctx.textAlign='center';
+      ctx.font='900 '+(this.game.isTouch?22:30)+'px system-ui, sans-serif';
+      ctx.fillStyle='#9d7bff'; ctx.shadowColor='#c3a6ff'; ctx.shadowBlur=16;
+      ctx.fillText(en?'⚡ ULTIMATE READY — press R':'⚡ 必杀就绪 — 按 R 释放',W/2,this.topMargin+44);
+      ctx.restore();
+    }
+    // Ultimate RESULT banner — scaled to what the ult actually did (total dmg + KOs).
+    if(this._ultResultBanner>0){
+      const span=this._ultResultText.includes('×')||this._ultResultText.includes('KO')?2.0:1.4;
+      const k=Math.min(1,this._ultResultBanner/span),pop=1+0.18*Math.sin((1-k)*Math.PI);
+      ctx.save(); ctx.globalAlpha=Math.min(1,k*1.5); ctx.textAlign='center';
+      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
+      ctx.fillStyle=this._ultResultColor; ctx.shadowColor=this._ultResultColor; ctx.shadowBlur=20;
+      ctx.fillText(this._ultResultText,W/2,this.topMargin+104);
+      ctx.restore();
+    }
     // Compact combo badge instead of huge layered text across the cats.
     if(this.combo>=2){
       ctx.save();

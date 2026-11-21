@@ -222,17 +222,22 @@
   const SKILLS = [
     // ---- 火 fire ----
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 1.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
-    { id: 'fireballMeow', name: '喵火球', element: 'fire',  kind: 'projectile', power: 1.1, cd: 3.0, ultCost: 0,  tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '吐出滚烫火球，命中后持续灼烧。' },
+    { id: 'fireballMeow', name: '喵火球', element: 'fire',  kind: 'projectile', power: 1.35, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '蓄力吐出滚烫火球（短暂前摇），命中后持续灼烧；施放后短暂迟缓（后遗症）。' },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 water ----
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.0, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
+    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 0.9, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
+    { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 6.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
     { id: 'guardStance', name: '守护',   element: 'light', kind: 'buff', shieldType: 'protect', power: 0, cd: 9.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '极短时间完全格挡下一次攻击；结束后短暂易伤。' },
     { id: 'mirrorWall',  name: '反弹壁', element: 'elec',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '立起反弹壁，弹回飞行弹体；架盾期间自身被定身。' },
     { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
     // ---- 草 grass ----
     { id: 'leafDart',   name: '叶刃',     element: 'grass', kind: 'projectile', power: 1.0, cd: 1.6, ultCost: 0,  tags: ['ranged'],        appliesTag: null,    vfx: 'muzzle',    desc: '锋利草叶高速飞射。' },
+    { id: 'sporeBloom', name: '孢子涨',   element: 'grass', kind: 'projectile', power: 0.95, cd: 3.2, ultCost: 0, grow: 3.2, tags: ['ranged','bind'], appliesTag: 'bind', vfx: 'impact', desc: '孢子团边飞边膨胀，飞得越远覆盖范围越大，命中束缚目标。' },
+    { id: 'homingSeed', name: '追踪草种', element: 'grass', kind: 'projectile', power: 1.0, cd: 3.6, ultCost: 0, homing: 3.2, tags: ['ranged'], appliesTag: null, vfx: 'muzzle', desc: '会追踪目标的草种，最多飞行数秒后消散。' },
     { id: 'thornCoil',  name: '荆缠',     element: 'grass', kind: 'melee',      power: 1.1, cd: 3.5, ultCost: 0,  tags: ['bind','bleed'],  appliesTag: 'bleed', vfx: 'impact',    desc: '荆棘缠绕撕裂，造成流血。' },
+    { id: 'quakeStomp', name: '泰山压顶', element: 'grass', kind: 'leap',       power: 1.4, cd: 5.0, ultCost: 0,  tags: ['melee','stagger'], appliesTag: null, vfx: 'impact', desc: '腾空跃起，泰山压顶般砸向目标点，落地小范围震荡并击虚周围敌人。' },
     { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'orb',       desc: '吸收日光回复自身斗志。' },
     // ---- 电 elec ----
     { id: 'staticPounce', name: '静电扑', element: 'elec',  kind: 'dash',       power: 1.4, cd: 4.0, ultCost: 0,  tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',      desc: '带电冲刺，命中麻痹目标。' },
@@ -240,6 +245,7 @@
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
+    { id: 'shadeLeap',  name: '飞扑',     element: 'dark',  kind: 'pounce',     power: 1.3, cd: 4.0, ultCost: 0,  tags: ['melee','dash'],  appliesTag: null,    vfx: 'beam',      desc: '猛地飞扑而出，撞上的第一个敌人受到重击并被击退。' },
     { id: 'hex',        name: '猫咒',     element: 'dark',  kind: 'projectile', power: 0.9, cd: 3.0, ultCost: 0,  tags: ['expose','curse'], appliesTag: 'expose', vfx: 'orb',       desc: '诅咒之球暴露破绽，使目标受到的伤害提高40%。' },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
@@ -430,10 +436,10 @@
     const pool=learnableSkills(cat);
     const own=pool.filter(sk=>sk.element===elementOf(cat.species)&&!sk.ultCost);
     const splash=pool.filter(sk=>sk.element===SPLASH_ELEMENT[elementOf(cat.species)]&&!sk.ultCost);
-    const attackKinds=['melee','projectile','dash'];
+    const attackKinds=['melee','projectile','dash','leap','pounce'];
     // The basic (left-click) must always be a real attack, never a shield/heal —
     // otherwise the cat has no primary attack. Fall back across elements if needed.
-    const isAttack=sk=>['melee','projectile','dash','chain','aoe'].includes(sk.kind);
+    const isAttack=sk=>['melee','projectile','dash','leap','pounce','chain','aoe'].includes(sk.kind);
     const basic=own.find(sk=>['melee','projectile'].includes(sk.kind))
       ||own.find(isAttack)||pool.find(sk=>['melee','projectile'].includes(sk.kind))
       ||pool.find(isAttack)||own[0]||null;
