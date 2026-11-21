@@ -48,7 +48,7 @@ function switchLane(){side=1-side;if(window.mwMiniStats)window.mwMiniStats.flips
 return{init(){rnd=seeded(seed+"gravity");sec=0;side=0;py=410;haz=[];stars=[];sp=1.6;k=0;combo=0;window.mwMiniStats={flips:0,dodges:0,gems:0};info("TAP OR SPACE TO FLIP");},
 tick(dt){sec+=dt;const speed=248+Math.min(330,Math.max(0,sec-7)*5.5);sp-=dt;py+=(side?126-py:410-py)*Math.min(1,dt*16);if(sp<=0){const which=k<tutorial.length?tutorial[k]:Math.floor(rnd()*2);haz.push({x:1040,side:which,passed:false});if(k%2===0)stars.push({x:1145,side:1-which,got:false});k++;sp=Math.max(.62,1.68-Math.max(0,sec-8)*.029)+(rnd()-.5)*.1;}for(const p of haz){p.x-=speed*dt;if(!p.passed&&p.x<225){p.passed=true;if(Math.abs(py-(p.side?126:410))<78){shake=11;flash=1;finish(false,"You reached "+Math.floor(sec)+" seconds. Learn the pattern, then beat it.");return;}add(4);window.mwMiniStats.dodges++;combo++;if(combo%4===0)winEffect(225,py);}}for(const g of stars){g.x-=speed*dt;if(!g.got&&Math.abs(g.x-225)<30&&Math.abs(py-(g.side?126:410))<50){g.got=true;window.mwMiniStats.gems++;add(22);winEffect(225,py);}}haz=haz.filter(v=>v.x>-60);stars=stars.filter(v=>v.x>-50&&!v.got);if(Math.floor(sec*3)>Math.floor((sec-dt)*3))add(1);info(Math.floor(sec)+"s  ·  STREAK "+combo+"  ·  SPEED "+Math.floor(speed));},
 down(){switchLane();},key(key){if([" ","ArrowUp","ArrowDown"].includes(key))switchLane();},
-draw(){if(portrait){
+draw(){if(typeof portrait!=="undefined"&&portrait){
  // Upgrade mode replaces the base renderer: draw BOTH lanes in 540x960.
  const g=c.createLinearGradient(0,0,0,960);
  g.addColorStop(0,"#352c63");g.addColorStop(1,"#7a5688");
@@ -111,7 +111,7 @@ function release(x,y,gesture){
   // Drag-to-sort remains available for touch users.
   if(target>=0&&y>=95&&y<=520)send(target,"drag");
   else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,380)}
- }else if(target>=0&&(portrait||y>=0&&y<=540)){
+ }else if(target>=0&&((typeof portrait!=="undefined"&&portrait)||y>=0&&y<=540)){
   // Tap wins even if a moving box happens to overlap this lane.
   send(target,"click");
  }else if(gesture.fromParcel){
@@ -148,7 +148,7 @@ return{
   if(k==="ArrowLeft")send(0,"keyboard");else if(k==="ArrowDown")send(1,"keyboard");else if(k==="ArrowRight")send(2,"keyboard");
  },
  draw(){
-  if(portrait){
+  if(typeof portrait!=="undefined"&&portrait){
    const g=c.createLinearGradient(0,0,0,960);
    g.addColorStop(0,"#4b3967");g.addColorStop(1,"#795978");
    c.fillStyle=g;c.fillRect(0,0,540,960);
@@ -208,7 +208,7 @@ return{
  }
 };};
 const factory=G[id];G[id]=()=>{const m=factory();return{init(l){m.init(l);},tick(d){fxTick(d);m.tick(d);},draw(){if(shake){c.save();c.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);}m.draw();
-  if(portrait&&(id==="flip-dash"||id==="parcel-panic")){
+  if(typeof portrait!=="undefined"&&portrait&&(id==="flip-dash"||id==="parcel-panic")){
     c.save();
     if(id==="flip-dash"){
       // Transform landscape gameplay particles into the upright course.
