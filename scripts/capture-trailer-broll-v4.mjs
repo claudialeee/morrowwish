@@ -19,12 +19,14 @@ function realVerticalCamera(id){
  document.body.appendChild(output);
  const ctx=output.getContext('2d',{alpha:false});
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
- let focus=0.5;
- window.__V4_CAMERA__={setFocus(v){focus=Math.max(.18,Math.min(.82,v))},show(v){output.style.display=v?'block':'none'}};
+ let focus=0.5,mode='focus';
+ window.__V4_CAMERA__={setFocus(v){focus=Math.max(.18,Math.min(.82,v))},setMode(v){mode=v},show(v){output.style.display=v?'block':'none'}};
  function paint(){
   const sw=source.width,sh=source.height;
   ctx.fillStyle='#241a37';ctx.fillRect(0,0,540,960);
   if(sw>10&&sh>10){
+   if(mode==='arena'){const w=540,h=w*sh/sw;ctx.drawImage(source,0,0,sw,sh,0,(960-h)/2,w,h);requestAnimationFrame(paint);return;}
+
    // Trim 3% safe margins to remove any edge artifacts while retaining
    // exact 9:16 pixel aspect; never stretch a landscape game.
    const ch=sh*0.80,cw=ch*540/960,available=sw*.94;
@@ -111,102 +113,104 @@ try{
   if(!entered)throw Error('V5 proof missing: entered a real explorable region');
   await mark('map-explore',2850);
   await page.evaluate(()=>{
-   window.__V4_CAMERA__.show(false);
-   window.__game.scene='yard';window.__game.showYardChrome();
-   State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:true};
-   const wild=GameData.SPECIES.find(s=>s.rarity==='SR')||GameData.SPECIES.at(-1);
-   window.__game.startBattle(State.S.cats.slice(0,3),wild);
-   window.__V4_CAMERA__.show(true);
+   window.__V4_CAMERA__.show(false);window.__game.scene='yard';window.__game.showYardChrome();
+   const cats=State.S.cats.slice(0,3);
+   CatRelations.grow(cats[0],cats[1],75);CatRelations.choose(cats[0],cats[1]);
+   State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
+   const wild=GameData.SPECIES.find(s=>s.rarity==='SSR')||GameData.SPECIES.at(-1);
+   window.__game.startBattle(cats,wild);
+   window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
   });
-  await mark('battle',3350);
+  if(!await page.evaluate(()=>!!window.__game.battle?.duo))throw Error('V6 no actual two-cat combo');
+  await mark('battle-intro',1800);
+  const duo=await page.evaluate(()=>{
+   const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
+   b.duoCharge=100;b.duoCd=0;return{cast:b.castDuo(),uses:b.duoUses,cinematic:!!b.duoCinematic};
+  });
+  if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
+  await mark('duo',3300);
+  const ult=await page.evaluate(()=>{
+   const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
+   b.ult=100;b.ultCd=0;const cast=b.ultimate(),name=b.ultCinematic?.name;
+   return{cast,cinematic:!!b.ultCinematic,name,hasChinese:/[\u3400-\u9fff]/.test(name||'')};
+  });
+  if(!ult.cast||!ult.cinematic||ult.hasChinese)throw Error('V6 real ultimate missing '+JSON.stringify(ult));
+  await mark('ultimate',3400);
+  console.log('V6 REAL CAT COMBAT '+JSON.stringify({duo,ult}));
   const labels=shots.map(s=>s.label);
-  for(const required of ['raising','work-after','tease','map-explore','battle'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
+  for(const required of ['raising','work-after','tease','map-explore','battle-intro','duo','ultimate'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
  }));
  result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
   await page.goto(host+'/pawsibly-innocent/?platform=crazygames&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
-  await page.waitForFunction(()=>!!window.__PAWSIBLY_TEST__?.getState(),{timeout:12000});
+  await page.waitForFunction(()=>!!window.__PAWSIBLY_TEST__?.getState(),null,{timeout:12000});
+  // Keep the whole real board visible throughout both attempts. A cropped
+  // follow-cam previously hid the human and made legal moves look like teleports.
   await page.evaluate(()=>{
    const source=document.getElementById('board'),out=document.createElement('canvas');
-   out.id='mw-v5-chase-camera';out.width=540;out.height=960;
+   out.width=540;out.height=960;out.id='mw-v6-full-board';
    Object.assign(out.style,{position:'fixed',inset:'0',width:'100vw',height:'100vh',zIndex:'2147483647',pointerEvents:'none'});
    document.body.appendChild(out);
-   const ctx=out.getContext('2d');ctx.imageSmoothingEnabled=true;
-   window.__V5_FOCUS__='cat';
-   window.__V5_SHOW__=on=>out.style.display=on?'block':'none';
-   let cx=0;
-   function draw(){
+   const ctx=out.getContext('2d',{alpha:false});
+   function paint(){
+    ctx.fillStyle='#241a37';ctx.fillRect(0,0,540,960);
     const s=window.__PAWSIBLY_TEST__?.getState();
     if(s&&source.width&&source.height){
-     const vis=588*540/960,a=s.cat||{x:2},h=s.human||{x:7};
-     const mid=window.__V5_FOCUS__==='human'?h.x:window.__V5_FOCUS__==='cat'?a.x:.47*a.x+.53*h.x;
-     const want=Math.max(0,Math.min(840-vis,(mid+.5)*84-vis/2));
-     cx+=(want-cx)*.18;
-     ctx.drawImage(source,cx*source.width/840,0,vis*source.width/840,source.height,0,0,540,960);
+     const h=540*source.height/source.width,y=(960-h)/2;
+     ctx.drawImage(source,0,0,source.width,source.height,0,y,540,h);
+     ctx.fillStyle='#fff7ec';ctx.font='bold 30px system-ui,sans-serif';
+     ctx.fillText('STEAL THREE FISH',25,190);
+     ctx.font='bold 25px system-ui,sans-serif';
+     ctx.fillText('FISH '+s.got+'/3',28,760);
+     if(s.winning)ctx.fillText('ESCAPED!',28,815);
+     else if(s.lives<3)ctx.fillText('CAUGHT!',28,815);
     }
-    requestAnimationFrame(draw);
-   }draw();
+    requestAnimationFrame(paint);
+   }paint();
   });
-  const shots=[],api=()=>window.__PAWSIBLY_TEST__;
-  const sneak=stamp();
-  // Keep the successful attempt continuous: do NOT move four squares and
-  // silently restart before the yarn throw (that broke the previous advert).
-  await sleep(1570);
-  shots.push({label:'sneak',start:sneak,duration:stamp()-sneak-.07});
-  const decoy=stamp();
-  await page.evaluate(()=>{
-   const a=window.__PAWSIBLY_TEST__;a.throwYarn();if(!a.throwYarnTo({x:9,y:1}))throw Error('Real yarn distraction rejected');
-   window.__V5_FOCUS__='human';
-  });
-  await sleep(2600);shots.push({label:'distraction',start:decoy,duration:2.48});
-  await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:10000});
-  await page.evaluate(()=>window.__V5_FOCUS__='cat');
-  const escape=stamp();
-  let state;
-  for(const [dx,dy] of [[1,0],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[0,-1],[1,0],[0,1],[1,0]]){
-   state=await page.evaluate(([x,y])=>{
-    window.__PAWSIBLY_TEST__.move(x,y);const s=window.__PAWSIBLY_TEST__.getState();
-    return{won:s.winning,done:s.done,got:s.got,yarn:s.yarnThrows};
-   },[dx,dy]);await sleep(300);if(state.done)break;
-  }
-  if(!state?.won||state.got<3)throw Error('V5 escape must be earned by 3 genuine collected fish: '+JSON.stringify(state));
-  const escapedAt=stamp();
-  shots.push({label:'escape-run',start:escape,duration:Math.min(3.3,escapedAt-escape-.07)});
-  await page.evaluate(()=>window.__V5_SHOW__(false));
+  const shots=[],first=stamp();
   await sleep(1250);
-  shots.push({label:'escaped',start:escapedAt,duration:1.12});
-  // Explicitly separate this from the win: a different attempt, no jump cut
-  // disguised as one continuous run.
-  // A separate, explicitly labelled LATER ROOM for the caught sequence.
-  // A legal misplay in level six is more convincing than faking a loss in the
-  // forgiving tutorial level. The two runs are never presented as one run.
-  await page.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(5,false);window.__V5_SHOW__(true);window.__V5_FOCUS__='cat'});
-  const caughtRun=stamp();let caughtAt=null,lastLoss=null;
-  for(let i=0;i<28;i++){
-   lastLoss=await page.evaluate(()=>{
+  await page.evaluate(()=>{
+   const a=window.__PAWSIBLY_TEST__;a.throwYarn();
+   if(!a.throwYarnTo({x:9,y:1}))throw Error('The real yarn distraction failed');
+  });
+  await sleep(2650);
+  await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:10000});
+  let win;
+  for(const [dx,dy] of [[1,0],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[0,-1],[1,0],[0,1],[1,0]]){
+   win=await page.evaluate(([x,y])=>{
+    window.__PAWSIBLY_TEST__.move(x,y);const s=window.__PAWSIBLY_TEST__.getState();
+    return{won:s.winning,done:s.done,got:s.got};
+   },[dx,dy]);await sleep(400);if(win.done)break;
+  }
+  if(!win?.won||win.got<3)throw Error('Continuous successful escape does not collect three real fish '+JSON.stringify(win));
+  await sleep(1400);
+  shots.push({label:'escape-attempt',start:first,duration:stamp()-first-.1});
+  // Explicit second run. The cut is at the start of a NEW room, never in
+  // the middle of movement. A different outcome comes from actual game rules.
+  await page.evaluate(()=>window.__PAWSIBLY_TEST__.choose(5,false));
+  const second=stamp();await sleep(800);
+  let caught=false,last;
+  for(let i=0;i<30;i++){
+   last=await page.evaluate(()=>{
     const api=window.__PAWSIBLY_TEST__,s=api.getState();
     const dx=s.cat.x<s.human.x?1:s.cat.x>s.human.x?-1:0;
     const dy=s.cat.y<s.human.y?1:s.cat.y>s.human.y?-1:0;
-    // Legal directional moves only; the game itself enforces sight,
-    // enemy pursuit, invincibility and catching.
     const tries=dx?[[dx,0],[0,dy||1],[0,-1],[-dx,0]]:[[0,dy],[1,0],[-1,0],[0,-dy]];
     for(const [x,y] of tries){
-      if(!x&&!y)continue;
-      const before={...s.cat};
-      api.move(x,y);
-      const t=api.getState();
-      if(t.lives<3||before.x!==t.cat.x||before.y!==t.cat.y)break;
+     if(!x&&!y)continue;
+     const before={...s.cat};api.move(x,y);const next=api.getState();
+     if(next.lives<3||before.x!==next.cat.x||before.y!==next.cat.y)break;
     }
-    const q=api.getState();
-    return{lives:q.lives,cat:q.cat,human:q.human,exposure:q.exposure,steps:q.steps};
+    const q=api.getState();return{lives:q.lives,cat:q.cat,human:q.human,steps:q.steps};
    });
-   await sleep(260);
-   if(lastLoss.lives<3){caughtAt=stamp();break}
+   await sleep(390);
+   if(last.lives<3){caught=true;break}
   }
-  if(!caughtAt)throw Error('V5 missing real caught state; no fake failure is allowed '+JSON.stringify(lastLoss));
-  shots.push({label:'caught-chase',start:caughtRun,duration:Math.max(.65,Math.min(3.3,caughtAt-caughtRun-.75))});
-  shots.push({label:'caught',start:Math.max(caughtRun,caughtAt-.70),duration:1.45});
-  await sleep(1050);
+  if(!caught)throw Error('The second continuous run never gets caught '+JSON.stringify(last));
+  await sleep(1250);
+  shots.push({label:'caught-attempt',start:second,duration:stamp()-second-.12});
+  console.log('V6 CAT HEIST UNBROKEN RUNS VERIFIED '+JSON.stringify({win,caught:last}));
   return shots;
  }));
  result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
@@ -214,6 +218,7 @@ try{
   await page.locator('#introStart').click();
   // Marketing gameplay MUST show the real board. Avoid the zero-height flex collapse.
   await page.addStyleTag({content:'.arcade-return,.app>.header,.app>.progress,.app .resident-ribbon,.app .town-tabs,.app #moveWish,.app .citizen-panel,.app .petition,.app .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.app .stage{display:flex!important;flex-direction:column!important;gap:6px!important;overflow:hidden!important}.app .map-panel{order:0!important;display:flex!important;flex:0 0 550px!important;height:550px!important;min-height:550px!important;max-height:550px!important;width:100%!important;padding:5px!important}.app .panel-top{display:none!important}.app .world{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 495px!important;height:495px!important;min-height:495px!important;max-height:495px!important;padding:4px!important}.app .board{display:grid!important;flex:0 0 462px!important;height:462px!important;min-height:462px!important;width:462px!important;max-width:100%!important;aspect-ratio:1!important;gap:5px!important}.app .tile-icon{font-size:30px!important}.app .sidebar{display:contents!important}.app .cards{order:1!important;flex:0 0 122px!important;min-height:122px!important;max-height:122px!important;width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}.app .wish-card{min-height:110px!important;max-height:120px!important}.app #preview{max-height:22px!important}.app .town-bubble{max-height:23px!important}.modal{width:min(96vw,520px)!important;max-height:88vh!important;overflow:auto!important}'});
+  await page.addStyleTag({content:'#end.show .end-modal{box-sizing:border-box!important;width:96vw!important;max-width:96vw!important;height:88vh!important;max-height:88vh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important}#end.show #endArt{display:block!important;width:min(78vw,410px)!important;height:330px!important;max-height:330px!important;object-fit:contain!important}#end.show #endTitle{text-align:center!important;font-size:clamp(26px,5vw,40px)!important;line-height:1.1!important}#end.show #endLine{text-align:center!important;max-width:92%!important}#end.show #endStory,#end.show #endDetail,#end.show #endReason,#end.show #endLegacy,#end.show #endGoal,#end.show .feedback,#end.show .modal-choices{display:none!important}'});
   await page.waitForFunction(()=>{const e=document.querySelector('#board'),r=e?.getBoundingClientRect();return r&&r.width>=350&&r.height>=350&&r.top>=0&&r.bottom<=innerHeight-90&&getComputedStyle(e).display==='grid'},null,{timeout:8000});
   const started=stamp(),shots=[{label:'board',start:stamp(),duration:2.55}];
   // Hold each TRUE gameplay milestone before moving on, so successive cuts
@@ -221,6 +226,7 @@ try{
   await sleep(2850);
   let comboAt=null,legendAt=null,endAt=null,buildLate=null,matureAt=null,placed=0;
   for(let day=1;day<=7;day++){
+   const stepStart=stamp();
    const action=await page.evaluate(()=>{
     const cards=[...document.querySelectorAll('#cards .wish-card')];
     let best=null;
@@ -236,12 +242,18 @@ try{
     cards[best.i].click();
     const target=document.querySelector('#board .tile.target[data-pos="'+best.pos+'"]');
     if(!target)throw Error('Actual selected town plot disappeared');
-    target.click();
-    return{day,choice:best.i,pos:best.pos,combo:Number(document.querySelector('#comboNum')?.textContent)||0};
+    return{day,choice:best.i,pos:best.pos};
    });
-   if(!action)break;placed++;
+   if(!action)break;
+   await sleep(950); // show the highlighted plot before a real placement
+   action.combo=await page.evaluate(pos=>{
+    const tile=document.querySelector('#board .tile.target[data-pos="'+pos+'"]');
+    if(!tile)throw Error('Town plot vanished before placement');
+    tile.click();return Number(document.querySelector('#comboNum')?.textContent)||0;
+   },action.pos);
+   placed++;
    if(day===1){buildLate=stamp();await sleep(2400)}
-   if(action.combo>0&&!comboAt){comboAt=stamp();await sleep(2650)}
+   if(action.combo>0&&!comboAt){comboAt=stepStart;await sleep(3450)}
    if(day===6){matureAt=stamp();await sleep(2450)}
    if(day===3||day===4||day===5){
     if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card')||document.querySelector('#tabLegends')?.textContent?.includes('1'))){legendAt=stamp();await sleep(2450)}
@@ -273,7 +285,7 @@ try{
   if(!legendAt||!buildLate||!matureAt)throw Error('V5 requires distinct real day-one, mature board and legendary clips');
   shots[0].duration=Math.min(shots[0].duration,Math.max(.85,stamp()-started));
   shots.push({label:'board-later',start:buildLate,duration:2.25});
-  shots.push({label:'combination',start:comboAt,duration:2.35});
+  shots.push({label:'combination',start:comboAt,duration:3.4});
   shots.push({label:'legendary',start:legendAt,duration:2.25});
   if(matureAt)shots.push({label:'board-mature',start:matureAt,duration:2.25});
   shots.push({label:'ending',start:endAt,duration:3.35});
@@ -288,7 +300,9 @@ try{
     if(!r||!choices.length||r.top<0||r.left<0||r.right>innerWidth+1||r.bottom>innerHeight-10||document.documentElement.scrollWidth>innerWidth+2)throw Error('V5 native Elsewhere phone UI clipped for '+id+' '+JSON.stringify({rect:r&&{top:r.top,bottom:r.bottom,left:r.left,right:r.right},height:innerHeight,width:innerWidth,choices:choices.length}));
     if(choices.some(c=>{const x=c.getBoundingClientRect();return x.bottom>innerHeight||x.right>innerWidth}))throw Error('V5 Elsewhere choice off screen '+id);
   },world);
-  const shots=[],homeAt=stamp();await sleep(2500);shots.push({label:'choose-life',start:homeAt,duration:2.3});
+  const teaserStyle=await page.addStyleTag({content:'#home .life-card:nth-child(n+3){display:none!important}'});
+  const shots=[],homeAt=stamp();await sleep(3850);shots.push({label:'choose-life',start:homeAt,duration:3.7});
+  await teaserStyle.evaluate(el=>el.remove());
   for(const world of ['paris','amalfi','tokyo','moon']){
    await page.locator('[data-world="'+world+'"]').first().click({timeout:9000});
    await sleep(350);await checkFull(world);
@@ -317,11 +331,7 @@ try{
   const died=stamp();
   if(died-begun<1.2)throw Error('V5 flip collision has no preceding gameplay');
   await sleep(1700);
-  const playDuration=Math.min(3.65,died-begun-.92);
-  const collisionAt=Math.max(begun+playDuration,died-.57);
-  return [{label:'play',start:begun,duration:playDuration},
-    {label:'collision',start:collisionAt,duration:.60},
-    {label:'game-over',start:died+.12,duration:1.42}];
+  return [{label:'full-attempt',start:begun,duration:stamp()-begun-.08}];
  }));
  result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
   // Observer is READ ONLY: exposes the authentic next falling parcel's color.
@@ -374,9 +384,8 @@ try{
   if(!end.dead||end.state.lives>0||!/game over/i.test(end.result))throw Error('No genuine wrong-lane death '+JSON.stringify(end));
   await sleep(1900);
   if(died-wrongStart<2.8)throw Error('No readable wrong-lane footage');
-  return [{label:'deliver',start:Math.max(began,streak-3.55),duration:3.4},
-    {label:'wrong-lane',start:Math.max(wrongStart,died-2.8),duration:2.25},
-    {label:'game-over',start:died+.12,duration:1.55}];
+  const fullStart=Math.max(began,streak-2.3);
+  return [{label:'full-attempt',start:fullStart,duration:stamp()-fullStart-.12}];
  }));
  result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
   await page.goto(host+'/pocket-aquarium/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
@@ -397,7 +406,7 @@ try{
     {label:'water-cloudy',start:murkyAt,duration:Math.min(3.2,timeout-murkyAt-.15)},
     {label:'timeout',start:Math.max(murkyAt,timeout-.55),duration:2.0}];
  }));
- const manifest={createdAt:new Date().toISOString(),kind:'V5-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
+ const manifest={createdAt:new Date().toISOString(),kind:'V6-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
  fs.writeFileSync(path.join(dir,'broll-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 }finally{
  if(browser)await browser.close();server.kill('SIGTERM');

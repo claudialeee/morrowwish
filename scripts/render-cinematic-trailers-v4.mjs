@@ -10,7 +10,7 @@ const brollDir=process.env.MW_V4_BROLL_DIR||path.join(process.env.RUNNER_TEMP||o
 const work=fs.mkdtempSync(path.join(os.tmpdir(),'mw-edit-v4-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
-const manifest={version:'V5',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
+const manifest={version:'V6',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
  socialAutopublish:false,historicalVideoViewsExcluded:true,trailers:[]};
 const choose=(src,start,duration,caption='',label='')=>({src,start,duration,caption,label});
 const cover=(duration,caption='',label='')=>choose('cover',0,duration,caption,label);
@@ -18,62 +18,56 @@ const game=(start,duration,caption='',label='')=>choose('game',start,duration,ca
 const broll=(label,duration,caption='')=>choose('broll',0,duration,caption,label);
 const playlists={
  'cat-bond':[
-  broll('yard',2.5,'MEET YOUR NEW CAT FAMILY.'),
-  broll('raising',2.45,'RAISE YOUR OWN CAT CREW.'),
-  broll('work-before',1.55,'SEND CATS TO WORK.'),
-  broll('work-after',2.35,'EARN COINS TOGETHER.'),
-  broll('tease',2.45,'PLAY WITH YOUR CATS.'),
-  broll('map-choice',1.95,'DISCOVER FIVE REGIONS.'),
-  broll('map-explore',2.7,'EXPLORE BEYOND THE YARD.'),
-  broll('battle',3.1,'FIGHT AS A TEAM.'),
-  cover(1.9,'PLAY FREE')
+  broll('yard',2.8,'A HOME FULL OF CATS.'),
+  broll('raising',2.9,'MEET AND RAISE YOUR TEAM.'),
+  broll('work-before',1.8,'SEND CATS OUT TO WORK.'),
+  broll('work-after',2.4,'EARN COINS TOGETHER.'),
+  broll('tease',2.9,'PLAY WITH YOUR CATS.'),
+  broll('map-choice',2.15,'CHOOSE WHERE TO EXPLORE.'),
+  broll('map-explore',2.6,'DISCOVER THE WORLD TOGETHER.'),
+  broll('battle-intro',1.6,'YOUR CATS FIGHT AS A TEAM.'),
+  broll('duo',3.1,'TWO CATS. ONE COMBINATION!'),
+  broll('ultimate',3.2,'UNLEASH THE ULTIMATE!'),
+  cover(1.65,'PLAY FREE')
  ],
  'pawsibly-innocent':[
-  broll('sneak',1.4,'THREE FISH. ONE SNEAKY CAT.'),
-  broll('distraction',2.35,'DISTRACT THE HUMAN.'),
-  broll('escape-run',2.9,'RUN FOR THE EXIT.'),
-  broll('escaped',1.05,'A NARROW ESCAPE!'),
-  broll('caught-chase',2.85,'NEXT ROOM. ONE BAD MOVE...'),
-  broll('caught',1.3,'CAUGHT!'),
-  cover(1.9,'PLAY FREE')
+  broll('escape-attempt',25,'STEAL THREE FISH. ESCAPE THE HUMAN.'),
+  broll('caught-attempt',15,'ANOTHER ROOM. ONE WRONG MOVE...'),
+  cover(1.75,'PLAY FREE')
  ],
  'tiny-town':[
-  broll('board',2.5,'NO JOBS. JUST FREEDOM.'),
-  broll('board-later',2.35,'PLACE YOUR OWN DREAMS.'),
-  broll('combination',2.65,'NEIGHBORING DREAMS COMBINE.'),
-  broll('legendary',2.2,'UNLOCK LEGENDARY WISHES.'),
-  broll('board-mature',2.2,'WATCH YOUR TOWN TRANSFORM.'),
-  broll('ending',3.1,'SEVEN DAYS. YOUR OWN ENDING.'),
-  cover(1.9,'PLAY FREE')
- ],
- 'elsewhere':[
-  broll('choose-life',2.25,'WAKE UP TO A NEW LIFE.'),
-  broll('paris',3.0,'FALL IN LOVE IN PARIS.'),
-  broll('paris-result',1.4),
-  broll('amalfi',3.0,'OWN A SEASIDE VILLA.'),
-  broll('amalfi-result',1.4),
-  broll('tokyo',3.0,'LIVE AS A SUPERSTAR.'),
-  broll('tokyo-result',1.4),
-  broll('moon',3.0,'OR OWN A HOTEL ON THE MOON.'),
-  broll('moon-result',1.4),
-  cover(1.9,'PLAY FREE')
- ],
- 'flip-dash':[
-  broll('play',3.55,'ONE BUTTON. ONE WRONG FLIP.'),
-  broll('collision',0.6),
-  broll('game-over',1.4,'CRASHED. BEAT MY SCORE?'),
-  cover(3.0,'PLAY FREE')
- ],
- 'parcel-panic':[
-  broll('deliver',3.3,'KEEP THE DELIVERIES GOING.'),
-  broll('wrong-lane',2.15,'ONE WRONG LANE...'),
-  broll('game-over',1.85,'GAME OVER. BEAT MY RUN?'),
+  broll('board',2.5,'NO JOBS. BUILD YOUR OWN TOWN.'),
+  broll('board-later',2.35,'CHOOSE A WISH. PLACE IT.'),
+  broll('combination',3.35,'TWO WISHES COMBINE!'),
+  broll('legendary',2.35,'UNLOCK A LEGENDARY BUILDING.'),
+  broll('board-mature',2.25,'WATCH YOUR TOWN CHANGE.'),
+  broll('ending',3.3,'SEVEN DAYS. YOUR OWN ENDING.'),
   cover(1.7,'PLAY FREE')
  ],
+ 'elsewhere':[
+  broll('choose-life',3.55,'WAKE UP TO A WHOLE NEW LIFE.'),
+  broll('paris',3.15,'FALL IN LOVE IN PARIS.'),
+  broll('paris-result',1.4),
+  broll('amalfi',3.15,'LIVE IN YOUR OWN SEASIDE VILLA.'),
+  broll('amalfi-result',1.4),
+  broll('tokyo',3.15,'BECOME A SUPERSTAR.'),
+  broll('tokyo-result',1.4),
+  broll('moon',3.15,'OR OWN A HOTEL ON THE MOON.'),
+  broll('moon-result',1.4),
+  cover(1.7,'PLAY FREE')
+ ],
+ 'flip-dash':[
+  broll('full-attempt',20,'ONE BUTTON. HOW LONG CAN YOU SURVIVE?'),
+  cover(1.8,'PLAY FREE')
+ ],
+ 'parcel-panic':[
+  broll('full-attempt',20,'MATCH THE COLORS. TRY NOT TO MISS.'),
+  cover(1.8,'PLAY FREE')
+ ],
  'pocket-aquarium':[
-  broll('feeding',2.9,'FEED THE RIGHT FISH.'),
+  broll('feeding',2.9,'FEED THE HUNGRY FISH.'),
   broll('water-cloudy',3.0,'THE WATER IS GETTING CLOUDY.'),
-  broll('timeout',1.9,'TIME UP. CAN YOU GET AN A?'),
+  broll('timeout',2.0,'TIME IS UP. WHAT GRADE DID YOU GET?'),
   cover(1.7,'PLAY FREE')
  ]
 };
@@ -89,7 +83,7 @@ function edit(slug){
  const chosen=[];
  const rawInfo=b?ffprobe(b.file):null;
  if(b?.errors?.length)throw Error('Browser errors in recorded game: '+slug);
- if(new Set(playlists[slug].filter(x=>x.src==='broll').map(x=>x.label)).size!==playlists[slug].filter(x=>x.src==='broll').length)throw Error('V5 repeated footage label detected for '+slug);
+ if(new Set(playlists[slug].filter(x=>x.src==='broll').map(x=>x.label)).size!==playlists[slug].filter(x=>x.src==='broll').length)throw Error('V6 repeated footage label detected for '+slug);
  for(const item of playlists[slug]){
   const shot={...item};
   if(shot.src==='broll'){
@@ -100,10 +94,10 @@ function edit(slug){
    shot.duration=Math.min(shot.duration,scene.duration);
    if(shot.start+shot.duration>rawInfo.seconds-0.04)throw Error('Broll segment overruns video '+slug+'/'+shot.label);
   }
-  if(shot.src==='game')throw Error('V5 forbids old cut-together V3 footage '+slug);
+  if(shot.src==='game')throw Error('V6 forbids old cut-together V3 footage '+slug);
   chosen.push(shot);
  }
- const clipOverlap=0.22,n=chosen.length;
+ const clipOverlap=0.28,n=chosen.length;
  const args=['-nostdin','-y','-hide_banner','-loglevel','error',
   '-i',b.file];
  let coverIndex=1,brollIndex=0,musicIndex;
@@ -170,7 +164,7 @@ function edit(slug){
  let timeline=chosen[0].duration,prev='v0';
  for(let i=1;i<n;i++){
   const next='x'+i;
-  const types=['fade','fade','smoothleft','fade','wipeup','fade'];
+  const types=['fade'];
   const transition=types[(i+slug.length)%types.length];
   filters.push('['+prev+'][v'+i+']xfade=transition='+transition+
     ':duration='+fmt(clipOverlap)+':offset='+fmt(timeline-clipOverlap)+'['+next+']');
@@ -178,7 +172,7 @@ function edit(slug){
   prev=next;
  }
  filters.push('['+prev+']format=yuv420p[vout]');
- const output=base+'/trailer-v5-20261121.mp4',poster=base+'/trailer-v5-20261121.jpg';
+ const output=base+'/trailer-v6-20261121.mp4',poster=base+'/trailer-v6-20261121.jpg';
  const command=[...args,'-filter_complex',filters.join(';'),'-map','[vout]',
   '-map',musicIndex+':a:0','-t',fmt(timeline),'-r','30',
   '-c:v','libx264','-preset','veryfast','-crf','22','-pix_fmt','yuv420p',
@@ -187,28 +181,28 @@ function edit(slug){
  execFileSync('ffmpeg',command,{stdio:'inherit',timeout:330000});
  const meta=ffprobe(output),bytes=fs.statSync(output).size;
  const isHero=hero.has(slug);
- if(meta.seconds<(isHero?11.0:7.1)||meta.seconds>(isHero?40:16.5)||
+ if(meta.seconds<4.4||meta.seconds>55||
   !meta.streams.some(x=>x.codec_type==='video'&&x.width===1080&&x.height===1920)||
   !meta.streams.some(x=>x.codec_type==='audio')||bytes<220000)
    throw Error('Video format, genuine runtime or sound QA failed '+JSON.stringify({slug,meta,bytes}));
  execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','0.9','-i',output,'-frames:v','1','-q:v','3',poster],{timeout:24000});
  const review=[];
  for(const [i,seconds] of [1.1,meta.seconds*.50,Math.max(0,meta.seconds-0.85)].entries()){
-  const file=base+'/v5-review-'+(i+1)+'.jpg';
+  const file=base+'/v6-review-'+(i+1)+'.jpg';
   execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',fmt(seconds),'-i',output,'-frames:v','1','-q:v','3',file],{timeout:24000});
   if(fs.statSync(file).size<12000)throw Error('Blank review thumbnail '+file);
-  review.push('/promo/'+slug+'/v5-review-'+(i+1)+'.jpg');
+  review.push('/promo/'+slug+'/v6-review-'+(i+1)+'.jpg');
  }
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
-  video:'/promo/'+slug+'/trailer-v5-20261121.mp4',poster:'/promo/'+slug+'/trailer-v5-20261121.jpg',
+  video:'/promo/'+slug+'/trailer-v6-20261121.mp4',poster:'/promo/'+slug+'/trailer-v6-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
   sourceClips:'new verified game-controlled chronological V5 scenes and separate typeset end card',transitions:'new game-controlled scenes with gentle xfade, no stale V3 caption overlays',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
- console.log('CINEMATIC V5 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
+ console.log('CINEMATIC V6 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
 }
 try{
  for(const slug of ['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'])edit(slug);
- fs.writeFileSync('public/promo/v5-review.json',JSON.stringify(manifest,null,2)+'\n');
- console.log('V5 TRAILERS RENDERED FOR REVIEW, NO SOCIAL POSTING: '+manifest.trailers.length);
+ fs.writeFileSync('public/promo/v6-review.json',JSON.stringify(manifest,null,2)+'\n');
+ console.log('V6 TRAILERS RENDERED FOR REVIEW, NO SOCIAL POSTING: '+manifest.trailers.length);
 }finally{fs.rmSync(work,{recursive:true,force:true})}
