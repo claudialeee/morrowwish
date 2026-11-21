@@ -135,7 +135,7 @@ try{
  console.log('English switch:',JSON.stringify(en));
  assert.equal(en.lang,'en');
  assert.ok(en.winScore.includes('Score'),'Victory score label must switch language');
- assert.ok(en.instructions.includes('human'),'English tutorial must explain human movement');
+ assert.ok(/owner/i.test(en.instructions)&&/chase/i.test(en.instructions)&&/footsteps/i.test(en.instructions),'English tutorial must explain sight-triggered pursuit and soft footstep investigation');
  assert.equal(errors.length,0,'Canvas and UI must be free of uncaught errors');
  await page.goto(new URL('/',url).toString(),{waitUntil:'load',timeout:40000});
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(170);
