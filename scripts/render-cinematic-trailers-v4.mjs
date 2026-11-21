@@ -32,11 +32,11 @@ const playlists={
   cover(1.8,'PLAY FREE')
  ],
  'cat-bond':[
-  broll('yard',3.6,'MEET YOUR CAT CREW.'),
+  broll('battle',3.0,'TWO CATS. ONE FIGHT.'),
+  broll('yard',3.6,'BUILD YOUR CAT CREW.'),
   broll('yard-late',2.45),
-  broll('battle',3.0,'THE STRAYS FIGHT BACK.'),
+  broll('battle-late',2.6,'UNLEASH TEAM ATTACKS.'),
   game(2.85,2.3),
-  broll('battle-late',2.6,'FIGHT WITH TWO CATS.'),
   game(0.14,2.4),
   broll('battle',2.4),
   game(5.65,2.1),
@@ -44,8 +44,8 @@ const playlists={
   cover(1.8,'PLAY FREE')
  ],
  'tiny-town':[
-  broll('build',3.5,'NO WORK. BUILD WHAT YOU WANT.'),
-  broll('build-late',3.9),
+  broll('build',3.5,'NO WORK. GO ANYWHERE.'),
+  broll('build-late',3.9,'MAKE YOUR OWN TOWN.'),
   game(6.48,1.9),
   broll('build',3.45,'THE TOWN KEEPS CHANGING.'),
   game(6.50,2.0),

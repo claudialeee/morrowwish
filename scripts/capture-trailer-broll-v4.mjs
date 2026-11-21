@@ -96,7 +96,7 @@ try{
      x+=(want-x)*0.18;ctx.drawImage(source,x*source.width/840,0,vis*source.width/840,source.height,0,0,540,960);
     }
     requestAnimationFrame(draw);
-   }window.__V4_FOCUS__='both';draw();
+   }window.__V4_FOCUS__='cat';draw();
   });
   const sneak=stamp();for(let i=0;i<4;i++){await page.evaluate(()=>window.__PAWSIBLY_TEST__.move(1,0));await sleep(550);}
   const decoy=stamp();
