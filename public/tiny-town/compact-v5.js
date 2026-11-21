@@ -52,7 +52,7 @@ function neighborStoryNotes(s,focus){
 }
 
 function compareResidents(residents,s,byId,wish){
- const description=t('All five at a glance. Choose a row for that person’s full profile.','五位居民的喜好一眼对比。点击某一行，查看那个人的详细档案。');
+ const description=t('Every new town reshuffles residents’ homes and some of their likes. Tap a row to open one profile.','每次开局都会重新安排居民住址，也会改变部分喜好。点击任意一行查看个人档案。');
  return '<p class="inspect-intro">'+description+'</p><div class="resident-compare-list">'+residents.map((r,i)=>{
   const likes=r.likes.map(k=>byId[k]).filter(Boolean).slice(0,5);
   const dislikes=r.dislikes.map(k=>byId[k]).filter(Boolean).slice(0,4);

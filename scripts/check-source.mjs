@@ -447,7 +447,7 @@ if(!townCompact.includes('let opened=\'\',focusedResident=null')||
    !townCompactCss.includes('.app .resident-compare-row')||
    !townCompactCss.includes('.app .resident-focus-card'))
  throw Error('Resident avatar must open only one profile, with a separate all-five comparison');
-for(const marker of ['HOME=[0,2,4,20,24]','HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4}','window.TownV5Actions={selectWish}','if(tenant){tile.onclick','function rareUnlocked(id)','LEGENDARY_WISHES.includes(id)']){
+for(const marker of ['HOME=[0,2,4,20,24]','const homeResidents=randomizeNeighbors(seed)','window.TownV5Actions={selectWish}','if(tenant){tile.onclick','function rareUnlocked(id)','LEGENDARY_WISHES.includes(id)']){
  if(!townV4.includes(marker))throw Error('Tiny Town homes or usable legendary wishes missing: '+marker);
 }
 for(const marker of ['function legendaryPanel(','data-legend-wish','function openResident(index,source)','window.TownV5={boot,render,toggle,openResident}']){
@@ -461,7 +461,7 @@ if(!tinyMusicPage.includes('id="tabLegends"')||
 for(const marker of ['data-law="wonder"','data-law="care"','data-law="dream"','data-zh="想疯就疯"','data-zh="先躺为敬"','data-zh="离谱一点才好玩"','charter-flavor','charter-bonus']){
  if(!tinyMusicPage.includes(marker))throw Error('Playful starting style or visible perk is missing: '+marker);
 }
-for(const marker of ['function wishEffect(card)','lastComfortDay:-1','if(effect.cozy)S.lastComfortDay=S.day','S.law===\'wonder\'','S.law===\'care\'','if(S.law===\'dream\')','const firstThought=']){
+for(const marker of ['function wishEffect(card)','lastComfortDay:-1','if(effect.cozy)S.lastComfortDay=S.day','S.law===\'wonder\'','S.law===\'care\'','dream:[\'voyage\'','const firstThought=']){
  if(!townV4.includes(marker))throw Error('Distinct starting-style gameplay is missing: '+marker);
 }
 if(townV4.includes("S.law='care';news(")||townV4.includes("S.law='wonder';news("))
@@ -490,7 +490,7 @@ if(!townCompactCss.includes('.app .legend-requirements span.met')||
    townV4.includes('rareUnlocked()')){
  throw Error('Legacy instant-unlock behavior or missing progressive requirements');
 }
-for(const marker of ['const LEGENDARY_POWERS={','function activateLegendaryPower(card,power)','overlays.push({kind:\'legendaryBuild\'','function wishEffect(card)','const END_REASONS={','flight:[\'人人都能飞的天空城\'','coast:[\'永不结束的海边假期\'','roaming:[\'开往自由的银河列车\'','function endingText()','id===\'flight\'','S.found.forEach(c=>{score[c.vibe]+=7;']) {
+for(const marker of ['const LEGENDARY_POWERS={','function activateLegendaryPower(card,power,effect)','overlays.push({kind:\'legendaryBuild\'','function wishEffect(card)','const END_REASONS={','flight:[\'人人都能飞的天空城\'','coast:[\'永不结束的海边假期\'','roaming:[\'开往自由的银河列车\'','function endingText()','id===\'flight\'','S.found.forEach(c=>{score[c.vibe]+=7;']) {
  if(!townV4.includes(marker.replaceAll('\\','')))throw Error('Tiny Town special powers or outcome variety missing: '+marker);
 }
 if(!tinyMusicPage.includes('id="closeEnding"')||
@@ -517,6 +517,36 @@ if(!townCompactCss.includes('.neighbor-scene-portraits')||
    !tinyMusicPage.includes('id="closeEnding"')){
  throw Error('Town scenes and end card must remain usable');
 }
+for(const marker of [
+ 'const RESIDENT_ORIGINS=residents.map(',
+ 'const LEGEND_FANS={',
+ 'function randomizeNeighbors(seed)',
+ 'homeResidents=randomizeNeighbors(seed)',
+ 'S.homeResidents[HOME.indexOf(p)]',
+ 'function daySpark()',
+ 'function wonderStyleBonus(card)',
+ 'return sample(pools[S.law]||pools.care',
+ 'const freshStyle=sample(',
+ 'variety.extra',
+ 'wish-variety',
+ 'if(building)tile.dataset.building=building.id',
+ 'const ENDING_EPILOGUES={',
+ 'function endingDiorama()',
+ 'function endingAchievements()',
+ "$('endLegacy').innerHTML=endingAchievements();"
+]){
+ if(!townV4.includes(marker))throw Error('Tiny Town replay variety, train scaling or personalized finale missing: '+marker);
+}
+if(!tinyMusicPage.includes('id="endLegacy"')||
+   !townCompact.includes('Every new town reshuffles residents')||
+   !townCompactCss.includes('#mapWrap.world .tile.built[data-building="voyage"] .tile-icon')||
+   !townCompactCss.includes('.app .end-model-buildings')||
+   !townCompactCss.includes('.app .ending-legacy')){
+ throw Error('Tiny Town replay variation, train icon sizing, or unique result UI missing');
+}
+if(townV4.includes('HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4}')||
+  townV4.includes("if(S.day===1)return ['beach','voyage','garden']"))
+ throw Error('Fixed home assignments or repetitive opening options returned');
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||

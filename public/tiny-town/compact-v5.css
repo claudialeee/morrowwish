@@ -650,3 +650,104 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  .neighbor-scene{min-height:125px}.neighbor-scene-portraits{min-height:125px;gap:16px}
  .neighbor-scene-portraits span{width:65px;height:65px;font-size:38px}
 }
+
+/* Round-to-round variety; matching UI accurately displays the new score effects. */
+.app .wish-variety{display:flex;gap:3px;flex-wrap:wrap;align-items:center;min-height:11px;color:#a96f85;font-size:9px;font-weight:850;line-height:1.18}
+.app .wish-variety:empty{display:none}
+#mapWrap.world .tile.built[data-building="voyage"] .tile-icon{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:30px;height:24px;max-width:80%;
+ font-size:clamp(14px,2.4vh,21px)!important;
+ line-height:1!important;transform:scale(.86) translateY(-2px)!important;
+ filter:drop-shadow(0 1px 1px #65507042)
+}
+#mapWrap.world .tile.built[data-building="voyage"] .tile-name{font-size:clamp(8px,.75vw,10px)!important}
+@media(max-width:700px){
+ .app .wish-variety{font-size:8px;display:block;line-height:1.1;max-height:22px;overflow:hidden}
+ #mapWrap.world .tile.built[data-building="voyage"] .tile-icon{font-size:clamp(13px,4vw,18px)!important;height:19px}
+ #mapWrap.world .tile.built[data-building="voyage"] .tile-name{font-size:clamp(7px,2vw,9px)!important}
+}
+/* Personalized ending: town miniatures, resident faces and one authored epilogue. */
+.app .end-hero-art .end-story-world{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.app .end-hero-art .end-story-night{
+ position:absolute;top:11%;left:11%;font-size:clamp(23px,4.5vw,55px);
+ filter:drop-shadow(0 4px 14px #fff6e488);
+ animation:townEpilogueDrift 5.6s ease-in-out infinite alternate
+}
+.app .end-hero-art[data-theme="party"] .end-story-night,
+.app .end-hero-art[data-theme="chaos"] .end-story-night{left:68%;top:20%}
+.app .end-hero-art[data-theme="flight"] .end-story-night,
+.app .end-hero-art[data-theme="sky"] .end-story-night{left:23%;top:17%}
+.app .end-model-buildings{
+ position:absolute;bottom:42px;left:12%;right:12%;
+ display:flex;gap:5px;align-items:flex-end;justify-content:center
+}
+.app .end-model-building{
+ flex:0 1 77px;min-width:0;min-height:64px;padding:6px 3px 5px;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;
+ background:linear-gradient(150deg,#fff9edee,#f8d7e9ea);
+ border:2px solid #fff9f4eb;border-radius:15px 15px 8px 8px;
+ box-shadow:0 5px 11px #5a47625b;transform:translateY(0)
+}
+.app .end-model-building span{font-size:clamp(22px,3vw,35px);line-height:1.15}
+.app .end-model-building small{
+ font-size:clamp(8px,.8vw,10px);line-height:1.1;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:900;color:#71517d
+}
+.app .end-model-people{
+ position:absolute;left:20%;right:20%;bottom:7px;display:flex;gap:5px;
+ justify-content:center;align-items:center
+}
+.app .end-model-people span{
+ display:grid;place-items:center;width:28px;height:28px;border:2px solid #fff8ec;
+ background:#f9e6ef;border-radius:50%;font-size:18px;
+ box-shadow:0 2px 7px #654c704a
+}
+.app .end-hero-art .end-memories{
+ left:10px;top:10px;bottom:auto;right:auto;max-width:37%;gap:4px
+}
+.app .end-hero-art .end-memories span{font-size:9px;padding:3px 5px}
+.app .end-hero-art .end-centerpiece{top:36%;font-size:clamp(45px,7.5vw,97px);z-index:2}
+.app .ending-legacy{
+ margin:12px auto 6px;padding:13px;
+ max-width:640px;border:1px solid #e7c8df;border-radius:15px;
+ background:linear-gradient(135deg,#fff7ed,#f4e8fa);
+ text-align:left;box-shadow:0 3px 12px #89719517
+}
+.app .ending-legacy header{display:flex;align-items:center;gap:10px;margin:0 0 9px}
+.app .ending-legacy header>span{
+ width:41px;height:41px;flex:0 0 41px;border-radius:12px;
+ display:grid;place-items:center;font-size:26px;background:#f9e0ec
+}
+.app .ending-legacy header div{display:flex;flex-direction:column;gap:3px}
+.app .ending-legacy header small{font-size:10px;font-weight:900;letter-spacing:.08em;color:#a775a1}
+.app .ending-legacy header strong{font-size:16px;color:#5f4a75;line-height:1.2}
+.app .ending-legacy>p{font-size:12px!important;line-height:1.55;color:#755f7f!important;margin:6px 0 9px}
+.app .ending-legacy-stats{display:flex;flex-wrap:wrap;gap:6px}
+.app .ending-legacy-stats span,.app .ending-legacy-relics span{
+ font-size:10px;font-weight:850;border-radius:99px;padding:5px 8px;
+ color:#8b618d;background:#f7e8f1;border:1px solid #efdee9
+}
+.app .ending-legacy-relics{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.app .ending-legacy-relics span{color:#7d638f;background:#fff3e8}
+.app .ending-legacy .ending-last-friend{
+ margin:9px 0 0!important;padding-top:9px;border-top:1px solid #ecd7e6;
+ font-size:11px!important;color:#83667f!important;line-height:1.5
+}
+@keyframes townEpilogueDrift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-9px) rotate(5deg)}}
+@media(max-width:700px){
+ .app .end-model-buildings{bottom:33px;left:5%;right:5%;gap:3px}
+ .app .end-model-building{min-height:53px;padding:4px 2px;flex-basis:60px;border-radius:10px 10px 6px 6px}
+ .app .end-model-building span{font-size:21px}
+ .app .end-model-building small{font-size:8px}
+ .app .end-model-people{bottom:4px}
+ .app .end-model-people span{width:23px;height:23px;font-size:14px}
+ .app .end-hero-art .end-memories{max-width:34%;top:5px;left:5px}
+ .app .end-hero-art .end-memories span{font-size:7px;padding:2px 3px}
+ .app .end-hero-art .end-centerpiece{top:33%;font-size:55px}
+ .app .end-hero-art .end-story-night{top:15%;font-size:32px}
+ .app .ending-legacy{padding:10px}
+ .app .ending-legacy header>span{width:34px;height:34px;flex-basis:34px;font-size:21px}
+ .app .ending-legacy header strong{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){.app .end-hero-art .end-story-night{animation:none}}
