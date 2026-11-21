@@ -429,6 +429,10 @@ class Game {
       for (const t of e.changedTouches) {
         const p = touchPos(t);
         if (this.scene === 'battle') {
+          if(this.battle&&!this.battle.autoMode&&this.battle.lockAt?.(p.x,p.y)){
+            this.syncTouchBattleUI();
+            continue;
+          }
           if (p.x < this.W * 0.5 && !this.joystick.active) {
             this.joystick = { active: true, ox: p.x, oy: p.y, dx: 0, dy: 0, id: t.identifier };
             this.syncTouchBattleUI(p.x,p.y);
@@ -735,6 +739,16 @@ class Game {
         (this.touchAutoFire?'猫爪连击中 · 点击暂停':'猫爪已暂停 · 点击开启');
       attack.title=label;attack.setAttribute('aria-label',label);
       const key=attack.querySelector('.mv-k');if(key&&manual)key.textContent=en?(this.touchAutoFire?'ON':'OFF'):(this.touchAutoFire?'攻击中':'已暂停');
+    }
+    const lock=document.getElementById('mv-lock');
+    if(lock){
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      const chosen=this.battle?.lockedEnemy?.();
+      lock.classList.toggle('locked',manual&&!!chosen);
+      lock.setAttribute('aria-pressed',String(manual&&!!chosen));
+      lock.setAttribute('aria-label',en?'Lock next wild cat':'切换锁定的野猫');
+      const name=lock.querySelector('.mv-name');if(name)name.textContent=en?'Lock':'锁定';
+      const hint=lock.querySelector('.mv-k');if(hint)hint.textContent=en?'Next':'切换';
     }
     const pad=document.getElementById('battle-touch-joystick');
     if(pad){
