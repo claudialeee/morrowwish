@@ -426,6 +426,7 @@ const UI = {
       url.searchParams.set('pair',pair);
       if(a?.species)url.searchParams.set('a',a.species);
       if(b?.species)url.searchParams.set('b',b.species);
+      url.searchParams.set('lang',en?'en':'zh');
       window.open(url.href,'_blank','noopener');
     };
     const soothe=document.getElementById('duo-soothe');

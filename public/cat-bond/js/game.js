@@ -709,7 +709,7 @@ class Game {
     document.getElementById('hud').classList.add('hidden');
     // clear any lingering yard toasts
     document.getElementById('toasts').innerHTML = '';
-    document.getElementById('wild-name').textContent = `野生 ${wildSpecies.name} · ${GameData.RARITY[wildSpecies.rarity].name}`;
+    document.getElementById('wild-name').textContent = `野生 ${GameData.speciesName(wildSpecies)} · ${GameData.RARITY[wildSpecies.rarity].name}`;
     this.buildTeamSlots();
     this.updateSkillLabels();
     this.updateBattleUI();

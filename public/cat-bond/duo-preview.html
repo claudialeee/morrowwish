@@ -67,7 +67,7 @@
 <div id="signature-grid" role="group" aria-label="21 种双猫合击"></div>
 <p class="footer">演示展示每种元素组合的独特编排及视觉演出。实际战斗中的伤害、控制、治疗和冷却仍由游戏决定。动画自动循环；为避免破图，合击以完整连贯的小猫身体绘制。</p>
 </main>
-<script>window.MorrowwishI18n={get:()=> 'zh'};</script>
+<script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'};</script>
 <script src="js/data.js?v=duo-preview-pastel"></script>
 <script src="js/catart.js?v=duo-preview-pastel"></script>
 <script src="js/real-kittens.js?v=complete-watercolor-v2-20261121-1"></script>
@@ -98,7 +98,7 @@ for(const [id,slot,initial] of [['preview-cat-a','previewA','tangyuan'],['previe
  const control=document.getElementById(id);
  for(const breed of breeds){
   const opt=document.createElement('option');opt.value=breed.id;
-  opt.textContent=breed.name;control.append(opt);
+  opt.textContent=GameData.speciesName(breed);control.append(opt);
  }
  control.value=cats[slot].species;
  control.onchange=()=>{cats[slot].species=control.value;render(.8)};
@@ -125,8 +125,11 @@ function choose(key){
   b.classList.toggle('selected',b.dataset.pair===key);
   b.setAttribute('aria-pressed',String(b.dataset.pair===key));
  });
- document.getElementById('now-playing').textContent=names[key]+' · '+key.replace('+',' + ')+
-   ' · 默契 '+(tier===1?'20':tier===2?'60':'90');
+ const english=window.MorrowwishI18n.get()==='en';
+ document.getElementById('now-playing').textContent=
+   (english?(window.CatBondDuoSignatures.get(key)?.label||key):names[key])+
+   ' · '+key.replace('+',' + ')+(english?' · Trust ':' · 默契 ')+
+   (tier===1?'20':tier===2?'60':'90');
  render(.55);
 }
 for(const [i,key] of keys.entries()){
