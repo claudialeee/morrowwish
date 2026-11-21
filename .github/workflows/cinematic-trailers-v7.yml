@@ -65,7 +65,7 @@ jobs:
           done
           test -s public/promo/v7-review.json
           test -s public/promo/cat-bond/trailer-v7-20261121.mp4
-          node -e "const m=require('./public/promo/v7-review.json');if(m.trailers.length!==7||m.trailers.filter(x=>x.slug==='cat-bond'&&x.paused).length!==1)process.exit(1);if(process.env.MW_PROMO_ONLY==='elsewhere'){const x=m.trailers.find(t=>t.slug==='elsewhere');if(!x||x.duration>=41)process.exit(1);console.log('Elsewhere shortened to',x.duration,'seconds')}}"
+          node -e "const m=require('./public/promo/v7-review.json');if(m.trailers.length!==7||m.trailers.filter(x=>x.slug==='cat-bond'&&x.paused).length!==1)process.exit(1);if(process.env.MW_PROMO_ONLY==='elsewhere'){const x=m.trailers.find(t=>t.slug==='elsewhere');if(!x||x.duration>=41)process.exit(1);console.log('Elsewhere shortened to',x.duration,'seconds')}"
           test -s public/promo/readability-audit.json
           test -s public/promo/pawsibly-innocent/narrow-escape-card-proof.png
           node -e "const a=require('./public/promo/readability-audit.json'),m=require('./public/promo/v7-review.json');const shots=m.trailers.find(x=>x.slug==='elsewhere')?.shots||[];if(!Array.isArray(a.scenes)||a.scenes.length<38||a.scenes.some(s=>!s.passed)||a.scenes.some(s=>s.game==='cat-bond')||!a.scenes.some(s=>s.game==='tiny-town'&&s.scene==='opening-three-choices'&&s.seconds>=6.8)||shots.filter(s=>s.scene?.startsWith('paris')).length!==3||!shots.some(s=>s.scene==='moon-ending'))process.exit(1);console.log('Reading QA:',a.scenes.length,'scenes checked; Paris limited to three scenes')"
