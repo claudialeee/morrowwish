@@ -218,6 +218,7 @@ try{
   await page.locator('#introStart').click();
   // Marketing gameplay MUST show the real board. Avoid the zero-height flex collapse.
   await page.addStyleTag({content:'.arcade-return,.app>.header,.app>.progress,.app .resident-ribbon,.app .town-tabs,.app #moveWish,.app .citizen-panel,.app .petition,.app .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.app .stage{display:flex!important;flex-direction:column!important;gap:6px!important;overflow:hidden!important}.app .map-panel{order:0!important;display:flex!important;flex:0 0 550px!important;height:550px!important;min-height:550px!important;max-height:550px!important;width:100%!important;padding:5px!important}.app .panel-top{display:none!important}.app .world{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 495px!important;height:495px!important;min-height:495px!important;max-height:495px!important;padding:4px!important}.app .board{display:grid!important;flex:0 0 462px!important;height:462px!important;min-height:462px!important;width:462px!important;max-width:100%!important;aspect-ratio:1!important;gap:5px!important}.app .tile-icon{font-size:30px!important}.app .sidebar{display:contents!important}.app .cards{order:1!important;flex:0 0 122px!important;min-height:122px!important;max-height:122px!important;width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}.app .wish-card{min-height:110px!important;max-height:120px!important}.app #preview{max-height:22px!important}.app .town-bubble{max-height:23px!important}.modal{width:min(96vw,520px)!important;max-height:88vh!important;overflow:auto!important}'});
+  await page.addStyleTag({content:'#end.show .end-modal{box-sizing:border-box!important;width:96vw!important;max-width:96vw!important;height:88vh!important;max-height:88vh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important}#end.show #endArt{display:block!important;width:min(78vw,410px)!important;height:330px!important;max-height:330px!important;object-fit:contain!important}#end.show #endTitle{text-align:center!important;font-size:clamp(26px,5vw,40px)!important;line-height:1.1!important}#end.show #endLine{text-align:center!important;max-width:92%!important}#end.show #endStory,#end.show #endDetail,#end.show #endReason,#end.show #endLegacy,#end.show #endGoal,#end.show .feedback,#end.show .modal-choices{display:none!important}'});
   await page.waitForFunction(()=>{const e=document.querySelector('#board'),r=e?.getBoundingClientRect();return r&&r.width>=350&&r.height>=350&&r.top>=0&&r.bottom<=innerHeight-90&&getComputedStyle(e).display==='grid'},null,{timeout:8000});
   const started=stamp(),shots=[{label:'board',start:stamp(),duration:2.55}];
   // Hold each TRUE gameplay milestone before moving on, so successive cuts
@@ -241,10 +242,16 @@ try{
     cards[best.i].click();
     const target=document.querySelector('#board .tile.target[data-pos="'+best.pos+'"]');
     if(!target)throw Error('Actual selected town plot disappeared');
-    target.click();
-    return{day,choice:best.i,pos:best.pos,combo:Number(document.querySelector('#comboNum')?.textContent)||0};
+    return{day,choice:best.i,pos:best.pos};
    });
-   if(!action)break;placed++;
+   if(!action)break;
+   await sleep(950); // show the highlighted plot before a real placement
+   action.combo=await page.evaluate(pos=>{
+    const tile=document.querySelector('#board .tile.target[data-pos="'+pos+'"]');
+    if(!tile)throw Error('Town plot vanished before placement');
+    tile.click();return Number(document.querySelector('#comboNum')?.textContent)||0;
+   },action.pos);
+   placed++;
    if(day===1){buildLate=stamp();await sleep(2400)}
    if(action.combo>0&&!comboAt){comboAt=stepStart;await sleep(3450)}
    if(day===6){matureAt=stamp();await sleep(2450)}
@@ -293,7 +300,9 @@ try{
     if(!r||!choices.length||r.top<0||r.left<0||r.right>innerWidth+1||r.bottom>innerHeight-10||document.documentElement.scrollWidth>innerWidth+2)throw Error('V5 native Elsewhere phone UI clipped for '+id+' '+JSON.stringify({rect:r&&{top:r.top,bottom:r.bottom,left:r.left,right:r.right},height:innerHeight,width:innerWidth,choices:choices.length}));
     if(choices.some(c=>{const x=c.getBoundingClientRect();return x.bottom>innerHeight||x.right>innerWidth}))throw Error('V5 Elsewhere choice off screen '+id);
   },world);
+  const teaserStyle=await page.addStyleTag({content:'#home .life-card:nth-child(n+3){display:none!important}'});
   const shots=[],homeAt=stamp();await sleep(3850);shots.push({label:'choose-life',start:homeAt,duration:3.7});
+  await teaserStyle.evaluate(el=>el.remove());
   for(const world of ['paris','amalfi','tokyo','moon']){
    await page.locator('[data-world="'+world+'"]').first().click({timeout:9000});
    await sleep(350);await checkFull(world);
