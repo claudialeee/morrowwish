@@ -1,4 +1,4 @@
-// Cinematic V4.1 promo reels. 4 story trailers (~23-30s) and 3 challenge ads (~9s).
+// Cinematic V5 promo reels. Feature-led, complete phone UI, chronological real attempts.
 // All visuals are recorded current-game footage and current game-owned cover art.
 // No generated gameplay, no spoilers in the opening, no social posting.
 import fs from 'node:fs';
@@ -10,85 +10,69 @@ const brollDir=process.env.MW_V4_BROLL_DIR||path.join(process.env.RUNNER_TEMP||o
 const work=fs.mkdtempSync(path.join(os.tmpdir(),'mw-edit-v4-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
-const manifest={version:'V4.1',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
+const manifest={version:'V5',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
  socialAutopublish:false,historicalVideoViewsExcluded:true,trailers:[]};
 const choose=(src,start,duration,caption='',label='')=>({src,start,duration,caption,label});
 const cover=(duration,caption='',label='')=>choose('cover',0,duration,caption,label);
 const game=(start,duration,caption='',label='')=>choose('game',start,duration,caption,label);
 const broll=(label,duration,caption='')=>choose('broll',0,duration,caption,label);
 const playlists={
- 'pawsibly-innocent':[
-  broll('sneak',2.2,'THREE FISH. ONE CAT.'),
-  game(1.91,1.20),
-  broll('decoy',2.3,'A YARN BALL CHANGES EVERYTHING.'),
-  game(3.35,1.8),
-  broll('steal',3.6,'NOW STEAL THE FISH.'),
-  game(5.66,2.1),
-  broll('steal',3.2),
-  game(7.65,1.4),
-  broll('sneak',2.2),
-  game(8.47,1.5),
-  broll('decoy',2.3),
-  cover(1.8,'PLAY FREE')
- ],
  'cat-bond':[
-  broll('battle',3.0,'TWO CATS. ONE FIGHT.'),
-  broll('yard',3.6,'BUILD YOUR CAT CREW.'),
-  broll('yard-late',2.45),
-  broll('battle-late',2.6,'UNLEASH TEAM ATTACKS.'),
-  game(2.85,2.3),
-  game(0.14,2.4),
-  broll('battle',2.4),
-  game(5.65,2.1),
-  game(2.75,2.6),
-  cover(1.8,'PLAY FREE')
+  broll('yard',2.5,'MEET YOUR NEW CAT FAMILY.'),
+  broll('raising',2.45,'RAISE YOUR OWN CAT CREW.'),
+  broll('work-before',1.55,'SEND CATS TO WORK.'),
+  broll('work-after',2.35,'EARN COINS TOGETHER.'),
+  broll('tease',2.45,'PLAY WITH YOUR CATS.'),
+  broll('map-choice',1.95,'DISCOVER FIVE REGIONS.'),
+  broll('map-explore',2.7,'EXPLORE BEYOND THE YARD.'),
+  broll('battle',3.1,'FIGHT AS A TEAM.'),
+  cover(1.9,'PLAY FREE')
+ ],
+ 'pawsibly-innocent':[
+  broll('sneak',1.4,'THREE FISH. ONE SNEAKY CAT.'),
+  broll('distraction',2.35,'DISTRACT THE HUMAN.'),
+  broll('escape-run',2.9,'RUN FOR THE EXIT.'),
+  broll('escaped',1.05,'A NARROW ESCAPE!'),
+  broll('caught-chase',2.85,'BUT ONE BAD MOVE...'),
+  broll('caught',1.3,'CAUGHT!'),
+  cover(1.9,'PLAY FREE')
  ],
  'tiny-town':[
-  broll('build',3.5,'NO WORK. GO ANYWHERE.'),
-  broll('build-late',3.9,'MAKE YOUR OWN TOWN.'),
-  game(6.48,1.9),
-  broll('build',3.45,'THE TOWN KEEPS CHANGING.'),
-  game(6.50,2.0),
-  broll('build-late',3.5),
-  game(8.43,2.6),
-  game(8.10,2.3),
-  game(6.15,2.0),
-  cover(1.8,'PLAY FREE')
+  broll('board',2.5,'NO JOBS. JUST FREEDOM.'),
+  broll('board-later',2.35,'PLACE YOUR OWN DREAMS.'),
+  broll('combination',2.65,'NEIGHBORING DREAMS COMBINE.'),
+  broll('legendary',2.7,'UNLOCK LEGENDARY WISHES.'),
+  broll('ending',3.1,'SEVEN DAYS. YOUR OWN ENDING.'),
+  cover(1.9,'PLAY FREE')
  ],
  'elsewhere':[
-  game(3.64,2.3),
-  broll('maldives',3.6,'OR WAKE UP ON AN ISLAND.'),
-  broll('maldives-result',1.55),
-  game(6.13,1.85),
-  broll('tokyo',3.65,'ANOTHER CITY. ANOTHER YOU.'),
-  broll('tokyo-result',1.55),
-  broll('moon',3.65,'A HOTEL ON THE MOON?'),
-  broll('moon-result',1.55),
-  game(8.12,1.85),
-  game(10.16,2.3),
-  broll('maldives',2.3),
-  cover(1.8,'PLAY FREE')
+  broll('choose-life',2.25,'WAKE UP TO A NEW LIFE.'),
+  broll('paris',3.0,'FALL IN LOVE IN PARIS.'),
+  broll('paris-result',1.4),
+  broll('amalfi',3.0,'OWN A SEASIDE VILLA.'),
+  broll('amalfi-result',1.4),
+  broll('tokyo',3.0,'LIVE AS A SUPERSTAR.'),
+  broll('tokyo-result',1.4),
+  broll('moon',3.0,'OR OWN A HOTEL ON THE MOON.'),
+  broll('moon-result',1.4),
+  cover(1.9,'PLAY FREE')
  ],
  'flip-dash':[
-  game(0.05,1.45),
-  game(1.75,3.3),
-  game(4.3,1.4),
-  game(5.25,1.75),
-  cover(1.6,'PLAY FREE')
+  broll('play',3.8,'ONE BUTTON. ONE WRONG FLIP.'),
+  broll('crash',1.9,'CRASHED. CAN YOU SURVIVE?'),
+  cover(1.7,'PLAY FREE')
  ],
  'parcel-panic':[
-  game(0.05,1.5),
-  game(1.65,2.65),
-  game(3.9,1.6),
-  game(5.08,1.48),
+  broll('deliver',3.3,'KEEP THE DELIVERIES GOING.'),
+  broll('wrong-lane',2.15,'ONE WRONG LANE...'),
+  broll('game-over',1.85,'GAME OVER. BEAT MY RUN?'),
   cover(1.7,'PLAY FREE')
  ],
  'pocket-aquarium':[
-  game(0.06,1.75),
-  game(2.35,3.0),
-  game(5.65,1.8),
-  game(7.63,1.72),
-  cover(1.6,'PLAY FREE')
+  broll('feeding',2.9,'FEED THE RIGHT FISH.'),
+  broll('water-cloudy',3.0,'THE WATER IS GETTING CLOUDY.'),
+  broll('timeout',1.9,'TIME UP. CAN YOU GET AN A?'),
+  cover(1.7,'PLAY FREE')
  ]
 };
 const brollManifest=JSON.parse(fs.readFileSync(path.join(brollDir,'broll-manifest.json'),'utf8'));
@@ -98,11 +82,12 @@ function ffprobe(file){
  return {seconds:Number(result.format?.duration)||0,streams:result.streams||[]};
 }
 function edit(slug){
- const base='public/promo/'+slug,master=base+'/hook-v3-20261121.mp4',
-       coverFile=base+'/cover-portrait.png',music=promoTrack(slug),b=proofs[slug]||null;
- if(!fs.existsSync(master)||!fs.existsSync(coverFile))throw Error('Missing real V3 gameplay or official game cover for '+slug);
- const masterInfo=ffprobe(master),chosen=[];
+ const base='public/promo/'+slug,coverFile=base+'/cover-portrait.png',music=promoTrack(slug),b=proofs[slug]||null;
+ if(!b||!fs.existsSync(coverFile))throw Error('Missing newly recorded authentic scene or official cover for '+slug);
+ const chosen=[];
  const rawInfo=b?ffprobe(b.file):null;
+ if(b?.errors?.length)throw Error('Browser errors in recorded game: '+slug);
+ if(new Set(playlists[slug].filter(x=>x.src==='broll').map(x=>x.label)).size!==playlists[slug].filter(x=>x.src==='broll').length)throw Error('V5 repeated footage label detected for '+slug);
  for(const item of playlists[slug]){
   const shot={...item};
   if(shot.src==='broll'){
@@ -111,16 +96,15 @@ function edit(slug){
    if(!scene)throw Error('Real broll scene missing '+slug+'/'+shot.label);
    shot.start=scene.start;
    shot.duration=Math.min(shot.duration,scene.duration);
-   if(shot.start+shot.duration>rawInfo.seconds-0.08)throw Error('Broll segment overruns video '+slug+'/'+shot.label);
+   if(shot.start+shot.duration>rawInfo.seconds-0.04)throw Error('Broll segment overruns video '+slug+'/'+shot.label);
   }
-  if(shot.src==='game'&&shot.start+shot.duration>masterInfo.seconds-0.07)throw Error('Game cut exceeds actual live video '+slug+'/'+JSON.stringify(shot)+' / '+masterInfo.seconds);
+  if(shot.src==='game')throw Error('V5 forbids old cut-together V3 footage '+slug);
   chosen.push(shot);
  }
  const clipOverlap=0.22,n=chosen.length;
  const args=['-nostdin','-y','-hide_banner','-loglevel','error',
-  '-i',master];
- let coverIndex=1,brollIndex=null,musicIndex;
- if(b){brollIndex=1;args.push('-i',b.file);coverIndex=2;}
+  '-i',b.file];
+ let coverIndex=1,brollIndex=0,musicIndex;
  args.push('-loop','1','-framerate','30','-i',coverFile);
  musicIndex=coverIndex+1;args.push('-stream_loop','-1','-i',music);
  const filters=[];
@@ -192,7 +176,7 @@ function edit(slug){
   prev=next;
  }
  filters.push('['+prev+']format=yuv420p[vout]');
- const output=base+'/trailer-v4-20261121.mp4',poster=base+'/trailer-v4-20261121.jpg';
+ const output=base+'/trailer-v5-20261121.mp4',poster=base+'/trailer-v5-20261121.jpg';
  const command=[...args,'-filter_complex',filters.join(';'),'-map','[vout]',
   '-map',musicIndex+':a:0','-t',fmt(timeline),'-r','30',
   '-c:v','libx264','-preset','veryfast','-crf','22','-pix_fmt','yuv420p',
@@ -201,28 +185,28 @@ function edit(slug){
  execFileSync('ffmpeg',command,{stdio:'inherit',timeout:330000});
  const meta=ffprobe(output),bytes=fs.statSync(output).size;
  const isHero=hero.has(slug);
- if(meta.seconds<(isHero?23:8.0)||meta.seconds>(isHero?40:16.5)||
+ if(meta.seconds<(isHero?11.0:7.1)||meta.seconds>(isHero?40:16.5)||
   !meta.streams.some(x=>x.codec_type==='video'&&x.width===1080&&x.height===1920)||
   !meta.streams.some(x=>x.codec_type==='audio')||bytes<220000)
    throw Error('Video format, genuine runtime or sound QA failed '+JSON.stringify({slug,meta,bytes}));
  execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','0.9','-i',output,'-frames:v','1','-q:v','3',poster],{timeout:24000});
  const review=[];
  for(const [i,seconds] of [1.1,meta.seconds*.50,Math.max(0,meta.seconds-0.85)].entries()){
-  const file=base+'/v4-review-'+(i+1)+'.jpg';
+  const file=base+'/v5-review-'+(i+1)+'.jpg';
   execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',fmt(seconds),'-i',output,'-frames:v','1','-q:v','3',file],{timeout:24000});
   if(fs.statSync(file).size<12000)throw Error('Blank review thumbnail '+file);
-  review.push('/promo/'+slug+'/v4-review-'+(i+1)+'.jpg');
+  review.push('/promo/'+slug+'/v5-review-'+(i+1)+'.jpg');
  }
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
-  video:'/promo/'+slug+'/trailer-v4-20261121.mp4',poster:'/promo/'+slug+'/trailer-v4-20261121.jpg',
+  video:'/promo/'+slug+'/trailer-v5-20261121.mp4',poster:'/promo/'+slug+'/trailer-v5-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
-  sourceClips:'current real gameplay and short readable end card',transitions:'action cuts + gentle xfade; no cropped poster text',
+  sourceClips:'new verified game-controlled chronological V5 scenes and separate typeset end card',transitions:'new game-controlled scenes with gentle xfade, no stale V3 caption overlays',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
- console.log('CINEMATIC V4 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
+ console.log('CINEMATIC V5 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
 }
 try{
  for(const slug of ['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'])edit(slug);
- fs.writeFileSync('public/promo/v4-review.json',JSON.stringify(manifest,null,2)+'\n');
- console.log('V4 TRAILERS RENDERED FOR REVIEW, NO SOCIAL POSTING: '+manifest.trailers.length);
+ fs.writeFileSync('public/promo/v5-review.json',JSON.stringify(manifest,null,2)+'\n');
+ console.log('V5 TRAILERS RENDERED FOR REVIEW, NO SOCIAL POSTING: '+manifest.trailers.length);
 }finally{fs.rmSync(work,{recursive:true,force:true})}

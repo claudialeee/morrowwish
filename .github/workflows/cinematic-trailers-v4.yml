@@ -1,4 +1,4 @@
-name: Render Seven Cinematic V4 Game Trailers — REVIEW ONLY
+name: Render Seven Cinematic V5 Game Trailers — REVIEW ONLY
 on:
   push:
     branches: [main]
@@ -10,18 +10,18 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: morrowwish-v4-cinematic-review-only
+  group: morrowwish-v5-cinematic-review-only
   cancel-in-progress: false
 jobs:
   render-real-gameplay:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: main
           persist-credentials: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -45,26 +45,26 @@ jobs:
         run: |
           set -euo pipefail
           for slug in pawsibly-innocent cat-bond tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
-            mp4="public/promo/$slug/trailer-v4-20261121.mp4"
-            jpg="public/promo/$slug/trailer-v4-20261121.jpg"
+            mp4="public/promo/$slug/trailer-v5-20261121.mp4"
+            jpg="public/promo/$slug/trailer-v5-20261121.jpg"
             test -s "$mp4"; test -s "$jpg"
             test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$mp4")" = "1080x1920"
             test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$mp4")" = "audio"
-            for i in 1 2 3; do test -s "public/promo/$slug/v4-review-$i.jpg"; done
+            for i in 1 2 3; do test -s "public/promo/$slug/v5-review-$i.jpg"; done
             echo "$slug $(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$mp4") seconds"
           done
-          test -s public/promo/v4-review.json
+          test -s public/promo/v5-review.json
       - name: Save unapproved previews for owner review; NEVER schedule on social media
         run: |
           set -euo pipefail
           for slug in pawsibly-innocent cat-bond tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
-            git add "public/promo/$slug/trailer-v4-20261121.mp4" "public/promo/$slug/trailer-v4-20261121.jpg"
-            git add "public/promo/$slug/v4-review-"*.jpg
+            git add "public/promo/$slug/trailer-v5-20261121.mp4" "public/promo/$slug/trailer-v5-20261121.jpg"
+            git add "public/promo/$slug/v5-review-"*.jpg
           done
-          git add public/promo/cat-bond/cover-portrait.png public/promo/v4-review.json
+          git add public/promo/cat-bond/cover-portrait.png public/promo/v5-review.json public/promo/review-v5/index.html
           git diff --cached --quiet && exit 0
           git config user.name 'morrowwish-promo-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'qa(promo): 7 cinematic V4 video previews with no social publishing or approval'
+          git commit -m 'qa(promo): 7 cinematic V5 video previews with no social publishing or approval'
           git pull --rebase origin main
           git push origin HEAD:main
