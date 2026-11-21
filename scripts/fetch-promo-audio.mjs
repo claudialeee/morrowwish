@@ -9,6 +9,8 @@ const manifest=JSON.parse(fs.readFileSync('promotion/promo-music-catalog.json','
 const dir=process.env.MW_PROMO_AUDIO_DIR || path.join(process.env.RUNNER_TEMP || os.tmpdir(),'morrowwish-promo-audio');
 fs.mkdirSync(dir,{recursive:true});
 const all=Object.entries(manifest.tracks);
+const only=(process.env.MW_PROMO_ONLY||'').trim();
+if(only&&!manifest.tracks[only])throw Error('Unknown requested soundtrack '+only);
 if(all.length!==7)throw Error('Expected seven different music selections');
 const titles=new Set(),sources=new Set(),sums=new Set();
 for(const [slug,track] of all){
@@ -17,6 +19,9 @@ for(const [slug,track] of all){
  const source=track.localFile || track.sourceUrl;
  if(sources.has(source))throw Error('Duplicated recording source '+source);
  sources.add(source);
+ // Targeted video edits need only their own licensed soundtrack; never
+ // redownload all seven third-party tracks for a one-game revision.
+ if(only&&slug!==only)continue;
  const out=path.join(dir,slug+'.ogg'),download=path.join(dir,slug+'.source');
  try{
   if(track.localFile){

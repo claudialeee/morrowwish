@@ -36,11 +36,28 @@ jobs:
           npx playwright install --with-deps chromium
           sudo apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
-      - name: Validate seven independently licensed soundtracks
+      - name: Validate licensed soundtrack for the selected review video
         run: |
-          bash scripts/fetch-cat-music.sh
-          node scripts/fetch-promo-audio.mjs
-          node scripts/test-promo-music.mjs
+          if [ "${MW_PROMO_ONLY:-}" = "elsewhere" ]; then
+            # The current approved-for-review Elsewhere MP4 already contains
+            # its licensed "Easy Lemon" soundtrack. Reuse that same music:
+            # no unrelated downloads, no new attribution, no generic audio.
+            node scripts/test-promo-music.mjs
+            mkdir -p "$RUNNER_TEMP/morrowwish-promo-audio"
+            ffmpeg -nostdin -y -v error -i public/promo/elsewhere/trailer-v7-20261121.mp4 \
+              -map 0:a:0 -vn -ar 48000 -ac 2 -c:a libopus -b:a 72k \
+              "$RUNNER_TEMP/morrowwish-promo-audio/elsewhere.ogg"
+            test -s "$RUNNER_TEMP/morrowwish-promo-audio/elsewhere.ogg"
+            duration=$(ffprobe -v error -show_entries format=duration \
+              -of default=noprint_wrappers=1:nokey=1 \
+              "$RUNNER_TEMP/morrowwish-promo-audio/elsewhere.ogg")
+            node -e "if(Number(process.argv[1])<38)process.exit(1)" "$duration"
+            echo "Reused the same licensed Elsewhere soundtrack, no network dependency."
+          else
+            bash scripts/fetch-cat-music.sh
+            node scripts/fetch-promo-audio.mjs
+            node scripts/test-promo-music.mjs
+          fi
       - name: Verify trailer source syntax BEFORE expensive real-game capture
         run: |
           node --check scripts/capture-trailers-v7.mjs
