@@ -220,3 +220,11 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
  }
  .single-screen-game .in-game-top{min-height:46px}
 }
+
+/* A gentle in-context invitation to try the yarn after the first fish. */
+.single-screen-game .board-yarn.teach-yarn{
+ outline:3px solid #f4d48d;outline-offset:2px;
+ animation:yarn-invite 1.2s ease-in-out infinite alternate
+}
+@keyframes yarn-invite{to{outline-color:#b77abf;box-shadow:0 2px 0 #80599b,0 0 0 7px #e8bcef63}}
+@media(prefers-reduced-motion:reduce){.single-screen-game .board-yarn.teach-yarn{animation:none}}
