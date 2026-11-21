@@ -361,7 +361,7 @@ for(const marker of ['id="wonderStat"','id="peaceStat"','id="comboStat"','id="to
 for(const marker of ['body:has(.app){overflow:hidden}','height:calc(100dvh - 40px)','@media(max-width:700px)','.app .town-inspector[hidden]']){
  if(!townCompactCss.includes(marker))throw Error('Tiny Town single-screen responsive layout missing '+marker);
 }
-for(const marker of ['function peopleMarkup','function inspect()','function render()','window.TownV5={boot,render,toggle}']){
+for(const marker of ['function peopleMarkup','function inspect()','function render()','window.TownV5={boot,render,toggle,openResident}']){
  if(!townCompact.includes(marker))throw Error('Tiny Town readable resident profiles or in-game info missing '+marker);
 }
 for(const marker of ["S.memories.push(","S.wonder>=55","window.TownV5?.render?.()","wish-reactions","S.memories.map(m=>"]){
