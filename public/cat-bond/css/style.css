@@ -1250,6 +1250,28 @@ body.cb-exploring #scene{cursor:grab}
  display:none!important;visibility:hidden!important;pointer-events:none!important;
 }
 
+/* The utility toolbar sits over the game on BOTH landscape phones and desktop.
+   Keep optional panel close controls below it, regardless of screen width. */
+#panel.open:not([data-mandatory="true"]){
+ top:calc(env(safe-area-inset-top,0px) + 46px);
+}
+@media(orientation:landscape) and (pointer:coarse){
+ #panel.open:not([data-mandatory="true"]){
+  top:calc(env(safe-area-inset-top,0px) + 44px)!important;
+  bottom:max(54px,calc(env(safe-area-inset-bottom,0px) + 48px))!important;
+  padding:44px 8px 6px!important;
+  align-items:stretch!important;overflow:hidden!important;
+ }
+ #panel.open:not([data-mandatory="true"])>.card{
+  min-height:0!important;max-height:100%!important;
+  overflow-y:auto!important;-webkit-overflow-scrolling:touch;
+ }
+ #panel.open:not([data-mandatory="true"])>.panel-dismiss{
+  top:2px;right:max(9px,env(safe-area-inset-right,0px));
+  width:40px;height:40px;min-height:40px;min-width:40px;
+ }
+}
+
 /* Elemental duo guide stays readable in the small phone partnership sheet. */
 #panel .duo-relation .duo-art-description{
  margin:4px 0 8px;padding:9px 12px;border-radius:10px;
