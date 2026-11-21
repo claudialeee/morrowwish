@@ -165,7 +165,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
@@ -354,7 +354,7 @@ function catPathTo(from,to){
 const hidden=p=>s.boxes.some(b=>equal(b,p));
 function visible(p=s.cat){if(s.sleepTurns>0||s.guardMode==="distracted"||s.yarnAnimating||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
-function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.dangerActive=false;s.patrol=0;}
+function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.reactionAt=0;s.dangerActive=false;s.patrol=0;}
 function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
  aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
@@ -412,7 +412,7 @@ function startYarnChase(){
  syncUI();
 }
 function guardReaction(kind,turns=2){
- s.reaction=kind;s.reactionUntil=s.steps+turns;
+ s.reaction=kind;s.reactionUntil=s.steps+turns;s.reactionAt=performance.now();
 }
 function ownerDistance(p=s.cat){return Math.abs(s.human.x-p.x)+Math.abs(s.human.y-p.y)}
 function soundApproachPoint(target){
@@ -438,9 +438,11 @@ function guardMove(){
  }
  if(s.curiosityCooldown>0)s.curiosityCooldown--;
  if(s.noise){
-  target=soundApproachPoint(s.noise);s.guardMode="investigate";
+  if(!s.yarnAnimating&&visible(s.cat)&&s.exposure>0){s.noise=null;s.alert=0}
+  if(s.noise){target=soundApproachPoint(s.noise);s.guardMode="investigate";
   if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0;target=null}
   else s.alert--;
+  }
  }
  // Detection immediately changes the owner's intention toward the real cat.
  // Its first sighting pauses one turn with a visible warning, preventing an instant loss.
@@ -505,12 +507,16 @@ function resolveDetection(){
 function moveTo(p){if(s.done||s.yarnAnimating||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
-const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish");s.score+=save.cat===4?135:100;audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":"fish");metric("cat_fish",{level:daily?9:stage+1,score:s.score});}
+const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish"); s.score+=save.cat===4?135:100;audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":"fish");
+ if(ownerDistance(p)<=5&&s.sleepTurns===0&&!s.yarnAnimating&&!s.noise){
+  s.noise={...p};s.alert=4;guardReaction("fish",2);
+ }
+ metric("cat_fish",{level:daily?9:stage+1,score:s.score});}
 if(s.creak&&!s.creakTriggered&&equal(s.creak,p)){
- s.creakTriggered=true;s.noise={...p};s.alert=5;s.lastSeen=null;
+ s.creakTriggered=true;guardReaction("footsteps",2);s.noise={...p};s.alert=5;s.lastSeen=null;
  audio("vase");throwStars(p,"#ffd89e");popup("creak");metric("cat_noisy_floor",{level:s.index+1});
 }
-const vase=s.vases.find(v=>equal(v,p));if(vase&&!s.broken.has(key(vase))){s.broken.add(key(vase));addStat("vases");s.score+=35;s.noise={...p};s.alert=save.cat===3?11:6;s.lastSeen=null;audio("vase");throwStars(p,"#d4a8dc");popup("vase");metric("cat_vase",{level:daily?9:stage+1})}
+const vase=s.vases.find(v=>equal(v,p));if(vase&&!s.broken.has(key(vase))){s.broken.add(key(vase));addStat("vases");s.score+=35;guardReaction("vase",2);s.noise={...p};s.alert=save.cat===3?11:6;s.lastSeen=null;audio("vase");throwStars(p,"#d4a8dc");popup("vase");metric("cat_vase",{level:daily?9:stage+1})}
 if(s.yarnBall&&equal(p,s.yarnBall)&&!s.itemsTaken.has("yarn")){s.itemsTaken.add("yarn");s.yarn++;s.score+=25;popup("yarn");audio("yarn");metric("cat_yarn",{level:s.index+1})}
 if(s.relic&&equal(p,s.relic)&&!s.itemsTaken.has("relic")){s.itemsTaken.add("relic");s.hasRelic=true;s.score+=90;
  popup("relic-named");audio("souvenir");throwStars(p,"#aeb0ee");metric("cat_souvenir",{level:s.index+1})}
@@ -628,7 +634,7 @@ if(s.throwTrail&&time-s.throwTrail.at<950){const from=s.throwTrail.from,to=s.thr
 }
 if(s.guardTarget&&!equal(s.guardTarget,s.human)&&!["sleep","distracted"].includes(s.guardMode)){
  const pursuit=pathTo(s.human,s.guardTarget,true,s.guardMode==="investigate").slice(0,5);
- const tint=s.guardMode==="investigate"?"#a779d0aa":(s.guardMode==="chase"||s.guardMode==="search"?"#e76c81aa":"#67b7b1aa");
+ const tint=s.guardMode==="investigate"?"#a779d0aa":(s.guardMode==="chase"||s.guardMode==="search"?"#e76c81aa":s.guardMode==="curious"?"#e7aa56cc":"#67b7b1aa");
  pursuit.forEach((p,i)=>{shape((p.x+.5)*T,(p.y+.5)*T,Math.max(4,9-i),tint)});
 }
 if(s.alert>0||s.finalAlert){
@@ -649,6 +655,19 @@ const hu=s.human,ca=s.cat;
  const hx=(s.humanFrom.x+(hu.x-s.humanFrom.x)*easing+.5)*T;
  const hy=(s.humanFrom.y+(hu.y-s.humanFrom.y)*easing+.5)*T;
  humanDraw(hx,hy+10,time);
+ if(s.reaction&&s.steps<=s.reactionUntil&&time-(s.reactionAt||0)<1850){
+  const reactions={
+   spotted:lang==="zh"?"发现小猫！":"KITTY!",
+   footsteps:lang==="zh"?"谁在那里？":"WHO'S THERE?",
+   fish:lang==="zh"?"我的鱼呢？！":"MY FISH?!",
+   vase:lang==="zh"?"花瓶！":"MY VASE!",
+   wake:lang==="zh"?"什么声音？":"WHAT WAS THAT?"
+  };
+  const msg=reactions[s.reaction]||"?";
+  const bx=Math.max(95,Math.min(740,hx)),by=Math.max(77,hy-64);
+  round(bx-86,by-21,172,34,14,"#fffdf3ef");
+  label(msg,bx,by+2,"bold 14px Nunito,system-ui","#805875");
+ }
  if(s.yarnAnimating){label(lang==="zh"?"追毛球":"YARN!",hx,hy-49,"bold 14px Nunito,system-ui","#9b58b8")}
  if(s.sleepTurns>0){label("Z z z",hx,hy-41+Math.sin(time*.004)*3,"bold 18px Nunito, system-ui","#816d9e");}
  if(!hidden(ca)){catDraw(catX,catY+9+Math.sin(time*.007)*2-hop,time)}
