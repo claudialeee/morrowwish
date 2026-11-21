@@ -7,3 +7,5 @@ moods.paris={genre:L("巴黎 · 新恋情","PARIS · NEW ROMANCE"),stats:{proof:
 moods.amalfi={genre:L("阿马尔菲 · 无压力富豪假期","AMALFI · CAREFREE LUXURY"),stats:{proof:L("享受","Indulgence"),allies:L("分享","Togetherness"),leverage:L("自由","Freedom")},quality:L("没有需要打败的人，也没有必须完成的任务。你亲自选择了这一整天的快乐。","No villains or obligations. You chose what made your day wonderful."),rare:L("阿马尔菲的星光、游艇与花园，为你的自由人生留下了一个完美的夜晚。","Amalfi's starlight, yacht and garden made one perfect evening in your new life.")};
 window.ELSEWHERE_VIBES=moods;
 })();
+/* Route-specific finale is read from the finale scene, not from the overall story. */
+(()=>{for(const id of ["paris","amalfi"]){const life=window.ELSEWHERE_CASEFILES[id];if(!life||!Array.isArray(life.routeBodies)||life.routeBodies.length!==3)throw Error("Missing "+id+" route endings");life.finale.routeBodies=life.routeBodies;delete life.routeBodies;}})();
