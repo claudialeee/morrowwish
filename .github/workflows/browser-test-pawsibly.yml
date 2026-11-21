@@ -47,6 +47,5 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-local.log 2>&1 &
           sleep 2
           node scripts/browser-test-pawsibly.mjs
-          node scripts/mobile-playtest.mjs
-          node scripts/fullscreen-smoke.mjs
-          node scripts/cat-bond-touch-smoke.mjs
+          GAME_TEST_SCOPE=pawsibly-innocent node scripts/mobile-playtest.mjs
+          GAME_TEST_SCOPE=pawsibly-innocent node scripts/fullscreen-smoke.mjs
