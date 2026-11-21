@@ -255,14 +255,17 @@ html.cg-play .stealth-actionbar{min-height:0}
 .stage.victory .modal{animation:heist-celebrate .38s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes heist-celebrate{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.stage.victory .modal{animation:none}}
-</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=final-chase-20261121-1"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js?v=full-share-yarn-20261121-2" defer></script><script src="/pawsibly-innocent/game.js?v=final-chase-20261121-1" defer></script><meta name="twitter:card" content="summary_large_image"></head>
+</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=home-shortcut-20261121-1"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js?v=full-share-yarn-20261121-2" defer></script><script src="/pawsibly-innocent/game.js?v=home-shortcut-20261121-1" defer></script><meta name="twitter:card" content="summary_large_image"></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></header>
 <main class="wrap single-screen-game">
 <div class="board-layout">
  <div class="stage" id="stage">
    <div class="in-game-top">
     <div class="in-game-head-row">
-     <div class="sticker"><small id="roomNum">ROOM 01 / 08</small><b id="roomTag">The Sunny Lounge</b></div>
+     <div class="stage-left">
+      <a class="stage-home" id="stageHome" href="/" aria-label="Back to Morrow Wish home" title="Back to Morrow Wish home"><span class="stage-home-arrow" aria-hidden="true">←</span><span id="stageHomeLabel">Home</span></a>
+      <div class="sticker"><small id="roomNum">ROOM 01 / 08</small><b id="roomTag">The Sunny Lounge</b></div>
+     </div>
      <div id="heistStatus" class="heist-status" role="status" aria-label="Fish and lives">🐟 0/3 · ♥♥♥</div>
      <div class="in-game-controls" id="stageControls">
       <button id="quickHelp" class="hud-icon" type="button" aria-label="How to play" title="How to play">?</button>
