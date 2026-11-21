@@ -600,7 +600,10 @@ class CaptureBattle {
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
-      projSpeed: 300 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),   // AGI adds at most +30%
+      // Projectile speed is a property of the SHOT, not the cat's AGI — a fireball
+      // flies at a fireball's speed no matter who threw it. Flat base; individual
+      // skills carry their own speed multiplier off this (e.g. fireball *0.75).
+      projSpeed: 300,
       // Opening cooldowns: skills start on cooldown so a fight can't open with an
       // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
       cd: { basic: 0, q: 1.6, e: 2.4 },
