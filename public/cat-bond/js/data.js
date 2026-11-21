@@ -47,6 +47,41 @@ const SPECIES = [
   { id: 'xingchen', name: '星尘',   palette: 'mystic',      pattern: 'spotted', eyeColor: '#ffe08a', rarity: 'SSR', fluffy: true, ears: 'tufted', desc: '身披星河的梦境之猫，极为罕见。', base: { pow: 17, agi: 16, vit: 15, cha: 14 } },
 ];
 
+// Localized breed names use memorable, pronounceable CAT NAMES in English,
+ // not literal pinyin or generic species labels. Chinese save IDs remain stable.
+const EN_NAMES={
+  "tangyuan": "Mochi",
+  "doudou": "Bean",
+  "xiaohui": "Misty",
+  "moqiu": "Inky",
+  "nainai": "Snowy",
+  "nietu": "Biscuit",
+  "niuniu": "Oreo",
+  "sanhua": "Patches",
+  "lixiao": "Tux",
+  "lanbao": "Bluebell",
+  "dundun": "Pebble",
+  "yunduo": "Cloud",
+  "zherdd": "Muffin",
+  "qisi": "Cheddar",
+  "duanduan": "Shortcake",
+  "jinjc": "Goldie",
+  "xianluo": "Suki",
+  "yinghua": "Blossom",
+  "senlin": "Cedar",
+  "youling": "Wisp",
+  "nuowei": "Fjord",
+  "baomao": "Spot",
+  "jinwu": "Ember",
+  "yuelian": "Luna",
+  "xingchen": "Stardust"
+};
+SPECIES.forEach(sp=>{sp.nameEn=EN_NAMES[sp.id]||sp.name;});
+function speciesName(sp){
+ if(typeof sp==='string')sp=speciesById(sp);
+ if(!sp)return (window.MorrowwishI18n?.get?.()==='zh'?'猫猫':'Kitten');
+ return window.MorrowwishI18n?.get?.()==='zh'?sp.name:(sp.nameEn||sp.name);
+}
 function speciesById(id) { return SPECIES.find(s => s.id === id); }
 
 function rollSpecies(luck = 0) {
@@ -63,4 +98,4 @@ function rollSpecies(luck = 0) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-window.GameData = { RARITY, SPECIES, speciesById, rollSpecies };
+window.GameData = { RARITY, SPECIES, speciesById, speciesName, rollSpecies };

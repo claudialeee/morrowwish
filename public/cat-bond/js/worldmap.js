@@ -218,7 +218,7 @@
     var parts = ['探索「' + (prev ? prev.name : '') + '」至 ' + Math.round(r.unlock.explore * 100) + '%'];
     if (r.unlock.own) {
       var sp = window.GameData.speciesById(r.unlock.own);
-      parts.push('并拥有「' + (sp ? sp.name : r.unlock.own) + '」');
+      parts.push('并拥有「' + (sp ? window.GameData.speciesName(sp) : r.unlock.own) + '」');
     }
     return '需 ' + parts.join(' ');
   }

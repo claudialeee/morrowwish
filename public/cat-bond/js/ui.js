@@ -629,7 +629,7 @@ const UI = {
   openBreedPicker() {
     const cats = State.S.cats; this._breedSel = [];
     const render = () => {
-      const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const sel = this._breedSel.includes(c.uid); return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${sp.name}</div><div class="tiny">${GameData.RARITY[sp.rarity].name}</div></div></div>`; }).join('');
+      const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const sel = this._breedSel.includes(c.uid); return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${GameData.speciesName(sp)}</div><div class="tiny">${GameData.RARITY[sp.rarity].name}</div></div></div>`; }).join('');
       this.panel(`<span class="card-close">×</span><h2>🥚 选两只猫繁育</h2><p class="sub">已选 ${this._breedSel.length}/2</p><div class="roster">${chips}</div><div class="btn-row"><button class="btn gold" id="bp-go" ${this._breedSel.length === 2 ? '' : 'disabled'}>开始孵化</button></div>`);
       document.querySelectorAll('#panel .chip').forEach(chip => {
         const c = cats.find(x => x.uid === chip.dataset.uid);
@@ -727,11 +727,11 @@ const UI = {
       const strongest=group.reduce((best,cat)=>!best||State.catPower(cat)>State.catPower(best)?cat:best,null);
       const mastered=!!State.S.masteryBadges?.[id];
       return `<button type="button" class="dex-cell breed-group ${mastered?'golden-paw':''}" data-breed="${id}"
-        aria-label="${english?'Open':'查看'} ${sp.name} ${group.length}">
+        aria-label="${english?'Open':'查看'} ${GameData.speciesName(sp)} ${group.length}">
         ${mastered?'<span class="golden-paw-stamp">🏅 S</span>':''}
         ${group.length>1?'<span class="breed-group-count">×'+group.length+'</span>':''}
         <canvas width="90" height="76"></canvas>
-        <div class="name">${sp.name}</div>
+        <div class="name">${GameData.speciesName(sp)}</div>
         <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
         <div class="tiny">${english?'Top Lv.':'最高等级 '}${strongest.level}</div>
       </button>`;
@@ -771,7 +771,7 @@ const UI = {
         <span aria-hidden="true">›</span>
       </button>`).join('');
     this.panel(`<span class="card-close">×</span>
-      <h2>${species.name} <span class="tiny">×${all.length}</span></h2>
+      <h2>${GameData.speciesName(species)} <span class="tiny">×${all.length}</span></h2>
       <p class="sub">${english?'Every individual is kept. Choose one to train or bond.'
         :'所有猫猫均已保留，选择其中一只进行培养和互动。'}</p>
       <div class="breed-member-list">${rows}</div>
@@ -809,7 +809,7 @@ const UI = {
     const tierText = ['路人', '熟悉', '亲密', '灵魂纽带'][tier];
     const feedCost = 5, playCost = 0;
     const dispName = State.catName(cat);
-    const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${sp.name}</span>` : '';
+    const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${GameData.speciesName(sp)}</span>` : '';
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
@@ -930,7 +930,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">★ 觉醒！</h2>
       <canvas id="evo-cv" width="200" height="170" style="display:block;margin:10px auto"></canvas>
-      <p class="center">${sp.name} 觉醒为 <b style="color:${col}">${name}</b>！</p>
+      <p class="center">${GameData.speciesName(sp)} 觉醒为 <b style="color:${col}">${name}</b>！</p>
       <p class="sub center">${aw ? aw.desc : ''}</p>
       <div class="btn-row" style="justify-content:center"><button class="btn gold" onclick="UI.closeAll()">太棒了</button></div>`);
     const cv = document.getElementById('evo-cv'); const cx = cv.getContext('2d'); let tt = 0;
@@ -996,7 +996,7 @@ const UI = {
       req.item ? `${req.item}×1${itemOk ? '✓' : '(缺)'}` : null,
     ].filter(Boolean).join(' · ');
     return `<div class="evo-row ${ready ? 'ready' : ''}">
-      <div class="evo-info">🦋 可蜕变为 <b>${toSp.name}</b><div class="tiny">特殊变身 · ${reqStr}</div></div>
+      <div class="evo-info">🦋 可蜕变为 <b>${GameData.speciesName(toSp)}</b><div class="tiny">特殊变身 · ${reqStr}</div></div>
       <button class="btn ${ready ? 'gold' : ''}" id="cd-evolve" ${ready ? '' : 'disabled'}>蜕变</button>
     </div>`;
   },
@@ -1129,7 +1129,7 @@ const UI = {
     if (u.level) bits.push((en?'Lv.':'Lv.') + u.level + (cat.level>=u.level?' ✓':` (${en?'now':'当前'} ${cat.level||1})`));
     if (u.affinity) bits.push((en?'Affinity ':'亲密 ') + u.affinity + ((cat.affinity||0)>=u.affinity?' ✓':` (${cat.affinity||0})`));
     if (u.species) {
-      const names = u.species.map(id => GameData.speciesById(id)?.name || id).join('/');
+      const names = u.species.map(id => GameData.speciesName?.(id) || id).join('/');
       bits.push((en?'Breed: ':'品种专属：') + names + (u.species.indexOf(cat.species)>=0?' ✓':''));
     }
     if (u.quest) {
@@ -1168,7 +1168,7 @@ const UI = {
       State.S.evoStones[req.item]--;
     }
     const toSp = GameData.speciesById(evo.evolvesTo);
-    const oldName = GameData.speciesById(cat.species).name;
+    const oldName = GameData.speciesName(cat.species);
     const fromSpecies = cat.species;
     // evolve: change species, keep level/bond/xp, boost stats, re-roll loadout, log dex
     cat.species = evo.evolvesTo;
@@ -1187,7 +1187,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">✨ 进化成功！</h2>
       <canvas id="evo-cv" width="200" height="160" style="display:block;margin:10px auto"></canvas>
-      <p class="center"><b>${oldName}</b> 进化为 <b class="rarity-${toSp.rarity}">${toSp.name}</b>！</p>
+      <p class="center"><b>${oldName}</b> 进化为 <b class="rarity-${toSp.rarity}">${GameData.speciesName(toSp)}</b>！</p>
       <p class="sub center">${toSp.desc}</p>
       <div class="btn-row" style="justify-content:center"><button class="btn gold" onclick="UI.closeAll()">太棒了</button></div>`);
     const cv = document.getElementById('evo-cv'); const cx = cv.getContext('2d'); let tt = 0;
@@ -1269,7 +1269,7 @@ const UI = {
             en?'The Golden Paw tells a secret: this cat trusts you enough to share its true story.'
               :'金爪秘密：当它相信你时，才终于肯讲出自己的经历。']:null);
         this.panel(`<span class="card-close">×</span>
-          <h2>${sp.name} <span class="rarity-${sp.rarity}">◆${GameData.RARITY[sp.rarity].name}</span></h2>
+          <h2>${GameData.speciesName(sp)} <span class="rarity-${sp.rarity}">◆${GameData.RARITY[sp.rarity].name}</span></h2>
           <p class="sub">${sp.desc}</p>
           ${lore?'<p class="rare-lore">'+(en?'📖 Lost cat tale':'📖 猫咪往事')+' · '+lore[0]+'</p>'
              +(State.S.masteryBadges?.[sp.id]?'<p class="rare-lore unlocked">'+lore[1]+'</p>':
@@ -1400,7 +1400,7 @@ const UI = {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     this.panel(`<span class="card-close">×</span>
       <h2>${en?'Cat Teaser 🪶':'逗猫 🪶'}</h2>
-      <p class="sub">${en?'Tap the feather toy and help '+GameData.speciesById(target.species).name+' catch it. More catches improve affection and mood.':'点击逗猫棒，让 '+GameData.speciesById(target.species).name+' 扑抓！抓中越多，好感与心情涨得越快。'}</p>
+      <p class="sub">${en?'Tap the feather toy and help '+GameData.speciesName(target.species)+' catch it. More catches improve affection and mood.':'点击逗猫棒，让 '+GameData.speciesName(target.species)+' 扑抓！抓中越多，好感与心情涨得越快。'}</p>
       <div style="position:relative;height:220px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden;touch-action:manipulation" id="tease-area">
         <canvas id="tz" width="500" height="220" style="width:100%;height:100%;display:block"></canvas>
       </div>
@@ -1636,7 +1636,7 @@ const UI = {
       :newBreed?'🐾 新品种发现':'🐾 熟悉的朋友';
     this.panel(`<span class="card-close">×</span>
       <div class="sighting-badge rarity-${wildSp.rarity}">${rareText}</div>
-      <h2>发现野生 <span class="rarity-${wildSp.rarity}">${wildSp.name}</span></h2>
+      <h2>发现野生 <span class="rarity-${wildSp.rarity}">${GameData.speciesName(wildSp)}</span></h2>
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
@@ -1738,7 +1738,7 @@ const UI = {
     const actOpts = S.GAMBIT_ACTIONS.map(a => `<option value="${a.key}">${a.label}</option>`).join('');
     const tabs = team.map((c, i) => {
       const s = GameData.speciesById(c.species);
-      return `<button class="gb-tab ${i === this._gbIdx ? 'sel' : ''}" data-i="${i}">${s.name}</button>`;
+      return `<button class="gb-tab ${i === this._gbIdx ? 'sel' : ''}" data-i="${i}">${GameData.speciesName(s)}</button>`;
     }).join('');
     const rows = cat.gambits.map((r, i) => `
       <div class="gb-row" data-i="${i}">
@@ -1754,7 +1754,7 @@ const UI = {
       <h2>${en?'⚙️ Auto tactics':'⚙️ 智能战斗策略'} <span class="tiny">${en?'Rules checked top to bottom':'自上而下逐条判定'}</span></h2>
       <p class="sub">给每只猫配置自动战斗规则：满足「条件」就执行「动作」，最先命中的生效。</p>
       <div class="gb-tabs">${tabs}</div>
-      <p class="tiny" style="margin:6px 0"><b>${sp.name}</b> · ${S.elementOf ? this.game.elemIcon(S.elementOf(cat.species)) : ''} 元素 · 技能：${(cat.loadout || []).map(id => { const sk = S.skillById(id); return sk ? sk.name : ''; }).filter(Boolean).join(' / ') || '默认'}</p>
+      <p class="tiny" style="margin:6px 0"><b>${GameData.speciesName(sp)}</b> · ${S.elementOf ? this.game.elemIcon(S.elementOf(cat.species)) : ''} 元素 · 技能：${(cat.loadout || []).map(id => { const sk = S.skillById(id); return sk ? sk.name : ''; }).filter(Boolean).join(' / ') || '默认'}</p>
       <div id="gb-list">${rows}</div>
       <div class="btn-row" style="margin-top:8px">
         <button class="btn ghost" id="gb-add">＋ 加一条</button>
@@ -1788,7 +1788,7 @@ const UI = {
       :(en?'Best rank saved. Earn S once per breed for a Golden Paw. No repeat rewards.'
         :'已记录最佳评级。每个品种首次 S 可得金爪徽章，不重复发奖。');
     this.panel(`<span class="card-close">×</span>
-      <h2 class="center">${en?'Golden Paw Challenge':'金爪评级挑战'} · ${wildSp.name}</h2>
+      <h2 class="center">${en?'Golden Paw Challenge':'金爪评级挑战'} · ${GameData.speciesName(wildSp)}</h2>
       <canvas id="mc-cat" width="180" height="140" style="display:block;margin:6px auto"></canvas>
       <div class="battle-grade grade-${grade}"><b>${grade}</b>
         <div><strong>${en?'Battle result':'挑战结果'}</strong><small>${en?'Best record':'历史最佳'} ${best}
@@ -2076,12 +2076,12 @@ const UI = {
   openStarter(onPick) {
     const options = GameData.SPECIES.filter(s => s.rarity === 'N').slice(0, 3);
     const english=window.MorrowwishI18n?.get?.()!=='zh';
-    const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${sp.name}">
+    const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${GameData.speciesName(sp)}">
       <canvas width="90" height="76"></canvas>
       <div class="tiny starter-element">${this.game.elemIcon(Skills.elementOf(sp.id))} ${english
         ?({fire:'Fire',grass:'Nature',water:'Water'}[Skills.elementOf(sp.id)]||'Element')
         :({fire:'火系',grass:'草系',water:'水系'}[Skills.elementOf(sp.id)]||'元素')}</div>
-      <div class="name">${sp.name}</div>
+      <div class="name">${GameData.speciesName(sp)}</div>
       <div class="rarity rarity-N">普通</div>
       <div class="tiny">${sp.desc}</div>
     </button>`).join('');

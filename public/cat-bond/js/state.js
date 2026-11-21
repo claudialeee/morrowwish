@@ -63,13 +63,17 @@ function xpToNext(level) { return 20 + level * level * 8; }
 
 // display name: player nickname if set, else species name
 function catName(cat) {
-  if (!cat) return '猫猫';
+  if (!cat) return window.MorrowwishI18n?.get?.()==='zh'?'猫猫':'Kitten';
   // Assign unique names deterministically across the entire save, including
   // duplicate breeds AND user-defined nicknames. Never delete a collected cat.
   const cats = Array.isArray(S.cats) ? S.cats : [];
   const used = new Set();
-  const prefixes = ['小','阿','甜','糯','团','米','奶','星','云','花','桃','栗'];
-  const displayBase = c => c.nickname || GameData.speciesById(c.species)?.name || '猫猫';
+  const english=window.MorrowwishI18n?.get?.()!=='zh';
+  const prefixes=english
+    ?['Little ','Sunny ','Lucky ','Sweet ','Star ','Mimi ','Moon ','Coco ','Tiny ']
+    :['小','阿','甜','糯','团','米','奶','星','云','花','桃','栗'];
+  const displayBase=c=>c.nickname || GameData.speciesName?.(c.species) ||
+    GameData.speciesById(c.species)?.name || (english?'Kitten':'猫猫');
   for(const owned of cats){
     const base = displayBase(owned);
     let name=base,attempt=0;
