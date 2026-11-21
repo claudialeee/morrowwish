@@ -19,7 +19,7 @@ try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__game&&!!window.CatBondDuoHero&&!!window.CatRelations&&!!window.State);
   await page.waitForFunction(()=>window.CatBondDuoHero?.assetReady&&
-    window.CatBondDuoHero?.assetCount===8,{timeout:18000});
+    window.CatBondDuoHero?.assetCount===21,{timeout:18000});
   const entry=await page.evaluate(()=>{
    // Start through the real button and dismiss its starter chooser.
    document.getElementById('intro-start').click();
