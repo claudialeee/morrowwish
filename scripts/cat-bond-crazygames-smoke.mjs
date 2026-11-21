@@ -158,6 +158,12 @@ try{
           'Workshop must be reachable directly from the adventure guide');
         await page.locator('#journey-duo').click();
         await page.waitForSelector('#duo-play');
+        await page.locator('#duo-choose').click();
+        assert.match(await page.locator('.duo-active-status').innerText(),/Current|当前/,
+          'Choosing a duo must immediately confirm who is joining the next battle');
+        assert.deepEqual(await page.evaluate(()=>CatRelations.chosen().map(c=>c.uid)),
+          await page.evaluate(()=>State.S.cats.slice(0,2).map(c=>c.uid)),
+          'The chosen duo must persist in the save');
         assert.ok((await page.locator('.duo-relation').innerText()).length>10,
           'Duo relationship management must display a real trust meter');
         await page.locator('#duo-return').click();
@@ -185,6 +191,19 @@ try{
         }));
         await page.locator('#dx-rematch').click();
         await page.waitForFunction(()=>window.__game.scene==='battle');
+        const moves=await page.evaluate(()=>{
+          const b=window.__game.battle,active=b.me();
+          return {q:document.querySelector('#mv-q .mv-name')?.textContent,
+            e:document.querySelector('#mv-e .mv-name')?.textContent,
+            actualQ:active.qSkill?.name,actualE:active.eSkill?.name,
+            hotkey:document.querySelector('#mv-e .mv-k')?.textContent,
+            display:getComputedStyle(document.querySelector('#mv-e .mv-name')).display,
+            present:!!document.querySelector('#mv-e .mv-name')};
+        });
+        assert.ok(moves.present&&moves.display!=='none'&&moves.e.length>1,
+          'The newly equipped skill must have a visible name on the E button');
+        assert.equal(moves.hotkey,'E','E hotkey must not be replaced by a skill name');
+        assert.ok(moves.q?.length>1,'Q skill must be readable rather than a generic icon');
         const duoDamage=await page.evaluate(()=>{
           const b=window.__game.battle;
           if(!b?.duo)return null;
@@ -195,6 +214,8 @@ try{
         });
         assert.ok(duoDamage?.cast&&duoDamage.damage>0&&duoDamage.uses===1,
           'Real duo move must activate and deal damage, not just display a name');
+        assert.ok(await page.evaluate(()=>window.__game.battle.duoCinematic?.t>0),
+          'Duo attack must trigger an animated two-cat cinematic');
         await page.evaluate(()=>{
           const g=window.__game,b=g.battle;
           if(!b.masteryChallenge)throw Error('Codex rematch entered normal capture');

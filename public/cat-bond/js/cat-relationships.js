@@ -6,6 +6,8 @@ function grow(a,b,n){const p=pair(a,b);if(!p)return null;const old=p.value;p.val
 function chosen(){const c=State.S.cats,u=db().active;return u.map(id=>c.find(x=>x.uid===id)).filter(Boolean);}
 function choose(a,b){if(!pair(a,b))return false;db().active=[a.uid,b.uid];State.save();return true;}
 function personality(cat){
+  const en=window.MorrowwishI18n?.get?.()!=='zh';
+  if(en)return ({glutton:'Foodie',diligent:'Hardworking',lazy:'Sleepy',clever:'Clever',gentle:'Gentle'}[cat?.personality]||'Curious');
   return window.Raising?.PERSONALITIES?.[cat?.personality]?.name||({
     glutton:'贪吃',diligent:'勤劳',lazy:'慵懒',clever:'机敏',gentle:'温柔'
   }[cat?.personality]||'好奇');

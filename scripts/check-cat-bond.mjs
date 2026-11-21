@@ -147,6 +147,13 @@ vm.runInContext(duoSource,sandbox,{filename:'cat-relationships.js'});
 assert.ok(sandbox.window.CatRelations,'Signature relationship system loads');
 const worldMapSource = fs.readFileSync(DIR+'js/worldmap.js','utf8');
 assert.ok(worldMapSource.includes("kind:'secret'"),'Each region has a unique one-time landmark');
+const qualityGame=fs.readFileSync(DIR+'js/game.js','utf8');
+assert.ok(qualityGame.includes("querySelector('.mv-name')")&&qualityGame.includes("move-new-tag"),
+  'Battle buttons show equipped skill names and newly learned skills');
+assert.ok(fs.readFileSync(DIR+'js/scenery.js','utf8').includes('sceneIdentity('),
+  'Different regions render actual authored animated landmarks');
+assert.ok(fs.readFileSync(DIR+'js/cat-relationships.js','utf8').includes("'elec+fire'"),
+  'Electric and fire form a real named elemental duo move');
 assert.ok(worldMapSource.includes('sp: rollRegionCat()'),
   'Region spawns should use rarity-weighted encounters, not uniform legendary encounters');
 

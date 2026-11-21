@@ -1142,3 +1142,8 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 /* Combat VFX stays inside the canvas; the duo control remains touch-accessible. */
 #battle-ui #duo-burst.ready{border-width:3px;background:linear-gradient(125deg,#ffe2a9,#e8b3fa);
  box-shadow:0 0 22px #eec3fa8a,0 4px 13px #674c6966}
+
+#panel .rare-lore{padding:10px 13px;border:1px solid #d9cfae;border-radius:11px;background:#fff7e7;
+ font-size:13px;line-height:1.65;color:#5e6650;margin:8px auto}
+#panel .rare-lore.unlocked{background:#f8ecff;border-color:#c1a9d5;color:#725283}
+#panel .rare-lore.locked{background:#edf2e9;color:#718070}

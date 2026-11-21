@@ -251,7 +251,7 @@ class Game {
     if(d.pending)return;
     d.taps++;
     if(d.taps<(d.count?7:3)||(d.count&&Date.now()-d.at<90000))return;
-    d.pending={kind:d.count%3,uid:cat.uid};
+    d.pending={kind:d.count%7,uid:cat.uid};
     d.at=Date.now();d.count++;d.taps=0;
     this.toast(window.MorrowwishI18n?.get?.()==='zh'?'✨ 猫咪有个小秘密！':'✨ Your kitten found a secret!');
     metric('bond_yard_surprise_found',{kind:d.pending.kind});
@@ -275,10 +275,22 @@ class Game {
   claimYardSurprise(choice){
     const d=State.S.yardStory;if(!d?.pending||![0,1].includes(choice))return false;
     const kind=d.pending.kind;d.pending=null;
-    const rewards=[[{coins:24},{treats:2}],[{fish:2},{coins:28}],[{yarn:3},{treats:3}]][kind];
+    const rewards=[
+      [{coins:24},{treats:2}],
+      [{fish:2},{coins:28}],
+      [{yarn:3},{treats:3}],
+      [{coins:18,duo:6},{treats:1,duo:10}],
+      [{fish:2,duo:4},{coins:16,duo:8}],
+      [{treats:3},{yarn:2,duo:5}],
+      [{coins:30},{fish:2,duo:6}]
+    ][kind]||[{coins:12},{treats:1}];
     const r=rewards[choice];
     State.S.coins+=(r.coins||0);State.S.treats+=(r.treats||0);State.S.fish+=(r.fish||0);
     if(r.yarn){Raising.init();State.S.raising.yarn+=r.yarn;}
+    if(r.duo&&window.CatRelations){
+      const members=CatRelations.chosen();
+      if(members.length===2)CatRelations.grow(members[0],members[1],r.duo);
+    }
     State.save();this.refreshHUD();metric('bond_yard_surprise_claimed',{kind,choice});
     return true;
   }

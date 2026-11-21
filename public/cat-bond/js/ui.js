@@ -86,12 +86,20 @@ const UI = {
     const events=[
       ['🔔','草丛的小铃铛','A bell in the grass','带走铃铛','Take the bell','一起玩铃铛','Play with the bell'],
       ['🦋','蝴蝶的秘密路线','Follow the butterfly','寻找鱼干','Find fish','在花丛打滚','Play in the flowers'],
-      ['🧶','猫咪的宝藏','A kitten treasure','保存毛线','Keep yarn','交换零食','Trade for treats']
+      ['🧶','猫咪的宝藏','A kitten treasure','保存毛线','Keep yarn','交换零食','Trade for treats'],
+      ['🐾','两只猫争夺毛线球','A yarn-ball disagreement','两只都安慰','Comfort them both','帮助它们一起玩','Help them share'],
+      ['📦','神秘纸箱大探险','The mysterious cardboard box','打开纸箱','Open the box','一起钻进去','Explore together'],
+      ['🐟','小鱼干不翼而飞','The disappearing fish','揭开秘密','Find the culprit','悄悄补充零食','Refill the treats'],
+      ['🌠','流星落在屋顶上','A shooting star over the roof','收下星光','Collect starlight','许一个伙伴愿望','Wish for friendship']
     ];
     const e=events[d.kind]||events[0];
     this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
       <div class="yard-surprise-icon">${e[0]}</div><h2>${en?e[2]:e[1]}</h2>
-      <p>${en?'Your cat found something unexpected. What should you do?':'猫猫意外发现了一件小宝贝，你想怎么做？'}</p>
+      <p>${en?(d.kind===3?'Two kittens want the same yarn ball. Can you help them share?':
+        d.kind===5?'Someone stole the fish. Tiny pawprints lead into the flowers!':
+        'Your cat found something unexpected. What should you do?')
+        :(d.kind===3?'两只猫抢同一个毛线球，谁也不肯松爪。你准备怎么办？':
+          d.kind===5?'小鱼干桶空了，地上却留着两串神秘脚印！':'猫猫意外发现了一件小宝贝，你想怎么做？')}</p>
       <div class="btn-row"><button class="btn gold" id="surprise-a">${en?e[4]:e[3]}</button>
       <button class="btn" id="surprise-b">${en?e[6]:e[5]}</button></div></div>`);
     for(const [id,choice] of [['surprise-a',0],['surprise-b',1]])document.getElementById(id).onclick=()=>{
@@ -132,7 +140,11 @@ const UI = {
         <div class="duo-meter"><span style="width:${p}%"></span></div>
         <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small>
         ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
-          +CatRelations.secretStory(a,b)+'</span></p>':''}</div>
+          +CatRelations.secretStory(a,b)+'</span></p>':''}
+        ${p>=90?'<p class="duo-secret-story">🌙 '+(en?'SECRET PROMISE':'最终的约定')+'<span>'
+          +(en?'Even in the fullest garden, these two will always find each other. Their team move has reached its final form.'
+            :'即使庭院住满了小猫，它们也能一眼找到彼此。双猫合击终于达到最终形态。')
+          +'</span></p>':''}</div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
         ${mood==='sulky'?'<button class="btn" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button>':''}
@@ -804,9 +816,32 @@ const UI = {
         if(!State.S.dex[sp.id])return;
         const canRematch=State.S.cats.some(cat=>cat.species===sp.id);
         const best=State.S.bestGrades?.[sp.id]||'—';
+        const rareLore={
+          jinwu:[en?'The legendary sun-cat keeps a flame alive to guide lost kittens home.'
+            :'传说金乌把火种藏在山顶，不是为了守护宝藏，而是给迷路的猫咪照亮归途。',
+            en?'A Golden Paw reveals its secret: the flame is a promise to every kitten still searching for home.'
+              :'金爪秘密：那团不灭的火焰，是它对每只流浪小猫许下的约定。'],
+          youling:[en?'At night, a shy silhouette follows the moonlight between abandoned doors.'
+            :'深夜里，总有一只幽灵般的小猫替别人守住没关好的门。',
+            en?'Its Golden Paw secret: it waited for one friend for years, and still believes in reunions.'
+              :'金爪秘密：它曾等一位朋友很多年，至今仍相信总有一天能再相见。'],
+          xingchen:[en?'It collects every falling star as if each were someone\'s forgotten wish.'
+            :'星尘把每一颗流星收藏起来，因为它觉得每一颗都是谁遗失的愿望。',
+            en?'The final star belongs to the player who kept all their companions close.'
+              :'金爪秘密：最后一颗星星，留给始终没有放弃伙伴的你。']
+        };
+        const lore=rareLore[sp.id]||(sp.rarity==='SR'||sp.rarity==='SSR'
+          ?[en?'An unusual cat with an unfinished tale. Every meeting is another clue.'
+              :'这只猫的过去还藏着秘密。每一次相遇，都会留下一点线索。',
+            en?'The Golden Paw tells a secret: this cat trusts you enough to share its true story.'
+              :'金爪秘密：当它相信你时，才终于肯讲出自己的经历。']:null);
         this.panel(`<span class="card-close">×</span>
           <h2>${sp.name} <span class="rarity-${sp.rarity}">◆${GameData.RARITY[sp.rarity].name}</span></h2>
           <p class="sub">${sp.desc}</p>
+          ${lore?'<p class="rare-lore">'+(en?'📖 Lost cat tale':'📖 猫咪往事')+' · '+lore[0]+'</p>'
+             +(State.S.masteryBadges?.[sp.id]?'<p class="rare-lore unlocked">'+lore[1]+'</p>':
+                '<p class="rare-lore locked">'+(en?'🏅 Earn an S rank to reveal the rest of the story.'
+                  :'🏅 获得 S 评级才能解锁隐藏结局。')+'</p>'):''}
           <p class="mastery-detail">${State.S.masteryBadges?.[sp.id]
             ?(en?'🏅 Golden Paw earned · S rank':'🏅 金爪徽章已解锁 · S 评级')
             :(en?'Best grade '+best+' · Earn S to win the Golden Paw'
