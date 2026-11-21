@@ -119,6 +119,7 @@
     '🤖 自动': '🤖 Auto',
     '🎮 手动': '🎮 Manual',
     '🏳️ 撤退': '🏳️ Retreat',
+    '撤退': 'Retreat',
     '鼠标瞄准 · 左键猫爪 · 空格闪避 · P 自动战斗': 'Aim with mouse · left-click claw · Space dodge · P auto-battle',
     '鼠标瞄准 · 左键猫爪 · 空格闪避 · 斗志清零即收服': 'Aim with mouse · left-click claw · Space dodge · drain morale to capture',
     '鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避': 'Aim with mouse · left-click claw · Q/E skills · Space dodge',
