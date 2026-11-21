@@ -1,6 +1,6 @@
 {
   "version": "V4",
-  "createdAt": "2026-11-21T08:05:40.872Z",
+  "createdAt": "2026-11-21T08:09:42.713Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -15,73 +15,73 @@
         "/promo/cat-bond/v4-review-2.jpg",
         "/promo/cat-bond/v4-review-3.jpg"
       ],
-      "duration": 28,
+      "duration": 26.8,
       "shots": [
         {
           "source": "broll",
           "scene": "yard",
-          "caption": "THESE CATS ARE YOUR TEAM.",
-          "seconds": 3.4
+          "caption": "MEET YOUR CAT CREW.",
+          "seconds": 3.6
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "MEET. BEFRIEND. RECRUIT.",
-          "seconds": 2.65
+          "caption": "",
+          "seconds": 2.5
         },
         {
           "source": "broll",
           "scene": "battle",
-          "caption": "THEN THE STRAYS FIGHT BACK.",
+          "caption": "THE STRAYS FIGHT BACK.",
           "seconds": 3
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "THEY FIGHT TOGETHER.",
-          "seconds": 2.4
+          "caption": "",
+          "seconds": 2.3
+        },
+        {
+          "source": "broll",
+          "scene": "yard-late",
+          "caption": "",
+          "seconds": 2.45
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "EVERY DUO HAS A SECRET.",
-          "seconds": 2.8
+          "caption": "",
+          "seconds": 2.25
+        },
+        {
+          "source": "broll",
+          "scene": "battle-late",
+          "caption": "FIGHT WITH TWO CATS.",
+          "seconds": 2.6
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "NOW WATCH THIS...",
-          "seconds": 2.55
+          "caption": "",
+          "seconds": 2.4
         },
         {
           "source": "broll",
           "scene": "battle",
-          "caption": "THE BATTLE ISN’T OVER.",
-          "seconds": 2.5
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "DISCOVER NEW SKILLS.",
-          "seconds": 2.7
+          "caption": "",
+          "seconds": 2.4
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "A TEAM OF YOUR OWN.",
-          "seconds": 2
+          "caption": "",
+          "seconds": 2.1
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "WHICH CATS WOULD YOU CHOOSE?",
+          "caption": "PLAY FREE",
           "seconds": 3.4
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "CAT BOND · PLAY FREE",
-          "seconds": 2.8
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
@@ -100,79 +100,79 @@
         "/promo/pawsibly-innocent/v4-review-2.jpg",
         "/promo/pawsibly-innocent/v4-review-3.jpg"
       ],
-      "duration": 23.9,
+      "duration": 24.6,
       "shots": [
+        {
+          "source": "broll",
+          "scene": "sneak",
+          "caption": "THREE FISH. ONE CAT.",
+          "seconds": 2.2
+        },
         {
           "source": "game",
           "scene": null,
-          "caption": "THE HUMAN IS RIGHT THERE.",
+          "caption": "",
           "seconds": 1.2
         },
         {
           "source": "broll",
-          "scene": "sneak",
-          "caption": "THREE FISH TO STEAL.",
-          "seconds": 2.2
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "AND I AM THE CAT.",
-          "seconds": 2.55
-        },
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "PLAN: DISTRACT HIM.",
-          "seconds": 1.9
-        },
-        {
-          "source": "broll",
           "scene": "decoy",
-          "caption": "HE CHASES THE YARN.",
-          "seconds": 2.15
+          "caption": "A YARN BALL CHANGES EVERYTHING.",
+          "seconds": 2.3
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "SO I MAKE MY MOVE.",
-          "seconds": 2.55
+          "caption": "",
+          "seconds": 2.2
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "DON’T GET CAUGHT.",
-          "seconds": 2.15
+          "caption": "",
+          "seconds": 1.8
+        },
+        {
+          "source": "broll",
+          "scene": "steal",
+          "caption": "NOW STEAL THE FISH.",
+          "seconds": 3.6
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 2.1
+        },
+        {
+          "source": "broll",
+          "scene": "steal",
+          "caption": "",
+          "seconds": 3.2
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 1.4
         },
         {
           "source": "broll",
           "scene": "sneak",
-          "caption": "SNEAKING PAST HIM.",
+          "caption": "",
           "seconds": 2.2
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "SO CLOSE...",
-          "seconds": 2.35
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "ALL THREE FISH.",
-          "seconds": 1.55
+          "caption": "",
+          "seconds": 1.5
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "COULD YOU PULL THIS OFF?",
-          "seconds": 3
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "PAWSIBLY INNOCENT!",
-          "seconds": 2.55
+          "caption": "PLAY FREE",
+          "seconds": 3.3
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
@@ -191,67 +191,61 @@
         "/promo/tiny-town/v4-review-2.jpg",
         "/promo/tiny-town/v4-review-3.jpg"
       ],
-      "duration": 24.8,
+      "duration": 25,
       "shots": [
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "NO JOBS. ALL FREEDOM.",
-          "seconds": 2.65
-        },
         {
           "source": "broll",
           "scene": "build",
-          "caption": "YOU DESIGN THE TOWN.",
-          "seconds": 3.4
+          "caption": "NO WORK. BUILD WHAT YOU WANT.",
+          "seconds": 3.5
+        },
+        {
+          "source": "broll",
+          "scene": "build-late",
+          "caption": "",
+          "seconds": 3.9
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 1.9
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "WHAT IF EVERY WISH CAME TRUE?",
-          "seconds": 2.65
+          "caption": "",
+          "seconds": 2.6
+        },
+        {
+          "source": "broll",
+          "scene": "build",
+          "caption": "THE TOWN KEEPS CHANGING.",
+          "seconds": 3.45
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "THE NEIGHBORS HAVE OPINIONS.",
+          "caption": "",
           "seconds": 2
         },
         {
           "source": "broll",
-          "scene": "build",
-          "caption": "EVERY DECISION CHANGES IT.",
-          "seconds": 3.05
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "SEVEN DAYS OF UNLIMITED LIFE.",
-          "seconds": 3
+          "scene": "build-late",
+          "caption": "",
+          "seconds": 3.5
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "AND THE TOWN BECOMES...",
-          "seconds": 2.55
-        },
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "A STORY NO ONE PLANNED.",
-          "seconds": 1.85
+          "caption": "",
+          "seconds": 2.6
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "WHAT WOULD YOUR TOWN BECOME?",
-          "seconds": 2.95
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "NO MORE MONDAYS · PLAY FREE",
-          "seconds": 2.7
+          "caption": "PLAY FREE",
+          "seconds": 3.3
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
@@ -270,73 +264,79 @@
         "/promo/elsewhere/v4-review-2.jpg",
         "/promo/elsewhere/v4-review-3.jpg"
       ],
-      "duration": 24.6,
+      "duration": 27.1,
       "shots": [
         {
           "source": "game",
           "scene": null,
-          "caption": "WHAT IF YOU WOKE UP IN PARIS?",
-          "seconds": 2.35
+          "caption": "",
+          "seconds": 2.3
         },
         {
           "source": "broll",
           "scene": "maldives",
-          "caption": "OR ON A PRIVATE ISLAND?",
-          "seconds": 2.45
+          "caption": "OR WAKE UP ON AN ISLAND.",
+          "seconds": 3.6
+        },
+        {
+          "source": "broll",
+          "scene": "maldives-result",
+          "caption": "",
+          "seconds": 1.55
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "A DIFFERENT LIFE AWAITS.",
-          "seconds": 2.8
+          "caption": "",
+          "seconds": 2.45
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "ONE CHOICE CHANGES THINGS.",
+          "caption": "",
           "seconds": 1.85
         },
         {
           "source": "broll",
           "scene": "tokyo",
           "caption": "ANOTHER CITY. ANOTHER YOU.",
-          "seconds": 2.45
+          "seconds": 3.65
         },
         {
-          "source": "game",
-          "scene": null,
-          "caption": "LOVE. LUCK. AND SURPRISES.",
-          "seconds": 1.85
+          "source": "broll",
+          "scene": "tokyo-result",
+          "caption": "",
+          "seconds": 1.55
         },
         {
           "source": "broll",
           "scene": "moon",
-          "caption": "EVEN A HOTEL ON THE MOON.",
-          "seconds": 2.45
+          "caption": "A HOTEL ON THE MOON?",
+          "seconds": 3.65
         },
         {
-          "source": "cover",
-          "scene": null,
-          "caption": "THE STORY IS YOURS.",
-          "seconds": 2.75
+          "source": "broll",
+          "scene": "moon-result",
+          "caption": "",
+          "seconds": 1.55
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "HUNDREDS OF POSSIBLE DAYS.",
-          "seconds": 2.45
+          "caption": "",
+          "seconds": 1.85
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 2.3
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "WHICH LIFE WOULD YOU LIVE?",
-          "seconds": 2.8
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "ELSEWHERE · PLAY FREE",
-          "seconds": 2.55
+          "caption": "PLAY FREE",
+          "seconds": 3.2
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
@@ -355,43 +355,37 @@
         "/promo/flip-dash/v4-review-2.jpg",
         "/promo/flip-dash/v4-review-3.jpg"
       ],
-      "duration": 9.1,
+      "duration": 9,
       "shots": [
         {
           "source": "game",
           "scene": null,
-          "caption": "38 POINTS. CRASHED.",
+          "caption": "",
           "seconds": 1.45
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "ONE BUTTON. FLIP GRAVITY.",
-          "seconds": 2.6
+          "caption": "",
+          "seconds": 3.05
         },
         {
-          "source": "cover",
+          "source": "game",
           "scene": null,
-          "caption": "MISS ONCE...",
+          "caption": "",
           "seconds": 1.25
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "AND IT’S OVER.",
-          "seconds": 1.25
-        },
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "CAN YOU BEAT 38?",
+          "caption": "",
           "seconds": 1.55
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "FLIP DASH · PLAY FREE",
-          "seconds": 2.05
+          "caption": "PLAY FREE",
+          "seconds": 2.6
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
@@ -410,43 +404,37 @@
         "/promo/parcel-panic/v4-review-2.jpg",
         "/promo/parcel-panic/v4-review-3.jpg"
       ],
-      "duration": 8.5,
+      "duration": 8.2,
       "shots": [
         {
           "source": "game",
           "scene": null,
-          "caption": "28 POINTS. GAME OVER.",
+          "caption": "",
           "seconds": 1.3
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "SORT THE PACKAGES.",
+          "caption": "",
           "seconds": 2.35
         },
         {
-          "source": "cover",
+          "source": "game",
           "scene": null,
-          "caption": "WRONG LANE?",
-          "seconds": 1.15
+          "caption": "",
+          "seconds": 1.5
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "THERE GOES THE STREAK.",
-          "seconds": 1.35
-        },
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "BEAT MY 28?",
+          "caption": "",
           "seconds": 1.36
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "PARCEL PANIC · PLAY FREE",
-          "seconds": 2.1
+          "caption": "PLAY FREE",
+          "seconds": 2.55
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
@@ -465,43 +453,37 @@
         "/promo/pocket-aquarium/v4-review-2.jpg",
         "/promo/pocket-aquarium/v4-review-3.jpg"
       ],
-      "duration": 10,
+      "duration": 9.3,
       "shots": [
         {
           "source": "game",
           "scene": null,
-          "caption": "GRADE B. NOT S.",
+          "caption": "",
           "seconds": 1.75
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "FEED THE RIGHT FISH.",
+          "caption": "",
           "seconds": 2.5
         },
         {
-          "source": "cover",
-          "scene": null,
-          "caption": "KEEP THE COMBO GOING.",
-          "seconds": 1.35
-        },
-        {
           "source": "game",
           "scene": null,
-          "caption": "ONE WRONG BITE...",
+          "caption": "",
           "seconds": 1.75
         },
         {
           "source": "game",
           "scene": null,
-          "caption": "CAN YOU GET AN S?",
+          "caption": "",
           "seconds": 1.5
         },
         {
           "source": "cover",
           "scene": null,
-          "caption": "POCKET AQUARIUM · PLAY FREE",
-          "seconds": 2.2
+          "caption": "PLAY FREE",
+          "seconds": 2.7
         }
       ],
       "sourceClips": "current live gameplay and actual studio cover",
