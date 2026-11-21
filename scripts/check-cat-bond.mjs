@@ -532,4 +532,29 @@ render();                                   // toggle back restores Chinese
 assert.equal(zhNode.nodeValue, '🏡 庭院', 'toggling back to Chinese restores the original text');
 sandbox.window.MorrowwishI18n.get = () => 'en';
 
+// A duo ultimate must be a real two-cat signature move, not a one-second
+// toast. It has a long, finite elemental aftereffect with real combat value.
+const duoA=State.makeCat('tangyuan',{affinity:90}),duoB=State.makeCat('xiaohui',{affinity:90});
+State.S.cats=[duoA,duoB];
+sandbox.window.CatRelations.choose(duoA,duoB);
+sandbox.window.CatRelations.pair(duoA,duoB).value=95;
+const duoTest=new sandbox.window.Battle.CaptureBattle(game,[duoA,duoB],GameData.speciesById('jinwu'));
+duoTest.duoCharge=100;duoTest.duoCd=0;
+assert.ok(duoTest.duoReady(),'trust unlocks an actual team ultimate');
+assert.equal(duoTest.castDuo(),true,'two cats cast their ultimate');
+const fieldSecs=duoTest.duoField.duration;
+assert.ok(duoTest.duoCinematic.max>=2.7,'signature cinematic is not a one-second flash');
+assert.ok(duoTest.duoRun.duration>=2.3,'both kitten bodies visibly perform the attack');
+assert.ok(fieldSecs>=8&&fieldSecs<=11,'elemental aftereffect lasts through multiple beats');
+assert.ok(duoTest.team.every(f=>f.inv>=2.7),'cats are safe during the signature animation');
+const duoHpBefore=duoTest.enemies.reduce((n,e)=>n+e.hp,0);
+for(let k=0;k<115;k++)duoTest.tickDuoField(.016);
+const duoHpAfter=duoTest.enemies.reduce((n,e)=>n+e.hp,0);
+assert.ok(duoHpAfter<duoHpBefore,'the lingering field deals real follow-up damage');
+for(let k=0;k<710;k++)duoTest.tickDuoField(.016);
+assert.equal(duoTest.duoField,null,'lingering ultimate always ends without leaking');
+assert.ok(duoTest.skillStrokes.some(v=>v.kind==='duoImpact'&&v.life===.65),
+  'closing beat is a distinct twin-element flourish');
+assert.equal(Object.keys(sandbox.window.CatRelations.DUO_ARTS).length,21,'all 21 elemental pairs keep authored signatures');
+
 console.log('Cat Bond: 13 modules loaded, starter + capture win/loss driven, game_start/complete/over/cat_capture analytics, and bilingual ZH->EN layer (incl. live zh<->en toggle) PASS.');
