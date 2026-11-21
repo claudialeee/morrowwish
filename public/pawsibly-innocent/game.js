@@ -152,10 +152,10 @@ function toastText(k){
 function popup(k){
  currentToastKey=k;
  const el=$("toast");el.textContent=toastText(k);el.classList.add("on");
- clearTimeout(msgTimer);msgTimer=setTimeout(()=>{el.classList.remove("on");currentToastKey=null},1450);
+ clearTimeout(msgTimer);msgTimer=setTimeout(()=>{el.classList.remove("on");el.textContent="";currentToastKey=null},1450);
 }
 function refreshToasts(){
- if(currentToastKey!==null&&$("toast"))$("toast").textContent=toastText(currentToastKey);
+ if($("toast"))$("toast").textContent=currentToastKey!==null?toastText(currentToastKey):"";
  refreshBadgeToast();
 }
 function audio(type){window.MorrowwishAudio?.effect(type)}
