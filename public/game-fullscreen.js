@@ -165,10 +165,9 @@
 
       /* One integrated cat-game stage, including its own status, board and controls. */
       'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:0!important;background:radial-gradient(ellipse at 55% 40%,#f8e9e8,#e6d2df)!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.in-game-top{width:100%!important;max-width:1100px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 132px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 132px)!important;flex:0 1 auto!important;aspect-ratio:10/7!important;margin:0 auto!important;overflow:hidden!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.in-game-top{width:100%!important;max-width:1100px!important;min-height:43px!important;padding:0!important;flex:0 0 auto!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 138px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 138px)!important;flex:0 1 auto!important;aspect-ratio:10/7!important;margin:0 auto!important;overflow:hidden!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.stealth-actionbar{box-sizing:border-box!important;flex:0 0 auto!important;width:100%!important;max-width:1100px!important;min-height:55px!important;margin:0!important;padding:6px 12px!important;overflow:visible!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.game-menu{inset:0!important;z-index:50!important}',
 
       /* Tiny Town: preserve the working resident/map/build panels and live
