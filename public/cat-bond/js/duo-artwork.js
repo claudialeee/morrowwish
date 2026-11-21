@@ -97,7 +97,7 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  const spin=['spiral','tides','fireworks','petals','stars'].includes(style);
  const guard=['eclipse','lake','halo','snare','sprout','solar'].includes(style);
  const direction=flip?1:-1;
- const launch=spin?Math.sin(Math.PI*p)*scale*.22:guard&&!flip?0:Math.sin(Math.PI*p)*scale*.12;
+ const launch=style==='highfive'?Math.sin(Math.PI*clamp((p-.13)/.48))*scale*.06:spin?Math.sin(Math.PI*p)*scale*.22:guard&&!flip?0:Math.sin(Math.PI*p)*scale*.12;
  const tilt=spin?direction*(.16*Math.sin(Math.PI*p)):(lead?direction*.14*dash:direction*.07*dash);
  const width=scale*200/300;
  ctx.save();ctx.translate(x,y-launch);
@@ -113,12 +113,12 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
  window.CatArt?.drawCat?.(ctx,0,scale*.04,{
    species:sp,scale:Math.min(3.2,scale/96),face:1,
-   pose:p>.10&&p<.78?'walk':'idle',
+   pose:style==='highfive'&&p>.12&&p<.53?'play':(p>.10&&p<.78?'walk':'idle'),
    motion:Math.max(.35,Math.sin(Math.PI*p)),
    stride:p*10,t:p*2.5,mood:'alert'
  });
  // Paw spark originates BESIDE the leading actual illustrated forepaw.
- if(p>.38){
+ if(p>.38&&style!=='highfive'){
   const f=Math.sin(clamp((p-.38)/.46)*Math.PI);
   ctx.globalAlpha=Math.max(0,f)*.79;
   const px=width*.22,py=scale*.13;
