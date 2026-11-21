@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Fast syntax gate before lengthy browser capture
+        run: |
+          node --check scripts/capture-trailer-broll-v4.mjs
+          node --check scripts/render-cinematic-trailers-v4.mjs
       - name: Install gameplay capture and video tools
         run: |
           npm ci
