@@ -2,7 +2,7 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
-const games=[
+const gamesAll=[
   {slug:'pawsibly-innocent',title:'Cat stealth'},
   {slug:'elsewhere',title:'Elsewhere'},
   {slug:'tiny-town',title:'Tiny Town'},
@@ -10,6 +10,8 @@ const games=[
   {slug:'parcel-panic',title:'Parcel Panic'},
   {slug:'pocket-aquarium',title:'Pocket Aquarium'}
 ];
+const games=process.env.GAME_TEST_SCOPE?gamesAll.filter(g=>g.slug===process.env.GAME_TEST_SCOPE):gamesAll;
+if(!games.length)throw new Error('Unknown GAME_TEST_SCOPE');
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 let failures=[];
 try{
@@ -115,4 +117,4 @@ try{
   }
 }finally{await browser.close();}
 if(failures.length){console.error('\nMobile check failures:\n'+failures.join('\n'));process.exitCode=1;}
-else console.log('All six Morrow Wish games passed 390px and 320px phone checks (plus touch gameplay at 390px).');
+else console.log((process.env.GAME_TEST_SCOPE||'All six Morrow Wish games')+' passed 390px and 320px phone checks (plus touch gameplay at 390px).');
