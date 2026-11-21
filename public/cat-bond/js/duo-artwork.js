@@ -9,12 +9,13 @@ const order=['tangyuan','doudou','xiaohui','moqiu','nainai','nietu','niuniu',
  'sanhua','lixiao','lanbao','dundun','yunduo','zherdd','qisi','duanduan',
  'jinjc','xianluo','yinghua','senlin','youling','nuowei','baomao','jinwu','yuelian','xingchen'];
 const atIndex=Object.fromEntries(order.map((s,i)=>[s,i]));
-const atlas=new Image();atlas.decoding='async';
-let atlasOK=false;
-atlas.onload=()=>{atlasOK=atlas.naturalWidth===1000&&atlas.naturalHeight===1500;
- window.dispatchEvent(new Event('cat-bond-duo-art-ready'));};
-atlas.onerror=()=>{atlasOK=false;};
-if(window.CAT_BOND_BREED_ATLAS)atlas.src=window.CAT_BOND_BREED_ATLAS;
+// Reuse the game's CURRENT source-of-truth complete watercolor kittens.
+// Loading an obsolete 5x5 atlas would change the visual style and violate the
+// no-split, no-mirrored-face asset rule enforced by production CI.
+const watercolorsReady=()=>!!(
+ window.CatBondArtworkStatus?.breedsLoaded||
+ window.CatBondArtworkStatus?.originalLoaded
+);
 const scene=new Image();scene.decoding='async';
 let sceneOK=false;
 scene.onload=()=>{sceneOK=scene.naturalWidth===480&&scene.naturalHeight===405;
@@ -105,18 +106,17 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  ctx.save();ctx.globalAlpha=.16*pop;ctx.fillStyle=color||'#bcb2db';
  ctx.beginPath();ctx.ellipse(0,scale*.47,width*.50,scale*.075,0,0,Math.PI*2);ctx.fill();ctx.restore();
  // A single intact image preserves paws, tail, ears and breed-specific coat.
- if(atlasOK){
-  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-  const sx=(index%5)*200,sy=Math.floor(index/5)*300;
-  ctx.drawImage(atlas,sx,sy,200,300,-width*.5,-scale*.62,width,scale);
- }else{
-  const sp=window.GameData?.speciesById?.(speciesId)||
+ // Same actual per-species full-body watercolor renderer as the yard,
+ // exploration map and regular battle. No substitution with schematic cats.
+ const sp=window.GameData?.speciesById?.(speciesId)||
     {id:speciesId,palette:'orange',pattern:'tabby',eyeColor:'#688c88'};
-  ctx.save();ctx.scale(scale/150,scale/150);
-  window.CatArt?.drawCat?.(ctx,0,22,{species:sp,scale:2,face:1,
-    pose:'walk',motion:.65,t:p*2.5,mood:'happy'});
-  ctx.restore();
- }
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ window.CatArt?.drawCat?.(ctx,0,scale*.04,{
+   species:sp,scale:Math.min(3.2,scale/96),face:1,
+   pose:p>.10&&p<.78?'walk':'idle',
+   motion:Math.max(.35,Math.sin(Math.PI*p)),
+   stride:p*10,t:p*2.5,mood:'alert'
+ });
  // Paw spark originates BESIDE the leading actual illustrated forepaw.
  if(p>.38){
   const f=Math.sin(clamp((p-.38)/.46)*Math.PI);
@@ -132,9 +132,9 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  ctx.restore();
  return {species:speciesId,label:label||cat?.nickname||
    window.GameData?.speciesById?.(speciesId)?.name||speciesId,
-   atlas:atlasOK,x,y};
+   atlas:watercolorsReady(),x,y};
 }
 window.CatBondDuoArtwork={backdrop,drawKitten,theme,speciesOf,
- get ready(){return atlasOK},get backdropReady(){return sceneOK},
+ get ready(){return watercolorsReady()},get backdropReady(){return sceneOK},
  breedCount:order.length,sceneKinds:Object.keys(palette)};
 })();

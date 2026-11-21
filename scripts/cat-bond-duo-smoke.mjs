@@ -173,7 +173,7 @@ try{
   assert.equal(visual.visibleCanvas,true);
   assert.equal(visual.breedDiff,5,'five distinct real cat breeds produce visibly distinct cut-ins');
   assert.equal(visual.themeDiff,5,'signature backgrounds differ for moon, sun, storm, spring and water');
-  assert.equal(visual.breedReady,true,'25-breed illustrated atlas decodes');
+  assert.equal(visual.breedReady,true,'Current game watercolor kittens decode for every breed');
   assert.equal(visual.scenesReady,true,'pastel reference-art backgrounds decode');
   // Hold a visually informative impact frame; snapshots taken during the
   // first 150ms fade-in look incorrectly dark and cannot assess kitten art.
