@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-21T06:58:35.498Z",
+  "updatedAt": "2026-11-21T07:16:11.444Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "All 25 previous unapproved video posts are stopped as drafts. Old posts/playbacks are not counted in the new video campaign dashboard. Individual licensed music tracks have been verified for future recuts, but the video visuals and storytelling still require redesign and approval.",
+  "accuracyNote": "V3 gameplay clips are review previews, NOT yet published to social sites. The 25 rejected old posts remain paused drafts. The current reviewer gallery links fresh V3 gameplay for quality checking. Old video plays/published counts are excluded.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -15,14 +15,14 @@
       "slug": "pawsibly-innocent",
       "name": "Cat Heist",
       "hook": "Near catch → yarn decoy → steal three fish",
-      "media": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/pawsibly-innocent/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/pawsibly-innocent/viral-gameplay-20261121.jpg",
+      "cover": "/promo/pawsibly-innocent/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436425289,
         "tiktok": 436425304,
@@ -30,20 +30,26 @@
       },
       "scheduledDate": "2026-11-21",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "V3: authentic outcome-first cut passed live-game verification; no social posting until visual QA",
+      "reviewImages": [
+        "/promo/pawsibly-innocent/hook-v3-review-1.jpg",
+        "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
+        "/promo/pawsibly-innocent/hook-v3-review-3.jpg"
+      ],
+      "music": "unique-licensed-track"
     },
     {
       "slug": "cat-bond",
       "name": "Cat Bond",
       "hook": "Two-cat combination → ultimate finisher",
-      "media": "/promo/cat-bond/viral-gameplay-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/cat-bond/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/cat-bond/viral-gameplay-20261121.jpg",
+      "cover": "/promo/cat-bond/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436425346,
         "tiktok": 436425364,
@@ -51,7 +57,13 @@
       },
       "scheduledDate": "2026-11-22",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "V3: authentic outcome-first cut passed live-game verification; no social posting until visual QA",
+      "reviewImages": [
+        "/promo/cat-bond/hook-v3-review-1.jpg",
+        "/promo/cat-bond/hook-v3-review-2.jpg",
+        "/promo/cat-bond/hook-v3-review-3.jpg"
+      ],
+      "music": "unique-licensed-track"
     },
     {
       "slug": "tiny-town",
@@ -195,7 +207,9 @@
     "publishedPostsInThisCampaign": 0,
     "verification": "All 25 rejected 2026-11-21–28 posts were verified in Metricool as draft=true and autoPublish=false; historical published shorts are explicitly excluded from the new campaign video totals.",
     "pausedDraftPosts": 25,
-    "blockedReason": "Owner rejected video quality: distorted gameplay, illegible captions, no stakes/outcomes, English/Chinese mix. All 25 posts checked as draft:true autoPublish:false in Metricool."
+    "blockedReason": "Owner rejected video quality: distorted gameplay, illegible captions, no stakes/outcomes, English/Chinese mix. All 25 posts checked as draft:true autoPublish:false in Metricool.",
+    "v3PreviewReelsCreated": 2,
+    "v3ReviewPage": "/promo/review-v3/"
   },
   "metricScope": {
     "approvedCurrentVideosOnly": true,
