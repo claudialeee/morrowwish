@@ -117,6 +117,10 @@ class Game {
   }
 
   openWorldMap() {
+    // Clear messages from the garden encounter tutorial before navigating.
+    // The global toast queue otherwise covers the exploration map and cats
+    // for two seconds, despite the garden UI correctly being hidden.
+    document.getElementById('toasts')?.replaceChildren();
     this.scene = 'map';
     document.body.classList.add('cb-exploring');
     document.getElementById('tabbar').classList.add('hidden');

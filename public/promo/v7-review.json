@@ -1,6 +1,6 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T22:26:18.937Z",
+  "createdAt": "2026-11-21T22:44:59.034Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -124,31 +124,31 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 30.7,
+      "duration": 31,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.172
+          "seconds": 14.104000000000001
         },
         {
           "source": "broll",
           "scene": "narrow-pursuit",
           "caption": "SPOTTED! CAN IT ESCAPE?",
-          "seconds": 2.540999999999998
+          "seconds": 2.567
         },
         {
           "source": "broll",
           "scene": "narrow-achievement",
-          "caption": "NINE LIVES · ACHIEVEMENT!",
-          "seconds": 3.05
+          "caption": "",
+          "seconds": 3.4
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.354999999999998
+          "seconds": 7.328
         },
         {
           "source": "cover",
@@ -173,73 +173,67 @@
         "/promo/tiny-town/v7-review-2.jpg",
         "/promo/tiny-town/v7-review-3.jpg"
       ],
-      "duration": 55.3,
+      "duration": 40.2,
       "shots": [
         {
           "source": "broll",
           "scene": "opening-three-choices",
           "caption": "",
-          "seconds": 9.45
+          "seconds": 7
         },
         {
           "source": "broll",
           "scene": "board",
           "caption": "NO JOBS. BUILD YOUR TOWN.",
-          "seconds": 3.7
+          "seconds": 3
         },
         {
           "source": "broll",
           "scene": "resident-reactions",
           "caption": "FIVE NEIGHBORS. FIVE DREAMS.",
-          "seconds": 3.9
+          "seconds": 2.9
         },
         {
           "source": "broll",
           "scene": "resident-profile",
           "caption": "THEY HAVE THEIR OWN OPINIONS.",
-          "seconds": 6.5
-        },
-        {
-          "source": "broll",
-          "scene": "board-later",
-          "caption": "PLACE WISHES ON THE BOARD.",
-          "seconds": 3.5
+          "seconds": 4.7
         },
         {
           "source": "broll",
           "scene": "combination",
           "caption": "TWO WISHES BECOME ONE!",
-          "seconds": 4.1
+          "seconds": 3.5
         },
         {
           "source": "broll",
           "scene": "neighbor-story",
           "caption": "THE NEIGHBORS HAVE STORIES.",
-          "seconds": 6.85
+          "seconds": 5
         },
         {
           "source": "broll",
           "scene": "legendary",
           "caption": "UNLOCK A LEGENDARY WONDER.",
-          "seconds": 3.4
+          "seconds": 3.2
         },
         {
           "source": "broll",
           "scene": "board-mature",
           "caption": "WATCH THE WHOLE TOWN CHANGE.",
-          "seconds": 3.5
+          "seconds": 2.6
         },
         {
           "source": "broll",
           "scene": "ending",
           "caption": "SEVEN DAYS. YOUR OWN ENDING.",
-          "seconds": 6.8
+          "seconds": 5.2
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.6
+          "seconds": 3.1
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -258,91 +252,91 @@
         "/promo/elsewhere/v7-review-2.jpg",
         "/promo/elsewhere/v7-review-3.jpg"
       ],
-      "duration": 79.6,
+      "duration": 51.7,
       "shots": [
         {
           "source": "broll",
           "scene": "choose-life",
           "caption": "",
-          "seconds": 4.65
+          "seconds": 3.2
         },
         {
           "source": "broll",
           "scene": "amalfi",
           "caption": "A VILLA ON THE AMALFI COAST.",
-          "seconds": 4.7
+          "seconds": 2.75
         },
         {
           "source": "broll",
           "scene": "tokyo",
           "caption": "BE A SUPERSTAR TONIGHT.",
-          "seconds": 4.7
+          "seconds": 2.6
         },
         {
           "source": "broll",
           "scene": "moon-opening",
           "caption": "OR OWN A HOTEL ON THE MOON.",
-          "seconds": 5.3
+          "seconds": 3.1
         },
         {
           "source": "broll",
           "scene": "moon-surprise",
           "caption": "SURPRISES IN EVERY LIFE.",
-          "seconds": 5.7
+          "seconds": 2.9
         },
         {
           "source": "broll",
           "scene": "paris",
           "caption": "A NEW LOVE STORY IN PARIS.",
-          "seconds": 6.3
+          "seconds": 4.55
         },
         {
           "source": "broll",
           "scene": "paris-result",
           "caption": "",
-          "seconds": 3.95
+          "seconds": 2.55
         },
         {
           "source": "broll",
           "scene": "paris-romance",
           "caption": "MEET SOMEONE WHO GETS YOU.",
-          "seconds": 7.3
+          "seconds": 5.05
         },
         {
           "source": "broll",
           "scene": "paris-love-moment",
           "caption": "ONE UNFORGETTABLE DATE.",
-          "seconds": 4.2
+          "seconds": 2.9
         },
         {
           "source": "broll",
           "scene": "paris-chapter-3",
           "caption": "THE ROMANCE CONTINUES.",
-          "seconds": 7
+          "seconds": 4.6
         },
         {
           "source": "broll",
           "scene": "paris-chapter-4",
           "caption": "A MOMENT WORTH KEEPING.",
-          "seconds": 6.8
+          "seconds": 4
         },
         {
           "source": "broll",
           "scene": "paris-finale",
           "caption": "CHOOSE YOUR OWN LOVE STORY.",
-          "seconds": 7.15
+          "seconds": 4.8
         },
         {
           "source": "broll",
           "scene": "paris-ending",
           "caption": "YOUR CHOICES. YOUR ENDING.",
-          "seconds": 8.2
+          "seconds": 5.6
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.6
+          "seconds": 3.1
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -367,19 +361,19 @@
           "source": "broll",
           "scene": "first-coin",
           "caption": "GRAB GOLD FROM THE START!",
-          "seconds": 3.12
+          "seconds": 3.1200000000000006
         },
         {
           "source": "broll",
           "scene": "coin-collect",
           "caption": "COLLECT GOLD. DODGE PINK.",
-          "seconds": 9.966
+          "seconds": 9.939
         },
         {
           "source": "broll",
           "scene": "danger",
           "caption": "",
-          "seconds": 0.4909999999999993
+          "seconds": 0.48899999999999866
         },
         {
           "source": "broll",
@@ -410,19 +404,19 @@
         "/promo/parcel-panic/v7-review-2.jpg",
         "/promo/parcel-panic/v7-review-3.jpg"
       ],
-      "duration": 19.3,
+      "duration": 19.5,
       "shots": [
         {
           "source": "broll",
           "scene": "deliveries",
           "caption": "MATCH THE PARCEL COLOR.",
-          "seconds": 8.148
+          "seconds": 8.141
         },
         {
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.684
+          "seconds": 4.882000000000001
         },
         {
           "source": "broll",
@@ -453,19 +447,19 @@
         "/promo/pocket-aquarium/v7-review-2.jpg",
         "/promo/pocket-aquarium/v7-review-3.jpg"
       ],
-      "duration": 18.8,
+      "duration": 18.9,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.247
+          "seconds": 3.2399999999999998
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.236
+          "seconds": 4.245
         },
         {
           "source": "broll",

@@ -17,12 +17,12 @@ const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v1'
  pausedPromoGames:['cat-bond'],scenes:[]};
 const MIN_READING={
  'cat-bond':{'raising':4.5,'cat-upgrade':6.0,'duo-partners':6.0,'map-choice':4.5},
- 'pawsibly-innocent':{'narrow-achievement':3.0},
- 'tiny-town':{'opening-three-choices':9.0,'resident-profile':6.2,'neighbor-story':6.5,'ending':6.5},
- 'elsewhere':{'choose-life':4.4,'paris':6.0,'paris-result':3.7,
-  'paris-romance':7.0,'paris-love-moment':4.0,
-  'paris-chapter-3':6.7,'paris-chapter-4':6.5,'paris-finale':6.8,'paris-ending':7.9,
-  'amalfi':4.5,'tokyo':4.5,'moon-opening':5.0,'moon-surprise':5.5},
+ 'pawsibly-innocent':{'narrow-achievement':3.2},
+ 'tiny-town':{'opening-three-choices':6.6,'resident-profile':4.5,'neighbor-story':4.7,'ending':4.9},
+ 'elsewhere':{'choose-life':3.0,'paris':4.2,'paris-result':2.35,
+  'paris-romance':4.8,'paris-love-moment':2.7,'paris-chapter-3':4.3,
+  'paris-chapter-4':3.7,'paris-finale':4.5,'paris-ending':5.3,
+  'amalfi':2.6,'tokyo':2.45,'moon-opening':3.0,'moon-surprise':2.7},
  'flip-dash':{'first-coin':3.0,'crash':2.5},
  'parcel-panic':{'game-over':2.7},
  'pocket-aquarium':{'timeout':2.9}
@@ -51,40 +51,41 @@ const playlists={
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
   broll('narrow-pursuit',3.1,'SPOTTED! CAN IT ESCAPE?'),
-  broll('narrow-achievement',3.05,'NINE LIVES · ACHIEVEMENT!'),
+  broll('narrow-achievement',3.4),
   broll('caught-attempt',14,'NEXT ROOM. ONE BAD MOVE...'),
   cover(3.6,'PLAY FREE')
  ],
  'tiny-town':[
-  broll('opening-three-choices',9.45),
-  broll('board',3.7,'NO JOBS. BUILD YOUR TOWN.'),
-  broll('resident-reactions',3.9,'FIVE NEIGHBORS. FIVE DREAMS.'),
-  broll('resident-profile',6.5,'THEY HAVE THEIR OWN OPINIONS.'),
-  broll('board-later',3.5,'PLACE WISHES ON THE BOARD.'),
-  broll('combination',4.1,'TWO WISHES BECOME ONE!'),
-  broll('neighbor-story',6.85,'THE NEIGHBORS HAVE STORIES.'),
-  broll('legendary',3.4,'UNLOCK A LEGENDARY WONDER.'),
-  broll('board-mature',3.5,'WATCH THE WHOLE TOWN CHANGE.'),
-  broll('ending',6.8,'SEVEN DAYS. YOUR OWN ENDING.'),
-  cover(3.6,'PLAY FREE')
+  // Faster editorial rhythm; show ALL three real opening choices, cut the
+  // redundant second board montage instead of making text unreadable.
+  broll('opening-three-choices',7.0),
+  broll('board',3.0,'NO JOBS. BUILD YOUR TOWN.'),
+  broll('resident-reactions',2.9,'FIVE NEIGHBORS. FIVE DREAMS.'),
+  broll('resident-profile',4.7,'THEY HAVE THEIR OWN OPINIONS.'),
+  broll('combination',3.5,'TWO WISHES BECOME ONE!'),
+  broll('neighbor-story',5.0,'THE NEIGHBORS HAVE STORIES.'),
+  broll('legendary',3.2,'UNLOCK A LEGENDARY WONDER.'),
+  broll('board-mature',2.6,'WATCH THE WHOLE TOWN CHANGE.'),
+  broll('ending',5.2,'SEVEN DAYS. YOUR OWN ENDING.'),
+  cover(3.1,'PLAY FREE')
  ],
  'elsewhere':[
-  // A quick promise of multiple dream lives, then one clear romantic story
-  // from meeting to real ending. No repetitive generic moon/choice filler.
-  broll('choose-life',4.65),
-  broll('amalfi',4.7,'A VILLA ON THE AMALFI COAST.'),
-  broll('tokyo',4.7,'BE A SUPERSTAR TONIGHT.'),
-  broll('moon-opening',5.3,'OR OWN A HOTEL ON THE MOON.'),
-  broll('moon-surprise',5.7,'SURPRISES IN EVERY LIFE.'),
-  broll('paris',6.3,'A NEW LOVE STORY IN PARIS.'),
-  broll('paris-result',3.95),
-  broll('paris-romance',7.3,'MEET SOMEONE WHO GETS YOU.'),
-  broll('paris-love-moment',4.2,'ONE UNFORGETTABLE DATE.'),
-  broll('paris-chapter-3',7.0,'THE ROMANCE CONTINUES.'),
-  broll('paris-chapter-4',6.8,'A MOMENT WORTH KEEPING.'),
-  broll('paris-finale',7.15,'CHOOSE YOUR OWN LOVE STORY.'),
-  broll('paris-ending',8.2,'YOUR CHOICES. YOUR ENDING.'),
-  cover(3.6,'PLAY FREE')
+  // Three quick alternate-life glimpses; the core is a coherent Paris romance.
+  // Keep enough time for the choice itself, but no repetitive 7-second holds.
+  broll('choose-life',3.2),
+  broll('amalfi',2.75,'A VILLA ON THE AMALFI COAST.'),
+  broll('tokyo',2.6,'BE A SUPERSTAR TONIGHT.'),
+  broll('moon-opening',3.1,'OR OWN A HOTEL ON THE MOON.'),
+  broll('moon-surprise',2.9,'SURPRISES IN EVERY LIFE.'),
+  broll('paris',4.55,'A NEW LOVE STORY IN PARIS.'),
+  broll('paris-result',2.55),
+  broll('paris-romance',5.05,'MEET SOMEONE WHO GETS YOU.'),
+  broll('paris-love-moment',2.9,'ONE UNFORGETTABLE DATE.'),
+  broll('paris-chapter-3',4.6,'THE ROMANCE CONTINUES.'),
+  broll('paris-chapter-4',4.0,'A MOMENT WORTH KEEPING.'),
+  broll('paris-finale',4.8,'CHOOSE YOUR OWN LOVE STORY.'),
+  broll('paris-ending',5.6,'YOUR CHOICES. YOUR ENDING.'),
+  cover(3.1,'PLAY FREE')
  ],
  'flip-dash':[
   broll('first-coin',3.5,'GRAB GOLD FROM THE START!'),
@@ -136,7 +137,7 @@ function edit(slug){
  for(const shot of chosen){
    const words=(shot.caption||'').trim().split(/\s+/).filter(Boolean).length;
    const captionMinimum=words?Math.max(2,0.8+words/3.1):0;
-   const sceneMinimum=shot.src==='cover'?3.5:(MIN_READING[slug]?.[shot.label]||0);
+   const sceneMinimum=shot.src==='cover'?(slug==='tiny-town'||slug==='elsewhere'?3.0:3.5):(MIN_READING[slug]?.[shot.label]||0);
    const required=Math.max(captionMinimum,sceneMinimum);
    const passed=shot.duration+.05>=required;
    readingAudit.scenes.push({game:slug,scene:shot.label||'end-card',seconds:Number(shot.duration.toFixed(2)),

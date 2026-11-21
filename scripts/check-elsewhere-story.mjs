@@ -63,8 +63,14 @@ assert.ok(html.indexOf('story-polish.js')>html.indexOf('absurd-worlds.js')&&
  html.indexOf('story-polish.js')<html.indexOf('dreams.js'),
  'story polish must run after casefiles and before UI initialization');
 const capture=fs.readFileSync('scripts/capture-trailers-v7.mjs','utf8');
-assert.ok(capture.includes('ACHIEVEMENT UNLOCKED')&&capture.includes("save.achievements?.['near-miss']"),
- 'promotional close call must be genuinely earned, then visibly highlighted');
+assert.ok(capture.includes("save.achievements?.['near-miss']")&&
+ capture.includes("getElementById('achievementToast')")&&capture.includes('.award-title')&&
+ capture.includes('REAL IN-GAME ACHIEVEMENT CARD')&&
+ !capture.includes('NINE LIVES'),
+ 'promotional near-miss must display the real unlocked badge card (not a misleading subtitle)');
+const paws=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
+assert.ok(paws.includes('en:"Narrow escape",zh:"侥幸逃脱"')&&paws.includes('award-icon')&&
+ paws.includes('award-desc'), 'near-miss must be named and shown as a real in-game reward');
 assert.ok(capture.includes('first-coin')&&capture.includes('FIRST gold coin'),
  'Flip Dash video must show authentic first-coin pickup early');
 console.log('Elsewhere branching QA passed: 8 lives, 24 distinct finales, '+checked+' story/ending checks; verified promo evidence hooks.');

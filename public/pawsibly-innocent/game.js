@@ -63,7 +63,7 @@ const BADGES=[
  {id:"first-escape",glyph:"🚪",en:"Clean getaway",zh:"第一次开溜",enDesc:"Escape any room",zhDesc:"首次成功逃脱",ok:()=>save.stats.wins>=1||roomsWon()>=1},
  {id:"yarn-lure",glyph:"🧶",en:"Master of distraction",zh:"毛球诱敌大师",enDesc:"Make the owner investigate your yarn",zhDesc:"成功用毛球引走主人",ok:()=>save.stats.lures>=1},
  {id:"three-vases",glyph:"🏺",en:"Not my vase",zh:"花瓶不是我打的",enDesc:"Knock over 3 vases",zhDesc:"累计打翻三个花瓶",ok:()=>save.stats.vases>=3},
- {id:"near-miss",glyph:"💨",en:"Nine lives",zh:"险中逃生",enDesc:"Break line of sight after detection",zhDesc:"被发现后成功甩掉主人",ok:()=>save.stats.nearMisses>=1},
+ {id:"near-miss",glyph:"💨",en:"Narrow escape",zh:"侥幸逃脱",enDesc:"Get spotted, then escape the owner without being caught",zhDesc:"被主人发现后成功甩开追逐，没有被抓住",ok:()=>save.stats.nearMisses>=1},
  {id:"three-star",glyph:"🌟",en:"Purrfectionist",zh:"喵喵完美主义",enDesc:"Earn 3 stars in one room",zhDesc:"任一房间获得三星",ok:()=>Object.values(save.best).some(v=>Number(v?.stars)===3)},
  {id:"ghost",glyph:"🌫️",en:"Invisible paws",zh:"隐身猫爪",enDesc:"Escape without being spotted",zhDesc:"全程不被发现并成功逃脱",ok:()=>save.stats.ghostWins>=1},
  {id:"souvenir-one",glyph:"🎁",en:"Little souvenir",zh:"第一次藏宝",enDesc:"Bring home a room souvenir",zhDesc:"成功收藏第一件纪念品",ok:()=>relicCount()>=1},
@@ -105,12 +105,30 @@ function badgeToast(names,ids=[]){
  const el=$("achievementToast");if(!el||!names.length)return;
  badgeToastIds=ids.slice();
  el.hidden=false;refreshBadgeToast();
- clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true;badgeToastIds=[]},2500);
+ clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true;badgeToastIds=[]},4600);
 }
 function refreshBadgeToast(){
  const el=$("achievementToast");if(!el||el.hidden||!badgeToastIds.length)return;
- const names=badgeToastIds.map(id=>BADGES.find(b=>b.id===id)?.[lang==="zh"?"zh":"en"]).filter(Boolean);
- el.textContent=names.length===1?"🏅 "+names[0]:(lang==="zh"?"🏅 解锁了 "+names.length+" 个新成就！":"🏅 "+names.length+" achievements unlocked!");
+ const badges=badgeToastIds.map(id=>BADGES.find(b=>b.id===id)).filter(Boolean);
+ if(badges.length===1){
+  const badge=badges[0],zh=lang==="zh";
+  // The badge is a real in-game reward, not an advertising subtitle.
+  // Keep the original icon, name, and how it was earned together.
+  el.textContent='';
+  const icon=document.createElement("span");icon.className="award-icon";
+  icon.textContent=badge.glyph;
+  const info=document.createElement("span");info.className="award-copy";
+  const label=document.createElement("span");label.className="award-label";
+  label.textContent=zh?"🏅 成就解锁":"🏅 ACHIEVEMENT UNLOCKED";
+  const title=document.createElement("strong");title.className="award-title";
+  title.textContent=badge[zh?"zh":"en"];
+  const desc=document.createElement("small");desc.className="award-desc";
+  desc.textContent=badge[zh?"zhDesc":"enDesc"];
+  info.appendChild(label);info.appendChild(title);info.appendChild(desc);
+  el.appendChild(icon);el.appendChild(info);
+ }else{
+  el.textContent=lang==="zh"?"🏅 解锁了 "+badges.length+" 个新成就！":"🏅 "+badges.length+" achievements unlocked!";
+ }
 }
 function checkBadges(quiet=false){
  const earned=[],earnedIds=[];
