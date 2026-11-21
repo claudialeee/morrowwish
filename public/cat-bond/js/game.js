@@ -613,6 +613,12 @@ class Game {
     if (this._lastBattleLost) { metric('game_retry', { rarity: wildSpecies.rarity }); this._lastBattleLost = false; }
     metric('game_start', { level: (State.S.catchCount || 0) + 1, rarity: wildSpecies.rarity });
     document.getElementById('battle-ui').classList.add('on');
+    // Garden guidance has a higher z-index than the battle buttons. It must
+    // be hidden immediately, not only on the next yard HUD refresh.
+    const goal=document.getElementById('collection-goal');
+    if(goal)goal.hidden=true;
+    const firstQuest=document.getElementById('first-quest');
+    if(firstQuest)firstQuest.hidden=true;
     document.getElementById('yard-actions').classList.add('hidden');
     document.getElementById('tabbar').classList.add('hidden');
     document.getElementById('hud').classList.add('hidden');
@@ -831,6 +837,7 @@ class Game {
       this.scene = 'yard';
     }
     this.yard?.refreshYardSwitch();
+    this.refreshCollectionGoal();
     if(b.masteryChallenge){
       // Challenge rewards are *only* personal-best improvement and a first S
       // medal. Never add another cat or pay repeat capture resources here.
