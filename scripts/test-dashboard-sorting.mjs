@@ -3,6 +3,11 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const html=fs.readFileSync('public/studio-insights/index.html','utf8');
+// Fail CI if a dashboard update causes a JavaScript parse error. Otherwise the
+// entire report can stay hidden while the Cloudflare deploy still succeeds.
+const inlineScript=html.match(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i)?.[1];
+assert.ok(inlineScript,'Dashboard inline application script missing');
+assert.doesNotThrow(()=>new vm.Script(inlineScript,{filename:'studio-insights/index.html'}),'Dashboard full-page JavaScript syntax must be valid');
 for(const name of ['games','itch-rows','channel-rows','ew-worlds']){
  assert.ok(html.includes('id="'+name+'"'),'Missing sortable dashboard table: '+name);
 }
