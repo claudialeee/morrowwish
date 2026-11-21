@@ -101,6 +101,15 @@ async function heist(browser){
 }
 async function catBond(browser){
  const {c,p,born}=await session(browser,'cat-bond');
+ await p.addInitScript(()=>{
+  window.__MW_PROMO_CJK__=[];
+  const original=CanvasRenderingContext2D.prototype.fillText;
+  CanvasRenderingContext2D.prototype.fillText=function(message,...args){
+   const text=String(message);
+   if(/[\u3400-\u9fff]/.test(text)&&window.__MW_PROMO_CJK__.length<40)window.__MW_PROMO_CJK__.push(text);
+   return original.call(this,message,...args);
+  };
+ });
  await p.goto('http://127.0.0.1:8769/cat-bond/?autodev&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
  await p.waitForFunction(()=>!!window.__game&&!!window.State&&window.State.S.cats.length>=3,null,{timeout:19000});
  await p.evaluate(()=>{
@@ -145,7 +154,17 @@ async function catBond(browser){
  if(ult.hasChinese)throw Error('English gameplay cinematic leaked Chinese: '+JSON.stringify(ult));
  await sleep(3250);const finish=(Date.now()-began)/1000;
  await sleep(1050);const ended=Date.now();const v=p.video();await c.close();
- console.log('BATTLE HIGHLIGHTS VERIFIED: '+JSON.stringify({duo,ult}));
+ const langAudit=await p.evaluate(()=>({
+  canvasText:[...new Set(window.__MW_PROMO_CJK__||[])],
+  visibleDOM:[...document.querySelectorAll('body *')].filter(el=>{
+   const r=el.getBoundingClientRect();
+   return !el.children.length&&r.width>0&&r.height>0&&getComputedStyle(el).visibility!=='hidden'&&
+     /[\u3400-\u9fff]/.test(el.textContent||'');
+  }).map(el=>el.textContent.trim().slice(0,90)).slice(0,30)
+ }));
+ if(langAudit.canvasText.length||langAudit.visibleDOM.length)
+   throw Error('REJECT English Cat Bond video: Chinese text painted/visible '+JSON.stringify(langAudit));
+ console.log('BATTLE HIGHLIGHTS VERIFIED: '+JSON.stringify({duo,ult,langAudit}));
  return{slug:'cat-bond',raw:await v.path(),offset:(began-born)/1000,duration:(ended-began)/1000,
   clips:[{start:duoDone,duration:Math.min(2.8,finish-duoDone),caption:'THAT FINISHER!'},
     {start:0,duration:Math.min(2.8,duoDone),caption:'TWO CATS. ONE COMBO.'},
