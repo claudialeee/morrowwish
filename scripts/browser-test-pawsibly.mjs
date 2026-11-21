@@ -45,6 +45,37 @@ try{
  console.log('Single-screen cat geometry:',JSON.stringify(ruleLayout));
  assert.ok(ruleLayout.noDuplicateRules&&ruleLayout.inFrame&&ruleLayout.tabs===5&&ruleLayout.menuHidden,'All controls, bonus objective and tabs must live in a single game frame');
  assert.ok(ruleLayout.topBottom<=ruleLayout.boardTop+2&&ruleLayout.toolBottom<=ruleLayout.boardTop+2,'Tutorial, bonus and yarn must all be ABOVE the map and not cover tiles');
+ // Normal desktop windows (NOT fullscreen): stage must be visible without
+ // scrolling; tutorial, mission, yarn and top header must align with the map.
+ for(const viewport of [
+  {width:1440,height:900},{width:1366,height:768},{width:1280,height:720},
+  {width:1024,height:600},{width:900,height:520}
+ ]){
+  await page.setViewportSize(viewport);
+  await page.waitForTimeout(85);
+  const fit=await page.evaluate(()=>{
+   const rect=id=>{const r=document.getElementById(id).getBoundingClientRect();return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
+   const header=document.querySelector('.in-game-top').getBoundingClientRect();
+   const guide=document.querySelector('.in-game-guidance').getBoundingClientRect();
+   return {viewport:{width:innerWidth,height:innerHeight},
+    stage:rect('stage'),board:rect('board'),tool:rect('tool'),bonus:rect('bonusQuick'),
+    header:{left:header.left,right:header.right,width:header.width,bottom:header.bottom},
+    guide:{left:guide.left,right:guide.right,width:guide.width},
+    scrollHeight:document.scrollingElement.scrollHeight};
+  });
+  console.log('Windowed desktop fit:',JSON.stringify(fit));
+  assert.ok(fit.stage.top>=-1&&fit.stage.bottom<=fit.viewport.height+1,
+   'Desktop game must fit WITHOUT scrolling at '+viewport.width+'x'+viewport.height);
+  assert.ok(fit.scrollHeight<=fit.viewport.height+2,
+   'Game webpage must not require scrolling at '+viewport.width+'x'+viewport.height);
+  assert.ok(Math.abs(fit.header.left-fit.board.left)<=2&&Math.abs(fit.header.right-fit.board.right)<=2,
+   'Top HUD must exactly match the canvas width at '+viewport.width+'x'+viewport.height);
+  assert.ok(Math.abs(fit.guide.left-fit.board.left)<=2&&Math.abs(fit.guide.right-fit.board.right)<=2,
+   'Guidance and bonus row must be flush with the game map at '+viewport.width+'x'+viewport.height);
+  assert.ok(fit.tool.bottom<=fit.board.top+2&&fit.bonus.bottom<=fit.board.top+2,
+   'Objectives and yarn must remain visible ABOVE the board');
+ }
+ await page.setViewportSize({width:1250,height:900});
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
  assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
