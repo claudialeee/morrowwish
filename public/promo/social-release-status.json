@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-21T06:39:00.620Z",
+  "updatedAt": "2026-11-21T06:50:42.437Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "All 8 actual video assets are verified: seven game highlight reels plus one seven-game montage. Exactly 25 automatic network posts are scheduled and confirmed PENDING. These are not yet platform-public posts and do not prove homepage traffic. Live first-party homepage visits and genuine game starts are shown in the existing studio analytics.",
+  "accuracyNote": "Previous render pipeline passed technical encoding checks but failed human review. Its 25 Metricool posts were all confirmed PAUSED as drafts with autoPublish:false. Original files are retained as historical source only, not approved for release.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -16,11 +16,11 @@
       "name": "Cat Heist",
       "hook": "Near catch → yarn decoy → steal three fish",
       "media": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/pawsibly-innocent/viral-gameplay-20261121.jpg",
       "platformPostIds": {
@@ -29,18 +29,19 @@
         "instagram": 436425322
       },
       "scheduledDate": "2026-11-21",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     },
     {
       "slug": "cat-bond",
       "name": "Cat Bond",
       "hook": "Two-cat combination → ultimate finisher",
       "media": "/promo/cat-bond/viral-gameplay-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/cat-bond/viral-gameplay-20261121.jpg",
       "platformPostIds": {
@@ -49,18 +50,19 @@
         "instagram": 436425378
       },
       "scheduledDate": "2026-11-22",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     },
     {
       "slug": "tiny-town",
       "name": "No More Mondays",
       "hook": "Seven days without work → building magical wishes",
       "media": "/promo/tiny-town/highlight-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/tiny-town/highlight-20261121.jpg",
       "platformPostIds": {
@@ -69,18 +71,19 @@
         "instagram": 436425978
       },
       "scheduledDate": "2026-11-23",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     },
     {
       "slug": "elsewhere",
       "name": "Elsewhere",
       "hook": "Private island → Paris → hotel on the moon",
       "media": "/promo/elsewhere/highlight-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/elsewhere/highlight-20261121.jpg",
       "platformPostIds": {
@@ -89,18 +92,19 @@
         "instagram": 436426008
       },
       "scheduledDate": "2026-11-24",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     },
     {
       "slug": "flip-dash",
       "name": "Flip Dash",
       "hook": "Near misses and fast gravity flips",
       "media": "/promo/flip-dash/highlight-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/flip-dash/highlight-20261121.jpg",
       "platformPostIds": {
@@ -109,18 +113,19 @@
         "instagram": 436426063
       },
       "scheduledDate": "2026-11-25",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     },
     {
       "slug": "parcel-panic",
       "name": "Parcel Panic",
       "hook": "Real color-sorting streak under pressure",
       "media": "/promo/parcel-panic/highlight-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/parcel-panic/highlight-20261121.jpg",
       "platformPostIds": {
@@ -129,18 +134,19 @@
         "instagram": 436426112
       },
       "scheduledDate": "2026-11-26",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     },
     {
       "slug": "pocket-aquarium",
       "name": "Pocket Aquarium",
       "hook": "Real matching feeds and rising combo",
       "media": "/promo/pocket-aquarium/highlight-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
       },
       "cover": "/promo/pocket-aquarium/highlight-20261121.jpg",
       "platformPostIds": {
@@ -149,19 +155,20 @@
         "instagram": 436426139
       },
       "scheduledDate": "2026-11-27",
-      "timezone": "America/Los_Angeles"
+      "timezone": "America/Los_Angeles",
+      "reviewStatus": "rejected-by-owner"
     }
   ],
   "excludedGames": 8,
   "montage": {
     "media": "/promo/morrow-wish-seven-games-20261121.mp4",
     "cover": "/promo/morrow-wish-seven-games-20261121.jpg",
-    "production": "ready",
+    "production": "needs-recut",
     "social": {
-      "youtube": "scheduled",
-      "tiktok": "scheduled",
-      "instagram": "scheduled",
-      "bluesky": "scheduled"
+      "youtube": "draft",
+      "tiktok": "draft",
+      "instagram": "draft",
+      "bluesky": "draft"
     },
     "validation": "15.4s, real clips from each of seven verified games, video/audio validation succeeded",
     "platformPostIds": {
@@ -176,15 +183,18 @@
       "instagram": "2026-11-28",
       "bluesky": "2026-11-22"
     },
-    "timezone": "America/Los_Angeles"
+    "timezone": "America/Los_Angeles",
+    "reviewStatus": "rejected-by-owner"
   },
   "summary": {
     "activeGames": 7,
     "retiredGamesExcluded": 8,
-    "verifiedGameVideos": 7,
-    "verifiedMontageVideos": 1,
-    "scheduledAutomaticPosts": 25,
+    "verifiedGameVideos": 0,
+    "verifiedMontageVideos": 0,
+    "scheduledAutomaticPosts": 0,
     "publishedPostsInThisCampaign": 0,
-    "verification": "Metricool getScheduledPosts cross-checked all 25 post IDs; each PENDING, non-draft, autoPublish=true. Posts must publish before reporting reach or conversions."
+    "verification": "Metricool getScheduledPosts cross-checked all 25 post IDs; each PENDING, non-draft, autoPublish=true. Posts must publish before reporting reach or conversions.",
+    "pausedDraftPosts": 25,
+    "blockedReason": "Owner rejected video quality: distorted gameplay, illegible captions, no stakes/outcomes, English/Chinese mix. All 25 posts checked as draft:true autoPublish:false in Metricool."
   }
 }
