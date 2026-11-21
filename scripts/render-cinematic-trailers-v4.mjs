@@ -1,4 +1,4 @@
-// Cinematic V4 promo reels. 4 story trailers (~25-30s) and 3 challenge ads (~11s).
+// Cinematic V4.1 promo reels. 4 story trailers (~23-30s) and 3 challenge ads (~9s).
 // All visuals are recorded current-game footage and current game-owned cover art.
 // No generated gameplay, no spoilers in the opening, no social posting.
 import fs from 'node:fs';
@@ -10,7 +10,7 @@ const brollDir=process.env.MW_V4_BROLL_DIR||path.join(process.env.RUNNER_TEMP||o
 const work=fs.mkdtempSync(path.join(os.tmpdir(),'mw-edit-v4-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
-const manifest={version:'V4',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
+const manifest={version:'V4.1',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
  socialAutopublish:false,historicalVideoViewsExcluded:true,trailers:[]};
 const choose=(src,start,duration,caption='',label='')=>({src,start,duration,caption,label});
 const cover=(duration,caption='',label='')=>choose('cover',0,duration,caption,label);
@@ -21,7 +21,6 @@ const playlists={
   broll('sneak',2.2,'THREE FISH. ONE CAT.'),
   game(1.91,1.20),
   broll('decoy',2.3,'A YARN BALL CHANGES EVERYTHING.'),
-  cover(2.2),
   game(3.35,1.8),
   broll('steal',3.6,'NOW STEAL THE FISH.'),
   game(5.66,2.1),
@@ -29,37 +28,37 @@ const playlists={
   game(7.65,1.4),
   broll('sneak',2.2),
   game(8.47,1.5),
-  cover(3.3,'PLAY FREE')
+  broll('decoy',2.3),
+  cover(1.8,'PLAY FREE')
  ],
  'cat-bond':[
   broll('yard',3.6,'MEET YOUR CAT CREW.'),
-  cover(2.5),
+  broll('yard-late',2.45),
   broll('battle',3.0,'THE STRAYS FIGHT BACK.'),
   game(2.85,2.3),
-  broll('yard-late',2.45),
-  cover(2.25),
   broll('battle-late',2.6,'FIGHT WITH TWO CATS.'),
   game(0.14,2.4),
   broll('battle',2.4),
   game(5.65,2.1),
-  cover(3.4,'PLAY FREE')
+  game(2.75,2.6),
+  cover(1.8,'PLAY FREE')
  ],
  'tiny-town':[
   broll('build',3.5,'NO WORK. BUILD WHAT YOU WANT.'),
   broll('build-late',3.9),
   game(6.48,1.9),
-  cover(2.6),
   broll('build',3.45,'THE TOWN KEEPS CHANGING.'),
   game(6.50,2.0),
   broll('build-late',3.5),
   game(8.43,2.6),
-  cover(3.3,'PLAY FREE')
+  game(8.10,2.3),
+  game(6.15,2.0),
+  cover(1.8,'PLAY FREE')
  ],
  'elsewhere':[
   game(3.64,2.3),
   broll('maldives',3.6,'OR WAKE UP ON AN ISLAND.'),
   broll('maldives-result',1.55),
-  cover(2.45),
   game(6.13,1.85),
   broll('tokyo',3.65,'ANOTHER CITY. ANOTHER YOU.'),
   broll('tokyo-result',1.55),
@@ -67,28 +66,29 @@ const playlists={
   broll('moon-result',1.55),
   game(8.12,1.85),
   game(10.16,2.3),
-  cover(3.2,'PLAY FREE')
+  broll('maldives',2.3),
+  cover(1.8,'PLAY FREE')
  ],
  'flip-dash':[
   game(0.05,1.45),
-  game(1.75,3.05),
-  game(4.3,1.25),
-  game(5.25,1.55),
-  cover(2.6,'PLAY FREE')
+  game(1.75,3.3),
+  game(4.3,1.4),
+  game(5.25,1.8),
+  cover(1.6,'PLAY FREE')
  ],
  'parcel-panic':[
-  game(0.05,1.30),
-  game(1.65,2.35),
-  game(3.65,1.5),
-  game(5.08,1.36),
-  cover(2.55,'PLAY FREE')
+  game(0.05,1.5),
+  game(1.65,2.65),
+  game(3.9,1.6),
+  game(5.08,1.55),
+  cover(1.7,'PLAY FREE')
  ],
  'pocket-aquarium':[
   game(0.06,1.75),
-  game(2.35,2.5),
-  game(5.65,1.75),
-  game(7.63,1.5),
-  cover(2.7,'PLAY FREE')
+  game(2.35,3.0),
+  game(5.65,1.8),
+  game(7.63,1.8),
+  cover(1.6,'PLAY FREE')
  ]
 };
 const brollManifest=JSON.parse(fs.readFileSync(path.join(brollDir,'broll-manifest.json'),'utf8'));
@@ -135,9 +135,9 @@ function edit(slug){
   else f+='trim=duration='+fmt(sh.duration)+',setpts=PTS-STARTPTS,';
   f+='fps=30,';
   if(sh.src==='cover'){
-   // Gentle Ken-Burns motion, never stretched; official artwork only.
-   f+="scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:1920,"+
-      "zoompan=z='min(1.0+on*0.00042,1.055)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,";
+   // Source posters contain baked, partly cropped headlines. Never render
+   // those incomplete words; use a neutral background and typeset CTA.
+   f+='scale=1080:1920:flags=lanczos,drawbox=x=0:y=0:w=iw:h=ih:color=0x241A37@1:t=fill,';
   }else {
    f+='scale=1080:1920:flags=lanczos,';
    // Existing V3 Cat Bond captured a few orange pixels on source edges.
@@ -149,14 +149,34 @@ function edit(slug){
   // V3 gameplay already contains its own caption. Keep it untouched;
   // use V4 captions ONLY for clean newly captured b-roll + final CTA.
   const isFinalTitle=sh.src==='cover'&&i===chosen.length-1;
-  const addLabel=(sh.src==='broll'&&!!sh.caption&&!/result$/.test(sh.label))||isFinalTitle;
-  if(addLabel){
-   const label=isFinalTitle?'PLAY FREE · LINK IN BIO':sh.caption;
-   const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,label);
-   const y=sh.src==='broll'?1705:1760;
+  if(isFinalTitle){
+   const names={
+     'pawsibly-innocent':'PAWSIBLY INNOCENT!',
+     'cat-bond':'CAT BOND',
+     'tiny-town':'NO MORE MONDAYS',
+     'elsewhere':'ELSEWHERE',
+     'flip-dash':'FLIP DASH',
+     'parcel-panic':'PARCEL PANIC',
+     'pocket-aquarium':'POCKET AQUARIUM'
+   };
+   const title=names[slug];
+   if(!title)throw Error('Missing end card title: '+slug);
+   const titleFile=path.join(work,slug+'-end-title.txt'),
+         studioFile=path.join(work,slug+'-studio.txt'),
+         actionFile=path.join(work,slug+'-action.txt'),
+         destinationFile=path.join(work,slug+'-destination.txt');
+   for(const [file,txt] of [[titleFile,title],[studioFile,'MORROW WISH'],[actionFile,'PLAY FREE'],[destinationFile,'LINK IN BIO']])fs.writeFileSync(file,txt);
+   const titleSize=title.length>=16?58:title.length>=12?70:84;
+   f+=',drawbox=x=230:y=735:w=620:h=5:color=0xE7BDA3:t=fill';
+   for(const [file,size,y,col] of [[studioFile,40,660,'0xE7BDA3'],[titleFile,titleSize,810,'white'],[actionFile,56,1065,'white'],[destinationFile,36,1170,'0xE7BDA3']]){
+     f+=',drawtext=fontfile='+font+':textfile='+file+':fontcolor='+col+':fontsize='+size+':x=(w-text_w)/2:y='+y;
+   }
+   captionsUsed+=4;
+  }else if(sh.src==='broll'&&!!sh.caption&&!/result$/.test(sh.label)){
+   const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
-      ':fontcolor=white:fontsize='+(isFinalTitle?36:fontSize)+':x=(w-text_w)/2:y='+y+
-      ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.31:boxborderw=12';
+      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y=1705'+
+      ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.40:boxborderw=12';
    captionsUsed++;
   }
   filters.push(f+'[v'+i+']');
@@ -196,7 +216,7 @@ function edit(slug){
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
   video:'/promo/'+slug+'/trailer-v4-20261121.mp4',poster:'/promo/'+slug+'/trailer-v4-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
-  sourceClips:'current live gameplay and actual studio cover',transitions:'action cuts + gentle xfade + cover zoom',
+  sourceClips:'current real gameplay and short readable end card',transitions:'action cuts + gentle xfade; no cropped poster text',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
  console.log('CINEMATIC V4 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
