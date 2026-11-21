@@ -1332,3 +1332,74 @@ body.cb-exploring #scene{cursor:grab}
  #battle-ui .battle-tutorial-step p{font-size:12px;line-height:1.45}
  #battle-ui .battle-tutorial-progress{margin:3px 0 7px}
 }
+
+
+/* Mobile MANUAL combat: one thumb drives the floating left joystick; the
+   other operates a compact 2-row set of actions on the right. Basic claws
+   persist after one tap, leaving a free thumb for skills and dodge. */
+#battle-touch-joystick{display:none;pointer-events:none}
+@media(pointer:coarse){
+ #battle-ui.touch-manual #battle-touch-joystick{
+   display:grid;place-items:center;position:absolute;z-index:23;
+   left:73px;top:auto;bottom:max(39px,env(safe-area-inset-bottom,0px) + 30px);
+   width:102px;height:102px;border-radius:50%;
+   transform:translate(-50%,-50%);
+   background:radial-gradient(circle at 48% 44%,#fffdf5a1,#c7e2c45e);
+   border:2px solid #aad4b5a6;
+   box-shadow:inset 0 0 0 19px #d9e9d53b,0 3px 15px #334e5e24;
+ }
+ #battle-touch-joystick .battle-touch-nub{
+   width:39px;height:39px;border-radius:50%;
+   background:linear-gradient(150deg,#f9fced,#b9ddbd);
+   border:2px solid #81b18e;box-shadow:0 3px 8px #41574645;
+   will-change:transform;
+ }
+ #battle-touch-joystick .battle-touch-label{
+   position:absolute;bottom:-18px;font:800 11px/1.2 system-ui;
+   color:#375846;text-shadow:0 1px 2px white;white-space:nowrap
+ }
+ #battle-ui.touch-manual #battle-touch-joystick.active{
+   background:radial-gradient(circle at center,#e0f3da95,#b2dbcb7c);
+   border-color:#8ac69b
+ }
+ #battle-ui .move-bar{
+   display:grid!important;grid-template-columns:repeat(3,minmax(0,52px))!important;
+   grid-template-rows:repeat(2,52px)!important;
+   justify-content:end!important;align-items:center!important;
+   width:auto!important;max-width:none!important;
+   right:max(8px,env(safe-area-inset-right,0px))!important;
+   left:auto!important;
+   bottom:max(13px,env(safe-area-inset-bottom,0px) + 9px)!important;
+   gap:5px!important;pointer-events:auto!important;
+ }
+ #battle-ui .move-bar .move{
+   width:52px!important;height:52px!important;min-width:52px!important;
+   min-height:52px!important;padding:4px!important;
+   display:flex;flex-direction:column;align-items:center;justify-content:center;
+   border-radius:13px!important;font-size:11px!important;
+ }
+ #battle-ui #mv-q{grid-column:1;grid-row:1}
+ #battle-ui #mv-e{grid-column:2;grid-row:1}
+ #battle-ui #mv-basic{grid-column:3;grid-row:1}
+ #battle-ui #mv-dodge{grid-column:2;grid-row:2}
+ #battle-ui #ult-btn{grid-column:3;grid-row:2}
+ #battle-ui #mv-basic.auto-firing{
+   border:2px solid #55a57c!important;
+   background:#cbe9d3!important;color:#284b3e!important;
+   box-shadow:0 0 0 2px #69bd8540,0 3px 11px #33583d27!important
+ }
+ #battle-ui .move-bar .mv-k{font-size:10px!important;line-height:1.1}
+ #battle-ui .move-bar .mv-name{font-size:10px!important;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis}
+ #battle-ui .move-bar .mv-icon{font-size:17px!important;line-height:1.1}
+ #battle-ui .battle-hint{
+   max-width:calc(100% - 14px)!important;
+   pointer-events:none!important;
+ }
+}
+@media(pointer:coarse) and (max-height:470px){
+ #battle-ui .move-bar{grid-template-rows:repeat(2,43px)!important;grid-template-columns:repeat(3,46px)!important;gap:3px!important}
+ #battle-ui .move-bar .move{width:46px!important;height:43px!important;min-width:46px!important;min-height:43px!important}
+ #battle-ui.touch-manual #battle-touch-joystick{width:80px;height:80px;left:65px;bottom:17px}
+ #battle-touch-joystick .battle-touch-nub{width:33px;height:33px}
+ #battle-ui .move-bar .mv-name{font-size:9px!important}
+}
