@@ -1068,7 +1068,10 @@ const UI = {
       if (pounce > 0) pounce -= 0.03;
       ctx.clearRect(0, 0, W, H);
       // cat
-      CatArt.drawCat(ctx, cx, cy, { species: sp, scale: 1.2, face: fx < cx ? -1 : 1, t: tt, pose: pounce > 0 ? 'play' : 'walk', mood: 'alert' });
+      (window.CatMotion?.draw||CatArt.drawCat)(ctx,cx,cy,{
+        species:sp,scale:1.2,face:fx<cx?-1:1,t:tt,
+        pose:pounce>0?'play':'walk',motion:1,mood:'alert'
+      });
       // feather toy
       ctx.save(); ctx.translate(fx, fy);
       ctx.strokeStyle = '#b5a6cf'; ctx.lineWidth = 2;
