@@ -332,6 +332,10 @@ for(const id of requiredNewArcs){
    throw Error('Every choice must connect into the next scene: '+id);
  }
 }
+if(!dreamSource.includes('paris:{name:L("巴黎：邂逅全新恋情","A New Love Story in Paris")')||dreamSource.includes('巴黎：和旧爱再爱一次')||dreamSource.includes('Love Again in Paris'))
+ throw Error('Paris game-card title is inconsistent with the new romance storyline');
+if(dreamMoods.includes('五年没见的旧爱')||dreamMoods.includes('your old love')||dreamMoods.includes('重逢的浪漫主义者'))
+ throw Error('Stale Paris reunion story still bundled in current game scripts');
 if(cases.paris.intro.body[0].includes('旧爱')||cases.paris.intro.body[0].includes('五年')||cases.amalfi.intro.body[0].includes('地产商'))
  throw Error('Old stressful plot remains live');
 if(cases.paris.intro.body[0].includes('诺亚'))throw Error('The new romance must introduce Noa naturally after the first choice');

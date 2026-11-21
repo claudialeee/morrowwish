@@ -4,15 +4,15 @@ const L=(zh,en)=>[zh,en];
 const CASES=window.ELSEWHERE_CASEFILES||{};
 const META=[
  {id:"amalfi",name:L("继承阿马尔菲海岸的豪宅","An Amalfi Villa Is Yours"),place:L("意大利 · 阿马尔菲","ITALY · AMALFI"),tag:L("奢华 · 反转","LUXURY · REVERSAL"),color:"#cf7c51"},
- {id:"paris",name:L("巴黎恋爱，卷入名画失窃案","Love and Art Theft in Paris"),place:L("法国 · 巴黎","FRANCE · PARIS"),tag:L("浪漫 · 悬疑","ROMANCE · MYSTERY"),color:"#be7591"},
+ {id:"paris",name:L("巴黎：邂逅全新恋情","A New Love Story in Paris"),place:L("法国 · 巴黎","FRANCE · PARIS"),tag:L("浪漫 · 新邂逅","ROMANCE · NEW LOVE"),color:"#be7591"},
  {id:"tokyo",name:L("今晚，夺回你的巨星人生","Take Back Your Superstar Life"),place:L("日本 · 东京","JAPAN · TOKYO"),tag:L("巨星 · 逆袭","STARDOM · COMEBACK"),color:"#8e70c8"},
  {id:"iceland",name:L("极光之夜，收到失踪者的求救","An SOS Beneath the Aurora"),place:L("冰岛 · 极光之夜","ICELAND · NORTHERN LIGHTS"),tag:L("极光 · 惊险","AURORA · THRILLER"),color:"#568f99"},
  {id:"maldives",name:L("一觉醒来，继承私人海岛","You Wake Up Owning an Island"),place:L("马尔代夫 · 私人海岛","MALDIVES · PRIVATE ISLAND"),tag:L("海岛 · 反击","PARADISE · COMEBACK"),color:"#4c9e9b"},
  {id:"swiss",name:L("雪山豪华列车的秘密拍卖","A Secret Auction on the Alpine Express"),place:L("瑞士 · 阿尔卑斯山","SWITZERLAND · THE ALPS"),tag:L("豪华列车 · 悬疑","LUXURY TRAIN · MYSTERY"),color:"#7495c0"}
 ];
 const NEW_TITLES={
- amalfi:{name:L("阿马尔菲豪宅：我的富豪人生","The Amalfi Villa Life"),tag:L("豪宅 · 爽文","LUXURY · COMEBACK")},
- paris:{name:L("巴黎：和旧爱再爱一次","Love Again in Paris"),tag:L("浪漫 · 重逢","ROMANCE · REUNION")},
+ amalfi:{name:L("阿马尔菲豪宅：我的富豪人生","The Amalfi Villa Life"),tag:L("豪宅 · 自由","LUXURY · FREEDOM")},
+ paris:{name:L("巴黎：邂逅全新恋情","A New Love Story in Paris"),tag:L("浪漫 · 新邂逅","ROMANCE · NEW LOVE")},
  tokyo:{name:L("今夜我是东京超级巨星","Tonight, I'm Tokyo's Superstar"),tag:L("巨星 · 逆袭","STARDOM · COMEBACK")},
  iceland:{name:L("极光下的温柔奇迹","A Night of Aurora and Wonder"),tag:L("治愈 · 心动","WONDER · ROMANCE")},
  maldives:{name:L("继承一座会航行的私人海岛","My Floating Private Island"),tag:L("奢华 · 离谱","LUXURY · WILD")},
