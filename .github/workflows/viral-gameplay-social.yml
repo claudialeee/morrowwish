@@ -1,10 +1,7 @@
 name: Record current game highlights for Morrow Wish social
+# Rejected preview videos must never be regenerated or released on push.
+# Owner review is required before any future manual generation.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/make-viral-gameplay.mjs'
-      - '.github/workflows/viral-gameplay-social.yml'
   workflow_dispatch:
 
 permissions:
