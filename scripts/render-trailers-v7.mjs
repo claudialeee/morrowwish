@@ -110,7 +110,7 @@ function edit(slug){
   if(shot.src==='game')throw Error('V7 forbids old cut-together V3 footage '+slug);
   chosen.push(shot);
  }
- const clipOverlap=0.28,n=chosen.length;
+ const n=chosen.length;
  const args=['-nostdin','-y','-hide_banner','-loglevel','error',
   '-i',b.file];
  let coverIndex=1,brollIndex=0,musicIndex;
@@ -175,17 +175,11 @@ function edit(slug){
   }
   filters.push(f+'[v'+i+']');
  }
- let timeline=chosen[0].duration,prev='v0';
- for(let i=1;i<n;i++){
-  const next='x'+i;
-  const types=['fade'];
-  const transition=types[(i+slug.length)%types.length];
-  filters.push('['+prev+'][v'+i+']xfade=transition='+transition+
-    ':duration='+fmt(clipOverlap)+':offset='+fmt(timeline-clipOverlap)+'['+next+']');
-  timeline+=chosen[i].duration-clipOverlap;
-  prev=next;
- }
- filters.push('['+prev+']format=yuv420p[vout]');
+ // Hard cuts preserve readable UI: fades blend text, subtitles and overlays.
+ // All gameplay segments remain entirely visible without double-exposure.
+ const timeline=chosen.reduce((sum,sh)=>sum+sh.duration,0);
+ filters.push(chosen.map((_,i)=>'[v'+i+']').join('')+
+   'concat=n='+n+':v=1:a=0,format=yuv420p[vout]');
  const output=base+'/trailer-v7-20261121.mp4',poster=base+'/trailer-v7-20261121.jpg';
  const command=[...args,'-filter_complex',filters.join(';'),'-map','[vout]',
   '-map',musicIndex+':a:0','-t',fmt(timeline),'-r','30',
@@ -211,7 +205,7 @@ function edit(slug){
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
   video:'/promo/'+slug+'/trailer-v7-20261121.mp4',poster:'/promo/'+slug+'/trailer-v7-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
-  sourceClips:'V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card',transitions:'new game-controlled scenes with gentle xfade, no stale V3 caption overlays',
+  sourceClips:'V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card',transitions:'clean cuts, no ghosted or blended gameplay UI',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
  console.log('CINEMATIC V7 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
