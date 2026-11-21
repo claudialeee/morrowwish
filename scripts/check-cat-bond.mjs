@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','skills','growth','state','raising','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','world','worldmap','battle','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -131,6 +131,12 @@ new vm.Script(i18nSrc, { filename: 'i18n.js' });
 vm.runInContext(i18nSrc, sandbox, { filename: 'i18n.js' });
 
 assert.ok(sandbox.window.GameData, 'GameData global present');
+assert.equal(typeof sandbox.window.CatMotion?.draw,'function',
+  'The real four-legged world renderer must load before yard, world and combat');
+assert.doesNotThrow(()=>sandbox.window.CatMotion.draw(canvasCtx,90,90,{
+  species:sandbox.window.GameData.SPECIES[0],face:-1,t:1,
+  pose:'run',motion:1,stride:1.3,scale:1
+}), 'Animated world kittens draw as full-bodied animals in the canvas');
 assert.ok(sandbox.window.Skills, 'Skills global present');
 assert.ok(sandbox.window.Battle, 'Battle global present');
 assert.ok(sandbox.window.CatBondI18n, 'Cat Bond i18n layer present');

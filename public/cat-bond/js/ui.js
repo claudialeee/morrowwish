@@ -569,7 +569,11 @@ const UI = {
     const anim = () => {
       if (this.openCatUid !== cat.uid) return;
       tt += 0.03; cx.clearRect(0, 0, 120, 100);
-      CatArt.drawCat(cx, 60, 70, { species: sp, scale: 1.15, face: 1, t: tt, pose: 'play', mood: cat.joy > 60 ? 'happy' : 'neutral', growth: window.Growth ? Growth.visual(cat) : null });
+      (window.CatMotion?.draw||CatArt.drawCat)(cx,60,70,{
+        species:sp,scale:1.05,face:1,t:tt,pose:'play',
+        mood:cat.joy>60?'happy':'neutral',
+        growth:window.Growth?Growth.visual(cat):null
+      });
       requestAnimationFrame(anim);
     };
     anim();
