@@ -216,6 +216,173 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+// ---- Buildable yard play-structures (庭院游乐设施) ----
+// Each entry: id, 中文 name, icon, coin cost, short 中文 desc, the cat
+// interaction (pose + emote played when a cat walks over), and a Canvas2D
+// vector draw fn in the soft watercolor style of the yard scenery. All art is
+// vector (no images); draw(ctx,x,y,s,t) plants its base at (x,y), s≈depth.
+const BUILDINGS = [
+  {
+    id: 'scratcher', name: '猫抓板', icon: '🪵', cost: 60,
+    desc: '磨爪解压的小柱子，猫咪路过就想挠两下。',
+    pose: 'sit', emote: '🐾', joy: 6,
+    draw(ctx, x, y, s, t) {
+      ctx.save();
+      // contact shadow
+      ctx.globalAlpha = 0.14; ctx.fillStyle = '#3a5a30';
+      ctx.beginPath(); ctx.ellipse(x, y, 24 * s, 7 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // base board
+      ctx.fillStyle = '#caa978';
+      roundRectPath(ctx, x - 20 * s, y - 7 * s, 40 * s, 10 * s, 4 * s); ctx.fill();
+      // sisal-wrapped post (soft tan with coil lines)
+      ctx.fillStyle = '#e4cf9f';
+      roundRectPath(ctx, x - 9 * s, y - 52 * s, 18 * s, 46 * s, 5 * s); ctx.fill();
+      ctx.strokeStyle = 'rgba(176,146,96,0.5)'; ctx.lineWidth = 1.4 * s;
+      for (let i = 1; i < 9; i++) { const yy = y - 6 * s - i * 5 * s; ctx.beginPath(); ctx.moveTo(x - 9 * s, yy); ctx.lineTo(x + 9 * s, yy); ctx.stroke(); }
+      // little dangling pom-pom on a string (gentle sway)
+      const sway = Math.sin(t * 2) * 3 * s;
+      ctx.strokeStyle = '#b5a6cf'; ctx.lineWidth = 1.5 * s;
+      ctx.beginPath(); ctx.moveTo(x, y - 52 * s); ctx.lineTo(x + sway, y - 40 * s); ctx.stroke();
+      ctx.fillStyle = '#ff9db0';
+      ctx.beginPath(); ctx.arc(x + sway, y - 38 * s, 4 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    },
+  },
+  {
+    id: 'cave', name: '猫猫洞', icon: '🏠', cost: 90,
+    desc: '圆滚滚的猫窝洞，钻进去就能安心打盹。',
+    pose: 'sleep', emote: '💤', joy: 8,
+    draw(ctx, x, y, s, t) {
+      ctx.save();
+      ctx.globalAlpha = 0.14; ctx.fillStyle = '#3a5a30';
+      ctx.beginPath(); ctx.ellipse(x, y, 34 * s, 9 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // dome body — layered soft washes
+      ctx.fillStyle = '#9fb6d8';
+      ctx.beginPath(); ctx.ellipse(x, y - 4 * s, 32 * s, 30 * s, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#b6c8e4';
+      ctx.beginPath(); ctx.ellipse(x - 6 * s, y - 10 * s, 20 * s, 18 * s, 0, Math.PI, 0); ctx.fill();
+      // sun-caught highlight
+      ctx.fillStyle = 'rgba(234,242,255,0.6)';
+      ctx.beginPath(); ctx.ellipse(x - 10 * s, y - 20 * s, 8 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+      // dark round entrance
+      ctx.fillStyle = '#394a63';
+      ctx.beginPath(); ctx.ellipse(x, y - 2 * s, 13 * s, 15 * s, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = 'rgba(20,28,42,0.9)';
+      ctx.beginPath(); ctx.ellipse(x, y - 3 * s, 9 * s, 11 * s, 0, Math.PI, 0); ctx.fill();
+      // tiny flag on top
+      ctx.strokeStyle = '#8a97ad'; ctx.lineWidth = 1.5 * s;
+      ctx.beginPath(); ctx.moveTo(x + 16 * s, y - 24 * s); ctx.lineTo(x + 16 * s, y - 34 * s); ctx.stroke();
+      ctx.fillStyle = '#ffd36b';
+      ctx.beginPath(); ctx.moveTo(x + 16 * s, y - 34 * s); ctx.lineTo(x + 24 * s, y - 31 * s); ctx.lineTo(x + 16 * s, y - 28 * s); ctx.fill();
+      ctx.restore();
+    },
+  },
+  {
+    id: 'cattree', name: '猫爬架', icon: '🗼', cost: 120,
+    desc: '多层猫爬架，登高望远是猫咪最爱的运动。',
+    pose: 'play', emote: '😸', joy: 10,
+    draw(ctx, x, y, s, t) {
+      ctx.save();
+      ctx.globalAlpha = 0.14; ctx.fillStyle = '#3a5a30';
+      ctx.beginPath(); ctx.ellipse(x, y, 30 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // base
+      ctx.fillStyle = '#c9a877';
+      roundRectPath(ctx, x - 24 * s, y - 8 * s, 48 * s, 11 * s, 5 * s); ctx.fill();
+      // carpet-wrapped trunk
+      ctx.fillStyle = '#d9c29a';
+      roundRectPath(ctx, x - 7 * s, y - 78 * s, 14 * s, 72 * s, 5 * s); ctx.fill();
+      ctx.strokeStyle = 'rgba(176,146,96,0.4)'; ctx.lineWidth = 1.2 * s;
+      for (let i = 1; i < 14; i++) { const yy = y - 7 * s - i * 5 * s; ctx.beginPath(); ctx.moveTo(x - 7 * s, yy); ctx.lineTo(x + 7 * s, yy); ctx.stroke(); }
+      // two platforms + a cup perch on top
+      const plat = (px, py, w) => {
+        ctx.fillStyle = '#8fc0a0';
+        roundRectPath(ctx, px - w, py - 5 * s, w * 2, 10 * s, 5 * s); ctx.fill();
+        ctx.fillStyle = 'rgba(190,220,150,0.5)';
+        roundRectPath(ctx, px - w, py - 5 * s, w * 2, 4 * s, 4 * s); ctx.fill();
+      };
+      plat(x - 2 * s, y - 40 * s, 22 * s);
+      plat(x + 2 * s, y - 62 * s, 16 * s);
+      // cozy top cup
+      ctx.fillStyle = '#ff9db0';
+      ctx.beginPath(); ctx.ellipse(x, y - 80 * s, 15 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffc2d0';
+      ctx.beginPath(); ctx.ellipse(x, y - 82 * s, 11 * s, 5 * s, 0, 0, Math.PI * 2); ctx.fill();
+      // dangling toy from lower platform
+      const sway = Math.sin(t * 2.2) * 3 * s;
+      ctx.strokeStyle = '#b5a6cf'; ctx.lineWidth = 1.4 * s;
+      ctx.beginPath(); ctx.moveTo(x + 18 * s, y - 40 * s); ctx.lineTo(x + 18 * s + sway, y - 26 * s); ctx.stroke();
+      ctx.fillStyle = '#ffd36b';
+      ctx.beginPath(); ctx.arc(x + 18 * s + sway, y - 24 * s, 4 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    },
+  },
+  {
+    id: 'catnip', name: '猫薄荷花坛', icon: '🌿', cost: 80,
+    desc: '一小畦猫薄荷，香气让猫咪开心打滚。',
+    pose: 'belly', emote: '🎵', joy: 8,
+    draw(ctx, x, y, s, t) {
+      ctx.save();
+      ctx.globalAlpha = 0.14; ctx.fillStyle = '#3a5a30';
+      ctx.beginPath(); ctx.ellipse(x, y, 30 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // wooden planter box
+      ctx.fillStyle = '#c9a877';
+      roundRectPath(ctx, x - 28 * s, y - 16 * s, 56 * s, 18 * s, 5 * s); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      roundRectPath(ctx, x - 28 * s, y - 16 * s, 56 * s, 5 * s, 4 * s); ctx.fill();
+      // catnip sprigs swaying softly
+      for (let i = 0; i < 7; i++) {
+        const sx = x - 22 * s + i * 7 * s;
+        const h = (16 + (i % 3) * 5) * s;
+        const bend = Math.sin(t * 1.6 + i) * 2.5 * s;
+        ctx.strokeStyle = '#6a9f58'; ctx.lineWidth = 2 * s;
+        ctx.beginPath(); ctx.moveTo(sx, y - 14 * s); ctx.quadraticCurveTo(sx + bend, y - 14 * s - h * 0.6, sx + bend, y - 14 * s - h); ctx.stroke();
+        ctx.fillStyle = i % 2 ? '#7fb268' : '#8fc0a0';
+        ctx.beginPath(); ctx.ellipse(sx + bend, y - 14 * s - h, 3.5 * s, 5 * s, 0, 0, Math.PI * 2); ctx.fill();
+        if (i % 2) { ctx.fillStyle = '#b59bff'; ctx.beginPath(); ctx.arc(sx + bend, y - 14 * s - h - 3 * s, 2.2 * s, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.restore();
+    },
+  },
+  {
+    id: 'hammock', name: '吊床', icon: '🛖', cost: 100,
+    desc: '两根小柱撑起的吊床，午后晒着太阳最惬意。',
+    pose: 'sleep', emote: '💤', joy: 9,
+    draw(ctx, x, y, s, t) {
+      ctx.save();
+      ctx.globalAlpha = 0.14; ctx.fillStyle = '#3a5a30';
+      ctx.beginPath(); ctx.ellipse(x, y, 36 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      const px = 30 * s;        // pole half-span
+      // two posts
+      ctx.fillStyle = '#caa978';
+      roundRectPath(ctx, x - px - 3 * s, y - 40 * s, 6 * s, 40 * s, 3 * s); ctx.fill();
+      roundRectPath(ctx, x + px - 3 * s, y - 40 * s, 6 * s, 40 * s, 3 * s); ctx.fill();
+      // slung cloth (soft sag that breathes a little)
+      const sag = 22 * s + Math.sin(t * 1.4) * 1.5 * s;
+      ctx.fillStyle = '#ff9db0';
+      ctx.beginPath();
+      ctx.moveTo(x - px, y - 38 * s);
+      ctx.quadraticCurveTo(x, y - 38 * s + sag, x + px, y - 38 * s);
+      ctx.quadraticCurveTo(x, y - 30 * s + sag, x - px, y - 38 * s);
+      ctx.fill();
+      // stripes along the sling
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5 * s;
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(x + i * 10 * s, y - 38 * s + Math.abs(i) * 1.5 * s);
+        ctx.quadraticCurveTo(x + i * 10 * s, y - 38 * s + sag * 0.8, x + i * 10 * s, y - 34 * s + sag * 0.4);
+        ctx.stroke();
+      }
+      ctx.restore();
+    },
+  },
+];
+const BUILDINGS_BY_ID = Object.fromEntries(BUILDINGS.map(b => [b.id, b]));
+
 // ---- Yard scene ----
 class YardScene {
   constructor(game) {
@@ -275,6 +442,7 @@ class YardScene {
     move(this.bushes);move(this.butterflies);move(this.clouds);
     move(this.flowers);move(this.petals);move(this.fireflies);
     move(this.lootBubbles);move(this.petParticles);move(this.floatTexts);
+    move(State.S.yardBuildings);   // placed structures scale with the canvas like bushes
     if(this.golden){this.golden.x*=fx;this.golden.y*=fy;}
     for(const e of this.entities){
       e.W=W;e.H=H;e.x=Math.min(W-40,Math.max(40,e.x*fx));
@@ -283,6 +451,11 @@ class YardScene {
     }
     for(const b of this.bushes){
       const top=Math.min(H*.58,H-90),bottom=Math.max(top+10,H-74);
+      b.y=Math.max(top,Math.min(bottom,b.y));
+    }
+    for(const b of (State.S.yardBuildings||[])){
+      const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+      b.x=Math.min(W-40,Math.max(40,b.x));
       b.y=Math.max(top,Math.min(bottom,b.y));
     }
     // Portrait/landscape rotation changes how many cats fit in the yard.
@@ -403,7 +576,10 @@ class YardScene {
   }
   update(dt) {
     const mouse = this.game.mouse;
+    // A cat heading to a structure steers itself first, then runs normal motion.
+    for (const e of this.entities) { if (e._buildTarget && !(mouse && mouse.active)) this.stepBuildTarget(e, dt); }
     for(const e of this.entities)e.update(dt,mouse);
+    this.updateBuildingPlay(dt);
     const duo=window.CatRelations?.chosen?.()||[];
     if(duo.length===2){
       const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
@@ -500,14 +676,17 @@ class YardScene {
       ctx.restore();
     }
 
-    // draw bushes + sort cats by y with bushes
+    // draw bushes + placed buildings + cats, all y-sorted so cats can stand in
+    // front of / behind their play-structures
     const drawables = [];
     for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
+    for (const b of (State.S.yardBuildings || [])) drawables.push({ y: b.y, kind: 'building', ref: b });
     for (const e of this.entities) drawables.push({ y: e.y, kind: 'cat', ref: e });
     if (this.hide && !this.hide.found) drawables.push({ y: this.hide.spot.y + 0.1, kind: 'hide', ref: this.hide });
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) {
       if (d.kind === 'bush') this.drawBush(ctx, d.ref);
+      else if (d.kind === 'building') this.drawBuilding(ctx, d.ref);
       else if (d.kind === 'cat') d.ref.draw(ctx);
       else if (d.kind === 'hide') this.drawHide(ctx, d.ref);
     }
@@ -607,6 +786,13 @@ class YardScene {
     ctx.beginPath(); ctx.arc(b.x + b.r * 0.1, b.y + 4, 1.8, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
+  // Render one placed play-structure. Depth scales with y like the cats/bushes.
+  drawBuilding(ctx, b) {
+    const def = BUILDINGS_BY_ID[b.type];
+    if (!def) return;
+    const depth = 0.8 + (b.y / this.game.H) * 0.5;
+    def.draw(ctx, b.x, b.y, depth, this.game.t);
+  }
   drawHide(ctx, hide) {
     // First find is a highlighted target; later encounters keep the mystery.
     if(!hide.tutorial){
@@ -645,6 +831,97 @@ class YardScene {
       species:hide.species,scale:peeking?.78:.55,face,t:this.game.t,
       pose:peeking?'walk':'idle',motion:peeking?.75:0,mood:'alert'
     });
+  }
+  // ---- resident cats visit their play-structures and PLAY ----
+  // Cheap, subtle pathing: on a slow timer, send one idle cat toward a nearby
+  // structure. When it arrives, it strikes the structure's pose + emote and its
+  // joy/mood nudges upward. Reuses the normal CatEntity motion/behaviour timers.
+  updateBuildingPlay(dt) {
+    const builds = State.S.yardBuildings || [];
+    if (!builds.length || !this.entities.length) return;
+    // advance any in-progress "playing at a structure" timers first
+    for (const e of this.entities) {
+      if (e._playBuildT > 0) {
+        e._playBuildT -= dt;
+        // steady, gentle joy gain while playing (capped)
+        const def = e._playBuildDef;
+        if (def) e.cat.joy = Math.min(100, e.cat.joy + def.joy * dt * 0.5);
+        if (e._playBuildT <= 0) { e._playBuildDef = null; }
+      }
+    }
+    this._buildScan = (this._buildScan || 2 + Math.random() * 3) - dt;
+    if (this._buildScan > 0) return;
+    this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
+    // pick an idle, not-already-busy cat and a free-ish structure to visit
+    const idle = this.entities.filter(e => e._playBuildT <= 0 && !e._buildTarget &&
+      ['idle', 'sit', 'walk', 'loaf'].includes(e.pose));
+    if (!idle.length) return;
+    const cat = idle[Math.floor(Math.random() * idle.length)];
+    const b = builds[Math.floor(Math.random() * builds.length)];
+    cat._buildTarget = b;
+  }
+  // called from each cat's effective motion: nudge a cat toward its chosen
+  // structure, then trigger play on arrival. Invoked from YardScene.update via
+  // the per-cat hook below (kept here so all building logic lives together).
+  stepBuildTarget(e, dt) {
+    const b = e._buildTarget; if (!b) return;
+    const def = BUILDINGS_BY_ID[b.type];
+    const dx = b.x - e.x, dy = (b.y - 4) - e.y, dist = Math.hypot(dx, dy);
+    if (dist > 20) {
+      e.pose = 'walk'; e.timer = 1;
+      e.vx = (dx / dist) * 34; e.vy = (dy / dist) * 20;
+    } else {
+      // arrived: play!
+      e.vx = e.vy = 0;
+      e.setPose(def ? def.pose : 'play', 2.2 + Math.random() * 1.8);
+      e.emote(def ? def.emote : '🐾', 2.2);
+      e.cat.joy = Math.min(100, e.cat.joy + (def ? def.joy : 5));
+      e._playBuildT = e.timer;
+      e._playBuildDef = def;
+      e._buildTarget = null;
+    }
+  }
+  // Find a free yard spot for a new structure (spread out, below the horizon,
+  // away from existing buildings/bushes). Returns {x,y} in current canvas space.
+  freeBuildingSpot() {
+    const { W, H } = this.game;
+    const top = Math.min(H * 0.6, H - 90), bot = Math.max(top + 10, H - 70);
+    const builds = State.S.yardBuildings || [];
+    let best = null, bestGap = -1;
+    for (let i = 0; i < 24; i++) {
+      const x = 70 + Math.random() * Math.max(1, W - 140);
+      const y = top + Math.random() * (bot - top);
+      let gap = Infinity;
+      for (const o of builds) gap = Math.min(gap, Math.hypot(o.x - x, o.y - y));
+      for (const o of this.bushes) gap = Math.min(gap, Math.hypot(o.x - x, o.y - y) * 0.8);
+      if (gap > bestGap) { bestGap = gap; best = { x, y }; }
+      if (gap > 72) break;   // good enough
+    }
+    return best || { x: W / 2, y: (top + bot) / 2 };
+  }
+  // Spend coins and place a structure; returns true on success.
+  buildStructure(type) {
+    const def = BUILDINGS_BY_ID[type]; if (!def) return false;
+    if ((State.S.coins || 0) < def.cost) return false;
+    State.S.coins -= def.cost;
+    const spot = this.freeBuildingSpot();
+    (State.S.yardBuildings = State.S.yardBuildings || []).push({ type, x: spot.x, y: spot.y });
+    State.save();
+    window.arcadeMetric?.('bond_yard_build', { type, cost: def.cost });
+    return true;
+  }
+  // Remove a placed structure by index, refunding half its cost.
+  removeStructure(index) {
+    const builds = State.S.yardBuildings || [];
+    const b = builds[index]; if (!b) return 0;
+    const def = BUILDINGS_BY_ID[b.type];
+    const refund = def ? Math.floor(def.cost / 2) : 0;
+    builds.splice(index, 1);
+    for (const e of this.entities) { if (e._buildTarget === b) e._buildTarget = null; }
+    State.S.coins = (State.S.coins || 0) + refund;
+    State.save();
+    window.arcadeMetric?.('bond_yard_remove', { type: b.type, refund });
+    return refund;
   }
   // returns 'hide' | entity | null
   // ---- idle loot bubbles: visible, tappable resource rewards over the yard ----
@@ -730,4 +1007,4 @@ class YardScene {
   }
 }
 
-window.World = { YardScene, CatEntity };
+window.World = { YardScene, CatEntity, BUILDINGS, BUILDINGS_BY_ID };

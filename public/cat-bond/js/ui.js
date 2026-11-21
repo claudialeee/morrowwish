@@ -24,6 +24,7 @@ const UI = {
     });
     document.getElementById('fab-feed').addEventListener('click', () => this.openFeed());
     document.getElementById('fab-play').addEventListener('click', () => this.openTease());
+    document.getElementById('fab-build')?.addEventListener('click', () => { if (this.game.scene === 'yard') this.openBuild(); });
     const fabMap = document.getElementById('fab-map');
     if (fabMap) fabMap.addEventListener('click', () => { if (this.game.scene === 'yard') this.game.openWorldMap(); });
     // battle buttons
@@ -565,6 +566,68 @@ const UI = {
       const go = document.getElementById('bp-go'); if (go) go.onclick = () => { const r = Raising.startBreeding(this._breedSel[0], this._breedSel[1]); this.game.toast(r && r.ok ? '🥚 开始孵化！' : (r && r.msg) || '无法繁育'); State.save(); this.openWorkshop(); };
     };
     render();
+  },
+
+  // ---- 🏗️ 庭院游乐设施 (buildable yard play-structures) ----
+  // Spend coins to place cat trees / scratchers / caves etc. Resident cats walk
+  // over and play with them, lifting their mood. Reuses the panel() + st-row UI.
+  openBuild() {
+    const B = window.World?.BUILDINGS || [];
+    const en = window.MorrowwishI18n?.get?.() !== 'zh';
+    const placed = State.S.yardBuildings || [];
+    const coins = State.S.coins || 0;
+    const counts = {};
+    for (const p of placed) counts[p.type] = (counts[p.type] || 0) + 1;
+    const cards = B.map(def => {
+      const afford = coins >= def.cost;
+      const owned = counts[def.id] || 0;
+      return `<div class="st-row" data-type="${def.id}">
+        <div class="st-ico">${def.icon}</div>
+        <div class="st-main">
+          <div class="st-name">${def.name}${owned ? ' <span class="tiny">×' + owned + '</span>' : ''}</div>
+          <p class="work-usage">${def.desc}</p>
+          <div class="work-income">${en ? 'Cost' : '花费'}：<b>${def.cost} 🪙</b></div>
+        </div>
+        <div class="st-btns">
+          <button class="btn gold tiny-btn" data-build="${def.id}" ${afford ? '' : 'disabled'}>${en ? 'Build' : '建造'}</button>
+        </div>
+      </div>`;
+    }).join('');
+    const placedRows = placed.map((p, i) => {
+      const def = window.World?.BUILDINGS_BY_ID?.[p.type];
+      if (!def) return '';
+      return `<div class="st-row" data-placed="${i}">
+        <div class="st-ico">${def.icon}</div>
+        <div class="st-main"><div class="st-name">${def.name}</div>
+          <p class="work-usage">${en ? 'Tap remove to recover half the coins.' : '拆除可返还一半金币。'}</p></div>
+        <div class="st-btns"><button class="btn ghost tiny-btn" data-remove="${i}">${en ? 'Remove' : '拆除'}</button></div>
+      </div>`;
+    }).join('');
+    this.panel(`<span class="card-close">×</span>
+      <h2>🏗️ ${en ? 'Build the Yard' : '庭院建造'}</h2>
+      <p class="sub">${en ? 'Build play-structures with coins. Your cats will walk over and play with them, lifting their mood.'
+        : '用金币建造游乐设施，猫咪会跑过去玩耍，心情越来越好。'}</p>
+      <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
+      <div class="st-list">${cards}</div>
+      ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
+    const host = document.getElementById('panel');
+    host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
+      const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
+      if (this.game.yard.buildStructure(btn.dataset.build)) {
+        window.MorrowwishAudio?.effect?.('discover');
+        this.game.refreshHUD();
+        this.game.toast((en ? '🏗️ Built ' : '🏗️ 已建造 ') + (def ? def.name : ''));
+        this.openBuild();
+      } else {
+        this.game.toast(en ? 'Not enough coins' : '金币不足');
+      }
+    });
+    host.querySelectorAll('[data-remove]').forEach(btn => btn.onclick = () => {
+      const refund = this.game.yard.removeStructure(+btn.dataset.remove);
+      this.game.refreshHUD();
+      this.game.toast((en ? '♻️ Removed · +' : '♻️ 已拆除 · 返还 ') + refund + ' 🪙');
+      this.openBuild();
+    });
   },
 
   openRoster() {
