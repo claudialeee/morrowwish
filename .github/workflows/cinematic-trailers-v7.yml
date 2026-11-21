@@ -43,14 +43,14 @@ jobs:
           node --check scripts/render-trailers-v7.mjs
       - name: Verify all eight story worlds, coherent choices, and trailer evidence requirements
         run: node scripts/check-elsewhere-story.mjs
-      - name: Capture fresh gameplay from four real main games
+      - name: Capture six active promos; Cat Bond video production paused
         run: node scripts/capture-trailers-v7.mjs
-      - name: Render 4 feature-led trailers and 3 event-verified challenge ads
+      - name: Render six active review videos and retain existing Cat Bond trailer
         run: node scripts/render-trailers-v7.mjs
       - name: Strict V7 rendering and preview checks (no social upload)
         run: |
           set -euo pipefail
-          for slug in pawsibly-innocent cat-bond tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
+          for slug in pawsibly-innocent tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
             mp4="public/promo/$slug/trailer-v7-20261121.mp4"
             jpg="public/promo/$slug/trailer-v7-20261121.jpg"
             test -s "$mp4"; test -s "$jpg"
@@ -60,19 +60,21 @@ jobs:
             echo "$slug $(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$mp4") seconds"
           done
           test -s public/promo/v7-review.json
+          test -s public/promo/cat-bond/trailer-v7-20261121.mp4
+          node -e "const m=require('./public/promo/v7-review.json');if(m.trailers.length!==7||m.trailers.filter(x=>x.slug==='cat-bond'&&x.paused).length!==1)process.exit(1)"
           test -s public/promo/readability-audit.json
-          node -e "const a=require('./public/promo/readability-audit.json');if(!Array.isArray(a.scenes)||a.scenes.length<45||a.scenes.some(s=>!s.passed)||!a.scenes.some(s=>s.game==='tiny-town'&&s.scene==='opening-three-choices'&&s.seconds>=9))process.exit(1);console.log('Reading QA:',a.scenes.length,'scenes checked')"
+          node -e "const a=require('./public/promo/readability-audit.json');if(!Array.isArray(a.scenes)||a.scenes.length<40||a.scenes.some(s=>!s.passed)||a.scenes.some(s=>s.game==='cat-bond')||!a.scenes.some(s=>s.game==='tiny-town'&&s.scene==='opening-three-choices'&&s.seconds>=9))process.exit(1);console.log('Reading QA:',a.scenes.length,'scenes checked')"
       - name: Save unapproved previews for owner review; NEVER schedule on social media
         run: |
           set -euo pipefail
-          for slug in pawsibly-innocent cat-bond tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
+          for slug in pawsibly-innocent tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
             git add "public/promo/$slug/trailer-v7-20261121.mp4" "public/promo/$slug/trailer-v7-20261121.jpg"
             git add "public/promo/$slug/v7-review-"*.jpg
           done
-          git add public/promo/cat-bond/cover-portrait.png public/promo/v7-review.json public/promo/readability-audit.json public/promo/review-v7/index.html
+          git add public/promo/v7-review.json public/promo/readability-audit.json public/promo/review-v7/index.html
           git diff --cached --quiet && exit 0
           git config user.name 'morrowwish-promo-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'qa(promo): 7 chronological V7 video previews with no social publishing or approval'
+          git commit -m 'qa(promo): refresh six review trailers; Cat Bond remains paused and unchanged'
           git pull --rebase origin main
           git push origin HEAD:main

@@ -57,6 +57,11 @@ let browser;
 try{
  await sleep(1300);
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+ // CAT BOND PROMO PAUSED BY OWNER. Keep its existing video untouched.
+ // The remaining six are still captured from live gameplay.
+ const result=[];
+ const catBondPromoEnabled=false;
+ if(catBondPromoEnabled){
  // Use OFFICIAL current game art in the trailer, not invented game scenes.
  // No stretched landscape art: the cover is composed with CSS object-fit:cover.
  const coverPage=await browser.newPage({viewport:{width:540,height:960},deviceScaleFactor:1});
@@ -66,7 +71,6 @@ try{
  fs.mkdirSync('public/promo/cat-bond',{recursive:true});
  await coverPage.screenshot({path:'public/promo/cat-bond/cover-portrait.png'});
  await coverPage.close();
- const result=[];
  // Every scene below is a new browser recording. Fail rather than substitute an
  // unrelated old V3 edit or a synthetic, unearned gameplay achievement.
  result.push(await capture(browser,'cat-bond',async({page,stamp})=>{
@@ -202,6 +206,7 @@ try{
   for(const required of ['raising','work-after','tease','map-explore','battle-intro','duo','ultimate'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
  }));
+ } // end held Cat Bond promo capture; NEVER open or record it while paused.
  result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
   await page.goto(host+'/pawsibly-innocent/?platform=crazygames&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__PAWSIBLY_TEST__?.getState(),null,{timeout:12000});
@@ -716,7 +721,7 @@ try{
    {label:'water-cloudy',start:Math.max(played,murkyAt-5.1),duration:Math.min(4.8,timeout-Math.max(played,murkyAt-5.1)-.12)},
    {label:'timeout',start:Math.max(murkyAt,timeout-.65),duration:3.3}];
  }));
- const manifest={createdAt:new Date().toISOString(),kind:'V7-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
+ const manifest={createdAt:new Date().toISOString(),kind:'V7-six-active-trailers-cat-bond-paused',paused:['cat-bond'],broll:result};
  fs.writeFileSync(path.join(dir,'broll-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 }finally{
  if(browser)await browser.close();server.kill('SIGTERM');

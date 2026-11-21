@@ -11,10 +11,10 @@ const work=fs.mkdtempSync(path.join(os.tmpdir(),'mw-edit-v7-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
 const manifest={version:'V7',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
- socialAutopublish:false,historicalVideoViewsExcluded:true,readabilityChecked:true,trailers:[]};
+ socialAutopublish:false,historicalVideoViewsExcluded:true,readabilityChecked:true,pausedPromoGames:['cat-bond'],trailers:[]};
 const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v1',
  method:'Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.',
- scenes:[]};
+ pausedPromoGames:['cat-bond'],scenes:[]};
 const MIN_READING={
  'cat-bond':{'raising':4.5,'cat-upgrade':6.0,'duo-partners':6.0,'map-choice':4.5},
  'pawsibly-innocent':{'narrow-achievement':3.0},
@@ -245,7 +245,21 @@ function edit(slug){
  console.log('CINEMATIC V7 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
 }
 try{
- for(const slug of ['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'])edit(slug);
+ // Preserve Cat Bond's previous reviewed media EXACTLY. No browser capture,
+ // ffmpeg render, or file write for the paused game.
+ const existing=JSON.parse(fs.readFileSync('public/promo/v7-review.json','utf8'));
+ const cat=existing.trailers?.find(t=>t.slug==='cat-bond');
+ if(!cat?.video||!cat?.poster||!fs.existsSync('public'+cat.video)||!fs.existsSync('public'+cat.poster))
+   throw Error('Cannot preserve the last Cat Bond preview while its production is paused');
+ const archived=ffprobe('public'+cat.video);
+ if(!archived.streams.some(x=>x.codec_type==='video')||!archived.streams.some(x=>x.codec_type==='audio'))
+   throw Error('Existing paused Cat Bond preview is corrupt');
+ manifest.trailers.push({...cat,paused:true,productionStatus:'PAUSED — PREVIOUS REVIEW VIDEO RETAINED',
+  approved:false,published:false});
+ const active=['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
+ if(Object.keys(proofs).some(slug=>!active.includes(slug)))throw Error('Paused Cat Bond must not be captured');
+ for(const slug of active)edit(slug);
+ if(manifest.trailers.length!==7)throw Error('Review manifest should include 6 new trailers + 1 paused existing trailer');
  fs.writeFileSync('public/promo/v7-review.json',JSON.stringify(manifest,null,2)+'\n');
  fs.writeFileSync('public/promo/readability-audit.json',JSON.stringify(readingAudit,null,2)+'\n');
  console.log('V7 TRAILERS RENDERED FOR REVIEW, NO SOCIAL POSTING: '+manifest.trailers.length);

@@ -70,7 +70,7 @@ async function refresh(){
    if(!names[entry.slug]||typeof entry.video!=='string'||!entry.video.startsWith('/promo/'))continue;
    const article=document.createElement('article'),heading=document.createElement('h2'),
      video=document.createElement('video'),nav=document.createElement('div'),a=document.createElement('a'),note=document.createElement('small');
-   heading.textContent=names[entry.slug];video.controls=true;video.playsInline=true;video.preload='metadata';
+   heading.textContent=names[entry.slug]+(entry.paused?' · 暂停制作（保留上一版）':'');video.controls=true;video.playsInline=true;video.preload='metadata';
    const cacheToken=encodeURIComponent(data.createdAt||data.latestVersion||'latest');
    video.src=entry.video+'?revision='+cacheToken;
    if(entry.poster&&entry.poster.startsWith('/promo/'))video.poster=entry.poster+'?revision='+cacheToken;
@@ -84,7 +84,7 @@ async function refresh(){
      nav.appendChild(button);
    }
    a.className='video-link';a.href=video.src;a.target='_blank';a.rel='noopener';a.textContent='单独打开 MP4';
-   note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · 未批准发布';
+   note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · '+(entry.paused?'该游戏宣传片暂停制作，保留上一审核版 · ':'')+'未批准发布';
    video.addEventListener('play',()=>box.querySelectorAll('video').forEach(other=>{if(other!==video)other.pause()}));
    article.append(heading,video,nav,a,note);box.append(article);
   }
