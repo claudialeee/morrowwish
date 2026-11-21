@@ -37,6 +37,10 @@ jobs:
           bash scripts/fetch-cat-music.sh
           node scripts/fetch-promo-audio.mjs
           node scripts/test-promo-music.mjs
+      - name: Verify trailer source syntax BEFORE expensive real-game capture
+        run: |
+          node --check scripts/capture-trailers-v7.mjs
+          node --check scripts/render-trailers-v7.mjs
       - name: Verify all eight story worlds, coherent choices, and trailer evidence requirements
         run: node scripts/check-elsewhere-story.mjs
       - name: Capture fresh gameplay from four real main games

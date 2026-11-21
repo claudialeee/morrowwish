@@ -88,7 +88,7 @@ const playlists={
  'flip-dash':[
   broll('first-coin',3.5,'GRAB GOLD FROM THE START!'),
   broll('coin-collect',10.2,'COLLECT GOLD. DODGE PINK.'),
-  broll('danger',2.45,
+  broll('danger',2.45),
   broll('crash',2.7,'CAN YOU LAST LONGER?'),
   cover(3.6,'PLAY FREE')
  ],
