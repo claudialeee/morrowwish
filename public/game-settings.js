@@ -78,8 +78,23 @@ html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls .hud-icon,html
 .mw-mini-aquarium-frame .mw-mini-aqua-top .mw-mini-fullscreen-button{font-size:0!important;min-width:30px!important;width:30px!important;padding:0!important}
 .mw-mini-aquarium-frame .mw-mini-aqua-top .mw-mini-fullscreen-button::after{content:'⛶';font:800 19px/1 system-ui}
 }
+
+#mw-game-settings .mw-settings-share{font-size:21px!important;font-weight:800!important}
+.mw-share-fallback{position:fixed;inset:auto 12px 16px 12px;z-index:2147483646;
+ display:flex;flex-direction:column;gap:9px;align-items:stretch;max-width:400px;margin:auto;
+ padding:18px 14px;background:#fff9ef;border:2px solid #dbc8d8;border-radius:18px;
+ box-shadow:0 12px 60px #33253d66;font:700 13px/1.4 system-ui;color:#59405c;overflow-wrap:anywhere}
+.mw-share-fallback button{min-height:38px;border-radius:9px;border:1px solid #bca6be;background:#f4e8ee;color:#503c61}
+#cb-header-actions #mw-game-settings{margin:0!important;gap:3px!important}
+@media(max-width:420px){
+ #mw-game-settings button{width:28px!important;min-width:28px!important;height:30px!important;min-height:30px!important}
+ #mw-game-settings .mw-settings-language{width:33px!important;min-width:33px!important}
+ #stageControls #mw-game-settings{margin-left:1px!important}
+ html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls{gap:2px!important}
+ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{min-width:30px!important;width:30px!important;padding:0!important}
+}
 `;
-let dock,btnLang,btnMusic,btnSfx;
+let dock,btnLang,btnMusic,btnSfx,btnShare;
 const hiddenMenuControls=()=>route==='pawsibly-innocent';
 let fallbackMusic=null,fallbackEnabled=false,fallbackFxEnabled=true,fallbackFxCtx=null;
 try{fallbackFxEnabled=localStorage.getItem('morrowwish-universal-fx')!=='0';fallbackEnabled=localStorage.getItem('morrowwish-universal-music')==='1'}catch(_){}
@@ -170,13 +185,57 @@ function sync(){
  btnSfx.setAttribute('aria-pressed',String(!!fxOn));
  btnSfx.title=chinese?(fxOn?'关闭音效':'开启音效'):(fxOn?'Turn sound effects off':'Turn sound effects on');
  btnSfx.setAttribute('aria-label',btnSfx.title);
+ btnShare.textContent='↗';
+ btnShare.title=chinese?'分享游戏':'Share game';
+ btnShare.setAttribute('aria-label',btnShare.title);
+}
+
+function openShare(){
+ const chinese=zh();
+ const niceNames={
+  'cat-bond':['猫猫纽带','Cat Bond'],
+  'pawsibly-innocent':['猫猫捣蛋','Pawsibly Innocent'],
+  'tiny-town':['自由小镇','Tiny Town'],
+  'elsewhere':['平行人生','Elsewhere'],
+  'flip-dash':['反转冲刺','Flip Dash'],
+  'parcel-panic':['包裹分拣','Parcel Panic']
+ };
+ const title=niceNames[route]?.[chinese?0:1]||document.title.split(/[|—]/)[0].trim();
+ // Never share a transient fullscreen/query-state URL, only the game link.
+ const url=new URL('/'+route+'/',location.origin).href;
+ const message=chinese
+  ?'来玩《'+title+'》！免费、无需注册，直接开玩。'
+  :'Play '+title+' with me! Free, instant browser game, no account needed.';
+ if(window.MorrowwishSocialShare?.open){
+  window.MorrowwishSocialShare.open({title,url,message,language:chinese?'zh':'en'});
+  return;
+ }
+ // The script normally loads before anyone taps; this fallback works even
+ // while it is downloading or blocked in an embedded portal.
+ if(typeof navigator.share==='function'){
+  navigator.share({title,text:message,url}).catch(e=>{
+   if(e?.name!=='AbortError')copyShareFallback(url);
+  });return;
+ }
+ copyShareFallback(url);
+}
+function copyShareFallback(url){
+ const host=document.fullscreenElement||document.querySelector('.mw-immersive-fallback,.mw-mini-fullscreen-fallback')||document.body;
+ const card=document.createElement('div');card.className='mw-share-fallback';card.setAttribute('role','dialog');
+ const a=document.createElement('a');a.href=url;a.textContent=url;a.target='_blank';a.rel='noopener';
+ const copy=document.createElement('button');copy.type='button';copy.textContent=zh()?'复制链接':'Copy link';
+ const close=document.createElement('button');close.type='button';close.textContent='×';close.setAttribute('aria-label','Close');
+ const status=document.createElement('span');
+ copy.onclick=async()=>{try{await navigator.clipboard.writeText(url);status.textContent=zh()?'已复制':'Copied'}catch(_){status.textContent=zh()?'请长按上方链接复制':'Long press the link to copy'}};
+ close.onclick=()=>card.remove();
+ card.append(close,a,copy,status);host.append(card);
 }
 function correctHost(){
  if(!dock)return;
  const full=document.fullscreenElement;
  const root=full||document;
  const candidates=route==='pawsibly-innocent'?['#stageControls','.in-game-controls']:
- route==='cat-bond'?['#hud']:
+ route==='cat-bond'?['#cb-header-actions','#hud']:
  route==='elsewhere'?['.game-top .game-tools','.top-right','.game-top']:
  route==='tiny-town'?['.top-actions','.header']:
  route==='pocket-aquarium'?['.mw-mini-aqua-top','.scores','header']:
@@ -193,14 +252,20 @@ function mount(){
  if(dock||!document.body)return;
  document.documentElement.dataset.mwSettingsGame=route;
  ensureLanguage();
+ if(!window.MorrowwishSocialShare&&!document.querySelector('script[data-mw-social-share]')){
+  const shareScript=document.createElement('script');
+  shareScript.src='/social-share.js?v=fullscreen-share-20261120-2';
+  shareScript.dataset.mwSocialShare='1';document.head.appendChild(shareScript);
+ }
  const css=document.createElement('style');css.textContent=CSS;document.head.appendChild(css);
  dock=document.createElement('div');dock.id='mw-game-settings';
- dock.setAttribute('role','group');dock.setAttribute('aria-label','Language, music and sound settings');
+ dock.setAttribute('role','group');dock.setAttribute('aria-label','Language, music, sound and sharing settings');
  const button=(cls,click)=>{const el=document.createElement('button');el.type='button';el.className=cls;el.addEventListener('click',e=>{e.stopPropagation();click()});return el};
  btnLang=button('mw-settings-language',()=>setLanguage(zh()?'en':'zh'));
  btnMusic=button('mw-settings-music',toggleMusic);
  btnSfx=button('mw-settings-sfx',toggleEffects);
- dock.append(btnLang,btnMusic,btnSfx);
+ btnShare=button('mw-settings-share',openShare);
+ dock.append(btnLang,btnMusic,btnSfx,btnShare);
  document.addEventListener('pointerdown',gameTapSound,{passive:true});
  correctHost();sync();
  window.addEventListener('morrowwish-language-change',sync);
