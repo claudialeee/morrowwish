@@ -258,14 +258,15 @@ const dreamSource=fs.readFileSync('public/elsewhere/dreams.js','utf8');
 const dreamA=fs.readFileSync('public/elsewhere/casefiles-a.js','utf8');
 const dreamB=fs.readFileSync('public/elsewhere/casefiles-b.js','utf8');
 const dreamMoods=fs.readFileSync('public/elsewhere/dream-lives.js','utf8');
+const dreamFresh=fs.readFileSync('public/elsewhere/fresh-start.js','utf8');
 const dreamAudio=fs.readFileSync('public/elsewhere/dream-audio.js','utf8');
 const dreamPage=fs.readFileSync('public/elsewhere/index.html','utf8');
 const dreamCss=fs.readFileSync('public/elsewhere/dreams.css','utf8');
 const dreamSw=fs.readFileSync('public/elsewhere/sw.js','utf8');
-for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-lives',dreamMoods],['dream-audio',dreamAudio]])
+for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-lives',dreamMoods],['fresh-start',dreamFresh],['dream-audio',dreamAudio]])
  new vm.Script(src,{filename:name});
 for(const path of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/casefiles-a.js',
-                   '/elsewhere/casefiles-b.js','/elsewhere/dream-lives.js','/elsewhere/dream-audio.js',
+                   '/elsewhere/casefiles-b.js','/elsewhere/dream-lives.js','/elsewhere/fresh-start.js','/elsewhere/dream-audio.js',
                    '/telemetry.js','/social-share.js']){
  if(!dreamPage.includes(path))throw Error('Elsewhere missing resource: '+path);
  if(!path.startsWith('/telemetry')&&!path.startsWith('/social-share')&&!dreamSw.includes(path))
@@ -280,10 +281,10 @@ for(const marker of ['musicOn=read(KEY,true)','fxOn=read(FX_KEY,true)','audio.pl
                     'function toggleFX()','window.DreamAudio=','blocked=true'])
  if(!dreamAudio.includes(marker))throw Error('Elsewhere music/FX wiring missing');
 const storySandbox={window:{}};
-for(const src of [dreamA,dreamB,dreamMoods])vm.runInNewContext(src,storySandbox,{timeout:2500});
+for(const src of [dreamA,dreamB,dreamMoods,dreamFresh])vm.runInNewContext(src,storySandbox,{timeout:2500});
 const cases=storySandbox.window.ELSEWHERE_CASEFILES, vibes=storySandbox.window.ELSEWHERE_VIBES;
 const bilingual=x=>Array.isArray(x)&&x.length===2&&x.every(y=>typeof y==='string'&&y.trim().length>1);
-const expectedModes={paris:'romance',maldives:'wild',iceland:'wonder',swiss:'spectacle',tokyo:'comeback',amalfi:'comeback'};
+const expectedModes={paris:'romance',maldives:'wild',iceland:'wonder',swiss:'spectacle',tokyo:'comeback',amalfi:'luxury'};
 const moodNames=new Set();
 if(!cases||Object.keys(cases).length!==6||Object.keys(vibes||{}).length!==6)
  throw Error('All six dream lives must be fully configured');
@@ -312,7 +313,7 @@ for(const [world,life] of Object.entries(cases)){
  for(const kind of ['proof','allies','leverage'])
   if(!bilingual(vibes[world].stats[kind]))throw Error('Generic investigation score still present in '+world);
 }
-if(moodNames.size!==5)throw Error('All dreams still play like the same mystery game');
+if(moodNames.size!==6)throw Error('All dreams still play like the same mystery game');
 for(const marker of [
  'edition:"life-v4"','state.route=n','state.scores[act.gain]++','state.history.push',
  'prior.title','prior.result','function isDream','dream?"strong"','window.ELSEWHERE_VIBES',
@@ -321,9 +322,31 @@ for(const marker of [
  'track("life_completed"','track("ending_view"','window.arcadeMetric?.("game_complete")',
  'navigator.globalPrivacyControl','MorrowwishSocialShare?.open','history.pushState'
 ])if(!dreamSource.includes(marker))throw Error('Elsewhere progression or instrumentation missing: '+marker);
+const requiredNewArcs=['paris','amalfi'];
+for(const id of requiredNewArcs){
+ const w=cases[id];
+ if(!Array.isArray(w.finale.routeBodies)||w.finale.routeBodies.length!==3||w.finale.routeBodies.some(x=>!bilingual(x)))
+  throw Error('Finale must reflect the actual opening route: '+id);
+ for(const path of w.paths)for(const scene of path.slice(1)){
+  if(!Array.isArray(scene.links)||scene.links.length!==3||scene.links.some(x=>!bilingual(x)))
+   throw Error('Every choice must connect into the next scene: '+id);
+ }
+}
+if(cases.paris.intro.body[0].includes('旧爱')||cases.paris.intro.body[0].includes('五年')||cases.amalfi.intro.body[0].includes('地产商'))
+ throw Error('Old stressful plot remains live');
+if(cases.paris.intro.body[0].includes('诺亚'))throw Error('The new romance must introduce Noa naturally after the first choice');
+if(!cases.amalfi.objective[0].includes('没有失败结局'))throw Error('Amalfi must have no losing ending');
+if(!dreamCss.includes('white-space:nowrap!important')||!dreamCss.includes('font-size:clamp(15px,4.35vw,24px)'))
+ throw Error('Single-line responsive Chinese and English title missing');
+if(!dreamSource.includes('hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life you love.")'))
+ throw Error('Single-line headline changed unexpectedly');
+if(!dreamSource.includes('s.routeBodies?.[state.route]')||!dreamSource.includes('s.links?.[prior.index]'))
+ throw Error('Meaningful scene continuation missing');
+if(!dreamSource.includes('state.id==="amalfi"||state.id==="paris"'))
+ throw Error('Romance and luxury endings should be achievable without score pressure');
 if(dreamPage.includes('/elsewhere/extra-scenes.js')||dreamPage.includes('/elsewhere/app.js'))
  throw Error('Retired disconnected story still active');
-console.log('Elsewhere: 6 complete genres, 18 route-specific arcs, 66 authored scenes and 198 context-tied decisions, bilingual outcomes, and functioning sound wiring checked.');
+console.log('Elsewhere: 6 distinct genres, 18 route-specific arcs, 66 authored scenes and 198 context-tied decisions, bilingual outcomes, and functioning sound wiring checked.');
 
 // Four distinctly styled cheerful CC0 recordings, no shared Lo-fi fallback.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');

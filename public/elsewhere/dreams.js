@@ -46,8 +46,8 @@ const Q={
  collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("你拖住了对方，但这次还不足以让他们彻底认输。","You stopped them for now, but the case is not fully won."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
 };
 Object.assign(Q,{
- hero:L("醒来，活一种舍不得结束的人生。","Wake up in a life you never want to end."),
- intro:L("巴黎的心动、私人海岛的疯狂、十万人欢呼的舞台……有些人生就是要尽情去活。","Parisian romance, a floating island, a stadium chanting your name. Some lives are meant to be lived fully."),
+ hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life you love."),
+ intro:L("在巴黎开启全新恋情，住进海边豪宅享受自由，也可以成为万人追捧的巨星。换一段人生，尽情去活。","Fall in love for the first time in Paris, enjoy your own Amalfi villa, or live as a superstar. A new life is yours."),
  tiny:L("六种人生 · 五个精彩瞬间 · 24 种结局","6 DREAM LIVES · 5 MOMENTS · 24 ENDINGS"),
  choice:L("接下来，你想怎么活？","WHAT HAPPENS NEXT?"),
  stake:L("这一生的心愿","THE LIFE YOU WANT"),
@@ -110,7 +110,7 @@ function localResource(kind){return window.ELSEWHERE_VIBES?.[state?.id]?.stats?.
 function resolve(){
  if(!state||state.history.length!==5)return null;
  const last=state.history[4],kind=last.gain,n=types.indexOf(kind),dream=isDream();
- const rare=state.secret&&state.scores.proof>=2&&state.scores.allies>=2&&(dream||n===0);
+ const rare=state.secret&&(state.id==="amalfi"||state.id==="paris"||(state.scores.proof>=2&&state.scores.allies>=2&&(dream||n===0)));
  const quality=rare?"perfect":dream?"strong":state.scores[kind]>=2?"strong":"cost";
  const entry=rare?story(state.id).rare:story(state.id).endings[n];
  const vibe=window.ELSEWHERE_VIBES?.[state.id];
@@ -118,9 +118,10 @@ function resolve(){
  return {n:rare?3:n,kind,quality,entry,detail};
 }
 function badge(kind){
- return '<span class="case-gain '+kind+'">'+esc(T(localResource(kind)))+' +1</span>';
+ return '<span class="case-gain '+kind+'">'+esc(T(localResource(kind)))+(["amalfi","paris"].includes(state?.id)?"":" +1")+'</span>';
 }
 function counters(){
+ if(["amalfi","paris"].includes(state?.id))return "";
  return '<div class="case-resources" aria-label="'+(lang==="zh"?"人生收获":"Life experiences")+'">'+types.map(t=>'<span>'+esc(T(localResource(t)))+' <b>'+state.scores[t]+'</b></span>').join("")+'</div>';
 }
 function closeToTop(){window.scrollTo({top:0,behavior:"instant"})}
@@ -189,6 +190,8 @@ function renderStage(){
  const m=meta(state.id),s=node(),i=state.stage,dream=isDream(),isTwist=[2,4].includes(i),sealed=isTwist&&!state.revealed[i]&&state.selected===null;
  const result=state.selected===null?null:s.choices[state.selected];
  const prior=state.history[i-1],controls=window.DreamAudio?.controls()||"";
+ const chapterBody=i===4&&s.routeBodies?.[state.route]?s.routeBodies[state.route]:s.body;
+ const continuity=i>=2&&i<=3&&prior&&s.links?.[prior.index]?s.links[prior.index]:null;
  const clue=state.secret?'<span class="case-secret-found">'+Qe("secret")+' · '+esc(T(story(state.id).secret))+'</span>':'';
  const historyHint=prior?'<div class="case-previous"><b>'+Qe("prior")+'</b> <span>'+esc(T(prior.title))+'</span><em>'+esc(T(prior.result))+'</em></div>':'';
  const actions=sealed?
@@ -200,7 +203,7 @@ function renderStage(){
  const secretButton=!sealed&&i>=2?'<button class="secret-pin '+(state.secret?"is-found":"")+'" type="button" data-secret aria-label="'+Qe("findSecret")+'" title="'+Qe("findSecret")+'">✦</button>':'';
  const artTop='<div class="art-label"><span>'+esc(T(m.tag))+'</span><h2>'+esc(T(m.name))+'</h2></div>';
  const chapterLabels=[0,1,2,3,4].map(n=>'<span class="'+(n<i?"is-done":n===i?"is-current":"")+'"></span>').join("");
- $("#game").innerHTML='<div class="game-top"><button class="ghost-btn" type="button" data-home>← '+Qe("home")+'</button><span class="game-place">'+esc(T(m.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / 5</span>'+controls+'</div></div><div class="scene '+(isTwist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+m.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(m.id)+(isTwist?particles():"")+secretButton+artTop+cover+'</div><div class="scene-body"><div class="progress-track"><span style="width:'+((i+1)*20)+'%"></span></div><div class="moment-pips" aria-hidden="true">'+chapterLabels+'</div><div class="case-topline"><span class="scene-kicker">'+(i+1)+' / 05 · '+esc(T(window.ELSEWHERE_VIBES?.[state.id]?.genre||m.tag))+'</span>'+counters()+'</div><p class="case-objective"><b>'+Qe("stake")+'</b> '+esc(T(story(state.id).objective))+'</p><h2>'+esc(T(sealed?Q.twist:s.title))+'</h2>'+(!sealed?historyHint:"")+'<p class="story-line">'+esc(T(sealed?Q.sealed:s.body))+'</p>'+clue+(i===4&&!dream&&!sealed&&state.selected===null?'<p class="case-goal">'+Qe("goal")+'</p>':"")+actions+'</div></div>';
+ $("#game").innerHTML='<div class="game-top"><button class="ghost-btn" type="button" data-home>← '+Qe("home")+'</button><span class="game-place">'+esc(T(m.place))+'</span><div class="game-tools"><span class="count">'+(i+1)+' / 5</span>'+controls+'</div></div><div class="scene '+(isTwist?'surprise-stage':'')+(sealed?' scene-sealed':'')+'" style="--world-accent:'+m.color+'"><div class="scene-picture" data-phase="'+i+'">'+art(m.id)+(isTwist?particles():"")+secretButton+artTop+cover+'</div><div class="scene-body"><div class="progress-track"><span style="width:'+((i+1)*20)+'%"></span></div><div class="moment-pips" aria-hidden="true">'+chapterLabels+'</div><div class="case-topline"><span class="scene-kicker">'+(i+1)+' / 05 · '+esc(T(window.ELSEWHERE_VIBES?.[state.id]?.genre||m.tag))+'</span>'+counters()+'</div><p class="case-objective"><b>'+Qe("stake")+'</b> '+esc(T(story(state.id).objective))+'</p><h2>'+esc(T(sealed?Q.twist:s.title))+'</h2>'+(!sealed?historyHint:"")+(!sealed&&continuity?'<p class="story-link">'+esc(T(continuity))+'</p>':"")+'<p class="story-line">'+esc(T(sealed?Q.sealed:chapterBody))+'</p>'+clue+(i===4&&!dream&&!sealed&&state.selected===null?'<p class="case-goal">'+Qe("goal")+'</p>':"")+actions+'</div></div>';
  window.DreamAudio?.sync();
  if(state.selected===null&&!state.seen[i]){state.seen[i]=true;track("chapter_view",{world:state.id,chapter:i+1})}
 }
