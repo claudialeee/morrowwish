@@ -77,8 +77,11 @@ class CaptureBattle {
     this.duo=window.CatRelations?.active(this.team.map(f=>f.cat))||null;
     this.duoCharge=this.duo?12:0;this.duoCd=0;this.duoUses=0;   // bond support starts low + fills slow (bigger payoff than the ult)
 
-    // --- player runtime state: spread the whole team on the LEFT so all fight ---
-    this.team.forEach((f,i)=>{f.x=this.W*(.18+(i%2)*.1);f.y=this.H*(.55+i*.085);});
+    // --- player runtime state: spread the team on the LEFT, INSIDE the playable band
+    // [topMargin, H-bottomMargin] so cats are never hidden under the bottom control
+    // cluster on tall phones ---
+    this.team.forEach((f,i)=>{const top=this.topMargin,bot=this.H-this.bottomMargin;
+      f.x=this.W*(.18+(i%2)*.1);f.y=top+(bot-top)*(0.45+i*0.12);});
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
@@ -557,7 +560,8 @@ class CaptureBattle {
       role:rIdx>=2?'elite':(i%3===0?'ambusher':i%3===1?'sharpshooter':'skirmisher'),
       phase:0,challenge,
       maxhp, hp: maxhp,
-      x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
+      // place enemies inside the PLAYABLE band (above the control cluster), upper-right
+      x: this.W * col, y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(0.30+(i%2)*0.22);})(), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
       shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,swipeCd:1,
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
@@ -731,6 +735,99 @@ class CaptureBattle {
     this._autoLastAt=this.t;
   }
 
+  // ---- KIT-BASED RANGE BAND ---------------------------------------------------
+  // A fighter's preferred engagement distance should come from the TOOLS it carries,
+  // not one fixed number. A brawler (melee/dash/leap/pounce kit) wants to be on top
+  // of the target; a ranged/projectile/beam kit wants to kite at a comfortable band;
+  // a support kit (heal/buff only) hangs well back. Returns {min,max,rush} (px) plus
+  // a 'role' tag the steering + action layers read. HP-gate: when badly hurt the
+  // whole band shifts outward (retreat) so a dying cat backs off like a human would.
+  //   rush  : below min → close the gap hard (seek)
+  //   min..max : hold the band → strafe
+  //   above max : too far → re-approach (seek)
+  kitRangeBand(f) {
+    const skills=[f.qSkill,f.eSkill].filter(Boolean);
+    const isMelee=sk=>sk&&(sk.kind==='melee'||sk.kind==='dash'||sk.kind==='leap'||sk.kind==='pounce');
+    const isRanged=sk=>sk&&(sk.kind==='projectile'||sk.kind==='beam'||sk.kind==='aoe');
+    const isSupport=sk=>sk&&(sk.kind==='heal'||sk.kind==='buff');
+    const basicRange=Math.min(175,f.projSpeed*.45+25);     // the innate toy-toss reach
+    let role,min,max;
+    const meleeReach=Math.max(...skills.filter(isMelee).map(sk=>(
+      sk.kind==='melee'?106:sk.kind==='dash'?f.speed*3*.26+42:sk.kind==='leap'?240:300)),0);
+    const hasMelee=skills.some(isMelee), hasRanged=skills.some(isRanged);
+    if(hasMelee&&!hasRanged){
+      // brawler: crowd the target, bounded by the melee reach (~1.1× so it commits)
+      role='melee'; min=0; max=Math.max(70,meleeReach*1.1);
+    }else if(hasRanged&&!hasMelee){
+      // kiter: sit at 0.55–0.85 of the projectile reach, flee if closer, seek if farther
+      role='ranged'; const pr=Math.max(basicRange, f.projSpeed*.9);
+      min=pr*0.55; max=pr*0.85;
+    }else if(skills.length&&skills.every(isSupport)){
+      // pure support: hang back and babysit from safety
+      role='support'; min=230; max=320;
+    }else if(hasMelee&&hasRanged){
+      // hybrid: a brawler who can also poke — favour the aggressive band but keep poke
+      role='bruiser'; min=Math.max(55,meleeReach*0.4); max=Math.max(130,meleeReach*0.95);
+    }else{
+      // no offensive kit yet → fight at basic-toy range
+      role='basic'; min=Math.max(55,basicRange-55); max=basicRange-10;
+    }
+    // HP-gated retreat: shift the band outward + widen as HP drops below 30%.
+    const hp=f.hp/f.maxhp;
+    if(hp<0.3){const push=(0.3-hp)/0.3*120;min+=push;max+=push;}
+    const rush=min; // alias for readability at the call site
+    return {min,max,rush,role,hp};
+  }
+
+  // Per-fighter orbit sign (±1) that flips on a random 0.8–2.5s cadence, with the
+  // OCCASIONAL feint (a quick extra reversal) so a human can't just pre-aim the
+  // strafe. Shared by the active cat and allies/enemies (keyed by a prefix so each
+  // entity keeps its own timer/phase without colliding).
+  orbitSign(e,key,dt){
+    const kT=key+'FlipT',kS=key+'Sign',kF=key+'Feint';
+    if(e[kS]==null)e[kS]=Math.random()<0.5?-1:1;
+    e[kT]=(e[kT]||0)-(dt||0);
+    if(e[kT]<=0){
+      e[kS]=-e[kS];
+      e[kT]=0.8+Math.random()*1.7;                   // next scheduled flip
+      // ~22% of flips are a "feint": reverse again almost immediately
+      e[kF]=Math.random()<0.22?0.12+Math.random()*0.12:0;
+    }
+    if(e[kF]>0){e[kF]-=(dt||0);if(e[kF]<=0){e[kS]=-e[kS];}}
+    return e[kS];
+  }
+
+  // Persistent WANDER: a slowly random-walking heading projected onto a small circle
+  // ahead of the fighter. Cheap, bounded, and gives movement organic drift so two
+  // cats with the same band don't trace identical arcs. Returns a unit-ish vector.
+  wanderVec(e,key,dt){
+    const k=key+'Theta';
+    e[k]=(e[k]==null?Math.random()*Math.PI*2:e[k])+(Math.random()*2-1)*2.5*(dt||0.016);
+    return {x:Math.cos(e[k]),y:Math.sin(e[k])};
+  }
+
+  // Blend a kit band into a movement vector: seek when outside the band, flee when
+  // inside its inner edge, strafe (randomized flipping orbit) while holding it, plus
+  // a light wander. nx,ny = unit vector toward the target; dist = current distance.
+  bandSteer(f,nx,ny,dist,band,dt){
+    const d=dt!=null?dt:(this._lastDt||0.016);
+    let mx,my;
+    if(dist<band.min-6){           // too close → back off (kite / keep melee from overshooting)
+      mx=-nx;my=-ny;
+    }else if(dist>band.max+6){     // too far → close in
+      mx=nx;my=ny;
+    }else{                         // in the band → orbit with a slight range-correction
+      const dir=this.orbitSign(f,'_orbit',d);
+      mx=-ny*dir;my=nx*dir;
+      // nudge back toward band centre so it doesn't slowly spiral out
+      const mid=(band.min+band.max)*0.5, corr=clamp((dist-mid)/120,-0.5,0.5);
+      mx+=nx*-corr;my+=ny*-corr;
+    }
+    const w=this.wanderVec(f,'_wander',d);
+    mx+=w.x*0.2;my+=w.y*0.2;
+    return {x:mx,y:my};
+  }
+
   // Movement and action selection share the same engagement distance, so an
   // autopilot won't stand outside the range of its own basic attack.
   autoDrive(dt) {
@@ -753,9 +850,6 @@ class CaptureBattle {
     const dx=tgt.x-f.x,dy=tgt.y-f.y,dist=Math.hypot(dx,dy)||1;
     const aim=Math.atan2(dy,dx);this.aim=aim;f._aim=aim;
     let threat=this.incomingThreat(f);
-    const basicRange=Math.min(170,f.projSpeed*.45+20);
-    const ideal=Math.min(115,basicRange-22);
-    const danger=f.hp/f.maxhp<.34;
     // Don't juke away from EVERY shot — a per-threat roll (sticky for the threat's
     // life) so the squad eats some hits instead of ping-ponging untouchably.
     if(threat){
@@ -775,20 +869,22 @@ class CaptureBattle {
       const p=threat.p,sp=Math.hypot(p.vx,p.vy)||1;
       const side=f.i%2?-1:1;
       mx=-p.vy/sp*side;my=p.vx/sp*side;
-    }else if(danger&&dist<165){
-      mx=-dx/dist;my=-dy/dist;
-    }else if(this.commandTarget){
-      // Focus-fire: chase the LIVE targeted enemy (tgt already tracks the marker's
-      // nearest enemy), not the stale click point — otherwise the cat freezes on an
-      // empty spot once the marked enemy walks away. Approach to firing range, then
-      // orbit a little instead of standing dead still.
-      if(dist>ideal+18){mx=dx/dist;my=dy/dist;}
-      else if(dist<Math.max(62,ideal-45)){mx=-dx/dist;my=-dy/dist;}
-      else{mx=-dy/dist*.22;my=dx/dist*.22;}
-    }else if(dist>ideal+18){mx=dx/dist;my=dy/dist;}
-    else if(dist<Math.max(62,ideal-45)){mx=-dx/dist;my=-dy/dist;}
-    else{
-      mx=-dy/dist*.24;my=dx/dist*.24;
+    }else{
+      // KIT-BASED engagement: a melee/dash cat RUSHES in, a ranged/beam cat KITES at
+      // its band, a support cat HANGS BACK. The band comes from the equipped skills
+      // (+ an HP-gated retreat). Within the band we STRAFE on a randomized orbit that
+      // periodically flips, plus a persistent wander, so the path never reads as a
+      // fixed circle. (A focus-fire command just picks which enemy; the band is kept.)
+      const band=this.kitRangeBand(f);
+      const nx=dx/dist,ny=dy/dist;
+      const steer=this.bandSteer(f,nx,ny,dist,band,dt);
+      mx=steer.x;my=steer.y;
+      // separation so the active cat doesn't stack on an ally (sq-dist early-out)
+      for(const o of this.team){
+        if(o===f||!o.alive)continue;
+        const sx=f.x-o.x,sy=f.y-o.y,sd2=sx*sx+sy*sy;
+        if(sd2<3600&&sd2>1){const sd=Math.sqrt(sd2);mx+=sx/sd*0.45;my+=sy/sd*0.45;}
+      }
     }
     const mag=Math.hypot(mx,my);
     if(mag>0.04 && !(f.dashT>0&&f.pounce) && !(f._leapT>0) && f.rootT<=0 && !(f._beamRoot>0) && !(f._castRoot>0)){
@@ -815,7 +911,10 @@ class CaptureBattle {
   // skills outside their hit radius.
   smartAutoAction(f,tgt,dist,threat) {
     if(!tgt||!f.alive)return;
-    const aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+    // Auto fire LEADS the target (true intercept), so basics/projectile skills hit a
+    // moving enemy instead of trailing it. Facing uses the same lead so the cat looks
+    // where it shoots. Melee/close casts resolve to ~current pos (tiny lead time).
+    const aim=this.autoAim(f,tgt,f.projSpeed);
     f._aim=aim;
     // Auto-battle dodges like a competent human, NOT a frame-perfect robot: it only
     // reacts to ~55% of threats (less when it's cruising unhurt), so the player still
@@ -941,13 +1040,14 @@ class CaptureBattle {
     if (allySmash) { const ax = f.x - allySmash.x, ay = f.y - allySmash.y, ad = Math.hypot(ax, ay) || 1; mx = ax / ad; my = ay / ad; }  // flee the smash disc first
     else if (near && nd < 100 && f._allyStep) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; }
     else {
-      // keep a mid range, orbit a bit so allies spread out
-      const want = 125;
-      if (dist > want + 30) { mx = dx / dist; my = dy / dist; }
-      else if (dist < want - 30) { mx = -dx / dist; my = -dy / dist; }
-      mx += -dy / dist * 0.4 * (f.i % 2 ? 1 : -1); my += dx / dist * 0.4 * (f.i % 2 ? 1 : -1);
-      // separation from the active cat & other allies
-      for (const o of this.team) { if (o === f || !o.alive) continue; const sx = f.x - o.x, sy = f.y - o.y, sd = Math.hypot(sx, sy) || 1; if (sd < 60) { mx += sx / sd * 0.6; my += sy / sd * 0.6; } }
+      // same KIT-BASED band as the active cat: brawler allies rush, ranged allies
+      // kite, support allies hang back — each on its own flipping orbit + wander.
+      const band = this.kitRangeBand(f);
+      const nx = dx / dist, ny = dy / dist;
+      const steer = this.bandSteer(f, nx, ny, dist, band, dt);
+      mx = steer.x; my = steer.y;
+      // separation from the active cat & other allies (sq-dist early-out)
+      for (const o of this.team) { if (o === f || !o.alive) continue; const sx = f.x - o.x, sy = f.y - o.y, sd2 = sx * sx + sy * sy; if (sd2 < 3600 && sd2 > 1) { const sd = Math.sqrt(sd2); mx += sx / sd * 0.6; my += sy / sd * 0.6; } }
     }
     if (f.dashT <= 0 && f.rootT <= 0) {
       const spd = f.speed * 0.9 * this.moveMul(f);   // same soft-CC slow as the active cat
@@ -2541,6 +2641,7 @@ class CaptureBattle {
     // never stacks on top of bullet-time. Mobile uses a shorter freeze to avoid jank.
     if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
     this.t += dt;
+    this._lastDt = dt;                                  // shared by steering helpers (orbit/wander timers)
     if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
@@ -2644,6 +2745,16 @@ class CaptureBattle {
       const nvy = (f.y - (f._py != null ? f._py : f.y)) / Math.max(dt, 1e-3);
       f._vx = lerp(f._vx || 0, nvx, 0.2); f._vy = lerp(f._vy || 0, nvy, 0.2);
       f._px = f.x; f._py = f.y;
+    }
+    // Enemies also get a smoothed velocity sample (from last frame's displacement,
+    // since their AI hasn't moved them yet this frame) so the PLAYER's auto-aim can
+    // intercept-lead them the same way the enemy leads the player.
+    for (const e of this.enemies) {
+      if (!e.alive) continue;
+      const nvx = (e.x - (e._px != null ? e._px : e.x)) / Math.max(dt, 1e-3);
+      const nvy = (e.y - (e._py != null ? e._py : e.y)) / Math.max(dt, 1e-3);
+      e._vx = lerp(e._vx || 0, nvx, 0.2); e._vy = lerp(e._vy || 0, nvy, 0.2);
+      e._px = e.x; e._py = e.y;
     }
     // observe the player's preferred range (~4 Hz) for cross-battle habit learning
     if (this._obs) {
@@ -2896,6 +3007,26 @@ class CaptureBattle {
     return best || this.nearestEnemy(f.x, f.y);
   }
 
+  // Enemy preferred engagement band, from its ROLE and equipped skill kind — the
+  // mirror of kitRangeBand for wild cats. Ambusher/melee-skill cats rush into a
+  // small band; sharpshooters and ranged/beam skills kite at a wider band; others
+  // hold a mid band. The learned favRange knob still crowds a kiter / kites a brawler
+  // by sliding the band, and aggro pulls it slightly inward as the fight heats up.
+  enemyRangeBand(e) {
+    const sk = e.skill;
+    const melee = sk && (sk.kind === 'melee' || sk.kind === 'dash' || sk.kind === 'leap' || sk.kind === 'pounce');
+    const ranged = sk && (sk.kind === 'projectile' || sk.kind === 'beam' || sk.kind === 'aoe');
+    let min, max;
+    if (e.role === 'ambusher' || melee) { min = 40; max = 120; }        // rush into claw range
+    else if (e.role === 'sharpshooter' || ranged) { min = 170; max = 250; }  // kite at range
+    else { min = 120; max = 200; }                                      // skirmisher / elite mid band
+    // aggro (1 − hp) pulls the band slightly inward as it gets desperate
+    const pull = (e.aggro || 0) * 40; min = Math.max(32, min - pull); max = Math.max(min + 40, max - pull);
+    // LEARNED: slide the band to attack the player's comfort zone (crowd a kiter / kite a brawler)
+    if (this.aiP && this._aiConf) { const s = (0.5 - this.aiP.favRange) * 60 * this._aiConf; min = clamp(min + s, 32, 260); max = clamp(max + s, min + 40, 320); }
+    return { min, max };
+  }
+
   // ---- per-enemy AI with PACK COORDINATION ----
   // Coordination: enemies spread out (separation), surround the player from
   // different angles, and stagger their telegraphed specials so the player
@@ -2945,20 +3076,36 @@ class CaptureBattle {
       ax = nx; ay = ny; e.dodgeCd = 0.5 - e.rIdx * 0.07; e.pose = 'play';
       if (e.rIdx >= 1) this.vfx.burst(e.x, e.y, { count: 3, color: '#cfe', speed: 120, life: 0.2 });
     } else {
-      // surround: each enemy picks a slot angle around the player so they don't stack
-      const slot = (e.i / Math.max(1, this.enemies.length)) * Math.PI * 2;
-      // LEARNED: crowd a kiter / kite a brawler — attack the player's comfort zone.
-      let want = 200 - e.aggro * 80;
-      if (this.aiP && this._aiConf) want = clamp(want + (0.5 - this.aiP.favRange) * 60 * this._aiConf, 90, 230);
-      const desiredX = me.x + Math.cos(slot + this.t * 0.4) * want;
-      const desiredY = me.y + Math.sin(slot + this.t * 0.4) * want;
-      const gx = desiredX - e.x, gy = desiredY - e.y, gl = Math.hypot(gx, gy) || 1;
-      ax = gx / gl; ay = gy / gl;
-      // separation from packmates (don't clump)
+      // KIT-AWARE, LESS-PREDICTABLE engagement. Each enemy has a preferred band from
+      // its role/skill kind: an ambusher RUSHES into melee, a sharpshooter KITES at
+      // range, others hold a mid band. We PURSUE when past the band, EVADE when inside
+      // it, and STRAFE within it on a randomized orbit that periodically flips (with
+      // occasional feints) — never the old fixed `this.t*0.4` circle. A persistent
+      // wander + a per-enemy slot offset keep packmates from tracing the same arc.
+      const band = this.enemyRangeBand(e);
+      const dxp = me.x - e.x, dyp = me.y - e.y, dp = Math.hypot(dxp, dyp) || 1;
+      const nx = dxp / dp, ny = dyp / dp;
+      if (dp > band.max + 6) {                 // PURSUE: lead the target a touch so it actually closes
+        const ps = e.speed * (1 + e.aggro * .4) || 150, tl = Math.min(1.2, dp / (ps + 1));
+        const aimX = me.x + (me._vx || 0) * tl, aimY = me.y + (me._vy || 0) * tl;
+        const gl = Math.hypot(aimX - e.x, aimY - e.y) || 1;
+        ax = (aimX - e.x) / gl; ay = (aimY - e.y) / gl;
+      } else if (dp < band.min - 6) {          // EVADE: back off to the band (kite)
+        ax = -nx; ay = -ny;
+      } else {                                 // STRAFE: orbit on a flipping sign + range-correction
+        const dir = this.orbitSign(e, '_eorbit', dt);
+        ax = -ny * dir; ay = nx * dir;
+        const mid = (band.min + band.max) * 0.5, corr = clamp((dp - mid) / 110, -0.5, 0.5);
+        ax += -nx * corr; ay += -ny * corr;
+      }
+      // persistent wander (organic drift) + small per-enemy slot bias so a pack spreads
+      const w = this.wanderVec(e, '_ewander', dt);
+      ax += w.x * 0.22; ay += w.y * 0.22;
+      // separation from packmates (don't clump; sq-dist early-out)
       for (const o of this.liveEnemies()) {
         if (o === e) continue;
-        const sx = e.x - o.x, sy = e.y - o.y, sd = Math.hypot(sx, sy) || 1;
-        if (sd < 70) { ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
+        const sx = e.x - o.x, sy = e.y - o.y, sd2 = sx * sx + sy * sy;
+        if (sd2 < 4900 && sd2 > 1) { const sd = Math.sqrt(sd2); ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
       }
     }
     // 束缚 bind ROOTS the enemy (no movement) but it can still aim + fire below.
@@ -3052,11 +3199,13 @@ class CaptureBattle {
       // Within-fight pressure tapers that ease away and speeds fire as a stomp drags.
       const manualEase = (this.autoMode ? 1 : 1.12) - (this._pressure || 0) * 0.3;
       e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
-      let lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
+      // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
+      const shotSpeed = 200 + e.rIdx * 34;
+      let lead = this.leadAngle(e, me, shotSpeed);
       if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
       const dd = e.dmg * (e.status && e.status.weaken ? 0.5 : 1);            // 虚弱→伤害减半
-      this.spawnProj(e.x, e.y, lead, 200 + e.rIdx * 34, dd, 'wild', wc, 7, 'ball');
+      this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, 'ball');
       if (e.rIdx >= 2) {
         this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball');
         this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball');
@@ -3064,28 +3213,83 @@ class CaptureBattle {
     }
   }
 
-  // Predictive aim: lead the target by its SMOOTHED velocity (see the velocity
-  // sampler in update), capped so a strafer about to reverse isn't wildly over-led.
-  // aiLeadConf / aiJitter / learned strafe bias come from the adaptive layer.
+  // ---- TRUE INTERCEPT (first-order lead) --------------------------------------
+  // Solve for the time t a projectile of speed s (fired now from the shooter) takes
+  // to meet a target moving at constant velocity, then return the world point to aim
+  // at. This is the standard quadratic:  |delta + vr*t| = s*t  →  a t² + b t + c = 0
+  // with a = vr·vr − s², b = 2 vr·delta, c = delta·delta. We pick the smallest
+  // positive root. If there's no solution (target outrunning the shot) we fall back
+  // to the current position; if a≈0 (relative speed ≈ projectile speed) we use the
+  // linear form t = c / −b. Cheap: a handful of mults, only run when actually firing.
+  interceptPoint(shooter, target, projSpeed) {
+    const dxp = target.x - shooter.x, dyp = target.y - shooter.y;
+    const tvx = target._vx || 0, tvy = target._vy || 0;
+    const svx = shooter._vx || 0, svy = shooter._vy || 0;
+    const vrx = tvx - svx, vry = tvy - svy;
+    const s = projSpeed || 300;
+    const a = vrx * vrx + vry * vry - s * s;
+    const b = 2 * (vrx * dxp + vry * dyp);
+    const c = dxp * dxp + dyp * dyp;
+    let t = -1;
+    if (Math.abs(a) < 1e-3) {
+      if (Math.abs(b) > 1e-6) t = -c / b;                 // linear fallback
+    } else {
+      const disc = b * b - 4 * a * c;
+      if (disc >= 0) {
+        const sq = Math.sqrt(disc);
+        const t1 = (-b - sq) / (2 * a), t2 = (-b + sq) / (2 * a);
+        // smallest strictly-positive root
+        t = Math.min(t1 > 1e-4 ? t1 : Infinity, t2 > 1e-4 ? t2 : Infinity);
+        if (!isFinite(t)) t = -1;
+      }
+    }
+    if (t < 0 || t > 2.5) {                               // NO_SOLUTION / absurd → aim at current pos
+      return { x: target.x, y: target.y, t: Math.max(0, Math.hypot(dxp, dyp) / s) };
+    }
+    return { x: target.x + tvx * t, y: target.y + tvy * t, t };
+  }
+
+  // Predictive aim: a TRUE intercept solution (interceptPoint), tempered by the
+  // adaptive layer. aiLeadConf scales how much of the predicted lead is applied
+  // (sloppier foes under-lead); the learned strafe bias nudges toward the side the
+  // player habitually dodges; aiJitter adds speed-scaled aim error so fights read
+  // human, not frame-perfect. s = shooter, me = target, projSpeed = shot speed.
   leadAngle(s, me, projSpeed) {
-    const dx = me.x - s.x, dy = me.y - s.y, dist = Math.hypot(dx, dy) || 1;
-    const t = dist / projSpeed, vmax = (me.speed || 150) * 0.6;
+    const dx = me.x - s.x, dy = me.y - s.y;
     const lead = this.aiLeadConf != null ? this.aiLeadConf : 1;
-    let px = dx + clamp((me._vx || 0) * t, -vmax, vmax) * lead;
-    let py = dy + clamp((me._vy || 0) * t, -vmax, vmax) * lead;
+    const ip = this.interceptPoint(s, me, projSpeed);
+    // blend current→intercept by confidence (under-lead when the foe is "sloppy")
+    let px = dx + (ip.x - me.x) * lead;
+    let py = dy + (ip.y - me.y) * lead;
+    const vmax = (me.speed || 150) * 0.6;
     if (this.aiP && this._aiConf) {                       // learned: bias toward the side they habitually strafe
       const perp = Math.atan2(dy, dx) + Math.PI / 2, k = this.aiP.dodgeDir * this._aiConf * vmax * 0.5;
       px += Math.cos(perp) * k; py += Math.sin(perp) * k;
     }
     let ang = Math.atan2(py, px);
-    // Aim slop scales with the TARGET's movement, not the player's profiled skill.
-    // A cat standing still gets shot near-dead-on (punishes passivity); a juking
-    // player keeps the evasion payoff. (Playtest P0: standing still used to be the
-    // SAFEST play because low-skill jitter widened as the target got easier to hit.)
+    // Aim slop scales with the TARGET's PERPENDICULAR speed (how hard it is to hit),
+    // not the player's profiled skill. A cat standing still gets shot near-dead-on
+    // (punishes passivity); a juking player keeps the evasion payoff. err = base +
+    // k·perpSpeed (rad), from aiJitter (~0.02 skilled → ~0.08 sloppy) and k~0.0004.
     if (this.aiJitter) {
-      const mv = clamp(Math.hypot(me._vx || 0, me._vy || 0) / (me.speed || 150), 0, 1);
-      ang += (Math.random() * 2 - 1) * this.aiJitter * (0.25 + 0.75 * mv);
+      const dist = Math.hypot(dx, dy) || 1;
+      const perpSpeed = Math.abs((me._vx || 0) * (-dy / dist) + (me._vy || 0) * (dx / dist));
+      const err = this.aiJitter * 0.45 + 0.0004 * perpSpeed;   // base slop + speed-scaled term
+      ang += (Math.random() * 2 - 1) * err;
     }
+    return ang;
+  }
+
+  // Player-side auto aim: a TRUE intercept lead toward the target, kept deliberately
+  // TIGHTER than the enemy's (a friendly autopilot should feel competent). Falls back
+  // to straight-at-target when the shot can't catch up. Small bounded jitter keeps it
+  // from being pixel-perfect, but far less than the enemy's aim error.
+  autoAim(f, tgt, projSpeed) {
+    if (!tgt) return f._aim || 0;
+    const ps = projSpeed || f.projSpeed || 300;
+    const ip = this.interceptPoint(f, tgt, ps);
+    let ang = Math.atan2(ip.y - f.y, ip.x - f.x);
+    ang += (Math.random() * 2 - 1) * 0.02;              // tight human micro-jitter
     return ang;
   }
 
