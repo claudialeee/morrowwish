@@ -431,6 +431,9 @@ try{
    const state=await page.evaluate(()=>({s:window.__V7_PARCELS__(),dead:!document.querySelector('#overlay').hidden}));
    if(state.dead||!state.s.boxes.length)throw Error('V7 missing live package before action '+JSON.stringify(state));
    const color=state.s.boxes[0].color;
+   // Allow the viewer to recognize the package's color and the chosen lane.
+   // This is actual active gameplay, not freeze-framed or slowed post-production.
+   if(!right)await sleep(375);
    await page.keyboard.press(String(right?color+1:(color+1)%3+1));
    await sleep(460);
   }
