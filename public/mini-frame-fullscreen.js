@@ -39,6 +39,9 @@
     const changed=frame.classList.contains('mw-mini-portrait')!==portrait;
     frame.classList.toggle('mw-mini-screen-portrait',screenPortrait);
     frame.classList.toggle('mw-mini-portrait',portrait);
+    // Apply portrait dimensions to the actual Canvas bitmap BEFORE sizing CSS
+    // and BEFORE the player can tap. Prevents 960px content cut at 540px.
+    window.MorrowwishArcadeViewport?.setPortrait?.(portrait);
     if(changed)window.dispatchEvent(new CustomEvent('morrowwish-mini-viewport-change',{detail:{portrait}}));
     const area=frame.querySelector('.mw-mini-playfield');
     if(!area)return;
