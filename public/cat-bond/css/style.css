@@ -1287,3 +1287,48 @@ body.cb-exploring #scene{cursor:grab}
 #stage:has(#battle-ui.on) #collection-goal,
 #stage:has(#panel.open) #collection-goal,
 #stage:has(#battle-ui.on) #first-quest {display:none!important}
+
+
+/* Capture-prep mode choice: large, accessible touch targets, selected at a
+   glance. The first encounter recommends auto but never forces it. */
+#panel .capture-mode-picker{
+ min-width:0;margin:12px 0 10px;padding:10px 12px 11px;
+ border:1px solid #cbdcc6;border-radius:15px;background:#f5f8ed;
+}
+#panel .capture-mode-picker legend{color:#345c41;font-weight:900;font-size:14px;padding:0 5px}
+#panel .capture-mode-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#panel .capture-mode-option{min-width:0;min-height:87px;padding:11px 9px;
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:5px;
+ text-align:left;border:2px solid #dae4d6;border-radius:12px;
+ background:#fffefa;color:#48604f;cursor:pointer;touch-action:manipulation}
+#panel .capture-mode-option.selected{
+ border-color:#61aa7a;background:#e3f3df;box-shadow:0 0 0 2px #82bf8c22;
+}
+#panel .capture-mode-option strong{font:900 13px/1.3 system-ui,sans-serif;color:#315640}
+#panel .capture-mode-option strong small{font:750 10px/1 system-ui;color:#7b753d}
+#panel .capture-mode-option span{font:650 11px/1.5 system-ui,sans-serif;color:#687968}
+#panel .capture-mode-option:focus-visible{outline:3px solid #659e80;outline-offset:2px}
+#panel .capture-mode-note{font:700 11px/1.55 system-ui;color:#687d65;margin:9px 2px 0}
+@media(max-width:410px){
+ #panel .capture-mode-picker{padding:9px 7px}
+ #panel .capture-mode-options{gap:6px}
+ #panel .capture-mode-option{min-height:83px;padding:9px 7px}
+ #panel .capture-mode-option strong{font-size:12px}
+}
+/* Tutorial lives inside the existing battle-help pause sheet: it cannot
+   cover the arena while the fight clock or hostile AI is running. */
+#battle-ui .battle-tutorial-progress{display:flex;gap:6px;margin:6px 0 13px}
+#battle-ui .battle-tutorial-progress span{height:5px;border-radius:999px;flex:1;background:#e1e9d7}
+#battle-ui .battle-tutorial-progress .filled{background:#80b88a}
+#battle-ui .battle-tutorial-step{padding:15px 13px}
+#battle-ui .battle-tutorial-step>b{font-size:17px;color:#355744}
+#battle-ui .battle-tutorial-step p{font-size:14px;line-height:1.65;margin:9px 0 0}
+#battle-ui .battle-tutorial-skip{display:block;margin:8px auto 0;padding:7px 12px;
+ font:700 12px/1.2 system-ui;border:0;background:transparent;
+ color:#617468;text-decoration:underline;cursor:pointer;touch-action:manipulation}
+#battle-ui .battle-tutorial-skip:focus-visible{outline:2px solid #609676}
+@media(max-height:540px){
+ #battle-ui .battle-tutorial-step{padding:8px 10px}
+ #battle-ui .battle-tutorial-step p{font-size:12px;line-height:1.45}
+ #battle-ui .battle-tutorial-progress{margin:3px 0 7px}
+}
