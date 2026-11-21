@@ -285,7 +285,7 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  .app .resident-ribbon-heading{margin-bottom:2px}
  .app .resident-ribbon-heading strong{font-size:10px}
  .app .resident-ribbon-heading span{font-size:8px}
- .app .resident-avatar{min-height:38px;padding:2px 0}
+ .app .resident-avatar{min-height:44px;padding:2px 0}
  .app .resident-avatar .resident-face{font-size:17px}
  .app .resident-avatar b{font-size:8px}
  .app .resident-avatar small{font-size:8px}
