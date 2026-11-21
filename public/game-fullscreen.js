@@ -224,7 +224,12 @@
   document.addEventListener('fullscreenchange',update);
   document.addEventListener('webkitfullscreenchange',update);
   document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&fallback){e.preventDefault();leave();}
+    if(e.key==='Escape'&&fallback){
+      if(route==='pawsibly-innocent'&&
+        (!document.getElementById('gameMenu')?.hidden||
+         document.getElementById('stage')?.classList.contains('yarn-aiming')))return;
+      e.preventDefault();leave();
+    }
   });
   window.addEventListener('morrowwish-language-change',update);
   window.addEventListener('pageshow',update);
