@@ -26,6 +26,17 @@ const CSS=`
 /* The old floating language and audio docks must not overlap the new controls. */
 #mw-language,#mw-audio-dock,.mw-language-float{display:none!important}
 body [data-mw-music],body [data-mw-audio],body .lab-mute,body #music,body #sound,body .elsewhere-music{display:none!important}
+/* Leave room for the shared controls on compact playable viewports. */
+@media(max-width:700px){
+html[data-mw-settings-game="cat-bond"] #hud{top:54px!important}
+html[data-mw-settings-game="cat-bond"] #battle-ui .battle-topbar{top:54px!important}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-top{top:49px!important}
+html[data-mw-settings-game="pawsibly-innocent"].mw-fs-active .single-screen-game .in-game-top{top:52px!important}
+}
+html.mw-mini-fullscreen-on[data-mw-settings-game="flip-dash"] .mw-mini-frame-hud,
+html.mw-mini-fullscreen-on[data-mw-settings-game="parcel-panic"] .mw-mini-frame-hud{padding-top:max(55px,env(safe-area-inset-top))!important}
+html.mw-mini-fullscreen-on[data-mw-settings-game="pocket-aquarium"] .mw-mini-aqua-top{padding-top:max(54px,env(safe-area-inset-top))!important}
+
 `;
 let dock,btnLang,btnMusic,btnSfx;
 const hiddenMenuControls=()=>route==='pawsibly-innocent';
@@ -132,6 +143,7 @@ function correctHost(){
 }
 function mount(){
  if(dock||!document.body)return;
+ document.documentElement.dataset.mwSettingsGame=route;
  ensureLanguage();
  const css=document.createElement('style');css.textContent=CSS;document.head.appendChild(css);
  dock=document.createElement('div');dock.id='mw-game-settings';
