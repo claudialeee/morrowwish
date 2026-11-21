@@ -140,7 +140,8 @@ let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,currentTo
 const seedDay=Number(today.replaceAll("-",""));
 function randomRoom(){return Math.floor(rnd(seedDay)()*ROOMS.length)}
 function toastText(k){
- if(k==="relic-named"){
+ if(k==="bonus-completed")return lang==="zh"?"★ 额外任务完成！成功逃脱再得 150 分":"★ Bonus complete! Escape to claim +150";
+  if(k==="relic-named"){
   const relic=RELICS[s.index];return relic.glyph+" "+relic[lang==="zh"?"zh":"en"]+
     (lang==="zh"?"！逃走就能收藏":"! Escape to keep it");
  }
@@ -230,10 +231,33 @@ function dareDone(){
  default:return false;
  }
 }
+function dareProgress(){
+ if(!s)return {value:0,total:1,label:"0/1"};
+ const kind=DARES[s.index].kind;
+ if(kind==="allfish")return {value:s.got,total:s.fish.length,label:s.got+"/"+s.fish.length};
+ if(kind==="vase")return {value:Math.min(s.broken.size,1),total:1,label:(s.broken.size>0?1:0)+"/1"};
+ if(kind==="relic")return {value:Number(s.hasRelic),total:1,label:(s.hasRelic?1:0)+"/1"};
+ if(kind==="yarn")return {value:Number(s.yarnThrows>0),total:1,label:(s.yarnThrows>0?1:0)+"/1"};
+ if(kind==="ghost")return {value:Number(s.winning&&!s.everSpotted),total:1,
+  label:s.everSpotted?(lang==="zh"?"本局已暴露":"Spotted"):(s.winning?"1/1":(lang==="zh"?"保持潜行":"Stay unseen"))};
+ return {value:0,total:1,label:"0/1"};
+}
 function updateDare(){
- if(!s)return;const done=dareDone(),el=$("bonusDare");
- if(el){el.textContent=(done?"✓ ":"☆ ")+(lang==="zh"?"额外挑战 · ":"BONUS DARE · ")+DARES[s.index][lang];el.classList.toggle("complete",done);}
- if(done&&!s.dareAnnounced){s.dareAnnounced=true;metric("cat_dare_completed",{level:s.index+1,kind:DARES[s.index].kind});if(!s.done){throwStars(s.cat,"#ffd78a");audio("fish")}}
+ if(!s)return;
+ const done=dareDone(),dare=DARES[s.index],el=$("bonusDare"),quick=$("bonusQuick"),progress=dareProgress();
+ const prefix=lang==="zh"?"额外任务":"BONUS QUEST";
+ if(el){el.textContent=(done?"✓ ":"☆ ")+prefix+" · "+dare[lang]+" · "+progress.label;el.classList.toggle("complete",done)}
+ if(quick){
+  quick.classList.toggle("complete",done);
+  quick.setAttribute("aria-label",(done?"✓ ":"★ ")+prefix+" · "+dare[lang]+" · "+progress.label);
+  if($("bonusQuickText"))$("bonusQuickText").textContent=(done?"✓ ":prefix+" · ")+dare[lang];
+  if($("bonusQuickProgress"))$("bonusQuickProgress").textContent=done?"+150":progress.label;
+ }
+ if(done&&!s.dareAnnounced){
+  s.dareAnnounced=true;
+  metric("cat_dare_completed",{level:s.index+1,kind:dare.kind});
+  if(!s.done){throwStars(s.cat,"#ffd78a");audio("fish");popup("bonus-completed")}
+ }
 }
 function resultLoot(){
  if(!s)return "";
@@ -302,6 +326,7 @@ function localizeMenu(){
   const el=$(id);if(el){el.setAttribute("aria-label",title);el.title=title}
  }
  if($("settingsTitle"))$("settingsTitle").textContent=tx.settings;
+ if($("menuButtonLabel"))$("menuButtonLabel").textContent=lang==="zh"?"菜单":"Menu";
  document.querySelectorAll("[data-set-lang]").forEach(b=>b.setAttribute("aria-pressed",String(b.getAttribute("data-set-lang")===lang)));
 }
 function openMenu(tab="rooms"){
@@ -733,6 +758,7 @@ c.addEventListener("pointerdown",onClick);c.addEventListener("pointermove",e=>{i
  if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
 $("menuButton").onclick=()=>openMenu("rooms");
+$("bonusQuick").onclick=()=>openMenu("rooms");
 $("quickHelp").onclick=()=>openMenu("help");
 $("menuClose").onclick=closeMenu;
 $("gameMenu").addEventListener("pointerdown",e=>{if(e.target===$("gameMenu"))closeMenu()});
