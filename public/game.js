@@ -13,12 +13,21 @@ function glow(x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColo
 let score=0,level=1,running=false,mode=null,last=performance.now(),elapsed=0,portrait=false;
 // Match the orientation chosen at fullscreen entry, not device rotation events.
 // The immersive controller owns the orientation snapshot for this play session.
+function setArcadePortrait(next){
+ // Fullscreen controller and renderer must share one canvas orientation.
+ // On iOS a stale 960x540 backing canvas displayed as 9:16 clips the right
+ // half of both minigames. Check intrinsic pixels as well as the flag.
+ const w=next?540:960,h=next?960:540;
+ if(portrait===next&&cv.width===w&&cv.height===h)return;
+ portrait=next;cv.width=w;cv.height=h;
+}
 function syncCanvasViewport(){
  const next=document.documentElement.classList.contains("mw-mini-fullscreen-on")&&
   !!document.querySelector(".mw-mini-arcade-frame.mw-mini-portrait");
- if(next===portrait)return;
- portrait=next;cv.width=portrait?540:960;cv.height=portrait?960:540;
+ setArcadePortrait(next);
 }
+window.MorrowwishArcadeViewport={setPortrait:setArcadePortrait,sync:syncCanvasViewport,
+ get state(){return {portrait,width:cv.width,height:cv.height}}};
 window.addEventListener("morrowwish-mini-viewport-change",syncCanvasViewport);
 window.addEventListener("resize",syncCanvasViewport);
 const over=document.getElementById("overlay"),overTitle=document.getElementById("overlay-title"),overDesc=document.getElementById("overlay-desc"),goBtn=document.getElementById("play-btn");
@@ -264,7 +273,7 @@ down(x,y){if(y>443){if(x<340&&pearls>=fishCost()){pearls-=fishCost();fish++;spaw
 draw(){bg("#052a46","#086080");glow(500,140,380,"#15ffe516");for(let i=0;i<20;i++){const x=i*59+22,y=(((i*61-sec*(10+i%4*9))%390)+390)%390+32;circ(x,y,3+i%4,"#b9f9ff33");}box(0,405,960,40,"#225f64");for(let i=0;i<22;i++)circ((i*83+17)%960,420+rnd(0),rand(1,1)+10+i%5,colors[(i+decor)%6]+"77");for(let i=0;i<Math.min(decor,7);i++){const x=85+i*140;line(x,410,x-14,370,"#ffa6c8",7);line(x,410,x+18,359,"#ec7eab",6);}for(let f of swimmers){c.save();c.translate(f.x,f.y);c.scale(Math.sign(f.v),1);c.fillStyle=f.color;c.beginPath();c.ellipse(0,0,f.size*1.5,f.size,0,0,TAU);c.fill();c.beginPath();c.moveTo(-f.size,0);c.lineTo(-f.size*2,-f.size);c.lineTo(-f.size*2,f.size);c.fill();circ(f.size*.65,-f.size*.2,3,"#153958");c.restore();}for(let p of feedFx){glow(p.x,p.y,27*p.life,"#ffee9577");txt(p.x,p.y-p.life*30,"+1",21,"#fbed92");}box(12,450,290,73,"#19465c",14,"#578c99");box(335,450,290,73,"#19465c",14,"#578c99");box(658,450,290,73,"#19465c",14,"#578c99");txt(157,475,"NEW FISH",20,"#acfcf6");txt(157,502,fishCost()+" pearls",14,"#f9ec9b");txt(480,475,"BETTER FILTER",20,"#acfcf6");txt(480,502,filterCost()+" pearls",14,"#f9ec9b");txt(803,475,"GLOWING CORAL",20,"#acfcf6");txt(803,502,decorCost()+" pearls",14,"#f9ec9b");txt(480,33,"CLICK WATER TO FEED • BUILD YOUR REEF",17,"#aff7f6");},
 hud(){return "Your aquarium progress is saved in this browser";}};
 };
-function point(e){const a=cv.getBoundingClientRect();
+function point(e){syncCanvasViewport();const a=cv.getBoundingClientRect();
  if(portrait&&GAME==="parcel-panic"){
   const x=(e.clientX-a.left)*540/a.width,y=(e.clientY-a.top)*960/a.height;
   return{x:clamp((x+26.7272727)*275/170,0,W),y:clamp(45+(y-120)/1.7,0,H)};
@@ -299,7 +308,7 @@ document.getElementById("restart").onclick=()=>{track("restart");start();};
 document.getElementById("help").onclick=()=>showInfo();
 goBtn.onclick=start;track("page_view");
 syncCanvasViewport();
-function frame(t){const dt=clamp((t-last)/1000,0,.033);last=t;
+function frame(t){syncCanvasViewport();const dt=clamp((t-last)/1000,0,.033);last=t;
  if(running){elapsed+=dt;mode.tick(dt);}
  // Each game paints upright into the exact canvas orientation selected on entry.
  // Do not rotate the drawing context in portrait mode.
