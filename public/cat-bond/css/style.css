@@ -1557,3 +1557,32 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
   box-shadow:0 0 0 2px #f5cf7247;
  }
 }
+
+
+/* Combat text is an unobtrusive SINGLE-LINE ticker beneath the top HUD,
+   never a stack of skill labels hiding cats, enemy HP, or touch controls. */
+#stage:has(#battle-ui.on) #toasts{
+ top:calc(env(safe-area-inset-top,0px) + 86px)!important;
+ left:50%!important;transform:translateX(-50%)!important;
+ width:min(64%,270px)!important;max-height:23px!important;
+ overflow:hidden!important;pointer-events:none!important;
+}
+#stage:has(#battle-ui.on) .toast-battle{
+ display:block;box-sizing:border-box;width:100%;max-width:100%;
+ padding:3px 8px!important;margin:0!important;
+ background:rgba(252,249,240,.89)!important;
+ border:1px solid #cad9c9!important;border-radius:10px!important;
+ font:750 11px/1.3 system-ui,sans-serif!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ box-shadow:0 2px 9px #32443822!important;
+}
+@media(max-width:640px){
+ #stage:has(#battle-ui.on) #toasts{
+  top:calc(env(safe-area-inset-top,0px) + 83px)!important;
+  width:min(68%,220px)!important;
+ }
+}
+#yard-duo-status.needs-reconcile{
+ border:2px solid #dc9566!important;background:#fff2e3!important;
+ color:#773e2c!important;box-shadow:0 3px 13px #78433145!important;
+}
