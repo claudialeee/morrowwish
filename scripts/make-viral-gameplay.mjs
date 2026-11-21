@@ -10,7 +10,7 @@ const server=spawn('python3',['-m','http.server','8769','--bind','127.0.0.1','--
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 // Each game uses its OWN licensed recording; never fall back to one song.
-const outputName='viral-gameplay-20261121';
+const outputName='hook-v3-20261121';
 async function session(browser,slug){
  const dir=path.join(root,slug);fs.mkdirSync(dir,{recursive:true});
  const c=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:1,
@@ -81,16 +81,46 @@ async function heist(browser){
  }
  if(!s?.won||s.fish<3||s.yarn<1)throw Error('No authentic 3-fish victory: '+JSON.stringify(s));
  const finished=(Date.now()-began)/1000;
- await sleep(850);const ended=Date.now();const v=p.video();await c.close();
+ // This label is derived only from the verified genuine win. Never fake a victory.
+ await p.evaluate(()=>{
+  const el=document.createElement('div');el.textContent='3 / 3 FISH  ·  ESCAPED!';
+  Object.assign(el.style,{position:'fixed',bottom:'14%',left:'3%',width:'94%',zIndex:'2147483647',
+    padding:'20px 8px',boxSizing:'border-box',borderRadius:'17px',textAlign:'center',
+    font:'900 30px/1.25 system-ui',color:'#fff1ce',background:'rgba(26,30,47,.88)'});
+  document.body.appendChild(el);
+ });
+ await sleep(2300);const ended=Date.now();const v=p.video();await c.close();
  console.log('HEIST VERIFIED: '+JSON.stringify(s));
  return{slug:'pawsibly-innocent',raw:await v.path(),offset:(began-born)/1000,duration:(ended-began)/1000,
-  captions:[['HE ALMOST CAUGHT ME.',0,danger],['SO I THREW THE YARN.',danger,lure],
-    ['I STOLE ALL THREE.',lure,finished],['PLAY THE HEIST · LINK IN BIO',finished,(ended-began)/1000]]};
+  clips:[{start:finished,duration:1.9,caption:'3 FISH. I ESCAPED.'},
+    {start:0,duration:Math.max(.8,Math.min(1.4,danger)),caption:'HE ALMOST CAUGHT ME.'},
+    {start:danger,duration:Math.max(1.0,Math.min(2.3,lure-danger)),caption:'SO I THREW THE YARN.'},
+    {start:lure,duration:Math.max(1.3,Math.min(2.8,finished-lure)),caption:'THEN RAN FOR IT.'},
+    {start:finished,duration:1.9,caption:'CAN YOU ESCAPE?'}],
+  evidence:{kind:'real-victory',fish:s.fish,won:s.won,score:s.score,yarnThrows:s.yarn}};
 }
 async function catBond(browser){
  const {c,p,born}=await session(browser,'cat-bond');
  await p.goto('http://127.0.0.1:8769/cat-bond/?autodev&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
  await p.waitForFunction(()=>!!window.__game&&!!window.State&&window.State.S.cats.length>=3,null,{timeout:19000});
+ await p.evaluate(()=>{
+  // Crop the REAL arena with equal scale factors: the previous page-wide
+  // portrait recording made combat unreadably small.
+  const source=document.getElementById('scene'),mirror=document.createElement('canvas');
+  if(!source)throw Error('Live Cat Bond scene canvas missing');
+  mirror.width=540;mirror.height=960;
+  Object.assign(mirror.style,{position:'fixed',inset:'0',width:'100vw',height:'100vh',
+    zIndex:'2147483647',pointerEvents:'none',background:'#221b33'});
+  document.body.appendChild(mirror);const ctx=mirror.getContext('2d',{alpha:false});
+  const frame=()=>{
+   if(source.width&&source.height){
+    const aspect=540/960,sw=source.width,sh=source.height;
+    if(sw/sh>aspect){const crop=sh*aspect;ctx.drawImage(source,(sw-crop)/2,0,crop,sh,0,0,540,960);}
+    else {const crop=sw/aspect;ctx.drawImage(source,0,Math.max(0,(sh-crop)/2),sw,Math.min(sh,crop),0,0,540,960);}
+   }
+   requestAnimationFrame(frame);
+  };requestAnimationFrame(frame);
+ });
  await sleep(450);const began=Date.now();
  // Prepare a legitimate advanced-gameplay state; all footage is the actual
  // in-engine duo cinematic and ultimate, NOT fake effect overlays.
@@ -117,39 +147,55 @@ async function catBond(browser){
  await sleep(1050);const ended=Date.now();const v=p.video();await c.close();
  console.log('BATTLE HIGHLIGHTS VERIFIED: '+JSON.stringify({duo,ult}));
  return{slug:'cat-bond',raw:await v.path(),offset:(began-born)/1000,duration:(ended-began)/1000,
-  captions:[['THEY HAVE A TEAM ATTACK?!',0,duoDone],['WAIT FOR THE FINISHER.',duoDone,finish],
-    ['BUILD YOUR CAT SQUAD.',finish,finish+.22],['PLAY FREE · LINK IN BIO',finish+.22,(ended-began)/1000]]};
+  clips:[{start:duoDone,duration:Math.min(2.8,finish-duoDone),caption:'THAT FINISHER!'},
+    {start:0,duration:Math.min(2.8,duoDone),caption:'TWO CATS. ONE COMBO.'},
+    {start:duoDone,duration:Math.min(2.5,finish-duoDone),caption:'WHICH TWO WOULD YOU PICK?'}],
+  evidence:{kind:'real-duo-and-ultimate',duoUses:duo.duo,ultimateName:ult.name,englishNameVerified:!ult.hasChinese}};
 }
 function render(r){
  const dir=path.join('public','promo',r.slug);fs.mkdirSync(dir,{recursive:true});
  const out=path.join(dir,outputName+'.mp4'),cover=path.join(dir,outputName+'.jpg');
- const captions=r.captions.map(([phrase,start,end],i)=>{
-   const file=path.join(root,r.slug+'-'+i+'.txt');
-   fs.writeFileSync(file,phrase);
-   const bottom=i===r.captions.length-1;
-   return 'drawtext=fontfile='+font+':textfile='+file+
-    ':fontcolor=white:fontsize='+(bottom?45:52)+
-    ':box=1:boxcolor=black@0.48:boxborderw=16'+
-    ':x=(w-text_w)/2:y='+(bottom?1715:110)+
-    ":enable='between(t,"+start.toFixed(2)+','+end.toFixed(2)+")'";
+ if(!r.clips?.length||!r.evidence)throw Error('Missing gameplay proof or editorial beats');
+ const filters=r.clips.map((beat,i)=>{
+  if(beat.start<0||beat.duration<=.6||beat.start+beat.duration>r.duration+.18)
+   throw Error('Clip outside genuine recording '+r.slug+': '+JSON.stringify(beat));
+  return '[0:v]trim=start='+(r.offset+beat.start).toFixed(3)+':duration='+beat.duration.toFixed(3)+
+   ',setpts=PTS-STARTPTS,fps=30,scale=1080:1920:flags=lanczos,setsar=1,format=yuv420p[v'+i+']';
  });
- const filter='fps=30,scale=1080:1920:flags=lanczos,setsar=1,'+captions.join(',')+',format=yuv420p';
+ const combined=r.clips.map((_,i)=>'[v'+i+']').join('')+'concat=n='+r.clips.length+':v=1:a=0[joined]';
+ let at=0;const captions=[];
+ for(let i=0;i<r.clips.length;i++){
+  const c=r.clips[i],f=path.join(root,r.slug+'-text-'+i+'.txt');fs.writeFileSync(f,c.caption);
+  captions.push('drawtext=fontfile='+font+':textfile='+f+
+    ':fontcolor=white:fontsize=47:box=1:boxcolor=black@0.60:boxborderw=15:x=(w-text_w)/2:y=115'+
+    ":enable='between(t,"+at.toFixed(3)+','+(at+c.duration).toFixed(3)+")'");
+  at+=c.duration;
+ }
+ const cta=path.join(root,r.slug+'-cta.txt');fs.writeFileSync(cta,'PLAY FREE  ·  LINK IN BIO');
+ captions.push('drawtext=fontfile='+font+':textfile='+cta+':fontcolor=white:fontsize=39:box=1:boxcolor=black@0.5:boxborderw=12:x=(w-text_w)/2:y=1745'+
+ ":enable='gte(t,"+Math.max(0,at-2).toFixed(3)+")'");
+ const filter=filters.join(';')+';'+combined+';[joined]'+captions.join(',')+',format=yuv420p[v]';
  execFileSync('ffmpeg',['-nostdin','-y','-hide_banner','-loglevel','error',
-   '-ss',Math.max(0,r.offset).toFixed(2),'-i',r.raw,'-stream_loop','-1','-i',promoTrack(r.slug),
-   '-vf',filter,'-map','0:v:0','-map','1:a:0','-t',r.duration.toFixed(2),'-r','30',
-   '-c:v','libx264','-preset','veryfast','-crf','21','-pix_fmt','yuv420p',
-   '-c:a','aac','-b:a','128k',
-   '-af','volume=0.32,afade=t=out:st='+Math.max(0,r.duration-.6).toFixed(2)+':d=0.6',
-   '-movflags','+faststart',out],{stdio:'inherit',timeout:180000});
- execFileSync('ffmpeg',['-nostdin','-y','-hide_banner','-loglevel','error',
-   '-ss','1.1','-i',out,'-frames:v','1','-q:v','3',cover],{stdio:'inherit'});
+  '-i',r.raw,'-stream_loop','-1','-i',promoTrack(r.slug),
+  '-filter_complex',filter,'-map','[v]','-map','1:a:0','-t',at.toFixed(3),'-r','30',
+  '-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k',
+  '-af','volume=0.25,afade=t=out:st='+Math.max(0,at-.6).toFixed(3)+':d=0.6',
+  '-movflags','+faststart',out],{stdio:'inherit',timeout:180000});
+ execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','.65','-i',out,'-frames:v','1','-q:v','3',cover],{stdio:'inherit'});
  const streams=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',out],{encoding:'utf8'})).streams;
- if(!streams.some(s=>s.codec_type==='video'&&s.width===1080&&s.height===1920)||
-    !streams.some(s=>s.codec_type==='audio'))throw Error('Invalid final social reel: '+out);
  const bytes=fs.statSync(out).size;
- if(bytes<100000||bytes>25000000)throw Error('Unusual social clip size: '+bytes);
- console.log('FULL-BLEED REAL GAMEPLAY V2 READY '+JSON.stringify({slug:r.slug,out,cover,bytes,duration:r.duration}));
+ if(!streams.some(v=>v.codec_type==='video'&&v.width===1080&&v.height===1920)||!streams.some(v=>v.codec_type==='audio')||bytes<110000||bytes>25000000)
+  throw Error('Failed portrait/audio/size QA for '+r.slug+': '+bytes);
+ const review=[];
+ for(const [i,t] of [0.8,at*.46,at-1.0].entries()){
+  const name='hook-v3-review-'+(i+1)+'.jpg',file=path.join(dir,name);
+  execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',Math.max(0,t).toFixed(3),'-i',out,'-frames:v','1','-q:v','3',file],{stdio:'inherit'});
+  if(fs.statSync(file).size<11000)throw Error('Review thumbnail too small '+file);
+  review.push('/promo/'+r.slug+'/'+name);
+ }
+ console.log('HOOK V3 ACTUAL-GAME PLAYBACK: '+JSON.stringify({slug:r.slug,proof:r.evidence,duration:at,bytes,review}));
 }
+
 let browser;
 try{
  await sleep(1200);
