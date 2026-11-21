@@ -184,11 +184,38 @@ const UI = {
       <div class="btn-row"><button class="btn gold" id="secret-close">${en?'Explore more':'继续探索'}</button></div></div>`);
     document.getElementById('secret-close').onclick=()=>this.closeAll();
   },
+  openDuoQuarrel(a,b){
+    if(!a||!b)return this.openBondPanel();
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const esc=x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[ch]));
+    this.panel(`<span class="card-close">×</span><div class="duo-quarrel-story">
+      <div class="duo-quarrel-icon" aria-hidden="true">💢</div>
+      <h2>${en?'Two little cats had a disagreement':'两只小猫闹别扭了'}</h2>
+      <p><strong>${esc(State.catName(a))}</strong> ${en?'and':'和'} <strong>${esc(State.catName(b))}</strong>
+       ${en?'are giving each other the cold shoulder.':'现在正互相不理睬。'}</p>
+      <p>${en?'They need a little attention. You can help them make up for free and earn +6 trust.':
+        '别担心，在「双猫搭档」里点「哄一哄」，就能免费让它们和好，并增加 6 点默契。'}</p>
+      <div class="btn-row">
+        <button type="button" id="quarrel-fix" class="btn gold">${en?'Help them make up':'去哄一哄'}</button>
+        <button type="button" id="quarrel-later" class="btn ghost">${en?'Later':'稍后处理'}</button>
+      </div>
+      <p class="tiny">${en?'You can return using the pink duo notice in the garden.':
+        '稍后还可以点击庭院里的粉色搭档提示，随时回来处理。'}</p>
+    </div>`);
+    document.getElementById('quarrel-fix').onclick=()=>{
+      this._duoPicked=[a.uid,b.uid];
+      this.openBondPanel();
+    };
+    document.getElementById('quarrel-later').onclick=()=>this.closeAll();
+  },
   openBondPanel(){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
     let picked=this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid);
-    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked=[cats[0].uid,cats[1].uid];
+    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id))){
+      const pending=CatRelations.unresolved?.()[0];
+      picked=pending?[pending.a.uid,pending.b.uid]:[cats[0].uid,cats[1].uid];
+    }
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const duoArt=ok?CatRelations.title(a,b):null;
@@ -201,6 +228,10 @@ const UI = {
     this.panel(`<span class="card-close">×</span><div class="duo-panel">
       <h2>💞 ${en?'Your Cat Duo':'双猫纽带'}</h2>
       <p>${en?'Pair two cats. Pet and play to raise trust, then take both into battle for a team attack.':'选择两只搭档，撸猫和一起玩耍提升默契，组队出战释放元素合击。'}</p>
+      ${mood==='sulky'?'<section class="duo-quarrel-alert" role="status"><strong>💢 '+(en?'Time to make up':'闹别扭啦')+'</strong><p>'+
+        (en?State.catName(a)+' and '+State.catName(b)+' are upset. Make up for free to gain +6 trust.':
+          State.catName(a)+' 和 '+State.catName(b)+' 闹别扭了，点下面的按钮免费和好，还能增加 6 点默契。')+
+        '</p><button type="button" class="btn gold" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button></section>':''}
       <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
       <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
       <div class="duo-relation"><strong>${name}</strong>
@@ -218,7 +249,6 @@ const UI = {
           +'</span></p>':''}</div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
-        ${mood==='sulky'?'<button class="btn" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button>':''}
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
@@ -237,13 +267,13 @@ const UI = {
     };
     const soothe=document.getElementById('duo-soothe');
     if(soothe)soothe.onclick=()=>{
-      if(CatRelations.soothe(a,b)){this.game.toast(en?'💗 Made up! Trust +6':'💗 和好啦！默契 +6');this.openBondPanel();}
+      if(CatRelations.soothe(a,b)){this.game.toast(en?'💗 Made up! Trust +6':'💗 和好啦！默契 +6');this.game.refreshYardSurprise();this.openBondPanel();}
     };
     document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
       if(v.ok){this.game.toast(en?'💞 Friendship +13!':'💞 双猫默契 +13！');this.game.refreshHUD();}
       else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
       else if(v.reason==='treats')this.game.toast(en?'Not enough treats':'零食不够啦');
-      this._duoPicked=[a.uid,b.uid];this.openBondPanel();
+      this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
     };
     document.getElementById('duo-return').onclick=()=>this.openJourney();
   },
