@@ -364,16 +364,16 @@ const normalEnemy=b.enemies[0];
 const normalScale=1+(normalEnemy.level-1)*0.08;
 // HP now includes the early-game onboarding damp (Lv1 ~0.55 → full by Lv6) and the
 // logistic enemy-HP gap factor, so recompute with those rather than the flat base.
-const edamp=(lvl)=>0.55+0.45*Math.min(1,(lvl-1)/5);
+const edamp=(lvl,starter)=> (starter?.48:.55)+(starter?.32:.45)*Math.min(1,(lvl-1)/5);
 assert.equal(normalEnemy.maxhp,
-  Math.round((140+wild.base.vit*7)*normalScale*edamp(normalEnemy.level)*(b.enemyHpScaleGap||1)),
+  Math.round((140+wild.base.vit*7)*normalScale*edamp(normalEnemy.level,b.starterRegion)*(b.enemyHpScaleGap||1)),
   'Normal battle HP matches early-damp + gap scaling');
 const eliteSpecies=GameData.speciesById('jinwu');
 const eliteBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],eliteSpecies);
 const eliteLead=eliteBattle.enemies[0];
 const eliteScale=1+(eliteLead.level-1)*0.08;
 assert.equal(eliteLead.maxhp,
-  Math.round((140+eliteSpecies.base.vit*7)*(1+3*0.6)*eliteScale*1.22*edamp(eliteLead.level)*(eliteBattle.enemyHpScaleGap||1)),
+  Math.round((140+eliteSpecies.base.vit*7)*(1+3*0.6)*eliteScale*1.22*edamp(eliteLead.level,eliteBattle.starterRegion)*(eliteBattle.enemyHpScaleGap||1)),
   'Legendary cat encounter should have extra defensive challenge');
 assert.ok(eliteLead.dmg>(5+3*2.2)*eliteScale,
   'Legendary cat should hit harder than before');
