@@ -65,6 +65,97 @@
     xingchen:[5,'#8476b1',.61,'starry-black']
   };
   const breedCache=Object.create(null);
+  const animatedRigCache=Object.create(null);
+  let gaitLayersBuilt=0;
+  // Split the ORIGINAL painted breed illustration into soft-edged torso
+  // and two original-PAINTED paws. We do not paint a new cat body, face or coat.
+  // Each layer is sourced from the exact frame used for the static portrait.
+  function paintedMotionLayers(art,id){
+    const key=(breedLoaded?'breed:':'classic:')+(id||art.sx)+':'+art.sw+'x'+art.sh;
+    if(animatedRigCache[key])return animatedRigCache[key];
+    const w=art.sw,h=art.sh;
+    try{
+      const sourceCanvas=document.createElement('canvas');
+      sourceCanvas.width=w;sourceCanvas.height=h;
+      const c=sourceCanvas.getContext('2d',{willReadFrequently:true});
+      if(!c?.getImageData||!c?.putImageData||!c?.createImageData)return null;
+      c.drawImage(art.image,art.sx,art.sy,w,h,0,0,w,h);
+      const pixels=c.getImageData(0,0,w,h).data;
+      let left=w,top=h,right=-1,bottom=-1;
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        if(pixels[(y*w+x)*4+3]<35)continue;
+        if(x<left)left=x;if(x>right)right=x;
+        if(y<top)top=y;if(y>bottom)bottom=y;
+      }
+      if(right-left<w*.15||bottom-top<h*.28)return null;
+      // Find the original painted feet in the lower 30% of the silhouette.
+      // Feather the seam so every strand of fur belongs to the SAME image.
+      const seam=top+(bottom-top)*.69;
+      const softness=Math.max(4,(bottom-top)*.055);
+      const center=(left+right)*.5;
+      const midBlend=Math.max(3,(right-left)*.07);
+      const canvases=[];
+      for(let layer=0;layer<3;layer++){
+        const out=document.createElement('canvas');out.width=w;out.height=h;
+        const outCtx=out.getContext('2d',{willReadFrequently:true});
+        const pixelsOut=outCtx.createImageData(w,h);
+        const dst=pixelsOut.data;
+        for(let y=0;y<h;y++){
+          const v=Math.max(0,Math.min(1,(y-seam)/softness));
+          const footBlend=v*v*(3-2*v);
+          for(let x=0;x<w;x++){
+            const i=(y*w+x)*4;
+            if(!pixels[i+3])continue;
+            const side=Math.max(0,Math.min(1,(x-center)/midBlend+.5));
+            const sideBlend=side*side*(3-2*side);
+            const mask=layer===0?1-footBlend:
+              layer===1?footBlend*(1-sideBlend):footBlend*sideBlend;
+            dst[i]=pixels[i];dst[i+1]=pixels[i+1];dst[i+2]=pixels[i+2];
+            dst[i+3]=Math.round(pixels[i+3]*mask);
+          }
+        }
+        outCtx.putImageData(pixelsOut,0,0);
+        canvases.push(out);
+      }
+      const rig={upper:canvases[0],leftPaw:canvases[1],rightPaw:canvases[2],
+        sourceWidth:w,sourceHeight:h};
+      animatedRigCache[key]=rig;
+      gaitLayersBuilt++;
+      return rig;
+    }catch(err){
+      // Loading/reduced-memory/legacy canvas fallback keeps the game playable.
+      return null;
+    }
+  }
+  function paintArticulatedCat(ctx,art,dest,options,movement,phase){
+    const rig=paintedMotionLayers(art,options.species?.id);
+    if(!rig){ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);return false;}
+    const sprint=options.gait==='sprint';
+    const power=Math.min(1,Math.max(0,movement));
+    const sx=dest[2]/rig.sourceWidth,sy=dest[3]/rig.sourceHeight;
+    // Painted upper body and head stay intact; only the original fur/feet move.
+    ctx.drawImage(rig.upper,0,0,rig.sourceWidth,rig.sourceHeight,...dest);
+    for(const [i,paw] of [rig.leftPaw,rig.rightPaw].entries()){
+      const ph=phase+i*Math.PI;
+      const reach=Math.sin(ph);
+      const lift=Math.max(0,Math.cos(ph));
+      const stride=(sprint?24:19)*power*sx;
+      const rise=(sprint?21:16)*power*sy;
+      const offset=reach*stride;
+      const up=lift*rise;
+      // Tiny hip pivot preserves continuity with the painted shoulder.
+      const hipX=dest[0]+dest[2]*(i? .61:.39);
+      const hipY=dest[1]+dest[3]*.73;
+      ctx.save();
+      ctx.translate(hipX+offset*.5,hipY-up*.2);
+      ctx.rotate(Math.sin(ph)*power*(sprint?.068:.047));
+      ctx.translate(-hipX,-hipY);
+      ctx.translate(offset*.5,-up);
+      ctx.drawImage(paw,0,0,rig.sourceWidth,rig.sourceHeight,...dest);
+      ctx.restore();
+    }
+    return true;
+  }
   // Early popups render before the high-detail AVIF atlas finishes decoding.
   const pendingPortraits=new Map();
   function replayPortraits(){
@@ -160,17 +251,19 @@
     // Ease the sprite with a planted-feet pivot. A side-to-side nudge, gentle
     // stretch/compression and stride-dependent lean mimic shifting weight,
     // rather than spinning the entire illustration rigidly around its center.
-    const movement=pose==='walk' ? Math.max(.12,Math.min(1,o.motion??.8)) : 0;
-    const phase=o.stride===undefined?t*7:o.stride;
+    const movement=pose==='walk' ? Math.max(.04,Math.min(1,o.motion??.8)) : 0;
+    const phase=o.stride===undefined?t*(o.gait==='sprint'?11:7):o.stride;
     const footfall=Math.sin(phase),lift=Math.max(0,Math.sin(phase*2));
     const hop=pose==='play'?Math.pow(Math.abs(Math.sin(t*5.2)),1.5)*9:0;
     const breathing=Math.sin(t*1.65)*.008;
-    const sway=pose==='walk'?footfall*.019*movement:
+    const sway=pose==='walk'?footfall*.012*movement:
       pose==='sleep'?Math.sin(t*1.5)*.008:
       pose==='belly'?Math.sin(t*4)*.09:Math.sin(t*1.6)*.012;
-    const bob=movement*(.7+2.1*lift)+hop+(pose==='idle'?Math.sin(t*2)*.32:0);
-    const stretchX=1+movement*(.025*Math.cos(phase*2)) - (pose==='play'?hop*.0014:0);
-    const stretchY=1+breathing-movement*(.032*Math.cos(phase*2)) +(pose==='play'?hop*.002:0);
+    // Keep the painted face and fur proportions intact. The paws are now
+    // truly articulated so the whole illustration no longer "floats".
+    const bob=movement*(.15+.52*lift)+hop+(pose==='idle'?Math.sin(t*2)*.32:0);
+    const stretchX=1+movement*(.006*Math.cos(phase*2))-(pose==='play'?hop*.0014:0);
+    const stretchY=1+breathing-movement*(.007*Math.cos(phase*2))+(pose==='play'?hop*.002:0);
     ctx.save();
     ctx.translate(x,y);
     ctx.scale(face*scale,scale);
@@ -202,11 +295,13 @@
       build==='norwegian-forest'?[-32,-56,64,91]:
       build==='folded-cream'?[-30,-52,60,87]:
       [-30,-55,60,90];
-    ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
-    if(mood==='love'){
-      ctx.fillStyle='#ef8fa8';ctx.font='13px system-ui';
-      ctx.fillText('♥',22,-38-Math.sin(t*3)*2);
+    if(pose==='walk'&&movement>.075){
+      paintArticulatedCat(ctx,art,dest,o,movement,phase);
+    }else{
+      ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
     }
+    // No floating emoji hearts around running world cats. Affection
+    // is communicated by physical body motion instead of sticker overlays.
     if(gr?.gem){
       ctx.fillStyle=gr.gemColor||'#e8bb68';ctx.font='12px system-ui';
       ctx.fillText('✦',20,-47);
@@ -243,11 +338,13 @@
   window.CatBondArtworkStatus={
     get breedsLoaded(){return breedLoaded;},
     get originalLoaded(){return loaded;},
+    get gaitLayersBuilt(){return gaitLayersBuilt;},
     breedCount:BREED_ORDER.length,
   };
   source.onload=()=>{
     loaded=source.naturalWidth===w*6&&source.naturalHeight===h;
     for(const id of Object.keys(breedCache))delete breedCache[id];
+    for(const key of Object.keys(animatedRigCache))delete animatedRigCache[key];
     if(!loaded)return;
     // Intro uses a static canvas; repaint once the atlas is decoded.
     if(typeof window.paintIntroCatGallery==='function'){
@@ -263,6 +360,7 @@
     breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*5
       &&breedSheet.naturalHeight===breedFrameSize.h*5;
     if(breedLoaded){
+      for(const key of Object.keys(animatedRigCache))delete animatedRigCache[key];
       try{window.paintIntroCatGallery?.()}catch(_){}
       replayPortraits();
       window.dispatchEvent(new Event('cat-bond-illustrations-ready'));

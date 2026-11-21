@@ -14,8 +14,11 @@
     // primitive circles or triangles. Motion is grounded by world-space paths.
     const pose=opts.pose==='run'||opts.pose==='dash'?'walk':
       opts.pose==='pounce'?'play':opts.pose||'idle';
+    // The original 25 painted breeds are now cut out into real animated
+    // front paws and a grounded torso, not rendered as a moving flat sticker.
     const motion=moving?1:opts.motion;
-    window.CatArt.drawCat(ctx,x,y,{...opts,pose,motion});
+    const gait=moving?'sprint':'walk';
+    window.CatArt.drawCat(ctx,x,y,{...opts,pose,motion,gait});
   }
   window.CatMotion={draw,artStyle:'original-illustrated-25-breed'};
 })();
