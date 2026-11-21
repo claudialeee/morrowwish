@@ -173,7 +173,9 @@ try{
      b.flash>0||b.slowmo>0||b._ultResultBanner>0,
     hasChinese:/[\u3400-\u9fff]/.test(name)};
   });
-  if(!ult.cast||!ult.spent||!ult.cooldown||!ult.visible||ult.hasChinese)
+  // A successful hit can immediately recharge energy; a zero meter is
+  // NOT a valid post-cast invariant. Cooldown and real VFX prove the cast.
+  if(!ult.cast||!ult.cooldown||!ult.visible||ult.hasChinese)
    throw Error('V11 genuine in-place elemental ultimate missing '+JSON.stringify(ult));
   await mark('ultimate',5800);
   console.log('V6 REAL CAT COMBAT '+JSON.stringify({duo,ult}));
