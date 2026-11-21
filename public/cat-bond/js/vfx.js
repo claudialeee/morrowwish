@@ -62,9 +62,17 @@ class VFX {
       ctx.save();
       ctx.globalAlpha = k;
       if (e.type === 'spark') {
-        ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, e.r * k + 0.5, 0, Math.PI * 2); ctx.fill();
+        // Fine directional impact streaks, not floating dots.
+        const a=Math.atan2(e.vy||1,e.vx||1),size=(e.r+2)*k;
+        ctx.strokeStyle=e.color;ctx.lineWidth=Math.max(.8,size*.6);
+        ctx.lineCap='round';ctx.beginPath();
+        ctx.moveTo(e.x-Math.cos(a)*size*1.7,e.y-Math.sin(a)*size*1.7);
+        ctx.lineTo(e.x+Math.cos(a)*size*.6,e.y+Math.sin(a)*size*.6);ctx.stroke();
       } else if (e.type === 'fade') {
-        ctx.globalAlpha = k * 0.6; ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.fill();
+        // Narrow fading movement trail, never a screen of glowing dots.
+        ctx.globalAlpha=k*.35;ctx.strokeStyle=e.color;ctx.lineWidth=Math.max(.5,e.r*.65);
+        ctx.beginPath();ctx.moveTo(e.x-e.r,e.y-e.r*.3);
+        ctx.lineTo(e.x+e.r,e.y+e.r*.3);ctx.stroke();
       } else if (e.type === 'ring') {
         ctx.globalAlpha = k; ctx.strokeStyle = e.color; ctx.lineWidth = e.width * k + 0.5;
         ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.stroke();
@@ -72,13 +80,14 @@ class VFX {
         ctx.translate(e.x, e.y); ctx.rotate(e.angle);
         ctx.fillStyle = e.color; ctx.globalAlpha = k;
         ctx.beginPath(); ctx.moveTo(0, -6 * k); ctx.lineTo(e.len * (0.5 + k), 0); ctx.lineTo(0, 6 * k); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.arc(0, 0, 7 * k, 0, Math.PI * 2); ctx.fill();
+        // No circular muzzle stamp; the directional cone is the visual cue.
       } else if (e.type === 'text') {
         e.y -= 34 * dtGuess; ctx.fillStyle = e.color; ctx.font = `bold ${e.size}px sans-serif`; ctx.textAlign = 'center';
         ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.strokeText(e.str, e.x, e.y); ctx.fillText(e.str, e.x, e.y);
       } else if (e.type === 'orb') {
-        const a = e.baseA + (1 - k) * 6; const rad = e.rad * k;
-        ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x + Math.cos(a) * rad, e.y + Math.sin(a) * rad, 3, 0, Math.PI * 2); ctx.fill();
+        const a=e.baseA+(1-k)*6,rad=e.rad*k,x=e.x+Math.cos(a)*rad,y=e.y+Math.sin(a)*rad;
+        ctx.strokeStyle=e.color;ctx.lineWidth=2*k+1;ctx.beginPath();
+        ctx.moveTo(x,y-6);ctx.lineTo(x+4,y);ctx.lineTo(x,y+6);ctx.lineTo(x-4,y);ctx.closePath();ctx.stroke();
       } else if (e.type === 'beam') {
         ctx.strokeStyle = e.color; ctx.lineWidth = 3 * k + 1; ctx.globalAlpha = k;
         ctx.beginPath(); ctx.moveTo(e.x1, e.y1);
