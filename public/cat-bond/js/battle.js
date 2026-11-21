@@ -4140,12 +4140,29 @@ class CaptureBattle {
       }
       // status color wash (frozen=blue tint, burn=orange, etc.) via a soft overlay ring
       if (e.status) { const k = Object.keys(e.status); if (k.length) { const info = (Skills.TAG_INFO || {})[k[0]]; if (info) { ctx.save(); ctx.globalAlpha = 0.25 + 0.15 * Math.sin(this.t * 6); ctx.fillStyle = info.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + 6, 24, 30, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } }
+      // CAT-POUNCE PREP (猫味预备动作): while winding up, the body reads like a real cat
+      // about to pounce — it crouches (squashes down + widens), its hindquarters waggle
+      // side-to-side faster as release nears, and it leans toward the target. Draw-only
+      // (translate→squash/lean→translate back); never touches real coords.
+      let _pouncePrep = false;
+      if (e.telegraph > 0 && !e.frozen) {
+        _pouncePrep = true;
+        const k = Math.max(0, Math.min(1, 1 - e.telegraph / (e.telegraphMax || 0.8)));
+        const crouch = 0.10 + 0.12 * k;                       // squash amount grows with charge
+        const wig = Math.sin(this.t * (7 + 16 * k)) * (2 + 5 * k) * e.face;   // butt waggle, intensifies
+        const aimLean = (e.telegraphAim != null ? Math.cos(e.telegraphAim) : e.face) * 3 * k;
+        ctx.save();
+        ctx.translate(e.x + aimLean + wig * 0.5, e.y + 33 * crouch);   // keep paws planted while squashing
+        ctx.scale(1 + crouch * 0.5, 1 - crouch);              // wider + lower = coiled to spring
+        ctx.translate(-e.x, -(e.y + 33 * crouch));
+      }
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
         species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
         stride:e.stride,motion:e.motion||0,
         pose:e.frozen?'idle':e.pose,
         mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
       });
+      if (_pouncePrep) ctx.restore();
       this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
       // 虚弱 stagger: a pulsing gold ring + dizzy mark so the open window reads clearly
       if (e.staggerT > 0) {
