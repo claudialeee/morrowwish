@@ -283,7 +283,7 @@ class Game {
         const val=members.length===2?(CatRelations.pair(members[0],members[1])?.value||0):0;
         duoEl.textContent=pending
           ?'💢 '+State.catName(pending.a)+' + '+State.catName(pending.b)+
-            (en?' · Tap to make up':' · 点击哄一哄')
+            (en?' · Tap to reconcile for free':' · 点击免费和好')
           :'💞 '+members.map(c=>State.catName(c)).join(' + ')+' · '+(en?'Trust ':'默契 ')+val;
         duoEl.setAttribute('aria-label',pending
           ?(en?'Open the duo disagreement and reconcile':'查看双猫闹别扭事件并和好')
@@ -1102,12 +1102,24 @@ class Game {
   }
 
   toast(msg) {
-    const wrap = document.getElementById('toasts');
-    const el = document.createElement('div');
-    el.className = 'toast'; el.textContent = msg;
-    wrap.appendChild(el);
-    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; }, 1600);
-    setTimeout(() => el.remove(), 2100);
+    const wrap = document.getElementById('toasts');if(!wrap)return;
+    const battle=this.scene==='battle',message=String(msg);
+    if(battle){
+      // Ordinary attack/skill/chain messages have their own animations and
+      // counters. Repeating each name as a toast hid the cats and hit points.
+      const routine=/技能[:：]|[Ss]kill[:：]|毛球散射|疾扑冲刺|连击|[Cc]ombo|连携|[Cc]hain|效果一般|效果拔群|Skill activated/i.test(message);
+      const important=/⚠|[Dd]anger|危险|必杀|[Uu]ltimate|切换|[Ss]witch|自动战斗|智能自动|[Mm]anual|[Aa]uto battle|斗志耗尽|倒下/.test(message);
+      if(routine&&!important)return;
+      const now=performance.now();
+      if(!important&&now-(this._lastCombatNoticeAt||0)<950)return;
+      this._lastCombatNoticeAt=now;
+      wrap.replaceChildren(); // never stack battle text across the battlefield
+    }
+    const el=document.createElement('div');
+    el.className=battle?'toast toast-battle':'toast';
+    el.textContent=message;wrap.appendChild(el);
+    setTimeout(()=>{if(el.isConnected){el.style.opacity='0';el.style.transition='opacity .35s';}},battle?850:1600);
+    setTimeout(()=>el.remove(),battle?1250:2100);
   }
 }
 
