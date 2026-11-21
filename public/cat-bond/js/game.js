@@ -148,10 +148,15 @@ class Game {
     const clever=combo>=8||(b.perfectDodges||0)>=1;
     const points=Number(healthy)+Number(swift)+Number(clever);
     const autoUsed=!!(b.autoUsed||b.autoMode);
-    const autoExceptional=hpRatio>=.95&&seconds<=timeLimit*.6&&combo>=16
-      &&fighters.every(f=>f.alive!==false&&f.hp>0);
-    const grade=points===3&&(!autoUsed||autoExceptional)?'S'
-      :points>=2?'A':points===1?'B':'C';
+    // Automatic battles are a legitimate play style, not a consolation
+    // prize. A well-raised squad can earn S through speed and survivability.
+    // No arbitrary 16-hit / 95%-HP / 60%-time triple gate.
+    const squadIntact=fighters.length>0&&fighters.every(f=>f.alive!==false&&f.hp>0);
+    const autoExceptional=squadIntact&&hpRatio>=.75&&seconds<=timeLimit*1.25
+      &&(combo>=5||hpRatio>=.87);
+    const grade=autoUsed
+      ?(autoExceptional?'S':points>=2?'A':points===1?'B':'C')
+      :(points===3?'S':points>=2?'A':points===1?'B':'C');
     const bonuses={S:[42,2],A:[24,1],B:[14,0],C:[8,0]};
     const [bonusCoins,bonusTreats]=bonuses[grade];
     return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
