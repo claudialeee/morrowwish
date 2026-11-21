@@ -613,45 +613,41 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
 }
 
 
-// Compact cat sidebar: all essential gameplay remains above its optional details.
+// Cat game release guard: gameplay controls are integrated INSIDE the stage,
+// not in a permanent sidebar or a separate instruction panel.
 {
  const html=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
  const script=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
- const start=html.indexOf('<aside class="panel"');
- const end=html.indexOf('</aside>',start);
- if(start<0||end<0)throw new Error('Cat compact sidebar missing');
- const aside=html.slice(start,end);
- const extra=aside.indexOf('<details class="sidebar-extra">');
- if(extra<0||!aside.includes('<summary>')||!aside.includes('sidebar-extra-body'))
-  throw new Error('Secondary cat-game instructions and souvenirs must fold away by default');
- const above=aside.slice(0,extra);
- for(const id of ['hearts','chapter','fishCount','meterFill','mission','collection',
-                   'score','moves','starTotal','restart','levels','wardrobe','skinHint']){
-  if(!above.includes('id="'+id+'"'))throw new Error('Essential cat game control hidden in detail: '+id);
+ const css=fs.readFileSync('public/pawsibly-innocent/single-screen.css','utf8');
+ const fullscreen=fs.readFileSync('public/game-fullscreen.js','utf8');
+ const from=html.indexOf('<div class="stage" id="stage">');
+ const end=html.indexOf('</main>',from);
+ if(from<0||end<0)throw new Error('Cat gameplay stage missing');
+ const stage=html.slice(from,end);
+ const board=stage.indexOf('id="board"'),hud=stage.indexOf('id="heistStatus"'),
+   bar=stage.indexOf('class="stealth-actionbar"'),menu=stage.indexOf('id="gameMenu"');
+ if(board<0||hud<0||bar<board||menu<bar)
+  throw new Error('Cat game HUD/map/tools/menu are not integrated in one stage');
+ for(const id of ['menuButton','menuClose','quickHelp','stageControls','tool','visionTip','guardIntent',
+                 'levels','wardrobe','skinHint','score','moves','starTotal','collection','hearts','fishCount',
+                 'achievementCount','relicGallery','achievementsGrid','badgeHighlights','howTitle',
+                 'menuLanguage','menuAudio','restart','roomNum','roomTag','overlay']){
+  if(!stage.includes('id="'+id+'"'))throw new Error('Cat game stage lost control '+id);
  }
- // Music and effects now live at the top-right of the game, not in the sidebar.
- const top=html.slice(html.indexOf('<header class="sitebar">'),html.indexOf('</header>')+9);
- for(const id of ['sound','music'])if(!top.includes('id="'+id+'"'))
-  throw new Error('Audio control missing from cat header: '+id);
- if(html.includes('data-move="'))throw new Error('On-screen D-pad must not crowd the cat board');
- // The yarn button is a primary gameplay action above the board, not inside the sidebar.
- const yarnAction=html.indexOf('id="tool"'),canvas=html.indexOf('id="board"');
- if(yarnAction<0||canvas<0||yarnAction>canvas||yarnAction>start)
-  throw new Error('Yarn action must be visible immediately above the board');
- for(const id of ['yarnExplain','ability','collectionHint','souvenirShelf','musicCredit']){
-  if(!aside.slice(extra).includes('id="'+id+'"'))throw new Error('Optional cat section missing '+id);
- }
- for(const id of [...new Set([...script.matchAll(/\$\("([^"]+)"\)/g)].map(x=>x[1]))]){
-  if(!html.includes('id="'+id+'"'))throw new Error('Cat game script references missing DOM control '+id);
- }
+ if(!stage.includes('data-game-tab="rooms"')||!stage.includes('data-game-tab="album"')||
+    !stage.includes('data-game-tab="badges"')||!stage.includes('data-game-tab="help"'))
+  throw new Error('Game menu tabs missing');
+ if(html.includes('<section class="explainer"')||html.includes('<aside class="panel" aria-label="Game progress and controls">'))
+  throw new Error('Obsolete persistent cat sidebar or duplicated rules remain');
+ if(!css.includes('playfield')||!css.includes('game-menu')||
+    !fullscreen.includes("'pawsibly-innocent':['#stage','#stageControls']"))
+  throw new Error('One-screen game layout or stage-only fullscreen not wired');
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
  if(ids.some((id,i)=>ids.indexOf(id)!==i))throw new Error('Duplicate cat-game DOM ID');
- if(!html.includes('max-width:1110px')||!html.includes('max-width:620px')||
-    !html.includes('.panel .sidebar-actions')||!html.includes('.panel .level-btn'))
-  throw new Error('Compact cat sidebar responsiveness missing');
- if(aside.indexOf('id="levels"')>extra||aside.indexOf('id="wardrobe"')>extra)
-  throw new Error('Active level and cat selection cannot be hidden by default');
- console.log('Compact cat sidebar: every active control fits above folded extras; responsive and all IDs intact.');
+ for(const id of [...new Set([...script.matchAll(/\$\("([^"]+)"\)/g)].map(x=>x[1]))]){
+  if(!html.includes('id="'+id+'"'))throw new Error('Cat script references missing DOM node '+id);
+ }
+ console.log('Single-screen cat adventure: one stage, in-game menus, stage-only fullscreen, all DOM IDs present.');
 }
 
 // Elsewhere regression: all story text must remain full paragraphs, never
