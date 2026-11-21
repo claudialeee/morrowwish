@@ -1088,9 +1088,16 @@ class CaptureBattle {
     if(!sk)return false;
     const t = this.supportBeneficiary(f, sk, aim);   // friend or self
     if(sk.kind==='heal'){
-      if(t.hp>=t.maxhp-.5)return false;
+      const canCleanse = sk.tags?.includes('cleanse') && t.status && Object.keys(t.status).length;
+      if(t.hp>=t.maxhp-.5 && !canCleanse)return false;
       const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*.34));
       t.hp=Math.min(t.maxhp,t.hp+amount);
+      // 舔毛理顺 Grooming: wash off the worst debuff as well as healing.
+      if(canCleanse){
+        const worst=Object.keys(t.status)[0];
+        delete t.status[worst]; t.tags=(t.tags||[]).filter(x=>x!==worst);
+        this.vfx.text(t.x,t.y-50,'✦ '+(window.MorrowwishI18n?.get?.()!=='zh'?'cleansed':'净化'),'#cfeed8',13);
+      }
       this.vfx.ring(t.x,t.y,{r0:5,vr:225,life:.42,color:'#a8e9b4',width:4});
       this.vfx.text(t.x,t.y-33,'+'+Math.round(amount),'#93dca1',15);
       if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#a8e9b4');   // show the aid link
@@ -1098,9 +1105,21 @@ class CaptureBattle {
       const shield=sk.tags?.includes('shield');
       if(shield){
         return this.castWard(t, sk.shieldType || 'barrier');   // three shield verbs (on friend or self)
+      }else if(sk.tags?.includes('camo')){
+        // 纸箱埋伏 Box Ambush: brief untargetable (i-frames) + prime the next hit to stagger.
+        t.inv=Math.max(t.inv||0,1.2); t._ambush=true;
+        this.vfx.ring(t.x,t.y,{r0:14,vr:120,life:.5,color:'#b9e6a0',width:3});
+        this.vfx.text(t.x,t.y-34,window.MorrowwishI18n?.get?.()!=='zh'?'ambush!':'埋伏!','#cdeeb4',14);
       }else{
         if(t.damageBoostT>.3)return false;
         t.damageBoostT=6;
+        // 弓背炸毛 Puff & Hiss: a threat display also shoves nearby enemies back.
+        if(sk.tags?.includes('threat')){
+          for(const e of this.liveEnemies()){
+            const dx=e.x-t.x,dy=e.y-t.y,d=Math.hypot(dx,dy)||1; if(d>150)continue;
+            e.kbx=(e.kbx||0)+dx/d*280; e.kby=(e.kby||0)+dy/d*280;
+          }
+        }
         this.vfx.ring(t.x,t.y,{r0:10,vr:190,life:.55,color:'#ffd9a0',width:4});
         this.vfx.text(t.x,t.y-34,'强化','#f8eab8',14);
         if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#ffd9a0');
@@ -3368,6 +3387,8 @@ class CaptureBattle {
       // can't push a non-staggered enemy below a floor — so you must use skills to
       // actually finish a fight, not just hold attack.
       const isBasic = skill && skill.isBasic;
+      // 纸箱埋伏 Box Ambush: the primed cat's NEXT hit forces a stagger + double damage.
+      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 1.6); }
       if (target.poiseMax) {
         if (target.staggerT > 0) dmg *= 2;                 // hitting a staggered enemy = big
         if (!isBasic) {                                    // skills/combos/ult/beam crack poise

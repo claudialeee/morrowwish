@@ -421,6 +421,11 @@
     '身披星河的梦境之猫，极为罕见。': 'A dream cat draped in the galaxy — exceedingly rare.',
 
     // ---- skill names ----
+    // cat-instinct rework names (Spec A)
+    '咳毛球': 'Hairball Hack', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
+    '舔毛理顺': 'Grooming', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
+    '炸毛墙': 'Startle Static', '戏弄爪': 'Bat-Around', '居高临下': 'High Ground',
+    '呼噜光环': 'Purr Aura', '慢眨眼': 'Slow-Blink',
     '炽爪': 'Ember Claw', '喵火球': 'Meow Fireball', '金乌焱': 'Suncrow Blaze',
     '水鞭': 'Water Lash', '泡泡幕': 'Bubble Veil', '潮汐掌': 'Tidal Paw',
     '叶刃': 'Leaf Blade', '荆缠': 'Thorn Coil', '泰山压顶': 'Mountain Slam', '光合': 'Photosynthesis',
@@ -431,6 +436,31 @@
     '猫爪': 'Cat Claw', '喵爪旋风': 'Claw Cyclone', '喵爪攻击': 'Claw Attack',
 
     // ---- skill descriptions ----
+    // cat-instinct rework descs (Spec A)
+    '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。':
+      'The cat charges and hacks up a scalding hairball (brief wind-up) — a dead-center hit hits hard and keeps burning, a graze barely singes; brief sluggishness after.',
+    '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。':
+      'An arched-back bluff: raises your own damage and shoves nearby enemies back a step.',
+    '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。':
+      'Bats the target toward the arena edge — heavy knockback and Soak. Striking from the rear hits harder.',
+    '舔毛理顺安抚自身，回复斗志并洗去一种异常状态。':
+      'A soothing groom: restores morale and washes off one status effect.',
+    '钻进纸箱短暂隐身不可被选中，下一击必定把目标打得踉跄并造成双倍伤害。':
+      'Hides in a box, briefly untargetable; your next hit forces a stagger and deals double damage.',
+    '全身毛炸成一道静电墙，弹回飞行弹体；架墙期间自身被定住。':
+      'Puffs up into a static wall that bounces back projectiles; you are rooted while it holds.',
+    '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。':
+      'A midnight-zoomies electric dash that paralyzes on contact. Striking from the rear hits harder.',
+    '像拍打玩具一样戏弄目标：伤害不高，却打得它眩晕又后仰。':
+      'Bats the target like a toy: low damage, but it dizzies and knocks them back.',
+    '诅咒之球直取破绽——正中命中威力更强，使目标受到的伤害提高40%。':
+      'A cursed orb aimed at the weak point — a center hit is stronger and raises damage taken by 40%.',
+    '抢占高处俯冲而下的一记重扑，眩光致盲。侧后方突袭更狠。':
+      'Claims the high ground and dives down in a heavy pounce, blinding with glare. Striking from the rear hits harder.',
+    '发出安心的呼噜声形成光环，提升自身伤害。':
+      'A reassuring purr forms an aura that raises your own damage.',
+    '对你缓缓眨眼表达信任，回复斗志。':
+      'A slow, trusting blink that restores morale.',
     '燃烧的猫爪撕击，附加灼烧。': 'A burning claw slash that applies Burn.',
     '吐出滚烫火球，命中后持续灼烧。': 'Spits a scorching fireball that keeps burning on hit.',
     '【必杀】背负烈日炸裂全场，重灼。': '[Ultimate] Unleashes the sun across the field, searing all.',
