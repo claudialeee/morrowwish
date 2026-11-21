@@ -35,7 +35,7 @@ const UI = {
       this.game.setBattleHelpVisible(!this.game.battleHelpOpen);
     });
     document.getElementById('battle-help-close')?.addEventListener('click',()=>{
-      if(this.game.battleTutorial)this.game.completeBattleTutorial();
+      if(this.game.battleTutorial)this.game.completeBattleTutorial(true);
       else this.game.setBattleHelpVisible(false);
     });
     document.getElementById('battle-help-start')?.addEventListener('click',()=>{
@@ -58,6 +58,7 @@ const UI = {
       else this.openBondPanel();
     });
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
+    document.getElementById('map-squad')?.addEventListener('click',()=>this.openMapSquad());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
@@ -114,6 +115,71 @@ const UI = {
     else if (tab === 'shop') this.openShop();
   },
 
+
+  // Saved expedition selection never expands to three cats behind the player's back.
+  getPreferredBattleTeam(){
+    const cats=State.S.cats||[],byUid=new Map(cats.map(c=>[c.uid,c]));
+    const saved=(State.S.battlePrefs?.teamUids||[]).map(uid=>byUid.get(uid)).filter(Boolean);
+    if(saved.length)return saved.slice(0,3);
+    const duo=window.CatRelations?.chosen?.()||[];
+    const rest=[...cats].sort((a,b)=>State.catPower(b)-State.catPower(a));
+    const seen=new Set();
+    return [...duo,...rest].filter(c=>{
+      if(!c||!byUid.has(c.uid)||seen.has(c.uid))return false;
+      seen.add(c.uid);return true;
+    }).slice(0,3);
+  },
+  squadPickerMarkup(selected){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const cats=[...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a));
+    return '<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to three cats':'选择最多三只出战猫咪')+'">'
+      +cats.map(c=>'<button type="button" class="map-squad-choice '+(selected.includes(c.uid)?'sel':'')+'" data-uid="'+esc(c.uid)+'" aria-pressed="'+selected.includes(c.uid)+'">'
+        +'<canvas width="58" height="50" aria-hidden="true"></canvas><span><strong>'+esc(State.catName(c))+'</strong>'
+        +'<small>'+(en?'Power ':'战力 ')+State.catPower(c)+' · '+(en?'Bond ':'默契 ')+Math.round(c.affinity||0)+'</small></span></button>').join('')
+      +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 3'+(en?'':' 只')+'</p>';
+  },
+  bindSquadPicker(selected){
+    const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats||[];
+    const host=document.querySelector('#panel .map-squad-roster');if(!host)return;
+    const buttons=[...host.querySelectorAll('.map-squad-choice')];
+    const refresh=()=>{
+      buttons.forEach(btn=>{
+        const yes=selected.includes(btn.dataset.uid);
+        btn.classList.toggle('sel',yes);btn.setAttribute('aria-pressed',String(yes));
+      });
+      const count=document.querySelector('#panel .map-squad-count');
+      if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 3'+(en?'':' 只');
+    };
+    buttons.forEach(btn=>{
+      const cat=cats.find(c=>c.uid===btn.dataset.uid);
+      if(cat)CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species));
+      btn.onclick=()=>{
+        const i=selected.indexOf(btn.dataset.uid);
+        if(i>=0){if(selected.length>1)selected.splice(i,1);}
+        else{if(selected.length>=3)selected.shift();selected.push(btn.dataset.uid);}
+        refresh();
+      };
+    });refresh();
+  },
+  openMapSquad(){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const selected=this.getPreferredBattleTeam().map(c=>c.uid);
+    if(!selected.length){this.game.toast(en?'Adopt a kitten first':'请先领养一只小猫');return;}
+    this.panel('<span class="card-close">×</span><h2>'+(en?'🐾 Expedition team':'🐾 地图出战队伍')+'</h2>'
+      +'<p class="sub">'+(en?'Choose 1–3 cats; the first is your leader. You can change them again before a battle.':'挑选 1–3 只猫咪，第一只是领队。地图内和开战前都可以再调整。')+'</p>'
+      +this.squadPickerMarkup(selected)
+      +'<div class="btn-row"><button id="map-squad-save" type="button" class="btn gold">'+(en?'Save team':'保存队伍')+'</button>'
+      +'<button id="map-squad-cancel" type="button" class="btn ghost">'+(en?'Cancel':'取消')+'</button></div>');
+    this.bindSquadPicker(selected);
+    document.getElementById('map-squad-save').onclick=()=>{
+      State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:[...selected]};
+      State.save();this.closeAll();this.game.toast(en?'Expedition team saved!':'出战猫咪已更新！');
+      window.arcadeMetric?.('bond_squad_changed',{size:selected.length});
+    };
+    document.getElementById('map-squad-cancel').onclick=()=>this.closeAll();
+  },
+
   // Five real playable locations, with their exact unlocking conditions.
   openMapChooser(){
     if(!window.WorldMap)return;
@@ -142,7 +208,8 @@ const UI = {
       <p class="map-instructions">${en
         ?'PC: click to walk or mouse-drag to pan; WASD also works. Phone: tap to walk, drag to look around. Approach cats and treasure.'
         :'电脑：点击草坪行走、按住鼠标拖拽查看四周，也支持 WASD；手机：轻点行走、拖动草坪平移视角。接近野猫和宝藏自动互动。'}</p>
-      <div class="btn-row"><button class="btn" id="map-world-view">${en?'View world map':'查看世界地图'}</button>
+      <div class="btn-row"><button class="btn gold" id="map-pick-team">${en?'🐾 Choose cats':'🐾 选择出战猫咪'}</button>
+        <button class="btn" id="map-world-view">${en?'View world map':'查看世界地图'}</button>
         <button class="btn ghost" id="map-back-yard">${en?'Back to yard':'返回庭院'}</button></div></div>`);
     document.querySelectorAll('#panel .map-destination.available').forEach(btn=>{
       btn.onclick=()=>{
@@ -154,6 +221,7 @@ const UI = {
         }
       };
     });
+    document.getElementById('map-pick-team').onclick=()=>this.openMapSquad();
     document.getElementById('map-world-view').onclick=()=>{WorldMap.enterMap();this.closeAll();};
     document.getElementById('map-back-yard').onclick=()=>{this.closeAll();this.game.scene='yard';this.game.showYardChrome();};
   },
@@ -1193,10 +1261,13 @@ const UI = {
     const prefs=State.S.battlePrefs||{};
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
+    const selected=opts.origin==='map'?this.getPreferredBattleTeam().map(c=>c.uid):[];
+    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (1–3)':'选择本次出战猫咪（1–3 只）')+'</h3>'+this.squadPickerMarkup(selected):'';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     this.panel(`<span class="card-close">×</span>
-      <h2>${label}</h2><p class="sub">${en?'Choose how your team will fight before entering the arena.':'进入战场前，先决定让猫咪自动作战，还是亲自操作。'}</p>
+      <h2>${label}</h2><p class="sub">${en?'Choose your cats and control mode before entering the arena.':'先选择出战猫咪，再决定自动或手动战斗。'}</p>
+      ${squadMarkup}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Battle mode':'战斗模式'}">
@@ -1215,6 +1286,7 @@ const UI = {
       </fieldset>
       <div class="btn-row"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
+    if(opts.origin==='map')this.bindSquadPicker(selected);
     const options=[...document.querySelectorAll('#panel .capture-mode-option')];
     for(const button of options){
       button.onclick=()=>{
@@ -1235,10 +1307,13 @@ const UI = {
       State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true};
       State.save();this.closeAll();
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true);return;}
+      let fighters=team;
       if(opts.origin==='map'){
+        fighters=selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean);
+        State.S.battlePrefs.teamUids=[...selected];State.save();
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;
       }
-      this.game.startBattle(team,wildSp);
+      this.game.startBattle(fighters.length?fighters:team,wildSp);
     };
   },
 
@@ -1257,9 +1332,9 @@ const UI = {
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
     const deadline=this.game.gradeTimeLimit(wildSp.rarity);
     const masteryChallenge=english
-      ?('🏅 Manual S: win within '+deadline+'s, keep 80% HP, and earn an 8-hit combo or a perfect dodge. Auto S: all cats survive with 72%+ HP, win within '+Math.round(deadline*1.6)+'s, plus a 4-hit combo or 80%+ HP. '
+      ?('🏅 Manual S: all cats survive, win within '+deadline+'s, keep 84%+ HP, and reach a 9-hit combo or perfect dodge. Auto S: all survive with 83%+ HP, win within '+Math.round(deadline*1.22)+'s, plus a 7-hit combo or 92%+ HP. '
         +(hasMedal?'Golden Paw already earned.':'First S unlocks a Golden Paw and a rare-cat lure.'))
-      :('🏅 手动最高评级：'+deadline+'秒内获胜、保留80%血量、8连击或完美闪避。自动最高评级：全队存活、保留至少72%血量、在'+Math.round(deadline*1.6)+'秒内获胜，并达成4连击或保留80%血量。'
+      :('🏅 手动 S：全员存活、'+deadline+'秒内获胜、血量至少84%，并达到9连击或完美闪避。自动 S：全员存活、血量至少83%、在'+Math.round(deadline*1.22)+'秒内获胜，且达到7连击或保留92%血量。'
         +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁金爪徽章和稀有猫诱饵。'));
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
@@ -1276,7 +1351,8 @@ const UI = {
     }).filter((c, i, arr) => arr.findIndex(x=>x.species===c.species)===i);
     const preferred=window.CatRelations?.chosen?.()||[];
     const duo=preferred.length===2?preferred.filter(c=>sorted.some(t=>t.uid===c.uid)):[];
-    this.teamUids=[...duo,...sorted.filter(c=>!duo.some(d=>d.uid===c.uid))].slice(0,3).map(c=>c.uid);
+    const saved=this.getPreferredBattleTeam().filter(c=>sorted.some(t=>t.uid===c.uid));
+    this.teamUids=[...saved,...duo,...sorted].filter((c,i,arr)=>arr.findIndex(x=>x.uid===c.uid)===i).slice(0,3).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
@@ -1365,6 +1441,7 @@ const UI = {
       // preserve the selection order; fall back to strongest if somehow empty
       const team = this.teamUids.map(uid => cats.find(x => x.uid === uid)).filter(Boolean);
       changeBattleMode(this.prepAutoBattle);
+      State.S.battlePrefs.teamUids=[...this.teamUids];State.save();
       this.closeAll();
       this.game.startBattle(team.length ? team : [sorted[0]], wildSp);
     };
