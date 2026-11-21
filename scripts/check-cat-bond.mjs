@@ -389,7 +389,7 @@ const beforeMasteryCoins=State.S.coins;
 const beforeMasteryDex=State.S.dex.doudou;
 assert.equal(game.startMasteryChallenge(targetBreed),true);
 assert.equal(game.battle,null,'A rematch must show battle-mode selection before combat starts');
-assert.ok(document.querySelector('#panel #bp-go'),'A rematch needs a clear pre-battle choice');
+assert.ok(document.getElementById('panel').innerHTML.includes('id="bp-go"'),'A rematch needs a clear pre-battle choice');
 document.getElementById('bp-go').click();
 assert.equal(game.battle.masteryChallenge,true);
 const masteryBattle=game.battle;
