@@ -644,6 +644,60 @@
     ctx.textAlign = 'left';
   }
 
+  // Physical relics and signposts replace flat floating emoji markers.
+  // Everything is in the same world coordinate system as the cats.
+  function drawWorldRelic(ctx,node,region,t){
+    const x=node.x,y=node.y,secret=node.kind==='secret',rare=node.kind==='rare';
+    ctx.save();
+    const contactY=y+16;
+    ctx.fillStyle='rgba(32,40,38,.22)';
+    ctx.beginPath();ctx.ellipse(x+5,contactY+3,23,6,0,0,Math.PI*2);ctx.fill();
+    if(secret){
+      if(region==='home'){
+        ctx.fillStyle='#96735b';ctx.fillRect(x-20,y-3,40,21);
+        ctx.fillStyle='#cba786';ctx.fillRect(x-23,y-11,46,11);
+        ctx.strokeStyle='#f7e3be';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(x,y-6,7,0,Math.PI*1.7);ctx.stroke();
+      }else if(region==='sakura'){
+        ctx.save();ctx.rotate(-.16);
+        ctx.fillStyle='#fbf2e7';ctx.fillRect(x-20,y-13,40,30);
+        ctx.strokeStyle='#d6aab7';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(x-20,y-12);ctx.lineTo(x,y+3);ctx.lineTo(x+20,y-12);ctx.stroke();
+        ctx.restore();
+      }else if(region==='creek'){
+        ctx.fillStyle='#d8cbb5';ctx.beginPath();ctx.arc(x,y+3,18,Math.PI,0);ctx.closePath();ctx.fill();
+        for(let i=-2;i<=2;i++){ctx.strokeStyle='#fbf5dd';ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(x,y+16);ctx.lineTo(x+i*7,y-11);ctx.stroke();}
+      }else if(region==='volcano'){
+        ctx.fillStyle='#554e56';ctx.beginPath();
+        ctx.moveTo(x-23,y+17);ctx.lineTo(x-12,y-20);ctx.lineTo(x+7,y-33);
+        ctx.lineTo(x+23,y+18);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#f8b47c';ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(x+6,y-29);ctx.lineTo(x,y-11);ctx.lineTo(x+7,y+13);ctx.stroke();
+      }else{
+        ctx.fillStyle='#b9b5ca';ctx.fillRect(x-19,y-25,38,45);
+        ctx.strokeStyle='#e5d7c4';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(x,y-3,12,-2.1,1.4);ctx.stroke();
+        ctx.fillStyle='#faf1d4';ctx.beginPath();ctx.arc(x+3,y-5,3,0,Math.PI*2);ctx.fill();
+      }
+    }else if(rare){
+      ctx.fillStyle='#8b9aac';ctx.beginPath();ctx.moveTo(x-9,y+18);ctx.lineTo(x-17,y-6);
+      ctx.lineTo(x,y-27);ctx.lineTo(x+19,y-6);ctx.lineTo(x+8,y+18);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#d7ebec';ctx.beginPath();ctx.moveTo(x,y-26);ctx.lineTo(x+18,y-6);
+      ctx.lineTo(x+4,y+5);ctx.closePath();ctx.fill();
+    }else{
+      ctx.fillStyle='#a27d5f';ctx.fillRect(x-20,y-4,40,22);
+      ctx.fillStyle='#d1aa80';ctx.fillRect(x-23,y-12,46,10);
+      ctx.strokeStyle='#eed4a0';ctx.lineWidth=3;
+      ctx.strokeRect(x-13,y-11,26,29);
+      ctx.fillStyle='#e5bd68';ctx.fillRect(x-3,y-7,6,11);
+    }
+    // Discovery sparkle clings to the object and does not float as a sticker.
+    const glint=Math.max(0,Math.sin(t*3+node.bob))*5;
+    if(glint>1){ctx.fillStyle='rgba(255,247,213,.65)';
+      ctx.beginPath();ctx.ellipse(x+17,y-13,1.5+glint*.3,1.5+glint*.3,0,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
   // ================================================================
   // DRAW — region exploration
   // ================================================================
@@ -679,26 +733,22 @@
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
 
-    // return portal
-    var por = w.portal, pg = 1 + Math.sin(t * 3) * 0.12;
-    glowDot(ctx, por.x, por.y, 50 * pg, GOLD, 0.5);
-    ctx.fillStyle = 'rgba(27,16,38,0.85)';
-    ctx.beginPath(); ctx.ellipse(por.x, por.y, 26, 30, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.lineWidth = 3; ctx.strokeStyle = GOLD; ctx.stroke();
-    ctx.font = '22px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#fff'; ctx.fillText('🏠', por.x, por.y);
+    // A garden signpost physically planted on the ground, replacing
+    // a black portal with a floating house emoji.
+    var por=w.portal;
+    ctx.fillStyle='rgba(38,47,38,.23)';
+    ctx.beginPath();ctx.ellipse(por.x+5,por.y+15,36,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#816954';ctx.fillRect(por.x-7,por.y-40,14,59);
+    ctx.fillStyle='#cfb49a';ctx.fillRect(por.x-47,por.y-54,94,30);
+    ctx.strokeStyle='#846b52';ctx.lineWidth=2.5;ctx.strokeRect(por.x-47,por.y-54,94,30);
+    ctx.font='700 15px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#5d4a3c';
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回庭院':'← Yard',por.x,por.y-39);
 
-    // collectible nodes
-    for (var j = 0; j < w.nodes.length; j++) {
-      var n = w.nodes[j];
-      if (n.taken) continue;
-      var ny = n.y + Math.sin(t * 2 + n.bob) * 4;
-      var secret=n.kind==='secret',col=secret?w.region.theme.accent:(n.kind==='rare'?PURPLE:GOLD);
-      glowDot(ctx,n.x,ny,secret?46:26,col,secret?.85:.6);
-      ctx.font=secret?'28px serif':'20px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(secret?DISCOVERIES[w.region.id].icon:(n.kind==='rare'?'💎':'📦'),n.x,ny);
-      if(secret){ctx.font='700 12px system-ui';ctx.fillStyle='#fff';
-        ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'神秘发现':'Secret',n.x,ny+30);}
+    // Small in-world chests, crystals and five unique secret relics.
+    for(var j=0;j<w.nodes.length;j++){
+      var n=w.nodes[j];if(n.taken)continue;
+      drawWorldRelic(ctx,n,w.region.id,t);
     }
 
     // Real roaming full-body wild kittens, each with a ground shadow and gait.
@@ -711,9 +761,10 @@
       var spInfo=window.GameData.speciesById(s.sp);
       var rColor=spInfo?.rarity==='SSR'?'#ffdc6c':spInfo?.rarity==='SR'?'#c49df2'
         :spInfo?.rarity==='R'?'#fff2bd':th.accent;
-      glowDot(ctx,s.x,by,46,rColor,.58);
-      ctx.save();ctx.strokeStyle=rColor;ctx.lineWidth=3;
-      ctx.beginPath();ctx.arc(s.x,by,30+Math.sin(t*3+s.bob)*3,0,Math.PI*2);ctx.stroke();ctx.restore();
+      // Distinct but grounded wild-cat discovery cue; no giant orbiting ring.
+      ctx.save();ctx.strokeStyle=rColor;ctx.globalAlpha=.75;ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.ellipse(s.x,by+20,27,8,0,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
       if(window.CatMotion&&sp){
         CatMotion.draw(ctx,s.x,by,{species:sp,scale:.88,
           face:s.face,t:w.t,stride:s.stride,pose:'walk',motion:.75,mood:'alert'});
