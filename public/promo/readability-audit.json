@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-21T22:44:59.034Z",
+  "createdAt": "2026-11-21T23:24:16.516Z",
   "version": "readability-review-v1",
   "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.",
   "pausedPromoGames": [
@@ -127,118 +127,6 @@
       "passed": true
     },
     {
-      "game": "elsewhere",
-      "scene": "choose-life",
-      "seconds": 3.2,
-      "captionWords": 0,
-      "requiredSeconds": 3,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "amalfi",
-      "seconds": 2.75,
-      "captionWords": 6,
-      "requiredSeconds": 2.74,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "tokyo",
-      "seconds": 2.6,
-      "captionWords": 4,
-      "requiredSeconds": 2.45,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "moon-opening",
-      "seconds": 3.1,
-      "captionWords": 7,
-      "requiredSeconds": 3.06,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "moon-surprise",
-      "seconds": 2.9,
-      "captionWords": 4,
-      "requiredSeconds": 2.7,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris",
-      "seconds": 4.55,
-      "captionWords": 6,
-      "requiredSeconds": 4.2,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-result",
-      "seconds": 2.55,
-      "captionWords": 0,
-      "requiredSeconds": 2.35,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-romance",
-      "seconds": 5.05,
-      "captionWords": 5,
-      "requiredSeconds": 4.8,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-love-moment",
-      "seconds": 2.9,
-      "captionWords": 3,
-      "requiredSeconds": 2.7,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-chapter-3",
-      "seconds": 4.6,
-      "captionWords": 3,
-      "requiredSeconds": 4.3,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-chapter-4",
-      "seconds": 4,
-      "captionWords": 4,
-      "requiredSeconds": 3.7,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-finale",
-      "seconds": 4.8,
-      "captionWords": 5,
-      "requiredSeconds": 4.5,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "paris-ending",
-      "seconds": 5.6,
-      "captionWords": 4,
-      "requiredSeconds": 5.3,
-      "passed": true
-    },
-    {
-      "game": "elsewhere",
-      "scene": "end-card",
-      "seconds": 3.1,
-      "captionWords": 2,
-      "requiredSeconds": 3,
-      "passed": true
-    },
-    {
       "game": "flip-dash",
       "scene": "first-coin",
       "seconds": 3.12,
@@ -348,6 +236,86 @@
       "seconds": 3.6,
       "captionWords": 2,
       "requiredSeconds": 3.5,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "choose-life",
+      "seconds": 3.2,
+      "captionWords": 0,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "amalfi",
+      "seconds": 2.75,
+      "captionWords": 6,
+      "requiredSeconds": 2.74,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "tokyo",
+      "seconds": 2.6,
+      "captionWords": 4,
+      "requiredSeconds": 2.45,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "moon-opening",
+      "seconds": 3.1,
+      "captionWords": 7,
+      "requiredSeconds": 3.06,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "moon-surprise",
+      "seconds": 2.9,
+      "captionWords": 4,
+      "requiredSeconds": 2.7,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "moon-ending",
+      "seconds": 5.35,
+      "captionWords": 5,
+      "requiredSeconds": 5,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "paris",
+      "seconds": 4.25,
+      "captionWords": 6,
+      "requiredSeconds": 4,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "paris-romance",
+      "seconds": 4.9,
+      "captionWords": 4,
+      "requiredSeconds": 4.6,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "paris-ending",
+      "seconds": 5.5,
+      "captionWords": 4,
+      "requiredSeconds": 5.2,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "end-card",
+      "seconds": 3.1,
+      "captionWords": 2,
+      "requiredSeconds": 3,
       "passed": true
     }
   ]

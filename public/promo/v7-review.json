@@ -1,6 +1,6 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T22:44:59.034Z",
+  "createdAt": "2026-11-21T23:24:16.516Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -252,7 +252,7 @@
         "/promo/elsewhere/v7-review-2.jpg",
         "/promo/elsewhere/v7-review-3.jpg"
       ],
-      "duration": 51.7,
+      "duration": 37.7,
       "shots": [
         {
           "source": "broll",
@@ -286,51 +286,27 @@
         },
         {
           "source": "broll",
-          "scene": "paris",
-          "caption": "A NEW LOVE STORY IN PARIS.",
-          "seconds": 4.55
+          "scene": "moon-ending",
+          "caption": "EVERY LIFE HAS AN ENDING.",
+          "seconds": 5.35
         },
         {
           "source": "broll",
-          "scene": "paris-result",
-          "caption": "",
-          "seconds": 2.55
+          "scene": "paris",
+          "caption": "A NEW LOVE STORY IN PARIS.",
+          "seconds": 4.25
         },
         {
           "source": "broll",
           "scene": "paris-romance",
-          "caption": "MEET SOMEONE WHO GETS YOU.",
-          "seconds": 5.05
-        },
-        {
-          "source": "broll",
-          "scene": "paris-love-moment",
-          "caption": "ONE UNFORGETTABLE DATE.",
-          "seconds": 2.9
-        },
-        {
-          "source": "broll",
-          "scene": "paris-chapter-3",
-          "caption": "THE ROMANCE CONTINUES.",
-          "seconds": 4.6
-        },
-        {
-          "source": "broll",
-          "scene": "paris-chapter-4",
-          "caption": "A MOMENT WORTH KEEPING.",
-          "seconds": 4
-        },
-        {
-          "source": "broll",
-          "scene": "paris-finale",
-          "caption": "CHOOSE YOUR OWN LOVE STORY.",
-          "seconds": 4.8
+          "caption": "YOUR STORY. YOUR CHOICES.",
+          "seconds": 4.9
         },
         {
           "source": "broll",
           "scene": "paris-ending",
           "caption": "YOUR CHOICES. YOUR ENDING.",
-          "seconds": 5.6
+          "seconds": 5.5
         },
         {
           "source": "cover",
