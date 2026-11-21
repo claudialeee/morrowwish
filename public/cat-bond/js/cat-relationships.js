@@ -5,6 +5,21 @@ function pair(a,b){if(!a||!b||a.uid===b.uid)return null;const d=db(),k=[a.uid,b.
 function grow(a,b,n){const p=pair(a,b);if(!p)return null;const old=p.value;p.value=Math.min(100,old+Math.max(0,n));if(!db().active.length)db().active=[a.uid,b.uid];return {value:p.value,levelUp:(old<20&&p.value>=20)||(old<60&&p.value>=60)||(old<90&&p.value>=90)};}
 function chosen(){const c=State.S.cats,u=db().active;return u.map(id=>c.find(x=>x.uid===id)).filter(Boolean);}
 function choose(a,b){if(!pair(a,b))return false;db().active=[a.uid,b.uid];State.save();return true;}
+// A different memory album for each cat duo — not one global achievement.
+function memoryList(a,b){
+  return (pair(a,b)?.memories||[]).slice();
+}
+function remember(a,b,regionId){
+  if(!a||!b||!regionId)return {ok:false};
+  const p=pair(a,b);
+  if(!Array.isArray(p.memories))p.memories=[];
+  if(p.memories.includes(regionId))return {ok:false,reason:'already-found'};
+  p.memories.push(regionId);
+  const grown=grow(a,b,12);
+  State.save();
+  window.arcadeMetric?.('bond_duo_memory',{region:regionId,trust:grown.value,total:p.memories.length});
+  return {ok:true,trust:grown.value,total:p.memories.length};
+}
 function personality(cat){
   const en=window.MorrowwishI18n?.get?.()!=='zh';
   if(en)return ({glutton:'Foodie',diligent:'Hardworking',lazy:'Sleepy',clever:'Clever',gentle:'Gentle'}[cat?.personality]||'Curious');
@@ -134,5 +149,5 @@ function play(a,b){const p=pair(a,b);if(!p)return {ok:false,reason:'pair'};
  State.S.treats--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
  window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v};
 }
-window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,DUO_ARTS};
+window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,memoryList,remember,DUO_ARTS};
 })();
