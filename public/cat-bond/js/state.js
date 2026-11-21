@@ -56,9 +56,21 @@ function xpToNext(level) { return 20 + level * level * 8; }
 
 // display name: player nickname if set, else species name
 function catName(cat) {
-  if (cat && cat.nickname) return cat.nickname;
-  const sp = cat && GameData.speciesById(cat.species);
-  return sp ? sp.name : '猫猫';
+  if (!cat) return '猫猫';
+  const sp = GameData.speciesById(cat.species);
+  const base = cat.nickname || (sp ? sp.name : '猫猫');
+  // A breed is not an individual. Keep every collected cat while ensuring
+  // distinct display names even in old save files containing repeated breeds.
+  const all = Array.isArray(S.cats) ? S.cats : [];
+  const same = all.filter(other => (other.nickname || GameData.speciesById(other.species)?.name || '猫猫') === base);
+  if (same.length <= 1) return base;
+  const index = same.findIndex(other => other.uid === cat.uid);
+  if (index <= 0) return base;
+  const names = ['小','阿','甜','糯','团','米','奶','星','云','花','桃','栗'];
+  let candidate = (names[index-1] || ('第'+(index+1)+'只'))+base;
+  const occupied = new Set(all.filter(other=>other.uid!==cat.uid).map(other=>other.nickname || GameData.speciesById(other.species)?.name || '猫猫'));
+  if (occupied.has(candidate)) candidate=base+' '+(index+1);
+  return candidate;
 }
 
 function addXp(cat, amount) {
