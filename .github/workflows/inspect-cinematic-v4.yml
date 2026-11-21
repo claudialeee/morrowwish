@@ -1,0 +1,34 @@
+name: Inspect actual V4 cinematic trailer images (NO PUBLISHING)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-cinematic-v4.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Ensure ffmpeg image compositing is available
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Export three genuine video frames per trailer for visual inspection
+        run: node scripts/export-v4-contact-sheets.mjs
+      - name: Save editor review images in private GitHub repo, do NOT post anywhere
+        run: |
+          git add promotion/video-qa-v4/*.jpg promotion/video-qa-v4/*.b64
+          git config user.name 'morrowwish-promo-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'qa(promo): authentic opening/middle/ending V4 video frame contact sheets'
+          git pull --rebase origin main
+          git push origin HEAD:main
