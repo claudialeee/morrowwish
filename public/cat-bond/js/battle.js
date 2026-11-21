@@ -590,6 +590,12 @@ class CaptureBattle {
     return true;
   }
 
+  markMoveSeen(f,sk){
+    if(!f||!sk||!Array.isArray(f.cat.unseenSkills))return;
+    const idx=f.cat.unseenSkills.indexOf(sk.id);
+    if(idx<0)return;
+    f.cat.unseenSkills.splice(idx,1);State.save();this.game.updateSkillLabels?.();
+  }
   skillQ(f, aim) {
     f = f || this.me(); if (f.cd.q > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
@@ -597,6 +603,7 @@ class CaptureBattle {
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk))return false;
       f.cd.q=sk.cd*(f.bond.cdReduction||1);
+      this.markMoveSeen(f,sk);
       return true;
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1);
@@ -613,6 +620,7 @@ class CaptureBattle {
       this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
     }
     this.gainUlt(8);
+    this.markMoveSeen(f,sk);
     if (f === this.me()) this.game.toast('🧶 ' + (sk ? sk.name : '毛球散射') + '！');
     return true;
   }
@@ -643,6 +651,7 @@ class CaptureBattle {
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk))return false;
       f.cd.e=sk.cd*(f.bond.cdReduction||1);
+      this.markMoveSeen(f,sk);
       return true;
     }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1);
@@ -660,6 +669,7 @@ class CaptureBattle {
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
     }
     this.gainUlt(6);
+    this.markMoveSeen(f,sk);
     if(f===this.me())this.game.toast('💨 '+(sk?sk.name:'疾扑冲刺')+'！');
     return true;
   }
@@ -710,6 +720,7 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-48,skill.name+'!',color,22);
       this.game.toast(this.elemSymbol(skill.element)+' 必杀 · '+skill.name+'！');
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
+      this.markMoveSeen(f,skill);
       window.arcadeMetric?.('bond_signature_ultimate',{skill:skill.id,rarity:GameData.speciesById(f.cat.species).rarity});
     }else{
       // New ordinary cats still have a useful basic ultimate until their own

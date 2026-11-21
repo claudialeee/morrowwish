@@ -46,6 +46,7 @@ const UI = {
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
+    document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
@@ -109,11 +110,13 @@ const UI = {
   openBondPanel(){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
-    const picked=this._duoPicked||CatRelations.chosen().map(c=>c.uid);
-    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked.splice(0,picked.length,cats[0].uid,cats[1].uid);
+    let picked=this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid);
+    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked=[cats[0].uid,cats[1].uid];
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const name=ok?CatRelations.title(a,b).name:'—';
+    const selected=ok&&CatRelations.chosen().map(c=>c.uid).join('|')===picked.join('|');
+    const mood=ok?CatRelations.mood(a,b):'unknown';
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
     const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
@@ -122,22 +125,41 @@ const UI = {
       <p>${en?'Pair two cats. Pet and play to raise trust, then take both into battle for a team attack.':'选择两只搭档，撸猫和一起玩耍提升默契，组队出战释放元素合击。'}</p>
       <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
       <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
-      <div class="duo-relation"><strong>${name}</strong><span>${en?'Trust':'默契'} ${p}/100</span>
+      <div class="duo-relation"><strong>${name}</strong>
+        <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
+        <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
+        <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
         <div class="duo-meter"><span style="width:${p}%"></span></div>
         <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small>
         ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
           +CatRelations.secretStory(a,b)+'</span></p>':''}</div>
       <div class="btn-row">
-        <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${en?'Set active pair':'设为搭档'}</button>
+        <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
+        ${mood==='sulky'?'<button class="btn" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button>':''}
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
     for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
       const ids=picked.slice();ids[i]=e.target.value;this._duoPicked=ids;this.openBondPanel();
     };
-    document.getElementById('duo-choose').onclick=()=>{CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];this.openBondPanel();};
+    document.getElementById('duo-choose').onclick=()=>{
+      if(!ok)return;
+      CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
+      this.game.yard?.entities?.filter(e=>[a.uid,b.uid].includes(e.cat.uid))
+        .forEach(e=>{e.emote('💞',3);e.pettedGlow=1.5;});
+      this.game.refreshHUD();
+      this.game.toast(en?'💞 Duo formed! Both cats will join the next fight.':'💞 搭档组成成功！下次战斗两只会一起上场。');
+      window.arcadeMetric?.('bond_duo_selected',{elementPair:CatRelations.title(a,b).elementPair});
+      this.openBondPanel();
+    };
+    const soothe=document.getElementById('duo-soothe');
+    if(soothe)soothe.onclick=()=>{
+      if(CatRelations.soothe(a,b)){this.game.toast(en?'💗 Made up! Trust +6':'💗 和好啦！默契 +6');this.openBondPanel();}
+    };
     document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
       if(v.ok){this.game.toast(en?'💞 Friendship +13!':'💞 双猫默契 +13！');this.game.refreshHUD();}
+      else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
+      else if(v.reason==='treats')this.game.toast(en?'Not enough treats':'零食不够啦');
       this._duoPicked=[a.uid,b.uid];this.openBondPanel();
     };
     document.getElementById('duo-return').onclick=()=>this.openJourney();
@@ -647,6 +669,8 @@ const UI = {
     Skills.ensureLoadout(cat);
     const chosen=unlocked.find(sk=>sk.ultCost>0)
       ||unlocked.find(sk=>['dash','heal','buff'].includes(sk.kind))||unlocked[0];
+    if(!Array.isArray(cat.unseenSkills))cat.unseenSkills=[];
+    if(!cat.unseenSkills.includes(chosen.id))cat.unseenSkills.push(chosen.id);
     window.arcadeMetric?.('bond_skill_unlocked',{breed:cat.species,skill:chosen.id,source:'growth'});
     return chosen;
   },
@@ -996,13 +1020,16 @@ const UI = {
     }
     // sort partners by power; pick top 3 as the default team
     const sorted = [...cats].sort((a, b) => State.catPower(b) - State.catPower(a));
-    this.teamUids = sorted.slice(0, 3).map(c => c.uid);
+    const preferred=window.CatRelations?.chosen?.()||[];
+    const duo=preferred.length===2?preferred.filter(c=>cats.some(t=>t.uid===c.uid)):[];
+    this.teamUids=[...duo,...sorted.filter(c=>!duo.some(d=>d.uid===c.uid))].slice(0,3).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
-      return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}">
+      const inDuo=duo.some(d=>d.uid===c.uid);
+      return `<div class="chip ${sel ? 'sel' : ''} ${inDuo?'duo-member':''}" data-uid="${c.uid}">
         <canvas width="44" height="38"></canvas>
-        <div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
+        <div><div style="font-weight:700">${State.catName(c)} ${inDuo?'💞':''}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
       </div>`;
     }).join('');
     const newBreed=!State.S.dex[wildSp.id];
@@ -1021,6 +1048,7 @@ const UI = {
       ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
       ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
+      ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       <p class="tiny">${firstCapture?'电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！':'战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动'}</p>
       <div class="btn-row">
