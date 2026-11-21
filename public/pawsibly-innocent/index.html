@@ -260,8 +260,6 @@ html.cg-play .stealth-actionbar{min-height:0}
 <main class="wrap single-screen-game">
 <div class="board-layout">
  <div class="stage" id="stage">
-  <div class="playfield" id="playfield">
-   <canvas id="board" width="840" height="588" tabindex="0" aria-label="Tap to move your cat. Collect three fish and sneak through the cat flap."></canvas>
    <div class="in-game-top">
     <div class="sticker">
      <small id="roomNum">ROOM 01 / 08</small>
@@ -273,16 +271,10 @@ html.cg-play .stealth-actionbar{min-height:0}
      <button id="menuButton" class="hud-icon" type="button" aria-label="Open game menu" title="Open game menu">☰</button>
     </div>
    </div>
+  <div class="playfield" id="playfield">
+   <canvas id="board" width="840" height="588" tabindex="0" aria-label="Tap to move your cat. Collect three fish and sneak through the cat flap."></canvas>
    <div id="pawsAlert" class="paws-alert" hidden role="status">SPOTTED</div>
    <div id="yarnAimBanner" class="yarn-aim-banner" hidden>Tap a floor tile to aim your yarn</div>
-   <div class="stealth-actionbar">
-    <div class="stealth-help">
-     <strong id="visionTip">Tap the fish beside your cat to begin.</strong>
-     <div class="guard-status" id="guardStatus" data-mode="patrol"><span class="guard-dot" aria-hidden="true"></span><span id="guardIntent">Owner: patrolling</span></div>
-     <span class="yarn-hint" id="yarnQuickHint">Throw yarn to distract the human.</span>
-    </div>
-    <button class="button yarn board-yarn" id="tool" type="button">🧶 Toss yarn</button>
-   </div>
    <div id="coachSpot" class="coach-spot" aria-hidden="true"></div>
    <div class="toast" id="toast" role="status" aria-live="polite"></div>
    <div id="achievementToast" class="achievement-toast" role="status" aria-live="polite" hidden></div>
@@ -295,6 +287,14 @@ html.cg-play .stealth-actionbar{min-height:0}
     </div>
    </div>
   </div>
+   <div class="stealth-actionbar">
+    <div class="stealth-help">
+     <strong id="visionTip">Tap the fish beside your cat to begin.</strong>
+     <div class="guard-status" id="guardStatus" data-mode="patrol"><span class="guard-dot" aria-hidden="true"></span><span id="guardIntent">Owner: patrolling</span></div>
+     <span class="yarn-hint" id="yarnQuickHint">Throw yarn to distract the human.</span>
+    </div>
+    <button class="button yarn board-yarn" id="tool" type="button">🧶 Toss yarn</button>
+   </div>
   <div class="game-menu" id="gameMenu" hidden role="dialog" aria-modal="true" aria-labelledby="menuTitle">
    <div class="menu-shell">
     <div class="menu-head">
