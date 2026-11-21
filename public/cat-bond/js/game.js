@@ -603,9 +603,10 @@ class Game {
     this.yard.petEntity(entity);
     const cat = entity.cat;
     const previous=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
+    // 撸猫 only raises 亲密(affinity) + joy — NEVER XP/level. Levels come from winning
+    // battles; affinity gives a temporary % stat buff (see State.affinityStatMult).
     cat.affinity = Math.min(100, cat.affinity + 2);
     cat.joy = Math.min(100, cat.joy + 5);
-    const lv = State.addXp(cat, 3);
     const newSkill=UI.announceSkillMilestone?.(cat,previous);
     if(newSkill)this.toast('✨ '+State.catName(cat)+' 学会 '+newSkill.name+'！');
     State.S.petCount=(State.S.petCount||0)+1;
@@ -620,7 +621,6 @@ class Game {
     }
     this.tryYardSurprise(cat);
     const rewards=this.grantBondingRewards();
-    if(lv)this.toast(`${GameData.speciesById(cat.species).name} ${window.MorrowwishI18n?.get?.()==='zh'?'升到等级 ':'reached Lv.'}${cat.level}${window.MorrowwishI18n?.get?.()==='zh'?'！':'!'} `);
     if(rewards.length){
       const coins=rewards.reduce((n,r)=>n+r.coins,0);
       this.toast((window.MorrowwishI18n?.get?.()==='zh'
@@ -1138,10 +1138,22 @@ class Game {
       const masteryReward=this.recordBattleMastery(b.wild,performance,newCat);
       State.S.coins+=performance.bonusCoins;
       State.S.treats+=performance.bonusTreats;
-      // reward: partner gains affinity + xp, coins
+      // reward: partner gains affinity, coins
       const skillsBefore=new Set(window.Skills?.learnableSkills(b.partner).map(sk=>sk.id)||[]);
       b.partner.affinity = Math.min(100, b.partner.affinity + 6);
-      State.addXp(b.partner, 25);
+      // BATTLE XP: winning grants level-scaled XP (by enemy difficulty: rarity +
+      // wild level), SPLIT among the cats that actually fought (the field squad).
+      // This is the ONLY XP source now — 撸猫 no longer levels cats.
+      {
+        const rIdx = ['N','R','SR','SSR'].indexOf(b.wild.rarity);
+        const base = 30 + (b.wildLevel||1) * 6 + rIdx * 20;   // tougher/higher = more XP
+        const squad = (b.team && b.team.length ? b.team : [b.partner])
+          .filter(f => f && f.cat).map(f => f.cat);
+        const uniq = [...new Map(squad.map(c => [c.uid, c])).values()];
+        const share = Math.max(8, Math.round(base / Math.max(1, uniq.length)));
+        for (const c of uniq) State.addXp(c, share);
+        this._battleXp = { total: base, each: share, n: uniq.length };
+      }
       const firstSkill=(State.S.catchCount===1&&window.Skills?.awakenFirstSkill)
         ?Skills.awakenFirstSkill(b.partner):null;
       if(firstSkill){

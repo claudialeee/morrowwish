@@ -42,19 +42,20 @@ class CaptureBattle {
       const cats0 = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
       const avgLv = cats0.length ? cats0.reduce((s, c) => s + (c.level || 1), 0) / cats0.length : 1;
       const gap = avgLv - this.wildLevel;                  // + = you out-level; − = wild out-levels you
-      if (gap >= 0) {
-        // over-leveled: no penalty up to +3, then shave ~6%/lv to a 0.6 floor; enemy unchanged
-        this.levelSuppression = gap <= 3 ? 1 : Math.max(0.6, 1 - (gap - 3) * 0.06);
-        this.enemyLevelMult = 1;
-      } else {
-        // UNDER-leveled: level gives the wild an edge, but NEVER a hopeless stat wall
-        // (羁绊之旅 等级压制限制 — skill must still win a big gap). Your damage sinks
-        // ~5%/lv to a GENEROUS 0.70 floor; the wild hits ~9%/lv harder capped at +60%.
-        // So a Lv4 vs Lv15 is dangerous but beatable by dodging + 虚弱 combos, not a
-        // numbers loss. (Measured: old 0.55/×2.2 made it unwinnable.)
-        const under = -gap;
-        this.levelSuppression = Math.max(0.70, 1 - under * 0.05);
-        this.enemyLevelMult = Math.min(1.6, 1 + under * 0.09);
+      // LOGISTIC level-gap scaling (researched): smooth S-curves, no piecewise cliffs.
+      // ±1 level barely matters; gaps of 3–7 do the real work; huge gaps asymptote.
+      // Advantage lives mostly in DAMAGE RATE (Pokémon/WoW lesson), a little in enemy
+      // HP, so a big gap is slow+dangerous but never a hopeless stat wall (等级压制限制).
+      {
+        const L  = 1 / (1 + Math.exp(-0.5 * (gap + 0.94)));   // player advantage
+        this.playerDmgMult = 0.60 + 0.65 * L;                 // ∈ [0.60, 1.25]
+        const Le = 1 / (1 + Math.exp( 0.5 * (gap + 4.39)));   // enemy threat (rises as gap↓)
+        this.enemyDmgMult  = 0.90 + 1.00 * Le;                // ∈ [0.90, 1.90]
+        const Lh = 1 / (1 + Math.exp( 0.5 * (gap + 1.69)));   // enemy tankiness
+        this.enemyHpScaleGap = 0.85 + 0.50 * Lh;              // ∈ [0.85, 1.35]
+        // aliases for the existing hit sites (player-out / enemy-out damage)
+        this.levelSuppression = this.playerDmgMult;
+        this.enemyLevelMult = this.enemyDmgMult;
       }
     }
 
@@ -515,7 +516,14 @@ class CaptureBattle {
     // Only SR/SSR receive an extra challenge: normal and R encounters remain
     // accessible early. Existing roster levels and cat stats are untouched.
     const eliteFactor = rIdx === 3 ? 1.22 : rIdx === 2 ? 1.12 : 1;
-    const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor);
+    // EARLY-GAME onboarding damp: a fresh-save opener drags because the ~196 HP floor
+    // sits in front of a ~12-DPS Lv1 cat. Low-level enemies start with much less HP
+    // (Lv1 ~55%), ramping to full by Lv6, so the first fight is short + winnable.
+    const earlyDamp = 0.55 + 0.45 * Math.min(1, (level - 1) / 5);
+    // enemyHpScaleGap (logistic, from the constructor): a little extra HP when the
+    // wild out-levels you, gentle so a gap feels tankier without being spongy.
+    const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor
+                             * earlyDamp * (this.enemyHpScaleGap || 1));
     // First two battles teach controls; later battles ask for dodging and team skill timing.
     const captures=State.S.catchCount||0;
     // Base challenge ramps with collection progress; flawless-win streak (_stomp,
@@ -535,7 +543,7 @@ class CaptureBattle {
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
       dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*(1+challenge*.12),   // raised: enemy hits had no weight
-      speed:92+rIdx*22+challenge*14,fireRate:Math.max(.43,1.1-rIdx*.18-challenge*.12),
+      speed:92+rIdx*22+challenge*14,fireRate:Math.max(.38,0.8-rIdx*.14-challenge*.1),   // faster basic poke so the enemy plinks consistently (was too sparse)
       skill: this.pickWildSkillFor(element, rIdx),
       // POISE/韧性: filled only by SKILL/combo/beam/ult hits. When it breaks, the
       // enemy staggers into a 虚弱 window taking ~2x damage. Unmarked basics barely
@@ -552,7 +560,15 @@ class CaptureBattle {
     // HP/dmg derive purely from the cat's STATS (single source of truth). Level is
     // expressed THROUGH the stats, which grow along the breed's identity (see
     // State.addXp): a Lv.9 cat has genuinely bigger stats than a Lv.3 one.
-    const maxhp = Math.round(55 + s.vit * 5);
+    // AFFINITY (亲密) → temporary % stat modifier, capped ±15%. High bond buffs stats
+    // up to +15%; low bond or a RECENT DEATH (cat._deathPenaltyUntil set on faint)
+    // temporarily DROPS them. Multiplies hp + dmg; never permanent (recomputed each
+    // battle from live affinity). 撸猫 raises affinity → this is how petting helps.
+    const aff = Math.max(0, Math.min(100, cat.affinity || 0));
+    let affMult = 1 + 0.15 * ((aff - 50) / 50);          // aff 50 → 1.0, 100 → 1.15, 0 → 0.85
+    if (cat._deathPenaltyUntil && Date.now() < cat._deathPenaltyUntil) affMult *= 0.88;  // recent faint: shaken
+    affMult = Math.max(0.80, Math.min(1.15, affMult));
+    const maxhp = Math.round((55 + s.vit * 5) * affMult);
     // element + a learned loadout from the skill library (Q / E slots)
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(cat.species) : null;
     let loadout = null;
@@ -2756,8 +2772,8 @@ class CaptureBattle {
       // Manual play is harder than letting the AI dodge for you, so give a human
       // pilot ~25% more breathing room between enemy shots (auto mode stays brisk).
       // Within-fight pressure tapers that ease away and speeds fire as a stomp drags.
-      const manualEase = (this.autoMode ? 1 : 1.25) - (this._pressure || 0) * 0.3;
-      e.fireCd = Math.max(0.5, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
+      const manualEase = (this.autoMode ? 1 : 1.12) - (this._pressure || 0) * 0.3;
+      e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
       let lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
       if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
@@ -3048,7 +3064,7 @@ class CaptureBattle {
     // LEVEL SUPPRESSION: an over-leveled squad's raw damage is softly capped so a
     // fight can't be won by stats alone (see constructor). Applied to ALL player
     // damage (direct + DoT) at this single chokepoint; 1 when near/under level.
-    if (this.levelSuppression && this.levelSuppression < 1) dmg *= this.levelSuppression;
+    if (this.levelSuppression) dmg *= this.levelSuppression;   // logistic curve: <1 under-level, >1 over-level
     // a direct player hit extends the combo and gets the combo damage multiplier
     if (!isDot) {
       dmg *= this.comboMult(); this.addCombo(1);
@@ -3243,6 +3259,9 @@ class CaptureBattle {
   onFaint(f) {
     f = f || this.me();
     f.alive = false;
+    // A faint shakes the cat: a temporary % stat penalty (via affinityStatMult) that
+    // lingers ~3 min of real time into its NEXT battles, until it's comforted/bonds up.
+    if (f.cat) f.cat._deathPenaltyUntil = Date.now() + 180000;
     this.spawnBurst(f.x, f.y, '💫', '#c9b6ff', 10);
     // RESERVE SUBSTITUTION: a fainted field cat is replaced by a benched reserve cat
     // (brought in at the fainted cat's spot), so bringing a 3rd cat means a backup
