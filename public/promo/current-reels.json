@@ -53,8 +53,23 @@
   "montage": {
     "video": "/promo/morrow-wish-seven-games-20261121.mp4",
     "cover": "/promo/morrow-wish-seven-games-20261121.jpg",
-    "status": "pending-assembly"
+    "status": "verified-and-scheduled",
+    "channels": [
+      "youtube",
+      "tiktok",
+      "instagram",
+      "bluesky"
+    ],
+    "verifiedFromWorkflowRun": 44876285204
   },
   "cta": "https://morrowwish.vercel.app/",
-  "status": "seven-game-footage-verified-not-yet-platform-published"
+  "status": "video-assets-verified-social-posts-scheduled-not-yet-published",
+  "release": {
+    "videosVerified": 8,
+    "uniqueGames": 7,
+    "socialPostsScheduled": 25,
+    "postsActuallyPublished": 0,
+    "timezone": "America/Los_Angeles",
+    "verifiedFrom": "Metricool scheduled posts + GitHub Action gameplay and media logs"
+  }
 }
