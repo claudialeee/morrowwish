@@ -1352,7 +1352,8 @@ const UI = {
     const preferred=window.CatRelations?.chosen?.()||[];
     const duo=preferred.length===2?preferred.filter(c=>sorted.some(t=>t.uid===c.uid)):[];
     const saved=this.getPreferredBattleTeam().filter(c=>sorted.some(t=>t.uid===c.uid));
-    this.teamUids=[...saved,...duo,...sorted].filter((c,i,arr)=>arr.findIndex(x=>x.uid===c.uid)===i).slice(0,3).map(c=>c.uid);
+    const selection=State.S.battlePrefs?.teamUids?.length&&saved.length?saved:[...saved,...duo,...sorted];
+    this.teamUids=selection.filter((c,i,arr)=>arr.findIndex(x=>x.uid===c.uid)===i).slice(0,3).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
