@@ -165,6 +165,7 @@ function correctHost(){
  route==='elsewhere'?['.game-top .game-tools','.top-right','.game-top']:
  route==='tiny-town'?['.top-actions','.header']:
  route==='pocket-aquarium'?['.mw-mini-aqua-top','.scores','header']:
+ route==='echo-heist'?['.mw-mini-echo-head','.nav']:
  ['.mw-mini-frame-hud','.game-top .scoreboard','.scoreboard','.game-top','.topbar','header'];
  let anchor=null;
  for(const selector of candidates){const el=root.querySelector?.(selector);if(el){anchor=el;break;}}
