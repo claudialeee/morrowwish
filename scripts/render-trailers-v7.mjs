@@ -34,7 +34,8 @@ const playlists={
  ],
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
-  broll('narrow-escape',7.6,'NINE LIVES · ACHIEVEMENT!'),
+  broll('narrow-pursuit',3.1,'SPOTTED! CAN IT ESCAPE?'),
+  broll('narrow-achievement',2.0,'NINE LIVES · ACHIEVEMENT!'),
   broll('caught-attempt',14,'NEXT ROOM. ONE BAD MOVE...'),
   cover(1.95,'PLAY FREE')
  ],
@@ -53,7 +54,7 @@ const playlists={
  'elsewhere':[
   // A quick promise of multiple dream lives, then one clear romantic story
   // from meeting to real ending. No repetitive generic moon/choice filler.
-  broll('choose-life',2.8,'WAKE UP TO A NEW LIFE.'),
+  broll('choose-life',2.8),
   broll('amalfi',2.35,'A VILLA ON THE AMALFI COAST.'),
   broll('tokyo',2.35,'BE A SUPERSTAR TONIGHT.'),
   broll('moon-opening',2.5,'OR OWN A HOTEL ON THE MOON.'),
@@ -174,7 +175,7 @@ function edit(slug){
    if(sh.caption.length>31)throw Error('V7 subtitle exceeds phone-safe width '+slug+'/'+sh.label+': '+sh.caption);
     const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
-      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'||slug==='pawsibly-innocent'?110:slug==='pocket-aquarium'?1360:1705)+
+      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'?1650:slug==='pawsibly-innocent'?110:slug==='pocket-aquarium'?1360:1705)+
       ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.40:boxborderw=12';
    captionsUsed++;
   }

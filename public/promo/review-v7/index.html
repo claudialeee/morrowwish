@@ -5,7 +5,7 @@ fetch('/promo/v7-review.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(
  const article=document.createElement('article'),h=document.createElement('h2'),v=document.createElement('video'),a=document.createElement('a'),note=document.createElement('small');const names={'cat-bond':'猫猫纽带','pawsibly-innocent':'猫猫捣蛋','tiny-town':'自由小镇','elsewhere':'平行人生','flip-dash':'Flip Dash','parcel-panic':'快递大作战','pocket-aquarium':'口袋水族馆'};
  h.textContent=(names[entry.slug]||entry.slug)+' · 加长实机版';v.controls=true;v.playsInline=true;v.preload='metadata';v.poster=entry.poster;v.src=entry.video;
  const highlights={'cat-bond':[['cat-upgrade','猫咪升级'],['duo-partners','双猫搭档'],['duo','双猫合击'],['ultimate','必杀技']],
- 'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['narrow-escape','侥幸逃脱'],['caught-attempt','被抓住']],
+ 'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['narrow-pursuit','险些被抓'],['narrow-achievement','险中逃生成就'],['caught-attempt','被抓住']],
  'tiny-town':[['resident-reactions','居民心情'],['resident-profile','居民喜好'],['neighbor-story','居民故事'],['ending','小镇结局']],
  'elsewhere':[['paris-romance','巴黎浪漫爱情'],['paris-love-moment','爱情互动'],['paris-chapter-3','恋爱后续'],['paris-ending','爱情结局'],['moon-surprise','剧情惊喜']],
  'flip-dash':[['first-coin','开局吃金币'],['coin-collect','连续吃金币'],['crash','撞上障碍']],

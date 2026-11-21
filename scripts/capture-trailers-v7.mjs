@@ -283,9 +283,16 @@ try{
   });
   if(!badgeEarned)throw Error('The real Nine Lives achievement was not awarded');
   const nearMissEnd=stamp();await sleep(2100);
-  const nearMissClipStart=Math.max(nearMissStart,nearMissEnd-5500);
-  shots.push({label:'narrow-escape',start:nearMissClipStart,
-   duration:Math.min(7.6,nearMissEnd-nearMissClipStart+2.0)});
+  // A chronological BEFORE/AFTER pair: the "achievement" title must never
+  // appear over the starting board before the real badge is earned.
+  // The game has already incremented nearMisses 550ms before nearMissEnd;
+  // start the achievement clip once the real in-game badge is visible.
+  const chaseStart=Math.max(nearMissStart,nearMissEnd-3.3);
+  const badgeStart=nearMissEnd-.30;
+  if(badgeStart-chaseStart<1.1)throw Error('V10 close call lacks readable pursuit footage');
+  shots.push({label:'narrow-pursuit',start:chaseStart,duration:badgeStart-chaseStart-.1});
+  shots.push({label:'narrow-achievement',start:badgeStart,duration:Math.min(2.0,stamp()-badgeStart-.1)});
+  if(shots.at(-1).duration<1.8)throw Error('V10 real badge did not remain visible for two seconds');
   console.log('V8 CAT NARROW ESCAPE VERIFIED '+JSON.stringify(nearMissProof));
   // Explicit second run. The cut is at the start of a NEW room, never in
   // the middle of movement. A different outcome comes from actual game rules.
