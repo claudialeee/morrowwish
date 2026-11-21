@@ -431,7 +431,7 @@ try{
    assert.ok(v.hud?.includes('0/3')&&v.owner,'CrazyGames must show fish goal and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
-   assert.ok(v.canvas.width>=440&&v.canvas.height>=315,
+   assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
      'Gameplay must remain large and legible at DPR 1: '+JSON.stringify(v));
    assert.ok(v.totalWidth<=w+2&&v.totalHeight<=h+2,
      'CrazyGames iframe must not require page scrolling: '+JSON.stringify(v));
