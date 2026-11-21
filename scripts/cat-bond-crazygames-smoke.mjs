@@ -84,7 +84,42 @@ try{
         return {loaded:true,yard,frameDelta:delta};
       });
       assert.ok(motionAudit.loaded&&motionAudit.yard>0&&motionAudit.frameDelta>100,
-        'Yard must draw a real animated four-legged cat, not a floating portrait: '+JSON.stringify(motionAudit));
+        'Yard must draw a cat with real pose changes: '+JSON.stringify(motionAudit));
+      if(width===907){
+        await page.waitForFunction(()=>window.CatBondArtworkStatus?.breedsLoaded,{timeout:12000});
+        const paintedGait=await page.evaluate(()=>{
+          const cv=document.createElement('canvas');cv.width=170;cv.height=160;
+          const ctx=cv.getContext('2d'),sp=GameData.SPECIES[0];
+          const original=()=>new Uint8ClampedArray(ctx.getImageData(0,0,170,160).data);
+          const draw=(api,pose,stride)=>{
+            ctx.clearRect(0,0,170,160);
+            api(ctx,85,111,{species:sp,face:1,t:.8,pose,motion:1,stride,scale:1});
+            return original();
+          };
+          const stillFromMotion=draw(CatMotion.draw,'idle',0);
+          const stillFromOriginal=draw(CatArt.drawCat,'idle',0);
+          let unchanged=0;
+          for(let i=0;i<stillFromMotion.length;i+=4)
+            unchanged+=Math.abs(stillFromMotion[i+3]-stillFromOriginal[i+3]);
+          const first=draw(CatMotion.draw,'run',0);
+          const second=draw(CatMotion.draw,'run',Math.PI);
+          let pawDelta=0;
+          for(let i=3;i<first.length;i+=4)
+            pawDelta+=Math.abs(first[i]-second[i]);
+          return {unchanged,pawDelta,
+            rigged:window.CatBondArtworkStatus.gaitLayersBuilt,
+            atlas:window.CatBondArtworkStatus.breedsLoaded,
+            style:window.CatMotion.artStyle};
+        });
+        assert.equal(paintedGait.unchanged,0,
+          'The original 25-breed still illustrations must remain completely unchanged');
+        assert.ok(paintedGait.atlas&&paintedGait.rigged>0,
+          'Walking feet must be cut from the original high-resolution watercolor artwork');
+        assert.ok(paintedGait.pawDelta>150,
+          'Two strides with an identical head and body must move real illustrated paws, not slide the complete portrait: '
+          +JSON.stringify(paintedGait));
+        console.log('CAT BOND ORIGINAL PAINTED GAIT PASS',JSON.stringify(paintedGait));
+      }
       assert.equal(state.tutorial,true,'First wild must have a highlighted target');
       assert.equal(state.rarity,'N','First wild should be a learnable common');
       assert.notEqual(state.species,state.owned,'First catch must reveal a new breed');
