@@ -152,3 +152,47 @@ body>.sitebar{display:none!important}
  .single-screen-game .modal .cat-medal{font-size:34px}
 }
 @media(prefers-reduced-motion:reduce){.single-screen-game .coach-spot{animation:none}}
+
+/* The playable 10×7 board is never covered by a toolbar.
+   HUD, canvas and controls form ONE framed game window. */
+.single-screen-game .stage{
+ width:100%;max-width:1040px;aspect-ratio:auto!important;height:auto!important;
+ display:flex!important;flex-direction:column!important;gap:0!important;
+ align-items:center!important;justify-content:center!important;
+}
+.single-screen-game .in-game-top{
+ position:relative!important;top:auto!important;left:auto!important;right:auto!important;
+ box-sizing:border-box;width:100%;height:auto;min-height:53px;flex:0 0 auto;
+ padding:6px 10px!important;align-items:center!important;pointer-events:auto;
+ background:linear-gradient(90deg,#fff8f2ee,#f8e8f0f2);border-bottom:1px solid #ead9dc
+}
+.single-screen-game .sticker{box-shadow:none!important;background:#fffdfaef!important}
+.single-screen-game .playfield{
+ position:relative;flex:0 1 auto;min-height:0;
+ width:100%;height:auto!important;aspect-ratio:10/7!important;
+ margin:0 auto!important;max-width:100%;max-height:none;
+}
+.single-screen-game #board{width:100%;height:100%;aspect-ratio:10/7}
+.single-screen-game .stealth-actionbar{
+ position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;
+ box-sizing:border-box;flex:0 0 auto;width:100%!important;max-width:none!important;
+ min-height:61px!important;margin:0!important;padding:7px 12px!important;
+ border-radius:0!important;border:0!important;border-top:1px solid #f2dedb!important;
+ box-shadow:none!important;background:linear-gradient(90deg,#fffaf5,#fff1f2)!important
+}
+.single-screen-game .toast{bottom:14px}
+.single-screen-game .board-yarn{min-width:144px!important;min-height:44px!important}
+.single-screen-game #coachSpot{pointer-events:none}
+.single-screen-game .in-game-controls{position:relative}
+.single-screen-game .game-menu{z-index:40}
+@media(max-width:700px){
+ .single-screen-game .stage{border-width:3px;border-radius:12px}
+ .single-screen-game .in-game-top{min-height:41px;padding:3px 5px!important}
+ .single-screen-game .stealth-actionbar{min-height:49px!important;padding:5px 7px!important}
+ .single-screen-game .board-yarn{min-width:101px!important;min-height:42px!important}
+ .single-screen-game .sticker b{font-size:10px}
+ .single-screen-game .heist-status{font-size:11px;padding:6px 7px}
+ .single-screen-game .hud-icon,.single-screen-game .mw-fullscreen-toggle{width:39px!important;height:39px!important;min-width:39px!important;min-height:39px!important}
+ .single-screen-game .mw-fullscreen-toggle{font-size:0!important}
+ .single-screen-game .toast{bottom:10px}
+}
