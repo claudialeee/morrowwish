@@ -259,6 +259,27 @@
     { id: 'blessFur',   name: '呼噜光环', element: 'light', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','regen'],  appliesTag: null,    vfx: 'orb',       desc: '发出安心的呼噜声形成光环，提升自身伤害。' },
     { id: 'dawnHeal',   name: '慢眨眼',   element: 'light', kind: 'heal',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '对你缓缓眨眼表达信任，回复斗志。' },
     { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.1, cd: 0,   ultCost: 60, tags: ['buff','ult','weaken'],    appliesTag: ['blind','weaken'], vfx: 'ring',      desc: '【必杀】月华绽放，致盲并削弱——敌人伤害减半。' },
+
+    // ========================================================================
+    // GATED / LEARNED skills — NOT innate. Each carries an `unlock` descriptor
+    // (see section 5). A cat must LEARN these at the trainer before equipping;
+    // learning drops the skill id into cat.learned. Skills WITHOUT `unlock`
+    // follow the classic element/level/rarity rules and stay free as before.
+    // ========================================================================
+    // ---- 付费领悟 (pay a trainer) ----
+    { id: 'cometClaw',  name: '彗星爪',   element: 'fire',  kind: 'melee',      power: 1.7, cd: 3.2, ultCost: 0, heavy: true, tags: ['burn','heavy'],   appliesTag: 'burn',  vfx: 'impact',    desc: '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。', unlock: { cost: { coins: 150 } } },
+    { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
+    { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用毛线换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { yarn: 12 } } },
+    // ---- 等级 / 亲密 / 组合门槛 ----
+    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.45,cd: 2.8, ultCost: 0, precise: true, tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
+    { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.6, cd: 4.2, ultCost: 0, heavy: true, tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
+    { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 1.8, cd: 4.0, ultCost: 0, heavy: true, tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
+    // ---- 品种专属 (breed-locked signature) ----
+    { id: 'moonfang',   name: '月噬牙',   element: 'light', kind: 'aoe',        power: 2.6, cd: 0,   ultCost: 70, tags: ['light','ult','weaken'], appliesTag: ['blind','weaken'], vfx: 'ring', desc: '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。', unlock: { species: ['yuelian','xingchen','yinghua'] } },
+    // ---- 领悟条件 (quirky quests) ----
+    { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 1.9, cd: 3.4, ultCost: 0, heavy: true, tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
+    { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
+    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal',       power: 0,   cd: 7.0, ultCost: 0, tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
   ];
   const SKILL_BY_ID = {};
   SKILLS.forEach(s => { SKILL_BY_ID[s.id] = s; });
@@ -398,6 +419,97 @@
       ? window.GameData.speciesById(cat.species) : null;
   }
 
+  // ==========================================================================
+  // 5b. GATED SKILL-LEARNING (付费 / 等级 / 亲密 / 品种 / 领悟)
+  // ==========================================================================
+  // A skill may carry an `unlock` descriptor; skills without one stay innate and
+  // follow the classic element/level rules below. An `unlock` can combine any of:
+  //   cost:{coins?,fish?,yarn?}  — pay at the trainer (deducted on learn)
+  //   level: N                   — cat.level must be >= N
+  //   affinity: N                — cat.affinity (亲密) must be >= N
+  //   species: ['id',...]        — cat.species must be one of these (品种专属)
+  //   quest: 'id'                — a quirky "领悟" condition (see QUEST_CHECKS)
+  // A skill is LEARNABLE when every NON-cost gate is met (the player can afford
+  // or not); it is EQUIPPABLE only once its id is in cat.learned. Pure non-cost
+  // gates (level/affinity/species/quest with no cost) auto-learn the moment the
+  // gate is met, so they feel like natural 领悟 moments.
+
+  // Quirky "领悟" conditions, keyed by unlock.quest. Each is a pure predicate over
+  // the cat + global State — small by design, reusing counters that already tick.
+  const QUEST_CHECKS = {
+    // Win 10 battles while THIS cat was on the field (per-cat battlesWon counter,
+    // incremented by game.js when a won squad includes the cat).
+    battlesWon10: { need: 10, get: (cat) => cat.battlesWon || 0,
+      label: { zh: '随它出战并累计胜利 {cur}/{need}', en: 'Win {cur}/{need} battles with this cat' } },
+    // Collect 15 cats total (reuses State.S.catchCount).
+    catchFifteen: { need: 15, get: () => (window.State && State.S && State.S.catchCount) || 0,
+      label: { zh: '收服猫猫 {cur}/{need}', en: 'Capture {cur}/{need} cats' } },
+    // Pet living cats 40 times (reuses State.S.petCount).
+    pet40: { need: 40, get: () => (window.State && State.S && State.S.petCount) || 0,
+      label: { zh: '撸猫互动 {cur}/{need}', en: 'Pet cats {cur}/{need} times' } },
+  };
+  function questProgress(id) {
+    const q = QUEST_CHECKS[id];
+    return q ? { cur: 0, need: q.need } : null;
+  }
+  // Is a quirky condition satisfied for this cat right now?
+  function questMet(cat, id) {
+    const q = QUEST_CHECKS[id];
+    if (!q) return false;
+    return q.get(cat) >= q.need;
+  }
+
+  // Does the cat meet every NON-cost part of a skill's gate? (cost is paid, not met)
+  function gateMet(cat, skill) {
+    const u = skill && skill.unlock;
+    if (!u) return true;
+    if (u.level && (cat.level || 1) < u.level) return false;
+    if (u.affinity && (cat.affinity || 0) < u.affinity) return false;
+    if (u.species && (!Array.isArray(u.species) || u.species.indexOf(cat.species) < 0)) return false;
+    if (u.quest && !questMet(cat, u.quest)) return false;
+    return true;
+  }
+  function hasLearned(cat, id) {
+    return Array.isArray(cat.learned) && cat.learned.indexOf(id) >= 0;
+  }
+  function isGated(skill) { return !!(skill && skill.unlock); }
+
+  // Can this gated skill be LEARNED now? (gate met AND not already learned)
+  function canLearn(cat, skill) {
+    return isGated(skill) && !hasLearned(cat, skill.id) && gateMet(cat, skill);
+  }
+  // A pure non-cost gate (level/affinity/species/quest, no coins/fish/yarn) is a
+  // natural 领悟 — once its condition is met the cat learns it automatically.
+  function isAutoLearn(skill) {
+    const u = skill && skill.unlock;
+    return !!u && !u.cost;
+  }
+  // Auto-grant any pure-gate skills the cat now qualifies for. Returns the list of
+  // skills freshly learned (so the UI can toast / metric them). ensureLoadout and
+  // the trainer both call this so autobattle only ever sees legal skills.
+  function autoLearn(cat) {
+    if (!cat) return [];
+    if (!Array.isArray(cat.learned)) cat.learned = [];
+    const fresh = [];
+    for (const s of SKILLS) {
+      if (isGated(s) && isAutoLearn(s) && !hasLearned(cat, s.id) && gateMet(cat, s)) {
+        cat.learned.push(s.id);
+        fresh.push(s);
+      }
+    }
+    return fresh;
+  }
+  // Skills shown at the trainer: gated, not-yet-learned, grouped by whether their
+  // non-cost gate is already met (ready to learn) or still locked.
+  function trainerSkills(cat) {
+    const ready = [], locked = [];
+    for (const s of SKILLS) {
+      if (!isGated(s) || hasLearned(cat, s.id)) continue;
+      (gateMet(cat, s) ? ready : locked).push(s);
+    }
+    return { ready, locked };
+  }
+
   // learnableSkills(cat) -> array of skill objects the cat is allowed to slot.
   function learnableSkills(cat) {
     const el = elementOf(cat.species);
@@ -406,8 +518,18 @@
     const bond = cat.affinity || 0;
     const rIdx = rarityIdx((speciesOf(cat) || {}).rarity || cat.rarity || 'N');
     const tier = bondTier(bond);
+    // Natural 领悟: grant any pure-gate skills the cat now qualifies for before we
+    // build the pool, so the auto-loadout immediately sees them.
+    autoLearn(cat);
     const out = [];
     for (const s of SKILLS) {
+      // GATED skills bypass the element rules entirely: they are equippable ONLY
+      // when explicitly learned (via trainer or auto-领悟). This keeps powerful
+      // skills out of the free pool until their condition is met + learned.
+      if (isGated(s)) {
+        if (hasLearned(cat, s.id)) out.push(s);
+        continue;
+      }
       const isUlt = s.ultCost > 0;
       const sig = SIGNATURE_SKILL[cat.species] === s.id;
       // Progressive discovery: a beginner uses its own element first; its
@@ -515,6 +637,34 @@
       cat.autoSkillLoadout=cat.loadout.slice();
     }
     return selected;
+  }
+
+  // learnSkill(cat, skillId) — attempt to learn a gated skill. PURE on the skills
+  // side except it mutates cat.learned and the global currency wallet (the game's
+  // single source of truth). Returns {ok, reason?, via}. The UI handles save/toast/
+  // metric. `via` tags HOW it was learned for analytics: 'cost' | gate name.
+  function learnSkill(cat, skillId) {
+    const sk = skillById(skillId);
+    if (!sk || !isGated(sk)) return { ok: false, reason: 'notLearnable' };
+    if (hasLearned(cat, skillId)) return { ok: false, reason: 'already' };
+    if (!gateMet(cat, sk)) return { ok: false, reason: 'locked' };
+    const cost = sk.unlock.cost;
+    if (cost) {
+      const S = window.State && State.S;
+      if (!S) return { ok: false, reason: 'noState' };
+      const yarn = (S.raising && S.raising.yarn) || 0;
+      if ((cost.coins || 0) > (S.coins || 0)) return { ok: false, reason: 'coins' };
+      if ((cost.fish || 0) > (S.fish || 0)) return { ok: false, reason: 'fish' };
+      if ((cost.yarn || 0) > yarn) return { ok: false, reason: 'yarn' };
+      if (cost.coins) S.coins -= cost.coins;
+      if (cost.fish) S.fish -= cost.fish;
+      if (cost.yarn) { S.raising = S.raising || {}; S.raising.yarn = yarn - cost.yarn; }
+    }
+    if (!Array.isArray(cat.learned)) cat.learned = [];
+    cat.learned.push(skillId);
+    const via = cost ? 'cost' : (sk.unlock.quest ? 'quest'
+      : sk.unlock.species ? 'species' : sk.unlock.affinity ? 'affinity' : 'level');
+    return { ok: true, via };
   }
 
   function progressionHint(cat){
@@ -665,6 +815,9 @@
     // --- learning / loadouts ---
     SIGNATURE_SKILL, SPLASH_ELEMENT, learnableSkills, defaultLoadout, ensureLoadout,
     awakenFirstSkill, progressionHint,
+    // --- gated skill-learning (付费/等级/亲密/品种/领悟) ---
+    QUEST_CHECKS, questProgress, questMet, gateMet, hasLearned, isGated,
+    canLearn, isAutoLearn, autoLearn, trainerSkills, learnSkill,
     // --- bond ---
     BOND_BONUSES, bondTier, bondBonuses,
     // --- evolution ---

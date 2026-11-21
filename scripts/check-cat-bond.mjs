@@ -227,6 +227,60 @@ assert.equal(legendary.loadout[0],null,'Basic (slot 0) is the innate toy toss, n
 assert.notEqual(legendary.loadout[1],legendaryThunder.loadout[1],
   'Legendary and epic cats should have distinct equipped Q skills');
 
+// ---- GATED SKILL-LEARNING: powerful skills must be LEARNED, not free ----
+// A paid skill (cometClaw: 🪙150) is invisible to learnableSkills until bought;
+// buying deducts coins and adds the id to cat.learned, then it becomes equippable.
+{
+  const buyer=State.makeCat('tangyuan',{affinity:10}); // fire cat, low level
+  const comet=Skills.skillById('cometClaw');
+  assert.ok(comet&&comet.unlock&&comet.unlock.cost&&comet.unlock.cost.coins===150,
+    'cometClaw is a coin-gated skill');
+  assert.ok(!Skills.learnableSkills(buyer).some(s=>s.id==='cometClaw'),
+    'A paid skill is NOT learnable/equippable before it is learned');
+  // Too poor to learn: currency unchanged, nothing learned.
+  State.S.coins=100;
+  const poor=Skills.learnSkill(buyer,'cometClaw');
+  assert.equal(poor.ok,false,'Cannot learn a paid skill without enough coins');
+  assert.equal(State.S.coins,100,'A failed purchase deducts nothing');
+  assert.ok(!Skills.hasLearned(buyer,'cometClaw'),'A failed purchase learns nothing');
+  // Afford it: coins deducted, skill learned, now in the pool.
+  State.S.coins=200;
+  const bought=Skills.learnSkill(buyer,'cometClaw');
+  assert.equal(bought.ok,true,'Learning a paid skill succeeds when affordable');
+  assert.equal(bought.via,'cost','Paid learning is tagged via:cost for analytics');
+  assert.equal(State.S.coins,50,'Learning a paid skill deducts exactly its coin cost');
+  assert.ok(buyer.learned.includes('cometClaw'),'Learned skill id is pushed to cat.learned');
+  assert.ok(Skills.learnableSkills(buyer).some(s=>s.id==='cometClaw'),
+    'A learned skill becomes equippable (appears in learnableSkills)');
+
+  // A level-gated 领悟 skill (frostLance: Lv.10) is hidden until the level is
+  // reached, then AUTO-learned by learnableSkills (pure non-cost gate).
+  const climber=State.makeCat('xiaohui',{affinity:10}); // water cat
+  assert.ok(!Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
+    'A level-gated skill is hidden below its level');
+  climber.level=10;
+  assert.ok(Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
+    'Reaching the level auto-learns the 领悟 skill');
+  assert.ok(climber.learned.includes('frostLance'),'Auto-领悟 records the skill in cat.learned');
+
+  // ensureLoadout must never auto-equip a still-locked skill.
+  const fresh=State.makeCat('moqiu',{affinity:0}); fresh.level=1; // dark cat
+  Skills.ensureLoadout(fresh);
+  const equipped=new Set((fresh.loadout||[]).filter(Boolean));
+  for(const id of equipped){
+    const sk=Skills.skillById(id);
+    if(sk&&Skills.isGated(sk))
+      assert.ok(fresh.learned.includes(id),'ensureLoadout only equips learned/innate skills, never a locked gate: '+id);
+  }
+  // A breed-locked signature auto-learns for the right breed only.
+  const moon=State.makeCat('yuelian',{affinity:50});
+  Skills.learnableSkills(moon);
+  assert.ok(moon.learned.includes('moonfang'),'A breed-locked signature auto-learns for its breed');
+  const notMoon=State.makeCat('moqiu',{affinity:50});
+  assert.ok(!Skills.learnableSkills(notMoon).some(s=>s.id==='moonfang'),
+    'The wrong breed can never learn a breed-locked signature');
+}
+
 
 const earlyState=sandbox.window.State;
 earlyState.S.cats=[earlyState.makeCat('tangyuan')];

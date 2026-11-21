@@ -747,6 +747,10 @@ class Game {
       staticPounce: '⚡', boltArc: '🔌', thunderYowl: '🌩️',
       shadowSwipe: '🌑', hex: '🔮', voidMaw: '🕳️',
       prismBeam: '🌈', blessFur: '✨', dawnHeal: '💖', moonlitHalo: '🌙',
+      // gated / learned skills
+      cometClaw: '☄️', tidalBite: '🦷', thornLash: '🌵', frostLance: '❄️',
+      voltRush: '🏃', apexPounce: '🐆', moonfang: '🌝', veteranStrike: '⚔️',
+      purrNova: '💥', tenderPaw: '🫶',
     };
     return byId[sk.id] || this.elemIcon(sk.element);
   }
@@ -1191,6 +1195,16 @@ class Game {
         const share = Math.max(8, Math.round(base / Math.max(1, uniq.length)));
         for (const c of uniq) State.addXp(c, share);
         this._battleXp = { total: base, each: share, n: uniq.length };
+        // A win on the field advances each squad cat's personal 战斗 counter, which
+        // feeds the "百战斩" 领悟 skill-learning quest. Auto-learn any newly met
+        // pure-gate (level/affinity/species/quest) skills so the loadout stays legal.
+        for (const c of uniq) {
+          c.battlesWon = (c.battlesWon || 0) + 1;
+          const fresh = window.Skills?.autoLearn?.(c) || [];
+          for (const sk of fresh) {
+            metric('bond_skill_learned', { skill: sk.id, via: 'quest', breed: c.species });
+          }
+        }
       }
       const firstSkill=(State.S.catchCount===1&&window.Skills?.awakenFirstSkill)
         ?Skills.awakenFirstSkill(b.partner):null;
