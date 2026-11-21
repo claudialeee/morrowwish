@@ -31,7 +31,7 @@ const playlists={
   cover(1.65,'PLAY FREE')
  ],
  'pawsibly-innocent':[
-  broll('escape-attempt',25,'STEAL THREE FISH. ESCAPE THE HUMAN.'),
+  broll('escape-attempt',25,'STEAL FISH. ESCAPE THE HUMAN.'),
   broll('caught-attempt',15,'ANOTHER ROOM. ONE WRONG MOVE...'),
   cover(1.75,'PLAY FREE')
  ],
@@ -57,17 +57,17 @@ const playlists={
   cover(1.7,'PLAY FREE')
  ],
  'flip-dash':[
-  broll('full-attempt',20,'ONE BUTTON. HOW LONG CAN YOU SURVIVE?'),
+  broll('full-attempt',20,'ONE TAP. STAY ALIVE.'),
   cover(1.8,'PLAY FREE')
  ],
  'parcel-panic':[
-  broll('full-attempt',20,'MATCH THE COLORS. TRY NOT TO MISS.'),
+  broll('full-attempt',20,'MATCH COLORS. DON'T MISS.'),
   cover(1.8,'PLAY FREE')
  ],
  'pocket-aquarium':[
   broll('feeding',2.9,'FEED THE HUNGRY FISH.'),
   broll('water-cloudy',3.0,'THE WATER IS GETTING CLOUDY.'),
-  broll('timeout',2.0,'TIME IS UP. WHAT GRADE DID YOU GET?'),
+  broll('timeout',2.0,'TIME'S UP. WHAT GRADE?'),
   cover(1.7,'PLAY FREE')
  ]
 };
@@ -153,7 +153,8 @@ function edit(slug){
    }
    captionsUsed+=4;
   }else if(sh.src==='broll'&&!!sh.caption&&!/result$/.test(sh.label)){
-   const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
+   if(sh.caption.length>31)throw Error('V6 subtitle exceeds phone-safe width '+slug+'/'+sh.label+': '+sh.caption);
+    const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
       ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'||slug==='pawsibly-innocent'?110:slug==='pocket-aquarium'?1360:1705)+
       ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.40:boxborderw=12';
