@@ -117,7 +117,48 @@ try{
   assert.equal(sigAudit.count,21,'all elemental combinations need unique choreography');
   assert.equal(sigAudit.unique,21,'motifs should not be mere palette swaps');
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-duo.png'});
-  console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify(result));
+  // Real visual-preview page, not an inert 21-button mockup. Render EVERY
+  // signature at a fixed moment with the connected cat rigs + tier artwork.
+  await page.goto(origin+'/cat-bond/duo-preview.html',{waitUntil:'domcontentloaded',timeout:30000});
+  await page.waitForFunction(()=>window.__duoPreviewReady&&window.__duoPreviewDebug,{timeout:10000});
+  assert.equal(await page.locator('.signature').count(),21,'all 21 duos selectable');
+  const visual=await page.evaluate(()=>{
+    const debug=window.__duoPreviewDebug,keys=debug.getKeys(),cv=document.getElementById('duo-canvas');
+    const ctx=cv.getContext('2d',{willReadFrequently:true});
+    const hashes=[],motionHashes=[];
+    const hash=()=>{
+      const data=ctx.getImageData(0,0,cv.width,cv.height).data;let x=2166136261;
+      for(let i=0;i<data.length;i+=37)x=Math.imul(x^data[i],16777619)>>>0;
+      return x;
+    };
+    for(const key of keys){
+      debug.renderAt(key,3,.90);hashes.push(hash());
+      debug.renderAt(key,1,.32);motionHashes.push(hash());
+      const S=window.CatBondDuoSignatures;
+      for(const p of [.12,.32,.53,.79,.95]){
+        for(const width of [320,390,800,1180]){
+          const h=width===800?351:Math.min(380,width*1.1);
+          const pose=S.course(S.get(key).style,p,width,h,h/2,3);
+          const coords=[pose.x1,pose.x2,pose.y1,pose.y2];
+          if(!coords.every(Number.isFinite))throw Error('Broken cat motion for '+key);
+          if(pose.x1>width*.351||pose.x2<width*.649)
+            throw Error('Two kittens overlap at the head: '+key);
+        }
+      }
+    }
+    const overflow=document.documentElement.scrollWidth>innerWidth+3;
+    debug.select('elec+fire');
+    return {count:keys.length,distinct:new Set(hashes).size,
+      differentWindups:motionHashes.some((v,i)=>v!==hashes[i]),
+      overflow,visibleCanvas:cv.width>0&&cv.height>0};
+  });
+  assert.equal(visual.count,21);
+  assert.equal(visual.distinct,21,'all rendered signature screens must differ');
+  assert.equal(visual.differentWindups,true,'signature key frames must actually animate');
+  assert.equal(visual.overflow,false,'preview must not scroll sideways');
+  assert.equal(visual.visibleCanvas,true);
+  await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview.png'});
+  console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify({battle:result,signaturePreview:visual}));
   await context.close();
  }
  assert.deepEqual(errors,[],'uncaught browser errors');

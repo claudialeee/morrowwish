@@ -17,7 +17,7 @@ function cat(ctx,x,y,size,subject,face,age,col){
  const [fur,white,outline]=coat(subject);
  const crouch=clamp(age/.27,0,1),swipe=clamp((age-.28)/.27,0,1);
  const leap=clamp((age-.2)/.31,0,1);
- ctx.save();ctx.translate(x,y-Math.sin(leap*Math.PI)*34);
+ ctx.save();ctx.translate(x,y-Math.sin(leap*Math.PI)*34*(size/180));
  ctx.scale(face*size/180,size/180);
  ctx.rotate(face*(-.10+crouch*.06+swipe*.08));
  // A proper cat tail connects to its torso and flicks during the launch.
@@ -78,8 +78,10 @@ function draw(ctx,W,H,seq,lookup){
  if(age>1.82)return true; // leave the actual arena visible for the lingering field
  const p=clamp(age/1.52,0,1),tier=seq.tier||1;
  const alpha=clamp(age/.16,0,1)*clamp((1.86-age)/.26,0,1);
- const h=Math.min(H*.70,320),cy=Math.min(H*.55,Math.max(H*.38,H*.50)),top=cy-h/2;
- const size=Math.min(W*.29,h*.69,tier>=3?220:196);
+ const h=Math.min(H*.78,380),cy=H*.50,top=cy-h/2;
+ // Fit the ears, paws and connecting forearms INSIDE even a short mobile
+ // landscape viewport. A full-body cat never gets cut at the letterbox edge.
+ const size=Math.min(W*.30,h*.54,175)*(tier>=3?1.02:1);
  const xshift=ease((p-.15)/.42)*W*.24;
  const col1=seq.first||'#ffc38d',col2=seq.second||'#c0b6ff';
  const ids=seq.catUids||[];
@@ -104,10 +106,21 @@ function draw(ctx,W,H,seq,lookup){
   const sx=W*((i+.4)/12)+p*W*.12;
   ctx.beginPath();ctx.moveTo(sx-140,top+h);ctx.lineTo(sx+70,top);ctx.stroke();ctx.restore();
  }
- cat(ctx,choreography?.x1??(W*.255+xshift),choreography?.y1??(cy+h*.22),
-     size*(choreography?.scale||1),lookup(ids[0]),1,choreography?.phase1??p,col1);
- cat(ctx,choreography?.x2??(W*.745-xshift),choreography?.y2??(cy+h*.22),
-     size*(choreography?.scale||1),lookup(ids[1]),-1,choreography?.phase2??p,col2);
+ // Limit the center crossing to CLAWS, not the kittens' heads. This avoids
+ // a two-cat body overlap that looks like broken or split-up characters.
+ const paintCat=(x,y,scale,id,face,phase,color)=>{
+   const actualSize=size*scale;
+   const safeMin=top+actualSize*1.04+10;
+   const safeMax=top+h-actualSize*.54-10;
+   const safeY=Math.max(safeMin,Math.min(safeMax,y));
+   cat(ctx,x,safeY,actualSize,lookup(id),face,phase,color);
+ };
+ paintCat(Math.min(W*.35,choreography?.x1??W*.29),
+   choreography?.y1??(cy+h*.15),choreography?.scale||1,ids[0],1,
+   choreography?.phase1??p,col1);
+ paintCat(Math.max(W*.65,choreography?.x2??W*.71),
+   choreography?.y2??(cy+h*.15),choreography?.scale||1,ids[1],-1,
+   choreography?.phase2??p,col2);
  // Vary movement, not just numerical damage, at each relationship tier.
  const hit=clamp((p-.43)/.24,0,1);
  if(hit>0){
@@ -128,6 +141,12 @@ function draw(ctx,W,H,seq,lookup){
  const rank=tier>=3?(en?'SOULBOUND FINALE':'心意相通 · 终极连斩'):
    tier>=2?(en?'CROSS-CLAW COMBO':'默契进阶 · 交叉爪击'):
    (en?'TWIN PAW POUNCE':'双猫合击 · 联手飞扑');
+ // Keep title readable over scenery/kitten feet, not as floating text.
+ ctx.globalAlpha=alpha*.77;
+ const titleFade=ctx.createLinearGradient(0,top+h*.7,0,top+h);
+ titleFade.addColorStop(0,'rgba(9,22,37,0)');
+ titleFade.addColorStop(1,'rgba(9,22,37,.96)');
+ ctx.fillStyle=titleFade;ctx.fillRect(W*.025,top+h*.69,W*.95,h*.31);
  ctx.globalAlpha=alpha;ctx.textAlign='center';
  ctx.font='900 '+Math.round(Math.min(26,W*.052))+'px system-ui';
  ctx.fillStyle='#fff8ec';ctx.shadowColor=col1;ctx.shadowBlur=10;

@@ -20,7 +20,8 @@ class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
     this.game = game;
     this.W = game.W; this.H = game.H;
-    this._computeArenaMargins();
+    this.topMargin = this.H<540&&this.W>this.H ? Math.max(58,Math.min(105,this.H*.26)) : Math.max(85,Math.min(238,this.H*.40));
+    this.bottomMargin = this.H<540&&this.W>this.H ? Math.max(38,Math.min(64,this.H*.15)) : Math.max(54,Math.min(112,this.H*.16));
     this.wild = wildSpecies;
     this.rar = GameData.RARITY[wildSpecies.rarity];
     this.rarIdx = ['N', 'R', 'SR', 'SSR'].indexOf(wildSpecies.rarity);
@@ -70,13 +71,14 @@ class CaptureBattle {
     this.reinforceT = 0;                         // >0 while a temp 3rd cat is on the field
     this.active = 0;
     this.partner = cats[0];              // for reward bookkeeping in game.js
-    this.duo=window.CatRelations?.active(cats)||null;
+    // Only the two explicitly selected STARTERS can trigger a duo. Previously
+    // a favorite pair anywhere in the five-cat roster could silently be used
+    // even while one favorite was on the bench, disabling the Duo button.
+    this.duo=window.CatRelations?.active(this.team.map(f=>f.cat))||null;
     this.duoCharge=this.duo?12:0;this.duoCd=0;this.duoUses=0;   // bond support starts low + fills slow (bigger payoff than the ult)
 
-    // --- player runtime state: spread the team on the LEFT, INSIDE the playable band
-    // (above the control cluster) so they're never hidden behind the skill buttons ---
-    this.team.forEach((f,i)=>{const top=this.topMargin,bot=this.H-this.bottomMargin;
-      f.x=this.W*(.18+(i%2)*.1);f.y=top+(bot-top)*(0.45+i*0.12);});
+    // --- player runtime state: spread the whole team on the LEFT so all fight ---
+    this.team.forEach((f,i)=>{f.x=this.W*(.18+(i%2)*.1);f.y=this.H*(.55+i*.085);});
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
@@ -473,25 +475,13 @@ class CaptureBattle {
     ctx.restore();
   }
 
-  // Arena vertical bounds. The TOP band holds the squad panel + enemy HP; the BOTTOM
-  // band must clear the move-bar / skill-button cluster so combat never happens UNDER
-  // the controls (portrait phones were pushing the fight into the hidden bottom-right).
-  _computeArenaMargins(){
-    const H=this.H, W=this.W, shortLandscape=H<540&&W>H;
-    if(shortLandscape){
-      this.topMargin=Math.max(58,Math.min(105,H*.26));
-      this.bottomMargin=Math.max(70,Math.min(150,H*.22));      // clear the landscape control strip
-    }else{
-      this.topMargin=Math.max(85,Math.min(238,H*.34));
-      // portrait: the skill cluster + move bar eat the bottom ~26% — keep the fight above it
-      this.bottomMargin=Math.max(150,Math.min(320,H*.26));
-    }
-    if(this.topMargin+this.bottomMargin>H-120)this.topMargin=Math.max(36,H-this.bottomMargin-120);
-  }
   // Keep the combat field available when a phone is rotated mid-encounter.
   onResize(W,H){
     const oldW=this.W||W,oldH=this.H||H;this.W=W;this.H=H;
-    this._computeArenaMargins();
+    const shortLandscape=H<540&&W>H;
+    this.topMargin=shortLandscape?Math.max(58,Math.min(105,H*.26)):Math.max(85,Math.min(238,H*.40));
+    this.bottomMargin=shortLandscape?Math.max(38,Math.min(64,H*.15)):Math.max(54,Math.min(112,H*.16));
+    if(this.topMargin+this.bottomMargin>H-96)this.topMargin=Math.max(36,H-this.bottomMargin-96);
     const minX=Math.min(BATTLE_MARGIN.side,W*.15),maxX=Math.max(minX,W-minX);
     for(const f of [...this.team,...this.enemies]){
       f.x=clamp(f.x*W/oldW,minX,maxX);
@@ -558,8 +548,7 @@ class CaptureBattle {
       role:rIdx>=2?'elite':(i%3===0?'ambusher':i%3===1?'sharpshooter':'skirmisher'),
       phase:0,challenge,
       maxhp, hp: maxhp,
-      // place enemies inside the PLAYABLE band (above the control cluster), upper-right
-      x: this.W * col, y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(0.30+(i%2)*0.22);})(), vx: 0, vy: 0,
+      x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
       shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,swipeCd:1,
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
@@ -608,16 +597,11 @@ class CaptureBattle {
       hp: Math.round(maxhp * carried), maxhp,
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
-      // AGI modifies speed by AT MOST +30% over the base — a nimble cat is a little
-      // faster, not double-speed. (agi ~40 → +~27%; capped at +30%.)
-      speed: 150 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),
+      speed: 120 + s.agi * 2.8,            // trimmed ~20%: cats were a touch too zippy to control
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
-      // Projectile speed is a property of the SHOT, not the cat's AGI — a fireball
-      // flies at a fireball's speed no matter who threw it. Flat base; individual
-      // skills carry their own speed multiplier off this (e.g. fireball *0.75).
-      projSpeed: 300,
+      projSpeed: 250 + s.agi * 4,          // trimmed ~17%: projectiles read calmer/more dodgeable
       // Opening cooldowns: skills start on cooldown so a fight can't open with an
       // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
       cd: { basic: 0, q: 1.6, e: 2.4 },
@@ -1609,31 +1593,10 @@ class CaptureBattle {
       // the cast follows the live aim of the active cat (you can steer during windup)
       const aim = (f === this.me()) ? this.aim : (f._aim ?? c.aim);
       c.aim = aim;
-      // CHARGE-UP VFX: make it unmistakable the cat is winding up a heavy move —
-      // a CONVERGING ring (energy pulled inward), a brightening core glow, orbiting
-      // energy motes being sucked in, and sparks that quicken as the charge completes.
-      const k = 1 - Math.max(0, c.t) / c.max;                 // 0 → 1 over the windup
-      // converging ring: starts wide, closes toward the caster as k→1
-      this.vfx.ring(f.x, f.y, { r0: 40 * (1 - k) + 10, vr: 0, life: 0.07, color: c.col, width: 2 + 2 * k });
-      // brightening core glow (additive flash grows + pulses faster near the end)
-      this.vfx.impact && (f._chargeGlowCd = (f._chargeGlowCd || 0) - dt);
-      if ((f._chargeGlowCd || 0) <= 0) {
-        f._chargeGlowCd = 0.14 - 0.09 * k;                    // pulse speeds up as it fills
-        this.vfx.fx.push({ type: 'flash', x: f.x, y: f.y - 4, r: 8 + 14 * k, life: 0.18, max: 0.18 });
-      }
-      // orbiting motes drawn INWARD (gathered energy) — a couple per frame
-      for (let i = 0; i < 2; i++) {
-        const a = Math.random() * Math.PI * 2, rad = 46 * (1 - k) + 14;
-        const sx = f.x + Math.cos(a) * rad, sy = f.y + Math.sin(a) * rad;
-        this.vfx.fx.push({ type: 'spark', x: sx, y: sy,
-          vx: (f.x - sx) * (2.4 + 2 * k), vy: (f.y - sy) * (2.4 + 2 * k),
-          life: 0.22, max: 0.22, r: 2.4, color: c.col, drag: 0, grav: 0 });
-      }
-      if (c.t <= 0) {
-        // release flash — the charge "pops" the instant the skill fires
-        this.vfx.ring(f.x, f.y, { r0: 8, vr: 520, life: 0.3, color: c.col, width: 5 });
-        f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true);
-      }
+      // growing charge ring at the caster
+      const k = 1 - Math.max(0, c.t) / c.max;
+      this.vfx.ring(f.x, f.y, { r0: 34 * (1 - k) + 6, vr: 0, life: 0.06, color: c.col, width: 3 });
+      if (c.t <= 0) { f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true); }
     }
     this.pendingCasts = this.pendingCasts.filter(c => c.t > 0);
   }

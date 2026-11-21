@@ -171,13 +171,16 @@ function course(style,p,W,h,cy,tier=1){
   case 'lake':x1=W*(.26+.15*q);x2=W*(.74-.15*q);y1-=bounce*h*.06;break;
   case 'tides':x1=W*(.17+.26*q);x2=W*(.83-.26*q);y1-=bounce*h*.17;y2-=bounce*h*.17;scale=1.04;break;
  }
+ // Guaranteed separate heads even at the crossover hit beat; their PAWS
+ // reach across the center while each whole cat remains individually readable.
+ x1=Math.min(x1,W*.35);x2=Math.max(x2,W*.65);
  return {x1,x2,y1,y2,phase1,phase2,scale:scale*(tier>=3?1.04:1)};
 }
 function paint(ctx,W,H,p,tier,key){
  const sig=entries[key];if(!sig)return false;
  ctx.save();
  // translucent background effects, keeping kitten faces visible.
- ctx.globalAlpha=.80;
+ ctx.globalAlpha*=.80;
  sig.draw(ctx,W,H,p,tier);
  ctx.restore();
  return true;

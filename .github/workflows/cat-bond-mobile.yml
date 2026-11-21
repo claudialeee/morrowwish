@@ -33,3 +33,20 @@ jobs:
           node scripts/cat-bond-touch-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-duo-smoke.mjs
+
+      - name: Save duo animation visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-duo-visual-qa
+          path: /tmp/cat-bond-*-duo.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Save signature gallery screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-duo-preview
+          path: /tmp/cat-bond-*-preview.png
+          if-no-files-found: ignore
+          retention-days: 7

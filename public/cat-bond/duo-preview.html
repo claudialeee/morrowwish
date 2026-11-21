@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,follow">
+  <title>双猫合击演出总览 · Cat Bond | Morrow Wish</title>
+  <style>
+    :root{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      color:#2e4650;background:#f6f3eb;--paper:#fffdfa;--line:#d8ddce}
+    *{box-sizing:border-box}body{margin:0;padding:clamp(12px,3vw,32px)}
+    main{max-width:1120px;margin:auto}header{display:flex;align-items:center;gap:15px;justify-content:space-between;flex-wrap:wrap}
+    h1{margin:0;font-size:clamp(23px,4vw,35px);letter-spacing:-.035em}
+    h2{font-size:17px;margin:20px 0 10px}
+    .intro{font-size:13px;line-height:1.6;color:#647877;margin:8px 0 15px}
+    a{color:#3b6e5d;text-decoration:none}a:hover{text-decoration:underline}
+    .viewer{background:linear-gradient(130deg,#29414c,#162c3e);border-radius:18px;
+      padding:8px;box-shadow:0 13px 38px #273a3821;overflow:hidden}
+    #duo-canvas{display:block;width:100%;aspect-ratio:16/9;height:auto;border-radius:12px;touch-action:pan-y}
+    .controls{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:12px 0}
+    button{font:inherit;cursor:pointer;touch-action:manipulation}
+    .ctl{background:#fff;border:1px solid #b8c9c1;padding:9px 13px;border-radius:10px;color:#305a4a}
+    .ctl[aria-pressed=true],.signature.selected{background:#365e55;color:#fff;border-color:#365e55}
+    .tier{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+    #now-playing{font-weight:750;font-size:15px;color:#284b40;margin:8px 0}
+    #signature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:8px}
+    .signature{text-align:left;display:flex;align-items:center;gap:7px;min-height:58px;
+      padding:9px 11px;border-radius:12px;background:var(--paper);border:1px solid var(--line);
+      color:#34494a;transition:background .12s,border .12s}
+    .signature:hover{border-color:#9bbaa8}.signature .number{display:inline-block;min-width:24px;
+      color:inherit;opacity:.57;font-size:11px;font-variant-numeric:tabular-nums}
+    .signature .caption{font-size:12px;font-weight:700;line-height:1.38}
+    .footer{font-size:12px;line-height:1.65;color:#6c7777;margin:16px 0 25px}
+    @media(max-width:520px){#signature-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+      .signature{padding:7px 8px;min-height:52px}.signature .caption{font-size:11px}
+      .controls .ctl{padding:8px 9px}#now-playing{font-size:14px}}
+    @media(prefers-reduced-motion:reduce){.signature{transition:none}}
+  </style>
+</head>
+<body>
+<main>
+<header>
+  <h1>双猫合击 · 21 种独立演出</h1>
+  <a href="./">返回《猫猫纽带》游戏</a>
+</header>
+<p class="intro">点击任意合击技能，观看两只酷萌小猫的不同攻击轨迹、舞台元素与挥爪动作。切换默契等级，查看合击如何成长。此页面是演出预览，不影响游戏存档。</p>
+<div class="viewer"><canvas id="duo-canvas" width="960" height="540" role="img" aria-label="当前双猫合击动态演出"></canvas></div>
+<div class="controls">
+  <button id="restart" class="ctl">重播</button>
+  <button id="pause" class="ctl" aria-pressed="false">暂停</button>
+  <div class="tier" role="group" aria-label="默契等级">
+    <button class="ctl" data-tier="1" aria-pressed="false">20 · 联手</button>
+    <button class="ctl" data-tier="2" aria-pressed="false">60 · 交叉</button>
+    <button class="ctl" data-tier="3" aria-pressed="true">90 · 终结</button>
+  </div>
+</div>
+<div id="now-playing" aria-live="polite">正在加载合击演出…</div>
+<h2>选择合击技能</h2>
+<div id="signature-grid" role="group" aria-label="21 种双猫合击"></div>
+<p class="footer">演示展示每种元素组合的独特编排及视觉演出。实际战斗中的伤害、控制、治疗和冷却仍由游戏决定。动画自动循环；为避免破图，合击以完整连贯的小猫身体绘制。</p>
+</main>
+<script>window.MorrowwishI18n={get:()=> 'zh'};</script>
+<script src="js/duo-signatures.js?v=20261121-all21-kinetic"></script>
+<script src="js/duo-hero.js?v=20261121-all21-kinetic"></script>
+<script>
+(()=>{
+'use strict';
+const names={
+ 'dark+dark':'双影夜巡','dark+elec':'影雷瞬袭','dark+fire':'暗焰猫爪','dark+grass':'夜藤伏击',
+ 'dark+light':'星月交辉','dark+water':'深海迷雾','elec+elec':'双雷连闪','elec+fire':'雷火喵旋风',
+ 'elec+grass':'雷芽缠锁','elec+light':'闪光连击','elec+water':'闪电泡泡雨','fire+fire':'双焰喵盛典',
+ 'fire+grass':'花火猫爪舞','fire+light':'日曜喵闪','fire+water':'蒸汽喵喵炮',
+ 'grass+grass':'双叶春醒','grass+light':'晨光花环','grass+water':'春雨绽放',
+ 'light+light':'双星祝福','light+water':'月湖屏障','water+water':'双潮回响'
+};
+const keys=window.CatBondDuoSignatures?.keys||[];
+const cv=document.getElementById('duo-canvas'),ctx=cv.getContext('2d');
+let selected='elec+fire',tier=3,start=performance.now(),paused=false,hold=0;
+const colors={dark:'#bcb0ea',elec:'#ffe58a',fire:'#ffab80',grass:'#b2e3a1',light:'#fff0bd',water:'#9fdbf7'};
+const cats={previewA:{uid:'previewA',species:'tangyuan'},previewB:{uid:'previewB',species:'xiaohui'}};
+function measure(){
+ const w=Math.max(1,cv.getBoundingClientRect().width),h=w*9/16,dpr=Math.min(2,window.devicePixelRatio||1);
+ const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+ if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph}
+ ctx.setTransform(dpr,0,0,dpr,0,0);return {w,h};
+}
+function render(seconds){
+ const {w,h}=measure(),es=selected.split('+'),t=2.75-Math.min(2.05,seconds);
+ ctx.clearRect(0,0,w,h);ctx.fillStyle='#162c3a';ctx.fillRect(0,0,w,h);
+ window.CatBondDuoHero.draw(ctx,w,h,{
+   max:2.75,t,catUids:['previewA','previewB'],tier,
+   name:names[selected],elements:selected,
+   first:colors[es[0]],second:colors[es[1]]},
+   uid=>cats[uid]);
+}
+function choose(key){
+ if(!keys.includes(key))return;
+ selected=key;start=performance.now();hold=0;
+ document.querySelectorAll('.signature').forEach(b=>{
+  b.classList.toggle('selected',b.dataset.pair===key);
+  b.setAttribute('aria-pressed',String(b.dataset.pair===key));
+ });
+ document.getElementById('now-playing').textContent=names[key]+' · '+key.replace('+',' + ')+
+   ' · 默契 '+(tier===1?'20':tier===2?'60':'90');
+ render(.55);
+}
+for(const [i,key] of keys.entries()){
+ const b=document.createElement('button');
+ b.className='signature';b.dataset.pair=key;b.type='button';
+ b.innerHTML='<span class="number">'+String(i+1).padStart(2,'0')+'</span>'+
+   '<span class="caption"></span>';
+ b.querySelector('.caption').textContent=names[key]||key;
+ b.onclick=()=>choose(key);
+ document.getElementById('signature-grid').append(b);
+}
+document.getElementById('restart').onclick=()=>{start=performance.now();hold=0;paused=false;
+ document.getElementById('pause').textContent='暂停';document.getElementById('pause').setAttribute('aria-pressed','false')};
+document.getElementById('pause').onclick=()=>{
+ paused=!paused;
+ if(!paused)start=performance.now()-hold*1000;
+ document.getElementById('pause').textContent=paused?'继续':'暂停';
+ document.getElementById('pause').setAttribute('aria-pressed',String(paused));
+};
+document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{
+ tier=Number(b.dataset.tier);
+ document.querySelectorAll('[data-tier]').forEach(x=>x.setAttribute('aria-pressed',String(Number(x.dataset.tier)===tier)));
+ choose(selected);
+});
+function frame(now){
+ const t=paused?hold:((now-start)/1000)%2.10;
+ if(!paused)hold=t;
+ if(document.visibilityState!=='hidden')render(t);
+ requestAnimationFrame(frame);
+}
+if(keys.length===21&&window.CatBondDuoHero){
+ choose(selected);requestAnimationFrame(frame);
+ window.__duoPreviewReady=true;
+ window.__duoPreviewDebug={renderAt:(key,lvl,s)=>{
+    selected=key;tier=lvl;render(s);return cv.toDataURL('image/png')
+   },select:choose,getKeys:()=>keys.slice()};
+}else document.getElementById('now-playing').textContent='演出资源加载失败。';
+})();
+</script>
+</body>
+</html>
