@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-21T06:39:00Z",
+  "updatedAt": "2026-11-21T06:39:00.620Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "All seven unique videos are verified and 21 network posts are scheduled automatically (PENDING, not yet published). Studio montage video is verified but not yet scheduled in this snapshot. Source-attributed site visits and gameplay starts are live data in the existing dashboard, not fake video estimates.",
+  "accuracyNote": "All 8 actual video assets are verified: seven game highlight reels plus one seven-game montage. Exactly 25 automatic network posts are scheduled and confirmed PENDING. These are not yet platform-public posts and do not prove homepage traffic. Live first-party homepage visits and genuine game starts are shown in the existing studio analytics.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -158,10 +158,33 @@
     "cover": "/promo/morrow-wish-seven-games-20261121.jpg",
     "production": "ready",
     "social": {
-      "youtube": "not-scheduled",
-      "tiktok": "not-scheduled",
-      "instagram": "not-scheduled"
+      "youtube": "scheduled",
+      "tiktok": "scheduled",
+      "instagram": "scheduled",
+      "bluesky": "scheduled"
     },
-    "validation": "15.4s, real clips from each of seven verified games, video/audio validation succeeded"
+    "validation": "15.4s, real clips from each of seven verified games, video/audio validation succeeded",
+    "platformPostIds": {
+      "youtube": 436426622,
+      "tiktok": 436426637,
+      "instagram": 436426646,
+      "bluesky": 436426609
+    },
+    "scheduledDates": {
+      "youtube": "2026-11-28",
+      "tiktok": "2026-11-28",
+      "instagram": "2026-11-28",
+      "bluesky": "2026-11-22"
+    },
+    "timezone": "America/Los_Angeles"
+  },
+  "summary": {
+    "activeGames": 7,
+    "retiredGamesExcluded": 8,
+    "verifiedGameVideos": 7,
+    "verifiedMontageVideos": 1,
+    "scheduledAutomaticPosts": 25,
+    "publishedPostsInThisCampaign": 0,
+    "verification": "Metricool getScheduledPosts cross-checked all 25 post IDs; each PENDING, non-draft, autoPublish=true. Posts must publish before reporting reach or conversions."
   }
 }
