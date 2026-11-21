@@ -8,6 +8,8 @@ on:
       - 'scripts/cat-bond-touch-smoke.mjs'
       - 'scripts/cat-bond-crazygames-smoke.mjs'
       - 'scripts/cat-bond-duo-smoke.mjs'
+      - 'scripts/cat-bond-audio-smoke.mjs'
+      - 'public/studio-audio.js'
       - 'scripts/cat-bond-scale-smoke.mjs'
       - '.github/workflows/cat-bond-mobile.yml'
   workflow_dispatch:
@@ -34,6 +36,7 @@ jobs:
           node scripts/cat-bond-touch-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-duo-smoke.mjs
+          node scripts/cat-bond-audio-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
 
       - name: Save duo animation visual QA screenshots

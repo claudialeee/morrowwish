@@ -1,180 +1,177 @@
-// Illustrated double-paw cut-in: kinetic, expressive cats drawn independently
-// of regular breed sprites. Fast Canvas2D, no image files or network requests.
+/* Cat Bond — PREMIUM 21-combination duo cinematic.
+ * Uses the eight ORIGINAL finished illustrations approved in this chat, not
+ * recycled generic vector kittens. Each elemental pairing has an independent
+ * attack choreography (camera, speed, magic and impact). Team names and breed
+ * watercolor badges are taken from the two actual deployed starter cats.
+ *
+ * Source sheet: 2 columns × 4 rows, each finished painting 650×366 WebP.
+ * Art: moon ward, spring rain, tidal chase, solar carousel, thunder spiral,
+ * shadow ambush, cross-claw storm, lunar thunder counter.
+ */
 (function(){
 'use strict';
-const coats=[
- ['#e8a26c','#fff0d9','#81533d'],['#a9abb5','#f0eff1','#626477'],
- ['#39465a','#d3dce6','#263448'],['#dbb7a3','#fff0e4','#9a6e65'],
- ['#bea4ca','#f7e8f5','#765f82'],['#9dbdab','#e7f4e8','#5f8171'],
- ['#f0e2ce','#fffdf2','#ab9688'],['#b9906c','#f5d7ad','#74553c']
-];
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const ease=v=>1-Math.pow(1-clamp(v,0,1),3);
-function coat(c){const s=String(c?.species||c?.uid||'cat');let n=0;for(const letter of s)n=(n*31+letter.charCodeAt(0))>>>0;return coats[n%coats.length];}
-function oval(ctx,x,y,rx,ry,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();}
-function path(ctx,pts,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)ctx.lineTo(...pts[i]);ctx.closePath();ctx.fill();}
-function cat(ctx,x,y,size,subject,face,age,col){
- const [fur,white,outline]=coat(subject);
- const crouch=clamp(age/.27,0,1),swipe=clamp((age-.28)/.27,0,1);
- const leap=clamp((age-.2)/.31,0,1);
- ctx.save();ctx.translate(x,y-Math.sin(leap*Math.PI)*34*(size/180));
- ctx.scale(face*size/180,size/180);
- ctx.rotate(face*(-.10+crouch*.06+swipe*.08));
- // A proper cat tail connects to its torso and flicks during the launch.
- ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=22;ctx.strokeStyle=outline;
- ctx.beginPath();ctx.moveTo(49,34);ctx.bezierCurveTo(95,10,109,-57,72,-66);ctx.stroke();
- ctx.lineWidth=15;ctx.strokeStyle=fur;ctx.stroke();
- oval(ctx,14,25,67,71,outline);oval(ctx,12,23,63,67,fur);
- oval(ctx,-23,46,33,32,white);
- // Grounded hind legs / paws.
- oval(ctx,46,79,29,16,outline);oval(ctx,45,75,24,13,fur);
- oval(ctx,-35,79,30,16,outline);oval(ctx,-35,75,26,13,white);
- // Triangular ears with pale inner ear and outlined fluffy head.
- path(ctx,[[-63,-61],[-77,-141],[-22,-93]],outline);
- path(ctx,[[18,-91],[67,-146],[68,-57]],outline);
- path(ctx,[[-59,-71],[-66,-121],[-31,-89]],'#e6a1a7');
- path(ctx,[[32,-92],[58,-125],[57,-71]],'#e6a1a7');
- oval(ctx,0,-40,81,74,outline);oval(ctx,0,-40,76,69,fur);
- oval(ctx,0,-10,47,29,white);
- // Determined yet unmistakably friendly kitten expression.
- ctx.strokeStyle=outline;ctx.lineWidth=5;ctx.beginPath();
- ctx.moveTo(-47,-65);ctx.lineTo(-22,-61);ctx.moveTo(18,-62);ctx.lineTo(47,-69);ctx.stroke();
- oval(ctx,-31,-48,13,9,'#293648');oval(ctx,32,-50,13,9,'#293648');
- oval(ctx,-28,-52,4,4,col||'#ffe0a4');oval(ctx,34,-54,4,4,col||'#ffe0a4');
- path(ctx,[[-7,-21],[8,-21],[1,-12]],'#d88a96');
- ctx.lineWidth=2.8;ctx.strokeStyle=outline;ctx.beginPath();
- ctx.moveTo(1,-12);ctx.quadraticCurveTo(-4,-3,-14,-10);
- ctx.moveTo(1,-12);ctx.quadraticCurveTo(9,-3,17,-11);ctx.stroke();
- for(const s of [-1,1])for(let j=0;j<2;j++){
-  ctx.beginPath();ctx.moveTo(s*39,-20+j*11);ctx.lineTo(s*72,-25+j*19);ctx.stroke();
- }
- // One large articulated forepaw actually swings; three visible claw tips.
- ctx.save();ctx.translate(40,13);ctx.rotate(-.7+swipe*1.55);
- ctx.strokeStyle=outline;ctx.lineWidth=28;ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(53,-10);ctx.stroke();
- ctx.strokeStyle=fur;ctx.lineWidth=22;ctx.stroke();
- oval(ctx,69,-11,27,24,outline);oval(ctx,68,-13,23,20,fur);
- for(let i=-1;i<=1;i++){
-  ctx.lineWidth=6;ctx.strokeStyle='#fff9ed';
-  ctx.beginPath();ctx.moveTo(82,-13+i*11);ctx.quadraticCurveTo(101,-20+i*11,110,-12+i*11);ctx.stroke();
-  ctx.lineWidth=2;ctx.strokeStyle=outline;ctx.stroke();
- }
- ctx.restore();ctx.restore();
+const sheet=new Image();sheet.decoding='async';
+sheet.src='assets/duo-premium-sheet.webp?v=catbond-original-art-20261121';
+let ready=false;sheet.onload=()=>{ready=true;window.dispatchEvent(new Event('catbond-premium-cutin-ready'))};
+sheet.onerror=()=>{ready=false};
+const keys=['dark+dark','dark+elec','dark+fire','dark+grass','dark+light','dark+water',
+ 'elec+elec','elec+fire','elec+grass','elec+light','elec+water',
+ 'fire+fire','fire+grass','fire+light','fire+water',
+ 'grass+grass','grass+light','grass+water','light+light','light+water','water+water'];
+// Distinct painting + shot composition + elemental effect for every pairing.
+// The eight paintings remain intact: no detached cat limbs, no fake cats.
+const scenes={
+ 'dark+dark':[5,'shadow', '#a88bff','low-left'],
+ 'dark+elec':[7,'blink',  '#d4a8ff','high-right'],
+ 'dark+fire':[5,'ember', '#ffb1b8','high-left'],
+ 'dark+grass':[1,'vine', '#b7e8b6','low-right'],
+ 'dark+light':[0,'eclipse','#e6d7ff','guard'],
+ 'dark+water':[2,'mist','#9cc9e9','diagonal'],
+ 'elec+elec':[4,'zigzag','#db9dff','spiral'],
+ 'elec+fire':[6,'spiral','#f5b2ff','cross'],
+ 'elec+grass':[4,'snare','#ccf5a3','low-left'],
+ 'elec+light':[7,'dash','#e5ccff','rush'],
+ 'elec+water':[2,'bubbles','#b4e4ff','high-right'],
+ 'fire+fire':[3,'fireworks','#ffd49d','high-left'],
+ 'fire+grass':[1,'petals','#ffe0ab','bloom'],
+ 'fire+light':[3,'solar','#fff1ae','orbit'],
+ 'fire+water':[2,'cannon','#facda4','burst'],
+ 'grass+grass':[1,'sprout','#b8e9c0','guard'],
+ 'grass+light':[3,'halo','#f7eac6','orbit'],
+ 'grass+water':[1,'blossom','#a6f0dd','bloom'],
+ 'light+light':[0,'stars','#f6eafc','guard'],
+ 'light+water':[0,'lake','#cce9fb','diagonal'],
+ 'water+water':[2,'tides','#a9e2ff','rush']
+};
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
+const colors={dark:'#c7adeb',elec:'#e8bafa',fire:'#ffbf91',grass:'#c2e8af',
+ light:'#fff3d2',water:'#a3dafa'};
+const brightPairs=new Set(['dark+dark','dark+elec','elec+elec','elec+fire','elec+grass','elec+light']);
+const en=()=>window.MorrowwishI18n?.get?.()!=='zh';
+function label(cat){
+ if(!cat)return '';
+ if(window.State?.catName)try{return window.State.catName(cat)}catch{}
+ return cat.nickname||window.GameData?.speciesById?.(cat.species)?.name||String(cat.species||'');
 }
-function claws(ctx,cx,cy,angle,col,alpha,scale){
- ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);ctx.scale(scale,scale);
- ctx.globalAlpha*=alpha;ctx.lineCap='round';
- for(let i=-1;i<=1;i++){
-  const yy=i*22;
-  ctx.strokeStyle=col;ctx.lineWidth=11;ctx.shadowColor=col;ctx.shadowBlur=10;
-  ctx.beginPath();ctx.moveTo(-107,yy-37);ctx.quadraticCurveTo(-10,yy-8,105,yy+37);ctx.stroke();
-  ctx.strokeStyle='#fffdf3';ctx.shadowBlur=0;ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(-105,yy-37);ctx.quadraticCurveTo(-10,yy-8,103,yy+37);ctx.stroke();
- }
- ctx.restore();
-}
-function draw(ctx,W,H,seq,lookup){
- if(!seq||seq.t<=0)return false;
- const age=seq.max-seq.t;
- if(age>1.82)return true; // leave the actual arena visible for the lingering field
- const p=clamp(age/1.52,0,1),tier=seq.tier||1;
- const alpha=clamp(age/.16,0,1)*clamp((1.86-age)/.26,0,1);
- const h=Math.min(H*.78,380),cy=H*.50,top=cy-h/2;
- // Fit the ears, paws and connecting forearms INSIDE even a short mobile
- // landscape viewport. A full-body cat never gets cut at the letterbox edge.
- const size=Math.min(W*.30,h*.54,175)*(tier>=3?1.02:1);
- const xshift=ease((p-.15)/.42)*W*.24;
- const col1=seq.first||'#ffc38d',col2=seq.second||'#c0b6ff';
+function paintFallback(ctx,W,H,seq,lookup,p){
+ // Never revert to old low-quality pseudo-cat rig if asset fetch is delayed.
+ // Retain the game’s existing coherent full-watercolor species renderer.
+ const elem=seq.elements||'water+water';
+ if(window.CatBondDuoArtwork?.backdrop)window.CatBondDuoArtwork.backdrop(ctx,W,H,p,elem);
  const ids=seq.catUids||[];
- const signatures=window.CatBondDuoSignatures;
- const signature=signatures?.get?.(seq.elements);
- const choreography=signature?signatures.course(signature.style,p,W,h,cy,tier):null;
+ if(window.CatBondDuoArtwork?.drawKitten){
+  window.CatBondDuoArtwork.drawKitten(ctx,W*.27,H*.70,Math.min(H*.72,W*.34),lookup(ids[0]),false,p,'dash',seq.first);
+  window.CatBondDuoArtwork.drawKitten(ctx,W*.73,H*.70,Math.min(H*.72,W*.34),lookup(ids[1]),true,p,'dash',seq.second);
+ }
+}
+function shot(entry,index,p){
+ // Global camera in/out + pair-specific movement; whole illustrated cats
+ // remain one coherent image and are never mirrored or split into body pieces.
+ const style=entry[3],release=smooth((p-.04)/.43);
+ const energy=smooth((p-.24)/.30);
+ const swing=Math.sin(Math.PI*clamp(p/.86));
+ const dir=index%2?-1:1;
+ let dx=0,dy=0,zoom=1.027+.055*release+.035*energy;
+ switch(style){
+  case 'shadow': dx=-.048*(1-release);dy=.03*swing;break;
+  case 'low-left':dx=-.065*(1-release);dy=.04*swing;break;
+  case 'high-right':dx=.05*(1-release);dy=-.045*swing;break;
+  case 'high-left':dx=-.04*(1-release);dy=-.044*swing;break;
+  case 'low-right':dx=.035*(1-release);dy=.035*swing;break;
+  case 'guard':dx=.008*Math.sin(2*Math.PI*p);zoom=1.025+.037*release;break;
+  case 'diagonal':dx=.048*(1-release);dy=-.036*(1-release);break;
+  case 'spiral':dx=.035*Math.cos(3*Math.PI*p)*swing;dy=.025*Math.sin(3*Math.PI*p)*swing;break;
+  case 'cross':dx=.017*Math.sin(5*Math.PI*p)*swing;zoom=1.045+.08*release;break;
+  case 'rush':dx=-.075*(1-release);zoom=1.03+.065*release;break;
+  case 'bloom':dy=-.03*(1-release);zoom=1.015+.05*release;break;
+  case 'orbit':dx=.025*Math.sin(3*Math.PI*p);dy=.02*Math.cos(3*Math.PI*p);break;
+  case 'burst':zoom=1.015+.09*smooth((p-.37)/.25);break;
+ }
+ // Small signature-specific offset makes repeated paintings feel authored.
+ dx+=dir*.006*Math.sin((index%5+2)*Math.PI*p)*swing;
+ return {dx,dy,zoom};
+}
+function render(ctx,W,H,seq,lookup){
+ if(!seq||seq.t<=0)return false;
+ const age=seq.max-seq.t, p=clamp(age/Math.max(1,seq.max));
+ const key=scenes[seq.elements]?seq.elements:'elec+fire';
+ const cfg=scenes[key],idx=keys.indexOf(key),tile=cfg[0];
+ const alpha=smooth(age/.20)*(1-smooth((age-2.48)/.27));
+ if(alpha<=0)return true;
+ const W0=Math.max(1,W),H0=Math.max(1,H);
+ const w=Math.min(W0*.965,H0*.83*650/366),h=w*366/650;
+ const x=(W0-w)/2,y=(H0-h)/2;
+ const areaH=Math.min(H0*.94,h+44),areaY=(H0-areaH)/2;
  ctx.save();ctx.globalAlpha=alpha;
- // The artwork uses light spring, water, moon and sun palettes; deep violet
- // storms are reserved for lightning signatures only.
- ctx.beginPath();ctx.roundRect(W*.025,top,W*.95,h,Math.min(22,W*.05));ctx.clip();
- if(window.CatBondDuoArtwork?.backdrop){
-   ctx.save();ctx.translate(0,top);
-   window.CatBondDuoArtwork.backdrop(ctx,W,h,p,seq.elements);
-   ctx.restore();
+ // soft backdrop evokes this scene's colors even on a tall phone canvas.
+ const bg=ctx.createLinearGradient(0,0,W,H);
+ bg.addColorStop(0,brightPairs.has(key)?'#251842':'#e6e8f1');
+ bg.addColorStop(.55,brightPairs.has(key)?'#56376a':'#f5eef0');
+ bg.addColorStop(1,brightPairs.has(key)?'#171b39':'#e7f3ef');
+ ctx.fillStyle=bg;ctx.fillRect(0,areaY,W0,areaH);
+ if(ready){
+  ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,Math.min(17,w*.04));ctx.clip();
+  const move=shot(cfg,idx,p);
+  const zoom=move.zoom,drawW=w*zoom,drawH=h*zoom;
+  ctx.drawImage(sheet,(tile%2)*650,Math.floor(tile/2)*366,650,366,
+    x+(w-drawW)/2+move.dx*w,y+(h-drawH)/2+move.dy*h,drawW,drawH);
+  // Each of 21 techniques already has an authored elemental attack drawn
+  // in duo-signatures.js. Add it as a short, restrained hit-beat overlay ONLY.
+  if(p>.25&&p<.68&&window.CatBondDuoSignatures?.paint){
+    ctx.save();ctx.translate(x,y);
+    ctx.globalAlpha=.10+Math.sin(Math.PI*clamp((p-.25)/.43))*.15;
+    window.CatBondDuoSignatures.paint(ctx,w,h,p,seq.tier||1,key);
+    ctx.restore();
+  }
+  if(p>.31&&p<.59){
+    ctx.save();
+    const impact=Math.sin(Math.PI*clamp((p-.31)/.28));
+    ctx.globalAlpha=.18*impact;
+    const cx=x+w*.55,cy=y+h*.57;
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,w*.37);
+    glow.addColorStop(0,cfg[2]);glow.addColorStop(1,'#ffffff00');
+    ctx.fillStyle=glow;ctx.fillRect(x,y,w,h);
+    ctx.restore();
+  }
+  ctx.restore();
  }else{
-   const g=ctx.createLinearGradient(0,top,W,top+h);
-   g.addColorStop(0,'#edf5fa');g.addColorStop(1,'#e4dcf4');
-   ctx.fillStyle=g;ctx.fillRect(0,top,W,h);
+  ctx.save();ctx.translate(x,y);
+  paintFallback(ctx,w,h,seq,lookup,p);
+  ctx.restore();
  }
- // Art-directed scenery for this exact combination, BEHIND complete cat rigs.
- if(signature){
-   ctx.save();ctx.translate(0,top);
-   signatures.paint(ctx,W,h,p,tier,seq.elements);
-   ctx.restore();
+ // Only the impact beat receives a brief flash, matching real damage at
+ // strikeAt=0.78s. This communicates contact, never masks the cats for seconds.
+ const strikeAge=seq.strikeAt||.78;
+ const strike=Math.max(0,1-Math.abs(age-strikeAge)/.11);
+ if(strike>0){
+  ctx.save();ctx.globalAlpha=strike*.25;ctx.fillStyle='#fff8fa';ctx.fillRect(x,y,w,h);ctx.restore();
  }
- // Angular speed streaks, kicked forward only as the paws accelerate.
- for(let i=0;i<7;i++){
-  ctx.save();ctx.globalAlpha=alpha*(.06+.065*(i%3));
-  ctx.strokeStyle=i%2?col1:col2;ctx.lineWidth=i%3===0?8:3;
-  const sx=W*((i+.4)/7)+p*W*.12;
-  ctx.beginPath();ctx.moveTo(sx-140,top+h);ctx.lineTo(sx+70,top);ctx.stroke();ctx.restore();
+ const panelH=Math.min(73,Math.max(48,h*.18));
+ const strip=ctx.createLinearGradient(0,y+h-panelH,0,y+h);
+ strip.addColorStop(0,'#111c3000');strip.addColorStop(1,'#111b30db');
+ ctx.fillStyle=strip;ctx.fillRect(x,y+h-panelH,w,panelH);
+ const sz=Math.round(clamp(w*.038,12,25));
+ ctx.textAlign='center';ctx.shadowColor='#19253a';ctx.shadowBlur=4;
+ ctx.font='900 '+sz+'px system-ui,-apple-system,sans-serif';ctx.fillStyle='#fffdf7';
+ ctx.fillText(seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||
+     (en()?'Duo Special':'双猫合击'),W0*.5,y+h-panelH*.36,w*.87);
+ const cats=(seq.catUids||[]).map(uid=>lookup(uid)).filter(Boolean);
+ if(cats.length>=2){
+  ctx.shadowBlur=0;ctx.fillStyle='#f5ebdd';
+  ctx.font='700 '+Math.round(clamp(w*.020,10,13))+'px system-ui,sans-serif';
+  ctx.fillText(label(cats[0])+'  ×  '+label(cats[1]),
+    W0*.5,y+h-Math.max(7,panelH*.08),w*.87);
  }
- // The two painted cats are LOOKED UP FROM THE ACTUAL STARTERS' SPECIES,
- // using the game's 25-breed illustration atlas. No generic black/white pair.
- const spriteH=Math.min(h*.73,W*.26,260);
- const paintCat=(x,y,mult,id,flip,phase,color)=>{
-   const physicalH=spriteH*mult;
-   const safeY=Math.max(top+physicalH*.62+8,
-      Math.min(top+h-physicalH*.38-14,y));
-   if(window.CatBondDuoArtwork?.drawKitten)
-     window.CatBondDuoArtwork.drawKitten(ctx,x,safeY,physicalH,
-       lookup(id),flip,phase,signature?.style||'claw',color);
- };
- paintCat(Math.min(W*.35,choreography?.x1??W*.29),
-   choreography?.y1??(cy+h*.18),choreography?.scale||1,ids[0],false,
-   choreography?.phase1??p,col1);
- paintCat(Math.max(W*.65,choreography?.x2??W*.71),
-   choreography?.y2??(cy+h*.18),choreography?.scale||1,ids[1],true,
-   choreography?.phase2??p,col2);
- // Connect the impact to the two extended forepaws, not to the cats' faces.
- // The claw trails should frame (never cover) the character performance.
- const hit=clamp((p-.43)/.24,0,1);
- if(hit>0){
-   const burst=Math.sin(hit*Math.PI*.8);
-   const strikeY=cy+h*.20;
-   const slashScale=Math.min(.66,Math.max(.44,W/870));
-   claws(ctx,W*.5,strikeY,Math.PI*.25,col1,burst*.78,slashScale);
-   if(tier>=2)claws(ctx,W*.5,strikeY,-Math.PI*.25,col2,burst*.70,slashScale);
-   if(tier>=3){
-     // Final form: one clean finishing shock ring, not a third stack of
-     // bright scribbles hiding both kittens and making detached claw marks.
-     ctx.save();ctx.globalAlpha=alpha*.7*burst;
-     ctx.strokeStyle='#ffe9b8';ctx.lineWidth=4;
-     ctx.beginPath();ctx.arc(W*.5,strikeY,24+hit*Math.min(60,W*.10),0,Math.PI*2);ctx.stroke();
-     ctx.fillStyle='#ffedc6';
-     for(const dx of [-1,0,1]){
-       const x=W*.5+dx*Math.min(34,W*.08),y=strikeY-22-(dx===0?13:0);
-       ctx.beginPath();ctx.arc(x,y,Math.max(2,5*burst),0,Math.PI*2);ctx.fill();
-     }
-     ctx.restore();
-   }
-   ctx.save();ctx.globalAlpha=alpha*.40*burst;ctx.strokeStyle='#fff2d4';ctx.lineWidth=2;
-   const rad=22+18*hit;
-   ctx.beginPath();ctx.arc(W*.5,strikeY,rad,0,Math.PI*2);ctx.stroke();
-   ctx.restore();
+ ctx.shadowBlur=0;
+ if((seq.tier||1)>=3&&age>.3&&age<1.2){
+  ctx.save();ctx.globalAlpha=.6*Math.sin(Math.PI*clamp((age-.3)/.9));
+  ctx.strokeStyle=cfg[2];ctx.lineWidth=4;
+  ctx.strokeRect(x+4,y+4,w-8,h-8);
+  ctx.restore();
  }
- const en=window.MorrowwishI18n?.get?.()!=='zh';
- const rank=tier>=3?(en?'SOULBOUND FINALE':'心意相通 · 终极连斩'):
-   tier>=2?(en?'CROSS-CLAW COMBO':'默契进阶 · 交叉爪击'):
-   (en?'TWIN PAW POUNCE':'双猫合击 · 联手飞扑');
- // Keep title readable over scenery/kitten feet, not as floating text.
- ctx.globalAlpha=alpha*.77;
- const titleFade=ctx.createLinearGradient(0,top+h*.7,0,top+h);
- titleFade.addColorStop(0,'rgba(9,22,37,0)');
- titleFade.addColorStop(1,'rgba(9,22,37,.96)');
- ctx.fillStyle=titleFade;ctx.fillRect(W*.025,top+h*.69,W*.95,h*.31);
- ctx.globalAlpha=alpha;ctx.textAlign='center';
- ctx.font='900 '+Math.round(Math.min(26,W*.052))+'px system-ui';
- ctx.fillStyle='#fff8ec';ctx.shadowColor=col1;ctx.shadowBlur=10;
- ctx.fillText(seq.name||rank,W*.5,top+h*.88,W*.85);
- ctx.shadowBlur=0;ctx.font='800 '+Math.round(Math.min(14,W*.033))+'px system-ui';
- ctx.fillStyle='#f9d79c';ctx.fillText(signature&&en?'SIGNATURE · '+signature.label:rank,W*.5,top+h*.96,W*.86);
  ctx.restore();return true;
 }
-window.CatBondDuoHero={draw,coat};
+window.CatBondDuoHero={draw:render,scenes,sceneKeys:keys,get assetReady(){return ready},
+ assetSource:'original-approved-illustrations',assetCount:8};
 })();

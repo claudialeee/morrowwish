@@ -18,6 +18,8 @@ try{
   page.on('pageerror',e=>errors.push(profile.name+': '+e.message));
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__game&&!!window.CatBondDuoHero&&!!window.CatRelations&&!!window.State);
+  await page.waitForFunction(()=>window.CatBondDuoHero?.assetReady&&
+    window.CatBondDuoHero?.assetCount===8,{timeout:18000});
   const entry=await page.evaluate(()=>{
    // Start through the real button and dismiss its starter chooser.
    document.getElementById('intro-start').click();
@@ -120,7 +122,12 @@ try{
   // Real visual-preview page, not an inert 21-button mockup. Render EVERY
   // signature at a fixed moment with the connected cat rigs + tier artwork.
   await page.goto(origin+'/cat-bond/duo-preview.html',{waitUntil:'domcontentloaded',timeout:30000});
-  await page.waitForFunction(()=>window.__duoPreviewReady&&window.__duoPreviewDebug,{timeout:10000});
+  await page.waitForFunction(()=>window.__duoPreviewReady&&window.__duoPreviewDebug&&
+    window.CatBondDuoHero?.assetReady,{timeout:18000});
+  assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetSource),
+    'original-approved-illustrations','do not use generic procedural cat art');
+  assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetCount),8,
+    'show all eight previously illustrated original duo scenes');
   assert.equal(await page.locator('.signature').count(),21,'all 21 duos selectable');
   await page.waitForFunction(()=>window.CatBondDuoArtwork?.ready&&
     window.CatBondDuoArtwork?.backdropReady,{timeout:15000});
@@ -167,6 +174,14 @@ try{
       overflow,visibleCanvas:cv.width>0&&cv.height>0};
   });
   assert.equal(visual.count,21);
+  const premium=await page.evaluate(()=>{
+    const scene=window.CatBondDuoHero;
+    const frames=new Set(Object.values(scene.scenes).map(x=>x[0]));
+    return {ready:scene.assetReady,paintings:scene.assetCount,frames:frames.size,
+      pairs:Object.keys(scene.scenes).length};
+  });
+  assert.deepEqual(premium,{ready:true,paintings:8,frames:8,pairs:21},
+    'every skill gets one authored choreography using approved original art');
   assert.equal(visual.distinct,21,'all rendered signature screens must differ');
   assert.equal(visual.differentWindups,true,'signature key frames must actually animate');
   assert.equal(visual.overflow,false,'preview must not scroll sideways');

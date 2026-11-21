@@ -295,6 +295,7 @@ class CaptureBattle {
     // DEFERRED PAYLOAD — runs at the splash's strike beat (see duoCinematic tick),
     // so the big art shows first and the hit only lands once it clears.
     this.duoCinematic.payload=()=>{
+      window.MorrowwishAudio?.effect?.('combat_duo_impact');
       this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
       this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
       this.flash=Math.max(this.flash,.22);this.shakeT=Math.max(this.shakeT,.3);
@@ -349,7 +350,7 @@ class CaptureBattle {
       this.summonReinforcement(12 + d.tier * 1.5);
       window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     };
-    window.MorrowwishAudio?.effect?.('capture');
+    window.MorrowwishAudio?.effect?.('combat_duo');
     // The unique lingering field and restrained title make the special visible; avoid a second toast.
     return true;
   }
@@ -1189,7 +1190,7 @@ class CaptureBattle {
     this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
-      window.MorrowwishAudio?.effect?.('paw');this._lastPawSfx=this.t;
+      window.MorrowwishAudio?.effect?.('combat_swing');this._lastPawSfx=this.t;
     }
     this.gainUlt(2);
   }
@@ -1483,6 +1484,12 @@ class CaptureBattle {
     // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
+    window.MorrowwishAudio?.effect?.(
+      kind==='melee'?'combat_claw':
+      kind==='projectile'?'combat_projectile':
+      ['dash','leap'].includes(kind)?'combat_dash':
+      ['beam','chain'].includes(kind)?'combat_beam':'combat_magic'
+    );
     if (kind === 'melee') {
       this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
     } else if (kind === 'aoe') {
@@ -1783,6 +1790,7 @@ class CaptureBattle {
   }
   dodge(f) {
     f = f || this.me(); if (f.dodgeCd > 0) return false;
+    if(f===this.me())window.MorrowwishAudio?.effect?.('combat_dodge');
     if (f === this.me()) this._coachDodged = true;         // coach: step 4
     // A real escape tool now: a LONG i-frame dash that travels AWAY from danger,
     // plus a short bullet-time on every use so it actually buys breathing room.
@@ -1910,7 +1918,7 @@ class CaptureBattle {
     f.inv = 1.0;
     this.flash = Math.max(this.flash, 0.3);
     this.slowmo = Math.max(this.slowmo, 0.18);     // a brief hit-stop beat, not a lockout
-    window.MorrowwishAudio?.effect?.('ultimate');
+    window.MorrowwishAudio?.effect?.('combat_ultimate');
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
     return true;
@@ -2992,7 +3000,7 @@ class CaptureBattle {
     // converging warm ring pulling the cat "home"
     if (Math.random() < dt * 14) this.vfx.ring(s.x, s.y, { r0: 44 * (1 - k) + 8, vr: -120, life: 0.4, color: '#ffd36b', width: 3 });
     if (Math.random() < dt * 9) this.spawnBurst(s.x + (Math.random() * 40 - 20), s.y - 10, '❤', '#ff9bb4', 1);
-    if (s.t === 0) { this.captureSeq = null; this.finish(true); }
+    if (s.t === 0) { this.captureSeq = null; window.MorrowwishAudio?.effect?.('combat_win'); this.finish(true); }
   }
 
   nearestEnemy(x, y) {
@@ -3629,8 +3637,7 @@ class CaptureBattle {
       // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
       if ((this.t - (this._lastHitSfx || -1)) > 0.07) {
         this._lastHitSfx = this.t;
-        const freq = 440 * Math.pow(2, Math.min(18, this.combo) / 24);   // climbs up ~1.7 octave
-        window.MorrowwishAudio?.note?.(freq);
+        window.MorrowwishAudio?.effect?.('combat_hit');
       }
     }
     // bigger, brighter number as the combo climbs (crescendo feel)
@@ -3651,6 +3658,10 @@ class CaptureBattle {
     // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
     // routes through. hurtMe lands the (already shield-adjusted) damage.
     f.hp = Math.max(this.coach ? 1 : 0, f.hp - dmg);
+    if(dmg>0&&this.t-(this._lastHurtSfx??-5)>.24){
+      window.MorrowwishAudio?.effect?.('combat_hurt');
+      this._lastHurtSfx=this.t;
+    }
     if (this._obs) this._obs.dmgTaken += dmg;            // anti-stomp signal (see commitAiProfile)
     f.hitFlash = 0.14; f.inv = 0.3;
     if (f === this.me()) this.shakeT = 0.18;
