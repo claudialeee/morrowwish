@@ -170,7 +170,7 @@ function encode(r){
  const dest=path.join(folder,'highlight-20261121.mp4'),poster=path.join(folder,'highlight-20261121.jpg');
  const overlay=[];
  for(let i=0;i<r.marks.length;i++){
-   const [caption,start]=r.marks[i],end=r.marks[i+1]?.[1]??r.duration;
+   const [start,caption]=r.marks[i],end=r.marks[i+1]?.[0]??r.duration;
    const t=path.join(dir,r.slug+'-'+i+'.txt');fs.writeFileSync(t,caption);
    overlay.push('drawtext=fontfile='+font+':textfile='+t+':fontcolor=white:fontsize=48:x=(w-text_w)/2:y=130:box=1:boxcolor=black@0.54:boxborderw=16'+
      ":enable='between(t,"+start.toFixed(2)+','+end.toFixed(2)+")'");
