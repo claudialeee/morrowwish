@@ -49,7 +49,7 @@
     if(button){
       const chinese=zh();
       const label=on?(chinese?'退出全屏':'Exit fullscreen'):(chinese?'游戏全屏':'Game fullscreen');
-      button.textContent=(on?'↙ ':'⛶ ')+label;
+      button.textContent=on?'↙':'⛶';
       button.setAttribute('aria-label',label);
       button.setAttribute('aria-pressed',String(on));
       button.title=label;
@@ -89,8 +89,19 @@
   }
   function mount(){
     surface=document.querySelector(config[0]);
-    const controls=document.querySelector(config[1]);
+    let controls=document.querySelector(config[1]);
     if(!surface||!controls||document.querySelector('#mw-fullscreen-toggle'))return;
+    if(route==='cat-bond'){
+      let bar=document.querySelector('#cb-header');
+      if(!bar){
+        bar=document.createElement('div');bar.id='cb-header';
+        const originalHome=document.querySelector('a.cb-home');
+        const actions=document.createElement('div');actions.id='cb-header-actions';
+        if(originalHome)bar.append(originalHome);
+        bar.append(actions);surface.prepend(bar);
+      }
+      controls=bar.querySelector('#cb-header-actions');
+    }
     surface.classList.add('mw-immersive-target');
 
     // The Tiny Town result dialog must remain INSIDE the fullscreen subtree.
@@ -131,6 +142,19 @@
     const style=document.createElement('style');
     style.id='mw-fullscreen-styles';
     style.textContent=[
+
+       'html[data-mw-fullscreen-game] .mw-fullscreen-toggle{width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;min-height:34px!important;max-height:34px!important;border-radius:9px!important;padding:0!important;font-size:20px!important;line-height:1!important;letter-spacing:0!important;box-shadow:0 2px 5px #34293b20!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #cb-header{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:calc(env(safe-area-inset-left,0px) + 8px)!important;right:calc(env(safe-area-inset-right,0px) + 8px)!important;height:36px!important;z-index:110!important;display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:space-between!important;gap:3px!important;pointer-events:none!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #cb-header .cb-home{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;max-width:calc(100% - 188px)!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;padding:7px 9px!important;height:34px!important;display:flex!important;align-items:center!important;pointer-events:auto!important;font-size:11px!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important;flex:0 0 auto!important;pointer-events:auto!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions>.mw-fullscreen-toggle{position:relative!important;inset:auto!important;right:auto!important;top:auto!important;transform:none!important;z-index:auto!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #stage #hud{top:calc(env(safe-area-inset-top,0px) + 50px)!important;padding:4px 7px!important;justify-content:flex-start!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #stage .battle-topbar{top:calc(env(safe-area-inset-top,0px) + 49px)!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #stage #team-slots{top:calc(env(safe-area-inset-top,0px) + 116px)!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #stage #ult-wrap{top:calc(env(safe-area-inset-top,0px) + 116px)!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #stage #intro{padding-top:calc(env(safe-area-inset-top,0px) + 54px)!important}',
+       '@media(max-width:420px){html[data-mw-fullscreen-game="cat-bond"] #cb-header .cb-home{font-size:0!important;max-width:36px!important;min-width:36px!important;justify-content:center!important;padding:0!important}html[data-mw-fullscreen-game="cat-bond"] #cb-header .cb-home::before{content:"←";font:800 22px/1 system-ui}}',
+
       '.mw-fullscreen-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:42px;min-width:92px;padding:8px 11px;white-space:nowrap;flex:0 0 auto;border:1px solid #b9aabc;border-radius:999px;background:#fffaf7;color:#604c65;font:800 12px/1.2 system-ui,-apple-system,sans-serif;cursor:pointer;touch-action:manipulation;z-index:30}',
       '.mw-fullscreen-toggle:focus-visible{outline:3px solid #9271b3;outline-offset:2px}',
       '.mw-fullscreen-toggle[aria-pressed="true"]{background:#3c3247;color:white;border-color:#3c3247}',
