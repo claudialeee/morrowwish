@@ -27,10 +27,10 @@ function realVerticalCamera(id){
   if(sw>10&&sh>10){
    // Trim 3% safe margins to remove any edge artifacts while retaining
    // exact 9:16 pixel aspect; never stretch a landscape game.
-   const ch=sh*0.93,cw=ch*540/960,available=sw*.94;
+   const ch=sh*0.80,cw=ch*540/960,available=sw*.94;
    const w=Math.min(cw,available),h=w*960/540;
    const sx=Math.max(sw*.03,Math.min(sw*.97-w,sw*focus-w/2));
-   const sy=(sh-h)/2;
+   const sy=Math.max(0,Math.min(sh-h,sh*.64-h/2));
    ctx.drawImage(source,sx,sy,w,h,0,0,540,960);
   }
   requestAnimationFrame(paint);
@@ -69,15 +69,16 @@ try{
   await page.goto(host+'/cat-bond/?autodev&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__game?.yard && !!window.State?.S?.cats?.length,{timeout:19000});
   await page.evaluate(realVerticalCamera,'scene');
-  const yard=stamp();await sleep(4450);
+  const yard=stamp();await sleep(6150);
   const fight=stamp();
   await page.evaluate(()=>{
     const cats=State.S.cats.slice(0,3),wild=GameData.SPECIES.find(s=>s.rarity==='SSR')||GameData.SPECIES.at(-1);
     State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:true};
     window.__game.startBattle(cats,wild);
   });
-  await sleep(4700);
-  return [{label:'yard',start:yard,duration:4.0},{label:'battle',start:fight+0.45,duration:3.8}];
+  await sleep(6900);
+  return [{label:'yard',start:yard,duration:4.0},{label:'yard-late',start:yard+3.05,duration:2.75},
+    {label:'battle',start:fight+0.45,duration:3.0},{label:'battle-late',start:fight+3.45,duration:2.7}];
  }));
  result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
   await page.goto(host+'/pawsibly-innocent/?platform=crazygames&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
@@ -104,7 +105,14 @@ try{
     if(!g.throwYarnTo({x:9,y:1}))throw Error('Actual yarn decoy rejected');
   });
   await sleep(2600);await page.evaluate(()=>window.__V4_FOCUS__='cat');
-  return [{label:'sneak',start:sneak,duration:2.3},{label:'decoy',start:decoy,duration:2.4}];
+  const steal=stamp();
+  for(const [dx,dy] of [[1,0],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[0,-1],[1,0]]){
+    await page.evaluate(([x,y])=>window.__PAWSIBLY_TEST__.move(x,y),[dx,dy]);
+    await sleep(430);
+  }
+  await sleep(650);
+  return [{label:'sneak',start:sneak,duration:2.3},{label:'decoy',start:decoy,duration:2.4},
+    {label:'steal',start:steal,duration:4.3}];
  }));
  result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
   await page.goto(host+'/tiny-town/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
@@ -136,6 +144,7 @@ try{
   }
   if(placed<4)throw Error('Town broll contains too few real constructed wishes '+placed);
   return [{label:'build',start:build,duration:Math.min(7.2,stamp()-build-1)},
+    {label:'build-late',start:build+7.3,duration:Math.min(4.2,Math.max(1.5,stamp()-build-8))},
    ...(storyAt?[{label:'story',start:storyAt,duration:Math.min(2.2,Math.max(1.5,stamp()-storyAt-0.4))}]:[])];
  }));
  result.push(await capture(browser,'elsewhere',async({page,stamp})=>{
@@ -146,10 +155,11 @@ try{
    if(await page.locator('#game:not([hidden])').count())await page.evaluate(()=>document.querySelector('#game [data-home]')?.click());
    await page.locator('[data-world="'+world+'"]').first().click({timeout:8000});
    await sleep(400);
-   const start=stamp();await sleep(2850);
-   shots.push({label:world,start,duration:2.5});
+   const start=stamp();await sleep(4150);
+   shots.push({label:world,start,duration:3.7});
    await page.locator('#game [data-choice]').first().click({timeout:7000});
-   await sleep(1100);
+   const result=stamp();await sleep(2050);
+   shots.push({label:world+'-result',start:result,duration:1.7});
   }
   return shots;
  }));
