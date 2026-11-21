@@ -37,12 +37,12 @@ async function session(browser,slug){
      recordVideo:{dir:folder,size:{width:540,height:960}},locale:'en-US',isMobile:true,hasTouch:true});
   await context.route('**/api/session**',r=>r.abort('blockedbyclient'));
   await context.route('**/api/elsewhere-collect**',r=>r.abort('blockedbyclient'));
-  const page=await context.newPage();
+  const born=Date.now();const page=await context.newPage();
   page.on('pageerror',e=>console.log(slug+' console warning: '+e.message.slice(0,150)));
-  return{context,page};
+  return{context,page,born};
 }
 async function capture(browser,slug,record){
- const {context,page}=await session(browser,slug);
+ const {context,page,born}=await session(browser,slug);
  if(slug==='parcel-panic')await page.addInitScript(()=>{Math.random=()=>0.348;});
  if(slug==='pocket-aquarium'){
    // Read-only promo instrumentation. This changes NO game logic or scoring.
@@ -181,7 +181,7 @@ async function capture(browser,slug,record){
  const video=page.video();
  await context.close();
  console.log('ACTUAL GAMEPLAY VERIFIED '+slug+' '+JSON.stringify(proof)+' elapsed '+dur.toFixed(1));
- return{slug,raw:await video.path(),duration:dur+.6,marks,proof};
+ return{slug,raw:await video.path(),offset:(begin-born)/1000,duration:dur+.6,marks,proof};
 }
 function encode(r){
  const folder=path.join('public','promo',r.slug);fs.mkdirSync(folder,{recursive:true});
@@ -190,7 +190,7 @@ function encode(r){
  if(!r.marks?.length||!r.proof)throw Error('Missing proof or marketing beats');
  const clips=r.marks.map(([start,duration,caption],i)=>{
   if(duration<.75||start<0||start+duration>r.duration+.2)throw Error('Invalid verified highlight range '+JSON.stringify({start,duration,r}));
-  return '[0:v]trim=start='+start.toFixed(3)+':duration='+duration.toFixed(3)+
+  return '[0:v]trim=start='+(r.offset+start).toFixed(3)+':duration='+duration.toFixed(3)+
     ',setpts=PTS-STARTPTS,fps=30,scale=1080:1920:flags=lanczos,setsar=1,format=yuv420p[v'+i+']';
  });
  const concat=r.marks.map((_,i)=>'[v'+i+']').join('')+'concat=n='+r.marks.length+':v=1:a=0[joined]';
