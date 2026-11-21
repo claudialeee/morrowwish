@@ -160,6 +160,25 @@ try{
   });
   if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
   await mark('duo',5100);
+  // A genuine duo skill can defeat the entire enemy squad. Showcase the
+  // distinct SOLO ultimate in a SECOND real encounter rather than trying to
+  // cast into an already finished battle or overlay two attacks at once.
+  const nextEncounter=await page.evaluate(()=>{
+   const cats=State.S.cats.slice(0,2);
+   window.__V4_CAMERA__.show(false);
+   window.__game.scene='yard';window.__game.showYardChrome();
+   const wild=GameData.SPECIES.filter(sp=>sp.rarity==='R')
+     .sort((a,b)=>(b.base?.vit||0)-(a.base?.vit||0))[0]||
+     GameData.SPECIES.find(sp=>sp.rarity==='N');
+   if(!wild||cats.length!==2)throw Error('Cannot begin second authentic encounter');
+   window.__game.startBattle(cats,wild);
+   window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
+   const battle=window.__game.battle;
+   return{ready:!!battle&&!battle.done&&battle.liveEnemies().length>0,
+     species:wild.id||wild.name,team:battle?.team?.length||0};
+  });
+  if(!nextEncounter.ready)throw Error('Second real fight for ultimate did not start '+JSON.stringify(nextEncounter));
+  await mark('ultimate-intro',2450);
   const ult=await page.evaluate(()=>{
    const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
    // In the current game only the TWO-CAT combo has a full-screen

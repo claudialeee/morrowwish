@@ -44,6 +44,7 @@ const playlists={
   broll('map-explore',4.0,'EXPLORE BEYOND YOUR YARD.'),
   broll('battle-intro',2.5,'FIGHT AS A CAT TEAM.'),
   broll('duo',4.85,'UNLEASH A TWO-CAT COMBO!'),
+  broll('ultimate-intro',2.25,'NEW CHALLENGER!'),
   broll('ultimate',5.5,'NOW THE ULTIMATE ATTACK!'),
   cover(3.6,'PLAY FREE')
  ],
