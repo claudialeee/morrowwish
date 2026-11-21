@@ -134,20 +134,26 @@ assert.ok(test.getState().winning,'First room should be winnable without special
 const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
 assert.ok(earned.best?.['room-0']?.stars>=1&&earned.best?.['room-0']?.stars<=3,'Winning a room must save real stars toward new cats');
 assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
+if(earned.best['room-0'].stars>=3){
+ assert.ok(nodes.get('catUnlocks').innerHTML.includes('Mochi'),'New cat head and name must visibly appear on the victory card');
+ assert.ok(events.some(e=>e.name==='cat_skin_unlocked'&&e.payload.cat===1),'Unlocking three stars must award a new cat exactly once');
+}
+const unlockedCatsAtFirstWin=events.filter(e=>e.name==='cat_skin_unlocked').length;
 assert.equal(events.filter(e=>e.name==='game_complete').length,1,'Exactly one completion event');
 listeners['morrowwish-language-change']({detail:{lang:'zh'}});
 assert.ok(nodes.get('subtitle').textContent.includes('偷零食'),'Chinese gameplay copy switches correctly');
 assert.equal(nodes.get('menuButtonLabel').textContent,'菜单','The menu button must have a visible localized label');
 assert.equal(nodes.get('stageHomeLabel').textContent,'返回主页','Permanent home link must localize in Chinese');
+if(earned.best['room-0'].stars>=3)assert.ok(nodes.get('catUnlocks').innerHTML.includes('糯米'),'Cat unlock card must also localize to Chinese');
 assert.ok(nodes.get('bonusQuickText').textContent.includes('打翻一个花瓶'),
  'Bonus objective must show its full Chinese name');
 assert.ok(frames>=1,'Canvas art rendered');
 const reviewStyle=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
-assert.ok(reviewStyle.includes('single-screen.css?v=')&&reviewStyle.includes('heistStatus'),
+assert.ok(reviewStyle.includes('single-screen.css?v=')&&reviewStyle.includes('heistStatus')&&reviewStyle.includes('id="catUnlocks"'),
  'CrazyGames build should show new board HUD with an uncached script');
 assert.ok(source.includes('html.cg-play #stage>.playfield')&&!source.includes('html.cg-play #stage>.stealth-actionbar'),
  'CrazyGames embed must fit the single playfield and its in-frame HUD');
-assert.ok(source.includes('fitCanvasPixels')&&source.includes('catPathTo'),
+assert.ok(source.includes('fitCanvasPixels')&&source.includes('catPathTo')&&source.includes('before>=limit')&&source.includes('s.exposure>wasExposed'),
  'High-DPI canvas and risk-aware click routing must remain in the review build');
 // A new player's simple click sequence must clear the kitchen without being trapped in a repeat-loss loop.
 test.choose(1,false);
@@ -209,6 +215,7 @@ listeners['board:pointerdown']({clientX:300,clientY:250,pointerType:'mouse',butt
 assert.equal(finalChase.outro,null,'A click should skip directly to results');
 assert.equal(nodes.get('overlay').hidden,false,'Skipping the chase must reveal scores');
 assert.equal(events.filter(e=>e.name==='cat_level_won').length,winsBefore+1,'Skipping cannot duplicate a win');
+assert.ok(events.filter(e=>e.name==='cat_skin_unlocked').length>=unlockedCatsAtFirstWin,'New cats must be recorded when earned');
 test.choose(0,false);
 const earlyWin=test.getState();earlyWin.cat={x:8,y:6};earlyWin.catFrom={...earlyWin.cat};earlyWin.got=3;
 test.move(1,0);
