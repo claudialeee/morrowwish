@@ -637,7 +637,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
    bar=stage.indexOf('class="stealth-actionbar"'),menu=stage.indexOf('id="gameMenu"');
  if(board<0||hud<0||bar<board||menu<bar)
   throw new Error('Cat game HUD/map/tools/menu are not integrated in one stage');
- for(const id of ['menuButton','menuClose','quickHelp','stageControls','tool','visionTip','guardIntent',
+ for(const id of ['menuButton','menuButtonLabel','menuClose','quickHelp','stageControls','tool','visionTip','guardIntent','bonusQuick','bonusQuickText','bonusQuickProgress',
                  'levels','wardrobe','skinHint','score','moves','starTotal','collection','hearts','fishCount',
                  'achievementCount','relicGallery','achievementsGrid','badgeHighlights','howTitle',
                  'menuLanguage','menuAudio','restart','roomNum','roomTag','overlay']){
