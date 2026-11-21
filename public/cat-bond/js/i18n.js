@@ -827,6 +827,17 @@
     return out;
   }
 
+  // Gameplay data sometimes embeds compact English technical tokens in
+  // otherwise Chinese labels. Normalize those while preserving player names,
+  // key bindings (WASD/Q/E/R) and the studio brand.
+  function toChinese(str){
+    if(typeof str!=='string'||!str)return str;
+    return str.replace(/\\bLv\\.\\s*(\\d+)/g,'等级 $1')
+      .replace(/\\bAI\\s*(?=策略|战斗|规则)/g,'智能')
+      .replace(/\\bHP\\b/g,'生命值')
+      .replace(/\\bXP\\b/g,'经验');
+  }
+
   // Mode-aware translate: the public API + the canvas hook. In English mode it
   // converts ZH->EN; in Chinese mode it leaves text as-is.
   function translate(str) {
@@ -866,7 +877,7 @@
     // text. Use the mode-independent converter so saved.en is always correct,
     // even when the node is first seen while the page is in Chinese mode.
     if (saved === undefined || (current !== saved.en && current !== saved.zh)) {
-      saved = { zh: current, en: toEnglish(current) };
+      saved = { zh: toChinese(current), en: toEnglish(current) };
       originals.set(node, saved);
     }
     var want = lang() === 'en' ? saved.en : saved.zh;
@@ -881,7 +892,7 @@
       if (!el.hasAttribute || !el.hasAttribute(a)) continue;
       var cur = el.getAttribute(a);
       var rec = store[a];
-      if (!rec || (cur !== rec.en && cur !== rec.zh)) { rec = { zh: cur, en: toEnglish(cur) }; store[a] = rec; }
+      if (!rec || (cur !== rec.en && cur !== rec.zh)) { rec = { zh: toChinese(cur), en: toEnglish(cur) }; store[a] = rec; }
       var want = lang() === 'en' ? rec.en : rec.zh;
       if (cur !== want) el.setAttribute(a, want);
     }
@@ -939,7 +950,7 @@
   window.addEventListener('morrowwish-language-change', function () { setTimeout(render, 0); });
 
   // Expose for tests / debugging.
-  window.CatBondI18n = { translate: translate, toEnglish: toEnglish, dict: DICT, render: render };
+  window.CatBondI18n = { translate: translate, toEnglish: toEnglish, toChinese:toChinese, dict: DICT, render: render };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true });
   else mount();
