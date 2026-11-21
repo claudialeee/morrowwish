@@ -305,8 +305,8 @@ function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();
  if($("guardStatus"))$("guardStatus").setAttribute("data-mode",s?.guardMode||"patrol");
  renderCollections();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+NEED;$("meterFill").style.width=100*s.got/NEED+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collection"))$("collection").textContent=Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length+" / 8";$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+NEED+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
 const MENU_TEXT={
- en:{rooms:"Rooms",album:"Album",badges:"Badges",cats:"Cats",help:"Help",open:"Open game menu",close:"Close game menu",how:"How to play",settings:"Sound settings"},
- zh:{rooms:"关卡",album:"图鉴",badges:"成就",cats:"小猫",help:"帮助",open:"打开游戏菜单",close:"关闭菜单",how:"游戏玩法",settings:"声音设置"}
+ en:{rooms:"Rooms",album:"Album",badges:"Badges",cats:"Cats",help:"Help",open:"Open game menu",close:"Close game menu",how:"How to play"},
+ zh:{rooms:"关卡",album:"图鉴",badges:"成就",cats:"小猫",help:"帮助",open:"打开游戏菜单",close:"关闭菜单",how:"游戏玩法"}
 };
 function updateCoach(){
  const el=$("coachSpot");if(!el||!s)return;
@@ -333,7 +333,6 @@ function localizeMenu(){
  for(const [id,title] of [["menuButton",tx.open],["menuClose",tx.close],["quickHelp",tx.how]]){
   const el=$(id);if(el){el.setAttribute("aria-label",title);el.title=title}
  }
- if($("settingsTitle"))$("settingsTitle").textContent=tx.settings;
  if($("helpLegend"))$("helpLegend").textContent=lang==="zh"
   ?"🐟 偷3条鱼 · 🧶 引开主人 · 📦 躲藏 · 🚪 从猫门逃脱"
   :"🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape";
