@@ -472,5 +472,5 @@
   };
   breedSheet.onerror=()=>{pendingPortraits.clear();console.warn('Breed illustrations unavailable; original cat sprites retained')};
   if(window.CAT_BOND_BREED_ATLAS)breedSheet.src=window.CAT_BOND_BREED_ATLAS;
-  source.src=window.CAT_BOND_KITTEN_ATLAS;
+  if(window.CAT_BOND_KITTEN_ATLAS)source.src=window.CAT_BOND_KITTEN_ATLAS;
 })();
