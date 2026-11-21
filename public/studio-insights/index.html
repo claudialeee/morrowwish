@@ -372,7 +372,7 @@ try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
-if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);renderCampaignLedger();else updateEWLabels();enhanceSortableTables();setStatus(statusKind,lastError);
+if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();renderCampaignLedger();enhanceSortableTables();setStatus(statusKind,lastError);
 }
 async function load(){setStatus("loading");$("reload").disabled=true;
 try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
