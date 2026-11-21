@@ -78,7 +78,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 </details>
 <details class="ew-details" id="video-release-details"><summary><span id="video-release-title">短视频推广</span><small id="video-release-summary">正在读取 7 款游戏的发布情况</small></summary>
 <p class="description" id="video-release-note">制作完成 ≠ 平台发布。主页访客、真实开局请查看下方推广渠道效果。</p>
-<div class="table-wrap"><table class="table video-states"><thead><tr><th id="video-head-game">游戏</th><th id="video-head-media">视频</th><th>YouTube</th><th>TikTok</th><th>Instagram</th></tr></thead><tbody id="video-campaign-rows"></tbody></table></div></details>
+<div class="table-wrap"><table class="table video-states"><thead><tr><th id="video-head-game">游戏</th><th id="video-head-media">视频</th><th>YouTube</th><th>TikTok</th><th>Instagram</th><th>Bluesky</th></tr></thead><tbody id="video-campaign-rows"></tbody></table></div></details>
 <section class="section" id="promotion-channels">
  <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
  <div class="panel table-wrap"><table class="table compact-channels">
@@ -244,12 +244,12 @@ function renderCampaignLedger(){
  document.getElementById('video-release-summary').textContent=(zh?'成片 ':'Ready ')+ready+'/7 · '+(zh?'已排期 ':'Scheduled ')+scheduled+' · '+(zh?'已发布 ':'Published ')+published;
  document.getElementById('video-head-game').textContent=zh?'游戏':'Game';
  document.getElementById('video-head-media').textContent=zh?'视频':'Video';
- const note=document.getElementById('video-release-note');note.textContent=zh?'新片需要画面复核，尚未向社交平台发布；旧视频不计入统计。':'New cuts await visual review and are not posted. Historical video views are excluded.';const review=document.createElement('a');review.href='/promo/review-v3/';review.textContent=zh?'查看七款新视频质检页 ↗':'Review seven new videos ↗';review.rel='noopener noreferrer';review.target='_blank';note.append(' · ',review);if(z.montage?.production==='ready'&&/^\/promo\/[a-z0-9-]+\.mp4$/.test(z.montage.media||'')){const a=document.createElement('a');a.href=z.montage.media;a.textContent=zh?'观看七款游戏合集 ↗':'Watch seven-game montage ↗';a.target='_blank';a.rel='noopener noreferrer';note.append(' · ',a);}
+ const note=document.getElementById('video-release-note');note.textContent=zh?'新视频已复核并自动排期；尚未实际发布。旧视频和旧播放量不计入统计。':'Reviewed new videos are scheduled, not yet publicly published. Historical videos and views are excluded.';const review=document.createElement('a');review.href='/promo/review-v3/';review.textContent=zh?'查看七款新视频质检页 ↗':'Review seven new videos ↗';review.rel='noopener noreferrer';review.target='_blank';note.append(' · ',review);if(z.montage?.production==='ready'&&/^\/promo\/[a-z0-9-]+\.mp4$/.test(z.montage.media||'')){const a=document.createElement('a');a.href=z.montage.media;a.textContent=zh?'观看七款游戏合集 ↗':'Watch seven-game montage ↗';a.target='_blank';a.rel='noopener noreferrer';note.append(' · ',a);}
  const cells=s=>{const k=s||'not-scheduled',cl=k==='published'?'verified':k==='scheduled'?'scheduled':k==='draft'?'paused':'pending';return '<td class="'+cl+'">'+escapeHTML(state[k]||k)+'</td>';};
  document.getElementById('video-campaign-rows').innerHTML=z.games.map(g=>{
   const nm=gameNames[g.slug],name=nm?.[lang]||g.name||g.slug;
   const media=g.media&&['ready','review-ready'].includes(g.production)?'<a href="'+escapeHTML(g.media)+'" target="_blank" rel="noopener noreferrer">'+(zh?'预览成片 ↗':'Watch video ↗')+'</a>':escapeHTML(state[g.production]||state.rendering);
-  return '<tr><td><a href="/'+encodeURIComponent(g.slug)+'/">'+escapeHTML(name)+'</a></td><td>'+media+'</td>'+cells(g.social?.youtube)+cells(g.social?.tiktok)+cells(g.social?.instagram)+'</tr>';
+  return '<tr><td><a href="/'+encodeURIComponent(g.slug)+'/">'+escapeHTML(name)+'</a></td><td>'+media+'</td>'+cells(g.social?.youtube)+cells(g.social?.tiktok)+cells(g.social?.instagram)+cells(g.social?.bluesky)+'</tr>';
  }).join('');
 }
 
