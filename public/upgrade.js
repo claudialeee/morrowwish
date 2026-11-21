@@ -48,7 +48,34 @@ function switchLane(){side=1-side;if(window.mwMiniStats)window.mwMiniStats.flips
 return{init(){rnd=seeded(seed+"gravity");sec=0;side=0;py=410;haz=[];stars=[];sp=1.6;k=0;combo=0;window.mwMiniStats={flips:0,dodges:0,gems:0};info("TAP OR SPACE TO FLIP");},
 tick(dt){sec+=dt;const speed=248+Math.min(330,Math.max(0,sec-7)*5.5);sp-=dt;py+=(side?126-py:410-py)*Math.min(1,dt*16);if(sp<=0){const which=k<tutorial.length?tutorial[k]:Math.floor(rnd()*2);haz.push({x:1040,side:which,passed:false});if(k%2===0)stars.push({x:1145,side:1-which,got:false});k++;sp=Math.max(.62,1.68-Math.max(0,sec-8)*.029)+(rnd()-.5)*.1;}for(const p of haz){p.x-=speed*dt;if(!p.passed&&p.x<225){p.passed=true;if(Math.abs(py-(p.side?126:410))<78){shake=11;flash=1;finish(false,"You reached "+Math.floor(sec)+" seconds. Learn the pattern, then beat it.");return;}add(4);window.mwMiniStats.dodges++;combo++;if(combo%4===0)winEffect(225,py);}}for(const g of stars){g.x-=speed*dt;if(!g.got&&Math.abs(g.x-225)<30&&Math.abs(py-(g.side?126:410))<50){g.got=true;window.mwMiniStats.gems++;add(22);winEffect(225,py);}}haz=haz.filter(v=>v.x>-60);stars=stars.filter(v=>v.x>-50&&!v.got);if(Math.floor(sec*3)>Math.floor((sec-dt)*3))add(1);info(Math.floor(sec)+"s  ·  STREAK "+combo+"  ·  SPEED "+Math.floor(speed));},
 down(){switchLane();},key(key){if([" ","ArrowUp","ArrowDown"].includes(key))switchLane();},
-draw(){bg("#101137","#202d5b");glow(490,265,320,"#676eff22");box(0,77,960,15,"#79ecff",6);box(0,455,960,15,"#79ecff",6);for(let i=0;i<17;i++){const x=(i*88-sec*140%1000+1000)%1000;line(x,97,x+40,97,"#85e9ff35",4);line(x,450,x+40,450,"#85e9ff35",4);}for(const o of haz){const y=o.side?126:410;glow(o.x,y,61,"#fb648850");box(o.x-27,y-43,54,86,"#fe7297",12,"#ffb6c8");txt(o.x,y,"✦",24,"#4c163d");}for(const g of stars){const y=g.side?126:410;glow(g.x,y,34,"#ffe88a44");circ(g.x,y,14,"#ffce65");txt(g.x,y,"✧",24,"#fff");}glow(225,py,78,"#4ce8fd66");circ(225,py,22,"#70fff0");circ(232,py-6,5,"#142c51");for(let i=0;i<4;i++)circ(180-i*14,py+(i%2?5:-5),5-i,"#65d9ff");txt(480,36,sec<6?"TAP TO FLIP GRAVITY":combo>3?"STREAK x"+combo:"KEEP MOVING",20,"#e0faff");if(sec<6)txt(480,268,"AVOID PINK BLOCKS",23,"#ffffff88");}
+draw(){if(portrait){
+ // Upgrade mode replaces the base renderer: draw BOTH lanes in 540x960.
+ const g=c.createLinearGradient(0,0,0,960);
+ g.addColorStop(0,"#352c63");g.addColorStop(1,"#7a5688");
+ c.fillStyle=g;c.fillRect(0,0,540,960);
+ const lx=145,rx=395,mapY=v=>lx+(v-126)*(rx-lx)/284;
+ glow(270,482,370,"#c7a9ef23");
+ for(const x of [lx,rx]){
+  box(x-57,91,114,794,x===lx?"#d18bb725":"#7bbde425",18,"#cbb7df66");
+  for(let i=0;i<15;i++){
+   const y=120+((i*55+sec*155)%755+755)%755;
+   line(x-42,y,x+42,y,"#ffffff1b",2);
+  }
+ }
+ for(const o of haz){
+  const x=o.side?lx:rx,y=960-o.x;
+  if(y>-80&&y<1020){glow(x,y,58,"#fb648845");box(x-34,y-32,68,64,"#fe7297",10,"#ffb6c8");txt(x,y,"✦",28,"#4c163d");}
+ }
+ for(const star of stars){
+  const x=star.side?lx:rx,y=960-star.x;
+  if(y>-40&&y<1000){glow(x,y,32,"#ffe88a44");circ(x,y,15,"#ffce65");txt(x,y,"✧",24,"#fff");}
+ }
+ const px=mapY(py);glow(px,750,73,"#4ce8fd55");
+ circ(px,750,22,"#70fff0");circ(px+8,745,5,"#142c51");
+ for(let i=0;i<3;i++)circ(px-28-i*15,750+(i%2?5:-5),4.5-i,"#65d9ff");
+ txt(270,46,sec<6?"TAP TO SWITCH LANES":combo>3?"STREAK x"+combo:"KEEP MOVING",19,"#f2eaff");
+ return;
+}bg("#101137","#202d5b");glow(490,265,320,"#676eff22");box(0,77,960,15,"#79ecff",6);box(0,455,960,15,"#79ecff",6);for(let i=0;i<17;i++){const x=(i*88-sec*140%1000+1000)%1000;line(x,97,x+40,97,"#85e9ff35",4);line(x,450,x+40,450,"#85e9ff35",4);}for(const o of haz){const y=o.side?126:410;glow(o.x,y,61,"#fb648850");box(o.x-27,y-43,54,86,"#fe7297",12,"#ffb6c8");txt(o.x,y,"✦",24,"#4c163d");}for(const g of stars){const y=g.side?126:410;glow(g.x,y,34,"#ffe88a44");circ(g.x,y,14,"#ffce65");txt(g.x,y,"✧",24,"#fff");}glow(225,py,78,"#4ce8fd66");circ(225,py,22,"#70fff0");circ(232,py-6,5,"#142c51");for(let i=0;i<4;i++)circ(180-i*14,py+(i%2?5:-5),5-i,"#65d9ff");txt(480,36,sec<6?"TAP TO FLIP GRAVITY":combo>3?"STREAK x"+combo:"KEEP MOVING",20,"#e0faff");if(sec<6)txt(480,268,"AVOID PINK BLOCKS",23,"#ffffff88");}
 };};
 G["parcel-panic"]=()=>{
 let rnd=seeded(seed+"parcels");
@@ -84,9 +111,12 @@ function release(x,y,gesture){
   // Drag-to-sort remains available for touch users.
   if(target>=0&&y>=95&&y<=520)send(target,"drag");
   else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,380)}
+ }else if(target>=0&&(portrait||y>=0&&y<=540)){
+  // Tap wins even if a moving box happens to overlap this lane.
+  send(target,"click");
  }else if(gesture.fromParcel){
-  info(L("No need to grab it — just click a color lane!","不需要拿起包裹，直接点击颜色通道即可！"));
- }else if(target>=0&&y>=85&&y<=520)send(target,"click");
+  info(L("Tap the matching lane.","点击对应颜色的通道即可投递。"));
+ }
 }
 return{
  init(){
@@ -118,6 +148,35 @@ return{
   if(k==="ArrowLeft")send(0,"keyboard");else if(k==="ArrowDown")send(1,"keyboard");else if(k==="ArrowRight")send(2,"keyboard");
  },
  draw(){
+  if(portrait){
+   const g=c.createLinearGradient(0,0,0,960);
+   g.addColorStop(0,"#4b3967");g.addColorStop(1,"#795978");
+   c.fillStyle=g;c.fillRect(0,0,540,960);
+   const xOf=x=>100+(x-190)*170/290,yOf=y=>144+(y-108)*1.64;
+   for(let i=0;i<3;i++){
+    const x=100+i*170,col=colors[i],selected=press&&lane(press.x)===i,hover=drag&&lane(drag.x)===i;
+    box(x-72,104,144,779,hover||selected?col+"50":col+"1e",17,col+"ae");
+    for(let j=0;j<12;j++)line(x-50,164+j*50,x+50,164+j*50,col+"23",2);
+    box(x-73,765,146,117,col+"48",15,col);
+    txt(x,811,String(i+1),30,"#fff");
+    txt(x,845,zh()?zhLabels[i]:labels[i],17,col);
+   }
+   box(30,18,480,61,"#342b56",15,"#a98eaf");
+   txt(270,43,L("TAP THE MATCHING COLOR LANE","点击对应颜色的通道"),17,"#f6eeff");
+   for(let i=0;i<5;i++)circ(40+i*21,95,7,i<life?"#ff859c":"#735c83");
+   const b=boxes[0];
+   if(b){
+    const x=xOf(b.x),y=yOf(b.y),col=colors[b.color];
+    glow(x,y,59,col+"54");box(x-39,y-34,78,68,col,12,"#ffffffae");
+    box(x-25,y-19,50,35,"#ffffff44",6);
+    txt(x,y-8,L("NEXT","下一件"),11,"#24364c");
+    txt(x,y+15,zh()?zhLabels[b.color]:labels[b.color],16,"#24364c");
+    const ratio=Math.max(0,Math.min(1,(433-b.y)/325));
+    box(112,84,316,7,"#796b86",4);box(112,84,316*ratio,7,col,4);
+   }else txt(270,296,L("Next parcel incoming…","下一件快递马上到！"),17,"#f6edff");
+   if(feedback)txt(xOf(feedback.x),yOf(feedback.y)-(.9-feedback.life)*20,feedback.text,22,feedback.good?"#b4ffdc":"#ffc4d2");
+   return;
+  }
   bg("#182b49","#283f61");
   for(let i=0;i<3;i++){
    const x=docks[i],selected=press&&lane(press.x)===i,hover=drag&&lane(drag.x)===i;
