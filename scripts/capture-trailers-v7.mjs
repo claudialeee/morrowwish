@@ -162,10 +162,19 @@ try{
   await mark('duo',5100);
   const ult=await page.evaluate(()=>{
    const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
-   b.ult=100;b.ultCd=0;const cast=b.ultimate(),name=b.ultCinematic?.name;
-   return{cast,cinematic:!!b.ultCinematic,name,hasChinese:/[\u3400-\u9fff]/.test(name||'')};
+   // In the current game only the TWO-CAT combo has a full-screen
+   // cinematic. A solo ultimate is fired in place, with real elemental VFX.
+   b.ult=100;b.ultCd=0;
+   const skill=b.me()?.ultSkill;
+   const cast=b.ultimate();
+   const name=window.CatBondI18n?.translate?.(skill?.name)||skill?.name||'';
+   return{cast,name,cooldown:b.ultCd>0,spent:b.ult===0,
+    visible:!!b.ultCinematic||!!b.spotlightCinematic||
+     b.flash>0||b.slowmo>0||b._ultResultBanner>0,
+    hasChinese:/[\u3400-\u9fff]/.test(name)};
   });
-  if(!ult.cast||!ult.cinematic||ult.hasChinese)throw Error('V6 real ultimate missing '+JSON.stringify(ult));
+  if(!ult.cast||!ult.spent||!ult.cooldown||!ult.visible||ult.hasChinese)
+   throw Error('V11 genuine in-place elemental ultimate missing '+JSON.stringify(ult));
   await mark('ultimate',5800);
   console.log('V6 REAL CAT COMBAT '+JSON.stringify({duo,ult}));
   const labels=shots.map(s=>s.label);
