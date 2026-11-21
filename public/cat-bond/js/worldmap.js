@@ -251,7 +251,8 @@
   function playerSpecies() {
     var cats = window.State.S.cats || [];
     if (cats.length) {
-      var sp = window.GameData.speciesById(cats[0].species);
+      var leader=cats.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||cats[0];
+      var sp=window.GameData.speciesById(leader.species);
       if (sp) return sp;
     }
     return window.GameData.speciesById('tangyuan') || window.GameData.SPECIES[0];
