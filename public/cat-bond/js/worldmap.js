@@ -331,8 +331,10 @@
       taken:prog.nodes.includes(secretId),kind:'secret',bob:0});
     // A different duo memory in every region, unlocked by friendship.
     const duoId=id+'_duo';
+    const expeditionPair=activeDuo()?.cats;
+    const remembered=expeditionPair&&window.CatRelations?.memoryList?.(expeditionPair[0],expeditionPair[1])||[];
     nodes.push({id:duoId,x:WORLD_W*.42,y:WORLD_H*.77,
-      taken:prog.nodes.includes(duoId),kind:'duo',bob:1.8});
+      taken:remembered.includes(id),kind:'duo',bob:1.8});
     // parallax decor blobs (themed shrubs / rocks / crystals)
     for (var k = 0; k < 40; k++) {
       decor.push({
@@ -462,7 +464,8 @@
       var n = w.nodes[j];
       if (n.taken) continue;
       if (Math.hypot(w.px - n.x, w.py - n.y) < 48) {
-        if(n.kind==='duo'&&!activeDuo()?.ready){
+        if(n.kind==='duo'&&activeDuo()?.cats&&window.CatRelations?.memoryList?.(...activeDuo().cats)?.includes(w.region.id))n.taken=true;
+        else if(n.kind==='duo'&&!activeDuo()?.ready){
           if(toastCd<=0&&game?.toast){
             const en=window.MorrowwishI18n?.get?.()!=='zh';
             game.toast(en?'Pair two cats and reach 20 trust to discover this memory':'双猫搭档默契达到20，才能发现这段回忆');
@@ -509,7 +512,7 @@
     world.flash = 0.4;
     var wm = ensureSave();
     var prog = wm.regions[world.region.id];
-    if (prog.nodes.indexOf(n.id) < 0) prog.nodes.push(n.id);
+    if(n.kind!=='duo'&&prog.nodes.indexOf(n.id)<0)prog.nodes.push(n.id);
     var d = world.region.difficulty;
     var reward;
     if(n.kind==='secret'){
