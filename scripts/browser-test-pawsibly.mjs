@@ -373,7 +373,9 @@ try{
  assert.match(await page.locator('#guardIntent').textContent(),/巡逻|分心|调查|搜索|追猫/,'Owner AI behavior must be explained in Chinese');
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
- assert.equal(await page.locator('#menuAudio').isVisible(),true,'Audio settings accessible inside in-game help');
+ assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
+ assert.equal(await page.locator('.cat-sound-controls #music, .cat-sound-controls #sound').count(),2,'Music and sound effects must both remain in the header');
+ await page.locator('#menuClose').click();
  const audioButton=page.locator('#sound');
  await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
