@@ -174,7 +174,8 @@ const UI = {
     if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked=[cats[0].uid,cats[1].uid];
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
-    const name=ok?CatRelations.title(a,b).name:'—';
+    const duoArt=ok?CatRelations.title(a,b):null;
+    const name=duoArt?.name||'—';
     const selected=ok&&CatRelations.chosen().map(c=>c.uid).join('|')===picked.join('|');
     const mood=ok?CatRelations.mood(a,b):'unknown';
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
@@ -186,11 +187,12 @@ const UI = {
       <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
       <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
       <div class="duo-relation"><strong>${name}</strong>
+        <p class="duo-art-description">✨ ${esc(duoArt?.description||'')}${p>=60?' · '+(en?'Enhanced synergy unlocked':'进阶合击已觉醒'):''}</p>
         <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
         <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
         <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
         <div class="duo-meter"><span style="width:${p}%"></span></div>
-        <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small>
+        <small>${en?'20 unlocks · 60 adds a second effect · 90 strengthens the move':'20解锁合击 · 60新增元素效果 · 90强化威力'}</small>
         ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
           +CatRelations.secretStory(a,b)+'</span></p>':''}
         ${p>=90?'<p class="duo-secret-story">🌙 '+(en?'SECRET PROMISE':'最终的约定')+'<span>'
