@@ -156,20 +156,21 @@ async function capture(browser,slug,record){
      [chapters.result,3.0,'YOUR TOWN. YOUR ENDING.']];
  }else if(slug==='elsewhere'){
    // One COMPLETE life, not four incomprehensible menus flashing for 0.3s.
-   await page.addStyleTag({content:'.top,.topbar,.footer,.game-top,.scene-details,.scene-character,.story-continuity,.mystery-hook,.mystery-panel,.mystery-reveal{display:none!important}#game{margin:0!important;width:100%!important;max-width:100%!important;padding:0!important}.cinematic-frame{height:360px!important;min-height:360px!important}.cinematic-image{height:100%!important;object-fit:cover!important}.scene-content{padding:14px 16px!important}.scene-narrative p{font-size:19px!important;line-height:1.4!important;max-height:86px!important;overflow:hidden!important}.scene-choice{font-size:18px!important;min-height:64px!important}.scene-choice small{font-size:14px!important}.scene-result p{font-size:20px!important;line-height:1.45!important}.ending-illustration{height:370px!important}.ending-title-panel h1{font-size:30px!important}.ending-content .ending-consequence,.ending-content .ending-actions,.ending-feedback{display:none!important}.ending-content p{font-size:18px!important}'});
+   await page.addStyleTag({content:'.top,.topbar,.footer,.game-top,.case-topline,.moment-pips,.case-previous,.case-summary,.end-actions,.ending-route-label{display:none!important}#game,#ending{margin:0!important;width:100%!important;max-width:100%!important;padding:0!important}.scene-picture{height:350px!important;min-height:350px!important;max-height:350px!important;overflow:hidden!important}.scene-picture svg{width:100%!important;height:100%!important}.scene-body{padding:14px 18px!important}.scene-body h2{font-size:24px!important;line-height:1.2!important;margin:7px 0!important}.story-line{font-size:19px!important;line-height:1.35!important;max-height:86px!important;overflow:hidden!important}.case-objective{font-size:15px!important;line-height:1.35!important}.choices .choice{font-size:18px!important;min-height:62px!important}.choice strong{font-size:17px!important}.impact p{font-size:20px!important;line-height:1.4!important}.ending-art{height:365px!important;min-height:365px!important}.ending-paper{padding:18px!important}.ending-paper h1{font-size:31px!important;line-height:1.2!important}.ending-paper>p{font-size:19px!important;line-height:1.4!important}'});
    await page.locator('[data-world="paris"]').first().click({timeout:10000});
    chapters.action=(Date.now()-begin)/1000;await sleep(2500);
    for(let n=0;n<5;n++){
+     if(n===2||n===4){await page.locator('#game [data-twist]').first().click({timeout:8000});await sleep(n===2?1100:400);}
      await page.locator('#game [data-choice]').first().waitFor({timeout:11000});
      if(n===0){chapters.choice=(Date.now()-begin)/1000;await sleep(2000);}
      await page.locator('#game [data-choice]').first().click();
      if(n===0){chapters.effect=(Date.now()-begin)/1000;await sleep(2100);}
-     await page.locator('#continue-btn').click({timeout:8000});
+     await page.locator('#game [data-continue]').click({timeout:8000});
      await sleep(510);
    }
-   await page.locator('.ending-title-panel h1').waitFor({timeout:10000});
+   await page.locator('#ending .ending-paper h1').waitFor({timeout:10000});
    chapters.result=(Date.now()-begin)/1000;
-   proof={world:'paris',choices:5,ending:await page.locator('.ending-title-panel h1').textContent()};
+   proof={world:'paris',choices:5,ending:await page.locator('#ending .ending-paper h1').textContent(),grade:await page.locator('#ending .case-grade').textContent()};
    if(!proof.ending)throw Error('No genuine interactive Paris ending');
    await sleep(4300);
    marks=[[chapters.result,3.6,'I CHANGED MY LIFE.'],[chapters.action,2.5,'I WOKE UP IN PARIS.'],
