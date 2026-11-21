@@ -9,6 +9,12 @@ let lang=(()=>{let explicit=null;
 })();
 const words={
 "an indie game studio":"独立游戏工作室",
+"Meet our CEO (honorary title)":"认识一下我们的 CEO（荣誉职位）",
+"Chief Entertainment Officer. Expert napper. Occasionally approves new games.":"首席娱乐官。睡觉是强项，偶尔批准新游戏上线。",
+"Privacy":"隐私说明",
+"Contact":"联系我们",
+"On itch.io":"itch.io 游戏主页",
+"Back to games":"返回游戏主页",
 "We make playful worlds about imagination, freedom and delightful surprises. No pressure, no endless menus—just a little joy to discover.":"我们创造充满想象、自由与惊喜的游戏世界。不必精通任何技巧，也无需面对冗长的菜单，只要来发现一点小小的快乐。",
 "60-SECOND CHALLENGE":"60 秒挑战",
 "Match food to hungry fish. Keep the water clean!":"给小鱼喂对食物，保持水质清洁！",
