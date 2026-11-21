@@ -11,7 +11,22 @@ const work=fs.mkdtempSync(path.join(os.tmpdir(),'mw-edit-v7-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
 const manifest={version:'V7',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
- socialAutopublish:false,historicalVideoViewsExcluded:true,trailers:[]};
+ socialAutopublish:false,historicalVideoViewsExcluded:true,readabilityChecked:true,trailers:[]};
+const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v1',
+ method:'Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.',
+ scenes:[]};
+const MIN_READING={
+ 'cat-bond':{'raising':4.5,'cat-upgrade':6.0,'duo-partners':6.0,'map-choice':4.5},
+ 'pawsibly-innocent':{'narrow-achievement':3.0},
+ 'tiny-town':{'opening-three-choices':9.0,'resident-profile':6.2,'neighbor-story':6.5,'ending':6.5},
+ 'elsewhere':{'choose-life':4.4,'paris':6.0,'paris-result':3.7,
+  'paris-romance':7.0,'paris-love-moment':4.0,
+  'paris-chapter-3':6.7,'paris-chapter-4':6.5,'paris-finale':6.8,'paris-ending':7.9,
+  'amalfi':4.5,'tokyo':4.5,'moon-opening':5.0,'moon-surprise':5.5},
+ 'flip-dash':{'first-coin':3.0,'crash':2.5},
+ 'parcel-panic':{'game-over':2.7},
+ 'pocket-aquarium':{'timeout':2.9}
+};
 const choose=(src,start,duration,caption='',label='')=>({src,start,duration,caption,label});
 const cover=(duration,caption='',label='')=>choose('cover',0,duration,caption,label);
 const game=(start,duration,caption='',label='')=>choose('game',start,duration,caption,label);
@@ -19,75 +34,76 @@ const broll=(label,duration,caption='')=>choose('broll',0,duration,caption,label
 const playlists={
  'cat-bond':[
   broll('yard',3.5,'A HOME FULL OF CATS.'),
-  broll('raising',3.7,'RAISE YOUR OWN CAT TEAM.'),
-  broll('cat-upgrade',3.7,'LEVEL UP YOUR CATS.'),
-  broll('duo-partners',4.1,'BUILD YOUR CAT DUO.'),
-  broll('work-before',2.4,'SEND YOUR CATS OUT TO WORK.'),
+  broll('raising',4.65,'RAISE YOUR OWN CAT TEAM.'),
+  broll('cat-upgrade',6.45,'LEVEL UP YOUR CATS.'),
+  broll('duo-partners',6.45,'BUILD YOUR CAT DUO.'),
+  broll('work-before',3.35,'SEND YOUR CATS OUT TO WORK.'),
   broll('work-after',3.5,'BRING HOME REAL EARNINGS.'),
   broll('tease',3.9,'PLAY WITH YOUR CATS.'),
-  broll('map-choice',3.0,'CHOOSE A NEW ADVENTURE.'),
+  broll('map-choice',4.95,'CHOOSE A NEW ADVENTURE.'),
   broll('map-explore',4.0,'EXPLORE BEYOND YOUR YARD.'),
   broll('battle-intro',2.5,'FIGHT AS A CAT TEAM.'),
   broll('duo',4.85,'UNLEASH A TWO-CAT COMBO!'),
   broll('ultimate',5.5,'NOW THE ULTIMATE ATTACK!'),
-  cover(1.95,'PLAY FREE')
+  cover(3.6,'PLAY FREE')
  ],
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
   broll('narrow-pursuit',3.1,'SPOTTED! CAN IT ESCAPE?'),
-  broll('narrow-achievement',2.0,'NINE LIVES · ACHIEVEMENT!'),
+  broll('narrow-achievement',3.05,'NINE LIVES · ACHIEVEMENT!'),
   broll('caught-attempt',14,'NEXT ROOM. ONE BAD MOVE...'),
-  cover(1.95,'PLAY FREE')
+  cover(3.6,'PLAY FREE')
  ],
  'tiny-town':[
+  broll('opening-three-choices',9.45),
   broll('board',3.7,'NO JOBS. BUILD YOUR TOWN.'),
   broll('resident-reactions',3.9,'FIVE NEIGHBORS. FIVE DREAMS.'),
-  broll('resident-profile',4.2,'THEY HAVE THEIR OWN OPINIONS.'),
+  broll('resident-profile',6.5,'THEY HAVE THEIR OWN OPINIONS.'),
   broll('board-later',3.5,'PLACE WISHES ON THE BOARD.'),
   broll('combination',4.1,'TWO WISHES BECOME ONE!'),
-  broll('neighbor-story',4.0,'THE NEIGHBORS HAVE STORIES.'),
+  broll('neighbor-story',6.85,'THE NEIGHBORS HAVE STORIES.'),
   broll('legendary',3.4,'UNLOCK A LEGENDARY WONDER.'),
   broll('board-mature',3.5,'WATCH THE WHOLE TOWN CHANGE.'),
-  broll('ending',5.15,'SEVEN DAYS. YOUR OWN ENDING.'),
-  cover(1.95,'PLAY FREE')
+  broll('ending',6.8,'SEVEN DAYS. YOUR OWN ENDING.'),
+  cover(3.6,'PLAY FREE')
  ],
  'elsewhere':[
   // A quick promise of multiple dream lives, then one clear romantic story
   // from meeting to real ending. No repetitive generic moon/choice filler.
-  broll('choose-life',2.8),
-  broll('amalfi',2.35,'A VILLA ON THE AMALFI COAST.'),
-  broll('tokyo',2.35,'BE A SUPERSTAR TONIGHT.'),
-  broll('moon-opening',2.5,'OR OWN A HOTEL ON THE MOON.'),
-  broll('moon-surprise',2.55,'SURPRISES IN EVERY LIFE.'),
-  broll('paris',3.15,'A NEW LOVE STORY IN PARIS.'),
-  broll('paris-result',1.8),
-  broll('paris-romance',3.65,'MEET SOMEONE WHO GETS YOU.'),
-  broll('paris-love-moment',2.3,'ONE UNFORGETTABLE DATE.'),
-  broll('paris-chapter-3',2.75,'THE ROMANCE CONTINUES.'),
-  broll('paris-chapter-4',2.6,'A MOMENT WORTH KEEPING.'),
-  broll('paris-finale',2.45,'CHOOSE YOUR OWN LOVE STORY.'),
-  broll('paris-ending',3.65,'YOUR CHOICES. YOUR ENDING.'),
-  cover(1.95,'PLAY FREE')
+  broll('choose-life',4.65),
+  broll('amalfi',4.7,'A VILLA ON THE AMALFI COAST.'),
+  broll('tokyo',4.7,'BE A SUPERSTAR TONIGHT.'),
+  broll('moon-opening',5.3,'OR OWN A HOTEL ON THE MOON.'),
+  broll('moon-surprise',5.7,'SURPRISES IN EVERY LIFE.'),
+  broll('paris',6.3,'A NEW LOVE STORY IN PARIS.'),
+  broll('paris-result',3.95),
+  broll('paris-romance',7.3,'MEET SOMEONE WHO GETS YOU.'),
+  broll('paris-love-moment',4.2,'ONE UNFORGETTABLE DATE.'),
+  broll('paris-chapter-3',7.0,'THE ROMANCE CONTINUES.'),
+  broll('paris-chapter-4',6.8,'A MOMENT WORTH KEEPING.'),
+  broll('paris-finale',7.15,'CHOOSE YOUR OWN LOVE STORY.'),
+  broll('paris-ending',8.2,'YOUR CHOICES. YOUR ENDING.'),
+  cover(3.6,'PLAY FREE')
  ],
  'flip-dash':[
   broll('first-coin',3.5,'GRAB GOLD FROM THE START!'),
   broll('coin-collect',10.2,'COLLECT GOLD. DODGE PINK.'),
-  broll('danger',2.45,'ONE WRONG MOVE IS ENOUGH.'),
-  broll('crash',1.5,'CAN YOU LAST LONGER?'),
-  cover(1.95,'PLAY FREE')
+  broll('danger',2.45,
+  broll('crash',2.7,'CAN YOU LAST LONGER?'),
+  cover(3.6,'PLAY FREE')
  ],
  'parcel-panic':[
   broll('deliveries',12.4,'MATCH THE PARCEL COLOR.'),
   broll('mistakes',6.3,'NOW WATCH THE MISTAKES...'),
-  broll('game-over',1.85,'BEAT MY DELIVERY STREAK!'),
-  cover(1.95,'PLAY FREE')
+  broll('game-over',2.9,'BEAT MY DELIVERY STREAK!'),
+  cover(3.6,'PLAY FREE')
  ],
  'pocket-aquarium':[
   broll('feeding',4.55,'FEED THE HUNGRY FISH.'),
   broll('more-feeding',5.8,'KEEP PLAYING. BUILD A SCORE.'),
   broll('water-cloudy',4.65,'TIME IS RUNNING OUT.'),
-  broll('timeout',2.25,'TIME UP. BEAT THE GRADE!'),
-  cover(1.95,'PLAY FREE')
+  broll('timeout',3.1,'TIME UP. BEAT THE GRADE!'),
+  cover(3.6,'PLAY FREE')
  ]
 };
 const brollManifest=JSON.parse(fs.readFileSync(path.join(brollDir,'broll-manifest.json'),'utf8'));
@@ -116,6 +132,17 @@ function edit(slug){
   if(shot.src==='game')throw Error('V7 forbids old cut-together V3 footage '+slug);
   chosen.push(shot);
  }
+ for(const shot of chosen){
+   const words=(shot.caption||'').trim().split(/\s+/).filter(Boolean).length;
+   const captionMinimum=words?Math.max(2,0.8+words/3.1):0;
+   const sceneMinimum=shot.src==='cover'?3.5:(MIN_READING[slug]?.[shot.label]||0);
+   const required=Math.max(captionMinimum,sceneMinimum);
+   const passed=shot.duration+.05>=required;
+   readingAudit.scenes.push({game:slug,scene:shot.label||'end-card',seconds:Number(shot.duration.toFixed(2)),
+    captionWords:words,requiredSeconds:Number(required.toFixed(2)),passed});
+   if(!passed)throw Error('READABILITY QA failed: '+slug+'/'+(shot.label||'end-card')+
+     ' readable '+shot.duration.toFixed(2)+'s but requires '+required.toFixed(2)+'s');
+  }
  const n=chosen.length;
  const args=['-nostdin','-y','-hide_banner','-loglevel','error',
   '-i',b.file];
@@ -196,7 +223,7 @@ function edit(slug){
  const meta=ffprobe(output),bytes=fs.statSync(output).size;
  const isHero=hero.has(slug);
  const minimumSeconds={'cat-bond':33,'pawsibly-innocent':19,'tiny-town':30,'elsewhere':35,'flip-dash':15,'parcel-panic':15,'pocket-aquarium':13};
-  if(meta.seconds<(minimumSeconds[slug]||10)||meta.seconds>55||
+  if(meta.seconds<(minimumSeconds[slug]||10)||meta.seconds>(hero.has(slug)?100:40)||
   !meta.streams.some(x=>x.codec_type==='video'&&x.width===1080&&x.height===1920)||
   !meta.streams.some(x=>x.codec_type==='audio')||bytes<220000)
    throw Error('Video format, genuine runtime or sound QA failed '+JSON.stringify({slug,meta,bytes}));
@@ -219,5 +246,6 @@ function edit(slug){
 try{
  for(const slug of ['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'])edit(slug);
  fs.writeFileSync('public/promo/v7-review.json',JSON.stringify(manifest,null,2)+'\n');
+ fs.writeFileSync('public/promo/readability-audit.json',JSON.stringify(readingAudit,null,2)+'\n');
  console.log('V7 TRAILERS RENDERED FOR REVIEW, NO SOCIAL POSTING: '+manifest.trailers.length);
 }finally{fs.rmSync(work,{recursive:true,force:true})}

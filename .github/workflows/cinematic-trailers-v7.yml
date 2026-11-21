@@ -56,6 +56,8 @@ jobs:
             echo "$slug $(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$mp4") seconds"
           done
           test -s public/promo/v7-review.json
+          test -s public/promo/readability-audit.json
+          node -e "const a=require('./public/promo/readability-audit.json');if(!Array.isArray(a.scenes)||a.scenes.length<45||a.scenes.some(s=>!s.passed)||!a.scenes.some(s=>s.game==='tiny-town'&&s.scene==='opening-three-choices'&&s.seconds>=9))process.exit(1);console.log('Reading QA:',a.scenes.length,'scenes checked')"
       - name: Save unapproved previews for owner review; NEVER schedule on social media
         run: |
           set -euo pipefail
@@ -63,7 +65,7 @@ jobs:
             git add "public/promo/$slug/trailer-v7-20261121.mp4" "public/promo/$slug/trailer-v7-20261121.jpg"
             git add "public/promo/$slug/v7-review-"*.jpg
           done
-          git add public/promo/cat-bond/cover-portrait.png public/promo/v7-review.json public/promo/review-v7/index.html
+          git add public/promo/cat-bond/cover-portrait.png public/promo/v7-review.json public/promo/readability-audit.json public/promo/review-v7/index.html
           git diff --cached --quiet && exit 0
           git config user.name 'morrowwish-promo-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
