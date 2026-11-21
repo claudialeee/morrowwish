@@ -72,25 +72,33 @@ function oneResident(residents,index,s,byId,wish){
 
 
 function legendaryPanel(v){
- const {S,byId,legendaryWishes,rareUnlocked,selected}=v;
- const used=new Set(S.places.map(p=>p.id));
- const progress=Math.min(55,S.wonder),percent=Math.round(progress/55*100);
- const builtCount=legendaryWishes.filter(id=>used.has(id)).length;
- const note=rareUnlocked?t('Unlocked! Pick any unused legendary wish, then place it on the map. It takes one day, just like a regular wish.','已解锁！可直接选择任意尚未建造的传奇愿望，然后放到地图上。它和普通愿望一样占用一天。'):t('Collect 55 imagination, or discover the rare third souvenir during a free day, to unlock all four.','积累 55 点想象力，或在自由日发现第三种稀有纪念品，即可解锁全部四种传奇愿望。');
- return '<p class="inspect-intro">'+note+'</p>'+
-  '<div class="legend-unlock-status"><div><strong>'+(rareUnlocked?t('✦ LEGENDARY WISHES UNLOCKED','✦ 传奇愿望已解锁'):t('✧ YOUR NEXT MILESTONE','✧ 解锁传奇愿望'))+'</strong><b>'+S.wonder+' / 55</b></div>'+
-  '<div class="legend-progress"><span style="width:'+percent+'%"></span></div>'+
-  '<small>'+t('Already built','已建造')+' '+builtCount+' / '+legendaryWishes.length+(rareUnlocked?t(' · READY TO USE',' · 可以使用'):'')+'</small></div>'+
-  '<div class="legend-wish-list">'+legendaryWishes.map(id=>{
-   const c=byId[id],built=used.has(id),locked=!rareUnlocked,disabled=built||locked||!S.started||S.ended,active=selected===id;
-   const status=built?t('Already built','已建造'):locked?t('Locked','未解锁'):active?t('Selected · place on map','已选中 · 去地图放置'):t('Select & place','选择并建造');
-   return '<article class="legend-wish '+(built?'built':'')+(active?' active':'')+(locked?' locked':'')+'">'+
-    '<div class="legend-wish-symbol">'+c.icon+'</div><div class="legend-wish-copy"><strong>'+quote(t(c.en,c.zh))+'</strong><p>'+quote(t(c.descEn,c.descZh))+'</p>'+
-    '<small>'+t('Imagination','想象力')+' +'+c.joy+' · '+t('Harmony','友爱')+' '+(c.peace>=0?'+':'')+c.peace+'</small></div>'+
-    '<button type="button" class="legend-wish-action" data-legend-wish="'+id+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+status+'</button>'+
-    '</article>';
-  }).join('')+'</div>'+
-  '<p class="inspect-note">'+t('Legendary wishes also participate in adjacency combos and can unlock incredible three-wish spectacles.','传奇愿望也能参与建筑组合，并触发三个相连愿望形成的城市级奇观。')+'</p>';
+ const {S,byId,legendaryRules,nextLegendary,selected}=v;
+ const unlocked=S.legendaryUnlocked.length;
+ const next=nextLegendary;
+ const explanation=t('Legendary wishes unlock one at a time, at the start of a new day. Every tier needs a little more imagination and discovery.','传奇愿望逐个解锁：每天开始时最多开放一个，后面的愿望还需要更多想象力与探索成果。');
+ const progress=next?Math.min(100,Math.round(S.wonder/next.wonder*100)):100;
+ return '<p class="inspect-intro">'+explanation+'</p>'+
+ '<div class="legend-unlock-status"><div><strong>'+t('✦ LEGENDARY COLLECTION','✦ 传奇愿望图鉴')+'</strong><b>'+unlocked+' / '+legendaryRules.length+'</b></div>'+
+ '<div class="legend-progress"><span style="width:'+progress+'%"></span></div>'+
+ '<small>'+(next?t('Next: ','下一项：')+quote(t(byId[next.id].en,byId[next.id].zh))+' · '+S.wonder+'/'+next.wonder+' '+t('imagination','想象力'):t('All four legendary wishes unlocked!','四项传奇愿望全部解锁！'))+'</small></div>'+
+ '<div class="legend-wish-list">'+legendaryRules.map((rule,index)=>{
+  const c=byId[rule.id],built=S.places.some(p=>p.id===rule.id),unlockedOne=S.legendaryUnlocked.includes(rule.id);
+  const disabled=built||!unlockedOne||!S.started||S.ended,active=selected===rule.id;
+  const status=built?t('Built','已建造'):!unlockedOne?t('Locked','尚未解锁'):active?t('Selected · place on map','已选中 · 去地图放置'):t('Select & build','选择并建造');
+  const goals=[
+   [S.wonder>=rule.wonder,S.wonder+'/'+rule.wonder+' '+t('imagination','想象力')],
+   [S.day>=rule.day,t('Day ','第')+rule.day+t(' or later','天起')],
+   ...(rule.combos?[[S.found.length>=rule.combos,S.found.length+'/'+rule.combos+' '+t('combos','种组合')]]:[]),
+   ...(rule.epics?[[S.legends.length>=rule.epics,S.legends.length+'/'+rule.epics+' '+t('epic wonders','大型奇观')]]:[])
+  ];
+  const note=unlockedOne?t('Unlocked!','已解锁！'):index===unlocked?t('Next in line','下一个解锁目标'):t('Unlock the previous tier first','需先解锁前一项');
+  return '<article class="legend-wish '+(built?'built':'')+(active?' active':'')+(!unlockedOne?' locked':'')+'">'+
+   '<div class="legend-wish-symbol">'+c.icon+'</div><div class="legend-wish-copy"><strong>'+quote(t(c.en,c.zh))+'</strong>'+
+   '<p>'+quote(t(c.descEn,c.descZh))+'</p><small class="legend-tier-label">'+quote(note)+'</small></div>'+
+   '<div class="legend-requirements">'+goals.map(([met,label])=>'<span class="'+(met?'met':'pending')+'">'+(met?'✓ ':'○ ')+quote(label)+'</span>').join('')+'</div>'+
+   '<button type="button" class="legend-wish-action" data-legend-wish="'+rule.id+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+status+'</button></article>';
+ }).join('')+'</div>'+
+ '<p class="inspect-note">'+t('The third travel souvenir gives +6 imagination; it no longer unlocks the whole collection. Legendary wishes are still one-day builds and can form epic three-wish combinations.','旅行发现第三件纪念品会增加 6 点想象力，不再直接解锁整套传奇愿望。传奇愿望依然占用一天建造，也能参与大型奇观组合。')+'</p>';
 }
 
 function inspect(){
@@ -122,12 +130,12 @@ function inspect(){
    '<h3>'+t('Souvenirs','纪念品')+' · '+memories.length+'</h3>'+
    (memories.length?'<div class="inspect-souvenirs">'+memories.map(m=>'<div><span>'+m.icon+'</span><small>'+quote(t(m.en,m.zh))+'</small></div>').join('')+'</div>':
    '<div class="inspect-empty">'+t('No souvenirs yet. Take your time.','还没有纪念品。慢慢来，想去哪儿就去哪儿。')+'</div>')+
-   '<p class="inspect-note">'+t('Discover the first detail: +8 imagination. Second: +1 harmony. Third: +6 imagination and an early rare-wish unlock. You can return at any time.','第一个发现：想象力 +8；第二个：友爱 +1；第三个：想象力 +6，并能提前解锁传奇愿望。随时都可以返回。')+'</p>';
+   '<p class="inspect-note">'+t('First discovery: +8 imagination. Second: +1 harmony. Third: +6 imagination. Build legendary progress gradually; leave whenever you like.','第一个发现：想象力 +8；第二个：友爱 +1；第三个：想象力 +6。传奇愿望逐步解锁，随时可以返回。')+'</p>';
  }else if(opened==='legends'){
   content.innerHTML=legendaryPanel(view);
  }else{
   content.innerHTML='<div class="inspect-mechanics">'+
-   '<section><strong>✨ '+t('Imagination','想象力')+' · '+S.wonder+'</strong><p>'+t('Reach 55 to unlock rare wishes: Flying Day, Stargazing Tower, and Midnight Market. Build adjacent combos to earn more.','达到 55 可解锁飞行自由日、观星塔、午夜市集等传奇愿望。相邻建造相关愿望，可以更快积累想象力。')+'</p></section>'+
+   '<section><strong>✨ '+t('Imagination','想象力')+' · '+S.wonder+'</strong><p>'+t('Imagination advances the legendary collection. Each wish has its own milestone; combos and epic wonders unlock later tiers.','想象力可以推进传奇愿望图鉴，每项有独立门槛；后期还需要发现建筑组合与大型奇观。')+'</p></section>'+
    '<section><strong>♥ '+t('Harmony','友爱')+' · '+S.peace+'/10</strong><p>'+t('Preferences affect residents’ moods. Low harmony (2 or less) can start a town dispute, which you can resolve or embrace.','居民喜好影响心情。友爱降至 2 或以下时，可能出现居民争议，你可以协调，也可以任由小镇放飞。')+'</p></section>'+
    '<section><strong>✦ '+t('Discoveries','发现')+' · '+S.found.length+'</strong><p>'+t('Two related neighboring wishes produce a combination. Three connected wishes can create a town-wide spectacle.','相邻的两个相关愿望触发组合；三个连成一片的相关愿望可能创造整个城市的奇观。')+'</p></section>'+
    '</div><h3>'+t('Found combinations','已发现的组合')+'</h3>'+
@@ -140,17 +148,27 @@ function render(){
  const view=state();if(!view)return;
  const s=view.S;
  residentRibbon();
- if($('wonderHint'))$('wonderHint').textContent=s.wonder>=55||s.memories.some(m=>m.i===2)?t('Rare wishes unlocked','传奇愿望已解锁'):t((55-s.wonder)+' to rare wishes','还差 '+(55-s.wonder)+' 解锁传奇');
- if($('wonderMeter'))$('wonderMeter').style.width=Math.max(0,Math.min(100,s.wonder/55*100))+'%';
+ const next=view.nextLegendary;
+ if($('wonderHint')){
+  const missing=next?(
+   s.wonder<next.wonder?t('Need '+(next.wonder-s.wonder)+' more imagination','差 '+(next.wonder-s.wonder)+' 想象力'):
+   s.found.length<next.combos?t('Need '+(next.combos-s.found.length)+' combos','还需 '+(next.combos-s.found.length)+' 个组合'):
+   s.legends.length<next.epics?t('Need '+(next.epics-s.legends.length)+' epic wonders','还需 '+(next.epics-s.legends.length)+' 个奇观'):
+   s.day<next.day?t('Available from day '+next.day,'第 '+next.day+' 天起可解锁'):
+   t('Unlocks on the next day','下一天解锁')
+  ):t('All four unlocked','四项全部解锁');
+  $('wonderHint').textContent=missing;
+ }
+ if($('wonderMeter'))$('wonderMeter').style.width=Math.max(0,Math.min(100,s.wonder/(next?.wonder||290)*100))+'%';
  const news=s.news[0];if($('liveNotice'))$('liveNotice').textContent=news?t(news.en,news.zh):t('Choose a wish, then touch a glowing plot.','选一个愿望，再点击地图上的发光空地。');
  if($('tabMemories'))$('tabMemories').textContent=t('Memories','回忆')+' · '+s.memories.length;
  if($('tabDiscoveries'))$('tabDiscoveries').textContent=t('Wonders','发现')+' · '+(s.found.length+s.legends.length);
  const legendary=$('tabLegends');
  if(legendary){
-  const unlocked=view.rareUnlocked;
-  legendary.textContent=unlocked?t('✦ Legends','✦ 传奇 ✓'):t('✧ Legends','✧ 传奇 🔒');
-  legendary.classList.toggle('unlocked',unlocked);
-  legendary.setAttribute('aria-label',unlocked?t('View and select four unlocked legendary wishes','查看并使用已解锁的四个传奇愿望'):t('View four legendary wishes and unlocking requirements','查看四个传奇愿望及解锁条件'));
+  const count=s.legendaryUnlocked.length;
+  legendary.textContent=(count?'✦ ':'✧ ')+t('Legends ','传奇 ')+count+'/4';
+  legendary.classList.toggle('unlocked',count>0);
+  legendary.setAttribute('aria-label',t('View legendary collection, '+count+' of 4 unlocked','查看传奇愿望图鉴，已解锁 '+count+'/4'));
  }
  inspect();
 }

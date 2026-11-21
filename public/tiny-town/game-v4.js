@@ -3,8 +3,26 @@
 'use strict';
 const $=id=>document.getElementById(id),HOME=[0,2,4,20,24], CENTER=12;
 const HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4};
-const LEGENDARY_WISHES=['star','tower','flight','night'];
-function rareUnlocked(){return !!(S&&(S.wonder>=55||S.memories.some(m=>m.i===2)));}
+const LEGENDARY_RULES=[
+ {id:'star',day:3,wonder:55,combos:0,epics:0},
+ {id:'night',day:4,wonder:115,combos:1,epics:0},
+ {id:'tower',day:5,wonder:180,combos:3,epics:0},
+ {id:'flight',day:6,wonder:290,combos:5,epics:2}
+];
+const LEGENDARY_WISHES=LEGENDARY_RULES.map(rule=>rule.id);
+function legendaryRule(id){return LEGENDARY_RULES.find(rule=>rule.id===id);}
+function rareUnlocked(id){return !!(S&&S.legendaryUnlocked.includes(id));}
+function nextLegendaryRule(){return LEGENDARY_RULES.find(rule=>!rareUnlocked(rule.id))||null;}
+function legendaryReady(rule){return S.day>=rule.day&&S.wonder>=rule.wonder&&S.found.length>=rule.combos&&S.legends.length>=rule.epics;}
+function unlockNextLegendary(){
+ if(!S.started||S.ended||S.lastLegendDay===S.day)return;
+ const next=nextLegendaryRule();
+ if(!next||!legendaryReady(next))return;
+ S.legendaryUnlocked.push(next.id);S.lastLegendDay=S.day;
+ const name=byId[next.id];
+ news('A new legendary wish is yours: '+name.en+'!','传奇愿望解锁：'+name.zh+'！');
+ send('town_legendary_unlocked',{wish:next.id,week:S.day,unlocked_count:S.legendaryUnlocked.length});
+}
 
 const data=[
 ['cats','🐈','猫咪自由','Cat Freedom','每户都欢迎猫咪','Cats may enter anywhere',11,1,'cat'],
@@ -188,7 +206,7 @@ function finalLayers(){
  return collections+scenic;
 }
 
-function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],memories:[],scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,lastComfortDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
+function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],memories:[],legendaryUnlocked:[],lastLegendDay:-1,scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,lastComfortDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
 function offers(){
  if(S.day===1){
   if(S.law==='wonder')return ['music','beach','garden'];
@@ -197,14 +215,13 @@ function offers(){
  }
  const used=new Set(S.places.map(p=>p.id)),last=S.places[S.places.length-1].id;
  const advanced=LEGENDARY_WISHES;
- const unlocked=rareUnlocked();
- const available=data.filter(c=>!used.has(c.id)&&(unlocked||!advanced.includes(c.id))).map(c=>c.id);
+ const available=data.filter(c=>!used.has(c.id)&&(!advanced.includes(c.id)||rareUnlocked(c.id))).map(c=>c.id);
  const related=sample(available.filter(id=>pair(id,last)),S.seed+S.day*47);
  const recent=S.journeys[S.journeys.length-1];
  const routes={sea:['beach','pond','park'],mountain:['garden','tower','park'],train:['voyage','tower','star'],stars:['star','library','tower'],festival:['music','night','cafe'],meadow:['park','garden','picnic'],rest:['park','picnic','library']};
  const hinted=recent?sample((routes[recent]||[]).filter(id=>available.includes(id)),S.seed+S.day*37):[];
  const almost=legends.filter(l=>l.ids.filter(id=>used.has(id)).length===2).flatMap(l=>l.ids.filter(id=>available.includes(id)));
- const rare=unlocked?sample(available.filter(id=>advanced.includes(id)),S.seed+S.day*97):[];
+ const rare=sample(available.filter(id=>advanced.includes(id)),S.seed+S.day*97);
  return [...new Set(almost.slice(0,1).concat(rare.slice(0,1),hinted.slice(0,1),related,sample(available,S.seed+S.day*113)))].slice(0,3);
 }
 function wishEffect(card){
@@ -258,7 +275,7 @@ function renderBoard(){
 }
 function selectWish(id){
  if(!S||!S.started||S.ended||!byId[id]||selected==='relocate'||S.places.some(p=>p.id===id))return false;
- if(LEGENDARY_WISHES.includes(id)&&!rareUnlocked())return false;
+ if(LEGENDARY_WISHES.includes(id)&&!rareUnlocked(id))return false;
  if(!LEGENDARY_WISHES.includes(id)&&!offers().includes(id))return false;
  selected=id;send('town_wish_selected',{week:S.day,legendary:LEGENDARY_WISHES.includes(id)});render();preview(-1);return true;
 }
@@ -394,7 +411,7 @@ function chooseEvent(decision){
  send('town_event_decided',{week:S.day});nextOverlay();
 }
 function nextOverlay(){overlays.shift();$('storyModal').classList.remove('show');if(overlays.length)showOverlay();else if(S.advanceAfterOverlay){S.advanceAfterOverlay=false;advance();}else render();}
-function advance(){if(S.day===7){finish();return;}S.day++;render();}
+function advance(){if(S.day===7){finish();return;}S.day++;unlockNextLegendary();render();}
 function finish(){
  if(S.ended)return;
  S.ended=true;S.ending=type();S.grade=S.legends.length>=2&&S.peace>=4?'S':S.legends.length>=1&&S.peace>=3?'A':S.found.length>=2?'B':'C';
@@ -494,7 +511,7 @@ function boot(){
  window.addEventListener('pagehide',()=>{if(S?.started&&!S.ended)send('town_exit-week-'+S.day,{week:S.day});});
  render();
 }
-window.TownV5State=()=>({S,selected,residents,byId,combinations,legends,offers,memories:S?.memories||[],legendaryWishes:LEGENDARY_WISHES,rareUnlocked:rareUnlocked()});
+window.TownV5State=()=>({S,selected,residents,byId,combinations,legends,offers,memories:S?.memories||[],legendaryWishes:LEGENDARY_WISHES,legendaryRules:LEGENDARY_RULES,nextLegendary:nextLegendaryRule(),rareUnlocked:!!S?.legendaryUnlocked?.length});
 window.TownV5Actions={selectWish};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

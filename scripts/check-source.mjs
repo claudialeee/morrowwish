@@ -387,7 +387,7 @@ for(const marker of ['body:has(.app){overflow:hidden}','height:calc(100dvh - 40p
 for(const marker of ['function peopleMarkup','function inspect()','function render()','window.TownV5={boot,render,toggle,openResident}']){
  if(!townCompact.includes(marker))throw Error('Tiny Town readable resident profiles or in-game info missing '+marker);
 }
-for(const marker of ["S.memories.push(","S.wonder>=55","window.TownV5?.render?.()","wish-reactions","S.memories.map(m=>"]){
+for(const marker of ["S.memories.push(","LEGENDARY_RULES=[","window.TownV5?.render?.()","wish-reactions","S.memories.map(m=>"]){
  if(!townV4.includes(marker))throw Error('Tiny Town reward and preference system missing '+marker);
 }
 for(const marker of ['Bring ','Return to my town','freedom-collect','const found=[...taken]']){
@@ -409,7 +409,7 @@ if(!townCompact.includes('let opened=\'\',focusedResident=null')||
    !townCompactCss.includes('.app .resident-compare-row')||
    !townCompactCss.includes('.app .resident-focus-card'))
  throw Error('Resident avatar must open only one profile, with a separate all-five comparison');
-for(const marker of ['HOME=[0,2,4,20,24]','HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4}','window.TownV5Actions={selectWish}','if(tenant){tile.onclick','function rareUnlocked()','LEGENDARY_WISHES.includes(id)']){
+for(const marker of ['HOME=[0,2,4,20,24]','HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4}','window.TownV5Actions={selectWish}','if(tenant){tile.onclick','function rareUnlocked(id)','LEGENDARY_WISHES.includes(id)']){
  if(!townV4.includes(marker))throw Error('Tiny Town homes or usable legendary wishes missing: '+marker);
 }
 for(const marker of ['function legendaryPanel(','data-legend-wish','function openResident(index,source)','window.TownV5={boot,render,toggle,openResident}']){
@@ -431,6 +431,27 @@ if(townV4.includes("S.law='care';news(")||townV4.includes("S.law='wonder';news("
 if(!townCompactCss.includes('#intro .charter .charter-bonus')||
    !townCompactCss.includes('#intro .charter .charter-flavor'))
  throw Error('Starting choice effects must be visible on mobile and desktop');
+for(const code of [
+  "{id:'star',day:3,wonder:55,combos:0,epics:0}",
+  "{id:'night',day:4,wonder:115,combos:1,epics:0}",
+  "{id:'tower',day:5,wonder:180,combos:3,epics:0}",
+  "{id:'flight',day:6,wonder:290,combos:5,epics:2}",
+  'lastLegendDay:-1',
+  'S.legendaryUnlocked.push(next.id)',
+  'S.lastLegendDay===S.day',
+  'function unlockNextLegendary()',
+  'S.day++;unlockNextLegendary();render();'
+]){
+ if(!townV4.includes(code))throw Error('Legendary wish must unlock one at a time with escalating progress: '+code);
+}
+for(const code of ['function legendaryPanel(v)','legend-requirements','S.legendaryUnlocked.length','nextLegendary']){
+ if(!townCompact.includes(code))throw Error('Legendary collection must explain individual objectives: '+code);
+}
+if(!townCompactCss.includes('.app .legend-requirements span.met')||
+   townCompact.includes('all four')&&townCompact.includes('unlock all four')||
+   townV4.includes('rareUnlocked()')){
+ throw Error('Legacy instant-unlock behavior or missing progressive requirements');
+}
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||

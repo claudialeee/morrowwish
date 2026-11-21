@@ -493,3 +493,22 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  #intro .modal h2{font-size:20px}
 }
 @media(prefers-reduced-motion:reduce){#intro .charter{transition:none}}
+
+/* Progressive legendary collection — each card advertises its own objective. */
+.app .legend-wish .legend-tier-label{display:block;margin-top:3px;color:#9e6d9f;font-weight:850}
+.app .legend-requirements{
+ grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;
+ padding:7px 0 1px;border-top:1px solid #f1e5eb
+}
+.app .legend-requirements span{
+ display:inline-flex;align-items:center;gap:2px;
+ padding:4px 6px;border-radius:7px;font-size:10px;font-weight:800;line-height:1.2;
+ background:#f2eaf1;color:#a18e9f
+}
+.app .legend-requirements span.met{color:#338063;background:#e0f6e8}
+.app .legend-requirements span.pending{color:#a67d92;background:#fff1eb}
+.app #tabLegends.unlocked{animation:none!important}
+@media(max-width:700px){
+ .app .legend-requirements{gap:4px}
+ .app .legend-requirements span{font-size:9px;padding:4px 5px}
+}
