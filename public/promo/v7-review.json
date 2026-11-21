@@ -1,6 +1,6 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T19:52:49.506Z",
+  "createdAt": "2026-11-21T20:11:40.273Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -15,7 +15,7 @@
         "/promo/cat-bond/v7-review-2.jpg",
         "/promo/cat-bond/v7-review-3.jpg"
       ],
-      "duration": 39.6,
+      "duration": 47.4,
       "shots": [
         {
           "source": "broll",
@@ -28,6 +28,18 @@
           "scene": "raising",
           "caption": "RAISE YOUR OWN CAT TEAM.",
           "seconds": 3.7
+        },
+        {
+          "source": "broll",
+          "scene": "cat-upgrade",
+          "caption": "LEVEL UP YOUR CATS.",
+          "seconds": 3.7
+        },
+        {
+          "source": "broll",
+          "scene": "duo-partners",
+          "caption": "BUILD YOUR CAT DUO.",
+          "seconds": 4.1
         },
         {
           "source": "broll",
@@ -100,19 +112,25 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 23.4,
+      "duration": 27.4,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.135
+          "seconds": 14.052
+        },
+        {
+          "source": "broll",
+          "scene": "narrow-escape",
+          "caption": "SPOTTED! JUST GOT AWAY!",
+          "seconds": 4.069999999999999
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.336999999999999
+          "seconds": 7.319
         },
         {
           "source": "cover",
@@ -216,7 +234,7 @@
         "/promo/elsewhere/v7-review-2.jpg",
         "/promo/elsewhere/v7-review-3.jpg"
       ],
-      "duration": 44.6,
+      "duration": 50.6,
       "shots": [
         {
           "source": "broll",
@@ -235,6 +253,18 @@
           "scene": "paris-result",
           "caption": "",
           "seconds": 1.9
+        },
+        {
+          "source": "broll",
+          "scene": "paris-romance",
+          "caption": "LET ROMANCE BLOOM IN PARIS.",
+          "seconds": 3.7
+        },
+        {
+          "source": "broll",
+          "scene": "paris-love-moment",
+          "caption": "LOVE IS A NEW ADVENTURE.",
+          "seconds": 2.3
         },
         {
           "source": "broll",
@@ -325,13 +355,19 @@
         "/promo/flip-dash/v7-review-2.jpg",
         "/promo/flip-dash/v7-review-3.jpg"
       ],
-      "duration": 18.8,
+      "duration": 21,
       "shots": [
         {
           "source": "broll",
           "scene": "survival",
-          "caption": "DODGE. DO NOT SPAM TAPS.",
-          "seconds": 12.4
+          "caption": "DODGE PINK. GRAB GOLD.",
+          "seconds": 5.7
+        },
+        {
+          "source": "broll",
+          "scene": "coin-collect",
+          "caption": "CATCH THE GOLD COINS!",
+          "seconds": 8.926
         },
         {
           "source": "broll",
@@ -343,7 +379,7 @@
           "source": "broll",
           "scene": "crash",
           "caption": "CAN YOU LAST LONGER?",
-          "seconds": 2.2
+          "seconds": 2.146
         },
         {
           "source": "cover",
@@ -374,13 +410,13 @@
           "source": "broll",
           "scene": "deliveries",
           "caption": "MATCH THE PARCEL COLOR.",
-          "seconds": 8.145
+          "seconds": 8.127
         },
         {
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.7090000000000005
+          "seconds": 4.771999999999999
         },
         {
           "source": "broll",
@@ -417,13 +453,13 @@
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.2359999999999998
+          "seconds": 3.295
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.187
+          "seconds": 4.180000000000001
         },
         {
           "source": "broll",
