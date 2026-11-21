@@ -25,6 +25,7 @@ class Game {
     this.isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     // virtual joystick (battle movement on touch): {active, ox,oy, dx,dy}
     this.joystick = { active: false, ox: 0, oy: 0, dx: 0, dy: 0, id: null };
+    this.touchAutoFire=false; // manual phone players can focus on moving and skill timing
     this._worldTouch = null; // map: tap to walk / drag to pan
     this.resize();
     window.addEventListener('resize', () => this.resize());
@@ -33,6 +34,7 @@ class Game {
       if(this.scene==='battle'){
         this.syncBattleControlHelp();this.syncBattleModeUI();
         if(this.battleHelpOpen)this.renderBattleHelp();
+        this.syncTouchBattleUI();
       }
     });
   }
@@ -55,6 +57,7 @@ class Game {
       this.yard?.onResize?.(oldW,oldH,this.W,this.H);
       this.battle?.onResize?.(this.W,this.H);
       this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};
+      this.syncTouchBattleUI();
       this._worldTapCandidate=null;
       this._worldTouch=null;
     }
@@ -413,6 +416,7 @@ class Game {
         if (this.scene === 'battle') {
           if (p.x < this.W * 0.5 && !this.joystick.active) {
             this.joystick = { active: true, ox: p.x, oy: p.y, dx: 0, dy: 0, id: t.identifier };
+            this.syncTouchBattleUI(p.x,p.y);
           } else {
             this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
             this.mouse.down = true; this._fireTouchId = t.identifier;
@@ -446,6 +450,7 @@ class Game {
           const len = Math.hypot(dx, dy), max = 46;
           if (len > max) { dx = dx / len * max; dy = dy / len * max; }
           this.joystick.dx = dx / max; this.joystick.dy = dy / max;   // -1..1
+          this.syncTouchBattleUI();
           if(this._worldTapCandidate?.id===t.identifier&&len>12)this._worldTapCandidate.moved=true;
         } else if (t.identifier === this._fireTouchId) {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
@@ -470,6 +475,7 @@ class Game {
             const p=touchPos(t);WorldMap.setDestination(p.x,p.y);
           }
           this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
+          this.syncTouchBattleUI();
         }
         if (t.identifier === this._fireTouchId) { this.mouse.down = false; this._fireTouchId = null; }
       }
@@ -629,6 +635,7 @@ class Game {
     this.updateSkillLabels();
     this.updateBattleUI();
     // Display current battle state, including keyboard P toggles.
+    this.touchAutoFire=this.isTouch&&!this.battle.autoMode;
     this.syncBattleModeUI();
     this.syncBattleControlHelp();
     // The first-ever encounter begins paused with a short guided tour.
@@ -694,7 +701,34 @@ class Game {
     });
   }
 
-  syncBattleControlHelp(){
+  syncTouchBattleUI(x=null,y=null){
+    if(!this.isTouch)return;
+    const root=document.getElementById('battle-ui');
+    if(!root)return;
+    const manual=this.scene==='battle'&&!this.battle?.autoMode;
+    root.classList.toggle('touch-manual',manual);
+    const attack=document.getElementById('mv-basic');
+    if(attack){
+      attack.classList.toggle('auto-firing',manual&&this.touchAutoFire);
+      attack.setAttribute('aria-pressed',String(manual&&this.touchAutoFire));
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      const label=en?(this.touchAutoFire?'Auto claw ON · tap to pause':'Claw OFF · tap to attack'):
+        (this.touchAutoFire?'猫爪连击中 · 点击暂停':'猫爪已暂停 · 点击开启');
+      attack.title=label;attack.setAttribute('aria-label',label);
+      const key=attack.querySelector('.mv-k');if(key&&manual)key.textContent=en?(this.touchAutoFire?'ON':'OFF'):(this.touchAutoFire?'攻击中':'已暂停');
+    }
+    const pad=document.getElementById('battle-touch-joystick');
+    if(pad){
+      pad.classList.toggle('active',manual&&this.joystick.active);
+      if(this.joystick.active&&x!==null&&y!==null){
+        pad.style.left=Math.max(45,Math.min(this.W*.49-45,x))+'px';
+        pad.style.top=Math.max(72,Math.min(this.H-82,y))+'px';
+      }else if(!this.joystick.active){pad.style.left='';pad.style.top='';}
+      const nub=pad.querySelector('.battle-touch-nub');
+      if(nub)nub.style.transform='translate('+(this.joystick.dx*33)+'px,'+(this.joystick.dy*33)+'px)';
+    }
+  }
+    syncBattleControlHelp(){
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const dodge=document.getElementById('mv-dodge');
     const hint=dodge?.querySelector('.mv-k');
@@ -814,6 +848,7 @@ class Game {
     const btn=document.getElementById('btn-auto');
     if(!btn||!this.battle)return;
     const on=!!this.battle.autoMode;
+    this.syncTouchBattleUI();
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const label=en?(on?'🤖 Auto Battle: ON':'🤖 Auto Battle: OFF')
       :(on?'🤖 自动战斗：开':'🤖 自动战斗：关');
