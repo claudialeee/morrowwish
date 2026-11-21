@@ -654,11 +654,15 @@ const UI = {
     const cards = B.map(def => {
       const afford = coins >= def.cost;
       const owned = counts[def.id] || 0;
+      const prod=window.World?.BUILDING_PRODUCTION?.[def.id];
+      const title=en?(prod?.nameEn||def.name):def.name;
+      const desc=en?(prod?.purposeEn||def.desc):def.desc;
+      const res=prod?(' · '+(en?'Produces':'产出')+' '+(prod.kind==='coins'?'🪙':prod.kind==='yarn'?'🧶':prod.kind==='fish'?'🐟':'🍖')+' ×'+prod.base+' / '+(en?'visit':'次互动')):'';
       return `<div class="st-row" data-type="${def.id}">
         <div class="st-ico">${def.icon}</div>
         <div class="st-main">
-          <div class="st-name">${def.name}${owned ? ' <span class="tiny">×' + owned + '</span>' : ''}</div>
-          <p class="work-usage">${def.desc}</p>
+          <div class="st-name">${title}${owned ? ' <span class="tiny">×' + owned + '</span>' : ''}</div>
+          <p class="work-usage">${desc}</p><div class="tiny">${res}</div>
           <div class="work-income">${en ? 'Cost' : '花费'}：<b>${def.cost} 🪙</b></div>
         </div>
         <div class="st-btns">
@@ -669,17 +673,28 @@ const UI = {
     const placedRows = placed.map((p, i) => {
       const def = window.World?.BUILDINGS_BY_ID?.[p.type];
       if (!def) return '';
+      const up=window.World?.BUILDING_PRODUCTION?.[p.type];
+      const lvl=window.World?.buildingLevel?.(p)||1;
+      const next=window.World?.upgradeCost?.(p);
+      const benefit=up?.base*lvl||0;
       return `<div class="st-row" data-placed="${i}">
         <div class="st-ico">${def.icon}</div>
-        <div class="st-main"><div class="st-name">${def.name}</div>
-          <p class="work-usage">${en ? 'Tap remove to recover half the coins.' : '拆除可返还一半金币。'}</p></div>
-        <div class="st-btns"><button class="btn ghost tiny-btn" data-remove="${i}">${en ? 'Remove' : '拆除'}</button></div>
+        <div class="st-main"><div class="st-name">${en?(up?.nameEn||def.name):def.name}
+          <span class="tiny">Lv.${lvl}/3</span></div>
+          <p class="work-usage">${en?'When cats visit, produces':'猫咪使用时产出'} ×${benefit}
+          ${en?(up?.kind||'items'):(up?.name||'资源')} · ${en?'More joy at higher levels':'升级提高心情奖励'}
+          · ${en?'Two cats playing builds trust':'两猫轮流玩会提升默契'}</p></div>
+        <div class="st-btns">
+          <button class="btn gold tiny-btn" data-upgrade="${i}"
+            ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
+          <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
+        </div>
       </div>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2>🏗️ ${en ? 'Build the Yard' : '庭院建造'}</h2>
-      <p class="sub">${en ? 'Build play-structures with coins. Your cats will walk over and play with them, lifting their mood.'
-        : '用金币建造游乐设施，猫咪会跑过去玩耍，心情越来越好。'}</p>
+      <p class="sub">${en?'Build facilities, upgrade them to Lv.3 and earn resources every time cats visit. Friends who play together grow closer.'
+        :'建造并升级设施到 3 级，猫咪来玩会产出资源、增加心情；两只猫轮流玩还能增进默契。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
@@ -694,6 +709,13 @@ const UI = {
       } else {
         this.game.toast(en ? 'Not enough coins' : '金币不足');
       }
+    });
+    host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
+      const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);
+      this.game.refreshHUD();
+      this.game.toast(result.ok?(en?'Facility upgraded to Lv.':'设施升级到 Lv.')+result.level:
+        (en?'Not enough coins / max level':'金币不足或已满级'));
+      this.openBuild();
     });
     host.querySelectorAll('[data-remove]').forEach(btn => btn.onclick = () => {
       const refund = this.game.yard.removeStructure(+btn.dataset.remove);

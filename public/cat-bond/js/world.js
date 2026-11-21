@@ -382,6 +382,29 @@ const BUILDINGS = [
   },
 ];
 const BUILDINGS_BY_ID = Object.fromEntries(BUILDINGS.map(b => [b.id, b]));
+// Localized facility purpose and real, limited production. Building a toy
+// is now a growth choice, not just permanently adding a small emoji prop.
+const BUILDING_PRODUCTION={
+  scratcher:{kind:'yarn',base:1,nameEn:'Scratching Post',purposeEn:'Scratch and unwind; make yarn while cats play.',name:'毛线'},
+  cave:{kind:'fish',base:1,nameEn:'Cozy Cat Cave',purposeEn:'A quiet hideaway; collect dried fish after a visit.',name:'小鱼干'},
+  cattree:{kind:'coins',base:3,nameEn:'Climbing Tower',purposeEn:'Play high above the garden; earn a little extra income.',name:'金币'},
+  catnip:{kind:'treats',base:1,nameEn:'Catnip Garden',purposeEn:'Fresh catnip and happy naps; earn treats.',name:'零食'},
+  hammock:{kind:'coins',base:2,nameEn:'Sunny Hammock',purposeEn:'A lazy sunny rest; earn coins as cats relax.',name:'金币'}
+};
+function buildingLevel(b){return Math.max(1,Math.min(3,Math.round(Number(b?.level)||1)));}
+function upgradeCost(b){
+ const def=BUILDINGS_BY_ID[b?.type];if(!def||buildingLevel(b)>=3)return null;
+ return Math.ceil(def.cost*(.65+buildingLevel(b)*.35)/5)*5;
+}
+
+
+function eNotification(game,cat,kind,amount){
+ // Once per payout, very short text; do not block the yard canvas.
+ const english=window.MorrowwishI18n?.get?.()!=='zh';
+ const names=english?{coins:'coins',yarn:'yarn',fish:'fish',treats:'treats'}
+   :{coins:'金币',yarn:'毛线',fish:'小鱼干',treats:'零食'};
+ game.toast?.((english?'Facility reward +':'设施收获 +')+amount+' '+(names[kind]||kind));
+}
 
 // ---- Yard scene ----
 class YardScene {
@@ -792,6 +815,13 @@ class YardScene {
     if (!def) return;
     const depth = 0.8 + (b.y / this.game.H) * 0.5;
     def.draw(ctx, b.x, b.y, depth, this.game.t);
+    const lvl=buildingLevel(b);
+    if(lvl>1){
+      ctx.save();ctx.fillStyle='#fff5d9eb';ctx.strokeStyle='#ba965f';ctx.lineWidth=1.1;
+      ctx.beginPath();ctx.roundRect(b.x-15,b.y-96*depth,30,18,7);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#785931';ctx.font='800 11px system-ui';ctx.textAlign='center';
+      ctx.fillText('Lv.'+lvl,b.x,b.y-83*depth);ctx.restore();
+    }
   }
   drawHide(ctx, hide) {
     // First find is a highlighted target; later encounters keep the mystery.
@@ -845,7 +875,8 @@ class YardScene {
         e._playBuildT -= dt;
         // steady, gentle joy gain while playing (capped)
         const def = e._playBuildDef;
-        if (def) e.cat.joy = Math.min(100, e.cat.joy + def.joy * dt * 0.5);
+        if (def) e.cat.joy = Math.min(100, e.cat.joy +
+          def.joy*(1+.30*(buildingLevel(e._playBuilding)-1))*dt*.5);
         if (e._playBuildT <= 0) { e._playBuildDef = null; }
       }
     }
@@ -875,11 +906,57 @@ class YardScene {
       e.vx = e.vy = 0;
       e.setPose(def ? def.pose : 'play', 2.2 + Math.random() * 1.8);
       e.emote(def ? def.emote : '🐾', 2.2);
-      e.cat.joy = Math.min(100, e.cat.joy + (def ? def.joy : 5));
-      e._playBuildT = e.timer;
-      e._playBuildDef = def;
-      e._buildTarget = null;
+      e.cat.joy = Math.min(100,e.cat.joy+
+        (def?def.joy*(1+.35*(buildingLevel(b)-1)):5));
+      e._playBuildT=e.timer;e._playBuildDef=def;e._playBuilding=b;
+      e._buildTarget=null;
+      this.rewardBuildingVisit(e.cat,b,def);
     }
+  }
+  // Cat visits now have real income and relationship consequences, but a
+  // per-structure payout timer prevents AFK coin farming or save bloating.
+  rewardBuildingVisit(cat,b,def){
+    const now=Date.now(),up=BUILDING_PRODUCTION[b.type];
+    if(!up)return;
+    const level=buildingLevel(b);
+    const lastUid=b.lastVisitorUid;
+    if(lastUid&&lastUid!==cat.uid&&now-(b.lastVisitorAt||0)<90000&&
+       now-(b.lastBondAt||0)>75000){
+      const prev=State.S.cats.find(c=>c.uid===lastUid);
+      if(prev&&window.CatRelations){
+        CatRelations.grow(prev,cat,level>=3?2:1);
+        b.lastBondAt=now;
+        this.game.toast(window.MorrowwishI18n?.get?.()==='zh'
+          ?'💞 '+State.catName(prev)+' 和 '+State.catName(cat)+' 一起玩，默契提升！'
+          :State.catName(prev)+' & '+State.catName(cat)+' played together! Trust grew.');
+      }
+    }
+    b.lastVisitorUid=cat.uid;b.lastVisitorAt=now;
+    const interval=Math.max(12000,38000-level*6500);
+    if(now-(b.lastRewardAt||0)<interval)return;
+    b.lastRewardAt=now;
+    const n=up.base*level;
+    if(up.kind==='yarn'){
+      if(!State.S.raising&&window.Raising?.init)Raising.init();
+      State.S.raising??={yarn:0};State.S.raising.yarn=(State.S.raising.yarn||0)+n;
+    }else if(up.kind==='coins')State.S.coins=(State.S.coins||0)+n;
+    else if(up.kind==='fish')State.S.fish=(State.S.fish||0)+n;
+    else if(up.kind==='treats')State.S.treats=(State.S.treats||0)+n;
+    State.save();
+    this.game.refreshHUD?.();
+    eNotification(this.game,cat,up.kind,n);
+    window.arcadeMetric?.('bond_yard_production',{type:b.type,kind:up.kind,level,amount:n});
+  }
+  // Upgrade an existing placed facility; old saves silently start at level 1.
+  upgradeStructure(index){
+    const b=(State.S.yardBuildings||[])[index];
+    const cost=upgradeCost(b);if(!b||cost===null)return {ok:false,msg:'Max level'};
+    if((State.S.coins||0)<cost)return {ok:false,msg:'Not enough coins'};
+    State.S.coins-=cost;b.level=buildingLevel(b)+1;
+    b.upgradeSpend=(b.upgradeSpend||0)+cost;
+    State.save();
+    window.arcadeMetric?.('bond_yard_upgrade',{type:b.type,level:b.level,cost});
+    return {ok:true,level:b.level,cost};
   }
   // Find a free yard spot for a new structure (spread out, below the horizon,
   // away from existing buildings/bushes). Returns {x,y} in current canvas space.
@@ -905,7 +982,9 @@ class YardScene {
     if ((State.S.coins || 0) < def.cost) return false;
     State.S.coins -= def.cost;
     const spot = this.freeBuildingSpot();
-    (State.S.yardBuildings = State.S.yardBuildings || []).push({ type, x: spot.x, y: spot.y });
+    (State.S.yardBuildings = State.S.yardBuildings || []).push({
+      type,x:spot.x,y:spot.y,level:1,lastRewardAt:0
+    });
     State.save();
     window.arcadeMetric?.('bond_yard_build', { type, cost: def.cost });
     return true;
@@ -915,7 +994,7 @@ class YardScene {
     const builds = State.S.yardBuildings || [];
     const b = builds[index]; if (!b) return 0;
     const def = BUILDINGS_BY_ID[b.type];
-    const refund = def ? Math.floor(def.cost / 2) : 0;
+    const refund=def?Math.floor((def.cost+(b.upgradeSpend||0)*.5)/2):0;
     builds.splice(index, 1);
     for (const e of this.entities) { if (e._buildTarget === b) e._buildTarget = null; }
     State.S.coins = (State.S.coins || 0) + refund;
@@ -1007,4 +1086,4 @@ class YardScene {
   }
 }
 
-window.World = { YardScene, CatEntity, BUILDINGS, BUILDINGS_BY_ID };
+window.World = { YardScene, CatEntity, BUILDINGS, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost };
