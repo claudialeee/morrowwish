@@ -752,6 +752,8 @@ class Game {
     }
     const pad=document.getElementById('battle-touch-joystick');
     if(pad){
+      const label=pad.querySelector('.battle-touch-label');
+      if(label)label.textContent=window.MorrowwishI18n?.get?.()==='zh'?'移动':'Move';
       pad.classList.toggle('active',manual&&this.joystick.active);
       if(this.joystick.active&&x!==null&&y!==null){
         pad.style.left=Math.max(45,Math.min(this.W*.49-45,x))+'px';
