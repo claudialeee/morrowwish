@@ -58,7 +58,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (window.Raising) Raising.decorateNewCat(starter);
         State.S.cats.push(starter);
         State.S.dex[id] = (State.S.dex[id] || 0) + 1;
-        State.S.tutorialDone = true;
         State.save();
         game.rebuildYard();
         game.refreshHUD();
@@ -66,7 +65,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // Immediate discovery after selecting a first cat: no six-tab tutorial detour.
         game.yard.startHideAndSeek();
         game.refreshFirstQuest?.();
-        game.toast('🌿 院子里藏着一只野猫！点击发光的草丛找到它。');
+        game.toast(window.MorrowwishI18n?.get?.()==='zh'?'🌿 院子里藏着一只野猫！点击发光的草丛找到它。':'🌿 A wild cat is hiding! Tap the glowing grass to find it.');
       });
     } else {
       // returning player: offline raising report (replaces State.applyIdle)
