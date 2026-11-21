@@ -91,28 +91,38 @@ try{
           const cv=document.createElement('canvas');cv.width=170;cv.height=160;
           const ctx=cv.getContext('2d'),sp=GameData.SPECIES[0];
           const original=()=>new Uint8ClampedArray(ctx.getImageData(0,0,170,160).data);
-          const draw=(api,pose,stride)=>{
+          const draw=(api,pose,stride,scale=1,y=111)=>{
             ctx.clearRect(0,0,170,160);
-            api(ctx,85,111,{species:sp,face:1,t:.8,pose,motion:1,stride,scale:1});
+            api(ctx,85,y,{species:sp,face:1,t:.8,pose,motion:1,stride,scale});
             return original();
           };
           const stillFromMotion=draw(CatMotion.draw,'idle',0);
-          const stillFromOriginal=draw(CatArt.drawCat,'idle',0);
-          let unchanged=0;
-          for(let i=0;i<stillFromMotion.length;i+=4)
-            unchanged+=Math.abs(stillFromMotion[i+3]-stillFromOriginal[i+3]);
+          const ratio=CatMotion.scaleRatio;
+          // At rest the animated actor must match the ORIGINAL painted
+          // illustration exactly, simply scaled down and ground-anchored.
+          const stillFromOriginal=draw(CatArt.drawCat,'idle',0,
+            ratio,111+33*(1-ratio));
+          const giantPortrait=draw(CatArt.drawCat,'idle',0);
+          let unchanged=0,smallAlpha=0,largeAlpha=0;
+          for(let i=3;i<stillFromMotion.length;i+=4){
+            unchanged+=Math.abs(stillFromMotion[i]-stillFromOriginal[i]);
+            smallAlpha+=stillFromMotion[i];largeAlpha+=giantPortrait[i];
+          }
           const first=draw(CatMotion.draw,'run',0);
           const second=draw(CatMotion.draw,'run',Math.PI);
           let pawDelta=0;
           for(let i=3;i<first.length;i+=4)
             pawDelta+=Math.abs(first[i]-second[i]);
-          return {unchanged,pawDelta,
+          return {unchanged,pawDelta,sizeRatio:smallAlpha/Math.max(1,largeAlpha),
             rigged:window.CatBondArtworkStatus.gaitLayersBuilt,
             atlas:window.CatBondArtworkStatus.breedsLoaded,
             style:window.CatMotion.artStyle};
         });
         assert.equal(paintedGait.unchanged,0,
-          'The original 25-breed still illustrations must remain completely unchanged');
+          'The small moving cat must be the SAME original painted kitten, not a redesigned cartoon');
+        assert.ok(paintedGait.sizeRatio<.68,
+          'Moving illustrated kittens must be visibly smaller than old oversized game sprites: '
+          +JSON.stringify(paintedGait));
         assert.ok(paintedGait.atlas&&paintedGait.rigged>0,
           'Walking feet must be cut from the original high-resolution watercolor artwork');
         assert.ok(paintedGait.pawDelta>150,
