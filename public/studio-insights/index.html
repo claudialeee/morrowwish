@@ -244,7 +244,7 @@ function renderCampaignLedger(){
  document.getElementById('video-release-summary').textContent=(zh?'成片 ':'Ready ')+ready+'/7 · '+(zh?'已排期 ':'Scheduled ')+scheduled+' · '+(zh?'已发布 ':'Published ')+published;
  document.getElementById('video-head-game').textContent=zh?'游戏':'Game';
  document.getElementById('video-head-media').textContent=zh?'视频':'Video';
- document.getElementById('video-release-note').textContent=zh?'制作完成和平台发布分开记录；真实主页访客、开局及转化请看下方渠道数据。':'Footage and platform release status are separate. Use the acquisition table below for attributed homepage visits and game starts.';
+ const note=document.getElementById('video-release-note');note.textContent=zh?'制作完成不等于已发布；主页访客及真实开局请查看下方渠道数据。':'Footage is not publication. Use the acquisition report below for real homepage visits and game starts.';if(z.montage?.production==='ready'&&/^\/promo\/[a-z0-9-]+\.mp4$/.test(z.montage.media||'')){const a=document.createElement('a');a.href=z.montage.media;a.textContent=zh?'观看七款游戏合集 ↗':'Watch seven-game montage ↗';a.target='_blank';a.rel='noopener noreferrer';note.append(' · ',a);}
  const cells=s=>{const k=s||'not-scheduled',cl=k==='published'?'verified':k==='scheduled'?'scheduled':k==='draft'?'paused':'pending';return '<td class="'+cl+'">'+escapeHTML(state[k]||k)+'</td>';};
  document.getElementById('video-campaign-rows').innerHTML=z.games.map(g=>{
   const nm=gameNames[g.slug],name=nm?.[lang]||g.name||g.slug;
