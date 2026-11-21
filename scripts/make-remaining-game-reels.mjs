@@ -1,11 +1,12 @@
 // Five more Morrow Wish short-form reels. Real gameplay and gameplay UI only.
 // All simulations use legitimate clicks/keys; cannot upload fake scores or scenes.
 import {chromium} from 'playwright';
+import {promoTrack} from './promo-audio.mjs';
 import {spawn,execFileSync} from 'node:child_process';
 import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
 const home='http://127.0.0.1:8771',dir=fs.mkdtempSync(path.join(os.tmpdir(),'morrowwish-5-reels-'));
 const server=spawn('python3',['-m','http.server','8771','--bind','127.0.0.1','--directory','public'],{stdio:'ignore'});
-const audio='public/audio/cat-happy-clappy.ogg',font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
+const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function addCleanView(mode){
   const canvas=document.querySelector(mode==='aquarium'?'#sea':'#game');
@@ -178,7 +179,7 @@ function encode(r){
  const voice='drawtext=fontfile='+font+":text='PLAY FREE - LINK IN BIO':fontcolor=white:fontsize=33:x=(w-text_w)/2:y=1758:box=1:boxcolor=black@0.45:boxborderw=10:"+
    "enable='gte(t,"+Math.max(0,r.duration-1.8).toFixed(2)+")'";
  const args=['-nostdin','-y','-hide_banner','-loglevel','error','-i',r.raw,
-   '-stream_loop','-1','-i',audio,'-vf','fps=30,scale=1080:1920:flags=lanczos,setsar=1,'+overlay.join(',')+','+voice+',format=yuv420p',
+   '-stream_loop','-1','-i',promoTrack(r.slug),'-vf','fps=30,scale=1080:1920:flags=lanczos,setsar=1,'+overlay.join(',')+','+voice+',format=yuv420p',
    '-map','0:v:0','-map','1:a:0','-t',r.duration.toFixed(2),'-r','30','-c:v','libx264','-crf','21','-preset','veryfast','-pix_fmt','yuv420p',
    '-c:a','aac','-b:a','128k','-af','volume=0.32,afade=t=out:st='+Math.max(0,r.duration-.65).toFixed(2)+':d=0.65','-movflags','+faststart',dest];
  execFileSync('ffmpeg',args,{stdio:'inherit',timeout:120000});
@@ -191,7 +192,7 @@ function encode(r){
 let browser;
 try{
  await sleep(1200);
- if(!fs.existsSync(audio))throw Error('Licensed background track missing');
+ for(const slug of ['tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'])promoTrack(slug);
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
  for(const slug of ['tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'])encode(await capture(browser,slug));
 }finally{
