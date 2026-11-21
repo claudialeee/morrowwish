@@ -4,7 +4,9 @@ import assert from 'node:assert/strict';
 // The fullscreen feature deliberately targets only the interactive game stage,
 // never documentElement; mobile tests force iPhone Safari's fallback behavior.
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
-const games=['pawsibly-innocent','elsewhere','tiny-town','cat-bond','flip-dash','parcel-panic','pocket-aquarium'];
+const allGames=['pawsibly-innocent','elsewhere','tiny-town','cat-bond','flip-dash','parcel-panic','pocket-aquarium'];
+const games=process.env.GAME_TEST_SCOPE?allGames.filter(g=>g===process.env.GAME_TEST_SCOPE):allGames;
+if(!games.length)throw new Error('Unknown GAME_TEST_SCOPE');
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const failures=[];
 async function check(game,width,mobile){
@@ -130,7 +132,7 @@ try{
   for(const game of games){
     try{await check(game,1280,false)}catch(e){failures.push(game+' desktop: '+e.message);console.error('FULLSCREEN FAIL',failures.at(-1))}
   }
-  for(const game of ['flip-dash','parcel-panic','pocket-aquarium'])for(const landscape of [false,true]){
+  for(const game of ['flip-dash','parcel-panic','pocket-aquarium'].filter(g=>games.includes(g)))for(const landscape of [false,true]){
     try{await checkEntryOrientation(game,landscape)}catch(e){
       failures.push(game+' '+(landscape?'landscape':'portrait')+' orientation: '+e.message);
       console.error('FULLSCREEN ORIENTATION FAIL',failures.at(-1));
@@ -138,4 +140,4 @@ try{
   }
 }finally{await browser.close()}
 if(failures.length){console.error('Fullscreen failures:\n'+failures.join('\n'));process.exitCode=1}
-else console.log('All 7 games use play-surface fullscreen with reversible mobile fallback');
+else console.log((process.env.GAME_TEST_SCOPE||'All 7 games')+' use play-surface fullscreen with reversible mobile fallback');
