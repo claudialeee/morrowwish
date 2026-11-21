@@ -186,4 +186,30 @@ assert.ok(reviewStyle.includes('id="achievementCount"')&&reviewStyle.includes('i
  'The game must show collectible names, earned badges and the owner state');
 assert.ok(!reviewStyle.includes('<section class="explainer"'),
  'The duplicate how-to-play section must not reappear below the game');
-console.log('Pawsibly Innocent: QA PASS (8 rooms, real multi-step yarn lure, persistent achievements, named collectibles, compact UI, first-two-room playability).');
+// Final-room regression: the eighth escape deserves a visible, skippable
+// illustrated chase BEFORE the ordinary result card, with only one win event.
+test.choose(7,false);
+const finalChase=test.getState();
+finalChase.cat={x:8,y:6};finalChase.catFrom={...finalChase.cat};finalChase.got=3;
+const winsBefore=events.filter(e=>e.name==='cat_level_won').length;
+test.move(1,0);
+assert.equal(finalChase.winning,true,'Final room must finish when the cat reaches the door');
+assert.ok(finalChase.outro?.duration>=1800,'Final escape must enter animated outro state');
+assert.equal(nodes.get('overlay').hidden,true,'Scores must wait until the final chase has played');
+assert.equal(nodes.get('resultTitle').textContent,'猫猫大逃亡成功！','Final victory must have its own title');
+assert.equal(events.filter(e=>e.name==='cat_level_won').length,winsBefore+1,'Finale must count once');
+listeners['morrowwish-language-change']({detail:{lang:'en'}});
+assert.equal(nodes.get('resultTitle').textContent,'THE GREAT CAT ESCAPE!','English finale must be localized');
+assert.ok(source.includes('function drawOutro(time)')&&source.includes('catDraw(0,0,time)')&&source.includes('humanDraw(0,0,time)'),
+ 'Finale must animate the existing character art, not show a static slide');
+listeners['board:pointerdown']({clientX:300,clientY:250,pointerType:'mouse',button:0});
+assert.equal(finalChase.outro,null,'A click should skip directly to results');
+assert.equal(nodes.get('overlay').hidden,false,'Skipping the chase must reveal scores');
+assert.equal(events.filter(e=>e.name==='cat_level_won').length,winsBefore+1,'Skipping cannot duplicate a win');
+test.choose(0,false);
+const earlyWin=test.getState();earlyWin.cat={x:8,y:6};earlyWin.catFrom={...earlyWin.cat};earlyWin.got=3;
+test.move(1,0);
+assert.equal(earlyWin.outro,null,'Earlier rooms should keep their simple results');
+assert.equal(nodes.get('overlay').hidden,false,'Non-final room results remain immediate');
+
+console.log('Pawsibly Innocent: QA PASS (animated final chase, 8 rooms, real multi-step yarn lure, persistent achievements, named collectibles, compact UI, first-two-room playability).');
