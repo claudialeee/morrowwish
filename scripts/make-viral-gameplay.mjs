@@ -82,13 +82,9 @@ async function heist(browser){
  if(!s?.won||s.fish<3||s.yarn<1)throw Error('No authentic 3-fish victory: '+JSON.stringify(s));
  const finished=(Date.now()-began)/1000;
  // This label is derived only from the verified genuine win. Never fake a victory.
- await p.evaluate(()=>{
-  const el=document.createElement('div');el.textContent='3 / 3 FISH  ·  ESCAPED!';
-  Object.assign(el.style,{position:'fixed',bottom:'14%',left:'3%',width:'94%',zIndex:'2147483647',
-    padding:'20px 8px',boxSizing:'border-box',borderRadius:'17px',textAlign:'center',
-    font:'900 30px/1.25 system-ui',color:'#fff1ce',background:'rgba(26,30,47,.88)'});
-  document.body.appendChild(el);
- });
+ // The outcome is already proven by the real win condition and the single
+ // large top caption. No second giant banner obscuring the game.
+
  await sleep(2300);const ended=Date.now();const v=p.video();await c.close();
  console.log('HEIST VERIFIED: '+JSON.stringify(s));
  return{slug:'pawsibly-innocent',raw:await v.path(),offset:(began-born)/1000,duration:(ended-began)/1000,
