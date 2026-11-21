@@ -99,11 +99,17 @@ save.stats={fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,.
 save.achievements=save.achievements&&typeof save.achievements==="object"?save.achievements:{};
 const relicCount=()=>Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length;
 const roomsWon=()=>Object.keys(save.best).filter(k=>/^room-[0-7]$/.test(k)&&Number(save.best[k]?.stars)>0).length;
-let badgeTimer=null;
-function badgeToast(names){
+let badgeTimer=null,badgeToastIds=[];
+function badgeToast(names,ids=[]){
  const el=$("achievementToast");if(!el||!names.length)return;
+ badgeToastIds=ids.slice();
+ el.hidden=false;refreshBadgeToast();
+ clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true;badgeToastIds=[]},2500);
+}
+function refreshBadgeToast(){
+ const el=$("achievementToast");if(!el||el.hidden||!badgeToastIds.length)return;
+ const names=badgeToastIds.map(id=>BADGES.find(b=>b.id===id)?.[lang==="zh"?"zh":"en"]).filter(Boolean);
  el.textContent=names.length===1?"🏅 "+names[0]:(lang==="zh"?"🏅 解锁了 "+names.length+" 个新成就！":"🏅 "+names.length+" achievements unlocked!");
- el.hidden=false;clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true},2500);
 }
 function checkBadges(quiet=false){
  const earned=[],earnedIds=[];
@@ -113,7 +119,7 @@ function checkBadges(quiet=false){
  }
  if(earned.length){saveGame();if(!quiet){
   if(s&&Array.isArray(s.newBadges))s.newBadges.push(...earnedIds);
-  badgeToast(earned);audio("win");
+  badgeToast(earned,earnedIds);audio("win");
  }}
 }
 function addStat(name,n=1){save.stats[name]=(Number(save.stats[name])||0)+n;saveGame();checkBadges()}
@@ -130,10 +136,25 @@ const rnd=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^(seed>>
 const allStars=()=>Object.values(save.best).reduce((sum,v)=>sum+Math.min(3,Math.max(0,Number(v.stars)||0)),0);
 function saveGame(){try{localStorage.setItem("pawsibly-innocent-save-v1",JSON.stringify(save))}catch{}}
 function metric(name,p={}){window.arcadeMetric?.(name,p)}
-let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,fx=[],entered=false,aimingYarn=false,yarnPreview=null,yarnTargets=new Set(),yarnChaseTimer=null;
+let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,currentToastKey=null,fx=[],entered=false,aimingYarn=false,yarnPreview=null,yarnTargets=new Set(),yarnChaseTimer=null;
 const seedDay=Number(today.replaceAll("-",""));
 function randomRoom(){return Math.floor(rnd(seedDay)()*ROOMS.length)}
-function popup(k){const el=$("toast");el.textContent=TX[lang][k]||EXTRA_WORDS[lang][k]||k;el.classList.add("on");clearTimeout(msgTimer);msgTimer=setTimeout(()=>el.classList.remove("on"),1450);}
+function toastText(k){
+ if(k==="relic-named"){
+  const relic=RELICS[s.index];return relic.glyph+" "+relic[lang==="zh"?"zh":"en"]+
+    (lang==="zh"?"！逃走就能收藏":"! Escape to keep it");
+ }
+ return TX[lang][k]||EXTRA_WORDS[lang][k]||k;
+}
+function popup(k){
+ currentToastKey=k;
+ const el=$("toast");el.textContent=toastText(k);el.classList.add("on");
+ clearTimeout(msgTimer);msgTimer=setTimeout(()=>{el.classList.remove("on");currentToastKey=null},1450);
+}
+function refreshToasts(){
+ if(currentToastKey!==null&&$("toast"))$("toast").textContent=toastText(currentToastKey);
+ refreshBadgeToast();
+}
 function audio(type){window.MorrowwishAudio?.effect(type)}
 function stopYarnChase(){
  if(yarnChaseTimer!==null){clearInterval(yarnChaseTimer);yarnChaseTimer=null}
@@ -145,7 +166,7 @@ if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),que
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
 return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
-function init(index=0,isDaily=false){clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
+function init(index=0,isDaily=false){clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
@@ -413,7 +434,7 @@ if(s.creak&&!s.creakTriggered&&equal(s.creak,p)){
 const vase=s.vases.find(v=>equal(v,p));if(vase&&!s.broken.has(key(vase))){s.broken.add(key(vase));addStat("vases");s.score+=35;s.noise={...p};s.alert=save.cat===3?11:6;s.lastSeen=null;audio("vase");throwStars(p,"#d4a8dc");popup("vase");metric("cat_vase",{level:daily?9:stage+1})}
 if(s.yarnBall&&equal(p,s.yarnBall)&&!s.itemsTaken.has("yarn")){s.itemsTaken.add("yarn");s.yarn++;s.score+=25;popup("yarn");audio("yarn");metric("cat_yarn",{level:s.index+1})}
 if(s.relic&&equal(p,s.relic)&&!s.itemsTaken.has("relic")){s.itemsTaken.add("relic");s.hasRelic=true;s.score+=90;
- popup(RELICS[s.index].glyph+" "+RELICS[s.index][lang==="zh"?"zh":"en"]+(lang==="zh"?"！逃走就能收藏":"! Escape to keep it"));audio("souvenir");throwStars(p,"#aeb0ee");metric("cat_souvenir",{level:s.index+1})}
+ popup("relic-named");audio("souvenir");throwStars(p,"#aeb0ee");metric("cat_souvenir",{level:s.index+1})}
 if(s.milk&&equal(p,s.milk)&&!s.itemsTaken.has("milk")){s.itemsTaken.add("milk");s.lives=Math.min(3,s.lives+1);s.score+=25;popup("milk");audio("milk");throwStars(p,"#d6f5ef")}
 if(s.light&&equal(p,s.light)&&!s.itemsTaken.has("light")){s.itemsTaken.add("light");s.lightTurns=8;s.score+=30;popup("light");audio("light");throwStars(p,"#fbd886")}
 if(hidden(p))popup("hide");
@@ -645,7 +666,7 @@ $("nextResult").onclick=()=>{if(!s.winning)metric("game_retry");init(s.winning&&
 $("shareResult").onclick=share;
 $("tool")&&($("tool").onclick=throwYarn);
 $("sound").onclick=()=>{window.MorrowwishAudio?.toggle?.();$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff")};
-window.addEventListener("morrowwish-language-change",e=>{lang=e.detail.lang==="zh"?"zh":"en";translateUI();syncUI();if(s.done)finishOverlayTranslate()});
+window.addEventListener("morrowwish-language-change",e=>{lang=e.detail.lang==="zh"?"zh":"en";translateUI();syncUI();refreshToasts();if(s.done)finishOverlayTranslate()});
 function finishOverlayTranslate(){$("resultTitle").textContent=tr(s.winning?"winTitle":"loseTitle");$("resultDesc").textContent=s.winning?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(s.winning?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share")}
 window.__PAWSIBLY_TEST__={getState:()=>s,move:single,choose:init,throwYarn,throwYarnTo,advanceYarnChase,isChasing:()=>yarnChaseTimer!==null,isAiming:()=>aimingYarn,rooms:ROOMS};
 window.addEventListener("resize",fitCanvasPixels);
