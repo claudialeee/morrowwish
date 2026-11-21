@@ -5,6 +5,7 @@
   "description": "Morrow Wish browser games and unified analytics on Cloudflare",
   "scripts": {
     "check": "node scripts/check-source.mjs",
+    "playtest": "node scripts/playtest-sim.mjs",
     "deploy": "npm run deploy:pages",
     "build:pages": "node scripts/build-pages.mjs",
     "deploy:pages": "npm run build:pages && cd cloudflare-pages && npx wrangler pages deploy public --project-name morrowwish --branch main"

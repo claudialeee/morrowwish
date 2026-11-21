@@ -43,6 +43,8 @@ function makeEl(id) {
     // a canvas-capable stub so CatArt.renderCatThumb etc. never hit null.
     querySelector: (sel) => (/canvas/i.test(sel) ? makeEl('qs-canvas') : makeEl('qs-' + sel)),
     querySelectorAll: () => [], closest: () => null, focus: nop,
+    // UI wires dialog buttons via onclick; tests invoke .click() to drive them.
+    onclick: null, click() { if (typeof this.onclick === 'function') this.onclick({ target: this, preventDefault: nop, stopPropagation: nop }); },
     width: 1000, height: 700,
   };
   return el;
@@ -53,7 +55,9 @@ const document = {
   body: makeEl('body'),
   title: 'Cat Bond',
   getElementById(id) { if (!nodes.has(id)) nodes.set(id, makeEl(id)); return nodes.get(id); },
-  querySelector() { return null; },
+  // Resolve a trailing "#id" selector (e.g. "#panel #bp-go") via getElementById so
+  // tests that probe freshly-rendered dialog buttons find a real stub node.
+  querySelector(sel) { const m = /#([\w-]+)\s*$/.exec(sel || ''); return m ? this.getElementById(m[1]) : null; },
   querySelectorAll() { return []; },
   createElement(tag) { const e = makeEl('new-' + tag); e.tagName = String(tag).toUpperCase(); return e; },
   createTextNode(t) { return { nodeType: 3, nodeValue: String(t), parentNode: null }; },

@@ -871,6 +871,15 @@ class Game {
     document.getElementById('ult-btn').classList.toggle('ready', b.ult >= 100);
     const hint = document.getElementById('battle-hint');
     if (hint && hint.textContent !== b.hint) hint.textContent = b.hint;
+    if (hint) hint.classList.toggle('coach-hint', !!b.coach);   // highlight the coaching line
+    // First-fight coach: pulse the control the tutorial is currently teaching.
+    const hl = b.coach ? b._coachHighlight : null;
+    if (this._coachHlPrev !== hl) {
+      for (const id of ['mv-basic','mv-q','mv-e','mv-dodge','ult-btn']) {
+        const el = document.getElementById(id); if (el) el.classList.toggle('coach-pulse', id === hl);
+      }
+      this._coachHlPrev = hl;
+    }
     const duoButton=document.getElementById('duo-burst');
     if(duoButton){
       duoButton.hidden=!b.duo;

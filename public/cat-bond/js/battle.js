@@ -91,6 +91,82 @@ class CaptureBattle {
       { key: 'e',     name: '疾扑冲刺', hot: 'E', cd: 5.5 },
       { key: 'ult',   name: '喵之怒涛', hot: 'R', cd: 0, ult: true },
     ];
+
+    // --- FIRST-FIGHT COACH: a gentle, action-gated tutorial shown only on the
+    // player's very first battle (never again). Each step waits until the player
+    // actually performs the action, so they LEARN by doing. While coaching the
+    // early steps, enemies hold fire so a beginner isn't overwhelmed. ---
+    this.coach = this.initCoach();
+  }
+
+  // Build the tutorial state, or null if this isn't the first battle.
+  initCoach() {
+    const S = window.State && State.S;
+    if (!S) return null;
+    if (S.tutorialDone || (S.catchCount || 0) > 0) return null;   // only the FIRST fight, once
+    const touch = !!this.game.isTouch;
+    // Each step: {key, zh, en, done(battle)} — advances when done() is true.
+    const steps = [
+      { key: 'move', hl: null,
+        zh: touch ? '👋 欢迎！先在左半边滑动，让猫咪走两步' : '👋 欢迎！按 W A S D 移动你的猫咪',
+        en: touch ? '👋 Welcome! Slide on the left side to move your cat' : '👋 Welcome! Press W A S D to move your cat',
+        done: b => b._coachMoved },
+      { key: 'attack', hl: 'mv-basic',
+        zh: touch ? '👍 很好！现在按住右半边攻击野猫' : '👍 很好！按住鼠标左键（或 J）攻击野猫',
+        en: touch ? 'Nice! Now hold the right side to attack the wild cat' : 'Nice! Hold left-click (or J) to attack the wild cat',
+        done: b => b._coachAttacked >= 6 },
+      { key: 'skill', hl: 'mv-q',
+        zh: '✨ 试试技能：点一下「技能一」(Q)',
+        en: '✨ Try a skill: tap "Skill 1" (Q)',
+        done: b => b._coachUsedSkill },
+      { key: 'dodge', hl: 'mv-dodge',
+        zh: touch ? '🌀 危险时点「闪避」躲开攻击（短暂无敌）' : '🌀 按空格键「闪避」躲开攻击（短暂无敌）',
+        en: touch ? '🌀 Tap "Dodge" to avoid hits (brief invincibility)' : '🌀 Press Space to "Dodge" hits (brief invincibility)',
+        done: b => b._coachDodged },
+      { key: 'finish', hl: null,
+        zh: '🎉 就是这样！打空野猫的斗志就能收服它。加油！',
+        en: '🎉 That\'s it! Empty the wild cat\'s spirit to tame it. Good luck!',
+        done: b => b.t > (b._coachFinishAt || 0) + 2.6 },
+    ];
+    return { steps, i: 0, _finishStamped: false };
+  }
+
+  // Advance the coach based on real battle signals; returns the current line.
+  tickCoach(dt) {
+    const c = this.coach; if (!c) return;
+    // The coach teaches MANUAL controls. If the player is in auto-battle (the
+    // first-fight default some flows pick), it can't gate on their inputs — so
+    // stand down silently and mark the tutorial seen rather than stalling.
+    if (this.autoMode) {
+      this._coachHighlight = null; this.coach = null;
+      if (window.State && State.S && !State.S.tutorialDone) { State.S.tutorialDone = true; State.save(); }
+      return;
+    }
+    const step = c.steps[c.i];
+    if (!step) return;
+    if (step.key === 'finish' && !c._finishStamped) { this._coachFinishAt = this.t; c._finishStamped = true; }
+    // show the coaching line + highlight the relevant control
+    const en = window.MorrowwishI18n?.get?.() !== 'zh';
+    this.hint = en ? step.en : step.zh;
+    this._coachHighlight = step.hl;
+    // advance when the player completes the step
+    if (step.done(this)) {
+      c.i++;
+      if (c.i >= c.steps.length) {               // tutorial complete
+        this._coachHighlight = null;
+        if (window.State && State.S) { State.S.tutorialDone = true; State.save(); }
+        this.coach = null;
+        window.arcadeMetric?.('bond_tutorial_complete', {});
+      }
+    }
+  }
+
+  // Early coach steps (move/attack/skill) keep enemies from firing so a first-
+  // timer can learn the controls unpressured. Returns true while enemies hold.
+  coachHoldsEnemies() {
+    const c = this.coach; if (!c) return false;
+    const k = c.steps[c.i]?.key;
+    return k === 'move' || k === 'attack' || k === 'skill';
   }
 
   duoReady(){
@@ -616,6 +692,7 @@ class CaptureBattle {
       f.y += (my / l) * spd * dt;
       f.face = mx < 0 ? -1 : (mx > 0 ? 1 : f.face);
       f.moving = true;
+      if (f === this.me()) this._coachMoved = true;      // first-fight coach: step 1 done
     } else { f.moving = false; }
     // Dashing without a held direction travels along the dodge's chosen flee heading
     // (_dashAim), NOT the aim reticle — so a standing dodge never lurches into the enemy.
@@ -657,6 +734,7 @@ class CaptureBattle {
     f = f || this.me(); if (f.cd.basic > 0) return;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
     if (f === this.me() && this._obs) this._obs.fires++;    // aggression signal
+    if (f === this.me()) this._coachAttacked = (this._coachAttacked || 0) + 1;   // coach: step 2
     f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
@@ -854,6 +932,7 @@ class CaptureBattle {
   skillQ(f, aim) {
     f = f || this.me(); if (f.cd.q > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
+    if (f === this.me()) this._coachUsedSkill = true;      // coach: step 3
     const sk = f.qSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk))return false;
@@ -1020,6 +1099,7 @@ class CaptureBattle {
   }
   dodge(f) {
     f = f || this.me(); if (f.dodgeCd > 0) return false;
+    if (f === this.me()) this._coachDodged = true;         // coach: step 4
     // A real escape tool now: a LONG i-frame dash that travels AWAY from danger,
     // plus a short bullet-time on every use so it actually buys breathing room.
     f.dodgeCd = 1.2; f.dashT = 0.32; f.inv = 0.5;
@@ -1294,6 +1374,7 @@ class CaptureBattle {
     // never stacks on top of bullet-time. Mobile uses a shorter freeze to avoid jank.
     if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
     this.t += dt;
+    if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
@@ -1378,12 +1459,16 @@ class CaptureBattle {
     // now. (The old manual counter leaked — if a telegraphing enemy was frozen or
     // died mid-windup it never released the lock, permanently stalling pack specials.)
     this._novaLock = this.liveEnemies().some(e => e.telegraph > 0) ? 1 : 0;
+    // First-fight coach: while teaching move/attack/skill, enemies stand down so a
+    // brand-new player can learn the controls without taking damage.
+    const coachHold = this.coachHoldsEnemies();
     for (const e of this.enemies) { if (e.flash > 0) e.flash -= dt; }
     for (const e of this.liveEnemies()) {
       this.tickWards(e, dt);                           // protect/reflect/barrier timers
       if (e.wardCd > 0) e.wardCd -= dt;
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
-      if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
+      if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
+      else if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
       else if (e.alive) { e.pose = 'idle'; e.telegraph = 0; }  // frozen: drop any windup, stand still
     }
 
@@ -1872,9 +1957,12 @@ class CaptureBattle {
   hurtMe(dmg, fx, fy, f) {
     f = f || this.me();
     if (!f.alive) return;
+    // First-fight coach: a beginner can take hits to learn, but never dies during
+    // the tutorial — damage is gentled and HP floored so the first fight is safe.
+    if (this.coach) dmg *= 0.35;
     // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
     // routes through. hurtMe lands the (already shield-adjusted) damage.
-    f.hp = Math.max(0, f.hp - dmg);
+    f.hp = Math.max(this.coach ? 1 : 0, f.hp - dmg);
     f.hitFlash = 0.14; f.inv = 0.3;
     if (f === this.me()) this.shakeT = 0.18;
     this.floater(f.x, f.y - 24, '-' + Math.round(dmg), '#ff6b8a');
