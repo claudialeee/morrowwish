@@ -296,6 +296,9 @@ const UI = {
     panel.classList.remove('open');
     delete panel.dataset.mandatory;
     this.openCatUid = null;
+    // Dismissing any optional overlay must never leave the yard action strip
+    // hidden after a previous encounter or canceled pre-battle choice.
+    if(this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'yard'));
   },
 
@@ -1158,6 +1161,7 @@ const UI = {
     document.getElementById('bp-cancel').onclick=()=>{
       this.closeAll();
       if(opts.mastery)this.openDex();
+      else if(this.game.scene==='yard')this.game.showYardChrome();
     };
     document.getElementById('bp-go').onclick=()=>{
       State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true};
