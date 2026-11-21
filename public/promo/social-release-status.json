@@ -1,0 +1,100 @@
+{
+  "updatedAt": "2026-11-20T22:28:00-08:00",
+  "studio": "Morrow Wish",
+  "goal": "attributed homepage visitors and real game starts, not video impressions",
+  "accuracyNote": "Media generation and social publishing are separate. Native views and attributed visitors remain in existing channel analytics. Future scheduled posts are not yet published.",
+  "statusLegend": {
+    "ready": "video verified and saved",
+    "rendering": "recording or rendering",
+    "draft": "original plan paused; not auto-publishing",
+    "scheduled": "Metricool confirmed pending automatic publication",
+    "published": "platform public URL verified"
+  },
+  "games": [
+    {
+      "slug": "pawsibly-innocent",
+      "name": "Cat Heist",
+      "hook": "Near catch → yarn decoy → steal three fish",
+      "media": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
+      "production": "ready",
+      "social": {
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
+      }
+    },
+    {
+      "slug": "cat-bond",
+      "name": "Cat Bond",
+      "hook": "Two-cat combination → ultimate finisher",
+      "media": "/promo/cat-bond/viral-gameplay-20261121.mp4",
+      "production": "ready",
+      "social": {
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft"
+      }
+    },
+    {
+      "slug": "tiny-town",
+      "name": "No More Mondays",
+      "hook": "Seven days without work → building magical wishes",
+      "media": null,
+      "production": "rendering",
+      "social": {
+        "youtube": "not-scheduled",
+        "tiktok": "not-scheduled",
+        "instagram": "not-scheduled"
+      }
+    },
+    {
+      "slug": "elsewhere",
+      "name": "Elsewhere",
+      "hook": "Private island → Paris → hotel on the moon",
+      "media": null,
+      "production": "rendering",
+      "social": {
+        "youtube": "not-scheduled",
+        "tiktok": "not-scheduled",
+        "instagram": "not-scheduled"
+      }
+    },
+    {
+      "slug": "flip-dash",
+      "name": "Flip Dash",
+      "hook": "Near misses and fast gravity flips",
+      "media": null,
+      "production": "rendering",
+      "social": {
+        "youtube": "not-scheduled",
+        "tiktok": "not-scheduled",
+        "instagram": "not-scheduled"
+      }
+    },
+    {
+      "slug": "parcel-panic",
+      "name": "Parcel Panic",
+      "hook": "Real color-sorting streak under pressure",
+      "media": null,
+      "production": "rendering",
+      "social": {
+        "youtube": "not-scheduled",
+        "tiktok": "not-scheduled",
+        "instagram": "not-scheduled"
+      }
+    },
+    {
+      "slug": "pocket-aquarium",
+      "name": "Pocket Aquarium",
+      "hook": "Real matching feeds and rising combo",
+      "media": null,
+      "production": "rendering",
+      "social": {
+        "youtube": "not-scheduled",
+        "tiktok": "not-scheduled",
+        "instagram": "not-scheduled"
+      }
+    }
+  ],
+  "excludedGames": 8
+}
