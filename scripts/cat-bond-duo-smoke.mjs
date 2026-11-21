@@ -125,9 +125,9 @@ try{
   await page.waitForFunction(()=>window.__duoPreviewReady&&window.__duoPreviewDebug&&
     window.CatBondDuoHero?.assetReady,{timeout:18000});
   assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetSource),
-    'original-approved-illustrations','do not use generic procedural cat art');
-  assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetCount),8,
-    'show all eight previously illustrated original duo scenes');
+    'species-matched-watercolor-cinematics','do not use fixed illustrated cats for other breeds');
+  assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetCount),21,
+    'every elemental pair must have its own watercolor-action timeline');
   assert.equal(await page.locator('.signature').count(),21,'all 21 duos selectable');
   await page.waitForFunction(()=>window.CatBondDuoArtwork?.ready&&
     window.CatBondDuoArtwork?.backdropReady,{timeout:15000});
@@ -174,14 +174,24 @@ try{
       overflow,visibleCanvas:cv.width>0&&cv.height>0};
   });
   assert.equal(visual.count,21);
-  const premium=await page.evaluate(()=>{
-    const scene=window.CatBondDuoHero;
-    const frames=new Set(Object.values(scene.scenes).map(x=>x[0]));
-    return {ready:scene.assetReady,paintings:scene.assetCount,frames:frames.size,
-      pairs:Object.keys(scene.scenes).length};
+  const motion=await page.evaluate(()=>{
+    const D=window.CatBondDuoDirector,scene=window.CatBondDuoHero;
+    const traces=D.keys.map(key=>[.08,.18,.28,.48,.67]
+      .flatMap(t=>D.pose(key,t,500,280)
+        .flatMap(cat=>[Math.round(cat.x),Math.round(cat.y),Math.round(cat.angle*100)]))
+      .join('|'));
+    const activePairs=Object.keys(scene.scenes).length;
+    const moving=D.keys.filter(key=>{
+      const start=D.pose(key,.06,500,280),hit=D.pose(key,.28,500,280);
+      return Math.hypot(start[0].x-hit[0].x,start[0].y-hit[0].y)>25
+        ||Math.hypot(start[1].x-hit[1].x,start[1].y-hit[1].y)>25;
+    }).length;
+    return {assetReady:scene.assetReady,distinct:new Set(traces).size,
+      moving,activePairs,unique:D.isUnique()};
   });
-  assert.deepEqual(premium,{ready:true,paintings:8,frames:8,pairs:21},
-    'every skill gets one authored choreography using approved original art');
+  assert.deepEqual(motion,{assetReady:true,distinct:21,moving:21,
+     activePairs:21,unique:true},
+    '21 duos must have 21 genuinely different moving-cat timelines');
   assert.equal(visual.distinct,21,'all rendered signature screens must differ');
   assert.equal(visual.differentWindups,true,'signature key frames must actually animate');
   assert.equal(visual.overflow,false,'preview must not scroll sideways');
