@@ -163,6 +163,8 @@ try{
   await page.locator('[data-tier="3"]').click();
   await page.evaluate(()=>window.__duoPreviewDebug.renderAt('elec+fire',3,.95));
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview.png'});
+  // Isolate the actual full viewer instead of a scrolled browser viewport.
+  await page.locator('.viewer').screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview-stage.png'});
   console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify({battle:result,signaturePreview:visual}));
   await context.close();
  }

@@ -62,10 +62,10 @@ function cat(ctx,x,y,size,subject,face,age,col){
 }
 function claws(ctx,cx,cy,angle,col,alpha,scale){
  ctx.save();ctx.translate(cx,cy);ctx.rotate(angle);ctx.scale(scale,scale);
- ctx.globalAlpha=alpha;ctx.lineCap='round';
+ ctx.globalAlpha*=alpha;ctx.lineCap='round';
  for(let i=-1;i<=1;i++){
   const yy=i*22;
-  ctx.strokeStyle=col;ctx.lineWidth=13;ctx.shadowColor=col;ctx.shadowBlur=20;
+  ctx.strokeStyle=col;ctx.lineWidth=11;ctx.shadowColor=col;ctx.shadowBlur=10;
   ctx.beginPath();ctx.moveTo(-107,yy-37);ctx.quadraticCurveTo(-10,yy-8,105,yy+37);ctx.stroke();
   ctx.strokeStyle='#fffdf3';ctx.shadowBlur=0;ctx.lineWidth=3;
   ctx.beginPath();ctx.moveTo(-105,yy-37);ctx.quadraticCurveTo(-10,yy-8,103,yy+37);ctx.stroke();
@@ -100,10 +100,10 @@ function draw(ctx,W,H,seq,lookup){
    ctx.restore();
  }
  // Angular speed streaks, kicked forward only as the paws accelerate.
- for(let i=0;i<12;i++){
-  ctx.save();ctx.globalAlpha=alpha*(.12+.12*(i%3));
+ for(let i=0;i<7;i++){
+  ctx.save();ctx.globalAlpha=alpha*(.06+.065*(i%3));
   ctx.strokeStyle=i%2?col1:col2;ctx.lineWidth=i%3===0?8:3;
-  const sx=W*((i+.4)/12)+p*W*.12;
+  const sx=W*((i+.4)/7)+p*W*.12;
   ctx.beginPath();ctx.moveTo(sx-140,top+h);ctx.lineTo(sx+70,top);ctx.stroke();ctx.restore();
  }
  // Limit the center crossing to CLAWS, not the kittens' heads. This avoids
@@ -121,21 +121,32 @@ function draw(ctx,W,H,seq,lookup){
  paintCat(Math.max(W*.65,choreography?.x2??W*.71),
    choreography?.y2??(cy+h*.15),choreography?.scale||1,ids[1],-1,
    choreography?.phase2??p,col2);
- // Vary movement, not just numerical damage, at each relationship tier.
+ // Connect the impact to the two extended forepaws, not to the cats' faces.
+ // The claw trails should frame (never cover) the character performance.
  const hit=clamp((p-.43)/.24,0,1);
  if(hit>0){
-  const burst=Math.sin(hit*Math.PI*.8);
-  claws(ctx,W*.5,cy,Math.PI*.25,col1,burst,Math.min(1.05,W/370));
-  if(tier>=2)claws(ctx,W*.5,cy,-Math.PI*.25,col2,burst,Math.min(1.05,W/370));
-  if(tier>=3){
-   ctx.globalAlpha=alpha*.65*burst;ctx.strokeStyle='#ffecb8';
-   ctx.lineWidth=5;ctx.beginPath();ctx.arc(W*.5,cy,35+hit*W*.32,0,Math.PI*2);ctx.stroke();
-   claws(ctx,W*.5,cy,Math.PI*.5,'#fff4c6',burst*.65,Math.min(.77,W/460));
-  }
-  // Lock-on / hit confirmation appears at the exact crossing beat.
-  ctx.globalAlpha=alpha*burst;ctx.strokeStyle='#fff5d6';ctx.lineWidth=3;
-  const rad=27+25*hit;
-  ctx.beginPath();ctx.arc(W*.5,cy,rad,0,Math.PI*2);ctx.stroke();
+   const burst=Math.sin(hit*Math.PI*.8);
+   const strikeY=cy+h*.20;
+   const slashScale=Math.min(.66,Math.max(.44,W/870));
+   claws(ctx,W*.5,strikeY,Math.PI*.25,col1,burst*.78,slashScale);
+   if(tier>=2)claws(ctx,W*.5,strikeY,-Math.PI*.25,col2,burst*.70,slashScale);
+   if(tier>=3){
+     // Final form: one clean finishing shock ring, not a third stack of
+     // bright scribbles hiding both kittens and making detached claw marks.
+     ctx.save();ctx.globalAlpha=alpha*.7*burst;
+     ctx.strokeStyle='#ffe9b8';ctx.lineWidth=4;
+     ctx.beginPath();ctx.arc(W*.5,strikeY,24+hit*Math.min(60,W*.10),0,Math.PI*2);ctx.stroke();
+     ctx.fillStyle='#ffedc6';
+     for(const dx of [-1,0,1]){
+       const x=W*.5+dx*Math.min(34,W*.08),y=strikeY-22-(dx===0?13:0);
+       ctx.beginPath();ctx.arc(x,y,Math.max(2,5*burst),0,Math.PI*2);ctx.fill();
+     }
+     ctx.restore();
+   }
+   ctx.save();ctx.globalAlpha=alpha*.40*burst;ctx.strokeStyle='#fff2d4';ctx.lineWidth=2;
+   const rad=22+18*hit;
+   ctx.beginPath();ctx.arc(W*.5,strikeY,rad,0,Math.PI*2);ctx.stroke();
+   ctx.restore();
  }
  const en=window.MorrowwishI18n?.get?.()!=='zh';
  const rank=tier>=3?(en?'SOULBOUND FINALE':'心意相通 · 终极连斩'):
@@ -150,9 +161,9 @@ function draw(ctx,W,H,seq,lookup){
  ctx.globalAlpha=alpha;ctx.textAlign='center';
  ctx.font='900 '+Math.round(Math.min(26,W*.052))+'px system-ui';
  ctx.fillStyle='#fff8ec';ctx.shadowColor=col1;ctx.shadowBlur=10;
- ctx.fillText(seq.name||rank,W*.5,top+h*.83,W*.85);
+ ctx.fillText(seq.name||rank,W*.5,top+h*.88,W*.85);
  ctx.shadowBlur=0;ctx.font='800 '+Math.round(Math.min(14,W*.033))+'px system-ui';
- ctx.fillStyle='#f9d79c';ctx.fillText(signature&&en?'SIGNATURE · '+signature.label:rank,W*.5,top+h*.92,W*.86);
+ ctx.fillStyle='#f9d79c';ctx.fillText(signature&&en?'SIGNATURE · '+signature.label:rank,W*.5,top+h*.96,W*.86);
  ctx.restore();return true;
 }
 window.CatBondDuoHero={draw,coat};
