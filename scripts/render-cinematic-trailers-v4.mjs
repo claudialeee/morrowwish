@@ -61,7 +61,7 @@ const playlists={
  'flip-dash':[
   broll('play',3.8,'ONE BUTTON. ONE WRONG FLIP.'),
   broll('crash',1.9,'CRASHED. CAN YOU SURVIVE?'),
-  cover(1.7,'PLAY FREE')
+  cover(2.35,'PLAY FREE')
  ],
  'parcel-panic':[
   broll('deliver',3.3,'KEEP THE DELIVERIES GOING.'),
