@@ -207,5 +207,18 @@ function draw(ctx,W,H,_t,theme,cam,worldSize){
  ctx.drawImage(cached,-cam.x,-cam.y,w,h);
  return true;
 }
-window.CatBondPaintedRegions={draw,build:paint,get region(){return currentId},get generation(){return generation},ids:IDS};
+function drawBattle(ctx,W,H,_t,theme){
+ const id=theme?.region||'home';
+ if(!colors[id])return false;
+ if(!cached||currentId!==id){cached=paint(id,1800,1300);currentId=id;generation++;}
+ if(!cached)return false;
+ // Showcase the heart of the SAME region instead of the shared battle garden.
+ // Slightly wider crop, with contact plane and legibility for fighting cats.
+ const srcH=1050,srcW=srcH*W/Math.max(H,1);
+ const x=Math.max(0,Math.min(cached.width-srcW,(cached.width-srcW)/2));
+ const y=180;
+ ctx.drawImage(cached,x,y,Math.min(srcW,cached.width),srcH,0,0,W,H);
+ return true;
+}
+window.CatBondPaintedRegions={draw,drawBattle,build:paint,get region(){return currentId},get generation(){return generation},ids:IDS};
 })();

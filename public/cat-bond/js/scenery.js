@@ -107,6 +107,7 @@
     ctx.restore();
   }
   function drawBattle(ctx,W,H,t,theme){
+    if(window.CatBondPaintedRegions?.drawBattle?.(ctx,W,H,t,theme))return true;
     if(!cover(ctx,W,H))fallback(ctx,W,H,t);
     const sky=ctx.createLinearGradient(0,0,0,H);
     sky.addColorStop(0,'rgba(255,247,228,.14)');
@@ -122,7 +123,9 @@
     return true;
   }
   function drawRegion(ctx,W,H,t,theme,cam,worldSize){
-    // The painted garden must move with the game world, not the phone screen.
+    // Every region has its own authored, world-anchored art; no shared tinted garden.
+    if(window.CatBondPaintedRegions?.draw?.(ctx,W,H,t,theme,cam,worldSize))return true;
+    // Legacy fallback only for browsers without Canvas2D support.
     if(cam&&worldSize){
       ctx.save();ctx.translate(-cam.x,-cam.y);
       if(!cover(ctx,worldSize.width,worldSize.height))fallback(ctx,worldSize.width,worldSize.height,t);
