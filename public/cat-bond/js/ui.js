@@ -1838,6 +1838,13 @@ const UI = {
       ?(english?'Bonus: +'+performance.bonusCoins+' coins'+(performance.bonusTreats?' · +'+performance.bonusTreats+' treats':'')
         :'战斗奖励：+'+performance.bonusCoins+' 金币'+(performance.bonusTreats?' · +'+performance.bonusTreats+' 零食':''))
       :'';
+    const earnedXp=this.game._battleXp;
+    const xpMessage=earnedXp&&earnedXp.n
+      ?(english?'Training EXP +'+earnedXp.each+' per cat · '+earnedXp.n+' participating cats'
+        :'战斗经验：参战猫咪每只 +'+earnedXp.each+' XP · 共 '+earnedXp.n+' 只')
+      :'';
+    const levelMessage=earnedXp?.leveled?.length
+      ?earnedXp.leveled.map(c=>c.name+' Lv.'+c.level).join(' · ') :'';
     const rewardText=rewards.length
       ?rewards.map(r=>english
         ?('Collection bonus: +'+r.coins+' coins, +'+r.treats+' treats')
@@ -1858,6 +1865,8 @@ const UI = {
          +(performance.autoUsed?'<small class="grade-explain">'+(performance.autoExceptional
            ?(english?'Exceptional automatic performance!':'自动战斗发挥出色！')
            :this.rankSHelp(wildSp.rarity,true))+'</small>':'')+'</div></div>':''}
+      ${xpMessage?'<p class="center collection-reward">⭐ '+xpMessage+'</p>':''}
+      ${levelMessage?'<p class="center collection-reward">⬆ '+(english?'LEVEL UP! ':'升级！')+levelMessage+'</p>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
         +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name

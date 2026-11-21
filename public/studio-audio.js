@@ -32,7 +32,8 @@ function stop(){if(ctx&&master)master.gain.setTargetAtTime(.00001,ctx.currentTim
 function toggle(){
  enabled=!enabled;
  try{localStorage.setItem(KEY,enabled?'1':'0');localStorage.setItem('lab-muted',enabled?'0':'1')}catch{}
- if(enabled)start();else stop();
+ if(enabled){start();for(const kind of Object.keys(combatAt))delete combatAt[kind];}
+ else stop();
  sync();return enabled;
 }
 const hz=n=>440*Math.pow(2,(n-69)/12);

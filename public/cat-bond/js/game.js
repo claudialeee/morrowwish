@@ -1248,12 +1248,19 @@ class Game {
       {
         const rIdx = ['N','R','SR','SSR'].indexOf(b.wild.rarity);
         const base = 30 + (b.wildLevel||1) * 6 + rIdx * 20;   // tougher/higher = more XP
-        const squad = (b.team && b.team.length ? b.team : [b.partner])
-          .filter(f => f && f.cat).map(f => f.cat);
-        const uniq = [...new Map(squad.map(c => [c.uid, c])).values()];
-        const share = Math.max(8, Math.round(base / Math.max(1, uniq.length)));
-        for (const c of uniq) State.addXp(c, share);
-        this._battleXp = { total: base, each: share, n: uniq.length };
+        // Record every cat that ACTUALLY entered battle, including reserves
+        // that were swapped out. Unused bench cats do not get phantom XP.
+        const participants=[...(b.team||[]),...(b._benchFighters?.values?.()||[])];
+        const squad=participants.filter(f=>f&&f.cat).map(f=>f.cat);
+        const uniq=[...new Map(squad.map(c=>[c.uid,c])).values()];
+        const share=Math.max(10,Math.round(base/Math.max(1,uniq.length)));
+        const leveled=[];
+        for(const c of uniq){
+          const before=c.level;
+          State.addXp(c,share);
+          if(c.level>before)leveled.push({name:State.catName(c),level:c.level});
+        }
+        this._battleXp={total:share*uniq.length,each:share,n:uniq.length,leveled};
         // A win on the field advances each squad cat's personal 战斗 counter, which
         // feeds the "百战斩" 领悟 skill-learning quest. Auto-learn any newly met
         // pure-gate (level/affinity/species/quest) skills so the loadout stays legal.

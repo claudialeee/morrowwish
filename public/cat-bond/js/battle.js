@@ -25,6 +25,12 @@ class CaptureBattle {
     this.wild = wildSpecies;
     this.rar = GameData.RARITY[wildSpecies.rarity];
     this.rarIdx = ['N', 'R', 'SR', 'SSR'].indexOf(wildSpecies.rarity);
+    // The encounter's region is still available here (game.scene changes to
+    // battle AFTER this constructor). The first map is a safe starter area,
+    // not an endlessly scaling arena as the player's collection grows.
+    this.encounterRegion=game._battleTheme?.region||
+      (game.scene==='yard'?'yard':window.WorldMap?.currentRegion||null);
+    this.starterRegion=['sakura','yard'].includes(this.encounterRegion);
     // enemy level scales with the player's progress: average team level +
     // how far they've come (catchCount), nudged by rarity. So early wilds are
     // Lv.1-3 and late-game packs scale to match a strong roster.
@@ -53,6 +59,13 @@ class CaptureBattle {
         this.enemyDmgMult  = 0.90 + 1.00 * Le;                // ∈ [0.90, 1.90]
         const Lh = 1 / (1 + Math.exp( 0.5 * (gap + 1.69)));   // enemy tankiness
         this.enemyHpScaleGap = 0.85 + 0.50 * Lh;              // ∈ [0.85, 1.35]
+        if(this.starterRegion){
+          // In the starter map, the player's FIRST TWO cats should be able to
+          // beat one ordinary wild cat without perfect skill timing.
+          this.playerDmgMult=Math.max(.94,this.playerDmgMult);
+          this.enemyDmgMult=Math.min(1.08,this.enemyDmgMult);
+          this.enemyHpScaleGap=Math.min(1.08,this.enemyHpScaleGap);
+        }
         // aliases for the existing hit sites (player-out / enemy-out damage)
         this.levelSuppression = this.playerDmgMult;
         this.enemyLevelMult = this.enemyDmgMult;
@@ -510,9 +523,16 @@ class CaptureBattle {
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
     const avg = cats.length ? cats.reduce((s, c) => s + (c.level || 1), 0) / cats.length : 1;
     const caught = (window.State && State.S.catchCount) || 0;
-    // base = team average, +1 per 3 catches (world progress), +rarity bump, ±1 jitter
-    const lvl = Math.round(avg + caught / 3 + this.rarIdx * 2 + (Math.random() * 2 - 1));
-    return Math.max(1, lvl);
+    // Regional tiers, not a hidden '+1 level every 3 captures' treadmill.
+    // First map is ALWAYS Lv1-3, even after a player catches 15+ cats.
+    const caps={sakura:3,yard:3,home:5,creek:7,volcano:9,ruins:12};
+    const region=this.encounterRegion;
+    const cap=caps[region]??Math.max(3,Math.ceil(avg)+2);
+    const progress=Math.min(1.5,caught*.12);
+    const rarityBonus=Math.min(1.5,this.rarIdx*.65);
+    const noise=(Math.random()-.5)*1.2;
+    const lvl=Math.round(avg+progress+rarityBonus+noise);
+    return Math.max(1,Math.min(cap,lvl));
   }
 
   // Build a wild pack of 1~3 enemies. Lead = the encountered species; rarer
@@ -520,7 +540,9 @@ class CaptureBattle {
   buildPack(lead) {
     // Fewer wild cats on screen: with a 3-cat player team, big packs overcrowd the
     // arena. Solo is the norm; a 2nd joins sometimes, a 3rd only for rare encounters.
-    const packSize = 1 + (Math.random() < 0.22 + this.rarIdx * 0.1 ? 1 : 0) + (Math.random() < 0.05 + this.rarIdx * 0.08 ? 1 : 0);
+    const packSize = this.starterRegion ? 1 :
+      1 + (Math.random() < 0.22 + this.rarIdx * 0.1 ? 1 : 0) +
+      (Math.random() < 0.05 + this.rarIdx * 0.08 ? 1 : 0);
     const species = [lead];
     // fill remaining slots with same-or-lower rarity companions from the catalogue
     const order = ['N', 'R', 'SR', 'SSR'];
@@ -544,7 +566,8 @@ class CaptureBattle {
     // EARLY-GAME onboarding damp: a fresh-save opener drags because the ~196 HP floor
     // sits in front of a ~12-DPS Lv1 cat. Low-level enemies start with much less HP
     // (Lv1 ~55%), ramping to full by Lv6, so the first fight is short + winnable.
-    const earlyDamp = 0.55 + 0.45 * Math.min(1, (level - 1) / 5);
+    const earlyDamp = (this.starterRegion ? .48 : .55) +
+      (this.starterRegion ? .32 : .45) * Math.min(1, (level - 1) / 5);
     // enemyHpScaleGap (logistic, from the constructor): a little extra HP when the
     // wild out-levels you, gentle so a gap feels tankier without being spongy.
     const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor
@@ -568,8 +591,11 @@ class CaptureBattle {
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
-      dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*(1+challenge*.12),   // raised: enemy hits had no weight
-      speed:92+rIdx*22+challenge*14,fireRate:Math.max(.38,0.8-rIdx*.14-challenge*.1),   // faster basic poke so the enemy plinks consistently (was too sparse)
+      dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*
+        (1+challenge*.12)*(this.starterRegion?.70:1),
+      speed:92+rIdx*22+challenge*14,
+      fireRate:this.starterRegion?Math.max(.85,1.08-rIdx*.06):
+        Math.max(.38,0.8-rIdx*.14-challenge*.1),
       skill: this.pickWildSkillFor(element, rIdx),
       // POISE/韧性: filled only by SKILL/combo/beam/ult hits. When it breaks, the
       // enemy staggers into a 虚弱 window taking ~2x damage. Unmarked basics barely

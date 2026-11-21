@@ -9,6 +9,7 @@ on:
       - 'scripts/cat-bond-crazygames-smoke.mjs'
       - 'scripts/cat-bond-duo-smoke.mjs'
       - 'scripts/cat-bond-audio-smoke.mjs'
+      - 'scripts/cat-bond-balance-smoke.mjs'
       - 'public/studio-audio.js'
       - 'scripts/cat-bond-scale-smoke.mjs'
       - '.github/workflows/cat-bond-mobile.yml'
@@ -37,6 +38,7 @@ jobs:
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-duo-smoke.mjs
           node scripts/cat-bond-audio-smoke.mjs
+          node scripts/cat-bond-balance-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
 
       - name: Save duo animation visual QA screenshots
@@ -52,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-duo-preview
-          path: /tmp/cat-bond-*-preview.png
+          path: /tmp/cat-bond-*-preview*.png
           if-no-files-found: ignore
           retention-days: 7
 
