@@ -8,6 +8,7 @@ on:
       - 'scripts/cat-bond-touch-smoke.mjs'
       - 'scripts/cat-bond-crazygames-smoke.mjs'
       - 'scripts/cat-bond-duo-smoke.mjs'
+      - 'scripts/cat-bond-scale-smoke.mjs'
       - '.github/workflows/cat-bond-mobile.yml'
   workflow_dispatch:
 permissions:
@@ -33,6 +34,7 @@ jobs:
           node scripts/cat-bond-touch-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-duo-smoke.mjs
+          node scripts/cat-bond-scale-smoke.mjs
 
       - name: Save duo animation visual QA screenshots
         if: always()
@@ -48,5 +50,14 @@ jobs:
         with:
           name: cat-bond-duo-preview
           path: /tmp/cat-bond-*-preview.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Save map and battle visibility screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-cat-scale-qa
+          path: /tmp/cat-bond-scale-*.png
           if-no-files-found: ignore
           retention-days: 7

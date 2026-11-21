@@ -634,10 +634,15 @@ class CaptureBattle {
   // whether the stage is a small window or a big desktop canvas. Baseline is the
   // old fixed 0.62 at the reference 1100x720 stage; it grows/shrinks with the
   // arena diagonal, clamped so cats never get tiny or cartoonishly huge.
-  catScale() {
-    const base = 0.62, refDiag = Math.hypot(1100, 720);
-    const diag = Math.hypot(this.W || refDiag, this.H || refDiag);
-    return Math.max(0.5, Math.min(0.92, base * (diag / refDiag)));
+  catScale(role='ally') {
+    // The old 0.50 floor made cats markedly smaller than their map versions.
+    // Boost whole-body readability while keeping room for dodge telegraphs.
+    const diag=Math.hypot(this.W||1100,this.H||720);
+    const ratio=Math.sqrt(diag/Math.hypot(1100,720));
+    const readable=clamp(.79*ratio,.72,.92);
+    if(role==='active')return Math.min(.96,readable*1.10);
+    if(role==='enemy')return readable*.96;
+    return readable;
   }
 
   toggleAuto() {
@@ -2979,7 +2984,11 @@ class CaptureBattle {
       const d=Math.hypot(e.x-x,e.y-y);
       if(d<dist){dist=d;best=e;}
     }
-    if(!best||dist>Math.max(36,best.r?best.r+20:45))return false;
+    if(!best)return false;
+    // Touch targets must be larger than a fingertip, even for tiny breeds.
+    const radius=this.game.isTouch?Math.max(51,best.r?best.r+27:51):
+      Math.max(36,best.r?best.r+20:45);
+    if(dist>radius)return false;
     this._lockIdx=best.i;
     this.vfx.ring(best.x,best.y,{r0:12,vr:90,life:.33,color:'#f6d781',width:2});
     return true;
@@ -4074,7 +4083,7 @@ class CaptureBattle {
       // status color wash (frozen=blue tint, burn=orange, etc.) via a soft overlay ring
       if (e.status) { const k = Object.keys(e.status); if (k.length) { const info = (Skills.TAG_INFO || {})[k[0]]; if (info) { ctx.save(); ctx.globalAlpha = 0.25 + 0.15 * Math.sin(this.t * 6); ctx.fillStyle = info.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + 6, 24, 30, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } }
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
-        species:e.sp,scale:this.catScale(),face:e.face,t:e.t,
+        species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
         stride:e.stride,motion:e.motion||0,
         pose:e.frozen?'idle':e.pose,
         mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
@@ -4158,14 +4167,20 @@ class CaptureBattle {
       if (tf.inv > 0 && Math.floor(this.t * 20) % 2 === 0) ctx.globalAlpha = 0.5;
       if (tf.hitFlash > 0) ctx.globalAlpha = 0.5;
       // active cat gets a soft golden ground ring so you know who you control
-      if (isMe) { ctx.fillStyle = 'rgba(255,211,107,0.13)'; ctx.beginPath(); ctx.ellipse(visualX,visualY+3,27,7,0,0,Math.PI*2);ctx.fill(); }
+      if (isMe) {
+        // A clear grounded control marker; never obscure the kitten face.
+        ctx.fillStyle='rgba(255,210,102,.20)';
+        ctx.strokeStyle='rgba(225,154,54,.78)';ctx.lineWidth=2.5;
+        ctx.beginPath();ctx.ellipse(visualX,visualY+5,35,10,0,0,Math.PI*2);
+        ctx.fill();ctx.stroke();
+      }
       // airborne shadow for a leap: a shrinking blob under the rising cat
       if (hop>1) { const s=Math.max(0.3,1-hop/70); ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.beginPath(); ctx.ellipse(visualX,visualY+5,20*s,5*s,0,0,Math.PI*2); ctx.fill(); }
       const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.70?1:-1)<0?-1:1
         :(tf.face||(Math.cos(fAim)<0?-1:1));
       visualY-=hop;
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
-        species:sp2,scale:this.catScale(),face:visualFace,t:tf.t||this.t,
+        species:sp2,scale:this.catScale(isMe?'active':'ally'),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
         stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
       });
@@ -4176,7 +4191,7 @@ class CaptureBattle {
       if (isMe) {
         ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd36b'; ctx.textAlign = 'center';
         ctx.font = '12px system-ui, sans-serif';
-        ctx.fillText('▾', tf.x, tf.y - 40 + 2 * Math.sin(this.t * 4));
+        ctx.fillText('▾', tf.x, tf.y - Math.max(51,this.catScale('active')*72) + 2 * Math.sin(this.t * 4));
         ctx.restore();
       }
     }

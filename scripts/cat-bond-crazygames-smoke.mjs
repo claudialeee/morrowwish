@@ -297,10 +297,14 @@ try{
           b.duoCharge=100;
           const target=b.enemies[0],before=target.hp;
           const cast=b.castDuo();
-          return {cast,damage:before-target.hp,uses:b.duoUses};
+          const queued=!!b.duoCinematic?.payload,immediate=before-target.hp;
+          // Duo damage is intentionally deferred to the cinematic strike beat.
+          if(cast&&queued)b.update(Math.max(.81,b.duoCinematic.strikeAt+.03));
+          return {cast,queued,immediate,damage:before-target.hp,uses:b.duoUses};
         });
-        assert.ok(duoDamage?.cast&&duoDamage.damage>0&&duoDamage.uses===1,
-          'Real duo move must activate and deal damage, not just display a name');
+        assert.ok(duoDamage?.cast&&duoDamage.queued&&duoDamage.immediate===0
+          &&duoDamage.damage>0&&duoDamage.uses===1,
+          'Duo must deal damage at the illustrated hit beat, not before it');
         assert.ok(await page.evaluate(()=>window.__game.battle.duoCinematic?.t>0),
           'Duo attack must trigger an animated two-cat cinematic');
         await page.evaluate(()=>{
