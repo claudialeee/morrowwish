@@ -255,7 +255,11 @@ class CaptureBattle {
       elements:mix.split('+'),pair:mix,first:firstColor,second:secondColor,
       status:art.status,secondStatus:d.tier>=2?art.secondStatus:null,
       support:art.support||'shield',tier:d.tier};
-    this.duoCinematic={t:2.75,max:2.75,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
+    // strikeAt: the splash plays first (screen locked, nobody moves); the main payload
+    // only LANDS at this beat — "先显示合体大图，然后消失，然后发出技能". It is aligned
+    // with duo-bond.js's crossed-claw paw-impact (age>=0.76) so the big hit and the
+    // slashes read as ONE connect, then the arena un-freezes for the aftermath.
+    this.duoCinematic={t:2.75,max:2.75,strikeAt:0.78,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
     const target=this.lockedEnemy()||this.nearestEnemy(x,y)||{x,y};
@@ -284,61 +288,66 @@ class CaptureBattle {
     // duo's signature finisher — drops from above, lands with a shock ring.
     this.skillStrokes.push({kind:'giantSlam',x:target.x,y:target.y,
       firstColor,secondColor,life:1.1,max:1.1});
-    this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
-    this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
-    let hits=0;
-    for(const e of this.liveEnemies().slice()){
-      const raw=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
-        (fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
-      const damage=raw*Math.max(.8,Math.min(1.2,art.mult||1));
-      this.hurtEnemy(e,damage,e.x,e.y,true);
-      this.vfx.impact(e.x,e.y,hits%2?firstColor:secondColor);hits++;
-      e.status=e.status||{};e.tags=e.tags||[];
-      // All 21 element pairs use authored statuses; at 60+ trust a
-      // SECOND synergy becomes available. Crowd control stays time-limited.
-      const tags=[art.status,...(d.tier>=2&&art.secondStatus?[art.secondStatus]:[])];
-      for(const tag of tags){
-        if(!Skills.TAG_INFO[tag])continue;
-        const cc=['bind','chill','dizzy'].includes(tag);
-        const secs=cc?1.9+.35*d.tier:4.7+.95*d.tier;
-        e.status[tag]=Math.max(e.status[tag]||0,secs);
-        if(!e.tags.includes(tag))e.tags.push(tag);
-      }
-    }
-    // Different duos alter what the player can do AFTER the cinematic:
-    // healing, guarding, haste, power, evasion, regeneration or extra energy.
-    const allies=this.team.filter(f=>f.alive);
     const support=art.support||'shield';
-    for(const f of allies){
-      if(support==='heal'||support==='regen'){
-        const pct=(support==='regen'?.07:.11)+d.tier*.027;
-        const heal=Math.min(f.maxhp-f.hp,f.maxhp*pct);
-        f.hp=Math.min(f.maxhp,f.hp+heal);
-        if(heal>1)this.vfx.text(f.x,f.y-48,'+'+Math.round(heal),'#8be7ac',15);
-        if(support==='regen')f.shieldT=Math.max(f.shieldT||0,3.2+.45*d.tier);
-      }else if(support==='shield'){
-        f.shieldT=Math.max(f.shieldT||0,5.8+.95*d.tier);
-      }else if(support==='boost'){
-        f.damageBoostT=Math.max(f.damageBoostT||0,6.4+.7*d.tier);
-      }else if(support==='haste'){
-        const seconds=1.6+.45*d.tier;
-        for(const key of ['basic','q','e'])f.cd[key]=Math.max(0,(f.cd[key]||0)-seconds);
-        f.dodgeCd=Math.max(0,(f.dodgeCd||0)-seconds);
-      }else if(support==='evade'){
-        f.inv=Math.max(f.inv||0,2.5+.18*d.tier);
-      }else if(support==='protect'){
-        f.protectT=Math.max(f.protectT||0,1.45+.24*d.tier);
+    // DEFERRED PAYLOAD — runs at the splash's strike beat (see duoCinematic tick),
+    // so the big art shows first and the hit only lands once it clears.
+    this.duoCinematic.payload=()=>{
+      this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
+      this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
+      this.flash=Math.max(this.flash,.22);this.shakeT=Math.max(this.shakeT,.3);
+      let hits=0;
+      for(const e of this.liveEnemies().slice()){
+        const raw=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
+          (fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
+        const damage=raw*Math.max(.8,Math.min(1.2,art.mult||1));
+        this.hurtEnemy(e,damage,e.x,e.y,true);
+        this.vfx.impact(e.x,e.y,hits%2?firstColor:secondColor);hits++;
+        e.status=e.status||{};e.tags=e.tags||[];
+        // All 21 element pairs use authored statuses; at 60+ trust a
+        // SECOND synergy becomes available. Crowd control stays time-limited.
+        const tags=[art.status,...(d.tier>=2&&art.secondStatus?[art.secondStatus]:[])];
+        for(const tag of tags){
+          if(!Skills.TAG_INFO[tag])continue;
+          const cc=['bind','chill','dizzy'].includes(tag);
+          const secs=cc?1.9+.35*d.tier:4.7+.95*d.tier;
+          e.status[tag]=Math.max(e.status[tag]||0,secs);
+          if(!e.tags.includes(tag))e.tags.push(tag);
+        }
       }
-    }
-    if(support==='charge')this.gainUlt(11+8*d.tier);
-    this.gainUlt(16);
-    // BOND REINFORCEMENT (羁绊支援): the bond ult temporarily calls a benched cat
-    // onto the field to fight alongside the duo for a short window (~12s), then it
-    // leaves. The exception to the 2-on-field cap.
-    this.summonReinforcement(12 + d.tier * 1.5);
+      // Different duos alter what the player can do AFTER the cinematic:
+      // healing, guarding, haste, power, evasion, regeneration or extra energy.
+      const allies=this.team.filter(f=>f.alive);
+      for(const f of allies){
+        if(support==='heal'||support==='regen'){
+          const pct=(support==='regen'?.07:.11)+d.tier*.027;
+          const heal=Math.min(f.maxhp-f.hp,f.maxhp*pct);
+          f.hp=Math.min(f.maxhp,f.hp+heal);
+          if(heal>1)this.vfx.text(f.x,f.y-48,'+'+Math.round(heal),'#8be7ac',15);
+          if(support==='regen')f.shieldT=Math.max(f.shieldT||0,3.2+.45*d.tier);
+        }else if(support==='shield'){
+          f.shieldT=Math.max(f.shieldT||0,5.8+.95*d.tier);
+        }else if(support==='boost'){
+          f.damageBoostT=Math.max(f.damageBoostT||0,6.4+.7*d.tier);
+        }else if(support==='haste'){
+          const seconds=1.6+.45*d.tier;
+          for(const key of ['basic','q','e'])f.cd[key]=Math.max(0,(f.cd[key]||0)-seconds);
+          f.dodgeCd=Math.max(0,(f.dodgeCd||0)-seconds);
+        }else if(support==='evade'){
+          f.inv=Math.max(f.inv||0,2.5+.18*d.tier);
+        }else if(support==='protect'){
+          f.protectT=Math.max(f.protectT||0,1.45+.24*d.tier);
+        }
+      }
+      if(support==='charge')this.gainUlt(11+8*d.tier);
+      this.gainUlt(16);
+      // BOND REINFORCEMENT (羁绊支援): the bond ult temporarily calls a benched cat
+      // onto the field to fight alongside the duo for a short window (~12s), then it
+      // leaves. The exception to the 2-on-field cap.
+      this.summonReinforcement(12 + d.tier * 1.5);
+      window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
+    };
     window.MorrowwishAudio?.effect?.('capture');
     // The unique lingering field and restrained title make the special visible; avoid a second toast.
-    window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     return true;
   }
   // Bring a benched reserve cat onto the field as a timed reinforcement. It fights
@@ -2514,6 +2523,7 @@ class CaptureBattle {
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
+    const realDt = dt;                 // unscaled frame time for cinematic timers
     if(this.coach)this.coachSeconds+=dt;
     this.ultCd=Math.max(0,this.ultCd-dt); // real frame time, before simulation slowdown
     // Global combat tempo: scale the whole simulation (movement, projectiles, enemy
@@ -2535,7 +2545,22 @@ class CaptureBattle {
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
-    if(this.duoCinematic){this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);if(this.duoCinematic.t===0)this.duoCinematic=null;}
+    // 合体技 cut-in: the whole arena is HARD-FROZEN (nobody moves) while the splash
+    // art plays. Ticks on REAL dt so it always lasts its full length regardless of
+    // hitstop/slowmo. The damage payload is DEFERRED — it only fires at the art's
+    // impact beat (splash shows → clears → THEN the attack lands), per design.
+    if(this.duoCinematic){
+      const v=this.duoCinematic;
+      v.t=Math.max(0,v.t-realDt);
+      const age=v.max-v.t;
+      // Before the strike beat the whole arena is HARD-FROZEN (dt=0, nobody moves)
+      // while the splash art plays. At the strike beat the deferred payload fires and
+      // the sim un-freezes so the hit's shake/bursts actually animate in the revealed
+      // arena — "先显示合体大图，然后消失，然后发出技能".
+      if(age<v.strikeAt){dt=0;}
+      else if(v.payload){const p=v.payload;v.payload=null;p();}
+      if(v.t===0)this.duoCinematic=null;
+    }
     this.tickDuoField(dt);
     this.tickDeathRay(dt);
     if(this.duoRun){

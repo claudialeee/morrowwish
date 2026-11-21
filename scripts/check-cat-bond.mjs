@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
