@@ -14,10 +14,26 @@ function personality(cat){
 }
 function mood(a,b){
   const p=pair(a,b);if(!p)return 'unknown';
-  if((p.sulkyUntil||0)>Date.now())return 'sulky';
+  // A disagreement remains actionable until the player reconciles the pair.
+  // Old timed disagreements still work for saves made before this update.
+  if(p.sulkyPending===true||(p.sulkyUntil||0)>Date.now())return 'sulky';
   if(p.value>=90)return 'inseparable';
   if(p.value>=60)return 'besties';
   return p.value>=20?'friends':'shy';
+}
+function unresolved(){
+  const cats=State.S.cats||[],records=db().pairs||{},active=db().active||[];
+  const out=[];
+  for(const [key,rel] of Object.entries(records)){
+    if(rel.sulkyPending!==true&&!(rel.sulkyUntil>Date.now()))continue;
+    const ids=key.split(':'),a=cats.find(x=>x.uid===ids[0]),b=cats.find(x=>x.uid===ids[1]);
+    if(a&&b)out.push({a,b,rel});
+  }
+  // Put the current battle duo first, then other unsettled relationships.
+  out.sort((x,y)=>Number(active.includes(y.a.uid)&&active.includes(y.b.uid))-
+    Number(active.includes(x.a.uid)&&active.includes(x.b.uid))||
+    (y.rel.lastQuirk||0)-(x.rel.lastQuirk||0));
+  return out;
 }
 function moodLabel(a,b){
   const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -33,7 +49,7 @@ function moodLabel(a,b){
 }
 function soothe(a,b){
   const p=pair(a,b);if(!p||mood(a,b)!=='sulky')return false;
-  p.sulkyUntil=0;grow(a,b,6);State.save();
+  p.sulkyUntil=0;p.sulkyPending=false;grow(a,b,6);State.save();
   window.arcadeMetric?.('bond_duo_reconcile',{});
   return true;
 }
@@ -107,7 +123,7 @@ function pet(cat){
   const count=State.S.petCount||0;
   if(count>=4&&count%9===0&&Date.now()-(rel.lastQuirk||0)>180000&&
     c.some(x=>['glutton','clever','lazy'].includes(x.personality))){
-    rel.lastQuirk=Date.now();rel.sulkyUntil=Date.now()+90000;result.quirk='sulky';
+    rel.lastQuirk=Date.now();rel.sulkyUntil=0;rel.sulkyPending=true;result.quirk='sulky';
     window.arcadeMetric?.('bond_duo_squabble',{});
   }
   return result;
@@ -115,8 +131,8 @@ function pet(cat){
 function play(a,b){const p=pair(a,b);if(!p)return {ok:false,reason:'pair'};
  if(State.S.treats<1)return {ok:false,reason:'treats'};
  if(Date.now()-p.lastPlay<60000)return {ok:false,reason:'cooldown'};
- State.S.treats--;p.lastPlay=Date.now();p.sulkyUntil=0;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
+ State.S.treats--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
  window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v};
 }
-window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,DUO_ARTS};
+window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,DUO_ARTS};
 })();
