@@ -332,9 +332,21 @@ try{
   await page.evaluate(()=>document.querySelector('#mw-mini-fullscreen')?.click());
   await page.waitForFunction(()=>window.MorrowwishArcadeViewport?.state?.portrait===true&&!!window.__V5_PARCELS__,null,{timeout:8500});
   await page.locator('#play-btn').click();
+  await sleep(1200);
+  console.log('PARCEL START STATE '+JSON.stringify(await page.evaluate(()=>({state:window.__V5_PARCELS__?.(),overlayHidden:document.querySelector('#overlay')?.hidden,score:document.querySelector('#score')?.textContent,status:document.querySelector('#status')?.textContent}))));
   const began=stamp();
   const action=async right=>{
-   await page.waitForFunction(()=>window.__V5_PARCELS__?.().parcels.length>0||!document.querySelector('#overlay').hidden,null,{timeout:8000});
+   try{
+    await page.waitForFunction(()=>window.__V5_PARCELS__?.().parcels.length>0||!document.querySelector('#overlay').hidden,null,{timeout:8000,polling:100});
+   }catch(e){
+    const diagnostic=await page.evaluate(()=>({
+      state:window.__V5_PARCELS__?.(),overlayHidden:document.querySelector('#overlay')?.hidden,
+      score:document.querySelector('#score')?.textContent,status:document.querySelector('#status')?.textContent,
+      title:document.querySelector('#overlay-title')?.textContent,
+      visible:document.visibilityState,canvasSize:[document.querySelector('#game')?.width,document.querySelector('#game')?.height]
+    }));
+    throw Error('Parcel real-game wait timed out '+JSON.stringify(diagnostic)+'; '+String(e));
+   }
    const s=await page.evaluate(()=>{
     const x=window.__V5_PARCELS__();
     return{...x,next:[...x.parcels].sort((a,b)=>b.y-a.y)[0],dead:!document.querySelector('#overlay').hidden};
