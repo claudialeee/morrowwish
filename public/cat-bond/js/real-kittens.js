@@ -65,7 +65,28 @@
     xingchen:[5,'#8476b1',.61,'starry-black']
   };
   const breedCache=Object.create(null);
+  const framedBreedCache=Object.create(null);
   const animatedRigCache=Object.create(null);
+  // Generated atlas tiles sometimes contain paint right up to a tile boundary.
+  // Feather those hard crop lines rather than display a sharp rectangular cut
+  // through the kitten. This changes presentation, never the saved collection.
+  function framedBreed(slot){
+    if(framedBreedCache[slot])return framedBreedCache[slot];
+    const cw=breedFrameSize.w,ch=breedFrameSize.h;
+    const tile=document.createElement('canvas');
+    tile.width=cw;tile.height=ch;
+    const tx=tile.getContext('2d');
+    tx.drawImage(breedSheet,(slot%5)*cw,Math.floor(slot/5)*ch,cw,ch,0,0,cw,ch);
+    tx.globalCompositeOperation='destination-in';
+    const edge=tx.createLinearGradient(0,0,cw,0);
+    edge.addColorStop(0,'rgba(0,0,0,0)');
+    edge.addColorStop(.065,'rgba(0,0,0,1)');
+    edge.addColorStop(.90,'rgba(0,0,0,1)');
+    edge.addColorStop(1,'rgba(0,0,0,0)');
+    tx.fillStyle=edge;tx.fillRect(0,0,cw,ch);
+    framedBreedCache[slot]=tile;
+    return tile;
+  }
   let gaitLayersBuilt=0;
   // Paint an entire illustrated cat into each complete gait frame. This
   // replaces the earlier cut-and-move paw layers that looked severed.
@@ -170,8 +191,7 @@
     // older AVIF decoders or while the image is loading.
     const slot=BREED_ORDER.indexOf(id);
     if(breedLoaded&&slot>=0){
-      return {image:breedSheet,sx:(slot%5)*breedFrameSize.w,
-        sy:Math.floor(slot/5)*breedFrameSize.h,
+      return {image:framedBreed(slot),sx:0,sy:0,
         sw:breedFrameSize.w,sh:breedFrameSize.h};
     }
     const look=BREED_LOOKS[id];
@@ -325,8 +345,9 @@
     if(canvas.height!==ph)canvas.height=ph;
     ctx.setTransform?.(ratio,0,0,ratio,0,0);
     ctx.clearRect(0,0,logicalW,logicalH);
-    const scale=Math.min(logicalW/63,logicalH/90)*.94;
-    render(ctx,logicalW/2,logicalH*.58,{
+    // Leave an illustrated margin on all four sides in portrait cards.
+    const scale=Math.min(logicalW/72,logicalH/104)*.86;
+    render(ctx,logicalW/2,logicalH*.60,{
       species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
     if(!breedLoaded)pendingPortraits.set(canvas,species);
@@ -359,6 +380,7 @@
     breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*5
       &&breedSheet.naturalHeight===breedFrameSize.h*5;
     if(breedLoaded){
+      for(const key of Object.keys(framedBreedCache))delete framedBreedCache[key];
       for(const key of Object.keys(animatedRigCache))delete animatedRigCache[key];
       try{window.paintIntroCatGallery?.()}catch(_){}
       replayPortraits();
