@@ -183,7 +183,7 @@ return{
    }
    box(30,18,480,61,"#342b56",15,"#a98eaf");
    txt(270,43,L("TAP THE MATCHING COLOR LANE","点击对应颜色的通道"),17,"#f6eeff");
-   for(let i=0;i<5;i++)circ(40+i*21,95,7,i<life?"#ff859c":"#735c83");
+   for(let i=0;i<4;i++)circ(40+i*21,95,7,i<life?"#ff859c":"#735c83");
    const b=boxes[0];
    if(b){
     const x=xOf(b.x),y=yOf(b.y),col=colors[b.color];
@@ -210,7 +210,7 @@ return{
   box(206,12,548,60,"#213c63",15,"#557497");
   txt(480,35,L("NEXT PARCEL → CLICK ITS COLOR","看包裹颜色 → 点击对应通道"),18,"#f2f5ff");
   txt(480,55,L("Also: keyboard 1 / 2 / 3","也可按键盘 1 / 2 / 3"),12,"#cadcf3");
-  for(let i=0;i<5;i++)circ(34+i*22,38,7,i<life?"#ff859c":"#59718d");
+  for(let i=0;i<4;i++)circ(34+i*22,38,7,i<life?"#ff859c":"#59718d");
   const b=boxes[0];
   if(b){
    glow(b.x,b.y,64,colors[b.color]+"4e");box(b.x-52,b.y-39,104,78,colors[b.color],15,"#ffffffa0");
