@@ -639,3 +639,16 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
   height:min(96%,calc(100dvh - 16px))!important;max-height:100%!important;
  }
 }
+
+/* Eighth-room cinematic is a real in-game scene: unobstructed on desktop/mobile. */
+#stage.outro-active>.in-game-top,
+#stage.outro-active>.in-game-guidance,
+#stage.outro-active .paws-alert,
+#stage.outro-active .yarn-aim-banner,
+#stage.outro-active .coach-spot,
+#stage.outro-active .toast,
+#stage.outro-active .achievement-toast{
+ visibility:hidden!important;
+ pointer-events:none!important;
+}
+#stage.outro-active #board{cursor:pointer!important}
