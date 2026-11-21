@@ -1,10 +1,13 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T22:14:35.805Z",
+  "createdAt": "2026-11-21T22:26:18.937Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
   "readabilityChecked": true,
+  "pausedPromoGames": [
+    "cat-bond"
+  ],
   "trailers": [
     {
       "slug": "cat-bond",
@@ -107,7 +110,9 @@
       "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
-      "published": false
+      "published": false,
+      "paused": true,
+      "productionStatus": "PAUSED — PREVIOUS REVIEW VIDEO RETAINED"
     },
     {
       "slug": "pawsibly-innocent",
@@ -119,19 +124,19 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 30.6,
+      "duration": 30.7,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.101
+          "seconds": 14.172
         },
         {
           "source": "broll",
           "scene": "narrow-pursuit",
           "caption": "SPOTTED! CAN IT ESCAPE?",
-          "seconds": 2.4850000000000008
+          "seconds": 2.540999999999998
         },
         {
           "source": "broll",
@@ -143,7 +148,7 @@
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.331999999999998
+          "seconds": 7.354999999999998
         },
         {
           "source": "cover",
@@ -356,25 +361,25 @@
         "/promo/flip-dash/v7-review-2.jpg",
         "/promo/flip-dash/v7-review-3.jpg"
       ],
-      "duration": 19.8,
+      "duration": 19.9,
       "shots": [
         {
           "source": "broll",
           "scene": "first-coin",
           "caption": "GRAB GOLD FROM THE START!",
-          "seconds": 3.1200000000000006
+          "seconds": 3.12
         },
         {
           "source": "broll",
           "scene": "coin-collect",
           "caption": "COLLECT GOLD. DODGE PINK.",
-          "seconds": 9.917
+          "seconds": 9.966
         },
         {
           "source": "broll",
           "scene": "danger",
           "caption": "",
-          "seconds": 0.49199999999999877
+          "seconds": 0.4909999999999993
         },
         {
           "source": "broll",
@@ -405,19 +410,19 @@
         "/promo/parcel-panic/v7-review-2.jpg",
         "/promo/parcel-panic/v7-review-3.jpg"
       ],
-      "duration": 19.4,
+      "duration": 19.3,
       "shots": [
         {
           "source": "broll",
           "scene": "deliveries",
           "caption": "MATCH THE PARCEL COLOR.",
-          "seconds": 8.13
+          "seconds": 8.148
         },
         {
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.781999999999999
+          "seconds": 4.684
         },
         {
           "source": "broll",
@@ -448,19 +453,19 @@
         "/promo/pocket-aquarium/v7-review-2.jpg",
         "/promo/pocket-aquarium/v7-review-3.jpg"
       ],
-      "duration": 18.9,
+      "duration": 18.8,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.246
+          "seconds": 3.247
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.249
+          "seconds": 4.236
         },
         {
           "source": "broll",

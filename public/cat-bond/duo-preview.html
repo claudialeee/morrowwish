@@ -31,6 +31,10 @@
       color:inherit;opacity:.57;font-size:11px;font-variant-numeric:tabular-nums}
     .signature .caption{font-size:12px;font-weight:700;line-height:1.38}
     .footer{font-size:12px;line-height:1.65;color:#6c7777;margin:16px 0 25px}
+    #breed-controls{padding:9px 11px;background:#fdfcf8;border:1px solid #d7e1d6;border-radius:12px}
+    #breed-controls label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;flex:1;min-width:135px}
+    #breed-controls select{background:#fff;border:1px solid #cbd8ca;border-radius:8px;padding:7px 8px;
+      max-width:100%;min-width:0;flex:1;color:#476259}
     @media(max-width:520px){#duo-canvas{aspect-ratio:5/4}#signature-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
       .signature{padding:7px 8px;min-height:52px}.signature .caption{font-size:11px}
       .controls .ctl{padding:8px 9px}#now-playing{font-size:14px}}
@@ -55,13 +59,21 @@
   </div>
 </div>
 <div id="now-playing" aria-live="polite">正在加载合击演出…</div>
+<div class="controls" id="breed-controls" aria-label="按实际上场猫咪预览">
+ <label>第一只猫 <select id="preview-cat-a"></select></label>
+ <label>第二只猫 <select id="preview-cat-b"></select></label>
+</div>
 <h2>选择合击技能</h2>
 <div id="signature-grid" role="group" aria-label="21 种双猫合击"></div>
 <p class="footer">演示展示每种元素组合的独特编排及视觉演出。实际战斗中的伤害、控制、治疗和冷却仍由游戏决定。动画自动循环；为避免破图，合击以完整连贯的小猫身体绘制。</p>
 </main>
 <script>window.MorrowwishI18n={get:()=> 'zh'};</script>
-<script src="js/duo-signatures.js?v=20261121-all21-kinetic"></script>
-<script src="js/duo-hero.js?v=20261121-all21-kinetic"></script>
+<script src="js/data.js?v=duo-preview-pastel"></script>
+<script src="js/catart.js?v=duo-preview-pastel"></script>
+<script src="js/real-kittens.js?v=complete-watercolor-v2-20261121-1"></script>
+<script src="js/duo-artwork.js?v=duo-watercolor-20261121"></script>
+<script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
+<script src="js/duo-hero.js?v=duo-pastel-20261121"></script>
 <script>
 (()=>{
 'use strict';
@@ -78,6 +90,16 @@ const cv=document.getElementById('duo-canvas'),ctx=cv.getContext('2d');
 let selected='elec+fire',tier=3,start=performance.now(),paused=false,hold=0;
 const colors={dark:'#bcb0ea',elec:'#ffe58a',fire:'#ffab80',grass:'#b2e3a1',light:'#fff0bd',water:'#9fdbf7'};
 const cats={previewA:{uid:'previewA',species:'tangyuan'},previewB:{uid:'previewB',species:'xiaohui'}};
+const breeds=window.GameData?.SPECIES||[];
+for(const [id,slot,initial] of [['preview-cat-a','previewA','tangyuan'],['preview-cat-b','previewB','xiaohui']]){
+ const control=document.getElementById(id);
+ for(const breed of breeds){
+  const opt=document.createElement('option');opt.value=breed.id;
+  opt.textContent=breed.name;control.append(opt);
+ }
+ control.value=initial;
+ control.onchange=()=>{cats[slot].species=control.value;render(.8)};
+}
 function measure(){
  const rect=cv.getBoundingClientRect(),w=Math.max(1,rect.width),h=Math.max(1,rect.height),dpr=Math.min(2,window.devicePixelRatio||1);
  const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
@@ -137,7 +159,15 @@ if(keys.length===21&&window.CatBondDuoHero){
  window.__duoPreviewReady=true;
  window.__duoPreviewDebug={renderAt:(key,lvl,s)=>{
     selected=key;tier=lvl;render(s);return cv.toDataURL('image/png')
-   },select:choose,getKeys:()=>keys.slice()};
+   },select:choose,getKeys:()=>keys.slice(),
+   setCats:(a,b)=>{
+     cats.previewA.species=a;cats.previewB.species=b;
+     document.getElementById('preview-cat-a').value=a;
+     document.getElementById('preview-cat-b').value=b;render(.8);
+   },
+   getArtStatus:()=>({breedReady:!!window.CatBondDuoArtwork?.ready,
+     scenesReady:!!window.CatBondDuoArtwork?.backdropReady,
+     breeds:window.CatBondDuoArtwork?.breedCount})};
 }else document.getElementById('now-playing').textContent='演出资源加载失败。';
 })();
 </script>

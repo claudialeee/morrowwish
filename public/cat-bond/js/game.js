@@ -789,8 +789,20 @@ class Game {
     bench.innerHTML='';
     if(!b.reserve.length){bench.hidden=true;return;}
     bench.hidden=false;
-    const label=document.createElement('span');label.className='bench-caption';
-    label.textContent=en?'SWAP':'替补';bench.appendChild(label);
+    const label=document.createElement('button');label.className='bench-caption';
+    label.type='button';label.textContent=en?'SWAP':'替补';
+    label.title=en?'Show or hide reserve cats':'展开或收起替补猫咪';
+    label.setAttribute('aria-label',label.title);
+    // In short landscape, showing all three reserves permanently covers the
+    // fighter at its normal left-side spawn point. The toggle remains visible.
+    const compact=this.isTouch&&this.H<470&&this.W>this.H;
+    bench.classList.toggle('is-open',!compact);
+    label.setAttribute('aria-expanded',String(!compact));
+    label.addEventListener('click',()=>{
+      const expanded=bench.classList.toggle('is-open');
+      label.setAttribute('aria-expanded',String(expanded));
+    });
+    bench.appendChild(label);
     b.reserve.forEach((cat,i)=>{
       const btn=document.createElement('button');btn.type='button';
       btn.className='bench-slot';btn.title=(en?'Swap active cat with ':'替换当前出战猫：')+State.catName(cat);

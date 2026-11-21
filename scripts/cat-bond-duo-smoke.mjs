@@ -122,6 +122,8 @@ try{
   await page.goto(origin+'/cat-bond/duo-preview.html',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>window.__duoPreviewReady&&window.__duoPreviewDebug,{timeout:10000});
   assert.equal(await page.locator('.signature').count(),21,'all 21 duos selectable');
+  await page.waitForFunction(()=>window.CatBondDuoArtwork?.ready&&
+    window.CatBondDuoArtwork?.backdropReady,{timeout:15000});
   const visual=await page.evaluate(()=>{
     const debug=window.__duoPreviewDebug,keys=debug.getKeys(),cv=document.getElementById('duo-canvas');
     const ctx=cv.getContext('2d',{willReadFrequently:true});
@@ -148,8 +150,20 @@ try{
     }
     const overflow=document.documentElement.scrollWidth>innerWidth+3;
     debug.select('elec+fire');
+    const breedShots=[];
+    for(const id of ['tangyuan','sanhua','lanbao','xianluo','yunduo']){
+      debug.setCats(id,'xiaohui');
+      debug.renderAt('grass+water',3,.9);
+      breedShots.push(hash());
+    }
+    const themes=['elec+fire','grass+water','water+water','fire+light','dark+light']
+      .map(key=>{debug.renderAt(key,3,.9);return hash()});
     return {count:keys.length,distinct:new Set(hashes).size,
       differentWindups:motionHashes.some((v,i)=>v!==hashes[i]),
+      breedDiff:new Set(breedShots).size,
+      themeDiff:new Set(themes).size,
+      breedReady:debug.getArtStatus().breedReady,
+      scenesReady:debug.getArtStatus().scenesReady,
       overflow,visibleCanvas:cv.width>0&&cv.height>0};
   });
   assert.equal(visual.count,21);
@@ -157,6 +171,10 @@ try{
   assert.equal(visual.differentWindups,true,'signature key frames must actually animate');
   assert.equal(visual.overflow,false,'preview must not scroll sideways');
   assert.equal(visual.visibleCanvas,true);
+  assert.equal(visual.breedDiff,5,'five distinct real cat breeds produce visibly distinct cut-ins');
+  assert.equal(visual.themeDiff,5,'signature backgrounds differ for moon, sun, storm, spring and water');
+  assert.equal(visual.breedReady,true,'Current game watercolor kittens decode for every breed');
+  assert.equal(visual.scenesReady,true,'pastel reference-art backgrounds decode');
   // Hold a visually informative impact frame; snapshots taken during the
   // first 150ms fade-in look incorrectly dark and cannot assess kitten art.
   await page.locator('#pause').click();

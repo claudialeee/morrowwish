@@ -1798,3 +1798,55 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
  color:#345847;opacity:1}
 .duo-move-evolution b{font-size:12px;white-space:nowrap}
 .duo-move-evolution span{font-size:11px;line-height:1.35}
+
+/* Short landscape: preserve thumb-sized skills and unclutter the fighting area. */
+@media(pointer:coarse) and (max-height:470px) and (orientation:landscape){
+ #battle-ui .move-bar{grid-template-rows:repeat(2,48px)!important;
+  grid-template-columns:repeat(3,48px)!important;gap:4px!important}
+ #battle-ui .move-bar .move{width:48px!important;height:48px!important;
+  min-width:48px!important;min-height:48px!important;border-radius:12px!important}
+ #battle-ui.touch-manual #battle-touch-joystick{width:86px!important;height:86px!important;
+  left:70px!important;bottom:24px!important}
+ #battle-touch-joystick .battle-touch-label{bottom:-14px}
+ #battle-ui #bench-slots{left:7px!important;
+  top:calc(env(safe-area-inset-top,0px) + 157px)!important;
+  gap:4px!important;max-width:calc(100% - 118px)!important}
+ #battle-ui #bench-slots:not(.is-open) .bench-slot{display:none!important}
+ #battle-ui #bench-slots .bench-caption{min-height:46px!important;
+  min-width:47px!important;font-size:11px!important;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:#f5fff0f5!important;border:2px solid #94bea0!important}
+ #battle-ui #bench-slots.is-open{flex-wrap:wrap!important;max-width:212px!important;
+  background:#fff8eef5;border-radius:12px;padding:4px!important;
+  box-shadow:0 5px 18px #22382c55}
+ #battle-ui .bench-slot{min-width:46px!important;width:46px!important;height:54px!important}
+}
+@media(pointer:coarse) and (max-width:360px){
+ #battle-ui .move-bar .move{min-width:50px!important;min-height:50px!important}
+}
+
+/* Readable cooldowns: never mask the entire Q/E icon and skill name with
+   a dark number. A small corner badge shows remaining seconds instead. */
+#battle-ui .move-bar .move.cooling{
+ filter:none!important;opacity:.80!important;
+ border-color:#9db4aa!important;background:#eff1ec!important;
+}
+#battle-ui .move-bar .move .cd{
+ position:absolute!important;inset:auto!important;
+ top:-7px!important;right:-5px!important;left:auto!important;bottom:auto!important;
+ min-width:27px!important;width:auto!important;
+ height:20px!important;min-height:20px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ padding:1px 4px!important;box-sizing:border-box!important;
+ background:#516b61!important;color:#fff!important;
+ border:1.5px solid #fffdf5!important;border-radius:10px!important;
+ font:900 11px/1 system-ui,sans-serif!important;
+ text-shadow:none!important;z-index:7!important;
+ box-shadow:0 2px 5px #2d3c3866!important;pointer-events:none!important
+}
+@media(pointer:coarse) and (max-height:470px){
+ #battle-ui .move-bar .move .cd{
+  top:-6px!important;right:-3px!important;
+  min-width:26px!important;height:19px!important;font-size:10px!important
+ }
+}

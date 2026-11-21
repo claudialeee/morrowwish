@@ -880,11 +880,12 @@
       ctx.save();ctx.strokeStyle=rColor;ctx.globalAlpha=.75;ctx.lineWidth=2.5;
       ctx.beginPath();ctx.ellipse(s.x,by+20,27,8,0,0,Math.PI*2);ctx.stroke();
       ctx.restore();
+      const wildScale=game.H<480?.82:.87;
       if(window.CatMotion&&sp){
-        CatMotion.draw(ctx,s.x,by,{species:sp,scale:.88,
+        CatMotion.draw(ctx,s.x,by,{species:sp,scale:wildScale,
           face:s.face,t:w.t,stride:s.stride,pose:'walk',motion:.75,mood:'alert'});
       }else if(window.CatArt&&sp){
-        CatArt.drawCat(ctx,s.x,by,{species:sp,scale:.65,face:s.face,t,pose:'walk'});
+        CatArt.drawCat(ctx,s.x,by,{species:sp,scale:wildScale,face:s.face,t,pose:'walk'});
       }
       if(spInfo?.rarity==='SR'||spInfo?.rarity==='SSR'){
         ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillStyle=rColor;
@@ -903,17 +904,25 @@
       const partnerSpecies=window.GameData.speciesById(companion.species);
       const render=window.CatMotion?.draw||window.CatArt?.drawCat;
       if(partnerSpecies&&render){
-        try{render(ctx,w.px-(w.face||1)*54,w.py+26,{
-          species:partnerSpecies,scale:.83,face:w.face,t:w.t,
+        // Gap keeps the partner from covering the player's face/ears.
+        const gap=game.H<480?64:73;
+        const x=Math.max(53,Math.min(WORLD_W-53,w.px-(w.face||1)*gap));
+        try{render(ctx,x,w.py+18,{
+          species:partnerSpecies,scale:game.H<480?.78:.83,face:w.face,t:w.t,
           stride:w.walkT*11,motion:w.moving?.85:0,pose:w.moving?'walk':'idle',mood:'happy'
         });}catch(e){}
       }
     }
+    // Distinguish the controllable kitten from roaming wild cats.
+    ctx.save();ctx.fillStyle='rgba(255,248,206,.20)';
+    ctx.strokeStyle='rgba(114,149,103,.82)';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.ellipse(w.px,w.py+20,36,10,0,0,Math.PI*2);
+    ctx.fill();ctx.stroke();ctx.restore();
     // player avatar (lead cat) + shadow
     var pose = w.moving ? 'walk' : 'idle';
     if (window.CatArt) {
       try { (window.CatMotion?.draw||CatArt.drawCat)(ctx,w.px,w.py,{
-        species:playerSpecies(),scale:1,face:w.face,t:w.t,
+        species:playerSpecies(),scale:game.H<480?.95:1,face:w.face,t:w.t,
         stride:w.walkT*13,motion:w.moving?1:0,pose,mood:'happy'
       }); }
       catch (e2) { ctx.fillStyle = PINK; ctx.beginPath(); ctx.arc(w.px, w.py, 18, 0, Math.PI * 2); ctx.fill(); }
