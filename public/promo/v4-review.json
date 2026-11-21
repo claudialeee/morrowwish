@@ -1,0 +1,514 @@
+{
+  "version": "V4",
+  "createdAt": "2026-11-21T08:00:01.851Z",
+  "approval": "NOT APPROVED — REVIEW ONLY",
+  "socialAutopublish": false,
+  "historicalVideoViewsExcluded": true,
+  "trailers": [
+    {
+      "slug": "cat-bond",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/cat-bond/trailer-v4-20261121.mp4",
+      "poster": "/promo/cat-bond/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/cat-bond/v4-review-1.jpg",
+        "/promo/cat-bond/v4-review-2.jpg",
+        "/promo/cat-bond/v4-review-3.jpg"
+      ],
+      "duration": 28.3,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "yard",
+          "caption": "THESE CATS ARE YOUR TEAM.",
+          "seconds": 3.4
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "MEET. BEFRIEND. RECRUIT.",
+          "seconds": 2.65
+        },
+        {
+          "source": "broll",
+          "scene": "battle",
+          "caption": "THEN THE STRAYS FIGHT BACK.",
+          "seconds": 3.25
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "THEY FIGHT TOGETHER.",
+          "seconds": 2.4
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "EVERY DUO HAS A SECRET.",
+          "seconds": 2.8
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "NOW WATCH THIS...",
+          "seconds": 2.55
+        },
+        {
+          "source": "broll",
+          "scene": "battle",
+          "caption": "THE BATTLE ISN’T OVER.",
+          "seconds": 2.5
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "DISCOVER NEW SKILLS.",
+          "seconds": 2.7
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "A TEAM OF YOUR OWN.",
+          "seconds": 2
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "WHICH CATS WOULD YOU CHOOSE?",
+          "seconds": 3.4
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "CAT BOND · PLAY FREE",
+          "seconds": 2.8
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "pawsibly-innocent",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/pawsibly-innocent/trailer-v4-20261121.mp4",
+      "poster": "/promo/pawsibly-innocent/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/pawsibly-innocent/v4-review-1.jpg",
+        "/promo/pawsibly-innocent/v4-review-2.jpg",
+        "/promo/pawsibly-innocent/v4-review-3.jpg"
+      ],
+      "duration": 23.9,
+      "shots": [
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "THE HUMAN IS RIGHT THERE.",
+          "seconds": 1.2
+        },
+        {
+          "source": "broll",
+          "scene": "sneak",
+          "caption": "THREE FISH TO STEAL.",
+          "seconds": 2.2
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "AND I AM THE CAT.",
+          "seconds": 2.55
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "PLAN: DISTRACT HIM.",
+          "seconds": 1.9
+        },
+        {
+          "source": "broll",
+          "scene": "decoy",
+          "caption": "HE CHASES THE YARN.",
+          "seconds": 2.15
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "SO I MAKE MY MOVE.",
+          "seconds": 2.55
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "DON’T GET CAUGHT.",
+          "seconds": 2.15
+        },
+        {
+          "source": "broll",
+          "scene": "sneak",
+          "caption": "SNEAKING PAST HIM.",
+          "seconds": 2.2
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "SO CLOSE...",
+          "seconds": 2.35
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "ALL THREE FISH.",
+          "seconds": 1.55
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "COULD YOU PULL THIS OFF?",
+          "seconds": 3
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PAWSIBLY INNOCENT!",
+          "seconds": 2.55
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "tiny-town",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/tiny-town/trailer-v4-20261121.mp4",
+      "poster": "/promo/tiny-town/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/tiny-town/v4-review-1.jpg",
+        "/promo/tiny-town/v4-review-2.jpg",
+        "/promo/tiny-town/v4-review-3.jpg"
+      ],
+      "duration": 24.8,
+      "shots": [
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "NO JOBS. ALL FREEDOM.",
+          "seconds": 2.65
+        },
+        {
+          "source": "broll",
+          "scene": "build",
+          "caption": "YOU DESIGN THE TOWN.",
+          "seconds": 3.4
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "WHAT IF EVERY WISH CAME TRUE?",
+          "seconds": 2.65
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "THE NEIGHBORS HAVE OPINIONS.",
+          "seconds": 2
+        },
+        {
+          "source": "broll",
+          "scene": "build",
+          "caption": "EVERY DECISION CHANGES IT.",
+          "seconds": 3.05
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "SEVEN DAYS OF UNLIMITED LIFE.",
+          "seconds": 3
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "AND THE TOWN BECOMES...",
+          "seconds": 2.55
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "A STORY NO ONE PLANNED.",
+          "seconds": 1.85
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "WHAT WOULD YOUR TOWN BECOME?",
+          "seconds": 2.95
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "NO MORE MONDAYS · PLAY FREE",
+          "seconds": 2.7
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "elsewhere",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/elsewhere/trailer-v4-20261121.mp4",
+      "poster": "/promo/elsewhere/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/elsewhere/v4-review-1.jpg",
+        "/promo/elsewhere/v4-review-2.jpg",
+        "/promo/elsewhere/v4-review-3.jpg"
+      ],
+      "duration": 24.6,
+      "shots": [
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "WHAT IF YOU WOKE UP IN PARIS?",
+          "seconds": 2.35
+        },
+        {
+          "source": "broll",
+          "scene": "maldives",
+          "caption": "OR ON A PRIVATE ISLAND?",
+          "seconds": 2.45
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "A DIFFERENT LIFE AWAITS.",
+          "seconds": 2.8
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "ONE CHOICE CHANGES THINGS.",
+          "seconds": 1.85
+        },
+        {
+          "source": "broll",
+          "scene": "tokyo",
+          "caption": "ANOTHER CITY. ANOTHER YOU.",
+          "seconds": 2.45
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "LOVE. LUCK. AND SURPRISES.",
+          "seconds": 1.85
+        },
+        {
+          "source": "broll",
+          "scene": "moon",
+          "caption": "EVEN A HOTEL ON THE MOON.",
+          "seconds": 2.45
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "THE STORY IS YOURS.",
+          "seconds": 2.75
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "HUNDREDS OF POSSIBLE DAYS.",
+          "seconds": 2.45
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "WHICH LIFE WOULD YOU LIVE?",
+          "seconds": 2.8
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "ELSEWHERE · PLAY FREE",
+          "seconds": 2.55
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "flip-dash",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/flip-dash/trailer-v4-20261121.mp4",
+      "poster": "/promo/flip-dash/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/flip-dash/v4-review-1.jpg",
+        "/promo/flip-dash/v4-review-2.jpg",
+        "/promo/flip-dash/v4-review-3.jpg"
+      ],
+      "duration": 9.1,
+      "shots": [
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "38 POINTS. CRASHED.",
+          "seconds": 1.45
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "ONE BUTTON. FLIP GRAVITY.",
+          "seconds": 2.6
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "MISS ONCE...",
+          "seconds": 1.25
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "AND IT’S OVER.",
+          "seconds": 1.25
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "CAN YOU BEAT 38?",
+          "seconds": 1.55
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "FLIP DASH · PLAY FREE",
+          "seconds": 2.05
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "parcel-panic",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/parcel-panic/trailer-v4-20261121.mp4",
+      "poster": "/promo/parcel-panic/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/parcel-panic/v4-review-1.jpg",
+        "/promo/parcel-panic/v4-review-2.jpg",
+        "/promo/parcel-panic/v4-review-3.jpg"
+      ],
+      "duration": 8.5,
+      "shots": [
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "28 POINTS. GAME OVER.",
+          "seconds": 1.3
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "SORT THE PACKAGES.",
+          "seconds": 2.35
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "WRONG LANE?",
+          "seconds": 1.15
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "THERE GOES THE STREAK.",
+          "seconds": 1.35
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "BEAT MY 28?",
+          "seconds": 1.36
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PARCEL PANIC · PLAY FREE",
+          "seconds": 2.1
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "pocket-aquarium",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/pocket-aquarium/trailer-v4-20261121.mp4",
+      "poster": "/promo/pocket-aquarium/trailer-v4-20261121.jpg",
+      "review": [
+        "/promo/pocket-aquarium/v4-review-1.jpg",
+        "/promo/pocket-aquarium/v4-review-2.jpg",
+        "/promo/pocket-aquarium/v4-review-3.jpg"
+      ],
+      "duration": 10,
+      "shots": [
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "GRADE B. NOT S.",
+          "seconds": 1.75
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "FEED THE RIGHT FISH.",
+          "seconds": 2.5
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "KEEP THE COMBO GOING.",
+          "seconds": 1.35
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "ONE WRONG BITE...",
+          "seconds": 1.75
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "CAN YOU GET AN S?",
+          "seconds": 1.5
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "POCKET AQUARIUM · PLAY FREE",
+          "seconds": 2.2
+        }
+      ],
+      "sourceClips": "current live gameplay and actual studio cover",
+      "transitions": "action cuts + gentle xfade + cover zoom",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    }
+  ]
+}
