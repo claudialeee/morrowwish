@@ -33,10 +33,27 @@ const G={};
 G["parcel-panic"]=()=>{
 let parcels=[],t=0,spawn=0,lives=5,chain=0,sel=null,delivered=0;
 const bins=[205,480,755];
-return {init(){parcels=[];t=0;spawn=.6;lives=5;chain=0;sel=null;delivered=0;info("5 chances • drag boxes to the same color dock");},
+return {init(){parcels=[];t=0;spawn=.6;lives=5;chain=0;sel=null;delivered=0;info("Tap the matching colored lane; dragging a parcel also works.");},
 tick(dt){t+=dt;spawn-=dt;if(spawn<=0){const color=rnd(3),lane=rnd(3);parcels.push({x:bins[lane],y:45,color,vel:92+Math.min(130,t*1.35),seed:Math.random()});spawn=Math.max(.64,1.85-t*.008);}
 for(let i=parcels.length-1;i>=0;i--){let p=parcels[i];p.y+=p.vel*dt;if(p.y>436){const nearest=bins.findIndex(b=>Math.abs(p.x-b)<84);if(nearest===p.color){chain++;delivered++;add(12+Math.min(50,chain*3));}else{chain=0;lives--;if(lives<=0){finish(false,"The delivery docks overflowed. Deliveries: "+delivered);return;}}parcels.splice(i,1);}}info("Lives: "+lives+"  |  Streak: "+chain+"  |  Delivered: "+delivered);},
-down(x,y){for(let i=parcels.length-1;i>=0;i--){const p=parcels[i];if(Math.abs(x-p.x)<50&&Math.abs(y-p.y)<42){sel=p;break;}}},move(x,y){if(sel)sel.x=clamp(x,145,815);},up(){sel=null;},
+down(x,y){
+ // A lane is a full-size tap target in both orientations. Mobile players
+ // should never have to grab a 58px parcel while it is falling.
+ let grabbed=null;
+ for(let i=parcels.length-1;i>=0;i--){
+  const p=parcels[i];if(Math.abs(x-p.x)<58&&Math.abs(y-p.y)<53){grabbed=p;break;}
+ }
+ if(grabbed){sel=grabbed;return;}
+ if(!parcels.length)return;
+ const lane=bins.reduce((best,b,i)=>Math.abs(x-b)<Math.abs(x-bins[best])?i:best,0);
+ // Route the next parcel (the one nearest the docks) on tap.
+ const next=parcels.reduce((a,p)=>p.y>a.y?p:a,parcels[0]);
+ const idx=parcels.indexOf(next);if(idx<0)return;
+ if(next.color===lane){chain++;delivered++;add(12+Math.min(50,chain*3));}
+ else{chain=0;lives--;if(lives<=0)finish(false,"The delivery docks overflowed. Deliveries: "+delivered);}
+ parcels.splice(idx,1);
+ info("Lives: "+lives+"  |  Streak: "+chain+"  |  Delivered: "+delivered);
+},move(x,y){if(sel)sel.x=clamp(x,145,815);},up(){sel=null;},
 draw(){if(portrait){
  // Three tall docks: preserve the original game simulation and hit coordinates.
  const g=c.createLinearGradient(0,0,0,960);g.addColorStop(0,"#4d355c");g.addColorStop(1,"#805565");
