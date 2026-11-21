@@ -1,6 +1,6 @@
 {
-  "campaign": "morrow-wish-seven-verified-real-game-shorts-2026-11-21",
-  "description": "Historical footage from the rejected 2026-11-21 drafts. Does not count toward approved or published campaign metrics. These clips require a visual/story recut; seven different licensed audio recordings have been verified for new revisions.",
+  "campaign": "morrow-wish-actual-game-outcome-hook-v3-20261121",
+  "description": "Seven distinctly edited gameplay highlights, each opening on a verified win, defeat, finisher or outcome; cropped to native 9:16 aspect without stretch. Each has its own licensed song.",
   "verifiedAt": "2026-11-21T06:35:04Z",
   "generatorRuns": [
     44875411934,
@@ -9,84 +9,102 @@
   "games": [
     {
       "slug": "pawsibly-innocent",
-      "video": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
-      "cover": "/promo/pawsibly-innocent/viral-gameplay-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/pawsibly-innocent/hook-v3-20261121.mp4",
+      "cover": "/promo/pawsibly-innocent/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/pawsibly-innocent/hook-v3-review-1.jpg",
+        "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
+        "/promo/pawsibly-innocent/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     },
     {
       "slug": "cat-bond",
-      "video": "/promo/cat-bond/viral-gameplay-20261121.mp4",
-      "cover": "/promo/cat-bond/viral-gameplay-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/cat-bond/hook-v3-20261121.mp4",
+      "cover": "/promo/cat-bond/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/cat-bond/hook-v3-review-1.jpg",
+        "/promo/cat-bond/hook-v3-review-2.jpg",
+        "/promo/cat-bond/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     },
     {
       "slug": "tiny-town",
-      "video": "/promo/tiny-town/highlight-20261121.mp4",
-      "cover": "/promo/tiny-town/highlight-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/tiny-town/hook-v3-20261121.mp4",
+      "cover": "/promo/tiny-town/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/tiny-town/hook-v3-review-1.jpg",
+        "/promo/tiny-town/hook-v3-review-2.jpg",
+        "/promo/tiny-town/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     },
     {
       "slug": "elsewhere",
-      "video": "/promo/elsewhere/highlight-20261121.mp4",
-      "cover": "/promo/elsewhere/highlight-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/elsewhere/hook-v3-20261121.mp4",
+      "cover": "/promo/elsewhere/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/elsewhere/hook-v3-review-1.jpg",
+        "/promo/elsewhere/hook-v3-review-2.jpg",
+        "/promo/elsewhere/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     },
     {
       "slug": "flip-dash",
-      "video": "/promo/flip-dash/highlight-20261121.mp4",
-      "cover": "/promo/flip-dash/highlight-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/flip-dash/hook-v3-20261121.mp4",
+      "cover": "/promo/flip-dash/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/flip-dash/hook-v3-review-1.jpg",
+        "/promo/flip-dash/hook-v3-review-2.jpg",
+        "/promo/flip-dash/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     },
     {
       "slug": "parcel-panic",
-      "video": "/promo/parcel-panic/highlight-20261121.mp4",
-      "cover": "/promo/parcel-panic/highlight-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/parcel-panic/hook-v3-20261121.mp4",
+      "cover": "/promo/parcel-panic/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/parcel-panic/hook-v3-review-1.jpg",
+        "/promo/parcel-panic/hook-v3-review-2.jpg",
+        "/promo/parcel-panic/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     },
     {
       "slug": "pocket-aquarium",
-      "video": "/promo/pocket-aquarium/highlight-20261121.mp4",
-      "cover": "/promo/pocket-aquarium/highlight-20261121.jpg",
-      "production": "needs-recut",
-      "approved": false,
-      "socialRelease": "draft-paused"
+      "video": "/promo/pocket-aquarium/hook-v3-20261121.mp4",
+      "cover": "/promo/pocket-aquarium/hook-v3-20261121.jpg",
+      "reviewFrames": [
+        "/promo/pocket-aquarium/hook-v3-review-1.jpg",
+        "/promo/pocket-aquarium/hook-v3-review-2.jpg",
+        "/promo/pocket-aquarium/hook-v3-review-3.jpg"
+      ],
+      "production": "review-ready",
+      "approvedForSocial": false
     }
   ],
   "montage": {
-    "video": "/promo/morrow-wish-seven-games-20261121.mp4",
-    "cover": "/promo/morrow-wish-seven-games-20261121.jpg",
-    "status": "needs-recut",
-    "channels": [
-      "youtube",
-      "tiktok",
-      "instagram",
-      "bluesky"
-    ],
-    "verifiedFromWorkflowRun": 44876285204,
+    "status": "rejected",
     "approved": false,
-    "socialRelease": "draft-paused"
+    "video": null
   },
   "cta": "https://morrowwish.vercel.app/",
-  "status": "rejected-shorts-paused-no-automatic-publishing",
+  "status": "v3-seven-reels-created-under-review-not-yet-social-posted",
   "release": {
-    "videosApproved": 0,
-    "postsScheduled": 0,
+    "newReelsGenerated": 7,
+    "oldPostsPaused": 25,
     "postsActuallyPublished": 0,
-    "postsPausedAsDrafts": 25,
-    "oldPublishedShortsExcluded": true,
-    "uniqueSongSourcesVerified": 7,
-    "verifiedMusicWorkflowRun": 44877966871
+    "postsScheduledThisCampaign": 0,
+    "oldVideoViewsExcluded": true,
+    "source": "fresh browser gameplay and actual video frames"
   }
 }
