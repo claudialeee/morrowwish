@@ -1332,6 +1332,12 @@ class CaptureBattle {
     const f=this.me(),skill=f.ultSkill;
     this.ult=0;
     this.ultCd=ULT_COOLDOWN_SECONDS;
+    // DARK elemental ult (虚吞/voidMaw) manifests as the 破坏死光 sweeping death-ray,
+    // which plays on its OWN timeline (no arena-freeze cinematic) and deals its
+    // damage across the sweep rather than in one deferred detonation.
+    if(skill&&skill.ultCost>0&&skill.element==='dark'){
+      return this.castDeathRay(f,skill);
+    }
     f.inv=2.2;                                   // invulnerable through the whole cinematic
     // FULL-SCREEN ULTIMATE CINEMATIC: freeze the arena, play a 3s element-themed
     // sequence, and detonate at the climax. The heavy lifting (damage) still runs
@@ -1401,6 +1407,184 @@ class CaptureBattle {
     const elapsed=c.max-c.t;
     if(!c.impacted && elapsed>=c.impactAt){ c.impacted=true; this.fireUltimatePayload(); }
     if(c.t<=0) this.ultCinematic=null;
+  }
+
+  // ---------------- 破坏死光 · DESTRUCTION DEATH-RAY (signature ULT VFX) ----------------
+  // A wide charged beam that fires from the caster and SWEEPS a ~120° arc. Runs on
+  // its OWN timeline (no arena-freeze cinematic): charge-up tell (~0.5s) → fire snap
+  // (flash + shake) → ease-in-out sweep (~1.2s) → cut-off collapse (~0.3s). Enemies
+  // the beam crosses take damage over the sweep, throttled per-enemy so it reads as a
+  // continuous ray rather than a 60Hz one-shot. Element-tinted; scorch lingers on a
+  // persistent accumulation canvas composited under the beam.
+  castDeathRay(f, skill){
+    if(!f||!f.alive)return false;
+    const color=this.elemColor(skill?skill.element:'dark');
+    // Aim the SWEEP so it rakes across the pack: centre on the live-enemy centroid
+    // (fallback to the nearest enemy, then current aim) and swing ±60° around it.
+    const live=this.liveEnemies();
+    let cx=f.x+Math.cos(this.aim)*200, cy=f.y+Math.sin(this.aim)*200;
+    if(live.length){
+      cx=live.reduce((s,e)=>s+e.x,0)/live.length;
+      cy=live.reduce((s,e)=>s+e.y,0)/live.length;
+    }
+    const centre=Math.atan2(cy-f.y,cx-f.x);
+    const half=Math.PI*120/360/2;                 // half of a 120° arc
+    // Sweep from the side the pack is NOT weighted toward, so the beam ends ON them.
+    const start=centre-half, end=centre+half;
+    const chargeDur=0.5, sweepDur=1.2, cutoffDur=0.3;
+    this.deathRay={
+      ox:f.x, oy:f.y, color, element:skill?skill.element:'dark', skill:skill||{element:'dark'},
+      dmg:f.dmg*((skill&&skill.power)||2.4),       // per-hit base (throttled, so NOT a one-shot)
+      caster:f, start, end, age:0,
+      chargeDur, sweepDur, cutoffDur, total:chargeDur+sweepDur+cutoffDur,
+      ang:start, L:0, w1:0, scorch:null, sctx:null,
+    };
+    f.inv=Math.max(f.inv, this.deathRay.total+0.1);   // safe through the whole beam
+    this.shakeT=Math.max(this.shakeT,0.5);            // fire snap shake (decays in update)
+    this.flash=Math.max(this.flash,0.35);
+    this.slowmo=Math.max(this.slowmo,0.25);
+    this.vfx.ring(f.x,f.y,{r0:10,vr:340,life:.5,color,width:7});
+    this.vfx.burst(f.x,f.y,{count:14,color,speed:200,life:.5,r:3});
+    window.MorrowwishAudio?.effect?.('ultimate');
+    this.markMoveSeen(f,skill);
+    this.lastUltimate={skill:(skill&&skill.id)||'deathray',element:this.deathRay.element,hits:0};
+    window.arcadeMetric?.('bond_signature_ultimate',{skill:(skill&&skill.id)||'deathray',rarity:GameData.speciesById(f.cat.species).rarity,shape:'deathray'});
+    return true;
+  }
+  // Signed ray→arena-box distance (so the beam tip / impact blob sits at the edge).
+  _rayToBounds(ox,oy,ang){
+    const x0=BATTLE_MARGIN.side, x1=this.W-BATTLE_MARGIN.side;
+    const y0=this.topMargin, y1=this.H-this.bottomMargin;
+    const cx=Math.cos(ang), cy=Math.sin(ang); let best=Infinity;
+    if(Math.abs(cx)>1e-4){ for(const bx of [x0,x1]){ const t=(bx-ox)/cx; if(t>1){ const y=oy+cy*t; if(y>=y0-40&&y<=y1+40)best=Math.min(best,t); } } }
+    if(Math.abs(cy)>1e-4){ for(const by of [y0,y1]){ const t=(by-oy)/cy; if(t>1){ const x=ox+cx*t; if(x>=x0-40&&x<=x1+40)best=Math.min(best,t); } } }
+    return Number.isFinite(best)?best:Math.hypot(this.W,this.H);
+  }
+  // Current beam geometry for THIS frame (shared by damage + render). Returns null
+  // outside the active phases so nothing draws/hurts during pure charge/after cutoff.
+  _deathRayFrame(){
+    const r=this.deathRay; if(!r)return null;
+    const a=r.age;
+    let phase, firing=false, intensity=0, sweepT=0;
+    if(a<r.chargeDur){ phase='charge'; intensity=a/r.chargeDur; }
+    else if(a<r.chargeDur+r.sweepDur){ phase='sweep'; firing=true; intensity=1; sweepT=(a-r.chargeDur)/r.sweepDur; }
+    else if(a<r.total){ phase='cutoff'; intensity=1-(a-r.chargeDur-r.sweepDur)/r.cutoffDur; }
+    else { phase='done'; }
+    const ease=sweepT<0.5?2*sweepT*sweepT:1-Math.pow(-2*sweepT+2,2)/2;   // ease-in-out
+    const ang=r.start+(r.end-r.start)*ease;
+    const L=firing||phase==='cutoff'?this._rayToBounds(r.ox,r.oy,ang):this._rayToBounds(r.ox,r.oy,ang)*0.5;
+    // Far half-width swells over the charge, holds through the sweep, snaps to the
+    // core on cut-off. Near width stays slim so the beam reads as a tapered lance.
+    const w1=(26*Math.min(1,intensity))*(phase==='cutoff'?Math.max(0.12,intensity):1);
+    r.ang=ang; r.L=L; r.w1=w1;
+    return {phase,firing,intensity,sweepT,ang,L,w1,w0:Math.max(3,w1*0.4)};
+  }
+  // Advance the death-ray: sweep damage (throttled per enemy) + lifetime.
+  tickDeathRay(dt){
+    const r=this.deathRay; if(!r||this.done)return;
+    r.age+=dt;
+    const fr=this._deathRayFrame();
+    if(fr&&fr.firing){
+      const cosA=Math.cos(fr.ang), sinA=Math.sin(fr.ang);
+      for(const e of this.liveEnemies()){
+        e._drayCd=Math.max(0,(e._drayCd||0)-dt);
+        const dx=e.x-r.ox, dy=e.y-r.oy;
+        const along=dx*cosA+dy*sinA;                       // projection onto beam axis
+        const perp=Math.abs(-dx*sinA+dy*cosA);             // distance from centreline
+        if(along<0||along>fr.L)continue;
+        if(perp>fr.w1+(e.r||18)*0.55+10)continue;          // inside the beam body
+        if(e._drayCd>0)continue;
+        e._drayCd=0.14;                                    // ~7 ticks/sec per enemy, never 60×
+        this.resolveHit(e,'me',r.skill,r.dmg*0.3,e.x,e.y); // status + rewind still apply via skill
+        if(this.lastUltimate)this.lastUltimate.hits++;
+      }
+    }
+    if(!fr||fr.phase==='done')this.deathRay=null;
+  }
+  // Render the death-ray: lingering scorch (under) + layered additive beam (over).
+  // NO shadowBlur anywhere — the stacked 'lighter' quads ARE the glow.
+  drawDeathRay(ctx){
+    const r=this.deathRay; if(!r)return;
+    const fr=this._deathRayFrame(); if(!fr)return;
+    const { W, H }=this, hue=_hex(r.color), light=mix(r.color,'#ffffff',0.5);
+    const rgb=`${hue[0]},${hue[1]},${hue[2]}`;
+    const ox=r.ox, oy=r.oy;
+
+    // ---- 1) lingering SCORCH ARC on a persistent accumulation canvas ----
+    if(typeof document!=='undefined'&&document.createElement){
+      if(!r.scorch){ try{ const c=document.createElement('canvas'); c.width=W; c.height=H; r.scorch=c; r.sctx=c.getContext('2d'); }catch(e){ r.scorch=null; } }
+      if(r.sctx){
+        const s=r.sctx;
+        s.globalCompositeOperation='destination-out';       // slow fade of old wedges
+        s.fillStyle='rgba(0,0,0,0.035)'; s.fillRect(0,0,W,H);
+        if(fr.firing){                                       // ONE wedge per frame at current angle
+          s.globalCompositeOperation='source-over';
+          s.fillStyle='rgba(34,10,46,0.5)';
+          s.beginPath(); s.moveTo(ox,oy);
+          s.arc(ox,oy,fr.L,fr.ang-0.05,fr.ang+0.05); s.closePath(); s.fill();
+        }
+        s.globalCompositeOperation='source-over';
+        ctx.save(); ctx.globalAlpha=0.55; ctx.drawImage(r.scorch,0,0); ctx.restore();
+      }
+    }
+
+    ctx.save();
+    ctx.translate(ox,oy); ctx.rotate(fr.ang);
+    const L=fr.L, w0=fr.w0, w1=fr.w1;
+    const quad=(a,b)=>{ ctx.beginPath(); ctx.moveTo(0,-a); ctx.lineTo(L,-b); ctx.lineTo(L,b); ctx.lineTo(0,a); ctx.closePath(); ctx.fill(); };
+    // cross gradient across local Y: transparent edge → bright spine → transparent edge
+    const crossGrad=(span,edge,spine)=>{ const g=ctx.createLinearGradient(0,-span,0,span); g.addColorStop(0,edge); g.addColorStop(0.5,spine); g.addColorStop(1,edge); return g; };
+    ctx.globalCompositeOperation='lighter';
+    // ---- 2a) outer aura (~1.6× wide, hue, low alpha) ----
+    ctx.globalAlpha=0.2*fr.intensity;
+    ctx.fillStyle=crossGrad(w1*1.6+4,`rgba(${rgb},0)`,`rgba(${rgb},0.55)`);
+    quad(w0*1.6+3,w1*1.6+4);
+    // ---- 2b) body glow (~1.2× wide, lighter hue) ----
+    ctx.globalAlpha=0.5*fr.intensity;
+    ctx.fillStyle=crossGrad(w1*1.2+2,`rgba(${rgb},0)`,light);
+    quad(w0*1.2+2,w1*1.2+2);
+    // ---- 2c) CORE: thin tapered white spine ----
+    ctx.globalAlpha=fr.intensity;
+    ctx.fillStyle=crossGrad(Math.max(2,w1*0.5),'rgba(223,240,255,0)','#ffffff');
+    quad(Math.max(2,w0*0.5),Math.max(2,w1*0.5));
+    // ---- 3) wobbling plasma edges (scrolling sin-sum noise), capped step ----
+    if(fr.firing){
+      const t=this.t;
+      for(const sgn of [-1,1]){
+        ctx.beginPath();
+        for(let x=0;x<=L;x+=12){
+          const p=x/Math.max(1,L);
+          const hw=(w0+(w1-w0)*p);
+          const wob=Math.sin(x*0.05-t*18)*2.4+Math.sin(x*0.013+t*9)*1.6;
+          const y=sgn*(hw+wob);
+          x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        }
+        ctx.globalAlpha=0.5*fr.intensity; ctx.strokeStyle=`rgba(${rgb},0.9)`; ctx.lineWidth=3; ctx.stroke();
+        ctx.globalAlpha=0.9*fr.intensity; ctx.strokeStyle='#ffffff'; ctx.lineWidth=1.2; ctx.stroke();
+      }
+    }
+    // ---- 4) bright moving IMPACT blob at the beam tip (L,0) ----
+    const pulse=1+0.18*Math.sin(this.t*30);
+    const blobR=(w1*1.7+10)*pulse*fr.intensity;
+    if(blobR>1){
+      const g=ctx.createRadialGradient(L,0,0,L,0,blobR);
+      g.addColorStop(0,'#ffffff'); g.addColorStop(0.35,`rgba(${rgb},0.9)`); g.addColorStop(1,`rgba(${rgb},0)`);
+      ctx.globalAlpha=fr.intensity; ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(L,0,blobR,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+    // origin muzzle glow
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    const og=ctx.createRadialGradient(ox,oy,0,ox,oy,34*fr.intensity+6);
+    og.addColorStop(0,'#ffffff'); og.addColorStop(0.5,`rgba(${rgb},0.8)`); og.addColorStop(1,`rgba(${rgb},0)`);
+    ctx.globalAlpha=fr.intensity; ctx.fillStyle=og;
+    ctx.beginPath(); ctx.arc(ox,oy,34*fr.intensity+6,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    // charge-up tell: a faint aim line sweeping to the start angle before the fire snap
+    if(fr.phase==='charge'){
+      ctx.save(); ctx.globalAlpha=0.3*fr.intensity; ctx.strokeStyle=r.color; ctx.lineWidth=1.5; ctx.setLineDash([6,10]);
+      ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(ox+Math.cos(fr.ang)*fr.L,oy+Math.sin(fr.ang)*fr.L); ctx.stroke(); ctx.restore();
+    }
   }
   switchTo(i) {
     if (i === this.active || !this.team[i] || !this.team[i].alive) return;
@@ -1596,6 +1780,7 @@ class CaptureBattle {
     if (this.comboFlash > 0) this.comboFlash -= dt;
     if(this.duoCinematic){this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);if(this.duoCinematic.t===0)this.duoCinematic=null;}
     this.tickDuoField(dt);
+    this.tickDeathRay(dt);
     if(this.duoRun){
       this.duoRun.age+=dt;
       if(this.duoRun.age>=this.duoRun.duration)this.duoRun=null;
@@ -2447,6 +2632,7 @@ class CaptureBattle {
     // vfx under-layer (trails, rings, muzzle)
     this.vfx.draw(ctx);
     this.drawSkillStrokes(ctx);
+    this.drawDeathRay(ctx);                        // 破坏死光 sweeping beam (additive + scorch)
 
     // projectiles with glow
     for (const p of this.projectiles) {
