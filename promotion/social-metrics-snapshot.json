@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 1,
-  "capturedAt": "2026-11-20",
-  "nativeWindow": "2026-11-18 through 2026-11-20",
+  "schemaVersion": 2,
+  "capturedAt": "2026-11-21",
+  "nativeWindow": "Approved Morrow Wish short-video campaign only; no accepted/published videos at this snapshot",
   "source": "Metricool Morrow Wish connected account",
   "refreshMode": "manual",
-  "note": "Manual provider snapshot as of 2026-11-20. Native platform view totals are not live; null=not retrieved. Old blurry videos must never be reused.",
+  "note": "Older social videos were expressly excluded from the studio dashboard. The 25 rejected Nov 21–28 videos are paused drafts, not published or approved. Null native views mean no eligible, verified data; never copy account-wide views or historic counts.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -39,36 +39,42 @@
     {
       "id": "youtube",
       "priority": "P1",
-      "phase": "testing",
-      "published": 7,
-      "failed": 0,
-      "views": null
+      "phase": "quality-review-paused",
+      "published": 0,
+      "failed": null,
+      "views": null,
+      "metricScope": "approved-new-short-videos",
+      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet."
     },
     {
       "id": "tiktok",
       "priority": "P1",
-      "phase": "testing",
-      "published": 5,
-      "failed": 2,
-      "views": null
+      "phase": "quality-review-paused",
+      "published": 0,
+      "failed": null,
+      "views": null,
+      "metricScope": "approved-new-short-videos",
+      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet."
     },
     {
       "id": "instagram",
       "priority": "P1",
-      "phase": "testing",
-      "published": 6,
-      "failed": 0,
-      "views": 273,
-      "reach": 247
+      "phase": "quality-review-paused",
+      "published": 0,
+      "failed": null,
+      "views": null,
+      "metricScope": "approved-new-short-videos",
+      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet."
     },
     {
       "id": "bluesky",
       "priority": "P2",
-      "phase": "published-new-account",
-      "published": 1,
-      "failed": 0,
+      "phase": "quality-review-paused",
+      "published": 0,
+      "failed": null,
       "views": null,
-      "note": "New @morrowwishgames.bsky.social account has one verified public Cat Bond post on 2026-11-20; native post views unavailable. The previous ruckusbutton profile must not be mixed."
+      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet.",
+      "metricScope": "approved-new-short-videos"
     },
     {
       "id": "search",
@@ -78,5 +84,12 @@
       "failed": null,
       "views": null
     }
-  ]
+  ],
+  "metricScope": {
+    "type": "approved-short-videos-only",
+    "campaignTagPrefix": "mw-shorts-v2",
+    "historicalExcluded": true,
+    "rule": "Only count per-post native views and publications verified for approved new reels. Older YouTube/TikTok/Instagram/Bluesky posts and their aggregate account totals are excluded.",
+    "activeApprovedPosts": 0
+  }
 }
