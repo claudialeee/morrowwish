@@ -19,6 +19,10 @@
   dock.setAttribute('role','group');dock.setAttribute('aria-label','Background music and sound effects');
   dock.append(music,effects);
   header.appendChild(dock);
+  if(route==='pawsibly-innocent'){
+   const permission=document.getElementById('musicPermission');
+   if(permission)header.appendChild(permission);
+  }
   const css=document.createElement('style');
   css.textContent=`
   .mw-audio-dock{display:flex!important;align-items:center;justify-content:flex-end;flex:0 0 auto;gap:6px;margin-left:auto;max-width:100%;z-index:30}
