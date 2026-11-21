@@ -1850,3 +1850,17 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
   min-width:26px!important;height:19px!important;font-size:10px!important
  }
 }
+
+/* Explore maps must not inherit floating garden quests, collection bubbles,
+   shop actions, or yard-surprise cards. Keep the map-specific controls and
+   the region's own in-canvas discovery prompts visible. */
+body.cb-exploring #first-quest,
+body.cb-exploring #collection-goal,
+body.cb-exploring #yard-duo-status,
+body.cb-exploring #yard-surprise,
+body.cb-exploring #yard-cat-switch,
+body.cb-exploring #yard-actions,
+body.cb-exploring #hud,
+body.cb-exploring #tabbar{
+ display:none!important;
+}

@@ -25,7 +25,11 @@ try{
    await page.locator('#panel.open .dex-cell').first().click();
    await page.evaluate(()=>{
     const g=window.__game;
-    g.scene='map';g.keys={};
+    g.keys={};
+    // Follow the REAL map navigation: it hides yard chrome and enables
+    // cb-exploring before entering the region. A direct scene assignment
+    // would produce a false screenshot with garden buttons covering the map.
+    g.openWorldMap();UI.closeAll();
     WorldMap.onEncounter(()=>{});WorldMap.enterRegion('sakura');
    });
    const mapStats=await page.evaluate(()=>{
@@ -45,12 +49,17 @@ try{
       actualWild:actual.slice(0,-1),
       lead:scales.at(-1),wild:scales.slice(0,-1),
       x:WorldMap.view.px,y:WorldMap.view.py,
-      canvasWidth:g.W,canvasHeight:g.H};
+      canvasWidth:g.W,canvasHeight:g.H,
+      leakedYardUi:['hud','tabbar','yard-actions','first-quest','collection-goal','yard-duo-status','yard-surprise']
+       .filter(id=>{const el=document.getElementById(id);return el&&getComputedStyle(el).display!=='none'&&
+         el.getBoundingClientRect().width>0&&el.getBoundingClientRect().height>0;})};
    });
    assert.ok(mapStats.lead>=.95&&mapStats.lead<=1,
       'Map lead must be proportionate and visible: '+JSON.stringify(mapStats));
    assert.ok(mapStats.wild.length>=1&&mapStats.wild.every(s=>s>.70&&s<=1),
       'Wild cats must remain distinguishable from environment');
+   assert.deepEqual(mapStats.leakedYardUi,[],
+      'Yard-only buttons/prompts must not obscure exploration: '+JSON.stringify(mapStats.leakedYardUi));
    await page.screenshot({path:'/tmp/cat-bond-scale-'+spec.name+'-map.png'});
    const battleStats=await page.evaluate(()=>{
     const g=window.__game;
