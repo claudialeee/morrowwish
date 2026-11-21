@@ -20,8 +20,7 @@ class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
     this.game = game;
     this.W = game.W; this.H = game.H;
-    this.topMargin = this.H<540&&this.W>this.H ? Math.max(58,Math.min(105,this.H*.26)) : Math.max(85,Math.min(238,this.H*.40));
-    this.bottomMargin = this.H<540&&this.W>this.H ? Math.max(38,Math.min(64,this.H*.15)) : Math.max(54,Math.min(112,this.H*.16));
+    this._computeArenaMargins();
     this.wild = wildSpecies;
     this.rar = GameData.RARITY[wildSpecies.rarity];
     this.rarIdx = ['N', 'R', 'SR', 'SSR'].indexOf(wildSpecies.rarity);
@@ -74,8 +73,10 @@ class CaptureBattle {
     this.duo=window.CatRelations?.active(cats)||null;
     this.duoCharge=this.duo?12:0;this.duoCd=0;this.duoUses=0;   // bond support starts low + fills slow (bigger payoff than the ult)
 
-    // --- player runtime state: spread the whole team on the LEFT so all fight ---
-    this.team.forEach((f,i)=>{f.x=this.W*(.18+(i%2)*.1);f.y=this.H*(.55+i*.085);});
+    // --- player runtime state: spread the team on the LEFT, INSIDE the playable band
+    // (above the control cluster) so they're never hidden behind the skill buttons ---
+    this.team.forEach((f,i)=>{const top=this.topMargin,bot=this.H-this.bottomMargin;
+      f.x=this.W*(.18+(i%2)*.1);f.y=top+(bot-top)*(0.45+i*0.12);});
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
@@ -472,13 +473,25 @@ class CaptureBattle {
     ctx.restore();
   }
 
+  // Arena vertical bounds. The TOP band holds the squad panel + enemy HP; the BOTTOM
+  // band must clear the move-bar / skill-button cluster so combat never happens UNDER
+  // the controls (portrait phones were pushing the fight into the hidden bottom-right).
+  _computeArenaMargins(){
+    const H=this.H, W=this.W, shortLandscape=H<540&&W>H;
+    if(shortLandscape){
+      this.topMargin=Math.max(58,Math.min(105,H*.26));
+      this.bottomMargin=Math.max(70,Math.min(150,H*.22));      // clear the landscape control strip
+    }else{
+      this.topMargin=Math.max(85,Math.min(238,H*.34));
+      // portrait: the skill cluster + move bar eat the bottom ~26% — keep the fight above it
+      this.bottomMargin=Math.max(150,Math.min(320,H*.26));
+    }
+    if(this.topMargin+this.bottomMargin>H-120)this.topMargin=Math.max(36,H-this.bottomMargin-120);
+  }
   // Keep the combat field available when a phone is rotated mid-encounter.
   onResize(W,H){
     const oldW=this.W||W,oldH=this.H||H;this.W=W;this.H=H;
-    const shortLandscape=H<540&&W>H;
-    this.topMargin=shortLandscape?Math.max(58,Math.min(105,H*.26)):Math.max(85,Math.min(238,H*.40));
-    this.bottomMargin=shortLandscape?Math.max(38,Math.min(64,H*.15)):Math.max(54,Math.min(112,H*.16));
-    if(this.topMargin+this.bottomMargin>H-96)this.topMargin=Math.max(36,H-this.bottomMargin-96);
+    this._computeArenaMargins();
     const minX=Math.min(BATTLE_MARGIN.side,W*.15),maxX=Math.max(minX,W-minX);
     for(const f of [...this.team,...this.enemies]){
       f.x=clamp(f.x*W/oldW,minX,maxX);
@@ -545,7 +558,8 @@ class CaptureBattle {
       role:rIdx>=2?'elite':(i%3===0?'ambusher':i%3===1?'sharpshooter':'skirmisher'),
       phase:0,challenge,
       maxhp, hp: maxhp,
-      x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
+      // place enemies inside the PLAYABLE band (above the control cluster), upper-right
+      x: this.W * col, y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(0.30+(i%2)*0.22);})(), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
       shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,swipeCd:1,
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
