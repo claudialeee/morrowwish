@@ -843,9 +843,15 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  for(const id of ['menuButton','menuButtonLabel','menuClose','quickHelp','stageControls','tool','visionTip','guardIntent','bonusQuick','bonusQuickText','bonusQuickProgress',
                  'levels','wardrobe','skinHint','score','moves','starTotal','collection','hearts','fishCount',
                  'achievementCount','relicGallery','achievementsGrid','badgeHighlights','howTitle',
-                 'menuLanguage','menuAudio','restart','roomNum','roomTag','overlay']){
+                 'restart','roomNum','roomTag','overlay']){
   if(!stage.includes('id="'+id+'"'))throw new Error('Cat game stage lost control '+id);
  }
+ if(stage.includes('id="menuLanguage"')||stage.includes('id="menuAudio"')||stage.includes('id="settingsTitle"'))
+  throw new Error('Cat Help must not duplicate header language or sound controls');
+ const audioDock=fs.readFileSync('public/audio-dock.js','utf8');
+ if(!html.includes('class="cat-sound-controls"')||!html.includes('id="music"')||!html.includes('id="sound"')||
+    !audioDock.includes("route==='pawsibly-innocent'?document.querySelector('.cat-sound-controls')"))
+  throw new Error('Cat music and sound controls must live together in the page header');
  if(!stage.includes('data-game-tab="rooms"')||!stage.includes('data-game-tab="album"')||
     !stage.includes('data-game-tab="badges"')||!stage.includes('data-game-tab="help"'))
   throw new Error('Game menu tabs missing');
