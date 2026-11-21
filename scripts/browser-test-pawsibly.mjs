@@ -35,19 +35,16 @@ try{
  console.log('Recorded cat song ready before user input:',JSON.stringify(preloaded));
  assert.equal(initial.loaded,true,'Game Javascript must initialize');
  const ruleLayout=await page.evaluate(()=>{
-  const board=document.getElementById('board')?.getBoundingClientRect();
-  const action=document.getElementById('tool')?.getBoundingClientRect();
-  return {boardTop:board?.top,actionBottom:action?.bottom,duplicateRules:document.querySelectorAll('.explainer').length,
-   ownerState:!!document.getElementById('guardIntent'),
-   album:!!document.getElementById('relicGallery'),badges:!!document.getElementById('achievementsGrid'),
-   visibleBadges:!!document.getElementById('badgeHighlights'),
-   helpInsideSidebar:!!document.querySelector('aside.panel .sidebar-extra #howTitle')};
+  const stage=document.getElementById('stage'),board=document.getElementById('board'),tool=document.getElementById('tool'),top=document.querySelector('.in-game-top');
+  const br=board.getBoundingClientRect(),tr=tool.getBoundingClientRect();
+  return {boardTop:br.top,boardBottom:br.bottom,toolTop:tr.top,topBottom:top.getBoundingClientRect().bottom,
+   noDuplicateRules:!document.querySelector('.explainer'),menuHidden:document.getElementById('gameMenu').hidden,
+   inFrame:['board','tool','heistStatus','gameMenu','menuButton','guardIntent'].every(id=>stage.contains(document.getElementById(id))),
+   tabs:document.querySelectorAll('[data-game-tab]').length};
  });
- console.log('Compact game cockpit:',JSON.stringify(ruleLayout));
- assert.equal(ruleLayout.duplicateRules,0,'Duplicate rules must not appear below the game');
- assert.ok(ruleLayout.actionBottom<=ruleLayout.boardTop,'The yarn action must remain directly above the board');
- assert.ok(ruleLayout.ownerState&&ruleLayout.album&&ruleLayout.badges&&ruleLayout.visibleBadges&&ruleLayout.helpInsideSidebar,
-  'Owner status, named collection, achievements and optional help must all be integrated');
+ console.log('Single-screen cat geometry:',JSON.stringify(ruleLayout));
+ assert.ok(ruleLayout.noDuplicateRules&&ruleLayout.inFrame&&ruleLayout.tabs===5&&ruleLayout.menuHidden,'All controls and tabs must live in a single game frame');
+ assert.ok(ruleLayout.topBottom<=ruleLayout.boardTop+2&&ruleLayout.toolTop>=ruleLayout.boardBottom-2,'HUD and controls must not cover playable map tiles');
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
  assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
@@ -60,6 +57,14 @@ try{
  console.log('Click movement:',JSON.stringify({before,after}));
  assert.notDeepEqual(after,before,'Mouse click must move the cat');
  assert.equal(errors.length,0,'No uncaught exception after clicking');
+ await page.locator('#menuButton').click();
+ assert.equal(await page.locator('#gameMenu').isVisible(),true,'Menu opens in the game frame');
+ await page.locator('[data-game-tab="album"]').click();
+ assert.equal(await page.locator('[data-tab-panel="album"]').isVisible(),true,'Album available inside game');
+ await page.locator('[data-game-tab="badges"]').click();
+ assert.equal(await page.locator('[data-tab-panel="badges"]').isVisible(),true,'Achievements available inside game');
+ await page.locator('#menuClose').click();
+ assert.equal(await page.locator('#gameMenu').isVisible(),false,'Closing menu resumes gameplay');
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(110);
  const zh=await page.evaluate(()=>({
   lang:document.documentElement.lang,
@@ -74,8 +79,8 @@ try{
  console.log('Chinese switch:',JSON.stringify(zh));
  assert.equal(zh.lang,'zh-CN');
  const chineseContent=await page.evaluate(()=>({
-  title:document.getElementById('gameTitle')?.innerText,
-  byline:document.getElementById('studioByline')?.innerText,
+  title:document.getElementById('gameTitle')?.textContent,
+  byline:document.getElementById('studioByline')?.textContent,
   documentTitle:document.title,
   rules:document.getElementById('howTitle')?.innerText,
   englishWords:(document.querySelector('main')?.innerText.match(/[A-Za-z]{3,}/g)||[]),
@@ -286,6 +291,9 @@ try{
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
  assert.match(await page.locator('#yarnExplain').textContent(),/主人|毛线/,'Chinese explanation for yarn is clear');
  assert.match(await page.locator('#guardIntent').textContent(),/巡逻|分心|调查|搜索|追猫/,'Owner AI behavior must be explained in Chinese');
+ await page.locator('#menuButton').click();
+ await page.locator('[data-game-tab="help"]').click();
+ assert.equal(await page.locator('#menuAudio').isVisible(),true,'Audio settings accessible inside in-game help');
  const audioButton=page.locator('#sound');
  await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
@@ -331,7 +339,10 @@ try{
   });
   await policyPage.goto(url,{waitUntil:'load',timeout:40000});
   await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().blocked===true);
-  assert.equal(await policyPage.locator('#musicPermission').isVisible(),true,'Autoplay block must show a clear music start prompt');
+   assert.equal(await policyPage.evaluate(()=>!document.getElementById('musicPermission').hidden),true,'Autoplay fallback available');
+   await policyPage.locator('#menuButton').click();
+   await policyPage.locator('[data-game-tab="help"]').click();
+   assert.equal(await policyPage.locator('#musicPermission').isVisible(),true,'Fallback appears inside settings menu');
   await policyPage.locator('#musicPermission').click();
   await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().playing===true);
   await policyPage.waitForFunction(()=>window.MorrowwishCatMusic?.status().blocked===false&&document.getElementById('musicPermission')?.hidden===true);
@@ -361,7 +372,9 @@ try{
    assert.deepEqual(status.available,thresholds.map(t=>stars>=t),'Cat unlock gates must match the earned stars at '+stars);
    assert.ok(status.hint.length>8,'Wardrobe should show progress toward the next cat');
   }
-  await unlock.locator('#wardrobe .skin').nth(4).click();
+   await unlock.locator('#menuButton').click();
+   await unlock.locator('[data-game-tab="cats"]').click();
+   await unlock.locator('#wardrobe .skin').nth(4).click();
   const selected=await unlock.evaluate(()=>({
    cat:JSON.parse(localStorage.getItem('pawsibly-innocent-save-v1')).cat,
    active:[...document.querySelectorAll('#wardrobe .skin')].findIndex(b=>b.classList.contains('active')),
@@ -393,13 +406,13 @@ try{
       canvas:canvas&&{width:canvas.width,height:canvas.height},hud:document.getElementById('heistStatus')?.textContent,owner:document.getElementById('guardIntent')?.textContent,
       header:getComputedStyle(document.querySelector('.sitebar')).display,
       rules:document.querySelectorAll('.explainer').length,
-      sidebar:getComputedStyle(document.querySelector('aside.panel')).display,
+      menuHidden:document.getElementById('gameMenu').hidden,menuButton:!!document.getElementById('menuButton'),
       fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
       totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
    assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
    assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
-   assert.notEqual(v.sidebar,'none','CrazyGames mode should use the side space for compact mission, collection and badges');
+   assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
    assert.ok(v.hud?.includes('0/3')&&v.owner,'CrazyGames must show fish goal and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
