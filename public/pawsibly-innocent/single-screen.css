@@ -652,3 +652,38 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
  pointer-events:none!important;
 }
 #stage.outro-active #board{cursor:pointer!important}
+
+/* Always-visible home link in the top-left game header. */
+.single-screen-game .in-game-head-row .stage-left{
+ display:flex;align-items:center;gap:7px;flex:1 1 auto;min-width:0;
+}
+.single-screen-game .in-game-head-row .stage-left .sticker{
+ flex:1 1 auto;min-width:0;max-width:none!important;
+}
+.single-screen-game #stageHome{
+ display:inline-flex;align-items:center;justify-content:center;gap:4px;
+ min-height:39px;flex:0 0 auto;padding:0 10px;
+ border:1px solid #ead8df;border-radius:11px;background:#fffdfa;
+ color:#70516a;font:900 12px/1.1 Nunito,system-ui,sans-serif;
+ text-decoration:none;box-shadow:0 2px 5px #6d4f5e17;
+ cursor:pointer;white-space:nowrap;touch-action:manipulation;
+}
+.single-screen-game #stageHome:hover{background:#ffebf2;color:#914d77}
+.single-screen-game #stageHome:focus-visible{outline:3px solid #ac6c97;outline-offset:2px}
+.single-screen-game .stage-home-arrow{font-size:23px;line-height:1}
+@media(max-width:600px){
+ .single-screen-game .in-game-head-row .stage-left{gap:3px}
+ .single-screen-game #stageHome{width:39px;min-width:39px;height:39px;min-height:39px;padding:0}
+ .single-screen-game #stageHomeLabel{display:none}
+ .single-screen-game .in-game-head-row .stage-left .sticker{
+  min-width:0!important;max-width:none!important;padding:4px!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left .sticker b{font-size:9px}
+ .single-screen-game .in-game-head-row .heist-status{margin:0 3px}
+}
+@media(max-width:390px){
+ .single-screen-game .in-game-head-row .stage-left .sticker b{display:none}
+ .single-screen-game .in-game-head-row .stage-left .sticker{flex:0 1 auto}
+}
+#stage.outro-active #stageHome{visibility:visible!important;position:relative;z-index:16}
+html.cg-play #stageHome{display:none!important}
