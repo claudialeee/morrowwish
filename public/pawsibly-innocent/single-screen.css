@@ -287,3 +287,90 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
  .single-screen-game .sticker{max-width:31%}
  .single-screen-game #menuButton{min-width:74px!important}
 }
+
+/* Objectives-first single-screen layout: tutorial, owner awareness and the
+   optional quest appear ABOVE the map on desktop, phones and fullscreen. */
+.single-screen-game .in-game-top{
+ position:relative!important;display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;justify-content:flex-start!important;gap:0!important;
+ width:100%!important;min-width:0;box-sizing:border-box;padding:0!important;
+ background:linear-gradient(180deg,#fff9f3,#fff2ec)!important;
+}
+.single-screen-game .in-game-head-row{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ min-height:46px;padding:5px 10px;box-sizing:border-box;width:100%;
+}
+.single-screen-game .in-game-head-row>*{pointer-events:auto}
+.single-screen-game .in-game-head-row .sticker{min-width:0;max-width:37%}
+.single-screen-game .in-game-head-row .heist-status{flex-shrink:0}
+.single-screen-game .in-game-guidance{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ width:100%;min-width:0;box-sizing:border-box;padding:7px 11px;
+ border-top:1px solid #ecdad4;border-bottom:1px solid #ebd1c7;
+ background:linear-gradient(100deg,#fff9ec,#fff1e1);
+}
+.single-screen-game .in-game-guidance .stealth-help{
+ display:flex;flex:1 1 50%;min-width:0;align-items:flex-start;
+ flex-direction:column;gap:3px;margin:0;padding:0;
+}
+.single-screen-game .in-game-guidance #visionTip{
+ display:block;font-size:clamp(11px,1.5vw,14px);
+ line-height:1.24;font-weight:900;color:#6c455f;
+}
+.single-screen-game .in-game-guidance .guard-status{
+ display:flex;align-items:center;gap:5px;
+ font-size:clamp(9px,1.15vw,11px);line-height:1.2;color:#806d7f;
+}
+.single-screen-game .in-game-guidance #bonusQuick{
+ flex:0 1 43%;max-width:43%;min-height:38px;
+ margin:0!important;padding:6px 10px!important;
+ font-size:clamp(10px,1.25vw,13px)!important;
+ border-width:2px;border-radius:11px;
+ box-shadow:0 2px 0 #d4a14d70;
+}
+.single-screen-game .in-game-guidance #bonusQuickText{
+ overflow:hidden;text-overflow:ellipsis;white-space:normal;
+ line-height:1.14;max-height:2.3em;
+}
+.single-screen-game .in-game-guidance #bonusQuickProgress{font-size:10px}
+.single-screen-game .stealth-actionbar{
+ position:relative!important;box-sizing:border-box;
+ justify-content:center!important;align-items:center!important;
+ width:100%!important;min-height:53px!important;height:auto!important;
+ padding:5px 11px!important;gap:0!important;
+ background:linear-gradient(90deg,#fff8f3,#fff1f2)!important
+}
+.single-screen-game .stealth-actionbar .board-yarn{
+ min-width:170px!important;max-width:min(100%,360px)!important;min-height:43px!important;
+}
+@media(max-width:600px){
+ .single-screen-game .in-game-head-row{min-height:44px;padding:3px 6px;gap:4px}
+ .single-screen-game .in-game-head-row .sticker{max-width:34%}
+ .single-screen-game .in-game-guidance{
+  flex-wrap:wrap;gap:5px;padding:5px 8px 6px;align-items:stretch;
+ }
+ .single-screen-game .in-game-guidance .stealth-help{flex:1 1 100%;gap:2px}
+ .single-screen-game .in-game-guidance #visionTip{font-size:11px}
+ .single-screen-game .in-game-guidance .guard-status{font-size:10px}
+ .single-screen-game .in-game-guidance #bonusQuick{
+  flex:1 1 100%;max-width:100%;min-height:27px;
+  justify-content:flex-start;padding:3px 7px!important;
+  font-size:11px!important;
+ }
+ .single-screen-game .in-game-guidance #bonusQuickText{white-space:nowrap;max-height:none}
+ .single-screen-game .stealth-actionbar{min-height:50px!important;padding:4px 8px!important}
+ .single-screen-game .stealth-actionbar .board-yarn{min-width:145px!important;min-height:43px!important}
+}
+@media(max-width:370px){
+ .single-screen-game .in-game-head-row .sticker{max-width:32%}
+ .single-screen-game .in-game-head-row .heist-status{font-size:10px;padding:5px 4px}
+ .single-screen-game .in-game-guidance{padding:4px 7px 5px}
+}
+@media(max-height:500px) and (min-width:601px){
+ .single-screen-game .in-game-head-row{min-height:40px;padding:2px 8px}
+ .single-screen-game .in-game-guidance{min-height:0;padding:3px 9px;gap:8px}
+ .single-screen-game .in-game-guidance #visionTip{font-size:11px}
+ .single-screen-game .in-game-guidance .guard-status{font-size:10px}
+ .single-screen-game .in-game-guidance #bonusQuick{min-height:31px;padding:3px 8px!important}
+ .single-screen-game .stealth-actionbar{min-height:46px!important;padding:3px 8px!important}
+}
