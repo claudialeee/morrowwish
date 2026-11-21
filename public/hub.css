@@ -540,5 +540,6 @@ html[lang="zh-CN"] .about-section .about-copy p{
   .about-section .ceo-profile .ceo-description{font-size:12.5px}
 }
 
-/* Chinese About headline is now the studio tagline; avoid displaying it twice. */
-html[lang="zh-CN"] .about-section .about-copy h3{display:none}
+/* Both localized About headlines are the studio tagline; avoid repeating it in the intro. */
+html[lang="zh-CN"] .about-section .about-copy h3,
+html[lang="en"] .about-section .about-copy h3{display:none}
