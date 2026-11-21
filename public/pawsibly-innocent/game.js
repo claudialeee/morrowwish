@@ -168,7 +168,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
@@ -266,6 +266,21 @@ function updateDare(){
   metric("cat_dare_completed",{level:s.index+1,kind:dare.kind});
   if(!s.done){throwStars(s.cat,"#ffd78a");audio("fish");popup("bonus-completed")}
  }
+}
+function renderNewCatUnlocks(){
+ const panel=$("catUnlocks");if(!panel)return;
+ const newly=s?.winning&&Array.isArray(s.newCats)?s.newCats:[];
+ panel.hidden=newly.length===0;
+ if(!newly.length){panel.innerHTML="";return}
+ const zh=lang==="zh";
+ panel.innerHTML='<h3 class="new-cats-title">'+(zh?"新伙伴解锁！":"New cats unlocked!")+'</h3>'+
+  newly.map(i=>{
+   const name=TX[lang].skinNames[i],f=fur[i],equipped=save.cat===i;
+   return '<div class="new-cat-row"><span class="new-cat-face" style="--cat-fur:'+f[0]+';--cat-detail:'+f[1]+'"><span class="cat-portrait"><b>•ᴗ•</b></span></span>'+
+    '<span class="new-cat-copy"><strong>'+name+'</strong><small>'+et("ability")[i]+'</small></span>'+
+    '<button type="button" class="new-cat-equip" data-equip-cat="'+i+'"'+(equipped?' disabled':'')+'>'+
+    (equipped?(zh?"已换上":"Equipped"):(zh?"换上这只猫":"Equip cat"))+'</button></div>';
+  }).join("");
 }
 function resultLoot(){
  if(!s)return "";
@@ -475,7 +490,7 @@ function guardMove(){
  }
  if(s.curiosityCooldown>0)s.curiosityCooldown--;
  if(s.noise){
-  if(!s.yarnAnimating&&visible(s.cat)&&s.exposure>0){s.noise=null;s.alert=0}
+  if(!s.yarnAnimating&&visible(s.cat)){s.noise=null;s.alert=0}
   if(s.noise){target=soundApproachPoint(s.noise);s.guardMode="investigate";
   if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0;target=null}
   else s.alert--;
@@ -521,11 +536,12 @@ function guardMove(){
 // Later levels make sight, shadows, boxes and yarn meaningful choices.
 function detectionLimit(){return s.index===0&&!daily?4:s.index>=4?2:3}
 function updateStealthHUD(){
- const alert=$("pawsAlert");if(alert&&s){alert.hidden=s.exposure<=0;alert.textContent=lang==="zh"?"警戒 "+s.exposure+" / "+detectionLimit():"SPOTTED "+s.exposure+" / "+detectionLimit();}
+ const alert=$("pawsAlert");if(alert&&s){const seen=s.exposure>0&&visible();alert.hidden=!seen;alert.textContent=s.exposure>=detectionLimit()?(lang==="zh"?"危险！下一步仍暴露会被抓":"DANGER! Hide before next move"):(lang==="zh"?"被发现 "+s.exposure+" / "+detectionLimit():"SPOTTED "+s.exposure+" / "+detectionLimit());}
  const hud=document.querySelector?.("#cgStealthHUD");if(!hud||!s)return;
- const seen=s.exposure>0;
- hud.textContent=lang==="zh"?(seen?"被发现！快躲起来":"潜行中")+" · 小鱼 "+s.got+"/"+NEED
-  :(seen?"SPOTTED — HIDE!":"SNEAK MODE")+" · FISH "+s.got+"/"+NEED;
+ const seen=s.exposure>0&&visible();
+ const safeDistraction=s.yarnAnimating||["investigate","distracted","sleep"].includes(s.guardMode);
+ hud.textContent=lang==="zh"?(seen?(s.exposure>=detectionLimit()?"危险！再暴露一步就会被抓":"被发现！快躲起来"):(safeDistraction?"主人正在分心":"潜行中"))+" · 小鱼 "+s.got+"/"+NEED
+  :(seen?(s.exposure>=detectionLimit()?"DANGER — HIDE NOW!":"SPOTTED — HIDE!"):(safeDistraction?"OWNER DISTRACTED":"SNEAK MODE"))+" · FISH "+s.got+"/"+NEED;
  hud.classList.toggle("alert",seen);
  hud.setAttribute("aria-label",lang==="zh"?"警戒状态与小鱼数量":"Detection status and fish collected");
 }
@@ -533,12 +549,14 @@ function resolveDetection(){
  if(s.done)return;
  if(hidden(s.cat)||!visible()){
   if(s.dangerActive){s.dangerActive=false;if(s.invincible===0&&s.nearMisses<2){s.nearMisses++;addStat("nearMisses");s.score+=40;throwStars(s.cat,"#8ddbbc");audio("yarn");popup("closeCall");metric("cat_close_call",{level:s.index+1,score:s.score});}}
-  s.exposure=Math.max(0,s.exposure-1);return
+  // Breaking sight clears the alert, so the next sighting starts fresh.
+  s.exposure=0;return
  }
  s.dangerActive=true;s.everSpotted=true;
  const limit=detectionLimit(),before=s.exposure;
  s.exposure=Math.min(limit,s.exposure+1);
- if(s.exposure>=limit&&s.invincible===0){hurt();return}
+ // Give a visible warning at full alert before capture on a later move.
+ if(before>=limit&&s.invincible===0){hurt();return}
  if(before===0&&limit<99)popup("spotted");
 }
 function moveTo(p){if(s.done||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
@@ -580,14 +598,16 @@ function finish(win){if(s.done)return;stopYarnChase();s.done=true;s.winning=win;
 const bonus=win&&dareDone();
  const stars=win?(bonus&&s.lives===3?3:(bonus||s.lives===3?2:1)):0;
 if(win){s.score+=Math.max(80,300-s.steps*3)+s.lives*50+(s.everSpotted?0:125)+(bonus?150:0);if(daily||s.index!==7)audio("win");if(!daily&&stage<=save.unlocked)save.unlocked=Math.max(save.unlocked,Math.min(7,stage+1));if(s.hasRelic){save.souvenirs[s.index]=true;s.score+=75;metric("cat_relic_saved",{level:s.index+1})}
+const starsBefore=allStars();
 const id=daily?"daily-"+today:"room-"+stage;const old=save.best[id]||{stars:0,score:0};save.best[id]={stars:Math.max(old.stars,stars),score:Math.max(old.score,s.score)};save.stats.wins=(Number(save.stats.wins)||0)+1;
  if(daily)save.stats.dailyWins=(Number(save.stats.dailyWins)||0)+1;
  if(!s.everSpotted)save.stats.ghostWins=(Number(save.stats.ghostWins)||0)+1;
- saveGame();checkBadges();
+ s.newCats=fur.map((f,i)=>i>0&&starsBefore<f[3]&&allStars()>=f[3]?i:-1).filter(i=>i>=0);
+ saveGame();for(const i of s.newCats)metric("cat_skin_unlocked",{cat:i,stars:allStars()});checkBadges();
  metric("cat_level_won",{level:daily?9:stage+1,score:s.score});}
 metric(win?"game_complete":"game_over",{level:daily?9:stage+1,score:s.score,stars,bonus:bonus?1:0,steps:s.steps,duration:s.startedAt?Math.round((performance.now()-s.startedAt)/1000):0});syncUI();translateUI();
 $("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();
-$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("stage").classList.toggle("victory",win);
+$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();renderNewCatUnlocks();$("stage").classList.toggle("victory",win);
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResultLabel();$("shareResult").textContent=tr("share");
  if(win&&!daily&&s.index===7){
   s.outro={startedAt:performance.now(),duration:window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches?1800:4600};
@@ -686,7 +706,7 @@ function advanceCatRoute(){
  if(!pass(next)){stopWalking();popup("blocked");return}
  const wasExposed=s.exposure;
  moveTo(next);
- if(!s.done&&wasExposed===0&&s.exposure>0){stopWalking();return}
+ if(!s.done&&(s.exposure>wasExposed||(s.exposure>0&&visible()))){stopWalking();return}
  if(s.done||!route.length)stopWalking();
 }
 function command(x,y){
@@ -936,10 +956,16 @@ $("restart").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("retryResult").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("nextResult").onclick=()=>{if(!s.winning)metric("game_retry");init(s.winning&&!daily?Math.min(7,stage+1):stage,daily)};
 $("shareResult").onclick=share;
+ $("catUnlocks").onclick=e=>{
+  const control=e.target.closest?.("[data-equip-cat]");if(!control)return;
+  const i=Number(control.dataset.equipCat);
+  if(!Number.isInteger(i)||i<0||i>=fur.length||allStars()<fur[i][3])return;
+  save.cat=i;saveGame();renderNewCatUnlocks();audio("fish");
+ };
 $("tool")&&($("tool").onclick=throwYarn);
 $("sound").onclick=()=>{window.MorrowwishAudio?.toggle?.();$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff")};
 window.addEventListener("morrowwish-language-change",e=>{lang=e.detail.lang==="zh"?"zh":"en";translateUI();syncUI();refreshToasts();if(s.done)finishOverlayTranslate()});
-function finishOverlayTranslate(){$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResultLabel();$("shareResult").textContent=tr("share")}
+function finishOverlayTranslate(){renderNewCatUnlocks();$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();$("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResultLabel();$("shareResult").textContent=tr("share")}
 window.__PAWSIBLY_TEST__={getState:()=>s,move:single,choose:init,throwYarn,throwYarnTo,advanceYarnChase,isChasing:()=>yarnChaseTimer!==null,isAiming:()=>aimingYarn,rooms:ROOMS};
 window.addEventListener("resize",fitCanvasPixels);
 fitCanvasPixels();checkBadges(true);init(entryRoom,entryDaily);requestAnimationFrame(draw);
