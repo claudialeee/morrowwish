@@ -1,10 +1,7 @@
 name: Record five remaining Morrow Wish game highlights
+# Rejected preview videos must never be regenerated or released on push.
+# Owner review is required before any future manual generation.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/make-remaining-game-reels.mjs'
-      - '.github/workflows/remaining-game-reels.yml'
   workflow_dispatch:
 
 permissions:
