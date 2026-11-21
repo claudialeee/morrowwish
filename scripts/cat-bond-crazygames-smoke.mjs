@@ -151,8 +151,17 @@ try{
         assert.ok(art.css>80&&art.px/art.css>=1.8,
           'Cat portraits must render sharply on retina devices: '+JSON.stringify(art));
       }
+      // New players see auto recommended, but this scenario explicitly
+      // selects manual to verify the in-battle Auto toggle and dodge UI.
+      const manual=page.locator('#panel .capture-mode-option[data-battle-auto="false"]');
+      await manual.click();
+      assert.equal(await manual.getAttribute('aria-checked'),'true',
+        'Player must be able to select manual before battle');
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
+      if(await page.locator('#battle-tutorial-skip').count()){
+        await page.locator('#battle-tutorial-skip').click();
+      }
       const movingBattle=await page.evaluate(()=>{
         const renderer=window.CatMotion,old=renderer.draw;let draws=0;
         renderer.draw=(...args)=>{draws++;return old(...args);};
@@ -265,6 +274,9 @@ try{
           coins:State.S.coins,dex:JSON.stringify(State.S.dex)
         }));
         await page.locator('#dx-rematch').click();
+        await page.waitForSelector('#bp-go');
+        // Rematches must also offer a clear preflight control choice.
+        await page.locator('#bp-go').click();
         await page.waitForFunction(()=>window.__game.scene==='battle');
         const moves=await page.evaluate(()=>{
           const b=window.__game.battle,active=b.me();
