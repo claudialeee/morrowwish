@@ -4065,7 +4065,34 @@ class CaptureBattle {
         }
         ctx.restore();
       }
+      // CHARGING-BODY tell: while an enemy winds up ANY special, its body glows and
+      // trembles harder as release nears, so you can read WHICH cat is about to strike
+      // (not just the ground danger zone). Mirrors the player's heavy-skill wind-up.
+      if (e.telegraph > 0) {
+        const k = Math.max(0, Math.min(1, 1 - e.telegraph / (e.telegraphMax || 0.8)));  // 0→1 charge
+        const col = e.telegraphKind === 'smash' ? '#ff2d55'
+          : e.telegraphKind === 'nova' ? '#ff4d6d'
+          : (e.element ? this.elemColor(e.element) : '#ff7b9c');
+        // converging ring that tightens onto the body as the cast completes
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const rad = 46 - 18 * k, puls = 0.35 + 0.45 * Math.abs(Math.sin(this.t * (9 + 12 * k)));
+        ctx.globalAlpha = puls * (0.4 + 0.5 * k);
+        ctx.strokeStyle = col; ctx.lineWidth = 2 + 3 * k;
+        ctx.beginPath(); ctx.arc(e.x, e.y, rad, 0, Math.PI * 2); ctx.stroke();
+        // brightening core halo as it nears release
+        const g = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, 30 + 10 * k);
+        g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = 0.18 + 0.32 * k; ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(e.x, e.y, 30 + 10 * k, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        // high-charge tremble: a DRAW-ONLY offset (never touches real coords) so the
+        // body visibly shakes as release nears. Applied to the body save() below.
+        if (k > 0.45) { const j = (k - 0.45) * 5; e._castShakeX = Math.sin(this.t * 55) * j * 0.4; e._castShakeY = Math.cos(this.t * 61) * j * 0.3; }
+        else { e._castShakeX = 0; e._castShakeY = 0; }
+      } else { e._castShakeX = 0; e._castShakeY = 0; }
       ctx.save();
+      if (e._castShakeX || e._castShakeY) ctx.translate(e._castShakeX, e._castShakeY);
       if (e.flash > 0) ctx.globalAlpha = 0.6;
       if(e.phase>0){
         ctx.strokeStyle=e.phase>1?'#ff794f':'#ffc16e';ctx.lineWidth=3;
