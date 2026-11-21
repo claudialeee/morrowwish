@@ -67,25 +67,72 @@
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
   const animatedRigCache=Object.create(null);
-  // Generated atlas tiles sometimes contain paint right up to a tile boundary.
-  // Feather those hard crop lines rather than display a sharp rectangular cut
-  // through the kitten. This changes presentation, never the saved collection.
+  // Repair genuinely truncated silhouettes in the painted source atlas.
+  // A straight vertical alpha cliff across the body is a sliced image, not
+  // an intentional illustration boundary. Reconstruct that missing side from
+  // the intact opposite half, with a painted, soft transition; leave all
+  // intact tiles unchanged. The earlier edge-fade only hid the damaged art.
   function framedBreed(slot){
     if(framedBreedCache[slot])return framedBreedCache[slot];
     const cw=breedFrameSize.w,ch=breedFrameSize.h;
-    const tile=document.createElement('canvas');
-    tile.width=cw;tile.height=ch;
-    const tx=tile.getContext('2d');
-    tx.drawImage(breedSheet,(slot%5)*cw,Math.floor(slot/5)*ch,cw,ch,0,0,cw,ch);
-    tx.globalCompositeOperation='destination-in';
-    const edge=tx.createLinearGradient(0,0,cw,0);
-    edge.addColorStop(0,'rgba(0,0,0,0)');
-    edge.addColorStop(.065,'rgba(0,0,0,1)');
-    edge.addColorStop(.90,'rgba(0,0,0,1)');
-    edge.addColorStop(1,'rgba(0,0,0,0)');
-    tx.fillStyle=edge;tx.fillRect(0,0,cw,ch);
-    framedBreedCache[slot]=tile;
-    return tile;
+    const src=document.createElement('canvas');
+    src.width=cw;src.height=ch;
+    const sc=src.getContext('2d',{willReadFrequently:true});
+    sc.drawImage(breedSheet,(slot%5)*cw,Math.floor(slot/5)*ch,cw,ch,0,0,cw,ch);
+    const pixels=sc.getImageData(0,0,cw,ch).data;
+    const density=new Float32Array(cw);
+    for(let x=0;x<cw;x++){
+      let sum=0;
+      for(let y=Math.round(ch*.16);y<ch*.91;y+=2)
+        if(pixels[(y*cw+x)*4+3]>80)sum++;
+      density[x]=sum;
+    }
+    const scan=(direction)=>{
+      let best=null;
+      const from=direction==='right'?Math.round(cw*.63):Math.round(cw*.07);
+      const to=direction==='right'?Math.round(cw*.98):Math.round(cw*.35);
+      for(let x=from;x<to;x++){
+        const before=direction==='right'?density[Math.max(0,x-3)]:density[Math.min(cw-1,x+3)];
+        const after=direction==='right'?density[Math.min(cw-1,x+3)]:density[Math.max(0,x-3)];
+        const drop=before-after;
+        if(drop>ch*.085&&(!best||drop>best.drop))best={x,drop};
+      }
+      return best;
+    };
+    const right=scan('right'),left=scan('left');
+    const clip=right&&(!left||right.drop>=left.drop)?{...right,side:'right'}
+      :left?{...left,side:'left'}:null;
+    if(!clip){framedBreedCache[slot]=src;return src;}
+    const restored=document.createElement('canvas');
+    restored.width=cw;restored.height=ch;
+    const rc=restored.getContext('2d');
+    rc.drawImage(src,0,0);
+    // Mirror only the missing edge, retaining the original eyes, coat, bell,
+    // markings and facial asymmetry in the center of each illustration.
+    const mirror=document.createElement('canvas');
+    mirror.width=cw;mirror.height=ch;
+    const mc=mirror.getContext('2d');
+    mc.translate(cw,0);mc.scale(-1,1);mc.drawImage(src,0,0);
+    mc.setTransform(1,0,0,1,0,0);
+    mc.globalCompositeOperation='destination-in';
+    const fade=mc.createLinearGradient(0,0,cw,0);
+    const edge=clip.x/cw;
+    if(clip.side==='right'){
+      const start=Math.max(.50,edge-.18);
+      fade.addColorStop(0,'rgba(0,0,0,0)');
+      fade.addColorStop(start,'rgba(0,0,0,0)');
+      fade.addColorStop(Math.min(.999,start+.13),'rgba(0,0,0,1)');
+      fade.addColorStop(1,'rgba(0,0,0,1)');
+    }else{
+      fade.addColorStop(0,'rgba(0,0,0,1)');
+      fade.addColorStop(Math.max(.001,edge-.02),'rgba(0,0,0,1)');
+      fade.addColorStop(Math.min(.999,edge+.12),'rgba(0,0,0,0)');
+      fade.addColorStop(1,'rgba(0,0,0,0)');
+    }
+    mc.fillStyle=fade;mc.fillRect(0,0,cw,ch);
+    rc.drawImage(mirror,0,0);
+    framedBreedCache[slot]=restored;
+    return restored;
   }
   let gaitLayersBuilt=0;
   // Paint an entire illustrated cat into each complete gait frame. This
