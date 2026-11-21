@@ -1,6 +1,6 @@
 {
   "version": "V5",
-  "createdAt": "2026-11-21T18:40:38.172Z",
+  "createdAt": "2026-11-21T19:03:58.076Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -118,7 +118,7 @@
           "source": "broll",
           "scene": "caught-chase",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 1.6450000000000014
+          "seconds": 1.6419999999999995
         },
         {
           "source": "broll",
@@ -295,19 +295,25 @@
           "source": "broll",
           "scene": "play",
           "caption": "ONE BUTTON. ONE WRONG FLIP.",
-          "seconds": 3.7769999999999997
+          "seconds": 3.247
         },
         {
           "source": "broll",
-          "scene": "crash",
-          "caption": "CRASHED. CAN YOU SURVIVE?",
-          "seconds": 1.9
+          "scene": "collision",
+          "caption": "",
+          "seconds": 0.6
+        },
+        {
+          "source": "broll",
+          "scene": "game-over",
+          "caption": "CRASHED. BEAT MY SCORE?",
+          "seconds": 1.4
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 2.35
+          "seconds": 3
         }
       ],
       "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
@@ -326,7 +332,7 @@
         "/promo/parcel-panic/v5-review-2.jpg",
         "/promo/parcel-panic/v5-review-3.jpg"
       ],
-      "duration": 7.2,
+      "duration": 8.1,
       "shots": [
         {
           "source": "broll",
@@ -338,13 +344,13 @@
           "source": "broll",
           "scene": "wrong-lane",
           "caption": "ONE WRONG LANE...",
-          "seconds": 0.956000000000001
+          "seconds": 2.15
         },
         {
           "source": "broll",
           "scene": "game-over",
           "caption": "GAME OVER. BEAT MY RUN?",
-          "seconds": 1.85
+          "seconds": 1.55
         },
         {
           "source": "cover",
@@ -369,13 +375,13 @@
         "/promo/pocket-aquarium/v5-review-2.jpg",
         "/promo/pocket-aquarium/v5-review-3.jpg"
       ],
-      "duration": 8.7,
+      "duration": 8.8,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE RIGHT FISH.",
-          "seconds": 2.788
+          "seconds": 2.86
         },
         {
           "source": "broll",
