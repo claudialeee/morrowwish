@@ -351,9 +351,7 @@ class CaptureBattle {
       }
     }
     const f=this.me();
-    const tgt=this.commandTarget
-      ?this.nearestEnemy(this.commandTarget.x,this.commandTarget.y)
-      :this.nearestEnemy(f.x,f.y);
+    const tgt=this.commandedTarget(f.x,f.y);
     if(!tgt)return;
     const dx=tgt.x-f.x,dy=tgt.y-f.y,dist=Math.hypot(dx,dy)||1;
     const aim=Math.atan2(dy,dx);this.aim=aim;f._aim=aim;
@@ -492,10 +490,18 @@ class CaptureBattle {
     if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25))this.fireBasic(f,aim);
   }
 
+  // The commander's click order: the enemy nearest the focus marker. When set, the
+  // WHOLE squad (active cat + allies) prioritizes it, so commanding actually means
+  // "focus-fire THAT one". Falls back to each cat's nearest enemy when no order.
+  commandedTarget(fromX, fromY) {
+    if (this.commandTarget) { const t = this.nearestEnemy(this.commandTarget.x, this.commandTarget.y); if (t) return t; }
+    return this.nearestEnemy(fromX, fromY);
+  }
+
   // Ally AI: a non-active team cat fights on its own — flanks near the player,
-  // dodges incoming fire, and runs its gambit rules against the nearest enemy.
+  // dodges incoming fire, and focus-fires the commander's target when one is set.
   updateAllyAI(dt, f) {
-    const tgt = this.nearestEnemy(f.x, f.y);
+    const tgt = this.commandedTarget(f.x, f.y);
     if (!tgt) return;
     const dx = tgt.x - f.x, dy = tgt.y - f.y, dist = Math.hypot(dx, dy) || 1;
     // flee nearest enemy projectile
@@ -1243,6 +1249,10 @@ class CaptureBattle {
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
+    // Global combat tempo: scale the whole simulation (movement, projectiles, enemy
+    // AI, cooldowns) so fights read calmer and the cat isn't twitchy-fast. One knob,
+    // everything stays proportional/balanced. 1 = old speed; 0.8 = 20% slower.
+    dt *= 0.8;
     // perfect-dodge bullet-time: slow the WORLD but keep input responsive
     if (this.slowmo > 0) { this.slowmo -= dt; dt *= 0.35; }
     // hitstop: a few frames of near-freeze on a solid hit makes impacts feel weighty.
@@ -2169,6 +2179,16 @@ class CaptureBattle {
           ctx.rotate(Math.PI / 2);
           ctx.beginPath(); ctx.arc(0, 0, R, -0.35, 0.35); ctx.stroke();
         }
+        ctx.restore();
+      }
+      // commander focus-fire marker: the enemy the whole squad is ordered onto.
+      if (this.autoMode && this.commandTarget && e === this.commandedTarget(this.commandTarget.x, this.commandTarget.y)) {
+        ctx.save();
+        const pulse = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 5));
+        ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff5a7a'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(e.x, e.y, 34 + 3 * Math.sin(this.t * 5), 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = pulse; ctx.fillStyle = '#ff5a7a'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('🎯 集火', e.x, e.y - 58);
         ctx.restore();
       }
       const elemSym = this.elemSymbol(e.element);
