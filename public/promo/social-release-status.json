@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-20T22:28:00-08:00",
+  "updatedAt": "2026-11-21T06:39:00Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "Media generation and social publishing are separate. Native views and attributed visitors remain in existing channel analytics. Future scheduled posts are not yet published.",
+  "accuracyNote": "All seven unique videos are verified and 21 network posts are scheduled automatically (PENDING, not yet published). Studio montage video is verified but not yet scheduled in this snapshot. Source-attributed site visits and gameplay starts are live data in the existing dashboard, not fake video estimates.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -18,10 +18,18 @@
       "media": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
       "production": "ready",
       "social": {
-        "youtube": "draft",
-        "tiktok": "draft",
-        "instagram": "draft"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/pawsibly-innocent/viral-gameplay-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436425289,
+        "tiktok": 436425304,
+        "instagram": 436425322
+      },
+      "scheduledDate": "2026-11-21",
+      "timezone": "America/Los_Angeles"
     },
     {
       "slug": "cat-bond",
@@ -30,71 +38,130 @@
       "media": "/promo/cat-bond/viral-gameplay-20261121.mp4",
       "production": "ready",
       "social": {
-        "youtube": "draft",
-        "tiktok": "draft",
-        "instagram": "draft"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/cat-bond/viral-gameplay-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436425346,
+        "tiktok": 436425364,
+        "instagram": 436425378
+      },
+      "scheduledDate": "2026-11-22",
+      "timezone": "America/Los_Angeles"
     },
     {
       "slug": "tiny-town",
       "name": "No More Mondays",
       "hook": "Seven days without work → building magical wishes",
-      "media": null,
-      "production": "rendering",
+      "media": "/promo/tiny-town/highlight-20261121.mp4",
+      "production": "ready",
       "social": {
-        "youtube": "not-scheduled",
-        "tiktok": "not-scheduled",
-        "instagram": "not-scheduled"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/tiny-town/highlight-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436425896,
+        "tiktok": 436425970,
+        "instagram": 436425978
+      },
+      "scheduledDate": "2026-11-23",
+      "timezone": "America/Los_Angeles"
     },
     {
       "slug": "elsewhere",
       "name": "Elsewhere",
       "hook": "Private island → Paris → hotel on the moon",
-      "media": null,
-      "production": "rendering",
+      "media": "/promo/elsewhere/highlight-20261121.mp4",
+      "production": "ready",
       "social": {
-        "youtube": "not-scheduled",
-        "tiktok": "not-scheduled",
-        "instagram": "not-scheduled"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/elsewhere/highlight-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436425993,
+        "tiktok": 436426002,
+        "instagram": 436426008
+      },
+      "scheduledDate": "2026-11-24",
+      "timezone": "America/Los_Angeles"
     },
     {
       "slug": "flip-dash",
       "name": "Flip Dash",
       "hook": "Near misses and fast gravity flips",
-      "media": null,
-      "production": "rendering",
+      "media": "/promo/flip-dash/highlight-20261121.mp4",
+      "production": "ready",
       "social": {
-        "youtube": "not-scheduled",
-        "tiktok": "not-scheduled",
-        "instagram": "not-scheduled"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/flip-dash/highlight-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436426028,
+        "tiktok": 436426043,
+        "instagram": 436426063
+      },
+      "scheduledDate": "2026-11-25",
+      "timezone": "America/Los_Angeles"
     },
     {
       "slug": "parcel-panic",
       "name": "Parcel Panic",
       "hook": "Real color-sorting streak under pressure",
-      "media": null,
-      "production": "rendering",
+      "media": "/promo/parcel-panic/highlight-20261121.mp4",
+      "production": "ready",
       "social": {
-        "youtube": "not-scheduled",
-        "tiktok": "not-scheduled",
-        "instagram": "not-scheduled"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/parcel-panic/highlight-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436426079,
+        "tiktok": 436426097,
+        "instagram": 436426112
+      },
+      "scheduledDate": "2026-11-26",
+      "timezone": "America/Los_Angeles"
     },
     {
       "slug": "pocket-aquarium",
       "name": "Pocket Aquarium",
       "hook": "Real matching feeds and rising combo",
-      "media": null,
-      "production": "rendering",
+      "media": "/promo/pocket-aquarium/highlight-20261121.mp4",
+      "production": "ready",
       "social": {
-        "youtube": "not-scheduled",
-        "tiktok": "not-scheduled",
-        "instagram": "not-scheduled"
-      }
+        "youtube": "scheduled",
+        "tiktok": "scheduled",
+        "instagram": "scheduled"
+      },
+      "cover": "/promo/pocket-aquarium/highlight-20261121.jpg",
+      "platformPostIds": {
+        "youtube": 436426123,
+        "tiktok": 436426133,
+        "instagram": 436426139
+      },
+      "scheduledDate": "2026-11-27",
+      "timezone": "America/Los_Angeles"
     }
   ],
-  "excludedGames": 8
+  "excludedGames": 8,
+  "montage": {
+    "media": "/promo/morrow-wish-seven-games-20261121.mp4",
+    "cover": "/promo/morrow-wish-seven-games-20261121.jpg",
+    "production": "ready",
+    "social": {
+      "youtube": "not-scheduled",
+      "tiktok": "not-scheduled",
+      "instagram": "not-scheduled"
+    },
+    "validation": "15.4s, real clips from each of seven verified games, video/audio validation succeeded"
+  }
 }
