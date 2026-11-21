@@ -67,105 +67,34 @@
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
   const animatedRigCache=Object.create(null);
-  // Convert the source atlas to clean, alpha-matted sprites BEFORE scaling.
-  // Artwork touching a tile boundary is repaired by extending that exact
-  // painted contour outward; no white rectangle or hard crop is drawn.
+  // Restore the original painterly 25-cat artwork, not the flat Canvas
+  // replacement. The published 5x5 atlas is severed around column 173
+  // INSIDE each 200px tile. Its blank right edge cannot be restored by
+  // padding or CSS. Instead use the complete painted left half as the source
+  // for BOTH sides of a centered, transparent 326x300 kitten sprite.
+  // Source transparency is preserved: no white garden rectangles.
   function framedBreed(slot){
     if(framedBreedCache[slot])return framedBreedCache[slot];
     const cw=breedFrameSize.w,ch=breedFrameSize.h;
-    const scratch=document.createElement('canvas');scratch.width=cw;scratch.height=ch;
-    const sc=scratch.getContext('2d',{willReadFrequently:true});
+    const half=Math.round(cw*.755),pad=12;
+    const sourceTile=document.createElement('canvas');
+    sourceTile.width=cw;sourceTile.height=ch;
+    const sc=sourceTile.getContext('2d');
     sc.drawImage(breedSheet,(slot%5)*cw,Math.floor(slot/5)*ch,cw,ch,0,0,cw,ch);
-    const id=sc.getImageData(0,0,cw,ch),d=id.data;
-    const px=(x,y)=>(y*cw+x)*4;
-    const samples=[[2,2],[cw-3,2],[2,ch-3],[cw-3,ch-3]].map(([x,y])=>{const i=px(x,y);return[d[i],d[i+1],d[i+2]]});
-    const bright=samples.filter(rgb=>Math.min(...rgb)>204&&Math.max(...rgb)-Math.min(...rgb)<45);
-    // Only remove a pale matte when the actual atlas has a pale matte.
-    if(bright.length>=2){
-      const matte=[0,1,2].map(k=>bright.reduce((v,x)=>v+x[k],0)/bright.length);
-      const mask=new Uint8Array(cw*ch),queue=new Int32Array(cw*ch);
-      let head=0,tail=0;
-      function visit(x,y){
-        if(x<0||x>=cw||y<0||y>=ch)return;
-        const index=y*cw+x;if(mask[index])return;
-        const i=index*4,r=d[i],g=d[i+1],b=d[i+2];
-        // Keep pigmented fur, eyes, collars and paws; only edge-connected
-        // near-white background (including mild compression noise) disappears.
-        const delta=Math.max(Math.abs(r-matte[0]),Math.abs(g-matte[1]),Math.abs(b-matte[2]));
-        if(d[i+3]<18||Math.min(r,g,b)>213&&delta<42){
-          mask[index]=1;queue[tail++]=index;
-        }
-      }
-      for(let x=0;x<cw;x++){visit(x,0);visit(x,ch-1);}
-      for(let y=0;y<ch;y++){visit(0,y);visit(cw-1,y);}
-      while(head<tail){
-        const k=queue[head++],x=k%cw,y=Math.floor(k/cw);
-        visit(x-1,y);visit(x+1,y);visit(x,y-1);visit(x,y+1);
-      }
-      for(let k=0;k<mask.length;k++)if(mask[k])d[k*4+3]=0;
-      // Feather only one real edge pixel, avoiding a white halo.
-      const alpha=new Uint8Array(cw*ch);
-      for(let k=0;k<mask.length;k++)if(mask[k]){
-        const x=k%cw,y=Math.floor(k/cw);
-        for(const n of [k-1,k+1,k-cw,k+cw]){
-          if(n>=0&&n<mask.length&&!mask[n]){
-            const i=n*4;
-            if(Math.min(d[i],d[i+1],d[i+2])>190)alpha[n]=Math.max(alpha[n],80);
-          }
-        }
-      }
-      for(let k=0;k<alpha.length;k++)if(alpha[k])d[k*4+3]=Math.min(d[k*4+3],255-alpha[k]);
-    }
-    sc.putImageData(id,0,0);
-    // Expand the source tile, keeping full paws and ears within the sprite.
-    const margin=34,output=document.createElement('canvas');
-    output.width=cw+margin*2;output.height=ch;
-    const out=output.getContext('2d');
-    out.drawImage(scratch,margin,0);
-    // Detect a cut body on either side: significant opaque fur directly on
-    // the outermost image edge indicates the illustration was tiled mid-cat.
-    const occupied=(x)=>{
-      let count=0;
-      // Only count the head/upper chest. A naturally extended tail at the
-      // bottom of a full illustration must never trigger face reconstruction.
-      for(let y=Math.round(ch*.13);y<Math.round(ch*.62);y++){
-        if(d[px(x,y)+3]>160)count++;
-      }
-      return count;
-    };
-    const cutoff=Math.round(ch*.085),right=occupied(cw-1)>cutoff,left=occupied(0)>cutoff;
-    if(right||left){
-      // Rebuild the missing HALF of a frontal face from its intact painted
-      // half. A few extra reflected edge pixels alone leave a flat, cut cheek.
-      // Blend across the nose/forehead so the intact original art is preserved
-      // on one side and the repaired art has an organic full silhouette.
-      const repairRight=right&&(!left||occupied(cw-1)>=occupied(0));
-      const axis=repairRight?cw*.62:cw*.38;
-      const mirror=document.createElement('canvas');
-      mirror.width=output.width;mirror.height=ch;
-      const mc=mirror.getContext('2d');
-      mc.translate(2*(margin+axis),0);mc.scale(-1,1);
-      mc.drawImage(scratch,margin,0);
-      mc.setTransform(1,0,0,1,0,0);
-      mc.globalCompositeOperation='destination-in';
-      const blend=mc.createLinearGradient(0,0,output.width,0);
-      const lo=(margin+axis-14)/output.width,hi=(margin+axis+16)/output.width;
-      if(repairRight){
-        blend.addColorStop(0,'rgba(0,0,0,0)');
-        blend.addColorStop(lo,'rgba(0,0,0,0)');
-        blend.addColorStop(hi,'rgba(0,0,0,1)');
-        blend.addColorStop(1,'rgba(0,0,0,1)');
-      }else{
-        blend.addColorStop(0,'rgba(0,0,0,1)');
-        blend.addColorStop(lo,'rgba(0,0,0,1)');
-        blend.addColorStop(hi,'rgba(0,0,0,0)');
-        blend.addColorStop(1,'rgba(0,0,0,0)');
-      }
-      mc.fillStyle=blend;mc.fillRect(0,0,output.width,ch);
-      out.drawImage(mirror,0,0);
-    }
-    framedBreedCache[slot]=output;
-    return output;
+    const full=document.createElement('canvas');
+    full.width=2*(half+pad);full.height=ch;
+    const out=full.getContext('2d');
+    // Uncropped original watercolor on the left.
+    out.drawImage(sourceTile,0,0,half+1,ch,pad,0,half+1,ch);
+    // Reconstruct the missing face, ear, chest, paw and tail as one coherent
+    // silhouette. Matching the SAME midline pixel avoids a hard join.
+    out.save();
+    out.translate(2*(half+pad),0);
+    out.scale(-1,1);
+    out.drawImage(sourceTile,0,0,half+1,ch,pad,0,half+1,ch);
+    out.restore();
+    framedBreedCache[slot]=full;
+    return full;
   }
   let gaitLayersBuilt=0;
   // Paint an entire illustrated cat into each complete gait frame. This
@@ -265,17 +194,14 @@
     if(breedLoaded)pendingPortraits.clear();
   }
   function breedFrame(o) {
-    // All 25 identities now use complete transparent portraits, not a tiled
-    // AVIF that cuts through faces or bakes a white rectangle into the art.
-    if(window.CatBondCompleteKittens)return window.CatBondCompleteKittens.frameFor(o.species||o);
     const sp=o.species||{};
     const id=sp.id||'';
     // Use the 25-frame illustrated atlas first; fallback keeps playability on
     // older AVIF decoders or while the image is loading.
     const slot=BREED_ORDER.indexOf(id);
     if(breedLoaded&&slot>=0){
-      return {image:framedBreed(slot),sx:0,sy:0,
-        sw:breedFrameSize.w+68,sh:breedFrameSize.h};
+      const complete=framedBreed(slot);
+      return {image:complete,sx:0,sy:0,sw:complete.width,sh:complete.height};
     }
     const look=BREED_LOOKS[id];
     if(!look)return {image:source,sx:indexOf(o)*w,sy:0,sw:w,sh:h};
@@ -346,7 +272,7 @@
     const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded&&!breedLoaded&&!window.CatBondCompleteKittens){fallbackDraw(ctx,x,y,o);return;}
+    if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -397,7 +323,7 @@
       build==='norwegian-forest'?[-32,-56,64,91]:
       build==='folded-cream'?[-30,-52,60,87]:
       [-30,-55,60,90];
-    if(!window.CatBondCompleteKittens&&pose==='walk'&&movement>.075){
+    if(pose==='walk'&&movement>.075){
       paintArticulatedCat(ctx,art,dest,o,movement,phase);
     }else{
       ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
@@ -433,13 +359,13 @@
     render(ctx,logicalW/2,logicalH*.60,{
       species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
-    if(!window.CatBondCompleteKittens&&!breedLoaded)pendingPortraits.set(canvas,species);
+    if(!breedLoaded)pendingPortraits.set(canvas,species);
   }
   drawing.drawCat=render;
   drawing.renderCatThumb=thumbnail;
   // Surface decoding state for the automated 25-breed art audit.
   window.CatBondArtworkStatus={
-    get breedsLoaded(){return breedLoaded||!!window.CatBondCompleteKittens;},
+    get breedsLoaded(){return breedLoaded;},
     get originalLoaded(){return loaded;},
     get gaitLayersBuilt(){return gaitLayersBuilt;},
     breedCount:BREED_ORDER.length,
