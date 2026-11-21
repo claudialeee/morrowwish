@@ -118,8 +118,8 @@ function mainStats(x){
   return {days:x.days,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
- // Filter on explicit edition: previous five-scene editions must not contaminate this new casefile-driven edition.
- const rows=x.rows.filter(r=>r.data.edition==="casefiles-v3"&&Number(r.data.scenes)===5),runsById=new Map(),worlds=["amalfi","paris","tokyo","iceland","maldives","swiss"];
+ // Filter on explicit edition: previous five-scene editions must not contaminate this six-genre dream-life edition.
+ const rows=x.rows.filter(r=>r.data.edition==="life-v4"&&Number(r.data.scenes)===5),runsById=new Map(),worlds=["amalfi","paris","tokyo","iceland","maldives","swiss"];
  for(const r of rows){
    const id=r.run_id||r.data.runId||r.visitor+"-"+(r.data.session||"na");
    if(!runsById.has(id))runsById.set(id,{world:r.data.world||"no-work",visitor:r.visitor||id,opened:false,views:new Set(),completed:new Set(),finished:false,restarted:0});
@@ -139,7 +139,7 @@ function elsewhereStats(x){
  const continueRates=Array.from({length:4},(_,i)=>{const from=i+1,eligible=has(from,"completed"),continued=runs.filter(r=>r.completed.has(from)&&r.views.has(from+1)).length;return {from,to:from+1,eligible,continued,rate:pct(continued,eligible)};});
  const dropoff=continueRates.filter(r=>r.eligible>0).sort((a,b)=>(b.eligible-b.continued)-(a.eligible-a.continued)||a.from-b.from)[0];
  const worldSummary=worlds.map(world=>{const a=opened.filter(r=>r.world===world),done=a.filter(r=>r.finished).length;return {world,starts:a.length,ends:done,fullRate:pct(done,a.length)};});
- return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,trackingVersion:8,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:5},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
+ return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,trackingVersion:9,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:5},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
 }
 const cookieName="morrowwish_studio_auth", ttl=30*24*60*60;
 async function signSession(exp,keyText){

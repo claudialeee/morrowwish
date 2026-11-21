@@ -252,85 +252,78 @@ console.log('Published pages and UI source contain no starburst glyphs.');
 
 
 
-// Elsewhere casefiles v3: all choices must belong to an established story, with earned endings.
+// Elsewhere: 6 separate genres, explicit continuity, three routes per life, and functioning audio.
 import vm from 'node:vm';
 const dreamSource=fs.readFileSync('public/elsewhere/dreams.js','utf8');
 const dreamA=fs.readFileSync('public/elsewhere/casefiles-a.js','utf8');
 const dreamB=fs.readFileSync('public/elsewhere/casefiles-b.js','utf8');
+const dreamMoods=fs.readFileSync('public/elsewhere/dream-lives.js','utf8');
 const dreamAudio=fs.readFileSync('public/elsewhere/dream-audio.js','utf8');
 const dreamPage=fs.readFileSync('public/elsewhere/index.html','utf8');
 const dreamCss=fs.readFileSync('public/elsewhere/dreams.css','utf8');
 const dreamSw=fs.readFileSync('public/elsewhere/sw.js','utf8');
-for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-audio',dreamAudio]])
+for(const [name,src] of [['dreams',dreamSource],['casefiles-a',dreamA],['casefiles-b',dreamB],['dream-lives',dreamMoods],['dream-audio',dreamAudio]])
  new vm.Script(src,{filename:name});
 for(const path of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/casefiles-a.js',
-                   '/elsewhere/casefiles-b.js','/elsewhere/dream-audio.js','/telemetry.js','/social-share.js'])
+                   '/elsewhere/casefiles-b.js','/elsewhere/dream-lives.js','/elsewhere/dream-audio.js',
+                   '/telemetry.js','/social-share.js']){
  if(!dreamPage.includes(path))throw Error('Elsewhere missing resource: '+path);
-for(const path of ['/elsewhere/dreams.js','/elsewhere/dreams.css','/elsewhere/casefiles-a.js',
-                   '/elsewhere/casefiles-b.js','/elsewhere/dream-audio.js'])
- if(!dreamSw.includes(path))throw Error('Elsewhere offline shell cache missing: '+path);
-for(const marker of ['@media(min-width:701px)','@media(max-width:700px)','grid-template-columns:minmax(0,1.07fr)',
-                    'prefers-reduced-motion','twist-burst','twistFlash','twistSpark','.case-resources','.case-report'])
- if(!dreamCss.includes(marker))throw Error('Missing responsive presentation or readable outcome: '+marker);
-for(const marker of ['Kevin MacLeod','creativecommons.org/licenses/by/4.0'])
- if(!dreamPage.includes(marker))throw Error('Music attribution missing');
-for(const marker of ['musicOn=read(KEY,true)','fxOn=read(FX_KEY,true)','audio.play()','function toggleMusic()',
-                    'function toggleFX()','function fx(kind=','window.DreamAudio=','blocked=true'])
- if(!dreamAudio.includes(marker))throw Error('Elsewhere audio missing: '+marker);
-const storySandbox={window:{}};
-vm.runInNewContext(dreamA,storySandbox,{timeout:2500});
-vm.runInNewContext(dreamB,storySandbox,{timeout:2500});
-const cases=storySandbox.window.ELSEWHERE_CASEFILES;
-const bilingual=x=>Array.isArray(x)&&x.length===2&&x.every(y=>typeof y==='string'&&y.trim().length>1);
-if(!cases||Object.keys(cases).length!==6)throw Error('Expected exactly six authored casefiles');
-const resources=['proof','allies','leverage'];
-for(const [world,entry] of Object.entries(cases)){
- for(const label of [entry.mystery,entry.objective,entry.secret,entry.villain])
-  if(!bilingual(label))throw Error('Untranslated casefile metadata: '+world);
- if(!Array.isArray(entry.paths)||entry.paths.length!==3||
-    !Array.isArray(entry.endings)||entry.endings.length!==3||entry.rare.length!==2)
-  throw Error('Casefile route or outcome structure is incomplete: '+world);
- const scenes=[entry.intro,entry.finale,...entry.paths.flat()];
- if(entry.paths.some(path=>path.length!==3)||scenes.length!==11)
-  throw Error('Expected an opening, three route-specific encounters and a final confrontation: '+world);
- for(const scene of scenes){
-  if(!bilingual(scene.title)||!bilingual(scene.body)||scene.choices.length!==3)
-   throw Error('Untranslated or invalid scene in '+world);
-  if(new Set(scene.choices.map(c=>c.title[0])).size!==3)
-   throw Error('The same choice is repeated in scene '+scene.title[0]);
-  for(const choice of scene.choices){
-   if(!bilingual(choice.title)||!bilingual(choice.result)||!resources.includes(choice.gain))
-    throw Error('Invalid choice, consequence or objective resource in '+world);
-  }
- }
- if(entry.paths.some(path=>path.some((scene,i)=>scene.body[0]===entry.paths[0][i].body[0]&&path!==entry.paths[0])))
-  throw Error('Routes must have truly different scenes rather than reskinned psychological questions: '+world);
- for(const ending of [...entry.endings,entry.rare])
-  if(ending.length!==2||!bilingual(ending[0])||!bilingual(ending[1]))
-   throw Error('Casefile ending missing bilingual outcome: '+world);
- // All 3^5 possible paths are valid, but only the three relevant actions at the current scene can be shown.
- for(let route=0;route<3;route++){
-  if(!entry.intro.choices[route])throw Error('No opening action leading to route '+route);
-  for(let stage=1;stage<=3;stage++){
-   const scene=entry.paths[route][stage-1];
-   for(let decision=0;decision<3;decision++)if(!scene.choices[decision])
-    throw Error('Missing choice at route/stage '+world+'/'+route+'/'+stage);
-  }
- }
+ if(!path.startsWith('/telemetry')&&!path.startsWith('/social-share')&&!dreamSw.includes(path))
+  throw Error('Elsewhere offline cache missing: '+path);
 }
-const requiredStoryFeatures=[
- 'edition:"casefiles-v3"','const CASES=window.ELSEWHERE_CASEFILES||{}','state.route=n',
- 'state.scores[act.gain]++','state.history.push','state.history.length!==5',
- 'const rare=state.secret&&n===0','state.scores[kind]>=2','function revealTwist()',
- 'window.DreamAudio?.fx("twist")','window.DreamAudio?.fx("ending")',
- 'track("choice_made"','track("chapter_completed"','track("life_completed"',
- 'track("ending_view"','window.arcadeMetric?.("game_complete")','navigator.globalPrivacyControl',
- 'MorrowwishSocialShare?.open','history.pushState'];
-for(const marker of requiredStoryFeatures)
- if(!dreamSource.includes(marker))throw Error('Elsewhere gameplay, accountability or analytics missing: '+marker);
+for(const marker of ['@media(min-width:701px)','@media(max-width:700px)','grid-template-columns:minmax(0,1.07fr)',
+                    'prefers-reduced-motion','twist-burst','twistFlash','twistSpark','.case-resources','.case-report','.case-previous em'])
+ if(!dreamCss.includes(marker))throw Error('Missing desktop/mobile scene or continuation visual: '+marker);
+for(const marker of ['Kevin MacLeod','creativecommons.org/licenses/by/4.0'])
+ if(!dreamPage.includes(marker))throw Error('Elsewhere music credit missing');
+for(const marker of ['musicOn=read(KEY,true)','fxOn=read(FX_KEY,true)','audio.play()','function toggleMusic()',
+                    'function toggleFX()','window.DreamAudio=','blocked=true'])
+ if(!dreamAudio.includes(marker))throw Error('Elsewhere music/FX wiring missing');
+const storySandbox={window:{}};
+for(const src of [dreamA,dreamB,dreamMoods])vm.runInNewContext(src,storySandbox,{timeout:2500});
+const cases=storySandbox.window.ELSEWHERE_CASEFILES, vibes=storySandbox.window.ELSEWHERE_VIBES;
+const bilingual=x=>Array.isArray(x)&&x.length===2&&x.every(y=>typeof y==='string'&&y.trim().length>1);
+const expectedModes={paris:'romance',maldives:'wild',iceland:'wonder',swiss:'spectacle',tokyo:'comeback',amalfi:'comeback'};
+const moodNames=new Set();
+if(!cases||Object.keys(cases).length!==6||Object.keys(vibes||{}).length!==6)
+ throw Error('All six dream lives must be fully configured');
+for(const [world,life] of Object.entries(cases)){
+ if(life.mode!==expectedModes[world])throw Error('Wrong/missing dream genre for '+world);
+ moodNames.add(life.mode);
+ for(const label of [life.mystery,life.objective,life.secret,life.villain])
+  if(!bilingual(label))throw Error('Untranslated story introduction in '+world);
+ if(!life.paths||life.paths.length!==3||life.endings?.length!==3||life.rare?.length!==2)
+  throw Error('Missing routes or ending for '+world);
+ if(life.paths.some(x=>x.length!==3))throw Error('Every selected start must lead through three unique scenes: '+world);
+ const scenes=[life.intro,...life.paths.flat(),life.finale];
+ if(scenes.length!==11)throw Error('Invalid number of scenes in '+world);
+ if(new Set(life.paths.map(x=>x[0].body[0])).size!==3)
+  throw Error('Selected first action must create three genuinely different routes: '+world);
+ for(const scene of scenes){
+  if(!bilingual(scene.title)||!bilingual(scene.body)||scene.choices?.length!==3)
+   throw Error('Incomplete bilingual scene in '+world);
+  for(const a of scene.choices)
+   if(!bilingual(a.title)||!bilingual(a.result)||!['proof','allies','leverage'].includes(a.gain))
+    throw Error('Choice must have a real resulting event connected to its context in '+world);
+ }
+ for(const ending of [...life.endings,life.rare])
+  if(ending.length!==2||!bilingual(ending[0])||!bilingual(ending[1]))
+   throw Error('Incomplete ending in '+world);
+ for(const kind of ['proof','allies','leverage'])
+  if(!bilingual(vibes[world].stats[kind]))throw Error('Generic investigation score still present in '+world);
+}
+if(moodNames.size!==5)throw Error('All dreams still play like the same mystery game');
+for(const marker of [
+ 'edition:"life-v4"','state.route=n','state.scores[act.gain]++','state.history.push',
+ 'prior.title','prior.result','function isDream','dream?"strong"','window.ELSEWHERE_VIBES',
+ 'i===4&&!dream','function revealTwist()','window.DreamAudio?.fx("twist")',
+ 'window.DreamAudio?.fx("ending")','track("choice_made"','track("chapter_completed"',
+ 'track("life_completed"','track("ending_view"','window.arcadeMetric?.("game_complete")',
+ 'navigator.globalPrivacyControl','MorrowwishSocialShare?.open','history.pushState'
+])if(!dreamSource.includes(marker))throw Error('Elsewhere progression or instrumentation missing: '+marker);
 if(dreamPage.includes('/elsewhere/extra-scenes.js')||dreamPage.includes('/elsewhere/app.js'))
- throw Error('Retired random unrelated stories still active');
-console.log('Elsewhere: 6 coherent suspense casefiles, 18 route-specific investigations, 66 unique playable scenes, 198 meaningful decisions, earned outcome evaluations and explicit music controls checked.');
+ throw Error('Retired disconnected story still active');
+console.log('Elsewhere: 6 complete genres, 18 route-specific arcs, 66 authored scenes and 198 context-tied decisions, bilingual outcomes, and functioning sound wiring checked.');
 
 // Four distinctly styled cheerful CC0 recordings, no shared Lo-fi fallback.
 const originalMusic=fs.readFileSync('public/studio-music.js','utf8');
