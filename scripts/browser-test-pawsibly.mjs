@@ -92,19 +92,21 @@ try{
  assert.equal(await page.locator('#gameMenu').isVisible(),true,'Menu opens in the game frame');
  // The screenshot-reported issues: no clipped fifth tab, no overlapping cat
  // descriptions, and no double yarn instruction / untranslated legend.
- for(const viewport of [{width:1250,height:900},{width:570,height:720},{width:390,height:844}]){
+ for(const viewport of [{width:1250,height:900},{width:570,height:720},{width:570,height:380},{width:390,height:844}]){
   await page.setViewportSize(viewport);
   const layout=await page.evaluate(()=>{
    const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
    const nav=document.querySelector('.menu-tabs'),tabs=[...nav.querySelectorAll('button')];
    return {nav:rect(nav),tabs:tabs.map(rect),screen:innerWidth,
-    menu:rect(document.querySelector('#gameMenu .menu-shell'))};
+    menu:rect(document.querySelector('#gameMenu .menu-shell')),screenHeight:innerHeight,stage:rect(document.getElementById('stage'))};
   });
   assert.equal(layout.tabs.length,5,'All five game tabs must remain present');
   assert.ok(layout.tabs.every(t=>t.left>=layout.nav.left-2&&t.right<=layout.nav.right+2),
    'All five tabs must be visible, not horizontally cut off at '+viewport.width);
   assert.ok(layout.menu.left>=-2&&layout.menu.right<=layout.screen+2,
    'Menu must remain within the viewport at '+viewport.width);
+  assert.ok(layout.menu.top>=-2&&layout.menu.bottom<=layout.screenHeight+2,
+   'Menu must fit vertically even at browser zoom / '+viewport.width+'x'+viewport.height);
   await page.locator('[data-game-tab="cats"]').click();
   const catLayout=await page.evaluate(()=>{
    const a=document.getElementById('skinHint'),b=document.getElementById('ability');
