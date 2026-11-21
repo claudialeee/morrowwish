@@ -135,6 +135,16 @@
     volcano:{icon:'🔥',name:'火山暖光石',en:'The warm ember stone',story:'温暖的石头带来了寻找稀有猫咪的好运。',storyEn:'A warm stone brings luck for the next rare friend.',reward:{luck:2,coins:30}},
     ruins:{icon:'🌙',name:'月影星光匣',en:'The moonlit star box',story:'古老的匣子为一路冒险到这里的猫咪留下祝福。',storyEn:'An ancient chest rewards cats that made it this far.',reward:{luck:3,fish:3,coins:40}}
   };
+  // Native physical finds for each region; old saved node IDs stay stable.
+  var REGION_FINDS={"home":[["forage","窗台猫薄荷","Catnip on the windowsill",{"treats":2,"yarn":1}],["play","午后的晒太阳角","The sunny corner",{"coins":14,"yarn":2}],["cache","花盆下的零钱","Coins beneath a planter",{"coins":28}],["forage","厨房掉落的小鱼干","A fish treat by the kitchen",{"fish":2,"treats":1}],["rare","幸运许愿铃","The lucky wishing bell",{"luck":1,"coins":18}],["play","篱笆边的毛线球","Yarn by the garden fence",{"yarn":3}]],"sakura":[["forage","樱花蜜糖","Blossom nectar",{"treats":3}],["play","飘落的发光花瓣","Glowing falling petals",{"yarn":2,"coins":20}],["cache","神社祈愿签","Shrine fortune slip",{"luck":1,"coins":22}],["forage","樱树根下的鱼干","Fish beneath the cherry tree",{"fish":2}],["rare","樱色琥珀","Cherry blossom amber",{"luck":2,"coins":28}],["play","小猫的花环","A kitten flower crown",{"treats":2,"yarn":2}]],"creek":[["forage","小溪里的银鱼","Silver minnows",{"fish":3}],["play","石头跳跳乐","Stepping-stone game",{"coins":25,"treats":1}],["cache","水车边的宝贝","Waterwheel keepsake",{"yarn":2,"fish":1}],["forage","苔藓里的猫薄荷","Catnip in the moss",{"treats":3}],["rare","月光珍珠","Moonwater pearl",{"luck":2,"fish":2}],["play","贝壳寻宝","Shell treasure hunt",{"coins":34,"fish":1}]],"volcano":[["forage","暖石上的零食","Treats on warm stone",{"treats":4}],["play","火山温泉","Volcanic hot spring",{"coins":36,"yarn":2}],["cache","矿工遗落的金币","Forgotten prospector coins",{"coins":50}],["forage","岩洞秘密鱼干","Hidden cave fish",{"fish":3}],["rare","余烬晶石","Ember crystal",{"luck":3,"coins":22}],["play","火山流星雨","Ember meteor shower",{"luck":1,"treats":2}]],"ruins":[["forage","星光小鱼干","Starlit fish",{"fish":3}],["play","月光下的约定","A promise in moonlight",{"yarn":3,"coins":32}],["cache","遗迹古币","Ancient coins",{"coins":60}],["forage","夜花蜜露","Nightflower nectar",{"treats":4}],["rare","星河碎片","Stardust fragment",{"luck":3,"fish":2}],["play","旋转的星盘","The turning astrolabe",{"luck":2,"yarn":2}]]};
+  var DUO_MEMORIES={"home":["☀️","暖阳里的好朋友","Sunbeam Friends","两只小猫挤进同一缕阳光，谁都不愿先离开。","Two kittens squeeze into one sunbeam, and neither wants to leave."],"sakura":["🌸","花瓣下的双猫约定","Promise Under Petals","花瓣落在它们的耳朵上，它们约好来年春天还一起回来。","Petals land on their ears; they promise to return together next spring."],"creek":["🐚","一起越过小溪","Across the Creek Together","一只猫伸出小爪子，另一只已经在石头上等着它。","One kitten stretches out a paw; the other waits patiently on the stepping stone."],"volcano":["🔥","并肩的勇气","Brave Little Paws","面对炙热的石头，两只猫紧紧相随，找到了安全的路。","Side by side, the kittens find a safe way through the hot stones."],"ruins":["🌙","双猫星座","Two-Cat Constellation","古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。","Two new stars appear on the old astrolabe, carrying their names side by side."]};
+  var SPOT_COORDS=[[330,610],[590,345],[875,475],[1150,950],[1490,445],[1360,1070]];
+  function activeDuo(){
+    const cats=window.CatRelations?.chosen?.()||[];
+    if(cats.length!==2)return null;
+    const trust=window.CatRelations?.pair(cats[0],cats[1])?.value||0;
+    return {cats,trust,ready:trust>=20&&window.CatRelations?.mood(cats[0],cats[1])!=='sulky'};
+  }
   function regionById(id) { for (var i = 0; i < REGIONS.length; i++) if (REGIONS[i].id === id) return REGIONS[i]; return null; }
 
   // ---- module-internal state ----
@@ -305,17 +315,24 @@
     }
     // Patrols are bound to a den, not screen-space icons.
     for(const kitten of spawns){kitten.homeX=kitten.x;kitten.homeY=kitten.y;}
-    var nNode = 6;
-    for (var j = 0; j < nNode; j++) {
-      var nid = id + '_n' + j;
-      nodes.push({
-        id: nid, x: 160 + Math.random() * (WORLD_W - 320), y: 160 + Math.random() * (WORLD_H - 320),
-        taken: prog.nodes.indexOf(nid) >= 0, kind: Math.random() < 0.3 ? 'rare' : 'coin', bob: Math.random() * 6.28,
-      });
+    // Place local finds at recognizable permanent spots; no boxes randomly
+    // reshuffled between visits. A later visit keeps the same landmarks.
+    var nativeFinds=REGION_FINDS[id]||REGION_FINDS.home;
+    for (var j = 0; j < nativeFinds.length; j++) {
+      const spot=SPOT_COORDS[j], shift=(r.difficulty-1)*28;
+      nodes.push({id:id+'_n'+j,
+        x:Math.max(90,Math.min(WORLD_W-90,spot[0]+(j%2?shift:-shift*.3))),
+        y:Math.max(90,Math.min(WORLD_H-90,spot[1]+(j%3-1)*shift)),
+        taken:prog.nodes.includes(id+'_n'+j),
+        kind:nativeFinds[j][0],find:nativeFinds[j],bob:j*.85});
     }
     const secretId=id+'_secret';
     nodes.push({id:secretId,x:WORLD_W*.22,y:WORLD_H*.5+(r.difficulty-3)*23,
       taken:prog.nodes.includes(secretId),kind:'secret',bob:0});
+    // A different duo memory in every region, unlocked by friendship.
+    const duoId=id+'_duo';
+    nodes.push({id:duoId,x:WORLD_W*.42,y:WORLD_H*.77,
+      taken:prog.nodes.includes(duoId),kind:'duo',bob:1.8});
     // parallax decor blobs (themed shrubs / rocks / crystals)
     for (var k = 0; k < 40; k++) {
       decor.push({
@@ -444,7 +461,15 @@
     for (var j = 0; j < w.nodes.length; j++) {
       var n = w.nodes[j];
       if (n.taken) continue;
-      if (Math.hypot(w.px - n.x, w.py - n.y) < 48) collectNode(n);
+      if (Math.hypot(w.px - n.x, w.py - n.y) < 48) {
+        if(n.kind==='duo'&&!activeDuo()?.ready){
+          if(toastCd<=0&&game?.toast){
+            const en=window.MorrowwishI18n?.get?.()!=='zh';
+            game.toast(en?'Pair two cats and reach 20 trust to discover this memory':'双猫搭档默契达到20，才能发现这段回忆');
+            toastCd=4;
+          }
+        }else collectNode(n);
+      }
     }
 
     // ---- return portal ----
@@ -488,12 +513,21 @@
     var d = world.region.difficulty;
     var reward;
     if(n.kind==='secret'){
-      var disc=DISCOVERIES[world.region.id];
+      const disc=DISCOVERIES[world.region.id];
       reward=Object.assign({discovery:Object.assign({id:world.region.id},disc)},disc.reward);
-    }else if (n.kind === 'rare') {
-      reward = { coins: 10 + d * 6, fish: 1, label: '发现珍稀补给 (+' + (10 + d * 6) + '🪙 +1🐠)' };
-    } else {
-      reward = { coins: 12 + d * 8, treats: 1, label: '拾获补给 (+' + (12 + d * 8) + '🪙 +1🐟)' };
+    }else if(n.kind==='duo'){
+      const entry=DUO_MEMORIES[world.region.id],duo=activeDuo();
+      const disc={id:world.region.id+'_duo',icon:entry[0],name:entry[1],en:entry[2],
+        story:entry[3],storyEn:entry[4]};
+      const extra=({home:{yarn:3,coins:20},sakura:{treats:3,coins:22},
+        creek:{fish:3},volcano:{luck:2,coins:25},ruins:{luck:2,fish:2}})[world.region.id];
+      reward=Object.assign({discovery:disc,duoMemory:true,duoTrust:12,
+        duoNames:duo?.cats.map(c=>window.State.catName(c))||[]},extra);
+      window.arcadeMetric?.('bond_duo_map_memory',{region:world.region.id});
+    }else{
+      const en=window.MorrowwishI18n?.get?.()!=='zh',info=n.find;
+      reward=Object.assign({},info?info[3]:{coins:12+d*8},
+        {label:info?(en?info[2]:info[1]):(en?'Found a treasure':'发现宝贝'),kind:n.kind});
     }
     window.State.save();
     if (cbCollect) cbCollect(reward);
