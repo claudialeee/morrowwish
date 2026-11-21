@@ -300,7 +300,10 @@ class CaptureBattle {
     }
     this._autoLastAction=null;
     this.commandTarget=null;
-    this.game.toast(this.autoMode ? '🤖 自动战斗 开启（你当指挥官）' : '🎮 手动操控 开启');
+    if(this.game.isTouch&&!this.autoMode)this.game.touchAutoFire=true;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    this.game.toast(this.autoMode?(en?'🤖 Auto battle · command your cats':'🤖 自动战斗 · 指挥猫咪')
+      :(en?'🎮 Manual · move and use skills':'🎮 手动战斗 · 移动与释放技能'));
     return this.autoMode;
   }
 
@@ -623,7 +626,7 @@ class CaptureBattle {
     // edge-triggered actions
     const pressed = k => K[k] && !this._prevKeys[k];
     // basic attack: left mouse held OR J
-    if (m.down || K['j']) this.fireBasic();
+    if (m.down || K['j'] || (this.game.isTouch&&this.game.touchAutoFire)) this.fireBasic();
     if (pressed('q')) this.skillQ();
     if (pressed('e')) this.skillE();
     if (pressed(' ')) this.dodge();
