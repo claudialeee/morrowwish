@@ -41,12 +41,11 @@ html.mw-mini-fullscreen-on[data-mw-settings-game="pocket-aquarium"] .mw-mini-aqu
 let dock,btnLang,btnMusic,btnSfx;
 const hiddenMenuControls=()=>route==='pawsibly-innocent';
 let fallbackMusic=null,fallbackEnabled=false,fallbackFxEnabled=true,fallbackFxCtx=null;
-try{fallbackFxEnabled=localStorage.getItem('morrowwish-universal-fx')!=='0'}catch(_){}
+try{fallbackFxEnabled=localStorage.getItem('morrowwish-universal-fx')!=='0';fallbackEnabled=localStorage.getItem('morrowwish-universal-music')==='1'}catch(_){}
 function recordedFallback(){
  if(!fallbackMusic){
   fallbackMusic=new Audio('/audio/cat-happy-clappy.ogg');
   fallbackMusic.loop=true;fallbackMusic.preload='auto';fallbackMusic.volume=.12;
-  fallbackEnabled=localStorage.getItem('morrowwish-universal-music')==='1';
  }
  return fallbackMusic;
 }
