@@ -138,6 +138,7 @@ assert.equal(events.filter(e=>e.name==='game_complete').length,1,'Exactly one co
 listeners['morrowwish-language-change']({detail:{lang:'zh'}});
 assert.ok(nodes.get('subtitle').textContent.includes('偷零食'),'Chinese gameplay copy switches correctly');
 assert.equal(nodes.get('menuButtonLabel').textContent,'菜单','The menu button must have a visible localized label');
+assert.equal(nodes.get('stageHomeLabel').textContent,'返回主页','Permanent home link must localize in Chinese');
 assert.ok(nodes.get('bonusQuickText').textContent.includes('打翻一个花瓶'),
  'Bonus objective must show its full Chinese name');
 assert.ok(frames>=1,'Canvas art rendered');
@@ -182,6 +183,8 @@ assert.ok(nodes.get('relicGallery').innerHTML.includes('已收藏'),
  'The album must mark an escaped-with souvenir as saved');
 assert.ok(source.includes('const RELICS=[')&&source.includes('const BADGES=['),
  'Named souvenirs and persistent achievements must remain wired');
+assert.ok(reviewStyle.includes('id="stageHome"')&&reviewStyle.includes('class="stage-left"'),
+ 'A permanent top-left home link must remain visible outside menu and results');
 assert.ok(reviewStyle.includes('id="achievementCount"')&&reviewStyle.includes('id="relicGallery"')&&reviewStyle.includes('id="guardIntent"'),
  'The game must show collectible names, earned badges and the owner state');
 assert.ok(!reviewStyle.includes('<section class="explainer"'),
