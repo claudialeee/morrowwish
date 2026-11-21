@@ -3,7 +3,7 @@
 const W=10,H=7,T=84,NEED=3,$=id=>document.getElementById(id);
 const ROOMS=[
 {en:"The Sunny Lounge",zh:"阳光客厅",enSub:"Grab the nearby fish first. The human moves when you do.",zhSub:"先偷旁边的小鱼。你走一步，主人也走一步。",goal:29,patrol:[[7,2],[8,2],[8,1],[7,1]],rows:["..........",".....S....","...V......",".CF....F..","...S..H...","....B..F..","...F.....E"]},
-{en:"Kitchen Caper",zh:"厨房偷吃计划",enSub:"Four fish in the kitchen. Can you steal every last one?",zhSub:"厨房里有四条鱼。你敢全部偷走吗？",goal:30,patrol:[[6,1],[8,1],[8,4],[6,4]],rows:["..........","..S...H...",".C...V...F","...##.....","..F...S...","..B...F..F",".........E"]},
+{en:"Kitchen Caper",zh:"厨房偷吃计划",enSub:"Four fish in the kitchen. Can you steal every last one?",zhSub:"厨房里有四条鱼。你敢全部偷走吗？",goal:30,patrol:[[7,1],[9,1],[9,2],[7,2]],rows:["..........","..S...H...",".C...V...F","...##.....","..F...S...","..B...F..F",".........E"]},
 {en:"The Laundry Incident",zh:"洗衣房事件",enSub:"The vacuum patrols the laundry. Watch its next move.",zhSub:"扫地机在洗衣房巡逻，留意它的移动方向。",goal:32,patrol:[[7,2],[9,2],[9,5],[7,5]],rows:["....V...F.",".C..S.....",".....B.H..","..###.....",".F.....S..","....F.....","...F.....E"]},
 {en:"A Very Loud Nap",zh:"午睡大骚动",enSub:"The owner is asleep. Keep the room quiet.",zhSub:"主人正在睡觉。轻手轻脚，别把人吵醒了。",goal:32,patrol:[[5,2],[7,2],[7,5],[5,5]],rows:["...F......",".C...S...F","..S..H....",".....##...","..B..F....","...V...F..",".........E"]},
 {en:"Library of Secrets",zh:"图书馆秘密",enSub:"Creaky floorboards alert the owner. Find a silent route.",zhSub:"嘎吱作响的地板会惊动主人。找条安静路线。",goal:35,patrol:[[6,3],[8,3],[8,1],[6,1]],rows:["....F.....",".C.#......","...#...F..","..V...H...","...#..S...","...F...B..","......F..E"]},
@@ -533,7 +533,7 @@ function moveTo(p){if(s.done||s.yarnAnimating||!pass(p)||Math.abs(p.x-s.cat.x)+M
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
 const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish"); s.score+=save.cat===4?135:100;audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":"fish");
- if(ownerDistance(p)<=5&&s.sleepTurns===0&&!s.yarnAnimating&&!s.noise){
+ if(s.index>=2&&ownerDistance(p)<=5&&s.sleepTurns===0&&!s.yarnAnimating&&!s.noise){
   s.noise={...p};s.alert=4;guardReaction("fish",2);
  }
  metric("cat_fish",{level:daily?9:stage+1,score:s.score});}
