@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 const dir=process.env.MW_V4_BROLL_DIR||path.join(process.env.RUNNER_TEMP||os.tmpdir(),'morrowwish-v4-broll');
 const host='http://127.0.0.1:8795';
-fs.mkdirSync(dir,{recursive:true});
+fs.mkdirSync(dir,{recursive:true});fs.mkdirSync(path.join(dir,'raw'),{recursive:true});
 const server=spawn('python3',['-m','http.server','8795','--bind','127.0.0.1','--directory','public'],{stdio:'ignore'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function realVerticalCamera(id){
@@ -55,6 +55,15 @@ let browser;
 try{
  await sleep(1300);
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+ // Use OFFICIAL current game art in the trailer, not invented game scenes.
+ // No stretched landscape art: the cover is composed with CSS object-fit:cover.
+ const coverPage=await browser.newPage({viewport:{width:540,height:960},deviceScaleFactor:1});
+ const svg=fs.readFileSync('public/art/cat-bond-scene.svg').toString('base64');
+ await coverPage.setContent('<!doctype html><html><body style="margin:0;overflow:hidden;background:linear-gradient(160deg,#25193e 0%,#503466 46%,#c78c77 100%);display:flex;align-items:center;justify-content:center;width:100vw;height:100vh"><img style="width:125vw;height:85vh;object-fit:cover;object-position:center;border-radius:32px;box-shadow:0 25px 45px #170c2477" src="data:image/svg+xml;base64,'+svg+'"></body></html>');
+ await coverPage.waitForTimeout(550);
+ fs.mkdirSync('public/promo/cat-bond',{recursive:true});
+ await coverPage.screenshot({path:'public/promo/cat-bond/cover-portrait.png'});
+ await coverPage.close();
  const result=[];
  result.push(await capture(browser,'cat-bond',async({page,stamp})=>{
   await page.goto(host+'/cat-bond/?autodev&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
