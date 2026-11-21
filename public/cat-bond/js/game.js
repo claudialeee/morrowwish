@@ -711,10 +711,12 @@ class Game {
     ]){
       const btn=document.getElementById(id);if(!btn)continue;
       if(skill&&btn.querySelector('.mv-icon'))btn.querySelector('.mv-icon').textContent=this.skillIcon(skill);
-      if(btn.querySelector('.mv-name'))btn.querySelector('.mv-name').textContent=skill?.name||fallback;
+      const displayName=skill?(en?(window.CatBondI18n?.translate?.(skill.name)||skill.name):skill.name):fallback;
+      const displayDesc=skill?(en?(window.CatBondI18n?.translate?.(skill.desc||'')||skill.desc||''):(skill.desc||'')):'';
+      if(btn.querySelector('.mv-name'))btn.querySelector('.mv-name').textContent=displayName;
       if(btn.querySelector('.mv-k'))btn.querySelector('.mv-k').textContent=key;
-      btn.title=skill?(skill.name+' · '+(skill.desc||'')):fallback;
-      btn.setAttribute('aria-label',(skill?.name||fallback)+' · '+key);
+      btn.title=skill?(displayName+' · '+displayDesc):fallback;
+      btn.setAttribute('aria-label',displayName+' · '+key);
       const newMove=!!(skill&&active.cat.unseenSkills?.includes(skill.id));
       btn.classList.toggle('newly-learned',newMove);
       let tag=btn.querySelector('.move-new-tag');
