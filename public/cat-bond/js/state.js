@@ -18,6 +18,7 @@ const DEFAULT_STATE = () => ({
   bondingRewards: [], // claimed bonding milestones
   collectionMilestones: [], // one-time, cumulative codex discovery rewards
   repeatSightings: 0, // repeated already-owned species encountered while searching
+  battlePrefs: { autoBattle: false }, // remember the last combat control choice across captures and reloads
   bestGrades: {}, // speciesId -> best capture score (C/B/A/S), for rematches
   masteryBadges: {}, // speciesId -> true; only a first S earns a permanent Golden Paw
   // Tiny adaptive-AI profile: enemies learn the player's habits across battles.
