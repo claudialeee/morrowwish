@@ -47,6 +47,7 @@ const UI = {
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
     document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel());
+    document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
@@ -77,6 +78,50 @@ const UI = {
     else if (tab === 'dex') this.openDex();
     else if (tab === 'daily') this.openDaily();
     else if (tab === 'shop') this.openShop();
+  },
+
+  // Five real playable locations, with their exact unlocking conditions.
+  openMapChooser(){
+    if(!window.WorldMap)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const rows=WorldMap.REGIONS.map(r=>{
+      const open=WorldMap.isUnlocked(r.id);
+      const pct=Math.round(100*(State.S.worldmap?.regions?.[r.id]?.explored||0));
+      const prev=WorldMap.REGIONS.find(x=>x.id===r.unlock?.after);
+      const own=r.unlock?.own?GameData.speciesById(r.unlock.own):null;
+      const requirement=!r.unlock?(en?'Ready to explore':'开局即可探索')
+        :en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%'+(own?' · Befriend '+own.name:'')
+        :'探索「'+prev.name+'」'+Math.round(r.unlock.explore*100)+'%'+(own?' · 拥有「'+own.name+'」':'');
+      const icon=({home:'🏡',sakura:'🌸',creek:'💧',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
+      return `<button type="button" class="map-destination ${open?'available':'locked'}" data-region="${r.id}" ${open?'':'disabled'}>
+        <span class="map-destination-icon">${icon}</span>
+        <span class="map-destination-info"><strong>${en?r.sub:r.name}</strong>
+          <small>${open?(en?'Explored '+pct+'%':'探索度 '+pct+'%'):'🔒 '+requirement}</small></span>
+        <span class="map-destination-enter">${open?(en?'Enter':'进入'):'🔒'}</span>
+      </button>`;
+    }).join('');
+    this.panel(`<span class="card-close">×</span><div class="map-chooser">
+      <h2>${en?'🗺️ Explore five regions':'🗺️ 探索五个地区'}</h2>
+      <p>${en?'Each region has its own scenery, wild cats and treasures. Unlock the next by exploring.'
+        :'每个地区都有独立场景、野猫与宝藏。提高探索度，逐步解锁新地图。'}</p>
+      <div class="map-destination-list">${rows}</div>
+      <p class="map-instructions">${en
+        ?'PC: click to walk or mouse-drag to pan; WASD also works. Phone: tap to walk, drag to look around. Approach cats and treasure.'
+        :'电脑：点击草坪行走、按住鼠标拖拽查看四周，也支持 WASD；手机：轻点行走、拖动草坪平移视角。接近野猫和宝藏自动互动。'}</p>
+      <div class="btn-row"><button class="btn" id="map-world-view">${en?'View world map':'查看世界地图'}</button>
+        <button class="btn ghost" id="map-back-yard">${en?'Back to yard':'返回庭院'}</button></div></div>`);
+    document.querySelectorAll('#panel .map-destination.available').forEach(btn=>{
+      btn.onclick=()=>{
+        if(WorldMap.enterRegion(btn.dataset.region)){
+          this.closeAll();
+          const r=WorldMap.REGIONS.find(r=>r.id===btn.dataset.region);
+          this.game.toast(en?'Now exploring '+r.sub:'开始探索「'+r.name+'」');
+          window.arcadeMetric?.('bond_region_enter',{region:r.id});
+        }
+      };
+    });
+    document.getElementById('map-world-view').onclick=()=>{WorldMap.enterMap();this.closeAll();};
+    document.getElementById('map-back-yard').onclick=()=>{this.closeAll();this.game.scene='yard';this.game.showYardChrome();};
   },
 
   // An actual choice, not a random reward notification.
@@ -848,8 +893,8 @@ const UI = {
               :'历史最佳 '+best+' 级 · 挑战 S 级可解锁金爪徽章')}</p>
           <canvas id="dx" width="160" height="130" style="display:block;margin:10px auto;border-radius:12px"></canvas>
           <p class="tiny center">${en?'Successful encounters':'累计成功收服'} ${State.S.dex[sp.id]} ·
-             ${en?'S goal':'S级挑战'} ${this.game.gradeTimeLimit(sp.rarity)}s ·
-             ${en?'70% HP, 6-hit combo or perfect dodge':'保留70%血量，6连击或完美闪避'}</p>
+             ${en?'S: 80% HP, 8 hits or perfect dodge':'S：80%血量、8连击或完美闪避'} ·
+             ${en?'Auto S: 95% HP, 16 hits, 60% time':'自动 S：95%血量、16连击、60%限时'}</p>
           <div class="btn-row" style="justify-content:center">
             <button class="btn gold" id="dx-rematch" ${canRematch?'':'disabled'}>${en?'⚔️ Try for S rank':'⚔️ 重战挑战 S 级'}</button>
             <button class="btn ghost" id="dx-back">${en?'Back to codex':'返回图鉴'}</button>
@@ -1045,9 +1090,9 @@ const UI = {
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
     const deadline=this.game.gradeTimeLimit(wildSp.rarity);
     const masteryChallenge=english
-      ?('🏅 S challenge: Win in '+deadline+'s · Keep 70% HP · 6-hit combo or perfect dodge. '
+      ?('🏅 S: Win in '+deadline+'s · Keep 80% HP · 8-hit combo or perfect dodge. Auto S: 95% HP · 16 hits · 60% time limit. '
         +(hasMedal?'Golden Paw already earned.':'First S unlocks a permanent Golden Paw and a rare-cat lure.'))
-      :('🏅 S 评级：'+deadline+'秒内获胜 · 保持70%血量 · 6连击或完美闪避。'
+      :('🏅 S：'+deadline+'秒内获胜 · 保留80%血量 · 8连击或完美闪避。自动 S 还需95%血量、16连击、耗时不超过标准的60%。'
         +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁永久金爪徽章和稀有猫诱饵。'));
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
@@ -1189,6 +1234,10 @@ const UI = {
           · ${en?'Medals':'金爪徽章'} ${this.game.masteryStatus().medals}/${GameData.SPECIES.length}</small></div>
       </div>
       <p class="center mastery-challenge-note">${note}</p>
+      ${won&&performance?.autoUsed?'<p class="center mastery-grade-hint">'+(performance.autoExceptional
+        ?(en?'Exceptional auto run!':'自动战斗发挥出色！')
+        :(en?'Auto S requires 95% HP, 16 hits and 60% of the time limit.'
+          :'自动 S 需要95%血量、16连击、耗时不超过标准的60%。'))+'</p>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="mc-retry">${en?'Challenge again':'再次挑战'}</button>
         <button class="btn" id="mc-dex">${en?'View medals':'查看图鉴'}</button>
@@ -1245,7 +1294,11 @@ const UI = {
           :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 零食，不再增加重复个体。')
         +'</p>':''}
       <p class="sub center">${totalText} · ${goalText}</p>
-      ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small></div></div>':''}
+      ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small>'
+         +(performance.autoUsed?'<small class="grade-explain">'+(performance.autoExceptional
+           ?(english?'Exceptional automatic performance!':'自动战斗发挥出色！')
+           :(english?'Auto S requires 95% HP · 16-hit combo · 60% time limit'
+              :'自动 S 需要95%血量 · 16连击 · 60%时间限制'))+'</small>':'')+'</div></div>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
         +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name

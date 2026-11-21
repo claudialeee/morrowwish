@@ -42,7 +42,8 @@ class CaptureBattle {
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
     this.comboBest = 0;                   // best this battle
-    this.perfectDodges = 0;               // earns tactical capture rankings
+    this.perfectDodges = 0;
+    this.autoUsed=false;               // earns tactical capture rankings
     this.comboFlash = 0;                  // milestone pop timer
     this.slowmo = 0;                      // perfect-dodge bullet-time timer
 
@@ -58,6 +59,7 @@ class CaptureBattle {
 
     // --- shared ---
     this.projectiles = [];               // {x,y,vx,vy,r,dmg,owner,life,color,kind}
+    this.skillStrokes=[]; // Short-lived authored 2D spell shapes (not recolored bullets)
     this.particles = [];
     this.floaters = [];                  // damage numbers
     this.vfx = new VFX();                // juicy skill effects
@@ -243,6 +245,7 @@ class CaptureBattle {
 
   toggleAuto() {
     this.autoMode = !this.autoMode;
+    if(this.autoMode)this.autoUsed=true;
     this._autoLastAction=null;
     this.commandTarget=null;
     this.game.toast(this.autoMode ? '🤖 自动战斗 开启（你当指挥官）' : '🎮 手动操控 开启');
@@ -629,6 +632,74 @@ class CaptureBattle {
     if(idx<0)return;
     f.cat.unseenSkills.splice(idx,1);State.save();this.game.updateSkillLabels?.();
   }
+  // Elemental spell shapes have distinct geometry AND hit rules.
+  // Water/light: piercing lances; lightning: chain; fire: area blast; grass: cutting leaves.
+  castDistinctProjectile(f,sk,aim,col,baseDmg){
+    if(!sk)return false;
+    const id=sk.id,ex=f.x+Math.cos(aim)*23,ey=f.y+Math.sin(aim)*23;
+    const enemies=this.liveEnemies();
+    if(id==='waterLash'||id==='prismBeam'){
+      const water=id==='waterLash',range=water?430:525,width=water?38:21;
+      const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
+      this.skillStrokes.push({kind:water?'water':'prism',x:ex,y:ey,x2:endX,y2:endY,
+        color:col,life:.45,max:.45});
+      for(let i=0;i<(water?5:4);i++){
+        const r=60+i*(water?75:125);
+        this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
+          {r0:4,vr:80,life:.26,color:water?'#a5edfc':'#fefcbb',width:2});
+      }
+      let hits=0;
+      for(const e of enemies){
+        const dx=e.x-ex,dy=e.y-ey,along=dx*Math.cos(aim)+dy*Math.sin(aim);
+        const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
+        if(along<0||along>range||side>width+e.r*.5)continue;
+        const dd=this.applyHitEffects(e,sk,baseDmg*(water?.9:1.18),e.x,e.y);
+        this.hurtEnemy(e,dd,e.x,e.y,true);
+        this.vfx.impact(e.x,e.y,col);hits++;
+      }
+      if(hits)this.shakeT=Math.max(this.shakeT,.13);
+      return true;
+    }
+    if(id==='boltArc'){
+      const available=enemies.slice(),chain=[];
+      let sx=ex,sy=ey;
+      for(let i=0;i<3;i++){
+        const candidates=available.map(e=>({e,dist:Math.hypot(e.x-sx,e.y-sy)}))
+          .filter(v=>v.dist<(i===0?440:205)).sort((a,b)=>a.dist-b.dist);
+        if(!candidates.length)break;
+        const target=candidates[0].e;
+        this.vfx.beam(sx,sy,target.x,target.y,i?'#e2d6ff':'#ffeeb0');
+        this.skillStrokes.push({kind:'lightning',x:sx,y:sy,x2:target.x,y2:target.y,
+          color:col,life:.4,max:.4});
+        const dmg=this.applyHitEffects(target,sk,baseDmg*(1-i*.23),target.x,target.y);
+        this.hurtEnemy(target,dmg,target.x,target.y,true);
+        this.vfx.burst(target.x,target.y,{count:9,color:col,speed:160,life:.3});
+        available.splice(available.indexOf(target),1);
+        chain.push(target);sx=target.x;sy=target.y;
+      }
+      if(!chain.length){this.skillStrokes.push({kind:'lightning',x:ex,y:ey,
+        x2:ex+Math.cos(aim)*350,y2:ey+Math.sin(aim)*350,color:col,life:.28,max:.28});}
+      return true;
+    }
+    if(id==='leafDart'){
+      for(let i=-1;i<=1;i++){
+        const ang=aim+i*.16;
+        this.spawnProj(ex,ey,ang,f.projSpeed*1.28,baseDmg*.92,'me','#94e6a4',9,'leaf',sk,1.25);
+      }
+      this.vfx.burst(ex,ey,{count:9,color:'#c0f4ab',angle:aim,spread:.6,speed:170,life:.32});
+      return true;
+    }
+    if(id==='fireballMeow'){
+      this.spawnProj(ex,ey,aim,f.projSpeed*.75,baseDmg*1.5,'me','#ff9752',15,'fireball',sk,1.8);
+      this.vfx.burst(ex,ey,{count:16,color:'#ffdb84',angle:aim,spread:.65,speed:175,life:.38});
+      return true;
+    }
+    if(id==='hex'){
+      this.spawnProj(ex,ey,aim,f.projSpeed*.68,baseDmg*1.25,'me','#bca4ec',13,'hex',sk,1.85);
+      this.vfx.orb(ex,ey,'#b397ec',7);return true;
+    }
+    return false;
+  }
   skillQ(f, aim) {
     f = f || this.me(); if (f.cd.q > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
@@ -646,11 +717,11 @@ class CaptureBattle {
     if (kind === 'melee') {
       // 近战: short-range arc slash — only hits enemies within MELEE_RANGE, big damage
       this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
-    } else {
-      // 远程: projectile fan that flies the full arena
-      for (let i = -2; i <= 2; i++) this.spawnProj(f.x, f.y, aim + i * 0.18, f.projSpeed * 0.8, f.dmg * pow, 'me', col, 7, 'fur', sk);
-      this.vfx.muzzle(f.x, f.y, aim, col);
-      this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
+    } else if(!this.castDistinctProjectile(f,sk,aim,col,f.dmg*pow)){
+      // The basic unawakened Q remains a fast, learnable yarn fan.
+      for(let i=-2;i<=2;i++)
+        this.spawnProj(f.x,f.y,aim+i*.18,f.projSpeed*.8,f.dmg*pow,'me',col,7,'fur',sk);
+      this.vfx.muzzle(f.x,f.y,aim,col);
     }
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
@@ -664,6 +735,8 @@ class CaptureBattle {
   meleeStrike(f, aim, skill, dmg, col) {
     const RANGE = 90, ARC = 1.1;
     this.vfx.ring(f.x, f.y, { r0: RANGE * 0.4, vr: 520, life: 0.22, color: col, width: 7 });
+    this.skillStrokes.push({kind:'clawSlash',x:f.x,y:f.y,angle:aim,
+      color:col,life:.37,max:.37});
     // slash arc VFX
     for (let i = -2; i <= 2; i++) this.vfx.burst(f.x + Math.cos(aim) * 40, f.y + Math.sin(aim) * 40, { count: 2, color: col, angle: aim + i * 0.3, spread: 0.3, speed: 180, life: 0.25 });
     let hit = false;
@@ -690,9 +763,12 @@ class CaptureBattle {
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1);
     const col = this.elemColor(sk ? sk.element : f.element);
     if(sk&&sk.kind==='projectile'){
-      for(let i=-1;i<=1;i++)
-        this.spawnProj(f.x,f.y,aim+i*.12,f.projSpeed*.93,f.dmg*sk.power*(f.damageBoostT>0?1.25:1),'me',col,7,'fur',sk);
-      this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim,spread:.8,speed:155,life:.3});
+      const dmg=f.dmg*sk.power*(f.damageBoostT>0?1.25:1);
+      if(!this.castDistinctProjectile(f,sk,aim,col,dmg)){
+        for(let i=-1;i<=1;i++)
+          this.spawnProj(f.x,f.y,aim+i*.12,f.projSpeed*.93,dmg,'me',col,7,'fur',sk);
+        this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim,spread:.8,speed:155,life:.3});
+      }
     }else if(sk&&sk.kind==='melee'){
       this.meleeStrike(f,aim,sk,f.dmg*sk.power*(f.damageBoostT>0?1.25:1),col);
     }else{
@@ -748,6 +824,8 @@ class CaptureBattle {
         hits++;
       }
       this.vfx.shockwave(f.x,f.y,color);
+      this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,
+        color,life:.92,max:.92});
       this.vfx.ring(f.x,f.y,{r0:18,vr:Math.max(450,radius*2),life:.65,color,width:9});
       this.vfx.burst(f.x,f.y,{count:28,color,speed:280,life:.65,r:5});
       this.vfx.text(f.x,f.y-48,skill.name+'!',color,22);
@@ -811,6 +889,65 @@ class CaptureBattle {
   }
   floater(x, y, text, color, size) { this.floaters.push({ x, y, text, color, life: 0.9, size: size || 15 }); }
 
+  // Persistent animated strokes make each elemental spell recognizable in motion.
+  drawSkillStrokes(ctx){
+    for(const v of this.skillStrokes){
+      const k=Math.max(0,v.life/v.max),p=1-k;
+      ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
+      ctx.lineCap='round';ctx.lineJoin='round';
+      if(v.kind==='water'||v.kind==='prism'||v.kind==='lightning'){
+        const dx=v.x2-v.x,dy=v.y2-v.y,len=Math.hypot(dx,dy)||1;
+        const nx=-dy/len,ny=dx/len;
+        const colors=v.kind==='water'?['#d4fdff','#61d3f7','#f4ffff']:
+          v.kind==='prism'?['#fef3b1','#eab1ff','#bff9ff']:['#e9d6ff','#fbecb1','#b1dfff'];
+        for(let layer=0;layer<3;layer++){
+          ctx.strokeStyle=colors[layer];ctx.lineWidth=(v.kind==='water'?17:9)-layer*3;
+          ctx.beginPath();ctx.moveTo(v.x,v.y);
+          const seg=18;
+          for(let i=1;i<=seg;i++){
+            const t=i/seg,x=v.x+dx*t,y=v.y+dy*t;
+            const amp=v.kind==='water'?8:v.kind==='lightning'?12:3;
+            const wave=Math.sin(t*(v.kind==='lightning'?53:20)+this.t*22+layer*2)*amp*k;
+            ctx.lineTo(x+nx*wave,y+ny*wave);
+          }ctx.stroke();
+        }
+      }else if(v.kind==='clawSlash'){
+        ctx.translate(v.x,v.y);ctx.rotate(v.angle);
+        for(let i=-1;i<=1;i++){
+          ctx.strokeStyle=i===0?'#fffbe6':v.color;ctx.lineWidth=8-i*i*1.5;
+          ctx.beginPath();ctx.arc(24,0,56+i*6,-.95+p*.5,.9+p*.5);ctx.stroke();
+        }
+      }else if(v.kind==='fireBurst'){
+        ctx.strokeStyle=v.color;ctx.lineWidth=11*k;
+        ctx.beginPath();ctx.arc(v.x,v.y,15+p*112,0,Math.PI*2);ctx.stroke();
+        for(let i=0;i<12;i++){
+          const ang=i*Math.PI/6,rad=22+p*105;
+          ctx.fillStyle=i%2?'#ff7f38':'#ffe29a';
+          ctx.beginPath();ctx.arc(v.x+Math.cos(ang)*rad,v.y+Math.sin(ang)*rad,5*k+1,0,Math.PI*2);ctx.fill();
+        }
+      }else if(v.kind==='ultimate'){
+        const el=v.element,count=el==='grass'?18:el==='water'?14:el==='elec'?20:12;
+        for(let i=0;i<count;i++){
+          const ang=i*Math.PI*2/count+this.t*(el==='elec'?5:2);
+          const rad=45+p*(el==='water'?225:165);
+          const x=v.x+Math.cos(ang)*rad,y=v.y+Math.sin(ang)*rad;
+          ctx.save();ctx.translate(x,y);ctx.rotate(ang+this.t*2);
+          if(el==='grass'){
+            ctx.fillStyle='#b9ec9f';ctx.beginPath();ctx.ellipse(0,0,13,5,0,0,Math.PI*2);ctx.fill();
+          }else if(el==='water'){
+            ctx.strokeStyle='#adf3ff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,14,-2.7,.8);ctx.stroke();
+          }else if(el==='elec'){
+            ctx.strokeStyle='#f8e985';ctx.lineWidth=4;ctx.beginPath();
+            ctx.moveTo(-7,-13);ctx.lineTo(1,-2);ctx.lineTo(-4,3);ctx.lineTo(9,13);ctx.stroke();
+          }else{
+            ctx.fillStyle=v.color;ctx.beginPath();ctx.arc(0,0,6,0,Math.PI*2);ctx.fill();
+          }ctx.restore();
+        }
+      }
+      ctx.restore();
+    }
+  }
+
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
@@ -821,6 +958,8 @@ class CaptureBattle {
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
     if(this.duoCinematic)this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);
+    for(const v of this.skillStrokes)v.life-=dt;
+    this.skillStrokes=this.skillStrokes.filter(v=>v.life>0);
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
@@ -886,8 +1025,18 @@ class CaptureBattle {
         for (const e of this.liveEnemies()) {
           if (e.flash <= 0 && e.inv <= 0 && Math.hypot(p.x - e.x, p.y - e.y) < p.r + 22) {
             const dmg = this.applyHitEffects(e, p.skill, p.dmg, p.x, p.y);
-            this.hurtEnemy(e, dmg, p.x, p.y); this.vfx.impact(p.x, p.y, p.color); p.life = 0;
-            break;
+            this.hurtEnemy(e,dmg,p.x,p.y);this.vfx.impact(p.x,p.y,p.color);
+            if(p.kind==='fireball'){
+              this.vfx.shockwave(p.x,p.y,'#ffc16e');
+              this.vfx.burst(p.x,p.y,{count:32,color:'#ffbf71',speed:240,life:.55,r:5});
+              this.skillStrokes.push({kind:'fireBurst',x:p.x,y:p.y,color:'#ffbd76',life:.45,max:.45});
+              for(const other of this.liveEnemies().slice()){
+                if(other===e||Math.hypot(other.x-p.x,other.y-p.y)>105)continue;
+                const splash=this.applyHitEffects(other,p.skill,p.dmg*.36,other.x,other.y);
+                this.hurtEnemy(other,splash,other.x,other.y,true);
+              }
+            }
+            p.life=0;break;
           }
         }
       } else {
@@ -1348,6 +1497,7 @@ class CaptureBattle {
 
     // vfx under-layer (trails, rings, muzzle)
     this.vfx.draw(ctx);
+    this.drawSkillStrokes(ctx);
 
     // projectiles with glow
     for (const p of this.projectiles) {
@@ -1356,10 +1506,38 @@ class CaptureBattle {
       ctx.globalAlpha = 0.35; ctx.fillStyle = p.color;
       ctx.beginPath(); ctx.arc(0, 0, p.r * 2.1, 0, Math.PI * 2); ctx.fill();
       ctx.globalAlpha = 1; ctx.fillStyle = p.color;
-      if (p.kind === 'star') { ctx.rotate(this.t * 8); star(ctx, 0, 0, p.r, p.r * 0.5, 5); }
-      else { ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2); ctx.fill(); }
-      // white-hot core
-      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.arc(0, 0, p.r * 0.45, 0, Math.PI * 2); ctx.fill();
+      if(p.kind==='star'){ctx.rotate(this.t*8);star(ctx,0,0,p.r,p.r*.5,5);}
+      else if(p.kind==='claw'){
+        ctx.rotate(p.ang);
+        ctx.strokeStyle='#fff5d5';ctx.lineWidth=3;ctx.lineCap='round';
+        for(let k=-1;k<=1;k++){
+          ctx.beginPath();ctx.moveTo(-p.r*1.2,k*4-4);ctx.quadraticCurveTo(0,k*4+1,p.r*1.5,k*4+7);ctx.stroke();
+        }
+      }else if(p.kind==='leaf'){
+        ctx.rotate(p.ang+Math.sin(this.t*14)*.2);
+        ctx.fillStyle='#96f1a9';ctx.beginPath();ctx.moveTo(-14,0);
+        ctx.quadraticCurveTo(2,-9,16,0);ctx.quadraticCurveTo(2,9,-14,0);ctx.fill();
+        ctx.strokeStyle='#efffd5';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(-11,0);ctx.lineTo(13,0);ctx.stroke();
+      }else if(p.kind==='fireball'){
+        ctx.rotate(this.t*6);
+        const fire=ctx.createRadialGradient(0,0,0,0,0,18);
+        fire.addColorStop(0,'#fff8cc');fire.addColorStop(.4,'#ffd367');fire.addColorStop(1,'rgba(255,86,33,.15)');
+        ctx.fillStyle=fire;ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();
+        for(let i=0;i<5;i++){
+          const ang=i*Math.PI*2/5+this.t*4;
+          ctx.fillStyle='#ff914c';ctx.beginPath();ctx.ellipse(-12+Math.cos(ang)*10,Math.sin(ang)*10,7,3,ang,0,Math.PI*2);ctx.fill();
+        }
+      }else if(p.kind==='hex'){
+        ctx.rotate(this.t*2.6);ctx.strokeStyle='#e8c5ff';ctx.lineWidth=3;
+        ctx.beginPath();for(let i=0;i<=6;i++){const a=i*Math.PI/3;
+          if(i===0)ctx.moveTo(Math.cos(a)*15,Math.sin(a)*15);
+          else ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);}ctx.stroke();
+        ctx.rotate(-this.t*5.2);ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
+      }else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      if(!['claw','leaf','fireball','hex'].includes(p.kind)){
+        ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(0,0,p.r*.45,0,Math.PI*2);ctx.fill();
+      }
       ctx.restore();
     }
 

@@ -29,7 +29,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=quality-nov20" />
+  <link rel="stylesheet" href="css/style.css?v=map-spells-srank-nov20" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=catbond-2" defer></script>
   <script src="/studio-music.js?v=catbond-1" defer></script>
@@ -56,12 +56,13 @@
       <div id="first-quest" role="status" hidden></div>
       <button id="yard-surprise" type="button" hidden></button>
       <button id="yard-duo-status" type="button" hidden aria-label="查看双猫搭档"></button>
+      <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
       <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
       <button id="yard-cat-switch" type="button" aria-label="切换庭院中的猫猫" hidden></button>
 
       <!-- Yard floating actions -->
       <div id="yard-actions">
-        <button class="fab" id="fab-map" title="探索世界">🗺️</button>
+        <button class="fab map-fab" id="fab-map" title="查看五个探索地区" aria-label="探索五张地图">🗺️<small>地图</small></button>
         <button class="fab" id="fab-seek" title="主动寻找野猫（不会自动刷新）" aria-label="主动寻找野猫">🌿</button>
         <button class="fab" id="fab-play" title="逗猫">🪶</button>
         <button class="fab" id="fab-feed" title="喂食">🍖</button>
@@ -160,10 +161,10 @@
   <script src="js/raising.js?v=first-pay-duo-2-20261120"></script>
   <script src="js/scenery.js?v=quality-nov20"></script>
   <script src="js/world.js?v=quality-nov20"></script>
-  <script src="js/worldmap.js?v=quality-nov20"></script>
-  <script src="js/battle.js?v=quality-nov20"></script>
-  <script src="js/ui.js?v=quality-nov20"></script>
-  <script src="js/game.js?v=quality-nov20"></script>
+  <script src="js/worldmap.js?v=map-spells-srank-nov20"></script>
+  <script src="js/battle.js?v=map-spells-srank-nov20"></script>
+  <script src="js/ui.js?v=map-spells-srank-nov20"></script>
+  <script src="js/game.js?v=map-spells-srank-nov20"></script>
   <script src="js/main.js?v=safe-reset-20261120"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=duo-intro-20261120"></script>
