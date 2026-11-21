@@ -22,6 +22,13 @@ on:
       - 'package-lock.json'
       - '.github/workflows/deploy-cloudflare.yml'
   workflow_dispatch:
+  # GitHub Actions pushes rendered MP4 files using GITHUB_TOKEN, which does
+  # not fire another 'push' workflow. This event deploys the completed
+  # REVIEW-ONLY files automatically without triggering social publication.
+  workflow_run:
+    workflows: ['Render Seven Cinematic V7 Game Trailers — REVIEW ONLY']
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -36,6 +43,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Never deploy assets from a failed or incomplete video review render.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
