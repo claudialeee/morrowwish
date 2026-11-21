@@ -19,6 +19,9 @@ try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__game&&!!window.CatBondDuoHero&&!!window.CatRelations&&!!window.State);
   const entry=await page.evaluate(()=>{
+   // Start through the real button and dismiss its starter chooser.
+   document.getElementById('intro-start').click();
+   window.UI.closeAll();
    const g=window.__game,State=window.State;
    const a=State.makeCat('tangyuan',{affinity:90});
    const b=State.makeCat('xiaohui',{affinity:90});
@@ -91,6 +94,28 @@ try{
   assert.equal(result.tier,3,'90+ trust yields tier-3 art');
   assert.equal(result.variant,'finale','high trust must unlock finishing claw variant');
   assert.equal(result.cardPresent,true);
+  const sigAudit=await page.evaluate(()=>{
+    const S=window.CatBondDuoSignatures,keys=S?.keys||[];
+    const canvas=document.createElement('canvas');canvas.width=480;canvas.height=290;
+    const c=canvas.getContext('2d',{willReadFrequently:true});
+    const hashes=[];
+    for(const pair of keys){
+      c.clearRect(0,0,480,290);
+      S.paint(c,480,290,.57,3,pair);
+      const bytes=c.getImageData(0,0,480,290).data;
+      let hash=2166136261;
+      for(let i=0;i<bytes.length;i+=23)hash=Math.imul(hash^bytes[i],16777619)>>>0;
+      hashes.push(hash);
+      const pose=S.course(S.get(pair).style,.5,480,290,145,3);
+      if(![pose.x1,pose.y1,pose.x2,pose.y2].every(Number.isFinite))
+        throw Error('invalid motion: '+pair);
+      if(pose.x1<35||pose.x2>445)
+        throw Error('clipped kitten movement: '+pair);
+    }
+    return {count:keys.length,unique:new Set(hashes).size};
+  });
+  assert.equal(sigAudit.count,21,'all elemental combinations need unique choreography');
+  assert.equal(sigAudit.unique,21,'motifs should not be mere palette swaps');
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-duo.png'});
   console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify(result));
   await context.close();

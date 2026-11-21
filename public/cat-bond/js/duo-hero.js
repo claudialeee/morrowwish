@@ -83,11 +83,20 @@ function draw(ctx,W,H,seq,lookup){
  const xshift=ease((p-.15)/.42)*W*.24;
  const col1=seq.first||'#ffc38d',col2=seq.second||'#c0b6ff';
  const ids=seq.catUids||[];
+ const signatures=window.CatBondDuoSignatures;
+ const signature=signatures?.get?.(seq.elements);
+ const choreography=signature?signatures.course(signature.style,p,W,h,cy,tier):null;
  ctx.save();ctx.globalAlpha=alpha;
  const grad=ctx.createLinearGradient(0,top,W,top+h);
  grad.addColorStop(0,'#15263c');grad.addColorStop(.50,'#343349');grad.addColorStop(1,'#193849');
  ctx.fillStyle=grad;ctx.beginPath();ctx.roundRect(W*.025,top,W*.95,h,Math.min(22,W*.05));ctx.fill();
  ctx.beginPath();ctx.roundRect(W*.025,top,W*.95,h,Math.min(22,W*.05));ctx.clip();
+ // Art-directed scenery for this exact combination, BEHIND complete cat rigs.
+ if(signature){
+   ctx.save();ctx.translate(0,top);
+   signatures.paint(ctx,W,h,p,tier,seq.elements);
+   ctx.restore();
+ }
  // Angular speed streaks, kicked forward only as the paws accelerate.
  for(let i=0;i<12;i++){
   ctx.save();ctx.globalAlpha=alpha*(.12+.12*(i%3));
@@ -95,8 +104,10 @@ function draw(ctx,W,H,seq,lookup){
   const sx=W*((i+.4)/12)+p*W*.12;
   ctx.beginPath();ctx.moveTo(sx-140,top+h);ctx.lineTo(sx+70,top);ctx.stroke();ctx.restore();
  }
- cat(ctx,W*.255+xshift,cy+h*.22,size,lookup(ids[0]),1,p,col1);
- cat(ctx,W*.745-xshift,cy+h*.22,size,lookup(ids[1]),-1,p,col2);
+ cat(ctx,choreography?.x1??(W*.255+xshift),choreography?.y1??(cy+h*.22),
+     size*(choreography?.scale||1),lookup(ids[0]),1,choreography?.phase1??p,col1);
+ cat(ctx,choreography?.x2??(W*.745-xshift),choreography?.y2??(cy+h*.22),
+     size*(choreography?.scale||1),lookup(ids[1]),-1,choreography?.phase2??p,col2);
  // Vary movement, not just numerical damage, at each relationship tier.
  const hit=clamp((p-.43)/.24,0,1);
  if(hit>0){
@@ -122,7 +133,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.fillStyle='#fff8ec';ctx.shadowColor=col1;ctx.shadowBlur=10;
  ctx.fillText(seq.name||rank,W*.5,top+h*.83,W*.85);
  ctx.shadowBlur=0;ctx.font='800 '+Math.round(Math.min(14,W*.033))+'px system-ui';
- ctx.fillStyle='#f9d79c';ctx.fillText(rank,W*.5,top+h*.92,W*.86);
+ ctx.fillStyle='#f9d79c';ctx.fillText(signature&&en?'SIGNATURE · '+signature.label:rank,W*.5,top+h*.92,W*.86);
  ctx.restore();return true;
 }
 window.CatBondDuoHero={draw,coat};
