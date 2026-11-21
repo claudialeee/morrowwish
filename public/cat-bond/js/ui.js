@@ -1105,10 +1105,17 @@ const UI = {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
       return;
     }
-    // sort partners by power; pick top 3 as the default team
-    const sorted = [...cats].sort((a, b) => State.catPower(b) - State.catPower(a));
+    // "My Cats" groups by breed; battle selection must use the same
+    // representation. A duplicate breed is not a second battle character.
+    // Keep all owned instances intact; choose the strongest for each breed.
+    const sortedAll = [...cats].sort((a, b) => State.catPower(b) - State.catPower(a));
+    const breedCounts = new Map();
+    const sorted = sortedAll.filter(c => {
+      breedCounts.set(c.species,(breedCounts.get(c.species)||0)+1);
+      return true;
+    }).filter((c, i, arr) => arr.findIndex(x=>x.species===c.species)===i);
     const preferred=window.CatRelations?.chosen?.()||[];
-    const duo=preferred.length===2?preferred.filter(c=>cats.some(t=>t.uid===c.uid)):[];
+    const duo=preferred.length===2?preferred.filter(c=>sorted.some(t=>t.uid===c.uid)):[];
     this.teamUids=[...duo,...sorted.filter(c=>!duo.some(d=>d.uid===c.uid))].slice(0,3).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
@@ -1116,7 +1123,7 @@ const UI = {
       const inDuo=duo.some(d=>d.uid===c.uid);
       return `<div class="chip ${sel ? 'sel' : ''} ${inDuo?'duo-member':''}" data-uid="${c.uid}">
         <canvas width="44" height="38"></canvas>
-        <div><div style="font-weight:700">${State.catName(c)} ${inDuo?'💞':''}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
+        <div><div style="font-weight:700">${State.catName(c)} ${inDuo?'💞':''}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}${breedCounts.get(c.species)>1?(english?' · '+breedCounts.get(c.species)+' owned':' · 拥有'+breedCounts.get(c.species)+'只'):''}</div></div>
       </div>`;
     }).join('');
     const newBreed=!State.S.dex[wildSp.id];
