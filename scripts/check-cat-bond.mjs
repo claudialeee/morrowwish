@@ -329,8 +329,8 @@ assert.ok(events.some(e => e.name === 'cat_capture'), 'cat_capture analytics fir
 assert.ok(events.some(e => e.name === 'bond_battle_grade'),'Battle grade event fired');
 assert.equal(game.gradeBattle({team:[{hp:100,maxhp:100}],t:12,comboBest:10,perfectDodges:1}).grade,'S',
   'Swift, healthy, skillful battle merits S grade');
-assert.equal(game.gradeBattle({team:[{hp:85,maxhp:100,alive:true}],t:12,comboBest:10,autoUsed:true}).grade,'A',
-  'A normal good auto battle earns A, not automatic S');
+assert.equal(game.gradeBattle({team:[{hp:85,maxhp:100,alive:true}],t:12,comboBest:10,autoUsed:true}).grade,'S',
+  'A well-managed auto battle merits S without unrealistic triple perfection');
 assert.equal(game.gradeBattle({team:[{hp:98,maxhp:100,alive:true}],t:10,comboBest:19,autoUsed:true}).grade,'S',
   'An outstanding auto battle is still eligible for S');
 assert.equal(game.gradeBattle({team:[{hp:70,maxhp:100,alive:true}],t:10,comboBest:19,autoUsed:true}).grade,'A',
