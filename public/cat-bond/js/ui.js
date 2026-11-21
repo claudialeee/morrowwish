@@ -33,10 +33,14 @@ const UI = {
     if(helpButton)helpButton.addEventListener('click',()=>{
       this.game.setBattleHelpVisible(!this.game.battleHelpOpen);
     });
-    for(const id of ['battle-help-close','battle-help-start']){
-      const btn=document.getElementById(id);
-      if(btn)btn.addEventListener('click',()=>this.game.setBattleHelpVisible(false));
-    }
+    document.getElementById('battle-help-close')?.addEventListener('click',()=>{
+      if(this.game.battleTutorial)this.game.completeBattleTutorial();
+      else this.game.setBattleHelpVisible(false);
+    });
+    document.getElementById('battle-help-start')?.addEventListener('click',()=>{
+      if(this.game.battleTutorial)this.game.advanceBattleTutorial();
+      else this.game.setBattleHelpVisible(false);
+    });
     document.getElementById('btn-auto').addEventListener('click', () => {
       if (!this.game.battle) return;
       const on = this.game.battle.toggleAuto();
