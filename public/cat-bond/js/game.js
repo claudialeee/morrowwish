@@ -852,8 +852,11 @@ class Game {
     const on=!!this.battle.autoMode;
     this.syncTouchBattleUI();
     const en=window.MorrowwishI18n?.get?.()!=='zh';
-    const label=en?(on?'🤖 Auto Battle: ON':'🤖 Auto Battle: OFF')
-      :(on?'🤖 自动战斗：开':'🤖 自动战斗：关');
+    // The compact phone HUD names the ACTIVE mode. Full explanation remains
+    // in the accessible label, and players can switch without opening a menu.
+    const label=this.isTouch?(en?(on?'🤖 Auto':'🎮 Manual'):(on?'🤖 自动':'🎮 手动'))
+      :(en?(on?'🤖 Auto Battle: ON':'🎮 Manual Battle')
+      :(on?'🤖 自动战斗':'🎮 手动战斗'));
     if(btn.textContent!==label)btn.textContent=label;
     btn.setAttribute('aria-pressed',String(on));
     btn.setAttribute('aria-label',en?(on?'Disable automatic battle':'Enable automatic battle')
@@ -867,6 +870,22 @@ class Game {
     const b = this.battle; if (!b) return;
     this.syncBattleModeUI();
     // wild HP + player active HP shown on canvas; here we update the control bar
+    // Always-visible, compact ENEMY health bar. Canvas world HP floats with
+    // enemy position; on phones it can disappear behind the camera/controls.
+    const hpbar=document.querySelector('.battle-enemy-track');
+    const fill=document.getElementById('battle-enemy-hp-fill');
+    if(hpbar&&fill){
+      let total=0,max=0;
+      for(const enemy of b.enemies||[]){
+        max+=enemy.maxhp||0;
+        total+=Math.max(0,enemy.hp||0);
+      }
+      const pct=max?Math.max(0,Math.min(100,100*total/max)):0;
+      fill.style.width=pct.toFixed(1)+'%';
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      hpbar.setAttribute('aria-label',en?'Enemy health':'野猫血量');
+      hpbar.setAttribute('aria-valuenow',String(Math.round(pct)));
+    }
     document.getElementById('ult-bar').style.width = b.ult + '%';
     document.getElementById('ult-btn').classList.toggle('ready', b.ult >= 100);
     const hint = document.getElementById('battle-hint');
