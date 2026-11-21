@@ -1072,14 +1072,15 @@ const UI = {
     const cats = State.S.cats;
     if (!cats.length) { this.game.toast('还没有猫猫'); return; }
     const target = cat || cats[0];
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
     this.panel(`<span class="card-close">×</span>
-      <h2>逗猫 🪶</h2>
-      <p class="sub">点击逗猫棒，让 ${GameData.speciesById(target.species).name} 扑抓！抓中越多，好感与心情涨得越快。</p>
+      <h2>${en?'Cat Teaser 🪶':'逗猫 🪶'}</h2>
+      <p class="sub">${en?'Tap the feather toy and help '+GameData.speciesById(target.species).name+' catch it. More catches improve affection and mood.':'点击逗猫棒，让 '+GameData.speciesById(target.species).name+' 扑抓！抓中越多，好感与心情涨得越快。'}</p>
       <div style="position:relative;height:220px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden" id="tease-area">
         <canvas id="tz" width="500" height="220" style="width:100%;height:100%"></canvas>
       </div>
-      <p class="center" style="margin-top:8px">得分 <b id="tz-score">0</b> / 10</p>
-      <div class="btn-row" style="justify-content:center"><button class="btn ghost" id="tz-done">结束</button></div>`);
+      <p class="center" style="margin-top:8px">${en?"Score":"得分"} <b id="tz-score">0</b> / 10</p>
+      <div class="btn-row" style="justify-content:center"><button class="btn ghost" id="tz-done" type="button">${en?"Finish":"结束"}</button></div>`);
     this.runTease(target);
   },
 
@@ -1247,9 +1248,9 @@ const UI = {
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
     const deadline=this.game.gradeTimeLimit(wildSp.rarity);
     const masteryChallenge=english
-      ?('🏅 Manual S: within '+deadline+'s · keep 80% HP · 8-hit combo or perfect dodge. Auto S: all cats survive, keep at least 75% HP, finish within '+Math.round(deadline*1.25)+'s, plus a 5-hit combo or 87% HP. '
+      ?('🏅 Manual S: win within '+deadline+'s, keep 80% HP, and earn an 8-hit combo or a perfect dodge. Auto S: all cats survive with 72%+ HP, win within '+Math.round(deadline*1.6)+'s, plus a 4-hit combo or 80%+ HP. '
         +(hasMedal?'Golden Paw already earned.':'First S unlocks a Golden Paw and a rare-cat lure.'))
-      :('🏅 手动 S：'+deadline+'秒内获胜、保留80%血量、8连击或完美闪避。自动 S：全队存活、保留至少75%血量、在'+Math.round(deadline*1.25)+'秒内获胜，并达成5连击或保留87%血量。'
+      :('🏅 手动最高评级：'+deadline+'秒内获胜、保留80%血量、8连击或完美闪避。自动最高评级：全队存活、保留至少72%血量、在'+Math.round(deadline*1.6)+'秒内获胜，并达成4连击或保留80%血量。'
         +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁金爪徽章和稀有猫诱饵。'));
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
@@ -1312,7 +1313,7 @@ const UI = {
       </fieldset>
       <div class="btn-row">
         <button class="btn gold" id="cp-go">${firstCapture?'出发！收服这只猫':'开始战斗'}</button>
-        <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">⚙️ AI策略</button>
+        <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">${english?"⚙️ Auto tactics":"⚙️ 智能策略"}</button>
         <button class="btn ghost" id="cp-cancel">放它走</button>
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
@@ -1435,8 +1436,8 @@ const UI = {
       <p class="center mastery-challenge-note">${note}</p>
       ${won&&performance?.autoUsed?'<p class="center mastery-grade-hint">'+(performance.autoExceptional
         ?(en?'Exceptional auto run!':'自动战斗发挥出色！')
-        :(en?'For auto S: all cats survive · 75%+ HP · 125% of the standard time limit · 5-hit combo or 87%+ HP.'
-          :'自动 S：全队存活、至少75%血量、用时不超过标准的125%，且达成5连击或保留87%以上血量。'))+'</p>':''}
+        :(en?'For auto S: all cats survive · 72%+ HP · 160% of the standard time limit · 4-hit combo or 80%+ HP.'
+          :'自动最高评级：全队存活、至少72%血量、用时不超过标准的160%，且达成4连击或保留80%以上血量。'))+'</p>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="mc-retry">${en?'Challenge again':'再次挑战'}</button>
         <button class="btn" id="mc-dex">${en?'View medals':'查看图鉴'}</button>
