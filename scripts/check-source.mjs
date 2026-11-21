@@ -889,7 +889,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const upgraded=fs.readFileSync('public/upgrade.js','utf8');new Function(upgraded);
  // The upgraded game factories replace the base Flip Dash/Parcel Panic
  // renderers. Guard their own portrait painting and hit targets.
- if(upgraded.split('if(portrait){').length<3||
+ if(upgraded.split('if(typeof portrait!=="undefined"&&portrait){').length<3||
     !upgraded.includes('const lx=145,rx=395')||
     !upgraded.includes('const xOf=x=>100+(x-190)*170/290')||
     !upgraded.includes('send(target,"click")')||
