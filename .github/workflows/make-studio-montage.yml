@@ -1,9 +1,7 @@
 name: Assemble Morrow Wish seven-game homepage reel
+# Rejected preview videos must never be regenerated or released on push.
+# Owner review is required before any future manual generation.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'public/promo/pocket-aquarium/highlight-20261121.mp4'
   workflow_dispatch:
 permissions:
   contents: write
