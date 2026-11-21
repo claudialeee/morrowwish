@@ -117,7 +117,7 @@ try{
  result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
   await page.goto(host+'/tiny-town/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.locator('#introStart').click();
-  await page.addStyleTag({content:'.arcade-return,.app>.header,.stats,.app>.progress,.sidebar .citizen-panel,.sidebar .petition,.sidebar .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.stage{display:block!important}.map-panel{width:100%!important;padding:9px!important}.world{height:620px!important}.tile-icon{font-size:40px!important}.board{width:100%!important}.sidebar{width:100%!important}.wish-card{min-height:100px!important}.modal{width:96vw!important;max-width:96vw!important}'});
+  await page.addStyleTag({content:' .arcade-return,.app>.header,.stats,.app>.progress,.sidebar .citizen-panel,.sidebar .petition,.sidebar .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.stage{display:block!important}.map-panel{width:100%!important;padding:9px!important}.world{height:780px!important}.tile-icon{font-size:43px!important}.board{width:100%!important}.sidebar{width:100%!important}.wish-card{min-height:100px!important}.modal{width:96vw!important;max-width:96vw!important}.overlay{opacity:0!important;pointer-events:none!important}'});
   const build=stamp();let placed=0,storyAt=null;
   for(let i=0;i<6;i++){
    const done=await page.evaluate(()=>{
@@ -149,7 +149,7 @@ try{
  }));
  result.push(await capture(browser,'elsewhere',async({page,stamp})=>{
   await page.goto(host+'/elsewhere/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
-  await page.addStyleTag({content:'.topbar,.footer,.game-top,.case-topline,.moment-pips{display:none!important}.scene-picture{height:465px!important;min-height:465px!important}.scene-body{padding:18px!important}.story-line{font-size:19px!important;line-height:1.35!important}.choices .choice{min-height:70px!important;font-size:18px!important}'});
+  await page.addStyleTag({content:' .topbar,.footer,.game-top,.case-topline,.moment-pips,.scene-body,.choices-label,.impact{display:none!important}#game{padding:0!important;max-width:100vw!important;width:100vw!important}.scene-picture{height:960px!important;min-height:960px!important;width:100vw!important;overflow:hidden!important;border:0!important}.scene-picture svg{height:100%!important;width:100%!important;transform:scale(1.12);transform-origin:center}'});
   const shots=[];
   for(const world of ['maldives','moon','tokyo']){
    if(await page.locator('#game:not([hidden])').count())await page.evaluate(()=>document.querySelector('#game [data-home]')?.click());
@@ -157,7 +157,7 @@ try{
    await sleep(400);
    const start=stamp();await sleep(4150);
    shots.push({label:world,start,duration:3.7});
-   await page.locator('#game [data-choice]').first().click({timeout:7000});
+   await page.evaluate(()=>{const b=document.querySelector('#game [data-choice]');if(!b)throw Error('Actual life choice not present');b.click();});
    const result=stamp();await sleep(2050);
    shots.push({label:world+'-result',start:result,duration:1.7});
   }
