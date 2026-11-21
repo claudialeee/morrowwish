@@ -792,7 +792,7 @@ class CaptureBattle {
     if(shield&&(hp<.70||dist<145)){
       if(this.castSlot(f,shield,aim)!==false){this.markAutoAction(f,'展开护盾');return;}
     }
-    if(f===this.me()&&this.canUltimate()&&dist<370){
+    if(f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)){
       if(this.ultimate()!==false){this.markAutoAction(f,'释放必杀技');return;}
     }
     const offensive=(sk,slot)=>{
@@ -851,7 +851,7 @@ class CaptureBattle {
     };
     const action=act=>{
       switch(act){
-        case 'ult':return f===this.me()&&this.canUltimate()?this.ultimate():false;
+        case 'ult':return f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)?this.ultimate():false;
         case 'heal':{
           const slot=this.supportSlot(f,'heal')||this.supportSlot(f,'shield');
           return slot?this.castSlot(f,slot,aim):false;
@@ -1683,6 +1683,26 @@ class CaptureBattle {
     return m;
   }
   canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
+  // Would the ult actually HIT something if cast now? Mirrors each archetype's real
+  // geometry (fire = forward cone so the target must be roughly ahead; everything
+  // else = a radius around the caster). Used to gate AUTO-cast so the AI doesn't
+  // blow the ult into empty space; manual R still fires on demand.
+  ultWillConnect(f){
+    f = f || this.me(); if(!f) return false;
+    const skill=f.ultSkill, el=skill&&skill.ultCost>0?skill.element:null;
+    const diag=Math.hypot(this.W,this.H);
+    const live=this.liveEnemies(); if(!live.length) return false;
+    if(el==='fire'){
+      const aim=(f===this.me())?this.aim:(f._aim||0), half=0.6, reach=diag*0.5;
+      return live.some(e=>{
+        if(Math.hypot(e.x-f.x,e.y-f.y)>reach) return false;
+        let da=Math.atan2(e.y-f.y,e.x-f.x)-aim; while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
+        return Math.abs(da)<=half;
+      });
+    }
+    const R = el==='water'?diag*0.55:el==='dark'?diag*0.52:el==='light'?diag*0.42:el==='grass'?diag*0.4:el==='elec'?diag*1.4:diag*0.32;
+    return live.some(e=>Math.hypot(e.x-f.x,e.y-f.y)<=R);
+  }
   ultimate(){
     if(this.ultCd>0||this.ultCinematic){
       if(!this.autoMode&&this.ultCd>0&&this.t-(this._ultWarnAt??-999)>2.5){
@@ -2168,9 +2188,11 @@ class CaptureBattle {
         }
       }else if(v.kind==='furStorm'){
         const spins=7;
-        ctx.save();ctx.translate(v.x,v.y);ctx.rotate(p*1.5);
+        ctx.save();ctx.translate(v.x,v.y);ctx.rotate(p*2.4);
+        // snappier expansion: ease-out so it bursts wide fast, then eases (was linear *180)
+        const ease=1-(1-p)*(1-p);
         for(let i=0;i<spins;i++){
-          const ang=i*Math.PI*2/spins+this.t*3,rad=24+p*180;
+          const ang=i*Math.PI*2/spins+this.t*5,rad=24+ease*300;
           ctx.save();ctx.rotate(ang);ctx.translate(rad,0);ctx.rotate(ang);
           for(let claw=-1;claw<=1;claw++){
             ctx.strokeStyle=claw?'#d5a37d':'#fff9e4';ctx.lineWidth=(claw?3.7:5)*k;
@@ -2417,8 +2439,15 @@ class CaptureBattle {
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       // GROW: radius swells over flight for a widening hitbox / bigger area coverage.
       if (p.grow) { const age = 1 - Math.max(0, p.life) / (p.maxLife || 2.2); p.r = p.r0 * (1 + (p.grow - 1) * age); }
-      p._tc = (p._tc || 0) + dt;
-      if (p._tc > 0.02) { p._tc = 0; this.vfx.trail(p.x, p.y, p.color, p.r * 0.8); }
+      // RIBBON TRAIL: keep a short position history; drawProjectiles renders it as an
+      // additive tapered streak (wide/bright head → transparent tail) instead of the
+      // old fading-dot string. (VFX research: additive tapered ribbon.)
+      if (!p.burst) {
+        p._hist = p._hist || [];
+        p._hist.push(p.x, p.y);
+        const maxPts = 9;
+        if (p._hist.length > maxPts * 2) p._hist.splice(0, p._hist.length - maxPts * 2);
+      }
       // A lobbed AOE flies OVER enemies to its landing point, then bursts (it does
       // not collide on contact). Show its target ring; detonate on arrival/expiry.
       if (p.burst) {
@@ -3333,6 +3362,24 @@ class CaptureBattle {
 
     // projectiles with glow
     for (const p of this.projectiles) {
+      // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
+      // transparent tail), drawn under the body. Round caps hide the segment seams.
+      const h = p._hist;
+      if (h && h.length >= 4) {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.strokeStyle = p.color;
+        const segs = h.length / 2 - 1;
+        for (let s = 0; s < segs; s++) {
+          const t = (s + 1) / segs;                        // 0 tail → 1 head
+          ctx.globalAlpha = 0.5 * t;
+          ctx.lineWidth = Math.max(1, p.r * 1.3 * t);
+          ctx.beginPath();
+          ctx.moveTo(h[s * 2], h[s * 2 + 1]);
+          ctx.lineTo(h[s * 2 + 2], h[s * 2 + 3]);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
       ctx.save(); ctx.translate(p.x, p.y);
       // Keep the silhouettes crisp: no generic circular glow halo around
       // every projectile. A hit gets a brief impact effect instead.
