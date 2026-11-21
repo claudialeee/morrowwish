@@ -47,25 +47,28 @@ class CaptureBattle {
         this.levelSuppression = gap <= 3 ? 1 : Math.max(0.6, 1 - (gap - 3) * 0.06);
         this.enemyLevelMult = 1;
       } else {
-        // UNDER-leveled: you deal ~8%/lv less (floor 0.55) and the wild hits
-        // ~14%/lv harder (cap +120%) — a real wall that rewards leveling/skill.
+        // UNDER-leveled: level gives the wild an edge, but NEVER a hopeless stat wall
+        // (羁绊之旅 等级压制限制 — skill must still win a big gap). Your damage sinks
+        // ~5%/lv to a GENEROUS 0.70 floor; the wild hits ~9%/lv harder capped at +60%.
+        // So a Lv4 vs Lv15 is dangerous but beatable by dodging + 虚弱 combos, not a
+        // numbers loss. (Measured: old 0.55/×2.2 made it unwinnable.)
         const under = -gap;
-        this.levelSuppression = Math.max(0.55, 1 - under * 0.08);
-        this.enemyLevelMult = Math.min(2.2, 1 + under * 0.14);
+        this.levelSuppression = Math.max(0.70, 1 - under * 0.05);
+        this.enemyLevelMult = Math.min(1.6, 1 + under * 0.09);
       }
     }
 
     // --- build the player team — up to 2 cats ON FIELD (roguelike squad cap). A
     // bond ult can summon a temporary 3rd reinforcement mid-fight (see castDuo). ---
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
-    this.FIELD_CAP = 2;
+    this.FIELD_CAP = 3;                          // up to 3 cats fight on the field
     this.team = cats.slice(0, this.FIELD_CAP).map((c, i) => this.makeFighter(c, i));
-    this.reserve = cats.slice(this.FIELD_CAP);   // benched cats a bond ult can call in
+    this.reserve = cats.slice(this.FIELD_CAP);   // deeper bench: subs in when a field cat faints
     this.reinforceT = 0;                         // >0 while a temp 3rd cat is on the field
     this.active = 0;
     this.partner = cats[0];              // for reward bookkeeping in game.js
     this.duo=window.CatRelations?.active(cats)||null;
-    this.duoCharge=this.duo?22:0;this.duoCd=0;this.duoUses=0;
+    this.duoCharge=this.duo?12:0;this.duoCd=0;this.duoUses=0;   // bond support starts low + fills slow (bigger payoff than the ult)
 
     // --- player runtime state: spread the whole team on the LEFT so all fight ---
     this.team.forEach((f,i)=>{f.x=this.W*(.18+(i%2)*.1);f.y=this.H*(.55+i*.085);});
@@ -2273,7 +2276,7 @@ class CaptureBattle {
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
-        this.duoCharge=Math.min(100,this.duoCharge+dt*6);
+        this.duoCharge=Math.min(100,this.duoCharge+dt*3.2);   // bond support charges SLOWER than the ult (it's the bigger moment: reinforcement + duo strike)
     }
     // combo chain decays if you stop landing hits (需持续操作维持)
     if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0 && this.combo > 0) this.breakCombo(); }
@@ -3038,7 +3041,7 @@ class CaptureBattle {
     // a direct player hit extends the combo and gets the combo damage multiplier
     if (!isDot) {
       dmg *= this.comboMult(); this.addCombo(1);
-      if(this.duo)this.duoCharge=Math.min(100,this.duoCharge+11);
+      if(this.duo)this.duoCharge=Math.min(100,this.duoCharge+7);   // per-hit bond charge (slower than ult)
     }
     // vulnerability debuffs amplify incoming damage (破绽/破甲)
     const TAG = (window.Skills && Skills.TAG_INFO) || {};
@@ -3228,6 +3231,13 @@ class CaptureBattle {
     f = f || this.me();
     f.alive = false;
     this.spawnBurst(f.x, f.y, '💫', '#c9b6ff', 10);
+    // RESERVE SUBSTITUTION: a fainted field cat is replaced by a benched reserve cat
+    // (brought in at the fainted cat's spot), so bringing a 3rd cat means a backup
+    // sub, not just a bond-ult call-in. Fill the active field slots first.
+    if (this.substituteFromReserve(f)) {
+      if (!this.team.some(t => t.alive && !t._reinforcement)) this.finish(false);
+      return;
+    }
     const anyAlive = this.team.some(t => t.alive);
     if (!anyAlive) { this.finish(false); return; }
     this.game.toast(`${State.catName(f.cat)} 累瘫了！`);
@@ -3236,6 +3246,29 @@ class CaptureBattle {
       const next = this.team.findIndex(t => t.alive);
       if (next >= 0) this.active = next;
     }
+  }
+  // Bring a fresh reserve cat onto the field to replace a fainted one. Returns true
+  // if a sub came in. The reserve fights as a normal field cat (not the temporary
+  // bond reinforcement). If the fainted cat was the active one, control transfers.
+  substituteFromReserve(f) {
+    const onField = new Set(this.team.map(t => t.cat.uid));
+    const pick = (this.reserve || []).find(c => c && !onField.has(c.uid) && (c._hpFrac == null || c._hpFrac > 0.1));
+    if (!pick) return false;
+    const idx = this.team.indexOf(f);
+    const sub = this.makeFighter(pick, idx >= 0 ? idx : this.team.length);
+    sub.x = f.x; sub.y = f.y; sub.inv = 1.0;
+    this.reserve = this.reserve.filter(c => c !== pick);
+    if (idx >= 0) this.team[idx] = sub; else this.team.push(sub);
+    this.game.buildTeamSlots?.();
+    if (f === this.me() || !this.me()?.alive) this.active = this.team.indexOf(sub);
+    this.vfx.ring(sub.x, sub.y, { r0: 8, vr: 320, life: 0.5, color: '#9be7c4', width: 5 });
+    this.vfx.burst(sub.x, sub.y, { count: 12, color: '#9be7c4', speed: 190, life: 0.45, r: 3 });
+    const en = window.MorrowwishI18n?.get?.() !== 'zh';
+    this.vfx.text(sub.x, sub.y - 46, en ? 'SUB IN!' : '替补上场!', '#9be7c4', 15);
+    this.game.toast(en ? (State.catName(pick)) + ' subs in for ' + State.catName(f.cat) + '!'
+                       : State.catName(f.cat) + ' 倒下，' + State.catName(pick) + ' 替补上场！');
+    window.arcadeMetric?.('bond_reserve_sub', {});
+    return true;
   }
 
   finish(win) { this.done = true; this.result = win ? 'win' : 'flee'; this.shakeT = 0.5; }

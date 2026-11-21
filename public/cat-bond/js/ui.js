@@ -120,14 +120,14 @@ const UI = {
   getPreferredBattleTeam(){
     const cats=State.S.cats||[],byUid=new Map(cats.map(c=>[c.uid,c]));
     const saved=(State.S.battlePrefs?.teamUids||[]).map(uid=>byUid.get(uid)).filter(Boolean);
-    if(saved.length)return saved.slice(0,3);
+    if(saved.length)return saved.slice(0,5);
     const duo=window.CatRelations?.chosen?.()||[];
     const rest=[...cats].sort((a,b)=>State.catPower(b)-State.catPower(a));
     const seen=new Set();
     return [...duo,...rest].filter(c=>{
       if(!c||!byUid.has(c.uid)||seen.has(c.uid))return false;
       seen.add(c.uid);return true;
-    }).slice(0,3);
+    }).slice(0,5);
   },
   squadPickerMarkup(selected){
     const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -137,7 +137,7 @@ const UI = {
       +cats.map(c=>'<button type="button" class="map-squad-choice '+(selected.includes(c.uid)?'sel':'')+'" data-uid="'+esc(c.uid)+'" aria-pressed="'+selected.includes(c.uid)+'">'
         +'<canvas width="58" height="50" aria-hidden="true"></canvas><span><strong>'+esc(State.catName(c))+'</strong>'
         +'<small>'+(en?'Power ':'战力 ')+State.catPower(c)+' · '+(en?'Bond ':'默契 ')+Math.round(c.affinity||0)+'</small></span></button>').join('')
-      +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 3'+(en?'':' 只')+'</p>';
+      +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>';
   },
   bindSquadPicker(selected){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats||[];
@@ -149,7 +149,7 @@ const UI = {
         btn.classList.toggle('sel',yes);btn.setAttribute('aria-pressed',String(yes));
       });
       const count=document.querySelector('#panel .map-squad-count');
-      if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 3'+(en?'':' 只');
+      if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只');
     };
     buttons.forEach(btn=>{
       const cat=cats.find(c=>c.uid===btn.dataset.uid);
@@ -157,7 +157,7 @@ const UI = {
       btn.onclick=()=>{
         const i=selected.indexOf(btn.dataset.uid);
         if(i>=0){if(selected.length>1)selected.splice(i,1);}
-        else{if(selected.length>=3)selected.shift();selected.push(btn.dataset.uid);}
+        else{if(selected.length>=5)selected.shift();selected.push(btn.dataset.uid);}
         refresh();
       };
     });refresh();
@@ -167,7 +167,7 @@ const UI = {
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
     if(!selected.length){this.game.toast(en?'Adopt a kitten first':'请先领养一只小猫');return;}
     this.panel('<span class="card-close">×</span><h2>'+(en?'🐾 Expedition team':'🐾 地图出战队伍')+'</h2>'
-      +'<p class="sub">'+(en?'Pick up to 3; the first 2 fight on the field, a 3rd waits as a bond-ult reinforcement. The first is your leader.':'最多挑 3 只：前 2 只上场作战，第 3 只作为羁绊必杀的支援候补。第一只是领队。')+'</p>'
+      +'<p class="sub">'+(en?'Pick up to 5; 3 fight on the field, the rest are bench subs that tag in when a cat faints. The first is your leader.':'最多挑 5 只：3 只上场作战，其余在后备席，场上猫倒下时自动替补上场。第一只是领队。')+'</p>'
       +this.squadPickerMarkup(selected)
       +'<div class="btn-row"><button id="map-squad-save" type="button" class="btn gold">'+(en?'Save team':'保存队伍')+'</button>'
       +'<button id="map-squad-cancel" type="button" class="btn ghost">'+(en?'Cancel':'取消')+'</button></div>');
@@ -1289,8 +1289,8 @@ const UI = {
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
     const selected=opts.origin==='map'?this.getPreferredBattleTeam().map(c=>c.uid):[];
-    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (pick up to 3)':'选择出战猫咪（最多 3 只）')+'</h3>'
-      +'<p class="sub" style="margin:-2px 0 8px">'+(en?'2 fight on the field; a 3rd waits as a bond-ult reinforcement.':'场上出战 2 只；第 3 只作为羁绊必杀的支援候补。')+'</p>'
+    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (pick up to 5)':'选择出战猫咪（最多 5 只）')+'</h3>'
+      +'<p class="sub" style="margin:-2px 0 8px">'+(en?'3 fight on the field; the rest sub in when a cat faints.':'场上出战 3 只；其余在后备席，猫倒下时替补上场。')+'</p>'
       +this.squadPickerMarkup(selected):'';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
@@ -1667,7 +1667,7 @@ const UI = {
   // 2-cat field cap, prompt the player to keep exactly 2. Returns true if it
   // opened a chooser (caller should stop), false to proceed normally.
   _chooseRunSquad(newCat){
-    const FIELD_CAP=2;
+    const FIELD_CAP=5;   // the expedition roster cap (3 field + up to 2 bench)
     const byUid=new Map((State.S.cats||[]).map(c=>[c.uid,c]));
     // run roster = prior expedition team + the freshly caught cat
     const prior=(State.S.battlePrefs?.teamUids||[]).map(uid=>byUid.get(uid)).filter(Boolean);

@@ -15,6 +15,7 @@ const DEFAULT_STATE = () => ({
   tutorialDone: false,
   catchCount: 0,
   petCount: 0, // real taps on living cats, across sessions
+  yardBuildings: [], // placed yard play-structures {type,x,y}: 猫爬架/猫抓板/猫猫洞…
   bondingRewards: [], // claimed bonding milestones
   collectionMilestones: [], // one-time, cumulative codex discovery rewards
   repeatSightings: 0, // repeated already-owned species encountered while searching
