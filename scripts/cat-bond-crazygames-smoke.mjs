@@ -124,9 +124,9 @@ try{
           'Moving illustrated kittens must be visibly smaller than old oversized game sprites: '
           +JSON.stringify(paintedGait));
         assert.ok(paintedGait.atlas&&paintedGait.rigged>0,
-          'Walking feet must be cut from the original high-resolution watercolor artwork');
+          'Complete, continuous gait frames must be rendered from the original watercolor atlas');
         assert.ok(paintedGait.pawDelta>150,
-          'Two strides with an identical head and body must move real illustrated paws, not slide the complete portrait: '
+          'Complete painted gait frames must visibly change the legs with no severed-layer seams: '
           +JSON.stringify(paintedGait));
         console.log('CAT BOND ORIGINAL PAINTED GAIT PASS',JSON.stringify(paintedGait));
       }
@@ -310,6 +310,32 @@ try{
         assert.equal(await page.evaluate(()=>window.__game.scene),'map',
           'Explore CTA should actually open the explorable world');
         await page.waitForSelector('#panel .map-destination.available');
+        // Render each full region with its unique geometry. All five must
+        // produce distinguishable screenshots (not colorized copies).
+        const visualRegions=await page.evaluate(()=>{
+          const art=window.CatBondPaintedRegions;
+          if(!art)return {loaded:false};
+          const hashes=[];
+          const detail=[];
+          for(const id of art.ids){
+            const painting=art.build(id,1800,1300);
+            if(!painting)return {loaded:false,id};
+            const ctx=painting.getContext('2d');
+            const bytes=ctx.getImageData(100,90,1500,1100).data;
+            let hash=2166136261,active=0;
+            for(let i=0;i<bytes.length;i+=211){
+              hash=Math.imul(hash^bytes[i],16777619)>>>0;
+              if(bytes[i]!==bytes[i+1])active++;
+            }
+            hashes.push(hash);
+            detail.push({id,hash,active});
+          }
+          return {loaded:true,unique:new Set(hashes).size,detail};
+        });
+        assert.equal(visualRegions.loaded,true,'Five painterly region backgrounds must render in the browser');
+        assert.equal(visualRegions.unique,5,
+          'Five regions must have five genuinely different illustrated paintings: '+JSON.stringify(visualRegions));
+        console.log('CAT BOND FIVE UNIQUE PAINTED REGIONS PASS',JSON.stringify(visualRegions.detail));
         assert.equal(await page.locator('#panel .map-destination').count(),5,
           'All five real explorable regions must appear in one in-game directory');
         assert.equal(await page.locator('#panel .map-destination.locked').count(),4,

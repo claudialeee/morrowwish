@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','battle','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -131,6 +131,11 @@ new vm.Script(i18nSrc, { filename: 'i18n.js' });
 vm.runInContext(i18nSrc, sandbox, { filename: 'i18n.js' });
 
 assert.ok(sandbox.window.GameData, 'GameData global present');
+assert.equal(sandbox.window.CatBondPaintedRegions?.ids?.join(','),'home,sakura,creek,volcano,ruins',
+  'Every one of the five exploration maps has distinct authored scenery');
+const paintedSource=fs.readFileSync(DIR+'js/painted-regions.js','utf8');
+for(const feature of ['function home(','function sakura(','function creek(','function volcano(','function ruins('])
+  assert.ok(paintedSource.includes(feature),'Missing unique painted terrain for '+feature);
 assert.equal(typeof sandbox.window.CatMotion?.draw,'function',
   'The original-watercolor motion renderer must load before yard, world and combat');
 assert.ok(sandbox.window.CatMotion.scaleRatio<=.72
