@@ -1595,10 +1595,31 @@ class CaptureBattle {
       // the cast follows the live aim of the active cat (you can steer during windup)
       const aim = (f === this.me()) ? this.aim : (f._aim ?? c.aim);
       c.aim = aim;
-      // growing charge ring at the caster
-      const k = 1 - Math.max(0, c.t) / c.max;
-      this.vfx.ring(f.x, f.y, { r0: 34 * (1 - k) + 6, vr: 0, life: 0.06, color: c.col, width: 3 });
-      if (c.t <= 0) { f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true); }
+      // CHARGE-UP VFX: make it unmistakable the cat is winding up a heavy move —
+      // a CONVERGING ring (energy pulled inward), a brightening core glow, orbiting
+      // energy motes being sucked in, and sparks that quicken as the charge completes.
+      const k = 1 - Math.max(0, c.t) / c.max;                 // 0 → 1 over the windup
+      // converging ring: starts wide, closes toward the caster as k→1
+      this.vfx.ring(f.x, f.y, { r0: 40 * (1 - k) + 10, vr: 0, life: 0.07, color: c.col, width: 2 + 2 * k });
+      // brightening core glow (additive flash grows + pulses faster near the end)
+      this.vfx.impact && (f._chargeGlowCd = (f._chargeGlowCd || 0) - dt);
+      if ((f._chargeGlowCd || 0) <= 0) {
+        f._chargeGlowCd = 0.14 - 0.09 * k;                    // pulse speeds up as it fills
+        this.vfx.fx.push({ type: 'flash', x: f.x, y: f.y - 4, r: 8 + 14 * k, life: 0.18, max: 0.18 });
+      }
+      // orbiting motes drawn INWARD (gathered energy) — a couple per frame
+      for (let i = 0; i < 2; i++) {
+        const a = Math.random() * Math.PI * 2, rad = 46 * (1 - k) + 14;
+        const sx = f.x + Math.cos(a) * rad, sy = f.y + Math.sin(a) * rad;
+        this.vfx.fx.push({ type: 'spark', x: sx, y: sy,
+          vx: (f.x - sx) * (2.4 + 2 * k), vy: (f.y - sy) * (2.4 + 2 * k),
+          life: 0.22, max: 0.22, r: 2.4, color: c.col, drag: 0, grav: 0 });
+      }
+      if (c.t <= 0) {
+        // release flash — the charge "pops" the instant the skill fires
+        this.vfx.ring(f.x, f.y, { r0: 8, vr: 520, life: 0.3, color: c.col, width: 5 });
+        f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true);
+      }
     }
     this.pendingCasts = this.pendingCasts.filter(c => c.t > 0);
   }
