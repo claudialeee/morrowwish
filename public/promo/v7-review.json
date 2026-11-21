@@ -1,6 +1,6 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T20:53:13.347Z",
+  "createdAt": "2026-11-21T21:02:53.120Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -112,25 +112,31 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 28.4,
+      "duration": 28,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.172
+          "seconds": 14.151
         },
         {
           "source": "broll",
-          "scene": "narrow-escape",
+          "scene": "narrow-pursuit",
+          "caption": "SPOTTED! CAN IT ESCAPE?",
+          "seconds": 2.501000000000001
+        },
+        {
+          "source": "broll",
+          "scene": "narrow-achievement",
           "caption": "NINE LIVES · ACHIEVEMENT!",
-          "seconds": 4.9
+          "seconds": 2
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.373000000000002
+          "seconds": 7.378999999999999
         },
         {
           "source": "cover",
@@ -239,7 +245,7 @@
         {
           "source": "broll",
           "scene": "choose-life",
-          "caption": "WAKE UP TO A NEW LIFE.",
+          "caption": "",
           "seconds": 2.8
         },
         {
@@ -349,13 +355,13 @@
           "source": "broll",
           "scene": "coin-collect",
           "caption": "COLLECT GOLD. DODGE PINK.",
-          "seconds": 9.873999999999999
+          "seconds": 9.952
         },
         {
           "source": "broll",
           "scene": "danger",
           "caption": "ONE WRONG MOVE IS ENOUGH.",
-          "seconds": 0.49700000000000133
+          "seconds": 0.4830000000000002
         },
         {
           "source": "broll",
@@ -398,7 +404,7 @@
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.707
+          "seconds": 4.694999999999999
         },
         {
           "source": "broll",
@@ -429,19 +435,19 @@
         "/promo/pocket-aquarium/v7-review-2.jpg",
         "/promo/pocket-aquarium/v7-review-3.jpg"
       ],
-      "duration": 16.1,
+      "duration": 16.3,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.221
+          "seconds": 3.2449999999999997
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.0040000000000004
+          "seconds": 4.235
         },
         {
           "source": "broll",
