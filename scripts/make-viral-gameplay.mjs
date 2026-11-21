@@ -109,9 +109,10 @@ async function catBond(browser){
    const b=window.__game.battle;
    if(!b||b.done)return{cast:false,why:'Battle ended'};
    b.ult=100;b.ultCd=0;
-   return{cast:b.ultimate(),cinematic:!!b.ultCinematic,name:b.ultCinematic?.name};
+   const cast=b.ultimate(),name=b.ultCinematic?.name;return{cast,cinematic:!!b.ultCinematic,name,lang:document.documentElement.lang,hasChinese:/[\u3400-\u9fff]/.test(name||'')};
  });
  if(!ult.cast||!ult.cinematic)throw Error('Real ultimate not shown: '+JSON.stringify(ult));
+ if(ult.hasChinese)throw Error('English gameplay cinematic leaked Chinese: '+JSON.stringify(ult));
  await sleep(3250);const finish=(Date.now()-began)/1000;
  await sleep(1050);const ended=Date.now();const v=p.video();await c.close();
  console.log('BATTLE HIGHLIGHTS VERIFIED: '+JSON.stringify({duo,ult}));
