@@ -57,9 +57,16 @@ const UI = {
         if (m === 'dodge') b.dodge(); else b.castMove(m);
       });
     });
-    // generic close
+    // Generic close and keyboard fallback. The mobile close button is OUTSIDE
+    // the scrollable card so it never disappears when the player scrolls.
     document.body.addEventListener('click', e => {
-      if (e.target.classList.contains('card-close') || e.target.classList.contains('panel-bg')) {
+      if (e.target.closest?.('.card-close,.panel-bg,.panel-dismiss')) {
+        if(document.getElementById('panel')?.dataset.mandatory!=='true')this.closeAll();
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if(e.key==='Escape' && document.getElementById('panel')?.classList.contains('open') &&
+        document.getElementById('panel')?.dataset.mandatory!=='true'){
         this.closeAll();
       }
     });
@@ -258,10 +265,11 @@ const UI = {
 
   panel(html) {
     const p = document.getElementById('panel');
-    p.innerHTML = `<div class="card">${html}</div>`;
+    p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
     p.dataset.mandatory = 'false';
     p.classList.add('open');
-    // clicking backdrop closes
+    // The × remains accessible regardless of card scroll position.
+    p.querySelector('.panel-dismiss').onclick = e => {e.stopPropagation();this.closeAll();};
     p.onclick = e => { if (e.target === p) this.closeAll(); };
   },
   closeAll() {
