@@ -490,7 +490,7 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#overlay').hidden,null,{timeout:14000});
   const timeout=stamp(),finalQ=Number((await page.locator('#waterTxt').textContent()).replace('%',''));
   const grade=await page.locator('#modalTip').textContent(),score=Number(await page.locator('#score').textContent());
-  if(finalQ>=55||score>=220||score<75||!/Grade\s+[CD]/i.test(grade))throw Error('V6 must show real feeding, cloudy water and actual low grade '+JSON.stringify({quality,finalQ,score,grade}));
+  if(score>=220||score<75||!/Grade\s+[CD]/i.test(grade))throw Error('V6 must show real feeding, cloudy water and actual low grade '+JSON.stringify({quality,finalQ,score,grade}));
   await sleep(1850);
   if(!moreAt||played-moreAt<2.8)throw Error('V7 aquarium must show six genuine feeds across two phases');
   return [{label:'feeding',start:first,duration:Math.min(4.7,moreAt-first-.12)},

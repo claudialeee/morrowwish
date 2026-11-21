@@ -79,7 +79,7 @@ const playlists={
  'pocket-aquarium':[
   broll('feeding',4.55,'FEED THE HUNGRY FISH.'),
   broll('more-feeding',5.8,'KEEP PLAYING. BUILD A SCORE.'),
-  broll('water-cloudy',4.65,'THE WATER GETS MURKY.'),
+  broll('water-cloudy',4.65,'TIME IS RUNNING OUT.'),
   broll('timeout',2.25,'TIME UP. BEAT THE GRADE!'),
   cover(1.95,'PLAY FREE')
  ]
