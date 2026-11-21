@@ -411,7 +411,7 @@ if(!townCompactCss.includes('#intro .charter .charter-bonus')||
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||
-   tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')>tinyMusicPage.indexOf('src="/tiny-town/game-v4.js"')||
+   tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')>tinyMusicPage.indexOf('src="/tiny-town/game-v4.js')||
    !tinyMusicPage.includes('href="/tiny-town/freedom-scenes.css?v=1"')||
    !townFreedomCss.includes('/art/tiny-town-scene.svg'))
  throw Error('Free Days illustrated scenery assets must load before the game engine');
@@ -435,7 +435,7 @@ for(const marker of ['id="cityLandmark"','id="citizens"','id="petition"','id="mo
  if(!tinyMusicPage.includes(marker))throw Error('Tiny Town strategic interface missing: '+marker);
 }
 
-for(const marker of ['src="/tiny-town/game-v4.js"','id="intro"','id="endArt"','id="savePostcard"','id="feedbackQuestion"']){
+for(const marker of ['src="/tiny-town/game-v4.js','id="intro"','id="endArt"','id="savePostcard"','id="feedbackQuestion"']){
  if(!tinyMusicPage.includes(marker))throw new Error('Tiny Town wish-cascade UI missing: '+marker);
 }
 for(const marker of ['function place(pos)','function newPairs(id,pos)','function chooseEvent(decision)','function illustrate(kind)','function finish()','town_completed-']){
