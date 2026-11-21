@@ -668,10 +668,12 @@
     ctx.fillRect(0, groundTop, W, H - groundTop + 200);
     }
 
-    // far parallax decor (layer 0.4)
-    drawDecorLayer(ctx, 0.4, th);
-    // near parallax decor (layer 0.8)
-    drawDecorLayer(ctx, 0.8, th);
+    // Do not paint generic blurry decorative circles on top of five
+    // individually illustrated maps; only legacy fallback needs them.
+    if(!window.CatBondPaintedRegions?.region){
+      drawDecorLayer(ctx, 0.4, th);
+      drawDecorLayer(ctx, 0.8, th);
+    }
 
     // world-space items (1:1 with camera)
     ctx.save();

@@ -841,17 +841,19 @@ class CaptureBattle {
       this.markMoveSeen(f,skill);
       window.arcadeMetric?.('bond_signature_ultimate',{skill:skill.id,rarity:GameData.speciesById(f.cat.species).rarity});
     }else{
-      // New ordinary cats still have a useful basic ultimate until their own
-      // level and affinity unlock an elemental one.
-      for(let i=0;i<16;i++)
-        this.spawnProj(f.x,f.y,(i/16)*Math.PI*2,f.projSpeed*.9,
-          f.dmg*1.3,'me','#9d7bff',8,'star');
-      this.vfx.shockwave(f.x,f.y,'#ffd36b');
-      this.vfx.ring(f.x,f.y,{r0:10,vr:620,life:.5,color:'#9d7bff',width:8});
-      this.vfx.burst(f.x,f.y,{count:15,color:'#9d7bff',speed:230,life:.5,r:3});
-      this.vfx.text(f.x,f.y-40,'喵之怒涛!','#ffd36b',22);
-      this.game.toast('🌪️ 必杀·喵之怒涛！');
-      this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:0};
+      // The ordinary ultimate is an actual screen-space claw cyclone,
+      // not sixteen low-quality purple balls emitted in a circle.
+      const range=215;
+      const targets=this.liveEnemies().filter(e=>Math.hypot(e.x-f.x,e.y-f.y)<=range);
+      for(const e of targets.slice()){
+        this.hurtEnemy(e,f.dmg*1.25,e.x,e.y,true);
+        this.vfx.impact(e.x,e.y,'#e7c7a7');
+      }
+      this.skillStrokes.push({kind:'furStorm',x:f.x,y:f.y,
+        color:'#f7d6a2',life:.7,max:.7});
+      this.vfx.burst(f.x,f.y,{count:9,color:'#ffedca',speed:185,life:.35,r:2});
+      this.game.toast('必杀 · 喵爪旋风！');
+      this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:targets.length};
     }
     return true;
   }
@@ -969,6 +971,20 @@ class CaptureBattle {
             ctx.restore();
           }
         }
+      }else if(v.kind==='furStorm'){
+        const spins=7;
+        ctx.save();ctx.translate(v.x,v.y);ctx.rotate(p*1.5);
+        for(let i=0;i<spins;i++){
+          const ang=i*Math.PI*2/spins+this.t*3,rad=24+p*180;
+          ctx.save();ctx.rotate(ang);ctx.translate(rad,0);ctx.rotate(ang);
+          for(let claw=-1;claw<=1;claw++){
+            ctx.strokeStyle=claw?'#d5a37d':'#fff9e4';ctx.lineWidth=(claw?3.7:5)*k;
+            ctx.beginPath();ctx.moveTo(-17,-13+claw*9);
+            ctx.quadraticCurveTo(0,0+claw*9,18,11+claw*9);ctx.stroke();
+          }
+          ctx.restore();
+        }
+        ctx.restore();
       }else if(v.kind==='ultimate'){
         const el=v.element,count=el==='grass'?18:el==='water'?14:el==='elec'?20:12;
         for(let i=0;i<count;i++){
@@ -983,8 +999,19 @@ class CaptureBattle {
           }else if(el==='elec'){
             ctx.strokeStyle='#f8e985';ctx.lineWidth=4;ctx.beginPath();
             ctx.moveTo(-7,-13);ctx.lineTo(1,-2);ctx.lineTo(-4,3);ctx.lineTo(9,13);ctx.stroke();
+          }else if(el==='fire'){
+            ctx.fillStyle='#ffb46d';ctx.beginPath();
+            ctx.moveTo(-8,7);ctx.quadraticCurveTo(-15,-5,1,-20);
+            ctx.quadraticCurveTo(6,-7,10,-9);ctx.quadraticCurveTo(17,9,-8,7);ctx.fill();
+          }else if(el==='dark'){
+            ctx.strokeStyle='#d6bce9';ctx.lineWidth=3;ctx.beginPath();
+            for(let j=0;j<6;j++){
+              const a=j*Math.PI/3;
+              j?ctx.lineTo(Math.cos(a)*11,Math.sin(a)*11):ctx.moveTo(Math.cos(a)*11,Math.sin(a)*11);
+            }ctx.closePath();ctx.stroke();
           }else{
-            ctx.fillStyle=v.color;ctx.beginPath();ctx.arc(0,0,6,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#fff0bd';ctx.beginPath();ctx.moveTo(0,-13);
+            ctx.lineTo(8,0);ctx.lineTo(0,13);ctx.lineTo(-8,0);ctx.closePath();ctx.fill();
           }ctx.restore();
         }
       }
@@ -1539,9 +1566,8 @@ class CaptureBattle {
     // projectiles with glow
     for (const p of this.projectiles) {
       ctx.save(); ctx.translate(p.x, p.y);
-      // Subtle contact glow, not a large neon orb around every attack.
-      ctx.globalAlpha = p.kind==='fireball'?.25:.12;ctx.fillStyle=p.color;
-      ctx.beginPath();ctx.arc(0,0,p.r*1.65,0,Math.PI*2);ctx.fill();
+      // Keep the silhouettes crisp: no generic circular glow halo around
+      // every projectile. A hit gets a brief impact effect instead.
       ctx.globalAlpha=1;ctx.fillStyle=p.color;
       if(p.kind==='star'){ctx.rotate(this.t*8);star(ctx,0,0,p.r,p.r*.5,5);}
       else if(p.kind==='claw'){
@@ -1557,14 +1583,19 @@ class CaptureBattle {
         ctx.strokeStyle='#efffd5';ctx.lineWidth=1.5;
         ctx.beginPath();ctx.moveTo(-11,0);ctx.lineTo(13,0);ctx.stroke();
       }else if(p.kind==='fireball'){
-        ctx.rotate(this.t*6);
-        const fire=ctx.createRadialGradient(0,0,0,0,0,18);
-        fire.addColorStop(0,'#fff8cc');fire.addColorStop(.4,'#ffd367');fire.addColorStop(1,'rgba(255,86,33,.15)');
-        ctx.fillStyle=fire;ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();
-        for(let i=0;i<5;i++){
-          const ang=i*Math.PI*2/5+this.t*4;
-          ctx.fillStyle='#ff914c';ctx.beginPath();ctx.ellipse(-12+Math.cos(ang)*10,Math.sin(ang)*10,7,3,ang,0,Math.PI*2);ctx.fill();
-        }
+        ctx.rotate(p.ang);
+        const flicker=Math.sin(this.t*26)*3;
+        // A directional, tapered flame with a trailing fork, not an orange orb.
+        ctx.fillStyle='#db603f';ctx.beginPath();ctx.moveTo(17,0);
+        ctx.quadraticCurveTo(2,-13,-21,-9+flicker);
+        ctx.quadraticCurveTo(-10,0,-23,9-flicker);
+        ctx.quadraticCurveTo(3,14,17,0);ctx.fill();
+        ctx.fillStyle='#fdb96d';ctx.beginPath();ctx.moveTo(18,0);
+        ctx.quadraticCurveTo(0,-8,-13,-4);
+        ctx.quadraticCurveTo(-5,0,-13,4);
+        ctx.quadraticCurveTo(1,8,18,0);ctx.fill();
+        ctx.fillStyle='#fff0bf';ctx.beginPath();ctx.moveTo(14,0);
+        ctx.quadraticCurveTo(-1,-3,-5,0);ctx.quadraticCurveTo(-1,4,14,0);ctx.fill();
       }else if(p.kind==='fur'){
         // The basic yarn attack reads as a little thread bundle, not another light ball.
         ctx.rotate(this.t*7+p.ang);
@@ -1587,7 +1618,11 @@ class CaptureBattle {
           if(i===0)ctx.moveTo(Math.cos(a)*15,Math.sin(a)*15);
           else ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);}ctx.stroke();
         ctx.rotate(-this.t*5.2);ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
-      }else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      }else{
+        ctx.rotate(p.ang);
+        ctx.beginPath();ctx.moveTo(p.r*1.7,0);ctx.lineTo(-p.r*.8,-p.r*.65);
+        ctx.lineTo(-p.r*.5,0);ctx.lineTo(-p.r*.8,p.r*.65);ctx.closePath();ctx.fill();
+      }
       if(!['claw','leaf','fireball','hex','fur','ball'].includes(p.kind)){
         ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(0,0,p.r*.45,0,Math.PI*2);ctx.fill();
       }
