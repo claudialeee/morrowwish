@@ -152,8 +152,12 @@ class Game {
     // prize. A well-raised squad can earn S through speed and survivability.
     // No arbitrary 16-hit / 95%-HP / 60%-time triple gate.
     const squadIntact=fighters.length>0&&fighters.every(f=>f.alive!==false&&f.hp>0);
-    const autoExceptional=squadIntact&&hpRatio>=.75&&seconds<=timeLimit*1.25
-      &&(combo>=5||hpRatio>=.87);
+    // Auto S judges preparation and consistency rather than perfect manual
+    // dodge timing. A living team with >=72% total HP, a reasonable clear
+    // time (up to 1.6x the rarity-adjusted limit), and either a small combo or
+    // >=80% HP is deserving of the gold medal. Broken / defeated squads don't.
+    const autoExceptional=squadIntact&&hpRatio>=.72&&seconds<=timeLimit*1.6
+      &&(combo>=4||hpRatio>=.8);
     const grade=autoUsed
       ?(autoExceptional?'S':points>=2?'A':points===1?'B':'C')
       :(points===3?'S':points>=2?'A':points===1?'B':'C');
