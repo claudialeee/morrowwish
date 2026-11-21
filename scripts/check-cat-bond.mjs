@@ -132,7 +132,12 @@ vm.runInContext(i18nSrc, sandbox, { filename: 'i18n.js' });
 
 assert.ok(sandbox.window.GameData, 'GameData global present');
 assert.equal(typeof sandbox.window.CatMotion?.draw,'function',
-  'The real four-legged world renderer must load before yard, world and combat');
+  'The original-watercolor motion renderer must load before yard, world and combat');
+assert.ok(sandbox.window.CatMotion.scaleRatio<=.72
+  &&sandbox.window.CatMotion.maxWorldScale<=.88,
+  'All moving kittens must remain small relative to the game world');
+assert.equal(sandbox.window.CatMotion.artStyle,'original-illustrated-25-breed',
+  'No alternate vector/cartoony character style may replace the original kitten art');
 assert.doesNotThrow(()=>sandbox.window.CatMotion.draw(canvasCtx,90,90,{
   species:sandbox.window.GameData.SPECIES[0],face:-1,t:1,
   pose:'run',motion:1,stride:1.3,scale:1

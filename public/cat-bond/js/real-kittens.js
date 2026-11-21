@@ -90,8 +90,10 @@
       if(right-left<w*.15||bottom-top<h*.28)return null;
       // Find the original painted feet in the lower 30% of the silhouette.
       // Feather the seam so every strand of fur belongs to the SAME image.
-      const seam=top+(bottom-top)*.69;
-      const softness=Math.max(4,(bottom-top)*.055);
+      // Limit articulation to the actual lower paws. Moving the whole lower
+      // belly made the original paintings look like cut-out paper puppets.
+      const seam=top+(bottom-top)*.80;
+      const softness=Math.max(3,(bottom-top)*.035);
       const center=(left+right)*.5;
       const midBlend=Math.max(3,(right-left)*.07);
       const canvases=[];
@@ -139,16 +141,18 @@
       const ph=phase+i*Math.PI;
       const reach=Math.sin(ph);
       const lift=Math.max(0,Math.cos(ph));
-      const stride=(sprint?24:19)*power*sx;
-      const rise=(sprint?21:16)*power*sy;
+      // Measured against the source illustration so motion scales naturally
+      // with the smaller body, rather than exaggerated trampoline legs.
+      const stride=(sprint?21:15)*power*sx;
+      const rise=(sprint?18:12)*power*sy;
       const offset=reach*stride;
       const up=lift*rise;
       // Tiny hip pivot preserves continuity with the painted shoulder.
       const hipX=dest[0]+dest[2]*(i? .61:.39);
-      const hipY=dest[1]+dest[3]*.73;
+      const hipY=dest[1]+dest[3]*.80;
       ctx.save();
       ctx.translate(hipX+offset*.5,hipY-up*.2);
-      ctx.rotate(Math.sin(ph)*power*(sprint?.068:.047));
+      ctx.rotate(Math.sin(ph)*power*(sprint?.047:.032));
       ctx.translate(-hipX,-hipY);
       ctx.translate(offset*.5,-up);
       ctx.drawImage(paw,0,0,rig.sourceWidth,rig.sourceHeight,...dest);

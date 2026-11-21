@@ -18,7 +18,21 @@
     // front paws and a grounded torso, not rendered as a moving flat sticker.
     const motion=moving?1:opts.motion;
     const gait=moving?'sprint':'walk';
-    window.CatArt.drawCat(ctx,x,y,{...opts,pose,motion,gait});
+    // The 25 original watercolor kittens must stay SMALL relative to the game.
+    // Restore their earlier footprint instead of enlarging them across every
+    // world scene. This applies to yard, exploration, combat and duos.
+    const sourceScale=Math.max(.15,Number(opts.scale)||1);
+    const actualScale=Math.min(.86,sourceScale*.70);
+    // CatArt uses the feet/shadow at y+33*scale. When scaling a painted
+    // character down, place its baseline lower to keep paws planted.
+    const growthScale=opts.growth?.scale||1;
+    const plantedY=y+33*(sourceScale-actualScale)*growthScale;
+    window.CatArt.drawCat(ctx,x,plantedY,{
+      ...opts,scale:actualScale,pose,motion,gait
+    });
   }
-  window.CatMotion={draw,artStyle:'original-illustrated-25-breed'};
+  window.CatMotion={
+    draw,artStyle:'original-illustrated-25-breed',
+    scaleRatio:.70,maxWorldScale:.86,grounded:true
+  };
 })();
