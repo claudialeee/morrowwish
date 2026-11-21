@@ -845,13 +845,17 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !quick.includes('next.color===lane'))
   throw Error('Portrait parcel lane taps/keyboard and full two-lane runner must be preserved');
  const kitten=fs.readFileSync('public/cat-bond/js/real-kittens.js','utf8');new Function(kitten);
- const complete=fs.readFileSync('public/cat-bond/js/complete-kittens.js','utf8');new Function(complete);
  const bond=fs.readFileSync('public/cat-bond/index.html','utf8');
- if(!bond.includes('js/complete-kittens.js?v=')||bond.includes('js/breed-atlas.js')||bond.includes('js/kitten-illustrations.js')||
-    !kitten.includes('CatBondCompleteKittens.frameFor')||
-    !complete.includes('const cache=new Map(),W=240,H=280')||
-    !complete.includes('ctx.clearRect(0,0,W,H)'))
-  throw Error('Cat Bond must load ONLY padded transparent full kitten artwork, never the damaged atlas');
+ // Preserve the approved painterly coats; never serve flat procedural cartoon
+ // kittens or clipped right-hand atlas cells.
+ if(!bond.includes('js/breed-atlas.js?v=')||
+    !bond.includes('js/kitten-illustrations.js?v=')||
+    bond.includes('js/complete-kittens.js')||
+    !kitten.includes('full.width=2*(half+pad)')||
+    !kitten.includes('out.scale(-1,1)')||
+    !kitten.includes('framedBreed(slot)')||
+    kitten.includes('CatBondCompleteKittens.frameFor'))
+  throw Error('Cat Bond must show full transparent watercolor kittens from the original illustrated 25-cat source');
  const miniJs=fs.readFileSync('public/mini-frame-fullscreen.js','utf8');new Function(miniJs);
  for(const slug of ['flip-dash','parcel-panic','orbit-escape','tower-tuck',
    'traffic-tangle','color-current','perfect-pour','grid-glider','mirror-mosaic','echo-heist']){
