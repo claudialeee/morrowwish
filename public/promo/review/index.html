@@ -1,68 +1,97 @@
 <!doctype html>
-<html lang="zh-CN"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow,noarchive,noimageindex">
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="googlebot" content="noindex,nofollow">
-<title>Morrow Wish · 七条宣传片审核（未批准）</title>
+<title>Morrow Wish · 最新宣传视频审核</title>
 <style>
-:root{color-scheme:light;font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;background:#f8f5fb;color:#32253d}
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at 50% -4%,#e9dcf6 0,transparent 42%),#f8f5fb}
-main{max-width:1130px;margin:0 auto;padding:clamp(18px,4vw,44px)}
-header{max-width:780px;padding:28px 0 20px}
-.eyebrow{font-weight:850;text-transform:uppercase;letter-spacing:.17em;font-size:12px;color:#87619c}
-h1{font-size:clamp(29px,5vw,47px);letter-spacing:-.045em;line-height:1.14;margin:12px 0}
-.lead{font-size:16px;line-height:1.7;color:#675770;margin:0 0 18px}
-.notice{background:#fff;border:1px solid #e9dfed;border-radius:14px;padding:13px 16px;font-size:14px;line-height:1.6;color:#664e70}
-h2{font-size:22px;margin:38px 0 17px;letter-spacing:-.025em}
-.group{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:20px;align-items:start}
-.film{background:#fff;border:1px solid #e9e1ec;box-shadow:0 8px 26px #4321510b;border-radius:20px;overflow:hidden}
-.player{display:flex;justify-content:center;background:#241a37}
-video{display:block;aspect-ratio:9/16;width:100%;max-width:320px;object-fit:contain;background:#241a37}
-.details{padding:15px 17px 18px}
-.film-head{display:flex;align-items:start;justify-content:space-between;gap:8px}
-h3{font-size:16px;line-height:1.38;margin:0;font-weight:790}
-.film-head span{font-size:12px;white-space:nowrap;color:#795e87;background:#f5eef7;border-radius:7px;padding:4px 6px}
-.details p{color:#75677e;font-size:13px;line-height:1.55;margin:8px 0 15px;min-height:40px}
-a{color:#714f97;text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:730}
-footer{color:#87788b;font-size:12px;padding:40px 0 12px}
-@media(max-width:550px){main{padding:17px}header{padding-top:16px}.group{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.film{border-radius:13px}.details{padding:11px 9px}.film-head{flex-direction:column;gap:5px}h3{font-size:13px}.film-head span{font-size:10px}.details p{font-size:12px;min-height:0}a{font-size:12px}h2{margin-top:29px}}
-</style></head><body><main>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#171728;color:#f8f6ff}
+*{box-sizing:border-box}body{margin:0;background:#171728}
+header{max-width:1260px;margin:auto;padding:28px 22px 12px}
+.eyebrow{color:#e7bddc;letter-spacing:.12em;font-size:12px;font-weight:700;text-transform:uppercase}
+h1{font-size:clamp(24px,4vw,38px);line-height:1.2;margin:12px 0}
+.lead{margin:0 0 13px;color:#d7cfe4;line-height:1.65;font-size:14px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:11px;margin:12px 0 0;font-size:13px;color:#cfbfdd}
+.status{color:#f4c6d3;font-weight:700}
+button,.video-link{font:inherit}
+.reload{border:1px solid #6b6084;background:#393252;color:#faf3ff;border-radius:9px;padding:7px 12px;cursor:pointer}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:20px;max-width:1260px;margin:auto;padding:18px 22px 32px}
+article{background:#26243a;border:1px solid #443b58;border-radius:17px;padding:16px;min-width:0}
+h2{font-size:17px;line-height:1.4;margin:0 0 12px}
+video{display:block;width:100%;max-width:320px;aspect-ratio:9/16;object-fit:contain;background:#0b0a12;border-radius:12px;margin:0 auto}
+.highlights{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.highlights button{padding:7px 9px;border:1px solid #696081;border-radius:999px;color:#faefff;background:#413657;font-size:12px;cursor:pointer}
+.highlights button:hover{background:#634b77}
+a{color:#f0cbe7}.video-link{display:inline-block;margin-top:12px;font-size:13px}
+small{display:block;color:#c6b5d0;margin-top:9px;font-size:12px}
+footer{max-width:1260px;margin:auto;padding:2px 22px 32px;font-size:12px;color:#c9bed4}
+#error{margin:10px auto;max-width:1260px;padding:0 22px;color:#ffd4da}
+@media(max-width:580px){header{padding:19px 14px 8px}main{padding:12px 14px 26px;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}article{padding:9px;border-radius:12px}h2{font-size:13px;margin-bottom:7px}video{border-radius:9px}.highlights{gap:5px}.highlights button{font-size:11px;padding:6px}.video-link{font-size:12px}footer{padding:0 14px 25px}}
+</style>
+</head>
+<body>
 <header>
-<div class="eyebrow">Morrow Wish / Creative Review / 2026-11-21</div>
-<h1>7 条游戏宣传片 · V4.1</h1>
-<p class="lead">直接点击视频播放。四款主推游戏是 23–26 秒的剧情式宣传片，三款小游戏是 8–9 秒的挑战短片。支持手机竖屏播放。</p>
-<div class="notice"><strong>审核预览，未批准。</strong> 此页不在官网导航中，也不向搜索引擎申请收录。全部视频尚未获准发布到社交平台。播放效果与吸引力仍需人工验收。</div>
+<div class="eyebrow">Morrow Wish · Creative review</div>
+<h1>七款游戏 · 最新宣传视频</h1>
+<p class="lead">这个网址固定不变，始终展示最近一次成功生成的完整审核版本。点击视频播放，或点击片段标签跳到重点镜头。尚未完成的新一轮渲染不会替换现有视频。</p>
+<div class="meta"><span class="status">仅供审核 · 未获批准发布</span><span id="version">正在载入最新版本…</span><button class="reload" id="reload" type="button">检查更新</button></div>
 </header>
-<section aria-labelledby="featured"><h2 id="featured">四款主推游戏</h2><div class="group"><article class="film" data-kind="hero">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/cat-bond/v4-review-1.jpg" aria-label="Cat Bond · 猫猫纽带 视频"><source src="/promo/cat-bond/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>Cat Bond · 猫猫纽带</h3><span>23.3s</span></div><p>双猫战斗、组队与技能；战斗主体仍需进一步放大</p><a href="/promo/cat-bond/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article>
-<article class="film" data-kind="hero">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/pawsibly-innocent/v4-review-1.jpg" aria-label="Pawsibly Innocent! · 猫猫捣蛋 视频"><source src="/promo/pawsibly-innocent/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>Pawsibly Innocent! · 猫猫捣蛋</h3><span>23.2s</span></div><p>扔毛球引开主人，趁机偷鱼</p><a href="/promo/pawsibly-innocent/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article>
-<article class="film" data-kind="hero">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/tiny-town/v4-review-1.jpg" aria-label="No More Mondays · 自由小镇 视频"><source src="/promo/tiny-town/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>No More Mondays · 自由小镇</h3><span>25.0s</span></div><p>自由生活与居民互动；实际建造镜头比例还不够</p><a href="/promo/tiny-town/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article>
-<article class="film" data-kind="hero">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/elsewhere/v4-review-1.jpg" aria-label="Elsewhere · 平行人生 视频"><source src="/promo/elsewhere/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>Elsewhere · 平行人生</h3><span>25.5s</span></div><p>巴黎、海岛、未来人生；部分场景表现仍需打磨</p><a href="/promo/elsewhere/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article></div></section>
-<section aria-labelledby="shorts"><h2 id="shorts">三款失败挑战短片</h2><div class="group"><article class="film" data-kind="mini">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/flip-dash/v4-review-1.jpg" aria-label="Flip Dash 视频"><source src="/promo/flip-dash/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>Flip Dash</h3><span>8.6s</span></div><p>38 分失败挑战</p><a href="/promo/flip-dash/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article>
-<article class="film" data-kind="mini">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/parcel-panic/v4-review-1.jpg" aria-label="Parcel Panic · 快递大作战 视频"><source src="/promo/parcel-panic/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>Parcel Panic · 快递大作战</h3><span>8.1s</span></div><p>28 分投递失败挑战</p><a href="/promo/parcel-panic/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article>
-<article class="film" data-kind="mini">
-  <div class="player"><video controls playsinline preload="none" poster="/promo/pocket-aquarium/v4-review-1.jpg" aria-label="Pocket Aquarium · 口袋水族馆 视频"><source src="/promo/pocket-aquarium/trailer-v4-20261121.mp4" type="video/mp4">浏览器无法播放该视频。</video></div>
-  <div class="details"><div class="film-head"><h3>Pocket Aquarium · 口袋水族馆</h3><span>9.0s</span></div><p>B 级成绩，挑战 S 级</p><a href="/promo/pocket-aquarium/trailer-v4-20261121.mp4" target="_blank" rel="noopener">单独打开 MP4</a></div>
- </article></div></section>
-<footer>V4.1 · Review only · 请勿把本页当作正式推广素材或社交平台已发布证明。</footer>
-</main>
-<script>document.querySelectorAll('video').forEach(v=>v.addEventListener('play',()=>{document.querySelectorAll('video').forEach(other=>{if(other!==v)other.pause()})}));</script>
+<div id="error" role="status"></div>
+<main id="videos"></main>
+<footer>视频更新不等于批准发布。未经确认，不会将本页审核素材自动发布到 YouTube、TikTok、Instagram 或 Bluesky。</footer>
+<script>
+const names={'cat-bond':'猫猫纽带','pawsibly-innocent':'猫猫捣蛋','tiny-town':'自由小镇','elsewhere':'平行人生','flip-dash':'Flip Dash','parcel-panic':'快递大作战','pocket-aquarium':'口袋水族馆'};
+const highlights={
+ 'cat-bond':[['cat-upgrade','猫咪升级'],['duo-partners','双猫搭档'],['work-after','猫咪打工'],['tease','逗猫'],['map-explore','探索地图'],['duo','双猫合击'],['ultimate','必杀技']],
+ 'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['narrow-escape','侥幸逃脱'],['caught-attempt','被抓住']],
+ 'tiny-town':[['board','小镇棋盘'],['resident-profile','居民喜好'],['combination','组合碰撞'],['neighbor-story','居民故事'],['legendary','传奇建筑'],['ending','小镇结局']],
+ 'elsewhere':[['paris-romance','浪漫爱情'],['paris-love-moment','爱情互动'],['moon-surprise','剧情惊喜'],['moon-finale-surprise','惊喜转折'],['moon-ending','人生结局']],
+ 'flip-dash':[['coin-collect','吃金币'],['survival','躲障碍'],['crash','撞击失败']],
+ 'parcel-panic':[['deliveries','连续投递'],['mistakes','错误投递'],['game-over','结算']],
+ 'pocket-aquarium':[['feeding','喂鱼'],['more-feeding','继续游戏'],['timeout','时间结束']]
+};
+const $=id=>document.getElementById(id);
+function formatDate(iso){
+ if(!iso)return '';
+ const time=new Date(iso);
+ return Number.isNaN(time.getTime())?'':new Intl.DateTimeFormat('zh-CN',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(time);
+}
+async function refresh(){
+ $('error').textContent='';$('version').textContent='正在检查最新视频…';
+ try{
+  const response=await fetch('/promo/latest-review.json?check='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('审核清单尚未就绪');
+  const data=await response.json();
+  if(!Array.isArray(data.trailers)||data.trailers.length!==7)throw Error('最新审核视频不完整');
+  const box=$('videos');box.replaceChildren();
+  for(const entry of data.trailers){
+   if(!names[entry.slug]||typeof entry.video!=='string'||!entry.video.startsWith('/promo/'))continue;
+   const article=document.createElement('article'),heading=document.createElement('h2'),
+     video=document.createElement('video'),nav=document.createElement('div'),a=document.createElement('a'),note=document.createElement('small');
+   heading.textContent=names[entry.slug];video.controls=true;video.playsInline=true;video.preload='metadata';
+   const cacheToken=encodeURIComponent(data.createdAt||data.latestVersion||'latest');
+   video.src=entry.video+'?revision='+cacheToken;
+   if(entry.poster&&entry.poster.startsWith('/promo/'))video.poster=entry.poster+'?revision='+cacheToken;
+   const times={};let offset=0;
+   for(const scene of entry.shots||[]){if(scene.scene)times[scene.scene]=offset;offset+=Number(scene.seconds)||0}
+   nav.className='highlights';
+   for(const [key,label] of highlights[entry.slug]||[]){
+     if(times[key]===undefined)continue;
+     const button=document.createElement('button');button.type='button';button.textContent=label;
+     button.addEventListener('click',()=>{video.currentTime=times[key]+.1;video.play().catch(()=>{})});
+     nav.appendChild(button);
+   }
+   a.className='video-link';a.href=video.src;a.target='_blank';a.rel='noopener';a.textContent='单独打开 MP4';
+   note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · 未批准发布';
+   video.addEventListener('play',()=>box.querySelectorAll('video').forEach(other=>{if(other!==video)other.pause()}));
+   article.append(heading,video,nav,a,note);box.append(article);
+  }
+  $('version').textContent=(data.latestVersion||data.version||'最新版本')+(data.createdAt?' · '+formatDate(data.createdAt)+' 更新':'')+' · '+box.children.length+' 条';
+ }catch(error){$('version').textContent='暂时无法读取最新审核视频';$('error').textContent=error.message}
+}
+$('reload').addEventListener('click',refresh);
+refresh();
+</script>
 </body></html>

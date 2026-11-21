@@ -224,7 +224,7 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
 }
 </style>
 <link rel="stylesheet" href="/tiny-town/freedom-scenes.css?v=1">
-<link rel="stylesheet" href="/tiny-town/compact-v5.css?v=resident-top-20261121-2">
+<link rel="stylesheet" href="/tiny-town/compact-v5.css?v=prompt-top-20261121-1">
 <script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script>
 </head>
 <body>
@@ -242,12 +242,16 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
   <button type="button" class="stat stat-button" id="comboStat" aria-label="Discoveries and legendary combinations"><span class="label" data-en="✦ DISCOVERIES" data-zh="✦ 发现">✦ DISCOVERIES</span><strong id="comboNum">0</strong><small data-en="Combos and wonders" data-zh="组合与奇观">Combos and wonders</small></button>
  </div>
  <div class="progress" aria-hidden="true"><div id="progressFill"></div></div>
+ <section class="town-prompts" aria-label="Town story and combination guidance">
+   <div class="town-bubble" id="liveNotice" aria-live="polite">Choose a wish, then touch a glowing plot.</div>
+   <div class="preview" id="preview"><span data-en="Find combinations by placing related wishes next to each other." data-zh="把相互关联的愿望建在一起，发现隐藏组合。">Find combinations by placing related wishes next to each other.</span></div>
+ </section>
  <div class="stage">
   <section class="panel map-panel">
    <div class="panel-top"><strong id="mapTitle">Your little town</strong><span class="legend-counter"><span data-en="EPIC WONDERS" data-zh="大型奇观">EPIC WONDERS</span> <span id="legendCount">0/9</span></span></div>
    <div class="world" id="mapWrap" data-theme="normal"><span class="world-magic" aria-hidden="true">✧ ✦ ✧</span><span id="cityLandmark" class="city-landmark" aria-hidden="true"></span><div id="worldIllustration" class="world-illustration" aria-hidden="true"></div><div class="board" id="board" aria-label="Town map"></div></div>
-   <div class="town-bubble" id="liveNotice" aria-live="polite">Choose a wish, then touch a glowing plot.</div><p class="caption" id="guide" aria-live="polite">Pick a wish, then pick a place.</p>
-   <div class="preview" id="preview"><span data-en="Find combinations by placing related wishes next to each other." data-zh="把相互关联的愿望建在一起，发现隐藏组合。">Find combinations by placing related wishes next to each other.</span></div>
+   <p class="caption" id="guide" aria-live="polite">Pick a wish, then pick a place.</p>
+   
    <div id="journeyPassport" class="journey-passport" aria-live="polite"></div><div class="city-extras">
     <div class="micro-panel"><div class="micro-title" data-en="✦ DISCOVERED" data-zh="✦ 已发现">✦ DISCOVERED</div><div class="discoveries" id="discoveries"></div></div>
     <div class="micro-panel"><div class="micro-title" data-en="☀ TOWN NEWS" data-zh="☀ 小镇新闻">☀ TOWN NEWS</div><div class="news" id="news"></div></div>
@@ -257,6 +261,8 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
    <div class="sidebar-head" data-en="EVERY DAY IS YOURS" data-zh="每一天都属于你">EVERY DAY IS YOURS</div>
    <h2 id="cardsTitle" data-en="How do you want to live today?" data-zh="今天，想怎么生活？">How do you want to live today?</h2>
    <p data-en="Make a wish. Go somewhere. Let something beautiful happen." data-zh="许个愿，去远方，看看会有什么美好的事发生。">Make a wish. Go somewhere. Let something beautiful happen.</p>
+   <div class="cards" id="cards"></div>
+   <p class="pick-hint" id="pickHint"></p>
    <section id="residentRibbon" class="resident-ribbon" aria-label="Resident moods and wish reactions">
     <div class="resident-ribbon-heading"><strong data-en="👥 YOUR NEIGHBORS" data-zh="👥 居民心情">👥 居民心情</strong><span id="residentRibbonHint" aria-live="polite" data-en="Tap a face for likes and dislikes" data-zh="点头像看喜好">点头像看喜好</span></div>
     <div class="resident-ribbon-people" id="residentRibbonPeople"></div>
@@ -267,8 +273,6 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
     <button id="tabDiscoveries" type="button" aria-expanded="false">发现 · 0</button>
     <button id="tabLegends" type="button" aria-expanded="false" data-en="✧ Legends" data-zh="✧ 传奇 🔒">✧ 传奇 🔒</button>
    </div>
-   <div class="cards" id="cards"></div>
-   <p class="pick-hint" id="pickHint"></p>
    <div class="citizen-panel"><div class="citizen-head"><b data-en="YOUR FRIENDS" data-zh="一起生活的朋友">YOUR FRIENDS</b><small data-en="Everyone has their own dreams" data-zh="每个人都有自己的梦想">Everyone has their own dreams</small></div><div id="citizens" class="citizens"></div></div>
    <div class="petition" id="petition"></div>
    <button type="button" id="moveWish" hidden data-en="↔ Move one building" data-zh="↔ 搬迁一次建筑">↔ Move one building</button>

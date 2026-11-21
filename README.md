@@ -1,9 +1,16 @@
 # Morrow Wish
 
-Private source repository for the Morrow Wish browser-game studio.
+Publicly viewable source repository for the Morrow Wish browser-game studio. This repository is not open-source.
 
 **Public website:** https://morrowwish.vercel.app/
 **Unified dashboard:** https://morrowwish.vercel.app/studio-insights/
+
+
+## Copyright and permitted use
+
+© 2026 Morrow Wish. All rights reserved.
+
+This repository is publicly viewable but **not offered under an open-source license**. Unless expressly stated otherwise, no permission is granted to copy, modify, redistribute, or republish its original source code, writing, artwork, or other protected content. Third-party materials retain their respective licenses and required attributions. See [COPYRIGHT.md](COPYRIGHT.md) for details.
 
 ## Production architecture
 

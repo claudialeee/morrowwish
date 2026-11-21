@@ -1,0 +1,376 @@
+{
+  "version": "V6",
+  "createdAt": "2026-11-21T19:41:06.166Z",
+  "approval": "NOT APPROVED — REVIEW ONLY",
+  "socialAutopublish": false,
+  "historicalVideoViewsExcluded": true,
+  "trailers": [
+    {
+      "slug": "cat-bond",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/cat-bond/trailer-v6-20261121.mp4",
+      "poster": "/promo/cat-bond/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/cat-bond/v6-review-1.jpg",
+        "/promo/cat-bond/v6-review-2.jpg",
+        "/promo/cat-bond/v6-review-3.jpg"
+      ],
+      "duration": 23.4,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "yard",
+          "caption": "A HOME FULL OF CATS.",
+          "seconds": 2.5709999999999997
+        },
+        {
+          "source": "broll",
+          "scene": "raising",
+          "caption": "MEET AND RAISE YOUR TEAM.",
+          "seconds": 2.5210000000000004
+        },
+        {
+          "source": "broll",
+          "scene": "work-before",
+          "caption": "SEND CATS OUT TO WORK.",
+          "seconds": 1.62
+        },
+        {
+          "source": "broll",
+          "scene": "work-after",
+          "caption": "EARN COINS TOGETHER.",
+          "seconds": 2.4
+        },
+        {
+          "source": "broll",
+          "scene": "tease",
+          "caption": "PLAY WITH YOUR CATS.",
+          "seconds": 2.857000000000001
+        },
+        {
+          "source": "broll",
+          "scene": "map-choice",
+          "caption": "CHOOSE WHERE TO EXPLORE.",
+          "seconds": 2.0199999999999996
+        },
+        {
+          "source": "broll",
+          "scene": "map-explore",
+          "caption": "DISCOVER THE WORLD TOGETHER.",
+          "seconds": 2.6
+        },
+        {
+          "source": "broll",
+          "scene": "battle-intro",
+          "caption": "YOUR CATS FIGHT AS A TEAM.",
+          "seconds": 1.6
+        },
+        {
+          "source": "broll",
+          "scene": "duo",
+          "caption": "TWO CATS. ONE COMBINATION!",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "ultimate",
+          "caption": "UNLEASH THE ULTIMATE!",
+          "seconds": 3.2
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.65
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "pawsibly-innocent",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/pawsibly-innocent/trailer-v6-20261121.mp4",
+      "poster": "/promo/pawsibly-innocent/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/pawsibly-innocent/v6-review-1.jpg",
+        "/promo/pawsibly-innocent/v6-review-2.jpg",
+        "/promo/pawsibly-innocent/v6-review-3.jpg"
+      ],
+      "duration": 17.3,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "escape-attempt",
+          "caption": "STEAL FISH. ESCAPE THE HUMAN.",
+          "seconds": 10.613999999999999
+        },
+        {
+          "source": "broll",
+          "scene": "caught-attempt",
+          "caption": "ANOTHER ROOM. ONE WRONG MOVE...",
+          "seconds": 5.524000000000002
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.75
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "tiny-town",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/tiny-town/trailer-v6-20261121.mp4",
+      "poster": "/promo/tiny-town/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/tiny-town/v6-review-1.jpg",
+        "/promo/tiny-town/v6-review-2.jpg",
+        "/promo/tiny-town/v6-review-3.jpg"
+      ],
+      "duration": 15.9,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "board",
+          "caption": "NO JOBS. BUILD YOUR OWN TOWN.",
+          "seconds": 2.5
+        },
+        {
+          "source": "broll",
+          "scene": "board-later",
+          "caption": "CHOOSE A WISH. PLACE IT.",
+          "seconds": 2.25
+        },
+        {
+          "source": "broll",
+          "scene": "combination",
+          "caption": "TWO WISHES COMBINE!",
+          "seconds": 3.35
+        },
+        {
+          "source": "broll",
+          "scene": "legendary",
+          "caption": "UNLOCK A LEGENDARY BUILDING.",
+          "seconds": 2.25
+        },
+        {
+          "source": "broll",
+          "scene": "board-mature",
+          "caption": "WATCH YOUR TOWN CHANGE.",
+          "seconds": 2.25
+        },
+        {
+          "source": "broll",
+          "scene": "ending",
+          "caption": "SEVEN DAYS. YOUR OWN ENDING.",
+          "seconds": 3.3
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.7
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "elsewhere",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/elsewhere/trailer-v6-20261121.mp4",
+      "poster": "/promo/elsewhere/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/elsewhere/v6-review-1.jpg",
+        "/promo/elsewhere/v6-review-2.jpg",
+        "/promo/elsewhere/v6-review-3.jpg"
+      ],
+      "duration": 20.7,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "choose-life",
+          "caption": "WAKE UP TO A WHOLE NEW LIFE.",
+          "seconds": 3.55
+        },
+        {
+          "source": "broll",
+          "scene": "paris",
+          "caption": "FALL IN LOVE IN PARIS.",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "paris-result",
+          "caption": "",
+          "seconds": 1.4
+        },
+        {
+          "source": "broll",
+          "scene": "amalfi",
+          "caption": "LIVE IN YOUR OWN SEASIDE VILLA.",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "amalfi-result",
+          "caption": "",
+          "seconds": 1.4
+        },
+        {
+          "source": "broll",
+          "scene": "tokyo",
+          "caption": "BECOME A SUPERSTAR.",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "tokyo-result",
+          "caption": "",
+          "seconds": 1.4
+        },
+        {
+          "source": "broll",
+          "scene": "moon",
+          "caption": "OR OWN A HOTEL ON THE MOON.",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "moon-result",
+          "caption": "",
+          "seconds": 1.4
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.7
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "flip-dash",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/flip-dash/trailer-v6-20261121.mp4",
+      "poster": "/promo/flip-dash/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/flip-dash/v6-review-1.jpg",
+        "/promo/flip-dash/v6-review-2.jpg",
+        "/promo/flip-dash/v6-review-3.jpg"
+      ],
+      "duration": 7.3,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "full-attempt",
+          "caption": "ONE TAP. STAY ALIVE.",
+          "seconds": 5.8020000000000005
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.8
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "parcel-panic",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/parcel-panic/trailer-v6-20261121.mp4",
+      "poster": "/promo/parcel-panic/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/parcel-panic/v6-review-1.jpg",
+        "/promo/parcel-panic/v6-review-2.jpg",
+        "/promo/parcel-panic/v6-review-3.jpg"
+      ],
+      "duration": 8.9,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "full-attempt",
+          "caption": "MATCH COLORS. AVOID MISTAKES.",
+          "seconds": 7.323
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.8
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "pocket-aquarium",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/pocket-aquarium/trailer-v6-20261121.mp4",
+      "poster": "/promo/pocket-aquarium/trailer-v6-20261121.jpg",
+      "review": [
+        "/promo/pocket-aquarium/v6-review-1.jpg",
+        "/promo/pocket-aquarium/v6-review-2.jpg",
+        "/promo/pocket-aquarium/v6-review-3.jpg"
+      ],
+      "duration": 8.6,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "feeding",
+          "caption": "FEED THE HUNGRY FISH.",
+          "seconds": 2.6870000000000003
+        },
+        {
+          "source": "broll",
+          "scene": "water-cloudy",
+          "caption": "THE WATER IS GETTING CLOUDY.",
+          "seconds": 3
+        },
+        {
+          "source": "broll",
+          "scene": "timeout",
+          "caption": "TIME UP. WHAT GRADE?",
+          "seconds": 2
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 1.7
+        }
+      ],
+      "sourceClips": "new verified game-controlled chronological V5 scenes and separate typeset end card",
+      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    }
+  ]
+}
