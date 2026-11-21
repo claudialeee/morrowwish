@@ -1196,3 +1196,15 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
  border-color:#4c9860;box-shadow:0 0 0 2px #8cc59d55;outline:none}
 #scene{touch-action:none;user-select:none}
 body.cb-exploring #scene{cursor:grab}
+
+/* Landscape gamepad: put yard actions in a compact horizontal strip above the tabs.
+   The audio dock sits at the upper-right; a tall vertical FAB stack overlaps it. */
+@media (orientation:landscape) and (max-height:530px){
+  #yard-actions{display:flex;flex-direction:row;align-items:center;
+    right:max(8px,env(safe-area-inset-right,0px));bottom:max(65px,calc(env(safe-area-inset-bottom,0px) + 61px));
+    gap:6px}
+  #yard-actions .fab{width:44px;height:44px;min-width:44px;min-height:44px;font-size:20px}
+  #fab-map.map-fab{width:50px;height:46px;min-width:50px;min-height:46px;font-size:20px;
+    border-radius:12px}
+  #fab-map.map-fab small{font-size:9px;line-height:1}
+}
