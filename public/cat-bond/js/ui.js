@@ -51,7 +51,7 @@ const UI = {
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
-    document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel());
+    document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel(true));
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
@@ -213,10 +213,12 @@ const UI = {
     };
     document.getElementById('quarrel-later').onclick=()=>this.closeAll();
   },
-  openBondPanel(){
+  openBondPanel(preferUnresolved=false){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
-    let picked=this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid);
+    const pendingPair=preferUnresolved?CatRelations.unresolved?.()[0]:null;
+    let picked=pendingPair?[pendingPair.a.uid,pendingPair.b.uid]:
+      (this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid));
     if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id))){
       const pending=CatRelations.unresolved?.()[0];
       picked=pending?[pending.a.uid,pending.b.uid]:[cats[0].uid,cats[1].uid];
