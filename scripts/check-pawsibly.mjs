@@ -91,16 +91,16 @@ assert.equal(test.getState().cat.y,2,'The player can sneak past while the guard 
 test.choose(0,false);
 let chase=test.getState();
 chase.cat={x:3,y:3};chase.catFrom={x:3,y:3};
-chase.human={x:6,y:4};chase.humanFrom={x:6,y:4};
+chase.human={x:6,y:3};chase.humanFrom={x:6,y:3};
 chase.noise=null;chase.exposure=0;chase.guardMode="patrol";
 test.move(1,0);
 assert.equal(test.getState().guardMode,"chase","Owner must recognize the cat on first sight");
-assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:6,y:4},
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:6,y:3},
  "First sighting must telegraph a warning rather than instantly grab the cat");
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().guardTarget)),{x:4,y:3},
  "Chase waypoint should match where the cat just moved");
-test.move(0,1);
-assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:5,y:4},
+test.move(-1,0);
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:5,y:3},
  "Owner must actually MOVE one tile toward the visible cat");
 assert.equal(test.getState().lives,3,"An early visible chase must remain escapable");
 // Footsteps are weaker than visual detection: they move toward the previously
