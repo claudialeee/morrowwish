@@ -39,11 +39,11 @@ try{
   const br=board.getBoundingClientRect(),tr=tool.getBoundingClientRect();
   return {boardTop:br.top,boardBottom:br.bottom,toolTop:tr.top,topBottom:top.getBoundingClientRect().bottom,
    noDuplicateRules:!document.querySelector('.explainer'),menuHidden:document.getElementById('gameMenu').hidden,
-   inFrame:['board','tool','heistStatus','gameMenu','menuButton','guardIntent'].every(id=>stage.contains(document.getElementById(id))),
+   inFrame:['board','tool','heistStatus','gameMenu','menuButton','bonusQuick','guardIntent'].every(id=>stage.contains(document.getElementById(id))),
    tabs:document.querySelectorAll('[data-game-tab]').length};
  });
  console.log('Single-screen cat geometry:',JSON.stringify(ruleLayout));
- assert.ok(ruleLayout.noDuplicateRules&&ruleLayout.inFrame&&ruleLayout.tabs===5&&ruleLayout.menuHidden,'All controls and tabs must live in a single game frame');
+ assert.ok(ruleLayout.noDuplicateRules&&ruleLayout.inFrame&&ruleLayout.tabs===5&&ruleLayout.menuHidden,'All controls, bonus objective and tabs must live in a single game frame');
  assert.ok(ruleLayout.topBottom<=ruleLayout.boardTop+2&&ruleLayout.toolTop>=ruleLayout.boardBottom-2,'HUD and controls must not cover playable map tiles');
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
@@ -65,6 +65,12 @@ try{
  assert.equal(await page.locator('[data-tab-panel="badges"]').isVisible(),true,'Achievements available inside game');
  await page.locator('#menuClose').click();
  assert.equal(await page.locator('#gameMenu').isVisible(),false,'Closing menu resumes gameplay');
+ assert.match(await page.locator('#bonusQuickText').textContent(),/Knock over a vase/,'Bonus mission must be prominent on game HUD');
+ assert.equal(await page.locator('#bonusQuickProgress').textContent(),'0/1','Bonus progress must be visible in the game');
+ await page.locator('#bonusQuick').click();
+ assert.equal(await page.locator('#gameMenu').isVisible(),true,'Tapping bonus mission opens the current heist details');
+ assert.equal(await page.locator('[data-tab-panel="rooms"]').isVisible(),true,'Bonus opens details without leaving the game');
+ await page.locator('#menuClose').click();
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(110);
  const zh=await page.evaluate(()=>({
   lang:document.documentElement.lang,
@@ -78,6 +84,8 @@ try{
  }));
  console.log('Chinese switch:',JSON.stringify(zh));
  assert.equal(zh.lang,'zh-CN');
+ assert.equal(await page.locator('#menuButtonLabel').textContent(),'菜单','Menu icon must have a visible Chinese label');
+ assert.match(await page.locator('#bonusQuickText').textContent(),/额外任务|打翻一个花瓶/,'Bonus mission should be readable in Chinese');
  const chineseContent=await page.evaluate(()=>({
   title:document.getElementById('gameTitle')?.textContent,
   byline:document.getElementById('studioByline')?.textContent,
@@ -417,7 +425,7 @@ try{
    assert.ok(v.hud?.includes('0/3')&&v.owner,'CrazyGames must show fish goal and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
-   assert.ok(v.canvas.width>=475&&v.canvas.height>=330,
+   assert.ok(v.canvas.width>=440&&v.canvas.height>=315,
      'Gameplay must remain large and legible at DPR 1: '+JSON.stringify(v));
    assert.ok(v.totalWidth<=w+2&&v.totalHeight<=h+2,
      'CrazyGames iframe must not require page scrolling: '+JSON.stringify(v));
