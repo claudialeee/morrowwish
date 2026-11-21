@@ -1,6 +1,6 @@
 {
   "version": "V6",
-  "createdAt": "2026-11-21T19:18:02.657Z",
+  "createdAt": "2026-11-21T19:35:47.628Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -27,7 +27,7 @@
           "source": "broll",
           "scene": "raising",
           "caption": "MEET AND RAISE YOUR TEAM.",
-          "seconds": 2.5200000000000005
+          "seconds": 2.52
         },
         {
           "source": "broll",
@@ -45,7 +45,7 @@
           "source": "broll",
           "scene": "tease",
           "caption": "PLAY WITH YOUR CATS.",
-          "seconds": 2.9
+          "seconds": 2.867000000000001
         },
         {
           "source": "broll",
@@ -100,19 +100,19 @@
         "/promo/pawsibly-innocent/v6-review-2.jpg",
         "/promo/pawsibly-innocent/v6-review-3.jpg"
       ],
-      "duration": 17.1,
+      "duration": 17.3,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
-          "caption": "STEAL THREE FISH. ESCAPE THE HUMAN.",
-          "seconds": 10.466
+          "caption": "STEAL FISH. ESCAPE THE HUMAN.",
+          "seconds": 10.568
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "ANOTHER ROOM. ONE WRONG MOVE...",
-          "seconds": 5.469
+          "seconds": 5.537000000000002
         },
         {
           "source": "cover",
@@ -282,8 +282,8 @@
         {
           "source": "broll",
           "scene": "full-attempt",
-          "caption": "ONE BUTTON. HOW LONG CAN YOU SURVIVE?",
-          "seconds": 5.806
+          "caption": "ONE TAP. STAY ALIVE.",
+          "seconds": 5.803
         },
         {
           "source": "cover",
@@ -313,8 +313,8 @@
         {
           "source": "broll",
           "scene": "full-attempt",
-          "caption": "MATCH THE COLORS. TRY NOT TO MISS.",
-          "seconds": 7.339
+          "caption": "MATCH COLORS. AVOID MISTAKES.",
+          "seconds": 7.318999999999999
         },
         {
           "source": "cover",
@@ -339,13 +339,13 @@
         "/promo/pocket-aquarium/v6-review-2.jpg",
         "/promo/pocket-aquarium/v6-review-3.jpg"
       ],
-      "duration": 8.7,
+      "duration": 8.8,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 2.779
+          "seconds": 2.9
         },
         {
           "source": "broll",
@@ -356,7 +356,7 @@
         {
           "source": "broll",
           "scene": "timeout",
-          "caption": "TIME IS UP. WHAT GRADE DID YOU GET?",
+          "caption": "TIME UP. WHAT GRADE?",
           "seconds": 2
         },
         {
