@@ -321,11 +321,13 @@ try{
  }));
  result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
   // Observer is READ ONLY: exposes the authentic next falling parcel's color.
-  await page.route('**/game.js*',async route=>{
+  await page.route('**/upgrade.js*',async route=>{
    const response=await route.fetch(),code=await response.text();
-   const marker='let parcels=[],t=0,spawn=0,lives=5,chain=0,sel=null,delivered=0;';
-   if(!code.includes(marker))throw Error('Parcel recording instrumentation no longer matches actual game source');
-   const modified=code.replace(marker,marker+'window.__V5_PARCELS__=()=>({parcels:parcels.map(p=>({color:p.color,y:p.y})),lives,delivered,chain});');
+   // The active Parcel Panic code lives in upgrade.js, not the base
+   // game.js. The earlier observer watched an unused mode that never ticked.
+   const marker='let time=0,boxes=[],spawn=.42,life=4,count=0,delivered=0,press=null,drag=null,feedback=null;';
+   if(!code.includes(marker))throw Error('Parcel recording observer no longer matches ACTIVE upgrade.js');
+   const modified=code.replace(marker,marker+'window.__V5_PARCELS__=()=>({parcels:boxes.map(p=>({color:p.color,y:p.y})),lives:life,delivered,chain:window.mwMiniStats?.streak||0});');
    await route.fulfill({response,body:modified,headers:{...response.headers(),'content-type':'application/javascript; charset=utf-8'}});
   });
   await page.goto(host+'/parcel-panic/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
@@ -357,10 +359,11 @@ try{
   };
   for(let k=0;k<7;k++)await action(true);
   const streak=stamp(),proof=await page.evaluate(()=>({state:window.__V5_PARCELS__(),score:Number(document.querySelector('#score').textContent),dead:!document.querySelector('#overlay').hidden}));
-  if(proof.dead||proof.state.lives!==5||proof.state.delivered<7||proof.score<90)throw Error('No genuine delivery streak BEFORE failure '+JSON.stringify(proof));
+  if(proof.dead||proof.state.lives!==4||proof.state.delivered<7||proof.score<90)throw Error('No genuine delivery streak BEFORE failure '+JSON.stringify(proof));
   const wrongStart=stamp();
-  for(let k=0;k<5;k++){
+  for(let k=0;k<4;k++){
    await action(false);
+   await sleep(450);
    if(await page.evaluate(()=>!document.querySelector('#overlay').hidden))break;
   }
   const died=stamp(),end=await page.evaluate(()=>({state:window.__V5_PARCELS__(),dead:!document.querySelector('#overlay').hidden,result:document.querySelector('#overlay-kicker')?.textContent}));
