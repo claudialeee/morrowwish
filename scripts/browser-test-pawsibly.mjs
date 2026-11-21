@@ -44,7 +44,7 @@ try{
  });
  console.log('Single-screen cat geometry:',JSON.stringify(ruleLayout));
  assert.ok(ruleLayout.noDuplicateRules&&ruleLayout.inFrame&&ruleLayout.tabs===5&&ruleLayout.menuHidden,'All controls, bonus objective and tabs must live in a single game frame');
- assert.ok(ruleLayout.topBottom<=ruleLayout.boardTop+2&&ruleLayout.toolTop<ruleLayout.boardTop,'Tutorial, bonus and yarn must all be ABOVE the map and not cover tiles');
+ assert.ok(ruleLayout.topBottom<=ruleLayout.boardTop+2&&ruleLayout.toolBottom<=ruleLayout.boardTop+2,'Tutorial, bonus and yarn must all be ABOVE the map and not cover tiles');
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
  assert.equal(errors.length,0,'No uncaught exception during Canvas rendering');
