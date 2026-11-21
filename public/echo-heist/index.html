@@ -50,4 +50,4 @@ $("rewind").onclick=()=>rewind();$("go").onclick=startAll;const seen=localStorag
 $("share").onclick=async()=>{track("share_clicked",{score});const url=new URL(location.href);url.search="";url.searchParams.set("seed",seed);url.searchParams.set("beat",String(score));const s="I escaped Echo Heist with "+score+" points! Can you beat my daily vault? "+url;try{if(navigator.share)await navigator.share({title:"Echo Heist challenge",text:s,url:String(url)});else if(navigator.clipboard){await navigator.clipboard.writeText(s);$("share").textContent="COPIED!";}}catch(e){}};
 track("page_view");
 })();
-</script><script src="/mini-frame-fullscreen.js?v=echo-full-20261120-1" defer></script><script src="/game-settings.js?v=unified-inline-20261120-1" defer></script></body></html>
+</script><script src="/mini-frame-fullscreen.js?v=echo-full-20261120-2" defer></script><script src="/game-settings.js?v=unified-inline-20261120-2" defer></script></body></html>
