@@ -598,7 +598,15 @@ class CaptureBattle {
       f.moving=true;
     }else f.moving=false;
     const near=threat?.p||null;
-    this.evalGambits(f,tgt,Math.hypot(tgt.x-f.x,tgt.y-f.y),near,threat?.d??Infinity);
+    // HUMAN-LIKE CADENCE: a person doesn't re-decide and fire skills every frame.
+    // Gate skill decisions to a ~0.28s reaction interval (jittered), so auto-battle
+    // reads like a competent player, not a frame-perfect robot. Dodging a genuine
+    // incoming threat is allowed to react faster (people flinch at danger).
+    this._autoDecCd = (this._autoDecCd || 0) - dt;
+    if (this._autoDecCd <= 0 || (threat && this._autoDecCd < 0.12)) {
+      this._autoDecCd = 0.24 + Math.random() * 0.18;     // 0.24–0.42s between decisions
+      this.evalGambits(f,tgt,Math.hypot(tgt.x-f.x,tgt.y-f.y),near,threat?.d??Infinity);
+    }
   }
 
   // Context-sensitive default planner: defence, sustain, burst, elemental
@@ -743,6 +751,8 @@ class CaptureBattle {
 
   // ---------------- input (polled from game.keys / game.mouse) ----------------
   readInput(dt) {
+    // During the ultimate cinematic the player is locked out (it's a scripted beat).
+    if (this.ultCinematic) { this._prevKeys = Object.assign({}, this.game.keys || {}); return; }
     const K = this.game.keys || {};
     const m = this.game.mouse || { x: this.W / 2, y: this.H / 2 };
     const f = this.me();
@@ -1258,7 +1268,29 @@ class CaptureBattle {
     if(this.ult<100){this.game.toast('必杀能量不足');return false;}
     const f=this.me(),skill=f.ultSkill;
     this.ult=0;
-    f.inv=.65;this.shakeT=.5;this.flash=.4;
+    f.inv=2.2;                                   // invulnerable through the whole cinematic
+    // FULL-SCREEN ULTIMATE CINEMATIC: freeze the arena, play a 3s element-themed
+    // sequence, and detonate at the climax. The heavy lifting (damage) still runs
+    // through the same code below, deferred to the impact beat so it reads as one
+    // big synchronized hit instead of a quiet poke.
+    const color = skill && skill.ultCost>0 ? this.elemColor(skill.element) : '#ffd36b';
+    this.ultCinematic = {
+      t: 3.0, max: 3.0, impactAt: 1.15, impacted: false,
+      name: skill && skill.ultCost>0 ? skill.name : '喵爪旋风',
+      element: skill && skill.ultCost>0 ? skill.element : 'neutral',
+      color, x: f.x, y: f.y, uid: f.cat.uid,
+    };
+    this.slowmo = Math.max(this.slowmo, 0.5);     // world crawls as it winds up
+    window.MorrowwishAudio?.effect?.('ultimate');
+    this._pendingUlt = { f, skill };              // fired by tickUltCinematic at impactAt
+    return true;
+  }
+  // Deferred ultimate payload — the real damage/VFX, run at the cinematic's climax.
+  fireUltimatePayload(){
+    const p=this._pendingUlt; if(!p)return; this._pendingUlt=null;
+    const f=p.f, skill=p.skill;
+    if(!f||!f.alive)return;
+    this.shakeT=.6;this.flash=.5;
     if(skill&&skill.ultCost>0){
       // A learned elemental ultimate is an actual different attack, not just
       // a renamed purple projectile. Hit nearby enemies, apply its status and
@@ -1297,7 +1329,14 @@ class CaptureBattle {
       this.game.toast('必杀 · 喵爪旋风！');
       this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:targets.length};
     }
-    return true;
+  }
+  // Advance the ultimate cinematic; detonate at the impact beat, end after 3s.
+  tickUltCinematic(dt){
+    const c=this.ultCinematic; if(!c)return;
+    c.t=Math.max(0,c.t-dt);
+    const elapsed=c.max-c.t;
+    if(!c.impacted && elapsed>=c.impactAt){ c.impacted=true; this.fireUltimatePayload(); }
+    if(c.t<=0) this.ultCinematic=null;
   }
   switchTo(i) {
     if (i === this.active || !this.team[i] || !this.team[i].alive) return;
@@ -1475,6 +1514,9 @@ class CaptureBattle {
     // AI, cooldowns) so fights read calmer and the cat isn't twitchy-fast. One knob,
     // everything stays proportional/balanced. 1 = old speed; 0.8 = 20% slower.
     dt *= 0.8;
+    // Ultimate cinematic: the arena nearly freezes so the full-screen sequence
+    // reads as a dramatic beat. Ticks on REAL dt (pre-freeze) so it always lasts 3s.
+    if (this.ultCinematic) { this.tickUltCinematic(dt); dt *= 0.06; }
     // perfect-dodge bullet-time: slow the WORLD but keep input responsive
     if (this.slowmo > 0) { this.slowmo -= dt; dt *= 0.35; }
     // hitstop: a few frames of near-freeze on a solid hit makes impacts feel weighty.
@@ -1575,6 +1617,13 @@ class CaptureBattle {
     for (const e of this.liveEnemies()) {
       this.tickWards(e, dt);                           // protect/reflect/barrier timers
       if (e.wardCd > 0) e.wardCd -= dt;
+      // apply + decay hit knockback (independent of AI so even a frozen/casting enemy flies back)
+      if (e.kbx || e.kby) {
+        e.x = clamp(e.x + e.kbx * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+        e.y = clamp(e.y + e.kby * dt, this.topMargin, this.H - this.bottomMargin);
+        const decay = Math.exp(-9 * dt); e.kbx *= decay; e.kby *= decay;
+        if (Math.abs(e.kbx) < 4 && Math.abs(e.kby) < 4) { e.kbx = 0; e.kby = 0; }
+      }
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
       else if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
@@ -1818,7 +1867,10 @@ class CaptureBattle {
     // wounded enemy can't machine-gun. Predictively led.
     e.fireCd -= dt;
     if (e.fireCd <= 0 && dist < 340) {
-      e.fireCd = Math.max(0.5, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1);   // +floor; 感电降攻速
+      // Manual play is harder than letting the AI dodge for you, so give a human
+      // pilot ~25% more breathing room between enemy shots (auto mode stays brisk).
+      const manualEase = this.autoMode ? 1 : 1.25;
+      e.fireCd = Math.max(0.5, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
       let lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
       if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
@@ -2068,6 +2120,12 @@ class CaptureBattle {
       this.hitstop = Math.max(this.hitstop, stop);
       const heat = Math.min(1, this.combo / 20);
       this.shakeT = Math.max(this.shakeT, (touch ? 0.04 : 0.06) + 0.05 * heat);
+      // KNOCKBACK (Hades-style punch): shove the enemy away from the hit point,
+      // scaled by how big the hit was. Heavier enemies (SR/SSR) resist more.
+      const kx = e.x - fx, ky = e.y - fy, kl = Math.hypot(kx, ky) || 1;
+      const power = (90 + 240 * frac) / (1 + e.rIdx * 0.6);
+      e.kbx = (e.kbx || 0) + (kx / kl) * power;
+      e.kby = (e.kby || 0) + (ky / kl) * power;
     }
     // bigger, brighter number as the combo climbs (crescendo feel)
     const big = this.combo >= 15 ? 18 : this.combo >= 6 ? 15 : 13;
@@ -2286,11 +2344,15 @@ class CaptureBattle {
 
     if (this.flash > 0) { ctx.fillStyle = `rgba(157,123,255,${this.flash})`; ctx.fillRect(0, 0, W, H); }
 
+    this.drawUltCinematic(ctx, W, H);
+
     this.drawPackMorale(ctx, W);
 
     // aim reticle
     const m = this.game.mouse;
     if (m) { ctx.strokeStyle = 'rgba(255,211,107,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(m.x, m.y, 9, 0, Math.PI * 2); ctx.moveTo(m.x - 13, m.y); ctx.lineTo(m.x + 13, m.y); ctx.moveTo(m.x, m.y - 13); ctx.lineTo(m.x, m.y + 13); ctx.stroke(); }
+
+    this.drawAimPreview(ctx);
 
     // Manual target guide stays below the cat bodies and is thin enough not
     // to clutter a small phone. Tapping a wild cat locks it until it leaves.
@@ -2574,6 +2636,105 @@ class CaptureBattle {
 
   // Aggregate pack 斗志 (morale/HP) bar at the top — makes the win condition
   // legible: the player always sees how close the whole pack is to being tamed.
+  // Live AIM PREVIEW for the active cat: a trajectory line for directional skills
+  // and a landing impact-zone circle for lob/placed AOE, so the player can see
+  // where a skill will go/land BEFORE committing. Only on manual control.
+  drawAimPreview(ctx) {
+    if (this.autoMode || this.ultCinematic) return;
+    const f = this.me(); if (!f || !f.alive) return;
+    const aim = this.aim || 0;
+    // which off-cooldown offensive skill is the player most likely about to fire?
+    const q = f.qSkill, e = f.eSkill;
+    const readyLob = (sk, cd) => sk && sk.kind === 'aoe' && cd <= 0;
+    const readyDir = (sk, cd) => sk && (sk.kind === 'projectile' || sk.kind === 'chain') && cd <= 0;
+    // landing-zone preview for a lob AOE (prefer Q, then E)
+    const lob = readyLob(q, f.cd.q) ? q : readyLob(e, f.cd.e) ? e : null;
+    if (lob) {
+      const col = this.elemColor(lob.element);
+      let tx, ty;
+      if (!this.game.isTouch) { const mo = this.game.mouse || {}; tx = mo.x; ty = mo.y; }
+      else { const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; } }
+      ctx.save();
+      // dashed arc from caster to landing point
+      ctx.strokeStyle = withAlpha(col, 0.5); ctx.lineWidth = 2; ctx.setLineDash([4, 6]);
+      ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+      // impact zone (radius 86 matches lobAoe R)
+      const pulse = 0.35 + 0.2 * Math.abs(Math.sin(this.t * 4));
+      ctx.globalAlpha = pulse; ctx.fillStyle = withAlpha(col, 0.18); ctx.beginPath(); ctx.arc(tx, ty, 86, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.8; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.arc(tx, ty, 86, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+      return;
+    }
+    // trajectory line for a directional projectile/chain skill
+    const dir = readyDir(q, f.cd.q) ? q : readyDir(e, f.cd.e) ? e : null;
+    if (dir) {
+      const col = this.elemColor(dir.element);
+      const len = 300;
+      ctx.save();
+      ctx.strokeStyle = withAlpha(col, 0.45); ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]);
+      ctx.beginPath(); ctx.moveTo(f.x, f.y);
+      ctx.lineTo(f.x + Math.cos(aim) * len, f.y + Math.sin(aim) * len); ctx.stroke();
+      ctx.setLineDash([]);
+      // arrowhead
+      const ex = f.x + Math.cos(aim) * len, ey = f.y + Math.sin(aim) * len;
+      ctx.fillStyle = withAlpha(col, 0.8); ctx.translate(ex, ey); ctx.rotate(aim);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -6); ctx.lineTo(-12, 6); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // Full-screen ultimate cinematic: letterbox + radial zoom lines + element-themed
+  // energy ring that charges to the impact beat, a white flash at detonation, then
+  // the skill name. Three acts over ~3s: wind-up → impact → afterglow.
+  drawUltCinematic(ctx, W, H) {
+    const c = this.ultCinematic; if (!c) return;
+    const elapsed = c.max - c.t, k = elapsed / c.max;
+    const caster = this.team.find(f => f.cat.uid === c.uid) || this.me();
+    const cx = caster ? caster.x : W / 2, cy = caster ? caster.y : H / 2;
+    const col = c.color, en = window.MorrowwishI18n?.get?.() !== 'zh';
+    ctx.save();
+    // 1) vignette darken (eases in, holds, eases out)
+    const dark = Math.sin(Math.min(1, k * 1.3) * Math.PI) * 0.62;
+    ctx.fillStyle = `rgba(14,8,22,${dark})`; ctx.fillRect(0, 0, W, H);
+    // 2) cinematic letterbox bars
+    const bar = Math.min(1, elapsed / 0.4) * (c.t < 0.5 ? c.t / 0.5 : 1) * (H * 0.09);
+    ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, bar); ctx.fillRect(0, H - bar, W, bar);
+    // 3) speed lines rushing toward the caster during wind-up
+    if (elapsed < c.impactAt) {
+      const wind = elapsed / c.impactAt;
+      ctx.globalAlpha = 0.5 * (1 - wind); ctx.strokeStyle = col; ctx.lineWidth = 2;
+      for (let i = 0; i < 20; i++) {
+        const a = (i / 20) * Math.PI * 2 + this.t * 0.8, r0 = 520 * (1 - wind) + 60, r1 = r0 - 120;
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+        ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.stroke();
+      }
+      // charging ring
+      ctx.globalAlpha = 0.85; ctx.strokeStyle = col; ctx.lineWidth = 5 + 6 * wind;
+      ctx.beginPath(); ctx.arc(cx, cy, 30 + 70 * wind, 0, Math.PI * 2 * wind); ctx.stroke();
+    }
+    // 4) detonation flash + expanding shock at the impact beat
+    const sinceImpact = elapsed - c.impactAt;
+    if (sinceImpact >= 0 && sinceImpact < 0.9) {
+      const f = sinceImpact / 0.9;
+      ctx.globalAlpha = (1 - f) * 0.85; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1 - f; ctx.strokeStyle = col; ctx.lineWidth = 14 * (1 - f) + 2;
+      ctx.beginPath(); ctx.arc(cx, cy, 40 + f * Math.max(W, H), 0, Math.PI * 2); ctx.stroke();
+    }
+    // 5) skill name banner
+    ctx.globalAlpha = Math.min(1, elapsed / 0.35) * (c.t < 0.6 ? c.t / 0.6 : 1);
+    ctx.textAlign = 'center';
+    ctx.font = `900 ${this.game.isTouch ? 30 : 42}px system-ui, sans-serif`;
+    ctx.shadowColor = col; ctx.shadowBlur = 24;
+    ctx.fillStyle = '#fff';
+    ctx.fillText(c.name, W / 2, H * 0.5);
+    ctx.shadowBlur = 0; ctx.globalAlpha = (ctx.globalAlpha) * 0.9;
+    ctx.font = `700 ${this.game.isTouch ? 12 : 15}px system-ui, sans-serif`;
+    ctx.fillStyle = col;
+    ctx.fillText(en ? 'ULTIMATE' : '必 杀 技', W / 2, H * 0.5 + (this.game.isTouch ? 26 : 34));
+    ctx.restore();
+  }
+
   drawPackMorale(ctx, W) {
     // The always-visible DOM HP track sits below the global utility toolbar.
     // Suppress the old world-space copy, which rendered under that toolbar
