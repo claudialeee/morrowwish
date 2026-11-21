@@ -140,15 +140,13 @@
     "video": null
   },
   "cta": "https://morrowwish.vercel.app/",
-  "status": "v3-seven-reels-qa-reviewed-scheduled-four-networks-not-yet-published",
+  "status": "unapproved-v3-review-only; no social auto-post",
   "release": {
-    "videosApproved": 7,
-    "gamesLive": 7,
-    "scheduledPlatformDeliveries": 28,
-    "scheduledMetricoolRecords": 16,
+    "videosApproved": 0,
+    "postsScheduled": 0,
     "postsActuallyPublished": 0,
-    "oldPostsPaused": 25,
-    "oldVideoViewsExcluded": true,
-    "qa": "Visual inspection of true beginning and ending frames, no repeated subtitle overlap, genuine gameplay and native portrait, distinct audio."
+    "pausedDraftPosts": 64,
+    "ownerApprovalRequired": true,
+    "excludedHistoricViews": true
   }
 }
