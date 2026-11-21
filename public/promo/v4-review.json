@@ -1,6 +1,6 @@
 {
   "version": "V4.1",
-  "createdAt": "2026-11-21T08:19:25.790Z",
+  "createdAt": "2026-11-21T08:24:42.811Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -19,8 +19,14 @@
       "shots": [
         {
           "source": "broll",
+          "scene": "battle",
+          "caption": "TWO CATS. ONE FIGHT.",
+          "seconds": 3
+        },
+        {
+          "source": "broll",
           "scene": "yard",
-          "caption": "MEET YOUR CAT CREW.",
+          "caption": "BUILD YOUR CAT CREW.",
           "seconds": 3.6
         },
         {
@@ -31,21 +37,15 @@
         },
         {
           "source": "broll",
-          "scene": "battle",
-          "caption": "THE STRAYS FIGHT BACK.",
-          "seconds": 3
+          "scene": "battle-late",
+          "caption": "UNLEASH TEAM ATTACKS.",
+          "seconds": 2.6
         },
         {
           "source": "game",
           "scene": null,
           "caption": "",
           "seconds": 2.3
-        },
-        {
-          "source": "broll",
-          "scene": "battle-late",
-          "caption": "FIGHT WITH TWO CATS.",
-          "seconds": 2.6
         },
         {
           "source": "game",
@@ -190,13 +190,13 @@
         {
           "source": "broll",
           "scene": "build",
-          "caption": "NO WORK. BUILD WHAT YOU WANT.",
+          "caption": "NO WORK. GO ANYWHERE.",
           "seconds": 3.5
         },
         {
           "source": "broll",
           "scene": "build-late",
-          "caption": "",
+          "caption": "MAKE YOUR OWN TOWN.",
           "seconds": 3.9
         },
         {
