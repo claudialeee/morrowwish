@@ -5,6 +5,13 @@ class VFX {
   constructor() { this.fx = []; this._t = 0; }
   clear() { this.fx.length = 0; }
 
+  // Lighten a hex color toward white (for the mid glow pass of the charged bolt).
+  _lighten(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#cfe0ff';
+    const n = parseInt(m[1], 16);
+    const r = Math.min(255, (n >> 16 & 255) + 90), g = Math.min(255, (n >> 8 & 255) + 90), b = Math.min(255, (n & 255) + 90);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
   // Midpoint-displacement lightning path between two points. Seeded + time-quantized
   // so it re-rolls a few times per second (flicker) without being noisy every frame.
   _bolt(x1, y1, x2, y2, seed) {
@@ -25,6 +32,24 @@ class VFX {
       out.push(pts[pts.length - 1]);
       pts = out; offset *= 0.55;
     }
+    // branch forks: short dim child bolts peeling off a few interior vertices
+    // (Drilian). Seeded off the same rnd stream so they boil in sync with the main.
+    const branches = [];
+    for (let i = 2; i < pts.length - 2; i++) {
+      if (rand() > 0.22) continue;                       // ~1 in 5 vertices forks
+      const a = pts[i - 1], b = pts[i];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const ang = Math.atan2(dy, dx) + (rand() - 0.5) * 1.0;   // ±0.5 rad off parent
+      const len = Math.hypot(dx, dy) * (3 + rand() * 3);       // a few segments long
+      const n = 3; const seg = [];
+      for (let j = 0; j <= n; j++) {
+        const t = j / n;
+        seg.push({ x: b.x + Math.cos(ang) * len * t + (rand() - 0.5) * 6,
+                   y: b.y + Math.sin(ang) * len * t + (rand() - 0.5) * 6 });
+      }
+      branches.push(seg);
+    }
+    pts.branches = branches;
     return pts;
   }
 
@@ -164,15 +189,25 @@ class VFX {
         ctx.globalCompositeOperation = 'lighter';         // overlaps sum toward white = neon glow
         ctx.lineCap = 'round'; ctx.lineJoin = 'round';
         const flick = 0.75 + 0.25 * Math.abs(Math.sin(e.seed + this._t * 40));
-        const passes = [[9 * k + 2, 0.22], [4 * k + 1, 0.55], [1.6, 0.95]];  // halo → mid → white core
-        for (let pi = 0; pi < passes.length; pi++) {
-          const [w, a] = passes[pi];
-          ctx.globalAlpha = k * a * flick;
-          ctx.strokeStyle = pi === passes.length - 1 ? '#ffffff' : e.color;
-          ctx.lineWidth = w;
-          ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        const lite = this._lighten(e.color);
+        // 4-pass charged stack: wide colored aura → lighter-hue mid → near-white inner
+        // → pure-white hot core. Additive so overlaps clip to white = high-voltage look.
+        const passes = [[14 * k + 4, 0.16, e.color], [8 * k + 2, 0.32, lite], [4 * k + 1, 0.6, '#dceaff'], [1.8, 1.0, '#ffffff']];
+        const strokePath = (arr, scale) => {
+          ctx.beginPath(); ctx.moveTo(arr[0].x, arr[0].y);
+          for (let i = 1; i < arr.length; i++) ctx.lineTo(arr[i].x, arr[i].y);
           ctx.stroke();
+        };
+        for (const [w, a, col] of passes) {
+          ctx.globalAlpha = k * a * flick; ctx.strokeStyle = col; ctx.lineWidth = w;
+          strokePath(pts);
+        }
+        // branch forks: just the inner two passes, dimmer (Drilian branch dimming)
+        if (pts.branches) for (const seg of pts.branches) {
+          for (const [w, a, col] of [[3 * k + 1, 0.4, lite], [1.4, 0.8, '#ffffff']]) {
+            ctx.globalAlpha = k * a * flick * 0.6; ctx.strokeStyle = col; ctx.lineWidth = w;
+            strokePath(seg);
+          }
         }
         ctx.restore();
       } else if (e.type === 'slash') {
