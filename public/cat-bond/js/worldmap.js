@@ -88,20 +88,20 @@
   // ---------------------------------------------------------------
   var REGIONS = [
     {
-      id: 'home', name: '庭院', sub: 'Home',
-      node: { x: 0.16, y: 0.74 }, difficulty: 1,
-      theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
-      speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
-      unlock: null, // always open
-      desc: '熟悉的后院，新手猫猫的乐园。',
-    },
-    {
       id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
-      node: { x: 0.37, y: 0.52 }, difficulty: 2,
+      node: { x: 0.16, y: 0.74 }, difficulty: 1,
       theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
       speciesPool: ['nainai', 'moqiu', 'sanhua', 'yunduo', 'yinghua'],
-      unlock: { after: 'home', explore: 0.4 },
+      unlock: null, // cinematic opening region
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
+    },
+    {
+      id: 'home', name: '庭院', sub: 'Home',
+      node: { x: 0.37, y: 0.52 }, difficulty: 2,
+      theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
+      speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
+      unlock: { after: 'sakura', explore: 0.3 },
+      desc: '熟悉的后院，新手猫猫的乐园。',
     },
     {
       id: 'creek', name: '溪谷', sub: 'Creek Valley',
@@ -156,16 +156,16 @@
   // ================================================================
   function ensureSave() {
     var S = window.State.S;
-    if (!S.worldmap) S.worldmap = { current: 'home', unlocked: {}, regions: {} };
+    if (!S.worldmap) S.worldmap = { current: 'sakura', unlocked: {}, regions: {} };
     var wm = S.worldmap;
     if (!wm.unlocked) wm.unlocked = {};
     if (!wm.regions) wm.regions = {};
-    wm.unlocked.home = true;       // home is always open
+    wm.unlocked.sakura = true;     // the cherry-blossom forest is the new opening map
     for (var i = 0; i < REGIONS.length; i++) {
       var id = REGIONS[i].id;
       if (!wm.regions[id]) wm.regions[id] = { explored: 0, nodes: [], cleared: false };
     }
-    if (!wm.current) wm.current = 'home';
+    if (!wm.current) wm.current = 'sakura';
     return wm;
   }
 
@@ -219,7 +219,7 @@
   function init(g) {
     game = g;
     ensureSave();
-    cur = window.State.S.worldmap.current || 'home';
+    cur = window.State.S.worldmap.current || 'sakura';
     refreshUnlocks();
   }
   function onEncounter(fn) { cbEncounter = fn; }
