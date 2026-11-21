@@ -181,7 +181,7 @@ function render(r){
   '-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k',
   '-af','volume=0.25,afade=t=out:st='+Math.max(0,at-.6).toFixed(3)+':d=0.6',
   '-movflags','+faststart',out],{stdio:'inherit',timeout:180000});
- execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','.65','-i',out,'-frames:v','1','-q:v','3',cover],{stdio:'inherit'});
+ execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','0.65','-i',out,'-frames:v','1','-q:v','3',cover],{stdio:'inherit'});
  const streams=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',out],{encoding:'utf8'})).streams;
  const bytes=fs.statSync(out).size;
  if(!streams.some(v=>v.codec_type==='video'&&v.width===1080&&v.height===1920)||!streams.some(v=>v.codec_type==='audio')||bytes<110000||bytes>25000000)
