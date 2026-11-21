@@ -53,7 +53,7 @@ down(x,y){
  else{chain=0;lives--;if(lives<=0)finish(false,"The delivery docks overflowed. Deliveries: "+delivered);}
  parcels.splice(idx,1);
  info("Lives: "+lives+"  |  Streak: "+chain+"  |  Delivered: "+delivered);
-},move(x,y){if(sel)sel.x=clamp(x,145,815);},up(){sel=null;},
+},move(x,y){if(sel)sel.x=clamp(x,145,815);},up(){sel=null;},key(k){if(['1','2','3'].includes(k))this.down(bins[Number(k)-1],-999);},
 draw(){if(portrait){
  // Three tall docks: preserve the original game simulation and hit coordinates.
  const g=c.createLinearGradient(0,0,0,960);g.addColorStop(0,"#4d355c");g.addColorStop(1,"#805565");
@@ -122,34 +122,42 @@ tick(dt){
 },
 down(){top=!top;},key(k){if(k===" "||k==="ArrowUp"||k==="ArrowDown")top=!top;},
 draw(){if(portrait){
- // An upright portrait runner, NOT the 16:9 game rotated 90 degrees.
- // Existing physics stay in logical 960x540 coordinates, but lanes now
- // run vertically down the phone and the player switches left/right.
+ // Both lanes are rendered in the SAFE CENTER of a genuine upright
+ // 540×960 portrait canvas. Neither half of the game is clipped or rotated.
  const g=c.createLinearGradient(0,0,0,960);
  g.addColorStop(0,"#3e3157");g.addColorStop(1,"#7b4e79");
  c.fillStyle=g;c.fillRect(0,0,540,960);
- glow(270,490,390,"#6640ec22");
- box(82,0,13,960,"#56cfff");
- box(445,0,13,960,"#56cfff");
- for(let i=0;i<17;i++){
-  const yy=((i*75+time*150)%1040+1040)%1040;
-  line(94,yy,94,yy+31,"#7deaff33",5);
-  line(450,yy,450,yy+31,"#7deaff33",5);
+ glow(270,480,360,"#6640ec22");
+ const left=162,right=378,mapLane=v=>left+(v-125)*(right-left)/290;
+ box(98,90,10,830,"#56cfff");
+ box(432,90,10,830,"#56cfff");
+ // Both rails remain visible with generous margins on narrow phones.
+ box(left-55,90,110,790,"#48396470",18);
+ box(right-55,90,110,790,"#48396470",18);
+ for(let i=0;i<18;i++){
+  const yy=90+((i*53+time*170)%790+790)%790;
+  line(left-44,yy,left+44,yy,"#ffffff12",2);
+  line(right-44,yy,right+44,yy,"#ffffff12",2);
  }
  for(const o of obs){
-  const lane=o.side?125:415,yy=960-o.x;
-  box(lane-33,yy-o.w/2,66,o.w,"#fd6486",8);
-  txt(lane,yy,"✦",29,"#681e3a");
-  glow(lane,yy,60,"#fb2c6922");
+  const lane=o.side?left:right,yy=960-o.x;
+  if(yy<80||yy>925)continue;
+  box(lane-35,yy-o.w/2,70,o.w,"#fd6486",9);
+  txt(lane,yy,"✦",28,"#681e3a");
+  glow(lane,yy,52,"#fb2c6922");
  }
  for(const p of gems)if(!p.got){
-  const yy=960-p.x;circ(p.y,yy,13,"#ffcf6e");
-  txt(p.y,yy,"✧",25,"#fff");
+  const yy=960-p.x;if(yy<80||yy>925)continue;
+  const px=mapLane(p.y);circ(px,yy,13,"#ffcf6e");
+  txt(px,yy,"✧",25,"#fff");
  }
- glow(y,750,65,"#53e2ff44");
- circ(y,750,21,"#69eaff");
- circ(y+9,744,5,"#142b50");
- txt(270,53,"TAP TO SWITCH LANES",23,"#ffffffd8");
+ const playerX=mapLane(y);
+ glow(playerX,750,60,"#53e2ff44");
+ circ(playerX,750,21,"#69eaff");
+ circ(playerX+9,744,5,"#142b50");
+ txt(270,53,"TAP TO SWITCH LANES",21,"#ffffffeb");
+ txt(left,905,"LEFT",15,"#d8ecff");
+ txt(right,905,"RIGHT",15,"#d8ecff");
  return;
 }
 bg("#0e1036","#1e2865");glow(480,270,360,"#6640ec22");box(0,80,960,13,"#56cfff");box(0,450,960,13,"#56cfff");for(let i=0;i<20;i++){const x=((i*80-time*150)%1040+1040)%1040;line(x,92,x+30,92,"#7deaff33",5);line(x,454,x+30,454,"#7deaff33",5);}for(let o of obs){const yy=o.side?95:374;box(o.x-o.w/2,yy,o.w,66,"#fd6486",8);txt(o.x,yy+32,"✦",29,"#681e3a");glow(o.x,yy+30,60,"#fb2c6922");}for(let p of gems)if(!p.got){circ(p.x,p.y,13,"#ffcf6e");txt(p.x,p.y,"✧",25,"#fff");}glow(210,y,65,"#53e2ff44");circ(210,y,21,"#69eaff");circ(220,y-5,5,"#142b50");if(!portrait)txt(480,260,"TAP TO FLIP",32,"#ffffff20");},
