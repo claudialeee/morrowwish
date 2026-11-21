@@ -515,3 +515,27 @@ html[lang="zh-CN"] .about-section .about-copy p{
   .about-section .ceo-profile h4{font-size:18px}
   .about-section .ceo-profile .ceo-description{font-size:11.5px}
 }
+
+/* 03 / ABOUT shares the exact heading typography of 02 / JUST FIVE MORE MINUTES.
+   Clear, readable CEO biography without making the studio section oversized. */
+.tiny-section .section-intro h2,
+.about-section .about-heading h2{
+  font-family:'Nunito','DM Sans',system-ui,sans-serif;
+  font-size:clamp(23px,2.3vw,30px);
+  font-weight:900;
+  letter-spacing:-.052em;
+  line-height:1.2;
+  margin:3px 0 0;
+}
+.about-section .ceo-profile h4{font-size:clamp(20px,2vw,24px)}
+.about-section .ceo-profile .ceo-role{font-size:14px}
+.about-section .ceo-profile .ceo-description{font-size:14.5px}
+@media(max-width:680px){
+  .about-section .ceo-profile h4{font-size:20px}
+  .about-section .ceo-profile .ceo-role{font-size:12.5px}
+  .about-section .ceo-profile .ceo-description{font-size:13px;line-height:1.55}
+}
+@media(max-width:365px){
+  .about-section .ceo-profile h4{font-size:19px}
+  .about-section .ceo-profile .ceo-description{font-size:12.5px}
+}
