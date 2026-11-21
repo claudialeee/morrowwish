@@ -211,3 +211,12 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
  .single-screen-game .stealth-help>strong{font-size:10px}
  .single-screen-game .guard-status{font-size:9px}
 }
+
+/* Reliable 44px touch targets in both the webpage and immersive mode. */
+@media(max-width:700px){
+ .single-screen-game #menuButton,.single-screen-game #quickHelp,
+ .single-screen-game #stageControls>.mw-fullscreen-toggle{
+  width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+ }
+ .single-screen-game .in-game-top{min-height:46px}
+}
