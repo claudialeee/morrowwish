@@ -62,7 +62,7 @@ class CaptureBattle {
     // --- build the player team — up to 2 cats ON FIELD (roguelike squad cap). A
     // bond ult can summon a temporary 3rd reinforcement mid-fight (see castDuo). ---
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
-    this.FIELD_CAP = 3;                          // up to 3 cats fight on the field
+    this.FIELD_CAP = 2;                          // only 2 cats fight on the field at once
     this.team = cats.slice(0, this.FIELD_CAP).map((c, i) => this.makeFighter(c, i));
     this.reserve = cats.slice(this.FIELD_CAP);   // deeper bench: subs in when a field cat faints
     this.reinforceT = 0;                         // >0 while a temp 3rd cat is on the field
