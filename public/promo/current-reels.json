@@ -16,8 +16,8 @@
         "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
         "/promo/pawsibly-innocent/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
@@ -34,8 +34,8 @@
         "/promo/cat-bond/hook-v3-review-2.jpg",
         "/promo/cat-bond/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
@@ -52,8 +52,8 @@
         "/promo/tiny-town/hook-v3-review-2.jpg",
         "/promo/tiny-town/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
@@ -70,8 +70,8 @@
         "/promo/elsewhere/hook-v3-review-2.jpg",
         "/promo/elsewhere/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
@@ -88,8 +88,8 @@
         "/promo/flip-dash/hook-v3-review-2.jpg",
         "/promo/flip-dash/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
@@ -106,8 +106,8 @@
         "/promo/parcel-panic/hook-v3-review-2.jpg",
         "/promo/parcel-panic/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
@@ -124,8 +124,8 @@
         "/promo/pocket-aquarium/hook-v3-review-2.jpg",
         "/promo/pocket-aquarium/hook-v3-review-3.jpg"
       ],
-      "production": "reviewed",
-      "approvedForSocial": true,
+      "production": "rejected-unapproved",
+      "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",

@@ -33,7 +33,7 @@ const playlists={
   broll('distraction',2.35,'DISTRACT THE HUMAN.'),
   broll('escape-run',2.9,'RUN FOR THE EXIT.'),
   broll('escaped',1.05,'A NARROW ESCAPE!'),
-  broll('caught-chase',2.85,'BUT ONE BAD MOVE...'),
+  broll('caught-chase',2.85,'NEXT ROOM. ONE BAD MOVE...'),
   broll('caught',1.3,'CAUGHT!'),
   cover(1.9,'PLAY FREE')
  ],
@@ -41,7 +41,8 @@ const playlists={
   broll('board',2.5,'NO JOBS. JUST FREEDOM.'),
   broll('board-later',2.35,'PLACE YOUR OWN DREAMS.'),
   broll('combination',2.65,'NEIGHBORING DREAMS COMBINE.'),
-  broll('legendary',2.7,'UNLOCK LEGENDARY WISHES.'),
+  broll('legendary',2.2,'UNLOCK LEGENDARY WISHES.'),
+  broll('board-mature',2.2,'WATCH YOUR TOWN TRANSFORM.'),
   broll('ending',3.1,'SEVEN DAYS. YOUR OWN ENDING.'),
   cover(1.9,'PLAY FREE')
  ],
@@ -159,7 +160,7 @@ function edit(slug){
   }else if(sh.src==='broll'&&!!sh.caption&&!/result$/.test(sh.label)){
    const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
-      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y=1705'+
+      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'?85:1705)+
       ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.40:boxborderw=12';
    captionsUsed++;
   }

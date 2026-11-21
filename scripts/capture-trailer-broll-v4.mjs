@@ -38,7 +38,7 @@ function realVerticalCamera(id){
 }
 async function capture(browser,slug,fn){
  const context=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:1,
-   recordVideo:{dir:path.join(dir,'raw'),size:{width:540,height:960}},locale:'en-US'});
+   recordVideo:{dir:path.join(dir,'raw'),size:{width:540,height:960}},locale:'en-US',isMobile:true,hasTouch:true});
  const page=await context.newPage(),born=Date.now(),errors=[];
  page.on('pageerror',e=>errors.push(e.message.slice(0,180)));
  await context.route('**/api/session**',r=>r.abort('blockedbyclient'));
@@ -210,8 +210,11 @@ try{
   await page.locator('#introStart').click();
   // Keep the complete board and ALL actual combination/unlock/end dialogs visible.
   await page.addStyleTag({content:'.arcade-return,.app>.header,.app>.progress,.sidebar .citizen-panel,.sidebar .petition,.sidebar .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.stage{display:block!important}.map-panel{width:100%!important;padding:8px!important}.world{height:615px!important;padding:5px!important}.board{max-width:510px!important;width:100%!important;gap:5px!important}.tile-icon{font-size:36px!important}.sidebar{width:100%!important}.wish-card{min-height:84px!important}.modal{width:min(96vw,520px)!important;max-height:88vh!important;overflow:auto!important}'});
-  const started=stamp(),shots=[{label:'board',start:stamp(),duration:2.75}];
-  let comboAt=null,legendAt=null,endAt=null,buildLate=null,placed=0;
+  const started=stamp(),shots=[{label:'board',start:stamp(),duration:2.55}];
+  // Hold each TRUE gameplay milestone before moving on, so successive cuts
+  // never replay the same instant from overlapping time ranges.
+  await sleep(2850);
+  let comboAt=null,legendAt=null,endAt=null,buildLate=null,matureAt=null,placed=0;
   for(let day=1;day<=7;day++){
    const action=await page.evaluate(()=>{
     const cards=[...document.querySelectorAll('#cards .wish-card')];
@@ -232,10 +235,11 @@ try{
     return{day,choice:best.i,pos:best.pos,combo:Number(document.querySelector('#comboNum')?.textContent)||0};
    });
    if(!action)break;placed++;
-   if(day===2)buildLate=stamp();
-   if(action.combo>0&&!comboAt)comboAt=stamp();
+   if(day===1){buildLate=stamp();await sleep(2400)}
+   if(action.combo>0&&!comboAt){comboAt=stamp();await sleep(2650)}
+   if(day===6){matureAt=stamp();await sleep(2450)}
    if(day===3||day===4||day===5){
-    if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card')||document.querySelector('#tabLegends')?.textContent?.includes('1')))legendAt=stamp();
+    if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card')||document.querySelector('#tabLegends')?.textContent?.includes('1'))){legendAt=stamp();await sleep(2450)}
    }
    await sleep(850);
    for(let j=0;j<13;j++){
@@ -254,18 +258,19 @@ try{
     },state);
     await sleep(280);
    }
-   if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card')))legendAt=stamp();
+   if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card'))){legendAt=stamp();await sleep(2450)}
    if(await page.locator('#end.show').count()){endAt=stamp();await sleep(3650);break}
    await sleep(300);
   }
   const comboCount=Number(await page.locator('#comboNum').textContent())||0;
   const ending=await page.locator('#endTitle').textContent();
   if(placed!==7||!comboCount||!endAt||!ending)throw Error('V5 requires REAL 7-day town, combo and ending '+JSON.stringify({placed,comboCount,endAt,ending}));
-  if(!legendAt)throw Error('V5 requires actual legendary unlock footage, not an invented unlock');
+  if(!legendAt||!buildLate||!matureAt)throw Error('V5 requires distinct real day-one, mature board and legendary clips');
   shots[0].duration=Math.min(shots[0].duration,Math.max(.85,stamp()-started));
-  shots.push({label:'board-later',start:buildLate||started+3,duration:2.5});
-  shots.push({label:'combination',start:Math.max(started,comboAt-.35),duration:2.8});
-  shots.push({label:'legendary',start:Math.max(started,legendAt-.25),duration:2.85});
+  shots.push({label:'board-later',start:buildLate,duration:2.25});
+  shots.push({label:'combination',start:comboAt,duration:2.35});
+  shots.push({label:'legendary',start:legendAt,duration:2.25});
+  if(matureAt)shots.push({label:'board-mature',start:matureAt,duration:2.25});
   shots.push({label:'ending',start:endAt,duration:3.35});
   console.log('V5 TOWN VERIFIED '+JSON.stringify({placed,comboCount,ending,legendAt}));
   return shots;
