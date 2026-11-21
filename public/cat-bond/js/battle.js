@@ -594,11 +594,13 @@ class CaptureBattle {
       hp: Math.round(maxhp * carried), maxhp,
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
-      speed: 120 + s.agi * 2.8,            // trimmed ~20%: cats were a touch too zippy to control
+      // AGI modifies speed by AT MOST +30% over the base — a nimble cat is a little
+      // faster, not double-speed. (agi ~40 → +~27%; capped at +30%.)
+      speed: 150 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
-      projSpeed: 250 + s.agi * 4,          // trimmed ~17%: projectiles read calmer/more dodgeable
+      projSpeed: 300 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),   // AGI adds at most +30%
       // Opening cooldowns: skills start on cooldown so a fight can't open with an
       // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
       cd: { basic: 0, q: 1.6, e: 2.4 },
