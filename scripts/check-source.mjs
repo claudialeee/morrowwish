@@ -935,6 +935,31 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !mischief.includes('s.decoyAwareness')||
     !mischief.includes('setInterval(advanceYarnChase,470)'))
    throw Error('Cat mischief yarn must redirect owner while cat keeps moving');
+ // Cat Bond UI and battle regression gates.
+ const cbUi=fs.readFileSync('public/cat-bond/js/ui.js','utf8');
+ const cbCss=fs.readFileSync('public/cat-bond/css/style.css','utf8');
+ const cbGame=fs.readFileSync('public/cat-bond/js/game.js','utf8');
+ const cbBattle=fs.readFileSync('public/cat-bond/js/battle.js','utf8');
+ const cbState=fs.readFileSync('public/cat-bond/js/state.js','utf8');
+ const cbRel=fs.readFileSync('public/cat-bond/js/cat-relationships.js','utf8');
+ for(const js of [cbUi,cbGame,cbBattle,cbState,cbRel])new Function(js);
+ if(!cbUi.includes('panel-dismiss')||
+    !cbUi.includes("e.key==='Escape'")||
+    !cbCss.includes('#panel.open:not([data-mandatory="true"])>.panel-dismiss')||
+    !cbCss.includes('@media(orientation:landscape) and (pointer:coarse)')||
+    bond.includes('/audio-dock.js')||
+    !cbCss.includes('#stage>#mw-audio-dock')||
+    !cbGame.includes("if(goal)goal.hidden=true")||
+    !cbBattle.includes('battlePrefs?.autoBattle')||
+    !cbBattle.includes('State.S.battlePrefs.autoBattle=this.autoMode')||
+    !cbState.includes('battlePrefs: { autoBattle: false }'))
+   throw Error('Cat Bond overlays, sound controls, and saved combat-mode regression');
+ const artPairs=[...cbRel.matchAll(/^ '([a-z]+\\+[a-z]+)':\\[/gm)].map(m=>m[1]);
+ if(new Set(artPairs).size!==21||
+    !cbBattle.includes('art.secondStatus')||
+    !cbBattle.includes("const support=art.support||'shield'")||
+    !cbUi.includes('duo-art-description'))
+   throw Error('Cat Bond must keep all 21 playable two-cat elemental combinations');
  const upgraded=fs.readFileSync('public/upgrade.js','utf8');new Function(upgraded);
  // The upgraded game factories replace the base Flip Dash/Parcel Panic
  // renderers. Guard their own portrait painting and hit targets.
