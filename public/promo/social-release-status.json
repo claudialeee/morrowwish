@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-21T07:40:41.073Z",
+  "updatedAt": "2026-11-21T07:51:38.947Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "New campaign: 7 approved footage reels, 28 pending social deliveries across 4 networks and 16 Metricool post records. Zero actual publications verified yet. Old 25 rejected posts are paused drafts; historical video views/published totals excluded. First-party website visits/game starts are measured separately.",
+  "accuracyNote": "Owner declined all social publishing. Checked Metricool Nov21–30: 64 drafts, zero auto-publish. V3 previews rejected. Historic video counts excluded.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -16,12 +16,12 @@
       "name": "Cat Heist",
       "hook": "Near catch → yarn decoy → steal three fish",
       "media": "/promo/pawsibly-innocent/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/pawsibly-innocent/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -32,7 +32,7 @@
       },
       "scheduledDate": "2026-11-21",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/pawsibly-innocent/hook-v3-review-1.jpg",
         "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
@@ -46,19 +46,19 @@
         "qaRun": 44878977106,
         "seconds": 10.3
       },
-      "approved": true
+      "approved": false
     },
     {
       "slug": "cat-bond",
       "name": "Cat Bond",
       "hook": "Two-cat combination → ultimate finisher",
       "media": "/promo/cat-bond/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/cat-bond/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -69,7 +69,7 @@
       },
       "scheduledDate": "2026-11-22",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/cat-bond/hook-v3-review-1.jpg",
         "/promo/cat-bond/hook-v3-review-2.jpg",
@@ -83,19 +83,19 @@
         "qaRun": 44878977106,
         "seconds": 8.1
       },
-      "approved": true
+      "approved": false
     },
     {
       "slug": "tiny-town",
       "name": "No More Mondays",
       "hook": "Seven days without work → building magical wishes",
       "media": "/promo/tiny-town/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/tiny-town/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -106,7 +106,7 @@
       },
       "scheduledDate": "2026-11-23",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/tiny-town/hook-v3-review-1.jpg",
         "/promo/tiny-town/hook-v3-review-2.jpg",
@@ -120,19 +120,19 @@
         "seconds": 11.4
       },
       "music": "distinct licensed recording",
-      "approved": true
+      "approved": false
     },
     {
       "slug": "elsewhere",
       "name": "Elsewhere",
       "hook": "Private island → Paris → hotel on the moon",
       "media": "/promo/elsewhere/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/elsewhere/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -143,7 +143,7 @@
       },
       "scheduledDate": "2026-11-24",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/elsewhere/hook-v3-review-1.jpg",
         "/promo/elsewhere/hook-v3-review-2.jpg",
@@ -157,19 +157,19 @@
         "seconds": 13.2
       },
       "music": "distinct licensed recording",
-      "approved": true
+      "approved": false
     },
     {
       "slug": "flip-dash",
       "name": "Flip Dash",
       "hook": "Near misses and fast gravity flips",
       "media": "/promo/flip-dash/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/flip-dash/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -180,7 +180,7 @@
       },
       "scheduledDate": "2026-11-25",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/flip-dash/hook-v3-review-1.jpg",
         "/promo/flip-dash/hook-v3-review-2.jpg",
@@ -194,19 +194,19 @@
         "seconds": 7.1
       },
       "music": "distinct licensed recording",
-      "approved": true
+      "approved": false
     },
     {
       "slug": "parcel-panic",
       "name": "Parcel Panic",
       "hook": "Real color-sorting streak under pressure",
       "media": "/promo/parcel-panic/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/parcel-panic/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -217,7 +217,7 @@
       },
       "scheduledDate": "2026-11-26",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/parcel-panic/hook-v3-review-1.jpg",
         "/promo/parcel-panic/hook-v3-review-2.jpg",
@@ -231,19 +231,19 @@
         "seconds": 6.7
       },
       "music": "distinct licensed recording",
-      "approved": true
+      "approved": false
     },
     {
       "slug": "pocket-aquarium",
       "name": "Pocket Aquarium",
       "hook": "Real matching feeds and rising combo",
       "media": "/promo/pocket-aquarium/hook-v3-20261121.mp4",
-      "production": "ready",
+      "production": "needs-recut",
       "social": {
-        "youtube": "scheduled",
-        "tiktok": "scheduled",
-        "instagram": "scheduled",
-        "bluesky": "scheduled"
+        "youtube": "draft",
+        "tiktok": "draft",
+        "instagram": "draft",
+        "bluesky": "draft"
       },
       "cover": "/promo/pocket-aquarium/hook-v3-20261121.jpg",
       "platformPostIds": {
@@ -254,7 +254,7 @@
       },
       "scheduledDate": "2026-11-27",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3 final captions inspected from actual keyframes; authentic gameplay outcomes verified; four-platform social posts scheduled, not yet publicly published.",
+      "reviewStatus": "V3 rejected; cinematic V4 requires owner approval",
       "reviewImages": [
         "/promo/pocket-aquarium/hook-v3-review-1.jpg",
         "/promo/pocket-aquarium/hook-v3-review-2.jpg",
@@ -268,38 +268,40 @@
         "seconds": 9.5
       },
       "music": "distinct licensed recording",
-      "approved": true
+      "approved": false
     }
   ],
   "excludedGames": 8,
   "montage": {
-    "production": "rejected",
+    "production": "needs-recut",
     "media": null,
     "reviewStatus": "Older seven-game montage was rejected and excluded from this campaign.",
     "social": {
-      "youtube": "not-scheduled",
-      "tiktok": "not-scheduled",
-      "instagram": "not-scheduled",
-      "bluesky": "not-scheduled"
-    }
+      "youtube": "draft",
+      "tiktok": "draft",
+      "instagram": "draft",
+      "bluesky": "draft"
+    },
+    "approved": false
   },
   "summary": {
     "activeGames": 7,
     "retiredGamesExcluded": 8,
     "verifiedGameVideos": 0,
     "verifiedMontageVideos": 0,
-    "scheduledAutomaticPosts": 28,
+    "scheduledAutomaticPosts": 0,
     "publishedPostsInThisCampaign": 0,
     "verification": "Metricool getScheduledPosts checked 16 new post IDs: 28 network deliveries, all PENDING, autoPublish=true and draft=false. Prior 25 rejected posts remain paused drafts.",
-    "pausedDraftPosts": 25,
+    "pausedDraftPosts": 64,
     "blockedReason": "Owner rejected video quality: distorted gameplay, illegible captions, no stakes/outcomes, English/Chinese mix. All 25 posts checked as draft:true autoPublish:false in Metricool.",
     "v3PreviewReelsCreated": 7,
     "v3ReviewPage": "/promo/review-v3/",
     "v3SourceProvenance": "Actual game browser capture (GitHub Actions 44878977106 and 44879297287)",
     "originalRejectedPostsStillPaused": 25,
-    "approvedGameVideos": 7,
+    "approvedGameVideos": 0,
     "scheduledMetricoolPostRecords": 16,
-    "rejectedOldVideosIncluded": 0
+    "rejectedOldVideosIncluded": 0,
+    "approvalRequired": true
   },
   "metricScope": {
     "approvedCurrentVideosOnly": true,
