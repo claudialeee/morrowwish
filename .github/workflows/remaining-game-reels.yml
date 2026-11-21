@@ -31,8 +31,11 @@ jobs:
           npx playwright install --with-deps chromium
           sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
-      - name: Retrieve licensed CC0 audio
-        run: bash scripts/fetch-cat-music.sh
+      - name: Load and verify seven distinct licensed game tracks
+        run: |
+          bash scripts/fetch-cat-music.sh
+          node scripts/fetch-promo-audio.mjs
+          node scripts/test-promo-music.mjs
       - name: Play and record five real game highlights
         run: node scripts/make-remaining-game-reels.mjs
       - name: Verify all five different playable game clips
