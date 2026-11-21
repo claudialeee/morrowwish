@@ -6,7 +6,7 @@ fetch('/promo/v7-review.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(
  h.textContent=(names[entry.slug]||entry.slug)+' · 加长实机版';v.controls=true;v.playsInline=true;v.preload='metadata';v.poster=entry.poster;v.src=entry.video;
  const highlights={'cat-bond':[['cat-upgrade','猫咪升级'],['duo-partners','双猫搭档'],['duo','双猫合击'],['ultimate','必杀技']],
  'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['narrow-pursuit','险些被抓'],['narrow-achievement','险中逃生成就'],['caught-attempt','被抓住']],
- 'tiny-town':[['resident-reactions','居民心情'],['resident-profile','居民喜好'],['neighbor-story','居民故事'],['ending','小镇结局']],
+ 'tiny-town':[['opening-three-choices','开场三个选择'],['resident-reactions','居民心情'],['resident-profile','居民喜好'],['neighbor-story','居民故事'],['ending','小镇结局']],
  'elsewhere':[['paris-romance','巴黎浪漫爱情'],['paris-love-moment','爱情互动'],['paris-chapter-3','恋爱后续'],['paris-ending','爱情结局'],['moon-surprise','剧情惊喜']],
  'flip-dash':[['first-coin','开局吃金币'],['coin-collect','连续吃金币'],['crash','撞上障碍']],
  'parcel-panic':[['deliveries','连续投递'],['mistakes','错误投递'],['game-over','结算']],

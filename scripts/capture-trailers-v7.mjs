@@ -80,7 +80,7 @@ try{
   await mark('yard',3650);
   await page.evaluate(()=>UI.openRoster());
   await page.waitForSelector('#panel.open .card');
-  await mark('raising',3850);
+  await mark('raising',4900);
   // Actual cat management/training interface and in-game training transaction.
   const trained=await page.evaluate(()=>{
    const cat=State.S.cats[0],before=cat.level,oldXp=cat.xp;
@@ -91,7 +91,7 @@ try{
   });
   if(!trained.visible||(trained.after===trained.before&&trained.newXp<=trained.oldXp))
    throw Error('V8 real cat training was not shown '+JSON.stringify(trained));
-  await mark('cat-upgrade',3800);
+  await mark('cat-upgrade',6750);
   const duoPanel=await page.evaluate(()=>{
    const cats=State.S.cats.slice(0,2);
    if(cats.length<2)throw Error('V8 cannot show duo with fewer than two cats');
@@ -101,10 +101,10 @@ try{
     !!document.querySelector('#panel.open .duo-picker');
   });
   if(!duoPanel)throw Error('V8 real cat duo partner panel missing');
-  await mark('duo-partners',4200);
+  await mark('duo-partners',6750);
   await page.evaluate(()=>{UI.closeAll();UI.openWorkshop()});
   await page.waitForSelector('#panel.open .work-earn-header');
-  await mark('work-before',2550);
+  await mark('work-before',3700);
   const assigned=await page.evaluate(()=>{
    document.getElementById('work-quick-start')?.click();
    const sun=Raising.stationsView().find(s=>s.type==='sun');
@@ -127,7 +127,7 @@ try{
   await page.addStyleTag({content:'#panel.open:has(.map-destination){top:55px!important;bottom:65px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px!important}#panel.open>.card:has(.map-destination){height:auto!important;min-height:0!important;max-height:650px!important;flex:0 0 auto!important;overflow:hidden!important;align-self:center!important}'});
   await page.evaluate(()=>{UI.closeAll();window.__game.openWorldMap()});
   await page.waitForSelector('#panel.open .map-destination');
-  await mark('map-choice',3200);
+  await mark('map-choice',5300);
   const entered=await page.evaluate(()=>{
    UI.closeAll();
    // The actual starting region is now the cherry-blossom woodland.
@@ -282,7 +282,7 @@ try{
    return save.achievements?.['near-miss']===true;
   });
   if(!badgeEarned)throw Error('The real Nine Lives achievement was not awarded');
-  const nearMissEnd=stamp();await sleep(2100);
+  const nearMissEnd=stamp();await sleep(3450);
   // A chronological BEFORE/AFTER pair: the "achievement" title must never
   // appear over the starting board before the real badge is earned.
   // The game has already incremented nearMisses 550ms before nearMissEnd;
@@ -291,8 +291,8 @@ try{
   const badgeStart=nearMissEnd-.30;
   if(badgeStart-chaseStart<1.1)throw Error('V10 close call lacks readable pursuit footage');
   shots.push({label:'narrow-pursuit',start:chaseStart,duration:badgeStart-chaseStart-.1});
-  shots.push({label:'narrow-achievement',start:badgeStart,duration:Math.min(2.0,stamp()-badgeStart-.1)});
-  if(shots.at(-1).duration<1.8)throw Error('V10 real badge did not remain visible for two seconds');
+  shots.push({label:'narrow-achievement',start:badgeStart,duration:Math.min(3.15,stamp()-badgeStart-.1)});
+  if(shots.at(-1).duration<3.05)throw Error('V11 badge must stay visible for three full seconds');
   console.log('V8 CAT NARROW ESCAPE VERIFIED '+JSON.stringify(nearMissProof));
   // Explicit second run. The cut is at the start of a NEW room, never in
   // the middle of movement. A different outcome comes from actual game rules.
@@ -323,6 +323,22 @@ try{
  }));
  result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
   await page.goto(host+'/tiny-town/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
+  // The three starting town choices are real gameplay. Show them ALL before
+  // starting rather than skipping this distinct feature in the promo.
+  await page.addStyleTag({content:'#intro .modal{padding:14px!important;max-height:95vh!important;overflow:hidden!important}#intro .intro-inner{font-size:33px!important;padding:8px!important;margin:7px 0 8px!important}#intro .intro-inner span{display:none!important}#intro .charter-select{gap:5px!important;margin:8px 0 12px!important}#intro .charter{padding:8px 5px!important;gap:5px!important;min-height:132px!important}#intro .charter b{font-size:15px!important;line-height:1.2!important}#intro .charter-flavor{font-size:11.5px!important;line-height:1.35!important}#intro .charter-bonus{display:none!important}#intro h2{margin:6px 0!important}#intro .intro-note{font-size:13px!important}#intro .modal-choices .button{min-height:43px!important}'});
+  await page.waitForFunction(()=>{
+   const cards=[...document.querySelectorAll('#intro.show #charterSelect .charter')];
+   if(cards.length!==3||!cards.every(x=>x.getBoundingClientRect().width>85))return false;
+   const modal=document.querySelector('#intro .modal'),start=document.querySelector('#introStart');
+   const r=start?.getBoundingClientRect();
+   return !!modal&&!!r&&r.bottom<=innerHeight-12&&modal.scrollHeight<=modal.clientHeight+3&&
+    cards.every(x=>{const r=x.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight-90});
+  },null,{timeout:8000});
+  const introAt=stamp();await sleep(9850);
+  const introShot={label:'opening-three-choices',start:introAt,duration:stamp()-introAt-.14};
+  const introLabels=await page.locator('#intro .charter b').allTextContents();
+  if(introLabels.length!==3||introLabels.some(x=>!x.trim()))throw Error('Town opening lacks one of its three choices');
+  console.log('TOWN REAL THREE OPENING CHOICES '+JSON.stringify(introLabels));
   await page.locator('#introStart').click();
   // Marketing gameplay MUST show the real board. Avoid the zero-height flex collapse.
   await page.addStyleTag({content:'.arcade-return,.app>.header,.app>.progress,.app .town-tabs,.app #moveWish,.app .citizen-panel,.app .petition,.app .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.app .stage{display:flex!important;flex-direction:column!important;gap:6px!important;overflow:hidden!important}.app .map-panel{order:0!important;display:flex!important;flex:0 0 550px!important;height:550px!important;min-height:550px!important;max-height:550px!important;width:100%!important;padding:5px!important}.app .panel-top{display:none!important}.app .world{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 495px!important;height:495px!important;min-height:495px!important;max-height:495px!important;padding:4px!important}.app .board{display:grid!important;flex:0 0 462px!important;height:462px!important;min-height:462px!important;width:462px!important;max-width:100%!important;aspect-ratio:1!important;gap:5px!important}.app .tile-icon{font-size:30px!important}.app .sidebar{display:contents!important}.app .cards{order:1!important;flex:0 0 122px!important;min-height:122px!important;max-height:122px!important;width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}.app .wish-card{min-height:110px!important;max-height:120px!important}.app #preview{max-height:22px!important}.app .town-bubble{max-height:23px!important}.modal{width:min(96vw,520px)!important;max-height:88vh!important;overflow:auto!important}'});
@@ -330,7 +346,7 @@ try{
   await page.addStyleTag({content:'.app .resident-ribbon{display:block!important;order:2!important;width:100%!important;min-height:112px!important;max-height:126px!important;flex:0 0 auto!important;margin:5px 0!important;z-index:3!important}.app .resident-avatar{min-height:65px!important}.app .resident-avatar .resident-face{font-size:28px!important}.app .cards{order:1!important}.app #residentRibbonPeople{display:grid!important}.app .resident-ribbon-heading{margin-bottom:5px!important}'});
   await page.addStyleTag({content:'#end.show .end-modal{box-sizing:border-box!important;width:96vw!important;max-width:96vw!important;height:88vh!important;max-height:88vh!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important}#end.show #endArt{display:block!important;width:min(78vw,410px)!important;height:330px!important;max-height:330px!important;object-fit:contain!important}#end.show #endTitle{text-align:center!important;font-size:clamp(26px,5vw,40px)!important;line-height:1.1!important}#end.show #endLine{text-align:center!important;max-width:92%!important}#end.show #endStory,#end.show #endDetail,#end.show #endReason,#end.show #endLegacy,#end.show #endGoal,#end.show .feedback,#end.show .modal-choices{display:none!important}'});
   await page.waitForFunction(()=>{const e=document.querySelector('#board'),r=e?.getBoundingClientRect();return r&&r.width>=350&&r.height>=350&&r.top>=0&&r.bottom<=innerHeight-90&&getComputedStyle(e).display==='grid'},null,{timeout:8000});
-  const started=stamp(),shots=[{label:'board',start:stamp(),duration:3.85}];
+  const started=stamp(),shots=[introShot,{label:'board',start:stamp(),duration:3.85}];
   // Hold each TRUE gameplay milestone before moving on, so successive cuts
   // never replay the same instant from overlapping time ranges.
   await sleep(4100);
@@ -362,8 +378,8 @@ try{
       shots.push({label:'resident-reactions',start:residentAt,duration:4.0});
       await page.locator('#residentRibbonPeople [data-resident]').nth(1).click();
       await page.waitForFunction(()=>{const p=document.querySelector('#townInspector');return p&&!p.hidden&&/Likes|Dislikes/i.test(document.querySelector('#inspectorContent')?.textContent||'')},null,{timeout:6000});
-      profileAt=stamp();await sleep(4600);
-      shots.push({label:'resident-profile',start:profileAt,duration:4.3});
+      profileAt=stamp();await sleep(7100);
+      shots.push({label:'resident-profile',start:profileAt,duration:6.75});
       await page.locator('#closeInspector').click();
       await page.waitForFunction(()=>document.querySelector('#townInspector')?.hidden===true,null,{timeout:5000});
     }
@@ -392,8 +408,8 @@ try{
     if(state==='story'&&!neighborAt){
       const kicker=await page.locator('#storyKicker').textContent();
       if(/NEIGHBORS|STORY CONTINUES|居民|故事/i.test(kicker||'')){
-        neighborAt=stamp();await sleep(4400);
-        shots.push({label:'neighbor-story',start:neighborAt,duration:4.15});
+        neighborAt=stamp();await sleep(7350);
+        shots.push({label:'neighbor-story',start:neighborAt,duration:7.05});
       }
     }
     if((comboAt!==null&&Math.abs(stamp()-comboAt)<2)||state==='story')await sleep(450);
@@ -405,19 +421,19 @@ try{
     await sleep(280);
    }
    if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card'))){legendAt=stamp();await sleep(3800)}
-   if(await page.locator('#end.show').count()){endAt=stamp();await sleep(5700);break}
+   if(await page.locator('#end.show').count()){endAt=stamp();await sleep(7550);break}
    await sleep(300);
   }
   const comboCount=Number(await page.locator('#comboNum').textContent())||0;
   const ending=await page.locator('#endTitle').textContent();
   if(placed!==7||!comboCount||!endAt||!ending)throw Error('V5 requires REAL 7-day town, combo and ending '+JSON.stringify({placed,comboCount,endAt,ending}));
   if(!legendAt||!buildLate||!matureAt||!neighborAt||!residentAt||!profileAt)throw Error('V7 requires real residents, profile, neighbor story, combo, legend and ending');
-  shots[0].duration=Math.min(shots[0].duration,Math.max(.85,stamp()-started));
+  const boardShot=shots.find(x=>x.label==='board');boardShot.duration=Math.min(boardShot.duration,Math.max(.85,stamp()-started));
   shots.push({label:'board-later',start:buildLate,duration:3.6});
   shots.push({label:'combination',start:comboAt,duration:4.35});
   shots.push({label:'legendary',start:legendAt,duration:3.55});
   if(matureAt)shots.push({label:'board-mature',start:matureAt,duration:3.65});
-  shots.push({label:'ending',start:endAt,duration:5.35});
+  shots.push({label:'ending',start:endAt,duration:7.0});
   console.log('V5 TOWN VERIFIED '+JSON.stringify({placed,comboCount,ending,legendAt}));
   return shots;
  }));
@@ -428,55 +444,55 @@ try{
     const r=document.querySelector('#game .scene')?.getBoundingClientRect();
     if(!r||r.top<0||r.left<0||r.right>innerWidth+1||r.bottom>innerHeight-8||document.documentElement.scrollWidth>innerWidth+2)throw Error('V7 phone story clipped '+name+' '+JSON.stringify(r&&{top:r.top,bottom:r.bottom,height:innerHeight}));
   },label);
-  const shots=[],homeAt=stamp();await sleep(4300);
-  shots.push({label:'choose-life',start:homeAt,duration:4.1});
+  const shots=[],homeAt=stamp();await sleep(5200);
+  shots.push({label:'choose-life',start:homeAt,duration:4.9});
   for(const world of ['paris','amalfi','tokyo']){
     await page.locator('[data-world="'+world+'"]').first().click();
     await check(world);
-    const first=stamp();await sleep(3500);
-    shots.push({label:world,start:first,duration:3.25});
+    const first=stamp();await sleep(world==='paris'?6900:5100);
+    shots.push({label:world,start:first,duration:world==='paris'?6.55:4.8});
     await page.locator('#game [data-choice]').first().click();
-    const reaction=stamp();await sleep(2200);
-    shots.push({label:world+'-result',start:reaction,duration:2.0});
+    const reaction=stamp();await sleep(world==='paris'?4300:3150);
+    shots.push({label:world+'-result',start:reaction,duration:world==='paris'?4.05:2.9});
     if(world==='paris'){
       await page.locator('#game [data-continue]').click();
       await check('paris-romance-chapter-2');
-      const romance=stamp();await sleep(4000);
-      shots.push({label:'paris-romance',start:romance,duration:3.8});
+      const romance=stamp();await sleep(7800);
+      shots.push({label:'paris-romance',start:romance,duration:7.5});
       await page.locator('#game [data-choice]').first().click();
-      const moment=stamp();await sleep(2600);
-      shots.push({label:'paris-love-moment',start:moment,duration:2.4});
+      const moment=stamp();await sleep(4650);
+      shots.push({label:'paris-love-moment',start:moment,duration:4.35});
       await page.locator('#game [data-continue]').click();
       await page.locator('#game [data-twist]').first().click();
       await check('paris-chapter-3');
-      const chapter3=stamp();await sleep(3000);
-      shots.push({label:'paris-chapter-3',start:chapter3,duration:2.8});
+      const chapter3=stamp();await sleep(7500);
+      shots.push({label:'paris-chapter-3',start:chapter3,duration:7.2});
       await page.locator('#game [data-choice]').nth(1).click();
       await page.locator('#game [data-continue]').click();
       await check('paris-chapter-4');
-      const chapter4=stamp();await sleep(2900);
-      shots.push({label:'paris-chapter-4',start:chapter4,duration:2.7});
+      const chapter4=stamp();await sleep(7300);
+      shots.push({label:'paris-chapter-4',start:chapter4,duration:7.0});
       await page.locator('#game [data-choice]').nth(1).click();
       await page.locator('#game [data-continue]').click();
       await page.locator('#game [data-twist]').first().click();
       await check('paris-finale');
-      const finale=stamp();await sleep(2750);
-      shots.push({label:'paris-finale',start:finale,duration:2.55});
+      const finale=stamp();await sleep(7700);
+      shots.push({label:'paris-finale',start:finale,duration:7.4});
       await page.locator('#game [data-choice]').nth(1).click();
       await page.locator('#game [data-continue]').click();
       await page.waitForFunction(()=>{const e=document.querySelector('#ending');return !!e&&!e.hidden&&!!e.querySelector('.ending-paper h1')?.textContent},null,{timeout:5000});
       const parisTitle=await page.locator('#ending .ending-paper h1').textContent();
       if(!/Paris|巴黎|恋爱|love|date|书店|认真/i.test(parisTitle||''))throw Error('Paris story did not earn a romantic conclusion '+parisTitle);
-      const romanceEnding=stamp();await sleep(4000);
-      shots.push({label:'paris-ending',start:romanceEnding,duration:3.75});
+      const romanceEnding=stamp();await sleep(8750);
+      shots.push({label:'paris-ending',start:romanceEnding,duration:8.45});
     }
     await page.evaluate(()=>document.querySelector('#game [data-home]')?.click());
     await sleep(250);
   }
   await page.locator('[data-world="moon"]').first().click();
   await check('moon');
-  const started=stamp();await sleep(3650);
-  shots.push({label:'moon-opening',start:started,duration:3.45});
+  const started=stamp();await sleep(5850);
+  shots.push({label:'moon-opening',start:started,duration:5.55});
   let reveals=0;
   for(let stage=0;stage<5;stage++){
     if(stage===2||stage===4){
@@ -484,13 +500,13 @@ try{
       await page.locator('#game [data-twist]').first().click();
       await page.waitForSelector('#game [data-choice]');
       await check('reveal-'+stage);
-      const t=stamp();await sleep(3900);
-      shots.push({label:stage===2?'moon-surprise':'moon-finale-surprise',start:t,duration:3.65});
+      const t=stamp();await sleep(6250);
+      shots.push({label:stage===2?'moon-surprise':'moon-finale-surprise',start:t,duration:5.95});
       reveals++;
     }else if(stage===1||stage===3){
       await check('chapter-'+stage);
-      const t=stamp();await sleep(3300);
-      shots.push({label:stage===1?'moon-choice':'moon-consequence',start:t,duration:3.1});
+      const t=stamp();await sleep(6300);
+      shots.push({label:stage===1?'moon-choice':'moon-consequence',start:t,duration:5.95});
     }
     await page.locator('#game [data-choice]').first().click();
     const t=stamp();await sleep(stage===4?1700:1100);
@@ -500,7 +516,7 @@ try{
   await page.waitForFunction(()=>{const el=document.querySelector('#ending');return el&&!el.hidden&&!!el.querySelector('.ending-paper h1')?.textContent},null,{timeout:6000});
   const title=await page.locator('#ending .ending-paper h1').textContent();
   if(reveals!==2||!title)throw Error('V7 moon story lacked two real reveals and earned ending');
-  const endStart=stamp();await sleep(6200);shots.push({label:'moon-ending',start:endStart,duration:5.9});
+  const endStart=stamp();await sleep(8450);shots.push({label:'moon-ending',start:endStart,duration:8.1});
   console.log('V7 REAL ELSEWHERE SURPRISES/ENDING '+JSON.stringify({reveals,title,shots:shots.length}));
   return shots;
  }));
@@ -551,7 +567,7 @@ try{
   if(!collided||!aimed)throw Error('V7 Flip lacks verified final player mistake');
   const k=await page.locator('#overlay-kicker').textContent();
   if(!/GAME OVER|本局结束/i.test(k)||dodged<8||collected<3)throw Error('V8 Flip must collect three coins before a genuine crash');
-  await sleep(1900);
+  await sleep(3200);
   const openingAt=Math.max(start,firstCoinAt-1.6);
   const openingEnd=Math.min(firstCoinAt+1.6,targetAt-7.5);
   if(openingEnd-openingAt<2.4)throw Error('First coin was not visible long enough for an opening hook');
@@ -559,7 +575,7 @@ try{
   return [{label:'first-coin',start:openingAt,duration:openingEnd-openingAt-.08},
     {label:'coin-collect',start:openingEnd,duration:Math.min(10.6,targetAt-openingEnd-.15)},
     {label:'danger',start:targetAt,duration:Math.min(2.7,collided-targetAt-.1)},
-    {label:'crash',start:collided,duration:1.55}];
+    {label:'crash',start:collided,duration:2.8}];
  }));
  result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
   await page.route('**/upgrade.js*',async route=>{
@@ -593,10 +609,10 @@ try{
   for(let n=0;n<4;n++){await send(false);if(await page.evaluate(()=>!document.querySelector('#overlay').hidden))break}
   const died=stamp(),end=await page.evaluate(()=>({mode:window.__V7_PARCELS__(),over:!document.querySelector('#overlay').hidden,title:document.querySelector('#overlay-kicker')?.textContent}));
   if(!end.over||end.mode.life>0||!/GAME OVER|本局结束/i.test(end.title)||died-errorsAt<3.8)throw Error('V7 Parcel needs real mistake sequence and game over '+JSON.stringify(end));
-  await sleep(2150);
+  await sleep(3350);
   return [{label:'deliveries',start:started,duration:Math.min(12.8,goodAt-started-.1)},
     {label:'mistakes',start:errorsAt,duration:Math.min(6.8,died-errorsAt-.2)},
-    {label:'game-over',start:died+.10,duration:1.9}];
+    {label:'game-over',start:died+.10,duration:3.0}];
  }));
  result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
   // Instrument only a READ-ONLY browser observer. Every food drop below is a
@@ -643,12 +659,12 @@ try{
   const timeout=stamp(),finalQ=Number((await page.locator('#waterTxt').textContent()).replace('%',''));
   const grade=await page.locator('#modalTip').textContent(),score=Number(await page.locator('#score').textContent());
   if(score>=220||score<75||!/Grade\s+[CD]/i.test(grade))throw Error('V6 must show real feeding, cloudy water and actual low grade '+JSON.stringify({quality,finalQ,score,grade}));
-  await sleep(1850);
+  await sleep(3400);
   if(!moreAt||played-moreAt<2.8)throw Error('V7 aquarium must show six genuine feeds across two phases');
   return [{label:'feeding',start:first,duration:Math.min(4.7,moreAt-first-.12)},
    {label:'more-feeding',start:moreAt,duration:Math.min(6.0,played-moreAt-.12)},
    {label:'water-cloudy',start:Math.max(played,murkyAt-5.1),duration:Math.min(4.8,timeout-Math.max(played,murkyAt-5.1)-.12)},
-   {label:'timeout',start:Math.max(murkyAt,timeout-.65),duration:2.35}];
+   {label:'timeout',start:Math.max(murkyAt,timeout-.65),duration:3.3}];
  }));
  const manifest={createdAt:new Date().toISOString(),kind:'V7-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
  fs.writeFileSync(path.join(dir,'broll-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
