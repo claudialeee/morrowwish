@@ -2443,6 +2443,10 @@ class CaptureBattle {
   // Aggregate pack 斗志 (morale/HP) bar at the top — makes the win condition
   // legible: the player always sees how close the whole pack is to being tamed.
   drawPackMorale(ctx, W) {
+    // The always-visible DOM HP track sits below the global utility toolbar.
+    // Suppress the old world-space copy, which rendered under that toolbar
+    // and gave the impression that the enemy had no HP.
+    if(document.querySelector?.('#battle-ui.on .battle-enemy-track'))return;
     const live = this.liveEnemies();
     if (!live.length) return;
     let hp = 0, max = 0;
