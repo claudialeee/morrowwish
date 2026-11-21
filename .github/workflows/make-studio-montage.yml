@@ -17,11 +17,11 @@ jobs:
         with:
           ref: main
           persist-credentials: true
-      - name: Prepare ffmpeg and verified CC0 background audio
+      - name: Install encoder and verify distinct soundtrack policy
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
-          bash scripts/fetch-cat-music.sh
+          node scripts/test-promo-music.mjs
       - name: Render from seven genuine game recordings
         run: bash scripts/make-studio-montage.sh
       - name: Publish studio-wide reel
