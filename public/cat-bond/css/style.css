@@ -1208,3 +1208,44 @@ body.cb-exploring #scene{cursor:grab}
     border-radius:12px}
   #fab-map.map-fab small{font-size:9px;line-height:1}
 }
+
+
+/* Mobile overlays: reserve the common top utility row and keep a genuinely
+   tappable close control OUTSIDE the scrollable card. Applies to workshop,
+   adventure journal, codex, roster, store and every other optional panel. */
+#panel.open:not([data-mandatory="true"])>.panel-dismiss{
+  position:absolute;z-index:5;top:7px;right:max(10px,env(safe-area-inset-right,0px));
+  display:grid;place-items:center;box-sizing:border-box;
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  border:1.5px solid #b9cdb5;border-radius:13px;
+  background:#fffdf7;color:#315641;box-shadow:0 3px 12px #304a3d33;
+  font:800 27px/1 system-ui;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+#panel>.panel-dismiss:focus-visible{outline:3px solid #5b9473;outline-offset:2px}
+#panel.open:not([data-mandatory="true"]) .card>.card-close{display:none!important}
+#panel:not(.open)>.panel-dismiss,#panel[data-mandatory="true"]>.panel-dismiss{display:none!important}
+@media(max-width:700px){
+ #panel.open:not([data-mandatory="true"]){
+  top:calc(env(safe-area-inset-top,0px) + 46px)!important;
+  bottom:calc(max(61px,env(safe-area-inset-bottom,0px) + 52px))!important;
+  left:0;right:0;box-sizing:border-box;
+  padding:54px 9px 8px!important;
+  align-items:stretch!important;justify-content:center!important;
+  overflow:hidden!important;overscroll-behavior:contain;
+ }
+ #panel.open:not([data-mandatory="true"])>.card{
+  box-sizing:border-box!important;min-height:0!important;
+  max-height:100%!important;overflow-y:auto!important;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ }
+ #panel.open:not([data-mandatory="true"])>.panel-dismiss{
+  top:5px;right:max(10px,env(safe-area-inset-right,0px));
+ }
+}
+/* Only the common top-right controls can render music/effects in Cat Bond.
+   The obsolete audio-dock used stronger #stage>.mw-audio-dock selectors and
+   could otherwise draw two giant duplicate buttons over the game. */
+#stage>#mw-audio-dock,#stage>.mw-audio-dock{
+ display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
