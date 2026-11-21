@@ -272,7 +272,8 @@
   function playerSpecies() {
     var cats = window.State.S.cats || [];
     if (cats.length) {
-      var leader=cats.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||cats[0];
+      var leader=(window.CatRelations?.chosen?.()||[])[0]||
+        cats.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||cats[0];
       var sp=window.GameData.speciesById(leader.species);
       if (sp) return sp;
     }
@@ -894,7 +895,8 @@
     // An actual duo expedition shows both kittens, with the second
     // following just behind the leader. This isn't a floating HUD sticker.
     const members=window.CatRelations?.chosen?.()||[];
-    const leadCat=window.State.S.cats?.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||
+    const leadCat=members[0]||
+      window.State.S.cats?.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||
       window.State.S.cats?.[0];
     const companion=members.length===2?members.find(c=>c.uid!==leadCat?.uid):null;
     if(companion&&(window.CatMotion||window.CatArt)){
