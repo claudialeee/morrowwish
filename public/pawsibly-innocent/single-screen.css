@@ -479,3 +479,146 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
  }
  .single-screen-game .in-game-actions #bonusQuick{min-height:46px!important}
 }
+
+/* In-stage menu visual polish: undo legacy sidebar spacing inside modal. */
+.single-screen-game #gameMenu{
+ box-sizing:border-box!important;padding:clamp(5px,1.5vw,12px)!important;
+ overflow:hidden!important;
+}
+.single-screen-game #gameMenu .menu-shell{
+ box-sizing:border-box!important;flex:0 1 auto!important;
+ width:min(590px,100%)!important;max-width:100%!important;
+ height:min(95%,690px)!important;max-height:100%!important;min-height:0!important;
+ border-radius:16px!important;
+ overflow:hidden!important;
+}
+.single-screen-game #gameMenu .menu-head{
+ box-sizing:border-box!important;flex:0 0 auto!important;min-width:0!important;
+ padding:11px 14px 6px!important;align-items:flex-start!important;
+}
+.single-screen-game #gameMenu .menu-head>div{min-width:0;flex:1}
+.single-screen-game #gameMenu .menu-head h2{
+ font:700 clamp(19px,3.1vw,27px)/1.14 Fredoka,system-ui!important;
+ margin:2px 0 4px!important;overflow-wrap:anywhere
+}
+.single-screen-game #gameMenu .menu-head p{line-height:1.3!important}
+.single-screen-game #gameMenu .menu-tabs{
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ align-items:stretch!important;gap:6px!important;
+ overflow:visible!important;min-width:0!important;width:100%!important;
+ box-sizing:border-box!important;padding:7px 12px 9px!important;
+}
+.single-screen-game #gameMenu .menu-tabs button{
+ box-sizing:border-box!important;flex:none!important;min-width:0!important;max-width:100%!important;
+ white-space:nowrap!important;overflow:hidden!important;
+ display:flex!important;gap:5px!important;align-items:center!important;justify-content:center!important;
+ font:800 clamp(10px,1.3vw,12px)/1.15 Nunito,system-ui!important;
+ min-height:40px!important;padding:7px 3px!important;border-radius:9px!important;
+}
+.single-screen-game #gameMenu .menu-tabs button span{
+ display:inline-block;min-width:0;overflow:hidden;text-overflow:ellipsis;
+}
+.single-screen-game #gameMenu .game-menu-body{
+ box-sizing:border-box!important;display:block!important;min-width:0!important;
+ flex:1 1 auto!important;overflow-x:hidden!important;overflow-y:auto!important;
+ padding:14px 16px 18px!important;
+ scrollbar-width:thin;overscroll-behavior:contain;
+}
+.single-screen-game #gameMenu [data-tab-panel]{min-width:0;overflow-wrap:anywhere}
+.single-screen-game #gameMenu [data-tab-panel="cats"] #closetLabel{
+ display:block;font-size:11px;line-height:1.4;margin:0 0 10px!important;
+}
+.single-screen-game #gameMenu [data-tab-panel="cats"] #wardrobe{
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ gap:10px!important;align-items:start!important;
+ width:100%!important;max-width:480px!important;
+ margin:0 0 14px!important;padding:3px 0 0!important;
+}
+.single-screen-game #gameMenu [data-tab-panel="cats"] .skin{
+ box-sizing:border-box!important;display:grid!important;place-items:center!important;
+ width:min(100%,68px)!important;height:68px!important;min-height:68px!important;
+ margin:0!important;max-width:100%!important;
+ border-radius:16px!important;
+}
+.single-screen-game #gameMenu [data-tab-panel="cats"] .cat-portrait{
+ transform:none!important;width:36px!important;height:34px!important;
+ border-radius:46% 46% 43% 43%!important;
+}
+/* Short triangular cat ears; previous rounded upright shapes resembled bunnies. */
+.single-screen-game #gameMenu [data-tab-panel="cats"] .cat-portrait:before,
+.single-screen-game #gameMenu [data-tab-panel="cats"] .cat-portrait:after{
+ content:'';position:absolute;top:-11px;width:17px;height:16px;
+ background:var(--cat-fur);border:2px solid var(--cat-detail);
+ border-radius:2px 3px 0 0;z-index:-1;
+ clip-path:polygon(0 100%,43% 0,100% 100%);
+ transform:none!important;
+}
+.single-screen-game #gameMenu [data-tab-panel="cats"] .cat-portrait:before{left:-3px}
+.single-screen-game #gameMenu [data-tab-panel="cats"] .cat-portrait:after{right:-3px}
+.single-screen-game #gameMenu [data-tab-panel="cats"] #skinHint,
+.single-screen-game #gameMenu [data-tab-panel="cats"] #ability{
+ box-sizing:border-box!important;position:static!important;display:block!important;
+ width:100%!important;height:auto!important;
+ margin:0!important;padding:0!important;
+ font:750 12px/1.55 Nunito,system-ui!important;
+ color:#806a7e!important;overflow-wrap:anywhere!important;
+}
+.single-screen-game #gameMenu [data-tab-panel="cats"] #skinHint{
+ margin:0 0 8px!important;color:#82677f!important
+}
+.single-screen-game #gameMenu [data-tab-panel="cats"] #ability{
+ padding:9px 11px!important;border-radius:10px!important;
+ background:#f8eef5!important;border:1px solid #eadbe9!important;
+}
+.single-screen-game #gameMenu [data-tab-panel="help"] #howBody{
+ margin:6px 0 10px!important;
+ font:750 12px/1.5 Nunito,system-ui!important;
+ color:#756178!important;
+}
+.single-screen-game #gameMenu .menu-help-step{
+ box-sizing:border-box!important;
+ display:grid!important;grid-template-columns:minmax(100px,.72fr) minmax(0,1.28fr)!important;
+ align-items:start!important;gap:12px!important;
+ margin:7px 0!important;padding:9px 11px!important;
+ font:750 12px/1.46 Nunito,system-ui!important;
+}
+.single-screen-game #gameMenu .menu-help-step strong{
+ min-width:0!important;margin:0!important;line-height:1.4!important;
+}
+.single-screen-game #gameMenu .menu-help-step span{min-width:0}
+.single-screen-game #gameMenu #ruleBonus{
+ margin:11px 0!important;padding:10px 11px!important;
+ border:1px solid #ead7eb;border-radius:10px;
+ background:#f9eff9;color:#744f7c!important;
+ font:750 12px/1.5 Nunito,system-ui!important;
+}
+.single-screen-game #gameMenu #yarnExplain{display:none!important}
+.single-screen-game #gameMenu #helpLegend{
+ margin:8px 0 13px!important;padding:9px 11px!important;
+ font:800 11px/1.4 Nunito,system-ui!important;white-space:normal!important;
+}
+@media(max-width:480px){
+ .single-screen-game #gameMenu .menu-head{padding:8px 10px 4px!important}
+ .single-screen-game #gameMenu .menu-head h2{font-size:20px!important}
+ .single-screen-game #gameMenu .menu-tabs{gap:4px!important;padding:5px 7px 7px!important}
+ .single-screen-game #gameMenu .menu-tabs button{
+  gap:2px!important;font-size:10px!important;min-height:38px!important;padding:5px 1px!important;
+ }
+ .single-screen-game #gameMenu .game-menu-body{padding:10px 12px 15px!important}
+ .single-screen-game #gameMenu [data-tab-panel="cats"] #wardrobe{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  max-width:235px!important;gap:9px!important;
+ }
+ .single-screen-game #gameMenu [data-tab-panel="cats"] .skin{
+  width:min(100%,66px)!important;height:65px!important;min-height:65px!important;
+ }
+ .single-screen-game #gameMenu .menu-help-step{
+  grid-template-columns:1fr!important;gap:3px!important;
+  padding:8px 10px!important;
+ }
+}
+@media(max-height:420px){
+ .single-screen-game #gameMenu .menu-head{padding:5px 10px 2px!important}
+ .single-screen-game #gameMenu .menu-tabs{padding-top:3px!important;padding-bottom:4px!important}
+ .single-screen-game #gameMenu .game-menu-body{padding-top:8px!important}
+}
