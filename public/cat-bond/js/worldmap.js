@@ -727,17 +727,49 @@
         ctx.beginPath();ctx.arc(x,y-3,12,-2.1,1.4);ctx.stroke();
         ctx.fillStyle='#faf1d4';ctx.beginPath();ctx.arc(x+3,y-5,3,0,Math.PI*2);ctx.fill();
       }
+    }else if(node.kind==='duo'){
+      // Paired stone kittens physically inhabit the memory site.
+      for(const side of [-1,1]){
+        const xx=x+side*15;
+        ctx.fillStyle='#b9a69e';ctx.beginPath();ctx.ellipse(xx,y+5,12,17,0,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.moveTo(xx-11,y-8);ctx.lineTo(xx-8,y-25);ctx.lineTo(xx,y-13);
+        ctx.lineTo(xx+8,y-25);ctx.lineTo(xx+11,y-8);ctx.fill();
+        ctx.fillStyle='#fff1d9';ctx.beginPath();ctx.arc(xx-side*3,y-1,2,0,Math.PI*2);ctx.fill();
+      }
+      ctx.strokeStyle='#e4b7c1';ctx.lineWidth=4;ctx.beginPath();
+      ctx.moveTo(x-13,y-18);ctx.quadraticCurveTo(x,y-38,x+13,y-18);ctx.stroke();
+      ctx.fillStyle='#ffefd0';ctx.beginPath();ctx.arc(x,y-28,5,0,Math.PI*2);ctx.fill();
     }else if(rare){
-      ctx.fillStyle='#8b9aac';ctx.beginPath();ctx.moveTo(x-9,y+18);ctx.lineTo(x-17,y-6);
+      ctx.fillStyle=({home:'#c39f73',sakura:'#f0b8d0',creek:'#91cfdb',volcano:'#b77c61',ruins:'#aaa4d6'})[region]||'#8b9aac';ctx.beginPath();ctx.moveTo(x-9,y+18);ctx.lineTo(x-17,y-6);
       ctx.lineTo(x,y-27);ctx.lineTo(x+19,y-6);ctx.lineTo(x+8,y+18);ctx.closePath();ctx.fill();
       ctx.fillStyle='#d7ebec';ctx.beginPath();ctx.moveTo(x,y-26);ctx.lineTo(x+18,y-6);
       ctx.lineTo(x+4,y+5);ctx.closePath();ctx.fill();
     }else{
-      ctx.fillStyle='#a27d5f';ctx.fillRect(x-20,y-4,40,22);
-      ctx.fillStyle='#d1aa80';ctx.fillRect(x-23,y-12,46,10);
-      ctx.strokeStyle='#eed4a0';ctx.lineWidth=3;
-      ctx.strokeRect(x-13,y-11,26,29);
-      ctx.fillStyle='#e5bd68';ctx.fillRect(x-3,y-7,6,11);
+      // Visual reward identity depends on the biome, never the same box.
+      if(region==='sakura'){
+        ctx.strokeStyle='#a17681';ctx.lineWidth=4;ctx.beginPath();
+        ctx.moveTo(x-18,y+15);ctx.lineTo(x+6,y-12);ctx.stroke();
+        for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ctx.fillStyle=i%2?'#f3b5cd':'#ffedf0';
+          ctx.beginPath();ctx.ellipse(x+6+Math.cos(a)*12,y-12+Math.sin(a)*11,9,5,a,0,Math.PI*2);ctx.fill();}
+        ctx.fillStyle='#fff0a5';ctx.beginPath();ctx.arc(x+6,y-12,4,0,Math.PI*2);ctx.fill();
+      }else if(region==='creek'){
+        ctx.fillStyle='#f0e4d0';ctx.beginPath();ctx.ellipse(x,y+6,21,15,0,Math.PI,0);ctx.closePath();ctx.fill();
+        for(let i=-2;i<=2;i++){ctx.strokeStyle='#9cc5bd';ctx.lineWidth=2;ctx.beginPath();
+          ctx.moveTo(x,y+19);ctx.lineTo(x+i*8,y-9);ctx.stroke();}
+      }else if(region==='volcano'){
+        ctx.fillStyle='#64565a';ctx.beginPath();ctx.moveTo(x-22,y+18);ctx.lineTo(x-14,y-6);
+        ctx.lineTo(x+7,y-28);ctx.lineTo(x+23,y+18);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#f3ae70';ctx.lineWidth=5;ctx.beginPath();
+        ctx.moveTo(x+7,y-25);ctx.lineTo(x-5,y-1);ctx.lineTo(x+8,y+14);ctx.stroke();
+      }else if(region==='ruins'){
+        ctx.fillStyle='#a4a7c5';ctx.beginPath();ctx.ellipse(x,y,19,20,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#eee4be';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,10,-2.1,1.5);ctx.stroke();
+        ctx.fillStyle='#fff7dc';ctx.beginPath();ctx.arc(x+8,y-6,3,0,Math.PI*2);ctx.fill();
+      }else{
+        ctx.fillStyle='#b68e70';ctx.beginPath();ctx.ellipse(x,y+4,21,16,0,0,Math.PI*2);ctx.fill();
+        for(let i=0;i<4;i++){ctx.strokeStyle='#f8d8a6';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(x,y+4,7+i*4,-2,2);ctx.stroke();}
+      }
     }
     // Discovery sparkle clings to the object and does not float as a sticker.
     const glint=Math.max(0,Math.sin(t*3+node.bob))*5;
@@ -824,6 +856,22 @@
       }
     }
 
+    // An actual duo expedition shows both kittens, with the second
+    // following just behind the leader. This isn't a floating HUD sticker.
+    const members=window.CatRelations?.chosen?.()||[];
+    const leadCat=window.State.S.cats?.find(c=>c.uid===window.State.S.battlePrefs?.teamUids?.[0])||
+      window.State.S.cats?.[0];
+    const companion=members.length===2?members.find(c=>c.uid!==leadCat?.uid):null;
+    if(companion&&(window.CatMotion||window.CatArt)){
+      const partnerSpecies=window.GameData.speciesById(companion.species);
+      const render=window.CatMotion?.draw||window.CatArt?.drawCat;
+      if(partnerSpecies&&render){
+        try{render(ctx,w.px-(w.face||1)*54,w.py+26,{
+          species:partnerSpecies,scale:.83,face:w.face,t:w.t,
+          stride:w.walkT*11,motion:w.moving?.85:0,pose:w.moving?'walk':'idle',mood:'happy'
+        });}catch(e){}
+      }
+    }
     // player avatar (lead cat) + shadow
     var pose = w.moving ? 'walk' : 'idle';
     if (window.CatArt) {
