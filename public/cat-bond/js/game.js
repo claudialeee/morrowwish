@@ -97,13 +97,21 @@ class Game {
       if (reward.fish) State.S.fish += reward.fish;
       if(reward.yarn){Raising.init();State.S.raising.yarn+=reward.yarn;}
       if(reward.luck)State.S.luckLure=(State.S.luckLure||0)+reward.luck;
-      if(reward.discovery){const pair=window.CatRelations?.chosen?.()||[];
-        if(pair.length===2)CatRelations.grow(pair[0],pair[1],5);
-        metric('bond_region_secret_found',{region:reward.discovery.id});
+      if(reward.discovery){
+        const pair=window.CatRelations?.chosen?.()||[];
+        if(reward.duoMemory){
+          if(pair.length===2)CatRelations.remember(pair[0],pair[1],WorldMap.currentRegion);
+        }else if(pair.length===2)CatRelations.grow(pair[0],pair[1],5);
+        metric('bond_region_secret_found',{region:reward.discovery.id,duo:!!reward.duoMemory});
       }
       State.save(); this.refreshHUD();
       if(reward.discovery)UI.openRegionSecret(reward);
-      else this.toast('📦 ' + (reward.label || '拾获补给'));
+      else{
+        const en=window.MorrowwishI18n?.get?.()!=='zh';
+        const amounts=[['coins','🪙'],['fish','🐠'],['treats','🐟'],['yarn','🧶'],['luck','✨']]
+          .filter(([key])=>reward[key]).map(([key,icon])=>icon+'+'+reward[key]).join(' ');
+        this.toast((reward.label||(en?'Treasure found!':'发现宝贝'))+' '+amounts);
+      }
     });
     WorldMap.onExit(() => { this.scene = 'yard'; this.showYardChrome(); });
   }
