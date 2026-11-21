@@ -647,10 +647,30 @@ try{
    for(let retry=0;retry<3&&!success;retry++){
     const snap=await page.evaluate(()=>window.__V6_FISH__());
     const target=[...snap.fish].sort((a,b)=>a.wait-b.wait)[0];
-    const px=Math.max(35,Math.min(snap.W-35,target.x));
-    const py=Math.max(55,Math.min(snap.H-55,target.y));
+    // A real pointer tap must land on the SEA, not on the floating
+    // food toolbar that can overlap the lower canvas in portrait fullscreen.
+    // Find the nearest unobstructed on-canvas point and lure the hungry fish
+    // to the real pellet. Do not bypass browser hit testing or synthesize feeds.
+    const aim=await page.evaluate(({target,W,H})=>{
+      const c=document.querySelector('#sea'),r=c.getBoundingClientRect();
+      const x0=Math.max(24,Math.min(r.width-24,target.x/W*r.width));
+      const y0=Math.max(24,Math.min(r.height-24,target.y/H*r.height));
+      let best=null;
+      for(const dy of [0,-28,-56,-84,-112,-150,-200,-260,-330,28,56]){
+       for(const dx of [0,-24,24,-55,55,-90,90]){
+        const x=Math.max(22,Math.min(r.width-22,x0+dx));
+        const y=Math.max(22,Math.min(r.height-22,y0+dy));
+        const hit=document.elementFromPoint(r.left+x,r.top+y);
+        if(hit!==c)continue;
+        const dist=Math.hypot(x-x0,y-y0);
+        if(!best||dist<best.dist)best={x,y,dist};
+       }
+      }
+      return best;
+    },{target,W:snap.W,H:snap.H});
+    if(!aim)throw Error('No physically reachable aquarium canvas feeding point in portrait viewport');
     await foods.nth(target.type).click();
-    await page.locator('#sea').click({position:{x:px,y:py}});
+    await page.locator('#sea').click({position:{x:aim.x,y:aim.y},timeout:3000});
     try{
      await page.waitForFunction(oldFed=>window.__V6_FISH__?.().fed>oldFed,snap.fed,{timeout:3200,polling:100});
      success=true;
