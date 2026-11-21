@@ -458,6 +458,33 @@ if(!townCompactCss.includes('.app .legend-requirements span.met')||
    townV4.includes('rareUnlocked()')){
  throw Error('Legacy instant-unlock behavior or missing progressive requirements');
 }
+for(const marker of ['const LEGENDARY_POWERS={','function activateLegendaryPower(card,power)','overlays.push({kind:\'legendaryBuild\'','function wishEffect(card)','const END_REASONS={','flight:[\'人人都能飞的天空城\'','coast:[\'永不结束的海边假期\'','roaming:[\'开往自由的银河列车\'','function endingText()','id===\'flight\'','S.found.forEach(c=>{score[c.vibe]+=7;']) {
+ if(!townV4.includes(marker.replaceAll('\\','')))throw Error('Tiny Town special powers or outcome variety missing: '+marker);
+}
+if(!tinyMusicPage.includes('id="closeEnding"')||
+   !tinyMusicPage.includes('id="endReason"')||
+   !townV4.includes("$('closeEnding').onclick")||
+   !townV4.includes("$('endReason').textContent"))
+ throw Error('Tiny Town result must explain the outcome and support close without restarting');
+for(const marker of ['#mapWrap.world{','#mapWrap.world .tile.resident-home','#mapWrap.world .tile.built','#mapWrap.world .tile.target','#mapWrap.world .world-illustration','filter:none!important','#closeEnding.close-ending','.app .legend-wish-copy .legend-power-detail','.app .end-reason']) {
+ if(!townCompactCss.includes(marker))throw Error('Tiny Town illustration contrast or meaningful legendary UI missing: '+marker);
+}
+if(!townCompact.includes('legendaryPowers[rule.id]')||
+   !townCompact.includes('legend-power-stats'))
+ throw Error('Show legendary powers and real build rewards in the collection');
+if(townV4.includes('S.places[0].id].vibe]+=14'))
+ throw Error('Old first-wish ending bias should be removed');
+for(const marker of ['const NEIGHBOR_ARCS=[','function chooseNeighborArc()','function neighborMoment(arc,phase,option)','function showNeighborStory(day)','neighborArc:null,neighborChoice:null,neighborMoments:[]','showNeighborStory(o.day)','neighborEnding=S.neighborMoments.at(-1)']){
+ if(!townV4.includes(marker))throw Error('Resident story arc or continuity missing: '+marker);
+}
+for(const marker of ['function neighborStoryNotes(s,focus)','neighborStoryNotes(s,null)','neighborStoryNotes(s,r.name)']){
+ if(!townCompact.includes(marker))throw Error('Resident story history must appear in their profiles: '+marker);
+}
+if(!townCompactCss.includes('.neighbor-scene-portraits')||
+   !townCompactCss.includes('.neighbor-archive')||
+   !tinyMusicPage.includes('id="closeEnding"')){
+ throw Error('Town scenes and end card must remain usable');
+}
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||

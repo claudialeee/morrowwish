@@ -43,6 +43,14 @@ function reactionFor(r,wish){
  if(!wish)return 0;
  return r.likes.includes(wish.id)?1:r.dislikes.includes(wish.id)?-2:0;
 }
+
+function neighborStoryNotes(s,focus){
+ const moments=(s.neighborMoments||[]).filter(m=>focus==null||m.people?.includes(focus));
+ if(!moments.length)return focus==null?'<p class="neighbor-archive-empty">'+t('Neighbor stories begin as you build your town.','随着小镇慢慢建成，居民之间也会发生故事。')+'</p>':'';
+ return '<section class="neighbor-archive"><h3>'+t('Stories between neighbors','居民之间的故事')+'</h3>'+
+  moments.map(m=>'<div class="neighbor-memory"><strong>'+m.people.join(' × ')+' · '+t('Chapter ','第')+m.phase+t('','幕')+'</strong><p>'+quote(t(m.en,m.zh))+'</p></div>').join('')+'</section>';
+}
+
 function compareResidents(residents,s,byId,wish){
  const description=t('All five at a glance. Choose a row for that person’s full profile.','五位居民的喜好一眼对比。点击某一行，查看那个人的详细档案。');
  return '<p class="inspect-intro">'+description+'</p><div class="resident-compare-list">'+residents.map((r,i)=>{
@@ -56,7 +64,7 @@ function compareResidents(residents,s,byId,wish){
    '<small class="resident-compare-dislike"><b>'+t('Dislikes','不喜欢')+'</b> '+(dislikes.map(x=>x.icon).join(' ')||'—')+'</small></span>'+
    '<span class="resident-compare-state">'+forecast+'</span><span class="resident-compare-chevron">›</span></button>';
  }).join('')+'</div>'+
- '<p class="inspect-note">'+t('♥ Likes: mood +1. Dislikes: mood −2. The small number on each face previews your selected wish.','♥ 喜欢的愿望：心情 +1；不喜欢：心情 −2。选中愿望后，头像上的数字可预览变化。')+'</p>';
+ '<p class="inspect-note">'+t('♥ Likes: mood +1. Dislikes: mood −2. The small number on each face previews your selected wish.','♥ 喜欢的愿望：心情 +1；不喜欢：心情 −2。选中愿望后，头像上的数字可预览变化。')+'</p>'+neighborStoryNotes(s,null);
 }
 function oneResident(residents,index,s,byId,wish){
  const r=residents[index],change=reactionFor(r,wish);
@@ -67,12 +75,12 @@ function oneResident(residents,index,s,byId,wish){
  '<p class="resident-impact '+tone+'">'+(wish?wish.icon+' ':'')+effect+'</p></div>'+
  '<h3 class="resident-switch-title">'+t('Switch resident','切换居民')+'</h3><div class="resident-switch-list">'+
  residents.map((p,i)=>'<button type="button" data-resident-profile="'+i+'" class="resident-switch '+(i===index?'selected':'')+'" aria-pressed="'+(i===index)+'"><span>'+p.face+'</span><small>'+p.name+'</small></button>').join('')+'</div>'+
- '<p class="inspect-note">'+t('This person’s likes, dislikes, and mood are visible from the beginning. No hidden traits.','这位居民的喜好和心情从一开始就公开，没有故意隐藏特性。')+'</p>';
+ '<p class="inspect-note">'+t('This person’s likes, dislikes, and mood are visible from the beginning. No hidden traits.','这位居民的喜好和心情从一开始就公开，没有故意隐藏特性。')+'</p>'+neighborStoryNotes(s,r.name);
 }
 
 
 function legendaryPanel(v){
- const {S,byId,legendaryRules,nextLegendary,selected}=v;
+ const {S,byId,legendaryRules,legendaryPowers,nextLegendary,selected}=v;
  const unlocked=S.legendaryUnlocked.length;
  const next=nextLegendary;
  const explanation=t('Legendary wishes unlock one at a time, at the start of a new day. Every tier needs a little more imagination and discovery.','传奇愿望逐个解锁：每天开始时最多开放一个，后面的愿望还需要更多想象力与探索成果。');
@@ -82,7 +90,7 @@ function legendaryPanel(v){
  '<div class="legend-progress"><span style="width:'+progress+'%"></span></div>'+
  '<small>'+(next?t('Next: ','下一项：')+quote(t(byId[next.id].en,byId[next.id].zh))+' · '+S.wonder+'/'+next.wonder+' '+t('imagination','想象力'):t('All four legendary wishes unlocked!','四项传奇愿望全部解锁！'))+'</small></div>'+
  '<div class="legend-wish-list">'+legendaryRules.map((rule,index)=>{
-  const c=byId[rule.id],built=S.places.some(p=>p.id===rule.id),unlockedOne=S.legendaryUnlocked.includes(rule.id);
+  const c=byId[rule.id],power=legendaryPowers[rule.id],built=S.places.some(p=>p.id===rule.id),unlockedOne=S.legendaryUnlocked.includes(rule.id);
   const disabled=built||!unlockedOne||!S.started||S.ended,active=selected===rule.id;
   const status=built?t('Built','已建造'):!unlockedOne?t('Locked','尚未解锁'):active?t('Selected · place on map','已选中 · 去地图放置'):t('Select & build','选择并建造');
   const goals=[
@@ -94,7 +102,7 @@ function legendaryPanel(v){
   const note=unlockedOne?t('Unlocked!','已解锁！'):index===unlocked?t('Next in line','下一个解锁目标'):t('Unlock the previous tier first','需先解锁前一项');
   return '<article class="legend-wish '+(built?'built':'')+(active?' active':'')+(!unlockedOne?' locked':'')+'">'+
    '<div class="legend-wish-symbol">'+c.icon+'</div><div class="legend-wish-copy"><strong>'+quote(t(c.en,c.zh))+'</strong>'+
-   '<p>'+quote(t(c.descEn,c.descZh))+'</p><small class="legend-tier-label">'+quote(note)+'</small></div>'+
+   '<p>'+quote(t(c.descEn,c.descZh))+'</p><p class="legend-power-detail">✦ '+quote(t(power.en,power.zh))+'</p><small class="legend-power-stats">'+t('Build effect: imagination +','建造效果：想象力 +')+(c.joy+power.wonder)+' · '+t('harmony ','友爱 ')+(c.peace+power.peace>=0?'+':'')+(c.peace+power.peace)+'</small><small class="legend-tier-label">'+quote(note)+'</small></div>'+
    '<div class="legend-requirements">'+goals.map(([met,label])=>'<span class="'+(met?'met':'pending')+'">'+(met?'✓ ':'○ ')+quote(label)+'</span>').join('')+'</div>'+
    '<button type="button" class="legend-wish-action" data-legend-wish="'+rule.id+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+status+'</button></article>';
  }).join('')+'</div>'+

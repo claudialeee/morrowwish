@@ -512,3 +512,141 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  .app .legend-requirements{gap:4px}
  .app .legend-requirements span{font-size:9px;padding:4px 5px}
 }
+
+/* v5.2 — warm illustrated town, no green-tinted multi-layer filter. */
+#mapWrap.world{
+ background:linear-gradient(160deg,rgba(255,234,245,.53) 0%,rgba(251,224,243,.60) 49%,rgba(255,228,209,.68) 100%),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important;
+ filter:none!important; box-shadow:inset 0 -14px 36px #936d9d18,0 8px 22px #846c9c25!important;
+ border-color:#fff3ed!important;
+}
+#mapWrap.world::before{
+ content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:linear-gradient(180deg,rgba(255,247,249,.22),transparent 36%,rgba(226,169,196,.13) 100%)!important;
+ animation:none!important
+}
+#mapWrap.world::after{opacity:.25}
+#mapWrap.world .world-illustration{
+ opacity:.22!important;filter:saturate(.65) sepia(.08);mix-blend-mode:normal!important;
+ animation:none!important
+}
+#mapWrap.world .world-illustration svg{
+ filter:saturate(.72) hue-rotate(-16deg)!important;
+ mix-blend-mode:normal!important;animation:none!important
+}
+#mapWrap.world .board{
+ filter:drop-shadow(0 8px 12px #7f5f8f24)!important
+}
+#mapWrap.world .tile.resident-home{
+ background:linear-gradient(145deg,#fff9f0f7,#f8dceaf5)!important;
+ border:2px solid #fff9f4!important;
+ box-shadow:0 5px 14px #835e8355,0 0 0 1px #cfb0c65e!important;
+ backdrop-filter:none!important
+}
+#mapWrap.world .tile.built{
+ background:linear-gradient(155deg,#fff6e7f6,#ead8f0f7)!important;
+ border:2px solid #fff6e9!important;
+ box-shadow:0 7px 14px #75547655!important;
+ backdrop-filter:none!important
+}
+#mapWrap.world .tile.plaza{
+ background:linear-gradient(145deg,#fff8e9f8,#e7d0e9f5)!important;
+ border:2px solid #fff9ec!important;
+ box-shadow:0 5px 12px #745b7b4a!important;
+ backdrop-filter:none!important
+}
+#mapWrap.world .tile.target{
+ background:linear-gradient(145deg,#fff6f5b8,#f3d3ebb3)!important;
+ border:2px solid #e5b1d5!important;
+ box-shadow:0 2px 0 2px #fff9f5a8,0 5px 12px #86618638!important;
+}
+#mapWrap.world .tile.jackpot{
+ background:linear-gradient(140deg,#ffedc9,#f5cae2)!important;
+ border:2px solid #efcc79!important;
+ box-shadow:0 0 0 2px #fff2d0,0 5px 15px #ad73965c!important
+}
+#mapWrap.world .tile:not(.built):not(.house):not(.plaza):not(.target){
+ background:rgba(255,246,253,.14)!important;
+ border:1px solid #ffecf088!important;
+ box-shadow:none!important
+}
+#mapWrap.world .tile .tile-name{
+ color:#68466e!important;text-shadow:0 1px 2px #fffaf8;
+ font-weight:950;letter-spacing:0!important
+}
+#mapWrap.world .tile .tile-icon{filter:drop-shadow(0 1px 2px #6b4f7255)}
+#mapWrap.world .tile.resident-home .home-face{filter:drop-shadow(0 1px 3px #674c6a5c)}
+#mapWrap.world .tile.resident-home .tile-name{
+ background:#fff6f3f0!important;color:#744d76!important;
+}
+.app .town-bubble{background:#fff1e9!important;color:#74536d!important}
+.app .legend-wish-copy .legend-power-detail{
+ font-size:11px;font-weight:750;line-height:1.4;color:#734f83;
+ padding:8px 9px;border-left:3px solid #dca7ce;
+ background:#fbf0f7;border-radius:7px;margin:7px 0 5px
+}
+.app .legend-wish-copy .legend-power-stats{
+ display:block;color:#875e95;font-size:11px;font-weight:900;
+ margin:3px 0 8px
+}
+.app .end-modal{position:relative;padding-top:36px}
+.app #closeEnding.close-ending{
+ position:absolute;right:12px;top:10px;z-index:5;
+ display:flex;align-items:center;justify-content:center;
+ width:39px;height:39px;min-width:39px;
+ border-radius:50%;border:1px solid #e7d6e4;background:#fff5f8;
+ color:#775c7c;font-size:27px;line-height:1;cursor:pointer;
+ box-shadow:0 2px 7px #81678320
+}
+.app #closeEnding.close-ending:hover,
+.app #closeEnding.close-ending:focus-visible{
+ background:#f4e4f3;outline:2px solid #c9a4d7;outline-offset:2px
+}
+.end-hero-art[data-theme=coast] .end-landscape{filter:saturate(1.18) sepia(.09) hue-rotate(-10deg)}
+.end-hero-art[data-theme=roaming] .end-landscape{filter:saturate(1.23) hue-rotate(22deg)}
+.end-hero-art[data-theme=flight] .end-landscape{filter:saturate(1.28) hue-rotate(8deg)}
+@media(max-width:700px){
+ .app .end-modal{padding-top:34px}
+ .app #closeEnding.close-ending{top:7px;right:7px;width:36px;height:36px}
+}
+
+.app .end-reason{
+ margin:9px auto 12px!important;padding:10px 12px;
+ max-width:570px;border-radius:11px;background:#f9ebf4;
+ color:#795a86!important;font-size:12px!important;font-weight:800;line-height:1.5
+}
+@media(max-width:700px){.app .end-reason{padding:8px 10px;font-size:11px!important}}
+
+/* Legendary choices visibly reshape the atmosphere, without tinting the entire map green. */
+#mapWrap.world[data-theme="sky"]{
+ background:linear-gradient(165deg,rgba(221,221,255,.49),rgba(236,214,253,.61) 50%,rgba(250,203,230,.50)),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important
+}
+#mapWrap.world[data-theme="party"]{
+ background:linear-gradient(160deg,rgba(255,204,222,.56),rgba(243,192,227,.55) 50%,rgba(254,210,184,.45)),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important
+}
+#mapWrap.world[data-theme="cat"]{
+ background:linear-gradient(160deg,rgba(255,231,226,.52),rgba(247,217,237,.58) 52%,rgba(255,219,196,.54)),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important
+}
+#mapWrap.world[data-theme="art"]{
+ background:linear-gradient(160deg,rgba(248,220,240,.50),rgba(237,209,247,.57) 50%,rgba(255,233,205,.50)),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important
+}
+#mapWrap.world[data-theme="chaos"]{
+ background:linear-gradient(160deg,rgba(222,195,250,.60),rgba(239,190,224,.58) 50%,rgba(255,215,178,.49)),url('/art/tiny-town-scene.svg') center 54%/cover no-repeat!important
+}
+
+/* Resident encounters: small, theatrical character scenes instead of city-hall lectures. */
+.neighbor-scene{position:relative;min-height:162px;overflow:hidden;border-radius:15px;background:linear-gradient(145deg,#f5d8ed,#fae6d2)}
+.neighbor-scene-art{position:absolute;inset:0;opacity:.48;pointer-events:none}
+.neighbor-scene-art svg{width:100%;height:100%;display:block;object-fit:cover;filter:saturate(.75)}
+.neighbor-scene-portraits{position:relative;min-height:162px;display:flex;justify-content:center;align-items:center;gap:22px;z-index:2}
+.neighbor-scene-portraits span{display:grid;place-items:center;width:82px;height:82px;border-radius:50%;font-size:50px;background:#fff8f1d9;box-shadow:0 7px 17px #84547730;border:2px solid #fff6ee}
+.neighbor-scene-portraits b{font-size:23px;color:#a879b4;text-shadow:0 2px 6px #fff}
+.neighbor-archive{margin-top:14px;padding:12px;background:linear-gradient(150deg,#fff5ec,#faedf7);border:1px solid #efdaea;border-radius:13px}
+.neighbor-archive h3{font-size:13px;color:#73527b;margin:0 0 9px}
+.neighbor-memory{padding:8px 0;border-top:1px solid #eed9e6}
+.neighbor-memory strong{font-size:11px;color:#a06f91}
+.neighbor-memory p{font-size:11px;line-height:1.55;color:#725f77;margin:4px 0}
+.neighbor-archive-empty{font-size:11px!important;margin-top:12px!important;color:#967d94!important}
+@media(max-width:700px){
+ .neighbor-scene{min-height:125px}.neighbor-scene-portraits{min-height:125px;gap:16px}
+ .neighbor-scene-portraits span{width:65px;height:65px;font-size:38px}
+}
