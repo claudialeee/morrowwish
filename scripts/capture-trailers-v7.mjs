@@ -148,15 +148,15 @@ try{
    const cats=State.S.cats.slice(0,3);
    CatRelations.grow(cats[0],cats[1],75);CatRelations.choose(cats[0],cats[1]);
    State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
-   const wild=GameData.SPECIES.find(s=>s.rarity==='SSR')||GameData.SPECIES.at(-1);
+   const wild=GameData.SPECIES.find(s=>s.rarity==='R')||GameData.SPECIES.find(s=>s.rarity==='N')||GameData.SPECIES[0];
    window.__game.startBattle(cats,wild);
    window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
   });
   if(!await page.evaluate(()=>!!window.__game.battle?.duo))throw Error('V6 no actual two-cat combo');
-  await mark('battle-intro',3550);
+  await mark('battle-intro',2650);
   const duo=await page.evaluate(()=>{
    const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
-   b.duoCharge=100;b.duoCd=0;return{cast:b.castDuo(),uses:b.duoUses,cinematic:!!b.duoCinematic};
+   b.duoCharge=100;b.duoCd=0;const ready=b.duoReady();const status=b.team.map(f=>({id:f.cat.uid,alive:f.alive,hp:Math.round(f.hp)}));return{ready,status,cast:b.castDuo(),uses:b.duoUses,cinematic:!!b.duoCinematic};
   });
   if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
   await mark('duo',5100);
