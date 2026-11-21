@@ -1226,10 +1226,10 @@ const UI = {
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
     const deadline=this.game.gradeTimeLimit(wildSp.rarity);
     const masteryChallenge=english
-      ?('🏅 S: Win in '+deadline+'s · Keep 80% HP · 8-hit combo or perfect dodge. Auto S: 95% HP · 16 hits · 60% time limit. '
-        +(hasMedal?'Golden Paw already earned.':'First S unlocks a permanent Golden Paw and a rare-cat lure.'))
-      :('🏅 S：'+deadline+'秒内获胜 · 保留80%血量 · 8连击或完美闪避。自动 S 还需95%血量、16连击、耗时不超过标准的60%。'
-        +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁永久金爪徽章和稀有猫诱饵。'));
+      ?('🏅 Manual S: within '+deadline+'s · keep 80% HP · 8-hit combo or perfect dodge. Auto S: all cats survive, keep at least 75% HP, finish within '+Math.round(deadline*1.25)+'s, plus a 5-hit combo or 87% HP. '
+        +(hasMedal?'Golden Paw already earned.':'First S unlocks a Golden Paw and a rare-cat lure.'))
+      :('🏅 手动 S：'+deadline+'秒内获胜、保留80%血量、8连击或完美闪避。自动 S：全队存活、保留至少75%血量、在'+Math.round(deadline*1.25)+'秒内获胜，并达成5连击或保留87%血量。'
+        +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁金爪徽章和稀有猫诱饵。'));
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
       return;
@@ -1414,8 +1414,8 @@ const UI = {
       <p class="center mastery-challenge-note">${note}</p>
       ${won&&performance?.autoUsed?'<p class="center mastery-grade-hint">'+(performance.autoExceptional
         ?(en?'Exceptional auto run!':'自动战斗发挥出色！')
-        :(en?'Auto S requires 95% HP, 16 hits and 60% of the time limit.'
-          :'自动 S 需要95%血量、16连击、耗时不超过标准的60%。'))+'</p>':''}
+        :(en?'For auto S: all cats survive · 75%+ HP · 125% of the standard time limit · 5-hit combo or 87%+ HP.'
+          :'自动 S：全队存活、至少75%血量、用时不超过标准的125%，且达成5连击或保留87%以上血量。'))+'</p>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="mc-retry">${en?'Challenge again':'再次挑战'}</button>
         <button class="btn" id="mc-dex">${en?'View medals':'查看图鉴'}</button>
