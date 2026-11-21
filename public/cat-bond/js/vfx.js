@@ -36,7 +36,18 @@ class VFX {
     this.ring(x, y, { r0: 4, vr: 300, life: 0.3, color, width: 3 });
   }
   // rising text (damage / status)
-  text(x, y, str, color, size) { this.fx.push({ type: 'text', x, y, str, color: color || '#fff', size: size || 15, life: 0.9, max: 0.9 }); }
+  text(x, y, str, color, size) {
+    // Max 5 readable callouts, never 30 overlapping skill names.
+    // Nearby duplicate events coalesce instead of piling into a word cloud.
+    const clean=String(str||'').trim();
+    if(!clean)return;
+    const alive=this.fx.filter(e=>e.type==='text'&&e.life>.16);
+    if(alive.length>=5)return;
+    const nearby=alive.find(e=>Math.hypot(e.x-x,e.y-y)<42&&e.life>.4);
+    if(nearby)return;
+    this.fx.push({type:'text',x,y,str:clean.slice(0,11),color:color||'#fff',
+      size:Math.min(14,Math.max(10,size||12)),life:.52,max:.52});
+  }
   // orbiting glyph for charge/buff
   orb(x, y, color, n) {
     for (let i = 0; i < (n || 6); i++) this.fx.push({ type: 'orb', x, y, baseA: (i / (n || 6)) * Math.PI * 2, rad: 34, life: 0.6, max: 0.6, color: color || '#9d7bff' });
