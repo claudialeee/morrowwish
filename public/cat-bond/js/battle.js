@@ -193,6 +193,8 @@ class CaptureBattle {
     // Positions are visual only, leaving actual combat collision and saves intact.
     const target=this.liveEnemies()[0]||{x,y};
     this.duoCinematic.x=target.x;this.duoCinematic.y=target.y;
+    // The resonance should surround enemies, not the point where the two cats stood.
+    this.duoField.x=target.x;this.duoField.y=target.y;
     this.duoRun={age:0,duration:1.17,runners:fs.map((f,i)=>({
       uid:f.cat.uid,fromX:f.x,fromY:f.y,
       toX:target.x+(i?21:-21),toY:target.y+(i?-11:11)
