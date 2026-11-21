@@ -80,7 +80,7 @@ try{
           const button=page.locator('#tool');
           assert.ok(await button.isVisible(),'Yarn action not visible');
           const positions=await page.evaluate(()=>{const t=document.querySelector('#tool').getBoundingClientRect(),b=document.querySelector('#board').getBoundingClientRect();return{toolTop:t.top,toolBottom:t.bottom,boardTop:b.top,boardBottom:b.bottom,toolH:t.height};});
-          assert.ok(positions.toolTop+positions.toolH<=positions.boardBottom-15,'Yarn action must be in the upper HUD, not below the map');
+          assert.ok(positions.toolBottom<=positions.boardTop+2,'Yarn action must be completely ABOVE the map without covering a tile');
           assert.ok(positions.toolH>=44,'Yarn button touch target too small');
           await button.tap();
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Tapping the yarn button must enter aiming mode');
