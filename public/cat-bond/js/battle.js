@@ -871,7 +871,7 @@ class CaptureBattle {
       }
     }else return false;
     this.gainUlt(6);
-    if(f===this.me())this.game.toast('✨ '+sk.name+'！');
+    // Skill impact visual and icon communicate the attack; no repeated toast.
     return true;
   }
 
@@ -1049,7 +1049,7 @@ class CaptureBattle {
     this.castOffensiveSkill(f, aim, sk, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
-    if (f === this.me()) this.game.toast('🧶 ' + (sk ? sk.name : '毛球散射') + '！');
+    // Suppress repeated action labels; they used to cover the health bars.
     return true;
   }
 
@@ -1197,7 +1197,7 @@ class CaptureBattle {
     }
     this.gainUlt(6);
     this.markMoveSeen(f,sk);
-    if(f===this.me())this.game.toast('💨 '+(sk?sk.name:'疾扑冲刺')+'！');
+    // The dash animation is the feedback: no blocking combat toast.
     return true;
   }
   dodge(f) {
@@ -1967,8 +1967,8 @@ class CaptureBattle {
     }
     // element effectiveness
     const mult = this.elemMult(skill.element, e.sp.id);
-    if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果拔群!', '#ff7b9c', 13); }
-    else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果一般', '#9aa8ba', 11); }
+    if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '↑', '#ff7b9c', 12); }
+    else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11); }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
       const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
@@ -2160,8 +2160,8 @@ class CaptureBattle {
     // element effectiveness: enemy skill element vs this cat's element
     if (skill.element && f.cat) {
       const mult = this.elemMult(skill.element, f.cat.species);
-      if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果拔群!', '#ff7b9c', 13); }
-      else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果一般', '#9aa8ba', 11); }
+      if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '↑', '#ff7b9c', 12); }
+      else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11); }
     }
     // 破绽/破甲 on the cat amplify what it's about to take
     for (const tg in f.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
@@ -2280,7 +2280,7 @@ class CaptureBattle {
       ctx.font='800 '+(this.game.isTouch?12:15)+'px system-ui';
       ctx.fillStyle='rgba(255,253,238,'+(k*.92)+')';
       ctx.shadowColor=v.first;ctx.shadowBlur=9;
-      if(elapsed<1.75)ctx.fillText(v.name,W/2,Math.min(H-84,this.topMargin+18),W*.72);
+      if(elapsed<1.75)// Duo name is visible on its single compact HUD button, not across the arena.
       ctx.restore();
     }
 
@@ -2539,7 +2539,7 @@ class CaptureBattle {
     } else if (this.game.isTouch && this.combo < 2) {
       // hint on touch devices
       ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
-      ctx.fillText('← 左侧拖动移动  ·  右侧按住攻击 →', W / 2, H - 76);
+      // First-fight tutorial and the virtual joystick already explain touch controls.
       ctx.restore();
     }
 
