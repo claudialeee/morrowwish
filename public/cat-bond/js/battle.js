@@ -91,6 +91,13 @@ class CaptureBattle {
     const firstColor=this.elemColor(fs[0].element),secondColor=this.elemColor(fs[1].element);
     const mix=d.elementPair;
     this.duoCinematic={t:1.05,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
+    // Two actual fighters sprint toward the enemy, cross paths and sprint home.
+    // Positions are visual only, leaving actual combat collision and saves intact.
+    const target=this.liveEnemies()[0]||{x,y};
+    this.duoRun={age:0,duration:.96,runners:fs.map((f,i)=>({
+      uid:f.cat.uid,fromX:f.x,fromY:f.y,
+      toX:target.x+(i?21:-21),toY:target.y+(i?-11:11)
+    }))};
     this.flash=.38;this.shakeT=.42;this.slowmo=.24;
     this.vfx.beam(fs[0].x,fs[0].y,fs[1].x,fs[1].y,firstColor);
     this.vfx.beam(fs[1].x,fs[1].y,x,y,secondColor);
@@ -884,8 +891,9 @@ class CaptureBattle {
   spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill, life) {
     this.projectiles.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, kind, life: life || 2.2, ang, skill: skill || null });
   }
-  spawnBurst(x, y, ch, color, n) {
-    for (let i = 0; i < n; i++) this.particles.push({ x, y, vx: Math.random() * 120 - 60, vy: -40 - Math.random() * 70, life: 0.7, ch, color, size: 11 + Math.random() * 8 });
+  spawnBurst(x,y,_symbol,color,n){
+    // Energy dissipates as physical impact sparks, never floating emoji stickers.
+    this.vfx.burst(x,y,{count:n||12,color:color||'#ffd36b',speed:150,life:.45,r:3});
   }
   floater(x, y, text, color, size) { this.floaters.push({ x, y, text, color, life: 0.9, size: size || 15 }); }
 
@@ -958,6 +966,10 @@ class CaptureBattle {
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
     if(this.duoCinematic)this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);
+    if(this.duoRun){
+      this.duoRun.age+=dt;
+      if(this.duoRun.age>=this.duoRun.duration)this.duoRun=null;
+    }
     for(const v of this.skillStrokes)v.life-=dt;
     this.skillStrokes=this.skillStrokes.filter(v=>v.life>0);
     if(this.duo){
@@ -1166,6 +1178,9 @@ class CaptureBattle {
     const spd=e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1);   // 感电减速
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
+    if(Math.abs(ax)>.07)e.face=ax<0?-1:1;
+    e.motion=(ax||ay)?Math.min(1,Math.hypot(ax,ay)):.05;
+    e.stride=(e.stride||0)+dt*(6+spd*.052)*e.motion;
     if (e.pose !== 'play') e.pose = (ax || ay) ? 'walk' : 'idle';
 
     // telegraphed special (staggered: only one enemy charges a nova at a time)
@@ -1462,30 +1477,16 @@ class CaptureBattle {
 
     this.drawArenaBackground(ctx, W, H);
     if(this.duoCinematic?.t>0){
-      const v=this.duoCinematic,k=Math.max(0,v.t/1.05),p=1-k;
+      const v=this.duoCinematic,k=Math.max(0,v.t/1.05);
       ctx.save();
-      const halo=ctx.createRadialGradient(v.x,v.y,10,v.x,v.y,Math.max(W,H)*.68);
-      halo.addColorStop(0,'rgba(255,255,235,'+(k*.18)+')');
-      halo.addColorStop(1,'rgba(47,29,75,'+(k*.34)+')');
-      ctx.fillStyle=halo;ctx.fillRect(0,0,W,H);
-      ctx.globalCompositeOperation='lighter';
-      for(let i=0;i<2;i++){
-        ctx.strokeStyle=i?v.second:v.first;ctx.lineWidth=11-i*4;ctx.globalAlpha=.65*k;
-        ctx.beginPath();ctx.arc(v.x,v.y,40+p*(Math.min(W,H)*.44)+i*26,0,Math.PI*2);ctx.stroke();
-      }
-      for(let i=0;i<27;i++){
-        const ang=i*Math.PI*2/27+this.t*2.6,rad=48+p*(150+i%5*14);
-        ctx.fillStyle=i%2?v.second:v.first;ctx.globalAlpha=k*.8;
-        ctx.beginPath();ctx.arc(v.x+Math.cos(ang)*rad,v.y+Math.sin(ang)*rad*.7,2.6+(i%3)*1.7,0,Math.PI*2);ctx.fill();
-      }
-      ctx.globalCompositeOperation='source-over';ctx.globalAlpha=k;
-      const en=window.MorrowwishI18n?.get?.()!=='zh';
-      ctx.textAlign='center';ctx.font='900 '+Math.round(Math.max(19,Math.min(34,W*.048)))+'px system-ui';
-      ctx.lineWidth=5;ctx.strokeStyle='rgba(26,21,43,.86)';
-      ctx.strokeText(v.name,W/2,Math.max(102,H*.29));ctx.fillStyle='#fff9e4';
-      ctx.fillText(v.name,W/2,Math.max(102,H*.29));
-      ctx.font='800 12px system-ui';
-      ctx.fillText(en?'SIGNATURE DUO!':'双猫专属合击！',W/2,Math.max(79,H*.29-29));
+      // Battle-space focus rather than screen-wide spinning sticker graphics.
+      ctx.fillStyle='rgba(30,26,45,'+(k*.13)+')';
+      ctx.fillRect(0,0,W,H);
+      ctx.textAlign='center';
+      ctx.font='800 16px system-ui';
+      ctx.fillStyle='rgba(255,253,238,'+(k*.92)+')';
+      ctx.shadowColor=v.first;ctx.shadowBlur=9;
+      ctx.fillText(v.name,v.x,v.y-88);
       ctx.restore();
     }
 
@@ -1568,7 +1569,12 @@ class CaptureBattle {
       }
       // status color wash (frozen=blue tint, burn=orange, etc.) via a soft overlay ring
       if (e.status) { const k = Object.keys(e.status); if (k.length) { const info = (Skills.TAG_INFO || {})[k[0]]; if (info) { ctx.save(); ctx.globalAlpha = 0.25 + 0.15 * Math.sin(this.t * 6); ctx.fillStyle = info.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + 6, 24, 30, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } }
-      CatArt.drawCat(ctx, e.x, e.y, { species: e.sp, scale: 1.1, face: e.face, t: e.t, pose: e.frozen ? 'idle' : e.pose, mood: e.frozen ? 'sleepy' : ((e.hp / e.maxhp < 0.28) ? 'sleepy' : 'alert') });
+      (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
+        species:e.sp,scale:1.05,face:e.face,t:e.t,
+        stride:e.stride,motion:e.motion||0,
+        pose:e.frozen?'idle':e.pose,
+        mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
+      });
       ctx.restore();
       const elemSym = this.elemSymbol(e.element);
       this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color, `${elemSym} ${e.sp.name} Lv.${e.level}`);
@@ -1588,13 +1594,33 @@ class CaptureBattle {
       const isMe = tf === this.me();
       const sp2 = GameData.speciesById(tf.cat.species);
       const fAim = isMe ? this.aim : (tf._aim || 0);
+      const route=this.duoRun?.runners.find(r=>r.uid===tf.cat.uid);
+      let visualX=tf.x,visualY=tf.y,visualPose=tf.pounce?'play':(tf.moving?'walk':'idle');
+      if(route){
+        const pct=Math.min(1,this.duoRun.age/this.duoRun.duration);
+        // Outbound full-speed sprint, a contact leap, then a planted return.
+        const outbound=pct<.55;
+        const alpha=outbound?pct/.55:(1-pct)/.45;
+        const eased=Math.sin(Math.max(0,alpha)*Math.PI*.5);
+        visualX=outbound?route.fromX+(route.toX-route.fromX)*eased
+          :route.fromX+(route.toX-route.fromX)*eased;
+        visualY=outbound?route.fromY+(route.toY-route.fromY)*eased
+          :route.fromY+(route.toY-route.fromY)*eased;
+        visualPose=pct>.46&&pct<.65?'play':'run';
+      }
       ctx.save();
       if (!isMe) ctx.globalAlpha = 0.9;
       if (tf.inv > 0 && Math.floor(this.t * 20) % 2 === 0) ctx.globalAlpha = 0.5;
       if (tf.hitFlash > 0) ctx.globalAlpha = 0.5;
       // active cat gets a soft golden ground ring so you know who you control
-      if (isMe) { ctx.fillStyle = 'rgba(255,211,107,0.22)'; ctx.beginPath(); ctx.ellipse(tf.x, tf.y + 30, 26, 9, 0, 0, Math.PI * 2); ctx.fill(); }
-      CatArt.drawCat(ctx, tf.x, tf.y, { species: sp2, scale: 1.1, face: (Math.cos(fAim) < 0 ? -1 : 1), t: tf.t != null ? tf.t : this.t, pose: tf.pounce ? 'play' : (tf.moving ? 'walk' : 'idle'), mood: 'happy' });
+      if (isMe) { ctx.fillStyle = 'rgba(255,211,107,0.13)'; ctx.beginPath(); ctx.ellipse(visualX,visualY+3,27,7,0,0,Math.PI*2);ctx.fill(); }
+      const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.55?1:-1)<0?-1:1
+        :(tf.face||(Math.cos(fAim)<0?-1:1));
+      (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
+        species:sp2,scale:1.04,face:visualFace,t:tf.t||this.t,
+        pose:visualPose,motion:route?1:(tf.moving?.86:0),
+        stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
+      });
       ctx.restore();
       const sym = this.elemSymbol(tf.element);
       this.hpTag(ctx, tf.x, tf.y - 42, tf.hp / tf.maxhp, isMe ? '#ffd36b' : '#9be7c4', `${sym} ${State.catName(tf.cat)}${isMe ? ' ◀' : ''}`);
