@@ -386,6 +386,17 @@ if(!townCompact.includes('let opened=\'\',focusedResident=null')||
    !townCompactCss.includes('.app .resident-compare-row')||
    !townCompactCss.includes('.app .resident-focus-card'))
  throw Error('Resident avatar must open only one profile, with a separate all-five comparison');
+for(const marker of ['HOME=[0,2,4,20,24]','HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4}','window.TownV5Actions={selectWish}','if(tenant){tile.onclick','function rareUnlocked()','LEGENDARY_WISHES.includes(id)']){
+ if(!townV4.includes(marker))throw Error('Tiny Town homes or usable legendary wishes missing: '+marker);
+}
+for(const marker of ['function legendaryPanel(','data-legend-wish','function openResident(index,source)','window.TownV5={boot,render,toggle,openResident}']){
+ if(!townCompact.includes(marker))throw Error('Tiny Town legend collection or resident home links missing: '+marker);
+}
+if(!tinyMusicPage.includes('id="tabLegends"')||
+   !townCompactCss.includes('.app .tile.resident-home')||
+   !townCompactCss.includes('.app .legend-wish-list')||
+   !townCompactCss.includes('.app #tabLegends.unlocked'))
+ throw Error('Visible legendary catalog or resident nameplates missing');
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||

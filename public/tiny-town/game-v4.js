@@ -1,7 +1,11 @@
 /* Tiny Town: Wish Cascade v4 — bilingual, no dependencies */
 (()=>{
 'use strict';
-const $=id=>document.getElementById(id),HOME=[0,4,20,24], CENTER=12;
+const $=id=>document.getElementById(id),HOME=[0,2,4,20,24], CENTER=12;
+const HOME_RESIDENT={0:0,2:3,4:1,20:2,24:4};
+const LEGENDARY_WISHES=['star','tower','flight','night'];
+function rareUnlocked(){return !!(S&&(S.wonder>=55||S.memories.some(m=>m.i===2)));}
+
 const data=[
 ['cats','🐈','猫咪自由','Cat Freedom','每户都欢迎猫咪','Cats may enter anywhere',11,1,'cat'],
 ['music','🎸','随处演出','Music Everywhere','在任何地方开演唱会','Play music anywhere',14,-1,'party'],
@@ -188,8 +192,8 @@ function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>
 function offers(){
  if(S.day===1)return ['beach','voyage','garden'];
  const used=new Set(S.places.map(p=>p.id)),last=S.places[S.places.length-1].id;
- const advanced=['star','tower','flight','night'];
- const unlocked=S.wonder>=55||S.memories.some(m=>m.i===2);
+ const advanced=LEGENDARY_WISHES;
+ const unlocked=rareUnlocked();
  const available=data.filter(c=>!used.has(c.id)&&(unlocked||!advanced.includes(c.id))).map(c=>c.id);
  const related=sample(available.filter(id=>pair(id,last)),S.seed+S.day*47);
  const recent=S.journeys[S.journeys.length-1];
@@ -231,23 +235,33 @@ function renderBoard(){
  const board=$('board');board.innerHTML='';
  const placed=new Map(S.places.map(p=>[p.pos,byId[p.id]]));
  for(let p=0;p<25;p++){
-  const home=HOME.includes(p),center=p===CENTER,building=placed.get(p),moving=selected==='relocate',free=!!selected&&!home&&!center&&!building&&(!moving||S.relocateFrom!==null),combos=free&&!moving?newPairs(selected,p):[];
+  const home=HOME.includes(p),residentIndex=home?HOME_RESIDENT[p]:null,tenant=residentIndex!==null?residents[residentIndex]:null,center=p===CENTER,building=placed.get(p),moving=selected==='relocate',free=!!selected&&!home&&!center&&!building&&(!moving||S.relocateFrom!==null),combos=free&&!moving?newPairs(selected,p):[];
   const tile=document.createElement('button');tile.type='button';tile.dataset.pos=p;
-  tile.className='tile'+(home?' house':'')+(center?' plaza':'')+(building?' built':'')+(free?' target':'')+(combos.length?' jackpot':'')+(moving&&building?' movable':'')+(p===S.lastBuilt?' just-built':'')+(p===S.highlight?' combo-spark':'');
-  tile.disabled=!free&&!(moving&&building);tile.setAttribute('aria-label',home?t('House','小屋'):center?t('Town square','广场'):building?t(building.en,building.zh):t('Empty plot','空地'));
+  tile.className='tile'+(home?' house resident-home':'')+(center?' plaza':'')+(building?' built':'')+(free?' target':'')+(combos.length?' jackpot':'')+(moving&&building?' movable':'')+(p===S.lastBuilt?' just-built':'')+(p===S.highlight?' combo-spark':'');
+   if(tenant)tile.dataset.resident=residentIndex;
+  tile.disabled=!free&&!(moving&&building)&&!home;tile.setAttribute('aria-label',tenant?tenant.name+t("'s home. View resident profile.",'的家，点击查看居民档案。'):center?t('Town square','广场'):building?t(building.en,building.zh):t('Empty plot','空地'));
   let icon=home?'🏡':center?'⛲':building?building.icon:free?combos.length?'✦':'+':'·';
-  tile.innerHTML='<span class="tile-icon">'+icon+'</span>'+(home||center||building?'<span class="tile-name">'+(home?t('Home','居民'):center?t('Square','广场'):t(building.en,building.zh))+'</span>':'')+(building?'<span class="tile-people">'+residents.filter(r=>r.likes.includes(building.id)).slice(0,2).map(r=>r.face).join('')+'</span>':'')+(combos.length?'<span class="combo-dot">+'+combos.reduce((n,c)=>n+c.bonus,0)+'</span>':'');
-  if(free||moving&&building){tile.onclick=()=>moving?relocate(p):place(p);if(!moving){tile.onmouseenter=()=>preview(p);tile.onfocus=()=>preview(p);}}
+  tile.innerHTML='<span class="tile-icon">'+icon+'</span>'+(home||center||building?'<span class="tile-name">'+(tenant?esc(tenant.name):center?t('Square','广场'):t(building.en,building.zh))+'</span>':'')+(tenant?'<span class="home-face">'+tenant.face+'</span>':'')+(building?'<span class="tile-people">'+residents.filter(r=>r.likes.includes(building.id)).slice(0,2).map(r=>r.face).join('')+'</span>':'')+(combos.length?'<span class="combo-dot">+'+combos.reduce((n,c)=>n+c.bonus,0)+'</span>':'');
+  if(tenant){tile.onclick=()=>window.TownV5?.openResident?.(residentIndex,'house');}
+   else if(free||moving&&building){tile.onclick=()=>moving?relocate(p):place(p);if(!moving){tile.onmouseenter=()=>preview(p);tile.onfocus=()=>preview(p);}}
   board.appendChild(tile);
  }
 }
+function selectWish(id){
+ if(!S||!S.started||S.ended||!byId[id]||selected==='relocate'||S.places.some(p=>p.id===id))return false;
+ if(LEGENDARY_WISHES.includes(id)&&!rareUnlocked())return false;
+ if(!LEGENDARY_WISHES.includes(id)&&!offers().includes(id))return false;
+ selected=id;send('town_wish_selected',{week:S.day,legendary:LEGENDARY_WISHES.includes(id)});render();preview(-1);return true;
+}
 function renderCards(){
  const el=$('cards');el.innerHTML='';if(S.ended||selected==='relocate')return;
- for(const id of offers()){
-  const c=byId[id],b=document.createElement('button');b.type='button';b.className='wish-card'+(id===selected?' selected':'');b.setAttribute('aria-pressed',String(id===selected));
+ const shown=offers();
+  if(selected&&LEGENDARY_WISHES.includes(selected)&&!shown.includes(selected))shown[2]=selected;
+  for(const id of shown){
+  const c=byId[id],b=document.createElement('button');b.type='button';b.className='wish-card'+(id===selected?' selected':'')+(LEGENDARY_WISHES.includes(id)?' legendary-card':'');b.setAttribute('aria-pressed',String(id===selected));
   const fans=residents.filter(r=>r.likes.includes(id)),critics=residents.filter(r=>r.dislikes.includes(id));
-  b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b><small>'+t(c.descEn,c.descZh)+'</small><em>'+t('Wonder +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · Harmony '+(c.peace>=0?'+':'')+c.peace,'奇想 +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · 和谐 '+(c.peace>=0?'+':'')+c.peace)+'</em><span class="wish-reactions">'+(fans.length?'<span class="fan">♥ '+fans.map(x=>x.name).join('、')+'</span>':'')+(critics.length?'<span class="critic">− '+critics.map(x=>x.name).join('、')+'</span>':'')+'</span></span><span class="wish-next">›</span>';
-  b.onclick=()=>{selected=id;send('town_wish_selected',{week:S.day});render();preview(-1);};
+  b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b>'+(LEGENDARY_WISHES.includes(id)?'<small class="rare-mark">'+t('✦ LEGENDARY','✦ 传奇')+'</small>':'')+'<small>'+t(c.descEn,c.descZh)+'</small><em>'+t('Wonder +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · Harmony '+(c.peace>=0?'+':'')+c.peace,'奇想 +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · 和谐 '+(c.peace>=0?'+':'')+c.peace)+'</em><span class="wish-reactions">'+(fans.length?'<span class="fan">♥ '+fans.map(x=>x.name).join('、')+'</span>':'')+(critics.length?'<span class="critic">− '+critics.map(x=>x.name).join('、')+'</span>':'')+'</span></span><span class="wish-next">›</span>';
+  b.onclick=()=>selectWish(id);
   el.appendChild(b);
  }
  $('pickHint').textContent=selected?t('Touch the landscape to bring it to life.','点击地图，让这个愿望成为现实。'):t('Three beautiful possibilities. Which sounds like you?','三种美好的生活，你更想体验哪一种？');
@@ -456,6 +470,7 @@ function boot(){
  window.addEventListener('pagehide',()=>{if(S?.started&&!S.ended)send('town_exit-week-'+S.day,{week:S.day});});
  render();
 }
-window.TownV5State=()=>({S,selected,residents,byId,combinations,legends,offers,memories:S?.memories||[]});
+window.TownV5State=()=>({S,selected,residents,byId,combinations,legends,offers,memories:S?.memories||[],legendaryWishes:LEGENDARY_WISHES,rareUnlocked:rareUnlocked()});
+window.TownV5Actions={selectWish};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

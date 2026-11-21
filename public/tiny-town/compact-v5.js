@@ -70,19 +70,43 @@ function oneResident(residents,index,s,byId,wish){
  '<p class="inspect-note">'+t('This person’s likes, dislikes, and mood are visible from the beginning. No hidden traits.','这位居民的喜好和心情从一开始就公开，没有故意隐藏特性。')+'</p>';
 }
 
+
+function legendaryPanel(v){
+ const {S,byId,legendaryWishes,rareUnlocked,selected}=v;
+ const used=new Set(S.places.map(p=>p.id));
+ const progress=Math.min(55,S.wonder),percent=Math.round(progress/55*100);
+ const builtCount=legendaryWishes.filter(id=>used.has(id)).length;
+ const note=rareUnlocked?t('Unlocked! Pick any unused legendary wish, then place it on the map. It takes one day, just like a regular wish.','已解锁！可直接选择任意尚未建造的传奇愿望，然后放到地图上。它和普通愿望一样占用一天。'):t('Collect 55 imagination, or discover the rare third souvenir during a free day, to unlock all four.','积累 55 点想象力，或在自由日发现第三种稀有纪念品，即可解锁全部四种传奇愿望。');
+ return '<p class="inspect-intro">'+note+'</p>'+
+  '<div class="legend-unlock-status"><div><strong>'+(rareUnlocked?t('✦ LEGENDARY WISHES UNLOCKED','✦ 传奇愿望已解锁'):t('✧ YOUR NEXT MILESTONE','✧ 解锁传奇愿望'))+'</strong><b>'+S.wonder+' / 55</b></div>'+
+  '<div class="legend-progress"><span style="width:'+percent+'%"></span></div>'+
+  '<small>'+t('Already built','已建造')+' '+builtCount+' / '+legendaryWishes.length+(rareUnlocked?t(' · READY TO USE',' · 可以使用'):'')+'</small></div>'+
+  '<div class="legend-wish-list">'+legendaryWishes.map(id=>{
+   const c=byId[id],built=used.has(id),locked=!rareUnlocked,disabled=built||locked||!S.started||S.ended,active=selected===id;
+   const status=built?t('Already built','已建造'):locked?t('Locked','未解锁'):active?t('Selected · place on map','已选中 · 去地图放置'):t('Select & place','选择并建造');
+   return '<article class="legend-wish '+(built?'built':'')+(active?' active':'')+(locked?' locked':'')+'">'+
+    '<div class="legend-wish-symbol">'+c.icon+'</div><div class="legend-wish-copy"><strong>'+quote(t(c.en,c.zh))+'</strong><p>'+quote(t(c.descEn,c.descZh))+'</p>'+
+    '<small>'+t('Imagination','想象力')+' +'+c.joy+' · '+t('Harmony','友爱')+' '+(c.peace>=0?'+':'')+c.peace+'</small></div>'+
+    '<button type="button" class="legend-wish-action" data-legend-wish="'+id+'" '+(disabled?'disabled aria-disabled="true"':'')+'>'+status+'</button>'+
+    '</article>';
+  }).join('')+'</div>'+
+  '<p class="inspect-note">'+t('Legendary wishes also participate in adjacency combos and can unlock incredible three-wish spectacles.','传奇愿望也能参与建筑组合，并触发三个相连愿望形成的城市级奇观。')+'</p>';
+}
+
 function inspect(){
  const view=state();if(!view)return;
  const {S,residents,byId}=view,pane=$('townInspector'),content=$('inspectorContent');
  if(!pane||!content)return;
  pane.hidden=!opened;
- for(const [name,key] of [['tabResidents','residents'],['tabMemories','memories'],['tabDiscoveries','discoveries']]){
+ for(const [name,key] of [['tabResidents','residents'],['tabMemories','memories'],['tabDiscoveries','discoveries'],['tabLegends','legends']]){
   const el=$(name);if(el){el.setAttribute('aria-expanded',String(opened===key));el.classList.toggle('active',opened===key);}
  }
  if(!opened)return;
  $('inspectorTitle').textContent={
   residents:t('Meet your neighbors','认识居民'),
   memories:t('Your memory book','自由生活纪念册'),
-  discoveries:t('How the town works','数值与发现')
+  discoveries:t('How the town works','数值与发现'),
+  legends:t('Legendary wishes','传奇愿望')
  }[opened];
  if(opened==='residents'){
   const focused=Number.isInteger(focusedResident)&&focusedResident>=0&&focusedResident<residents.length?focusedResident:null;
@@ -99,6 +123,8 @@ function inspect(){
    (memories.length?'<div class="inspect-souvenirs">'+memories.map(m=>'<div><span>'+m.icon+'</span><small>'+quote(t(m.en,m.zh))+'</small></div>').join('')+'</div>':
    '<div class="inspect-empty">'+t('No souvenirs yet. Take your time.','还没有纪念品。慢慢来，想去哪儿就去哪儿。')+'</div>')+
    '<p class="inspect-note">'+t('Discover the first detail: +8 imagination. Second: +1 harmony. Third: +6 imagination and an early rare-wish unlock. You can return at any time.','第一个发现：想象力 +8；第二个：友爱 +1；第三个：想象力 +6，并能提前解锁传奇愿望。随时都可以返回。')+'</p>';
+ }else if(opened==='legends'){
+  content.innerHTML=legendaryPanel(view);
  }else{
   content.innerHTML='<div class="inspect-mechanics">'+
    '<section><strong>✨ '+t('Imagination','想象力')+' · '+S.wonder+'</strong><p>'+t('Reach 55 to unlock rare wishes: Flying Day, Stargazing Tower, and Midnight Market. Build adjacent combos to earn more.','达到 55 可解锁飞行自由日、观星塔、午夜市集等传奇愿望。相邻建造相关愿望，可以更快积累想象力。')+'</p></section>'+
@@ -119,6 +145,13 @@ function render(){
  const news=s.news[0];if($('liveNotice'))$('liveNotice').textContent=news?t(news.en,news.zh):t('Choose a wish, then touch a glowing plot.','选一个愿望，再点击地图上的发光空地。');
  if($('tabMemories'))$('tabMemories').textContent=t('Memories','回忆')+' · '+s.memories.length;
  if($('tabDiscoveries'))$('tabDiscoveries').textContent=t('Wonders','发现')+' · '+(s.found.length+s.legends.length);
+ const legendary=$('tabLegends');
+ if(legendary){
+  const unlocked=view.rareUnlocked;
+  legendary.textContent=unlocked?t('✦ Legends','✦ 传奇 ✓'):t('✧ Legends','✧ 传奇 🔒');
+  legendary.classList.toggle('unlocked',unlocked);
+  legendary.setAttribute('aria-label',unlocked?t('View and select four unlocked legendary wishes','查看并使用已解锁的四个传奇愿望'):t('View four legendary wishes and unlocking requirements','查看四个传奇愿望及解锁条件'));
+ }
  inspect();
 }
 function toggle(section){
@@ -131,17 +164,33 @@ function toggle(section){
  inspect();
  if(opened){$('closeInspector')?.focus();window.arcadeMetric?.('town_info_open',{section});}
 }
+function openResident(index,source){
+ const v=state();
+ if(!v||!Number.isInteger(index)||index<0||index>=v.residents.length)return false;
+ focusedResident=index;opened='residents';inspect();
+ $('closeInspector')?.focus();
+ window.arcadeMetric?.('town_resident_profile_open',{resident:index,source:source||'avatar'});
+ return true;
+}
 function boot(){
  $('residentRibbonPeople')?.addEventListener('click',e=>{
   const btn=e.target.closest?.('[data-resident]');
   if(!btn)return;
   const index=Number(btn.dataset.resident);
   if(!Number.isInteger(index)||index<0||index>=state()?.residents.length)return;
-  focusedResident=index;opened='residents';inspect();
-  $('closeInspector')?.focus();
-  window.arcadeMetric?.('town_resident_profile_open',{resident:index});
+  openResident(index,'avatar');
  });
  $('inspectorContent')?.addEventListener('click',event=>{
+  const legend=event.target.closest?.('[data-legend-wish]');
+  if(legend){
+   const id=legend.dataset.legendWish;
+   const chosen=window.TownV5Actions?.selectWish?.(id);
+   if(chosen){
+    opened='';focusedResident=null;inspect();
+    window.arcadeMetric?.('town_legendary_wish_chosen',{wish:id});
+   }
+   return;
+  }
   const back=event.target.closest?.('[data-residents-all]');
   if(back){focusedResident=null;opened='residents';inspect();return;}
   const row=event.target.closest?.('[data-resident-profile]');
@@ -152,11 +201,12 @@ function boot(){
   $('inspectorContent').scrollTop=0;
   window.arcadeMetric?.('town_resident_profile_open',{resident:index});
  });
- for(const [id,key] of [['tabResidents','residents'],['tabMemories','memories'],['tabDiscoveries','discoveries']])$(id)?.addEventListener('click',()=>toggle(key));
- for(const id of ['wonderStat','peaceStat','comboStat'])$(id)?.addEventListener('click',()=>{opened='discoveries';inspect();$('closeInspector')?.focus();});
+ for(const [id,key] of [['tabResidents','residents'],['tabMemories','memories'],['tabDiscoveries','discoveries'],['tabLegends','legends']])$(id)?.addEventListener('click',()=>toggle(key));
+ $('wonderStat')?.addEventListener('click',()=>{opened='legends';inspect();$('closeInspector')?.focus();});
+ for(const id of ['peaceStat','comboStat'])$(id)?.addEventListener('click',()=>{opened='discoveries';inspect();$('closeInspector')?.focus();});
  $('closeInspector')?.addEventListener('click',()=>{opened='';focusedResident=null;inspect();});
  $('townInspector')?.addEventListener('keydown',event=>{if(event.key==='Escape'){opened='';focusedResident=null;inspect();$('tabResidents')?.focus();}});
  window.addEventListener('morrowwish-language-change',()=>render());
 }
-window.TownV5={boot,render,toggle};
+window.TownV5={boot,render,toggle,openResident};
 })();
