@@ -85,9 +85,9 @@ const legends=[
  {ids:['beach','music','cafe'],zh:'海边举办了永不落幕的音乐节！',en:'THE BEACH FESTIVAL NEVER ENDS!',vibe:'party',icon:'🌅',captionZh:'海风、吉他、晚霞，谁也不着急回家。',captionEn:'Sea breeze and guitars. Nobody needs to go home.'}
 ];
 const charters=[
- {id:'wonder',icon:'🎲',en:'Unrestricted experiments',zh:'放飞想象',descEn:'Wild wishes score +6, but harmony drops faster.',descZh:'大胆的愿望 +6 奇想，但更容易产生冲突。'},
- {id:'care',icon:'🤝',en:'Freedom for everyone',zh:'共同的自由',descEn:'Your first combo each day restores 1 harmony.',descZh:'每天第一次触发组合，恢复 1 点和谐。'},
- {id:'dream',icon:'✨',en:'Dream bigger',zh:'大胆造梦',descEn:'Epic three-wish wonders gain +30 bonus.',descZh:'三个愿望形成大型奇观时，额外获得 30 奇想。'}
+ {id:'wonder',icon:'🎉',en:'Chaos, please',zh:'想疯就疯',descEn:'Bold wishes give +6 imagination, −1 harmony.',descZh:'大胆愿望：想象力额外 +6、友爱额外 −1。'},
+ {id:'care',icon:'🛋️',en:'Nap first',zh:'先躺为敬',descEn:'First cozy wish each day: +4 imagination, +1 harmony.',descZh:'每天首个舒心愿望：想象力 +4、友爱 +1。'},
+ {id:'dream',icon:'🚀',en:'Make it impossible',zh:'离谱一点才好玩',descEn:'Epic wonders give +30 imagination.',descZh:'大型奇观：想象力额外 +30。'}
 ];
 const petitions={
  2:{zh:'Mia 想看看某种新奇的组合',en:'Mia hopes to see an unexpected combination',passes:()=>S.found.length>=1},
@@ -116,7 +116,7 @@ function processCombos(card,pos){
  if(matches.length){
   send('town_combo_found',{week:S.day});
   if(S.found.length===matches.length)send('town_first-club');
-  if(S.law==='care'&&S.lastComboDay!==S.day){S.lastComboDay=S.day;S.peace=Math.min(10,S.peace+1);}
+  /* Cozy bonus is applied to the first peaceful wish, not to combos. */
   news('✨ '+matches.map(c=>c.en).join(' + ')+'!','✨ '+matches.map(c=>c.zh).join(' + ')+'！');
   if(S.found.length<=2)overlays.push({kind:'combo',match:matches[0]});
  }
@@ -188,9 +188,13 @@ function finalLayers(){
  return collections+scenic;
 }
 
-function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],memories:[],scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
+function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],memories:[],scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,lastComfortDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
 function offers(){
- if(S.day===1)return ['beach','voyage','garden'];
+ if(S.day===1){
+  if(S.law==='wonder')return ['music','beach','garden'];
+  if(S.law==='dream')return ['voyage','garden','cats'];
+  return ['beach','picnic','garden'];
+ }
  const used=new Set(S.places.map(p=>p.id)),last=S.places[S.places.length-1].id;
  const advanced=LEGENDARY_WISHES;
  const unlocked=rareUnlocked();
@@ -202,6 +206,11 @@ function offers(){
  const almost=legends.filter(l=>l.ids.filter(id=>used.has(id)).length===2).flatMap(l=>l.ids.filter(id=>available.includes(id)));
  const rare=unlocked?sample(available.filter(id=>advanced.includes(id)),S.seed+S.day*97):[];
  return [...new Set(almost.slice(0,1).concat(rare.slice(0,1),hinted.slice(0,1),related,sample(available,S.seed+S.day*113)))].slice(0,3);
+}
+function wishEffect(card){
+ const bold=S.law==='wonder'&&card.peace<0;
+ const cozy=S.law==='care'&&card.peace>0&&S.lastComfortDay!==S.day;
+ return {wonder:card.joy+(bold?6:0)+(cozy?4:0),peace:card.peace-(bold?1:0)+(cozy?1:0),cozy};
 }
 function newPairs(id,pos){return S.places.filter(p=>adjacent(pos,p.pos)).map(p=>pair(id,p.id)).filter(c=>c&&!S.found.some(f=>f.key===c.key));}
 function type(){const totals={cat:0,sky:0,party:0,art:0,calm:0};S.places.forEach(p=>totals[byId[p.id].vibe]+=2);S.found.forEach(f=>totals[f.vibe]+=4);S.legends.forEach(l=>totals[l.vibe]+=24); if(S.journeys.length){const scenic={sea:'calm',mountain:'calm',train:'sky',stars:'sky',festival:'party',meadow:'calm',rest:'calm'};totals[scenic[S.journeys.at(-1)]]+=5;}if(S.places.length)totals[byId[S.places[0].id].vibe]+=14;if(S.peace<=2&&S.found.length)return 'chaos';return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0];}
@@ -259,8 +268,8 @@ function renderCards(){
   if(selected&&LEGENDARY_WISHES.includes(selected)&&!shown.includes(selected))shown[2]=selected;
   for(const id of shown){
   const c=byId[id],b=document.createElement('button');b.type='button';b.className='wish-card'+(id===selected?' selected':'')+(LEGENDARY_WISHES.includes(id)?' legendary-card':'');b.setAttribute('aria-pressed',String(id===selected));
-  const fans=residents.filter(r=>r.likes.includes(id)),critics=residents.filter(r=>r.dislikes.includes(id));
-  b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b>'+(LEGENDARY_WISHES.includes(id)?'<small class="rare-mark">'+t('✦ LEGENDARY','✦ 传奇')+'</small>':'')+'<small>'+t(c.descEn,c.descZh)+'</small><em>'+t('Wonder +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · Harmony '+(c.peace>=0?'+':'')+c.peace,'奇想 +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · 和谐 '+(c.peace>=0?'+':'')+c.peace)+'</em><span class="wish-reactions">'+(fans.length?'<span class="fan">♥ '+fans.map(x=>x.name).join('、')+'</span>':'')+(critics.length?'<span class="critic">− '+critics.map(x=>x.name).join('、')+'</span>':'')+'</span></span><span class="wish-next">›</span>';
+  const fans=residents.filter(r=>r.likes.includes(id)),critics=residents.filter(r=>r.dislikes.includes(id)),effect=wishEffect(c);
+  b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b>'+(LEGENDARY_WISHES.includes(id)?'<small class="rare-mark">'+t('✦ LEGENDARY','✦ 传奇')+'</small>':'')+'<small>'+t(c.descEn,c.descZh)+'</small><em>'+t('Imagination +'+effect.wonder+' · Harmony '+(effect.peace>=0?'+':'')+effect.peace,'想象力 +'+effect.wonder+' · 友爱 '+(effect.peace>=0?'+':'')+effect.peace)+'</em><span class="wish-reactions">'+(fans.length?'<span class="fan">♥ '+fans.map(x=>x.name).join('、')+'</span>':'')+(critics.length?'<span class="critic">− '+critics.map(x=>x.name).join('、')+'</span>':'')+'</span></span><span class="wish-next">›</span>';
   b.onclick=()=>selectWish(id);
   el.appendChild(b);
  }
@@ -271,13 +280,18 @@ function renderNews(){
  $('discoveries').innerHTML=S.found.length?S.found.slice(-3).reverse().map(c=>'<span class="discovery">✦ '+esc(t(c.en,c.zh))+'</span>').join(''):'<span class="discover-empty">'+t('Secret combinations are hiding everywhere…','奇妙组合藏在地图的每个角落…')+'</span>';
 }
 function preview(pos){
- if(!selected)return;const c=byId[selected],extra=pos<0?[]:newPairs(selected,pos),gain=extra.reduce((n,q)=>n+q.bonus,0);
- $('preview').innerHTML='<b>'+c.icon+' '+esc(t(c.en,c.zh))+'</b><span>+'+c.joy+' '+t('wonder','奇想')+' · '+(c.peace>=0?'+':'')+c.peace+' '+t('harmony','和谐')+'</span>'+(gain?'<strong class="preview-gain">✦ '+extra.map(x=>esc(t(x.en,x.zh))).join('、')+' +'+gain+'</strong>':'');
+ if(!selected||!byId[selected])return;const c=byId[selected],effect=wishEffect(c),extra=pos<0?[]:newPairs(selected,pos),gain=extra.reduce((n,q)=>n+q.bonus,0);
+ $('preview').innerHTML='<b>'+c.icon+' '+esc(t(c.en,c.zh))+'</b><span>+'+effect.wonder+' '+t('imagination','想象力')+' · '+(effect.peace>=0?'+':'')+effect.peace+' '+t('harmony','友爱')+'</span>'+(gain?'<strong class="preview-gain">✦ '+extra.map(x=>esc(t(x.en,x.zh))).join('、')+' +'+gain+'</strong>':'');
 }
 function news(en,zh){S.news.unshift({en,zh});S.news=S.news.slice(0,2);}
 function place(pos){
  if(!S.started||S.ended||!selected||HOME.includes(pos)||pos===CENTER||S.places.some(q=>q.pos===pos))return;
- const card=byId[selected],matches=newPairs(card.id,pos);S.places.push({id:card.id,pos});S.lastBuilt=pos;S.highlight=-1;S.wonder+=card.joy+(S.law==='wonder'&&card.peace<0?6:0);S.peace=Math.min(10,Math.max(0,S.peace+card.peace-(S.law==='wonder'&&card.peace<0?1:0)));processResidents(card);
+ const card=byId[selected],matches=newPairs(card.id,pos),effect=wishEffect(card);
+ S.places.push({id:card.id,pos});S.lastBuilt=pos;S.highlight=-1;
+ S.wonder+=effect.wonder;
+ S.peace=Math.min(10,Math.max(0,S.peace+effect.peace));
+ if(effect.cozy)S.lastComfortDay=S.day;
+ processResidents(card);
  if(S.day===1)send('town_started',{week:1});
  send('town_week-'+S.day,{week:S.day,score:S.wonder});
  if(S.day===2)send('town_second-wish',{week:2});
@@ -375,8 +389,8 @@ function showOverlay(){
 }
 function chooseEvent(decision){
  S.events.push(decision);
- if(decision==='care'){S.peace=Math.min(10,S.peace+2);S.wonder+=6;S.moods=S.moods.map(m=>Math.min(6,m+1));S.law='care';news('Neighbors built a quiet corner together.','居民共同保留了一处安静角落。');}
- else{S.peace=Math.max(0,S.peace-2);S.wonder+=24;S.law='wonder';news('The celebration filled every street!','热闹的庆典占满了整条街！');}
+ if(decision==='care'){S.peace=Math.min(10,S.peace+2);S.wonder+=6;S.moods=S.moods.map(m=>Math.min(6,m+1));news('Neighbors built a quiet corner together.','居民共同保留了一处安静角落。');}
+ else{S.peace=Math.max(0,S.peace-2);S.wonder+=24;news('The celebration filled every street!','热闹的庆典占满了整条街！');}
  send('town_event_decided',{week:S.day});nextOverlay();
 }
 function nextOverlay(){overlays.shift();$('storyModal').classList.remove('show');if(overlays.length)showOverlay();else if(S.advanceAfterOverlay){S.advanceAfterOverlay=false;advance();}else render();}
@@ -451,14 +465,24 @@ function postcard(){
  picture.src='/art/tiny-town-scene.svg';
  send('town_postcard_clicked');
 }
-function start(){S.law=document.querySelector('[data-law].active')?.dataset.law||'care';S.started=true;$('intro').hidden=true;send('town_charter_'+S.law);render();}
+function start(){
+ S.law=document.querySelector('[data-law].active')?.dataset.law||'care';
+ S.started=true;$('intro').hidden=true;
+ const firstThought={
+  wonder:['No alarms. No rules. Time to make a little trouble!','没有闹钟，也没有规矩。先闹个痛快！'],
+  care:['Sleeping in is a perfectly good plan.','睡到自然醒，就是今天最棒的计划。'],
+  dream:['What if this little town could do the impossible?','如果这座小镇能把不可能变成日常呢？']
+ };
+ news(...firstThought[S.law]);
+ send('town_charter_'+S.law);render();
+}
 function restart(){
  if(S?.started&&!S.ended)send('town_restarted-early',{week:S.day});if(S?.ended)send('town_replayed');
  S=fresh();selected='';overlays=[];$('end').classList.remove('show');$('storyModal').classList.remove('show');$('intro').hidden=true;S.started=true;send('game_retry');render();
 }
 function boot(){
  S=fresh();window.TownV5?.boot?.();
- document.querySelectorAll('[data-law]').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('[data-law]').forEach(n=>n.classList.toggle('active',n===el));}));
+ document.querySelectorAll('[data-law]').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('[data-law]').forEach(n=>{n.classList.toggle('active',n===el);n.setAttribute('aria-pressed',String(n===el));});}));
  $('moveWish').onclick=()=>{if(!S.started||S.ended||S.relocateUsed||S.day<3)return;selected=selected==='relocate'?'':'relocate';S.relocateFrom=null;render();};
  $('introStart').onclick=start;$('retry').onclick=restart;$('newAgain').onclick=restart;
  $('shareGame').onclick=share;$('shareEnding').onclick=share;$('savePostcard').onclick=postcard;

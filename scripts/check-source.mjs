@@ -397,6 +397,17 @@ if(!tinyMusicPage.includes('id="tabLegends"')||
    !townCompactCss.includes('.app .legend-wish-list')||
    !townCompactCss.includes('.app #tabLegends.unlocked'))
  throw Error('Visible legendary catalog or resident nameplates missing');
+for(const marker of ['data-law="wonder"','data-law="care"','data-law="dream"','data-zh="想疯就疯"','data-zh="先躺为敬"','data-zh="离谱一点才好玩"','charter-flavor','charter-bonus']){
+ if(!tinyMusicPage.includes(marker))throw Error('Playful starting style or visible perk is missing: '+marker);
+}
+for(const marker of ['function wishEffect(card)','lastComfortDay:-1','if(effect.cozy)S.lastComfortDay=S.day','S.law===\'wonder\'','S.law===\'care\'','if(S.law===\'dream\')','const firstThought=']){
+ if(!townV4.includes(marker))throw Error('Distinct starting-style gameplay is missing: '+marker);
+}
+if(townV4.includes("S.law='care';news(")||townV4.includes("S.law='wonder';news("))
+ throw Error('Random story events cannot override the player's opening playstyle');
+if(!townCompactCss.includes('#intro .charter .charter-bonus')||
+   !townCompactCss.includes('#intro .charter .charter-flavor'))
+ throw Error('Starting choice effects must be visible on mobile and desktop');
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||
