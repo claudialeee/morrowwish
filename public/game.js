@@ -40,8 +40,15 @@ down(x,y){
  // A lane is a full-size tap target in both orientations. Mobile players
  // should never have to grab a 58px parcel while it is falling.
  let grabbed=null;
- for(let i=parcels.length-1;i>=0;i--){
-  const p=parcels[i];if(Math.abs(x-p.x)<58&&Math.abs(y-p.y)<53){grabbed=p;break;}
+ // Touch users always tap the FULL lane; do not accidentally grab a falling
+ // parcel on a phone (that made perfectly valid lane taps appear ignored).
+ // Mouse/trackpad users retain the optional drag mechanic.
+ const touchFirst=portrait||navigator.maxTouchPoints>0||
+   window.matchMedia?.('(pointer:coarse)').matches;
+ if(!touchFirst){
+  for(let i=parcels.length-1;i>=0;i--){
+   const p=parcels[i];if(Math.abs(x-p.x)<58&&Math.abs(y-p.y)<53){grabbed=p;break;}
+  }
  }
  if(grabbed){sel=grabbed;return;}
  if(!parcels.length)return;
