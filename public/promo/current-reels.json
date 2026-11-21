@@ -1,0 +1,19 @@
+{
+  "campaign": "morrow-wish-homepage-real-gameplay-2026-11-21",
+  "description": "Two authentic gameplay reels captured from current playable versions, for homepage discovery via social platforms.",
+  "capturedFromCommit": "447340aa5ce5de57e63e80c3e324e960f14dc153",
+  "games": [
+    {
+      "slug": "pawsibly-innocent",
+      "video": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
+      "cover": "/promo/pawsibly-innocent/viral-gameplay-20261121.jpg"
+    },
+    {
+      "slug": "cat-bond",
+      "video": "/promo/cat-bond/viral-gameplay-20261121.mp4",
+      "cover": "/promo/cat-bond/viral-gameplay-20261121.jpg"
+    }
+  ],
+  "cta": "https://morrowwish.vercel.app/",
+  "status": "generated-video-assets-ready-for-distribution"
+}
