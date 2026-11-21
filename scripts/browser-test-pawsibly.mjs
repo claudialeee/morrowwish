@@ -90,6 +90,45 @@ try{
  assert.equal(errors.length,0,'No uncaught exception after clicking');
  await page.locator('#menuButton').click();
  assert.equal(await page.locator('#gameMenu').isVisible(),true,'Menu opens in the game frame');
+ // The screenshot-reported issues: no clipped fifth tab, no overlapping cat
+ // descriptions, and no double yarn instruction / untranslated legend.
+ for(const viewport of [{width:1250,height:900},{width:570,height:720},{width:390,height:844}]){
+  await page.setViewportSize(viewport);
+  const layout=await page.evaluate(()=>{
+   const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
+   const nav=document.querySelector('.menu-tabs'),tabs=[...nav.querySelectorAll('button')];
+   return {nav:rect(nav),tabs:tabs.map(rect),screen:innerWidth,
+    menu:rect(document.querySelector('#gameMenu .menu-shell'))};
+  });
+  assert.equal(layout.tabs.length,5,'All five game tabs must remain present');
+  assert.ok(layout.tabs.every(t=>t.left>=layout.nav.left-2&&t.right<=layout.nav.right+2),
+   'All five tabs must be visible, not horizontally cut off at '+viewport.width);
+  assert.ok(layout.menu.left>=-2&&layout.menu.right<=layout.screen+2,
+   'Menu must remain within the viewport at '+viewport.width);
+  await page.locator('[data-game-tab="cats"]').click();
+  const catLayout=await page.evaluate(()=>{
+   const a=document.getElementById('skinHint'),b=document.getElementById('ability');
+   return {hint:a.getBoundingClientRect().toJSON(),ability:b.getBoundingClientRect().toJSON(),
+    cats:document.querySelectorAll('#wardrobe .skin').length,
+    grid:getComputedStyle(document.getElementById('wardrobe')).display};
+  });
+  assert.equal(catLayout.cats,5,'Cat gallery must show five cats');
+  assert.equal(catLayout.grid,'grid','Cat wardrobe should use a stable grid');
+  assert.ok(catLayout.ability.top>=catLayout.hint.bottom+3,
+   'Cat skill description must NOT overlap the unlock description at '+viewport.width);
+  await page.locator('[data-game-tab="help"]').click();
+  const helpLayout=await page.evaluate(()=>({
+   englishLegend:document.getElementById('helpLegend').textContent,
+   yarnDuplicateVisible:getComputedStyle(document.getElementById('yarnExplain')).display!=='none',
+   stepCount:document.querySelectorAll('[data-tab-panel="help"] .menu-help-step').length
+  }));
+  assert.equal(helpLayout.yarnDuplicateVisible,false,'Duplicate yarn help must be hidden');
+  assert.equal(helpLayout.stepCount,3,'Help must keep its three concise steps');
+  assert.ok(helpLayout.englishLegend.includes('fish'),'Help icon legend should be translated in English');
+ }
+ await page.setViewportSize({width:1250,height:900});
+ await page.locator('[data-game-tab="rooms"]').click();
+
  await page.locator('[data-game-tab="album"]').click();
  assert.equal(await page.locator('[data-tab-panel="album"]').isVisible(),true,'Album available inside game');
  await page.locator('[data-game-tab="badges"]').click();
@@ -166,7 +205,7 @@ try{
  console.log('English switch:',JSON.stringify(en));
  assert.equal(en.lang,'en');
  assert.ok(en.winScore.includes('Score'),'Victory score label must switch language');
- assert.ok(/owner/i.test(en.instructions)&&/chase/i.test(en.instructions)&&/footsteps/i.test(en.instructions),'English tutorial must explain sight-triggered pursuit and soft footstep investigation');
+ assert.ok(/owner/i.test(en.instructions)&&/chase/i.test(en.instructions)&&/pink/i.test(en.instructions),'English tutorial must explain sight-triggered pursuit and pink danger zones');
  assert.equal(errors.length,0,'Canvas and UI must be free of uncaught errors');
  await page.goto(new URL('/',url).toString(),{waitUntil:'load',timeout:40000});
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));await page.waitForTimeout(170);
