@@ -52,7 +52,7 @@ const playlists={
   broll('build',3.05,'EVERY DECISION CHANGES IT.'),
   cover(3.00,'SEVEN DAYS OF UNLIMITED LIFE.'),
   game(8.45,2.55,'AND THE TOWN BECOMES...'),
-  broll('story',2.10,'A STORY NO ONE PLANNED.'),
+  game(6.52,1.85,'A STORY NO ONE PLANNED.'),
   cover(2.95,'WHAT WOULD YOUR TOWN BECOME?'),
   cover(2.70,'NO MORE MONDAYS · PLAY FREE')
  ],
