@@ -1,6 +1,6 @@
 {
   "campaign": "morrow-wish-seven-verified-real-game-shorts-2026-11-21",
-  "description": "Seven distinct 9:16 short-form highlights made from the latest real, playable game versions. No retired games; no synthetic gameplay clips.",
+  "description": "Historical footage from the rejected 2026-11-21 drafts. Does not count toward approved or published campaign metrics. These clips require a visual/story recut; seven different licensed audio recordings have been verified for new revisions.",
   "verifiedAt": "2026-11-21T06:35:04Z",
   "generatorRuns": [
     44875411934,
@@ -11,65 +11,82 @@
       "slug": "pawsibly-innocent",
       "video": "/promo/pawsibly-innocent/viral-gameplay-20261121.mp4",
       "cover": "/promo/pawsibly-innocent/viral-gameplay-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     },
     {
       "slug": "cat-bond",
       "video": "/promo/cat-bond/viral-gameplay-20261121.mp4",
       "cover": "/promo/cat-bond/viral-gameplay-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     },
     {
       "slug": "tiny-town",
       "video": "/promo/tiny-town/highlight-20261121.mp4",
       "cover": "/promo/tiny-town/highlight-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     },
     {
       "slug": "elsewhere",
       "video": "/promo/elsewhere/highlight-20261121.mp4",
       "cover": "/promo/elsewhere/highlight-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     },
     {
       "slug": "flip-dash",
       "video": "/promo/flip-dash/highlight-20261121.mp4",
       "cover": "/promo/flip-dash/highlight-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     },
     {
       "slug": "parcel-panic",
       "video": "/promo/parcel-panic/highlight-20261121.mp4",
       "cover": "/promo/parcel-panic/highlight-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     },
     {
       "slug": "pocket-aquarium",
       "video": "/promo/pocket-aquarium/highlight-20261121.mp4",
       "cover": "/promo/pocket-aquarium/highlight-20261121.jpg",
-      "production": "verified"
+      "production": "needs-recut",
+      "approved": false,
+      "socialRelease": "draft-paused"
     }
   ],
   "montage": {
     "video": "/promo/morrow-wish-seven-games-20261121.mp4",
     "cover": "/promo/morrow-wish-seven-games-20261121.jpg",
-    "status": "verified-and-scheduled",
+    "status": "needs-recut",
     "channels": [
       "youtube",
       "tiktok",
       "instagram",
       "bluesky"
     ],
-    "verifiedFromWorkflowRun": 44876285204
+    "verifiedFromWorkflowRun": 44876285204,
+    "approved": false,
+    "socialRelease": "draft-paused"
   },
   "cta": "https://morrowwish.vercel.app/",
-  "status": "video-assets-verified-social-posts-scheduled-not-yet-published",
+  "status": "rejected-shorts-paused-no-automatic-publishing",
   "release": {
-    "videosVerified": 8,
-    "uniqueGames": 7,
-    "socialPostsScheduled": 25,
+    "videosApproved": 0,
+    "postsScheduled": 0,
     "postsActuallyPublished": 0,
-    "timezone": "America/Los_Angeles",
-    "verifiedFrom": "Metricool scheduled posts + GitHub Action gameplay and media logs"
+    "postsPausedAsDrafts": 25,
+    "oldPublishedShortsExcluded": true,
+    "uniqueSongSourcesVerified": 7,
+    "verifiedMusicWorkflowRun": 44877966871
   }
 }
