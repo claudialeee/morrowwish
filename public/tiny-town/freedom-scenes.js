@@ -35,45 +35,51 @@ function svg(name){
 }
 function play(opts,onDone){
  const mount=document.getElementById('freedomModal');
- if(!mount){onDone({id:opts.day===2?'sea':'stars',count:0});return;}
+ if(!mount){onDone({id:'rest',found:[],count:0});return;}
  if(active){active.cleanup();active=null;}
  const day=Number(opts.day),names=(DAYS[day]||DAYS[2]),zh=!!opts.zh,txt=(en,cn)=>zh?cn:en;
- const options=names.map(id=>T[id]);
  mount.hidden=false;mount.classList.add('show');
  mount.innerHTML='<div class="freedom-shell" role="dialog" aria-modal="true" aria-label="'+esc(txt('Your free day','你的自由日'))+'">'+
- '<div class="freedom-head"><span class="freedom-eyebrow">'+txt('A DAY WITH NO OBLIGATIONS','今天，没有任何必须做的事')+'</span>'+
- '<h2>'+txt('Where would you go, if tomorrow belonged to you?','如果明天完全属于你，你想去哪里？')+'</h2><p>'+txt('Choose a place. Collect three little memories. Bring the feeling home.','挑一个地方，亲手发现三份小快乐，把这份自由带回小镇。')+'</p></div>'+
- '<div class="freedom-options">'+names.map(id=>'<button type="button" class="freedom-option" data-destination="'+id+'"><span class="freedom-preview">'+svg(id)+'</span><b>'+esc(txt(T[id].en,T[id].zh))+'</b><small>'+esc(txt(T[id].descEn,T[id].descZh))+'</small></button>').join('')+'</div>'+
- '<button class="freedom-skip" type="button">'+txt('Or just stay home and do absolutely nothing','或者今天就什么也不做，睡到自然醒')+'</button>'+
+ '<div class="freedom-head"><span class="freedom-eyebrow">'+txt('NOTHING YOU HAVE TO DO','今天，没有必须完成的事')+'</span>'+
+ '<h2>'+txt('Where do you want to go?','今天想去哪里？')+'</h2><p>'+txt('Every little discovery gives a real reward. Exploring is always optional.','每个小发现都有真正的奖励；想不想探索，完全由你决定。')+'</p></div>'+
+ '<div class="freedom-options">'+names.map(id=>'<button type="button" class="freedom-option" data-destination="'+id+'"><span class="freedom-preview">'+svg(id)+'</span><b>'+esc(txt(T[id].en,T[id].zh))+'</b><small>'+esc(txt(T[id].descEn,T[id].descZh))+'</small><span class="destination-bonus">'+(T[id].bless==='peace'?txt('♥ Harmony +1','♥ 友爱 +1'):txt('✨ Imagination +5','✨ 想象力 +5'))+'</span></button>').join('')+'</div>'+
+ '<button class="freedom-skip" type="button">'+txt('Stay home and do nothing · ♥ Harmony +2','在家什么也不做 · ♥ 友爱 +2')+'</button>'+
  '<div class="freedom-adventure" hidden></div></div>';
- const btns=[...mount.querySelectorAll('[data-destination]')];
  let chosen='',taken=new Set();
  const hide=()=>{mount.classList.remove('show');mount.hidden=true;mount.innerHTML='';active=null;};
  active={cleanup:hide};
+ function finish(id){
+  if(!id)return;
+  const info=T[id];
+  const found=[...taken].sort((a,b)=>a-b);
+  hide();
+  onDone({id,day,found,count:found.length,bless:info.bless,amount:info.amount,zh:info.zh,en:info.en});
+ }
  function stage(id){
   chosen=id;taken=new Set();
   const travel=T[id];
-  mount.querySelector('.freedom-head').innerHTML='<span class="freedom-eyebrow">'+txt('LIVE YOUR OWN STORY','这一天由你决定')+'</span><h2>'+esc(txt(travel.en,travel.zh))+'</h2><p>'+esc(txt(travel.descEn,travel.descZh))+'</p>';
+  mount.querySelector('.freedom-head').innerHTML='<span class="freedom-eyebrow">'+txt('A DAY WITHOUT A SCHEDULE','没有时间表的一天')+'</span><h2>'+esc(txt(travel.en,travel.zh))+'</h2><p>'+esc(txt(travel.descEn,travel.descZh))+'</p>';
   mount.querySelector('.freedom-options').hidden=true;mount.querySelector('.freedom-skip').hidden=true;
   const pane=mount.querySelector('.freedom-adventure');pane.hidden=false;
+  const benefits=[txt('✨ Imagination +8','✨ 想象力 +8'),txt('♥ Harmony +1','♥ 友爱 +1'),txt('✦ Souvenir + imagination +6','✦ 纪念品 + 想象力 6')];
   pane.innerHTML='<div class="freedom-paint" data-destination="'+id+'">'+svg(id)+
-  '<div class="freedom-hotspots">'+travel.mem.map((em,i)=>'<button type="button" class="freedom-collect c'+i+'" data-memory="'+i+'" aria-label="'+esc(txt('Discover a memory','发现小回忆'))+'"><span>'+em+'</span></button>').join('')+'</div>'+
-  '<div class="freedom-glow" aria-hidden="true"></div></div>'+
-  '<div class="freedom-finding"><strong id="foundCount">'+txt('0 / 3 memories','已发现 0 / 3 份快乐')+'</strong><span id="foundMessage">'+txt('Tap three glowing details in the scene.','点击风景中三个发光的小惊喜。')+'</span></div>'+
-  '<button type="button" class="freedom-finish" hidden>'+txt('Bring this happiness home','把这份快乐带回小镇')+'</button>';
+    '<div class="freedom-hotspots">'+travel.mem.map((em,i)=>'<button type="button" class="freedom-collect c'+i+'" data-memory="'+i+'" aria-label="'+esc(txt(travel.hintsEn[i],travel.hintsZh[i])+'. '+benefits[i])+'"><span>'+em+'</span><small>'+benefits[i]+'</small></button>').join('')+'</div>'+
+    '<div class="freedom-glow" aria-hidden="true"></div></div>'+
+    '<div class="freedom-finding" aria-live="polite"><strong id="foundCount">'+txt('0 souvenirs','0 份纪念')+'</strong><span id="foundMessage">'+txt('Tap anything that catches your eye. Leave whenever you like.','想看就点，想走就走。每次发现都有奖励。')+'</span></div>'+
+    '<button type="button" class="freedom-finish">'+txt('Return to my town · anytime','随时回小镇')+'</button>';
   pane.querySelectorAll('[data-memory]').forEach(button=>button.addEventListener('click',()=>{
    const i=Number(button.dataset.memory);
    if(taken.has(i))return;
    taken.add(i);button.classList.add('found');button.setAttribute('aria-pressed','true');
-   pane.querySelector('#foundCount').textContent=txt(taken.size+' / 3 memories','已发现 '+taken.size+' / 3 份快乐');
-   pane.querySelector('#foundMessage').textContent=txt(travel.hintsEn[i],travel.hintsZh[i]);
-   if(taken.size>=3){pane.querySelector('.freedom-finish').hidden=false;pane.querySelector('.freedom-glow').classList.add('burst');}
+   pane.querySelector('#foundCount').textContent=txt(taken.size+' souvenirs','已获得 '+taken.size+' 份纪念');
+   pane.querySelector('#foundMessage').textContent=txt(travel.hintsEn[i],travel.hintsZh[i])+' · '+benefits[i];
+   pane.querySelector('.freedom-finish').textContent=txt('Bring '+taken.size+' memories home','带着 '+taken.size+' 份纪念回小镇');
+   if(taken.size>=3)pane.querySelector('.freedom-glow').classList.add('burst');
   }));
-  pane.querySelector('.freedom-finish').onclick=()=>{if(taken.size!==3)return;hide();onDone({id,day,count:taken.size,bless:travel.bless,amount:travel.amount,zh:travel.zh,en:travel.en});};
+  pane.querySelector('.freedom-finish').onclick=()=>finish(id);
  }
- btns.forEach(btn=>btn.onclick=()=>stage(btn.dataset.destination));
- const skip=mount.querySelector('.freedom-skip');
- skip.onclick=()=>{hide();onDone({id:'rest',day,count:0,bless:'peace',amount:1,zh:T.rest.zh,en:T.rest.en});};
+ mount.querySelectorAll('[data-destination]').forEach(btn=>btn.onclick=()=>stage(btn.dataset.destination));
+ mount.querySelector('.freedom-skip').onclick=()=>finish('rest');
 }
 window.TownFreedom={play,svg,DATA:T,DAYS};
 })();

@@ -224,6 +224,7 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
 }
 </style>
 <link rel="stylesheet" href="/tiny-town/freedom-scenes.css?v=1">
+<link rel="stylesheet" href="/tiny-town/compact-v5.css?v=1">
 <script src="/lang.js"></script><script src="/zh-site.js"></script><script src="/zh-stories.js"></script><script src="/zh-polish.js"></script>
 </head>
 <body>
@@ -235,17 +236,17 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
   <div class="top-actions"><button type="button" class="button" id="retry" data-en="New town" data-zh="新小镇">New town</button><button type="button" class="button" id="shareGame" data-en="Share" data-zh="分享">Share</button></div>
  </header>
  <div class="stats" aria-label="Town progress">
-  <div class="stat"><span class="label"><span data-en="DAY" data-zh="第">DAY</span> <span data-en="" data-zh="天"></span></span><strong id="day">1 / 7</strong></div>
-  <div class="stat"><span class="label" data-en="JOY" data-zh="快乐">WONDER</span><strong id="wonder">0</strong></div>
-  <div class="stat"><span class="label" data-en="TOGETHER" data-zh="友爱">HARMONY</span><strong id="peace">6/10</strong></div>
-  <div class="stat"><span class="label" data-en="DISCOVERIES" data-zh="新发现">SURPRISES</span><strong id="comboNum">0</strong></div>
+  <div class="stat stat-day"><span class="label" data-en="DAY" data-zh="第几天">DAY</span><strong id="day">1 / 7</strong></div>
+  <button type="button" class="stat stat-button" id="wonderStat" aria-label="Imagination: see how to unlock rare wishes"><span class="label" data-en="✨ IMAGINATION" data-zh="✨ 想象力">✨ IMAGINATION</span><strong id="wonder">0</strong><small id="wonderHint">55 to rare wishes</small><span class="stat-track"><span id="wonderMeter"></span></span></button>
+  <button type="button" class="stat stat-button" id="peaceStat" aria-label="Harmony: understand neighbor relations"><span class="label" data-en="♥ HARMONY" data-zh="♥ 友爱">♥ HARMONY</span><strong id="peace">6/10</strong><small data-en="Neighbor relations" data-zh="居民关系">Neighbor relations</small></button>
+  <button type="button" class="stat stat-button" id="comboStat" aria-label="Discoveries and legendary combinations"><span class="label" data-en="✦ DISCOVERIES" data-zh="✦ 发现">✦ DISCOVERIES</span><strong id="comboNum">0</strong><small data-en="Combos and wonders" data-zh="组合与奇观">Combos and wonders</small></button>
  </div>
  <div class="progress" aria-hidden="true"><div id="progressFill"></div></div>
  <div class="stage">
   <section class="panel map-panel">
    <div class="panel-top"><strong id="mapTitle">Your little town</strong><span class="legend-counter"><span data-en="EPIC WONDERS" data-zh="大型奇观">EPIC WONDERS</span> <span id="legendCount">0/9</span></span></div>
    <div class="world" id="mapWrap" data-theme="normal"><span class="world-magic" aria-hidden="true">✧ ✦ ✧</span><span id="cityLandmark" class="city-landmark" aria-hidden="true"></span><div id="worldIllustration" class="world-illustration" aria-hidden="true"></div><div class="board" id="board" aria-label="Town map"></div></div>
-   <p class="caption" id="guide" aria-live="polite">Pick a wish, then pick a place.</p>
+   <div class="town-bubble" id="liveNotice" aria-live="polite">Choose a wish, then touch a glowing plot.</div><p class="caption" id="guide" aria-live="polite">Pick a wish, then pick a place.</p>
    <div class="preview" id="preview"><span data-en="Find combinations by placing related wishes next to each other." data-zh="把相互关联的愿望建在一起，发现隐藏组合。">Find combinations by placing related wishes next to each other.</span></div>
    <div id="journeyPassport" class="journey-passport" aria-live="polite"></div><div class="city-extras">
     <div class="micro-panel"><div class="micro-title" data-en="✦ DISCOVERED" data-zh="✦ 已发现">✦ DISCOVERED</div><div class="discoveries" id="discoveries"></div></div>
@@ -258,12 +259,21 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
    <p data-en="Make a wish. Go somewhere. Let something beautiful happen." data-zh="许个愿，去远方，看看会有什么美好的事发生。">Make a wish. Go somewhere. Let something beautiful happen.</p>
    <div class="cards" id="cards"></div>
    <p class="pick-hint" id="pickHint"></p>
+   <div class="town-tabs" role="group" aria-label="Information panels">
+    <button id="tabResidents" type="button" aria-expanded="false" data-en="Residents" data-zh="居民">居民</button>
+    <button id="tabMemories" type="button" aria-expanded="false">回忆 · 0</button>
+    <button id="tabDiscoveries" type="button" aria-expanded="false">发现 · 0</button>
+   </div>
    <div class="citizen-panel"><div class="citizen-head"><b data-en="YOUR FRIENDS" data-zh="一起生活的朋友">YOUR FRIENDS</b><small data-en="Everyone has their own dreams" data-zh="每个人都有自己的梦想">Everyone has their own dreams</small></div><div id="citizens" class="citizens"></div></div>
    <div class="petition" id="petition"></div>
    <button type="button" id="moveWish" hidden data-en="↔ Move one building" data-zh="↔ 搬迁一次建筑">↔ Move one building</button>
    <div class="tip-box"><b data-en="Secret tip" data-zh="秘密提示">Secret tip</b><span data-en="Put related wishes beside each other. A small change may transform the entire town." data-zh="把相关愿望摆在一起，小小变化可能让整座城进化。">Put related wishes beside each other. A small change may transform the entire town.</span><small data-en="No wrong way to live. Three linked dreams may create a wonder." data-zh="自由没有标准答案。三个相连的梦想，也许能创造不可思议的奇观。">Complete 7 days. Discover 2 combos and keep harmony at 3+ for a dream ending.</small></div>
   </aside>
  </div>
+ <section id="townInspector" class="town-inspector" hidden aria-label="Game information" role="region">
+  <header><h2 id="inspectorTitle"></h2><button type="button" id="closeInspector" aria-label="Close information panel">×</button></header>
+  <div id="inspectorContent" class="inspector-content"></div>
+ </section>
  <div id="intro" class="overlay show" role="dialog" aria-modal="true"><div class="modal">
   <div class="kicker" data-en="NO MORE WORK · ALL THE TIME IN THE WORLD" data-zh="不用上班了 · 世界上的时间都属于你">NO MORE WORK · ALL THE TIME IN THE WORLD</div>
   <h2 data-en="Tomorrow belongs to you." data-zh="明天，完全属于你。">Tomorrow belongs to you.</h2>
@@ -290,6 +300,7 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
  <div id="freedomModal" hidden></div>
 </main>
 <script src="/tiny-town/freedom-scenes.js"></script>
+<script src="/tiny-town/compact-v5.js"></script>
 <script src="/tiny-town/game-v4.js"></script>
 <script src="/studio-audio.js"></script><script src="/studio-music.js"></script><script src="/audio-dock.js"></script><script src="/game-fullscreen.js?v=5" defer></script>
 </body></html>

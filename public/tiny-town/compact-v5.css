@@ -1,0 +1,216 @@
+/* No More Mondays — single-frame interface v5.
+   One game canvas on desktop and phones; optional information in an in-canvas drawer. */
+html,body{max-width:100%;overflow-x:hidden}
+body{min-height:100dvh}
+body:has(.app){overflow:hidden}
+.arcade-return{height:40px;min-height:40px;padding-top:5px;padding-bottom:5px}
+.app{
+  height:calc(100dvh - 40px);min-height:0;max-height:none;
+  max-width:1240px;margin:auto;padding:9px 12px 10px;
+  display:flex;flex-direction:column;overflow:hidden;isolation:isolate;position:relative
+}
+.app .header{flex:0 0 auto;margin:0 0 6px;min-height:42px}
+.app .header h1{font-size:clamp(19px,2.4vw,29px);line-height:1.1;white-space:nowrap}
+.app .header h1 small{font-size:10px}
+.app .tagline{font-size:10px;margin:2px 0 0;line-height:1.2}
+.app .top-actions .button{min-height:32px;padding:5px 9px;font-size:11px;border-radius:9px}
+.app .stats{flex:0 0 auto;gap:6px;margin-bottom:5px;grid-template-columns:.72fr 1.36fr 1fr 1fr}
+.app .stat{min-width:0;padding:5px 10px 6px;border-radius:12px;text-align:left;box-shadow:none}
+.app .stat strong{font-size:18px;line-height:1.15;margin:2px 0 1px}
+.app .stat .label{font-size:9px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.app .stat-button{width:100%;color:var(--ink);cursor:pointer}
+.app .stat-button:hover{border-color:#b69aca}
+.app .stat small{display:block;font-size:9px;line-height:1.2;color:#918195;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app .stat-track{display:block;margin-top:3px;height:3px;border-radius:8px;background:#eadfe6;overflow:hidden}
+.app #wonderMeter{display:block;height:100%;width:0;background:linear-gradient(90deg,#eca8bc,#917ac1);transition:width .2s}
+.app .progress{flex:0 0 3px;height:3px;margin:0 1px 7px}
+.app .stage{
+ flex:1 1 0;min-height:0;min-width:0;
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(248px,305px);
+ gap:9px;align-items:stretch;overflow:hidden
+}
+.app .map-panel{padding:9px;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.app .panel-top{flex:0 0 auto;margin:0 3px 7px}
+.app .panel-top strong{font-size:14px}
+.app .panel-top span{font-size:10px}
+.app .world{flex:1 1 0;min-height:0!important;aspect-ratio:auto!important;padding:7px!important;overflow:hidden}
+.app .board{
+ height:min(100%,485px);width:auto;max-width:100%;min-height:0;aspect-ratio:1;
+ margin:auto;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));
+ gap:clamp(3px,.6vw,7px);filter:drop-shadow(0 4px 7px #204e483e)
+}
+.app .tile{min-height:0;width:100%;height:100%;aspect-ratio:auto}
+.app .tile-icon{font-size:clamp(18px,3.7vh,37px)}
+.app .tile-name{font-size:clamp(8px,.85vw,11px)}
+.app .tile-people{font-size:clamp(10px,1.7vw,14px)}
+.app .town-bubble{
+ flex:0 0 auto;text-align:center;min-height:27px;max-height:40px;
+ border-radius:10px;padding:6px 9px;margin-top:6px;
+ background:#fff7ec;color:#75677d;font-size:11px;font-weight:700;line-height:1.25;
+ overflow:hidden;display:flex;align-items:center;justify-content:center
+}
+.app #guide{display:none}
+.app #preview{
+ flex:0 0 auto;min-height:0;max-height:37px;overflow:hidden;
+ margin:5px 0 0;padding:6px 8px;border-radius:10px;font-size:10px;
+ background:#f9f0ef;line-height:1.2;gap:6px
+}
+.app #preview>*{font-size:10px}
+.app .city-extras,.app .journey-passport{display:none!important}
+.app .sidebar{
+ width:100%;height:100%;padding:12px 11px;min-width:0;min-height:0;overflow:hidden;
+ display:flex;flex-direction:column;gap:6px;justify-content:flex-start
+}
+.app .sidebar-head{font-size:9px}
+.app .sidebar h2{font-size:17px;line-height:1.18;margin:0 0 1px}
+.app .sidebar>p:not(.pick-hint){font-size:10px;line-height:1.3;margin:0;color:#8f8394}
+.app .cards{flex:0 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px}
+.app .wish-card{
+ min-height:0;flex:1 1 auto;max-height:113px;padding:8px 9px;gap:9px;
+ border-radius:13px;align-items:center;overflow:hidden
+}
+.app .wish-icon{font-size:26px;width:35px}
+.app .wish-copy{gap:3px}
+.app .wish-copy b{font-size:12px;line-height:1.1}
+.app .wish-copy small{font-size:10px;line-height:1.2}
+.app .wish-copy em{font-size:9px;margin-top:0}
+.app .wish-next{font-size:18px}
+.wish-reactions{display:flex;gap:5px;flex-wrap:wrap;min-width:0;font-size:9px;line-height:1.1}
+.wish-reactions span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.wish-reactions .fan{color:#519878;font-weight:800}
+.wish-reactions .critic{color:#be7888;font-weight:800}
+.app .pick-hint{flex:0 0 auto;margin:1px 0!important;font-size:10px!important;line-height:1.2}
+.app .citizen-panel,.app .petition,.app .tip-box{display:none!important}
+.app #moveWish:not([hidden]){
+ flex:0 0 auto;padding:6px;min-height:29px;margin:0;font-size:10px;order:2
+}
+.app .town-tabs{flex:0 0 auto;margin-top:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.app .town-tabs button{
+ min-height:39px;padding:6px 2px;background:#fff6ef;border:1px solid #eadadf;
+ border-radius:12px;color:#806886;font-weight:800;font-size:11px;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.app .town-tabs button:hover,.app .town-tabs button.active{background:#f2e6fa;border-color:#b99ac9}
+.app .town-inspector{
+ position:absolute;z-index:80;right:12px;top:68px;bottom:10px;width:min(390px,calc(100% - 24px));
+ display:flex;flex-direction:column;min-height:0;
+ background:linear-gradient(145deg,#fffdf7,#fff4ee);
+ border:1px solid #e8d4e3;border-radius:18px;
+ box-shadow:0 17px 48px #513e6566;overflow:hidden
+}
+.app .town-inspector[hidden]{display:none!important}
+.app .town-inspector>header{
+ display:flex;justify-content:space-between;align-items:center;gap:7px;padding:13px 15px 9px;
+ border-bottom:1px solid #f1e2e9;flex:0 0 auto
+}
+.app .town-inspector h2{font-size:17px;color:#5e4b74;margin:0}
+.app #closeInspector{height:34px;width:34px;min-width:34px;border:0;background:#f6e7ed;color:#755875;border-radius:50%;font-size:24px}
+.app .inspector-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:13px 14px 18px}
+.inspect-intro,.inspect-note{font-size:12px;line-height:1.5;color:#89778c;margin:0 0 10px}
+.inspect-note{background:#f5eaf4;padding:10px;border-radius:11px;margin:12px 0}
+.inspect-person{border:1px solid #e9dfe3;border-radius:12px;background:#fffefa;margin:0 0 9px;padding:10px}
+.inspect-person header{display:flex;align-items:center;gap:9px;margin:0 0 7px}
+.inspect-person .face{font-size:25px}
+.inspect-person header div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.inspect-person header div strong{font-size:13px;color:#665272}
+.inspect-person header div small{font-size:10px;color:#9c899d}
+.inspect-person .hearts{font-size:12px;color:#b97b96;white-space:nowrap;font-weight:800}
+.inspect-person .hearts small{display:block;text-align:center;font-size:9px;color:#908096}
+.inspect-person p{font-size:11px;line-height:1.35;margin:4px 0;color:#776778}
+.inspect-person b.good{color:#4b9d78;margin-right:6px}
+.inspect-person b.bad{color:#b36b7a;margin-right:6px}
+.inspector-content h3{font-size:13px;color:#78647f;margin:12px 0 7px}
+.inspect-mechanics{display:grid;gap:8px}
+.inspect-mechanics section{border-radius:13px;padding:11px;background:#fffefa;border:1px solid #eedfe6}
+.inspect-mechanics section strong{font-size:13px;color:#715877}
+.inspect-mechanics section p{font-size:11px;line-height:1.45;color:#8e7e8c;margin:5px 0 0}
+.inspect-found{display:flex;gap:7px;flex-wrap:wrap}
+.inspect-found span{padding:7px 9px;border-radius:10px;background:#f2e8dd;color:#8f6f83;font-size:11px}
+.inspect-empty{padding:15px 10px;border-radius:10px;background:#f9f0ed;color:#a28f9e;font-size:11px;line-height:1.5}
+.inspect-trips{display:grid;gap:7px}
+.inspect-trip{display:flex;align-items:center;gap:9px;background:#f7eeec;padding:8px;border-radius:11px}
+.inspect-trip>span{font-size:24px}
+.inspect-trip div{display:flex;flex-direction:column;gap:2px}
+.inspect-trip strong{font-size:12px;color:#78647a}
+.inspect-trip small{font-size:10px;color:#a08b97}
+.inspect-souvenirs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.inspect-souvenirs>div{display:flex;flex-direction:column;align-items:center;gap:5px;background:#fffdf6;padding:10px 4px;border:1px solid #ede0e4;border-radius:11px;text-align:center}
+.inspect-souvenirs span{font-size:28px}
+.inspect-souvenirs small{font-size:10px;line-height:1.3;color:#927d8f}
+.app .overlay{position:absolute;inset:0;z-index:1000;overscroll-behavior:contain}
+.app #freedomModal{position:absolute;inset:0;z-index:1500;overscroll-behavior:contain}
+.app .modal,.app .freedom-shell{max-height:calc(100% - 20px);overscroll-behavior:contain}
+.app .freedom-shell{max-height:100%;width:min(920px,100%);overflow-y:auto}
+.freedom-collect{width:clamp(78px,10vw,118px);height:clamp(78px,10vw,118px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px}
+.freedom-collect span{font-size:clamp(27px,4vw,42px)}
+.freedom-collect small{font-size:9px;line-height:1.2;font-weight:900;color:#6f557f;background:#fffaf0cc;border-radius:99px;padding:3px 5px;text-align:center}
+.freedom-collect.found{opacity:.48}
+.freedom-option .destination-bonus{padding:0 12px 10px;font-size:11px;font-weight:900;color:#8666a8}
+.freedom-finding{font-size:11px;min-height:32px}
+html.mw-fs-active .app{height:100dvh!important;max-width:none!important;min-height:0!important}
+html.mw-fs-active .arcade-return{display:none}
+@media(max-width:700px){
+ .app{padding:5px 7px 6px;height:calc(100dvh - 40px)}
+ .app .header{min-height:34px;margin-bottom:4px}
+ .app .header h1{font-size:21px}
+ .app .header h1 small,.app .tagline{display:none}
+ .app .top-actions{gap:5px}
+ .app .top-actions .button{min-height:30px;padding:5px 8px;font-size:10px}
+ .app .stats{gap:4px;margin-bottom:4px;grid-template-columns:.68fr 1.32fr 1fr 1fr}
+ .app .stat{padding:5px 5px;border-radius:9px}
+ .app .stat .label{font-size:8px}
+ .app .stat strong{font-size:16px}
+ .app .stat small{font-size:8px}
+ .app .stat-track{height:2px;margin-top:2px}
+ .app .progress{margin-bottom:5px}
+ .app .stage{display:flex;flex-direction:column;gap:5px;overflow:hidden}
+ .app .sidebar{display:contents}
+ .app .sidebar-head,.app .sidebar h2,.app .sidebar>p:not(.pick-hint),.app .sidebar .pick-hint{display:none!important}
+ .app .cards{order:0;width:100%;flex:0 0 auto;min-height:79px;max-height:112px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .app .wish-card{max-height:112px;min-height:79px;padding:5px 3px;gap:3px;border-radius:10px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+ .app .wish-icon{font-size:23px;width:auto}
+ .app .wish-copy{gap:2px;align-items:center}
+ .app .wish-copy b{font-size:10px;line-height:1.1}
+ .app .wish-copy small{font-size:9px;line-height:1.1;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+ .app .wish-copy em{font-size:8px}
+ .app .wish-next{display:none}
+ .app .wish-reactions{font-size:8px;display:block;max-width:100%;line-height:1;white-space:nowrap;overflow:hidden}
+ .app .wish-reactions .critic{display:block}
+ .app .map-panel{order:1;flex:1 1 0;min-height:0;max-height:none;width:100%;padding:5px}
+ .app .panel-top{display:none}
+ .app .world{flex:1 1 0;min-height:0!important;border-width:2px!important;padding:4px!important;border-radius:13px}
+ .app .board{height:min(100%,100vw - 26px);width:auto;aspect-ratio:1;max-width:100%;gap:4px}
+ .app .tile{border-radius:9px}
+ .app .tile-icon{font-size:clamp(18px,6vw,30px)}
+ .app .tile-name{font-size:clamp(7px,2.2vw,10px)}
+ .app .town-bubble{font-size:10px;max-height:30px;min-height:24px;margin-top:3px;padding:4px 6px}
+ .app #preview{min-height:0;max-height:30px;margin-top:3px;padding:5px;font-size:9px}
+ .app #preview>*{font-size:9px}
+ .app .town-tabs{order:3;display:grid;gap:5px;width:100%;margin:0}
+ .app .town-tabs button{min-height:35px;padding:4px 2px;font-size:10px;border-radius:10px}
+ .app #moveWish:not([hidden]){order:2;margin:0;width:100%;min-height:27px;padding:4px}
+ .app .town-inspector{top:10px;right:6px;bottom:6px;left:6px;width:auto;border-radius:14px}
+ .app .town-inspector>header{padding:8px 12px}
+ .app .inspector-content{padding:10px 12px}
+ .app .overlay{padding:7px}
+ .app .modal{padding:12px;max-height:100%}
+ .app .freedom-shell{padding:10px;max-height:100%}
+ .app .freedom-paint{height:min(38dvh,320px)}
+ .app .freedom-option .destination-bonus{padding:0 5px 7px;font-size:9px}
+ .app .freedom-collect{width:clamp(65px,18vw,80px);height:clamp(65px,18vw,80px);padding:3px}
+ .app .freedom-collect span{font-size:25px}
+ .app .freedom-collect small{font-size:8px}
+}
+@media(max-width:700px) and (max-height:650px){
+ .app .cards{min-height:66px;max-height:80px}
+ .app .wish-card{min-height:65px;max-height:80px}
+ .app .wish-icon{font-size:18px}
+ .app .wish-copy small,.app .wish-reactions{display:none}
+ .app .stats{margin-bottom:2px}
+ .app .stat small{display:none}
+ .app .town-tabs button{min-height:30px}
+ .app .town-bubble{display:none}
+ .app #preview{max-height:23px}
+}
+
+html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!important;padding:8px!important;height:100dvh!important}

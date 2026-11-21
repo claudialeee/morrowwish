@@ -147,7 +147,7 @@ function renderPeople(){
  $('moveWish').classList.toggle('chosen',selected==='relocate');
  $('cityLandmark').textContent=S.celebration||'';
  $('cityLandmark').className='city-landmark'+(S.legends.length?' revealed':'');
- $('legendCount').textContent=S.legends.length+'/9';
+ $('legendCount').textContent=S.legends.length+'/'+legends.length;
 }
 function runAnomaly(){
  if(S.peace>2||S.hadRevolt||S.day<3)return;
@@ -184,16 +184,20 @@ function finalLayers(){
  return collections+scenic;
 }
 
-function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
+function fresh(){return {seed:(Date.now()^Math.floor(Math.random()*1000000000))>>>0,day:1,places:[],found:[],legends:[],wonder:0,peace:6,news:[],events:[],mutation:'',celebration:'',lastBuilt:-1,highlight:-1,journeys:[],memories:[],scenic:'meadow',moods:residents.map(()=>4),tensions:0,law:'care',lastComboDay:-1,promiseHistory:[],relocateUsed:false,relocateFrom:null,hadRevolt:false,advanceAfterOverlay:false,ended:false,started:false,ending:''};}
 function offers(){
  if(S.day===1)return ['beach','voyage','garden'];
- const used=new Set(S.places.map(p=>p.id)),last=S.places[S.places.length-1].id,available=data.filter(c=>!used.has(c.id)).map(c=>c.id);
+ const used=new Set(S.places.map(p=>p.id)),last=S.places[S.places.length-1].id;
+ const advanced=['star','tower','flight','night'];
+ const unlocked=S.wonder>=55||S.memories.some(m=>m.i===2);
+ const available=data.filter(c=>!used.has(c.id)&&(unlocked||!advanced.includes(c.id))).map(c=>c.id);
  const related=sample(available.filter(id=>pair(id,last)),S.seed+S.day*47);
  const recent=S.journeys[S.journeys.length-1];
  const routes={sea:['beach','pond','park'],mountain:['garden','tower','park'],train:['voyage','tower','star'],stars:['star','library','tower'],festival:['music','night','cafe'],meadow:['park','garden','picnic'],rest:['park','picnic','library']};
  const hinted=recent?sample((routes[recent]||[]).filter(id=>available.includes(id)),S.seed+S.day*37):[];
  const almost=legends.filter(l=>l.ids.filter(id=>used.has(id)).length===2).flatMap(l=>l.ids.filter(id=>available.includes(id)));
- return [...new Set(almost.slice(0,1).concat(hinted.slice(0,1),related,sample(available,S.seed+S.day*113)))].slice(0,3);
+ const rare=unlocked?sample(available.filter(id=>advanced.includes(id)),S.seed+S.day*97):[];
+ return [...new Set(almost.slice(0,1).concat(rare.slice(0,1),hinted.slice(0,1),related,sample(available,S.seed+S.day*113)))].slice(0,3);
 }
 function newPairs(id,pos){return S.places.filter(p=>adjacent(pos,p.pos)).map(p=>pair(id,p.id)).filter(c=>c&&!S.found.some(f=>f.key===c.key));}
 function type(){const totals={cat:0,sky:0,party:0,art:0,calm:0};S.places.forEach(p=>totals[byId[p.id].vibe]+=2);S.found.forEach(f=>totals[f.vibe]+=4);S.legends.forEach(l=>totals[l.vibe]+=24); if(S.journeys.length){const scenic={sea:'calm',mountain:'calm',train:'sky',stars:'sky',festival:'party',meadow:'calm',rest:'calm'};totals[scenic[S.journeys.at(-1)]]+=5;}if(S.places.length)totals[byId[S.places[0].id].vibe]+=14;if(S.peace<=2&&S.found.length)return 'chaos';return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0];}
@@ -206,7 +210,7 @@ function render(){
  $('mapTitle').textContent=S.mutation?t('A world you made possible','你亲手创造的奇妙世界'):t('Make a life worth remembering','创造你真正想过的生活');
  $('mapWrap').dataset.theme=S.mutation||'normal';
  $('guide').textContent=selected?t('Choose where your dream comes alive. Gold means a surprise.','选一个让梦想发生的地方。金光代表惊喜！'):t('Choose a dream. Every small decision changes the scenery.','今天做什么，由你决定。每个小愿望都会改变风景。');
- renderBoard();renderCards();renderNews();renderPeople();renderScenery();
+ renderBoard();renderCards();renderNews();renderPeople();renderScenery();window.TownV5?.render?.();
 }
 function renderScenery(){
  const art=$('worldIllustration');
@@ -241,7 +245,8 @@ function renderCards(){
  const el=$('cards');el.innerHTML='';if(S.ended||selected==='relocate')return;
  for(const id of offers()){
   const c=byId[id],b=document.createElement('button');b.type='button';b.className='wish-card'+(id===selected?' selected':'');b.setAttribute('aria-pressed',String(id===selected));
-  b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b><small>'+t(c.descEn,c.descZh)+'</small><em>'+t('Wonder +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · Harmony '+(c.peace>=0?'+':'')+c.peace,'奇想 +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · 和谐 '+(c.peace>=0?'+':'')+c.peace)+'</em></span><span class="wish-next">›</span>';
+  const fans=residents.filter(r=>r.likes.includes(id)),critics=residents.filter(r=>r.dislikes.includes(id));
+  b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b><small>'+t(c.descEn,c.descZh)+'</small><em>'+t('Wonder +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · Harmony '+(c.peace>=0?'+':'')+c.peace,'奇想 +'+(c.joy+(S.law==='wonder'&&c.peace<0?6:0))+' · 和谐 '+(c.peace>=0?'+':'')+c.peace)+'</em><span class="wish-reactions">'+(fans.length?'<span class="fan">♥ '+fans.map(x=>x.name).join('、')+'</span>':'')+(critics.length?'<span class="critic">− '+critics.map(x=>x.name).join('、')+'</span>':'')+'</span></span><span class="wish-next">›</span>';
   b.onclick=()=>{selected=id;send('town_wish_selected',{week:S.day});render();preview(-1);};
   el.appendChild(b);
  }
@@ -297,10 +302,20 @@ function showOverlay(){
  if(o.kind==='journey'){
   $('storyModal').classList.remove('show');
   const finish=memory=>{
-    if(S.journeys.includes(memory.id)){nextOverlay();return;}
+    if(!memory||!memory.id){nextOverlay();return;}
     S.journeys.push(memory.id);S.scenic=memory.id==='rest'?'meadow':memory.id;
-    if(memory.bless==='peace'){S.peace=Math.min(10,S.peace+memory.amount);S.wonder+=12;}
-    else{S.wonder+=memory.amount;S.peace=Math.min(10,S.peace+1);}
+    const found=Array.isArray(memory.found)?[...new Set(memory.found.filter(i=>Number.isInteger(i)&&i>=0&&i<3))]:[];
+    const info=window.TownFreedom?.DATA?.[memory.id];
+    found.forEach(i=>{
+      S.memories.push({place:memory.id,i,icon:info?.mem?.[i]||'✦',en:info?.hintsEn?.[i]||'A souvenir',zh:info?.hintsZh?.[i]||'一份纪念'});
+      if(i===0)S.wonder+=8;
+      if(i===1)S.peace=Math.min(10,S.peace+1);
+      if(i===2)S.wonder+=6;
+    });
+    if(found.length)send('town_memories_collected',{count:found.length,week:S.day});
+    if(memory.id==='rest'){S.peace=Math.min(10,S.peace+2);}
+    else if(memory.bless==='peace'){S.peace=Math.min(10,S.peace+1);}
+    else{S.wonder+=5;}
     S.moods=S.moods.map(v=>Math.min(6,v+1));
     const destination=window.TownFreedom?.DATA?.[memory.id];
     news('A whole day of freedom: '+(destination?.en||memory.id)+'.','自由的一天：'+(destination?.zh||memory.id)+'。');
@@ -361,7 +376,7 @@ function finish(){
  const eicon={cat:'🐈',sky:'🏝️',party:'🎆',art:'🎨',calm:'🌺',chaos:'🌈'}[S.ending]||'✦';
  $('endArt').innerHTML='<div class="end-hero-art" data-theme="'+S.ending+'"><img class="end-landscape" src="/art/tiny-town-scene.svg" alt="">'+
  '<span class="end-centerpiece">'+(S.celebration||eicon)+'</span><div class="end-stamp">NO<br>MORE<br>MONDAYS</div><div class="end-memories">'+
- S.journeys.map(j=>'<span>'+(window.TownFreedom?.DATA?.[j]?.icon||'✦')+' '+esc(t(window.TownFreedom?.DATA?.[j]?.en||j,window.TownFreedom?.DATA?.[j]?.zh||j))+'</span>').join('')+'</div><div class="end-sky-portal">'+(window.TownFreedom?.svg?.(S.scenic)||'')+'</div></div>'+
+ S.journeys.map(j=>'<span>'+(window.TownFreedom?.DATA?.[j]?.icon||'✦')+' '+esc(t(window.TownFreedom?.DATA?.[j]?.en||j,window.TownFreedom?.DATA?.[j]?.zh||j))+'</span>').concat(S.memories.map(m=>'<span>'+m.icon+'</span>')).join('')+'</div><div class="end-sky-portal">'+(window.TownFreedom?.svg?.(S.scenic)||'')+'</div></div>'+
  '<div hidden>'+illustrate(S.ending)+'</div>';
  endingText();$('end').classList.add('show');
  $('feedbackQuestion').hidden=false;$('feedbackThanks').hidden=true;render();
@@ -412,6 +427,7 @@ function postcard(){
    ctx.font='25px system-ui';ctx.fillText(t('The life I chose · '+S.journeys.length+' adventures','我的自由生活 · '+S.journeys.length+' 段旅程'),630,626);
    ctx.textAlign='left';ctx.fillStyle='#514063';ctx.font='bold 28px system-ui';
    ctx.fillText('MORROW WISH',36,705);
+   ctx.font='26px system-ui';ctx.textAlign='center';ctx.fillText(S.memories.slice(0,6).map(m=>m.icon).join('  '),630,705);
    ctx.textAlign='right';ctx.font='19px system-ui';ctx.fillText('NO MORE MONDAYS',1220,704);
    canvas.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='my-free-town-'+S.ending+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);},'image/png');
   }catch(err){alert(t('Could not save this postcard in your browser.','此浏览器暂时无法保存这张明信片。'));}
@@ -427,7 +443,7 @@ function restart(){
  S=fresh();selected='';overlays=[];$('end').classList.remove('show');$('storyModal').classList.remove('show');$('intro').hidden=true;S.started=true;send('game_retry');render();
 }
 function boot(){
- S=fresh();
+ S=fresh();window.TownV5?.boot?.();
  document.querySelectorAll('[data-law]').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('[data-law]').forEach(n=>n.classList.toggle('active',n===el));}));
  $('moveWish').onclick=()=>{if(!S.started||S.ended||S.relocateUsed||S.day<3)return;selected=selected==='relocate'?'':'relocate';S.relocateFrom=null;render();};
  $('introStart').onclick=start;$('retry').onclick=restart;$('newAgain').onclick=restart;
@@ -440,5 +456,6 @@ function boot(){
  window.addEventListener('pagehide',()=>{if(S?.started&&!S.ended)send('town_exit-week-'+S.day,{week:S.day});});
  render();
 }
+window.TownV5State=()=>({S,selected,residents,byId,combinations,legends,offers,memories:S?.memories||[]});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

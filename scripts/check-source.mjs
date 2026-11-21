@@ -352,6 +352,26 @@ new vm.Script(townV4,{filename:'public/tiny-town/game-v4.js'});
 const townFreedom=fs.readFileSync('public/tiny-town/freedom-scenes.js','utf8');
 const townFreedomCss=fs.readFileSync('public/tiny-town/freedom-scenes.css','utf8');
 new vm.Script(townFreedom,{filename:'public/tiny-town/freedom-scenes.js'});
+const townCompact=fs.readFileSync('public/tiny-town/compact-v5.js','utf8');
+const townCompactCss=fs.readFileSync('public/tiny-town/compact-v5.css','utf8');
+new vm.Script(townCompact,{filename:'public/tiny-town/compact-v5.js'});
+for(const marker of ['id="wonderStat"','id="peaceStat"','id="comboStat"','id="townInspector"','id="inspectorContent"','id="tabResidents"','id="tabMemories"','id="tabDiscoveries"','id="liveNotice"']){
+ if(!tinyMusicPage.includes(marker))throw Error('Tiny Town compact single-surface UI missing '+marker);
+}
+for(const marker of ['body:has(.app){overflow:hidden}','height:calc(100dvh - 40px)','@media(max-width:700px)','.app .town-inspector[hidden]']){
+ if(!townCompactCss.includes(marker))throw Error('Tiny Town single-screen responsive layout missing '+marker);
+}
+for(const marker of ['function peopleMarkup','function inspect()','function render()','window.TownV5={boot,render,toggle}']){
+ if(!townCompact.includes(marker))throw Error('Tiny Town readable resident profiles or in-game info missing '+marker);
+}
+for(const marker of ["S.memories.push(","S.wonder>=55","window.TownV5?.render?.()","wish-reactions","S.memories.map(m=>"]){
+ if(!townV4.includes(marker))throw Error('Tiny Town reward and preference system missing '+marker);
+}
+for(const marker of ['Bring ','Return to my town','freedom-collect','const found=[...taken]']){
+ if(!townFreedom.includes(marker))throw Error('Optional free-day souvenir collection missing '+marker);
+}
+console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
+
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||
    tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')>tinyMusicPage.indexOf('src="/tiny-town/game-v4.js"')||
    !tinyMusicPage.includes('href="/tiny-town/freedom-scenes.css?v=1"')||
