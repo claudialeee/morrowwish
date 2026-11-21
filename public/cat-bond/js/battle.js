@@ -46,6 +46,18 @@ class CaptureBattle {
     this.autoUsed=false;               // earns tactical capture rankings
     this.comboFlash = 0;                  // milestone pop timer
     this.slowmo = 0;                      // perfect-dodge bullet-time timer
+    this.hitstop = 0;                     // brief freeze-on-hit for weighty impacts
+
+    // --- adaptive AI: read the learned player profile, derive this battle's knobs ---
+    this.aiP = this.normalizeAiProfile(window.State && State.S && State.S.aiProfile);
+    this._aiConf = clamp(this.aiP.battles / 8, 0, 1);       // ramps in over ~8 fights
+    this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0 };
+    if (this.aiP.adapt) {                                   // optional adaptive difficulty (timing/accuracy ONLY)
+      const sk = this.aiP.skill;
+      this.aiReact = clamp(1.15 - 0.3 * sk, 0.90, 1.15);    // ×windup / dodge timers
+      this.aiJitter = clamp(0.18 - 0.16 * sk, 0.02, 0.18);  // aim slop (never 0)
+      this.aiLeadConf = clamp(0.4 + 0.6 * sk, 0.40, 1.00);  // how much predicted lead to apply
+    } else { this.aiReact = 1; this.aiJitter = 0.06; this.aiLeadConf = 1; }
 
     // --- wild cat PACK: 1~3 enemies (rarer / commander-seeded = bigger packs) ---
     // The pack can be passed in via opts.pack (array of species); otherwise we
@@ -206,6 +218,7 @@ class CaptureBattle {
       maxhp, hp: maxhp,
       x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
+      shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
@@ -235,7 +248,8 @@ class CaptureBattle {
       r: 20, inv: 0, dashT: 0,
       speed: 150 + s.agi * 3.5,
       dmg: (6 + s.pow * 0.7 + cat.level * 0.3) * (bond.dmgMult || 1),
-      shieldT:0,damageBoostT:0,
+      shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
+      tags: [], status: {}, slowed: false,
       projSpeed: 300 + s.agi * 5,
       cd: { basic: 0, q: 0, e: 0 },
       // the two active skills this cat actually knows (from its element loadout)
@@ -365,8 +379,8 @@ class CaptureBattle {
       mx=-dy/dist*.24;my=dx/dist*.24;
     }
     const mag=Math.hypot(mx,my);
-    if(mag>0.04 && !(f.dashT>0&&f.pounce)){
-      const spd=f.dashT>0?f.speed*3:f.speed;
+    if(mag>0.04 && !(f.dashT>0&&f.pounce) && f.rootT<=0){
+      const spd=(f.dashT>0?f.speed*3:f.speed)*(f.slowed?0.55:1);
       f.x=clamp(f.x+mx/mag*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
       f.y=clamp(f.y+my/mag*spd*dt,this.topMargin,this.H-this.bottomMargin);
       f.face=mx<0?-1:mx>0?1:f.face;
@@ -498,8 +512,8 @@ class CaptureBattle {
       // separation from the active cat & other allies
       for (const o of this.team) { if (o === f || !o.alive) continue; const sx = f.x - o.x, sy = f.y - o.y, sd = Math.hypot(sx, sy) || 1; if (sd < 60) { mx += sx / sd * 0.6; my += sy / sd * 0.6; } }
     }
-    if (f.dashT <= 0) {
-      const spd = f.speed * 0.9;
+    if (f.dashT <= 0 && f.rootT <= 0) {
+      const spd = f.speed * 0.9 * (f.slowed ? 0.55 : 1);   // same soft-CC slow as the active cat
       f.x = clamp(f.x + mx * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
       f.face = dx < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
@@ -534,10 +548,13 @@ class CaptureBattle {
       return;
     }
 
-    // aim: toward mouse on desktop; on touch, auto-aim the nearest enemy
+    // aim: toward mouse on desktop; on touch, auto-aim the locked/nearest enemy.
+    // The soft lock lets a phone player focus-fire one cat instead of the game
+    // thrashing to whichever happens to be nearest as the pack orbits.
     const joy = this.game.joystick;
     if (this.game.isTouch) {
-      const tgt = this.nearestEnemy ? this.nearestEnemy(f.x, f.y) : null;
+      let tgt = this.lockedEnemy();
+      if (!tgt) { tgt = this.nearestEnemy(f.x, f.y); if (tgt) this._lockIdx = tgt.i; }  // auto-lock nearest
       if (tgt) this.aim = Math.atan2(tgt.y - f.y, tgt.x - f.x);
     } else {
       this.aim = Math.atan2(m.y - f.y, m.x - f.x);
@@ -550,16 +567,19 @@ class CaptureBattle {
     if (K['a'] || K['arrowleft']) mx -= 1;
     if (K['d'] || K['arrowright']) mx += 1;
     if (joy && joy.active && (Math.abs(joy.dx) > 0.15 || Math.abs(joy.dy) > 0.15)) { mx += joy.dx; my += joy.dy; }
+    if (f.rootT > 0) { mx = 0; my = 0; }                 // Reflect wall roots the caster
+    f._mvx = mx; f._mvy = my;                            // remember input so dodge can flee the right way
     if (mx || my) {
       const l = Math.hypot(mx, my);
-      const spd = f.dashT > 0 ? f.speed * 3 : f.speed;
+      const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * (f.slowed ? 0.55 : 1);   // 冰冻/束缚/感电 减速
       f.x += (mx / l) * spd * dt;
       f.y += (my / l) * spd * dt;
       f.face = mx < 0 ? -1 : (mx > 0 ? 1 : f.face);
       f.moving = true;
     } else { f.moving = false; }
-    // if dashing without input, continue dash in aim dir
-    if (f.dashT > 0 && !mx && !my) { f.x += Math.cos(this.aim) * f.speed * 3 * dt; f.y += Math.sin(this.aim) * f.speed * 3 * dt; }
+    // Dashing without a held direction travels along the dodge's chosen flee heading
+    // (_dashAim), NOT the aim reticle — so a standing dodge never lurches into the enemy.
+    if (f.dashT > 0 && !mx && !my) { const a = f._dashAim != null ? f._dashAim : this.aim; f.x += Math.cos(a) * f.speed * 3 * dt; f.y += Math.sin(a) * f.speed * 3 * dt; }
     f.x = clamp(f.x, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     f.y = clamp(f.y, this.topMargin, this.H - this.bottomMargin);
 
@@ -572,6 +592,7 @@ class CaptureBattle {
     if (pressed(' ')) this.dodge();
     if (pressed('r')) this.ultimate();
     if (pressed('f')) this.castDuo();
+    if (pressed('tab')) this.cycleTarget();   // focus-fire: cycle the locked enemy
     if (pressed('1')) this.switchTo(0);
     if (pressed('2')) this.switchTo(1);
     if (pressed('3')) this.switchTo(2);
@@ -595,11 +616,12 @@ class CaptureBattle {
   fireBasic(f, aim) {
     f = f || this.me(); if (f.cd.basic > 0) return;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
+    if (f === this.me() && this._obs) this._obs.fires++;    // aggression signal
     f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
     // 猫爪=近身快攻: short-lived projectile so it only reaches ~short range
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1), 'me', col, 5, 'claw', { element: f.element }, 0.45);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 5, 'claw', { element: f.element }, 0.45);
     this.vfx.muzzle(mx, my, aim, col);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
       window.MorrowwishAudio?.effect?.('paw');this._lastPawSfx=this.t;
@@ -619,14 +641,13 @@ class CaptureBattle {
     }else if(sk.kind==='buff'){
       const shield=sk.tags?.includes('shield');
       if(shield){
-        if(f.shieldT>.25)return false;
-        f.shieldT=4.8;
+        return this.castWard(f, sk.shieldType || 'barrier');   // three shield verbs
       }else{
         if(f.damageBoostT>.3)return false;
         f.damageBoostT=6;
+        this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:'#ffd9a0',width:4});
+        this.vfx.text(f.x,f.y-34,'强化','#f8eab8',14);
       }
-      this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:shield?'#9dd8ff':'#ffd9a0',width:4});
-      this.vfx.text(f.x,f.y-34,shield?'护盾':'强化','#f8eab8',14);
     }else return false;
     this.gainUlt(6);
     if(f===this.me())this.game.toast('✨ '+sk.name+'！');
@@ -707,6 +728,89 @@ class CaptureBattle {
     }
     return false;
   }
+  // ---- the three shield verbs (players AND enemies) ----
+  // Each sets a short-lived field resolveHit() consults, with its own limit and
+  // after-effect. Shared so enemy AI can cast the exact same wards.
+  castWard(f, type) {
+    if ((f.protectT||0)>0 || (f.reflectT||0)>0 || (f.shieldT||0)>.25) return false;  // one ward at a time
+    if (type === 'protect') {
+      // Protect 守护: full block, tiny window, then a vulnerable 后遗症.
+      f.protectT = 0.8; f._protectVuln = 1.2;        // after it drops → vulnerableT
+      this.vfx.ring(f.x,f.y,{r0:14,vr:120,life:.5,color:'#9be7c4',width:6});
+      this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
+    } else if (type === 'reflect') {
+      // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
+      f.reflectT = 2.2; f.rootT = 2.2;
+      this.vfx.ring(f.x,f.y,{r0:18,vr:70,life:.5,color:'#b8e0ff',width:5});
+      this.vfx.text(f.x,f.y-34,'反弹壁','#b8e0ff',14);
+    } else {
+      // Barrier 护盾: % reduction for a duration (the classic bubble).
+      f.shieldT = 4.8;
+      this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:'#9dd8ff',width:4});
+      this.vfx.text(f.x,f.y-34,'护盾','#9dd8ff',14);
+    }
+    return true;
+  }
+  // ---- adaptive AI profile (tiny online statistics, all clamped) ----
+  normalizeAiProfile(p) {
+    const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true };
+    p = Object.assign({}, d, p || {});
+    p.elemLead = Object.assign({}, p.elemLead);
+    p.dodgeDir = clamp(p.dodgeDir, -1, 1); p.favRange = clamp(p.favRange, 0, 1);
+    p.evasive = clamp(p.evasive, 0.05, 0.95); p.aggression = clamp(p.aggression, 0, 1);
+    p.skill = clamp(p.skill, 0, 1); p.battles = clamp(p.battles | 0, 0, 9999);
+    return p;
+  }
+  // Fold this battle's observations into the persisted EMAs. Called at battle end.
+  commitAiProfile(won) {
+    if (!(window.State && State.S)) return;
+    const p = this.normalizeAiProfile(State.S.aiProfile), o = this._obs;
+    p.battles = Math.min(p.battles + 1, 9999);
+    if (o.dodgeN) p.dodgeDir = clamp(lerp(p.dodgeDir, o.dodgeSignSum / o.dodgeN, 0.2), -1, 1);
+    if (o.rangeN) p.favRange = clamp(lerp(p.favRange, (o.rangeSum / o.rangeN) / Math.hypot(this.W, this.H), 0.15), 0, 1);
+    if (o.threats) p.evasive = clamp(lerp(p.evasive, o.dodgedThreats / o.threats, 0.2), 0.05, 0.95);
+    if (o.frames) p.aggression = clamp(lerp(p.aggression, Math.min(1, (o.fires / Math.max(1, o.frames / 60)) / 3), 0.2), 0, 1);
+    const el = this.me() && this.me().element; if (el) { for (const k in p.elemLead) p.elemLead[k] *= 0.9; p.elemLead[el] = Math.min((p.elemLead[el] || 0) + 1, 50); }
+    // adaptive-difficulty skill estimate from this battle's outcome signals
+    const hpFrac = this.team.reduce((n, f) => n + Math.max(0, f.hp), 0) / Math.max(1, this.team.reduce((n, f) => n + f.maxhp, 0));
+    const perf = clamp(0.3 * (won ? 1 : 0) + 0.25 * (hpFrac >= 0.6 ? 1 : 0) + 0.25 * Math.min(1, (this.perfectDodges + this.comboBest / 10) / 2) + 0.2 * (this.t <= 60 ? 1 : 0), 0, 1);
+    p.skill = clamp(lerp(p.skill, perf, 0.25), 0, 1);
+    State.S.aiProfile = p;
+  }
+
+  // Tick ward timers for any fighter/enemy; Protect leaves a vulnerable window.
+  tickWards(f, dt) {
+    if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
+    if (f.reflectT > 0) f.reflectT = Math.max(0, f.reflectT - dt);
+    if (f.rootT > 0) f.rootT = Math.max(0, f.rootT - dt);
+    if (f.vulnerableT > 0) f.vulnerableT = Math.max(0, f.vulnerableT - dt);
+  }
+
+  // Tick DoT + soft-CC the ENEMY inflicted on a cat. Fair by design: damage-over-
+  // time ticks, control tags only SLOW the cat (sets f.slowed) and weaken reduces
+  // its damage — a cat is never fully locked out of acting.
+  tickCatStatus(f, dt) {
+    if (!f.status) { f.slowed = false; return; }
+    const TAG = (window.Skills && Skills.TAG_INFO) || {};
+    let slow = false, weak = false;
+    for (const tg in f.status) {
+      f.status[tg] -= dt;
+      if (f.status[tg] <= 0) { delete f.status[tg]; f.tags = (f.tags || []).filter(t => t !== tg); continue; }
+      const info = TAG[tg];
+      if (!info) continue;
+      if (info.dps) {
+        const d = f.maxhp * info.dps * dt;
+        f.hp = Math.max(0, f.hp - d);
+        if (Math.random() < dt * 3) this.vfx.text(f.x + (Math.random() * 16 - 8), f.y - 18, '-' + Math.max(1, Math.round(f.maxhp * info.dps)), info.color, 10);
+        if (f.hp <= 0 && f.alive) this.onFaint(f);
+      }
+      if (tg === 'chill' || tg === 'bind' || tg === 'dizzy' || tg === 'shock') slow = true;  // soft-CC → slow
+      if (info.dmgDealt) weak = true;                                                         // 虚弱 → 伤害减半
+    }
+    f.slowed = slow;
+    f.weakened = weak;
+  }
+
   skillQ(f, aim) {
     f = f || this.me(); if (f.cd.q > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
@@ -719,17 +823,8 @@ class CaptureBattle {
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1);
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1);
-    const kind = sk ? sk.kind : 'projectile';
-    if (kind === 'melee') {
-      // 近战: short-range arc slash — only hits enemies within MELEE_RANGE, big damage
-      this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
-    } else if(!this.castDistinctProjectile(f,sk,aim,col,f.dmg*pow)){
-      // The basic unawakened Q remains a fast, learnable yarn fan.
-      for(let i=-2;i<=2;i++)
-        this.spawnProj(f.x,f.y,aim+i*.18,f.projSpeed*.8,f.dmg*pow,'me',col,7,'fur',sk);
-      this.vfx.muzzle(f.x,f.y,aim,col);
-    }
+    const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
+    this.castOffensiveSkill(f, aim, sk, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
     if (f === this.me()) this.game.toast('🧶 ' + (sk ? sk.name : '毛球散射') + '！');
@@ -741,22 +836,121 @@ class CaptureBattle {
   // 近战范围攻击: an instant arc in front of the caster, hitting enemies within range
   meleeStrike(f, aim, skill, dmg, col) {
     const RANGE = 90, ARC = 1.1;
-    this.vfx.ring(f.x, f.y, { r0: RANGE * 0.4, vr: 520, life: 0.22, color: col, width: 7 });
-    this.skillStrokes.push({kind:'clawSlash',x:f.x,y:f.y,angle:aim,
-      color:col,life:.37,max:.37});
-    // slash arc VFX
-    for (let i = -2; i <= 2; i++) this.vfx.burst(f.x + Math.cos(aim) * 40, f.y + Math.sin(aim) * 40, { count: 2, color: col, angle: aim + i * 0.3, spread: 0.3, speed: 180, life: 0.25 });
+    // signature melee VFX: owner's authored claw-slash stroke + my sweeping blade.
+    this.skillStrokes.push({kind:'clawSlash',x:f.x,y:f.y,angle:aim,color:col,life:.37,max:.37});
+    this.vfx.slash(f.x, f.y, aim, col, RANGE * 0.9, ARC * 0.92);
+    this.vfx.burst(f.x + Math.cos(aim) * RANGE * 0.6, f.y + Math.sin(aim) * RANGE * 0.6, { count: this.game.isTouch ? 4 : 8, color: col, angle: aim, spread: ARC, speed: 220, life: 0.28, r: 2.5, drag: 3 });
     let hit = false;
     for (const e of this.liveEnemies()) {
       const d = Math.hypot(e.x - f.x, e.y - f.y);
       if (d > RANGE + 22) continue;
       const ang = Math.atan2(e.y - f.y, e.x - f.x);
       if (Math.abs(this.angleDiff(ang, aim)) > ARC) continue;   // must be in the frontal arc
-      const dd = this.applyHitEffects(e, skill, dmg, e.x, e.y);
-      this.hurtEnemy(e, dd, e.x, e.y); this.vfx.impact(e.x, e.y, col); hit = true;
+      const r = this.resolveHit(e, 'me', skill, dmg, e.x, e.y);  // melee can't be reflected (no proj)
+      if (r.dealt > 0) hit = true;
     }
     if (hit) this.shakeT = Math.max(this.shakeT, 0.1);
   }
+
+  // ---------------- offensive skill dispatch by KIND ----------------
+  // Shared by skillQ/skillE (and reusable by enemy AI). Each kind has honest hit
+  // geometry: projectile=flying fan, melee=arc, aoe=slow placed lob, dash=lunge,
+  // chain=jump. Support kinds (heal/buff) are handled by the callers before this.
+  castOffensiveSkill(f, aim, sk, pow, col) {
+    const kind = sk ? sk.kind : 'projectile';
+    if (kind === 'melee') {
+      this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
+    } else if (kind === 'aoe') {
+      this.lobAoe(f, aim, sk, f.dmg * pow, col);
+    } else if (kind === 'dash') {
+      this.dashLunge(f, aim, sk, f.dmg * pow * 1.5, col);
+    } else if (kind === 'chain') {
+      this.chainBolt(f, aim, sk, f.dmg * pow, col);
+    } else if (!this.castDistinctProjectile(f, sk, aim, col, f.dmg * pow)) {
+      // Owner's per-skill elemental geometry (lances/fireball/hex/etc.) takes
+      // priority; fall back to a directional projectile fan for plain skills.
+      for (let i = -2; i <= 2; i++) this.spawnProj(f.x, f.y, aim + i * 0.18, f.projSpeed * 0.8, f.dmg * pow, 'me', col, 7, 'fur', sk);
+      this.vfx.muzzle(f.x, f.y, aim, col);
+      this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
+    }
+  }
+
+  // Placed AOE: a slow projectile lobbed toward a target POINT; on arrival it
+  // bursts into a circle and only enemies inside the circle are hit. Desktop aims
+  // at the cursor; mobile/AI at the locked/nearest enemy. Telegraphed by a ground
+  // ring that travels with it, so it stays dodgeable (leave the circle).
+  lobAoe(f, aim, sk, dmg, col) {
+    const R = 86;                                   // burst radius
+    // destination point
+    let tx, ty;
+    if (f === this.me() && !this.game.isTouch) {
+      const m = this.game.mouse || {}; tx = m.x; ty = m.y;             // desktop: cursor
+    } else {
+      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
+      if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
+    }
+    const ang = Math.atan2(ty - f.y, tx - f.x), dist = Math.hypot(tx - f.x, ty - f.y);
+    const speed = 300;                              // deliberately slow → readable/dodgeable
+    this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
+    const p = this.projectiles[this.projectiles.length - 1];
+    p.burst = { r: R, dmg, skill: sk, col, tx, ty };  // consumed by burstAt() on expiry
+    this.vfx.muzzle(f.x, f.y, ang, col);
+  }
+  // Detonate a lobbed AOE at its landing point: everyone inside R takes the hit.
+  burstAt(p) {
+    const b = p.burst; if (!b) return;
+    const side = p.owner === 'wild' ? 'wild' : 'me';
+    this.vfx.shockwave(b.tx, b.ty, b.col);
+    this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
+    this.vfx.burst(b.tx, b.ty, { count: this.game.isTouch ? 12 : 22, color: b.col, speed: 240, life: 0.5, r: 4 });
+    if (side === 'me') {
+      for (const e of this.liveEnemies()) if (Math.hypot(e.x - b.tx, e.y - b.ty) <= b.r) this.resolveHit(e, 'me', b.skill, b.dmg, e.x, e.y);
+    } else {
+      for (const tf of this.team) if (tf.alive && Math.hypot(tf.x - b.tx, tf.y - b.ty) <= b.r) this.resolveHit(tf, 'wild', b.skill, b.dmg, tf.x, tf.y);
+    }
+    this.shakeT = Math.max(this.shakeT, this.game.isTouch ? 0.08 : 0.14);
+  }
+  // Dash lunge: the caster leaps along aim; enemies crossed along the lunge line
+  // are struck once. A gap-closer, not a ranged poke.
+  dashLunge(f, aim, sk, dmg, col) {
+    f.dashT = 0.24; f.inv = 0.28; f._dashAim = aim;
+    const x2 = f.x + Math.cos(aim) * 190, y2 = f.y + Math.sin(aim) * 190;
+    this.vfx.trail(f.x, f.y, col, 10); this.vfx.beam(f.x, f.y, x2, y2, col);
+    const hitThisLunge = new Set();
+    for (const e of this.liveEnemies()) {
+      // distance from the enemy to the lunge segment
+      const d = this.pointToSeg(e.x, e.y, f.x, f.y, x2, y2);
+      if (d <= 34 && !hitThisLunge.has(e.i)) { hitThisLunge.add(e.i); this.resolveHit(e, 'me', sk, dmg, e.x, e.y); }
+    }
+  }
+  // Chain lightning: hit the aimed/nearest enemy, then jump to the nearest
+  // not-yet-hit enemy within jumpR, up to N jumps. Only chain nodes are hit.
+  chainBolt(f, aim, sk, dmg, col) {
+    const JUMP_R = 240, MAX = 4;
+    let from = { x: f.x, y: f.y };
+    const hit = new Set();
+    let node = this.targetEnemy ? this.targetEnemy() : this.nearestEnemy(f.x, f.y);
+    let n = 0, power = dmg;
+    while (node && n < MAX) {
+      hit.add(node.i);
+      this.vfx.beam(from.x, from.y, node.x, node.y, col);
+      this.vfx.impact(node.x, node.y, col);
+      this.resolveHit(node, 'me', sk, power, node.x, node.y);
+      from = { x: node.x, y: node.y };
+      power *= 0.82;                                 // each jump a little weaker
+      // next nearest live, unhit enemy within jump range
+      let best = null, bd = JUMP_R;
+      for (const e of this.liveEnemies()) { if (hit.has(e.i)) continue; const dd = Math.hypot(e.x - from.x, e.y - from.y); if (dd < bd) { bd = dd; best = e; } }
+      node = best; n++;
+    }
+  }
+  // perpendicular distance from point (px,py) to segment (ax,ay)-(bx,by)
+  pointToSeg(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
+    let t = ((px - ax) * dx + (py - ay) * dy) / L2; t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+  }
+
   skillE(f, aim) {
     f = f || this.me(); if (f.cd.e > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
@@ -769,18 +963,13 @@ class CaptureBattle {
     }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1);
     const col = this.elemColor(sk ? sk.element : f.element);
-    if(sk&&sk.kind==='projectile'){
-      const dmg=f.dmg*sk.power*(f.damageBoostT>0?1.25:1);
-      if(!this.castDistinctProjectile(f,sk,aim,col,dmg)){
-        for(let i=-1;i<=1;i++)
-          this.spawnProj(f.x,f.y,aim+i*.12,f.projSpeed*.93,dmg,'me',col,7,'fur',sk);
-        this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim,spread:.8,speed:155,life:.3});
-      }
-    }else if(sk&&sk.kind==='melee'){
-      this.meleeStrike(f,aim,sk,f.dmg*sk.power*(f.damageBoostT>0?1.25:1),col);
-    }else{
+    const pow = (sk ? sk.power : 1) * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
+    if (sk) {
+      this.castOffensiveSkill(f, aim, sk, pow, col);
+    } else {
+      // no learned E skill → the classic pounce (contact-damage lunge)
       f.dashT=.26;f.inv=.3;
-      f.pounce=true;f._dashAim=aim;f._pounceSkill=sk;
+      f.pounce=true;f._dashAim=aim;f._pounceSkill=null;
       this.vfx.shockwave(f.x,f.y,col);
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
     }
@@ -791,13 +980,40 @@ class CaptureBattle {
   }
   dodge(f) {
     f = f || this.me(); if (f.dodgeCd > 0) return false;
-    f.dodgeCd = 1.1; f.dashT = 0.2; f.inv = 0.38;
-    // PERFECT DODGE: an enemy shot within ~36px when you dodge → bullet-time reward
+    // A real escape tool now: a LONG i-frame dash that travels AWAY from danger,
+    // plus a short bullet-time on every use so it actually buys breathing room.
+    f.dodgeCd = 1.2; f.dashT = 0.32; f.inv = 0.5;
+    // Pick the dash direction: honor the player's held movement if any; otherwise
+    // flee the nearest incoming shot (or the nearest enemy) instead of lurching
+    // toward the aim reticle (which points AT the enemy — the old useless behavior).
+    let dir = null;
+    const mvx = f._mvx || 0, mvy = f._mvy || 0;        // last movement input (set in readInput)
+    if (f === this.me() && (Math.abs(mvx) + Math.abs(mvy)) > 0.01) {
+      dir = Math.atan2(mvy, mvx);
+    } else {
+      let threat = null, td = 1e9;
+      for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < td) { td = d; threat = p; } }
+      if (threat && td < 140) dir = Math.atan2(f.y - threat.y, f.x - threat.x);   // away from the shot
+      else { const ne = this.nearestEnemy(f.x, f.y); if (ne) dir = Math.atan2(f.y - ne.y, f.x - ne.x); }  // away from enemy
+    }
+    if (dir != null) f._dashAim = dir;
+    // LEARN the player's habits: which way they strafe when dodging, and whether a
+    // threat was actually present (dodge-vs-panic). Only observe the active cat.
+    if (f === this.me() && this._obs) {
+      const vx = f._vx || 0, vy = f._vy || 0, ne = this.nearestEnemy(f.x, f.y);
+      if (ne && (Math.abs(vx) + Math.abs(vy) > 10)) {
+        const toE = Math.atan2(ne.y - f.y, ne.x - f.x);
+        const sign = Math.sign(Math.cos(toE) * vy - Math.sin(toE) * vx);  // CW(+)/CCW(-) relative to enemy
+        this._obs.dodgeSignSum += sign; this._obs.dodgeN++;
+      }
+    }
+    // PERFECT DODGE: an enemy shot within ~40px when you dodge → big bullet-time reward
     let perfect = false;
     for (const p of this.projectiles) {
       if (p.owner !== 'wild') continue;
       if (Math.hypot(p.x - f.x, p.y - f.y) < 40) { perfect = true; break; }
     }
+    if (f === this.me() && this._obs) { this._obs.threats++; if (perfect) this._obs.dodgedThreats++; }
     if (perfect && f === this.me()) {
       this.perfectDodges++;
       this.slowmo = 0.9; this.flash = 0.25; f.inv = 0.7;
@@ -807,8 +1023,11 @@ class CaptureBattle {
       this.vfx.text(f.x, f.y - 46, '完美闪避!', '#9d7bff', 18);
       this.game.toast('✨ 完美闪避！子弹时间 + 充能');
     } else {
-      this.vfx.ring(f.x, f.y, { r0: 6, vr: 240, life: 0.3, color: '#ffffff', width: 2 });
-      this.vfx.burst(f.x, f.y, { count: 6, color: '#ffffff', speed: 150, life: 0.3, r: 2 });
+      // Even an ordinary dodge briefly slows the world (enemies + their shots), so
+      // it reliably creates space to reposition — the "freeze time" the dash needs.
+      if (f === this.me()) this.slowmo = Math.max(this.slowmo, 0.35);
+      this.vfx.ring(f.x, f.y, { r0: 6, vr: 300, life: 0.35, color: '#bfe9ff', width: 3 });
+      this.vfx.burst(f.x, f.y, { count: 8, color: '#bfe9ff', speed: 170, life: 0.32, r: 2 });
     }
     return true;
   }
@@ -826,9 +1045,8 @@ class CaptureBattle {
       let hits=0;
       for(const e of this.liveEnemies().slice()){
         if(Math.hypot(e.x-f.x,e.y-f.y)>radius)continue;
-        const dmg=this.applyHitEffects(e,skill,f.dmg*skill.power*.85,e.x,e.y);
-        this.hurtEnemy(e,dmg,e.x,e.y);
-        hits++;
+        const r=this.resolveHit(e,'me',skill,f.dmg*skill.power*.62,e.x,e.y);
+        if(r.dealt>0)hits++;
       }
       this.vfx.shockwave(f.x,f.y,color);
       this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,
@@ -870,7 +1088,10 @@ class CaptureBattle {
   gainUlt(n) { this.ult = Math.min(100, this.ult + n); }
 
   // ---- COMBO: every hit extends the chain; higher chain = more dmg + ult ----
-  comboMult() { return 1 + Math.min(this.combo, 50) * 0.03; }   // up to ×2.5 at 50 hits
+  // Combo bonus with DIMINISHING returns so it can't stack multiplicatively with
+  // element-effectiveness + STAB into a one-shot. Square-root curve: ~×1.35 at 10
+  // combo, ~×1.55 at 25, caps ~×1.7 at 50 (was a runaway linear ×2.5).
+  comboMult() { return 1 + Math.sqrt(Math.min(this.combo, 50)) * 0.1; }
   addCombo(n) {
     this.combo += (n || 1);
     this.comboT = 1.3;                                          // drop window (需持续命中)
@@ -1024,6 +1245,10 @@ class CaptureBattle {
     if (this.done) return;
     // perfect-dodge bullet-time: slow the WORLD but keep input responsive
     if (this.slowmo > 0) { this.slowmo -= dt; dt *= 0.35; }
+    // hitstop: a few frames of near-freeze on a solid hit makes impacts feel weighty.
+    // It scales the SIMULATION dt only (input was already polled by the loop), and
+    // never stacks on top of bullet-time. Mobile uses a shorter freeze to avoid jank.
+    if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
     this.t += dt;
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
@@ -1056,6 +1281,8 @@ class CaptureBattle {
       if (f.dodgeCd > 0) f.dodgeCd -= dt;
       if (f.shieldT > 0) f.shieldT=Math.max(0,f.shieldT-dt);
       if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
+      this.tickWards(f, dt);
+      this.tickCatStatus(f, dt);              // DoT + soft-CC (slow) the enemy inflicted
       if (f.hitFlash > 0) f.hitFlash -= dt;
     }
     const me = this.me();
@@ -1073,9 +1300,7 @@ class CaptureBattle {
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + 22) {
-          const dmg = this.applyHitEffects(e, f._pounceSkill, f.dmg * 1.6 * (f.damageBoostT>0?1.25:1), e.x, e.y);
-          this.hurtEnemy(e, dmg, f.x, f.y);
-          this.vfx.impact(e.x, e.y, this.elemColor(f.element));
+          this.resolveHit(e, 'me', f._pounceSkill || { element: f.element }, f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), e.x, e.y);
           f.pounce = false;
         }
       }
@@ -1083,12 +1308,39 @@ class CaptureBattle {
       if (f !== me) this.updateAllyAI(dt, f);
     }
 
+    // ---- velocity sampler: team positions are final for this frame, so record a
+    // smoothed velocity (EMA) the enemy AI's predictive aim can lead. Player vx/vy
+    // were previously never written, so leadAngle was a no-op; this fixes that. ----
+    for (const f of this.team) {
+      if (!f.alive) continue;
+      const nvx = (f.x - (f._px != null ? f._px : f.x)) / Math.max(dt, 1e-3);
+      const nvy = (f.y - (f._py != null ? f._py : f.y)) / Math.max(dt, 1e-3);
+      f._vx = lerp(f._vx || 0, nvx, 0.2); f._vy = lerp(f._vy || 0, nvy, 0.2);
+      f._px = f.x; f._py = f.y;
+    }
+    // observe the player's preferred range (~4 Hz) for cross-battle habit learning
+    if (this._obs) {
+      this._obs.frames++;
+      this._obs.rangeT = (this._obs.rangeT || 0) + dt;
+      if (this._obs.rangeT >= 0.25) {
+        this._obs.rangeT = 0;
+        const am = this.me(), ne = am && this.nearestEnemy(am.x, am.y);
+        if (am && ne) { this._obs.rangeSum += Math.hypot(ne.x - am.x, ne.y - am.y); this._obs.rangeN++; }
+      }
+    }
+
     // ---- each enemy in the pack runs its own AI (they coordinate; see updateEnemyAI) ----
+    // Self-healing pack cast-lock: recompute from who is ACTUALLY telegraphing right
+    // now. (The old manual counter leaked — if a telegraphing enemy was frozen or
+    // died mid-windup it never released the lock, permanently stalling pack specials.)
+    this._novaLock = this.liveEnemies().some(e => e.telegraph > 0) ? 1 : 0;
     for (const e of this.enemies) { if (e.flash > 0) e.flash -= dt; }
     for (const e of this.liveEnemies()) {
+      this.tickWards(e, dt);                           // protect/reflect/barrier timers
+      if (e.wardCd > 0) e.wardCd -= dt;
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
-      else if (e.alive) { e.pose = 'idle'; }           // frozen: stand still, no attacks
+      else if (e.alive) { e.pose = 'idle'; e.telegraph = 0; }  // frozen: drop any windup, stand still
     }
 
     // ---- projectiles ----
@@ -1096,29 +1348,42 @@ class CaptureBattle {
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       p._tc = (p._tc || 0) + dt;
       if (p._tc > 0.02) { p._tc = 0; this.vfx.trail(p.x, p.y, p.color, p.r * 0.8); }
+      // A lobbed AOE flies OVER enemies to its landing point, then bursts (it does
+      // not collide on contact). Show its target ring; detonate on arrival/expiry.
+      if (p.burst) {
+        this.vfx.ring(p.burst.tx, p.burst.ty, { r0: p.burst.r, vr: 0, life: 0.08, color: p.burst.col, width: 2 });
+        if (p.life <= 0 || Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16) { this.burstAt(p); p.life = 0; }
+        continue;
+      }
       if (p.owner === 'me') {
         for (const e of this.liveEnemies()) {
           if (e.flash <= 0 && e.inv <= 0 && Math.hypot(p.x - e.x, p.y - e.y) < p.r + 22) {
-            const dmg = this.applyHitEffects(e, p.skill, p.dmg, p.x, p.y);
-            this.hurtEnemy(e,dmg,p.x,p.y);this.vfx.impact(p.x,p.y,p.color);
-            if(p.kind==='fireball'){
-              this.vfx.shockwave(p.x,p.y,'#ffc16e');
-              this.vfx.burst(p.x,p.y,{count:32,color:'#ffbf71',speed:240,life:.55,r:5});
-              this.skillStrokes.push({kind:'fireBurst',x:p.x,y:p.y,color:'#ffbd76',life:.45,max:.45});
-              for(const other of this.liveEnemies().slice()){
-                if(other===e||Math.hypot(other.x-p.x,other.y-p.y)>105)continue;
-                const splash=this.applyHitEffects(other,p.skill,p.dmg*.36,other.x,other.y);
-                this.hurtEnemy(other,splash,other.x,other.y,true);
+            const r = this.resolveHit(e, 'me', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
+            if (r.reflected) break;            // bounced back — projectile lives, now enemy-owned
+            // fireball keeps its owner-authored area splash (routed through resolveHit)
+            if (p.kind === 'fireball' && r.dealt > 0) {
+              this.vfx.shockwave(p.x, p.y, '#ffc16e');
+              this.vfx.burst(p.x, p.y, { count: 32, color: '#ffbf71', speed: 240, life: .55, r: 5 });
+              this.skillStrokes.push({ kind: 'fireBurst', x: p.x, y: p.y, color: '#ffbd76', life: .45, max: .45 });
+              for (const other of this.liveEnemies().slice()) {
+                if (other === e || Math.hypot(other.x - p.x, other.y - p.y) > 105) continue;
+                this.resolveHit(other, 'me', p.skill || { element: p.element }, p.dmg * .36, other.x, other.y);
               }
             }
-            p.life=0;break;
+            p.life = 0;                         // landed or blocked: consume it
+            break;
           }
         }
       } else {
         // enemy shot hits ANY alive team cat it overlaps
         for (const tf of this.team) {
           if (!tf.alive || tf.inv > 0) continue;
-          if (Math.hypot(p.x - tf.x, p.y - tf.y) < p.r + tf.r * 0.7) { this.hurtMe(p.dmg, p.x, p.y, tf); this.vfx.impact(p.x, p.y, p.color); p.life = 0; break; }
+          if (Math.hypot(p.x - tf.x, p.y - tf.y) < p.r + tf.r * 0.7) {
+            const r = this.resolveHit(tf, 'wild', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
+            if (r.reflected) break;
+            p.life = 0;
+            break;
+          }
         }
       }
     }
@@ -1162,6 +1427,22 @@ class CaptureBattle {
     let best = null, bd = 1e9;
     for (const e of this.liveEnemies()) { const d = Math.hypot(e.x - x, e.y - y); if (d < bd) { bd = d; best = e; } }
     return best;
+  }
+  // ---- soft target lock: the enemy the player is focusing ----
+  // Keeps the same target across frames (hysteresis) so auto-aim doesn't thrash
+  // as the pack orbits. Falls back to nearest when the lock dies or is unset.
+  lockedEnemy() {
+    if (this._lockIdx != null) { const e = this.liveEnemies().find(x => x.i === this._lockIdx); if (e) return e; this._lockIdx = null; }
+    return null;
+  }
+  // Cycle the lock to the next live enemy (Tab on desktop, button on mobile).
+  cycleTarget() {
+    const live = this.liveEnemies();
+    if (!live.length) { this._lockIdx = null; return; }
+    let i = live.findIndex(e => e.i === this._lockIdx);
+    const next = live[(i + 1) % live.length];
+    this._lockIdx = next.i;
+    this.vfx.ring(next.x, next.y, { r0: 10, vr: 260, life: 0.3, color: '#ffd36b', width: 3 });
   }
   // the enemy the player's aim/attacks target (nearest to aim direction from active cat)
   targetEnemy() {
@@ -1226,7 +1507,9 @@ class CaptureBattle {
     } else {
       // surround: each enemy picks a slot angle around the player so they don't stack
       const slot = (e.i / Math.max(1, this.enemies.length)) * Math.PI * 2;
-      const want = 200 - e.aggro * 80;
+      // LEARNED: crowd a kiter / kite a brawler — attack the player's comfort zone.
+      let want = 200 - e.aggro * 80;
+      if (this.aiP && this._aiConf) want = clamp(want + (0.5 - this.aiP.favRange) * 60 * this._aiConf, 90, 230);
       const desiredX = me.x + Math.cos(slot + this.t * 0.4) * want;
       const desiredY = me.y + Math.sin(slot + this.t * 0.4) * want;
       const gx = desiredX - e.x, gy = desiredY - e.y, gl = Math.hypot(gx, gy) || 1;
@@ -1246,28 +1529,45 @@ class CaptureBattle {
     e.stride=(e.stride||0)+dt*(6+spd*.052)*e.motion;
     if (e.pose !== 'play') e.pose = (ax || ay) ? 'walk' : 'idle';
 
-    // telegraphed special (staggered: only one enemy charges a nova at a time)
+    // ---- reactive ward: an enemy that's thinking defends itself (SR/SSR more often) ----
+    if (e.wardCd <= 0 && e.rIdx >= 1 && !e.protectT && !e.reflectT && !(e.shieldT > 0.25)) {
+      this.enemyMaybeWard(e, me, dist);
+    }
+    // telegraphed special (staggered: only ONE enemy telegraphs at a time, pack-wide)
     if (e.telegraph > 0) {
       e.telegraph -= dt;
       if (Math.random() < 0.5) this.vfx.burst(e.x, e.y, { count: 1, color: '#ff4d6d', speed: 40, life: 0.3 });
-      if (e.telegraph <= 0) { this.unleashEnemySpecial(e, me); this._novaLock = Math.max(0, (this._novaLock || 0) - 1); }
+      if (e.telegraph <= 0) { this.unleashEnemySpecial(e, me); }   // lock auto-clears next frame (recomputed)
       return;
     }
     e.special -= dt;
-    if (e.special <= 0 && dist < 440) {
-      e.special = Math.max(2.2, e.specialCd - e.aggro * 2) + Math.random();
-      const wantNova=hpFrac<.55&&e.rIdx>=1&&(this._novaLock||0)===0;
-      e.telegraphKind=wantNova?'nova':e.role==='ambusher'&&e.challenge>0?'pounce':'barrage';
-      if (wantNova) this._novaLock = 1;                      // reserve nova slot; others barrage
-      e.telegraph = Math.max(0.4, 0.75 - e.rIdx * 0.08);
-      if (wantNova) this.game.toast('⚠️ 野猫在蓄力大招！');
-      return;
+    // Per-kind engagement: nova is a point-blank punish, pounce is an ambusher's
+    // close leap, barrage is mid-range, AoE-lob reaches out. Pick the kind that
+    // fits the CURRENT distance instead of casting from across the arena. Only one
+    // enemy telegraphs at a time.
+    if (e.special <= 0 && (this._novaLock || 0) === 0) {
+      let kind = null;
+      if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
+      else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
+      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && Math.random() < 0.5) ? 'lob' : 'barrage';
+      else if (dist < 320) kind = 'barrage';
+      if (kind) {
+        e.special = Math.max(2.6, e.specialCd - e.aggro * 1.5) + Math.random();          // +recovery floor
+        e.telegraphKind = kind;
+        this._novaLock = 1;                                   // pack cast-lock: others keep basic-firing
+        e.telegraph = Math.min(1.2, 0.8 + e.rIdx * 0.1) * (this.aiReact || 1);
+        e.telegraphMax = e.telegraph;
+        e.telegraphAim = this.leadAngle(e, me, 300);          // predictive lead (see leadAngle)
+        if (kind === 'nova') this.game.toast('⚠️ 野猫在蓄力大招！');
+        return;
+      }
     }
 
-    // normal aimed fire (leads the player)
+    // normal aimed fire — only within effective range, with a cadence floor so a
+    // wounded enemy can't machine-gun. Predictively led.
     e.fireCd -= dt;
-    if (e.fireCd <= 0) {
-      e.fireCd = e.fireRate * (1 - e.aggro * 0.35) * (e.slowed ? 1.8 : 1);   // 感电降攻速
+    if (e.fireCd <= 0 && dist < 340) {
+      e.fireCd = Math.max(0.5, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1);   // +floor; 感电降攻速
       let lead = this.leadAngle(e, me, 240 + e.rIdx * 40);
       if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
@@ -1280,43 +1580,97 @@ class CaptureBattle {
     }
   }
 
-  // aim that leads a moving target (from source s to target me)
+  // Predictive aim: lead the target by its SMOOTHED velocity (see the velocity
+  // sampler in update), capped so a strafer about to reverse isn't wildly over-led.
+  // aiLeadConf / aiJitter / learned strafe bias come from the adaptive layer.
   leadAngle(s, me, projSpeed) {
-    const dx = me.x - s.x, dy = me.y - s.y;
-    const t = Math.hypot(dx, dy) / projSpeed;
-    return Math.atan2(dy + (me.vy || 0) * t, dx + (me.vx || 0) * t);
+    const dx = me.x - s.x, dy = me.y - s.y, dist = Math.hypot(dx, dy) || 1;
+    const t = dist / projSpeed, vmax = (me.speed || 150) * 0.6;
+    const lead = this.aiLeadConf != null ? this.aiLeadConf : 1;
+    let px = dx + clamp((me._vx || 0) * t, -vmax, vmax) * lead;
+    let py = dy + clamp((me._vy || 0) * t, -vmax, vmax) * lead;
+    if (this.aiP && this._aiConf) {                       // learned: bias toward the side they habitually strafe
+      const perp = Math.atan2(dy, dx) + Math.PI / 2, k = this.aiP.dodgeDir * this._aiConf * vmax * 0.5;
+      px += Math.cos(perp) * k; py += Math.sin(perp) * k;
+    }
+    let ang = Math.atan2(py, px);
+    if (this.aiJitter) ang += (Math.random() * 2 - 1) * this.aiJitter;  // human slop / difficulty
+    return ang;
   }
 
   unleashEnemySpecial(e, me) {
+    // RE-CHECK the target at release: if it died or walked out of range, retarget
+    // the nearest cat, and downgrade a now-pointless nova to an aimed barrage
+    // rather than firing into empty space.
+    if (!me || !me.alive) me = this.nearestEnemyTeamCat(e);
+    if (!me) return;
+    const dist = Math.hypot(me.x - e.x, me.y - e.y);
+    if (e.telegraphKind === 'nova' && dist > 180) e.telegraphKind = 'barrage';   // too far for a self-burst
     const sk = e.skill;
     const col = sk ? this.elemColor(sk.element) : '#ff4d6d';
     const pow = sk ? sk.power : 0.9;
-    const skillName = sk ? sk.name : (e.telegraphKind === 'nova' ? '猫猫怒涛' : '连射');
-    this.game.toast('💢 ' + e.sp.name + ' 施放 ' + skillName + '！');
-    if(e.telegraphKind==='pounce'){
-      const aim=Math.atan2(me.y-e.y,me.x-e.x);
-      this.vfx.beam(e.x,e.y,me.x,me.y,'#fb7c65');
-      this.vfx.burst(e.x,e.y,{count:12,color:col,speed:200,life:.4});
-      const leap=Math.min(95,Math.hypot(me.x-e.x,me.y-e.y)*.42);
-      e.x=clamp(e.x+Math.cos(aim)*leap,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
-      e.y=clamp(e.y+Math.sin(aim)*leap,this.topMargin,this.H-this.bottomMargin);
-      for(const f of this.team.filter(f=>f.alive)){
-        if(Math.hypot(f.x-e.x,f.y-e.y)<95)this.hurtMe(e.dmg*1.25,e.x,e.y,f);
+    const kindName = { nova: '猫猫怒涛', barrage: '连射', lob: '落雷', pounce: '猛扑' };
+    this.game.toast('💢 ' + e.sp.name + ' 施放 ' + (sk ? sk.name : (kindName[e.telegraphKind] || '连射')) + '！');
+    if (e.telegraphKind === 'pounce') {
+      // ambusher leap — routed through resolveHit so cat shields still apply
+      const aim = Math.atan2(me.y - e.y, me.x - e.x);
+      this.vfx.beam(e.x, e.y, me.x, me.y, '#fb7c65');
+      this.vfx.burst(e.x, e.y, { count: 12, color: col, speed: 200, life: .4 });
+      const leap = Math.min(95, Math.hypot(me.x - e.x, me.y - e.y) * .42);
+      e.x = clamp(e.x + Math.cos(aim) * leap, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+      e.y = clamp(e.y + Math.sin(aim) * leap, this.topMargin, this.H - this.bottomMargin);
+      for (const f of this.team.filter(f => f.alive)) {
+        if (Math.hypot(f.x - e.x, f.y - e.y) < 95) this.resolveHit(f, 'wild', sk || { element: e.element }, e.dmg * 1.25, e.x, e.y);
       }
       return;
     }
     if (e.telegraphKind === 'nova') {
       const n = 12 + e.rIdx * 4;
       const off = Math.random() * Math.PI;
-      for (let i = 0; i < n; i++) this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 200, e.dmg * pow, 'wild', col, 7, 'ball');
+      for (let i = 0; i < n; i++) this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 200, e.dmg * pow, 'wild', col, 7, 'ball', sk);
       this.vfx.shockwave(e.x, e.y, col);
       this.vfx.ring(e.x, e.y, { r0: 10, vr: 520, life: 0.45, color: col, width: 6 });
       e.inv = 0.25;
+    } else if (e.telegraphKind === 'lob') {
+      this.enemyLobAoe(e, me, col);
     } else {
-      // rapid aimed barrage tinted to its element
+      // rapid aimed barrage, predictively led + element-tinted
       const base = this.leadAngle(e, me, 300);
-      for (let i = 0; i < 5; i++) this.spawnProj(e.x, e.y, base + (i - 2) * 0.12, 300, e.dmg * 0.85, 'wild', col, 6, 'ball');
+      for (let i = 0; i < 5; i++) this.spawnProj(e.x, e.y, base + (i - 2) * 0.12, 300, e.dmg * 0.85, 'wild', col, 6, 'ball', sk);
       this.vfx.muzzle(e.x, e.y, base, col);
+    }
+  }
+  // nearest alive team cat to an enemy (release-time retarget helper)
+  nearestEnemyTeamCat(e) {
+    let best = null, bd = 1e9;
+    for (const tf of this.team) { if (!tf.alive) continue; const d = Math.hypot(tf.x - e.x, tf.y - e.y); if (d < bd) { bd = d; best = tf; } }
+    return best;
+  }
+  // Enemy places a SLOW lobbed AoE where the target is heading (predictive lead),
+  // telegraphed by its traveling ground ring. Mirrors the player lobAoe.
+  enemyLobAoe(e, me, col) {
+    const tLead = Math.hypot(me.x - e.x, me.y - e.y) / 300;
+    let tx = clamp(me.x + (me._vx || 0) * tLead, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+    let ty = clamp(me.y + (me._vy || 0) * tLead, this.topMargin, this.H - this.bottomMargin);
+    const ang = Math.atan2(ty - e.y, tx - e.x), dist = Math.hypot(tx - e.x, ty - e.y), speed = 280;
+    this.spawnProj(e.x, e.y, ang, speed, e.dmg * 1.1, 'wild', col, 9, 'orb', e.skill, dist / speed + 0.02);
+    const p = this.projectiles[this.projectiles.length - 1];
+    p.burst = { r: 80, dmg: e.dmg * 1.1, skill: e.skill, col, tx, ty };
+    this.vfx.muzzle(e.x, e.y, ang, col);
+  }
+  // Enemy ward decision: Protect a big incoming hit, Reflect projectile spam,
+  // Barrier under general pressure. Timing/decision only — no damage/HP change.
+  enemyMaybeWard(e, me, dist) {
+    let incoming = 0;
+    for (const p of this.projectiles) { if (p.owner === 'me' && Math.hypot(p.x - e.x, p.y - e.y) < 220) incoming++; }
+    const playerUltSoon = this.ult >= 95;
+    let type = null;
+    if (playerUltSoon && dist < 260) type = 'protect';     // eat the ultimate (not reflectable)
+    else if (incoming >= 3) type = 'reflect';              // bounce a projectile spammer
+    else if (e.hp / e.maxhp < 0.6 && incoming >= 1) type = 'barrier';
+    if (type && this.castWard(e, type)) {
+      e.wardCd = (e.rIdx >= 2 ? 6 : 9) + Math.random() * 2;
+      this.game.toast('🛡️ ' + e.sp.name + (type === 'protect' ? ' 守护!' : type === 'reflect' ? ' 立起反弹壁!' : ' 展开护盾!'));
     }
   }
 
@@ -1368,14 +1722,40 @@ class CaptureBattle {
     if (skill.appliesTag) {
       const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
       for (const tg of tags) {
-        if (!e.tags.includes(tg)) e.tags.push(tg);
+        const fresh = !e.tags.includes(tg);
+        if (fresh) e.tags.push(tg);
         const info = TAG[tg];
         e.status[tg] = info ? info.ttl : 3;
         const nm = info ? info.name : tg;
         this.vfx.text(e.x + (Math.random() * 20 - 10), e.y - 30, nm, info ? info.color : '#fff', 12);
+        if (fresh) this.controlFx(e, tg, info ? info.color : '#fff');   // distinct "it's controlled!" burst
       }
     }
     return dmg;
+  }
+
+  // A distinct cast flourish per status so a control landing READS as control,
+  // not a plain poke. Pairs with the persistent on-body overlay in draw().
+  controlFx(e, tag, color) {
+    switch (tag) {
+      case 'dizzy':   // spinning stars ring overhead
+        this.vfx.ring(e.x, e.y - 30, { r0: 4, vr: 120, life: 0.5, color, width: 3 });
+        this.vfx.text(e.x, e.y - 52, '✦ ✦ ✦', color, 14); break;
+      case 'blind':   // dark wash + shrinking veil
+        this.vfx.ring(e.x, e.y, { r0: 34, vr: -60, life: 0.45, color: '#5a4a6a', width: 10 });
+        this.vfx.burst(e.x, e.y, { count: 8, color: '#2a2030', speed: 90, life: 0.4, r: 4 }); break;
+      case 'chill':   // ice shards snapping inward
+        this.vfx.ring(e.x, e.y, { r0: 40, vr: -140, life: 0.4, color: '#bfe6ff', width: 4 });
+        this.vfx.burst(e.x, e.y, { count: 10, color: '#d6f2ff', speed: 70, life: 0.5, r: 3 }); break;
+      case 'bind':    // vines clamp
+        this.vfx.ring(e.x, e.y, { r0: 28, vr: -40, life: 0.5, color: '#6fcf5f', width: 6 }); break;
+      case 'shock':   // electric jitter arcs
+        for (let i = 0; i < 3; i++) this.vfx.beam(e.x, e.y - 24, e.x + (Math.random() * 40 - 20), e.y + (Math.random() * 30 - 10), color); break;
+      case 'expose': case 'rust':  // cracked red vulnerability ring
+        this.vfx.ring(e.x, e.y, { r0: 10, vr: 200, life: 0.4, color, width: 4 }); break;
+      default:
+        this.vfx.ring(e.x, e.y, { r0: 8, vr: 160, life: 0.3, color, width: 3 });
+    }
   }
 
   // per-enemy status tick: DoT (burn/bleed/shock), crowd-control (chill/bind/dizzy),
@@ -1427,7 +1807,17 @@ class CaptureBattle {
     if (e.status) for (const tg in e.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
     const scaled = dmg;
     e.hp = Math.max(0, e.hp - scaled);
-    e.flash = 0.08;
+    e.flash = 0.16;
+    // Weighty impact on DIRECT hits only (DoT ticks stay quiet to avoid noise):
+    // a short damage-scaled hitstop + a micro screen-shake that grows with combo heat.
+    if (!isDot) {
+      const touch = !!this.game.isTouch;
+      const frac = e.maxhp ? Math.min(1, scaled / e.maxhp) : 0.2;
+      const stop = (touch ? 0.03 : 0.045 + frac * 0.06);          // ~30ms mobile, 45-105ms desktop
+      this.hitstop = Math.max(this.hitstop, stop);
+      const heat = Math.min(1, this.combo / 20);
+      this.shakeT = Math.max(this.shakeT, (touch ? 0.04 : 0.06) + 0.05 * heat);
+    }
     // bigger, brighter number as the combo climbs (crescendo feel)
     const big = this.combo >= 15 ? 18 : this.combo >= 6 ? 15 : 13;
     this.floater(e.x, e.y - 24, '-' + Math.round(scaled), this.combo >= 15 ? '#ffd36b' : '#fff', big);
@@ -1438,7 +1828,8 @@ class CaptureBattle {
   hurtMe(dmg, fx, fy, f) {
     f = f || this.me();
     if (!f.alive) return;
-    dmg*=f.shieldT>0?.55:1;
+    // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
+    // routes through. hurtMe lands the (already shield-adjusted) damage.
     f.hp = Math.max(0, f.hp - dmg);
     f.hitFlash = 0.14; f.inv = 0.3;
     if (f === this.me()) this.shakeT = 0.18;
@@ -1455,6 +1846,90 @@ class CaptureBattle {
       this.onFaint(f);
     }
   }
+
+  // ---------------- UNIFIED HIT RESOLVER ----------------
+  // One entry every attack (projectile / melee / aoe / dash / chain, player or
+  // enemy) passes through, so shields are honored consistently and status/combo
+  // run only on damage that actually lands. `side` is the ATTACKER's owner
+  // ('me'|'wild'); `proj` (optional) is the flying body, needed for reflect.
+  // Returns {blocked, reflected, dealt}.
+  resolveHit(target, side, skill, dmg, x, y, proj) {
+    if (!target || !target.alive) return { blocked: false, reflected: false, dealt: 0 };
+    if ((target.inv || 0) > 0 || (target.flash || 0) > 0) return { blocked: false, reflected: false, dealt: 0 };
+    const col = this.elemColor(skill && skill.element);
+    // 1) PROTECT (守护): fully blocks the next hit of any kind for its window.
+    if ((target.protectT || 0) > 0) {
+      this.vfx.ring(target.x, target.y, { r0: 10, vr: 300, life: 0.3, color: '#9be7c4', width: 5 });
+      this.vfx.text(target.x, target.y - 40, '格挡', '#9be7c4', 15);
+      return { blocked: true, reflected: false, dealt: 0 };
+    }
+    // 2) REFLECT (反弹壁): flip a flying projectile back at its owner (capped so
+    //    it can't ping-pong forever). Instant melee/aoe/chain are NOT reflected.
+    if ((target.reflectT || 0) > 0 && proj && (proj._reflects || 0) < 1) {
+      proj._reflects = (proj._reflects || 0) + 1;
+      proj.owner = side === 'me' ? 'wild' : 'me';
+      proj.vx = -proj.vx; proj.vy = -proj.vy; proj.life = Math.max(proj.life, 1.2);
+      this.vfx.ring(target.x, target.y, { r0: 8, vr: 260, life: 0.25, color: '#b8e0ff', width: 4 });
+      this.vfx.text(target.x, target.y - 40, '反弹', '#b8e0ff', 15);
+      return { blocked: false, reflected: true, dealt: 0 };
+    }
+    // 3) BARRIER (护盾): percentage damage reduction (keeps the existing 55%).
+    if ((target.shieldT || 0) > 0) dmg *= 0.55;
+    // VULNERABLE after a Protect drops (后遗症): takes extra damage briefly.
+    if ((target.vulnerableT || 0) > 0) dmg *= 1.3;
+    // land it
+    if (side === 'me') {
+      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
+      this.hurtEnemy(target, dealt, x, y);
+      this.vfx.impact(x, y, col);
+      return { blocked: false, reflected: false, dealt };
+    } else {
+      // Enemy hit on a cat: type matchup matters defensively too, and an enemy
+      // special can leave a DoT/soft-CC on the cat (mirror of applyHitEffects).
+      const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
+      this.hurtMe(dealt, x, y, target);
+      this.vfx.impact(x, y, col);
+      return { blocked: false, reflected: false, dealt };
+    }
+  }
+
+  // Enemy-side mirror of applyHitEffects: element effectiveness against the cat's
+  // own element, plus any status tag the enemy's skill inflicts. Deliberately
+  // simpler than the player's version — NO combo system on cats, and crowd-control
+  // on a cat is a SLOW (handled in tickCatStatus), never a full input lockout.
+  applyEnemyHitEffects(f, skill, baseDmg, x, y) {
+    let dmg = baseDmg;
+    if (!window.Skills || !skill) return dmg;
+    f.tags = f.tags || [];
+    f.status = f.status || {};
+    const TAG = Skills.TAG_INFO || {};
+    // element effectiveness: enemy skill element vs this cat's element
+    if (skill.element && f.cat) {
+      const mult = this.elemMult(skill.element, f.cat.species);
+      if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果拔群!', '#ff7b9c', 13); }
+      else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '效果一般', '#9aa8ba', 11); }
+    }
+    // 破绽/破甲 on the cat amplify what it's about to take
+    for (const tg in f.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
+    // apply the skill's status tag to the cat (DoT or soft-CC)
+    if (skill.appliesTag) {
+      const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
+      for (const tg of tags) {
+        if (tg === 'rewind') continue;                 // player-only mechanic
+        const info = TAG[tg];
+        if (!info) continue;
+        const fresh = !f.tags.includes(tg);
+        if (fresh) f.tags.push(tg);
+        // cap pure crowd-control on a cat so it's a brief slow, not a long lockout
+        const isCC = (info.dps || 0) === 0 && !info.dmgTaken && !info.dmgDealt;
+        f.status[tg] = isCC ? Math.min(info.ttl, 1.4) : info.ttl;
+        this.vfx.text(f.x + (Math.random() * 20 - 10), f.y - 30, info.name, info.color, 12);
+        if (fresh) this.controlFx(f, tg, info.color);
+      }
+    }
+    return dmg;
+  }
+
   onFaint(f) {
     f = f || this.me();
     f.alive = false;
@@ -1535,7 +2010,8 @@ class CaptureBattle {
   draw(ctx) {
     const { W, H } = this;
     let sx = 0, sy = 0;
-    if (this.shakeT > 0) { sx = (Math.random() - 0.5) * 9; sy = (Math.random() - 0.5) * 9; }
+    // Screen shake — gentler on phones (thumb occludes the view; big shake nauseates).
+    if (this.shakeT > 0) { const amp = this.game.isTouch ? 4 : 9; sx = (Math.random() - 0.5) * amp; sy = (Math.random() - 0.5) * amp; }
     ctx.save(); ctx.translate(sx, sy);
 
     this.drawArenaBackground(ctx, W, H);
@@ -1554,6 +2030,8 @@ class CaptureBattle {
     }
 
     if (this.flash > 0) { ctx.fillStyle = `rgba(157,123,255,${this.flash})`; ctx.fillRect(0, 0, W, H); }
+
+    this.drawPackMorale(ctx, W);
 
     // aim reticle
     const m = this.game.mouse;
@@ -1632,19 +2110,36 @@ class CaptureBattle {
     // wild pack — draw every live enemy (back-to-front by y)
     const sorted = this.liveEnemies().slice().sort((a, b) => a.y - b.y);
     for (const e of sorted) {
-      // telegraph warning ring while charging a special
+      // Telegraph warning — distinct shapes so the player can read the threat:
+      //   nova    = a RADIAL ring that fills as it charges (dodge outward / away)
+      //   barrage = a DIRECTIONAL cone along the aim (dodge sideways out of the line)
       if (e.telegraph > 0) {
-        const k = 1 - e.telegraph / Math.max(0.4, 0.75 - e.rIdx * 0.08);
+        const k = Math.max(0, Math.min(1, 1 - e.telegraph / (e.telegraphMax || 0.8)));  // 0→1 charge
+        const pulse = 0.45 + 0.4 * Math.abs(Math.sin(this.t * 14));
         ctx.save();
-        ctx.globalAlpha = 0.4 + 0.4 * Math.abs(Math.sin(this.t * 18));
-        ctx.strokeStyle = e.telegraphKind === 'nova' ? '#ff4d6d' : '#ff7b9c';
-        ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.arc(e.x, e.y, 30 + k * 26, 0, Math.PI * 2); ctx.stroke();
-        if(e.telegraphKind==='pounce'){
-          ctx.setLineDash([7,5]);ctx.strokeStyle='#fb745d';
-          const target=this.team.find(f=>f.alive);
-          if(target){ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(target.x,target.y);ctx.stroke();}
+        if (e.telegraphKind === 'nova') {
+          const R = 34 + k * 30;
+          ctx.globalAlpha = pulse * 0.3;                       // filled danger disc
+          ctx.fillStyle = '#ff4d6d';
+          ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff4d6d'; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, Math.PI * 2); ctx.stroke();
+        } else if (e.telegraphKind === 'pounce') {
+          // ambusher leap: pulsing ring + dashed line to the target it will jump
+          ctx.globalAlpha = pulse; ctx.strokeStyle = '#fb745d'; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(e.x, e.y, 30 + k * 26, 0, Math.PI * 2); ctx.stroke();
+          ctx.setLineDash([7, 5]);
+          const target = this.team.find(f => f.alive);
+          if (target) { ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(target.x, target.y); ctx.stroke(); }
           ctx.setLineDash([]);
+        } else {
+          const aim = e.telegraphAim || 0, half = 0.42, reach = 150 + k * 120;
+          ctx.globalAlpha = pulse * 0.28;                      // aimed warning cone
+          ctx.fillStyle = e.element ? this.elemColor(e.element) : '#ff7b9c';
+          ctx.beginPath(); ctx.moveTo(e.x, e.y);
+          ctx.arc(e.x, e.y, reach, aim - half, aim + half); ctx.closePath(); ctx.fill();
+          ctx.globalAlpha = pulse; ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 2.5;
+          ctx.stroke();
         }
         ctx.restore();
       }
@@ -1662,15 +2157,35 @@ class CaptureBattle {
         pose:e.frozen?'idle':e.pose,
         mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
       });
+      this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
       ctx.restore();
+      // locked-target reticle: show who you're focusing (rotates for life)
+      if (this._lockIdx === e.i) {
+        ctx.save();
+        ctx.translate(e.x, e.y); ctx.rotate(this.t * 1.5);
+        ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.9;
+        const R = 30;
+        for (let q = 0; q < 4; q++) {
+          ctx.rotate(Math.PI / 2);
+          ctx.beginPath(); ctx.arc(0, 0, R, -0.35, 0.35); ctx.stroke();
+        }
+        ctx.restore();
+      }
       const elemSym = this.elemSymbol(e.element);
       this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color, `${elemSym} ${e.sp.name} Lv.${e.level}`);
       // status icons row under the HP tag
       if (e.status) {
         const keys = Object.keys(e.status); const TAG = Skills.TAG_INFO || {};
-        const icons = { burn: '🔥', soak: '💧', shock: '⚡', oil: '🛢️', chill: '❄️', dizzy: '💫', bleed: '🩸', blind: '🌀', bind: '🌿' };
+        const icons = { burn: '🔥', soak: '💧', shock: '⚡', oil: '🛢️', chill: '❄️', dizzy: '💫', bleed: '🩸', blind: '🌀', bind: '🌿', expose: '❗', weaken: '🔻', rust: '🪓' };
         ctx.save(); ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-        keys.slice(0, 5).forEach((tg, i) => { ctx.fillText(icons[tg] || '●', e.x - (keys.length - 1) * 7 + i * 14, e.y - 50); });
+        const shown = keys.slice(0, 5);
+        shown.forEach((tg, i) => {
+          const ix = e.x - (shown.length - 1) * 8 + i * 16, iy = e.y - 50;
+          ctx.fillText(icons[tg] || '●', ix, iy);
+          // thin countdown arc under the icon (remaining / ttl) so duration is legible
+          const info = TAG[tg]; const frac = info && info.ttl ? Math.max(0, Math.min(1, e.status[tg] / info.ttl)) : 0;
+          if (frac > 0) { ctx.strokeStyle = info ? info.color : '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(ix, iy + 4, 7, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke(); }
+        });
         ctx.restore();
       }
     }
@@ -1757,6 +2272,57 @@ class CaptureBattle {
     ctx.restore();
   }
 
+  // Persistent, distinct markers drawn over a controlled enemy's body so a
+  // crowd-control state reads at a glance for its whole (now-longer) duration.
+  drawControlOverlay(ctx, e) {
+    if (!e.status) return;
+    const s = e.status, T = this.t;
+    ctx.save();
+    if (s.dizzy != null) {                 // orbiting stars overhead
+      ctx.fillStyle = '#ffe08a';
+      for (let i = 0; i < 3; i++) { const a = T * 4 + i * (Math.PI * 2 / 3); ctx.globalAlpha = 0.9; ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('✦', e.x + Math.cos(a) * 16, e.y - 34 + Math.sin(a) * 5); }
+    }
+    if (s.chill != null) {                 // pale ice shell
+      ctx.globalAlpha = 0.35 + 0.1 * Math.sin(T * 3); ctx.strokeStyle = '#bfe6ff'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, 26, 32, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.9; ctx.fillStyle = '#eaf7ff'; for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; ctx.fillText('❄', e.x + Math.cos(a) * 24, e.y + 2 + Math.sin(a) * 28); }
+    }
+    if (s.bind != null) {                  // green vines wrapping
+      ctx.globalAlpha = 0.8; ctx.strokeStyle = '#6fcf5f'; ctx.lineWidth = 3;
+      for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(e.x, e.y + 4 + i * 8 - 8, 22 - i * 2, 7, 0.2 * Math.sin(T * 2 + i), 0, Math.PI * 2); ctx.stroke(); }
+    }
+    if (s.blind != null) {                 // dark veil over the eyes
+      ctx.globalAlpha = 0.5; ctx.fillStyle = '#2a2036';
+      ctx.beginPath(); ctx.ellipse(e.x, e.y - 8, 24, 12, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Aggregate pack 斗志 (morale/HP) bar at the top — makes the win condition
+  // legible: the player always sees how close the whole pack is to being tamed.
+  drawPackMorale(ctx, W) {
+    const live = this.liveEnemies();
+    if (!live.length) return;
+    let hp = 0, max = 0;
+    for (const e of this.enemies) { max += e.maxhp; if (e.alive) hp += e.hp; }
+    const frac = max ? Math.max(0, Math.min(1, hp / max)) : 0;
+    const zh = window.MorrowwishI18n?.get?.() === 'zh';
+    const bw = Math.min(360, W - 120), bx = (W - bw) / 2, by = 16, bh = 12;
+    const ready = this.captureReady;
+    ctx.save();
+    ctx.textAlign = 'center'; ctx.font = '700 11px system-ui, sans-serif';
+    ctx.fillStyle = ready ? '#ffd36b' : 'rgba(255,250,239,.95)';
+    ctx.fillText(ready ? (zh ? '斗志将尽 · 收服它！' : 'Almost tamed — capture it!') : (zh ? '野猫斗志' : 'Wild morale'), W / 2, by - 3);
+    // track
+    ctx.fillStyle = 'rgba(20,12,30,0.55)'; rr(ctx, bx - 2, by - 2, bw + 4, bh + 4, 8); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.14)'; rr(ctx, bx, by, bw, bh, 6); ctx.fill();
+    // fill (turns gold when capture-ready)
+    const col = ready ? '#ffd36b' : (frac > 0.5 ? '#ff6b8a' : '#ff9db0');
+    ctx.fillStyle = col; rr(ctx, bx, by, bw * frac, bh, 6); ctx.fill();
+    if (ready) { ctx.globalAlpha = 0.4 + 0.4 * Math.abs(Math.sin(this.t * 8)); ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 2; rr(ctx, bx - 2, by - 2, bw + 4, bh + 4, 8); ctx.stroke(); }
+    ctx.restore();
+  }
+
   hpTag(ctx, x, y, frac, color, label) {
     // Cream game-card label: more legible over the illustrated garden.
     const w=86,h=6;
@@ -1779,6 +2345,7 @@ class CaptureBattle {
 }
 
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function lerp(a, b, t) { return a + (b - a) * t; }
 function _hex(h) { h = (h || '#000').replace('#', ''); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
 function mix(a, b, f) { const x = _hex(a), y = _hex(b); return `rgb(${(x[0] + (y[0] - x[0]) * f) | 0},${(x[1] + (y[1] - x[1]) * f) | 0},${(x[2] + (y[2] - x[2]) * f) | 0})`; }
 function withAlpha(h, a) { const c = _hex(h); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }

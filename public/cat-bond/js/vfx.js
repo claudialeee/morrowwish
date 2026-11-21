@@ -45,6 +45,12 @@ class VFX {
   beam(x1, y1, x2, y2, color) {
     this.fx.push({ type: 'beam', x1, y1, x2, y2, life: 0.2, max: 0.2, color: color || '#ffd36b', seed: (x1 * 13 + y2 * 7) % 100 });
   }
+  // sweeping curved slash blade in front of the caster (melee signature VFX).
+  // Draws a crescent along `radius` spanning ±arc around `aim`, that wipes from
+  // one edge to the other over its short life.
+  slash(x, y, aim, color, radius, arc) {
+    this.fx.push({ type: 'slash', x, y, aim, color: color || '#fff', radius: radius || 92, arc: arc || 1.0, life: 0.26, max: 0.26 });
+  }
 
   update(dt) {
     for (const e of this.fx) {
@@ -100,6 +106,22 @@ class VFX {
           ctx.lineTo(mx + nx / nl * off, my + ny / nl * off);
         }
         ctx.lineTo(e.x2, e.y2); ctx.stroke();
+      } else if (e.type === 'slash') {
+        // a crescent blade that wipes across the frontal arc as it fades
+        const sweep = 1 - k;                                   // 0→1 over life
+        const a0 = e.aim - e.arc, a1 = e.aim + e.arc;
+        const lead = a0 + (a1 - a0) * sweep;                   // leading edge angle
+        ctx.translate(e.x, e.y);
+        // soft wide crescent body
+        ctx.globalAlpha = k * 0.5; ctx.strokeStyle = e.color;
+        ctx.lineWidth = 10 * k + 2; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.arc(0, 0, e.radius, a0, a1); ctx.stroke();
+        // bright thin leading slash
+        ctx.globalAlpha = k; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(0, 0, e.radius, Math.max(a0, lead - 0.5), lead); ctx.stroke();
+        // white hot tip
+        ctx.fillStyle = '#fff'; ctx.globalAlpha = k;
+        ctx.beginPath(); ctx.arc(Math.cos(lead) * e.radius, Math.sin(lead) * e.radius, 3.5 * k + 1, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }

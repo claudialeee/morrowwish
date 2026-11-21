@@ -226,7 +226,9 @@
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 water ----
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.0, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
-    { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff',       power: 0,   cd: 7.0, ultCost: 0,  tags: ['shield','soak'], appliesTag: null,    vfx: 'ring',      desc: '展开泡泡护盾，短时减伤。' },
+    { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
+    { id: 'guardStance', name: '守护',   element: 'light', kind: 'buff', shieldType: 'protect', power: 0, cd: 9.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '极短时间完全格挡下一次攻击；结束后短暂易伤。' },
+    { id: 'mirrorWall',  name: '反弹壁', element: 'elec',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '立起反弹壁，弹回飞行弹体；架盾期间自身被定身。' },
     { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
     // ---- 草 grass ----
     { id: 'leafDart',   name: '叶刃',     element: 'grass', kind: 'projectile', power: 1.0, cd: 1.6, ultCost: 0,  tags: ['ranged'],        appliesTag: null,    vfx: 'muzzle',    desc: '锋利草叶高速飞射。' },
@@ -234,7 +236,7 @@
     { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'orb',       desc: '吸收日光回复自身斗志。' },
     // ---- 电 elec ----
     { id: 'staticPounce', name: '静电扑', element: 'elec',  kind: 'dash',       power: 1.4, cd: 4.0, ultCost: 0,  tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',      desc: '带电冲刺，命中麻痹目标。' },
-    { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'projectile', power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，附加感电。' },
+    { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
@@ -258,11 +260,11 @@
     soak:  { name: '淋湿', ttl: 5.0, dps: 0,    color: '#4aa8ff' },
     shock: { name: '感电', ttl: 3.0, dps: 0.02, color: '#ffd23c' },
     oil:   { name: '浸油', ttl: 6.0, dps: 0,    color: '#8a6bff' },
-    chill: { name: '冰冻', ttl: 3.5, dps: 0,    color: '#9ec8ff' },
-    dizzy: { name: '眩晕', ttl: 1.6, dps: 0,    color: '#c9b6ff' },
+    chill: { name: '冰冻', ttl: 4.0, dps: 0,    color: '#9ec8ff' },
+    dizzy: { name: '眩晕', ttl: 2.4, dps: 0,    color: '#c9b6ff' },
     bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
-    blind: { name: '失明', ttl: 2.0, dps: 0,    color: '#ffe9a8' },
-    bind:  { name: '束缚', ttl: 2.5, dps: 0,    color: '#6fcf5f' },
+    blind: { name: '失明', ttl: 3.0, dps: 0,    color: '#ffe9a8' },
+    bind:  { name: '束缚', ttl: 3.5, dps: 0,    color: '#6fcf5f' },
     // --- advanced debuffs ---
     expose:{ name: '破绽', ttl: 5.0, dps: 0,    color: '#ff5a8a', dmgTaken: 1.4 },   // 增伤: 受到伤害 ×1.4
     weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5

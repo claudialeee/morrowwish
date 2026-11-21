@@ -483,7 +483,7 @@ class Game {
     const keyName = e => (e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
     window.addEventListener('keydown', e => {
       this.keys[keyName(e)] = true;
-      if (this.scene === 'battle' && ['w', 'a', 's', 'd', ' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(keyName(e))) e.preventDefault();
+      if (this.scene === 'battle' && ['w', 'a', 's', 'd', ' ', 'tab', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(keyName(e))) e.preventDefault();
     });
     window.addEventListener('keyup', e => { this.keys[keyName(e)] = false; });
     // prevent right-click menu over the arena
@@ -812,6 +812,9 @@ class Game {
     const b = this.battle;
     if (!b) return;                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
+    // Fold this battle's observations into the persistent adaptive-AI profile so
+    // enemies evolve to the player's habits over time. (Save happens below.)
+    try { b.commitAiProfile(win); } catch (e) {}
     document.getElementById('battle-ui').classList.remove('on');
     const duoButton=document.getElementById('duo-burst');if(duoButton)duoButton.hidden=true;
     this.setBattleHelpVisible(false);
@@ -913,6 +916,7 @@ class Game {
       this._lastBattleLost = true;   // a subsequent battle counts as a retry
       this.toast('💨 野生猫猫跑掉了…下次再来！');
       if (!backToMap) document.getElementById('yard-actions').classList.remove('hidden');
+      State.save();   // persist the adaptive-AI profile folded in above, even on a loss
     }
     this.battle = null;
   }

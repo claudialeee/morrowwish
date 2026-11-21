@@ -20,6 +20,9 @@ const DEFAULT_STATE = () => ({
   repeatSightings: 0, // repeated already-owned species encountered while searching
   bestGrades: {}, // speciesId -> best capture score (C/B/A/S), for rematches
   masteryBadges: {}, // speciesId -> true; only a first S earns a permanent Golden Paw
+  // Tiny adaptive-AI profile: enemies learn the player's habits across battles.
+  // Plain statistics (EMAs + a decayed element table), all clamped. ~200 bytes.
+  aiProfile: { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true },
 });
 
 let S = DEFAULT_STATE();
