@@ -269,7 +269,22 @@ class CaptureBattle {
     const v=this.duoField;
     if(!v||this.done)return;
     v.age+=dt;v.remaining=Math.max(0,v.duration-v.age);
-    if(!v.remaining){this.duoField=null;return;}
+    // Let the paired-element field drift after the wild pack as it moves.
+    // It is ground-level and never becomes a large foreground overlay.
+    const moving=this.liveEnemies();
+    if(moving.length){
+      const x=moving.reduce((sum,e)=>sum+e.x,0)/moving.length;
+      const y=moving.reduce((sum,e)=>sum+e.y,0)/moving.length;
+      const follow=Math.min(1,dt*2.5);
+      v.x+=(x-v.x)*follow;v.y+=(y-v.y)*follow;
+    }
+    if(!v.remaining){
+      // A restrained final echo, so the special has a clear ending.
+      this.skillStrokes.push({kind:'duoImpact',x:v.x,y:v.y,
+        firstColor:v.first,secondColor:v.second,elements:v.pair,
+        life:.65,max:.65});
+      this.duoField=null;return;
+    }
     v.pulse-=dt;
     if(v.pulse>0)return;
     v.pulse+=1.65;
