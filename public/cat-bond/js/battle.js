@@ -84,25 +84,53 @@ class CaptureBattle {
   castDuo(){
     if(!this.duoReady())return false;
     const d=this.duo,fs=this.team.filter(f=>f.alive&&[d.a.uid,d.b.uid].includes(f.cat.uid));
-    this.duoCharge=0;this.duoCd=18;this.duoUses++;
+    this.duoCharge=0;this.duoCd=17;this.duoUses++;
     const x=(fs[0].x+fs[1].x)/2,y=(fs[0].y+fs[1].y)/2;
-    this.flash=.38;this.shakeT=.4;
-    fs.forEach(f=>{const col=this.elemColor(f.element);f.inv=Math.max(f.inv,.6);
-      this.vfx.ring(f.x,f.y,{r0:9,vr:400,life:.55,color:col,width:7});
-      this.vfx.burst(f.x,f.y,{count:20,color:col,speed:230,life:.6,r:4});
-    });
-    this.vfx.shockwave(x,y,this.elemColor(fs[0].element));
-    this.vfx.ring(x,y,{r0:20,vr:650,life:.7,color:this.elemColor(fs[1].element),width:9});
-    this.vfx.text(x,y-52,d.name+'!',this.elemColor(fs[1].element),23);
+    const firstColor=this.elemColor(fs[0].element),secondColor=this.elemColor(fs[1].element);
+    const mix=d.elementPair;
+    this.duoCinematic={t:1.05,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
+    this.flash=.38;this.shakeT=.42;this.slowmo=.24;
+    this.vfx.beam(fs[0].x,fs[0].y,fs[1].x,fs[1].y,firstColor);
+    this.vfx.beam(fs[1].x,fs[1].y,x,y,secondColor);
+    for(let i=0;i<3;i++)this.vfx.ring(x,y,{r0:15+i*27,vr:450+i*125,life:.75,
+      color:i%2?firstColor:secondColor,width:7-i});
+    for(const f of fs){
+      f.inv=Math.max(f.inv,.75);
+      this.vfx.ring(f.x,f.y,{r0:9,vr:390,life:.65,color:this.elemColor(f.element),width:7});
+      this.vfx.burst(f.x,f.y,{count:22,color:this.elemColor(f.element),speed:250,life:.65,r:4});
+    }
+    this.vfx.shockwave(x,y,secondColor);
+    this.vfx.burst(x,y,{count:46,color:firstColor,speed:285,life:.75,r:6});
+    this.vfx.burst(x,y,{count:34,color:secondColor,speed:330,life:.85,r:4});
+    this.vfx.text(x,y-60,d.name+'!',firstColor,27);
     let hits=0;
     for(const e of this.liveEnemies().slice()){
-      const damage=Math.min(e.maxhp*(.18+(d.tier-1)*.035),(fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
+      const damage=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
+        (fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
       this.hurtEnemy(e,damage,e.x,e.y,true);
-      this.vfx.impact(e.x,e.y,this.elemColor(fs[hits%2].element));hits++;
+      this.vfx.impact(e.x,e.y,hits%2?firstColor:secondColor);hits++;
+      e.status=e.status||{};e.tags=e.tags||[];
+      let tag=null;
+      if(mix.includes('fire')&&mix.includes('elec'))tag='shock';
+      else if(mix.includes('water')&&mix.includes('grass'))tag='chill';
+      else if(mix.includes('fire')&&mix.includes('water'))tag='soak';
+      else if(mix.includes('dark')&&mix.includes('light'))tag='blind';
+      if(tag){e.status[tag]=Math.max(e.status[tag]||0,2.5+d.tier*.5);
+        if(!e.tags.includes(tag))e.tags.push(tag);}
     }
-    this.gainUlt(18);
+    if(mix.includes('water')&&mix.includes('grass')){
+      for(const teammate of this.team.filter(f=>f.alive)){
+        const heal=Math.min(teammate.maxhp-teammate.hp,teammate.maxhp*(.12+d.tier*.04));
+        teammate.hp+=heal;
+        if(heal>1)this.vfx.text(teammate.x,teammate.y-48,'+'+Math.round(heal),'#8be7ac',15);
+      }
+    }else if(mix.includes('dark')&&mix.includes('light')){
+      for(const teammate of this.team.filter(f=>f.alive))teammate.shieldT=Math.max(teammate.shieldT,3);
+    }
+    this.gainUlt(16);
+    window.MorrowwishAudio?.effect?.('capture');
     this.game.toast((window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫合击 · ':'💞 Duo attack · ')+d.name+'！');
-    window.arcadeMetric?.('bond_duo_attack',{elementPair:d.elementPair,tier:d.tier,hits});
+    window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits});
     return true;
   }
   // Keep the combat field available when a phone is rotated mid-encounter.
@@ -157,18 +185,23 @@ class CaptureBattle {
     // accessible early. Existing roster levels and cat stats are untouched.
     const eliteFactor = rIdx === 3 ? 1.22 : rIdx === 2 ? 1.12 : 1;
     const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor);
-    // spread the pack across the right half of the arena
+    // First two battles teach controls; later battles ask for dodging and team skill timing.
+    const captures=State.S.catchCount||0;
+    const challenge=captures<2?0:Math.min(1.8,(captures-1)*.11);
     const col = total === 1 ? 0.7 : 0.58 + (i / Math.max(1, total - 1)) * 0.26;
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(sp.id) : null;
     return {
       sp, i, element, rIdx, level,
+      role:rIdx>=2?'elite':(i%3===0?'ambusher':i%3===1?'sharpshooter':'skirmisher'),
+      phase:0,challenge,
       maxhp, hp: maxhp,
       x: this.W * col, y: this.H * (0.52 + (i % 2) * 0.13), vx: 0, vy: 0,
       face: -1, t: Math.random() * 3, pose: 'idle',
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
-      specialCd: 5 - rIdx * 0.6, telegraph: 0, telegraphKind: null, inv: 0,
+      specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
-      dmg: (5 + rIdx * 2.2) * lvScale * (rIdx === 3 ? 1.10 : rIdx === 2 ? 1.06 : 1), speed: 92 + rIdx * 22, fireRate: Math.max(0.4, 1.1 - rIdx * 0.18),
+      dmg:(5+rIdx*2.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*(1+challenge*.12),
+      speed:92+rIdx*22+challenge*14,fireRate:Math.max(.43,1.1-rIdx*.18-challenge*.12),
       skill: this.pickWildSkillFor(element, rIdx),
       tags: [], alive: true,
     };
@@ -590,6 +623,12 @@ class CaptureBattle {
     return true;
   }
 
+  markMoveSeen(f,sk){
+    if(!f||!sk||!Array.isArray(f.cat.unseenSkills))return;
+    const idx=f.cat.unseenSkills.indexOf(sk.id);
+    if(idx<0)return;
+    f.cat.unseenSkills.splice(idx,1);State.save();this.game.updateSkillLabels?.();
+  }
   skillQ(f, aim) {
     f = f || this.me(); if (f.cd.q > 0) return false;
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
@@ -597,6 +636,7 @@ class CaptureBattle {
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk))return false;
       f.cd.q=sk.cd*(f.bond.cdReduction||1);
+      this.markMoveSeen(f,sk);
       return true;
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1);
@@ -613,6 +653,7 @@ class CaptureBattle {
       this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
     }
     this.gainUlt(8);
+    this.markMoveSeen(f,sk);
     if (f === this.me()) this.game.toast('🧶 ' + (sk ? sk.name : '毛球散射') + '！');
     return true;
   }
@@ -643,6 +684,7 @@ class CaptureBattle {
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk))return false;
       f.cd.e=sk.cd*(f.bond.cdReduction||1);
+      this.markMoveSeen(f,sk);
       return true;
     }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1);
@@ -660,6 +702,7 @@ class CaptureBattle {
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
     }
     this.gainUlt(6);
+    this.markMoveSeen(f,sk);
     if(f===this.me())this.game.toast('💨 '+(sk?sk.name:'疾扑冲刺')+'！');
     return true;
   }
@@ -710,6 +753,7 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-48,skill.name+'!',color,22);
       this.game.toast(this.elemSymbol(skill.element)+' 必杀 · '+skill.name+'！');
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
+      this.markMoveSeen(f,skill);
       window.arcadeMetric?.('bond_signature_ultimate',{skill:skill.id,rarity:GameData.speciesById(f.cat.species).rarity});
     }else{
       // New ordinary cats still have a useful basic ultimate until their own
@@ -776,6 +820,7 @@ class CaptureBattle {
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
+    if(this.duoCinematic)this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
@@ -924,7 +969,17 @@ class CaptureBattle {
     if (e.inv > 0) e.inv -= dt;
     if (e.dodgeCd > 0) e.dodgeCd -= dt;
     e.aggro = 1 - e.hp / e.maxhp;
-    const hpFrac = e.hp / e.maxhp;
+    const hpFrac=e.hp/e.maxhp;
+    // Elites visibly change behavior at half HP; SSR have a second last stand.
+    const nextPhase=e.rIdx>=3&&hpFrac<.24?2:e.rIdx>=2&&hpFrac<.52?1:0;
+    if(nextPhase>e.phase){
+      e.phase=nextPhase;e.special=Math.min(e.special,.45);e.dodgeCd=0;
+      this.vfx.ring(e.x,e.y,{r0:18,vr:540,life:.65,color:'#ffb370',width:7});
+      this.vfx.burst(e.x,e.y,{count:17,color:'#ff9c82',speed:220,life:.6});
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      this.game.toast(en?(e.sp.name+(nextPhase===2?' makes a final stand!':' changes tactics!'))
+        :('⚠️ '+e.sp.name+(nextPhase===2?'进入最后反击！':'改变战术，开始反击！')));
+    }
 
     // reactive dodge of the nearest incoming player shot
     let threat = null, threatT = 1e9;
@@ -959,7 +1014,7 @@ class CaptureBattle {
         if (sd < 70) { ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
       }
     }
-    const spd = e.speed * (1 + e.aggro * 0.4) * (e.slowed ? 0.5 : 1);   // 感电减速
+    const spd=e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1);   // 感电减速
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
     if (e.pose !== 'play') e.pose = (ax || ay) ? 'walk' : 'idle';
@@ -974,8 +1029,8 @@ class CaptureBattle {
     e.special -= dt;
     if (e.special <= 0 && dist < 440) {
       e.special = Math.max(2.2, e.specialCd - e.aggro * 2) + Math.random();
-      const wantNova = hpFrac < 0.5 && e.rIdx >= 1 && (this._novaLock || 0) === 0;
-      e.telegraphKind = wantNova ? 'nova' : 'barrage';
+      const wantNova=hpFrac<.55&&e.rIdx>=1&&(this._novaLock||0)===0;
+      e.telegraphKind=wantNova?'nova':e.role==='ambusher'&&e.challenge>0?'pounce':'barrage';
       if (wantNova) this._novaLock = 1;                      // reserve nova slot; others barrage
       e.telegraph = Math.max(0.4, 0.75 - e.rIdx * 0.08);
       if (wantNova) this.game.toast('⚠️ 野猫在蓄力大招！');
@@ -1011,6 +1066,18 @@ class CaptureBattle {
     const pow = sk ? sk.power : 0.9;
     const skillName = sk ? sk.name : (e.telegraphKind === 'nova' ? '猫猫怒涛' : '连射');
     this.game.toast('💢 ' + e.sp.name + ' 施放 ' + skillName + '！');
+    if(e.telegraphKind==='pounce'){
+      const aim=Math.atan2(me.y-e.y,me.x-e.x);
+      this.vfx.beam(e.x,e.y,me.x,me.y,'#fb7c65');
+      this.vfx.burst(e.x,e.y,{count:12,color:col,speed:200,life:.4});
+      const leap=Math.min(95,Math.hypot(me.x-e.x,me.y-e.y)*.42);
+      e.x=clamp(e.x+Math.cos(aim)*leap,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+      e.y=clamp(e.y+Math.sin(aim)*leap,this.topMargin,this.H-this.bottomMargin);
+      for(const f of this.team.filter(f=>f.alive)){
+        if(Math.hypot(f.x-e.x,f.y-e.y)<95)this.hurtMe(e.dmg*1.25,e.x,e.y,f);
+      }
+      return;
+    }
     if (e.telegraphKind === 'nova') {
       const n = 12 + e.rIdx * 4;
       const off = Math.random() * Math.PI;
@@ -1245,6 +1312,33 @@ class CaptureBattle {
     ctx.save(); ctx.translate(sx, sy);
 
     this.drawArenaBackground(ctx, W, H);
+    if(this.duoCinematic?.t>0){
+      const v=this.duoCinematic,k=Math.max(0,v.t/1.05),p=1-k;
+      ctx.save();
+      const halo=ctx.createRadialGradient(v.x,v.y,10,v.x,v.y,Math.max(W,H)*.68);
+      halo.addColorStop(0,'rgba(255,255,235,'+(k*.18)+')');
+      halo.addColorStop(1,'rgba(47,29,75,'+(k*.34)+')');
+      ctx.fillStyle=halo;ctx.fillRect(0,0,W,H);
+      ctx.globalCompositeOperation='lighter';
+      for(let i=0;i<2;i++){
+        ctx.strokeStyle=i?v.second:v.first;ctx.lineWidth=11-i*4;ctx.globalAlpha=.65*k;
+        ctx.beginPath();ctx.arc(v.x,v.y,40+p*(Math.min(W,H)*.44)+i*26,0,Math.PI*2);ctx.stroke();
+      }
+      for(let i=0;i<27;i++){
+        const ang=i*Math.PI*2/27+this.t*2.6,rad=48+p*(150+i%5*14);
+        ctx.fillStyle=i%2?v.second:v.first;ctx.globalAlpha=k*.8;
+        ctx.beginPath();ctx.arc(v.x+Math.cos(ang)*rad,v.y+Math.sin(ang)*rad*.7,2.6+(i%3)*1.7,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalCompositeOperation='source-over';ctx.globalAlpha=k;
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      ctx.textAlign='center';ctx.font='900 '+Math.round(Math.max(19,Math.min(34,W*.048)))+'px system-ui';
+      ctx.lineWidth=5;ctx.strokeStyle='rgba(26,21,43,.86)';
+      ctx.strokeText(v.name,W/2,Math.max(102,H*.29));ctx.fillStyle='#fff9e4';
+      ctx.fillText(v.name,W/2,Math.max(102,H*.29));
+      ctx.font='800 12px system-ui';
+      ctx.fillText(en?'SIGNATURE DUO!':'双猫专属合击！',W/2,Math.max(79,H*.29-29));
+      ctx.restore();
+    }
 
     if (this.flash > 0) { ctx.fillStyle = `rgba(157,123,255,${this.flash})`; ctx.fillRect(0, 0, W, H); }
 
@@ -1280,10 +1374,20 @@ class CaptureBattle {
         ctx.strokeStyle = e.telegraphKind === 'nova' ? '#ff4d6d' : '#ff7b9c';
         ctx.lineWidth = 4;
         ctx.beginPath(); ctx.arc(e.x, e.y, 30 + k * 26, 0, Math.PI * 2); ctx.stroke();
+        if(e.telegraphKind==='pounce'){
+          ctx.setLineDash([7,5]);ctx.strokeStyle='#fb745d';
+          const target=this.team.find(f=>f.alive);
+          if(target){ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(target.x,target.y);ctx.stroke();}
+          ctx.setLineDash([]);
+        }
         ctx.restore();
       }
       ctx.save();
       if (e.flash > 0) ctx.globalAlpha = 0.6;
+      if(e.phase>0){
+        ctx.strokeStyle=e.phase>1?'#ff794f':'#ffc16e';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(e.x,e.y,31+Math.sin(this.t*4)*3,0,Math.PI*2);ctx.stroke();
+      }
       // status color wash (frozen=blue tint, burn=orange, etc.) via a soft overlay ring
       if (e.status) { const k = Object.keys(e.status); if (k.length) { const info = (Skills.TAG_INFO || {})[k[0]]; if (info) { ctx.save(); ctx.globalAlpha = 0.25 + 0.15 * Math.sin(this.t * 6); ctx.fillStyle = info.color; ctx.beginPath(); ctx.ellipse(e.x, e.y + 6, 24, 30, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } } }
       CatArt.drawCat(ctx, e.x, e.y, { species: e.sp, scale: 1.1, face: e.face, t: e.t, pose: e.frozen ? 'idle' : e.pose, mood: e.frozen ? 'sleepy' : ((e.hp / e.maxhp < 0.28) ? 'sleepy' : 'alert') });

@@ -81,7 +81,8 @@ class Game {
     if (!window.WorldMap) return;
     WorldMap.init(this);
     WorldMap.onEncounter((species, regionId) => {
-      const team = State.S.cats.slice(0, 3);
+      const chosen=window.CatRelations?.chosen?.()||[];
+      const team=[...chosen,...State.S.cats.filter(c=>!chosen.some(x=>x.uid===c.uid))].slice(0,3);
       if (!team.length) { this.toast('没有可出战的猫'); return; }
       this._returnScene = 'map';           // after battle, go back to the region
       const region = WorldMap.REGIONS.find(r => r.id === regionId);
@@ -250,13 +251,23 @@ class Game {
     if(d.pending)return;
     d.taps++;
     if(d.taps<(d.count?7:3)||(d.count&&Date.now()-d.at<90000))return;
-    d.pending={kind:d.count%3,uid:cat.uid};
+    d.pending={kind:d.count%7,uid:cat.uid};
     d.at=Date.now();d.count++;d.taps=0;
     this.toast(window.MorrowwishI18n?.get?.()==='zh'?'✨ 猫咪有个小秘密！':'✨ Your kitten found a secret!');
     metric('bond_yard_surprise_found',{kind:d.pending.kind});
     this.refreshYardSurprise();
   }
   refreshYardSurprise(){
+    const duoEl=document.getElementById('yard-duo-status');
+    if(duoEl){
+      const members=window.CatRelations?.chosen?.()||[];
+      duoEl.hidden=this.scene!=='yard'||members.length!==2||!!document.getElementById('panel')?.classList.contains('open');
+      if(!duoEl.hidden){
+        const en=window.MorrowwishI18n?.get?.()!=='zh';
+        const val=CatRelations.pair(members[0],members[1])?.value||0;
+        duoEl.textContent='💞 '+members.map(c=>State.catName(c)).join(' + ')+' · '+(en?'Bond ':'默契 ')+val;
+      }
+    }
     const el=document.getElementById('yard-surprise');if(!el)return;
     el.hidden=this.scene!=='yard'||!State.S.yardStory?.pending||!!document.getElementById('panel')?.classList.contains('open');
     if(!el.hidden)el.textContent=window.MorrowwishI18n?.get?.()==='zh'?'✨ 猫咪小秘密 · 点击发现':'✨ Cat surprise · Open';
@@ -264,10 +275,22 @@ class Game {
   claimYardSurprise(choice){
     const d=State.S.yardStory;if(!d?.pending||![0,1].includes(choice))return false;
     const kind=d.pending.kind;d.pending=null;
-    const rewards=[[{coins:24},{treats:2}],[{fish:2},{coins:28}],[{yarn:3},{treats:3}]][kind];
+    const rewards=[
+      [{coins:24},{treats:2}],
+      [{fish:2},{coins:28}],
+      [{yarn:3},{treats:3}],
+      [{coins:18,duo:6},{treats:1,duo:10}],
+      [{fish:2,duo:4},{coins:16,duo:8}],
+      [{treats:3},{yarn:2,duo:5}],
+      [{coins:30},{fish:2,duo:6}]
+    ][kind]||[{coins:12},{treats:1}];
     const r=rewards[choice];
     State.S.coins+=(r.coins||0);State.S.treats+=(r.treats||0);State.S.fish+=(r.fish||0);
     if(r.yarn){Raising.init();State.S.raising.yarn+=r.yarn;}
+    if(r.duo&&window.CatRelations){
+      const members=CatRelations.chosen();
+      if(members.length===2)CatRelations.grow(members[0],members[1],r.duo);
+    }
     State.save();this.refreshHUD();metric('bond_yard_surprise_claimed',{kind,choice});
     return true;
   }
@@ -513,6 +536,11 @@ class Game {
     State.S.petCount=(State.S.petCount||0)+1;
     const closer=window.CatRelations?.pet(cat);
     if(closer?.levelUp)this.toast(window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫关系升级！':'💞 Your duo grew closer!');
+    if(closer?.quirk==='sulky'){
+      CatRelations.chosen().forEach(c=>this.yard.entities.find(e=>e.cat.uid===c.uid)?.emote('💢',2.5));
+      this.toast(window.MorrowwishI18n?.get?.()==='zh'
+        ?'💢 猫咪闹别扭了！去搭档面板哄一哄。':'💢 Your duo is sulking. Help them make up!');
+    }
     this.tryYardSurprise(cat);
     const rewards=this.grantBondingRewards();
     if(lv)this.toast(`${GameData.speciesById(cat.species).name} 升到 Lv.${cat.level}！`);
@@ -575,29 +603,25 @@ class Game {
   }
 
   updateSkillLabels() {
-    const b = this.battle; if (!b) return;
-    const f = b.me();
-    const qBtn = document.getElementById('mv-q');
-    const eBtn = document.getElementById('mv-e');
-    if (qBtn) {
-      const sk = f.qSkill;
-      qBtn.querySelector('.mv-icon').textContent = sk ? this.skillIcon(sk) : '🧶';
-      qBtn.querySelector('.mv-k').textContent = sk ? sk.name : 'Q';
-    }
-    if (eBtn) {
-      const sk = f.eSkill;
-      eBtn.querySelector('.mv-icon').textContent = sk ? this.skillIcon(sk) : '💨';
-      eBtn.querySelector('.mv-k').textContent = sk ? sk.name : 'E';
-      eBtn.title=sk?sk.name+' · '+sk.desc:'E · 疾扑';
-    }
-    if(qBtn){const sk=f.qSkill;qBtn.title=sk?sk.name+' · '+sk.desc:'Q · 猫爪技能';}
-    const ult=document.getElementById('ult-btn');
-    if(ult){
-      const sk=f.ultSkill,en=window.MorrowwishI18n?.get?.()!=='zh';
-      ult.querySelector('.mv-icon').textContent=sk?this.skillIcon(sk):'🌪️';
-      ult.querySelector('.mv-name').textContent=sk?sk.name:(en?'Cat Storm':'喵之怒涛');
-      ult.title=sk?sk.name+' · '+sk.desc
-        :(en?'Train your cat to unlock an elemental ultimate':'培养猫咪后可解锁元素必杀技');
+    const b=this.battle;if(!b)return;
+    const active=b.me(),en=window.MorrowwishI18n?.get?.()!=='zh';
+    for(const [id,skill,fallback,key] of [
+      ['mv-basic',null,en?'Claw':'猫爪',this.isTouch?(en?'Tap':'点击'):'J'],
+      ['mv-q',active.qSkill,en?'Skill Q':'技能一','Q'],
+      ['mv-e',active.eSkill,en?'Skill E':'技能二','E'],
+      ['ult-btn',active.ultSkill,en?'Cat Storm':'喵之怒涛','R']
+    ]){
+      const btn=document.getElementById(id);if(!btn)continue;
+      if(skill&&btn.querySelector('.mv-icon'))btn.querySelector('.mv-icon').textContent=this.skillIcon(skill);
+      if(btn.querySelector('.mv-name'))btn.querySelector('.mv-name').textContent=skill?.name||fallback;
+      if(btn.querySelector('.mv-k'))btn.querySelector('.mv-k').textContent=key;
+      btn.title=skill?(skill.name+' · '+(skill.desc||'')):fallback;
+      btn.setAttribute('aria-label',(skill?.name||fallback)+' · '+key);
+      const newMove=!!(skill&&active.cat.unseenSkills?.includes(skill.id));
+      btn.classList.toggle('newly-learned',newMove);
+      let tag=btn.querySelector('.move-new-tag');
+      if(newMove&&!tag){tag=document.createElement('span');tag.className='move-new-tag';tag.textContent='NEW';btn.appendChild(tag);}
+      if(!newMove&&tag)tag.remove();
     }
   }
 
@@ -830,6 +854,8 @@ class Game {
       const firstSkill=(State.S.catchCount===1&&window.Skills?.awakenFirstSkill)
         ?Skills.awakenFirstSkill(b.partner):null;
       if(firstSkill){
+        if(!Array.isArray(b.partner.unseenSkills))b.partner.unseenSkills=[];
+        if(!b.partner.unseenSkills.includes(firstSkill.id))b.partner.unseenSkills.push(firstSkill.id);
         metric('bond_skill_unlocked',{breed:b.partner.species,skill:firstSkill.id,source:'first_capture'});
       }
       const earnedSkill=firstSkill||UI.announceSkillMilestone?.(b.partner,skillsBefore)||null;

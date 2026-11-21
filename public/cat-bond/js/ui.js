@@ -46,6 +46,7 @@ const UI = {
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
+    document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
@@ -85,12 +86,20 @@ const UI = {
     const events=[
       ['🔔','草丛的小铃铛','A bell in the grass','带走铃铛','Take the bell','一起玩铃铛','Play with the bell'],
       ['🦋','蝴蝶的秘密路线','Follow the butterfly','寻找鱼干','Find fish','在花丛打滚','Play in the flowers'],
-      ['🧶','猫咪的宝藏','A kitten treasure','保存毛线','Keep yarn','交换零食','Trade for treats']
+      ['🧶','猫咪的宝藏','A kitten treasure','保存毛线','Keep yarn','交换零食','Trade for treats'],
+      ['🐾','两只猫争夺毛线球','A yarn-ball disagreement','两只都安慰','Comfort them both','帮助它们一起玩','Help them share'],
+      ['📦','神秘纸箱大探险','The mysterious cardboard box','打开纸箱','Open the box','一起钻进去','Explore together'],
+      ['🐟','小鱼干不翼而飞','The disappearing fish','揭开秘密','Find the culprit','悄悄补充零食','Refill the treats'],
+      ['🌠','流星落在屋顶上','A shooting star over the roof','收下星光','Collect starlight','许一个伙伴愿望','Wish for friendship']
     ];
     const e=events[d.kind]||events[0];
     this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
       <div class="yard-surprise-icon">${e[0]}</div><h2>${en?e[2]:e[1]}</h2>
-      <p>${en?'Your cat found something unexpected. What should you do?':'猫猫意外发现了一件小宝贝，你想怎么做？'}</p>
+      <p>${en?(d.kind===3?'Two kittens want the same yarn ball. Can you help them share?':
+        d.kind===5?'Someone stole the fish. Tiny pawprints lead into the flowers!':
+        'Your cat found something unexpected. What should you do?')
+        :(d.kind===3?'两只猫抢同一个毛线球，谁也不肯松爪。你准备怎么办？':
+          d.kind===5?'小鱼干桶空了，地上却留着两串神秘脚印！':'猫猫意外发现了一件小宝贝，你想怎么做？')}</p>
       <div class="btn-row"><button class="btn gold" id="surprise-a">${en?e[4]:e[3]}</button>
       <button class="btn" id="surprise-b">${en?e[6]:e[5]}</button></div></div>`);
     for(const [id,choice] of [['surprise-a',0],['surprise-b',1]])document.getElementById(id).onclick=()=>{
@@ -109,11 +118,13 @@ const UI = {
   openBondPanel(){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
-    const picked=this._duoPicked||CatRelations.chosen().map(c=>c.uid);
-    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked.splice(0,picked.length,cats[0].uid,cats[1].uid);
+    let picked=this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid);
+    if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id)))picked=[cats[0].uid,cats[1].uid];
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const name=ok?CatRelations.title(a,b).name:'—';
+    const selected=ok&&CatRelations.chosen().map(c=>c.uid).join('|')===picked.join('|');
+    const mood=ok?CatRelations.mood(a,b):'unknown';
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
     const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
@@ -122,22 +133,45 @@ const UI = {
       <p>${en?'Pair two cats. Pet and play to raise trust, then take both into battle for a team attack.':'选择两只搭档，撸猫和一起玩耍提升默契，组队出战释放元素合击。'}</p>
       <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
       <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
-      <div class="duo-relation"><strong>${name}</strong><span>${en?'Trust':'默契'} ${p}/100</span>
+      <div class="duo-relation"><strong>${name}</strong>
+        <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
+        <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
+        <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
         <div class="duo-meter"><span style="width:${p}%"></span></div>
         <small>${en?'20 unlocks the duo skill · 60 and 90 improve it':'20解锁合击 · 60和90升级合击'}</small>
         ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
-          +CatRelations.secretStory(a,b)+'</span></p>':''}</div>
+          +CatRelations.secretStory(a,b)+'</span></p>':''}
+        ${p>=90?'<p class="duo-secret-story">🌙 '+(en?'SECRET PROMISE':'最终的约定')+'<span>'
+          +(en?'Even in the fullest garden, these two will always find each other. Their team move has reached its final form.'
+            :'即使庭院住满了小猫，它们也能一眼找到彼此。双猫合击终于达到最终形态。')
+          +'</span></p>':''}</div>
       <div class="btn-row">
-        <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${en?'Set active pair':'设为搭档'}</button>
+        <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
+        ${mood==='sulky'?'<button class="btn" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button>':''}
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
     for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
       const ids=picked.slice();ids[i]=e.target.value;this._duoPicked=ids;this.openBondPanel();
     };
-    document.getElementById('duo-choose').onclick=()=>{CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];this.openBondPanel();};
+    document.getElementById('duo-choose').onclick=()=>{
+      if(!ok)return;
+      CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
+      this.game.yard?.entities?.filter(e=>[a.uid,b.uid].includes(e.cat.uid))
+        .forEach(e=>{e.emote('💞',3);e.pettedGlow=1.5;});
+      this.game.refreshHUD();
+      this.game.toast(en?'💞 Duo formed! Both cats will join the next fight.':'💞 搭档组成成功！下次战斗两只会一起上场。');
+      window.arcadeMetric?.('bond_duo_selected',{elementPair:CatRelations.title(a,b).elementPair});
+      this.openBondPanel();
+    };
+    const soothe=document.getElementById('duo-soothe');
+    if(soothe)soothe.onclick=()=>{
+      if(CatRelations.soothe(a,b)){this.game.toast(en?'💗 Made up! Trust +6':'💗 和好啦！默契 +6');this.openBondPanel();}
+    };
     document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
       if(v.ok){this.game.toast(en?'💞 Friendship +13!':'💞 双猫默契 +13！');this.game.refreshHUD();}
+      else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
+      else if(v.reason==='treats')this.game.toast(en?'Not enough treats':'零食不够啦');
       this._duoPicked=[a.uid,b.uid];this.openBondPanel();
     };
     document.getElementById('duo-return').onclick=()=>this.openJourney();
@@ -647,6 +681,8 @@ const UI = {
     Skills.ensureLoadout(cat);
     const chosen=unlocked.find(sk=>sk.ultCost>0)
       ||unlocked.find(sk=>['dash','heal','buff'].includes(sk.kind))||unlocked[0];
+    if(!Array.isArray(cat.unseenSkills))cat.unseenSkills=[];
+    if(!cat.unseenSkills.includes(chosen.id))cat.unseenSkills.push(chosen.id);
     window.arcadeMetric?.('bond_skill_unlocked',{breed:cat.species,skill:chosen.id,source:'growth'});
     return chosen;
   },
@@ -780,9 +816,32 @@ const UI = {
         if(!State.S.dex[sp.id])return;
         const canRematch=State.S.cats.some(cat=>cat.species===sp.id);
         const best=State.S.bestGrades?.[sp.id]||'—';
+        const rareLore={
+          jinwu:[en?'The legendary sun-cat keeps a flame alive to guide lost kittens home.'
+            :'传说金乌把火种藏在山顶，不是为了守护宝藏，而是给迷路的猫咪照亮归途。',
+            en?'A Golden Paw reveals its secret: the flame is a promise to every kitten still searching for home.'
+              :'金爪秘密：那团不灭的火焰，是它对每只流浪小猫许下的约定。'],
+          youling:[en?'At night, a shy silhouette follows the moonlight between abandoned doors.'
+            :'深夜里，总有一只幽灵般的小猫替别人守住没关好的门。',
+            en?'Its Golden Paw secret: it waited for one friend for years, and still believes in reunions.'
+              :'金爪秘密：它曾等一位朋友很多年，至今仍相信总有一天能再相见。'],
+          xingchen:[en?'It collects every falling star as if each were someone\'s forgotten wish.'
+            :'星尘把每一颗流星收藏起来，因为它觉得每一颗都是谁遗失的愿望。',
+            en?'The final star belongs to the player who kept all their companions close.'
+              :'金爪秘密：最后一颗星星，留给始终没有放弃伙伴的你。']
+        };
+        const lore=rareLore[sp.id]||(sp.rarity==='SR'||sp.rarity==='SSR'
+          ?[en?'An unusual cat with an unfinished tale. Every meeting is another clue.'
+              :'这只猫的过去还藏着秘密。每一次相遇，都会留下一点线索。',
+            en?'The Golden Paw tells a secret: this cat trusts you enough to share its true story.'
+              :'金爪秘密：当它相信你时，才终于肯讲出自己的经历。']:null);
         this.panel(`<span class="card-close">×</span>
           <h2>${sp.name} <span class="rarity-${sp.rarity}">◆${GameData.RARITY[sp.rarity].name}</span></h2>
           <p class="sub">${sp.desc}</p>
+          ${lore?'<p class="rare-lore">'+(en?'📖 Lost cat tale':'📖 猫咪往事')+' · '+lore[0]+'</p>'
+             +(State.S.masteryBadges?.[sp.id]?'<p class="rare-lore unlocked">'+lore[1]+'</p>':
+                '<p class="rare-lore locked">'+(en?'🏅 Earn an S rank to reveal the rest of the story.'
+                  :'🏅 获得 S 评级才能解锁隐藏结局。')+'</p>'):''}
           <p class="mastery-detail">${State.S.masteryBadges?.[sp.id]
             ?(en?'🏅 Golden Paw earned · S rank':'🏅 金爪徽章已解锁 · S 评级')
             :(en?'Best grade '+best+' · Earn S to win the Golden Paw'
@@ -996,13 +1055,16 @@ const UI = {
     }
     // sort partners by power; pick top 3 as the default team
     const sorted = [...cats].sort((a, b) => State.catPower(b) - State.catPower(a));
-    this.teamUids = sorted.slice(0, 3).map(c => c.uid);
+    const preferred=window.CatRelations?.chosen?.()||[];
+    const duo=preferred.length===2?preferred.filter(c=>cats.some(t=>t.uid===c.uid)):[];
+    this.teamUids=[...duo,...sorted.filter(c=>!duo.some(d=>d.uid===c.uid))].slice(0,3).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
-      return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}">
+      const inDuo=duo.some(d=>d.uid===c.uid);
+      return `<div class="chip ${sel ? 'sel' : ''} ${inDuo?'duo-member':''}" data-uid="${c.uid}">
         <canvas width="44" height="38"></canvas>
-        <div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
+        <div><div style="font-weight:700">${State.catName(c)} ${inDuo?'💞':''}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}</div></div>
       </div>`;
     }).join('');
     const newBreed=!State.S.dex[wildSp.id];
@@ -1021,6 +1083,7 @@ const UI = {
       ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
       ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
+      ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       <p class="tiny">${firstCapture?'电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！':'战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动'}</p>
       <div class="btn-row">

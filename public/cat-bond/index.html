@@ -29,7 +29,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=duo-stories-20261120" />
+  <link rel="stylesheet" href="css/style.css?v=quality-nov20" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=catbond-2" defer></script>
   <script src="/studio-music.js?v=catbond-1" defer></script>
@@ -55,6 +55,7 @@
       <div id="toasts"></div>
       <div id="first-quest" role="status" hidden></div>
       <button id="yard-surprise" type="button" hidden></button>
+      <button id="yard-duo-status" type="button" hidden aria-label="查看双猫搭档"></button>
       <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
       <button id="yard-cat-switch" type="button" aria-label="切换庭院中的猫猫" hidden></button>
 
@@ -97,8 +98,8 @@
         <!-- move bar (bottom) -->
         <div class="move-bar">
           <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐾</span><span class="mv-k">左键/J</span></button>
-          <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-k">Q</span></button>
-          <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-k">E</span></button>
+          <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-name">技能一</span><span class="mv-k">Q</span></button>
+          <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-name">技能二</span><span class="mv-k">E</span></button>
           <button class="move" id="mv-dodge" data-move="dodge" title="闪避伤害，短暂无敌（空格键）" aria-label="闪避伤害，短暂无敌（空格键）"><span class="mv-icon">🌀</span><span class="mv-name">闪避</span><span class="mv-k">空格键</span></button>
           <button class="move ult" id="ult-btn" data-move="ult" title="必杀技"><span class="mv-icon">🌪️</span><span class="mv-name">喵之怒涛</span><span class="mv-k">R</span></button>
         </div>
@@ -155,14 +156,14 @@
   <script src="js/skills.js?v=auto-unlock-20261120"></script>
   <script src="js/growth.js?v=36"></script>
   <script src="js/state.js?v=golden-paws-20261120"></script>
-  <script src="js/cat-relationships.js?v=duo-stories-20261120"></script>
+  <script src="js/cat-relationships.js?v=quality-nov20"></script>
   <script src="js/raising.js?v=first-pay-duo-2-20261120"></script>
-  <script src="js/scenery.js?v=4-meadow-pan"></script>
-  <script src="js/world.js?v=wild-pacing-20261120"></script>
-  <script src="js/worldmap.js?v=secrets-duo-20261120"></script>
-  <script src="js/battle.js?v=duo-20261120"></script>
-  <script src="js/ui.js?v=duo-stories-20261120"></script>
-  <script src="js/game.js?v=duo-20261120"></script>
+  <script src="js/scenery.js?v=quality-nov20"></script>
+  <script src="js/world.js?v=quality-nov20"></script>
+  <script src="js/worldmap.js?v=quality-nov20"></script>
+  <script src="js/battle.js?v=quality-nov20"></script>
+  <script src="js/ui.js?v=quality-nov20"></script>
+  <script src="js/game.js?v=quality-nov20"></script>
   <script src="js/main.js?v=safe-reset-20261120"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=duo-intro-20261120"></script>

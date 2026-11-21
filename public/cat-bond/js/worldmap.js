@@ -90,7 +90,7 @@
     {
       id: 'home', name: '庭院', sub: 'Home',
       node: { x: 0.16, y: 0.74 }, difficulty: 1,
-      theme: { sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
+      theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
       speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
       unlock: null, // always open
       desc: '熟悉的后院，新手猫猫的乐园。',
@@ -98,7 +98,7 @@
     {
       id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
       node: { x: 0.37, y: 0.52 }, difficulty: 2,
-      theme: { sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
+      theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
       speciesPool: ['nainai', 'moqiu', 'sanhua', 'yunduo', 'yinghua'],
       unlock: { after: 'home', explore: 0.4 },
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
@@ -106,7 +106,7 @@
     {
       id: 'creek', name: '溪谷', sub: 'Creek Valley',
       node: { x: 0.58, y: 0.68 }, difficulty: 3,
-      theme: { sky1: '#122436', sky2: '#1e3c54', ground: '#2f5a6a', ground2: '#4d879a', accent: '#8fd3ff' },
+      theme: { region:'creek',sky1: '#122436', sky2: '#1e3c54', ground: '#2f5a6a', ground2: '#4d879a', accent: '#8fd3ff' },
       speciesPool: ['lanbao', 'dundun', 'lixiao', 'zherdd', 'youling'],
       unlock: { after: 'sakura', explore: 0.5 },
       desc: '清凉溪水穿谷而过，史诗猫猫在此栖息。',
@@ -114,7 +114,7 @@
     {
       id: 'volcano', name: '火山口', sub: 'Volcano',
       node: { x: 0.74, y: 0.36 }, difficulty: 4,
-      theme: { sky1: '#2a1410', sky2: '#4a1e14', ground: '#5a241a', ground2: '#9a3a1f', accent: '#ff6a1f' },
+      theme: { region:'volcano',sky1: '#2a1410', sky2: '#4a1e14', ground: '#5a241a', ground2: '#9a3a1f', accent: '#ff6a1f' },
       speciesPool: ['senlin', 'xianluo', 'jinwu'],
       unlock: { after: 'creek', explore: 0.6, own: 'youling' },
       desc: '灼热的火山口，传说之火焰猫金乌沉睡于此。',
@@ -122,7 +122,7 @@
     {
       id: 'ruins', name: '月影遗迹', sub: 'Moonshadow Ruins',
       node: { x: 0.9, y: 0.6 }, difficulty: 5,
-      theme: { sky1: '#17102e', sky2: '#2f2650', ground: '#3a2f66', ground2: '#5a4a9a', accent: PURPLE },
+      theme: { region:'ruins',sky1: '#17102e', sky2: '#2f2650', ground: '#3a2f66', ground2: '#5a4a9a', accent: PURPLE },
       speciesPool: ['youling', 'yuelian', 'xingchen'],
       unlock: { after: 'volcano', explore: 0.7, own: 'jinwu' },
       desc: '月光笼罩的古老遗迹，最稀有的传说猫沉眠在星河之中。',
@@ -692,14 +692,19 @@
       if (s.cd >= 9999) continue;      // consumed
       var sp = window.GameData.speciesById(s.sp);
       var by = s.y + Math.sin(t * 1.8 + s.bob) * 3;
-      // curiosity marker ring
-      glowDot(ctx, s.x, by, 30, th.accent, 0.3);
+      // Wild cats must read at a glance on phones and in dark regions.
+      var spInfo=window.GameData.speciesById(s.sp);
+      var rColor=spInfo?.rarity==='SSR'?'#ffdc6c':spInfo?.rarity==='SR'?'#c49df2'
+        :spInfo?.rarity==='R'?'#fff2bd':th.accent;
+      glowDot(ctx,s.x,by,46,rColor,.58);
+      ctx.save();ctx.strokeStyle=rColor;ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(s.x,by,30+Math.sin(t*3+s.bob)*3,0,Math.PI*2);ctx.stroke();ctx.restore();
       if (window.CatArt && sp) {
         try { window.CatArt.drawCat(ctx, s.x, by, { species: sp, scale: 0.6, face: 1, t: t, pose: 'sit', mood: 'neutral' }); }
         catch (e) { ctx.fillStyle = th.accent; ctx.beginPath(); ctx.arc(s.x, by, 14, 0, Math.PI * 2); ctx.fill(); }
       }
       ctx.font = '13px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('❔', s.x, by - 34);
+      ctx.fillText(spInfo?.rarity==='SSR'?'👑':spInfo?.rarity==='SR'?'✨':'❕',s.x,by-34);
     }
 
     // player avatar (lead cat) + shadow

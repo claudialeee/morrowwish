@@ -402,7 +402,23 @@ class YardScene {
   }
   update(dt) {
     const mouse = this.game.mouse;
-    for (const e of this.entities) e.update(dt, mouse);
+    for(const e of this.entities)e.update(dt,mouse);
+    const duo=window.CatRelations?.chosen?.()||[];
+    if(duo.length===2){
+      const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
+      const b=this.entities.find(e=>e.cat.uid===duo[1].uid);
+      if(a&&b){
+        const sulky=CatRelations.mood(duo[0],duo[1])==='sulky';
+        if(this.game.t>(this._nextDuoEmote||0)){
+          this._nextDuoEmote=this.game.t+10+Math.random()*9;
+          a.emote(sulky?'💢':'💞',2.6);b.emote(sulky?'😾':'💞',2.6);
+        }
+        const dist=Math.hypot(a.x-b.x,a.y-b.y);
+        if(!sulky&&dist>100&&dist<260&&b.pose==='walk'){
+          b.vx+=(a.x-b.x)/dist*9*dt;b.vy+=(a.y-b.y)/dist*9*dt;
+        }
+      }
+    }
     this.updateLoot(dt);
     for (const b of this.butterflies) {
       b.t += dt;
@@ -585,6 +601,21 @@ class YardScene {
   }
   drawHide(ctx, hide) {
     // First find is a highlighted target; later encounters keep the mystery.
+    if(!hide.tutorial){
+      const rarity=hide.species.rarity;
+      const hue=rarity==='SSR'?'#ffbe5e':rarity==='SR'?'#bd92fa':rarity==='R'?'#ffd38f':'#e5fbdd';
+      const pulse=Math.sin(this.game.t*4.5)*6;
+      ctx.save();ctx.fillStyle='rgba(255,249,222,.34)';
+      ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y,49+pulse,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=hue;ctx.lineWidth=4.5;ctx.shadowColor=hue;ctx.shadowBlur=17;
+      ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y,44+pulse,0,Math.PI*2);ctx.stroke();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='#fff9e4';ctx.beginPath();
+      ctx.roundRect(hide.spot.x-45,hide.spot.y-79,90,28,12);ctx.fill();
+      ctx.font='800 12px system-ui';ctx.fillStyle='#40553d';ctx.textAlign='center';
+      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'发现野猫！':'Wild cat!',hide.spot.x,hide.spot.y-61);
+      ctx.restore();
+    }
     if(hide.tutorial){
       const pulse=Math.sin(this.game.t*5)*4;
       ctx.save();
@@ -674,7 +705,7 @@ class YardScene {
     }
     if (this.hide && !this.hide.found) {
       const d = Math.hypot(px - this.hide.spot.x, py - this.hide.spot.y);
-      if (d < 42) { return { type: 'hide' }; }
+      if (d < 58) { return { type: 'hide' }; }
     }
     // topmost cat (largest y first)
     const sorted = [...this.entities].sort((a, b) => b.y - a.y);
