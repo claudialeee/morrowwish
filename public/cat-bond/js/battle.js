@@ -34,7 +34,10 @@ class CaptureBattle {
     // enemy level scales with the player's progress: average team level +
     // how far they've come (catchCount), nudged by rarity. So early wilds are
     // Lv.1-3 and late-game packs scale to match a strong roster.
-    this.wildLevel = this.computeWildLevel(teamOrCat);
+    // Encounter level is rolled when the wild cat appears, not after the
+    // player taps Start. The visible Lv. tag is exactly the battle's level.
+    this.wildLevel = Math.max(1,Math.round(wildSpecies.encounterLevel||
+      this.computeWildLevel(teamOrCat)));
 
     // --- LEVEL GAP (bidirectional: suppression when over-leveled, threat when under) ---
     // The level difference between your squad and the wild pack must MATTER. Two
@@ -4697,4 +4700,12 @@ function star(ctx, cx, cy, R, r, n) {
   ctx.closePath(); ctx.fill();
 }
 
+// Compute one preview level at spawn and keep it on that encounter.
+CaptureBattle.previewWildLevel=function(species,region,team){
+  const rIdx=['N','R','SR','SSR'].indexOf(species?.rarity);
+  const fields={rarIdx:Math.max(0,rIdx),encounterRegion:region||'yard'};
+  const candidates=Array.isArray(team)&&team.length?team:
+    (window.State?.S?.cats||[]).slice(0,5);
+  return CaptureBattle.prototype.computeWildLevel.call(fields,candidates);
+};
 window.Battle = { CaptureBattle };

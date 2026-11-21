@@ -1564,8 +1564,16 @@ const UI = {
       +this.squadPickerMarkup(selected):'';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
+    const encounterLvl=wildSp.encounterLevel||
+      window.Battle?.CaptureBattle?.previewWildLevel?.(
+        wildSp,opts.origin==='map'?(window.WorldMap?.currentRegion||'sakura'):'yard',team)||1;
     this.panel(`<span class="card-close">×</span>
-      <h2>${label}</h2><p class="sub">${en?'Choose your cats and control mode before entering the arena.':'先选择出战猫咪，再决定自动或手动战斗。'}</p>
+      <h2>${label}</h2>
+      <p class="sub" style="font-weight:750;color:#765e85">
+        ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
+        <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
+      </p>
+      <p class="sub">${en?'Choose your cats and control mode before entering the arena.':'先选择出战猫咪，再决定自动或手动战斗。'}</p>
       ${squadMarkup}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
@@ -1671,7 +1679,9 @@ const UI = {
       <h2>发现野生 <span class="rarity-${wildSp.rarity}">${GameData.speciesName(wildSp)}</span></h2>
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
-      <p class="center tiny">稀有度 <span class="rarity-${wildSp.rarity}">◆${rar.name}</span> · 越稀有斗志越强</p>
+      <p class="center tiny">${english?'Wild level':'野猫等级'} <b>Lv.${wildSp.encounterLevel||
+          window.Battle?.CaptureBattle?.previewWildLevel?.(wildSp,'yard',cats.slice(0,5))||1}</b>
+          · ${english?'Rarity':'稀有度'} <span class="rarity-${wildSp.rarity}">◆${wildSp.rarity} · ${english?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):rar.name}</span></p>
       ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
       ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建双猫队伍（首发 2 只 + 替补最多 3 只，点击选择）'}</h3>
