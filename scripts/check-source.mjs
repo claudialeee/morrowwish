@@ -355,7 +355,7 @@ new vm.Script(townFreedom,{filename:'public/tiny-town/freedom-scenes.js'});
 const townCompact=fs.readFileSync('public/tiny-town/compact-v5.js','utf8');
 const townCompactCss=fs.readFileSync('public/tiny-town/compact-v5.css','utf8');
 new vm.Script(townCompact,{filename:'public/tiny-town/compact-v5.js'});
-for(const marker of ['id="wonderStat"','id="peaceStat"','id="comboStat"','id="townInspector"','id="inspectorContent"','id="tabResidents"','id="tabMemories"','id="tabDiscoveries"','id="liveNotice"']){
+for(const marker of ['id="wonderStat"','id="peaceStat"','id="comboStat"','id="townInspector"','id="inspectorContent"','id="tabResidents"','id="tabMemories"','id="tabDiscoveries"','id="liveNotice"','id="residentRibbon"','id="residentRibbonPeople"']){
  if(!tinyMusicPage.includes(marker))throw Error('Tiny Town compact single-surface UI missing '+marker);
 }
 for(const marker of ['body:has(.app){overflow:hidden}','height:calc(100dvh - 40px)','@media(max-width:700px)','.app .town-inspector[hidden]']){
@@ -370,6 +370,13 @@ for(const marker of ["S.memories.push(","S.wonder>=55","window.TownV5?.render?.(
 for(const marker of ['Bring ','Return to my town','freedom-collect','const found=[...taken]']){
  if(!townFreedom.includes(marker))throw Error('Optional free-day souvenir collection missing '+marker);
 }
+if(!townCompact.includes('function residentRibbon()')||
+   !townCompact.includes('data-resident=')||
+   !townCompact.includes('residentRibbon();')||
+   !townCompactCss.includes('.app .resident-ribbon')||
+   !townCompactCss.includes('.app .resident-avatar.likes')||
+   !townCompactCss.includes('.app .resident-avatar.dislikes'))
+ throw Error('Visible resident strip and wish impact indicators are missing');
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||

@@ -214,3 +214,79 @@ html.mw-fs-active .arcade-return{display:none}
 }
 
 html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!important;padding:8px!important;height:100dvh!important}
+
+/* Residents are part of the playfield, not a buried optional dashboard tab. */
+.app .resident-ribbon{
+ flex:0 0 auto;min-height:98px;margin-top:auto;
+ background:linear-gradient(122deg,#625079,#826188);
+ border:1px solid #e3c8e8;border-radius:14px;
+ padding:9px 9px 10px;box-shadow:0 7px 15px #735d7f2b;
+ color:#fff9f5;overflow:hidden
+}
+.app .resident-ribbon-heading{
+ display:flex;justify-content:space-between;align-items:center;gap:5px;
+ margin-bottom:8px;line-height:1.1
+}
+.app .resident-ribbon-heading strong{font-size:12px;color:#fff8e9;letter-spacing:.01em;white-space:nowrap}
+.app .resident-ribbon-heading span{font-size:9px;color:#f5deeb;font-weight:700;text-align:right;line-height:1.2}
+.app .resident-ribbon-people{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.app .resident-avatar{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:1px;min-width:0;min-height:60px;padding:4px 0 3px;
+ color:#4e3a60;background:#fff8f5;border:2px solid transparent;border-radius:11px;
+ box-shadow:0 2px 5px #3d2a5541;cursor:pointer;
+ transition:transform .16s,background .16s,border-color .16s
+}
+.app .resident-avatar:hover,.app .resident-avatar:focus-visible{
+ transform:translateY(-3px);box-shadow:0 5px 12px #33244863;outline:2px solid #ffeda8;outline-offset:1px
+}
+.app .resident-avatar .resident-face{font-size:24px;line-height:1;filter:drop-shadow(0 2px 2px #6e638055)}
+.app .resident-avatar b{font-size:10px;line-height:1.1;color:#655273}
+.app .resident-avatar small{
+ display:block;line-height:1.1;padding:2px 3px;border-radius:5px;
+ font-size:10px;font-weight:900;color:#9b699a;background:#f7eafa
+}
+.app .resident-avatar.happy{background:#f2fff1}
+.app .resident-avatar.sad{background:#fff1e9;border-color:#f4ada4}
+.app .resident-avatar.likes{background:#e5fbea;border-color:#76d4a3}
+.app .resident-avatar.likes small{background:#bfeccc;color:#276e49}
+.app .resident-avatar.dislikes{background:#ffe6e6;border-color:#ee8b9b}
+.app .resident-avatar.dislikes small{background:#ffd0d8;color:#a43251}
+.app .resident-avatar.neutral small{background:#ece5f2;color:#7e6c91}
+.app .town-tabs{margin-top:0}
+.app .wish-reactions{gap:3px;margin-top:3px;font-size:10px;line-height:1.2}
+.app .wish-reactions .fan,.app .wish-reactions .critic{
+ display:inline-flex;max-width:100%;
+ padding:3px 6px;border-radius:6px;font-weight:850;white-space:nowrap
+}
+.app .wish-reactions .fan{color:#286d48;background:#dff7e7}
+.app .wish-reactions .critic{color:#ad3d58;background:#ffebed}
+@media(max-width:700px){
+ .app .resident-ribbon{
+  order:2;width:100%;min-height:0;margin:0;
+  padding:6px 7px 7px;border-radius:12px;box-shadow:0 4px 9px #735d7f25
+ }
+ .app .resident-ribbon-heading{margin-bottom:5px}
+ .app .resident-ribbon-heading strong{font-size:11px}
+ .app .resident-ribbon-heading span{font-size:9px}
+ .app .resident-ribbon-people{gap:5px}
+ .app .resident-avatar{min-height:50px;padding:2px 0 3px;border-width:1.5px;border-radius:9px}
+ .app .resident-avatar .resident-face{font-size:22px}
+ .app .resident-avatar b{font-size:9px}
+ .app .resident-avatar small{font-size:9px;padding:1px 3px}
+ .app .town-tabs{order:4}
+ .app #moveWish:not([hidden]){order:3}
+ .app .wish-reactions{font-size:8px;margin-top:1px;line-height:1.1}
+ .app .wish-reactions .fan,.app .wish-reactions .critic{display:inline;padding:1px 3px}
+ .app .wish-card{min-height:0}
+}
+@media(max-width:700px) and (max-height:650px){
+ .app .resident-ribbon{padding:4px 5px}
+ .app .resident-ribbon-heading{margin-bottom:2px}
+ .app .resident-ribbon-heading strong{font-size:10px}
+ .app .resident-ribbon-heading span{font-size:8px}
+ .app .resident-avatar{min-height:38px;padding:2px 0}
+ .app .resident-avatar .resident-face{font-size:17px}
+ .app .resident-avatar b{font-size:8px}
+ .app .resident-avatar small{font-size:8px}
+}

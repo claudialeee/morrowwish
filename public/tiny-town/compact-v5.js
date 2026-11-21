@@ -10,10 +10,34 @@ function state(){return window.TownV5State?.();}
 function peopleMarkup(r,i,s,byId){
  const likes=r.likes.map(x=>byId[x]).filter(Boolean);
  const dislikes=r.dislikes.map(x=>byId[x]).filter(Boolean);
- return '<article class="inspect-person"><header><span class="face">'+r.face+'</span><div><strong>'+r.name+'</strong><small>'+quote(t(r.en,r.zh))+'</small></div><span class="hearts">'+('♥'.repeat(Math.ceil(s.moods[i]/2))||'♡')+'<small>'+s.moods[i]+'/6</small></span></header>'+
+ return '<article class="inspect-person" data-profile="'+i+'"><header><span class="face">'+r.face+'</span><div><strong>'+r.name+'</strong><small>'+quote(t(r.en,r.zh))+'</small></div><span class="hearts">'+('♥'.repeat(Math.ceil(s.moods[i]/2))||'♡')+'<small>'+s.moods[i]+'/6</small></span></header>'+
  '<p><b class="good">'+t('Likes','喜欢')+'</b> '+likes.map(c=>c.icon+' '+quote(t(c.en,c.zh))).join(' · ')+'</p>'+
  '<p><b class="bad">'+t('Dislikes','不喜欢')+'</b> '+(dislikes.length?dislikes.map(c=>c.icon+' '+quote(t(c.en,c.zh))).join(' · '):t('Nothing specific','暂无'))+'</p></article>';
 }
+
+function residentRibbon(){
+ const v=state(),el=$('residentRibbonPeople'),hint=$('residentRibbonHint');
+ if(!v||!el||!hint)return;
+ const {S,residents,byId,selected}=v;
+ const wish=selected&&byId[selected];
+ const fans=wish?residents.filter(r=>r.likes.includes(wish.id)):[];
+ const critics=wish?residents.filter(r=>r.dislikes.includes(wish.id)):[];
+ if(!wish){
+  hint.textContent=t('Tap a face to see their dreams','点头像看每个人的喜好');
+ }else if(fans.length||critics.length){
+  hint.textContent=t((fans.length?'♥ '+fans.length+' happy  ':'')+(critics.length?'↘ '+critics.length+' upset':''),(fans.length?'♥ '+fans.length+' 人喜欢  ':'')+(critics.length?'↘ '+critics.length+' 人不满':''));
+ }else hint.textContent=t('This wish leaves their moods unchanged','这个愿望不会改变居民心情');
+ el.innerHTML=residents.map((r,i)=>{
+  const mood=S.moods[i],impact=wish?(r.likes.includes(wish.id)?1:r.dislikes.includes(wish.id)?-2:0):0;
+  const moodClass=mood<=1?'sad':mood>=5?'happy':'steady',changeClass=impact>0?'likes':impact<0?'dislikes':'neutral';
+  const change=wish?(impact>0?'+1':impact<0?'−2':'·'):'♥ '+mood+'/6';
+  const alt=t(r.en,r.zh);
+  const label=r.name+', '+alt+', '+t('mood','心情')+' '+mood+'/6'+(impact>0?t(', would enjoy this wish', '，喜欢这个愿望'):impact<0?t(', would dislike this wish','，不喜欢这个愿望'):'');
+  return '<button type="button" class="resident-avatar '+moodClass+' '+changeClass+'" data-resident="'+i+'" aria-label="'+quote(label)+'" title="'+quote(label)+'">'+
+  '<span class="resident-face">'+r.face+'</span><b>'+r.name+'</b><small>'+change+'</small></button>';
+ }).join('');
+}
+
 function inspect(){
  const view=state();if(!view)return;
  const {S,residents,byId}=view,pane=$('townInspector'),content=$('inspectorContent');
@@ -56,6 +80,7 @@ function inspect(){
 function render(){
  const view=state();if(!view)return;
  const s=view.S;
+ residentRibbon();
  if($('wonderHint'))$('wonderHint').textContent=s.wonder>=55||s.memories.some(m=>m.i===2)?t('Rare wishes unlocked','传奇愿望已解锁'):t((55-s.wonder)+' to rare wishes','还差 '+(55-s.wonder)+' 解锁传奇');
  if($('wonderMeter'))$('wonderMeter').style.width=Math.max(0,Math.min(100,s.wonder/55*100))+'%';
  const news=s.news[0];if($('liveNotice'))$('liveNotice').textContent=news?t(news.en,news.zh):t('Choose a wish, then touch a glowing plot.','选一个愿望，再点击地图上的发光空地。');
@@ -69,6 +94,16 @@ function toggle(section){
  if(opened){$('closeInspector')?.focus();window.arcadeMetric?.('town_info_open',{section});}
 }
 function boot(){
+ $('residentRibbonPeople')?.addEventListener('click',e=>{
+  const btn=e.target.closest?.('[data-resident]');
+  if(!btn)return;
+  opened='residents';inspect();
+  const index=Number(btn.dataset.resident);
+  const target=$('inspectorContent')?.querySelector?.('[data-profile="'+index+'"]');
+  target?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+  $('closeInspector')?.focus();
+  window.arcadeMetric?.('town_resident_profile_open',{resident:index});
+ });
  for(const [id,key] of [['tabResidents','residents'],['tabMemories','memories'],['tabDiscoveries','discoveries']])$(id)?.addEventListener('click',()=>toggle(key));
  for(const id of ['wonderStat','peaceStat','comboStat'])$(id)?.addEventListener('click',()=>{opened='discoveries';inspect();$('closeInspector')?.focus();});
  $('closeInspector')?.addEventListener('click',()=>{opened='';inspect();});
