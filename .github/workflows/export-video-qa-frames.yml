@@ -18,11 +18,20 @@ jobs:
         with:
           ref: main
           persist-credentials: true
+      - name: Ensure FFmpeg is available for missing video-frame extraction
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
       - name: Export real JPEG frame bytes (not screenshot descriptions)
         run: node scripts/export-video-qa-frames.mjs
       - name: Preserve the seven previews for actual visual inspection
         run: |
           git add promotion/video-qa-v3/*.b64
+          for slug in pawsibly-innocent cat-bond tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
+            git add public/promo/$slug/hook-v3-review-*.jpg
+          done
           git config user.name 'morrowwish-promo-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'qa(promo): export actual frames of seven revised gameplay videos for visual inspection'
