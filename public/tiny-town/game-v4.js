@@ -337,10 +337,11 @@ function offers(){
  return [...new Set(almost.slice(0,1).concat(rare.slice(0,1),hinted.slice(0,1),related,sample(available,S.seed+S.day*113)))].slice(0,3);
 }
 function wishEffect(card){
- const bold=S.law==='wonder'&&card.peace<0;
+ const isLegendary=LEGENDARY_WISHES.includes(card.id);
+  const bold=!isLegendary&&S.law==='wonder'&&card.peace<0;
  const cozy=S.law==='care'&&card.peace>0&&S.lastComfortDay!==S.day;
  const power=LEGENDARY_POWERS[card.id];
- return {wonder:card.joy+(bold?6:0)+(cozy?4:0)+(power?.wonder||0),peace:card.peace-(bold?1:0)+(cozy?1:0)+(power?.peace||0),cozy,power};
+ return {wonder:card.joy+(bold?6:0)+(cozy?4:0)+(power?.wonder||0),peace:(isLegendary?Math.max(0,card.peace):card.peace)-(bold?1:0)+(cozy?1:0)+(power?.peace||0),cozy,power};
 }
 function activateLegendaryPower(card,power){
  if(!power)return;
