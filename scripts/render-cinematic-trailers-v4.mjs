@@ -31,7 +31,7 @@ const playlists={
   cover(1.65,'PLAY FREE')
  ],
  'pawsibly-innocent':[
-  broll('escape-attempt',25,'STEAL THREE FISH. ESCAPE THE HUMAN.'),
+  broll('escape-attempt',25,'STEAL FISH. ESCAPE THE HUMAN.'),
   broll('caught-attempt',15,'ANOTHER ROOM. ONE WRONG MOVE...'),
   cover(1.75,'PLAY FREE')
  ],
@@ -61,13 +61,13 @@ const playlists={
   cover(1.8,'PLAY FREE')
  ],
  'parcel-panic':[
-  broll('full-attempt',20,'MATCH THE COLORS. TRY NOT TO MISS.'),
+  broll('full-attempt',20,'MATCH COLORS. DON'T MISS.'),
   cover(1.8,'PLAY FREE')
  ],
  'pocket-aquarium':[
   broll('feeding',2.9,'FEED THE HUNGRY FISH.'),
   broll('water-cloudy',3.0,'THE WATER IS GETTING CLOUDY.'),
-  broll('timeout',2.0,'TIME IS UP. WHAT GRADE DID YOU GET?'),
+  broll('timeout',2.0,'TIME'S UP. WHAT GRADE?'),
   cover(1.7,'PLAY FREE')
  ]
 };
