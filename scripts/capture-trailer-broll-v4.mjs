@@ -432,7 +432,7 @@ try{
   await page.waitForFunction(()=>!document.querySelector('#overlay').hidden,null,{timeout:14000});
   const timeout=stamp(),finalQ=Number((await page.locator('#waterTxt').textContent()).replace('%',''));
   const grade=await page.locator('#modalTip').textContent(),score=Number(await page.locator('#score').textContent());
-  if(finalQ>=55||score>=220||score<45||!/Grade\s+[CD]/i.test(grade))throw Error('V6 must show real feeding, cloudy water and actual low grade '+JSON.stringify({quality,finalQ,score,grade}));
+  if(finalQ>=65||score>=220||score<45||!/Grade\s+[CD]/i.test(grade))throw Error('V6 must show real feeding, cloudy water and actual low grade '+JSON.stringify({quality,finalQ,score,grade}));
   await sleep(1850);
   return [{label:'feeding',start:first,duration:Math.min(3.2,played-first-.1)},
    {label:'water-cloudy',start:murkyAt,duration:Math.min(3.2,timeout-murkyAt-.15)},
