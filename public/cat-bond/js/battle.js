@@ -817,7 +817,7 @@ class CaptureBattle {
   // mouse-only / on-screen button casts (aim auto toward nearest enemy)
   castMove(key) {
     const f = this.me();
-    const e = this.nearestEnemy(f.x, f.y);
+    const e = this.lockedEnemy()||this.nearestEnemy(f.x, f.y);
     if (e) this.aim = Math.atan2(e.y - f.y, e.x - f.x);
     if(key==='duo')return this.castDuo();
     if (key === 'basic') this.fireBasic();
@@ -1667,6 +1667,19 @@ class CaptureBattle {
     if (this._lockIdx != null) { const e = this.liveEnemies().find(x => x.i === this._lockIdx); if (e) return e; this._lockIdx = null; }
     return null;
   }
+  lockAt(x,y){
+    if(this.autoMode)return false;
+    const live=this.liveEnemies();
+    let best=null,dist=1e9;
+    for(const e of live){
+      const d=Math.hypot(e.x-x,e.y-y);
+      if(d<dist){dist=d;best=e;}
+    }
+    if(!best||dist>Math.max(36,best.r?best.r+20:45))return false;
+    this._lockIdx=best.i;
+    this.vfx.ring(best.x,best.y,{r0:12,vr:90,life:.33,color:'#f6d781',width:2});
+    return true;
+  }
   // Cycle the lock to the next live enemy (Tab on desktop, button on mobile).
   cycleTarget() {
     const live = this.liveEnemies();
@@ -2272,6 +2285,22 @@ class CaptureBattle {
     // aim reticle
     const m = this.game.mouse;
     if (m) { ctx.strokeStyle = 'rgba(255,211,107,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(m.x, m.y, 9, 0, Math.PI * 2); ctx.moveTo(m.x - 13, m.y); ctx.lineTo(m.x + 13, m.y); ctx.moveTo(m.x, m.y - 13); ctx.lineTo(m.x, m.y + 13); ctx.stroke(); }
+
+    // Manual target guide stays below the cat bodies and is thin enough not
+    // to clutter a small phone. Tapping a wild cat locks it until it leaves.
+    if(!this.autoMode && (this.game.isTouch||this._lockIdx!=null)){
+      const target=this.lockedEnemy();
+      const actor=this.me();
+      if(target&&actor){
+        ctx.save();ctx.strokeStyle='rgba(247,215,130,.46)';
+        ctx.lineWidth=1.7;ctx.setLineDash([5,8]);
+        ctx.beginPath();ctx.moveTo(actor.x,actor.y-5);ctx.lineTo(target.x,target.y-5);ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle='rgba(255,235,159,.85)';ctx.lineWidth=1.7;
+        ctx.beginPath();ctx.arc(target.x,target.y,34+2*Math.sin(this.t*3),0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
+    }
 
     // vfx under-layer (trails, rings, muzzle)
     this.vfx.draw(ctx);
