@@ -747,6 +747,38 @@
       ctx.lineTo(x,y-27);ctx.lineTo(x+19,y-6);ctx.lineTo(x+8,y+18);ctx.closePath();ctx.fill();
       ctx.fillStyle='#d7ebec';ctx.beginPath();ctx.moveTo(x,y-26);ctx.lineTo(x+18,y-6);
       ctx.lineTo(x+4,y+5);ctx.closePath();ctx.fill();
+    }else if(node.kind==='forage'){
+      // A living herb or plant clump; creek forage becomes a silvery fish.
+      if(region==='creek'||region==='ruins'){
+        ctx.fillStyle=region==='creek'?'#d9eff0':'#e1d8fa';
+        ctx.beginPath();ctx.ellipse(x,y,21,11,0,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.moveTo(x-16,y);ctx.lineTo(x-29,y-11);ctx.lineTo(x-29,y+11);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#617a89';ctx.beginPath();ctx.arc(x+11,y-3,2.2,0,Math.PI*2);ctx.fill();
+      }else{
+        ctx.strokeStyle='#699a6b';ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(x,y+19);ctx.lineTo(x,y-21);ctx.stroke();
+        for(const side of [-1,1])for(let i=0;i<3;i++){
+          ctx.fillStyle=region==='volcano'?'#d0a66c':region==='sakura'?'#f3adc7':'#87b78c';
+          ctx.beginPath();ctx.ellipse(x+side*(8+i*3),y-12+i*12,12,6,side*.6,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }else if(node.kind==='play'){
+      // A toy with wrapped thread, not a treasure chest.
+      ctx.fillStyle=region==='volcano'?'#e7b990':region==='ruins'?'#c6bde3':
+        region==='creek'?'#a8d6d8':region==='sakura'?'#f9c2d0':'#deb49a';
+      ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#fff3df';ctx.lineWidth=2;
+      for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(x,y,7+i*3,-1.7,1.8);ctx.stroke();}
+      ctx.strokeStyle='#dbc99e';ctx.lineWidth=2;ctx.beginPath();
+      ctx.moveTo(x+10,y+10);ctx.quadraticCurveTo(x+26,y+23,x+31,y+8);ctx.stroke();
+    }else if(node.kind==='cache'){
+      // Small coin pouch or shrine offering, visually different from plants/toys.
+      ctx.fillStyle=region==='volcano'?'#8e6960':region==='ruins'?'#8e8ba6':'#a58a6f';
+      ctx.beginPath();ctx.moveTo(x-16,y-15);ctx.lineTo(x+16,y-15);
+      ctx.quadraticCurveTo(x+28,y+12,x,y+21);ctx.quadraticCurveTo(x-28,y+12,x-16,y-15);ctx.fill();
+      ctx.strokeStyle='#f4d39a';ctx.lineWidth=3;ctx.beginPath();
+      ctx.moveTo(x-12,y-13);ctx.quadraticCurveTo(x,y-5,x+12,y-13);ctx.stroke();
+      ctx.fillStyle='#f5d384';ctx.beginPath();ctx.arc(x,y+5,7,0,Math.PI*2);ctx.fill();
     }else{
       // Visual reward identity depends on the biome, never the same box.
       if(region==='sakura'){
