@@ -158,3 +158,40 @@ Hooks: cat-relationships.js (NAMED_DUOS + reaction column + active() tier-4 + gr
 battle.js (duoCharge fill, castDuo reaction dispatch, reinforcement escalation), skills.js (reuse
 COMBO vocab; shared applyReaction dispatcher). Queued as a worktree — auto-starts after the
 skill-rework worktree merges (shares battle.js/skills.js).
+
+## Combat IDENTITY spec — "You don't kill. You CATCH." (2026-11-21 research)
+North-star: you're a cat — TOY with prey until it submits, then CATCH it into your bond
+(makes 纽带/bond load-bearing; reframes DPS from goal → a resource you spend carefully).
+Research lesson: theme-defining combat = the core VERB is the fantasy + the WIN rewards it
+(Splatoon turf-not-kills, Katamari roll-to-build, Kirby inhale-not-hit, UGG mischief, StS
+readable intent, real cat butt-wiggle/bat-prey/slow-blink). Today the theme is painted on —
+the win is still a generic KO (finish(true) on pack HP=0; captureReady is cosmetic).
+Ranked build (identity × cheapness):
+ ① CATCH-not-KO core (MED, identity-defining): below ~20% HP enemy enters a SUBDUE window
+    (floor HP, e.subduing), you throw yarn/小鱼干/纸箱 to PIN it (isCatch resolveHit path).
+    Catch GRADE = low-HP + status tags + was-staggered + play/juggle meter + slow-blink calm
+    − OVERKILL penalty (KO to 0 = scared off, worse bond). Grade → starting affinity/bond tier.
+    Fixes the "basics-only KO" rot: status/restraint/positioning become the skill ceiling.
+ ② Knock-it-off-the-ledge (LOW, very high identity): edges/hazards EJECT on knockback (kbx
+    already exists but arena just clamps at BATTLE_MARGIN). knockOff/puffHiss become positional
+    finishers; shove a subduable enemy off = the catch. Nearly free — vectors exist.
+ ③ Butt-wiggle windup = universal tell (LOW): replace charge-ring with crouch+rear-wiggle
+    (amp from telegraph/telegraphMax) + ears-back + tail. Draw-layer; makes 10s of footage
+    unmistakably cat (StS readable-intent as cat body-language).
+ ④ Bat-around juggle (LOW-MED): batAround keeps a staggered enemy bouncing, builds play meter
+    (restraint rewarded at catch) instead of racing HP to 0.
+ ⑤ 对波 clash = paw-swat/deflect (LOW): reframe clash as batting shots out of the air; timed
+    swat deflects one shot at an angle (reuse tickProjectileClash + reflect).
+ ⑥ Box-ambush stealth (LOW, mostly built): boxAmbush i-frames + enemy LOSES track (leadAngle
+    aims at last-seen) → pounce-from-stillness guaranteed stagger = catch setup.
+ ⑦ Laser-pointer BAIT (MED, new AI): you hold the dot; enemies fixate & chase it → herd onto
+    fields/ledges. The one genuinely-new system; do last.
+ ⑧ Slow-blink/purr de-escalation (LOW): 慢眨眼/呼噜光环 in the subdue window CALM the wild cat
+    (raise catch grade, no damage) — the non-violent bond finisher.
+Juice (Canvas2D, no art): procedural tail mood-read, ears-back telegraph, loaf guard pose, yarn
+thread trails + 纸箱 catch-cam replacing the quiet KO, paw-print landing decals, startle fluff-pop.
+Anti-generic fixes: (1) win=catch-not-KO; (2) knockback actually ejects off ledges; (3) butt-
+wiggle/ears/tail telegraph replaces the generic charge-ring.
+Hooks: battle.js resolveHit/hurtEnemy/applyHitEffects, captureReady/finish, knockback loop,
+tickProjectileClash, enemy telegraph draw; skills.js knockOff/batAround/boxAmbush/puffHiss/
+dawnHeal/blessFur. Queued as a worktree after the 3 in-flight builders merge (heavy battle.js overlap).
