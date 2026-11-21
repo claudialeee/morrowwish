@@ -329,8 +329,15 @@ assert.ok(events.some(e => e.name === 'cat_capture'), 'cat_capture analytics fir
 assert.ok(events.some(e => e.name === 'bond_battle_grade'),'Battle grade event fired');
 assert.equal(game.gradeBattle({team:[{hp:100,maxhp:100}],t:12,comboBest:10,perfectDodges:1}).grade,'S',
   'Swift, healthy, skillful battle merits S grade');
-assert.equal(game.gradeBattle({team:[{hp:85,maxhp:100,alive:true}],t:12,comboBest:10,autoUsed:true}).grade,'S',
-  'A well-managed auto battle merits S without unrealistic triple perfection');
+// The old fixture assumed 85% HP always qualified for auto-S. New players
+// can earn one with approachable, explicit requirements instead of free HP-only S.
+const noviceAuto=game.sRankRequirements('N').auto;
+assert.equal(game.gradeBattle({team:[{hp:Math.ceil(noviceAuto.hp*100+.01),maxhp:100,alive:true}],
+  t:noviceAuto.seconds,comboBest:noviceAuto.combo,autoUsed:true,wild:{rarity:'N'}}).grade,'S',
+  'A well-managed beginner auto battle still earns S');
+assert.notEqual(game.gradeBattle({team:[{hp:99,maxhp:100,alive:true}],
+  t:10,comboBest:0,autoUsed:true,wild:{rarity:'N'}}).grade,'S',
+  'Full health without combat contribution must not grant automatic S');
 assert.equal(game.gradeBattle({team:[{hp:98,maxhp:100,alive:true}],t:10,comboBest:19,autoUsed:true}).grade,'S',
   'An outstanding auto battle is still eligible for S');
 assert.equal(game.gradeBattle({team:[{hp:70,maxhp:100,alive:true}],t:10,comboBest:19,autoUsed:true}).grade,'A',
