@@ -197,7 +197,7 @@ for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souve
  if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);
 }
 const catHTML=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
-for(const id of ['id="tool"','id="collection"','id="ability"'])if(!catHTML.includes(id))throw Error('Cat interface missing '+id);
+for(const id of ['id="tool"','id="restart"','id="relicGallery"','id="achievementsGrid"','id="ability"'])if(!catHTML.includes(id))throw Error('Cat interface missing '+id);
 if(!fs.readFileSync('public/art/pawsibly-scene.svg','utf8').includes('<svg'))throw Error('Featured cat art missing');
 const approvedPawsiblyCover=fs.readFileSync('public/art/pawsibly-hatted-muted.avif');
 if(!homepage.includes('/art/pawsibly-hatted-muted.avif?v=20261120')||approvedPawsiblyCover.length<4000||approvedPawsiblyCover.toString('ascii',4,12)!=='ftypavif')throw Error('Pawsibly homepage must use the approved muted hatted cat cover');
