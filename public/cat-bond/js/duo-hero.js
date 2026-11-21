@@ -156,6 +156,6 @@ window.CatBondDuoHero={
  sceneKeys:window.CatBondDuoDirector?.keys||[],
  get assetReady(){return !!(window.CatBondDuoArtwork?.ready&&window.CatBondDuoArtwork?.backdropReady)},
  get assetSource(){return 'species-matched-watercolor-cinematics'},
- assetCount:21,breedCount:25,
+ assetCount:21,signatureCount:21,breedCount:25,
 };
 })();

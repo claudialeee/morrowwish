@@ -76,8 +76,8 @@ try{
    assert.equal(result.allUnique,true,'all 25 cat names must be unique');
    assert.equal(result.chinese,true,'keep original Chinese names untouched');
    assert.deepEqual(result.englishTeam,['Mochi','Misty']);
-   assert.equal(result.artSource,'original-approved-illustrations');
-   assert.equal(result.assetCount,8,'all eight full-quality reference art paintings');
+   assert.equal(result.artSource,'species-matched-watercolor-cinematics');
+   assert.equal(result.assetCount,21,'all 21 unique dynamic duo cut-ins');
    assert.equal(result.signatureCount,21,'element-specific signature catalogue');
    assert.equal(result.buildingResults.length,5);
    assert.ok(result.buildingResults.every(r=>r.made&&r.upgraded&&r.maxLevel===3
