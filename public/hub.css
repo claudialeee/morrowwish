@@ -358,3 +358,18 @@ html[lang="zh-CN"] .hero>p.hero-copy{white-space:nowrap;max-width:100%;overflow:
 .footer-links a:hover,.footer-links a:focus-visible{text-decoration:underline;color:#a45973}
 @media(max-width:900px){.footer-row{flex-wrap:wrap}.footer-links{gap:10px 15px}}
 @media(max-width:700px){.ceo-bio{font-size:11px;margin-top:8px}.footer-links{gap:9px 14px}}
+
+/* Studio's actual cat CEO: authentic owner photo, no generated illustration. */
+.about-section{grid-template-columns:minmax(0,1fr) minmax(0,1.17fr);gap:26px;padding:30px 0 35px;align-items:center}
+.about-copy{min-width:0}
+.about-copy h2{font-size:clamp(24px,2.4vw,32px);line-height:1.18;margin:7px 0 10px}
+.about-copy p{font-size:13px;line-height:1.65;max-width:470px}
+.ceo-profile{display:flex;align-items:center;gap:17px;padding:12px;min-width:0;border-radius:19px;background:linear-gradient(115deg,#fcf3f3,#fbf4ed);border:1px solid #eddbd6;box-shadow:0 7px 20px #7c626014}
+.ceo-profile>img{display:block;flex:0 0 165px;width:165px;height:194px;object-fit:cover;object-position:center 41%;border-radius:13px;background:#e8dfd7}
+.ceo-profile-copy{min-width:0}
+.ceo-kicker{display:block;color:#9b617d;font-size:11px;font-weight:900;letter-spacing:.11em;margin-bottom:9px}
+.ceo-profile h3{font-size:clamp(21px,2.05vw,29px);font-weight:900;letter-spacing:-.045em;line-height:1.13;color:#634765;margin:0 0 12px}
+.ceo-profile p{color:#756872;font-size:13px;line-height:1.65;margin:0}
+@media(max-width:1050px){.about-section{grid-template-columns:1fr;gap:18px}.ceo-profile{max-width:630px}.about-copy p{max-width:670px}}
+@media(max-width:700px){.about-section{padding:23px 0 28px;gap:14px}.about-copy h2{font-size:24px}.about-copy p{font-size:12.5px;line-height:1.6}.ceo-profile{gap:13px;padding:10px;border-radius:15px}.ceo-profile>img{flex-basis:118px;width:118px;height:150px;border-radius:11px}.ceo-kicker{font-size:10px;margin-bottom:7px}.ceo-profile h3{font-size:21px;margin-bottom:8px}.ceo-profile p{font-size:12px;line-height:1.55}}
+@media(max-width:365px){.ceo-profile{gap:10px;padding:8px}.ceo-profile>img{flex-basis:105px;width:105px;height:140px}.ceo-profile h3{font-size:19px}.ceo-profile p{font-size:11px}}

@@ -10,6 +10,9 @@ let lang=(()=>{let explicit=null;
 const words={
 "an indie game studio":"独立游戏工作室",
 "Meet our CEO (honorary title)":"认识一下我们的 CEO（荣誉职位）",
+"MEET THE BOSS":"认识我们的老板",
+"Chief Entertainment Officer":"首席娱乐官",
+"Not a fan of meetings. Big fan of naps. Still makes all the important decisions.":"不爱开会，热爱打盹，工作室的大事却都由它拍板。",
 "Chief Entertainment Officer. Expert napper. Occasionally approves new games.":"首席娱乐官。睡觉是强项，偶尔批准新游戏上线。",
 "Privacy":"隐私说明",
 "Contact":"联系我们",
