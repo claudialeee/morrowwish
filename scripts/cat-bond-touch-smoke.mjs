@@ -97,8 +97,15 @@ try{
           g.startBattle(State.S.cats.slice(0,1),GameData.SPECIES[1]);
         });
         await page.waitForFunction(()=>window.__game.scene==='battle');
+        // A first-time encounter opens paused tutorial before the live HUD.
+        const tutorial=await page.evaluate(()=>!!window.__game.battleTutorial);
+        if(tutorial){
+          assert.equal(await page.locator('#battle-help').isVisible(),true,
+            'First battle should open a visible, skippable control tutorial');
+          await page.locator('#battle-tutorial-skip').tap();
+        }
         await page.waitForFunction(()=>document.getElementById('battle-hint').textContent.includes('左侧滑动'),
-          null,{timeout:5000});
+          null,{timeout:8000});
         const phoneBattle=await page.evaluate(()=>{
           const title=document.getElementById('battle-hint').textContent;
           const dodge=document.getElementById('mv-dodge').innerText;
