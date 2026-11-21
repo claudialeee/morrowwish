@@ -5,7 +5,7 @@
   'use strict';
   const route=location.pathname.split('/').filter(Boolean)[0];
   const config={
-    'pawsibly-innocent':['.board-layout','.stealth-actionbar'],
+    'pawsibly-innocent':['#stage','#stageControls'],
     'elsewhere':['#play-view','.play-utilities'],
     'tiny-town':['.app','.top-actions'],
     'cat-bond':['#stage','#stage'],
@@ -163,24 +163,13 @@
       'html.mw-fs-active[data-mw-fullscreen-game="pocket-aquarium"] .meters,html.mw-fs-active[data-mw-fullscreen-game="pocket-aquarium"] .foods,html.mw-fs-active[data-mw-fullscreen-game="pocket-aquarium"] .under{flex:0 0 auto!important;margin-top:0!important;margin-bottom:0!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="pocket-aquarium"] .hint{display:none!important}',
 
-      /* Pawsibly Innocent: game board plus a small in-game HUD, not the
-         instructions, wardrobe, souvenir list or the entire page. */
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;padding:calc(env(safe-area-inset-top,0px) + 8px) 9px calc(env(safe-area-inset-bottom,0px) + 8px)!important;overflow:hidden!important;background:#fff5ea!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout>div:first-child{display:flex!important;flex-direction:column!important;flex:1 1 auto!important;min-height:0!important;align-items:center!important;justify-content:center!important;gap:7px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout .stealth-actionbar{order:2!important;flex:0 0 auto!important;width:100%!important;max-width:900px!important;justify-content:center!important;padding:0!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .stealth-help{display:none!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .cat-legend{display:none!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout .stage{box-sizing:border-box!important;order:1!important;flex:0 1 auto!important;aspect-ratio:10/7!important;width:min(100%,calc((100dvh - 195px)*10/7))!important;max-height:calc(100dvh - 195px)!important;margin:auto!important;border-width:4px!important;border-radius:16px!important;box-shadow:none!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout .stage canvas{width:100%!important;height:auto!important;aspect-ratio:10/7!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout>aside.panel{order:-1!important;display:flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:space-between!important;gap:7px!important;flex-wrap:wrap!important;width:100%!important;max-width:none!important;margin:0!important;padding:6px 8px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-mission,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-fish{padding:0!important;margin:0!important;border:0!important;flex:0 0 auto!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .chapter,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .chapter-sub,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-fish .meter,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-fish .mission,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .collection-count,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .levels,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .clothes,html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-extra{display:none!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .panel .stats{display:flex!important;gap:5px!important;margin:0!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .panel .stat{padding:3px 8px!important;min-width:48px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .panel .stat strong{font-size:16px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-actions{margin:0!important;padding:0!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-actions .button{padding:7px 10px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-yarn{min-height:42px!important}',
+      /* One integrated cat-game stage, including its own status, board and controls. */
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:0!important;background:radial-gradient(ellipse at 55% 40%,#f8e9e8,#e6d2df)!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.in-game-top{width:100%!important;max-width:1100px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 115px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 115px)!important;flex:0 1 auto!important;aspect-ratio:10/7!important;margin:0 auto!important;overflow:hidden!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.stealth-actionbar{box-sizing:border-box!important;flex:0 0 auto!important;width:100%!important;max-width:1100px!important;min-height:55px!important;margin:0!important;padding:6px 12px!important;overflow:visible!important}',
+      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #stage>.game-menu{inset:0!important;z-index:50!important}',
 
       /* Tiny Town: preserve the working resident/map/build panels and live
          score, week and club metrics. Hide site news and introductory copy. */
@@ -219,9 +208,6 @@
       'html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .tt-builder-rail{order:2!important;width:100%!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .tt-resident-rail{order:3!important;width:100%!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stats.tt-stats .stat .k{font-size:9px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout>aside.panel{justify-content:center!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .sidebar-mission .mini-label{display:none!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout .stage{width:min(100%,calc((100dvh - 215px)*10/7))!important;max-height:calc(100dvh - 215px)!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-layout{display:flex!important;flex-direction:column!important;gap:6px!important;overflow:hidden!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar{display:flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:space-between!important;gap:7px!important;padding:7px!important}',
       'html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar .aside-kicker,html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar .sidebar-art,html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar #sidebar-title,html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar #sidebar-subtitle,html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar .side-divider,html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar .quality-bars,html.mw-fs-active[data-mw-fullscreen-game="elsewhere"] #play-view .play-sidebar .aside-quiet{display:none!important}',
@@ -230,7 +216,6 @@
       '}',
       '@media(max-height:610px){',
       'html.mw-fs-active[data-mw-fullscreen-game="pocket-aquarium"] .tank{flex-basis:180px!important;min-height:180px!important}',
-      'html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] .board-layout .stage{width:min(100%,calc((100dvh - 165px)*10/7))!important;max-height:calc(100dvh - 165px)!important}',
       '}'
     ].join('\n');
     document.head.appendChild(style);
