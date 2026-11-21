@@ -604,6 +604,7 @@ class Game {
     this._battleTheme = null;
     this.scene = 'battle';
     this.battleHelpOpen=false;
+    this.battleTutorial=null;
     this.setBattleHelpVisible(false);
     this.yard?.refreshYardSwitch();
     window.MorrowwishAudio?.effect?.('discover');
@@ -631,6 +632,12 @@ class Game {
     // Display current battle state, including keyboard P toggles.
     this.syncBattleModeUI();
     this.syncBattleControlHelp();
+    // The first-ever encounter begins paused with a short guided tour.
+    // No damage, movement, or timer runs until the player starts or skips.
+    if(!State.S.battlePrefs?.tutorialSeen && (State.S.catchCount||0)===0){
+      this.battleTutorial={step:0,auto:!!this.battle.autoMode};
+      this.setBattleHelpVisible(true);
+    }
   }
 
   updateSkillLabels() {
@@ -713,6 +720,45 @@ class Game {
     const host=document.getElementById('battle-help-body');
     if(!host)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
+    if(this.battleTutorial){
+      const flow=this.battleTutorial;
+      const stages=flow.auto
+        ?(en?[
+          ['🤖 Let the cats take care of it','Your cats automatically move, aim, attack, use skills and dodge. You can watch the battle unfold.'],
+          ['✨ You are still the commander','Tap a teammate portrait to change cats. The Auto Battle button at the top lets you take control whenever you want.']
+        ]:[
+          ['🤖 猫咪会替你战斗','自动模式下，猫咪会自己移动、瞄准、攻击、放技能与闪避。你可以轻松观战。'],
+          ['✨ 你随时能接管','点击队友头像可以换猫。战斗顶部的「自动战斗」按钮可以随时切换成手动。']
+        ])
+        :(en?[
+          ['🕹️ 1 · Move your kitten',this.isTouch?'Drag on the LEFT half of the arena to move.':'Use WASD or the arrow keys to move around the arena.'],
+          ['🐾 2 · Attack the wild cat',this.isTouch?'Press and hold the RIGHT half of the arena to attack. Aim is assisted.':'Hold left mouse button or press J to attack. Aim with the mouse.'],
+          ['✨ 3 · Skills and dodge',this.isTouch?'Tap the bottom skill buttons. Dodge to avoid a hit; unleash your ultimate once the meter fills.':'Press Q / E for skills, Space to dodge and R for an ultimate. You can turn on Auto Battle at any time.']
+        ]:[
+          ['🕹️ 1 · 移动小猫',this.isTouch?'在战斗画面左半边按住滑动，控制小猫移动。':'使用 WASD 或方向键控制小猫移动。'],
+          ['🐾 2 · 攻击野猫',this.isTouch?'按住战斗画面右半边攻击，会自动瞄准附近的野猫。':'按住鼠标左键或按 J 攻击，用鼠标瞄准。'],
+          ['✨ 3 · 技能与闪避',this.isTouch?'点下方技能键释放技能；点「闪避」躲开攻击，能量满时释放必杀。':'按 Q / E 放技能、空格闪避、R 放必杀。战斗中也可以随时切换自动。']
+        ]);
+      const step=Math.min(flow.step,stages.length-1);
+      const title=document.getElementById('battle-help-title');
+      if(title)title.textContent=en?'Your first battle · '+(step+1)+'/'+stages.length
+        :'第一次战斗 · '+(step+1)+'/'+stages.length;
+      const [heading,desc]=stages[step];
+      host.innerHTML='<div class="battle-tutorial-progress" aria-hidden="true">'+
+        stages.map((_,i)=>'<span class="'+(i<=step?'filled':'')+'"></span>').join('')+
+        '</div><section class="battle-help-section preferred battle-tutorial-step"><b>'+
+        heading+'</b><p>'+desc+'</p></section><p class="battle-help-note">'+
+        (en?'The battle is paused while you learn.':'教学期间战斗暂停，不会突然受到攻击。')+
+        '</p><button id="battle-tutorial-skip" type="button" class="battle-tutorial-skip">'+
+        (en?'Skip tutorial':'跳过教学')+'</button>';
+      host.querySelector('#battle-tutorial-skip').onclick=()=>this.completeBattleTutorial();
+      const btn=document.getElementById('battle-help-start');
+      if(btn)btn.textContent=step===stages.length-1?(en?'Start fighting!':'开始战斗！')
+        :(en?'Next':'下一步');
+      const close=document.getElementById('battle-help-close');
+      if(close)close.setAttribute('aria-label',en?'Skip tutorial':'跳过教学');
+      return;
+    }
     const title=document.getElementById('battle-help-title');
     if(title)title.textContent=en?'How to fight':'手动战斗怎么玩？';
     const btn=document.getElementById('battle-help-start');
@@ -739,7 +785,24 @@ class Game {
         <p><strong>必杀：</strong>R；1 / 2 / 3 换猫；P 切换自动战斗。</p></section>
         <p class="battle-help-note">查看说明时战斗会暂停。自动模式会代替你移动、攻击和闪避。</p>`;
   }
+  advanceBattleTutorial(){
+    if(!this.battleTutorial){this.setBattleHelpVisible(false);return;}
+    const count=this.battleTutorial.auto?2:3;
+    if(this.battleTutorial.step+1>=count){this.completeBattleTutorial();return;}
+    this.battleTutorial.step++;
+    this.renderBattleHelp();
+  }
+  completeBattleTutorial(){
+    if(!this.battleTutorial)return;
+    this.battleTutorial=null;
+    State.S.battlePrefs=State.S.battlePrefs||{};
+    State.S.battlePrefs.tutorialSeen=true;
+    State.save();
+    this.mouse.down=false;this.keys={};
+    this.setBattleHelpVisible(false);
+  }
   setBattleHelpVisible(show){
+    if(!show&&this.battleTutorial){this.completeBattleTutorial();return;}
     this.battleHelpOpen=!!show&&this.scene==='battle';
     const el=document.getElementById('battle-help');
     if(el)el.hidden=!this.battleHelpOpen;
