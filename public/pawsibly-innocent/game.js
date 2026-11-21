@@ -74,7 +74,8 @@ const BADGES=[
  {id:"daily",glyph:"☀️",en:"Daily trouble",zh:"今日捣蛋王",enDesc:"Win a daily challenge",zhDesc:"成功完成每日挑战",ok:()=>save.stats.dailyWins>=1},
  {id:"cat-crew",glyph:"🐈",en:"Cat club",zh:"猫猫小队",enDesc:"Unlock at least 3 cats",zhDesc:"解锁至少三只猫",ok:()=>fur.filter(f=>allStars()>=f[3]).length>=3},
  {id:"cat-team",glyph:"🐾",en:"Full cat crew",zh:"猫猫全家福",enDesc:"Unlock all 5 cats",zhDesc:"解锁全部五只猫",ok:()=>fur.filter(f=>allStars()>=f[3]).length===5},
- {id:"fish-20",glyph:"🍣",en:"Fish enthusiast",zh:"小鱼鉴赏家",enDesc:"Steal 20 fish across runs",zhDesc:"累计偷到二十条鱼",ok:()=>save.stats.fish>=20}
+ {id:"fish-20",glyph:"🍣",en:"Fish enthusiast",zh:"小鱼鉴赏家",enDesc:"Steal 20 fish across runs",zhDesc:"累计偷到二十条鱼",ok:()=>save.stats.fish>=20},
+ {id:"perfect-diversion",glyph:"🎭",en:"The perfect distraction",zh:"声东击西",enDesc:"Steal a fish while the human investigates a distraction",zhDesc:"趁主人调查声音时偷走小鱼",ok:()=>save.stats.combos>=1}
 ];
 const TX={
 en:{startHint:"Tap a tile to walk",back:"← Morrow Wish",eyebrow:"A LITTLE CAT. A LOT OF TROUBLE.",subtitle:"Steal the snacks. Outsmart the human. Leave a little chaos.",missionLabel:"TODAY'S MISSION",snackLabel:"FISH ACQUIRED",scoreLabel:"SCORE",moveLabel:"STEPS",starLabel:"STARS",roomLabel:"CHOOSE A ROOM",closetLabel:"YOUR LITTLE TROUBLEMAKER",skinHint:"Earn 1–3 stars per room to unlock new cats.",retry:"↻ Retry",soundOn:"🔊 Sound effects: On",soundOff:"🔇 Sound effects: Off",rulesKicker:"HOW TO PLAY · 30 SECOND GUIDE",howTitle:"Three steps to a purrfect escape",howBody:"Every cat step moves the human. Stay out of pink sight zones; if spotted, hide behind a box or throw yarn to distract the guard.",ruleStep1Title:"1 · Tap to move",ruleStep1Text:"Tap the floor or use arrow keys.",ruleStep2Title:"2 · Steal three fish",ruleStep2Text:"Pink means visible. Hide before the alert fills! Boxes conceal you.",ruleStep3Title:"3 · Escape through the pink flap",ruleStep3Text:"Reach the cat door with three fish to win.",ruleBonus:"🧶 Tap Toss yarn (or Space), then tap an open floor tile to choose where the yarn lands. Tap the button again to cancel.",tip:"<span><strong>①</strong> Tap floor to walk</span><span><strong>②</strong> Collect 3 fish</span><span><strong>③</strong> Reach pink cat flap</span>",mission:"Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.",daily:"☼ Daily",room:"ROOM",dailyRoom:"DAILY CHAOS",closed:"Grab three fish first!",blocked:"Something is blocking the way!",caught:"Caught! Try a different hiding spot.",closeCall:"Narrow escape! +40",bonusDone:"Bonus dare cleared! Escape for +150.",spotted:"SPOTTED! Break line of sight!",last:"Last life! Be sneaky.",fish:"Fish acquired! Delicious.",ready:"The cat flap is open. Run for it!",vase:"CRASH! The human heard that.",box:"A cardboard box! The perfect hiding place.",hide:"The human can't see inside the box.",winTitle:"Purrfect escape!",win:"Fish stolen, chaos delivered. The human is absolutely baffled.",loseTitle:"Caught red-pawed!",lose:"A small setback for a very ambitious cat. Try a different route.",tryAgain:"Try again",nextRoom:"Next room →",again:"Play again →",share:"Share your chaos ♡",shared:"Challenge link copied!",shareText:"I escaped in Pawsibly Innocent! Can you steal three fish without getting caught?",locked:"Earn {n} stars to unlock",dailyName:"Daily House Remix",dailySub:"A familiar house with a fresh secret snack stash.",skinNames:["Marmalade","Mochi","Shadow","Peaches","Blueberry"]},
@@ -95,7 +96,7 @@ function fitCanvasPixels(){
 let lang=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 let save={unlocked:0,best:{},cat:0,souvenirs:{}};try{const s=JSON.parse(localStorage.getItem("pawsibly-innocent-save-v1")||"{}");if(s&&typeof s==="object"){save={...save,...s};save.best=s.best||{};save.souvenirs=s.souvenirs||{};}}catch{}
 save.unlocked=Math.min(7,Math.max(0,Number(save.unlocked)||0));save.cat=Math.max(0,Math.min(4,Number(save.cat)||0));
-save.stats={fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,...(save.stats&&typeof save.stats==="object"?save.stats:{})};
+save.stats={fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,combos:0,...(save.stats&&typeof save.stats==="object"?save.stats:{})};
 save.achievements=save.achievements&&typeof save.achievements==="object"?save.achievements:{};
 const relicCount=()=>Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length;
 const roomsWon=()=>Object.keys(save.best).filter(k=>/^room-[0-7]$/.test(k)&&Number(save.best[k]?.stars)>0).length;
@@ -141,6 +142,7 @@ const seedDay=Number(today.replaceAll("-",""));
 function randomRoom(){return Math.floor(rnd(seedDay)()*ROOMS.length)}
 function toastText(k){
  if(k==="bonus-completed")return lang==="zh"?"★ 额外任务完成！成功逃脱再得 150 分":"★ Bonus complete! Escape to claim +150";
+  if(k==="trick-combo")return lang==="zh"?"🎭 声东击西！趁主人分心偷到鱼 +60":"🎭 Perfect distraction! Sneaky fish +60";
   if(k==="relic-named"){
   const relic=RELICS[s.index];return relic.glyph+" "+relic[lang==="zh"?"zh":"en"]+
     (lang==="zh"?"！逃走就能收藏":"! Escape to keep it");
@@ -532,7 +534,13 @@ function resolveDetection(){
 function moveTo(p){if(s.done||s.yarnAnimating||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
-const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish"); s.score+=save.cat===4?135:100;audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":"fish");
+const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish"); s.score+=save.cat===4?135:100;
+ const combo=!!(s.guardMode==="distracted"||s.guardMode==="investigate")&&!visible(p);
+ if(combo){
+  s.score+=60;addStat("combos");
+  throwStars(p,"#ecc1fc");metric("cat_trick_combo",{level:s.index+1,score:s.score});
+ }
+ audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":combo?"trick-combo":"fish");
  if(s.index>=2&&ownerDistance(p)<=5&&s.sleepTurns===0&&!s.yarnAnimating&&!s.noise){
   s.noise={...p};s.alert=4;guardReaction("fish",2);
  }
