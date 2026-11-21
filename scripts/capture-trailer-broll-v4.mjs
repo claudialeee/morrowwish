@@ -145,7 +145,9 @@ try{
   });
   const shots=[],api=()=>window.__PAWSIBLY_TEST__;
   const sneak=stamp();
-  for(let i=0;i<4;i++){await page.evaluate(()=>window.__PAWSIBLY_TEST__.move(1,0));await sleep(370)}
+  // Keep the successful attempt continuous: do NOT move four squares and
+  // silently restart before the yarn throw (that broke the previous advert).
+  await sleep(1570);
   shots.push({label:'sneak',start:sneak,duration:stamp()-sneak-.07});
   const decoy=stamp();
   await page.evaluate(()=>{
@@ -197,7 +199,7 @@ try{
    if(s.lives<3){caughtAt=stamp();break}
   }
   if(!caughtAt)throw Error('V5 missing real caught state; no fake failure is allowed');
-  shots.push({label:'caught-chase',start:caughtRun,duration:Math.min(3.3,caughtAt-caughtRun-.15)});
+  shots.push({label:'caught-chase',start:caughtRun,duration:Math.max(.65,Math.min(3.3,caughtAt-caughtRun-.75))});
   shots.push({label:'caught',start:Math.max(caughtRun,caughtAt-.70),duration:1.45});
   await sleep(1050);
   return shots;
