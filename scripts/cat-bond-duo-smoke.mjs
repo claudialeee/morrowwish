@@ -200,6 +200,28 @@ try{
   assert.equal(visual.themeDiff,5,'signature backgrounds differ for moon, sun, storm, spring and water');
   assert.equal(visual.breedReady,true,'Current game watercolor kittens decode for every breed');
   assert.equal(visual.scenesReady,true,'pastel reference-art backgrounds decode');
+  // Filmstrip of every actual dynamically painted cat action at the HIT beat:
+  // 21 different real compositions, not just 21 text labels in the preview.
+  await page.evaluate(()=>{
+    const d=window.__duoPreviewDebug,all=d.getKeys();
+    d.setCats('sanhua','xianluo'); // visibly different calico + Siamese
+    const stage=document.getElementById('duo-canvas');
+    const grid=document.createElement('canvas');
+    grid.id='duo-qa-contact-sheet';grid.width=960;grid.height=7*208;
+    grid.style.display='block';grid.style.width='960px';grid.style.maxWidth='none';
+    const c=grid.getContext('2d');c.fillStyle='#f8f5ee';c.fillRect(0,0,960,grid.height);
+    for(let i=0;i<all.length;i++){
+      const key=all[i],x=(i%3)*320,y=Math.floor(i/3)*208;
+      d.renderAt(key,3,.78);
+      c.save();c.fillStyle='#fff';c.fillRect(x+2,y+3,316,202);
+      c.drawImage(stage,x+3,y+3,314,176);
+      c.fillStyle='#355448';c.font='bold 13px system-ui';
+      c.fillText(String(i+1).padStart(2,'0')+' '+key,x+9,y+196,300);c.restore();
+    }
+    document.body.appendChild(grid);
+  });
+  await page.locator('#duo-qa-contact-sheet').screenshot({
+    path:'/tmp/cat-bond-'+profile.name+'-preview-contact-sheet.png'});
   // Hold a visually informative impact frame; snapshots taken during the
   // first 150ms fade-in look incorrectly dark and cannot assess kitten art.
   await page.locator('#pause').click();
