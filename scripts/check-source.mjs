@@ -840,9 +840,12 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(board<0||hud<0||guide<0||bonus<0||tool<0||menu<board||!(guide<bonus&&bonus<board&&tool<board))
   throw new Error('Cat tutorial, bonus and yarn control must be grouped in one upper HUD before the map');
  if(stage.includes('class="stealth-actionbar"'))throw new Error('Standalone bottom yarn strip must not return');
+  const retry=stage.indexOf('id="restart"');
+  if(retry<tool||retry>board||stage.includes('class="collection-count"')||stage.includes('id="collectionPreview"'))
+    throw new Error('Retry belongs above the board, and album preview cards stay removed');
  for(const id of ['menuButton','menuButtonLabel','menuClose','quickHelp','stageControls','tool','visionTip','guardIntent','bonusQuick','bonusQuickText','bonusQuickProgress',
-                 'levels','wardrobe','skinHint','score','moves','starTotal','collection','hearts','fishCount',
-                 'achievementCount','relicGallery','achievementsGrid','badgeHighlights','howTitle',
+                 'levels','wardrobe','skinHint','score','moves','starTotal','hearts','fishCount',
+                 'relicGallery','achievementsGrid','badgeHighlights','howTitle',
                  'restart','roomNum','roomTag','overlay']){
   if(!stage.includes('id="'+id+'"'))throw new Error('Cat game stage lost control '+id);
  }
