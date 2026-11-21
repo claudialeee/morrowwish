@@ -43,7 +43,9 @@ class CaptureBattle {
     this.comboT = 0;                      // seconds until the chain drops
     this.comboBest = 0;                   // best this battle
     this.perfectDodges = 0;
-    this.autoUsed=false;               // earns tactical capture rankings
+    // Auto-assisted runs have different mastery ranking requirements even
+    // when the player selected auto in a previous encounter.
+    this.autoUsed=!!(window.State?.S?.battlePrefs?.autoBattle);
     this.comboFlash = 0;                  // milestone pop timer
     this.slowmo = 0;                      // perfect-dodge bullet-time timer
     this.hitstop = 0;                     // brief freeze-on-hit for weighty impacts
@@ -66,7 +68,7 @@ class CaptureBattle {
     this.captureReady = false;
 
     // --- control mode: 'manual' | 'auto' (commander). Toggle in-battle. ---
-    this.autoMode = false;
+    this.autoMode = !!(window.State?.S?.battlePrefs?.autoBattle);
     this.commandTarget = null;    // commander focus-fire marker {x,y}
 
     // --- shared ---
@@ -267,6 +269,13 @@ class CaptureBattle {
   toggleAuto() {
     this.autoMode = !this.autoMode;
     if(this.autoMode)this.autoUsed=true;
+    // Store the choice once. Every future encounter defaults to the player's
+    // last mode; players may still switch manually at any time.
+    if(window.State?.S){
+      State.S.battlePrefs=State.S.battlePrefs||{};
+      State.S.battlePrefs.autoBattle=this.autoMode;
+      State.save();
+    }
     this._autoLastAction=null;
     this.commandTarget=null;
     this.game.toast(this.autoMode ? '🤖 自动战斗 开启（你当指挥官）' : '🎮 手动操控 开启');
