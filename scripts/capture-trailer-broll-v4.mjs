@@ -19,12 +19,14 @@ function realVerticalCamera(id){
  document.body.appendChild(output);
  const ctx=output.getContext('2d',{alpha:false});
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
- let focus=0.5;
- window.__V4_CAMERA__={setFocus(v){focus=Math.max(.18,Math.min(.82,v))},show(v){output.style.display=v?'block':'none'}};
+ let focus=0.5,mode='focus';
+ window.__V4_CAMERA__={setFocus(v){focus=Math.max(.18,Math.min(.82,v))},setMode(v){mode=v},show(v){output.style.display=v?'block':'none'}};
  function paint(){
   const sw=source.width,sh=source.height;
   ctx.fillStyle='#241a37';ctx.fillRect(0,0,540,960);
   if(sw>10&&sh>10){
+   if(mode==='arena'){const w=540,h=w*sh/sw;ctx.drawImage(source,0,0,sw,sh,0,(960-h)/2,w,h);requestAnimationFrame(paint);return;}
+
    // Trim 3% safe margins to remove any edge artifacts while retaining
    // exact 9:16 pixel aspect; never stretch a landscape game.
    const ch=sh*0.80,cw=ch*540/960,available=sw*.94;
@@ -111,16 +113,32 @@ try{
   if(!entered)throw Error('V5 proof missing: entered a real explorable region');
   await mark('map-explore',2850);
   await page.evaluate(()=>{
-   window.__V4_CAMERA__.show(false);
-   window.__game.scene='yard';window.__game.showYardChrome();
-   State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:true};
-   const wild=GameData.SPECIES.find(s=>s.rarity==='SR')||GameData.SPECIES.at(-1);
-   window.__game.startBattle(State.S.cats.slice(0,3),wild);
-   window.__V4_CAMERA__.show(true);
+   window.__V4_CAMERA__.show(false);window.__game.scene='yard';window.__game.showYardChrome();
+   const cats=State.S.cats.slice(0,3);
+   CatRelations.grow(cats[0],cats[1],75);CatRelations.choose(cats[0],cats[1]);
+   State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
+   const wild=GameData.SPECIES.find(s=>s.rarity==='SSR')||GameData.SPECIES.at(-1);
+   window.__game.startBattle(cats,wild);
+   window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
   });
-  await mark('battle',3350);
+  if(!await page.evaluate(()=>!!window.__game.battle?.duo))throw Error('V6 no actual two-cat combo');
+  await mark('battle-intro',1800);
+  const duo=await page.evaluate(()=>{
+   const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
+   b.duoCharge=100;b.duoCd=0;return{cast:b.castDuo(),uses:b.duoUses,cinematic:!!b.duoCinematic};
+  });
+  if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
+  await mark('duo',3300);
+  const ult=await page.evaluate(()=>{
+   const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
+   b.ult=100;b.ultCd=0;const cast=b.ultimate(),name=b.ultCinematic?.name;
+   return{cast,cinematic:!!b.ultCinematic,name,hasChinese:/[\u3400-\u9fff]/.test(name||'')};
+  });
+  if(!ult.cast||!ult.cinematic||ult.hasChinese)throw Error('V6 real ultimate missing '+JSON.stringify(ult));
+  await mark('ultimate',3400);
+  console.log('V6 REAL CAT COMBAT '+JSON.stringify({duo,ult}));
   const labels=shots.map(s=>s.label);
-  for(const required of ['raising','work-after','tease','map-explore','battle'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
+  for(const required of ['raising','work-after','tease','map-explore','battle-intro','duo','ultimate'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
  }));
  result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
@@ -221,6 +239,7 @@ try{
   await sleep(2850);
   let comboAt=null,legendAt=null,endAt=null,buildLate=null,matureAt=null,placed=0;
   for(let day=1;day<=7;day++){
+   const stepStart=stamp();
    const action=await page.evaluate(()=>{
     const cards=[...document.querySelectorAll('#cards .wish-card')];
     let best=null;
@@ -241,7 +260,7 @@ try{
    });
    if(!action)break;placed++;
    if(day===1){buildLate=stamp();await sleep(2400)}
-   if(action.combo>0&&!comboAt){comboAt=stamp();await sleep(2650)}
+   if(action.combo>0&&!comboAt){comboAt=stepStart;await sleep(3450)}
    if(day===6){matureAt=stamp();await sleep(2450)}
    if(day===3||day===4||day===5){
     if(!legendAt&&await page.evaluate(()=>!!document.querySelector('#cards .legendary-card')||document.querySelector('#tabLegends')?.textContent?.includes('1'))){legendAt=stamp();await sleep(2450)}
@@ -273,7 +292,7 @@ try{
   if(!legendAt||!buildLate||!matureAt)throw Error('V5 requires distinct real day-one, mature board and legendary clips');
   shots[0].duration=Math.min(shots[0].duration,Math.max(.85,stamp()-started));
   shots.push({label:'board-later',start:buildLate,duration:2.25});
-  shots.push({label:'combination',start:comboAt,duration:2.35});
+  shots.push({label:'combination',start:comboAt,duration:3.4});
   shots.push({label:'legendary',start:legendAt,duration:2.25});
   if(matureAt)shots.push({label:'board-mature',start:matureAt,duration:2.25});
   shots.push({label:'ending',start:endAt,duration:3.35});
@@ -288,7 +307,7 @@ try{
     if(!r||!choices.length||r.top<0||r.left<0||r.right>innerWidth+1||r.bottom>innerHeight-10||document.documentElement.scrollWidth>innerWidth+2)throw Error('V5 native Elsewhere phone UI clipped for '+id+' '+JSON.stringify({rect:r&&{top:r.top,bottom:r.bottom,left:r.left,right:r.right},height:innerHeight,width:innerWidth,choices:choices.length}));
     if(choices.some(c=>{const x=c.getBoundingClientRect();return x.bottom>innerHeight||x.right>innerWidth}))throw Error('V5 Elsewhere choice off screen '+id);
   },world);
-  const shots=[],homeAt=stamp();await sleep(2500);shots.push({label:'choose-life',start:homeAt,duration:2.3});
+  const shots=[],homeAt=stamp();await sleep(3850);shots.push({label:'choose-life',start:homeAt,duration:3.7});
   for(const world of ['paris','amalfi','tokyo','moon']){
    await page.locator('[data-world="'+world+'"]').first().click({timeout:9000});
    await sleep(350);await checkFull(world);
@@ -317,11 +336,7 @@ try{
   const died=stamp();
   if(died-begun<1.2)throw Error('V5 flip collision has no preceding gameplay');
   await sleep(1700);
-  const playDuration=Math.min(3.65,died-begun-.92);
-  const collisionAt=Math.max(begun+playDuration,died-.57);
-  return [{label:'play',start:begun,duration:playDuration},
-    {label:'collision',start:collisionAt,duration:.60},
-    {label:'game-over',start:died+.12,duration:1.42}];
+  return [{label:'full-attempt',start:begun,duration:stamp()-begun-.08}];
  }));
  result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
   // Observer is READ ONLY: exposes the authentic next falling parcel's color.
@@ -374,9 +389,8 @@ try{
   if(!end.dead||end.state.lives>0||!/game over/i.test(end.result))throw Error('No genuine wrong-lane death '+JSON.stringify(end));
   await sleep(1900);
   if(died-wrongStart<2.8)throw Error('No readable wrong-lane footage');
-  return [{label:'deliver',start:Math.max(began,streak-3.55),duration:3.4},
-    {label:'wrong-lane',start:Math.max(wrongStart,died-2.8),duration:2.25},
-    {label:'game-over',start:died+.12,duration:1.55}];
+  const fullStart=Math.max(began,streak-2.3);
+  return [{label:'full-attempt',start:fullStart,duration:stamp()-fullStart-.12}];
  }));
  result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
   await page.goto(host+'/pocket-aquarium/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
@@ -397,7 +411,7 @@ try{
     {label:'water-cloudy',start:murkyAt,duration:Math.min(3.2,timeout-murkyAt-.15)},
     {label:'timeout',start:Math.max(murkyAt,timeout-.55),duration:2.0}];
  }));
- const manifest={createdAt:new Date().toISOString(),kind:'V5-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
+ const manifest={createdAt:new Date().toISOString(),kind:'V6-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
  fs.writeFileSync(path.join(dir,'broll-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 }finally{
  if(browser)await browser.close();server.kill('SIGTERM');
