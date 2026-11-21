@@ -60,6 +60,10 @@ try{
  // CAT BOND PROMO PAUSED BY OWNER. Keep its existing video untouched.
  // The remaining six are still captured from live gameplay.
  const result=[];
+ const only=(process.env.MW_PROMO_ONLY||'').trim();
+ const enabled=slug=>!only||only===slug;
+ if(only&&!['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'].includes(only))
+  throw Error('Invalid selective promo request '+only);
  const catBondPromoEnabled=false;
  if(catBondPromoEnabled){
  // Use OFFICIAL current game art in the trailer, not invented game scenes.
@@ -207,7 +211,7 @@ try{
   return shots;
  }));
  } // end held Cat Bond promo capture; NEVER open or record it while paused.
- result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
+ if(enabled('pawsibly-innocent')) result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
   await page.goto(host+'/pawsibly-innocent/?platform=crazygames&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__PAWSIBLY_TEST__?.getState(),null,{timeout:12000});
   // Keep the whole real board visible throughout both attempts. A cropped
@@ -368,7 +372,7 @@ try{
   console.log('V6 CAT HEIST UNBROKEN RUNS VERIFIED '+JSON.stringify({win,caught:last}));
   return shots;
  }));
- result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
+ if(enabled('tiny-town')) result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
   await page.goto(host+'/tiny-town/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   // The three starting town choices are real gameplay. Show them ALL before
   // starting rather than skipping this distinct feature in the promo.
@@ -484,7 +488,7 @@ try{
   console.log('V5 TOWN VERIFIED '+JSON.stringify({placed,comboCount,ending,legendAt}));
   return shots;
  }));
- result.push(await capture(browser,'elsewhere',async({page,stamp})=>{
+ if(enabled('elsewhere')) result.push(await capture(browser,'elsewhere',async({page,stamp})=>{
   await page.goto(host+'/elsewhere/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.addStyleTag({content:'main{padding:0 13px!important}.top{height:54px!important}.game-top{height:39px!important}#game,#ending{margin:0 auto!important;width:100%!important;max-width:100%!important}.scene{display:block!important;height:auto!important;min-height:0!important}.scene-picture{height:200px!important;min-height:200px!important;max-height:200px!important;aspect-ratio:auto!important}.scene-body{height:auto!important;max-height:none!important;overflow:visible!important;padding:10px 15px!important}.scene-body>.story-line{font-size:12.5px!important;line-height:1.38!important;margin-bottom:7px!important}.scene-body>h2{font-size:18px!important;line-height:1.2!important;margin-bottom:7px!important}.scene .choice{min-height:48px!important;padding:7px 10px!important}.scene .choices{grid-template-columns:1fr!important;gap:5px!important}.scene .choice strong{font-size:12px!important}.scene-body .progress-track,.scene .case-objective,.scene .case-topline,.scene .case-previous{margin-bottom:5px!important}#ending .ending-art{height:185px!important;aspect-ratio:auto!important}#ending .ending-paper{padding:15px 17px!important}#ending .ending-paper h1{font-size:27px!important;line-height:1.13!important;margin:7px 0!important}#ending .ending-paper>p{font-size:14px!important;line-height:1.36!important;margin-bottom:9px!important}#ending .case-verdict{font-size:11px!important;margin:3px auto 9px!important}#ending .case-summary,#ending .end-actions{display:none!important}'});
   const check=async label=>page.evaluate(name=>{
@@ -568,7 +572,7 @@ try{
   return shots;
  }));
  // Mini-games MUST show visible gameplay for at least 15 seconds before an earned loss.
- result.push(await capture(browser,'flip-dash',async({page,stamp})=>{
+ if(enabled('flip-dash')) result.push(await capture(browser,'flip-dash',async({page,stamp})=>{
   await page.route('**/upgrade.js*',async route=>{
    const response=await route.fetch(),code=await response.text();
    const key='let sec=0,side=0,py=410,haz=[],stars=[],sp=.8,k=0,lastHazSide=1;';
@@ -624,7 +628,7 @@ try{
     {label:'danger',start:targetAt,duration:Math.min(2.7,collided-targetAt-.1)},
     {label:'crash',start:collided,duration:2.8}];
  }));
- result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
+ if(enabled('parcel-panic')) result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
   await page.route('**/upgrade.js*',async route=>{
    const response=await route.fetch(),code=await response.text();
    const key='let time=0,boxes=[],spawn=.42,life=4,count=0,delivered=0,press=null,drag=null,feedback=null;';
@@ -661,7 +665,7 @@ try{
     {label:'mistakes',start:errorsAt,duration:Math.min(6.8,died-errorsAt-.2)},
     {label:'game-over',start:died+.10,duration:3.0}];
  }));
- result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
+ if(enabled('pocket-aquarium')) result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
   // Instrument only a READ-ONLY browser observer. Every food drop below is a
   // genuine click in the actual game. Fail QA if a fish is never fed.
   await page.route('**/pocket-aquarium/**',async route=>{

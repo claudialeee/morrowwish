@@ -19,10 +19,9 @@ const MIN_READING={
  'cat-bond':{'raising':4.5,'cat-upgrade':6.0,'duo-partners':6.0,'map-choice':4.5},
  'pawsibly-innocent':{'narrow-achievement':3.2},
  'tiny-town':{'opening-three-choices':6.6,'resident-profile':4.5,'neighbor-story':4.7,'ending':4.9},
- 'elsewhere':{'choose-life':3.0,'paris':4.2,'paris-result':2.35,
-  'paris-romance':4.8,'paris-love-moment':2.7,'paris-chapter-3':4.3,
-  'paris-chapter-4':3.7,'paris-finale':4.5,'paris-ending':5.3,
-  'amalfi':2.6,'tokyo':2.45,'moon-opening':3.0,'moon-surprise':2.7},
+ 'elsewhere':{'choose-life':3.0,'paris':4.0,'paris-romance':4.6,
+  'paris-ending':5.2,'amalfi':2.6,'tokyo':2.45,'moon-opening':3.0,
+  'moon-surprise':2.7,'moon-ending':5.0},
  'flip-dash':{'first-coin':3.0,'crash':2.5},
  'parcel-panic':{'game-over':2.7},
  'pocket-aquarium':{'timeout':2.9}
@@ -70,21 +69,18 @@ const playlists={
   cover(3.1,'PLAY FREE')
  ],
  'elsewhere':[
-  // Three quick alternate-life glimpses; the core is a coherent Paris romance.
-  // Keep enough time for the choice itself, but no repetitive 7-second holds.
+  // Keep the romance as ONE memorable life, not the entire advertisement.
+  // Three Paris beats only: a new encounter, a meaningful choice, the ending.
+  // Let a second life supply the surprising payoff for better variety.
   broll('choose-life',3.2),
   broll('amalfi',2.75,'A VILLA ON THE AMALFI COAST.'),
   broll('tokyo',2.6,'BE A SUPERSTAR TONIGHT.'),
   broll('moon-opening',3.1,'OR OWN A HOTEL ON THE MOON.'),
   broll('moon-surprise',2.9,'SURPRISES IN EVERY LIFE.'),
-  broll('paris',4.55,'A NEW LOVE STORY IN PARIS.'),
-  broll('paris-result',2.55),
-  broll('paris-romance',5.05,'MEET SOMEONE WHO GETS YOU.'),
-  broll('paris-love-moment',2.9,'ONE UNFORGETTABLE DATE.'),
-  broll('paris-chapter-3',4.6,'THE ROMANCE CONTINUES.'),
-  broll('paris-chapter-4',4.0,'A MOMENT WORTH KEEPING.'),
-  broll('paris-finale',4.8,'CHOOSE YOUR OWN LOVE STORY.'),
-  broll('paris-ending',5.6,'YOUR CHOICES. YOUR ENDING.'),
+  broll('moon-ending',5.35,'EVERY LIFE HAS AN ENDING.'),
+  broll('paris',4.25,'A NEW LOVE STORY IN PARIS.'),
+  broll('paris-romance',4.9,'YOUR STORY. YOUR CHOICES.'),
+  broll('paris-ending',5.5,'YOUR CHOICES. YOUR ENDING.'),
   cover(3.1,'PLAY FREE')
  ],
  'flip-dash':[
@@ -258,8 +254,24 @@ try{
  manifest.trailers.push({...cat,paused:true,productionStatus:'PAUSED — PREVIOUS REVIEW VIDEO RETAINED',
   approved:false,published:false});
  const active=['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
- if(Object.keys(proofs).some(slug=>!active.includes(slug)))throw Error('Paused Cat Bond must not be captured');
- for(const slug of active)edit(slug);
+ const only=(process.env.MW_PROMO_ONLY||'').trim();
+ if(only&&!active.includes(only))throw Error('Invalid single-review-video target '+only);
+ if(Object.keys(proofs).some(slug=>!active.includes(slug)||(only&&slug!==only)))
+   throw Error('Paused Cat Bond or a non-target game must never be recorded');
+ if(only){
+   const previousAudit=JSON.parse(fs.readFileSync('public/promo/readability-audit.json','utf8'));
+   readingAudit.scenes.push(...(previousAudit.scenes||[]).filter(scene=>scene.game!==only&&scene.game!=='cat-bond'));
+ }
+ for(const slug of active){
+   if(only&&slug!==only){
+     const retained=existing.trailers.find(x=>x.slug===slug);
+     if(!retained?.video||!fs.existsSync('public'+retained.video))
+       throw Error('Previously approved-for-review video missing: '+slug);
+     manifest.trailers.push({...retained,approved:false,published:false});
+     continue;
+   }
+   edit(slug);
+ }
  if(manifest.trailers.length!==7)throw Error('Review manifest should include 6 new trailers + 1 paused existing trailer');
  fs.writeFileSync('public/promo/v7-review.json',JSON.stringify(manifest,null,2)+'\n');
  fs.writeFileSync('public/promo/readability-audit.json',JSON.stringify(readingAudit,null,2)+'\n');
