@@ -79,8 +79,8 @@ try{
         }else if(game.slug==='pawsibly-innocent'){
           const button=page.locator('#tool');
           assert.ok(await button.isVisible(),'Yarn action not visible');
-          const positions=await page.evaluate(()=>{const t=document.querySelector('#tool').getBoundingClientRect(),b=document.querySelector('#board').getBoundingClientRect();return{toolBottom:t.bottom,boardTop:b.top,toolH:t.height};});
-          assert.ok(positions.toolBottom>positions.boardTop+35,'Yarn action must stay inside the stage but below the playable map');
+          const positions=await page.evaluate(()=>{const t=document.querySelector('#tool').getBoundingClientRect(),b=document.querySelector('#board').getBoundingClientRect();return{toolTop:t.top,boardBottom:b.bottom,toolH:t.height};});
+          assert.ok(positions.toolTop>=positions.boardBottom-2,'Yarn action must be below every tappable map tile');
           assert.ok(positions.toolH>=44,'Yarn button touch target too small');
           await button.tap();
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Tapping the yarn button must enter aiming mode');
