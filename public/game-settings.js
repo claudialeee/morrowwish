@@ -24,6 +24,16 @@ const CSS=`
 #mw-language,#mw-audio-dock,.mw-language-float{display:none!important}
 body [data-mw-music],body [data-mw-audio],body .lab-mute,body #music,body #sound,body .elsewhere-music{display:none!important}
 .home-audio,.game-tools .dream-sound{display:none!important}
+html[data-mw-settings-game="elsewhere"] .top-right .language-switch{display:none!important}
+@media(max-width:700px){
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-head-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'room tools' 'status status'!important;gap:3px!important;align-items:center!important}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .sticker{grid-area:room!important;max-width:100%!important;min-width:0!important}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .heist-status{grid-area:status!important;justify-self:start!important;margin:0!important}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game #stageControls{grid-area:tools!important;justify-self:end!important}
+html[data-mw-settings-game="pawsibly-innocent"] #menuButtonLabel{display:none!important}
+html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{font-size:21px!important}
+}
+
 #hud #mw-game-settings{pointer-events:auto!important;margin-left:auto!important}
 #hud .scene-title{display:none!important}
 #stageControls #mw-game-settings{order:5;margin-left:2px!important}
