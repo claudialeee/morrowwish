@@ -1,6 +1,6 @@
 {
-  "version": "V4",
-  "createdAt": "2026-11-21T08:09:42.713Z",
+  "version": "V4.1",
+  "createdAt": "2026-11-21T08:19:25.790Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -15,7 +15,7 @@
         "/promo/cat-bond/v4-review-2.jpg",
         "/promo/cat-bond/v4-review-3.jpg"
       ],
-      "duration": 26.8,
+      "duration": 23.3,
       "shots": [
         {
           "source": "broll",
@@ -24,10 +24,10 @@
           "seconds": 3.6
         },
         {
-          "source": "cover",
-          "scene": null,
+          "source": "broll",
+          "scene": "yard-late",
           "caption": "",
-          "seconds": 2.5
+          "seconds": 2.45
         },
         {
           "source": "broll",
@@ -40,18 +40,6 @@
           "scene": null,
           "caption": "",
           "seconds": 2.3
-        },
-        {
-          "source": "broll",
-          "scene": "yard-late",
-          "caption": "",
-          "seconds": 2.45
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "",
-          "seconds": 2.25
         },
         {
           "source": "broll",
@@ -78,14 +66,20 @@
           "seconds": 2.1
         },
         {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 2.6
+        },
+        {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.4
+          "seconds": 1.8
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -100,7 +94,7 @@
         "/promo/pawsibly-innocent/v4-review-2.jpg",
         "/promo/pawsibly-innocent/v4-review-3.jpg"
       ],
-      "duration": 24.6,
+      "duration": 23.2,
       "shots": [
         {
           "source": "broll",
@@ -119,12 +113,6 @@
           "scene": "decoy",
           "caption": "A YARN BALL CHANGES EVERYTHING.",
           "seconds": 2.3
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "",
-          "seconds": 2.2
         },
         {
           "source": "game",
@@ -169,14 +157,20 @@
           "seconds": 1.5
         },
         {
+          "source": "broll",
+          "scene": "decoy",
+          "caption": "",
+          "seconds": 2.3
+        },
+        {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.3
+          "seconds": 1.8
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -212,12 +206,6 @@
           "seconds": 1.9
         },
         {
-          "source": "cover",
-          "scene": null,
-          "caption": "",
-          "seconds": 2.6
-        },
-        {
           "source": "broll",
           "scene": "build",
           "caption": "THE TOWN KEEPS CHANGING.",
@@ -242,14 +230,26 @@
           "seconds": 2.6
         },
         {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 2.3
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 2
+        },
+        {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.3
+          "seconds": 1.8
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -264,7 +264,7 @@
         "/promo/elsewhere/v4-review-2.jpg",
         "/promo/elsewhere/v4-review-3.jpg"
       ],
-      "duration": 27.1,
+      "duration": 25.5,
       "shots": [
         {
           "source": "game",
@@ -283,12 +283,6 @@
           "scene": "maldives-result",
           "caption": "",
           "seconds": 1.55
-        },
-        {
-          "source": "cover",
-          "scene": null,
-          "caption": "",
-          "seconds": 2.45
         },
         {
           "source": "game",
@@ -333,14 +327,20 @@
           "seconds": 2.3
         },
         {
+          "source": "broll",
+          "scene": "maldives",
+          "caption": "",
+          "seconds": 2.3
+        },
+        {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.2
+          "seconds": 1.8
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -355,7 +355,7 @@
         "/promo/flip-dash/v4-review-2.jpg",
         "/promo/flip-dash/v4-review-3.jpg"
       ],
-      "duration": 9,
+      "duration": 8.6,
       "shots": [
         {
           "source": "game",
@@ -367,29 +367,29 @@
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 3.05
+          "seconds": 3.3
         },
         {
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 1.25
+          "seconds": 1.4
         },
         {
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 1.55
+          "seconds": 1.75
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 2.6
+          "seconds": 1.6
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -404,20 +404,8 @@
         "/promo/parcel-panic/v4-review-2.jpg",
         "/promo/parcel-panic/v4-review-3.jpg"
       ],
-      "duration": 8.2,
+      "duration": 8.1,
       "shots": [
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "",
-          "seconds": 1.3
-        },
-        {
-          "source": "game",
-          "scene": null,
-          "caption": "",
-          "seconds": 2.35
-        },
         {
           "source": "game",
           "scene": null,
@@ -428,17 +416,29 @@
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 1.36
+          "seconds": 2.65
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 1.6
+        },
+        {
+          "source": "game",
+          "scene": null,
+          "caption": "",
+          "seconds": 1.48
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 2.55
+          "seconds": 1.7
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -453,7 +453,7 @@
         "/promo/pocket-aquarium/v4-review-2.jpg",
         "/promo/pocket-aquarium/v4-review-3.jpg"
       ],
-      "duration": 9.3,
+      "duration": 9,
       "shots": [
         {
           "source": "game",
@@ -465,29 +465,29 @@
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 2.5
+          "seconds": 3
         },
         {
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 1.75
+          "seconds": 1.8
         },
         {
           "source": "game",
           "scene": null,
           "caption": "",
-          "seconds": 1.5
+          "seconds": 1.72
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 2.7
+          "seconds": 1.6
         }
       ],
-      "sourceClips": "current live gameplay and actual studio cover",
-      "transitions": "action cuts + gentle xfade + cover zoom",
+      "sourceClips": "current real gameplay and short readable end card",
+      "transitions": "action cuts + gentle xfade; no cropped poster text",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
