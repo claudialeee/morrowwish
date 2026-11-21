@@ -316,13 +316,23 @@
     // Mild breed silhouettes; retain the illustrated face, texture, and
     // foot anchoring so existing movement and collision remain unchanged.
     const build=BREED_LOOKS[o.species?.id]?.[3]||'';
-    const dest=build==='short-legged'?[-30,-46,60,79]:
+    const originalDest=build==='short-legged'?[-30,-46,60,79]:
       build==='seal-point'?[-27,-55,54,90]:
       build==='british-blue'?[-33,-53,66,86]:
       build==='maine-coon'?[-33,-57,66,92]:
       build==='norwegian-forest'?[-32,-56,64,91]:
       build==='folded-cream'?[-30,-52,60,87]:
       [-30,-55,60,90];
+    // The complete watercolor is wider than the cropped historical sprite.
+    // Preserve its painted proportions instead of squeezing a whole cat into
+    // the old, narrow half-cat rectangle. Keep feet planted at +35 and limit
+    // the width so mobile garden/battle cats are still compact.
+    const dest=breedLoaded?(()=>{
+      const width=Math.min(83,originalDest[2]*1.24);
+      const height=width*(art.sh/art.sw);
+      const feetY=originalDest[1]+originalDest[3];
+      return [-width/2,feetY-height,width,height];
+    })():originalDest;
     if(pose==='walk'&&movement>.075){
       paintArticulatedCat(ctx,art,dest,o,movement,phase);
     }else{
