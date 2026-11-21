@@ -165,7 +165,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,newBadges:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
@@ -216,7 +216,7 @@ function renderCollections(){
 }
 function guardLabel(){
  const mode=s?.guardMode||"patrol",zh=lang==="zh";
- const modes={patrol:zh?"巡逻：按固定路线移动":"Patrol: following a set route",investigate:zh?"调查：正在走向毛球／声音":"Investigating: following a sound",chase:zh?"追猫：已经看见你！":"Chasing: the owner spotted you!",search:zh?"搜索：前往最后看见猫的位置":"Searching: last known cat position",distracted:zh?"分心：围着毛球发呆（剩 "+s.distractionTurns+" 步）":"Distracted by yarn ("+s.distractionTurns+" turns)",sleep:zh?"睡觉：主人还没醒":"Sleeping: owner is unaware"};
+ const modes={patrol:zh?"巡逻：还没发现小猫":"Patrol: unaware of the cat",curious:zh?"听到脚步：向小猫刚经过的位置查看":"Heard footsteps: checking where you just were",investigate:zh?"调查：正在走向毛球／声音":"Investigating: following a sound",chase:zh?"追猫：已经看见你！":"Chasing: the owner spotted you!",search:zh?"搜索：前往最后看见猫的位置":"Searching: last known cat position",distracted:zh?"分心：围着毛球发呆（剩 "+s.distractionTurns+" 步）":"Distracted by yarn ("+s.distractionTurns+" turns)",sleep:zh?"睡觉：主人还没醒":"Sleeping: owner is unaware"};
  return modes[mode]||modes.patrol;
 }
 function dareDone(){
@@ -354,7 +354,7 @@ function catPathTo(from,to){
 const hidden=p=>s.boxes.some(b=>equal(b,p));
 function visible(p=s.cat){if(s.sleepTurns>0||s.guardMode==="distracted"||s.yarnAnimating||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
-function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.dangerActive=false;s.patrol=0;}
+function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.dangerActive=false;s.patrol=0;}
 function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
  aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
@@ -387,7 +387,7 @@ function throwYarnTo(p){
 function finishYarnInvestigation(){
  stopYarnChase();
  if(!s||s.done)return;
- s.noise=null;s.alert=0;s.lastSeen=null;s.yarnDestination=null;
+ s.noise=null;s.alert=0;s.lastSeen=null;s.yarnDestination=null;s.searchTurns=0;s.reaction="";
  s.distractionTurns=4;s.guardMode="distracted";s.guardTarget={...s.human};
  addStat("lures");
  audio("yarn");syncUI();
@@ -411,29 +411,56 @@ function startYarnChase(){
  if(s.yarnAnimating)yarnChaseTimer=setInterval(advanceYarnChase,240);
  syncUI();
 }
+function guardReaction(kind,turns=2){
+ s.reaction=kind;s.reactionUntil=s.steps+turns;
+}
+function ownerDistance(p=s.cat){return Math.abs(s.human.x-p.x)+Math.abs(s.human.y-p.y)}
+function soundApproachPoint(target){
+ // If the cat made the noise, investigate BESIDE that location, not into the cat.
+ // A thrown ball still draws the owner to its exact unoccupied tile.
+ if(!equal(target,s.cat))return target;
+ const options=neighbors(target).filter(p=>pass(p,true)&&!equal(p,s.cat));
+ const reachable=options.map(p=>({p,path:pathTo(s.human,p,true,true)}))
+   .filter(v=>v.path.length||equal(v.p,s.human))
+   .sort((a,b)=>a.path.length-b.path.length);
+ return reachable[0]?.p||target;
+}
 function guardMove(){
  const h=s.human;let target=null;
  if(s.sleepTurns>0&&!s.noise){
   s.sleepTurns--;s.guardMode="sleep";s.guardTarget=null;
-  if(s.sleepTurns===0)popup("wake");
+  if(s.sleepTurns===0){popup("wake");guardReaction("wake")}
   return;
  }
- if(s.sleepTurns>0&&s.noise){s.sleepTurns=0;popup("wake")}
+ if(s.sleepTurns>0&&s.noise){s.sleepTurns=0;popup("wake");guardReaction("wake")}
  if(s.distractionTurns>0&&!s.noise){
   s.distractionTurns--;s.guardMode="distracted";s.guardTarget={...h};return;
  }
+ if(s.curiosityCooldown>0)s.curiosityCooldown--;
  if(s.noise){
-  target={...s.noise};s.guardMode="investigate";
+  target=soundApproachPoint(s.noise);s.guardMode="investigate";
   if(equal(h,target)||s.alert<=0){s.noise=null;s.alert=0;target=null}
   else s.alert--;
  }
- if(!target&&visible()){
-  s.lastSeen={...s.cat};
-  if(s.exposure>0||s.finalAlert){target={...s.cat};s.alert=3;s.guardMode="chase"}
+ // Detection immediately changes the owner's intention toward the real cat.
+ // Its first sighting pauses one turn with a visible warning, preventing an instant loss.
+ const seesCat=!s.noise&&visible(s.cat);
+ if(!target&&seesCat){
+  s.lastSeen={...s.cat};s.searchTurns=2;s.alert=3;
+  s.guardMode="chase";s.guardTarget={...s.cat};
+  if(s.exposure===0&&!s.finalAlert){guardReaction("spotted");return}
+  target={...s.cat};
  }
- if(!target&&s.alert>0&&s.lastSeen){
-  target={...s.lastSeen};s.guardMode="search";s.alert--;
-  if(equal(h,target))s.lastSeen=null;
+ if(!target&&s.lastSeen&&s.searchTurns>0){
+  target={...s.lastSeen};s.guardMode="search";s.searchTurns--;
+  if(equal(h,target)){s.searchTurns=0;s.lastSeen=null}
+ }
+ // Hearing footsteps pulls the owner toward a tile the cat JUST LEFT.
+ // A short cooldown gives the player time to hide, rather than a psychic constant chase.
+ if(!target&&!hidden(s.cat)&&s.steps>=2&&s.curiosityCooldown===0&&ownerDistance()<=4){
+  target={...s.catFrom};s.lastSeen={...target};s.searchTurns=1;
+  s.curiosityCooldown=s.index<=1?4:3;
+  s.guardMode="curious";guardReaction("footsteps");
  }
  if(!target){
   const stops=s.room.patrol;
@@ -441,13 +468,14 @@ function guardMove(){
   target={x:stops[s.patrol][0],y:stops[s.patrol][1]};s.guardMode="patrol";
  }
  s.guardTarget={...target};
- const steps=pathTo(h,target,true,s.guardMode==="investigate");s.humanFrom={...h};
- if(steps.length){
-  if(equal(steps[0],s.cat)&&(s.guardMode==="investigate"||(s.exposure===0&&!s.finalAlert))){
-   if(s.guardMode==="investigate")return;
-   s.alert=Math.max(2,s.alert);s.lastSeen={...s.cat};return;
+ const investigate=s.guardMode==="investigate";
+ const steps=pathTo(h,target,true,investigate),next=steps[0];
+ s.humanFrom={...h};
+ if(next){
+  if(equal(next,s.cat)&&(investigate||s.guardMode==="curious"||s.guardMode==="search")){
+   guardReaction("footsteps");return;
   }
-  s.human={...steps[0]};s.humanMovedAt=performance.now();
+  s.human={...next};s.humanMovedAt=performance.now();
  }
 }
 // Escalating alert: the first room teaches controls without instant vision penalties.
