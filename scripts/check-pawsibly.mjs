@@ -86,6 +86,34 @@ test.move(0,-1);
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),target,'Distracted human must stay at the yarn for several player steps');
 assert.equal(test.getState().distractionTurns,3,'Lure pause must consume one step at a time');
 assert.equal(test.getState().cat.y,2,'The player can sneak past while the guard is distracted');
+// A visible cat must draw the owner toward the current cat location. The
+// FIRST sighting is a warning; this is not an impossible instant capture.
+test.choose(0,false);
+let chase=test.getState();
+chase.cat={x:3,y:3};chase.catFrom={x:3,y:3};
+chase.human={x:6,y:4};chase.humanFrom={x:6,y:4};
+chase.noise=null;chase.exposure=0;chase.guardMode="patrol";
+test.move(1,0);
+assert.equal(test.getState().guardMode,"chase","Owner must recognize the cat on first sight");
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:6,y:4},
+ "First sighting must telegraph a warning rather than instantly grab the cat");
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().guardTarget)),{x:4,y:3},
+ "Chase waypoint should match where the cat just moved");
+test.move(0,1);
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:5,y:4},
+ "Owner must actually MOVE one tile toward the visible cat");
+assert.equal(test.getState().lives,3,"An early visible chase must remain escapable");
+// Footsteps are weaker than visual detection: they move toward the previously
+// occupied tile and have a cooldown instead of psychic continuous pursuit.
+test.choose(0,false);
+chase=test.getState();
+chase.cat={x:2,y:3};chase.catFrom={x:2,y:3};
+chase.human={x:7,y:3};chase.humanFrom={x:7,y:3};
+chase.noise=null;chase.steps=2;chase.curiosityCooldown=0;
+test.move(1,0);
+assert.equal(test.getState().guardMode,"curious","Owner should hear nearby footsteps");
+assert.deepEqual(JSON.parse(JSON.stringify(test.getState().guardTarget)),{x:2,y:3},
+ "Footstep curiosity must follow the position the cat LEFT, not know the future");
 test.choose(0,false);
 // Exercise an intentional stealth route, not a nearest-fish bot that walks straight into the guard.
 // Players can clear room one without yarn or purchased cat powers, and may topple its vase for a bonus.
@@ -99,6 +127,9 @@ for(const [dx,dy] of safeRoute){
 }
 assert.equal(test.getState().got,3,'First room must award three fish on the escape route');
 assert.ok(test.getState().dareAnnounced,'The optional vase dare should visibly complete');
+assert.equal(nodes.get('bonusQuickProgress').textContent,'+150','On-board bonus pill must visibly show the reward');
+assert.ok(nodes.get('bonusQuickText').textContent.includes('Knock over a vase'),
+ 'The extra task must be readable without opening a sidebar');
 assert.ok(test.getState().winning,'First room should be winnable without special tools');
 const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
 assert.ok(earned.best?.['room-0']?.stars>=1&&earned.best?.['room-0']?.stars<=3,'Winning a room must save real stars toward new cats');
@@ -106,6 +137,9 @@ assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
 assert.equal(events.filter(e=>e.name==='game_complete').length,1,'Exactly one completion event');
 listeners['morrowwish-language-change']({detail:{lang:'zh'}});
 assert.ok(nodes.get('subtitle').textContent.includes('偷零食'),'Chinese gameplay copy switches correctly');
+assert.equal(nodes.get('menuButtonLabel').textContent,'菜单','The menu button must have a visible localized label');
+assert.ok(nodes.get('bonusQuickText').textContent.includes('打翻一个花瓶'),
+ 'Bonus objective must show its full Chinese name');
 assert.ok(frames>=1,'Canvas art rendered');
 const reviewStyle=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
 assert.ok(reviewStyle.includes('single-screen.css?v=')&&reviewStyle.includes('heistStatus'),
