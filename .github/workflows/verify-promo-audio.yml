@@ -1,0 +1,44 @@
+name: Verify seven distinct video soundtrack sources
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-promo-audio.yml'
+      - 'scripts/fetch-promo-audio.mjs'
+      - 'scripts/promo-audio.mjs'
+      - 'scripts/test-promo-music.mjs'
+      - 'promotion/promo-music-catalog.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install media inspection tools
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+      - name: Obtain previously verified licensed cat soundtrack
+        run: bash scripts/fetch-cat-music.sh
+      - name: Verify individual license and selection rules
+        run: node scripts/test-promo-music.mjs
+      - name: Actually download and validate seven different audio recordings
+        run: node scripts/fetch-promo-audio.mjs
+      - name: Confirm all audio outputs exist and are different
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/morrowwish-promo-audio"
+          for game in pawsibly-innocent cat-bond tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
+            test -s "$directory/$game.ogg"
+            ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 "$directory/$game.ogg"
+          done
+          test "$(sha256sum "$directory"/*.ogg | cut -d' ' -f1 | sort -u | wc -l)" -eq 7
+          echo "Distinct, licensed recording sources: 7 / 7"
