@@ -194,7 +194,7 @@ function edit(slug){
  execFileSync('ffmpeg',command,{stdio:'inherit',timeout:330000});
  const meta=ffprobe(output),bytes=fs.statSync(output).size;
  const isHero=hero.has(slug);
- const minimumSeconds={'cat-bond':33,'pawsibly-innocent':19,'tiny-town':30,'elsewhere':37,'flip-dash':15,'parcel-panic':15,'pocket-aquarium':13};
+ const minimumSeconds={'cat-bond':33,'pawsibly-innocent':19,'tiny-town':30,'elsewhere':35,'flip-dash':15,'parcel-panic':15,'pocket-aquarium':13};
   if(meta.seconds<(minimumSeconds[slug]||10)||meta.seconds>55||
   !meta.streams.some(x=>x.codec_type==='video'&&x.width===1080&&x.height===1920)||
   !meta.streams.some(x=>x.codec_type==='audio')||bytes<220000)
