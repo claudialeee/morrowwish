@@ -104,6 +104,7 @@ class CaptureBattle {
     const x=(fs[0].x+fs[1].x)/2,y=(fs[0].y+fs[1].y)/2;
     const firstColor=this.elemColor(fs[0].element),secondColor=this.elemColor(fs[1].element);
     const mix=d.elementPair;
+    const art=d.effect||{status:'expose',support:'shield',mult:1};
     this.duoCinematic={t:1.05,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
@@ -128,32 +129,53 @@ class CaptureBattle {
     this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
     let hits=0;
     for(const e of this.liveEnemies().slice()){
-      const damage=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
+      const raw=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
         (fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
+      const damage=raw*Math.max(.8,Math.min(1.2,art.mult||1));
       this.hurtEnemy(e,damage,e.x,e.y,true);
       this.vfx.impact(e.x,e.y,hits%2?firstColor:secondColor);hits++;
       e.status=e.status||{};e.tags=e.tags||[];
-      let tag=null;
-      if(mix.includes('fire')&&mix.includes('elec'))tag='shock';
-      else if(mix.includes('water')&&mix.includes('grass'))tag='chill';
-      else if(mix.includes('fire')&&mix.includes('water'))tag='soak';
-      else if(mix.includes('dark')&&mix.includes('light'))tag='blind';
-      if(tag){e.status[tag]=Math.max(e.status[tag]||0,2.5+d.tier*.5);
-        if(!e.tags.includes(tag))e.tags.push(tag);}
-    }
-    if(mix.includes('water')&&mix.includes('grass')){
-      for(const teammate of this.team.filter(f=>f.alive)){
-        const heal=Math.min(teammate.maxhp-teammate.hp,teammate.maxhp*(.12+d.tier*.04));
-        teammate.hp+=heal;
-        if(heal>1)this.vfx.text(teammate.x,teammate.y-48,'+'+Math.round(heal),'#8be7ac',15);
+      // All 21 element pairs use authored statuses; at 60+ trust a
+      // SECOND synergy becomes available. Crowd control stays time-limited.
+      const tags=[art.status,...(d.tier>=2&&art.secondStatus?[art.secondStatus]:[])];
+      for(const tag of tags){
+        if(!Skills.TAG_INFO[tag])continue;
+        const cc=['bind','chill','dizzy'].includes(tag);
+        const secs=cc?1.45+.3*d.tier:2.2+.48*d.tier;
+        e.status[tag]=Math.max(e.status[tag]||0,secs);
+        if(!e.tags.includes(tag))e.tags.push(tag);
       }
-    }else if(mix.includes('dark')&&mix.includes('light')){
-      for(const teammate of this.team.filter(f=>f.alive))teammate.shieldT=Math.max(teammate.shieldT,3);
     }
+    // Different duos alter what the player can do AFTER the cinematic:
+    // healing, guarding, haste, power, evasion, regeneration or extra energy.
+    const allies=this.team.filter(f=>f.alive);
+    const support=art.support||'shield';
+    for(const f of allies){
+      if(support==='heal'||support==='regen'){
+        const pct=(support==='regen'?.07:.11)+d.tier*.027;
+        const heal=Math.min(f.maxhp-f.hp,f.maxhp*pct);
+        f.hp=Math.min(f.maxhp,f.hp+heal);
+        if(heal>1)this.vfx.text(f.x,f.y-48,'+'+Math.round(heal),'#8be7ac',15);
+        if(support==='regen')f.shieldT=Math.max(f.shieldT||0,1.2+.25*d.tier);
+      }else if(support==='shield'){
+        f.shieldT=Math.max(f.shieldT||0,2.2+.65*d.tier);
+      }else if(support==='boost'){
+        f.damageBoostT=Math.max(f.damageBoostT||0,3.1+.45*d.tier);
+      }else if(support==='haste'){
+        const seconds=1.15+.35*d.tier;
+        for(const key of ['basic','q','e'])f.cd[key]=Math.max(0,(f.cd[key]||0)-seconds);
+        f.dodgeCd=Math.max(0,(f.dodgeCd||0)-seconds);
+      }else if(support==='evade'){
+        f.inv=Math.max(f.inv||0,.9+.23*d.tier);
+      }else if(support==='protect'){
+        f.protectT=Math.max(f.protectT||0,.65+.22*d.tier);
+      }
+    }
+    if(support==='charge')this.gainUlt(11+8*d.tier);
     this.gainUlt(16);
     window.MorrowwishAudio?.effect?.('capture');
     this.game.toast((window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫合击 · ':'💞 Duo attack · ')+d.name+'！');
-    window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits});
+    window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     return true;
   }
   // Keep the combat field available when a phone is rotated mid-encounter.
