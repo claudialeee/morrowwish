@@ -268,9 +268,23 @@ function point(e){const a=cv.getBoundingClientRect();
  }
  return{x:clamp((e.clientX-a.left)*W/a.width,0,W),y:clamp((e.clientY-a.top)*H/a.height,0,H)};
 }
-let held=false;cv.addEventListener("pointerdown",e=>{if(!running)return;held=true;cv.setPointerCapture(e.pointerId);const p=point(e);mode.down?.(p.x,p.y);});
-cv.addEventListener("pointermove",e=>{if(!running||!held)return;const p=point(e);mode.move?.(p.x,p.y);});
-cv.addEventListener("pointerup",e=>{if(!running)return;held=false;const p=point(e);mode.up?.(p.x,p.y);});
+let held=false;cv.style.touchAction='none';
+cv.addEventListener("pointerdown",e=>{
+ if(!running)return;
+ e.preventDefault();held=true;
+ try{cv.setPointerCapture(e.pointerId)}catch(_){}
+ const p=point(e);mode.down?.(p.x,p.y);
+});
+cv.addEventListener("pointermove",e=>{
+ if(!running||!held)return;e.preventDefault();
+ const p=point(e);mode.move?.(p.x,p.y);
+});
+cv.addEventListener("pointerup",e=>{
+ if(!held)return;e.preventDefault();held=false;
+ const p=point(e);if(running)mode.up?.(p.x,p.y);
+ try{cv.releasePointerCapture(e.pointerId)}catch(_){}
+});
+cv.addEventListener("pointercancel",()=>{held=false;mode.up?.(-1,-1);});
 window.addEventListener("keydown",e=>{if(!running)return;if([" ","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key))e.preventDefault();mode.key?.(e.key);});
 mode=(G[GAME]||G["parcel-panic"])();mode.init(1);
 document.getElementById("best").textContent=localStorage.getItem("arcade-high-"+GAME)||"0";
