@@ -80,6 +80,7 @@ jobs:
           node scripts/test-analytics-integrity.mjs
           node scripts/test-game-entry-attribution.mjs
           node scripts/test-dashboard-sorting.mjs
+          node scripts/test-promo-music.mjs
           node scripts/test-attribution-links.mjs
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
