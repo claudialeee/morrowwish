@@ -256,10 +256,14 @@ const UI = {
   },
   openRegionSecret(reward){
     const d=reward.discovery,en=window.MorrowwishI18n?.get?.()!=='zh';
+    const duoNames=reward.duoNames||[];
+    const duoLabel=reward.duoMemory
+      ?'<p class="duo-discovery-names">'+duoNames.map(n=>String(n).replace(/[&<>"']/g,'')).join(' + ')+
+        ' · '+(en?'Trust +12':'默契 +12')+'</p>':'';
     const items=['coins','fish','treats','yarn','luck'].filter(k=>reward[k]).map(k=>'+'+reward[k]+' '+({coins:'🪙',fish:'🐠',treats:'🐟',yarn:'🧶',luck:'✨'}[k])).join(' · ');
     this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
       <div class="yard-surprise-icon">${d.icon}</div><h2>${en?d.en:d.name}</h2>
-      <p>${en?d.storyEn:d.story}</p><p class="secret-reward">${en?'Unique discovery':'地区专属发现'} · ${items}</p>
+      <p>${en?d.storyEn:d.story}</p>${duoLabel}<p class="secret-reward">${reward.duoMemory?(en?'Duo expedition memory':'双猫旅行回忆'):(en?'Unique discovery':'地区专属发现')} · ${items}</p>
       <div class="btn-row"><button class="btn gold" id="secret-close">${en?'Explore more':'继续探索'}</button></div></div>`);
     document.getElementById('secret-close').onclick=()=>this.closeAll();
   },
@@ -306,9 +310,17 @@ const UI = {
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
     const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
+    const memories=ok?CatRelations.memoryList(a,b):[];
+    const journey=window.WorldMap?.REGIONS||[];
+    const album=journey.map(r=>{
+      const found=memories.includes(r.id);
+      const icon=({sakura:'🌸',home:'🏡',creek:'🐚',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
+      return '<span class="duo-memory-stamp '+(found?'found':'missing')+'" title="'+esc(en?r.sub:r.name)+'">'+
+        (found?icon:'?')+'<small>'+esc(en?r.sub:r.name)+'</small></span>';
+    }).join('');
     this.panel(`<span class="card-close">×</span><div class="duo-panel">
       <h2>💞 ${en?'Your Cat Duo':'双猫纽带'}</h2>
-      <p>${en?'Pair two cats. Pet and play to raise trust, then take both into battle for a team attack.':'选择两只搭档，撸猫和一起玩耍提升默契，组队出战释放元素合击。'}</p>
+      <p>${en?'Raise two best friends: explore together, collect shared memories and unlock powerful duo moves.':'让两只小猫从陌生到形影不离：一起探索、收集专属回忆、解锁强力合击。'}</p>
       ${mood==='sulky'?'<section class="duo-quarrel-alert" role="status"><strong>💢 '+(en?'Time to make up':'闹别扭啦')+'</strong><p>'+
         (en?State.catName(a)+' and '+State.catName(b)+' are upset. Make up for free to gain +6 trust.':
           State.catName(a)+' 和 '+State.catName(b)+' 闹别扭了，点下面的按钮免费和好，还能增加 6 点默契。')+
@@ -327,7 +339,12 @@ const UI = {
         ${p>=90?'<p class="duo-secret-story">🌙 '+(en?'SECRET PROMISE':'最终的约定')+'<span>'
           +(en?'Even in the fullest garden, these two will always find each other. Their team move has reached its final form.'
             :'即使庭院住满了小猫，它们也能一眼找到彼此。双猫合击终于达到最终形态。')
-          +'</span></p>':''}</div>
+          +'</span></p>':''}
+        <section class="duo-memory-album" aria-label="${en?'Travel memories':'双猫旅行回忆'}">
+          <strong>${en?'🐾 Travel memories':'🐾 双猫旅行回忆'} · ${memories.length}/5</strong>
+          <p class="tiny">${en?'Bring this duo to different regions. Trust 20 unlocks each shared memory.':'带上这组搭档探索不同地图，默契达到20就能解锁各地区的双猫回忆。'}</p>
+          <div class="duo-memory-grid">${album}</div>
+        </section></div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
