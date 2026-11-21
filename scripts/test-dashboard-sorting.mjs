@@ -21,7 +21,7 @@ assert.equal(sortCellValue(row('A','34 (21%)'),1,'games'),34,'Primary metric, no
 assert.equal(sortCellValue(row('A','14.7%'),1,'ew-worlds'),14.7,'Percentage');
 assert.equal(sortCellValue(row('A','—'),1,'games'),null,'Missing metrics not fabricated as zero');
 assert.equal(sortCellValue(row('A','0'),1,'itch-rows'),0,'True zero not treated as missing');
-assert.equal(sortCellValue(row('A','2 / 19','19'),1,'channel-rows'),19,'Compound sort uses real game-page visits');
+assert.equal(sortCellValue({cells:[cell('itch.io'),cell('Live'),cell('—'),cell('2 / 19','19')]},3,'channel-rows'),19,'Compound sort uses real game-page visits');
 const head=()=>({setAttribute(){},querySelector(){return null}});
 const body={id:'games',rows:[row('C','—'),row('A','25'),row('B','3'),row('D','0')],append(...r){this.rows=r;}};
 const table={tBodies:[body],tHead:{rows:[{cells:[head(),head()]}]}};
