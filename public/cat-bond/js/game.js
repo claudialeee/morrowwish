@@ -599,7 +599,7 @@ class Game {
     }
     this.tryYardSurprise(cat);
     const rewards=this.grantBondingRewards();
-    if(lv)this.toast(`${GameData.speciesById(cat.species).name} 升到 Lv.${cat.level}！`);
+    if(lv)this.toast(`${GameData.speciesById(cat.species).name} ${window.MorrowwishI18n?.get?.()==='zh'?'升到等级 ':'reached Lv.'}${cat.level}${window.MorrowwishI18n?.get?.()==='zh'?'！':'!'} `);
     if(rewards.length){
       const coins=rewards.reduce((n,r)=>n+r.coins,0);
       this.toast((window.MorrowwishI18n?.get?.()==='zh'
