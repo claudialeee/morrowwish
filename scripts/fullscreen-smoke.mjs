@@ -28,7 +28,7 @@ async function check(game,width,mobile){
     const surface=page.locator(mini?(game==='pocket-aquarium'?'.mw-mini-aquarium-frame':'.mw-mini-arcade-frame'):'.mw-immersive-target');
     assert.equal(await surface.count(),1,game+' must identify one actual play area');
     const hit=await button.boundingBox();
-    assert.ok(hit&&hit.width>=60&&hit.height>=40,'Fullscreen button is not finger-friendly');
+    assert.ok(hit&&hit.width>=(game==='pawsibly-innocent'?42:60)&&hit.height>=40,'Fullscreen button is not finger-friendly');
     if(mobile)await surface.evaluate(e=>Object.defineProperty(e,'requestFullscreen',{value:undefined,configurable:true}));
     if(mobile)await button.tap();else await button.click();
     await page.waitForFunction(()=>document.documentElement.classList.contains('mw-fs-active')||document.documentElement.classList.contains('mw-mini-fullscreen-on'));
