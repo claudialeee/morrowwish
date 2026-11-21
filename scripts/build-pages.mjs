@@ -12,6 +12,33 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 fs.cpSync(path.join(base, 'public'), out, { recursive: true });
 
+
+// Publish a stable, version-independent preview manifest for the private
+// creative-review landing page. Only use fully rendered local assets.
+const promoRoot = path.join(out, 'promo');
+const reviewVersions = fs.readdirSync(promoRoot)
+  .map(name => ({ name, match: /^v(\d+)-review\.json$/.exec(name) }))
+  .filter(v => v.match)
+  .sort((a, b) => Number(b.match[1]) - Number(a.match[1]));
+let latestReview = null;
+for (const item of reviewVersions) {
+  const data = JSON.parse(fs.readFileSync(path.join(promoRoot, item.name), 'utf8'));
+  if (!Array.isArray(data.trailers) || data.trailers.length !== 7) continue;
+  const hasFiles = data.trailers.every(entry =>
+    [entry.video, entry.poster].every(url => {
+      if (typeof url !== 'string' || !url.startsWith('/promo/') || url.includes('..')) return false;
+      const file = path.join(out, url.slice(1));
+      return fs.existsSync(file) && fs.statSync(file).size > 0;
+    }));
+  if (!hasFiles) continue;
+  latestReview = { ...data, latestPreviewPath: '/promo/review/', latestVersion: 'V' + item.match[1] };
+  fs.writeFileSync(path.join(promoRoot, 'latest-review.json'), JSON.stringify(latestReview, null, 2) + '\n');
+  console.log('Latest seven-game trailer preview: ' + latestReview.latestVersion);
+  break;
+}
+if (!latestReview) throw new Error('No fully rendered seven-game trailer review manifest is available');
+
+
 // Dated provider snapshot stays inside the authenticated Worker response, not a public asset.
 const social = JSON.parse(fs.readFileSync(path.join(base,'promotion','social-metrics-snapshot.json'),'utf8'));
 if(social.schemaVersion!==2||!Array.isArray(social.platforms)||social.metricScope?.type!=='approved-short-videos-only'||!social.metricScope?.historicalExcluded)throw Error('Social snapshot must exclude all previously published short videos');
