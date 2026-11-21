@@ -238,8 +238,8 @@ function renderCampaignLedger(){
  const z=campaignLedger;if(!z)return;
  const zh=lang==='zh',state={ready:zh?'已生成':'Verified',rendering:zh?'制作中':'Rendering',draft:zh?'草稿暂停':'Paused draft',scheduled:zh?'待自动发布':'Scheduled',published:zh?'已发布':'Published','not-scheduled':zh?'待安排':'Unscheduled'};
  const ready=z.games.filter(x=>x.production==='ready').length;
- const scheduled=z.games.reduce((n,x)=>n+Object.values(x.social||{}).filter(v=>v==='scheduled').length,0);
- const published=z.games.reduce((n,x)=>n+Object.values(x.social||{}).filter(v=>v==='published').length,0);
+ const scheduled=z.games.reduce((n,x)=>n+Object.values(x.social||{}).filter(v=>v==='scheduled').length,0)+Object.values(z.montage?.social||{}).filter(v=>v==='scheduled').length;
+ const published=z.games.reduce((n,x)=>n+Object.values(x.social||{}).filter(v=>v==='published').length,0)+Object.values(z.montage?.social||{}).filter(v=>v==='published').length;
  document.getElementById('video-release-title').textContent=zh?'7 款游戏短视频推广':'Seven-game video releases';
  document.getElementById('video-release-summary').textContent=(zh?'成片 ':'Ready ')+ready+'/7 · '+(zh?'已排期 ':'Scheduled ')+scheduled+' · '+(zh?'已发布 ':'Published ')+published;
  document.getElementById('video-head-game').textContent=zh?'游戏':'Game';
