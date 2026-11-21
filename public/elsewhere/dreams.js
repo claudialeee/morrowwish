@@ -220,7 +220,7 @@ function renderStage(){
  const chapterBody=i===4&&s.routeBodies?.[state.route]?s.routeBodies[state.route]:
   i>=2&&i<=3&&prior&&s.bodyByPrior?.[prior.index]?s.bodyByPrior[prior.index]:s.body;
  const continuity=prior?(s.links?.[prior.index]||prior.result):null;
- const storyBridge=!sealed&&continuity?'<p class="story-link life-causal-bridge"><b>'+(lang==='zh'?'因为上一幕：':'AFTER YOUR LAST CHOICE:')+'</b> '+esc(T(continuity))+'</p>':'';
+ const storyBridge=!sealed&&continuity?'<p class="story-link life-causal-bridge"><b>'+(lang==='zh'?'你刚刚选择：':'YOUR LAST CHOICE:')+' '+esc(T(prior.title))+'</b> '+esc(T(continuity))+'</p>':'';
  const sceneQuestion=esc(T(s.prompt||Q.choice));
  const clue=state.secret?'<span class="case-secret-found">'+Qe("secret")+' · '+esc(T(story(state.id).secret))+'</span>':'';
  const historyHint=''; // One causal bridge supersedes repetitive recaps
