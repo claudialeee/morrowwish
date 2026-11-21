@@ -10,6 +10,8 @@
 // active cat auto-swaps to the next alive one.
 
 const BATTLE_MARGIN = { side: 46 }; // vertical bounds follow the visible paved stage
+// Real seconds: unaffected by combat slow-motion and cinematic hitstop.
+const ULT_COOLDOWN_SECONDS = 18;
 
 class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
@@ -38,6 +40,7 @@ class CaptureBattle {
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
+    this.ultCd = 0;                       // shared across fighter swaps
     // --- COMBO system: hits chain a multiplier; drops after a gap (需要操作维持) ---
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
@@ -643,7 +646,7 @@ class CaptureBattle {
     if(shield&&(hp<.70||dist<145)){
       if(this.castSlot(f,shield,aim)!==false){this.markAutoAction(f,'展开护盾');return;}
     }
-    if(f===this.me()&&this.ult>=100&&dist<370){
+    if(f===this.me()&&this.canUltimate()&&dist<370){
       if(this.ultimate()!==false){this.markAutoAction(f,'释放必杀技');return;}
     }
     const offensive=(sk,slot)=>{
@@ -689,7 +692,7 @@ class CaptureBattle {
         case 'enemyHpBelow50':return tgt.hp/tgt.maxhp<.50;
         case 'selfHpBelow40':return f.hp/f.maxhp<.40;
         case 'selfHpBelow25':return f.hp/f.maxhp<.25;
-        case 'ultReady':return this.ult>=100;
+        case 'ultReady':return this.canUltimate();
         case 'comboPrimed':case 'enemyHasTag':return tags.length>0;
         case 'enemyClose':return dist<145;
         case 'enemyFar':return dist>260;
@@ -700,7 +703,7 @@ class CaptureBattle {
     };
     const action=act=>{
       switch(act){
-        case 'ult':return f===this.me()&&this.ult>=100?this.ultimate():false;
+        case 'ult':return f===this.me()&&this.canUltimate()?this.ultimate():false;
         case 'heal':{
           const slot=this.supportSlot(f,'heal')||this.supportSlot(f,'shield');
           return slot?this.castSlot(f,slot,aim):false;
@@ -1311,10 +1314,23 @@ class CaptureBattle {
     }
     return true;
   }
+  canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
   ultimate(){
-    if(this.ult<100){this.game.toast('必杀能量不足');return false;}
+    if(this.ultCd>0||this.ultCinematic){
+      if(!this.autoMode&&this.ultCd>0&&this.t-(this._ultWarnAt??-999)>2.5){
+        const en=window.MorrowwishI18n?.get?.()!=='zh';
+        this.game.toast(en?'Ultimate cooldown: '+Math.ceil(this.ultCd)+'s':'必杀冷却中：'+Math.ceil(this.ultCd)+'秒');
+        this._ultWarnAt=this.t;
+      }
+      return false;
+    }
+    if(this.ult<100){
+      this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'必杀能量不足':'Not enough ultimate energy');
+      return false;
+    }
     const f=this.me(),skill=f.ultSkill;
     this.ult=0;
+    this.ultCd=ULT_COOLDOWN_SECONDS;
     f.inv=2.2;                                   // invulnerable through the whole cinematic
     // FULL-SCREEN ULTIMATE CINEMATIC: freeze the arena, play a 3s element-themed
     // sequence, and detonate at the climax. The heavy lifting (damage) still runs
@@ -1557,6 +1573,7 @@ class CaptureBattle {
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
+    this.ultCd=Math.max(0,this.ultCd-dt); // real frame time, before simulation slowdown
     // Global combat tempo: scale the whole simulation (movement, projectiles, enemy
     // AI, cooldowns) so fights read calmer and the cat isn't twitchy-fast. One knob,
     // everything stays proportional/balanced. 1 = old speed; 0.8 = 20% slower.
@@ -1590,7 +1607,7 @@ class CaptureBattle {
     }
     // combo chain decays if you stop landing hits (需持续操作维持)
     if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0 && this.combo > 0) this.breakCombo(); }
-    this.gainUlt(12 * dt);                 // ult builds over time
+    this.gainUlt(8 * dt);                  // passive charge; active combat charges faster
 
     this.readInput(dt);
     if(this.autoMode&&this.duoReady())this.castDuo();
@@ -2017,7 +2034,7 @@ class CaptureBattle {
   enemyMaybeWard(e, me, dist) {
     let incoming = 0;
     for (const p of this.projectiles) { if (p.owner === 'me' && Math.hypot(p.x - e.x, p.y - e.y) < 220) incoming++; }
-    const playerUltSoon = this.ult >= 95;
+    const playerUltSoon = this.ult >= 95 && this.ultCd<=0 && !this.ultCinematic;
     let type = null;
     if (playerUltSoon && dist < 260) type = 'protect';     // eat the ultimate (not reflectable)
     else if (incoming >= 3) type = 'reflect';              // bounce a projectile spammer

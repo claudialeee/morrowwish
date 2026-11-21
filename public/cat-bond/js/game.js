@@ -946,7 +946,13 @@ class Game {
       hpbar.setAttribute('aria-valuenow',String(Math.round(pct)));
     }
     document.getElementById('ult-bar').style.width = b.ult + '%';
-    document.getElementById('ult-btn').classList.toggle('ready', b.ult >= 100);
+    document.getElementById('ult-btn').classList.toggle('ready',b.canUltimate());
+    const ultLabel=document.querySelector('#ult-wrap .ult-label');
+    if(ultLabel){
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      const label=b.ultCd>0?(en?'Cooldown '+Math.ceil(b.ultCd)+'s':'冷却 '+Math.ceil(b.ultCd)+'秒'):(en?'Ultimate':'必杀');
+      if(ultLabel.textContent!==label)ultLabel.textContent=label;
+    }
     const hint = document.getElementById('battle-hint');
     if (hint && hint.textContent !== b.hint) hint.textContent = b.hint;
     if (hint) hint.classList.toggle('coach-hint', !!b.coach);   // highlight the coaching line
@@ -985,6 +991,7 @@ class Game {
     this.renderCd('mv-q', f.cd.q);
     this.renderCd('mv-e', f.cd.e);
     this.renderCd('mv-dodge', f.dodgeCd);
+    this.renderCd('ult-btn', b.ultCd);
     // team slots: hp + active highlight
     const host = document.getElementById('team-slots');
     if (host) [...host.children].forEach((el, i) => {
