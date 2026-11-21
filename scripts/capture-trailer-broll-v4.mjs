@@ -143,7 +143,7 @@ try{
   await page.addStyleTag({content:'.topbar,.footer,.game-top,.case-topline,.moment-pips{display:none!important}.scene-picture{height:465px!important;min-height:465px!important}.scene-body{padding:18px!important}.story-line{font-size:19px!important;line-height:1.35!important}.choices .choice{min-height:70px!important;font-size:18px!important}'});
   const shots=[];
   for(const world of ['maldives','moon','tokyo']){
-   if(await page.locator('#game:not([hidden])').count())await page.locator('[data-home]').first().click();
+   if(await page.locator('#game:not([hidden])').count())await page.evaluate(()=>document.querySelector('#game [data-home]')?.click());
    await page.locator('[data-world="'+world+'"]').first().click({timeout:8000});
    await sleep(400);
    const start=stamp();await sleep(2850);
