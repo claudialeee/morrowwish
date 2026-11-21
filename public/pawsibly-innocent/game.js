@@ -279,7 +279,7 @@ function resultLine(){
 function contextualHint(){
  if(!s)return "";
  if(aimingYarn)return lang==="zh"?"点地图上的空地板，主人会走向毛球。":"Tap a floor tile. The owner will walk to your yarn.";
- if(s.yarnAnimating)return lang==="zh"?"看！主人正走向毛球，等他停下再行动。":"Watch the owner follow the yarn. Move when they stop.";
+ if(s.yarnAnimating)return lang==="zh"?"主人正被毛球引开！现在就可以移动，去偷鱼！":"The owner is following the yarn! Move now and steal the fish.";
  if(s.distractionTurns>0)return lang==="zh"?"主人分心了！趁这 "+s.distractionTurns+" 步偷鱼开溜。":"The owner is distracted! You have "+s.distractionTurns+" safe moves.";
  if(s.index===0&&!daily){
   if(s.got===0)return lang==="zh"?"① 点旁边的小鱼。主人看见你才会追！":"① Tap the nearby fish. The owner chases if they spot you!";
