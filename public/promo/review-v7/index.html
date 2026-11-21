@@ -1,10 +1,26 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morrow Wish V7 Video QA — Not Published</title><style>
-:root{color-scheme:dark}body{margin:0;background:#171728;color:#f8f6ff;font:15px/1.55 system-ui,sans-serif}header{text-align:center;padding:26px 16px 20px}h1{font-size:clamp(21px,4vw,34px);margin:0 0 10px}p{margin:8px 0;color:#d1cce0}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;max-width:1320px;padding:20px;margin:auto}article{background:#25243b;padding:15px;border-radius:19px;min-width:0}h2{font-size:18px;margin:0 0 10px}video{display:block;aspect-ratio:9/16;object-fit:contain;width:min(100%,310px);max-height:560px;margin:auto;border-radius:13px;background:#080812}a{color:#e9c0f4}small{display:block;color:#b3aacb;margin-top:10px}footer{text-align:center;padding:20px;color:#c1b6d1}</style></head><body><header><h1>Morrow Wish · 七款游戏 V7 加长版宣传视频</h1><p>真实游玩长镜头 · 猫咪大招 · 小镇居民互动 · 新人生惊喜与结局 · 小游戏先操作再失败。仅供审核，不会自动发布。</p></header><main id="videos"></main><footer>所有视频需要确认后才允许发布到社交平台。</footer><script>
+:root{color-scheme:dark}body{margin:0;background:#171728;color:#f8f6ff;font:15px/1.55 system-ui,sans-serif}header{text-align:center;padding:26px 16px 20px}h1{font-size:clamp(21px,4vw,34px);margin:0 0 10px}p{margin:8px 0;color:#d1cce0}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;max-width:1320px;padding:20px;margin:auto}article{background:#25243b;padding:15px;border-radius:19px;min-width:0}h2{font-size:18px;margin:0 0 10px}video{display:block;aspect-ratio:9/16;object-fit:contain;width:min(100%,310px);max-height:560px;margin:auto;border-radius:13px;background:#080812}a{color:#e9c0f4}small{display:block;color:#b3aacb;margin-top:10px}.highlights{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}.highlights button{padding:7px 10px;border:1px solid #666180;border-radius:999px;color:#f7eafa;background:#3c375c;font:600 12px system-ui;cursor:pointer}.highlights button:hover{background:#594976}.highlights button:focus-visible{outline:2px solid #edd0ff}footer{text-align:center;padding:20px;color:#c1b6d1}</style></head><body><header><h1>Morrow Wish · 七款游戏 V7 加长版宣传视频</h1><p>真实游玩长镜头 · 猫咪大招 · 小镇居民互动 · 新人生惊喜与结局 · 小游戏先操作再失败。仅供审核，不会自动发布。</p></header><main id="videos"></main><footer>所有视频需要确认后才允许发布到社交平台。</footer><script>
 fetch('/promo/v7-review.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Previews not rendered yet');return r.json()}).then(data=>{
  for(const entry of data.trailers||[]){
  const article=document.createElement('article'),h=document.createElement('h2'),v=document.createElement('video'),a=document.createElement('a'),note=document.createElement('small');const names={'cat-bond':'猫猫纽带','pawsibly-innocent':'猫猫捣蛋','tiny-town':'自由小镇','elsewhere':'平行人生','flip-dash':'Flip Dash','parcel-panic':'快递大作战','pocket-aquarium':'口袋水族馆'};
  h.textContent=(names[entry.slug]||entry.slug)+' · 加长实机版';v.controls=true;v.playsInline=true;v.preload='metadata';v.poster=entry.poster;v.src=entry.video;
- a.href=entry.video;a.textContent='单独观看 MP4';note.textContent=entry.duration+' 秒 · 未批准发布';article.append(h,v,a,note);document.getElementById('videos').appendChild(article);
+ const highlights={'cat-bond':[['duo','双猫合击'],['ultimate','必杀技']],
+ 'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['caught-attempt','被抓住']],
+ 'tiny-town':[['resident-reactions','居民心情'],['resident-profile','居民喜好'],['neighbor-story','居民故事'],['ending','小镇结局']],
+ 'elsewhere':[['moon-surprise','剧情惊喜'],['moon-finale-surprise','最终惊喜'],['moon-ending','真实结局']],
+ 'flip-dash':[['survival','连续躲避'],['crash','撞上障碍']],
+ 'parcel-panic':[['deliveries','连续投递'],['mistakes','错误投递'],['game-over','结算']],
+ 'pocket-aquarium':[['feeding','喂鱼操作'],['more-feeding','继续喂鱼'],['timeout','最终成绩']]};
+ const timeByScene={};let current=0;
+ for(const shot of entry.shots||[]){if(shot.scene)timeByScene[shot.scene]=current;current+=Number(shot.seconds)||0}
+ const nav=document.createElement('div');nav.className='highlights';
+ for(const [scene,title] of highlights[entry.slug]||[]){
+  if(timeByScene[scene]===undefined)continue;
+  const button=document.createElement('button');button.type='button';button.textContent=title;
+  button.addEventListener('click',()=>{v.currentTime=Math.max(0,timeByScene[scene]+.12);v.play().catch(()=>{})});
+  nav.appendChild(button);
+ }
+ a.href=entry.video;a.textContent='单独观看 MP4';note.textContent=entry.duration+' 秒 · 未批准发布';article.append(h,v,nav,a,note);document.getElementById('videos').appendChild(article);
  }
 }).catch(e=>{const p=document.createElement('p');p.textContent='Previews unavailable: '+e.message;document.querySelector('main').appendChild(p)});
 </script></body></html>
