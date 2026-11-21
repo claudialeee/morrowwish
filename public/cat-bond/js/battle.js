@@ -1340,7 +1340,7 @@ class CaptureBattle {
     const color = skill && skill.ultCost>0 ? this.elemColor(skill.element) : '#ffd36b';
     this.ultCinematic = {
       t: 3.0, max: 3.0, impactAt: 1.15, impacted: false,
-      name: skill && skill.ultCost>0 ? skill.name : '喵爪旋风',
+      name: skill && skill.ultCost>0 ? (window.CatBondI18n?.translate?.(skill.name) || skill.name) : (window.MorrowwishI18n?.get?.()==='zh' ? '喵爪旋风' : 'Claw Cyclone'),
       element: skill && skill.ultCost>0 ? skill.element : 'neutral',
       color, x: f.x, y: f.y, uid: f.cat.uid,
     };
@@ -1374,7 +1374,7 @@ class CaptureBattle {
       this.vfx.burst(f.x,f.y,{count:14,color,speed:245,life:.55,r:3});
       // Distinct attack animation already communicates the move; avoid a giant skill-name label.
       this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
-      this.game.toast(this.elemSymbol(skill.element)+' 必杀 · '+skill.name+'！');
+      this.game.toast(this.elemSymbol(skill.element)+' '+(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · ':'Ultimate · ')+(window.CatBondI18n?.translate?.(skill.name)||skill.name)+(window.MorrowwishI18n?.get?.()==='zh'?'！':'!'));
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
       this.markMoveSeen(f,skill);
       window.arcadeMetric?.('bond_signature_ultimate',{skill:skill.id,rarity:GameData.speciesById(f.cat.species).rarity});
@@ -1390,7 +1390,7 @@ class CaptureBattle {
       this.skillStrokes.push({kind:'furStorm',x:f.x,y:f.y,
         color:'#f7d6a2',life:.7,max:.7});
       this.vfx.burst(f.x,f.y,{count:9,color:'#ffedca',speed:185,life:.35,r:2});
-      this.game.toast('必杀 · 喵爪旋风！');
+      this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · 喵爪旋风！':'Ultimate · Claw Cyclone!');
       this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:targets.length};
     }
   }
