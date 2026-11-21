@@ -143,88 +143,74 @@ try{
  }));
  result.push(await capture(browser,'pawsibly-innocent',async({page,stamp})=>{
   await page.goto(host+'/pawsibly-innocent/?platform=crazygames&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
-  await page.waitForFunction(()=>!!window.__PAWSIBLY_TEST__?.getState(),{timeout:12000});
+  await page.waitForFunction(()=>!!window.__PAWSIBLY_TEST__?.getState(),null,{timeout:12000});
+  // Keep the whole real board visible throughout both attempts. A cropped
+  // follow-cam previously hid the human and made legal moves look like teleports.
   await page.evaluate(()=>{
    const source=document.getElementById('board'),out=document.createElement('canvas');
-   out.id='mw-v5-chase-camera';out.width=540;out.height=960;
+   out.width=540;out.height=960;out.id='mw-v6-full-board';
    Object.assign(out.style,{position:'fixed',inset:'0',width:'100vw',height:'100vh',zIndex:'2147483647',pointerEvents:'none'});
    document.body.appendChild(out);
-   const ctx=out.getContext('2d');ctx.imageSmoothingEnabled=true;
-   window.__V5_FOCUS__='cat';
-   window.__V5_SHOW__=on=>out.style.display=on?'block':'none';
-   let cx=0;
-   function draw(){
+   const ctx=out.getContext('2d',{alpha:false});
+   function paint(){
+    ctx.fillStyle='#241a37';ctx.fillRect(0,0,540,960);
     const s=window.__PAWSIBLY_TEST__?.getState();
     if(s&&source.width&&source.height){
-     const vis=588*540/960,a=s.cat||{x:2},h=s.human||{x:7};
-     const mid=window.__V5_FOCUS__==='human'?h.x:window.__V5_FOCUS__==='cat'?a.x:.47*a.x+.53*h.x;
-     const want=Math.max(0,Math.min(840-vis,(mid+.5)*84-vis/2));
-     cx+=(want-cx)*.18;
-     ctx.drawImage(source,cx*source.width/840,0,vis*source.width/840,source.height,0,0,540,960);
+     const h=540*source.height/source.width,y=(960-h)/2;
+     ctx.drawImage(source,0,0,source.width,source.height,0,y,540,h);
+     ctx.fillStyle='#fff7ec';ctx.font='bold 30px system-ui,sans-serif';
+     ctx.fillText('STEAL THREE FISH',25,190);
+     ctx.font='bold 25px system-ui,sans-serif';
+     ctx.fillText('FISH '+s.got+'/3',28,760);
+     if(s.winning)ctx.fillText('ESCAPED!',28,815);
+     else if(s.lives<3)ctx.fillText('CAUGHT!',28,815);
     }
-    requestAnimationFrame(draw);
-   }draw();
+    requestAnimationFrame(paint);
+   }paint();
   });
-  const shots=[],api=()=>window.__PAWSIBLY_TEST__;
-  const sneak=stamp();
-  // Keep the successful attempt continuous: do NOT move four squares and
-  // silently restart before the yarn throw (that broke the previous advert).
-  await sleep(1570);
-  shots.push({label:'sneak',start:sneak,duration:stamp()-sneak-.07});
-  const decoy=stamp();
-  await page.evaluate(()=>{
-   const a=window.__PAWSIBLY_TEST__;a.throwYarn();if(!a.throwYarnTo({x:9,y:1}))throw Error('Real yarn distraction rejected');
-   window.__V5_FOCUS__='human';
-  });
-  await sleep(2600);shots.push({label:'distraction',start:decoy,duration:2.48});
-  await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:10000});
-  await page.evaluate(()=>window.__V5_FOCUS__='cat');
-  const escape=stamp();
-  let state;
-  for(const [dx,dy] of [[1,0],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[0,-1],[1,0],[0,1],[1,0]]){
-   state=await page.evaluate(([x,y])=>{
-    window.__PAWSIBLY_TEST__.move(x,y);const s=window.__PAWSIBLY_TEST__.getState();
-    return{won:s.winning,done:s.done,got:s.got,yarn:s.yarnThrows};
-   },[dx,dy]);await sleep(300);if(state.done)break;
-  }
-  if(!state?.won||state.got<3)throw Error('V5 escape must be earned by 3 genuine collected fish: '+JSON.stringify(state));
-  const escapedAt=stamp();
-  shots.push({label:'escape-run',start:escape,duration:Math.min(3.3,escapedAt-escape-.07)});
-  await page.evaluate(()=>window.__V5_SHOW__(false));
+  const shots=[],first=stamp();
   await sleep(1250);
-  shots.push({label:'escaped',start:escapedAt,duration:1.12});
-  // Explicitly separate this from the win: a different attempt, no jump cut
-  // disguised as one continuous run.
-  // A separate, explicitly labelled LATER ROOM for the caught sequence.
-  // A legal misplay in level six is more convincing than faking a loss in the
-  // forgiving tutorial level. The two runs are never presented as one run.
-  await page.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(5,false);window.__V5_SHOW__(true);window.__V5_FOCUS__='cat'});
-  const caughtRun=stamp();let caughtAt=null,lastLoss=null;
-  for(let i=0;i<28;i++){
-   lastLoss=await page.evaluate(()=>{
+  await page.evaluate(()=>{
+   const a=window.__PAWSIBLY_TEST__;a.throwYarn();
+   if(!a.throwYarnTo({x:9,y:1}))throw Error('The real yarn distraction failed');
+  });
+  await sleep(2650);
+  await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:10000});
+  let win;
+  for(const [dx,dy] of [[1,0],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[0,-1],[1,0],[0,1],[1,0]]){
+   win=await page.evaluate(([x,y])=>{
+    window.__PAWSIBLY_TEST__.move(x,y);const s=window.__PAWSIBLY_TEST__.getState();
+    return{won:s.winning,done:s.done,got:s.got};
+   },[dx,dy]);await sleep(400);if(win.done)break;
+  }
+  if(!win?.won||win.got<3)throw Error('Continuous successful escape does not collect three real fish '+JSON.stringify(win));
+  await sleep(1400);
+  shots.push({label:'escape-attempt',start:first,duration:stamp()-first-.1});
+  // Explicit second run. The cut is at the start of a NEW room, never in
+  // the middle of movement. A different outcome comes from actual game rules.
+  await page.evaluate(()=>window.__PAWSIBLY_TEST__.choose(5,false));
+  const second=stamp();await sleep(800);
+  let caught=false,last;
+  for(let i=0;i<30;i++){
+   last=await page.evaluate(()=>{
     const api=window.__PAWSIBLY_TEST__,s=api.getState();
     const dx=s.cat.x<s.human.x?1:s.cat.x>s.human.x?-1:0;
     const dy=s.cat.y<s.human.y?1:s.cat.y>s.human.y?-1:0;
-    // Legal directional moves only; the game itself enforces sight,
-    // enemy pursuit, invincibility and catching.
     const tries=dx?[[dx,0],[0,dy||1],[0,-1],[-dx,0]]:[[0,dy],[1,0],[-1,0],[0,-dy]];
     for(const [x,y] of tries){
-      if(!x&&!y)continue;
-      const before={...s.cat};
-      api.move(x,y);
-      const t=api.getState();
-      if(t.lives<3||before.x!==t.cat.x||before.y!==t.cat.y)break;
+     if(!x&&!y)continue;
+     const before={...s.cat};api.move(x,y);const next=api.getState();
+     if(next.lives<3||before.x!==next.cat.x||before.y!==next.cat.y)break;
     }
-    const q=api.getState();
-    return{lives:q.lives,cat:q.cat,human:q.human,exposure:q.exposure,steps:q.steps};
+    const q=api.getState();return{lives:q.lives,cat:q.cat,human:q.human,steps:q.steps};
    });
-   await sleep(260);
-   if(lastLoss.lives<3){caughtAt=stamp();break}
+   await sleep(390);
+   if(last.lives<3){caught=true;break}
   }
-  if(!caughtAt)throw Error('V5 missing real caught state; no fake failure is allowed '+JSON.stringify(lastLoss));
-  shots.push({label:'caught-chase',start:caughtRun,duration:Math.max(.65,Math.min(3.3,caughtAt-caughtRun-.75))});
-  shots.push({label:'caught',start:Math.max(caughtRun,caughtAt-.70),duration:1.45});
-  await sleep(1050);
+  if(!caught)throw Error('The second continuous run never gets caught '+JSON.stringify(last));
+  await sleep(1250);
+  shots.push({label:'caught-attempt',start:second,duration:stamp()-second-.12});
+  console.log('V6 CAT HEIST UNBROKEN RUNS VERIFIED '+JSON.stringify({win,caught:last}));
   return shots;
  }));
  result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
