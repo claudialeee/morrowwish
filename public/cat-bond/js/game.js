@@ -282,12 +282,14 @@ class Game {
       duoEl.hidden=this.scene!=='yard'||(!pending&&members.length!==2)||
         !!document.getElementById('panel')?.classList.contains('open');
       duoEl.classList.toggle('needs-reconcile',!!pending);
+      duoEl.setAttribute('aria-live',pending?'polite':'off');
+      if(pending)duoEl.setAttribute('role','button');
       if(!duoEl.hidden){
         const en=window.MorrowwishI18n?.get?.()!=='zh';
         const val=members.length===2?(CatRelations.pair(members[0],members[1])?.value||0):0;
         duoEl.textContent=pending
           ?'💢 '+State.catName(pending.a)+' + '+State.catName(pending.b)+
-            (en?' · Tap to reconcile for free':' · 点击免费和好')
+            (en?' had a disagreement — tap to make up':' 闹别扭了！点这里免费和好')
           :'💞 '+members.map(c=>State.catName(c)).join(' + ')+' · '+(en?'Trust ':'默契 ')+val;
         duoEl.setAttribute('aria-label',pending
           ?(en?'Open the duo disagreement and reconcile':'查看双猫闹别扭事件并和好')
