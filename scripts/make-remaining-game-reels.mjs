@@ -34,7 +34,7 @@ function addCleanView(mode){
 
 // Promotional-only result card: real gameplay status, without displaying
 // share panels, settings, long achievements or tiny text at the hook.
-function showRealResultCard(title,subline,kind){
+function showRealResultCard({title,subline,kind}){
  const original=document.getElementById('overlay');
  if(!original||original.hidden)throw Error('No actual finished game state to show');
  original.style.setProperty('display','none','important');
@@ -88,7 +88,7 @@ async function capture(browser,slug,record){
      outcome:document.querySelector('#overlay-title')?.textContent,gameOver:!document.getElementById('overlay').hidden,
      portrait:window.MorrowwishArcadeViewport?.state}));
    if(!proof.gameOver||proof.portrait?.width!==540)throw Error('Missing genuine portrait failure screen '+JSON.stringify(proof));
-   await page.evaluate(showRealResultCard,proof.score+' POINTS · CRASHED','CAN YOU LAST LONGER?','arcade');
+   await page.evaluate(showRealResultCard,{title:proof.score+' POINTS · CRASHED',subline:'CAN YOU LAST LONGER?',kind:'arcade'});
    await sleep(2500);
    marks=[[chapters.result,1.7,'ONE WRONG FLIP.'],[chapters.action,3.4,'JUST ONE BUTTON.'],[chapters.result,2.0,'BEAT MY RUN?']];
  }else if(slug==='parcel-panic'){
@@ -107,7 +107,7 @@ async function capture(browser,slug,record){
    proof=await page.evaluate(()=>({score:Number(document.querySelector('#score')?.textContent)||0,
      outcome:document.querySelector('#overlay-title')?.textContent,
      portrait:window.MorrowwishArcadeViewport?.state,gameOver:!document.getElementById('overlay').hidden}));
-   await page.evaluate(showRealResultCard,proof.score+' POINTS · GAME OVER','ONE WRONG DELIVERY ENDS THE STREAK','arcade');
+   await page.evaluate(showRealResultCard,{title:proof.score+' POINTS · GAME OVER',subline:'ONE WRONG DELIVERY ENDS THE STREAK',kind:'arcade'});
    await sleep(2300);
    marks=[[chapters.result,1.6,'ONE WRONG LANE.'],[chapters.action,3.1,'KEEP THE STREAK.'],[chapters.result,2.0,'BEAT MY SCORE?']];
  }else if(slug==='pocket-aquarium'){
@@ -136,8 +136,7 @@ async function capture(browser,slug,record){
    if(!proof.done||proof.score<90||!proof.grade)throw Error('No genuine aquarium achievement and ending '+JSON.stringify(proof));
    const gradeMatch=(proof.grade||'').match(/Grade\s+([A-D]|S)/i);
    const grade=gradeMatch?.[1]||'?';
-   await page.evaluate(showRealResultCard,'GRADE '+grade+' · '+proof.score+' POINTS',
-     'BEST COMBO ×'+proof.bestCombo,'aqua');
+   await page.evaluate(showRealResultCard,{title:'GRADE '+grade+' · '+proof.score+' POINTS',subline:'BEST COMBO ×'+proof.bestCombo,kind:'aqua'});
    await sleep(2800);
    marks=[[chapters.result,2.3,'WHAT GRADE DID I GET?'],[chapters.action,3.3,'MATCH THE FOOD.'],[Math.max(chapters.action,peak-1.2),1.9,'KEEP THE COMBO.'],[chapters.result,2.0,'BEAT MY GRADE?']];
  }else if(slug==='tiny-town'){
