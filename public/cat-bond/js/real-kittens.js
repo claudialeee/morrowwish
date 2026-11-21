@@ -67,72 +67,101 @@
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
   const animatedRigCache=Object.create(null);
-  // Repair genuinely truncated silhouettes in the painted source atlas.
-  // A straight vertical alpha cliff across the body is a sliced image, not
-  // an intentional illustration boundary. Reconstruct that missing side from
-  // the intact opposite half, with a painted, soft transition; leave all
-  // intact tiles unchanged. The earlier edge-fade only hid the damaged art.
+  // Convert the source atlas to clean, alpha-matted sprites BEFORE scaling.
+  // Artwork touching a tile boundary is repaired by extending that exact
+  // painted contour outward; no white rectangle or hard crop is drawn.
   function framedBreed(slot){
     if(framedBreedCache[slot])return framedBreedCache[slot];
     const cw=breedFrameSize.w,ch=breedFrameSize.h;
-    const src=document.createElement('canvas');
-    src.width=cw;src.height=ch;
-    const sc=src.getContext('2d',{willReadFrequently:true});
+    const scratch=document.createElement('canvas');scratch.width=cw;scratch.height=ch;
+    const sc=scratch.getContext('2d',{willReadFrequently:true});
     sc.drawImage(breedSheet,(slot%5)*cw,Math.floor(slot/5)*ch,cw,ch,0,0,cw,ch);
-    const pixels=sc.getImageData(0,0,cw,ch).data;
-    const density=new Float32Array(cw);
-    for(let x=0;x<cw;x++){
-      let sum=0;
-      for(let y=Math.round(ch*.16);y<ch*.91;y+=2)
-        if(pixels[(y*cw+x)*4+3]>80)sum++;
-      density[x]=sum;
-    }
-    const scan=(direction)=>{
-      let best=null;
-      const from=direction==='right'?Math.round(cw*.63):Math.round(cw*.07);
-      const to=direction==='right'?Math.round(cw*.98):Math.round(cw*.35);
-      for(let x=from;x<to;x++){
-        const before=direction==='right'?density[Math.max(0,x-3)]:density[Math.min(cw-1,x+3)];
-        const after=direction==='right'?density[Math.min(cw-1,x+3)]:density[Math.max(0,x-3)];
-        const drop=before-after;
-        if(drop>ch*.085&&(!best||drop>best.drop))best={x,drop};
+    const id=sc.getImageData(0,0,cw,ch),d=id.data;
+    const px=(x,y)=>(y*cw+x)*4;
+    const samples=[[2,2],[cw-3,2],[2,ch-3],[cw-3,ch-3]].map(([x,y])=>{const i=px(x,y);return[d[i],d[i+1],d[i+2]]});
+    const bright=samples.filter(rgb=>Math.min(...rgb)>204&&Math.max(...rgb)-Math.min(...rgb)<45);
+    // Only remove a pale matte when the actual atlas has a pale matte.
+    if(bright.length>=2){
+      const matte=[0,1,2].map(k=>bright.reduce((v,x)=>v+x[k],0)/bright.length);
+      const mask=new Uint8Array(cw*ch),queue=new Int32Array(cw*ch);
+      let head=0,tail=0;
+      function visit(x,y){
+        if(x<0||x>=cw||y<0||y>=ch)return;
+        const index=y*cw+x;if(mask[index])return;
+        const i=index*4,r=d[i],g=d[i+1],b=d[i+2];
+        // Keep pigmented fur, eyes, collars and paws; only edge-connected
+        // near-white background (including mild compression noise) disappears.
+        const delta=Math.max(Math.abs(r-matte[0]),Math.abs(g-matte[1]),Math.abs(b-matte[2]));
+        if(d[i+3]<18||Math.min(r,g,b)>213&&delta<42){
+          mask[index]=1;queue[tail++]=index;
+        }
       }
-      return best;
-    };
-    const right=scan('right'),left=scan('left');
-    const clip=right&&(!left||right.drop>=left.drop)?{...right,side:'right'}
-      :left?{...left,side:'left'}:null;
-    if(!clip){framedBreedCache[slot]=src;return src;}
-    const restored=document.createElement('canvas');
-    restored.width=cw;restored.height=ch;
-    const rc=restored.getContext('2d');
-    rc.drawImage(src,0,0);
-    // Mirror only the missing edge, retaining the original eyes, coat, bell,
-    // markings and facial asymmetry in the center of each illustration.
-    const mirror=document.createElement('canvas');
-    mirror.width=cw;mirror.height=ch;
-    const mc=mirror.getContext('2d');
-    mc.translate(cw,0);mc.scale(-1,1);mc.drawImage(src,0,0);
-    mc.setTransform(1,0,0,1,0,0);
-    mc.globalCompositeOperation='destination-in';
-    const fade=mc.createLinearGradient(0,0,cw,0);
-    const edge=clip.x/cw;
-    if(clip.side==='right'){
-      const start=Math.max(.50,edge-.18);
-      fade.addColorStop(0,'rgba(0,0,0,0)');
-      fade.addColorStop(start,'rgba(0,0,0,0)');
-      fade.addColorStop(Math.min(.999,start+.13),'rgba(0,0,0,1)');
-      fade.addColorStop(1,'rgba(0,0,0,1)');
-    }else{
-      fade.addColorStop(0,'rgba(0,0,0,1)');
-      fade.addColorStop(Math.max(.001,edge-.02),'rgba(0,0,0,1)');
-      fade.addColorStop(Math.min(.999,edge+.12),'rgba(0,0,0,0)');
-      fade.addColorStop(1,'rgba(0,0,0,0)');
+      for(let x=0;x<cw;x++){visit(x,0);visit(x,ch-1);}
+      for(let y=0;y<ch;y++){visit(0,y);visit(cw-1,y);}
+      while(head<tail){
+        const k=queue[head++],x=k%cw,y=Math.floor(k/cw);
+        visit(x-1,y);visit(x+1,y);visit(x,y-1);visit(x,y+1);
+      }
+      for(let k=0;k<mask.length;k++)if(mask[k])d[k*4+3]=0;
+      // Feather only one real edge pixel, avoiding a white halo.
+      const alpha=new Uint8Array(cw*ch);
+      for(let k=0;k<mask.length;k++)if(mask[k]){
+        const x=k%cw,y=Math.floor(k/cw);
+        for(const n of [k-1,k+1,k-cw,k+cw]){
+          if(n>=0&&n<mask.length&&!mask[n]){
+            const i=n*4;
+            if(Math.min(d[i],d[i+1],d[i+2])>190)alpha[n]=Math.max(alpha[n],80);
+          }
+        }
+      }
+      for(let k=0;k<alpha.length;k++)if(alpha[k])d[k*4+3]=Math.min(d[k*4+3],255-alpha[k]);
     }
-    mc.fillStyle=fade;mc.fillRect(0,0,cw,ch);
-    rc.drawImage(mirror,0,0);
-    framedBreedCache[slot]=restored;
-    return restored;
+    sc.putImageData(id,0,0);
+    // Expand the source tile, keeping full paws and ears within the sprite.
+    const margin=34,output=document.createElement('canvas');
+    output.width=cw+margin*2;output.height=ch;
+    const out=output.getContext('2d');
+    out.drawImage(scratch,margin,0);
+    // Detect a cut body on either side: significant opaque fur directly on
+    // the outermost image edge indicates the illustration was tiled mid-cat.
+    const occupied=(x)=>{
+      let count=0;
+      for(let y=Math.round(ch*.22);y<Math.round(ch*.89);y++){
+        if(d[px(x,y)+3]>150)count++;
+      }
+      return count;
+    };
+    const cutoff=Math.round(ch*.085);
+    const right=occupied(cw-1)>cutoff,left=occupied(0)>cutoff;
+    if(right||left){
+      const extend=margin;
+      out.save();
+      if(right){
+        // Reflect the existing edge-adjacent painted pixels into the missing
+        // strip, keeping the seam continuous and tapered at the new silhouette.
+        out.translate(margin+cw*2,0);out.scale(-1,1);
+        out.drawImage(scratch,cw-extend,0,extend,ch,cw-extend,0,extend,ch);
+        out.setTransform(1,0,0,1,0,0);
+        out.globalCompositeOperation='destination-out';
+        const fade=out.createLinearGradient(margin+cw,0,margin+cw+extend,0);
+        fade.addColorStop(0,'rgba(0,0,0,0)');
+        fade.addColorStop(1,'rgba(0,0,0,1)');
+        out.fillStyle=fade;out.fillRect(margin+cw,0,extend,ch);
+      }
+      if(left){
+        out.globalCompositeOperation='source-over';
+        out.save();out.translate(margin*2,0);out.scale(-1,1);
+        out.drawImage(scratch,0,0,extend,ch,margin,0,extend,ch);out.restore();
+        out.globalCompositeOperation='destination-out';
+        const fade=out.createLinearGradient(0,0,margin,0);
+        fade.addColorStop(0,'rgba(0,0,0,1)');
+        fade.addColorStop(1,'rgba(0,0,0,0)');
+        out.fillStyle=fade;out.fillRect(0,0,margin,ch);
+      }
+      out.restore();
+    }
+    framedBreedCache[slot]=output;
+    return output;
   }
   let gaitLayersBuilt=0;
   // Paint an entire illustrated cat into each complete gait frame. This
@@ -239,7 +268,7 @@
     const slot=BREED_ORDER.indexOf(id);
     if(breedLoaded&&slot>=0){
       return {image:framedBreed(slot),sx:0,sy:0,
-        sw:breedFrameSize.w,sh:breedFrameSize.h};
+        sw:breedFrameSize.w+68,sh:breedFrameSize.h};
     }
     const look=BREED_LOOKS[id];
     if(!look)return {image:source,sx:indexOf(o)*w,sy:0,sw:w,sh:h};
