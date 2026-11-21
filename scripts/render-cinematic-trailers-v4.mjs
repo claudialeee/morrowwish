@@ -59,8 +59,9 @@ const playlists={
   cover(1.9,'PLAY FREE')
  ],
  'flip-dash':[
-  broll('play',3.8,'ONE BUTTON. ONE WRONG FLIP.'),
-  broll('crash',1.9,'CRASHED. CAN YOU SURVIVE?'),
+  broll('play',3.55,'ONE BUTTON. ONE WRONG FLIP.'),
+  broll('collision',0.6),
+  broll('game-over',1.4,'CRASHED. BEAT MY SCORE?'),
   cover(2.35,'PLAY FREE')
  ],
  'parcel-panic':[
@@ -160,7 +161,7 @@ function edit(slug){
   }else if(sh.src==='broll'&&!!sh.caption&&!/result$/.test(sh.label)){
    const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
-      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'?85:1705)+
+      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'||slug==='pawsibly-innocent'?110:slug==='pocket-aquarium'?1360:1705)+
       ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.40:boxborderw=12';
    captionsUsed++;
   }

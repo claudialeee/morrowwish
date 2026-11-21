@@ -128,7 +128,7 @@ try{
    Object.assign(out.style,{position:'fixed',inset:'0',width:'100vw',height:'100vh',zIndex:'2147483647',pointerEvents:'none'});
    document.body.appendChild(out);
    const ctx=out.getContext('2d');ctx.imageSmoothingEnabled=true;
-   window.__V5_FOCUS__='both';
+   window.__V5_FOCUS__='cat';
    window.__V5_SHOW__=on=>out.style.display=on?'block':'none';
    let cx=0;
    function draw(){
@@ -176,7 +176,7 @@ try{
   // A separate, explicitly labelled LATER ROOM for the caught sequence.
   // A legal misplay in level six is more convincing than faking a loss in the
   // forgiving tutorial level. The two runs are never presented as one run.
-  await page.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(5,false);window.__V5_SHOW__(true);window.__V5_FOCUS__='both'});
+  await page.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(5,false);window.__V5_SHOW__(true);window.__V5_FOCUS__='cat'});
   const caughtRun=stamp();let caughtAt=null,lastLoss=null;
   for(let i=0;i<28;i++){
    lastLoss=await page.evaluate(()=>{
@@ -208,8 +208,9 @@ try{
  result.push(await capture(browser,'tiny-town',async({page,stamp})=>{
   await page.goto(host+'/tiny-town/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.locator('#introStart').click();
-  // Keep the complete board and ALL actual combination/unlock/end dialogs visible.
-  await page.addStyleTag({content:'.arcade-return,.app>.header,.app>.progress,.sidebar .citizen-panel,.sidebar .petition,.sidebar .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.stage{display:block!important}.map-panel{width:100%!important;padding:8px!important}.world{height:615px!important;padding:5px!important}.board{max-width:510px!important;width:100%!important;gap:5px!important}.tile-icon{font-size:36px!important}.sidebar{width:100%!important}.wish-card{min-height:84px!important}.modal{width:min(96vw,520px)!important;max-height:88vh!important;overflow:auto!important}'});
+  // Marketing gameplay MUST show the real board. Avoid the zero-height flex collapse.
+  await page.addStyleTag({content:'.arcade-return,.app>.header,.app>.progress,.app .resident-ribbon,.app .town-tabs,.app #moveWish,.app .citizen-panel,.app .petition,.app .sidebar-head{display:none!important}.app{max-width:100vw!important;width:100vw!important;padding:0!important}.app .stage{display:flex!important;flex-direction:column!important;gap:6px!important;overflow:hidden!important}.app .map-panel{order:0!important;display:flex!important;flex:0 0 550px!important;height:550px!important;min-height:550px!important;max-height:550px!important;width:100%!important;padding:5px!important}.app .panel-top{display:none!important}.app .world{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 495px!important;height:495px!important;min-height:495px!important;max-height:495px!important;padding:4px!important}.app .board{display:grid!important;flex:0 0 462px!important;height:462px!important;min-height:462px!important;width:462px!important;max-width:100%!important;aspect-ratio:1!important;gap:5px!important}.app .tile-icon{font-size:30px!important}.app .sidebar{display:contents!important}.app .cards{order:1!important;flex:0 0 122px!important;min-height:122px!important;max-height:122px!important;width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}.app .wish-card{min-height:110px!important;max-height:120px!important}.app #preview{max-height:22px!important}.app .town-bubble{max-height:23px!important}.modal{width:min(96vw,520px)!important;max-height:88vh!important;overflow:auto!important}'});
+  await page.waitForFunction(()=>{const e=document.querySelector('#board'),r=e?.getBoundingClientRect();return r&&r.width>=350&&r.height>=350&&r.top>=0&&r.bottom<=innerHeight-90&&getComputedStyle(e).display==='grid'},null,{timeout:8000});
   const started=stamp(),shots=[{label:'board',start:stamp(),duration:2.55}];
   // Hold each TRUE gameplay milestone before moving on, so successive cuts
   // never replay the same instant from overlapping time ranges.
@@ -312,25 +313,51 @@ try{
   const died=stamp();
   if(died-begun<1.2)throw Error('V5 flip collision has no preceding gameplay');
   await sleep(1700);
-  return [{label:'play',start:begun,duration:Math.min(4.1,died-begun-.4)},
-    {label:'crash',start:Math.max(begun,died-.7),duration:2.0}];
+  const playDuration=Math.min(3.65,died-begun-.92);
+  const collisionAt=Math.max(begun+playDuration,died-.57);
+  return [{label:'play',start:begun,duration:playDuration},
+    {label:'collision',start:collisionAt,duration:.60},
+    {label:'game-over',start:died+.12,duration:1.42}];
  }));
  result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
-  await page.addInitScript(()=>{Math.random=()=>.348});
+  // Observer is READ ONLY: exposes the authentic next falling parcel's color.
+  await page.route('**/game.js*',async route=>{
+   const response=await route.fetch(),code=await response.text();
+   const marker='let parcels=[],t=0,spawn=0,lives=5,chain=0,sel=null,delivered=0;';
+   if(!code.includes(marker))throw Error('Parcel recording instrumentation no longer matches actual game source');
+   const modified=code.replace(marker,marker+'window.__V5_PARCELS__=()=>({parcels:parcels.map(p=>({color:p.color,y:p.y})),lives,delivered,chain});');
+   await route.fulfill({response,body:modified,headers:{...response.headers(),'content-type':'application/javascript; charset=utf-8'}});
+  });
   await page.goto(host+'/parcel-panic/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.evaluate(()=>document.querySelector('#mw-mini-fullscreen')?.click());
-  await page.waitForFunction(()=>window.MorrowwishArcadeViewport?.state?.portrait===true,{timeout:8500});
+  await page.waitForFunction(()=>window.MorrowwishArcadeViewport?.state?.portrait===true&&!!window.__V5_PARCELS__,null,{timeout:8500});
   await page.locator('#play-btn').click();
-  const began=stamp();let score=0;
-  for(let n=0;n<14;n++){await sleep(1110);await page.keyboard.press('2');score=Number(await page.locator('#score').textContent());if(score>=55)break}
-  if(score<25)throw Error('V5 parcel run has no verified successful deliveries '+score);
-  const streak=stamp();
-  for(let n=0;n<17;n++){await sleep(1050);await page.keyboard.press('1');if(await page.evaluate(()=>!document.querySelector('#overlay').hidden))break}
-  if(await page.evaluate(()=>document.querySelector('#overlay').hidden))throw Error('V5 parcel run has no real missed-delivery ending');
-  const failed=stamp();await sleep(1750);
-  return [{label:'deliver',start:Math.max(began,streak-3.8),duration:Math.min(3.5,streak-began)},
-    {label:'wrong-lane',start:Math.max(streak,failed-2.65),duration:Math.min(2.3,failed-streak-.1)},
-    {label:'game-over',start:Math.max(streak,failed-.6),duration:1.95}];
+  const began=stamp();
+  const action=async right=>{
+   await page.waitForFunction(()=>window.__V5_PARCELS__?.().parcels.length>0||!document.querySelector('#overlay').hidden,null,{timeout:8000});
+   const s=await page.evaluate(()=>{
+    const x=window.__V5_PARCELS__();
+    return{...x,next:[...x.parcels].sort((a,b)=>b.y-a.y)[0],dead:!document.querySelector('#overlay').hidden};
+   });
+   if(s.dead||!s.next)throw Error('Parcel gameplay ended too early '+JSON.stringify(s));
+   const lane=right?s.next.color+1:(s.next.color+1)%3+1;
+   await page.keyboard.press(String(lane));await sleep(350);
+  };
+  for(let k=0;k<7;k++)await action(true);
+  const streak=stamp(),proof=await page.evaluate(()=>({state:window.__V5_PARCELS__(),score:Number(document.querySelector('#score').textContent),dead:!document.querySelector('#overlay').hidden}));
+  if(proof.dead||proof.state.lives!==5||proof.state.delivered<7||proof.score<90)throw Error('No genuine delivery streak BEFORE failure '+JSON.stringify(proof));
+  const wrongStart=stamp();
+  for(let k=0;k<5;k++){
+   await action(false);
+   if(await page.evaluate(()=>!document.querySelector('#overlay').hidden))break;
+  }
+  const died=stamp(),end=await page.evaluate(()=>({state:window.__V5_PARCELS__(),dead:!document.querySelector('#overlay').hidden,result:document.querySelector('#overlay-kicker')?.textContent}));
+  if(!end.dead||end.state.lives>0||!/game over/i.test(end.result))throw Error('No genuine wrong-lane death '+JSON.stringify(end));
+  await sleep(1900);
+  if(died-wrongStart<2.8)throw Error('No readable wrong-lane footage');
+  return [{label:'deliver',start:Math.max(began,streak-3.55),duration:3.4},
+    {label:'wrong-lane',start:Math.max(wrongStart,died-2.8),duration:2.25},
+    {label:'game-over',start:died+.12,duration:1.55}];
  }));
  result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
   await page.goto(host+'/pocket-aquarium/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
