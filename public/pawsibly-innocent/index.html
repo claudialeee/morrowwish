@@ -255,7 +255,7 @@ html.cg-play .stealth-actionbar{min-height:0}
 .stage.victory .modal{animation:heist-celebrate .38s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes heist-celebrate{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.stage.victory .modal{animation:none}}
-</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=20261120-desktop-fit-v2"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-objectives-top-v2" defer></script><meta name="twitter:card" content="summary_large_image"></head>
+</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=20261120-menu-polish-v1"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-menu-polish-v1" defer></script><meta name="twitter:card" content="summary_large_image"></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></header>
 <main class="wrap single-screen-game">
 <div class="board-layout">
@@ -352,8 +352,8 @@ html.cg-play .stealth-actionbar{min-height:0}
       <div class="menu-help-step"><strong id="ruleStep2Title">Steal 3 fish</strong><span id="ruleStep2Text">Pink tiles show the owner's vision.</span></div>
       <div class="menu-help-step"><strong id="ruleStep3Title">Escape</strong><span id="ruleStep3Text">Reach the cat flap with 3 fish.</span></div>
       <p id="ruleBonus">Tap toss yarn, then tap the floor. The owner walks there and pauses.</p>
-      <p id="yarnExplain">Yarn distracts the human.</p>
-      <div class="menu-help-legend">🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape</div>
+      <p id="yarnExplain" hidden>Yarn distracts the human.</p>
+      <div class="menu-help-legend" id="helpLegend">🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape</div>
       <h3 class="menu-section-title" id="settingsTitle">Sound & language</h3>
       <div id="menuLanguage" class="menu-language"><button type="button" data-set-lang="zh">中文</button><button type="button" data-set-lang="en">English</button></div>
       <div class="menu-audio" id="menuAudio"></div>
