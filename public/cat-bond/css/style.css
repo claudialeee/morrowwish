@@ -1544,3 +1544,16 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
    top:calc(env(safe-area-inset-top,0px) + 84px)!important;
  }
 }
+
+/* The sixth mobile action occupies the free bottom-left grid cell. */
+#battle-ui #mv-lock{display:none}
+@media(pointer:coarse){
+ #battle-ui.touch-manual #mv-lock{
+  display:flex!important;grid-column:1;grid-row:2;
+  background:#edf0fa;border-color:#b9bddf;color:#505d83;
+ }
+ #battle-ui.touch-manual #mv-lock.locked{
+  background:#fff0cb;border:2px solid #e1b958;
+  box-shadow:0 0 0 2px #f5cf7247;
+ }
+}
