@@ -61,13 +61,13 @@ const playlists={
   cover(1.8,'PLAY FREE')
  ],
  'parcel-panic':[
-  broll('full-attempt',20,'MATCH COLORS. DON'T MISS.'),
+  broll('full-attempt',20,'MATCH COLORS. AVOID MISTAKES.'),
   cover(1.8,'PLAY FREE')
  ],
  'pocket-aquarium':[
   broll('feeding',2.9,'FEED THE HUNGRY FISH.'),
   broll('water-cloudy',3.0,'THE WATER IS GETTING CLOUDY.'),
-  broll('timeout',2.0,'TIME'S UP. WHAT GRADE?'),
+  broll('timeout',2.0,'TIME UP. WHAT GRADE?'),
   cover(1.7,'PLAY FREE')
  ]
 };
