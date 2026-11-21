@@ -725,3 +725,23 @@ html.cg-play #stageHome{display:none!important}
  .single-screen-game .in-game-actions #bonusQuick,
  .single-screen-game .in-game-actions .board-yarn{min-height:38px!important;padding-top:3px!important;padding-bottom:3px!important}
 }
+
+/* HUD restart beside the yarn action; visible without opening a menu. */
+.single-screen-game .in-game-actions #restart{
+ box-sizing:border-box;display:inline-flex;flex:0 0 68px;align-items:center;
+ justify-content:center;gap:4px;min-width:68px;max-width:68px;min-height:45px;
+ padding:5px 7px;border:1px solid #dcc7d2;border-radius:11px;
+ background:#fffaf6;color:#78546c;box-shadow:0 2px 4px #7052661c;
+ font:900 12px/1.1 Nunito,system-ui,sans-serif;white-space:nowrap;
+ cursor:pointer;touch-action:manipulation;
+}
+.single-screen-game .in-game-actions #restart:hover{background:#ffedf1}
+.single-screen-game .in-game-actions #restart:focus-visible{outline:3px solid #ad789e;outline-offset:2px}
+.single-screen-game .in-game-actions #restart .restart-symbol{font:900 23px/1 system-ui,sans-serif}
+@media(max-width:700px){
+ .single-screen-game .in-game-actions #restart{flex-basis:44px;min-width:44px;max-width:44px;min-height:46px;padding:4px}
+ .single-screen-game .in-game-actions #restart .restart-label{display:none}
+}
+@media(min-width:701px) and (max-height:500px){
+ .single-screen-game .in-game-actions #restart{min-height:39px}
+}
