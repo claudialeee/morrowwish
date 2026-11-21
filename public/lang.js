@@ -30,6 +30,7 @@ const words={
 "Independent games for curious people.":"为好奇的人制作独立游戏。",
 "Play our worlds":"探索游戏世界",
 "03 / THE WHOLE IDEA":"03 / 我们的想法",
+"03 / OUR WHOLE IDEA":"03 / 我们的想法",
 "Play Flip Dash":"开始玩翻转冲刺",
 "Play Parcel Panic":"开始玩包裹分拣",
 "Play Pocket Aquarium":"开始玩口袋水族馆",
