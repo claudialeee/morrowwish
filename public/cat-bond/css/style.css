@@ -1201,8 +1201,8 @@ body.cb-exploring #scene{cursor:grab}
    The audio dock sits at the upper-right; a tall vertical FAB stack overlaps it. */
 @media (orientation:landscape) and (max-height:530px){
   #yard-actions{display:flex;flex-direction:row;align-items:center;
-    right:max(8px,env(safe-area-inset-right,0px));bottom:max(65px,calc(env(safe-area-inset-bottom,0px) + 61px));
-    gap:6px}
+    right:max(8px,env(safe-area-inset-right,0px));bottom:max(96px,calc(env(safe-area-inset-bottom,0px) + 93px));
+    gap:6px;z-index:32}
   #yard-actions .fab{width:44px;height:44px;min-width:44px;min-height:44px;font-size:20px}
   #fab-map.map-fab{width:50px;height:46px;min-width:50px;min-height:46px;font-size:20px;
     border-radius:12px}
