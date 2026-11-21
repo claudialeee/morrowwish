@@ -259,7 +259,7 @@ class CaptureBattle {
     if(support==='charge')this.gainUlt(11+8*d.tier);
     this.gainUlt(16);
     window.MorrowwishAudio?.effect?.('capture');
-    this.game.toast((window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫合击 · ':'💞 Duo attack · ')+d.name+'！');
+    // The unique lingering field and restrained title make the special visible; avoid a second toast.
     window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     return true;
   }
@@ -1255,7 +1255,8 @@ class CaptureBattle {
         color,life:.92,max:.92});
       this.vfx.ring(f.x,f.y,{r0:18,vr:Math.max(450,radius*2),life:.65,color,width:9});
       this.vfx.burst(f.x,f.y,{count:14,color,speed:245,life:.55,r:3});
-      this.vfx.text(f.x,f.y-48,skill.name+'!',color,22);
+      // Distinct attack animation already communicates the move; avoid a giant skill-name label.
+      this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
       this.game.toast(this.elemSymbol(skill.element)+' 必杀 · '+skill.name+'！');
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
       this.markMoveSeen(f,skill);
@@ -1303,13 +1304,13 @@ class CaptureBattle {
       this.comboFlash = 0.5; this.shakeT = Math.max(this.shakeT, 0.15);
       this.gainUlt(6);                                          // chains feed the ult
       const me = this.me();
-      this.vfx.text(me.x, me.y - 60, this.combo + ' 连击!', '#ffd36b', 20);
+      // The compact combo chip in the HUD replaces this mid-arena banner.
       this.vfx.ring(me.x, me.y, { r0: 10, vr: 420, life: 0.4, color: '#ffd36b', width: 4 });
-      this.game.toast('🔥 ' + this.combo + ' 连击！伤害 ×' + this.comboMult().toFixed(2));
+      // Do not stack a toast over the battle for each combo milestone.
     }
   }
   breakCombo() {
-    if (this.combo >= 10) { const me = this.me(); this.vfx.text(me.x, me.y - 40, '连击中断…', '#9aa8ba', 13); }
+    // Avoid an extra floating sentence every time a combo ends.
     this.combo = 0; this.comboT = 0;
   }
 
@@ -1320,7 +1321,11 @@ class CaptureBattle {
     // Energy dissipates as physical impact sparks, never floating emoji stickers.
     this.vfx.burst(x,y,{count:n||12,color:color||'#ffd36b',speed:150,life:.45,r:3});
   }
-  floater(x, y, text, color, size) { this.floaters.push({ x, y, text, color, life: 0.9, size: size || 15 }); }
+  floater(x,y,text,color,size){
+    // Keep at most five damage/heal numerals on screen at once.
+    if(this.floaters.length>=5)this.floaters.shift();
+    this.floaters.push({x,y,text,color,life:.62,size:Math.min(13,size||12)});
+  }
 
   // Persistent animated strokes make each elemental spell recognizable in motion.
   drawSkillStrokes(ctx){
@@ -1822,7 +1827,7 @@ class CaptureBattle {
     const col = sk ? this.elemColor(sk.element) : '#ff4d6d';
     const pow = sk ? sk.power : 0.9;
     const kindName = { nova: '猫猫怒涛', barrage: '连射', lob: '落雷', pounce: '猛扑' };
-    this.game.toast('💢 ' + e.sp.name + ' 施放 ' + (sk ? sk.name : (kindName[e.telegraphKind] || '连射')) + '！');
+    // Enemy windup ring and projectile trajectory are the warning; do not flood the HUD.
     if (e.telegraphKind === 'pounce') {
       // ambusher leap — routed through resolveHit so cat shields still apply
       const aim = Math.atan2(me.y - e.y, me.x - e.x);
@@ -1882,7 +1887,7 @@ class CaptureBattle {
     else if (e.hp / e.maxhp < 0.6 && incoming >= 1) type = 'barrier';
     if (type && this.castWard(e, type)) {
       e.wardCd = (e.rIdx >= 2 ? 6 : 9) + Math.random() * 2;
-      this.game.toast('🛡️ ' + e.sp.name + (type === 'protect' ? ' 守护!' : type === 'reflect' ? ' 立起反弹壁!' : ' 展开护盾!'));
+      // Ward visuals show protection without stacking language-specific combat toasts.
     }
   }
 
@@ -1922,8 +1927,8 @@ class CaptureBattle {
     if (combo) {
       dmg *= combo.bonusMult || 1;
       this.vfx.ring(e.x, e.y, { r0: 8, vr: 460, life: 0.45, color: this.elemColor(skill.element), width: 6 });
-      this.vfx.text(e.x, e.y - 50, combo.name || '连携!', '#ffd36b', 18);
-      this.game.toast('✨ 连携 ' + (combo.name || '') + '！');
+      this.vfx.text(e.x, e.y - 50, '✦', '#ffd36b', 12);
+      // The paired-element strike and status effect carry the feedback.
       if (combo.consumes && e.tags.includes(combo.tag)) { e.tags = e.tags.filter(t => t !== combo.tag); delete e.status[combo.tag]; }
     }
     // element effectiveness
@@ -2458,24 +2463,17 @@ class CaptureBattle {
     for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
     for (const fl of this.floaters) { ctx.save(); ctx.globalAlpha = Math.max(0, fl.life); ctx.fillStyle = fl.color; ctx.font = 'bold ' + (fl.size || 15) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.strokeText(fl.text, fl.x, fl.y); ctx.fillText(fl.text, fl.x, fl.y); ctx.restore(); }
 
-    // ---- COMBO counter (top-center, grows & heats up with the chain) ----
-    if (this.combo >= 2) {
+    // Compact combo badge instead of huge layered text across the cats.
+    if(this.combo>=2){
       ctx.save();
-      const cx = W / 2, cy = 128;
-      const heat = Math.min(1, this.combo / 40);
-      const pop = 1 + (this.comboFlash > 0 ? this.comboFlash * 0.6 : 0);
-      const col = heat > 0.6 ? '#ff6b3c' : heat > 0.3 ? '#ffd36b' : '#fff1a8';
-      ctx.textAlign = 'center';
-      ctx.globalAlpha = 0.5 + 0.5 * Math.min(1, this.comboT / 1.3);  // dim as it's about to drop
-      ctx.font = `900 ${Math.round((34 + heat * 20) * pop)}px system-ui, sans-serif`;
-      ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(20,10,30,0.6)';
-      ctx.strokeText(this.combo + '', cx, cy); ctx.fillStyle = col; ctx.fillText(this.combo + '', cx, cy);
-      ctx.font = '700 14px system-ui, sans-serif'; ctx.fillStyle = col;
-      ctx.fillText('连击 ×' + this.comboMult().toFixed(2), cx, cy + 20);
-      // drop timer bar
-      ctx.globalAlpha = 0.8; ctx.fillStyle = col;
-      const bw = 70 * Math.max(0, this.comboT / 1.3);
-      ctx.fillRect(cx - bw / 2, cy + 28, bw, 3);
+      const x=W-56,y=Math.max(this.topMargin+60,115);
+      ctx.globalAlpha=.67+.25*Math.max(0,this.comboT)/1.3;
+      ctx.fillStyle='rgba(45,58,64,.54)';
+      ctx.beginPath();ctx.roundRect(x-32,y-17,65,29,12);ctx.fill();
+      ctx.textAlign='center';ctx.font='800 15px system-ui';ctx.fillStyle='#ffe0a3';
+      ctx.fillText('×'+this.combo,x,y+3);
+      ctx.strokeStyle='#ffe0a3';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(x,y,21,-Math.PI/2,-Math.PI/2+2*Math.PI*Math.max(0,this.comboT)/1.3);ctx.stroke();
       ctx.restore();
     }
 
