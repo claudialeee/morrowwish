@@ -2670,6 +2670,8 @@ class CaptureBattle {
       else if(v.payload){const p=v.payload;v.payload=null;p();}
       if(v.t===0)this.duoCinematic=null;
     }
+    // Capture beat: freeze the sim (realDt timer) so the warm "收服" moment reads.
+    if (this.captureSeq) { this.tickCaptureSeq(realDt); dt = 0; }
     this.tickDuoField(dt);
     this.tickDeathRay(dt);
     if(this.duoRun){
@@ -2964,7 +2966,33 @@ class CaptureBattle {
       const step=this.coach.steps[this.coach.i];
       if(step)this.hint=english?step.en:step.zh;
     }
-    if (live.length === 0) this.finish(true);
+    // CAPTURE-not-KO moment (你不是打死它，是收服它): when the last wild cat's 斗志
+    // empties, don't just win — play a brief capture beat (the cat stops fighting, a
+    // warm ring + hearts pull it in) before finishing. tickCaptureSeq() calls finish.
+    if (live.length === 0 && !this.done) {
+      if (!this.captureSeq) this.startCaptureSeq();
+    }
+  }
+  // Begin the warm capture sequence over the last downed wild cat.
+  startCaptureSeq() {
+    const e = this._lastDropped || this.enemies[this.enemies.length - 1];
+    this.captureSeq = { t: 1.35, max: 1.35, x: e ? e.x : this.W / 2, y: e ? e.y : this.H / 2,
+      sp: e ? e.sp : null, cat: e };
+    if (e) { e.pose = 'idle'; e.captured = true; }     // it sits down, no longer hostile
+    this.slowmo = Math.max(this.slowmo, 0.5);
+    this.flash = Math.max(this.flash, 0.25);
+    this.enemyProjectiles = [];                         // clear any darts still in the air
+    window.MorrowwishAudio?.effect?.('capture');
+  }
+  // Tick the capture beat; warm ring + rising hearts, then finish(true).
+  tickCaptureSeq(dt) {
+    const s = this.captureSeq; if (!s) return;
+    s.t = Math.max(0, s.t - dt);
+    const age = s.max - s.t, k = age / s.max;
+    // converging warm ring pulling the cat "home"
+    if (Math.random() < dt * 14) this.vfx.ring(s.x, s.y, { r0: 44 * (1 - k) + 8, vr: -120, life: 0.4, color: '#ffd36b', width: 3 });
+    if (Math.random() < dt * 9) this.spawnBurst(s.x + (Math.random() * 40 - 20), s.y - 10, '❤', '#ff9bb4', 1);
+    if (s.t === 0) { this.captureSeq = null; this.finish(true); }
   }
 
   nearestEnemy(x, y) {
@@ -3528,7 +3556,7 @@ class CaptureBattle {
       // last ~3s — re-applying its best recent damage like rewinding a clock.
       if (info.rewind) {
         let lo = e.hp; for (const h of e._hpHist) if (h.hp < lo) lo = h.hp;
-        if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
+        if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
         delete e.status[tg]; e.tags = (e.tags || []).filter(t => t !== tg); continue;
       }
       // damage-over-time
@@ -3536,7 +3564,7 @@ class CaptureBattle {
         const d = e.maxhp * info.dps * dt;
         e.hp = Math.max(0, e.hp - d);
         if (Math.random() < dt * 3) this.vfx.text(e.x + (Math.random() * 16 - 8), e.y - 18, '-' + Math.max(1, Math.round(e.maxhp * info.dps)), info.color, 10);
-        if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', info.color, 10); this.game.toast(e.sp.name + ' 倒下了！'); }
+        if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 10); this.game.toast(e.sp.name + ' 倒下了！'); }
       }
     }
     // TIERED crowd control — not every CC is a full freeze:
@@ -3610,7 +3638,7 @@ class CaptureBattle {
     this.floater(e.x, e.y - 24, '-' + Math.round(scaled), this.combo >= 15 ? '#ffd36b' : '#fff', big);
     this.spawnBurst(fx, fy, '✦', '#ffd36b', 3);
     this.gainUlt(3);
-    if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', '#ffd36b', 12); this.game.toast(e.sp.name + ' 斗志耗尽！'); }
+    if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', '#ffd36b', 12); this.game.toast(e.sp.name + ' 斗志耗尽！'); }
   }
   hurtMe(dmg, fx, fy, f) {
     f = f || this.me();
@@ -4238,6 +4266,38 @@ class CaptureBattle {
       ctx.font='900 '+((this.game.isTouch?26:36)*pop)+'px system-ui, sans-serif';
       ctx.fillStyle='#ffd36b'; ctx.shadowColor='#ff9b3c'; ctx.shadowBlur=18;
       ctx.fillText(en?'FINISH IT!':'收服它！',W/2,this.topMargin+70);
+      ctx.restore();
+    }
+    // CAPTURE sequence overlay (你不是打死它，是收服它): the subdued wild cat is no
+    // longer in liveEnemies(), so draw it here — sitting calmly — while a warm glow
+    // pulls it home. A soft vignette + bilingual "收服成功" banner seals the moment.
+    if(this.captureSeq){
+      const s=this.captureSeq,k=1-s.t/s.max,en=window.MorrowwishI18n?.get?.()!=='zh';
+      ctx.save();
+      // warm vignette
+      ctx.fillStyle='rgba(40,30,16,'+(0.18*Math.sin(Math.PI*k))+')';ctx.fillRect(0,0,W,H);
+      // the captured cat, sitting, with a gentle breathing bob
+      if(s.sp){
+        const bob=Math.sin(this.t*3)*2;
+        ctx.save();ctx.globalAlpha=Math.max(0,1-k*0.15);
+        (window.CatMotion?.draw||CatArt.drawCat)(ctx,s.x,s.y+bob,{
+          species:s.sp,scale:this.catScale(),face:-1,t:this.t,
+          stride:0,motion:0,pose:'idle',mood:'happy'});
+        ctx.restore();
+      }
+      // converging halo of light around it
+      ctx.globalCompositeOperation='lighter';
+      const rr=70*(1-k)+20,puls=0.5+0.4*Math.abs(Math.sin(this.t*6));
+      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,rr);
+      g.addColorStop(0,'rgba(255,211,107,'+(0.35*puls)+')');g.addColorStop(1,'rgba(255,211,107,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,rr,0,Math.PI*2);ctx.fill();
+      ctx.globalCompositeOperation='source-over';
+      // banner
+      const pop=1+0.18*Math.sin(k*Math.PI);
+      ctx.globalAlpha=Math.min(1,k*2);ctx.textAlign='center';
+      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
+      ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=18;
+      ctx.fillText(en?'🏠 TAMED!':'🏠 收服成功！',W/2,this.topMargin+70);
       ctx.restore();
     }
     // Ult-ready announcement banner (one-time when the meter first fills).
