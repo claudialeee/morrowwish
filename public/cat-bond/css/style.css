@@ -1260,3 +1260,8 @@ body.cb-exploring #scene{cursor:grab}
  #panel.open:not([data-mandatory="true"]){padding-top:45px!important}
  #panel.open:not([data-mandatory="true"])>.panel-dismiss{width:38px;height:38px;min-width:38px;min-height:38px}
 }
+
+/* Garden-only notices must never intercept battle buttons or popup dismissal. */
+#stage:has(#battle-ui.on) #collection-goal,
+#stage:has(#panel.open) #collection-goal,
+#stage:has(#battle-ui.on) #first-quest {display:none!important}
