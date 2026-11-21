@@ -1,6 +1,6 @@
 {
   "version": "V6",
-  "createdAt": "2026-11-21T19:35:47.628Z",
+  "createdAt": "2026-11-21T19:41:06.166Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -27,7 +27,7 @@
           "source": "broll",
           "scene": "raising",
           "caption": "MEET AND RAISE YOUR TEAM.",
-          "seconds": 2.52
+          "seconds": 2.5210000000000004
         },
         {
           "source": "broll",
@@ -45,7 +45,7 @@
           "source": "broll",
           "scene": "tease",
           "caption": "PLAY WITH YOUR CATS.",
-          "seconds": 2.867000000000001
+          "seconds": 2.857000000000001
         },
         {
           "source": "broll",
@@ -106,13 +106,13 @@
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL FISH. ESCAPE THE HUMAN.",
-          "seconds": 10.568
+          "seconds": 10.613999999999999
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "ANOTHER ROOM. ONE WRONG MOVE...",
-          "seconds": 5.537000000000002
+          "seconds": 5.524000000000002
         },
         {
           "source": "cover",
@@ -283,7 +283,7 @@
           "source": "broll",
           "scene": "full-attempt",
           "caption": "ONE TAP. STAY ALIVE.",
-          "seconds": 5.803
+          "seconds": 5.8020000000000005
         },
         {
           "source": "cover",
@@ -314,7 +314,7 @@
           "source": "broll",
           "scene": "full-attempt",
           "caption": "MATCH COLORS. AVOID MISTAKES.",
-          "seconds": 7.318999999999999
+          "seconds": 7.323
         },
         {
           "source": "cover",
@@ -339,13 +339,13 @@
         "/promo/pocket-aquarium/v6-review-2.jpg",
         "/promo/pocket-aquarium/v6-review-3.jpg"
       ],
-      "duration": 8.8,
+      "duration": 8.6,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 2.9
+          "seconds": 2.6870000000000003
         },
         {
           "source": "broll",
