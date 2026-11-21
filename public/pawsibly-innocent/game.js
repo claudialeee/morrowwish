@@ -745,14 +745,14 @@ if(cgEmbed&&document.head){
   html.cg-play .board-layout{width:100%!important;height:100%!important;margin:0!important;display:block!important}
   html.cg-play #stage{box-sizing:border-box!important;width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;background:radial-gradient(ellipse at 50% 45%,#fff0e2,#e6d4e8)!important}
   html.cg-play #stage>.in-game-top{width:100%!important;max-width:990px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}
-  html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 107px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 107px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
+  html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 130px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 130px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
   html.cg-play #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}
   html.cg-play #stage>.stealth-actionbar{box-sizing:border-box!important;width:100%!important;max-width:990px!important;min-height:51px!important;flex:0 0 auto!important;padding:6px 10px!important;margin:0!important}
   html.cg-play .game-menu{inset:0!important}
   html.cg-play .menu-shell{max-height:98%!important}
   @media(max-height:390px){
    html.cg-play #stage>.in-game-top{min-height:37px!important}
-   html.cg-play #stage>.playfield{width:min(100%,calc((100dvh - 94px)*10/7))!important;max-height:calc(100dvh - 94px)!important}
+   html.cg-play #stage>.playfield{width:min(100%,calc((100dvh - 118px)*10/7))!important;max-height:calc(100dvh - 118px)!important}
    html.cg-play #stage>.stealth-actionbar{min-height:47px!important}
   }
 `;
