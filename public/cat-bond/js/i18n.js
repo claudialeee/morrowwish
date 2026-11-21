@@ -427,7 +427,7 @@
     '影袭': 'Shadow Strike', '猫咒': 'Cat Hex', '虚吞': 'Void Maw',
     '棱光束': 'Prism Beam', '祝福绒': 'Blessed Fluff', '曙光愈': 'Dawn Mend',
     '月华环': 'Moonlit Halo', '毛球散射': 'Furball Spray', '疾扑冲刺': 'Dash Pounce',
-    '猫爪': 'Cat Claw',
+    '猫爪': 'Cat Claw', '喵爪旋风': 'Claw Cyclone', '喵爪攻击': 'Claw Attack',
 
     // ---- skill descriptions ----
     '燃烧的猫爪撕击，附加灼烧。': 'A burning claw slash that applies Burn.',
