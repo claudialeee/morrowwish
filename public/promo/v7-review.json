@@ -1,6 +1,6 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T19:43:49.796Z",
+  "createdAt": "2026-11-21T19:52:49.506Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -15,7 +15,7 @@
         "/promo/cat-bond/v7-review-2.jpg",
         "/promo/cat-bond/v7-review-3.jpg"
       ],
-      "duration": 36.8,
+      "duration": 39.6,
       "shots": [
         {
           "source": "broll",
@@ -85,7 +85,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -100,19 +100,19 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 22.9,
+      "duration": 23.4,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.115
+          "seconds": 14.135
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.348
+          "seconds": 7.336999999999999
         },
         {
           "source": "cover",
@@ -122,7 +122,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -137,7 +137,7 @@
         "/promo/tiny-town/v7-review-2.jpg",
         "/promo/tiny-town/v7-review-3.jpg"
       ],
-      "duration": 34.9,
+      "duration": 37.4,
       "shots": [
         {
           "source": "broll",
@@ -201,7 +201,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -216,7 +216,7 @@
         "/promo/elsewhere/v7-review-2.jpg",
         "/promo/elsewhere/v7-review-3.jpg"
       ],
-      "duration": 40.7,
+      "duration": 44.6,
       "shots": [
         {
           "source": "broll",
@@ -310,7 +310,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -325,7 +325,7 @@
         "/promo/flip-dash/v7-review-2.jpg",
         "/promo/flip-dash/v7-review-3.jpg"
       ],
-      "duration": 17.9,
+      "duration": 18.8,
       "shots": [
         {
           "source": "broll",
@@ -343,7 +343,7 @@
           "source": "broll",
           "scene": "crash",
           "caption": "CAN YOU LAST LONGER?",
-          "seconds": 2.137999999999999
+          "seconds": 2.2
         },
         {
           "source": "cover",
@@ -353,7 +353,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -368,19 +368,19 @@
         "/promo/parcel-panic/v7-review-2.jpg",
         "/promo/parcel-panic/v7-review-3.jpg"
       ],
-      "duration": 15.8,
+      "duration": 16.7,
       "shots": [
         {
           "source": "broll",
           "scene": "deliveries",
           "caption": "MATCH THE PARCEL COLOR.",
-          "seconds": 8.144
+          "seconds": 8.145
         },
         {
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.688999999999999
+          "seconds": 4.7090000000000005
         },
         {
           "source": "broll",
@@ -396,7 +396,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
@@ -411,19 +411,19 @@
         "/promo/pocket-aquarium/v7-review-2.jpg",
         "/promo/pocket-aquarium/v7-review-3.jpg"
       ],
-      "duration": 15.2,
+      "duration": 16.3,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.23
+          "seconds": 3.2359999999999998
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.2379999999999995
+          "seconds": 4.187
         },
         {
           "source": "broll",
@@ -445,7 +445,7 @@
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
-      "transitions": "new game-controlled scenes with gentle xfade, no stale V3 caption overlays",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
       "published": false
