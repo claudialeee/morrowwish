@@ -157,6 +157,11 @@ try{
   assert.equal(visual.differentWindups,true,'signature key frames must actually animate');
   assert.equal(visual.overflow,false,'preview must not scroll sideways');
   assert.equal(visual.visibleCanvas,true);
+  // Hold a visually informative impact frame; snapshots taken during the
+  // first 150ms fade-in look incorrectly dark and cannot assess kitten art.
+  await page.locator('#pause').click();
+  await page.locator('[data-tier="3"]').click();
+  await page.evaluate(()=>window.__duoPreviewDebug.renderAt('elec+fire',3,.95));
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview.png'});
   console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify({battle:result,signaturePreview:visual}));
   await context.close();
