@@ -531,7 +531,7 @@ class CaptureBattle {
       fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
-      dmg:(5+rIdx*2.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*(1+challenge*.12),
+      dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*(1+challenge*.12),   // raised: enemy hits had no weight
       speed:92+rIdx*22+challenge*14,fireRate:Math.max(.43,1.1-rIdx*.18-challenge*.12),
       skill: this.pickWildSkillFor(element, rIdx),
       // POISE/韧性: filled only by SKILL/combo/beam/ult hits. When it breaks, the
@@ -567,7 +567,7 @@ class CaptureBattle {
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
       speed: 120 + s.agi * 2.8,            // trimmed ~20%: cats were a touch too zippy to control
-      dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1),
+      dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
       projSpeed: 250 + s.agi * 4,          // trimmed ~17%: projectiles read calmer/more dodgeable
@@ -3169,12 +3169,9 @@ class CaptureBattle {
             window.MorrowwishAudio?.effect?.('crash');
           }
         }
-        // mash-wall: an unmarked basic can't drop a healthy, un-staggered enemy below
-        // ~12% HP — the last chunk requires a skill/combo/stagger to finish.
-        if (isBasic && target.staggerT <= 0 && target.tags.length === 0) {
-          const floor = target.maxhp * 0.12;
-          if (target.hp - dmg < floor) dmg = Math.max(0, target.hp - floor);
-        }
+        // (The old 12% basic mash-floor was removed per design: basics can finish a
+        // fight. Skills still crack poise for the 2x 虚弱 payoff, so they stay worth
+        // using, but a basics-only player is no longer soft-locked near 12% HP.)
       }
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       this.hurtEnemy(target, dealt, x, y);
