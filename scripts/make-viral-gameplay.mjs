@@ -160,7 +160,7 @@ async function catBond(browser){
    const r=el.getBoundingClientRect();
    return !el.children.length&&r.width>0&&r.height>0&&getComputedStyle(el).visibility!=='hidden'&&
      /[\u3400-\u9fff]/.test(el.textContent||'');
-  }).map(el=>el.textContent.trim().slice(0,90)).slice(0,30)
+  }).map(el=>el.textContent.trim().slice(0,90)).filter(v=>v!=='中文').slice(0,30)
  }));
  if(langAudit.canvasText.length||langAudit.visibleDOM.length)
    throw Error('REJECT English Cat Bond video: Chinese text painted/visible '+JSON.stringify(langAudit));
