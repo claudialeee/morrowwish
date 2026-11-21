@@ -1602,3 +1602,38 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
  #yard-duo-status.needs-reconcile{max-width:min(82vw,330px)!important;font-size:12px!important}
 }
 
+
+/* Expedition squad selector stays reachable inside the world map and each region. */
+#map-squad{position:absolute;right:133px;top:calc(env(safe-area-inset-top,0px) + 8px);
+ z-index:23;border:2px solid #acd1b4;border-radius:10px;background:#f2f9ee;color:#385846;
+ padding:8px 10px;font:850 12px system-ui;min-height:40px;cursor:pointer;touch-action:manipulation}
+#map-squad[hidden],#stage:has(#battle-ui.on) #map-squad{display:none!important}
+#panel .map-squad-heading{font-size:15px;color:#48634d;margin:12px 0 6px}
+#panel .map-squad-roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+ gap:8px;max-height:min(41vh,280px);overflow:auto;padding:3px;overscroll-behavior:contain}
+#panel .map-squad-choice{display:flex;gap:6px;align-items:center;min-height:70px;text-align:left;
+ border:2px solid #d4e3d2;border-radius:13px;background:#fffcf5;color:#425a4b;
+ padding:5px 7px;cursor:pointer;touch-action:manipulation;min-width:0}
+#panel .map-squad-choice.sel{background:#e3f2db;border-color:#6da981;box-shadow:0 0 0 1px #a8d5b3}
+#panel .map-squad-choice:focus-visible{outline:3px solid #397653;outline-offset:1px}
+#panel .map-squad-choice canvas{flex:0 0 54px;width:54px;height:47px;object-fit:contain}
+#panel .map-squad-choice span{min-width:0;overflow-wrap:anywhere}
+#panel .map-squad-choice strong{display:block;font:850 12px/1.35 system-ui}
+#panel .map-squad-choice small{display:block;font:700 10px/1.35 system-ui;color:#67836d}
+#panel .map-squad-count{text-align:right;font:800 12px/1.5 system-ui;color:#4b7959;margin:5px 2px 9px}
+@media(max-width:380px){#map-squad{right:117px;padding:7px;font-size:11px}
+ #panel .map-squad-roster{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #panel .map-squad-choice{flex-direction:column;justify-content:center;text-align:center}}
+@media(max-height:530px) and (orientation:landscape){
+ #map-squad{top:calc(env(safe-area-inset-top,0px) + 6px)}
+ #panel .map-squad-roster{max-height:25vh}}
+/* Show the live interactive manual lesson over the battle instead of hiding it. */
+#battle-ui .battle-hint.coach-hint{display:block!important;position:absolute!important;
+ top:calc(env(safe-area-inset-top,0px) + 157px)!important;left:50%;right:auto;
+ z-index:19;max-width:min(92%,460px)!important;width:max-content;
+ white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+ transform:translateX(-50%);text-align:center;font-size:clamp(12px,2.8vw,15px)!important;
+ line-height:1.45;padding:9px 12px;border-radius:12px;pointer-events:none}
+@media(max-height:530px) and (orientation:landscape){
+ #battle-ui .battle-hint.coach-hint{top:calc(env(safe-area-inset-top,0px) + 133px)!important;
+  max-width:68%!important;font-size:12px!important;padding:5px 8px}}
