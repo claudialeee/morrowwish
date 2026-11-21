@@ -211,7 +211,7 @@ function encode(r){
   '-c:v','libx264','-crf','20','-preset','veryfast','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k',
   '-af','volume=0.28,afade=t=out:st='+Math.max(0,elapsed-.6).toFixed(3)+':d=0.6',
   '-movflags','+faststart',dest],{stdio:'inherit',timeout:180000});
- execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','.75','-i',dest,'-frames:v','1','-q:v','3',poster],{stdio:'inherit'});
+ execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','0.75','-i',dest,'-frames:v','1','-q:v','3',poster],{stdio:'inherit'});
  const streams=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',dest],{encoding:'utf8'})).streams;
  const bytes=fs.statSync(dest).size;
  if(!streams.some(q=>q.codec_type==='video'&&q.width===1080&&q.height===1920)||!streams.some(q=>q.codec_type==='audio')||bytes<120000||bytes>30000000)throw Error('Invalid real portrait reel '+dest+' '+bytes);
