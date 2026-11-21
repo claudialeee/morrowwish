@@ -832,10 +832,10 @@
   // key bindings (WASD/Q/E/R) and the studio brand.
   function toChinese(str){
     if(typeof str!=='string'||!str)return str;
-    return str.replace(/\\bLv\\.\\s*(\\d+)/g,'等级 $1')
-      .replace(/\\bAI\\s*(?=策略|战斗|规则)/g,'智能')
-      .replace(/\\bHP\\b/g,'生命值')
-      .replace(/\\bXP\\b/g,'经验');
+    return str.replace(/\bLv\.\s*(\d+)/g,'等级 $1')
+      .replace(/\bAI\s*(?=策略|战斗|规则)/g,'智能')
+      .replace(/\bHP\b/g,'生命值')
+      .replace(/\bXP\b/g,'经验');
   }
 
   // Mode-aware translate: the public API + the canvas hook. In English mode it
