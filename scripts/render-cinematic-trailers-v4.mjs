@@ -62,7 +62,7 @@ const playlists={
   broll('play',3.55,'ONE BUTTON. ONE WRONG FLIP.'),
   broll('collision',0.6),
   broll('game-over',1.4,'CRASHED. BEAT MY SCORE?'),
-  cover(2.35,'PLAY FREE')
+  cover(3.0,'PLAY FREE')
  ],
  'parcel-panic':[
   broll('deliver',3.3,'KEEP THE DELIVERIES GOING.'),
