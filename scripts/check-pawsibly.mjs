@@ -175,8 +175,6 @@ while(!test.getState().done&&!test.getState().hasRelic&&relicMoves++<40){
  test.move(next.x-room.cat.x,next.y-room.cat.y);
 }
 assert.equal(test.getState().hasRelic,true,'Touching the souvenir must pick it up');
-assert.ok(nodes.get('collectionPreview').innerHTML.includes('窗帘流苏'),
- 'Collection preview should NAME the actual found object in Chinese');
 assert.ok(nodes.get('relicGallery').innerHTML.includes('窗帘流苏'),
  'The collection gallery must identify the acquired item');
 const finalRoom=test.getState();
@@ -191,8 +189,10 @@ assert.ok(source.includes('const RELICS=[')&&source.includes('const BADGES=['),
  'Named souvenirs and persistent achievements must remain wired');
 assert.ok(reviewStyle.includes('id="stageHome"')&&reviewStyle.includes('class="stage-left"'),
  'A permanent top-left home link must remain visible outside menu and results');
-assert.ok(reviewStyle.includes('id="achievementCount"')&&reviewStyle.includes('id="relicGallery"')&&reviewStyle.includes('id="guardIntent"'),
+assert.ok(reviewStyle.includes('id="achievementsGrid"')&&reviewStyle.includes('id="relicGallery"')&&reviewStyle.includes('id="guardIntent"'),
  'The game must show collectible names, earned badges and the owner state');
+assert.ok(!reviewStyle.includes('id="collectionPreview"')&&!reviewStyle.includes('class="collection-count"'),'Album summary and recent-item preview must stay removed');
+assert.ok(reviewStyle.indexOf('id="restart"')>reviewStyle.indexOf('id="tool"')&&reviewStyle.indexOf('id="restart"')<reviewStyle.indexOf('id="board"'),'Replay button must be directly accessible above the board');
 assert.ok(!reviewStyle.includes('<section class="explainer"'),
  'The duplicate how-to-play section must not reappear below the game');
 // Final-room regression: the eighth escape deserves a visible, skippable
