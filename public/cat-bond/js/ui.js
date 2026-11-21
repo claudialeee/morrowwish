@@ -687,7 +687,7 @@ const UI = {
       const unlocked=this.announceSkillMilestone(cat,old);
       State.save();this.game.refreshHUD();this.renderCatDetail(cat);
       this.game.toast(unlocked?'✨ '+State.catName(cat)+' 学会 '+unlocked.name+'！'
-        :(lv?`🎉 升到 Lv.${cat.level}！(+${gain}经验)`:`🐟 +${gain} 经验`));
+        :(lv?`🎉 ${this.levelText(cat.level)}！(+${gain}经验)`:`🐟 +${gain} 经验`));
     };
     document.getElementById('cd-trainstat').onclick = () => {
       const yarn = (State.S.raising && State.S.raising.yarn) || 0;
