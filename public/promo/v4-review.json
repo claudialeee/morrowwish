@@ -1,6 +1,6 @@
 {
   "version": "V4",
-  "createdAt": "2026-11-21T08:00:01.851Z",
+  "createdAt": "2026-11-21T08:05:40.872Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -15,7 +15,7 @@
         "/promo/cat-bond/v4-review-2.jpg",
         "/promo/cat-bond/v4-review-3.jpg"
       ],
-      "duration": 28.3,
+      "duration": 28,
       "shots": [
         {
           "source": "broll",
@@ -33,7 +33,7 @@
           "source": "broll",
           "scene": "battle",
           "caption": "THEN THE STRAYS FIGHT BACK.",
-          "seconds": 3.25
+          "seconds": 3
         },
         {
           "source": "game",
