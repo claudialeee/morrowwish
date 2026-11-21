@@ -51,7 +51,11 @@ const UI = {
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
-    document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel(true));
+    document.getElementById('yard-duo-status')?.addEventListener('click',()=>{
+      const pending=window.CatRelations?.unresolved?.()[0];
+      if(pending)this.openDuoQuarrel(pending.a,pending.b);
+      else this.openBondPanel();
+    });
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
@@ -339,6 +343,10 @@ const UI = {
     // hidden after a previous encounter or canceled pre-battle choice.
     if(this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'yard'));
+    // A pending disagreement must reappear in the yard after *any* panel is
+    // dismissed. Previously refreshing while the panel was open set
+    // yard-duo-status.hidden=true and never restored it after closing.
+    this.game?.refreshYardSurprise?.();
   },
 
   // ---------- roster ----------
