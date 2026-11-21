@@ -97,6 +97,8 @@ try{
       assert.match(await auto.innerText(),/ON|开/,'Button must show CURRENT active mode');
       await auto.click();
       assert.equal(await auto.getAttribute('aria-pressed'),'false','Click must turn automatic battle OFF');
+      assert.equal(await page.evaluate(()=>window.__game.battle.autoUsed),true,
+        'Turning off auto must not erase automatic assistance from the rank evaluation');
       if(width===907){
         // Simulate earned win through the real battle completion logic.
         await page.evaluate(()=>{
@@ -105,7 +107,7 @@ try{
           // entire S-rank achievement path, not only generic battle victory.
           for(const e of b.enemies){e.hp=0;e.alive=false;}
           b.team.forEach(cat=>{cat.hp=cat.maxhp;});
-          b.t=10;b.comboBest=8;
+          b.t=10;b.comboBest=19; // exceptional auto S, not a trivial automatic S
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
@@ -128,7 +130,7 @@ try{
         assert.equal(await page.locator('.skill-reveal-card').count(),1,
           'New players must visibly celebrate an unlocked skill');
         const rank=await page.locator('.battle-grade b').innerText();
-        assert.equal(rank,'S','Good play earns an S rank and a permanent species medal');
+        assert.equal(rank,'S','An exceptional auto battle can still earn S and a permanent species medal');
         await page.waitForSelector('.golden-paw-unlock',{timeout:5000});
         assert.equal(await page.locator('#cr-medal').count(),1,
           'First S unlock must offer a direct route into the Golden Paw codex');
@@ -234,6 +236,27 @@ try{
         await page.locator('#journey-explore').click();
         assert.equal(await page.evaluate(()=>window.__game.scene),'map',
           'Explore CTA should actually open the explorable world');
+        await page.waitForSelector('#panel .map-destination.available');
+        assert.equal(await page.locator('#panel .map-destination').count(),5,
+          'All five real explorable regions must appear in one in-game directory');
+        assert.equal(await page.locator('#panel .map-destination.locked').count(),4,
+          'Future regions must expose their actual unlocking requirements');
+        await page.locator('#panel .map-destination.available').first().click();
+        assert.equal(await page.evaluate(()=>WorldMap.mode),'region',
+          'Clicking a region must open a playable walking world');
+        const canvasBox=await page.locator('#scene').boundingBox();
+        assert.ok(canvasBox,'World must have a playable canvas');
+        const x=canvasBox.x+canvasBox.width*.68,y=canvasBox.y+canvasBox.height*.48;
+        await page.mouse.move(x,y);await page.mouse.down();
+        await page.mouse.move(x-210,y-12,{steps:8});await page.mouse.up();
+        const view=await page.evaluate(()=>WorldMap.view);
+        assert.ok(view.panMode&&view.camX>30,
+          'Desktop mouse drag must pan the camera rather than only move the cat');
+        await page.mouse.click(canvasBox.x+canvasBox.width*.48,canvasBox.y+canvasBox.height*.45);
+        const walk=await page.evaluate(()=>WorldMap.view);
+        assert.equal(walk.panMode,false,'Click-to-walk must resume camera follow');
+        assert.equal(walk.target,true,'Click-to-walk should set a physical destination');
+        await page.evaluate(()=>{window.__game.scene='yard';window.__game.showYardChrome();UI.closeAll();});
         // Production-like mature save: dozens of owned cats, many duplicates.
         // The garden should remain inviting and every individual accessible.
         const mature=await page.evaluate(()=>{

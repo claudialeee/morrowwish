@@ -1186,3 +1186,13 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #panel .map-chooser .btn-row{margin-top:5px}}
 
 #panel .grade-explain,#panel .mastery-grade-hint{display:block;color:#556955;font:700 11px/1.5 system-ui;margin-top:5px}
+
+/* High-contrast, responsive destination chooser inside the actual dark panel. */
+#panel .card:has(.map-chooser){background:#fbf8eb;border:2px solid #b8cca9;color:#395a42;
+ box-shadow:0 20px 60px #0f1e1a8a}
+#panel .card:has(.map-chooser) .card-close{color:#6a7469}
+#panel .card:has(.map-chooser) .btn.ghost{background:#e3e9de;color:#47644c}
+#panel .map-destination.available:hover,#panel .map-destination.available:focus-visible{
+ border-color:#4c9860;box-shadow:0 0 0 2px #8cc59d55;outline:none}
+#scene{touch-action:none;user-select:none}
+body.cb-exploring #scene{cursor:grab}

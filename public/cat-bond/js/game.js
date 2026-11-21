@@ -145,7 +145,7 @@ class Game {
     const healthy=hpRatio>=.8,swift=seconds<=timeLimit;
     const clever=combo>=8||(b.perfectDodges||0)>=1;
     const points=Number(healthy)+Number(swift)+Number(clever);
-    const autoUsed=!!b.autoUsed;
+    const autoUsed=!!(b.autoUsed||b.autoMode);
     const autoExceptional=hpRatio>=.95&&seconds<=timeLimit*.6&&combo>=16
       &&fighters.every(f=>f.alive!==false&&f.hp>0);
     const grade=points===3&&(!autoUsed||autoExceptional)?'S'
