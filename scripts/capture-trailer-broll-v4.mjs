@@ -103,6 +103,7 @@ try{
    await sleep(420);
   }
   shots.push({label:'tease',start:playStart,duration:stamp()-playStart-.08});
+  await page.addStyleTag({content:'#panel.open:has(.map-destination){top:55px!important;bottom:65px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px!important}#panel.open>.card:has(.map-destination){height:auto!important;min-height:0!important;max-height:650px!important;flex:0 0 auto!important;overflow:hidden!important;align-self:center!important}'});
   await page.evaluate(()=>{UI.closeAll();window.__game.openWorldMap()});
   await page.waitForSelector('#panel.open .map-destination');
   await mark('map-choice',2100);
@@ -156,11 +157,13 @@ try{
     ctx.fillStyle='#241a37';ctx.fillRect(0,0,540,960);
     const s=window.__PAWSIBLY_TEST__?.getState();
     if(s&&source.width&&source.height){
+     // Enlarged *real gameplay* is blurred only behind the undistorted board.
+     ctx.save();ctx.filter='blur(27px) brightness(0.47)';
+     ctx.drawImage(source,0,0,source.width,source.height,-480,0,1500,960);
+     ctx.restore();
      const h=540*source.height/source.width,y=(960-h)/2;
      ctx.drawImage(source,0,0,source.width,source.height,0,y,540,h);
-     ctx.fillStyle='#fff7ec';ctx.font='bold 30px system-ui,sans-serif';
-     ctx.fillText('STEAL THREE FISH',25,190);
-     ctx.font='bold 25px system-ui,sans-serif';
+     ctx.fillStyle='#fff7ec';ctx.font='bold 25px system-ui,sans-serif';
      ctx.fillText('FISH '+s.got+'/3',28,760);
      if(s.winning)ctx.fillText('ESCAPED!',28,815);
      else if(s.lives<3)ctx.fillText('CAUGHT!',28,815);
@@ -388,23 +391,52 @@ try{
   return [{label:'full-attempt',start:fullStart,duration:stamp()-fullStart-.12}];
  }));
  result.push(await capture(browser,'pocket-aquarium',async({page,stamp})=>{
+  // Instrument only a READ-ONLY browser observer. Every food drop below is a
+  // genuine click in the actual game. Fail QA if a fish is never fed.
+  await page.route('**/pocket-aquarium/**',async route=>{
+   if(route.request().resourceType()!=='document')return route.continue();
+   const response=await route.fetch(),html=await response.text();
+   const marker='const rand=(a,b)=>';
+   if(!html.includes(marker))throw Error('Aquarium capture observer no longer matches real game');
+   const observer="window.__V6_FISH__=()=>({fish:fish.map(f=>({x:f.x,y:f.y,type:f.type,wait:f.wait})),score,fed,time,quality,W,H,state});\n";
+   await route.fulfill({response,body:html.replace(marker,observer+marker),headers:{...response.headers(),'content-type':'text/html; charset=utf-8'}});
+  });
   await page.goto(host+'/pocket-aquarium/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.locator('#start').click();
   await page.evaluate(()=>document.querySelector('#mw-mini-fullscreen')?.click());
-  await page.waitForFunction(()=>!!document.querySelector('.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback'),{timeout:8500});
-  const first=stamp();
-  const foods=page.locator('.food');
-  for(let n=0;n<4;n++){await foods.nth(n%3).click();await page.locator('#sea').click({position:{x:120+n*45,y:190+(n%2)*40}});await sleep(650)}
-  const played=stamp();await page.waitForFunction(()=>Number(document.querySelector('#time')?.textContent||100)<=7,null,{timeout:70000});
+  await page.waitForFunction(()=>!!document.querySelector('.mw-mini-aquarium-frame.mw-mini-fullscreen-fallback')&&!!window.__V6_FISH__,null,{timeout:8500});
+  const first=stamp(),foods=page.locator('.food');
+  for(let n=0;n<3;n++){
+   let success=false,diagnostics=[];
+   for(let retry=0;retry<3&&!success;retry++){
+    const snap=await page.evaluate(()=>window.__V6_FISH__());
+    const target=[...snap.fish].sort((a,b)=>a.wait-b.wait)[0];
+    const px=Math.max(35,Math.min(snap.W-35,target.x));
+    const py=Math.max(55,Math.min(snap.H-55,target.y));
+    await foods.nth(target.type).click();
+    await page.locator('#sea').click({position:{x:px,y:py}});
+    try{
+     await page.waitForFunction(oldFed=>window.__V6_FISH__?.().fed>oldFed,snap.fed,{timeout:3200,polling:100});
+     success=true;
+    }catch(e){diagnostics.push(await page.evaluate(()=>window.__V6_FISH__()))}
+    await sleep(250);
+   }
+   if(!success)throw Error('Aquarium actual food drop missed hungry fish '+JSON.stringify({n,diagnostics}));
+  }
+  const proof=await page.evaluate(()=>window.__V6_FISH__());
+  if(proof.score<45||proof.fed<3)throw Error('Aquarium real scoring missing '+JSON.stringify(proof));
+  console.log('V6 AQUARIUM REAL FEEDING '+JSON.stringify({score:proof.score,fed:proof.fed}));
+  const played=stamp();
+  await page.waitForFunction(()=>Number(document.querySelector('#time')?.textContent||100)<=7,null,{timeout:70000});
   const murkyAt=stamp(),quality=Number((await page.locator('#waterTxt').textContent()).replace('%',''));
   await page.waitForFunction(()=>!document.querySelector('#overlay').hidden,null,{timeout:14000});
   const timeout=stamp(),finalQ=Number((await page.locator('#waterTxt').textContent()).replace('%',''));
   const grade=await page.locator('#modalTip').textContent(),score=Number(await page.locator('#score').textContent());
-  if(finalQ>=55||score>=220||!/Grade\s+[CD]/i.test(grade))throw Error('V5 aquarium must show actual cloudy water and low grade '+JSON.stringify({quality,finalQ,score,grade}));
+  if(finalQ>=55||score>=220||score<45||!/Grade\s+[CD]/i.test(grade))throw Error('V6 must show real feeding, cloudy water and actual low grade '+JSON.stringify({quality,finalQ,score,grade}));
   await sleep(1850);
   return [{label:'feeding',start:first,duration:Math.min(3.2,played-first-.1)},
-    {label:'water-cloudy',start:murkyAt,duration:Math.min(3.2,timeout-murkyAt-.15)},
-    {label:'timeout',start:Math.max(murkyAt,timeout-.55),duration:2.0}];
+   {label:'water-cloudy',start:murkyAt,duration:Math.min(3.2,timeout-murkyAt-.15)},
+   {label:'timeout',start:Math.max(murkyAt,timeout-.55),duration:2.0}];
  }));
  const manifest={createdAt:new Date().toISOString(),kind:'V6-all-seven-authentic-chronological-gameplay-not-posted',broll:result};
  fs.writeFileSync(path.join(dir,'broll-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
