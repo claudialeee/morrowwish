@@ -129,10 +129,19 @@ try{
   await page.waitForSelector('#panel.open .map-destination');
   await mark('map-choice',3200);
   const entered=await page.evaluate(()=>{
-   UI.closeAll();const ok=WorldMap.enterRegion('home');
-   window.__V4_CAMERA__.show(true);return ok&&window.__game.scene==='map';
+   UI.closeAll();
+   // The actual starting region is now the cherry-blossom woodland.
+   // Select an unlocked real region instead of hardcoding the retired
+   // 'home' opening; verify the new runtime is actively exploring it.
+   const chosen=WorldMap.isUnlocked('sakura')?'sakura':
+     WorldMap.REGIONS.find(r=>WorldMap.isUnlocked(r.id))?.id;
+   if(!chosen)return{ok:false,reason:'no unlocked map'};
+   const ok=WorldMap.enterRegion(chosen);
+   window.__V4_CAMERA__.show(true);
+   return{ok:!!ok&&window.__game.scene==='map'&&WorldMap.mode==='region',region:chosen,mode:WorldMap.mode};
   });
-  if(!entered)throw Error('V5 proof missing: entered a real explorable region');
+  if(!entered.ok)throw Error('V9 real exploration region not entered '+JSON.stringify(entered));
+  console.log('V9 REAL CURRENT REGION '+JSON.stringify(entered));
   await mark('map-explore',4300);
   await page.evaluate(()=>{
    window.__V4_CAMERA__.show(false);window.__game.scene='yard';window.__game.showYardChrome();
