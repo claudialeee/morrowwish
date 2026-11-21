@@ -255,70 +255,110 @@ html.cg-play .stealth-actionbar{min-height:0}
 .stage.victory .modal{animation:heist-celebrate .38s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes heist-celebrate{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.stage.victory .modal{animation:none}}
-</style><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-overhaul-v3" defer></script><meta name="twitter:card" content="summary_large_image"></head>
+</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=20261120-v1"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js" defer></script><script src="/pawsibly-innocent/game.js?v=20261120-single-screen-v1" defer></script><meta name="twitter:card" content="summary_large_image"></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><a class="back" href="/" id="back">← Morrow Wish</a><div class="cat-header-right"><span class="brand">morrow<span>wish</span> <b id="studioByline">presents ♡</b></span><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></div></header>
-<main class="wrap">
- <div class="heading"><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h1 id="gameTitle">PAWSIBLY <span>INNOCENT!</span></h1><p class="sub" id="subtitle">Steal three fish. Fool the human. Get away with it.</p></div>
- <div class="board-layout">
-  <div class="play-column">
-   <div class="stealth-actionbar" aria-label="Live mission and stealth controls">
-    <div class="stealth-help">
-     <strong id="visionTip">Tap the fish next to your cat to begin.</strong>
-     <div class="guard-status" id="guardStatus" data-mode="patrol"><span class="guard-dot" aria-hidden="true"></span><span id="guardIntent">Owner: patrolling the room</span></div>
-     <span id="yarnQuickHint" class="yarn-hint">Toss yarn to distract the owner.</span>
-     <span class="bonus-dare" id="bonusDare">☆ Bonus: Knock over a vase</span>
+<main class="wrap single-screen-game">
+<div class="board-layout">
+ <div class="stage" id="stage">
+  <div class="playfield" id="playfield">
+   <canvas id="board" width="840" height="588" tabindex="0" aria-label="Tap to move your cat. Collect three fish and sneak through the cat flap."></canvas>
+   <div class="in-game-top">
+    <div class="sticker">
+     <small id="roomNum">ROOM 01 / 08</small>
+     <b id="roomTag">The Sunny Lounge</b>
     </div>
-    <button class="button yarn board-yarn" id="tool" type="button" aria-label="Toss yarn to distract the owner">🧶 Toss yarn</button>
+    <div id="heistStatus" class="heist-status" role="status" aria-label="Fish and lives">🐟 0/3 · ♥♥♥</div>
+    <div class="in-game-controls" id="stageControls">
+     <button id="quickHelp" class="hud-icon" type="button" aria-label="How to play" title="How to play">?</button>
+     <button id="menuButton" class="hud-icon" type="button" aria-label="Open game menu" title="Open game menu">☰</button>
+    </div>
    </div>
-   <div class="stage" id="stage">
-    <canvas id="board" width="840" height="588" tabindex="0" aria-label="Cat stealth adventure. Tap to move, steal three fish, and escape."></canvas>
-    <div id="heistStatus" class="heist-status" aria-label="Fish and remaining lives">🐟 0/3 · ♥♥♥</div>
-    <div id="pawsAlert" class="paws-alert" hidden role="status">SPOTTED</div>
-    <div class="yarn-aim-banner" id="yarnAimBanner" hidden>Tap a tile to throw the yarn there</div>
-    <div class="sticker"><small id="roomNum">ROOM 01 / 08</small><b id="roomTag">The Sunny Lounge</b></div>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <div id="achievementToast" class="achievement-toast" role="status" aria-live="polite" hidden></div>
-    <div class="overlay" id="overlay" hidden>
-     <div class="modal"><div class="cat-medal" id="medal">🐱</div><div class="stars" id="stars">★★★</div>
-      <h2 id="resultTitle">Purrfect escape!</h2><p id="resultDesc"></p><p id="resultScore"></p><p id="resultUnlocks" class="result-unlocks"></p>
-      <div class="buttons"><button class="button secondary" id="retryResult">Try again</button><button class="button" id="nextResult">Next room →</button><button class="button mint wide" id="shareResult">Share your chaos ♡</button></div>
-     </div>
+   <div id="pawsAlert" class="paws-alert" hidden role="status">SPOTTED</div>
+   <div id="yarnAimBanner" class="yarn-aim-banner" hidden>Tap a floor tile to aim your yarn</div>
+   <div class="stealth-actionbar">
+    <div class="stealth-help">
+     <strong id="visionTip">Tap the fish beside your cat to begin.</strong>
+     <div class="guard-status" id="guardStatus" data-mode="patrol"><span class="guard-dot" aria-hidden="true"></span><span id="guardIntent">Owner: patrolling</span></div>
+     <span class="yarn-hint" id="yarnQuickHint">Throw yarn to distract the human.</span>
+    </div>
+    <button class="button yarn board-yarn" id="tool" type="button">🧶 Toss yarn</button>
+   </div>
+   <div id="coachSpot" class="coach-spot" aria-hidden="true"></div>
+   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+   <div id="achievementToast" class="achievement-toast" role="status" aria-live="polite" hidden></div>
+   <div class="overlay" id="overlay" hidden>
+    <div class="modal">
+     <div class="cat-medal" id="medal">🐱</div><div class="stars" id="stars">★★★</div>
+     <h2 id="resultTitle">Purrfect escape!</h2><p id="resultDesc"></p>
+     <p id="resultScore"></p><p id="resultUnlocks" class="result-unlocks"></p>
+     <div class="buttons"><button class="button secondary" id="retryResult">Try again</button><button class="button" id="nextResult">Next room →</button><button class="button mint wide" id="shareResult">Share your chaos ♡</button></div>
     </div>
    </div>
   </div>
-  <aside class="panel" aria-label="Room progress, collection and achievements">
-   <section class="sidebar-mission">
-    <div class="row"><span class="mini-label" id="missionLabel">CURRENT HEIST</span><span class="hearts" id="hearts" aria-label="3 hearts">♥ ♥ ♥</span></div>
-    <h2 class="chapter" id="chapter">The Sunny Lounge</h2><p class="chapter-sub" id="chapterSub">Grab the nearby fish first.</p>
-   </section>
-   <section class="sidebar-fish">
-    <div class="meter-label"><span id="snackLabel">FISH STOLEN</span><b id="fishCount">0 / 3</b></div>
-    <div class="meter"><i id="meterFill"></i></div><p class="mission" id="mission">Steal three fish and escape through the cat flap.</p>
-   </section>
-   <div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">MOVES</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
-   <div class="buttons sidebar-actions"><button class="button secondary" id="restart">↻ Retry this room</button></div>
-   <section class="levels sidebar-section"><span class="mini-label" id="roomLabel">ROOMS</span><div class="progress" id="levels"></div></section>
-   <div class="collection-count"><span id="collectionLabel">SOUVENIRS</span><strong id="collection">0 / 8</strong><span id="achievementCount">0 / 14 achievements</span></div>
-   <div class="collection-preview" id="collectionPreview" role="status">Secret treasures appear here as you discover them.</div><div class="badge-highlights" id="badgeHighlights" aria-live="polite"></div>
-   <details class="relic-details"><summary id="relicSummary">View souvenir album</summary><div class="relic-gallery" id="relicGallery"></div></details>
-   <details class="achievement-details"><summary id="achievementSummary">View achievements</summary><div class="achievement-grid" id="achievementsGrid"></div></details>
-   <section class="clothes sidebar-section"><span class="mini-label" id="closetLabel">CHOOSE YOUR CAT</span><div class="wardrobe" id="wardrobe"></div><p class="chapter-sub" id="skinHint">Earn stars to unlock cats with new skills.</p></section>
-   <details class="sidebar-extra"><summary><span class="sidebar-en">Controls &amp; credits</span><span class="sidebar-zh">玩法说明与署名</span></summary>
-    <div class="sidebar-extra-body">
-     <div class="help-content"><span class="rules-kicker" id="rulesKicker">HOW TO PLAY</span><h2 id="howTitle">Three moves to freedom</h2><p id="howBody">Each cat step moves the owner. Avoid pink tiles.</p>
-      <p><strong id="ruleStep1Title">Tap to move</strong> <span id="ruleStep1Text">Tap a tile or use the arrow keys.</span></p>
-      <p><strong id="ruleStep2Title">Steal three fish</strong> <span id="ruleStep2Text">Pink tiles show the owner's sight.</span></p>
-      <p><strong id="ruleStep3Title">Escape the room</strong> <span id="ruleStep3Text">Use the cat flap after stealing three fish.</span></p>
-      <p id="ruleBonus">Tap Toss yarn, then a floor tile. The owner follows the sound.</p>
-     </div>
-     <p class="yarn-explain" id="yarnExplain">🧶 Throw yarn to distract the human.</p>
-     <p class="ability" id="ability">Starts with a yarn ball.</p>
-     <p class="collection-hint" id="collectionHint">Find the room's unique collectible and escape to keep it.</p>
-     <div class="souvenir-shelf" id="souvenirShelf" aria-label="Room souvenir shortcuts"></div>
-     <p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p>
+  <div class="game-menu" id="gameMenu" hidden role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+   <div class="menu-shell">
+    <div class="menu-head">
+     <div><span class="eyebrow" id="eyebrow">A LITTLE CAT. A LOT OF TROUBLE.</span><h2 id="gameTitle">PAWSIBLY <span>INNOCENT!</span></h2><p id="subtitle">Steal three fish. Fool the human. Escape.</p></div>
+     <button type="button" id="menuClose" class="hud-icon" aria-label="Close game menu">✕</button>
     </div>
-   </details>
-  </aside>
+    <nav class="menu-tabs" aria-label="Game sections">
+     <button type="button" data-game-tab="rooms" aria-selected="true">🏠 <span data-menu-label="rooms">Rooms</span></button>
+     <button type="button" data-game-tab="album" aria-selected="false">🎁 <span data-menu-label="album">Album</span></button>
+     <button type="button" data-game-tab="badges" aria-selected="false">🏅 <span data-menu-label="badges">Badges</span></button>
+     <button type="button" data-game-tab="cats" aria-selected="false">🐱 <span data-menu-label="cats">Cats</span></button>
+     <button type="button" data-game-tab="help" aria-selected="false">? <span data-menu-label="help">Help</span></button>
+    </nav>
+    <aside class="panel game-menu-body" aria-label="Game progress and controls">
+     <section data-tab-panel="rooms">
+      <div class="row"><span class="mini-label" id="missionLabel">CURRENT HEIST</span><span class="hearts" id="hearts">♥ ♥ ♥</span></div>
+      <h3 class="chapter" id="chapter">The Sunny Lounge</h3><p class="chapter-sub" id="chapterSub">Grab the nearby fish first.</p>
+      <div class="meter-label"><span id="snackLabel">FISH STOLEN</span><b id="fishCount">0 / 3</b></div><div class="meter"><i id="meterFill"></i></div>
+      <p class="mission" id="mission">Collect three fish and escape.</p>
+      <div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">STEPS</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
+      <div class="menu-challenge" id="bonusDare">☆ BONUS DARE · Knock over a vase</div>
+      <div class="buttons sidebar-actions"><button class="button secondary" id="restart">↻ Retry</button></div>
+      <section class="levels sidebar-section"><span class="mini-label" id="roomLabel">CHOOSE A ROOM</span><div class="progress" id="levels"></div></section>
+     </section>
+     <section data-tab-panel="album" hidden>
+      <div class="collection-count"><span id="collectionLabel">KEEPSAKES</span><strong id="collection">0 / 8</strong><span id="achievementCount">0 / 16 achievements</span></div>
+      <div id="collectionPreview" class="collection-preview" role="status">Find a keepsake and escape to save it.</div>
+      <h3 id="relicSummary" class="menu-section-title">Room souvenirs</h3>
+      <div id="relicGallery" class="relic-gallery"></div>
+      <p id="collectionHint" class="collection-hint">Each room hides a secret keepsake.</p>
+      <div id="souvenirShelf" class="souvenir-shelf"></div>
+     </section>
+     <section data-tab-panel="badges" hidden>
+      <h3 id="achievementSummary" class="menu-section-title">Achievement badges</h3>
+      <div id="badgeHighlights" class="badge-highlights"></div>
+      <div id="achievementsGrid" class="achievement-grid"></div>
+     </section>
+     <section data-tab-panel="cats" hidden>
+      <span class="mini-label" id="closetLabel">CHOOSE YOUR CAT</span>
+      <div class="wardrobe" id="wardrobe"></div>
+      <p id="skinHint" class="chapter-sub">Earn stars to unlock cats with special skills.</p>
+      <p id="ability" class="ability">Starts with a yarn ball.</p>
+     </section>
+     <section data-tab-panel="help" hidden>
+      <span class="rules-kicker" id="rulesKicker">HOW TO PLAY</span>
+      <h3 id="howTitle" class="menu-section-title">Three steps to freedom</h3>
+      <p id="howBody">Every cat step moves the human, unless they're investigating your yarn.</p>
+      <div class="menu-help-step"><strong id="ruleStep1Title">Tap to move</strong><span id="ruleStep1Text">Tap a tile or use arrow keys.</span></div>
+      <div class="menu-help-step"><strong id="ruleStep2Title">Steal 3 fish</strong><span id="ruleStep2Text">Pink tiles show the owner's vision.</span></div>
+      <div class="menu-help-step"><strong id="ruleStep3Title">Escape</strong><span id="ruleStep3Text">Reach the cat flap with 3 fish.</span></div>
+      <p id="ruleBonus">Tap toss yarn, then tap the floor. The owner walks there and pauses.</p>
+      <p id="yarnExplain">Yarn distracts the human.</p>
+      <div class="menu-help-legend">🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape</div>
+      <h3 class="menu-section-title" id="settingsTitle">Sound & language</h3>
+      <div id="menuLanguage" class="menu-language"><button type="button" data-set-lang="zh">中文</button><button type="button" data-set-lang="en">English</button></div>
+      <div class="menu-audio" id="menuAudio"></div>
+      <p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p>
+      <a class="back menu-home" id="back" href="/">← Morrow Wish</a>
+      <p class="menu-byline">morrow wish <span id="studioByline">presents ♡</span></p>
+     </section>
+    </aside>
+   </div>
+  </div>
  </div>
+</div>
 </main>
 <script src="/pawsibly-innocent/cat-music.js" defer></script><script src="/telemetry.js" defer></script><script src="/playtest-pulse.js" defer></script><script src="/audio-dock.js"></script><script src="/game-fullscreen.js?v=5" defer></script></body></html>
