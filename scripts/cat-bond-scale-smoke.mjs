@@ -51,6 +51,7 @@ try{
       'Map lead must be proportionate and visible: '+JSON.stringify(mapStats));
    assert.ok(mapStats.wild.length>=1&&mapStats.wild.every(s=>s>.70&&s<=1),
       'Wild cats must remain distinguishable from environment');
+   await page.screenshot({path:'/tmp/cat-bond-scale-'+spec.name+'-map.png'});
    const battleStats=await page.evaluate(()=>{
     const g=window.__game;
     State.S.cats.push(State.makeCat('doudou',{affinity:50}));
@@ -78,7 +79,9 @@ try{
       benchOpen:document.getElementById('bench-slots')?.classList.contains('is-open'),
       benchLabel:rect('bench-slots'),
       team:rect('team-slots'),joystick:rect('battle-touch-joystick'),
-      stage:rect('stage'),canvas:rect('scene'),totalTeam:b.team.length,reserve:b.reserve.length};
+      stage:rect('stage'),canvas:rect('scene'),totalTeam:b.team.length,reserve:b.reserve.length,
+      cooldownBadges:[...document.querySelectorAll('#battle-ui .move .cd')]
+       .map(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height}))};
    });
    assert.ok(battleStats.roleScales.active>=.78,
      'Active fighter must be larger than the old tiny 0.50 scale');
@@ -93,6 +96,8 @@ try{
        JSON.stringify({map:mapStats.actualLead,battle:battleStats.actualMax}));
    assert.ok(battleStats.actualScales.every(s=>s>=mapStats.actualWild[0]*.88),
      'Final painted combat bodies should not shrink dramatically versus map cats');
+   assert.ok(battleStats.cooldownBadges.every(b=>b.height<=22&&b.width<=47),
+     'Cooldown badge must never cover the skill icon and full button');
    if(spec.touch){
     const threshold=spec.height<470?47:49;
     assert.ok(battleStats.buttons.every(btn=>btn.w>=threshold&&btn.h>=threshold),

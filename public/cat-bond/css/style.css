@@ -1824,3 +1824,29 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
 @media(pointer:coarse) and (max-width:360px){
  #battle-ui .move-bar .move{min-width:50px!important;min-height:50px!important}
 }
+
+/* Readable cooldowns: never mask the entire Q/E icon and skill name with
+   a dark number. A small corner badge shows remaining seconds instead. */
+#battle-ui .move-bar .move.cooling{
+ filter:none!important;opacity:.80!important;
+ border-color:#9db4aa!important;background:#eff1ec!important;
+}
+#battle-ui .move-bar .move .cd{
+ position:absolute!important;inset:auto!important;
+ top:-7px!important;right:-5px!important;left:auto!important;bottom:auto!important;
+ min-width:27px!important;width:auto!important;
+ height:20px!important;min-height:20px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ padding:1px 4px!important;box-sizing:border-box!important;
+ background:#516b61!important;color:#fff!important;
+ border:1.5px solid #fffdf5!important;border-radius:10px!important;
+ font:900 11px/1 system-ui,sans-serif!important;
+ text-shadow:none!important;z-index:7!important;
+ box-shadow:0 2px 5px #2d3c3866!important;pointer-events:none!important
+}
+@media(pointer:coarse) and (max-height:470px){
+ #battle-ui .move-bar .move .cd{
+  top:-6px!important;right:-3px!important;
+  min-width:26px!important;height:19px!important;font-size:10px!important
+ }
+}
