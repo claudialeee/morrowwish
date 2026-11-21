@@ -4,7 +4,6 @@ on:
     branches: [main]
     paths:
       - 'public/promo/pocket-aquarium/highlight-20261121.mp4'
-      - 'public/promo/current-reels.json'
   workflow_dispatch:
 permissions:
   contents: write
