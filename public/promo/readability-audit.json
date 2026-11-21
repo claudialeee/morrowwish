@@ -1,124 +1,15 @@
 {
-  "createdAt": "2026-11-21T22:14:35.805Z",
+  "createdAt": "2026-11-21T22:26:18.937Z",
   "version": "readability-review-v1",
   "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.",
+  "pausedPromoGames": [
+    "cat-bond"
+  ],
   "scenes": [
-    {
-      "game": "cat-bond",
-      "scene": "yard",
-      "seconds": 3.5,
-      "captionWords": 5,
-      "requiredSeconds": 2.41,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "raising",
-      "seconds": 4.65,
-      "captionWords": 5,
-      "requiredSeconds": 4.5,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "cat-upgrade",
-      "seconds": 6.45,
-      "captionWords": 4,
-      "requiredSeconds": 6,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "duo-partners",
-      "seconds": 6.45,
-      "captionWords": 4,
-      "requiredSeconds": 6,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "work-before",
-      "seconds": 3.35,
-      "captionWords": 6,
-      "requiredSeconds": 2.74,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "work-after",
-      "seconds": 3.5,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "tease",
-      "seconds": 3.9,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "map-choice",
-      "seconds": 4.95,
-      "captionWords": 4,
-      "requiredSeconds": 4.5,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "map-explore",
-      "seconds": 4,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "battle-intro",
-      "seconds": 2.5,
-      "captionWords": 5,
-      "requiredSeconds": 2.41,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "duo",
-      "seconds": 4.85,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "ultimate-intro",
-      "seconds": 2.25,
-      "captionWords": 2,
-      "requiredSeconds": 2,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "ultimate",
-      "seconds": 5.5,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "cat-bond",
-      "scene": "end-card",
-      "seconds": 3.6,
-      "captionWords": 2,
-      "requiredSeconds": 3.5,
-      "passed": true
-    },
     {
       "game": "pawsibly-innocent",
       "scene": "escape-attempt",
-      "seconds": 14.1,
+      "seconds": 14.17,
       "captionWords": 4,
       "requiredSeconds": 2.09,
       "passed": true
@@ -126,7 +17,7 @@
     {
       "game": "pawsibly-innocent",
       "scene": "narrow-pursuit",
-      "seconds": 2.49,
+      "seconds": 2.54,
       "captionWords": 4,
       "requiredSeconds": 2.09,
       "passed": true
@@ -142,7 +33,7 @@
     {
       "game": "pawsibly-innocent",
       "scene": "caught-attempt",
-      "seconds": 7.33,
+      "seconds": 7.35,
       "captionWords": 5,
       "requiredSeconds": 2.41,
       "passed": true
@@ -366,7 +257,7 @@
     {
       "game": "flip-dash",
       "scene": "coin-collect",
-      "seconds": 9.92,
+      "seconds": 9.97,
       "captionWords": 4,
       "requiredSeconds": 2.09,
       "passed": true
@@ -398,7 +289,7 @@
     {
       "game": "parcel-panic",
       "scene": "deliveries",
-      "seconds": 8.13,
+      "seconds": 8.15,
       "captionWords": 4,
       "requiredSeconds": 2.09,
       "passed": true
@@ -406,7 +297,7 @@
     {
       "game": "parcel-panic",
       "scene": "mistakes",
-      "seconds": 4.78,
+      "seconds": 4.68,
       "captionWords": 4,
       "requiredSeconds": 2.09,
       "passed": true
@@ -438,7 +329,7 @@
     {
       "game": "pocket-aquarium",
       "scene": "more-feeding",
-      "seconds": 4.25,
+      "seconds": 4.24,
       "captionWords": 5,
       "requiredSeconds": 2.41,
       "passed": true
