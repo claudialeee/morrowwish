@@ -46,7 +46,7 @@ const Q={
  collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("你拖住了对方，但这次还不足以让他们彻底认输。","You stopped them for now, but the case is not fully won."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
 };
 Object.assign(Q,{
- hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life you love."),
+ hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end."),
  intro:L("在巴黎开启全新恋情，住进海边豪宅享受自由，也可以成为万人追捧的巨星。换一段人生，尽情去活。","Fall in love for the first time in Paris, enjoy your own Amalfi villa, or live as a superstar. A new life is yours."),
  tiny:L("六种人生 · 五个精彩瞬间 · 24 种结局","6 DREAM LIVES · 5 MOMENTS · 24 ENDINGS"),
  choice:L("接下来，你想怎么活？","WHAT HAPPENS NEXT?"),

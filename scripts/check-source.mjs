@@ -338,7 +338,7 @@ if(cases.paris.intro.body[0].includes('诺亚'))throw Error('The new romance mus
 if(!cases.amalfi.objective[0].includes('没有失败结局'))throw Error('Amalfi must have no losing ending');
 if(!dreamCss.includes('white-space:nowrap!important')||!dreamCss.includes('font-size:clamp(15px,4.35vw,24px)'))
  throw Error('Single-line responsive Chinese and English title missing');
-if(!dreamSource.includes('hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life you love.")'))
+if(!dreamSource.includes('hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end.")'))
  throw Error('Single-line headline changed unexpectedly');
 if(!dreamSource.includes('s.routeBodies?.[state.route]')||!dreamSource.includes('s.links?.[prior.index]'))
  throw Error('Meaningful scene continuation missing');
