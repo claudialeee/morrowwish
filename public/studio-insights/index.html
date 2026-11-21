@@ -44,6 +44,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 .device-summary{max-width:430px;margin:8px 0}.device-details{margin-top:10px}
 @media(max-width:540px){.compact-channels th,.compact-channels td{padding:10px 7px;font-size:11px}}
 @media(max-width:800px){.signal-grid{grid-template-columns:1fr}.ew-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.table th.sortable{padding:0}.table .sort-trigger{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;min-height:37px;width:100%;padding:10px 7px;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;text-align:right;cursor:pointer;white-space:normal}.table th:first-child .sort-trigger{justify-content:flex-start;text-align:left}.table .sort-trigger:hover{background:#fff0e9;color:#9b597e}.table .sort-trigger:focus-visible{outline:2px solid #ad829d;outline-offset:-2px;border-radius:5px}.table .sort-arrow{font-size:10px;flex:none;color:#a18a9b}.table th[aria-sort="ascending"] .sort-arrow,.table th[aria-sort="descending"] .sort-arrow{color:#925575}@media(max-width:540px){.table .sort-trigger{padding:9px 4px;gap:2px}}
 </style></head><body><main class="wrap">
 <div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
 <div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><select id="days" aria-label="Date range / 日期范围"><option value="1" data-i18n="today"></option><option value="3" data-i18n="day3"></option><option value="7" data-i18n="day7" selected></option><option value="14" data-i18n="day14"></option></select><button id="reload" type="button" data-i18n="refresh"></button></div></div>
@@ -92,7 +93,7 @@ ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",
 trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"看访问有没有转成开局，开局有没有走到结算，以及玩家是否再次尝试。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"展开玩法反馈、itch.io 和剧情细节",trendMore:"查看流量趋势",
 colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"开局",colRetries:"重玩",colTime:"平均会话",colEnds:"完成",colDone:"获胜/通关",notAvailable:"未获取",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"六款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"等待新版游玩数据",
 homeFunnelLabel:"主页→游戏（新版）：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelYouTube:"YouTube：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"新的主页点击数据尚未产生。",channelTitle:"推广渠道 · 进度与试玩",channelDesc:"每个平台使用专属链接。进站分别显示首页、游戏页访问；开局和完成来自本站埋点。两种访问可能属于同一人，不等于独立玩家。",channelState:"当前进度",acquisitionVisits:"进站访问（首页 / 游戏）",channelFuture:"后续待推进平台（展开查看）",nativeViews:"平台播放",syncPending:"待同步",socialSourceNote:"YouTube/TikTok 官方有播放量，但 Metricool 当前查询未返回明细；这里不显示虚假的 0。点击平台名称可查看官方页面。",nativePublished:"已发布",socialSnapshotNote:"平台播放数据截至 {date}，不是实时数据；“待同步”表示接口未返回播放量，不等于 0。开局和完成来自本站埋点。",blueskyPublished:"已发布 {n} 条",channelGame:"游戏",channelSource:"来源渠道",channelVisits:"首页/游戏页访问",channelDirect:"直接 / 未识别",channelOther:"其他来源",deviceMore:"查看设备分布",flipSignal:"Flip Dash",parcelSignal:"Parcel Panic",elsewhereSignal:"平行人生",flipRuns:"结束的局数",flip10:"存活至少 10 秒",flip30:"存活至少 30 秒",parcelSorted:"正确分拣",parcelMissed:"漏接 / 分错",parcel10:"完成至少 10 件的局数",elsewhereFirst:"首幕完成率",elsewhereFull:"故事完读率",elsewhereReplay:"重玩率",channelCampaign:"活动",sourcesTitle:"访客从哪里来",sourcesDesc:"区分直接访问、站内跳转和外部网站。直接打开网页或浏览器隐藏来源时，不会有来源网站域名。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站 / 直接访问",websites:"访问网址",
-itchTitle:"itch.io 游戏内游玩",itchDesc:"仅统计从 itch.io 进入本站游戏的可归因会话，按游戏单独展示。",itchViews:"已追踪游戏页访问",itchNote:"仅计入在 Morrow Wish 游戏页面运行并成功回传的事件；不是 itch.io 官方 Browser Plays 或 itch.io 项目页浏览量。未接入的独立上传版本及历史数据无法自动补录。",itchNoData:"尚无可归因的 itch.io 游玩数据。请确认已发布的 iframe 使用带 utm_source=itch 的本站游戏链接。",coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件与粗粒度流量来源，不记录姓名、邮箱或完整 IP 地址。独立浏览器通过本站随机标识估算，不等于真实人数。尊重浏览器的“不追踪”和“全局隐私控制”设置。历史访问数据不会自动补录。",
+itchTitle:"itch.io 游戏内游玩",itchDesc:"展示从 itch.io 加载本站游戏页的访问；未开局可能是在开始界面离开，也可能是开局事件未回传。",itchViews:"已追踪游戏页访问",itchNote:"访问＝从 itch.io 加载本站游戏页；开局＝实际开始事件成功回传。这不是 itch.io 官方 Browser Plays 或项目页浏览量。独立上传版与历史数据无法补录。",itchNoData:"尚无可归因的 itch.io 游玩数据。请确认已发布的 iframe 使用带 utm_source=itch 的本站游戏链接。",coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件与粗粒度流量来源，不记录姓名、邮箱或完整 IP 地址。独立浏览器通过本站随机标识估算，不等于真实人数。尊重浏览器的“不追踪”和“全局隐私控制”设置。历史访问数据不会自动补录。",
 statPv:"页面浏览量",statPvNote:"所有游戏及首页",statVisitors:"独立浏览器",statVisitorsNote:"匿名浏览器，不是人数",statStarts:"游戏启动次数",statStartsNote:"记录局数，不是人数",statSession:"平均会话时长",statSessionNote:"按匿名会话计算",statRetries:"重玩次数",statRetriesNote:"再次游玩次数",statShares:"分享点击",statSharesNote:"成绩或挑战分享",statFinished:"完成局数",statFinishedNote:"正常结算即完成，失败也算",statD1:"首访次日回访率",statD1Note:"样本 {n} 个匿名浏览器",
 seconds:"{n} 秒",none:"暂无数据",headHome:"网站首页",empty:"—",coverageDays:"覆盖最近 {days} 天，共读取 {records} 条匿名记录。",lastEventLabel:"最近一次实际入库：{when}。",lastEventMissing:"本次日期范围内没有可核实的入库事件。",coveragePartial:"本次统计达到读取上限，结果可能不完整。",coverageOld:"旧版会话有 {n} 条缺少稳定访客 ID，计入访问或会话，但不计入独立访客。",coverageDetails:"网页加载计入 PV；游戏开始及结束立即上报，游玩时长在游戏中及离开页面时累计。新增指标不补录历史数据。",
 direct:"直接访问",internal:"站内跳转",external:"外部网站",mobile:"手机",tablet:"平板",desktop:"桌面",arcade:"Morrow Wish 工作室",legacy:"旧版埋点记录",direct_no_referrer:"直接访问（无来源网站）",unknown:"来源未提供",failGeneric:"服务暂时不可用"
@@ -106,7 +107,7 @@ ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded
 trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"See whether visitors begin a game, reach the results screen and try again.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"Gameplay, itch.io and story details",trendMore:"Traffic trends",
 colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Started",colRetries:"Replays",colTime:"Avg. session",colEnds:"Completed",colDone:"Wins / clears",notAvailable:"Unavailable",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"Awaiting new gameplay data",
 homeFunnelLabel:"Homepage → game (new): {clickers}/{visits} visits chose a game ({rate})",homeFunnelYouTube:"YouTube: {clickers}/{visits} visits chose a game ({rate})",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"No new homepage click data yet.",channelTitle:"Promotion channels · status and actual plays",channelDesc:"Each platform has a distinct link. Home/game counts are separate pageviews and may overlap; starts/finishes use first-party telemetry.",channelState:"Status",acquisitionVisits:"Site visits (home / game)",channelFuture:"Future platforms (expand)",nativeViews:"Platform views",syncPending:"Sync pending",socialSourceNote:"YouTube/TikTok have native views but Metricool currently returns no rows. Never show a fabricated zero; click the platform name to check its own page.",nativePublished:"Published",socialSnapshotNote:"Platform views are a dated snapshot ({date}), not live. Sync pending means the API did not return views, not zero. Starts and finishes come from first-party tracking.",blueskyPublished:"{n} published",channelGame:"Game",channelSource:"Source",channelVisits:"Home/game visits",channelDirect:"Direct / unknown",channelOther:"Other sources",deviceMore:"Show device breakdown",flipSignal:"Flip Dash",parcelSignal:"Parcel Panic",elsewhereSignal:"Elsewhere",flipRuns:"Finished runs",flip10:"Survived 10+ sec",flip30:"Survived 30+ sec",parcelSorted:"Correctly sorted",parcelMissed:"Missed / wrong",parcel10:"Runs with 10+ parcels",elsewhereFirst:"First scene completed",elsewhereFull:"Story finish rate",elsewhereReplay:"Replay rate",channelCampaign:"Campaign",sourcesTitle:"Where visitors come from",sourcesDesc:"Traffic sources, devices, referring sites and the original standalone site.",sourceType:"Traffic type",deviceType:"Device type",referrerHosts:"Referring sites (domains)",websites:"Website",
-itchTitle:"itch.io gameplay",itchDesc:"Attributable sessions entering our games from itch.io, by game.",itchViews:"Tracked game views",itchNote:"Only events sent by Morrow Wish-hosted game pages are counted. These are not itch.io native Browser Plays or itch.io project-page views. Standalone uploads and historical records are not backfilled.",itchNoData:"No attributable itch.io gameplay yet. Make sure the published iframe uses the game URL with utm_source=itch.",coverageTitle:"Metrics & coverage",footnote:"Anonymous gameplay and coarse traffic attribution; no names, emails or complete IP addresses. Browser counts use random first-party identifiers, not people. Do Not Track and Global Privacy Control are respected.",
+itchTitle:"itch.io gameplay",itchDesc:"Game-page loads referred from itch.io. A visit without a start may mean a player left on the start screen, or the start event was not received.",itchViews:"Tracked game views",itchNote:"Visit means a game page loaded from itch.io; start means the game start event reached our tracker. These are not itch.io native Browser Plays or project-page views; standalone uploads and old data are not backfilled.",itchNoData:"No attributable itch.io gameplay yet. Make sure the published iframe uses the game URL with utm_source=itch.",coverageTitle:"Metrics & coverage",footnote:"Anonymous gameplay and coarse traffic attribution; no names, emails or complete IP addresses. Browser counts use random first-party identifiers, not people. Do Not Track and Global Privacy Control are respected.",
 statPv:"Pageviews · PV",statPvNote:"All games and homepage",statVisitors:"Unique browsers",statVisitorsNote:"Anonymous browsers, not people",statStarts:"Game starts",statStartsNote:"Run counts, not player counts",statSession:"Avg. session length",statSessionNote:"Across anonymous sessions",statRetries:"Replays",statRetriesNote:"Replay actions",statShares:"Share clicks",statSharesNote:"Shared a score or challenge",statFinished:"Completed runs",statFinishedNote:"Game over counts, win or lose",statD1:"Day-1 return rate",statD1Note:"Cohort: {n} anonymous browsers",
 seconds:"{n} sec",none:"No data yet",headHome:"Homepage",empty:"—",coverageDays:"Last {days} days; {records} anonymous records read.",lastEventLabel:"Last stored event: {when}.",lastEventMissing:"No stored events found in the selected period.",coveragePartial:"The read limit was reached; some data may be excluded.",coverageOld:"{n} legacy sessions lack a stable visitor ID. They count toward pageviews/sessions, but not unique browsers.",coverageDetails:"Page loads count as views. Starts and finishes are sent immediately; playtime is aggregated during play and when leaving. Newly added metrics are not backfilled.",
 direct:"Direct",internal:"Internal navigation",external:"External website",mobile:"Mobile",tablet:"Tablet",desktop:"Desktop",arcade:"Morrow Wish",legacy:"Legacy tracking events",direct_no_referrer:"Direct (no referring site)",unknown:"Not provided",failGeneric:"Service temporarily unavailable"
@@ -118,6 +119,60 @@ let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
 try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
 const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
+const tableSorts=new Map(),sortableBodies=new Set(["games","itch-rows","channel-rows","ew-worlds"]);
+function sortCellValue(row,index,id){
+ const cell=row.cells[index];if(!cell)return null;
+ const value=(cell.dataset.sortValue!==undefined?cell.dataset.sortValue:cell.textContent).trim();
+ if(!value||["—","待同步","未获取","Sync pending","Unavailable"].includes(value))return null;
+ if(index===0||(id==="channel-rows"&&index===1))return value;
+ const m=/^-?\d+(?:\.\d+)?/.exec(value.replaceAll(",","").replaceAll(" ",""));
+ return m?Number(m[0]):null;
+}
+function sortDataTable(table){
+ const body=table.tBodies[0],id=body?.id,state=tableSorts.get(id);
+ if(!sortableBodies.has(id))return;
+ Array.from(table.tHead?.rows[0]?.cells||[]).forEach((th,i)=>{
+  const active=state&&state.index===i;
+  th.setAttribute("aria-sort",active?(state.direction==="asc"?"ascending":"descending"):"none");
+  const arrow=th.querySelector(".sort-arrow");
+  if(arrow)arrow.textContent=active?(state.direction==="asc"?"▲":"▼"):"↕";
+ });
+ if(!state)return;
+ const collator=new Intl.Collator(lang==="zh"?"zh-CN":"en-US",{numeric:true,sensitivity:"base"});
+ const rows=Array.from(body.rows).map((row,order)=>({row,order,value:sortCellValue(row,state.index,id)}));
+ rows.sort((a,b)=>{
+  if(a.value===null&&b.value!==null)return 1;
+  if(b.value===null&&a.value!==null)return -1;
+  if(a.value===null)return a.order-b.order;
+  const delta=typeof a.value==="number"&&typeof b.value==="number"?a.value-b.value:collator.compare(String(a.value),String(b.value));
+  return delta?(state.direction==="asc"?delta:-delta):a.order-b.order;
+ });
+ body.append(...rows.map(x=>x.row));
+}
+function enhanceSortableTables(){
+ for(const table of document.querySelectorAll("#report table.table")){
+  const id=table.tBodies[0]?.id;if(!sortableBodies.has(id))continue;
+  Array.from(table.tHead?.rows[0]?.cells||[]).forEach((th,index)=>{
+   const label=th.dataset.i18n?t(th.dataset.i18n):th.dataset.ew?ewText(th.dataset.ew):th.textContent.replace(/[↕▲▼]$/,"").trim();
+   const button=document.createElement("button");button.type="button";button.className="sort-trigger";button.dataset.index=String(index);
+   button.setAttribute("aria-label",(lang==="zh"?"按":"Sort by ")+label+(lang==="zh"?"排序":""));
+   const name=document.createElement("span");name.textContent=label;
+   const arrow=document.createElement("span");arrow.className="sort-arrow";arrow.setAttribute("aria-hidden","true");
+   button.append(name,arrow);th.classList.add("sortable");th.replaceChildren(button);
+  });
+  if(!table.dataset.sortBound){
+   table.addEventListener("click",event=>{
+    const button=event.target.closest?.("button.sort-trigger");if(!button||!table.contains(button))return;
+    const index=Number(button.dataset.index),old=tableSorts.get(id);
+    const numeric=index>0&&!(id==="channel-rows"&&index===1);
+    tableSorts.set(id,{index,direction:old?.index===index?(old.direction==="asc"?"desc":"asc"):(numeric?"desc":"asc")});
+    sortDataTable(table);
+   });
+   table.dataset.sortBound="1";
+  }
+  sortDataTable(table);
+ }
+}
 function dateFormat(x){return new Date(x).toLocaleString(lang==="zh"?"zh-CN":"en-US");}
 function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lang==="zh"?t("failGeneric"):lastError});}else status.textContent=t(kind);}
 function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
@@ -222,7 +277,7 @@ const siteNum=(rows,key)=>rows.length?format(totalOf(rows,key)):t('empty');
 const platformLinks={itch:'https://morrowwishgames.itch.io/',youtube:'https://www.youtube.com/channel/UC9v31QGhSfBASDsbXMjch4Q/shorts',tiktok:'https://www.tiktok.com/@morrowwishgames',instagram:'https://www.instagram.com/morrowwishgames/',bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2rchppku32o'};
 $("channel-rows").innerHTML=platforms.map(p=>{const z=siteFor(p.id),label=escapeHTML(platformNames[p.id]||p.id);
  const name=platformLinks[p.id]?'<a href="'+platformLinks[p.id]+'" target="_blank" rel="noopener noreferrer"><strong>'+label+'</strong></a>':'<strong>'+label+'</strong>';
- return '<tr><td>'+name+'</td><td>'+escapeHTML(channelStatus(p))+'</td><td>'+nativeNum(p.views,p.id)+'</td><td>'+siteNum(homeFor(p.id),'visits')+' / '+siteNum(z,'pageviews')+'</td><td>'+siteNum(z,'starts')+'</td><td>'+siteNum(z,'ends')+'</td></tr>';}).join('');
+ return '<tr><td>'+name+'</td><td>'+escapeHTML(channelStatus(p))+'</td><td>'+nativeNum(p.views,p.id)+'</td><td data-sort-value="'+(z.length?totalOf(z,'pageviews'):'')+'">'+siteNum(homeFor(p.id),'visits')+' / '+siteNum(z,'pageviews')+'</td><td>'+siteNum(z,'starts')+'</td><td>'+siteNum(z,'ends')+'</td></tr>';}).join('');
 $("future-channel-list").textContent=(lang==='zh'
  ?'Poki：质量达标后申请；GamePix：准备平台适配；GameDistribution：广告 SDK 适配后推进。'
  :'Poki: quality gate before applying; GamePix: portal-specific build needed; GameDistribution: ad SDK integration needed.');
@@ -241,7 +296,7 @@ breakdown("devices",j.devices);
 renderSignals(games);
 const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)}),
  j.lastEventAt?t("lastEventLabel",{when:new Date(j.lastEventAt).toLocaleString(lang==="zh"?"zh-CN":"en-US")}):t("lastEventMissing")];
-if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=chunks.join(" ");$("report").hidden=false;}
+if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=chunks.join(" ");$("report").hidden=false;enhanceSortableTables();}
 
 let elsewhereData=null;
 const EW={
@@ -262,7 +317,7 @@ function renderElsewhere(j){
  $('ew-continue').innerHTML=rates.map(x=>'<div class="ew-continue-row"><span>'+escapeHTML(ewText('chapter',{n:x.from}))+' → '+escapeHTML(ewText('chapter',{n:x.to}))+'</span><b>'+escapeHTML(ewPct(x.rate))+'</b></div>').join('');
  $('ew-worlds').innerHTML=worlds.map(x=>'<tr><td>'+escapeHTML(worldName(x.world))+'</td><td>'+format(x.starts)+'</td><td>'+format(x.ends)+'</td><td>'+escapeHTML(ewPct(x.fullRate))+'</td></tr>').join('');
  $('ew-coverage').textContent=ewText('coverage',{n:format(j.records)})+(j.partial?ewText('partial'):'');
- $('ew-state').hidden=true;$('ew-report').hidden=false;
+ $('ew-state').hidden=true;$('ew-report').hidden=false;enhanceSortableTables();
 }
 async function loadElsewhere(){
  elsewhereData=null;if(lastData)renderSignals(lastData.byGame||[]);
@@ -275,7 +330,7 @@ try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
-if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();setStatus(statusKind,lastError);
+if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();enhanceSortableTables();setStatus(statusKind,lastError);
 }
 async function load(){setStatus("loading");$("reload").disabled=true;
 try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
