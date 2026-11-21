@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-21T07:16:11.444Z",
+  "updatedAt": "2026-11-21T07:18:27.570Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "V3 gameplay clips are review previews, NOT yet published to social sites. The 25 rejected old posts remain paused drafts. The current reviewer gallery links fresh V3 gameplay for quality checking. Old video plays/published counts are excluded.",
+  "accuracyNote": "V3 preview render complete 7/7 with genuine gameplay outcomes and aspect checks. Prior 25 rejected scheduled posts remain paused drafts, historical platform views excluded. V3 gameplay footage is NOT posted or approved yet. Cat Bond full English-language canvas scan is being retested.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -30,13 +30,20 @@
       },
       "scheduledDate": "2026-11-21",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3: authentic outcome-first cut passed live-game verification; no social posting until visual QA",
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
       "reviewImages": [
         "/promo/pawsibly-innocent/hook-v3-review-1.jpg",
         "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
         "/promo/pawsibly-innocent/hook-v3-review-3.jpg"
       ],
-      "music": "unique-licensed-track"
+      "music": "distinct licensed recording",
+      "outcomeVerified": "3 fish stolen; escaped; 1 yarn decoy",
+      "evidence": {
+        "kind": "real game escape",
+        "outcome": "3 fish stolen; escaped; 1 yarn decoy",
+        "qaRun": 44878977106,
+        "seconds": 10.3
+      }
     },
     {
       "slug": "cat-bond",
@@ -57,26 +64,33 @@
       },
       "scheduledDate": "2026-11-22",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V3: authentic outcome-first cut passed live-game verification; no social posting until visual QA",
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
       "reviewImages": [
         "/promo/cat-bond/hook-v3-review-1.jpg",
         "/promo/cat-bond/hook-v3-review-2.jpg",
         "/promo/cat-bond/hook-v3-review-3.jpg"
       ],
-      "music": "unique-licensed-track"
+      "music": "distinct licensed recording",
+      "outcomeVerified": "Blossomfire Pawdance + Claw Cyclone; scan of entire English video pending",
+      "evidence": {
+        "kind": "real duo+ultimate",
+        "outcome": "Blossomfire Pawdance + Claw Cyclone; scan of entire English video pending",
+        "qaRun": 44878977106,
+        "seconds": 8.1
+      }
     },
     {
       "slug": "tiny-town",
       "name": "No More Mondays",
       "hook": "Seven days without work → building magical wishes",
-      "media": "/promo/tiny-town/highlight-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/tiny-town/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/tiny-town/highlight-20261121.jpg",
+      "cover": "/promo/tiny-town/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436425896,
         "tiktok": 436425970,
@@ -84,20 +98,33 @@
       },
       "scheduledDate": "2026-11-23",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
+      "reviewImages": [
+        "/promo/tiny-town/hook-v3-review-1.jpg",
+        "/promo/tiny-town/hook-v3-review-2.jpg",
+        "/promo/tiny-town/hook-v3-review-3.jpg"
+      ],
+      "outcomeVerified": "7 days completed, 5 resident story sequences",
+      "evidence": {
+        "kind": "real seven-day ending",
+        "outcome": "7 days completed, 5 resident story sequences",
+        "qaRun": 44879297287,
+        "seconds": 11.4
+      },
+      "music": "distinct licensed recording"
     },
     {
       "slug": "elsewhere",
       "name": "Elsewhere",
       "hook": "Private island → Paris → hotel on the moon",
-      "media": "/promo/elsewhere/highlight-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/elsewhere/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/elsewhere/highlight-20261121.jpg",
+      "cover": "/promo/elsewhere/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436425993,
         "tiktok": 436426002,
@@ -105,20 +132,33 @@
       },
       "scheduledDate": "2026-11-24",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
+      "reviewImages": [
+        "/promo/elsewhere/hook-v3-review-1.jpg",
+        "/promo/elsewhere/hook-v3-review-2.jpg",
+        "/promo/elsewhere/hook-v3-review-3.jpg"
+      ],
+      "outcomeVerified": "Paris: Two Names on the Bookshop Card · A Life Worth Living",
+      "evidence": {
+        "kind": "five real choices and ending",
+        "outcome": "Paris: Two Names on the Bookshop Card · A Life Worth Living",
+        "qaRun": 44879297287,
+        "seconds": 13.2
+      },
+      "music": "distinct licensed recording"
     },
     {
       "slug": "flip-dash",
       "name": "Flip Dash",
       "hook": "Near misses and fast gravity flips",
-      "media": "/promo/flip-dash/highlight-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/flip-dash/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/flip-dash/highlight-20261121.jpg",
+      "cover": "/promo/flip-dash/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436426028,
         "tiktok": 436426043,
@@ -126,20 +166,33 @@
       },
       "scheduledDate": "2026-11-25",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
+      "reviewImages": [
+        "/promo/flip-dash/hook-v3-review-1.jpg",
+        "/promo/flip-dash/hook-v3-review-2.jpg",
+        "/promo/flip-dash/hook-v3-review-3.jpg"
+      ],
+      "outcomeVerified": "38 points; actual fail screen; native 540x960 portrait",
+      "evidence": {
+        "kind": "real game over",
+        "outcome": "38 points; actual fail screen; native 540x960 portrait",
+        "qaRun": 44879297287,
+        "seconds": 7.1
+      },
+      "music": "distinct licensed recording"
     },
     {
       "slug": "parcel-panic",
       "name": "Parcel Panic",
       "hook": "Real color-sorting streak under pressure",
-      "media": "/promo/parcel-panic/highlight-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/parcel-panic/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/parcel-panic/highlight-20261121.jpg",
+      "cover": "/promo/parcel-panic/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436426079,
         "tiktok": 436426097,
@@ -147,20 +200,33 @@
       },
       "scheduledDate": "2026-11-26",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
+      "reviewImages": [
+        "/promo/parcel-panic/hook-v3-review-1.jpg",
+        "/promo/parcel-panic/hook-v3-review-2.jpg",
+        "/promo/parcel-panic/hook-v3-review-3.jpg"
+      ],
+      "outcomeVerified": "28 points; actual fail screen; native 540x960 portrait",
+      "evidence": {
+        "kind": "real game over",
+        "outcome": "28 points; actual fail screen; native 540x960 portrait",
+        "qaRun": 44879297287,
+        "seconds": 6.7
+      },
+      "music": "distinct licensed recording"
     },
     {
       "slug": "pocket-aquarium",
       "name": "Pocket Aquarium",
       "hook": "Real matching feeds and rising combo",
-      "media": "/promo/pocket-aquarium/highlight-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/pocket-aquarium/hook-v3-20261121.mp4",
+      "production": "review-ready",
       "social": {
         "youtube": "draft",
         "tiktok": "draft",
         "instagram": "draft"
       },
-      "cover": "/promo/pocket-aquarium/highlight-20261121.jpg",
+      "cover": "/promo/pocket-aquarium/hook-v3-20261121.jpg",
       "platformPostIds": {
         "youtube": 436426123,
         "tiktok": 436426133,
@@ -168,7 +234,20 @@
       },
       "scheduledDate": "2026-11-27",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "rejected-by-owner"
+      "reviewStatus": "Freshly recorded and encoded. Technical checks passed; requires visual editorial signoff before social auto-publishing.",
+      "reviewImages": [
+        "/promo/pocket-aquarium/hook-v3-review-1.jpg",
+        "/promo/pocket-aquarium/hook-v3-review-2.jpg",
+        "/promo/pocket-aquarium/hook-v3-review-3.jpg"
+      ],
+      "outcomeVerified": "245 points; combo 6; Grade B; A New Fish Friend",
+      "evidence": {
+        "kind": "real 60-sec result",
+        "outcome": "245 points; combo 6; Grade B; A New Fish Friend",
+        "qaRun": 44879297287,
+        "seconds": 9.5
+      },
+      "music": "distinct licensed recording"
     }
   ],
   "excludedGames": 8,
@@ -208,14 +287,16 @@
     "verification": "All 25 rejected 2026-11-21–28 posts were verified in Metricool as draft=true and autoPublish=false; historical published shorts are explicitly excluded from the new campaign video totals.",
     "pausedDraftPosts": 25,
     "blockedReason": "Owner rejected video quality: distorted gameplay, illegible captions, no stakes/outcomes, English/Chinese mix. All 25 posts checked as draft:true autoPublish:false in Metricool.",
-    "v3PreviewReelsCreated": 2,
-    "v3ReviewPage": "/promo/review-v3/"
+    "v3PreviewReelsCreated": 7,
+    "v3ReviewPage": "/promo/review-v3/",
+    "v3SourceProvenance": "Actual game browser capture (GitHub Actions 44878977106 and 44879297287)",
+    "originalRejectedPostsStillPaused": 25,
+    "approvedGameVideos": 0
   },
   "metricScope": {
     "approvedCurrentVideosOnly": true,
     "excludePriorPublicShorts": true,
-    "excludeOwnerRejectedDrafts": true,
-    "previousPlatformViewsAndPublishedTotals": "excluded"
+    "excludeOwnerRejectedDrafts": true
   },
   "musicQA": {
     "status": "verified-seven-unique-recordings-for-next-recut",
