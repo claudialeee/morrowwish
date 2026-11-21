@@ -40,7 +40,10 @@ if(!dashboard.includes('if(x.game==="hub")return')||
  throw Error('Homepage overview: show pageviews only and leave gameplay cells blank');
 
 const social=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
-if(social.schemaVersion!==1||social.platforms.find(x=>x.id==='instagram')?.views!==273)throw Error('Provider metrics snapshot must preserve available and unknown native metrics');
+const newVideoSources=['youtube','tiktok','instagram','bluesky'];
+if(social.schemaVersion!==2||social.metricScope?.type!=='approved-short-videos-only'||!social.metricScope.historicalExcluded||
+   newVideoSources.some(id=>{const p=social.platforms.find(x=>x.id===id);return !p||p.published!==0||p.views!==null;}))
+ throw Error('Only approved new short videos may enter social-view totals; old posts and views must stay excluded');
 if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 // The mini-game upgrade already emits run_start/run_end. Do not count
@@ -73,8 +76,8 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("snapshotPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("3n2rchppku32o")||
-   social.platforms.find(p=>p.id==='bluesky')?.published!==1)
- throw Error('Dashboard must retain conversion context, hide N/A sources and show the actual Bluesky post');
+   social.platforms.find(p=>p.id==='bluesky')?.published!==0)
+ throw Error('Dashboard must preserve conversion context and links without counting old Bluesky posts as new videos');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
    !telemetry.includes('window.__MWMiniActive')||
