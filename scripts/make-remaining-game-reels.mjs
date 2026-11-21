@@ -180,7 +180,7 @@ function encode(r){
  const args=['-nostdin','-y','-hide_banner','-loglevel','error','-i',r.raw,
    '-stream_loop','-1','-i',audio,'-vf','fps=30,scale=1080:1920:flags=lanczos,setsar=1,'+overlay.join(',')+','+voice+',format=yuv420p',
    '-map','0:v:0','-map','1:a:0','-t',r.duration.toFixed(2),'-r','30','-c:v','libx264','-crf','21','-preset','veryfast','-pix_fmt','yuv420p',
-   '-c:a','aac','-b:a','128k','-af','volume=0.32,afade=t=out:st='+Math.max(0,r.duration-.65).toFixed(2)+':d=.65','-movflags','+faststart',dest];
+   '-c:a','aac','-b:a','128k','-af','volume=0.32,afade=t=out:st='+Math.max(0,r.duration-.65).toFixed(2)+':d=0.65','-movflags','+faststart',dest];
  execFileSync('ffmpeg',args,{stdio:'inherit',timeout:120000});
  execFileSync('ffmpeg',['-nostdin','-y','-hide_banner','-loglevel','error','-ss',Math.min(1.3,r.duration*.2).toFixed(2),'-i',dest,'-frames:v','1','-q:v','3',poster],{stdio:'inherit'});
  const streams=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-of','json',dest],{encoding:'utf8'})).streams;
