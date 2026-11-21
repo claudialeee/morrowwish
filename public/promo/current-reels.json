@@ -1,6 +1,6 @@
 {
   "campaign": "morrow-wish-actual-game-outcome-hook-v3-20261121",
-  "description": "Seven distinctly edited gameplay highlights, each opening on a verified win, defeat, finisher or outcome; cropped to native 9:16 aspect without stretch. Each has its own licensed song.",
+  "description": "Seven authentic gameplay videos, each opening with a real achievement/failure/finisher/ending. 28 network deliveries scheduled via Metricool, all pending. Individual licensed songs. Historical views and rejected videos excluded.",
   "verifiedAt": "2026-11-21T06:35:04Z",
   "generatorRuns": [
     44875411934,
@@ -16,8 +16,14 @@
         "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
         "/promo/pawsibly-innocent/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     },
     {
       "slug": "cat-bond",
@@ -28,8 +34,14 @@
         "/promo/cat-bond/hook-v3-review-2.jpg",
         "/promo/cat-bond/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     },
     {
       "slug": "tiny-town",
@@ -40,8 +52,14 @@
         "/promo/tiny-town/hook-v3-review-2.jpg",
         "/promo/tiny-town/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     },
     {
       "slug": "elsewhere",
@@ -52,8 +70,14 @@
         "/promo/elsewhere/hook-v3-review-2.jpg",
         "/promo/elsewhere/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     },
     {
       "slug": "flip-dash",
@@ -64,8 +88,14 @@
         "/promo/flip-dash/hook-v3-review-2.jpg",
         "/promo/flip-dash/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     },
     {
       "slug": "parcel-panic",
@@ -76,8 +106,14 @@
         "/promo/parcel-panic/hook-v3-review-2.jpg",
         "/promo/parcel-panic/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     },
     {
       "slug": "pocket-aquarium",
@@ -88,8 +124,14 @@
         "/promo/pocket-aquarium/hook-v3-review-2.jpg",
         "/promo/pocket-aquarium/hook-v3-review-3.jpg"
       ],
-      "production": "review-ready",
-      "approvedForSocial": false
+      "production": "reviewed",
+      "approvedForSocial": true,
+      "scheduledNetworks": [
+        "youtube",
+        "tiktok",
+        "instagram",
+        "bluesky"
+      ]
     }
   ],
   "montage": {
@@ -98,13 +140,15 @@
     "video": null
   },
   "cta": "https://morrowwish.vercel.app/",
-  "status": "v3-seven-reels-created-under-review-not-yet-social-posted",
+  "status": "v3-seven-reels-qa-reviewed-scheduled-four-networks-not-yet-published",
   "release": {
-    "newReelsGenerated": 7,
-    "oldPostsPaused": 25,
+    "videosApproved": 7,
+    "gamesLive": 7,
+    "scheduledPlatformDeliveries": 28,
+    "scheduledMetricoolRecords": 16,
     "postsActuallyPublished": 0,
-    "postsScheduledThisCampaign": 0,
+    "oldPostsPaused": 25,
     "oldVideoViewsExcluded": true,
-    "source": "fresh browser gameplay and actual video frames"
+    "qa": "Visual inspection of true beginning and ending frames, no repeated subtitle overlap, genuine gameplay and native portrait, distinct audio."
   }
 }
