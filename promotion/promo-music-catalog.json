@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "policy": "All seven short-video game reels must use distinct, credited recorded songs. No automatic fallback to one shared song. This catalog is for future recuts; previously rejected footage must not be republished.",
+  "tracks": {
+    "pawsibly-innocent": {
+      "title": "Happy Clappy Loop",
+      "artist": "OwlishMedia",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceUrl": "https://opengameart.org/content/happy-clappy-loop",
+      "localFile": "public/audio/cat-happy-clappy.ogg",
+      "mood": "playful piano caper"
+    },
+    "cat-bond": {
+      "title": "My Giant Bunny Friend",
+      "artist": "FreePD",
+      "license": "CC0",
+      "licenseUrl": "https://en.freepd.cn/music",
+      "sourceUrl": "https://en.freepd.cn/api/music/436f6d6564792f4d79204769616e742042756e6e7920467269656e642e6d7033",
+      "mood": "bright ensemble comedy"
+    },
+    "tiny-town": {
+      "title": "Happy Whistling Ukulele",
+      "artist": "FreePD",
+      "license": "CC0",
+      "licenseUrl": "https://en.freepd.cn/music",
+      "sourceUrl": "https://en.freepd.cn/api/music/5570626561742f48617070792057686973746c696e6720556b756c656c652e6d7033",
+      "mood": "cheerful laid-back town"
+    },
+    "elsewhere": {
+      "title": "Easy Lemon",
+      "artist": "Kevin MacLeod",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Easy%20Lemon.mp3",
+      "attribution": "Easy Lemon by Kevin MacLeod (incompetech.com), licensed CC BY 4.0. https://creativecommons.org/licenses/by/4.0/",
+      "mood": "warm romantic story"
+    },
+    "flip-dash": {
+      "title": "Inventing Flight",
+      "artist": "FreePD",
+      "license": "CC0",
+      "licenseUrl": "https://en.freepd.cn/music",
+      "sourceUrl": "https://en.freepd.cn/api/music/5570626561742f496e76656e74696e6720466c696768742e6d7033",
+      "mood": "kinetic near miss"
+    },
+    "parcel-panic": {
+      "title": "Funshine",
+      "artist": "FreePD",
+      "license": "CC0",
+      "licenseUrl": "https://en.freepd.cn/music",
+      "sourceUrl": "https://en.freepd.cn/api/music/5570626561742f46756e7368696e652e6d7033",
+      "mood": "bouncy sorting streak"
+    },
+    "pocket-aquarium": {
+      "title": "Connecting Rainbows",
+      "artist": "FreePD",
+      "license": "CC0",
+      "licenseUrl": "https://en.freepd.cn/music",
+      "sourceUrl": "https://en.freepd.cn/api/music/576f726c642f436f6e6e656374696e67205261696e626f77732e6d7033",
+      "mood": "gentle underwater"
+    }
+  }
+}
