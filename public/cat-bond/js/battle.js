@@ -104,7 +104,7 @@ class CaptureBattle {
   initCoach() {
     const S = window.State && State.S;
     if (!S) return null;
-    if (S.tutorialDone || (S.catchCount || 0) > 0) return null;   // only the FIRST fight, once
+    if (S.battlePrefs?.manualTutorialSeen || this.autoMode) return null; // first manual battle, even after auto battles
     const touch = !!this.game.isTouch;
     // Each step: {key, zh, en, done(battle)} — advances when done() is true.
     const steps = [
@@ -140,7 +140,6 @@ class CaptureBattle {
     // stand down silently and mark the tutorial seen rather than stalling.
     if (this.autoMode) {
       this._coachHighlight = null; this.coach = null;
-      if (window.State && State.S && !State.S.tutorialDone) { State.S.tutorialDone = true; State.save(); }
       return;
     }
     const step = c.steps[c.i];
@@ -151,13 +150,19 @@ class CaptureBattle {
     this.hint = en ? step.en : step.zh;
     this._coachHighlight = step.hl;
     // advance when the player completes the step
-    if (step.done(this)) {
+    if(step.done(this)){
+      if(step.key==='move')this._coachAttacked=0;
+      if(step.key==='attack')this._coachUsedSkill=false;
+      if(step.key==='skill')this._coachDodged=false;
       c.i++;
-      if (c.i >= c.steps.length) {               // tutorial complete
-        this._coachHighlight = null;
-        if (window.State && State.S) { State.S.tutorialDone = true; State.save(); }
-        this.coach = null;
-        window.arcadeMetric?.('bond_tutorial_complete', {});
+      if(c.i>=c.steps.length){
+        this._coachHighlight=null;this.coach=null;
+        if(window.State&&State.S){
+          State.S.tutorialDone=true;
+          State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true};
+          State.save();
+        }
+        window.arcadeMetric?.('bond_tutorial_complete',{mode:'manual'});
       }
     }
   }
@@ -486,7 +491,10 @@ class CaptureBattle {
     }
     this._autoLastAction=null;
     this.commandTarget=null;
-    if(this.game.isTouch&&!this.autoMode)this.game.touchAutoFire=true;
+    if(!this.autoMode&&!State.S.battlePrefs?.manualTutorialSeen){
+      this.coach=this.initCoach();this.game.touchAutoFire=false;this.game.showFirstManualTutorial();
+    }else if(this.autoMode){this.coach=null;this._coachHighlight=null;}
+    else if(this.game.isTouch)this.game.touchAutoFire=true;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     this.game.toast(this.autoMode?(en?'🤖 Auto battle · command your cats':'🤖 自动战斗 · 指挥猫咪')
       :(en?'🎮 Manual · move and use skills':'🎮 手动战斗 · 移动与释放技能'));
@@ -1746,6 +1754,10 @@ class CaptureBattle {
               :'鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避')));
 
 
+    if(this.coach&&!this.autoMode){
+      const step=this.coach.steps[this.coach.i];
+      if(step)this.hint=english?step.en:step.zh;
+    }
     if (live.length === 0) this.finish(true);
   }
 
