@@ -387,7 +387,9 @@ class CaptureBattle {
   // Build a wild pack of 1~3 enemies. Lead = the encountered species; rarer
   // encounters bring more/tougher friends.
   buildPack(lead) {
-    const packSize = 1 + (Math.random() < 0.35 + this.rarIdx * 0.12 ? 1 : 0) + (Math.random() < 0.12 + this.rarIdx * 0.1 ? 1 : 0);
+    // Fewer wild cats on screen: with a 3-cat player team, big packs overcrowd the
+    // arena. Solo is the norm; a 2nd joins sometimes, a 3rd only for rare encounters.
+    const packSize = 1 + (Math.random() < 0.22 + this.rarIdx * 0.1 ? 1 : 0) + (Math.random() < 0.05 + this.rarIdx * 0.08 ? 1 : 0);
     const species = [lead];
     // fill remaining slots with same-or-lower rarity companions from the catalogue
     const order = ['N', 'R', 'SR', 'SSR'];
@@ -436,7 +438,10 @@ class CaptureBattle {
 
   makeFighter(cat, i) {
     const s = cat.stats;
-    const maxhp = Math.round(45 + s.vit * 5 + cat.level * 3);
+    // HP/dmg derive purely from the cat's STATS (single source of truth). Level is
+    // expressed THROUGH the stats, which grow along the breed's identity (see
+    // State.addXp): a Lv.9 cat has genuinely bigger stats than a Lv.3 one.
+    const maxhp = Math.round(55 + s.vit * 5);
     // element + a learned loadout from the skill library (Q / E slots)
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(cat.species) : null;
     let loadout = null;
@@ -450,11 +455,13 @@ class CaptureBattle {
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
       speed: 150 + s.agi * 3.5,
-      dmg: (6 + s.pow * 0.7 + cat.level * 0.3) * (bond.dmgMult || 1),
+      dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1),
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
       projSpeed: 300 + s.agi * 5,
-      cd: { basic: 0, q: 0, e: 0 },
+      // Opening cooldowns: skills start on cooldown so a fight can't open with an
+      // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
+      cd: { basic: 0, q: 1.6, e: 2.4 },
       // the two active skills this cat actually knows (from its element loadout)
       qSkill: loadout ? skillOf(loadout[1]) : null,
       eSkill: loadout ? skillOf(loadout[2]) : null,
@@ -761,16 +768,27 @@ class CaptureBattle {
     if (K['p'] && !this._prevKeys['p']) this.toggleAuto();
 
     if (this.autoMode) {
-      // commander: you don't move/aim. Hotkeys still let you fire skills & switch.
+      // Commander mode: the AI moves, but the PLAYER can still manually fire aimed
+      // skills. autoDrive runs first (and sets this.aim at the AI's target); when the
+      // human presses a skill we override aim toward THEIR cursor/locked target so a
+      // directional/AOE/heal cast goes where they intend, not where the AI was facing.
       this.autoDrive(dt);
       const pressedC = k => K[k] && !this._prevKeys[k];
+      const me = this.me();
+      const playerAim = () => {
+        if (!me) return this.aim;
+        if (!this.game.isTouch && m) return Math.atan2(m.y - me.y, m.x - me.x);
+        const t = this.lockedEnemy() || this.nearestEnemy(me.x, me.y);
+        return t ? Math.atan2(t.y - me.y, t.x - me.x) : this.aim;
+      };
       if (pressedC('r')) this.ultimate();
       if (pressedC('f')) this.castDuo();
       if (pressedC('1')) this.switchTo(0);
       if (pressedC('2')) this.switchTo(1);
       if (pressedC('3')) this.switchTo(2);
-      if (pressedC('q')) this.skillQ();
-      if (pressedC('e')) this.skillE();
+      if (pressedC('q')) { const a = playerAim(); this.aim = a; if (me) me._aim = a; this.skillQ(me, a); }
+      if (pressedC('e')) { const a = playerAim(); this.aim = a; if (me) me._aim = a; this.skillE(me, a); }
+      if (pressedC(' ')) this.dodge();                             // manual dodge in auto too
       // click sets a focus/move marker for the squad
       if (m.down) this.commandTarget = { x: m.x, y: m.y };
       this._prevKeys = Object.assign({}, K);
@@ -861,23 +879,44 @@ class CaptureBattle {
   }
   // Native skill semantics for heal/buff (formerly mis-cast as damage or dash).
   // Returns whether anything was actually used, for smart AI priorities.
-  castSupportSkill(f,sk){
+  // Support skills can target a FRIEND, not just the caster. If the player is
+  // aiming at an ally (or an ally needs it far more), the heal/buff lands on them.
+  supportBeneficiary(f, sk, aim){
+    // explicit aim at an ally (manual intent) wins
+    if (aim != null && f === this.me() && !this.game.isTouch) {
+      const ax = f.x + Math.cos(aim), ay = f.y + Math.sin(aim);
+      let best = null, bd = 60;
+      for (const tf of this.team) { if (!tf.alive || tf === f) continue; const d = Math.hypot(tf.x - (this.game.mouse?.x ?? ax), tf.y - (this.game.mouse?.y ?? ay)); if (d < bd) { bd = d; best = tf; } }
+      if (best) return best;
+    }
+    // heals auto-prioritise the most-hurt living teammate (incl. caster)
+    if (sk.kind === 'heal') {
+      let best = f, worst = f.hp / f.maxhp;
+      for (const tf of this.team) { if (!tf.alive) continue; const r = tf.hp / tf.maxhp; if (r < worst) { worst = r; best = tf; } }
+      return best;
+    }
+    return f;
+  }
+  castSupportSkill(f,sk,aim){
     if(!sk)return false;
+    const t = this.supportBeneficiary(f, sk, aim);   // friend or self
     if(sk.kind==='heal'){
-      if(f.hp>=f.maxhp-.5)return false;
-      const amount=Math.min(f.maxhp-f.hp,Math.max(14,f.maxhp*.34));
-      f.hp=Math.min(f.maxhp,f.hp+amount);
-      this.vfx.ring(f.x,f.y,{r0:5,vr:225,life:.42,color:'#a8e9b4',width:4});
-      this.vfx.text(f.x,f.y-33,'+'+Math.round(amount),'#93dca1',15);
+      if(t.hp>=t.maxhp-.5)return false;
+      const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*.34));
+      t.hp=Math.min(t.maxhp,t.hp+amount);
+      this.vfx.ring(t.x,t.y,{r0:5,vr:225,life:.42,color:'#a8e9b4',width:4});
+      this.vfx.text(t.x,t.y-33,'+'+Math.round(amount),'#93dca1',15);
+      if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#a8e9b4');   // show the aid link
     }else if(sk.kind==='buff'){
       const shield=sk.tags?.includes('shield');
       if(shield){
-        return this.castWard(f, sk.shieldType || 'barrier');   // three shield verbs
+        return this.castWard(t, sk.shieldType || 'barrier');   // three shield verbs (on friend or self)
       }else{
-        if(f.damageBoostT>.3)return false;
-        f.damageBoostT=6;
-        this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:'#ffd9a0',width:4});
-        this.vfx.text(f.x,f.y-34,'强化','#f8eab8',14);
+        if(t.damageBoostT>.3)return false;
+        t.damageBoostT=6;
+        this.vfx.ring(t.x,t.y,{r0:10,vr:190,life:.55,color:'#ffd9a0',width:4});
+        this.vfx.text(t.x,t.y-34,'强化','#f8eab8',14);
+        if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#ffd9a0');
       }
     }else return false;
     this.gainUlt(6);
@@ -1048,7 +1087,7 @@ class CaptureBattle {
     if (f === this.me()) this._coachUsedSkill = true;      // coach: step 3
     const sk = f.qSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
-      if(!this.castSupportSkill(f,sk))return false;
+      if(!this.castSupportSkill(f,sk,aim))return false;
       f.cd.q=sk.cd*(f.bond.cdReduction||1);
       this.markMoveSeen(f,sk);
       return true;
@@ -1188,7 +1227,7 @@ class CaptureBattle {
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
     const sk = f.eSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
-      if(!this.castSupportSkill(f,sk))return false;
+      if(!this.castSupportSkill(f,sk,aim))return false;
       f.cd.e=sk.cd*(f.bond.cdReduction||1);
       this.markMoveSeen(f,sk);
       return true;

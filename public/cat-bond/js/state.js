@@ -80,6 +80,30 @@ function catName(cat) {
   return displayBase(cat);
 }
 
+// Per-level growth is shaped by the cat's BREED identity, RARITY and awaken branch,
+// not a flat bump — so a cat levels up ALONG its character. A breed's base-stat
+// profile sets how each stat grows (a high-pow bruiser gains more pow/level), the
+// rarity statMul scales total growth (legends out-scale commons), and an awakened
+// branch pours extra into its chosen stat. This makes level genuinely matter and
+// keeps distinct breeds feeling distinct as they grow.
+function statGrowth(cat) {
+  const sp = GameData.speciesById(cat.species);
+  const base = (sp && sp.base) || { pow: 6, agi: 6, vit: 6, cha: 6 };
+  const rar = sp ? GameData.RARITY[sp.rarity] : null;
+  const rarMul = rar ? rar.statMul : 1;                 // N 1.0 → SSR 2.1
+  const total = base.pow + base.agi + base.vit + base.cha || 1;
+  // ~5.5 stat-points per level for a common, scaled by rarity, split by the breed's
+  // profile so the biggest base stat grows fastest. Awaken branch gets a bonus share.
+  const budget = 5.5 * rarMul;
+  const out = {};
+  for (const k of ['pow', 'agi', 'vit', 'cha']) {
+    let share = base[k] / total;
+    if (cat.awaken === k) share += 0.25;                 // 灵 awakening favours its aura stat
+    out[k] = budget * share;
+  }
+  return out;
+}
+
 function addXp(cat, amount) {
   cat.xp += amount;
   let leveled = 0;
@@ -87,11 +111,15 @@ function addXp(cat, amount) {
     cat.xp -= xpToNext(cat.level);
     cat.level++;
     leveled++;
-    // small stat growth on level up
-    cat.stats.pow += 1 + Math.floor(Math.random() * 2);
-    cat.stats.agi += 1 + Math.floor(Math.random() * 2);
-    cat.stats.vit += 1 + Math.floor(Math.random() * 2);
-    cat.stats.cha += 1 + Math.floor(Math.random() * 2);
+    const g = statGrowth(cat);
+    // accumulate fractional growth so small per-level shares still add up cleanly
+    cat._gacc = cat._gacc || { pow: 0, agi: 0, vit: 0, cha: 0 };
+    for (const k of ['pow', 'agi', 'vit', 'cha']) {
+      cat._gacc[k] += g[k] + (Math.random() * 0.6 - 0.3);   // tiny jitter so twins differ
+      const whole = Math.max(1, Math.round(cat._gacc[k]));   // always at least +1
+      cat.stats[k] += whole;
+      cat._gacc[k] -= whole;
+    }
   }
   return leveled;
 }
