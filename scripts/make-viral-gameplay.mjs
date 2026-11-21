@@ -153,7 +153,7 @@ async function catBond(browser){
  if(!ult.cast||!ult.cinematic)throw Error('Real ultimate not shown: '+JSON.stringify(ult));
  if(ult.hasChinese)throw Error('English gameplay cinematic leaked Chinese: '+JSON.stringify(ult));
  await sleep(3250);const finish=(Date.now()-began)/1000;
- await sleep(1050);const ended=Date.now();const v=p.video();await c.close();
+ await sleep(1050);const ended=Date.now();const v=p.video();
  const langAudit=await p.evaluate(()=>({
   canvasText:[...new Set(window.__MW_PROMO_CJK__||[])],
   visibleDOM:[...document.querySelectorAll('body *')].filter(el=>{
@@ -165,6 +165,7 @@ async function catBond(browser){
  if(langAudit.canvasText.length||langAudit.visibleDOM.length)
    throw Error('REJECT English Cat Bond video: Chinese text painted/visible '+JSON.stringify(langAudit));
  console.log('BATTLE HIGHLIGHTS VERIFIED: '+JSON.stringify({duo,ult,langAudit}));
+ await c.close();
  return{slug:'cat-bond',raw:await v.path(),offset:(began-born)/1000,duration:(ended-began)/1000,
   clips:[{start:duoDone,duration:Math.min(2.8,finish-duoDone),caption:'THAT FINISHER!'},
     {start:0,duration:Math.min(2.8,duoDone),caption:'TWO CATS. ONE COMBO.'},
