@@ -1,0 +1,154 @@
+/* Pawsibly Innocent — one playable screen, one optional in-game menu.
+   All HUD and drawers live inside #stage, including in native fullscreen. */
+html{background:#f9ede4}
+body{background:radial-gradient(circle at 50% 18%,#ffe9d9 0%,#fff8f0 70%)}
+body>.sitebar{display:none!important}
+.single-screen-game{width:min(1130px,calc(100% - 20px));max-width:none;margin:0 auto;padding:10px 0 20px!important;display:block!important}
+.single-screen-game .board-layout{display:block!important;width:100%;margin:0 auto}
+.single-screen-game .stage{
+ position:relative;display:flex;align-items:center;justify-content:center;
+ width:100%;max-width:1130px;height:auto;aspect-ratio:10/7;margin:auto;
+ padding:0;overflow:hidden;isolation:isolate;border:5px solid #fffdf7;border-radius:24px;
+ background:radial-gradient(ellipse at 40% 30%,#f4d5d6,#e6cfdd);
+ box-shadow:0 10px 0 #eccfcc,0 24px 48px #8f6d7a2b
+}
+.single-screen-game .playfield{position:relative;aspect-ratio:10/7;width:100%;height:100%;max-width:100%;max-height:100%;flex:0 0 auto;overflow:hidden}
+.single-screen-game #board{display:block;width:100%;height:100%;aspect-ratio:10/7;touch-action:none}
+.single-screen-game .in-game-top{position:absolute;z-index:4;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:11px 11px 0;pointer-events:none}
+.single-screen-game .in-game-top>*{pointer-events:auto}
+.single-screen-game .sticker{position:relative;top:auto;left:auto;max-width:35%;flex:0 0 auto;margin:0;padding:5px 11px;border-radius:13px;background:#fffbf0ef;box-shadow:0 4px 13px #5b435222}
+.single-screen-game .sticker b{font-size:clamp(11px,1.7vw,16px);line-height:1.1;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.single-screen-game .sticker small{font-size:clamp(8px,1.1vw,10px)}
+.single-screen-game .heist-status{position:relative;top:auto;right:auto;max-width:none;margin:0 auto;flex:0 0 auto;white-space:nowrap;background:#483952ee;border-color:#fffcf5c9;border-radius:12px;box-shadow:0 4px 13px #44304435;font-size:clamp(12px,1.9vw,17px);padding:8px 13px}
+.single-screen-game .in-game-controls{display:flex;align-items:center;gap:6px;flex:0 0 auto;pointer-events:auto}
+.single-screen-game .hud-icon,.single-screen-game .mw-fullscreen-toggle{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:43px!important;height:43px!important;min-width:43px!important;min-height:43px!important;
+ padding:0!important;border:1px solid #f5e6e9!important;border-radius:13px!important;
+ background:#fff9f3f2!important;color:#704e6e!important;font:900 20px/1 Nunito,system-ui!important;
+ box-shadow:0 3px 9px #503b4633!important;text-decoration:none!important;cursor:pointer;pointer-events:auto
+}
+.single-screen-game .hud-icon:focus-visible,.single-screen-game .mw-fullscreen-toggle:focus-visible{outline:3px solid #a974c7;outline-offset:2px}
+.single-screen-game .mw-fullscreen-toggle{font-size:0!important}
+.single-screen-game .mw-fullscreen-toggle::before{content:'⛶';font-size:25px;line-height:1}
+.single-screen-game .mw-fullscreen-toggle[aria-pressed=true]::before{content:'↙';font-size:19px}
+.single-screen-game .mw-fullscreen-toggle[aria-pressed=true]{background:#5f4771!important;color:#fff!important}
+.single-screen-game .paws-alert{top:63px;right:12px;z-index:5}
+.single-screen-game .yarn-aim-banner{top:72px;max-width:82%;z-index:6;background:#fff6ffd9}
+.single-screen-game .stealth-actionbar{
+ position:absolute;z-index:4;left:11px;right:11px;bottom:10px;top:auto;
+ width:auto!important;height:auto!important;min-height:0!important;max-width:none!important;
+ margin:0!important;padding:8px 9px!important;border:1px solid #fff8f6ab!important;border-radius:14px!important;
+ background:#fffaf0ed!important;box-shadow:0 6px 20px #59495c37!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:10px!important
+}
+.single-screen-game .stealth-help{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:3px;align-items:flex-start}
+.single-screen-game .stealth-help>strong{font-size:clamp(10px,1.7vw,15px);line-height:1.3;color:#6a516b}
+.single-screen-game .guard-status{font-size:clamp(9px,1.3vw,12px);line-height:1.2}
+.single-screen-game .yarn-hint{display:none!important}
+.single-screen-game .board-yarn{
+ order:0!important;position:relative;flex:0 0 auto!important;
+ width:auto!important;min-width:133px!important;min-height:43px!important;max-width:42%!important;
+ margin:0!important;padding:8px 11px!important;border-radius:12px!important;font-size:clamp(10px,1.35vw,13px)!important;
+ background:#a875bf;color:white;box-shadow:0 3px 0 #81599a!important;touch-action:manipulation
+}
+.single-screen-game .board-yarn:disabled{opacity:.64}
+.single-screen-game .toast{bottom:105px;z-index:8}
+.single-screen-game .achievement-toast{top:24%;z-index:9}
+.single-screen-game .coach-spot{position:absolute;z-index:2;width:53px;height:53px;border:4px dashed #e5a555;
+ border-radius:50%;box-shadow:0 0 0 5px #fff3ce5c;pointer-events:none;opacity:0;
+ animation:paws-coach 1s ease-in-out infinite alternate}
+.single-screen-game .coach-spot.active{opacity:1}
+@keyframes paws-coach{to{transform:scale(1.12);box-shadow:0 0 0 13px #fff3ce22}}
+.single-screen-game .overlay{z-index:12;backdrop-filter:blur(4px);padding:8px}
+.single-screen-game .modal{width:min(440px,92%);max-height:93%;padding:clamp(10px,3vh,22px)}
+.single-screen-game .modal .cat-medal{font-size:44px}
+.single-screen-game .modal h2{font-size:clamp(23px,4vw,34px);margin:7px 0}
+.single-screen-game .modal p{margin:6px 0;font-size:12px}
+.single-screen-game .modal .buttons{margin-top:11px}
+.single-screen-game .game-menu{
+ position:absolute;z-index:20;inset:0;padding:12px;
+ display:flex;align-items:center;justify-content:center;
+ background:#30243fc4;backdrop-filter:blur(7px);overflow:hidden
+}
+.single-screen-game [hidden]{display:none!important}
+.single-screen-game .menu-shell{
+ width:min(590px,100%);height:min(95%,690px);max-height:100%;overflow:hidden;
+ display:flex;flex-direction:column;min-height:0;
+ background:#fffaf1;border:3px solid #fffdf8;border-radius:21px;
+ box-shadow:0 20px 70px #28213765;color:#594259
+}
+.single-screen-game .menu-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px 7px;flex:0 0 auto}
+.single-screen-game .menu-head .eyebrow{font-size:9px;letter-spacing:.08em}
+.single-screen-game .menu-head h2{font:700 clamp(21px,3vw,28px)/1.1 Fredoka,system-ui;margin:2px 0;color:#e47f95}
+.single-screen-game .menu-head h2 span{color:#e4ac68}
+.single-screen-game .menu-head p{font-size:11px;margin:3px 0 0;color:#897782}
+.single-screen-game .menu-tabs{display:flex;gap:5px;padding:6px 12px 10px;flex:0 0 auto;overflow-x:auto;scrollbar-width:thin}
+.single-screen-game .menu-tabs button{
+ flex:1 0 auto;min-width:76px;min-height:41px;padding:7px 8px;
+ background:#f9eae9;border:1px solid #ead7dd;border-radius:10px;font-size:11px;font-weight:900;color:#78637a
+}
+.single-screen-game .menu-tabs button[aria-selected=true]{background:#6f507f;color:#fff;border-color:#6f507f}
+.single-screen-game .game-menu-body{display:block!important;flex:1 1 auto;overflow-y:auto;min-height:0;max-height:none!important;
+ padding:12px 17px 20px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fffaf1!important}
+.single-screen-game .game-menu-body>section{display:block;min-height:0}
+.single-screen-game .game-menu-body>section[hidden]{display:none!important}
+.single-screen-game .game-menu-body .chapter{font-size:22px}
+.single-screen-game .game-menu-body .stats{margin:10px 0}
+.single-screen-game .game-menu-body .progress{display:flex!important;flex-wrap:wrap;gap:7px;margin:10px 0}
+.single-screen-game .game-menu-body .wardrobe{display:flex!important;flex-wrap:wrap;gap:12px;margin:12px 0}
+.single-screen-game .game-menu-body .skin{width:56px;height:55px}
+.single-screen-game .game-menu-body .collection-count{display:flex!important;margin:0 0 10px;padding:8px 10px;align-items:center}
+.single-screen-game .game-menu-body .collection-preview{margin:8px 0}
+.single-screen-game .menu-section-title{font:700 18px/1.3 Fredoka,system-ui;margin:12px 0;color:#795f81}
+.single-screen-game .relic-gallery,.single-screen-game .achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0}
+.single-screen-game .badge-highlights{margin:9px 0}
+.single-screen-game .menu-challenge{font-size:12px;color:#986390;font-weight:900;margin:9px 0}
+.single-screen-game .menu-help-step{display:flex;gap:10px;align-items:baseline;margin:7px 0;padding:8px 11px;border:1px solid #efded9;border-radius:10px;background:#fff1e5;font-size:12px}
+.single-screen-game .menu-help-step strong{min-width:120px}
+.single-screen-game .menu-help-legend{font-size:12px;background:#fff2da;border-radius:10px;padding:8px}
+.single-screen-game #ruleBonus,.single-screen-game #howBody{font-size:12px;line-height:1.5}
+.single-screen-game .menu-language{display:flex;gap:7px;margin:9px 0}
+.single-screen-game .menu-language button{padding:8px 12px;border:1px solid #e3cedf;background:#fff7f0;border-radius:10px;color:#614e64;font-weight:900}
+.single-screen-game .menu-language button[aria-pressed=true]{background:#704a81;color:#fff}
+.single-screen-game .menu-audio{display:flex;align-items:center;min-height:45px}
+.single-screen-game .menu-audio .mw-audio-dock{display:flex!important;margin:0!important;order:0!important}
+.single-screen-game .menu-home{display:inline-flex;margin-top:12px}
+.single-screen-game .menu-byline{font-size:10px;color:#aa939b}
+.single-screen-game .souvenir-shelf{margin-top:10px}
+.single-screen-game .collection-hint{margin:8px 0;font-size:11px}
+.single-screen-game #menuClose{background:#f9e5eb!important;box-shadow:none!important}
+@media(max-width:700px){
+ .single-screen-game{width:calc(100% - 8px);padding:3px 0 9px!important}
+ .single-screen-game .stage{border-width:3px;border-radius:13px;box-shadow:0 5px 0 #eccfcc}
+ .single-screen-game .in-game-top{padding:5px 5px 0;gap:3px}
+ .single-screen-game .sticker{padding:4px 6px;max-width:36%;min-width:0;border-width:1px;border-radius:9px}
+ .single-screen-game .sticker b{font-size:10px}
+ .single-screen-game .sticker small{font-size:8px}
+ .single-screen-game .heist-status{padding:5px 6px;font-size:11px;border-radius:8px;line-height:1.15}
+ .single-screen-game .in-game-controls{gap:3px}
+ .single-screen-game .hud-icon,.single-screen-game .mw-fullscreen-toggle{width:35px!important;height:35px!important;min-width:35px!important;min-height:35px!important;border-radius:9px!important;font-size:17px!important}
+ .single-screen-game .mw-fullscreen-toggle{font-size:0!important}
+ .single-screen-game .paws-alert{top:45px;right:5px;padding:4px 6px;font-size:10px}
+ .single-screen-game .yarn-aim-banner{top:44px;padding:5px;font-size:10px}
+ .single-screen-game .stealth-actionbar{left:5px;right:5px;bottom:5px;padding:4px 5px!important;gap:5px!important;border-radius:10px!important;box-shadow:0 2px 8px #59495c2c!important}
+ .single-screen-game .stealth-help>strong{font-size:10px;line-height:1.13}
+ .single-screen-game .guard-status{font-size:9px;line-height:1.12;gap:4px}
+ .single-screen-game .guard-dot{width:6px;height:6px}
+ .single-screen-game .board-yarn{min-width:98px!important;min-height:36px!important;padding:5px 6px!important;font-size:10px!important;max-width:40%!important}
+ .single-screen-game .toast{bottom:70px;font-size:11px}
+ .single-screen-game .coach-spot{width:26px;height:26px;border-width:2px}
+ .single-screen-game .game-menu{padding:5px}
+ .single-screen-game .menu-shell{height:min(98%,680px);border-width:2px;border-radius:12px}
+ .single-screen-game .menu-head{padding:8px 10px 3px}
+ .single-screen-game .menu-head h2{font-size:20px}
+ .single-screen-game .menu-head .eyebrow{font-size:8px}
+ .single-screen-game .menu-head p{font-size:9px}
+ .single-screen-game .menu-tabs{padding:5px 6px}
+ .single-screen-game .menu-tabs button{min-width:56px;font-size:10px;min-height:37px;padding:5px 6px}
+ .single-screen-game .game-menu-body{padding:9px 10px!important}
+ .single-screen-game .modal{padding:9px;max-height:95%}
+ .single-screen-game .modal .stars{font-size:24px}
+ .single-screen-game .modal .cat-medal{font-size:34px}
+}
+@media(prefers-reduced-motion:reduce){.single-screen-game .coach-spot{animation:none}}
