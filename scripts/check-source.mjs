@@ -336,6 +336,8 @@ if(cases.paris.intro.body[0].includes('旧爱')||cases.paris.intro.body[0].inclu
  throw Error('Old stressful plot remains live');
 if(cases.paris.intro.body[0].includes('诺亚'))throw Error('The new romance must introduce Noa naturally after the first choice');
 if(!cases.amalfi.objective[0].includes('没有失败结局'))throw Error('Amalfi must have no losing ending');
+if(!dreamCss.includes('.intro p{font-size:18px;color:#596879;margin:0;max-width:none;width:100%}')||!dreamCss.includes('@media(min-width:960px)'))
+ throw Error('Elsewhere intro text must use full desktop width without premature line breaking');
 if(!dreamCss.includes('white-space:nowrap!important')||!dreamCss.includes('font-size:clamp(15px,4.35vw,24px)'))
  throw Error('Single-line responsive Chinese and English title missing');
 if(!dreamSource.includes('hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end.")'))
