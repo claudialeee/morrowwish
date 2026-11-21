@@ -1658,3 +1658,15 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #ult-wrap{
 .keep-cat canvas{width:54px;height:46px}
 .keep-cat .keep-name{font:700 12px/1.2 system-ui,sans-serif;color:#6a4a2a}
 .keep-cat .keep-hp{font:600 11px/1.2 system-ui,sans-serif;color:#9a7a55}
+
+/* Paired-kitten expedition journal, compact even on landscape phones. */
+.duo-memory-album{margin:14px 0 4px;padding:12px 14px;border:1px solid rgba(220,167,180,.42);background:linear-gradient(130deg,rgba(255,244,235,.10),rgba(235,206,230,.12));border-radius:14px}
+.duo-memory-album>strong{display:block;font-size:14px;line-height:1.5}
+.duo-memory-album>.tiny{margin:6px 0 10px;line-height:1.5}
+.duo-memory-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.duo-memory-stamp{display:flex;min-width:0;min-height:54px;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(204,180,186,.4);border-radius:11px;background:rgba(255,247,238,.12);font-size:19px}
+.duo-memory-stamp.found{border-color:rgba(255,216,142,.8);background:rgba(255,219,160,.18)}
+.duo-memory-stamp.missing{color:#bcaab5;opacity:.66}
+.duo-memory-stamp small{font-size:10px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 1px;text-align:center}
+.duo-discovery-names{font-weight:700;color:#f4c0d0}
+@media (max-width:540px){.duo-memory-album{padding:9px}.duo-memory-grid{gap:4px}.duo-memory-stamp{min-height:46px;font-size:17px}.duo-memory-stamp small{font-size:9px}}
