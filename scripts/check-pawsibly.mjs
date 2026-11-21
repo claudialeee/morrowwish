@@ -144,7 +144,7 @@ assert.ok(frames>=1,'Canvas art rendered');
 const reviewStyle=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
 assert.ok(reviewStyle.includes('single-screen.css?v=')&&reviewStyle.includes('heistStatus'),
  'CrazyGames build should show new board HUD with an uncached script');
-assert.ok(source.includes('html.cg-play #stage>.playfield')&&source.includes('html.cg-play #stage>.stealth-actionbar'),
+assert.ok(source.includes('html.cg-play #stage>.playfield')&&!source.includes('html.cg-play #stage>.stealth-actionbar'),
  'CrazyGames embed must fit the single playfield and its in-frame HUD');
 assert.ok(source.includes('fitCanvasPixels')&&source.includes('catPathTo'),
  'High-DPI canvas and risk-aware click routing must remain in the review build');
