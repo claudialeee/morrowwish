@@ -572,4 +572,34 @@ assert.ok(duoTest.skillStrokes.some(v=>v.kind==='duoImpact'&&v.life===.65),
   'closing beat is a distinct twin-element flourish');
 assert.equal(Object.keys(sandbox.window.CatRelations.DUO_ARTS).length,21,'all 21 elemental pairs keep authored signatures');
 
+// 破坏死光 · DESTRUCTION DEATH-RAY: the dark elemental ultimate fires a wide
+// charged beam that SWEEPS a 120° arc on its own timeline, damaging enemies it
+// crosses over the sweep (throttled, never a one-shot) and drawing without throwing.
+const drBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
+const drFighter=drBattle.me();
+drFighter.ultSkill={id:'voidMaw',name:'虚吞',element:'dark',kind:'aoe',power:2.5,ultCost:80,appliesTag:'dizzy'};
+// Pin two enemies in front of the caster so the sweeping beam must cross them.
+drBattle.enemies.forEach((e,i)=>{e.x=drFighter.x+180+i*20;e.y=drFighter.y;e.hp=e.maxhp;e.inv=0;e.flash=0;});
+drBattle.ult=100;drBattle.ultCd=0;
+assert.equal(drBattle.ultimate(),true,'dark ultimate casts the sweeping death-ray');
+assert.ok(drBattle.deathRay,'death-ray effect state is created');
+assert.ok(Math.abs((drBattle.deathRay.end-drBattle.deathRay.start)-Math.PI*120/360)<1e-6,
+  'the death-ray sweeps a 120° arc');
+assert.ok(drBattle.deathRay.total>=1.9&&drBattle.deathRay.total<=2.1,
+  'charge → sweep → cutoff timeline runs ~2 seconds');
+const drHpBefore=drBattle.enemies.reduce((n,e)=>n+e.hp,0);
+let drStartedFiring=false;
+assert.doesNotThrow(()=>{
+  for(let k=0;k<150;k++){
+    drBattle.tickDeathRay(0.016);
+    drBattle.drawDeathRay(canvasCtx);                 // additive layers + scorch, must not throw
+    if(drBattle.deathRay&&drBattle._deathRayFrame()?.firing)drStartedFiring=true;
+  }
+},'death-ray ticks and draws against a stub 2D context without throwing');
+const drHpAfter=drBattle.enemies.reduce((n,e)=>n+e.hp,0);
+assert.ok(drStartedFiring,'the beam reaches its firing (sweep) phase');
+assert.ok(drHpAfter<drHpBefore,'enemies crossed by the sweeping beam take damage');
+assert.ok(drHpAfter>0||drBattle.enemies.every(e=>!e.alive),'throttled sweep damage is not an instant one-shot wipe');
+assert.equal(drBattle.deathRay,null,'the death-ray always collapses and clears after its cutoff');
+
 console.log('Cat Bond: 13 modules loaded, starter + capture win/loss driven, game_start/complete/over/cat_capture analytics, and bilingual ZH->EN layer (incl. live zh<->en toggle) PASS.');
