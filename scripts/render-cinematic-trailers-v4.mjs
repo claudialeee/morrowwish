@@ -73,21 +73,21 @@ const playlists={
   game(0.05,1.45),
   game(1.75,3.3),
   game(4.3,1.4),
-  game(5.25,1.8),
+  game(5.25,1.75),
   cover(1.6,'PLAY FREE')
  ],
  'parcel-panic':[
   game(0.05,1.5),
   game(1.65,2.65),
   game(3.9,1.6),
-  game(5.08,1.55),
+  game(5.08,1.48),
   cover(1.7,'PLAY FREE')
  ],
  'pocket-aquarium':[
   game(0.06,1.75),
   game(2.35,3.0),
   game(5.65,1.8),
-  game(7.63,1.8),
+  game(7.63,1.72),
   cover(1.6,'PLAY FREE')
  ]
 };
@@ -207,7 +207,7 @@ function edit(slug){
    throw Error('Video format, genuine runtime or sound QA failed '+JSON.stringify({slug,meta,bytes}));
  execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','0.9','-i',output,'-frames:v','1','-q:v','3',poster],{timeout:24000});
  const review=[];
- for(const [i,seconds] of [1.1,meta.seconds*.50,Math.max(0,meta.seconds-2.2)].entries()){
+ for(const [i,seconds] of [1.1,meta.seconds*.50,Math.max(0,meta.seconds-0.85)].entries()){
   const file=base+'/v4-review-'+(i+1)+'.jpg';
   execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',fmt(seconds),'-i',output,'-frames:v','1','-q:v','3',file],{timeout:24000});
   if(fs.statSync(file).size<12000)throw Error('Blank review thumbnail '+file);
