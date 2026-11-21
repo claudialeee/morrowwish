@@ -1250,7 +1250,7 @@ const UI = {
           :best?'<span class="battle-best-stamp">'+best+'</span>':''}
         ${count > 1 ? `<div class="badge-count">×${count}</div>` : ''}
         <canvas width="90" height="76"></canvas>
-        <div class="name">${locked ? '？？？' : sp.name}</div>
+        <div class="name">${locked ? '？？？' : GameData.speciesName(sp)}</div>
         <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
       </div>`;
     }).join('');
@@ -1849,7 +1849,7 @@ const UI = {
     const exploring=this.game.scene==='map';
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const firstAdventure=(State.S.catchCount||0)===1;
-    const name=wildSp.name;
+    const name=GameData.speciesName(wildSp);
     const headline=reunion
       ?(english?'A familiar friend returns!':'老朋友又来啦！')
       :(english?'A new friend joined!':'新伙伴加入啦！');

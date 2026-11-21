@@ -115,7 +115,7 @@ function render(seconds){
  ctx.clearRect(0,0,w,h);ctx.fillStyle='#162c3a';ctx.fillRect(0,0,w,h);
  window.CatBondDuoHero.draw(ctx,w,h,{
    max:2.75,t,catUids:['previewA','previewB'],tier,
-   name:names[selected],elements:selected,
+   name:window.MorrowwishI18n.get()==='en'?(window.CatBondDuoSignatures.get(selected)?.label||selected):names[selected],elements:selected,
    first:colors[es[0]],second:colors[es[1]]},
    uid=>cats[uid]);
 }
