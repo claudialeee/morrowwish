@@ -935,10 +935,20 @@ class Game {
     if(duoButton){
       duoButton.hidden=!b.duo;
       if(b.duo){
-        duoButton.disabled=!b.duoReady();
-        duoButton.classList.toggle('ready',b.duoReady());
-        duoButton.textContent=b.duoReady()?'💞 '+b.duo.name+'！'
-          :'💞 '+(window.MorrowwishI18n?.get?.()==='zh'?'双猫默契 ':'Duo charge ')+Math.floor(b.duoCharge)+'%';
+        const zh=window.MorrowwishI18n?.get?.()==='zh';
+        const channeling=(b.duoField?.remaining||0)>0;
+        duoButton.disabled=channeling||!b.duoReady();
+        duoButton.classList.toggle('ready',!channeling&&b.duoReady());
+        duoButton.classList.toggle('duo-channeling',channeling);
+        if(channeling){
+          // The existing duo button doubles as a compact countdown; don't
+          // create a new overlay over the enemy or touch controls.
+          duoButton.textContent='✦ '+(zh?'共鸣持续 ':'Resonance ')+
+            b.duoField.remaining.toFixed(1)+(zh?'秒':'s');
+        }else{
+          duoButton.textContent=b.duoReady()?'💞 '+b.duo.name+'！'
+            :'💞 '+(zh?'双猫默契 ':'Duo charge ')+Math.floor(b.duoCharge)+'%';
+        }
       }
     }
     // move cooldowns; refresh labels if active cat changed
