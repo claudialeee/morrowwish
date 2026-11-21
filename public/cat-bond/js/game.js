@@ -84,10 +84,8 @@ class Game {
       const chosen=window.CatRelations?.chosen?.()||[];
       const team=[...chosen,...State.S.cats.filter(c=>!chosen.some(x=>x.uid===c.uid))].slice(0,3);
       if (!team.length) { this.toast('没有可出战的猫'); return; }
-      this._returnScene = 'map';           // after battle, go back to the region
       const region = WorldMap.REGIONS.find(r => r.id === regionId);
-      this._battleTheme = region ? region.theme : null;
-      this.startBattle(team, species);
+      UI.openBattleModePrompt(team,species,{origin:'map',theme:region?.theme||null});
     });
     WorldMap.onCollect((reward) => {
       if (reward.coins) State.S.coins += reward.coins;
@@ -581,7 +579,7 @@ class Game {
   }
 
   // ---------- battle flow ----------
-  startMasteryChallenge(species){
+  startMasteryChallenge(species,modeConfirmed=false){
     // A targeted S-rank rematch is a training challenge, NOT another capture.
     // Replaying cannot duplicate cats, grow the dex or farm capture currency.
     const owned=State.S.cats.filter(cat=>cat.species===species.id);
@@ -589,6 +587,7 @@ class Game {
       this.toast('先收服这个品种，才能挑战金爪评级。');return false;
     }
     const team=State.S.cats.slice().sort((a,b)=>State.catPower(b)-State.catPower(a)).slice(0,3);
+    if(!modeConfirmed){UI.openBattleModePrompt(team,species,{mastery:true});return true;}
     this.startBattle(team,species);
     this.battle.masteryChallenge=true;
     metric('bond_mastery_rematch_start',{breed:species.id,rarity:species.rarity});
