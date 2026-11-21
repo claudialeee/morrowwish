@@ -67,97 +67,92 @@
   const breedCache=Object.create(null);
   const animatedRigCache=Object.create(null);
   let gaitLayersBuilt=0;
-  // Split the ORIGINAL painted breed illustration into soft-edged torso
-  // and two original-PAINTED paws. We do not paint a new cat body, face or coat.
-  // Each layer is sourced from the exact frame used for the static portrait.
-  function paintedMotionLayers(art,id){
-    const key=(breedLoaded?'breed:':'classic:')+(id||art.sx)+':'+art.sw+'x'+art.sh;
+  // Paint an entire illustrated cat into each complete gait frame. This
+  // replaces the earlier cut-and-move paw layers that looked severed.
+  // Smooth localized pixel deformation is continuous through the belly and
+  // paws: no transparent seams or separate limbs can open during a stride.
+  // Four walk frames and four sprint frames are built lazily per breed.
+  function smoothstep(a,b,x){
+    const t=Math.max(0,Math.min(1,(x-a)/(b-a)));
+    return t*t*(3-2*t);
+  }
+  function illustratedGaitFrames(art,id,sprint){
+    const key=(breedLoaded?'breed:':'classic:')+(id||art.sx)+':'+art.sw+'x'+art.sh+':'+(sprint?'run':'walk');
     if(animatedRigCache[key])return animatedRigCache[key];
-    const w=art.sw,h=art.sh;
     try{
-      const sourceCanvas=document.createElement('canvas');
-      sourceCanvas.width=w;sourceCanvas.height=h;
-      const c=sourceCanvas.getContext('2d',{willReadFrequently:true});
+      const w=Math.min(124,art.sw),h=Math.min(186,art.sh);
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      const c=canvas.getContext('2d',{willReadFrequently:true});
       if(!c?.getImageData||!c?.putImageData||!c?.createImageData)return null;
-      c.drawImage(art.image,art.sx,art.sy,w,h,0,0,w,h);
-      const pixels=c.getImageData(0,0,w,h).data;
+      c.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,0,0,w,h);
+      const original=c.getImageData(0,0,w,h).data;
+      // Find original painted silhouette, not a guessed cartoon skeleton.
       let left=w,top=h,right=-1,bottom=-1;
       for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-        if(pixels[(y*w+x)*4+3]<35)continue;
-        if(x<left)left=x;if(x>right)right=x;
-        if(y<top)top=y;if(y>bottom)bottom=y;
+        const a=original[(y*w+x)*4+3];
+        if(a<32)continue;
+        left=Math.min(left,x);right=Math.max(right,x);
+        top=Math.min(top,y);bottom=Math.max(bottom,y);
       }
-      if(right-left<w*.15||bottom-top<h*.28)return null;
-      // Find the original painted feet in the lower 30% of the silhouette.
-      // Feather the seam so every strand of fur belongs to the SAME image.
-      // Limit articulation to the actual lower paws. Moving the whole lower
-      // belly made the original paintings look like cut-out paper puppets.
-      const seam=top+(bottom-top)*.80;
-      const softness=Math.max(3,(bottom-top)*.035);
-      const center=(left+right)*.5;
-      const midBlend=Math.max(3,(right-left)*.07);
-      const canvases=[];
-      for(let layer=0;layer<3;layer++){
-        const out=document.createElement('canvas');out.width=w;out.height=h;
-        const outCtx=out.getContext('2d',{willReadFrequently:true});
-        const pixelsOut=outCtx.createImageData(w,h);
-        const dst=pixelsOut.data;
+      if(right-left<w*.13||bottom-top<h*.24)return null;
+      const bodyW=right-left,bodyH=bottom-top;
+      const lX=left+bodyW*.32,rX=left+bodyW*.68;
+      const radius=Math.max(4,bodyW*.19);
+      function sample(u,v,channel){
+        const x=Math.max(0,Math.min(w-1.001,u));
+        const y=Math.max(0,Math.min(h-1.001,v));
+        const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
+        const i=(iy*w+ix)*4+channel,j=(iy*w+Math.min(w-1,ix+1))*4+channel;
+        const z=(Math.min(h-1,iy+1)*w+ix)*4+channel;
+        const zz=(Math.min(h-1,iy+1)*w+Math.min(w-1,ix+1))*4+channel;
+        return Math.round(original[i]*(1-fx)*(1-fy)+original[j]*fx*(1-fy)
+          +original[z]*(1-fx)*fy+original[zz]*fx*fy);
+      }
+      const frames=[];
+      for(let index=0;index<4;index++){
+        const phase=index*Math.PI*.5;
+        const frame=document.createElement('canvas');
+        frame.width=w;frame.height=h;
+        const cc=frame.getContext('2d',{willReadFrequently:true});
+        const out=cc.createImageData(w,h),dst=out.data;
         for(let y=0;y<h;y++){
-          const v=Math.max(0,Math.min(1,(y-seam)/softness));
-          const footBlend=v*v*(3-2*v);
+          // Body-to-paw deformation tapers in continuously. Upper face, ears
+          // and most fur are pixel-for-pixel identical to the original atlas.
+          const flex=smoothstep(top+bodyH*.61,bottom-bodyH*.02,y);
+          if(flex<=0){
+            const row=y*w*4;dst.set(original.subarray(row,row+w*4),row);
+            continue;
+          }
           for(let x=0;x<w;x++){
-            const i=(y*w+x)*4;
-            if(!pixels[i+3])continue;
-            const side=Math.max(0,Math.min(1,(x-center)/midBlend+.5));
-            const sideBlend=side*side*(3-2*side);
-            const mask=layer===0?1-footBlend:
-              layer===1?footBlend*(1-sideBlend):footBlend*sideBlend;
-            dst[i]=pixels[i];dst[i+1]=pixels[i+1];dst[i+2]=pixels[i+2];
-            dst[i+3]=Math.round(pixels[i+3]*mask);
+            const leftWeight=Math.exp(-Math.pow((x-lX)/radius,2));
+            const rightWeight=Math.exp(-Math.pow((x-rX)/radius,2));
+            const reach=(leftWeight*Math.sin(phase)+rightWeight*Math.sin(phase+Math.PI));
+            const lift=leftWeight*Math.max(0,Math.cos(phase))
+              +rightWeight*Math.max(0,Math.cos(phase+Math.PI));
+            const dx=flex*(sprint?7.6:4.6)*reach;
+            const dy=flex*(sprint?5.2:3.2)*lift;
+            const i=(y*w+x)*4,px=x-dx,py=y+dy;
+            for(let channel=0;channel<4;channel++)dst[i+channel]=sample(px,py,channel);
           }
         }
-        outCtx.putImageData(pixelsOut,0,0);
-        canvases.push(out);
+        cc.putImageData(out,0,0);
+        frames.push(frame);
       }
-      const rig={upper:canvases[0],leftPaw:canvases[1],rightPaw:canvases[2],
-        sourceWidth:w,sourceHeight:h};
-      animatedRigCache[key]=rig;
+      animatedRigCache[key]=frames;
       gaitLayersBuilt++;
-      return rig;
-    }catch(err){
-      // Loading/reduced-memory/legacy canvas fallback keeps the game playable.
-      return null;
-    }
+      return frames;
+    }catch(err){return null;}
   }
   function paintArticulatedCat(ctx,art,dest,options,movement,phase){
-    const rig=paintedMotionLayers(art,options.species?.id);
-    if(!rig){ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);return false;}
-    const sprint=options.gait==='sprint';
-    const power=Math.min(1,Math.max(0,movement));
-    const sx=dest[2]/rig.sourceWidth,sy=dest[3]/rig.sourceHeight;
-    // Painted upper body and head stay intact; only the original fur/feet move.
-    ctx.drawImage(rig.upper,0,0,rig.sourceWidth,rig.sourceHeight,...dest);
-    for(const [i,paw] of [rig.leftPaw,rig.rightPaw].entries()){
-      const ph=phase+i*Math.PI;
-      const reach=Math.sin(ph);
-      const lift=Math.max(0,Math.cos(ph));
-      // Measured against the source illustration so motion scales naturally
-      // with the smaller body, rather than exaggerated trampoline legs.
-      const stride=(sprint?21:15)*power*sx;
-      const rise=(sprint?18:12)*power*sy;
-      const offset=reach*stride;
-      const up=lift*rise;
-      // Tiny hip pivot preserves continuity with the painted shoulder.
-      const hipX=dest[0]+dest[2]*(i? .61:.39);
-      const hipY=dest[1]+dest[3]*.80;
-      ctx.save();
-      ctx.translate(hipX+offset*.5,hipY-up*.2);
-      ctx.rotate(Math.sin(ph)*power*(sprint?.047:.032));
-      ctx.translate(-hipX,-hipY);
-      ctx.translate(offset*.5,-up);
-      ctx.drawImage(paw,0,0,rig.sourceWidth,rig.sourceHeight,...dest);
-      ctx.restore();
+    const sprite=illustratedGaitFrames(art,options.species?.id,options.gait==='sprint');
+    if(!sprite){
+      ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
+      return false;
     }
+    const a=((phase%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+    const frame=Math.floor(a/(Math.PI*.5))%4;
+    ctx.drawImage(sprite[frame],0,0,sprite[frame].width,sprite[frame].height,...dest);
     return true;
   }
   // Early popups render before the high-detail AVIF atlas finishes decoding.
