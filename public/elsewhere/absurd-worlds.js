@@ -5,3 +5,6 @@
 v.moon={genre:L("月球 · 离谱度假","MOON · LUNAR LUXURY"),stats:{proof:L("享受","Delight"),allies:L("分享","Friendship"),leverage:L("创意","Imagination")},quality:L("整座月球酒店都在迎合你的快乐，你不用赶着完成任何任务。","Your lunar hotel exists for your delight, not your deadlines."),rare:L("你把最荒唐的月球假期，过成全宇宙最难忘的一夜。","You turned an absurd lunar holiday into the most memorable night in the universe.")};
 v.monday={genre:L("童话城 · 超现实喜剧","FAIRYTALE CITY · SURREAL COMEDY"),stats:{proof:L("快乐","Delight"),allies:L("伙伴","Friends"),leverage:L("想象力","Imagination")},quality:L("魔法只持续一天，但你给全城留下的笑声是真的。","Magic lasted one day, but you gave the whole city real laughter."),rare:L("日历局也没想到，一张星期一的券会让快乐延续到下一周。","Even the Calendar Bureau never expected a Monday wish to spread joy into another week.")};
 })();
+
+/* Route-specific final chapters are authored on each world, then installed on its finale scene. */
+(()=>{for(const id of ["moon","monday"]){const w=window.ELSEWHERE_CASEFILES[id];if(!w||!Array.isArray(w.routeBodies)||w.routeBodies.length!==3)throw Error("Missing route-specific finale "+id);w.finale.routeBodies=w.routeBodies;delete w.routeBodies;}})();
