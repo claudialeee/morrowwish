@@ -618,6 +618,37 @@
     '条件不足': 'Requirements not met',
     '条件已满足！': 'Requirements met!',
     '还需': 'Still need',
+    // ---- gated skill-learning trainer ----
+    '技能训练师': 'Skill Trainer',
+    '学习新技能': 'Learn new skills',
+    '强力技能需要习得：付费学习、达到等级或亲密、成为特定品种，或完成领悟条件。':
+      'Powerful skills must be learned — pay a trainer, reach a level or affinity, match a breed, or fulfil a 领悟 condition.',
+    '暂时没有可学习的技能。': 'No skills ready to learn right now.',
+    '尚未满足条件': 'Still locked',
+    '立即领悟': 'Learn now',
+    '毛线不足': 'Not enough yarn',
+    '小鱼干不足': 'Not enough fish',
+    '条件尚未满足': 'Condition not met yet',
+    '无法学习该技能': 'Cannot learn this skill',
+    '学会了 ': 'Learned ',
+    '✨ 学会了 ': '✨ Learned ',
+    // new gated skill names
+    '彗星爪': 'Comet Claw', '潮汐咬': 'Tidal Bite', '荆棘鞭': 'Thorn Lash',
+    '霜锥': 'Frost Lance', '雷遁突袭': 'Volt Rush', '绝顶扑': 'Apex Pounce',
+    '月噬牙': 'Moonfang', '百战斩': 'Veteran Strike', '呼噜新星': 'Purr Nova', '抚心掌': 'Tender Paw',
+    // new gated skill descriptions
+    '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。': 'A paid-training heavy claw trailing fire — hits hard and burns deeper.',
+    '用小鱼干向训练师换来的近身咬击，淋湿并重创。': 'A melee bite traded for dried fish — soaks and crushes the target.',
+    '用毛线换来的缠斗技，撕裂并束缚目标。': 'A grappling move traded for yarn — tears and binds the target.',
+    '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。': 'A precise frost spike — a direct hit freezes. Learned at the right level.',
+    '高亲密才能驾驭的闪电冲刺，撞中强麻痹。': 'A lightning dash only a close bond can control — a hit heavily shocks.',
+    '需要等级与金币双重积累的绝技，重创并击退。': 'A finishing move needing both level and coins — heavy damage and knockback.',
+    '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。':
+      '[Ultimate · breed-locked] Moonlit fangs only the moon-treading bloodline can learn — blinds and weakens.',
+    '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。':
+      'Learned only through battle: a lethal strike unlocked after winning ten fights with this cat.',
+    '【必杀】收服众多猫猫后领悟的爆裂新星。': '[Ultimate] A bursting nova mastered after capturing many cats.',
+    '被长久撸爱后领悟的治愈掌，回复更多斗志。': 'A healing paw learned through long affection — restores more spirit.',
     // evolution / transformation / awakening
     '🦋 可蜕变为': '🦋 Can transform into',
     '· 可成长为': '· Can grow into',

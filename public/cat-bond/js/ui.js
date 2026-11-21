@@ -1024,7 +1024,7 @@ const UI = {
       <p class="skill-roadmap">✨ ${S.progressionHint(cat)}</p>
       <p class="skill-progression-note">普通猫通过升级与好感解锁元素必杀；SR / SSR 更早解锁专属必杀。能量充满后按 R 或点击右下角释放。</p>
       <div class="sk-list">${rows}</div>
-      <div class="btn-row"><button class="btn gold" id="sk-back">← 返回</button></div>`);
+      <div class="btn-row"><button class="btn" id="sk-trainer">🎓 ${en0?'Learn new skills':'学习新技能'}</button><button class="btn gold" id="sk-back">← 返回</button></div>`);
     this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
       const slotI = +b.dataset.slot, skId = b.dataset.sk;
       cat.loadout = cat.loadout.slice(); cat.loadout[slotI] = skId;
@@ -1032,7 +1032,106 @@ const UI = {
       State.save(); this.openSkillEditor(cat);
       this.game.toast('已装备 ' + (S.skillById(skId) || {}).name);
     });
+    document.getElementById('sk-trainer').onclick = () => this.openTrainer(cat);
     document.getElementById('sk-back').onclick = () => this.openCatDetail(cat);
+  },
+  // ---- 技能训练师: learn GATED skills (付费 / 等级 / 亲密 / 品种 / 领悟) ----
+  // Shows every gated skill the cat hasn't learned yet, split into "ready to
+  // learn" (its non-cost gate is met) and "still locked" (shows the condition).
+  // Paying deducts the right currency; pure non-cost gates auto-learn on meeting
+  // their condition elsewhere, but remain here as a visible Learn action too.
+  openTrainer(cat) {
+    const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
+    const en = window.MorrowwishI18n?.get?.() !== 'zh';
+    S.autoLearn(cat);
+    const { ready, locked } = S.trainerSkills(cat);
+    const icon = sk => this.game.skillIcon ? this.game.skillIcon(sk) : '🐾';
+    const kindName = en
+      ? { melee:'Melee', projectile:'Ranged', dash:'Dash', leap:'Leap', pounce:'Pounce', chain:'Chain', beam:'Beam', buff:'Buff', heal:'Heal', aoe:'AoE' }
+      : { melee:'近战', projectile:'远程', dash:'突进', leap:'跃击', pounce:'飞扑', chain:'连锁', beam:'持续', buff:'增益', heal:'治疗', aoe:'范围' };
+    // Describe a skill's unlock condition as a short bilingual line + status.
+    const condLine = (sk) => this.skillUnlockText(cat, sk);
+    const costLabel = (cost) => {
+      if (!cost) return '';
+      const parts = [];
+      if (cost.coins) parts.push('🪙' + cost.coins);
+      if (cost.fish) parts.push('🐠' + cost.fish);
+      if (cost.yarn) parts.push('🧶' + cost.yarn);
+      return parts.join(' ');
+    };
+    const card = (sk, canBuy) => {
+      const cost = sk.unlock.cost;
+      const btn = cost
+        ? `<button class="btn ${canBuy?'gold':''}" data-learn="${sk.id}" ${canBuy?'':'disabled'}>${en?'Learn':'学习'} ${costLabel(cost)}</button>`
+        : `<button class="btn gold" data-learn="${sk.id}">${en?'Learn now':'立即领悟'}</button>`;
+      return `<div class="sk-slot trainer-skill"><div class="sk-slot-label">${icon(sk)} ${sk.name}
+        <div class="tiny">${kindName[sk.kind]||''} · ${this.game.elemIcon(sk.element)}${sk.ultCost>0?(en?' · Ultimate':' · 必杀'):''}</div></div>
+        <div class="sk-opts"><div class="tiny trainer-cond">${condLine(sk)}</div>${sk.desc?`<div class="tiny">${sk.desc}</div>`:''}${btn}</div></div>`;
+    };
+    const readyHtml = ready.length
+      ? ready.map(sk => card(sk, this.canAffordSkill(sk))).join('')
+      : `<p class="tiny">${en?'No skills ready to learn right now.':'暂时没有可学习的技能。'}</p>`;
+    const lockedHtml = locked.length
+      ? `<h3 class="tiny" style="margin:10px 0 4px">${en?'Still locked':'尚未满足条件'}</h3>` +
+        locked.map(sk => `<div class="sk-slot trainer-skill locked"><div class="sk-slot-label">${icon(sk)} ${sk.name}
+          <div class="tiny">${kindName[sk.kind]||''} · ${this.game.elemIcon(sk.element)}</div></div>
+          <div class="sk-opts"><div class="tiny trainer-cond">🔒 ${condLine(sk)}</div></div></div>`).join('')
+      : '';
+    this.panel(`<span class="card-close">×</span>
+      <h2>🎓 ${State.catName(cat)} · ${en?'Skill Trainer':'技能训练师'}</h2>
+      <p class="sub">${en?'Powerful skills must be learned — pay a trainer, reach a level or affinity, match a breed, or fulfil a 领悟 condition.':'强力技能需要习得：付费学习、达到等级或亲密、成为特定品种，或完成领悟条件。'}</p>
+      <div class="sk-list">${readyHtml}${lockedHtml}</div>
+      <div class="btn-row"><button class="btn gold" id="tr-back">← ${en?'Back':'返回'}</button></div>`);
+    document.querySelectorAll('#panel [data-learn]').forEach(b => b.onclick = () => {
+      this.learnSkillFromTrainer(cat, b.dataset.learn);
+    });
+    document.getElementById('tr-back').onclick = () => this.openSkillEditor(cat);
+  },
+  canAffordSkill(sk) {
+    const cost = sk.unlock && sk.unlock.cost; if (!cost) return true;
+    const S = State.S, yarn = (S.raising && S.raising.yarn) || 0;
+    return (cost.coins||0) <= (S.coins||0) && (cost.fish||0) <= (S.fish||0) && (cost.yarn||0) <= yarn;
+  },
+  // Bilingual unlock-condition + live status for a gated skill.
+  skillUnlockText(cat, sk) {
+    const S = window.Skills, u = sk.unlock || {}, en = window.MorrowwishI18n?.get?.() !== 'zh';
+    const bits = [];
+    if (u.cost) {
+      const c = u.cost, p = [];
+      if (c.coins) p.push('🪙' + c.coins); if (c.fish) p.push('🐠' + c.fish); if (c.yarn) p.push('🧶' + c.yarn);
+      bits.push((en?'Pay ':'付费 ') + p.join(' '));
+    }
+    if (u.level) bits.push((en?'Lv.':'Lv.') + u.level + (cat.level>=u.level?' ✓':` (${en?'now':'当前'} ${cat.level||1})`));
+    if (u.affinity) bits.push((en?'Affinity ':'亲密 ') + u.affinity + ((cat.affinity||0)>=u.affinity?' ✓':` (${cat.affinity||0})`));
+    if (u.species) {
+      const names = u.species.map(id => GameData.speciesById(id)?.name || id).join('/');
+      bits.push((en?'Breed: ':'品种专属：') + names + (u.species.indexOf(cat.species)>=0?' ✓':''));
+    }
+    if (u.quest) {
+      const q = S.QUEST_CHECKS[u.quest];
+      if (q) {
+        const cur = q.get(cat), tmpl = en ? q.label.en : q.label.zh;
+        bits.push(tmpl.replace('{cur}', Math.min(cur, q.need)).replace('{need}', q.need) + (cur>=q.need?' ✓':''));
+      }
+    }
+    return bits.join(' · ');
+  },
+  learnSkillFromTrainer(cat, skillId) {
+    const S = window.Skills, en = window.MorrowwishI18n?.get?.() !== 'zh';
+    const sk = S.skillById(skillId);
+    const r = S.learnSkill(cat, skillId);
+    if (!r.ok) {
+      const msg = r.reason==='coins' ? (en?'Not enough coins':'金币不足')
+        : r.reason==='fish' ? (en?'Not enough fish':'小鱼干不足')
+        : r.reason==='yarn' ? (en?'Not enough yarn':'毛线不足')
+        : r.reason==='locked' ? (en?'Condition not met yet':'条件尚未满足')
+        : (en?'Cannot learn this skill':'无法学习该技能');
+      this.game.toast(msg); return;
+    }
+    window.arcadeMetric?.('bond_skill_learned', { skill: skillId, via: r.via, breed: cat.species });
+    State.save(); this.game.refreshHUD();
+    this.game.toast('✨ ' + (en?'Learned ':'学会了 ') + (sk?sk.name:skillId) + (en?'!':'！'));
+    this.openTrainer(cat);
   },
   doEvolve(cat) {
     const S = window.Skills;

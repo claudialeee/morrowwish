@@ -51,6 +51,8 @@ function makeCat(speciesId, opts = {}) {
     hunger: 70,       // 0..100, decays over time
     joy: 70,          // 0..100
     caughtAt: opts.caughtAt || Date.now(),
+    learned: [],      // skill ids this cat has explicitly LEARNED/unlocked at a trainer
+    battlesWon: 0,    // wins with this cat on the field (feeds a 领悟 skill-learning quest)
     // ---- growth forms (universal evolution; every cat can reach 灵) ----
     stage: 0,         // 0=幼 1=成 2=灵(觉醒)
     awaken: null,     // 'pow'|'agi'|'cha' aura branch chosen at stage 2
@@ -146,7 +148,16 @@ function save() {
 function load() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) { S = Object.assign(DEFAULT_STATE(), JSON.parse(raw)); return true; }
+    if (raw) {
+      S = Object.assign(DEFAULT_STATE(), JSON.parse(raw));
+      // Migrate older saves: every cat must carry a learned-skills list and a
+      // per-cat win counter so the gated skill-learning system never sees undefined.
+      if (Array.isArray(S.cats)) for (const c of S.cats) {
+        if (!Array.isArray(c.learned)) c.learned = [];
+        if (typeof c.battlesWon !== 'number') c.battlesWon = 0;
+      }
+      return true;
+    }
   } catch (e) {}
   return false;
 }
