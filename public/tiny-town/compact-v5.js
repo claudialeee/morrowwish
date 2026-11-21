@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-let opened='';
+let opened='',focusedResident=null;
 const quote=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const zh=()=>window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang?.toLowerCase().startsWith('zh');
 const t=(en,cn)=>zh()?cn:en;
@@ -38,6 +38,38 @@ function residentRibbon(){
  }).join('');
 }
 
+
+function reactionFor(r,wish){
+ if(!wish)return 0;
+ return r.likes.includes(wish.id)?1:r.dislikes.includes(wish.id)?-2:0;
+}
+function compareResidents(residents,s,byId,wish){
+ const description=t('All five at a glance. Choose a row for that person’s full profile.','五位居民的喜好一眼对比。点击某一行，查看那个人的详细档案。');
+ return '<p class="inspect-intro">'+description+'</p><div class="resident-compare-list">'+residents.map((r,i)=>{
+  const likes=r.likes.map(k=>byId[k]).filter(Boolean).slice(0,5);
+  const dislikes=r.dislikes.map(k=>byId[k]).filter(Boolean).slice(0,4);
+  const change=reactionFor(r,wish),flag=change>0?'positive':change<0?'negative':'stable';
+  const forecast=wish?(change>0?'+1':change<0?'−2':'—'):'♥ '+s.moods[i]+'/6';
+  return '<button type="button" class="resident-compare-row '+flag+'" data-resident-profile="'+i+'" aria-label="'+quote(r.name+', '+t('view resident profile','查看居民档案'))+'">'+
+   '<span class="resident-compare-face">'+r.face+'</span><span class="resident-compare-main"><strong>'+r.name+'</strong>'+
+   '<small class="resident-compare-like"><b>'+t('Likes','喜欢')+'</b> '+likes.map(x=>x.icon).join(' ')+'</small>'+
+   '<small class="resident-compare-dislike"><b>'+t('Dislikes','不喜欢')+'</b> '+(dislikes.map(x=>x.icon).join(' ')||'—')+'</small></span>'+
+   '<span class="resident-compare-state">'+forecast+'</span><span class="resident-compare-chevron">›</span></button>';
+ }).join('')+'</div>'+
+ '<p class="inspect-note">'+t('♥ Likes: mood +1. Dislikes: mood −2. The small number on each face previews your selected wish.','♥ 喜欢的愿望：心情 +1；不喜欢：心情 −2。选中愿望后，头像上的数字可预览变化。')+'</p>';
+}
+function oneResident(residents,index,s,byId,wish){
+ const r=residents[index],change=reactionFor(r,wish);
+ const effect=wish?(change>0?t('This wish will cheer them up (+1 mood).','这个愿望会让他/她更开心（心情 +1）。'):change<0?t('This wish will upset them (−2 mood).','这个愿望会让他/她不高兴（心情 −2）。'):t('This wish will not change their mood.','这个愿望不会改变他/她的心情。')):t('Choose a wish to preview how this resident will respond.','先选一个愿望，就能预览这位居民是否喜欢。');
+ const tone=change>0?'good':change<0?'bad':'neutral';
+ return '<button type="button" class="resident-back" data-residents-all>‹ '+t('Compare all five residents','返回五人对比')+'</button>'+
+ '<div class="resident-focus-card">'+peopleMarkup(r,index,s,byId)+
+ '<p class="resident-impact '+tone+'">'+(wish?wish.icon+' ':'')+effect+'</p></div>'+
+ '<h3 class="resident-switch-title">'+t('Switch resident','切换居民')+'</h3><div class="resident-switch-list">'+
+ residents.map((p,i)=>'<button type="button" data-resident-profile="'+i+'" class="resident-switch '+(i===index?'selected':'')+'" aria-pressed="'+(i===index)+'"><span>'+p.face+'</span><small>'+p.name+'</small></button>').join('')+'</div>'+
+ '<p class="inspect-note">'+t('This person’s likes, dislikes, and mood are visible from the beginning. No hidden traits.','这位居民的喜好和心情从一开始就公开，没有故意隐藏特性。')+'</p>';
+}
+
 function inspect(){
  const view=state();if(!view)return;
  const {S,residents,byId}=view,pane=$('townInspector'),content=$('inspectorContent');
@@ -53,9 +85,10 @@ function inspect(){
   discoveries:t('How the town works','数值与发现')
  }[opened];
  if(opened==='residents'){
-  content.innerHTML='<p class="inspect-intro">'+t('You can see everyone’s preferences before choosing a wish. A liked wish adds one heart; a disliked wish removes two.','选择愿望之前，就能看到所有居民的喜好。喜欢的愿望心情 +1，不喜欢的 −2。')+'</p>'+
-   residents.map((r,i)=>peopleMarkup(r,i,S,byId)).join('')+
-   '<p class="inspect-note">'+t('When two neighbors fall to 1/6, harmony drops by one. If harmony reaches 2 or less, a town debate may begin.','当两位居民心情下降到 1/6，友爱会下降；友爱为 2 或更低时，可能出现需要处理的居民争议。')+'</p>';
+  const focused=Number.isInteger(focusedResident)&&focusedResident>=0&&focusedResident<residents.length?focusedResident:null;
+  const wish=view.selected&&byId[view.selected];
+  $('inspectorTitle').textContent=focused===null?t('Compare neighbors','居民喜好对比'):residents[focused].name+' · '+t('Profile','个人档案');
+  content.innerHTML=focused===null?compareResidents(residents,S,byId,wish):oneResident(residents,focused,S,byId,wish);
  }else if(opened==='memories'){
   const places=window.TownFreedom?.DATA||{};
   const journeys=S.journeys||[],memories=S.memories||[];
@@ -89,7 +122,12 @@ function render(){
  inspect();
 }
 function toggle(section){
- opened=opened===section?'':section;
+ if(section==='residents'&&opened==='residents'&&focusedResident!==null){
+  focusedResident=null;
+ }else{
+  opened=opened===section?'':section;
+  if(section==='residents')focusedResident=null;
+ }
  inspect();
  if(opened){$('closeInspector')?.focus();window.arcadeMetric?.('town_info_open',{section});}
 }
@@ -97,17 +135,27 @@ function boot(){
  $('residentRibbonPeople')?.addEventListener('click',e=>{
   const btn=e.target.closest?.('[data-resident]');
   if(!btn)return;
-  opened='residents';inspect();
   const index=Number(btn.dataset.resident);
-  const target=$('inspectorContent')?.querySelector?.('[data-profile="'+index+'"]');
-  target?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+  if(!Number.isInteger(index)||index<0||index>=state()?.residents.length)return;
+  focusedResident=index;opened='residents';inspect();
   $('closeInspector')?.focus();
+  window.arcadeMetric?.('town_resident_profile_open',{resident:index});
+ });
+ $('inspectorContent')?.addEventListener('click',event=>{
+  const back=event.target.closest?.('[data-residents-all]');
+  if(back){focusedResident=null;opened='residents';inspect();return;}
+  const row=event.target.closest?.('[data-resident-profile]');
+  if(!row)return;
+  const index=Number(row.dataset.residentProfile),v=state();
+  if(!v||!Number.isInteger(index)||index<0||index>=v.residents.length)return;
+  focusedResident=index;opened='residents';inspect();
+  $('inspectorContent').scrollTop=0;
   window.arcadeMetric?.('town_resident_profile_open',{resident:index});
  });
  for(const [id,key] of [['tabResidents','residents'],['tabMemories','memories'],['tabDiscoveries','discoveries']])$(id)?.addEventListener('click',()=>toggle(key));
  for(const id of ['wonderStat','peaceStat','comboStat'])$(id)?.addEventListener('click',()=>{opened='discoveries';inspect();$('closeInspector')?.focus();});
- $('closeInspector')?.addEventListener('click',()=>{opened='';inspect();});
- $('townInspector')?.addEventListener('keydown',event=>{if(event.key==='Escape'){opened='';inspect();$('tabResidents')?.focus();}});
+ $('closeInspector')?.addEventListener('click',()=>{opened='';focusedResident=null;inspect();});
+ $('townInspector')?.addEventListener('keydown',event=>{if(event.key==='Escape'){opened='';focusedResident=null;inspect();$('tabResidents')?.focus();}});
  window.addEventListener('morrowwish-language-change',()=>render());
 }
 window.TownV5={boot,render,toggle};

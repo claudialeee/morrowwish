@@ -377,6 +377,15 @@ if(!townCompact.includes('function residentRibbon()')||
    !townCompactCss.includes('.app .resident-avatar.likes')||
    !townCompactCss.includes('.app .resident-avatar.dislikes'))
  throw Error('Visible resident strip and wish impact indicators are missing');
+if(!townCompact.includes('let opened=\'\',focusedResident=null')||
+   !townCompact.includes('function oneResident(')||
+   !townCompact.includes('function compareResidents(')||
+   !townCompact.includes('data-residents-all')||
+   !townCompact.includes('data-resident-profile')||
+   !tinyMusicPage.includes('data-zh="居民对比"')||
+   !townCompactCss.includes('.app .resident-compare-row')||
+   !townCompactCss.includes('.app .resident-focus-card'))
+ throw Error('Resident avatar must open only one profile, with a separate all-five comparison');
 console.log('Tiny Town single-canvas UI, resident preferences, meaningful resources, and optional memory rewards verified.');
 
 if(tinyMusicPage.indexOf('src="/tiny-town/freedom-scenes.js"')<0||

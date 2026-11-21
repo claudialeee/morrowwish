@@ -290,3 +290,62 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  .app .resident-avatar b{font-size:8px}
  .app .resident-avatar small{font-size:8px}
 }
+
+/* Two clear navigation levels: one resident profile or all-five comparison. */
+.app .resident-compare-list{display:grid;gap:7px}
+.app .resident-compare-row{
+ display:grid;grid-template-columns:37px minmax(0,1fr) 48px 12px;
+ align-items:center;gap:8px;min-height:67px;width:100%;text-align:left;
+ padding:7px 9px;background:#fffdf9;border:1px solid #eadde4;
+ border-radius:12px;box-shadow:0 2px 4px #a68d9a12;color:#67566d
+}
+.app .resident-compare-row:hover,.app .resident-compare-row:focus-visible{
+ border-color:#b695c6;background:#fff7f5;outline-offset:2px
+}
+.app .resident-compare-face{font-size:27px}
+.app .resident-compare-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.app .resident-compare-main strong{font-size:12px;color:#694e72}
+.app .resident-compare-main small{font-size:10px;line-height:1.2;white-space:nowrap}
+.app .resident-compare-main small b{display:inline-block;min-width:42px;font-size:9px}
+.app .resident-compare-like b{color:#4e9f7e}
+.app .resident-compare-dislike b{color:#b97484}
+.app .resident-compare-state{
+ font-size:11px;font-weight:900;color:#a77a9f;text-align:center;
+ background:#f6edf3;border-radius:8px;padding:5px 2px
+}
+.app .resident-compare-row.positive .resident-compare-state{background:#dbf5e7;color:#32764f}
+.app .resident-compare-row.negative .resident-compare-state{background:#ffdee2;color:#b14060}
+.app .resident-compare-chevron{font-size:21px;color:#ab89b2;font-weight:700}
+.app .resident-back{
+ padding:8px 11px;display:inline-flex;align-items:center;min-height:36px;
+ margin:0 0 11px;background:#f4e8f5;border:1px solid #d8bbdf;border-radius:10px;
+ color:#755583;font-size:12px;font-weight:900
+}
+.app .resident-focus-card{padding:12px;background:#fffdfa;border:1px solid #e9d9e4;border-radius:14px}
+.app .resident-focus-card .inspect-person{
+ margin:0;padding:2px;background:transparent;border:0;box-shadow:none
+}
+.app .resident-focus-card .inspect-person .face{font-size:42px}
+.app .resident-focus-card .inspect-person header div strong{font-size:17px}
+.app .resident-focus-card .inspect-person header div small{font-size:12px}
+.app .resident-focus-card .inspect-person p{font-size:12px;margin:10px 0;line-height:1.5}
+.app .resident-impact{
+ background:#f1edf5;border-radius:10px;padding:11px;font-size:12px;
+ font-weight:800;line-height:1.45;margin:11px 0 0;color:#76607e
+}
+.app .resident-impact.good{background:#e4f7e9;color:#2e815a}
+.app .resident-impact.bad{background:#ffe6e8;color:#a54a63}
+.app .resident-switch-title{margin:14px 0 8px!important}
+.app .resident-switch-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.app .resident-switch{
+ display:flex;flex-direction:column;align-items:center;gap:4px;min-height:59px;
+ background:#fff7f2;border:1px solid #eadfe7;border-radius:11px;
+ padding:6px 2px;color:#776381
+}
+.app .resident-switch span{font-size:24px;line-height:1}
+.app .resident-switch small{font-size:10px;font-weight:800}
+.app .resident-switch.selected{background:#f1e5f8;border:2px solid #ae82bf}
+@media(max-width:700px){
+ .app .resident-compare-row{min-height:64px;padding:6px 8px}
+ .app .resident-focus-card{padding:10px}
+}
