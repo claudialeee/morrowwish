@@ -31,6 +31,24 @@ function addCleanView(mode){
  if(!(rect.width>200&&rect.height>300&&Math.abs(ratio-9/16)<.035))
   throw Error('Portrait CSS/bitmap aspect mismatch, do not record stretched video '+ratio);
 }
+
+// Promotional-only result card: real gameplay status, without displaying
+// share panels, settings, long achievements or tiny text at the hook.
+function showRealResultCard(title,subline,kind){
+ const original=document.getElementById('overlay');
+ if(!original||original.hidden)throw Error('No actual finished game state to show');
+ original.style.setProperty('display','none','important');
+ const card=document.createElement('div');card.className='mw-v3-real-outcome';
+ card.textContent=title;
+ const note=document.createElement('div');note.textContent=subline;
+ Object.assign(card.style,{position:'fixed',zIndex:'2147483646',bottom:'12%',left:'5%',width:'90%',
+   boxSizing:'border-box',font:'900 34px/1.25 system-ui',color:'#fff5e7',textAlign:'center',
+   padding:'15px 10px',borderRadius:'20px',
+   background:kind==='aqua'?'rgba(4,63,65,.88)':'rgba(34,23,61,.88)',
+   boxShadow:'0 6px 23px rgba(0,0,0,.23)'});
+ Object.assign(note.style,{font:'750 22px/1.4 system-ui',color:'#f7eac7',marginTop:'5px'});
+ card.appendChild(note);document.body.appendChild(card);
+}
 async function session(browser,slug){
   const folder=path.join(dir,slug);fs.mkdirSync(folder,{recursive:true});
   const context=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:1,
@@ -70,6 +88,7 @@ async function capture(browser,slug,record){
      outcome:document.querySelector('#overlay-title')?.textContent,gameOver:!document.getElementById('overlay').hidden,
      portrait:window.MorrowwishArcadeViewport?.state}));
    if(!proof.gameOver||proof.portrait?.width!==540)throw Error('Missing genuine portrait failure screen '+JSON.stringify(proof));
+   await page.evaluate(showRealResultCard,proof.score+' POINTS · CRASHED','CAN YOU LAST LONGER?','arcade');
    await sleep(2500);
    marks=[[chapters.result,1.7,'ONE WRONG FLIP.'],[chapters.action,3.4,'JUST ONE BUTTON.'],[chapters.result,2.0,'BEAT MY RUN?']];
  }else if(slug==='parcel-panic'){
@@ -88,6 +107,7 @@ async function capture(browser,slug,record){
    proof=await page.evaluate(()=>({score:Number(document.querySelector('#score')?.textContent)||0,
      outcome:document.querySelector('#overlay-title')?.textContent,
      portrait:window.MorrowwishArcadeViewport?.state,gameOver:!document.getElementById('overlay').hidden}));
+   await page.evaluate(showRealResultCard,proof.score+' POINTS · GAME OVER','ONE WRONG DELIVERY ENDS THE STREAK','arcade');
    await sleep(2300);
    marks=[[chapters.result,1.6,'ONE WRONG LANE.'],[chapters.action,3.1,'KEEP THE STREAK.'],[chapters.result,2.0,'BEAT MY SCORE?']];
  }else if(slug==='pocket-aquarium'){
@@ -114,6 +134,10 @@ async function capture(browser,slug,record){
      done:!document.getElementById('overlay').hidden}));
    proof.bestCombo=combo;
    if(!proof.done||proof.score<90||!proof.grade)throw Error('No genuine aquarium achievement and ending '+JSON.stringify(proof));
+   const gradeMatch=(proof.grade||'').match(/Grade\s+([A-D]|S)/i);
+   const grade=gradeMatch?.[1]||'?';
+   await page.evaluate(showRealResultCard,'GRADE '+grade+' · '+proof.score+' POINTS',
+     'BEST COMBO ×'+proof.bestCombo,'aqua');
    await sleep(2800);
    marks=[[chapters.result,2.3,'WHAT GRADE DID I GET?'],[chapters.action,3.3,'MATCH THE FOOD.'],[Math.max(chapters.action,peak-1.2),1.9,'KEEP THE COMBO.'],[chapters.result,2.0,'BEAT MY GRADE?']];
  }else if(slug==='tiny-town'){
@@ -147,7 +171,12 @@ async function capture(browser,slug,record){
        if(modal==='story'){stories++;if(!chapters.story){chapters.story=(Date.now()-begin)/1000;await sleep(2100);}}
        await sleep(modal==='story'?460:240);
      }
-     if(await page.locator('#end.show').count()){ending=true;chapters.result=(Date.now()-begin)/1000;await sleep(3600);break;}
+     if(await page.locator('#end.show').count()){
+       ending=true;
+       // Playwright-only cinematic framing: retain real end artwork & name,
+       // remove tiny paragraphs and achievement tables that hid the scene.
+       await page.addStyleTag({content:'#end{overflow:hidden!important;padding:0!important}#end .end-modal{box-sizing:border-box!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;overflow:hidden!important;padding:14px!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;background:#fffaf5!important}#end .kicker,#end .close-ending,#end #endLine,#end #endStory,#end #endDetail,#end #endReason,#end #endLegacy,#end #endGoal,#end .modal-choices,#end .feedback{display:none!important}#end #endArt{order:0!important;display:block!important;width:100%!important;height:720px!important;flex:0 0 720px!important;overflow:hidden!important}#end #endArt .end-hero-art{height:700px!important;min-height:700px!important;width:100%!important;max-width:100%!important;border-radius:23px!important}#end #endTitle{order:1!important;font-size:30px!important;line-height:1.17!important;max-width:100%!important;margin:16px 0!important;text-align:center!important;color:#51395f!important}'});
+       chapters.result=(Date.now()-begin)/1000;await sleep(3600);break;}
    }
    proof={placed,stories,ending,day:await page.locator('#day').textContent()};
    if(placed<6||!ending)throw Error('Missing real 7-day town ending: '+JSON.stringify(proof));
@@ -156,7 +185,7 @@ async function capture(browser,slug,record){
      [chapters.result,3.0,'YOUR TOWN. YOUR ENDING.']];
  }else if(slug==='elsewhere'){
    // One COMPLETE life, not four incomprehensible menus flashing for 0.3s.
-   await page.addStyleTag({content:'.top,.topbar,.footer,.game-top,.case-topline,.moment-pips,.case-previous,.case-summary,.end-actions,.ending-route-label{display:none!important}#game,#ending{margin:0!important;width:100%!important;max-width:100%!important;padding:0!important}.scene-picture{height:350px!important;min-height:350px!important;max-height:350px!important;overflow:hidden!important}.scene-picture svg{width:100%!important;height:100%!important}.scene-body{padding:14px 18px!important}.scene-body h2{font-size:24px!important;line-height:1.2!important;margin:7px 0!important}.story-line{font-size:19px!important;line-height:1.35!important;max-height:86px!important;overflow:hidden!important}.case-objective{font-size:15px!important;line-height:1.35!important}.choices .choice{font-size:18px!important;min-height:62px!important}.choice strong{font-size:17px!important}.impact p{font-size:20px!important;line-height:1.4!important}.ending-art{height:365px!important;min-height:365px!important}.ending-paper{padding:18px!important}.ending-paper h1{font-size:31px!important;line-height:1.2!important}.ending-paper>p{font-size:19px!important;line-height:1.4!important}'});
+   await page.addStyleTag({content:'.top,.topbar,.footer,.game-top,.case-topline,.moment-pips,.case-previous,.case-summary,.end-actions,.ending-route-label{display:none!important}#game,#ending{margin:0!important;width:100%!important;max-width:100%!important;padding:0!important}.scene-picture{height:350px!important;min-height:350px!important;max-height:350px!important;overflow:hidden!important}.scene-picture svg{width:100%!important;height:100%!important}.scene-body{padding:14px 18px!important}.scene-body h2{font-size:24px!important;line-height:1.2!important;margin:7px 0!important}.story-line{font-size:19px!important;line-height:1.35!important;max-height:86px!important;overflow:hidden!important}.case-objective{font-size:15px!important;line-height:1.35!important}.choices .choice{font-size:18px!important;min-height:62px!important}.choice strong{font-size:17px!important}.impact p{font-size:20px!important;line-height:1.4!important}.ending-art{height:480px!important;min-height:480px!important}.ending-paper{padding:20px!important;min-height:390px!important}.ending-paper h1{font-size:34px!important;line-height:1.2!important}.ending-paper>p{font-size:19px!important;line-height:1.4!important}'});
    await page.locator('[data-world="paris"]').first().click({timeout:10000});
    chapters.action=(Date.now()-begin)/1000;await sleep(2500);
    for(let n=0;n<5;n++){
