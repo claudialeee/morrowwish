@@ -528,11 +528,15 @@ class CaptureBattle {
     const caps={sakura:3,yard:3,home:5,creek:7,volcano:9,ruins:12};
     const region=this.encounterRegion;
     const cap=caps[region]??Math.max(3,Math.ceil(avg)+2);
+    // Advanced locations are intentionally tougher than the starter meadow,
+    // even if a player explores ahead with an under-leveled team.
+    const floors={sakura:1,yard:1,home:2,creek:3,volcano:4,ruins:5};
+    const minLv=floors[region]??1;
     const progress=Math.min(1.5,caught*.12);
     const rarityBonus=Math.min(1.5,this.rarIdx*.65);
     const noise=(Math.random()-.5)*1.2;
     const lvl=Math.round(avg+progress+rarityBonus+noise);
-    return Math.max(1,Math.min(cap,lvl));
+    return Math.max(minLv,Math.min(cap,lvl));
   }
 
   // Build a wild pack of 1~3 enemies. Lead = the encountered species; rarer
