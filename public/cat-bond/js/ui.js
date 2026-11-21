@@ -44,6 +44,7 @@ const UI = {
     document.getElementById('btn-auto').addEventListener('click', () => {
       if (!this.game.battle) return;
       const on = this.game.battle.toggleAuto();
+      if(this.game.isTouch&&!on)this.game.touchAutoFire=true;
       this.game.syncBattleModeUI();
       window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
@@ -56,11 +57,23 @@ const UI = {
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
       btn.addEventListener('click', () => {
-        const b = this.game.battle; if (!b) return;
+        const b = this.game.battle; if (!b || this.game.battleHelpOpen) return;
         const m = btn.dataset.move;
+        if(m==='basic'&&this.game.isTouch&&!b.autoMode){
+          this.game.touchAutoFire=!this.game.touchAutoFire;
+          this.game.syncTouchBattleUI();
+          return;
+        }
         if (m === 'dodge') b.dodge(); else b.castMove(m);
       });
     });
+    if(!document.getElementById('battle-touch-joystick')){
+      const pad=document.createElement('div');
+      pad.id='battle-touch-joystick';
+      pad.setAttribute('aria-hidden','true');
+      pad.innerHTML='<div class="battle-touch-nub"></div><span class="battle-touch-label">移动</span>';
+      document.getElementById('battle-ui')?.append(pad);
+    }
     // Generic close and keyboard fallback. The mobile close button is OUTSIDE
     // the scrollable card so it never disappears when the player scrolls.
     document.body.addEventListener('click', e => {
@@ -1228,7 +1241,7 @@ const UI = {
           </button>
           <button type="button" role="radio" class="capture-mode-option ${initialAuto?'':'selected'}" data-battle-auto="false" aria-checked="${!initialAuto}">
             <strong>${english?'🎮 Manual control':'🎮 手动操作'}</strong>
-            <span>${english?(this.game.isTouch?'Drag left to move, hold right to attack.':'WASD to move, mouse/J to attack.'):(this.game.isTouch?'左半屏滑动移动，右半屏按住攻击。':'WASD 移动，鼠标/J 攻击。')}</span>
+            <span>${english?(this.game.isTouch?'Drag left to move; tap Claw to toggle continuous attacks.':'WASD to move, mouse/J to attack.'):(this.game.isTouch?'左侧滑动控制移动，右下猫爪可开启持续攻击。':'WASD 移动，鼠标或 J 键攻击。')}</span>
           </button>
         </div>
         <p class="capture-mode-note">${firstCapture
