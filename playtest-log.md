@@ -107,3 +107,28 @@ Adversary-confirmed pain points + ranked fixes:
 Net: the clash-excludes-basic fix (P1 #1) is the cheapest highest-impact — it alone should
 pull avgDmgTaken off zero and restore stakes. Pairs naturally with the loosened _pressure
 gate. Deferred to owner review; not applied this cycle.
+
+## Adversarial playtest — 2026-11-21 (cycle, task w2m7021gq; 6 personas × 8 battles, 51 critiques)
+Headline: "Combat has no clock and no unconditional threat: every forcing function is gated
+behind the player already winning, so mashers/kiters face a punching bag that never resolves;
+panicky players hit an unexplained wall with no mercy valve." (ran on current rebased code.)
+
+Adversary-confirmed P1s (converge across 3 masher critiques):
+- **The must-dodge heavy never fires in common fights.** It's gated on `e.rIdx>=1` (SR/SSR
+  only) AND `dominating` (_stomp>=0.4 = two flawless wins, OR _pressure>=0.6). So on N/R packs
+  — what a masher grinds — the one unavoidable threat never spawns. FIX: drop the rIdx gate
+  (gate on catchCount so beginners are still spared); lower _pressure trigger ~0.6→~0.35 and
+  raise accrual dt*0.25→~0.45 so a cruising player meets a "leave the circle" test within ~1s.
+- **No battle clock → masher soft-lock.** Basics are floored at 12% HP (can't finish) and
+  nothing ends the fight, so the enemy sits at ~12% forever; worse, within-fight escalation
+  keeps ramping, so mashing LONGER = stronger enemy ("did nothing different, got worse"). FIX:
+  stall detector — if only-basics while an enemy is pinned near the floor for ~5-6s, pulse the
+  Q/E/R buttons with "用技能破防!/Use a SKILL to break its guard!" and SUSPEND the rubber-band
+  while stalled; add a hard time cap (~2x gradeTimeLimit) → defined finish() + tip, not a hang.
+- **Four of five verbs are dead.** poise floor is cleared by ONE incidental Q tap; E/ult/dodge
+  have no floor-level requirement; poise regens 12%/s so there's no cadence pressure. The verbs
+  aren't underpowered, they're unrequired.
+Also noted (panicky): the wall arrives with no mercy valve / explanation.
+
+Owner-review log per cron policy. NOTE: acting on the P1 ungate + stall-teach this session
+under the standing "keep improving combat" directive (committed locally, not pushed).

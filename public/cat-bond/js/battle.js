@@ -128,6 +128,7 @@ class CaptureBattle {
     this._ultResultBanner = 0; this._ultResultText = ''; this._ultResultColor = '#ffd36b';
     this.pendingCasts = [];              // heavy-skill wind-ups in progress
     this._pressure = 0;                  // within-fight escalation rubber-band (0..1)
+    this._stallT = 0; this._stalled = false; this._lastSkillT = 0;   // mash-stall teach/resolve
     this._prevKeys = {};
 
     // move definitions (cooldowns live on the active fighter)
@@ -1299,6 +1300,7 @@ class CaptureBattle {
   // geometry: projectile=flying fan, melee=arc, aoe=slow placed lob, dash=lunge,
   // chain=jump. Support kinds (heal/buff) are handled by the callers before this.
   castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
+    this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
     // WIND-UP (前摇): heavy skills charge for sk.windup seconds before firing — a
     // brief commit that roots the caster and shows a growing charge ring, so big
     // moves have weight and can be read/punished (mirrors enemy telegraph).
@@ -1855,12 +1857,15 @@ class CaptureBattle {
   }
   switchTo(i) {
     if (i === this.active || !this.team[i] || !this.team[i].alive) return;
-    const old = this.me();
-    this.team[i].x = old.x; this.team[i].y = old.y; this.team[i].inv = 0.6;
+    // Take control of the chosen cat WHERE IT ALREADY STANDS — do not relocate its
+    // body to the old cat's spot (that made the other cat visibly teleport across
+    // the arena). A brief swap-in i-frame + a marker ring on the new controlled cat.
+    const nf = this.team[i];
+    nf.inv = Math.max(nf.inv || 0, 0.4);
     this.active = i;
-    this.vfx.ring(old.x, old.y, { r0: 8, vr: 280, life: 0.35, color: '#9be7c4', width: 3 });
-    this.vfx.burst(old.x, old.y, { count: 10, color: '#9be7c4', speed: 180, life: 0.4 });
-    this.game.toast(`切换到 ${State.catName(this.team[i].cat)}！`);
+    this.vfx.ring(nf.x, nf.y, { r0: 8, vr: 280, life: 0.35, color: '#9be7c4', width: 3 });
+    this.vfx.burst(nf.x, nf.y, { count: 10, color: '#9be7c4', speed: 180, life: 0.4 });
+    this.game.toast(`切换到 ${State.catName(nf.cat)}！`);
   }
 
   gainUlt(n) {
@@ -2305,8 +2310,24 @@ class CaptureBattle {
     // fire, two can telegraph at once, less manual breathing room. Threat you feel
     // now, not a +10% statline next run. 0 → 1 as the stomp drags on.
     const teamHpFrac = this.team.reduce((n,f)=>n+Math.max(0,f.hp),0)/Math.max(1,this.team.reduce((n,f)=>n+f.maxhp,0));
-    this._pressure = (!this.coach && this.t > 6 && teamHpFrac > 0.92)
-      ? Math.min(1, (this._pressure || 0) + dt * 0.25) : Math.max(0, (this._pressure || 0) - dt * 0.5);
+    this._pressure = (!this.coach && this.t > 5 && teamHpFrac > 0.88 && !this._stalled)
+      ? Math.min(1, (this._pressure || 0) + dt * 0.45) : Math.max(0, (this._pressure || 0) - dt * 0.5);
+    // MASH-STALL teach + resolve: if the player keeps throwing ONLY basics while an
+    // enemy sits pinned near the un-skilled mash floor (~<20% HP, not staggered), the
+    // fight can't end from basics alone. Detect it, pulse a "use a skill" teach beat,
+    // suspend the rubber-band so a confused player isn't punished, and hard-resolve
+    // after a generous cap so it can never soft-lock into an infinite stalemate.
+    if (!this.coach) {
+      const pinned = this.liveEnemies().some(e => e.hp / e.maxhp < 0.2 && (e.staggerT || 0) <= 0);
+      const onlyBasics = (this.t - (this._lastSkillT || -99)) > 3.5;   // no skill in a while
+      if (pinned && onlyBasics && !this.autoMode) {
+        this._stallT = (this._stallT || 0) + dt;
+      } else { this._stallT = Math.max(0, (this._stallT || 0) - dt * 2); }
+      this._stalled = this._stallT > 5;
+      if (this._stalled) this._stallBanner = 1.2;         // drawn + pulses the skill buttons
+      // Hard resolution: never let a fight run forever. ~70s is well past any real win.
+      if (this.t > 70 && !this.done) { this._timeCapLoss = true; this.finish(false); }
+    }
     // First-fight coach: while teaching move/attack/skill, enemies stand down so a
     // brand-new player can learn the controls without taking damage.
     const coachHold = this.coachHoldsEnemies();
@@ -2434,6 +2455,7 @@ class CaptureBattle {
     if (this._captureBanner > 0) this._captureBanner -= dt;
     if (this._ultReadyBanner > 0) this._ultReadyBanner -= dt;
     if (this._ultResultBanner > 0) this._ultResultBanner -= dt;
+    if (this._stallBanner > 0) this._stallBanner -= dt;
     const packN = this.enemies.length;
     // Each control scheme gets its own legible instruction. Mobile users
     // should never be told to use a mouse or Space key.
@@ -2614,8 +2636,14 @@ class CaptureBattle {
       // only chip it; the answer is to physically leave the circle (dodge/move). This is
       // the defensive forcing function the combat lacked. Generous windup = a reaction
       // test, not a reflex check. Own cooldown so it never spams.
-      const dominating = (this._stomp || 0) >= 0.4 || (this._pressure || 0) >= 0.6;
-      if (dominating && dist < 300 && (e.smashCd || 0) <= 0 && e.rIdx >= 1) kind = 'smash';
+      // Fire in ORDINARY fights too (not just SR/SSR or a flawless streak), so the
+      // one unavoidable dodge test isn't invisible to the exact player who mashes.
+      // Gate on collection progress (catchCount) instead of rarity so true beginners
+      // in their first couple fights are still spared. Lower _pressure trigger +
+      // faster accrual mean a cruising player meets a "leave the circle" test early.
+      const pastTutorial = (State.S.catchCount || 0) >= 2;
+      const dominating = (this._stomp || 0) >= 0.3 || (this._pressure || 0) >= 0.35;
+      if (pastTutorial && dominating && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
       else if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
@@ -3531,6 +3559,16 @@ class CaptureBattle {
       ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
       ctx.fillStyle=this._ultResultColor; ctx.shadowColor=this._ultResultColor; ctx.shadowBlur=20;
       ctx.fillText(this._ultResultText,W/2,this.topMargin+104);
+      ctx.restore();
+    }
+    // MASH-STALL teach banner: tell a basic-only player to use a skill to break guard.
+    if(this._stallBanner>0){
+      const k=Math.min(1,this._stallBanner/1.2),pulse=0.6+0.4*Math.abs(Math.sin(this.t*6));
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      ctx.save();ctx.globalAlpha=Math.min(1,k*1.5)*pulse;ctx.textAlign='center';
+      ctx.font='900 '+(this.game.isTouch?20:27)+'px system-ui, sans-serif';
+      ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=16;
+      ctx.fillText(en?'Use a SKILL (Q/E) to break its guard!':'用技能 (Q/E) 破防才能收服！',W/2,this.topMargin+150);
       ctx.restore();
     }
     // Compact combo badge instead of huge layered text across the cats.

@@ -167,7 +167,7 @@ const UI = {
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
     if(!selected.length){this.game.toast(en?'Adopt a kitten first':'请先领养一只小猫');return;}
     this.panel('<span class="card-close">×</span><h2>'+(en?'🐾 Expedition team':'🐾 地图出战队伍')+'</h2>'
-      +'<p class="sub">'+(en?'Choose 1–3 cats; the first is your leader. You can change them again before a battle.':'挑选 1–3 只猫咪，第一只是领队。地图内和开战前都可以再调整。')+'</p>'
+      +'<p class="sub">'+(en?'Pick up to 3; the first 2 fight on the field, a 3rd waits as a bond-ult reinforcement. The first is your leader.':'最多挑 3 只：前 2 只上场作战，第 3 只作为羁绊必杀的支援候补。第一只是领队。')+'</p>'
       +this.squadPickerMarkup(selected)
       +'<div class="btn-row"><button id="map-squad-save" type="button" class="btn gold">'+(en?'Save team':'保存队伍')+'</button>'
       +'<button id="map-squad-cancel" type="button" class="btn ghost">'+(en?'Cancel':'取消')+'</button></div>');
@@ -1289,7 +1289,9 @@ const UI = {
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
     const selected=opts.origin==='map'?this.getPreferredBattleTeam().map(c=>c.uid):[];
-    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (1–3)':'选择本次出战猫咪（1–3 只）')+'</h3>'+this.squadPickerMarkup(selected):'';
+    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (pick up to 3)':'选择出战猫咪（最多 3 只）')+'</h3>'
+      +'<p class="sub" style="margin:-2px 0 8px">'+(en?'2 fight on the field; a 3rd waits as a bond-ult reinforcement.':'场上出战 2 只；第 3 只作为羁绊必杀的支援候补。')+'</p>'
+      +this.squadPickerMarkup(selected):'';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     this.panel(`<span class="card-close">×</span>
