@@ -37,7 +37,7 @@ try{
  const ruleLayout=await page.evaluate(()=>{
   const stage=document.getElementById('stage'),board=document.getElementById('board'),tool=document.getElementById('tool'),top=document.querySelector('.in-game-top');
   const br=board.getBoundingClientRect(),tr=tool.getBoundingClientRect();
-  return {boardTop:br.top,boardBottom:br.bottom,toolTop:tr.top,topBottom:top.getBoundingClientRect().bottom,
+  return {boardTop:br.top,boardBottom:br.bottom,toolTop:tr.top,toolBottom:tr.bottom,topBottom:top.getBoundingClientRect().bottom,
    noDuplicateRules:!document.querySelector('.explainer'),menuHidden:document.getElementById('gameMenu').hidden,
    inFrame:['board','tool','heistStatus','gameMenu','menuButton','bonusQuick','guardIntent'].every(id=>stage.contains(document.getElementById(id))),
    tabs:document.querySelectorAll('[data-game-tab]').length};
