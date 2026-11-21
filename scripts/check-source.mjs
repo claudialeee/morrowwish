@@ -886,6 +886,15 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !kitten.includes('framedBreed(slot)')||
     kitten.includes('CatBondCompleteKittens.frameFor'))
   throw Error('Cat Bond must show full transparent watercolor kittens from the original illustrated 25-cat source');
+ const upgraded=fs.readFileSync('public/upgrade.js','utf8');new Function(upgraded);
+ // The upgraded game factories replace the base Flip Dash/Parcel Panic
+ // renderers. Guard their own portrait painting and hit targets.
+ if(upgraded.split('if(portrait){').length<3||
+    !upgraded.includes('const lx=145,rx=395')||
+    !upgraded.includes('const xOf=x=>100+(x-190)*170/290')||
+    !upgraded.includes('send(target,"click")')||
+    upgraded.includes('No need to grab it — just click a color lane!'))
+   throw Error('Upgrade.js must render BOTH complete 540x960 mini-games and honor touch sorting');
  const miniJs=fs.readFileSync('public/mini-frame-fullscreen.js','utf8');new Function(miniJs);
  for(const slug of ['flip-dash','parcel-panic','orbit-escape','tower-tuck',
    'traffic-tangle','color-current','perfect-pour','grid-glider','mirror-mosaic','echo-heist']){
