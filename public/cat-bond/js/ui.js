@@ -336,6 +336,26 @@ const UI = {
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const duoArt=ok?CatRelations.title(a,b):null;
     const name=duoArt?.name||'—';
+    const personalityNotes=[a,b].map(c=>{
+      const notes=en?{
+        gentle:'Protector · shields a vulnerable partner',
+        diligent:'Reliable protector · guards friends under pressure',
+        shy:'Courage · counterattacks when rescued',
+        mischievous:'Trickster · distracts enemies for partner ambushes',
+        clever:'Clever decoy · baits enemies for a surprise attack',
+        lazy:'Sleepy guardian · awakens to protect a weakened friend',
+        glutton:'Snack power · well-fed cats charge the duo meter'
+      }:{
+        gentle:'温柔守护 · 挺身减轻伙伴受到的伤害',
+        diligent:'可靠守护 · 危急时为伙伴挡伤害',
+        shy:'勇气反击 · 被保护后主动挥爪还击',
+        mischievous:'调皮诱敌 · 吸引野猫，为伙伴制造偷袭机会',
+        clever:'机敏声东击西 · 诱敌之后由搭档偷袭',
+        lazy:'慵懒守护 · 伙伴受伤时惊醒并展开护盾',
+        glutton:'吃饱发力 · 饱腹时额外积攒合击能量'
+      };
+      return State.catName(c)+' · '+(notes[c.personality]||(en?'Curious companion':'好奇的伙伴'));
+    });
     const selected=ok&&CatRelations.chosen().map(c=>c.uid).join('|')===picked.join('|');
     const mood=ok?CatRelations.mood(a,b):'unknown';
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
@@ -363,8 +383,13 @@ const UI = {
         <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
         <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
         <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
+        <div class="duo-personality-list">${personalityNotes.map(note=>'<p>'+esc(note)+'</p>').join('')}</div>
         <div class="duo-meter"><span style="width:${p}%"></span></div>
-        <small>${en?'20 unlocks · 60 adds a second effect · 90 strengthens the move':'20解锁合击 · 60新增元素效果 · 90强化威力'}</small>
+        <div class="duo-move-evolution" aria-label="${en?'Duo move upgrades':'双猫合击升级'}">
+          <div class="${p>=20?'unlocked':''}"><b>20 · ${en?'Twin Pounce':'联手飞扑'}</b><span>${en?'Two kittens launch and claw together':'双猫突进，挥出第一道爪痕'}</span></div>
+          <div class="${p>=60?'unlocked':''}"><b>60 · ${en?'Cross Claws':'交叉爪击'}</b><span>${en?'Crossed strikes and stronger elemental reactions':'两猫交叉挥爪，追加元素连锁效果'}</span></div>
+          <div class="${p>=90?'unlocked':''}"><b>90 · ${en?'Soulbound Finale':'终极连斩'}</b><span>${en?'Three claw waves with staggering force':'三重爪光与终结冲击，打出虚弱破绽'}</span></div>
+        </div>
         ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
           +CatRelations.secretStory(a,b)+'</span></p>':''}
         ${p>=90?'<p class="duo-secret-story">🌙 '+(en?'SECRET PROMISE':'最终的约定')+'<span>'
@@ -1519,7 +1544,7 @@ const UI = {
           </button>
           <button type="button" class="capture-mode-option ${auto?'':'selected'}" role="radio" data-battle-auto="false" aria-checked="${!auto}">
             <strong>${en?'🎮 Manual control':'🎮 手动操作'}</strong>
-            <span>${en?'Control the cat yourself; switch to auto whenever needed.':'自己控制小猫，也可以随时改成自动。'}</span>
+            <span>${en?'Phone: drag, tap skills. PC: WASD + mouse. A short tutorial comes first.':'自己操控；手机可拖动移动、点技能，电脑使用 WASD / 鼠标。开战前先看教程。'}</span>
           </button>
         </div>
         <p class="capture-mode-note">${(State.S.catchCount||0)===0&&!prefs.tutorialSeen?
