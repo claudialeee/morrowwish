@@ -245,7 +245,7 @@ try{
  assert.match(homeZh.heroPitch,/捣蛋小猫|偷三条鱼/,'Homepage hero should promote the leading cat game');
  assert.ok(homeZh.heroPitch.indexOf('和满院子的猫咪')<homeZh.heroPitch.indexOf('捣蛋小猫')&&homeZh.heroPitch.indexOf('捣蛋小猫')<homeZh.heroPitch.indexOf('自由的小镇')&&homeZh.heroPitch.indexOf('自由的小镇')<homeZh.heroPitch.indexOf('从未活过的人生'),'Homepage hero must match the four featured cards in order');
  assert.ok(homeZh.miniHeight>270&&homeZh.miniHeight<480,'The 02 game gallery should be compact without hiding any games');
- assert.ok(homeZh.aboutHeight>130&&homeZh.aboutHeight<260,'The 03 studio introduction should not consume a full screen');
+ assert.ok(homeZh.aboutHeight>260&&homeZh.aboutHeight<580,'The 03 studio introduction should accommodate the cat CEO without filling the entire viewport');
  const compactLayout=await page.evaluate(()=>{
   const rect=s=>document.querySelector(s)?.getBoundingClientRect();
   const copy=document.querySelector('.hero .hero-zh-copy');
