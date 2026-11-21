@@ -34,7 +34,7 @@ const playlists={
  ],
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
-  broll('narrow-escape',7.8,'SPOTTED! JUST GOT AWAY!'),
+  broll('narrow-escape',7.6,'NINE LIVES · ACHIEVEMENT!'),
   broll('caught-attempt',14,'NEXT ROOM. ONE BAD MOVE...'),
   cover(1.95,'PLAY FREE')
  ],
@@ -51,29 +51,28 @@ const playlists={
   cover(1.95,'PLAY FREE')
  ],
  'elsewhere':[
-  broll('choose-life',4.0,'WAKE UP TO A BRAND NEW LIFE.'),
-  broll('paris',3.15,'A NEW ROMANCE IN PARIS.'),
-  broll('paris-result',1.9),
-  broll('paris-romance',3.7,'LET ROMANCE BLOOM IN PARIS.'),
-  broll('paris-love-moment',2.3,'LOVE IS A NEW ADVENTURE.'),
-  broll('amalfi',3.15,'YOUR OWN SEASIDE VILLA.'),
-  broll('amalfi-result',1.9),
-  broll('tokyo',3.15,'LIVE AS A SUPERSTAR.'),
-  broll('tokyo-result',1.9),
-  broll('moon-opening',3.35,'OR LIVE ON THE MOON.'),
-  broll('moon-choice',3.0,'EVERY DECISION CHANGES YOU.'),
-  broll('moon-surprise',3.55,'A HIDDEN SURPRISE APPEARS.'),
-  broll('moon-consequence',3.0,'YOUR LIFE KEEPS UNFOLDING.'),
-  broll('moon-finale-surprise',3.55,'ONE FINAL UNEXPECTED TWIST.'),
-  broll('moon-last-result',1.45),
-  broll('moon-ending',5.6,'A REAL ENDING YOU EARNED.'),
+  // A quick promise of multiple dream lives, then one clear romantic story
+  // from meeting to real ending. No repetitive generic moon/choice filler.
+  broll('choose-life',2.8,'WAKE UP TO A NEW LIFE.'),
+  broll('amalfi',2.35,'A VILLA ON THE AMALFI COAST.'),
+  broll('tokyo',2.35,'BE A SUPERSTAR TONIGHT.'),
+  broll('moon-opening',2.5,'OR OWN A HOTEL ON THE MOON.'),
+  broll('moon-surprise',2.55,'SURPRISES IN EVERY LIFE.'),
+  broll('paris',3.15,'A NEW LOVE STORY IN PARIS.'),
+  broll('paris-result',1.8),
+  broll('paris-romance',3.65,'MEET SOMEONE WHO GETS YOU.'),
+  broll('paris-love-moment',2.3,'ONE UNFORGETTABLE DATE.'),
+  broll('paris-chapter-3',2.75,'THE ROMANCE CONTINUES.'),
+  broll('paris-chapter-4',2.6,'A MOMENT WORTH KEEPING.'),
+  broll('paris-finale',2.45,'CHOOSE YOUR OWN LOVE STORY.'),
+  broll('paris-ending',3.65,'YOUR CHOICES. YOUR ENDING.'),
   cover(1.95,'PLAY FREE')
  ],
  'flip-dash':[
-  broll('survival',5.7,'DODGE PINK. GRAB GOLD.'),
-  broll('coin-collect',9.0,'CATCH THE GOLD COINS!'),
-  broll('danger',2.25,'ONE WRONG MOVE IS ENOUGH.'),
-  broll('crash',2.2,'CAN YOU LAST LONGER?'),
+  broll('first-coin',3.5,'GRAB GOLD FROM THE START!'),
+  broll('coin-collect',10.2,'COLLECT GOLD. DODGE PINK.'),
+  broll('danger',2.45,'ONE WRONG MOVE IS ENOUGH.'),
+  broll('crash',1.5,'CAN YOU LAST LONGER?'),
   cover(1.95,'PLAY FREE')
  ],
  'parcel-panic':[

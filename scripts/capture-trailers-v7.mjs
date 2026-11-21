@@ -188,6 +188,16 @@ try{
      ctx.fillText('FISH '+s.got+'/3',28,760);
      if(s.winning)ctx.fillText('ESCAPED!',28,815);
      else if(s.lives<3)ctx.fillText('CAUGHT!',28,815);
+     // These labels are keyed to the real in-game near-miss counter,
+     // which is set only after a guard spots the cat and loses sight.
+     if(s.nearMisses>0){
+      ctx.fillStyle='#302341db';ctx.fillRect(26,145,488,111);
+      ctx.strokeStyle='#eac56f';ctx.lineWidth=3;ctx.strokeRect(26,145,488,111);
+      ctx.fillStyle='#ffdd7c';ctx.font='bold 22px system-ui,sans-serif';
+      ctx.fillText('ACHIEVEMENT UNLOCKED',43,183);
+      ctx.fillStyle='#ffffff';ctx.font='bold 27px system-ui,sans-serif';
+      ctx.fillText('NINE LIVES · NARROW ESCAPE!',43,220);
+     }
     }
     requestAnimationFrame(paint);
    }paint();
@@ -258,10 +268,15 @@ try{
   }
   if(!nearMissProof?.sighted||nearMissProof.nearMisses<1||nearMissProof.lives!==3)
    throw Error('V8 true narrowly escaped pursuit was not captured');
-  const nearMissEnd=stamp();await sleep(1500);
-  const nearMissClipStart=Math.max(nearMissStart,nearMissEnd-6900);
+  const badgeEarned=await page.evaluate(()=>{
+   const save=JSON.parse(localStorage.getItem('pawsibly-innocent-save-v1')||'{}');
+   return save.achievements?.['near-miss']===true;
+  });
+  if(!badgeEarned)throw Error('The real Nine Lives achievement was not awarded');
+  const nearMissEnd=stamp();await sleep(2100);
+  const nearMissClipStart=Math.max(nearMissStart,nearMissEnd-5500);
   shots.push({label:'narrow-escape',start:nearMissClipStart,
-   duration:Math.min(7.9,nearMissEnd-nearMissClipStart+1.2)});
+   duration:Math.min(7.6,nearMissEnd-nearMissClipStart+2.0)});
   console.log('V8 CAT NARROW ESCAPE VERIFIED '+JSON.stringify(nearMissProof));
   // Explicit second run. The cut is at the start of a NEW room, never in
   // the middle of movement. A different outcome comes from actual game rules.
@@ -415,6 +430,29 @@ try{
       await page.locator('#game [data-choice]').first().click();
       const moment=stamp();await sleep(2600);
       shots.push({label:'paris-love-moment',start:moment,duration:2.4});
+      await page.locator('#game [data-continue]').click();
+      await page.locator('#game [data-twist]').first().click();
+      await check('paris-chapter-3');
+      const chapter3=stamp();await sleep(3000);
+      shots.push({label:'paris-chapter-3',start:chapter3,duration:2.8});
+      await page.locator('#game [data-choice]').nth(1).click();
+      await page.locator('#game [data-continue]').click();
+      await check('paris-chapter-4');
+      const chapter4=stamp();await sleep(2900);
+      shots.push({label:'paris-chapter-4',start:chapter4,duration:2.7});
+      await page.locator('#game [data-choice]').nth(1).click();
+      await page.locator('#game [data-continue]').click();
+      await page.locator('#game [data-twist]').first().click();
+      await check('paris-finale');
+      const finale=stamp();await sleep(2750);
+      shots.push({label:'paris-finale',start:finale,duration:2.55});
+      await page.locator('#game [data-choice]').nth(1).click();
+      await page.locator('#game [data-continue]').click();
+      await page.waitForFunction(()=>{const e=document.querySelector('#ending');return !!e&&!e.hidden&&!!e.querySelector('.ending-paper h1')?.textContent},null,{timeout:5000});
+      const parisTitle=await page.locator('#ending .ending-paper h1').textContent();
+      if(!/Paris|巴黎|恋爱|love|date|书店|认真/i.test(parisTitle||''))throw Error('Paris story did not earn a romantic conclusion '+parisTitle);
+      const romanceEnding=stamp();await sleep(4000);
+      shots.push({label:'paris-ending',start:romanceEnding,duration:3.75});
     }
     await page.evaluate(()=>document.querySelector('#game [data-home]')?.click());
     await sleep(250);
@@ -469,12 +507,16 @@ try{
    if(now.dead)throw Error('V7 Flip crashed before long survival '+JSON.stringify(now));
    const st=now.s,h=st.haz.filter(x=>!x.passed&&x.x>225).sort((x,y)=>x.x-y.x)[0];
    if(st.gems>0&&!firstCoinAt)firstCoinAt=stamp();
+   if(st.sec>5.7&&st.gems<1)throw Error('Flip failed to take the FIRST gold coin at the start: '+JSON.stringify(st));
+   if(st.sec>11.5&&st.gems<2)throw Error('Flip failed to collect a second early gold coin: '+JSON.stringify(st));
    if(st.sec>=15&&st.dodges>=8&&st.gems>=3){targetAt=stamp();dodged=st.dodges;collected=st.gems;break}
-   // Do not dodge gold: collect stars by being on their real lane.
-   const coin=st.stars.filter(x=>!x.got&&x.x>225).sort((x,y)=>x.x-y.x)[0];
-   if(h&&h.x<570&&st.side===h.side)await page.keyboard.press('Space');
-   else if(coin&&coin.x<460&&coin.x>240&&st.side!==coin.side&&(!h||h.x>600))
-    await page.keyboard.press('Space');
+   const coin=st.stars.filter(x=>!x.got&&x.x>195).sort((x,y)=>x.x-y.x)[0];
+   // Prioritize the NEAREST actual event. If a collectible is about to
+   // reach us BEFORE the next pink block, stay in / move to its lane.
+   // Never flip away from a coin because a more distant hazard appears.
+   const collectNow=coin&&coin.x<555&&(!h||h.x>coin.x+70);
+   if(collectNow&&st.side!==coin.side)await page.keyboard.press('Space');
+   else if(!collectNow&&h&&h.x<550&&st.side===h.side)await page.keyboard.press('Space');
    last=st;await sleep(115);
   }
   if(!targetAt||!firstCoinAt)throw Error('V8 Flip must dodge eight obstacles AND genuinely collect >=3 gold coins during 15 seconds '+JSON.stringify(last));
@@ -494,12 +536,14 @@ try{
   const k=await page.locator('#overlay-kicker').textContent();
   if(!/GAME OVER|本局结束/i.test(k)||dodged<8||collected<3)throw Error('V8 Flip must collect three coins before a genuine crash');
   await sleep(1900);
-  const coinStart=start+Math.min(6,targetAt-start-5);
-  console.log('V8 FLIP COIN COLLECTION VERIFIED '+JSON.stringify({collected,dodged,firstCoinAt,seconds:targetAt-start}));
-  return [{label:'survival',start,duration:Math.min(5.8,coinStart-start-.12)},
-    {label:'coin-collect',start:coinStart,duration:Math.min(9.3,targetAt-coinStart-.12)},
-    {label:'danger',start:Math.max(start+12.8,targetAt-2),duration:Math.min(2.35,collided-Math.max(start+12.8,targetAt-2)-.1)},
-    {label:'crash',start:Math.max(targetAt,collided-.75),duration:Math.min(2.45,collided-Math.max(targetAt,collided-.75)+1.55)}];
+  const openingAt=Math.max(start,firstCoinAt-1.6);
+  const openingEnd=Math.min(firstCoinAt+1.6,targetAt-7.5);
+  if(openingEnd-openingAt<2.4)throw Error('First coin was not visible long enough for an opening hook');
+  console.log('V9 FLIP EARLY COIN VERIFIED '+JSON.stringify({collected,dodged,firstCoinAt,openingAt,seconds:targetAt-start}));
+  return [{label:'first-coin',start:openingAt,duration:openingEnd-openingAt-.08},
+    {label:'coin-collect',start:openingEnd,duration:Math.min(10.6,targetAt-openingEnd-.15)},
+    {label:'danger',start:targetAt,duration:Math.min(2.7,collided-targetAt-.1)},
+    {label:'crash',start:collided,duration:1.55}];
  }));
  result.push(await capture(browser,'parcel-panic',async({page,stamp})=>{
   await page.route('**/upgrade.js*',async route=>{

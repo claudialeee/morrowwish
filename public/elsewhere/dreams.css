@@ -345,3 +345,13 @@ main{max-width:1170px;margin:auto;padding:0 24px}
 /* Eight stories: use a balanced four-by-two desktop gallery, with no lonely
    two-card final row. Small screens retain two columns for easy browsing. */
 @media(min-width:851px){.life-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.life-card>strong{font-size:clamp(16px,1.5vw,19px);min-height:52px}.life-card .tease{min-height:66px}.life-card .place{font-size:10px}.life-card .card-image{aspect-ratio:1.55}}
+
+/* Situation-specific narrative decisions and route-dependent endings. */
+.life-causal-bridge{background:rgba(251,236,230,.68);border-left:3px solid var(--rose);padding:8px 11px;border-radius:0 9px 9px 0;margin:8px 0!important;font-size:12px!important;line-height:1.42!important}
+.life-causal-bridge b{color:#94566c;letter-spacing:.02em}
+.life-specific-question{font-weight:830!important;color:#7e455f!important;letter-spacing:0!important;font-size:15px!important;line-height:1.35!important;margin:12px 0 8px!important}
+.life-choice-made{display:block;font-size:13px;line-height:1.4;color:#a65d7c;margin:4px 0 6px}
+.life-ending-moments{margin:13px 0 12px;padding:12px 14px;border:1px solid #eddcdf;border-radius:12px;background:#fff6f8}
+.life-ending-moments>strong{display:block;color:#8a536a;font-size:12px;letter-spacing:.025em;margin-bottom:6px}
+.life-ending-moments p{font-size:12.5px!important;line-height:1.4!important;margin:5px 0!important;color:#574c63!important}
+@media(max-width:560px){.life-causal-bridge{font-size:11.5px!important;padding:6px 9px}.life-specific-question{font-size:13.5px!important;margin:8px 0 6px!important}.life-ending-moments{margin:9px 0;padding:9px 11px}.life-ending-moments p{font-size:12px!important}}
