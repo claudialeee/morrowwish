@@ -116,22 +116,29 @@ function render(ctx,W,H,seq,lookup){
   const zoom=move.zoom,drawW=w*zoom,drawH=h*zoom;
   ctx.drawImage(sheet,(tile%2)*650,Math.floor(tile/2)*366,650,366,
     x+(w-drawW)/2+move.dx*w,y+(h-drawH)/2+move.dy*h,drawW,drawH);
-  // Each of 21 techniques already has an authored elemental attack drawn
-  // in duo-signatures.js. Add it as a short, restrained hit-beat overlay ONLY.
-  if(p>.25&&p<.68&&window.CatBondDuoSignatures?.paint){
-    ctx.save();ctx.translate(x,y);
-    ctx.globalAlpha=.10+Math.sin(Math.PI*clamp((p-.25)/.43))*.15;
-    window.CatBondDuoSignatures.paint(ctx,w,h,p,seq.tier||1,key);
-    ctx.restore();
+  // The finished premium cat illustration always remains WHOLE. Animate
+  // complementary elemental energy beneath the faces, at the actual damage
+  // timeline: wind-up (0-.3s), strike (.78s), lingering aura thereafter.
+  if(window.CatBondDuoSignatures?.paint){
+    const wind=smooth((p-.08)/.16)*(1-smooth((p-.25)/.12));
+    const hit=smooth((p-.24)/.07)*(1-smooth((p-.47)/.20));
+    const release=smooth((p-.47)/.13)*(1-smooth((p-.87)/.13));
+    const strength=Math.max(wind*.24,hit*.51,release*.22);
+    if(strength>.01){
+      ctx.save();ctx.translate(x,y);
+      ctx.beginPath();ctx.rect(0,h*.48,w,h*.52);ctx.clip();
+      ctx.globalAlpha=strength;
+      window.CatBondDuoSignatures.paint(ctx,w,h,p,seq.tier||1,key);
+      ctx.restore();
+    }
   }
-  if(p>.31&&p<.59){
-    ctx.save();
-    const impact=Math.sin(Math.PI*clamp((p-.31)/.28));
-    ctx.globalAlpha=.18*impact;
-    const cx=x+w*.55,cy=y+h*.57;
-    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,w*.37);
-    glow.addColorStop(0,cfg[2]);glow.addColorStop(1,'#ffffff00');
-    ctx.fillStyle=glow;ctx.fillRect(x,y,w,h);
+  const hitPulse=Math.max(0,1-Math.abs(age-(seq.strikeAt||.78))/.28);
+  if(hitPulse>.01){
+    ctx.save();ctx.globalAlpha=.35*hitPulse;
+    const cx=x+w*.71,cy=y+h*.78,r=20+(1-hitPulse)*w*.105;
+    ctx.strokeStyle=cfg[2];ctx.lineWidth=Math.max(2,w*.004);
+    ctx.shadowColor=cfg[2];ctx.shadowBlur=12;
+    ctx.beginPath();ctx.ellipse(cx,cy,r,r*.52,-.18,0,Math.PI*2);ctx.stroke();
     ctx.restore();
   }
   ctx.restore();
@@ -173,5 +180,5 @@ function render(ctx,W,H,seq,lookup){
  ctx.restore();return true;
 }
 window.CatBondDuoHero={draw:render,scenes,sceneKeys:keys,get assetReady(){return ready},
- assetSource:'original-approved-illustrations',assetCount:8};
+ assetSource:'original-approved-illustrations',assetCount:8,signatureCount:keys.length};
 })();

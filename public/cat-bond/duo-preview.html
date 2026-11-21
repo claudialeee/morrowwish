@@ -89,7 +89,10 @@ const keys=window.CatBondDuoSignatures?.keys||[];
 const cv=document.getElementById('duo-canvas'),ctx=cv.getContext('2d');
 let selected='elec+fire',tier=3,start=performance.now(),paused=false,hold=0;
 const colors={dark:'#bcb0ea',elec:'#ffe58a',fire:'#ffab80',grass:'#b2e3a1',light:'#fff0bd',water:'#9fdbf7'};
-const cats={previewA:{uid:'previewA',species:'tangyuan'},previewB:{uid:'previewB',species:'xiaohui'}};
+const q=new URLSearchParams(location.search);
+const valid=new Set(window.GameData.SPECIES.map(sp=>sp.id));
+const cats={previewA:{uid:'previewA',species:valid.has(q.get('a'))?q.get('a'):'tangyuan'},
+ previewB:{uid:'previewB',species:valid.has(q.get('b'))?q.get('b'):'xiaohui'}};
 const breeds=window.GameData?.SPECIES||[];
 for(const [id,slot,initial] of [['preview-cat-a','previewA','tangyuan'],['preview-cat-b','previewB','xiaohui']]){
  const control=document.getElementById(id);
@@ -97,7 +100,7 @@ for(const [id,slot,initial] of [['preview-cat-a','previewA','tangyuan'],['previe
   const opt=document.createElement('option');opt.value=breed.id;
   opt.textContent=breed.name;control.append(opt);
  }
- control.value=initial;
+ control.value=cats[slot].species;
  control.onchange=()=>{cats[slot].species=control.value;render(.8)};
 }
 function measure(){
@@ -155,7 +158,7 @@ function frame(now){
  requestAnimationFrame(frame);
 }
 if(keys.length===21&&window.CatBondDuoHero){
- choose(selected);requestAnimationFrame(frame);
+ choose(keys.includes(q.get('pair'))?q.get('pair'):selected);requestAnimationFrame(frame);
  window.__duoPreviewReady=true;
  window.__duoPreviewDebug={renderAt:(key,lvl,s)=>{
     selected=key;tier=lvl;render(s);return cv.toDataURL('image/png')

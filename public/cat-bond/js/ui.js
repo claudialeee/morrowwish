@@ -403,7 +403,8 @@ const UI = {
         </section></div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
-        <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button></div>
+        <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button>
+        <button class="btn ghost" id="duo-preview">${en?'Preview illustrated duo attack':'预览原画合击动画'}</button></div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
     for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
@@ -418,6 +419,14 @@ const UI = {
       this.game.toast(en?'💞 Duo formed! Both cats will join the next fight.':'💞 搭档组成成功！下次战斗两只会一起上场。');
       window.arcadeMetric?.('bond_duo_selected',{elementPair:CatRelations.title(a,b).elementPair});
       this.openBondPanel();
+    };
+    document.getElementById('duo-preview').onclick=()=>{
+      const pair=ok?CatRelations.title(a,b).elementPair:'dark+light';
+      const url=new URL('duo-preview.html',window.location.href);
+      url.searchParams.set('pair',pair);
+      if(a?.species)url.searchParams.set('a',a.species);
+      if(b?.species)url.searchParams.set('b',b.species);
+      window.open(url.href,'_blank','noopener');
     };
     const soothe=document.getElementById('duo-soothe');
     if(soothe)soothe.onclick=()=>{
