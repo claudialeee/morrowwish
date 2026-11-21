@@ -267,7 +267,7 @@
   function breedFrame(o) {
     // All 25 identities now use complete transparent portraits, not a tiled
     // AVIF that cuts through faces or bakes a white rectangle into the art.
-    if(window.CatBondCompleteKittens)return window.CatBondCompleteKittens.frameFor(o.species);
+    if(window.CatBondCompleteKittens)return window.CatBondCompleteKittens.frameFor(o.species||o);
     const sp=o.species||{};
     const id=sp.id||'';
     // Use the 25-frame illustrated atlas first; fallback keeps playability on
