@@ -3,6 +3,7 @@
 const UI = {
   game: null,
   openCatUid: null,
+  levelText(level){return (window.MorrowwishI18n?.get?.()==='zh'?'等级 ':'Lv.')+level;},
 
   init(game) {
     this.game = game;
@@ -377,7 +378,7 @@ const UI = {
       return `<div class="st-row workshop-row ${st.type==='sun'?'work-money':''}" data-id="${st.id}">
         <div class="st-ico">${st.icon}</div>
         <div class="st-main">
-          <div class="st-name">${name} <span class="tiny">Lv.${st.level}</span></div>
+          <div class="st-name">${name} <span class="tiny">${this.levelText(st.level)}</span></div>
           <p class="work-usage">${usage}</p>
           <div class="work-income">${en?'Production':'产出'}：<b>${Number(st.ratePerHour||0).toFixed(1)} ${unit}/${en?'hour':'小时'}</b></div>
           <div class="work-employee">${st.active
@@ -475,7 +476,7 @@ const UI = {
   },
   openCatPicker(title, onPick) {
     const cats = State.S.cats;
-    const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const busy = window.Raising && Raising.isBusy && Raising.isBusy(c.uid); return `<div class="chip ${busy ? 'busy' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">${busy ? '工作中' : 'Lv.' + c.level}</div></div></div>`; }).join('');
+    const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const busy = window.Raising && Raising.isBusy && Raising.isBusy(c.uid); return `<div class="chip ${busy ? 'busy' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${State.catName(c)}</div><div class="tiny">${busy ? '工作中' : this.levelText(c.level)}</div></div></div>`; }).join('');
     this.panel(`<span class="card-close">×</span><h2>${title}</h2><div class="roster">${chips}</div>`);
     document.querySelectorAll('#panel .chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
@@ -528,7 +529,7 @@ const UI = {
         <canvas width="90" height="76"></canvas>
         <div class="name">${sp.name}</div>
         <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
-        <div class="tiny">${english?'Top Lv.':'最高等级 Lv.'}${strongest.level}</div>
+        <div class="tiny">${english?'Top Lv.':'最高等级 '}${strongest.level}</div>
       </button>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
@@ -561,7 +562,7 @@ const UI = {
     const rows=all.slice(current*perPage,(current+1)*perPage).map(cat=>
       `<button type="button" class="breed-member" data-cat-uid="${safe(cat.uid)}">
         <canvas width="68" height="56"></canvas>
-        <span><strong>${safe(State.catName(cat))}</strong><small>Lv.${cat.level} · ❤ ${Math.round(cat.affinity)}
+        <span><strong>${safe(State.catName(cat))}</strong><small>${this.levelText(cat.level)} · ❤ ${Math.round(cat.affinity)}
           · ⚔ ${State.catPower(cat)}${cat.shiny?' · ✨':''}</small></span>
         <span aria-hidden="true">›</span>
       </button>`).join('');
@@ -615,7 +616,7 @@ const UI = {
       <div style="display:flex;gap:16px;align-items:center;">
         <canvas id="cd-canvas" width="120" height="100" style="background:rgba(255,255,255,0.04);border-radius:12px;"></canvas>
         <div style="flex:1">
-          <div class="stat-row"><span class="label">等级</span><span class="val" style="width:auto">Lv.${cat.level}</span></div>
+          <div class="stat-row"><span class="label">等级</span><span class="val" style="width:auto">${this.levelText(cat.level)}</span></div>
           <div class="stat-row"><span class="label">经验</span><div class="bar xp"><span style="width:${Math.round(cat.xp / need * 100)}%"></span></div><span class="val">${Math.round(cat.xp)}/${need}</span></div>
           <div class="stat-row"><span class="label">好感 (${tierText})</span><div class="bar aff"><span style="width:${cat.affinity}%"></span></div><span class="val">${Math.round(cat.affinity)}</span></div>
         </div>
@@ -786,7 +787,7 @@ const UI = {
     const itemOk = !req.item || ((State.S.evoStones && State.S.evoStones[req.item]) > 0);
     const ready = lvlOk && bondOk && itemOk;
     const reqStr = [
-      `Lv.${req.level}${lvlOk ? '✓' : `(当前${cat.level})`}`,
+      `${this.levelText(req.level)}${lvlOk ? '✓' : `(当前${cat.level})`}`,
       `好感${req.bond}${bondOk ? '✓' : ''}`,
       req.item ? `${req.item}×1${itemOk ? '✓' : '(缺)'}` : null,
     ].filter(Boolean).join(' · ');
@@ -1371,6 +1372,7 @@ const UI = {
 
   // ---- Gambit editor: configure each team cat's auto-battle rule list ----
   openGambitEditor(wildSp) {
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
     const cats = State.S.cats;
     const team = this.teamUids.map(uid => cats.find(x => x.uid === uid)).filter(Boolean);
     const S = window.Skills;
@@ -1398,7 +1400,7 @@ const UI = {
       </div>`).join('');
 
     this.panel(`<span class="card-close">×</span>
-      <h2>⚙️ AI 策略 <span class="tiny">自上而下逐条判定</span></h2>
+      <h2>${en?'⚙️ Auto tactics':'⚙️ 智能战斗策略'} <span class="tiny">${en?'Rules checked top to bottom':'自上而下逐条判定'}</span></h2>
       <p class="sub">给每只猫配置自动战斗规则：满足「条件」就执行「动作」，最先命中的生效。</p>
       <div class="gb-tabs">${tabs}</div>
       <p class="tiny" style="margin:6px 0"><b>${sp.name}</b> · ${S.elementOf ? this.game.elemIcon(S.elementOf(cat.species)) : ''} 元素 · 技能：${(cat.loadout || []).map(id => { const sk = S.skillById(id); return sk ? sk.name : ''; }).filter(Boolean).join(' / ') || '默认'}</p>
