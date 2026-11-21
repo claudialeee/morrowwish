@@ -746,6 +746,7 @@ class Game {
       if(helpBtn.textContent!==label)helpBtn.textContent=label;
       helpBtn.setAttribute('aria-label',english?'Show battle controls':'查看手动战斗操作说明');
     }
+    this.syncTouchBattleUI();
     this.renderBattleHelp();
   }
 
@@ -764,12 +765,12 @@ class Game {
           ['✨ 你随时能接管','点击队友头像可以换猫。战斗顶部的「自动战斗」按钮可以随时切换成手动。']
         ])
         :(en?[
-          ['🕹️ 1 · Move your kitten',this.isTouch?'Drag on the LEFT half of the arena to move.':'Use WASD or the arrow keys to move around the arena.'],
-          ['🐾 2 · Attack the wild cat',this.isTouch?'Press and hold the RIGHT half of the arena to attack. Aim is assisted.':'Hold left mouse button or press J to attack. Aim with the mouse.'],
+          ['🕹️ 1 · Move your kitten',this.isTouch?'Drag the left virtual joystick to move. Your claws keep attacking; tap Claw to pause.':'Use WASD or the arrow keys to move around the arena.'],
+          ['🐾 2 · Attack the wild cat',this.isTouch?'Claws auto-aim at nearby foes. Tap Claw to start or pause continuous attacks; hold the right arena to shoot manually.':'Hold left mouse button or press J to attack. Aim with the mouse.'],
           ['✨ 3 · Skills and dodge',this.isTouch?'Tap the bottom skill buttons. Dodge to avoid a hit; unleash your ultimate once the meter fills.':'Press Q / E for skills, Space to dodge and R for an ultimate. You can turn on Auto Battle at any time.']
         ]:[
-          ['🕹️ 1 · 移动小猫',this.isTouch?'在战斗画面左半边按住滑动，控制小猫移动。':'使用 WASD 或方向键控制小猫移动。'],
-          ['🐾 2 · 攻击野猫',this.isTouch?'按住战斗画面右半边攻击，会自动瞄准附近的野猫。':'按住鼠标左键或按 J 攻击，用鼠标瞄准。'],
+          ['🕹️ 1 · 移动小猫',this.isTouch?'滑动左侧摇杆移动。猫爪会持续攻击，点击猫爪按钮可暂停。':'使用 WASD 或方向键控制小猫移动。'],
+          ['🐾 2 · 攻击野猫',this.isTouch?'猫爪自动瞄准附近野猫。点击猫爪按钮可开始或暂停持续攻击，也可以按住画面右侧射击。':'按住鼠标左键或按 J 攻击，用鼠标瞄准。'],
           ['✨ 3 · 技能与闪避',this.isTouch?'点下方技能键释放技能；点「闪避」躲开攻击，能量满时释放必杀。':'按 Q / E 放技能、空格闪避、R 放必杀。战斗中也可以随时切换自动。']
         ]);
       const step=Math.min(flow.step,stages.length-1);
