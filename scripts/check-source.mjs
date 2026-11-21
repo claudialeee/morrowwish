@@ -820,3 +820,33 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(page.includes('id="narrate-voice"'))throw new Error('Duplicate iPhone speech voice menu has returned');
  console.log('Elsewhere: '+count+' full-length bilingual passages, curated narrator and no duplicate voice picker verified.');
 }
+
+
+// Shared settings and portrait interaction regression gate.
+// Covers every published game, not only the four featured experiences.
+{
+ const games=['cat-bond','color-current','echo-heist','elsewhere','flip-dash',
+  'grid-glider','mirror-mosaic','orbit-escape','parcel-panic',
+  'pawsibly-innocent','perfect-pour','pocket-aquarium',
+  'tiny-town','tower-tuck','traffic-tangle'];
+ const settings=fs.readFileSync('public/game-settings.js','utf8');
+ new Function(settings);
+ for(const slug of games){
+  const html=fs.readFileSync('public/'+slug+'/index.html','utf8');
+  if(!html.includes('/game-settings.js?v='))
+   throw Error('Missing visible settings dock: '+slug);
+ }
+ if(!settings.includes('mw-settings-language')||!settings.includes('mw-settings-music')||
+    !settings.includes('mw-settings-sfx')||!settings.includes('document.fullscreenElement'))
+  throw Error('Shared language, music and sound controls must remain visible in fullscreen');
+ const quick=fs.readFileSync('public/game.js','utf8');new Function(quick);
+ if(!quick.includes("key(k){if(['1','2','3'].includes(k))")||
+    !quick.includes('Both lanes are rendered in the SAFE CENTER')||
+    !quick.includes('next.color===lane'))
+  throw Error('Portrait parcel lane taps/keyboard and full two-lane runner must be preserved');
+ const kitten=fs.readFileSync('public/cat-bond/js/real-kittens.js','utf8');new Function(kitten);
+ if(!kitten.includes('getImageData')||!kitten.includes('putImageData')||
+    !kitten.includes('framedBreed(slot)'))
+  throw Error('Cat artwork must be alpha-cleaned rather than drawn on a white rectangle');
+ console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
+}
