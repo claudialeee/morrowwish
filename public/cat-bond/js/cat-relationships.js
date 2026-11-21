@@ -22,9 +22,9 @@ function remember(a,b,regionId){
 }
 function personality(cat){
   const en=window.MorrowwishI18n?.get?.()!=='zh';
-  if(en)return ({glutton:'Foodie',diligent:'Hardworking',lazy:'Sleepy',clever:'Clever',gentle:'Gentle'}[cat?.personality]||'Curious');
+  if(en)return ({glutton:'Foodie',diligent:'Hardworking',lazy:'Sleepy',clever:'Clever',gentle:'Gentle',shy:'Shy',mischievous:'Mischievous'}[cat?.personality]||'Curious');
   return window.Raising?.PERSONALITIES?.[cat?.personality]?.name||({
-    glutton:'贪吃',diligent:'勤劳',lazy:'慵懒',clever:'机敏',gentle:'温柔'
+    glutton:'贪吃',diligent:'勤劳',lazy:'慵懒',clever:'机敏',gentle:'温柔',shy:'胆小',mischievous:'调皮'
   }[cat?.personality]||'好奇');
 }
 function mood(a,b){

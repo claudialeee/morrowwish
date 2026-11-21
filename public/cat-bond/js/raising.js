@@ -102,7 +102,9 @@ const PERSONALITIES = {
   diligent: { name: '勤劳', icon: '💪', weight: 20, prod: 1.18, decay: 1.0, note: '站点产出 +18%。' },
   lazy:     { name: '慵懒', icon: '😴', weight: 20, prod: 0.9,  decay: 0.55, note: '产出 -10%，但几乎不掉状态。' },
   clever:   { name: '机敏', icon: '✨', weight: 19, prod: 1.05, decay: 1.0, luck: 1.6, note: '更容易招来访客与好运。' },
-  gentle:   { name: '温柔', icon: '🌸', weight: 19, prod: 1.0,  decay: 1.0, bond: 1.6, note: '羁绊成长更快。' },
+  gentle:   { name: '温柔', icon: '🌸', weight: 19, prod: 1.0,  decay: 1.0, bond: 1.6, note: '羁绊成长更快，战斗中保护伙伴。' },
+  shy:     { name: '胆小', icon: '🌙', weight: 8, prod: 1.0, decay: 0.85, note: '被伙伴保护后鼓起勇气反击。' },
+  mischievous: { name: '调皮', icon: '🐾', weight: 8, prod: 1.06, decay: 1.08, note: '诱敌，给双猫搭档创造偷袭机会。' },
 };
 
 // ---------- hidden trait (revealed via play) ----------

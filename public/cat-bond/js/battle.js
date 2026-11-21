@@ -2876,6 +2876,8 @@ class CaptureBattle {
     // target the nearest ALIVE team cat (so the enemy engages whoever's closest)
     let me = null, md = 1e9;
     for (const tf of this.team) { if (!tf.alive) continue; const d = Math.hypot(tf.x - e.x, tf.y - e.y); if (d < md) { md = d; me = tf; } }
+    if(e._bondLureUntil>this.t)
+      me=this.team.find(f=>f.alive&&f.cat.uid===e._bondLureUid)||me;
     if (!me) return;
     const dx = me.x - e.x, dy = me.y - e.y;
     const dist = Math.hypot(dx, dy) || 1;

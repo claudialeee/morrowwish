@@ -1420,7 +1420,7 @@ const UI = {
           </button>
           <button type="button" class="capture-mode-option ${auto?'':'selected'}" role="radio" data-battle-auto="false" aria-checked="${!auto}">
             <strong>${en?'🎮 Manual control':'🎮 手动操作'}</strong>
-            <span>${en?'Control the cat yourself; switch to auto whenever needed.':'自己控制小猫，也可以随时改成自动。'}</span>
+            <span>${en?'Phone: drag, tap skills. PC: WASD + mouse. A short tutorial comes first.':'自己操控；手机可拖动移动、点技能，电脑使用 WASD / 鼠标。开战前先看教程。'}</span>
           </button>
         </div>
         <p class="capture-mode-note">${(State.S.catchCount||0)===0&&!prefs.tutorialSeen?

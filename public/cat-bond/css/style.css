@@ -1760,3 +1760,28 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
  html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #team-slots{
   top:calc(env(safe-area-inset-top,0px) + 84px)!important}
 }
+
+/* Cat Bond: the paused first manual preflight teaches both touch and keyboard. */
+#battle-ui .battle-device-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;margin:8px 0}
+#battle-ui .battle-device-item{background:#fffaf1;border:1px solid #ccd9c8;border-radius:12px;
+  padding:10px 11px;color:#375345}
+#battle-ui .battle-device-item.preferred{border:2px solid #81b399;background:#eef8ee}
+#battle-ui .battle-device-item strong{font:850 12px/1.2 system-ui,sans-serif}
+#battle-ui .battle-device-item p{font:500 12px/1.48 system-ui,sans-serif;margin:6px 0 0}
+#battle-ui #battle-coach-card[hidden]{display:none!important}
+#battle-ui #battle-coach-card{position:absolute;z-index:13;pointer-events:none;
+  left:12px;bottom:175px;max-width:min(45%,300px);padding:9px 11px;
+  border:1px solid #9dbb9d;border-radius:12px;background:#fff7e4ed;
+  box-shadow:0 5px 15px #263c3255;color:#335444;
+  font:750 12px/1.38 system-ui,sans-serif}
+@media(max-width:520px){
+ #battle-ui .battle-device-guide{grid-template-columns:1fr;gap:5px}
+ #battle-ui .battle-device-item{padding:7px 9px}
+ #battle-ui .battle-device-item p{font-size:11px;line-height:1.4;margin-top:3px}
+ #battle-ui #battle-coach-card{bottom:175px;left:6px;max-width:47%;font-size:11px}
+}
+@media(orientation:landscape) and (max-height:530px){
+ #battle-ui .battle-device-guide{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #battle-ui #battle-coach-card{bottom:130px;left:6px;max-width:38%;font-size:10px;padding:5px 7px}
+}

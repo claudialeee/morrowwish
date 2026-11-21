@@ -861,30 +861,51 @@ class Game {
       const flow=this.battleTutorial;
       const stages=flow.auto
         ?(en?[
-          ['🤖 Let the cats take care of it','Your cats automatically move, aim, attack, use skills and dodge. You can watch the battle unfold.'],
-          ['✨ You are still the commander','Tap a teammate portrait to change cats. The Auto Battle button at the top lets you take control whenever you want.']
+          ['Auto battle','The cats move, aim, attack, use skills, and dodge for you.'],
+          ['You can still command','Tap a cat portrait to switch; tap Auto at the top to take manual control.']
         ]:[
-          ['🤖 猫咪会替你战斗','自动模式下，猫咪会自己移动、瞄准、攻击、放技能与闪避。你可以轻松观战。'],
-          ['✨ 你随时能接管','点击队友头像可以换猫。战斗顶部的「自动战斗」按钮可以随时切换成手动。']
+          ['自动战斗','小猫会自动移动、瞄准、攻击、释放技能并闪避。'],
+          ['随时可以接管','点猫咪头像切换操控对象；点顶部的「自动战斗」可切换手动。']
         ])
         :(en?[
-          ['🕹️ Learn by doing',this.isTouch
-            ?'Slide on the left to move. Hold the right to attack, then follow prompts to use a skill and dodge. Enemies wait during practice.'
-            :'Move with WASD / arrow keys, then attack with left-click or J. Follow the Q and Space prompts. Enemies wait during practice.']
+          ['1 · Meet your team','Two cats fight together. Empty the wild cats’ spirit bars to befriend them. Set the starting pair and reserve order before battle.',
+            'Tap a cat portrait to control it; tap a reserve to swap in (6s cooldown).',
+            'Click a cat portrait or press 1 / 2 to switch. Reserves can be tapped too.'],
+          ['2 · Move and aim','You directly control one cat; the partner helps with attacks.',
+            'Drag on the LEFT side to move. Tap a wild cat to lock on, or press Lock to cycle targets.',
+            'Move with WASD / arrow keys. Aim with your mouse; Tab locks the next target.'],
+          ['3 · Attack, skill, dodge','Every action below is available immediately in manual combat.',
+            'Hold the RIGHT half to attack. The paw button toggles continuous claws. Tap Skill 1 / 2, Dodge and Ultimate on the right.',
+            'Hold left mouse / J to attack; Q / E use skills; Space dodges; R casts Ultimate.'],
+          ['4 · Unleash your duo','At 20 trust your pair unlocks a duo move. 60 brings crossed claws, and 90 unlocks a finishing frenzy.',
+            'When the Duo button lights up, tap it. Auto mode can be toggled at the top anytime.',
+            'Press F for Duo when ready, P to toggle auto, 1 / 2 to switch active cats.']
         ]:[
-          ['🕹️ 边玩边学',this.isTouch
-            ?'在左半边滑动移动，再按住右半边攻击。之后按提示练习技能和闪避，学习时野猫会等你。'
-            :'用 WASD 或方向键移动，再按住鼠标左键或 J 攻击。然后按提示练习 Q 技能和空格闪避，学习时野猫会等你。']
+          ['1 · 认识双猫队伍','两只猫并肩出战，把野猫的斗志打空即可收服；开战前可以指定首发与替补顺序。',
+            '点击猫咪头像切换操控对象；点替补头像换猫（冷却 6 秒）。',
+            '点击猫咪头像或按 1 / 2 换猫，也可点替补头像换上场。'],
+          ['2 · 移动和锁定','你亲自操控一只猫，另一只会协助战斗。',
+            '在画面左侧按住拖动移动；点野猫即可锁定目标，或按「锁定」切换。',
+            'WASD / 方向键移动；鼠标瞄准；Tab 切换锁定目标。'],
+          ['3 · 普攻、技能与闪避','所有操作都在同一个战斗界面中，不需要切换页面。',
+            '按住右半边攻击；点猫爪按钮可开启/暂停持续攻击。点右侧技能一、技能二、闪避和必杀。',
+            '按住鼠标左键或 J 攻击；Q / E 放技能；空格闪避；R 放必杀。'],
+          ['4 · 双猫合击','默契达到 20 解锁合击，60 解锁交叉挥爪，90 解锁终结连斩。',
+            '合击按钮亮起后点击释放；顶部可随时切换自动战斗。',
+            '合击蓄满后按 F；P 切换自动模式；1 / 2 换操控猫咪。']
         ]);
       const step=Math.min(flow.step,stages.length-1);
       const title=document.getElementById('battle-help-title');
       if(title)title.textContent=en?'Your first battle · '+(step+1)+'/'+stages.length
         :'第一次战斗 · '+(step+1)+'/'+stages.length;
-      const [heading,desc]=stages[step];
+      const [heading,desc,phone,computer]=stages[step];
+      const deviceInfo=phone?'<div class="battle-device-guide">'+
+        '<div class="battle-device-item '+(this.isTouch?'preferred':'')+'"><strong>'+(en?'Phone / touch':'手机 / 触屏')+'</strong><p>'+phone+'</p></div>'+
+        '<div class="battle-device-item '+(!this.isTouch?'preferred':'')+'"><strong>'+(en?'Computer / keyboard':'电脑 / 键鼠')+'</strong><p>'+computer+'</p></div></div>':'';
       host.innerHTML='<div class="battle-tutorial-progress" aria-hidden="true">'+
         stages.map((_,i)=>'<span class="'+(i<=step?'filled':'')+'"></span>').join('')+
         '</div><section class="battle-help-section preferred battle-tutorial-step"><b>'+
-        heading+'</b><p>'+desc+'</p></section><p class="battle-help-note">'+
+        heading+'</b><p>'+desc+'</p></section>'+deviceInfo+'<p class="battle-help-note">'+
         (en?'The battle is paused while you learn.':'教学期间战斗暂停，不会突然受到攻击。')+
         '</p><button id="battle-tutorial-skip" type="button" class="battle-tutorial-skip">'+
         (en?'Skip tutorial':'跳过教学')+'</button>';
@@ -924,7 +945,7 @@ class Game {
   }
   advanceBattleTutorial(){
     if(!this.battleTutorial){this.setBattleHelpVisible(false);return;}
-    const count=this.battleTutorial.auto?2:1;
+    const count=this.battleTutorial.auto?2:4;
     if(this.battleTutorial.step+1>=count){this.completeBattleTutorial();return;}
     this.battleTutorial.step++;
     this.renderBattleHelp();
@@ -1043,6 +1064,16 @@ class Game {
     this.renderCd('mv-e', f.cd.e);
     this.renderCd('mv-dodge', f.dodgeCd);
     this.renderCd('ult-btn', b.ultCd);
+    // Keep the coached controls visible in-game AFTER the paused preflight lesson.
+    const coachCard=document.getElementById('battle-coach-card');
+    if(coachCard){
+      const coach=b.coach,step=coach?.steps?.[coach.i];
+      coachCard.hidden=!step||this.battleHelpOpen;
+      if(step){
+        const chinese=window.MorrowwishI18n?.get?.()==='zh';
+        coachCard.textContent=(chinese?'操作练习 ':'Practice ')+(coach.i+1)+'/'+coach.steps.length+' · '+(chinese?step.zh:step.en);
+      }
+    }
     // team slots: hp + active highlight
     const host = document.getElementById('team-slots');
     if (host) [...host.children].forEach((el, i) => {
