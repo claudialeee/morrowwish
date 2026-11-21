@@ -1147,3 +1147,40 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
  font-size:13px;line-height:1.65;color:#5e6650;margin:8px auto}
 #panel .rare-lore.unlocked{background:#f8ecff;border-color:#c1a9d5;color:#725283}
 #panel .rare-lore.locked{background:#edf2e9;color:#718070}
+
+/* Five-region navigation stays inside the game frame. */
+#fab-map.map-fab{width:63px;height:64px;border-radius:17px;display:flex;flex-direction:column;gap:1px;
+ background:linear-gradient(135deg,#f7efc7,#b5d5ad);border:2px solid #b8a36a;
+ color:#355543;font-size:24px;box-shadow:0 6px 17px #424e4159}
+#fab-map.map-fab small{font:900 12px/1.1 system-ui}
+#map-index{position:absolute;right:9px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:23;
+ border:2px solid #d2b56b;border-radius:10px;background:#fff7df;color:#4e654c;
+ padding:8px 11px;font:850 12px system-ui;cursor:pointer}
+#map-index[hidden]{display:none!important}
+#panel .map-chooser{max-width:505px;margin:auto;color:#405b4a}
+#panel .map-chooser h2{font-size:clamp(15px,2vw,20px);color:#36583f;margin:0 22px 5px 0}
+#panel .map-chooser>p{font:650 11px/1.5 system-ui;margin:0 0 8px;color:#597263}
+#panel .map-destination-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#panel .map-destination{min-width:0;width:100%;display:flex;align-items:center;gap:6px;
+ padding:9px 7px;border:1.5px solid #a6c3ad;border-radius:11px;background:#edf6e9;
+ color:#345943;text-align:left;cursor:pointer}
+#panel .map-destination.locked{background:#f1efe9;border-color:#d2d0c6;cursor:default;opacity:.8}
+#panel .map-destination-icon{flex:0 0 24px;font-size:22px}
+#panel .map-destination-info{display:grid;min-width:0;flex:1;gap:2px}
+#panel .map-destination-info strong{font:850 12px/1.2 system-ui}
+#panel .map-destination-info small{font:650 10px/1.35 system-ui;white-space:normal;color:#6c7d6c}
+#panel .map-destination-enter{font:800 10px/1.1 system-ui;flex:0 0 auto}
+#panel .map-instructions{background:#e9efe2;border-radius:10px;padding:8px;color:#526b58}
+#panel .map-chooser .btn-row{gap:8px;margin-top:8px}
+#panel .map-chooser .btn{font-size:12px;padding:7px 11px}
+@media(max-width:520px){#fab-map.map-fab{width:59px;height:59px}
+#panel .map-destination-list{gap:5px}
+#panel .map-destination{padding:7px 5px;gap:4px}
+#panel .map-destination-icon{font-size:18px;flex-basis:18px}
+#panel .map-destination-info strong{font-size:11px}
+#panel .map-destination-info small{font-size:9px}}
+@media(max-height:530px) and (orientation:landscape){#panel .map-destination-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+#panel .map-destination{padding:5px 5px}
+#panel .map-chooser>p{margin-bottom:5px}
+#panel .map-instructions{padding:5px;margin:5px 0;font-size:10px}
+#panel .map-chooser .btn-row{margin-top:5px}}

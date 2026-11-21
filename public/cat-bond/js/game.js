@@ -114,6 +114,7 @@ class Game {
     document.getElementById('yard-actions').classList.add('hidden');
     this.yard?.refreshYardSwitch();
     WorldMap.enterMap();
+    UI.openMapChooser();
   }
   showYardChrome() {
     document.body.classList.remove('cb-exploring');
@@ -324,6 +325,8 @@ class Game {
   }
 
   update(dt) {
+    const mapIndex=document.getElementById('map-index');
+    if(mapIndex)mapIndex.hidden=this.scene!=='map';
     if(this.scene==='yard'){
       this.yard.update(dt);
       if(this.t>=(this._nextQuestTick||0)){

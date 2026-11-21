@@ -47,6 +47,7 @@ const UI = {
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
     document.getElementById('yard-duo-status')?.addEventListener('click',()=>this.openBondPanel());
+    document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
@@ -77,6 +78,50 @@ const UI = {
     else if (tab === 'dex') this.openDex();
     else if (tab === 'daily') this.openDaily();
     else if (tab === 'shop') this.openShop();
+  },
+
+  // Five real playable locations, with their exact unlocking conditions.
+  openMapChooser(){
+    if(!window.WorldMap)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const rows=WorldMap.REGIONS.map(r=>{
+      const open=WorldMap.isUnlocked(r.id);
+      const pct=Math.round(100*(State.S.worldmap?.regions?.[r.id]?.explored||0));
+      const prev=WorldMap.REGIONS.find(x=>x.id===r.unlock?.after);
+      const own=r.unlock?.own?GameData.speciesById(r.unlock.own):null;
+      const requirement=!r.unlock?(en?'Ready to explore':'开局即可探索')
+        :en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%'+(own?' · Befriend '+own.name:'')
+        :'探索「'+prev.name+'」'+Math.round(r.unlock.explore*100)+'%'+(own?' · 拥有「'+own.name+'」':'');
+      const icon=({home:'🏡',sakura:'🌸',creek:'💧',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
+      return `<button type="button" class="map-destination ${open?'available':'locked'}" data-region="${r.id}" ${open?'':'disabled'}>
+        <span class="map-destination-icon">${icon}</span>
+        <span class="map-destination-info"><strong>${en?r.sub:r.name}</strong>
+          <small>${open?(en?'Explored '+pct+'%':'探索度 '+pct+'%'):'🔒 '+requirement}</small></span>
+        <span class="map-destination-enter">${open?(en?'Enter':'进入'):'🔒'}</span>
+      </button>`;
+    }).join('');
+    this.panel(`<span class="card-close">×</span><div class="map-chooser">
+      <h2>${en?'🗺️ Explore five regions':'🗺️ 探索五个地区'}</h2>
+      <p>${en?'Each region has its own scenery, wild cats and treasures. Unlock the next by exploring.'
+        :'每个地区都有独立场景、野猫与宝藏。提高探索度，逐步解锁新地图。'}</p>
+      <div class="map-destination-list">${rows}</div>
+      <p class="map-instructions">${en
+        ?'PC: WASD/arrow keys. Phone: tap to walk, drag to look around. Step near cats or treasure; use the house to return.'
+        :'电脑 WASD/方向键移动；手机点击草坪行走、拖动草坪看周围；靠近野猫与宝藏会触发互动。点击🏠可返回地图。'}</p>
+      <div class="btn-row"><button class="btn" id="map-world-view">${en?'View world map':'查看世界地图'}</button>
+        <button class="btn ghost" id="map-back-yard">${en?'Back to yard':'返回庭院'}</button></div></div>`);
+    document.querySelectorAll('#panel .map-destination.available').forEach(btn=>{
+      btn.onclick=()=>{
+        if(WorldMap.enterRegion(btn.dataset.region)){
+          this.closeAll();
+          const r=WorldMap.REGIONS.find(r=>r.id===btn.dataset.region);
+          this.game.toast(en?'Now exploring '+r.sub:'开始探索「'+r.name+'」');
+          window.arcadeMetric?.('bond_region_enter',{region:r.id});
+        }
+      };
+    });
+    document.getElementById('map-world-view').onclick=()=>{WorldMap.enterMap();this.closeAll();};
+    document.getElementById('map-back-yard').onclick=()=>{this.closeAll();this.game.scene='yard';this.game.showYardChrome();};
   },
 
   // An actual choice, not a random reward notification.
