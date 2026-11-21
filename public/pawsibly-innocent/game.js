@@ -219,7 +219,7 @@ function renderCollections(){
 }
 function guardLabel(){
  const mode=s?.guardMode||"patrol",zh=lang==="zh";
- const modes={patrol:zh?"巡逻：还没发现小猫":"Patrol: unaware of the cat",curious:zh?"听到脚步：向小猫刚经过的位置查看":"Heard footsteps: checking where you just were",investigate:zh?"调查：正在走向毛球／声音":"Investigating: following a sound",chase:zh?"追猫：已经看见你！":"Chasing: the owner spotted you!",search:zh?"搜索：前往最后看见猫的位置":"Searching: last known cat position",distracted:zh?"分心：围着毛球发呆（剩 "+s.distractionTurns+" 步）":"Distracted by yarn ("+s.distractionTurns+" turns)",sleep:zh?"睡觉：主人还没醒":"Sleeping: owner is unaware"};
+ const modes={patrol:zh?"巡逻中 · 没发现猫":"Patrolling · cat unseen",curious:zh?"听到脚步 · 去刚才的位置查看":"Heard footsteps · checking last tile",investigate:zh?"调查响声 · 正走向声源":"Investigating · heading to the noise",chase:zh?"发现小猫！正在追赶":"Cat spotted! Giving chase",search:zh?"找猫中 · 搜索最后出现的位置":"Searching · last seen location",distracted:zh?"被毛球吸引 · 还剩 "+s.distractionTurns+" 步":"Distracted by yarn · "+s.distractionTurns+" moves left",sleep:zh?"睡着了 · 轻轻走":"Asleep · tread softly"};
  return modes[mode]||modes.patrol;
 }
 function dareDone(){
@@ -384,7 +384,7 @@ function catPathTo(from,to){
 const hidden=p=>s.boxes.some(b=>equal(b,p));
 function visible(p=s.cat){if(s.sleepTurns>0||s.guardMode==="distracted"||s.yarnAnimating||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}return d<=2}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
-function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.reactionAt=0;s.dangerActive=false;s.patrol=0;}
+function hurt(){if(s.invincible>0)return;stopYarnChase();s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.reactionAt=0;s.dangerActive=false;s.patrol=0;s.catFrom={...s.cat};s.humanFrom={...s.human};s.movedAt=performance.now();s.humanMovedAt=performance.now();}
 function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
  aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
@@ -510,7 +510,7 @@ function guardMove(){
   if(equal(next,s.cat)&&(investigate||s.guardMode==="curious"||s.guardMode==="search")){
    guardReaction("footsteps");return;
   }
-  s.human={...next};s.humanMovedAt=performance.now();
+  s.human={...next};s.humanMovedAt=performance.now()+105;
  }
 }
 // Escalating alert: the first room teaches controls without instant vision penalties.
@@ -585,9 +585,29 @@ metric(win?"game_complete":"game_over",{level:daily?9:stage+1,score:s.score,star
 $("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=tr(win?"winTitle":"loseTitle");$("resultDesc").textContent=win?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose");
 $("resultScore").textContent=resultLine();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("stage").classList.toggle("victory",win);
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=tr(win?"nextRoom":"tryAgain");$("shareResult").textContent=tr("share");$("overlay").hidden=false;}
-function command(x,y){if(!s||s.done||menuOpen)return;if(x===s.cat.x&&y===s.cat.y)return;if(s.vacuum&&equal({x,y},s.vacuum)){popup("robot");return;}if(!pass({x,y})){popup("blocked");return;}route=catPathTo(s.cat,{x,y});if(!route.length){popup("blocked");return}if(!movingTimer){movingTimer=setInterval(()=>{if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null;return}const p=route.shift();if(!pass(p)){route=[];clearInterval(movingTimer);movingTimer=null;popup("blocked");return}
- // Risk-aware routing already avoids dangerous tiles; a tap must never deadlock movement.
- moveTo(p);if(s.done||!route.length){clearInterval(movingTimer);movingTimer=null}},180)}}
+// A tap immediately starts walking, with no confirmation. On the first sighting,
+// stop queued steps so the player can react instead of auto-walking into danger.
+function stopWalking(){route=[];if(movingTimer!==null){clearInterval(movingTimer);movingTimer=null}}
+function advanceCatRoute(){
+ if(!s||s.done||!route.length){stopWalking();return}
+ const next=route.shift();
+ if(!pass(next)){stopWalking();popup("blocked");return}
+ const wasExposed=s.exposure;
+ moveTo(next);
+ if(!s.done&&wasExposed===0&&s.exposure>0){stopWalking();return}
+ if(s.done||!route.length)stopWalking();
+}
+function command(x,y){
+ if(!s||s.done||menuOpen||aimingYarn)return;
+ if(x===s.cat.x&&y===s.cat.y){if(route.length)stopWalking();return}
+ const target={x,y};
+ if(s.vacuum&&equal(target,s.vacuum)){popup("robot");return}
+ if(!pass(target)){popup("blocked");return}
+ if(movingTimer&&equal(route[route.length-1],target))return;
+ route=catPathTo(s.cat,target);
+ if(!route.length){stopWalking();popup("blocked");return}
+ if(movingTimer===null){advanceCatRoute();if(route.length)movingTimer=setInterval(advanceCatRoute,300)}
+}
 function single(dx,dy){if(!s||s.done||menuOpen)return;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
 function shape(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function round(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
@@ -689,12 +709,29 @@ const hu=s.human,ca=s.cat;
  const catY=(s.catFrom.y+(ca.y-s.catFrom.y)*catEase+.5)*T;
  const hop=(catGlide>0&&catGlide<1?Math.sin(catGlide*Math.PI)*7:0);
  // Brief in-between frames make the owner's reaction and chase readable.
- const glide=Math.min(1,Math.max(0,(time-(s.humanMovedAt||0))/190));
+ const glide=Math.min(1,Math.max(0,(time-(s.humanMovedAt||0))/155));
  const easing=glide*glide*(3-2*glide);
  const hx=(s.humanFrom.x+(hu.x-s.humanFrom.x)*easing+.5)*T;
  const hy=(s.humanFrom.y+(hu.y-s.humanFrom.y)*easing+.5)*T;
  humanDraw(hx,hy+10,time);
- if(s.reaction&&s.steps<=s.reactionUntil&&time-(s.reactionAt||0)<1850){
+ // In-world intent follows the owner, but never overlaps their reaction speech.
+ const speaking=s.reaction&&s.steps<=s.reactionUntil&&time-(s.reactionAt||0)<1850;
+ if(!speaking&&!s.yarnAnimating&&!s.done){
+  const tags={
+   patrol:[lang==="zh"?"巡逻":"PATROL","#fffcf4","#685970"],
+   curious:[lang==="zh"?"听声":"HEARD","#fff0d6","#855e36"],
+   investigate:[lang==="zh"?"调查":"CHECK","#f1e0ff","#7c4e9e"],
+   chase:[lang==="zh"?"追猫":"CHASE","#ffe2e2","#ae3e60"],
+   search:[lang==="zh"?"找猫":"SEARCH","#fff0da","#995c43"],
+   distracted:[lang==="zh"?"分心":"BUSY","#e4faeb","#417a60"],
+   sleep:[lang==="zh"?"睡觉":"ASLEEP","#eef0fa","#65709a"]
+  };
+  const tag=tags[s.guardMode]||tags.patrol;
+  const bx=Math.max(51,Math.min(787,hx+42)),by=Math.max(92,hy-37);
+  round(bx-43,by-15,86,27,12,tag[1]);
+  label(tag[0],bx,by+4,"bold 13px Nunito,system-ui",tag[2]);
+ }
+ if(speaking){
   const reactions={
    spotted:lang==="zh"?"发现小猫！":"KITTY!",
    footsteps:lang==="zh"?"谁在那里？":"WHO'S THERE?",
@@ -774,7 +811,25 @@ if(cgEmbed&&document.head){
  // Progress and warning now live in the existing board HUD.
 }
 
-c.addEventListener("pointerdown",onClick);c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPreview=yarnTarget(p)?p:null}});c.addEventListener("pointerleave",()=>{yarnPreview=null});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&menuOpen){e.preventDefault();closeMenu();return}
+// A tap is one action; dragging a finger over the board is not a tap.
+let fingerTap=null;
+c.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="touch"){
+  if(e.isPrimary===false)return;
+  fingerTap={id:e.pointerId,x:e.clientX,y:e.clientY};return;
+ }
+ if(e.button!==undefined&&e.button!==0)return;
+ onClick(e);
+});
+c.addEventListener("pointerup",e=>{
+ if(e.pointerType!=="touch"||!fingerTap||e.pointerId!==fingerTap.id)return;
+ const dx=e.clientX-fingerTap.x,dy=e.clientY-fingerTap.y;
+ fingerTap=null;
+ if(dx*dx+dy*dy>196)return;
+ onClick(e);
+});
+c.addEventListener("pointercancel",()=>{fingerTap=null});
+c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPreview=yarnTarget(p)?p:null}});c.addEventListener("pointerleave",()=>{yarnPreview=null});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&menuOpen){e.preventDefault();closeMenu();return}
  if(menuOpen)return;
  if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
