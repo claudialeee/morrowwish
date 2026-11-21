@@ -1,6 +1,6 @@
 {
   "version": "V5",
-  "createdAt": "2026-11-21T19:03:58.076Z",
+  "createdAt": "2026-11-21T19:11:39.070Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -118,7 +118,7 @@
           "source": "broll",
           "scene": "caught-chase",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 1.6419999999999995
+          "seconds": 1.6259999999999994
         },
         {
           "source": "broll",
@@ -295,7 +295,7 @@
           "source": "broll",
           "scene": "play",
           "caption": "ONE BUTTON. ONE WRONG FLIP.",
-          "seconds": 3.247
+          "seconds": 3.2589999999999995
         },
         {
           "source": "broll",
@@ -375,13 +375,13 @@
         "/promo/pocket-aquarium/v5-review-2.jpg",
         "/promo/pocket-aquarium/v5-review-3.jpg"
       ],
-      "duration": 8.8,
+      "duration": 8.7,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE RIGHT FISH.",
-          "seconds": 2.86
+          "seconds": 2.787
         },
         {
           "source": "broll",
