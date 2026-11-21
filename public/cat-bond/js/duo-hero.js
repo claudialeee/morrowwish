@@ -89,10 +89,18 @@ function draw(ctx,W,H,seq,lookup){
  const signature=signatures?.get?.(seq.elements);
  const choreography=signature?signatures.course(signature.style,p,W,h,cy,tier):null;
  ctx.save();ctx.globalAlpha=alpha;
- const grad=ctx.createLinearGradient(0,top,W,top+h);
- grad.addColorStop(0,'#15263c');grad.addColorStop(.50,'#343349');grad.addColorStop(1,'#193849');
- ctx.fillStyle=grad;ctx.beginPath();ctx.roundRect(W*.025,top,W*.95,h,Math.min(22,W*.05));ctx.fill();
+ // The artwork uses light spring, water, moon and sun palettes; deep violet
+ // storms are reserved for lightning signatures only.
  ctx.beginPath();ctx.roundRect(W*.025,top,W*.95,h,Math.min(22,W*.05));ctx.clip();
+ if(window.CatBondDuoArtwork?.backdrop){
+   ctx.save();ctx.translate(0,top);
+   window.CatBondDuoArtwork.backdrop(ctx,W,h,p,seq.elements);
+   ctx.restore();
+ }else{
+   const g=ctx.createLinearGradient(0,top,W,top+h);
+   g.addColorStop(0,'#edf5fa');g.addColorStop(1,'#e4dcf4');
+   ctx.fillStyle=g;ctx.fillRect(0,top,W,h);
+ }
  // Art-directed scenery for this exact combination, BEHIND complete cat rigs.
  if(signature){
    ctx.save();ctx.translate(0,top);
@@ -106,20 +114,22 @@ function draw(ctx,W,H,seq,lookup){
   const sx=W*((i+.4)/7)+p*W*.12;
   ctx.beginPath();ctx.moveTo(sx-140,top+h);ctx.lineTo(sx+70,top);ctx.stroke();ctx.restore();
  }
- // Limit the center crossing to CLAWS, not the kittens' heads. This avoids
- // a two-cat body overlap that looks like broken or split-up characters.
- const paintCat=(x,y,scale,id,face,phase,color)=>{
-   const actualSize=size*scale;
-   const safeMin=top+actualSize*1.04+10;
-   const safeMax=top+h-actualSize*.54-10;
-   const safeY=Math.max(safeMin,Math.min(safeMax,y));
-   cat(ctx,x,safeY,actualSize,lookup(id),face,phase,color);
+ // The two painted cats are LOOKED UP FROM THE ACTUAL STARTERS' SPECIES,
+ // using the game's 25-breed illustration atlas. No generic black/white pair.
+ const spriteH=Math.min(h*.73,W*.26,260);
+ const paintCat=(x,y,mult,id,flip,phase,color)=>{
+   const physicalH=spriteH*mult;
+   const safeY=Math.max(top+physicalH*.62+8,
+      Math.min(top+h-physicalH*.38-14,y));
+   if(window.CatBondDuoArtwork?.drawKitten)
+     window.CatBondDuoArtwork.drawKitten(ctx,x,safeY,physicalH,
+       lookup(id),flip,phase,signature?.style||'claw',color);
  };
  paintCat(Math.min(W*.35,choreography?.x1??W*.29),
-   choreography?.y1??(cy+h*.15),choreography?.scale||1,ids[0],1,
+   choreography?.y1??(cy+h*.18),choreography?.scale||1,ids[0],false,
    choreography?.phase1??p,col1);
  paintCat(Math.max(W*.65,choreography?.x2??W*.71),
-   choreography?.y2??(cy+h*.15),choreography?.scale||1,ids[1],-1,
+   choreography?.y2??(cy+h*.18),choreography?.scale||1,ids[1],true,
    choreography?.phase2??p,col2);
  // Connect the impact to the two extended forepaws, not to the cats' faces.
  // The claw trails should frame (never cover) the character performance.
