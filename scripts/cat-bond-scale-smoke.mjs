@@ -32,6 +32,9 @@ try{
     g.openWorldMap();UI.closeAll();
     WorldMap.onEncounter(()=>{});WorldMap.enterRegion('sakura');
    });
+   const oldGardenNotices=await page.locator('#toasts .toast').allTextContents();
+   assert.ok(!oldGardenNotices.some(t=>/院子里|草丛里|庭院|sneaking|hiding in the yard/i.test(t)),
+      'Garden-specific toasts must not obscure the map after entering: '+JSON.stringify(oldGardenNotices));
    const mapStats=await page.evaluate(()=>{
     const g=window.__game,calls=[];
     const old=window.CatMotion.draw,real=window.CatArt.drawCat,actual=[];
