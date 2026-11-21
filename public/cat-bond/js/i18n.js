@@ -779,6 +779,31 @@
     '· 特性:': '· Trait:',
     '经验)': 'XP)',
 
+    // ---- 庭院建造 (buildable yard play-structures) ----
+    '庭院建造': 'Build the Yard',
+    '庭院建造游乐设施': 'Build yard play-structures',
+    '用金币建造游乐设施，猫咪会跑过去玩耍，心情越来越好。':
+      'Build play-structures with coins. Your cats walk over and play with them, lifting their mood.',
+    '建造': 'Build',
+    '拆除': 'Remove',
+    '已建造': 'Placed',
+    '拆除可返还一半金币。': 'Remove to recover half the coins.',
+    '🏗️ 已建造 ': '🏗️ Built ',
+    '♻️ 已拆除 · 返还 ': '♻️ Removed · +',
+    '花费': 'Cost',
+    // structure names
+    '猫抓板': 'Scratching Post',
+    '猫猫洞': 'Cat Cave',
+    '猫爬架': 'Cat Tree',
+    '猫薄荷花坛': 'Catnip Bed',
+    '吊床': 'Hammock',
+    // structure descriptions
+    '磨爪解压的小柱子，猫咪路过就想挠两下。': 'A little post for sharpening claws — cats scratch it whenever they pass.',
+    '圆滚滚的猫窝洞，钻进去就能安心打盹。': 'A round cozy den; cats crawl inside for a peaceful nap.',
+    '多层猫爬架，登高望远是猫咪最爱的运动。': 'A multi-level cat tree — climbing up high is every cat\'s favorite exercise.',
+    '一小畦猫薄荷，香气让猫咪开心打滚。': 'A little bed of catnip whose scent sends cats rolling with joy.',
+    '两根小柱撑起的吊床，午后晒着太阳最惬意。': 'A hammock slung between two posts — pure bliss in the afternoon sun.',
+
     // ---- small shared fragments (applied last; longer phrases above win) ----
     '升到': 'reached',
     '来访': 'visited',
