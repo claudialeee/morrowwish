@@ -1,5 +1,6 @@
 // Real-gameplay full-bleed portrait shorts: no shrunk landscape frame or invented scenes.
 import {chromium} from 'playwright';
+import {promoTrack} from './promo-audio.mjs';
 import {spawn,execFileSync} from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -8,7 +9,7 @@ const root=fs.mkdtempSync(path.join(os.tmpdir(),'mw-reel-v2-'));
 const server=spawn('python3',['-m','http.server','8769','--bind','127.0.0.1','--directory','public'],{stdio:'ignore'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
-const sound='public/audio/cat-happy-clappy.ogg';
+// Each game uses its OWN licensed recording; never fall back to one song.
 const outputName='viral-gameplay-20261121';
 async function session(browser,slug){
  const dir=path.join(root,slug);fs.mkdirSync(dir,{recursive:true});
@@ -133,7 +134,7 @@ function render(r){
  });
  const filter='fps=30,scale=1080:1920:flags=lanczos,setsar=1,'+captions.join(',')+',format=yuv420p';
  execFileSync('ffmpeg',['-nostdin','-y','-hide_banner','-loglevel','error',
-   '-ss',Math.max(0,r.offset).toFixed(2),'-i',r.raw,'-stream_loop','-1','-i',sound,
+   '-ss',Math.max(0,r.offset).toFixed(2),'-i',r.raw,'-stream_loop','-1','-i',promoTrack(r.slug),
    '-vf',filter,'-map','0:v:0','-map','1:a:0','-t',r.duration.toFixed(2),'-r','30',
    '-c:v','libx264','-preset','veryfast','-crf','21','-pix_fmt','yuv420p',
    '-c:a','aac','-b:a','128k',
@@ -151,7 +152,7 @@ function render(r){
 let browser;
 try{
  await sleep(1200);
- if(!fs.existsSync(sound))throw Error('Missing CC0 audio');
+ promoTrack('pawsibly-innocent');promoTrack('cat-bond');
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
  render(await heist(browser));
  render(await catBond(browser));
