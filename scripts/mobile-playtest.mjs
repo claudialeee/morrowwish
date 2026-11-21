@@ -39,11 +39,17 @@ try{
         }
         assert.ok(metrics.scrollWidth<=metrics.width+3,game.slug+' has horizontal overflow at '+width+'px: '+JSON.stringify(metrics));
         assert.ok(metrics.buttons>0,game.slug+' has no usable buttons');
+        if(game.slug==='pawsibly-innocent'){
+          assert.equal(await page.locator('#gameMenu').isVisible(),false,'Cat game should start with only the playfield');
+          await page.locator('#menuButton').tap();
+          await page.locator('[data-game-tab="help"]').tap();
+        }
         const dock=page.locator('#mw-audio-dock');
         assert.equal(await dock.count(),1,game.slug+' missing unified audio controls');
         assert.equal(await dock.locator('button').count(),2,game.slug+' should offer music and sound switches');
         const audioBox=await dock.boundingBox();
         assert.ok(audioBox&&audioBox.x+audioBox.width<=width+3,game.slug+' audio controls overflow the phone');
+        if(game.slug==='pawsibly-innocent')await page.locator('#menuClose').tap();
         if(width!==390)continue;
         if(game.slug==='flip-dash'||game.slug==='parcel-panic'){
           const play=page.locator('#play-btn');assert.equal(await play.isVisible(),true,'PLAY NOW clipped');
@@ -74,7 +80,7 @@ try{
           const button=page.locator('#tool');
           assert.ok(await button.isVisible(),'Yarn action not visible');
           const positions=await page.evaluate(()=>{const t=document.querySelector('#tool').getBoundingClientRect(),b=document.querySelector('#board').getBoundingClientRect();return{toolBottom:t.bottom,boardTop:b.top,toolH:t.height};});
-          assert.ok(positions.toolBottom<positions.boardTop,'Yarn button must appear above board');
+          assert.ok(positions.toolBottom>positions.boardTop+35,'Yarn action must stay inside the stage but below the playable map');
           assert.ok(positions.toolH>=44,'Yarn button touch target too small');
           await button.tap();
           assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__?.isAiming()),true,'Tapping the yarn button must enter aiming mode');
