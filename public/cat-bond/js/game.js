@@ -84,8 +84,7 @@ class Game {
     if (!window.WorldMap) return;
     WorldMap.init(this);
     WorldMap.onEncounter((species, regionId) => {
-      const chosen=window.CatRelations?.chosen?.()||[];
-      const team=[...chosen,...State.S.cats.filter(c=>!chosen.some(x=>x.uid===c.uid))].slice(0,3);
+      const team=UI.getPreferredBattleTeam();
       if (!team.length) { this.toast('没有可出战的猫'); return; }
       const region = WorldMap.REGIONS.find(r => r.id === regionId);
       UI.openBattleModePrompt(team,species,{origin:'map',theme:region?.theme||null});
@@ -136,36 +135,30 @@ class Game {
     return ({N:40,R:55,SR:75,SSR:100})[rarity]||40;
   }
   gradeBattle(b){
-    // S is demanding but attainable on both manual and automatic runs.
-    // Switching auto off at the end cannot hide the assist used earlier.
+    // S is attainable but a routine win should generally earn A/B.
     const fighters=b.team||[];
     const maxHP=fighters.reduce((n,f)=>n+(f.maxhp||0),0);
     const remaining=fighters.reduce((n,f)=>n+Math.max(0,f.hp||0),0);
     const hpRatio=maxHP>0?remaining/maxHP:0;
     const seconds=b.t||0,combo=b.comboBest||0;
     const timeLimit=this.gradeTimeLimit(b.wild?.rarity);
+    const squadIntact=fighters.length>0&&fighters.every(f=>f.alive!==false&&f.hp>0);
+    const autoUsed=!!(b.autoUsed||b.autoMode);
     const healthy=hpRatio>=.8,swift=seconds<=timeLimit;
     const clever=combo>=8||(b.perfectDodges||0)>=1;
     const points=Number(healthy)+Number(swift)+Number(clever);
-    const autoUsed=!!(b.autoUsed||b.autoMode);
-    // Automatic battles are a legitimate play style, not a consolation
-    // prize. A well-raised squad can earn S through speed and survivability.
-    // No arbitrary 16-hit / 95%-HP / 60%-time triple gate.
-    const squadIntact=fighters.length>0&&fighters.every(f=>f.alive!==false&&f.hp>0);
-    // Auto S judges preparation and consistency rather than perfect manual
-    // dodge timing. A living team with >=72% total HP, a reasonable clear
-    // time (up to 1.6x the rarity-adjusted limit), and either a small combo or
-    // >=80% HP is deserving of the gold medal. Broken / defeated squads don't.
-    const autoExceptional=squadIntact&&hpRatio>=.72&&seconds<=timeLimit*1.6
-      &&(combo>=4||hpRatio>=.8);
+    const manualExceptional=squadIntact&&hpRatio>=.84&&seconds<=timeLimit
+      &&(combo>=9||(b.perfectDodges||0)>=1);
+    const autoExceptional=squadIntact&&hpRatio>=.83&&seconds<=timeLimit*1.22
+      &&(combo>=7||hpRatio>=.92);
     const grade=autoUsed
       ?(autoExceptional?'S':points>=2?'A':points===1?'B':'C')
-      :(points===3?'S':points>=2?'A':points===1?'B':'C');
+      :(manualExceptional?'S':points>=2?'A':points===1?'B':'C');
     const bonuses={S:[42,2],A:[24,1],B:[14,0],C:[8,0]};
     const [bonusCoins,bonusTreats]=bonuses[grade];
     return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
       combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
-      healthy,swift,clever,timeLimit,autoUsed,autoExceptional,hpRatio};
+      healthy,swift,clever,timeLimit,autoUsed,autoExceptional,manualExceptional,hpRatio};
   }
   masteryStatus(){
     const badges=State.S.masteryBadges||{};
@@ -354,6 +347,14 @@ class Game {
   update(dt) {
     const mapIndex=document.getElementById('map-index');
     if(mapIndex)mapIndex.hidden=this.scene!=='map';
+    const squadBtn=document.getElementById('map-squad');
+    if(squadBtn){
+      squadBtn.hidden=this.scene!=='map';
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      const label=en?'🐾 Battle team':'🐾 出战猫咪';
+      if(squadBtn.textContent!==label)squadBtn.textContent=label;
+      squadBtn.setAttribute('aria-label',en?'Choose battle cats':'选择出战猫咪');
+    }
     if(this.scene==='yard'){
       this.yard.update(dt);
       if(this.t>=(this._nextQuestTick||0)){
@@ -669,13 +670,14 @@ class Game {
     this.updateSkillLabels();
     this.updateBattleUI();
     // Display current battle state, including keyboard P toggles.
-    this.touchAutoFire=this.isTouch&&!this.battle.autoMode;
+    this.touchAutoFire=this.isTouch&&!this.battle.autoMode&&!this.battle.coach;
     this.syncBattleModeUI();
     this.syncBattleControlHelp();
     // The first-ever encounter begins paused with a short guided tour.
     // No damage, movement, or timer runs until the player starts or skips.
-    if(!State.S.battlePrefs?.tutorialSeen && (State.S.catchCount||0)===0){
-      this.battleTutorial={step:0,auto:!!this.battle.autoMode};
+    if(!this.battle.autoMode&&this.battle.coach)this.showFirstManualTutorial();
+    else if(this.battle.autoMode&&!State.S.battlePrefs?.tutorialSeen&&(State.S.catchCount||0)===0){
+      this.battleTutorial={step:0,auto:true};
       this.setBattleHelpVisible(true);
     }
   }
@@ -796,6 +798,10 @@ class Game {
     this.renderBattleHelp();
   }
 
+  showFirstManualTutorial(){
+    if(!this.battle||this.battle.autoMode||!this.battle.coach||State.S.battlePrefs?.manualTutorialSeen)return;
+    this.battleTutorial={step:0,auto:false};this.setBattleHelpVisible(true);
+  }
   renderBattleHelp(){
     const host=document.getElementById('battle-help-body');
     if(!host)return;
@@ -811,13 +817,13 @@ class Game {
           ['✨ 你随时能接管','点击队友头像可以换猫。战斗顶部的「自动战斗」按钮可以随时切换成手动。']
         ])
         :(en?[
-          ['🕹️ 1 · Move your kitten',this.isTouch?'Drag the left virtual joystick to move. Your claws keep attacking; tap Claw to pause.':'Use WASD or the arrow keys to move around the arena.'],
-          ['🐾 2 · Attack the wild cat',this.isTouch?'Claws auto-aim at nearby foes. Tap Claw to start or pause continuous attacks; hold the right arena to shoot manually.':'Hold left mouse button or press J to attack. Aim with the mouse.'],
-          ['✨ 3 · Skills and dodge',this.isTouch?'Tap the bottom skill buttons. Dodge to avoid a hit; unleash your ultimate once the meter fills.':'Press Q / E for skills, Space to dodge and R for an ultimate. You can turn on Auto Battle at any time.']
+          ['🕹️ Learn by doing',this.isTouch
+            ?'Slide on the left to move. Hold the right to attack, then follow prompts to use a skill and dodge. Enemies wait during practice.'
+            :'Move with WASD / arrow keys, then attack with left-click or J. Follow the Q and Space prompts. Enemies wait during practice.']
         ]:[
-          ['🕹️ 1 · 移动小猫',this.isTouch?'滑动左侧摇杆移动。猫爪会持续攻击，点击猫爪按钮可暂停。':'使用 WASD 或方向键控制小猫移动。'],
-          ['🐾 2 · 攻击野猫',this.isTouch?'猫爪自动瞄准附近野猫。点击猫爪按钮可开始或暂停持续攻击，也可以按住画面右侧射击。':'按住鼠标左键或按 J 攻击，用鼠标瞄准。'],
-          ['✨ 3 · 技能与闪避',this.isTouch?'点下方技能键释放技能；点「闪避」躲开攻击，能量满时释放必杀。':'按 Q / E 放技能、空格闪避、R 放必杀。战斗中也可以随时切换自动。']
+          ['🕹️ 边玩边学',this.isTouch
+            ?'在左半边滑动移动，再按住右半边攻击。之后按提示练习技能和闪避，学习时野猫会等你。'
+            :'用 WASD 或方向键移动，再按住鼠标左键或 J 攻击。然后按提示练习 Q 技能和空格闪避，学习时野猫会等你。']
         ]);
       const step=Math.min(flow.step,stages.length-1);
       const title=document.getElementById('battle-help-title');
@@ -831,9 +837,9 @@ class Game {
         (en?'The battle is paused while you learn.':'教学期间战斗暂停，不会突然受到攻击。')+
         '</p><button id="battle-tutorial-skip" type="button" class="battle-tutorial-skip">'+
         (en?'Skip tutorial':'跳过教学')+'</button>';
-      host.querySelector('#battle-tutorial-skip').onclick=()=>this.completeBattleTutorial();
+      host.querySelector('#battle-tutorial-skip').onclick=()=>this.completeBattleTutorial(true);
       const btn=document.getElementById('battle-help-start');
-      if(btn)btn.textContent=step===stages.length-1?(en?'Start fighting!':'开始战斗！')
+      if(btn)btn.textContent=step===stages.length-1?(en?(flow.auto?'Start fighting!':'Start practice'):(flow.auto?'开始战斗！':'开始练习'))
         :(en?'Next':'下一步');
       const close=document.getElementById('battle-help-close');
       if(close)close.setAttribute('aria-label',en?'Skip tutorial':'跳过教学');
@@ -867,17 +873,25 @@ class Game {
   }
   advanceBattleTutorial(){
     if(!this.battleTutorial){this.setBattleHelpVisible(false);return;}
-    const count=this.battleTutorial.auto?2:3;
+    const count=this.battleTutorial.auto?2:1;
     if(this.battleTutorial.step+1>=count){this.completeBattleTutorial();return;}
     this.battleTutorial.step++;
     this.renderBattleHelp();
   }
-  completeBattleTutorial(){
+  completeBattleTutorial(skipCoach=false){
     if(!this.battleTutorial)return;
+    const manual=!this.battleTutorial.auto;
     this.battleTutorial=null;
     State.S.battlePrefs=State.S.battlePrefs||{};
-    State.S.battlePrefs.tutorialSeen=true;
-    State.save();
+    if(!manual||skipCoach){
+      State.S.battlePrefs.tutorialSeen=true;
+      if(manual){
+        State.S.battlePrefs.manualTutorialSeen=true;
+        if(this.battle){this.battle.coach=null;this.battle._coachHighlight=null;}
+        window.arcadeMetric?.('bond_tutorial_skip',{mode:'manual'});
+      }
+      State.save();
+    }
     this.mouse.down=false;this.keys={};
     this.setBattleHelpVisible(false);
   }
