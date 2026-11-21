@@ -1,9 +1,10 @@
 {
   "version": "V7",
-  "createdAt": "2026-11-21T21:02:53.120Z",
+  "createdAt": "2026-11-21T22:14:35.805Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
+  "readabilityChecked": true,
   "trailers": [
     {
       "slug": "cat-bond",
@@ -15,7 +16,7 @@
         "/promo/cat-bond/v7-review-2.jpg",
         "/promo/cat-bond/v7-review-3.jpg"
       ],
-      "duration": 46.6,
+      "duration": 59.5,
       "shots": [
         {
           "source": "broll",
@@ -27,25 +28,25 @@
           "source": "broll",
           "scene": "raising",
           "caption": "RAISE YOUR OWN CAT TEAM.",
-          "seconds": 3.7
+          "seconds": 4.65
         },
         {
           "source": "broll",
           "scene": "cat-upgrade",
           "caption": "LEVEL UP YOUR CATS.",
-          "seconds": 3.7
+          "seconds": 6.45
         },
         {
           "source": "broll",
           "scene": "duo-partners",
           "caption": "BUILD YOUR CAT DUO.",
-          "seconds": 4.1
+          "seconds": 6.45
         },
         {
           "source": "broll",
           "scene": "work-before",
           "caption": "SEND YOUR CATS OUT TO WORK.",
-          "seconds": 2.4
+          "seconds": 3.35
         },
         {
           "source": "broll",
@@ -63,7 +64,7 @@
           "source": "broll",
           "scene": "map-choice",
           "caption": "CHOOSE A NEW ADVENTURE.",
-          "seconds": 3
+          "seconds": 4.95
         },
         {
           "source": "broll",
@@ -85,6 +86,12 @@
         },
         {
           "source": "broll",
+          "scene": "ultimate-intro",
+          "caption": "NEW CHALLENGER!",
+          "seconds": 2.25
+        },
+        {
+          "source": "broll",
           "scene": "ultimate",
           "caption": "NOW THE ULTIMATE ATTACK!",
           "seconds": 5.5
@@ -93,7 +100,7 @@
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -112,37 +119,37 @@
         "/promo/pawsibly-innocent/v7-review-2.jpg",
         "/promo/pawsibly-innocent/v7-review-3.jpg"
       ],
-      "duration": 28,
+      "duration": 30.6,
       "shots": [
         {
           "source": "broll",
           "scene": "escape-attempt",
           "caption": "STEAL THREE FISH. ESCAPE!",
-          "seconds": 14.151
+          "seconds": 14.101
         },
         {
           "source": "broll",
           "scene": "narrow-pursuit",
           "caption": "SPOTTED! CAN IT ESCAPE?",
-          "seconds": 2.501000000000001
+          "seconds": 2.4850000000000008
         },
         {
           "source": "broll",
           "scene": "narrow-achievement",
           "caption": "NINE LIVES · ACHIEVEMENT!",
-          "seconds": 2
+          "seconds": 3.05
         },
         {
           "source": "broll",
           "scene": "caught-attempt",
           "caption": "NEXT ROOM. ONE BAD MOVE...",
-          "seconds": 7.378999999999999
+          "seconds": 7.331999999999998
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -161,8 +168,14 @@
         "/promo/tiny-town/v7-review-2.jpg",
         "/promo/tiny-town/v7-review-3.jpg"
       ],
-      "duration": 37.4,
+      "duration": 55.3,
       "shots": [
+        {
+          "source": "broll",
+          "scene": "opening-three-choices",
+          "caption": "",
+          "seconds": 9.45
+        },
         {
           "source": "broll",
           "scene": "board",
@@ -179,7 +192,7 @@
           "source": "broll",
           "scene": "resident-profile",
           "caption": "THEY HAVE THEIR OWN OPINIONS.",
-          "seconds": 4.2
+          "seconds": 6.5
         },
         {
           "source": "broll",
@@ -197,7 +210,7 @@
           "source": "broll",
           "scene": "neighbor-story",
           "caption": "THE NEIGHBORS HAVE STORIES.",
-          "seconds": 4
+          "seconds": 6.85
         },
         {
           "source": "broll",
@@ -215,13 +228,13 @@
           "source": "broll",
           "scene": "ending",
           "caption": "SEVEN DAYS. YOUR OWN ENDING.",
-          "seconds": 5.15
+          "seconds": 6.8
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -240,91 +253,91 @@
         "/promo/elsewhere/v7-review-2.jpg",
         "/promo/elsewhere/v7-review-3.jpg"
       ],
-      "duration": 36.9,
+      "duration": 79.6,
       "shots": [
         {
           "source": "broll",
           "scene": "choose-life",
           "caption": "",
-          "seconds": 2.8
+          "seconds": 4.65
         },
         {
           "source": "broll",
           "scene": "amalfi",
           "caption": "A VILLA ON THE AMALFI COAST.",
-          "seconds": 2.35
+          "seconds": 4.7
         },
         {
           "source": "broll",
           "scene": "tokyo",
           "caption": "BE A SUPERSTAR TONIGHT.",
-          "seconds": 2.35
+          "seconds": 4.7
         },
         {
           "source": "broll",
           "scene": "moon-opening",
           "caption": "OR OWN A HOTEL ON THE MOON.",
-          "seconds": 2.5
+          "seconds": 5.3
         },
         {
           "source": "broll",
           "scene": "moon-surprise",
           "caption": "SURPRISES IN EVERY LIFE.",
-          "seconds": 2.55
+          "seconds": 5.7
         },
         {
           "source": "broll",
           "scene": "paris",
           "caption": "A NEW LOVE STORY IN PARIS.",
-          "seconds": 3.15
+          "seconds": 6.3
         },
         {
           "source": "broll",
           "scene": "paris-result",
           "caption": "",
-          "seconds": 1.8
+          "seconds": 3.95
         },
         {
           "source": "broll",
           "scene": "paris-romance",
           "caption": "MEET SOMEONE WHO GETS YOU.",
-          "seconds": 3.65
+          "seconds": 7.3
         },
         {
           "source": "broll",
           "scene": "paris-love-moment",
           "caption": "ONE UNFORGETTABLE DATE.",
-          "seconds": 2.3
+          "seconds": 4.2
         },
         {
           "source": "broll",
           "scene": "paris-chapter-3",
           "caption": "THE ROMANCE CONTINUES.",
-          "seconds": 2.75
+          "seconds": 7
         },
         {
           "source": "broll",
           "scene": "paris-chapter-4",
           "caption": "A MOMENT WORTH KEEPING.",
-          "seconds": 2.6
+          "seconds": 6.8
         },
         {
           "source": "broll",
           "scene": "paris-finale",
           "caption": "CHOOSE YOUR OWN LOVE STORY.",
-          "seconds": 2.45
+          "seconds": 7.15
         },
         {
           "source": "broll",
           "scene": "paris-ending",
           "caption": "YOUR CHOICES. YOUR ENDING.",
-          "seconds": 3.65
+          "seconds": 8.2
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -343,37 +356,37 @@
         "/promo/flip-dash/v7-review-2.jpg",
         "/promo/flip-dash/v7-review-3.jpg"
       ],
-      "duration": 17,
+      "duration": 19.8,
       "shots": [
         {
           "source": "broll",
           "scene": "first-coin",
           "caption": "GRAB GOLD FROM THE START!",
-          "seconds": 3.12
+          "seconds": 3.1200000000000006
         },
         {
           "source": "broll",
           "scene": "coin-collect",
           "caption": "COLLECT GOLD. DODGE PINK.",
-          "seconds": 9.952
+          "seconds": 9.917
         },
         {
           "source": "broll",
           "scene": "danger",
-          "caption": "ONE WRONG MOVE IS ENOUGH.",
-          "seconds": 0.4830000000000002
+          "caption": "",
+          "seconds": 0.49199999999999877
         },
         {
           "source": "broll",
           "scene": "crash",
           "caption": "CAN YOU LAST LONGER?",
-          "seconds": 1.5
+          "seconds": 2.7
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -392,31 +405,31 @@
         "/promo/parcel-panic/v7-review-2.jpg",
         "/promo/parcel-panic/v7-review-3.jpg"
       ],
-      "duration": 16.7,
+      "duration": 19.4,
       "shots": [
         {
           "source": "broll",
           "scene": "deliveries",
           "caption": "MATCH THE PARCEL COLOR.",
-          "seconds": 8.15
+          "seconds": 8.13
         },
         {
           "source": "broll",
           "scene": "mistakes",
           "caption": "NOW WATCH THE MISTAKES...",
-          "seconds": 4.694999999999999
+          "seconds": 4.781999999999999
         },
         {
           "source": "broll",
           "scene": "game-over",
           "caption": "BEAT MY DELIVERY STREAK!",
-          "seconds": 1.85
+          "seconds": 2.9
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
@@ -435,19 +448,19 @@
         "/promo/pocket-aquarium/v7-review-2.jpg",
         "/promo/pocket-aquarium/v7-review-3.jpg"
       ],
-      "duration": 16.3,
+      "duration": 18.9,
       "shots": [
         {
           "source": "broll",
           "scene": "feeding",
           "caption": "FEED THE HUNGRY FISH.",
-          "seconds": 3.2449999999999997
+          "seconds": 3.246
         },
         {
           "source": "broll",
           "scene": "more-feeding",
           "caption": "KEEP PLAYING. BUILD A SCORE.",
-          "seconds": 4.235
+          "seconds": 4.249
         },
         {
           "source": "broll",
@@ -459,13 +472,13 @@
           "source": "broll",
           "scene": "timeout",
           "caption": "TIME UP. BEAT THE GRADE!",
-          "seconds": 2.25
+          "seconds": 3.1
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 1.95
+          "seconds": 3.6
         }
       ],
       "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
