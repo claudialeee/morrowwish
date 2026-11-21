@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/export-video-qa-frames.mjs'
+      - 'public/promo/review-v3/index.html'
       - '.github/workflows/export-video-qa-frames.yml'
   workflow_dispatch:
 permissions:
