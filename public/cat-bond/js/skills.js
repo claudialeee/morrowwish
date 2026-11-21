@@ -440,14 +440,13 @@
     const own=pool.filter(sk=>sk.element===elementOf(cat.species)&&!sk.ultCost);
     const splash=pool.filter(sk=>sk.element===SPLASH_ELEMENT[elementOf(cat.species)]&&!sk.ultCost);
     const attackKinds=['melee','projectile','dash','leap','pounce'];
-    // The basic (left-click) must always be a real attack, never a shield/heal —
-    // otherwise the cat has no primary attack. Fall back across elements if needed.
     const isAttack=sk=>['melee','projectile','dash','leap','pounce','chain','aoe'].includes(sk.kind);
-    const basic=own.find(sk=>['melee','projectile'].includes(sk.kind))
-      ||own.find(isAttack)||pool.find(sk=>['melee','projectile'].includes(sk.kind))
-      ||pool.find(isAttack)||own[0]||null;
-    const q=own.find(sk=>attackKinds.includes(sk.kind)&&sk!==basic)
-      ||pool.find(sk=>attackKinds.includes(sk.kind)&&sk!==basic)||basic||null;
+    // Slot 0 (left-click BASIC) is the innate cat-toy toss (小鱼干/毛线团) — it is NOT
+    // a chosen skill, so it stays null. This stops a real skill from being duplicated
+    // into both the basic slot AND Q. Q/E/ult are the three skills the player equips.
+    const basic=null;
+    const q=own.find(sk=>attackKinds.includes(sk.kind))
+      ||pool.find(sk=>attackKinds.includes(sk.kind))||null;
     // E is the DEFENSIVE / utility slot so the shield + heal verbs are actually
     // visible in play. Prefer a shield the cat knows, then a heal, then a buff;
     // only fall back to a splash attack when the cat has no defensive option.

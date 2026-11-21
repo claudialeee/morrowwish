@@ -949,15 +949,18 @@ const UI = {
     const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
     S.ensureLoadout(cat);
     const learn = S.learnableSkills(cat) || [];          // skills actually unlocked
+    // Slot 0 (普攻) is the FIXED innate cat-toy toss — not a chooseable skill — so it's
+    // shown as a fixed info row, not an editable slot. The player equips 技能1/技能2/必杀.
+    const en0 = window.MorrowwishI18n?.get?.() !== 'zh';
+    const basicRow = `<div class="sk-slot"><div class="sk-slot-label">${en0?'Basic':'普攻'}<div class="tiny">${en0?'Toss fish / yarn':'扔小鱼干 / 毛线团'}</div></div><div class="sk-opts"><span class="tiny">${en0?'Innate — always your left-click poke':'固有普攻 · 始终是你的左键攻击'}</span></div></div>`;
     const slots = [
-      { i: 0, label: '普攻', kinds: ['melee', 'projectile'] },
-      { i: 1, label: '技能1', kinds: ['melee', 'projectile', 'dash', 'buff', 'heal', 'aoe'] },
-      { i: 2, label: '技能2', kinds: ['melee', 'projectile', 'dash', 'buff', 'heal', 'aoe'] },
+      { i: 1, label: '技能1', kinds: ['melee', 'projectile', 'dash', 'leap', 'pounce', 'chain', 'buff', 'heal', 'aoe', 'beam'] },
+      { i: 2, label: '技能2', kinds: ['melee', 'projectile', 'dash', 'leap', 'pounce', 'chain', 'buff', 'heal', 'aoe', 'beam'] },
       { i: 3, label: '必杀', kinds: ['aoe'], ult: true },
     ];
     const icon = sk => this.game.skillIcon ? this.game.skillIcon(sk) : '🐾';
     const kindName = { melee: '近战', projectile: '远程', dash: '突进', leap: '跃击', pounce: '飞扑', chain: '连锁', beam: '持续', buff: '增益', heal: '治疗', aoe: '范围' };
-    const rows = slots.map(slot => {
+    const rows = basicRow + slots.map(slot => {
       const cur = S.skillById(cat.loadout[slot.i]);
       // candidates: learnable, matching the slot's allowed kinds, ult-slot only ults
       const opts = learn.filter(s => (slot.ult ? s.ultCost > 0 : s.ultCost === 0) && slot.kinds.indexOf(s.kind) >= 0);

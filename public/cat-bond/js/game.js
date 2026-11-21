@@ -706,7 +706,7 @@ class Game {
     const b=this.battle;if(!b)return;
     const active=b.me(),en=window.MorrowwishI18n?.get?.()!=='zh';
     for(const [id,skill,fallback,key] of [
-      ['mv-basic',null,en?'Claw':'猫爪',this.isTouch?(en?'Tap':'点击'):'J'],
+      ['mv-basic',null,en?'Toss':'丢猫玩具',this.isTouch?(en?'Tap':'点击'):'J'],
       ['mv-q',active.qSkill,en?'Skill Q':'技能一','Q'],
       ['mv-e',active.eSkill,en?'Skill E':'技能二','E'],
       ['ult-btn',active.ultSkill,en?'Cat Storm':'喵之怒涛','R']

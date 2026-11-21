@@ -221,8 +221,11 @@ const legendaryThunder=State.makeCat('xianluo');
 Skills.ensureLoadout(legendaryThunder);
 assert.equal(legendaryThunder.loadout[3],'thunderYowl',
   'Epic electric cat must have unique elemental ultimate');
-assert.notEqual(legendary.loadout[0],legendaryThunder.loadout[0],
-  'Legendary and epic cats should have distinct normal attacks');
+// Slot 0 is the fixed innate cat-toy toss for every cat (null in loadout); their
+// distinct identity now lives in the equipped Q skill (slot 1).
+assert.equal(legendary.loadout[0],null,'Basic (slot 0) is the innate toy toss, not a chosen skill');
+assert.notEqual(legendary.loadout[1],legendaryThunder.loadout[1],
+  'Legendary and epic cats should have distinct equipped Q skills');
 
 
 const earlyState=sandbox.window.State;
