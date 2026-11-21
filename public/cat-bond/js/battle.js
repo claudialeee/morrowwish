@@ -182,34 +182,34 @@ class CaptureBattle {
     const firstColor=this.elemColor(fs[0].element),secondColor=this.elemColor(fs[1].element);
     const mix=d.elementPair;
     const art=d.effect||{status:'expose',support:'shield',mult:1};
-    const fieldDuration=5.3+.7*d.tier;
+    const fieldDuration=8.2+1.15*(d.tier-1);
     this.duoField={x,y,age:0,duration:fieldDuration,remaining:fieldDuration,
-      pulse:1.2,radius:Math.min(138,102+9*d.tier),
+      pulse:1.65,radius:Math.min(134,96+8*d.tier),
       elements:mix.split('+'),pair:mix,first:firstColor,second:secondColor,
       status:art.status,secondStatus:d.tier>=2?art.secondStatus:null,
       support:art.support||'shield',tier:d.tier};
-    this.duoCinematic={t:1.25,max:1.25,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
+    this.duoCinematic={t:2.75,max:2.75,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
     const target=this.liveEnemies()[0]||{x,y};
     this.duoCinematic.x=target.x;this.duoCinematic.y=target.y;
     // The resonance should surround enemies, not the point where the two cats stood.
     this.duoField.x=target.x;this.duoField.y=target.y;
-    this.duoRun={age:0,duration:1.17,runners:fs.map((f,i)=>({
+    this.duoRun={age:0,duration:2.40,runners:fs.map((f,i)=>({
       uid:f.cat.uid,fromX:f.x,fromY:f.y,
       toX:target.x+(i?21:-21),toY:target.y+(i?-11:11)
     }))};
-    this.flash=.14;this.shakeT=.28;this.slowmo=.18;
+    this.flash=.10;this.shakeT=.24;this.slowmo=.11;
     // Composition uses *two running bodies*, sharp impact marks and a restrained
     // elemental afterimage — not dozens of floating globes or kitten stickers.
     this.vfx.beam(fs[0].x,fs[0].y,target.x,target.y,firstColor);
     this.vfx.beam(fs[1].x,fs[1].y,target.x,target.y,secondColor);
     for(const f of fs){
-      f.inv=Math.max(f.inv,.75);
+      f.inv=Math.max(f.inv,2.7);
       this.vfx.burst(f.x,f.y,{count:6,color:this.elemColor(f.element),speed:130,life:.3,r:2});
     }
     this.skillStrokes.push({kind:'duoImpact',x:target.x,y:target.y,
-      firstColor,secondColor,elements:mix,life:1.25,max:1.25});
+      firstColor,secondColor,elements:mix,life:2.55,max:2.55});
     this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
     this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
     let hits=0;
@@ -226,7 +226,7 @@ class CaptureBattle {
       for(const tag of tags){
         if(!Skills.TAG_INFO[tag])continue;
         const cc=['bind','chill','dizzy'].includes(tag);
-        const secs=cc?1.45+.3*d.tier:2.2+.48*d.tier;
+        const secs=cc?1.9+.35*d.tier:4.7+.95*d.tier;
         e.status[tag]=Math.max(e.status[tag]||0,secs);
         if(!e.tags.includes(tag))e.tags.push(tag);
       }
@@ -241,19 +241,19 @@ class CaptureBattle {
         const heal=Math.min(f.maxhp-f.hp,f.maxhp*pct);
         f.hp=Math.min(f.maxhp,f.hp+heal);
         if(heal>1)this.vfx.text(f.x,f.y-48,'+'+Math.round(heal),'#8be7ac',15);
-        if(support==='regen')f.shieldT=Math.max(f.shieldT||0,1.2+.25*d.tier);
+        if(support==='regen')f.shieldT=Math.max(f.shieldT||0,3.2+.45*d.tier);
       }else if(support==='shield'){
-        f.shieldT=Math.max(f.shieldT||0,2.2+.65*d.tier);
+        f.shieldT=Math.max(f.shieldT||0,5.8+.95*d.tier);
       }else if(support==='boost'){
-        f.damageBoostT=Math.max(f.damageBoostT||0,3.1+.45*d.tier);
+        f.damageBoostT=Math.max(f.damageBoostT||0,6.4+.7*d.tier);
       }else if(support==='haste'){
-        const seconds=1.15+.35*d.tier;
+        const seconds=1.6+.45*d.tier;
         for(const key of ['basic','q','e'])f.cd[key]=Math.max(0,(f.cd[key]||0)-seconds);
         f.dodgeCd=Math.max(0,(f.dodgeCd||0)-seconds);
       }else if(support==='evade'){
-        f.inv=Math.max(f.inv||0,.9+.23*d.tier);
+        f.inv=Math.max(f.inv||0,2.5+.18*d.tier);
       }else if(support==='protect'){
-        f.protectT=Math.max(f.protectT||0,.65+.22*d.tier);
+        f.protectT=Math.max(f.protectT||0,1.45+.24*d.tier);
       }
     }
     if(support==='charge')this.gainUlt(11+8*d.tier);
@@ -272,7 +272,7 @@ class CaptureBattle {
     if(!v.remaining){this.duoField=null;return;}
     v.pulse-=dt;
     if(v.pulse>0)return;
-    v.pulse+=1.25;
+    v.pulse+=1.65;
     for(const e of this.liveEnemies()){
       if(Math.hypot(e.x-v.x,e.y-v.y)>v.radius*1.3)continue;
       const damage=Math.min(e.maxhp*(.019+.003*v.tier),
@@ -1465,7 +1465,7 @@ class CaptureBattle {
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
-    if(this.duoCinematic)this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);
+    if(this.duoCinematic){this.duoCinematic.t=Math.max(0,this.duoCinematic.t-dt);if(this.duoCinematic.t===0)this.duoCinematic=null;}
     this.tickDuoField(dt);
     if(this.duoRun){
       this.duoRun.age+=dt;
@@ -2237,16 +2237,16 @@ class CaptureBattle {
     this.drawArenaBackground(ctx, W, H);
     this.drawDuoField(ctx);
     if(this.duoCinematic?.t>0){
-      const v=this.duoCinematic,k=Math.max(0,v.t/(v.max||1.25));
+      const v=this.duoCinematic,k=Math.max(0,v.t/v.max),elapsed=v.max-v.t;
       ctx.save();
       // Battle-space focus rather than screen-wide spinning sticker graphics.
-      ctx.fillStyle='rgba(30,26,45,'+(k*.055)+')';
+      ctx.fillStyle='rgba(30,26,45,'+(Math.min(.10,Math.sin(Math.PI*elapsed/v.max)*.10))+')';
       ctx.fillRect(0,0,W,H);
       ctx.textAlign='center';
-      ctx.font='800 12px system-ui';
+      ctx.font='800 '+(this.game.isTouch?12:15)+'px system-ui';
       ctx.fillStyle='rgba(255,253,238,'+(k*.92)+')';
       ctx.shadowColor=v.first;ctx.shadowBlur=9;
-      ctx.fillText(v.name,Math.max(85,Math.min(W-85,v.x)),Math.max(this.topMargin+38,v.y-90));
+      if(elapsed<1.75)ctx.fillText(v.name,W/2,Math.min(H-84,this.topMargin+18),W*.72);
       ctx.restore();
     }
 
@@ -2432,14 +2432,14 @@ class CaptureBattle {
       if(route){
         const pct=Math.min(1,this.duoRun.age/this.duoRun.duration);
         // Outbound full-speed sprint, a contact leap, then a planted return.
-        const outbound=pct<.55;
-        const alpha=outbound?pct/.55:(1-pct)/.45;
-        const eased=Math.sin(Math.max(0,alpha)*Math.PI*.5);
+        const outbound=pct<.70;
+        const alpha=pct<.15?0:pct<.51?(pct-.15)/.36:pct<.70?1:Math.max(0,1-(pct-.70)/.30);
+        const eased=Math.sin(Math.max(0,Math.min(1,alpha))*Math.PI*.5);
         visualX=outbound?route.fromX+(route.toX-route.fromX)*eased
           :route.fromX+(route.toX-route.fromX)*eased;
         visualY=outbound?route.fromY+(route.toY-route.fromY)*eased
           :route.fromY+(route.toY-route.fromY)*eased;
-        visualPose=pct>.46&&pct<.65?'play':'run';
+        visualPose=pct>.51&&pct<.70?'play':pct<.15?'idle':'run';
       }
       ctx.save();
       if (!isMe) ctx.globalAlpha = 0.9;
@@ -2447,7 +2447,7 @@ class CaptureBattle {
       if (tf.hitFlash > 0) ctx.globalAlpha = 0.5;
       // active cat gets a soft golden ground ring so you know who you control
       if (isMe) { ctx.fillStyle = 'rgba(255,211,107,0.13)'; ctx.beginPath(); ctx.ellipse(visualX,visualY+3,27,7,0,0,Math.PI*2);ctx.fill(); }
-      const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.55?1:-1)<0?-1:1
+      const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.70?1:-1)<0?-1:1
         :(tf.face||(Math.cos(fAim)<0?-1:1));
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
         species:sp2,scale:1.04,face:visualFace,t:tf.t||this.t,
