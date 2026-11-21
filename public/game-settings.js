@@ -28,7 +28,8 @@ const CSS=`
 `;
 let dock,btnLang,btnMusic,btnSfx;
 const hiddenMenuControls=()=>route==='pawsibly-innocent';
-let fallbackMusic=null,fallbackEnabled=false;
+let fallbackMusic=null,fallbackEnabled=false,fallbackFxEnabled=true,fallbackFxCtx=null;
+try{fallbackFxEnabled=localStorage.getItem('morrowwish-universal-fx')!=='0'}catch(_){}
 function recordedFallback(){
  if(!fallbackMusic){
   fallbackMusic=new Audio('/audio/cat-happy-clappy.ogg');
@@ -76,7 +77,28 @@ function toggleEffects(){
  const api=fxAPI();
  if(api?.toggle)api.toggle();
  else if(route==='pawsibly-innocent')document.getElementById('sound')?.click();
+ else{
+  fallbackFxEnabled=!fallbackFxEnabled;
+  try{localStorage.setItem('morrowwish-universal-fx',fallbackFxEnabled?'1':'0')}catch(_){}
+ }
  sync();
+}
+function gameTapSound(event){
+ if(fxAPI()||!fallbackFxEnabled||event.target.closest?.('#mw-game-settings'))return;
+ if(!event.target.closest?.('canvas,button,[role="button"]'))return;
+ try{
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass)return;
+  fallbackFxCtx??=new AudioContextClass();
+  if(fallbackFxCtx.state==='suspended')fallbackFxCtx.resume().catch(()=>{});
+  const o=fallbackFxCtx.createOscillator(),v=fallbackFxCtx.createGain(),t=fallbackFxCtx.currentTime;
+  o.type='sine';o.frequency.setValueAtTime(510,t);
+  o.frequency.exponentialRampToValueAtTime(660,t+.06);
+  v.gain.setValueAtTime(.0001,t);
+  v.gain.linearRampToValueAtTime(.014,t+.008);
+  v.gain.exponentialRampToValueAtTime(.0001,t+.09);
+  o.connect(v);v.connect(fallbackFxCtx.destination);o.start(t);o.stop(t+.1);
+ }catch(_){}
 }
 function sync(){
  if(!dock)return;
@@ -91,7 +113,7 @@ function sync(){
  btnMusic.title=chinese?(on?'关闭音乐':'播放音乐'):(on?'Turn music off':'Play music');
  btnMusic.setAttribute('aria-label',btnMusic.title);
  const fx=fxAPI(),fs=fx?.status?.();
- const fxOn=route==='elsewhere'?(fs?.fxOn!==false):(fx?.isEnabled?.()??fs?.enabled??true);
+ const fxOn=route==='elsewhere'?(fs?.fxOn!==false):(fx?.isEnabled?.()??fs?.enabled??fallbackFxEnabled);
  btnSfx.textContent=fxOn?'◖))':'◖';
  btnSfx.setAttribute('aria-pressed',String(!!fxOn));
  btnSfx.title=chinese?(fxOn?'关闭音效':'开启音效'):(fxOn?'Turn sound effects off':'Turn sound effects on');
@@ -118,6 +140,7 @@ function mount(){
  btnMusic=button('mw-settings-music',toggleMusic);
  btnSfx=button('mw-settings-sfx',toggleEffects);
  dock.append(btnLang,btnMusic,btnSfx);
+ document.addEventListener('pointerdown',gameTapSound,{passive:true});
  correctHost();sync();
  window.addEventListener('morrowwish-language-change',sync);
  document.addEventListener('fullscreenchange',()=>{correctHost();sync()});
