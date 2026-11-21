@@ -4,7 +4,8 @@
 (()=>{
   'use strict';
   const route=location.pathname.split('/').filter(Boolean)[0];
-  if(!['flip-dash','parcel-panic','pocket-aquarium'].includes(route))return;
+  const games=['flip-dash','parcel-panic','pocket-aquarium','orbit-escape','tower-tuck','traffic-tangle','color-current','perfect-pour','grid-glider','mirror-mosaic'];
+  if(!games.includes(route))return;
 
   const root=document.documentElement;
   let frame,button,fallback=false,wasActive=false,returnScroll=0,entryPortrait=false;
@@ -31,8 +32,12 @@
     if(route==='pocket-aquarium')return;
     // Freeze the selected gameplay orientation until the player exits fullscreen.
     // Browser chrome and gyroscope-driven viewport resizing must not flip the game.
-    const portrait=active()&&entryPortrait;
+    const screenPortrait=active()&&entryPortrait;
+    // Only these games have a real 540x960 drawing implementation. Every
+    // other puzzle retains its full 960x540 board: scale to fit, NEVER crop.
+    const portrait=screenPortrait&&(route==='flip-dash'||route==='parcel-panic');
     const changed=frame.classList.contains('mw-mini-portrait')!==portrait;
+    frame.classList.toggle('mw-mini-screen-portrait',screenPortrait);
     frame.classList.toggle('mw-mini-portrait',portrait);
     if(changed)window.dispatchEvent(new CustomEvent('morrowwish-mini-viewport-change',{detail:{portrait}}));
     const area=frame.querySelector('.mw-mini-playfield');
