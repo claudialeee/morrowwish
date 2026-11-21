@@ -2394,10 +2394,10 @@ class CaptureBattle {
   // ---------------- draw ----------------
   draw(ctx) {
     const { W, H } = this;
-    let sx = 0, sy = 0;
-    // Screen shake — gentler on phones (thumb occludes the view; big shake nauseates).
-    if (this.shakeT > 0) { const amp = this.game.isTouch ? 4 : 9; sx = (Math.random() - 0.5) * amp; sy = (Math.random() - 0.5) * amp; }
-    ctx.save(); ctx.translate(sx, sy);
+    // Keep the arena camera fixed during combat. Translating the entire canvas
+    // exposed undrawn side strips on narrow portrait screens, especially when
+    // big elemental skills hit. Impact rings and flashes still communicate hits.
+    ctx.save();
 
     this.drawArenaBackground(ctx, W, H);
     this.drawDuoField(ctx);
@@ -2411,7 +2411,8 @@ class CaptureBattle {
       ctx.font='800 '+(this.game.isTouch?12:15)+'px system-ui';
       ctx.fillStyle='rgba(255,253,238,'+(k*.92)+')';
       ctx.shadowColor=v.first;ctx.shadowBlur=9;
-      if(elapsed<1.75)// Duo name is visible on its single compact HUD button, not across the arena.
+      // Always balance the inner save. The previous conditional skipped
+      // restore after 1.75s, leaking shadow/compositing state into every frame.
       ctx.restore();
     }
 
