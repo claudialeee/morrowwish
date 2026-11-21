@@ -266,11 +266,14 @@
     soak:  { name: '淋湿', ttl: 5.0, dps: 0,    color: '#4aa8ff' },
     shock: { name: '感电', ttl: 3.0, dps: 0.02, color: '#ffd23c' },
     oil:   { name: '浸油', ttl: 6.0, dps: 0,    color: '#8a6bff' },
-    chill: { name: '冰冻', ttl: 4.0, dps: 0,    color: '#9ec8ff' },
-    dizzy: { name: '眩晕', ttl: 2.4, dps: 0,    color: '#c9b6ff' },
+    // Tiered CC (see battle.js tickStatus): chill = hard freeze (no move/attack),
+    // dizzy = full stun (shortest — it's the strongest), bind = root only (can still
+    // attack, so it can run a little longer). Durations trimmed — CC felt too long.
+    chill: { name: '冰冻', ttl: 2.2, dps: 0,    color: '#9ec8ff' },
+    dizzy: { name: '眩晕', ttl: 1.4, dps: 0,    color: '#c9b6ff' },
     bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
-    blind: { name: '失明', ttl: 3.0, dps: 0,    color: '#ffe9a8' },
-    bind:  { name: '束缚', ttl: 3.5, dps: 0,    color: '#6fcf5f' },
+    blind: { name: '失明', ttl: 2.6, dps: 0,    color: '#ffe9a8' },
+    bind:  { name: '束缚', ttl: 3.0, dps: 0,    color: '#6fcf5f' },
     // --- advanced debuffs ---
     expose:{ name: '破绽', ttl: 5.0, dps: 0,    color: '#ff5a8a', dmgTaken: 1.4 },   // 增伤: 受到伤害 ×1.4
     weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5

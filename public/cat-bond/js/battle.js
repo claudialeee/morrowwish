@@ -2667,7 +2667,8 @@ class CaptureBattle {
         if (sd < 70) { ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
       }
     }
-    const spd=e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1)*(e._castSlow>0?.5:1);   // 感电减速 + 后遗症
+    // 束缚 bind ROOTS the enemy (no movement) but it can still aim + fire below.
+    const spd=e.rooted?0:e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1)*(e._castSlow>0?.5:1);   // 感电减速 + 后遗症
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
     if(Math.abs(ax)>.07)e.face=ax<0?-1:1;
@@ -3027,14 +3028,20 @@ class CaptureBattle {
         if (Math.random() < dt * 3) this.vfx.text(e.x + (Math.random() * 16 - 8), e.y - 18, '-' + Math.max(1, Math.round(e.maxhp * info.dps)), info.color, 10);
         if (e.hp <= 0 && e.alive) { e.alive = false; this.spawnBurst(e.x, e.y, '💫', info.color, 10); this.game.toast(e.sp.name + ' 倒下了！'); }
       }
-      // crowd control: chill/bind/dizzy stop the enemy acting/moving
-      if (tg === 'chill' || tg === 'bind' || tg === 'dizzy') frozen = true;
     }
-    e.frozen = frozen;
+    // TIERED crowd control — not every CC is a full freeze:
+    //  • dizzy 眩晕  = FULL stun: can't move AND can't attack (true hard control)
+    //  • chill 冰冻  = frozen solid: can't move AND can't attack (hard, but see ttls)
+    //  • bind  束缚  = ROOTED: can't move, but CAN still attack (partial control)
+    // So binds let the enemy keep shooting (just pinned), dizzy/chill lock it out.
+    const hardStun = !!(e.status.dizzy || e.status.chill);   // no move, no attack
+    const rooted   = !!(e.status.bind);                       // no move, attacks OK
+    e.frozen = hardStun;                                      // legacy flag = full lock
+    e.rooted = rooted && !hardStun;
     // shock/blind flags for the AI to read
     e.slowed = !!(e.status.shock);
     e.blinded = !!(e.status.blind);
-    return !frozen;
+    return !hardStun;                                         // false → updateEnemyAI skipped (full lock)
   }
 
   hurtEnemy(e, dmg, fx, fy, isDot) {
