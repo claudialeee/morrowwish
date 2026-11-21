@@ -32,6 +32,21 @@ html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .heist-statu
 html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game #stageControls{grid-area:tools!important;justify-self:end!important}
 html[data-mw-settings-game="pawsibly-innocent"] #menuButtonLabel{display:none!important}
 html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{font-size:21px!important}
+
+html[data-mw-settings-game="tiny-town"] .header{flex-direction:column!important;align-items:stretch!important}
+html[data-mw-settings-game="tiny-town"] .top-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;flex-wrap:nowrap!important;gap:4px!important;width:100%!important}
+html[data-mw-settings-game="tiny-town"] .top-actions .button{padding:6px!important;font-size:11px!important;min-height:32px!important}
+html[data-mw-settings-game="tiny-town"] .top-actions #mw-fullscreen-toggle{font-size:0!important;min-width:32px!important;width:32px!important;min-height:32px!important;padding:0!important}
+html[data-mw-settings-game="tiny-town"] .top-actions #mw-fullscreen-toggle::after{content:'⛶';font:800 19px/1 system-ui}
+html[data-mw-settings-game="tiny-town"] .top-actions #mw-fullscreen-toggle[aria-pressed=true]::after{content:'↙'}
+html[data-mw-settings-game="elsewhere"] .top .brand-divider{display:none!important}
+html[data-mw-settings-game="elsewhere"] .top .brand-area{gap:5px!important}
+html[data-mw-settings-game="elsewhere"] .top .home-link{font-size:0!important;min-width:24px!important}
+html[data-mw-settings-game="elsewhere"] .top .home-link::before{content:'←';font:800 18px/1 system-ui}
+html[data-mw-settings-game="elsewhere"] .top .brand{font-size:20px!important}
+html[data-mw-settings-game="echo-heist"] .nav a:last-child{font-size:0!important;padding:7px!important}
+html[data-mw-settings-game="echo-heist"] .nav a:last-child::after{content:'← HOME';font:800 11px/1 system-ui}
+
 }
 
 #hud #mw-game-settings{pointer-events:auto!important;margin-left:auto!important}
