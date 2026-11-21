@@ -217,6 +217,14 @@ try{
    out.width=540;out.height=960;out.id='mw-v6-full-board';
    Object.assign(out.style,{position:'fixed',inset:'0',width:'100vw',height:'100vh',zIndex:'2147483647',pointerEvents:'none'});
    document.body.appendChild(out);
+   // Record the genuine achievement UI from the running game, not a fake
+   // subtitle painted over the gameplay. The fixed camera otherwise hides
+   // DOM toasts by covering the whole original playfield.
+   const realBadge=document.getElementById('achievementToast');
+   if(!realBadge)throw Error('Game-native achievement card is missing');
+   document.body.appendChild(realBadge);
+   Object.assign(realBadge.style,{position:'fixed',top:'14%',left:'50%',width:'min(460px,88vw)',
+    maxWidth:'88vw',zIndex:'2147483647',pointerEvents:'none'});
    const ctx=out.getContext('2d',{alpha:false});
    function paint(){
     ctx.fillStyle='#241a37';ctx.fillRect(0,0,540,960);
@@ -232,16 +240,8 @@ try{
      ctx.fillText('FISH '+s.got+'/3',28,760);
      if(s.winning)ctx.fillText('ESCAPED!',28,815);
      else if(s.lives<3)ctx.fillText('CAUGHT!',28,815);
-     // These labels are keyed to the real in-game near-miss counter,
-     // which is set only after a guard spots the cat and loses sight.
-     if(s.nearMisses>0){
-      ctx.fillStyle='#302341db';ctx.fillRect(26,145,488,111);
-      ctx.strokeStyle='#eac56f';ctx.lineWidth=3;ctx.strokeRect(26,145,488,111);
-      ctx.fillStyle='#ffdd7c';ctx.font='bold 22px system-ui,sans-serif';
-      ctx.fillText('ACHIEVEMENT UNLOCKED',43,183);
-      ctx.fillStyle='#ffffff';ctx.font='bold 27px system-ui,sans-serif';
-      ctx.fillText('NINE LIVES · NARROW ESCAPE!',43,220);
-     }
+     // No fabricated badge overlay. The game's own #achievementToast card
+     // renders above this camera only after the real near-miss is earned.
     }
     requestAnimationFrame(paint);
    }paint();
@@ -316,18 +316,30 @@ try{
    const save=JSON.parse(localStorage.getItem('pawsibly-innocent-save-v1')||'{}');
    return save.achievements?.['near-miss']===true;
   });
-  if(!badgeEarned)throw Error('The real Nine Lives achievement was not awarded');
-  const nearMissEnd=stamp();await sleep(3450);
-  // A chronological BEFORE/AFTER pair: the "achievement" title must never
-  // appear over the starting board before the real badge is earned.
-  // The game has already incremented nearMisses 550ms before nearMissEnd;
-  // start the achievement clip once the real in-game badge is visible.
-  const chaseStart=Math.max(nearMissStart,nearMissEnd-3.3);
-  const badgeStart=nearMissEnd-.30;
-  if(badgeStart-chaseStart<1.1)throw Error('V10 close call lacks readable pursuit footage');
-  shots.push({label:'narrow-pursuit',start:chaseStart,duration:badgeStart-chaseStart-.1});
-  shots.push({label:'narrow-achievement',start:badgeStart,duration:Math.min(3.15,stamp()-badgeStart-.1)});
-  if(shots.at(-1).duration<3.05)throw Error('V11 badge must stay visible for three full seconds');
+  if(!badgeEarned)throw Error('The genuine Narrow Escape achievement was not awarded');
+  const nearMissEnd=stamp();
+  const awardUI=await page.evaluate(()=>{
+   const toast=document.getElementById('achievementToast');
+   const title=toast?.querySelector('.award-title')?.textContent?.trim()||'';
+   const icon=toast?.querySelector('.award-icon')?.textContent?.trim()||'';
+   const description=toast?.querySelector('.award-desc')?.textContent?.trim()||'';
+   const rect=toast?.getBoundingClientRect();
+   return{visible:!!toast&&!toast.hidden&&getComputedStyle(toast).display!=='none',
+    title,icon,description,rect:rect&&{left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom}};
+  });
+  if(!awardUI.visible||!/Narrow escape/i.test(awardUI.title)||!awardUI.icon||!awardUI.description||
+    awardUI.rect.left<0||awardUI.rect.right>540||awardUI.rect.bottom>960)
+    throw Error('The actual game achievement CARD is not visible in the portrait video '+JSON.stringify(awardUI));
+  // Native game UI proof screenshot; screenshot is separate from the MP4.
+  await page.screenshot({path:'public/promo/pawsibly-innocent/narrow-escape-card-proof.png'});
+  const badgeStart=stamp();await sleep(3680);
+  const chaseStart=Math.max(nearMissStart,nearMissEnd-3.25);
+  if(nearMissEnd-.35-chaseStart<1.1)throw Error('Narrow escape lacks a visible pursuit before the reward');
+  shots.push({label:'narrow-pursuit',start:chaseStart,duration:nearMissEnd-.35-chaseStart});
+  shots.push({label:'narrow-achievement',start:badgeStart,duration:3.4});
+  const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('pawsibly-innocent-save-v1')||'{}').achievements?.['near-miss']===true);
+  if(!persisted)throw Error('Achievement card appeared without a genuine saved game achievement');
+  console.log('REAL IN-GAME ACHIEVEMENT CARD '+JSON.stringify(awardUI));
   console.log('V8 CAT NARROW ESCAPE VERIFIED '+JSON.stringify(nearMissProof));
   // Explicit second run. The cut is at the start of a NEW room, never in
   // the middle of movement. A different outcome comes from actual game rules.
