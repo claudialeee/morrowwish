@@ -14,29 +14,45 @@ const ensureLanguage=()=>{
  }
 };
 const CSS=`
-#mw-game-settings{position:fixed!important;top:max(8px,env(safe-area-inset-top))!important;right:max(8px,env(safe-area-inset-right))!important;left:auto!important;bottom:auto!important;z-index:2147483640!important;display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;padding:5px!important;background:rgba(255,251,248,.94)!important;border:1px solid rgba(130,94,116,.22)!important;box-shadow:0 4px 14px rgba(56,39,64,.15)!important;backdrop-filter:blur(10px);border-radius:15px!important;max-width:calc(100vw - 16px)!important;pointer-events:auto!important;transform:none!important;isolation:isolate}
-#mw-game-settings button{position:static!important;display:inline-flex!important;justify-content:center!important;align-items:center!important;flex:0 0 auto!important;padding:0!important;margin:0!important;width:37px!important;height:37px!important;min-width:37px!important;min-height:37px!important;border-radius:10px!important;background:#fffdf9!important;border:1px solid #e4d6df!important;color:#66496b!important;font:800 13px/1 system-ui,sans-serif!important;box-shadow:none!important;white-space:nowrap!important;opacity:1!important;visibility:visible!important;cursor:pointer!important;touch-action:manipulation!important}
-#mw-game-settings button[aria-pressed="true"]{background:#f4e4f3!important;border-color:#c4a6c7!important}
-#mw-game-settings button:focus-visible{outline:3px solid #aa80c4!important;outline-offset:1px!important}
-#mw-game-settings button:disabled{opacity:.5!important;cursor:not-allowed!important}
-#mw-game-settings .mw-settings-language{font-size:11px!important;width:42px!important;min-width:42px!important}
-#mw-game-settings .mw-settings-music{font-size:23px!important}
-#mw-game-settings .mw-settings-sfx{font-size:17px!important}
-@media(max-width:450px){#mw-game-settings{top:max(5px,env(safe-area-inset-top))!important;right:max(5px,env(safe-area-inset-right))!important;gap:3px!important;padding:3px!important}#mw-game-settings button{width:33px!important;min-width:33px!important;height:35px!important;min-height:35px!important}#mw-game-settings .mw-settings-language{width:39px!important;min-width:39px!important}}
-/* The old floating language and audio docks must not overlap the new controls. */
+#mw-game-settings{position:relative!important;inset:auto!important;transform:none!important;z-index:2147483000!important;display:inline-flex!important;align-items:center!important;gap:3px!important;padding:1px!important;margin:0 0 0 auto!important;flex:0 0 auto!important;width:auto!important;height:auto!important;background:transparent!important;border:0!important;box-shadow:none!important;pointer-events:auto!important}
+#mw-game-settings button{position:relative!important;inset:auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:32px!important;min-width:32px!important;height:34px!important;min-height:34px!important;margin:0!important;padding:0!important;border:1px solid #e3d5df!important;border-radius:9px!important;background:#fffaf7!important;color:#624765!important;box-shadow:0 1px 4px #40304019!important;font:800 12px/1 system-ui,sans-serif!important;opacity:1!important;cursor:pointer!important;touch-action:manipulation!important}
+#mw-game-settings button[aria-pressed="true"]{background:#f2e1f2!important;border-color:#c4a4c7!important}
+#mw-game-settings button:focus-visible{outline:3px solid #aa80c4!important}
+#mw-game-settings .mw-settings-language{width:39px!important;min-width:39px!important;font-size:11px!important}
+#mw-game-settings .mw-settings-music{font-size:20px!important}
+#mw-game-settings .mw-settings-sfx{font-size:15px!important}
 #mw-language,#mw-audio-dock,.mw-language-float{display:none!important}
 body [data-mw-music],body [data-mw-audio],body .lab-mute,body #music,body #sound,body .elsewhere-music{display:none!important}
-/* Leave room for the shared controls on compact playable viewports. */
+.home-audio,.game-tools .dream-sound{display:none!important}
+#hud #mw-game-settings{pointer-events:auto!important;margin-left:auto!important}
+#hud .scene-title{display:none!important}
+#stageControls #mw-game-settings{order:5;margin-left:2px!important}
+.top-right #mw-game-settings,.top-actions #mw-game-settings{margin-left:5px!important}
+.mw-mini-arcade-frame>.mw-mini-frame-hud{display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:3px!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none}
+.mw-mini-arcade-frame>.mw-mini-frame-hud::-webkit-scrollbar{display:none}
+.mw-mini-arcade-frame .mw-mini-fullscreen-button{margin-left:0!important}
+html.mw-fs-active #mw-game-settings,html.mw-mini-fullscreen-on #mw-game-settings{display:inline-flex!important;pointer-events:auto!important}
 @media(max-width:700px){
-html[data-mw-settings-game="cat-bond"] #hud{top:54px!important}
-html[data-mw-settings-game="cat-bond"] #battle-ui .battle-topbar{top:54px!important}
-html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-top{top:49px!important}
-html[data-mw-settings-game="pawsibly-innocent"].mw-fs-active .single-screen-game .in-game-top{top:52px!important}
+#mw-game-settings{gap:2px!important;padding:0!important}
+#mw-game-settings button{width:28px!important;min-width:28px!important;height:32px!important;min-height:32px!important;border-radius:8px!important}
+#mw-game-settings .mw-settings-language{width:36px!important;min-width:36px!important;font-size:10px!important}
+html[data-mw-settings-game="cat-bond"] #hud{top:0!important;flex-wrap:nowrap!important;gap:3px!important;padding:5px!important}
+html[data-mw-settings-game="cat-bond"] #hud .hud-pill{padding:5px!important;font-size:11px!important;gap:2px!important}
+html[data-mw-settings-game="cat-bond"] #hud .hud-pill .ico{font-size:12px!important}
+html[data-mw-settings-game="cat-bond"] #hud .hud-spacer{flex:1 1 1px;min-width:0}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-top{top:0!important}
+html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls{flex-wrap:nowrap!important;gap:3px!important}
+html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls .hud-icon,html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls .mw-fullscreen-toggle{width:32px!important;min-width:32px!important;height:34px!important;min-height:34px!important;font-size:15px!important}
+.mw-mini-arcade-frame .mw-mini-frame-hud{padding:5px!important;gap:3px!important}
+.mw-mini-arcade-frame .mw-mini-frame-hud .score-chip{min-width:43px!important;padding:3px 4px!important;font-size:13px!important}
+.mw-mini-arcade-frame .mw-mini-frame-hud .icon-btn{min-width:29px!important;width:29px!important;min-height:32px!important;height:32px!important;padding:0!important}
+.mw-mini-arcade-frame .mw-mini-fullscreen-button{font-size:0!important;min-width:30px!important;width:30px!important;min-height:32px!important;padding:0!important}
+.mw-mini-arcade-frame .mw-mini-fullscreen-button::after{content:'⛶';font:800 20px/1 system-ui}
+.mw-mini-arcade-frame .mw-mini-fullscreen-button[aria-pressed="true"]::after{content:'↙'}
+.mw-mini-aquarium-frame .mw-mini-aqua-top{flex-wrap:nowrap!important;gap:3px!important}
+.mw-mini-aquarium-frame .mw-mini-aqua-top .mw-mini-fullscreen-button{font-size:0!important;min-width:30px!important;width:30px!important;padding:0!important}
+.mw-mini-aquarium-frame .mw-mini-aqua-top .mw-mini-fullscreen-button::after{content:'⛶';font:800 19px/1 system-ui}
 }
-html.mw-mini-fullscreen-on[data-mw-settings-game="flip-dash"] .mw-mini-frame-hud,
-html.mw-mini-fullscreen-on[data-mw-settings-game="parcel-panic"] .mw-mini-frame-hud{padding-top:max(55px,env(safe-area-inset-top))!important}
-html.mw-mini-fullscreen-on[data-mw-settings-game="pocket-aquarium"] .mw-mini-aqua-top{padding-top:max(54px,env(safe-area-inset-top))!important}
-
 `;
 let dock,btnLang,btnMusic,btnSfx;
 const hiddenMenuControls=()=>route==='pawsibly-innocent';
@@ -132,13 +148,20 @@ function sync(){
 }
 function correctHost(){
  if(!dock)return;
- // Native fullscreen only shows descendants of the fullscreen element.
- const host=document.fullscreenElement||document.body;
- if(dock.parentElement!==host)host.appendChild(dock);
- // Hide legacy controls without deleting any underlying event listeners.
- if(route==='elsewhere'){
-  document.querySelectorAll('.home-audio,.game-tools .dream-sound,.top-right .language-switch').forEach(el=>{el.style.display='none'});
- }
+ const full=document.fullscreenElement;
+ const root=full||document;
+ const candidates=route==='pawsibly-innocent'?['#stageControls','.in-game-controls']:
+ route==='cat-bond'?['#hud']:
+ route==='elsewhere'?['.game-top .game-tools','.top-right','.game-top']:
+ route==='tiny-town'?['.top-actions','.header']:
+ route==='pocket-aquarium'?['.mw-mini-aqua-top','.scores','header']:
+ ['.mw-mini-frame-hud','.game-top .scoreboard','.scoreboard','.game-top','.topbar','header'];
+ let anchor=null;
+ for(const selector of candidates){const el=root.querySelector?.(selector);if(el){anchor=el;break;}}
+ if(!anchor&&full)anchor=full.querySelector?.('.game-top,header,.game-tools,#hud')||full;
+ if(!anchor){for(const selector of candidates){anchor=document.querySelector(selector);if(anchor)break;}}
+ if(anchor&&dock.parentElement!==anchor)anchor.appendChild(dock);
+ if(route==='elsewhere')document.querySelectorAll('.home-audio,.game-tools .dream-sound').forEach(el=>{el.style.display='none'});
 }
 function mount(){
  if(dock||!document.body)return;
