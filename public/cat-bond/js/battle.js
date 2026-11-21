@@ -94,24 +94,24 @@ class CaptureBattle {
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
     const target=this.liveEnemies()[0]||{x,y};
+    this.duoCinematic.x=target.x;this.duoCinematic.y=target.y;
     this.duoRun={age:0,duration:.96,runners:fs.map((f,i)=>({
       uid:f.cat.uid,fromX:f.x,fromY:f.y,
       toX:target.x+(i?21:-21),toY:target.y+(i?-11:11)
     }))};
-    this.flash=.38;this.shakeT=.42;this.slowmo=.24;
-    this.vfx.beam(fs[0].x,fs[0].y,fs[1].x,fs[1].y,firstColor);
-    this.vfx.beam(fs[1].x,fs[1].y,x,y,secondColor);
-    for(let i=0;i<3;i++)this.vfx.ring(x,y,{r0:15+i*27,vr:450+i*125,life:.75,
-      color:i%2?firstColor:secondColor,width:7-i});
+    this.flash=.14;this.shakeT=.28;this.slowmo=.18;
+    // Composition uses *two running bodies*, sharp impact marks and a restrained
+    // elemental afterimage — not dozens of floating globes or kitten stickers.
+    this.vfx.beam(fs[0].x,fs[0].y,target.x,target.y,firstColor);
+    this.vfx.beam(fs[1].x,fs[1].y,target.x,target.y,secondColor);
     for(const f of fs){
       f.inv=Math.max(f.inv,.75);
-      this.vfx.ring(f.x,f.y,{r0:9,vr:390,life:.65,color:this.elemColor(f.element),width:7});
-      this.vfx.burst(f.x,f.y,{count:22,color:this.elemColor(f.element),speed:250,life:.65,r:4});
+      this.vfx.burst(f.x,f.y,{count:6,color:this.elemColor(f.element),speed:130,life:.3,r:2});
     }
-    this.vfx.shockwave(x,y,secondColor);
-    this.vfx.burst(x,y,{count:46,color:firstColor,speed:285,life:.75,r:6});
-    this.vfx.burst(x,y,{count:34,color:secondColor,speed:330,life:.85,r:4});
-    this.vfx.text(x,y-60,d.name+'!',firstColor,27);
+    this.skillStrokes.push({kind:'duoImpact',x:target.x,y:target.y,
+      firstColor,secondColor,elements:mix,life:.78,max:.78});
+    this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
+    this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
     let hits=0;
     for(const e of this.liveEnemies().slice()){
       const damage=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
@@ -834,7 +834,7 @@ class CaptureBattle {
       this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,
         color,life:.92,max:.92});
       this.vfx.ring(f.x,f.y,{r0:18,vr:Math.max(450,radius*2),life:.65,color,width:9});
-      this.vfx.burst(f.x,f.y,{count:28,color,speed:280,life:.65,r:5});
+      this.vfx.burst(f.x,f.y,{count:14,color,speed:245,life:.55,r:3});
       this.vfx.text(f.x,f.y-48,skill.name+'!',color,22);
       this.game.toast(this.elemSymbol(skill.element)+' 必杀 · '+skill.name+'！');
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
@@ -848,7 +848,7 @@ class CaptureBattle {
           f.dmg*1.3,'me','#9d7bff',8,'star');
       this.vfx.shockwave(f.x,f.y,'#ffd36b');
       this.vfx.ring(f.x,f.y,{r0:10,vr:620,life:.5,color:'#9d7bff',width:8});
-      this.vfx.burst(f.x,f.y,{count:30,color:'#9d7bff',speed:300,life:.6,r:4});
+      this.vfx.burst(f.x,f.y,{count:15,color:'#9d7bff',speed:230,life:.5,r:3});
       this.vfx.text(f.x,f.y-40,'喵之怒涛!','#ffd36b',22);
       this.game.toast('🌪️ 必杀·喵之怒涛！');
       this.lastUltimate={skill:'basicCatStorm',element:'neutral',hits:0};
@@ -932,6 +932,42 @@ class CaptureBattle {
           const ang=i*Math.PI/6,rad=22+p*105;
           ctx.fillStyle=i%2?'#ff7f38':'#ffe29a';
           ctx.beginPath();ctx.arc(v.x+Math.cos(ang)*rad,v.y+Math.sin(ang)*rad,5*k+1,0,Math.PI*2);ctx.fill();
+        }
+      }else if(v.kind==='duoImpact'){
+        ctx.translate(v.x,v.y);
+        const element=v.elements||'',rad=24+p*96;
+        ctx.rotate(p*.6);
+        for(let layer=0;layer<2;layer++){
+          ctx.strokeStyle=layer?v.secondColor:v.firstColor;
+          ctx.lineWidth=(layer?5:8)*k;
+          ctx.beginPath();
+          ctx.arc(0,0,rad+layer*17,-2.5+p*.6,1.6+p*.6);
+          ctx.stroke();
+        }
+        for(let i=0;i<3;i++){
+          const yy=(i-1)*13,dir=i%2?-1:1;
+          ctx.strokeStyle=i===1?'#fff9e5':(i===0?v.firstColor:v.secondColor);
+          ctx.lineWidth=4.5*k;ctx.beginPath();
+          ctx.moveTo(-61+p*10,yy-12);
+          ctx.quadraticCurveTo(-4,-16+yy*dir,63-p*14,yy+12);
+          ctx.stroke();
+        }
+        if(element.includes('elec')){
+          ctx.strokeStyle='#ffedaa';ctx.lineWidth=3*k;
+          for(let i=0;i<3;i++){
+            const a=i*Math.PI*2/3+p*2;
+            ctx.save();ctx.rotate(a);
+            ctx.beginPath();ctx.moveTo(15,-8);ctx.lineTo(27,3);ctx.lineTo(21,8);ctx.lineTo(48,24);ctx.stroke();
+            ctx.restore();
+          }
+        }else if(element.includes('grass')){
+          ctx.fillStyle='#c6f4b2';
+          for(let i=0;i<7;i++){
+            const a=i*Math.PI*2/7+p;
+            ctx.save();ctx.rotate(a);ctx.translate(39+p*48,0);
+            ctx.beginPath();ctx.ellipse(0,0,10*k,3.5*k,a,0,Math.PI*2);ctx.fill();
+            ctx.restore();
+          }
         }
       }else if(v.kind==='ultimate'){
         const el=v.element,count=el==='grass'?18:el==='water'?14:el==='elec'?20:12;
@@ -1503,10 +1539,10 @@ class CaptureBattle {
     // projectiles with glow
     for (const p of this.projectiles) {
       ctx.save(); ctx.translate(p.x, p.y);
-      // outer glow
-      ctx.globalAlpha = 0.35; ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.arc(0, 0, p.r * 2.1, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 1; ctx.fillStyle = p.color;
+      // Subtle contact glow, not a large neon orb around every attack.
+      ctx.globalAlpha = p.kind==='fireball'?.25:.12;ctx.fillStyle=p.color;
+      ctx.beginPath();ctx.arc(0,0,p.r*1.65,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=1;ctx.fillStyle=p.color;
       if(p.kind==='star'){ctx.rotate(this.t*8);star(ctx,0,0,p.r,p.r*.5,5);}
       else if(p.kind==='claw'){
         ctx.rotate(p.ang);
@@ -1529,6 +1565,22 @@ class CaptureBattle {
           const ang=i*Math.PI*2/5+this.t*4;
           ctx.fillStyle='#ff914c';ctx.beginPath();ctx.ellipse(-12+Math.cos(ang)*10,Math.sin(ang)*10,7,3,ang,0,Math.PI*2);ctx.fill();
         }
+      }else if(p.kind==='fur'){
+        // The basic yarn attack reads as a little thread bundle, not another light ball.
+        ctx.rotate(this.t*7+p.ang);
+        ctx.fillStyle='#e5c5a9';ctx.beginPath();ctx.ellipse(0,0,p.r*1.1,p.r*.85,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#a6826f';ctx.lineWidth=1.5;
+        for(let i=-1;i<=1;i++){
+          ctx.beginPath();ctx.ellipse(0,i*2,p.r*.85,p.r*.48,i*.8,0,Math.PI*2);ctx.stroke();
+        }
+        ctx.beginPath();ctx.moveTo(-p.r,0);ctx.quadraticCurveTo(-p.r*2,5,-p.r*2.5,-3);ctx.stroke();
+      }else if(p.kind==='ball'){
+        // Wild enemy attacks are narrow warning darts with tails, not pastel pellets.
+        ctx.rotate(p.ang);
+        ctx.fillStyle=p.color;ctx.beginPath();ctx.moveTo(15,0);
+        ctx.lineTo(-6,-7);ctx.lineTo(-3,0);ctx.lineTo(-6,7);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(-2,-10);ctx.lineTo(12,0);ctx.lineTo(-2,10);ctx.stroke();
       }else if(p.kind==='hex'){
         ctx.rotate(this.t*2.6);ctx.strokeStyle='#e8c5ff';ctx.lineWidth=3;
         ctx.beginPath();for(let i=0;i<=6;i++){const a=i*Math.PI/3;
@@ -1536,7 +1588,7 @@ class CaptureBattle {
           else ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);}ctx.stroke();
         ctx.rotate(-this.t*5.2);ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
       }else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
-      if(!['claw','leaf','fireball','hex'].includes(p.kind)){
+      if(!['claw','leaf','fireball','hex','fur','ball'].includes(p.kind)){
         ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(0,0,p.r*.45,0,Math.PI*2);ctx.fill();
       }
       ctx.restore();
