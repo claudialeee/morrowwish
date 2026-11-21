@@ -584,13 +584,12 @@ class Game {
     State.S.petCount=(State.S.petCount||0)+1;
     const closer=window.CatRelations?.pet(cat);
     if(closer?.levelUp)this.toast(window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫关系升级！':'💞 Your duo grew closer!');
-    if(closer?.quirk==='sulky'){
-      const pair=CatRelations.chosen();
-      pair.forEach(c=>this.yard.entities.find(e=>e.cat.uid===c.uid)?.emote('💢',2.5));
-      // An important event is NOT a transient toast: explain how to resolve
-      // it in a panel, and leave an actionable reminder in the garden.
+    const quarrelPair=closer?.quirk==='sulky' ? (CatRelations.chosen()||[]) : null;
+    if(quarrelPair?.length===2){
+      quarrelPair.forEach(c=>this.yard.entities.find(e=>e.cat.uid===c.uid)?.emote('💢',2.5));
+      // Resolve all underlying state and cat-detail redraws FIRST, then
+      // present the actionable disagreement panel, not a fading toast.
       this.refreshYardSurprise();
-      if(pair.length===2)UI.openDuoQuarrel(pair[0],pair[1]);
     }
     this.tryYardSurprise(cat);
     const rewards=this.grantBondingRewards();
@@ -603,8 +602,14 @@ class Game {
     }
     State.save();
     this.refreshYardSurprise();
-    // if a detail panel is open for this cat, refresh it
+    // If a cat detail panel is open, refresh BEFORE any important modal.
+    // Previously this refresh replaced the quarrel story immediately after
+    // showing it (an apparent one-frame flash).
     if (UI.openCatUid === cat.uid) UI.renderCatDetail(cat);
+    if(quarrelPair?.length===2){
+      UI.openDuoQuarrel(quarrelPair[0],quarrelPair[1]);
+      this.refreshYardSurprise();
+    }
   }
 
   // ---------- battle flow ----------
