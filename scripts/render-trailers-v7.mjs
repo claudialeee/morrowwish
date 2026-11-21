@@ -20,6 +20,8 @@ const playlists={
  'cat-bond':[
   broll('yard',3.5,'A HOME FULL OF CATS.'),
   broll('raising',3.7,'RAISE YOUR OWN CAT TEAM.'),
+  broll('cat-upgrade',3.7,'LEVEL UP YOUR CATS.'),
+  broll('duo-partners',4.1,'BUILD YOUR CAT DUO.'),
   broll('work-before',2.4,'SEND YOUR CATS OUT TO WORK.'),
   broll('work-after',3.5,'BRING HOME REAL EARNINGS.'),
   broll('tease',3.9,'PLAY WITH YOUR CATS.'),
@@ -32,6 +34,7 @@ const playlists={
  ],
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
+  broll('narrow-escape',7.8,'SPOTTED! JUST GOT AWAY!'),
   broll('caught-attempt',14,'NEXT ROOM. ONE BAD MOVE...'),
   cover(1.95,'PLAY FREE')
  ],
@@ -51,6 +54,8 @@ const playlists={
   broll('choose-life',4.0,'WAKE UP TO A BRAND NEW LIFE.'),
   broll('paris',3.15,'A NEW ROMANCE IN PARIS.'),
   broll('paris-result',1.9),
+  broll('paris-romance',3.7,'LET ROMANCE BLOOM IN PARIS.'),
+  broll('paris-love-moment',2.3,'LOVE IS A NEW ADVENTURE.'),
   broll('amalfi',3.15,'YOUR OWN SEASIDE VILLA.'),
   broll('amalfi-result',1.9),
   broll('tokyo',3.15,'LIVE AS A SUPERSTAR.'),
@@ -65,7 +70,8 @@ const playlists={
   cover(1.95,'PLAY FREE')
  ],
  'flip-dash':[
-  broll('survival',12.4,'DODGE. DO NOT SPAM TAPS.'),
+  broll('survival',5.7,'DODGE PINK. GRAB GOLD.'),
+  broll('coin-collect',9.0,'CATCH THE GOLD COINS!'),
   broll('danger',2.25,'ONE WRONG MOVE IS ENOUGH.'),
   broll('crash',2.2,'CAN YOU LAST LONGER?'),
   cover(1.95,'PLAY FREE')

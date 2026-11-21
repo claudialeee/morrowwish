@@ -81,6 +81,27 @@ try{
   await page.evaluate(()=>UI.openRoster());
   await page.waitForSelector('#panel.open .card');
   await mark('raising',3850);
+  // Actual cat management/training interface and in-game training transaction.
+  const trained=await page.evaluate(()=>{
+   const cat=State.S.cats[0],before=cat.level,oldXp=cat.xp;
+   State.S.fish=Math.max(3,State.S.fish||0); // capture-only resource fixture
+   UI.closeAll();UI.openCatDetail(cat);
+   document.getElementById('cd-trainxp')?.click();
+   return {visible:!!document.querySelector('#cat-detail #cd-trainxp'),before,after:cat.level,oldXp,newXp:cat.xp};
+  });
+  if(!trained.visible||(trained.after===trained.before&&trained.newXp<=trained.oldXp))
+   throw Error('V8 real cat training was not shown '+JSON.stringify(trained));
+  await mark('cat-upgrade',3800);
+  const duoPanel=await page.evaluate(()=>{
+   const cats=State.S.cats.slice(0,2);
+   if(cats.length<2)throw Error('V8 cannot show duo with fewer than two cats');
+   CatRelations.grow(cats[0],cats[1],35);
+   CatRelations.choose(cats[0],cats[1]);UI.closeAll();UI.openBondPanel();
+   return !!document.querySelector('#panel.open .duo-panel #duo-choose')&&
+    !!document.querySelector('#panel.open .duo-picker');
+  });
+  if(!duoPanel)throw Error('V8 real cat duo partner panel missing');
+  await mark('duo-partners',4200);
   await page.evaluate(()=>{UI.closeAll();UI.openWorkshop()});
   await page.waitForSelector('#panel.open .work-earn-header');
   await mark('work-before',2550);
@@ -189,6 +210,59 @@ try{
   if(!win?.won||win.got<3)throw Error('Continuous successful escape does not collect three real fish '+JSON.stringify(win));
   await sleep(1400);
   shots.push({label:'escape-attempt',start:first,duration:stamp()-first-.1});
+  // Real narrow escape: approach the owner until alert, then break line of sight.
+  // The published footage requires a genuine nearMisses increment.
+  let nearMissProof=null,nearMissStart=0;
+  for(let attempt=0;attempt<3&&!nearMissProof;attempt++){
+   await page.evaluate(()=>window.__PAWSIBLY_TEST__.choose(0,false));
+   const began=stamp();await sleep(650);
+   let sighted=false,previous=[];
+   for(let turn=0;turn<28;turn++){
+    const q=await page.evaluate(({flee,previous})=>{
+     const api=window.__PAWSIBLY_TEST__,s=api.getState();
+     const options=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({
+      dx,dy,x:s.cat.x+dx,y:s.cat.y+dy
+     })).filter(p=>p.x>=0&&p.x<10&&p.y>=0&&p.y<7&&
+      !['#','S'].includes(s.grid[p.y][p.x])&&!(p.x===s.human.x&&p.y===s.human.y));
+     const distance=p=>Math.abs(p.x-s.human.x)+Math.abs(p.y-s.human.y);
+     const visible=p=>{
+      if(s.boxes.some(b=>b.x===p.x&&b.y===p.y))return false;
+      const d=distance(p),h=s.human;
+      if(d<=1)return true;
+      if(d>3)return false;
+      if(p.x===h.x){for(let y=Math.min(p.y,h.y)+1;y<Math.max(p.y,h.y);y++)
+       if(['#','S'].includes(s.grid[y][p.x]))return false;return true}
+      if(p.y===h.y){for(let x=Math.min(p.x,h.x)+1;x<Math.max(p.x,h.x);x++)
+       if(['#','S'].includes(s.grid[p.y][x]))return false;return true}
+      if(d===2&&Math.abs(p.x-h.x)===1)
+       return !['#','S'].includes(s.grid[p.y][h.x])&&!['#','S'].includes(s.grid[h.y][p.x]);
+      return false;
+     };
+     options.sort((a,b)=>{
+      const score=p=>flee?
+       (!visible(p)?100:0)+distance(p)*7+(s.boxes.some(v=>v.x===p.x&&v.y===p.y)?40:0)-(previous.includes(p.x+','+p.y)?5:0):
+       (visible(p)?30:0)-Math.abs(distance(p)-2)*12-(previous.includes(p.x+','+p.y)?8:0);
+      return score(b)-score(a);
+     });
+     if(!options.length)return null;
+     const p=options[0];api.move(p.dx,p.dy);const next=api.getState();
+     return {cat:next.cat,nearMisses:next.nearMisses,danger:next.dangerActive,
+      lives:next.lives,done:next.done,steps:next.steps,exposure:next.exposure};
+    },{flee:sighted,previous});
+    if(!q||q.done||q.lives<3)break;
+    previous.push(q.cat.x+','+q.cat.y);if(previous.length>5)previous.shift();
+    sighted ||= q.danger || q.exposure>0;
+    await sleep(550);
+    if(q.nearMisses>0){nearMissStart=began;nearMissProof={sighted,steps:q.steps,nearMisses:q.nearMisses,lives:q.lives};break}
+   }
+  }
+  if(!nearMissProof?.sighted||nearMissProof.nearMisses<1||nearMissProof.lives!==3)
+   throw Error('V8 true narrowly escaped pursuit was not captured');
+  const nearMissEnd=stamp();await sleep(1500);
+  const nearMissClipStart=Math.max(nearMissStart,nearMissEnd-6900);
+  shots.push({label:'narrow-escape',start:nearMissClipStart,
+   duration:Math.min(7.9,nearMissEnd-nearMissClipStart+1.2)});
+  console.log('V8 CAT NARROW ESCAPE VERIFIED '+JSON.stringify(nearMissProof));
   // Explicit second run. The cut is at the start of a NEW room, never in
   // the middle of movement. A different outcome comes from actual game rules.
   await page.evaluate(()=>window.__PAWSIBLY_TEST__.choose(5,false));
@@ -333,6 +407,15 @@ try{
     await page.locator('#game [data-choice]').first().click();
     const reaction=stamp();await sleep(2200);
     shots.push({label:world+'-result',start:reaction,duration:2.0});
+    if(world==='paris'){
+      await page.locator('#game [data-continue]').click();
+      await check('paris-romance-chapter-2');
+      const romance=stamp();await sleep(4000);
+      shots.push({label:'paris-romance',start:romance,duration:3.8});
+      await page.locator('#game [data-choice]').first().click();
+      const moment=stamp();await sleep(2600);
+      shots.push({label:'paris-love-moment',start:moment,duration:2.4});
+    }
     await page.evaluate(()=>document.querySelector('#game [data-home]')?.click());
     await sleep(250);
   }
@@ -373,24 +456,28 @@ try{
    const response=await route.fetch(),code=await response.text();
    const key='let sec=0,side=0,py=410,haz=[],stars=[],sp=.8,k=0,lastHazSide=1;';
    if(!code.includes(key))throw Error('V7 Flip observer does not match active game');
-   const observer='window.__V7_FLIP__=()=>({sec,side,py,haz:haz.map(h=>({x:h.x,side:h.side,passed:h.passed})),dodges:window.mwMiniStats?.dodges||0,flips:window.mwMiniStats?.flips||0});';
+   const observer='window.__V7_FLIP__=()=>({sec,side,py,haz:haz.map(h=>({x:h.x,side:h.side,passed:h.passed})),stars:stars.map(g=>({x:g.x,side:g.side,got:g.got})),dodges:window.mwMiniStats?.dodges||0,flips:window.mwMiniStats?.flips||0,gems:window.mwMiniStats?.gems||0});';
    await route.fulfill({response,body:code.replace(key,key+observer),headers:{...response.headers(),'content-type':'application/javascript; charset=utf-8'}});
   });
   await page.goto(host+'/flip-dash/?lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.evaluate(()=>document.querySelector('#mw-mini-fullscreen')?.click());
   await page.waitForFunction(()=>window.MorrowwishArcadeViewport?.state?.portrait===true&&!!window.__V7_FLIP__,null,{timeout:8500});
   await page.locator('#play-btn').click();
-  const start=stamp();let targetAt=null,dodged=0,last=null;
+  const start=stamp();let targetAt=null,dodged=0,collected=0,last=null,firstCoinAt=null;
   for(let tick=0;tick<220;tick++){
    const now=await page.evaluate(()=>({s:window.__V7_FLIP__(),dead:!document.querySelector('#overlay').hidden}));
    if(now.dead)throw Error('V7 Flip crashed before long survival '+JSON.stringify(now));
    const st=now.s,h=st.haz.filter(x=>!x.passed&&x.x>225).sort((x,y)=>x.x-y.x)[0];
-   if(st.sec>=15&&st.dodges>=8){targetAt=stamp();dodged=st.dodges;break}
-   // Never mash: a flip occurs only for the next incoming hazard on our lane.
-   if(h&&h.x<610&&st.side===h.side)await page.keyboard.press('Space');
+   if(st.gems>0&&!firstCoinAt)firstCoinAt=stamp();
+   if(st.sec>=15&&st.dodges>=8&&st.gems>=3){targetAt=stamp();dodged=st.dodges;collected=st.gems;break}
+   // Do not dodge gold: collect stars by being on their real lane.
+   const coin=st.stars.filter(x=>!x.got&&x.x>225).sort((x,y)=>x.x-y.x)[0];
+   if(h&&h.x<570&&st.side===h.side)await page.keyboard.press('Space');
+   else if(coin&&coin.x<460&&coin.x>240&&st.side!==coin.side&&(!h||h.x>600))
+    await page.keyboard.press('Space');
    last=st;await sleep(115);
   }
-  if(!targetAt)throw Error('V7 Flip lacks a real 15 second / eight-dodge run '+JSON.stringify(last));
+  if(!targetAt||!firstCoinAt)throw Error('V8 Flip must dodge eight obstacles AND genuinely collect >=3 gold coins during 15 seconds '+JSON.stringify(last));
   let collided=null,aimed=false;
   for(let tick=0;tick<160;tick++){
    const now=await page.evaluate(()=>({s:window.__V7_FLIP__(),dead:!document.querySelector('#overlay').hidden}));
@@ -405,10 +492,12 @@ try{
   }
   if(!collided||!aimed)throw Error('V7 Flip lacks verified final player mistake');
   const k=await page.locator('#overlay-kicker').textContent();
-  if(!/GAME OVER|本局结束/i.test(k)||dodged<8)throw Error('V7 Flip final screen not a genuine crash');
+  if(!/GAME OVER|本局结束/i.test(k)||dodged<8||collected<3)throw Error('V8 Flip must collect three coins before a genuine crash');
   await sleep(1900);
-  const surviveDuration=targetAt-start;
-  return [{label:'survival',start,duration:Math.min(12.7,surviveDuration-.35)},
+  const coinStart=start+Math.min(6,targetAt-start-5);
+  console.log('V8 FLIP COIN COLLECTION VERIFIED '+JSON.stringify({collected,dodged,firstCoinAt,seconds:targetAt-start}));
+  return [{label:'survival',start,duration:Math.min(5.8,coinStart-start-.12)},
+    {label:'coin-collect',start:coinStart,duration:Math.min(9.3,targetAt-coinStart-.12)},
     {label:'danger',start:Math.max(start+12.8,targetAt-2),duration:Math.min(2.35,collided-Math.max(start+12.8,targetAt-2)-.1)},
     {label:'crash',start:Math.max(targetAt,collided-.75),duration:Math.min(2.45,collided-Math.max(targetAt,collided-.75)+1.55)}];
  }));
