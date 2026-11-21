@@ -65,9 +65,17 @@ class VFX {
     if (this._noise() > 120) return;                 // don't pile trails onto a saturated screen
     this.fx.push({ type: 'fade', x, y, r: r || 4, life: 0.26, max: 0.26, color: color || '#ffd36b' });
   }
-  impact(x, y, color) {
-    this.burst(x, y, { count: 10, color, speed: 200, life: 0.4, r: 3, drag: 3 });
+  // `angle` (optional) sprays sparks directionally along the hit normal — reads as
+  // force far better than a symmetric puff. A brief white flash pop sells the connect.
+  impact(x, y, color, angle) {
+    if (angle != null) {
+      this.burst(x, y, { count: 9, color, speed: 240, life: 0.34, r: 3, drag: 3.5, angle, spread: 1.0 });
+    } else {
+      this.burst(x, y, { count: 10, color, speed: 200, life: 0.4, r: 3, drag: 3 });
+    }
     this.ring(x, y, { r0: 4, vr: 300, life: 0.3, color, width: 3 });
+    // white-hot flash pop at the contact point (impact-frame feel)
+    this.fx.push({ type: 'flash', x, y, r: 10, life: 0.12, max: 0.12 });
   }
   // rising text (damage / status)
   text(x, y, str, color, size) {
@@ -128,6 +136,13 @@ class VFX {
       } else if (e.type === 'ring') {
         ctx.globalAlpha = k; ctx.strokeStyle = e.color; ctx.lineWidth = e.width * k + 0.5;
         ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2); ctx.stroke();
+      } else if (e.type === 'flash') {
+        // additive white-hot contact pop (impact-frame feel); shrinks as it fades
+        ctx.globalCompositeOperation = 'lighter';
+        const rr = e.r * (0.6 + k);
+        const g = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, rr);
+        g.addColorStop(0, 'rgba(255,255,255,' + k + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y, rr, 0, Math.PI * 2); ctx.fill();
       } else if (e.type === 'muzzle') {
         ctx.translate(e.x, e.y); ctx.rotate(e.angle);
         ctx.fillStyle = e.color; ctx.globalAlpha = k;

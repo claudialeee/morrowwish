@@ -1032,11 +1032,13 @@ class CaptureBattle {
     f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
-    // 猫爪=近身快攻: short-lived projectile so it only reaches ~short range
-    // basic marks itself (isBasic) so applyHitEffects can make it a FINISHER on
-    // status-marked targets and weaker on un-marked ones — pushing players to prime
-    // with Q/E skills. (Playtest P1: basic was a self-sufficient win condition.)
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 5, 'claw', { element: f.element, isBasic: true }, 0.45);
+    // CAT-THEMED BASIC: the猫 lobs its own stuff — 小鱼干 (dried fish) and 毛线团
+    // (yarn ball) alternating — instead of a generic claw shot. Still marks itself
+    // (isBasic) so it's a FINISHER on status-marked targets and weaker on un-marked
+    // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
+    f._basicTick = (f._basicTick || 0) + 1;
+    const toy = f._basicTick % 2 ? 'fish' : 'yarn';
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
       window.MorrowwishAudio?.effect?.('paw');this._lastPawSfx=this.t;
@@ -3385,7 +3387,28 @@ class CaptureBattle {
       // every projectile. A hit gets a brief impact effect instead.
       ctx.globalAlpha=1;ctx.fillStyle=p.color;
       if(p.kind==='star'){ctx.rotate(this.t*8);star(ctx,0,0,p.r,p.r*.5,5);}
-      else if(p.kind==='claw'){
+      else if(p.kind==='fish'){
+        // 小鱼干: a little dried-fish, tumbling as it flies
+        ctx.rotate(p.ang+this.t*9);
+        const r=p.r;
+        ctx.fillStyle='#e8b57a';ctx.strokeStyle='#b9823f';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.ellipse(0,0,r,r*0.62,0,0,Math.PI*2);ctx.fill();ctx.stroke();  // body
+        ctx.beginPath();ctx.moveTo(-r*0.9,0);ctx.lineTo(-r*1.5,-r*0.6);ctx.lineTo(-r*1.5,r*0.6);ctx.closePath();ctx.fill();ctx.stroke(); // tail
+        ctx.fillStyle='#4a3524';ctx.beginPath();ctx.arc(r*0.5,-r*0.12,r*0.14,0,Math.PI*2);ctx.fill(); // eye
+        // little cross-hatch "dried" marks
+        ctx.strokeStyle='#c8914f';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-r*0.2,-r*0.4);ctx.lineTo(-r*0.2,r*0.4);ctx.moveTo(r*0.2,-r*0.35);ctx.lineTo(r*0.2,r*0.35);ctx.stroke();
+      }else if(p.kind==='yarn'){
+        // 毛线团: a wound yarn ball, spinning, in the cat's element tint
+        ctx.rotate(p.ang+this.t*11);
+        const r=p.r;
+        ctx.fillStyle=p.color;ctx.strokeStyle='rgba(0,0,0,0.25)';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+        // wound strands: a few arcs across the ball
+        ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.4;
+        for(let s=-2;s<=2;s++){ctx.beginPath();ctx.arc(0,0,r,s*0.5-0.6,s*0.5+0.6);ctx.stroke();}
+        ctx.beginPath();ctx.ellipse(0,0,r,r*0.5,0.7,0,Math.PI*2);ctx.stroke();
+        ctx.beginPath();ctx.ellipse(0,0,r*0.5,r,0.7,0,Math.PI*2);ctx.stroke();
+      }else if(p.kind==='claw'){
         ctx.rotate(p.ang);
         ctx.strokeStyle='#fff5d5';ctx.lineWidth=3;ctx.lineCap='round';
         for(let k=-1;k<=1;k++){
@@ -3438,7 +3461,7 @@ class CaptureBattle {
         ctx.beginPath();ctx.moveTo(p.r*1.7,0);ctx.lineTo(-p.r*.8,-p.r*.65);
         ctx.lineTo(-p.r*.5,0);ctx.lineTo(-p.r*.8,p.r*.65);ctx.closePath();ctx.fill();
       }
-      if(!['claw','leaf','fireball','hex','fur','ball'].includes(p.kind)){
+      if(!['claw','leaf','fireball','hex','fur','ball','fish','yarn'].includes(p.kind)){
         ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(0,0,p.r*.45,0,Math.PI*2);ctx.fill();
       }
       ctx.restore();
