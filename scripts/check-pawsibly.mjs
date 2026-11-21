@@ -110,8 +110,8 @@ assert.ok(frames>=1,'Canvas art rendered');
 const reviewStyle=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
 assert.ok(reviewStyle.includes('single-screen.css?v=')&&reviewStyle.includes('heistStatus'),
  'CrazyGames build should show new board HUD with an uncached script');
-assert.ok(source.includes('grid-template-columns:minmax(0,1fr) clamp(204px'),
- 'CrazyGames embed should use a readable mission panel beside the game');
+assert.ok(source.includes('html.cg-play #stage>.playfield')&&source.includes('html.cg-play #stage>.stealth-actionbar'),
+ 'CrazyGames embed must fit the single playfield and its in-frame HUD');
 assert.ok(source.includes('fitCanvasPixels')&&source.includes('catPathTo'),
  'High-DPI canvas and risk-aware click routing must remain in the review build');
 // A new player's simple click sequence must clear the kitchen without being trapped in a repeat-loss loop.
