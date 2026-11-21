@@ -132,3 +132,29 @@ Also noted (panicky): the wall arrives with no mercy valve / explanation.
 
 Owner-review log per cron policy. NOTE: acting on the P1 ungate + stall-teach this session
 under the standing "keep improving combat" directive (committed locally, not pushed).
+
+## 羁绊/合体技 rework — design spec (2026-11-21, research agent)
+Vision: the 合体技 is the earned apex of a fight with real stakes — the ONLY screen-freeze.
+Keep TWO distinct axes: 亲密 (cat↔player, ±15% affMult + bondBonuses) vs 羁绊 (cat↔cat,
+duoRelations value → gates/powers the duo combo). Don't unify values; unify only the tier
+vocabulary + stop the UI conflating them.
+Ranked build (all cheap, reuse existing primitives — fields/giantSlam/duoCinematic/reinforcement):
+ 1. Add a `reaction` column to DUO_ARTS (21 pairs) → castDuo dispatches a DISTINCT verb per
+    element pair (reuse single-cat COMBO effect vocab: explode/chainAll/shatter/bloom/blind/
+    freeze/steam). Makes fire+water ≠ fire+elec. Shared with the "dispatch authored combo
+    effects" item already #1 in prior research.
+ 2. Duo-charge rework: passive 3.2→~1.8/s; +18-25 when a combo fires with both pair cats alive;
+    + on perfect dodge. Playing WELL charges the super — ties duo meter to the skill expression
+    the playtests say is ignored. Masher charges slowly = stakes gradient.
+ 3. Battle-driven CatRelations.grow() hooks (sync hits / combo / reinforcement-save / shared win),
+    so 羁绊 is a record of fighting together (Trails Link-Level / FE support model), not only 撸猫.
+ 4. NAMED_DUOS: ~5 Chrono-Trigger flagship techs for specific breed pairs, gated 羁绊≥90, override
+    the generic element art (e.g. 赤焰流星 jinwu+xingchen, 月海潮音 yuelian+lanbao, 雷鸣樱吹雪
+    xianluo+yinghua, 森罗万象 senlin+nuowei, 幽光回廊 youling+moqiu). Pure data, zero engine cost.
+ 5. 羁绊-100 "Triple Tech": summonReinforcement fires INSIDE the cinematic, the reserve cat's
+    element escalates the reaction (water+elec + fire bench → chainAll→explode). Outcome-scaled
+    cinematic length/shake. MED.
+Hooks: cat-relationships.js (NAMED_DUOS + reaction column + active() tier-4 + grow calls),
+battle.js (duoCharge fill, castDuo reaction dispatch, reinforcement escalation), skills.js (reuse
+COMBO vocab; shared applyReaction dispatcher). Queued as a worktree — auto-starts after the
+skill-rework worktree merges (shares battle.js/skills.js).
