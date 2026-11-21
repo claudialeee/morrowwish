@@ -18,80 +18,77 @@ const game=(start,duration,caption='',label='')=>choose('game',start,duration,ca
 const broll=(label,duration,caption='')=>choose('broll',0,duration,caption,label);
 const playlists={
  'pawsibly-innocent':[
-  game(1.91,1.20,'THE HUMAN IS RIGHT THERE.'),
-  broll('sneak',2.20,'THREE FISH TO STEAL.'),
-  cover(2.55,'AND I AM THE CAT.'),
-  game(3.33,1.90,'PLAN: DISTRACT HIM.'),
-  broll('decoy',2.15,'HE CHASES THE YARN.'),
-  cover(2.55,'SO I MAKE MY MOVE.'),
-  game(5.66,2.15,'DON’T GET CAUGHT.'),
-  broll('sneak',2.20,'SNEAKING PAST HIM.'),
-  cover(2.35,'SO CLOSE...'),
-  game(8.47,1.55,'ALL THREE FISH.'),
-  cover(3.00,'COULD YOU PULL THIS OFF?'),
-  cover(2.55,'PAWSIBLY INNOCENT!')
+  broll('sneak',2.2,'THREE FISH. ONE CAT.'),
+  game(1.91,1.20),
+  broll('decoy',2.3,'A YARN BALL CHANGES EVERYTHING.'),
+  cover(2.2),
+  game(3.35,1.8),
+  broll('steal',3.6,'NOW STEAL THE FISH.'),
+  game(5.66,2.1),
+  broll('steal',3.2),
+  game(7.65,1.4),
+  broll('sneak',2.2),
+  game(8.47,1.5),
+  cover(3.3,'PLAY FREE')
  ],
  'cat-bond':[
-  broll('yard',3.40,'THESE CATS ARE YOUR TEAM.'),
-  cover(2.65,'MEET. BEFRIEND. RECRUIT.'),
-  broll('battle',3.25,'THEN THE STRAYS FIGHT BACK.'),
-  game(2.82,2.40,'THEY FIGHT TOGETHER.'),
-  cover(2.80,'EVERY DUO HAS A SECRET.'),
-  game(0.15,2.55,'NOW WATCH THIS...'),
-  broll('battle',2.50,'THE BATTLE ISN’T OVER.'),
-  cover(2.70,'DISCOVER NEW SKILLS.'),
-  game(5.70,2.00,'A TEAM OF YOUR OWN.'),
-  cover(3.40,'WHICH CATS WOULD YOU CHOOSE?'),
-  cover(2.80,'CAT BOND · PLAY FREE')
+  broll('yard',3.6,'MEET YOUR CAT CREW.'),
+  cover(2.5),
+  broll('battle',3.0,'THE STRAYS FIGHT BACK.'),
+  game(2.85,2.3),
+  broll('yard-late',2.45),
+  cover(2.25),
+  broll('battle-late',2.6,'FIGHT WITH TWO CATS.'),
+  game(0.14,2.4),
+  broll('battle',2.4),
+  game(5.65,2.1),
+  cover(3.4,'PLAY FREE')
  ],
  'tiny-town':[
-  game(3.04,2.65,'NO JOBS. ALL FREEDOM.'),
-  broll('build',3.40,'YOU DESIGN THE TOWN.'),
-  cover(2.65,'WHAT IF EVERY WISH CAME TRUE?'),
-  game(6.45,2.00,'THE NEIGHBORS HAVE OPINIONS.'),
-  broll('build',3.05,'EVERY DECISION CHANGES IT.'),
-  cover(3.00,'SEVEN DAYS OF UNLIMITED LIFE.'),
-  game(8.45,2.55,'AND THE TOWN BECOMES...'),
-  game(6.52,1.85,'A STORY NO ONE PLANNED.'),
-  cover(2.95,'WHAT WOULD YOUR TOWN BECOME?'),
-  cover(2.70,'NO MORE MONDAYS · PLAY FREE')
+  broll('build',3.5,'NO WORK. BUILD WHAT YOU WANT.'),
+  broll('build-late',3.9),
+  game(6.48,1.9),
+  cover(2.6),
+  broll('build',3.45,'THE TOWN KEEPS CHANGING.'),
+  game(6.50,2.0),
+  broll('build-late',3.5),
+  game(8.43,2.6),
+  cover(3.3,'PLAY FREE')
  ],
  'elsewhere':[
-  game(3.63,2.35,'WHAT IF YOU WOKE UP IN PARIS?'),
-  broll('maldives',2.45,'OR ON A PRIVATE ISLAND?'),
-  cover(2.80,'A DIFFERENT LIFE AWAITS.'),
-  game(6.17,1.85,'ONE CHOICE CHANGES THINGS.'),
-  broll('tokyo',2.45,'ANOTHER CITY. ANOTHER YOU.'),
-  game(8.12,1.85,'LOVE. LUCK. AND SURPRISES.'),
-  broll('moon',2.45,'EVEN A HOTEL ON THE MOON.'),
-  cover(2.75,'THE STORY IS YOURS.'),
-  game(10.14,2.45,'HUNDREDS OF POSSIBLE DAYS.'),
-  cover(2.80,'WHICH LIFE WOULD YOU LIVE?'),
-  cover(2.55,'ELSEWHERE · PLAY FREE')
+  game(3.64,2.3),
+  broll('maldives',3.6,'OR WAKE UP ON AN ISLAND.'),
+  broll('maldives-result',1.55),
+  cover(2.45),
+  game(6.13,1.85),
+  broll('tokyo',3.65,'ANOTHER CITY. ANOTHER YOU.'),
+  broll('tokyo-result',1.55),
+  broll('moon',3.65,'A HOTEL ON THE MOON?'),
+  broll('moon-result',1.55),
+  game(8.12,1.85),
+  game(10.16,2.3),
+  cover(3.2,'PLAY FREE')
  ],
  'flip-dash':[
-  game(0.05,1.45,'38 POINTS. CRASHED.'),
-  game(1.75,2.60,'ONE BUTTON. FLIP GRAVITY.'),
-  cover(1.25,'MISS ONCE...'),
-  game(4.30,1.25,'AND IT’S OVER.'),
-  game(5.25,1.55,'CAN YOU BEAT 38?'),
-  cover(2.05,'FLIP DASH · PLAY FREE')
+  game(0.05,1.45),
+  game(1.75,3.05),
+  game(4.3,1.25),
+  game(5.25,1.55),
+  cover(2.6,'PLAY FREE')
  ],
  'parcel-panic':[
-  game(0.05,1.30,'28 POINTS. GAME OVER.'),
-  game(1.65,2.35,'SORT THE PACKAGES.'),
-  cover(1.15,'WRONG LANE?'),
-  game(4.22,1.35,'THERE GOES THE STREAK.'),
-  game(5.08,1.36,'BEAT MY 28?'),
-  cover(2.10,'PARCEL PANIC · PLAY FREE')
+  game(0.05,1.30),
+  game(1.65,2.35),
+  game(3.65,1.5),
+  game(5.08,1.36),
+  cover(2.55,'PLAY FREE')
  ],
  'pocket-aquarium':[
-  game(0.06,1.75,'GRADE B. NOT S.'),
-  game(2.35,2.50,'FEED THE RIGHT FISH.'),
-  cover(1.35,'KEEP THE COMBO GOING.'),
-  game(5.65,1.75,'ONE WRONG BITE...'),
-  game(7.63,1.50,'CAN YOU GET AN S?'),
-  cover(2.20,'POCKET AQUARIUM · PLAY FREE')
+  game(0.06,1.75),
+  game(2.35,2.5),
+  game(5.65,1.75),
+  game(7.63,1.5),
+  cover(2.7,'PLAY FREE')
  ]
 };
 const brollManifest=JSON.parse(fs.readFileSync(path.join(brollDir,'broll-manifest.json'),'utf8'));
@@ -141,15 +138,25 @@ function edit(slug){
    // Gentle Ken-Burns motion, never stretched; official artwork only.
    f+="scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:1920,"+
       "zoompan=z='min(1.0+on*0.00042,1.055)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,";
-  }else f+='scale=1080:1920:flags=lanczos,';
+  }else {
+   f+='scale=1080:1920:flags=lanczos,';
+   // Existing V3 Cat Bond captured a few orange pixels on source edges.
+   // Crop only ~1.7% symmetrically, keeping an exact 9:16 aspect ratio.
+   if(slug==='cat-bond'&&sh.src==='game')f+='crop=1044:1856:18:32,scale=1080:1920:flags=lanczos,';
+  }
   f+='setsar=1,format=yuv420p,settb=AVTB';
-  if(sh.caption){
-   const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
-   // One short caption per shot; no full-screen text panels.
-   const y=hero.has(slug)?1692:136;
+  // Prior versions had two overlapping caption layers on every shot.
+  // V3 gameplay already contains its own caption. Keep it untouched;
+  // use V4 captions ONLY for clean newly captured b-roll + final CTA.
+  const isFinalTitle=sh.src==='cover'&&i===chosen.length-1;
+  const addLabel=(sh.src==='broll'&&!!sh.caption&&!/result$/.test(sh.label))||isFinalTitle;
+  if(addLabel){
+   const label=isFinalTitle?'PLAY FREE · LINK IN BIO':sh.caption;
+   const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,label);
+   const y=sh.src==='broll'?1705:1760;
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
-      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+y+
-      ':shadowcolor=black@0.9:shadowx=2:shadowy=3:box=1:boxcolor=black@0.36:boxborderw=12';
+      ':fontcolor=white:fontsize='+(isFinalTitle?36:fontSize)+':x=(w-text_w)/2:y='+y+
+      ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.31:boxborderw=12';
    captionsUsed++;
   }
   filters.push(f+'[v'+i+']');
