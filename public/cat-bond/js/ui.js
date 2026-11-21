@@ -1104,6 +1104,12 @@ const UI = {
     const rar = GameData.RARITY[wildSp.rarity];
     const firstCapture=(State.S.catchCount||0)===0;
     const english=window.MorrowwishI18n?.get?.()!=='zh';
+    // First visit starts with the friendly auto recommendation; subsequent
+    // battles honor the last explicit auto/manual choice from the save.
+    const prefs=State.S.battlePrefs||{};
+    const initialAuto=prefs.modeChosen?!!prefs.autoBattle
+      :(firstCapture?true:!!prefs.autoBattle);
+    this.prepAutoBattle=initialAuto;
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
     const deadline=this.game.gradeTimeLimit(wildSp.rarity);
     const masteryChallenge=english
@@ -1154,7 +1160,22 @@ const UI = {
       <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建出战队伍（最多 3 只，点击选择）'}</h3>
       ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
-      <p class="tiny">${firstCapture?'电脑按住鼠标左键攻击；手机右半屏按住攻击、左半屏移动。打赢就能收服！':'战斗玩法：WASD 移动 · 鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避 · R 必杀 · 1/2/3 换猫 · P 自动'}</p>
+      <fieldset class="capture-mode-picker" aria-label="${english?'Battle control':'选择战斗方式'}">
+        <legend>${english?'How would you like to fight?':'这场战斗怎么打？'}</legend>
+        <div class="capture-mode-options" role="radiogroup" aria-label="${english?'Battle control':'战斗方式'}">
+          <button type="button" role="radio" class="capture-mode-option ${initialAuto?'selected':''}" data-battle-auto="true" aria-checked="${initialAuto}">
+            <strong>${english?'🤖 Auto battle':'🤖 自动战斗'} <small>${firstCapture?(english?'Recommended':'推荐'):''}</small></strong>
+            <span>${english?'Cats move, attack and dodge for you.':'猫咪自动移动、攻击、放技能和闪避。'}</span>
+          </button>
+          <button type="button" role="radio" class="capture-mode-option ${initialAuto?'':'selected'}" data-battle-auto="false" aria-checked="${!initialAuto}">
+            <strong>${english?'🎮 Manual control':'🎮 手动操作'}</strong>
+            <span>${english?(this.game.isTouch?'Drag left to move, hold right to attack.':'WASD to move, mouse/J to attack.'):(this.game.isTouch?'左半屏滑动移动，右半屏按住攻击。':'WASD 移动，鼠标/J 攻击。')}</span>
+          </button>
+        </div>
+        <p class="capture-mode-note">${firstCapture
+          ?(english?'Your first fight starts with a short, skippable tutorial.':'第一次战斗会有简短教学，可以跳过。')
+          :(english?'Your previous choice is remembered; switch anytime during battle.':'记住你上次的选择，战斗中也能随时切换。')}</p>
+      </fieldset>
       <div class="btn-row">
         <button class="btn gold" id="cp-go">${firstCapture?'出发！收服这只猫':'开始战斗'}</button>
         <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">⚙️ AI策略</button>
@@ -1175,11 +1196,31 @@ const UI = {
         refreshSel();
       };
     });
+    const changeBattleMode=auto=>{
+      this.prepAutoBattle=auto;
+      document.querySelectorAll('#panel .capture-mode-option').forEach(btn=>{
+        const selected=(btn.dataset.battleAuto==='true')===auto;
+        btn.classList.toggle('selected',selected);
+        btn.setAttribute('aria-checked',String(selected));
+      });
+      State.S.battlePrefs={...(State.S.battlePrefs||{}),autoBattle:auto,modeChosen:true};
+      State.save();
+    };
+    document.querySelectorAll('#panel .capture-mode-option').forEach(btn=>{
+      btn.onclick=()=>changeBattleMode(btn.dataset.battleAuto==='true');
+      btn.onkeydown=e=>{
+        if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+          e.preventDefault();const other=btn.parentElement.querySelector('[data-battle-auto="'+(btn.dataset.battleAuto!=='true')+'"]');
+          other?.focus();other?.click();
+        }
+      };
+    });
     document.getElementById('cp-cancel').onclick = () => { this.closeAll(); document.getElementById('yard-actions').classList.remove('hidden'); };
     document.getElementById('cp-ai').onclick = () => this.openGambitEditor(wildSp);
     document.getElementById('cp-go').onclick = () => {
       // preserve the selection order; fall back to strongest if somehow empty
       const team = this.teamUids.map(uid => cats.find(x => x.uid === uid)).filter(Boolean);
+      changeBattleMode(this.prepAutoBattle);
       this.closeAll();
       this.game.startBattle(team.length ? team : [sorted[0]], wildSp);
     };
