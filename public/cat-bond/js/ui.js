@@ -1043,8 +1043,8 @@ const UI = {
               :'历史最佳 '+best+' 级 · 挑战 S 级可解锁金爪徽章')}</p>
           <canvas id="dx" width="160" height="130" style="display:block;margin:10px auto;border-radius:12px"></canvas>
           <p class="tiny center">${en?'Successful encounters':'累计成功收服'} ${State.S.dex[sp.id]} ·
-             ${en?'S: 80% HP, 8 hits or perfect dodge':'S：80%血量、8连击或完美闪避'} ·
-             ${en?'Auto S: 95% HP, 16 hits, 60% time':'自动 S：95%血量、16连击、60%限时'}</p>
+             ${this.rankSHelp(sp.rarity)} ·
+             ${this.rankSHelp(sp.rarity,true)}</p>
           <div class="btn-row" style="justify-content:center">
             <button class="btn gold" id="dx-rematch" ${canRematch?'':'disabled'}>${en?'⚔️ Try for S rank':'⚔️ 重战挑战 S 级'}</button>
             <button class="btn ghost" id="dx-back">${en?'Back to codex':'返回图鉴'}</button>
@@ -1144,6 +1144,16 @@ const UI = {
     };
   },
 
+  rankSHelp(rarity,auto=false){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const r=this.game.sRankRequirements(rarity),c=auto?r.auto:r.manual;
+    const hp=Math.round(c.hp*100);
+    const skill=auto?(en?c.combo+'-hit combo':c.combo+'连击')
+      :(en?c.combo+'-hit combo or perfect dodge + '+c.dodgeCombo+' hits'
+         :c.combo+'连击，或完美闪避加'+c.dodgeCombo+'连击');
+    return en?(r.novice?'Beginner ':'')+(auto?'Auto':'Manual')+' S: all survive · '+hp+'%+ HP · '+c.seconds+'s · '+skill
+      :(r.novice?'新手':'')+(auto?'自动':'手动')+' S：全员存活 · '+hp+'%血量 · '+c.seconds+'秒内 · '+skill;
+  },
   // ---------- tease mini-game (逗猫) ----------
   openTease(cat) {
     const cats = State.S.cats;
@@ -1154,7 +1164,7 @@ const UI = {
       <h2>${en?'Cat Teaser 🪶':'逗猫 🪶'}</h2>
       <p class="sub">${en?'Tap the feather toy and help '+GameData.speciesById(target.species).name+' catch it. More catches improve affection and mood.':'点击逗猫棒，让 '+GameData.speciesById(target.species).name+' 扑抓！抓中越多，好感与心情涨得越快。'}</p>
       <div style="position:relative;height:220px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden" id="tease-area">
-        <canvas id="tz" width="500" height="220" style="width:100%;height:100%"></canvas>
+        <canvas id="tz" width="500" height="220" style="width:100%;height:100%;display:block"></canvas>
       </div>
       <p class="center" style="margin-top:8px">${en?"Score":"得分"} <b id="tz-score">0</b> / 10</p>
       <div class="btn-row" style="justify-content:center"><button class="btn ghost" id="tz-done" type="button">${en?"Finish":"结束"}</button></div>`);
@@ -1165,7 +1175,10 @@ const UI = {
     const sp = GameData.speciesById(cat.species);
     const cv = document.getElementById('tz');
     const ctx = cv.getContext('2d');
-    const W = 500, H = 220;
+    const area=document.getElementById('tease-area');
+    // Logical coordinates match actual CSS pixels, preserving kitten proportions.
+    let W=Math.max(1,area.clientWidth||500),H=Math.max(1,area.clientHeight||220);
+    const dpr=Math.min(3,window.devicePixelRatio||1);
     let score = 0, misses = 0, tt = 0, active = true;
     // feather toy position
     let fx = W / 2, fy = H / 2, tx = fx, ty = fy, moveTimer = 0;
@@ -1173,11 +1186,24 @@ const UI = {
     let cx = W / 2, cy = H - 40, pounce = 0;
     const scoreEl = document.getElementById('tz-score');
 
-    const area = document.getElementById('tease-area');
+    const syncCanvasSize=()=>{
+      const rect=area.getBoundingClientRect();
+      const nextW=Math.max(1,Math.round(rect.width)),nextH=Math.max(1,Math.round(rect.height));
+      const bw=Math.max(1,Math.round(nextW*dpr)),bh=Math.max(1,Math.round(nextH*dpr));
+      if(nextW===W&&nextH===H&&cv.width===bw&&cv.height===bh)return;
+      const sx=nextW/W,sy=nextH/H;
+      fx*=sx;tx*=sx;cx*=sx;fy*=sy;ty*=sy;cy*=sy;
+      W=nextW;H=nextH;cv.width=bw;cv.height=bh;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    };
+    syncCanvasSize();
+    const sizeObserver=typeof ResizeObserver!=='undefined'?new ResizeObserver(syncCanvasSize):null;
+    sizeObserver?.observe(area);
     let frameId=0;
     const stop=()=>{
       active=false;
       if(frameId)cancelAnimationFrame(frameId);
+      sizeObserver?.disconnect();
       area.removeEventListener('pointerdown',tap);
       if(this._teaseStop===stop)this._teaseStop=null;
     };
@@ -1186,8 +1212,8 @@ const UI = {
       if (!active) return;
       const r = cv.getBoundingClientRect();
       const p = e.touches ? e.touches[0] : e;
-      const mx = (p.clientX - r.left) * (W / r.width);
-      const my = (p.clientY - r.top) * (H / r.height);
+      const mx=p.clientX-r.left;
+      const my=p.clientY-r.top;
       // if clicking near toy AND cat is close → score
       const toCatp = Math.hypot(mx - cx, my - cy);
       if (toCatp < 60) {
@@ -1228,6 +1254,7 @@ const UI = {
 
     const anim = () => {
       if (!active||document.getElementById('tz')!==cv){stop();return;}
+      syncCanvasSize();
       tt += 0.03;
       // toy drifts a little + auto-wanders if not moved
       moveTimer -= 0.03;
@@ -1330,12 +1357,9 @@ const UI = {
       :(firstCapture?true:!!prefs.autoBattle);
     this.prepAutoBattle=initialAuto;
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
-    const deadline=this.game.gradeTimeLimit(wildSp.rarity);
-    const masteryChallenge=english
-      ?('🏅 Manual S: all cats survive, win within '+deadline+'s, keep 84%+ HP, and reach a 9-hit combo or perfect dodge. Auto S: all survive with 83%+ HP, win within '+Math.round(deadline*1.22)+'s, plus a 7-hit combo or 92%+ HP. '
-        +(hasMedal?'Golden Paw already earned.':'First S unlocks a Golden Paw and a rare-cat lure.'))
-      :('🏅 手动 S：全员存活、'+deadline+'秒内获胜、血量至少84%，并达到9连击或完美闪避。自动 S：全员存活、血量至少83%、在'+Math.round(deadline*1.22)+'秒内获胜，且达到7连击或保留92%血量。'
-        +(hasMedal?'该品种已有金爪徽章。':'首次 S 解锁金爪徽章和稀有猫诱饵。'));
+    const masteryChallenge='🏅 '+this.rankSHelp(wildSp.rarity)+'. '+this.rankSHelp(wildSp.rarity,true)+'. '
+      +(hasMedal?(english?'Golden Paw already earned.':'该品种已有金爪徽章。')
+        :(english?'First S unlocks a Golden Paw and a rare-cat lure.':'首次 S 解锁金爪徽章和稀有猫诱饵。'));
     if (!cats.length) {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
       return;
@@ -1524,8 +1548,7 @@ const UI = {
       <p class="center mastery-challenge-note">${note}</p>
       ${won&&performance?.autoUsed?'<p class="center mastery-grade-hint">'+(performance.autoExceptional
         ?(en?'Exceptional auto run!':'自动战斗发挥出色！')
-        :(en?'For auto S: all cats survive · 72%+ HP · 160% of the standard time limit · 4-hit combo or 80%+ HP.'
-          :'自动最高评级：全队存活、至少72%血量、用时不超过标准的160%，且达成4连击或保留80%以上血量。'))+'</p>':''}
+        :this.rankSHelp(wildSp.rarity,true))+'</p>':''}
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="mc-retry">${en?'Challenge again':'再次挑战'}</button>
         <button class="btn" id="mc-dex">${en?'View medals':'查看图鉴'}</button>
@@ -1585,8 +1608,7 @@ const UI = {
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small>'
          +(performance.autoUsed?'<small class="grade-explain">'+(performance.autoExceptional
            ?(english?'Exceptional automatic performance!':'自动战斗发挥出色！')
-           :(english?'Auto S requires 95% HP · 16-hit combo · 60% time limit'
-              :'自动 S 需要95%血量 · 16连击 · 60%时间限制'))+'</small>':'')+'</div></div>':''}
+           :this.rankSHelp(wildSp.rarity,true))+'</small>':'')+'</div></div>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
       ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
         +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name

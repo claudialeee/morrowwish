@@ -45,6 +45,7 @@ class CaptureBattle {
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
     this.comboBest = 0;                   // best this battle
+    this.coachSeconds=0;                  // first tutorial time excluded from rank
     this.perfectDodges = 0;
     // Auto-assisted runs have different mastery ranking requirements even
     // when the player selected auto in a previous encounter.
@@ -1573,6 +1574,7 @@ class CaptureBattle {
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
+    if(this.coach)this.coachSeconds+=dt;
     this.ultCd=Math.max(0,this.ultCd-dt); // real frame time, before simulation slowdown
     // Global combat tempo: scale the whole simulation (movement, projectiles, enemy
     // AI, cooldowns) so fights read calmer and the cat isn't twitchy-fast. One knob,

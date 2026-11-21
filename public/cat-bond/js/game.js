@@ -134,6 +134,16 @@ class Game {
     // A fixed 40s S requirement was unfair to players who found a legend.
     return ({N:40,R:55,SR:75,SSR:100})[rarity]||40;
   }
+  sRankRequirements(rarity){
+    const novice=(window.State?.S?.catchCount||0)<=3;
+    const limit=this.gradeTimeLimit(rarity);
+    return {novice,
+      manual:{hp:novice?.82:.88,seconds:Math.floor(limit*(novice?1:.90)),
+        combo:novice?5:9,dodgeCombo:novice?2:5},
+      auto:{hp:novice?.88:.90,seconds:Math.floor(limit*(novice?1:.87)),
+        combo:novice?6:10}
+    };
+  }
   gradeBattle(b){
     // S is attainable but a routine win should generally earn A/B.
     const fighters=b.team||[];
@@ -141,16 +151,22 @@ class Game {
     const remaining=fighters.reduce((n,f)=>n+Math.max(0,f.hp||0),0);
     const hpRatio=maxHP>0?remaining/maxHP:0;
     const seconds=b.t||0,combo=b.comboBest||0;
+    const ratedSeconds=Math.max(0,seconds-Math.max(0,b.coachSeconds||0));
     const timeLimit=this.gradeTimeLimit(b.wild?.rarity);
+    const criteria=this.sRankRequirements(b.wild?.rarity);
     const squadIntact=fighters.length>0&&fighters.every(f=>f.alive!==false&&f.hp>0);
     const autoUsed=!!(b.autoUsed||b.autoMode);
-    const healthy=hpRatio>=.8,swift=seconds<=timeLimit;
+    const healthy=hpRatio>=.8,swift=ratedSeconds<=timeLimit;
     const clever=combo>=8||(b.perfectDodges||0)>=1;
     const points=Number(healthy)+Number(swift)+Number(clever);
-    const manualExceptional=squadIntact&&hpRatio>=.84&&seconds<=timeLimit
-      &&(combo>=9||(b.perfectDodges||0)>=1);
-    const autoExceptional=squadIntact&&hpRatio>=.83&&seconds<=timeLimit*1.22
-      &&(combo>=7||hpRatio>=.92);
+    // All S ranks need speed, HP and actual skill. Early catches have a
+    // forgiving threshold; an idle high-HP automatic run never earns S.
+    const manualExceptional=squadIntact&&hpRatio>=criteria.manual.hp
+      &&ratedSeconds<=criteria.manual.seconds
+      &&(combo>=criteria.manual.combo||
+        ((b.perfectDodges||0)>=1&&combo>=criteria.manual.dodgeCombo));
+    const autoExceptional=squadIntact&&hpRatio>=criteria.auto.hp
+      &&ratedSeconds<=criteria.auto.seconds&&combo>=criteria.auto.combo;
     const grade=autoUsed
       ?(autoExceptional?'S':points>=2?'A':points===1?'B':'C')
       :(manualExceptional?'S':points>=2?'A':points===1?'B':'C');
@@ -158,7 +174,9 @@ class Game {
     const [bonusCoins,bonusTreats]=bonuses[grade];
     return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
       combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
-      healthy,swift,clever,timeLimit,autoUsed,autoExceptional,manualExceptional,hpRatio};
+      healthy,swift,clever,timeLimit,autoUsed,autoExceptional,manualExceptional,hpRatio,
+      ratedSeconds:Math.round(ratedSeconds),novice:criteria.novice,
+      sRankCriteria:criteria[autoUsed?'auto':'manual']};
   }
   masteryStatus(){
     const badges=State.S.masteryBadges||{};
