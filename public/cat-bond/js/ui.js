@@ -1163,7 +1163,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${en?'Cat Teaser 🪶':'逗猫 🪶'}</h2>
       <p class="sub">${en?'Tap the feather toy and help '+GameData.speciesById(target.species).name+' catch it. More catches improve affection and mood.':'点击逗猫棒，让 '+GameData.speciesById(target.species).name+' 扑抓！抓中越多，好感与心情涨得越快。'}</p>
-      <div style="position:relative;height:220px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden" id="tease-area">
+      <div style="position:relative;height:220px;background:rgba(255,255,255,0.04);border-radius:12px;overflow:hidden;touch-action:manipulation" id="tease-area">
         <canvas id="tz" width="500" height="220" style="width:100%;height:100%;display:block"></canvas>
       </div>
       <p class="center" style="margin-top:8px">${en?"Score":"得分"} <b id="tz-score">0</b> / 10</p>
