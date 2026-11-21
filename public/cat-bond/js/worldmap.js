@@ -287,8 +287,12 @@
         sp: rollRegionCat(),
         cd: 0,                                // encounter cooldown after trigger
         bob: Math.random() * 6.28,
+        homeX:0,homeY:0,face:1,stride:Math.random()*6,
+        pace:.5+Math.random()*.5,
       });
     }
+    // Patrols are bound to a den, not screen-space icons.
+    for(const kitten of spawns){kitten.homeX=kitten.x;kitten.homeY=kitten.y;}
     var nNode = 6;
     for (var j = 0; j < nNode; j++) {
       var nid = id + '_n' + j;
@@ -404,10 +408,19 @@
     var gi = Math.max(0, Math.min(GRID_C * GRID_R - 1, gy * GRID_C + gx));
     if (!w.grid[gi]) { w.grid[gi] = true; w.visited++; commitExplore(); }
 
-    // ---- wild-cat spawns: walk near to trigger encounter ----
+    // ---- World kittens really walk between points and change direction.
+    // The encounter triggers on their *live* position, not a stationary icon.
     for (var i = 0; i < w.spawns.length; i++) {
       var s = w.spawns[i];
       if (s.cd > 0) { s.cd -= dt; continue; }
+      const prevX=s.x;
+      const phase=w.t*s.pace+s.bob;
+      s.x=Math.max(100,Math.min(WORLD_W-100,s.homeX+
+        69*(Math.sin(phase)-Math.sin(s.bob))));
+      s.y=Math.max(100,Math.min(WORLD_H-100,s.homeY+
+        27*(Math.sin(phase*.67)-Math.sin(s.bob*.67))));
+      if(Math.abs(s.x-prevX)>.03)s.face=s.x<prevX?-1:1;
+      s.stride+=dt*(5+Math.max(.25,Math.abs(s.x-prevX)/Math.max(dt,.001))*.12);
       if (Math.hypot(w.px - s.x, w.py - s.y) < 56) {
         s.cd = 9999;                 // consumed; handoff to battle
         triggerEncounter(s);
@@ -686,12 +699,12 @@
         ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'神秘发现':'Secret',n.x,ny+30);}
     }
 
-    // wild-cat spawn markers (draw as tiny cats via CatArt)
+    // Real roaming full-body wild kittens, each with a ground shadow and gait.
     for (var i = 0; i < w.spawns.length; i++) {
       var s = w.spawns[i];
       if (s.cd >= 9999) continue;      // consumed
       var sp = window.GameData.speciesById(s.sp);
-      var by = s.y + Math.sin(t * 1.8 + s.bob) * 3;
+      var by=s.y; // Stay on the ground instead of bobbing like a sticker.
       // Wild cats must read at a glance on phones and in dark regions.
       var spInfo=window.GameData.speciesById(s.sp);
       var rColor=spInfo?.rarity==='SSR'?'#ffdc6c':spInfo?.rarity==='SR'?'#c49df2'
@@ -699,18 +712,25 @@
       glowDot(ctx,s.x,by,46,rColor,.58);
       ctx.save();ctx.strokeStyle=rColor;ctx.lineWidth=3;
       ctx.beginPath();ctx.arc(s.x,by,30+Math.sin(t*3+s.bob)*3,0,Math.PI*2);ctx.stroke();ctx.restore();
-      if (window.CatArt && sp) {
-        try { window.CatArt.drawCat(ctx, s.x, by, { species: sp, scale: 0.6, face: 1, t: t, pose: 'sit', mood: 'neutral' }); }
-        catch (e) { ctx.fillStyle = th.accent; ctx.beginPath(); ctx.arc(s.x, by, 14, 0, Math.PI * 2); ctx.fill(); }
+      if(window.CatMotion&&sp){
+        CatMotion.draw(ctx,s.x,by,{species:sp,scale:.88,
+          face:s.face,t:w.t,stride:s.stride,pose:'walk',motion:.75,mood:'alert'});
+      }else if(window.CatArt&&sp){
+        CatArt.drawCat(ctx,s.x,by,{species:sp,scale:.65,face:s.face,t,pose:'walk'});
       }
-      ctx.font = '13px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(spInfo?.rarity==='SSR'?'👑':spInfo?.rarity==='SR'?'✨':'❕',s.x,by-34);
+      if(spInfo?.rarity==='SR'||spInfo?.rarity==='SSR'){
+        ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillStyle=rColor;
+        ctx.fillText(spInfo.rarity,s.x,by-58);
+      }
     }
 
     // player avatar (lead cat) + shadow
     var pose = w.moving ? 'walk' : 'idle';
     if (window.CatArt) {
-      try { window.CatArt.drawCat(ctx, w.px, w.py, { species: playerSpecies(), scale: 0.8, face: w.face, t: w.walkT, pose: pose, mood: 'happy' }); }
+      try { (window.CatMotion?.draw||CatArt.drawCat)(ctx,w.px,w.py,{
+        species:playerSpecies(),scale:1,face:w.face,t:w.t,
+        stride:w.walkT*13,motion:w.moving?1:0,pose,mood:'happy'
+      }); }
       catch (e2) { ctx.fillStyle = PINK; ctx.beginPath(); ctx.arc(w.px, w.py, 18, 0, Math.PI * 2); ctx.fill(); }
     }
 

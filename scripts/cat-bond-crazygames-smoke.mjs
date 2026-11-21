@@ -65,6 +65,26 @@ try{
       }));
       assert.equal(state.cats,1);
       assert.equal(state.hide,true,'Fresh player should immediately see a discoverable cat');
+      const motionAudit=await page.evaluate(()=>{
+        const cat=window.CatMotion,draw=cat?.draw;
+        if(!draw)return {loaded:false,yard:0,frameDelta:0};
+        let yard=0;
+        cat.draw=(...args)=>{yard++;return draw(...args);};
+        try{window.__game.draw();}finally{cat.draw=draw;}
+        const cv=document.createElement('canvas');cv.width=160;cv.height=120;
+        const c=cv.getContext('2d');
+        const sp=GameData.SPECIES[0];
+        draw(c,80,94,{species:sp,face:1,t:0,pose:'run',motion:1,stride:0});
+        const first=c.getImageData(0,0,160,120).data.slice();
+        c.clearRect(0,0,160,120);
+        draw(c,80,94,{species:sp,face:1,t:.3,pose:'run',motion:1,stride:3});
+        const second=c.getImageData(0,0,160,120).data;
+        let delta=0;
+        for(let i=0;i<first.length;i+=16)delta+=Math.abs(first[i]-second[i]);
+        return {loaded:true,yard,frameDelta:delta};
+      });
+      assert.ok(motionAudit.loaded&&motionAudit.yard>0&&motionAudit.frameDelta>100,
+        'Yard must draw a real animated four-legged cat, not a floating portrait: '+JSON.stringify(motionAudit));
       assert.equal(state.tutorial,true,'First wild must have a highlighted target');
       assert.equal(state.rarity,'N','First wild should be a learnable common');
       assert.notEqual(state.species,state.owned,'First catch must reveal a new breed');
@@ -88,6 +108,14 @@ try{
       }
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
+      const movingBattle=await page.evaluate(()=>{
+        const renderer=window.CatMotion,old=renderer.draw;let draws=0;
+        renderer.draw=(...args)=>{draws++;return old(...args);};
+        try{window.__game.draw();}finally{renderer.draw=old;}
+        return draws;
+      });
+      assert.ok(movingBattle>=2,
+        'Both allied and wild battle cats must render as whole moving animals');
       const auto=page.locator('#btn-auto');
       assert.equal(await auto.getAttribute('aria-pressed'),'false','Start in explicit manual mode');
       assert.ok((await page.locator('#mv-dodge').innerText()).match(/Dodge|闪避/),
@@ -242,6 +270,14 @@ try{
         assert.equal(await page.locator('#panel .map-destination.locked').count(),4,
           'Future regions must expose their actual unlocking requirements');
         await page.locator('#panel .map-destination.available').first().click();
+        const movingMap=await page.evaluate(()=>{
+          const renderer=window.CatMotion,old=renderer.draw;let draws=0;
+          renderer.draw=(...args)=>{draws++;return old(...args);};
+          try{window.__game.draw();}finally{renderer.draw=old;}
+          return draws;
+        });
+        assert.ok(movingMap>=2,
+          'Exploration must display physical animated roaming wild cats plus the player');
         assert.equal(await page.evaluate(()=>WorldMap.mode),'region',
           'Clicking a region must open a playable walking world');
         const canvasBox=await page.locator('#scene').boundingBox();

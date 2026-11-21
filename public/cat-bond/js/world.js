@@ -135,6 +135,7 @@ class CatEntity {
 
   }
   mood() {
+    if(this.bubble==='💢'||this.bubble==='😾')return 'sulky';
     if (this.pettedGlow > 0) return 'love';
     if (this.pose === 'sleep') return 'sleepy';
     if (this.curious || this.pose === 'play' || this.pose === 'belly') return 'happy';
@@ -152,7 +153,7 @@ class CatEntity {
       ctx.beginPath(); ctx.arc(this.x, this.y, 36, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
-    CatArt.drawCat(ctx, this.x, this.y, {
+    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x, this.y, {
       species: sp, scale: depth, face: this.face, t: this.t,
       motion: this.motion, stride: this.stride,
       pose: this.pose, mood: this.mood(),
@@ -165,8 +166,8 @@ class CatEntity {
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     roundTag(ctx, this.x, this.y - 34 * depth, `${State.catName(this.cat)} Lv.${this.cat.level}`);
     ctx.restore();
-    // emote thought-bubble
-    if (this.bubble && this.bubbleT > 0) this.drawBubble(ctx, depth);
+    // No detached emoji bubbles above moving kittens.
+    // Mood is conveyed through ears, eyes, posture and tail, all attached to the cat.
   }
   drawBubble(ctx, depth) {
     const dur = this.bubbleDur || 2.2;
@@ -409,13 +410,20 @@ class YardScene {
       const b=this.entities.find(e=>e.cat.uid===duo[1].uid);
       if(a&&b){
         const sulky=CatRelations.mood(duo[0],duo[1])==='sulky';
+        const dist=Math.hypot(a.x-b.x,a.y-b.y);
         if(this.game.t>(this._nextDuoEmote||0)){
           this._nextDuoEmote=this.game.t+10+Math.random()*9;
-          a.emote(sulky?'💢':'💞',2.6);b.emote(sulky?'😾':'💞',2.6);
+          // Together they chase, apart they turn and walk away; no floating icons.
+          const dx=a.x-b.x,dy=a.y-b.y,den=Math.max(1,dist);
+          const dir=sulky?-1:1;
+          b.pose='walk';b.timer=sulky?1.4:2.5;
+          b.vx=dir*(dx/den)*62;b.vy=dir*(dy/den)*35;
+          a.pose=sulky?'idle':'walk';a.timer=sulky?1.5:1.4;
+          if(!sulky&&dist>60){a.vx=-(dx/den)*26;a.vy=-(dy/den)*15;}
+          b.emote(sulky?'😾':'💞',2.1);
         }
-        const dist=Math.hypot(a.x-b.x,a.y-b.y);
         if(!sulky&&dist>100&&dist<260&&b.pose==='walk'){
-          b.vx+=(a.x-b.x)/dist*9*dt;b.vy+=(a.y-b.y)/dist*9*dt;
+          b.vx+=(a.x-b.x)/dist*15*dt;b.vy+=(a.y-b.y)/dist*9*dt;
         }
       }
     }
@@ -530,7 +538,7 @@ class YardScene {
       ga.addColorStop(0, 'rgba(255,215,100,0.5)'); ga.addColorStop(1, 'rgba(255,215,100,0)');
       ctx.fillStyle = ga; ctx.beginPath(); ctx.arc(g.x, g.y, 42, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
-      CatArt.drawCat(ctx, g.x, g.y, { palette: 'flame', pattern: 'solid', eyeColor: '#fff6c0', scale: 1.0, face: g.vx < 0 ? -1 : 1, t: g.t, pose: 'walk', mood: 'happy', growth: { stage: 2, scale: 1.1, aura: '#ffd36b', sparkle: true, gem: true, gemColor: '#ffd36b' } });
+      (window.CatMotion?.draw||CatArt.drawCat)(ctx, g.x, g.y, { palette: 'flame', pattern: 'solid', eyeColor: '#fff6c0', scale: 1.0, face: g.vx < 0 ? -1 : 1, t: g.t, pose: 'walk', mood: 'happy', growth: { stage: 2, scale: 1.1, aura: '#ffd36b', sparkle: true, gem: true, gemColor: '#ffd36b' } });
       ctx.save(); ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd36b';
       ctx.fillText('🌟金运喵·点我!', g.x, g.y - 44);
       ctx.restore();
@@ -628,28 +636,15 @@ class YardScene {
       ctx.fillText('↓',hide.spot.x,hide.spot.y-47);
       ctx.restore();
     }
-    // peeking eyes / ear tips above the bush when peeking
-    if (!hide.peeking && !hide.tutorial) {
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('?', hide.spot.x, hide.spot.y - 30 + Math.sin(this.game.t * 3) * 2);
-      return;
-    }
-    const sp = hide.species;
-    const pal = CatArt.CAT_PALETTES[sp.palette];
-    ctx.save();
-    ctx.translate(hide.spot.x, hide.spot.y - 10);
-    // two glowing eyes + ears poking
-    ctx.fillStyle = pal.body;
-    ctx.beginPath(); ctx.moveTo(-8, -6); ctx.lineTo(-5, -16); ctx.lineTo(-1, -6); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(1, -6); ctx.lineTo(5, -16); ctx.lineTo(8, -6); ctx.fill();
-    ctx.fillStyle = sp.eyeColor;
-    ctx.beginPath(); ctx.arc(-4, -2, 2.2, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4, -2, 2.2, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#1a1420';
-    ctx.beginPath(); ctx.ellipse(-4, -2, 0.9, 2, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(4, -2, 0.9, 2, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
+    // The whole kitten creeps out of the bush, rather than disembodied
+    // ears or a floating cat-head sticker. The player can still tap the bush.
+    const peeking=hide.peeking||hide.tutorial;
+    const face=Math.sin(this.game.t*1.2)>=0?1:-1;
+    const offset=peeking?21:8;
+    (window.CatMotion?.draw||CatArt.drawCat)(ctx,hide.spot.x+face*offset,hide.spot.y+6,{
+      species:hide.species,scale:peeking?.78:.55,face,t:this.game.t,
+      pose:peeking?'walk':'idle',motion:peeking?.75:0,mood:'alert'
+    });
   }
   // returns 'hide' | entity | null
   // ---- idle loot bubbles: visible, tappable resource rewards over the yard ----
