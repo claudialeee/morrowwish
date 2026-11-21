@@ -269,6 +269,12 @@ class CaptureBattle {
     const v=this.duoField;
     if(!v||this.done)return;
     v.age+=dt;v.remaining=Math.max(0,v.duration-v.age);
+    // The resonance follows the nearest living opponent, rather than becoming
+    // useless if the wild cat leaves its starting position.
+    const marked=this.liveEnemies().reduce((best,e)=>!best||Math.hypot(e.x-v.x,e.y-v.y)<Math.hypot(best.x-v.x,best.y-v.y)?e:best,null);
+    if(marked){v.x+=(marked.x-v.x)*Math.min(1,dt*.55);v.y+=(marked.y-v.y)*Math.min(1,dt*.55);}
+    if(!v.finisher&&v.remaining<1.15){v.finisher=true;
+      this.skillStrokes.push({kind:'duoImpact',x:v.x,y:v.y,firstColor:v.first,secondColor:v.second,elements:v.pair,life:.8,max:.8});}
     // Let the paired-element field drift after the wild pack as it moves.
     // It is ground-level and never becomes a large foreground overlay.
     const moving=this.liveEnemies();
@@ -287,7 +293,7 @@ class CaptureBattle {
     }
     v.pulse-=dt;
     if(v.pulse>0)return;
-    v.pulse+=1.65;
+    v.pulse+=1.22;
     for(const e of this.liveEnemies()){
       if(Math.hypot(e.x-v.x,e.y-v.y)>v.radius*1.3)continue;
       const damage=Math.min(e.maxhp*(.019+.003*v.tier),
