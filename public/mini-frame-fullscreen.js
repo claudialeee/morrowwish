@@ -4,7 +4,7 @@
 (()=>{
   'use strict';
   const route=location.pathname.split('/').filter(Boolean)[0];
-  const games=['flip-dash','parcel-panic','pocket-aquarium','orbit-escape','tower-tuck','traffic-tangle','color-current','perfect-pour','grid-glider','mirror-mosaic'];
+  const games=['flip-dash','parcel-panic','pocket-aquarium','orbit-escape','tower-tuck','traffic-tangle','color-current','perfect-pour','grid-glider','mirror-mosaic','echo-heist'];
   if(!games.includes(route))return;
 
   const root=document.documentElement;
@@ -154,9 +154,27 @@
     frame.append(top,bottom);
     return true;
   }
+  function setupEcho(){
+    frame=document.querySelector('.frame');
+    const canvas=frame?.querySelector('#play');
+    const cover=frame?.querySelector('#cover');
+    const stats=document.querySelector('.stats');
+    const tools=document.querySelector('.tools');
+    if(!frame||!canvas||!cover||!stats||!tools)return false;
+    frame.classList.add('mw-mini-echo-frame');
+    const head=document.createElement('div');
+    head.className='mw-mini-echo-head';
+    head.append(stats,createButton());
+    const area=document.createElement('div');
+    area.className='mw-mini-playfield';
+    area.append(canvas,cover);
+    frame.append(head,area,tools);
+    if(typeof ResizeObserver!=='undefined')new ResizeObserver(fitArcadeCanvas).observe(area);
+    return true;
+  }
   function mount(){
     if(document.getElementById('mw-mini-fullscreen'))return;
-    const ok=route==='pocket-aquarium'?setupAquarium():setupArcade();
+    const ok=route==='pocket-aquarium'?setupAquarium():(route==='echo-heist'?setupEcho():setupArcade());
     if(!ok)return;
     update();
     sizeChanged();
