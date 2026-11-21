@@ -37,9 +37,43 @@ function soothe(a,b){
   window.arcadeMetric?.('bond_duo_reconcile',{});
   return true;
 }
-function title(a,b){const es=[Skills.elementOf(a.species),Skills.elementOf(b.species)].sort().join('+');
- const t={'elec+fire':['雷火喵旋风','Thunderfire Pawstorm'],'fire+water':['蒸汽喵喵炮','Steamcloud Cat Cannon'],'fire+grass':['花火猫爪舞','Blossomfire Pawdance'],'grass+water':['春雨绽放','Spring Rain Bloom'],'elec+water':['闪电泡泡雨','Thunder Bubble Rain'],'dark+light':['星月交辉','Moonlight Starburst']}[es]||['双猫星光舞','Twin Star Pawdance'];
- return {name:t[window.MorrowwishI18n?.get?.()==='zh'?0:1],elementPair:es};}
+// Every possible pairing of the six elements has a specific move and
+// combat identity (6 self-pairs + 15 mixed pairs = 21).
+// [Chinese name, English name, Chinese effect, English effect, status,
+//  team support, damage factor, additional status at trust tier 2+]
+const DUO_ARTS={
+ 'dark+dark':['双影夜巡','Twin Shadow Hunt','撕裂目标，双猫短暂无敌','Bleed enemies; brief evasion for both cats','bleed','evade',1.04,'expose'],
+ 'dark+elec':['影雷瞬袭','Shadowbolt Pounce','感电敌人，加速积攒必杀','Shock enemies and charge the ultimate','shock','charge',1.04,'expose'],
+ 'dark+fire':['暗焰猫爪','Midnight Ember Claws','灼烧与破绽，双猫攻击提升','Ignite and expose foes; boost ally damage','burn','boost',1.09,'expose'],
+ 'dark+grass':['夜藤伏击','Nightvine Ambush','荆棘困敌，双猫伺机闪避','Bind enemies and grant evasive cover','bind','evade',.98,'bleed'],
+ 'dark+light':['星月交辉','Moonlight Starburst','致盲敌人，星光保护全队','Blind enemies and shield your team','blind','shield',1.02,'weaken'],
+ 'dark+water':['深海迷雾','Deepwater Mist','迷雾致盲，为队友回复斗志','Blind enemies in mist and restore resolve','blind','heal',.99,'soak'],
+ 'elec+elec':['双雷连闪','Twin Lightning Dash','连环感电，刷新部分技能冷却','Shock targets and quicken ally skill cooldowns','shock','haste',1.09,'dizzy'],
+ 'elec+fire':['雷火喵旋风','Thunderfire Pawstorm','雷火连击，灼烧感电并加强进攻','Shock and burn enemies with a fierce combo','shock','boost',1.16,'burn'],
+ 'elec+grass':['雷芽缠锁','Thunderroot Snare','麻痹束缚敌人，补充必杀能量','Root enemies and recharge the team ultimate','bind','charge',1.02,'shock'],
+ 'elec+light':['闪光连击','Radiant Spark Rush','炫目闪击，加快全队技能循环','Blind enemies and shorten ally cooldowns','blind','haste',1.04,'shock'],
+ 'elec+water':['闪电泡泡雨','Thunder Bubble Rain','导电泡泡，感电并保护同伴','Electrified bubbles shock enemies; shield allies','shock','shield',1.02,'soak'],
+ 'fire+fire':['双焰喵盛典','Twin Ember Festival','烈焰盛开，强化全队攻击','Blazing flames empower allied attacks','burn','boost',1.16,'rust'],
+ 'fire+grass':['花火猫爪舞','Blossomfire Pawdance','燃烧花瓣，治疗全队','Fire blossoms scorch foes and heal allies','burn','heal',1.00,'bind'],
+ 'fire+light':['日曜喵闪','Sunflare Pawburst','耀眼烈焰，鼓舞双猫连击','Dazzle foes and empower ally attacks','blind','boost',1.10,'burn'],
+ 'fire+water':['蒸汽喵喵炮','Steamcloud Cat Cannon','蒸汽爆发、淋湿敌人并护队友','Steam blast soaks enemies and shields allies','soak','shield',1.08,'weaken'],
+ 'grass+grass':['双叶春醒','Twinleaf Awakening','藤蔓封锁，治愈全队','Entangle enemies and regenerate ally health','bind','regen',.97,'bleed'],
+ 'grass+light':['晨光花环','Dawnbloom Halo','花环禁锢敌人、治疗同伴','Root enemies and bathe allies in healing light','bind','heal',1.00,'weaken'],
+ 'grass+water':['春雨绽放','Spring Rain Bloom','春雨冰封敌人，为全队疗伤','Freeze enemies and heal every allied cat','chill','heal',.99,'soak'],
+ 'light+light':['双星祝福','Twin Starlight Blessing','群星致盲，给予短暂完全格挡','Blind enemies and give allies a guarded moment','blind','protect',.98,'weaken'],
+ 'light+water':['月湖屏障','Moonlit Lake Ward','月光浸润敌人，为队友建立护盾','Soak enemies in moonlight and shield allies','soak','shield',.99,'chill'],
+ 'water+water':['双潮回响','Twin Tidal Echo','层层冰潮禁锢敌人，唤醒生命','Chill enemies with two tides and heal allies','chill','regen',.97,'soak']
+};
+function title(a,b){
+ const es=[Skills.elementOf(a.species),Skills.elementOf(b.species)].sort().join('+');
+ const art=DUO_ARTS[es];
+ const en=window.MorrowwishI18n?.get?.()!=='zh';
+ if(!art)return {name:en?'Twin Star Pawdance':'双猫星光舞',elementPair:es,
+   description:en?'Twin cats attack together.':'双猫携手出击。',
+   effect:{status:'expose',support:'shield',mult:1,secondStatus:'weaken'}};
+ return {name:art[en?1:0],description:art[en?3:2],elementPair:es,
+   effect:{status:art[4],support:art[5],mult:art[6],secondStatus:art[7]}};
+}
 function secretStory(a,b){
   const k=[Skills.elementOf(a.species),Skills.elementOf(b.species)].sort().join('+');
   const stories={
@@ -84,5 +118,5 @@ function play(a,b){const p=pair(a,b);if(!p)return {ok:false,reason:'pair'};
  State.S.treats--;p.lastPlay=Date.now();p.sulkyUntil=0;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
  window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v};
 }
-window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe};
+window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,DUO_ARTS};
 })();
