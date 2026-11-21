@@ -173,32 +173,33 @@ try{
   shots.push({label:'escaped',start:escapedAt,duration:1.12});
   // Explicitly separate this from the win: a different attempt, no jump cut
   // disguised as one continuous run.
-  await page.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(0,false);window.__V5_SHOW__(true);window.__V5_FOCUS__='both'});
-  const caughtRun=stamp();let caughtAt=null;
-  for(let i=0;i<35;i++){
-   const s=await page.evaluate(()=>{
-    const api=window.__PAWSIBLY_TEST__,s=api.getState(),A=s.cat,B=s.human;
-    const q=[A],seen=new Set([A.x+','+A.y]),prev=new Map();
-    const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
-    for(let j=0;j<q.length;j++){
-     const p=q[j];if(p.x===B.x&&p.y===B.y)break;
-     for(const [dx,dy] of dirs){
-      const v={x:p.x+dx,y:p.y+dy},k=v.x+','+v.y;
-      if(v.x<0||v.y<0||v.y>=s.grid.length||v.x>=s.grid[0].length||seen.has(k))continue;
-      if(s.grid[v.y][v.x]==='#'||s.grid[v.y][v.x]==='S')continue;
-      if(s.boxes.some(b=>b.x===v.x&&b.y===v.y))continue;
-      seen.add(k);prev.set(k,[p.x,p.y]);q.push(v);
-     }
+  // A separate, explicitly labelled LATER ROOM for the caught sequence.
+  // A legal misplay in level six is more convincing than faking a loss in the
+  // forgiving tutorial level. The two runs are never presented as one run.
+  await page.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(5,false);window.__V5_SHOW__(true);window.__V5_FOCUS__='both'});
+  const caughtRun=stamp();let caughtAt=null,lastLoss=null;
+  for(let i=0;i<28;i++){
+   lastLoss=await page.evaluate(()=>{
+    const api=window.__PAWSIBLY_TEST__,s=api.getState();
+    const dx=s.cat.x<s.human.x?1:s.cat.x>s.human.x?-1:0;
+    const dy=s.cat.y<s.human.y?1:s.cat.y>s.human.y?-1:0;
+    // Legal directional moves only; the game itself enforces sight,
+    // enemy pursuit, invincibility and catching.
+    const tries=dx?[[dx,0],[0,dy||1],[0,-1],[-dx,0]]:[[0,dy],[1,0],[-1,0],[0,-dy]];
+    for(const [x,y] of tries){
+      if(!x&&!y)continue;
+      const before={...s.cat};
+      api.move(x,y);
+      const t=api.getState();
+      if(t.lives<3||before.x!==t.cat.x||before.y!==t.cat.y)break;
     }
-    let target=B.x+','+B.y,from=target,first=null;
-    while(prev.has(from)){const p=prev.get(from);first=[Number(from.split(',')[0])-p[0],Number(from.split(',')[1])-p[1]];from=p.join(',');if(from===A.x+','+A.y)break;}
-    if(first)api.move(first[0],first[1]);
-    const next=api.getState();return{lives:next.lives,cat:next.cat,human:next.human};
+    const q=api.getState();
+    return{lives:q.lives,cat:q.cat,human:q.human,exposure:q.exposure,steps:q.steps};
    });
-   await sleep(270);
-   if(s.lives<3){caughtAt=stamp();break}
+   await sleep(260);
+   if(lastLoss.lives<3){caughtAt=stamp();break}
   }
-  if(!caughtAt)throw Error('V5 missing real caught state; no fake failure is allowed');
+  if(!caughtAt)throw Error('V5 missing real caught state; no fake failure is allowed '+JSON.stringify(lastLoss));
   shots.push({label:'caught-chase',start:caughtRun,duration:Math.max(.65,Math.min(3.3,caughtAt-caughtRun-.75))});
   shots.push({label:'caught',start:Math.max(caughtRun,caughtAt-.70),duration:1.45});
   await sleep(1050);
