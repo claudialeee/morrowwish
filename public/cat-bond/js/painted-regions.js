@@ -11,7 +11,7 @@ const colors={
  ruins:['#bbc5df','#899bb5','#535d84','#e1d6e7','#9d9fbb']
 };
 const IDS=['home','sakura','creek','volcano','ruins'];
-let cache=null,currentId=null,serial=0;
+let cached=null,currentId=null,generation=0;
 function random(seed){let s=seed>>>0;return()=>{s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296;};}
 function oval(c,x,y,rx,ry,color,rot=0){c.beginPath();c.ellipse(x,y,Math.max(.2,rx),Math.max(.2,ry),rot,0,Math.PI*2);c.fillStyle=color;c.fill();}
 function path(c,pts,width,color){
