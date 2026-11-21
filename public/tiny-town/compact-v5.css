@@ -751,3 +751,36 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  .app .ending-legacy header strong{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.app .end-hero-art .end-story-night{animation:none}}
+
+/* Make resident reactions and the four information tabs visible before players
+   choose wishes, instead of hiding them under the town board. */
+.app .sidebar .resident-ribbon{
+ margin:3px 0 1px;min-height:0;flex-shrink:0;
+ padding:6px 8px 7px;
+}
+.app .sidebar .resident-ribbon-heading{margin-bottom:5px}
+.app .sidebar .resident-avatar{min-height:47px;padding:2px 0}
+.app .sidebar .resident-avatar .resident-face{font-size:20px}
+.app .sidebar .resident-avatar b{font-size:9px}
+.app .sidebar .resident-avatar small{font-size:9px;padding:1px 2px}
+.app .sidebar .town-tabs{margin:0 0 2px;flex-shrink:0;gap:5px}
+.app .sidebar .town-tabs button{min-height:35px;padding:5px 3px}
+@media(max-width:700px){
+ /* The sidebar is display:contents here, so order applies to stage children. */
+ .app .resident-ribbon{order:-2!important;margin:0!important}
+ .app .town-tabs{order:-1!important;width:100%;margin:0!important}
+ .app .cards{order:0!important}
+ .app .map-panel{order:1!important}
+ .app .resident-ribbon-heading{margin-bottom:3px}
+ .app .resident-avatar{min-height:42px;padding:2px 0}
+ .app .resident-avatar .resident-face{font-size:18px}
+ .app .town-tabs button{min-height:32px}
+}
+@media(max-width:700px) and (max-height:550px){
+ .app .resident-ribbon{padding:3px 5px!important}
+ .app .resident-ribbon-heading{margin-bottom:2px}
+ .app .resident-avatar{min-height:32px}
+ .app .resident-avatar .resident-face{font-size:15px}
+ .app .resident-avatar small{display:none}
+ .app .town-tabs button{min-height:28px}
+}
