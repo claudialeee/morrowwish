@@ -196,3 +196,18 @@ body>.sitebar{display:none!important}
  .single-screen-game .mw-fullscreen-toggle{font-size:0!important}
  .single-screen-game .toast{bottom:10px}
 }
+
+/* Readability on the smallest supported phones and inside native fullscreen. */
+.single-screen-game .coach-spot{margin-left:-26px;margin-top:-26px}
+@keyframes paws-coach{to{transform:scale(1.12);box-shadow:0 0 0 11px #fff3ce22}}
+html.mw-fs-active[data-mw-fullscreen-game="pawsibly-innocent"] #gameMenu #mw-audio-dock{display:flex!important}
+body:has(.single-screen-game) #mw-language,
+body:has(.single-screen-game) .mw-language-float{display:none!important}
+@media(max-width:440px){
+ .single-screen-game #quickHelp{display:none!important}
+ .single-screen-game .sticker{max-width:37%}
+ .single-screen-game .heist-status{margin:0 auto;padding:5px 5px;font-size:11px}
+ .single-screen-game .coach-spot{width:27px;height:27px;margin-left:-13px;margin-top:-13px}
+ .single-screen-game .stealth-help>strong{font-size:10px}
+ .single-screen-game .guard-status{font-size:9px}
+}
