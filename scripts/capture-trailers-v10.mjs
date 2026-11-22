@@ -259,51 +259,56 @@ try{
   if(!entered.ok)throw Error('V9 real exploration region not entered '+JSON.stringify(entered));
   console.log('V9 REAL CURRENT REGION '+JSON.stringify(entered));
   await mark('map-explore',4300);
-  // The public promo must show the NEW navigation: top-left goes straight to
-  // the courtyard and the top-right map directory is the only map switcher.
-  // Proof screenshot captures real in-game pixels, not a composited mock.
+  // Record real gameplay with the top-left Yard and single top-header menu.
+  // The legacy world/squad buttons must NOT be displayed in this promo.
   const regionNav=await page.evaluate(()=>{
-    const g=window.__game,mapButton=document.getElementById('map-index');
-    const rect=mapButton?.getBoundingClientRect();
-    const visible=!!rect&&!mapButton.hidden&&rect.width>=38&&rect.height>=30&&
-      getComputedStyle(mapButton).display!=='none'&&rect.top>=0&&rect.bottom<=innerHeight;
+    const g=window.__game,menu=document.getElementById('map-menu'),
+      full=document.getElementById('mw-fullscreen-toggle'),
+      nav=document.getElementById('map-actions'),
+      home=document.getElementById('cb-home');
+    const rect=menu?.getBoundingClientRect(),fr=full?.getBoundingClientRect();
+    const visible=!!rect&&!menu.hidden&&rect.width>=34&&rect.height>=30&&
+      getComputedStyle(menu).display!=='none'&&rect.top>=0&&rect.bottom<=innerHeight;
     const canvas=document.getElementById('scene'),cr=canvas.getBoundingClientRect();
-    const compact=g.isTouch&&g.W>g.H&&g.H<520;
-    const yardX=compact?64:16,yardY=g.W<650?106:65;
-    const yardScreen={left:cr.left+yardX*cr.width/g.W,top:cr.top+yardY*cr.height/g.H,
-      right:cr.left+(yardX+(compact?104:128))*cr.width/g.W,
-      bottom:cr.top+(yardY+(compact?38:42))*cr.height/g.H};
+    const narrow=g.W<=360,yard={x:narrow?8:12,y:8,w:narrow?76:120,h:narrow?34:38};
+    const yardScreen={left:cr.left+yard.x*cr.width/g.W,top:cr.top+yard.y*cr.height/g.H,
+      right:cr.left+(yard.x+yard.w)*cr.width/g.W,bottom:cr.top+(yard.y+yard.h)*cr.height/g.H};
     const yardOnScreen=yardScreen.left>=-1&&yardScreen.top>=-1&&
       yardScreen.right<=innerWidth+1&&yardScreen.bottom<=innerHeight+1;
     const cameraOff=getComputedStyle(document.getElementById('mw-v5-camera')).display==='none';
-    return {visible,scene:g.scene,mode:WorldMap.mode,
-      topRight:!!rect&&rect.right>innerWidth/2,
+    return{visible,scene:g.scene,mode:WorldMap.mode,
+      legacyHidden:!!nav&&getComputedStyle(nav).display==='none',
+      homeHidden:!home||getComputedStyle(home).display==='none',
+      beforeFullscreen:!!fr&&rect.right<=fr.left+2&&rect.top<fr.bottom&&rect.bottom>fr.top,
       yardOnScreen,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
   });
   if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||
-      !regionNav.topRight||!regionNav.yardOnScreen||!regionNav.cameraOff)
-    throw Error('Native left yard/right map navigation clipped by mobile promo camera '+JSON.stringify(regionNav));
+      !regionNav.beforeFullscreen||!regionNav.legacyHidden||!regionNav.homeHidden||
+      !regionNav.yardOnScreen||!regionNav.cameraOff)
+    throw Error('New top-left yard / header menu cut off in actual promo '+JSON.stringify(regionNav));
   await page.screenshot({path:'public/promo/cat-bond/v10-map-navigation-proof.png'});
   const returned=await page.evaluate(()=>{
-    document.getElementById('map-index').click();
+    document.getElementById('map-menu').click();
+    const menuOpened=!!document.querySelector('#panel.open .explore-menu');
+    document.querySelector('#panel [data-explore-action="regions"]')?.click();
     const chooser=!!document.querySelector('#panel.open .map-destination');
     UI.closeAll();
-    const g=window.__game,compact=g.isTouch&&g.W>g.H&&g.H<520;
-    const button={x:compact?64:16,y:g.W<650?106:65,w:compact?104:128,h:compact?38:42};
+    const g=window.__game,narrow=g.W<=360,button={x:narrow?8:12,y:8,w:narrow?76:120,h:narrow?34:38};
     const handled=WorldMap.handleTap(button.x+button.w/2,button.y+button.h/2);
     const yard=handled&&g.scene==='yard'&&!document.body.classList.contains('cb-exploring');
     g.openWorldMap();UI.closeAll();
     const resumed=WorldMap.enterRegion('sakura');
-    return {chooser,handled,yard,resumed,mode:WorldMap.mode,scene:g.scene};
+    return{menuOpened,chooser,handled,yard,resumed,mode:WorldMap.mode,scene:g.scene};
   });
-  if(!returned.chooser||!returned.yard||!returned.resumed||returned.mode!=='region')
-    throw Error('Real new map directory or upper-left yard navigation failed '+JSON.stringify(returned));
-  console.log('V10 VERIFIED RIGHT MAP DIRECTORY + LEFT YARD NAV '+JSON.stringify(returned));
+  if(!returned.menuOpened||!returned.chooser||!returned.yard||
+      !returned.resumed||returned.mode!=='region')
+    throw Error('Real world menu or upper-left yard navigation failed '+JSON.stringify(returned));
+  console.log('V10 VERIFIED HEADER MENU / WORLD DIRECTORY / YARD '+JSON.stringify(returned));
   // The expedition menu and auto-team selection are both NEW game features,
   // recorded from their actual controls without mock panels or fake data.
   const mapMenu=await page.evaluate(()=>{
    window.__V4_CAMERA__.show(false);
-   UI.openExploreMenu();
+   document.getElementById('map-menu').click();
    return {open:!!document.querySelector('#panel.open .explore-menu'),
     actions:document.querySelectorAll('#panel [data-explore-action]').length,
     cats:document.querySelectorAll('#panel .explore-cat').length};
