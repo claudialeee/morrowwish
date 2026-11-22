@@ -153,10 +153,17 @@ class CatEntity {
       ctx.beginPath(); ctx.arc(this.x, this.y, 36, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
-    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x, this.y, {
+    const atPlay=!!(this._playBuildT>0&&this._playBuilding);
+    const sleepy=atPlay&&this._playBuildDef?.pose==='sleep';
+    // The CAT itself hops and lifts its forepaws at a real structure.
+    // No floating cat heads or limb stickers are substituted.
+    const bob=atPlay&&!sleepy?2+Math.sin(this.t*9)*3:0;
+    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x, this.y-bob, {
       species: sp, scale: depth, face: this.face, t: this.t,
-      motion: this.motion, stride: this.stride,
-      pose: this.pose, mood: this.mood(),
+      motion: atPlay&&!sleepy?.98:this.motion,
+      stride: atPlay&&!sleepy?this.stride+this.t*4:this.stride,
+      pose: atPlay?(sleepy?'sleep':'play'):this.pose,
+      mood: atPlay?'happy':this.mood(),
       growth: window.Growth ? Growth.visual(this.cat) : null,
     });
     // name + level tag
@@ -1183,6 +1190,11 @@ class YardScene {
     // topmost cat (largest y first)
     const sorted = [...this.entities].sort((a, b) => b.y - a.y);
     for (const e of sorted) { if (e.hit(px, py)) return { type: 'cat', entity: e }; }
+    // Tapping the structure itself directly invites a kitten to play.
+    const buildings=[...(State.S.yardBuildings||[])].sort((a,b)=>b.y-a.y);
+    for(const b of buildings){
+      if(Math.abs(px-b.x)<39 && py<b.y+16 && py>b.y-75)return {type:'building',building:b};
+    }
     return null;
   }
   collectLoot(bubble, idx) {
