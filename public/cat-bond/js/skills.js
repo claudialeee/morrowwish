@@ -329,7 +329,7 @@
     // --- advanced debuffs ---
     expose:{ name: '破绽', ttl: 5.0, dps: 0,    color: '#ff5a8a', dmgTaken: 1.2 },   // 破绽: +20% incoming damage
     weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5
-    rust:  { name: '破甲', ttl: 6.0, dps: 0.01, color: '#c98a4a', dmgTaken: 1.12 },  // 破甲: +12% incoming damage + light DoT
+    rust:  { name: '破甲', ttl: 10.0,dps: 0,    color: '#c98a4a', dmgTaken: 1.12 },  // 破甲: 10s +12% incoming damage, no passive HP drain
     rewind:{ name: '回溯', ttl: 0.1, dps: 0,    color: '#9d7bff', rewind: true },    // 时间倒流: 回退到数秒前的血量
   };
 
