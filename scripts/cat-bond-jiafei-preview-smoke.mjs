@@ -65,10 +65,16 @@ try {
   assert.ok(check.box.left>1&&check.box.right<399&&check.box.top>1&&check.box.bottom<389,
     'Jiafei must fit within the illustrated portrait and not be clipped: '+
       JSON.stringify(check.box));
-  assert.ok(check.box.bottom-check.box.top<=251,
-    'Jiafei image must be perceptibly smaller than prior 262px watercolor bounds');
-  assert.ok(check.referenceBox.bottom>check.referenceBox.top,
-    'Normal watercolor breed must actually decode for meaningful scale QA');
+  // Compare actual alpha-visible art, not the AVIF box or art dimensions.
+  const h=check.box.bottom-check.box.top,refH=check.referenceBox.bottom-check.referenceBox.top;
+  const w=check.box.right-check.box.left,refW=check.referenceBox.right-check.referenceBox.left;
+  assert.ok(refH>100&&refW>100,'Normal watercolor reference must decode');
+  assert.ok(h/refH>=.88&&h/refH<=1.12,
+    'Jiafei must be the same perceived height as an ordinary watercolor cat: '+
+      JSON.stringify({h,refH}));
+  assert.ok(w/refW>=.84&&w/refW<=1.16,
+    'Jiafei must keep a similar footprint, not a giant or tiny sprite: '+
+      JSON.stringify({w,refW}));
   const save=(path,data)=>fs.writeFileSync(path,Buffer.from(data.split(',')[1],'base64'));
   save('/tmp/jiafei-review-'+spec.name+'-illustration.png',check.drawing);
   save('/tmp/jiafei-review-'+spec.name+'-portrait.png',check.portrait);
