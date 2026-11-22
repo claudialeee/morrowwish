@@ -95,7 +95,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('intro-start').addEventListener('click', startGame);
   // CrazyGames asks users to reach real gameplay immediately; skip the full
   // studio intro and present the starter choice as the first interactive action.
-  if(window.CatBondPlatform?.crazygames){
+  if(window.CatBondPlatform?.externalPortal){
     document.getElementById('cb-home')?.remove();
     startGame();
   }
@@ -118,7 +118,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // auto-save periodically
   setInterval(() => { if (game._lastTs) State.save(); }, 8000);
+  // A native app or Steam wrapper can suspend the WebView without unloading.
+  // Persist on both pagehide and backgrounding; keep the save key compatible
+  // with existing browser players for eventual cloud-save migration.
   window.addEventListener('beforeunload', () => State.save());
+  window.addEventListener('pagehide', () => State.save());
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden') State.save();
+  });
 });
 
 // Animated starfield + drifting moons behind the intro title.
