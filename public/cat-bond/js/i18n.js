@@ -20,6 +20,11 @@
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
     '☰ 庭院菜单': '☰ Yard menu',
+    // Manual skill-tree progression and the compact phone duo form.
+    '攻击技能逐级学会；高阶招式需到训练师处主动学习': 'Unlock attacks gradually; learn advanced moves deliberately with a trainer',
+    '继续培养本系与副系技能，并到训练师处学习高阶招式': 'Develop native and secondary skills and visit the trainer for advanced moves',
+    '组建新的双猫搭档': 'Create a new cat duo',
+    '✓ 组成出战搭档': '✓ Form battle duo',
     '当前位置：': 'Location: ',
     '阳光花园': 'Sunlit Garden',
     '%，快捷键 F': '%, shortcut F',
