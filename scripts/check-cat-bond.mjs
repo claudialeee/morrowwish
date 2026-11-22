@@ -250,7 +250,8 @@ const worldMapSource = fs.readFileSync(DIR+'js/worldmap.js','utf8');
 const regions=sandbox.window.WorldMap.REGIONS;
 assert.deepEqual(Array.from(regions.slice(0,2),r=>r.id),['home','sakura'],
   'first two explorable regions are courtyard then sakura');
-assert.equal(regions[0].name,'庭院','first region is labeled courtyard');
+assert.equal(regions[0].name,'阳光花园','first exploration region must be named Sunlit Garden in Chinese');
+assert.equal(regions[0].sub,'Sunlit Garden','first exploration region must be named Sunlit Garden in English');
 assert.equal(regions[0].difficulty,1,'courtyard is the beginner exploration zone');
 assert.equal(regions[0].unlock,null,'courtyard unlocks immediately');
 assert.deepEqual(JSON.parse(JSON.stringify(regions[1].unlock)),
