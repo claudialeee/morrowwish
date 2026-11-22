@@ -53,13 +53,15 @@ const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
 if(!dashboard.includes('id="game-details"')||!dashboard.includes('data-i18n="gameMore"')||
-   !dashboard.includes('data-i18n="playtestGuide"')||
+   !dashboard.includes('metricCard(t("statPv")')||
    !dashboard.includes('metricCard(t("statFinished")')||
    dashboard.includes('data-i18n="colDone"')||
-   dashboard.includes('data-i18n="nativePublished"')||
-   !dashboard.includes('syncPending:')||
+   dashboard.includes('data-i18n="channelState"')||
+   !dashboard.includes('const nativeNum=(n,id,published)=>')||
+   !dashboard.includes('n==null')||
+   !dashboard.includes('hasData?format(r.pageviews):""')||
    !dashboard.includes('game!=="hub"'))
- throw Error('Dashboard must prioritize honest game starts, normal finishes and replays with provider sync status');
+ throw Error('Dashboard must show meaningful results and leave missing data blank');
 // Primary dashboard must preserve visit-to-start and start-to-finish context
 // and not show unsupported portals as native social-view channels.
 const requiredChannels=['itch','crazygames','kongregate','youtube','tiktok','instagram','bluesky','search'];
@@ -67,7 +69,9 @@ const channelIds=dashboard.match(/const fallbackIds=\[([^\]]+)\];/)?.[1]||'';
 if(requiredChannels.some(name=>!channelIds.includes("'"+name+"'"))||
    !dashboard.includes('id="future-channels"')||
    !dashboard.includes('id="future-channel-list"')||
-   !dashboard.includes('channelState:')||
+   !dashboard.includes('colHomeVisits:')||
+   !dashboard.includes('colGameVisits:')||
+   dashboard.includes('id="itch-rows"')||
    dashboard.includes("t('notApplicable')"))
  throw Error('Promotion pipeline channels must stay visible; irrelevant metrics stay blank, not N/A');
 if(!dashboard.includes("num('pageviews')")||
@@ -89,7 +93,7 @@ if(!telemetry.includes('"town_completed-win"||n==="town_completed-lose"') ||
    !telemetry.includes('"town_completed-lose"].includes(n))eventCounts.ends++') ||
    !telemetry.includes('"level_complete"')) throw Error('Winning and losing Tiny Town runs must both be counted as finished');
 if(!analyticsSource.includes('z.ends+=events.reduce') ||
-   !dashboard.includes('data-i18n="colEnds"')) throw Error('Unified and itch.io dashboard must show finished runs');
+   !dashboard.includes('data-i18n="colEnds"')) throw Error('Unified and channel dashboard must show finished runs');
 
 const config=JSON.parse(fs.readFileSync('cloudflare-pages/wrangler.jsonc','utf8'));
 if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
