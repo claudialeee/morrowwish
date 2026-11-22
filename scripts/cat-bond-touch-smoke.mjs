@@ -92,16 +92,20 @@ try{
       assert.ok(menuText.includes('探险菜单')&&menuText.includes('状态 / 养成')&&
         menuText.includes('技能搭配')&&menuText.includes('工坊收益')&&menuText.includes('小卖部'),
         'Map menu must show cat status, raising, skills, workshop and shop: '+menuText);
-      // Unlike child screens, the expedition root previously had only ×.
-      const rootBack=page.locator('#panel.open .panel-map-back');
-      assert.equal(await rootBack.isVisible(),true,'Root expedition menu must show Back to map on mobile');
-      const rootBackRect=await rootBack.boundingBox();
-      assert.ok(rootBackRect&&rootBackRect.x>=-1&&rootBackRect.x+rootBackRect.width<=width+1&&rootBackRect.height>=40,
-        'Root Back to map must fit phone viewport: '+JSON.stringify(rootBackRect));
-      await rootBack.tap();
-      assert.equal(await page.locator('#panel.open').count(),0,'Back to map dismisses the expedition menu');
+      // The root menu needs only ×; child pages get ← Back to previous page.
+      assert.equal(await page.locator('#panel.open .panel-map-back').count(),0,
+        'Expedition root should not duplicate × with Back to map');
+      assert.equal(await page.locator('#panel.open .panel-back').count(),0,
+        'Expedition root is not a child page');
+      const dismiss=page.locator('#panel.open > .panel-dismiss');
+      assert.ok(await dismiss.isVisible(),'The fixed close control must remain visible');
+      const dismissRect=await dismiss.boundingBox();
+      assert.ok(dismissRect&&dismissRect.x>=0&&dismissRect.x+dismissRect.width<=width+1&&dismissRect.height>=38,
+        'The close control must remain tappable on phone: '+JSON.stringify(dismissRect));
+      await dismiss.tap();
+      assert.equal(await page.locator('#panel.open').count(),0,'× must return from expedition menu to map');
       assert.deepEqual(await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion})),beforeMenu,
-        'Back to map must preserve the same exploration region');
+        '× must preserve the same exploration region');
       await page.locator('#map-menu').tap();
       await page.locator('#panel.open [data-explore-action="shop"]').tap();
       assert.ok((await page.locator('#panel.open .card').innerText()).includes('小卖部'),
