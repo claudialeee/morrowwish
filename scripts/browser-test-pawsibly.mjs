@@ -579,7 +579,10 @@ try{
     return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none',
      roomNumWidth:document.getElementById('roomNum').getBoundingClientRect().width,
      roomNumHeight:document.getElementById('roomNum').getBoundingClientRect().height,
-     roomNameVisible:getComputedStyle(document.getElementById('roomTag')).display!=='none'};
+     roomNameVisible:getComputedStyle(document.getElementById('roomTag')).display!=='none',headDisplay:getComputedStyle(document.querySelector('.in-game-head-row')).display,
+     headHeight:document.querySelector('.in-game-head-row').getBoundingClientRect().height,
+     headerAreas:getComputedStyle(document.querySelector('.in-game-head-row')).gridTemplateAreas,
+     stageLeftWidth:document.querySelector('.stage-left').getBoundingClientRect().width};
    });
    await waitPage.screenshot({path:`test-results/pawsibly-mobile-${width}.png`});
    assert.ok(layout.within&&!layout.overlap,'Every action must fit without overlap at '+width+'px: '+JSON.stringify(layout));

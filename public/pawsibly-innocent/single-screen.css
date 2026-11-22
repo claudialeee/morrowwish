@@ -918,3 +918,30 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
   min-width:0!important;white-space:nowrap!important;
  }
 }
+
+/* Review correction: prior mobile grid had a fixed-height 42px ancestor
+   from the desktop compact rule. Let two rows lay out at their real height. */
+@media(max-width:620px){
+ html:not(.cg-play) .single-screen-game .in-game-head-row,
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game .in-game-head-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"controls controls" "room status"!important;
+  height:auto!important;min-height:88px!important;max-height:none!important;
+  overflow:visible!important;align-items:center!important;row-gap:3px!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left{
+  grid-area:room!important;justify-self:stretch!important;min-width:0!important;
+  width:100%!important;max-width:none!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left .sticker{
+  min-width:85px!important;flex:1 1 auto!important;max-width:none!important;
+  width:auto!important;overflow:hidden!important;
+ }
+ .single-screen-game .in-game-head-row #heistStatus{
+  grid-area:status!important;justify-self:end!important;
+ }
+ .single-screen-game .in-game-head-row #stageControls{
+  grid-area:controls!important;min-width:0!important;width:100%!important;
+  justify-self:stretch!important;justify-content:space-between!important;
+ }
+}
