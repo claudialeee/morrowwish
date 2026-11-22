@@ -1,47 +1,165 @@
 {
-  "createdAt": "2026-11-21T23:24:16.516Z",
-  "version": "readability-review-v1",
-  "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.",
-  "pausedPromoGames": [
-    "cat-bond"
-  ],
+  "createdAt": "2026-11-22T06:45:28.925Z",
+  "version": "readability-review-v11",
+  "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate. V11 retains the other games' approved-for-review timings.",
+  "pausedPromoGames": [],
   "scenes": [
     {
-      "game": "pawsibly-innocent",
-      "scene": "escape-attempt",
-      "seconds": 14.1,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "pawsibly-innocent",
-      "scene": "narrow-pursuit",
-      "seconds": 2.57,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "pawsibly-innocent",
-      "scene": "narrow-achievement",
-      "seconds": 3.4,
-      "captionWords": 0,
-      "requiredSeconds": 3.2,
-      "passed": true
-    },
-    {
-      "game": "pawsibly-innocent",
-      "scene": "caught-attempt",
-      "seconds": 7.33,
+      "game": "cat-bond",
+      "scene": "yard",
+      "seconds": 2.5,
       "captionWords": 5,
       "requiredSeconds": 2.41,
       "passed": true
     },
     {
-      "game": "pawsibly-innocent",
-      "scene": "end-card",
+      "game": "cat-bond",
+      "scene": "cat-upgrade",
+      "seconds": 3.15,
+      "captionWords": 5,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-partners",
+      "seconds": 2.75,
+      "captionWords": 4,
+      "requiredSeconds": 2.6,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-map-walk",
+      "seconds": 1.8,
+      "captionWords": 0,
+      "requiredSeconds": 0,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-promise",
+      "seconds": 3.9,
+      "captionWords": 5,
+      "requiredSeconds": 3.7,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-quarrel",
+      "seconds": 6.1,
+      "captionWords": 4,
+      "requiredSeconds": 6,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-reconcile",
+      "seconds": 2.9,
+      "captionWords": 4,
+      "requiredSeconds": 2.7,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "work-after",
+      "seconds": 2.5,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "tease",
+      "seconds": 2.2,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "map-choice",
+      "seconds": 2.5,
+      "captionWords": 3,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "map-explore",
+      "seconds": 2.45,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "map-management",
+      "seconds": 2.15,
+      "captionWords": 3,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "auto-team-saved",
+      "seconds": 2.5,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "battle-hud",
+      "seconds": 2.45,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "battle-skills",
+      "seconds": 2.8,
+      "captionWords": 3,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo",
+      "seconds": 4.25,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "rare-encounter",
+      "seconds": 2.05,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "rare-capture",
+      "seconds": 3.45,
+      "captionWords": 5,
+      "requiredSeconds": 2.8,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "ssr-showcase",
       "seconds": 3.6,
+      "captionWords": 5,
+      "requiredSeconds": 3.4,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "end-card",
+      "seconds": 3.5,
       "captionWords": 2,
       "requiredSeconds": 3.5,
       "passed": true
@@ -316,6 +434,55 @@
       "seconds": 3.1,
       "captionWords": 2,
       "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "narrow-pursuit",
+      "seconds": 2.35,
+      "requiredSeconds": 0.9,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "narrow-achievement",
+      "seconds": 3.35,
+      "requiredSeconds": 3.2,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "fish-tease",
+      "seconds": 1.35,
+      "requiredSeconds": 0.9,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "room-kitchen",
+      "seconds": 1.45,
+      "requiredSeconds": 0.9,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "room-library",
+      "seconds": 1.45,
+      "requiredSeconds": 0.9,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "room-garden",
+      "seconds": 1.35,
+      "requiredSeconds": 0.9,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "caught-attempt",
+      "seconds": 2.72,
+      "requiredSeconds": 2.6,
       "passed": true
     }
   ]
