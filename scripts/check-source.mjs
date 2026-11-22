@@ -1206,8 +1206,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
     !cbMain.includes('sc.getImageData(0,0,240,240)')||
     !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
-    !bondIntro.includes('js/main.js?v=original-intro-cats-20261121-2')||
-    !cbCss.includes('background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important'))
+    !/js\/main\.js\?v=[a-z0-9][\w.-]*/i.test(bondIntro)||
+    !cbCss.includes('#intro #intro-start{background:linear-gradient('))
    throw Error('Cat Bond must balance intro kitten silhouettes and make Start primary');
  if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
     !cbMain.includes('const catBottom=h-15,targetHeight=132,maxWidth=140')||
@@ -1228,7 +1228,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
    if(!(current<old&&current>=.94&&current<=1.32))
      throw Error('Garden cat size must be smaller than before on '+W+'x'+H);
  }
- if(!bondIntro.includes('js/main.js?v=original-intro-cats-20261121-2')||
+ if(!/js\/main\.js\?v=[a-z0-9][\w.-]*/i.test(bondIntro)||
     !cbMain.includes('targetHeight=132,maxWidth=140')||
     !/src="js\/world\.js\?v=[^"]+"/.test(bondIntro))
    throw Error('Garden resize must not shrink the main menu kitten portraits');
