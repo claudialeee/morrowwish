@@ -197,10 +197,10 @@ function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=
 
 function renderSignals(gameRows){
  const games=new Map((gameRows||[]).map(x=>[x.game,x]));
- const W={zh:{start:"访问→开玩",finish:"开玩→结算",replay:"失败后重试",next:"继续挑战（新）",caught:"成功捕获（新）",rareSeen:"稀有猫挑战（新）",rare:"稀有猫捕获（新）",v2Note:"猫猫纽带的新口径从更新后开始；旧数据不补算。",legacyNote:"旧版稀有遭遇仅记庭院草丛，不能与全部捕获比较。",regionTitle:"探索区域战斗结算率（新版）",regionLabels:{yard:"庭院",home:"起始花园",sakura:"樱花林",creek:"溪流谷",volcano:"火山口",ruins:"月影遗迹",unknown:"未知来源"},duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
- en:{start:"Visit → play",finish:"Play → finish",replay:"Retries after loss",next:"Next battles (new)",caught:"Cats captured (new)",rareSeen:"Rare battles (new)",rare:"Rare captures (new)",v2Note:"New Cat Bond data only; legacy events are not backfilled.",legacyNote:"Old rare encounters counted yard spawns only, not all catches.",regionTitle:"Battle finish rate by region (new)",regionLabels:{yard:"Yard",home:"Home garden",sakura:"Sakura woods",creek:"Creek valley",volcano:"Volcano",ruins:"Moonshadow ruins",unknown:"Unknown"},duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
+ const W={zh:{start:"开局率（历史）",finish:"结算率（历史）",replay:"重玩次数",next:"继续挑战（新）",caught:"成功捕获",rareSeen:"遇见稀有猫（庭院）",rare:"捕获稀有猫",v2Note:"猫猫纽带的新口径从更新后开始；旧数据不补算。",legacyNote:"旧版稀有遭遇仅记庭院草丛，不能与全部捕获比较。",regionTitle:"探索区域战斗结算率（新版）",regionLabels:{yard:"庭院",home:"起始花园",sakura:"樱花林",creek:"溪流谷",volcano:"火山口",ruins:"月影遗迹",unknown:"未知来源"},duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
+ en:{start:"Start rate (historical)",finish:"Finish rate (historical)",replay:"Replays",next:"Next battles (new)",caught:"Cats captured",rareSeen:"Rare encounters (yard)",rare:"Rare cats captured",v2Note:"New Cat Bond data only; legacy events are not backfilled.",legacyNote:"Old rare encounters counted yard spawns only, not all catches.",regionTitle:"Battle finish rate by region (new)",regionLabels:{yard:"Yard",home:"Home garden",sakura:"Sakura woods",creek:"Creek valley",volcano:"Volcano",ruins:"Moonshadow ruins",unknown:"Unknown"},duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
  const cards=[
- {id:'cat-bond',priority:1,subtitle:W.bond,items:[['caught','bond_capture_v2'],['rareSeen','bond_rare_attempt_v2'],['rare','bond_rare_capture_v2'],['duo','bond_duo_used'],['yard','bond_yard_built'],['surprise','bond_surprise']]},
+ {id:'cat-bond',priority:1,subtitle:W.bond,items:[['caught','bond_capture'],['rareSeen','bond_rare_encounter'],['rare','bond_rare_capture'],['duo','bond_duo_used'],['yard','bond_yard_built'],['surprise','bond_surprise']]},
  {id:'pawsibly-innocent',priority:1,subtitle:W.heist,items:[['room1','cat_room_1'],['room8','cat_room_8'],['escaped','cat_escape'],['seen','cat_caught'],['near','cat_close_call'],['yarn','cat_yarn_distracted']]},
  {id:'tiny-town',priority:0,subtitle:W.town,items:[['combo','town_combo_discovered'],['legend','town_legendary_unlocked'],['resident','town_neighbor_story'],['townWin','town_win'],['townLose','town_lose'],['townReplay','town_replayed']]},
  {id:'elsewhere',priority:0,subtitle:W.story,items:[['storyYes','elsewhere_return_yes'],['storyMaybe','elsewhere_return_maybe']]}
@@ -211,11 +211,12 @@ function renderSignals(gameRows){
   const count=k=>valid&&Number.isFinite(Number(signals[k]))?format(signals[k]):'';
   const ratio=(x,y)=>valid&&Number(y)>0&&Number(x)<=Number(y)?format(x)+' / '+format(y)+' · '+format(pct(x,y))+'%':'';
   const bond=g.id==='cat-bond',cv=r?.conversion||{},active=Number(cv.pageviews)>0;
+  // Display the entire historical period first, even before any V2 visits.
+  // New-cohort data belongs in an expandable section, NEVER here.
   const rows=bond?[
-   line(W.start,active?ratio(cv.startedViews,cv.pageviews):''),
-   line(W.finish,active?ratio(signals.bond_battle_end_v2||0,signals.bond_battle_start_v2||0):''),
-   line(W.replay,active?format(signals.bond_retry_loss_v2||0):''),
-   line(W.next,active?format(signals.bond_next_battle_v2||0):'')
+   line(W.start,ratio(r?.startedViews,r?.pageviews)),
+   line(W.finish,ratio(r?.ends,r?.starts)),
+   line(W.replay,valid?format(r.retries):'')
   ]:[
    line(W.start,ratio(cv.startedViews,cv.pageviews)),
    line(W.finish,ratio(cv.finishedViews,cv.startedViews)),
@@ -225,13 +226,21 @@ function renderSignals(gameRows){
    const z=elsewhereData.summary;
    rows.push(line(W.storyFinish,z.fullRate==null?'':format(z.fullRate)+'%'),line(W.storyReplay,z.replayRate==null?'':format(z.replayRate)+'%'));
   }
-  for(const [label,key] of g.items)rows.push(line(W[label],
-   bond&&key.endsWith('_v2')?(active?format(signals[key]||0):''):count(key)));
+  for(const [label,key] of g.items)rows.push(line(W[label],count(key)));
   const title=gameNames[g.id]?.[lang]||g.id;
   const feedback=g.id==='pawsibly-innocent'&&Number(signals.play_feedback_fun)>0?'<p class="focus-subtitle">'+escapeHTML(t('feelPrefix'))+' · '+format(signals.play_feedback_fun)+'</p>':'';
   const legacy=bond?'<p class="focus-subtitle">'+escapeHTML(W.v2Note)+'</p>'+
    (Number(signals.bond_rare_encounter)>0||Number(signals.bond_rare_capture)>0?
     '<p class="focus-subtitle">'+escapeHTML(W.legacyNote)+'</p>':''):'';
+  const newMetrics=bond&&active?'<details class="studio-advanced"><summary>'+
+   escapeHTML(lang==='zh'?'新版漏斗（更新后的访问）':'New funnel (post-update visits)')+
+   '</summary>'+line(lang==='zh'?'新版访问→开玩':'New visit → play',ratio(cv.startedViews,cv.pageviews))+
+   line(lang==='zh'?'新版战斗→结算':'New battle → finish',
+      ratio(signals.bond_battle_end_v2||0,signals.bond_battle_start_v2||0))+
+   line(W.next,format(signals.bond_next_battle_v2||0))+
+   line(lang==='zh'?'新版稀有挑战':'New rare attempts',format(signals.bond_rare_attempt_v2||0))+
+   line(lang==='zh'?'新版稀有捕获':'New rare captures',format(signals.bond_rare_capture_v2||0))+
+   '</details>':'';
   const regions=bond&&active?'<details class="studio-advanced"><summary>'+
    escapeHTML(W.regionTitle)+'</summary>'+['yard','home','sakura','creek','volcano','ruins','unknown']
    .map(id=>{const start=Number(signals['bond_region_'+id+'_start_v2']||0);
@@ -239,7 +248,7 @@ function renderSignals(gameRows){
     return line(W.regionLabels[id],start>0&&end<=start?
       format(end)+' / '+format(start)+' · '+format(pct(end,start))+'%':'');
    }).join('')+'</details>':'';
-  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+regions+legacy+feedback+'</article>';
+  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+newMetrics+regions+legacy+feedback+'</article>';
  }).join('');
 }
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(j.records)>0;
@@ -271,7 +280,7 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  // The homepage is not a game: show its pageviews only. Do not display
  // gameplay counts, placeholder dashes or conversion rates in its row.
  if(x.game==="hub")return '<tr><td><a class="game-name" href="/">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
- return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+(isBond?num('starts'):num('starts')+startRate)+'</td><td>'+(isBond?num('ends'):finished)+'</td><td>'+num('retries')+'</td><td>'+c1+'</td><td>'+c2+'</td><td>'+c3+'</td></tr>';
+ return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+num('starts')+startRate+'</td><td>'+finished+'</td><td>'+num('retries')+'</td><td>'+c1+'</td><td>'+c2+'</td><td>'+c3+'</td></tr>';
 }).join("");
 const channels=Array.isArray(j.byChannel)?j.byChannel:[];
 const sourceAliases={itch:['itch','itch.io','itchio','itch.zone'],youtube:['youtube','youtube.com','youtu.be','m.youtube.com'],tiktok:['tiktok','tiktok.com'],instagram:['instagram','instagram.com','l.instagram.com'],bluesky:['bluesky','bsky.app','bsky.social']};

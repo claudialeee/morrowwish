@@ -60,3 +60,42 @@ assert.deepEqual(body.rows.map(x=>x.cells[0].textContent),['A','B','D','C'],'Des
 tableSorts.set('games',{index:1,direction:'asc'});sortDataTable(table);
 assert.deepEqual(body.rows.map(x=>x.cells[0].textContent),['D','B','A','C'],'Ascending: missing last');
 console.log('Dashboard columns sort numerically, retain real zeros, leave missing values last, and sort mixed channel visits by game-page visits.');
+
+
+// Regression from the 2026-11-22 live incident. An empty V2 cohort MUST NOT
+// replace historic Cat Bond activity with blanks. This invokes the actual
+// dashboard renderers for both languages and mixed/legacy-only cohorts.
+const historicalBond={game:'cat-bond',pageviews:26,startedViews:8,startRate:30.8,
+ starts:82,ends:79,retries:1,
+ conversion:{pageviews:0,startedViews:0,finishedViews:0},
+ signals:{bond_capture:73,bond_rare_encounter:4,bond_rare_capture:57,
+  bond_duo_used:46,bond_yard_built:6,bond_surprise:5}};
+for(const locale of ['zh','en'])for(const v2 of [false,true]){
+ const bond=v2?{...historicalBond,
+  conversion:{pageviews:4,startedViews:3,finishedViews:2},
+  signals:{...historicalBond.signals,bond_battle_start_v2:3,
+   bond_battle_end_v2:2,bond_capture_v2:2,bond_rare_attempt_v2:1}}:historicalBond;
+ const dom={};
+ const env={lang:locale,elsewhereData:null,
+  gameNames:{'cat-bond':{zh:'猫猫纽带',en:'Cat Bond'}},
+  escapeHTML:s=>String(s??''),format:n=>Number(n||0).toLocaleString('en-US'),
+  pct:(a,b)=>b?Math.round(a*1000/b)/10:0,
+  $:id=>(dom[id]??={innerHTML:''})};
+ const focusCode=inlineScript.slice(inlineScript.indexOf('function renderSignals('),
+  inlineScript.indexOf('\nfunction render(j)'));
+ vm.runInNewContext(focusCode+';globalThis.draw=renderSignals;',env);
+ env.draw([bond]);
+ const card=dom['focus-grid'].innerHTML;
+ for(const snippet of ['8 / 26 · 30.8%','79 / 82 · 96.3%',
+  '<b>73</b>','<b>4</b>','<b>57</b>','<b>46</b>',
+  '<b>6</b>','<b>5</b>','<b>1</b>'])
+  assert.ok(card.includes(snippet),locale+' erased Cat Bond metric '+snippet);
+ if(v2)assert.ok(card.includes('3 / 4 · 75%'),'New cohort must be separate');
+ const tableCode=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
+  inlineScript.indexOf('\nconst channels=Array.isArray'));
+ vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,{...env,fixture:[bond]});
+ const main=dom.games.innerHTML;
+ assert.ok(main.includes('<td>82 <small>30.8%</small></td><td>79 <small>96.3%</small></td><td>1</td>'),
+  locale+' main Cat Bond row erased history');
+}
+console.log('Cat Bond historical dashboard gate: 8/26, 79/82, 73, 4, 57, 46, 6, 5, 1 remain visible in zh/en.');
