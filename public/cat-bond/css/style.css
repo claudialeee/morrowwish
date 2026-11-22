@@ -3790,3 +3790,59 @@ body.cb-exploring #stage #map-actions > button{
     min-height:44px;padding:8px 12px;font-size:13px;
   }
 }
+
+
+/* Encounter preparation: one reliable touch/trackpad scrolling surface and
+   an always-visible footer. Never let the sticky CTA cover lineup controls. */
+#panel.open > .card.prebattle-dialog{
+  position:relative;display:flex;flex-direction:column;box-sizing:border-box;
+  height:min(780px,100%);max-height:100%!important;min-height:0;
+  overflow:hidden!important;
+}
+#panel .prebattle-dialog > .card-close{position:absolute;top:8px;right:14px;z-index:3}
+#panel .prebattle-dialog > .prebattle-scroll{
+  flex:1 1 auto;min-height:0;min-width:0;
+  overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y;
+  scrollbar-gutter:stable;padding:2px 5px 16px 1px;
+}
+#panel .prebattle-dialog > .prebattle-scroll:focus-visible{
+  outline:2px solid #a887b7;outline-offset:-2px;border-radius:9px;
+}
+#panel .prebattle-dialog > .prebattle-actions{
+  position:static!important;bottom:auto!important;z-index:1;flex:0 0 auto;
+  margin:0!important;padding:11px 0 max(3px,env(safe-area-inset-bottom,0px));
+  border-top:1px solid #e8dce7;
+  background:linear-gradient(180deg,#fff8f0 0%,#fff9f1 100%);
+}
+/* The roster itself must NOT trap wheel/touch scrolling inside the dialog. */
+#panel .prebattle-dialog .map-squad-roster,
+#panel .prebattle-dialog #cp-roster{
+  max-height:none!important;overflow:visible!important;overscroll-behavior:auto;
+}
+#panel .prebattle-dialog .battle-order{margin:9px 0 7px;padding:9px}
+#panel .prebattle-dialog .battle-order-item{min-height:42px;gap:7px}
+#panel .prebattle-dialog .battle-order-item button{
+  min-width:42px;min-height:40px;font-size:19px;font-weight:900;
+  touch-action:manipulation;flex-shrink:0;
+}
+#panel .prebattle-dialog .map-squad-choice.sel::after{
+  content:attr(data-order-role);position:absolute;top:3px;right:4px;
+  border-radius:6px;padding:3px 6px;background:#fff0bb;color:#695338;
+  font:900 10px/1.2 system-ui;pointer-events:none;
+}
+#panel .prebattle-dialog .map-squad-count{text-align:left;margin:9px 2px 6px}
+@media(max-width:700px), (pointer:coarse){
+  #panel.open > .card.prebattle-dialog{
+    height:100%!important;max-height:100%!important;
+    padding:12px 10px 7px!important;
+  }
+  #panel .prebattle-dialog .battle-order-item button{min-width:44px;min-height:44px}
+  #panel .prebattle-dialog .prebattle-scroll{padding-right:4px}
+}
+@media(orientation:landscape) and (max-height:530px){
+  #panel.open > .card.prebattle-dialog{padding:6px 9px 5px!important}
+  #panel .prebattle-dialog > .prebattle-actions{padding:4px 0 2px}
+  #panel .prebattle-dialog .battle-order-item{min-height:34px}
+  #panel .prebattle-dialog .battle-order-item button{min-height:36px}
+}
