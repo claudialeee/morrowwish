@@ -257,7 +257,8 @@ jobs:
           verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js 'battlePrepSkillCard(team,en){'
           verify_live /cat-bond/js/main.js /tmp/mw-live-catbond-main.js 'targetHeight=132,maxWidth=140'
           verify_live /cat-bond/js/world.js /tmp/mw-live-catbond-world.js 'const yardMagnify=Math.min(1.32'
-          grep -Fq 'js/world.js?v=smaller-courtyard-cats-20261121-2' /tmp/mw-live-catbond.html
+          # HTML asset versions are checked dynamically above; do not lock this
+          # release gate to a removed world.js cache-busting version.
           verify_live /cat-bond/css/style.css /tmp/mw-live-catbond-style.css '#battle-ui #battle-skill-tooltip'
           for asset in game.js ui.js main.js; do
             cmp -s "public/cat-bond/js/$asset" "/tmp/mw-live-catbond-$asset" || {
