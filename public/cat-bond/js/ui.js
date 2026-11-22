@@ -2429,7 +2429,7 @@ const UI = {
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
-        wildSp,opts.origin==='map'?(window.WorldMap?.currentRegion||'sakura'):'yard',team)||1;
+        wildSp,opts.origin==='map'?(window.WorldMap?.currentRegion||'home'):'yard',team)||1;
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
