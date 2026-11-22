@@ -403,7 +403,7 @@ assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'existing stagger retains 1.3x, not 2x, vulnerability');
 
 // Regular Q/E cause armor break, never poise drain or Stagger. Dedicated
-// 泰山压顶 keeps the five-second Stagger window and visible countdown.
+// 泰山压顶 keeps the three-second Stagger window and visible countdown.
 assert.equal(Skills.TAG_INFO.rust.ttl,10,'armor break persists for ten seconds');
 assert.equal(Skills.TAG_INFO.rust.dps,0,'armor break is not an added DOT');
 const poiseBattle=new sandbox.window.Battle.CaptureBattle(game,
@@ -424,7 +424,7 @@ slamCat._leapTo={x:poiseEnemy.x,y:poiseEnemy.y};
 slamCat._leapR=54;slamCat._leapDmg=10;slamCat._leapCol='#7ee787';
 slamCat._leapSkill={id:'quakeStomp',kind:'leap',element:'grass',tags:['stagger']};
 poiseBattle.leapLand(slamCat);
-assert.equal(poiseEnemy.staggerT,5,'dedicated stagger slam lasts five seconds');
+assert.equal(poiseEnemy.staggerT,3,'dedicated stagger slam lasts three seconds');
 
 const gaugeText=[];
 const gaugeCtx=new Proxy(canvasCtx,{get(target,key){
@@ -433,7 +433,7 @@ const gaugeCtx=new Proxy(canvasCtx,{get(target,key){
 }});
 poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa',
   'Wild Cat',{current:poiseEnemy.poise,max:poiseEnemy.poiseMax,stagger:poiseEnemy.staggerT});
-assert.ok(gaugeText.some(x=>x.includes('虚弱 5.0s')),
+assert.ok(gaugeText.some(x=>x.includes('虚弱 3.0s')),
   'enemy poise gauge must display stagger countdown');
 poiseEnemy.staggerT=0;
 gaugeText.length=0;
