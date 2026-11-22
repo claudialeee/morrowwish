@@ -34,6 +34,7 @@
     '专精本系技能，高阶招式到训练师处学习': 'Specialize in native moves and learn advanced ones at the trainer',
     '战斗数值': 'Battle statistics',
     '生命': 'HP',
+    '战力': 'Battle power',
     '基础伤害': 'Base damage',
     '移动速度': 'Move speed',
     '负伤中，建议战前恢复': 'Injured · recover before battle',
