@@ -619,6 +619,84 @@ assert.equal(roleBattle.me().eSkill?.id,dpsKit[2],
   'battle E reads equipped build skill');
 
 
+// Skill consolidation: all seven upgrade families remain resolvable, while a
+// learned tier-2 replaces tier-1 in equipped gear and new build recommendations.
+const upgradePairs=[
+  ['emberClaw','cometClaw'],['thornCoil','thornLash'],
+  ['waterLash','frostLance'],['staticPounce','voltRush'],
+  ['shadeLeap','apexPounce'],['shadowSwipe','veteranStrike'],
+  ['dawnHeal','tenderPaw']
+];
+for(const [oldId,newId] of upgradePairs){
+  assert.equal(Skills.skillById(newId)?.upgradeOf,oldId,
+    'upgrade metadata kept for '+newId);
+}
+const upgraded=State.makeCat('tangyuan',{affinity:90});
+upgraded.level=15;upgraded.skillEdited=true;
+upgraded.loadout=[null,'emberClaw',null,null];
+upgraded.learned=['cometClaw'];
+Skills.ensureLoadout(upgraded);
+assert.equal(upgraded.loadout[1],'cometClaw',
+  'saved basic fire claw is replaced by its learned advanced form');
+assert.ok(Skills.skillById('emberClaw'),
+  'old skill IDs stay resolvable for historic saves');
+assert.equal(Skills.recommendLoadout(upgraded,'fighter').includes('emberClaw'),false,
+  'new builds do not re-select a superseded first-tier skill');
+const retiredMoves=['gen_water_dash','gen_grass_dash','gen_dark_dash','gen_light_dash'];
+for(const oldId of retiredMoves){
+  assert.ok(Skills.skillById(oldId),'retired generic mobility IDs remain loadable');
+}
+const developedWater=State.makeCat('xiaohui',{affinity:90});
+developedWater.level=14;developedWater.skillAwakened=true;
+assert.ok(!Skills.learnableSkills(developedWater).some(sk=>sk.id==='gen_water_dash'),
+  'water generic lunge is retired in favor of authored pounce');
+assert.ok(Skills.learnableSkills(developedWater).some(sk=>sk.id==='knockOff'),
+  'water authored mobility survives consolidation');
+
+// Elemental barriers vary in mitigation and secondary behavior.
+const barrierCat=State.makeCat('tangyuan');
+const barrierBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [barrierCat],GameData.speciesById('doudou'));
+const protector=barrierBattle.me();
+const fireWard=Skills.skillById('gen_fire_shield');
+const grassWard=Skills.skillById('gen_grass_shield');
+const darkWard=Skills.skillById('gen_dark_shield');
+assert.ok(fireWard&&grassWard&&darkWard,'three elemental barriers are present');
+assert.ok(fireWard.wardReduction!==grassWard.wardReduction &&
+  grassWard.wardReduction!==darkWard.wardReduction,
+  'element shields must not have identical mitigation');
+assert.equal(barrierBattle.castWard(protector,'barrier',fireWard),true);
+assert.equal(protector._wardReduction,.40,'fire ward prevents 40%');
+assert.equal(protector._wardRetaliateBurn,true,'fire ward burns close attackers');
+protector.shieldT=0;barrierBattle.tickWards(protector,.05);
+assert.equal(barrierBattle.castWard(protector,'barrier',grassWard),true);
+assert.equal(protector._wardReduction,.30,'grass ward prevents 30%');
+protector.hp=protector.maxhp*.5;
+const grassBefore=protector.hp;
+barrierBattle.tickWards(protector,1);
+assert.ok(protector.hp>grassBefore,'grass ward regenerates actual HP');
+protector.shieldT=0;barrierBattle.tickWards(protector,.05);
+assert.equal(barrierBattle.castWard(protector,'barrier',darkWard),true);
+assert.equal(protector._wardReduction,.55,'dark ward prevents 55%');
+assert.ok(darkWard.wardDuration<grassWard.wardDuration,
+  'dark mitigation trades duration against grass regeneration');
+
+// Pellet fan has a shared per-enemy budget, not five full-damage hits.
+const projectileCheck=fs.readFileSync(DIR+'js/battle.js','utf8');
+assert.ok(projectileCheck.includes('maxHitsPerEnemy:2') &&
+  projectileCheck.includes('f.dmg*pow*.5') &&
+  projectileCheck.includes('hitsByEnemy.set(e.i,count+1)'),
+  'five shot generic fan is limited to one total base hit per enemy');
+
+// BD compositions should be role-defining when the cat knows the skills.
+const supportBuild=Skills.recommendLoadout(roleCat,'support');
+const supportQ=Skills.skillById(supportBuild[1]);
+assert.ok(['heal','buff'].includes(supportQ.kind),
+  'support Q prioritizes an actionable team-support skill');
+const outputQ=Skills.skillById(dpsKit[1]);
+assert.ok(['projectile','beam','chain'].includes(outputQ.kind),
+  'ranged output Q is a ranged offensive skill');
+
 // Consolidated picker must not erase choices, including legacy generic moves.
 const skillPickerSource=fs.readFileSync(DIR+'js/ui.js','utf8');
 assert.ok(skillPickerSource.includes('skill-extra-options') &&
