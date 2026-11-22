@@ -263,7 +263,8 @@ const UI = {
     let mult=1+.15*((aff-50)/50);
     if(cat._deathPenaltyUntil&&Date.now()<cat._deathPenaltyUntil)mult*=.88;
     mult=Math.max(.80,Math.min(1.15,mult));
-    const maxHp=Math.round((55+(s.vit||0)*5)*mult);
+    // Keep this in sync with Battle.makeFighter (80 + VIT*8).
+    const maxHp=Math.round((80+(s.vit||0)*8)*mult);
     const carried=State.catHpFraction?.(cat)??1;
     const hp=Math.round(maxHp*carried);
     const rarity=sp.rarity||'N';
@@ -275,9 +276,16 @@ const UI = {
       grass:['🌿',en?'Nature':'草'],elec:['⚡',en?'Lightning':'雷'],
       dark:['🌙',en?'Shadow':'暗'],light:['✨',en?'Light':'光']
     };
+    const bond=window.Skills?.bondBonuses?.(
+      window.Skills.bondTier?.(aff))||{dmgMult:1};
+    // The battle's base damage and movement formulas, not invented
+    // "defense" numbers (VIT affects max HP; there is no defense stat).
+    const damage=(6+(s.pow||0)*.7)*(bond.dmgMult||1)*.62;
+    const speed=120*(1+Math.min(.2,Math.max(0,s.agi||0)*.0035));
     return {level:cat.level||1,rarity,rarityName:r[rarity]||rarity,
       element,elementLabel:(elements[element]||['✨',''])[0]+' '+(elements[element]||['',''])[1],
-      power:State.catPower(cat),pow:s.pow||0,agi:s.agi||0,vit:s.vit||0,
+      power:State.catPower(cat),pow:s.pow||0,agi:s.agi||0,vit:s.vit||0,cha:s.cha||0,
+      damage:Math.round(damage*10)/10,speed:Math.round(speed*10)/10,
       hp,maxHp,hpPercent:maxHp?Math.round(hp/maxHp*100):100,
       affinity:Math.round(aff),wounded:carried<.99};
   },
@@ -1519,6 +1527,17 @@ const UI = {
     const xpPerFeed = 20 + cat.level * 12;
     const fishToNext = Math.max(1, Math.ceil(Math.max(0, need - (cat.xp || 0)) / xpPerFeed)) * 3;
     const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${GameData.speciesName(sp)}</span>` : '';
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const facts=this.battleCatFacts(cat);
+    const primary=window.Skills?.elementOf?.(cat.species)||'light';
+    const secondary=window.Skills?.SPLASH_ELEMENT?.[primary]||null;
+    const elNames={fire:[en?'Fire':'火','🔥'],water:[en?'Water':'水','💧'],
+      grass:[en?'Nature':'草','🌿'],elec:[en?'Lightning':'雷','⚡'],
+      dark:[en?'Shadow':'暗','🌙'],light:[en?'Light':'光','✨']};
+    const elLabel=id=>(elNames[id]?.[1]||'✨')+' '+(elNames[id]?.[0]||id);
+    const sideCap=window.Skills?.secondaryLimit?.(cat)||0;
+    const sideChoices=window.Skills?.secondaryChoices?.(cat)||[];
+    const sideUnlocked=sideChoices.slice(0,sideCap);
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
@@ -1534,10 +1553,33 @@ const UI = {
           <div class="stat-row"><span class="label">好感 (${tierText})</span><div class="bar aff"><span style="width:${cat.affinity}%"></span></div><span class="val">${Math.round(cat.affinity)}</span></div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin-top:12px">
-        ${statLine('力量', cat.stats.pow)}${statLine('敏捷', cat.stats.agi)}
-        ${statLine('体力', cat.stats.vit)}${statLine('魅力', cat.stats.cha)}
-      </div>
+      <section class="cat-detail-combat-stats" aria-label="${en?'Cat attributes and battle statistics':'猫猫属性与战斗数值'}">
+        <h3>${en?'Cat attributes':'猫猫属性'}</h3>
+        <div class="cat-detail-element-row">
+          <span><strong>${en?'Primary':'主属性'}：</strong>${elLabel(primary)}</span>
+          <span><strong>${en?'Secondary':'副属性'}：</strong>${secondary?elLabel(secondary):(en?'None':'无')}</span>
+        </div>
+        <p class="tiny cat-detail-side-hint">
+          ${en?'Secondary skills':'副属性技能'}：${sideCap}/${sideChoices.length}
+          ${sideCap===0?(en?' · First capture or Lv.4 unlocks the first move':' · 首次收服伙伴或 Lv.4 解锁第一招'):
+            sideCap<2?(en?' · Second move: Lv.12 and affinity 60':' · 第二招需 Lv.12 且好感达到 60'):''}
+          ${sideUnlocked.length?' · '+sideUnlocked.map(s=>s.name).join(' / '):''}
+        </p>
+        <div class="cat-detail-stat-grid">
+          ${statLine(en?'Power':'力量',cat.stats.pow)}
+          ${statLine(en?'Agility':'敏捷',cat.stats.agi)}
+          ${statLine(en?'Vitality':'体力',cat.stats.vit)}
+          ${statLine(en?'Charm':'魅力',cat.stats.cha)}
+        </div>
+        <h3>${en?'Battle stats':'战斗数值'}</h3>
+        <div class="cat-detail-stat-grid">
+          ${statLine(en?'HP':'生命',facts.hp+'/'+facts.maxHp)}
+          ${statLine(en?'Base damage':'基础伤害',facts.damage)}
+          ${statLine(en?'Move speed':'移动速度',facts.speed)}
+          ${statLine(en?'Battle power':'战力',facts.power)}
+        </div>
+        ${facts.wounded?'<p class="squad-health-warning">'+(en?'Injured; recover before battle':'负伤中，建议战前恢复')+'</p>':''}
+      </section>
       <div class="stat-row" style="margin-top:12px"><span class="label">饱食</span><div class="bar hp"><span style="width:${cat.hunger}%"></span></div><span class="val">${Math.round(cat.hunger)}</span></div>
       <div class="stat-row"><span class="label">心情</span><div class="bar aff"><span style="width:${cat.joy}%"></span></div><span class="val">${Math.round(cat.joy)}</span></div>
       <p class="tiny" style="margin-top:8px">战力 ⚔ ${State.catPower(cat)}${cat.personality ? ' · 性格: ' + cat.personality : ''}${cat.trait ? ' · 特性: ' + cat.trait : ''}</p>
