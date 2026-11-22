@@ -15,6 +15,10 @@ const ULT_COOLDOWN_SECONDS = 18;
 // Global skill-cadence knob: >1 lengthens every Q/E cooldown so skills can't be
 // spammed back-to-back (they were firing a touch too fast). One place to tune.
 const SKILL_CD_MULT = 1.3;
+// A skill equipped in the BASIC (left-click) slot deals this fraction of the power it
+// would as a Q/E skill — basics are short-cooldown + spammable, so the SAME skill must
+// hit for clearly less when used as a basic than when slotted as a real skill.
+const BASIC_SKILL_DMG_MULT = 0.5;
 
 class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
@@ -1289,7 +1293,10 @@ class CaptureBattle {
       const sk = f.basicSkill;
       f.cd.basic = Math.max(this.moves[0].cd, sk.cd * 0.6) * (f.bond.cdReduction || 1);
       const col = this.elemColor(sk.element || f.element);
-      const pow = (sk.power || 1) * (f.damageBoostT > 0 ? 1.25 : 1) * (f.weakened ? 0.5 : 1);
+      // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
+      // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
+      // down (BASIC_SKILL_DMG_MULT). The identical skill in Q/E still pays full power.
+      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * (f.damageBoostT > 0 ? 1.25 : 1) * (f.weakened ? 0.5 : 1);
       this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
       if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
         window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
