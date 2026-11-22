@@ -42,9 +42,10 @@
       "phase": "verified-platform-publications",
       "published": 7,
       "failed": null,
-      "views": 73,
+      "views": 321,
       "metricScope": "verified-new-short-videos",
-      "note": "Native video figures from connected platform data. Values are a snapshot, not continuously fetched in the website."
+      "note": "Seven approved Nov 22 Shorts individually verified in the connected YouTube owner library; 321 views at capture on 2026-11-22. Snapshot is not continuously live.",
+      "likes": 3
     },
     {
       "id": "tiktok",
@@ -106,10 +107,10 @@
         "game": "cat-bond",
         "url": "https://www.youtube.com/shorts/ELv02K9K294",
         "publishedAt": "2026-11-22",
-        "views": 0,
+        "views": 11,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
         "likes": 0
       },
       {
@@ -117,10 +118,10 @@
         "game": "pawsibly-innocent",
         "url": "https://www.youtube.com/shorts/JUQ8PsYCFG8",
         "publishedAt": "2026-11-22",
-        "views": 10,
+        "views": 38,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
         "likes": 0
       },
       {
@@ -131,7 +132,7 @@
         "views": 1,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
         "likes": 0
       },
       {
@@ -139,10 +140,10 @@
         "game": "elsewhere",
         "url": "https://www.youtube.com/shorts/n8bbePy8Unw",
         "publishedAt": "2026-11-22",
-        "views": 1,
+        "views": 3,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
         "likes": 0
       },
       {
@@ -150,32 +151,32 @@
         "game": "flip-dash",
         "url": "https://www.youtube.com/shorts/cC7akb-kUIo",
         "publishedAt": "2026-11-22",
-        "views": 56,
+        "views": 216,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
-        "likes": 1
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
+        "likes": 2
       },
       {
         "platform": "youtube",
         "game": "parcel-panic",
         "url": "https://www.youtube.com/shorts/c1qeZ3tvuLU",
         "publishedAt": "2026-11-22",
-        "views": 2,
+        "views": 16,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
-        "likes": 0
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
+        "likes": 1
       },
       {
         "platform": "youtube",
         "game": "pocket-aquarium",
         "url": "https://www.youtube.com/shorts/O3tMbulVPvk",
         "publishedAt": "2026-11-22",
-        "views": 3,
+        "views": 36,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-public",
+        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
         "likes": 0
       },
       {
