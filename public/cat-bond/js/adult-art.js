@@ -78,7 +78,13 @@
     preservesOriginalProportions:true,
     matureArtIsSeparateImage:false,
     get loadedCount(){
-      return window.CatBondArtworkStatus?.breedsLoaded?ids.length:0;
+      // The 32-cell atlas and the independent 33rd watercolor must BOTH
+      // decode before the original-vs-grown visual proportions are audited.
+      // Otherwise a Jiafei kitten may still show the procedural fallback
+      // while its adult thumbnail already uses the real watercolor image.
+      const art=window.CatBondArtworkStatus;
+      return art?.breedsLoaded&&(!ids.includes('jiafei')||art?.jiafeiLoaded)
+        ?ids.length:0;
     },
     get failedCount(){
       // Missing art should be reported by the source decoder, not claimed
