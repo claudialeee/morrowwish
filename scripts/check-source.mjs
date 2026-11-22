@@ -986,7 +986,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const bond=fs.readFileSync('public/cat-bond/index.html','utf8');
  // Source must be complete transparent watercolor sprites, not a
  // broken 25-piece atlas, horizontal clipping or doubled mirrored faces.
- if(!bond.includes('js/real-kittens.js?v=complete-watercolor-v2')||
+ if(!/<script src="js\/real-kittens\.js\?v=[^\"]+"><\/script>/.test(bond)||
     bond.includes('src="js/breed-atlas.js')||
     bond.includes('src="js/kitten-illustrations.js')||
     bond.includes('src="js/complete-kittens.js')||
