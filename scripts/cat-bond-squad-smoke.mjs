@@ -161,6 +161,10 @@ try{
   assert.deepEqual(actual,saved,'combat starters and bench must follow saved order');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.UI&&!!window.State&&!!window.__game);
+  // A regular reload opens the title screen. The saved profile is loaded when
+  // the player taps Start; checking DEFAULT_STATE before that is not gameplay.
+  await page.locator('#intro-start').click();
+  await page.waitForFunction(()=>window.__game?.scene==='yard');
   assert.deepEqual(await page.evaluate(()=>State.S.battlePrefs.teamUids),saved,
     'saved squad must survive a page reload');
   assert.deepEqual(await page.evaluate(()=>UI.getPreferredBattleTeam().map(c=>c.uid)),saved,
