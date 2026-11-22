@@ -263,8 +263,15 @@ for(const kind of ['dash','pounce','melee']){
 {
   for (const id of ['tangyuan', 'qisi', 'xiaohui']) {
     const c = State.makeCat(id, { affinity: 0 }); c.level = 4;
-    const n = Skills.learnableSkills(c).length;
-    assert.ok(n <= 6, 'INV-6 '+id+' Lv4/aff0 learnable pool is paced (<=6), got '+n);
+    const pool = Skills.learnableSkills(c);
+    const roleWall = pool.filter(sk=>sk.id==='mirrorWall');
+    assert.ok(roleWall.length<=1 && (!roleWall.length || Skills.buildTypeForBreed(c)==='tank'),
+      'INV-6 only a genuine tank may learn the universal mirror wall');
+    // A tank's defensive wall is an explicit role ability, not a free flood
+    // of secondary elemental attacks. Keep the original <=6 pace for attacks
+    // and other ordinary unlocks.
+    const n = pool.filter(sk=>sk.id!=='mirrorWall').length;
+    assert.ok(n <= 6, 'INV-6 '+id+' Lv4/aff0 normal pool is paced (<=6), got '+n);
   }
   // but growth still DELIVERS more over time (not permanently starved)
   const grown = State.makeCat('tangyuan', { affinity: 80 }); grown.level = 14;
