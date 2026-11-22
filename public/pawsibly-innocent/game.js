@@ -323,10 +323,12 @@ function contextualHint(){
   if(s.got<NEED)return lang==="zh"?"③ 躲开粉色区域，再偷够三条鱼。":"③ Stay out of pink tiles and steal three fish.";
   return lang==="zh"?"✓ 三条鱼到手！点亮绿色猫门，成功开溜。":"✓ Three fish! Tap the GREEN cat flap to escape.";
  }
+ if(s.finalAlert)return lang==="zh"?"主人发现异样了，快去猫门！":"The owner is suspicious. Make your escape!";
+ // Rising time-pressure (警戒升级) is the more urgent state — surface it ahead of the
+ // ambient sleep/creak tips so the HUD always explains why the owner's sight widened.
+ if(s.pressure)return lang==="zh"?"警戒升级：主人巡逻更仔细！躲视野、用毛球绕路。":"High alert: wider sight! Hide, time your moves and use yarn.";
  if(s.sleepTurns>0)return lang==="zh"?"主人睡着了，轻声行动，别碰响声！":"The owner is sleeping. Stay quiet!";
  if(s.creak&&!s.creakTriggered)return lang==="zh"?"橙色闪光地板会发出声响，请绕开。":"The amber tile CREAKS. Find a quiet route.";
- if(s.finalAlert)return lang==="zh"?"主人发现异样了，快去猫门！":"The owner is suspicious. Make your escape!";
-  if(s.pressure)return lang==="zh"?"警戒升级：主人巡逻更仔细！躲视野、用毛球绕路。":"High alert: wider sight! Hide, time your moves and use yarn.";
   if(s.index>=3&&s.got>=2)return lang==="zh"?"鱼少了！主人变警觉，尽快找机会从猫门溜走。":"Missing fish! The human is more watchful. Plan your escape.";
  return YARN_LEGEND[lang].vision;
 }
