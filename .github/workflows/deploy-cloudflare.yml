@@ -327,6 +327,23 @@ jobs:
               *) echo "::error::Game-specific campaign redirect failed: $origin"; exit 1 ;;
             esac
           done
+      - name: Verify production dashboard shows launched channels only
+        run: |
+          set -eu
+          for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
+            ready=0
+            for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+              if curl -fsSL --max-time 15 -o /tmp/mw-studio-live.html "$origin/studio-insights/?verify=$GITHUB_SHA&attempt=$attempt" \
+                 && grep -Fq "const fallbackIds=['itch','youtube','tiktok','instagram','bluesky'];" /tmp/mw-studio-live.html \
+                 && ! grep -Eq 'id="future-channels"|id="future-channel-list"|channelFuture:|Poki:|GamePix:|GameDistribution:' /tmp/mw-studio-live.html \
+                 && ! grep -Fq 'instagram-historical' /tmp/mw-studio-live.html; then
+                ready=1; break
+              fi
+              sleep 5
+            done
+            test "$ready" = 1 || { echo "::error::Dashboard on $origin still contains unreleased/old promotional material or an old asset version"; exit 1; }
+            echo "Verified live dashboard on $origin: five launched channels; no old or future promotional entries"
+          done
       - name: Verify live D1 telemetry ingestion for six games without adding player stats
         run: |
           set -eu
