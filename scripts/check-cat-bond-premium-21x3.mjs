@@ -28,7 +28,7 @@ const Hero=window.CatBondDuoHero;
 const BreedArt=window.CatBondDuoBreedArt;
 assert.equal(BreedArt.breedCount,32,'Must supply actual illustrated fur profiles for all 32 cats');
 assert.equal(Premium.breedMatchCount,32,'Premium painter must load breed-specific coats');
-const rosterIds=[...source('js/data.js').matchAll(/\\bid\\s*:\\s*['"]([a-z][a-z0-9]*)['"]/g)].map(x=>x[1]);
+const rosterIds=[...source('js/data.js').matchAll(/\bid\s*:\s*['"]([a-z][a-z0-9]*)['"]/g)].map(x=>x[1]);
 assert.equal(rosterIds.length,32,'Actual playable roster must contain exactly 32 collectible IDs');
 assert.deepEqual(new Set(BreedArt.sourceProfiles),new Set(rosterIds),
   'No missing cat or fabricated non-playable fur profile');
@@ -38,9 +38,9 @@ for(const id of rosterIds){
  assert.equal(coat.base.length,3);
  assert.ok(coat.base.every(v=>Number.isFinite(v)&&v>=0&&v<=255));
 }
-assert.match(source('js/duo-premium.js'),/identity\\.paint\\(g,key,lv,actorA,actorB/,
+assert.match(source('js/duo-premium.js'),/identity\.paint\(g,key,lv,actorA,actorB/,
   'Paint actual selected A/B fur in full high-resolution scene, not just captions');
-assert.match(source('js/duo-bond.js'),/this\\.duoCinematic,uid=>/,
+assert.match(source('js/duo-bond.js'),/this\.duoCinematic,uid=>/,
   'Real battle must resolve current team UID to the proper two actual chosen cats');
 assert.equal(Director.keys.length,21,'Must offer 21 real element combinations');
 assert.equal(Premium.scenePaletteCount,21,'Each combo must have its own palette');
