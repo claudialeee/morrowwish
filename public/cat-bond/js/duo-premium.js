@@ -264,11 +264,10 @@ function bondTierChoreography(g,W,H,p,key,tier){
 // The two complete, transparent watercolor cats are drawn AFTER this matte,
 // so their ears, paws and tails never become translucent or clipped by it.
 function featherScenery(g,W,H){
- // Narrow, smooth perimeter falloff; the cats in the original 63 paintings
- // remain opaque through the central composition. Phone stages are only
- // ~180px high, so a 43px top/bottom matte would erase ears and paws.
- const edgeX=clamp(21/W,.06,.11);
- const edgeY=clamp(24/H,.09,.17);
+ // Dissolve scenery over a generous, smooth band, not a moving picture frame.
+ // Cat details stay legible through the middle of the original painting.
+ const edgeX=clamp(48/W,.10,.20);
+ const edgeY=clamp(56/H,.13,.24);
  g.save();
  g.globalAlpha=1;
  g.globalCompositeOperation='destination-in';
@@ -284,6 +283,23 @@ function featherScenery(g,W,H){
  fade.addColorStop(1-edgeY,'#fff');
  fade.addColorStop(1,'rgba(255,255,255,0)');
  g.fillStyle=fade;g.fillRect(0,0,W,H);
+ g.restore();
+}
+// A soft oval dissolve for the original 16:9 painting on portrait phones.
+// Four linear side-feathers still read as a rectangular sticker while moving.
+function dissolvePortraitFocus(g,W,H){
+ g.save();
+ g.globalAlpha=1;
+ g.globalCompositeOperation='destination-in';
+ g.scale(W,H);
+ const matte=g.createRadialGradient(.5,.5,.08,.5,.5,.52);
+ matte.addColorStop(0,'#fff');
+ matte.addColorStop(.37,'#fff');
+ matte.addColorStop(.62,'rgba(255,255,255,.86)');
+ matte.addColorStop(.83,'rgba(255,255,255,.26)');
+ matte.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=matte;
+ g.fillRect(0,0,1,1);
  g.restore();
 }
 function portraitEnvironment(key,frame,tier,W,H){
@@ -328,9 +344,8 @@ function drawPortraitStory(g,W,H,frame,tier,cam,scale,galleryPreview=false){
  sourceCover(pctx,cellRect(frame,tier),0,0,width,height,
    galleryPreview?1:Math.min(1.065,Math.max(1.005,cam.zoom*.96)),0,0,1,null,tier);
  pctx.restore();
- // The perimeter melts into the clean tall watercolor scenery; no 16:9
- // rectangle, black bars, second cat outline, or blurred pair of ghosts.
- featherScenery(pctx,width,height);
+ // Blend into the full-height, matching scenery with no straight inset edge.
+ dissolvePortraitFocus(pctx,width,height);
  g.drawImage(portraitFocus,x,y,width,height);
 }
 function draw(ctx,W,H,seq,lookup){
