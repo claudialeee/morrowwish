@@ -6,6 +6,7 @@ on:
       - 'public/cat-bond/**'
       - 'public/game-fullscreen.js'
       - 'scripts/cat-bond-touch-smoke.mjs'
+      - 'scripts/cat-bond-adult-smoke.mjs'
       - 'scripts/cat-bond-ult-visual-smoke.mjs'
       - 'scripts/cat-bond-crazygames-smoke.mjs'
       - 'scripts/cat-bond-duo-smoke.mjs'
@@ -42,6 +43,9 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-server.log 2>&1 &
           sleep 2
+          # Real Chromium checks that all 32 mature watercolor cats load and
+          # the growth ceremony + saved stages work on desktop and phone.
+          node scripts/cat-bond-adult-smoke.mjs
           # Gate the newly unlocked-only duo UI and the complete 21-motion
           # private QA first, so unrelated map browser failures cannot hide
           # regressions in the core cat-bond abilities.
@@ -59,6 +63,15 @@ jobs:
           node scripts/cat-bond-touch-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
+
+      - name: Save adult art comparison and growth screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-32-adult-forms
+          path: /tmp/cat-bond-adult-*.png
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Save eight distinct in-battle ultimate VFX review frames
         if: always()
