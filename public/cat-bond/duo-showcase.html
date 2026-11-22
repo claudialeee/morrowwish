@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="morrowwish-art-review-release" content="2026-11-22-visible-originals-v1">
+<meta name="morrowwish-art-review-release" content="2026-11-22-21-scenes-three-bond-cinematics-v3">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#e7efe9">
@@ -65,6 +65,7 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 .actor-controls select{display:block;width:100%;min-width:0;min-height:39px;padding:6px;
  background:#fffdf7;border:1px solid #c5d4be;border-radius:10px;color:#355c46;font:750 13px system-ui}
 @media(max-width:950px){.breed-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tier-row button{min-height:46px;font-size:clamp(10px,1.2vw,13px);padding:7px 9px}
 @media(max-width:520px){.breed-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.gallery{gap:8px}.duo-card{border-radius:14px;padding:5px}.duo-card canvas{border-radius:9px}.card-copy{padding:7px 4px}.card-name{font-size:12px}.card-meta{font-size:10px}.side-note{display:flex;padding:16px}h1{font-size:29px}.player{padding:6px;border-radius:16px}.player-stage{border-radius:11px}.controls{gap:6px}.controls button{flex:1 1 auto;padding:10px 9px;font-size:12px}.review{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.duo-card{transition:none}}
 
@@ -162,10 +163,10 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 <div class="kitten-line"><canvas id="cat-b" width="86" height="72"></canvas><span><b id="cat-name-b">幽灵</b><small id="element-b">暗属性</small></span></div>
 <p class="note">右侧猫咪图鉴不代表合击原画中的品种。目前原画仍是固定角色，无法按选择真正替换品种。</p><p id="move-desc" class="details"></p><div style="display:flex;align-items:center;gap:9px;font-size:12px;color:#6c806e"><span id="scene-theme-indicator" class="scene-palette-swatch"></span><span>本合击的独立柔和调色</span></div>
 <div><strong style="font-size:13px;display:block;margin-bottom:8px">默契阶段效果（独立动作尚未完成）</strong><div class="tier-row">
-<button id="tier-1" type="button" data-tier="1">默契 20</button>
-<button id="tier-2" type="button" data-tier="2">默契 60</button>
-<button id="tier-3" type="button" data-tier="3" aria-pressed="true">默契 90</button>
-</div></div>
+<button id="tier-1" type="button" data-tier="1" aria-pressed="false">默契 20 · 双猫飞扑</button>
+<button id="tier-2" type="button" data-tier="2" aria-pressed="false">默契 60 · 交叉双击</button>
+<button id="tier-3" type="button" data-tier="3" aria-pressed="true">默契 90 · 防反终结</button>
+</div><p id="tier-choreography" class="details" aria-live="polite">默契 90：先守护同伴，再空中反击，最终连携爆发。</p></div>
 <p class="note">已分别实现：20 默契同步突进、60 默契双段交叉、90 默契防护反击与终结。三档镜头轨迹、打击时点和特效不同；原画中的猫咪肢体仍共用画师插图，尚非逐帧角色动画。</p>
 </aside></section>
 <section class="section-head"><h2>你认可的精美原画 · 8 张</h2><span>前三张优先展示</span></section>
@@ -326,9 +327,15 @@ if(GameData.SPECIES.length!==32||new Set(entries.flatMap(v=>[v.a.species,v.b.spe
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{
  tier=Number(b.dataset.tier);
  document.querySelectorAll('[data-tier]').forEach(el=>el.setAttribute('aria-pressed',String(el===b)));
+ const descriptions={
+ 1:'默契 20：双猫同步蓄力、共同飞扑，一次清晰的合击命中。',
+ 2:'默契 60：第一只猫抢攻，第二只沿相反路线追击，连续两次命中。',
+ 3:'默契 90：先守护同伴，再空中反击，最终连携爆发。'
+ };
+ byId('tier-choreography').textContent=descriptions[tier];
  started=performance.now();hold=0;playing=true;
  byId('pause').textContent='暂停';byId('pause').setAttribute('aria-pressed','false');
- paintThumbs();
+ previewDone=false;paintThumbs();
 });
 if(CatBondDuoDirector.keys.length!==21||CatBondDuoHero.assetCount!==21||
   entries.some(({key})=>!CatBondDuoDirector.keys.includes(key))){
