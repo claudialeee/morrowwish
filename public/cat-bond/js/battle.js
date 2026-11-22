@@ -311,7 +311,8 @@ class CaptureBattle {
     // DEFERRED PAYLOAD — runs at the splash's strike beat (see duoCinematic tick),
     // so the big art shows first and the hit only lands once it clears.
     this.duoCinematic.payload=()=>{
-      window.MorrowwishAudio?.effect?.('combat_duo_impact');
+      window.MorrowwishAudio?.effect?.('combat_duo_impact',{pair:mix,tier:d.tier,
+        gesture:window.CatBondDuoDirector?.styles?.[mix]});
       this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
       this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
       this.flash=Math.max(this.flash,.22);this.shakeT=Math.max(this.shakeT,.3);
@@ -366,7 +367,8 @@ class CaptureBattle {
       this.summonReinforcement(12 + d.tier * 1.5);
       window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     };
-    window.MorrowwishAudio?.effect?.('combat_duo');
+    window.MorrowwishAudio?.effect?.('combat_duo',{pair:mix,tier:d.tier,
+      gesture:window.CatBondDuoDirector?.styles?.[mix]});
     // The unique lingering field and restrained title make the special visible; avoid a second toast.
     return true;
   }
