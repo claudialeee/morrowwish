@@ -244,6 +244,15 @@ const UI = {
       seen.add(c.uid);return true;
     }).slice(0,5);
   },
+  // Explicit one-tap best team: strongest first, exactly two starters when
+  // available, up to three reserves. Unlike the saved preferred lineup, this
+  // intentionally ignores old picks and never silently replaces them.
+  getStrongestBattleTeam(eligibleCats=State.S.cats){
+    return [...(eligibleCats||[])].sort((a,b)=>
+      State.catPower(b)-State.catPower(a)||
+      (b.level||1)-(a.level||1)||
+      String(a.uid).localeCompare(String(b.uid))).slice(0,5);
+  },
   // Visible battle stats match CaptureBattle.makeFighter: a level raises stats,
   // and map attrition carries wounded HP into the NEXT fight. Do not show a
   // misleading full health bar for a tired survivor.
@@ -492,10 +501,15 @@ const UI = {
     if(!selected.length){this.game.toast(en?'Adopt a kitten first':'请先领养一只小猫');return;}
     this.panel('<span class="card-close">×</span><h2>'+(en?'🐾 Expedition team':'🐾 地图出战队伍')+'</h2>'
       +'<p class="sub">'+(en?'Pick up to 5; 2 fight on the field, the rest are bench subs that tag in when a cat faints (a bond ult can also call one in). The first is your leader.':'最多挑 5 只：场上出战 2 只，其余在后备席，场上猫倒下时自动替补上场（羁绊必杀也能临时召唤一只）。第一只是领队。')+'</p>'
+      +'<div class="prebattle-quick-select"><button id="map-squad-best" type="button" class="btn ghost">'+(en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵')+'</button></div>'
       +this.squadPickerMarkup(selected)
       +'<div class="btn-row"><button id="map-squad-save" type="button" class="btn gold">'+(en?'Save team':'保存队伍')+'</button>'
       +'<button id="map-squad-cancel" type="button" class="btn ghost">'+(en?'Cancel':'取消')+'</button></div>');
     this.bindSquadPicker(selected);
+    document.getElementById('map-squad-best').onclick=()=>{
+      selected.splice(0,selected.length,...this.getStrongestBattleTeam().map(cat=>cat.uid));
+      this.bindSquadPicker(selected);
+    };
     document.getElementById('map-squad-save').onclick=()=>{
       State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:[...selected]};
       State.save();this.closeAll();this.game.toast(en?'Expedition team saved!':'出战猫咪已更新！');
@@ -2266,14 +2280,14 @@ const UI = {
     const prefs=State.S.battlePrefs||{};
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
-    const selected=opts.origin==='map'?this.getPreferredBattleTeam().map(c=>c.uid):[];
-    const squadMarkup=opts.origin==='map'?
+    const selected=this.getPreferredBattleTeam().map(c=>c.uid);
+    const squadMarkup=
       '<details class="prep-advanced prep-team-details" id="battle-team-details">'+
       '<summary><strong>'+(en?'Battle team · edit':'出战队伍 · 点击调整')+'</strong>'+
       '<span id="battle-team-summary">'+this.battlePrepEsc(
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
       '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
-      this.squadPickerMarkup(selected)+'</details>':'';
+      this.squadPickerMarkup(selected)+'</details>';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
@@ -2287,9 +2301,8 @@ const UI = {
       </p>
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
-      ${this.battlePrepSkillCard(opts.origin==='map'
-        ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
-        :team,en)}
+      <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button></div>
+      ${this.battlePrepSkillCard(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en)}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Battle mode':'战斗模式'}">
@@ -2324,10 +2337,12 @@ const UI = {
       </fieldset></details>
       <div class="btn-row prebattle-actions"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
-    if(opts.origin==='map')this.bindSquadPicker(selected);
-    this.refreshBattlePrepSkills(opts.origin==='map'
-      ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
-      :team,en);
+    this.bindSquadPicker(selected);
+    this.refreshBattlePrepSkills(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en);
+    document.getElementById('bp-best-team').onclick=()=>{
+      selected.splice(0,selected.length,...this.getStrongestBattleTeam().map(cat=>cat.uid));
+      this.bindSquadPicker(selected);
+    };
     const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
     for(const button of options){
       button.onclick=()=>{
@@ -2365,13 +2380,12 @@ const UI = {
       else if(this.game.scene==='yard')this.game.showYardChrome();
     };
     document.getElementById('bp-go').onclick=()=>{
-      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,skillsIntroSeen:true};
+      const fighters=selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean);
+      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,
+        skillsIntroSeen:true,teamUids:[...selected]};
       State.save();this.closeAll();
-      if(opts.mastery){this.game.startMasteryChallenge(wildSp,true);return;}
-      let fighters=team;
+      if(opts.mastery){this.game.startMasteryChallenge(wildSp,true,fighters);return;}
       if(opts.origin==='map'){
-        fighters=selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean);
-        State.S.battlePrefs.teamUids=[...selected];State.save();
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;
       }
       this.game.startBattle(fighters.length?fighters:team,wildSp);
@@ -2449,6 +2463,7 @@ const UI = {
         <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
         ${this.squadOrderMarkup()}
       </details>
+      <div class="prebattle-quick-select"><button id="cp-best-team" type="button" class="btn ghost">${english?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button></div>
       ${this.battlePrepSkillCard(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english)}
       <fieldset class="capture-mode-picker" aria-label="${english?'Battle control':'选择战斗方式'}">
         <legend>${english?'How would you like to fight?':'这场战斗怎么打？'}</legend>
@@ -2496,6 +2511,10 @@ const UI = {
       };
     });
     refreshSel();
+    document.getElementById('cp-best-team').onclick=()=>{
+      this.teamUids=this.getStrongestBattleTeam(sorted).map(cat=>cat.uid);
+      refreshSel();
+    };
     const changeBattleMode=auto=>{
       this.prepAutoBattle=auto;
       document.querySelectorAll('#panel .capture-mode-option').forEach(btn=>{
