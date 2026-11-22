@@ -132,7 +132,10 @@ assert.ok(nodes.get('bonusQuickText').textContent.includes('Knock over a vase'),
  'The extra task must be readable without opening a sidebar');
 assert.ok(test.getState().winning,'First room should be winnable without special tools');
 const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
-assert.ok(earned.best?.['room-0']?.stars>=1&&earned.best?.['room-0']?.stars<=3,'Winning a room must save real stars toward new cats');
+assert.equal(earned.best?.['room-0']?.stars,2,'Three fish plus bonus is two stars, NOT three');
+assert.equal(nodes.get('stars').textContent,'★★☆','A fourth fish is required for three stars');
+assert.ok(nodes.get('resultStarGuide').textContent.includes('Missing 1 fish'),'Scoring explains missing fourth fish');
+assert.equal(nodes.get('fishCount').textContent,'3 / 4','Fish meter shows all four available fish');
 assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
 if(earned.best['room-0'].stars>=3){
  assert.ok(nodes.get('catUnlocks').innerHTML.includes('Mochi'),'New cat head and name must visibly appear on the victory card');
@@ -258,4 +261,32 @@ for(let room=0;room<solvableRoutes.length;room++){
  assert.equal(state.yarnThrows,0,'Room '+(room+1)+' proof should not depend on unlimited distractions');
 }
 
-console.log('Pawsibly Innocent: QA PASS (animated finale, eight full no-hit escape routes under hard AI, yarn, bilingual UI and collections).');
+// Verify a REAL 4-fish, no-hit 3-star route. No teleport, free fish or cheats.
+test.choose(0,false);
+for(const direction of 'RUURDDLDDRDLURRURRRUDDRRD'){
+ const delta={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]}[direction];
+ assert.equal(test.getState().done,false,'Perfect-route cat cannot finish before exit');
+ test.move(...delta);
+}
+const perfect=test.getState();
+assert.equal(perfect.winning,true,'Four fish and escape must still be possible');
+assert.equal(perfect.got,4,'Perfect run must collect all four fish');
+assert.equal(perfect.caughtCount,0,'Perfect run has zero captures');
+assert.equal(perfect.lives,3,'Perfect run retains all hearts');
+assert.equal(perfect.broken.size,1,'Perfect run completes bonus vase challenge');
+assert.ok(perfect.steps<=perfect.room.goal+4,'Perfect run meets step budget');
+assert.equal(nodes.get('stars').textContent,'★★★','Full-fish, no-hit bonus run must award three stars');
+assert.ok(nodes.get('resultStarGuide').textContent.includes('Perfect heist'),'Perfect result confirms achievement');
+const updated=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
+assert.equal(updated.best['room-0'].stars,3,'New 3-star run persists');
+assert.ok(events.some(e=>e.name==='cat_skin_unlocked'&&e.payload.cat===1),'3-star cat unlock remains attainable');
+test.choose(0,false);
+const healed=test.getState();healed.cat={x:8,y:6};healed.catFrom={...healed.cat};
+healed.got=4;healed.broken.add('3,2');healed.caughtCount=1;healed.lives=3;
+test.move(1,0);
+assert.equal(nodes.get('stars').textContent,'★★☆','Regained hearts never erase a prior capture');
+test.choose(0,false);
+const missedBonus=test.getState();missedBonus.cat={x:8,y:6};missedBonus.catFrom={...missedBonus.cat};missedBonus.got=4;
+test.move(1,0);
+assert.equal(nodes.get('stars').textContent,'★★☆','All fish without bonus cannot award three stars');
+console.log('Pawsibly Innocent: QA PASS (eight no-hit clears, complete 4-fish 3-star route, strict ratings, healed-capture check).');

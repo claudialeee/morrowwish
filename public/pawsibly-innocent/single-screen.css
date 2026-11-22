@@ -823,3 +823,16 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
   flex-wrap:nowrap!important;align-items:center!important;gap:4px!important;
  }
 }
+
+/* Communicate why a perfect escape earned or missed three stars. */
+.single-screen-game .overlay .modal .result-star-guide{
+ margin:5px auto 9px;max-width:100%;padding:7px 9px;
+ background:#f4edf7;border:1px solid #e8d7eb;border-radius:10px;
+ color:#765774;font:800 12px/1.4 Nunito,system-ui,sans-serif;overflow-wrap:anywhere;
+}
+.single-screen-game .overlay .modal .result-star-guide:empty{display:none}
+.single-screen-game #gameMenu .star-rule-help{
+ background:#fff3d9;border-left:3px solid #d8ac64;border-radius:7px;
+ margin:7px 0 9px;padding:7px 10px;font:800 12px/1.5 Nunito,system-ui,sans-serif;
+ color:#70566b;overflow-wrap:anywhere;
+}
