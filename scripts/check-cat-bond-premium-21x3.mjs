@@ -81,7 +81,8 @@ assert.equal((page.match(/class="stage-breed-preview"/g)||[]).length,63,
  'All 63 stage paintings must show selected breeds, not old fixed cats');
 assert.equal((page.match(/class="feature-breed-preview"/g)||[]).length,3);
 assert.equal((page.match(/class="skill-preview"/g)||[]).length,21);
-assert.equal((page.match(/<article class="breed-card"/g)||[]).length,32);
+assert.equal((page.match(/<article class="breed-card"/g)||[]).length,roster.length,
+ 'Every playable species, including Exotic Shorthair, must have a gallery card');
 assert.match(page,/id="pick-cat-a"/);
 assert.match(page,/id="pick-cat-b"/);
 for(const html of [page,game,unlocked]){
