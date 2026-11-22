@@ -30,7 +30,12 @@ try{
     // cb-exploring before entering the region. A direct scene assignment
     // would produce a false screenshot with garden buttons covering the map.
     g.openWorldMap();UI.closeAll();
-    WorldMap.onEncounter(()=>{});WorldMap.enterRegion('sakura');
+    WorldMap.onEncounter(()=>{});
+    // A new save has NOT explored 40% of home, so sakura is correctly locked.
+    // Exercise the genuinely unlocked home expedition rather than bypassing
+    // progression or reading a null WorldMap.view after rejected entry.
+    if(!WorldMap.enterRegion('home'))throw Error('Starter expedition home is locked');
+    if(!WorldMap.view)throw Error('Starter expedition did not create a playable region');
    });
    const oldGardenNotices=await page.locator('#toasts .toast').allTextContents();
    assert.ok(!oldGardenNotices.some(t=>/院子里|草丛里|庭院|sneaking|hiding in the yard/i.test(t)),
