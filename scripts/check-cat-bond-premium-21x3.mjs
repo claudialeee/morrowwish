@@ -69,7 +69,7 @@ assert.match(source('js/duo-bond.js'),/this\.duoCinematic,uid=>/,
   'Battle must resolve player-selected UIDs to live player cats');
 for(const [path,min] of [
  ['assets/duo-watercolor-32-actors-v1.webp',750000],
- ['assets/duo-stage-clean-21x3-v1.webp',150000]]){
+ ['assets/duo-stage-clean-21x3-v2.webp',150000]]){
  const file='public/cat-bond/'+path;
  assert.ok(fs.existsSync(file)&&fs.statSync(file).size>min,
   'Original high resolution painted asset is missing: '+path);
