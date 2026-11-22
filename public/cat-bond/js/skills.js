@@ -894,14 +894,13 @@
     const own=elementOf(cat.species);
     const splash=SPLASH_ELEMENT[own];
     const pool=(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0);
-    // ELEMENT-AWARE ranking: a cat keeps its ELEMENT IDENTITY — Q/E are drawn from its
-    // OWN element first; a splash-element skill is only chosen to fill a slot the own
-    // element can't. Without this, high-power cross-element skills (雷遁突袭/居高临下)
-    // win every role for every cat → "草猫配电技能 / 8只坦克Q全是泡泡幕" (千猫一面).
-    // We add a big own-element bonus to the role score rather than a hard filter, so a
-    // cat with a thin own-element pool can still borrow a splash skill when needed.
-    const OWN_BONUS=6, SPLASH_PENALTY=2;
-    const elemAdj=sk=> sk.element===own?OWN_BONUS : sk.element===splash?0 : -SPLASH_PENALTY;
+    // Role must dominate the recommendation: the old +6 same-element bonus
+    // outweighed most tank / DPS / control distinctions, producing nearly
+    // identical Q/E kits for different builds. Prefer own-element skills only
+    // as a moderate tie-breaker, never at the expense of the selected role.
+    // Only skills the cat has actually unlocked are eligible.
+    const OWN_BONUS=1.5, SPLASH_PENALTY=1;
+    const elemAdj=sk=>sk.element===own?OWN_BONUS:sk.element===splash?0:-SPLASH_PENALTY;
     const scored=pool.map(sk=>({sk,s:buildScore(role,sk)+elemAdj(sk)}))
       .filter(x=>x.s>-99).sort((a,b)=>b.s-a.s).map(x=>x.sk);
     const q=scored[0]||null;
