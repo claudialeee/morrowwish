@@ -37,7 +37,9 @@ sprite.src=urlBase+'duo-watercolor-32-actors-v1.webp?v=32-original-breeds-202611
 scene.src=urlBase+'duo-stage-clean-21x3-v2.webp?v=no-ghosts-or-legacy-titles-20261122';
 function species(cat){
  const id=typeof cat?.species==='string'?cat.species:cat?.species?.id||cat?.id;
- return Object.hasOwn(byId,id||'')?id:null;
+ // The new Exotic Shorthair has a dedicated live storybook drawing rather than
+ // a nonexistent 33rd cell in the immutable 8×4 watercolor source atlas.
+ return id==='jiafei'||Object.hasOwn(byId,id||'')?id:null;
 }
 function sceneRect(key,tier,orderedKeys){
  const i=orderedKeys.indexOf(key);if(i<0)return null;
@@ -51,6 +53,17 @@ function paintScene(ctx,key,tier,orderedKeys){
  return true;
 }
 function drawActor(g,sp,x,y,height,rotation,flip,opacity=1){
+ if(sp==='jiafei'){
+   // Unique chubby/flat-face rendering through the SAME shared cat renderer
+   // used in the yard and battle; do not substitute an unrelated source actor.
+   const spec=window.GameData?.speciesById?.('jiafei');
+   if(!spec||!window.CatArt?.drawCat)return false;
+   const sc=height/107;
+   g.save();g.globalAlpha*=opacity;
+   g.translate(x,y);g.rotate(rotation);g.scale(flip?-1:1,1);
+   window.CatArt.drawCat(g,0,-34*sc,{species:spec,scale:sc,pose:'sit',t:1.2});
+   g.restore();return true;
+ }
  if(!portraitReady)return false;
  const idx=byId[sp];if(idx===undefined)return false;
  const cw=sprite.naturalWidth/8,ch=sprite.naturalHeight/4;
