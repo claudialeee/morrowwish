@@ -1970,6 +1970,7 @@
   "🎯 集火": "🎯 Focus fire",
   "必 杀 技": "ULTIMATE",
   "韧性": "Resilience",
+  "野猫韧性": "Wild cat poise",
   "水枪": "Water Jet",
   "极短时间完全格挡下一次攻击；结束后短暂易伤。": "Completely block the next hit for a moment, then briefly take extra damage.",
   "焰弹": "Flame Orb",
