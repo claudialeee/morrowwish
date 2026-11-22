@@ -2003,7 +2003,10 @@ class CaptureBattle {
     // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
-    if((sk?.ultCost||0)===0)this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
+    // Close-range claws have a single painted brush: do not add a second
+    // rotating circular elemental cast badge over the kitten's head.
+    if((sk?.ultCost||0)===0&&kind!=='melee')
+      this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
     // Skill IDs select 39 different local silhouettes; generic element accents
     // remain as a subtle baseline and projectile mechanics are untouched.
     window.CatBondSkillFX?.cast(this,f,sk,aim);
@@ -4782,14 +4785,18 @@ class CaptureBattle {
         // provides the distinct accent instead.
         // A small localized impact accent makes heavy physical hits feel
         // decisive without painting the whole screen or enlarging hitboxes.
-        if(skill?.heavy||['dash','pounce','leap','melee'].includes(skill?.kind)){
+        // A true melee hit already receives hitstop, one contact flash,
+        // and its own skill-specific ink. Do not pile on another wide ring
+        // or 9-particle burst; keep these accents on moving impact skills.
+        if(skill?.kind!=='melee'&&
+          (skill?.heavy||['dash','pounce','leap'].includes(skill?.kind))){
           this.vfx.ring(x,y,{r0:5,vr:90,life:.26,color:col,width:3});
           this.vfx.burst(x,y,{count:this.game.isTouch?5:9,
             color:col,speed:110,life:.24,r:2.6});
         }
       }
       // One clean elemental impact mark per beat; suppress spam from beams.
-      if(dealt>0&&skill?.element&&(skill.ultCost||0)===0&&
+      if(dealt>0&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
         this.t-(this._lastRegularHitFx??-99)>.12){
         this._lastRegularHitFx=this.t;
         this.regularSkillAccent({x,y},skill.element,0,!!skill.isBasic,true);
