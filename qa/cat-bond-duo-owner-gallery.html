@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>猫猫纽带 · 21 种合体技动画展映 | Cat Bond</title>
+<style>
+:root{color-scheme:light;font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f8f5f4;color:#374451}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 75% -6%,#e7dafa 0,transparent 34%),radial-gradient(circle at 8% 31%,#e3f1ee 0,transparent 38%),#f8f5f4}
+main{max-width:1210px;margin:auto;padding:clamp(14px,3vw,30px)}
+a{color:#5a5a8d;text-decoration:none;font-weight:750}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{color:#8b749e;letter-spacing:.17em;font:800 12px/1.5 system-ui}
+h1{font:900 clamp(24px,4.5vw,42px)/1.18 system-ui;letter-spacing:-.04em;margin:12px 0 7px}
+.sub{color:#647382;max-width:720px;line-height:1.7;margin:0 0 20px}
+.stage{border:1px solid #e8dae6;padding:8px;background:#fff;border-radius:21px;box-shadow:0 18px 44px #65618a18}
+#show{display:block;width:100%;aspect-ratio:16/9;border-radius:13px;background:#e4e2f0}
+.stage-title{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin:10px 2px 3px}
+.stage-title h2{font-size:clamp(16px,2.2vw,22px);margin:0}
+#counter{font-variant-numeric:tabular-nums;color:#697686;font-weight:750}
+#desc{font-size:13px;color:#7a7181;margin:4px 0 10px}
+.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}
+button{font:750 14px system-ui;min-height:42px;border-radius:12px;padding:9px 15px;border:1px solid #d9d1df;cursor:pointer;color:#56506d;background:#fff}
+button:hover,button:focus-visible{background:#f5eefa;border-color:#a68dc4}
+button.primary{background:#665d91;color:#fff;border-color:#665d91}
+button.primary:hover{background:#554a81}
+button[aria-pressed=true]{background:#ede7f6;border-color:#ab91d1}
+#timeline{flex:1 1 170px;max-width:420px;accent-color:#8273ad}
+.block-heading{display:flex;align-items:baseline;justify-content:space-between;gap:15px;margin-top:30px}
+.block-heading h2{font-size:20px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:13px;margin:14px 0 30px}
+.skill{padding:7px;text-align:left;display:block;width:100%;background:#fff;border:1.5px solid #e7dfe8;border-radius:15px;min-height:unset}
+.skill[aria-current=true]{border-color:#8066ae;box-shadow:0 0 0 2px #dfd5f3}
+.skill canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#e8e4f4}
+.skill strong{display:block;margin:8px 3px 1px;font-size:14px;color:#3c465c}
+.skill small{display:block;margin:0 3px 5px;color:#788294}
+.note{color:#81909a;font-size:12px;padding-top:10px;border-top:1px solid #e4e0e6}
+#load{padding:25px;text-align:center;color:#686282}
+[hidden]{display:none!important}
+@media(max-width:560px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.skill strong{font-size:12px}.skill small{font-size:10px}.toolbar button{font-size:12px;padding:8px 10px}#show{aspect-ratio:16/10}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body><main>
+<header><div class="brand">MORROW WISH / CAT BOND</div><a href="../public/cat-bond/">进入游戏 ↗</a></header>
+<h1>双猫合体技 · 全动画展映</h1>
+<p class="sub">21 种元素组合，21 段独立设计的动作与场景。这里直接播放游戏实际使用的合体技渲染代码，可逐个重播、拖动时间轴检查动作，或一键连续观看全部。</p>
+<div class="stage">
+ <canvas id="show" width="1120" height="630" aria-label="合体技动画实际渲染画面"></canvas>
+ <div id="load">加载原画与合体技演出中…</div>
+ <div class="stage-title"><h2 id="name">—</h2><span id="counter">1 / 21</span></div>
+ <div id="desc">—</div>
+</div>
+<div class="toolbar" aria-label="动画播放控制">
+<button id="prev">上一个</button>
+<button id="play" class="primary">播放</button>
+<button id="pause" aria-pressed="false">暂停</button>
+<button id="replay">重播</button>
+<button id="next">下一个</button>
+<button id="all" aria-pressed="false">连续播放全部 21 个</button>
+<input type="range" id="timeline" min="0" max="2.75" step="0.01" value="0" aria-label="合体技动画时间轴">
+<span id="clock">0.00 / 2.75s</span>
+</div>
+<div class="block-heading"><h2>全部合体技 <span id="count" style="color:#a18bba"></span></h2><small style="color:#75848f">点选一项放大播放</small></div>
+<div id="gallery" class="grid" aria-label="全部合体技预览卡片"></div>
+<p class="note">本页是画面演出验收工具，不解锁存档技能；游戏中的默契等级、施放条件与实际战斗数值不在这里修改。屏幕上的角色来自独立大招人物绘制，并根据示例猫咪的品种显示对应花纹。</p>
+</main>
+<script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'}</script>
+<script src="../public/cat-bond/js/data.js"></script>
+<script src="../public/cat-bond/js/skills.js"></script>
+<script src="../public/cat-bond/js/state.js"></script>
+<script src="../public/cat-bond/js/duo-portraits.js?v=cinematic-20261121"></script>
+<script src="../public/cat-bond/js/duo-artwork.js?v=cinematic-20261121"></script>
+<script src="../public/cat-bond/js/duo-signatures.js?v=cinematic-20261121"></script>
+<script src="../public/cat-bond/js/duo-director.js?v=cinematic-20261121"></script>
+<script src="../public/cat-bond/js/duo-summons.js?v=cinematic-spirit-20261121"></script>
+<script src="../public/cat-bond/js/duo-finale.js?v=unique-cinematics-20261121"></script>
+<script src="../public/cat-bond/js/duo-hero.js?v=unique-cinematics-20261121"></script>
+<script>
+(()=>{'use strict';
+const D=2.75, keys=CatBondDuoDirector.keys, total=keys.length, list=document.querySelector('#gallery');
+const zhNames={
+ 'dark+dark':'暗影猎杀','dark+elec':'影雷瞬袭','dark+fire':'夜焰猫爪',
+ 'dark+grass':'夜藤伏击','dark+light':'月蚀守护','dark+water':'深海幻影',
+ 'elec+elec':'双雷闪击','elec+fire':'雷焰旋风','elec+grass':'雷根缠绕',
+ 'elec+light':'极光电闪','elec+water':'雷雨泡泡','fire+fire':'双焰烟火',
+ 'fire+grass':'花火喵舞','fire+light':'日轮烈爪','fire+water':'蒸汽猫炮',
+ 'grass+grass':'双叶觉醒','grass+light':'晨光击掌','grass+water':'春雨花开',
+ 'light+light':'双星祈愿','light+water':'月湖庇护','water+water':'潮汐双生'};
+const elements={dark:'暗',elec:'电',fire:'火',grass:'草',light:'光',water:'水'};
+const previewSpecies=keys.map((key,i)=>key.split('+').map((element,j)=>{
+ const pool=GameData.SPECIES.filter(s=>Skills.elementOf(s.id)===element);
+ return pool[(i+j*3)%Math.max(1,pool.length)]||GameData.SPECIES[i%GameData.SPECIES.length];
+}));
+let idx=0,elapsed=0,playing=true,all=false,stamp=performance.now(),painted=false;
+const canvas=document.querySelector('#show'),ctx=canvas.getContext('2d',{alpha:false});
+const $=id=>document.getElementById(id);
+function duo(i){
+ return previewSpecies[i].map((sp,j)=>({uid:j?'preview-b':'preview-a',species:sp.id,nickname:sp.name}));
+}
+function drawInto(target,i,at){
+ if(!CatBondDuoHero.assetReady)return false;
+ const rect=target.getBoundingClientRect();if(!rect.width||!rect.height)return false;
+ const isLarge=target===canvas;
+ const dpr=Math.min(isLarge?2:1.3,window.devicePixelRatio||1);
+ const w=rect.width,h=rect.height,pw=Math.round(w*dpr),ph=Math.round(h*dpr);
+ if(target.width!==pw||target.height!==ph){target.width=pw;target.height=ph}
+ const c=target.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+ c.clearRect(0,0,w,h);
+ const cats=duo(i),name=zhNames[keys[i]]||CatBondDuoSignatures.get(keys[i]).label;
+ const seq={max:D,t:D-Math.max(.0001,Math.min(D-.0001,at)),
+   name,catUids:cats.map(cat=>cat.uid),elements:keys[i],tier:3,strikeAt:.78};
+ return CatBondDuoHero.draw(c,w,h,seq,uid=>cats.find(cat=>cat.uid===uid));
+}
+function info(){
+ const key=keys[idx],cats=duo(idx);
+ $('name').textContent=zhNames[key]+' · '+CatBondDuoSignatures.get(key).label;
+ $('desc').textContent=cats.map(c=>c.nickname).join(' × ')+' ｜ '+key.split('+').map(k=>elements[k]).join(' + ')+' ｜ 顶级默契演出';
+ $('counter').textContent=(idx+1)+' / '+total;
+ document.querySelectorAll('.skill').forEach((node,i)=>node.setAttribute('aria-current',String(i===idx)));
+ $('all').setAttribute('aria-pressed',String(all));$('pause').setAttribute('aria-pressed',String(!playing));
+}
+function select(i,autoplay=true){
+ idx=(i+total)%total;elapsed=0;playing=autoplay;stamp=performance.now();info();drawInto(canvas,idx,.001);
+}
+function thumbs(){
+ if(painted||!CatBondDuoHero.assetReady)return;
+ painted=true;$('load').hidden=true;
+ keys.forEach((key,i)=>{
+  const btn=document.createElement('button');btn.className='skill';btn.type='button';
+  btn.setAttribute('aria-label',(i+1)+'. '+zhNames[key]);btn.setAttribute('aria-current',String(i===idx));
+  const cv=document.createElement('canvas');cv.width=320;cv.height=180;btn.appendChild(cv);
+  const title=document.createElement('strong');title.textContent=String(i+1).padStart(2,'0')+'  '+zhNames[key];btn.appendChild(title);
+  const sub=document.createElement('small');sub.textContent=CatBondDuoSignatures.get(key).label;btn.appendChild(sub);
+  btn.addEventListener('click',()=>{all=false;select(i);window.scrollTo({top:0,behavior:'smooth'})});
+  list.appendChild(btn);
+ });
+ // Post-layout paint thumbnails once instead of animating 21 canvases on every frame.
+ requestAnimationFrame(()=>list.querySelectorAll('canvas').forEach((cv,i)=>drawInto(cv,i,.50)));
+}
+$('count').textContent='('+total+')';
+$('prev').onclick=()=>{all=false;select(idx-1)};
+$('next').onclick=()=>{all=false;select(idx+1)};
+$('play').onclick=()=>{playing=true;stamp=performance.now();info()};
+$('pause').onclick=()=>{playing=!playing;stamp=performance.now();info()};
+$('replay').onclick=()=>select(idx);
+$('all').onclick=()=>{all=!all;select(all?0:idx);};
+$('timeline').oninput=e=>{elapsed=+e.target.value;playing=false;info();drawInto(canvas,idx,elapsed)};
+function frame(now){
+ requestAnimationFrame(frame);
+ if(!CatBondDuoHero.assetReady)return;
+ thumbs();
+ if(document.hidden){stamp=now;return}
+ if(playing){elapsed+=(now-stamp)/1000;if(elapsed>=D){
+   if(all)select(idx+1);else elapsed%=D;
+ }}
+ stamp=now;
+ drawInto(canvas,idx,elapsed);
+ $('timeline').value=String(elapsed);
+ $('clock').textContent=elapsed.toFixed(2)+' / '+D.toFixed(2)+'s';
+}
+info();requestAnimationFrame(frame);
+window.CatBondGalleryQA={get total(){return total},get ready(){return painted},get selected(){return keys[idx]},select};
+})();
+</script>
+</body></html>
