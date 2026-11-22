@@ -12,7 +12,7 @@ import path from 'node:path';
 const dir=process.env.MW_V7_BROLL_DIR||path.join(process.env.RUNNER_TEMP||os.tmpdir(),'morrowwish-v10-landscape-broll');
 const host='http://127.0.0.1:8795';
 fs.mkdirSync(dir,{recursive:true});fs.mkdirSync(path.join(dir,'raw'),{recursive:true});
-const server=spawn('python3',['-m','http.server','8795','--bind','127.0.0.1','--directory','public'],{stdio:'ignore'});
+const server=spawn('python3',['-m','http.server','8795','--bind','127.0.0.1','--directory',process.env.MW_LANDSCAPE_CAPTURE_PUBLIC||'public'],{stdio:'ignore'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function realVerticalCamera(id){
  const source=document.getElementById(id);
@@ -498,11 +498,12 @@ try{
   await sleep(3000);
   // Trim the genuine single cast before its after-action effects can resemble
   // a second finisher. The untouched raw recording is retained for QA.
-  shots.push({label:'duo',start:duoStart,duration:Math.min(3.1,stamp()-duoStart-.08)});
+  const duoOffset=0.42; // Reference-video phase alignment; keeps full 3.1s authentic duel.
+   shots.push({label:'duo',start:duoStart+duoOffset,duration:3.1});
   // Preserve the one natural on-screen follow-through: finisher art fades,
   // native arena health bars return and the real rare-cat capture resolves.
   // This is contiguous raw footage, not a second duo cast or another fight.
-  shots.push({label:'rare-aftermath',start:duoStart+3.1,duration:1.2});
+  shots.push({label:'rare-aftermath',start:duoStart+duoOffset+3.1,duration:1.2});
   console.log('V10 VERIFIED NEW DUO CINEMATIC '+JSON.stringify(cinematicSource));
   const postDuo=await page.evaluate(rareId=>{
     const b=window.__game.battle;
