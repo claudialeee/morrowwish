@@ -688,6 +688,7 @@ class Game {
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
+    window.MorrowwishMusic?.switchScene?.('battle');
     this.battleHelpOpen=false;
     this.battleTutorial=null;
     this.setBattleHelpVisible(false);
@@ -1155,7 +1156,8 @@ class Game {
 
   endBattle() {
     const b = this.battle;
-    if (!b) return;                 // already ended (loop may call this once on finish)
+    if (!b) return;
+    window.MorrowwishMusic?.switchScene?.('yard');                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
     const fromMap = this._returnScene === 'map';
     // Fold this battle's observations into the persistent adaptive-AI profile so
