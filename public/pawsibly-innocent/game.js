@@ -103,12 +103,6 @@ save.achievements=save.achievements&&typeof save.achievements==="object"?save.ac
 const relicCount=()=>Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length;
 const roomsWon=()=>Object.keys(save.best).filter(k=>/^room-[0-7]$/.test(k)&&Number(save.best[k]?.stars)>0).length;
 let badgeTimer=null,badgeCollectTimer=null,badgeToastIds=[];
-function updateBadgePocket(){
- const pocket=$("achievementPocket"),count=$("badgePocketCount");
- const total=Object.values(save.achievements).filter(Boolean).length;
- if(count)count.textContent=String(total);
- if(pocket){const title=lang==="zh"?"成就 · 已解锁 "+total+" 个":"Achievements · "+total+" unlocked";pocket.title=title;pocket.setAttribute("aria-label",title)}
-}
 function badgeToast(names,ids=[]){
  const el=$("achievementToast");if(!el||!names.length)return;
  badgeToastIds=ids.slice();
@@ -117,7 +111,7 @@ function badgeToast(names,ids=[]){
  el.style.setProperty("--badge-dx","0px");el.style.setProperty("--badge-dy","0px");
  el.hidden=false;refreshBadgeToast();
  badgeCollectTimer=setTimeout(()=>{
-  const pocket=$("achievementPocket");
+  const pocket=$("menuButton");
   if(!pocket||el.hidden)return;
   const source=el.getBoundingClientRect(),dest=pocket.getBoundingClientRect();
   el.style.setProperty("--badge-dx",(dest.left+dest.width/2-source.left-source.width/2)+"px");
@@ -125,7 +119,7 @@ function badgeToast(names,ids=[]){
   el.classList.add("collecting");pocket.classList.remove("badge-received");
   void pocket.offsetWidth;pocket.classList.add("badge-received");
  },850);
- badgeTimer=setTimeout(()=>{el.hidden=true;el.classList.remove("collecting");badgeToastIds=[];$("achievementPocket")?.classList.remove("badge-received")},1470);
+ badgeTimer=setTimeout(()=>{el.hidden=true;el.classList.remove("collecting");badgeToastIds=[];$("menuButton")?.classList.remove("badge-received")},1470);
 }
 function refreshBadgeToast(){
  const el=$("achievementToast");if(!el||el.hidden||!badgeToastIds.length)return;
@@ -160,7 +154,7 @@ function checkBadges(quiet=false){
   if(s&&Array.isArray(s.newBadges))s.newBadges.push(...earnedIds);
   badgeToast(earned,earnedIds);audio("win");
  }}
- updateBadgePocket();
+
 }
 function addStat(name,n=1){save.stats[name]=(Number(save.stats[name])||0)+n;saveGame();checkBadges()}
 const YARN_LEGEND={
@@ -219,11 +213,11 @@ $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INN
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
 document.title=lang==="zh"?"猫猫绝对无辜！— Morrow Wish":"Pawsibly Innocent! — A Little Cat, A Lot of Trouble | Morrow Wish";localizeMenu();
 const ids={back:"back",eyebrow:"eyebrow",subtitle:"subtitle",missionLabel:"missionLabel",snackLabel:"snackLabel",scoreLabel:"scoreLabel",moveLabel:"moveLabel",starLabel:"starLabel",roomLabel:"roomLabel",closetLabel:"closetLabel",skinHint:"skinHint",rulesKicker:"rulesKicker",howTitle:"howTitle",ruleStep1Title:"ruleStep1Title",ruleStep1Text:"ruleStep1Text",ruleStep2Title:"ruleStep2Title",ruleStep2Text:"ruleStep2Text",ruleStep3Title:"ruleStep3Title",ruleStep3Text:"ruleStep3Text",ruleBonus:"ruleBonus",mission:"mission"};for(const [id,k]of Object.entries(ids))$(id).textContent=tr(k);
- if($("restartLabel"))$("restartLabel").textContent=lang==="zh"?"重玩":"Retry";
+ if($("restartLabel"))$("restartLabel").textContent=lang==="zh"?"重玩本关":"Retry room";
  if($("wait")){const tip=lang==="zh"?"等待一回合：猫不动，主人和扫地机继续巡逻（消耗一步）":"Wait a turn: cat stays still, patrol moves (costs a step)";$("wait").setAttribute("aria-label",tip);$("wait").title=tip}
  if($("waitLabel"))$("waitLabel").textContent=lang==="zh"?"等待":"Wait";
- if($("restart")){const tip=lang==="zh"?"重新开始当前关卡":"Restart this room";$("restart").setAttribute("aria-label",tip);$("restart").title=tip;}
- if($("resetGameQuick")){const tip=lang==="zh"?"重置游戏：清除全部关卡、星星、成就和收藏（需要确认）":"Reset game: clear all rooms, stars, achievements and souvenirs (confirmation required)";$("resetGameQuick").setAttribute("aria-label",tip);$("resetGameQuick").title=tip;}
+ if($("restart")){const tip=lang==="zh"?"重玩本关：保留所有星星、解锁和成就":"Retry this room without losing any unlocked progress";$("restart").setAttribute("aria-label",tip);$("restart").title=tip;}
+ if($("resetGameQuick")){const tip=lang==="zh"?"重玩游戏：清空全部游戏进度并从第一关重新开始（需要确认）":"Restart entire game: erase all progress and begin at Room 1 (confirmation required)";$("resetGameQuick").setAttribute("aria-label",tip);$("resetGameQuick").title=tip;}
 $("howBody").textContent=tr("howBody");if($("visionTip"))$("visionTip").textContent=YARN_LEGEND[lang].vision;if($("yarnAimBanner"))$("yarnAimBanner").textContent=YARN_LEGEND[lang].aim;c.setAttribute("aria-label",lang==="zh"?"猫猫捣蛋游戏。点击地板移动，收集三条鱼，再从粉色猫门逃走。":"Cat stealth adventure. Tap a floor tile to move. Collect three fish and reach the pink cat flap.");if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collectionHint"))$("collectionHint").textContent=lang==="zh"?"每个房间都藏着一件纪念品，成功逃脱才能收藏。":"Each room hides a souvenir. Escape to add it to your album.";
  if($("starRuleHelp"))$("starRuleHelp").textContent=lang==="zh"?"★ 偷到 3 条鱼逃脱即通关  ·  ★★ 偷齐 4 条鱼或完成额外任务  ·  ★★★ 4 条鱼＋额外任务＋全程未被抓＋步数达标":"★ Escape with 3 fish  ·  ★★ Collect all 4 fish or complete the bonus quest  ·  ★★★ All 4 fish + bonus + no captures + efficient steps";if($("ability"))$("ability").textContent=et("ability")[save.cat];const total=allStars(),nextCat=fur.findIndex((f,i)=>i>0&&total<f[3]);if($("skinHint"))$("skinHint").textContent=nextCat<0?(lang==="zh"?"全部 5 只小猫已解锁！":"All 5 cats unlocked!"):(lang==="zh"?"累计 "+total+" 星 · 再得 "+(fur[nextCat][3]-total)+" 星解锁「"+TX.zh.skinNames[nextCat]+"」":total+" stars · "+(fur[nextCat][3]-total)+" more to unlock "+TX.en.skinNames[nextCat]);if($("tool"))$("tool").setAttribute("aria-label",aimingYarn?YARN_LEGEND[lang].cancel:YARN_LEGEND[lang].tool);$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff");
 if($("stageHome")){
@@ -423,14 +417,13 @@ function localizeMenu(){
  if($("menuButtonLabel"))$("menuButtonLabel").textContent=lang==="zh"?"菜单":"Menu";
  const zh=lang==="zh";
  for(const [id,english,chinese] of [
-  ["resetGame","↺ Reset all game progress","↺ 重置全部游戏进度"],
-  ["resetQuickLabel","Reset game","重置游戏"],
-  ["resetTitle","Reset all game progress?","确定重置全部游戏进度？"],
-  ["resetDescription","This permanently clears unlocked rooms, stars, achievements, souvenirs and game records on this device. You will return to Room 1.","这将永久清除本设备上的关卡解锁、星星、成就、纪念品和游戏记录，并返回第 1 关。此操作无法撤销。"],
-  ["cancelReset","Keep my progress","保留进度"],
-  ["confirmReset","Yes, reset everything","确认清空所有进度"]
+  ["resetQuickLabel","Restart game","重玩游戏"],
+  ["resetTitle","Restart the entire game?","确定从头重玩整个游戏？"],
+  ["resetDescription","This permanently erases unlocked rooms, stars, achievements and collectibles on this device, and restarts from Room 1. To keep your progress, choose Retry room instead.","这将清空本设备保存的关卡、星星、成就和收藏，从第 1 关重新开始，无法撤销。如需保留进度，请选择「重玩本关」。"],
+  ["cancelReset","Keep my progress","保留游戏进度"],
+  ["confirmReset","Erase progress & restart","清空进度并重玩"]
  ])if($(id))$(id).textContent=zh?chinese:english;
- updateBadgePocket();
+
 }
 function openMenu(tab="rooms"){
  if(!s)return;
@@ -448,22 +441,17 @@ function closeMenu(){
  pausedYarn=false;updateCoach();
  $("menuButton")?.focus?.({preventScroll:true});
 }
-let resetOpenedFromGame=false;
-function showResetConfirm(fromGame=false){
+function showResetConfirm(){
  if(!s||!$("resetConfirm")||!$("resetConfirm").hidden)return;
- resetOpenedFromGame=fromGame;
- // Use the existing menu to pause auto-walk and yarn while deciding.
+ // Pause queued movement and yarn by opening the existing game menu.
  if(!menuOpen)openMenu("rooms");
  $("resetConfirm").hidden=false;
  $("cancelReset")?.focus?.({preventScroll:true});
 }
 function cancelResetConfirm(){
  if($("resetConfirm"))$("resetConfirm").hidden=true;
- if(resetOpenedFromGame){
-  resetOpenedFromGame=false;
-  closeMenu();
-  $("resetGameQuick")?.focus?.({preventScroll:true});
- }else $("resetGame")?.focus?.({preventScroll:true});
+ closeMenu();
+ $("resetGameQuick")?.focus?.({preventScroll:true});
 }
 function resetAllProgress(){
  if($("resetConfirm")?.hidden)return;
@@ -1161,12 +1149,10 @@ c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPr
   if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if(e.key==="."&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();waitTurn();return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
 $("menuButton").onclick=()=>openMenu("rooms");
-$("resetGame").onclick=()=>showResetConfirm(false);
-$("resetGameQuick").onclick=()=>showResetConfirm(true);
+$("resetGameQuick").onclick=showResetConfirm;
 $("cancelReset").onclick=cancelResetConfirm;
 $("confirmReset").onclick=resetAllProgress;
 $("resetConfirm").addEventListener("pointerdown",e=>{if(e.target===$("resetConfirm"))cancelResetConfirm()});
- $("achievementPocket").onclick=()=>openMenu("badges");
 $("bonusQuick").onclick=()=>openMenu("rooms");
 $("quickHelp").onclick=()=>openMenu("help");
 $("menuClose").onclick=closeMenu;
