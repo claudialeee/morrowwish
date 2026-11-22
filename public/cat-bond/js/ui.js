@@ -130,6 +130,48 @@ const UI = {
       seen.add(c.uid);return true;
     }).slice(0,5);
   },
+  // Visible battle stats match CaptureBattle.makeFighter: a level raises stats,
+  // and map attrition carries wounded HP into the NEXT fight. Do not show a
+  // misleading full health bar for a tired survivor.
+  battleCatFacts(cat){
+    const sp=GameData.speciesById(cat.species)||{},s=cat.stats||{};
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const aff=Math.max(0,Math.min(100,cat.affinity||0));
+    let mult=1+.15*((aff-50)/50);
+    if(cat._deathPenaltyUntil&&Date.now()<cat._deathPenaltyUntil)mult*=.88;
+    mult=Math.max(.80,Math.min(1.15,mult));
+    const maxHp=Math.round((55+(s.vit||0)*5)*mult);
+    const carried=typeof cat._hpFrac==='number'?
+      Math.max(.15,Math.min(1,cat._hpFrac)):1;
+    const hp=Math.round(maxHp*carried);
+    const rarity=sp.rarity||'N';
+    const r={N:en?'Common':'普通',R:en?'Rare':'稀有',
+      SR:en?'Epic':'史诗',SSR:en?'Legendary':'传说'};
+    const element=window.Skills?.elementOf?.(cat.species)||'light';
+    const elements={
+      fire:['🔥',en?'Fire':'火'],water:['💧',en?'Water':'水'],
+      grass:['🌿',en?'Nature':'草'],elec:['⚡',en?'Lightning':'雷'],
+      dark:['🌙',en?'Shadow':'暗'],light:['✨',en?'Light':'光']
+    };
+    return {level:cat.level||1,rarity,rarityName:r[rarity]||rarity,
+      element,elementLabel:(elements[element]||['✨',''])[0]+' '+(elements[element]||['',''])[1],
+      power:State.catPower(cat),pow:s.pow||0,agi:s.agi||0,vit:s.vit||0,
+      hp,maxHp,hpPercent:maxHp?Math.round(hp/maxHp*100):100,
+      affinity:Math.round(aff),wounded:carried<.99};
+  },
+  battleCatStatsMarkup(cat){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const f=this.battleCatFacts(cat);
+    return '<span class="squad-statline squad-statline-primary">'
+      +'<span class="squad-level">Lv.'+f.level+'</span>'
+      +'<span class="squad-rarity rarity-'+f.rarity+'">'+f.rarity+' · '+f.rarityName+'</span>'
+      +'<span class="squad-element">'+f.elementLabel+'</span></span>'
+      +'<span class="squad-statline squad-statline-secondary">'
+      +'<span>'+(en?'Power ':'战力 ')+f.power+'</span>'
+      +'<span>⚔ '+f.pow+'</span><span>⚡ '+f.agi+'</span>'
+      +'<span>❤ '+f.hp+'/'+f.maxHp+'</span></span>'
+      +(f.wounded?'<span class="squad-health-warning">'+(en?'Injured · recovery recommended':'负伤 · 建议先恢复')+'</span>':'');
+  },
   // Chosen first two start together; remaining chosen cats form an ordered bench.
   squadOrderMarkup(){
     return '<div class="battle-order" role="group"></div>';
@@ -144,9 +186,11 @@ const UI = {
     host.innerHTML='<strong>'+(en?'Your lineup · reorder with arrows':'双猫首发与替补顺序')+'</strong>'
       +'<p>'+(en?'Two cats fight together; use arrows to choose who starts. Bench cats can swap in (6s cooldown).':'两只猫并肩战斗。用箭头指定首发与替补；战斗中可主动换猫（冷却 6 秒）。')+'</p>'
       +'<div class="battle-order-items">'+selected.map((uid,i)=>{
-        const name=State.catName(cats.get(uid)||{species:uid});
+        const cat=cats.get(uid),name=cat?State.catName(cat):uid;
+        const facts=cat?this.battleCatFacts(cat):null;
         return '<div class="battle-order-item '+(i<2?'field':'bench')+'"><span class="battle-order-role">'+role(i)+'</span>'
-          +'<span class="battle-order-name">'+esc(name)+'</span>'
+          +'<span class="battle-order-name">'+esc(name)
+          +(facts?'<small>Lv.'+facts.level+' · '+(en?'Power ':'战力 ')+facts.power+'</small>':'')+'</span>'
           +'<button type="button" data-order-shift="-1" data-order-index="'+i+'" '+(i===0?'disabled':'')+' aria-label="'+(en?'Move up':'上移')+'">↑</button>'
           +'<button type="button" data-order-shift="1" data-order-index="'+i+'" '+(i===selected.length-1?'disabled':'')+' aria-label="'+(en?'Move down':'下移')+'">↓</button></div>';
       }).join('')+'</div>';
@@ -166,8 +210,9 @@ const UI = {
     const cats=[...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a));
     return '<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
       +cats.map(c=>'<button type="button" class="map-squad-choice '+(selected.includes(c.uid)?'sel':'')+'" data-uid="'+esc(c.uid)+'" aria-pressed="'+selected.includes(c.uid)+'">'
-        +'<canvas width="58" height="50" aria-hidden="true"></canvas><span><strong>'+esc(State.catName(c))+'</strong>'
-        +'<small>'+(en?'Power ':'战力 ')+State.catPower(c)+' · '+(en?'Bond ':'默契 ')+Math.round(c.affinity||0)+'</small></span></button>').join('')
+        +'<canvas width="58" height="50" aria-hidden="true"></canvas>'
+        +'<span class="squad-cat-info"><strong>'+esc(State.catName(c))+'</strong>'
+        +this.battleCatStatsMarkup(c)+'</span></button>').join('')
       +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'+this.squadOrderMarkup();
   },
   bindSquadPicker(selected){
@@ -1662,10 +1707,14 @@ const UI = {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
       const inDuo=duo.some(d=>d.uid===c.uid);
-      return `<div class="chip ${sel ? 'sel' : ''} ${inDuo?'duo-member':''}" data-uid="${c.uid}">
-        <canvas width="44" height="38"></canvas>
-        <div><div style="font-weight:700">${State.catName(c)} ${inDuo?'💞':''}</div><div class="tiny">⚔${State.catPower(c)} ❤${Math.round(c.affinity)}${breedCounts.get(c.species)>1?(english?' · '+breedCounts.get(c.species)+' owned':' · 拥有'+breedCounts.get(c.species)+'只'):''}</div></div>
-      </div>`;
+      const escName=String(State.catName(c)).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+      return `<button type="button" class="chip ${sel ? 'sel' : ''} ${inDuo?'duo-member':''}" data-uid="${c.uid}" aria-pressed="${sel}">
+        <canvas width="58" height="50" aria-hidden="true"></canvas>
+        <span class="squad-cat-info"><strong>${escName} ${inDuo?'💞':''}</strong>
+        ${this.battleCatStatsMarkup(c)}
+        ${breedCounts.get(c.species)>1?'<small class="squad-duplicate">'+
+          (english?'Owned: ':'拥有：')+breedCounts.get(c.species)+'</small>':''}</span>
+      </button>`;
     }).join('');
     const newBreed=!State.S.dex[wildSp.id];
     const skillPreview=window.Skills?Skills.skillsByElement(Skills.elementOf(wildSp.id))
@@ -1716,6 +1765,7 @@ const UI = {
       roster.querySelectorAll('.chip').forEach(ch => {
         const order=this.teamUids.indexOf(ch.dataset.uid);
         ch.classList.toggle('sel',order>=0);
+        ch.setAttribute('aria-pressed',String(order>=0));
         ch.dataset.orderRole=order<0?'':(order<2?(english?'START '+(order+1):'首发 '+(order+1)):(english?'BENCH '+(order-1):'替补 '+(order-1)));
       });
       this.refreshSquadOrder(this.teamUids,refreshSel);

@@ -1883,3 +1883,54 @@ body.cb-exploring #map-squad{
    min-height:36px;
  }
 }
+
+/* Prebattle party choices: show actual cat level, rarity, element, power,
+   offensive/agility stats and carried HP without requiring a detail modal. */
+#panel .map-squad-roster{grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));
+ max-height:min(45vh,360px);align-content:start}
+#panel .map-squad-choice,#panel #cp-roster .chip{
+ position:relative;display:flex;align-items:center;gap:9px;min-width:0;
+ min-height:96px;text-align:left;border:2px solid #d6e2d4;
+ background:#fffdf8;color:#385245;border-radius:13px;padding:9px;
+ box-sizing:border-box;cursor:pointer;touch-action:manipulation;
+ transition:border-color .13s,background-color .13s}
+#panel .map-squad-choice.sel,#panel #cp-roster .chip.sel{
+ border-color:#72a583;background:#edf8e9}
+#panel #cp-roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));
+ align-content:start;gap:8px;max-height:min(40vh,355px);overflow-y:auto;
+ padding:4px;overscroll-behavior:contain;margin:8px 0 13px}
+#panel .map-squad-choice canvas,#panel #cp-roster .chip canvas{
+ width:58px!important;height:50px!important;flex:0 0 58px;
+ object-fit:contain;align-self:center}
+#panel .map-squad-choice .squad-cat-info,#panel #cp-roster .chip .squad-cat-info{
+ display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;
+ width:100%;font:700 11px/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
+#panel .squad-cat-info>strong{display:block;font:850 13px/1.25 system-ui,sans-serif;
+ color:#304e3c;padding-right:25px}
+#panel .squad-statline{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+#panel .squad-statline-primary{font-size:11px}
+#panel .squad-statline-secondary{color:#536d5e;font-size:11px}
+#panel .squad-level{font-weight:900;color:#365e47}
+#panel .squad-rarity{font-weight:850;padding:2px 5px;border-radius:5px;
+ background:#f2f0fb}
+#panel .squad-rarity.rarity-N{color:#5a665c;background:#ebeee9}
+#panel .squad-rarity.rarity-R{color:#356ca3;background:#e5f1ff}
+#panel .squad-rarity.rarity-SR{color:#8256ae;background:#f0e8fb}
+#panel .squad-rarity.rarity-SSR{color:#97651e;background:#fff2cc}
+#panel .squad-health-warning{display:block;color:#b36047;font-weight:750;font-size:10px}
+#panel .squad-duplicate{font-size:10px;color:#748476}
+#panel .battle-order-name{white-space:normal;line-height:1.25}
+#panel .battle-order-name small{display:block;color:#6f8372;font-size:10px;margin-top:3px}
+#panel .map-squad-choice:focus-visible,#panel #cp-roster .chip:focus-visible{
+ outline:3px solid #427b60;outline-offset:2px}
+@media(max-width:620px){
+ #panel .map-squad-roster,#panel #cp-roster{grid-template-columns:minmax(0,1fr)}
+ #panel .map-squad-choice,#panel #cp-roster .chip{min-height:85px;padding:7px 9px}
+ #panel .map-squad-choice canvas,#panel #cp-roster .chip canvas{
+  width:50px!important;height:46px!important;flex-basis:50px}
+ #panel .map-squad-roster{max-height:35vh}
+ #panel #cp-roster{max-height:32vh}
+}
+@media(max-height:480px) and (orientation:landscape){
+ #panel .map-squad-roster,#panel #cp-roster{max-height:28vh}
+}
