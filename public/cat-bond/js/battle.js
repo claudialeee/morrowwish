@@ -2320,7 +2320,7 @@ class CaptureBattle {
             // Other sustained beams retain their damage-over-time tick rate.
             const damage=flame?b.dps*b.max/passes:hitDmg;
             const contact=this.resolveHit(e,b.owner,
-              {...(b.sk||{element:b.element}),isChanneledTick:!flame,
+              {...(b.sk||{element:b.element}),isChanneledTick:true,
                 _poiseSource:b,_poisePass:flame?pass:undefined},
               damage,e.x,e.y);
             if(contact?.dealt>0){
