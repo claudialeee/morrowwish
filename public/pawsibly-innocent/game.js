@@ -94,7 +94,9 @@ function fitCanvasPixels(){
  ctx.setTransform(scale,0,0,scale,0,0);
 }
 let lang=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
-let save={unlocked:0,best:{},cat:0,souvenirs:{}};try{const s=JSON.parse(localStorage.getItem("pawsibly-innocent-save-v1")||"{}");if(s&&typeof s==="object"){save={...save,...s};save.best=s.best||{};save.souvenirs=s.souvenirs||{};}}catch{}
+const SAVE_KEY="pawsibly-innocent-save-v1";
+function freshSave(){return {unlocked:0,best:{},cat:0,souvenirs:{},stats:{fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,combos:0},achievements:{}}}
+let save=freshSave();try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||"{}");if(s&&typeof s==="object"){save={...save,...s};save.best=s.best||{};save.souvenirs=s.souvenirs||{};}}catch{}
 save.unlocked=Math.min(7,Math.max(0,Number(save.unlocked)||0));save.cat=Math.max(0,Math.min(4,Number(save.cat)||0));
 save.stats={fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,combos:0,...(save.stats&&typeof save.stats==="object"?save.stats:{})};
 save.achievements=save.achievements&&typeof save.achievements==="object"?save.achievements:{};
@@ -172,7 +174,7 @@ const equal=(a,b)=>!!a&&!!b&&a.x===b.x&&a.y===b.y;
 const key=p=>p.x+","+p.y;
 const rnd=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^(seed>>>15),1|seed);t=t+Math.imul(t^(t>>>7),61|t)^t;return ((t^(t>>>14))>>>0)/4294967296;};
 const allStars=()=>Object.values(save.best).reduce((sum,v)=>sum+Math.min(3,Math.max(0,Number(v.stars)||0)),0);
-function saveGame(){try{localStorage.setItem("pawsibly-innocent-save-v1",JSON.stringify(save))}catch{}}
+function saveGame(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch{}}
 function metric(name,p={}){window.arcadeMetric?.(name,p)}
 let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,currentToastKey=null,fx=[],entered=false,menuOpen=false,currentMenuTab="rooms",pausedYarn=false,aimingYarn=false,yarnPreview=null,yarnTargets=new Set(),yarnChaseTimer=null;
 const seedDay=Number(today.replaceAll("-",""));
@@ -211,7 +213,7 @@ if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),que
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
 return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,blockedTarget:null,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],spottedCount:0,tutorialSaves:0,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
-function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);clearTimeout(badgeCollectTimer);if($("achievementToast")){$("achievementToast").hidden=true;$("achievementToast").classList.remove("collecting")}badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
+function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);clearTimeout(badgeCollectTimer);if($("achievementToast")){$("achievementToast").hidden=true;$("achievementToast").classList.remove("collecting")}if($("resetConfirm"))$("resetConfirm").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
@@ -418,6 +420,14 @@ function localizeMenu(){
   ?"🐟 偷3条鱼 · 🧶 引开主人 · 📦 躲藏 · 🚪 从猫门逃脱"
   :"🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape";
  if($("menuButtonLabel"))$("menuButtonLabel").textContent=lang==="zh"?"菜单":"Menu";
+ const zh=lang==="zh";
+ for(const [id,english,chinese] of [
+  ["resetGame","↺ Reset game progress","↺ 重置游戏进度"],
+  ["resetTitle","Reset all game progress?","确定重置全部游戏进度？"],
+  ["resetDescription","This permanently clears unlocked rooms, stars, achievements, souvenirs and game records on this device. You will return to Room 1.","这将永久清除本设备上的关卡解锁、星星、成就、纪念品和游戏记录，并返回第 1 关。此操作无法撤销。"],
+  ["cancelReset","Keep my progress","保留进度"],
+  ["confirmReset","Yes, reset everything","确认清空所有进度"]
+ ])if($(id))$(id).textContent=zh?chinese:english;
  updateBadgePocket();
 }
 function openMenu(tab="rooms"){
@@ -430,9 +440,34 @@ function openMenu(tab="rooms"){
 }
 function closeMenu(){
  if(!menuOpen)return;
+ if($("resetConfirm"))$("resetConfirm").hidden=true;
  menuOpen=false;$("gameMenu").hidden=true;
  if(pausedYarn&&s?.yarnAnimating){yarnChaseTimer=setInterval(advanceYarnChase,470)}
  pausedYarn=false;updateCoach();
+ $("menuButton")?.focus?.({preventScroll:true});
+}
+function showResetConfirm(){
+ if(!menuOpen||!$("resetConfirm"))return;
+ $("resetConfirm").hidden=false;
+ $("cancelReset")?.focus?.({preventScroll:true});
+}
+function cancelResetConfirm(){
+ if($("resetConfirm"))$("resetConfirm").hidden=true;
+ $("resetGame")?.focus?.({preventScroll:true});
+}
+function resetAllProgress(){
+ if($("resetConfirm")?.hidden)return;
+ // Clear ONLY this game's save. Language/audio and other games are untouched.
+ save=freshSave();collectionPaintKey="";
+ try{localStorage.removeItem(SAVE_KEY)}catch{}
+ saveGame();
+ try{
+  const url=new URL(window.location.href);
+  for(const key of ["room","daily","beat"])url.searchParams.delete(key);
+  window.history?.replaceState?.(null,"",url.pathname+url.search+url.hash);
+ }catch{}
+ metric("cat_progress_reset");
+ init(0,false);
  $("menuButton")?.focus?.({preventScroll:true});
 }
 function neighbors(p){return[[1,0],[0,1],[-1,0],[0,-1]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).filter(q=>q.x>=0&&q.x<W&&q.y>=0&&q.y<H);}
@@ -1109,13 +1144,17 @@ c.addEventListener("pointerup",e=>{
  onClick(e);
 });
 c.addEventListener("pointercancel",()=>{fingerTap=null});
-c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPreview=yarnTarget(p)?p:null}});c.addEventListener("pointerleave",()=>{yarnPreview=null});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&menuOpen){e.preventDefault();closeMenu();return}
+c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPreview=yarnTarget(p)?p:null}});c.addEventListener("pointerleave",()=>{yarnPreview=null});window.addEventListener("keydown",e=>{if(e.key==="Escape"&&menuOpen){e.preventDefault();if(!$("resetConfirm").hidden)cancelResetConfirm();else closeMenu();return}
  if(menuOpen)return;
  if(s?.outro){if(["Escape","Enter"," "].includes(e.key)){e.preventDefault();endOutro()}return}
  if(e.key==="Escape"&&s?.done&&!$("overlay").hidden){e.preventDefault();closeResult();return}
   if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if(e.key==="."&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();waitTurn();return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
 $("menuButton").onclick=()=>openMenu("rooms");
+$("resetGame").onclick=showResetConfirm;
+$("cancelReset").onclick=cancelResetConfirm;
+$("confirmReset").onclick=resetAllProgress;
+$("resetConfirm").addEventListener("pointerdown",e=>{if(e.target===$("resetConfirm"))cancelResetConfirm()});
  $("achievementPocket").onclick=()=>openMenu("badges");
 $("bonusQuick").onclick=()=>openMenu("rooms");
 $("quickHelp").onclick=()=>openMenu("help");
