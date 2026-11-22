@@ -19,6 +19,15 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    // Newly surfaced first-capture conversion and progress CTAs. Keep both
+    // locales explicit so the English portal never leaks Han characters.
+    '战斗奖励与详情': 'Battle rewards & stats',
+    '双猫搭档已经准备好！下一场带上两只猫一起战斗，积攒合击能量，释放它们的专属合击。': 'Your duo is ready! Bring both cats to the next hunt to build Duo energy and unleash a special team move.',
+    '双猫出战 · 再找一只伙伴': 'Try your duo · Find another cat',
+    '双猫搭档继续探索': 'Explore with your duo',
+    '💞 双猫搭档就绪！点击发光草丛一起出战，开战后按 F 或点双猫合击！': '💞 Your duo is ready! Tap the glowing bush to fight together. Press F or tap Duo when the battle begins!',
+    '💞 双猫合击已就绪！按 F 或点击双猫合击，释放首次搭档绝招！': '💞 Duo is ready! Press F or tap Duo for your first team move!',
+    '探索其他玩法': 'Explore other activities',
     // Reviewed 33-breed elemental identities and attribute cards.
     '寒冰爪': 'Frost Claw',
     '短距离挥出霜晶爪痕，使目标湿润；更强的霜锥需向训练师学习。': 'A short icy claw swipe inflicts Soak; train to learn the stronger Frost Lance.',

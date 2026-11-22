@@ -1282,6 +1282,9 @@ State.S.dex['tangyuan'] = 1;
 
 const wild = GameData.speciesById('doudou');
 const before = State.S.cats.length;
+// Simulate a fresh player's saved one-cat battle lineup; first capture must
+// make the second cat playable immediately, not leave a solo roster.
+State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:[starter.uid]};
 game.startBattle([starter], wild);
 assert.equal(game.scene, 'battle', 'entered battle scene');
 assert.ok(events.some(e => e.name === 'game_start'), 'game_start analytics fired');
@@ -1315,6 +1318,17 @@ assert.ok(b.done, 'battle resolved');
 assert.equal(b.result, 'win', 'player won the capture');
 game.endBattle();
 assert.equal(State.S.cats.length, before + 1, 'captured cat added to roster');
+assert.deepEqual(Array.from(State.S.battlePrefs.teamUids.slice(0,2)),
+  [starter.uid,State.S.cats.at(-1).uid],
+  'first catch auto-selects newly unlocked duo as the next battle starters');
+assert.equal(State.S.firstDuoShowcasePending,true,
+  'First capture queues a playable duo move for the next eligible hunt');
+assert.ok(document.getElementById('panel').innerHTML.includes('first-capture-rewards'),
+  'first capture result folds secondary rewards to keep the action clear');
+assert.ok(document.getElementById('panel').innerHTML.includes('Try your duo'),
+  'first capture offers a meaningful second fight, not a dead-end result');
+assert.ok(!document.getElementById('panel').innerHTML.includes('id="cr-duo"'),
+  'first win should not require navigating five competing CTAs');
 assert.ok(events.some(e => e.name === 'game_complete'), 'game_complete analytics fired');
 assert.ok(events.some(e => e.name === 'cat_capture'), 'cat_capture analytics fired');
 assert.ok(events.some(e => e.name === 'bond_battle_grade'),'Battle grade event fired');

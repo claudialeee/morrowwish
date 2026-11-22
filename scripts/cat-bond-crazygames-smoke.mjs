@@ -197,8 +197,17 @@ try{
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
-        await page.waitForSelector('#cr-newskill',{timeout:5000});
-        await page.waitForSelector('#cr-duo',{timeout:5000});
+        // First capture is a focused sequel hook, not five competing CTAs.
+        await page.waitForSelector('#cr-journey',{timeout:5000});
+        assert.equal(await page.locator('#cr-duo,#cr-newskill,#cr-medal').count(),0,
+          'First win should offer one clear duo follow-up, not competing buttons');
+        assert.match(await page.locator('#cr-next').innerText(),/duo/i,
+          'First win must offer the next two-cat battle immediately');
+        assert.equal(await page.locator('.first-capture-rewards').count(),1,
+          'Secondary grade/recovery details stay accessible behind a disclosure');
+        assert.equal(await page.locator('.first-capture-rewards').evaluate(el=>el.open),false,
+          'New players should not have to scroll past detailed battle statistics');
+        await page.locator('.first-capture-rewards summary').click();
         const unlockedDuo=await page.evaluate(()=>{
           const cats=State.S.cats;
           const duo=window.CatRelations?.active(cats);
@@ -218,8 +227,8 @@ try{
         const rank=await page.locator('.battle-grade b').innerText();
         assert.equal(rank,'S','An exceptional auto battle can still earn S and a permanent species medal');
         await page.waitForSelector('.golden-paw-unlock',{timeout:5000});
-        assert.equal(await page.locator('#cr-medal').count(),1,
-          'First S unlock must offer a direct route into the Golden Paw codex');
+        assert.equal(await page.locator('.golden-paw-unlock').count(),1,
+          'First S must visibly unlock the Golden Paw without another primary button');
         const medalState=await page.evaluate(()=>({
           count:window.__game.masteryStatus().medals,
           lure:State.S.luckLure,
@@ -236,8 +245,40 @@ try{
           'CrazyGames English catch result has untranslated Chinese: '+catchCopy);
 
         assert.equal(await page.evaluate(()=>State.S.cats.length),2);
+        assert.deepEqual(await page.evaluate(()=>State.S.battlePrefs.teamUids.slice(0,2)),
+          await page.evaluate(()=>State.S.cats.map(c=>c.uid).slice(0,2)),
+          'The next hunt must actually field the unlocked two-cat duo');
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
+        await page.waitForFunction(()=>document.getElementById('first-quest')?.textContent?.includes('duo'),null,{timeout:5000});
+        assert.match(await page.locator('#first-quest').innerText(),/duo/i,
+          'After the first win the live guide should point to the duo hunt, not petting');
+        // A real second hunt must introduce the signature duo attack, not
+        // quietly leave the player in another solo fight after the unlock.
+        await page.evaluate(()=>{
+          const game=window.__game,spot=game.yard.hide.spot;
+          game.yardTap(spot.x,spot.y);
+        });
+        await page.waitForSelector('#cp-go',{timeout:8000});
+        await page.locator('#cp-go').click();
+        await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
+        const duoPreview=await page.evaluate(()=>{
+          const b=window.__game.battle;
+          return {team:b.team.map(f=>f.cat.uid),duo:!!b.duo,
+            charge:b.duoCharge,ready:b.duoReady()};
+        });
+        assert.equal(duoPreview.team.length,2,'Follow-up fight must field two cats');
+        assert.equal(duoPreview.duo,true,'First duo must be active in combat');
+        assert.equal(duoPreview.charge,100,'First duo demonstration starts ready');
+        assert.equal(duoPreview.ready,true,'Duo is immediately castable');
+        assert.equal(await page.evaluate(()=>window.__game.battle.castDuo()),true,
+          'First duo cinematic must actually execute');
+        await page.evaluate(()=>{
+          const game=window.__game,b=game.battle;
+          b.finish(false);game.endBattle();UI.closeAll();
+        });
+        assert.equal(await page.evaluate(()=>State.S.firstDuoShowcasePending),false,
+          'Using the first duo move consumes its one-time invitation');
         // The old top omnibus collection-goal banner was deliberately
         // removed in favor of real bottom / right shortcuts. Verify the new
         // navigation and open the same adventure guide from its own action.
