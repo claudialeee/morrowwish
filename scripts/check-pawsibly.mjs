@@ -351,5 +351,20 @@ distantLure.human={x:5,y:3};distantLure.yarnAnimating=true;
 test.move(1,0);
 assert.equal(distantLure.exposure,0,
  'A distracted guard should not magically spot the cat from across the room');
+// Guard proximity must remain meaningful AFTER the yarn has been reached.
+test.choose(0,false);
+const pausedGuard=test.getState();
+pausedGuard.human={x:3,y:3};pausedGuard.guardMode="distracted";
+pausedGuard.distractionTurns=3;
+test.move(1,0);
+assert.ok(pausedGuard.exposure>0,
+ 'A paused, distracted guard must notice a cat standing directly beside them');
+test.choose(0,false);
+const pausedGuardFar=test.getState();
+pausedGuardFar.human={x:5,y:3};pausedGuardFar.guardMode="distracted";
+pausedGuardFar.distractionTurns=3;
+test.move(1,0);
+assert.equal(pausedGuardFar.exposure,0,
+ 'Yarn distraction must still offer safe distant movement for ordinary players');
 
 console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings, capture consequences and lure-risk regression).');
