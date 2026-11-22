@@ -305,42 +305,35 @@ try{
   if(!caught.resultVisible||caught.count<=rare.before)
    throw Error('No earned rare-cat capture result screen '+JSON.stringify(caught));
   await mark('rare-capture',5400);
-  // A late-game SSR must be shown with its native LEGENDARY badge.
-  // Unlocks and deterministic spawning are isolated to this review capture:
-  // do NOT pretend a new player can enter Ruins or win SSR immediately.
-  const legendary=await page.evaluate(()=>{
-    UI.closeAll();window.__game.openWorldMap();UI.closeAll();
-    State.S.worldmap.unlocked.ruins=true;  // late-game progress fixture
-    const orig=Math.random;
-    Math.random=()=>.99999; // region's weighted real species roll selects SSR
-    try{if(!WorldMap.enterRegion('ruins'))throw Error('Legendary region locked')}
-    finally{Math.random=orig}
-    window.__V4_CAMERA__.setMode('focus');window.__V4_CAMERA__.show(true);
-    const v=WorldMap.view;
-    const did=WorldMap.setDestination(1620-v.camX,1120-v.camY);
-    const ssr=WorldMap.REGIONS.find(r=>r.id==='ruins').speciesPool.filter(
-       id=>GameData.speciesById(id).rarity==='SSR');
-    return {did,ssr,region:WorldMap.currentRegion};
+  // Official real-game SSR species and detail interface. For a marketing
+  // showcase, preload one veteran cat into this isolated browser session.
+  // This does NOT show an unearned SSR capture or fake map encounter.
+  const ssrProof=await page.evaluate(()=>{
+    UI.closeAll();window.__V4_CAMERA__.show(false);
+    window.__game.scene='yard';window.__game.showYardChrome();
+    const species=GameData.SPECIES.find(sp=>sp.id==='xingchen'&&sp.rarity==='SSR');
+    if(!species)throw Error('The current game no longer has the SSR Xingchen species');
+    const veteran=State.makeCat(species.id);
+    State.addXp(veteran,1350);State.S.cats.push(veteran);
+    UI.openCatDetail(veteran);
+    const card=document.getElementById('cat-detail');
+    const badge=card?.querySelector('.rarity-SSR');
+    const canvas=card?.querySelector('#cd-canvas');
+    const rect=badge?.getBoundingClientRect();
+    return {rarity:species.rarity,breed:species.id,level:veteran.level,badge:badge?.textContent?.trim(),
+      nativeDetail:!!card,nativeCatPortrait:!!canvas,visible:!!rect&&rect.width>0&&rect.height>0,
+      hasUpgradeButton:!!card?.querySelector('#cd-trainnext')};
   });
-  if(!legendary.did||legendary.ssr.length<1)throw Error('No authentic SSR in Ruins '+JSON.stringify(legendary));
-  await page.waitForFunction(()=>document.querySelector('#panel.open .sighting-badge.rarity-SSR')&&
-      document.querySelector('#panel.open #cp-wild')?.width>0,null,{timeout:23000,polling:100});
-  await page.evaluate(()=>window.__V4_CAMERA__.show(false));
-  const ssrProof=await page.evaluate(()=>({
-    badge:document.querySelector('#panel.open .sighting-badge.rarity-SSR')?.textContent?.trim(),
-    species:document.querySelector('#panel.open h2')?.textContent?.trim(),
-    portrait:!!document.querySelector('#panel.open #cp-wild'),
-    region:WorldMap.currentRegion,
-    fromMap:window.__game.scene==='map'
-  }));
-  if(!ssrProof.badge?.includes('传说')||!ssrProof.portrait||ssrProof.region!=='ruins'||!ssrProof.fromMap)
-    throw Error('Real late-game SSR encounter preview missing '+JSON.stringify(ssrProof));
-  await mark('ssr-encounter',4300);
-  console.log('V9 REAL MAP-TRIGGERED SSR '+JSON.stringify(ssrProof));
-  console.log('V8 REAL RARE CAT CAPTURE '+JSON.stringify({rare,caught,rareCast}));
+  if(ssrProof.rarity!=='SSR'||!ssrProof.visible||!ssrProof.nativeCatPortrait||
+     !ssrProof.nativeDetail||!ssrProof.badge?.includes('传说'))
+    throw Error('Real native SSR cat profile failed '+JSON.stringify(ssrProof));
+  await mark('ssr-showcase',4200);
+  await page.screenshot({path:'public/promo/cat-bond/ssr-showcase-proof.png'});
+  console.log('V9 REAL GAME SSR SPECIES PROFILE '+JSON.stringify(ssrProof));
+  console.log('V9 REAL RARE CAT CAPTURE '+JSON.stringify({rare,caught,rareCast}));
   console.log('V9 REAL CAT COMBAT '+JSON.stringify({duo,battleHud,castSkills}));
   const labels=shots.map(s=>s.label);
-  for(const required of ['raising','duo-map-walk','duo-promise','work-after','tease','map-explore','map-management','team-chooser','auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-encounter'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
+  for(const required of ['raising','duo-map-walk','duo-promise','work-after','tease','map-explore','map-management','team-chooser','auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-showcase'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
  }));
  } // end new Cat Bond gameplay capture.
