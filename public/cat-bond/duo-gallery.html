@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>猫猫纽带 · 21种合体技能 · 实际动画总览</title>
+<style>
+:root{font:15px/1.5 system-ui,-apple-system,sans-serif;color:#3f455a;background:#faf7f5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 95% 0%,#e9dcfc,transparent 46%),linear-gradient(135deg,#faf9f3,#f5f0fa)}
+main{max-width:1180px;margin:auto;padding:clamp(12px,3vw,30px)}
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+header small{color:#906fa4;font-weight:900;letter-spacing:.12em}
+header a{color:#705994;text-decoration:none;font-weight:850}
+h1{font-size:clamp(23px,4vw,39px);letter-spacing:-.03em;margin:10px 0 2px}
+p{margin:7px 0 16px;color:#697484;font-size:14px}
+#stage{background:white;border:1px solid #e8dbe7;padding:8px;border-radius:19px;box-shadow:0 14px 45px #695c8216}
+#movie{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;background:#e6def1}
+#info{display:flex;gap:12px;align-items:baseline;justify-content:space-between;padding:12px 8px 3px}
+#name{font-size:clamp(17px,2.2vw,23px);font-weight:900}
+#count{font-variant-numeric:tabular-nums;color:#80758c;font-weight:750}
+#desc{font-size:13px;padding:0 8px 9px}
+.controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:14px 0 21px}
+button{cursor:pointer;background:#fff;border:1px solid #dacee1;padding:9px 13px;border-radius:11px;min-height:41px;color:#675477;font:800 13px/1.2 system-ui}
+button:focus-visible{outline:3px solid #947ec6}
+button:hover{background:#f6effa}
+button.main{background:#76639a;color:white;border-color:#76639a}
+button[aria-pressed=true]{background:#e8def1}
+input[type=range]{accent-color:#8067a8;flex:1 1 160px;min-width:120px}
+#clock{font:700 12px system-ui;color:#787286}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:11px;margin:14px 0 25px}
+.tile{padding:7px;text-align:left;min-height:unset;background:white}
+.tile[aria-current=true]{border:2px solid #9b78b6;box-shadow:0 0 0 2px #e9d8f7}
+.tile canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:8px;background:#e8dfef}
+.tile strong{display:block;padding:7px 4px 0;color:#4c4862}
+.tile small{display:block;color:#748090;padding:3px 4px 6px}
+#status{font-size:12px;color:#7b698a}
+.note{border-top:1px solid #e7dde8;padding:12px 0;font-size:12px;color:#7b8494}
+@media(max-width:550px){#gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tile strong{font-size:12px}.tile small{font-size:10px}button{font-size:12px;padding:8px 10px}.controls{gap:5px}#info{align-items:flex-start}}
+</style></head>
+<body><main><header><small>MORROW WISH · CAT BOND</small><a href="./">返回游戏</a></header>
+<h1>双猫合体技 · 全部 21 种</h1>
+<p>真实游戏绘制模块的动画总览。每招都能独立播放、暂停、重播、拖动进度，或连续放映。点击下方图鉴可以切换。</p>
+<section id="stage">
+<canvas id="movie" width="1120" height="630" aria-label="合体技能游戏动画"></canvas>
+<div id="info"><span id="name">动画加载中…</span><span id="count">— / 21</span></div>
+<p id="desc"></p></section>
+<div class="controls">
+<button id="prev" type="button">上一招</button>
+<button id="play" type="button" class="main">播放</button>
+<button id="pause" type="button">暂停</button>
+<button id="replay" type="button">重播</button>
+<button id="next" type="button">下一招</button>
+<button id="all" type="button">连续看全部</button>
+<input id="seek" type="range" min="0" max="2.75" step=".01" value="0" aria-label="动画播放进度">
+<span id="clock">0.00 / 2.75s</span>
+</div>
+<p id="status" role="status">正在加载实际游戏演出……</p>
+<h2>全部合体技能</h2><div id="gallery"></div>
+<div class="note">图鉴用于展示全部动画，不会给玩家解锁技能或修改存档。演示猫咪由各个元素对应的真实品种选取；游戏中的双猫搭档演出则使用玩家实际选择的两只猫。</div>
+</main>
+<script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'}</script>
+<script src="js/data.js"></script><script src="js/skills.js"></script><script src="js/state.js"></script>
+<script src="js/cat-relationships.js"></script>
+<script src="js/duo-portraits.js?v=21-showcase-20261122"></script>
+<script src="js/duo-artwork.js?v=21-showcase-20261122"></script>
+<script src="js/duo-signatures.js?v=21-showcase-20261122"></script>
+<script src="js/duo-director.js?v=21-showcase-20261122"></script>
+<script src="js/duo-summons.js?v=21-showcase-20261122"></script>
+<script src="js/duo-finale.js?v=21-showcase-20261122"></script>
+<script src="js/duo-hero.js?v=21-showcase-20261122"></script>
+<script>
+(()=>{'use strict';
+ const D=2.75, $=id=>document.getElementById(id),director=window.CatBondDuoDirector;
+ const keys=director?.keys||[];
+ if(keys.length!==21||!window.CatBondDuoHero||!window.CatRelations){
+   $('status').textContent='游戏动画资源没有完整加载，无法播放。';return;
+ }
+ const en=MorrowwishI18n.get()==='en',elements={dark:'暗',elec:'雷',fire:'火',grass:'草',light:'光',water:'水'};
+ const raw=new URLSearchParams(location.search),requested=raw.get('pair');
+ let chosen=0,elapsed=.01,playing=true,playlist=false,last=performance.now(),galleryReady=false;
+ const example=(key,i)=>{
+   const parts=key.split('+'),override=[raw.get('a'),raw.get('b')];
+   return parts.map((el,n)=>{
+     const group=GameData.SPECIES.filter(sp=>Skills.elementOf(sp.id)===el);
+     const forced=requested===key&&GameData.speciesById(override[n]);
+     const sp=forced&&Skills.elementOf(forced.id)===el?forced:group[(i+n*4)%group.length]||GameData.SPECIES[0];
+     return {uid:'demo-'+n,species:sp.id,nickname:GameData.speciesName(sp)};
+   });
+ };
+ const examples=keys.map(example);
+ const move=keys.map((key,i)=>CatRelations.title(examples[i][0],examples[i][1]));
+ if(requested&&keys.includes(requested))chosen=keys.indexOf(requested);
+ function draw(cv,i,t){
+   if(!CatBondDuoHero.assetReady)return false;
+   const box=cv.getBoundingClientRect(),w=box.width,h=box.height;if(w<1||h<1)return false;
+   const dpr=Math.min(cv.id==='movie'?2:1.2,window.devicePixelRatio||1),W=Math.round(w*dpr),H=Math.round(h*dpr);
+   if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+   const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+   ctx.clearRect(0,0,w,h);
+   const cats=examples[i],m=move[i];
+   return CatBondDuoHero.draw(ctx,w,h,{max:D,t:D-Math.max(.002,Math.min(D-.002,t)),
+     name:m.name,elements:keys[i],tier:3,strikeAt:.78,catUids:cats.map(c=>c.uid)},uid=>cats.find(c=>c.uid===uid));
+ }
+ function info(){
+   $('name').textContent=move[chosen].name;
+   $('desc').textContent=move[chosen].description+' · '+examples[chosen].map(x=>x.nickname).join(' × ')+
+     ' · '+keys[chosen].split('+').map(x=>elements[x]).join('+');
+   $('count').textContent=(chosen+1)+' / 21';
+   document.querySelectorAll('.tile').forEach((node,i)=>node.setAttribute('aria-current',String(i===chosen)));
+   $('all').setAttribute('aria-pressed',String(playlist));$('pause').setAttribute('aria-pressed',String(!playing));
+ }
+ function select(i){chosen=(i+21)%21;elapsed=.01;playing=true;last=performance.now();info()}
+ $('prev').onclick=()=>{playlist=false;select(chosen-1)};
+ $('next').onclick=()=>{playlist=false;select(chosen+1)};
+ $('play').onclick=()=>{playing=true;last=performance.now();info()};
+ $('replay').onclick=()=>select(chosen);
+ $('pause').onclick=()=>{playing=!playing;last=performance.now();info()};
+ $('all').onclick=()=>{playlist=!playlist;select(playlist?0:chosen)};
+ $('seek').oninput=()=>{elapsed=Number($('seek').value);playing=false;info();draw($('movie'),chosen,elapsed)};
+ function tiles(){
+   if(galleryReady||!CatBondDuoHero.assetReady)return;
+   galleryReady=true;
+   keys.forEach((key,i)=>{
+     const button=document.createElement('button');button.className='tile';button.type='button';
+     const cv=document.createElement('canvas');cv.width=320;cv.height=180;button.appendChild(cv);
+     const heading=document.createElement('strong');heading.textContent=String(i+1).padStart(2,'0')+' '+move[i].name;
+     button.appendChild(heading);
+     const caption=document.createElement('small');caption.textContent=keys[i].split('+').map(x=>elements[x]).join(' + ');
+     button.appendChild(caption);
+     button.onclick=()=>{playlist=false;select(i);window.scrollTo({top:0,behavior:'smooth'})};
+     $('gallery').appendChild(button);
+   });
+   requestAnimationFrame(()=>document.querySelectorAll('.tile canvas').forEach((cv,i)=>draw(cv,i,.45)));
+   $('status').textContent=(en?'All 21 real in-game animations loaded':'21 种实机动画已加载')+' · '+(en?'2.75 seconds per move':'每招约 2.75 秒');
+   info();
+ }
+ function tick(now){requestAnimationFrame(tick);if(!CatBondDuoHero.assetReady)return;tiles();
+   if(playing&&!document.hidden){elapsed+=(now-last)/1000;if(elapsed>=D){if(playlist)select(chosen+1);else elapsed%=D;}}
+   last=now;draw($('movie'),chosen,elapsed);
+   $('seek').value=String(elapsed);$('clock').textContent=elapsed.toFixed(2)+' / 2.75s';
+ }
+ window.CatBondGalleryQA={get ready(){return galleryReady},get total(){return keys.length},get key(){return keys[chosen]},select};
+ info();requestAnimationFrame(tick);
+})();
+</script></body></html>
