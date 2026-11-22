@@ -155,7 +155,7 @@ assert.doesNotThrow(()=>sandbox.window.CatMotion.draw(canvasCtx,90,90,{
 assert.ok(sandbox.window.Skills, 'Skills global present');
 assert.ok(sandbox.window.Battle, 'Battle global present');
 assert.ok(sandbox.window.CatBondI18n, 'Cat Bond i18n layer present');
-assert.equal(sandbox.window.GameData.SPECIES.length, 25, '25 cat species');
+assert.equal(sandbox.window.GameData.SPECIES.length, 32, '32 collectible cat species');
 const weights = sandbox.window.GameData.RARITY;
 assert.deepEqual(['N', 'R', 'SR', 'SSR'].map(k => weights[k].weight), [68,24,7,1],
   'Base rare-cat odds should be intentionally lower than before');

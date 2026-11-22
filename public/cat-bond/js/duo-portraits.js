@@ -81,7 +81,7 @@ function face(g,sp,dark,light,p){
   el(g,s*64,-146,9,5,'#f5a7a6a0');
  }
 }
-function draw(g,sp,height,p,style,aura){
+function draw(g,sp,height,p,style,aura,tier=1){
  const [base,light,dark]=coats[sp.palette]||coats.orange;
  const outline=mix(dark,'#333349',.3);
  const fluff=!!sp.fluffy;
@@ -91,7 +91,7 @@ function draw(g,sp,height,p,style,aura){
  const energy=clamp(Math.sin(p*P*1.2));
  const gesture=clamp((p-.08)/.25)*(1-clamp((p-.43)/.3));
  const raise=guard?gesture*.58:gesture;
- const legLift=(bold?46:24)*raise;
+ const legLift=(bold?46:24)*raise*(tier>=3?1.32:tier===2?1.17:1);
  g.save();const s=height/280;g.scale(s,s);
  // Delicate colored character halo, never an opaque cut-out from the map.
  g.save();g.globalAlpha=.4+.26*energy;
@@ -115,9 +115,45 @@ function draw(g,sp,height,p,style,aura){
   for(let i=0;i<4;i++)line(g,[84+i*8,-48-i*19,89+i*7,-52-i*22,99+i*8,-54-i*22,105+i*8,-58-i*22],dark,6);
  }
  // Body and plush neck bib, painterly gradient and shadows.
- const rx=fluff?76:sp.short?65:68;
+ const rx=fluff?76:sp.id==='wumao'?55:sp.short?65:68;
  const bodyGrad=grad(g,light,base,mix(dark,base,.6),-175,30);
  el(g,0,-67,rx,105,bodyGrad);
+ // Coat pattern is visible on the WHOLE body, not only on a shared face.
+ g.save();
+ g.beginPath();g.ellipse(0,-67,rx-4,99,0,0,T);g.clip();
+ if(['tabby','silver'].includes(sp.pattern)){
+   g.strokeStyle=mix(dark,base,.32);g.lineWidth=7;g.lineCap='round';
+   for(const side of [-1,1])for(let j=0;j<3;j++){
+     g.beginPath();g.moveTo(side*(rx-2),-129+j*41);
+     g.quadraticCurveTo(side*(rx-23),-133+j*39,side*(rx-36),-118+j*41);g.stroke();
+   }
+ }else if(sp.pattern==='spotted'){
+   g.strokeStyle=mix(dark,base,.16);g.lineWidth=6;
+   for(let i=0;i<13;i++){const x=Math.sin(i*3.47)*52,y=-135+(i%5)*37;
+     g.beginPath();g.ellipse(x,y,7+i%3*2,5+i%2*2,i*.3,0,Math.PI*1.73);g.stroke();}
+ }else if(sp.pattern==='calico'){
+   el(g,-48,-93,25,43,'#c38b6a');el(g,45,-31,28,44,'#4c4951');
+ }else if(sp.pattern==='pointed'){
+   el(g,-56,-48,20,48,mix(dark,base,.35));
+   el(g,56,-46,19,46,mix(dark,base,.35));
+ }else if(sp.pattern==='tuxedo'||sp.pattern==='bicolor'){
+   el(g,0,-74,30,83,mix(light,'#ffffff',.48));
+ }
+ if(sp.id==='sanhua')el(g,36,-106,17,21,'#a57965');
+ if(sp.id==='xuewa'){el(g,-53,-22,18,28,'#fffaf2');el(g,53,-22,18,28,'#fffaf2')}
+ if(sp.id==='mengmai')for(let i=0;i<3;i++)star(g,-39+i*38,-111+i%2*18,2.6,'#f3d9a6');
+ if(sp.id==='fanmao'){el(g,-49,-124,22,18,'#e9b17b');el(g,41,-102,18,15,'#e9b17b')}
+ if(sp.id==='meidu')for(let i=0;i<4;i++)el(g,Math.sin(i*2)*36,-134+i*31,5,11,'#657d8b');
+ if(sp.id==='wumao'){
+   g.strokeStyle='#ba8480';g.lineWidth=2.4;
+   for(let i=0;i<4;i++){g.beginPath();g.moveTo(-29,-105+i*18);
+      g.quadraticCurveTo(0,-113+i*18,29,-105+i*18);g.stroke()}
+ }
+ if(sp.id==='bosi')el(g,0,-130,42,17,'#faf0dc');
+ if(sp.id==='abi')for(let i=0;i<7;i++)el(g,-38+i*12,-119+(i%2)*13,2.5,5,'#b27e51');
+ if(sp.id==='jinwu')for(let i=0;i<5;i++)star(g,-43+i*21,-115+i%2*15,3,'#fff0a1');
+ if(sp.id==='xingchen')for(let i=0;i<9;i++)star(g,Math.sin(i*5)*56,-137+(i%4)*33,3,'#fff7b3');
+ g.restore();
  el(g,-46,-16,31,31,mix(base,dark,.14));el(g,45,-15,31,31,mix(base,dark,.14));
  curve(g,[-55,-112,-44,-154,-16,-156,0,-151,16,-156,44,-154,55,-112,
   37,-96,29,-52,0,-16,-29,-52,-37,-96,-55,-112],grad(g,'#ffffff',light,base,-150,-10));
@@ -129,7 +165,7 @@ function draw(g,sp,height,p,style,aura){
  paw(g,-43,8,31,20,light,outline,dark);paw(g,44,8,31,20,base,outline,dark);
  // Elbows emerge smoothly from chest, wrists and pads remain attached to arms.
  for(const side of [-1,1]){
-  const active=side===1;
+  const active=side===1||(tier>=3&&gesture>.46&&side===-1);
   const handX=side*(active?60+legLift:54);
   const handY=active?-75-legLift*.87:-53-raise*16;
   const shoulderX=side*49,shoulderY=-102;
@@ -142,8 +178,9 @@ function draw(g,sp,height,p,style,aura){
  // Head, integrated cheek tufts and triangular folded/tufted ear silhouettes.
  const ears=[-1,1];
  for(const side of ears){
-  const tipY=folded?-237:-274-(tufted?6:0);
-  const topX=side*(folded?66:79);
+  const tall=sp.ears==='large';
+  const tipY=folded?-237:tall?-298:-274-(tufted?6:0);
+  const topX=side*(folded?66:tall?89:79);
   curve(g,[side*38,-191,side*45,-225,side*60,tipY,topX,tipY+6,
     side*94,-263,side*89,-196,side*76,-168,side*55,-173,side*38,-191],
     grad(g,light,base,dark,-268,-150),outline,2.3);
@@ -174,5 +211,5 @@ function draw(g,sp,height,p,style,aura){
  }
  g.restore();
 }
-window.CatBondDuoPortraits={draw,version:'cinematic-original-25-breeds-v1',breedCount:Object.keys(coats).length};
+window.CatBondDuoPortraits={draw,version:'storybook-breed-identity-three-stage-v3',breedCount:32};
 })();

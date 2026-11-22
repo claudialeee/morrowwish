@@ -95,7 +95,7 @@ function motionRibbons(ctx,W,H,p,key,tier,positions){
  const c=key.split('+'),cs=c.map(el=>colors[el]||'#bfb5e8');
  ctx.save();ctx.globalCompositeOperation='screen';ctx.lineCap='round';
  for(let i=0;i<2;i++){
-  const trailPoints=trail.map(t=>S.pose(key,t,W,H)[i]);
+  const trailPoints=trail.map(t=>S.pose(key,t,W,H,tier)[i]);
   trailPoints.push(positions[i]);
   ctx.beginPath();trailPoints.forEach((s,j)=>{if(j)ctx.lineTo(s.x,s.y-H*.09);
     else ctx.moveTo(s.x,s.y-H*.09)});
@@ -107,12 +107,11 @@ function motionRibbons(ctx,W,H,p,key,tier,positions){
  ctx.restore();
 }
 function render(ctx,W,H,seq,lookup){
- if(window.CatBondPremiumCinematics?.ready)
-   return window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup);
- // Never flash previously rejected procedural kittens in the split second
- // while the premium art is decoding; wait for the real paintings.
- if(window.CatBondPremiumCinematics&&!window.CatBondPremiumCinematics.failed)return true;
+ // The old 8-panel premium sheet paints FIXED CAT BREEDS over every skill.
+ // Use the high-detail, independent 25-breed portrait renderer instead.
+ // Characters therefore match the real cats selected by the player.
  if(!seq||seq.t<=0)return false;
+ if(!window.CatBondDuoArtwork?.ready)return true;
  const Director=window.CatBondDuoDirector;
  const key=seq.elements&&Director?.styles?.[seq.elements]?seq.elements:'elec+fire';
  const age=seq.max-seq.t, p=clamp(age/(seq.max||2.75));
@@ -136,7 +135,35 @@ function render(ctx,W,H,seq,lookup){
  window.CatBondDuoSummons?.draw?.(ctx,stageW,stageH,p,key,tier);
  // Put large signatures BEHIND cats to keep eyes, whiskers and paws clear.
  window.CatBondDuoFinale?.draw?.(ctx,stageW,stageH,p,key,tier);
- const poses=Director?.pose(key,p,stageW,stageH)||[
+ // Elemental anticipation and attack language: each trust stage gets a
+ // separate spatial motif and a different two-cat route (not just scaling VFX).
+ ctx.save();
+ const pulse=Math.max(0,1-Math.abs(p-.30)/.19);
+ const theme=pair.map(e=>colors[e]||'#c6dba6');
+ ctx.lineCap='round';ctx.lineJoin='round';
+ if(tier===2){
+  ctx.strokeStyle=theme[0];ctx.lineWidth=Math.max(3,stageH*.012);
+  ctx.globalAlpha=.38*pulse;ctx.setLineDash([stageW*.034,stageW*.014]);
+  ctx.beginPath();ctx.moveTo(stageW*.15,stageH*.65);ctx.quadraticCurveTo(stageW*.5,stageH*.17,stageW*.85,stageH*.71);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(stageW*.85,stageH*.65);ctx.quadraticCurveTo(stageW*.5,stageH*.83,stageW*.15,stageH*.61);ctx.stroke();
+ }else if(tier===3){
+  // High tier has a protective anticipation halo followed by an airborne
+  // counter and an outward finale. Not a scaled tier-1 claw stamp.
+  const wind=Math.max(0,1-Math.abs(p-.14)/.15);
+  const burst=Math.max(0,1-Math.abs(p-.66)/.17);
+  ctx.strokeStyle=theme[1];ctx.lineWidth=Math.max(4,stageH*.018);
+  ctx.globalAlpha=.52*wind;
+  ctx.beginPath();ctx.ellipse(stageW*.27,stageH*.58,stageW*.17,stageH*.25,-.20,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=.48*burst;ctx.strokeStyle=theme[0];
+  for(let i=0;i<5;i++){
+   const ang=(i+.2)*Math.PI*2/5;
+   ctx.beginPath();ctx.moveTo(stageW*.52+Math.cos(ang)*stageH*.12,stageH*.48+Math.sin(ang)*stageH*.12);
+   ctx.lineTo(stageW*.52+Math.cos(ang)*stageH*.37,stageH*.48+Math.sin(ang)*stageH*.37);
+   ctx.stroke();
+  }
+ }
+ ctx.restore();
+ const poses=Director?.pose(key,p,stageW,stageH,tier)||[
   {x:stageW*.26,y:stageH*.72,angle:0,size:1,opacity:1,phase:p},
   {x:stageW*.74,y:stageH*.72,angle:0,size:1,opacity:1,phase:p}
  ];
@@ -145,7 +172,7 @@ function render(ctx,W,H,seq,lookup){
  // silhouette and markings. Never draw the eight fixed cats from the old sheet.
  // Make the illustrated cats the main subjects (not 60px stickers in an
  // otherwise empty scene). Keep stage-relative limits for landscape/portrait.
- const size=Math.min(282,stageH*.58,stageW*.29);
+ const size=Math.min(228,stageH*.52,stageW*.247);
  for(let i=0;i<2;i++){
   const actor=duo[i]||null,pose=poses[i],color=colors[pair[i]]||'#e5c7ff';
   if(!actor||!window.CatBondDuoArtwork?.drawKitten)continue;
@@ -156,10 +183,10 @@ function render(ctx,W,H,seq,lookup){
   // Director poses expose .scale, not .size. A NaN canvas transform made
   // the portraits render enormous and clip out of the animation viewport.
   const actorSize=size*(Number.isFinite(pose.scale)?pose.scale:1);
-  const groundedY=Math.max(stageH*.07+actorSize*1.17,Math.min(stageH*.83,pose.y));
+  const groundedY=Math.max(stageH*.04+actorSize*1.09,Math.min(stageH*.90,pose.y));
   ctx.translate(pose.x,groundedY);ctx.rotate(pose.angle);
   window.CatBondDuoArtwork.drawKitten(ctx,0,0,actorSize,actor,i===1,p,
-     Director?.styles?.[key]||'dash',color);
+     Director?.styles?.[key]||'dash',color,tier);
   ctx.restore();
  }
  // Full different signature silhouettes replace the former generic claw stamp.
@@ -167,17 +194,17 @@ function render(ctx,W,H,seq,lookup){
  // Accessible nameplate, protected from bright effects and outside cat faces.
  const panelH=Math.min(72,Math.max(43,stageH*.19));
  const overlay=ctx.createLinearGradient(0,stageH-panelH,0,stageH);
- overlay.addColorStop(0,'#1b254000');overlay.addColorStop(1,'#1e2648e8');
+ overlay.addColorStop(0,'#fffdf000');overlay.addColorStop(1,'#fff9ecf4');
  ctx.fillStyle=overlay;ctx.fillRect(0,stageH-panelH,stageW,panelH);
  ctx.textAlign='center';ctx.textBaseline='alphabetic';
  const titleSize=clamp(stageW*.040,12,25);
- ctx.shadowColor='#14203a';ctx.shadowBlur=4;
- ctx.fillStyle='#fffdf9';ctx.font='900 '+Math.round(titleSize)+'px system-ui,sans-serif';
+ ctx.shadowColor='#fffaf0';ctx.shadowBlur=4;
+ ctx.fillStyle='#365647';ctx.font='900 '+Math.round(titleSize)+'px system-ui,sans-serif';
  ctx.fillText(seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||
    (en()?'Duo Special':'双猫合击'),stageW*.5,stageH-panelH*.40,stageW*.87);
  ctx.shadowBlur=0;
  ctx.font='700 '+Math.round(clamp(stageW*.019,10,13))+'px system-ui,sans-serif';
- ctx.fillStyle='#f6ebda';
+ ctx.fillStyle='#6a776b';
  if(duo[0]&&duo[1])ctx.fillText(catLabel(duo[0])+' × '+catLabel(duo[1]),
    stageW*.5,stageH-7,stageW*.88);
  ctx.restore();
@@ -187,8 +214,8 @@ function render(ctx,W,H,seq,lookup){
 window.CatBondDuoHero={
  draw:render,scenes:Object.fromEntries(Object.entries(window.CatBondDuoDirector?.styles||{}).map(([k,v])=>[k,v])),
  sceneKeys:window.CatBondDuoDirector?.keys||[],
- get assetReady(){return !!window.CatBondPremiumCinematics?.ready},
- get assetSource(){return 'premium-painterly-breed-archetypes'},
- assetCount:21,signatureCount:21,breedCount:25,
+ get assetReady(){return !!window.CatBondDuoArtwork?.ready},
+ get assetSource(){return 'individual-breed-storybook-portraits'},
+ assetCount:21,signatureCount:21,breedCount:32,
 };
 })();

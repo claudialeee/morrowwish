@@ -14,7 +14,8 @@
     'nietu','niuniu','sanhua','lixiao','lanbao',
     'dundun','yunduo','zherdd','qisi','duanduan',
     'jinjc','xianluo','yinghua','senlin','youling',
-    'nuowei','baomao','jinwu','yuelian','xingchen'
+    'nuowei','baomao','jinwu','yuelian','xingchen',
+    'abi','meidu','xuewa','mengmai','fanmao','bosi','wumao'
   ];
   const breedFrameSize={w:110,h:130,cols:3,rows:1};
   // New illustrated atlas keeps the original six breeds but supplies over
@@ -26,7 +27,8 @@
     tangyuan:0,doudou:3,xiaohui:3,moqiu:5,nainai:4,nietu:4,niuniu:2,
     sanhua:1,lixiao:2,lanbao:3,dundun:3,yunduo:4,zherdd:4,
     qisi:0,duanduan:0,jinjc:0,xianluo:4,yinghua:4,senlin:0,
-    youling:5,nuowei:0,baomao:0,jinwu:0,yuelian:4,xingchen:5
+    youling:5,nuowei:0,baomao:0,jinwu:0,yuelian:4,xingchen:5,
+    abi:0,meidu:3,xuewa:4,mengmai:5,fanmao:0,bosi:4,wumao:4
   };
   const paletteIndex={
     orange:0,brownTabby:0,silver:3,tux:2,white:4,black:5,cream:4,
@@ -65,7 +67,14 @@
     baomao:[0,'#bf935e',.64,'bengal-rosettes'],
     jinwu:[0,'#ffb65b',.39,'flame-tabby'],
     yuelian:[2,'#dce2ee',.57,'moon-point'],
-    xingchen:[1,'#5d557e',.86,'starry-black']
+    xingchen:[1,'#5d557e',.86,'starry-black'],
+    abi:[0,'#d6a46a',.71,'abyssinian-ticked'],
+    meidu:[1,'#bec7d5',.55,'american-swirl'],
+    xuewa:[2,'#e2d1bc',.56,'snowshoe'],
+    mengmai:[1,'#25232c',.96,'bombay-black'],
+    fanmao:[2,'#f2e3d0',.40,'turkish-van'],
+    bosi:[2,'#f4dab0',.63,'persian-fluffy'],
+    wumao:[2,'#e8ae9c',.88,'sphynx-skin']
   };
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
@@ -230,10 +239,10 @@
       }
       ctx.putImageData(image,0,0);
     }
-    if(['bengal-rosettes','maine-coon','norwegian-forest','brown-tabby'].includes(kind)){
+    if(['bengal-rosettes','maine-coon','norwegian-forest','brown-tabby','american-swirl','abyssinian-ticked'].includes(kind)){
       ctx.save();ctx.globalCompositeOperation='source-atop';
-      ctx.strokeStyle=kind==='bengal-rosettes'?'#79533f80':'#97785b55';
-      ctx.lineWidth=kind==='bengal-rosettes'?2.3:1.4;
+      ctx.strokeStyle=kind==='bengal-rosettes'?'#79533f80':kind==='american-swirl'?'#61778f77':'#97785b55';
+      ctx.lineWidth=['bengal-rosettes','american-swirl'].includes(kind)?2.3:1.4;
       for(const [x,y] of [[39,93],[78,100],[46,115],[72,119]]){
         ctx.beginPath();ctx.ellipse(x,y,7,3,-.27,.3,Math.PI*1.9);ctx.stroke();
       }
@@ -243,6 +252,18 @@
       ctx.save();ctx.globalCompositeOperation='source-atop';
       ctx.fillStyle='#fbebadbb';ctx.font='11px system-ui';ctx.textAlign='center';
       for(const [x,y] of [[28,59],[80,85]])ctx.fillText('✧',x,y);
+      ctx.restore();
+    }
+    if(kind==='snowshoe'||kind==='turkish-van'){
+      ctx.save();ctx.globalCompositeOperation='source-atop';
+      ctx.fillStyle=kind==='snowshoe'?'#fffaf2ca':'#f9f3e4ae';
+      ctx.beginPath();ctx.ellipse(52,102,24,24,0,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }else if(kind==='sphynx-skin'){
+      ctx.save();ctx.globalCompositeOperation='source-atop';
+      ctx.strokeStyle='#aa706c85';ctx.lineWidth=1.4;
+      for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(38,56+i*8);
+        ctx.quadraticCurveTo(54,48+i*8,69,57+i*8);ctx.stroke();}
       ctx.restore();
     }
     breedCache[id]=canvas;

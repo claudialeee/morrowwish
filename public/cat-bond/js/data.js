@@ -45,6 +45,21 @@ const SPECIES = [
   { id: 'jinwu',    name: '金乌',   palette: 'flame',       pattern: 'tabby',   eyeColor: '#ffd36b', rarity: 'SSR', fluffy: true, ears: 'tufted', desc: '传说中背负太阳的火焰之猫。', base: { pow: 16, agi: 14, vit: 14, cha: 15 } },
   { id: 'yuelian',  name: '月莲',   palette: 'cloud',       pattern: 'bicolor', eyeColor: '#9ec8ff', rarity: 'SSR', fluffy: true, desc: '踏月而行的云端仙猫，毛泛微光。',       base: { pow: 14, agi: 17, vit: 13, cha: 16 } },
   { id: 'xingchen', name: '星尘',   palette: 'mystic',      pattern: 'spotted', eyeColor: '#ffe08a', rarity: 'SSR', fluffy: true, ears: 'tufted', desc: '身披星河的梦境之猫，极为罕见。', base: { pow: 17, agi: 16, vit: 15, cha: 14 } },
+  // Seven genuinely collectible new breeds — included in the normal catch pool.
+  { id:'abi', name:'阿比',palette:'apricot',pattern:'tabby',eyeColor:'#86bd73',rarity:'N',short:true,
+    desc:'阿比西尼亚猫，身形轻巧，额头有细细的暖金纹。',base:{pow:7,agi:9,vit:6,cha:7} },
+  { id:'meidu', name:'美短',palette:'silver',pattern:'silver',eyeColor:'#85bc77',rarity:'N',
+    desc:'美短银虎斑，背上是醒目的漩涡纹。',base:{pow:7,agi:7,vit:9,cha:8} },
+  { id:'xuewa', name:'雪袜',palette:'siamese',pattern:'bicolor',eyeColor:'#73c8fa',rarity:'R',point:'#65535a',
+    desc:'雪鞋猫，深色面罩配四只白袜子。',base:{pow:8,agi:8,vit:8,cha:10} },
+  { id:'mengmai', name:'孟买',palette:'black',pattern:'solid',eyeColor:'#e3a64d',rarity:'R',
+    desc:'孟买猫，一身亮黑毛，像迷你黑豹。',base:{pow:9,agi:10,vit:8,cha:8} },
+  { id:'fanmao', name:'梵猫',palette:'cheese',pattern:'bicolor',eyeColor:'#a4ccf9',rarity:'R',fluffy:true,
+    desc:'土耳其梵猫，雪白的身体和奶橘色尾巴。',base:{pow:8,agi:9,vit:9,cha:10} },
+  { id:'bosi', name:'波斯',palette:'cream',pattern:'solid',eyeColor:'#87c5c1',rarity:'SR',fluffy:true,
+    desc:'波斯猫，圆圆的娃娃脸，蓬松得像云朵。',base:{pow:7,agi:6,vit:11,cha:14} },
+  { id:'wumao', name:'无毛',palette:'apricot',pattern:'solid',eyeColor:'#89bead',rarity:'SR',ears:'large',
+    desc:'斯芬克斯猫，暖桃色皮肤、大耳朵，活力十足。',base:{pow:10,agi:14,vit:7,cha:12} },
 ];
 
 // Localized breed names use memorable, pronounceable CAT NAMES in English,
@@ -74,7 +89,10 @@ const EN_NAMES={
   "baomao": "Spot",
   "jinwu": "Ember",
   "yuelian": "Luna",
-  "xingchen": "Stardust"
+  "xingchen": "Stardust",
+  "abi": "Aby", "meidu": "Swirl", "xuewa": "Snowboots",
+  "mengmai": "Midnight", "fanmao": "Vanilla",
+  "bosi": "PomPom", "wumao": "Peach"
 };
 SPECIES.forEach(sp=>{sp.nameEn=EN_NAMES[sp.id]||sp.name;});
 function speciesName(sp){

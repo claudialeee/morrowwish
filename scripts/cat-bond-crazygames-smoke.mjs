@@ -25,10 +25,10 @@ try{
           });
           return {total:portraits.length,unique:new Set(portraits).size};
         });
-        assert.equal(artAudit.total,25,'All catalog breeds must have artwork');
-        assert.equal(artAudit.unique,25,
+        assert.equal(artAudit.total,32,'All catalog breeds must have artwork');
+        assert.equal(artAudit.unique,32,
           'Different breeds must not share identical final portrait artwork: '+JSON.stringify(artAudit));
-        console.log('CAT BOND 25-BREED ART PASS',JSON.stringify(artAudit));
+        console.log('CAT BOND 32-BREED ART PASS',JSON.stringify(artAudit));
       }
       await page.waitForTimeout(80); // MutationObserver's ZH→EN DOM pass
       const starterCopy=await page.locator('#panel.open').innerText();

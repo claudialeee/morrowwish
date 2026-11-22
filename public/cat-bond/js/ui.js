@@ -54,14 +54,6 @@ const UI = {
     const placementCancel=document.getElementById('yard-placement-cancel');
     if(placementConfirm)placementConfirm.addEventListener('click',()=>this.confirmBuildingPlacement());
     if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
-    document.getElementById('yard-quick-skills')?.addEventListener('click',()=>{
-      // Prefer the cat with a newly unlocked skill; otherwise use the starter.
-      const cat=State.S.cats?.find(c=>Array.isArray(c.unseenSkills)&&c.unseenSkills.length)
-        ||State.S.cats?.[0];
-      if(cat)this.openSkillEditor(cat);
-      else this.game.toast(this.isEnglish()?'Adopt a cat first':'先领养一只小猫');
-    });
-    document.getElementById('yard-quick-work')?.addEventListener('click',()=>this.openWorkshop());
     this.syncYardNav();
     window.addEventListener('morrowwish-language-change',()=>this.syncYardNav());
     const journey=document.getElementById('collection-goal');
@@ -120,12 +112,8 @@ const UI = {
     const en=this.isEnglish();
     const tabCats=document.querySelector('[data-tab="cats"] .nav-caption');
     const tabWork=document.querySelector('[data-tab="work"] .nav-caption');
-    if(tabCats)tabCats.textContent=en?'Cats / Skills':'猫咪·技能';
-    if(tabWork)tabWork.textContent=en?'Earn in Workshop':'工坊赚钱';
-    const skill=document.getElementById('yard-quick-skills');
-    const work=document.getElementById('yard-quick-work');
-    if(skill)skill.textContent=en?'✨ New Skills':'✨ 新技能';
-    if(work)work.textContent=en?'🪙 Workshop':'🪙 工坊赚钱';
+    if(tabCats)tabCats.textContent=en?'Cats':'猫咪';
+    if(tabWork)tabWork.textContent=en?'Workshop':'工坊';
   },
   startBuildingPlacement(type){
     const en=this.isEnglish();
@@ -187,13 +175,31 @@ const UI = {
     }
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     if (tab === 'yard') { this.closeAll(); }
-    else if (tab === 'cats') this.openRoster();
+    else if (tab === 'cats') this.openCatHub('solo');
     else if (tab === 'work') this.openWorkshop();
     else if (tab === 'dex') this.openDex();
     else if (tab === 'daily') this.openDaily();
     else if (tab === 'shop') this.openShop();
   },
 
+
+  openCatHub(view='solo'){
+    if(view==='duo'){
+      const pending=window.CatRelations?.unresolved?.()[0];
+      this.openBondPanel(!!pending);
+    }else this.openRoster();
+    document.querySelectorAll('#tabbar .tab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='cats'));
+  },
+  catHubTabs(view){
+    const card=document.querySelector('#panel>.card');
+    if(!card||card.querySelector('.cat-hub-tabs'))return;
+    const en=this.isEnglish();
+    card.insertAdjacentHTML('afterbegin',
+      '<nav class="cat-hub-tabs" role="tablist" aria-label="'+(en?'Cat collection':'猫咪管理')+'">'+
+      '<button type="button" role="tab" data-cat-view="solo" aria-selected="'+(view==='solo')+'">'+(en?'Single Cats':'单猫')+'</button>'+
+      '<button type="button" role="tab" data-cat-view="duo" aria-selected="'+(view==='duo')+'">'+(en?'Cat Duos':'双猫')+'</button></nav>');
+    card.querySelectorAll('[data-cat-view]').forEach(b=>b.onclick=()=>this.openCatHub(b.dataset.catView));
+  },
 
   // Saved expedition selection never expands to three cats behind the player's back.
   getPreferredBattleTeam(){
@@ -502,7 +508,7 @@ const UI = {
   },
   openBondPanel(preferUnresolved=false){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
-    if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
+    if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');this.catHubTabs('duo');return;}
     const pendingPair=preferUnresolved?CatRelations.unresolved?.()[0]:null;
     // Build the visible gallery from EARNED relationship records only.
     // Simply owning two cats does not reveal their ability or cinematics.
@@ -646,6 +652,7 @@ const UI = {
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
+    this.catHubTabs('duo');
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
       const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
       if(!entry)return;
@@ -716,7 +723,7 @@ const UI = {
       else if(v.reason==='fish')this.game.toast(en?'Not enough fish':'小鱼不够啦');
       this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
     };
-    document.getElementById('duo-return').onclick=()=>this.openJourney();
+    document.getElementById('duo-return').onclick=()=>this.openCatHub('solo');
   },
 
   // ---- 欢迎回来 (offline raising report) ----
@@ -1054,6 +1061,7 @@ const UI = {
     if(cats.length===0){
       this.panel(`<span class="card-close">×</span><h2>${english?'My Cats':'我的猫猫'}</h2>
         <p class="sub">${english?'Find your first cat in the yard!':'还没有猫猫，去庭院捉迷藏吧！'}</p>`);
+      this.catHubTabs('solo');
       return;
     }
     // Group duplicate *individuals* under one illustrated breed card; no saved
@@ -1071,9 +1079,11 @@ const UI = {
       if(!sp)return '';
       const strongest=group.reduce((best,cat)=>!best||State.catPower(cat)>State.catPower(best)?cat:best,null);
       const mastered=!!State.S.masteryBadges?.[id];
+      const fresh=group.some(cat=>Array.isArray(cat.unseenSkills)&&cat.unseenSkills.length>0);
       return `<button type="button" class="dex-cell breed-group ${mastered?'golden-paw':''}" data-breed="${id}"
         aria-label="${english?'Open':'查看'} ${GameData.speciesName(sp)} ${group.length}">
         ${mastered?'<span class="golden-paw-stamp">🏅 S</span>':''}
+        ${fresh?'<span class="cat-new-skill">✨ '+(english?'New skill':'新技能')+'</span>':''}
         ${group.length>1?'<span class="breed-group-count">×'+group.length+'</span>':''}
         <canvas width="90" height="76"></canvas>
         <div class="name">${GameData.speciesName(sp)}</div>
@@ -1087,6 +1097,7 @@ const UI = {
         ?speciesGroups.size+' breeds · Duplicate cats are grouped; tap a breed to manage them.'
         :'已收集 '+speciesGroups.size+' 个品种 · 同品种合并展示，点开可管理每一只。'}</p>
       <div class="dex-grid">${cards}</div>`);
+    this.catHubTabs('solo');
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel [data-breed]').forEach(cell=>{
       const sp=GameData.speciesById(cell.dataset.breed);
