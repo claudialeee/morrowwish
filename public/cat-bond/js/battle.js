@@ -1480,9 +1480,17 @@ class CaptureBattle {
     const t = this.supportBeneficiary(f, sk, aim);   // friend or self
     if(sk.kind==='heal'){
       const canCleanse = sk.tags?.includes('cleanse') && t.status && Object.keys(t.status).length;
-      if(t.hp>=t.maxhp-.5 && !canCleanse)return false;
-      const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*.34));
+      // 元素愈合微调 (generic template tweaks): `big` heals more (light), `hot` leaves a
+      // regen-over-time (water). An un-wounded target still accepts a hot/cleanse refresh.
+      const hasHot = !!sk.hot;
+      if(t.hp>=t.maxhp-.5 && !canCleanse && !hasHot)return false;
+      const pct = sk.big ? 0.46 : 0.34;
+      const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*pct));
       t.hp=Math.min(t.maxhp,t.hp+amount);
+      if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035; }   // ~3.5%/s for 4s (water)
+      if(sk.selfBuff){ f.damageBoostT=Math.max(f.damageBoostT||0,3.0); }       // fire self-heal also buffs
+      if(sk.haste){ t.hasteT=Math.max(t.hasteT||0,4.0); }                      // elec heal → brief speed-up
+      if(sk.leech){ f.hp=Math.min(f.maxhp,f.hp+amount*0.5); }                  // dark heal also siphons for the caster
       // 舔毛理顺 Grooming: wash off the worst debuff as well as healing.
       if(canCleanse){
         const worst=Object.keys(t.status)[0];
@@ -1757,16 +1765,19 @@ class CaptureBattle {
     this.skillStrokes.push({kind:'clawSlash',x:f.x,y:f.y,angle:aim,color:col,life:.37,max:.37});
     this.vfx.slash(f.x, f.y, aim, col, RANGE * 0.9, ARC * 0.92);
     this.vfx.burst(f.x + Math.cos(aim) * RANGE * 0.6, f.y + Math.sin(aim) * RANGE * 0.6, { count: this.game.isTouch ? 4 : 8, color: col, angle: aim, spread: ARC, speed: 220, life: 0.28, r: 2.5, drag: 3 });
-    let hit = false;
+    let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {
       const d = Math.hypot(e.x - f.x, e.y - f.y);
       if (d > RANGE + (e.r||18)*.65) continue;
       const ang = Math.atan2(e.y - f.y, e.x - f.x);
       if (Math.abs(this.angleDiff(ang, aim)) > ARC) continue;   // must be in the frontal arc
       const r = this.resolveHit(e, 'me', skill, dmg, e.x, e.y);  // melee can't be reflected (no proj)
-      if (r.dealt > 0) hit = true;
+      if (r.dealt > 0) { hit = true; dealtTotal += r.dealt; }
     }
     if (hit) this.shakeT = Math.max(this.shakeT, 0.1);
+    // 藤蔓爪微调 lifesteal: a grass melee heals the caster a cut of damage it landed.
+    const steal = skill && skill.lifesteal;
+    if (steal && dealtTotal > 0 && f.alive) f.hp = Math.min(f.maxhp, f.hp + dealtTotal * steal);
   }
 
   // ---------------- offensive skill dispatch by KIND ----------------
@@ -1931,8 +1942,10 @@ class CaptureBattle {
   dashLunge(f, aim, sk, dmg, col) {
     // A DASH IS PHYSICAL MOVEMENT. Damage only on real contact during tick.
     // Never draw the old 190px laser or pre-hit every enemy on its segment.
-    f.dashT=.24;f.inv=.28;f.pounce=true;f._dashAim=aim;
-    f._dashReach=120;f._dashTravel=0;f._pounceSkill=sk;f._pounceDmg=dmg;
+    // 元素冲刺微调: stealthFrames (dark) = longer i-frames through the dash; knockMul
+    // (water) = heavier shove on contact (read in the contact-knockback at tick time).
+    f.dashT=.24;f.inv=sk&&sk.stealthFrames?.5:.28;f.pounce=true;f._dashAim=aim;
+    f._dashReach=120;f._dashTravel=0;f._pounceSkill=sk;f._pounceDmg=dmg;f._dashKnockMul=(sk&&sk.knockMul)||1;
     this.vfx.trail(f.x,f.y,col,9);
     this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim+Math.PI,
       spread:.7,speed:110,life:.24,r:2});
@@ -2199,6 +2212,7 @@ class CaptureBattle {
     let m = f.slowed ? 0.55 : 1;
     if (f._castSlow > 0) m *= 0.5;          // sluggish recovery after a heavy cast
     if ((f.reflectT || 0) > 0) m *= 0.5; // directional reflect wall: half movement speed
+    if ((f.hasteT || 0) > 0) m *= 1.25;  // 静电舔毛 haste: brief move speed-up (elec heal tweak)
     return m;
   }
   canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
@@ -3235,6 +3249,9 @@ class CaptureBattle {
       if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
       // 踩奶 Knead stacks decay together when the rhythm window lapses.
       if (f.kneadT > 0) { f.kneadT=Math.max(0,f.kneadT-dt); if(f.kneadT===0) f.kneadStacks=0; }
+      // HoT regen from a `hot` heal (water template tweak): drip until the window lapses.
+      if (f.hotT > 0) { f.hotT=Math.max(0,f.hotT-dt); if(f.alive&&f.hp<f.maxhp) f.hp=Math.min(f.maxhp,f.hp+(f.hotRate||0)*dt); }
+      if (f.hasteT > 0) f.hasteT=Math.max(0,f.hasteT-dt);   // 静电舔毛 haste window (elec heal tweak)
       if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
       // SAFETY: a root flag with no live cast/beam backing it would freeze the cat
       // forever (the "卡在原地没动" auto-battle bug). Self-heal any orphaned root.
@@ -3287,9 +3304,18 @@ class CaptureBattle {
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + (e.r||18)*.6) {
-          const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * this.outgoingBuffMult(f);
+          let dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * this.outgoingBuffMult(f);
           const contact=f._pounceSkill;
+          // 暗影微调 backstab: a dash/pounce landing from behind the target hits harder.
+          if(contact?.backstab){
+            const facing=Math.atan2((e._vy||0),(e._vx||0));
+            const fromBehind=Math.abs(((f._dashAim||0)-facing+Math.PI)%(Math.PI*2))<1.1;
+            if(fromBehind||Math.random()<0.5) dmg*=contact.backstab;
+          }
           this.resolveHit(e, 'me', contact||{element:f.element},dmg,e.x,e.y);
+          // lifesteal/leech (grass melee / dark heal-type tweak): caster recovers a cut of it.
+          const steal=contact&&(contact.lifesteal||contact.leech);
+          if(steal&&f.alive) f.hp=Math.min(f.maxhp,f.hp+dmg*steal);
           // Electric pounces are physical lightning impacts, not distant rays.
           if(contact?.element==='elec'){
             this.vfx.burst(e.x,e.y,{count:this.game.isTouch?9:15,
@@ -3297,7 +3323,7 @@ class CaptureBattle {
             this.vfx.ring(e.x,e.y,{r0:9,vr:120,
               life:.25,color:'#8da8ef',width:4});
           }
-          this.hurtEnemy && (e.kbx = (e.kbx||0) + Math.cos(f._dashAim||0) * 260, e.kby = (e.kby||0) + Math.sin(f._dashAim||0) * 260);  // knockback
+          { const kb=260*(f._dashKnockMul||1); e.kbx=(e.kbx||0)+Math.cos(f._dashAim||0)*kb; e.kby=(e.kby||0)+Math.sin(f._dashAim||0)*kb; }  // knockback (×knockMul: water dash shoves harder)
           f.pounce=false;f._pounceDmg=null;f._pounceSkill=null;
           f._dashReach=null;f._dashTravel=0;f.dashT=0;
         }
