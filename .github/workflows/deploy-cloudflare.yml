@@ -140,14 +140,18 @@ jobs:
               && grep -Fq "$expected_js" /tmp/catbond-live.html \
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-main.js "https://morrowwish.pages.dev/cat-bond/js/main.js?verify=$GITHUB_SHA&attempt=$attempt" \
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-style.css "https://morrowwish.pages.dev/cat-bond/css/style.css?verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-world.js "https://morrowwish.pages.dev/cat-bond/js/world.js?verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-yard.svg "https://morrowwish.pages.dev/cat-bond/assets/yard-storybook.svg?verify=$GITHUB_SHA&attempt=$attempt" \
               && cmp -s public/cat-bond/js/main.js /tmp/catbond-live-main.js \
-              && cmp -s public/cat-bond/css/style.css /tmp/catbond-live-style.css; then
+              && cmp -s public/cat-bond/css/style.css /tmp/catbond-live-style.css \
+              && cmp -s public/cat-bond/js/world.js /tmp/catbond-live-world.js \
+              && cmp -s public/cat-bond/assets/yard-storybook.svg /tmp/catbond-live-yard.svg; then
               latest=1; break
             fi
             sleep 4
           done
           test "$latest" = 1 || { echo "::error::Cloudflare Cat Bond HTML/JS/CSS still stale after deployment"; exit 1; }
-          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact JS/CSS bytes."
+          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact main/world JS, CSS, and garden SVG bytes."
           for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /pawsibly-innocent/cat-music.js /audio/cat-happy-clappy.ogg /icons/pawsibly-innocent.svg /studio-insights/; do
             ready=0
             for attempt in 1 2 3 4 5 6; do
