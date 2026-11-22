@@ -141,6 +141,10 @@
     if(route==='cat-bond'){
       const guide=document.getElementById('battle-skill-info-toggle');
       if(guide)controls.insertBefore(guide,button);
+      // Preserve its existing event listeners while placing the map menu
+      // immediately to the LEFT of fullscreen on phones and desktop.
+      const menu=document.getElementById('map-menu');
+      if(menu)controls.insertBefore(menu,guide||button);
     }
     installStyles();
     if(route==='cat-bond'){
