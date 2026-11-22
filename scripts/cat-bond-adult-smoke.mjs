@@ -12,8 +12,27 @@ try {
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:8765/cat-bond/adult-preview.html',
       {waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>window.CatBondAdultArt?.loadedCount===32,
-      null,{timeout:25000});
+    try {
+      await page.waitForFunction(()=>window.CatBondAdultArt?.loadedCount===32,
+        null,{timeout:25000});
+    } catch(error) {
+      const diagnostics=await page.evaluate(()=>({
+        adultArtPresent:!!window.CatBondAdultArt,
+        breedCount:window.CatBondAdultArt?.breedCount,
+        loadedCount:window.CatBondAdultArt?.loadedCount,
+        watercolorStatus:window.CatBondArtworkStatus?.breedsLoaded,
+        originalStatus:window.CatBondArtworkStatus?.originalLoaded,
+        catRendererPresent:!!window.CatArt,
+        gameDataPresent:!!window.GameData,
+        cards:document.querySelectorAll('.breed-card').length,
+        statusText:document.querySelector('#load-status')?.textContent,
+        resourceEntries:performance.getEntriesByType('resource')
+          .filter(x=>/watercolor|real-kittens|adult-art/.test(x.name))
+          .map(x=>({url:x.name,transferSize:x.transferSize,duration:Math.round(x.duration)}))
+      }));
+      console.error('CAT BOND ADULT ART LOAD DIAGNOSTIC',p.name,JSON.stringify({diagnostics,errors}));
+      throw error;
+    }
     const check=await page.evaluate(()=>{
       const cards=[...document.querySelectorAll('.breed-card')];
       const thumbs=cards.map(c=>[...c.querySelectorAll('canvas')]);
