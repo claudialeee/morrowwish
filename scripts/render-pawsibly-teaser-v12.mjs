@@ -55,14 +55,14 @@ const filters=ordered.map((s,i)=>{
    const a=path.join(captureDir,'hook-1.txt'),b=path.join(captureDir,'hook-2.txt');
    fs.writeFileSync(a,'STEAL THREE FISH.');fs.writeFileSync(b,'DON\'T GET CAUGHT.');
    chain+=',drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:textfile='+a+
-    ':fontcolor=white:fontsize=52:x=(w-text_w)/2:y=205:shadowcolor=black@0.8:shadowx=3:shadowy=3:box=1:boxcolor=black@0.50:boxborderw=14';
+    ':fontcolor=white:fontsize=52:x=(w-text_w)/2:y=65:shadowcolor=black@0.8:shadowx=3:shadowy=3:box=1:boxcolor=black@0.50:boxborderw=14';
    chain+=',drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:textfile='+b+
-    ':fontcolor=white:fontsize=44:x=(w-text_w)/2:y=285:shadowcolor=black@0.8:shadowx=3:shadowy=3:box=1:boxcolor=black@0.45:boxborderw=12';
+    ':fontcolor=white:fontsize=44:x=(w-text_w)/2:y=145:shadowcolor=black@0.8:shadowx=3:shadowy=3:box=1:boxcolor=black@0.45:boxborderw=12';
  }
  if(s.scene==='last-chase'){
    const file=path.join(captureDir,'twist.txt');fs.writeFileSync(file,'NOT SO LUCKY THIS TIME...');
    chain+=',drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:textfile='+file+
-    ':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=205:shadowcolor=black@0.8:shadowx=3:shadowy=3:box=1:boxcolor=black@0.46:boxborderw=12';
+    ':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=65:shadowcolor=black@0.8:shadowx=3:shadowy=3:box=1:boxcolor=black@0.46:boxborderw=12';
  }
  return chain+'[v'+i+']';
 });
