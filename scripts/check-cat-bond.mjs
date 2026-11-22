@@ -391,8 +391,8 @@ const balanceEnemy=damageBalance.enemies[0];
 balanceEnemy.maxhp=10000;balanceEnemy.hp=10000;balanceEnemy.alive=true;
 balanceEnemy.status={expose:4,rust:4};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,true);
-assert.ok(Math.abs((10000-balanceEnemy.hp)-117)<.001,
-  'stacked expose/rust vulnerability is additive and player damage is 0.9x');
+assert.ok(Math.abs((10000-balanceEnemy.hp)-118.8)<.001,
+  'expose +20% and rust +12% stack additively, then player damage is scaled to 90%');
 balanceEnemy.hp=1000;balanceEnemy.flash=0;
 balanceEnemy.status={};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
