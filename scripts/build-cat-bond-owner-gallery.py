@@ -21,7 +21,7 @@ def inline(match):
 regex=re.compile(r'<script src="\.\./public/cat-bond/js/([a-zA-Z0-9_-]+)\.js(?:\?[^"]*)?"></script>')
 html,n=regex.subn(inline,html)
 assert n>=9, f"Expected inline game modules, got {n}"
-assert "duo-premium-sheet.webp" not in html or "data:image/webp;base64," in html
+assert "img.src=\'data:image/webp;base64," in html, "Premium art not embedded"
 html=html.replace('href="../public/cat-bond/"','href="https://morrowwish.vercel.app/cat-bond/"')
 dest=Path("/tmp/cat-bond-premium-21-duos-review.html")
 dest.write_text(html,encoding="utf-8")
