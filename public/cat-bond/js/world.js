@@ -720,7 +720,11 @@ class YardScene {
     const drawables = [];
     for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
     for (const b of (State.S.yardBuildings || [])) drawables.push({ y: b.y, kind: 'building', ref: b });
-    for (const e of this.entities) drawables.push({ y: e.y, kind: 'cat', ref: e });
+    // While visibly using a structure, render the whole kitten in front of
+    // its object (not hidden behind the post it is scratching).
+    for(const e of this.entities)drawables.push({
+      y:e.y+(e._playBuilding&&e._playBuildT>0?20:0),kind:'cat',ref:e
+    });
     if (this.hide && !this.hide.found) drawables.push({ y: this.hide.spot.y + 0.1, kind: 'hide', ref: this.hide });
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) {
