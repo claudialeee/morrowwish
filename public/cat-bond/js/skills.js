@@ -319,7 +319,7 @@
     if (s.ultCost > 0) return null;
     if (s.kind === 'melee') return 'melee';
     if (s.kind === 'projectile') return 'ranged';
-    if (s.kind === 'dash') return 'dash';
+    if (['dash','pounce','leap'].includes(s.kind)) return 'dash';
     if (s.kind === 'heal') return 'heal';
     if (s.kind === 'buff' && (s.shieldType || (s.tags || []).includes('shield'))) return 'shield';
     return null;
@@ -732,7 +732,17 @@
       if (sig && !isUlt && tier < 2 && rIdx < 2) continue;
       out.push(s);
     }
-    return out;
+    // Hide obsolete generic mobility fillers when the element already has a
+    // hand-authored pounce/leap. Existing equipped IDs are grandfathered until
+    // the player re-equips them; nothing is removed from the lookup map.
+    const retiredDash=new Set(['gen_water_dash','gen_grass_dash','gen_dark_dash','gen_light_dash']);
+    // A learned tier-2 move supersedes its tier-1 counterpart in selection.
+    // Keep the old ID resolvable for legacy save migration.
+    const upgrades=new Set(out.filter(sk=>sk.upgradeOf).map(sk=>sk.upgradeOf));
+    const equipped=new Set([...(cat.loadout||[]),...(cat.autoSkillLoadout||[])]);
+    return out.filter(sk=>
+      (!retiredDash.has(sk.id)||equipped.has(sk.id)) &&
+      (!upgrades.has(sk.id)||equipped.has(sk.id)));
   }
 
   // BASIC-ELIGIBLE: a skill the player may slot as their LEFT-CLICK basic attack.
@@ -792,8 +802,18 @@
   // Keep valid player-chosen equipment; backfill new unlocks and safely migrate
   // legacy 2/3-slot saves without erasing the rest of the user's progress.
   function ensureLoadout(cat){
+    // Promote saved tier-1 IDs to learned upgrades before calculating legal
+    // choices; never wipe custom equipment or break legacy IDs in save files.
+    const current=Array.isArray(cat.loadout)?cat.loadout.slice():[];
+    const learned=new Set(Array.isArray(cat.learned)?cat.learned:[]);
+    for(let i=0;i<current.length;i++){
+      const next=upgradeTargetOf(current[i]);
+      if(next&&learned.has(next))current[i]=next;
+    }
+    if(Array.isArray(cat.loadout)&&current.some((id,i)=>id!==cat.loadout[i])){
+      cat.loadout=current.slice();
+    }
     const available=new Set(learnableSkills(cat).map(sk=>sk.id));
-    const current=Array.isArray(cat.loadout)?cat.loadout:[];
     const defaults=defaultLoadout(cat);
     // Auto-created equipment upgrades itself when a new level/bond gate opens.
     // An explicitly edited loadout is left alone and only repairs illegal slots.
