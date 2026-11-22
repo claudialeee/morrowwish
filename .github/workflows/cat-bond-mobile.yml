@@ -6,6 +6,7 @@ on:
       - 'public/cat-bond/**'
       - 'public/game-fullscreen.js'
       - 'scripts/cat-bond-touch-smoke.mjs'
+      - 'scripts/cat-bond-panel-scroll-smoke.mjs'
       - 'scripts/cat-bond-topbar-smoke.mjs'
       - 'scripts/cat-bond-adult-smoke.mjs'
       - 'scripts/cat-bond-ult-visual-smoke.mjs'
@@ -65,6 +66,8 @@ jobs:
           node scripts/cat-bond-autofight-smoke.mjs
           node scripts/cat-bond-squad-smoke.mjs
           node scripts/cat-bond-touch-smoke.mjs
+          # Verify skill/duo selection never jumps a long 320/390px panel to the top.
+          node scripts/cat-bond-panel-scroll-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
 
