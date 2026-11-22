@@ -29,15 +29,15 @@ assert.ok(posts.some(p=>p.platform==='tiktok'&&p.game==='pawsibly-innocent')&&po
 const yt=snap.platforms.find(x=>x.id==='youtube');
 const ytPosts=posts.filter(p=>p.platform==='youtube');
 const ytExpected={
- 'cat-bond':['ELv02K9K294',11],
- 'pawsibly-innocent':['JUQ8PsYCFG8',38],
+ 'cat-bond':['ELv02K9K294',13],
+ 'pawsibly-innocent':['JUQ8PsYCFG8',39],
  'tiny-town':['64Uh0S9dqmQ',1],
  'elsewhere':['n8bbePy8Unw',3],
- 'flip-dash':['cC7akb-kUIo',216],
+ 'flip-dash':['cC7akb-kUIo',219],
  'parcel-panic':['c1qeZ3tvuLU',16],
  'pocket-aquarium':['O3tMbulVPvk',36]
 };
-assert.equal(yt.views,321,'seven current owner-confirmed YouTube Shorts sum to 321');
+assert.equal(yt.views,327,'seven current owner-confirmed YouTube Shorts sum to 327');
 assert.equal(ytPosts.length,7,'seven current Shorts only');
 for(const [game,[id,views]] of Object.entries(ytExpected)){
  const p=ytPosts.find(x=>x.game===game);
