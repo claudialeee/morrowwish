@@ -1020,9 +1020,15 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const bondIntro=fs.readFileSync('public/cat-bond/index.html','utf8');
  const bondViewer=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
  const bondPremium=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
- const galleryMarkup=bondIntro.match(/<div class="intro-cat-gallery">([\s\S]*?)<\/div>\s*<div class="intro-gallery-caption">/);
+ // Gallery and caption are independent siblings. Start Adventure is intentionally
+ // between them, so the previous adjacent-sibling regex blocked deployment.
+ const galleryMarkup=bondIntro.match(/<div class="intro-cat-gallery">([\s\S]*?)<\/div>/);
+ const galleryEnd=galleryMarkup ? bondIntro.indexOf(galleryMarkup[0])+galleryMarkup[0].length : -1;
+ const ctaAfterGallery=bondIntro.indexOf('id="intro-start"',galleryEnd);
+ const captionAfterCta=bondIntro.indexOf('class="intro-gallery-caption"',ctaAfterGallery);
  if(!galleryMarkup||!galleryMarkup[1].includes('id="intro-cats"')||
     galleryMarkup[1].includes('class="intro-gallery-caption"')||
+    galleryEnd<0||ctaAfterGallery<galleryEnd||captionAfterCta<ctaAfterGallery||
     !cbCss.includes('#intro > .intro-gallery-caption')||
     !cbUi.includes('this.openUnlockedDuoViewer(entry.a,entry.b)')||
     !cbUi.includes('this.openUnlockedDuoViewer(a,b)')||
