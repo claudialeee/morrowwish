@@ -1479,12 +1479,30 @@ class CaptureBattle {
     if(!sk)return false;
     const t = this.supportBeneficiary(f, sk, aim);   // friend or self
     if(sk.kind==='heal'){
-      const canCleanse = sk.tags?.includes('cleanse') && t.status && Object.keys(t.status).length;
-      // 元素愈合微调 (generic template tweaks): `big` heals more (light), `hot` leaves a
-      // regen-over-time (water). An un-wounded target still accepts a hot/cleanse refresh.
+      // ELEMENT HEAL IDENTITY (#56):
+      //   water  healMode:'area'  — a lingering area HoT: every teammate within radius
+      //                             gets a regen-over-time (breadth, for multi-cat fights)
+      //   light  healMode:'single'— lock the most-hurt ally, one big burst (raw量)
+      //   grass  healMode:'cleanse'— medium heal + strip one debuff / CC (resilience)
+      //   fire/elec/dark — selfish self-heal (selfBuff/haste/leech, handled below)
+      if(sk.healMode==='area'){
+        const R=160, hpBack=f.maxhp; let any=false;
+        for(const tf of this.team){ if(!tf.alive)continue;
+          if(Math.hypot(tf.x-f.x,tf.y-f.y)>R && tf!==f)continue;   // caster + nearby allies
+          tf.hotT=Math.max(tf.hotT||0,5.0); tf.hotRate=tf.maxhp*0.03;   // ~3%/s for 5s
+          any=true;
+        }
+        this.vfx.ring(f.x,f.y,{r0:R*0.3,vr:R*2,life:.6,color:'#8fe0ff',width:5});
+        this.vfx.text(f.x,f.y-34,window.MorrowwishI18n?.get?.()!=='zh'?'regen field':'回复领域','#a8e9f0',14);
+        this.gainUlt(6); window.CatBondSkillFX?.support(this,f,sk);
+        return any;
+      }
+      const canCleanse = (sk.healMode==='cleanse'||sk.tags?.includes('cleanse')) && t.status && Object.keys(t.status).length;
+      // 元素愈合微调 (generic template tweaks): `big`/single heals more (light), `hot`
+      // leaves a regen-over-time. An un-wounded target still accepts a hot/cleanse refresh.
       const hasHot = !!sk.hot;
       if(t.hp>=t.maxhp-.5 && !canCleanse && !hasHot)return false;
-      const pct = sk.big ? 0.46 : 0.34;
+      const pct = (sk.healMode==='single'||sk.big) ? 0.46 : 0.34;   // light single = big burst; grass = medium
       const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*pct));
       t.hp=Math.min(t.maxhp,t.hp+amount);
       if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035; }   // ~3.5%/s for 4s (water)

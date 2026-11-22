@@ -231,7 +231,7 @@
     // ---- 水 water ----
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
     { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
-    { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal','cleanse'],appliesTag: null, vfx: 'orb',       desc: '舔毛理顺安抚自身，回复斗志并洗去一种异常状态。' },
+    { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 斗士能领悟。', unlock: { element: 'water', role: ['tank','fighter'] } },
     { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.3, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
@@ -245,7 +245,7 @@
     { id: 'thornCoil',  name: '荆缠',     element: 'grass', kind: 'melee',      power: 1.1, cd: 3.5, ultCost: 0,  tags: ['bind','bleed'],  appliesTag: 'bleed', vfx: 'impact',    desc: '荆棘缠绕撕裂，造成流血。' },
     { id: 'boxAmbush',  name: '纸箱埋伏', element: 'grass', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','camo'],   appliesTag: null, vfx: 'ring',      desc: '钻进纸箱短暂隐身不可被选中，下一击必定把目标打得踉跄并造成双倍伤害。' },
     { id: 'quakeStomp', name: '泰山压顶', element: 'grass', kind: 'leap',       power: 1.4, cd: 5.0, ultCost: 0,  heavy: true, tags: ['melee','stagger'], appliesTag: null, vfx: 'impact', desc: '腾空跃起，泰山压顶般砸向目标点，落地小范围震荡并击虚周围敌人。' },
-    { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'orb',       desc: '吸收日光回复自身斗志。' },
+    { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal', healMode: 'cleanse', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal','cleanse'], appliesTag: null, vfx: 'orb', desc: '吸收日光回复斗志，并洗去一种异常状态或挣脱束缚——草木的再生之力。' },
     { id: 'knead',      name: '踩奶',     element: 'grass', kind: 'buff',       power: 0,   cd: 2.4, ultCost: 0,  tags: ['buff','knead'],  appliesTag: null,    vfx: 'orb',       desc: '原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。' },
     { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['bind','ult'], appliesTag: 'bind', vfx: 'shockwave', desc: '【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。' },
     // ---- 电 elec ----
@@ -264,7 +264,7 @@
     { id: 'prismBeam',  name: '棱光束',   element: 'light', kind: 'projectile', power: 1.2, cd: 2.6, ultCost: 0,  tags: ['ranged','blind'],appliesTag: 'blind', vfx: 'beam',      desc: '聚焦光束灼目，可致短暂失明。' },
     { id: 'highGround', name: '居高临下', element: 'light', kind: 'leap',       power: 1.4, cd: 4.5, ultCost: 0,  heavy: true, tags: ['melee','blind'], appliesTag: 'blind', vfx: 'impact', desc: '抢占高处俯冲而下的一记重扑，眩光致盲。侧后方突袭更狠。' },
     { id: 'blessFur',   name: '呼噜光环', element: 'light', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','regen'],  appliesTag: null,    vfx: 'orb',       desc: '发出安心的呼噜声形成光环，提升自身伤害。' },
-    { id: 'dawnHeal',   name: '慢眨眼',   element: 'light', kind: 'heal',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '对你缓缓眨眼表达信任，回复斗志。' },
+    { id: 'dawnHeal',   name: '慢眨眼',   element: 'light', kind: 'heal', healMode: 'single',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '对你缓缓眨眼表达信任，回复斗志。' },
     { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 60, tags: ['buff','ult','weaken'],    appliesTag: ['blind','weaken'], vfx: 'ring',      desc: '【必杀】月华绽放，致盲并削弱——敌人伤害减半。' },
 
     // ========================================================================
@@ -286,7 +286,7 @@
     // ---- 领悟条件 (quirky quests) ----
     { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 1.9, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
-    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal',       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
+    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal', healMode: 'single',       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
   ];
 
   // ==========================================================================
@@ -620,6 +620,12 @@
     if (u.affinity && (cat.affinity || 0) < u.affinity) return false;
     if (u.species && (!Array.isArray(u.species) || u.species.indexOf(cat.species) < 0)) return false;
     if (u.quest && !questMet(cat, u.quest)) return false;
+    // ROLE gate: only cats whose breed recommends one of these build-types may learn it
+    // (e.g. 舔毛理顺 team-heal is a Tank/Fighter skill — 收割 assassins can't learn it).
+    if (u.role) {
+      const roles = Array.isArray(u.role) ? u.role : [u.role];
+      if (roles.indexOf(buildTypeForBreed(cat)) < 0) return false;
+    }
     return true;
   }
   function hasLearned(cat, id) {
