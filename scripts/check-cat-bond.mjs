@@ -424,6 +424,12 @@ damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
 assert.ok(Math.abs((10000-balanceEnemy.hp)-148.5)<.001,
   'vulnerability caps at +50%, combo caps at +15%');
 assert.ok(damageBalance.comboMult()<=1.15,'combo never exceeds +15%');
+const playerVulnerable=damageBalance.me();
+playerVulnerable.status={expose:4,rust:8};
+const incomingDamage=damageBalance.applyEnemyHitEffects(playerVulnerable,{element:null},100,
+  playerVulnerable.x,playerVulnerable.y);
+assert.ok(Math.abs(incomingDamage-130)<.001,
+  'incoming expose/rust damage is additive and capped for player cats too');
 const statusEnemy=damageBalance.enemies[0];
 statusEnemy.status={burn:3,soak:3,shock:3,oil:3,chill:3,expose:3,rust:3};
 statusEnemy.tags=Object.keys(statusEnemy.status);
