@@ -15,12 +15,31 @@ page.on('pageerror',e=>errors.push('Runtime: '+e.message));
 try{
  await page.goto('http://127.0.0.1:8765/cat-bond/duo-showcase.html?visual-qa=21x3',
    {waitUntil:'domcontentloaded',timeout:30000});
- await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready&&
-   window.__catBondDuoGallery?.ready&&
-   window.CatBondDuoBreedActors?.ready&&
-   document.querySelectorAll('.stage-breed-preview').length===63&&
-   document.querySelectorAll('.duo-card .skill-preview').length===21&&
-   document.querySelectorAll('.breed-card').length===window.GameData?.SPECIES?.length,{timeout:40000});
+ const readiness=()=>({
+   premium:!!window.CatBondPremiumCinematics?.ready,
+   gallery:!!window.__catBondDuoGallery?.ready,
+   breedActors:!!window.CatBondDuoBreedActors?.ready,
+   previews:document.querySelectorAll('.stage-breed-preview').length,
+   skills:document.querySelectorAll('.duo-card .skill-preview').length,
+   breeds:document.querySelectorAll('.breed-card').length,
+   roster:window.GameData?.SPECIES?.length||0,
+   artStatus:!!window.CatBondArtworkStatus?.breedsLoaded,
+   error:document.querySelector('#gallery-error')?.textContent||''
+ });
+ try{
+   await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready&&
+     window.__catBondDuoGallery?.ready&&
+     window.CatBondDuoBreedActors?.ready&&
+     document.querySelectorAll('.stage-breed-preview').length===63&&
+     document.querySelectorAll('.duo-card .skill-preview').length===21&&
+     document.querySelectorAll('.breed-card').length===window.GameData?.SPECIES?.length,
+     null,{timeout:45000});
+ }catch(error){
+   const state=await page.evaluate(readiness);
+   await page.screenshot({path:DIR+'/startup-failure.png',fullPage:true});
+   throw Error('21x3 original-art startup readiness failed: '+JSON.stringify({state,errors})+
+     '; underlying: '+error.message);
+ }
  const result=await page.evaluate(()=>{
   const keys=window.CatBondDuoDirector.keys;
   const painter=window.CatBondPremiumCinematics;
