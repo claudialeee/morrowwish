@@ -4245,11 +4245,12 @@ class CaptureBattle {
     if ((e.staggerT || 0) > 0) vulnerabilityBonus += 0.30;
     const vulnBonus = Math.min(0.50, vulnerabilityBonus);
     const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
-    // Bosses remain immune; ordinary/elite enemies keep their execution effect,
-    // but it adds to (not multiplies with) vulnerability and combo bonuses.
+    // Boss: immune to auto-execute. Elite SR/SSR: fixed +20% execute bonus.
+    // Ordinary enemies retain the 20–55% low-HP ramp; all are additive.
     const boss = e.isBoss === true || e.boss === true || e.role === 'boss';
-    const executeBonus = (!boss && !isDot && frac0 < 0.28)
-      ? 0.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35 : 0;
+    const elite = e.role === 'elite' || (e.rIdx ?? -1) >= 2;
+    const executeBonus = (boss || isDot || frac0 >= 0.28) ? 0
+      : elite ? 0.20 : 0.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35;
     dmg *= 1 + vulnBonus + comboBonus + executeBonus;
     let scaled = dmg;
     if (fromDuo && this.duoField) {
