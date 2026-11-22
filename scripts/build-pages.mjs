@@ -46,12 +46,20 @@ const tiktokNative=fs.readFileSync(path.join(base,'src','tiktok-native.js'),'utf
   .replace(/^export /gm,'');
 const blueskyNative=fs.readFileSync(path.join(base,'src','bluesky-native.js'),'utf8')
   .replace(/^export /gm,'');
+const youtubeNative=fs.readFileSync(path.join(base,'src','youtube-native.js'),'utf8')
+  .replace(/^export /gm,'');
+const instagramNative=fs.readFileSync(path.join(base,'src','instagram-native.js'),'utf8')
+  .replace(/^export /gm,'');
 const analytics = 'const SOCIAL_SNAPSHOT='+JSON.stringify(social)+';\n'
   + tiktokNative+'\n'
   + blueskyNative+'\n'
+  + youtubeNative+'\n'
+  + instagramNative+'\n'
   + fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
     .replace('import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";','')
     .replace('import {nativeBlueskySnapshot} from "./bluesky-native.js";','')
+    .replace('import {nativeYouTubeSnapshot} from "./youtube-native.js";','')
+    .replace('import {nativeInstagramSnapshot,nativeInstagramRoute} from "./instagram-native.js";','')
     .replace('export async function api', 'async function api');
 const router = fs.readFileSync(path.join(base, 'src', 'worker.js'), 'utf8')
   .replace('import {api} from "./analytics.js";', '');
