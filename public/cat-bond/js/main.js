@@ -185,7 +185,7 @@ function paintIntroCatGallery() {
   // dimensions. Using one sprite scale makes the dark/cream pair visibly
   // larger than the orange/gray pair. Normalize each rendered alpha silhouette
   // instead of stretching its face, changing breed art, or guessing CSS sizes.
-  const catBottom=h-15,targetHeight=106,maxWidth=115;
+  const catBottom=h-15,targetHeight=132,maxWidth=140;
   ids.forEach((id,i)=>{
     const species=GameData.speciesById(id);
     if (!species) return;
@@ -217,7 +217,7 @@ function paintIntroCatGallery() {
       ctx.restore();
     }catch(_){
       // Legacy browser fallback retains intact cat art at approximate balance.
-      const scale=[1.58,1.47,1.30,1.30][i];
+      const scale=[1.96,1.83,1.62,1.62][i];
       CatArt.drawCat(ctx,xs[i],h-42*scale-8,{...o,scale});
     }
   });
