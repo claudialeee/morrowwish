@@ -4672,7 +4672,8 @@ class CaptureBattle {
       if (isMe) {
         ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd36b'; ctx.textAlign = 'center';
         ctx.font = '12px system-ui, sans-serif';
-        ctx.fillText('▾', tf.x, tf.y - Math.max(51,this.catScale('active')*72) + 2 * Math.sin(this.t * 4));
+        const grownScale=window.Growth?.visual(tf.cat)?.scale||1;
+        ctx.fillText('▾', tf.x, tf.y - Math.max(51,this.catScale('active')*72*grownScale) + 2 * Math.sin(this.t * 4));
         ctx.restore();
       }
     }

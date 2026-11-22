@@ -1429,7 +1429,7 @@ const UI = {
    const ctx=cv.getContext('2d');if(!ctx)return;
    const start=performance.now();
    const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-   const oldForm=beforeStage===0?null:{stage:1,scale:1.07,gem:true,gemColor:'#cbd4ff'};
+   const oldForm=beforeStage===0?null:{stage:1,scale:1.06,gem:true,gemColor:'#cbd4ff'};
    const newForm=Growth.visual(cat);
    const drawForm=(x,y,scale,form,opacity,pose='sit')=>{
      ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,opacity));

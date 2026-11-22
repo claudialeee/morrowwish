@@ -62,11 +62,11 @@ try{
       aura:!!awakened.aura,gems:awakened.gem,remaining:State.S.raising.starShards};
   });
   assert.equal(form.one,true);
-  assert.equal(form.adultScale,1.07);
+  assert.equal(form.adultScale,1.06);
   assert.equal(form.two,true);
   assert.equal(form.stage,2);
   assert.equal(form.branch,'agi');
-  assert.equal(form.scale,1.18);
+  assert.equal(form.scale,1.10);
   assert.equal(form.aura,true);
   assert.equal(form.remaining,0);
   const duo=await page.evaluate(()=>{

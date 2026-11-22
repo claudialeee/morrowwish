@@ -5,8 +5,8 @@
  * and broke the look in the Moonshadow Ruins. Never replace a painted breed
  * with a new vector cat just because its stage changes.
  *
- * Maturity is expressed through the existing uniform Growth.visual scale
- * (adult 1.07x, awakened 1.18x), paw-grounding, gem and awakening aura.
+ * Maturity is expressed through the conservative uniform Growth.visual scale
+ * (adult 1.06x, awakened 1.10x), paw-grounding, gem and awakening aura.
  * Every mature cat retains EXACTLY the same original watercolor breed source,
  * colors, expression and natural body proportions as its kitten form.
  */

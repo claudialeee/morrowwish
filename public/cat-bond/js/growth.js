@@ -70,7 +70,9 @@
     if (st <= 0) return null;
     return {
       stage: st,
-      scale: st === 2 ? 1.18 : 1.07,      // bigger forms
+      // A mature cat is visibly older without becoming oversized in the
+      // courtyard, expedition map or combat. Always scale the entire painting uniformly.
+      scale: st === 2 ? 1.10 : 1.06,
       aura: st === 2 ? (AWAKEN[cat.awaken] ? AWAKEN[cat.awaken].color : '#ffd36b') : null,
       sparkle: st === 2,
       gem: st >= 1,                        // a floating gem badge

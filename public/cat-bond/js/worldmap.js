@@ -956,7 +956,9 @@
       const render=window.CatMotion?.draw||window.CatArt?.drawCat;
       if(partnerSpecies&&render){
         // Gap keeps the partner from covering the player's face/ears.
-        const gap=game.H<480?64:73;
+        // Grown partners get breathing room without enlarging the explorer.
+        const grown=!!((leadCat?.stage||0)||(companion.stage||0));
+        const gap=(game.H<480?64:73)+(grown?5:0);
         const x=Math.max(53,Math.min(WORLD_W-53,w.px-(w.face||1)*gap));
         try{render(ctx,x,w.py+18,{
           species:partnerSpecies,scale:game.H<480?.78:.83,face:w.face,t:w.t,

@@ -180,20 +180,24 @@ class CatEntity {
     } else if(atPlay && !sleepy){ bob=2+Math.sin(this.t*9)*3; }
     const playful=mode==='post'||mode==='nip'||(atPlay&&!sleepy&&!use);
     this._renderedYardScale=drawScale*yardMagnify;
+    const growthForm=window.Growth ? Growth.visual(this.cat) : null;
+    // Match the rendered footprint for level tags and touch hit targets.
+    // Growth only adds 6% (adult) or 10% (awakened) to the kitten footprint.
+    this._renderedYardVisualScale=this._renderedYardScale*(growthForm?.scale||1);
     CatArt.drawCat(ctx, this.x+dx, this.y-bob, {
       species: sp, scale: this._renderedYardScale, face: this.face, t: this.t,
       motion: playful?.98:this.motion,
       stride: playful?this.stride+this.t*4:this.stride,
       pose: atPlay?(use?use.pose:(sleepy?'sleep':'play')):this.pose,
       mood: atPlay?(sleepy?'sleepy':'happy'):this.mood(),
-      growth: window.Growth ? Growth.visual(this.cat) : null,
+      growth: growthForm,
     });
     // name + level tag
     ctx.save();
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    roundTag(ctx, this.x, this.y - 44 * this._renderedYardScale, `${State.catName(this.cat)} Lv.${this.cat.level}`);
+    roundTag(ctx, this.x, this.y - 44 * this._renderedYardVisualScale, `${State.catName(this.cat)} Lv.${this.cat.level}`);
     ctx.restore();
     // No detached emoji bubbles above moving kittens.
     // Mood is conveyed through ears, eyes, posture and tail, all attached to the cat.
@@ -224,8 +228,9 @@ class CatEntity {
     // Match the full illustrated cat body (paws are near y+33*s, ears above).
     // A visible cat should be tappable on its head, not only on an old 40px dot.
     const s=this._renderedYardScale||1.2;
-    return Math.abs(px-this.x)<Math.max(40,37*s) &&
-      py>=this.y-69*s && py<=this.y+40*s;
+    const visibleSize=this._renderedYardVisualScale||s;
+    return Math.abs(px-this.x)<Math.max(40,37*visibleSize) &&
+      py>=this.y-69*visibleSize && py<=this.y+40*visibleSize;
   }
 }
 
