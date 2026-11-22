@@ -1030,7 +1030,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('rel?.value)<20')||
     !bondPremium.includes('if(!thumbnail&&dual>.09)')||
     !bondViewer.includes('duo-embedded')||
-    !bondIntro.includes('css/style.css?v=intro-compact-elements-20261121-1'))
+    !bondIntro.includes('css/style.css?v=catbond-cta-hierarchy-20261121-2'))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
  // First-run CTA precedes optional feature cards so short screens never cut it
@@ -1038,8 +1038,15 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const cbMain=fs.readFileSync('public/cat-bond/js/main.js','utf8');
  const startIndex=bondIntro.indexOf('id="intro-start"');
  const featuresIndex=bondIntro.indexOf('class="intro-features"');
+ const captionIndex=bondIntro.indexOf('class="intro-gallery-caption"');
+ if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
+    !cbMain.includes('ctx.getImageData(0,0,240,240)')||
+    !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
+    !bondIntro.includes('js/main.js?v=catbond-equal-cat-silhouettes-20261121-2')||
+    !cbCss.includes('background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important'))
+   throw Error('Cat Bond must balance intro kitten silhouettes and make Start primary');
  if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
-    !cbMain.includes("const feetY=h-43*scale-6")||
+    !cbMain.includes('const catBottom=h-15,targetHeight=132,maxWidth=140')||
     !cbCss.includes("#intro #intro-start{")||
     !cbCss.includes("order:0!important")||
     !cbCss.includes("overflow-y:auto!important")||

@@ -2728,3 +2728,152 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #intro .intro-features{max-width:420px!important}
  #intro #intro-start{width:min(300px,85%)!important}
 }
+
+
+/* 2026-11-21: one clear visual hierarchy on the Cat Bond first screen.
+   Title + kittens introduce the game; the ONLY primary action comes directly
+   next, before the small tagline, secondary copy and noninteractive features. */
+#intro{
+ --intro-berry:#865080;
+ --intro-ink:#57435e;
+}
+#intro .studio-badge{
+ opacity:.78!important;
+ transform:scale(.88);
+ transform-origin:center;
+ margin:0 auto!important;
+}
+#intro .game-logo{
+ color:#65466e!important;
+ font-weight:950!important;
+ letter-spacing:.055em!important;
+ text-shadow:0 2px 0 #fff8f2,0 6px 16px #89709225!important;
+}
+#intro .game-logo .logo-en{
+ color:#987da0!important;
+ font-size:.20em!important;
+ letter-spacing:.23em!important;
+ font-weight:750!important;
+}
+#intro > .intro-cat-gallery{
+ border-color:#fff9f2!important;
+ box-shadow:0 8px 20px #93789722,inset 0 2px 4px #fffaf9b0!important;
+}
+#intro #intro-start{
+ /* Override the old low-contrast pastel gold-button skin. */
+ order:0!important;
+ display:inline-flex!important;
+ align-items:center;justify-content:center;gap:9px;
+ position:relative;z-index:3;
+ width:min(370px,86vw)!important;
+ min-width:0!important;
+ min-height:62px!important;
+ padding:13px 24px!important;
+ margin:8px auto 6px!important;
+ color:#fff9f6!important;
+ font:950 clamp(20px,3.2vw,25px)/1.2 "PingFang SC","Microsoft YaHei",system-ui,sans-serif!important;
+ letter-spacing:.08em;
+ text-shadow:0 2px 2px #5e386080!important;
+ background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important;
+ border:3px solid #fff7f3!important;
+ border-radius:22px!important;
+ box-shadow:0 6px 0 #72507f57,0 13px 26px #7852775c,
+  inset 0 1px 3px #fff6f18e!important;
+ cursor:pointer;
+ transition:transform .16s ease,box-shadow .16s ease,filter .16s ease!important;
+}
+#intro #intro-start::before{
+ content:"🐾";display:inline-block;
+ font-size:clamp(20px,3vw,25px);line-height:1;
+ filter:drop-shadow(0 2px 2px #5e3a6b44);
+}
+#intro #intro-start::after{
+ content:"›";
+ font:900 28px/1 system-ui,sans-serif;
+ opacity:.95;margin-left:1px;
+}
+#intro #intro-start:hover{
+ filter:brightness(1.09)!important;
+ transform:translateY(-2px)!important;
+ box-shadow:0 8px 0 #72507f57,0 17px 28px #78527767!important;
+}
+#intro #intro-start:active{
+ filter:brightness(.98)!important;
+ transform:translateY(3px)!important;
+ box-shadow:0 2px 0 #72507f57,0 5px 12px #78527744!important;
+}
+#intro #intro-start:focus-visible{
+ outline:3px solid #e6be6e!important;
+ outline-offset:3px!important;
+}
+#intro > .intro-gallery-caption{
+ /* This should read as a subtitle, NOT a competing call-to-action. */
+ position:static!important;inset:auto!important;transform:none!important;
+ color:#806985!important;
+ background:transparent!important;
+ border:0!important;box-shadow:none!important;
+ font:725 clamp(11px,1.55vw,13px)/1.4 system-ui,sans-serif!important;
+ padding:1px 4px!important;
+ margin:0 auto!important;
+ white-space:normal!important;
+}
+#intro > p:not(#start-error){
+ color:#7a6c79!important;
+ font-size:clamp(11px,1.5vw,13px)!important;
+ font-weight:550!important;
+ line-height:1.5!important;
+ max-width:570px!important;
+}
+#intro .intro-features{
+ width:min(510px,100%)!important;
+ gap:6px!important;
+ margin:5px auto 0!important;
+}
+#intro .intro-features span{
+ background:#fffaf18a!important;
+ border:1px solid #f5eaf0b8!important;
+ box-shadow:none!important;
+ color:#827385!important;
+ font-size:clamp(10px,1.3vw,12px)!important;
+ font-weight:670!important;
+ line-height:1.35!important;
+ min-height:34px!important;
+ padding:6px 10px!important;
+}
+#intro .intro-guide{
+ max-width:500px!important;
+ border:0!important;
+ border-radius:10px!important;
+ background:transparent!important;
+ color:#8c7e8b!important;
+ box-shadow:none!important;
+ font-size:clamp(10px,1.2vw,12px)!important;
+ padding:2px 5px!important;
+}
+#intro .intro-guide strong{font-weight:650!important}
+#intro #intro-reset{
+ font-size:11px!important;
+ opacity:.75;
+}
+@media(max-width:700px){
+ #intro #intro-start{
+  width:min(325px,88vw)!important;
+  min-height:55px!important;
+  padding:11px 15px!important;
+  margin:5px auto 4px!important;
+  font-size:clamp(18px,5vw,22px)!important;
+  border-radius:18px!important;
+ }
+ #intro .intro-cat-gallery{margin-bottom:0!important}
+ #intro > .intro-gallery-caption{font-size:11px!important}
+ #intro .intro-features span{min-height:33px!important;padding:6px 7px!important}
+ #intro > p:not(#start-error){font-size:11.5px!important}
+}
+@media(max-height:610px){
+ #intro #intro-start{min-height:49px!important;margin:3px auto!important}
+ #intro .intro-features{margin:2px auto!important}
+ #intro .intro-gallery-caption{padding:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #intro #intro-start{transition:none!important}
+}

@@ -181,18 +181,44 @@ function paintIntroCatGallery() {
   const ids=['tangyuan','dundun','niuniu','yunduo'];
   const xs=[114,278,442,606];
   const poses=['sit','loaf','sit','sit'];
+  // The watercolor source breeds do NOT have the same painted silhouette
+  // dimensions. Using one sprite scale makes the dark/cream pair visibly
+  // larger than the orange/gray pair. Normalize each rendered alpha silhouette
+  // instead of stretching its face, changing breed art, or guessing CSS sizes.
+  const catBottom=h-15,targetHeight=132,maxWidth=140;
   ids.forEach((id,i)=>{
     const species=GameData.speciesById(id);
     if (!species) return;
-    ctx.save();
-    // Match the art bounds: raise and enlarge the cats so the frame is not
-    // mostly empty sky. Reserve six pixels below the paws; never crop ears.
-    const scale=i===1?1.65:1.78;
-    const feetY=h-43*scale-6;
-    CatArt.drawCat(ctx,xs[i],feetY,{
-      species,scale,face:i%2===0?1:-1,
-      pose:poses[i],mood:'happy',t:.5+i*.6
-    });
-    ctx.restore();
+    const o={species,scale:1.42,face:i%2===0?1:-1,
+      pose:poses[i],mood:'happy',t:.5+i*.6};
+    try{
+      const scratch=document.createElement('canvas');
+      scratch.width=240;scratch.height=240;
+      const sc=scratch.getContext('2d',{willReadFrequently:true});
+      if(!sc)throw new Error('No canvas context');
+      CatArt.drawCat(sc,120,142,o);
+      const pixels=sc.getImageData(0,0,240,240).data;
+      let minX=240,minY=240,maxX=-1,maxY=-1;
+      // Ignore subpixel shadow haze so all four HEADS/PAWS, not their
+      // transparent padded atlases, determine the same displayed height.
+      for(let y=0;y<240;y++)for(let x=0;x<240;x++){
+        if(pixels[(y*240+x)*4+3]<40)continue;
+        if(x<minX)minX=x;if(x>maxX)maxX=x;
+        if(y<minY)minY=y;if(y>maxY)maxY=y;
+      }
+      if(maxY<minY)throw new Error('Illustration not decoded');
+      const srcW=maxX-minX+1,srcH=maxY-minY+1;
+      const ratio=Math.min(targetHeight/srcH,maxWidth/srcW);
+      const drawW=srcW*ratio,drawH=srcH*ratio;
+      ctx.save();ctx.imageSmoothingEnabled=true;
+      ctx.imageSmoothingQuality='high';
+      ctx.drawImage(scratch,minX,minY,srcW,srcH,
+        xs[i]-drawW/2,catBottom-drawH,drawW,drawH);
+      ctx.restore();
+    }catch(_){
+      // Legacy browser fallback retains intact cat art at approximate balance.
+      const scale=[1.96,1.83,1.62,1.62][i];
+      CatArt.drawCat(ctx,xs[i],h-42*scale-8,{...o,scale});
+    }
   });
 }
