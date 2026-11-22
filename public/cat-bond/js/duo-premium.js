@@ -1,7 +1,8 @@
 /* Premium duo cinematic renderer: one uninterrupted watercolor painting
  * showing both complete cats in a shared setting. No clipped or pasted
- * silhouettes. 21 elemental choreographies over 63 complete painted frames.
- * Unsafe automatic coat recoloring was removed after visual QA found bleed.
+ * silhouettes. 21 elemental choreographies over 63 cat-free watercolor
+ * SCENES with the player's two real breed portraits as separate characters.
+ * Never overlay fixed illustrated cats or use destructive fur recoloring.
  */
 (function(){
 'use strict';
@@ -11,7 +12,7 @@ img.decoding='async';
 // into the playable arena instead of drawing a hard-edged rectangular card.
 const cinematicLayer=document.createElement('canvas');
 const cinematicCtx=cinematicLayer.getContext('2d',{alpha:true});
-let ready=false,broken=false;
+let ready=false,broken=false,originalReady=false;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const label=(cat)=>{
@@ -107,15 +108,24 @@ const gradeCache=new Map();
 // The new atlas arrives already painted in warm, varied storybook colors.
 // Do NOT gray-wash the new cats or layer earlier rejected paintings underneath.
 function preparePastelAtlas(){pastelAtlas=null;retouchedPixels=0;return true;}
-img.onload=()=>{
- ready=img.naturalWidth===3584&&img.naturalHeight===2592;broken=!ready;
+function syncArtwork(){
+ const actors=window.CatBondDuoBreedActors;
+ ready=originalReady&&!!actors?.ready;
+ if(actors?.failed)broken=true;
  if(ready){
-  try{preparePastelAtlas();}
-  catch(err){pastelAtlas=null;console.warn('[Cat Bond] pastel art fallback',err)}
+  gradeCache.clear();
+  window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
+ }else if(broken){
+  window.dispatchEvent(new Event('cat-bond-premium-art-error'));
  }
- window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
+}
+window.addEventListener('cat-bond-breed-art-ready',syncArtwork);
+window.addEventListener('cat-bond-breed-art-error',syncArtwork);
+img.onload=()=>{
+ originalReady=img.naturalWidth===3584&&img.naturalHeight===2592;
+ broken=!originalReady;syncArtwork();
 };
-img.onerror=()=>{broken=true;window.dispatchEvent(new Event('cat-bond-premium-art-error'))};
+img.onerror=()=>{broken=true;syncArtwork()};
 img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-storyboard-21x3-v3.webp?v=original-63-poses-20261122';
 
 function coatOf(cat){
@@ -137,14 +147,9 @@ function cellRect(panel,tier=1){
          y:(Math.floor(panel/7)*3+(lv-1))*FRAME_H,
          w:FRAME_W,h:FRAME_H};
 }
-// A separate real painting is decoded per combo AND trust milestone.
-// All 63 illustrations have intact cat bodies rather than generated limbs.
-// Art-integrity gate: never alter pixels of the painter-approved complete
-// cat illustrations with the rejected approximate fur masks. Those masks
-// crossed paws, faces, flowers and scenery and produced giant color blocks.
-// Preserve all 63 actual paintings, independent of preview-roster selection.
-// The selected cats remain authoritative for battle logic, labels and thumbnails;
-// no false claim of inside-the-painting breed replacement until verified assets.
+// Separate the 63 premium storybook SCENES from the two actor portraits.
+// Every selected breed is an actual painterly transparent character in front
+// of a cat-free scenic frame. Old baked-in cats can NEVER appear behind them.
 function gradedScene(key,tier=1,actorA=null,actorB=null){
  const lv=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
  const cacheKey=key+'|'+lv;
@@ -154,7 +159,8 @@ function gradedScene(key,tier=1,actorA=null,actorB=null){
  layer.width=FRAME_W;layer.height=FRAME_H;
  const g=layer.getContext('2d');if(!g)return null;
  const rect=cellRect(panel,lv);
- g.drawImage(img,rect.x,rect.y,rect.w,rect.h,0,0,FRAME_W,FRAME_H);
+ const breedArt=window.CatBondDuoBreedActors;
+ if(!breedArt?.paintScene(g,key,lv,Object.keys(regions)))return null;
  gradeCache.set(cacheKey,layer);
  return layer;
 }
@@ -269,11 +275,9 @@ function draw(ctx,W,H,seq,lookup){
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,sw,sh);
  ctx.save();ctx.globalAlpha=opacity;
- // One complete, illustrated two-cat tableau per attack, NEVER two sliced
- // paintings or a pair of cropped heads glued across a visible vertical seam.
- // The 21 independently authored cinematic storyboards control camera
- // charge, dodge, lunge, rise, arc, rebound and finish. We transform ONE
- // complete illustration (both cats and scenery together), not crop/tile cats.
+ // Each 21x3 background is clean of fixed cat bodies; two TRUE species
+ // watercolor portraits travel together with the same cinematic camera.
+ // There is no fur polygon masking and no ghost of the old painted pair.
  const cam=thumbnail?{dx:0,dy:0,zoom:1.025,angle:0}:
    (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
     {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
@@ -281,7 +285,11 @@ function draw(ctx,W,H,seq,lookup){
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.23),0,0,1,key,tier,actorA,actorB);
+ sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.16),0,0,1,key,tier,actorA,actorB);
+ const painted=window.CatBondDuoBreedActors?.draw?.(
+   ctx,sw,sh,[actorA,actorB],key,p,tier);
+ // An absent player breed may not be replaced by a generic grey cat.
+ if(!painted){ctx.restore();ctx.restore();return true;}
  ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
@@ -342,8 +350,9 @@ function draw(ctx,W,H,seq,lookup){
 }
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
- get breedMatchCount(){return 0}, // No longer claim unsafe coat repainting works
- get breedProfileCount(){return window.CatBondDuoBreedArt?.breedCount||0},
+ get breedMatchCount(){return window.CatBondDuoBreedActors?.ready?32:0},
+ get breedProfileCount(){return window.CatBondDuoBreedActors?.breedCount||0},
+ get liveBreedArtworkEnabled(){return !!window.CatBondDuoBreedActors?.ready},
  get activePaintCacheEntries(){return gradeCache.size},
  get realBreedOverpaintEnabled(){return false},
  coatOf,
@@ -352,6 +361,7 @@ window.CatBondPremiumCinematics={
  get failed(){return broken},wholeSceneCount:21,paintedFrameCount:63,skillVariants:Object.keys(regions).length,
  get pastelAdjusted(){return ready},
  get pastelPixelCount(){return retouchedPixels},
- get source(){return img.src}
+ get source(){return window.CatBondDuoBreedActors?.sceneSource||img.src},
+ get characterSource(){return window.CatBondDuoBreedActors?.catSource||''}
 };
 })();
