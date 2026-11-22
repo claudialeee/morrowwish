@@ -25,9 +25,9 @@ const map={
  'fire+light': ['solar', [[.31,.75,.77,.68],[.31,.69,.73,.30],[.33,.68,.66,.52],[.32,.68,.73,.41],[.30,.74,.79,.71]]],
  'fire+water': ['cannon',[[.28,.75,.78,.74],[.30,.75,.82,.72],[.34,.62,.63,.38],[.29,.67,.77,.49],[.25,.75,.78,.73]]],
  'grass+grass':['sprout',[[.25,.74,.75,.74],[.30,.69,.70,.69],[.36,.58,.65,.58],[.29,.53,.71,.53],[.25,.73,.75,.73]]],
- 'grass+light':['halo',[[.30,.75,.79,.73],[.30,.71,.75,.36],[.32,.65,.65,.51],[.30,.68,.76,.43],[.29,.74,.79,.73]]],
+ 'grass+light':['highfive',[[.26,.75,.76,.75],[.35,.71,.66,.71],[.435,.67,.565,.67],[.34,.71,.66,.71],[.26,.75,.76,.75]]],
  'grass+water':['blossom',[[.20,.77,.81,.74],[.28,.71,.75,.34],[.36,.71,.65,.44],[.28,.55,.75,.64],[.22,.75,.79,.73]]],
- 'light+light':['stars',[[.23,.75,.76,.75],[.32,.49,.69,.48],[.36,.60,.64,.59],[.27,.46,.73,.46],[.24,.74,.76,.74]]],
+ 'light+light':['stars',[[.23,.75,.76,.75],[.31,.67,.69,.67],[.425,.66,.575,.66],[.31,.56,.69,.56],[.24,.74,.76,.74]]],
  'light+water':['lake',[[.29,.74,.80,.74],[.30,.69,.75,.61],[.31,.67,.63,.52],[.31,.70,.74,.61],[.29,.74,.79,.74]]],
  'water+water':['tides',[[.20,.77,.80,.74],[.31,.40,.70,.71],[.37,.64,.64,.39],[.27,.53,.75,.71],[.21,.74,.79,.74]]]
 };
@@ -36,7 +36,7 @@ const styleAngle={
  eclipse:[-.03,-.18],mist:[-.19,.16],zigzag:[.18,-.25],spiral:[.25,-.27],
  snare:[.08,-.27],dash:[-.22,.22],bubbles:[-.18,.12],fireworks:[-.27,.28],
  petals:[.09,-.29],solar:[0,-.2],cannon:[-.07,-.32],sprout:[-.12,.11],
- halo:[0,-.22],blossom:[.10,-.30],stars:[.12,-.11],lake:[0,-.24],tides:[.18,-.25]
+ halo:[0,-.22],highfive:[.085,-.085],blossom:[.10,-.30],stars:[.12,-.11],lake:[0,-.24],tides:[.18,-.25]
 };
 const styles=Object.fromEntries(Object.entries(map).map(([k,v])=>[k,v[0]]));
 function pose(key,p,W,H){
@@ -57,6 +57,12 @@ function pose(key,p,W,H){
   a.scale*=1.05; // guardian cat braces in front of the attack
  }else if(style==='cannon'){
   b.scale*=1+.10*Math.sin(Math.PI*clamp((p-.13)/.28));
+ }else if(style==='highfive'||style==='stars'){
+  // Two intact watercolor kittens approach, lift their inside forepaws,
+  // touch in a grounded play pose, then spring back. No detached limbs.
+  const touch=ease((p-.13)/.15)*(1-ease((p-.33)/.29));
+  a.angle+=touch*.07;b.angle-=touch*.07;
+  a.scale*=1+touch*.055;b.scale*=1+touch*.055;
  }
  return [a,b];
 }

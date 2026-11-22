@@ -314,8 +314,18 @@
         pace:.5+Math.random()*.5,
       });
     }
-    // Patrols are bound to a den, not screen-space icons.
-    for(const kitten of spawns){kitten.homeX=kitten.x;kitten.homeY=kitten.y;}
+    // Every visible roaming cat has an immutable encounter level, before
+    // contact, regardless of changes to the team chooser afterward.
+    const roster=window.State?.S?.cats||[];
+    const preferred=(window.State?.S?.battlePrefs?.teamUids||[])
+      .map(uid=>roster.find(c=>c.uid===uid)).filter(Boolean);
+    for(const kitten of spawns){
+      kitten.homeX=kitten.x;kitten.homeY=kitten.y;
+      const sp=window.GameData.speciesById(kitten.sp);
+      kitten.level=sp&&window.Battle?.CaptureBattle?.previewWildLevel
+        ?window.Battle.CaptureBattle.previewWildLevel(sp,id,preferred.length?preferred:roster.slice(0,5))
+        :1;
+    }
     // Place local finds at recognizable permanent spots; no boxes randomly
     // reshuffled between visits. A later visit keeps the same landmarks.
     var nativeFinds=REGION_FINDS[id]||REGION_FINDS.home;
@@ -505,7 +515,7 @@
     }
     // bias the roll a little by difficulty using the existing luck system,
     // but keep the species anchored to the one standing in the field.
-    if (cbEncounter) cbEncounter(sp, world.region.id);
+    if (cbEncounter) cbEncounter({...sp,encounterLevel:s.level||1}, world.region.id);
   }
 
   function collectNode(n) {
@@ -887,9 +897,17 @@
       }else if(window.CatArt&&sp){
         CatArt.drawCat(ctx,s.x,by,{species:sp,scale:wildScale,face:s.face,t,pose:'walk'});
       }
-      if(spInfo?.rarity==='SR'||spInfo?.rarity==='SSR'){
-        ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillStyle=rColor;
-        ctx.fillText(spInfo.rarity,s.x,by-58);
+      // Player sees the exact Lv. and rarity BEFORE deciding to start the
+      // encounter; the tag is compact but legible on small touch screens.
+      if(spInfo){
+        const label='Lv.'+(s.level||1)+' · '+spInfo.rarity;
+        ctx.save();ctx.textAlign='center';ctx.font='800 11px system-ui';
+        const ww=Math.max(62,ctx.measureText(label).width+17);
+        ctx.fillStyle='#fffcf1e8';ctx.strokeStyle=rColor;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.roundRect(s.x-ww/2,by-76,ww,23,10);
+        ctx.fill();ctx.stroke();
+        ctx.fillStyle='#465365';ctx.fillText(label,s.x,by-60);
+        ctx.restore();
       }
     }
 

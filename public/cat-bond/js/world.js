@@ -576,8 +576,13 @@ class YardScene {
     if(!first&&State.S.luckLure>0)State.S.luckLure--;
     spot=spot||(first?this.bushes[Math.floor(this.bushes.length/2)]
       :this.bushes[Math.floor(Math.random()*this.bushes.length)]);
+    const roster=State.S.cats||[];
+    const preferred=(State.S.battlePrefs?.teamUids||[])
+      .map(uid=>roster.find(c=>c.uid===uid)).filter(Boolean);
+    const level=window.Battle?.CaptureBattle?.previewWildLevel
+      ?Battle.CaptureBattle.previewWildLevel(sp,'yard',preferred.length?preferred:roster.slice(0,5)):1;
     this.hide={
-      species:sp,spot,found:false,revealT:0,
+      species:sp,spot,level,found:false,revealT:0,
       tutorial:first,peekT:first?999:0.4+Math.random()*1.2,peeking:true,
     };
     window.arcadeMetric?.('bond_wild_spawned',{rarity:sp.rarity,newBreed:!State.S.dex[sp.id]});
@@ -837,7 +842,8 @@ class YardScene {
       ctx.fillStyle='#fff9e4';ctx.beginPath();
       ctx.roundRect(hide.spot.x-45,hide.spot.y-79,90,28,12);ctx.fill();
       ctx.font='800 12px system-ui';ctx.fillStyle='#40553d';ctx.textAlign='center';
-      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'发现野猫！':'Wild cat!',hide.spot.x,hide.spot.y-61);
+      ctx.fillText('Lv.'+(hide.level||1)+' · '+hide.species.rarity,
+        hide.spot.x,hide.spot.y-61);
       ctx.restore();
     }
     if(hide.tutorial){
@@ -850,6 +856,10 @@ class YardScene {
       ctx.fillStyle='#fff8e8';ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y-55,17,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#84624d';ctx.font='bold 20px system-ui';ctx.textAlign='center';
       ctx.fillText('↓',hide.spot.x,hide.spot.y-47);
+      ctx.font='800 12px system-ui';
+      ctx.fillStyle='#40553d';
+      ctx.fillText('Lv.'+(hide.level||1)+' · '+hide.species.rarity,
+        hide.spot.x,hide.spot.y-83);
       ctx.restore();
     }
     // The whole kitten creeps out of the bush, rather than disembodied

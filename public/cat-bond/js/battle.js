@@ -34,7 +34,10 @@ class CaptureBattle {
     // enemy level scales with the player's progress: average team level +
     // how far they've come (catchCount), nudged by rarity. So early wilds are
     // Lv.1-3 and late-game packs scale to match a strong roster.
-    this.wildLevel = this.computeWildLevel(teamOrCat);
+    // Encounter level is rolled when the wild cat appears, not after the
+    // player taps Start. The visible Lv. tag is exactly the battle's level.
+    this.wildLevel = Math.max(1,Math.round(wildSpecies.encounterLevel||
+      this.computeWildLevel(teamOrCat)));
 
     // --- LEVEL GAP (bidirectional: suppression when over-leveled, threat when under) ---
     // The level difference between your squad and the wild pack must MATTER. Two
@@ -308,7 +311,8 @@ class CaptureBattle {
     // DEFERRED PAYLOAD — runs at the splash's strike beat (see duoCinematic tick),
     // so the big art shows first and the hit only lands once it clears.
     this.duoCinematic.payload=()=>{
-      window.MorrowwishAudio?.effect?.('combat_duo_impact');
+      window.MorrowwishAudio?.effect?.('combat_duo_impact',{pair:mix,tier:d.tier,
+        gesture:window.CatBondDuoDirector?.styles?.[mix]});
       this.vfx.burst(target.x,target.y,{count:16,color:firstColor,speed:200,life:.45,r:3});
       this.vfx.burst(target.x,target.y,{count:12,color:secondColor,speed:240,life:.47,r:2});
       this.flash=Math.max(this.flash,.22);this.shakeT=Math.max(this.shakeT,.3);
@@ -363,7 +367,8 @@ class CaptureBattle {
       this.summonReinforcement(12 + d.tier * 1.5);
       window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     };
-    window.MorrowwishAudio?.effect?.('combat_duo');
+    window.MorrowwishAudio?.effect?.('combat_duo',{pair:mix,tier:d.tier,
+      gesture:window.CatBondDuoDirector?.styles?.[mix]});
     // The unique lingering field and restrained title make the special visible; avoid a second toast.
     return true;
   }
@@ -4702,4 +4707,12 @@ function star(ctx, cx, cy, R, r, n) {
   ctx.closePath(); ctx.fill();
 }
 
+// Compute one preview level at spawn and keep it on that encounter.
+CaptureBattle.previewWildLevel=function(species,region,team){
+  const rIdx=['N','R','SR','SSR'].indexOf(species?.rarity);
+  const fields={rarIdx:Math.max(0,rIdx),encounterRegion:region||'yard'};
+  const candidates=Array.isArray(team)&&team.length?team:
+    (window.State?.S?.cats||[]).slice(0,5);
+  return CaptureBattle.prototype.computeWildLevel.call(fields,candidates);
+};
 window.Battle = { CaptureBattle };

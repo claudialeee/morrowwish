@@ -600,7 +600,8 @@ class Game {
     }
     if (hit.type === 'hide') {
       // found the hiding wild cat → open capture prep
-      const sp = this.yard.hide.species;
+      const sp = {...this.yard.hide.species,
+        encounterLevel:this.yard.hide.level||1};
       this.yard.hide.found = true;
       window.MorrowwishAudio?.effect?.('discover');
       this.spawnFoundFx(this.yard.hide.spot);
@@ -709,7 +710,8 @@ class Game {
     document.getElementById('hud').classList.add('hidden');
     // clear any lingering yard toasts
     document.getElementById('toasts').innerHTML = '';
-    document.getElementById('wild-name').textContent = `野生 ${GameData.speciesName(wildSpecies)} · ${GameData.RARITY[wildSpecies.rarity].name}`;
+    document.getElementById('wild-name').textContent =
+      `野生 ${GameData.speciesName(wildSpecies)} · Lv.${this.battle.wildLevel} · ${wildSpecies.rarity}`;
     this.buildTeamSlots();
     this.updateSkillLabels();
     this.updateBattleUI();

@@ -80,7 +80,7 @@ const combatKinds=new Set(['combat_swing','combat_claw','combat_projectile','com
  'combat_beam','combat_dash','combat_hit','combat_dodge','combat_hurt',
  'combat_duo','combat_duo_impact','combat_ultimate','combat_win']);
 const combatAt=Object.create(null);
-function combatSound(kind){
+function combatSound(kind,detail){
  if(route!=='cat-bond'||!enabled||!unlocked||!ctx||!master)return;
  const now=ctx.currentTime+.007;
  const gaps={combat_hit:.11,combat_hurt:.23,combat_swing:.16,combat_duo:.6,
@@ -119,8 +119,39 @@ function combatSound(kind){
  case 'combat_hit':brush(.075,850,.17);sweep(220,105,.13,.13);break;
  case 'combat_dodge':brush(.17,2450,.13);sweep(630,1190,.16,.06,'sine');break;
  case 'combat_hurt':brush(.10,560,.11);sweep(270,125,.20,.09);break;
- case 'combat_duo':sweep(170,335,.37,.11);sweep(280,670,.32,.073,'sine',.11);brush(.33,1400,.08,.1);break;
- case 'combat_duo_impact':brush(.26,860,.25);sweep(175,72,.34,.18,'sawtooth');sweep(800,260,.23,.09,'triangle',.04);break;
+ case 'combat_duo':
+ case 'combat_duo_impact':{
+  // Unique, layered audio fingerprint for every one of the 21 combos.
+  // The two elements supply different timbres and a distinct melodic
+  // interval / timing. Tier 3 adds deep bass and a longer impact tail.
+  const el=['dark','elec','fire','grass','light','water'];
+  const pair=String(detail?.pair||'light+water').split('+');
+  const a=Math.max(0,el.indexOf(pair[0])),b=Math.max(0,el.indexOf(pair[1]));
+  const id=a*6+b,tier=Math.max(1,Math.min(3,Number(detail?.tier)||1));
+  const hz=[180,410,260,330,530,290];
+  const root=hz[a]*(1+.025*(id%5)),fifth=hz[b]*(.80+.17*(id%4));
+  const hit=kind==='combat_duo_impact',loud=hit?.13:.085;
+  const voice=(e,f,at,v)=>{
+   if(e===1){sweep(f*.75,f*2.4,.18,v,'sawtooth',at);brush(.09,1750,v*.5,at+.04)}
+   else if(e===2){brush(.19,1050,v,at);sweep(f*1.6,f*.55,.23,v*.6,'triangle',at)}
+   else if(e===3){brush(.21,650,v*.62,at);sweep(f*.66,f*1.25,.25,v*.6,'sine',at)}
+   else if(e===4){sweep(f,f*1.73,.28,v*.84,'sine',at);sweep(f*1.5,f*2,.20,v*.42,'triangle',at+.05)}
+   else if(e===5){sweep(f*.65,f*1.42,.27,v*.83,'sine',at);brush(.20,1120,v*.48,at+.08)}
+   else{sweep(f*.84,f*.45,.34,v*.85,'triangle',at);brush(.19,480,v*.5,at+.07)}
+  };
+  voice(a,root,0,loud);
+  voice(b,fifth,.073+.022*(id%5),loud*(tier>=2?1.05:.8));
+  if(hit){
+    const clap=['highfive','stars'].includes(detail?.gesture);
+    brush(clap?.13:.25,clap?2100:850,clap?.21:.18,.025);
+    sweep(tier>=3?115:175,tier>=3?46:85,tier>=3?.46:.29,tier>=3?.20:.15,
+      tier>=3?'sawtooth':'triangle',.03);
+    if(tier>=3){sweep(95,43,.55,.22,'sawtooth',.11);
+      sweep(root,root*.45,.31,.10,'triangle',.19);brush(.37,350,.14,.13);}
+    else if(tier>=2)sweep(root*.8,root*1.7,.26,.084,'triangle',.17);
+  }else if(tier>=2)sweep(root*.72,fifth*1.48,.30,tier>=3?.14:.088,'triangle',.19);
+  break;
+ }
  case 'combat_ultimate':brush(.25,1400,.13);sweep(260,730,.27,.1,'sawtooth');sweep(950,360,.25,.06,'sine',.065);break;
  case 'combat_win':sweep(520,660,.17,.048,'sine');sweep(660,880,.21,.044,'triangle',.13);sweep(880,1040,.25,.033,'sine',.27);break;
  }
@@ -137,8 +168,8 @@ const mappings={
  // soft channel hiss — previously these keys fell through to the quiet UI blip.
  ultimate:[48,'crash'],ready:[84,'success'],beam:[66,'quiet'],charge:[60,'bounce']
 };
-function effect(kind='tap'){
- if(combatKinds.has(kind)){combatSound(kind);return;}
+function effect(kind='tap',detail=null){
+ if(combatKinds.has(kind)){combatSound(kind,detail);return;}
  // Cat Bond's gentle layered gestures avoid beeps on every canvas movement.
  if(route==='cat-bond'&&['pet','rustle','paw','discover'].includes(kind)){
    if(!enabled||!unlocked||!ctx)return;
