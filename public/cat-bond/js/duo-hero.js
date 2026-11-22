@@ -150,7 +150,8 @@ function render(ctx,W,H,seq,lookup){
      Director?.styles?.[key]||'dash',color);
   ctx.restore();
  }
- flourish(ctx,stageW,stageH,p,key,tier,Director?.styles?.[key]);
+ // Full different signature silhouettes replace the former generic claw stamp.
+ window.CatBondDuoFinale?.draw?.(ctx,stageW,stageH,p,key,tier);
  // Accessible nameplate, protected from bright effects and outside cat faces.
  const panelH=Math.min(72,Math.max(43,stageH*.19));
  const overlay=ctx.createLinearGradient(0,stageH-panelH,0,stageH);
