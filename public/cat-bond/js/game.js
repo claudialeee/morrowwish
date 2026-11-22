@@ -859,7 +859,7 @@ class Game {
   }
 
   // ---------- battle flow ----------
-  startMasteryChallenge(species,modeConfirmed=false){
+  startMasteryChallenge(species,modeConfirmed=false,selectedTeam=null){
     // A targeted S-rank rematch is a training challenge, NOT another capture.
     // Replaying cannot duplicate cats, grow the dex or farm capture currency.
     const owned=State.S.cats.filter(cat=>cat.species===species.id);
@@ -868,7 +868,7 @@ class Game {
     }
     const team=UI.getPreferredBattleTeam();
     if(!modeConfirmed){UI.openBattleModePrompt(team,species,{mastery:true});return true;}
-    this.startBattle(team,species);
+    this.startBattle(selectedTeam?.length?selectedTeam:team,species);
     this.battle.masteryChallenge=true;
     metric('bond_mastery_rematch_start',{breed:species.id,rarity:species.rarity});
     return true;
