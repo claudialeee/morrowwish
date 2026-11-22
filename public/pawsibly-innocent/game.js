@@ -100,12 +100,30 @@ save.stats={fish:0,wins:0,lures:0,vases:0,nearMisses:0,ghostWins:0,dailyWins:0,c
 save.achievements=save.achievements&&typeof save.achievements==="object"?save.achievements:{};
 const relicCount=()=>Object.keys(save.souvenirs).filter(k=>save.souvenirs[k]).length;
 const roomsWon=()=>Object.keys(save.best).filter(k=>/^room-[0-7]$/.test(k)&&Number(save.best[k]?.stars)>0).length;
-let badgeTimer=null,badgeToastIds=[];
+let badgeTimer=null,badgeCollectTimer=null,badgeToastIds=[];
+function updateBadgePocket(){
+ const pocket=$("achievementPocket"),count=$("badgePocketCount");
+ const total=Object.values(save.achievements).filter(Boolean).length;
+ if(count)count.textContent=String(total);
+ if(pocket){const title=lang==="zh"?"成就 · 已解锁 "+total+" 个":"Achievements · "+total+" unlocked";pocket.title=title;pocket.setAttribute("aria-label",title)}
+}
 function badgeToast(names,ids=[]){
  const el=$("achievementToast");if(!el||!names.length)return;
  badgeToastIds=ids.slice();
+ clearTimeout(badgeTimer);clearTimeout(badgeCollectTimer);
+ el.classList.remove("collecting");
+ el.style.removeProperty("--badge-dx");el.style.removeProperty("--badge-dy");
  el.hidden=false;refreshBadgeToast();
- clearTimeout(badgeTimer);badgeTimer=setTimeout(()=>{el.hidden=true;badgeToastIds=[]},4600);
+ badgeCollectTimer=setTimeout(()=>{
+  const pocket=$("achievementPocket");
+  if(!pocket||el.hidden)return;
+  const source=el.getBoundingClientRect(),dest=pocket.getBoundingClientRect();
+  el.style.setProperty("--badge-dx",(dest.left+dest.width/2-source.left-source.width/2)+"px");
+  el.style.setProperty("--badge-dy",(dest.top+dest.height/2-source.top-source.height/2)+"px");
+  el.classList.add("collecting");pocket.classList.remove("badge-received");
+  void pocket.offsetWidth;pocket.classList.add("badge-received");
+ },850);
+ badgeTimer=setTimeout(()=>{el.hidden=true;el.classList.remove("collecting");badgeToastIds=[];$("achievementPocket")?.classList.remove("badge-received")},1470);
 }
 function refreshBadgeToast(){
  const el=$("achievementToast");if(!el||el.hidden||!badgeToastIds.length)return;
@@ -140,6 +158,7 @@ function checkBadges(quiet=false){
   if(s&&Array.isArray(s.newBadges))s.newBadges.push(...earnedIds);
   badgeToast(earned,earnedIds);audio("win");
  }}
+ updateBadgePocket();
 }
 function addStat(name,n=1){save.stats[name]=(Number(save.stats[name])||0)+n;saveGame();checkBadges()}
 const YARN_LEGEND={
@@ -192,7 +211,7 @@ if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),que
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
 return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,blockedTarget:null,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
-function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
+function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);clearTimeout(badgeCollectTimer);if($("achievementToast")){$("achievementToast").hidden=true;$("achievementToast").classList.remove("collecting")}badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
@@ -399,6 +418,7 @@ function localizeMenu(){
   ?"🐟 偷3条鱼 · 🧶 引开主人 · 📦 躲藏 · 🚪 从猫门逃脱"
   :"🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape";
  if($("menuButtonLabel"))$("menuButtonLabel").textContent=lang==="zh"?"菜单":"Menu";
+ updateBadgePocket();
 }
 function openMenu(tab="rooms"){
  if(!s)return;
@@ -1059,6 +1079,7 @@ c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPr
   if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if(e.key==="."&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();waitTurn();return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
 $("menuButton").onclick=()=>openMenu("rooms");
+ $("achievementPocket").onclick=()=>openMenu("badges");
 $("bonusQuick").onclick=()=>openMenu("rooms");
 $("quickHelp").onclick=()=>openMenu("help");
 $("menuClose").onclick=closeMenu;
