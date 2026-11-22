@@ -1134,7 +1134,7 @@ UI.closeAll();
 // ---- bilingual layer: representative ZH strings must resolve to pure English ----
 const tr = sandbox.window.CatBondI18n.translate;
 const enVisit=tr('汤圆 来访 · 留下 🪙+12 🐠+1');
-assert.match(enVisit, /Tangyuan/, 'Visitor name translates into English');
+assert.match(enVisit, /Mochi/, 'Visitor name uses the current localized English cat name');
 assert.match(enVisit, /visited|left/, 'Visitor action translates into English');
 assert.ok(enVisit.includes('🪙+12') && enVisit.includes('🐠+1'), 'Gift amounts survive English conversion');
 
