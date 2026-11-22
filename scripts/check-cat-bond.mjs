@@ -392,7 +392,7 @@ balanceEnemy.maxhp=10000;balanceEnemy.hp=10000;balanceEnemy.alive=true;
 balanceEnemy.status={expose:4,rust:4};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,true);
 assert.ok(Math.abs((10000-balanceEnemy.hp)-117)<.001,
-  'stacked expose/rust vulnerability is additive (+30% cap) and player damage is 0.9x');
+  'stacked expose/rust vulnerability is additive and player damage is 0.9x');
 balanceEnemy.hp=1000;balanceEnemy.flash=0;
 balanceEnemy.status={};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
@@ -407,9 +407,35 @@ damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
 assert.ok((1000-balanceEnemy.hp)>90,
   'elite rarity is not silently classified as a boss');
 balanceEnemy.role='boss';
+// Audited damage buckets: 100 raw x [1 + .30 stagger + .12 armor +
+// .15 combo] x .9 = 141.3, NOT a stack of four multipliers.
+balanceEnemy.hp=10000;balanceEnemy.maxhp=10000;balanceEnemy.flash=0;
+balanceEnemy.status={rust:10};balanceEnemy.staggerT=2;damageBalance.combo=50;
+damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
+assert.ok(Math.abs((10000-balanceEnemy.hp)-141.3)<.001,
+  'stagger, armor break and capped 15% combo are one additive hit bucket');
+balanceEnemy.hp=10000;balanceEnemy.flash=0;
+balanceEnemy.status={rust:10,expose:4};damageBalance.combo=50;
+damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
+assert.ok(Math.abs((10000-balanceEnemy.hp)-148.5)<.001,
+  'vulnerability caps at +50%, combo caps at +15%');
+assert.ok(damageBalance.comboMult()<=1.15,'combo never exceeds +15%');
+const statusEnemy=damageBalance.enemies[0];
+statusEnemy.status={burn:3,soak:3,shock:3,oil:3,chill:3,expose:3,rust:3};
+statusEnemy.tags=Object.keys(statusEnemy.status);
+const basicDmg=damageBalance.applyHitEffects(statusEnemy,{isBasic:true,element:null},100,
+  statusEnemy.x,statusEnemy.y);
+assert.ok(basicDmg<=130+1e-9,'basic status setup bonus caps at +30%');
+const baseBuffCat=damageBalance.me();
+baseBuffCat.damageBoostT=1;baseBuffCat.kneadStacks=4;baseBuffCat.weakened=false;
+assert.ok(Math.abs(damageBalance.outgoingBuffMult(baseBuffCat)-1.73)<1e-9,
+  'attack buff +25% and four knead stacks +48% add to +73%');
+baseBuffCat.weakened=true;
+assert.ok(Math.abs(damageBalance.outgoingBuffMult(baseBuffCat)-.865)<1e-9,
+  'weaken halves outgoing damage after additive positive buffs');
 const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
-assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
-  'existing stagger retains 1.3x, not 2x, vulnerability');
+assert.ok(battleSource.includes('vulnerabilityBonus += 0.30') && !battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
+  'stagger belongs to the additive vulnerability bucket, not a separate multiplier');
 
 // Regular Q/E cause armor break, never poise drain or Stagger. Dedicated
 // 泰山压顶 keeps the three-second Stagger window and visible countdown.
