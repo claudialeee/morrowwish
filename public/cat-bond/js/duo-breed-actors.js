@@ -15,13 +15,15 @@ const SPECIES=[
 ];
 const byId=Object.fromEntries(SPECIES.map((id,i)=>[id,i]));
 const urlBase=window.CatBondDuoAssetBase||'assets/';
-const sprite=new Image(),scene=new Image();
-sprite.decoding='async';scene.decoding='async';
-let portraitReady=false,sceneReady=false,failed=false;
+// The original 8x4 actor sheet is immutable. Jiafei is a separate raster
+// watercolor character with its own decode/readiness gate, NOT cell 33.
+const sprite=new Image(),scene=new Image(),jiafei=new Image();
+sprite.decoding='async';scene.decoding='async';jiafei.decoding='async';
+let portraitReady=false,sceneReady=false,jiafeiReady=false,failed=false;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const ease=x=>{x=clamp(x);return x*x*(3-2*x)};
 function notify(){
- if(portraitReady&&sceneReady){
+ if(portraitReady&&sceneReady&&jiafeiReady){
    window.dispatchEvent(new Event('cat-bond-breed-art-ready'));
  }else if(failed){
    window.dispatchEvent(new Event('cat-bond-breed-art-error'));
@@ -33,12 +35,18 @@ scene.onload=()=>{sceneReady=scene.naturalWidth===3584&&scene.naturalHeight===25
  if(!sceneReady)failed=true;notify()};
 sprite.onerror=()=>{failed=true;notify()};
 scene.onerror=()=>{failed=true;notify()};
+jiafei.onload=()=>{
+ jiafeiReady=jiafei.naturalWidth===228&&jiafei.naturalHeight===256;
+ if(!jiafeiReady)failed=true;
+ notify();
+};
+jiafei.onerror=()=>{failed=true;notify()};
 sprite.src=urlBase+'duo-watercolor-32-actors-v1.webp?v=32-original-breeds-20261122';
 scene.src=urlBase+'duo-stage-clean-21x3-v2.webp?v=no-ghosts-or-legacy-titles-20261122';
+jiafei.src=urlBase+'jiafei-watercolor-v1.avif?v=duo-dedicated-watercolor-20261122';
 function species(cat){
  const id=typeof cat?.species==='string'?cat.species:cat?.species?.id||cat?.id;
- // The new Exotic Shorthair has a dedicated live storybook drawing rather than
- // a nonexistent 33rd cell in the immutable 8×4 watercolor source atlas.
+ // Jiafei is a separately painted raster image, never an imaginary 33rd cell.
  return id==='jiafei'||Object.hasOwn(byId,id||'')?id:null;
 }
 function sceneRect(key,tier,orderedKeys){
@@ -54,14 +62,17 @@ function paintScene(ctx,key,tier,orderedKeys){
 }
 function drawActor(g,sp,x,y,height,rotation,flip,opacity=1){
  if(sp==='jiafei'){
-   // Unique chubby/flat-face rendering through the SAME shared cat renderer
-   // used in the yard and battle; do not substitute an unrelated source actor.
-   const spec=window.GameData?.speciesById?.('jiafei');
-   if(!spec||!window.CatArt?.drawCat)return false;
-   const sc=height/107;
+   // Paint the *actual* independent transparent watercolor artwork. Never
+   // call CatArt here: a procedural fallback can pass silhouette-only checks.
+   if(!jiafeiReady)return false;
+   const side=height*jiafei.naturalWidth/jiafei.naturalHeight;
    g.save();g.globalAlpha*=opacity;
-   g.translate(x,y);g.rotate(rotation);g.scale(flip?-1:1,1);
-   window.CatArt.drawCat(g,0,-34*sc,{species:spec,scale:sc,pose:'sit',t:1.2});
+   g.translate(x,y);g.rotate(rotation);
+   g.save();g.globalAlpha*=.15;g.fillStyle='#69536b';
+   g.beginPath();g.ellipse(0,-4,side*.34,height*.035,0,0,Math.PI*2);g.fill();g.restore();
+   g.scale(flip?-1:1,1);
+   g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+   g.drawImage(jiafei,-side*.5,-height,side,height);
    g.restore();return true;
  }
  if(!portraitReady)return false;
@@ -84,7 +95,7 @@ function drawActor(g,sp,x,y,height,rotation,flip,opacity=1){
  return true;
 }
 function draw(g,W,H,cats,key,p,tier=1){
- if(!portraitReady)return false;
+ if(!portraitReady||!sceneReady||!jiafeiReady)return false;
  const a=species(cats?.[0]),b=species(cats?.[1]);
  // Never substitute a random or fixed breed. The game must supply the
  // two actual player cats; the gallery supplies its two chosen species.
@@ -94,7 +105,9 @@ function draw(g,W,H,cats,key,p,tier=1){
  const poses=[];
  for(let n=0;n<2;n++){
    const side=n===0?-1:1;
-   let x=W*(n===0?.31:.69),y=H*.90,height=H*.76;
+   // Width-bounded framing retains full ears/tails for both characters even
+   // on narrow portrait devices (the old H-only size clipped them).
+   let x=W*(n===0?.31:.69),y=H*.90,height=Math.min(H*.76,W*.41);
    let angle=side*.035,flip=n===1;
    if(lv===1){
      const approach=ease((t-.06)/.28);
@@ -129,17 +142,21 @@ function draw(g,W,H,cats,key,p,tier=1){
  }
  // Guarding partner appears behind the striking partner in tier 90.
  for(const pose of poses)
-   drawActor(g,pose.species,pose.x,pose.y,pose.height,pose.angle,pose.flip);
+   if(!drawActor(g,pose.species,pose.x,pose.y,pose.height,pose.angle,pose.flip))
+     return false;
  return true;
 }
 window.CatBondDuoBreedActors={
  draw,paintScene,sceneRect,species,breedIds:SPECIES,breedCount:SPECIES.length,
- get ready(){return portraitReady&&sceneReady},
+ get ready(){return portraitReady&&sceneReady&&jiafeiReady},
  get failed(){return failed},
  get catSheetReady(){return portraitReady},
  get cleanSceneReady(){return sceneReady},
+ get jiafeiArtReady(){return jiafeiReady},
+ get supportedBreedCount(){return SPECIES.length+1},
+ get jiafeiSource(){return jiafei.src},
  get catSource(){return sprite.src},
  get sceneSource(){return scene.src},
- version:'true-watercolor-32-breeds-no-overlay-v1'
+ version:'watercolor-32-plus-jiafei-raster-no-fake-cell-v2'
 };
 })();
