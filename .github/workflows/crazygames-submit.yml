@@ -58,7 +58,16 @@ jobs:
       - name: Install free Playwright driver (runner Chrome is preinstalled)
         run: |
           npm ci
-          npm install --no-save --no-package-lock playwright
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+      - name: Prepare Cat Bond CrazyGames covers and preview videos for QA-approved release
+        if: ${{ inputs.slug == 'cat-bond' }}
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+          node scripts/prepare-cat-bond-crazygames-media.mjs
+          # Technical format checks are not a visual or music-rights signoff.
       - name: Sign in to authorized Morrow Wish studio account, submit external live URLs
         env:
           CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
