@@ -127,13 +127,13 @@ function draw(ctx,W,H,seq,lookup){
     const src=cellRect(sources[i][0],sources[i][1]);
     ctx.save();
     ctx.beginPath();ctx.rect(i*W2,0,W2,sh);ctx.clip();
-    const from=i===0?-sw*.10:sw*.10;
+    // Move the CAMERA inside each crop, not the painted panels. Sliding the
+    // panels exposed an ugly vertical stripe from the unrelated backdrop.
     const speed=1-smooth((p-.16)/.20);
-    const dx=i*W2+from*speed;
-    const zoom=1.10+.035*Math.sin(p*7+i*2);
-    sourceCover(ctx,src,dx,0,W2,sh,zoom,
-      (i===0?-.017:.017)*Math.sin(p*7),-.02*Math.sin(p*3+i),
-      dual*.99);
+    const zoom=1.09+.035*Math.sin(p*7+i*2);
+    sourceCover(ctx,src,i*W2,0,W2,sh,zoom,
+      (i===0?-.07:.07)*speed+(i===0?-.012:.012)*Math.sin(p*7),
+      -.018*Math.sin(p*3+i),dual*.99);
     ctx.restore();
   }
   const blend=ctx.createLinearGradient(sw*.36,0,sw*.64,0);
@@ -143,7 +143,7 @@ function draw(ctx,W,H,seq,lookup){
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
  if(dual>.10){
-  ctx.save();ctx.globalAlpha*=Math.min(.40,dual*.33);
+  ctx.save();ctx.globalAlpha*=Math.min(.31,dual*.27);
   window.CatBondDuoDirector?.accent?.(ctx,sw,sh,p,key,tier);
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,p,key,tier);
   ctx.restore();
@@ -152,7 +152,7 @@ function draw(ctx,W,H,seq,lookup){
  paper(ctx,0,0,sw,sh);
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
- if(flare>.01){ctx.save();ctx.globalAlpha=.10*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
+ if(flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
  // No English-only baked labels over the player's translated skill name.
  // One atlas panel contains a decorative old English title in the far top-right.
  // A soft semitransparent enamel banner reduces it behind localized UI.
