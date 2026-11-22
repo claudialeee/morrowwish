@@ -609,7 +609,11 @@ class Game {
         }else WorldMap.handleTap(x,y);
         e.preventDefault();
       }
-      else if (this.scene === 'battle') { this.mouse.down = true; e.preventDefault(); }
+      else if (this.scene === 'battle') {
+        if (this.battle?.autoMode) this.battle.commandFocusAt?.(x,y);
+        else this.mouse.down = true;
+        e.preventDefault();
+      }
     };
     const move = e => {
       const { x, y } = pos(e);
@@ -653,6 +657,11 @@ class Game {
       for (const t of e.changedTouches) {
         const p = touchPos(t);
         if (this.scene === 'battle') {
+          // Auto commander taps select enemies before joystick/fire gestures.
+          if (this.battle?.autoMode) {
+            this.battle.commandFocusAt?.(p.x,p.y);
+            continue;
+          }
           if(this.battle&&!this.battle.autoMode&&this.battle.lockAt?.(p.x,p.y)){
             this.syncTouchBattleUI();
             continue;
