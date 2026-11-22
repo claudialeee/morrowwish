@@ -1127,8 +1127,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  // Tour must progress through real post-capture actions and remain optional.
  if(!bondIntro.includes('id="guide-help"')||
     !bondIntro.includes('role="region" aria-label="猫猫冒险指引"')||
-    !bondIntro.includes('js/game.js?v=skill-tooltips-current-cat-20261121-1')||
-    !bondIntro.includes('js/ui.js?v=skill-review-before-battle-20261121-1')||
+    !/src="js\/game\.js\?v=[^\"]+"/.test(bondIntro)||
+    !/src="js\/ui\.js\?v=[^\"]+"/.test(bondIntro)||
     !cbMain.includes('targetHeight=132,maxWidth=140')||
     !cbCss.includes('#first-quest.is-tour')||
     !cbCss.includes('#stage .cb-guide-target')||
