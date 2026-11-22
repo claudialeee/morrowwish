@@ -90,6 +90,62 @@
     "campaignTagPrefix": "mw-shorts-v2",
     "historicalExcluded": true,
     "rule": "Only count per-post native views and publications verified for approved new reels. Older YouTube/TikTok/Instagram/Bluesky posts and their aggregate account totals are excluded.",
-    "activeApprovedPosts": 0
+    "activeApprovedPosts": 0,
+    "verifiedPosts": []
+  },
+  "accountOverview": {
+    "capturedAt": "2026-11-22",
+    "source": "Metricool Morrow Wish: Instagram Reels IGRE01 IGRE06 IGRE23; TikTok evolution TKEV01 TKEV02",
+    "refreshMode": "manual",
+    "windowStart": "2026-11-19",
+    "windowEnd": "2026-11-22",
+    "note": "Account native data is distinct from approved-new-video campaign results. Instagram lifetime Reel plays vs. TikTok window evolution views.",
+    "platforms": [
+      {
+        "id": "instagram",
+        "published": 6,
+        "views": 273,
+        "viewBasis": "lifetime_views_of_reels_published_in_window",
+        "posts": [
+          {
+            "url": "https://www.instagram.com/reel/Df9CJXwttqy/",
+            "publishedAt": "2026-11-20",
+            "views": 44
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df87XKxS4Jy/",
+            "publishedAt": "2026-11-20",
+            "views": 133
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df80eunpptl/",
+            "publishedAt": "2026-11-20",
+            "views": 84
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df8tj4HB7Ge/",
+            "publishedAt": "2026-11-20",
+            "views": 4
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df8mrfBuMha/",
+            "publishedAt": "2026-11-20",
+            "views": 6
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df8f0EFBdCl/",
+            "publishedAt": "2026-11-20",
+            "views": 2
+          }
+        ]
+      },
+      {
+        "id": "tiktok",
+        "published": 0,
+        "views": 0,
+        "viewBasis": "evolution_videos_and_views_in_window",
+        "posts": []
+      }
+    ]
   }
 }

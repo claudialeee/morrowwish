@@ -41,9 +41,35 @@ if(!dashboard.includes('if(x.game==="hub")return')||
 
 const social=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 const newVideoSources=['youtube','tiktok','instagram','bluesky'];
+const verifiedSocialPosts=social.metricScope?.verifiedPosts||[];
+const nativeHosts={youtube:['youtube.com','youtu.be'],tiktok:['tiktok.com'],instagram:['instagram.com'],bluesky:['bsky.app']};
+const validSocialPost=p=>{
+ if(!p||!newVideoSources.includes(p.platform)||p.approved!==true||p.publicVerified!==true||
+    typeof p.publishedAt!=='string'||!/^\d{4}-\d{2}-\d{2}/.test(p.publishedAt)||p.publishedAt.slice(0,10)<'2026-11-21')return false;
+ if(p.views!=null&&(!Number.isSafeInteger(p.views)||p.views<0))return false;
+ try{const url=new URL(p.url);return url.protocol==='https:'&&nativeHosts[p.platform].some(d=>url.hostname===d||url.hostname.endsWith('.'+d));}catch{return false}
+};
 if(social.schemaVersion!==2||social.metricScope?.type!=='approved-short-videos-only'||!social.metricScope.historicalExcluded||
-   newVideoSources.some(id=>{const p=social.platforms.find(x=>x.id===id);return !p||p.published!==0||p.views!==null;}))
- throw Error('Only approved new short videos may enter social-view totals; old posts and views must stay excluded');
+   !Array.isArray(verifiedSocialPosts)||verifiedSocialPosts.some(p=>!validSocialPost(p))||
+   new Set(verifiedSocialPosts.map(p=>p.url)).size!==verifiedSocialPosts.length||
+   social.metricScope.activeApprovedPosts!==verifiedSocialPosts.length||
+   newVideoSources.some(id=>{
+     const p=social.platforms.find(x=>x.id===id),items=verifiedSocialPosts.filter(x=>x.platform===id);
+     const expectedViews=items.length&&items.every(x=>x.views!=null)?items.reduce((n,x)=>n+x.views,0):null;
+     return !p||p.published!==items.length||p.views!==expectedViews;
+   }))
+ throw Error('New-campaign views require verified public posts newer than Nov 20; old content stays excluded');
+const accountOverview=social.accountOverview;
+if(accountOverview){
+ const a=accountOverview.platforms||[],ig=a.find(p=>p.id==='instagram'),tk=a.find(p=>p.id==='tiktok');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(accountOverview.capturedAt||'')||
+    !ig||!tk||!Array.isArray(ig.posts)||!Array.isArray(tk.posts)||
+    ig.published!==ig.posts.length||ig.views!==ig.posts.reduce((n,p)=>n+p.views,0)||
+    ig.posts.some(p=>!p.url?.startsWith('https://www.instagram.com/reel/')||!Number.isSafeInteger(p.views)||p.views<0)||
+    (tk.posts.length>0&&tk.published!==tk.posts.length)||
+    !Number.isSafeInteger(tk.published)||tk.published<0||!Number.isSafeInteger(tk.views)||tk.views<0)
+   throw Error('Metricool overview must match real per-post Instagram readings and valid TikTok provider totals');
+}
 if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 // The mini-game upgrade already emits run_start/run_end. Do not count
@@ -80,7 +106,8 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("snapshotPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("3n2rchppku32o")||
-   social.platforms.find(p=>p.id==='bluesky')?.published!==0)
+   !dashboard.includes('id="account-overview-rows"')||
+   !dashboard.includes('accountOverviewNote:'))
  throw Error('Dashboard must preserve conversion context and links without counting old Bluesky posts as new videos');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
