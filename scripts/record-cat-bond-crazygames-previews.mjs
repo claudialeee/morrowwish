@@ -65,6 +65,17 @@ try {
       return {active:fight.team.length,duo:!!fight.duo,wild:fight.wild.id};
     });
     if(setup.active!==2||!setup.duo)throw Error('Bad gameplay fixture: '+JSON.stringify(setup));
+    // Do not approve a recording that merely shows a charged button or
+    // frozen tutorial: the signature must actually execute on camera.
+    await page.waitForFunction(()=>window.__game?.battle?.duoUses>=1,null,
+      {timeout:7000});
+    const filmed=await page.evaluate(()=>({
+      uses:window.__game?.battle?.duoUses||0,
+      active:window.__game?.scene,
+      tutorialVisible:!!window.__game?.battleHelpOpen
+    }));
+    if(filmed.uses<1||filmed.tutorialVisible)
+      throw Error('Duo action was not visibly filmed: '+JSON.stringify(filmed));
     await sleep(18000);
     if(errors.length)throw Error('Gameplay capture errors: '+errors.join('; '));
     await page.close();
