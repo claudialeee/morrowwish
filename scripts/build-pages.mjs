@@ -44,10 +44,14 @@ const social = JSON.parse(fs.readFileSync(path.join(base,'promotion','social-met
 if(social.schemaVersion!==2||!Array.isArray(social.platforms)||social.metricScope?.type!=='approved-short-videos-only'||!social.metricScope?.historicalExcluded)throw Error('Social snapshot must exclude all previously published short videos');
 const tiktokNative=fs.readFileSync(path.join(base,'src','tiktok-native.js'),'utf8')
   .replace(/^export /gm,'');
+const blueskyNative=fs.readFileSync(path.join(base,'src','bluesky-native.js'),'utf8')
+  .replace(/^export /gm,'');
 const analytics = 'const SOCIAL_SNAPSHOT='+JSON.stringify(social)+';\n'
   + tiktokNative+'\n'
+  + blueskyNative+'\n'
   + fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
     .replace('import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";','')
+    .replace('import {nativeBlueskySnapshot} from "./bluesky-native.js";','')
     .replace('export async function api', 'async function api');
 const router = fs.readFileSync(path.join(base, 'src', 'worker.js'), 'utf8')
   .replace('import {api} from "./analytics.js";', '');
