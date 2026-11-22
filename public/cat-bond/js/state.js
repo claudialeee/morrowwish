@@ -4,6 +4,7 @@ const SAVE_KEY = 'catbond_save_v1';
 
 const DEFAULT_STATE = () => ({
   coins: 50,           // general currency (shop, buildings, skill learning, upgrades)
+  medkits: 2, // dedicated medical supplies (legacy saves receive 2 once)
   fish: 5,             // cat-raising / feeding / premium currency (luck lures, old treats folded in)
   luckLure: 0,         // active luck boost charges
   cats: [],            // owned cats (instances)
@@ -214,25 +215,25 @@ function healAllCats() {
   if(count)save();
   return count;
 }
-function feedFishForHealth(cat) {
+function useMedkitForHealth(cat) {
   if(!cat)return {ok:false,reason:'cat'};
   if(difficulty()==='casual')return {ok:false,reason:'full'};
   const before=catHpFraction(cat);
   if(before>=.999)return {ok:false,reason:'full'};
-  if((S.fish||0)<1)return {ok:false,reason:'fish'};
-  S.fish--;
+  if((S.medkits||0)<1)return {ok:false,reason:'medkit'};
+  S.medkits--;
   const after=Math.min(1,before+FISH_HEAL_FRACTION);
   setBattleHealth(cat,after);
   save();
   return {ok:true,cost:1,before,after};
 }
-function feedFishForTeam(cats) {
+function useMedkitForTeam(cats) {
   const unique=[...new Map((cats||[]).filter(Boolean).map(c=>[c.uid,c])).values()];
   if(difficulty()==='casual')return {ok:false,reason:'full'};
   const wounded=unique.map(c=>({cat:c,before:catHpFraction(c)})).filter(x=>x.before<.999);
   if(!wounded.length)return {ok:false,reason:'full'};
-  if((S.fish||0)<wounded.length)return {ok:false,reason:'fish',cost:wounded.length};
-  S.fish-=wounded.length;
+  if((S.medkits||0)<wounded.length)return {ok:false,reason:'medkit',cost:wounded.length};
+  S.medkits-=wounded.length;
   for(const x of wounded)setBattleHealth(x.cat,Math.min(1,x.before+FISH_HEAL_FRACTION));
   save();
   return {ok:true,cost:wounded.length,count:wounded.length};
@@ -309,5 +310,5 @@ window.State = {
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
-  healAllCats, feedFishForHealth, feedFishForTeam,
+  healAllCats, useMedkitForHealth, useMedkitForTeam,
 };

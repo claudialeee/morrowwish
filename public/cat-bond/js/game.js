@@ -935,10 +935,10 @@ class Game {
     const translate=text=>en?(window.CatBondI18n?.translate?.(text)||text):text;
     const tap=this.isTouch;
     const defs={
-      basic: {skill:fighter?.basicSkill,icon:'🐟',
-        fallback:en?'Fish & Yarn':'小鱼干',
-        desc:en?'Alternately toss dried fish and yarn balls to damage wild cats. Basic attacks also build ultimate energy.':
-          '交替投掷小鱼干和毛线团攻击野猫，积攒必杀能量。可衔接其他技能触发连击。',
+      basic: {skill:fighter?.basicSkill,icon:'🧶',
+        fallback:en?'Fluff Attack':'毛球出击',
+        desc:en?'Toss fluffy yarn balls to attack wild cats and build ultimate energy.':
+          '投掷毛线球攻击野猫，积攒必杀能量。可衔接其他技能触发连击。',
         key:tap?(en?'Tap':'点击'):(en?'Click / J':'左键 / J'),
         extra:en?'Basic attack · short cooldown':'普通攻击 · 短冷却'},
       q: {skill:fighter?.qSkill,icon:'🧶',fallback:en?'Skill 1':'技能一',
