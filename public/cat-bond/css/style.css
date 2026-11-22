@@ -2359,3 +2359,175 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #intro .intro-features span{min-height:36px}
  #intro .intro-guide{margin:2px auto}
 }
+
+
+/* 2026-11-21 STORYBOOK GARDEN: intentionally translucent navigation canvas.
+   The yard painting stays visible through the toolbar; each action is its own
+   distinct, high-contrast pastel button. No giant white plate over the scene. */
+:root{
+ --cb-blush:#f6c7d2;--cb-lilac:#e8d8f5;--cb-butter:#fae5ae;
+ --cb-sky:#d6e9f8;--cb-mint:#d6ebdf;--cb-ink:#60536d;
+}
+#stage{background:linear-gradient(150deg,#e6d8ef,#f9e6db 51%,#e5ddd4)!important}
+#tabbar{
+ background:transparent!important;
+ background-image:none!important;
+ border:0!important;box-shadow:none!important;
+ isolation:isolate;
+ padding:8px clamp(8px,1.5vw,18px) max(12px,env(safe-area-inset-bottom,0px))!important;
+ gap:clamp(5px,1vw,12px)!important;
+}
+#tabbar .tab{
+ position:relative;min-width:0;
+ border:1.5px solid #ffffffd6!important;
+ border-radius:19px!important;color:#5f506b!important;
+ background:linear-gradient(158deg,#fff8f3df,#f1e5f1d9)!important;
+ box-shadow:0 4px 0 #a68a9a26,0 9px 18px #6c607a1b,inset 0 2px 2px #fffdf9bd!important;
+ backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+ font-weight:850;transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+ text-shadow:0 1px 0 #ffffffbd;
+}
+#tabbar .tab:nth-child(1){background:linear-gradient(155deg,#fff0e6e5,#f9d9d7de)!important}
+#tabbar .tab:nth-child(2){background:linear-gradient(155deg,#f9eaffef,#e7d5f6e6)!important}
+#tabbar .tab:nth-child(3){background:linear-gradient(155deg,#ffefdce9,#f9dfbae8)!important}
+#tabbar .tab:nth-child(4){background:linear-gradient(155deg,#e9f5ffed,#d5e6f6e6)!important}
+#tabbar .tab:nth-child(5){background:linear-gradient(155deg,#fff0f5ed,#f6d6e4e6)!important}
+#tabbar .tab:nth-child(6){background:linear-gradient(155deg,#ecf9f1ed,#d9ebdce6)!important}
+#tabbar .tab.active{
+ color:#624772!important;border-color:#c79ac5!important;
+ background:linear-gradient(145deg,#f8d7e9f5,#ecdbfaf5)!important;
+ box-shadow:0 0 0 2px #fff8f0bd,0 4px 0 #ad7fa22e,0 7px 16px #8c608c30!important;
+ transform:translateY(-2px);
+}
+#tabbar .tab:focus-visible,
+#yard-actions .fab:focus-visible,
+#panel button:focus-visible,
+#intro button:focus-visible{
+ outline:3px solid #ad84b8!important;outline-offset:3px;
+}
+#tabbar .tab .ico{filter:drop-shadow(0 1px 1px #fff9efcc)}
+#yard-actions{gap:9px}
+#yard-actions .fab{
+ background:linear-gradient(155deg,#ffedebf7,#edc7def7)!important;
+ border:2px solid #fff3eff0!important;
+ color:#66536a!important;border-radius:19px!important;
+ box-shadow:0 5px 0 #987e902c,0 11px 18px #5a53642d,inset 0 2px 5px #fffdfcc2!important;
+ text-shadow:0 1px 0 #fff8ef;
+ backdrop-filter:blur(8px);
+ transition:transform .15s,box-shadow .15s!important;
+}
+#yard-actions .fab:nth-child(1){background:linear-gradient(145deg,#ecf5ffee,#c6dff2f0)!important;border-color:#f4fbff!important}
+#yard-actions .fab:nth-child(2){background:linear-gradient(145deg,#fff1dff0,#f5d7bdf2)!important;border-color:#fff6ec!important}
+#yard-actions .fab:nth-child(3){background:linear-gradient(145deg,#f5e4ffee,#e0cbf0f0)!important;border-color:#fff3ff!important}
+#yard-actions .fab:nth-child(4){background:linear-gradient(145deg,#ffe7eff0,#f4c6d3f2)!important;border-color:#fff6f7!important}
+#yard-actions .fab:nth-child(5){background:linear-gradient(145deg,#fff6d9ed,#f6e1b7f0)!important;border-color:#fffaf1!important}
+#yard-actions .fab:hover{transform:translateY(-2px) scale(1.03)}
+#yard-actions .fab:active{transform:translateY(2px) scale(.97);box-shadow:0 2px 9px #73627525!important}
+#fab-map.map-fab{border-radius:20px!important;color:#665577!important}
+#fab-map.map-fab small{font-size:11px;letter-spacing:.04em}
+#hud .hud-pill,.scene-title{
+ color:#695369!important;background:#fff2f0bf!important;
+ border:1.5px solid #ffffffd9!important;border-radius:16px!important;
+ box-shadow:0 3px 13px #866f8240!important;
+ backdrop-filter:blur(9px);
+}
+#hud .hud-pill:nth-child(2){background:#edf2ffbd!important}
+#first-quest{
+ color:#704f6e;background:#fff1f0e0!important;
+ border:1.5px solid #fff6f0!important;border-radius:18px!important;
+ box-shadow:0 7px 18px #8a69802c!important;backdrop-filter:blur(10px);
+}
+#intro{
+ background:radial-gradient(circle at 79% 14%,#fff4d8b8 0 11%,transparent 27%),
+ linear-gradient(164deg,#e8e3f6 0%,#f9dfeb 33%,#fff1e3 65%,#e3ecdc 100%)!important;
+}
+#intro::before{
+ background:radial-gradient(ellipse at 12% 110%,#e9c8e3 0 19%,transparent 19.5%),
+ radial-gradient(ellipse at 88% 111%,#d8d1eb 0 24%,transparent 24.5%),
+ radial-gradient(ellipse at 50% 119%,#f4e0d1 0 31%,transparent 31.5%)!important;
+}
+#intro::after{
+ background:radial-gradient(circle at 10% 76%,#f0adc2 0 3px,transparent 4px),
+ radial-gradient(circle at 18% 85%,#fff8e5 0 3px,transparent 4px),
+ radial-gradient(circle at 89% 79%,#d4b4e9 0 3px,transparent 4px),
+ radial-gradient(circle at 78% 89%,#f8cba1 0 4px,transparent 5px)!important;
+}
+#intro .intro-cat-gallery{
+ background:radial-gradient(ellipse at 50% 54%,#fff9eacb,transparent 76%),
+ linear-gradient(160deg,#f9e8ece3,#e8ddf0c9 55%,#f7e8daca)!important;
+ border:2px solid #fff8f3d9!important;
+ box-shadow:0 10px 25px #a58baa30!important;
+}
+#intro .intro-cat-gallery::after{
+ background:radial-gradient(ellipse at 55% 89%,#e3cfe2 0 50%,transparent 50.5%),
+ linear-gradient(0deg,#ebd7e1 0%,transparent 93%)!important;
+}
+#intro .intro-features span{
+ background:#fff8f14d!important;
+ border:1px solid #fff9f3b8!important;
+ box-shadow:none!important;
+ backdrop-filter:blur(4px);color:#715875!important;
+}
+#intro .intro-guide{background:#fff6ef88!important;border-color:#fffaf3c7!important;color:#795b77!important}
+#intro .game-logo{color:#765977!important;text-shadow:0 2px #fff9f4,0 8px 19px #866d9733!important}
+#intro .logo-en{color:#a480a3!important}
+#intro #intro-start{
+ color:#5d4165!important;border:2px solid #fff6f0!important;
+ background:linear-gradient(135deg,#f8cddd,#e3d2f7 56%,#f9e5c1)!important;
+ border-radius:23px!important;
+ box-shadow:0 5px 0 #b487ac40,0 13px 22px #896b8e32!important;
+}
+#intro #intro-start:active{transform:translateY(2px)}
+#panel .card{
+ border:1.5px solid #fff6ed!important;
+ border-radius:23px;
+ background:linear-gradient(145deg,#fff9f2f5,#f7eef9f3 50%,#f2f6ecf3)!important;
+ color:#65556e;box-shadow:0 20px 45px #77627a55;
+}
+#panel .btn,
+#panel button:not(.card-close):not(.panel-dismiss):not(.duo-unlocked-card):not(.cat-card):not(.dex-cell),
+#yard-placement-dock button{
+ border-radius:15px;
+ box-shadow:0 3px 0 #8a738123;
+}
+#panel .btn.gold,
+#panel .btn:not(.ghost),#panel .capture-mode-option[aria-checked="true"],
+#yard-placement-dock #yard-placement-confirm{
+ color:#654c66!important;
+ background:linear-gradient(135deg,#f9d1dc,#e4d5f6)!important;
+ border:1.5px solid #e9c1d9!important;
+}
+#panel .btn.ghost{background:#f6ecf7db;color:#66546e}
+#panel .cat-hub-tabs{
+ background:#f5eafaab!important;border:1px solid #ead7ee!important;border-radius:18px!important;
+}
+#panel .cat-hub-tabs button[aria-selected="true"]{
+ background:linear-gradient(135deg,#fff4f5,#f0e4ff)!important;border-color:#dec7e8!important;
+ color:#725372!important;
+}
+#panel .card-close,#panel .panel-dismiss{
+ color:#664e69!important;background:#fcebf6ed!important;
+ border:2px solid #fff8f6!important;border-radius:50%!important;
+ box-shadow:0 3px 9px #7c647b30!important;
+}
+#yard-placement-dock{
+ background:linear-gradient(145deg,#fff9f5e9,#f2e5f8e6)!important;
+ border:2px solid #fff6eac2!important;color:#715c72!important;
+ backdrop-filter:blur(10px);border-radius:22px!important;
+}
+#yard-placement-dock #yard-placement-cancel{background:#f7eff4!important;color:#725671!important}
+@media(max-width:700px){
+ #tabbar{gap:4px!important;padding:5px 5px max(8px,env(safe-area-inset-bottom,0px))!important}
+ #tabbar .tab{border-radius:13px!important;min-height:48px;padding:5px 2px}
+ #tabbar .tab .ico{font-size:clamp(16px,4.7vw,21px)}
+ #yard-actions .fab{border-radius:15px!important}
+ #first-quest{top:calc(100px + env(safe-area-inset-top,0px))!important;left:50%;max-width:calc(100vw - 20px)}
+ #hud{top:calc(45px + env(safe-area-inset-top,0px))!important}
+}
+@media(orientation:landscape) and (max-height:530px){
+ #tabbar .tab{min-height:39px;padding:3px 2px}
+ #first-quest{top:calc(88px + env(safe-area-inset-top,0px))!important;max-width:min(63vw,440px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #tabbar .tab,#yard-actions .fab{transition:none!important}
+}
