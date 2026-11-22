@@ -65,7 +65,7 @@ try{
         const reportText = await page.locator('#panel.open .card').textContent();
         assert.ok(await page.locator('#panel.open .wb-visitor').isVisible(),
           'The visitor reward must be visibly displayed in the welcome panel');
-        assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+15') && reportText.includes('🐠+1') &&
+        assert.ok(reportText.includes('汤圆') && /留下\s*\+15(?:\s|🐠)/u.test(reportText) && reportText.includes('🐠+1') &&
           !reportText.includes('🧶'),
           'Welcome popup must aggregate legacy yarn into 12+3 coins, retain fish: ' + reportText);
         assert.ok(!reportText.includes('[object Object]'), 'Real visitor popup must never stringify rewards as [object Object]');
