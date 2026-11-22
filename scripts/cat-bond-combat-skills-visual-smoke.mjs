@@ -67,7 +67,7 @@ try{
       const p=b.projectiles.at(-1);
       if(!p||p.kind!=='lightningOrb'||p.spd>150||p.homing<3)throw Error('orb not slow homing');
       target.y=f.y-70;const before=p.ang;
-      b.tick(.08);
+      b.update(.08);
       if(!(p.ang<before-.04))throw Error('orb did not turn toward enemy');
       mode='seeking';
     }else if(kind==='chain'){
@@ -79,7 +79,7 @@ try{
       b.dashLunge(f,0,sk,18,'#ffe4a1');
       if(target.hp<hp)throw Error('dash dealt ranged damage on cast');
       const x0=f.x;
-      for(let j=0;j<6;j++)b.tick(.055);
+      for(let j=0;j<6;j++)b.update(.055);
       if(f.x<=x0+17)throw Error('dash never moved');
       if(target.hp>=hp)throw Error('dash never collided');
       if(f.x>x0+133)throw Error('dash travelled beyond short melee range');
