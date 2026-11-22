@@ -294,9 +294,9 @@ function dissolvePortraitFocus(g,W,H){
  g.scale(W,H);
  const matte=g.createRadialGradient(.5,.5,.08,.5,.5,.52);
  matte.addColorStop(0,'#fff');
- matte.addColorStop(.37,'#fff');
- matte.addColorStop(.62,'rgba(255,255,255,.86)');
- matte.addColorStop(.83,'rgba(255,255,255,.26)');
+ matte.addColorStop(.40,'#fff');
+ matte.addColorStop(.62,'rgba(255,255,255,.94)');
+ matte.addColorStop(.84,'rgba(255,255,255,.30)');
  matte.addColorStop(1,'rgba(255,255,255,0)');
  g.fillStyle=matte;
  g.fillRect(0,0,1,1);
@@ -318,17 +318,15 @@ function portraitEnvironment(key,frame,tier,W,H){
   pctx.save();pctx.globalAlpha=.30;
   pctx.filter='blur('+Math.round(Math.max(24,Math.min(38,W*.085)))+'px) saturate(1.12)';
   sourceCover(pctx,cellRect(frame,tier),-W*.09,-H*.09,W*1.18,H*1.18,
-    1.015,0,0,1,null,tier);
+    1.015,0,0,1,key,tier);
   pctx.restore();
  }
  return portraitAtmosphere;
 }
 function drawPortraitStory(g,W,H,frame,tier,cam,scale,galleryPreview=false){
- // Use the full 16:9 original in a wide, unbroken central composition,
- // while the cat-free, matching scene extends across the portrait viewport.
- // A little side overscan keeps both cats prominent without stretching.
- const width=W*(galleryPreview?.97:1.17),height=width*9/16;
- const x=(W-width)/2,y=(H-height)/2-H*.014;
+ // Preserve EVERY part of the original cats: no camera zoom, pan or crop.
+ const width=Math.min(W*.985,H*16/9*.985),height=width*9/16;
+ const x=(W-width)/2,y=(H-height)/2;
  const dpr=scale;
  const pw=Math.max(1,Math.round(width*dpr)),ph=Math.max(1,Math.round(height*dpr));
  if(portraitFocus.width!==pw||portraitFocus.height!==ph){
@@ -337,14 +335,7 @@ function drawPortraitStory(g,W,H,frame,tier,cam,scale,galleryPreview=false){
  const pctx=portraitFocusCtx;
  pctx.setTransform(dpr,0,0,dpr,0,0);
  pctx.clearRect(0,0,width,height);
- pctx.save();
- pctx.translate(width*.5+cam.dx*.18,height*.5+cam.dy*.08);
- pctx.rotate(cam.angle*.16);
- pctx.translate(-width*.5,-height*.5);
- sourceCover(pctx,cellRect(frame,tier),0,0,width,height,
-   galleryPreview?1:Math.min(1.065,Math.max(1.005,cam.zoom*.96)),0,0,1,null,tier);
- pctx.restore();
- // Blend into the full-height, matching scenery with no straight inset edge.
+ sourceCover(pctx,cellRect(frame,tier),0,0,width,height,1,0,0,1,null,tier);
  dissolvePortraitFocus(pctx,width,height);
  g.drawImage(portraitFocus,x,y,width,height);
 }
@@ -393,17 +384,12 @@ function draw(ctx,W,H,seq,lookup){
    (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
     {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
  ctx.save();
- ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
- ctx.rotate(cam.angle);
+ // Fixed scene origin avoids shaking a sharp rectangular painting over combat.
+ ctx.translate(sw*.5+(originalArt?0:cam.dx),sh*.5+(originalArt?0:cam.dy));
+ ctx.rotate(originalArt?0:cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- // Extend ONLY scenery past the camera viewport. Rotated camera tracks
- // must never expose white triangular edges or a tilted image rectangle.
- // The character actors retain their original uncropped scale.
- // Landscape/desktop: cover the entire battle canvas with the full
- // original 63-scene painting. Portrait: cover ALL of the phone with its
- // matching cat-free scenery first; the complete original pair is overlaid
- // as a soft central focus, without sacrificing either cat to a 16:9 crop.
- if(originalArt&&portrait){
+ if(originalArt&&!thumbnail&&!galleryPreview){
+  // Shared cat-free scenery fills the entire phone or desktop viewport.
   ctx.drawImage(portraitEnvironment(key,frame,tier,sw,sh),0,0,sw,sh);
  }else{
   sourceCover(ctx,cellRect(frame,tier),galleryPreview?0:-sw*.13,galleryPreview?0:-sh*.13,
@@ -432,8 +418,10 @@ function draw(ctx,W,H,seq,lookup){
  ctx.restore();
  // Gallery thumbnails retain every pixel of the 63 original paintings.
  // Only the in-battle animated cut-in fades at the four perimeter edges.
+ if(originalArt&&!thumbnail&&!galleryPreview)
+  drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview);
+ // Matte the finished scene AND its foreground, never leave a hard-edged box.
  if(!thumbnail)featherScenery(ctx,sw,sh);
- if(originalArt&&portrait)drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview);
  // The restored original artwork ALREADY contains both illustrated cats.
  // Do not paste a second pair on it. For breed-specific alternate scenes,
  // paint the two selected transparent watercolor cats AFTER the matte.
@@ -510,7 +498,7 @@ window.CatBondPremiumCinematics={
  get originalPaintingDefault(){return true},
  get restoredOriginalFrameCount(){return 63},
  get fullBleedResponsive(){return true},
- get portraitComposition(){return 'clean-matching-scene-plus-feathered-original-63'},
+ get portraitComposition(){return 'uncropped-original-63-with-whole-viewport-feather'},
  get characterSource(){return window.CatBondDuoBreedActors?.catSource||''}
 };
 })();
