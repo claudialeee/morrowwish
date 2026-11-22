@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morrow Wish V8 Video QA — Not Published</title><style>
+:root{color-scheme:dark}body{margin:0;background:#171728;color:#f8f6ff;font:15px/1.55 system-ui,sans-serif}header{text-align:center;padding:26px 16px 20px}h1{font-size:clamp(21px,4vw,34px);margin:0 0 10px}p{margin:8px 0;color:#d1cce0}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;max-width:1320px;padding:20px;margin:auto}article{background:#25243b;padding:15px;border-radius:19px;min-width:0}h2{font-size:18px;margin:0 0 10px}video{display:block;aspect-ratio:9/16;object-fit:contain;width:min(100%,310px);max-height:560px;margin:auto;border-radius:13px;background:#080812}a{color:#e9c0f4}small{display:block;color:#b3aacb;margin-top:10px}.highlights{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}.highlights button{padding:7px 10px;border:1px solid #666180;border-radius:999px;color:#f7eafa;background:#3c375c;font:600 12px system-ui;cursor:pointer}.highlights button:hover{background:#594976}.highlights button:focus-visible{outline:2px solid #edd0ff}footer{text-align:center;padding:20px;color:#c1b6d1}</style></head><body><header><h1>Morrow Wish · 七款游戏 V8 审核页 · 两款猫猫游戏全新实机录制</h1><p>《猫猫纽带》新录制：稀有猫收服、双猫惊喜互动、养成、打工、地图与合击。《猫猫捣蛋》重新拍摄连贯逃脱、成就、被抓。其他五款保留 V7。仅供审核，不会自动发布。</p></header><main id="videos"></main><footer>所有视频需要确认后才允许发布到社交平台。</footer><script>
+fetch('/promo/v8-review.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Previews not rendered yet');return r.json()}).then(data=>{
+ for(const entry of data.trailers||[]){
+ const article=document.createElement('article'),h=document.createElement('h2'),v=document.createElement('video'),a=document.createElement('a'),note=document.createElement('small');const names={'cat-bond':'猫猫纽带','pawsibly-innocent':'猫猫捣蛋','tiny-town':'自由小镇','elsewhere':'平行人生','flip-dash':'Flip Dash','parcel-panic':'快递大作战','pocket-aquarium':'口袋水族馆'};
+ h.textContent=(names[entry.slug]||entry.slug)+' · 加长实机版';v.controls=true;v.playsInline=true;v.preload='metadata';v.poster=entry.poster;v.src=entry.video;
+ const highlights={'cat-bond':[['cat-upgrade','猫咪升级'],['duo-partners','双猫搭档'],['duo','双猫合击'],['ultimate','必杀技'],['duo-surprise','双猫惊喜事件'],['rare-encounter','发现稀有猫'],['rare-capture','成功收服']],
+ 'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['narrow-pursuit','险些被抓'],['narrow-achievement','侥幸逃脱成就'],['caught-attempt','被抓住']],
+ 'tiny-town':[['opening-three-choices','开场三个选择'],['resident-reactions','居民心情'],['resident-profile','居民喜好'],['neighbor-story','居民故事'],['ending','小镇结局']],
+ 'elsewhere':[['moon-surprise','月球奇遇'],['moon-ending','月球人生结局'],['paris-romance','巴黎邂逅'],['paris-ending','爱情结局']],
+ 'flip-dash':[['first-coin','开局吃金币'],['coin-collect','连续吃金币'],['crash','撞上障碍']],
+ 'parcel-panic':[['deliveries','连续投递'],['mistakes','错误投递'],['game-over','结算']],
+ 'pocket-aquarium':[['feeding','喂鱼操作'],['more-feeding','继续喂鱼'],['timeout','最终成绩']]};
+ const timeByScene={};let current=0;
+ for(const shot of entry.shots||[]){if(shot.scene)timeByScene[shot.scene]=current;current+=Number(shot.seconds)||0}
+ const nav=document.createElement('div');nav.className='highlights';
+ for(const [scene,title] of highlights[entry.slug]||[]){
+  if(timeByScene[scene]===undefined)continue;
+  const button=document.createElement('button');button.type='button';button.textContent=title;
+  button.addEventListener('click',()=>{v.currentTime=Math.max(0,timeByScene[scene]+.12);v.play().catch(()=>{})});
+  nav.appendChild(button);
+ }
+ a.href=entry.video;a.textContent='单独观看 MP4';note.textContent=entry.duration+' 秒 · 未批准发布';article.append(h,v,nav,a,note);document.getElementById('videos').appendChild(article);
+ }
+}).catch(e=>{const p=document.createElement('p');p.textContent='Previews unavailable: '+e.message;document.querySelector('main').appendChild(p)});
+</script></body></html>
