@@ -676,6 +676,102 @@
     return cat.loadout||next;
   }
 
+  // ==========================================================================
+  // 4c. BUILD TYPES (按品种 + 流派自动配装) — DotA/LoL role taxonomy, cat-flavored
+  // ==========================================================================
+  // Six roles, each a lens on what the Q/E slots should prioritise. A build does
+  // NOT invent skills the cat can't learn — it re-ranks the cat's OWN learnable
+  // pool toward a playstyle, then fills Q/E/ult with the best fit. The ult slot
+  // stays the cat's element/ signature ult regardless of build (that's identity).
+  //   tank     坦克 — survive + peel: shield/heal first, then a sticky melee
+  //   fighter  斗士 — bruiser: heavy melee + a gap-closer, self-buff tiebreak
+  //   dps      输出 — sustained ranged: projectile/beam poke, kite-friendly
+  //   assassin 收割 — burst: biggest single-hit melee/dash/pounce, expose/bleed
+  //   control  控制 — lockdown: bind/dizzy/blind/chill appliers, field/leap CC
+  //   support  辅助 — enable team: heal + buff first, safe ranged poke second
+  const BUILD_TYPES = {
+    tank:     { zh: '坦克', en: 'Tank',     icon: '🛡️' },
+    fighter:  { zh: '斗士', en: 'Fighter',  icon: '⚔️' },
+    dps:      { zh: '输出', en: 'DPS',      icon: '🎯' },
+    assassin: { zh: '收割', en: 'Assassin', icon: '🗡️' },
+    control:  { zh: '控制', en: 'Control',  icon: '🌀' },
+    support:  { zh: '辅助', en: 'Support',  icon: '💚' },
+  };
+  const BUILD_ORDER = ['tank','fighter','dps','assassin','control','support'];
+  // CC tags a skill can apply (used to score the control build + as a tiebreak).
+  const CC_TAGS = ['bind','dizzy','blind','chill','expose','weaken'];
+  function skillCCScore(sk){
+    const t=[].concat(sk.appliesTag||[], sk.tags||[]);
+    return CC_TAGS.reduce((n,c)=>n+(t.includes(c)?1:0),0);
+  }
+  function isShieldSkill(sk){ return sk.kind==='buff'&&(sk.shieldType||(sk.tags||[]).includes('shield')); }
+  // Per-role score for a single (non-ult) skill. Higher = better fit for the role.
+  function buildScore(role, sk){
+    if(!sk||sk.ultCost>0)return -1;
+    const k=sk.kind, p=sk.power||0, cc=skillCCScore(sk), heavy=!!sk.heavy;
+    const ranged=['projectile','beam','chain'].includes(k);
+    const melee=['melee','dash','pounce','leap'].includes(k);
+    switch(role){
+      case 'tank':     return (isShieldSkill(sk)?6:0)+(k==='heal'?4:0)+(melee&&!heavy?2:0)+cc*1.2;
+      case 'fighter':  return (melee?4:0)+(heavy?2.5:0)+p*1.6+(k==='dash'||k==='pounce'?1.5:0)+(sk.tags?.includes('buff')?1:0);
+      case 'dps':      return (ranged?4:0)+p*1.8+(k==='beam'?1.5:0)-(heavy?1:0)-(isShieldSkill(sk)?3:0);
+      case 'assassin': return (melee?3:0)+(k==='dash'||k==='pounce'||k==='leap'?2.5:0)+p*2.2+(heavy?2:0)+(cc?0.8:0)-(isShieldSkill(sk)||k==='heal'?4:0);
+      case 'control':  return cc*3+(k==='leap'||sk.field?2:0)+(ranged?1:0)+(isShieldSkill(sk)?1:0)+p*0.4;
+      case 'support':  return (k==='heal'?6:0)+(isShieldSkill(sk)?4:0)+((sk.tags||[]).includes('buff')?4:0)+(ranged?1.5:0)-(heavy?1:0);
+    }
+    return 0;
+  }
+  // Recommend a build for a breed purely from its base stat profile. POW-heavy →
+  // fighter/assassin, VIT-heavy → tank, CHA-heavy → support/control, AGI-heavy →
+  // dps/assassin. Returns a BUILD_TYPES key. Deterministic (no RNG) so the same
+  // breed always suggests the same identity.
+  function buildTypeForBreed(cat){
+    const sp=speciesOf(cat), b=(sp&&sp.base)||{pow:6,agi:6,vit:6,cha:6};
+    const total=(b.pow+b.agi+b.vit+b.cha)||1;
+    const pw=b.pow/total, ag=b.agi/total, vt=b.vit/total, ch=b.cha/total;
+    // weighted affinity of each role for this stat spread
+    const score={
+      tank:     vt*3 + pw*0.6,
+      fighter:  pw*2.4 + vt*1.1,
+      dps:      ag*2.2 + pw*1.0,
+      assassin: pw*1.6 + ag*1.8,
+      control:  ch*1.8 + ag*1.0,
+      support:  ch*2.6 + vt*0.8,
+    };
+    let best='fighter', bv=-1;
+    for(const r of BUILD_ORDER){ if(score[r]>bv){ bv=score[r]; best=r; } }
+    return best;
+  }
+  // Build a [basic,Q,E,ult] loadout for a role from the cat's learnable pool.
+  // Basic stays the innate toy toss (null). Ult stays the cat's element/signature
+  // ult. Q/E are the two highest-scoring distinct non-ult skills for the role,
+  // with a guaranteed defensive E for tank/support when one is available.
+  function recommendLoadout(cat, role){
+    role=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
+    const pool=(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0);
+    const ranked=pool.map(sk=>({sk,s:buildScore(role,sk)}))
+      .filter(x=>x.s>-1).sort((a,b)=>b.s-a.s).map(x=>x.sk);
+    const q=ranked[0]||null;
+    // For tank/support, force the E slot to the best defensive verb if the cat has
+    // one but it wasn't already picked as Q; otherwise take the next best skill.
+    let e=null;
+    if((role==='tank'||role==='support')){
+      e=ranked.find(sk=>sk!==q&&(isShieldSkill(sk)||sk.kind==='heal'))||null;
+    }
+    if(!e)e=ranked.find(sk=>sk!==q)||null;
+    const full=defaultLoadout(cat);                 // reuse its ult-slot resolution
+    return [null, q?.id||full[1]||null, e?.id||full[2]||null, full[3]||null];
+  }
+  // Apply a recommended build to the cat (marks it edited so growth won't override).
+  function applyBuild(cat, role){
+    const next=recommendLoadout(cat, role);
+    cat.loadout=next.slice();
+    cat.autoSkillLoadout=next.slice();
+    cat.buildType=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
+    cat.skillEdited=true;                            // respect the player's explicit choice
+    return cat.loadout;
+  }
+
   // One intentional discovery moment after the first successful capture.
   // Existing custom equipment is respected; new players get the fresh skill
   // automatically in the E slot. This returns the actual unlocked ability.
@@ -872,6 +968,8 @@
     // --- learning / loadouts ---
     SIGNATURE_SKILL, SPLASH_ELEMENT, learnableSkills, defaultLoadout, ensureLoadout,
     basicEligible, basicChoices,
+    // --- build types (按品种 + 流派自动配装) ---
+    BUILD_TYPES, BUILD_ORDER, buildTypeForBreed, recommendLoadout, applyBuild,
     awakenFirstSkill, progressionHint,
     // --- gated skill-learning (付费/等级/亲密/品种/领悟) ---
     QUEST_CHECKS, questProgress, questMet, gateMet, hasLearned, isGated,

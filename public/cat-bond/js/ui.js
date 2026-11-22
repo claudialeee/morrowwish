@@ -1472,13 +1472,33 @@ const UI = {
       }).join('') || '<span class="tiny">暂无可选（提升等级/好感解锁）</span>';
       return `<div class="sk-slot"><div class="sk-slot-label">${slot.label}<div class="tiny">${cur ? cur.name : '空'}</div></div><div class="sk-opts">${chips}</div></div>`;
     }).join('');
+    // ---- 一键配装 (按品种 + 流派自动推荐) ----
+    // Six build types; the one that best fits this breed's stats is marked 推荐.
+    // Clicking a build re-equips Q/E (and keeps the element ult) for that role.
+    const suggested = S.buildTypeForBreed ? S.buildTypeForBreed(cat) : null;
+    const curBuild = cat.buildType || null;
+    const buildChips = (S.BUILD_ORDER || []).map(role => {
+      const b = S.BUILD_TYPES[role];
+      const on = curBuild === role ? 'on' : '';
+      const rec = role === suggested ? `<span class="tiny">${en0?'suggested':'推荐'}</span>` : '';
+      return `<button class="sk-chip build-chip ${on}" data-build="${role}" title="${en0?b.en:b.zh}">${b.icon} ${en0?b.en:b.zh}${rec}</button>`;
+    }).join('');
+    const buildRow = `<div class="sk-slot build-row"><div class="sk-slot-label">${en0?'Auto build':'一键配装'}<div class="tiny">${en0?'by breed + role':'按品种 + 流派'}</div></div><div class="sk-opts">${buildChips}</div></div>`;
     this.panel(`<span class="card-close">×</span>
       <h2>📖 ${State.catName(cat)} · 技能搭配</h2>
       <p class="sub">已解锁 ${learn.length} 种技能 · 点击替换 Q / E / 必杀。每只猫拥有不同的元素技能与解锁路线。</p>
       <p class="skill-roadmap">✨ ${S.progressionHint(cat)}</p>
       <p class="skill-progression-note">普通猫通过升级与好感解锁元素必杀；SR / SSR 更早解锁专属必杀。能量充满后按 R 或点击右下角释放。</p>
-      <div class="sk-list">${rows}</div>
+      <div class="sk-list">${buildRow}${rows}</div>
       <div class="btn-row"><button class="btn" id="sk-trainer">🎓 ${en0?'Learn new skills':'学习新技能'}</button><button class="btn gold" id="sk-back">← 返回</button></div>`);
+    document.querySelectorAll('#panel .build-chip').forEach(b => b.onclick = () => {
+      const role = b.dataset.build;
+      if (S.applyBuild) S.applyBuild(cat, role);
+      State.save(); this.openSkillEditor(cat);
+      const bt = S.BUILD_TYPES[role];
+      this.game.toast((en0 ? 'Build: ' : '流派：') + (en0 ? bt.en : bt.zh));
+      window.arcadeMetric?.('bond_build_applied', { breed: cat.species, build: role });
+    });
     this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
       const slotI = +b.dataset.slot, skId = b.dataset.sk;
       cat.loadout = cat.loadout.slice();
