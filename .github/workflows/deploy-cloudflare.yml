@@ -234,6 +234,25 @@ jobs:
           grep -Fq 'href="/pawsibly-innocent/"' /tmp/morrowwish-live-home.html || { echo '::error::Cat homepage link missing'; exit 1; }
           verify_live /pawsibly-innocent/ /tmp/morrowwish-live-cat.html 'PAWSIBLY'
           verify_live /pawsibly-innocent/game.js /tmp/morrowwish-live-game.js 'function throwYarn'
+          # The public player-facing game URL is Vercel, not Pages. Ensure its
+          # Cat Bond HTML and all four changed assets match this exact release.
+          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'js/game.js?v=first-adventure-tour-20261121-1'
+          grep -Fq 'js/main.js?v=smaller-intro-cats-20261121-1' /tmp/mw-live-catbond.html
+          grep -Fq 'js/ui.js?v=tour-panel-navigation-20261121-1' /tmp/mw-live-catbond.html
+          grep -Fq 'css/style.css?v=guided-tour-small-cats-20261121-1' /tmp/mw-live-catbond.html
+          verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'firstAdventureTour(){'
+          verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js "completeFirstAdventureStep?.('duo')"
+          verify_live /cat-bond/js/main.js /tmp/mw-live-catbond-main.js 'targetHeight=106,maxWidth=115'
+          verify_live /cat-bond/css/style.css /tmp/mw-live-catbond-style.css '#first-quest.is-tour'
+          for asset in game.js ui.js main.js; do
+            cmp -s "public/cat-bond/js/$asset" "/tmp/mw-live-catbond-$asset" || {
+              echo "::error::Vercel Cat Bond $asset is not the deployed source"; exit 1;
+            }
+          done
+          cmp -s public/cat-bond/css/style.css /tmp/mw-live-catbond-style.css || {
+            echo '::error::Vercel Cat Bond stylesheet remains stale'; exit 1;
+          }
+          echo 'Official Vercel Cat Bond URL checked: guided intro and all updated JS/CSS bytes match production.'
           echo 'Public homepage slogan, cat link, and playable game markup verified.'
       - name: Verify live platform tracking links on both domains
         run: |

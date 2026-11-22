@@ -1036,7 +1036,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('rel?.value)<20')||
     !bondPremium.includes('if(!thumbnail&&dual>.09)')||
     !bondViewer.includes('duo-embedded')||
-    !bondIntro.includes('css/style.css?v=catbond-cta-hierarchy-20261121-2'))
+    !bondIntro.includes('css/style.css?v=guided-tour-small-cats-20261121-1'))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
  // Returning from battle must never leave stale additive blend/alpha/filter
@@ -1095,11 +1095,11 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
     !cbMain.includes('sc.getImageData(0,0,240,240)')||
     !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
-    !bondIntro.includes('js/main.js?v=catbond-equal-cat-silhouettes-20261121-2')||
+    !bondIntro.includes('js/main.js?v=smaller-intro-cats-20261121-1')||
     !cbCss.includes('background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important'))
    throw Error('Cat Bond must balance intro kitten silhouettes and make Start primary');
  if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
-    !cbMain.includes('const catBottom=h-15,targetHeight=132,maxWidth=140')||
+    !cbMain.includes('const catBottom=h-15,targetHeight=106,maxWidth=115')||
     !cbCss.includes("#intro #intro-start{")||
     !cbCss.includes("order:0!important")||
     !cbCss.includes("overflow-y:auto!important")||
@@ -1108,6 +1108,54 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbBattle.includes("this.regularSkillAccent(f,f.element,aim,true)")||
     !cbBattle.includes("this.regularSkillAccent({x,y},skill.element"))
    throw Error('Cat Bond first-screen CTA and six-element ordinary-skill VFX regressions');
+ // Tour must progress through real post-capture actions and remain optional.
+ if(!bondIntro.includes('id="guide-help"')||
+    !bondIntro.includes('role="region" aria-label="猫猫冒险指引"')||
+    !bondIntro.includes('js/game.js?v=first-adventure-tour-20261121-1')||
+    !bondIntro.includes('js/ui.js?v=tour-panel-navigation-20261121-1')||
+    !cbMain.includes('targetHeight=106,maxWidth=115')||
+    !cbCss.includes('#first-quest.is-tour')||
+    !cbCss.includes('#stage .cb-guide-target')||
+    !cbCss.includes('#intro > .intro-cat-gallery{')||
+    !cbGame.includes('firstAdventureTour(){')||
+    !cbGame.includes('completeFirstAdventureStep(kind){')||
+    !cbGame.includes('replayFirstAdventureTour(){')||
+    !cbGame.includes("this.completeFirstAdventureStep('pet')")||
+    !cbUi.includes("this.game?.completeFirstAdventureStep?.('duo')")||
+    !cbUi.includes("this.game?.completeFirstAdventureStep?.('map')")||
+    !cbUi.includes("this.game?.completeFirstAdventureStep?.('workshop')")||
+    !cbUi.includes("this.game?.completeFirstAdventureStep?.('play')"))
+   throw Error('Cat Bond post-capture guided tour or smaller intro portraits missing');
+ const tourMockWindow={MorrowwishI18n:{get:()=> 'zh'}};
+ let tourSaved=0;
+ const tourState={S:{catchCount:1,petCount:0,cats:[{uid:'a'},{uid:'b'}]},
+   save:()=>{tourSaved++;}};
+ const tourMockDocument={getElementById:()=>null,querySelector:()=>null};
+ const TourGame=new Function('window','document','State','UI',
+   cbGame+';return Game;')(tourMockWindow,tourMockDocument,tourState,{});
+ const tourGame=Object.create(TourGame.prototype);
+ tourGame.scene='yard';
+ const starterTour=tourGame.firstAdventureTour();
+ if(!starterTour||starterTour.step!==0||tourSaved!==1)
+   throw Error('First capture must initialize pet tutorial');
+ if(tourGame.completeFirstAdventureStep('map')!==false||
+    starterTour.step!==0)throw Error('Guide must not skip ahead');
+ for(const [step,kind] of ['pet','duo','map','workshop','play'].entries()){
+   if(tourGame.completeFirstAdventureStep(kind)!==true||
+      starterTour.step!==step+1)
+     throw Error('Post-capture guide failed: '+kind);
+ }
+ tourGame.finishFirstAdventureTour();
+ if(!tourState.S.firstAdventureTour.done||
+    tourState.S.firstAdventureTour.skipped||
+    tourGame.completeFirstAdventureStep('pet')!==false)
+   throw Error('Guide completion must persist and stop hints');
+ tourGame.replayFirstAdventureTour();
+ if(tourState.S.firstAdventureTour.step!==0||
+    tourState.S.firstAdventureTour.done)throw Error('Guide replay failed');
+ tourGame.finishFirstAdventureTour(true);
+ if(!tourState.S.firstAdventureTour.skipped)
+   throw Error('Guide must allow skipping without harming progress');
  // Lightweight canvas stub exercises basic, Q/E and hit accents for every
  // element without modifying game rules or loading illustration assets.
  const mockWindow={};

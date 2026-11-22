@@ -354,23 +354,158 @@ class Game {
     State.save();this.refreshHUD();metric('bond_yard_surprise_claimed',{kind,choice});
     return true;
   }
+  // A save-backed, opt-out walkthrough AFTER the first successful capture.
+  // Progress is earned by opening the real gameplay panels, never by timers.
+  firstAdventureTour(){
+    const S=State.S;
+    if(!S||(S.catchCount||0)<1)return null;
+    if(!S.firstAdventureTour&&(S.catchCount||0)<=2){
+      S.firstAdventureTour={
+        step:(S.petCount||0)>0?1:0,done:false,skipped:false
+      };
+      State.save();
+    }
+    return S.firstAdventureTour||null;
+  }
+
+  completeFirstAdventureStep(kind){
+    const tour=this.firstAdventureTour();
+    if(!tour||tour.done||tour.skipped)return false;
+    const kinds=['pet','duo','map','workshop','play'];
+    const step=Math.max(0,Math.min(5,Number(tour.step)||0));
+    if(kinds[step]!==kind)return false;
+    tour.step=step+1;
+    State.save();
+    metric('bond_first_tour_step',{step:kind,number:step+1});
+    this.refreshFirstQuest();
+    return true;
+  }
+
+  finishFirstAdventureTour(skipped=false){
+    const tour=this.firstAdventureTour();
+    if(!tour)return;
+    tour.done=true;tour.skipped=!!skipped;
+    State.save();
+    metric(skipped?'bond_first_tour_skipped':'bond_first_tour_complete');
+    this.refreshFirstQuest();
+  }
+
+  replayFirstAdventureTour(){
+    if((State.S.catchCount||0)<1)return;
+    State.S.firstAdventureTour={step:0,done:false,skipped:false};
+    State.save();
+    if(this.scene!=='yard'){
+      this.scene='yard';this.battle=null;this.showYardChrome();
+    }
+    window.UI?.closeAll?.();
+    this.refreshFirstQuest();
+  }
+
+  performFirstAdventureAction(){
+    const tour=this.firstAdventureTour();
+    if(!tour||tour.done||tour.skipped||this.scene!=='yard')return;
+    switch(Math.max(0,Math.min(5,Number(tour.step)||0))){
+      case 0: {
+        const kitten=this.yard?.entities?.find(e=>e?.cat);
+        if(kitten)this.petCat(kitten);
+        else window.UI?.openCatHub?.('solo');
+        break;
+      }
+      case 1: window.UI?.openCatHub?.('duo');break;
+      case 2: this.openWorldMap();break;
+      case 3: window.UI?.onTab?.('work');break;
+      case 4: window.UI?.openTease?.();break;
+      case 5: this.finishFirstAdventureTour();break;
+    }
+  }
+
   refreshFirstQuest(){
     this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
-    const firstCapture=State.S.cats.length>0&&(State.S.catchCount||0)===0;
-    const firstPet=State.S.cats.length>0&&(State.S.catchCount||0)>0&&(State.S.petCount||0)===0;
-    const panelOpen=document.getElementById('panel')?.classList.contains('open');
-    hint.hidden=!(firstCapture||firstPet)||this.scene!=='yard'||!!panelOpen;
-    if(hint.hidden)return;
     const english=window.MorrowwishI18n?.get?.()!=='zh';
-    // Teach one delightful action at a time. Never force a separate tutorial modal.
-    const label=firstPet
-      ? (english?'🐾 Your next step: tap a cat to pet it and grow your bond!':'🐾 下一步：点击庭院里的小猫，摸摸它，培养感情！')
-      : this.yard?.hide
-        ? (english?'🌿 First adventure: tap the glowing bush to meet a new cat!':'🌿 第一次冒险：点击发光的草丛，遇见新伙伴！')
-        : (english?'🌿 First adventure: tap the grass button to find a cat':'🌿 第一次冒险：点击草丛按钮寻找野猫');
-    if(hint.textContent!==label)hint.textContent=label;
+    const count=State.S.catchCount||0;
+    const firstCapture=(State.S.cats?.length||0)>0&&count===0;
+    const tour=count>0?this.firstAdventureTour():null;
+    const tourActive=!!tour&&!tour.done&&!tour.skipped;
+    const panelOpen=!!document.getElementById('panel')?.classList.contains('open');
+    const visible=this.scene==='yard'&&!panelOpen;
+    const help=document.getElementById('guide-help');
+    if(help){
+      help.hidden=!visible||count<1||tourActive;
+      help.textContent=english?'? Guide':'? 玩法';
+      help.setAttribute('aria-label',english?'Replay guided tour':'重新查看玩法引导');
+    }
+    hint.hidden=!visible||!(firstCapture||tourActive);
+    if(this._tourTarget){
+      this._tourTarget.classList.remove('cb-guide-target');
+      this._tourTarget=null;
+    }
+    if(hint.hidden)return;
+    if(firstCapture){
+      hint.classList.remove('is-tour');
+      const label=this.yard?.hide
+        ?(english?'🌿 Tap the glowing bush to meet your first new friend!':'🌿 点击发光的草丛，遇见第一位新伙伴！')
+        :(english?'🌿 Tap the grass button to search for a cat.':'🌿 点击右侧草丛按钮，寻找野猫！');
+      if(hint.textContent!==label)hint.textContent=label;
+      hint.dataset.guideKey='capture';
+      if(!this.yard?.hide){
+        this._tourTarget=document.getElementById('fab-seek');
+        this._tourTarget?.classList.add('cb-guide-target');
+      }
+      return;
+    }
+    const steps=[
+      {icon:'🐾',zhTitle:'认识新伙伴',enTitle:'Meet your new friend',
+        zhText:'收服成功！点击庭院里的小猫，摸摸它，亲密度会提高。',
+        enText:'You caught a cat! Tap a kitten in the yard to pet it and grow closer.',
+        zhAction:'摸摸小猫',enAction:'Pet a kitten'},
+      {icon:'💞',zhTitle:'发现双猫默契',enTitle:'Discover cat duos',
+        zhText:'下方「猫咪」→「双猫」可以查看搭档、默契和合击技能。',
+        enText:'Open Cats → Cat Duos below to see your pair, trust and duo moves.',
+        zhAction:'查看双猫',enAction:'See cat duos',target:'[data-tab="cats"]'},
+      {icon:'🗺️',zhTitle:'探索五张地图',enTitle:'Explore five regions',
+        zhText:'右侧「地图」可以去新地区，遇见不同野猫、宝藏和故事。',
+        enText:'Use Map on the right to discover new cats, treasures and places.',
+        zhAction:'打开地图',enAction:'Open map',target:'#fab-map'},
+      {icon:'🧶',zhTitle:'派猫咪去工坊',enTitle:'Let cats earn resources',
+        zhText:'返回庭院后，点下方「工坊」。派猫咪工作赚金币和小鱼。',
+        enText:'Back in the yard, open Workshop below to earn coins and fish.',
+        zhAction:'前往工坊',enAction:'Open workshop',target:'[data-tab="work"]'},
+      {icon:'🪶',zhTitle:'还有逗猫与建造',enTitle:'Play and decorate',
+        zhText:'右侧羽毛可以逗猫；建造按钮能自由布置庭院。先玩一次逗猫吧！',
+        enText:'The feather starts a cat game; Build lets you decorate the yard. Try playing!',
+        zhAction:'试试逗猫',enAction:'Play with cats',target:'#fab-play'},
+      {icon:'🌟',zhTitle:'现在自由冒险吧！',enTitle:'Your adventure begins!',
+        zhText:'你已经认识主要玩法！继续收服猫、解锁技能、提升双猫默契，也可以随时重看指引。',
+        enText:'You know the essentials! Catch cats, grow your duo, unlock skills and revisit this guide anytime.',
+        zhAction:'开始自由冒险',enAction:'Explore freely'}
+    ];
+    const step=Math.max(0,Math.min(5,Number(tour.step)||0));
+    const data=steps[step];
+    const key=(english?'en':'zh')+'-'+step;
+    hint.classList.add('is-tour');
+    if(hint.dataset.guideKey!==key){
+      // All labels are fixed literals, never player-controlled HTML.
+      hint.innerHTML='<div class="cb-guide-head"><span class="cb-guide-progress">'+
+        (step<5?(english?'ADVENTURE GUIDE ':'冒险指引 ')+(step+1)+'/5':
+          (english?'GUIDE COMPLETE':'指引完成'))+'</span>'+
+        '<button type="button" class="cb-guide-skip" aria-label="'+
+        (english?'Skip guided tour':'跳过新手引导')+'">'+
+        (english?'Skip ×':'跳过 ×')+'</button></div>'+
+        '<strong class="cb-guide-title">'+data.icon+' '+
+        (english?data.enTitle:data.zhTitle)+'</strong>'+
+        '<p class="cb-guide-message">'+(english?data.enText:data.zhText)+'</p>'+
+        '<button type="button" class="cb-guide-action">'+
+        (english?data.enAction:data.zhAction)+' <span aria-hidden="true">›</span></button>';
+      hint.dataset.guideKey=key;
+      hint.querySelector('.cb-guide-action').onclick=()=>this.performFirstAdventureAction();
+      hint.querySelector('.cb-guide-skip').onclick=()=>this.finishFirstAdventureTour(true);
+    }
+    if(data.target){
+      this._tourTarget=document.querySelector(data.target);
+      this._tourTarget?.classList.add('cb-guide-target');
+    }
   }
 
   loop(ts) {
@@ -678,6 +813,7 @@ class Game {
     const newSkill=UI.announceSkillMilestone?.(cat,previous);
     if(newSkill)this.toast('✨ '+State.catName(cat)+' 学会 '+newSkill.name+'！');
     State.S.petCount=(State.S.petCount||0)+1;
+    this.completeFirstAdventureStep('pet');
     const closer=window.CatRelations?.pet(cat);
     if(closer?.levelUp)this.toast(window.MorrowwishI18n?.get?.()==='zh'?'💞 双猫关系升级！':'💞 Your duo grew closer!');
     const quarrelPair=closer?.quirk==='sulky' ? (CatRelations.chosen()||[]) : null;

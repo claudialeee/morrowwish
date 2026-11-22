@@ -31,7 +31,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=catbond-cta-hierarchy-20261121-2" />
+  <link rel="stylesheet" href="css/style.css?v=guided-tour-small-cats-20261121-1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=all-skill-elemental-sfx-20261121" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -53,7 +53,8 @@
 
       <!-- Toasts -->
       <div id="toasts"></div>
-      <div id="first-quest" role="status" hidden></div>
+      <div id="first-quest" role="region" aria-label="猫猫冒险指引" aria-live="polite" hidden></div>
+      <button id="guide-help" type="button" hidden aria-label="重新查看玩法引导">? 玩法</button>
       <button id="yard-surprise" type="button" hidden></button>
       <!-- Duo is now part of the right-hand action rail. -->
       <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
@@ -197,9 +198,9 @@
   <script src="js/duo-hero.js?v=high-res-watercolor-21-20261122"></script>
   <script src="js/battle.js?v=hitfeel-basicfx-20261122"></script>
   <script src="js/duo-bond.js?v=duo-memory-strike-20261122"></script>
-  <script src="js/ui.js?v=duo-click-play-preview-20261121-1"></script>
-  <script src="js/game.js?v=isolated-canvas-postbattle-20261121-1"></script>
-  <script src="js/main.js?v=catbond-equal-cat-silhouettes-20261121-2"></script>
+  <script src="js/ui.js?v=tour-panel-navigation-20261121-1"></script>
+  <script src="js/game.js?v=first-adventure-tour-20261121-1"></script>
+  <script src="js/main.js?v=smaller-intro-cats-20261121-1"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=catbond-32-breed-lang-20261122"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
