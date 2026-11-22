@@ -366,6 +366,7 @@ class CaptureBattle {
       this.summonReinforcement(12 + d.tier * 1.5);
       window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     };
+    window.MorrowwishMusic?.duckFor?.(2500);
     if(!window.MorrowwishAudio?.duoSignature?.(mix,d.tier,'cast'))window.MorrowwishAudio?.effect?.('combat_duo');
     // The unique lingering field and restrained title make the special visible; avoid a second toast.
     return true;
