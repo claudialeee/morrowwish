@@ -240,4 +240,22 @@ assert.equal(hard.pressure,true,'Spending the room step budget should raise guar
 assert.ok(nodes.get('visionTip').textContent.includes('High alert'),'Rising pressure must be explained in HUD');
 assert.ok(source.includes('s.index>=3?1:0')&&source.includes('s.searchTurns=s.index>=5'),
  'Later rooms must widen sight and extend guard search memory');
-console.log('Pawsibly Innocent: QA PASS (animated final chase, 8 rooms, real multi-step yarn lure, persistent achievements, named collectibles, compact UI, first-two-room playability).');
+// Real step-by-step solutions through the post-balance guard AI (no shortcuts,
+// no debug teleports, no special-cat abilities and no yarn). Protect against
+// future difficulty changes accidentally making any of the 8 rooms unwinnable.
+const solvableRoutes=["RDDRDRRRRURRD","RDDRRRDRRRDRUD","DDDRRDDLRRUDRRRRR","RRURDDDDRRRDRRD","RURRRRRDDDLLDDRDRRR","RUDDDDDRRRRRDRR","RRURLDDDDDRRDRRRR","RRULDDRDDLRRRRRDRRD"];
+const stepDelta={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]};
+for(let room=0;room<solvableRoutes.length;room++){
+ test.choose(room,false);
+ const state=test.getState();
+ for(const letter of solvableRoutes[room]){
+  assert.equal(state.done,false,'Room '+(room+1)+' should not finish before its route ends');
+  test.move(...stepDelta[letter]);
+ }
+ assert.equal(state.winning,true,'Room '+(room+1)+' must still be beatable under stronger detection');
+ assert.equal(state.got,3,'Room '+(room+1)+' must collect three actual fish');
+ assert.equal(state.lives,3,'Room '+(room+1)+' should have a fair no-hit solution');
+ assert.equal(state.yarnThrows,0,'Room '+(room+1)+' proof should not depend on unlimited distractions');
+}
+
+console.log('Pawsibly Innocent: QA PASS (animated finale, eight full no-hit escape routes under hard AI, yarn, bilingual UI and collections).');

@@ -854,8 +854,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
   throw new Error('Cat Help must not duplicate header language or sound controls');
  const audioDock=fs.readFileSync('public/audio-dock.js','utf8');
  if(!html.includes('class="cat-sound-controls"')||!html.includes('id="music"')||!html.includes('id="sound"')||
-    !audioDock.includes("route==='pawsibly-innocent'?document.querySelector('.cat-sound-controls')"))
-  throw new Error('Cat music and sound controls must live together in the page header');
+    !audioDock.includes("route==='pawsibly-innocent'?document.querySelector('#stageControls')"))
+  throw new Error('Cat music and sound controls must live in the visible game header');
  if(!stage.includes('data-game-tab="rooms"')||!stage.includes('data-game-tab="album"')||
     !stage.includes('data-game-tab="badges"')||!stage.includes('data-game-tab="help"'))
   throw new Error('Game menu tabs missing');
