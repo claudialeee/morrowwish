@@ -327,9 +327,9 @@
     blind: { name: '失明', ttl: 2.6, dps: 0,    color: '#ffe9a8' },
     bind:  { name: '束缚', ttl: 3.0, dps: 0,    color: '#6fcf5f' },
     // --- advanced debuffs ---
-    expose:{ name: '破绽', ttl: 5.0, dps: 0,    color: '#ff5a8a', dmgTaken: 1.4 },   // 增伤: 受到伤害 ×1.4
+    expose:{ name: '破绽', ttl: 5.0, dps: 0,    color: '#ff5a8a', dmgTaken: 1.2 },   // 破绽: +20% incoming damage
     weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5
-    rust:  { name: '破甲', ttl: 6.0, dps: 0.01, color: '#c98a4a', dmgTaken: 1.25 },  // 减防+轻微掉血
+    rust:  { name: '破甲', ttl: 6.0, dps: 0.01, color: '#c98a4a', dmgTaken: 1.12 },  // 破甲: +12% incoming damage + light DoT
     rewind:{ name: '回溯', ttl: 0.1, dps: 0,    color: '#9d7bff', rewind: true },    // 时间倒流: 回退到数秒前的血量
   };
 
