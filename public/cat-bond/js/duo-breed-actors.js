@@ -34,7 +34,7 @@ scene.onload=()=>{sceneReady=scene.naturalWidth===3584&&scene.naturalHeight===25
 sprite.onerror=()=>{failed=true;notify()};
 scene.onerror=()=>{failed=true;notify()};
 sprite.src=urlBase+'duo-watercolor-32-actors-v1.webp?v=32-original-breeds-20261122';
-scene.src=urlBase+'duo-stage-clean-21x3-v1.webp?v=no-baked-cats-20261122';
+scene.src=urlBase+'duo-stage-clean-21x3-v2.webp?v=no-ghosts-or-legacy-titles-20261122';
 function species(cat){
  const id=typeof cat?.species==='string'?cat.species:cat?.species?.id||cat?.id;
  return Object.hasOwn(byId,id||'')?id:null;

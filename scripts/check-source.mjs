@@ -140,9 +140,9 @@ if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
    !premiumScene.includes('CatBondDuoBreedActors?.draw')||
    premiumScene.includes('identity.paint(')||
    !watercolorActors.includes('duo-watercolor-32-actors-v1.webp')||
-   !watercolorActors.includes('duo-stage-clean-21x3-v1.webp')||
+   !watercolorActors.includes('duo-stage-clean-21x3-v2.webp')||
    !fs.existsSync('public/cat-bond/assets/duo-watercolor-32-actors-v1.webp')||
-   !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v1.webp'))
+   !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v2.webp'))
  throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
 
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
