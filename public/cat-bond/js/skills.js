@@ -193,7 +193,7 @@
     yuelian:  'light',  // 踏月仙猫
     xingchen: 'dark', // 星河梦境
     abi: 'fire', meidu: 'grass', xuewa: 'water', mengmai: 'dark',
-    fanmao: 'water', bosi: 'light', wumao: 'elec',
+    fanmao: 'water', bosi: 'light', wumao: 'elec', jiafei: 'fire',
   };
 
   function elementOf(speciesId) { return SPECIES_ELEMENT[speciesId] || 'light'; }
@@ -929,6 +929,11 @@
   // breed's identity reads from its own numbers. Deterministic (no RNG).
   function buildTypeForBreed(cat){
     const sp=speciesOf(cat), b=(sp&&sp.base)||{pow:6,agi:6,vit:6,cha:6};
+    // Authored breed roles take priority over statistical inference.
+    // This allows fluffy Maine Coons to tank and stocky orange cats to fight,
+    // without changing saved, explicitly selected buildType values.
+    const BREED_ROLES={tangyuan:'fighter',qisi:'fighter',senlin:'tank',jiafei:'tank'};
+    if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
     const ranked=order.slice().sort((a,b2)=> (b[b2]-b[a]) || (order.indexOf(a)-order.indexOf(b2)));
