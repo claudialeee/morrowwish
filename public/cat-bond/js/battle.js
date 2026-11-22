@@ -1086,7 +1086,7 @@ class CaptureBattle {
     // doesn't snap when the desired direction jumps. Evasion (smash/threat) re-aims
     // much faster (K≈22, near-instant) so dodging stays crisp; cruising uses K≈8.
     const dir=this.smoothSteer(f,mx,my,evasive?22:8);
-    if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._reflectFacing=f._moveFacing; }
+    if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(tgt.y-f.y,tgt.x-f.x); }
     if(dir && !(f.dashT>0&&f.pounce) && !(f._leapT>0) && f.rootT<=0 && !(f._beamRoot>0) && !(f._castRoot>0)){
       const spd=(f.dashT>0?f.speed*3:f.speed)*this.moveMul(f);
       f.x=clamp(f.x+dir.x*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
@@ -1119,7 +1119,8 @@ class CaptureBattle {
     const picked=this.commandTarget ? tgt : this.unwardedTarget(f,tgt);
     if(picked&&picked!==tgt){ tgt=picked; dist=Math.hypot(tgt.x-f.x,tgt.y-f.y)||1; }
     const tgtWarded=this.enemyWarded(tgt,f);
-    const tgtReflect=this.reflectCovers(tgt,f.x,f.y); // only shots from the ward's front are unsafe
+    const tgtReflect=this.reflectCovers(tgt,f.x,f.y) ||
+      !!this.wallBlockingLine(f.x,f.y,tgt.x,tgt.y,'me');
     // Auto fire LEADS the target (true intercept), so basics/projectile skills hit a
     // moving enemy instead of trailing it. Facing uses the same lead so the cat looks
     // where it shoots. Melee/close casts resolve to ~current pos (tiny lead time).
@@ -1255,6 +1256,11 @@ class CaptureBattle {
       const guard=this.reflectGuardDirection(f,tgt,'wild');mx=guard.x;my=guard.y;
     }
     else if (near && nd < 100 && f._allyStep) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; evasive = true; }
+    else if((f.cat.buildType||Skills.buildTypeForBreed(f.cat))==='dps' &&
+        this.wallFlankVector(f,tgt,'me')){
+      const flank=this.wallFlankVector(f,tgt,'me');
+      mx=flank.x;my=flank.y;
+    }
     else {
       // same KIT-BASED band as the active cat: brawler allies rush, ranged allies
       // kite, support allies hang back — each on its own flipping orbit + wander.
@@ -1270,7 +1276,7 @@ class CaptureBattle {
     // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
-    if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._reflectFacing=f._moveFacing; }
+    if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(tgt.y-f.y,tgt.x-f.x); }
     if (dir && f.dashT <= 0 && f.rootT <= 0 &&
         !(f._beamRoot>0) && !(f._castRoot>0)) {
       const spd = f.speed * this.moveMul(f);   // equal auto-speed for every team cat
@@ -1354,7 +1360,7 @@ class CaptureBattle {
     if (mx || my) {
       const l = Math.hypot(mx, my);
       f._moveFacing = Math.atan2(my, mx);
-      if (f.reflectT > 0) f._reflectFacing = f._moveFacing;
+      if(f.reflectT>0)f._wallDesiredAngle=this.aim;
       const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * this.moveMul(f);   // 冰冻/束缚/感电 减速
       f.x += (mx / l) * spd * dt;
       f.y += (my / l) * spd * dt;
@@ -1661,11 +1667,11 @@ class CaptureBattle {
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
       f.reflectT=2.2;
-      // Hold a deployed, WORLD-SPACE 220px line 42px in front of the caster.
-      // The flat panel doesn't teleport when the caster moves or changes aim.
+      // Hold a 220px flat barrier 42px in front of the caster. It follows the
+      // caster at reduced speed, with capped turn rate instead of instant flips.
       const heading=Number.isFinite(aim)?aim:
         (f._moveFacing??f._reflectFacing??(f.face<0?Math.PI:0));
-      f._reflectFacing=heading;
+      f._reflectFacing=heading;f._wallDesiredAngle=heading;
       const nx=Math.cos(heading),ny=Math.sin(heading);
       const wall={owner:f,side:this.team.includes(f)?'me':'wild',
         x:f.x+nx*42,y:f.y+ny*42,angle:heading,nx,ny,
@@ -1727,6 +1733,59 @@ class CaptureBattle {
     return false;
   }
 
+  // Returns the enemy flat wall physically BETWEEN a shooter and target,
+  // provided the shot is approaching from its protected front side.
+  wallBlockingLine(x1,y1,x2,y2,attackerSide){
+    for(const w of this.barrierWalls||[]){
+      if(w.remaining<=0||!w.owner?.alive||w.side===attackerSide)continue;
+      const d1=(x1-w.x)*w.nx+(y1-w.y)*w.ny;
+      const d2=(x2-w.x)*w.nx+(y2-w.y)*w.ny;
+      if(d1<=0||d2>=0)continue;
+      const t=d1/(d1-d2);
+      const px=x1+(x2-x1)*t,py=y1+(y2-y1)*t;
+      const lateral=(px-w.x)*(-w.ny)+(py-w.y)*w.nx;
+      if(Math.abs(lateral)<=w.halfLength+4)return w;
+    }
+    return null;
+  }
+  // Ranged attackers flank the END of a mirror wall rather than firing futile
+  // shots into its center. Melee/assassin cats retain their ordinary approach.
+  wallFlankVector(actor,target,side){
+    const w=this.wallBlockingLine(actor.x,actor.y,target.x,target.y,side);
+    if(!w)return null;
+    const tx=-w.ny,ty=w.nx;
+    const near=(actor.x-w.x)*tx+(actor.y-w.y)*ty;
+    const sign=Math.abs(near)>12?Math.sign(near):
+      (Math.hypot(actor.x-(w.x+tx*w.halfLength),actor.y-(w.y+ty*w.halfLength))<=
+       Math.hypot(actor.x-(w.x-tx*w.halfLength),actor.y-(w.y-ty*w.halfLength))?1:-1);
+    // A stable side avoids flip-flopping as the caster turns.
+    const choice=actor._wallFlankRef===w?actor._wallFlankSign:sign;
+    actor._wallFlankRef=w;actor._wallFlankSign=choice;
+    const wx=clamp(w.x+tx*choice*(w.halfLength+38)-w.nx*30,
+      BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+    const wy=clamp(w.y+ty*choice*(w.halfLength+38)-w.ny*30,
+      this.topMargin,this.H-this.bottomMargin);
+    const dx=wx-actor.x,dy=wy-actor.y,dist=Math.hypot(dx,dy);
+    if(dist<4)return null;
+    return {x:dx/dist,y:dy/dist};
+  }
+  // Turn the carried barrier at only 1.25 rad/sec. The caster can reposition
+  // at half speed, but cannot instantly whip a 220px wall across the arena.
+  updateFlatWallPose(f,dt){
+    const w=f?._flatWall;
+    if(!w||f.reflectT<=0)return;
+    const desired=Number.isFinite(f._wallDesiredAngle)?f._wallDesiredAngle:
+      (f._moveFacing??f._reflectFacing??w.angle);
+    let delta=desired-(f._reflectFacing??w.angle);
+    while(delta>Math.PI)delta-=Math.PI*2;
+    while(delta<-Math.PI)delta+=Math.PI*2;
+    const maxTurn=1.25*Math.max(0,dt);
+    f._reflectFacing=(f._reflectFacing??w.angle)+clamp(delta,-maxTurn,maxTurn);
+    w.angle=f._reflectFacing;
+    w.nx=Math.cos(w.angle);w.ny=Math.sin(w.angle);
+    w.x=f.x+w.nx*42;w.y=f.y+w.ny*42;
+  }
+
   // ---- adaptive AI profile (tiny online statistics, all clamped) ----
   normalizeAiProfile(p) {
     const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true, stompStreak: 0 };
@@ -1777,6 +1836,7 @@ class CaptureBattle {
     if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
     if(f.reflectT>0)f.reflectT=Math.max(0,f.reflectT-dt);
     if(f._flatWall){
+      this.updateFlatWallPose(f,dt);
       f._flatWall.remaining=f.reflectT;
       f._flatWall.age+=dt;
       f._flatWall.hitAge=Math.max(0,(f._flatWall.hitAge||0)-dt);
@@ -3825,6 +3885,11 @@ class CaptureBattle {
       if ((e.x < this.W / 2) === (nx < 0)) { nx = -nx; ny = -ny; }
       ax = nx; ay = ny; e.dodgeCd = 0.5 - e.rIdx * 0.07; e.pose = 'play';
       if (e.rIdx >= 1) this.vfx.burst(e.x, e.y, { count: 3, color: '#cfe', speed: 120, life: 0.2 });
+    } else if((e.role==='sharpshooter'||
+         ['projectile','beam','chain'].includes(e.skill?.kind)) &&
+         this.wallFlankVector(e,me,'wild')){
+      const flank=this.wallFlankVector(e,me,'wild');
+      ax=flank.x;ay=flank.y;
     } else {
       // KIT-AWARE, LESS-PREDICTABLE engagement. Each enemy has a preferred band from
       // its role/skill kind: an ambusher RUSHES into melee, a sharpshooter KITES at
@@ -3864,7 +3929,7 @@ class CaptureBattle {
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
     if (spd>0.001 && Math.hypot(ax,ay)>0.07) {
       e._moveFacing=Math.atan2(ay,ax);
-      if(e.reflectT>0)e._reflectFacing=e._moveFacing;
+      if(e.reflectT>0)e._wallDesiredAngle=Math.atan2(me.y-e.y,me.x-e.x);
     }
     if(Math.abs(ax)>.07)e.face=ax<0?-1:1;
     e.motion=(ax||ay)?Math.min(1,Math.hypot(ax,ay)):.05;
