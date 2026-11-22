@@ -148,7 +148,7 @@ const DUO_ARTS={
  'fire+grass':['花火猫爪舞','Blossomfire Pawdance','燃烧花瓣，治疗全队','Fire blossoms scorch foes and heal allies','burn','heal',1.00,'bind'],
  'fire+light':['日曜喵闪','Sunflare Pawburst','耀眼烈焰，鼓舞双猫连击','Dazzle foes and empower ally attacks','blind','boost',1.10,'burn'],
  'fire+water':['蒸汽喵喵炮','Steamcloud Cat Cannon','蒸汽爆发、淋湿敌人并护队友','Steam blast soaks enemies and shields allies','soak','shield',1.08,'weaken'],
- 'grass+grass':['双叶春醒','Twinleaf Awakening','藤蔓封锁，治愈全队','Entangle enemies and regenerate ally health','bind','regen',.97,'bleed'],
+ 'grass+grass':['三叶集结','Tripleleaf Rally','藤蔓封锁敌人，并召唤一名替补猫短暂加入战斗','Bind enemies and call a reserve cat to join the fight briefly','bind','summon',.97,'bleed'],
  'grass+light':['晨光花环','Dawnbloom Halo','花环禁锢敌人、治疗同伴','Root enemies and bathe allies in healing light','bind','heal',1.00,'weaken'],
  'grass+water':['春雨绽放','Spring Rain Bloom','春雨冰封敌人，为全队疗伤','Freeze enemies and heal every allied cat','chill','heal',.99,'soak'],
  'light+light':['双星祝福','Twin Starlight Blessing','群星致盲，给予短暂完全格挡','Blind enemies and give allies a guarded moment','blind','protect',.98,'weaken'],
