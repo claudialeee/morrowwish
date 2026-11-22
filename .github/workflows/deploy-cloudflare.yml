@@ -342,7 +342,7 @@ jobs:
             fi
             echo "D1 live first-party analytics verified: $game via $origin"
           }
-          for game in pawsibly-innocent tiny-town elsewhere flip-dash parcel-panic pocket-aquarium; do
+          for game in pawsibly-innocent tiny-town elsewhere flip-dash parcel-panic pocket-aquarium cat-bond; do
             check_probe https://morrowwish.pages.dev "$game"
           done
           check_probe https://morrowwish.vercel.app flip-dash

@@ -8,7 +8,7 @@ const html=fs.readFileSync('public/studio-insights/index.html','utf8');
 const inlineScript=html.match(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i)?.[1];
 assert.ok(inlineScript,'Dashboard inline application script missing');
 assert.doesNotThrow(()=>new vm.Script(inlineScript,{filename:'studio-insights/index.html'}),'Dashboard full-page JavaScript syntax must be valid');
-for(const name of ['games','itch-rows','channel-rows','ew-worlds']){
+for(const name of ['games','channel-rows','ew-worlds']){
  assert.ok(html.includes('id="'+name+'"'),'Missing sortable dashboard table: '+name);
 }
 assert.ok(html.includes('data-sort-value='),'Compound home/game visits need a numeric key');
@@ -24,9 +24,9 @@ const row=(name,metric,sortValue)=>({cells:[cell(name),cell(metric,sortValue)]})
 assert.equal(sortCellValue(row('A','1,230'),1,'games'),1230,'Thousands separator');
 assert.equal(sortCellValue(row('A','34 (21%)'),1,'games'),34,'Primary metric, not commentary percentage');
 assert.equal(sortCellValue(row('A','14.7%'),1,'ew-worlds'),14.7,'Percentage');
-assert.equal(sortCellValue(row('A','—'),1,'games'),null,'Missing metrics not fabricated as zero');
+assert.equal(sortCellValue(row('A',''),1,'games'),null,'Missing metrics not fabricated as zero');
 assert.equal(sortCellValue(row('A','0'),1,'itch-rows'),0,'True zero not treated as missing');
-assert.equal(sortCellValue({cells:[cell('itch.io'),cell('Live'),cell('—'),cell('2 / 19','19')]},3,'channel-rows'),19,'Compound sort uses real game-page visits');
+assert.equal(sortCellValue({cells:[cell('itch.io'),cell(''),cell('2'),cell('19','19'),cell('4'),cell('1')]},3,'channel-rows'),19,'Site visit column sorts by real game-page visits');
 const head=()=>({setAttribute(){},querySelector(){return null}});
 const body={id:'games',rows:[row('C','—'),row('A','25'),row('B','3'),row('D','0')],append(...r){this.rows=r;}};
 const table={tBodies:[body],tHead:{rows:[{cells:[head(),head()]}]}};

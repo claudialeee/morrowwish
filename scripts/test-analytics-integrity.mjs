@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const source=fs.readFileSync('src/analytics.js','utf8').replace('export async function api','async function api');
 const {api}=new Function(source+';return {api};')();
-const games=['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
+const games=['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium','cat-bond'];
 const rows=[];
 const DB={prepare(sql){
  let args=[];
@@ -75,6 +75,6 @@ for(const g of games){
  assert.equal(row?.abandons,endless?1:0,g+' abandoned runs never count as completions');
  assert.equal(row?.pageviews,endless?2:1,g+' game views counted');
 }
-assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,8,'combined referral starts');
+assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,9,'combined referral starts');
 assert.equal(rows.some(x=>x.category==='diagnostic'),false,'no persistent smoke events');
-console.log('Six-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
+console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
