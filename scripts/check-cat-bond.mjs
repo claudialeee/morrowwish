@@ -421,6 +421,25 @@ State.S.cats=initialRoster;game.yard.page=0;game.yard.rebuild();
 // Give the player a starter + a strong team, then run a real capture battle.
 State.S.cats = [];
 const starter = State.makeCat('tangyuan', { affinity: 60 });
+
+// Hit-feel regression: impact coordinates are normally the TARGET center, not
+// the attacking cat. Knockback/attacker recoil and directional sparks must
+// still receive a real normalized direction.
+const contactB=new sandbox.window.Battle.CaptureBattle(game,[starter],
+  GameData.speciesById('doudou'));
+contactB.coach=null;
+const contactEnemy=contactB.enemies[0],contactCat=contactB.me();
+contactEnemy.kbx=0;contactEnemy.kby=0;contactCat._recoilX=0;
+contactB.hurtEnemy(contactEnemy,2,contactEnemy.x,contactEnemy.y,false);
+assert.ok(Math.hypot(contactEnemy.kbx||0,contactEnemy.kby||0)>30,
+  'enemy gets real knockback even when attack impact is its own center');
+assert.ok(Math.hypot(contactCat._recoilX||0,contactCat._recoilY||0)>1,
+  'attacker sprite reacts against the impact normal');
+contactCat.kbx=0;contactCat.kby=0;
+contactB.hurtMe(2,contactCat.x,contactCat.y,contactCat);
+assert.ok(Math.hypot(contactCat.kbx||0,contactCat.kby||0)>30,
+  'player cat also moves on contact instead of zero knockback');
+
 starter.level = 40;
 starter.stats = { pow: 200, agi: 120, vit: 200, cha: 80 };
 State.S.cats.push(starter);
