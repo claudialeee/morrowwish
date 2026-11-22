@@ -4491,7 +4491,12 @@ class CaptureBattle {
       else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11); }
     }
     // 破绽/破甲 on the cat amplify what it's about to take
-    for (const tg in f.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
+    let incomingVulnerability=0;
+    for (const tg in f.status) {
+      const info=TAG[tg];
+      if (info?.dmgTaken>1) incomingVulnerability+=info.dmgTaken-1;
+    }
+    dmg *= 1+Math.min(0.30,incomingVulnerability);
     // apply the skill's status tag to the cat (DoT or soft-CC)
     if (skill.appliesTag) {
       const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
