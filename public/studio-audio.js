@@ -164,6 +164,50 @@ function duoSignature(pair,tier=1,beat='cast'){
  lastSignature={pair,beat,tier:lvl,identity:notes.join('-')+'/'+rhythms.join('-')+'/'+color};
  return true;
 }
+// Individual Q/E/ultimate abilities get their own short musical/foley fingerprint.
+// Reuse the SAME WebAudio/mute state as the rest of Morrow Wish.
+const skillAt=Object.create(null);
+let skillSignatureEvents=0,lastSkillSignature=null;
+function skillSignature(skillId,element='light',strength=1){
+ if(route!=='cat-bond'||!enabled||!unlocked||!ctx||!master||!skillId)return false;
+ const key=String(skillId);
+ const now=ctx.currentTime+.008;
+ if(now-(skillAt[key]??-99)<.15)return true;
+ skillAt[key]=now;
+ const profiles={
+  dark:[47,'triangle',580],elec:[64,'sawtooth',2200],
+  fire:[53,'sawtooth',1450],grass:[58,'sine',920],
+  light:[71,'sine',2550],water:[60,'triangle',1250]
+ };
+ const [base,wave,filterHz]=profiles[element]||profiles.light;
+ let id=5381;for(const c of key)id=(Math.imul(id,33)^c.charCodeAt(0))>>>0;
+ const root=base+(id%9)-4,interval=3+id%9,delay=.04+(id%5)*.014;
+ const power=Math.max(1,Math.min(3,Number(strength)||1));
+ tone(root,now,.11+.04*(id%3),wave,.033+.006*power);
+ tone(root+interval,now+delay,.16+.04*(id%4),wave,.026+.006*power);
+ if(power>=2){
+  // Heavy skills should sound heavier before players look at the screen.
+  tone(root-12,now,.25,power>=3?'sawtooth':'triangle',.063+.015*(power-2));
+  tone(root-19,now+.065,.33,'sine',.055);
+ }
+ try{
+  const len=power>=3?.29:power>=2?.20:.12;
+  const buffer=ctx.createBuffer(1,Math.max(128,Math.floor(ctx.sampleRate*len)),ctx.sampleRate);
+  const data=buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;
+  const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  src.buffer=buffer;filter.type=['dark','water','grass'].includes(element)?'lowpass':'bandpass';
+  filter.frequency.value=filterHz+id%3*120;filter.Q.value=.55+(id%4)*.2;
+  gain.gain.setValueAtTime(.0001,now);
+  gain.gain.exponentialRampToValueAtTime(.055+.025*(power-1),now+.008);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+len);
+  src.connect(filter);filter.connect(gain);gain.connect(master);
+  src.start(now);src.stop(now+len+.01);
+ }catch{}
+ effects++;skillSignatureEvents++;
+ lastSkillSignature={id:key,element,power,signature:root+'/'+interval+'/'+delay+'/'+wave+'/'+filterHz};
+ return true;
+}
 const mappings={
  fish:[77,'success'],win:[74,'success'],bad:[55,'fail'],caught:[52,'fail'],vase:[62,'crash'],
  yarn:[74,'bounce'],lured:[76,'bounce'],light:[69,'quiet'],souvenir:[81,'success'],milk:[77,'pop'],
@@ -212,8 +256,8 @@ function effect(kind='tap'){
  const [n,s]=mappings[kind]||mappings.tap;sfx(n,s);
 }
 function note(freq){if(enabled&&unlocked)sfx(69+12*Math.log2(Math.max(40,freq)/440),'pop')}
-function status(){return{profile:route,enabled,unlocked,playing:false,backgroundMusic:false,oscillators:voices,loopSteps:0,effects,audioState:ctx?.state||'not-created',combatSounds:route==='cat-bond'?combatKinds.size:0,duoSignatureCount:route==='cat-bond'?Object.keys(duoSoundCatalog).length:0,duoSignatureEvents,lastSignature}}
-window.MorrowwishAudio={start,toggle,effect,note,status,sync,duoSignature,isEnabled:()=>enabled};
+function status(){return{profile:route,enabled,unlocked,playing:false,backgroundMusic:false,oscillators:voices,loopSteps:0,effects,audioState:ctx?.state||'not-created',combatSounds:route==='cat-bond'?combatKinds.size:0,duoSignatureCount:route==='cat-bond'?Object.keys(duoSoundCatalog).length:0,duoSignatureEvents,lastSignature,skillSignatureEvents,lastSkillSignature}}
+window.MorrowwishAudio={start,toggle,effect,note,status,sync,duoSignature,skillSignature,isEnabled:()=>enabled};
 // Browsers allow Web Audio only after a user gesture. Unlocking does NOT play a sound.
 function gesture(e){
  if(e.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(e.key))return;
