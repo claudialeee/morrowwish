@@ -45,10 +45,10 @@ jobs:
           node scripts/cat-bond-balance-smoke.mjs
           node scripts/cat-bond-progression-smoke.mjs
           node scripts/cat-bond-autofight-smoke.mjs
+          node scripts/cat-bond-squad-smoke.mjs
           node scripts/cat-bond-touch-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
-          node scripts/cat-bond-squad-smoke.mjs
 
       - name: Save duo animation visual QA screenshots
         if: always()
