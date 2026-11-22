@@ -4130,6 +4130,9 @@ class CaptureBattle {
     // fight can't be won by stats alone (see constructor). Applied to ALL player
     // damage (direct + DoT) at this single chokepoint; 1 when near/under level.
     if (this.levelSuppression) dmg *= this.levelSuppression;   // logistic curve: <1 under-level, >1 over-level
+    // Global player-only balance adjustment: applies once to basics, skills,
+    // damage-over-time, ally attacks and duo hits. Enemy damage is untouched.
+    dmg *= 0.9;
     // a direct player hit extends the combo and gets the combo damage multiplier
     if (!isDot) {
       dmg *= this.comboMult(); this.addCombo(1);
