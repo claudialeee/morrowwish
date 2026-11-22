@@ -224,7 +224,7 @@ window.CatBondDuoHero={
  draw:render,scenes:Object.fromEntries(Object.entries(window.CatBondDuoDirector?.styles||{}).map(([k,v])=>[k,v])),
  sceneKeys:window.CatBondDuoDirector?.keys||[],
  get assetReady(){return !!window.CatBondPremiumCinematics?.ready},
- get assetSource(){return 'approved-complete-painterly-duo-sheet'},
+ get assetSource(){return '32-actual-breed-watercolor-actors'},
  assetCount:21,signatureCount:21,breedCount:32,
 };
 })();
