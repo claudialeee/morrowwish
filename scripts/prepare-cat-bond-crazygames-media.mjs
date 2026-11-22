@@ -58,10 +58,20 @@ await sharp(await bg(800,800))
 function runVideo(w,h,name,rawName){
   const out=path.join(dir,name);
   const sourceVideo=path.join(rawVideoDir,rawName);
-  const filter=`scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},setsar=1,fps=30`;
-  execFileSync('ffmpeg',['-y','-hide_banner','-loglevel','error','-i',sourceVideo,
-    '-t','18','-vf',filter,'-an','-c:v','libx264','-preset','veryfast',
-    '-crf','26','-pix_fmt','yuv420p','-movflags','+faststart',out],{stdio:'pipe',timeout:180000});
+  const cover=path.join(dir,h>w?'cover-portrait.png':'cover-landscape.png');
+  const size=`scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},setsar=1,fps=30`;
+  // Begin on the SAME cover image players see in the game listing.
+  // Then show ~17 seconds of genuine recorded gameplay, beginning after
+  // the initial browser navigation. Never use blank/logo transitions.
+  const filters=`[0:v]${size},trim=duration=0.5,setpts=PTS-STARTPTS[cover];`+
+    `[1:v]${size},trim=duration=17,setpts=PTS-STARTPTS[game];`+
+    '[cover][game]concat=n=2:v=1:a=0[v]';
+  execFileSync('ffmpeg',['-y','-hide_banner','-loglevel','error',
+    '-loop','1','-framerate','30','-t','0.5','-i',cover,
+    '-ss','1','-i',sourceVideo,'-filter_complex',filters,
+    '-map','[v]','-an','-c:v','libx264','-preset','veryfast',
+    '-crf','24','-pix_fmt','yuv420p','-movflags','+faststart',out],
+    {stdio:'pipe',timeout:180000});
 }
 runVideo(1920,1080,'real-gameplay-landscape.mp4','cat-bond-gameplay-landscape.webm');
 runVideo(1080,1620,'real-gameplay-portrait.mp4','cat-bond-gameplay-portrait.webm');
