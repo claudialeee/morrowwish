@@ -28,7 +28,12 @@ try{
     State.save();UI._shopQuantity=1;
     UI.openShop();
   });
-  assert.equal(await page.locator('#panel [data-buy]').count(),7);
+  assert.equal(await page.locator('#panel [data-buy]').count(),8,
+    'Shop exposes eight real supplies, including the new recovery kit');
+  assert.equal(await page.locator('#panel [data-buy="medkit"]').count(),1,
+    'The first-aid kit must be buyable for post-combat recovery');
+  assert.equal(await page.evaluate(()=>UI.shopItem('medkit')?.medkitsGain),1,
+    'Buying a kit must produce an actual consumable, not decorative shop art');
   await page.locator('#panel [data-shop-qty="10"]').click();
   await page.locator('#panel [data-buy="treat15"]').click();
   const paid=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
