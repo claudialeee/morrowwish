@@ -108,6 +108,7 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("3n2rchppku32o")||
    !dashboard.includes('id="account-overview-rows"')||
+   !dashboard.includes('id="video-detail-rows"')||
    !dashboard.includes('accountOverviewNote:'))
  throw Error('Dashboard must preserve conversion context and links without counting old Bluesky posts as new videos');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
