@@ -48,12 +48,15 @@ try{
     const stroke=b.skillStrokes.findLast(v=>v.kind==='ultimate'&&v.element===element);
     if(!stroke)throw Error('No element-specific stroke '+element);
     stroke.life=stroke.max*.53;
+    if(!b.ultHero)throw Error('No watercolor hero focus '+element);
+    b.ultHero.age=b.ultHero.max*.42;
     g.draw(); // actual battle composition: cats, terrain, spells, HUD
-    return {cast:cast===true,element,shape:stroke.kind,sk:skill.id,
+    return {cast:cast===true,element,shape:stroke.kind,hero:!!b.ultHero,sk:skill.id,
       isDeathRay:!!b.deathRay,canvasW:g.W,canvasH:g.H};
    },{element,breed,skillId});
    assert.equal(result.cast,true,element+' casts its ultimate');
    assert.equal(result.shape,'ultimate',element+' uses the six-element renderer');
+   assert.ok(result.hero,element+' actually draws large watercolor cat focus');
    if(element==='dark')assert.equal(result.isDeathRay,false,
      'void maw must have a gravitational vortex, never an automatic laser');
    assert.ok(result.canvasW>200&&result.canvasH>250,'arena is visible');

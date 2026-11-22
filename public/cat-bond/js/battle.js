@@ -2069,6 +2069,7 @@ class CaptureBattle {
     if(!window.MorrowwishAudio?.skillSignature?.(skill?.id||skill?.name,f.element||skill?.element,3))
       window.MorrowwishAudio?.effect?.('combat_ultimate');
     this._ultCastTargets=this.liveEnemies().slice(0,6).map(e=>({x:e.x,y:e.y}));
+    this.ultHero=window.CatBondUltHero?.begin(this,f,skill)||null;
     this.addShake?.(.55,this.aim);
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
@@ -2990,6 +2991,8 @@ class CaptureBattle {
     this._vfxDt = dt;                                   // real dt for the vfx layer
     if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.02; }
     this.t += dt;
+    // Single-cat hero focus advances on real time even during combat hitstop.
+    window.CatBondUltHero?.update(this,realDt);
     this._lastDt = dt;                                  // shared by steering helpers (orbit/wander timers)
     if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
     if (this.shakeT > 0) this.shakeT -= dt;
@@ -4833,6 +4836,8 @@ class CaptureBattle {
       ctx.restore();
     }
 
+    // Brief original watercolor cat close-up, layered over the LIVE arena.
+    window.CatBondUltHero?.draw(ctx,this,W,H);
     this.drawCatCutin(ctx,W,H);
     ctx.restore();
   }

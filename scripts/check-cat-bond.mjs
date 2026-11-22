@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ult-hero','catart','cute-cats','real-kittens','data','running-cats','skills','growth','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -661,6 +661,7 @@ const voidHpBefore=voidBattle.enemies.reduce((n,e)=>n+e.hp,0);
 voidBattle.ult=100;voidBattle.ultCd=0;
 assert.equal(voidBattle.ultimate(),true,'void maw ultimate casts');
 assert.ok(!voidBattle.deathRay,'void maw must not be silently replaced by a death ray');
+assert.ok(voidBattle.ultHero,'void maw starts the watercolor hero focus');
 assert.ok(voidBattle.skillStrokes.some(x=>x.kind==='ultimate'&&x.element==='dark'),
   'void maw must spawn a dark vortex silhouette');
 assert.ok(voidBattle.enemies.some(e=>Math.abs(e.kbx||0)+Math.abs(e.kby||0)>0),
