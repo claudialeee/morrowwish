@@ -116,6 +116,14 @@ try{
   // require the native gameplay callback, earned memory and native story UI.
   const promiseSetup=await page.evaluate(()=>{
     UI.closeAll();window.__game.openWorldMap();UI.closeAll();
+    // Promo-only pre-progressed save: satisfy the REAL Sakura unlock rule
+    // (40% exploration of the starter region) before filming gameplay.
+    // The duo memory itself is still earned from the genuine world event.
+    const starter=State.S.worldmap?.regions?.home;
+    if(!starter)throw Error('Missing starter-region progression');
+    starter.explored=Math.max(.41,starter.explored||0);
+    WorldMap.enterMap();
+    if(!WorldMap.isUnlocked('sakura'))throw Error('Sakura map must unlock normally');
     const a=State.S.cats[0],b=State.S.cats[1];
     CatRelations.grow(a,b,35);CatRelations.choose(a,b);
     const before=CatRelations.memoryList(a,b).includes('sakura');
