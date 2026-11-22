@@ -71,6 +71,14 @@ try{
      await scan(page,slug,lang,'yard');
     }
    }
+   if(slug==='pocket-aquarium'&&await page.locator('#start').isVisible()){
+    await page.locator('#start').click({timeout:7000});
+    await scan(page,slug,lang,'feeding game');
+   }
+   if(slug==='pawsibly-innocent'&&await page.locator('#menuButton').isVisible()){
+    await page.locator('#menuButton').click({timeout:7000});
+    await scan(page,slug,lang,'pause menu');
+   }
    if(slug==='tiny-town'&&await page.locator('#introStart').isVisible()){
     await page.locator('#introStart').click({timeout:7000});
     await scan(page,slug,lang,'town');
