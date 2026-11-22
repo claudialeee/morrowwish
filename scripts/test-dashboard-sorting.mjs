@@ -67,6 +67,7 @@ console.log('Dashboard columns sort numerically, retain real zeros, leave missin
 // dashboard renderers for both languages and mixed/legacy-only cohorts.
 const historicalBond={game:'cat-bond',pageviews:26,startedViews:8,startRate:30.8,
  starts:82,ends:79,retries:1,
+ historicalVisitFunnel:{pageviews:26,startedViews:8,finishedViews:7},
  conversion:{pageviews:0,startedViews:0,finishedViews:0},
  signals:{bond_capture:73,bond_rare_encounter:4,bond_rare_capture:57,
   bond_duo_used:46,bond_yard_built:6,bond_surprise:5}};
@@ -80,6 +81,7 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
   gameNames:{'cat-bond':{zh:'猫猫纽带',en:'Cat Bond'}},
   escapeHTML:s=>String(s??''),format:n=>Number(n||0).toLocaleString('en-US'),
   pct:(a,b)=>b?Math.round(a*1000/b)/10:0,
+  t:id=>id==='bondBattleStarts'?(locale==='zh'?'场战斗':'battles'):id==='bondBattleEnds'?(locale==='zh'?'场结算':'battle finishes'):id,
   $:id=>(dom[id]??={innerHTML:''})};
  const focusCode=inlineScript.slice(inlineScript.indexOf('function renderSignals('),
   inlineScript.indexOf('\nfunction render(j)'));
@@ -95,7 +97,12 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,{...env,fixture:[bond]});
  const main=dom.games.innerHTML;
- assert.ok(main.includes('<td>82 <small>30.8%</small></td><td>79 <small>96.3%</small></td><td>1</td>'),
-  locale+' main Cat Bond row erased history');
+ const startLabel=locale==='zh'?'场战斗':'battles';
+ const finishLabel=locale==='zh'?'场结算':'battle finishes';
+ assert.ok(main.includes('<td>82 <small>'+startLabel+'</small></td><td>79 <small>'+finishLabel+'</small></td><td>1</td>'),
+  locale+' historic Cat Bond battle totals must remain and be labeled');
+ for(const ratio of ['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'])
+  assert.ok(main.includes('<td>'+ratio+'</td>'),locale+' per-visit conversion missing: '+ratio);
+ assert.ok(!main.includes('79 / 82 · 96.3%</td>'),'Raw battle rates are not visit conversion');
 }
 console.log('Cat Bond historical dashboard gate: 8/26, 79/82, 73, 4, 57, 46, 6, 5, 1 remain visible in zh/en.');
