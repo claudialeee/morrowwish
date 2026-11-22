@@ -1504,7 +1504,7 @@ class CaptureBattle {
     }else if(sk.kind==='buff'){
       const shield=sk.tags?.includes('shield');
       if(shield){
-        const wardPlaced=this.castWard(t, sk.shieldType || 'barrier');
+        const wardPlaced=this.castWard(t, sk.shieldType || 'barrier', sk);
         if(wardPlaced)window.CatBondSkillFX?.support(this,t,sk);
         return wardPlaced;  // three shield verbs (on friend or self)
       }else if(sk.tags?.includes('camo')){
@@ -1630,7 +1630,7 @@ class CaptureBattle {
   // ---- the three shield verbs (players AND enemies) ----
   // Each sets a short-lived field resolveHit() consults, with its own limit and
   // after-effect. Shared so enemy AI can cast the exact same wards.
-  castWard(f, type) {
+  castWard(f, type, sk=null) {
     if ((f.protectT||0)>0 || (f.reflectT||0)>0 || (f.shieldT||0)>.25) return false;  // one ward at a time
     if (type === 'protect') {
       // Protect 守护: full block, tiny window, then a vulnerable 后遗症.
@@ -1647,7 +1647,10 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-34,'反弹壁','#b8e0ff',14);
     } else {
       // Barrier 护盾: % reduction for a duration (the classic bubble).
-      f.shieldT = 4.8;
+      f.shieldT=sk?.wardDuration||4.8;
+      f._wardReduction=Math.max(0,Math.min(.8,sk?.wardReduction??.45));
+      f._wardRegenPct=sk?.wardRegenPct||0;
+      f._wardRetaliateBurn=!!sk?.wardRetaliateBurn;
       this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:'#9dd8ff',width:4});
       this.vfx.text(f.x,f.y-34,'护盾','#9dd8ff',14);
     }
@@ -1692,7 +1695,14 @@ class CaptureBattle {
   // ("有些猫身上的防护罩一直都在"). Ticking it in the shared ward tick fixes both sides.
   tickWards(f, dt) {
     const oldShield=f.shieldT||0,oldProtect=f.protectT||0,oldReflect=f.reflectT||0;
-    if (f.shieldT > 0) f.shieldT = Math.max(0, f.shieldT - dt);
+    if(f.shieldT>0){
+      f.shieldT=Math.max(0,f.shieldT-dt);
+      if(f._wardRegenPct&&f.alive&&f.hp<f.maxhp)
+        f.hp=Math.min(f.maxhp,f.hp+f.maxhp*f._wardRegenPct*dt);
+    }
+    if(f.shieldT<=0){
+      f._wardReduction=null;f._wardRegenPct=0;f._wardRetaliateBurn=false;
+    }
     if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
     if (f.reflectT > 0) f.reflectT = Math.max(0, f.reflectT - dt);
     // One-time local dissolve on shield expiry; never spawn every frame.
@@ -4424,7 +4434,20 @@ class CaptureBattle {
     //    barrier only chips it (0.85) so standing in the circle behind a shield still
     //    hurts; the real answer is to leave the telegraphed disc / dodge for i-frames.
     if ((target.shieldT || 0) > 0) {
-      dmg *= (skill && skill.unblockable) ? 0.85 : 0.55;
+      dmg *= (skill && skill.unblockable)
+        ? 0.85 : 1-Math.max(0,Math.min(.8,target._wardReduction??.45));
+      // Fire barrier trades some prevention for a close-range burn counter.
+      if(side==='wild'&&target._wardRetaliateBurn&&
+         this.t-(target._lastWardRetaliateAt??-99)>=1){
+        const attacker=this.nearestEnemy(target.x,target.y);
+        if(attacker&&Math.hypot(attacker.x-target.x,attacker.y-target.y)<100){
+          target._lastWardRetaliateAt=this.t;
+          attacker.status=attacker.status||{};attacker.tags=attacker.tags||[];
+          attacker.status.burn=Math.max(attacker.status.burn||0,Skills.TAG_INFO.burn.ttl);
+          if(!attacker.tags.includes('burn'))attacker.tags.push('burn');
+          this.vfx.ring(attacker.x,attacker.y,{r0:8,vr:95,life:.25,color:'#ff854f',width:2});
+        }
+      }
       // A contact ripple with channel-hit throttling; no global overlay.
       if(this.t-(target._lastBarrierFxAt??-99)>.24){
         target._lastBarrierFxAt=this.t;
