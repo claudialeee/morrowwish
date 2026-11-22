@@ -734,6 +734,10 @@ const UI = {
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
       const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
       if(!entry||entry.trust<20)return;
+      // Selecting a gallery card should update the highlighted duo and
+      // detailed relationship panel, without changing the battle lineup.
+      this._duoPicked=[entry.a.uid,entry.b.uid];
+      this.openBondPanel();
       this.openUnlockedDuoViewer(entry.a,entry.b);
     });
     document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
