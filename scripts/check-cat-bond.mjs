@@ -378,6 +378,15 @@ const baseFighterBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 const baseFighter=baseFighterBattle.me();
 const basePow=baseFighter.cat.stats.pow;
+const baseSpeedExpected=150*(1+Math.min(.15,Math.max(0,baseFighter.cat.stats.agi||0)*.0035));
+assert.ok(Math.abs(baseFighter.speed-baseSpeedExpected)<1e-9,
+  'AGI move bonus uses 0.35% per point, capped at +15%');
+const fastCat=State.makeCat('tangyuan');
+fastCat.stats={...fastCat.stats,agi:200};
+const fastBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [fastCat],GameData.speciesById('doudou'));
+assert.ok(fastBattle.me().speed<=172.5+1e-9,
+  'even extremely high AGI cannot increase run speed above 115%');
 const baseExpected=(6+basePow*.7)*(baseFighter.bond.dmgMult||1)*.62;
 assert.ok(Math.abs(baseFighter.dmg-baseExpected)<1e-9,
   'player base attack uses the toned-down 0.62 coefficient');
