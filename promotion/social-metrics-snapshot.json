@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "capturedAt": "2026-11-22",
-  "nativeWindow": "Verified public native short-video stats on 2026-11-22; historic content excluded. TikTok verified snapshot; Bluesky public feed refreshed by Worker.",
-  "source": "Directly connected platform accounts and public video listings through vidIQ (not Metricool)",
-  "refreshMode": "tiktok-verified-snapshot;bluesky-live-refresh",
-  "note": "All 7 new TikTok videos individually verified via connected vidIQ public profile; 94 plays at 2026-11-22 capture. Bluesky reactions are refreshed from the native public feed where available; no Bluesky play count is inferred.",
+  "nativeWindow": "Lifetime stats for seven 2026-11-22 Instagram Reels and seven TikTok videos from owner/public platform readings; separately identified older IG Reels never merged.",
+  "source": "Instagram owner Insights + TikTok public video listing from connected vidIQ; Bluesky public AppView",
+  "refreshMode": "instagram-owner-verified-snapshot;tiktok-public-verified-snapshot;bluesky-native-10-min-refresh",
+  "note": "Instagram 7 Nov 22 Reels: 305 views, 10 likes (owner Insights); TikTok 7 Nov 22 videos: 94 views, 1 like (public feed). Both as-of snapshots, not continuous live counters. Bluesky public likes/reposts refresh in Worker.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -67,12 +67,13 @@
     {
       "id": "instagram",
       "priority": "P1",
-      "phase": "verified-platform-publications",
+      "phase": "verified-seven-reels-owner-insights",
       "published": 7,
       "failed": null,
-      "views": 31,
-      "metricScope": "verified-new-short-videos",
-      "note": "Native video figures from connected platform data. Values are a snapshot, not continuously fetched in the website."
+      "views": 305,
+      "metricScope": "seven-2026-11-22-reels-instagram-owner-lifetime-plays",
+      "note": "All 7 Reels published Nov 22 verified through Instagram owner insights; 305 plays and 10 likes in this snapshot. Nov 20 historical Reels excluded.",
+      "likes": 10
     },
     {
       "id": "bluesky",
@@ -112,17 +113,6 @@
         "likes": 0
       },
       {
-        "platform": "instagram",
-        "game": "cat-bond",
-        "url": "https://www.instagram.com/reel/DgDdwz6T4Gy/",
-        "publishedAt": "2026-11-22",
-        "views": 3,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
-        "likes": 0
-      },
-      {
         "platform": "youtube",
         "game": "pawsibly-innocent",
         "url": "https://www.youtube.com/shorts/JUQ8PsYCFG8",
@@ -131,17 +121,6 @@
         "approved": true,
         "publicVerified": true,
         "dataSource": "vidiq-youtube-public",
-        "likes": 0
-      },
-      {
-        "platform": "instagram",
-        "game": "pawsibly-innocent",
-        "url": "https://www.instagram.com/reel/DgDfM-DBb1K/",
-        "publishedAt": "2026-11-22",
-        "views": 0,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
         "likes": 0
       },
       {
@@ -156,17 +135,6 @@
         "likes": 0
       },
       {
-        "platform": "instagram",
-        "game": "tiny-town",
-        "url": "https://www.instagram.com/reel/DgDfO6ztxnM/",
-        "publishedAt": "2026-11-22",
-        "views": 0,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
-        "likes": 0
-      },
-      {
         "platform": "youtube",
         "game": "elsewhere",
         "url": "https://www.youtube.com/shorts/n8bbePy8Unw",
@@ -175,17 +143,6 @@
         "approved": true,
         "publicVerified": true,
         "dataSource": "vidiq-youtube-public",
-        "likes": 0
-      },
-      {
-        "platform": "instagram",
-        "game": "elsewhere",
-        "url": "https://www.instagram.com/reel/DgDfQqkT6Gx/",
-        "publishedAt": "2026-11-22",
-        "views": 0,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
         "likes": 0
       },
       {
@@ -200,17 +157,6 @@
         "likes": 1
       },
       {
-        "platform": "instagram",
-        "game": "flip-dash",
-        "url": "https://www.instagram.com/reel/DgDfUwbB4EP/",
-        "publishedAt": "2026-11-22",
-        "views": 16,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
-        "likes": 0
-      },
-      {
         "platform": "youtube",
         "game": "parcel-panic",
         "url": "https://www.youtube.com/shorts/c1qeZ3tvuLU",
@@ -222,17 +168,6 @@
         "likes": 0
       },
       {
-        "platform": "instagram",
-        "game": "parcel-panic",
-        "url": "https://www.instagram.com/reel/DgDfRCJAF83/",
-        "publishedAt": "2026-11-22",
-        "views": 8,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
-        "likes": 0
-      },
-      {
         "platform": "youtube",
         "game": "pocket-aquarium",
         "url": "https://www.youtube.com/shorts/O3tMbulVPvk",
@@ -241,17 +176,6 @@
         "approved": true,
         "publicVerified": true,
         "dataSource": "vidiq-youtube-public",
-        "likes": 0
-      },
-      {
-        "platform": "instagram",
-        "game": "pocket-aquarium",
-        "url": "https://www.instagram.com/reel/DgDfRT3O7EK/",
-        "publishedAt": "2026-11-22",
-        "views": 4,
-        "approved": true,
-        "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
         "likes": 0
       },
       {
@@ -351,55 +275,167 @@
         "publicVerified": true,
         "dataSource": "vidiq-tiktok-public",
         "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "cat-bond",
+        "url": "https://www.instagram.com/reel/DgDdwz6T4Gy/",
+        "publishedAt": "2026-11-22",
+        "views": 4,
+        "likes": 1,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "pawsibly-innocent",
+        "url": "https://www.instagram.com/reel/DgDfM-DBb1K/",
+        "publishedAt": "2026-11-22",
+        "views": 9,
+        "likes": 1,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "tiny-town",
+        "url": "https://www.instagram.com/reel/DgDfO6ztxnM/",
+        "publishedAt": "2026-11-22",
+        "views": 2,
+        "likes": 1,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "elsewhere",
+        "url": "https://www.instagram.com/reel/DgDfQqkT6Gx/",
+        "publishedAt": "2026-11-22",
+        "views": 0,
+        "likes": 1,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "flip-dash",
+        "url": "https://www.instagram.com/reel/DgDfUwbB4EP/",
+        "publishedAt": "2026-11-22",
+        "views": 227,
+        "likes": 2,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "parcel-panic",
+        "url": "https://www.instagram.com/reel/DgDfRCJAF83/",
+        "publishedAt": "2026-11-22",
+        "views": 34,
+        "likes": 2,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "instagram",
+        "game": "pocket-aquarium",
+        "url": "https://www.instagram.com/reel/DgDfRT3O7EK/",
+        "publishedAt": "2026-11-22",
+        "views": 29,
+        "likes": 2,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-instagram-owner-insights",
+        "lastVerifiedAt": "2026-11-22"
       }
     ]
   },
   "accountOverview": {
     "capturedAt": "2026-11-22",
-    "source": "Historical Instagram from Metricool; TikTok seven video views from public vidIQ listing.",
+    "source": "Instagram native owner insights and public TikTok feed through connected vidIQ; historical IG kept in separate row.",
     "refreshMode": "manual",
-    "windowStart": "2026-11-19",
+    "windowStart": "2026-11-20",
     "windowEnd": "2026-11-22",
-    "note": "Historical Instagram 6 Reels from Nov 20 kept separate. TikTok has all 7 published 2026-11-22 videos verified individually (94 plays at capture), not continuously fetched until direct OAuth is configured.",
+    "note": "New 2026-11-22 Instagram campaign: seven Reels individually verified (305 plays, 10 likes), kept separate from six older Nov 20 Reels (273 historical plays). TikTok: seven verified videos (94 plays). All counts are as-of snapshots.",
     "platforms": [
       {
         "id": "instagram",
-        "published": 6,
-        "views": 273,
-        "viewBasis": "lifetime_views_of_reels_published_in_window",
+        "published": 7,
+        "views": 305,
+        "likes": 10,
+        "viewBasis": "7-new-reels-published-2026-11-22-instagram-owner-insights",
         "posts": [
           {
-            "url": "https://www.instagram.com/reel/Df9CJXwttqy/",
-            "publishedAt": "2026-11-20",
-            "views": 44
+            "url": "https://www.instagram.com/reel/DgDdwz6T4Gy/",
+            "publishedAt": "2026-11-22",
+            "views": 4,
+            "likes": 1
           },
           {
-            "url": "https://www.instagram.com/reel/Df87XKxS4Jy/",
-            "publishedAt": "2026-11-20",
-            "views": 133
+            "url": "https://www.instagram.com/reel/DgDfM-DBb1K/",
+            "publishedAt": "2026-11-22",
+            "views": 9,
+            "likes": 1
           },
           {
-            "url": "https://www.instagram.com/reel/Df80eunpptl/",
-            "publishedAt": "2026-11-20",
-            "views": 84
+            "url": "https://www.instagram.com/reel/DgDfO6ztxnM/",
+            "publishedAt": "2026-11-22",
+            "views": 2,
+            "likes": 1
           },
           {
-            "url": "https://www.instagram.com/reel/Df8tj4HB7Ge/",
-            "publishedAt": "2026-11-20",
-            "views": 4
+            "url": "https://www.instagram.com/reel/DgDfQqkT6Gx/",
+            "publishedAt": "2026-11-22",
+            "views": 0,
+            "likes": 1
           },
           {
-            "url": "https://www.instagram.com/reel/Df8mrfBuMha/",
-            "publishedAt": "2026-11-20",
-            "views": 6
+            "url": "https://www.instagram.com/reel/DgDfUwbB4EP/",
+            "publishedAt": "2026-11-22",
+            "views": 227,
+            "likes": 2
           },
           {
-            "url": "https://www.instagram.com/reel/Df8f0EFBdCl/",
-            "publishedAt": "2026-11-20",
-            "views": 2
+            "url": "https://www.instagram.com/reel/DgDfRCJAF83/",
+            "publishedAt": "2026-11-22",
+            "views": 34,
+            "likes": 2
+          },
+          {
+            "url": "https://www.instagram.com/reel/DgDfRT3O7EK/",
+            "publishedAt": "2026-11-22",
+            "views": 29,
+            "likes": 2
           }
         ],
-        "status": "historical-only-awaiting-new-reels"
+        "status": "seven-reels-verified",
+        "label": "Instagram Nov 22"
       },
       {
         "id": "tiktok",
@@ -451,6 +487,46 @@
           }
         ],
         "status": "7-videos-verified-snapshot"
+      },
+      {
+        "id": "instagram-historical",
+        "published": 6,
+        "views": 273,
+        "viewBasis": "lifetime_views_of_reels_published_in_window",
+        "posts": [
+          {
+            "url": "https://www.instagram.com/reel/Df9CJXwttqy/",
+            "publishedAt": "2026-11-20",
+            "views": 44
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df87XKxS4Jy/",
+            "publishedAt": "2026-11-20",
+            "views": 133
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df80eunpptl/",
+            "publishedAt": "2026-11-20",
+            "views": 84
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df8tj4HB7Ge/",
+            "publishedAt": "2026-11-20",
+            "views": 4
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df8mrfBuMha/",
+            "publishedAt": "2026-11-20",
+            "views": 6
+          },
+          {
+            "url": "https://www.instagram.com/reel/Df8f0EFBdCl/",
+            "publishedAt": "2026-11-20",
+            "views": 2
+          }
+        ],
+        "status": "historical-nov-20-only",
+        "label": "Instagram Nov 20 (historical)"
       }
     ]
   }
