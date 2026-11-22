@@ -25,11 +25,14 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/yard-preview-server.log 2>&1 &
           sleep 2
           node scripts/cat-bond-yard-placement-smoke.mjs
+          node scripts/cat-bond-art-review.mjs
       - name: Save screenshots for owner review
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-review-yard-screenshots
-          path: /tmp/cat-bond-*-yard-placement.png
+          path: |
+            /tmp/cat-bond-*-yard-placement.png
+            /tmp/catbond-review-*.png
           retention-days: 7
           if-no-files-found: warn
