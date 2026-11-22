@@ -438,9 +438,10 @@ function catPathTo(from,to){
 }
 
 const hidden=p=>s.boxes.some(b=>equal(b,p));
-function visible(p=s.cat){if(s.sleepTurns>0||s.guardMode==="distracted"||hidden(p))return false;
- // A thrown yarn ball distracts from afar, but does not make the cat invisible at touching distance.
- if(s.yarnAnimating&&Math.abs(s.human.x-p.x)+Math.abs(s.human.y-p.y)>1)return false;
+function visible(p=s.cat){if(s.sleepTurns>0||hidden(p))return false;
+ // An investigating OR temporarily distracted owner can still notice a cat
+ // right beside them; a thrown yarn ball is a lure, not magical invisibility.
+ if((s.yarnAnimating||s.guardMode==="distracted")&&Math.abs(s.human.x-p.x)+Math.abs(s.human.y-p.y)>1)return false;
  let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3+(s.index>=3?1:0)+((s.index>=5&&s.got>=2)||s.pressure?1:0)-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}if(d===2&&Math.abs(a.x-b.x)===1&&Math.abs(a.y-b.y)===1){
  // No diagonal sight through the corner of a wall or sofa.
  const blocked=(x,y)=>["#","S"].includes(s.grid[y][x]);
