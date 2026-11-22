@@ -162,6 +162,7 @@ function toastText(k){
  if(k==="bonus-completed")return lang==="zh"?"★ 额外任务完成！成功逃脱再得 150 分":"★ Bonus complete! Escape to claim +150";
   if(k==="pressure")return lang==="zh"?"主人开始加强巡逻！注意视野变大了。":"The human is on high alert! Watch their wider sight.";
   if(k==="heat")return lang==="zh"?"偷了两条鱼，主人开始留意小猫了！":"Two fish gone — the human is getting suspicious!";
+  if(k==="caughtFish")return lang==="zh"?"被主人抓住了！最后偷到的一条鱼掉了，快去捡回来！":"Caught! You dropped your latest fish. Sneak back and recover it!";
   if(k==="trick-combo")return lang==="zh"?"🎭 声东击西！趁主人分心偷到鱼 +60":"🎭 Perfect distraction! Sneaky fish +60";
   if(k==="relic-named"){
   const relic=RELICS[s.index];return relic.glyph+" "+relic[lang==="zh"?"zh":"en"]+
@@ -188,7 +189,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
@@ -437,13 +438,22 @@ function catPathTo(from,to){
 }
 
 const hidden=p=>s.boxes.some(b=>equal(b,p));
-function visible(p=s.cat){if(s.sleepTurns>0||s.guardMode==="distracted"||s.yarnAnimating||hidden(p))return false;let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3+(s.index>=3?1:0)+((s.index>=5&&s.got>=2)||s.pressure?1:0)-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}if(d===2&&Math.abs(a.x-b.x)===1&&Math.abs(a.y-b.y)===1){
+function visible(p=s.cat){if(s.sleepTurns>0||s.guardMode==="distracted"||hidden(p))return false;
+ // A thrown yarn ball distracts from afar, but does not make the cat invisible at touching distance.
+ if(s.yarnAnimating&&Math.abs(s.human.x-p.x)+Math.abs(s.human.y-p.y)>1)return false;
+ let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3+(s.index>=3?1:0)+((s.index>=5&&s.got>=2)||s.pressure?1:0)-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}if(d===2&&Math.abs(a.x-b.x)===1&&Math.abs(a.y-b.y)===1){
  // No diagonal sight through the corner of a wall or sofa.
  const blocked=(x,y)=>["#","S"].includes(s.grid[y][x]);
  return !blocked(a.x,b.y)&&!blocked(b.x,a.y);
  }return false}
 function throwStars(p,color){for(let i=0;i<9;i++)fx.push({x:(p.x+.5)*T,y:(p.y+.5)*T,dx:(Math.random()-.5)*4,dy:-Math.random()*3-1,life:30,col:color});}
-function hurt(){if(s.invincible>0)return;stopYarnChase();s.caughtCount++;s.lives--;s.score=Math.max(0,s.score-30);route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup("caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.reactionAt=0;s.dangerActive=false;s.patrol=0;s.catFrom={...s.cat};s.humanFrom={...s.human};s.movedAt=performance.now();s.humanMovedAt=performance.now();}
+function hurt(){if(s.invincible>0)return;stopYarnChase();s.caughtCount++;s.lives--;s.score=Math.max(0,s.score-30);
+ // A capture costs the most recently stolen fish, rather than merely teleporting
+ // the player with the full haul intact. Fish stay on their original reachable tiles.
+ const dropped=s.fishHaul.pop();
+ if(dropped){s.taken.delete(dropped.tile);s.got=Math.max(0,s.got-1);s.score=Math.max(0,s.score-dropped.points);
+  metric("cat_fish_dropped",{level:daily?9:stage+1,remaining:s.got});}
+ route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}audio("bad");popup(dropped?"caughtFish":"caught");throwStars(s.cat,"#fb7893");s.invincible=2;s.exposure=0;metric("cat_caught",{level:daily?9:stage+1,score:s.score});if(s.lives<=0){finish(false);return;}s.cat={...s.start};s.human={...s.humanStart};s.noise=null;s.alert=0;s.lastSeen=null;s.distractionTurns=0;s.yarnDestination=null;s.guardMode="patrol";s.guardTarget=null;s.searchTurns=0;s.curiosityCooldown=0;s.reaction="";s.reactionUntil=0;s.reactionAt=0;s.dangerActive=false;s.patrol=0;s.catFrom={...s.cat};s.humanFrom={...s.human};s.movedAt=performance.now();s.humanMovedAt=performance.now();}
 function yarnTarget(p){return !!s&&yarnTargets.has(key(p))}
 function setYarnAim(on){
  aimingYarn=!!on;yarnPreview=null;yarnTargets.clear();
@@ -602,12 +612,13 @@ function resolveDetection(){
 function moveTo(p){if(s.done||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
 s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
-const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish"); s.score+=save.cat===4?135:100;
+const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish");const fishValue=save.cat===4?135:100; s.score+=fishValue;
  const combo=!!(s.guardMode==="distracted"||s.guardMode==="investigate")&&!visible(p);
  if(combo){
   s.score+=60;addStat("combos");
   throwStars(p,"#ecc1fc");metric("cat_trick_combo",{level:s.index+1,score:s.score});
  }
+ s.fishHaul.push({tile:key(p),points:fishValue+(combo?60:0)});
  audio("fish");throwStars(p,"#ffd16e");popup(s.got>=NEED?"ready":combo?"trick-combo":"fish");
  if(s.index>=2&&ownerDistance(p)<=5&&s.sleepTurns===0&&!s.yarnAnimating&&!s.noise){
   s.noise={...p};s.alert=4;guardReaction("fish",2);
