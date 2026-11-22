@@ -1068,9 +1068,17 @@ const UI = {
     // would still jump a 30-cat picker back to the first row on every tap.
     const nestedScroll=preserveScroll?[...p.querySelectorAll('.duo-cat-chip-list')]
       .map(list=>list.scrollTop):[];
+    const expandedSkillGroups=preserveScroll?[...(before?.querySelectorAll('details.skill-extra-options')||[])]
+      .map(group=>group.open):[];
     p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
     if(preserveScroll){
       const after=p.querySelector(':scope > .card');
+      // Keep an expanded "more unlocked skills" group open after equipping a
+      // move from it. Otherwise the panel shrinks and scrollTop is clamped,
+      // which looks exactly like an unexpected jump to the first screen.
+      [...(after?.querySelectorAll('details.skill-extra-options')||[])].forEach((group,i)=>{
+        if(i<expandedSkillGroups.length)group.open=expandedSkillGroups[i];
+      });
       const restoreLists=()=>p.querySelectorAll('.duo-cat-chip-list').forEach((list,i)=>{
         list.scrollTop=nestedScroll[i]||0;
       });
