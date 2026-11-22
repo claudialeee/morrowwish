@@ -150,7 +150,7 @@ for(const breed of allBreeds){
 // both the rendered cat and shield by exactly the same scale.
 // Standardized local hit feedback: every hit tier produces a different
 // bounded effect mix without painting a full-screen frame.
-const effectTypes=['light','heavy','crit','stagger','kill','heal','guard','reflect'];
+const effectTypes=['light','heavy','crit','stagger','kill','heal','guard','reflect','shieldBreak'];
 const tierFx=new sandbox.window.VFX();
 for(const type of effectTypes){
   const before=tierFx.fx.length;
@@ -158,6 +158,23 @@ for(const type of effectTypes){
   assert.ok(tierFx.fx.length>before,'hit tier generated particles: '+type);
 }
 assert.ok(tierFx.fx.length<160,'hit feedback cannot exhaust the VFX budget');
+assert.ok(tierFx.fx.some(q=>q.type==='guardShards'),
+  'single-use protect must fracture into localized shards, not a fullscreen wash');
+// Rendering a scene more often must NOT modify combat state. Text follows dt,
+// not refresh rate; this is especially important on 120Hz phones.
+const pureFx=new sandbox.window.VFX();
+pureFx.text(130,175,'+20','#b7eac7',12);
+const textMark=pureFx.fx.find(q=>q.type==='text');
+assert.ok(textMark);
+const initialY=textMark.y;
+pureFx.draw(canvasCtx);pureFx.draw(canvasCtx);
+assert.equal(textMark.y,initialY,'VFX.draw cannot advance a text animation');
+pureFx.update(.10);
+assert.ok(Math.abs(textMark.y-(initialY-3.4))<1e-6,
+  'VFX text moves via real elapsed time, not frame count');
+pureFx.draw(canvasCtx);
+assert.ok(Math.abs(textMark.y-(initialY-3.4))<1e-6,
+  'extra draw does not shift a popup again');
 const supportFx=new sandbox.window.VFX();
 for(const type of ['cleanse','barrier','wardFade']){
   const before=supportFx.fx.length;
@@ -270,6 +287,50 @@ assert.equal(expireBattle.vfx.fx.length,afterExpire,
   'expired barriers must not spray repeated particles');
 
 const skillFx=sandbox.window.CatBondSkillFX;
+// One-use Guard Stance must stop ONE real contact, shatter, then enter
+// vulnerability. A second hit must be able to land, not become 0.8s god mode.
+const guardBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('yuelian',{level:8,affinity:40})],
+  GameData.speciesById('doudou'));
+guardBattle.coach=null;
+const guarded=guardBattle.me();
+guarded.protectT=.8;guarded._protectVuln=1.2;
+guarded.inv=0;guarded.flash=0;
+const guardHp=guarded.hp;
+const firstBlock=guardBattle.resolveHit(guarded,'wild',
+  {id:'wildStrike',kind:'melee',element:'grass'},10,guarded.x,guarded.y);
+assert.equal(firstBlock.blocked,true,'Guard Stance blocks the next strike');
+assert.equal(guarded.hp,guardHp,'the guarded contact deals zero HP damage');
+assert.equal(guarded.protectT,0,'one-hit guard must be consumed');
+assert.ok(guarded.vulnerableT>=1.2,'guard starts its vulnerable recovery');
+assert.ok(guardBattle.vfx.fx.some(x=>x.type==='guardShards'),
+  'guard impact plays one localized shield-break animation');
+const followup=guardBattle.resolveHit(guarded,'wild',
+  {id:'wildStrike',kind:'melee',element:'grass'},10,guarded.x,guarded.y);
+assert.equal(followup.blocked,false,'the second blow can land after guard breaks');
+assert.ok(guarded.hp<guardHp,'post-block recovery is genuinely vulnerable');
+ 
+// Heavy-tag skills must read as weight even if difficulty settings reduce
+// the damage number; striking an ALREADY staggered target earns crit visuals.
+const impactBattle=new sandbox.window.Battle.CaptureBattle(game,
+ [State.makeCat('jinwu',{level:8,affinity:40})],GameData.speciesById('doudou'));
+impactBattle.coach=null;
+const styles=[],impactFn=impactBattle.vfx.impactType;
+impactBattle.vfx.impactType=function(x,y,tier,opts){
+  styles.push(tier);return impactFn.call(this,x,y,tier,opts);
+};
+const targetImpact=impactBattle.enemies[0];
+targetImpact.inv=0;targetImpact.flash=0;targetImpact.staggerT=0;
+impactBattle.resolveHit(targetImpact,'me',
+  {id:'emberClaw',kind:'melee',heavy:true,element:'fire'},8,
+  targetImpact.x,targetImpact.y);
+assert.ok(styles.includes('heavy'),'heavy melee has its own impact tier');
+targetImpact.flash=0;targetImpact.inv=0;targetImpact.staggerT=1.2;
+impactBattle.resolveHit(targetImpact,'me',
+  {id:'emberClaw',kind:'melee',heavy:true,element:'fire'},8,
+  targetImpact.x,targetImpact.y);
+assert.ok(styles.includes('crit'),'existing stagger vulnerability uses crit tier');
+
 assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
 const normalIDs=Skills.SKILLS.filter(sk=>!sk.ultCost).map(sk=>sk.id);
