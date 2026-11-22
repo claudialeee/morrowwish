@@ -47,7 +47,11 @@ function walk(node,place,order){
   return;
  }
  if(typeof node==='string'){
-  if(order==='english-only')validEnglish(node,place);
+  if(order==='english-only'){
+   // Optional narrative placeholders may be empty, but may never show Han in EN.
+   if(HAN.test(node))issue(place+': Chinese in English storyline: '+node.slice(0,135));
+   else if(node.trim())checked.english++;
+  }
   else if(HAN.test(node))issue(place+': untranslated Chinese text outside bilingual pair: '+node.slice(0,135));
  }
 }
