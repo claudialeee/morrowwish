@@ -981,3 +981,13 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
   row-gap:4px!important;column-gap:4px!important;
  }
 }
+
+/* Real phone touch-target audit: 28px icon hitboxes are too small, even
+   when they appear visually inside the screen. Flex wrapping is allowed. */
+@media(max-width:620px){
+ html:not(.cg-play) .single-screen-game #stageControls button{
+  box-sizing:border-box!important;
+  min-width:34px!important;
+  flex-shrink:0!important;
+ }
+}
