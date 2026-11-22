@@ -4271,7 +4271,10 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#intro:not(.hide)) #cb-heade
 }
 // Exploration map carries its own named region and progress HUD. Resource chips
 // duplicate the yard display and overlap the separate left 'Back to Yard' control.
-html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage #cb-header #cb-header-actions > #hud{
+/* The older :not(:has(#battle-ui.on)) HUD override has more IDs than
+   ordinary map styles; this rule must win that specificity contest. */
+html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#battle-ui.on)) #cb-header #cb-header-actions > #hud,
+html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#battle-ui.on)) #cb-header #cb-header-actions > #hud.hidden{
   display:none!important;
 }
 @media(max-width:420px){
