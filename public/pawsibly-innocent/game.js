@@ -210,7 +210,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,blockedTarget:null,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,blockedTarget:null,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],spottedCount:0,startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);clearTimeout(badgeCollectTimer);if($("achievementToast")){$("achievementToast").hidden=true;$("achievementToast").classList.remove("collecting")}badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
@@ -472,7 +472,7 @@ function visible(p=s.cat){if(s.sleepTurns>0||hidden(p))return false;
  // An investigating OR temporarily distracted owner can still notice a cat
  // right beside them; a thrown yarn ball is a lure, not magical invisibility.
  if((s.yarnAnimating||s.guardMode==="distracted")&&Math.abs(s.human.x-p.x)+Math.abs(s.human.y-p.y)>1)return false;
- let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,3+(s.index>=3?1:0)+((s.index>=5&&s.got>=2)||s.pressure?1:0)-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}if(d===2&&Math.abs(a.x-b.x)===1&&Math.abs(a.y-b.y)===1){
+ let a=s.human,b=p,d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const sight=Math.max(1,(s.index===0&&!daily?2:3)+(s.index>=3?1:0)+((s.index>=5&&s.got>=2)||s.pressure?1:0)-(save.cat===1?1:0)-(s.lightTurns>0?(save.cat===2?2:1):0));if(d>sight)return false;if(d<=1)return true;if(a.x===b.x){for(let y=Math.min(a.y,b.y)+1;y<Math.max(a.y,b.y);y++)if(s.grid[y][a.x]==="#"||s.grid[y][a.x]==="S")return false;return true}if(a.y===b.y){for(let x=Math.min(a.x,b.x)+1;x<Math.max(a.x,b.x);x++)if(s.grid[a.y][x]==="#"||s.grid[a.y][x]==="S")return false;return true}if(d===2&&Math.abs(a.x-b.x)===1&&Math.abs(a.y-b.y)===1){
  // No diagonal sight through the corner of a wall or sofa.
  const blocked=(x,y)=>["#","S"].includes(s.grid[y][x]);
  return !blocked(a.x,b.y)&&!blocked(b.x,a.y);
@@ -561,6 +561,11 @@ function soundApproachPoint(target){
 }
 function guardMove(silent=false){
  const h=s.human;let target=null;
+ // First-room practice: skip every other SAFE patrol turn.
+ // Sightings, sounds, pursuit and collisions still trigger real reactions.
+ if(s.index===0&&!daily&&!s.noise&&!s.lastSeen&&s.exposure===0&&s.guardMode==="patrol"&&s.steps%2===0&&!visible(s.cat)){
+  s.guardTarget=null;return;
+ }
  if(s.sleepTurns>0&&!s.noise){
   s.sleepTurns--;s.guardMode="sleep";s.guardTarget=null;
   if(s.sleepTurns===0){popup("wake");guardReaction("wake")}
@@ -616,7 +621,7 @@ function guardMove(silent=false){
 }
 // Escalating alert: the first room teaches controls without instant vision penalties.
 // Later levels make sight, shadows, boxes and yarn meaningful choices.
-function detectionLimit(){return s.index===0&&!daily?4:s.index>=4?2:3}
+function detectionLimit(){return s.index<=1&&!daily?4:s.index>=4?2:3}
 function updateStealthHUD(){
  const alert=$("pawsAlert");if(alert&&s){const seen=s.exposure>0&&visible();alert.hidden=!seen;alert.textContent=s.exposure>=detectionLimit()?(lang==="zh"?"危险！下一步仍暴露会被抓":"DANGER! Hide before next move"):(lang==="zh"?"被发现 "+s.exposure+" / "+detectionLimit():"SPOTTED "+s.exposure+" / "+detectionLimit());}
  const hud=document.querySelector?.("#cgStealthHUD");if(!hud||!s)return;
@@ -634,7 +639,7 @@ function resolveDetection(){
   // Breaking sight clears the alert, so the next sighting starts fresh.
   s.exposure=0;return
  }
- s.dangerActive=true;s.everSpotted=true;
+ s.dangerActive=true;if(s.exposure===0)s.spottedCount=(s.spottedCount||0)+1;s.everSpotted=true;
  const limit=detectionLimit(),before=s.exposure;
  s.exposure=Math.min(limit,s.exposure+(ownerDistance()<=1?2:1));
  // Give a visible warning at full alert before capture on a later move.
