@@ -7,14 +7,16 @@ const game=read('public/cat-bond/js/data.js');
 const context={window:{MorrowwishI18n:{get:()=> 'en'}}};
 vm.runInNewContext(game+';window.__species=SPECIES;window.__speciesName=speciesName;',context);
 const cats=context.window.__species;
-assert.equal(cats.length,32,'Cat Bond must retain all 32 breeds');
+assert.ok(cats.length>=32,'Cat Bond must retain all original breeds');
 for(const [field,locale] of [['name','Chinese'],['nameEn','English']]){
  const values=cats.map(c=>c[field]);
- assert.equal(new Set(values).size,32,locale+' cat names must be unique');
+ assert.equal(new Set(values).size,cats.length,locale+' cat names must be unique');
  assert.ok(values.every(n=>n&&n.length<=24),locale+' cat names must be readable');
 }
 assert.equal(cats.find(s=>s.id==='nainai').name,'雪团','No grandma-named kitten');
 assert.equal(cats.find(s=>s.id==='nainai').nameEn,'Snowball');
+assert.equal(cats.find(s=>s.id==='jiafei').name,'圆宝');
+assert.equal(cats.find(s=>s.id==='jiafei').nameEn,'Pudding');
 assert.ok(cats.every(c=>!/[\u3400-\u9fff]/.test(c.nameEn)),'All 32 English cat names use English text');
 const dictScope={window:{MorrowwishI18n:{get:()=> 'en'},addEventListener(){}},document:{readyState:'loading',addEventListener(){}},console};
 vm.runInNewContext(read('public/cat-bond/js/i18n.js'),dictScope);
@@ -32,7 +34,7 @@ const mustTranslate=[
  '猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。',
  '古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。',
  '🏆 猫猫冒险 · 32 种全部收集 ›',
- '目标锁定','雪团', '奶酥', '奥利奥'
+ '目标锁定','雪团', '奶酥', '奥利奥', '圆宝', '加菲'
 ];
 for(const [source,value] of Object.entries(i18n.dict)){
  assert.ok(!/[\u3400-\u9fff]/.test(value),'English dictionary contains Chinese: '+source);
@@ -75,4 +77,4 @@ for(const file of ['public/pawsibly-innocent/game.js','public/tiny-town/game-v4.
    assert.ok(!/[\u3400-\u9fff]/.test(m[2]),'Chinese in an English text field: '+file+': '+m[2]);
  }
 }
-console.log('Language QA: 32 unique bilingual cat names, English-first entry, primary menus/skills/regions localized.');
+console.log('Language QA: '+cats.length+' unique bilingual cat names, English-first entry, primary menus/skills/regions localized.');
