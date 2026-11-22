@@ -4216,12 +4216,17 @@ class CaptureBattle {
     }
     // vulnerability debuffs amplify incoming damage (破绽/破甲)
     const TAG = (window.Skills && Skills.TAG_INFO) || {};
-    if (e.status) for (const tg in e.status) { const info = TAG[tg]; if (info && info.dmgTaken) dmg *= info.dmgTaken; }
-    // EXECUTE PHASE: once a wild cat is low (斗志将尽), direct hits escalate hard so
-    // the decided fight actually ENDS instead of a slow 40s whittle. ×1.5 at 28% HP
-    // ramping toward ×2.5 under 12%. (Playtest P1: there was no closer.)
+    // Multiple vulnerabilities should not compound into a runaway one-shot.
+    let vulnerabilityBonus = 0;
+    if (e.status) for (const tg in e.status) {
+      const info = TAG[tg];
+      if (info?.dmgTaken > 1) vulnerabilityBonus += info.dmgTaken - 1;
+    }
+    dmg *= 1 + Math.min(0.30, vulnerabilityBonus);
+    // Low-HP finisher keeps battles moving but no longer compounds into huge
+    // normal-skill spikes with stagger and vulnerability tags (1.2x..1.55x).
     const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
-    if (!isDot && frac0 < 0.28) dmg *= 1.5 + (1 - clamp(frac0 / 0.28, 0, 1)) * 1.0;
+    if (!isDot && frac0 < 0.28) dmg *= 1.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35;
     let scaled = dmg;
     if (fromDuo && this.duoField) {
       // Apply cap AFTER level scaling and vulnerability multipliers; otherwise
@@ -4406,7 +4411,7 @@ class CaptureBattle {
       // 纸箱埋伏 Box Ambush: the primed cat's NEXT hit forces a stagger + double damage.
       const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 1.6); }
       if (target.poiseMax) {
-        if (target.staggerT > 0) dmg *= 2;                 // hitting a staggered enemy = big
+        if (target.staggerT > 0) dmg *= 1.4; // stagger remains rewarding without doubling every Q/E
         if (!isBasic) {                                    // skills/combos/ult/beam crack poise
           target.poise = Math.max(0, (target.poise ?? target.poiseMax) - dmg);
           if (target.poise <= 0 && target.staggerT <= 0) {
