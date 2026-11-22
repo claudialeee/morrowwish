@@ -939,6 +939,25 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
 #panel .mastery-summary b{font-size:15px;color:#916526}
 #panel .mastery-summary span{font-size:12px;line-height:1.5}
 #panel .mastery-summary small{font-weight:850;font-size:11px;color:#59836c}
+/* 元素反应图鉴 (reaction codex) */
+#panel .reaction-codex{margin-top:16px;border:1px solid #d9c6a6;border-radius:14px;
+  background:linear-gradient(135deg,#fbf6ec,#eef2ea);padding:4px 12px;color:#4a4636}
+#panel .reaction-codex summary{cursor:pointer;padding:9px 2px;display:flex;align-items:center;
+  justify-content:space-between;gap:8px;list-style:none;font-size:14px}
+#panel .reaction-codex summary::-webkit-details-marker{display:none}
+#panel .reaction-codex .rx-hint{margin:2px 0 10px;opacity:.8;line-height:1.5}
+#panel .reaction-list{display:grid;gap:5px;padding-bottom:10px}
+#panel .rx-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:7px;
+  font-size:12px;padding:5px 8px;background:rgba(255,255,255,.55);border-radius:9px}
+#panel .rx-row.rx-counter{background:rgba(150,170,195,.16)}
+#panel .rx-tag{display:flex;align-items:center;gap:4px;font-weight:700}
+#panel .rx-chip{padding:1px 6px;border-radius:7px;border:1px solid;font-size:11px;color:#3a3630}
+#panel .rx-plus{opacity:.55}
+#panel .rx-arrow{opacity:.5}
+#panel .rx-name{font-weight:800;color:#6a4b96;white-space:nowrap}
+#panel .rx-mult{font-weight:850;font-variant-numeric:tabular-nums}
+#panel .rx-mult.up{color:#c2622c}
+#panel .rx-mult.down{color:#5b7fa6}
 #panel .mastery-detail{background:#f3e7ca;border:1px solid #cfb879;border-radius:12px;
   color:#8c6428;font-weight:800;font-size:12px;padding:8px 11px;margin:9px 0}
 #panel .cat-highlight-card .golden-paw-unlock{margin:11px auto;max-width:450px;

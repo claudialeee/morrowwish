@@ -1903,6 +1903,49 @@ const UI = {
   },
 
   // ---------- collection / dex ----------
+  // ELEMENT REACTION CODEX (元素反应图鉴): a readable list of every status×element
+  // reaction, generated straight from Skills.COMBO so it always matches the live table.
+  // Each row: [status tag] + [element] → reaction name · multiplier. Grouped by the
+  // status being detonated; amplifiers vs counters (×<1) visually separated.
+  reactionCodexHtml(en) {
+    const S = window.Skills; if (!S || !S.COMBO) return '';
+    const TAG = S.TAG_INFO || {}, EL = S.ELEMENTS || {};
+    const elIcon = el => this.game.elemIcon ? this.game.elemIcon(el) : '';
+    const tagName = tg => (TAG[tg]?.name) || tg;
+    const tagColor = tg => (TAG[tg]?.color) || '#ccc';
+    // collect rows; skill-specific keys (tag|@skillId) show the skill name instead of an element
+    const rows = [];
+    for (const key in S.COMBO) {
+      const c = S.COMBO[key];
+      const [tag, rhs] = key.split('|');
+      let trigger, tcolor;
+      if (rhs.startsWith('@')) {
+        const sk = S.skillById(rhs.slice(1));
+        trigger = (sk ? sk.name : rhs.slice(1)); tcolor = '#ffd36b';
+      } else {
+        trigger = elIcon(rhs) + (EL[rhs]?.name || rhs); tcolor = EL[rhs]?.color || '#ccc';
+      }
+      const mult = c.bonusMult || 1;
+      const counter = mult < 1;
+      rows.push({ tag, trigger, tcolor, name: c.name, mult, counter });
+    }
+    rows.sort((a, b) => (a.counter - b.counter) || (b.mult - a.mult));
+    const rowHtml = r => `<div class="rx-row ${r.counter?'rx-counter':''}">
+      <span class="rx-tag" style="color:${r.tcolor}">
+        <span class="rx-chip" style="background:${tagColor(r.tag)}22;border-color:${tagColor(r.tag)}">${tagName(r.tag)}</span>
+        <span class="rx-plus">+</span><span style="color:${r.tcolor}">${r.trigger}</span></span>
+      <span class="rx-arrow">→</span>
+      <span class="rx-name">${r.name}</span>
+      <span class="rx-mult ${r.counter?'down':'up'}">×${r.mult}</span>
+    </div>`;
+    return `<details class="reaction-codex"><summary><strong>⚗️ ${en?'Elemental Reactions':'元素反应图鉴'}</strong>
+        <span class="tiny">${rows.length} ${en?'reactions':'种反应'}</span></summary>
+      <p class="tiny rx-hint">${en
+        ? 'Apply a status (burn, soak, shock…), then hit with a matching element to trigger a reaction. Reaction and type-effectiveness bonuses ADD together.'
+        : '先用技能附加状态（灼烧/淋湿/感电…），再用相克元素攻击即可触发反应。反应加成与属性克制加成「独立相加」。'}</p>
+      <div class="reaction-list">${rows.map(rowHtml).join('')}</div>
+    </details>`;
+  },
   openDex() {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const mastery=this.game.masteryStatus();
@@ -1932,7 +1975,8 @@ const UI = {
           :'每获得 3 枚徽章，永久增加稀有猫的遭遇机会。'}</span>
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
-      <div class="dex-grid">${cells}</div>`);
+      <div class="dex-grid">${cells}</div>
+      ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
       const sp = GameData.speciesById(cell.dataset.id);
