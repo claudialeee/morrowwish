@@ -1669,7 +1669,8 @@ class CaptureBattle {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
       f.reflectT = 2.2;
       // Face the direction of travel; if stationary, keep the last heading.
-      f._reflectFacing ??= f._moveFacing ?? (f.face < 0 ? Math.PI : 0);
+      // Every new cast starts from CURRENT travel direction, not a stale previous ward.
+      f._reflectFacing = f._moveFacing ?? (f.face < 0 ? Math.PI : 0);
       this.vfx.ring(f.x,f.y,{r0:18,vr:70,life:.5,color:'#b8e0ff',width:5});
       this.vfx.text(f.x,f.y-34,'反弹壁','#b8e0ff',14);
     } else {
