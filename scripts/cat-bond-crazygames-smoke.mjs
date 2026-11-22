@@ -197,8 +197,17 @@ try{
           b.finish(true);window.__game.endBattle();
         });
         await page.waitForSelector('#cr-next',{timeout:8000});
-        await page.waitForSelector('#cr-newskill',{timeout:5000});
-        await page.waitForSelector('#cr-duo',{timeout:5000});
+        // First capture is a focused sequel hook, not five competing CTAs.
+        await page.waitForSelector('#cr-journey',{timeout:5000});
+        assert.equal(await page.locator('#cr-duo,#cr-newskill,#cr-medal').count(),0,
+          'First win should offer one clear duo follow-up, not competing buttons');
+        assert.match(await page.locator('#cr-next').innerText(),/duo/i,
+          'First win must offer the next two-cat battle immediately');
+        assert.equal(await page.locator('.first-capture-rewards').count(),1,
+          'Secondary grade/recovery details stay accessible behind a disclosure');
+        assert.equal(await page.locator('.first-capture-rewards').evaluate(el=>el.open),false,
+          'New players should not have to scroll past detailed battle statistics');
+        await page.locator('.first-capture-rewards summary').click();
         const unlockedDuo=await page.evaluate(()=>{
           const cats=State.S.cats;
           const duo=window.CatRelations?.active(cats);
@@ -218,8 +227,8 @@ try{
         const rank=await page.locator('.battle-grade b').innerText();
         assert.equal(rank,'S','An exceptional auto battle can still earn S and a permanent species medal');
         await page.waitForSelector('.golden-paw-unlock',{timeout:5000});
-        assert.equal(await page.locator('#cr-medal').count(),1,
-          'First S unlock must offer a direct route into the Golden Paw codex');
+        assert.equal(await page.locator('.golden-paw-unlock').count(),1,
+          'First S must visibly unlock the Golden Paw without another primary button');
         const medalState=await page.evaluate(()=>({
           count:window.__game.masteryStatus().medals,
           lure:State.S.luckLure,
@@ -236,6 +245,9 @@ try{
           'CrazyGames English catch result has untranslated Chinese: '+catchCopy);
 
         assert.equal(await page.evaluate(()=>State.S.cats.length),2);
+        assert.deepEqual(await page.evaluate(()=>State.S.battlePrefs.teamUids.slice(0,2)),
+          await page.evaluate(()=>State.S.cats.map(c=>c.uid).slice(0,2)),
+          'The next hunt must actually field the unlocked two-cat duo');
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
         // The old top omnibus collection-goal banner was deliberately
