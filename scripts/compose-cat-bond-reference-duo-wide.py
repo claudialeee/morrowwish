@@ -41,8 +41,10 @@ with tempfile.TemporaryDirectory(prefix='source-duo-wide-') as folder:
     '[2:v]format=gray[alpha];[fg][alpha]alphamerge[foreground];'
     '[0:v]scale=1920:1080:flags=lanczos,format=rgba[bg];'
     '[bg][foreground]overlay=x=(W-w)/2:y=118:shortest=1:format=auto,format=yuv420p,'
-    ''
-    f'drawtext=fontfile={font}:textfile={name}:fontcolor=white:fontsize=43:shadowcolor=black@0.8:shadowx=2:shadowy=2:x=(w-text_w)/2:y=915[v]')
+    'drawbox=x=420:y=193:w=1080:h=90:color=0x241e31@0.90:t=fill,'
+    f'drawtext=fontfile={font}:textfile={caption}:fontcolor=white:fontsize=50:x=(w-text_w)/2:y=213,'
+    'drawbox=x=595:y=899:w=730:h=77:color=0x241e31@0.77:t=fill,'
+    f'drawtext=fontfile={font}:textfile={name}:fontcolor=white:fontsize=43:x=(w-text_w)/2:y=915[v]')
  run(['ffmpeg','-nostdin','-y','-v','error','-loop','1','-framerate','30','-i',str(backdrop),
       '-ss',f'{start:.3f}','-i',str(src),'-loop','1','-i',str(mask),
       '-filter_complex',f,'-map','[v]','-t',f'{length:.3f}','-r','30',
