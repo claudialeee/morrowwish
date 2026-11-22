@@ -1392,3 +1392,6 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
 await import('./check-language.mjs');
 // Include every hidden and legacy narrative branch in the production gate.
 await import('./check-hidden-story-language.mjs');
+// Universal preflight: dashboards may NEVER erase previously reported metrics.
+// This is intentionally part of npm run check, not only the deployment workflow.
+await import('./test-dashboard-sorting.mjs');

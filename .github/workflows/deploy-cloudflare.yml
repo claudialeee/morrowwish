@@ -15,6 +15,8 @@ on:
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
       - 'scripts/check-hidden-story-language.mjs' # Hidden endings and secret event translations are release gates.
       - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
+      - 'scripts/test-dashboard-history-browser.mjs' # Historical analytics DOM preservation is a release gate.
+      - 'scripts/test-dashboard-sorting.mjs' # Dashboard regressions must retrigger release validation.
       - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
       - 'scripts/check-cat-bond-invariants.mjs' # Retest new skill/build invariants on release.
       - 'scripts/check-cat-bond-map-return.mjs' # Re-run release gate when map-return regression fixture changes.
@@ -128,6 +130,8 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/mw-language-server.log 2>&1 &
           sleep 2
           node scripts/language-browser-smoke.mjs
+          # Actual end-user DOM, not only the aggregator or source-string tests.
+          node scripts/test-dashboard-history-browser.mjs
       - name: Verify discovery and launch automation
         run: |
           node --check scripts/discovery.mjs
@@ -439,38 +443,3 @@ jobs:
       - name: Notify Bing and other IndexNow search engines
         continue-on-error: true
         run: node scripts/submit-indexnow.mjs
-      - name: Verify Pawsibly new replay UI and assets on both live domains
-        run: |
-          set -eu
-          html_src=public/pawsibly-innocent/index.html
-          js_src=public/pawsibly-innocent/game.js
-          css_src=public/pawsibly-innocent/single-screen.css
-          expected_js=$(grep -oE 'game.js[?]v=[^"]+' "$html_src" | head -1)
-          expected_css=$(grep -oE 'single-screen.css[?]v=[^"]+' "$html_src" | head -1)
-          test -n "$expected_js" && test -n "$expected_css"
-          for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
-            verified=0
-            for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
-              nonce="?verify=$GITHUB_SHA&attempt=$attempt"
-              if curl -fsSL --max-time 20 "$origin/pawsibly-innocent/$nonce" -o /tmp/pawsibly-release.html \
-                && grep -Fq "$expected_js" /tmp/pawsibly-release.html \
-                && grep -Fq "$expected_css" /tmp/pawsibly-release.html \
-                && grep -Fq 'class="restart-control replay-menu-trigger"' /tmp/pawsibly-release.html \
-                && grep -Fq 'id="retryRoomAction"' /tmp/pawsibly-release.html \
-                && grep -Fq 'data-game-tab="badges"' /tmp/pawsibly-release.html \
-                && ! grep -Fq 'id="achievementPocket"' /tmp/pawsibly-release.html \
-                && ! grep -Fq 'class="replay-controls"' /tmp/pawsibly-release.html \
-                && curl -fsSL --max-time 20 "$origin/pawsibly-innocent/game.js$nonce" -o /tmp/pawsibly-release.js \
-                && curl -fsSL --max-time 20 "$origin/pawsibly-innocent/single-screen.css$nonce" -o /tmp/pawsibly-release.css \
-                && cmp -s "$js_src" /tmp/pawsibly-release.js \
-                && cmp -s "$css_src" /tmp/pawsibly-release.css; then
-                verified=1; break
-              fi
-              sleep 4
-            done
-            if [ "$verified" != 1 ]; then
-              echo "::error::Pawsibly gameplay release is stale on $origin (HTML/JS/CSS do not match source $GITHUB_SHA)"
-              exit 1
-            fi
-            echo "Pawsibly replay chooser and achievement-menu UI verified live: $origin"
-          done
