@@ -136,27 +136,6 @@ new vm.Script(i18nSrc, { filename: 'i18n.js' });
 vm.runInContext(i18nSrc, sandbox, { filename: 'i18n.js' });
 
 assert.ok(sandbox.window.GameData, 'GameData global present');
-const skillFx=sandbox.window.CatBondSkillFX;
-assert.ok(skillFx,'39 skill-signature renderer must load');
-const nonUltNames=Skills.skills.filter?Skills.skills.filter(s=>!s.ultCost).map(s=>s.id):null;
-const signatureIDs=Array.from(skillFx.ids);
-assert.equal(signatureIDs.length,39,'every one of the 39 normal skills has a signature');
-assert.equal(new Set(signatureIDs).size,39,'signature ids must be unique');
-for(const id of signatureIDs){
-  const skill=Skills.skillById(id);
-  assert.ok(skill&&!(skill.ultCost>0),'normal skill has registered FX: '+id);
-  const example={kind:'signatureCast',skillId:id,x:220,y:260,angle:0,
-    life:.2,max:.4};
-  assert.doesNotThrow(()=>skillFx.draw(canvasCtx,example,.25),
-    'unique cast must draw without a canvas error: '+id);
-  const impact={...example,kind:'signatureHit',life:.15,max:.3};
-  assert.doesNotThrow(()=>skillFx.draw(canvasCtx,impact,.3),
-    'unique hit must draw without a canvas error: '+id);
-}
-assert.equal(skillFx.drawStatus(canvasCtx,{x:0,y:0,status:{shock:1,burn:2,expose:3}},1),true,
-  'persistent status overlays render for ongoing debuffs');
-
- 
 // WARD-ART REGRESSION: the shield rim must be at the kitten's PLANTED PAWS,
 // not 26px too high across every device / ally / enemy. Growth multiplies
 // both the rendered cat and shield by exactly the same scale.
@@ -248,6 +227,27 @@ const State = sandbox.window.State, UI = sandbox.window.UI, GameData = sandbox.w
 // Skill design: first battle is simple, first capture guarantees a new move.
 // Ordinary and rare cats must not all start with the same fireball loadout.
 const Skills=sandbox.window.Skills;
+const skillFx=sandbox.window.CatBondSkillFX;
+assert.ok(skillFx,'39 skill-signature renderer must load');
+const signatureIDs=Array.from(skillFx.ids);
+assert.equal(signatureIDs.length,39,'every one of the 39 normal skills has a signature');
+assert.equal(new Set(signatureIDs).size,39,'signature ids must be unique');
+for(const id of signatureIDs){
+  const skill=Skills.skillById(id);
+  assert.ok(skill&&!(skill.ultCost>0),'normal skill has registered FX: '+id);
+  const example={kind:'signatureCast',skillId:id,x:220,y:260,angle:0,
+    life:.2,max:.4};
+  assert.doesNotThrow(()=>skillFx.draw(canvasCtx,example,.25),
+    'unique cast must draw without a canvas error: '+id);
+  const impact={...example,kind:'signatureHit',life:.15,max:.3};
+  assert.doesNotThrow(()=>skillFx.draw(canvasCtx,impact,.3),
+    'unique hit must draw without a canvas error: '+id);
+}
+assert.equal(skillFx.drawStatus(canvasCtx,{x:0,y:0,status:{shock:1,burn:2,expose:3}},1),true,
+  'persistent status overlays render for ongoing debuffs');
+
+ 
+
 for(const id of ['tangyuan','doudou','xiaohui']){
   const kitten=State.makeCat(id,{affinity:20});
   const ownElement=Skills.elementOf(id);
