@@ -128,10 +128,13 @@ P.update=function(dt){
  const result=originalUpdate.call(this,dt);
  if(!this.done){
   this.tickBondStory();
-  // Sync the signature impact to the crossed claw slashes, not only the
-  // original call time. Higher trust unlocks extra real attacks and stagger.
+  // Crossed-claw paw-impact: gated to the SAME strike beat as the main deferred
+  // payload (the END of the frozen splash), never mid-splash. The whole arena is
+  // hard-frozen while the big art plays; once it clears, this extra hit + the main
+  // payload land together as ONE connect and animate in the revealed arena.
+  // Higher trust unlocks extra real attacks and stagger.
   const c=this.duoCinematic;
-  if(c&&!c._pawImpact&&c.max-c.t>=.76){
+  if(c&&!c._pawImpact&&c.max-c.t>=(c.strikeAt??.76)){
    c._pawImpact=true;
    const tier=c.tier||this.duo?.tier||1;
    for(const foe of this.liveEnemies()){

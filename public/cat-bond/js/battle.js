@@ -286,11 +286,13 @@ class CaptureBattle {
       elements:mix.split('+'),pair:mix,first:firstColor,second:secondColor,
       status:art.status,secondStatus:d.tier>=2?art.secondStatus:null,
       support:art.support||'shield',tier:d.tier};
-    // strikeAt: the splash plays first (screen locked, nobody moves); the main payload
-    // only LANDS at this beat — "先显示合体大图，然后消失，然后发出技能". It is aligned
-    // with duo-bond.js's crossed-claw paw-impact (age>=0.76) so the big hit and the
-    // slashes read as ONE connect, then the arena un-freezes for the aftermath.
-    this.duoCinematic={t:2.75,max:2.75,strikeAt:0.78,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
+    // max ≈ 3.0s splash + a short un-frozen aftermath tail. strikeAt sits at the END of the
+    // splash, so the arena stays HARD-FROZEN (dt=0, nobody moves) for essentially the WHOLE
+    // cut-in. The splash art plays and fades out, THEN at strikeAt the deferred payload LANDS
+    // and the arena un-freezes so the skill's hit VFX animate in the revealed arena —
+    // "先显示合体大图，然后消失，然后发出技能". duo-bond.js's crossed-claw paw-impact is gated to this
+    // same strikeAt beat so the big hit + slashes read as ONE connect once the art clears.
+    this.duoCinematic={t:3.2,max:3.2,strikeAt:3.0,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix};
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
     const target=this.lockedEnemy()||this.nearestEnemy(x,y)||{x,y};
