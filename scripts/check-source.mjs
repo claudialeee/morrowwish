@@ -169,14 +169,26 @@ if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||
    !studioAudioSource.includes("beat==='release'"))
  throw Error('Cat Bond premium duo must fill mobile/desktop arena and keep post-cut-in VFX + audio');
-// One primary duo finisher in owner-review trailers; the rare-cat teaser
-// must not trigger another auto-battle cast while the camera is recording.
+// Trailer must show one uninterrupted real rare-cat battle: native HP/skills,
+// exactly one duo finisher and earned capture (never a second encounter).
 const duoPromoCapture=fs.readFileSync('scripts/capture-trailers-v10.mjs','utf8');
 const duoPromoEdit=fs.readFileSync('scripts/render-trailers-v10.mjs','utf8');
+const bondPromoReview=JSON.parse(fs.readFileSync('public/promo/v12-review.json','utf8'))
+  .trailers.find(t=>t.slug==='cat-bond');
+const promoScenes=bondPromoReview?.shots?.map(s=>s.scene)||[];
+const fightSequence=['rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture'];
+const indices=fightSequence.map(scene=>promoScenes.indexOf(scene));
 if(!duoPromoCapture.includes('b.autoMode=false;b.duoCharge=0;b.duoCd=999')||
-   !duoPromoCapture.includes('Repeated duo cinematic in rare encounter trailer teaser')||
-   !duoPromoEdit.includes("broll('duo',3.1,'ONE POWERFUL DUO FINISHER!')"))
- throw Error('Cat Bond trailer must show only one duo finisher, with no rare-encounter replay');
+   !duoPromoCapture.includes('v10-rare-native-hud-proof.png')||
+   !duoPromoCapture.includes('No real captured rare cat after the single combo')||
+   !duoPromoCapture.includes('duo.uses!==1')||
+   !duoPromoEdit.includes("broll('duo',3.1,'ONE POWERFUL DUO FINISHER!')")||
+   !duoPromoEdit.includes("broll('rare-aftermath',1.2)")||
+   promoScenes.filter(scene=>scene==='duo').length!==1||
+   promoScenes.filter(scene=>scene==='rare-encounter').length!==1||
+   indices.some((i,k)=>i<0||(k>0&&i!==indices[k-1]+1)))
+ throw Error('Cat Bond promo must keep native HUD, one continuous rare fight and immediately earned capture');
+
 const unlockedPreview=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
 if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!important}')||
    !unlockedPreview.includes('height:min(75dvh')||
