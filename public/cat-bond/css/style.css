@@ -2071,3 +2071,173 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #panel .duo-card-body b{font-size:14px}
  #panel .duo-card-body small{font-size:11px}
 }
+
+
+/* Cat Bond: each earned duo move has one illustrated card; the lower section is
+   relationship management and a journal of 13 genuine, per-pair memories. */
+#panel .duo-relation-heading{margin:0;font:850 15px/1.35 system-ui;color:#735e81}
+#panel .duo-current-pair{font:800 16px/1.35 system-ui;color:#6c5c76}
+#panel .duo-memory-album{width:100%;margin:8px 0;padding:12px;border-radius:15px;
+ background:linear-gradient(140deg,#fffaf1,#f0f8ed 70%,#f8f0fa);
+ border:1px solid #dfd6cd;color:#5f5865;text-align:left}
+#panel .duo-memory-album>strong{color:#665476}
+#panel .duo-memory-album .tiny{color:#807381}
+#panel .duo-memory-group-title{display:block;margin:10px 0 6px;font:800 12px/1.3 system-ui;color:#74667d}
+#panel .duo-memory-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+#panel .duo-memory-grid.duo-memory-moments{grid-template-columns:repeat(3,minmax(0,1fr))}
+#panel .duo-memory-stamp{font-family:inherit;cursor:pointer;min-height:70px;
+ background:#fffdf7;border:1px solid #ded5d1;color:#665775;padding:6px 4px}
+#panel .duo-memory-stamp.found{background:linear-gradient(145deg,#fff8eb,#f6f2fa);border-color:#d5bc9b}
+#panel .duo-memory-stamp.missing{opacity:.65;background:#f2eeeb;cursor:default}
+#panel .duo-memory-stamp.found:focus-visible{outline:2px solid #9279b0;outline-offset:2px}
+#panel .duo-memory-stamp[aria-pressed=true]{border-color:#a68bc5;box-shadow:0 0 0 2px #cbb4e04f}
+#panel .duo-memory-stamp .duo-memory-icon{font-size:19px;line-height:1.3}
+#panel .duo-memory-stamp small{color:inherit;max-width:100%;white-space:normal;
+ line-height:1.3;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+#panel .duo-memory-note{min-height:39px;margin-top:10px;padding:10px 12px;border-radius:11px;
+ background:#fffdf8;border:1px solid #ebdfd3;line-height:1.6;font-size:12px;color:#6b5c70}
+#panel .shop-qty-options{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#panel .shop-qty-options>.btn{min-height:40px;min-width:58px}
+#panel .shop-bulk-list{display:grid;gap:8px}
+#panel .shop-bulk-item{display:flex;justify-content:space-between;align-items:center;
+ gap:10px;min-height:48px;text-align:left;border-radius:12px;background:#fffaf4;color:#534d65}
+#panel .shop-bulk-item small{font-size:12px;white-space:nowrap;color:#7a5c63}
+#panel .shop-bulk-item:disabled{opacity:.55;cursor:not-allowed}
+#panel .cb-lazy-training{margin-top:7px;flex-wrap:wrap}
+#panel .cb-train-note{margin:5px 0 10px;font-size:11px;color:#7b7277}
+@media(max-width:540px){
+ #panel .duo-memory-grid{gap:5px}
+ #panel .duo-memory-stamp{min-height:66px;padding:5px 2px}
+ #panel .duo-memory-stamp small{font-size:9px}
+ #panel .shop-bulk-item{flex-wrap:wrap}
+ #panel .shop-bulk-item small{white-space:normal}
+ #panel .shop-qty-options>.btn{flex:1}
+}
+
+
+/* PREMIUM CAT BOND CONCEPT PANEL · pastel illustrated game UI.
+   This styling is applied to the ACTUAL build/duo controls, not screenshots. */
+#panel .cb-blueprint-heading{display:flex;align-items:center;gap:12px;padding:8px 12px 12px;
+ margin:-2px 0 6px;border-bottom:1px solid #e7d8cc}
+#panel .cb-blueprint-heading>span{width:46px;height:46px;flex:none;border-radius:50%;
+ display:grid;place-items:center;font:900 29px/1 Georgia,serif;color:#a47d94;
+ background:radial-gradient(circle,#fff9e9,#f3e6f4);border:2px solid #e2cdd9;
+ box-shadow:inset 0 2px 7px #fff,0 4px 9px #8b7a8422}
+#panel .cb-blueprint-heading h2{margin:0;color:#67596c;font:850 clamp(20px,3vw,28px)/1.3 system-ui}
+#panel .cb-blueprint-heading small{color:#8a7e86;letter-spacing:.05em;font-size:11px}
+#panel:has(.cb-build-blueprint-card) .card{width:min(710px,calc(100vw - 18px));
+ max-width:min(710px,calc(100vw - 18px));
+ background:linear-gradient(145deg,#fffdf6,#f9f6f1 40%,#f2f7ec)}
+#panel .cb-build-blueprint-card{display:grid;grid-template-columns:142px minmax(0,1fr) auto;
+ gap:12px;align-items:center;border:1px solid #ded6c8;border-radius:18px;
+ padding:11px;background:linear-gradient(135deg,#fffefa,#f4f6ed);
+ box-shadow:0 7px 18px #69796a12, inset 0 1px #ffffff}
+#panel .cb-build-blueprint-card .st-ico{display:none}
+#panel .cb-build-blueprint-card .cb-build-thumb{display:block;width:142px;height:108px;
+ object-fit:contain;border-radius:14px;border:1px solid #d8e4d2;
+ background:#f2f7ec;box-shadow:inset 0 2px 10px #7eae8e18}
+#panel .cb-build-blueprint-card .st-main{min-width:0}
+#panel .cb-build-blueprint-card .st-name{color:#546e57;font-size:clamp(14px,2vw,17px);font-weight:850}
+#panel .cb-build-blueprint-card .work-usage{line-height:1.55;color:#736e66;font-size:12px}
+#panel .cb-build-blueprint-card .work-income{font-weight:750;color:#856d58}
+#panel .cb-build-blueprint-card [data-build]{border-radius:12px;min-height:47px;
+ color:#fff;border:1px solid #598b71;background:linear-gradient(125deg,#78aa86,#508d78);
+ box-shadow:0 4px 12px #67937435;font-weight:850;min-width:98px}
+#panel .cb-build-blueprint-card [data-build]:disabled{opacity:.55}
+#yard-placement-dock{background:linear-gradient(145deg,#fffef8ec,#f3f9edf7 66%,#f8f2f3f7);
+ border:2px solid #b3c9b0;box-shadow:0 9px 35px #35493832, inset 0 1px #fff;
+ border-radius:21px;backdrop-filter:blur(14px);color:#55705b}
+#yard-placement-dock .cb-placement-heading{display:flex;align-items:center;justify-content:center;gap:10px;
+ padding:2px 4px 6px;border-bottom:1px solid #d6e2d0}
+#yard-placement-dock .cb-placement-seal{font:900 28px Georgia,serif;color:#7bab88;
+ display:grid;place-items:center;width:43px;height:43px;border-radius:50%;
+ background:#fff7ee;box-shadow:0 0 0 2px #d9e5d5}
+#yard-placement-dock .cb-placement-heading-text{display:grid;text-align:left;gap:2px}
+#yard-placement-dock .cb-placement-heading-text strong{font:850 14px/1.3 system-ui;color:#56705d}
+#yard-placement-dock .cb-placement-heading-text small{font:550 11px/1.4 system-ui;color:#818b7b}
+#yard-placement-dock #yard-placement-confirm{background:linear-gradient(120deg,#82b88a,#4f9a76);
+ box-shadow:0 4px 11px #4e92752d}
+#yard-placement-dock #yard-placement-confirm:disabled{background:#c3d1c2;color:#667e69;box-shadow:none}
+#panel .duo-panel>h2{color:#76617b;font:850 clamp(22px,3vw,30px)/1.28 system-ui;
+ text-shadow:0 1px #fff8f4;letter-spacing:.015em}
+#panel .duo-unlocked-section{padding:13px;border:1px solid #e4d7d0;border-radius:21px;
+ background:linear-gradient(140deg,#fffaf4,#f4f8f0 50%,#f7f0f8);
+ box-shadow:inset 0 1px #fff,0 8px 25px #725f7212}
+#panel .duo-unlocked-card{position:relative;overflow:hidden;padding:8px;
+ background:linear-gradient(145deg,#fffefd,#fff7ed 42%,#f5f5f6);
+ border:2px solid #e2c9d7;border-radius:18px;
+ box-shadow:0 7px 19px #8b658421, inset 0 1px #fff}
+#panel .duo-unlocked-card.chosen{border-color:#b4cba5;
+ background:linear-gradient(145deg,#fffefa,#edf7ec);
+ box-shadow:0 0 0 2px #d6e8cfb0,0 9px 24px #6c987c27}
+#panel .duo-unlocked-card::after{content:'✦';position:absolute;right:17px;top:9px;
+ font:18px Georgia,serif;color:#ffeed1ba;pointer-events:none;
+ text-shadow:0 1px 3px #a9ae9b9c}
+#panel .duo-unlocked-card .duo-gallery-thumb{border:1px solid #f0e8dc;
+ border-radius:12px;box-shadow:inset 0 -12px 25px #aac4aa2d;
+ background:linear-gradient(120deg,#e6ecf3,#f8eddd 55%,#e6f0e7)}
+#panel .duo-card-body{padding:3px 5px 7px;gap:5px}
+#panel .duo-card-body strong{color:#5e7d68;font-size:14px}
+#panel .duo-card-body b{color:#86637f;font-size:16px}
+#panel .duo-card-body small{color:#747579;line-height:1.6}
+#panel .duo-card-trust{display:inline-flex;align-items:center;justify-self:start;
+ border-radius:999px;padding:3px 9px;background:#e7f2e2;color:#54806a;
+ border:1px solid #c5dfc3;font-size:11px}
+#battle-ui #duo-burst{--duo-charge:0%;display:flex;align-items:center;gap:8px;
+ padding:8px 11px 10px;max-width:min(44vw,248px);min-height:53px;
+ border-radius:17px;color:#526e5c;white-space:normal;
+ border:2px solid #b5cdb6;background:linear-gradient(135deg,#fff9e9,#f4f6ed 55%,#efe6f4);
+ box-shadow:0 5px 18px #405a4a42, inset 0 1px #fff;overflow:hidden}
+#battle-ui #duo-burst[hidden]{display:none!important}
+#battle-ui #duo-burst:disabled{filter:saturate(.76);opacity:.82;cursor:not-allowed}
+#battle-ui #duo-burst.ready{border-color:#9bcbad;color:#365f4d;
+ background:linear-gradient(125deg,#fff6df,#e2f1e2 60%,#ebedff);
+ box-shadow:0 0 0 2px #fff6eb99,0 5px 18px #55866d75;
+ animation:cbPremiumDuoReady 1.5s ease-in-out infinite}
+@keyframes cbPremiumDuoReady{50%{box-shadow:0 0 0 3px #f6eedc,0 6px 25px #84b89688}}
+#battle-ui #duo-burst .duo-burst-emblem{display:grid;place-items:center;flex:none;
+ width:33px;height:33px;border:1px solid #d6dcbf;border-radius:50%;
+ background:radial-gradient(circle,#fffef6 10%,#e8f5e2 85%);
+ box-shadow:inset 0 2px 5px #ffffff,0 2px 5px #748d7933;
+ color:#8b9e72;font:900 23px Georgia,serif}
+#battle-ui #duo-burst .duo-burst-label{flex:1;min-width:0;font:850 12px/1.3 system-ui;
+ text-align:left;z-index:1;letter-spacing:.012em}
+#battle-ui #duo-burst .duo-burst-track{position:absolute;left:49px;right:11px;bottom:5px;
+ height:4px;border-radius:999px;background:#d2dccd;overflow:hidden}
+#battle-ui #duo-burst .duo-burst-track i{display:block;width:var(--duo-charge);
+ height:100%;background:linear-gradient(90deg,#87bdab,#d4bd8a);
+ border-radius:999px;transition:width .16s ease-out}
+@media(max-width:600px){
+ #panel .cb-build-blueprint-card{grid-template-columns:92px minmax(0,1fr);gap:9px;padding:8px}
+ #panel .cb-build-blueprint-card .cb-build-thumb{width:92px;height:96px;grid-row:span 2}
+ #panel .cb-build-blueprint-card .st-btns{grid-column:2;justify-self:start}
+ #panel .cb-build-blueprint-card [data-build]{min-height:40px;min-width:110px}
+ #yard-placement-dock .cb-placement-heading{gap:8px}
+ #yard-placement-dock .cb-placement-heading-text small{font-size:10px}
+ #battle-ui #duo-burst{max-width:min(47vw,220px);min-height:48px;padding:6px 8px 9px;gap:6px;
+ border-radius:14px}
+ #battle-ui #duo-burst .duo-burst-emblem{width:28px;height:28px;font-size:19px}
+ #battle-ui #duo-burst .duo-burst-label{font-size:10px}
+ #battle-ui #duo-burst .duo-burst-track{left:43px;right:9px}
+}
+@media(orientation:landscape) and (max-height:530px){
+ #battle-ui #duo-burst{min-height:35px;padding:3px 7px 7px}
+ #battle-ui #duo-burst .duo-burst-emblem{width:23px;height:23px;font-size:16px}
+ #battle-ui #duo-burst .duo-burst-label{font-size:10px}
+ #battle-ui #duo-burst .duo-burst-track{height:3px;left:37px;bottom:2px}
+ #yard-placement-dock .cb-placement-heading{display:none}
+}
+
+/* Visual QA correction: one owned duo must NOT inflate a single watercolor
+   painting into the entire modal, and mobile canvases must keep their
+   natural 16:9 proportions (no squeezed cats). */
+#panel .duo-unlocked-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));align-items:start}
+#panel .duo-unlocked-card .duo-gallery-thumb{display:block;max-height:none;aspect-ratio:16/9!important;
+ width:100%;height:auto!important;object-fit:contain!important}
+@media(max-width:520px){
+ #panel .duo-unlocked-grid{grid-template-columns:minmax(0,1fr)}
+ #panel .duo-unlocked-card{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+ #panel .duo-unlocked-card .duo-gallery-thumb{width:100%;height:auto!important;
+  aspect-ratio:16/9!important;min-height:0!important;max-height:none!important}
+ #panel .duo-unlocked-card .duo-card-body{padding:6px 8px 8px}
+}

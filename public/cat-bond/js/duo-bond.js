@@ -158,6 +158,12 @@ P.castDuo=function(){
   this.duoCinematic.tier=this.duo?.tier||1;
   this.duoCinematic.variant=this.duoCinematic.tier>=3?'finale':
    this.duoCinematic.tier>=2?'cross':'pounce';
+  // Earn the first-strike memory only by actually casting a charged duo move.
+  if(this.duo?.a&&this.duo?.b&&window.CatRelations?.remember){
+    const memory=CatRelations.remember(this.duo.a,this.duo.b,'duo-strike');
+    if(memory.ok)this.game?.toast?.(en()?'✨ Duo memory unlocked: First Twin Strike':
+      '✨ 解锁双猫回忆：第一次并肩出击');
+  }
  }
  return ok;
 };

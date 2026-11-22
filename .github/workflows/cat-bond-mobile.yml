@@ -10,6 +10,7 @@ on:
       - 'scripts/cat-bond-duo-smoke.mjs'
       - 'scripts/cat-bond-single-painting-smoke.mjs'
       - 'scripts/cat-bond-locked-duo-review.mjs'
+      - 'scripts/cat-bond-lazy-memory-smoke.mjs'
       - 'scripts/cat-bond-yard-placement-smoke.mjs'
       - 'scripts/cat-bond-audio-smoke.mjs'
       - 'scripts/cat-bond-balance-smoke.mjs'
@@ -46,6 +47,7 @@ jobs:
           node scripts/cat-bond-duo-smoke.mjs
           node scripts/cat-bond-single-painting-smoke.mjs
           node scripts/cat-bond-locked-duo-review.mjs
+          node scripts/cat-bond-lazy-memory-smoke.mjs
           node scripts/cat-bond-yard-placement-smoke.mjs
           node scripts/cat-bond-audio-smoke.mjs
           node scripts/cat-bond-balance-smoke.mjs
