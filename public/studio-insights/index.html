@@ -107,7 +107,7 @@ const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
 try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
-const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
+const t=(id,params={})=>{let s=Object.prototype.hasOwnProperty.call(I18N[lang],id)?I18N[lang][id]:id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
 const tableSorts=new Map(),sortableBodies=new Set(["games","channel-rows"]);
 function sortCellValue(row,index,id){
@@ -208,7 +208,7 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  // Elsewhere uses the same complete unified metrics as all other games.
  const x=visibleGames.get(gameId)||{game:gameId,pageviews:0,visitors:0,starts:0,retries:0,avgSeconds:0,ends:0,completion:0,shares:0};
  const known=visibleGames.has(gameId);
- const num=k=>known?format(x[k]??0):t('empty');
+ const num=k=>known?format(x[k]??0):'';
  const startRate=known&&x.pageviews>0&&x.startedViews<=x.pageviews?' <small>'+format(x.startRate??pct(x.startedViews,x.pageviews))+'%</small>':'';
  const finishRate=known&&x.starts>0&&x.ends<=x.starts?' <small>'+format(pct(x.ends,x.starts))+'%</small>':'';
  const finished=num('ends')+finishRate;
@@ -244,7 +244,7 @@ $("future-channel-list").textContent=(lang==='zh'
 $("social-pulse-note").textContent=snapshotPlatforms.some(p=>Number(p.published)>0&&p.views!=null)?t('socialSnapshotNote'):"";
 const funnel=j.homeFunnel||{},fSources=Array.isArray(funnel.bySource)?funnel.bySource:[];
 const youtube=fSources.filter(z=>/youtu/i.test(z.source)),ytVisits=youtube.reduce((n,z)=>n+Number(z.visits||0),0),ytClicked=youtube.reduce((n,z)=>n+Number(z.clickedViews||0),0);
-const choices=funnel.byGame||{},rate=n=>n==null?t('empty'):format(n)+'%';
+const choices=funnel.byGame||{},rate=n=>n==null?'':format(n)+'%';
 const funnelLines=Number(funnel.visits)>0?[
  t('homeFunnelLabel',{clickers:format(funnel.clickedViews||0),visits:format(funnel.visits),rate:rate(funnel.clickRate)}),
  ...(ytVisits?[t('homeFunnelYouTube',{clickers:format(ytClicked),visits:format(ytVisits),rate:rate(pct(ytClicked,ytVisits))})]:[]),

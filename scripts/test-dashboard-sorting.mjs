@@ -25,6 +25,18 @@ for(const key of missingKeys){
 }
 assert.ok(!html.includes('escapeHTML(t("none"))'),'Do not render empty-state text');
 assert.ok(!html.includes("pulse.capturedAt||'—'"),'Missing social snapshot cannot render dash');
+// Check translations at runtime: an empty string is an intentional translated value.
+// Using `translations[key] || key` would visibly print "empty" in every missing game cell.
+const dictSource=inlineScript.slice(inlineScript.indexOf('const I18N='),inlineScript.indexOf('const gameNames='));
+const translatorLine=inlineScript.split('\n').find(line=>line.trim().startsWith('const t=(id,params={})=>'));
+assert.ok(dictSource&&translatorLine,'Localization function and dictionaries required');
+for(const locale of ['zh','en']){
+ const context={}; 
+ vm.runInNewContext("const lang="+JSON.stringify(locale)+";"+dictSource+"\n"+translatorLine+"\nglobalThis.translate=t;",context);
+ for(const key of missingKeys)assert.equal(context.translate(key),'',locale+' '+key+' must render blank at runtime');
+ assert.equal(context.translate('nonexistent-test-key'),'nonexistent-test-key','Unknown translations may still fall back to the key');
+}
+assert.ok(html.includes("const num=k=>known?format(x[k]??0):'';"),'Missing game rows must use empty cells directly');
 assert.ok(html.includes('enhanceSortableTables()'),'Sort must survive dashboard refresh');
 const block=html.slice(html.indexOf('const tableSorts='),html.indexOf('function dateFormat('));
 assert.ok(block.includes('function sortCellValue')&&block.includes('function sortDataTable'),'Sort functions missing');
