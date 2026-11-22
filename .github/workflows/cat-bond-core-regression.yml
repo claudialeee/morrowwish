@@ -6,6 +6,7 @@ on:
       - 'public/cat-bond/js/**'
       - 'scripts/check-cat-bond.mjs'
       - 'scripts/check-cat-bond-ai.mjs'
+      - 'scripts/check-cat-bond-invariants.mjs'
       - '.github/workflows/cat-bond-core-regression.yml'
   workflow_dispatch:
 permissions:
@@ -26,5 +27,7 @@ jobs:
           node-version: '22'
       - name: Full headless game logic regression
         run: node scripts/check-cat-bond.mjs
+      - name: Physical melee reach, ward expiry and bounded status invariants
+        run: node scripts/check-cat-bond-invariants.mjs
       - name: Real 2D enemy AI and auto-combat regression
         run: node scripts/check-cat-bond-ai.mjs
