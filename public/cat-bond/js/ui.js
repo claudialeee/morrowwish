@@ -1550,7 +1550,11 @@ const UI = {
       const opts = learn.filter(s => (slot.ult ? s.ultCost > 0 : s.ultCost === 0) && slot.kinds.indexOf(s.kind) >= 0);
       const chips = opts.map(s => {
         const on = cur && s.id === cur.id;
-        return `<button class="sk-chip ${on ? 'on' : ''}" data-slot="${slot.i}" data-sk="${s.id}" title="${s.desc || ''}">${icon(s)} ${s.name}<span class="tiny">${kindName[s.kind] || ''}·${this.game.elemIcon(s.element)}</span></button>`;
+        // Upgrade-chain badge (升级链): a tier2 skill shows ⬆ + the base it supersedes.
+        const base = S.upgradeBaseOf ? S.upgradeBaseOf(s.id) : null;
+        const baseSk = base ? S.skillById(base) : null;
+        const upBadge = baseSk ? `<span class="tiny sk-up">⬆${baseSk.name}</span>` : '';
+        return `<button class="sk-chip ${on ? 'on' : ''}" data-slot="${slot.i}" data-sk="${s.id}" title="${s.desc || ''}${baseSk?`（${en0?'upgrade of ':'升级版·'}${baseSk.name}）`:''}">${icon(s)} ${s.name}<span class="tiny">${kindName[s.kind] || ''}·${this.game.elemIcon(s.element)}</span>${upBadge}</button>`;
       }).join('') || '<span class="tiny">暂无可选（提升等级/好感解锁）</span>';
       return `<div class="sk-slot"><div class="sk-slot-label">${slot.label}<div class="tiny">${cur ? cur.name : '空'}</div></div><div class="sk-opts">${chips}</div></div>`;
     }).join('');

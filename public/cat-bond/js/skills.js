@@ -273,24 +273,42 @@
     // follow the classic element/level/rarity rules and stay free as before.
     // ========================================================================
     // ---- 付费领悟 (pay a trainer) ----
-    { id: 'cometClaw',  name: '彗星爪',   element: 'fire',  kind: 'melee',      power: 1.7, cd: 3.2, ultCost: 0, heavy: true, tags: ['burn','heavy'],   appliesTag: 'burn',  vfx: 'impact',    desc: '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。', unlock: { cost: { coins: 150 } } },
+    { id: 'cometClaw',  name: '彗星爪',   element: 'fire',  kind: 'melee',      power: 1.7, cd: 3.2, ultCost: 0, heavy: true, upgradeOf: 'emberClaw', tags: ['burn','heavy'],   appliesTag: 'burn',  vfx: 'impact',    desc: '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。', unlock: { cost: { coins: 150 } } },
     { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
-    { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
+    { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, upgradeOf: 'thornCoil', tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
     // ---- 等级 / 亲密 / 组合门槛 ----
-    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.45,cd: 2.8, ultCost: 0, precise: true, tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
-    { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.6, cd: 4.2, ultCost: 0, heavy: true, tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
-    { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 1.8, cd: 4.0, ultCost: 0, heavy: true, tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
+    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.45,cd: 2.8, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
+    { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.6, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
+    { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 1.8, cd: 4.0, ultCost: 0, heavy: true, upgradeOf: 'shadeLeap', tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
     // ---- 品种专属 (breed-locked signature) ----
     { id: 'moonfang',   name: '月噬牙',   element: 'light', kind: 'aoe',        power: 2.6, cd: 0,   ultCost: 70, tags: ['light','ult','weaken'], appliesTag: ['blind','weaken'], vfx: 'ring', desc: '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。', unlock: { species: ['yuelian','xingchen','yinghua'] } },
     // ---- 领悟条件 (quirky quests) ----
-    { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 1.9, cd: 3.4, ultCost: 0, heavy: true, tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
+    { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 1.9, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
-    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal',       power: 0,   cd: 7.0, ultCost: 0, tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
+    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal',       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
   ];
   const SKILL_BY_ID = {};
   SKILLS.forEach(s => { SKILL_BY_ID[s.id] = s; });
   function skillById(id) { return SKILL_BY_ID[id] || null; }
   function skillsByElement(el) { return SKILLS.filter(s => s.element === el); }
+  // UPGRADE CHAINS (升级链): a skill may carry `upgradeOf: baseId` meaning it is the
+  // stronger tier of that base (same slot role, same element — e.g. 彗星爪←炽爪). The
+  // tier2 still has its own id (so saves/CI stay stable) + its own unlock gate; the
+  // metadata just lets the UI show "升级版 of X" and lets a cat that learns the tier2
+  // treat it as the natural successor. upgradeTargetOf(baseId) → the tier2 id (if any).
+  const _UPGRADE_TARGET = {};
+  SKILLS.forEach(s => { if (s.upgradeOf) _UPGRADE_TARGET[s.upgradeOf] = s.id; });
+  function upgradeTargetOf(id) { return _UPGRADE_TARGET[id] || null; }          // base → tier2
+  function upgradeBaseOf(id) { const s = skillById(id); return s && s.upgradeOf || null; } // tier2 → base
+  // Full ordered chain [base, tier2, ...] that a given skill id belongs to.
+  function upgradeChainFor(id) {
+    let root = id;
+    while (upgradeBaseOf(root)) root = upgradeBaseOf(root);   // walk down to the base
+    const chain = [root];
+    let next = upgradeTargetOf(root);
+    while (next) { chain.push(next); next = upgradeTargetOf(next); }
+    return chain;
+  }
 
   // Status-tag metadata so battle.js can tick them uniformly.
   // dps = fraction of target maxhp per second (0 for crowd-control tags).
@@ -961,6 +979,8 @@
     elementOf, effectiveness, effectivenessLabel, stabBonus,
     // --- skills & status ---
     SKILLS, TAG_INFO, skillById, skillsByElement,
+    // --- upgrade chains (升级链) ---
+    upgradeTargetOf, upgradeBaseOf, upgradeChainFor,
     // --- combos ---
     COMBO, checkCombo,
     // --- risky combo-chain ---

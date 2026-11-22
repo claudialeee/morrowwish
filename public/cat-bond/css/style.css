@@ -405,6 +405,8 @@ canvas { display: block; width: 100%; height: 100%; }
 /* 一键配装 (build-type) row: a subtle divider + the "suggested" tag reads as a hint. */
 .sk-slot.build-row { border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:8px; margin-bottom:4px; }
 .sk-chip.build-chip .tiny { color:var(--gold); opacity:0.95; margin-left:3px; }
+/* 升级链 badge: marks a tier2 skill as the upgrade of a base skill. */
+.sk-chip .sk-up { color:#9fe0b0; opacity:0.95; margin-left:2px; font-weight:600; }
 
 /* ===== Morrow Wish integration (on top of v36 game CSS) ===== */
 /* Back-to-site link floats above the full-viewport game. */
