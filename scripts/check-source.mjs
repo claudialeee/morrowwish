@@ -255,6 +255,7 @@ console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game l
 await import('./check-pawsibly.mjs');
 await import('./check-cat-bond.mjs');
 await import('./check-cat-bond-ai.mjs');
+await import('./check-cat-bond-premium-21x3.mjs');
 
 // Prevent decorative starburst glyphs from leaking back into any published page,
 // SVG social card, dynamically generated game copy, or language map.
