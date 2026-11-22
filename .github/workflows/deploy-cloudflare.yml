@@ -239,7 +239,7 @@ jobs:
           verify_live /cat-bond/ /tmp/mw-live-catbond.html 'id="battle-skill-info-toggle"'
           # Read the current cache-busted asset references from source instead
           # of assuming previous version names are still in the live HTML.
-          for asset in css/style.css js/main.js js/ui.js js/game.js js/world.js js/adult-art.js; do
+          for asset in css/style.css js/main.js js/ui.js js/game.js js/world.js js/adult-art.js js/ward-art.js; do
             expected=$(grep -oE "$asset[?]v=[^\" ]+" public/cat-bond/index.html | head -1)
             if [ -z "$expected" ] || ! grep -Fq "$expected" /tmp/mw-live-catbond.html; then
               echo "::error::Vercel Cat Bond HTML is missing the source asset $asset"
@@ -252,6 +252,12 @@ jobs:
           verify_live /cat-bond/js/adult-art.js /tmp/mw-live-catbond-adult-art.js 'CatBondAdultArt'
           cmp -s public/cat-bond/js/adult-art.js /tmp/mw-live-catbond-adult-art.js || {
             echo '::error::Adult cat art is missing or stale on the player URL'; exit 1;
+          }
+          # Player screenshots are from Vercel, which proxies Pages. Verify the
+          # actual shield art bytes, not only a successful HTML response.
+          verify_live /cat-bond/js/ward-art.js /tmp/mw-live-catbond-ward-art.js 'const groundY=y+33*s;'
+          cmp -s public/cat-bond/js/ward-art.js /tmp/mw-live-catbond-ward-art.js || {
+            echo '::error::Ward shader/grounding bytes on Vercel do not match the deployed fix'; exit 1;
           }
           verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'battleSkillInfo(slot, fighter=this.battle?.me())'
           verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js 'battlePrepSkillCard(team,en){'
