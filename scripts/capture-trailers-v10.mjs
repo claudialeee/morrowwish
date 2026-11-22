@@ -501,9 +501,10 @@ try{
   const postDuo=await page.evaluate(rareId=>{
     const b=window.__game.battle;
     if(b&&!b.done)b.autoMode=true;
-    return {rareId,duoUses:b?.duoUses||0,auto:b?.autoMode||false};
+    return {rareId,duoUses:b?.duoUses??null,auto:b?.autoMode||false,alreadyResolved:!b};
   },rare.id);
-  if(postDuo.duoUses!==1)throw Error('Rare fight must contain exactly one finisher '+JSON.stringify(postDuo));
+  if(duo.uses!==1||(postDuo.duoUses!==null&&postDuo.duoUses!==1))
+    throw Error('Rare fight must contain exactly one finisher '+JSON.stringify({duo,postDuo}));
   await page.waitForFunction(({id,before})=>(State.S.dex[id]||0)>before,
     {id:rare.id,before:rare.before},{timeout:55000,polling:250});
   await page.evaluate(()=>window.__V4_CAMERA__.show(false));
