@@ -395,7 +395,10 @@ try{
    if(!wild)throw Error('No real Rare species exists');
    const before=State.S.dex[wild.id]||0;
    const team=State.S.cats.slice(0,3);
-   team.forEach(cat=>State.addXp(cat,15000));
+   // Keep the rare opponent alive through the visible skill-and-health-bar sequence.
+   // A normal early-game squad is enough; an overleveled 15k XP fixture caused
+   // the allies to defeat the rare cat before the advertised duo finisher.
+   team.forEach(cat=>State.addXp(cat,120));
    CatRelations.grow(team[0],team[1],75);
    CatRelations.choose(team[0],team[1]);
    State.S.battlePrefs={...(State.S.battlePrefs||{}),
@@ -502,7 +505,7 @@ try{
   });
   if(postDuo.duoUses!==1)throw Error('Rare fight must contain exactly one finisher '+JSON.stringify(postDuo));
   await page.waitForFunction(({id,before})=>(State.S.dex[id]||0)>before,
-    {id:rare.id,before:rare.before},{timeout:35000,polling:250});
+    {id:rare.id,before:rare.before},{timeout:55000,polling:250});
   await page.evaluate(()=>window.__V4_CAMERA__.show(false));
   const caught=await page.evaluate(id=>({
     count:State.S.dex[id],name:GameData.speciesName(GameData.speciesById(id)),
