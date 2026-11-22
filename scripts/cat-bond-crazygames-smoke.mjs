@@ -254,6 +254,9 @@ try{
         await page.waitForSelector('.cat-hub-tabs [data-cat-view="duo"]');
         assert.equal(await page.locator('.cat-hub-tabs [data-cat-view="duo"]').isVisible(),true,
           'Duo management must be visible from the Cats tab');
+        // Cats is a modal panel over the bottom nav. Dismiss through the real UI
+        // before tapping Yard; never force-click through the panel backdrop.
+        await page.evaluate(()=>UI.closeAll());
         await page.locator('#tabbar [data-tab="yard"]').click();
         await page.evaluate(()=>UI.openJourney());
         await page.waitForSelector('#journey-collect');
