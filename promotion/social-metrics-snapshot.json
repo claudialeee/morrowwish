@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "capturedAt": "2026-11-22",
+  "capturedAt": "2026-11-22T13:05:00-08:00",
   "nativeWindow": "Only seven approved 2026-11-22 promo videos per YouTube, Instagram and TikTok; Bluesky only its seven verified 2026-11-22 posts. Older promo content is never included.",
-  "source": "Instagram owner Insights + TikTok public video listing from connected vidIQ; Bluesky public AppView",
+  "source": "Instagram owner Insights + TikTok public video listing from connected vidIQ; Bluesky public AppView; Bluesky vidIQ individual native publication status",
   "refreshMode": "instagram-owner-verified-snapshot;tiktok-public-verified-snapshot;bluesky-native-10-min-refresh",
   "note": "Only current approved 2026-11-22 game promo campaign. Earlier Instagram Reels and all older promo material are excluded from the dashboard, snapshots, source sync, and promotion aggregates.",
   "accounts": {
@@ -63,12 +63,13 @@
     {
       "id": "bluesky",
       "priority": "P2",
-      "phase": "awaiting-provider-sync",
-      "published": null,
-      "failed": null,
+      "phase": "seven-native-posts-completed",
+      "published": 7,
+      "failed": 0,
       "views": null,
-      "note": "Externally published content reported; native metrics not yet returned for newly published campaign videos. Publication count pending URL verification; zero is not asserted.",
-      "metricScope": "approved-new-short-videos"
+      "note": "All seven individual native Bluesky post permalinks verified by connected vidIQ publish-status at 13:05 PT Nov 22. No native engagement metrics available; null is intentional.",
+      "metricScope": "seven-new-2026-11-22-videos-only",
+      "likes": null
     }
   ],
   "metricScope": {
@@ -76,7 +77,7 @@
     "campaignTagPrefix": "mw-shorts-20261122",
     "historicalExcluded": true,
     "rule": "Strict allowlist of seven approved 2026-11-22 promo videos per platform; older videos never counted, imported or backfilled. Only approved individual URLs with verified metrics contribute to aggregates.",
-    "activeApprovedPosts": 21,
+    "activeApprovedPosts": 28,
     "verifiedPosts": [
       {
         "platform": "youtube",
@@ -350,6 +351,104 @@
         "publicVerified": true,
         "dataSource": "vidiq-instagram-owner-insights",
         "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "bluesky",
+        "game": "cat-bond",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcn56m33kj",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+      },
+      {
+        "platform": "bluesky",
+        "game": "pawsibly-innocent",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcqugab5jq",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+      },
+      {
+        "platform": "bluesky",
+        "game": "tiny-town",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcr7nylvrr",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+      },
+      {
+        "platform": "bluesky",
+        "game": "elsewhere",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcraws7xga",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+      },
+      {
+        "platform": "bluesky",
+        "game": "flip-dash",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcrc4lqcyn",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+      },
+      {
+        "platform": "bluesky",
+        "game": "parcel-panic",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcrdnc2owx",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+      },
+      {
+        "platform": "bluesky",
+        "game": "pocket-aquarium",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcreq5hq3p",
+        "publishedAt": "2026-11-22",
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "reposts": null,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-bluesky-publish-completed-permalink",
+        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
       }
     ],
     "campaignStart": "2026-11-22"
