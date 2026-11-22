@@ -37,15 +37,18 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-server.log 2>&1 &
           sleep 2
-          node scripts/cat-bond-touch-smoke.mjs
-          node scripts/cat-bond-crazygames-smoke.mjs
+          # Gate the newly unlocked-only duo UI and the complete 21-motion
+          # private QA first, so unrelated map browser failures cannot hide
+          # regressions in the core cat-bond abilities.
           node scripts/cat-bond-duo-smoke.mjs
           node scripts/cat-bond-audio-smoke.mjs
           node scripts/cat-bond-balance-smoke.mjs
           node scripts/cat-bond-progression-smoke.mjs
           node scripts/cat-bond-autofight-smoke.mjs
-          node scripts/cat-bond-scale-smoke.mjs
           node scripts/cat-bond-squad-smoke.mjs
+          node scripts/cat-bond-touch-smoke.mjs
+          node scripts/cat-bond-crazygames-smoke.mjs
+          node scripts/cat-bond-scale-smoke.mjs
 
       - name: Save duo animation visual QA screenshots
         if: always()
@@ -55,7 +58,7 @@ jobs:
           path: /tmp/cat-bond-*-duo.png
           if-no-files-found: ignore
           retention-days: 7
-      - name: Save signature gallery screenshots
+      - name: Save unlocked duo-only preview screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:

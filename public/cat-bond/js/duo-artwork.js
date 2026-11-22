@@ -95,7 +95,7 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  const pop=ease(p/.33),dash=ease((p-.22)/.44);
  const lead=['blink','dash','zigzag','shadow','ember'].includes(style);
  const spin=['spiral','tides','fireworks','petals'].includes(style);
- const highFive=['stars','halo'].includes(style);
+ const highFive=['stars','halo','highfive'].includes(style);
  const protector=['eclipse','lake','snare'].includes(style);
  const gesture=highFive?'duo-highfive':
    protector&&!flip?'duo-guard':
@@ -103,7 +103,10 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
      ?'duo-swipe':'walk';
  const guard=['eclipse','lake','halo','snare','sprout','solar'].includes(style);
  const direction=flip?1:-1;
- const launch=spin?Math.sin(Math.PI*p)*scale*.22:guard&&!flip?0:Math.sin(Math.PI*p)*scale*.12;
+ // The director already animates height. A second large vertical offset
+ // used to crop the head off airborne cats, so keep this grounded.
+ const launch=spin?Math.sin(Math.PI*p)*scale*.055:
+   guard&&!flip?0:Math.sin(Math.PI*p)*scale*.03;
  const tilt=highFive?direction*.045*Math.sin(Math.PI*p):
    spin?direction*(.16*Math.sin(Math.PI*p)):
    lead?direction*.14*dash:direction*.07*dash;
@@ -120,7 +123,9 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
     {id:speciesId,palette:'orange',pattern:'tabby',eyeColor:'#688c88'};
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
  window.CatArt?.drawCat?.(ctx,0,scale*.04,{
-   species:sp,scale:Math.min(3.2,scale/96),face:1,
+   // Full-size original watercolor, NOT a small floating-cat sticker.
+   // Still limited on tiny viewports so both complete bodies stay visible.
+   species:sp,scale:Math.min(6.5,scale/46),face:1,
    pose:p>.07&&p<.76?gesture:'idle',
    motion:Math.max(.35,Math.sin(Math.PI*p)),
    // Align the watercolor paw-raise frame with the real hit (p=.28).
