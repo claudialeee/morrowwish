@@ -63,6 +63,10 @@ function push(b,v){
 }
 function cast(b,f,sk,aim){
  if(!b||!f||!REG[sk?.id]||sk?.ultCost||sk?.isBasic)return false;
+ // Melee casts already have a physical three-claw VFX in battle.js.
+ // A second circular skill glyph used to bury both the paws and the target.
+ // Keep the per-skill HIT accent, which spawns only after genuine contact.
+ if(sk.kind==='melee')return true;
  if(sk.id==='mirrorWall')return true; // the physical 220px panel owns all visual feedback
  const g=REG[sk.id],dur=['beam','aoe','pounce','dash'].includes(sk.kind)?.51:.36;
  push(b,{kind:'signatureCast',skillId:sk.id,x:f.x,y:f.y,angle:aim||0,
@@ -87,7 +91,7 @@ function hit(b,target,sk,dealt,continuous=false){
   b._sigHitAt.set(key,b.t);
  }
  const g=REG[sk.id],big=(sk.heavy||['melee','dash','leap','pounce'].includes(sk.kind));
- const dur=big?.36:.25;
+ const dur=sk.kind==='melee'?(sk.heavy?.26:.22):(big?.36:.25);
  push(b,{kind:'signatureHit',skillId:sk.id,x:target.x,y:target.y,
   angle:Math.atan2(target.y-b.me().y,target.x-b.me().x),
   life:dur,max:dur,seed:g.seed,heavy:!!big});
@@ -166,8 +170,92 @@ function identityDetail(ctx,id,R,k,p,spin,cast){
  }
  ctx.restore();
 }
+// Melee contacts should read as one precise strike, not the generic magic
+// halo + radial wash + six-point fireworks used by ranged spells.
+const MELEE_IDS=new Set(['emberClaw','shadowSwipe','batAround','thornCoil',
+ 'cometClaw','tidalBite','thornLash','veteranStrike']);
+function isMeleeId(id){
+ return MELEE_IDS.has(id)||/^gen_(fire|water|grass|elec|dark|light)_melee$/.test(id);
+}
+function drawMeleeContact(ctx,v,spec){
+ if(v.kind==='signatureCast')return true; // the moving claw brush owns this phase
+ const k=clip(v.life/v.max),p=1-k,R=Math.min(32,spec.r*.54);
+ const sk=window.Skills?.skillById?.(v.skillId);
+ const el=sk?.element||(/^gen_([^_]+)_melee$/.exec(v.skillId)||[])[1]||'fire';
+ const heavy=!!v.heavy,spin=(v.seed||0)*.71;
+ ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.angle||0);
+ ctx.lineCap='round';ctx.lineJoin='round';
+ const strength=k*(heavy?.96:.8);
+ // Three tiny directional contact splinters, not a second full claw sweep.
+ for(let j=-1;j<=1;j++){
+  const y=j*R*.29,reach=R*(.40+.08*(j+1))*(1+.18*p);
+  stroke(ctx,j===0?'#fff8ea':spec.color,heavy?2.6:1.7,strength*(j===0?.9:.62));
+  ctx.beginPath();ctx.moveTo(-reach*.36,y+R*.13);
+  ctx.quadraticCurveTo(reach*.16,y-R*.13,reach,y-R*.21);
+  ctx.stroke();
+ }
+ // Each element has an authored contact silhouette of its own, confined to
+ // 34px around the TARGET; no large circular pulse or occluding aura.
+ if(el==='fire'){
+  for(let j=0;j<(heavy?3:2);j++){
+   const x=(j-1)*R*.34,y=-R*.21-j*3;
+   ctx.globalAlpha=strength*.75;ctx.fillStyle=j===1?'#fff1b8':'#ff9859';
+   ctx.beginPath();ctx.moveTo(x-3,y+8);ctx.quadraticCurveTo(x-9,y+1,x+2,y-12-(heavy?4:0));
+   ctx.quadraticCurveTo(x+10,y+2,x+4,y+8);ctx.closePath();ctx.fill();
+  }
+ }else if(el==='water'){
+  for(let j=-1;j<=1;j+=2){
+   const x=R*.08+j*R*.34,y=j*R*.22;
+   ctx.globalAlpha=strength*.72;ctx.fillStyle=j<0?'#d4f9ff':'#7dcce9';
+   ctx.beginPath();ctx.moveTo(x,y-8);
+   ctx.quadraticCurveTo(x+j*7,y+4,x,y+8);
+   ctx.quadraticCurveTo(x-j*7,y+4,x,y-8);ctx.fill();
+  }
+ }else if(el==='grass'){
+  for(let j=-1;j<=1;j+=2){
+   const x=j*R*.38,y=-R*.18;
+   ctx.globalAlpha=strength*.72;ctx.fillStyle=j<0?'#dff4b4':'#83b989';
+   ctx.beginPath();ctx.moveTo(x-7,y+5);ctx.quadraticCurveTo(x-4,y-9,x+10,y-10);
+   ctx.quadraticCurveTo(x+7,y+7,x-7,y+5);ctx.fill();
+   stroke(ctx,'#fff3c8',1,strength*.6);
+   path(ctx,[[x-6,y+4],[x+8,y-9]]);
+  }
+ }else if(el==='elec'){
+  for(let j=-1;j<=1;j+=2){
+   const y=j*R*.32;
+   stroke(ctx,j>0?'#fff6bf':'#9facf5',2.4,strength*.9);
+   path(ctx,[[-R*.31,y],[0,y-R*.22],[R*.12,y+R*.05],[R*.43,y-R*.17]]);
+  }
+ }else if(el==='dark'){
+  for(let j=-1;j<=1;j+=2){
+   stroke(ctx,j<0?'#9f85d1':'#f1d8ff',heavy?3:2.1,strength*.73);
+   ctx.beginPath();ctx.moveTo(-R*.42,j*R*.19);
+   ctx.quadraticCurveTo(R*.12,j*R*.38,R*.48,j*R*.08);ctx.stroke();
+  }
+ }else if(el==='light'){
+  for(let j=-1;j<=1;j+=2){
+   const x=j*R*.33;
+   stroke(ctx,'#fff5ca',1.9,strength*.85);
+   path(ctx,[[x-6,-R*.25],[x+5,R*.26]]);
+   path(ctx,[[x+6,-R*.24],[x-5,R*.23]]);
+  }
+ }
+ // The distinctive advanced move gets a small, readable extra mark.
+ if(v.skillId==='veteranStrike'||v.skillId==='batAround'){
+  stroke(ctx,v.skillId==='veteranStrike'?'#f3defd':'#c7a7e2',2.1,strength*.8);
+  ctx.beginPath();ctx.moveTo(-R*.36,-R*.27);
+  ctx.lineTo(R*.34,R*.25);ctx.moveTo(-R*.27,R*.29);
+  ctx.lineTo(R*.30,-R*.28);ctx.stroke();
+ }else if(v.skillId==='tidalBite'){
+  stroke(ctx,'#effcff',2.3,strength*.87);
+  path(ctx,[[-R*.33,-R*.29],[-R*.18,R*.20],[0,-R*.06]]);
+  path(ctx,[[R*.33,-R*.29],[R*.18,R*.20],[0,-R*.06]]);
+ }
+ ctx.restore();return true;
+}
 function draw(ctx,v,time=0){
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
+ if(isMeleeId(v.skillId))return drawMeleeContact(ctx,v,spec);
  const p=1-clip(v.life/Math.max(.001,v.max)),k=clip(v.life/v.max),r=spec.r;
  const cast=v.kind==='signatureCast',angle=v.angle||0;
  ctx.save();ctx.translate(v.x,v.y);ctx.rotate(angle);
