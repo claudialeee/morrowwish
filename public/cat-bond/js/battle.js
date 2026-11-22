@@ -1843,10 +1843,10 @@ class CaptureBattle {
       // priority; fall back to a directional projectile fan for plain skills.
       // Shared per-cast single-target budget: a five-pellet fan must not
       // accidentally deal 5x power to a wide/hugging enemy.
-      const volley={hitsByEnemy:new Map(),maxHitsPerEnemy:2};
+      const volley={hitsByEnemy:new Map(),maxHitsPerEnemy:1};
       for(let i=-2;i<=2;i++){
         const pellet=this.spawnProj(f.x,f.y,aim+i*.18,f.projSpeed*.8,
-          f.dmg*pow*.5,'me',col,7,'fur',sk);
+          f.dmg*pow,'me',col,7,'fur',sk);
         pellet._volley=volley;
       }
       this.vfx.muzzle(f.x, f.y, aim, col);
