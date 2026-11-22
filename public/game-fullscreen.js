@@ -15,7 +15,7 @@
   }[route];
   if(!config)return;
   // CrazyGames provides fullscreen and forbids a competing in-game button.
-  if(route==='cat-bond'&&document.documentElement.classList.contains('cb-cg'))return;
+  if(route==='cat-bond'&&(document.documentElement.classList.contains('cb-cg')||window.CatBondPlatform?.ownsFullscreen))return;
 
   const root=document.documentElement;
   root.dataset.mwFullscreenGame=route;
