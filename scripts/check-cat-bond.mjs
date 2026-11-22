@@ -150,7 +150,7 @@ for(const breed of allBreeds){
 // both the rendered cat and shield by exactly the same scale.
 // Standardized local hit feedback: every hit tier produces a different
 // bounded effect mix without painting a full-screen frame.
-const effectTypes=['light','heavy','stagger','kill','heal','guard','reflect'];
+const effectTypes=['light','heavy','crit','stagger','kill','heal','guard','reflect'];
 const tierFx=new sandbox.window.VFX();
 for(const type of effectTypes){
   const before=tierFx.fx.length;
