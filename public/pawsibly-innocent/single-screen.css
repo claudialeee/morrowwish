@@ -686,7 +686,7 @@ body:has(.single-screen-game) .mw-language-float{display:none!important}
  .single-screen-game .in-game-head-row .stage-left .sticker{flex:0 1 auto}
 }
 #stage.outro-active #stageHome{visibility:visible!important;position:relative;z-index:16}
-html.cg-play #stageHome{display:none!important}
+html.cg-play #stageHome,html.cg-play #back{display:none!important}
 
 /* In a short non-fullscreen browser window, the menu must be sized to
    the visible viewport, not the shrunken game board's bounding box. */
