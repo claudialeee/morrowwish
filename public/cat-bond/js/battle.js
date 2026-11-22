@@ -632,9 +632,9 @@ class CaptureBattle {
       fireRate:this.starterRegion?Math.max(.85,1.08-rIdx*.06):
         Math.max(.38,0.8-rIdx*.14-challenge*.1),
       skill: this.pickWildSkillFor(element, rIdx),
-      // POISE/韧性: filled only by SKILL/combo/beam/ult hits. When it breaks, the
-      // enemy staggers into a 虚弱 window taking ~2x damage. Unmarked basics barely
-      // dent it, so pure mashing can't crack a tough cat — you must use skills.
+      // POISE/韧性: only authored stagger actions (泰山压顶, 纸箱埋伏,
+      // cast interrupts) break poise. Ordinary hits cause armor break instead.
+      // Poise stays empty during stagger and refills visibly after recovery.
       poise: Math.round(maxhp * 0.6), poiseMax: Math.round(maxhp * 0.6), staggerT: 0,
       tags: [], alive: true,
     };
@@ -1922,6 +1922,13 @@ class CaptureBattle {
     this.vfx.ring(tx, ty, { r0: f._leapR, vr: -120, life: 0.44, color: col, width: 3 });   // shrinking target reticle
     window.MorrowwishAudio?.effect?.('charge');
   }
+  // A dedicated stagger consumes the entire poise gauge. Keep it empty for
+  // the 3s stagger window, then refill over the following ~3 seconds.
+  triggerStagger(e,seconds=3) {
+    if (!e || !e.alive) return;
+    e.poise=0;
+    e.staggerT=Math.max(e.staggerT||0,seconds);
+  }
   // land the leap: AOE slam + stagger under the impact point
   leapLand(f) {
     const tx = f._leapTo.x, ty = f._leapTo.y, R = f._leapR || 78, col = f._leapCol || '#fff';
@@ -1938,7 +1945,7 @@ class CaptureBattle {
       // Only 泰山压顶 has the dedicated stagger trait. Other leap skills
       // apply armor break through resolveHit and cannot skip the poise rules.
       if (result.dealt>0 && (f._leapSkill?.id==='quakeStomp' || f._leapSkill?.tags?.includes('stagger')))
-        e.staggerT = Math.max(e.staggerT || 0, 3);
+        this.triggerStagger(e);
     }
     window.MorrowwishAudio?.effect?.('crash');
     f._leapT = 0; f._leapSkill = null;
@@ -3364,9 +3371,10 @@ class CaptureBattle {
           }
         }
       }
-      if (e.staggerT > 0) e.staggerT = Math.max(0, e.staggerT - dt);   // 虚弱 window decay
-      if (e._castSlow > 0) e._castSlow = Math.max(0, e._castSlow - dt); // 后遗症 recovery after a special
-      else if (e.poise < e.poiseMax) e.poise = Math.min(e.poiseMax, e.poise + e.poiseMax * 0.12 * dt);  // poise slowly regenerates when not staggered
+      if (e.staggerT > 0) e.staggerT = Math.max(0, e.staggerT - dt); // 3s break window
+      if (e._castSlow > 0) e._castSlow = Math.max(0, e._castSlow - dt);
+      if (e.staggerT <= 0 && e.poise < e.poiseMax)
+        e.poise = Math.min(e.poiseMax, e.poise + e.poiseMax * (dt / 3)); // visible 3s refill
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
       else if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
@@ -3882,7 +3890,7 @@ class CaptureBattle {
   interruptEnemyCast(e) {
     e.telegraph = 0; e.telegraphKind = null; e.castInterruptible = false;
     e.smashTarget = null;
-    e.staggerT = Math.max(e.staggerT || 0, 3);         // 虚弱: open to follow-up
+    this.triggerStagger(e);                             // break poise and open 3s window
     e.special = Math.max(e.special, 1.4);                // brief recovery before it can try again
     this._novaLock = 0;                                  // free the pack cast-lock
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
@@ -4364,7 +4372,7 @@ class CaptureBattle {
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
-      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 3); }
+      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
       // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       // Channel damage is steady pressure, not a rapid sequence of hard
@@ -4924,18 +4932,30 @@ class CaptureBattle {
       const elemSym = this.elemSymbol(e.element);
       this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
         `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT});
-      // status icons row under the HP tag
+      // Stable compact grid ABOVE the HP/poise card. Previous y=e.y-50 drew
+      // icons directly over the name/HP label, causing severe visual overlap.
       if (e.status) {
-        const keys = Object.keys(e.status); const TAG = Skills.TAG_INFO || {};
-        const icons = { burn: '🔥', soak: '💧', shock: '⚡', oil: '🛢️', chill: '❄️', dizzy: '💫', bleed: '🩸', blind: '🌀', bind: '🌿', expose: '❗', weaken: '🔻', rust: '🪓' };
-        ctx.save(); ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
-        const shown = keys.slice(0, 5);
-        shown.forEach((tg, i) => {
-          const ix = e.x - (shown.length - 1) * 8 + i * 16, iy = e.y - 50;
-          ctx.fillText(icons[tg] || '●', ix, iy);
-          // thin countdown arc under the icon (remaining / ttl) so duration is legible
-          const info = TAG[tg]; const frac = info && info.ttl ? Math.max(0, Math.min(1, e.status[tg] / info.ttl)) : 0;
-          if (frac > 0) { ctx.strokeStyle = info ? info.color : '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(ix, iy + 4, 7, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke(); }
+        const TAG=Skills.TAG_INFO||{};
+        const icons={burn:'🔥',soak:'💧',shock:'⚡',oil:'🛢️',chill:'❄️',
+          dizzy:'💫',bleed:'🩸',blind:'🌀',bind:'🌿',expose:'❗',
+          weaken:'🔻',rust:'🪓'};
+        const priority=['dizzy','chill','bind','shock','expose','rust',
+          'blind','weaken','burn','bleed','soak','oil'];
+        const shown=Object.keys(e.status)
+          .filter(tg=>e.status[tg]>0&&icons[tg])
+          .sort((a,b)=>priority.indexOf(a)-priority.indexOf(b)).slice(0,8);
+        ctx.save();ctx.font='11px sans-serif';ctx.textAlign='center';
+        shown.forEach((tg,i)=>{
+          const row=Math.floor(i/4), col=i%4;
+          const inRow=Math.min(4,shown.length-row*4);
+          const ix=e.x+(col-(inRow-1)/2)*19,iy=e.y-80-row*19;
+          ctx.fillText(icons[tg],ix,iy);
+          const info=TAG[tg];
+          const frac=info?.ttl?Math.max(0,Math.min(1,e.status[tg]/info.ttl)):0;
+          if(frac>0){
+            ctx.strokeStyle=info?.color||'#fff';ctx.lineWidth=1.5;
+            ctx.beginPath();ctx.arc(ix,iy+3,7,-Math.PI/2,-Math.PI/2+frac*Math.PI*2);ctx.stroke();
+          }
         });
         ctx.restore();
       }
@@ -5437,8 +5457,7 @@ class CaptureBattle {
     }
     if(poise && poise.max>0){
       const broken=(poise.stagger||0)>0;
-      const amount=broken?Math.max(0,Math.min(1,poise.stagger/3)):
-        Math.max(0,Math.min(1,(poise.current||0)/poise.max));
+      const amount=broken?0:Math.max(0,Math.min(1,(poise.current||0)/poise.max));
       const yy=y+7;
       ctx.fillStyle='rgba(112,132,110,.18)';
       rr(ctx,x-w/2,yy,w,4,2);ctx.fill();
