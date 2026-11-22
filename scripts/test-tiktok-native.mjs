@@ -23,7 +23,7 @@ assert.equal(posts.length,7);
 assert.ok(posts.every(p=>p.publicVerified&&p.approved&&p.dataSource==='tiktok-display-api-v2'));
 let partial=tkOverlay(baseline,{posts:posts.slice(0,2),feedCount:2,checkedAt:'2026-11-22T20:00:00.000Z'},'ready');
 assert.equal(partial.platforms.find(p=>p.id==='tiktok').published,7);
-assert.equal(partial.platforms.find(p=>p.id==='tiktok').views,null,'partial feed total must not be an invented zero');
+assert.equal(partial.platforms.find(p=>p.id==='tiktok').views,262,'partial native feed retains previously verified video figures');
 assert.equal(partial.metricScope.verifiedPosts.filter(p=>p.platform==='tiktok').length,7,'never drop baseline verified videos on partial provider feed');
 const complete=tkOverlay(baseline,{posts,feedCount:7,checkedAt:'2026-11-22T20:05:00.000Z'},'ready');
 assert.equal(complete.platforms.find(p=>p.id==='tiktok').published,7);
