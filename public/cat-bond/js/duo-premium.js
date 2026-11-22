@@ -225,6 +225,7 @@ function draw(ctx,W,H,seq,lookup){
   // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
   // while keeping the watercolor painting beneath them readable.
   ctx.save();ctx.globalAlpha*=Math.min(.92,dual*.83);
+  window.CatBondDuoDirector?.footwork?.(ctx,sw,sh,p,key,tier);
   window.CatBondDuoDirector?.accent?.(ctx,sw,sh,p,key,tier);
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,p,key,tier);
   ctx.restore();
