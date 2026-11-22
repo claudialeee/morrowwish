@@ -1283,6 +1283,21 @@ class CaptureBattle {
     else if (key === 'ult') this.ultimate();
   }
 
+  // Compact cast/hit flourishes for regular skills. Visual only: this does
+  // NOT change damage, radius, cooldown, projectile speed or target selection.
+  regularSkillAccent(f,element,angle=0,isBasic=false,hit=false){
+    if(!f||this.skillStrokes.length>55)return;
+    const e=['fire','water','grass','elec','dark','light'].includes(element)?element:'light';
+    const time=hit?.29:isBasic?.23:.39;
+    const reach=hit?0:isBasic?17:23;
+    this.skillStrokes.push({
+      kind:'regularAccent',element:e,hit:!!hit,isBasic:!!isBasic,
+      x:f.x+Math.cos(angle)*reach,
+      y:f.y+(hit?0:9)+Math.sin(angle)*reach*.55,
+      angle,life:time,max:time
+    });
+  }
+
   // actions accept an optional fighter + aim so ALLIES can use them too.
   fireBasic(f, aim) {
     f = f || this.me(); if (f.cd.basic > 0) return;
@@ -1319,6 +1334,7 @@ class CaptureBattle {
     const toy = f._basicTick % 2 ? 'fish' : 'yarn';
     this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
+    this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
       window.MorrowwishAudio?.effect?.('combat_swing');this._lastPawSfx=this.t;
     }
@@ -1561,6 +1577,7 @@ class CaptureBattle {
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk,aim))return false;
       f.cd.q=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT;
+      this.regularSkillAccent(f,sk.element||f.element,aim);
       this.markMoveSeen(f,sk);
       return true;
     }
@@ -1614,6 +1631,7 @@ class CaptureBattle {
     // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
+    if((sk?.ultCost||0)===0)this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
     // Unique elemental timbre and skill-ID cadence. Strong AoE/dash skills
     // gain a low impact layer; actual ultimates get the heaviest accent.
     const soundPower=sk?.ultCost>0?3:(sk?.windup>=.35||Number(pow)>1.6?2:1);
@@ -1903,6 +1921,7 @@ class CaptureBattle {
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk,aim))return false;
       f.cd.e=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT;
+      this.regularSkillAccent(f,sk.element||f.element,aim);
       this.markMoveSeen(f,sk);
       return true;
     }
@@ -1917,6 +1936,7 @@ class CaptureBattle {
       f.pounce=true;f._dashAim=aim;f._pounceSkill=null;
       this.vfx.shockwave(f.x,f.y,col);
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
+      this.regularSkillAccent(f,f.element,aim);
     }
     this.gainUlt(6);
     this.markMoveSeen(f,sk);
@@ -2601,12 +2621,74 @@ class CaptureBattle {
       ctx.restore();
     }
   }
+  // Six distinct tiny motifs, drawn BELOW fighters so no face is covered.
+  // Fire = warm flame, water = drop, grass = leaf, electric = zigzag,
+  // shadow = crescent, light = four-point star. No generic full-screen flash.
+  drawRegularSkillAccent(ctx,v,k,p){
+    const scale=v.isBasic?.72:1,hit=!!v.hit;
+    const color={
+      fire:'#f9ad73',water:'#88d9f0',grass:'#a7d39b',
+      elec:'#f4d676',dark:'#c5a8e8',light:'#ffe8a0'
+    }[v.element]||'#f6d2dc';
+    ctx.save();ctx.translate(v.x,v.y);if(!hit)ctx.rotate(v.angle);
+    ctx.globalAlpha*=Math.min(1,k*1.6);
+    const rad=(hit?10:8)+p*(hit?24:25)*scale;
+    ctx.strokeStyle=color;ctx.lineWidth=(hit?3.4:2.4)*scale*k+0.5;
+    ctx.beginPath();ctx.arc(0,0,rad,-.85,2.25);ctx.stroke();
+    // Tiny neutral rim creates readability over any pastel map.
+    ctx.strokeStyle='#fffdf5';ctx.lineWidth=1.4*scale*k;
+    ctx.beginPath();ctx.arc(0,0,Math.max(3,rad-4),-.65,1.8);ctx.stroke();
+    const n=v.isBasic?3:5;
+    for(let i=0;i<n;i++){
+      const a=i*Math.PI*2/n+p*(hit?1.15:.75);
+      const dist=(hit?8:12)+p*(hit?21:24)*scale;
+      ctx.save();ctx.translate(Math.cos(a)*dist,Math.sin(a)*dist);
+      ctx.rotate(a+.25+p*.5);
+      ctx.fillStyle=color;ctx.strokeStyle=color;ctx.lineWidth=2*scale;
+      if(v.element==='fire'){
+        ctx.beginPath();ctx.moveTo(0,-6*scale);
+        ctx.quadraticCurveTo(6*scale,-1*scale,2*scale,4*scale);
+        ctx.quadraticCurveTo(-6*scale,3*scale,0,-6*scale);ctx.fill();
+        ctx.fillStyle='#fff0cb';ctx.beginPath();ctx.ellipse(0,1*scale,1.5*scale,2*scale,0,0,Math.PI*2);ctx.fill();
+      }else if(v.element==='water'){
+        ctx.beginPath();ctx.moveTo(0,-7*scale);
+        ctx.bezierCurveTo(6*scale,-1*scale,6*scale,5*scale,0,5*scale);
+        ctx.bezierCurveTo(-6*scale,5*scale,-6*scale,-1*scale,0,-7*scale);
+        ctx.fill();ctx.fillStyle='#f6fdff';
+        ctx.beginPath();ctx.arc(-1*scale,1*scale,1.3*scale,0,Math.PI*2);ctx.fill();
+      }else if(v.element==='grass'){
+        ctx.beginPath();ctx.ellipse(1*scale,-1*scale,6*scale,3.1*scale,-.65,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#fff7dd';ctx.lineWidth=1*scale;
+        ctx.beginPath();ctx.moveTo(-3*scale,3*scale);ctx.lineTo(5*scale,-5*scale);ctx.stroke();
+      }else if(v.element==='elec'){
+        ctx.beginPath();ctx.moveTo(-3*scale,-6*scale);ctx.lineTo(2*scale,-2*scale);
+        ctx.lineTo(-1*scale,2*scale);ctx.lineTo(4*scale,6*scale);ctx.stroke();
+        ctx.strokeStyle='#fff7ce';ctx.lineWidth=1*scale;ctx.beginPath();
+        ctx.moveTo(-1*scale,-5*scale);ctx.lineTo(3*scale,-2*scale);ctx.stroke();
+      }else if(v.element==='dark'){
+        ctx.strokeStyle=color;ctx.lineWidth=3*scale;ctx.beginPath();
+        ctx.arc(0,0,5.5*scale,-1.55,1.55);ctx.stroke();
+        ctx.fillStyle='#f4dfed';ctx.beginPath();ctx.arc(2*scale,-4*scale,1*scale,0,Math.PI*2);ctx.fill();
+      }else{
+        ctx.beginPath();ctx.moveTo(0,-7*scale);ctx.lineTo(2.2*scale,-2.2*scale);
+        ctx.lineTo(7*scale,0);ctx.lineTo(2.2*scale,2.2*scale);
+        ctx.lineTo(0,7*scale);ctx.lineTo(-2.2*scale,2.2*scale);
+        ctx.lineTo(-7*scale,0);ctx.lineTo(-2.2*scale,-2.2*scale);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#fffdf2';ctx.beginPath();ctx.arc(0,0,1.6*scale,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
   drawSkillStrokes(ctx){
     for(const v of this.skillStrokes){
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
-      if(v.kind==='water'||v.kind==='prism'||v.kind==='lightning'){
+      if(v.kind==='regularAccent'){
+        this.drawRegularSkillAccent(ctx,v,k,p);
+      }else if(v.kind==='water'||v.kind==='prism'||v.kind==='lightning'){
         const dx=v.x2-v.x,dy=v.y2-v.y,len=Math.hypot(dx,dy)||1;
         const nx=-dy/len,ny=dx/len;
         const colors=v.kind==='water'?['#d4fdff','#61d3f7','#f4ffff']:
@@ -3921,6 +4003,12 @@ class CaptureBattle {
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       this.hurtEnemy(target, dealt, x, y);
       this.vfx.impact(x, y, col);
+      // One clean elemental impact mark per beat; suppress spam from beams.
+      if(dealt>0&&skill?.element&&(skill.ultCost||0)===0&&
+        this.t-(this._lastRegularHitFx??-99)>.12){
+        this._lastRegularHitFx=this.t;
+        this.regularSkillAccent({x,y},skill.element,0,!!skill.isBasic,true);
+      }
       return { blocked: false, reflected: false, dealt };
     } else {
       // Enemy hit on a cat: type matchup matters defensively too, and an enemy
@@ -4368,6 +4456,7 @@ class CaptureBattle {
         ctx.scale(1 + crouch * 0.5, 1 - crouch);              // wider + lower = coiled to spring
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
+      window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
         species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
         stride:e.stride,motion:e.motion||0,
@@ -4389,6 +4478,7 @@ class CaptureBattle {
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y - 6, r, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
+      window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'front');
       this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
       // 虚弱 stagger: a pulsing gold ring + dizzy mark so the open window reads clearly
       if (e.staggerT > 0) {
@@ -4487,6 +4577,7 @@ class CaptureBattle {
       const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.70?1:-1)<0?-1:1
         :(tf.face||(Math.cos(fAim)<0?-1:1));
       visualY-=hop;
+      window.CatBondWardArt?.draw(ctx,tf,visualX,visualY,this.t,this.catScale(isMe?'active':'ally'),'back');
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
         species:sp2,scale:this.catScale(isMe?'active':'ally'),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
@@ -4504,6 +4595,7 @@ class CaptureBattle {
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(visualX, visualY - 6, r, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
+      window.CatBondWardArt?.draw(ctx,tf,visualX,visualY,this.t,this.catScale(isMe?'active':'ally'),'front');
       ctx.restore();
       // Player HP/ult now live in the sleek top-left squad panel (drawSquadPanel),
       // not floating over the cat. Keep only a tiny active-cat chevron so you can

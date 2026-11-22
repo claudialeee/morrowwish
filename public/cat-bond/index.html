@@ -30,7 +30,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=storybook-paws-v2-20261121" />
+  <link rel="stylesheet" href="css/style.css?v=catbond-cta-hierarchy-20261121-2" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=all-skill-elemental-sfx-20261121" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -150,7 +150,9 @@
           <span class="studio-tag">STUDIO 工作室 呈现</span>
         </div>
         <h1 class="game-logo">猫猫纽带<span class="logo-en">Cat Bond</span></h1>
-        <div class="intro-cat-gallery"><span class="intro-gallery-caption">✿ 在庭院遇见命中注定的搭档 ✿</span><canvas id="intro-cats" width="720" height="172" role="img" aria-label="Four expressive cats from Cat Bond"></canvas><span class="intro-cat-glint" aria-hidden="true">✦</span></div>
+        <div class="intro-cat-gallery"><canvas id="intro-cats" width="720" height="172" role="img" aria-label="Four expressive cats from Cat Bond"></canvas><span class="intro-cat-glint" aria-hidden="true">✦</span></div>
+        <button class="btn gold" id="intro-start">开始冒险 🐱</button>
+        <div class="intro-gallery-caption">✿ 在庭院遇见命中注定的搭档 ✿</div>
         <p>每只小猫都有自己的脾气。一起冒险、玩耍、变强，慢慢成为彼此最好的搭档。</p>
         <div class="intro-features" aria-label="猫猫纽带的四种玩法">
           <span>🐾 收集 32 种猫</span>
@@ -159,7 +161,6 @@
           <span>🗺️ 解锁地图 · 发现秘密</span>
         </div>
         <div class="intro-guide"><strong>开局只要一步：选一只小猫，寻找第一位伙伴</strong></div>
-        <button class="btn gold" id="intro-start" style="padding:14px 34px;font-size:1.15rem">开始冒险 🐱</button>
         <p id="start-error" hidden role="alert"></p>
         <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
       </div>
@@ -168,6 +169,7 @@
 
   <!-- ?v= cache-buster: bump this number whenever JS changes so the browser can't serve stale code -->
   <script src="js/vfx.js?v=charged-bolt-20261121"></script>
+  <script src="js/ward-art.js?v=premium-wards-20261122"></script>
   <script src="js/catart.js?v=36"></script>
 
   <script src="js/cute-cats.js?v=1-storybook"></script>
@@ -187,16 +189,16 @@
   <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
   <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
   <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
-  <script src="js/duo-director.js?v=duo-three-actual-tiers-20261122"></script>
+  <script src="js/duo-director.js?v=three-tiers-21-cameras-20261122"></script>
   <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
   <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
-  <script src="js/duo-premium.js?v=approved-watercolor-restore-20261122"></script>
-  <script src="js/duo-hero.js?v=approved-painting-restore-20261122"></script>
-  <script src="js/battle.js?v=hit-feel-juice-20261122"></script>
+  <script src="js/duo-premium.js?v=21-tinted-scenes-3-cinematic-tiers-20261122"></script>
+  <script src="js/duo-hero.js?v=high-res-watercolor-21-20261122"></script>
+  <script src="js/battle.js?v=hitfeel-basicfx-20261122"></script>
   <script src="js/duo-bond.js?v=duo-memory-strike-20261122"></script>
-  <script src="js/ui.js?v=catbond-hub-redesign-20261122"></script>
+  <script src="js/ui.js?v=duo-click-play-preview-20261121-1"></script>
   <script src="js/game.js?v=catbond-hub-redesign-20261122"></script>
-  <script src="js/main.js?v=no-empty-welcomeback-20261121"></script>
+  <script src="js/main.js?v=catbond-equal-cat-silhouettes-20261121-2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=catbond-32-breed-lang-20261122"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->

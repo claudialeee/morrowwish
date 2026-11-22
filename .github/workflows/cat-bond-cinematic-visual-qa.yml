@@ -1,0 +1,50 @@
+name: Cat Bond original-art 21x3 visual QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-21x3-visual-qa.mjs'
+      - '.github/workflows/cat-bond-cinematic-visual-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cat-bond-premium-visual-qa
+  cancel-in-progress: true
+
+jobs:
+  original-art-quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - name: Check out current actual game
+        uses: actions/checkout@v4
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install Chromium Playwright
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Start local game server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/catbond-http.log 2>&1 &
+          sleep 2
+          curl -fsS http://127.0.0.1:8765/cat-bond/duo-showcase.html > /dev/null
+      - name: Render all 21 paintings at 3 tiers and inspect mobile/desktop
+        run: node scripts/cat-bond-21x3-visual-qa.mjs
+      - name: Save painted screenshots and pixel-difference report for human review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-21x3-original-art-visual-qa
+          path: artifacts/cat-bond-21x3/
+          if-no-files-found: warn
+          retention-days: 14

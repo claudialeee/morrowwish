@@ -9,6 +9,7 @@ on:
       # Only scripts that affect the deployed site or release automation.
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
+      - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
       - 'scripts/render-social-v2.sh'
       - 'scripts/record-cat-bond-social.mjs'
       - 'scripts/fetch-cat-music.sh'
@@ -127,6 +128,26 @@ jobs:
       - name: Verify Cloudflare site and analytics API
         run: |
           set -eu
+          # A successful Pages command alone does not prove the public alias
+          # updated. Check exact source-asset versions plus JS/CSS bytes.
+          expected_css=$(grep -oE 'css/style.css[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_js=$(grep -oE 'js/main.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          test -n "$expected_css" && test -n "$expected_js"
+          latest=0
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsSL --max-time 20 -o /tmp/catbond-live.html "https://morrowwish.pages.dev/cat-bond/?verify=$GITHUB_SHA&attempt=$attempt" \
+              && grep -Fq "$expected_css" /tmp/catbond-live.html \
+              && grep -Fq "$expected_js" /tmp/catbond-live.html \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-main.js "https://morrowwish.pages.dev/cat-bond/js/main.js?verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-style.css "https://morrowwish.pages.dev/cat-bond/css/style.css?verify=$GITHUB_SHA&attempt=$attempt" \
+              && cmp -s public/cat-bond/js/main.js /tmp/catbond-live-main.js \
+              && cmp -s public/cat-bond/css/style.css /tmp/catbond-live-style.css; then
+              latest=1; break
+            fi
+            sleep 4
+          done
+          test "$latest" = 1 || { echo "::error::Cloudflare Cat Bond HTML/JS/CSS still stale after deployment"; exit 1; }
+          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact JS/CSS bytes."
           for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /pawsibly-innocent/cat-music.js /audio/cat-happy-clappy.ogg /icons/pawsibly-innocent.svg /studio-insights/; do
             ready=0
             for attempt in 1 2 3 4 5 6; do

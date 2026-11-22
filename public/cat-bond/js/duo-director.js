@@ -136,15 +136,50 @@ const motionTracks={
  'light+water': [[0,0,1.08,0],[.020,-.006,1.13,1],[-.014,-.025,1.23,-1],[0,-.030,1.27,0],[-.013,.019,1.14,0],[0,0,1.08,0]],
  'water+water': [[0,0,1.08,0],[-.039,.013,1.14,-3],[.024,-.037,1.24,2],[.039,.016,1.28,3],[-.028,.024,1.14,-2],[0,0,1.08,0]]
 };
-function camera(key,p,W,H){
+// Each bond milestone has its OWN cinematic edit: different charge,
+// attack order, camera path and recovery. These run in the approved FULL
+// illustrated tableau; they never substitute a low-res kitten silhouette.
+const trustStoryboards={
+ 1:{name:'sync-pounce',events:[.10,.31,.61],camera:'forward'},
+ 2:{name:'crossing-double-strike',events:[.19,.51,.78],camera:'reversal'},
+ 3:{name:'protect-vault-finale',events:[.12,.39,.70,.89],camera:'orbit-finish'}
+};
+function camera(key,p,W,H,tier=1){
  const track=motionTracks[key]||motionTracks['grass+light'];
- const progress=clamp(p);
+ const progress=clamp(p),stage=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
  let i=0;while(i<beats.length-2&&progress>beats[i+1])i++;
  const k=ease((progress-beats[i])/(beats[i+1]-beats[i]));
  const at=n=>track[i][n]+(track[i+1][n]-track[i][n])*k;
- return {dx:at(0)*W,dy:at(1)*H,zoom:at(2),
-   angle:at(3)*Math.PI/180,kind:styles[key]||'highfive',
-   phase:progress};
+ const baseX=at(0),baseY=at(1),baseZ=at(2),baseR=at(3);
+ const signature=Object.keys(motionTracks).indexOf(key);
+ const flip=signature%2?-1:1;
+ const burst=(x,w)=>Math.max(0,1-Math.abs(progress-x)/w);
+ let dx=baseX,dy=baseY,zoom=baseZ,rotation=baseR;
+ if(stage===1){
+   // Quiet sync-pounce, a single well-read impact, then return to rest.
+   dx=baseX*.67;dy=baseY*.55;
+   zoom=1+(baseZ-1)*.69+.065*burst(.31,.095);
+   rotation=baseR*.55;
+ }else if(stage===2){
+   // Partner A slices in, B counters from the opposite side: two clear
+   // impact beats instead of more particles on the basic attack.
+   const strikeA=burst(.20,.13),strikeB=burst(.52,.13);
+   dx=baseX*.79+flip*(.084*strikeA-.10*strikeB);
+   dy=baseY*.68-.035*strikeA+.044*strikeB;
+   zoom=baseZ+.11*strikeA+.17*strikeB;
+   rotation=baseR+flip*(2.2*strikeA-3*strikeB);
+ }else{
+   // A shield/ready phase, an aerial counter from the opposite side,
+   // and a broad slow-motion finishing blow: three spatially separate beats.
+   const guard=burst(.13,.115),vault=burst(.40,.135),fin=burst(.73,.18);
+   dx=baseX*.90+flip*(-.055*guard+.11*vault-.085*fin);
+   dy=baseY*.7+.053*guard-.09*vault+.025*fin;
+   zoom=baseZ+.07*guard+.20*vault+.27*fin;
+   rotation=baseR+flip*(-1.6*guard+3.5*vault-2.0*fin);
+ }
+ return {dx:dx*W,dy:dy*H,zoom:Math.min(1.70,zoom),
+   angle:rotation*Math.PI/180,kind:styles[key]||'highfive',
+   phase:progress,tier:stage,edit:trustStoryboards[stage].name};
 }
 // Follow BOTH cats' separately-authored routes with restrained calligraphic
 // movement streaks. These are NOT pasted-on heads/paws: watercolor light
@@ -189,7 +224,7 @@ function footwork(ctx,W,H,p,key,tier=1){
  ctx.restore();
 }
 window.CatBondDuoDirector={
- keys:Object.keys(map),styles,map,pose,camera,motionTracks,footwork,accent,
+ keys:Object.keys(map),styles,map,pose,camera,motionTracks,trustStoryboards,footwork,accent,
  isUnique:()=>new Set(Object.values(map).map(v=>JSON.stringify(v[1]))).size===21
 };
 })();

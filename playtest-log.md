@@ -195,3 +195,45 @@ wiggle/ears/tail telegraph replaces the generic charge-ring.
 Hooks: battle.js resolveHit/hurtEnemy/applyHitEffects, captureReady/finish, knockback loop,
 tickProjectileClash, enemy telegraph draw; skills.js knockOff/batAround/boxAmbush/puffHiss/
 dawnHeal/blessFur. Queued as a worktree after the 3 in-flight builders merge (heavy battle.js overlap).
+
+---
+
+## 2026-11-21 18:21 — Hourly adversarial playtest (6 personas × 8 battles, 1 round)
+Run wf_68924755-dd1 · 64/68 agents ok (4 synth agents hit StructuredOutput retry cap) · 51 critiques (41 real-problem / 10 opportunity). FINDINGS ONLY — no code changes applied/pushed this cycle (owner review).
+
+**Headline:** Cat Bond already ships the depth every persona asks for, but its escalation triggers are gated on conditions dominant players structurally never meet — so combat collapses to a flat "mash-wins" monotone for 5 of 6 archetypes. Fun scores mostly 3-5/10 (one 7/10).
+
+### Adversary-confirmed pain points (root-caused to file:line)
+- **P1 — Rubber-band switches itself off the moment it works.** `_pressure` (battle.js:2915) only climbs while teamHpFrac > 0.88; the must-dodge smash fires only at `_pressure >= 0.35` (battle.js:3323). Sequence: masher at full HP → pressure builds → ONE smash lands (26% max HP) → HP drops to ~74% → pressure decays → smashes stop → masher finishes with basics. The single forcing function fires once then eases off the exact player it was built to challenge. Casual enemyDmg 0.6 + starter caps (battle.js:84-86) + removed 12% basic mash-floor (battle.js:3858) → nothing a masher does/skips can lose.
+- **P1 — Anti-stomp ramp has a hole at the dominator's real stat line.** Cross-fight ramp gated on STRICT zero damage: `won && (o.dmgTaken||0) <= 0` (battle.js:1514). A 0.98 HP-frac win took ~9 chip → dmgTaken>0 → stompStreak resets every fight → `_stomp` stays 0 forever → the entire escalation (sharper windups 143-145, smash-via-_stomp 3323) is DEAD for the exact archetype it targets. The 0.98/0.97 metrics are the bug's fingerprint, not "fine."
+- **P1 — Smash auto-dodges itself for free.** Smash targets the player's CURRENT position (battle.js:3337) with 1.4s windup + 9-12s per-enemy cooldown behind single-caster `_novaLock`; a masher walking toward the enemy drifts out of the 86px circle without ever registering it as a dodge.
+- **P1 — Teaching exists but is toothless.** First-fight coach (battle.js:187-273) clears its "skill" step on ONE incidental tap (`_coachUsedSkill`) and auto-advances the dodge step after 12s idle (line 243); `coachHoldsEnemies` freezes enemies during the skill step so there's no threat to use a skill against. Only the ult has an in-combat re-engagement loop (`tickUltReminder` 2434) — Q/E/dodge/shield have zero reinforcement after battle 1.
+- **P1 — Depth is hidden behind the default difficulty.** All anti-mash depth changes combat EFFICIENCY (poise = 2× payoff), but a masher optimizes only for "did I win," so efficiency pressure is invisible; the real challenge lives behind the hardcore toggle (default casual) this player never flips.
+
+### Ranked fixes (adversary-proposed, NOT applied — for owner review)
+- **P0 (de-facto):** Decouple `_pressure` from team-HP so the smash forcing-function can't self-disable: gate escalation on an ENGAGEMENT signal (no dodge/shield/skill in last N s) via the existing `_obs` block (battle.js:137), keep pressure climbing regardless of HP for a never-defending player, OR raise the 0.88 band to ~0.70 and cut decay so one smash doesn't drop below threshold. Let smashes STACK on a refuser → recoverable teaching-death, even on casual. (Addresses 3 of the 5 P1s at the root.)
+- **P1:** Change the anti-stomp flawless gate (battle.js:1514) from `dmgTaken <= 0` to near-flawless `hpFrac >= 0.9` (hpFrac already computed at 1508) so a 0.98 masher counts as dominating and the ramp actually arms.
+- **P1:** Lead the smash target by `me._vx/_vy` (like enemyLobAoe at 3549-3551) so forward-chasing no longer auto-dodges it — keep the 1.4s windup so a reacting player still walks out.
+- **P1:** Generalize the ult-reminder re-engagement loop to Q/E/dodge/shield (reuse `_coachHighlight`), and make the first-fight coach require genuine execution (land a skill hit; one scripted telegraphed swipe the player must actually dodge, not a 12s timeout).
+- **P2 (15 items):** per-persona polish (cautious/explorer/panicky/lazy/impatient) — pacing, clarity, discoverability nudges; see run transcript for detail.
+
+**Note for owner:** these are structural combat-tuning changes to battle.js; several overlap the in-flight difficulty/skill-tree rework. Recommend folding the P0 pressure-decoupling + the 1-line flawless-gate fix (1514) into the next combat pass. Combat does NOT read healthy this cycle — the mash-monotone is real and reproducible across 5/6 personas.
+
+---
+
+## 2026-11-21 ~18:5x — Hourly adversarial playtest #2 (6 personas × 8 battles, 1 round)
+Run wf_ca1f26ac-87f · 59/64 agents ok (5 synth retry-capped) · 46 critiques. FINDINGS ONLY — no code changes applied/pushed this cycle.
+
+**Headline:** Rich danger/escalation engine exists, but every trigger is gated behind back-loaded dominance or pixel-perfect flawlessness no persona's win condition reaches → combat is an identical, stakes-free damage-race all 6 archetypes out-pace before systems arm. (Corroborates cycle #1 — same mash-monotone, more specifics.)
+
+### New/sharpened adversary-confirmed findings
+- **P1 (confirms #1):** smash gate needs `catchCount>=2 && (_stomp>=0.3 || _pressure>=0.35)`; `_pressure` only ramps after t>5 at dt*0.45 (battle.js:2915); enemy first `special` ~2-4s (615) + early HP damped ~0.5 (593). Masher deletes enemy (~4s TTK) before the fuse burns → the one "leave the red circle or eat 26%" forcing function never fires.
+- **P1 (NEW, 2-line fix):** anti-stomp `stompStreak` HARD-RESETS to 0 on any chip damage (battle.js:1514 `won && dmgTaken<=0`). A 0.99-HP win takes 1-3% → resets every fight → `_stomp` never accumulates → fight N+1 == fight N forever. Proposed: increment on DOMINANT win (`won && hpFrac>=0.9 && t<=25`), DECAY by 1 (not reset) on non-dominant. Single highest-leverage change.
+- **P2 (NEW, input feel):** basic cd 0.6s throttles ~80 presses/s → 1.67 fires/s; `fireBasic` early-returns `if(cd.basic>0)return` SILENTLY (battle.js:1284) → ~95% of presses give zero feedback → input feels weightless. Proposed: buffer last press to auto-fire when cd hits 0 + a "ready" tick pulse so the thumb locks onto the 0.6s beat.
+
+### Ranked (adversary-proposed, NOT applied)
+- **P0:** decouple smash/escalation from back-loaded `_stomp`/`_pressure`/`t>5` → arm off live passivity (`_obs.dodgeN≈0` + low movement); shorten enemy first-special window so a stationary post-tutorial masher meets a dodge test in the opening 2-3s.
+- **P1:** the stompStreak graded-dominance fix (battle.js:1514); faster `earlyDamp` decay (593).
+- **P2:** basic input buffering + ready-tick; combo-heat crescendo on sustained on-cadence mashing.
+
+**Note for owner:** Same conclusion as cycle #1 — combat does NOT read healthy; mash-monotone reproducible across all 6 personas. These overlap heavily with the in-flight hit-feel + difficulty/skill-tree work. The `1514` stompStreak fix + `_pressure` decoupling remain the two cheapest high-impact levers.

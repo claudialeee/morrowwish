@@ -255,6 +255,7 @@ console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game l
 await import('./check-pawsibly.mjs');
 await import('./check-cat-bond.mjs');
 await import('./check-cat-bond-ai.mjs');
+await import('./check-cat-bond-premium-21x3.mjs');
 
 // Prevent decorative starburst glyphs from leaking back into any published page,
 // SVG social card, dynamically generated game copy, or language map.
@@ -1015,5 +1016,72 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(!settings.includes("['#stageControls','.in-game-controls']")||
     !settings.includes("['.mw-mini-frame-hud'")||!settings.includes("['.top-actions','.header']"))
   throw Error('Language/music/SFX controls must live inside the original toolbar');
+ // Cat Bond: regressions in intro art overlap and duo animation access.
+ const bondIntro=fs.readFileSync('public/cat-bond/index.html','utf8');
+ const bondViewer=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
+ const bondPremium=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
+ // Gallery and caption are independent siblings. Start Adventure is intentionally
+ // between them, so the previous adjacent-sibling regex blocked deployment.
+ const galleryMarkup=bondIntro.match(/<div class="intro-cat-gallery">([\s\S]*?)<\/div>/);
+ const galleryEnd=galleryMarkup ? bondIntro.indexOf(galleryMarkup[0])+galleryMarkup[0].length : -1;
+ const ctaAfterGallery=bondIntro.indexOf('id="intro-start"',galleryEnd);
+ const captionAfterCta=bondIntro.indexOf('class="intro-gallery-caption"',ctaAfterGallery);
+ if(!galleryMarkup||!galleryMarkup[1].includes('id="intro-cats"')||
+    galleryMarkup[1].includes('class="intro-gallery-caption"')||
+    galleryEnd<0||ctaAfterGallery<galleryEnd||captionAfterCta<ctaAfterGallery||
+    !cbCss.includes('#intro > .intro-gallery-caption')||
+    !cbUi.includes('this.openUnlockedDuoViewer(entry.a,entry.b)')||
+    !cbUi.includes('this.openUnlockedDuoViewer(a,b)')||
+    !cbUi.includes('thumbnail:true')||
+    !cbUi.includes('rel?.value)<20')||
+    !bondPremium.includes('if(!thumbnail&&dual>.09)')||
+    !bondViewer.includes('duo-embedded')||
+    !bondIntro.includes('css/style.css?v=catbond-cta-hierarchy-20261121-2'))
+   throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
+ new Function(bondPremium);
+ // First-run CTA precedes optional feature cards so short screens never cut it
+ // off; six normal skill elements have animated casts + readable hit marks.
+ const cbMain=fs.readFileSync('public/cat-bond/js/main.js','utf8');
+ const startIndex=bondIntro.indexOf('id="intro-start"');
+ const featuresIndex=bondIntro.indexOf('class="intro-features"');
+ const captionIndex=bondIntro.indexOf('class="intro-gallery-caption"');
+ if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
+    !cbMain.includes('sc.getImageData(0,0,240,240)')||
+    !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
+    !bondIntro.includes('js/main.js?v=catbond-equal-cat-silhouettes-20261121-2')||
+    !cbCss.includes('background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important'))
+   throw Error('Cat Bond must balance intro kitten silhouettes and make Start primary');
+ if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
+    !cbMain.includes('const catBottom=h-15,targetHeight=132,maxWidth=140')||
+    !cbCss.includes("#intro #intro-start{")||
+    !cbCss.includes("order:0!important")||
+    !cbCss.includes("overflow-y:auto!important")||
+    !cbBattle.includes("regularSkillAccent(f,element,angle=0,isBasic=false,hit=false)")||
+    !cbBattle.includes("drawRegularSkillAccent(ctx,v,k,p)")||
+    !cbBattle.includes("this.regularSkillAccent(f,f.element,aim,true)")||
+    !cbBattle.includes("this.regularSkillAccent({x,y},skill.element"))
+   throw Error('Cat Bond first-screen CTA and six-element ordinary-skill VFX regressions');
+ // Lightweight canvas stub exercises basic, Q/E and hit accents for every
+ // element without modifying game rules or loading illustration assets.
+ const mockWindow={};
+ const CaptureForFx=new Function('window',cbBattle+';return window.Battle.CaptureBattle;')(mockWindow);
+ const fake=Object.create(CaptureForFx.prototype);
+ fake.skillStrokes=[];
+ const ctx={globalAlpha:1};
+ for(const m of ['beginPath','arc','ellipse','stroke','fill','save','restore','translate',
+                 'rotate','moveTo','lineTo','quadraticCurveTo','bezierCurveTo','closePath'])
+   ctx[m]=()=>{};
+ for(const element of ['fire','water','grass','elec','dark','light']){
+   for(const basic of [true,false]){
+     fake.regularSkillAccent({x:120,y:120},element,0,basic);
+     const v=fake.skillStrokes.pop();
+     if(!v||v.element!==element||v.hit)throw Error('Missing regular cast accent: '+element);
+     fake.drawRegularSkillAccent(ctx,v,.7,.33);
+   }
+   fake.regularSkillAccent({x:155,y:110},element,0,false,true);
+   const hit=fake.skillStrokes.pop();
+   if(!hit||!hit.hit||hit.element!==element)throw Error('Missing regular hit accent: '+element);
+   fake.drawRegularSkillAccent(ctx,hit,.5,.5);
+ }
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }

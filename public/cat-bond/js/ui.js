@@ -485,6 +485,63 @@ const UI = {
     };
     requestAnimationFrame(draw);
   },
+  // Open an earned duo technique inside the game. The animation viewer
+  // verifies saved trust again, so locked pairs cannot be opened by URL alone.
+  openUnlockedDuoViewer(a,b){
+    if(!a||!b||a.uid===b.uid)return false;
+    const key=[a.uid,b.uid].sort().join(':');
+    const rel=State.S.duoRelations?.pairs?.[key];
+    if(Number(rel?.value)<20)return false;
+    const english=window.MorrowwishI18n?.get?.()!=='zh';
+    const art=CatRelations.title(a,b);
+    const url=new URL('duo-preview.html',window.location.href);
+    url.searchParams.set('a',a.uid);
+    url.searchParams.set('b',b.uid);
+    url.searchParams.set('lang',english?'en':'zh');
+    url.searchParams.set('embedded','1');
+    document.getElementById('cb-duo-viewer')?.remove();
+    const previousFocus=document.activeElement;
+    const overlay=document.createElement('div');
+    overlay.id='cb-duo-viewer';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label',english?'Watch unlocked duo move':'观看已解锁双猫合击');
+    const shell=document.createElement('div');
+    shell.className='cb-duo-viewer-shell';
+    const heading=document.createElement('strong');
+    heading.className='cb-duo-viewer-title';
+    heading.textContent=(art?.name|| (english?'Duo move':'双猫合击'))+' · '+
+      State.catName(a)+' × '+State.catName(b);
+    const closeButton=document.createElement('button');
+    closeButton.type='button';
+    closeButton.className='cb-duo-viewer-close';
+    closeButton.setAttribute('aria-label',english?'Close animation':'关闭合击演出');
+    closeButton.textContent='×';
+    const player=document.createElement('iframe');
+    player.title=english?'Unlocked duo animation':'已解锁双猫合击演出';
+    player.src=url.href;
+    player.setAttribute('allow','autoplay');
+    shell.append(heading,closeButton,player);
+    overlay.appendChild(shell);
+    const keydown=e=>{
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();dismiss();}
+      // Keep keyboard focus within the modal; the iframe still handles its
+      // own playback shortcuts when focused.
+      if(e.key==='Tab'&&document.activeElement===closeButton){
+        e.preventDefault();player.focus();
+      }
+    };
+    const dismiss=()=>{
+      document.removeEventListener('keydown',keydown,true);
+      overlay.remove();previousFocus?.focus?.();
+    };
+    closeButton.addEventListener('click',dismiss);
+    overlay.addEventListener('click',e=>{if(e.target===overlay)dismiss()});
+    document.addEventListener('keydown',keydown,true);
+    document.body.appendChild(overlay);
+    closeButton.focus();
+    return true;
+  },
   // Paint each unlocked pair ONCE with the same full-illustration renderer
   // as combat. Locked records never create canvases or preview requests.
   renderUnlockedDuoCards(entries){
@@ -497,7 +554,8 @@ const UI = {
         const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
         ctx.clearRect(0,0,w,h);
         window.CatBondDuoHero.draw(ctx,w,h,{
-          max:2.75,t:1.80,catUids:[entry.a.uid,entry.b.uid],hideCaptions:true,
+          max:2.75,t:1.62,catUids:[entry.a.uid,entry.b.uid],hideCaptions:true,
+          thumbnail:true, // static card view: no foreground vines, slashes or bloom
           elements:art.elementPair,name:art.name,
           tier:entry.trust>=90?3:entry.trust>=60?2:1
         },uid=>uid===entry.a.uid?entry.a:uid===entry.b.uid?entry.b:null);
@@ -569,12 +627,14 @@ const UI = {
       const selected=[entry.a.uid,entry.b.uid].sort().join(':')===
         picked.slice().sort().join(':');
       return '<button type="button" class="duo-unlocked-card '+(selected?'chosen':'')+
-        '" data-duo-index="'+i+'" aria-pressed="'+String(selected)+'">'+
+        '" data-duo-index="'+i+'" aria-label="'+esc((en?'Watch ':'观看 ')+art.name+
+          ' · '+State.catName(entry.a)+' × '+State.catName(entry.b))+'">'+
         '<canvas class="duo-gallery-thumb" data-duo-thumb="'+i+'" width="300" height="169" aria-hidden="true"></canvas>'+
         '<span class="duo-card-body"><strong>'+esc(State.catName(entry.a))+' × '+esc(State.catName(entry.b))+'</strong>'+
         '<b>'+esc(art.name)+'</b><small>'+esc(art.description)+'</small>'+
         '<span class="duo-card-trust">'+(active?'✓ '+(en?'Active · ':'出战中 · '):'')+
-        (en?'Trust ':'默契 ')+Math.floor(entry.trust)+'/100</span></span></button>';
+        (en?'Trust ':'默契 ')+Math.floor(entry.trust)+'/100</span>'+
+        '<span class="duo-card-watch">'+(en?'▶ Watch animation':'▶ 点击观看合击')+'</span></span></button>';
     }).join('');
     const catButtons=side=>cats.map(c=>
       '<button class="duo-cat-chip '+(picked[side]===c.uid?'selected':'')+
@@ -655,9 +715,8 @@ const UI = {
     this.catHubTabs('duo');
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
       const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
-      if(!entry)return;
-      this._duoPicked=[entry.a.uid,entry.b.uid];
-      this._duoChangeOpen=false;this.openBondPanel();
+      if(!entry||entry.trust<20)return;
+      this.openUnlockedDuoViewer(entry.a,entry.b);
     });
     document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
       this._duoChangeOpen=!this._duoChangeOpen;
@@ -695,14 +754,7 @@ const UI = {
     };
     const previewButton=document.getElementById('duo-preview');
     if(previewButton)previewButton.onclick=()=>{
-      if(!unlocked)return;
-      // This player page reads actual saved relationship trust; a URL alone
-      // never grants access to a locked animation.
-      const url=new URL('duo-preview.html',window.location.href);
-      url.searchParams.set('a',a.uid);
-      url.searchParams.set('b',b.uid);
-      url.searchParams.set('lang',en?'en':'zh');
-      window.open(url.href,'_blank','noopener');
+      if(unlocked)this.openUnlockedDuoViewer(a,b);
     };
     const soothe=document.getElementById('duo-soothe');
     if(soothe)soothe.onclick=()=>{

@@ -35,6 +35,35 @@ const regions={
  'grass+light':1,'grass+water':2,'light+light':0,
  'light+water':0,'water+water':2
 };
+// Per-PAIR, not per-element: 21 independent watercolor scene color scripts.
+// All inks use the approved muted, warm storybook aesthetic; no solid blue
+// or saturated violet stage is shared between unrelated pairings.
+const chromaticThemes={
+ 'dark+dark':['#eadfd5','#fff4e8','#d3d7c8','#d9b9bf'],
+ 'dark+elec':['#e8ecd9','#fff4dc','#cfdec9','#e4d3a2'],
+ 'dark+fire':['#f5e2ce','#fff1df','#e8d4c5','#ecbaa1'],
+ 'dark+grass':['#e9ecdd','#f7f0e4','#bed6bf','#dbc3b5'],
+ 'dark+light':['#e9e8e9','#fff9eb','#d9ded7','#efe1b8'],
+ 'dark+water':['#e4efe6','#f9f5e7','#c4dcd8','#c9d6cb'],
+ 'elec+elec':['#f4eddb','#fff5dc','#e7dfc5','#ebd298'],
+ 'elec+fire':['#f9e6d4','#fff1de','#ebd8c0','#f3bb9b'],
+ 'elec+grass':['#f0efd8','#fdf6dc','#cedfbc','#ead8a6'],
+ 'elec+light':['#f9eedb','#fffae8','#e6e2cd','#e9d9b5'],
+ 'elec+water':['#ebeee3','#faf8df','#c1ded2','#d4ddbf'],
+ 'fire+fire':['#f9e1ce','#fff1d9','#edceba','#f2b090'],
+ 'fire+grass':['#f9e8dd','#fff5e7','#cde3cb','#e4c0b8'],
+ 'fire+light':['#ffebd5','#fff9e8','#ecdcc8','#f5c691'],
+ 'fire+water':['#f5e9dc','#fff4e7','#cbdfd7','#e3c6b4'],
+ 'grass+grass':['#edf0dd','#fff9e8','#c0dbb4','#c7d4a2'],
+ 'grass+light':['#f8efde','#fff9e7','#d5e6cd','#e7dcb8'],
+ 'grass+water':['#eaf0e2','#fdf9e9','#bedcc9','#cedfbb'],
+ 'light+light':['#f9f1df','#fffdf2','#e8dfc8','#e9d7ba'],
+ 'light+water':['#f0eee5','#fcf9e9','#cde1d9','#dad4c4'],
+ 'water+water':['#e8f0e9','#f9faf1','#bfdcd4','#c8dfd6']
+};
+
+const tintRGB=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
+function paletteFor(key){return chromaticThemes[key]||chromaticThemes['grass+light']}
 // Muted fantasy palettes are coordinated with Cat Bond's actual scenery:
 // gentle lilac skies, sage gardens, warm peach sunlight and pale blue rivers.
 // Never impose a solid purple battle card or a bright saturated rectangle.
@@ -46,12 +75,8 @@ const harmonies={
  solar:{sky:'#e3bfa7',mist:'#f8ebd8',ground:'#c5c5ac',light:'#fff2d8'}
 };
 function harmony(key){
- const els=key.split('+');
- if(els.includes('elec')&&els.includes('dark'))return harmonies.storm;
- if(els.includes('water'))return harmonies.water;
- if(els.includes('grass'))return harmonies.spring;
- if(els.includes('fire'))return harmonies.solar;
- return harmonies.moon;
+ const v=paletteFor(key);
+ return {sky:v[0],mist:v[1],ground:v[2],light:v[3]};
 }
 const accents={
  dark:'#d0a8ff',elec:'#c6d4ff',fire:'#ffcc9b',grass:'#c8f4c6',
@@ -62,6 +87,7 @@ const accents={
 // the painted cats, facial details, black coats, paws, outfits and line work.
 // This changes the actual painted BACKGROUND, not merely an external overlay.
 let pastelAtlas=null,retouchedPixels=0;
+const gradeCache=new Map();
 const panelTones=[
  [211,226,235], // moon: pale blue-white / silver mist
  [210,237,222], // blossoms: soft garden mint
@@ -142,7 +168,46 @@ function cellRect(panel,half=null){
  return {x:(panel%2)*cellW+cellW*start,y:Math.floor(panel/2)*cellH+cellH*.014,
    w:cellW*fraction,h:cellH*.97};
 }
-function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1){
+
+// Bake the exact scene palette into the REAL watercolour painting for each
+// pairing. Keep photographed-looking cat anatomy, inking and fine fur intact;
+// focus re-grading on chromatic purple/blue scenery and high-lit environment.
+function gradedScene(key){
+ if(gradeCache.has(key))return gradeCache.get(key);
+ const frame=regions[key],w=img.naturalWidth/2,h=img.naturalHeight/4;
+ const layer=document.createElement('canvas');
+ layer.width=w;layer.height=h;
+ const g=layer.getContext('2d',{willReadFrequently:true});
+ g.drawImage(pastelAtlas||img,(frame%2)*w,Math.floor(frame/2)*h,w,h,0,0,w,h);
+ const pixels=g.getImageData(0,0,w,h),a=pixels.data;
+ const palette=paletteFor(key);
+ const target=tintRGB(palette[0]),highlight=tintRGB(palette[1]);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const i=(y*w+x)*4,r=a[i],gg=a[i+1],b=a[i+2];
+   const lum=r*.299+gg*.587+b*.114;
+   const violet=clamp((Math.min(r,b)-gg+3)/78);
+   const cold=clamp((b-Math.max(r,gg)+2)/86);
+   const warm=clamp((r-gg-10)/115);
+   // Deep fur, eye outlines and jewellery stay close to the original.
+   const blackProtect=lum<94?.16:lum<135?.48:1;
+   // Bright cats also retain their cream highlights / tabby markings.
+   const focal=x>w*.19&&x<w*.81&&y>h*.11&&y<h*.91?.67:1;
+   const weight=clamp((.19+.58*violet+.21*cold+.08*warm)
+     *(frame>=4?1.18:1)*blackProtect*focal,0,.87);
+   const texture=[r,gg,b];
+   for(let j=0;j<3;j++){
+     const ink=target[j]+(lum-146)*.61+(texture[j]-lum)*.18;
+     const pale=highlight[j]+(lum-200)*.54;
+     const desired=ink*(1-clamp((lum-190)/95))+
+       pale*clamp((lum-190)/95);
+     a[i+j]=Math.max(0,Math.min(255,Math.round(texture[j]*(1-weight)+desired*weight)));
+   }
+ }
+ g.putImageData(pixels,0,0);
+ gradeCache.set(key,layer);
+ return layer;
+}
+function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null){
  const srcAspect=source.w/source.h,dstAspect=w/h;
  let sx=source.x,sy=source.y,sw=source.w,sh=source.h;
  if(srcAspect>dstAspect){sw=sh*dstAspect;sx+=(source.w-sw)/2}
@@ -152,7 +217,9 @@ function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1){
  sy+=Math.max(0,(source.h-sh)/2)+offsetY*sh;
  sx=clamp(sx,source.x,source.x+source.w-sw);
  sy=clamp(sy,source.y,source.y+source.h-sh);
- ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(pastelAtlas||img,sx,sy,sw,sh,x,y,w,h);ctx.restore();
+ const tex=key&&ready?gradedScene(key):null;
+ if(tex){sx-=source.x;sy-=source.y;}
+ ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(tex||pastelAtlas||img,sx,sy,sw,sh,x,y,w,h);ctx.restore();
 }
 function paper(g,x,y,w,h){
  const v=g.createLinearGradient(0,y,0,y+h);
@@ -179,10 +246,57 @@ function slash(g,W,H,p,key,tier){
  g.beginPath();g.ellipse(centerX,centerY,H*.11*hit,H*.075*hit,0,0,Math.PI*2);g.fill();
  g.restore();
 }
+
+// Separate cinematic beats, not merely different particle intensities.
+// All graphics hug the edges to keep the original complete painted cats
+// and their paws/eyes readable. Each tier has a different hit timeline.
+function bondTierChoreography(g,W,H,p,key,tier){
+ const colors=paletteFor(key),w=Math.max(2,H*.012);
+ const impact=(at,span=.115)=>Math.max(0,1-Math.abs(p-at)/span);
+ g.save();g.lineCap='round';g.lineJoin='round';
+ if(tier===1){
+   // Lv 20: two-cat simultaneous approach -> one warm central paw impact.
+   const v=impact(.31,.135);
+   g.globalAlpha=.60*v;g.strokeStyle=colors[3];g.lineWidth=w*1.6;
+   g.beginPath();g.arc(W*.50,H*.53,H*(.09+.08*(1-v)),-.3,Math.PI*1.2);g.stroke();
+ }else if(tier===2){
+   // Lv 60: A travels the upper crossing lane, B counters below.
+   // TWO independent flashes at .20s and .52s.
+   for(const [n,at] of [[0,.20],[1,.52]]){
+     const v=impact(at,.12);
+     g.globalAlpha=.64*v;g.strokeStyle=n?colors[3]:colors[2];g.lineWidth=w*(n?2.2:1.5);
+     g.beginPath();g.moveTo(n?W*.88:W*.10,n?H*.76:H*.30);
+     g.bezierCurveTo(W*.35,n?H*.12:H*.83,W*.62,n?H*.75:H*.14,
+       n?W*.12:W*.88,n?H*.24:H*.69);g.stroke();
+     g.globalAlpha=.60*v;g.fillStyle=colors[1];
+     g.beginPath();g.arc(n?W*.42:W*.60,n?H*.61:H*.38,H*.055*v,0,Math.PI*2);g.fill();
+   }
+ }else{
+   // Lv 90: guard shield -> aerial counter -> converging finisher.
+   const guard=impact(.14,.16),vault=impact(.42,.16),fin=impact(.73,.18);
+   g.globalAlpha=.57*guard;g.strokeStyle=colors[3];g.lineWidth=w*1.6;
+   g.beginPath();g.ellipse(W*.30,H*.54,W*.16,H*.29,-.18,Math.PI*.80,Math.PI*2.25);g.stroke();
+   g.globalAlpha=.55*vault;g.strokeStyle=colors[2];g.lineWidth=w*1.4;
+   g.beginPath();g.moveTo(W*.22,H*.68);
+   g.bezierCurveTo(W*.32,H*.04,W*.64,H*.13,W*.78,H*.66);g.stroke();
+   g.globalAlpha=.70*fin;g.strokeStyle=colors[1];g.lineWidth=w*2.2;
+   for(let n=0;n<12;n++){
+     const a=n*Math.PI/6+p*.8;
+     g.beginPath();
+     g.moveTo(W*.51+Math.cos(a)*H*.14,H*.49+Math.sin(a)*H*.11);
+     g.lineTo(W*.51+Math.cos(a)*H*.31,H*.49+Math.sin(a)*H*.27);
+     g.stroke();
+   }
+   g.strokeStyle=colors[3];g.lineWidth=w*1.5;
+   g.beginPath();g.ellipse(W*.51,H*.49,W*.28*fin,H*.34*fin,0,0,Math.PI*2);g.stroke();
+ }
+ g.restore();
+}
 function draw(ctx,W,H,seq,lookup){
  if(!seq||seq.t<=0)return false;
  if(!ready)return true; // avoid flashing the rejected procedural kittens during load
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
+ const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
  const opacity=smooth(p/.07)*(1-smooth((p-.89)/.11));
  if(opacity<=0)return true;
@@ -209,32 +323,37 @@ function draw(ctx,W,H,seq,lookup){
  // The 21 independently authored cinematic storyboards control camera
  // charge, dodge, lunge, rise, arc, rebound and finish. We transform ONE
  // complete illustration (both cats and scenery together), not crop/tile cats.
- const cam=window.CatBondDuoDirector?.camera?.(key,p,sw,sh)||
-   {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'};
+ const cam=thumbnail?{dx:0,dy:0,zoom:1.025,angle:0}:
+   (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
+    {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
  ctx.save();
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- sourceCover(ctx,cellRect(frame),0,0,sw,sh,cam.zoom,0,0,1);
+ sourceCover(ctx,cellRect(frame),0,0,sw,sh,cam.zoom,0,0,1,key);
  ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
- if(dual>.09){
+ if(!thumbnail&&dual>.09){
   // Previously both authored VFX layers were almost invisible: .27 × .31
   // opacity on top of signature opacity. Let the player actually distinguish
   // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
   // while keeping the watercolor painting beneath them readable.
   ctx.save();ctx.globalAlpha*=Math.min(.92,dual*.83);
   window.CatBondDuoDirector?.footwork?.(ctx,sw,sh,p,key,tier);
-  window.CatBondDuoDirector?.accent?.(ctx,sw,sh,p,key,tier);
-  window.CatBondDuoFinale?.draw?.(ctx,sw,sh,p,key,tier);
+  const fxTime=tier===1?p:tier===2?(p<.36?p+.09:p-.23):
+     (p<.29?p+.10:p<.55?p-.11:p-.44);
+  window.CatBondDuoDirector?.accent?.(ctx,sw,sh,fxTime,key,tier);
+  window.CatBondDuoFinale?.draw?.(ctx,sw,sh,fxTime,key,tier);
   ctx.restore();
  }
- slash(ctx,sw,sh,p,key,tier);
- paper(ctx,0,0,sw,sh);
+ if(!thumbnail)bondTierChoreography(ctx,sw,sh,p,key,tier);
+ // The old generic claw stamp made all 21 skills look identical; the
+ // individually drawn finale and key-specific palette now carry the impact.
+ if(!thumbnail)paper(ctx,0,0,sw,sh);
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
- if(flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
+ if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
  // No English-only baked labels over the player's translated skill name.
  // One atlas panel contains a decorative old English title in the far top-right.
  // A soft semitransparent enamel banner reduces it behind localized UI.
@@ -258,7 +377,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.restore();
  // Four overlapping soft alpha masks: zero visible hard edges, even in
  // portrait / landscape game modes. No rectangular stroke or clip border.
- ctx.save();
+ if(!thumbnail){ctx.save();
  ctx.globalCompositeOperation='destination-in';
  const fx=Math.max(14,sw*.085),fy=Math.max(12,sh*.13);
  function fade(x0,y0,x1,y1){
@@ -271,7 +390,7 @@ function draw(ctx,W,H,seq,lookup){
  fade(sw,0,sw-fx,0);
  fade(0,0,0,fy);
  fade(0,sh,0,sh-fy);
- ctx.restore();
+ ctx.restore();}
  // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
  // the region's existing battle theme instead of an unrelated purple card.
  const tone=harmony(key);
@@ -299,6 +418,8 @@ function draw(ctx,W,H,seq,lookup){
 }
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
+ paletteFor,get scenePaletteCount(){return Object.keys(chromaticThemes).length},
+ get gradedSceneCount(){return gradeCache.size},tierVariants:3,
  get failed(){return broken},wholeSceneCount:8,skillVariants:Object.keys(regions).length,
  get pastelAdjusted(){return !!pastelAtlas&&retouchedPixels>0},
  get pastelPixelCount(){return retouchedPixels},

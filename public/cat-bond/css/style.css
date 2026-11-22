@@ -2570,3 +2570,310 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #tabbar .tab:nth-child(2)::after{width:13px;height:13px;right:2px}
  #yard-actions .fab::after{width:14px;height:14px}
 }
+
+
+/* 2026-11-21: real intro collision fix. The caption is a separate flex child
+   AFTER the cat gallery, never a floating layer across illustrated paws. */
+#intro > .intro-cat-gallery{margin-bottom:0!important;}
+#intro > .intro-gallery-caption{
+ position:static!important;inset:auto!important;left:auto!important;bottom:auto!important;
+ transform:none!important;z-index:1;display:block;flex:0 0 auto;
+ align-self:center;max-width:min(92%,490px);width:max-content;
+ margin:0 auto 3px;padding:6px 16px;
+ background:rgba(255,248,243,.72);border:1px solid #ffffffb5;
+ border-radius:999px;box-shadow:0 3px 11px #8c719321;
+ color:#775f7d;font:850 clamp(12px,2.1vw,16px)/1.45 system-ui,sans-serif;
+ white-space:normal;text-align:center;overflow-wrap:anywhere;
+}
+@media(max-width:650px){
+ #intro > .intro-cat-gallery{margin-bottom:0!important}
+ #intro > .intro-gallery-caption{font-size:clamp(11px,3.3vw,14px);padding:5px 12px;
+   max-width:calc(100% - 24px);margin:0 auto 2px}
+}
+@media(max-height:620px){
+ #intro > .intro-gallery-caption{padding:4px 10px;font-size:12px;margin:0 auto}
+}
+
+/* Every earned duo tile is a direct viewer action, not a pair selector. */
+#panel .duo-unlocked-card{
+ cursor:pointer;touch-action:manipulation;transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+#panel .duo-unlocked-card:hover{transform:translateY(-2px)}
+#panel .duo-unlocked-card:active{transform:translateY(1px) scale(.992)}
+#panel .duo-unlocked-card:focus-visible{outline:3px solid #a07ebe;outline-offset:3px}
+#panel .duo-card-watch{display:inline-flex;align-items:center;justify-content:center;
+ width:fit-content;max-width:100%;gap:6px;min-height:29px;
+ border-radius:999px;padding:5px 11px;
+ font:850 12px/1.25 system-ui,sans-serif;
+ color:#724e7b;background:linear-gradient(115deg,#f9e5f1,#eee2fd);
+ border:1px solid #d9bfdc;box-shadow:0 2px 5px #9b829525;
+}
+#panel .duo-unlocked-card:hover .duo-card-watch{background:#f6d9ed}
+#panel .duo-unlocked-card .duo-gallery-thumb{
+ aspect-ratio:16/9!important;width:100%;height:auto!important;
+ border-radius:13px;object-fit:contain;filter:contrast(1.07) saturate(1.07);
+ background:linear-gradient(150deg,#fffbf4,#f1e9f5 48%,#e7f0ea);
+}
+
+/* Accessible, same-page animation viewer. Close is always above its iframe,
+   including narrow portrait phones with safe-area cutouts. */
+#cb-duo-viewer{
+ position:fixed;inset:0;z-index:2147482500;display:flex;
+ align-items:center;justify-content:center;padding:clamp(9px,2.5vw,22px);
+ background:rgba(36,25,46,.67);backdrop-filter:blur(9px);
+}
+#cb-duo-viewer[hidden]{display:none!important}
+#cb-duo-viewer .cb-duo-viewer-shell{
+ width:min(920px,100%);max-height:calc(100dvh - 18px);
+ position:relative;overflow:hidden;border-radius:23px;
+ border:2px solid #fff9ef;box-shadow:0 22px 70px #24142d85;
+ background:linear-gradient(155deg,#fff8ef,#f2e9fa);
+ padding:48px 9px 8px;display:flex;flex-direction:column;
+}
+#cb-duo-viewer .cb-duo-viewer-close{
+ position:absolute;z-index:2;top:8px;right:10px;
+ width:38px;height:38px;border-radius:50%;
+ border:2px solid #f6f0ec;background:#f7e1f0;
+ color:#684d70;font:bold 25px/1 system-ui;cursor:pointer;
+ box-shadow:0 3px 8px #9b82942b;
+}
+#cb-duo-viewer .cb-duo-viewer-close:focus-visible{
+ outline:3px solid #8d73a2;outline-offset:2px;
+}
+#cb-duo-viewer .cb-duo-viewer-title{
+ position:absolute;top:11px;left:18px;right:58px;text-align:left;
+ color:#735c7d;font:850 clamp(13px,2.2vw,18px)/1.3 system-ui;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+#cb-duo-viewer iframe{
+ border:0;display:block;width:100%;
+ height:min(73dvh,660px);min-height:250px;border-radius:16px;
+ background:#f7f0e9;
+}
+@media(max-width:600px){
+ #cb-duo-viewer{padding:7px}
+ #cb-duo-viewer .cb-duo-viewer-shell{padding:47px 5px 5px;border-radius:16px;
+   max-height:calc(100dvh - 14px)}
+ #cb-duo-viewer iframe{height:min(75dvh,590px);min-height:280px}
+ #cb-duo-viewer .cb-duo-viewer-close{right:7px}
+ #cb-duo-viewer .cb-duo-viewer-title{left:12px}
+}
+
+
+/* Intro framing 2026-11-21: CTA stays in the first visible viewport even on
+   short windows. The painted kittens use the same full-body CatArt shapes;
+   reduce the empty top rather than clipping their ears or feet. */
+#intro{
+ justify-content:flex-start!important;
+ gap:clamp(5px,.85vh,9px)!important;
+ padding:clamp(42px,5.8vh,58px) 12px max(13px,env(safe-area-inset-bottom,0px))!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;
+ scroll-padding-top:clamp(42px,5.8vh,58px);
+}
+#intro > .intro-cat-gallery{
+ width:min(720px,94vw)!important;
+ height:clamp(120px,19vh,182px)!important;
+ max-height:182px!important;
+ flex-shrink:0!important;
+ margin:0 auto!important;
+}
+#intro #intro-cats{object-fit:contain!important}
+#intro > .intro-gallery-caption{margin:1px auto 0!important;padding:5px 14px!important}
+#intro .studio-badge{flex-shrink:0}
+#intro .game-logo{margin:0 auto!important;line-height:1.06!important}
+#intro .game-logo .logo-en{margin-top:2px!important}
+#intro > p:not(#start-error){margin:0 auto!important;padding:0 8px!important;line-height:1.4!important}
+#intro #intro-start{
+ order:0!important;display:block!important;visibility:visible!important;
+ flex:0 0 auto!important;align-self:center;
+ min-height:50px!important;
+ margin:3px auto!important;
+ padding:10px 30px!important;
+}
+#intro .intro-features{order:1!important;margin:3px auto!important}
+#intro .intro-guide{order:2!important;margin:0 auto!important}
+#intro #intro-reset{order:3!important;margin:0 auto!important}
+#intro #start-error{order:4!important}
+@media(max-width:700px){
+ #intro{
+   padding:calc(43px + env(safe-area-inset-top,0px)) 10px
+    calc(13px + env(safe-area-inset-bottom,0px))!important;
+   gap:6px!important;
+ }
+ #intro > .intro-cat-gallery{
+  width:min(96vw,540px)!important;
+  height:clamp(109px,18vh,155px)!important;
+  max-height:155px!important;
+ }
+ #intro .game-logo{font-size:clamp(29px,8vw,41px)!important}
+ #intro .game-logo .logo-en{font-size:10px!important}
+ #intro #intro-start{
+   width:min(90%,330px)!important;min-height:48px!important;
+   padding:10px 14px!important;order:0!important;
+ }
+ #intro .intro-features span{min-height:38px!important;padding:6px 9px!important}
+ #intro > p:not(#start-error){font-size:12px!important}
+ #intro > .intro-gallery-caption{font-size:clamp(11px,3.1vw,13px)!important}
+}
+@media(max-height:680px){
+ #intro{gap:5px!important}
+ #intro > .intro-cat-gallery{height:clamp(108px,17vh,146px)!important}
+ #intro .game-logo{font-size:clamp(27px,5vh,42px)!important}
+ #intro .intro-features span{min-height:36px!important}
+ #intro #intro-start{min-height:46px!important}
+}
+@media(max-height:480px) and (orientation:landscape){
+ #intro > .intro-cat-gallery{height:110px!important;width:min(580px,80vw)!important}
+ #intro .intro-features{max-width:420px!important}
+ #intro #intro-start{width:min(300px,85%)!important}
+}
+
+
+/* 2026-11-21: one clear visual hierarchy on the Cat Bond first screen.
+   Title + kittens introduce the game; the ONLY primary action comes directly
+   next, before the small tagline, secondary copy and noninteractive features. */
+#intro{
+ --intro-berry:#865080;
+ --intro-ink:#57435e;
+}
+#intro .studio-badge{
+ opacity:.78!important;
+ transform:scale(.88);
+ transform-origin:center;
+ margin:0 auto!important;
+}
+#intro .game-logo{
+ color:#65466e!important;
+ font-weight:950!important;
+ letter-spacing:.055em!important;
+ text-shadow:0 2px 0 #fff8f2,0 6px 16px #89709225!important;
+}
+#intro .game-logo .logo-en{
+ color:#987da0!important;
+ font-size:.20em!important;
+ letter-spacing:.23em!important;
+ font-weight:750!important;
+}
+#intro > .intro-cat-gallery{
+ border-color:#fff9f2!important;
+ box-shadow:0 8px 20px #93789722,inset 0 2px 4px #fffaf9b0!important;
+}
+#intro #intro-start{
+ /* Override the old low-contrast pastel gold-button skin. */
+ order:0!important;
+ display:inline-flex!important;
+ align-items:center;justify-content:center;gap:9px;
+ position:relative;z-index:3;
+ width:min(370px,86vw)!important;
+ min-width:0!important;
+ min-height:62px!important;
+ padding:13px 24px!important;
+ margin:8px auto 6px!important;
+ color:#fff9f6!important;
+ font:950 clamp(20px,3.2vw,25px)/1.2 "PingFang SC","Microsoft YaHei",system-ui,sans-serif!important;
+ letter-spacing:.08em;
+ text-shadow:0 2px 2px #5e386080!important;
+ background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important;
+ border:3px solid #fff7f3!important;
+ border-radius:22px!important;
+ box-shadow:0 6px 0 #72507f57,0 13px 26px #7852775c,
+  inset 0 1px 3px #fff6f18e!important;
+ cursor:pointer;
+ transition:transform .16s ease,box-shadow .16s ease,filter .16s ease!important;
+}
+#intro #intro-start::before{
+ content:"🐾";display:inline-block;
+ font-size:clamp(20px,3vw,25px);line-height:1;
+ filter:drop-shadow(0 2px 2px #5e3a6b44);
+}
+#intro #intro-start::after{
+ content:"›";
+ font:900 28px/1 system-ui,sans-serif;
+ opacity:.95;margin-left:1px;
+}
+#intro #intro-start:hover{
+ filter:brightness(1.09)!important;
+ transform:translateY(-2px)!important;
+ box-shadow:0 8px 0 #72507f57,0 17px 28px #78527767!important;
+}
+#intro #intro-start:active{
+ filter:brightness(.98)!important;
+ transform:translateY(3px)!important;
+ box-shadow:0 2px 0 #72507f57,0 5px 12px #78527744!important;
+}
+#intro #intro-start:focus-visible{
+ outline:3px solid #e6be6e!important;
+ outline-offset:3px!important;
+}
+#intro > .intro-gallery-caption{
+ /* This should read as a subtitle, NOT a competing call-to-action. */
+ position:static!important;inset:auto!important;transform:none!important;
+ color:#806985!important;
+ background:transparent!important;
+ border:0!important;box-shadow:none!important;
+ font:725 clamp(11px,1.55vw,13px)/1.4 system-ui,sans-serif!important;
+ padding:1px 4px!important;
+ margin:0 auto!important;
+ white-space:normal!important;
+}
+#intro > p:not(#start-error){
+ color:#7a6c79!important;
+ font-size:clamp(11px,1.5vw,13px)!important;
+ font-weight:550!important;
+ line-height:1.5!important;
+ max-width:570px!important;
+}
+#intro .intro-features{
+ width:min(510px,100%)!important;
+ gap:6px!important;
+ margin:5px auto 0!important;
+}
+#intro .intro-features span{
+ background:#fffaf18a!important;
+ border:1px solid #f5eaf0b8!important;
+ box-shadow:none!important;
+ color:#827385!important;
+ font-size:clamp(10px,1.3vw,12px)!important;
+ font-weight:670!important;
+ line-height:1.35!important;
+ min-height:34px!important;
+ padding:6px 10px!important;
+}
+#intro .intro-guide{
+ max-width:500px!important;
+ border:0!important;
+ border-radius:10px!important;
+ background:transparent!important;
+ color:#8c7e8b!important;
+ box-shadow:none!important;
+ font-size:clamp(10px,1.2vw,12px)!important;
+ padding:2px 5px!important;
+}
+#intro .intro-guide strong{font-weight:650!important}
+#intro #intro-reset{
+ font-size:11px!important;
+ opacity:.75;
+}
+@media(max-width:700px){
+ #intro #intro-start{
+  width:min(325px,88vw)!important;
+  min-height:55px!important;
+  padding:11px 15px!important;
+  margin:5px auto 4px!important;
+  font-size:clamp(18px,5vw,22px)!important;
+  border-radius:18px!important;
+ }
+ #intro .intro-cat-gallery{margin-bottom:0!important}
+ #intro > .intro-gallery-caption{font-size:11px!important}
+ #intro .intro-features span{min-height:33px!important;padding:6px 7px!important}
+ #intro > p:not(#start-error){font-size:11.5px!important}
+}
+@media(max-height:610px){
+ #intro #intro-start{min-height:49px!important;margin:3px auto!important}
+ #intro .intro-features{margin:2px auto!important}
+ #intro .intro-gallery-caption{padding:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #intro #intro-start{transition:none!important}
+}
