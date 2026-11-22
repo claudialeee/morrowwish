@@ -69,7 +69,7 @@ jobs:
           if(m.version!=='V8'||m.trailers.length!==7||m.socialAutopublish!==false||m.trailers.some(t=>t.published||t.paused))throw Error('Invalid approval-safe manifest');
           const bond=m.trailers.find(x=>x.slug==='cat-bond');
           const heist=m.trailers.find(x=>x.slug==='pawsibly-innocent');
-          for(const name of ['raising','cat-upgrade','duo-partners','duo-surprise','duo-surprise-outcome','work-after','tease','map-explore','battle-intro','duo','ultimate','rare-encounter','rare-fight','rare-capture']){
+          for(const name of ['raising','cat-upgrade','duo-partners','duo-surprise','duo-surprise-outcome','work-after','tease','map-explore','map-management','team-chooser','auto-team-saved','battle-intro','duo','ultimate','rare-encounter','rare-fight','rare-capture']){
             if(!bond.shots.some(s=>s.scene===name&&s.seconds>=1.5))throw Error('Cat Bond missing new real footage: '+name);
           }
           for(const name of ['escape-attempt','narrow-pursuit','narrow-achievement','caught-attempt']){
