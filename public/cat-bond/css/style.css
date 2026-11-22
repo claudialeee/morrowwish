@@ -2877,3 +2877,145 @@ body.cb-exploring #yard-placement-dock{display:none!important}
 @media(prefers-reduced-motion:reduce){
  #intro #intro-start{transition:none!important}
 }
+
+
+/* Post-capture adventure guide + quieter hero portrait, Nov 2026.
+   Small visual hint, direct actions and real target highlights; all
+   optional, save-backed and keyboard accessible. */
+#intro > .intro-cat-gallery{
+ width:min(660px,92vw)!important;
+ height:clamp(112px,17vh,148px)!important;
+ max-height:148px!important;
+ margin:0 auto!important;
+ flex:0 0 auto!important;
+}
+#intro #intro-cats{
+ object-fit:contain!important;
+}
+#first-quest.is-tour{
+ position:absolute!important;
+ top:calc(108px + env(safe-area-inset-top,0px))!important;
+ left:50%!important;
+ transform:translateX(-50%)!important;
+ z-index:26!important;
+ display:flex!important;
+ flex-direction:column;
+ align-items:stretch;
+ gap:7px;
+ width:min(422px,calc(100% - 28px))!important;
+ max-width:calc(100% - 28px)!important;
+ padding:12px 14px 13px!important;
+ pointer-events:auto!important;
+ text-align:left!important;
+ white-space:normal!important;
+ border-radius:19px!important;
+ border:2px solid #fffaf5!important;
+ background:linear-gradient(135deg,rgba(255,248,240,.96),rgba(242,230,250,.97))!important;
+ color:#655269!important;
+ box-shadow:0 10px 25px #4c315a35,0 0 0 1px #cdaac670!important;
+ backdrop-filter:blur(10px);
+}
+#first-quest.is-tour[hidden]{display:none!important}
+#first-quest .cb-guide-head{
+ display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+#first-quest .cb-guide-progress{
+ color:#a2739b;
+ font:850 10px/1.3 system-ui,sans-serif;
+ letter-spacing:.07em;
+}
+#first-quest .cb-guide-title{
+ display:block;
+ color:#6f4c78;
+ font:900 clamp(15px,2vw,17px)/1.32 system-ui,sans-serif;
+}
+#first-quest .cb-guide-message{
+ margin:0!important;
+ padding:0!important;
+ color:#67576b!important;
+ font:550 clamp(12px,1.6vw,13px)/1.5 system-ui,sans-serif;
+ background:transparent!important;
+ box-shadow:none!important;
+ text-align:left!important;
+}
+#first-quest .cb-guide-action{
+ align-self:flex-start;
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ min-height:37px;padding:7px 16px;
+ border:1.5px solid #fff6f3;border-radius:13px;
+ background:linear-gradient(115deg,#9c608c,#815a9b);
+ box-shadow:0 3px 0 #755a8033,0 6px 13px #71447b2b;
+ color:white;font:850 13px/1.4 system-ui,sans-serif;
+ cursor:pointer;touch-action:manipulation;
+}
+#first-quest .cb-guide-action span{font-size:20px;line-height:1}
+#first-quest .cb-guide-action:hover{filter:brightness(1.07)}
+#first-quest .cb-guide-action:active{transform:translateY(2px)}
+#first-quest .cb-guide-skip{
+ border:0;background:transparent;color:#948398;
+ font:650 11px/1.4 system-ui,sans-serif;
+ padding:5px 2px 5px 9px;min-height:26px;
+ cursor:pointer;touch-action:manipulation;
+}
+#first-quest .cb-guide-skip:hover{text-decoration:underline}
+#first-quest button:focus-visible,#guide-help:focus-visible{
+ outline:3px solid #e8be7b;outline-offset:3px;
+}
+#guide-help{
+ position:absolute;top:calc(112px + env(safe-area-inset-top,0px));left:12px;
+ z-index:26;min-width:72px;min-height:36px;
+ display:inline-flex;align-items:center;justify-content:center;
+ border-radius:13px;border:1.5px solid #fff4ed;
+ background:rgba(255,246,239,.84);
+ color:#785e83;font:750 12px/1.25 system-ui,sans-serif;
+ box-shadow:0 3px 10px #785c8529;
+ cursor:pointer;touch-action:manipulation;
+}
+#guide-help[hidden]{display:none!important}
+/* Highlight the actual Cats / Workshop tab or Map / Play control, rather
+   than placing another blocking instruction over the game. */
+#stage .cb-guide-target{
+ outline:3px solid #dd97be!important;
+ outline-offset:3px!important;
+ border-color:#c889b6!important;
+ animation:cb-tour-glow 1.5s ease-in-out infinite;
+}
+@keyframes cb-tour-glow{
+ 0%,100%{filter:brightness(1);box-shadow:0 0 0 4px #f8c9e149!important}
+ 50%{filter:brightness(1.1);box-shadow:0 0 0 8px #f7c4e382!important}
+}
+@media(max-width:700px){
+ #intro > .intro-cat-gallery{
+  width:min(94vw,530px)!important;
+  height:clamp(98px,15.5vh,123px)!important;
+  max-height:123px!important;
+ }
+ #first-quest.is-tour{
+  top:calc(108px + env(safe-area-inset-top,0px))!important;
+  width:calc(100% - 20px)!important;
+  max-width:calc(100% - 20px)!important;
+  border-radius:15px!important;
+  padding:9px 11px 10px!important;
+  gap:5px;
+ }
+ #first-quest .cb-guide-title{font-size:14px}
+ #first-quest .cb-guide-message{font-size:12px}
+ #first-quest .cb-guide-action{min-height:35px;font-size:12px}
+ #guide-help{top:calc(108px + env(safe-area-inset-top,0px));left:9px}
+}
+@media(orientation:landscape) and (max-height:520px){
+ #intro > .intro-cat-gallery{height:105px!important;width:min(520px,78vw)!important}
+ #first-quest.is-tour{
+  top:calc(87px + env(safe-area-inset-top,0px))!important;
+  left:10px!important;transform:none!important;
+  width:min(370px,54vw)!important;
+  max-width:min(370px,54vw)!important;
+  gap:4px;padding:7px 9px!important;
+ }
+ #first-quest .cb-guide-title{font-size:13px}
+ #first-quest .cb-guide-message{font-size:11px}
+ #first-quest .cb-guide-action{min-height:30px;padding:4px 11px}
+}
+@media(prefers-reduced-motion:reduce){
+ #stage .cb-guide-target{animation:none!important}
+}
