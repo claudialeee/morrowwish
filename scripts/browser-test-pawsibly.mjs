@@ -241,7 +241,7 @@ try{
  assert.equal(homeZh.bondTitle?.trim(),'猫猫纽带','Chinese Cat Bond heading should not repeat English game name');
  assert.equal(await page.locator('body').textContent().then(s=>(s.match(/✳/g)||[]).length),0,'Homepage should not display the disliked ✳ decorative glyph');
  assert.match(homeZh.about,/想象|自由/,'About text must be Chinese');
- assert.match(homeZh.footer,/独立游戏/,'Footer must be Chinese');
+ assert.match(homeZh.footer,/独立游戏|Independent games/,'Footer must retain the Morrow Wish studio byline');
  assert.match(homeZh.miniDescription,/小游戏|挑战|短局/,'Mini games copy must be Chinese');
  assert.equal(homeZh.catTitle?.trim(),'猫猫绝对无辜！','Chinese title must show no English Pawsibly subtitle');
  assert.doesNotMatch(homeZh.catTitle,/Pawsibly|Innocent/i,'Chinese title must not leak its English name');
