@@ -773,9 +773,9 @@ html,body{background:#eaf1e8;color:var(--text)}
 
 /* Frictionless new-player capture hint; game world remains unchanged. */
 #intro .intro-guide{padding:11px 15px;width:auto;max-width:92vw;margin:1px auto;background:rgba(255,251,239,.82);color:#61452f;font-size:.96rem;font-weight:850;text-align:center}
-#first-quest{position:absolute;z-index:25;top:66px;left:50%;transform:translateX(-50%);width:max-content;max-width:min(92%,450px);padding:9px 14px;border:2px solid #f1d5a3;border-radius:999px;background:rgba(255,251,235,.95);box-shadow:0 5px 18px #4a332c30;color:#654632;font:800 13px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none}
+#first-quest{position:absolute;z-index:25;top:calc(96px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:max-content;max-width:min(92%,450px);padding:9px 14px;border:2px solid #f1d5a3;border-radius:999px;background:rgba(255,251,235,.95);box-shadow:0 5px 18px #4a332c30;color:#654632;font:800 13px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none}
 #first-quest[hidden]{display:none!important}
-@media(max-width:600px){#first-quest{top:max(62px,env(safe-area-inset-top));font-size:12px;padding:7px 10px}#intro{gap:9px;padding:14px}#intro .intro-guide{font-size:.8rem}}
+@media(max-width:600px){#first-quest{top:calc(96px + env(safe-area-inset-top,0px));max-width:calc(100% - 24px);font-size:12px;line-height:1.25;padding:7px 10px;border-radius:14px;overflow-wrap:anywhere}#intro{gap:9px;padding:14px}#intro .intro-guide{font-size:.8rem}}
 
 /* CrazyGames-specific iframe: only the playable game, not a portal to our site.
    Fullscreen belongs to the host. The ordinary Morrow Wish page is unchanged. */
@@ -792,7 +792,7 @@ html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!imp
   html.cb-cg .battle-hint{top:45px;font-size:11px;max-width:70vw;overflow:hidden;text-overflow:ellipsis}
   html.cb-cg .battle-topbar{top:4px;padding:4px 10px;max-width:95vw}
   html.cb-cg #team-slots{top:45px}
-  html.cb-cg #first-quest{top:56px;font-size:11px;padding:6px 10px}
+  html.cb-cg #first-quest{top:calc(92px + env(safe-area-inset-top,0px));font-size:11px;padding:6px 10px}
 }
 
 /* Battle rank turns skillful captures into visible progression. */
