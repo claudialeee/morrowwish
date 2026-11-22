@@ -451,8 +451,8 @@ for(const [world,life] of Object.entries(cases)){
 if(moodNames.size!==8)throw Error('All dreams still play like the same mystery game');
 for(const marker of [
  'edition:"life-v5"','state.route=n','state.scores[act.gain]++','state.history.push',
- 'prior.title','prior.result','function isDream','const quality=rare?"perfect":"strong"','window.ELSEWHERE_VIBES',
- 'i===4&&!dream','function revealTwist()','window.DreamAudio?.fx("twist")',
+ 'prior.title','prior.result','function isDream','const quality=rare?"perfect":(state.id==="amalfi"||momentum>=2)?"strong":"cost"','window.ELSEWHERE_VIBES',
+ 'choiceHint(a,i)','function revealTwist()','window.DreamAudio?.fx("twist")',
  'window.DreamAudio?.fx("ending")','track("choice_made"','track("chapter_completed"',
  'track("life_completed"','track("ending_view"','window.arcadeMetric?.("game_complete")',
  'navigator.globalPrivacyControl','MorrowwishSocialShare?.open','history.pushState'
@@ -795,13 +795,18 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
  const three=play([...ready,['key','1'],['tick',.2],['key','2'],['tick',.2],['key','3']]);
  if(three.points<42||three.delivered!==3||three.events.filter(x=>x.name==='parcel_sorted').length!==3)
   throw Error('Sequential parcels or combos broken: '+JSON.stringify(three));
+ const eightActions=[...ready,['key','1'],['tick',.2],['key','2'],['tick',.2],['key','3']];
+ for(let i=0;i<5;i++)eightActions.push(['tick',.2],['key','2']);
+ const eight=play(eightActions);
+ if(eight.delivered!==8||eight.events.filter(x=>x.name==='parcel_shift_clear').length!==1||eight.points<200)
+  throw Error('Parcel Panic eight-delivery shift reward regressed: '+JSON.stringify(eight));
  const zh=play([...ready,['key','1']], 'zh');
  if(!zh.status.includes('已送达')&&!zh.status.includes('直接点击'))throw Error('One-click Chinese hints missing');
  const page=fs.readFileSync('public/parcel-panic/index.html','utf8');
  const translations=fs.readFileSync('public/zh-mini.js','utf8');
- if(!page.includes('click its color lane or press 1, 2, or 3')||
+ if(!page.includes('anticipate the next order')||
     !translations.includes('按顺序分拣包裹')||
-    !factory.includes('NEXT PARCEL'))throw Error('One-click onboarding copy missing');
+    !factory.includes('UP NEXT:')||!factory.includes('parcel_shift_clear'))throw Error('One-click onboarding copy missing');
  console.log('Parcel Panic: one-click, keyboard, touch drag, wrong/empty lane, combos and zh copy passed.');
 }
 
@@ -838,7 +843,7 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
  if(!src.includes('doubleBeat=k>=5')||!src.includes('lastHazSide')||!src.includes('Math.max(.43'))
   throw Error('Flip Dash rapid alternating/repeated beat logic missing');
  const parcel=src.slice(src.indexOf('G["parcel-panic"]=()=>{'),src.indexOf('const factory=G[id]'));
- if(!parcel.includes('life=4')||!parcel.includes('Math.min(355,145+delivered*10.5'))
+ if(!parcel.includes('life=4')||!parcel.includes('Math.min(315,148+delivered*5+time*.3)')||!parcel.includes('p?.kind==="express"?1.25')||!parcel.includes('queue.shift()'))
   throw Error('Parcel Panic difficulty and reaction window regressed');
  console.log('Reflex challenge: faster opening, earned dodges, mixed hazard waves, tougher four-life sorting verified.');
 }
