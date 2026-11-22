@@ -2243,6 +2243,8 @@ class CaptureBattle {
       uid: f.cat.uid, owner: 'me', f, sk, col,
       aim,baseAim:aim,len,width,dps:Math.max(1,dmgPerSec),t:dur,max:dur,
       tickAcc: 0, element: sk?.element,
+      // Use per-beam elapsed seconds rather than wall time to throttle feedback.
+      _impactAt:new Map(), _impactCount:0, _lastPulseAt:-99,
     });
     window.MorrowwishAudio?.effect?.('beam');
   }
@@ -2296,9 +2298,10 @@ class CaptureBattle {
           if (this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5) {
             // A sustained stream makes small damage ticks, not four huge
             // hit-stops/shakes per second. Contact feedback remains localized.
-            this.resolveHit(e,b.owner,
+            const contact=this.resolveHit(e,b.owner,
               {...(b.sk||{element:b.element}),isChanneledTick:true},
               hitDmg,e.x,e.y);
+            if(contact?.dealt>0)this.beamHitFeedback(b,e);
           }
         }
         // sparks along the beam so it reads as a continuous stream
@@ -2312,6 +2315,40 @@ class CaptureBattle {
     for (const b of endedBeams) if (b.f && b.f._beamRoot) b.f._beamRoot = 0;
     this.beams = this.beams.filter(b => b.t > 0);
   }
+  // Contact feedback for channeling: an initial connect pop and short pulses,
+  // not a global flash, large knockback or hitstop on every damage tick.
+  beamHitFeedback(b,target){
+    if(!b||!target)return false;
+    const elapsed=b.max-b.t;
+    b._impactAt??=new Map();
+    const last=b._impactAt.get(target);
+    if(last!=null&&elapsed-last<.23)return false;
+    b._impactAt.set(target,elapsed);
+    b._impactCount=(b._impactCount||0)+1;
+    const first=last==null,color=b.col||'#cde9ff';
+    target.hitWhite=Math.max(target.hitWhite||0,first?.085:.055);
+    target.hitSquash=Math.max(target.hitSquash||0,first?.14:.075);
+    // Draw-only micro recoil: the target never leaves the beam's collision area.
+    target._recoilX=(target._recoilX||0)+Math.cos(b.aim)*(first?3:1.4);
+    target._recoilY=(target._recoilY||0)+Math.sin(b.aim)*(first?3:1.4);
+    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim});
+    this.vfx.ring(target.x,target.y,{r0:first?9:5,
+      vr:first?105:74,life:first?.26:.19,color,width:first?2.8:1.8});
+    if(first)this.vfx.burst(target.x,target.y,
+      {count:this.game?.isTouch?4:6,color:'#fff5dc',speed:80,life:.2,r:2});
+    // Gate camera and sound across all simultaneous beam targets.
+    if(elapsed-(b._lastPulseAt??-99)>.33){
+      b._lastPulseAt=elapsed;
+      this.addShake(first?.065:.035,b.aim);
+      if(first)this.hitstop=Math.max(this.hitstop,.016);
+      if(this.t-(this._lastBeamHitAudioAt??-99)>.3){
+        this._lastBeamHitAudioAt=this.t;
+        window.MorrowwishAudio?.effect?.('combat_hit');
+      }
+    }
+    return true;
+  }
+
   // perpendicular distance from point (px,py) to segment (ax,ay)-(bx,by)
   pointToSeg(px, py, ax, ay, bx, by) {
     const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
