@@ -314,8 +314,6 @@
     '玩小游戏': 'Play a mini-game',
     '更多培养方式': 'More Training Options',
     '🐠 补充经验': '🐠 Gain XP',
-    '⬆ 最多连升 5 级': '⬆ Up to 5 Levels',
-    '逐级计算花费': 'Pay for each full level',
     '✨ 连续特训': '✨ Batch Training',
     '最多 10 次 · 每次 80🪙': 'Up to 10 times · 80🪙 each',
     '📖 查看与搭配技能': '📖 View & Equip Skills',

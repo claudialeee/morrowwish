@@ -50,12 +50,11 @@ try{
   });
   assert.deepEqual(failed,{ok:false,stable:true},'insufficient bulk orders never partially debit');
   await page.evaluate(()=>UI.openCatDetail(State.S.cats[0]));
-  // Advanced growth actions intentionally live behind a <details> disclosure.
-  // Test the real player path, not a hidden DOM button click.
-  await page.locator('#cd-grow-more > summary').click();
-  await page.locator('#cd-trainfive').click();
-  assert.equal(await page.evaluate(()=>State.S.cats[0].level),6,
-    'one-tap multi-level training must actually advance five levels');
+  assert.equal(await page.locator('#cd-trainfive').count(),0,
+    'the redundant five-level button has been removed');
+  await page.locator('#cd-trainnext').click();
+  assert.equal(await page.evaluate(()=>State.S.cats[0].level),2,
+    'one-tap upgrade should advance one level');
   // Current economy uses coins for stat training; top up only for this isolated operation.
   await page.evaluate(()=>{State.S.coins=1000;UI.renderCatDetail(State.S.cats[0]);});
   await page.locator('#cd-grow-more > summary').click();

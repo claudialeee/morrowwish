@@ -78,10 +78,12 @@ try {
       handlerPresent:typeof UI.doGrow==='function',
       stageChanged:(cat.stage||0)!==beforeStage,
       shardsChanged:State.S.raising.starShards!==beforeShards,
-      trainingButton:!!document.getElementById('cd-trainfive')};
+      trainingButton:!!document.getElementById('cd-trainnext'),
+      redundantFiveLevelButton:!!document.getElementById('cd-trainfive')};
   });
   assert.deepEqual(removed,{button:false,awakeningChoices:0,ceremony:false,
-    handlerPresent:false,stageChanged:false,shardsChanged:false,trainingButton:true});
+    handlerPresent:false,stageChanged:false,shardsChanged:false,
+    trainingButton:true,redundantFiveLevelButton:false});
   const disabled=await page.evaluate(()=>{
     const cat=State.S.cats[0],before=cat.stage||0;
     const result=Growth.advance(cat,'agi');

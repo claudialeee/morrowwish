@@ -1499,7 +1499,6 @@ const UI = {
           <summary>更多培养方式</summary>
           <div class="cb-grow-advanced">
             <button type="button" class="btn ghost cb-grow-action" id="cd-trainxp"><strong>🐠 补充经验</strong><small>3🐠 · +${xpPerFeed}经验</small></button>
-            <button type="button" class="btn ghost cb-grow-action" id="cd-trainfive"><strong>⬆ 最多连升 5 级</strong><small>逐级计算花费</small></button>
             <button type="button" class="btn ghost cb-grow-action" id="cd-stat-ten"><strong>✨ 连续特训</strong><small>最多 10 次 · 每次 80🪙</small></button>
           </div>
         </details>
@@ -1565,8 +1564,7 @@ const UI = {
     document.getElementById('cd-grow-more')?.addEventListener('toggle',e=>{
       if(e.currentTarget===document.getElementById('cd-grow-more'))this._catGrowMore=e.currentTarget.open?cat.uid:null;
     });
-    document.getElementById('cd-trainnext').onclick=()=>this.quickTrainCat(cat,1);
-    document.getElementById('cd-trainfive').onclick=()=>this.quickTrainCat(cat,5);
+    document.getElementById('cd-trainnext').onclick=()=>this.quickTrainCat(cat);
     document.getElementById('cd-stat-ten').onclick=()=>this.quickStatCat(cat,10);
     const renameBtn = document.getElementById('cd-rename');
     if (renameBtn) renameBtn.onclick = () => {
@@ -1577,11 +1575,9 @@ const UI = {
     const evoBtn = document.getElementById('cd-evolve');
     if (evoBtn) evoBtn.onclick = () => this.doEvolve(cat);
   },
-  // Batch XP by whole LEVELS, using the same fish cost / skill unlock
-  // formulas as individual training. Never overspend to stop halfway through
-  // an advertised level, and do not bypass the intentional growth-form choice.
-  quickTrainCat(cat,levels=1){
-    const limit=Math.max(1,Math.min(5,Math.floor(levels)||1));
+  // One-tap upgrade advances exactly one level, spending the required fish.
+  quickTrainCat(cat){
+    const limit=1;
     const was=cat.level;
     const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
     let paid=0;

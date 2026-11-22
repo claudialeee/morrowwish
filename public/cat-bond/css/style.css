@@ -3761,7 +3761,7 @@ body.cb-exploring #stage #map-actions > button{
 #panel #cat-detail .cb-grow-interactions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 #panel #cat-detail .cb-grow-more{margin-top:10px;border-top:1px solid #e2e9de;padding-top:5px}
 #panel #cat-detail .cb-grow-more summary{cursor:pointer;color:#53725c;font-size:12px;line-height:1.5;font-weight:750;padding:6px 3px;list-style-position:inside}
-#panel #cat-detail .cb-grow-advanced{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding-top:7px}
+#panel #cat-detail .cb-grow-advanced{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding-top:7px}
 #panel #cat-detail .cb-grow-advanced .cb-grow-action{background:#f7f8f5;color:#48644f;border:1px solid #d7e2d7}
 #panel #cat-detail .cb-grow-skills{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:9px;padding:11px 13px;border:1px solid #bdd5c1;border-radius:11px;background:#deeddf;color:#42644b;cursor:pointer;text-align:left;font-size:13px;font-weight:800}
 #panel #cat-detail .cb-grow-skills:hover{background:#d1e6d3}
