@@ -4046,7 +4046,7 @@ class CaptureBattle {
     return !hardStun;                                         // false → updateEnemyAI skipped (full lock)
   }
 
-  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false) {
+  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false, hitTier = null) {
     // Resonance gets a separate coefficient: standard attacks retain the
     // general difficulty curve, while duo is tuned for multi-wave fights.
     if (fromDuo) dmg *= this.duoDamageMult ?? 1;
@@ -4090,7 +4090,8 @@ class CaptureBattle {
       const touch = !!this.game.isTouch;
       const frac = e.maxhp ? Math.min(1, scaled / e.maxhp) : 0.2;
       // HIT-FEEL: true short hitstop (consumed as a hard freeze in update), strength-scaled.
-      const stop = (touch ? 0.035 : 0.05) + frac * 0.07;          // ~35ms mobile, 50-120ms desktop
+      const strong=hitTier==='heavy'||hitTier==='crit'||hitTier==='stagger';
+      const stop=(touch?.035:.05)+frac*.07+(strong?.010:0);          // ~35ms mobile, 50-120ms desktop
       this.hitstop = Math.max(this.hitstop, stop);
       // CAMERA SHAKE scaled by HIT STRENGTH (not just combo heat), kicked along the blow.
       const heat = Math.min(1, this.combo / 20);
@@ -4100,7 +4101,7 @@ class CaptureBattle {
       // WHITE connect-flash on the body silhouette (separate from the i-frame fade).
       e.hitWhite = 0.09;
       // On-hit SQUASH: the struck cat compresses then springs back (draw-only).
-      e.hitSquash = Math.min(0.28, 0.12 + 0.14 * frac);
+      e.hitSquash = Math.min(.28,.12+.14*frac+(strong?.025:0));
       // KNOCKBACK (now VISIBLE): bigger base, softer rarity resist, slower decay so the
       // boop reads over ~5-6 frames. basic≈20-26px, heavy≈55px. Playful, not brutal.
       const power=(160+320*frac)/(1+e.rIdx*.3);
@@ -4113,8 +4114,10 @@ class CaptureBattle {
       if(atk&&atk.alive){atk._recoilX=-normal.x*7;atk._recoilY=-normal.y*7;}
       // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
       // scaled by hit strength — reads as force, not a symmetric puff.
-      this.vfx.impactType?.(e.x,e.y,frac>=.17?'heavy':'light',
-        {color:frac>=.17?'#ffdf9d':'#fff2c0',angle:normal.angle});
+      const tier=hitTier||(frac>=.17?'heavy':'light');
+      this.vfx.impactType?.(e.x,e.y,tier,
+        {color:tier==='crit'?'#fff4cf':tier==='heavy'?'#ffdf9d':'#fff2c0',
+          angle:normal.angle});
       // CONNECT TICK: a short, combo-pitched pop so every landed hit is audible
       // (previously only the swing had sound → players couldn't tell a hit landed).
       // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
@@ -4193,8 +4196,14 @@ class CaptureBattle {
     const col = this.elemColor(skill && skill.element);
     // 1) PROTECT (守护): fully blocks the next hit of any kind for its window.
     if ((target.protectT || 0) > 0) {
-      this.vfx.impactType?.(target.x,target.y,'guard',{color:'#9be7c4'});
-      this.vfx.text(target.x, target.y - 40, '格挡', '#9be7c4', 15);
+      // Protect is a SINGLE-HIT guard; consuming it also starts the recovery.
+      target.protectT=0;
+      target.vulnerableT=Math.max(target.vulnerableT||0,target._protectVuln||1.2);
+      target._protectVuln=0;
+      this.vfx.impactType?.(target.x,target.y,'shieldBreak',{color:'#d4f5eb'});
+      this.vfx.text(target.x,target.y-40,
+        window.MorrowwishI18n?.get?.()==='zh'?'格挡!':'BLOCK!', '#cbefd8',14);
+      this.hitstop=Math.max(this.hitstop,this.game?.isTouch?.035:.05);
       return { blocked: true, reflected: false, dealt: 0 };
     }
     // 2) REFLECT (反弹壁): flip a flying projectile back at its owner (capped so
@@ -4229,6 +4238,8 @@ class CaptureBattle {
       // can't push a non-staggered enemy below a floor — so you must use skills to
       // actually finish a fight, not just hold attack.
       const isBasic = skill && skill.isBasic;
+      // Only a hit on an ALREADY staggered enemy is a critical contact.
+      const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's NEXT hit forces a stagger + double damage.
       const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 1.6); }
       if (target.poiseMax) {
@@ -4251,7 +4262,9 @@ class CaptureBattle {
       // Channel damage is steady pressure, not a rapid sequence of hard
       // camera pauses. Normal melee/chain/projectiles retain their hitstop.
       const continuous=!!skill?.isChanneledTick;
-      this.hurtEnemy(target,dealt,x,y,continuous);
+      const heavyMove=!!skill?.heavy||['melee','dash','pounce','leap'].includes(skill?.kind);
+      const hitTier=continuous?null:alreadyStaggered?'crit':heavyMove?'heavy':'light';
+      this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier);
       // Additional authored contact mark is strictly local. Continuous beams
       // are throttled per skill/target to avoid particle and audio overload.
       if(dealt>0)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);
