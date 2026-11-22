@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 280" width="300" height="280" role="img" aria-label="圆宝，橘色异国短毛猫坦克，原创手绘二维角色贴图">
+<defs>
+ <radialGradient id="fur" cx=".28" cy=".18" r=".88"><stop stop-color="#fff0c8"/><stop offset=".45" stop-color="#f9b96c"/><stop offset=".83" stop-color="#e99846"/><stop offset="1" stop-color="#cc783a"/></radialGradient>
+ <radialGradient id="face" cx=".35" cy=".2" r=".83"><stop stop-color="#ffe8b9"/><stop offset=".56" stop-color="#f8b36b"/><stop offset="1" stop-color="#df8c47"/></radialGradient>
+ <radialGradient id="cream" cx=".39" cy=".25" r=".82"><stop stop-color="#fffdf0"/><stop offset=".75" stop-color="#fbe6d0"/><stop offset="1" stop-color="#e9be9b"/></radialGradient>
+ <linearGradient id="cape" x1="0" x2=".88" y1=".15" y2="1"><stop stop-color="#888bb6"/><stop offset=".52" stop-color="#64678e"/><stop offset="1" stop-color="#444765"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3b5"/><stop offset=".5" stop-color="#eebc6a"/><stop offset="1" stop-color="#b87937"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-80%" width="170%" height="280%"><feGaussianBlur stdDeviation="4"/></filter>
+ <filter id="paint" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" seed="11" result="grain"/><feDisplacementMap in="SourceGraphic" in2="grain" scale="1.1" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs>
+<ellipse cx="149" cy="260" rx="119" ry="12" fill="#594c53" opacity=".20" filter="url(#shadow)"/>
+<g stroke="#bd7e4e" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" filter="url(#paint)">
+ <!-- luxurious curling tiger tail -->
+ <path d="M67 180C24 161 13 116 32 82 45 61 78 67 80 90 81 104 65 109 60 101" fill="none" stroke="#ce8346" stroke-width="41"/>
+ <path d="M67 180C24 161 13 116 32 82 45 61 78 67 80 90 81 104 65 109 60 101" fill="none" stroke="url(#fur)" stroke-width="36"/>
+ <path d="M30 126q19-9 38 4M37 95q16-1 27 8M49 160q18-11 32 7" fill="none" stroke="#cf7e43" stroke-width="9" opacity=".47"/>
+ <!-- round stocky torso -->
+ <path d="M58 161Q60 114 138 109 234 106 256 166 272 219 237 249 215 264 151 253 87 269 62 241 44 221 58 161Z" fill="url(#fur)"/>
+ <ellipse cx="174" cy="193" rx="67" ry="57" fill="url(#cream)" opacity=".82" stroke="none"/>
+ <path d="M100 156q14-15 29-11M92 181q16-13 33-6M239 167q-20-15-33-6M252 190q-22-8-33-2" fill="none" stroke="#ce783b" stroke-width="8" opacity=".42"/>
+ <!-- tank cape draped to back -->
+ <path d="M90 131Q41 146 49 211 57 235 81 244 102 223 121 198L128 137Z" fill="url(#cape)" stroke="#eac17c" stroke-width="7"/>
+ <path d="M53 207Q76 221 89 229" fill="none" stroke="#f6dea7" stroke-width="3" opacity=".7"/>
+ <!-- embroidered paw -->
+ <ellipse cx="79" cy="193" rx="8" ry="7" fill="#f0d098" stroke="none"/>
+ <circle cx="68" cy="182" r="3.5" fill="#f0d098" stroke="none"/><circle cx="77" cy="177" r="3.5" fill="#f0d098" stroke="none"/><circle cx="86" cy="180" r="3.5" fill="#f0d098" stroke="none"/>
+ <!-- low front feet / grounding -->
+ <path d="M102 213Q88 225 91 252 92 266 117 265L145 262Q152 254 142 236Z" fill="url(#fur)"/>
+ <path d="M193 215Q184 233 190 257 193 269 223 265L242 260Q253 246 238 223Z" fill="url(#fur)"/>
+ <path d="M117 263v-11M127 263v-10M212 263v-11M224 263v-10" stroke="#bd774f" opacity=".55" fill="none"/>
+ <!-- ears nestled into round cheek silhouette -->
+ <path d="M79 88Q75 37 96 24 120 20 137 62Z" fill="url(#fur)" stroke="#c87e48" stroke-width="3"/>
+ <path d="M174 60Q194 19 223 23 242 37 237 91Z" fill="url(#fur)" stroke="#c87e48" stroke-width="3"/>
+ <path d="M96 43q-9 12-5 31l27-14Z" fill="#eaa3a2" stroke="none" opacity=".81"/>
+ <path d="M210 45q16 12 14 30l-34-11Z" fill="#eaa3a2" stroke="none" opacity=".81"/>
+ <!-- enormous flattened plush face -->
+ <path d="M61 112Q61 68 102 56 163 28 222 67 247 85 247 123 249 171 201 190 144 212 95 185 57 169 61 112Z" fill="url(#face)" stroke="#c17d4f" stroke-width="2.6"/>
+ <!-- dark orange tabby forehead streaks -->
+ <path d="M135 57q-8 15-4 25M156 49q-8 18-2 29M180 53q-5 14-2 27" fill="none" stroke="#c77b42" stroke-width="8" opacity=".63"/>
+ <path d="M71 115q15-13 31-11M223 105q12 2 19 10" fill="none" stroke="#c77b42" stroke-width="7" opacity=".44"/>
+ <!-- fluffy cheeks, pale muzzle, striking flat nose -->
+ <ellipse cx="113" cy="152" rx="47" ry="38" fill="url(#cream)" stroke="none"/>
+ <ellipse cx="197" cy="152" rx="47" ry="38" fill="url(#cream)" stroke="none"/>
+ <path d="M142 134q10-13 24 0 9 12-2 25l-9 6-10-5q-9-14-3-26Z" fill="url(#cream)" stroke="none"/>
+ <!-- gentle sleepy amber eyes -->
+ <ellipse cx="113" cy="113" rx="24" ry="14" fill="#89503b" stroke="#9a5b39" stroke-width="1.3"/>
+ <ellipse cx="197" cy="113" rx="24" ry="14" fill="#89503b" stroke="#9a5b39" stroke-width="1.3"/>
+ <ellipse cx="115" cy="118" rx="16" ry="8" fill="#c89a57" stroke="none"/>
+ <ellipse cx="195" cy="118" rx="16" ry="8" fill="#c89a57" stroke="none"/>
+ <ellipse cx="117" cy="118" rx="4" ry="7" fill="#4b332d" stroke="none"/>
+ <ellipse cx="193" cy="118" rx="4" ry="7" fill="#4b332d" stroke="none"/>
+ <path d="M88 109Q110 98 137 110M172 110Q197 98 224 109" fill="none" stroke="#a55f3b" stroke-width="9" stroke-linecap="round"/>
+ <path d="M147 139q8-6 17 0-1 8-9 10-7-1-8-10Z" fill="#c98082" stroke="none"/>
+ <path d="M155 149v7m0 0q-5 8-13 1m13-1q6 8 14 0" fill="none" stroke="#a06a5c" stroke-width="2"/>
+ <!-- fine whiskers -->
+ <path d="M112 148L56 139M113 158L56 158M113 168L63 177M198 148L252 140M198 158L255 158M197 168L251 178" fill="none" stroke="#fff5e1" stroke-width="2.2" opacity=".88"/>
+ <!-- tank neck clasp -->
+ <path d="M102 189Q151 206 212 187L213 215Q159 237 102 213Z" fill="url(#cape)" stroke="#e5b978" stroke-width="5"/>
+ <circle cx="112" cy="200" r="10" fill="url(#gold)" stroke="#9c6b3f" stroke-width="2"/>
+ <circle cx="207" cy="200" r="10" fill="url(#gold)" stroke="#9c6b3f" stroke-width="2"/>
+ <path d="M146 198l13-4 14 4 0 20-14 10-13-10Z" fill="#727397" stroke="#f8d18a" stroke-width="3"/>
+ <ellipse cx="159" cy="214" rx="6" ry="5" fill="#ffe7a6" stroke="none"/>
+ <circle cx="152" cy="207" r="2.6" fill="#ffe7a6" stroke="none"/><circle cx="158" cy="204" r="2.6" fill="#ffe7a6" stroke="none"/><circle cx="165" cy="207" r="2.6" fill="#ffe7a6" stroke="none"/>
+</g>
+</svg>
