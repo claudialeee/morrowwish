@@ -232,6 +232,7 @@ function draw(ctx,W,H,seq,lookup){
    veil.addColorStop(0,'#e9e0f100');veil.addColorStop(.48,'#d9ccef99');veil.addColorStop(1,'#d5cdf0dc');
    ctx.fillStyle=veil;ctx.fillRect(sw*.57,0,sw*.43,sh*.155);
  }
+ if(!seq.hideCaptions){
  const en=window.MorrowwishI18n?.get?.()!=='zh';
  const title=seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||(en?'Duo Special':'双猫合击');
  ctx.save();ctx.textAlign='center';ctx.textBaseline='alphabetic';
@@ -242,6 +243,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
  if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.855,sw*.88);
  ctx.restore();
+ }
  ctx.restore();
  // Four overlapping soft alpha masks: zero visible hard edges, even in
  // portrait / landscape game modes. No rectangular stroke or clip border.

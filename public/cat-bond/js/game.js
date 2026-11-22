@@ -100,7 +100,7 @@ class Game {
       if(reward.discovery){
         const pair=window.CatRelations?.chosen?.()||[];
         if(reward.duoMemory){
-          if(pair.length===2)CatRelations.remember(pair[0],pair[1],WorldMap.currentRegion);
+          if(pair.length===2)CatRelations.remember(pair[0],pair[1],reward.duoMemoryId||WorldMap.currentRegion);
         }else if(pair.length===2)CatRelations.grow(pair[0],pair[1],5);
         metric('bond_region_secret_found',{region:reward.discovery.id,duo:!!reward.duoMemory});
       }
