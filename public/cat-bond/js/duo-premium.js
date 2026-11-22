@@ -249,9 +249,9 @@ function draw(ctx,W,H,seq,lookup){
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
  const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
- const opacity=smooth(p/.07)*(1-smooth((p-.89)/.11));
+ const opacity=smooth(p/.028)*(1-smooth((p-.965)/.035));
  if(opacity<=0)return true;
- const sw=Math.min(W*.97,H*.93*16/9),sh=sw*9/16,x=(W-sw)/2,y=(H-sh)/2;
+ const sw=Math.min(W,H*16/9),sh=sw*9/16,x=(W-sw)/2,y=(H-sh)/2;
  const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));
  const actorA=actors[0],actorB=actors[1];
  const frame=regions[key];
@@ -290,7 +290,7 @@ function draw(ctx,W,H,seq,lookup){
   // opacity on top of signature opacity. Let the player actually distinguish
   // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
   // while keeping the watercolor painting beneath them readable.
-  ctx.save();ctx.globalAlpha*=Math.min(.92,dual*.83);
+  ctx.save();ctx.globalAlpha*=Math.min(.24,dual*.22);
   window.CatBondDuoDirector?.footwork?.(ctx,sw,sh,p,key,tier);
   const fxTime=tier===1?p:tier===2?(p<.36?p+.09:p-.23):
      (p<.29?p+.10:p<.55?p-.11:p-.44);
@@ -298,10 +298,10 @@ function draw(ctx,W,H,seq,lookup){
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,fxTime,key,tier);
   ctx.restore();
  }
- if(!thumbnail)bondTierChoreography(ctx,sw,sh,p,key,tier);
+ if(!thumbnail){ctx.save();ctx.globalAlpha*=.22;bondTierChoreography(ctx,sw,sh,p,key,tier);ctx.restore();}
  // The old generic claw stamp made all 21 skills look identical; the
  // individually drawn finale and key-specific palette now carry the impact.
- if(!thumbnail)paper(ctx,0,0,sw,sh);
+ // Do not wash out the artist's real watercolor with a grey film.
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
  if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
@@ -320,48 +320,21 @@ function draw(ctx,W,H,seq,lookup){
  ctx.shadowColor='#2d244a';ctx.shadowBlur=8;ctx.fillStyle='#fffbed';
  const px=clamp(sw*.054,17,36);
  ctx.font='900 '+Math.round(px)+'px system-ui,sans-serif';
- ctx.fillText(title,sw*.5,sh*.76,sw*.91);
+ ctx.fillText(title,sw*.5,sh*.925,sw*.92);
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
- if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.855,sw*.88);
+ // Breed information is shown in the separate roster UI; never overlay
+ // a false claim of exact painted breed identity over fixed artist subjects.
+ if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.984,sw*.86);
  ctx.restore();
  }
  ctx.restore();
- // Four overlapping soft alpha masks: zero visible hard edges, even in
- // portrait / landscape game modes. No rectangular stroke or clip border.
- if(!thumbnail){ctx.save();
- ctx.globalCompositeOperation='destination-in';
- const fx=Math.max(14,sw*.085),fy=Math.max(12,sh*.13);
- function fade(x0,y0,x1,y1){
-   const m=ctx.createLinearGradient(x0,y0,x1,y1);
-   m.addColorStop(0,'rgba(255,255,255,0)');
-   m.addColorStop(1,'rgba(255,255,255,1)');
-   ctx.fillStyle=m;ctx.fillRect(0,0,sw,sh);
- }
- fade(0,0,fx,0);
- fade(sw,0,sw-fx,0);
- fade(0,0,0,fy);
- fade(0,sh,0,sh-fy);
- ctx.restore();}
+ // Keep the full painted scene opaque and intact. The old four-sided
+ // destination-in fade cut away fur, paws and scenery, making cats translucent.
  // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
  // the region's existing battle theme instead of an unrelated purple card.
  const tone=harmony(key);
  battlefield.save();
- const surrounding=battlefield.createLinearGradient(0,H*.15,W,H*.85);
- surrounding.addColorStop(0,tone.sky+'38');
- surrounding.addColorStop(.48,tone.mist+'20');
- surrounding.addColorStop(1,tone.ground+'22');
- battlefield.globalAlpha=opacity*.55;
- battlefield.fillStyle=surrounding;
- battlefield.fillRect(0,0,W,H);
- // One subtle colored halo belongs to the entire two-cat composition.
- // Its outer edge blends to the same green/blue/purple as the actual arena.
- const aura=battlefield.createRadialGradient(W*.5,H*.47,sw*.09,W*.5,H*.47,sw*.7);
- aura.addColorStop(0,tone.light+'4b');
- aura.addColorStop(.48,tone.mist+'26');
- aura.addColorStop(1,tone.ground+'00');
- battlefield.globalAlpha=opacity*.55;
- battlefield.fillStyle=aura;
- battlefield.fillRect(0,0,W,H);
+ // No washed-out halo or colored rectangle behind the full bleed painting.
  battlefield.globalAlpha=1;
  battlefield.drawImage(cinematicLayer,x,y,sw,sh);
  battlefield.restore();
