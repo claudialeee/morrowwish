@@ -1969,6 +1969,8 @@
   "净化": "Cleanse",
   "🎯 集火": "🎯 Focus fire",
   "必 杀 技": "ULTIMATE",
+  "野猫": "Wild Cat",
+  "野猫韧性：": "Wild cat poise: ",
   "韧性": "Resilience",
   "破防": "Guard Broken",
   "恢复中": "Recovering",
