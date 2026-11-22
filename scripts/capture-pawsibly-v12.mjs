@@ -49,7 +49,11 @@ function fullBoardCamera(){
    overflow:auto!important;box-sizing:border-box!important;padding:15px 18px!important}
  #overlay:not([hidden]) .modal h2{font-size:30px!important;line-height:1.15!important}
  #overlay:not([hidden]) .cat-medal{font-size:58px!important}
- #overlay:not([hidden]) .modal .buttons{margin-top:12px!important}
+ #overlay:not([hidden]) .modal .buttons{margin-top:12px!important;justify-content:center!important}
+ #overlay:not([hidden]) #retryResult,
+ #overlay:not([hidden]) #shareResult,
+ #overlay:not([hidden]) .mw-quick-feedback{display:none!important}
+ #overlay:not([hidden]) #nextResult{width:min(270px,100%)!important}
  `;
  document.head.append(css);
  // Game's #stage establishes its own stacking context; moving the REAL
