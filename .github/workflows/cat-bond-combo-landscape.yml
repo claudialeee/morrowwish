@@ -1,0 +1,84 @@
+name: Cat Bond 16x9 Combo YouTube Master
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cat-bond-combo-landscape.yml'
+      - 'scripts/record-cat-bond-combo-landscape.mjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cat-bond-combo-landscape-master
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install browser and ffmpeg
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+      - name: Fetch owned and licensed Cat Bond soundtrack
+        run: |
+          bash scripts/fetch-cat-music.sh
+          MW_PROMO_ONLY=cat-bond node scripts/fetch-promo-audio.mjs
+      - name: Capture native wide game and edit identical combat sequence
+        run: node scripts/record-cat-bond-combo-landscape.mjs
+      - name: Check final mastered MP4 and proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=public/promo/cat-bond/combo-landscape-20261122.mp4
+          test -s "$f"
+          test -s public/promo/cat-bond/combo-landscape-20261122.jpg
+          test -s public/promo/cat-bond/combo-landscape-20261122.json
+          test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$f")" = 1920x1080
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$f")" = audio
+          node - <<'NODE'
+          const m=require('./public/promo/cat-bond/combo-landscape-20261122.json');
+          const names=m.shots.map(s=>s.scene);
+          if(m.aspect!=='16:9'||m.duration<14||m.duration>22||
+            !['rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture'].every(x=>names.includes(x))||
+            m.duo.uses!==1||!m.caught.panel||m.caught.count<=m.rare.before)
+              throw Error('Cat Bond landscape real battle continuity proof failed');
+          console.log('REAL NATIVE 16:9 CAT BOND QA PASSED',m.duration,m.bytes);
+          NODE
+      - name: Save encoded video if publication to repo fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-combo-landscape-20261122
+          path: |
+            public/promo/cat-bond/combo-landscape-20261122.mp4
+            public/promo/cat-bond/combo-landscape-20261122.jpg
+            public/promo/cat-bond/combo-landscape-20261122.json
+          retention-days: 14
+      - name: Add wide master to official public promo assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/promo/cat-bond/combo-landscape-20261122.mp4
+          git add public/promo/cat-bond/combo-landscape-20261122.jpg
+          git add public/promo/cat-bond/combo-landscape-20261122.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name morrowwish-promo-bot
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'media(cat-bond): real 16:9 combo attack and rare cat capture'
+          for attempt in $(seq 1 15); do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 4
+          done
+          exit 1
