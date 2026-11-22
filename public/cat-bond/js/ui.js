@@ -754,7 +754,7 @@ const UI = {
     if(window.CatBondDuoHero?.assetReady)requestAnimationFrame(paint);
     else window.addEventListener('cat-bond-premium-art-ready',paint,{once:true});
   },
-  openBondPanel(preferUnresolved=false){
+  openBondPanel(preferUnresolved=false,preserveScroll=false){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length>=2)this.game?.completeFirstAdventureStep?.('duo');
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');this.catHubTabs('duo');return;}
@@ -837,7 +837,9 @@ const UI = {
       '<p class="tiny">'+(en?'Tap two cats to raise another pairing (skills remain secret until unlocked).':
         '直接点选两只猫培养新的搭档；未解锁的技能不会提前显示。')+'</p>'+
       '<strong>'+(en?'First cat':'第一只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(0)+'</div>'+
-      '<strong>'+(en?'Second cat':'第二只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(1)+'</div></div>';
+      '<strong>'+(en?'Second cat':'第二只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(1)+'</div>'+ 
+      '<p class="duo-chooser-selection">'+esc(State.catName(cats.find(c=>c.uid===picked[0])))+' × '+esc(State.catName(cats.find(c=>c.uid===picked[1])))+'</p>'+ 
+      '<button type="button" class="btn gold duo-chooser-confirm" id="duo-choose">'+(en?'✓ Form my battle duo':'✓ 组成出战搭档')+'</button></div>';
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
     const memories=ok?CatRelations.memoryList(a,b):[];
     const memoryCount=CatRelations.MEMORY_CATALOG.filter(m=>memories.includes(m.id)).length;
@@ -857,16 +859,17 @@ const UI = {
         (en?State.catName(a)+' and '+State.catName(b)+' are upset. Make up for free to gain +6 trust.':
           State.catName(a)+' 和 '+State.catName(b)+' 闹别扭了，点下面的按钮免费和好，还能增加 6 点默契。')+
         '</p><button type="button" class="btn gold" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button></section>':''}
+      ${unlockedPairs.length?'<button id="duo-change-cats" type="button" class="btn ghost duo-new-pair-toggle">'+
+         (this._duoChangeOpen?(en?'Hide new pairing':'收起新搭档'):
+           (en?'Raise another pairing':'培养其他搭档'))+'</button>':''}
+      ${showPairChooser?pairChooser:''}
       <section class="duo-unlocked-section">
         <h3>${en?'Unlocked cat duos':'已解锁的双猫合击'} <small>${unlockedPairs.length}</small></h3>
         ${unlockedPairs.length?'<div class="duo-unlocked-grid">'+unlockedCards+'</div>':
           '<p class="duo-empty">'+(en?'No duo moves unlocked yet. Play together to reach 20 trust.':
             '暂时还没有解锁合击。选好搭档后一起玩、撸猫，默契达到 20 才会揭晓技能。')+'</p>'}
       </section>
-      ${unlockedPairs.length?'<button id="duo-change-cats" type="button" class="btn ghost duo-new-pair-toggle">'+
-         (this._duoChangeOpen?(en?'Hide new pairing':'收起新搭档'):
-           (en?'Raise another pairing':'培养其他搭档'))+'</button>':''}
-      ${showPairChooser?pairChooser:''}
+
       <div class="duo-relation">
         <h3 class="duo-relation-heading">${en?'Pair bonding':'双猫相处'}</h3>
         <strong class="duo-current-pair">${esc(State.catName(a))} × ${esc(State.catName(b))}</strong>
@@ -898,11 +901,11 @@ const UI = {
           <div class="duo-memory-note" id="duo-memory-note" aria-live="polite">${en?'Tap an unlocked memory to read its story.':'点击已解锁的回忆，可以重温两只猫的故事。'}</div>
         </section></div>
       <div class="btn-row">
-        <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
+        ${showPairChooser?'':('<button class="btn gold" id="duo-choose" '+(!ok?'disabled':'')+'>'+(selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档'))+'</button>')}
         <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.medkits||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
-      <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
+      <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`,preserveScroll);
     this.catHubTabs('duo');
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
       const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
@@ -915,7 +918,7 @@ const UI = {
     });
     document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
       this._duoChangeOpen=!this._duoChangeOpen;
-      this.openBondPanel();
+      this.openBondPanel(false,true);
     });
     document.querySelectorAll('#panel [data-duo-cat]').forEach(btn=>btn.onclick=()=>{
       const side=Number(btn.dataset.duoCat),uid=btn.dataset.catUid;
@@ -926,7 +929,7 @@ const UI = {
         if(other)this._duoPicked[1-side]=other.uid;
       }
       this._duoChangeOpen=true;
-      this.openBondPanel();
+      this.openBondPanel(false,true);
     });
     this.renderUnlockedDuoCards(unlockedPairs);
     document.querySelectorAll('#panel [data-duo-memory]').forEach(btn=>btn.onclick=()=>{
@@ -945,7 +948,7 @@ const UI = {
       this.game.refreshHUD();
       this.game.toast(en?'💞 Duo formed! Both cats will join the next fight.':'💞 搭档组成成功！下次战斗两只会一起上场。');
       window.arcadeMetric?.('bond_duo_selected',{elementPair:CatRelations.title(a,b).elementPair});
-      this.openBondPanel();
+      this.openBondPanel(false,true);
     };
     const previewButton=document.getElementById('duo-preview');
     if(previewButton)previewButton.onclick=()=>{
@@ -1052,10 +1055,27 @@ const UI = {
     card.classList.add('prebattle-dialog');
     card.insertBefore(scroll,actions);
   },
-  panel(html) {
+  // Preserve the card's scroll position when a choice only rerenders that
+  // SAME form (skill selection / duo pairing). Full navigation still starts
+  // at the top; never force the whole window to scroll on a button tap.
+  panel(html,preserveScroll=false) {
     this._teaseStop?.();
     const p = document.getElementById('panel');
+    const before=p.querySelector(':scope > .card');
+    const cardTop=preserveScroll?before?.scrollTop||0:0;
+    const panelTop=preserveScroll?p.scrollTop:0;
     p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
+    if(preserveScroll){
+      const after=p.querySelector(':scope > .card');
+      if(after)after.scrollTop=cardTop;
+      p.scrollTop=panelTop;
+      // iOS may apply layout after the initial DOM replacement.
+      requestAnimationFrame(()=>{
+        if(!p.classList.contains('open')||p.querySelector(':scope > .card')!==after)return;
+        if(after)after.scrollTop=cardTop;
+        p.scrollTop=panelTop;
+      });
+    }
     // A child page retains an explicit way home without closing the map or yard.
     if(this._navStack.length){
       const nav=document.createElement('nav');
@@ -1681,7 +1701,7 @@ const UI = {
     return chosen;
   },
 
-  openSkillEditor(cat) {
+  openSkillEditor(cat,preserveScroll=false) {
     const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
     S.ensureLoadout(cat);
     const learn = S.learnableSkills(cat) || [];          // skills actually unlocked
@@ -1775,13 +1795,13 @@ const UI = {
       <p class="skill-roadmap">✨ ${S.progressionHint(cat)}</p>
       <p class="skill-progression-note">普通猫通过升级与好感解锁元素必杀；SR / SSR 更早解锁专属必杀。能量充满后按 R 或点击右下角释放。</p>
       <div class="sk-list">${buildRow}${rows}</div>
-      <div class="btn-row"><button class="btn" id="sk-trainer">🎓 ${en0?'Learn new skills':'学习新技能'}</button><button class="btn gold" id="sk-back">← 返回</button></div>`);
+      <div class="btn-row"><button class="btn" id="sk-trainer">🎓 ${en0?'Learn new skills':'学习新技能'}</button><button class="btn gold" id="sk-back">← 返回</button></div>`,preserveScroll);
     document.querySelectorAll('#panel .build-chip').forEach(b => b.onclick = () => {
       const role = b.dataset.build;
       const before=(cat.loadout||[]).slice();
       if (S.applyBuild) S.applyBuild(cat, role);
       const changed=before[1]!==cat.loadout?.[1]||before[2]!==cat.loadout?.[2];
-      State.save(); this.openSkillEditor(cat);
+      State.save(); this.openSkillEditor(cat,true);
       const bt = S.BUILD_TYPES[role];
       this.game.toast(changed
         ?((en0?'Equipped ':'已切换')+(en0?bt.en:bt.zh)+' · '+['Q','E'].map((slot,i)=>slot+': '+(S.skillById(cat.loadout[i+1])?.name||(en0?'Empty':'空'))).join(' / '))
@@ -1799,13 +1819,13 @@ const UI = {
       if (slotI === 0 && skId === '__toy__') {
         cat.loadout[0] = null;
         cat.skillEdited = true;
-        State.save(); this.openSkillEditor(cat);
+        State.save(); this.openSkillEditor(cat,true);
         this.game.toast(en0 ? 'Basic: toy toss' : '普攻：扔玩具');
         return;
       }
       cat.loadout[slotI] = skId;
       cat.skillEdited=true;
-      State.save(); this.openSkillEditor(cat);
+      State.save(); this.openSkillEditor(cat,true);
       this.game.toast('已装备 ' + (S.skillById(skId) || {}).name);
     });
     document.getElementById('sk-trainer').onclick = () => this.navigateTo(()=>this.openTrainer(cat));
