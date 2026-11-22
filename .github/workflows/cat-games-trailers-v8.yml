@@ -36,7 +36,8 @@ jobs:
       - name: Fetch music licensed for each game
         run: |
           bash scripts/fetch-cat-music.sh
-          node scripts/fetch-promo-audio.mjs
+          MW_PROMO_ONLY=cat-bond node scripts/fetch-promo-audio.mjs
+          MW_PROMO_ONLY=pawsibly-innocent node scripts/fetch-promo-audio.mjs
           node scripts/test-promo-music.mjs
       - name: Validate current recording and editing source
         run: |
