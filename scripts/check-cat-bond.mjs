@@ -889,7 +889,7 @@ const expectedSecondary={
 };
 assert.equal(GameData.SPECIES.length,33,'Audit exactly all 33 collectible breeds');
 assert.deepEqual(Object.keys(expectedPrimary).sort(),
-  GameData.SPECIES.map(sp=>sp.id).sort(),
+  Array.from(GameData.SPECIES,sp=>sp.id).sort(),
   'Every collectible breed must have an individually reviewed primary element');
 assert.deepEqual(Object.keys(Skills.SPECIES_SECONDARY).sort(),
   Object.keys(expectedSecondary).sort(),'No forced element ring / extra dual species');
