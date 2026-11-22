@@ -110,8 +110,50 @@ function camera(key,p,W,H){
    angle:at(3)*Math.PI/180,kind:styles[key]||'highfive',
    phase:progress};
 }
+// Follow BOTH cats' separately-authored routes with restrained calligraphic
+// movement streaks. These are NOT pasted-on heads/paws: watercolor light
+// traces behind full intact illustrated characters, like traditional animation
+// action lines. Movement follows each of the 21 unique staging trajectories.
+const tracePalette={
+ dark:'#d3badb',elec:'#e9d8a6',fire:'#f1c0aa',
+ grass:'#c7d8ba',light:'#f7e7bf',water:'#c4dfe0'
+};
+function footwork(ctx,W,H,p,key,tier=1){
+ if(p<.12||p>.79)return;
+ const pair=key.split('+'),from=Math.max(.12,p-.11);
+ const col=[tracePalette[pair[0]]||'#e0d0df',tracePalette[pair[1]]||'#e0dfe8'];
+ const enter=ease((p-.12)/.1),leave=1-ease((p-.57)/.22);
+ const fade=enter*leave;
+ if(fade<=0)return;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ for(let member=0;member<2;member++){
+  const points=[];
+  for(let j=0;j<=7;j++){
+   const t=from+(p-from)*j/7;
+   const a=pose(key,t,W,H)[member];
+   points.push([a.x,a.y-H*.17]);
+  }
+  const c=col[member];
+  ctx.strokeStyle=c;ctx.shadowColor=c;ctx.shadowBlur=6;
+  ctx.globalAlpha=.36*fade;ctx.lineWidth=Math.max(1.2,H*.009);
+  ctx.beginPath();ctx.moveTo(...points[0]);
+  for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);
+  ctx.stroke();
+  // The pair converge for a high-five; lightning duos blink at different
+  // corners, while flower/water duos leave a rounded, flowing afterimage.
+  const final=points[points.length-1],at=pose(key,p,W,H)[member];
+  ctx.globalAlpha=.66*fade;ctx.fillStyle=c;
+  const size=Math.max(2,H*.010);
+  const angle=(p*8+member*2.4),offset=Math.max(4,H*.042);
+  ctx.save();ctx.translate(final[0],final[1]);ctx.rotate(angle);
+  ctx.beginPath();ctx.moveTo(0,-size*1.7);ctx.lineTo(size*.8,0);
+  ctx.lineTo(0,size*1.8);ctx.lineTo(-size*.8,0);ctx.closePath();ctx.fill();
+  ctx.restore();
+ }
+ ctx.restore();
+}
 window.CatBondDuoDirector={
- keys:Object.keys(map),styles,map,pose,camera,motionTracks,accent,
+ keys:Object.keys(map),styles,map,pose,camera,motionTracks,footwork,accent,
  isUnique:()=>new Set(Object.values(map).map(v=>JSON.stringify(v[1]))).size===21
 };
 })();
