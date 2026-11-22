@@ -60,11 +60,11 @@ jobs:
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
 
-      - name: Save six real-game ultimate VFX review frames
+      - name: Save eight distinct in-battle ultimate VFX review frames
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cat-bond-six-ult-vfx-review
+          name: cat-bond-eight-ult-vfx-review
           path: /tmp/cat-bond-ult-*.png
           if-no-files-found: ignore
           retention-days: 7
