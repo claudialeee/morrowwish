@@ -125,6 +125,9 @@ function syncArtwork(){
  if(actors?.failed)broken=true;
  if(ready){
   gradeCache.clear();
+  // Rasterize 63 clean scenic frames before the first cast, not during animation.
+  for(const key of Object.keys(regions))
+   for(let tier=1;tier<=3;tier++)gradedScene(key,tier);
   window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
  }else if(broken){
   window.dispatchEvent(new Event('cat-bond-premium-art-error'));
@@ -337,7 +340,7 @@ function drawPortraitStory(g,W,H,frame,tier,cam,scale,galleryPreview=false){
  pctx.clearRect(0,0,width,height);
  sourceCover(pctx,cellRect(frame,tier),0,0,width,height,1,0,0,1,null,tier);
  dissolvePortraitFocus(pctx,width,height);
- g.drawImage(portraitFocus,x,y,width,height);
+ g.drawImage(portraitFocus,0,0,portraitFocus.width,portraitFocus.height,x,y,width,height);
 }
 function draw(ctx,W,H,seq,lookup){
  if(!seq||seq.t<=0)return false;
@@ -390,7 +393,8 @@ function draw(ctx,W,H,seq,lookup){
  ctx.translate(-sw*.5,-sh*.5);
  if(originalArt&&!thumbnail&&!galleryPreview){
   // Shared cat-free scenery fills the entire phone or desktop viewport.
-  ctx.drawImage(portraitEnvironment(key,frame,tier,sw,sh),0,0,sw,sh);
+  const backdrop=portraitEnvironment(key,frame,tier,sw,sh);
+  ctx.drawImage(backdrop,0,0,backdrop.width,backdrop.height,0,0,sw,sh);
  }else{
   sourceCover(ctx,cellRect(frame,tier),galleryPreview?0:-sw*.13,galleryPreview?0:-sh*.13,
     galleryPreview?sw:sw*1.26,galleryPreview?sh:sh*1.26,
