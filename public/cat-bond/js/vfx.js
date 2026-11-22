@@ -90,6 +90,29 @@ class VFX {
     if (this._noise() > 120) return;                 // don't pile trails onto a saturated screen
     this.fx.push({ type: 'fade', x, y, r: r || 4, life: 0.26, max: 0.26, color: color || '#ffd36b' });
   }
+  // Standard visual grammar. Purely local: no fullscreen hit overlay.
+  // Combat mechanics (HP, invulnerability, hitstop) remain battle-owned.
+  impactType(x,y,type='light',options={}){
+    const color=options.color||({
+      light:'#fff1ce',heavy:'#ffe4a4',stagger:'#ffd888',kill:'#fff1b3',
+      heal:'#a6e9c5',guard:'#9ce5ce',reflect:'#addaff'
+    }[type]||'#fff1ce');
+    const heavy=type==='heavy'||type==='stagger'||type==='kill';
+    const soft=type==='heal'||type==='guard'||type==='reflect';
+    const duration=soft?.34:.25;
+    this.ring(x,y,{r0:heavy?10:4,vr:(heavy?72:soft?40:32)/duration,
+      life:duration,color,width:heavy?4.5:2.4});
+    this.burst(x,y,{count:type==='kill'?15:heavy?11:soft?7:5,
+      color,speed:heavy?180:soft?85:130,life:soft?.38:.26,
+      r:heavy?2.8:2.2,angle:options.angle,
+      spread:options.angle==null?Math.PI*2:1.1,
+      grav:type==='heal'?-35:0});
+    if(!soft)this.fx.push({type:'flash',x,y,r:heavy?12:7,
+      life:heavy?.11:.08,max:heavy?.11:.08});
+    if(type==='stagger')this.orb(x,y,'#fff0bf',4);
+    if(type==='reflect')this.beam(x-8,y-4,x+21,y-16,'#a3d5ff');
+    if(type==='heal')this.orb(x,y,'#ace9cd',4);
+  }
   // `angle` (optional) sprays sparks directionally along the hit normal — reads as
   // force far better than a symmetric puff. A brief white flash pop sells the connect.
   impact(x, y, color, angle) {
