@@ -14,7 +14,8 @@ permissions:
 
 concurrency:
   group: cat-bond-premium-visual-qa
-  cancel-in-progress: true
+  # Finish each actual browser QA even when a collaborator pushes another edit.
+  cancel-in-progress: false
 
 jobs:
   original-art-quality:
