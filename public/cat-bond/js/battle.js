@@ -21,15 +21,17 @@ const SKILL_CD_MULT = 1.3;
 const BASIC_SKILL_DMG_MULT = 0.5;
 
 class CaptureBattle {
-  constructor(game, teamOrCat, wildSpecies) {
+  constructor(game, teamOrCat, wildSpecies, opts) {
     this.game = game;
     // DETERMINISM HOOK (world-model verifier): by default this.rng() === Math.random so
-    // LIVE gameplay is byte-for-byte unchanged. A headless sim calls seedRng(seed) to swap
-    // in a reproducible mulberry32 stream, making a battle a pure function of (seed,inputs)
-    // for snapshot/replay + counterfactual rollouts. Only DECISION-relevant randomness is
-    // routed through this.rng() (dodge rolls, target pick, pack build); cosmetic VFX jitter
-    // stays on Math.random (determinism of OUTCOME, not pixels).
+    // LIVE gameplay is byte-for-byte unchanged. A headless sim passes opts.seed (or calls
+    // seedRng) to swap in a reproducible mulberry32 stream, making a battle a pure function
+    // of (seed,inputs) for snapshot/replay + counterfactual rollouts. Seeding here in the
+    // ctor (BEFORE buildPack) makes even enemy spawn/stat rolls deterministic. Only
+    // DECISION-relevant randomness is routed through this.rng() (dodge rolls, steering,
+    // enemy timers, pack build); cosmetic VFX jitter stays on Math.random.
     this._rngState = 0; this._seeded = false;
+    if (opts && opts.seed != null) this.seedRng(opts.seed);
     this.W = game.W; this.H = game.H;
     this.topMargin = this.H<540&&this.W>this.H ? Math.max(58,Math.min(105,this.H*.26)) : Math.max(85,Math.min(238,this.H*.40));
     this.bottomMargin = this.H<540&&this.W>this.H ? Math.max(38,Math.min(64,this.H*.15)) : Math.max(54,Math.min(112,this.H*.16));
@@ -621,7 +623,7 @@ class CaptureBattle {
     const minLv=floors[region]??1;
     const progress=Math.min(1.5,caught*.12);
     const rarityBonus=Math.min(1.5,this.rarIdx*.65);
-    const noise=(Math.random()-.5)*1.2;
+    const noise=((this.rng?this.rng():Math.random())-.5)*1.2;
     const lvl=Math.round(avg+progress+rarityBonus+noise);
     return Math.max(minLv,Math.min(cap,lvl));
   }
@@ -632,14 +634,14 @@ class CaptureBattle {
     // Fewer wild cats on screen: with a 3-cat player team, big packs overcrowd the
     // arena. Solo is the norm; a 2nd joins sometimes, a 3rd only for rare encounters.
     const packSize = this.starterRegion ? 1 :
-      1 + (Math.random() < 0.22 + this.rarIdx * 0.1 ? 1 : 0) +
-      (Math.random() < 0.05 + this.rarIdx * 0.08 ? 1 : 0);
+      1 + (this.rng() < 0.22 + this.rarIdx * 0.1 ? 1 : 0) +
+      (this.rng() < 0.05 + this.rarIdx * 0.08 ? 1 : 0);
     const species = [lead];
     // fill remaining slots with same-or-lower rarity companions from the catalogue
     const order = ['N', 'R', 'SR', 'SSR'];
     const pool = GameData.SPECIES.filter(s => order.indexOf(s.rarity) <= this.rarIdx);
     for (let i = 1; i < packSize; i++) {
-      species.push(pool.length ? pool[Math.floor(Math.random() * pool.length)] : lead);
+      species.push(pool.length ? pool[Math.floor(this.rng() * pool.length)] : lead);
     }
     const enemies = species.map((sp, i) => this.makeEnemy(sp, i, species.length));
     return enemies;
@@ -649,7 +651,7 @@ class CaptureBattle {
     const wv = sp.base;
     const rIdx = ['N', 'R', 'SR', 'SSR'].indexOf(sp.rarity);
     // this enemy's level = pack level, companions a touch lower than the lead
-    const level = Math.max(1, this.wildLevel - (i === 0 ? 0 : 1 + Math.floor(Math.random() * 2)));
+    const level = Math.max(1, this.wildLevel - (i === 0 ? 0 : 1 + Math.floor(this.rng() * 2)));
     const lvScale = 1 + (level - 1) * 0.08;               // +8% stats per level
     // Only SR/SSR receive an extra challenge: normal and R encounters remain
     // accessible early. Existing roster levels and cat stats are untouched.
@@ -677,9 +679,9 @@ class CaptureBattle {
       maxhp, hp: maxhp,
       // place enemies inside the PLAYABLE band (above the control cluster), upper-right
       x: this.W * col, y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(0.30+(i%2)*0.22);})(), vx: 0, vy: 0,
-      face: -1, t: Math.random() * 3, pose: 'idle',
-      shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+Math.random()*3,swipeCd:1,
-      fireCd: 0.6 + Math.random() * 0.8, dodgeCd: 0, special: 2 + Math.random() * 2,
+      face: -1, t: this.rng() * 3, pose: "idle",
+      shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+this.rng()*3,swipeCd:1,
+      fireCd: 0.6 + this.rng() * 0.8, dodgeCd: 0, special: 2 + this.rng() * 2,
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
       dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*
@@ -757,7 +759,7 @@ class CaptureBattle {
       revived: false,
       alive: true,
       hitFlash: 0,
-      t: Math.random() * 3, moving: false, _aim: 0,
+      t: this.rng() * 3, moving: false, _aim: 0,
     };
   }
   me() { return this.team[this.active]; }
@@ -988,13 +990,13 @@ class CaptureBattle {
   // entity keeps its own timer/phase without colliding).
   orbitSign(e,key,dt){
     const kT=key+'FlipT',kS=key+'Sign',kF=key+'Feint';
-    if(e[kS]==null)e[kS]=Math.random()<0.5?-1:1;
+    if(e[kS]==null)e[kS]=this.rng()<0.5?-1:1;
     e[kT]=(e[kT]||0)-(dt||0);
     if(e[kT]<=0){
       e[kS]=-e[kS];
-      e[kT]=1.6+Math.random()*1.8;                   // next scheduled flip (1.6–3.4s: a deliberate direction change, not a vibration)
+      e[kT]=1.6+this.rng()*1.8;                   // next scheduled flip (1.6–3.4s: a deliberate direction change, not a vibration)
       // ~10% of flips are a "feint": reverse again almost immediately (rare, so it reads as a juke not jitter)
-      e[kF]=Math.random()<0.10?0.14+Math.random()*0.12:0;
+      e[kF]=this.rng()<0.10?0.14+this.rng()*0.12:0;
     }
     if(e[kF]>0){e[kF]-=(dt||0);if(e[kF]<=0){e[kS]=-e[kS];}}
     return e[kS];
@@ -1008,9 +1010,9 @@ class CaptureBattle {
     // Low-frequency drift: theta advances at a per-fighter rate that itself slews only
     // gently, so the heading sweeps smoothly instead of jumping every frame. (The old
     // version re-rolled a full ±2.5 rad/s step each frame → that read as jitter.)
-    if(e[k]==null){e[k]=Math.random()*Math.PI*2;e[kr]=(Math.random()*2-1)*0.9;}
+    if(e[k]==null){e[k]=this.rng()*Math.PI*2;e[kr]=(this.rng()*2-1)*0.9;}
     // nudge the drift rate slowly (bounded) so the wander isn't perfectly periodic
-    e[kr]=clamp(e[kr]+(Math.random()*2-1)*0.4*(dt||0.016),-1.1,1.1);
+    e[kr]=clamp(e[kr]+(this.rng()*2-1)*0.4*(dt||0.016),-1.1,1.1);
     e[k]+=e[kr]*(dt||0.016);
     return {x:Math.cos(e[k]),y:Math.sin(e[k])};
   }
@@ -1175,7 +1177,7 @@ class CaptureBattle {
     // incoming threat is allowed to react faster (people flinch at danger).
     this._autoDecCd = (this._autoDecCd || 0) - dt;
     if (this._autoDecCd <= 0 || (threat && this._autoDecCd < 0.12)) {
-      this._autoDecCd = 0.24 + Math.random() * 0.18;     // 0.24–0.42s between decisions
+      this._autoDecCd = 0.24 + this.rng() * 0.18;     // 0.24–0.42s between decisions
       this.evalGambits(f,tgt,Math.hypot(tgt.x-f.x,tgt.y-f.y),near,threat?.d??Infinity);
     }
   }
@@ -3601,7 +3603,7 @@ class CaptureBattle {
           if(contact?.backstab){
             const facing=Math.atan2((e._vy||0),(e._vx||0));
             const fromBehind=Math.abs(((f._dashAim||0)-facing+Math.PI)%(Math.PI*2))<1.1;
-            if(fromBehind||Math.random()<0.5) dmg*=contact.backstab;
+            if(fromBehind||this.rng()<0.5) dmg*=contact.backstab;
           }
           this.resolveHit(e, 'me', contact||{element:f.element},dmg,e.x,e.y);
           // lifesteal/leech (grass melee / dark heal-type tweak): caster recovers a cut of it.
@@ -4121,17 +4123,17 @@ class CaptureBattle {
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
       // screen isn't constantly full of ground bursts; mostly a focused barrage.
-      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && (e.lobCd||0) <= 0 && Math.random() < 0.3) ? 'lob' : 'barrage';
+      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && (e.lobCd||0) <= 0 && this.rng() < 0.3) ? "lob" : "barrage";
       else if (dist < 320) kind = 'barrage';
       if (kind) {
-        if (kind === 'lob') e.lobCd = 7 + Math.random() * 3;                             // per-enemy AOE throttle
+        if (kind === 'lob') e.lobCd = 7 + this.rng() * 3;                             // per-enemy AOE throttle
         if (kind === 'smash') {
-          e.smashCd = 9 + Math.random() * 3;                                             // per-enemy heavy throttle
+          e.smashCd = 9 + this.rng() * 3;                                             // per-enemy heavy throttle
           // land the smash where the player IS NOW (predictive but generous) so there's
           // time to walk out of the telegraphed disc.
           e.smashTarget = { x: me.x, y: me.y };
         }
-        e.special = Math.max(2.6, e.specialCd - e.aggro * 1.5) + Math.random();          // +recovery floor
+        e.special = Math.max(2.6, e.specialCd - e.aggro * 1.5) + this.rng();          // +recovery floor
         e.telegraphKind = kind;
         this._novaLock = 1;                                   // pack cast-lock: others keep basic-firing
         // the heavy winds up longer (readable) than ordinary specials
@@ -4162,7 +4164,7 @@ class CaptureBattle {
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
       let lead = this.leadAngle(e, me, shotSpeed);
-      if (e.blinded) lead += (Math.random() - 0.5) * 1.2;                    // 失明→乱射
+      if (e.blinded) lead += (this.rng() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
       const dd = e.dmg * (e.status && e.status.weaken ? 0.5 : 1);            // 虚弱→伤害减半
       this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, 'ball');
@@ -4235,7 +4237,7 @@ class CaptureBattle {
       const dist = Math.hypot(dx, dy) || 1;
       const perpSpeed = Math.abs((me._vx || 0) * (-dy / dist) + (me._vy || 0) * (dx / dist));
       const err = this.aiJitter * 0.45 + 0.0004 * perpSpeed;   // base slop + speed-scaled term
-      ang += (Math.random() * 2 - 1) * err;
+      ang += (this.rng() * 2 - 1) * err;
     }
     return ang;
   }
@@ -4249,7 +4251,7 @@ class CaptureBattle {
     const ps = projSpeed || f.projSpeed || 300;
     const ip = this.interceptPoint(f, tgt, ps);
     let ang = Math.atan2(ip.y - f.y, ip.x - f.x);
-    ang += (Math.random() * 2 - 1) * 0.02;              // tight human micro-jitter
+    ang += (this.rng() * 2 - 1) * 0.02;              // tight human micro-jitter
     return ang;
   }
 
@@ -4318,7 +4320,7 @@ class CaptureBattle {
     }
     if (e.telegraphKind === 'nova') {
       const n = 12 + e.rIdx * 4;
-      const off = Math.random() * Math.PI;
+      const off = this.rng() * Math.PI;
       for (let i = 0; i < n; i++) this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 200, e.dmg * pow, 'wild', col, 7, 'ball', sk);
       this.vfx.shockwave(e.x, e.y, col);
       this.vfx.ring(e.x, e.y, { r0: 10, vr: 520, life: 0.45, color: col, width: 6 });
@@ -4361,7 +4363,7 @@ class CaptureBattle {
     else if (incoming >= 3) type = 'reflect';              // bounce a projectile spammer
     else if (e.hp / e.maxhp < 0.6 && incoming >= 1) type = 'barrier';
     if (type && this.castWard(e, type)) {
-      e.wardCd = (e.rIdx >= 2 ? 6 : 9) + Math.random() * 2;
+      e.wardCd = (e.rIdx >= 2 ? 6 : 9) + this.rng() * 2;
       // Ward visuals show protection without stacking language-specific combat toasts.
     }
   }
@@ -4381,7 +4383,7 @@ class CaptureBattle {
     if (!pool || !pool.length) return null;
     const castable = pool.filter(s => s.kind === 'projectile' || s.kind === 'aoe');
     const ults = pool.filter(s => s.ultCost > 0);
-    if (rIdx >= 2 && ults.length && Math.random() < 0.5) return ults[0];
+    if (rIdx >= 2 && ults.length && this.rng() < 0.5) return ults[0];
     return (castable[0] || pool[0]);
   }
   // effectiveness multiplier atk-element vs a target species' element
