@@ -216,6 +216,6 @@ window.CatBondDuoHero={
  sceneKeys:window.CatBondDuoDirector?.keys||[],
  get assetReady(){return !!window.CatBondDuoArtwork?.ready},
  get assetSource(){return 'individual-breed-storybook-portraits'},
- assetCount:21,signatureCount:21,breedCount:25,
+ assetCount:21,signatureCount:21,breedCount:32,
 };
 })();
