@@ -933,7 +933,7 @@
     const MATRIX={
       pow:{ agi:'assassin', vit:'fighter', cha:'fighter', pow:'fighter' },
       agi:{ pow:'assassin', vit:'dps',      cha:'dps',      agi:'dps' },
-      vit:{ pow:'fighter',  agi:'tank',     cha:'tank',     vit:'tank' },
+      vit:{ pow:'tank',     agi:'tank',     cha:'tank',     vit:'tank' },
       cha:{ agi:'control',  pow:'support',  vit:'support',  cha:'support' },
     };
     // Close VIT/POW breeds are bruisers rather than static frontline walls.
