@@ -939,7 +939,7 @@
     // Close VIT/POW breeds are bruisers rather than static frontline walls.
     // This shifts high-attack Norwegian and American Shorthair to fighter,
     // leaving low-POW VIT cats as tanks and preserving every saved explicit BD.
-    if(p==='vit'&&s==='pow'&&b.pow>=7&&b.vit-b.pow<=2)return 'fighter';
+    if(p==='vit'&&b.pow>=7&&b.agi>=7&&b.vit-b.pow<=2)return 'fighter';
     return (MATRIX[p] && MATRIX[p][s]) || 'fighter';
   }
   // Build a [basic,Q,E,ult] loadout for a role from the cat's learnable pool.
