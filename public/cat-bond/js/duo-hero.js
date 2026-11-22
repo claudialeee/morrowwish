@@ -129,6 +129,8 @@ function render(ctx,W,H,seq,lookup){
  if(Director)Director.accent(ctx,stageW,stageH,p,key,tier);
  // One coherent giant celestial summon rises behind the two illustrated cats.
  window.CatBondDuoSummons?.draw?.(ctx,stageW,stageH,p,key,tier);
+ // Put large signatures BEHIND cats to keep eyes, whiskers and paws clear.
+ window.CatBondDuoFinale?.draw?.(ctx,stageW,stageH,p,key,tier);
  const poses=Director?.pose(key,p,stageW,stageH)||[
   {x:stageW*.26,y:stageH*.72,angle:0,size:1,opacity:1,phase:p},
   {x:stageW*.74,y:stageH*.72,angle:0,size:1,opacity:1,phase:p}
@@ -156,7 +158,7 @@ function render(ctx,W,H,seq,lookup){
   ctx.restore();
  }
  // Full different signature silhouettes replace the former generic claw stamp.
- window.CatBondDuoFinale?.draw?.(ctx,stageW,stageH,p,key,tier);
+
  // Accessible nameplate, protected from bright effects and outside cat faces.
  const panelH=Math.min(72,Math.max(43,stageH*.19));
  const overlay=ctx.createLinearGradient(0,stageH-panelH,0,stageH);
