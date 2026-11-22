@@ -11,6 +11,7 @@ const historical={
     bond_capture:73,bond_rare_encounter:4,bond_rare_capture:57,
     bond_duo_used:46,bond_yard_built:6,bond_surprise:5
   },
+  historicalVisitFunnel:{pageviews:26,startedViews:8,finishedViews:7},
   conversion:{pageviews:0,startedViews:0,finishedViews:0}
 };
 const oldCount={
@@ -59,9 +60,11 @@ try{
    const cells=(await gameRow.locator('td').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
    assert.equal(cells[1],'26','Historical pageviews erased');
-   assert.equal(cells[2],'82 30.8%','Historical start total/rate erased');
-   assert.equal(cells[3],'79 96.3%','Historical result total/rate erased');
+   assert.equal(cells[2],language==='zh'?'82 场战斗':'82 battles','Historic battle starts not preserved or mislabeled');
+   assert.equal(cells[3],language==='zh'?'79 场结算':'79 battle finishes','Historic battle finishes not preserved or mislabeled');
    assert.equal(cells[4],'1','Historical replay total erased');
+   assert.deepEqual(cells.slice(5,8),['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'],
+    'Visit conversion must be deduplicated, not raw battle totals');
    const card=page.locator('#focus-grid .focus-card').first();
    const lines=(await card.locator('.focus-line').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
