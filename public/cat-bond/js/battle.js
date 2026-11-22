@@ -1227,7 +1227,8 @@ class CaptureBattle {
     // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
-    if (dir && f.dashT <= 0 && f.rootT <= 0) {
+    if (dir && f.dashT <= 0 && f.rootT <= 0 &&
+        !(f._beamRoot>0) && !(f._castRoot>0)) {
       const spd = f.speed * 0.9 * this.moveMul(f);   // same soft-CC slow as the active cat
       f.x = clamp(f.x + dir.x * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + dir.y * spd * dt, this.topMargin, this.H - this.bottomMargin);
@@ -1296,7 +1297,10 @@ class CaptureBattle {
     if (K['a'] || K['arrowleft']) mx -= 1;
     if (K['d'] || K['arrowright']) mx += 1;
     if (joy && joy.active && (Math.abs(joy.dx) > 0.15 || Math.abs(joy.dy) > 0.15)) { mx += joy.dx; my += joy.dy; }
-    if (f.rootT > 0 || (f._beamRoot > 0) || (f._castRoot > 0)) { mx = 0; my = 0; }   // Reflect wall / beam / skill wind-up anchors the caster
+    if (f.rootT > 0 || (f._beamRoot > 0) || (f._castRoot > 0) ||
+        (f.dashT > 0 && f.pounce)) { mx = 0; my = 0; }
+    // Dash is moved in tick by its locked direction; manual movement must not
+    // add a second displacement or stretch a contact attack into ranged travel.
     f._mvx = mx; f._mvy = my;                            // remember input so dodge can flee the right way
     if (mx || my) {
       const l = Math.hypot(mx, my);
@@ -1854,10 +1858,10 @@ class CaptureBattle {
     if (f === this.me() && !this.game.isTouch) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
     else { const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (t) { tx = t.x; ty = t.y; } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; } }
     // cap leap range so it stays a reach, not a teleport
-    const d = Math.hypot(tx - f.x, ty - f.y), max = 240;
+    const d = Math.hypot(tx - f.x, ty - f.y), max = 170;
     if (d > max) { const a = Math.atan2(ty - f.y, tx - f.x); tx = f.x + Math.cos(a) * max; ty = f.y + Math.sin(a) * max; }
     f._leapT = 0.44; f._leapMax = 0.44; f._leapFrom = { x: f.x, y: f.y }; f._leapTo = { x: tx, y: ty };
-    f._leapSkill = sk; f._leapDmg = dmg; f._leapCol = col; f.inv = 0.46; f._leapR = 78;
+    f._leapSkill = sk; f._leapDmg = dmg; f._leapCol = col; f.inv = 0.46; f._leapR = 54;
     this.vfx.ring(tx, ty, { r0: f._leapR, vr: -120, life: 0.44, color: col, width: 3 });   // shrinking target reticle
     window.MorrowwishAudio?.effect?.('charge');
   }
@@ -1883,10 +1887,10 @@ class CaptureBattle {
   // takes a hard hit + knockback. Shares the pounce travel/contact machinery but
   // reaches farther and hits harder than the default dash leap.
   flyingPounce(f, aim, sk, dmg, col) {
-    f.dashT = 0.34; f.inv = 0.36; f.pounce = true; f._dashAim = aim; f._pounceSkill = sk;
-    f._pounceDmg = dmg;
+    f.dashT = 0.29; f.inv = 0.32; f.pounce = true; f._dashAim = aim; f._pounceSkill = sk;
+    f._pounceDmg=dmg;f._dashReach=155;f._dashTravel=0;
     this.vfx.trail(f.x, f.y, col, 11);
-    this.vfx.beam(f.x, f.y, f.x + Math.cos(aim) * 150, f.y + Math.sin(aim) * 150, col);
+    // A physical lunge is not a 150-unit glowing ranged laser.
     this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim + Math.PI, spread: 1.0, speed: 230 });
   }
   // Chain lightning: hit the aimed/nearest enemy, then jump to the nearest
@@ -2013,6 +2017,7 @@ class CaptureBattle {
       // no learned E skill → the classic pounce (contact-damage lunge)
       f.dashT=.26;f.inv=.3;
       f.pounce=true;f._dashAim=aim;f._pounceSkill=null;
+      f._dashReach=135;f._dashTravel=0;f._pounceDmg=null;
       this.vfx.shockwave(f.x,f.y,col);
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
       this.regularSkillAccent(f,f.element,aim);
@@ -3038,7 +3043,11 @@ class CaptureBattle {
       }
       for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt;
       if (f.inv > 0) f.inv -= dt;
-      if (f.dashT > 0) f.dashT -= dt; else f.pounce = false;
+      if (f.dashT > 0) f.dashT -= dt;
+      else if(f.pounce){
+        f.pounce=false;f._pounceSkill=null;f._pounceDmg=null;
+        f._dashReach=null;f._dashTravel=0;
+      }
       if (f.dodgeCd > 0) f.dodgeCd -= dt;
       if (f.shieldT > 0) f.shieldT=Math.max(0,f.shieldT-dt);
       if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
@@ -3097,7 +3106,8 @@ class CaptureBattle {
           const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
           this.resolveHit(e, 'me', f._pounceSkill || { element: f.element }, dmg, e.x, e.y);
           this.hurtEnemy && (e.kbx = (e.kbx||0) + Math.cos(f._dashAim||0) * 260, e.kby = (e.kby||0) + Math.sin(f._dashAim||0) * 260);  // knockback
-          f.pounce = false; f._pounceDmg = null;
+          f.pounce=false;f._pounceDmg=null;f._pounceSkill=null;
+          f._dashReach=null;f._dashTravel=0;f.dashT=0;
         }
       }
       // non-active alive cats fight autonomously via their gambits
