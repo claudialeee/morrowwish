@@ -2725,7 +2725,8 @@ class CaptureBattle {
       let i=this.floaters.findIndex(fl=>!fl.prio);
       this.floaters.splice(i<0?0:i,1);
     }
-    this.floaters.push({x,y,text,color,life:.62,size:Math.min(22,size||12),prio:!!prio});
+    this.floaters.push({x,y,text,color,life:.62,max:.62,
+      size:Math.min(22,size||12),prio:!!prio});
   }
 
   // Persistent animated strokes make each elemental spell recognizable in motion.
@@ -3378,7 +3379,10 @@ class CaptureBattle {
     this.vfx.update(this._vfxDt != null ? this._vfxDt : dt);   // VFX run real-time so sparks pop DURING hitstop
     for (const q of this.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 60 * dt; q.life -= dt; }
     this.particles = this.particles.filter(q => q.life > 0);
-    for (const fl of this.floaters) { fl.y -= 40 * dt; fl.life -= dt; }
+    // Damage numbers pop while combat is in hitstop; they use real clock time
+    // like sparks instead of stretching strangely during simulation slowmo.
+    const floaterDt=this._vfxDt!=null?this._vfxDt:dt;
+    for(const fl of this.floaters){fl.y-=40*floaterDt;fl.life-=floaterDt;}
     this.floaters = this.floaters.filter(fl => fl.life > 0);
 
     // win when the whole pack is down; "captureReady" when any enemy is low
@@ -4126,9 +4130,14 @@ class CaptureBattle {
         window.MorrowwishAudio?.effect?.('combat_hit');
       }
     }
-    // bigger, brighter number as the combo climbs (crescendo feel)
-    const big = this.combo >= 15 ? 18 : this.combo >= 6 ? 15 : 13;
-    this.floater(e.x, e.y - 24, '-' + Math.round(scaled), this.combo >= 15 ? '#ffd36b' : '#fff', big);
+    // Skill-aware numbers: a POISE/stagger critical produces a gold snap
+    // even if hardcore damage modifiers keep its numeric damage modest.
+    const critNumber=hitTier==='crit',strongNumber=hitTier==='heavy';
+    const big=critNumber?21:strongNumber?17:
+      this.combo>=15?18:this.combo>=6?15:13;
+    const numberColor=critNumber?'#ffe2a2':strongNumber?'#fff0cf':
+      this.combo>=15?'#ffd36b':'#fff';
+    this.floater(e.x,e.y-24,'-'+Math.round(scaled),numberColor,big);
     this.spawnBurst(fx, fy, '✦', '#ffd36b', 3);
     this.gainUlt(3);
     if(e.hp<=0&&e.alive){
@@ -4926,7 +4935,17 @@ class CaptureBattle {
     }
     // particles & floaters
     for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
-    for (const fl of this.floaters) { ctx.save(); ctx.globalAlpha = Math.max(0, fl.life); ctx.fillStyle = fl.color; ctx.font = 'bold ' + (fl.size || 15) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.strokeText(fl.text, fl.x, fl.y); ctx.fillText(fl.text, fl.x, fl.y); ctx.restore(); }
+    for(const fl of this.floaters){
+      const age=1-Math.max(0,Math.min(1,fl.life/(fl.max||.62)));
+      const kick=1+.21*Math.sin(Math.min(1,age*4)*Math.PI);
+      ctx.save();ctx.globalAlpha=Math.min(1,Math.max(0,fl.life/.20));
+      ctx.fillStyle=fl.color;
+      ctx.font='900 '+Math.round((fl.size||15)*kick)+'px sans-serif';
+      ctx.textAlign='center';ctx.lineWidth=3;
+      ctx.strokeStyle='rgba(34,30,41,.55)';
+      ctx.strokeText(fl.text,fl.x,fl.y);ctx.fillText(fl.text,fl.x,fl.y);
+      ctx.restore();
+    }
 
     // Capture-ready finisher banner (one-time pop when a wild cat enters subdue range).
     if(this._captureBanner>0){
