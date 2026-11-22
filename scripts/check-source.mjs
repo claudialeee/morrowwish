@@ -1039,6 +1039,53 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !bondIntro.includes('css/style.css?v=catbond-cta-hierarchy-20261121-2'))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
+ // Returning from battle must never leave stale additive blend/alpha/filter
+ // state or collapse two illustrated cats into one pale, untappable pile.
+ const cbWorld=fs.readFileSync('public/cat-bond/js/world.js','utf8');
+ new Function(cbWorld);
+ const yardIndex=fs.readFileSync('public/cat-bond/index.html','utf8');
+ if(!cbGame.includes("ctx.globalCompositeOperation='source-over'")||
+    !cbGame.includes("ctx.filter='none'")||
+    !cbGame.includes("try {")||!cbGame.includes("finally { ctx.restore(); }")||
+    !cbWorld.includes('const yardMagnify=Math.min(2.05')||
+    !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
+    !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
+    !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
+    !yardIndex.includes('js/world.js?v=clear-cats-postbattle-20261121-1')||
+    !yardIndex.includes('js/game.js?v=isolated-canvas-postbattle-20261121-1'))
+   throw Error('Cat Bond post-battle garden requires crisp kittens, spatial layout, and reset canvas state');
+ const fakeWindow={};
+ const fakeState={S:{cats:[{uid:'1',species:'orange',joy:90},
+     {uid:'2',species:'gray',joy:90}],yardBuildings:[]}};
+ const FakeImage=class{set src(_v){}};
+ const YardForTest=new Function('window','Image','document','State',
+   cbWorld+';return window.World.YardScene;')(
+   fakeWindow,FakeImage,{getElementById:()=>null},fakeState);
+ const yardForTest=new YardForTest({W:1600,H:820,scene:'yard'});
+ if(yardForTest.entities.length!==2||
+    Math.abs(yardForTest.entities[0].x-yardForTest.entities[1].x)<320||
+    Math.abs(yardForTest.entities[0].y-yardForTest.entities[1].y)>5)
+   throw Error('Two yard cats stack instead of appearing side-by-side');
+ fakeState.S.cats.push({uid:'3',species:'black',joy:80});
+ yardForTest.rebuild();
+ if(yardForTest.entities.length!==3||
+    new Set(yardForTest.entities.map(e=>Math.round(e.x))).size!==3)
+   throw Error('Three yard cats must have separate positions');
+ const CanvasGameForTest=new Function('window','document',
+   cbGame+';return window.Game;')({}, {getElementById:()=>null});
+ const cleanCanvas={
+   globalAlpha:0.08,globalCompositeOperation:'lighter',filter:'blur(16px)',
+   shadowBlur:24,save(){},restore(){},setLineDash(){},clearRect(){}
+ };
+ const gameForTest=Object.create(CanvasGameForTest.prototype);
+ gameForTest.ctx=cleanCanvas;gameForTest.W=1600;gameForTest.H=820;
+ gameForTest.scene='yard';
+ gameForTest.yard={draw(ctx){
+   if(ctx.globalAlpha!==1||ctx.globalCompositeOperation!=='source-over'||
+      ctx.filter!=='none'||ctx.shadowBlur!==0)
+     throw Error('Battle blend/filter leaked into yard redraw');
+ }};
+ gameForTest.draw();
  // First-run CTA precedes optional feature cards so short screens never cut it
  // off; six normal skill elements have animated casts + readable hit marks.
  const cbMain=fs.readFileSync('public/cat-bond/js/main.js','utf8');
