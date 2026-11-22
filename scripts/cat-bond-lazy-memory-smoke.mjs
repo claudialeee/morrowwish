@@ -23,7 +23,7 @@ try{
     UI.closeAll();
     const a=State.makeCat('tangyuan'),b=State.makeCat('xiaohui');
     State.S.cats=[a,b];State.S.duoRelations={pairs:{},active:[]};
-    State.S.coins=1200;State.S.fish=1200;State.S.treats=30;
+    State.S.coins=1200;State.S.fish=1200;
     Raising.init();State.S.raising.yarn=100;State.S.raising.starShards=50;
     State.save();UI._shopQuantity=1;
     UI.openShop();
@@ -31,8 +31,8 @@ try{
   assert.equal(await page.locator('#panel [data-buy]').count(),7);
   await page.locator('#panel [data-shop-qty="10"]').click();
   await page.locator('#panel [data-buy="treat15"]').click();
-  const paid=await page.evaluate(()=>({coins:State.S.coins,treats:State.S.treats}));
-  assert.deepEqual(paid,{coins:450,treats:180},'ten packs cost 750 once; grant 150 treats');
+  const paid=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
+  assert.deepEqual(paid,{coins:450,fish:1350},'ten packs cost 750 once; grant 150 fish in the two-currency economy');
   await page.locator('#panel [data-shop-qty="max"]').click();
   const affordable=await page.evaluate(()=>UI.shopMaxAffordable('fish'));
   assert.equal(affordable,7,'one-tap affordable max uses remaining wallet');
@@ -48,8 +48,10 @@ try{
   await page.locator('#cd-trainfive').click();
   assert.equal(await page.evaluate(()=>State.S.cats[0].level),6,
     'one-tap multi-level training must actually advance five levels');
+  // Current economy uses coins for stat training; top up only for this isolated operation.
+  await page.evaluate(()=>{State.S.coins=1000;UI.renderCatDetail(State.S.cats[0]);});
   await page.locator('#cd-stat-ten').click();
-  assert.equal(await page.evaluate(()=>State.S.raising.yarn),20,'ten stat sessions cost exactly 80 yarn');
+  assert.equal(await page.evaluate(()=>State.S.coins),200,'ten stat sessions cost exactly 800 coins');
   const form=await page.evaluate(()=>{
     const c=State.S.cats[0];c.level=8;c.affinity=20;
     const one=Growth.advance(c),adult=Growth.visual(c);
