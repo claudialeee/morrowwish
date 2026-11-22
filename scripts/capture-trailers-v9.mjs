@@ -494,7 +494,8 @@ try{
       return {index:s.index,title:s.room.en,moved,steps:a.getState().steps};
     },index);
     if(room.moved<1||room.steps<1)throw Error('Room footage is static '+JSON.stringify(room));
-    await mark(label,2650);
+    const roomAt=stamp();await sleep(2650);
+    shots.push({label,start:roomAt,duration:stamp()-roomAt-.08});
     console.log('V9 DISTINCT STEALTH ROOM '+JSON.stringify(room));
   }
   // Explicit second run. The cut is at the start of a NEW room, never in
