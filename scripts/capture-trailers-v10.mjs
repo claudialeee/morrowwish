@@ -477,17 +477,29 @@ try{
    State.S.battlePrefs={...(State.S.battlePrefs||{}),
     manualTutorialSeen:true,tutorialSeen:true,modeChosen:true,autoBattle:true};
    window.__game.startBattle(team,wild);
-   const b=window.__game.battle;b.autoMode=true;b.duoCharge=100;b.duoCd=0;
+   // The rare encounter teaser is NOT a second ultimate: hold auto combat
+   // until after the teaser, then let the separate (unselected) actual fight
+   // complete naturally for the earned capture result.
+   const b=window.__game.battle;b.autoMode=false;b.duoCharge=0;b.duoCd=999;
    window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
    return {id:wild.id,rarity:wild.rarity,before,team:b.team.length,active:!b.done};
   });
   if(rare.rarity!=='R'||!rare.active)throw Error('Rare encounter is not real '+JSON.stringify(rare));
   await mark('rare-encounter',2200);
+  const noRepeat=await page.evaluate(()=>{
+    const b=window.__game.battle;
+    return {casts:b?.duoUses||0,cinematic:!!b?.duoCinematic,auto:b?.autoMode};
+  });
+  if(noRepeat.casts!==0||noRepeat.cinematic||noRepeat.auto)
+    throw Error('Repeated duo cinematic in rare encounter trailer teaser '+JSON.stringify(noRepeat));
   const rareCast=await page.evaluate(()=>{
    const b=window.__game.battle;
    if(!b||b.done)return {cast:false,done:true};
    b.duoCharge=100;b.duoCd=0;
-   return {cast:b.castDuo(),uses:b.duoUses};
+   // Continue the genuine fight after the teaser; this unseen cast earns
+   // the real capture result, but must never be edited into the trailer.
+   const cast=b.castDuo();b.autoMode=true;
+   return {cast,uses:b.duoUses};
   });
   if(!rareCast.cast)throw Error('Could not demonstrate real duo-assisted rare battle '+JSON.stringify(rareCast));
   await mark('rare-fight',4500);
