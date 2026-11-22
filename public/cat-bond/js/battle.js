@@ -2983,6 +2983,31 @@ class CaptureBattle {
     }
   }
 
+  // Real contact often passes the TARGET's impact point as (fx,fy).
+  // Deriving knockback from target - impact point then gives (0,0), so
+  // recoil/shake look broken despite hitstop and burst VFX working.
+  // Fall back to the nearest genuine attacker, never a random direction.
+  hitNormal(target,fx,fy,attackerSide='me'){
+    let dx=target.x-fx,dy=target.y-fy,dist=Math.hypot(dx,dy);
+    if(dist<1){
+      const pool=attackerSide==='wild'?this.liveEnemies():this.team;
+      const attackers=(pool||[]).filter(c=>c&&c.alive&&c!==target);
+      let nearest=null,nearDist=Infinity;
+      for(const actor of attackers){
+        const dd=Math.hypot(target.x-actor.x,target.y-actor.y);
+        if(dd<nearDist){nearDist=dd;nearest=actor;}
+      }
+      if(nearest){dx=target.x-nearest.x;dy=target.y-nearest.y;dist=Math.hypot(dx,dy);}
+    }
+    if(dist<1){
+      // Exact same center (spawn-overlap): follow the player's facing rather
+      // than silently suppressing the contact force.
+      const angle=attackerSide==='me'?(this.aim||0):Math.PI;
+      dx=Math.cos(angle);dy=Math.sin(angle);dist=1;
+    }
+    return {x:dx/dist,y:dy/dist,angle:Math.atan2(dy,dx)};
+  }
+
   // HIT-FEEL: add camera trauma (0..1 clamp) with an optional hit-normal direction
   // so the first shake frames kick along the blow. mag ~0.15 basic / 0.35 skill /
   // 0.7 stagger-ult. Also keeps shakeT alive for any legacy reader.
@@ -4056,27 +4081,27 @@ class CaptureBattle {
       this.hitstop = Math.max(this.hitstop, stop);
       // CAMERA SHAKE scaled by HIT STRENGTH (not just combo heat), kicked along the blow.
       const heat = Math.min(1, this.combo / 20);
+      const normal=this.hitNormal(e,fx,fy,'me');
       this.addShake((touch ? 0.10 : 0.15) + 0.35 * frac + 0.06 * heat,
-        Math.atan2(e.y - fy, e.x - fx));
+        normal.angle);
       // WHITE connect-flash on the body silhouette (separate from the i-frame fade).
       e.hitWhite = 0.09;
       // On-hit SQUASH: the struck cat compresses then springs back (draw-only).
       e.hitSquash = Math.min(0.28, 0.12 + 0.14 * frac);
       // KNOCKBACK (now VISIBLE): bigger base, softer rarity resist, slower decay so the
       // boop reads over ~5-6 frames. basic≈20-26px, heavy≈55px. Playful, not brutal.
-      const kx = e.x - fx, ky = e.y - fy, kl = Math.hypot(kx, ky) || 1;
-      const power = (160 + 320 * frac) / (1 + e.rIdx * 0.3);
-      e.kbx = (e.kbx || 0) + (kx / kl) * power;
-      e.kby = (e.kby || 0) + (ky / kl) * power;
+      const power=(160+320*frac)/(1+e.rIdx*.3);
+      e.kbx=(e.kbx||0)+normal.x*power;
+      e.kby=(e.kby||0)+normal.y*power;
       // ATTACKER SELF-RECOIL: the striker rocks back a touch along -normal (draw-only
       // offset), selling the force exchange. me() for basics/melee; harmless if attacker
       // unknown.
       const atk = this.me && this.me();
-      if (atk && atk.alive) { atk._recoilX = -(kx / kl) * 7; atk._recoilY = -(ky / kl) * 7; }
+      if(atk&&atk.alive){atk._recoilX=-normal.x*7;atk._recoilY=-normal.y*7;}
       // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
       // scaled by hit strength — reads as force, not a symmetric puff.
       this.vfx.impactType?.(e.x,e.y,frac>=.17?'heavy':'light',
-        {color:frac>=.17?'#ffdf9d':'#fff2c0',angle:Math.atan2(ky,kx)});
+        {color:frac>=.17?'#ffdf9d':'#fff2c0',angle:normal.angle});
       // CONNECT TICK: a short, combo-pitched pop so every landed hit is audible
       // (previously only the swing had sound → players couldn't tell a hit landed).
       // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
@@ -4121,11 +4146,11 @@ class CaptureBattle {
       f.hitWhite = 0.09;
       f.hitSquash = Math.min(0.28, 0.12 + 0.14 * frac);
       this.hitstop = Math.max(this.hitstop, (this.game.isTouch ? 0.03 : 0.04) + frac * 0.06);
-      this.addShake((this.game.isTouch ? 0.12 : 0.18) + 0.3 * frac, Math.atan2(f.y - fy, f.x - fx));
-      const kx = f.x - fx, ky = f.y - fy, kl = Math.hypot(kx, ky) || 1;
-      const power = 120 + 220 * frac;
-      f.kbx = (f.kbx || 0) + (kx / kl) * power;
-      f.kby = (f.kby || 0) + (ky / kl) * power;
+      const normal=this.hitNormal(f,fx,fy,'wild');
+      this.addShake((this.game.isTouch?.12:.18)+.3*frac,normal.angle);
+      const power=120+220*frac;
+      f.kbx=(f.kbx||0)+normal.x*power;
+      f.kby=(f.kby||0)+normal.y*power;
     }
     // priority floater so damage taken on ANY of your cats (active or ally) is never
     // dropped by the active cat's own outgoing-number spam. Slightly larger + red.
