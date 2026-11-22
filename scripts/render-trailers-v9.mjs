@@ -17,7 +17,7 @@ const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v9'
  pausedPromoGames:[],scenes:[]};
 const MIN_READING={
  'cat-bond':{'cat-upgrade':3.0,'duo-partners':2.6,'duo-promise':3.7,
-   'ssr-encounter':3.4,'rare-capture':2.8},
+   'ssr-showcase':3.4,'rare-capture':2.8},
  'pawsibly-innocent':{'narrow-achievement':3.2},
  'tiny-town':{'opening-three-choices':6.6,'resident-profile':4.5,'neighbor-story':4.7,'ending':4.9},
  'elsewhere':{'choose-life':3.0,'paris':4.0,'paris-romance':4.6,
@@ -51,7 +51,7 @@ const playlists={
   broll('duo',4.25,'ONE POWERFUL DUO FINISHER!'),
   broll('rare-encounter',1.85,'A RARE CAT APPEARS!'),
   broll('rare-capture',3.45,'A NEW FRIEND JOINS YOU.'),
-  broll('ssr-encounter',3.9,'DISCOVER A LEGENDARY SSR!'),
+  broll('ssr-showcase',3.9,'MEET A LEGENDARY SSR CAT!'),
   cover(3.6,'PLAY FREE')
  ],
  'pawsibly-innocent':[
@@ -247,7 +247,7 @@ function edit(slug){
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
   video:'/promo/'+slug+'/trailer-v9-20261121.mp4',poster:'/promo/'+slug+'/trailer-v9-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
-  sourceClips:'V8 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled',transitions:'clean cuts, no ghosted or blended gameplay UI',
+  sourceClips:'V9 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled',transitions:'clean cuts, no ghosted or blended gameplay UI',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
  console.log('CINEMATIC V9 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
