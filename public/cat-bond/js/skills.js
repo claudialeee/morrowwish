@@ -667,6 +667,9 @@
     const ready = [], locked = [];
     for (const s of SKILLS) {
       if (!isGated(s) || hasLearned(cat, s.id)) continue;
+      // Do not show another build's exclusive equipment in the trainer.
+      if(s.unlock?.build&&(cat.buildType||buildTypeForBreed(cat))!==s.unlock.build)
+        continue;
       (gateMet(cat, s) ? ready : locked).push(s);
     }
     return { ready, locked };
