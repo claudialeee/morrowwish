@@ -104,6 +104,9 @@ jobs:
           node scripts/test-game-entry-attribution.mjs
           node scripts/test-dashboard-sorting.mjs
           node scripts/test-promotion-metrics.mjs
+          node scripts/test-youtube-native.mjs
+          node scripts/test-instagram-native.mjs
+          node scripts/test-social-refresh.mjs
           node scripts/test-tiktok-native.mjs
           node scripts/test-bluesky-native.mjs
           node scripts/test-promo-music.mjs

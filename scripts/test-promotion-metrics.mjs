@@ -74,8 +74,8 @@ assert.ok(posts.every(p=>p.publishedAt==='2026-11-22'),'only this launch campaig
 assert.ok(JSON.stringify(snap).indexOf('instagram-historical')<0,'legacy posts absent from snapshot');
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 assert.ok(dashboard.includes('id="video-detail-rows"'),'per-game detail table present');
-assert.ok(dashboard.includes("if(!items.length||items.some(p=>p.views==null"),'unknown views blank, not zero');
-assert.ok(dashboard.includes("verifiedVideos.filter(p=>p.platform===platform&&p.game===id)"),'individual game/medium cells');
+assert.ok(dashboard.includes("post.checkedAt&&Number.isSafeInteger(post[key])"),'unknown views blank, not zero');
+assert.ok(dashboard.includes("verifiedVideos.find(p=>p.platform===platform&&p.game===id)"),'individual game/medium cells');
 assert.ok(!dashboard.includes('id="native-account-overview"'),'old and duplicate promo overview hidden permanently');
 assert.ok(!dashboard.includes('instagram-historical')&&!dashboard.includes('Nov 20 old Reels'),'no historical promo presentation');
 assert.ok(!dashboard.includes('pulse.accountOverview'),'old promo metrics never read by dashboard');

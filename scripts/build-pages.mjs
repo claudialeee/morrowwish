@@ -39,23 +39,44 @@ for (const item of reviewVersions) {
 if (!latestReview) throw new Error('No fully rendered seven-game trailer review manifest is available');
 
 
-// Dated provider snapshot stays inside the authenticated Worker response, not a public asset.
-const social = JSON.parse(fs.readFileSync(path.join(base,'promotion','social-metrics-snapshot.json'),'utf8'));
-if(social.schemaVersion!==2||!Array.isArray(social.platforms)||social.metricScope?.type!=='approved-short-videos-only'||!social.metricScope?.historicalExcluded)throw Error('Social snapshot must exclude all previously published short videos');
+// Use the approved publication ledger for permalinks only. All numbers come
+// from native providers at runtime.
+const campaignDate = '2026-11-22';
+const release = JSON.parse(fs.readFileSync(path.join(promoRoot, 'social-release-status.json'), 'utf8'));
+const nativePlatforms = ['youtube', 'tiktok', 'instagram', 'bluesky'];
+const approvedGames = release.games.filter(game => game.approved === true);
+const approvedPosts = nativePlatforms.flatMap(platform => approvedGames.map(game => ({
+  platform, game: game.slug, url: game.socialUrls?.[platform],
+  publishedAt: campaignDate, approved: true, publicVerified: true
+})));
+if (approvedGames.length !== 7 || new Set(approvedGames.map(game => game.slug)).size !== 7 ||
+    approvedPosts.some(post => typeof post.url !== 'string' || !post.url.startsWith('https://')) ||
+    new Set(approvedPosts.map(post => post.url)).size !== 28) {
+  throw Error('Expected 28 unique approved publication links from the November 22 campaign');
+}
+const social = {
+  platforms: [{id:'itch'}, ...nativePlatforms.map(id => ({id, published: 7}))],
+  metricScope: {type:'approved-short-videos-only', campaignStart:campaignDate, historicalExcluded:true,
+    activeApprovedPosts:approvedPosts.length, verifiedPosts:approvedPosts}
+};
+const nativeHelpers = ['social-native.js','social-schedule.js'].map(file=>
+  fs.readFileSync(path.join(base,'src',file),'utf8').replace(/^export /gm,'')).join('\n');
 const tiktokNative=fs.readFileSync(path.join(base,'src','tiktok-native.js'),'utf8')
-  .replace(/^export /gm,'');
+  .replace(/^export /gm,'').replace(/^import .*"\.\/social-native\.js";\n/gm,'');
 const blueskyNative=fs.readFileSync(path.join(base,'src','bluesky-native.js'),'utf8')
-  .replace(/^export /gm,'');
+  .replace(/^export /gm,'').replace(/^import .*"\.\/social-native\.js";\n/gm,'');
 const youtubeNative=fs.readFileSync(path.join(base,'src','youtube-native.js'),'utf8')
-  .replace(/^export /gm,'');
+  .replace(/^export /gm,'').replace(/^import .*"\.\/social-native\.js";\n/gm,'');
 const instagramNative=fs.readFileSync(path.join(base,'src','instagram-native.js'),'utf8')
-  .replace(/^export /gm,'');
-const analytics = 'const SOCIAL_SNAPSHOT='+JSON.stringify(social)+';\n'
+  .replace(/^export /gm,'').replace(/^import .*"\.\/social-native\.js";\n/gm,'');
+const analytics = 'const SOCIAL_CAMPAIGN='+JSON.stringify(social)+';\n'
+  + nativeHelpers+'\n'
   + tiktokNative+'\n'
   + blueskyNative+'\n'
   + youtubeNative+'\n'
   + instagramNative+'\n'
   + fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
+    .replace('import {authorizedSocialSchedule} from "./social-schedule.js";','')
     .replace('import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";','')
     .replace('import {nativeBlueskySnapshot} from "./bluesky-native.js";','')
     .replace('import {nativeYouTubeSnapshot,nativeYouTubeRoute} from "./youtube-native.js";','')

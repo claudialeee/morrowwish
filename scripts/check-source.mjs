@@ -79,9 +79,9 @@ if(accountOverview){
     (tk.views!=null&&(!Number.isSafeInteger(tk.views)||tk.views<0)))
    throw Error('Metricool overview must match real per-post Instagram readings and valid TikTok provider totals');
 }
-if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
+if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_CAMPAIGN'))throw Error('Metrics must be embedded in the protected analytics worker');
 const tikSource=fs.readFileSync('src/tiktok-native.js','utf8'),nativeBuild=fs.readFileSync('scripts/build-pages.mjs','utf8');
-if(!tikSource.includes('/v2/video/list/')||!tikSource.includes('/v2/oauth/token/')||
+if(!tikSource.includes('/v2/video/query/')||!tikSource.includes('/v2/oauth/token/')||
    !tikSource.includes('video.list')||!tikSource.includes('tkEncrypt')||
    !nativeBuild.includes("tiktokNative+'\\n'")||
    !fs.readFileSync('src/analytics.js','utf8').includes('nativeTikTokSnapshot(env'))
@@ -120,7 +120,7 @@ if(requiredChannels.some(name=>!channelIds.includes("'"+name+"'"))||
 if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const finishRate=")||
    !dashboard.includes("const startRate=")||
-   !dashboard.includes("snapshotPlatforms.filter(p=>platformIds.has(p.id))")||
+   !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
    !dashboard.includes('id="bluesky-engagement-rows"')||

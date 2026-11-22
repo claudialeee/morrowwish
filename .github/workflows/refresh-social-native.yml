@@ -1,0 +1,33 @@
+name: Refresh first-party video metrics
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+
+concurrency:
+  group: morrowwish-native-video-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Refresh approved video metrics on production Pages
+        env:
+          REFRESH_URL: https://morrowwish.pages.dev/api/social/refresh
+        run: |
+          set -euo pipefail
+          token=$(curl --fail --silent --show-error --max-time 10 \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https%3A%2F%2Fmorrowwish.pages.dev%2Fapi%2Fsocial%2Frefresh" | jq -er .value)
+          echo "::add-mask::$token"
+          result=$(curl --fail --silent --show-error --max-time 70 --request POST \
+            -H "Authorization: Bearer $token" "$REFRESH_URL")
+          jq . <<<"$result"
+          jq -e '.bluesky.checkedAt and (.bluesky.status == "ready" or .bluesky.status == "refreshing") and
+            ([.youtube, .instagram, .tiktok, .bluesky] | all(.status != "sync_error" and .status != "storage_error"))' <<<"$result" >/dev/null

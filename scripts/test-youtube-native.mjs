@@ -15,6 +15,6 @@ assert.equal(partial.platforms.find(p=>p.id==='youtube').views,null);
 assert.equal(partial.metricScope.verifiedPosts.find(p=>p.platform==='youtube'&&p.game==='tiny-town').views,null);
 const missing=ytOverlay(base,null,'needs_api_key');
 assert.equal(missing.nativeYouTube.status,'needs_api_key');
-assert.equal(missing.platforms.find(p=>p.id==='youtube').views,base.platforms.find(p=>p.id==='youtube').views);
+assert.equal(missing.platforms.find(p=>p.id==='youtube').views,null);
 assert.equal((await nativeYouTubeSnapshot({},base)).nativeYouTube.status,'needs_api_key');
 console.log('YouTube official seven-video allowlist and incomplete feed handling passed.');

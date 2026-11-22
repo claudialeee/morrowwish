@@ -1,40 +1,38 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {bskyGame,bskyPost,bskyOverlay,nativeBlueskySnapshot} from '../src/bluesky-native.js';
+import {bskyPost,bskyOverlay,nativeBlueskySnapshot} from '../src/bluesky-native.js';
 
 const baseline=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 const did='did:plc:d55banmfpsnzmt35hqmmwha7';
-const make=(game,rkey,likes,reposts)=>({
-  post:{author:{did},uri:'at://'+did+'/app.bsky.feed.post/'+rkey,
-    indexedAt:'2026-11-22T20:00:00Z',
-    record:{text:'Play free: https://morrowwish.vercel.app/'+game+'/'},
-    likeCount:likes,repostCount:reposts,replyCount:2,quoteCount:1}
+const make=(rkey, likes, reposts)=>({
+  author:{did},uri:'at://'+did+'/app.bsky.feed.post/'+rkey,
+  embed:{$type:'app.bsky.embed.video#view'}, likeCount:likes,repostCount:reposts,replyCount:0,quoteCount:0
 });
-assert.equal(bskyGame('Play free: https://morrowwish.vercel.app/cat-bond/'),'cat-bond');
-assert.equal(bskyGame('No jobs. No bosses. Your town, your rules.'),'tiny-town');
-assert.equal(bskyGame('Unrelated post'),null);
-const cat=bskyPost(make('cat-bond','3n2wcn56m33kj',3,2));
-const town=bskyPost(make('tiny-town','3n2wcr7nylvrr',1,4));
+const cat=bskyPost(make('3n2wcn56m33kj',3,2));
+const town=bskyPost(make('3n2wcr7nylvrr',1,4));
+assert.equal(cat.game,'cat-bond');
 assert.equal(cat.likes,3);
 assert.equal(cat.reposts,2);
 assert.ok(cat.url.endsWith('/post/3n2wcn56m33kj'));
-assert.equal(bskyPost({...make('cat-bond','3n2wcn56m33kj',3,2),reason:{$type:'app.bsky.feed.defs#reasonRepost'}}),null);
-assert.equal(bskyPost({...make('cat-bond','3n2wcn56m33kj',3,2),post:{...make('cat-bond','3n2wcn56m33kj',3,2).post,author:{did:'did:plc:other'}}}),null);
-assert.equal(bskyPost({...make('cat-bond','3n2wcn56m33kj',3,2),post:{...make('cat-bond','3n2wcn56m33kj',3,2).post,indexedAt:'2026-11-20T10:00:00Z'}}),null);
-assert.equal(bskyPost(make('cat-bond','3n2notapproved',500,1000)),null,'older or unapproved campaign post must not be tracked');
+assert.equal(bskyPost({...make('3n2wcn56m33kj',3,2),embed:null}),null);
+assert.equal(bskyPost({...make('3n2wcn56m33kj',3,2),author:{did:'did:plc:other'}}),null);
+assert.equal(bskyPost(make('3n2notapproved',500,1000)),null);
 const oldCache={platform:'bluesky',game:'cat-bond',url:'https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2rcatbond',publishedAt:'2026-11-22',views:null,likes:999,reposts:999,publicVerified:true,approved:true};
 const result=bskyOverlay(baseline,{posts:[cat,town,oldCache],checkedAt:'2026-11-22T20:00:00Z'},'ready');
 const bluesky=result.platforms.find(p=>p.id==='bluesky');
-assert.equal(bluesky.published,2);
-assert.equal(bluesky.likes,4);
-assert.equal(bluesky.reposts,6);
-assert.equal(bluesky.replies,4);
-assert.equal(bluesky.quotes,2);
+assert.equal(bluesky.published,7);
+assert.equal(bluesky.likes,null);
+assert.equal(bluesky.reposts,null);
+assert.equal(bluesky.replies,null);
+assert.equal(bluesky.quotes,null);
+assert.equal(result.nativeBluesky.postMetricsCount,2);
+assert.equal(result.nativeBluesky.status,'partial');
+assert.equal(result.metricScope.verifiedPosts.find(p=>p.platform==='bluesky'&&p.game==='cat-bond').likes,3);
 assert.equal(bluesky.views,null,'Bluesky public likes must not be mislabeled as views');
 assert.equal(result.platforms.find(p=>p.id==='tiktok').views,94,'TikTok snapshot retained');
-assert.equal(result.metricScope.verifiedPosts.filter(p=>p.platform==='bluesky').length,2);
-assert.equal(result.metricScope.verifiedPosts.length,23);
-assert.equal(bskyOverlay(result,{posts:[cat,town]},'ready').metricScope.verifiedPosts.length,23,'refresh replaces, not duplicates, old values');
+assert.equal(result.metricScope.verifiedPosts.filter(p=>p.platform==='bluesky').length,7);
+assert.equal(result.metricScope.verifiedPosts.length,28);
+assert.equal(bskyOverlay(result,{posts:[cat,town]},'ready').metricScope.verifiedPosts.length,28,'refresh replaces, not duplicates, old values');
 const failed=await nativeBlueskySnapshot({DB:{prepare(){throw Error('not available')}}},baseline);
 assert.equal(failed.nativeBluesky.status,'storage_error');
 assert.equal(failed.platforms.find(p=>p.id==='tiktok').views,94);
