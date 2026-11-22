@@ -269,23 +269,43 @@ function bondTierChoreography(g,W,H,p,key,tier){
 function featherScenery(g,W,H){
  // Dissolve scenery over a generous, smooth band, not a moving picture frame.
  // Cat details stay legible through the middle of the original painting.
- const edgeX=clamp(48/W,.10,.20);
- const edgeY=clamp(56/H,.13,.24);
+ // Wide, eased alpha skirts: the painting vanishes into the real arena
+ // before reaching the canvas edge, even on narrow portrait devices.
+ const edgeX=clamp(72/W,.14,.24);
+ const edgeY=clamp(86/H,.16,.28);
  g.save();
  g.globalAlpha=1;
  g.globalCompositeOperation='destination-in';
  let fade=g.createLinearGradient(0,0,W,0);
  fade.addColorStop(0,'rgba(255,255,255,0)');
+ fade.addColorStop(edgeX*.27,'rgba(255,255,255,.07)');
+ fade.addColorStop(edgeX*.70,'rgba(255,255,255,.75)');
  fade.addColorStop(edgeX,'#fff');
  fade.addColorStop(1-edgeX,'#fff');
+ fade.addColorStop(1-edgeX*.70,'rgba(255,255,255,.75)');
+ fade.addColorStop(1-edgeX*.27,'rgba(255,255,255,.07)');
  fade.addColorStop(1,'rgba(255,255,255,0)');
  g.fillStyle=fade;g.fillRect(0,0,W,H);
  fade=g.createLinearGradient(0,0,0,H);
  fade.addColorStop(0,'rgba(255,255,255,0)');
+ fade.addColorStop(edgeY*.27,'rgba(255,255,255,.07)');
+ fade.addColorStop(edgeY*.70,'rgba(255,255,255,.75)');
  fade.addColorStop(edgeY,'#fff');
  fade.addColorStop(1-edgeY,'#fff');
+ fade.addColorStop(1-edgeY*.70,'rgba(255,255,255,.75)');
+ fade.addColorStop(1-edgeY*.27,'rgba(255,255,255,.07)');
  fade.addColorStop(1,'rgba(255,255,255,0)');
  g.fillStyle=fade;g.fillRect(0,0,W,H);
+ // An elliptical corner vignette removes the four-corner picture-frame
+ // silhouette, without ever blurring the cats themselves.
+ g.save();g.scale(W,H);
+ const oval=g.createRadialGradient(.5,.5,.26,.5,.5,.73);
+ oval.addColorStop(0,'#fff');
+ oval.addColorStop(.43,'#fff');
+ oval.addColorStop(.77,'rgba(255,255,255,.83)');
+ oval.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=oval;g.fillRect(0,0,1,1);
+ g.restore();
  g.restore();
 }
 // A soft oval dissolve for the original 16:9 painting on portrait phones.
@@ -295,11 +315,13 @@ function dissolvePortraitFocus(g,W,H){
  g.globalAlpha=1;
  g.globalCompositeOperation='destination-in';
  g.scale(W,H);
- const matte=g.createRadialGradient(.5,.5,.08,.5,.5,.52);
+ // A wider blurred-alpha oval (not blurred artwork): its exact rectangular
+ // bounds disappear completely, preserving sharp eyes/fur in the center.
+ const matte=g.createRadialGradient(.5,.5,.04,.5,.5,.50);
  matte.addColorStop(0,'#fff');
- matte.addColorStop(.40,'#fff');
- matte.addColorStop(.62,'rgba(255,255,255,.94)');
- matte.addColorStop(.84,'rgba(255,255,255,.30)');
+ matte.addColorStop(.28,'#fff');
+ matte.addColorStop(.57,'rgba(255,255,255,.86)');
+ matte.addColorStop(.82,'rgba(255,255,255,.22)');
  matte.addColorStop(1,'rgba(255,255,255,0)');
  g.fillStyle=matte;
  g.fillRect(0,0,1,1);
@@ -357,7 +379,8 @@ function draw(ctx,W,H,seq,lookup){
  // A long, eased cinematic dissolve: the painted world grows into view,
  // stays present for the choreography, and releases back to live combat
  // BEFORE the separate elemental hit. No instantaneous pop-in/out.
- const opacity=thumbnail?1:smooth(p/.19)*(1-smooth((p-.70)/.23));
+ const opacity=(thumbnail||galleryPreview)?1:
+  smooth(p/.22)*(1-smooth((p-.71)/.29));
  if(opacity<=0)return true;
  const portrait=!thumbnail&&W/H<.90;
  const sw=thumbnail?Math.min(W,H*16/9):W;

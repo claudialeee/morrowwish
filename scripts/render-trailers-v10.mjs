@@ -49,7 +49,7 @@ const playlists={
   broll('auto-team-saved',2.5,'SAVE YOUR BEST BATTLE TEAM.'),
   broll('battle-hud',2.45,'REAL-TIME HEALTH AND BATTLE.'),
   broll('battle-skills',2.8,'USE DIFFERENT SKILLS.'),
-  broll('duo',4.25,'ONE POWERFUL DUO FINISHER!'),
+  broll('duo',3.1,'ONE POWERFUL DUO FINISHER!'),
   broll('rare-encounter',2.05,'A RARE CAT APPEARS!'),
   broll('rare-capture',3.45,'A NEW FRIEND JOINS YOU.'),
   broll('ssr-showcase',3.6,'MEET A LEGENDARY SSR CAT!'),

@@ -455,7 +455,9 @@ try{
     throw Error('Duo animation is obscured or finished in filmed segment '+JSON.stringify(duoProof));
   await page.screenshot({path:'public/promo/cat-bond/v10-duo-actual-render-proof.png'});
   await sleep(3000);
-  shots.push({label:'duo',start:duoStart,duration:stamp()-duoStart-.08});
+  // Trim the genuine single cast before its after-action effects can resemble
+  // a second finisher. The untouched raw recording is retained for QA.
+  shots.push({label:'duo',start:duoStart,duration:Math.min(3.1,stamp()-duoStart-.08)});
   console.log('V10 VERIFIED NEW DUO CINEMATIC '+JSON.stringify(cinematicSource));
   // One cinematic finisher ONLY. The older V8 edit separately showed a
   // second solo ultimate, making the promo look like the same move repeated.

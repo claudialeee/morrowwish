@@ -8,6 +8,7 @@ on:
       - 'public/cat-bond/index.html'
       - 'public/cat-bond/css/style.css'
       - 'public/cat-bond/js/ui.js'
+      - 'public/cat-bond/js/duo-premium.js'
       - 'public/cat-bond/js/worldmap.js'
       - 'public/game-fullscreen.js'
       - 'scripts/capture-trailers-v10.mjs'
@@ -94,8 +95,10 @@ jobs:
             if(!bond.shots.some(s=>s.scene===scene&&s.seconds>=1.5))
               throw Error('Missing verified real Cat Bond feature: '+scene);
           const scenes=bond.shots.map(s=>s.scene);
-          if(scenes.filter(s=>s==='duo').length!==1||scenes.includes('ultimate'))
-            throw Error('Repeated or legacy ultimate footage');
+          const finishers=bond.shots.filter(s=>s.scene==='duo');
+          if(finishers.length!==1||finishers[0].seconds<2.8||finishers[0].seconds>3.2||
+              scenes.includes('ultimate'))
+            throw Error('Finisher must be one short, complete sequence without a second cast');
           for(const [first,next] of [['duo-promise','duo-quarrel'],['duo-quarrel','duo-reconcile'],
               ['battle-skills','duo'],['duo','rare-encounter']])
             if(scenes.indexOf(first)===-1||scenes.indexOf(first)>=scenes.indexOf(next))
