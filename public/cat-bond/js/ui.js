@@ -476,15 +476,53 @@ const UI = {
     };
     requestAnimationFrame(draw);
   },
+  // Paint each unlocked pair ONCE with the same full-illustration renderer
+  // as combat. Locked records never create canvases or preview requests.
+  renderUnlockedDuoCards(entries){
+    const paint=()=>{
+      if(!window.CatBondDuoHero?.assetReady)return;
+      document.querySelectorAll('#panel canvas[data-duo-thumb]').forEach(canvas=>{
+        const entry=entries[Number(canvas.dataset.duoThumb)];
+        if(!entry||entry.trust<20||!canvas.isConnected)return;
+        const art=CatRelations.title(entry.a,entry.b);
+        const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+        ctx.clearRect(0,0,w,h);
+        window.CatBondDuoHero.draw(ctx,w,h,{
+          max:2.75,t:1.80,catUids:[entry.a.uid,entry.b.uid],
+          elements:art.elementPair,name:art.name,
+          tier:entry.trust>=90?3:entry.trust>=60?2:1
+        },uid=>uid===entry.a.uid?entry.a:uid===entry.b.uid?entry.b:null);
+      });
+    };
+    if(window.CatBondDuoHero?.assetReady)requestAnimationFrame(paint);
+    else window.addEventListener('cat-bond-premium-art-ready',paint,{once:true});
+  },
   openBondPanel(preferUnresolved=false){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
     const pendingPair=preferUnresolved?CatRelations.unresolved?.()[0]:null;
+    // Build the visible gallery from EARNED relationship records only.
+    // Simply owning two cats does not reveal their ability or cinematics.
+    const unlockedPairs=Object.entries(State.S.duoRelations?.pairs||{})
+      .filter(([,rel])=>Number(rel?.value)>=20)
+      .map(([key,rel])=>{
+        const [uidA,uidB]=key.split(':');
+        const a=cats.find(c=>c.uid===uidA),b=cats.find(c=>c.uid===uidB);
+        return a&&b?{a,b,trust:rel.value}:null;
+      }).filter(Boolean)
+      .sort((x,y)=>y.trust-x.trust);
     let picked=pendingPair?[pendingPair.a.uid,pendingPair.b.uid]:
       (this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid));
     if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id))){
       const pending=CatRelations.unresolved?.()[0];
       picked=pending?[pending.a.uid,pending.b.uid]:[cats[0].uid,cats[1].uid];
+    }
+    if(unlockedPairs.length&&!this._duoChangeOpen&&!preferUnresolved){
+      const saved=[picked[0],picked[1]].sort().join(':');
+      if(!unlockedPairs.some(entry=>[entry.a.uid,entry.b.uid].sort().join(':')===saved)){
+        picked=[unlockedPairs[0].a.uid,unlockedPairs[0].b.uid];
+        this._duoPicked=picked.slice();
+      }
     }
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
@@ -516,7 +554,31 @@ const UI = {
     const selected=ok&&CatRelations.chosen().map(c=>c.uid).join('|')===picked.join('|');
     const mood=ok?CatRelations.mood(a,b):'unknown';
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-    const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
+    const unlockedCards=unlockedPairs.map((entry,i)=>{
+      const art=CatRelations.title(entry.a,entry.b);
+      const active=CatRelations.chosen().map(c=>c.uid).sort().join(':')===
+        [entry.a.uid,entry.b.uid].sort().join(':');
+      const selected=[entry.a.uid,entry.b.uid].sort().join(':')===
+        picked.slice().sort().join(':');
+      return '<button type="button" class="duo-unlocked-card '+(selected?'chosen':'')+
+        '" data-duo-index="'+i+'" aria-pressed="'+String(selected)+'">'+
+        '<canvas class="duo-gallery-thumb" data-duo-thumb="'+i+'" width="300" height="169" aria-hidden="true"></canvas>'+
+        '<span class="duo-card-body"><strong>'+esc(State.catName(entry.a))+' × '+esc(State.catName(entry.b))+'</strong>'+
+        '<b>'+esc(art.name)+'</b><small>'+esc(art.description)+'</small>'+
+        '<span class="duo-card-trust">'+(active?'✓ '+(en?'Active · ':'出战中 · '):'')+
+        (en?'Trust ':'默契 ')+Math.floor(entry.trust)+'/100</span></span></button>';
+    }).join('');
+    const catButtons=side=>cats.map(c=>
+      '<button class="duo-cat-chip '+(picked[side]===c.uid?'selected':'')+
+      '" type="button" data-duo-cat="'+side+'" data-cat-uid="'+esc(c.uid)+
+      '" aria-pressed="'+String(picked[side]===c.uid)+'">'+esc(State.catName(c))+'</button>'
+    ).join('');
+    const showPairChooser=!unlockedPairs.length||this._duoChangeOpen;
+    const pairChooser='<div class="duo-direct-chooser" id="duo-direct-chooser">'+
+      '<p class="tiny">'+(en?'Tap two cats to raise another pairing (skills remain secret until unlocked).':
+        '直接点选两只猫培养新的搭档；未解锁的技能不会提前显示。')+'</p>'+
+      '<strong>'+(en?'First cat':'第一只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(0)+'</div>'+
+      '<strong>'+(en?'Second cat':'第二只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(1)+'</div></div>';
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
     const memories=ok?CatRelations.memoryList(a,b):[];
     const journey=window.WorldMap?.REGIONS||[];
@@ -533,8 +595,16 @@ const UI = {
         (en?State.catName(a)+' and '+State.catName(b)+' are upset. Make up for free to gain +6 trust.':
           State.catName(a)+' 和 '+State.catName(b)+' 闹别扭了，点下面的按钮免费和好，还能增加 6 点默契。')+
         '</p><button type="button" class="btn gold" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button></section>':''}
-      <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
-      <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
+      <section class="duo-unlocked-section">
+        <h3>${en?'Unlocked cat duos':'已解锁的双猫合击'} <small>${unlockedPairs.length}</small></h3>
+        ${unlockedPairs.length?'<div class="duo-unlocked-grid">'+unlockedCards+'</div>':
+          '<p class="duo-empty">'+(en?'No duo moves unlocked yet. Play together to reach 20 trust.':
+            '暂时还没有解锁合击。选好搭档后一起玩、撸猫，默契达到 20 才会揭晓技能。')+'</p>'}
+      </section>
+      ${unlockedPairs.length?'<button id="duo-change-cats" type="button" class="btn ghost duo-new-pair-toggle">'+
+         (this._duoChangeOpen?(en?'Hide new pairing':'收起新搭档'):
+           (en?'Raise another pairing':'培养其他搭档'))+'</button>':''}
+      ${showPairChooser?pairChooser:''}
       <div class="duo-relation">
         <div class="duo-skill-identity" aria-label="${en?'Selected duo special move':'当前组合合体技能'}">
           <span class="duo-skill-kicker">${en?'THIS PAIR’S DUO SKILL':'这对猫的专属合体技'}</span>
@@ -572,9 +642,28 @@ const UI = {
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
     if(unlocked&&duoArt)this.showPairSkillAnimation(a,b,duoArt.name,duoArt.elementPair,
       p>=90?3:p>=60?2:1);
-    for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
-      const ids=picked.slice();ids[i]=e.target.value;this._duoPicked=ids;this.openBondPanel();
-    };
+    document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
+      const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
+      if(!entry)return;
+      this._duoPicked=[entry.a.uid,entry.b.uid];
+      this._duoChangeOpen=false;this.openBondPanel();
+    });
+    document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
+      this._duoChangeOpen=!this._duoChangeOpen;
+      this.openBondPanel();
+    });
+    document.querySelectorAll('#panel [data-duo-cat]').forEach(btn=>btn.onclick=()=>{
+      const side=Number(btn.dataset.duoCat),uid=btn.dataset.catUid;
+      if(!cats.some(c=>c.uid===uid)||![0,1].includes(side))return;
+      this._duoPicked=picked.slice();this._duoPicked[side]=uid;
+      if(this._duoPicked[0]===this._duoPicked[1]){
+        const other=cats.find(c=>c.uid!==uid);
+        if(other)this._duoPicked[1-side]=other.uid;
+      }
+      this._duoChangeOpen=true;
+      this.openBondPanel();
+    });
+    this.renderUnlockedDuoCards(unlockedPairs);
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
       CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
