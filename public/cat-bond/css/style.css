@@ -1884,7 +1884,9 @@ body.cb-exploring #map-squad{
 @media(max-height:530px) and (orientation:landscape){
  body.cb-exploring #map-index,
  body.cb-exploring #map-squad{
-   top:calc(env(safe-area-inset-top,0px) + 57px)!important;
+   /* #stage is vertically shifted a few px in short mobile landscape.
+      Use a proper toolbar gap in screen coordinates, not a 1px overlap. */
+   top:calc(env(safe-area-inset-top,0px) + 66px)!important;
    min-height:36px;
  }
 }
