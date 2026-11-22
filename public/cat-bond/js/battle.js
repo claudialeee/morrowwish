@@ -4241,7 +4241,9 @@ class CaptureBattle {
     // Low-HP finisher keeps battles moving but no longer compounds into huge
     // normal-skill spikes with stagger and vulnerability tags (1.2x..1.55x).
     const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
-    if (!isDot && frac0 < 0.28) dmg *= 1.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35;
+    // Bosses are immune to automatic low-HP execution; SSR/elite alone is NOT a boss flag.
+    const boss = e.isBoss === true || e.boss === true || e.role === 'boss';
+    if (!boss && !isDot && frac0 < 0.28) dmg *= 1.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35;
     let scaled = dmg;
     if (fromDuo && this.duoField) {
       // Apply cap AFTER level scaling and vulnerability multipliers; otherwise
