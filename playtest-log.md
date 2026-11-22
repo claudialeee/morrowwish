@@ -310,3 +310,35 @@ Run wf_ca1f26ac-87f · 59/64 agents ok (5 synth retry-capped) · 46 critiques. F
 - **P1 — the only danger cue is a 46px top-left tile pulse at hp≤0.25**, where a masher never looks, binary not gradient. Fix: a center/edge red vignette ramping CONTINUOUSLY as teamHpFrac<0.40 + heartbeat/slowmo tick at <0.15 (reuse teamHpFrac@3642, the purple flash@4978 site). Offense got all the juice; the "I'm in danger" state got none.
 
 **Note for owner:** these are feedback/legibility + one smash-taper — lower-risk than rebalancing. Consistent with the standing escalation-gating root across cycles. No code changed, no push (cron rule).
+
+---
+
+## Cycle (2026-11-22 ~02:00 PST, code @ 8acbe61) — adversarial playtest, 6 personas × 8 battles (1 round)
+
+**Workflow:** cat-bond-playtest.js, 67 agents, 54 adversary-graded critiques (**45 real-problem**, 9 opportunity; 41 P1 / 13 P2). Code under test = HEAD 8acbe61 (post owner poise-rework merge).
+
+**Per-persona verdict (real sim telemetry):** 探索型 fun 7 engaged · 狂按型 6 engaged · 懒人型 6 bored · 没耐心型 3 **quit** · 手忙脚乱型 3 frustrated **quit** · 谨慎型 3 bored **quit**. Three of six would stop playing — all three for the same reason (patient/low-APM play is a dead end).
+
+**Headline (synthesized):** "Combat has strong juice and real depth, but almost every reward and survival signal is gated behind states casual players can't reach — so aggression doesn't accelerate kills, patience is a silent timeout loss, and defense/skills stay optional decoration."
+
+**Honest note on novelty:** this largely **reconfirms** the standing cross-cycle root (escalation/teaching/feedback keyed to the wrong variables) — NOT new. The one sharper, newly-dominant cluster this cycle is **A** below (kite = silent timeout, the single largest theme: 24 real-problems across 5 personas), surfaced because the cautious/lazy/impatient personas were run together and all hit the same wall.
+
+**Adversary-confirmed, ranked (findings only — NOT applied, no push):**
+
+- **P1 · A — Patience/kite is a silent timeout LOSS; the basic-attack DPS floor can't close a fight (24 real-problems, 5 personas — NEW dominant).** 谨慎型 won 1/8, timed out 7/8 at ~46s with 94% HP left and 80% idle — the clock, not the enemy, is the opponent, and the screen never says "you under-damaged." Root: a pure-basics playstyle meets a self-healing + `_pressure`-escalating target it can't out-DPS. Fix dir: (1) turn stalling into a real losing pressure — gate `_pressure` escalation (battle.js:3647) on a **no-progress** signal (enemy pack HP hasn't dropped in ~5s) rather than "team HP high", so turtling actively degrades; (2) on timeout/hard-cap show a "你造成了所需伤害的 X% / dealt X% of needed DPS" recap so the failure reason is visible; (3) give patient play a poke-payoff (well-timed Q/basic after a dodge → bonus/stagger) so careful ≠ dead-end.
+
+- **P1 · F — The "use a skill" teach fires on the WRONG variable (catch-22, recurring + now mechanism-pinpointed).** The MASH-STALL banner only arms at enemy hp<0.2 (battle.js:3655), but a masher plateaus ABOVE 20% precisely because they only mash → banner never fires; fight dies at the 70s hard cap as a flat LOSS (3663). Fix: arm on **behavior** — `onlyBasics` AND fight >15-18s AND enemy HP dropped <25% over the last few seconds; make the hard-cap resolve a neutral escape/draw for onboarding, not a defeat for a pacing hole the design created.
+
+- **P1 · D — Basics are triple-gated, so mashers can never reach the stagger loop (recurring, confirmed in code).** Basics deal ×0.7 on un-marked targets (4405), apply zero status tags so they never self-escalate (4403), and never drain poise so the 2× 虚弱 stagger window is unreachable without Q/E (4427). The most common casual input style is structurally locked out of the game's reward loop. Fix: let basics apply a small poise drain / light tag so a masher can *stumble into* the stagger lesson, then the teach (theme F) converts it.
+
+- **P1 · C — The only survival cue is off-screen; a masher is deleted with no center-screen warning (recurring).** Low-HP warning lives solely in the top-left DOM rail (game.js refreshBattleHud ~L1458, ~300ms cadence) + a 12px gold chevron; the full-screen purple flash (battle.js:4986) fires on *every* hit so it's ambient noise, not danger. 狂按型 ate 428 dmg → faint with 100% of the warning in the margins. Fix: additive center/edge **red vignette** keyed to the ACTIVE cat's hp frac (<0.33), opacity + heartbeat pulse ramping to 0, hue distinct from the purple hit-flash + a red rim-glow on the active cat body. Pure feedback, zero balance change.
+
+- **P1 · E — The 20-vs-428 dmg swing is a hidden `_pressure` ramp + a binary smash, indistinguishable from RNG (recurring).** `_pressure` silently ramps +0.45/s above 88% HP (3647); once armed, the must-dodge smash deals a FLAT `max(e.dmg*1.6, maxhp*0.26)` with a hard R=86 cutoff (4291-4292), no falloff → eat 0 = ~20 dmg, eat 3-4 = ~428, with no visible trigger. Fix: replace the flat 26%/0% cliff with **radial falloff** (`k = 1 - dist/R; heavy = max(e.dmg*1.2, maxhp*(0.08+0.20*k))`) so damage correlates with where you stand, and surface `_pressure` as a small HUD heat/aggro tell.
+
+- **P2 · B — Dodge never fires in any persona, any battle (recurring; `dodge:0 / everUsedDodge=false` ×48).** Even the explorer "tries-everything" persona never dodged once — either unbound/unresponsive in auto-sim or zero incentive. Fix GATE before buffing: make dodge a real i-frame dash with a visible cooldown pip + perfect-dodge juice; the smash (theme E) should be the thing that *teaches* dodge once it's legible.
+
+- **P2 · G/H/I — long fights devolve to basic-spam (3082 basics in a 36s fight ≈85/s), encounters read samey, no win-screen flourish.** Lower priority; combo-depth + encounter variety + a "flawless/fast-clear" recap would retain the engaged personas (explorer fun 7) past 8 runs.
+
+**Guardrails (adversary-flagged, carried):** keep casual accessibility + no-death first-fight coach; compress the DPS/difficulty FLOOR without removing the matchup skill-ceiling; fix the dodge GATE before buffing E/ult. Most P1 fixes here are **feedback/legibility** (vignette, DPS-recap, pressure tell, behavioral teach-trigger) — lower-risk than rebalancing; the smash-falloff + `_pressure` re-gate are the only mechanics touches.
+
+**Note for owner:** findings only — no code changed, no push (cron rule). Convergent with prior cycles; the systemic version of the escalation/smash re-gate is already drafted in `.claude/aggro-system-spec.md`.
