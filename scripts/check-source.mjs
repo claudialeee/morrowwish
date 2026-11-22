@@ -1048,6 +1048,9 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbGame.includes("ctx.filter='none'")||
     !cbGame.includes("try {")||!cbGame.includes("finally { ctx.restore(); }")||
     !cbWorld.includes('const yardMagnify=Math.min(1.32')||
+    !cbWorld.includes('Math.min(this.W/880,this.H/490)*.79')||
+    !cbWorld.includes('this._renderedYardScale=drawScale*yardMagnify')||
+    !cbWorld.includes('const s=this._renderedYardScale||1.2')||
     !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
     !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
@@ -1108,6 +1111,19 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbBattle.includes("this.regularSkillAccent(f,f.element,aim,true)")||
     !cbBattle.includes("this.regularSkillAccent({x,y},skill.element"))
    throw Error('Cat Bond first-screen CTA and six-element ordinary-skill VFX regressions');
+ // Catch the regression that previously scaled COURTYARD cats up to 2.05x.
+ // Portrait cats remain at their original 132px height; ONLY yard magnification
+ // is reduced. The hit test continues to use the actual painted cat scale.
+ for(const [W,H] of [[1600,820],[960,600],[390,700],[320,530]]){
+   const old=Math.min(2.05,Math.max(1.22,Math.min(W/880,H/490)*1.12));
+   const current=Math.min(1.32,Math.max(.94,Math.min(W/880,H/490)*.79));
+   if(!(current<old&&current>=.94&&current<=1.32))
+     throw Error('Garden cat size must be smaller than before on '+W+'x'+H);
+ }
+ if(!bondIntro.includes('js/main.js?v=original-intro-cats-20261121-2')||
+    !cbMain.includes('targetHeight=132,maxWidth=140')||
+    !bondIntro.includes('js/world.js?v=smaller-courtyard-cats-20261121-2'))
+   throw Error('Garden resize must not shrink the main menu kitten portraits');
  // Tour must progress through real post-capture actions and remain optional.
  if(!bondIntro.includes('id="guide-help"')||
     !bondIntro.includes('role="region" aria-label="猫猫冒险指引"')||
