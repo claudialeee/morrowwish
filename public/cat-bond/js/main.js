@@ -2,6 +2,14 @@
 
 window.addEventListener('DOMContentLoaded', () => {
   console.log('Cat Bond build v36 — reset save from the intro if a battle cannot start');
+  // The published intro must follow the canonical playable species catalogue.
+  // Keep Chinese as the source: the Cat Bond i18n layer translates it on mount
+  // and on all later language changes without diverging the two labels.
+  const introBreedCount=document.getElementById('intro-breed-count');
+  const totalBreeds=window.GameData?.SPECIES?.length;
+  if(introBreedCount && Number.isInteger(totalBreeds) && totalBreeds>0){
+    introBreedCount.textContent=`🐾 收集 ${totalBreeds} 种猫`;
+  }
   const game = new Game();
   window.__game = game;
   UI.init(game);

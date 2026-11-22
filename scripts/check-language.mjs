@@ -7,7 +7,14 @@ const game=read('public/cat-bond/js/data.js');
 const context={window:{MorrowwishI18n:{get:()=> 'en'}}};
 vm.runInNewContext(game+';window.__species=SPECIES;window.__speciesName=speciesName;',context);
 const cats=context.window.__species;
-assert.ok(cats.length>=32,'Cat Bond must retain all original breeds');
+assert.equal(cats.length,33,'All 33 playable species, including Jiafei, must stay in the catalogue');
+const introHtml=read('public/cat-bond/index.html');
+const introMain=read('public/cat-bond/js/main.js');
+const introCount=Number(introHtml.match(/id="intro-breed-count">🐾 收集 (\d+) 种猫<\/span>/)?.[1]);
+assert.equal(introCount,cats.length,'Intro first-paint collection count must match canonical roster');
+assert.ok(introMain.includes('window.GameData?.SPECIES?.length') &&
+  introMain.includes('introBreedCount.textContent=`🐾 收集 ${totalBreeds} 种猫`'),
+  'Intro must derive its displayed count from the live roster, not a hard-coded number');
 for(const [field,locale] of [['name','Chinese'],['nameEn','English']]){
  const values=cats.map(c=>c[field]);
  assert.equal(new Set(values).size,cats.length,locale+' cat names must be unique');
@@ -22,6 +29,11 @@ const dictScope={window:{MorrowwishI18n:{get:()=> 'en'},addEventListener(){}},do
 vm.runInNewContext(read('public/cat-bond/js/i18n.js'),dictScope);
 const i18n=dictScope.window.CatBondI18n;
 assert.ok(i18n?.toEnglish,'Cat Bond language display layer must initialize');
+for(const count of [cats.length,cats.length+1]){
+ assert.equal(i18n.toEnglish(`🐾 收集 ${count} 种猫`),
+   `🐾 Collect ${count} cat breeds`,
+   'Intro English count must follow the live species count');
+}
 for(const cat of cats){
  assert.equal(i18n.toEnglish(cat.name),cat.nameEn,'Breed name mismatch: '+cat.id);
 }
@@ -34,7 +46,7 @@ const mustTranslate=[
  '双猫默契提升！解锁新的合击动作！',
  '猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。',
  '古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。',
- '🏆 猫猫冒险 · 32 种全部收集 ›',
+ '🏆 猫猫冒险 · '+cats.length+' 种全部收集 ›',
  '目标锁定','雪团', '奶酥', '奥利奥', '圆宝', '加菲'
 ];
 for(const [source,value] of Object.entries(i18n.dict)){

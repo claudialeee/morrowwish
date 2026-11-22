@@ -643,7 +643,6 @@
     '领养心仪的小猫，和伙伴一起战斗、成长，探索更大的猫咪世界。': 'Adopt a kitten, fight and grow together, and explore a bigger world of cats.',
     '每只小猫都有自己的脾气。一起冒险、玩耍、变强，慢慢成为彼此最好的搭档。': 'Every kitten has their own personality. Explore, play and grow until they become inseparable.',
     '✿ 在庭院遇见命中注定的搭档 ✿': '✿ Meet your perfect little partners ✿',
-    '🐾 收集 32 种猫': '🐾 Collect 32 cat breeds',
     '⚔️ 双猫合击 · 觉醒新技能': '⚔️ Duo attacks · Awaken new skills',
     '🧶 工坊赚金币 · 培养猫': '🧶 Earn coins · Raise your cats',
     '🗺️ 解锁地图 · 发现秘密': '🗺️ Unlock areas · Discover secrets',
@@ -2075,6 +2074,10 @@
   // form is computed correctly even if the page is currently showing Chinese.
   function toEnglish(str) {
     if (typeof str !== 'string' || !str || !CJK.test(str)) return str;
+    // Use the live breed count. A new collectible must not require another
+    // hard-coded English intro translation.
+    var breedCount = /^🐾 收集 (\d+) 种猫$/.exec(str);
+    if (breedCount) return '🐾 Collect ' + breedCount[1] + ' cat breeds';
     var out = str;
     for (var i = 0; i < KEYS.length; i++) {
       var k = KEYS[i];
