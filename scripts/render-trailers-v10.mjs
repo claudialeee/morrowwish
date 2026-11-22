@@ -45,7 +45,7 @@ const playlists={
   broll('tease',2.2,'PLAY WITH YOUR CATS.'),
   broll('map-choice',2.5,'DISCOVER NEW PLACES.'),
   broll('map-explore',2.45,'EXPLORE A LIVING WORLD.'),
-  broll('map-management',2.15,'ONE MENU FOR YOUR WORLD.'),
+  broll('map-management',2.15,'ALL IN ONE MENU.'),
   broll('auto-team-saved',2.5,'SAVE YOUR BEST BATTLE TEAM.'),
   broll('battle-hud',2.45,'REAL-TIME HEALTH AND BATTLE.'),
   broll('battle-skills',2.8,'USE DIFFERENT SKILLS.'),
