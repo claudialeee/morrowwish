@@ -52,6 +52,13 @@ try{
     }
     variants.push({tier,hash:hash.toString(16),avgBrightness:count?+(bright/count).toFixed(1):0,
      purpleRatio:count?+(purple/count).toFixed(3):0});
+    // Also verify the separate 32-breed mode remains intact without
+    // silently replacing the default classic 63 original paintings.
+    ctx.clearRect(0,0,cv.width,cv.height);
+    if(!painter.draw(ctx,cv.width,cv.height,{
+      elements:key,max:2.75,t:2.75*.60,tier,catUids:cats.map(c=>c.uid),
+      name:key,hideCaptions:true,originalArt:false
+    },uid=>cats.find(c=>c.uid===uid)))throw Error('Breed mode failed '+key+' tier '+tier);
    }
    frames.push({key,variants,palette:painter.paletteFor(key)});
   }
@@ -61,6 +68,14 @@ try{
  });
  assert.equal(result.keys,21);
  assert.equal(result.palettes,21);
+ assert.equal(await page.evaluate(()=>CatBondPremiumCinematics.originalPaintingDefault),true,
+   'All 63 intact original watercolor scenes must be the default');
+ assert.equal(await page.evaluate(()=>CatBondPremiumCinematics.restoredOriginalFrameCount),63);
+ assert.equal(await page.locator('#mode-original').getAttribute('aria-pressed'),'true');
+ await page.locator('#mode-breeds').click();
+ assert.equal(await page.locator('#mode-breeds').getAttribute('aria-pressed'),'true');
+ await page.locator('#mode-original').click();
+ assert.equal(await page.locator('#mode-original').getAttribute('aria-pressed'),'true');
  assert.equal(result.grades,63,'Cache must hold the 63 untouched, separately painted scenes (no actor-tinted duplicates)');
  assert.equal(result.tiers,3);
  assert.equal(result.source,'32-actual-breed-watercolor-actors');
@@ -74,7 +89,7 @@ try{
    function hash(){
      c.clearRect(0,0,480,270);
      painter.draw(c,480,270,{elements:'dark+light',max:2.75,t:1.20,tier:3,
-       catUids:['qa-A','qa-B'],hideCaptions:true,thumbnail:true},
+       catUids:['qa-A','qa-B'],hideCaptions:true,thumbnail:true,originalArt:false},
        id=>id==='qa-A'?actorA:actorB);
      const pix=c.getImageData(0,0,480,270).data;
      let h=2166136261>>>0;
