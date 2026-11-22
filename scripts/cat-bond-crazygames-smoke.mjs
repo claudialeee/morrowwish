@@ -23,12 +23,14 @@ try{
             CatArt.renderCatThumb(canvas,sp);
             return canvas.toDataURL('image/png');
           });
-          return {total:portraits.length,unique:new Set(portraits).size};
+          return {total:portraits.length,expected:GameData.SPECIES.length,
+            unique:new Set(portraits).size};
         });
-        assert.equal(artAudit.total,32,'All catalog breeds must have artwork');
-        assert.equal(artAudit.unique,32,
+        assert.ok(artAudit.expected>=32,'Original watercolor breeds must remain available');
+        assert.equal(artAudit.total,artAudit.expected,'All catalog breeds must have artwork');
+        assert.equal(artAudit.unique,artAudit.expected,
           'Different breeds must not share identical final portrait artwork: '+JSON.stringify(artAudit));
-        console.log('CAT BOND 32-BREED ART PASS',JSON.stringify(artAudit));
+        console.log('CAT BOND ALL-BREED ART PASS',JSON.stringify(artAudit));
       }
       await page.waitForTimeout(80); // MutationObserver's ZH→EN DOM pass
       const starterCopy=await page.locator('#panel.open').innerText();
