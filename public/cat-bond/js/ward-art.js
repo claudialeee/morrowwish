@@ -111,10 +111,67 @@ function hexGrid(g,rx,ry,t){
   }
   g.restore();
 }
+// A DEPLOYED barrier, not a circular aura around the caster.
+// Local X runs along the 220px shield span; local Y is its thin depth.
+// The top/lower rails and very shallow face communicate a standing plane.
+function drawFlatWall(ctx,w,t){
+  if(!ctx||!w||w.remaining<=0)return false;
+  const half=w.halfLength||110;
+  const opening=cap((w.age||0)/.18,0,1);
+  const expand=1-Math.pow(1-opening,3);
+  const fade=cap(w.remaining/.28,0,1);
+  const flash=cap((w.hitAge||0)/.28,0,1);
+  ctx.save();
+  ctx.translate(w.x,w.y);
+  ctx.rotate(w.angle+Math.PI/2);
+  ctx.globalAlpha=fade;
+  ctx.scale(Math.max(.05,expand),1);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  // Two sharp parallel rails over a translucent, very shallow glass panel.
+  const body=ctx.createLinearGradient(0,-31,0,12);
+  body.addColorStop(0,'rgba(232,254,255,.62)');
+  body.addColorStop(.30,'rgba(133,238,255,.21)');
+  body.addColorStop(.72,'rgba(75,163,238,.095)');
+  body.addColorStop(1,'rgba(188,250,255,.24)');
+  ctx.fillStyle=body;
+  ctx.beginPath();ctx.moveTo(-half,-31);ctx.lineTo(half,-31);
+  ctx.lineTo(half-5,11);ctx.lineTo(-half+5,11);ctx.closePath();ctx.fill();
+  // Outer mirror rails and gently spiked fur-like ends.
+  ctx.strokeStyle='rgba(195,248,255,.93)';ctx.lineWidth=2.8;
+  ctx.shadowColor='#80eaff';ctx.shadowBlur=11;
+  ctx.beginPath();ctx.moveTo(-half,-31);ctx.lineTo(half,-31);
+  ctx.moveTo(-half+5,11);ctx.lineTo(half-5,11);ctx.stroke();
+  ctx.shadowBlur=0;
+  for(const sign of [-1,1]){
+    ctx.beginPath();ctx.moveTo(sign*half,-31);
+    ctx.lineTo(sign*(half+9),-18);ctx.lineTo(sign*half,11);
+    ctx.stroke();
+  }
+  // Subtle mirror facets; readable without filling the combat screen.
+  ctx.strokeStyle='rgba(221,251,255,.32)';ctx.lineWidth=1.1;
+  for(let i=-3;i<=3;i++){
+    const x=i*26;
+    ctx.beginPath();ctx.moveTo(x-13,-27);ctx.lineTo(x+6,7);ctx.stroke();
+  }
+  const scan=-half+((t*.37)%1)*half*2;
+  ctx.strokeStyle='rgba(250,255,255,.78)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(scan,-30);ctx.lineTo(scan+10,7);ctx.stroke();
+  if(flash>0){
+    const hx=w.hitOffset||0;
+    ctx.globalAlpha=fade*flash;
+    ctx.strokeStyle='#f8ffff';ctx.lineWidth=2+flash*2;
+    ctx.beginPath();ctx.ellipse(hx,-12,10+(1-flash)*21,6+(1-flash)*12,0,0,TAU);ctx.stroke();
+    glint(ctx,hx,-13,5+flash*7,'#ffffff');
+  }
+  ctx.restore();
+  return true;
+}
 function draw(ctx,f,x,y,t,scale=1,layer='front'){
   if(!ctx||!f)return false;
   const type=(f.protectT||0)>0?'protect':(f.reflectT||0)>0?'reflect':(f.shieldT||0)>0?'barrier':null;
   if(!type)return false;
+  // Mirror walls now have their own world-space plane. No circular personal VFX.
+  if(type==='reflect'&&f._flatWall)return false;
   // Both the CatMotion and original watercolor renderer draw the feet/shadow
   // at (worldY + 33 * sourceScale * growthScale). The old y+7*s anchor put
   // every ward rim near the cat's belly, leaving its paws OUTSIDE the shield.
@@ -149,5 +206,5 @@ function draw(ctx,f,x,y,t,scale=1,layer='front'){
   else {bubble(ctx,rx,ry,t,layer);if(layer==='front')hexGrid(ctx,rx,ry,t);}
   ctx.restore();return true;
 }
-window.CatBondWardArt={draw};
+window.CatBondWardArt={draw,drawFlatWall};
 })();
