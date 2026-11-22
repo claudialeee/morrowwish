@@ -313,4 +313,43 @@ for(let i=0;i<perfectRoutes.length;i++){
  assert.ok(state.steps<=state.room.goal+4,'Room '+(i+1)+' perfect run must meet the step budget');
  assert.equal(nodes.get('stars').textContent,'★★★','Room '+(i+1)+' must still allow earning 3 stars');
 }
-console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings and recovery regression).');
+// Gameplay-quality regression: a capture must have a meaningful, recoverable
+// cost. A stolen fish drops at its original tile; the player can retrieve it.
+// This prevents brute-forcing a heist by keeping every fish after being caught.
+test.choose(0,false);
+const droppedRun=test.getState();
+test.move(1,0); // steal the nearby real fish
+assert.equal(droppedRun.got,1,'First stolen fish must be in the haul');
+assert.equal(droppedRun.fishHaul.length,1,'Stolen fish must be tracked in pickup order');
+const pointsBeforeCapture=droppedRun.score;
+droppedRun.human={x:2,y:5};droppedRun.exposure=4;droppedRun.guardMode="chase";
+test.move(0,1); // owner moves onto the exposed cat; an actual capture
+assert.equal(droppedRun.caughtCount,1,'Guard must catch an exposed, nearby cat');
+assert.equal(droppedRun.lives,2,'Capture costs exactly one heart');
+assert.equal(droppedRun.got,0,'Capture drops the most recently stolen fish');
+assert.equal(droppedRun.fishHaul.length,0,'The captured fish leaves the haul');
+assert.equal(droppedRun.taken.has('2,3'),false,'Dropped fish reappears at its original tile');
+assert.ok(droppedRun.score<pointsBeforeCapture,'Capture must not preserve the full stolen-fish score');
+assert.ok(events.some(e=>e.name==='cat_fish_dropped'),'Track recovered-risk captures without synthetic game starts');
+assert.ok(nodes.get('toast').textContent.includes('dropped your latest fish'),
+ 'Capture feedback must teach the player why their fish count went down');
+test.move(1,0);
+assert.equal(droppedRun.got,1,'Dropped fish must be recoverable by playing the real map');
+assert.equal(droppedRun.taken.has('2,3'),true,'Re-collected fish is once again in the haul');
+
+// Gameplay-quality regression: yarn is a lure, not a magical invisibility
+// shield. It distracts the guard at a distance, but not from an adjacent cat.
+test.choose(0,false);
+const yarnRisk=test.getState();
+yarnRisk.human={x:3,y:3};yarnRisk.yarnAnimating=true;
+test.move(1,0); // one tile from the owner while they investigate yarn
+assert.ok(yarnRisk.exposure>0,
+ 'Standing directly next to the guard during a lure must still trigger detection');
+test.choose(0,false);
+const distantLure=test.getState();
+distantLure.human={x:5,y:3};distantLure.yarnAnimating=true;
+test.move(1,0);
+assert.equal(distantLure.exposure,0,
+ 'A distracted guard should not magically spot the cat from across the room');
+
+console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings, capture consequences and lure-risk regression).');
