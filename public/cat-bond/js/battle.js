@@ -2005,7 +2005,7 @@ class CaptureBattle {
       // Only 泰山压顶 has the dedicated stagger trait. Other leap skills
       // apply armor break through resolveHit and cannot skip the poise rules.
       if (result.dealt>0 && (f._leapSkill?.id==='quakeStomp' || f._leapSkill?.tags?.includes('stagger')))
-        e.staggerT = Math.max(e.staggerT || 0, 5);
+        e.staggerT = Math.max(e.staggerT || 0, 3);
     }
     window.MorrowwishAudio?.effect?.('crash');
     f._leapT = 0; f._leapSkill = null;
@@ -3949,7 +3949,7 @@ class CaptureBattle {
   interruptEnemyCast(e) {
     e.telegraph = 0; e.telegraphKind = null; e.castInterruptible = false;
     e.smashTarget = null;
-    e.staggerT = Math.max(e.staggerT || 0, 5);         // 虚弱: open to follow-up
+    e.staggerT = Math.max(e.staggerT || 0, 3);         // 虚弱: open to follow-up
     e.special = Math.max(e.special, 1.4);                // brief recovery before it can try again
     this._novaLock = 0;                                  // free the pack cast-lock
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
@@ -4421,7 +4421,7 @@ class CaptureBattle {
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
-      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 5); }
+      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 3); }
       if (target.poiseMax) {
         if (target.staggerT > 0) dmg *= 1.3; // stagger remains rewarding without doubling every Q/E
         // No generic poise drain: poise is exclusive to authored stagger moves.
@@ -5495,7 +5495,7 @@ class CaptureBattle {
     }
     if(poise && poise.max>0){
       const broken=(poise.stagger||0)>0;
-      const amount=broken?Math.max(0,Math.min(1,poise.stagger/5)):
+      const amount=broken?Math.max(0,Math.min(1,poise.stagger/3)):
         Math.max(0,Math.min(1,(poise.current||0)/poise.max));
       const yy=y+7;
       ctx.fillStyle='rgba(112,132,110,.18)';
