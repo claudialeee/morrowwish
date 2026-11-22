@@ -249,11 +249,42 @@ function bondTierChoreography(g,W,H,p,key,tier){
  }
  g.restore();
 }
+// Only the painted scenery/effects dissolve into the real battlefield.
+// The two complete, transparent watercolor cats are drawn AFTER this matte,
+// so their ears, paws and tails never become translucent or clipped by it.
+function featherScenery(g,W,H){
+ // Narrow, smooth perimeter falloff; the cats in the original 63 paintings
+ // remain opaque through the central composition. Phone stages are only
+ // ~180px high, so a 43px top/bottom matte would erase ears and paws.
+ const edgeX=clamp(21/W,.06,.11);
+ const edgeY=clamp(24/H,.09,.17);
+ g.save();
+ g.globalAlpha=1;
+ g.globalCompositeOperation='destination-in';
+ let fade=g.createLinearGradient(0,0,W,0);
+ fade.addColorStop(0,'rgba(255,255,255,0)');
+ fade.addColorStop(edgeX,'#fff');
+ fade.addColorStop(1-edgeX,'#fff');
+ fade.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=fade;g.fillRect(0,0,W,H);
+ fade=g.createLinearGradient(0,0,0,H);
+ fade.addColorStop(0,'rgba(255,255,255,0)');
+ fade.addColorStop(edgeY,'#fff');
+ fade.addColorStop(1-edgeY,'#fff');
+ fade.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=fade;g.fillRect(0,0,W,H);
+ g.restore();
+}
 function draw(ctx,W,H,seq,lookup){
  if(!seq||seq.t<=0)return false;
  if(!ready)return true; // avoid flashing the rejected procedural kittens during load
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
  const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
+ // Default: restore the 21 x 3 COMPLETE painted storyboards, including
+ // their integrated cats. This is the art chosen by the player again.
+ // Explicit originalArt:false is retained for the 32 breed-specific
+ // alternate rendering mode; NEVER draw both sets of cats together.
+ const originalArt=seq.originalArt!==false;
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
  const opacity=smooth(p/.028)*(1-smooth((p-.965)/.035));
  if(opacity<=0)return true;
@@ -275,9 +306,9 @@ function draw(ctx,W,H,seq,lookup){
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,sw,sh);
  ctx.save();ctx.globalAlpha=opacity;
- // Each 21x3 background is clean of fixed cat bodies; two TRUE species
- // watercolor portraits travel together with the same cinematic camera.
- // There is no fur polygon masking and no ghost of the old painted pair.
+ // Paint ONE original 63-scene storyboard (cats + scenery together)
+ // or, in optional breed-matched mode, its cat-free backdrop.
+ // No superimposed duplicate cats and no rectangle pasted over combat.
  const cam=thumbnail?{dx:0,dy:0,zoom:1.025,angle:0}:
    (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
     {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
@@ -289,7 +320,7 @@ function draw(ctx,W,H,seq,lookup){
  // must never expose white triangular edges or a tilted image rectangle.
  // The character actors retain their original uncropped scale.
  sourceCover(ctx,cellRect(frame,tier),-sw*.13,-sh*.13,sw*1.26,sh*1.26,
-   Math.min(cam.zoom,1.16),0,0,1,key,tier,actorA,actorB);
+   Math.min(cam.zoom,1.16),0,0,1,originalArt?null:key,tier,actorA,actorB);
  // Paint all large magical symbols, circles and sparkles BEHIND the cats.
  // Never overlay even translucent giant rings on their faces and ears.
  if(!thumbnail&&dual>.09){
@@ -305,19 +336,40 @@ function draw(ctx,W,H,seq,lookup){
   bondTierChoreography(ctx,sw,sh,p,key,tier);
   ctx.restore();
  }
- // Both ACTUAL selected watercolor cats are always the top subject layer.
- const painted=window.CatBondDuoBreedActors?.draw?.(
-   ctx,sw,sh,[actorA,actorB],key,p,tier);
- if(!painted){ctx.restore();ctx.restore();return true;}
+ // Complete the camera-transformed scenic pass first. Fade it against
+ // the live battle without placing a rectangular 16:9 card on the arena.
+ // The mask follows the SCREEN, not the rotated/zoomed scenery.
  ctx.restore();
+ // Gallery thumbnails retain every pixel of the 63 original paintings.
+ // Only the in-battle animated cut-in fades at the four perimeter edges.
+ if(!thumbnail)featherScenery(ctx,sw,sh);
+ // The restored original artwork ALREADY contains both illustrated cats.
+ // Do not paste a second pair on it. For breed-specific alternate scenes,
+ // paint the two selected transparent watercolor cats AFTER the matte.
+ if(!originalArt){
+  ctx.save();
+  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
+  ctx.rotate(cam.angle);
+  ctx.translate(-sw*.5,-sh*.5);
+  const painted=window.CatBondDuoBreedActors?.draw?.(
+    ctx,sw,sh,[actorA,actorB],key,p,tier);
+  if(!painted){ctx.restore();ctx.restore();return true;}
+  ctx.restore();
+ }
  // The old generic claw stamp made all 21 skills look identical; the
  // individually drawn finale and key-specific palette now carry the impact.
  // Do not wash out the artist's real watercolor with a grey film.
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
- if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
- // The actor-only scenic atlas contains NO baked English skill title.
- // Never paint the old rectangular veil over either cat's head or tail.
+ if(!thumbnail&&flare>.01){
+  ctx.save();ctx.globalAlpha=.065*flare;
+  const glow=ctx.createRadialGradient(sw*.5,sh*.51,0,sw*.5,sh*.51,sw*.56);
+  glow.addColorStop(0,'#fffefa');glow.addColorStop(.50,'#fffef999');
+  glow.addColorStop(1,'#fffefa00');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,sw,sh);ctx.restore();
+ }
+ // Titles stay localized in the active game language; the original
+ // 63 paintings are otherwise untouched and never covered by grey panels.
  if(!seq.hideCaptions){
  const en=window.MorrowwishI18n?.get?.()!=='zh';
  const title=seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||(en?'Duo Special':'双猫合击');
@@ -325,21 +377,21 @@ function draw(ctx,W,H,seq,lookup){
  ctx.shadowColor='#2d244a';ctx.shadowBlur=8;ctx.fillStyle='#fffbed';
  const px=clamp(sw*.054,17,36);
  ctx.font='900 '+Math.round(px)+'px system-ui,sans-serif';
- ctx.fillText(title,sw*.5,sh*.925,sw*.92);
+ ctx.fillText(title,sw*.5,sh*.865,sw*.90);
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
  // Breed information is shown in the separate roster UI; never overlay
  // a false claim of exact painted breed identity over fixed artist subjects.
- if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.984,sw*.86);
+ if(!originalArt&&actorA&&actorB)
+   ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.945,sw*.86);
  ctx.restore();
  }
  ctx.restore();
- // Keep the full painted scene opaque and intact. The old four-sided
- // destination-in fade cut away fur, paws and scenery, making cats translucent.
- // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
- // the region's existing battle theme instead of an unrelated purple card.
+ // The 63 full original paintings now dissolve into real gameplay with
+ // compact antialiased perimeter gradients (including portrait phones).
+ // Alternate breed-matched paintings feather only scenery, never fur.
  const tone=harmony(key);
  battlefield.save();
- // No washed-out halo or colored rectangle behind the full bleed painting.
+ // Transparent feathered scene merges directly with the live arena.
  battlefield.globalAlpha=1;
  battlefield.drawImage(cinematicLayer,x,y,sw,sh);
  battlefield.restore();
@@ -358,7 +410,10 @@ window.CatBondPremiumCinematics={
  get failed(){return broken},wholeSceneCount:21,paintedFrameCount:63,skillVariants:Object.keys(regions).length,
  get pastelAdjusted(){return ready},
  get pastelPixelCount(){return retouchedPixels},
- get source(){return window.CatBondDuoBreedActors?.sceneSource||img.src},
+ get source(){return img.src},
+ get originalPaintingSource(){return img.src},
+ get originalPaintingDefault(){return true},
+ get restoredOriginalFrameCount(){return 63},
  get characterSource(){return window.CatBondDuoBreedActors?.catSource||''}
 };
 })();

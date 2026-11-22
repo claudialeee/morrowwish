@@ -7,6 +7,8 @@ const browser=await chromium.launch({headless:true});
 try{
  for(const profile of [
   {name:'phone',width:390,height:844,mobile:true,touch:true},
+  {name:'compact-phone',width:320,height:568,mobile:true,touch:true},
+  {name:'landscape-phone',width:844,height:390,mobile:true,touch:true},
   {name:'desktop',width:1180,height:760,mobile:false,touch:false}
  ]){
   const ctx=await browser.newContext({viewport:{width:profile.width,height:profile.height},
@@ -47,6 +49,26 @@ try{
   assert.equal(choosing.coins,500,'selecting a facility does not charge money');
   assert.equal(choosing.buildings,0,'no building placed until user confirms');
   assert.ok(choosing.pair);
+  if(profile.mobile){
+   // Real responsive geometry: the entire placement HUD must be ABOVE the
+   // grass where taps are accepted, not cover the location being selected.
+   const dock=await page.locator('#yard-placement-dock').boundingBox();
+   assert.ok(dock&&dock.x>=-1&&dock.x+dock.width<=profile.width+1,
+    'mobile placement controls must remain on screen');
+   assert.ok(dock.y+dock.height<stage.y+stage.height*.60,
+    'placement dock must clear the entire buildable grass');
+   const tap={x:stage.x+22,y:stage.y+Math.round(stage.height*.45)};
+   await page.touchscreen.tap(tap.x,tap.y);
+   const preview=await page.evaluate(()=>{
+    const p=window.__game.yard.placement;
+    return {x:p.x,y:p.y,valid:p.valid};
+   });
+   assert.ok(Math.abs(preview.x-(tap.x-stage.x))<2&&
+      Math.abs(preview.y-(tap.y-stage.y))<2,
+     'touch placement preview must stay exactly under the selected finger position');
+   assert.equal(preview.valid,false,'tapping outside the grass should show invalid, not snap');
+   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-placement-preview.png'});
+  }
   const valid=await page.evaluate(()=>{
    const g=window.__game,previous=State.S.yardBuildings.length;
    const y=g.game?.H||g.H;
@@ -100,6 +122,36 @@ try{
   const visit=page.locator('[data-visit="0"]');
   assert.equal(await visit.count(),1,'already placed facility can invite a visible cat');
   await visit.click();
+  // Same mobile viewport, with the actual battle DOM and combat buttons shown:
+  // duo cast cannot overlap any Q/E/basic/dodge/ultimate hit target.
+  await page.evaluate(()=>{
+   document.getElementById('battle-ui').classList.add('on');
+   document.getElementById('duo-burst').hidden=false;
+  });
+  const combat=await page.evaluate(()=>{
+   const bounds=id=>{
+    const r=document.getElementById(id).getBoundingClientRect();
+    return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,
+      width:r.width,height:r.height};
+   };
+   return {
+    duo:bounds('duo-burst'),
+    moves:['mv-q','mv-e','mv-basic','mv-dodge','ult-btn'].map(bounds),
+    skillGuide:document.getElementById('battle-skill-guide').hidden
+   };
+  });
+  const intersects=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+  assert.ok(combat.duo.width>=80&&combat.duo.height>=30,'Duo must stay visible and tappable');
+  assert.ok(combat.duo.left>=0&&combat.duo.right<=profile.width+1 &&
+    combat.duo.top>=0&&combat.duo.bottom<=profile.height+1,'Duo must fit the viewport');
+  for(const move of combat.moves)
+   assert.equal(intersects(combat.duo,move),false,
+    'Duo must never block a combat button at '+profile.name);
+  await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-duo-clearance.png'});
+  await page.evaluate(()=>{
+   document.getElementById('duo-burst').hidden=true;
+   document.getElementById('battle-ui').classList.remove('on');
+  });
   assert.deepEqual(errors,[],'no browser errors in placement path');
   console.log('YARD PLACEMENT PASS '+profile.name+' '+JSON.stringify({rect,valid,built,plays}));
   await ctx.close();

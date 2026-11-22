@@ -57,6 +57,8 @@ try {
     console.log('32 ADULT BREEDS REAL CHROMIUM PASS',p.name,JSON.stringify(check));
     await context.close();
   }
+  // Growth feature retired: assert neither a button nor an awakening option
+  // exists, even after all previous level and affection requirements are met.
   const context=await browser.newContext({viewport:{width:390,height:844},
     isMobile:true,hasTouch:true});
   const page=await context.newPage();
@@ -64,45 +66,28 @@ try {
     {waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__game&&window.State?.S?.cats?.length>=4,
     null,{timeout:12000});
-  const uid=await page.evaluate(()=>{
-    const c=State.S.cats[0];c.level=8;c.affinity=30;
-    UI.openCatDetail(c);return c.uid;
-  });
-  const ready=await page.evaluate(()=>({uid:UI.openCatUid,level:State.S.cats[0]?.level,
-    affinity:State.S.cats[0]?.affinity,stage:State.S.cats[0]?.stage,
-    canGrow:Growth.canAdvance(State.S.cats[0]),button:!!document.getElementById('cd-grow')}));
-  console.log('GROWTH BEFORE CLICK',JSON.stringify(ready));
-  await page.locator('#cd-grow').click();
-  const grew=await page.evaluate(()=>({stage:State.S.cats[0]?.stage,
-    modal:!!document.getElementById('cb-growth-canvas'),
-    panelOpen:document.getElementById('panel')?.className,
-    text:document.getElementById('panel')?.innerText.slice(0,200)}));
-  console.log('GROWTH AFTER CLICK',JSON.stringify(grew));
-  assert.equal(grew.stage,1,'growth must mutate the saved cat');
-  assert.equal(grew.modal,true,'stage0 to stage1 must show an illustrated ceremony');
-  await page.locator('#cb-growth-canvas').waitFor({state:'visible',timeout:3000});
-  assert.equal(await page.evaluate(()=>State.S.cats[0].stage),1);
-  assert.match(await page.locator('.cb-growth-ceremony').innerText(),/(成长成功|Growth complete!)/,
-    'growth ceremony must display the correct title in the active language');
-  await page.screenshot({path:'/tmp/cat-bond-adult-growth-phone.png'});
-  await page.evaluate(()=>{
-    const c=State.S.cats[0];c.level=20;c.affinity=80;
+  const removed=await page.evaluate(()=>{
+    const cat=State.S.cats[0];cat.level=25;cat.affinity=100;
     State.S.raising=State.S.raising||{};
-    State.S.raising.starShards=40;
-    UI.closeAll();UI.doGrow(c,'agi');State.save();
+    State.S.raising.starShards=100;
+    const beforeStage=cat.stage||0,beforeShards=State.S.raising.starShards;
+    UI.openCatDetail(cat);
+    return {button:!!document.getElementById('cd-grow'),
+      awakeningChoices:document.querySelectorAll('#cat-detail [data-awaken]').length,
+      ceremony:!!document.getElementById('cb-growth-canvas'),
+      handlerPresent:typeof UI.doGrow==='function',
+      stageChanged:(cat.stage||0)!==beforeStage,
+      shardsChanged:State.S.raising.starShards!==beforeShards,
+      trainingButton:!!document.getElementById('cd-trainfive')};
   });
-  assert.equal(await page.evaluate(()=>State.S.cats[0].stage),2);
-  assert.equal(await page.evaluate(()=>State.S.cats[0].awaken),'agi');
-  await page.goto('http://127.0.0.1:8765/cat-bond/?persist-adult',
-    {waitUntil:'domcontentloaded'});
-  // A returning player enters through the start button. Game.start() loads
-  // the saved state; checking before that is a false persistence failure.
-  await page.locator('#intro-start').click();
-  await page.waitForFunction(()=>window.State?.S?.cats?.some(c=>c.stage===2),
-    null,{timeout:12000});
-  const persist=await page.evaluate(()=>State.S.cats.find(c=>c.stage===2));
-  assert.equal(persist.uid,uid);
-  assert.equal(persist.awaken,'agi');
+  assert.deepEqual(removed,{button:false,awakeningChoices:0,ceremony:false,
+    handlerPresent:false,stageChanged:false,shardsChanged:false,trainingButton:true});
+  const disabled=await page.evaluate(()=>{
+    const cat=State.S.cats[0],before=cat.stage||0;
+    const result=Growth.advance(cat,'agi');
+    return {ok:result.ok,disabled:result.disabled,unchanged:(cat.stage||0)===before};
+  });
+  assert.deepEqual(disabled,{ok:false,disabled:true,unchanged:true});
   await context.close();
-  console.log('ADULT GROWTH CEREMONY + PERSISTED AWAKENING PASS');
+  console.log('GROWTH CONTROLS RETIRED; PLAYER TRAINING PRESERVED');
 }finally{await browser.close();}

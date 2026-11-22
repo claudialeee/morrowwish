@@ -1273,7 +1273,7 @@ const UI = {
       <div class="stat-row" style="margin-top:12px"><span class="label">饱食</span><div class="bar hp"><span style="width:${cat.hunger}%"></span></div><span class="val">${Math.round(cat.hunger)}</span></div>
       <div class="stat-row"><span class="label">心情</span><div class="bar aff"><span style="width:${cat.joy}%"></span></div><span class="val">${Math.round(cat.joy)}</span></div>
       <p class="tiny" style="margin-top:8px">战力 ⚔ ${State.catPower(cat)}${cat.personality ? ' · 性格: ' + cat.personality : ''}${cat.trait ? ' · 特性: ' + cat.trait : ''}</p>
-      ${this.evoRowHtml(cat)}
+      ${this.speciesEvoRowHtml(cat)}
       <p class="sub" style="margin:12px 0 4px">🎣 用挂机产出培养它变强</p>
       <div class="btn-row">
         <button class="btn gold" id="cd-trainxp">🐠 喂鱼练级 (×3🐠 → +经验)</button>
@@ -1284,7 +1284,7 @@ const UI = {
         <button class="btn" id="cd-trainfive">⬆ 连升最多 5 级</button>
         <button class="btn" id="cd-stat-ten">🧶 特训 ×10</button>
       </div>
-      <p class="tiny cb-train-note">批量操作按实际每级经验与材料计算；资源不足会停止，不会出现负数。成长形态需满足条件后手动选择。</p>
+      <p class="tiny cb-train-note">批量操作按实际每级经验与材料计算；资源不足会停止，不会出现负数。</p>
       <div class="btn-row">
         <button class="btn" id="cd-skills">📖 技能搭配</button>
         <button class="btn ghost" id="cd-pet">🤲 撸猫</button>
@@ -1359,9 +1359,6 @@ const UI = {
     };
     const evoBtn = document.getElementById('cd-evolve');
     if (evoBtn) evoBtn.onclick = () => this.doEvolve(cat);
-    const growBtn = document.getElementById('cd-grow');
-    if (growBtn) growBtn.onclick = () => this.doGrow(cat, null);
-    document.querySelectorAll('#cat-detail [data-awaken]').forEach(b => b.onclick = () => this.doGrow(cat, b.dataset.awaken));
   },
   // Batch XP by whole LEVELS, using the same fish cost / skill unlock
   // formulas as individual training. Never overspend to stop halfway through
@@ -1400,113 +1397,6 @@ const UI = {
     State.save();this.game.refreshHUD();this.renderCatDetail(cat);
     this.game.toast('🪙 特训 ×'+times+' · 四项属性均 +'+times);
     return times;
-  },
-  doGrow(cat, awakenKey) {
-   const G=window.Growth;if(!G)return;
-   const beforeStage=cat.stage||0,oldStats={...cat.stats};
-   const result=G.advance(cat,awakenKey);
-   if(!result.ok){this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'成长条件不足':'Growth requirements not met');return;}
-   State.save();this.game.rebuildYard();this.game.refreshHUD();
-   this.openGrowthAnim(cat,G.stageName(cat),beforeStage,oldStats);
- },
-  openGrowthAnim(cat,name,beforeStage,oldStats) {
-   const en=window.MorrowwishI18n?.get?.()!=='zh';
-   const sp=GameData.speciesById(cat.species);
-   const awakened=cat.stage>=2;
-   const color=awakened?(window.Growth?.AWAKEN[cat.awaken]?.color||'#a5b7f1'):'#d7a579';
-   const safe=str=>String(str??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-   const oldLabel=beforeStage===0?(en?'Kitten':'幼猫'):(en?'Adult':'成年');
-   const newLabel=awakened?(en?'Awakened Adult':'灵·觉醒'):(en?'Adult':'成年');
-   const stats=[['pow',en?'Power':'力量'],['agi',en?'Agility':'敏捷'],['vit',en?'Vitality':'体力'],['cha',en?'Charm':'魅力']];
-   const gains=stats.map(([key,label])=>`<span class="cb-growth-stat">${label} <strong>+${Math.max(0,cat.stats[key]-(oldStats?.[key]||0))}</strong></span>`).join('');
-   this.panel(`<span class="card-close">×</span>
-     <section class="cb-growth-ceremony" aria-label="${en?'Cat growth celebration':'猫咪成长演出'}">
-       <p class="cb-growth-overline">${en?'A new chapter together':'一起长大 · 新的冒险'}</p>
-       <h2>${en?'Growth complete!':'成长成功！'}</h2>
-       <div class="cb-growth-stage-names"><span>${oldLabel}</span><b aria-label="${en?'becomes':'成长为'}">✦</b><span>${newLabel}</span></div>
-       <canvas id="cb-growth-canvas" width="360" height="220" role="img" aria-label="${en?'Illustrated before-and-after growth for '+safe(GameData.speciesName(sp)):'成长前后：'+safe(GameData.speciesName(sp))}"></canvas>
-       <h3>${safe(State.catName(cat))} · ${safe(name)}</h3>
-       <p class="cb-growth-caption">${awakened?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'Your companion has grown! Original watercolor features stay intact, with a larger body and a growth badge.':'伙伴长大啦！保留原版水彩脸型和毛色，体型自然成长，新增成长饰标。')}</p>
-       <div class="cb-growth-stats">${gains}</div>
-       <button class="btn gold" id="cb-growth-done" type="button">${en?'Continue adventure':'继续冒险'}</button>
-     </section>`);
-   document.getElementById('cb-growth-done')?.addEventListener('click',()=>this.closeAll());
-   const cv=document.getElementById('cb-growth-canvas');
-   if(!cv)return;
-   const ctx=cv.getContext('2d');if(!ctx)return;
-   const start=performance.now();
-   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-   const oldForm=beforeStage===0?null:{stage:1,scale:1.06,gem:true,gemColor:'#cbd4ff'};
-   const newForm=Growth.visual(cat);
-   const drawForm=(x,y,scale,form,opacity,pose='sit')=>{
-     ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,opacity));
-     CatArt.drawCat(ctx,x,y,{species:sp,growth:form,face:1,scale,t:performance.now()*.001,pose,mood:'happy'});
-     ctx.restore();
-   };
-   const frame=now=>{
-     if(!cv.isConnected)return;
-     const t=reduced?1:Math.min(1,(now-start)/2600);
-     ctx.clearRect(0,0,360,220);
-     const glow=ctx.createRadialGradient(180,112,8,180,112,154);
-     glow.addColorStop(0,color+'50');glow.addColorStop(1,color+'00');
-     ctx.fillStyle=glow;ctx.fillRect(0,0,360,220);
-     // Fade only COMPLETE painted poses, never separate an ear or paw.
-     const reveal=Math.max(0,Math.min(1,(t-.30)/.40));
-     const eased=reveal*reveal*(3-2*reveal);
-     drawForm(125,144,1.35-eased*.18,oldForm,1-eased);
-     drawForm(210,144,1.07+eased*.30,newForm,eased);
-     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;
-     const ring=12+eased*112;
-     ctx.globalAlpha=(1-eased)*.35;
-     ctx.beginPath();ctx.ellipse(180,108,ring,ring*.64,0,0,Math.PI*2);ctx.stroke();
-     ctx.restore();
-     for(let i=0;i<12;i++){
-       const a=i*Math.PI/6+now*.00025,r=30+eased*(58+i%3*8);
-       const x=180+Math.cos(a)*r,y=108+Math.sin(a)*r*.68;
-       ctx.fillStyle=color;ctx.globalAlpha=Math.min(.7,Math.max(0,(t-.08)*1.4)*(1-t*.28));
-       ctx.beginPath();ctx.arc(x,y,2+i%3,0,Math.PI*2);ctx.fill();
-     }
-     ctx.globalAlpha=1;
-     if(t<1)requestAnimationFrame(frame);
-   };
-   requestAnimationFrame(frame);
-   const refresh=()=>{if(cv.isConnected)frame(performance.now());};
-   window.addEventListener('cat-bond-adult-art-ready',refresh,{once:true});
- },
-
-    // growth-form (成长形态) row + optional species 蜕变 row
-  evoRowHtml(cat) {
-    let html = this.growthRowHtml(cat);
-    html += this.speciesEvoRowHtml(cat);
-    return html;
-  },
-  // universal growth-form advancement (幼→成→灵觉醒)
-  growthRowHtml(cat) {
-    const G = window.Growth; if (!G) return '';
-    const st = cat.stage || 0;
-    const stageName = G.stageName(cat);
-    if (st >= 2) {
-      const aw = G.AWAKEN[cat.awaken];
-      return `<div class="evo-row ready"><div class="evo-info">★ 已觉醒 <b style="color:${aw ? aw.color : '#ffd36b'}">${stageName}</b><div class="tiny">${aw ? aw.desc : ''} · 最终形态</div></div></div>`;
-    }
-    const chk = G.canAdvance(cat);
-    const nextName = st === 0 ? '成形态' : '灵·觉醒';
-    const reqStr = chk.ok ? '条件已满足！' : ('还需 ' + chk.missing.join(' · '));
-    if (st === 1) {
-      // awakening choice buttons
-      return `<div class="evo-row ${chk.ok ? 'ready' : ''}">
-        <div class="evo-info">★ 可觉醒为 <b>灵形态</b><div class="tiny">${reqStr}${chk.ok ? ' · 选择觉醒之路：' : ''}</div></div>
-        ${chk.ok ? `<div class="awaken-pick">
-          <button class="btn gold tiny-btn" data-awaken="pow">💪力</button>
-          <button class="btn gold tiny-btn" data-awaken="agi">⚡速</button>
-          <button class="btn gold tiny-btn" data-awaken="cha">💖心</button>
-        </div>` : ''}
-      </div>`;
-    }
-    return `<div class="evo-row ${chk.ok ? 'ready' : ''}">
-      <div class="evo-info">${G.stageTag(cat) || '🐣'} 当前 <b>${stageName}</b> · 可成长为 <b>${nextName}</b><div class="tiny">${reqStr}</div></div>
-      <button class="btn ${chk.ok ? 'gold' : ''}" id="cd-grow" ${chk.ok ? '' : 'disabled'}>成长</button>
-    </div>`;
   },
   // species 蜕变 (the rarer, flavor evolution that swaps species)
   speciesEvoRowHtml(cat) {
@@ -1584,7 +1474,7 @@ const UI = {
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2>📖 ${State.catName(cat)} · 技能搭配</h2>
-      <p class="sub">已解锁 ${learn.length} 种技能 · 点击替换 Q / E / 必杀。每只猫的元素与成长路线不同。</p>
+      <p class="sub">已解锁 ${learn.length} 种技能 · 点击替换 Q / E / 必杀。每只猫拥有不同的元素技能与解锁路线。</p>
       <p class="skill-roadmap">✨ ${S.progressionHint(cat)}</p>
       <p class="skill-progression-note">普通猫通过升级与好感解锁元素必杀；SR / SSR 更早解锁专属必杀。能量充满后按 R 或点击右下角释放。</p>
       <div class="sk-list">${rows}</div>

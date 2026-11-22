@@ -52,6 +52,13 @@ try{
     }
     variants.push({tier,hash:hash.toString(16),avgBrightness:count?+(bright/count).toFixed(1):0,
      purpleRatio:count?+(purple/count).toFixed(3):0});
+    // Also verify the separate 32-breed mode remains intact without
+    // silently replacing the default classic 63 original paintings.
+    ctx.clearRect(0,0,cv.width,cv.height);
+    if(!painter.draw(ctx,cv.width,cv.height,{
+      elements:key,max:2.75,t:2.75*.60,tier,catUids:cats.map(c=>c.uid),
+      name:key,hideCaptions:true,originalArt:false
+    },uid=>cats.find(c=>c.uid===uid)))throw Error('Breed mode failed '+key+' tier '+tier);
    }
    frames.push({key,variants,palette:painter.paletteFor(key)});
   }
@@ -61,6 +68,14 @@ try{
  });
  assert.equal(result.keys,21);
  assert.equal(result.palettes,21);
+ assert.equal(await page.evaluate(()=>CatBondPremiumCinematics.originalPaintingDefault),true,
+   'All 63 intact original watercolor scenes must be the default');
+ assert.equal(await page.evaluate(()=>CatBondPremiumCinematics.restoredOriginalFrameCount),63);
+ assert.equal(await page.locator('#mode-original').getAttribute('aria-pressed'),'true');
+ await page.locator('#mode-breeds').click();
+ assert.equal(await page.locator('#mode-breeds').getAttribute('aria-pressed'),'true');
+ await page.locator('#mode-original').click();
+ assert.equal(await page.locator('#mode-original').getAttribute('aria-pressed'),'true');
  assert.equal(result.grades,63,'Cache must hold the 63 untouched, separately painted scenes (no actor-tinted duplicates)');
  assert.equal(result.tiers,3);
  assert.equal(result.source,'32-actual-breed-watercolor-actors');
@@ -74,7 +89,7 @@ try{
    function hash(){
      c.clearRect(0,0,480,270);
      painter.draw(c,480,270,{elements:'dark+light',max:2.75,t:1.20,tier:3,
-       catUids:['qa-A','qa-B'],hideCaptions:true,thumbnail:true},
+       catUids:['qa-A','qa-B'],hideCaptions:true,thumbnail:true,originalArt:false},
        id=>id==='qa-A'?actorA:actorB);
      const pix=c.getImageData(0,0,480,270).data;
      let h=2166136261>>>0;
@@ -149,6 +164,42 @@ try{
  assert.ok(mobileLayout.documentWidth<=mobileLayout.viewport+4,
    'Mobile art gallery scrolls horizontally '+JSON.stringify(mobileLayout));
  await mobile.screenshot({path:DIR+'/gallery-mobile.png',fullPage:true,animations:'disabled'});
+ // Regression: the old premium animation was pasted into the real phone battle
+ // as an opaque 16:9 rectangle. Test its REAL pixels against a dark battlefield,
+ // including the 320px narrowest supported screen, not just gallery CSS.
+ const mobileEdges=await mobile.evaluate(()=>{
+   const results=[];
+   const painter=window.CatBondPremiumCinematics;
+   const pair=[{uid:'edge-a',species:'tangyuan'},
+               {uid:'edge-b',species:'mengmai'}];
+   for(const W of [320,390]){
+     const H=W===320?640:844;
+     const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+     const g=cv.getContext('2d',{willReadFrequently:true});
+     const base=[45,61,57];g.fillStyle='rgb('+base.join(',')+')';
+     g.fillRect(0,0,W,H);
+     const success=painter.draw(g,W,H,{
+       elements:'fire+grass',max:2.75,t:2.75*.44,tier:3,
+       catUids:pair.map(cat=>cat.uid),name:'Duo',hideCaptions:true
+     },uid=>pair.find(cat=>cat.uid===uid));
+     const top=(H-W*9/16)/2;
+     const pix=(x,y)=>[...g.getImageData(x,y,1,1).data].slice(0,3);
+     const delta=(rgb)=>rgb.reduce((a,n,i)=>a+Math.abs(n-base[i]),0);
+     const outer=delta(pix(Math.floor(W/2),Math.floor(top)-2));
+     const topInside=delta(pix(Math.floor(W/2),Math.floor(top)+2));
+     const leftInside=delta(pix(2,Math.floor(H/2)));
+     const inner=delta(pix(Math.floor(W/2),Math.floor(H/2)));
+     results.push({W,H,success,outer,topInside,leftInside,inner});
+   }
+   return results;
+ });
+ for(const edge of mobileEdges){
+   assert.equal(edge.success,true,'Duo cutin did not render at '+edge.W+'px');
+   assert.equal(edge.outer,0,'Duo cinematic drew outside its stage at '+edge.W+'px');
+   assert.ok(edge.topInside<55,'Hard top rectangular edge at '+edge.W+'px: '+JSON.stringify(edge));
+   assert.ok(edge.leftInside<55,'Hard side rectangular edge at '+edge.W+'px: '+JSON.stringify(edge));
+   assert.ok(edge.inner>75,'Soft edge mask erased the artwork at '+edge.W+'px: '+JSON.stringify(edge));
+ }
  await mobile.close();
  assert.deepEqual(errors,[],'No uncaught JavaScript runtime errors');
  fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,errors},null,2));

@@ -226,6 +226,7 @@
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 1.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
     { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.35, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
+    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 1.35, reach: 156, width: 22, sweep: .72, power: 1.04, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 water ----
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.0, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
@@ -249,6 +250,8 @@
     // ---- 电 elec ----
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.4, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },
     { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
+    { id: 'lightningOrb',name: '球状闪电', element: 'elec', kind: 'projectile', power: 1.05, cd: 4.8, ultCost: 0, homing: 3.4, tags: ['shock','ranged'], appliesTag: 'shock', vfx: 'orb', desc: '缓慢浮游的电球转向敌人，命中放出感电火花。', unlock: { level: 5, element: 'elec' } },
+    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.22, reach: 270, width: 13, power: .89, cd: 5.5, ultCost: 0, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪短暂站定，持续吐出可转向的折线雷电。', unlock: { level: 4, element: 'elec' } },
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
@@ -467,6 +470,8 @@
     const u = skill && skill.unlock;
     if (!u) return true;
     if (u.level && (cat.level || 1) < u.level) return false;
+    // Element-locked spells do not auto-unlock for all six types.
+    if (u.element && elementOf(cat.species)!==u.element) return false;
     if (u.affinity && (cat.affinity || 0) < u.affinity) return false;
     if (u.species && (!Array.isArray(u.species) || u.species.indexOf(cat.species) < 0)) return false;
     if (u.quest && !questMet(cat, u.quest)) return false;
@@ -547,6 +552,20 @@
       // Advanced rare cats eventually learn more than two elements.
       if (!elemOk && rIdx >= 2 && lvl >= 12) elemOk = true;
       if (!elemOk) continue;
+      // Learn innate skills progressively. Never strip a saved manual or
+      // previous automatic loadout: those slots are grandfathered in.
+      const alreadyEquipped=(Array.isArray(cat.loadout)&&cat.loadout.includes(s.id))||
+        (Array.isArray(cat.autoSkillLoadout)&&cat.autoSkillLoadout.includes(s.id));
+      if(!isUlt&&!alreadyEquipped){
+        if(s.element===el){
+          const rank=SKILLS.filter(k=>k.element===el&&!k.unlock&&!k.ultCost)
+            .findIndex(k=>k.id===s.id);
+          if(rank>=1){
+            const threshold=rank===1?3:rank===2?5:7;
+            if(lvl<threshold&&bond<(rank===1?30:rank===2?55:75))continue;
+          }
+        }else if(lvl<4&&!cat.skillAwakened)continue;
+      }
       // An owned rare kitten needs to FEEL different right away, not at Lv.20.
       // N earns an ultimate by training; R earns it with some bonding; SR and
       // SSR arrive with one innate signature or elemental ultimate.
@@ -609,10 +628,12 @@
       ||splash.find(sk=>sk!==q&&sk!==basic)
       ||own.find(sk=>['buff','heal'].includes(sk.kind)&&sk!==basic&&sk!==q)
       ||own.find(sk=>sk!==basic&&sk!==q)||null;
+    const starterE=(cat.level||1)<3&&!cat.skillAwakened&&
+      !(Array.isArray(cat.loadout)&&cat.loadout[2])?null:e;
     const ult=pool.find(sk=>sk.ultCost>0&&SIGNATURE_SKILL[cat.species]===sk.id)
       ||pool.find(sk=>sk.ultCost>0&&sk.element===elementOf(cat.species))
       ||pool.find(sk=>sk.ultCost>0)||null;
-    return [basic?.id||null,q?.id||null,e?.id||null,ult?.id||null];
+    return [basic?.id||null,q?.id||null,starterE?.id||null,ult?.id||null];
   }
 
   // Keep valid player-chosen equipment; backfill new unlocks and safely migrate

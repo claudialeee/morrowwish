@@ -143,7 +143,7 @@ P.update=function(dt){
     if(tier>=3){foe.staggerT=Math.max(foe.staggerT||0,1.3);
       this.vfx.ring(foe.x,foe.y,{r0:9,vr:330,life:.5,color:'#ffe5af',width:5});}
     const extra=foe.maxhp*(tier===1?.025:tier===2?.045:.065);
-    this.hurtEnemy(foe,extra,foe.x,foe.y,true);
+    this.hurtEnemy(foe,extra,foe.x,foe.y,true,true);
    }
    this.hitstop=Math.max(this.hitstop,.07);
    window.arcadeMetric?.('bond_duo_paw_impact',{tier});
