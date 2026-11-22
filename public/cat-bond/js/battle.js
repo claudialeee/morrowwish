@@ -1831,7 +1831,14 @@ class CaptureBattle {
     } else if (!this.castDistinctProjectile(f, sk, aim, col, f.dmg * pow)) {
       // Owner's per-skill elemental geometry (lances/fireball/hex/etc.) takes
       // priority; fall back to a directional projectile fan for plain skills.
-      for (let i = -2; i <= 2; i++) this.spawnProj(f.x, f.y, aim + i * 0.18, f.projSpeed * 0.8, f.dmg * pow, 'me', col, 7, 'fur', sk);
+      // Shared per-cast single-target budget: a five-pellet fan must not
+      // accidentally deal 5x power to a wide/hugging enemy.
+      const volley={hitsByEnemy:new Map(),maxHitsPerEnemy:2};
+      for(let i=-2;i<=2;i++){
+        const pellet=this.spawnProj(f.x,f.y,aim+i*.18,f.projSpeed*.8,
+          f.dmg*pow*.5,'me',col,7,'fur',sk);
+        pellet._volley=volley;
+      }
       this.vfx.muzzle(f.x, f.y, aim, col);
       this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
     }
@@ -3474,6 +3481,11 @@ class CaptureBattle {
       if (p.owner === 'me') {
         for (const e of this.liveEnemies()) {
           if (e.flash <= 0 && e.inv <= 0 && Math.hypot(p.x - e.x, p.y - e.y) < p.r + 22) {
+            if(p._volley){
+              const count=p._volley.hitsByEnemy.get(e.i)||0;
+              if(count>=p._volley.maxHitsPerEnemy){p.life=0;continue;}
+              p._volley.hitsByEnemy.set(e.i,count+1);
+            }
             const r = this.resolveHit(e, 'me', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
             if (r.reflected) break;            // bounced back — projectile lives, now enemy-owned
             if(p.kind==='lightningOrb'&&r.dealt>0){
