@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#e7efe9">
+<title>猫猫纽带 · 21 种双猫合击动画审核</title>
+<style>
+:root{color-scheme:light;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#314b41;background:#f6f5ef}
+*{box-sizing:border-box}body{margin:0;min-width:0;background:radial-gradient(ellipse at 80% 0,#fbe7df 0,transparent 36%),radial-gradient(ellipse at 5% 35%,#e0ece9 0,transparent 44%),#f6f5ef}
+button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible,a:focus-visible{outline:3px solid #6a8e71;outline-offset:3px}a{color:#58745a}
+main{max-width:1280px;margin:0 auto;padding:clamp(14px,3vw,38px)}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:15px}
+.eyebrow{font-size:11px;font-weight:900;letter-spacing:.19em;text-transform:uppercase;color:#9a7986}
+h1{font-size:clamp(27px,4.3vw,43px);letter-spacing:-.04em;margin:5px 0 8px;color:#345447}
+.sub{font-size:14px;line-height:1.8;color:#60736c;margin:0 0 17px}
+.review{font-size:12px;color:#825e7a;background:#faedf3;padding:8px 11px;border:1px solid #ead5df;border-radius:999px;font-weight:750}
+.intro{margin-bottom:18px}
+.viewer-layout{display:grid;grid-template-columns:minmax(0,1.68fr) minmax(250px,.72fr);gap:20px;align-items:stretch}
+.player{background:#fffdf8;border:1px solid #e1e5dd;border-radius:24px;box-shadow:0 16px 40px #3f58501a;padding:11px;min-width:0}
+.player-stage{position:relative;overflow:hidden;border-radius:17px;background:linear-gradient(120deg,#e9f0e5,#eae5f3 55%,#f2e4df)}
+#duo-player{display:block;width:100%;height:auto;aspect-ratio:16/9}
+.load-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;background:#e9eeea;color:#658073;padding:20px;font-weight:750;line-height:1.65}
+.load-status[hidden]{display:none}
+.player-meta{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px 7px 5px}
+.player-meta h2{font-size:clamp(20px,2.4vw,27px);margin:3px 0;color:#364f48}
+.player-meta p{color:#677a73;font-size:12px;margin:5px 0}
+.progress{height:5px;background:#e7ede5;border-radius:999px;overflow:hidden;margin:4px 7px 12px}
+.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#88b29a,#d7a9be);border-radius:inherit}
+.controls{display:flex;gap:8px;flex-wrap:wrap;padding:0 7px 9px}
+.controls button,.tier-row button{padding:10px 13px;border-radius:12px;background:#fff;border:1px solid #d5ded4;color:#486253;font-size:13px;font-weight:750;min-height:41px}
+.controls button.primary,.controls button[aria-pressed=true],.tier-row button[aria-pressed=true]{background:#e3eee2;border-color:#a9c4ac;color:#315744}
+.side-note{background:linear-gradient(145deg,#fffdf8,#eff5ed);border:1px solid #dfe7df;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:15px}
+.side-note h3{margin:0;font-size:20px;color:#365747}
+.kitten-line{display:flex;align-items:center;gap:11px;padding:10px;border:1px solid #e2e8df;border-radius:14px;background:#fff}
+.kitten-line canvas{width:66px;height:56px;flex:none;object-fit:contain}
+.kitten-line span{font-size:12px;color:#63776b}.kitten-line b{display:block;font-size:15px;color:#3c5948}
+.details{font-size:13px;color:#64776b;line-height:1.75;margin:0}
+.tier-row{display:flex;flex-wrap:wrap;gap:8px}.tier-row button{flex:1 1 65px}
+.note{font-size:11px;color:#7e8f83;margin:0;line-height:1.65}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:27px 0 12px}
+.section-head h2{font-size:22px;margin:0}.section-head span{font-size:13px;color:#798d7f}
+.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.duo-card{display:block;width:100%;min-width:0;text-align:left;border:2px solid #e1e8df;background:#fffdf9;border-radius:19px;padding:8px;box-shadow:0 8px 23px #435c4b12;transition:transform .15s,box-shadow .15s,border-color .15s}
+.duo-card:hover{transform:translateY(-2px);box-shadow:0 11px 27px #435c4b24}
+.duo-card[aria-current=true]{border-color:#82b39c;background:#f2faf1}
+.duo-card canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:12px;background:linear-gradient(125deg,#e7ede7,#f1e6ed)}
+.card-copy{padding:10px 7px 8px}
+.card-name{display:flex;align-items:center;gap:6px;justify-content:space-between;font-size:14px;font-weight:900;color:#3d584a}
+.card-index{font-size:10px;color:#789388}
+.card-meta{font-size:12px;color:#799081;margin-top:6px;line-height:1.4}
+footer{padding:24px 0 8px;color:#819185;font-size:12px}
+@media(max-width:900px){.viewer-layout{grid-template-columns:1fr}.side-note{display:grid;grid-template-columns:1fr 1fr;gap:12px}.side-note h3,.side-note .note{grid-column:1/-1}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.gallery{gap:8px}.duo-card{border-radius:14px;padding:5px}.duo-card canvas{border-radius:9px}.card-copy{padding:7px 4px}.card-name{font-size:12px}.card-meta{font-size:10px}.side-note{display:flex;padding:16px}h1{font-size:29px}.player{padding:6px;border-radius:16px}.player-stage{border-radius:11px}.controls{gap:6px}.controls button{flex:1 1 auto;padding:10px 9px;font-size:12px}.review{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.duo-card{transition:none}}
+</style>
+</head>
+<body><main>
+<header><div class="eyebrow">MORROW WISH · CAT BOND</div><a href="./">返回游戏 / Back to game</a></header>
+<section class="intro"><h1>21 种双猫合击 · 动画总览</h1>
+<p class="sub">六种元素，两两组合，共 21 套。点击任意卡片播放完整演出，也可以一键连续看完全部。全部调用游戏当前实际使用的合击动画渲染器，供视觉审核。</p>
+<span class="review">仅供预览 · 不会修改游戏存档或解锁进度</span></section>
+<section class="viewer-layout">
+<div class="player">
+<div class="player-stage"><canvas id="duo-player" width="960" height="540" aria-label="双猫合击演出播放器"></canvas><div id="load-status" class="load-status" role="status">正在加载游戏原版动画素材…</div></div>
+<div class="player-meta"><div><div class="eyebrow" id="current-index">01 / 21</div><h2 id="current-title">双影夜巡</h2><p id="current-en">Twin Shadow Hunt</p></div><span class="review" id="current-element">暗 × 暗</span></div>
+<div class="progress"><i id="progress-fill"></i></div>
+<div class="controls">
+<button id="prev" type="button" aria-label="上一个合击">‹ 上一个</button>
+<button id="replay" type="button">↻ 重播</button>
+<button id="pause" type="button" aria-pressed="false">暂停</button>
+<button id="next" type="button" aria-label="下一个合击">下一个 ›</button>
+<button id="playlist" class="primary" type="button" aria-pressed="false">▶ 连播全部 21 种</button>
+</div></div>
+<aside class="side-note">
+<h3>本组出场猫咪</h3>
+<div class="kitten-line"><canvas id="cat-a" width="86" height="72"></canvas><span><b id="cat-name-a">墨球</b><small id="element-a">暗属性</small></span></div>
+<div class="kitten-line"><canvas id="cat-b" width="86" height="72"></canvas><span><b id="cat-name-b">幽灵</b><small id="element-b">暗属性</small></span></div>
+<p id="move-desc" class="details"></p>
+<div><strong style="font-size:13px;display:block;margin-bottom:8px">动作阶段预览</strong><div class="tier-row">
+<button id="tier-1" type="button" data-tier="1">默契 20</button>
+<button id="tier-2" type="button" data-tier="2">默契 60</button>
+<button id="tier-3" type="button" data-tier="3" aria-pressed="true">默契 90</button>
+</div></div>
+<p class="note">审核页默认展示最高解锁阶段，以便比较完整动画。游戏内的技能仍须正常培养默契解锁。以下静态卡片是每套动画的真实中途画面，不是另一批替代插画。</p>
+</aside></section>
+<section class="section-head"><h2>全部组合</h2><span id="gallery-count">21 / 21</span></section>
+<div id="gallery" class="gallery" aria-label="全部双猫合击动画"></div>
+<footer>动画审核专页 · Noindex · 不影响普通玩家存档和游戏平衡</footer>
+</main>
+<script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'};</script>
+<script src="js/data.js"></script>
+<script src="js/skills.js"></script>
+<script src="js/state.js"></script>
+<script src="js/cat-relationships.js"></script>
+<script src="js/catart.js"></script>
+<script src="js/real-kittens.js"></script>
+<script src="js/duo-portraits.js?v=cinematic-v5-20261121"></script>
+<script src="js/duo-artwork.js?v=cinematic-20261121"></script>
+<script src="js/duo-signatures.js?v=duo-gallery-20261121"></script>
+<script src="js/duo-director.js?v=all-21-motion-ship-20261122b"></script>
+<script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
+<script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
+<script src="js/duo-premium.js?v=all-21-effects-ship-20261122b"></script>
+<script src="js/duo-hero.js?v=full-scene-blend-20261122"></script>
+<script>
+(()=>{'use strict';
+const byId=id=>document.getElementById(id);
+const elements={dark:'暗',elec:'电',fire:'火',grass:'草',light:'光',water:'水'};
+const breeds={
+ dark:['moqiu','youling'],elec:['xianluo','duanduan'],
+ fire:['tangyuan','jinwu'],grass:['doudou','senlin'],
+ light:['yunduo','yinghua'],water:['lanbao','xiaohui']
+};
+const names=[
+['dark+dark','双影夜巡','Twin Shadow Hunt'],['dark+elec','影雷瞬袭','Shadowbolt Pounce'],
+['dark+fire','暗焰猫爪','Midnight Ember Claws'],['dark+grass','夜藤伏击','Nightvine Ambush'],
+['dark+light','星月交辉','Moonlight Starburst'],['dark+water','深海迷雾','Deepwater Mist'],
+['elec+elec','双雷连闪','Twin Lightning Dash'],['elec+fire','雷火喵旋风','Thunderfire Pawstorm'],
+['elec+grass','雷芽缠锁','Thunderroot Snare'],['elec+light','闪光连击','Radiant Spark Rush'],
+['elec+water','闪电泡泡雨','Thunder Bubble Rain'],['fire+fire','双焰喵盛典','Twin Ember Festival'],
+['fire+grass','花火猫爪舞','Blossomfire Pawdance'],['fire+light','日曜喵闪','Sunflare Pawburst'],
+['fire+water','蒸汽喵喵炮','Steamcloud Cat Cannon'],['grass+grass','双叶春醒','Twinleaf Awakening'],
+['grass+light','晨光花环','Dawnbloom Halo'],['grass+water','春雨绽放','Spring Rain Bloom'],
+['light+light','双星祝福','Twin Starlight Blessing'],['light+water','月湖屏障','Moonlit Lake Ward'],
+['water+water','双潮回响','Twin Tidal Echo']
+];
+const entries=names.map(([key,zh,en],i)=>{
+ const [x,y]=key.split('+');
+ const a={uid:'gallery_'+i+'_a',species:breeds[x][0]};
+ const b={uid:'gallery_'+i+'_b',species:x===y?breeds[y][1]:breeds[y][0]};
+ return {key,zh,en,a,b,els:[x,y]};
+});
+const main=byId('duo-player'),ctx=main.getContext('2d'),status=byId('load-status');
+let index=0,tier=3,playing=true,sequence=false,started=performance.now(),hold=0,previewDone=false;
+const duration=2750;
+function sequenceFor(item,t,tier,showLabels=true){
+ return {max:2.75,t:Math.max(.001,2.75-(t/1000)),strikeAt:.78,
+   catUids:[item.a.uid,item.b.uid],elements:item.key,name:item.zh,tier,
+   hideCaptions:!showLabels};
+}
+function drawFrame(c,w,h,item,t,lv=3,showLabels=true){
+ c.clearRect(0,0,w,h);c.fillStyle='#e9f0e7';c.fillRect(0,0,w,h);
+ return CatBondDuoHero.draw(c,w,h,sequenceFor(item,t,lv,showLabels),
+   uid=>uid===item.a.uid?item.a:uid===item.b.uid?item.b:null);
+}
+function paintThumbs(){
+ if(previewDone||!CatBondDuoHero.assetReady)return;
+ previewDone=true;
+ document.querySelectorAll('[data-duo-index]').forEach((b,i)=>{
+   const cv=b.querySelector('canvas');if(!cv)return;
+   drawFrame(cv.getContext('2d'),cv.width,cv.height,entries[i],860,3,false);
+ });
+ status.hidden=true;
+}
+function paintCats(item){
+ for(const n of ['a','b']){
+   const cat=item[n],sp=GameData.speciesById(cat.species);
+   byId('cat-name-'+n).textContent=GameData.speciesName(sp);
+   byId('element-'+n).textContent=elements[Skills.elementOf(cat.species)]+'属性';
+   const cv=byId('cat-'+n),c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);
+   CatArt.renderCatThumb(cv,sp);
+ }
+}
+function refresh(){
+ const item=entries[index];
+ byId('current-title').textContent=item.zh;
+ byId('current-en').textContent=item.en;
+ byId('current-index').textContent=String(index+1).padStart(2,'0')+' / '+entries.length;
+ byId('current-element').textContent=item.els.map(e=>elements[e]).join(' × ');
+ byId('move-desc').textContent=CatRelations.title(item.a,item.b).description;
+ paintCats(item);
+ document.querySelectorAll('[data-duo-index]').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
+ byId('gallery-count').textContent=entries.length+' / 21';
+}
+function choose(i){
+ index=(i+entries.length)%entries.length;started=performance.now();hold=0;playing=true;
+ byId('pause').textContent='暂停';byId('pause').setAttribute('aria-pressed','false');
+ refresh();
+}
+function setSequence(on){
+ sequence=on;byId('playlist').setAttribute('aria-pressed',String(on));
+ byId('playlist').textContent=on?'■ 停止连播':'▶ 连播全部 21 种';
+ if(on)choose(0);
+}
+const gallery=byId('gallery');
+gallery.innerHTML=entries.map((v,i)=>
+ '<button type="button" class="duo-card" data-duo-index="'+i+'" aria-current="false" aria-label="播放 '+v.zh+'">'+
+ '<canvas width="360" height="203" aria-hidden="true"></canvas>'+
+ '<div class="card-copy"><div class="card-name"><span>'+v.zh+'</span><small class="card-index">'+String(i+1).padStart(2,'0')+'</small></div>'+
+ '<div class="card-meta">'+v.els.map(e=>elements[e]).join(' + ')+' · '+v.en+'</div></div></button>'
+).join('');
+gallery.querySelectorAll('[data-duo-index]').forEach(b=>b.addEventListener('click',()=>{
+ setSequence(false);choose(Number(b.dataset.duoIndex));
+ document.querySelector('.viewer-layout').scrollIntoView({behavior:'smooth',block:'start'});
+}));
+byId('prev').onclick=()=>{setSequence(false);choose(index-1)};
+byId('next').onclick=()=>{setSequence(false);choose(index+1)};
+byId('replay').onclick=()=>{started=performance.now();hold=0;playing=true;byId('pause').textContent='暂停';byId('pause').setAttribute('aria-pressed','false')};
+byId('pause').onclick=()=>{
+ if(playing){hold=performance.now()-started;playing=false}
+ else{started=performance.now()-hold;playing=true}
+ byId('pause').textContent=playing?'暂停':'继续';
+ byId('pause').setAttribute('aria-pressed',String(!playing));
+};
+byId('playlist').onclick=()=>setSequence(!sequence);
+document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{
+ tier=Number(b.dataset.tier);
+ document.querySelectorAll('[data-tier]').forEach(el=>el.setAttribute('aria-pressed',String(el===b)));
+ started=performance.now();hold=0;playing=true;
+ byId('pause').textContent='暂停';byId('pause').setAttribute('aria-pressed','false');
+ paintThumbs();
+});
+if(CatBondDuoDirector.keys.length!==21||CatBondDuoHero.assetCount!==21||
+  entries.some(({key})=>!CatBondDuoDirector.keys.includes(key))){
+ status.textContent='检查失败：动画列表与游戏技能配置不一致，请勿审核。';
+ throw Error('21 skill parity check failed');
+}
+refresh();
+function frame(now){
+ if(CatBondDuoHero.assetReady){
+   paintThumbs();
+   let elapsed=playing?now-started:hold;
+   if(elapsed>=duration){
+     if(sequence&&playing){
+       if(index===entries.length-1){sequence=false;byId('playlist').setAttribute('aria-pressed','false');byId('playlist').textContent='▶ 连播全部 21 种';choose(0)}
+       else choose(index+1);
+       elapsed=0;
+     }else if(playing){started=now;elapsed=0;}
+   }
+   drawFrame(ctx,main.width,main.height,entries[index],Math.min(duration-1,elapsed),tier,true);
+   byId('progress-fill').style.width=Math.min(100,100*elapsed/duration)+'%';
+ }else if(window.CatBondPremiumCinematics?.failed){
+   status.textContent='动画原画资源加载失败。请刷新重试或检查资源是否部署成功。';
+ }
+ requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__catBondDuoGallery={get ready(){return previewDone},count:entries.length,get selected(){return entries[index].key},choose};
+})();
+</script>
+</body></html>
