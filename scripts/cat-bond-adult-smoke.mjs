@@ -1,4 +1,5 @@
-// Independent actual-Chromium QA for all 32 original adult forms and growth.
+// Chromium QA: all 32 watercolor cats must retain original proportions as they grow.
+// Regression guard for the skinny synthetic SVG adults shown in Moonshadow Ruins.
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
@@ -17,23 +18,40 @@ try {
       const cards=[...document.querySelectorAll('.breed-card')];
       const thumbs=cards.map(c=>[...c.querySelectorAll('canvas')]);
       const pixels=cv=>{
-        const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;
-        let visible=0;
-        for(let i=3;i<d.length;i+=4)if(d[i]>35)visible++;
-        return visible;
+        const w=cv.width,h=cv.height,d=cv.getContext('2d').getImageData(0,0,w,h).data;
+        let visible=0,left=w,right=0,top=h,bottom=0;
+        for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]>70){
+          visible++;left=Math.min(left,x);right=Math.max(right,x);
+          top=Math.min(top,y);bottom=Math.max(bottom,y);
+        }
+        return {visible,aspect:(right-left+1)/(bottom-top+1)};
       };
+      const bounds=thumbs.map(row=>row.map(pixels));
+      const maxAspectChange=Math.max(...bounds.map(([kitten,adult])=>Math.max(
+        kitten.aspect/(adult.aspect||.001),adult.aspect/(kitten.aspect||.001))));
       return {breeds:cards.length,failed:CatBondAdultArt.failedCount,
         loaded:CatBondAdultArt.loadedCount,
+        sourceKind:CatBondAdultArt.sourceKind,
+        preservesOriginalProportions:CatBondAdultArt.preservesOriginalProportions,
+        matureArtIsSeparateImage:CatBondAdultArt.matureArtIsSeparateImage,
         adultUnique:new Set(thumbs.map(v=>v[1].toDataURL())).size,
-        allVisible:thumbs.every(v=>v.length===3&&v.every(c=>pixels(c)>100)),
-        changed:thumbs.every(v=>v[0].toDataURL()!==v[1].toDataURL())};
+        allVisible:thumbs.every(v=>v.length===3)&&bounds.every(row=>row.every(c=>c.visible>100)),
+        changed:thumbs.every(v=>v[0].toDataURL()!==v[1].toDataURL()),
+        maxAspectChange};
     });
     assert.equal(check.breeds,32);
     assert.equal(check.loaded,32);
     assert.equal(check.failed,0);
-    assert.equal(check.adultUnique,32,'one unique adult breed artwork per cat');
+    assert.equal(check.sourceKind,'original-watercolor-atlas',
+      'adult should preserve watercolor breed fur and facial proportions');
+    assert.equal(check.preservesOriginalProportions,true);
+    assert.equal(check.matureArtIsSeparateImage,false,
+      'adult cannot replace painted cat with a narrow SVG model');
+    assert.equal(check.adultUnique,32,'all 32 breeds must retain unique coats');
     assert.ok(check.allVisible,'no blank illustration at any growth stage');
-    assert.ok(check.changed,'adult silhouette cannot be the kitten unchanged');
+    assert.ok(check.changed,'growth must be visible');
+    assert.ok(check.maxAspectChange<1.35,
+      'grown cat changed aspect ratio beyond original watercolor proportions: '+check.maxAspectChange);
     assert.deepEqual(errors,[]);
     await page.screenshot({path:'/tmp/cat-bond-adult-'+p.name+'.png',fullPage:true});
     console.log('32 ADULT BREEDS REAL CHROMIUM PASS',p.name,JSON.stringify(check));
