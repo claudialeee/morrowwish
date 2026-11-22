@@ -1,5 +1,5 @@
 // Cat Bond regression: cohesive unlocked-only gallery, 13 memories, two
-// earnable map markers per region, atomic bulk shop and one-tap cat growth.
+// earnable map markers per region, atomic bulk shop and retired growth controls.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
@@ -52,23 +52,21 @@ try{
   await page.evaluate(()=>{State.S.coins=1000;UI.renderCatDetail(State.S.cats[0]);});
   await page.locator('#cd-stat-ten').click();
   assert.equal(await page.evaluate(()=>State.S.coins),200,'ten stat sessions cost exactly 800 coins');
+  // Level and skill training still work, but growth transformations are retired.
   const form=await page.evaluate(()=>{
-    const c=State.S.cats[0];c.level=8;c.affinity=20;
-    const one=Growth.advance(c),adult=Growth.visual(c);
-    c.level=20;c.affinity=60;State.S.raising.starShards=30;
-    const two=Growth.advance(c,'agi'),awakened=Growth.visual(c);
-    return {one:one.ok,adultStage:c.stage-1,adultScale:adult.scale,
-      two:two.ok,stage:c.stage,branch:c.awaken,scale:awakened.scale,
-      aura:!!awakened.aura,gems:awakened.gem,remaining:State.S.raising.starShards};
+    const c=State.S.cats[0];c.level=20;c.affinity=100;
+    State.S.raising.starShards=30;
+    UI.renderCatDetail(c);
+    const before=c.stage||0,shards=State.S.raising.starShards;
+    const r=Growth.advance(c,'agi');
+    return {blocked:!r.ok&&r.disabled===true,stage:(c.stage||0),
+      unchanged:(c.stage||0)===before,
+      unspent:State.S.raising.starShards===shards,
+      noButton:!document.getElementById('cd-grow'),
+      noAwaken:!document.querySelector('[data-awaken]')};
   });
-  assert.equal(form.one,true);
-  assert.equal(form.adultScale,1.06);
-  assert.equal(form.two,true);
-  assert.equal(form.stage,2);
-  assert.equal(form.branch,'agi');
-  assert.equal(form.scale,1.10);
-  assert.equal(form.aura,true);
-  assert.equal(form.remaining,0);
+  assert.deepEqual(form,{blocked:true,stage:0,unchanged:true,unspent:true,
+    noButton:true,noAwaken:true});
   const duo=await page.evaluate(()=>{
     const [a,b]=State.S.cats;CatRelations.choose(a,b);
     CatRelations.pair(a,b).value=20;State.save();
