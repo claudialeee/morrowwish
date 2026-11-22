@@ -67,7 +67,8 @@
   audio.preload='auto';audio.loop=true;audio.volume=active().volume;
   audio.setAttribute('playsinline','');
   audio.setAttribute('aria-hidden','true');
-  audio.src=active().url;
+  audio.src=track.url;
+  if(slug==='cat-bond'&&scene==='battle')audio.src=active().url;
   audio.addEventListener('playing',()=>{blocked=false;unavailable=false;sync()});
   audio.addEventListener('pause',()=>{if(enabled&&!document.hidden&&!audio.ended){blocked=!audio.error;sync()}});
   audio.addEventListener('error',()=>{
