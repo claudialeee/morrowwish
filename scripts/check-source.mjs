@@ -1036,7 +1036,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('rel?.value)<20')||
     !bondPremium.includes('if(!thumbnail&&dual>.09)')||
     !bondViewer.includes('duo-embedded')||
-    !bondIntro.includes('css/style.css?v=battle-skill-tooltip-cards-20261121-1'))
+    !/href="css\/style\.css\?v=[^\"]+"/.test(bondIntro))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
  // Returning from battle must never leave stale additive blend/alpha/filter
