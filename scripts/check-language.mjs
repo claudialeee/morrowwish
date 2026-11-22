@@ -15,7 +15,7 @@ for(const [field,locale] of [['name','Chinese'],['nameEn','English']]){
 }
 assert.equal(cats.find(s=>s.id==='nainai').name,'雪团','No grandma-named kitten');
 assert.equal(cats.find(s=>s.id==='nainai').nameEn,'Snowball');
-assert.ok(cats.every(c=>!/[\\u3400-\\u9fff]/.test(c.nameEn)),'All 32 English cat names use English text');
+assert.ok(cats.every(c=>!/[\u3400-\u9fff]/.test(c.nameEn)),'All 32 English cat names use English text');
 const dictScope={window:{MorrowwishI18n:{get:()=> 'en'},addEventListener(){}},document:{readyState:'loading',addEventListener(){}},console};
 vm.runInNewContext(read('public/cat-bond/js/i18n.js'),dictScope);
 const i18n=dictScope.window.CatBondI18n;
@@ -24,6 +24,7 @@ for(const cat of cats){
  assert.equal(i18n.toEnglish(cat.name),cat.nameEn,'Breed name mismatch: '+cat.id);
 }
 const mustTranslate=[
+ "水枪", "✓ 可建造", "猫猫冒险指引", "已解锁的双猫合击", "派猫咪去工坊", "把猫咪送回庭院", "火山口", "必 杀 技",
  '猫猫纽带','🧰 已给 2 只猫补血，消耗 1 个急救包。',
  '✨ 新技能 · 工坊赚钱 · 地图探索 ›',
  '🌿 点击发光的草丛，遇见第一位新伙伴！',
@@ -33,9 +34,12 @@ const mustTranslate=[
  '🏆 猫猫冒险 · 32 种全部收集 ›',
  '目标锁定','雪团', '奶酥', '奥利奥'
 ];
+for(const [source,value] of Object.entries(i18n.dict)){
+ assert.ok(!/[\u3400-\u9fff]/.test(value),'English dictionary contains Chinese: '+source);
+}
 for(const source of mustTranslate){
  const output=i18n.toEnglish(source);
- assert.ok(!/[\\u3400-\\u9fff]/.test(output),'English translation leaked Chinese: '+source+' -> '+output);
+ assert.ok(!/[\u3400-\u9fff]/.test(output),'English translation leaked Chinese: '+source+' -> '+output);
 }
 const lang=read('public/lang.js');
 assert.ok(lang.includes('return "en"; // English for first-time visitors'),'First visit must default to English');
@@ -46,4 +50,29 @@ for(const file of ['public/index.html','public/cat-bond/index.html','public/paws
 assert.ok(read('public/pawsibly-innocent/game.js').includes('morrowwish-language-change'));
 assert.ok(read('public/elsewhere/dreams.js').includes('return "en"')); 
 assert.ok(read('public/pocket-aquarium/index.html').includes("||'en'"));
+
+// Regression: source strings used by Cat Bond must not retain Chinese when translated.
+for(const file of ["public/cat-bond/js/data.js","public/cat-bond/js/ui.js","public/cat-bond/js/game.js","public/cat-bond/js/battle.js","public/cat-bond/js/skills.js","public/cat-bond/js/world.js","public/cat-bond/js/worldmap.js","public/cat-bond/js/raising.js","public/cat-bond/js/duo-bond.js","public/cat-bond/index.html"]){
+ const lines=read(file).split('\n');
+ for(let line=0;line<lines.length;line++){
+  if(/^\s*(\/\/|\/\*|\*|#)/.test(lines[line]))continue;
+  for(const m of lines[line].matchAll(/(["'])([^"'\n]{1,210})\1/g)){
+   const source=m[2];
+   if(!/[\u3400-\u9fff]/.test(source)||source.length>=180)continue;
+   assert.ok(!/[\u3400-\u9fff]/.test(i18n.toEnglish(source)),
+    'Untranslated Cat Bond string: '+file+':'+(line+1)+' '+source);
+  }
+ }
+}
+// Other titles store authored English in en/enDesc/data-en fields.
+for(const file of ['public/pawsibly-innocent/game.js','public/tiny-town/game-v4.js',
+ 'public/tiny-town/index.html','public/elsewhere/dreams.js',
+ 'public/elsewhere/dream-lives.js','public/elsewhere/casefiles-a.js',
+ 'public/elsewhere/casefiles-b.js','public/pocket-aquarium/index.html']){
+ const source=read(file);
+ for(const rx of [/\ben(?:Text|Desc|Sub)?\s*:\s*(["'])([^"'\n]{1,200})\1/g,/\bdata-en\s*=\s*(["'])([^"'<>]{1,200})\1/g]){
+  for(const m of source.matchAll(rx))
+   assert.ok(!/[\u3400-\u9fff]/.test(m[2]),'Chinese in an English text field: '+file+': '+m[2]);
+ }
+}
 console.log('Language QA: 32 unique bilingual cat names, English-first entry, primary menus/skills/regions localized.');
