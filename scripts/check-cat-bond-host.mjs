@@ -63,5 +63,7 @@ assert.ok(main.includes("window.addEventListener('pagehide'")&&
   main.includes("document.addEventListener('visibilitychange'"),
   'Browser and native WebView background paths should both save');
 assert.ok(fullscreen.includes('window.CatBondPlatform?.ownsFullscreen'));
+assert.ok(!main.includes('localStorage.clear()'),'Developer fixtures must not wipe unrelated saves');
+assert.ok(main.includes("location.hostname"),'Developer fixtures are allowed only on localhost');
 assert.ok(submission.includes("'cat-bond':{category:'Adventure'"));
 console.log('CAT BOND HOST / PORTAL RELEASE GATE PASS ('+hostCases.length+' host modes)');
