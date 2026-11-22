@@ -2227,3 +2227,17 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #battle-ui #duo-burst .duo-burst-track{height:3px;left:37px;bottom:2px}
  #yard-placement-dock .cb-placement-heading{display:none}
 }
+
+/* Visual QA correction: one owned duo must NOT inflate a single watercolor
+   painting into the entire modal, and mobile canvases must keep their
+   natural 16:9 proportions (no squeezed cats). */
+#panel .duo-unlocked-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));align-items:start}
+#panel .duo-unlocked-card .duo-gallery-thumb{display:block;max-height:none;aspect-ratio:16/9!important;
+ width:100%;height:auto!important;object-fit:contain!important}
+@media(max-width:520px){
+ #panel .duo-unlocked-grid{grid-template-columns:minmax(0,1fr)}
+ #panel .duo-unlocked-card{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+ #panel .duo-unlocked-card .duo-gallery-thumb{width:100%;height:auto!important;
+  aspect-ratio:16/9!important;min-height:0!important;max-height:none!important}
+ #panel .duo-unlocked-card .duo-card-body{padding:6px 8px 8px}
+}
