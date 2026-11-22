@@ -43,8 +43,8 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-server.log 2>&1 &
           sleep 2
-          # Real Chromium checks that all 32 mature watercolor cats load and
-          # the growth ceremony + saved stages work on desktop and phone.
+          # Real Chromium checks legacy illustrated cats on phone/desktop and
+          # confirms no new growth/awakening controls are available.
           node scripts/cat-bond-adult-smoke.mjs
           # Gate the newly unlocked-only duo UI and the complete 21-motion
           # private QA first, so unrelated map browser failures cannot hide
@@ -64,7 +64,7 @@ jobs:
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
 
-      - name: Save adult art comparison and growth screenshots
+      - name: Save legacy art comparison screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
