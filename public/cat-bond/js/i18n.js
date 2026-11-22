@@ -1129,7 +1129,7 @@
     '燃烧的猫爪撕击，附加灼烧。': 'A burning claw slash that applies Burn.',
     '吐出滚烫火球，命中后持续灼烧。': 'Spits a scorching fireball that keeps burning on hit.',
     '【必杀】背负烈日炸裂全场，重灼。': '[Ultimate] Unleashes the sun across the field, searing all.',
-    '高压水流抽击，使目标淋湿。': 'A high-pressure water whip that soaks the target.',
+    '高压水流抽击，使目标淋湿——淋湿会减速移动，并为元素反应铺垫。': 'A high-pressure water whip that soaks the target — soak slows movement and sets up elemental reactions.',
     '展开泡泡护盾，短时减伤。': 'Raises a bubble shield that briefly reduces damage.',
     '【必杀】掀起巨浪，全体淋湿。': '[Ultimate] Raises a great wave, soaking everyone.',
     '锋利草叶高速飞射。': 'Fires razor-sharp leaves at high speed.',

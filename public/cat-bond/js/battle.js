@@ -1200,6 +1200,13 @@ class CaptureBattle {
     // where it shoots. Melee/close casts resolve to ~current pos (tiny lead time).
     const aim=this.autoAim(f,tgt,f.projSpeed);
     f._aim=aim;
+    // Intercept LEAD is correct for a travelling projectile, but WRONG for a hitscan /
+    // instant-direction skill (beam line, melee arc, dash/leap/pounce lunge): those resolve
+    // at the target's CURRENT position, so leading makes a 水枪 beam point where the enemy
+    // WILL be and miss a strafing target. Pick the aim per skill kind.
+    const directAim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+    const instant=k=>k==='beam'||k==='melee'||k==='dash'||k==='leap'||k==='pounce'||k==='chain';
+    const aimFor=sk=>(sk&&instant(sk.kind))?directAim:aim;
     // Auto-battle dodges like a competent human, NOT a frame-perfect robot: it only
     // reacts to ~55% of threats (less when it's cruising unhurt), so the player still
     // takes hits and the fight has stakes. (Playtest: auto evasion was too strong.)
@@ -1236,10 +1243,10 @@ class CaptureBattle {
       return dist<460;
     };
     if(f.cd.q<=0&&offensive(f.qSkill,'q')){
-      if(this.skillQ(f,aim)!==false){this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射'));return;}
+      if(this.skillQ(f,aimFor(f.qSkill))!==false){this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射'));return;}
     }
     if(f.cd.e<=0&&offensive(f.eSkill,'e')){
-      if(this.skillE(f,aim)!==false){this.markAutoAction(f,'技能：'+(f.eSkill?.name||'疾扑'));return;}
+      if(this.skillE(f,aimFor(f.eSkill))!==false){this.markAutoAction(f,'技能：'+(f.eSkill?.name||'疾扑'));return;}
     }
     const buff=this.supportSlot(f,'buff');
     if(buff&&dist<290){
@@ -2310,6 +2317,15 @@ class CaptureBattle {
     for (const c of dropped) if (c.f && c.f._castRoot) c.f._castRoot = 0;
     this.pendingCasts = this.pendingCasts.filter(c => c.t > 0);
   }
+  // The enemy a beam's soft-lock may nudge toward — the locked target (or nearest), UNLESS it
+  // is mid-displacement (dash/leap/pounce or i-frames), in which case return null so the lock
+  // RELEASES and the enemy can break the stream with a movement skill. Keeps soft-lock soft.
+  beamSoftTarget(b){
+    const cand=(b._tgt&&b._tgt.alive)?b._tgt:this.nearestEnemy(b.f.x,b.f.y);
+    if(!cand||!cand.alive)return null;
+    const displacing=(cand.dashT>0)||(cand._leapT>0)||(cand.inv>0)||cand.pounce;
+    return displacing?null:cand;
+  }
   tickBeams(dt) {
     if (!this.beams.length) return;
     for (const b of this.beams) {
@@ -2323,7 +2339,40 @@ class CaptureBattle {
         const passes=Math.max(1,Math.round(b.sk.sweepPasses||2));
         // 3 half-cycles: left → right → left → right.
         b.aim=b.baseAim-Math.cos(progress*Math.PI*passes)*b.sk.sweep;
-      }else if(f===this.me())b.aim=this.aim;
+      }else if(f===this.me()){
+        // PLAYER beam: mouse aims, but a gentle SOFT-LOCK nudges the stream toward the nearest
+        // enemy so a stationary channel (you can't move while spraying) doesn't trivially slip
+        // off a strafing target. The assist is weak (~1.6 rad/s) and the mouse ALWAYS overrides
+        // instantly — raw mouse aim is blended in at full weight, soft-lock only fills the gap.
+        // CRUCIAL: the lock RELEASES while the target is dashing/leaping/i-framed (a displacement
+        // skill), so an enemy can still break the beam by repositioning — soft, not sticky.
+        // Apply the player's mouse MOVEMENT 1:1 (full control, instant override), THEN let a
+        // small assist accumulate toward the target when the mouse is roughly still. Resetting
+        // to this.aim each frame would prevent the assist from ever integrating, so track the
+        // mouse delta and carry b.aim forward instead.
+        const mouseStep=((this.aim-(b._lastMouseAim??this.aim)+Math.PI*3)%(Math.PI*2))-Math.PI;
+        b._lastMouseAim=this.aim;
+        b.aim+=mouseStep;                                        // mouse moves the beam 1:1
+        const tgt=this.beamSoftTarget(b);
+        if(tgt && Math.abs(mouseStep)<0.06){                     // only assist when NOT actively re-aiming
+          const want=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+          let d=((want-b.aim+Math.PI*3)%(Math.PI*2))-Math.PI;
+          b.aim+=Math.max(-1.0*dt,Math.min(1.0*dt,d));           // SLOW accumulating pull (water-jet turns slowly)
+        }
+      }
+      else{
+        // ALLY (non-active player cat) beams TRACK their target while channeling (slew toward
+        // it, not snap). SLOW turn rate (~2.2 rad/s) so the water-jet visibly lags a strafing
+        // target and can be out-maneuvered; same displacement-release rule (beamSoftTarget drops
+        // a dashing/leaping/i-framed target). Beams are player-side only (castBeam owner:'me').
+        const tgt=this.beamSoftTarget(b)||((b._tgt&&b._tgt.alive)?b._tgt:this.nearestEnemy(f.x,f.y));
+        if(tgt){
+          b._tgt=tgt;
+          const want=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+          let d=((want-b.aim+Math.PI*3)%(Math.PI*2))-Math.PI;   // shortest signed delta
+          b.aim+=Math.max(-2.2*dt,Math.min(2.2*dt,d)); b.baseAim=b.aim;
+        }
+      }
       if (f._beamRoot != null) f._beamRoot = Math.max(0, b.t);  // stay anchored while it lasts
       const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
       const ex = ox + Math.cos(b.aim) * b.len, ey = oy + Math.sin(b.aim) * b.len;
@@ -2509,6 +2558,10 @@ class CaptureBattle {
   // 后遗症 recovery slow left after a heavy skill. Shared by player + enemy movement.
   moveMul(f){
     let m = f.slowed ? 0.55 : 1;
+    // 淋湿 (soak): water's signature debuff is a MILD slow (×0.8) — lighter than hard soft-CC
+    // (chill/bind 0.55) since soak is applied broadly and also primes elemental reactions.
+    // Stacks multiplicatively but the heavier CC dominates, so it never over-locks a cat.
+    if (f.status && f.status.soak > 0) m *= 0.8;
     if (f._castSlow > 0) m *= 0.5;          // sluggish recovery after a heavy cast
     if ((f.reflectT || 0) > 0) m *= 0.5; // directional reflect wall: half movement speed
     if ((f.hasteT || 0) > 0) m *= 1.25;  // 静电舔毛 haste: brief move speed-up (elec heal tweak)
@@ -3001,9 +3054,9 @@ class CaptureBattle {
 
   // ---- COMBO: every hit extends the chain; higher chain = more dmg + ult ----
   // Combo bonus with DIMINISHING returns so it can't stack multiplicatively with
-  // element-effectiveness + STAB into a one-shot. Square-root curve: ~×1.35 at 10
-  // combo, ~×1.55 at 25, caps ~×1.7 at 50 (was a runaway linear ×2.5).
-  comboMult() { return 1 + Math.min(0.15, Math.sqrt(Math.min(this.combo, 50)) * 0.026); }
+  // element-effectiveness + STAB into a one-shot. Square-root curve capped at +0.20:
+  // ~×1.08 at 10 combo, ~×1.14 at 25, ~×1.18 at ~45, hard cap ×1.20.
+  comboMult() { return 1 + Math.min(0.20, Math.sqrt(Math.min(this.combo, 50)) * 0.029); }
   addCombo(n) {
     this.combo += (n || 1);
     this.comboT = 1.3;                                          // drop window (需持续命中)
@@ -3668,6 +3721,15 @@ class CaptureBattle {
     const teamHpFrac = this.team.reduce((n,f)=>n+Math.max(0,f.hp),0)/Math.max(1,this.team.reduce((n,f)=>n+f.maxhp,0));
     this._pressure = (!this.coach && this.t > 5 && teamHpFrac > 0.88 && !this._stalled)
       ? Math.min(1, (this._pressure || 0) + dt * 0.45) : Math.max(0, (this._pressure || 0) - dt * 0.5);
+    // CLOSING / "收网" — a TIME-driven ramp (0 at 45s → 1 at 70s), independent of HP so it is
+    // NOT the "player is cruising" rubber-band above. Its job: force a drawn-out fight to RESOLVE
+    // by combat before the hard backstop, instead of letting the clock arbitrate it. It only ever
+    // amplifies the CONSEQUENCES OF THE PLAYER LANDING HITS (poise-recovery suppression +
+    // execute/break ease, applied elsewhere) and raises enemy aggression — it never drains enemy
+    // HP directly, so an over-levelled fight stays genuinely hard and a zero-output turtle gets no
+    // free progress (no hits → no benefit). A real kiter who IS fighting finally closes in time; a
+    // fight you truly can't win ends as the wild cat fleeing (neutral), not a silent clock-loss.
+    this._closing = this.coach ? 0 : clamp((this.t - 45) / 25, 0, 1);
     // MASH-STALL teach + resolve: if the player keeps throwing ONLY basics while an
     // enemy sits pinned near the un-skilled mash floor (~<20% HP, not staggered), the
     // fight can't end from basics alone. Detect it, pulse a "use a skill" teach beat,
@@ -3681,8 +3743,13 @@ class CaptureBattle {
       } else { this._stallT = Math.max(0, (this._stallT || 0) - dt * 2); }
       this._stalled = this._stallT > 5;
       if (this._stalled) this._stallBanner = 1.2;         // drawn + pulses the skill buttons
-      // Hard resolution: never let a fight run forever. ~70s is well past any real win.
-      if (this.t > 70 && !this.done) { this._timeCapLoss = true; this.finish(false); }
+      // Hard backstop: the CLOSING ramp (45→70s) escalates both sides so a winnable fight
+      // resolves by combat first; this is only the catch for a true stalemate (can't kill it,
+      // not dying either). Pushed to ~85s so the escalation gets its full window, and framed as
+      // the wild cat FLEEING (neutral "got away", not a scored defeat) — result='flee' already
+      // renders that screen. An over-levelled fight the player genuinely can't win still ends
+      // here, honestly, as the prey escaping rather than a silent clock-loss at full HP.
+      if (this.t > 85 && !this.done) { this._timeCapLoss = true; this.finish(false); }
     }
     // First-fight coach: while teaching move/attack/skill, enemies stand down so a
     // brand-new player can learn the controls without taking damage.
@@ -3726,8 +3793,12 @@ class CaptureBattle {
       // Never regenerate partially damaged poise. ONLY a full break unlocks
       // recovery, and the stagger vulnerability must finish before any refill.
       if(e.poiseRecovering && e.staggerT<=0){
-        // At the end of the 3s stagger, instantly refill and unlock another break.
-        e.poise=e.poiseMax;e.poiseRecovering=false;
+        // At the end of the 3s stagger, refill and unlock another break. During the CLOSING
+        // phase the refill is SUPPRESSED (down to ~45% at full closing) so the player's poise
+        // pressure sticks and a slow DPS build can chain breaks to a finish before the backstop —
+        // a consequence of the player's own hits, never free enemy-HP loss.
+        const refill = 1 - 0.55 * (this._closing || 0);
+        e.poise=Math.round(e.poiseMax*refill);e.poiseRecovering=false;
         e.poiseComboHits=0;e.poiseLastHitAt=-99;
       }
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
@@ -4418,8 +4489,18 @@ class CaptureBattle {
       this.vfx.text(e.x, e.y - 50, '✦', '#ffd36b', 12);
       if (combo.consumes && e.tags.includes(combo.tag)) { e.tags = e.tags.filter(t => t !== combo.tag); delete e.status[combo.tag]; }
     }
+    // Readable effectiveness call-out (效果拔群! / 效果不佳…) so a mis-/super-matched hit tells
+    // the player WHY the number is big or small — using the authored Skills.effectivenessLabel
+    // that was previously dead code. Throttled ~1s per enemy so a beam/DoT can't spam it; the
+    // small ↑/↓ arrow still fires every hit as the lightweight cue. Label only at real counters
+    // (≥1.5 or ≤0.5), so the new mild 0.75 same-element resist stays quiet.
     if (elem > 1) this.vfx.text(x, y - 14, '↑', '#ff7b9c', 12);
     else if (elem < 1) this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11);
+    const effLabel = window.Skills?.effectivenessLabel?.(elem);
+    if (effLabel && this.t-(e._effLabelAt||-99) > 1) {
+      e._effLabelAt = this.t;
+      this.vfx.text(e.x, e.y - 64, effLabel, elem >= 1.5 ? '#ff9f6b' : '#9aa8ba', 14);
+    }
     // BASIC-ATTACK TENSION: the basic poke rewards SKILL SETUP. It applies no tags
     // itself, but roars on a target already afflicted (+45% per active status tag)
     // and lands softer on an un-marked target — so Q/E priming carries the fight.
@@ -4479,7 +4560,16 @@ class CaptureBattle {
     const streak=now>=last&&now-last<=1.6?Math.min(5,e.poiseComboHits||0):0;
     const heavy=!!skill.heavy||['dash','pounce','leap'].includes(skill.kind);
     const base=skill.isBasic?.08:heavy?.24:.16;
-    const fraction=Math.min(.48,base*(1+.20*streak));
+    // 虚弱 / "almost tamed": once a wild cat drops below the capture line (<28% HP, the same
+    // threshold that arms captureReady), its poise shatters far faster — every hit drains ~1.8x
+    // and the per-hit cap lifts. This turns the dead 28% line into a real finishing state: a
+    // low-DPS kiter who grinds a cat to the line can now break its poise, stagger it (which
+    // stacks the existing +30% vuln and the <28% execute bonus) and actually collect it inside
+    // the time limit, instead of chipping to 0 and timing out.
+    const subdued = (e.maxhp ? e.hp/e.maxhp : 1) < 0.28;
+    let fraction = base*(1+.20*streak);
+    if (subdued) fraction *= 1.8;
+    fraction = Math.min(subdued ? .72 : .48, fraction);
     e.poise=Math.max(0,e.poise-e.poiseMax*fraction);
     e.poiseComboHits=Math.min(6,streak+1);e.poiseLastHitAt=now;
     if(e.poise<=0)this.triggerStagger(e);
@@ -4592,7 +4682,12 @@ class CaptureBattle {
     const elite = e.role === 'elite' || (e.rIdx ?? -1) >= 2;
     const executeBonus = (boss || isDot || frac0 >= 0.28) ? 0
       : elite ? 0.20 : 0.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35;
-    dmg *= 1 + vulnBonus + comboBonus + executeBonus;
+    // CLOSING ease: in the late "收网" phase a landed hit on a low wild cat finishes a touch
+    // harder (+0 → +0.25), so a drawn-out fight the player is actually winning wraps before the
+    // backstop. Bosses excluded; only applies under the capture line so it can't trivialize a
+    // healthy over-levelled enemy.
+    const closeBonus = (boss || isDot || frac0 >= 0.28) ? 0 : 0.25 * (this._closing || 0);
+    dmg *= 1 + vulnBonus + comboBonus + executeBonus + closeBonus;
     let scaled = dmg;
     if (fromDuo && this.duoField) {
       // Apply cap AFTER level scaling and vulnerability multipliers; otherwise
@@ -4659,7 +4754,19 @@ class CaptureBattle {
       this.combo>=15?18:this.combo>=6?15:13;
     const numberColor=critNumber?'#ffe2a2':strongNumber?'#fff0cf':
       this.combo>=15?'#ffd36b':'#fff';
-    this.floater(e.x,e.y-24,'-'+Math.round(scaled),numberColor,big);
+    // CONTINUOUS damage (beam / DoT) ticks 8×/sec — one tiny "-2" floater per tick reads as
+    // trivial chip damage even when the per-second total is solid. Instead ACCUMULATE per enemy
+    // and float a single rolled-up number ~every 0.5s, so a 水枪 shows "-18" once rather than
+    // eight "-2"s. Discrete hits keep their immediate number.
+    if(isDot){
+      e._dotAccum=(e._dotAccum||0)+scaled;
+      if(this.t-(e._dotFloatAt||-99)>=0.5){
+        this.floater(e.x,e.y-24,'-'+Math.round(e._dotAccum),numberColor,big);
+        e._dotAccum=0; e._dotFloatAt=this.t;
+      }
+    }else{
+      this.floater(e.x,e.y-24,'-'+Math.round(scaled),numberColor,big);
+    }
     this.spawnBurst(fx, fy, '✦', '#ffd36b', 3);
     this.gainUlt(3);
     if(e.hp<=0&&e.alive){

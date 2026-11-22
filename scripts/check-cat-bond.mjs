@@ -466,18 +466,18 @@ assert.ok(Math.abs((100-balanceEnemy.hp)-32.4)<.001,
   'even near zero HP elite execute remains a fixed +20%');
 balanceEnemy.role='boss';
 // Audited damage buckets: 100 raw x [1 + .30 stagger + .12 armor +
-// .15 combo] x .9 = 141.3, NOT a stack of four multipliers.
+// .20 combo] x .9 = 145.8, NOT a stack of four multipliers.
 balanceEnemy.hp=10000;balanceEnemy.maxhp=10000;balanceEnemy.flash=0;
 balanceEnemy.status={rust:10};balanceEnemy.staggerT=2;damageBalance.combo=50;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((10000-balanceEnemy.hp)-141.3)<.001,
-  'stagger, armor break and capped 15% combo are one additive hit bucket');
+assert.ok(Math.abs((10000-balanceEnemy.hp)-145.8)<.001,
+  'stagger, armor break and capped 20% combo are one additive hit bucket');
 balanceEnemy.hp=10000;balanceEnemy.flash=0;
 balanceEnemy.status={rust:10,expose:4};damageBalance.combo=50;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((10000-balanceEnemy.hp)-148.5)<.001,
-  'vulnerability caps at +50%, combo caps at +15%');
-assert.ok(damageBalance.comboMult()<=1.15,'combo never exceeds +15%');
+assert.ok(Math.abs((10000-balanceEnemy.hp)-153.0)<.001,
+  'vulnerability caps at +50%, combo caps at +20%');
+assert.ok(damageBalance.comboMult()<=1.20,'combo never exceeds +20%');
 const playerVulnerable=damageBalance.me();
 playerVulnerable.status={expose:4,rust:8};
 const incomingDamage=damageBalance.applyEnemyHitEffects(playerVulnerable,{element:null},100,
