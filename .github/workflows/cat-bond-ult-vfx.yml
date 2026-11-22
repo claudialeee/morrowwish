@@ -1,0 +1,45 @@
+name: Cat Bond eight solo ult VFX visual gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/js/ult-vfx.js'
+      - 'public/cat-bond/js/battle.js'
+      - 'public/cat-bond/index.html'
+      - 'scripts/cat-bond-ult-visual-smoke.mjs'
+      - '.github/workflows/cat-bond-ult-vfx.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  eight-local-ults:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out current game
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless Chromium
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Render all eight ULTs inside real arena on desktop and phone
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-local-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-ult-visual-smoke.mjs
+      - name: Save 16 authentic arena screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-eight-local-ult-screenshots
+          path: /tmp/cat-bond-ult-*.png
+          if-no-files-found: warn
+          retention-days: 7
