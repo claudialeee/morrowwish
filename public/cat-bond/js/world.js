@@ -505,6 +505,10 @@ class YardScene {
     move(this.flowers);move(this.petals);move(this.fireflies);
     move(this.lootBubbles);move(this.petParticles);move(this.floatTexts);
     move(State.S.yardBuildings);   // placed structures scale with the canvas like bushes
+    if(this.placement){
+      this.placement.x*=fx;this.placement.y*=fy;
+      this.movePlacement(this.placement.x,this.placement.y);
+    }
     if(this.golden){this.golden.x*=fx;this.golden.y*=fy;}
     for(const e of this.entities){
       e.W=W;e.H=H;e.x=Math.min(W-40,Math.max(40,e.x*fx));
@@ -1134,8 +1138,10 @@ class YardScene {
     if(!this.placement)return false;
     const {W,H}=this.game;
     const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+    // Follow the actual finger/cursor, even when the spot is invalid. Clamping
+    // to the grass boundary made a tap above it silently jump elsewhere.
     this.placement.x=Math.max(0,Math.min(W,x));
-    this.placement.y=Math.max(top,Math.min(bottom,y));
+    this.placement.y=Math.max(0,Math.min(H,y));
     this.placement.valid=this.buildingSpotValid(this.placement.x,this.placement.y);
     return this.placement.valid;
   }
