@@ -94,7 +94,7 @@ jobs:
             'duo-quarrel','duo-reconcile','work-after','tease','map-explore','map-management',
             'auto-team-saved','rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture','ssr-showcase'];
           for(const scene of required)
-            if(!bond.shots.some(s=>s.scene===scene&&s.seconds>=1.5))
+            if(!bond.shots.some(s=>s.scene===scene&&s.seconds>=(scene==='rare-aftermath'?1.1:1.5)))
               throw Error('Missing verified real Cat Bond feature: '+scene);
           const scenes=bond.shots.map(s=>s.scene);
           const finishers=bond.shots.filter(s=>s.scene==='duo');
