@@ -21,12 +21,15 @@ try{
   await page.locator('#intro-start').click();
   await page.evaluate(()=>{
    window.UI.closeAll();
+   // This suite explicitly verifies an INJURED veteran. Casual now fully
+   // heals between battles by design; only hardcore persists wounds.
+   State.setDifficulty('hardcore');
    const veteran=State.makeCat('xianluo',{affinity:70});
    const beginner=State.makeCat('tangyuan',{affinity:25});
    const partner=State.makeCat('sanhua',{affinity:50});
    veteran.level=7;
    veteran.stats={pow:22,agi:19,vit:20,cha:14};
-   veteran._hpFrac=.44;
+   State.setBattleHealth(veteran,.44);
    beginner.level=1;
    beginner.stats={pow:6,agi:4,vit:8,cha:7};
    State.S.cats=[veteran,beginner,partner];
