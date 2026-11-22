@@ -175,6 +175,30 @@ assert.ok(Math.abs(textMark.y-(initialY-3.4))<1e-6,
 pureFx.draw(canvasCtx);
 assert.ok(Math.abs(textMark.y-(initialY-3.4))<1e-6,
   'extra draw does not shift a popup again');
+// Melee is a 64px physical attack: the painted VFX must not restore the old
+// giant 90-170px circular crescents, duplicate brush layers or confetti.
+// Assert the REAL render primitive uses bounded tapered geometry instead of
+// accepting a source-code comment as a visual regression test.
+const clawFx=new sandbox.window.VFX();
+clawFx.slash(100,150,.35,'#ffab83',180,.72,{heavy:true});
+assert.equal(clawFx.fx.length,1,'one contact attack creates one brush stroke');
+assert.equal(clawFx.fx[0].type,'slash','shared VFX owns melee claw brush');
+assert.ok(clawFx.fx[0].radius<=64&&clawFx.fx[0].max<.27&&clawFx.fx[0].heavy,
+  'heavy melee brush must stay within true short-range reach and fade quickly');
+clawFx.update(.055);
+let paintedShapes=0;
+const clawCanvas=new Proxy(canvasCtx,{get(target,key){
+  if(key==='arc')return()=>{throw Error('a circular arc or stamp came back into melee');};
+  if(key==='fill')return()=>{paintedShapes++;};
+  return target[key];
+}});
+assert.doesNotThrow(()=>clawFx.draw(clawCanvas),
+  'melee must draw tapered brush ribbons without circular crescent geometry');
+assert.ok(paintedShapes>=9,'three blades need ink, pigment and bright edge');
+const enemyClaw=new sandbox.window.VFX();
+enemyClaw.slash(100,150,0,'#e6a0a0',40,.9);
+assert.ok(enemyClaw.fx[0].radius<=40&&!enemyClaw.fx[0].heavy,
+  'wild-cat contact slash must stay compact with the same renderer');
 const supportFx=new sandbox.window.VFX();
 for(const type of ['cleanse','barrier','wardFade']){
   const before=supportFx.fx.length;
