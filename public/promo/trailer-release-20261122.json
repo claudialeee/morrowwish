@@ -1,0 +1,120 @@
+{
+  "campaign": "Morrow Wish seven-game latest-trailers release",
+  "sourceReview": "V12",
+  "sourceReviewManifest": "/promo/latest-review.json",
+  "createdDate": "2026-11-22",
+  "timezone": "America/Los_Angeles",
+  "publicationState": "scheduled; awaiting platform-native success verification",
+  "autoPublish": true,
+  "draft": false,
+  "deliveryTotal": 28,
+  "verifiedPublished": 0,
+  "networks": [
+    "youtube",
+    "tiktok",
+    "instagram",
+    "bluesky"
+  ],
+  "videos": [
+    {
+      "slug": "pawsibly-innocent",
+      "name": "Cat Heist",
+      "media": "/promo/pawsibly-innocent/trailer-v12-20261121.mp4",
+      "metricoolPostId": 437809024,
+      "scheduledLocalTime": "2026-11-22T10:35:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=-788250705524797718",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    },
+    {
+      "slug": "cat-bond",
+      "name": "Cat Bond",
+      "media": "/promo/cat-bond/trailer-v10-20261121.mp4",
+      "metricoolPostId": 437809292,
+      "scheduledLocalTime": "2026-11-22T10:45:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=-8847367773527521875",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    },
+    {
+      "slug": "tiny-town",
+      "name": "No More Mondays",
+      "media": "/promo/tiny-town/trailer-v7-20261121.mp4",
+      "metricoolPostId": 437809322,
+      "scheduledLocalTime": "2026-11-22T11:00:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=8150174995161039575",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    },
+    {
+      "slug": "elsewhere",
+      "name": "Elsewhere",
+      "media": "/promo/elsewhere/trailer-v7-20261121.mp4",
+      "metricoolPostId": 437809362,
+      "scheduledLocalTime": "2026-11-22T11:15:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=-926216662134275809",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    },
+    {
+      "slug": "flip-dash",
+      "name": "Flip Dash",
+      "media": "/promo/flip-dash/trailer-v7-20261121.mp4",
+      "metricoolPostId": 437809387,
+      "scheduledLocalTime": "2026-11-22T11:30:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=5155242955432608012",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    },
+    {
+      "slug": "parcel-panic",
+      "name": "Parcel Panic",
+      "media": "/promo/parcel-panic/trailer-v7-20261121.mp4",
+      "metricoolPostId": 437809415,
+      "scheduledLocalTime": "2026-11-22T11:45:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=1447495388556380879",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    },
+    {
+      "slug": "pocket-aquarium",
+      "name": "Pocket Aquarium",
+      "media": "/promo/pocket-aquarium/trailer-v7-20261121.mp4",
+      "metricoolPostId": 437809449,
+      "scheduledLocalTime": "2026-11-22T12:00:00",
+      "plannerUrl": "https://app.metricool.com/planner/calendar?blogId=8237096&openWithPostUuid=9037351103552242440",
+      "providers": {
+        "youtube": "PENDING",
+        "tiktok": "PENDING",
+        "instagram": "PENDING",
+        "bluesky": "PENDING"
+      }
+    }
+  ],
+  "verificationRule": "Metricool PENDING is not published; verify public platform URLs before changing to published.",
+  "priorRejectedDrafts": "Remain paused, no legacy draft activation"
+}
