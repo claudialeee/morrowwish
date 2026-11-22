@@ -1116,13 +1116,14 @@ class Game {
         duoButton.disabled=channeling||!b.duoReady();
         duoButton.classList.toggle('ready',!channeling&&b.duoReady());
         duoButton.classList.toggle('duo-channeling',channeling);
+        const duoLabel=duoButton.querySelector('.duo-burst-label')||duoButton;
+        duoButton.style.setProperty('--duo-charge',Math.max(0,Math.min(100,b.duoCharge))+'%');
         if(channeling){
-          // The existing duo button doubles as a compact countdown; don't
-          // create a new overlay over the enemy or touch controls.
-          duoButton.textContent='✦ '+(zh?'共鸣持续 ':'Resonance ')+
+          // One compact in-world ultimate button, not a new obstruction.
+          duoLabel.textContent='✦ '+(zh?'共鸣持续 ':'Resonance ')+
             b.duoField.remaining.toFixed(1)+(zh?'秒':'s');
         }else{
-          duoButton.textContent=b.duoReady()
+          duoLabel.textContent=b.duoReady()
             ?'💞 '+(zh?'双猫合击 · ':'Duo Ultimate · ')+b.duo.name+'！'
             :'💞 '+(zh?'双猫合击 · ':'Duo Ultimate · ')+Math.floor(b.duoCharge)+'%';
           duoButton.setAttribute('aria-label',
