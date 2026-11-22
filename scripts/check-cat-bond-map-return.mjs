@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 const source=fs.readFileSync('public/cat-bond/js/worldmap.js','utf8');
 const html=fs.readFileSync('public/cat-bond/index.html','utf8');
-assert.match(html,/worldmap\.js\?v=region-yard-upper-left-20261122/);
+assert.match(html,/worldmap\.js\?v=one-map-directory-no-portal-20261122/);
 assert.match(source,/← 回庭院/);
 assert.doesNotMatch(source,/← 回地图|← Map/, 'no redundant scene return-to-map sign');
 assert.doesNotMatch(source,/Math\.hypot\(w\.px - w\.portal\.x/, 'no automatic portal exit');
