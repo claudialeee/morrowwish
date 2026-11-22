@@ -1651,6 +1651,22 @@ class Game {
           metric('bond_duo_unlocked',{elementPair:firstDuo.elementPair});
         }
       }
+      // The first capture unlocks a real duo, not just a card on the result
+      // screen. New players had only one UID in their saved battle lineup, so
+      // their very next hunt silently launched another SOLO fight. Offer the
+      // new partner as the second starter; never overwrite a deliberately
+      // configured two-or-more-cat squad on an existing save.
+      if(firstDuo){
+        const previous=State.S.battlePrefs?.teamUids||[];
+        if(previous.length<=1){
+          const owned=new Set(State.S.cats.map(cat=>cat.uid));
+          const ready=[b.partner.uid,newCat.uid,...previous]
+            .filter((uid,index,arr)=>uid&&owned.has(uid)&&arr.indexOf(uid)===index)
+            .slice(0,5);
+          State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:ready};
+          metric('bond_first_duo_team_ready',{count:ready.length});
+        }
+      }
       if(b.duo&&window.CatRelations)CatRelations.grow(b.duo.a,b.duo.b,4);
       State.S.coins += 20 + (['N', 'R', 'SR', 'SSR'].indexOf(b.wild.rarity)) * 25;
       this.rebuildYard();
