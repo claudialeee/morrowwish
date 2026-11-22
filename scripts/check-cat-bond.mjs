@@ -875,10 +875,17 @@ assert.ok(fallbackArt.includes('flatFace:')&&fallbackArt.includes('chubby:'),
 const wallSpecialist=State.makeCat('xianluo',{affinity:90});
 wallSpecialist.level=12;wallSpecialist.skillAwakened=true;
 Skills.applyBuild(wallSpecialist,'tank');
+assert.ok(Skills.trainerSkills(wallSpecialist).ready.some(sk=>sk.id==='mirrorWall'),
+  'any tank build may study the shield at the trainer');
+assert.ok(!Skills.learnableSkills(wallSpecialist).some(sk=>sk.id==='mirrorWall'),
+  'building as tank alone must not automatically learn the shield');
+assert.ok(Skills.learnSkill(wallSpecialist,'mirrorWall').ok,
+  'tank can explicitly learn the unlocked shield');
+Skills.applyBuild(wallSpecialist,'tank');
 assert.ok(Skills.learnableSkills(wallSpecialist).some(sk=>sk.id==='mirrorWall'),
-  'any tank BD can learn the shield, not just a particular breed');
+  'trained tank can equip the shield');
 assert.ok(wallSpecialist.loadout.includes('mirrorWall'),
-  'tank BD recommendation includes mirror wall');
+  'tank BD recommendation includes the previously trained mirror wall');
 Skills.applyBuild(wallSpecialist,'dps');
 Skills.ensureLoadout(wallSpecialist);
 assert.ok(!Skills.learnableSkills(wallSpecialist).some(sk=>sk.id==='mirrorWall'),
@@ -1030,15 +1037,20 @@ assert.ok(skillPickerSource.includes('data-sk=') &&
   assert.ok(Skills.learnableSkills(buyer).some(s=>s.id==='cometClaw'),
     'A learned skill becomes equippable (appears in learnableSkills)');
 
-  // A level-gated 领悟 skill (frostLance: Lv.10) is hidden until the level is
-  // reached, then AUTO-learned by learnableSkills (pure non-cost gate).
+  // Level-gated techniques become trainer choices, NOT automatic unlocks.
   const climber=State.makeCat('xiaohui',{affinity:10}); // water cat
   assert.ok(!Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
     'A level-gated skill is hidden below its level');
   climber.level=10;
-  assert.ok(Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
-    'Reaching the level auto-learns the 领悟 skill');
-  assert.ok(climber.learned.includes('frostLance'),'Auto-领悟 records the skill in cat.learned');
+  assert.ok(!Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
+    'Reaching level 10 must not auto-learn the advanced technique');
+  assert.ok(Skills.trainerSkills(climber).ready.some(s=>s.id==='frostLance'),
+    'Level 10 reveals frost lance at trainer');
+  assert.ok(Skills.learnSkill(climber,'frostLance').ok,
+    'The player can manually learn the revealed technique');
+  assert.ok(climber.learned.includes('frostLance')&&
+    Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
+    'Manually learned skill is available to equip');
 
   // ensureLoadout must never auto-equip a still-locked skill.
   const fresh=State.makeCat('moqiu',{affinity:0}); fresh.level=1; // dark cat
@@ -1049,10 +1061,16 @@ assert.ok(skillPickerSource.includes('data-sk=') &&
     if(sk&&Skills.isGated(sk))
       assert.ok(fresh.learned.includes(id),'ensureLoadout only equips learned/innate skills, never a locked gate: '+id);
   }
-  // A breed-locked signature auto-learns for the right breed only.
+  // Breed-specific skills are visible to the correct cat at the trainer;
+  // even rare owners must deliberately learn them before equipping.
   const moon=State.makeCat('yuelian',{affinity:50});
   Skills.learnableSkills(moon);
-  assert.ok(moon.learned.includes('moonfang'),'A breed-locked signature auto-learns for its breed');
+  assert.ok(!moon.learned.includes('moonfang'),
+    'A breed-locked signature must not auto-learn on a new cat');
+  assert.ok(Skills.trainerSkills(moon).ready.some(s=>s.id==='moonfang'),
+    'A correct breed may study its signature');
+  assert.ok(Skills.learnSkill(moon,'moonfang').ok&&moon.learned.includes('moonfang'),
+    'The player can actively learn the breed signature');
   const notMoon=State.makeCat('moqiu',{affinity:50});
   assert.ok(!Skills.learnableSkills(notMoon).some(s=>s.id==='moonfang'),
     'The wrong breed can never learn a breed-locked signature');
