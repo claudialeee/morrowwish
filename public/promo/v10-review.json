@@ -1,6 +1,6 @@
 {
   "version": "V10",
-  "createdAt": "2026-11-22T06:27:59.211Z",
+  "createdAt": "2026-11-22T06:45:28.925Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -17,31 +17,25 @@
         "/promo/cat-bond/v10-review-2.jpg",
         "/promo/cat-bond/v10-review-3.jpg"
       ],
-      "duration": 63.3,
+      "duration": 59.5,
       "shots": [
         {
           "source": "broll",
           "scene": "yard",
           "caption": "A WORLD FULL OF CATS.",
-          "seconds": 2.7
-        },
-        {
-          "source": "broll",
-          "scene": "raising",
-          "caption": "MEET YOUR CAT TEAM.",
-          "seconds": 2.25
+          "seconds": 2.5
         },
         {
           "source": "broll",
           "scene": "cat-upgrade",
           "caption": "LEVEL UP WITH ONE TAP.",
-          "seconds": 3.25
+          "seconds": 3.15
         },
         {
           "source": "broll",
           "scene": "duo-partners",
           "caption": "CHOOSE YOUR CAT DUO.",
-          "seconds": 2.85
+          "seconds": 2.75
         },
         {
           "source": "broll",
@@ -53,13 +47,13 @@
           "source": "broll",
           "scene": "duo-promise",
           "caption": "A SECRET PROMISE UNDER PETALS.",
-          "seconds": 3.85
+          "seconds": 3.9
         },
         {
           "source": "broll",
           "scene": "duo-quarrel",
           "caption": "EVEN BEST FRIENDS DISAGREE.",
-          "seconds": 3.5
+          "seconds": 6.1
         },
         {
           "source": "broll",
@@ -69,39 +63,33 @@
         },
         {
           "source": "broll",
-          "scene": "work-before",
-          "caption": "SEND CATS OUT TO WORK.",
-          "seconds": 2.5
-        },
-        {
-          "source": "broll",
           "scene": "work-after",
-          "caption": "EARN COINS TO GROW.",
-          "seconds": 2.25
+          "caption": "SEND CATS OUT TO EARN.",
+          "seconds": 2.5
         },
         {
           "source": "broll",
           "scene": "tease",
           "caption": "PLAY WITH YOUR CATS.",
-          "seconds": 2.45
+          "seconds": 2.2
         },
         {
           "source": "broll",
           "scene": "map-choice",
           "caption": "DISCOVER NEW PLACES.",
-          "seconds": 2.8
+          "seconds": 2.5
         },
         {
           "source": "broll",
           "scene": "map-explore",
           "caption": "EXPLORE A LIVING WORLD.",
-          "seconds": 2.7
+          "seconds": 2.45
         },
         {
           "source": "broll",
           "scene": "map-management",
           "caption": "MANAGE CATS ANYWHERE.",
-          "seconds": 2.25
+          "seconds": 2.15
         },
         {
           "source": "broll",
@@ -113,13 +101,13 @@
           "source": "broll",
           "scene": "battle-hud",
           "caption": "REAL-TIME HEALTH AND BATTLE.",
-          "seconds": 2.5
+          "seconds": 2.45
         },
         {
           "source": "broll",
           "scene": "battle-skills",
           "caption": "USE DIFFERENT SKILLS.",
-          "seconds": 3
+          "seconds": 2.8
         },
         {
           "source": "broll",
@@ -143,13 +131,13 @@
           "source": "broll",
           "scene": "ssr-showcase",
           "caption": "MEET A LEGENDARY SSR CAT!",
-          "seconds": 3.9
+          "seconds": 3.6
         },
         {
           "source": "cover",
           "scene": null,
           "caption": "PLAY FREE",
-          "seconds": 3.6
+          "seconds": 3.5
         }
       ],
       "sourceClips": "V10 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled",
