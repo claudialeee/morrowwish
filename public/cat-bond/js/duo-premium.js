@@ -286,28 +286,26 @@ function draw(ctx,W,H,seq,lookup){
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
  sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.16),0,0,1,key,tier,actorA,actorB);
- const painted=window.CatBondDuoBreedActors?.draw?.(
-   ctx,sw,sh,[actorA,actorB],key,p,tier);
- // An absent player breed may not be replaced by a generic grey cat.
- if(!painted){ctx.restore();ctx.restore();return true;}
- ctx.restore();
- // Elemental choreography is individually authored for all 21 combinations.
- // The photography-like painted cats are NOT replaced by canvas line drawings.
+ // Paint all large magical symbols, circles and sparkles BEHIND the cats.
+ // Never overlay even translucent giant rings on their faces and ears.
  if(!thumbnail&&dual>.09){
-  // Previously both authored VFX layers were almost invisible: .27 × .31
-  // opacity on top of signature opacity. Let the player actually distinguish
-  // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
-  // while keeping the watercolor painting beneath them readable.
-  ctx.save();ctx.globalAlpha*=Math.min(.24,dual*.22);
+  ctx.save();ctx.globalAlpha*=Math.min(.25,dual*.20);
   window.CatBondDuoDirector?.footwork?.(ctx,sw,sh,p,key,tier);
   const fxTime=tier===1?p:tier===2?(p<.36?p+.09:p-.23):
-     (p<.29?p+.10:p<.55?p-.11:p-.44);
-  // Old oversized signature glyphs sit on TOP of kitten faces; remove that
-  // entire intrusive stamp. 21 unique real attack effects remain in Finale.
+    (p<.29?p+.10:p<.55?p-.11:p-.44);
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,fxTime,key,tier);
   ctx.restore();
  }
- if(!thumbnail){ctx.save();ctx.globalAlpha*=.22;bondTierChoreography(ctx,sw,sh,p,key,tier);ctx.restore();}
+ if(!thumbnail){
+  ctx.save();ctx.globalAlpha*=.16;
+  bondTierChoreography(ctx,sw,sh,p,key,tier);
+  ctx.restore();
+ }
+ // Both ACTUAL selected watercolor cats are always the top subject layer.
+ const painted=window.CatBondDuoBreedActors?.draw?.(
+   ctx,sw,sh,[actorA,actorB],key,p,tier);
+ if(!painted){ctx.restore();ctx.restore();return true;}
+ ctx.restore();
  // The old generic claw stamp made all 21 skills look identical; the
  // individually drawn finale and key-specific palette now carry the impact.
  // Do not wash out the artist's real watercolor with a grey film.
