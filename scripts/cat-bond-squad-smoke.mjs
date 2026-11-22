@@ -53,9 +53,13 @@ try{
    UI.openBattleModePrompt(team,{...GameData.speciesById('moqiu'),encounterLevel:4},{origin:'map'});
   });
   const encounter=await page.locator('#panel').innerText();
-  assert.match(encounter,/(?:Lv\.?\s*4|等级\s*4)/,'enemy level visible before fight');
-  assert.match(encounter,/(?:Lv\.?\s*7|等级\s*7)/,'team levels still visible during encounter in both languages');
-  assert.equal(await page.locator('#panel .map-squad-choice').count(),3);
+  const encounterCards=await page.locator('#panel .map-squad-choice').allTextContents();
+  assert.match(encounter,/(?:Lv\.?\s*4|等级\s*4)/,
+    'enemy level visible before fight: '+encounter.slice(0,450));
+  assert.equal(encounterCards.length,3,
+    'map encounter must provide three selectable team members: '+encounter.slice(0,450));
+  assert.ok(encounterCards.some(t=>/(?:Lv\.?\s*7|等级\s*7)/.test(t)),
+    'team levels must remain visible during encounter: '+JSON.stringify(encounterCards));
   await page.screenshot({path:'/tmp/cat-bond-squad-'+device.name+'-encounter.png'});
   await page.evaluate(()=>{
    UI.openCapturePrep({...GameData.speciesById('doudou'),encounterLevel:2});
