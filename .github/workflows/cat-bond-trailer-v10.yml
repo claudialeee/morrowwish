@@ -5,6 +5,13 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/cat-bond-trailer-v10.yml'
+      - 'public/cat-bond/index.html'
+      - 'public/cat-bond/css/style.css'
+      - 'public/cat-bond/js/ui.js'
+      - 'public/cat-bond/js/worldmap.js'
+      - 'public/game-fullscreen.js'
+      - 'scripts/capture-trailers-v10.mjs'
+      - 'scripts/render-trailers-v10.mjs'
   workflow_dispatch:
 permissions:
   contents: write
@@ -44,8 +51,10 @@ jobs:
           node --check scripts/merge-latest-catbond-review.mjs
           node --check public/cat-bond/js/ui.js
           node --check public/cat-bond/js/worldmap.js
+          node --check public/game-fullscreen.js
+          node scripts/check-cat-bond-map-return.mjs
       - name: Record full map navigation and current Cat Bond in real mobile Chromium
-        # The map shot must display both edge controls; cropping the game canvas fails QA.
+        # The map shot must show top-left courtyard and the new header menu.
         run: node scripts/capture-trailers-v10.mjs
       - name: Render only the updated Cat Bond review video
         run: node scripts/render-trailers-v10.mjs
