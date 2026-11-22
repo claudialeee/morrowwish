@@ -21,7 +21,9 @@ try{
    CanvasRenderingContext2D.prototype.drawImage=function(...args){
      calls.push({argc:args.length,sourceWidth:args[0]?.naturalWidth||args[0]?.width,
        sourceHeight:args[0]?.naturalHeight||args[0]?.height,
-       srcW:args[3],srcH:args[4],x:args[5],y:args[6],w:args[7],h:args[8]});
+       srcW:args.length===9?args[3]:null,srcH:args.length===9?args[4]:null,
+       x:args.length===9?args[5]:args[1],y:args.length===9?args[6]:args[2],
+       w:args.length===9?args[7]:args[3],h:args.length===9?args[8]:args[4]});
      return orig.apply(this,args);
    };
    return CatBondDuoDirector.keys.map(key=>{
