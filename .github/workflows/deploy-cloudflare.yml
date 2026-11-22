@@ -439,3 +439,38 @@ jobs:
       - name: Notify Bing and other IndexNow search engines
         continue-on-error: true
         run: node scripts/submit-indexnow.mjs
+      - name: Verify Pawsibly new replay UI and assets on both live domains
+        run: |
+          set -eu
+          html_src=public/pawsibly-innocent/index.html
+          js_src=public/pawsibly-innocent/game.js
+          css_src=public/pawsibly-innocent/single-screen.css
+          expected_js=$(grep -oE 'game.js[?]v=[^"]+' "$html_src" | head -1)
+          expected_css=$(grep -oE 'single-screen.css[?]v=[^"]+' "$html_src" | head -1)
+          test -n "$expected_js" && test -n "$expected_css"
+          for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
+            verified=0
+            for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+              nonce="?verify=$GITHUB_SHA&attempt=$attempt"
+              if curl -fsSL --max-time 20 "$origin/pawsibly-innocent/$nonce" -o /tmp/pawsibly-release.html \
+                && grep -Fq "$expected_js" /tmp/pawsibly-release.html \
+                && grep -Fq "$expected_css" /tmp/pawsibly-release.html \
+                && grep -Fq 'class="restart-control replay-menu-trigger"' /tmp/pawsibly-release.html \
+                && grep -Fq 'id="retryRoomAction"' /tmp/pawsibly-release.html \
+                && grep -Fq 'data-game-tab="badges"' /tmp/pawsibly-release.html \
+                && ! grep -Fq 'id="achievementPocket"' /tmp/pawsibly-release.html \
+                && ! grep -Fq 'class="replay-controls"' /tmp/pawsibly-release.html \
+                && curl -fsSL --max-time 20 "$origin/pawsibly-innocent/game.js$nonce" -o /tmp/pawsibly-release.js \
+                && curl -fsSL --max-time 20 "$origin/pawsibly-innocent/single-screen.css$nonce" -o /tmp/pawsibly-release.css \
+                && cmp -s "$js_src" /tmp/pawsibly-release.js \
+                && cmp -s "$css_src" /tmp/pawsibly-release.css; then
+                verified=1; break
+              fi
+              sleep 4
+            done
+            if [ "$verified" != 1 ]; then
+              echo "::error::Pawsibly gameplay release is stale on $origin (HTML/JS/CSS do not match source $GITHUB_SHA)"
+              exit 1
+            fi
+            echo "Pawsibly replay chooser and achievement-menu UI verified live: $origin"
+          done
