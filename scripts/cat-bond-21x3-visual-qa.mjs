@@ -17,6 +17,8 @@ try{
    {waitUntil:'domcontentloaded',timeout:30000});
  await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready&&
    window.__catBondDuoGallery?.ready&&
+   window.CatBondDuoBreedActors?.ready&&
+   document.querySelectorAll('.stage-breed-preview').length===63&&
    document.querySelectorAll('.duo-card .skill-preview').length===21&&
    document.querySelectorAll('.breed-card').length===32,{timeout:40000});
  const result=await page.evaluate(()=>{
@@ -61,10 +63,10 @@ try{
  assert.equal(result.palettes,21);
  assert.equal(result.grades,63,'Cache must hold the 63 untouched, separately painted scenes (no actor-tinted duplicates)');
  assert.equal(result.tiers,3);
- assert.equal(result.source,'approved-complete-painterly-duo-sheet');
+ assert.equal(result.source,'32-actual-breed-watercolor-actors');
  const matches=await page.evaluate(()=>{
    const painter=window.CatBondPremiumCinematics;
-   const art=window.CatBondDuoBreedArt;
+   const art=window.CatBondDuoBreedActors;
    const breeds=window.GameData.SPECIES.map(s=>s.id);
    const cv=document.createElement('canvas');cv.width=480;cv.height=270;
    const c=cv.getContext('2d',{willReadFrequently:true});
@@ -90,14 +92,14 @@ try{
    return {n:art.breedCount,firstSide,secondSide,ordered,reversed,
      cached:painter.activePaintCacheEntries};
  });
- assert.equal(matches.n,32,'All 32 collectible breeds must have an actual painted coat profile');
- assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,1,
-   'All preview cats must leave the original painting intact: no ugly recolored fur blocks');
- assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,1,
-   'Both actors must leave the 63 painted cat portraits unchanged until reliable breed illustration assets exist');
- assert.equal(matches.ordered,matches.reversed,
-   'Switching the selected roster must not corrupt the original painted cats');
- assert.ok(matches.cached<=63,'Selecting cats must not create unbounded recolored textures');
+ assert.equal(matches.n,32,'All 32 collectible breeds must have their own painted character');
+ assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,32,
+   'All 32 first-side breeds must produce visibly distinct actual watercolor cats');
+ assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,32,
+   'All 32 second-side breeds must produce visibly distinct actual watercolor cats');
+ assert.notEqual(matches.ordered,matches.reversed,
+   'Swapping the two player cats must visibly exchange both painted characters');
+ assert.ok(matches.cached<=63,'Changing cats must not create unbounded scene caches');
  assert.equal(new Set(result.frames.map(x=>x.variants[2].hash)).size,21,
    '21 skill previews still visually identical; do not release');
  for(const entry of result.frames){
@@ -150,5 +152,5 @@ try{
  await mobile.close();
  assert.deepEqual(errors,[],'No uncaught JavaScript runtime errors');
  fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,errors},null,2));
- console.log('CAT BOND REAL CHROMIUM ART-INTEGRITY PASS: 63 intact painted scenes; no destructive breed-mask overlays; 32 roster choices verified in sidebar; mobile fits. Painted breed identity still requires verified illustrated assets.');
+ console.log('CAT BOND ACTUAL BREED CHROMIUM PASS: all 32 watercolor breeds in both team slots, 21x3 scenes, 63 breed-aware illustrations, no fixed-cat masking, mobile and desktop.');
 }finally{await browser.close()}

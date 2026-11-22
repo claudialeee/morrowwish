@@ -82,7 +82,8 @@ try {
   assert.equal(grew.modal,true,'stage0 to stage1 must show an illustrated ceremony');
   await page.locator('#cb-growth-canvas').waitFor({state:'visible',timeout:3000});
   assert.equal(await page.evaluate(()=>State.S.cats[0].stage),1);
-  assert.match(await page.locator('.cb-growth-ceremony').innerText(),/成长成功/);
+  assert.match(await page.locator('.cb-growth-ceremony').innerText(),/(成长成功|Growth complete!)/,
+    'growth ceremony must display the correct title in the active language');
   await page.screenshot({path:'/tmp/cat-bond-adult-growth-phone.png'});
   await page.evaluate(()=>{
     const c=State.S.cats[0];c.level=20;c.affinity=80;
