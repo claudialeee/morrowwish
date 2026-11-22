@@ -26,6 +26,7 @@ for(const cat of cats){
  assert.equal(i18n.toEnglish(cat.name),cat.nameEn,'Breed name mismatch: '+cat.id);
 }
 const mustTranslate=[
+ '地图',
  "水枪", "✓ 可建造", "猫猫冒险指引", "已解锁的双猫合击", "派猫咪去工坊", "把猫咪送回庭院", "火山口", "必 杀 技",
  '猫猫纽带','🧰 已给 2 只猫补血，消耗 1 个急救包。',
  '✨ 新技能 · 工坊赚钱 · 地图探索 ›',
