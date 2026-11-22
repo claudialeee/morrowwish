@@ -1,4 +1,5 @@
 
+import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"}});
 const pct=(a,b)=>b?Math.round(a*1000/b)/10:null;
 const tidy=(s,max=100)=>typeof s==="string"?s.slice(0,max):"";
@@ -177,6 +178,8 @@ export async function api(req,env){
    return response;
  }
  if(!env.DB)return json({error:"Database not configured"},503);
+ if(p.startsWith("/api/tiktok/"))return nativeTikTokRoute(req,env,
+   async()=>!!env.ARCADE_ANALYTICS_KEY&&(req.headers.get("x-analytics-key")===env.ARCADE_ANALYTICS_KEY||await hasSession(req,env)),json);
  if(p==="/api/session"||p==="/api/elsewhere-collect"){
   if(req.method!=="POST")return json({error:"POST required"},405);
   const origin=req.headers.get("Origin");if(origin){try{if(!new Set([new URL(req.url).origin,"https://morrowwish.vercel.app"]).has(new URL(origin).origin))return json({error:"Origin not allowed"},403)}catch{return json({error:"Invalid origin"},403)}}
@@ -231,7 +234,7 @@ export async function api(req,env){
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
   const x=await read(req,env,p==="/api/summary"?"arcade":"elsewhere");
-  return json(p==="/api/summary"?{...mainStats(x),socialPulse:typeof SOCIAL_SNAPSHOT==="undefined"?null:SOCIAL_SNAPSHOT}:elsewhereStats(x));
+  return json(p==="/api/summary"?{...mainStats(x),socialPulse:await nativeTikTokSnapshot(env,typeof SOCIAL_SNAPSHOT==="undefined"?null:SOCIAL_SNAPSHOT)}:elsewhereStats(x));
  }
  return json({error:"Not found"},404);
 }

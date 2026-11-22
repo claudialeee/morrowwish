@@ -80,6 +80,12 @@ if(accountOverview){
    throw Error('Metricool overview must match real per-post Instagram readings and valid TikTok provider totals');
 }
 if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
+const tikSource=fs.readFileSync('src/tiktok-native.js','utf8'),nativeBuild=fs.readFileSync('scripts/build-pages.mjs','utf8');
+if(!tikSource.includes('/v2/video/list/')||!tikSource.includes('/v2/oauth/token/')||
+   !tikSource.includes('video.list')||!tikSource.includes('tkEncrypt')||
+   !nativeBuild.includes("tiktokNative+'\\n'")||
+   !fs.readFileSync('src/analytics.js','utf8').includes('nativeTikTokSnapshot(env'))
+ throw Error('TikTok official owner Display API connection must be included in the protected Worker');
 const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 // The mini-game upgrade already emits run_start/run_end. Do not count
 // duplicate local game.js tracking events as extra sessions.

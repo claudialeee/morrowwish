@@ -42,8 +42,12 @@ if (!latestReview) throw new Error('No fully rendered seven-game trailer review 
 // Dated provider snapshot stays inside the authenticated Worker response, not a public asset.
 const social = JSON.parse(fs.readFileSync(path.join(base,'promotion','social-metrics-snapshot.json'),'utf8'));
 if(social.schemaVersion!==2||!Array.isArray(social.platforms)||social.metricScope?.type!=='approved-short-videos-only'||!social.metricScope?.historicalExcluded)throw Error('Social snapshot must exclude all previously published short videos');
+const tiktokNative=fs.readFileSync(path.join(base,'src','tiktok-native.js'),'utf8')
+  .replace(/^export /gm,'');
 const analytics = 'const SOCIAL_SNAPSHOT='+JSON.stringify(social)+';\n'
+  + tiktokNative+'\n'
   + fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
+    .replace('import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";','')
     .replace('export async function api', 'async function api');
 const router = fs.readFileSync(path.join(base, 'src', 'worker.js'), 'utf8')
   .replace('import {api} from "./analytics.js";', '');
