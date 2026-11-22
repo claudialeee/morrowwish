@@ -4295,3 +4295,42 @@ html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#batt
 /* Silver money is a game-owned asset, not gold platform-specific emoji. */
 .cb-silver-coin{display:inline-block;width:1.08em;height:1.08em;vertical-align:-.18em;object-fit:contain;flex:none;filter:drop-shadow(0 1px 1px #536c8144)}
 #hud .hud-pill .cb-silver-coin{width:16px;height:16px;vertical-align:middle}
+
+/* Enemy poise is intentionally more prominent than HP in both battle HUDs.
+   This block changes presentation ONLY, never resource balance. */
+#battle-ui .battle-enemy-summary{
+  gap:2px!important;justify-content:center;min-width:0
+}
+#battle-ui .battle-topbar{grid-template-rows:minmax(42px,auto)!important}
+#battle-ui .battle-enemy-track{
+  height:6px!important;min-height:6px;flex:none
+}
+#battle-ui .battle-poise-row{
+  display:flex;align-items:center;gap:4px;width:100%;min-width:0
+}
+#battle-ui .battle-poise-label{
+  flex:none;min-width:22px;font:850 9px/1 system-ui,sans-serif;
+  color:#59558e;white-space:nowrap
+}
+#battle-ui .battle-poise-track{
+  display:block;flex:1 1 auto;min-width:20px;height:11px!important;
+  border-radius:999px;border:1px solid #aaa6d7;box-sizing:border-box;
+  background:#deddf1;overflow:hidden
+}
+#battle-ui #battle-enemy-poise-fill{
+  display:block;width:100%;height:100%;border-radius:inherit;
+  background:linear-gradient(90deg,#7474c4,#a6a2e7);
+  transition:width .13s linear
+}
+#battle-ui .battle-poise-track.is-staggered{
+  border-color:#da7a70;background:#f4dcdb;
+  box-shadow:0 0 0 1px #e89e8e66
+}
+#battle-ui .battle-poise-track.is-staggered #battle-enemy-poise-fill{
+  background:linear-gradient(90deg,#bb625c,#e6a49b)
+}
+#battle-ui .battle-topbar{min-height:46px!important}
+@media(max-width:520px){
+  #battle-ui .battle-enemy-summary{gap:2px!important}
+  #battle-ui .battle-poise-label{font-size:8px;min-width:18px}
+}

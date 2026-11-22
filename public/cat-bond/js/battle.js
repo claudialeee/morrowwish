@@ -5779,13 +5779,14 @@ class CaptureBattle {
   }
 
   hpTag(ctx, x, y, frac, color, label, poise=null) {
-    // Enemy health cards also show a distinct poise bar underneath HP.
-    const w=86,h=6;
+    // Enemy health cards show a WIDER, THICKER poise meter than HP.
+    // Display-only. Never change poise damage, regeneration or stagger timings.
+    const w=86,h=6,poiseW=106,poiseH=11,cardW=poise?poiseW+14:w+14;
     ctx.save();
-    ctx.fillStyle='rgba(255,250,239,.92)';
+    ctx.fillStyle='rgba(255,250,239,.94)';
     ctx.strokeStyle='rgba(114,124,101,.28)';
     ctx.lineWidth=1;
-    rr(ctx,x-w/2-7,y-23,w+14,poise?51:36,12);ctx.fill();ctx.stroke();
+    rr(ctx,x-cardW/2,y-23,cardW,poise?61:36,12);ctx.fill();ctx.stroke();
     ctx.textAlign='center';ctx.font='700 11px system-ui, sans-serif';
     ctx.fillStyle='#4d5b49';ctx.fillText(label,x,y-9);
     ctx.fillStyle='rgba(112,132,110,.16)';
@@ -5798,16 +5799,22 @@ class CaptureBattle {
     if(poise && poise.max>0){
       const broken=(poise.stagger||0)>0;
       const amount=broken?0:Math.max(0,Math.min(1,(poise.current||0)/poise.max));
-      const yy=y+7;
-      ctx.fillStyle='rgba(112,132,110,.18)';
-      rr(ctx,x-w/2,yy,w,4,2);ctx.fill();
+      const yy=y+5;
+      ctx.fillStyle=broken?'rgba(210,95,90,.19)':'rgba(119,119,173,.23)';
+      rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.fill();
       if(amount>0){
-        ctx.fillStyle=broken?'#f0b66a':'#d4b66c';
-        rr(ctx,x-w/2,yy,w*amount,4,2);ctx.fill();
+        ctx.fillStyle='#8582d5';
+        rr(ctx,x-poiseW/2,yy,poiseW*amount,poiseH,5);ctx.fill();
+        ctx.fillStyle='rgba(246,245,255,.55)';
+        rr(ctx,x-poiseW/2+2,yy+1,Math.max(0,poiseW*amount-4),3,2);ctx.fill();
       }
-      ctx.textAlign='center';ctx.font='700 9px system-ui, sans-serif';
-      ctx.fillStyle=broken?'#b46b32':'#7e7358';
-      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):'韧性',x,y+21);
+      if(broken){
+        ctx.strokeStyle='#df847d';ctx.lineWidth=1.6;
+        rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.stroke();
+      }
+      ctx.textAlign='center';ctx.font='800 10px system-ui, sans-serif';
+      ctx.fillStyle=broken?'#ae534b':'#615c96';
+      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):'韧性',x,y+29);
     }
     ctx.restore();
   }

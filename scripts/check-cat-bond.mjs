@@ -538,6 +538,21 @@ assert.ok(gaugeText.includes('韧性'),'enemy poise gauge must show toughness la
 gaugeText.length=0;
 poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa','Friendly Cat');
 assert.ok(!gaugeText.includes('韧性'),'normal HP labels should not gain enemy poise gauge');
+// Display regression: toughness is physically larger than HP and visible in
+// the fixed battle header, not only as a 4px floating indicator.
+const battleHtml=fs.readFileSync(DIR+'index.html','utf8');
+const battleCss=fs.readFileSync(DIR+'css/style.css','utf8');
+const battleGameSource=fs.readFileSync(DIR+'js/game.js','utf8');
+assert.ok(battleSource.includes('poiseW=106,poiseH=11')&&
+  battleSource.includes('const w=86,h=6'),
+  'enemy floating poise bar must be both wider and thicker than HP');
+assert.ok(battleHtml.includes('id="battle-enemy-poise-fill"')&&
+  battleHtml.includes('id="battle-poise-label"')&&
+  battleCss.includes('height:11px!important')&&
+  battleGameSource.includes("poiseFill.style.width=percentage.toFixed(1)+'%'"),
+  'top HUD must expose and live-update a larger separate poise bar');
+assert.ok(battleGameSource.includes("poiseTrack.classList.toggle('is-staggered',broken>0)"),
+  'stagger must be visible in the fixed combat UI');
 
 // Even legacy 'always basic' gambits cannot prevent adaptive ranged skills.
 const prismAutoBattle=new sandbox.window.Battle.CaptureBattle(game,

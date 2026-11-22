@@ -1361,6 +1361,30 @@ class Game {
       hpbar.setAttribute('aria-label',en?'Enemy health':'野猫血量');
       hpbar.setAttribute('aria-valuenow',String(Math.round(pct)));
     }
+    // Live POISE HUD uses a separate, visibly thicker meter. Display only:
+    // the battle system remains the sole owner of depletion and recovery.
+    const poiseTrack=document.querySelector('.battle-poise-track');
+    const poiseFill=document.getElementById('battle-enemy-poise-fill');
+    const poiseLabel=document.getElementById('battle-poise-label');
+    if(poiseTrack&&poiseFill&&poiseLabel){
+      const alive=(b.enemies||[]).filter(e=>e.alive);
+      let current=0,maximum=0,broken=0,longestStagger=0;
+      for(const e of alive){
+        maximum+=Math.max(0,e.poiseMax||0);
+        current+=Math.max(0,Math.min(e.poiseMax||0,e.poise||0));
+        if((e.staggerT||0)>0){broken++;longestStagger=Math.max(longestStagger,e.staggerT);}
+      }
+      const percentage=maximum?Math.max(0,Math.min(100,current/maximum*100)):0;
+      const en=window.MorrowwishI18n?.get?.()!=='zh';
+      const label=broken>0?(en?'Staggered':'虚弱')+
+        (alive.length===1?' '+longestStagger.toFixed(1)+'s':' '+broken+'/'+alive.length)
+        :(en?'POISE':'韧性');
+      poiseFill.style.width=percentage.toFixed(1)+'%';
+      poiseTrack.setAttribute('aria-label',en?'Enemy poise':'野猫韧性');
+      poiseTrack.setAttribute('aria-valuenow',String(Math.round(percentage)));
+      poiseTrack.classList.toggle('is-staggered',broken>0);
+      if(poiseLabel.textContent!==label)poiseLabel.textContent=label;
+    }
     document.getElementById('ult-bar').style.width = b.ult + '%';
     document.getElementById('ult-btn').classList.toggle('ready',b.canUltimate());
     const ultLabel=document.querySelector('#ult-wrap .ult-label');

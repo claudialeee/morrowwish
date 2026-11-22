@@ -32,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=silver-currency-20261122-v1" />
+  <link rel="stylesheet" href="css/style.css?v=poise-visible-hud-20261122-v1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -90,6 +90,10 @@
           <div class="battle-enemy-summary">
             <span id="wild-name">野生猫猫</span>
             <div class="battle-enemy-track" role="progressbar" aria-label="Enemy health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="battle-enemy-hp-fill"></span></div>
+            <div class="battle-poise-row">
+              <span id="battle-poise-label" class="battle-poise-label">韧性</span>
+              <div class="battle-poise-track" role="progressbar" aria-label="Enemy poise" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="battle-enemy-poise-fill"></span></div>
+            </div>
           </div>
           <div class="battle-tools" role="group" aria-label="战斗操作">
             <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看战斗操作说明">?<span class="battle-top-label"> 操作</span></button>
@@ -217,10 +221,10 @@
   <script src="js/duo-hero.js?v=32-selected-breeds-actual-v2-20261122"></script>
   <script src="js/ult-vfx.js?v=shadow-thunder-contrast-20261122"></script>
   <script src="js/skill-fx.js?v=generic-templates-20261122"></script>
-  <script src="js/battle.js?v=melee-class-range-20261122-v3"></script>
+  <script src="js/battle.js?v=poise-visible-hud-20261122-v1"></script>
   <script src="js/duo-bond.js?v=duo-in-arena-aftershock-v3-20261122"></script>
   <script src="js/ui.js?v=unified-yard-map-menu-20261122-v2"></script>
-  <script src="js/game.js?v=unified-map-menu-no-duplicate-controls-20261122"></script>
+  <script src="js/game.js?v=poise-visible-hud-20261122-v1"></script>
   <script src="js/main.js?v=original-intro-cats-20261121-2"></script>
   <script src="js/silver-coins.js?v=silver-currency-20261122-v1"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
