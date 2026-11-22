@@ -376,7 +376,7 @@ try{
  assert.equal(tossed.sound.loopSteps,0,'Cat game must never schedule a background music loop');
  await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
  assert.match(await page.locator('#yarnExplain').textContent(),/主人|毛线/,'Chinese explanation for yarn is clear');
- assert.match(await page.locator('#guardIntent').textContent(),/巡逻|分心|调查|搜索|追猫/,'Owner AI behavior must be explained in Chinese');
+ assert.match(await page.locator('#guardIntent').textContent(),/巡逻|分心|被毛球吸引|调查|搜索|追猫/,'Owner AI behavior must be explained in Chinese');
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
  assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
