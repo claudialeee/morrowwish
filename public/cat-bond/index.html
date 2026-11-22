@@ -32,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=compact-right-meters-20261122-v5" />
+  <link rel="stylesheet" href="css/style.css?v=map-menu-header-20261122-v1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -58,9 +58,9 @@
       <button id="guide-help" type="button" hidden aria-label="重新查看玩法引导">? 玩法</button>
       <button id="yard-surprise" type="button" hidden></button>
       <!-- Compact exploration action buttons aligned below the top-right utilities. -->
-      <nav id="map-actions" aria-label="地图操作 / Explore actions">
-        <button id="map-squad" type="button" hidden aria-label="选择出战猫咪">🐾 出战猫咪</button>
-        <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
+      <nav id="map-actions" hidden aria-label="兼容旧地图入口（统一由顶部菜单访问）">
+        <button id="map-squad" type="button" hidden aria-label="选择出战队伍">🐾 出战队伍</button>
+        <button id="map-index" type="button" hidden>🗺️ 世界目录</button>
         <button id="map-menu" type="button" hidden aria-label="打开探险管理菜单" aria-haspopup="dialog" aria-controls="panel" aria-expanded="false">☰ 菜单</button>
       </nav>
       <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
@@ -206,7 +206,7 @@
   <script src="js/painted-regions.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/world.js?v=five-mobile-buildings-20261122"></script>
-  <script src="js/worldmap.js?v=one-map-directory-no-portal-20261122"></script>
+  <script src="js/worldmap.js?v=top-left-yard-and-raised-region-20261122"></script>
   <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
   <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
   <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
@@ -220,12 +220,12 @@
   <script src="js/skill-fx.js?v=generic-templates-20261122"></script>
   <script src="js/battle.js?v=element-microtweaks-20261122"></script>
   <script src="js/duo-bond.js?v=duo-in-arena-aftershock-v3-20261122"></script>
-  <script src="js/ui.js?v=quarrel-storybook-20261122"></script>
+  <script src="js/ui.js?v=expedition-world-menu-20261122"></script>
   <script src="js/game.js?v=expedition-hp-recovery-live-20261122-3"></script>
   <script src="js/main.js?v=original-intro-cats-20261121-2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=more-reactions-20261122"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js" defer></script>
-<script src="/game-fullscreen.js?v=battle-skill-guide-top-20261122-v4" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>
+<script src="/game-fullscreen.js?v=expedition-menu-header-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>
 </html>
