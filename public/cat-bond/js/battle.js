@@ -1976,7 +1976,11 @@ class CaptureBattle {
         const list = b.owner === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
         for (const e of list) {
           if (this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5) {
-            this.resolveHit(e, b.owner, b.sk || { element: b.element }, hitDmg, e.x, e.y);
+            // A sustained stream makes small damage ticks, not four huge
+            // hit-stops/shakes per second. Contact feedback remains localized.
+            this.resolveHit(e,b.owner,
+              {...(b.sk||{element:b.element}),isChanneledTick:true},
+              hitDmg,e.x,e.y);
           }
         }
         // sparks along the beam so it reads as a continuous stream
@@ -3104,7 +3108,15 @@ class CaptureBattle {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + (e.r||18)*.6) {
           const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
-          this.resolveHit(e, 'me', f._pounceSkill || { element: f.element }, dmg, e.x, e.y);
+          const contact=f._pounceSkill;
+          this.resolveHit(e, 'me', contact||{element:f.element},dmg,e.x,e.y);
+          // Electric pounces are physical lightning impacts, not distant rays.
+          if(contact?.element==='elec'){
+            this.vfx.burst(e.x,e.y,{count:this.game.isTouch?9:15,
+              color:'#ffe29a',speed:150,life:.34,r:3.2});
+            this.vfx.ring(e.x,e.y,{r0:9,vr:120,
+              life:.25,color:'#8da8ef',width:4});
+          }
           this.hurtEnemy && (e.kbx = (e.kbx||0) + Math.cos(f._dashAim||0) * 260, e.kby = (e.kby||0) + Math.sin(f._dashAim||0) * 260);  // knockback
           f.pounce=false;f._pounceDmg=null;f._pounceSkill=null;
           f._dashReach=null;f._dashTravel=0;f.dashT=0;
@@ -4151,8 +4163,22 @@ class CaptureBattle {
         // using, but a basics-only player is no longer soft-locked near 12% HP.)
       }
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
-      this.hurtEnemy(target, dealt, x, y);
-      this.vfx.impact(x, y, col);
+      // Channel damage is steady pressure, not a rapid sequence of hard
+      // camera pauses. Normal melee/chain/projectiles retain their hitstop.
+      const continuous=!!skill?.isChanneledTick;
+      this.hurtEnemy(target,dealt,x,y,continuous);
+      if(continuous){
+        this.vfx.trail(x,y,col,2.5);
+      }else{
+        this.vfx.impact(x,y,col);
+        // A small localized impact accent makes heavy physical hits feel
+        // decisive without painting the whole screen or enlarging hitboxes.
+        if(skill?.heavy||['dash','pounce','leap','melee'].includes(skill?.kind)){
+          this.vfx.ring(x,y,{r0:5,vr:90,life:.26,color:col,width:3});
+          this.vfx.burst(x,y,{count:this.game.isTouch?5:9,
+            color:col,speed:110,life:.24,r:2.6});
+        }
+      }
       // One clean elemental impact mark per beat; suppress spam from beams.
       if(dealt>0&&skill?.element&&(skill.ultCost||0)===0&&
         this.t-(this._lastRegularHitFx??-99)>.12){
