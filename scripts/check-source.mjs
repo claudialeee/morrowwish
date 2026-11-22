@@ -152,7 +152,9 @@ const duoBondSource=fs.readFileSync('public/cat-bond/js/duo-bond.js','utf8');
 const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
 if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
-   !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr)')||
+   !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview)')||
+   !premiumScene.includes('const galleryPreview=seq.galleryPreview===true')||
+   !premiumScene.includes('galleryPreview?1:Math.min(cam.zoom,1.16)')||
    !premiumScene.includes('portraitEnvironment(key,frame,tier,sw,sh)')||
    !premiumScene.includes('const opacity=thumbnail?1:smooth(p/.19)')||
    !premiumScene.includes('originalArt?null:key')&&
