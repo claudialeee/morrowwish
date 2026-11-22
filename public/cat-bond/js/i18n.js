@@ -1312,7 +1312,7 @@
     '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。': 'A paid-training heavy claw trailing fire — hits hard and burns deeper.',
     '用小鱼干向训练师换来的近身咬击，淋湿并重创。': 'A melee bite traded for fish — soaks and crushes the target.',
     '用金币换来的缠斗技，撕裂并束缚目标。': 'A grappling move traded for coins — tears and binds the target.',
-    '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。': 'A precise frost spike — a direct hit freezes. Learned at the right level.',
+    '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。': 'A precise frost spike — a direct hit freezes, on a shorter cooldown. Learned at the right level.',
     '高亲密才能驾驭的闪电冲刺，撞中强麻痹。': 'A lightning dash only a close bond can control — a hit heavily shocks.',
     '需要等级与金币双重积累的绝技，重创并击退。': 'A finishing move needing both level and coins — heavy damage and knockback.',
     '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。':
@@ -1758,7 +1758,7 @@
     "左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。": "Sweep back and forth three times; each pass deals one moderate hit without repeat tick damage.",
     "金乌焱": "Solar Ember",
     "拨下桌": "Paw Swipe",
-    "舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 斗士能领悟。": "Soothe nearby allies with grooming and create a healing mist. Only tanks and fighters can learn it.",
+    "舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 辅助能领悟。": "Soothe nearby allies with grooming and create a healing mist. Only tanks and supports can learn it.",
     "持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。": "Spray a high-pressure stream of water for repeated line damage. Remain still while firing and briefly slow afterward.",
     "泡泡幕": "Bubble Barrier",
     "展开泡泡护盾，短时减伤（减伤 45%）。": "Create a bubble shield that reduces damage by 45% for a short time.",

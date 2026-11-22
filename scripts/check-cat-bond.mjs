@@ -501,6 +501,49 @@ const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('vulnerabilityBonus += 0.30') && !battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'stagger belongs to the additive vulnerability bucket, not a separate multiplier');
 
+// --- SOAK = mild move slow (challenger-required coverage) ---
+// soak alone → ×0.8; soak stacked with hard-CC (f.slowed → 0.55) → 0.44; neither over-locks.
+const soakCat=damageBalance.me();
+soakCat.status={}; soakCat.slowed=false; soakCat._castSlow=0; soakCat.reflectT=0; soakCat.hasteT=0;
+assert.ok(Math.abs(damageBalance.moveMul(soakCat)-1)<1e-9,'dry cat moves at full speed');
+soakCat.status={soak:3};
+assert.ok(Math.abs(damageBalance.moveMul(soakCat)-0.8)<1e-9,'soak alone is a mild 0.8 move slow');
+soakCat.slowed=true;   // hard-CC (chill/bind) also active
+assert.ok(Math.abs(damageBalance.moveMul(soakCat)-0.44)<1e-9,'soak stacks with hard-CC to 0.55*0.8=0.44, no further');
+soakCat.status={}; soakCat.slowed=false;   // reset
+
+// --- CLOSING phase: closeBonus only on sub-28% non-boss at _closing>0 (challenger-required) ---
+// At _closing=1 a sub-28% hit gains +0.25 execute; a healthy (>=28%) or boss hit gains nothing.
+const closeB=new sandbox.window.Battle.CaptureBattle(game,[State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+closeB.coach=null; closeB.levelSuppression=1; closeB.combo=0; closeB._closing=1;
+const ce=closeB.enemies[0]; ce.maxhp=1000; ce.alive=true; ce.status={}; ce.staggerT=0; ce.flash=0;
+ce.hp=200;  // 20% → subdued/execute window. execute=0.2+(1-200/280)*0.35≈0.3, close=+0.25
+const beforeClose=ce.hp; closeB.hurtEnemy(ce,100,ce.x,ce.y,false);
+const dClose=beforeClose-ce.hp;
+ce.hp=200; closeB.combo=0; closeB._closing=0; const before0=ce.hp; closeB.hurtEnemy(ce,100,ce.x,ce.y,false);
+const d0=before0-ce.hp;
+assert.ok(dClose>d0+10, 'closeBonus adds execute damage at _closing=1 on a sub-28% enemy (got '+dClose.toFixed(1)+' vs '+d0.toFixed(1)+')');
+// healthy (>=28%) enemy: closeBonus must be ZERO regardless of _closing. Reset combo each run so
+// only the _closing difference is measured (combo would otherwise drift the baseline).
+ce.hp=900; ce.flash=0; closeB.combo=0; closeB._closing=1; const beforeHealthy=ce.hp; closeB.hurtEnemy(ce,100,ce.x,ce.y,false);
+const dHealthy=beforeHealthy-ce.hp;
+ce.hp=900; ce.flash=0; closeB.combo=0; closeB._closing=0; const beforeHealthy0=ce.hp; closeB.hurtEnemy(ce,100,ce.x,ce.y,false);
+assert.ok(Math.abs(dHealthy-(beforeHealthy0-ce.hp))<1e-6,'closeBonus never touches a healthy (>=28% HP) enemy');
+
+// --- SUBDUED poise: below 28% HP, skill-hit poise drain ×1.8 and per-hit cap lifts to .72 ---
+const subB=new sandbox.window.Battle.CaptureBattle(game,[State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+subB.coach=null;
+const se=subB.enemies[0]; se.alive=true; se.maxhp=1000; se.poiseMax=100; se.staggerT=0;
+const skill={id:'probe',name:'p',kind:'projectile',element:'fire'};   // normal offensive skill, base drain .16
+se.hp=900; se.poise=100; se.poiseRecovering=false; se.poiseComboHits=0; se.poiseLastHitAt=-99; subB.t=1;
+subB.applyPoiseOnSkillHit(se,skill);
+const healthyDrain=100-se.poise;   // base .16*100 = 16
+se.hp=200; se.poise=100; se.poiseRecovering=false; se.poiseComboHits=0; se.poiseLastHitAt=-99; subB.t=1;
+subB.applyPoiseOnSkillHit(se,skill);
+const subduedDrain=100-se.poise;   // .16*1.8*100 = 28.8
+assert.ok(Math.abs(healthyDrain-16)<1e-6,'healthy (>=28%) enemy loses base 16 poise from a skill hit');
+assert.ok(Math.abs(subduedDrain-28.8)<1e-6,'subdued (<28%) enemy loses 1.8x = 28.8 poise from the same hit');
+
 // Basic and skill hits build per-enemy poise combos; partial loss stays.
 // only breaking to zero unlocks stagger then post-break recovery. Dedicated
 // 泰山压顶 zeroes instantly. The ten-second rust mark is unchanged.
@@ -865,11 +908,46 @@ const tankRoster=GameData.SPECIES.filter(sp=>
   Skills.buildTypeForBreed({species:sp.id})==='tank').map(sp=>sp.id);
 const fighterRoster=GameData.SPECIES.filter(sp=>
   Skills.buildTypeForBreed({species:sp.id})==='fighter').map(sp=>sp.id);
-assert.equal(tankRoster.length,5,'five true defensive breeds retain tank recommendations');
-assert.equal(fighterRoster.length,5,'fighters include the orange cats and agile bruisers');
-assert.ok(fighterRoster.includes('nuowei')&&fighterRoster.includes('meidu'),
-  'Norwegian and American Shorthair become fighters');
-assert.ok(tankRoster.includes('lanbao'),'low-AGI Blue remains a tank');
+// Role rebalance 2026-11-22: 4 tanks spread across elements (Fire 汤圆/圆宝, Water 团团, Grass 奶酥),
+// not clustered; 蓝莓 is now a Water fighter, dark element is no longer all-assassin.
+assert.equal(tankRoster.length,4,'four tanks, one-ish per element (not clustered in Fire)');
+for(const t of ['tangyuan','jiafei','dundun','nietu'])
+  assert.ok(tankRoster.includes(t),'tank roster includes '+t);
+assert.ok(fighterRoster.includes('nuowei')&&fighterRoster.includes('senlin'),
+  'Norwegian and Maine Coon are fighters (high-atk frontline, not walls)');
+assert.equal(Skills.buildTypeForBreed({species:'meidu'}),'control',
+  'American Shorthair 圈圈 is grass CONTROL (bind/束缚), giving grass its missing control role');
+assert.ok(fighterRoster.includes('lanbao'),'Blue英短 is now a bruiser fighter, not a passive tank');
+assert.ok(fighterRoster.includes('tangyuan')===false,'橘猫 汤圆 is a tank, not a fighter');
+
+// ROLE × SKILL-CATEGORY identity gate (gateMet): each role may only learn fitting skill kinds.
+const gL=(species,id)=>Skills.gateMet({species,level:40,affinity:100},Skills.skillById(id));
+assert.ok(!gL('jiafei','waterLash'),'tank cannot learn a ranged skill (no backline guns)');
+assert.ok(gL('xiaohui','waterJet'),'dps CAN learn a strong ranged nuke');
+assert.ok(gL('xiaohui','frostLance'),'dps CAN learn a high-power ranged skill that incidentally chills (not control)');
+assert.ok(gL('meidu','sporeBloom'),'control CAN learn a weak ranged bind poke');
+assert.ok(!gL('meidu','waterJet'),'control cannot learn a strong (power>=1.3) ranged nuke');
+assert.ok(!gL('moqiu','bubbleVeil'),'assassin cannot learn a shield (no safety tools)');
+// every real cat still has >=4 legal native-element non-ult skills under the gate (no soft-lock)
+for(const sp of GameData.SPECIES){
+  const el=Skills.elementOf(sp.id);
+  const legal=Skills.SKILLS.filter(s=>s.element===el&&!(s.ultCost>0)&&Skills.gateMet({species:sp.id,level:40,affinity:100},s));
+  assert.ok(legal.length>=4,'role gate leaves '+sp.name+' ('+el+'/'+Skills.buildTypeForBreed({species:sp.id})+') >=4 legal skills (got '+legal.length+')');
+}
+// AUTO-EQUIP honors the role gate for EVERY cat: ensureLoadout must never auto-equip a gate-denied
+// skill, and must never leave a cat attackless. (Prior bug: non-gated ranged/shields bypassed the
+// gate in the equip pool — 16/33 cats got an off-role auto-equip.)
+for(const sp of GameData.SPECIES){
+  const role=Skills.buildTypeForBreed({species:sp.id});
+  const cat=State.makeCat(sp.id,{affinity:100}); cat.level=40;
+  Skills.ensureLoadout(cat);
+  const lo=(cat.loadout||[]).filter(Boolean);
+  const isAtk=id=>{const k=Skills.skillById(id);return k&&['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind);};
+  assert.ok(lo.some(isAtk),'auto-equip gives '+sp.name+' ('+role+') at least one attacking skill');
+  for(const id of lo){ const sk=Skills.skillById(id);
+    assert.ok(!sk||sk.ultCost>0||Skills.gateMet(cat,sk),
+      'auto-equip must not hand '+sp.name+' ('+role+') the gate-denied skill '+id); }
+}
 // One authoritative type map for every collectible cat: 27 mono-element,
 // six curated mythical duals. Blueberry is Water/Ice, not Water/Electric.
 const expectedPrimary={
@@ -959,10 +1037,12 @@ assert.ok(dualDiscovery&&dualDiscovery.element==='light',
 assert.ok(Skills.learnableSkills(dualKitten)
   .filter(s=>s.element!=='fire').length<=1,
   'Early dual may have ONE secondary technique only');
-assert.ok(fighterRoster.includes('tangyuan')&&fighterRoster.includes('qisi'),
-  'Mochi and Cheese are fighters, not tanks');
-assert.ok(tankRoster.includes('senlin')&&tankRoster.includes('jiafei'),
-  'Maine Coon and Exotic Shorthair fill the heavy tank roles');
+// Role rebalance 2026-11-22: 汤圆橘猫 = tank (fat orange wall), 芝士 = fighter (stocky bruiser橘);
+// 松松缅因 = fighter (pow13 high-attack frontline, no longer a passive wall); 圆宝加菲 = the heavy tank.
+assert.ok(tankRoster.includes('tangyuan')&&fighterRoster.includes('qisi'),
+  'Mochi橘猫 is a tank; Cheese is a bruiser fighter');
+assert.ok(fighterRoster.includes('senlin')&&tankRoster.includes('jiafei'),
+  'Maine Coon is a high-attack fighter; Exotic Shorthair (加菲) is the heavy tank');
 const exotic=GameData.speciesById('jiafei');
 assert.equal(exotic?.rarity,'SR','Jiafei should be collectible as SR, not R');
 const jiafeiSprite=fs.readFileSync(DIR+'assets/jiafei-watercolor-v2.webp');

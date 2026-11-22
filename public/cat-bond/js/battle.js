@@ -2147,7 +2147,15 @@ class CaptureBattle {
         fld._drip = 0;
         for (const u of targets) {
           if (Math.hypot(u.x - fld.x, u.y - fld.y) > fld.r) continue;
-          if (fld.tag) { u.tags = u.tags || []; u.status = u.status || {}; if (!u.tags.includes(fld.tag)) u.tags.push(fld.tag); const info = (window.Skills?.TAG_INFO || {})[fld.tag]; u.status[fld.tag] = info ? info.ttl : 2; }
+          if (fld.tag) { u.tags = u.tags || []; u.status = u.status || {}; if (!u.tags.includes(fld.tag)) u.tags.push(fld.tag);
+            // Field re-applies its tag while you stand in it, but only tops up to a SHORT window
+            // (not the full ttl) so it isn't a permanent debuff zone — walk out and the slow/soak
+            // lapses in ~1s instead of a fresh 5s. Keeps the "stand in the tide = soaked" read
+            // without a free perma-slow. (Challenger fix: tidePool was re-arming full ttl 3×/s.)
+            // NOTE: this cap is GLOBAL to all fields — it also shortens the grass ult 万木丛生's
+            // in-field bind residual (was its tag ttl, now ~1s). Intended: no field should be a
+            // permanent debuff zone; the brief in-zone top-up still reads as "stand in it = afflicted".
+            u.status[fld.tag] = Math.max(u.status[fld.tag] || 0, 1.0); }
           if (fld.dps && fld.side === 'me') this.hurtEnemy(u, u.maxhp * fld.dps * 0.33, u.x, u.y, true);
         }
       }
@@ -3723,12 +3731,14 @@ class CaptureBattle {
       ? Math.min(1, (this._pressure || 0) + dt * 0.45) : Math.max(0, (this._pressure || 0) - dt * 0.5);
     // CLOSING / "收网" — a TIME-driven ramp (0 at 45s → 1 at 70s), independent of HP so it is
     // NOT the "player is cruising" rubber-band above. Its job: force a drawn-out fight to RESOLVE
-    // by combat before the hard backstop, instead of letting the clock arbitrate it. It only ever
-    // amplifies the CONSEQUENCES OF THE PLAYER LANDING HITS (poise-recovery suppression +
-    // execute/break ease, applied elsewhere) and raises enemy aggression — it never drains enemy
-    // HP directly, so an over-levelled fight stays genuinely hard and a zero-output turtle gets no
-    // free progress (no hits → no benefit). A real kiter who IS fighting finally closes in time; a
-    // fight you truly can't win ends as the wild cat fleeing (neutral), not a silent clock-loss.
+    // by combat before the hard backstop, instead of letting the clock arbitrate it. It ONLY
+    // amplifies the CONSEQUENCES OF THE PLAYER LANDING HITS — exactly two effects, both elsewhere:
+    // (1) post-stagger poise refill suppressed (so a slow-DPS kiter can chain breaks), and
+    // (2) closeBonus = +0..0.25 execute dmg on a sub-28%-HP non-boss. It does NOT drain enemy HP
+    // and does NOT touch enemy aggression, so an over-levelled fight stays genuinely hard and a
+    // zero-output turtle gets no free progress (no hits → no benefit). A real kiter who IS fighting
+    // finally closes in time; a fight you truly can't win ends as the wild cat fleeing (neutral),
+    // not a silent clock-loss. (Optional future: ramp enemy fire-rate here too — deferred, unreviewed.)
     this._closing = this.coach ? 0 : clamp((this.t - 45) / 25, 0, 1);
     // MASH-STALL teach + resolve: if the player keeps throwing ONLY basics while an
     // enemy sits pinned near the un-skilled mash floor (~<20% HP, not staggered), the

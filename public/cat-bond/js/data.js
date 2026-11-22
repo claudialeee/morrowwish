@@ -25,7 +25,7 @@ const SPECIES = [
   // ---------- R (稀有) ----------
   { id: 'sanhua',   name: '花花',   palette: 'calico',      pattern: 'calico',  eyeColor: '#f2c94c', rarity: 'R', desc: '三色福猫，传说能招来好运。',           base: { pow: 7, agi: 7, vit: 7, cha: 9 } },
   { id: 'lixiao',   name: '绅绅',   palette: 'tux',         pattern: 'tuxedo',  eyeColor: '#7ee787', rarity: 'R', desc: '穿燕尾服的绅士，优雅又傲娇。',         base: { pow: 8, agi: 8, vit: 6, cha: 8 } },
-  { id: 'lanbao',   name: '蓝莓',   palette: 'blue',        pattern: 'solid',   eyeColor: '#f6b93b', rarity: 'R', desc: '英短蓝猫，圆脸包子，捏不腻。',         base: { pow: 7, agi: 5, vit: 9, cha: 7 } },
+  { id: 'lanbao',   name: '蓝莓',   palette: 'blue',        pattern: 'solid',   eyeColor: '#f6b93b', rarity: 'R', desc: '英短蓝猫，圆脸包子，捏不腻。',         base: { pow: 7, agi: 7, vit: 9, cha: 7 } },
   { id: 'dundun',   name: '团团',   palette: 'silver',      pattern: 'silver',  eyeColor: '#7ee7c4', rarity: 'R', desc: '银渐层，眼线天生，表情包担当。',       base: { pow: 6, agi: 7, vit: 8, cha: 8 } },
   { id: 'yunduo',   name: '云朵',   palette: 'ragdoll',     pattern: 'pointed', eyeColor: '#56ccf2', rarity: 'R', fluffy: true, point: '#6b5244', desc: '布偶幼崽，软成一团云。', base: { pow: 6, agi: 6, vit: 8, cha: 9 } },
   { id: 'zherdd',   name: '布丁',   palette: 'cream',       pattern: 'solid',   eyeColor: '#f2994a', rarity: 'R', ears: 'fold', desc: '折耳小团子，坐姿像佛系大师。',          base: { pow: 6, agi: 6, vit: 7, cha: 9 } },
@@ -52,7 +52,7 @@ const SPECIES = [
   { id: 'xingchen', name: '星星',   palette: 'mystic',      pattern: 'spotted', eyeColor: '#ffe08a', rarity: 'SSR', fluffy: true, ears: 'tufted', desc: '身披星河的梦境之猫，极为罕见。', base: { pow: 17, agi: 16, vit: 15, cha: 14 } },
   // Seven genuinely collectible new breeds — included in the normal catch pool.
   { id:'abi', name:'杏仁',palette:'apricot',pattern:'tabby',eyeColor:'#86bd73',rarity:'N',short:true,
-    desc:'阿比西尼亚猫，身形轻巧，额头有细细的暖金纹。',base:{pow:7,agi:9,vit:6,cha:7} },
+    desc:'阿比西尼亚猫，身形轻巧，额头有细细的暖金纹。',base:{pow:7,agi:9,vit:6,cha:8} },
   { id:'meidu', name:'圈圈',palette:'silver',pattern:'silver',eyeColor:'#85bc77',rarity:'N',
     desc:'美短银虎斑，背上是醒目的漩涡纹。',base:{pow:7,agi:7,vit:9,cha:8} },
   { id:'xuewa', name:'雪袜',palette:'siamese',pattern:'bicolor',eyeColor:'#73c8fa',rarity:'R',point:'#65535a',

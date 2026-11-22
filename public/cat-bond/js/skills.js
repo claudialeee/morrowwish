@@ -159,7 +159,10 @@
     dark:  { light: 2,   grass: 1.5, dark: 0.5, fire: 1,   water: 1,   elec: 1 },
     light: { dark: 2,    fire: 1.5,  light: 0.5, grass: 1,  water: 1,   elec: 1 },
   };
-  const STAB = 1.2; // same-type-attack-bonus
+  const STAB = 1.2; // same-type-attack-bonus — NOTE: defined but NOT currently applied in battle.js
+                    // combat (elemMult/effectiveness is the only element multiplier wired in). So a
+                    // same-element hit nets the raw 0.75 diagonal, NOT 0.75×1.2. Wire stabBonus()
+                    // into hurtEnemy if STAB should actually matter; until then it's data-only.
 
   // Assign an element to every existing species by flavor / palette.
   const SPECIES_ELEMENT = {
@@ -237,7 +240,7 @@
       desc: '短距离挥出霜晶爪痕，使目标湿润；更强的霜锥需向训练师学习。' },
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
     { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
-    { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 斗士能领悟。', unlock: { element: 'water', role: ['tank','fighter'] } },
+    { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 辅助能领悟。', unlock: { element: 'water', role: ['tank','support'] } },
     { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.3, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
@@ -284,7 +287,7 @@
     { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
     { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, upgradeOf: 'thornCoil', tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
     // ---- 等级 / 亲密 / 组合门槛 ----
-    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 2,cd: 2.8, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
+    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.6,cd: 2.2, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。', unlock: { level: 10 } },
     { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.85, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
     { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 1.8, cd: 4.0, ultCost: 0, heavy: true, upgradeOf: 'shadeLeap', tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
     // ---- 品种专属 (breed-locked signature) ----
@@ -663,8 +666,50 @@
     return q.get(cat) >= q.need;
   }
 
+  // ---- ROLE × SKILL-CATEGORY GATE (owner-approved role identities 2026-11-22) ----
+  // Each build-type may only learn skills whose CATEGORY fits its fantasy, so roles read as
+  // distinct playstyles (a tank never backline-guns, a dps never locks down, etc.). Ults are
+  // exempt (signature/ult always allowed). Verified by audit: every real cat keeps >=4 legal
+  // native-element skills under this gate.
+  function skillCategory(sk) {
+    if (sk.ultCost > 0) return 'ult';
+    const k = sk.kind;
+    if (k === 'heal') return sk.healMode === 'single' ? 'heal-self' : 'heal-group';
+    if (k === 'buff') return 'shield';
+    if (k === 'melee' || k === 'dash' || k === 'leap' || k === 'pounce') return 'close';
+    if (k === 'projectile' || k === 'beam' || k === 'aoe') return (sk.power >= 1.3) ? 'ranged-strong' : 'ranged-weak';
+    return k;
+  }
+  // A DEDICATED control skill = its job is lockdown, not damage. Explicit tags:['control'], OR it
+  // applies hard-CC (chill/bind/dizzy) WHILE being low-damage (power < 1.3). A high-power nuke that
+  // merely chills on hit (e.g. 霜锥 frostLance power 1.6) is a DAMAGE skill, not control — otherwise
+  // "dps can't learn control" would wrongly ban every damage skill with an incidental freeze.
+  function isControlSkill(sk) {
+    if ((sk.tags || []).includes('control')) return true;
+    const t = sk.appliesTag, a = Array.isArray(t) ? t : [t];
+    return a.some(x => ['chill', 'bind', 'dizzy'].includes(x)) && (sk.power || 0) < 1.3;
+  }
+  // Returns false if this role may NOT learn this skill. Mirror of the audited DENY policy.
+  function roleAllowsSkill(role, sk) {
+    if (!sk || sk.ultCost > 0) return true;          // ults/signatures exempt
+    const c = skillCategory(sk);
+    switch (role) {
+      case 'tank':     return c !== 'ranged-weak' && c !== 'ranged-strong';            // wall: no backline guns
+      case 'fighter':  return c !== 'heal-group' && c !== 'ranged-weak' && c !== 'ranged-strong'; // self-sustain duelist
+      case 'dps':      return c !== 'heal-group' && c !== 'shield' && !isControlSkill(sk);        // pure damage, no lockdown
+      case 'assassin': return c !== 'shield' && c !== 'heal-self' && c !== 'heal-group'
+                           && sk.kind !== 'beam' && sk.kind !== 'aoe';                 // glass striker: thrown projectile pokes OK, no long-range beam/aoe guns, no safety tools
+      case 'control':  return c !== 'heal-group' && c !== 'ranged-strong';             // lockdown; only weak ranged poke
+      case 'support':  return c !== 'ranged-strong' && !(c === 'close' && sk.power >= 1.3) && !isControlSkill(sk);
+      default:         return true;
+    }
+  }
+
   // Does the cat meet every NON-cost part of a skill's gate? (cost is paid, not met)
   function gateMet(cat, skill) {
+    // ROLE × CATEGORY identity gate runs FIRST — it applies to EVERY skill (even ones with no
+    // unlock block): a tank can't learn ranged, a dps can't learn control, etc.
+    if (skill && !roleAllowsSkill(cat.buildType || buildTypeForBreed(cat), skill)) return false;
     const u = skill && skill.unlock;
     if (!u) return true;
     if (u.level && (cat.level || 1) < u.level) return false;
@@ -826,6 +871,20 @@
       (!retiredDash.has(sk.id)||equipped.has(sk.id)) &&
       (!upgrades.has(sk.id)||equipped.has(sk.id)));
   }
+  // Role-identity filter for AUTO-EQUIP only (recommendLoadout/ensureLoadout). Deny off-role
+  // categories UNLESS removing them would leave the cat with no legal attack — never strand a
+  // slot. The manual learn pool (learnableSkills) stays unfiltered so the starter-attack
+  // guarantee and player choice are preserved; the gate shapes what the game AUTO-picks.
+  function roleFilterForAutoEquip(cat, pool) {
+    const role = cat.buildType || buildTypeForBreed(cat);
+    const allowed = pool.filter(sk => roleAllowsSkill(role, sk));
+    // keep at least one attacking option so we never hand back an unusable (attack-less) set
+    const atk = k => ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k);
+    if (!allowed.some(sk => atk(sk.kind)) && pool.some(sk => atk(sk.kind))) {
+      return pool;   // role gate would remove the only attacks → fall back to the full pool
+    }
+    return allowed;
+  }
 
   // BASIC-ELIGIBLE: a skill the player may slot as their LEFT-CLICK basic attack.
   // The basic should stay light + spammable, so only low/mid-power attack skills
@@ -851,7 +910,12 @@
   // Earlier builds filled the first four arbitrary skills and accidentally
   // put an ultimate in Q/E; every cat then appeared to have the same attacks.
   function defaultLoadout(cat){
-    const pool=learnableSkills(cat);
+    // Auto-equip respects the role identity gate (tank won't be handed a ranged poke, dps a
+    // shield, etc.) — but ults stay available, and the filter self-disables if it would leave no
+    // attack (so a cat is never auto-equipped attack-less). Manual learnableSkills is unfiltered.
+    const rawPool=learnableSkills(cat);
+    const ultsPool=rawPool.filter(sk=>sk.ultCost>0);
+    const pool=roleFilterForAutoEquip(cat, rawPool.filter(sk=>!(sk.ultCost>0))).concat(ultsPool);
     const own=pool.filter(sk=>sk.element===elementOf(cat.species)&&!sk.ultCost);
     const splash=pool.filter(sk=>sk.element===secondaryOf(cat.species)&&!sk.ultCost);
     const attackKinds=['melee','projectile','dash','leap','pounce'];
@@ -979,7 +1043,13 @@
     // Authored breed roles take priority over statistical inference.
     // This allows fluffy Maine Coons to tank and stocky orange cats to fight,
     // without changing saved, explicitly selected buildType values.
-    const BREED_ROLES={tangyuan:'fighter',qisi:'fighter',senlin:'tank',jiafei:'tank'};
+    // Authored roles (identity beats stat-inference). Owner-approved role rebalance 2026-11-22:
+    // 汤圆橘猫=tank, 芝士起司橘=fighter(stocky bruiser), 松松缅因=fighter(pow13 frontline, not wall),
+    // 圆宝加菲=tank, 幽幽紫雾=dps, 夜夜孟买=control, 绅绅燕尾服=fighter — to break up the all-assassin
+    // dark element and give each element a varied role spread. (蓝莓/豆豆/杏仁 reach their new roles
+    // via base-stat tweaks in data.js, so they are NOT listed here.)
+    const BREED_ROLES={tangyuan:'tank',qisi:'fighter',senlin:'fighter',jiafei:'tank',
+      youling:'dps',mengmai:'control',lixiao:'fighter',meidu:'control'};
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
@@ -1005,7 +1075,8 @@
     role=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
     const own=elementOf(cat.species);
     const splash=secondaryOf(cat);
-    const allUnlocked=(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0);
+    // Auto-recommend respects the role identity gate (self-disables if it would leave no attack).
+    const allUnlocked=roleFilterForAutoEquip(cat,(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0));
     const unlockedIds=new Set(allUnlocked.map(sk=>sk.id));
     const pool=allUnlocked.filter(sk=>!upgradeTargetOf(sk.id)||
       !unlockedIds.has(upgradeTargetOf(sk.id)));
