@@ -160,7 +160,9 @@ if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('const galleryPreview=seq.galleryPreview===true')||
    !premiumScene.includes('galleryPreview?1:Math.min(cam.zoom,1.16)')||
    !premiumScene.includes('portraitEnvironment(key,frame,tier,sw,sh)')||
-   !premiumScene.includes('const opacity=thumbnail?1:smooth(p/.19)')||
+   !premiumScene.includes('const opacity=(thumbnail||galleryPreview)?1:')||
+   !premiumScene.includes('smooth(p/.22)*(1-smooth((p-.71)/.29))')||
+   !premiumScene.includes('featherScenery(ctx,sw,sh)')||
    !premiumScene.includes('originalArt?null:key')&&
       !premiumScene.includes('(originalArt&&!portrait)?null:key')||
    !duoBondSource.includes('window.CatBondDuoReleaseVFX=')||
