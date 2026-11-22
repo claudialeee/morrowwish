@@ -119,22 +119,31 @@ const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
 // Every active game module must keep a cache-buster, but the CI test must
 // not pin a stale version when the game's battle mechanics are improved.
 
-// Regression guard for the user's approved high-quality full-painting attacks.
-// The rejected primitive/vector cat cut-ins must NEVER be promoted back as
-// the production renderer simply to claim 32 species or three skill tiers.
-// Artwork is shared by battle, unlocked private preview and full review gallery.
+// Art-quality gate: 32 DISTINCT hand-painted watercolor cat portraits
+// must replace the original two fixed cats for all 21x3 cutins. Never regress
+// to unsafe polygon-based fur overpaint or unapproved procedural silhouettes.
 const approvedDuo=fs.readFileSync('public/cat-bond/js/duo-hero.js','utf8');
+const watercolorActors=fs.readFileSync('public/cat-bond/js/duo-breed-actors.js','utf8');
+const premiumScene=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
 for(const path of ['public/cat-bond/index.html','public/cat-bond/duo-showcase.html','public/cat-bond/duo-preview.html']){
  const page=fs.readFileSync(path,'utf8');
- const oldArt=page.indexOf('src="js/duo-premium.js?v=');
- const mainArt=page.indexOf('src="js/duo-hero.js?v=');
- if(oldArt<0||mainArt<=oldArt)
-   throw Error('Original approved painted duo attack sheet not loaded before the hero renderer in '+path);
+ const actors=page.indexOf('src="js/duo-breed-actors.js?v=');
+ const scene=page.indexOf('src="js/duo-premium.js?v=');
+ const hero=page.indexOf('src="js/duo-hero.js?v=');
+ if(actors<0||scene<=actors||hero<=scene||
+   page.includes('src="js/duo-breed-art.js'))
+   throw Error('Breed-specific premium watercolor actors must load BEFORE the duo scene and hero in '+path);
 }
 if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
    !approvedDuo.includes('window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup)')||
-   !approvedDuo.includes("approved-complete-painterly-duo-sheet"))
- throw Error('Do not replace approved complete painted cats with procedural duo portraits again');
+   !approvedDuo.includes("32-actual-breed-watercolor-actors")||
+   !premiumScene.includes('CatBondDuoBreedActors?.draw')||
+   premiumScene.includes('identity.paint(')||
+   !watercolorActors.includes('duo-watercolor-32-actors-v1.webp')||
+   !watercolorActors.includes('duo-stage-clean-21x3-v1.webp')||
+   !fs.existsSync('public/cat-bond/assets/duo-watercolor-32-actors-v1.webp')||
+   !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v1.webp'))
+ throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
 
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
