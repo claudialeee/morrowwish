@@ -755,4 +755,70 @@ assert.ok(laserBattle.enemies.reduce((n,e)=>n+e.hp,0)<rayHpBefore,
   'dedicated ray deals throttled sweep damage');
 assert.equal(laserBattle.deathRay,null,'dedicated ray ends and clears');
 
+
+// CHANNELING + melee/dash + progression regressions.
+// These checks use the actual CaptureBattle methods and skill table, not a VFX
+// prototype disconnected from combat or an invented player save.
+for(const [id,element] of [['waterJet','water'],['thunderStream','elec'],['flameSweep','fire']]){
+  const sk=Skills.skillById(id);
+  assert.equal(sk?.kind,'beam',id+' must be a real channelled skill');
+  assert.ok(sk.channel>.8&&sk.reach>100&&sk.width>0);
+  const spellBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],
+    GameData.speciesById('doudou'));
+  const f=spellBattle.me();
+  spellBattle.castBeam(f,0,sk,12,'#ffdfa2');
+  assert.equal(spellBattle.beams.length,1,id+' registers a live beam');
+  assert.ok(f._beamRoot>0,id+' roots its caster while channeling');
+  const target=spellBattle.enemies[0];
+  target.x=f.x+Math.min(sk.reach-28,116);target.y=f.y;
+  target.hp=target.maxhp;target.inv=0;target.flash=0;
+  const hp=target.hp;
+  for(let t=0;t<Math.ceil(sk.channel/.08)+2;t++){
+    spellBattle.tickBeams(.08);
+    assert.doesNotThrow(()=>spellBattle.drawBeams(canvasCtx),id+' draws an active beam');
+  }
+  assert.equal(spellBattle.beams.length,0,id+' ends its channel');
+  assert.ok(!f._beamRoot,id+' releases its caster root when done');
+  assert.ok(target.hp<hp,id+' deals periodic line damage in combat');
+}
+const flame=Skills.skillById('flameSweep');
+assert.ok(flame.sweep>=.65&&flame.reach<=160,
+  'flamethrower sweeps a short arc, never the giant death-ray reach');
+const smallShock=Skills.skillById('lightningOrb');
+assert.ok(smallShock?.homing>=3&&smallShock?.element==='elec');
+const missileBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],
+  GameData.speciesById('doudou'));
+const missileF=missileBattle.me();
+assert.equal(missileBattle.castDistinctProjectile(
+  missileF,smallShock,0,'#ffe5a0',missileF.dmg),true);
+assert.ok(missileBattle.projectiles.some(p=>p.kind==='lightningOrb'&&
+  p.homing>0&&p.life>=3),
+  'ball lightning must fly slowly and home — not resolve as an instant chain');
+const dashBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],
+  GameData.speciesById('doudou'));
+const df=dashBattle.me(),targetDash=dashBattle.enemies[0];
+targetDash.x=df.x+88;targetDash.y=df.y;targetDash.hp=targetDash.maxhp;
+dashBattle.dashLunge(df,0,Skills.skillById('voltRush'),14,'#ffe5a0');
+assert.ok(df.pounce&&df._dashReach<=130,
+  'Volt Rush is physical movement and has a short max travel');
+assert.equal(targetDash.hp,targetDash.maxhp,
+  'Volt Rush must NOT deal ranged damage at cast time');
+const newbie=State.makeCat('xianluo',{level:1,affinity:0});
+newbie.loadout=[];newbie.autoSkillLoadout=[];newbie.skillEdited=false;
+const startSkills=Skills.learnableSkills(newbie);
+assert.ok(startSkills.some(sk=>sk.id==='staticPounce'));
+assert.ok(!startSkills.some(sk=>sk.id==='boltArc'),
+  'a fresh level-1 cat should not already know the full second attack');
+assert.equal(Skills.defaultLoadout(newbie)[2],null,
+  'the E slot unlocks with growth, not as a free starting ability');
+const grown=State.makeCat('xianluo',{level:5,affinity:0});
+assert.ok(Skills.learnableSkills(grown).some(sk=>sk.id==='lightningOrb'),
+  'electric cats learn the slow homing orb by Lv.5');
+const nonElectric=State.makeCat('jinwu',{level:5,affinity:0});
+assert.ok(!Skills.learnableSkills(nonElectric).some(sk=>sk.id==='lightningOrb'),
+  'element-locked orb must not appear on a fire-only cat');
+newbie.loadout=[null,'boltArc',null,null];newbie.skillEdited=true;
+assert.ok(Skills.learnableSkills(newbie).some(sk=>sk.id==='boltArc'),
+  'never delete old saved skills when introducing progressive unlocks');
+
 console.log('Cat Bond: 13 modules loaded, starter + capture win/loss driven, game_start/complete/over/cat_capture analytics, and bilingual ZH->EN layer (incl. live zh<->en toggle) PASS.');
