@@ -177,6 +177,9 @@ try{
     await lp.evaluate(()=>{
       window.WorldMap.onEncounter(()=>{});
       window.WorldMap.enterRegion(window.WorldMap.REGIONS.find(r=>window.WorldMap.isUnlocked(r.id)).id);
+      // Leaving the region picker open freezes map updates intentionally.
+      // Close it exactly as a real player does after entering a destination.
+      window.UI.closeAll();
       // Test setup enters region via API instead of actual map chooser button;
       // dismiss the still-open chooser or Game.update correctly pauses walking.
       UI.closeAll();
