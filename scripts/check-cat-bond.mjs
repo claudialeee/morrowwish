@@ -514,9 +514,11 @@ assert.equal(poiseEnemy.staggerT,3,'dedicated stagger slam lasts three seconds')
 assert.equal(poiseEnemy.poise,0,'dedicated stagger visibly empties the poise gauge');
 poiseEnemy.staggerT=0;
 poiseEnemy.poise=0;
-poiseEnemy.poise+=poiseEnemy.poiseMax/3; // one second of post-stagger recovery
-assert.ok(poiseEnemy.poise<poiseEnemy.poiseMax,'poise recovery is gradual, not an instant refill');
-poiseEnemy.poise=0;
+poiseEnemy.swipeCd=999;
+for(let frame=0;frame<4;frame++)poiseBattle.update(.1);
+assert.equal(poiseEnemy.poise,0,'broken poise must NEVER regenerate on combat ticks');
+assert.ok(!battleSource.includes('e.poise = Math.min(e.poiseMax'),
+  'do not bring back frame-based poise refilling');
 poiseEnemy.staggerT=3;
 
 const gaugeText=[];
@@ -528,6 +530,13 @@ poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa',
   'Wild Cat',{current:poiseEnemy.poise,max:poiseEnemy.poiseMax,stagger:poiseEnemy.staggerT});
 assert.ok(gaugeText.some(x=>x.includes('虚弱 3.0s')),
   'enemy poise gauge must display stagger countdown');
+poiseEnemy.staggerT=0;
+gaugeText.length=0;
+poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa',
+  'Wild Cat',{current:0,max:poiseEnemy.poiseMax,stagger:0});
+assert.ok(gaugeText.includes('破防'),
+  'after stagger expires, permanently empty poise must show 破防, never a refilled gauge');
+poiseEnemy.staggerT=3;
 assert.ok(battleSource.includes('const amount=broken?0:'),
   'stagger empties the gauge rather than drawing the countdown as remaining poise');
 poiseEnemy.staggerT=0;

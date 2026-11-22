@@ -667,7 +667,7 @@ class CaptureBattle {
       skill: this.pickWildSkillFor(element, rIdx),
       // POISE/韧性: only authored stagger actions (泰山压顶, 纸箱埋伏,
       // cast interrupts) break poise. Ordinary hits cause armor break instead.
-      // Poise stays empty during stagger and refills visibly after recovery.
+      // Each enemy's poise only decreases in this encounter; a zero gauge stays broken.
       poise: Math.round(maxhp * 0.6), poiseMax: Math.round(maxhp * 0.6), staggerT: 0,
       tags: [], alive: true,
     };
@@ -2173,8 +2173,8 @@ class CaptureBattle {
     this.vfx.ring(tx, ty, { r0: f._leapR, vr: -120, life: 0.44, color: col, width: 3 });   // shrinking target reticle
     window.MorrowwishAudio?.effect?.('charge');
   }
-  // A dedicated stagger consumes the entire poise gauge. Keep it empty for
-  // the 3s stagger window, then refill over the following ~3 seconds.
+  // A dedicated stagger consumes the entire poise gauge. The stagger vulnerability
+  // expires after its timed window, but depleted poise never regenerates this fight.
   triggerStagger(e,seconds=3) {
     if (!e || !e.alive) return;
     e.poise=0;
@@ -3674,8 +3674,8 @@ class CaptureBattle {
       }
       if (e.staggerT > 0) e.staggerT = Math.max(0, e.staggerT - dt); // 3s break window
       if (e._castSlow > 0) e._castSlow = Math.max(0, e._castSlow - dt);
-      if (e.staggerT <= 0 && e.poise < e.poiseMax)
-        e.poise = Math.min(e.poiseMax, e.poise + e.poiseMax * (dt / 3)); // visible 3s refill
+      // No automatic poise recovery: once the gauge is depleted, it remains
+      // shattered for this entire encounter. Stagger vulnerability still times out.
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
       else if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
@@ -5792,9 +5792,10 @@ class CaptureBattle {
     }
     if(poise && poise.max>0){
       const broken=(poise.stagger||0)>0;
-      const amount=broken?0:Math.max(0,Math.min(1,(poise.current||0)/poise.max));
+      const shattered=(poise.current||0)<=0;
+      const amount=shattered?0:Math.max(0,Math.min(1,poise.current/poise.max));
       const yy=y+5;
-      ctx.fillStyle=broken?'rgba(210,95,90,.19)':'rgba(119,119,173,.23)';
+      ctx.fillStyle=(broken||shattered)?'rgba(210,95,90,.19)':'rgba(119,119,173,.23)';
       rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.fill();
       if(amount>0){
         ctx.fillStyle='#8582d5';
@@ -5802,13 +5803,13 @@ class CaptureBattle {
         ctx.fillStyle='rgba(246,245,255,.55)';
         rr(ctx,x-poiseW/2+2,yy+1,Math.max(0,poiseW*amount-4),3,2);ctx.fill();
       }
-      if(broken){
+      if(broken||shattered){
         ctx.strokeStyle='#df847d';ctx.lineWidth=1.6;
         rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.stroke();
       }
       ctx.textAlign='center';ctx.font='800 10px system-ui, sans-serif';
-      ctx.fillStyle=broken?'#ae534b':'#615c96';
-      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):'韧性',x,y+29);
+      ctx.fillStyle=(broken||shattered)?'#ae534b':'#615c96';
+      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):(shattered?'破防':'韧性'),x,y+29);
     }
     ctx.restore();
   }
