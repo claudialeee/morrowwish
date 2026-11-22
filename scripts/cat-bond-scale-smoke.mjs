@@ -58,12 +58,13 @@ try{
       lead:scales.at(-1),wild:scales.slice(0,-1),
       x:WorldMap.view.px,y:WorldMap.view.py,
       canvasWidth:g.W,canvasHeight:g.H,
-      mapNav:['map-index','map-squad'].filter(id=>{
-        let el=document.getElementById(id);return el&&!el.hidden;
-      }).map(id=>{
-        let r=document.getElementById(id).getBoundingClientRect();
-        return {id,y:r.y,h:r.height,visible:getComputedStyle(document.getElementById(id)).display!=='none'};
+      mapNav:['map-index','map-squad'].map(id=>{
+        const el=document.getElementById(id);
+        return {id,visible:!!el&&getComputedStyle(el).display!=='none'};
       }),
+      sharedMapMenu:!!document.getElementById('map-menu')&&
+        !document.getElementById('map-menu').hidden&&
+        getComputedStyle(document.getElementById('map-menu')).display!=='none',
       leakedYardUi:['hud','tabbar','yard-actions','first-quest','collection-goal','yard-duo-status','yard-surprise']
        .filter(id=>{const el=document.getElementById(id);return el&&getComputedStyle(el).display!=='none'&&
          el.getBoundingClientRect().width>0&&el.getBoundingClientRect().height>0;})};
@@ -74,8 +75,9 @@ try{
       'Wild cats must remain distinguishable from environment');
    assert.deepEqual(mapStats.leakedYardUi,[],
       'Yard-only buttons/prompts must not obscure exploration: '+JSON.stringify(mapStats.leakedYardUi));
-   assert.ok(mapStats.mapNav.every(x=>x.y>=51&&!x.visible===false),
-     'Map navigation should sit below the permanent game toolbar: '+JSON.stringify(mapStats.mapNav));
+   assert.ok(mapStats.mapNav.every(x=>!x.visible),
+     'Legacy world/squad buttons must stay hidden; both moved to shared Menu: '+JSON.stringify(mapStats.mapNav));
+   assert.equal(mapStats.sharedMapMenu,true,'Map management remains accessible through top-right Menu');
    await page.screenshot({path:'/tmp/cat-bond-scale-'+spec.name+'-map.png'});
    const battleStats=await page.evaluate(()=>{
     const g=window.__game;
