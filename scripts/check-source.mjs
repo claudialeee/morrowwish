@@ -1036,7 +1036,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('rel?.value)<20')||
     !bondPremium.includes('if(!thumbnail&&dual>.09)')||
     !bondViewer.includes('duo-embedded')||
-    !bondIntro.includes('css/style.css?v=guided-tour-small-cats-20261121-1'))
+    !bondIntro.includes('css/style.css?v=guided-tour-restored-hero-20261121-2'))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
  // Returning from battle must never leave stale additive blend/alpha/filter
@@ -1047,11 +1047,11 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(!cbGame.includes("ctx.globalCompositeOperation='source-over'")||
     !cbGame.includes("ctx.filter='none'")||
     !cbGame.includes("try {")||!cbGame.includes("finally { ctx.restore(); }")||
-    !cbWorld.includes('const yardMagnify=Math.min(2.05')||
+    !cbWorld.includes('const yardMagnify=Math.min(1.32')||
     !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
     !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
-    !yardIndex.includes('js/world.js?v=clear-cats-postbattle-20261121-1')||
+    !yardIndex.includes('js/world.js?v=smaller-courtyard-cats-20261121-2')||
     !yardIndex.includes('js/game.js?v=first-adventure-tour-20261121-2'))
    throw Error('Cat Bond post-battle garden requires crisp kittens, spatial layout, and reset canvas state');
  const fakeWindow={};
@@ -1095,11 +1095,11 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
     !cbMain.includes('sc.getImageData(0,0,240,240)')||
     !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
-    !bondIntro.includes('js/main.js?v=smaller-intro-cats-20261121-1')||
+    !bondIntro.includes('js/main.js?v=original-intro-cats-20261121-2')||
     !cbCss.includes('background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important'))
    throw Error('Cat Bond must balance intro kitten silhouettes and make Start primary');
  if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
-    !cbMain.includes('const catBottom=h-15,targetHeight=106,maxWidth=115')||
+    !cbMain.includes('const catBottom=h-15,targetHeight=132,maxWidth=140')||
     !cbCss.includes("#intro #intro-start{")||
     !cbCss.includes("order:0!important")||
     !cbCss.includes("overflow-y:auto!important")||
@@ -1113,7 +1113,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !bondIntro.includes('role="region" aria-label="猫猫冒险指引"')||
     !bondIntro.includes('js/game.js?v=first-adventure-tour-20261121-2')||
     !bondIntro.includes('js/ui.js?v=tour-panel-navigation-20261121-2')||
-    !cbMain.includes('targetHeight=106,maxWidth=115')||
+    !cbMain.includes('targetHeight=132,maxWidth=140')||
     !cbCss.includes('#first-quest.is-tour')||
     !cbCss.includes('#stage .cb-guide-target')||
     !cbCss.includes('#intro > .intro-cat-gallery{')||
