@@ -100,16 +100,33 @@ draw(){if(typeof portrait!=="undefined"&&portrait){
 G["parcel-panic"]=()=>{
 let rnd=seeded(seed+"parcels");
 const docks=[190,480,770],labels=["CYAN","GOLD","PINK"],zhLabels=["青色","黄色","粉色"];
-let time=0,boxes=[],spawn=.42,life=4,count=0,delivered=0,press=null,drag=null,feedback=null;
+let time=0,boxes=[],spawn=.42,life=4,delivered=0,press=null,drag=null,feedback=null,queue=[],planned=0;
 const zh=()=>window.MorrowwishI18n?.get?.()==="zh"||document.documentElement.lang.startsWith("zh");
 const L=(en,cn)=>zh()?cn:en;
-const lane=x=>docks.findIndex(X=>Math.abs(x-X)<=104);
-const speed=()=>Math.min(355,145+delivered*10.5+time*.75);
-function next(){if(boxes.length||spawn>0)return;const color=count<3?[0,1,2][count]:Math.floor(rnd()*3);boxes.push({x:480,y:108,color});count++;event("parcel_spawned");}
+const lane=x=>x<0||x>960?-1:Math.min(2,Math.floor(x/320));
+const speed=p=>Math.min(315,148+delivered*5+time*.3)*(p?.kind==="express"?1.25:1);
+// The next two orders are planned in advance so the player can anticipate a rush.
+function plan(index){
+ const color=index<3?index:Math.floor(rnd()*3);
+ const kind=index>=5&&index%7===5?"express":index>=8&&index%9===8?"gift":"normal";
+ return {x:480,y:108,color,kind};
+}
+function fillQueue(){while(queue.length<2)queue.push(plan(planned++));}
+function next(){
+ if(boxes.length||spawn>0)return;
+ fillQueue();const parcel=queue.shift();fillQueue();
+ boxes.push(parcel);event("parcel_spawned",{kind:parcel.kind,color:parcel.color});
+}
+function kindLabel(p){return p?.kind==="express"?L("EXPRESS","加急"):p?.kind==="gift"?L("BONUS","奖励"):L("PARCEL","包裹");}
+function nextLabel(){
+ const p=queue[0];if(!p)return "";
+ return L("UP NEXT: ","下一件：")+(zh()?zhLabels[p.color]:labels[p.color])+(p.kind==="normal"?"":" · "+kindLabel(p));
+}
+function shiftLabel(){return L("SHIFT ","班次 ")+(Math.floor(delivered/8)+1)+" · "+(delivered%8)+"/8";}
 function miss(p,wrong=false){
  const i=boxes.indexOf(p);if(i<0)return;
  boxes.splice(i,1);press=null;drag=null;spawn=.29;life--;combo=0;window.mwMiniStats.misses++;window.mwMiniStats.streak=0;shake=8;
- event("parcel_missed",{cause:wrong?"wrong_lane":"timeout",color:p.color});
+ event("parcel_missed",{cause:wrong?"wrong_lane":"timeout",color:p.color,kind:p.kind});
  burst(p.x,p.y,"#f67f97",13);tone(190);vibrate(22);
  feedback={x:480,y:286,text:wrong?L("TRY ANOTHER COLOR","颜色不对"):L("PACKAGE MISSED","超时未投递"),life:.9,good:false};
  if(!life)finish(false,L("You sorted "+delivered+" parcels. Try for a longer streak!","送达 "+delivered+" 件，下一局冲击更高连击！"));
@@ -117,11 +134,20 @@ function miss(p,wrong=false){
 function send(target,input="click"){
  const b=boxes[0];if(!b||target<0)return false;
  if(target!==b.color){miss(b,true);return false}
- boxes.shift();press=null;drag=null;spawn=.14;delivered++;window.mwMiniDelivered=delivered;window.mwMiniStats.delivered=delivered;window.mwMiniStats.streak++;window.mwMiniStats.maxStreak=Math.max(window.mwMiniStats.maxStreak,window.mwMiniStats.streak);if(delivered===5&&window.mwMiniStats.misses===0)window.mwMiniStats.clean5=1;if(delivered===10&&window.mwMiniStats.misses===0)window.mwMiniStats.clean10=1;
- event("parcel_sorted",{input,color:target,delivered});
+ boxes.shift();press=null;drag=null;spawn=.12;delivered++;window.mwMiniDelivered=delivered;window.mwMiniStats.delivered=delivered;window.mwMiniStats.streak++;window.mwMiniStats.maxStreak=Math.max(window.mwMiniStats.maxStreak,window.mwMiniStats.streak);if(delivered===5&&window.mwMiniStats.misses===0)window.mwMiniStats.clean5=1;if(delivered===10&&window.mwMiniStats.misses===0)window.mwMiniStats.clean10=1;
+ if(b.kind==="express")window.mwMiniStats.express++;
+ if(b.kind==="gift")window.mwMiniStats.gifts++;
+ event("parcel_sorted",{input,color:target,delivered,kind:b.kind,shift:Math.floor((delivered-1)/8)+1});
  if(delivered===10)event("parcel_ten_sorted");
- const gain=14+Math.min(combo,12)*3;add(gain);winEffect(docks[target],449);
- feedback={x:docks[target],y:354,text:"+"+gain,life:.85,good:true};
+ const gain=14+Math.min(combo,12)*3+(b.kind==="express"?24:b.kind==="gift"?36:0);
+ add(gain);winEffect(docks[target],449);
+ feedback={x:docks[target],y:354,text:kindLabel(b)+" +"+gain,life:.85,good:true};
+ if(delivered%8===0){
+  const recovered=life<4;life=Math.min(4,life+1);add(80);
+  window.mwMiniStats.shifts++;
+  event("parcel_shift_clear",{shift:delivered/8,restoredLife:recovered?1:0});
+  feedback={x:480,y:286,text:L("SHIFT CLEAR +80","班次完成 +80"),life:1.1,good:true};
+ }
  return true;
 }
 function release(x,y,gesture){
@@ -140,8 +166,8 @@ function release(x,y,gesture){
 }
 return{
  init(){
-  rnd=seeded(seed+"parcels");time=0;boxes=[];spawn=.42;life=4;count=0;delivered=0;window.mwMiniDelivered=0;
-  press=null;drag=null;feedback=null;combo=0;window.mwMiniStats={delivered:0,streak:0,maxStreak:0,misses:0,clean5:0,clean10:0};
+  rnd=seeded(seed+"parcels");time=0;boxes=[];queue=[];planned=0;fillQueue();spawn=.42;life=4;delivered=0;window.mwMiniDelivered=0;
+  press=null;drag=null;feedback=null;combo=0;window.mwMiniStats={delivered:0,streak:0,maxStreak:0,misses:0,clean5:0,clean10:0,express:0,gifts:0,shifts:0};
   info(L("Just click the matching color lane, or press 1 / 2 / 3.","看颜色，直接点击对应通道，或按 1 / 2 / 3。"));
  },
  tick(dt){
@@ -149,10 +175,10 @@ return{
   if(feedback){feedback.life-=dt;if(feedback.life<=0)feedback=null}
   next();
   if(boxes[0]&&!drag){
-   boxes[0].y+=speed()*dt;
+   boxes[0].y+=speed(boxes[0])*dt;
    if(boxes[0].y>433)miss(boxes[0]);
   }
-  info(L(life+" LIVES · "+delivered+" DELIVERED · STREAK "+combo+(delivered>=8?" · RUSH":""),life+" 次机会 · 已送达 "+delivered+" 件 · 连击 "+combo+(delivered>=8?" · 加速中":"")));
+  info(L(life+" LIVES · "+delivered+" DELIVERED · COMBO "+combo+" · "+shiftLabel(),life+" 次机会 · 已送达 "+delivered+" 件 · 连击 "+combo+" · "+shiftLabel()));
  },
  down(x,y){
   const b=boxes[0];press={x,y,fromParcel:!!b&&Math.abs(x-b.x)<52&&Math.abs(y-b.y)<42,dragged:false};
