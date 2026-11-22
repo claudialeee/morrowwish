@@ -123,10 +123,15 @@ try{
    const ordered=hash();
    actorA.species='mengmai';actorB.species='xuewa';
    const reversed=hash();
-   return {n:art.breedCount,firstSide,secondSide,ordered,reversed,
+   return {n:art.supportedBreedCount,originalAtlasCount:art.breedCount,
+     jiafeiArtReady:art.jiafeiArtReady,jiafeiSource:art.jiafeiSource,
+     firstSide,secondSide,ordered,reversed,
      cached:painter.activePaintCacheEntries};
  });
- assert.equal(matches.n,33,'All 33 collectible breeds must have their own painted character');
+ assert.equal(matches.originalAtlasCount,32,'The immutable 8x4 sheet must retain its original 32 cats');
+ assert.equal(matches.n,33,'32 atlas cats + standalone Jiafei must all render');
+ assert.equal(matches.jiafeiArtReady,true,'Real browser must decode the separate Jiafei watercolor');
+ assert.match(matches.jiafeiSource,/jiafei-watercolor-v1\.avif/);
  assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,33,
    'All 33 first-side breeds must produce visibly distinct actual watercolor cats');
  assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,33,
@@ -149,6 +154,26 @@ try{
  assert.equal(await page.locator('#pick-cat-b').inputValue(),'bosi');
  await page.screenshot({path:DIR+'/gallery-32-breed-pickers.png',fullPage:false,animations:'disabled'});
  await page.screenshot({path:DIR+'/gallery-desktop.png',fullPage:true,animations:'disabled'});
+ // Review the actual independent Jiafei watercolor in BOTH real Canvas slots,
+ // not just species() IDs or distinct hashes from a procedural renderer.
+ for(const [a,b,side] of [['jiafei','tangyuan','left'],['tangyuan','jiafei','right']]){
+   await page.evaluate(({a,b})=>{
+     document.getElementById('qa-jiafei-actor')?.remove();
+     const cv=document.createElement('canvas');cv.id='qa-jiafei-actor';
+     cv.width=960;cv.height=540;
+     cv.style.cssText='position:fixed;inset:0;z-index:999999;width:960px;height:540px;background:#f4efe5';
+     document.body.appendChild(cv);
+     const cats=[{uid:'real-a',species:a},{uid:'real-b',species:b}];
+     if(!CatBondPremiumCinematics.draw(cv.getContext('2d'),960,540,{
+       elements:'elec+fire',max:2.75,t:1.18,tier:3,
+       catUids:cats.map(cat=>cat.uid),hideCaptions:true,originalArt:false
+     },uid=>cats.find(cat=>cat.uid===uid)))
+       throw Error('Jiafei dedicated watercolor failed in '+a+' + '+b);
+   },{a,b});
+   await page.locator('#qa-jiafei-actor').screenshot({
+     path:DIR+'/jiafei-raster-'+side+'-desktop.png',animations:'disabled'});
+ }
+ await page.evaluate(()=>document.getElementById('qa-jiafei-actor')?.remove());
  for(const [key,name] of [['dark+light','moon'],['fire+light','sun'],['grass+grass','spring'],['dark+elec','shadow-storm']]){
   for(const tier of [1,2,3]){
    await page.evaluate(({key,tier})=>{
@@ -183,6 +208,11 @@ try{
  assert.ok(mobileLayout.documentWidth<=mobileLayout.viewport+4,
    'Mobile art gallery scrolls horizontally '+JSON.stringify(mobileLayout));
  await mobile.screenshot({path:DIR+'/gallery-mobile.png',fullPage:true,animations:'disabled'});
+ // Phone QA also uses the live breed-matched mode, never the fixed original cats.
+ await mobile.locator('#mode-breeds').click();
+ await mobile.selectOption('#pick-cat-a','jiafei');
+ await mobile.selectOption('#pick-cat-b','tangyuan');
+ await mobile.screenshot({path:DIR+'/jiafei-raster-mobile-gallery.png',fullPage:true,animations:'disabled'});
  // Real viewport coverage: 320px portrait, 390px portrait, 844px
  // landscape, and 1280px desktop. The painting must fill the entire
  // arena, keep cat anatomy intact, and dissolve at both ends of playback.
@@ -229,5 +259,5 @@ try{
  await mobile.close();
  assert.deepEqual(errors,[],'No uncaught JavaScript runtime errors');
  fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,fullStage,errors},null,2));
- console.log('CAT BOND FULL-STAGE CINEMATIC PASS: original 63 frames, all 32 optional breeds, 320/390 portrait, 844 landscape, 1280 desktop, eased in/out and afterglow-safe screen edges.');
+ console.log('CAT BOND FULL-STAGE CINEMATIC PASS: original 63 frames + 32 atlas cats + dedicated Jiafei AVIF in BOTH actor slots, desktop/mobile screenshots, and responsive 320/390/844/1280 layouts.');
 }finally{await browser.close()}
