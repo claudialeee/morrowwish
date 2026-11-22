@@ -1437,7 +1437,7 @@ class CaptureBattle {
         delete t.status[worst]; t.tags=(t.tags||[]).filter(x=>x!==worst);
         this.vfx.text(t.x,t.y-50,'✦ '+(window.MorrowwishI18n?.get?.()!=='zh'?'cleansed':'净化'),'#cfeed8',13);
       }
-      this.vfx.ring(t.x,t.y,{r0:5,vr:225,life:.42,color:'#a8e9b4',width:4});
+      this.vfx.impactType?.(t.x,t.y,'heal',{color:'#a8e9b4'});
       this.vfx.text(t.x,t.y-33,'+'+Math.round(amount),'#93dca1',15);
       if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#a8e9b4');   // show the aid link
     }else if(sk.kind==='buff'){
@@ -4049,7 +4049,8 @@ class CaptureBattle {
       if (atk && atk.alive) { atk._recoilX = -(kx / kl) * 7; atk._recoilY = -(ky / kl) * 7; }
       // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
       // scaled by hit strength — reads as force, not a symmetric puff.
-      this.vfx.impact(e.x, e.y, '#fff2c0', Math.atan2(ky, kx));
+      this.vfx.impactType?.(e.x,e.y,frac>=.17?'heavy':'light',
+        {color:frac>=.17?'#ffdf9d':'#fff2c0',angle:Math.atan2(ky,kx)});
       // CONNECT TICK: a short, combo-pitched pop so every landed hit is audible
       // (previously only the swing had sound → players couldn't tell a hit landed).
       // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
@@ -4063,7 +4064,12 @@ class CaptureBattle {
     this.floater(e.x, e.y - 24, '-' + Math.round(scaled), this.combo >= 15 ? '#ffd36b' : '#fff', big);
     this.spawnBurst(fx, fy, '✦', '#ffd36b', 3);
     this.gainUlt(3);
-    if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', '#ffd36b', 12); this.game.toast(e.sp.name + ' 斗志耗尽！'); }
+    if(e.hp<=0&&e.alive){
+      e.alive=false;this._lastDropped=e;
+      this.vfx.impactType?.(e.x,e.y,'kill',{color:'#ffeca9'});
+      this.spawnBurst(e.x,e.y,'💫','#ffd36b',12);
+      this.game.toast(e.sp.name+' 斗志耗尽！');
+    }
   }
   hurtMe(dmg, fx, fy, f) {
     f = f || this.me();
@@ -4123,7 +4129,7 @@ class CaptureBattle {
     const col = this.elemColor(skill && skill.element);
     // 1) PROTECT (守护): fully blocks the next hit of any kind for its window.
     if ((target.protectT || 0) > 0) {
-      this.vfx.ring(target.x, target.y, { r0: 10, vr: 300, life: 0.3, color: '#9be7c4', width: 5 });
+      this.vfx.impactType?.(target.x,target.y,'guard',{color:'#9be7c4'});
       this.vfx.text(target.x, target.y - 40, '格挡', '#9be7c4', 15);
       return { blocked: true, reflected: false, dealt: 0 };
     }
@@ -4133,7 +4139,7 @@ class CaptureBattle {
       proj._reflects = (proj._reflects || 0) + 1;
       proj.owner = side === 'me' ? 'wild' : 'me';
       proj.vx = -proj.vx; proj.vy = -proj.vy; proj.life = Math.max(proj.life, 1.2);
-      this.vfx.ring(target.x, target.y, { r0: 8, vr: 260, life: 0.25, color: '#b8e0ff', width: 4 });
+      this.vfx.impactType?.(target.x,target.y,'reflect',{color:'#b8e0ff'});
       this.vfx.text(target.x, target.y - 40, '反弹', '#b8e0ff', 15);
       return { blocked: false, reflected: true, dealt: 0 };
     }
@@ -4160,7 +4166,7 @@ class CaptureBattle {
           target.poise = Math.max(0, (target.poise ?? target.poiseMax) - dmg);
           if (target.poise <= 0 && target.staggerT <= 0) {
             target.staggerT = 2.2; target.poise = target.poiseMax;   // break → 虚弱 window
-            this.vfx.ring(target.x, target.y, { r0: 10, vr: 420, life: 0.5, color: '#ffd36b', width: 6 });
+            this.vfx.impactType?.(target.x,target.y,'stagger',{color:'#ffd36b'});
             this.vfx.text(target.x, target.y - 46, window.MorrowwishI18n?.get?.()==='zh'?'虚弱!':'STAGGER!', '#ffd36b', 16);
             this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.08);
             window.MorrowwishAudio?.effect?.('crash');
@@ -4204,7 +4210,7 @@ class CaptureBattle {
       // special can leave a DoT/soft-CC on the cat (mirror of applyHitEffects).
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       this.hurtMe(dealt, x, y, target);
-      this.vfx.impact(x, y, col);
+      this.vfx.impactType?.(x,y,'light',{color:col});
       return { blocked: false, reflected: false, dealt };
     }
   }
