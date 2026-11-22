@@ -252,7 +252,11 @@ function draw(ctx,v,W,H,time=0,layer='back'){
  const R=Math.min(300,Math.max(108,Math.min(W,H)*.40));
  const s={x:v.x,y:v.y,R,p,a:fade*(layer==='front'?.85:1),
   angle:v.angle||0,targets:v.targets||[],time,front:layer==='front'};
- ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
+ // Purple shadow and dark-blue thunder must not be bleached into white by
+ // additive compositing over a bright garden floor. Other spells keep glow.
+ ctx.save();ctx.globalCompositeOperation=
+   v.skillId==='voidMaw'||v.skillId==='thunderYowl'?'source-over':'lighter';
+ ctx.lineCap='round';ctx.lineJoin='round';
  paint[v.skillId](ctx,s);
  ctx.restore();return true;
 }
