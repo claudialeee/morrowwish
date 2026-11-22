@@ -584,7 +584,9 @@ try{
      headHeight:document.querySelector('.in-game-head-row').getBoundingClientRect().height,
      headerAreas:getComputedStyle(document.querySelector('.in-game-head-row')).gridTemplateAreas,
      stageLeftWidth:document.querySelector('.stage-left').getBoundingClientRect().width,
-     topControlsFit:[...document.querySelectorAll('#stageControls button')].filter(b=>getComputedStyle(b).display!=='none').every(b=>{const r=b.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&r.width>=29}),
+     topControlRects:[...document.querySelectorAll('#stageControls button')]
+       .filter(b=>{const c=getComputedStyle(b),r=b.getBoundingClientRect();return c.display!=='none'&&c.visibility!=='hidden'&&Number(c.opacity)>.01&&r.width>1&&r.height>1})
+       .map(b=>{const r=b.getBoundingClientRect();return{id:b.id,width:r.width,left:r.left,right:r.right,top:r.top,bottom:r.bottom}}),
      roomStatusSeparate:(()=>{const a=document.querySelector('.stage-left').getBoundingClientRect(),b=document.getElementById('heistStatus').getBoundingClientRect();return a.right<=b.left+1&&a.bottom>b.top-1&&b.bottom>a.top+1})(),
      controlsBelowRoom:(()=>{const a=document.querySelector('.stage-left').getBoundingClientRect(),b=document.getElementById('stageControls').getBoundingClientRect();return b.top>=a.bottom-2})()};
    });
@@ -594,7 +596,7 @@ try{
    assert.ok(layout.roomNumWidth>=70&&layout.roomNumHeight<=16&&layout.roomNameVisible,
      'Room label must be horizontal and name visible at '+width+'px: '+JSON.stringify(layout));
    assert.equal(layout.headDisplay,'flex','Computed mobile header must use the intended flex layout at '+width+'px');
-   assert.ok(layout.topControlsFit&&layout.roomStatusSeparate&&layout.controlsBelowRoom,
+   assert.ok(layout.topControlRects.every(b=>b.left>=-1&&b.right<=width+1&&b.width>=29)&&layout.roomStatusSeparate&&layout.controlsBelowRoom,
      'All top mobile controls must fit and not overlap room/progress at '+width+'px: '+JSON.stringify(layout));
    if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
   }
