@@ -4926,14 +4926,14 @@ class CaptureBattle {
         ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff5a7a'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(e.x, e.y, 34 + 3 * Math.sin(this.t * 5), 0, Math.PI * 2); ctx.stroke();
         ctx.globalAlpha = pulse; ctx.fillStyle = '#ff5a7a'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('🎯 集火', e.x, e.y - 58);
+        ctx.fillText('🎯 集火', e.x, e.y - 98);
         ctx.restore();
       }
       const elemSym = this.elemSymbol(e.element);
-      this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
+      this.hpTag(ctx, e.x, e.y - 78, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
         `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT});
-      // Stable compact grid ABOVE the HP/poise card. Previous y=e.y-50 drew
-      // icons directly over the name/HP label, causing severe visual overlap.
+      // Compact status grid BELOW the HP + poise card. Lift the card to reserve
+      // two rows between its bottom edge and the cat's head.
       if (e.status) {
         const TAG=Skills.TAG_INFO||{};
         const icons={burn:'🔥',soak:'💧',shock:'⚡',oil:'🛢️',chill:'❄️',
@@ -4948,7 +4948,7 @@ class CaptureBattle {
         shown.forEach((tg,i)=>{
           const row=Math.floor(i/4), col=i%4;
           const inRow=Math.min(4,shown.length-row*4);
-          const ix=e.x+(col-(inRow-1)/2)*19,iy=e.y-80-row*19;
+          const ix=e.x+(col-(inRow-1)/2)*19,iy=e.y-36+row*18;
           ctx.fillText(icons[tg],ix,iy);
           const info=TAG[tg];
           const frac=info?.ttl?Math.max(0,Math.min(1,e.status[tg]/info.ttl)):0;
