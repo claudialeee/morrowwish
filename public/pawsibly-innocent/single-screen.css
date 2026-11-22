@@ -991,3 +991,128 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
   flex-shrink:0!important;
  }
 }
+
+
+/* 2026-11-22: Desktop HUD must reserve actual width for the room title,
+   instead of squeezing it between the score and duplicate audio controls. */
+.single-screen-game .achievement-pocket{position:relative;flex-shrink:0;overflow:visible!important}
+.single-screen-game .achievement-pocket>span{font-size:18px;line-height:1}
+.single-screen-game #badgePocketCount{
+ position:absolute;right:-5px;bottom:-5px;min-width:17px;height:17px;
+ padding:1px 3px;border-radius:9px;background:#704c82;color:white;
+ border:1px solid #fffaf4;font:900 10px/14px Nunito,system-ui;text-align:center;
+}
+.single-screen-game .achievement-pocket.badge-received{animation:pocketPulse .5s ease-out}
+@keyframes pocketPulse{0%{box-shadow:0 0 0 0 #c68ab9}50%{box-shadow:0 0 0 7px #c68ab966}100%{box-shadow:0 0 0 0 #c68ab900}}
+@media (min-width:701px){
+ .single-screen-game .in-game-head-row{
+  display:grid!important;grid-template-columns:minmax(205px,1.2fr) max-content minmax(0,2fr)!important;
+  align-items:center!important;column-gap:9px!important;row-gap:4px!important;
+  height:auto!important;max-height:none!important;min-height:46px!important;
+  padding:5px 9px!important;overflow:visible!important
+ }
+ .single-screen-game .in-game-head-row .stage-left{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  flex:initial!important;gap:5px!important
+ }
+ .single-screen-game .in-game-head-row .stage-left .sticker{
+  flex:1 1 auto!important;min-width:0!important;max-width:100%!important;
+  width:100%!important;padding:4px 8px!important;overflow:hidden!important
+ }
+ .single-screen-game #roomNum,.single-screen-game #roomTag{
+  display:block!important;white-space:nowrap!important;word-break:normal!important;
+  overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important
+ }
+ .single-screen-game #roomNum{font-size:10px!important}
+ .single-screen-game #roomTag{font-size:clamp(11px,1.2vw,14px)!important}
+ .single-screen-game .in-game-head-row .heist-status{
+  white-space:nowrap!important;margin:0!important;max-width:none!important;
+  font-size:13px!important;padding:7px 9px!important;justify-self:center!important
+ }
+ .single-screen-game #stageControls{
+  display:flex!important;justify-content:flex-end!important;align-items:center!important;
+  width:100%!important;min-width:0!important;flex:none!important;
+  flex-wrap:nowrap!important;gap:4px!important
+ }
+ .single-screen-game #stageControls>.hud-icon,
+ .single-screen-game #stageControls>.mw-fullscreen-toggle{
+  box-sizing:border-box!important;flex:0 0 36px!important;
+  width:36px!important;min-width:36px!important;height:38px!important;min-height:38px!important;
+  max-width:36px!important;border-radius:10px!important;font-size:17px!important
+ }
+ .single-screen-game #stageControls #menuButton{
+  flex:0 0 auto!important;width:auto!important;min-width:76px!important;
+  max-width:none!important;padding:0 9px!important;font-size:13px!important
+ }
+ .single-screen-game #stageControls #mw-fullscreen-toggle{width:36px!important;min-width:36px!important;max-width:36px!important;flex-basis:36px!important;height:38px!important;min-height:38px!important}
+ .single-screen-game #stageHomeLabel{display:none!important}
+ .single-screen-game #stageHome{box-sizing:border-box!important;padding:0!important;width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important}
+}
+@media(min-width:701px) and (max-width:1070px){
+ .single-screen-game .in-game-head-row{
+  grid-template-columns:minmax(0,1fr) max-content!important;
+  grid-template-areas:"room status" "tools tools"!important;
+  row-gap:3px!important
+ }
+ .single-screen-game .in-game-head-row .stage-left{grid-area:room!important}
+ .single-screen-game .in-game-head-row .heist-status{grid-area:status!important}
+ .single-screen-game .in-game-head-row #stageControls{grid-area:tools!important;justify-content:flex-end!important}
+}
+@media(max-width:700px){
+ .single-screen-game #stageControls>.achievement-pocket{
+  width:34px!important;min-width:34px!important;max-width:34px!important;
+  height:35px!important;min-height:35px!important;padding:0!important
+ }
+ .single-screen-game .achievement-pocket>span{font-size:15px}
+ .single-screen-game #badgePocketCount{font-size:9px;min-width:15px;height:15px;line-height:12px}
+}
+/* Reward acknowledgement: compact for 850ms, then visibly flies into the badges pocket. */
+.single-screen-game .achievement-toast{
+ top:17%!important;width:max-content!important;max-width:min(300px,83%)!important;
+ min-height:0!important;gap:8px!important;padding:8px 10px!important;
+ border-radius:12px!important;border-width:1px!important;
+ animation:badgeAppear .18s ease-out both!important;will-change:transform,opacity;
+}
+.single-screen-game .achievement-toast .award-icon{
+ width:37px!important;height:37px!important;flex:0 0 37px!important;
+ border-radius:9px!important;font-size:22px!important
+}
+.single-screen-game .achievement-toast .award-label{font-size:9px!important}
+.single-screen-game .achievement-toast .award-title{font-size:14px!important;line-height:1.2!important}
+.single-screen-game .achievement-toast .award-desc{font-size:10px!important;line-height:1.2!important}
+.single-screen-game .achievement-toast.collecting{
+ animation:badgeCollect .5s cubic-bezier(.5,0,.9,.6) both!important
+}
+@keyframes badgeAppear{
+ from{opacity:0;transform:translate(-50%,-9px) scale(.92)}
+ to{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+@keyframes badgeCollect{
+ from{opacity:1;transform:translate(-50%,0) scale(1)}
+ 75%{opacity:.9}
+ to{opacity:0;transform:translate(calc(-50% + var(--badge-dx,0px)),var(--badge-dy,-100px)) scale(.15)}
+}
+@media(prefers-reduced-motion:reduce){
+ .single-screen-game .achievement-toast,.single-screen-game .achievement-toast.collecting{
+  animation:none!important;transition:opacity .15s ease!important
+ }
+ .single-screen-game .achievement-toast.collecting{opacity:0}
+ .single-screen-game .achievement-pocket.badge-received{animation:none}
+}
+/* Richer, readable end-of-room recap. */
+.single-screen-game .overlay .modal .result-verdict{
+ color:#7b5876;font-weight:850;font-size:12px;line-height:1.35;
+ margin:5px auto 9px;max-width:340px
+}
+.single-screen-game .overlay .modal .result-breakdown{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:6px;margin:9px 0 11px;text-align:left
+}
+.single-screen-game .overlay .result-stat{
+ display:flex;justify-content:space-between;align-items:center;gap:5px;
+ padding:7px 9px;background:#fff1e9;border:1px solid #efdfd9;border-radius:10px;
+ font-size:11px;min-width:0
+}
+.single-screen-game .overlay .result-stat span{color:#8d7383;min-width:0;line-height:1.2}
+.single-screen-game .overlay .result-stat strong{color:#6f496b;white-space:nowrap;font-size:12px}
+@media(max-width:420px){.single-screen-game .overlay .result-stat{padding:6px;font-size:10px}.single-screen-game .overlay .result-stat strong{font-size:10px}}
