@@ -223,18 +223,18 @@
   // power = multiplier of fighter.dmg. appliesTag seeds the combo system.
   const SKILLS = [
     // ---- 火 fire ----
-    { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 1.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
+    { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
     { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.35, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
-    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 1.35, reach: 156, width: 22, sweep: .72, power: 1.04, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。', unlock: { level: 6, element: 'fire' } },
+    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 1.35, reach: 156, width: 22, sweep: .72, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 water ----
-    { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.0, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
-    { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 4.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
+    { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
+    { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
     { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal','cleanse'],appliesTag: null, vfx: 'orb',       desc: '舔毛理顺安抚自身，回复斗志并洗去一种异常状态。' },
-    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 0.9, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
+    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.3, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
-    { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 6.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
+    { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
     { id: 'guardStance', name: '守护',   element: 'light', kind: 'buff', shieldType: 'protect', power: 0, cd: 9.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '极短时间完全格挡下一次攻击；结束后短暂易伤。' },
     { id: 'mirrorWall',  name: '炸毛墙', element: 'elec',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '全身毛炸成一道静电墙，弹回飞行弹体；架墙期间自身被定住。' },
     { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
@@ -252,7 +252,7 @@
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.4, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },
     { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
     { id: 'lightningOrb',name: '球状闪电', element: 'elec', kind: 'projectile', power: 1.05, cd: 4.8, ultCost: 0, homing: 3.4, tags: ['shock','ranged'], appliesTag: 'shock', vfx: 'orb', desc: '缓慢浮游的电球转向敌人，命中放出感电火花。', unlock: { level: 5, element: 'elec' } },
-    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.22, reach: 270, width: 13, power: .89, cd: 5.5, ultCost: 0, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪短暂站定，持续吐出可转向的折线雷电。', unlock: { level: 4, element: 'elec' } },
+    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.22, reach: 270, width: 13, power: 1.3, cd: 5.5, ultCost: 0, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪短暂站定，持续吐出可转向的折线雷电。', unlock: { level: 4, element: 'elec' } },
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
@@ -265,7 +265,7 @@
     { id: 'highGround', name: '居高临下', element: 'light', kind: 'leap',       power: 1.4, cd: 4.5, ultCost: 0,  heavy: true, tags: ['melee','blind'], appliesTag: 'blind', vfx: 'impact', desc: '抢占高处俯冲而下的一记重扑，眩光致盲。侧后方突袭更狠。' },
     { id: 'blessFur',   name: '呼噜光环', element: 'light', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','regen'],  appliesTag: null,    vfx: 'orb',       desc: '发出安心的呼噜声形成光环，提升自身伤害。' },
     { id: 'dawnHeal',   name: '慢眨眼',   element: 'light', kind: 'heal',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '对你缓缓眨眼表达信任，回复斗志。' },
-    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.1, cd: 0,   ultCost: 60, tags: ['buff','ult','weaken'],    appliesTag: ['blind','weaken'], vfx: 'ring',      desc: '【必杀】月华绽放，致盲并削弱——敌人伤害减半。' },
+    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 60, tags: ['buff','ult','weaken'],    appliesTag: ['blind','weaken'], vfx: 'ring',      desc: '【必杀】月华绽放，致盲并削弱——敌人伤害减半。' },
 
     // ========================================================================
     // GATED / LEARNED skills — NOT innate. Each carries an `unlock` descriptor

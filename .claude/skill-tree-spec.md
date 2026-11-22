@@ -77,3 +77,48 @@ homingSeed 以外的纯重复项 — 复查后清单可能缩到很小。
   **半透明的墙 或 球状护罩**(semi-transparent barrier wall / dome bubble around the cat)
 - 现在 vfx 只有 ring,要加一个持续的半透明护罩绘制(跟随猫,持续到护盾结束),区分 barrier(墙)/dome(球)
 - 改 vfx.js(加护罩绘制)+ battle.js(护盾激活时挂载/绘制护罩,shieldT/protectT/reflectT 期间)
+
+---
+
+# v2 设计 (用户确认): 通用模板 × 6属性 + 本系专属 + 终结技
+
+分析依据: /tmp/tmplscan.mjs 扫描 — 技能分三类(template-able / special-signature / ult)。
+元素×原型覆盖矩阵(/tmp/elemmap.mjs)显示每系都有大量 role 缺口(火无 dash/盾/愈, 暗无盾/愈/buff,
+电无 melee/heal),这就是"草猫配电技能/跨系借"的根因。
+
+## 第1层: 通用模板(数值共用, 属性染色自动派生) — 命名=元素形象名
+一个 ELEMENT_KIT 表 + 一个 genericSkills() 工厂: 每模板 × 每系, 若该系缺此原型则生成注入 SKILLS。
+数值由模板统一(等 balance agent 结论定稿), 元素只换 tag/颜色/名字。所有 role 不再跨系借。
+
+模板清单(current → 补齐):
+- 爪击 melee   pow~1.3 cd~1.5  现:炽爪(火)影袭(暗) → 补 水/草/电/光
+- 弹射 projectile pow~1.0 cd~2.0 现:水鞭/叶刃/棱光束(有cc的归专属) → 补齐6系基础弹
+- 冲刺 dash    pow~1.4 cd~4.0  现:仅电(疯跑冲刺=专属heavy) → 补 火/水/草/暗/光 通用冲刺
+- 护盾 shield-buff cd~7.0     现:泡泡幕(水barrier)/守护(光protect)/炸毛墙(电reflect) → 补 火/草/暗(半透明罩, ward-art 已支持 barrier/reflect/protect)
+- 愈合 heal    cd~7.5         现:慢眨眼/抚心掌(光)/光合(草)/舔毛(水) → 补 火/电/暗
+
+命名(爪击系示例): 烈焰爪(火) 碧波爪(水) 藤蔓爪(草) 雷光爪(电) 暗影爪(暗) 耀光爪(光)
+护盾系: 烈焰罩/碧波罩/…  愈合系: 炽愈/润愈/…  (工厂按 ELEMENT_KIT.prefix 组名)
+
+ELEMENT_KIT 表(每系): { tag, color, 名字词根 }
+  fire:{tag:'burn',color:'#ff7a3c'} water:{tag:'soak',...} grass:{tag:'bleed'/'bind'}
+  elec:{tag:'shock'} dark:{tag:'bleed'} light:{tag:'blind'}
+
+## 第2层: 本系专属(手写保留, 不套模板 — 体现各系独特玩法)
+scan 已识别(有 windup/channel/grow/homing/field/shield/cc/heavy 机制), 全部保留:
+- 火: 咳毛球(蓄力精准) 弓背炸毛(威吓) 横扫喷焰(channel) 彗星爪(heavy升级)
+- 水: 水枪(引导beam) 潮汐池(场地) 拨下桌(击飞) 霜锥(冰冻)
+- 草: 孢子涨(grow) 追踪草种(homing) 纸箱埋伏(隐身) 泰山压顶(跳砸) 荆棘鞭(升级)
+- 电: 电弧(连锁) 球状闪电(homing) 雷流喷射(channel) 雷遁突袭(heavy升级)
+- 暗: 猫咒(expose) 戏弄爪(dizzy) 绝顶扑/百战斩(heavy升级)
+- 光: 棱光束(致盲) 居高临下(跳跃致盲)
+
+## 第3层: 终结技(每系1 ult, 已齐): 金乌焱/潮汐掌/阳光烈焰/雷鸣啸/虚吞/月华环
+
+## 实现(加法, 小 diff, 不与 owner churn 大撞)
+1. ELEMENT_KIT 常量表 + TEMPLATES 常量(模板数值) + genericSkills() 工厂
+2. 工厂只对"该系缺的原型"生成 → 不覆盖已有专属/升级技
+3. recommendLoadout 的本系优先现在天然满足(每系都有本系 role 技能了)
+4. 矩阵不变量 INV: 每系 melee/projectile/dash/shield/heal 原型齐全(覆盖矩阵无✗)
+5. i18n: 生成名进字典(或走通用翻译路径)
+6. 数值待 balance agent 结论定稿后再锁 TEMPLATES 的 pow/cd
