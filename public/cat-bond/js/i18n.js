@@ -568,6 +568,13 @@
     '嗜血突袭!': 'Bloodthirst Strike!',
     '圣光制裁!': 'Holy Judgment!',
     '暗影处决!': 'Shadow Execution!',
+    // expanded elemental reactions
+    '藤蔓缠水!': 'Vine Soak!', '冰火爆裂!': 'Ice-Fire Burst!', '折射冰华!': 'Prism Shatter!',
+    '溺影侵蚀!': 'Drowning Shadow!', '热离子化!': 'Thermal Ionize!', '炽焰骤熄!': 'Flame Doused!',
+    '油烟引爆!': 'Oil Spark Blast!', '离子过曝!': 'Ion Overexposure!', '雷击落种!': 'Thunder Sprout!',
+    '焚烬藤蔓!': 'Scorch the Vines!', '缚身过载!': 'Bound Overload!', '眩雷贯穿!': 'Dazed Thunder!',
+    '致命弱点!': 'Fatal Weakness!', '灼心强袭!': 'Searing Strike!', '荆棘深撕!': 'Thorn Rend!',
+    '净光裁决!': 'Purifying Verdict!', '炫目爆闪!': 'Blinding Flash!', '烈焰叠烧!': 'Stacked Burn!',
 
     // ---- status tags ----
     '灼烧': 'Burn', '淋湿': 'Soak', '感电': 'Shock', '浸油': 'Oil',
