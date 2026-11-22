@@ -66,12 +66,22 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 @media(max-width:950px){.breed-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:520px){.breed-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.gallery{gap:8px}.duo-card{border-radius:14px;padding:5px}.duo-card canvas{border-radius:9px}.card-copy{padding:7px 4px}.card-name{font-size:12px}.card-meta{font-size:10px}.side-note{display:flex;padding:16px}h1{font-size:29px}.player{padding:6px;border-radius:16px}.player-stage{border-radius:11px}.controls{gap:6px}.controls button{flex:1 1 auto;padding:10px 9px;font-size:12px}.review{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.duo-card{transition:none}}
+
+.master-art-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.master-art{border:1px solid #e5e0d5;border-radius:17px;background:#fffaf2;overflow:hidden;box-shadow:0 8px 18px #4f6a4b12}
+.master-art .painting-crop{position:relative;overflow:hidden;width:100%;aspect-ratio:650/366}
+.master-art .painting-crop img{position:absolute;display:block;max-width:none;width:200%;height:400%;object-fit:fill}
+.master-art .painting-name{font-weight:800;color:#3e5d4c;padding:9px 12px 4px;font-size:14px}
+.master-art .painting-hint{font-size:11px;color:#7e897b;padding:0 12px 12px;line-height:1.5}
+@media(max-width:700px){.master-art-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.master-art .painting-name{font-size:12px;padding:7px 9px 3px}
+.master-art .painting-hint{font-size:10px;padding:0 9px 9px}}
 </style>
 </head>
 <body><main>
 <header><div class="eyebrow">MORROW WISH · CAT BOND</div><a href="./">返回游戏 / Back to game</a></header>
 <section class="intro"><h1>21 种双猫合击 · 动画总览</h1>
-<p class="sub">六种元素，21 套专属合击，每套分默契 20、60、90 三种不同动作。可逐个播放、连播全部，或在下方选择 32 种猫咪更换出演品种。动画直接调用游戏当前的演出代码。</p>
+<p class="sub">已恢复你认可的完整精美猫咪原画。下方可查看当前 21 种合击组合与默契阶段，以及原始 8 张精美绘画。21 套完全独立的角色动画和 32 种猫咪的专属合击原画还没有真正完成。</p>
 <span class="review">仅供预览 · 不会修改游戏存档或解锁进度</span></section>
 <section class="viewer-layout">
 <div class="player">
@@ -86,24 +96,23 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 <button id="playlist" class="primary" type="button" aria-pressed="false">▶ 连播全部 21 种</button>
 </div></div>
 <aside class="side-note">
-<h3>更换出演猫咪 · 32 种</h3>
+<h3>当前元素搭配 · 图鉴示例猫咪</h3>
 <div class="kitten-line"><canvas id="cat-a" width="86" height="72"></canvas><span><b id="cat-name-a">墨球</b><small id="element-a">暗属性</small></span></div>
 <div class="kitten-line"><canvas id="cat-b" width="86" height="72"></canvas><span><b id="cat-name-b">幽灵</b><small id="element-b">暗属性</small></span></div>
-<div class="actor-controls">
-<label>左侧猫咪品种<select id="actor-a" aria-label="左侧猫咪品种"></select></label>
-<label>右侧猫咪品种<select id="actor-b" aria-label="右侧猫咪品种"></select></label>
-</div><p id="move-desc" class="details"></p>
-<div><strong style="font-size:13px;display:block;margin-bottom:8px">动作阶段预览</strong><div class="tier-row">
+<p class="note">右侧猫咪图鉴不代表合击原画中的品种。目前原画仍是固定角色，无法按选择真正替换品种。</p><p id="move-desc" class="details"></p>
+<div><strong style="font-size:13px;display:block;margin-bottom:8px">默契阶段效果（独立动作尚未完成）</strong><div class="tier-row">
 <button id="tier-1" type="button" data-tier="1">默契 20</button>
 <button id="tier-2" type="button" data-tier="2">默契 60</button>
 <button id="tier-3" type="button" data-tier="3" aria-pressed="true">默契 90</button>
 </div></div>
-<p class="note">审核页默认展示最高解锁阶段，以便比较完整动画。游戏内的技能仍须正常培养默契解锁。以下静态卡片是每套动画的真实中途画面，不是另一批替代插画。</p>
+<p class="note">目前三档仍共用同一套原画，部分特效和镜头有区别，但还不是三组独立动作。解锁条件没有改变。</p>
 </aside></section>
-<section class="section-head"><h2>全部组合</h2><span id="gallery-count">21 / 21</span></section>
+<section class="section-head"><h2>你认可的精美原画 · 8 张</h2><span>前三张优先展示</span></section>
+<div id="premium-art-grid" class="master-art-grid" aria-label="最初高质量猫咪合击原画资料库"></div>
+<section class="section-head"><h2>全部 21 种合击组合</h2><span id="gallery-count">21 / 21 · 8 张基础原画</span></section>
 <div id="gallery" class="gallery" aria-label="全部双猫合击动画"></div>
-<section class="section-head"><h2>猫咪品种资料库 · 32 种</h2><span>点击任意猫咪放进合击动画</span></section>
-<div id="breed-gallery" class="breed-gallery" aria-label="全部猫咪品种原画资料库"></div>
+<section class="section-head"><h2>32 种可收集猫咪图鉴</h2><span>展示日常游戏猫咪形象，不是合击特写原画</span></section>
+<div id="breed-gallery" class="breed-gallery" aria-label="全部可收集猫咪的日常游戏图鉴"></div>
 <footer>动画审核专页 · Noindex · 不影响普通玩家存档和游戏平衡</footer>
 </main>
 <script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'};</script>
@@ -190,16 +199,9 @@ function refresh(){
  byId('current-index').textContent=String(index+1).padStart(2,'0')+' / '+entries.length;
  byId('current-element').textContent=item.els.map(e=>elements[e]).join(' × ');
  byId('move-desc').textContent=CatRelations.title(item.a,item.b).description;
- for(const side of ['a','b']){
-   const sel=byId('actor-'+side),el=item.els[side==='a'?0:1];
-   sel.innerHTML=breedPools[el].map(id=>{
-     const sp=GameData.speciesById(id);
-     return '<option value="'+id+'"'+(item[side].species===id?' selected':'')+'>'+GameData.speciesName(sp)+'</option>';
-   }).join('');
- }
  paintCats(item);
  document.querySelectorAll('[data-duo-index]').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
- byId('gallery-count').textContent=entries.length+' / 21';
+ byId('gallery-count').textContent=entries.length+' / 21 · 8 张基础原画';
 }
 function choose(i){
  index=(i+entries.length)%entries.length;started=performance.now();hold=0;playing=true;
@@ -211,6 +213,22 @@ function setSequence(on){
  byId('playlist').textContent=on?'■ 停止连播':'▶ 连播全部 21 种';
  if(on)choose(0);
 }
+const references=[
+ [0,'星月交辉 · 月光守护','月色银白 · 完整猫咪绘画'],
+ [3,'日曜喵闪 · 日曜之光','金桃色 · 柔和阳光'],
+ [1,'双叶春醒 · 春日花开','樱粉与浅绿 · 花园'],
+ [2,'水纹连携','浅蓝水色 · 水流'],
+ [4,'暗影旋风','深紫原稿，配色还未达到目标'],
+ [5,'雷影突袭','深紫原稿，配色还未达到目标'],
+ [6,'双影十字爪','深紫原稿，配色还未达到目标'],
+ [7,'月下双猫斩','深紫原稿，配色还未达到目标']
+];
+byId('premium-art-grid').innerHTML=references.map(([frame,title,note])=>{
+ const col=frame%2,row=Math.floor(frame/2);
+ return '<figure class="master-art"><div class="painting-crop"><img alt="'+title+
+ '" loading="lazy" src="assets/duo-premium-sheet.webp" style="left:-'+(col*100)+'%;top:-'+(row*100)+'%"></div>'+
+ '<figcaption class="painting-name">'+title+'</figcaption><p class="painting-hint">'+note+'</p></figure>';
+}).join('');
 const gallery=byId('gallery');
 gallery.innerHTML=entries.map((v,i)=>
  '<button type="button" class="duo-card" data-duo-index="'+i+'" aria-current="false" aria-label="播放 '+v.zh+'">'+
@@ -232,36 +250,17 @@ byId('pause').onclick=()=>{
  byId('pause').setAttribute('aria-pressed',String(!playing));
 };
 byId('playlist').onclick=()=>setSequence(!sequence);
-for(const side of ['a','b'])byId('actor-'+side).onchange=e=>{
- entries[index][side].species=e.target.value;
- previewDone=false;started=performance.now();refresh();
-};
-// The same cinematic breed renderer used for battles appears in this 32-cat
-// reference catalog, including seven new catchable species.
+// The painted duo uses fixed subjects. Never pretend that selecting a breed changes its painted characters.
 const breedGallery=byId('breed-gallery');
 breedGallery.innerHTML=GameData.SPECIES.map((sp,i)=>
- '<button class="breed-card" type="button" data-breed-id="'+sp.id+'" aria-label="预览 '+GameData.speciesName(sp)+'">'+
+ '<article class="breed-card" data-breed-id="'+sp.id+'">'+
  '<canvas width="180" height="215" aria-hidden="true"></canvas>'+
  '<strong>'+GameData.speciesName(sp)+'</strong><small>'+elements[Skills.elementOf(sp.id)]+
- '属性 · '+sp.rarity+'</small></button>'
+ '属性 · '+sp.rarity+'</small></article>'
 ).join('');
 breedGallery.querySelectorAll('[data-breed-id]').forEach(b=>{
  const sp=GameData.speciesById(b.dataset.breedId);
- const cv=b.querySelector('canvas'),c=cv.getContext('2d');
- c.clearRect(0,0,cv.width,cv.height);
- c.save();c.translate(cv.width*.50,cv.height*.89);
- CatBondDuoPortraits.draw(c,sp,cv.height*.70,.43,'sprout','#b9cfb8',3);
- c.restore();
- b.onclick=()=>{
-   const el=Skills.elementOf(sp.id);
-   let target=index;
-   if(!entries[target].els.includes(el))
-     target=entries.findIndex(item=>item.els.includes(el));
-   setSequence(false);choose(target);
-   const chosen=entries[target],side=chosen.els[0]===el?'a':'b';
-   chosen[side].species=sp.id;previewDone=false;refresh();
-   document.querySelector('.viewer-layout').scrollIntoView({behavior:'smooth',block:'start'});
- };
+ CatArt.renderCatThumb(b.querySelector('canvas'),sp);
 });
 if(GameData.SPECIES.length!==32||new Set(entries.flatMap(v=>[v.a.species,v.b.species])).size!==32){
  status.textContent='品种资料库检查失败：应覆盖全部 32 种可收集猫咪。';
