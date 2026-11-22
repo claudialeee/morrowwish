@@ -914,10 +914,16 @@ const UI = {
   // Visitor gifts are resource dictionaries (e.g. {coins: 12, fish: 1}), not printable strings.
   formatVisitorGift(gift) {
     if (!gift || typeof gift !== 'object' || Array.isArray(gift)) return '';
-    return Object.entries(gift)
-      .filter(([, amount]) => Number.isFinite(amount) && amount > 0)
-      .map(([resource, amount]) => `${this.resIcon(resource) || resource}+${amount}`)
-      .join(' ');
+    // Current currencies are only coins and fish. Convert retired yarn/treats
+    // before displaying gifts: two legacy keys must not show as duplicate coins.
+    const sums=new Map();
+    for(const [key,amount] of Object.entries(gift)){
+      if(!Number.isFinite(amount)||amount<=0)continue;
+      const currency=key==='yarn'?'coins':key==='treats'?'fish':key;
+      sums.set(currency,(sums.get(currency)||0)+amount);
+    }
+    return [...sums].map(([currency,amount])=>
+      `${this.resIcon(currency) || currency}+${amount}`).join(' ');
   },
   // Two currencies remain (🪙 coins, 🐠 fish); legacy yarn→coins icon, treats→fish icon
   // keep old in-flight reward dicts rendering sensibly.
