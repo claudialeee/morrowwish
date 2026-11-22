@@ -489,14 +489,18 @@ gaugeText.length=0;
 poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa','Friendly Cat');
 assert.ok(!gaugeText.includes('韧性'),'normal HP labels should not gain enemy poise gauge');
 
-assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
+assert.ok(skillFx,'skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
 const normalIDs=Skills.SKILLS.filter(sk=>!sk.ultCost).map(sk=>sk.id);
-assert.equal(normalIDs.length,40,'skill list contains 40 normal moves');
-assert.equal(signatureIDs.length,40,'all 40 normal skills must have VFX');
-assert.equal(new Set(signatureIDs).size,40,'each signature id must be unique');
+// The invariant is 1:1 coverage (every non-ult skill has a unique VFX signature, none
+// omitted) — derived from the live roster, not a brittle hard-coded count, so adding
+// skills (incl. the #56 generic element-template kit) can't silently skip VFX.
+const expectedN=normalIDs.length;
+assert.ok(expectedN>=40,'skill list keeps at least the 40 base normal moves ('+expectedN+')');
+assert.equal(signatureIDs.length,expectedN,'all normal skills must have VFX');
+assert.equal(new Set(signatureIDs).size,expectedN,'each signature id must be unique');
 assert.deepEqual([...signatureIDs].sort(),[...normalIDs].sort(),
-  'new moves (including Knead) may not be omitted from VFX registry');
+  'new moves (including Knead + generic element templates) may not be omitted from VFX registry');
 for(const id of signatureIDs){
   const skill=Skills.skillById(id);
   assert.ok(skill&&!(skill.ultCost>0),'normal skill has registered FX: '+id);

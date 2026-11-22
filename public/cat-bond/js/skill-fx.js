@@ -28,6 +28,24 @@ const LIST=[
 ['knead','knead','#f7d4b4',49,39]
 ];
 const REG=Object.fromEntries(LIST.map(([id,style,color,r,seed])=>[id,{style,color,r,seed}]));
+// AUTO-REGISTER generic template skills (#56): the factory in skills.js generates one
+// basic skill per (element × archetype) gap. Rather than hand-author a bespoke signature
+// for each, map its kind → an existing style and element → color so every generic skill
+// still renders a real cast/hit VFX and the registry stays in lockstep with the roster.
+// Run LAZILY (on first access): skill-fx.js may load BEFORE skills.js (it does in the
+// test harness), so window.Skills isn't available at module-eval time.
+function syncGenerics(){
+  const S=window.Skills; if(!S||!Array.isArray(S.SKILLS))return;
+  const EL=S.ELEMENTS||{};
+  const styleFor={melee:'claw',projectile:'ball',dash:'dash',buff:'shield',heal:'heal'};
+  for(const sk of S.SKILLS){
+    if(!sk.generic||REG[sk.id])continue;
+    const style=styleFor[sk.kind]||'ball';
+    const color=(EL[sk.element]&&EL[sk.element].color)||'#cccccc';
+    REG[sk.id]={style,color,r:52,seed:LIST.length};
+    LIST.push([sk.id,style,color,52,LIST.length]);
+  }
+}
 const clip=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const ease=x=>{x=clip(x);return x*x*(3-2*x)};
 function point(ctx,x,y,r,fill){
@@ -395,6 +413,10 @@ function drawStatus(ctx,unit,time=0){
  }
  ctx.restore();return true;
 }
-window.CatBondSkillFX={ids:Object.freeze(LIST.map(row=>row[0])),has:id=>!!REG[id],
+window.CatBondSkillFX={
+ // `ids` is a live getter (not frozen): it syncs the generic template skills on first
+ // access, so it reflects the full roster however the modules were load-ordered.
+ get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
+ has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
  cast,support,hit,draw,drawStatus};
 })();

@@ -288,6 +288,75 @@
     { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
     { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal',       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
   ];
+
+  // ==========================================================================
+  // GENERIC SKILL TEMPLATES × 6 ELEMENTS (#56 — give every element a full role kit)
+  // ==========================================================================
+  // Each element gets its OWN basic version of the core archetypes (爪击/弹射/冲刺/
+  // 护盾/愈合) so build recommendations never have to borrow cross-element. The NUMBERS
+  // are shared per template (balance once, applies to all); the element only changes the
+  // name, color, applied status-tag, AND a small per-element MICRO-TWEAK so "烈焰爪" and
+  // "碧波爪" feel different, not reskinned. The factory only fills a (element,archetype)
+  // slot that the hand-authored roster is MISSING — it never duplicates a signature skill.
+  const ELEMENT_KIT = {
+    fire:  { tag: 'burn',  color: '#ff7a3c', claw: '烈焰爪', bolt: '焰弹',   rush: '炽焰冲', ward: '烈焰罩', heal: '暖阳舔毛', tw: { melee: { powMul: 1.05 }, dash: { trail: true }, shield: { variant: 'barrier', reflectBurn: true }, heal: { selfBuff: true } } },
+    water: { tag: 'soak',  color: '#4aa8ff', claw: '碧波爪', bolt: '水弹',   rush: '潮涌冲', ward: '碧波罩', heal: '润泽舔毛', tw: { dash: { knockMul: 1.4 }, heal: { hot: true } } },
+    grass: { tag: 'bind',  color: '#6fcf5f', claw: '藤蔓爪', bolt: '草弹',   rush: '疾藤冲', ward: '藤甲罩', heal: '光合舔毛', tw: { melee: { lifesteal: 0.1 }, dash: { bindOnHit: true }, shield: { variant: 'barrier', regen: true } } },
+    elec:  { tag: 'shock', color: '#ffd23c', claw: '雷光爪', bolt: '电弹',   rush: '迅雷冲', ward: '雷光罩', heal: '静电舔毛', tw: { melee: { cdMul: 0.85 }, heal: { haste: true } } },
+    dark:  { tag: 'bleed', color: '#8a6bff', claw: '暗影爪', bolt: '影弹',   rush: '幽影冲', ward: '暗影罩', heal: '夜舔毛',   tw: { melee: { backstab: 1.25 }, dash: { stealthFrames: true }, shield: { variant: 'barrier' }, heal: { leech: true } } },
+    light: { tag: 'blind', color: '#ffe9a8', claw: '耀光爪', bolt: '光弹',   rush: '流光冲', ward: '耀光罩', heal: '晨光舔毛', tw: { melee: { powMul: 1.0 }, dash: { trail: true }, heal: { ally: true, big: true } } },
+  };
+  // Base stats per archetype (balance here once → all six elements inherit).
+  const TEMPLATES = {
+    melee:  { kind: 'melee',      power: 1.25, cd: 1.6, vfx: 'muzzle', nameKey: 'claw', descZh: '元素猫爪撕击，附带元素效果。' },
+    ranged: { kind: 'projectile', power: 1.0,  cd: 2.0, vfx: 'impact', nameKey: 'bolt', descZh: '射出元素弹丸，附带元素效果。' },
+    dash:   { kind: 'dash',       power: 1.35, cd: 4.0, vfx: 'beam',   nameKey: 'rush', descZh: '带电般冲刺撞击，侧后方突袭更狠。' },
+    shield: { kind: 'buff',       power: 0,    cd: 7.0, vfx: 'ring',   nameKey: 'ward', descZh: '展开元素护罩，短时减伤。', shield: true },
+    heal:   { kind: 'heal',       power: 0,    cd: 7.5, vfx: 'orb',    nameKey: 'heal', descZh: '安抚自身，回复斗志。' },
+  };
+  // What archetype is this skill a "basic version of"? (used to detect gaps)
+  function _archOf(s) {
+    if (s.ultCost > 0) return null;
+    if (s.kind === 'melee') return 'melee';
+    if (s.kind === 'projectile') return 'ranged';
+    if (s.kind === 'dash') return 'dash';
+    if (s.kind === 'heal') return 'heal';
+    if (s.kind === 'buff' && (s.shieldType || (s.tags || []).includes('shield'))) return 'shield';
+    return null;
+  }
+  // Build one generated skill for (element, archetype) from the template + kit tweak.
+  function _genSkill(el, arch) {
+    const kit = ELEMENT_KIT[el], t = TEMPLATES[arch], tw = (kit.tw && kit.tw[arch]) || {};
+    const id = 'gen_' + el + '_' + arch;
+    const sk = {
+      id, name: kit[t.nameKey], element: el, kind: t.kind,
+      power: +(t.power * (tw.powMul || 1)).toFixed(2),
+      cd: +(t.cd * (tw.cdMul || 1)).toFixed(2),
+      ultCost: 0, generic: true,
+      tags: [], appliesTag: null, vfx: t.vfx,
+      desc: kit[t.nameKey] + '：' + t.descZh,
+    };
+    if (arch === 'shield') { sk.shieldType = tw.variant || 'barrier'; sk.tags = ['shield', kit.tag]; }
+    else if (arch === 'heal') { sk.tags = ['heal']; }
+    else { sk.tags = [kit.tag]; sk.appliesTag = kit.tag; }
+    // carry the element micro-tweaks forward so battle.js can read them if it wants
+    Object.assign(sk, tw);
+    return sk;
+  }
+  // Fill every (element × core archetype) slot the hand-authored roster is MISSING.
+  function genericSkills() {
+    const out = [];
+    for (const el of ELEMENT_ORDER) {
+      for (const arch of ['melee', 'ranged', 'dash', 'shield', 'heal']) {
+        const covered = SKILLS.some(s => s.element === el && _archOf(s) === arch);
+        if (!covered) out.push(_genSkill(el, arch));
+      }
+    }
+    return out;
+  }
+  // Inject the generated gap-fillers into the live roster BEFORE the lookup map builds.
+  SKILLS.push(...genericSkills());
+
   const SKILL_BY_ID = {};
   SKILLS.forEach(s => { SKILL_BY_ID[s.id] = s; });
   function skillById(id) { return SKILL_BY_ID[id] || null; }
