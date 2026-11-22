@@ -1248,6 +1248,16 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbGame.includes('showBattleSkillTooltip(slot){')||
     !cbGame.includes('toggleBattleSkillGuide(open){'))
    throw Error('Cat Bond skill labels, hovered tooltips, mobile reference or prebattle preview missing');
+  if(!cbUi.includes('class="cb-grow-grid"')||
+     !cbUi.includes('id="cd-grow-more"')||
+     !cbUi.includes('id="cb-grow-level-title"')||
+     !cbUi.includes('id="cb-grow-stat-title"')||
+     !cbUi.includes('id="cb-grow-bond-title"')||
+     !cbUi.includes('id="cd-trainnext"')||
+     !cbUi.includes('id="cd-trainstat"')||
+     !cbUi.includes('id="cd-feed"')||
+     !cbCss.includes('#panel #cat-detail .cb-grow-interactions'))
+    throw Error('Cat Bond upgrade / training / interaction groups are missing');
  const skillFixtures={
    q:{id:'testQ',name:'炽爪',desc:'造成灼烧',element:'fire',cd:3,ultCost:0},
    e:{id:'testE',name:'泡泡幕',desc:'减伤',element:'water',cd:7,ultCost:0},
