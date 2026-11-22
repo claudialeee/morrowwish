@@ -1911,6 +1911,11 @@ const UI = {
     }
     document.getElementById('bp-cancel').onclick=()=>{
       this.closeAll();
+      // Letting the wild cat go (暂不出战) from a MAP encounter never enters battle, so
+      // endBattle's resume never runs — the cat was frozen at cd=9999 by triggerEncounter
+      // and would stay stuck forever. Resume it here (flee path: short cooldown, then it
+      // roams again).
+      if(opts.origin==='map'&&window.WorldMap?.resumeRegion)WorldMap.resumeRegion(false);
       if(opts.mastery)this.openDex();
       else if(this.game.scene==='yard')this.game.showYardChrome();
     };

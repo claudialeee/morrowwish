@@ -410,7 +410,14 @@ class Game {
         this.refreshCollectionGoal();
       }
     }
-    else if (this.scene === 'map' && window.WorldMap) WorldMap.update(dt);
+    else if (this.scene === 'map' && window.WorldMap) {
+      // Freeze the whole overworld while a panel is open (e.g. the pre-battle mode
+      // prompt that pops the instant you touch a wild cat): the scene is still 'map'
+      // until the player taps Start, so without this the roamers keep wandering
+      // behind the dialog. A full-screen lock on encounter is the intended feel.
+      const panelOpen = document.getElementById('panel')?.classList.contains('open');
+      if (!panelOpen) WorldMap.update(dt);
+    }
     else if (this.scene === 'battle' && this.battle) {
       if(this.battleHelpOpen)return; // Pause while the player reads controls.
       this.battle.update(dt);
