@@ -928,7 +928,10 @@
     role=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
     const own=elementOf(cat.species);
     const splash=SPLASH_ELEMENT[own];
-    const pool=(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0);
+    const allUnlocked=(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0);
+    const unlockedIds=new Set(allUnlocked.map(sk=>sk.id));
+    const pool=allUnlocked.filter(sk=>!upgradeTargetOf(sk.id)||
+      !unlockedIds.has(upgradeTargetOf(sk.id)));
     // Role must dominate the recommendation: the old +6 same-element bonus
     // outweighed most tank / DPS / control distinctions, producing nearly
     // identical Q/E kits for different builds. Prefer own-element skills only
