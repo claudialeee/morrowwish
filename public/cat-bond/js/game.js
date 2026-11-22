@@ -424,10 +424,22 @@ class Game {
 
   draw() {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.W, this.H);
-    if (this.scene === 'yard') this.yard.draw(ctx);
-    else if (this.scene === 'map' && window.WorldMap) WorldMap.draw(ctx);
-    else if (this.scene === 'battle' && this.battle) this.battle.draw(ctx);
+    // Battle cut-ins use additive blending, flashes, canvas filters and alpha.
+    // ClearRect does NOT reset any of those drawing-state properties. Every
+    // scene starts from an opaque source-over layer to prevent a washed-out
+    // courtyard or ghost cats after returning from a finished battle.
+    ctx.save();
+    ctx.globalAlpha=1;
+    ctx.globalCompositeOperation='source-over';
+    ctx.filter='none';
+    ctx.shadowBlur=0;
+    ctx.setLineDash([]);
+    ctx.clearRect(0,0,this.W,this.H);
+    try {
+      if (this.scene === 'yard') this.yard.draw(ctx);
+      else if (this.scene === 'map' && window.WorldMap) WorldMap.draw(ctx);
+      else if (this.scene === 'battle' && this.battle) this.battle.draw(ctx);
+    } finally { ctx.restore(); }
   }
 
   // ---------- input ----------
@@ -1234,6 +1246,12 @@ class Game {
       else WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
       this.scene = 'yard';
+      // Reset transient battlefield paint state before the very next yard frame.
+      this.ctx.globalAlpha=1;
+      this.ctx.globalCompositeOperation='source-over';
+      this.ctx.filter='none';
+      this.ctx.shadowBlur=0;
+      this.ctx.setLineDash([]);
       // One canonical restore path: no exit (victory, defeat, flee, replay,
       // panel dismissal) may strand the leaf/seek, feed or map buttons hidden.
       this.showYardChrome();
