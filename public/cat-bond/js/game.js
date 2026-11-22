@@ -1115,8 +1115,14 @@ class Game {
           duoButton.textContent='✦ '+(zh?'共鸣持续 ':'Resonance ')+
             b.duoField.remaining.toFixed(1)+(zh?'秒':'s');
         }else{
-          duoButton.textContent=b.duoReady()?'💞 '+b.duo.name+'！'
-            :'💞 '+(zh?'双猫默契 ':'Duo charge ')+Math.floor(b.duoCharge)+'%';
+          duoButton.textContent=b.duoReady()
+            ?'💞 '+(zh?'双猫合击 · ':'Duo Ultimate · ')+b.duo.name+'！'
+            :'💞 '+(zh?'双猫合击 · ':'Duo Ultimate · ')+Math.floor(b.duoCharge)+'%';
+          duoButton.setAttribute('aria-label',
+            zh?'双猫合击，当前充能'+Math.floor(b.duoCharge)+'%，快捷键 F'
+              :'Duo ultimate, '+Math.floor(b.duoCharge)+'% charged, shortcut F');
+          duoButton.title=zh?'双猫合击 · 充能达到100%后释放（电脑F键）'
+            :'Duo Ultimate · Cast at 100% charge (F on desktop)';
         }
       }
     }
