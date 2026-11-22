@@ -1,7 +1,7 @@
 {
   "createdAt": "2026-11-22T07:02:24.593Z",
-  "version": "readability-review-v11",
-  "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate. · Other games retain current review scene timings.",
+  "version": "readability-review-v12",
+  "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate. · Other games retain current review scene timings. · V12 keeps other games' most recent scene timing.",
   "pausedPromoGames": [],
   "scenes": [
     {
@@ -438,51 +438,37 @@
     },
     {
       "game": "pawsibly-innocent",
+      "scene": "first-fish",
+      "seconds": 2.32,
+      "requiredSeconds": 1.8,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
       "scene": "narrow-pursuit",
-      "seconds": 2.35,
-      "requiredSeconds": 0.9,
+      "seconds": 2.3,
+      "requiredSeconds": 1.8,
       "passed": true
     },
     {
       "game": "pawsibly-innocent",
       "scene": "narrow-achievement",
-      "seconds": 3.35,
+      "seconds": 3.32,
       "requiredSeconds": 3.2,
       "passed": true
     },
     {
       "game": "pawsibly-innocent",
-      "scene": "fish-tease",
-      "seconds": 1.35,
-      "requiredSeconds": 0.9,
+      "scene": "last-chase",
+      "seconds": 2.8,
+      "requiredSeconds": 1.8,
       "passed": true
     },
     {
       "game": "pawsibly-innocent",
-      "scene": "room-kitchen",
-      "seconds": 1.45,
-      "requiredSeconds": 0.9,
-      "passed": true
-    },
-    {
-      "game": "pawsibly-innocent",
-      "scene": "room-library",
-      "seconds": 1.45,
-      "requiredSeconds": 0.9,
-      "passed": true
-    },
-    {
-      "game": "pawsibly-innocent",
-      "scene": "room-garden",
-      "seconds": 1.35,
-      "requiredSeconds": 0.9,
-      "passed": true
-    },
-    {
-      "game": "pawsibly-innocent",
-      "scene": "caught-attempt",
-      "seconds": 2.72,
-      "requiredSeconds": 2.6,
+      "scene": "failure-result",
+      "seconds": 2.9,
+      "requiredSeconds": 2.8,
       "passed": true
     }
   ]
