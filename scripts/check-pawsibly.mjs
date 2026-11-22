@@ -289,4 +289,28 @@ test.choose(0,false);
 const missedBonus=test.getState();missedBonus.cat={x:8,y:6};missedBonus.catFrom={...missedBonus.cat};missedBonus.got=4;
 test.move(1,0);
 assert.equal(nodes.get('stars').textContent,'★★☆','All fish without bonus cannot award three stars');
-console.log('Pawsibly Innocent: QA PASS (eight no-hit clears, complete 4-fish 3-star route, strict ratings, healed-capture check).');
+// A perfect 3-star result must remain ACHIEVABLE in ALL eight rooms.
+// Paths are deterministic under the real heightened guard AI. Room 4 spends
+// one real yarn throw before following its perfect 4-fish escape path.
+const perfectRoutes=["RRLURDLDDRDLURRURRRUDDRRD","RDDRRRDUURUDLDDRLUUURRRRDDDD","DDDRRDDURULRRUULLUURRRRRRDDDDDD","RRUDLURRRRRRRDDDLDLLLLUUUDDDRRDRRRD","RURRRRRDDDRDDLLLLLRRRDRRR","DDDRDUUUUURDRRDRRDDDDRR","RDRUDUURRRRRDLDDDLLLLDDRRRLRRRR","DDDDRUURLUURURRRRRDDDDLDDRR"];
+for(let i=0;i<perfectRoutes.length;i++){
+ test.choose(i,false);
+ if(i===3){
+  test.throwYarn();
+  assert.equal(test.throwYarnTo({x:7,y:2}),true,'Room 4 bonus needs a real yarn toss');
+  let guardTurns=0;
+  while(test.isChasing()&&guardTurns++<24)test.advanceYarnChase();
+  assert.equal(test.isChasing(),false,'Room 4 yarn investigation must finish');
+ }
+ const state=test.getState();
+ for(const step of perfectRoutes[i]){
+  assert.equal(state.done,false,'Room '+(i+1)+' perfect route exited too soon');
+  test.move(...stepDelta[step]);
+ }
+ assert.equal(state.winning,true,'Room '+(i+1)+' perfect escape must succeed');
+ assert.equal(state.got,4,'Room '+(i+1)+' perfect escape must steal all four fish');
+ assert.equal(state.caughtCount,0,'Room '+(i+1)+' must allow a perfect no-capture route');
+ assert.ok(state.steps<=state.room.goal+4,'Room '+(i+1)+' perfect run must meet the step budget');
+ assert.equal(nodes.get('stars').textContent,'★★★','Room '+(i+1)+' must still allow earning 3 stars');
+}
+console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings and recovery regression).');
