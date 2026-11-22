@@ -46,6 +46,10 @@ try{
     const target=b.enemies[0];
     if(!target)throw Error('missing opponent');
     target.x=f.x+100;target.y=f.y;
+    // Use a real manual cursor pointed AT the opponent. Without this the
+    // desktop game correctly re-aims continuous beams at browser default
+    // (0,0), giving misleading screenshots of beams leaving the arena.
+    if(g.mouse){g.mouse.x=target.x;g.mouse.y=target.y;g.mouse.down=false;}
     target.maxhp=5000;target.hp=5000;target.speed=0;
     target.flash=0;target.inv=0;target.kbx=0;target.kby=0;
     const hp=target.hp;
