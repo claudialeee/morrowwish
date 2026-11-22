@@ -1,7 +1,10 @@
 import {socialCount, socialStore, socialRead, socialWrite, socialRefresh, socialOverlay, SocialSyncError, socialOAuthStart, socialOAuthCode, socialOAuthResult, socialRefreshResponse} from "./social-native.js";
-// Instagram API with Instagram Login: approved reels, owner OAuth, Insights.
+// Instagram API with Unified Login: approved reels, business OAuth, Insights.
 // No vidIQ, Metricool, scraping, publishing privileges or public credentials.
-const IG_API="https://graph.instagram.com/v27.0";
+const IG_API="https://graph.facebook.com/v27.0";
+const IG_OAUTH="https://www.facebook.com/dialog/oauth";
+const IG_TOKEN="https://graph.facebook.com/v27.0/oauth/access_token";
+const IG_CONFIG="2480710455789845";
 const IG_REDIRECT="https://morrowwish.vercel.app/api/instagram/callback";
 const IG_TTL=15*60*1000;
 const IG_APPROVED={
@@ -44,66 +47,52 @@ async function igRequest(path,token,params={}){
  }
  return obj;
 }
+async function igVerifiedAccount(token){
+ const [me,accounts]=await Promise.all([
+   igRequest("/me",token,{fields:"client_business_id"}),
+   igRequest("/me/assigned_instagram_accounts",token,{fields:"id,username",limit:100})
+ ]);
+ const account=accounts.data?.find(item=>String(item.username||"").toLowerCase()==="morrowwishgames");
+ if(!account||!/^[0-9]+$/.test(account.id||"")||!/^[0-9]+$/.test(me.client_business_id||""))
+   throw new SocialSyncError("wrong_account");
+ return {accountId:account.id,username:account.username,businessId:me.client_business_id};
+}
 async function igGrant(env,code){
- const form=new FormData();
- for(const [key,value] of Object.entries({
-   client_id:env.INSTAGRAM_APP_ID,client_secret:env.INSTAGRAM_APP_SECRET,
-   grant_type:"authorization_code",redirect_uri:IG_REDIRECT,code:code.replace(/#_$/,"")
- }))form.set(key,value);
- const r=await fetch("https://api.instagram.com/oauth/access_token",{
-   method:"POST",body:form,signal:AbortSignal.timeout(12000)
- });
+ const u=new URL(IG_TOKEN);
+ for(const [key,value] of Object.entries({client_id:env.INSTAGRAM_APP_ID,
+   client_secret:env.INSTAGRAM_APP_SECRET,code:code.replace(/#_$/,""),redirect_uri:IG_REDIRECT}))
+   u.searchParams.set(key,value);
+ const r=await fetch(u.toString(),{signal:AbortSignal.timeout(12000),headers:{Accept:"application/json"}});
  const grant=await r.json();
- const short=grant.data?.[0]??grant;
- if(!r.ok||!short.access_token)throw Error("Instagram OAuth exchange failed");
- const scopes=typeof short.permissions==="string"?short.permissions.split(/[,\s]+/):short.permissions;
- if(Array.isArray(scopes)&&!["instagram_business_basic","instagram_business_manage_insights"].every(scope=>scopes.includes(scope)))
-   throw new SocialSyncError("needs_permission");
- const u=new URL("https://graph.instagram.com/access_token");
- u.searchParams.set("grant_type","ig_exchange_token");
- u.searchParams.set("client_secret",env.INSTAGRAM_APP_SECRET);
- u.searchParams.set("access_token",short.access_token);
- const longResponse=await fetch(u.toString(),{signal:AbortSignal.timeout(12000)});
- const long=await longResponse.json();
- if(!longResponse.ok||!long.access_token)throw Error("Instagram long-lived token exchange failed");
- return {accessToken:long.access_token,expiresAt:Date.now()+Number(long.expires_in||5184000)*1000};
+ if(!r.ok||grant.error||!grant.access_token)
+   throw new SocialSyncError(grant.error?.code===190?"needs_owner_authorization":"oauth_exchange_failed");
+ const details=await igVerifiedAccount(grant.access_token);
+ // This configuration issues a system-user token with no expiry. If Meta returns
+ // an expiry in a future configuration, surface reconnect before it expires.
+ return {accessToken:grant.access_token,expiresAt:grant.expires_in?Date.now()+Number(grant.expires_in)*1000:null,...details};
 }
 async function igAuthorizedToken(env){
  const row=await socialRead(env,"instagram:token");
  if(!row)return null;
  const token=await igDecrypt(env,row.data.cipher);
- if(token.expiresAt>Date.now()+7*86400000)return token.accessToken;
- if(token.expiresAt<Date.now())throw new SocialSyncError("needs_owner_authorization");
- const u=new URL("https://graph.instagram.com/refresh_access_token");
- u.searchParams.set("grant_type","ig_refresh_token");u.searchParams.set("access_token",token.accessToken);
- const r=await fetch(u.toString(),{signal:AbortSignal.timeout(12000)});
- const obj=await r.json();
- if(!r.ok||!obj.access_token)throw new SocialSyncError(obj.error?.code===190?"needs_owner_authorization":"sync_error");
- const next={accessToken:obj.access_token,expiresAt:Date.now()+Number(obj.expires_in||5184000)*1000};
- await socialWrite(env,"instagram:token",{cipher:await igEncrypt(env,next)});
- return next.accessToken;
+ if(token.expiresAt&&token.expiresAt<=Date.now())throw new SocialSyncError("needs_owner_authorization");
+ return token;
 }
 const IG_CACHE="instagram:approved:20261122";
-async function igVerifiedAccount(token) {
- const me=await igRequest("/me",token,{fields:"user_id,username"});
- if(String(me.username||"").toLowerCase()!=="morrowwishgames"||!/^\d+$/.test(me.user_id||""))
-   throw new SocialSyncError("wrong_account");
- return me.user_id;
-}
 async function igFetch(env){
- const token=await igAuthorizedToken(env);
- if(!token)throw new SocialSyncError("needs_owner_authorization");
- const userId=await igVerifiedAccount(token);
+ const auth=await igAuthorizedToken(env);
+ if(!auth)throw new SocialSyncError("needs_owner_authorization");
+ const {accessToken:token,accountId:userId}=auth;
+ if(!userId)throw new SocialSyncError("needs_owner_authorization");
  let after=null,matched=new Map();
  for(let page=0;page<4;page++){
-   const q={fields:"id,permalink,media_type,media_product_type,timestamp,like_count,comments_count",limit:100,
-     since:Date.parse("2026-11-22T00:00:00-08:00")/1000,until:Date.parse("2026-11-23T00:00:00-08:00")/1000};
+   const q={fields:"id,permalink,media_type,media_product_type,timestamp,like_count,comments_count",limit:100};
    if(after)q.after=after;
    const response=await igRequest("/"+userId+"/media",token,q);
    if(!Array.isArray(response.data))throw Error("Instagram media listing missing");
    for(const p of response.data){
      const game=Object.keys(IG_APPROVED).find(k=>IG_APPROVED[k]===igCode(p.permalink));
-     if(!game||matched.has(game)||String(p.timestamp||"").slice(0,10)<"2026-11-22")continue;
+     if(!game||matched.has(game)||String(p.timestamp||"").slice(0,10)!=="2026-11-22")continue;
      if(p.media_type!=="VIDEO"||p.media_product_type!=="REELS")continue;
      matched.set(game,{platform:"instagram",game,url:"https://www.instagram.com/reel/"+IG_APPROVED[game]+"/",
        publishedAt:"2026-11-22",views:null,likes:socialCount(p.like_count),comments:socialCount(p.comments_count),
@@ -137,7 +126,7 @@ export function igOverlay(base,state,status){
  });
 }
 export async function nativeInstagramSnapshot(env,base,force=false){
- if(!env.INSTAGRAM_APP_ID||!env.INSTAGRAM_APP_SECRET)return igOverlay(base,null,"needs_developer_app");
+ if(!env.INSTAGRAM_APP_ID||!env.INSTAGRAM_APP_SECRET||!(env.INSTAGRAM_CONFIG_ID||IG_CONFIG))return igOverlay(base,null,"needs_developer_app");
  try{
    await socialStore(env);
    if(!await socialRead(env,"instagram:token"))return igOverlay(base,null,"needs_owner_authorization");
@@ -155,7 +144,6 @@ export async function nativeInstagramRoute(req,env,hasAdminSession,json){
      if(!env.INSTAGRAM_APP_ID||!env.INSTAGRAM_APP_SECRET)throw Error("Instagram app is not configured");
      const code=await socialOAuthCode(req,env,"instagram");
      const token=await igGrant(env,code);
-     await igVerifiedAccount(token.accessToken);
      await socialStore(env);
      await socialWrite(env,"instagram:token",{cipher:await igEncrypt(env,token)});
      await nativeInstagramSnapshot(env,null,true);
@@ -166,12 +154,13 @@ export async function nativeInstagramRoute(req,env,hasAdminSession,json){
  if(!env.INSTAGRAM_APP_ID||!env.INSTAGRAM_APP_SECRET)
    return json({status:"needs_developer_app",required:["INSTAGRAM_APP_ID","INSTAGRAM_APP_SECRET"],redirectUri:IG_REDIRECT},503);
  if(path.endsWith("/connect")){
-   const url=new URL("https://www.instagram.com/oauth/authorize");
+   const url=new URL(IG_OAUTH);
    url.searchParams.set("client_id",env.INSTAGRAM_APP_ID);
+   url.searchParams.set("config_id",env.INSTAGRAM_CONFIG_ID||IG_CONFIG);
    url.searchParams.set("redirect_uri",IG_REDIRECT);
    url.searchParams.set("response_type","code");
-   url.searchParams.set("scope","instagram_business_basic,instagram_business_manage_insights");
-   url.searchParams.set("enable_fb_login","0");
+   url.searchParams.set("display","popup");
+   url.searchParams.set("prompt","login");
    return socialOAuthStart(env,"instagram",url);
  }
  const data=await nativeInstagramSnapshot(env,null,refresh);
