@@ -53,7 +53,7 @@ const playlists={
   broll('rare-encounter',2.05,'A RARE CAT APPEARS!'),
   broll('rare-capture',3.45,'A NEW FRIEND JOINS YOU.'),
   broll('ssr-showcase',3.6,'MEET A LEGENDARY SSR CAT!'),
-  cover(3.2,'PLAY FREE')
+  cover(3.5,'PLAY FREE')
  ],
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
@@ -233,7 +233,7 @@ function edit(slug){
  const meta=ffprobe(output),bytes=fs.statSync(output).size;
  const isHero=hero.has(slug);
  const minimumSeconds={'cat-bond':33,'pawsibly-innocent':19,'tiny-town':30,'elsewhere':35,'flip-dash':15,'parcel-panic':15,'pocket-aquarium':13};
-  if(meta.seconds<(minimumSeconds[slug]||10)||meta.seconds>(hero.has(slug)?100:40)||
+  if(meta.seconds<(minimumSeconds[slug]||10)||meta.seconds>(slug==='cat-bond'?60:(hero.has(slug)?100:40))||
   !meta.streams.some(x=>x.codec_type==='video'&&x.width===1080&&x.height===1920)||
   !meta.streams.some(x=>x.codec_type==='audio')||bytes<220000)
    throw Error('Video format, genuine runtime or sound QA failed '+JSON.stringify({slug,meta,bytes}));
