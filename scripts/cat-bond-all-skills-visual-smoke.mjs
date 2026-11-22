@@ -18,12 +18,15 @@ try{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
-   await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length===40
-     &&window.CatBondArtworkStatus?.breedsLoaded,{timeout:30000});
+   await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length>=40
+     &&window.CatBondArtworkStatus?.breedsLoaded,null,{timeout:45000});
    await page.locator('#intro-start').click();
    await page.locator('#panel.open .dex-cell').first().click();
    const ids=await page.evaluate(()=>Array.from(CatBondSkillFX.ids));
-   assert.equal(ids.length,40);
+   const expected=await page.evaluate(()=>Skills.SKILLS.filter(sk=>!sk.ultCost&&!sk.isBasic).map(sk=>sk.id));
+   assert.ok(ids.length>=40,'At least 40 hand-authored normal VFX must remain');
+   assert.deepEqual(new Set(ids),new Set(expected),
+     'Every real normal skill, including generated archetypes, must have an individual VFX ID');
    const hashes=[];
    for(const id of ids){
     const record=await page.evaluate(id=>{
@@ -71,11 +74,11 @@ try{
     hashes.push(crypto.createHash('sha256').update(bytes).digest('hex'));
     console.log('SKILL-ID REAL BATTLE '+spec.name+' '+JSON.stringify(record));
    }
-   assert.equal(new Set(hashes).size,40,
-     '40 original-skill silhouettes must be distinct on '+spec.name);
+   assert.equal(new Set(hashes).size,ids.length,
+     'All original and generated skill silhouettes must be distinct on '+spec.name);
    assert.deepEqual(errors,[],'unhandled game errors on '+spec.name);
-   console.log('ALL 40 NORMAL SKILLS PASS '+spec.name);
+   console.log('ALL NORMAL SKILLS PASS '+spec.name);
   }finally{await page.close();}
  }
- console.log('CAT BOND ALL 40 SKILL-ID ARENA VISUAL QA PASS');
+ console.log('CAT BOND ALL SKILL-ID ARENA VISUAL QA PASS');
 }finally{await browser.close();}
