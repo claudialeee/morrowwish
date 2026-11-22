@@ -4817,8 +4817,10 @@ class CaptureBattle {
       if (tf._recoilX) visualX += tf._recoilX;
       if (tf._recoilY) visualY += tf._recoilY;
       ctx.save();
-      if (!isMe) ctx.globalAlpha = 0.9;
-      if (tf.inv > 0 && Math.floor(this.t * 20) % 2 === 0) ctx.globalAlpha = 0.5;
+      // Never fade the kitten itself for hit i-frames or for being a teammate:
+      // half-transparent coats make faces look grey/black over battlefield VFX.
+      // Keep hit feedback in a small ground-level marker below instead.
+      ctx.globalAlpha = 1;
       // HIT-FEEL on-hit squash (compress + spring back), draw-only around the body.
       if (tf.hitSquash > 0) {
         const q = tf.hitSquash;
@@ -4844,6 +4846,18 @@ class CaptureBattle {
         stride:route?this.duoRun.age*26:tf.t*13,mood:'happy',
         growth:window.Growth?.visual(tf.cat)||null
       });
+      if (tf.inv > 0) {
+        // Invulnerability cue is OUTSIDE the cat face: no ghosting/dark mask.
+        ctx.save();
+        ctx.globalAlpha = .55;
+        ctx.strokeStyle = '#fff2c6';
+        ctx.lineWidth = 1.7;
+        ctx.setLineDash([3,5]);
+        ctx.beginPath();
+        ctx.ellipse(visualX,visualY+7,31,9,0,0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
       // WHITE connect-flash on a struck player cat (additive bloom, not a vanish-fade).
       if (tf.hitWhite > 0) {
         ctx.save();

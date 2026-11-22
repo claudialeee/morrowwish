@@ -73,6 +73,23 @@ try{
   assert.equal(await page.locator('#yard-placement-dock .cb-placement-heading').count(),1);
   await page.screenshot({path:'/tmp/catbond-premium-'+profile.name+'-placement-panel.png'});
   await page.evaluate(()=>UI.cancelBuildingPlacement());
+  // Map navigation should be compact and must not paint a wide milky banner.
+  const mapRail=await page.evaluate(()=>{
+    const nav=document.getElementById('map-actions');
+    for(const button of nav.querySelectorAll('button'))button.hidden=false;
+    const r=nav.getBoundingClientRect();
+    const stage=document.getElementById('stage').getBoundingClientRect();
+    const buttons=[...nav.querySelectorAll('button')].map(b=>{
+      const rect=b.getBoundingClientRect();return {width:rect.width,height:rect.height};
+    });
+    return {width:r.width,rightGap:stage.right-r.right,
+      background:getComputedStyle(nav).backgroundColor,buttons};
+  });
+  assert.ok(mapRail.width<340,'map controls must be a compact group, not a 382px bar');
+  assert.ok(mapRail.rightGap>=0&&mapRail.rightGap<30,'map controls sit at top-right');
+  assert.equal(mapRail.background,'rgba(0, 0, 0, 0)','map actions outer background must be transparent');
+  assert.ok(mapRail.buttons.every(b=>b.width<135&&b.height>=35),'map actions must be short, reachable buttons');
+
   // Battle artwork button is inside the PLAYABLE game, not in a mockup.
   await page.evaluate(()=>{
     const battle=document.getElementById('battle-ui');
@@ -85,6 +102,9 @@ try{
   const layout=await page.locator('#battle-ui #duo-burst').boundingBox();
   assert.ok(layout&&layout.width>=115&&layout.height>=30,'functional duo ultimate panel should fit screen');
   assert.ok(layout.x>=0&&layout.x+layout.width<=profile.width+1,'duo panel must not clip horizontally');
+  const stageRect=await page.locator('#stage').boundingBox();
+  assert.ok(layout.x>stageRect.x+stageRect.width*.45,'duo must be on the right in every viewport');
+  assert.ok(layout.y>stageRect.y+130&&layout.y<stageRect.y+270,'duo must sit above the skill grid');
   await page.screenshot({path:'/tmp/catbond-premium-'+profile.name+'-battle.png'});
   assert.deepEqual(errs,[],'No runtime errors during gameplay');
   console.log('PREMIUM 21 MOTION + CONCEPT UI PASS '+profile.name+' '+JSON.stringify({
