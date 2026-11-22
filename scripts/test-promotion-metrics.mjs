@@ -52,8 +52,22 @@ assert.equal(posts.filter(p=>p.platform==='tiktok').length,7,'all seven public v
 assert.equal(tk.views,94,'seven individually verified TikTok videos sum to 94 plays');
 const ig=snap.platforms.find(x=>x.id==='instagram');
 assert.equal(ig.published,7,'seven current Instagram Reels');
-assert.equal(ig.views,305,'Instagram owner Insights seven-reel plays');
-assert.equal(ig.likes,10,'Instagram owner Insights seven-reel likes');
+assert.equal(ig.views,363,'Instagram owner Insights seven-reel plays');
+assert.equal(ig.likes,11,'Instagram owner Insights seven-reel likes');
+const igExpected={
+ 'cat-bond':['DgDdwz6T4Gy',6],
+ 'pawsibly-innocent':['DgDfM-DBb1K',11],
+ 'tiny-town':['DgDfO6ztxnM',3],
+ 'elsewhere':['DgDfQqkT6Gx',1],
+ 'flip-dash':['DgDfUwbB4EP',254],
+ 'parcel-panic':['DgDfRCJAF83',45],
+ 'pocket-aquarium':['DgDfRT3O7EK',43]
+};
+for(const [game,[shortcode,views]] of Object.entries(igExpected)){
+ const post=posts.find(p=>p.platform==='instagram'&&p.game===game);
+ assert.ok(post?.url.includes(shortcode),'canonical current Reel for '+game);
+ assert.equal(post.views,views,'Instagram nonzero native views for '+game);
+}
 assert.equal(snap.accountOverview,undefined,'historical promo summaries must never ship');
 assert.equal(snap.metricScope.campaignStart,'2026-11-22','approved campaign begins Nov 22');
 assert.ok(posts.every(p=>p.publishedAt==='2026-11-22'),'only this launch campaign is tracked');
