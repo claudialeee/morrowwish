@@ -87,6 +87,9 @@ jobs:
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'media(cat-bond): native 16:9 copy of original V10 21-shot trailer'
+          # The recording temporarily changes existing QA stills and covers, which
+          # must never be committed, and must not block safe git pull --rebase.
+          git restore --worktree .
           for attempt in $(seq 1 20); do
             git pull --rebase origin main
             if git push origin HEAD:main; then exit 0; fi
