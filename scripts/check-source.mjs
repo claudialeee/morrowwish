@@ -1052,7 +1052,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
     !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
     !yardIndex.includes('js/world.js?v=clear-cats-postbattle-20261121-1')||
-    !yardIndex.includes('js/game.js?v=isolated-canvas-postbattle-20261121-1'))
+    !yardIndex.includes('js/game.js?v=first-adventure-tour-20261121-1'))
    throw Error('Cat Bond post-battle garden requires crisp kittens, spatial layout, and reset canvas state');
  const fakeWindow={};
  const fakeState={S:{cats:[{uid:'1',species:'orange',joy:90},
