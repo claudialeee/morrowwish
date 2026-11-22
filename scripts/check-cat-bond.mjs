@@ -330,6 +330,10 @@ impactBattle.resolveHit(targetImpact,'me',
   {id:'emberClaw',kind:'melee',heavy:true,element:'fire'},8,
   targetImpact.x,targetImpact.y);
 assert.ok(styles.includes('crit'),'existing stagger vulnerability uses crit tier');
+assert.ok(impactBattle.floaters.some(f=>f.size===21&&f.color==='#ffe2a2'),
+  'stagger critical numbers must visually pop gold instead of standard white');
+assert.ok(impactBattle.floaters.some(f=>f.max===.62),
+  'damage popups have normalized timing for animation across frame rates');
 
 assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
