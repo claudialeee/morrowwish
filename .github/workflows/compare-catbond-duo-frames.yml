@@ -1,0 +1,47 @@
+name: Compare actual V10 portrait and landscape duo frames
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/compare-catbond-duo-frames.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Extract precise matching frames (reference portrait + remade landscape)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; fi
+          orig=public/promo/cat-bond/trailer-v10-20261121.mp4
+          wide=public/promo/cat-bond/trailer-v10-landscape-20261122.mp4
+          test -s "$orig"; test -s "$wide"
+          mkdir -p public/promo/cat-bond/compare
+          for t in 44.8 45.4 46.0 46.6 47.2 47.7 48.3; do
+            ffmpeg -nostdin -y -hide_banner -loglevel error \
+              -ss "$t" -i "$orig" -ss "$t" -i "$wide" \
+              -filter_complex '[0:v]scale=540:960:flags=lanczos,pad=960:960:210:0:0x1e2633[v0];[1:v]scale=960:540:flags=lanczos,pad=960:960:0:210:0x1e2633[v1];[v0][v1]hstack=inputs=2[v]' \
+              -map '[v]' -frames:v 1 -q:v 3 "public/promo/cat-bond/compare/time-$t.jpg"
+            test -s "public/promo/cat-bond/compare/time-$t.jpg"
+          done
+      - name: Preserve frames for visual verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/promo/cat-bond/compare/time-*.jpg
+          git config user.name morrowwish-qa-bot
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'qa(cat-bond): compare identical source and landscape duo timeline'
+          git restore --worktree .
+          for a in $(seq 1 10); do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
