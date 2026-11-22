@@ -127,6 +127,8 @@ function render(ctx,W,H,seq,lookup){
  // A distinct elemental tableau for all 21 combinations (not re-colored
  // copies of one scene); large motifs remain under the cats, not over faces.
  if(Director)Director.accent(ctx,stageW,stageH,p,key,tier);
+ // One coherent giant celestial summon rises behind the two illustrated cats.
+ window.CatBondDuoSummons?.draw?.(ctx,stageW,stageH,p,key,tier);
  const poses=Director?.pose(key,p,stageW,stageH)||[
   {x:stageW*.26,y:stageH*.72,angle:0,size:1,opacity:1,phase:p},
   {x:stageW*.74,y:stageH*.72,angle:0,size:1,opacity:1,phase:p}
@@ -136,7 +138,7 @@ function render(ctx,W,H,seq,lookup){
  // silhouette and markings. Never draw the eight fixed cats from the old sheet.
  // Make the illustrated cats the main subjects (not 60px stickers in an
  // otherwise empty scene). Keep stage-relative limits for landscape/portrait.
- const size=Math.min(302,stageH*.67,stageW*.35);
+ const size=Math.min(282,stageH*.58,stageW*.29);
  for(let i=0;i<2;i++){
   const actor=duo[i]||null,pose=poses[i],color=colors[pair[i]]||'#e5c7ff';
   if(!actor||!window.CatBondDuoArtwork?.drawKitten)continue;
@@ -144,7 +146,7 @@ function render(ctx,W,H,seq,lookup){
   // Rotate the entire coherent illustrated cat: never disassemble legs/head.
   // Keep complete ears and paws in frame even at high leap moments. The
   // horizontal duo choreography remains unchanged, only vertical safety.
-  const groundedY=Math.max(stageH*.14+size*.91,Math.min(stageH*.87,pose.y));
+  const groundedY=Math.max(stageH*.12+size*1.05,Math.min(stageH*.83,pose.y));
   ctx.translate(pose.x,groundedY);ctx.rotate(pose.angle);
   window.CatBondDuoArtwork.drawKitten(ctx,0,0,size*pose.size,actor,i===1,p,
      Director?.styles?.[key]||'dash',color);
