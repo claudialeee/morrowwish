@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "capturedAt": "2026-11-22T13:05:00-08:00",
   "nativeWindow": "Only seven approved 2026-11-22 promo videos per YouTube, Instagram and TikTok; Bluesky only its seven verified 2026-11-22 posts. Older promo content is never included.",
-  "source": "Instagram owner Insights + TikTok public video listing from connected vidIQ; Bluesky public AppView; Bluesky vidIQ individual native publication status",
-  "refreshMode": "instagram-owner-verified-snapshot;tiktok-public-verified-snapshot;bluesky-native-10-min-refresh",
-  "note": "Only current approved 2026-11-22 game promo campaign. Earlier Instagram Reels and all older promo material are excluded from the dashboard, snapshots, source sync, and promotion aggregates.",
+  "source": "Dated Nov 22 owner-verified video snapshots (historical baseline); official first-party APIs supply subsequent refreshes when independently authorized",
+  "refreshMode": "youtube-data-api-v3;instagram-graph-insights; tiktok-display-api-v2; bluesky-public-appview; authorized-owner-worker-cache",
+  "note": "Only the 2026-11-22 seven-game campaign. Original snapshots are dated and NOT live; as soon as official owner-authorized sources are enabled, the protected Worker refreshes the exact allowlisted posts. No Metricool or vidIQ analytics refresh. Missing native coverage stays null. Older posts excluded.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
