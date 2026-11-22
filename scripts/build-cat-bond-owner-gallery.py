@@ -10,7 +10,7 @@ html=source.read_text(encoding="utf-8")
 png=base64.b64encode((root/"assets/duo-premium-sheet.webp").read_bytes()).decode("ascii")
 def inline(match):
     filename=match.group(1)
-    body=(root/"js"/filename).read_text(encoding="utf-8")
+    body=(root/"js"/(filename+".js")).read_text(encoding="utf-8")
     if filename=="duo-premium.js":
         old="img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-premium-sheet.webp?v=duo-studio-approved-art';"
         new="img.src='data:image/webp;base64,"+png+"';"
