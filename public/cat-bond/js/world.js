@@ -920,7 +920,7 @@ class YardScene {
     if (this._buildScan > 0) return;
     this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
     // pick an idle, not-already-busy cat and a free-ish structure to visit
-    const idle = this.entities.filter(e => e._playBuildT <= 0 && !e._buildTarget &&
+    const idle = this.entities.filter(e => !(e._playBuildT > 0) && !e._buildTarget &&
       ['idle', 'sit', 'walk', 'loaf'].includes(e.pose));
     if (!idle.length) return;
     // Prefer the nearest idle cat and the newest available structure so a
