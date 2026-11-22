@@ -9,13 +9,22 @@ on:
       - 'public/game-fullscreen.js'
       - 'public/lang.js'
       - 'scripts/browser-test-pawsibly.mjs'
+      - 'scripts/check-pawsibly.mjs'
+      - 'scripts/mobile-playtest.mjs'
+      - 'scripts/fullscreen-smoke.mjs'
+      - '.github/workflows/browser-test-pawsibly.yml'
+  pull_request:
+    paths:
+      - 'public/pawsibly-innocent/**'
+      - 'scripts/check-pawsibly.mjs'
+      - 'scripts/browser-test-pawsibly.mjs'
       - 'scripts/mobile-playtest.mjs'
       - 'scripts/fullscreen-smoke.mjs'
       - '.github/workflows/browser-test-pawsibly.yml'
   workflow_dispatch:
 # Only the most recent source revision needs a browser test.
 concurrency:
-  group: morrowwish-browser-smoke-main
+  group: morrowwish-browser-smoke-${{ github.ref }}
   cancel-in-progress: true
 permissions:
   contents: read
@@ -35,6 +44,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Fetch CC0 recorded cat soundtrack
         run: bash scripts/fetch-cat-music.sh
+      - name: Run Pawsibly core rules
+        run: node scripts/check-pawsibly.mjs
       - name: Run Chromium test against local source
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-local.log 2>&1 &
@@ -42,3 +53,14 @@ jobs:
           node scripts/browser-test-pawsibly.mjs
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/mobile-playtest.mjs
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/fullscreen-smoke.mjs
+
+      - name: Run full repository source gate (includes other games)
+        run: npm run check
+      - name: Archive Pawsibly Chromium screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pawsibly-chromium-qa
+          path: test-results/pawsibly-*.png
+          if-no-files-found: warn
+          retention-days: 7

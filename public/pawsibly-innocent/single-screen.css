@@ -836,3 +836,158 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  margin:7px 0 9px;padding:7px 10px;font:800 12px/1.5 Nunito,system-ui,sans-serif;
  color:#70566b;overflow-wrap:anywhere;
 }
+
+/* A fair Wait turn also resolves fish temporarily blocked by moving actors. */
+.single-screen-game .in-game-actions #wait{
+ box-sizing:border-box;display:inline-flex;flex:0 0 65px;align-items:center;justify-content:center;gap:3px;
+ min-width:65px;max-width:65px;min-height:45px;padding:5px 7px;border:1px solid #c5d5d0;
+ border-radius:11px;background:#effaf6;color:#456f65;font:900 12px/1.1 Nunito,system-ui,sans-serif;
+ cursor:pointer;touch-action:manipulation;
+}
+.single-screen-game .in-game-actions #wait:disabled{opacity:.55;cursor:default}
+.single-screen-game .in-game-actions #wait:focus-visible{outline:3px solid #508f81;outline-offset:2px}
+.single-screen-game .in-game-actions #wait .wait-symbol{font:900 19px/1 system-ui,sans-serif}
+@media(max-width:700px){
+ .single-screen-game .in-game-actions #wait{flex-basis:44px;min-width:44px;max-width:44px;min-height:46px;padding:2px;flex-direction:column;gap:0}
+ .single-screen-game .in-game-actions #wait .wait-symbol{font-size:17px}
+ .single-screen-game .in-game-actions #wait .wait-label{display:inline!important;font:900 10px/1 Nunito,system-ui,sans-serif}
+}
+@media(max-width:360px){
+ .single-screen-game .in-game-actions{gap:4px!important;flex-wrap:wrap!important}
+ .single-screen-game .in-game-actions #bonusQuick{flex:1 1 100%!important;order:0;min-height:35px!important;padding:4px!important}
+ .single-screen-game .in-game-actions .board-yarn{flex:1 1 auto!important;order:1;min-width:101px!important;max-width:none!important;padding:4px!important;font-size:10px!important}
+ .single-screen-game .in-game-actions #wait{order:2}
+ .single-screen-game .in-game-actions #restart{order:3}
+}
+@media(min-width:701px) and (max-height:500px){.single-screen-game .in-game-actions #wait{min-height:39px}}
+
+/* 900x520: previously the optional goal collapsed to 22px. A full-width
+   action row on short desktop windows preserves instructions and readable CTA. */
+@media(min-width:701px) and (max-height:830px){
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .stage{
+  width:min(1040px,calc(100vw - 28px),calc(128dvh - 188px))!important;
+ }
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .in-game-guidance{
+  grid-template-columns:minmax(0,1fr)!important;gap:3px!important;
+  padding:5px 9px!important;
+ }
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .in-game-actions{
+  width:100%!important;max-width:100%!important;
+ }
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .in-game-actions #bonusQuick{
+  min-width:120px!important;
+ }
+}
+
+/* Narrow-screen player QA: controls may wrap, but ROOM 01/08 must never
+   collapse into a three-line vertical label beside the audio tools. */
+@media(max-width:620px){
+ .single-screen-game .in-game-head-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"controls controls" "room status"!important;
+  align-items:center!important;column-gap:6px!important;row-gap:3px!important;
+  padding:5px 7px!important;
+ }
+ .single-screen-game #stageControls{
+  grid-area:controls!important;display:flex!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  flex:none!important;justify-content:space-between!important;gap:3px!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left{
+  grid-area:room!important;min-width:0!important;max-width:100%!important;
+  width:auto!important;flex:none!important;gap:4px!important;
+  align-items:center!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left .sticker{
+  box-sizing:border-box!important;flex:1 1 auto!important;
+  min-width:0!important;max-width:none!important;
+  padding:3px 6px!important;overflow:hidden!important;
+ }
+ .single-screen-game #roomNum{
+  display:block!important;font-size:9px!important;line-height:1.2!important;
+  white-space:nowrap!important;word-break:normal!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;
+ }
+ .single-screen-game #roomTag{
+  display:block!important;font-size:10px!important;line-height:1.2!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ }
+ .single-screen-game #heistStatus{
+  grid-area:status!important;flex:none!important;justify-self:end!important;
+  min-width:0!important;white-space:nowrap!important;
+ }
+}
+
+/* Review correction: prior mobile grid had a fixed-height 42px ancestor
+   from the desktop compact rule. Let two rows lay out at their real height. */
+@media(max-width:620px){
+ html:not(.cg-play) .single-screen-game .in-game-head-row,
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game .in-game-head-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"controls controls" "room status"!important;
+  height:auto!important;min-height:88px!important;max-height:none!important;
+  overflow:visible!important;align-items:center!important;row-gap:3px!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left{
+  grid-area:room!important;justify-self:stretch!important;min-width:0!important;
+  width:100%!important;max-width:none!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left .sticker{
+  min-width:85px!important;flex:1 1 auto!important;max-width:none!important;
+  width:auto!important;overflow:hidden!important;
+ }
+ .single-screen-game .in-game-head-row #heistStatus{
+  grid-area:status!important;justify-self:end!important;
+ }
+ .single-screen-game .in-game-head-row #stageControls{
+  grid-area:controls!important;min-width:0!important;width:100%!important;
+  justify-self:stretch!important;justify-content:space-between!important;
+ }
+}
+
+/* Mobile release-review layout: do not cram navigation, 0/3 and a long
+   icon toolbar on the same line. The room/status line and wrapped
+   controls must each own genuine space and remain fully clickable. */
+@media(max-width:620px){
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game .in-game-head-row,
+ html.mw-fs-active:not(.cg-play) .single-screen-game .in-game-head-row{
+  position:relative!important;display:flex!important;flex-direction:column!important;
+  justify-content:flex-start!important;align-items:stretch!important;
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;gap:5px!important;padding:5px 7px!important;
+ }
+ html:not(.cg-play) .single-screen-game .in-game-head-row .stage-left{
+  box-sizing:border-box!important;order:0!important;align-self:flex-start!important;
+  flex:0 0 auto!important;width:calc(100% - 114px)!important;
+  min-width:0!important;max-width:calc(100% - 114px)!important;
+ }
+ html:not(.cg-play) .single-screen-game .in-game-head-row .stage-left .sticker{
+  width:auto!important;max-width:none!important;min-width:0!important;
+  flex:1 1 auto!important;
+ }
+ html:not(.cg-play) .single-screen-game .in-game-head-row #heistStatus{
+  position:absolute!important;top:7px!important;right:7px!important;
+  order:0!important;white-space:nowrap!important;margin:0!important;
+  font-size:10px!important;padding:5px 6px!important;
+  z-index:2!important;max-width:106px!important;
+ }
+ html:not(.cg-play) .single-screen-game .in-game-head-row #stageControls{
+  order:1!important;box-sizing:border-box!important;
+  display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+  align-self:stretch!important;width:100%!important;max-width:100%!important;
+  flex:0 0 auto!important;min-width:0!important;height:auto!important;
+  justify-content:center!important;align-content:center!important;
+  row-gap:4px!important;column-gap:4px!important;
+ }
+}
+
+/* Real phone touch-target audit: 28px icon hitboxes are too small, even
+   when they appear visually inside the screen. Flex wrapping is allowed. */
+@media(max-width:620px){
+ html:not(.cg-play) .single-screen-game #stageControls button{
+  box-sizing:border-box!important;
+  min-width:34px!important;
+  flex-shrink:0!important;
+ }
+}

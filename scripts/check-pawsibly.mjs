@@ -37,6 +37,30 @@ for(let i=0;i<8;i++){
  assert.ok(s.fish.length>=3&&s.fish.every(p=>path(s,s.cat,p)!==null));
  assert.ok(path(s,s.cat,s.door)!==null);
 }
+// Player QA: blocked collectibles must have a real, costly way to advance patrols.
+test.choose(4,false);
+let w=test.getState(),initialHuman={...test.getState().human};
+nodes.get('wait').onclick();
+assert.equal(w.steps,1,'Wait spends one turn');
+assert.equal(w.started,true,'Wait begins the run');
+assert.notDeepEqual(JSON.parse(JSON.stringify(w.human)),initialHuman,'Wait advances human');
+test.choose(4,false);w=test.getState();
+const guardFish=w.fish[1];w.human={...guardFish};
+listeners['board:pointerdown']({pointerType:'mouse',button:0,clientX:(guardFish.x+.5)*84,clientY:(guardFish.y+.5)*84});
+assert.match(nodes.get('visionTip').textContent,/human blocks a fish/i,'Blocked human needs actionable help');
+test.throwYarn();
+assert.match(nodes.get('visionTip').textContent,/Tap a floor tile/i,'Yarn targeting must override the earlier blocked-fish hint');
+test.throwYarn();
+nodes.get('wait').onclick();
+assert.ok(w.human.x!==guardFish.x||w.human.y!==guardFish.y,'Wait frees guard-blocked fish');
+test.choose(3,false);const v=test.getState(),robotFish=v.fish[2];v.vacuum={...robotFish};
+listeners['board:pointerdown']({pointerType:'mouse',button:0,clientX:(robotFish.x+.5)*84,clientY:(robotFish.y+.5)*84});
+assert.match(nodes.get('visionTip').textContent,/vacuum blocks a fish/i,'Blocked robot needs actionable help');
+nodes.get('wait').onclick();nodes.get('wait').onclick();
+assert.ok(v.vacuum.x!==robotFish.x||v.vacuum.y!==robotFish.y,'Wait frees robot-blocked fish');
+test.choose(0,false);w=test.getState();w.cat={x:3,y:3};w.human={x:5,y:3};w.catFrom={...w.cat};
+nodes.get('wait').onclick();
+assert.ok(w.exposure>0,'Visible waiting must still cause detection');
 // Review-gate regressions: distinct room mechanics must be real, not descriptions.
 test.choose(3,false);
 let special=test.getState(),sleeper={...special.human};
@@ -70,6 +94,12 @@ assert.notDeepEqual(JSON.parse(JSON.stringify(test.getState().human)),startingHu
 assert.equal(test.isChasing(),true,'Human should be actively walking toward distant yarn');
 assert.equal(test.getState().guardMode,'investigate','Human should investigate yarn, not silently chase the cat');
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().cat)),stationaryCat,'Throwing yarn must not move the cat');
+assert.equal(test.getState().started,true,'A successful yarn throw must start the run, even before any walking');
+nodes.get('menuButton').onclick();
+assert.equal(test.getState().yarnAnimating,true,'Opening the menu must preserve the active yarn investigation');
+assert.equal(test.isChasing(),false,'Opening the menu must pause the moving human');
+nodes.get('menuClose').onclick();
+assert.equal(test.isChasing(),true,'Closing the menu must resume the same human investigation');
 let guardSteps=1;
 while(test.isChasing()&&guardSteps++<25){
  for(const [id,fn] of [...pendingIntervals.entries()])if(pendingIntervals.has(id))fn();
@@ -135,7 +165,7 @@ const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
 assert.equal(earned.best?.['room-0']?.stars,2,'Three fish plus bonus is two stars, NOT three');
 assert.equal(nodes.get('stars').textContent,'★★☆','A fourth fish is required for three stars');
 assert.ok(nodes.get('resultStarGuide').textContent.includes('Missing 1 fish'),'Scoring explains missing fourth fish');
-assert.equal(nodes.get('fishCount').textContent,'3 / 4','Fish meter shows all four available fish');
+assert.equal(nodes.get('fishCount').textContent,'3 / 3','Mission meter shows the three fish needed to escape');
 assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
 if(earned.best['room-0'].stars>=3){
  assert.ok(nodes.get('catUnlocks').innerHTML.includes('Mochi'),'New cat head and name must visibly appear on the victory card');

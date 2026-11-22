@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
+await mkdir('test-results',{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage({viewport:{width:1250,height:900},deviceScaleFactor:1});
 // Local Python HTTP server cannot accept analytics POSTs; fulfill them in-browser.
@@ -72,6 +74,8 @@ try{
    'Top HUD must exactly match the canvas width at '+viewport.width+'x'+viewport.height);
   assert.ok(Math.abs(fit.guide.left-fit.board.left)<=2&&Math.abs(fit.guide.right-fit.board.right)<=2,
    'Guidance and bonus row must be flush with the game map at '+viewport.width+'x'+viewport.height);
+  assert.ok(fit.bonus.width>=120,'Bonus button unreadably squeezed at '+viewport.width+'x'+viewport.height+': '+JSON.stringify(fit));
+  if(viewport.width===900)await page.screenshot({path:'test-results/pawsibly-desktop-900x520.png'});
   assert.ok(fit.tool.bottom<=fit.board.top+2&&fit.bonus.bottom<=fit.board.top+2,
    'Objectives and yarn must remain visible ABOVE the board');
  }
@@ -355,6 +359,15 @@ try{
  assert.ok(tossed.trail&&tossed.walking&&tossed.mode==='investigate',
   'A long throw must visibly start a multi-step investigation');
  assert.notDeepEqual(tossed.human,humanBefore,'The owner must immediately react to the ball');
+ // Regression: pause must not cancel or irreversibly freeze the yarn investigation.
+ const positionBeforePause=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().human}));
+ await page.locator('#menuButton').click();
+ const paused=await page.evaluate(()=>({animating:window.__PAWSIBLY_TEST__.getState().yarnAnimating,timer:window.__PAWSIBLY_TEST__.isChasing()}));
+ assert.deepEqual(paused,{animating:true,timer:false},'Menu must suspend but preserve the active yarn chase');
+ await page.waitForTimeout(650);
+ assert.deepEqual(await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().human})),positionBeforePause,'Guard must not move under the menu');
+ await page.locator('#menuClose').click();
+ assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.isChasing()),true,'Guard investigation resumes after menu closes');
  await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:6500});
  const settled=await page.evaluate(()=>{
   const s=window.__PAWSIBLY_TEST__.getState();
@@ -479,7 +492,23 @@ try{
   await unlock.reload({waitUntil:'load'});
   assert.equal(await unlock.locator('#wardrobe .skin.active').count(),1);
   assert.equal(await unlock.evaluate(()=>[...document.querySelectorAll('#wardrobe .skin')].findIndex(b=>b.classList.contains('active'))),4,'Selected cat must persist after reload');
-  console.log('Cat unlock and persistent selection checked at thresholds:',JSON.stringify({thresholds,selected}));
+  // A loadout is chosen before a run; swapping to regain yarn mid-heist is forbidden.
+  await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.choose(0,false));
+  await unlock.locator('#menuButton').click();
+  await unlock.locator('[data-game-tab="cats"]').click();
+  await unlock.locator('#wardrobe .skin').nth(0).click();
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),1,'Starting as Marmalade grants exactly one yarn');
+  await unlock.locator('#menuClose').click();
+  await unlock.locator('#tool').click();
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.throwYarnTo({x:8,y:1})),true,'Valid yarn throw before movement works');
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().started),true,'First throw starts a session');
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),0,'Throw consumes opening yarn');
+  await unlock.locator('#menuButton').click();
+  await unlock.locator('[data-game-tab="cats"]').click();
+  assert.equal(await unlock.locator('#wardrobe .skin').nth(4).isDisabled(),true,'Other cats must be locked mid-run');
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),0,'Opening the menu must not refill consumed yarn');
+  await unlock.locator('#menuClose').click();
+  console.log('Cat unlock, persisted selection and finite per-run yarn checked:',JSON.stringify({thresholds,selected}));
  }finally{await unlock.close()}
 
  // Verify the CrazyGames iframe loads directly into a clean, usable game stage
@@ -504,15 +533,21 @@ try{
       rules:document.querySelectorAll('.explainer').length,
       menuHidden:document.getElementById('gameMenu').hidden,menuButton:!!document.getElementById('menuButton'),
       fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
-      totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
+      fishOnBoard:window.__PAWSIBLY_TEST__.getState().fish.length,
+       bonusWidth:document.getElementById('bonusQuick').getBoundingClientRect().width,
+       bonusText:document.getElementById('bonusQuickText').textContent,
+       bonusTextFits:document.getElementById('bonusQuickText').scrollWidth<=document.getElementById('bonusQuickText').clientWidth+1,
+       totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
-   assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
+   await iframe.screenshot({path:`test-results/pawsibly-portal-${w}x${h}.png`});
+    assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
     assert.equal(v.studioBack,'none','CrazyGames must hide the on-stage external studio link');
     assert.equal(v.menuBack,'none','CrazyGames game menu must not link to another playable website');
    assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
-   assert.ok(v.hud?.includes('0/4')&&v.owner,'CrazyGames must show all four fish and owner behavior inside iframe');
+   assert.ok(v.hud?.includes('0/3')&&v.fishOnBoard===4&&v.owner,'CrazyGames must show the three-fish goal, fourth bonus fish and owner behavior inside iframe');
+    if(w===800)assert.ok(v.bonusText==='BONUS'&&v.bonusTextFits&&v.bonusWidth>=70,'800px portal must show the complete compact BONUS label: '+JSON.stringify(v));
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
@@ -527,6 +562,57 @@ try{
   }finally{await iframe.close();}
  }
 
+ // Browser test: player can use the Wait control at mobile width.
+ const waitPage=await browser.newPage({viewport:{width:390,height:844}});
+ try{
+  await waitPage.route('**/api/session',route=>route.fulfill({status:204,body:''}));
+  await waitPage.goto(url,{waitUntil:'load',timeout:40000});
+
+  // Both 390px and 320px layouts must keep the entire wait button and
+  // all adjacent controls visible, readable and nonoverlapping.
+  for(const width of [390,320]){
+   await waitPage.setViewportSize({width,height:844});
+   const layout=await waitPage.evaluate(()=>{
+    const root=document.querySelector('.in-game-actions').getBoundingClientRect();
+    const controls=['bonusQuick','tool','wait','restart'].map(id=>document.getElementById(id).getBoundingClientRect());
+    const within=controls.every(r=>r.left>=root.left-1&&r.right<=root.right+1&&r.top>=root.top-1&&r.bottom<=root.bottom+1);
+    const overlap=controls.some((a,i)=>controls.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
+    return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none',
+     roomNumWidth:document.getElementById('roomNum').getBoundingClientRect().width,
+     roomNumHeight:document.getElementById('roomNum').getBoundingClientRect().height,
+     roomNameVisible:getComputedStyle(document.getElementById('roomTag')).display!=='none',headDisplay:getComputedStyle(document.querySelector('.in-game-head-row')).display,
+     headHeight:document.querySelector('.in-game-head-row').getBoundingClientRect().height,
+     headerAreas:getComputedStyle(document.querySelector('.in-game-head-row')).gridTemplateAreas,
+     stageLeftWidth:document.querySelector('.stage-left').getBoundingClientRect().width,
+     topControlRects:[...document.querySelectorAll('#stageControls button')]
+       .filter(b=>{const c=getComputedStyle(b),r=b.getBoundingClientRect();return c.display!=='none'&&c.visibility!=='hidden'&&Number(c.opacity)>.01&&r.width>1&&r.height>1})
+       .map(b=>{const r=b.getBoundingClientRect();return{id:b.id,width:r.width,left:r.left,right:r.right,top:r.top,bottom:r.bottom}}),
+     roomStatusSeparate:(()=>{const a=document.querySelector('.stage-left').getBoundingClientRect(),b=document.getElementById('heistStatus').getBoundingClientRect();return a.right<=b.left+1&&a.bottom>b.top-1&&b.bottom>a.top+1})(),
+     controlsBelowRoom:(()=>{const a=document.querySelector('.stage-left').getBoundingClientRect(),b=document.getElementById('stageControls').getBoundingClientRect();return b.top>=a.bottom-2})()};
+   });
+   await waitPage.screenshot({path:`test-results/pawsibly-mobile-${width}.png`});
+   assert.ok(layout.within&&!layout.overlap,'Every action must fit without overlap at '+width+'px: '+JSON.stringify(layout));
+   assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
+   assert.ok(layout.roomNumWidth>=70&&layout.roomNumHeight<=16&&layout.roomNameVisible,
+     'Room label must be horizontal and name visible at '+width+'px: '+JSON.stringify(layout));
+   assert.equal(layout.headDisplay,'flex','Computed mobile header must use the intended flex layout at '+width+'px');
+   assert.ok(layout.topControlRects.every(b=>b.left>=-1&&b.right<=width+1&&b.width>=29)&&layout.roomStatusSeparate&&layout.controlsBelowRoom,
+     'All top mobile controls must fit and not overlap room/progress at '+width+'px: '+JSON.stringify(layout));
+   if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
+  }
+  await waitPage.setViewportSize({width:390,height:844});
+  await waitPage.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(4,false);const s=window.__PAWSIBLY_TEST__.getState();s.human={...s.fish[1]}});
+  const fish=await waitPage.evaluate(()=>window.__PAWSIBLY_TEST__.getState().fish[1]);
+  const box=await waitPage.locator('#board').boundingBox();
+  await waitPage.locator('#board').click({position:{x:box.width*(fish.x+.5)/10,y:box.height*(fish.y+.5)/7}});
+  assert.match(await waitPage.locator('#visionTip').textContent(),/human blocks a fish/i,'Explain occupied fish');
+  await waitPage.locator('#wait').click();
+  const result=await waitPage.evaluate(()=>{const s=window.__PAWSIBLY_TEST__.getState();return{steps:s.steps,started:s.started,human:{...s.human}}});
+  assert.equal(result.steps,1,'Wait spends a turn');assert.equal(result.started,true,'Wait starts run');
+  assert.notDeepEqual(result.human,fish,'Owner vacates fish on wait');
+  await waitPage.keyboard.press('Period');
+  assert.equal(await waitPage.evaluate(()=>window.__PAWSIBLY_TEST__.getState().steps),2,'Period key waits');
+ }finally{await waitPage.close()}
  // Five non-cat studio games remain effects-only; never synthesize melodies.
  const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
  const noMusicAudit=[],separateAudioGames=[];
