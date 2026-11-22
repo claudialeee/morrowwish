@@ -317,31 +317,17 @@ class Game {
       // mechanic immediately instead of hiding the duo entry until THEY
       // somehow discover the otherwise buried pairing menu.
       const canPair=(State.S.cats||[]).length>=1;
-      duoEl.hidden=this.scene!=='yard'||(!pending&&!canPair)||
-        !!document.getElementById('panel')?.classList.contains('open');
-      duoEl.classList.toggle('needs-reconcile',!!pending);
-      duoEl.setAttribute('aria-live',pending?'polite':'off');
-      if(pending)duoEl.setAttribute('role','button');
-      if(!duoEl.hidden){
-        const en=window.MorrowwishI18n?.get?.()!=='zh';
-        const val=members.length===2?(CatRelations.pair(members[0],members[1])?.value||0):0;
-        duoEl.textContent=pending
-          ?'💢 '+State.catName(pending.a)+' + '+State.catName(pending.b)+
-            (en?' had a disagreement — tap to make up':' 闹别扭了！点这里免费和好')
-          :members.length===2
-            ?'💞 '+(en?'Duo Moves':'双猫合击')+' · '+members.map(c=>State.catName(c)).join(' + ')+
-              ' · '+(en?'Trust ':'默契 ')+val+'/100'+
-              (val<20?(en?' · Duo at 20':' · 20 解锁合击'):
-               val<60?(en?' · Cross-claws at 60':' · 60 解锁交叉爪击'):
-               val<90?(en?' · Finale at 90':' · 90 解锁终结连斩'):
-                 (en?' · Finale unlocked':' · 终结连斩已觉醒'))
-            :(en?'💞 Duo Moves · Find your partner'
-               :'💞 双猫合击 · 寻找搭档');
-        duoEl.setAttribute('aria-label',pending
-          ?(en?'Open the duo disagreement and reconcile':'查看双猫闹别扭事件并和好')
-          :(en?'Open cat duo and learn the bond moves':'查看双猫搭档与合击成长'));
-      }
+      // The Duo screen now lives in Cats > Duo, not in the right action rail.
+      duoEl.hidden=true;
     }
+    // Alert the player to a relationship disagreement in the bottom Cat tab.
+    const pending=window.CatRelations?.unresolved?.()[0]||null;
+    const dot=document.getElementById('cat-duo-dot');
+    if(dot)dot.hidden=!pending;
+    const catTab=document.querySelector('[data-tab="cats"]');
+    if(catTab)catTab.setAttribute('aria-label',pending
+      ?(window.MorrowwishI18n?.get?.()==='zh'?'猫咪：双猫闹别扭待处理':'Cats: a duo needs your attention')
+      :(window.MorrowwishI18n?.get?.()==='zh'?'猫咪':'Cats'));
     const el=document.getElementById('yard-surprise');if(!el)return;
     el.hidden=this.scene!=='yard'||!State.S.yardStory?.pending||!!document.getElementById('panel')?.classList.contains('open');
     if(!el.hidden)el.textContent=window.MorrowwishI18n?.get?.()==='zh'?'✨ 猫咪小秘密 · 点击发现':'✨ Cat surprise · Open';
