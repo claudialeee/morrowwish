@@ -15,6 +15,7 @@ const moves=[
  ['boltArc','xianluo','chain'],
  ['voltRush','xianluo','dash'],
  ['shadowSwipe','xingchen','melee'],
+ ['frostClaw','lanbao','melee'], // water-typed Blueberry; NEVER electric
 ];
 const browser=await chromium.launch({headless:true});
 try{
@@ -99,6 +100,14 @@ try{
       target.x=f.x+56;target.flash=0;target.inv=0;
       b.meleeStrike(f,0,sk,18,'#c9a6df');
       if(target.hp>=hp)throw Error('close claw never hit');
+      if(id==='frostClaw'){
+        if(sk.element!=='water'||Skills.secondaryOf('lanbao')!==null)
+          throw Error('Blueberry Frost Claw must be Water and single-element');
+        if(b.vfx.fx.filter(v=>v.type==='slash').length!==2)
+          throw Error('Frost Claw must paint precisely one short swipe per contact');
+        if(!b.skillStrokes.some(v=>v.kind==='signatureHit'&&v.skillId===id))
+          throw Error('Frost Claw must paint real icy crystals on confirmed contact');
+      }
       mode='close-contact';
     }
     if(window.CatBondUltHero||b.ultHero)throw Error('full-screen cat overlay');
