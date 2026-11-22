@@ -92,8 +92,11 @@ assert.equal(bond?.signals.bond_battle_end_v2,1,'duplicate seq cannot inflate re
 for(const g of summary.byGame.filter(g=>g.game!=='hub')){
  assert.equal(g.conversion.pageviews,g.pageviews,g.game+' denominator uses pages');
  assert.equal(g.conversion.visitStart,100,g.game+' visit to play');
- assert.equal(g.conversion.startFinish,100,g.game+' play to finish');
- assert.equal(g.conversion.visitFinish,100,g.game+' visit to finish');
+ // Flip Dash and Parcel Panic include one extra abandoned visit/run, so
+ // completion conversion is correctly 1/2, not a fabricated 100%.
+ const withAbandoned=g.game==='flip-dash'||g.game==='parcel-panic';
+ assert.equal(g.conversion.startFinish,withAbandoned?50:100,g.game+' play to finish');
+ assert.equal(g.conversion.visitFinish,withAbandoned?50:100,g.game+' visit to finish');
 }
 // Legacy rare encounters vs captures: the old 4/57 events must remain in
 // historical reporting but never be mistaken for V2 same-funnel conversions.
