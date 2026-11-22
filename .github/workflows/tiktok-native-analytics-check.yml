@@ -6,10 +6,14 @@ on:
     paths:
       - 'src/tiktok-native.js'
       - 'src/bluesky-native.js'
+      - 'src/youtube-native.js'
+      - 'src/instagram-native.js'
       - 'src/analytics.js'
       - 'scripts/build-pages.mjs'
       - 'scripts/test-tiktok-native.mjs'
       - 'scripts/test-bluesky-native.mjs'
+      - 'scripts/test-youtube-native.mjs'
+      - 'scripts/test-instagram-native.mjs'
       - 'promotion/social-metrics-snapshot.json'
       - '.github/workflows/tiktok-native-analytics-check.yml'
   workflow_dispatch:
@@ -29,10 +33,14 @@ jobs:
         run: |
           node --check src/tiktok-native.js
           node --check src/bluesky-native.js
+          node --check src/youtube-native.js
+          node --check src/instagram-native.js
           node --check src/analytics.js
           node --check scripts/build-pages.mjs
           node scripts/test-tiktok-native.mjs
           node scripts/test-bluesky-native.mjs
+          node scripts/test-youtube-native.mjs
+          node scripts/test-instagram-native.mjs
           node scripts/test-promotion-metrics.mjs
       - name: Verify production Worker concatenation without external credentials
         run: |
@@ -42,12 +50,16 @@ jobs:
           const social=fs.readFileSync('promotion/social-metrics-snapshot.json','utf8');
           const native=fs.readFileSync('src/tiktok-native.js','utf8').replace(/^export /gm,'');
           const bluesky=fs.readFileSync('src/bluesky-native.js','utf8').replace(/^export /gm,'');
+          const youtube=fs.readFileSync('src/youtube-native.js','utf8').replace(/^export /gm,'');
+          const instagram=fs.readFileSync('src/instagram-native.js','utf8').replace(/^export /gm,'');
           const analytics=fs.readFileSync('src/analytics.js','utf8')
             .replace('import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";','')
             .replace('import {nativeBlueskySnapshot} from "./bluesky-native.js";','')
+            .replace('import {nativeYouTubeSnapshot} from "./youtube-native.js";','')
+            .replace('import {nativeInstagramSnapshot,nativeInstagramRoute} from "./instagram-native.js";','')
             .replace('export async function api','async function api');
           const router=fs.readFileSync('src/worker.js','utf8')
             .replace('import {api} from "./analytics.js";','');
-          new vm.Script('const SOCIAL_SNAPSHOT='+social+';\n'+native+'\n'+bluesky+'\n'+analytics+'\n'+router.replace('export default {','const WORKER = {'));
+          new vm.Script('const SOCIAL_SNAPSHOT='+social+';\n'+native+'\n'+bluesky+'\n'+youtube+'\n'+instagram+'\n'+analytics+'\n'+router.replace('export default {','const WORKER = {'));
           console.log('Cloudflare Pages Worker bundle compiles with TikTok OAuth + API v2 client.');
           NODE
