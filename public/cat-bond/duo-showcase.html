@@ -133,7 +133,7 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 <header><div class="eyebrow">MORROW WISH · CAT BOND</div><a href="./">返回游戏 / Back to game</a></header>
 <section class="intro"><h1>21 种双猫合击 · 动画总览</h1>
 <p class="sub">已恢复你认可的完整精美猫咪原画。下方可查看当前 21 种合击组合与默契阶段，以及原始 8 张精美绘画。21 套完全独立的角色动画和 32 种猫咪的专属合击原画还没有真正完成。</p>
-<span class="review">仅供预览 · 不会修改游戏存档或解锁进度</span></section>
+<span class="review">新版 · 高清原画立即可见 · 不改存档</span></section>
 <section class="favorite-masterpieces" aria-label="优先展示的三张精美猫咪原画">
 <div class="favorite-heading"><div><p class="eyebrow">ORIGINAL ILLUSTRATIONS · RESTORED</p><h2>先看真正好看的猫咪</h2></div><p>原版完整双猫绘画 · 不使用简陋替代猫</p></div>
 <div class="featured-paintings"><button class="featured-painting" type="button" data-feature-index="4" aria-label="播放星月交辉">
@@ -228,7 +228,7 @@ function sequenceFor(item,t,tier,showLabels=true){
    hideCaptions:!showLabels};
 }
 function drawFrame(c,w,h,item,t,lv=3,showLabels=true){
- c.clearRect(0,0,w,h);c.fillStyle='#e9f0e7';c.fillRect(0,0,w,h);
+ c.clearRect(0,0,w,h);
  return CatBondDuoHero.draw(c,w,h,sequenceFor(item,t,lv,showLabels),
    uid=>uid===item.a.uid?item.a:uid===item.b.uid?item.b:null);
 }
@@ -257,6 +257,11 @@ function refresh(){
  byId('current-index').textContent=String(index+1).padStart(2,'0')+' / '+entries.length;
  byId('current-element').textContent=item.els.map(e=>elements[e]).join(' × ');
  byId('move-desc').textContent=CatRelations.title(item.a,item.b).description;
+ // Keep original premium art visible in the large player while video loads.
+ const frames=[0,2,3,1,0,2,2,3,1,0,2,3,1,3,2,1,1,2,0,0,2];
+ const currentFrame=frames[index],col=currentFrame%2,row=Math.floor(currentFrame/2);
+ const fall=byId('duo-player').previousElementSibling?.querySelector('img');
+ if(fall){fall.style.left='-'+col*100+'%';fall.style.top='-'+row*100+'%';}
  paintCats(item);
  document.querySelectorAll('[data-duo-index]').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
  byId('gallery-count').textContent=entries.length+' / 21 · 8 张基础原画';
@@ -271,29 +276,15 @@ function setSequence(on){
  byId('playlist').textContent=on?'■ 停止连播':'▶ 连播全部 21 种';
  if(on)choose(0);
 }
-const references=[
- [0,'星月交辉 · 月光守护','月色银白 · 完整猫咪绘画'],
- [3,'日曜喵闪 · 日曜之光','金桃色 · 柔和阳光'],
- [1,'双叶春醒 · 春日花开','樱粉与浅绿 · 花园'],
- [2,'水纹连携','浅蓝水色 · 水流'],
- [4,'暗影旋风','深紫原稿，配色还未达到目标'],
- [5,'雷影突袭','深紫原稿，配色还未达到目标'],
- [6,'双影十字爪','深紫原稿，配色还未达到目标'],
- [7,'月下双猫斩','深紫原稿，配色还未达到目标']
-];
-byId('premium-art-grid').innerHTML=references.map(([frame,title,note])=>{
- const col=frame%2,row=Math.floor(frame/2);
- return '<figure class="master-art"><div class="painting-crop"><img alt="'+title+
- '" loading="lazy" src="assets/duo-premium-sheet.webp" style="left:-'+(col*100)+'%;top:-'+(row*100)+'%"></div>'+
- '<figcaption class="painting-name">'+title+'</figcaption><p class="painting-hint">'+note+'</p></figure>';
-}).join('');
+// The original eight high-resolution painted scenes are present in HTML,
+ // so users see them before JavaScript and even if a script cannot load.
 const gallery=byId('gallery');
-gallery.innerHTML=entries.map((v,i)=>
- '<button type="button" class="duo-card" data-duo-index="'+i+'" aria-current="false" aria-label="播放 '+v.zh+'">'+
- '<canvas width="360" height="203" aria-hidden="true"></canvas>'+
- '<div class="card-copy"><div class="card-name"><span>'+v.zh+'</span><small class="card-index">'+String(i+1).padStart(2,'0')+'</small></div>'+
- '<div class="card-meta">'+v.els.map(e=>elements[e]).join(' + ')+' · '+v.en+'</div></div></button>'
-).join('');
+// Static illustrated cards are already in HTML. Never replace them with
+// blank canvases and make the player think the site was not updated.
+document.querySelectorAll('[data-feature-index]').forEach(b=>b.addEventListener('click',()=>{
+ setSequence(false);choose(Number(b.dataset.featureIndex));
+ document.querySelector('.viewer-layout').scrollIntoView({behavior:'smooth',block:'start'});
+}));
 gallery.querySelectorAll('[data-duo-index]').forEach(b=>b.addEventListener('click',()=>{
  setSequence(false);choose(Number(b.dataset.duoIndex));
  document.querySelector('.viewer-layout').scrollIntoView({behavior:'smooth',block:'start'});
@@ -310,15 +301,14 @@ byId('pause').onclick=()=>{
 byId('playlist').onclick=()=>setSequence(!sequence);
 // The painted duo uses fixed subjects. Never pretend that selecting a breed changes its painted characters.
 const breedGallery=byId('breed-gallery');
-breedGallery.innerHTML=GameData.SPECIES.map((sp,i)=>
- '<article class="breed-card" data-breed-id="'+sp.id+'">'+
- '<canvas width="180" height="215" aria-hidden="true"></canvas>'+
- '<strong>'+GameData.speciesName(sp)+'</strong><small>'+elements[Skills.elementOf(sp.id)]+
- '属性 · '+sp.rarity+'</small></article>'
-).join('');
+// The 32 breed cards also exist as immediate HTML; hydrate their real
+// game portraits after the data modules load.
 breedGallery.querySelectorAll('[data-breed-id]').forEach(b=>{
  const sp=GameData.speciesById(b.dataset.breedId);
- CatArt.renderCatThumb(b.querySelector('canvas'),sp);
+ const canvas=b.querySelector('canvas');
+ if(canvas)CatArt.renderCatThumb(canvas,sp);
+ const rarity=b.querySelector('.breed-rarity');
+ if(rarity)rarity.textContent=sp.rarity;
 });
 if(GameData.SPECIES.length!==32||new Set(entries.flatMap(v=>[v.a.species,v.b.species])).size!==32){
  status.textContent='品种资料库检查失败：应覆盖全部 32 种可收集猫咪。';
