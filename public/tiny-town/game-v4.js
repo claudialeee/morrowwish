@@ -437,6 +437,14 @@ function render(){
    :selected?t('Tap a glowing plot. Place related wishes beside each other for surprises.','点击发光的空地。把相关愿望建在一起，会有惊喜！')
    :t('Choose your next wish. Try placing it beside something related!','选下一个愿望，试试建在有关联的建筑旁边！');
  renderBoard();renderCards();renderNews();renderPeople();renderScenery();window.TownV5?.render?.();
+ // The visible banner, not the hidden legacy #guide caption, owns the first-run hint.
+ const introPrompt=$('liveNotice');
+ if(introPrompt&&S.started&&!S.ended&&S.places.length===0){
+  introPrompt.textContent=selected
+   ?t('2 / 2 · Now tap a glowing empty plot to place your wish.','第 2 步 · 点击发光的空地，把愿望建在这里。')
+   :t('1 / 2 · Pick any wish below. There is no wrong choice.','第 1 步 · 从下方选一个愿望，没有错误答案。');
+ }
+
 }
 function renderScenery(){
  const art=$('worldIllustration');
