@@ -149,7 +149,7 @@ try{
   subtitle:document.getElementById('subtitle').textContent,
   mission:document.getElementById('mission').textContent,
   button:document.getElementById('tool').textContent,
-  shelf:document.getElementById('collectionLabel').textContent,
+  shelf:document.getElementById('relicSummary').textContent,
   hint:document.getElementById('collectionHint').textContent,
   instructions:document.getElementById('howBody').textContent,
   room:document.getElementById('chapter').textContent
@@ -207,6 +207,12 @@ try{
  console.log('English switch:',JSON.stringify(en));
  assert.equal(en.lang,'en');
  assert.ok(en.winScore.includes('Score'),'Victory score label must switch language');
+ assert.equal(await page.locator('#closeResult').getAttribute('aria-label'),'Close results','Results X must localize to English');
+ await page.locator('#closeResult').click();
+ assert.equal(await page.locator('#overlay').isVisible(),false,'Results close X must show the completed board');
+ await page.locator('#menuButton').click();
+ assert.equal(await page.locator('#gameMenu').isVisible(),true,'Game menu must work after result X');
+ await page.locator('#menuClose').click();
  assert.ok(/owner/i.test(en.instructions)&&/chase/i.test(en.instructions)&&/pink/i.test(en.instructions),'English tutorial must explain sight-triggered pursuit and pink danger zones');
  assert.equal(errors.length,0,'Canvas and UI must be free of uncaught errors');
  await page.goto(new URL('/',url).toString(),{waitUntil:'load',timeout:40000});
