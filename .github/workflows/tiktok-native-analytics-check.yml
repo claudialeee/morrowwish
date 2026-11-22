@@ -42,6 +42,6 @@ jobs:
             .replace('export async function api','async function api');
           const router=fs.readFileSync('src/worker.js','utf8')
             .replace('import {api} from "./analytics.js";','');
-          new vm.Script('const SOCIAL_SNAPSHOT='+social+';\n'+native+'\n'+analytics+'\n'+router);
+          new vm.Script('const SOCIAL_SNAPSHOT='+social+';\n'+native+'\n'+analytics+'\n'+router.replace('export default {','const WORKER = {'));
           console.log('Cloudflare Pages Worker bundle compiles with TikTok OAuth + API v2 client.');
           NODE
