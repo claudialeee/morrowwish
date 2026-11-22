@@ -27,7 +27,7 @@ on:
   # not fire another 'push' workflow. This event deploys the completed
   # REVIEW-ONLY files automatically without triggering social publication.
   workflow_run:
-    workflows: ['Render Seven Cinematic V7 Game Trailers — REVIEW ONLY']
+    workflows: ['Render Seven Cinematic V7 Game Trailers — REVIEW ONLY', 'Rerecord Two Updated Cat Game Trailers V8 - REVIEW ONLY']
     types: [completed]
     branches: [main]
 
