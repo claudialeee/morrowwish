@@ -11,6 +11,7 @@ on:
       - 'scripts/build-pages.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
+      - 'scripts/check-hidden-story-language.mjs' # Hidden endings and secret event translations are release gates.
       - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
       - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
       - 'scripts/check-cat-bond-invariants.mjs' # Retest new skill/build invariants on release.
