@@ -980,6 +980,7 @@ const UI = {
   },
   closeAll() {
     this.resetNavigation();
+    this._teaseFromCatDetail=false;
     this._teaseStop?.();
     const panel=document.getElementById('panel');
     panel.classList.remove('open');
@@ -2029,6 +2030,7 @@ const UI = {
     const cats = State.S.cats;
     if (!cats.length) { this.game.toast('还没有猫猫'); return; }
     const target = cat || cats[0];
+    this._teaseFromCatDetail=this.openCatUid===target.uid;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     this.panel(`<span class="card-close">×</span>
       <h2>${en?'Cat Teaser 🪶':'逗猫 🪶'}</h2>
@@ -2102,7 +2104,8 @@ const UI = {
 
     const finish = () => {
       if (!active) return;
-      const fromCatDetail=this.openCatUid===cat.uid;
+      const fromCatDetail=!!this._teaseFromCatDetail;
+      this._teaseFromCatDetail=false;
       stop();
       const gain=3+score;
       cat.affinity=Math.min(100,cat.affinity+gain*.8);
