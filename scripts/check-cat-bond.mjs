@@ -555,10 +555,11 @@ assert.equal(victim.poiseRecovering,false,'landed skill cancels refill');
 const lockedPoise=victim.poise;victim.swipeCd=999;
 starterBattle.update(.1);
 assert.equal(victim.poise,lockedPoise,'partial poise stays depleted');
-// User requested AT LEAST three repeat flame sweeps, not one left-right-left.
-// Time budget doubles for visible animation, while damage stays unchanged.
+// Fire's three left-right traversals each LAND independently on touch, but
+// combined damage remains capped near the old one-channel damage budget.
 const flameSkill=Skills.skillById('flameSweep');
-assert.ok(flameSkill?.sweepCycles>=3&&flameSkill.channel>=2.4);
+assert.equal(flameSkill?.sweepPasses,3,'fire must make exactly 3 traversals');
+assert.ok(flameSkill.channel>=2.4);
 const flameBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('jinwu')],GameData.speciesById('doudou'));
 flameBattle.coach=null;flameBattle.enemies=[];
@@ -572,8 +573,43 @@ for(let tick=0;tick<100;tick++){
 }
 const signs=flameAngles.map(a=>Math.sign(a)).filter(Boolean);
 let flips=0;for(let k=1;k<signs.length;k++)if(signs[k]!==signs[k-1])flips++;
-assert.ok(flips>=6,'fire must cross arena six times for three cycles: '+flips);
+assert.ok(flips>=2&&flips<=3,'three fire traversals require 2 direction reversals: '+flips);
 assert.equal(flameBattle.beams.length,0,'flame channel expires on schedule');
+const flameHitsBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('jinwu')],GameData.speciesById('doudou'));
+flameHitsBattle.coach=null;
+const flameUser=flameHitsBattle.me(),flameTarget=flameHitsBattle.enemies[0];
+flameTarget.x=flameUser.x+100;flameTarget.y=flameUser.y;
+flameTarget.maxhp=flameTarget.hp=20000;
+flameHitsBattle.castBeam(flameUser,0,flameSkill,20,'#ffac66');
+const flameInstance=flameHitsBattle.beams[0];
+for(let step=0;step<180;step++){
+  // In full combat, tickStatus/update lowers the enemy's hit flash between sweeps.
+  flameTarget.flash=0;flameTarget.inv=0;
+  flameHitsBattle.tickBeams(flameSkill.channel/180);
+}
+assert.equal(flameInstance._flameHits?.get(flameTarget),2,
+ 'every one of the three flame passes must score a real separate hit');
+assert.ok(flameTarget.hp<20000&&flameTarget.hp>19900,
+ 'three independent fire passes deal moderate total damage, no 8Hz overdamage');
+assert.ok(flameTarget.poise<flameTarget.poiseMax,
+ 'fire pass hits should chip real target poise');
+// Legacy water/lightning damage bypassed the unified hit resolver; these
+// checks exercise the actual special projectile path and its poise updates.
+for(const id of ['waterLash','frostLance','boltArc']){
+ const projectileBattle=new sandbox.window.Battle.CaptureBattle(game,
+   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+ projectileBattle.coach=null;
+ const caster=projectileBattle.me(),enemy=projectileBattle.enemies[0];
+ enemy.x=caster.x+110;enemy.y=caster.y;enemy.hp=enemy.maxhp=10000;
+ enemy.flash=0;enemy.inv=0;
+ const sk=Skills.skillById(id);
+ assert.equal(projectileBattle.castDistinctProjectile(caster,sk,0,'#dbf2ff',14),true,
+   id+' should keep its authored specialized projectile geometry');
+ assert.ok(enemy.poise<enemy.poiseMax,
+   id+' must deduct poise using the real resolver when it hits');
+}
+
 
 // draining poise to empty via skill hits opens the Stagger window
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=1;poiseEnemy.staggerT=0;
@@ -849,6 +885,18 @@ assert.ok(!wallSpecialist.loadout.includes('mirrorWall'),
 assert.ok(wallSpecialist.learned.includes('mirrorWall'),
   'changing BD preserves learned skill history for future tank switching');
 
+// Upgrade damage should overcome longer cooldowns; otherwise high-level
+// abilities are strictly worse in sustained play despite larger hit numbers.
+for(const [oldId,newId] of [
+ ['emberClaw','cometClaw'],['waterLash','frostLance'],
+ ['staticPounce','voltRush'],['shadowSwipe','veteranStrike']
+]){
+ const old=Skills.skillById(oldId),high=Skills.skillById(newId);
+ assert.ok(high.power/high.cd>old.power/old.cd*1.10,
+   newId+' must have >10% power/cooldown improvement over '+oldId);
+}
+assert.ok(Skills.skillById('tenderPaw').healPct>=.6,
+ 'healing upgrade must use a truly larger heal percentage');
 // Skill consolidation: all seven upgrade families remain resolvable, while a
 // learned tier-2 replaces tier-1 in equipped gear and new build recommendations.
 const upgradePairs=[

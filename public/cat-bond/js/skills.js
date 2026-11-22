@@ -226,7 +226,7 @@
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
     { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.35, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
-    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 156, width: 22, sweep: .72, sweepCycles: 3, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '短距离来回扫射三轮火焰，延长动画但不提高总伤害。', unlock: { level: 6, element: 'fire' } },
+    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 156, width: 22, sweep: .72, sweepPasses: 3, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 water ----
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
@@ -274,19 +274,19 @@
     // follow the classic element/level/rarity rules and stay free as before.
     // ========================================================================
     // ---- 付费领悟 (pay a trainer) ----
-    { id: 'cometClaw',  name: '彗星爪',   element: 'fire',  kind: 'melee',      power: 1.7, cd: 3.2, ultCost: 0, heavy: true, upgradeOf: 'emberClaw', tags: ['burn','heavy'],   appliesTag: 'burn',  vfx: 'impact',    desc: '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。', unlock: { cost: { coins: 150 } } },
+    { id: 'cometClaw',  name: '彗星爪',   element: 'fire',  kind: 'melee',      power: 2.25, cd: 3.2, ultCost: 0, heavy: true, upgradeOf: 'emberClaw', tags: ['burn','heavy'],   appliesTag: 'burn',  vfx: 'impact',    desc: '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。', unlock: { cost: { coins: 150 } } },
     { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
     { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, upgradeOf: 'thornCoil', tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
     // ---- 等级 / 亲密 / 组合门槛 ----
-    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.45,cd: 2.8, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
-    { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.6, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
+    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 2,cd: 2.8, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
+    { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.85, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
     { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 1.8, cd: 4.0, ultCost: 0, heavy: true, upgradeOf: 'shadeLeap', tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
     // ---- 品种专属 (breed-locked signature) ----
     { id: 'moonfang',   name: '月噬牙',   element: 'light', kind: 'aoe',        power: 2.6, cd: 0,   ultCost: 70, tags: ['light','ult','weaken'], appliesTag: ['blind','weaken'], vfx: 'ring', desc: '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。', unlock: { species: ['yuelian','xingchen','yinghua'] } },
     // ---- 领悟条件 (quirky quests) ----
-    { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 1.9, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
+    { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 2.3, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
-    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal', healMode: 'single',       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
+    { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal', healMode: 'single', healPct: 0.62,       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
   ];
 
   // ==========================================================================

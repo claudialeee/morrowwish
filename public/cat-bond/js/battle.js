@@ -1563,7 +1563,7 @@ class CaptureBattle {
       // leaves a regen-over-time. An un-wounded target still accepts a hot/cleanse refresh.
       const hasHot = !!sk.hot;
       if(t.hp>=t.maxhp-.5 && !canCleanse && !hasHot)return false;
-      const pct = (sk.healMode==='single'||sk.big) ? 0.46 : 0.34;   // light single = big burst; grass = medium
+      const pct = sk.healPct ?? ((sk.healMode==='single'||sk.big) ? 0.46 : 0.34); // learned heal upgrade matters
       const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*pct));
       t.hp=Math.min(t.maxhp,t.hp+amount);
       if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035; }   // ~3.5%/s for 4s (water)
@@ -1636,24 +1636,23 @@ class CaptureBattle {
     if(!sk)return false;
     const id=sk.id,ex=f.x+Math.cos(aim)*23,ey=f.y+Math.sin(aim)*23;
     const enemies=this.liveEnemies();
-    if(id==='waterLash'||id==='prismBeam'){
-      const water=id==='waterLash',range=water?430:525,width=water?38:21;
+    if(id==='waterLash'||id==='frostLance'||id==='prismBeam'){
+      const water=id==='waterLash',frost=id==='frostLance',range=water?430:frost?480:525,width=water?38:frost?19:21;
       const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
-      this.skillStrokes.push({kind:water?'water':'prism',x:ex,y:ey,x2:endX,y2:endY,
+      this.skillStrokes.push({kind:water?'water':frost?'ice':'prism',x:ex,y:ey,x2:endX,y2:endY,
         color:col,life:.45,max:.45});
       for(let i=0;i<(water?5:4);i++){
         const r=60+i*(water?75:125);
         this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
-          {r0:4,vr:80,life:.26,color:water?'#a5edfc':'#fefcbb',width:2});
+          {r0:4,vr:80,life:.26,color:frost?'#b8eaff':water?'#a5edfc':'#fefcbb',width:2});
       }
       let hits=0;
       for(const e of enemies){
         const dx=e.x-ex,dy=e.y-ey,along=dx*Math.cos(aim)+dy*Math.sin(aim);
         const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
         if(along<0||along>range||side>width+e.r*.5)continue;
-        const dd=this.applyHitEffects(e,sk,baseDmg*(water?.9:1.18),e.x,e.y);
-        this.hurtEnemy(e,dd,e.x,e.y,true);
-        this.vfx.impact(e.x,e.y,col);hits++;
+        const hit=this.resolveHit(e,'me',sk,baseDmg*(water?.9:frost?1.12:1.18),e.x,e.y);
+        if(hit.dealt>0){this.vfx.impact(e.x,e.y,col);hits++;}
       }
       if(hits)this.shakeT=Math.max(this.shakeT,.13);
       return true;
@@ -1669,9 +1668,8 @@ class CaptureBattle {
         this.vfx.beam(sx,sy,target.x,target.y,i?'#e2d6ff':'#ffeeb0');
         this.skillStrokes.push({kind:'lightning',x:sx,y:sy,x2:target.x,y2:target.y,
           color:col,life:.4,max:.4});
-        const dmg=this.applyHitEffects(target,sk,baseDmg*(1-i*.23),target.x,target.y);
-        this.hurtEnemy(target,dmg,target.x,target.y,true);
-        this.vfx.burst(target.x,target.y,{count:9,color:col,speed:160,life:.3});
+        const hit=this.resolveHit(target,'me',sk,baseDmg*(1-i*.23),target.x,target.y);
+        if(hit.dealt>0)this.vfx.burst(target.x,target.y,{count:9,color:col,speed:160,life:.3});
         available.splice(available.indexOf(target),1);
         chain.push(target);sx=target.x;sy=target.y;
       }
@@ -2293,8 +2291,9 @@ class CaptureBattle {
       // left-right-left oscillations rather than just one wobble.
       if(b.sk?.sweep){
         const progress=1-Math.max(0,b.t)/b.max;
-        const cycles=Math.max(1,b.sk.sweepCycles||1);
-        b.aim=b.baseAim-Math.cos(progress*Math.PI*2*cycles)*b.sk.sweep;
+        const passes=Math.max(1,Math.round(b.sk.sweepPasses||2));
+        // 3 half-cycles: left → right → left → right.
+        b.aim=b.baseAim-Math.cos(progress*Math.PI*passes)*b.sk.sweep;
       }else if(f===this.me())b.aim=this.aim;
       if (f._beamRoot != null) f._beamRoot = Math.max(0, b.t);  // stay anchored while it lasts
       const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
@@ -2310,10 +2309,24 @@ class CaptureBattle {
           if (this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5) {
             // A sustained stream makes small damage ticks, not four huge
             // hit-stops/shakes per second. Contact feedback remains localized.
+            const flame=b.sk?.id==='flameSweep',passes=Math.max(1,Math.round(b.sk?.sweepPasses||1));
+            const elapsed=Math.max(0,Math.min(b.max,b.max-b.t));
+            const pass=Math.min(passes-1,Math.floor(elapsed/b.max*passes));
+            if(flame){
+              b._flameHits??=new WeakMap();
+              if(b._flameHits.get(e)===pass)continue;
+            }
+            // Total three-pass power stays near the OLD fire channel budget.
+            // Other sustained beams retain their damage-over-time tick rate.
+            const damage=flame?b.dps*b.max/passes:hitDmg;
             const contact=this.resolveHit(e,b.owner,
-              {...(b.sk||{element:b.element}),isChanneledTick:true,_poiseSource:b},
-              hitDmg,e.x,e.y);
-            if(contact?.dealt>0)this.beamHitFeedback(b,e);
+              {...(b.sk||{element:b.element}),isChanneledTick:!flame,
+                _poiseSource:b,_poisePass:flame?pass:undefined},
+              damage,e.x,e.y);
+            if(contact?.dealt>0){
+              if(flame)b._flameHits.set(e,pass);
+              this.beamHitFeedback(b,e);
+            }
           }
         }
         // sparks along the beam so it reads as a continuous stream
@@ -3113,7 +3126,7 @@ class CaptureBattle {
         ctx.restore();continue;
       }
       if(b.sk?.id==='flameSweep'){
-        // A true SHORT-RANGE CHANNELED FIRE FAN. Two warm outer flames, a
+        // A true SHORT-RANGE THREE-PASS FIRE FAN. Two warm outer flames, a
         // narrower white-hot core, travelling tongues and glowing embers;
         // follow b.aim so the cat visibly sweeps its head LEFT↔RIGHT.
         // Never fill the viewport or extend beyond the real 156px hit reach.
@@ -3255,11 +3268,11 @@ class CaptureBattle {
         window.CatBondSkillFX?.draw(ctx,v,this.t);
       }else if(v.kind==='regularAccent'){
         this.drawRegularSkillAccent(ctx,v,k,p);
-      }else if(v.kind==='water'||v.kind==='prism'||v.kind==='lightning'){
+      }else if(v.kind==='water'||v.kind==='ice'||v.kind==='prism'||v.kind==='lightning'){
         const dx=v.x2-v.x,dy=v.y2-v.y,len=Math.hypot(dx,dy)||1;
         const nx=-dy/len,ny=dx/len;
         const colors=v.kind==='water'?['#d4fdff','#61d3f7','#f4ffff']:
-          v.kind==='prism'?['#fef3b1','#eab1ff','#bff9ff']:['#e9d6ff','#fbecb1','#b1dfff'];
+          v.kind==='ice'?['#d7f7ff','#8dcced','#f7ffff']:v.kind==='prism'?['#fef3b1','#eab1ff','#bff9ff']:['#e9d6ff','#fbecb1','#b1dfff'];
         for(let layer=0;layer<3;layer++){
           ctx.strokeStyle=colors[layer];ctx.lineWidth=(v.kind==='water'?17:9)-layer*3;
           ctx.beginPath();ctx.moveTo(v.x,v.y);
