@@ -59,8 +59,9 @@ try{
           visitors: [{ name: '汤圆', gift: { coins: 12, fish: 1, yarn: 3 }, rare: false }],
         }));
         const reportText = await page.locator('#panel.open .card').innerText();
-        assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+12') && reportText.includes('🐠+1') && reportText.includes('🪙+3'),
-          'Real visitor popup must show Tangyuan and each numeric resource reward: ' + reportText);
+        assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+15') && reportText.includes('🐠+1') &&
+          !reportText.includes('🧶'),
+          'Welcome popup must aggregate legacy yarn into 12+3 coins, retain fish: ' + reportText);
         assert.ok(!reportText.includes('[object Object]'), 'Real visitor popup must never stringify rewards as [object Object]');
         await page.evaluate(() => UI.closeAll());
       }
@@ -176,6 +177,9 @@ try{
     await lp.evaluate(()=>{
       window.WorldMap.onEncounter(()=>{});
       window.WorldMap.enterRegion(window.WorldMap.REGIONS.find(r=>window.WorldMap.isUnlocked(r.id)).id);
+      // Test setup enters region via API instead of actual map chooser button;
+      // dismiss the still-open chooser or Game.update correctly pauses walking.
+      UI.closeAll();
     });
     await lp.waitForTimeout(250);
     const start=await lp.evaluate(()=>window.WorldMap.view);
