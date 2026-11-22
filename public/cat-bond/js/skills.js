@@ -340,24 +340,24 @@
   // for skill-specific combos. checkCombo scans the target's current tags.
   const COMBO = {
     // soak(淋湿) + 电 = 全体连锁 ×3
-    'soak|elec':   { name: '导电连锁!', bonusMult: 3.0, effect: 'chainAll', consumes: true },
+    'soak|elec':   { name: '导电连锁!', bonusMult: 1.5, effect: 'chainAll', consumes: true },
     // oil(浸油) + 火 = 爆炸
-    'oil|fire':    { name: '浸油爆燃!', bonusMult: 2.6, effect: 'explode',  consumes: true },
+    'oil|fire':    { name: '浸油爆燃!', bonusMult: 1.45, effect: 'explode',  consumes: true },
     // soak(淋湿) + 火 = 蒸发(减伤, 清除淋湿)
     'soak|fire':   { name: '蒸发…',     bonusMult: 0.6, effect: 'steam',    consumes: true },
     // chill(冰冻) + 扑击(dash) = 碎冰暴击
-    'chill|@staticPounce': { name: '碎冰暴击!', bonusMult: 2.75, effect: 'shatter', consumes: true },
-    'chill|@thornCoil':    { name: '碎冰缠绕!', bonusMult: 2.2,  effect: 'shatter', consumes: true },
+    'chill|@staticPounce': { name: '碎冰暴击!', bonusMult: 1.5, effect: 'shatter', consumes: true },
+    'chill|@thornCoil':    { name: '碎冰缠绕!', bonusMult: 1.4,  effect: 'shatter', consumes: true },
     // burn(灼烧) + 草 = 野火蔓延
-    'burn|grass':  { name: '野火蔓延!', bonusMult: 1.8, effect: 'bloom',    consumes: false },
+    'burn|grass':  { name: '野火蔓延!', bonusMult: 1.3, effect: 'bloom',    consumes: false },
     // shock(感电) + 水 = 过载
-    'shock|water': { name: '电解过载!', bonusMult: 2.2, effect: 'chainAll', consumes: true },
+    'shock|water': { name: '电解过载!', bonusMult: 1.4, effect: 'chainAll', consumes: true },
     // bleed(流血) + 暗 = 嗜血
-    'bleed|dark':  { name: '嗜血突袭!', bonusMult: 2.0, effect: 'bloom',    consumes: false },
+    'bleed|dark':  { name: '嗜血突袭!', bonusMult: 1.35, effect: 'bloom',    consumes: false },
     // dizzy(眩晕) + 任意近战重击(光) = 制裁
-    'dizzy|light': { name: '圣光制裁!', bonusMult: 2.3, effect: 'shatter', consumes: true },
+    'dizzy|light': { name: '圣光制裁!', bonusMult: 1.4, effect: 'shatter', consumes: true },
     // blind(失明) + 暗 = 处决(目标下次攻击必失手)
-    'blind|dark':  { name: '暗影处决!', bonusMult: 1.9, effect: 'blind',    consumes: false },
+    'blind|dark':  { name: '暗影处决!', bonusMult: 1.3, effect: 'blind',    consumes: false },
 
     // ============ 元素反应扩展 (more cross-element chemistry) ============
     // Each is a believable elemental interaction; every element both SETS UP a tag and
@@ -366,34 +366,34 @@
     // one-shot bursts, false for DoT/spread reactions so the status keeps ticking.
 
     // --- 水/冰 family ---
-    'soak|grass':  { name: '藤蔓缠水!', bonusMult: 1.7, effect: 'bloom',    consumes: false }, // 湿润助长 → 束缚更久
-    'chill|fire':  { name: '冰火爆裂!', bonusMult: 2.4, effect: 'explode',  consumes: true },  // 骤热碎冰 → 爆裂
-    'chill|light': { name: '折射冰华!', bonusMult: 2.1, effect: 'shatter',  consumes: true },  // 光穿冰晶 → 碎
-    'soak|dark':   { name: '溺影侵蚀!', bonusMult: 1.9, effect: 'bloom',    consumes: false }, // 湿透导蚀 → 流血叠加
+    'soak|grass':  { name: '藤蔓缠水!', bonusMult: 1.25, effect: 'bloom',    consumes: false }, // 湿润助长 → 束缚更久
+    'chill|fire':  { name: '冰火爆裂!', bonusMult: 1.4, effect: 'explode',  consumes: true },  // 骤热碎冰 → 爆裂
+    'chill|light': { name: '折射冰华!', bonusMult: 1.35, effect: 'shatter',  consumes: true },  // 光穿冰晶 → 碎
+    'soak|dark':   { name: '溺影侵蚀!', bonusMult: 1.3, effect: 'bloom',    consumes: false }, // 湿透导蚀 → 流血叠加
 
     // --- 火/灼烧 family ---
-    'burn|elec':   { name: '热离子化!', bonusMult: 2.2, effect: 'chainAll', consumes: true },  // 灼热电离 → 连锁
+    'burn|elec':   { name: '热离子化!', bonusMult: 1.4, effect: 'chainAll', consumes: true },  // 灼热电离 → 连锁
     'burn|water':  { name: '炽焰骤熄!', bonusMult: 0.7, effect: 'steam',    consumes: true },  // 水浇灭火(反制, 低倍)
-    'oil|elec':    { name: '油烟引爆!', bonusMult: 2.5, effect: 'explode',  consumes: true },  // 浸油遇电火花 → 爆
+    'oil|elec':    { name: '油烟引爆!', bonusMult: 1.45, effect: 'explode',  consumes: true },  // 浸油遇电火花 → 爆
 
     // --- 电/感电 family ---
-    'shock|light': { name: '离子过曝!', bonusMult: 2.0, effect: 'shatter',  consumes: true },  // 感电+强光 → 过曝定身
-    'shock|grass': { name: '雷击落种!', bonusMult: 1.7, effect: 'bloom',    consumes: false }, // 电流催长孢子
+    'shock|light': { name: '离子过曝!', bonusMult: 1.35, effect: 'shatter',  consumes: true },  // 感电+强光 → 过曝定身
+    'shock|grass': { name: '雷击落种!', bonusMult: 1.25, effect: 'bloom',    consumes: false }, // 电流催长孢子
 
     // --- 束缚 / 控制 reactions (bind had NO reaction before) ---
-    'bind|fire':   { name: '焚烬藤蔓!', bonusMult: 2.1, effect: 'explode',  consumes: true },  // 烧断束缚 → 爆烬
-    'bind|elec':   { name: '缚身过载!', bonusMult: 2.3, effect: 'chainAll', consumes: true },  // 定身目标被连锁贯穿
-    'dizzy|elec':  { name: '眩雷贯穿!', bonusMult: 2.2, effect: 'shatter',  consumes: true },  // 眩晕中雷 → 定身暴击
+    'bind|fire':   { name: '焚烬藤蔓!', bonusMult: 1.35, effect: 'explode',  consumes: true },  // 烧断束缚 → 爆烬
+    'bind|elec':   { name: '缚身过载!', bonusMult: 1.4, effect: 'chainAll', consumes: true },  // 定身目标被连锁贯穿
+    'dizzy|elec':  { name: '眩雷贯穿!', bonusMult: 1.4, effect: 'shatter',  consumes: true },  // 眩晕中雷 → 定身暴击
 
     // --- 暗/流血/破绽 reactions (expose/weaken were unused) ---
-    'expose|dark': { name: '致命弱点!', bonusMult: 2.6, effect: 'shatter',  consumes: true },  // 破绽+暗影 → 致命一击
-    'expose|fire': { name: '灼心强袭!', bonusMult: 2.0, effect: 'explode',  consumes: true },  // 破绽处灼烧爆发
-    'bleed|grass': { name: '荆棘深撕!', bonusMult: 1.8, effect: 'bloom',    consumes: false }, // 荆棘撕裂流血伤口
-    'weaken|light':{ name: '净光裁决!', bonusMult: 2.1, effect: 'shatter',  consumes: true },  // 虚弱目标受圣光裁决
+    'expose|dark': { name: '致命弱点!', bonusMult: 1.45, effect: 'shatter',  consumes: true },  // 破绽+暗影 → 致命一击
+    'expose|fire': { name: '灼心强袭!', bonusMult: 1.35, effect: 'explode',  consumes: true },  // 破绽处灼烧爆发
+    'bleed|grass': { name: '荆棘深撕!', bonusMult: 1.3, effect: 'bloom',    consumes: false }, // 荆棘撕裂流血伤口
+    'weaken|light':{ name: '净光裁决!', bonusMult: 1.35, effect: 'shatter',  consumes: true },  // 虚弱目标受圣光裁决
 
     // --- 光/失明 reactions ---
-    'blind|light': { name: '炫目爆闪!', bonusMult: 1.9, effect: 'shatter',  consumes: true },  // 失明叠光 → 爆闪
-    'burn|fire':   { name: '烈焰叠烧!', bonusMult: 1.6, effect: 'bloom',    consumes: false }, // 同系叠烧(本系也有小反应)
+    'blind|light': { name: '炫目爆闪!', bonusMult: 1.3, effect: 'shatter',  consumes: true },  // 失明叠光 → 爆闪
+    'burn|fire':   { name: '烈焰叠烧!', bonusMult: 1.25, effect: 'bloom',    consumes: false }, // 同系叠烧(本系也有小反应)
   };
 
   // checkCombo(targetTags, skill) -> null | {name, bonusMult, effect, consumes, tag}

@@ -4084,23 +4084,27 @@ class CaptureBattle {
     e.tags = e.tags || [];        // live tag list (for combo checks)
     e.status = e.status || {};    // tag -> remaining seconds (timed effects)
     const TAG = Skills.TAG_INFO || {};
-    // combo: existing tag + this skill → amplified burst
+    // DAMAGE MULTIPLIERS ARE ADDITIVE, NOT MULTIPLICATIVE. The element-reaction combo
+    // bonus and the element-effectiveness bonus each contribute their part ABOVE 1 to a
+    // single shared multiplier: mult = 1 + (combo-1) + (elem-1). This keeps reactions
+    // (now tuned to 1.2-1.5) and effectiveness (up to 2x) from COMPOUNDING into 3-5x
+    // spikes — a 1.5 reaction on a 2x-effective hit is 2.5x, not 3.0x. Reductions
+    // (combo<1 "steam/douse", elem<1 resist) subtract their shortfall the same way.
     const combo = Skills.checkCombo ? Skills.checkCombo(e.tags, skill) : null;
+    const elem = this.elemMult(skill.element, e.sp.id);
+    let bonus = 0;                                   // sum of (factor-1) contributions
+    if (combo) bonus += (combo.bonusMult || 1) - 1;
+    bonus += elem - 1;
+    dmg *= Math.max(0.25, 1 + bonus);                // floor so stacked reductions never zero out
     if (combo) {
-      dmg *= combo.bonusMult || 1;
-      // Real shattered-ice crit receives a distinct gold/icy impact. Other
-      // elemental combos retain their original no-extra-hitstop treatment.
       if(combo.effect==='shatter')
         this.vfx.impactType?.(e.x,e.y,'crit',{color:'#dceeff'});
       this.vfx.ring(e.x, e.y, { r0: 8, vr: 460, life: 0.45, color: this.elemColor(skill.element), width: 6 });
       this.vfx.text(e.x, e.y - 50, '✦', '#ffd36b', 12);
-      // The paired-element strike and status effect carry the feedback.
       if (combo.consumes && e.tags.includes(combo.tag)) { e.tags = e.tags.filter(t => t !== combo.tag); delete e.status[combo.tag]; }
     }
-    // element effectiveness
-    const mult = this.elemMult(skill.element, e.sp.id);
-    if (mult > 1) { dmg *= mult; this.vfx.text(x, y - 14, '↑', '#ff7b9c', 12); }
-    else if (mult < 1) { dmg *= mult; this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11); }
+    if (elem > 1) this.vfx.text(x, y - 14, '↑', '#ff7b9c', 12);
+    else if (elem < 1) this.vfx.text(x, y - 14, '↓', '#9aa8ba', 11);
     // BASIC-ATTACK TENSION: the basic poke rewards SKILL SETUP. It applies no tags
     // itself, but roars on a target already afflicted (+45% per active status tag)
     // and lands softer on an un-marked target — so Q/E priming carries the fight.
