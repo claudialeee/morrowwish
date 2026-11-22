@@ -317,6 +317,27 @@ const ACTIVE={
  blind:'#ffe5ab',bind:'#82ca84',expose:'#ed9ed5',
  weaken:'#aea0c8',rust:'#d1a06e',rewind:'#b9a5fa'
 };
+// Persistent, 3-star orbit for a real DIZZY/hard-stunned cat, including allies.
+function drawDizzyStars(ctx,x,y,time=0,remaining=0){
+ if(!ctx||!(remaining>0))return false;
+ const alpha=Math.min(1,remaining/.24),angle0=time*3.8,top=y-41;
+ ctx.save();ctx.lineJoin='round';
+ for(let i=0;i<3;i++){
+  const angle=angle0+i*TAU/3,depth=(1+Math.sin(angle))*.5;
+  const cx=x+Math.cos(angle)*24,cy=top+Math.sin(angle)*6,rad=4.4+1.5*depth;
+  ctx.save();ctx.globalAlpha=alpha*(.72+.27*depth);
+  ctx.fillStyle=i===1?'#fff2bf':i===2?'#f5d18f':'#fffbea';
+  ctx.strokeStyle='#9f8659';ctx.lineWidth=1.05;
+  ctx.beginPath();
+  for(let j=0;j<10;j++){
+   const th=j*Math.PI/5-Math.PI/2,r=j%2?rad*.43:rad;
+   const px=cx+Math.cos(th)*r,py=cy+Math.sin(th)*r;
+   if(j)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+  }
+  ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+ }
+ ctx.restore();return true;
+}
 function drawStatus(ctx,unit,time=0){
  if(!ctx||!unit)return false;
  const tags=Object.keys(unit.status||{}).filter(
@@ -325,13 +346,12 @@ function drawStatus(ctx,unit,time=0){
  if(!tags.length&&!knead)return false;
  ctx.save();
  tags.forEach((tag,i)=>{
+  // Keep the stun halo ABOVE the head, never duplicate the ear-side marks.
+  if(tag==='dizzy'){drawDizzyStars(ctx,unit.x,unit.y,time,unit.status.dizzy);return;}
   const col=ACTIVE[tag],phase=time*(tag==='shock'?13:3.3)+i*1.6;
-  // Keep each status around the OUTER silhouette, not across the eyes.
-  // Draw close to the planted paws; dizzy stars float to either side of ears.
   const rad=31+i*4,a0=phase+i*2.1;
   const x=unit.x+Math.cos(a0)*rad;
-  const y=unit.y+(tag==='dizzy'?-23:17)+
-    Math.sin(a0)*(tag==='dizzy'?4:5);
+  const y=unit.y+17+Math.sin(a0)*5;
   const a=Math.max(.4,Math.min(.83,(unit.status[tag]||0)*1.8));
   ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=col;ctx.fillStyle=col;
   ctx.lineWidth=2.4;ctx.lineCap='round';ctx.lineJoin='round';
@@ -357,16 +377,6 @@ function drawStatus(ctx,unit,time=0){
     ctx.beginPath();ctx.moveTo(x-dx,y-dy);ctx.lineTo(x+dx,y+dy);ctx.stroke();
    }
    ctx.fillStyle='#f4ffff';ctx.beginPath();ctx.arc(x,y,2,0,TAU);ctx.fill();
-  }else if(tag==='dizzy'){
-   for(let j=0;j<3;j++){
-    const th=j*TAU/3+phase*.4,xx=x+Math.cos(th)*10,yy=y+Math.sin(th)*5;
-    ctx.beginPath();
-    for(let k=0;k<10;k++){
-      const t=k*Math.PI/5,r=k%2?2.5:5;
-      const px=xx+Math.cos(t)*r,py=yy+Math.sin(t)*r;
-      k?ctx.lineTo(px,py):ctx.moveTo(px,py);
-    }ctx.closePath();ctx.fill();
-   }
   }else if(tag==='blind'){
    ctx.beginPath();ctx.ellipse(x,y,11,5,0,0,TAU);ctx.stroke();
    ctx.beginPath();ctx.moveTo(x-12,y+8);ctx.lineTo(x+12,y-9);ctx.stroke();
@@ -421,5 +431,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus};
+ cast,support,hit,draw,drawStatus,drawDizzyStars};
 })();

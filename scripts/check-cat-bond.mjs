@@ -603,6 +603,21 @@ assert.equal(skillFx.drawStatus(canvasCtx,{
  'Knead buffs require on-cat paw-pad stack feedback');
 assert.equal(skillFx.drawStatus(canvasCtx,{x:120,y:180,status:{}},1),false,
  'no phantom status VFX on a healthy unbuffed cat');
+// True stunned/dizzy overlay: exactly three head-orbiting stars; expired means no VFX.
+function captureStun(t,remaining){
+ const pts=[];
+ const ctx=new Proxy({},{get(_,k){return k==='moveTo'?(x,y)=>pts.push([x,y]):()=>{};},set(){return true;}});
+ return {visible:skillFx.drawStatus(ctx,{x:200,y:175,status:{dizzy:remaining}},t),pts};
+}
+const stunFirst=captureStun(1,1.3),stunLater=captureStun(1.35,1.3);
+assert.equal(stunFirst.visible,true,'hard stun should have an overhead indicator');
+assert.equal(stunFirst.pts.length,3,'exactly three stars, no duplicate ear sparkles');
+assert.ok(stunFirst.pts.every(([x,y])=>x>=171&&x<=229&&y<148),
+  'dizzy stars need to stay above, not on, the cat eyes');
+assert.notDeepEqual(stunFirst.pts,stunLater.pts,'stars must actually orbit');
+assert.deepEqual(captureStun(2,0),{visible:false,pts:[]},
+  'stun halo must clear immediately when the dizzy timer expires');
+
 
  
 

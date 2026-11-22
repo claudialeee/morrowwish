@@ -5277,9 +5277,9 @@ class CaptureBattle {
       if (e.status) {
         const TAG=Skills.TAG_INFO||{};
         const icons={burn:'🔥',soak:'💧',shock:'⚡',oil:'🛢️',chill:'❄️',
-          dizzy:'💫',bleed:'🩸',blind:'🌀',bind:'🌿',expose:'❗',
+          bleed:'🩸',blind:'🌀',bind:'🌿',expose:'❗',
           weaken:'🔻',rust:'🪓'};
-        const priority=['dizzy','chill','bind','shock','expose','rust',
+        const priority=['chill','bind','shock','expose','rust',
           'blind','weaken','burn','bleed','soak','oil'];
         const shown=Object.keys(e.status)
           .filter(tg=>e.status[tg]>0&&icons[tg])
@@ -5534,12 +5534,6 @@ class CaptureBattle {
     // Controls must remain obvious without painting vines/snowflakes over
     // the original watercolor cat's EYES. The previous stacked full-body
     // vines and freeze shell visibly hid the breed-specific face on phones.
-    if(s.dizzy!=null){
-      ctx.globalAlpha=.64;ctx.fillStyle='#f2d990';ctx.font='11px system-ui';
-      ctx.textAlign='center';
-      ctx.fillText('✦',e.x-29,e.y-23+Math.sin(T*4)*3);
-      ctx.fillText('✦',e.x+29,e.y-23-Math.sin(T*4)*3);
-    }
     if(s.chill!=null){
       ctx.globalAlpha=.49;ctx.strokeStyle='#a9daf0';ctx.lineWidth=2;
       ctx.beginPath();ctx.ellipse(e.x,e.y+21,25,7,0,0,Math.PI*2);ctx.stroke();
