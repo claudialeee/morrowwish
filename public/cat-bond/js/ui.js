@@ -1064,16 +1064,25 @@ const UI = {
     const before=p.querySelector(':scope > .card');
     const cardTop=preserveScroll?before?.scrollTop||0:0;
     const panelTop=preserveScroll?p.scrollTop:0;
+    // Cat chips use their own scroll containers: preserving only the card
+    // would still jump a 30-cat picker back to the first row on every tap.
+    const nestedScroll=preserveScroll?[...p.querySelectorAll('.duo-cat-chip-list')]
+      .map(list=>list.scrollTop):[];
     p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
     if(preserveScroll){
       const after=p.querySelector(':scope > .card');
+      const restoreLists=()=>p.querySelectorAll('.duo-cat-chip-list').forEach((list,i)=>{
+        list.scrollTop=nestedScroll[i]||0;
+      });
       if(after)after.scrollTop=cardTop;
       p.scrollTop=panelTop;
+      restoreLists();
       // iOS may apply layout after the initial DOM replacement.
       requestAnimationFrame(()=>{
         if(!p.classList.contains('open')||p.querySelector(':scope > .card')!==after)return;
         if(after)after.scrollTop=cardTop;
         p.scrollTop=panelTop;
+        restoreLists();
       });
     }
     // A child page retains an explicit way home without closing the map or yard.
