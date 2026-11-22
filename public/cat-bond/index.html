@@ -31,7 +31,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=guided-tour-restored-hero-20261121-2" />
+  <link rel="stylesheet" href="css/style.css?v=battle-skill-tooltip-cards-20261121-1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=all-skill-elemental-sfx-20261121" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -117,9 +117,19 @@
           <div class="ult-track"><span id="ult-bar"></span></div>
         </div>
 
+        <!-- A single readable skill card (hover/focus) and explicit touch help.
+             Kept OUTSIDE the action buttons so it never casts by accident. -->
+        <div id="battle-skill-tooltip" class="battle-skill-tooltip" role="status" hidden></div>
+        <button type="button" id="battle-skill-info-toggle" class="battle-skill-info-toggle"
+          aria-expanded="false" aria-controls="battle-skill-guide">ⓘ 技能说明</button>
+        <section id="battle-skill-guide" class="battle-skill-guide" aria-label="技能说明" hidden>
+          <button type="button" id="battle-skill-guide-close" aria-label="关闭技能说明">×</button>
+          <h3 id="battle-skill-guide-title">当前猫咪的技能</h3>
+          <div id="battle-skill-guide-body"></div>
+        </section>
         <!-- move bar (bottom) -->
         <div class="move-bar">
-          <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐟</span><span class="mv-k">左键/J</span></button>
+          <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐟</span><span class="mv-name">小鱼干</span><span class="mv-k">左键/J</span></button>
           <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-name">技能一</span><span class="mv-k">Q</span></button>
           <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-name">技能二</span><span class="mv-k">E</span></button>
           <button class="move" id="mv-lock" type="button" data-move="lock" aria-label="锁定野猫"><span class="mv-icon">◎</span><span class="mv-name">锁定</span><span class="mv-k">切换</span></button>
@@ -200,8 +210,8 @@
   <script src="js/ult-hero.js?v=hero-scale-fix-20261122"></script>
   <script src="js/battle.js?v=six-element-hero-speedcap-20261122"></script>
   <script src="js/duo-bond.js?v=duo-memory-strike-20261122"></script>
-  <script src="js/ui.js?v=tour-panel-navigation-20261121-2"></script>
-  <script src="js/game.js?v=first-adventure-tour-20261121-2"></script>
+  <script src="js/ui.js?v=skill-review-before-battle-20261121-1"></script>
+  <script src="js/game.js?v=skill-tooltips-current-cat-20261121-1"></script>
   <script src="js/main.js?v=original-intro-cats-20261121-2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=catbond-32-breed-lang-20261122"></script>
