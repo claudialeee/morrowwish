@@ -122,6 +122,7 @@ class Game {
     // for two seconds, despite the garden UI correctly being hidden.
     document.getElementById('toasts')?.replaceChildren();
     this.scene = 'map';
+    if(this.yard?.placement){this.yard.cancelPlacement();window.UI?.updateBuildingPlacement?.();}
     document.body.classList.add('cb-exploring');
     document.getElementById('tabbar').classList.add('hidden');
     document.getElementById('hud').classList.add('hidden');
@@ -250,6 +251,8 @@ class Game {
   refreshCollectionGoal(){
     const hint=document.getElementById('collection-goal');
     if(!hint)return;
+    // Replaced by explicit bottom/right skill, workshop and duo controls.
+    hint.hidden=true;return;
     const status=this.collectionStatus();
     const panelOpen=document.getElementById('panel')?.classList.contains('open');
     hint.hidden=this.scene!=='yard'||status.count<2||!!panelOpen;
@@ -307,7 +310,7 @@ class Game {
       // After the player befriends a second cat, surface the defining game
       // mechanic immediately instead of hiding the duo entry until THEY
       // somehow discover the otherwise buried pairing menu.
-      const canPair=(State.S.cats||[]).length>=2;
+      const canPair=(State.S.cats||[]).length>=1;
       duoEl.hidden=this.scene!=='yard'||(!pending&&!canPair)||
         !!document.getElementById('panel')?.classList.contains('open');
       duoEl.classList.toggle('needs-reconcile',!!pending);
@@ -320,14 +323,14 @@ class Game {
           ?'💢 '+State.catName(pending.a)+' + '+State.catName(pending.b)+
             (en?' had a disagreement — tap to make up':' 闹别扭了！点这里免费和好')
           :members.length===2
-            ?'💞 '+members.map(c=>State.catName(c)).join(' + ')+
+            ?'💞 '+(en?'Duo Moves':'双猫合击')+' · '+members.map(c=>State.catName(c)).join(' + ')+
               ' · '+(en?'Trust ':'默契 ')+val+'/100'+
               (val<20?(en?' · Duo at 20':' · 20 解锁合击'):
                val<60?(en?' · Cross-claws at 60':' · 60 解锁交叉爪击'):
                val<90?(en?' · Finale at 90':' · 90 解锁终结连斩'):
                  (en?' · Finale unlocked':' · 终结连斩已觉醒'))
-            :(en?'🐾 Form a cat duo · Unlock coordinated paw attacks'
-               :'🐾 组建双猫搭档 · 解锁默契合击！');
+            :(en?'💞 Duo Moves · Find your partner'
+               :'💞 双猫合击 · 寻找搭档');
         duoEl.setAttribute('aria-label',pending
           ?(en?'Open the duo disagreement and reconcile':'查看双猫闹别扭事件并和好')
           :(en?'Open cat duo and learn the bond moves':'查看双猫搭档与合击成长'));
@@ -454,7 +457,13 @@ class Game {
         if(drag.moved)WorldMap.panBy(x-drag.lastX,y-drag.lastY);
         drag.lastX=x;drag.lastY=y;e.preventDefault();
       }
-      if (this.scene === 'yard') this.maybeRevealWild(x, y);
+      if (this.scene === 'yard') {
+        if(this.yard?.placement){
+          this.yard.movePlacement(x,y);
+          window.UI?.updateBuildingPlacement?.();
+          e.preventDefault();
+        }else this.maybeRevealWild(x, y);
+      }
       if (this.scene === 'battle') e.preventDefault();
     };
     const up = e => {
@@ -526,7 +535,12 @@ class Game {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
         } else if (this.scene !== 'battle') {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
-          if (this.scene === 'yard') this.maybeRevealWild(p.x, p.y);
+          if (this.scene === 'yard') {
+            if(this.yard?.placement){
+              this.yard.movePlacement(p.x,p.y);
+              window.UI?.updateBuildingPlacement?.();
+            }else this.maybeRevealWild(p.x,p.y);
+          }
         }
       }
     }, { passive: false });
@@ -576,6 +590,11 @@ class Game {
   }
 
   yardTap(x, y) {
+    if(this.yard?.placement){
+      this.yard.movePlacement(x,y);
+      window.UI?.updateBuildingPlacement?.();
+      return;
+    }
     const hit = this.yard.handleTap(x, y);
     if (!hit) return;
     if (hit.type === 'loot') {
@@ -688,6 +707,7 @@ class Game {
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
+    if(this.yard?.placement){this.yard.cancelPlacement();window.UI?.updateBuildingPlacement?.();}
     window.MorrowwishMusic?.switchScene?.('battle');
     this.battleHelpOpen=false;
     this.battleTutorial=null;
