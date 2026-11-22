@@ -1,6 +1,6 @@
 {
   "version": "V12",
-  "createdAt": "2026-11-22T07:07:13.479Z",
+  "createdAt": "2026-11-22T07:25:17.346Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -88,13 +88,13 @@
         {
           "source": "broll",
           "scene": "map-management",
-          "caption": "MANAGE CATS ANYWHERE.",
+          "caption": "ALL IN ONE MENU.",
           "seconds": 2.15
         },
         {
           "source": "broll",
           "scene": "auto-team-saved",
-          "caption": "AUTO-DEPLOY YOUR BEST TEAM.",
+          "caption": "SAVE YOUR BEST BATTLE TEAM.",
           "seconds": 2.5
         },
         {

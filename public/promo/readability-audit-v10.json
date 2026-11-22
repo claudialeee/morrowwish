@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-22T07:02:24.593Z",
+  "createdAt": "2026-11-22T07:25:17.346Z",
   "version": "readability-review-v10",
   "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate.",
   "pausedPromoGames": [],
@@ -96,16 +96,16 @@
       "game": "cat-bond",
       "scene": "map-management",
       "seconds": 2.15,
-      "captionWords": 3,
-      "requiredSeconds": 2,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
       "passed": true
     },
     {
       "game": "cat-bond",
       "scene": "auto-team-saved",
       "seconds": 2.5,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
       "passed": true
     },
     {
