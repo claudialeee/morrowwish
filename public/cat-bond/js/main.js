@@ -104,8 +104,9 @@ window.addEventListener('DOMContentLoaded', () => {
   window.__CAT_BOND_READY__=true;
 
   // dev screenshot harness: ?autodev seeds a lively yard & skips the intro
-  if (location.search.includes('autodev')) {
-    try { localStorage.clear(); } catch (e) {}
+  if (location.search.includes('autodev') && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    // Development fixture must never erase progress from unrelated games.
+    try { localStorage.removeItem('catbond_save_v1'); } catch (e) {}
     setTimeout(() => {
       document.getElementById('intro').classList.add('hide');
       game.start(); if (window.Raising) Raising.init();
