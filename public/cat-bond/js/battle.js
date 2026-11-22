@@ -830,16 +830,32 @@ class CaptureBattle {
     const meleeReach=Math.max(...skills.filter(isMelee).map(sk=>(
       sk.kind==='melee'?106:sk.kind==='dash'?f.speed*3*.26+42:sk.kind==='leap'?240:300)),0);
     const hasMelee=skills.some(isMelee), hasRanged=skills.some(isRanged);
+    // Is a melee/gap-closer skill READY right now? (drives hit-and-run: commit when the
+    // skill is up, kite out while it recharges instead of hugging and eating free hits).
+    const meleeReady=['q','e'].some(slot=>{
+      const sk=slot==='q'?f.qSkill:f.eSkill;
+      return isMelee(sk) && (f.cd?.[slot]||0)<=0;
+    });
     if(hasMelee&&!hasRanged){
-      // brawler: crowd the target, bounded by the melee reach (~1.1× so it commits)
-      role='melee'; min=0; max=Math.max(70,meleeReach*1.1);
+      // BRAWLER hit-and-run (sim-confirmed fix): skill READY → commit at reach with a
+      // modest inner standoff (48, not the old glued-at-0 that made it hug+tank); skill
+      // ON COOLDOWN → widen the band so it kites OUT, waits for CD, then re-commits —
+      // no more "charge in and tank in place" (was min=0 → retreat% flat 0, 25-77% of
+      // damage eaten hugging). Harness after: hug 19.7/33%→3.7/5%, dmgInHug→0/10.7%.
+      role='melee';
+      if(meleeReady){ min=48; max=Math.max(80,meleeReach*1.0); }     // skill up → commit to reach
+      else { min=Math.max(120,meleeReach*1.15); max=Math.max(190,meleeReach*1.7); } // skill down → kite out & wait (don't hug)
     }else if(hasRanged&&!hasMelee){
       // kiter: sit at 0.55–0.85 of the projectile reach, flee if closer, seek if farther
       role='ranged'; const pr=Math.max(basicRange, f.projSpeed*.9);
       min=pr*0.55; max=pr*0.85;
     }else if(skills.length&&skills.every(isSupport)){
-      // pure support: hang back and babysit from safety
-      role='support'; min=230; max=320;
+      // SUPPORT: a heal/buff cat's only offense is its basic toss (~160px). As an ALLY it
+      // hangs back and babysits (230-320) — but when it's the ACTIVE/solo cat it must be
+      // able to actually land its basic, so pull the band into its own attack range.
+      role='support';
+      if(f===this.me()){ min=90; max=Math.max(140,basicRange); }
+      else { min=230; max=320; }
     }else if(hasMelee&&hasRanged){
       // hybrid: a brawler who can also poke — favour the aggressive band but keep poke
       role='bruiser'; min=Math.max(55,meleeReach*0.4); max=Math.max(130,meleeReach*0.95);
@@ -1029,6 +1045,13 @@ class CaptureBattle {
   // skills outside their hit radius.
   smartAutoAction(f,tgt,dist,threat) {
     if(!tgt||!f.alive)return;
+    // WARD-AWARE TARGETING: if the chosen enemy is warded (barrier/reflect/protect) and a
+    // live un-warded enemy exists, switch to it (sticky, so wards flickering don't cause
+    // ping-pong). Re-derive distance/aim for the possibly-new target.
+    const picked=this.unwardedTarget(f,tgt);
+    if(picked&&picked!==tgt){ tgt=picked; dist=Math.hypot(tgt.x-f.x,tgt.y-f.y)||1; }
+    const tgtWarded=this.enemyWarded(tgt);
+    const tgtReflect=!!tgt&&tgt.reflectT>0;   // firing a PROJECTILE at this = self-harm
     // Auto fire LEADS the target (true intercept), so basics/projectile skills hit a
     // moving enemy instead of trailing it. Facing uses the same lead so the cat looks
     // where it shoots. Melee/close casts resolve to ~current pos (tiny lead time).
@@ -1052,9 +1075,13 @@ class CaptureBattle {
     if(f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)){
       if(this.ultimate()!==false){this.markAutoAction(f,'释放必杀技');return;}
     }
+    const rangedKind=k=>k==='projectile'||k==='beam';   // reflectable shots
     const offensive=(sk,slot)=>{
-      if(!sk)return slot==='q'&&dist<310;
+      if(!sk)return slot==='q'&&dist<310&&!tgtReflect;    // default poke is a projectile → not into a reflect wall
       if(sk.kind==='heal'||sk.kind==='buff')return false;
+      // HARD RULE: never fire a reflectable shot (projectile/beam) at a reflect wall —
+      // it bounces straight back as self-damage. Melee/aoe/dash still allowed (not reflected).
+      if(tgtReflect&&rangedKind(sk.kind))return false;
       if(sk.kind==='melee')return dist<=106;
       if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
@@ -1071,7 +1098,8 @@ class CaptureBattle {
     if(buff&&dist<290){
       if(this.castSlot(f,buff,aim)!==false){this.markAutoAction(f,'强化自身');return;}
     }
-    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)){
+    // Basic is the innate toy TOSS (a projectile) → don't lob it into a reflect wall.
+    if(f.cd.basic<=0&&!tgtReflect&&dist<Math.min(175,f.projSpeed*.45+25)){
       this.fireBasic(f,aim);
       // Basic attack intentionally does not overwrite the last skill label.
     }
@@ -1140,6 +1168,26 @@ class CaptureBattle {
   commandedTarget(fromX, fromY) {
     if (this.commandTarget) { const t = this.nearestEnemy(this.commandTarget.x, this.commandTarget.y); if (t) return t; }
     return this.nearestEnemy(fromX, fromY);
+  }
+  // An enemy is "warded" while it has a damage-reducing barrier, a reflect wall, or a
+  // full protect up — attacking it is wasteful (and firing a projectile into a reflect
+  // wall bounces back as SELF-damage). Auto-battle uses this to retarget / hold fire.
+  enemyWarded(e) { return !!e && ((e.shieldT > 0.25) || (e.reflectT > 0) || (e.protectT > 0)); }
+  // Prefer a live UN-warded enemy when the current pick is warded and another is free.
+  // Sticky: once we retarget, keep the new one for ≥0.3s so flickering wards don't cause
+  // target ping-pong (which would spread damage and look indecisive).
+  unwardedTarget(f, cur) {
+    if (!this.enemyWarded(cur)) return cur;
+    if (f._wardSwitchUntil && this.t < f._wardSwitchUntil && f._wardSwitchTgt &&
+        f._wardSwitchTgt.alive && !this.enemyWarded(f._wardSwitchTgt)) return f._wardSwitchTgt;
+    let best = null, bd = 1e9;
+    for (const e of this.liveEnemies()) {
+      if (this.enemyWarded(e)) continue;
+      const d = Math.hypot(e.x - f.x, e.y - f.y);
+      if (d < bd) { bd = d; best = e; }
+    }
+    if (best) { f._wardSwitchTgt = best; f._wardSwitchUntil = this.t + 0.3; return best; }
+    return cur;   // everyone is warded → caller repositions instead of feeding the ward
   }
 
   // Ally AI: a non-active team cat fights on its own — flanks near the player,

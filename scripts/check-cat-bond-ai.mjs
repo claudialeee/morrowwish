@@ -132,11 +132,19 @@ function fighterWithSkills(kinds) {
 // 2) MELEE kit → CLOSES: band should be small, and a FAR target should drive it in.
 {
   const melee = fighterWithSkills(['melee', 'melee']);
-  const band = b.kitRangeBand(melee);
-  assert.equal(band.role, 'melee', 'two melee skills → melee role');
-  assert.ok(band.min === 0 && band.max <= 160, 'melee cat wants to be on top of the target (max=' + band.max.toFixed(0) + ')');
+  // Hit-and-run: skill READY → commit to a reach band WITH a real standoff (min>0, not
+  // the old glued-at-0 that left brawlers hugging + tanking); skill ON COOLDOWN → kite
+  // out and wait instead of standing in melee doing nothing.
+  const readyMelee = Object.assign({}, melee, { cd: { basic: 0, q: 0, e: 0 }, dodgeCd: 0 });
+  const bandReady = b.kitRangeBand(readyMelee);
+  assert.equal(bandReady.role, 'melee', 'two melee skills → melee role');
+  assert.ok(bandReady.min > 0 && bandReady.min <= 80 && bandReady.max <= 260,
+    'melee (skill ready) commits to a reach band with a standoff (min=' + bandReady.min.toFixed(0) + ', max=' + bandReady.max.toFixed(0) + ')');
+  const cdMelee = Object.assign({}, melee, { cd: { basic: 0, q: 3, e: 3 }, dodgeCd: 0 });
+  const bandCd = b.kitRangeBand(cdMelee);
+  assert.ok(bandCd.min > bandReady.min, 'melee (skill on cooldown) kites OUT instead of hugging (min=' + bandCd.min.toFixed(0) + ' > ' + bandReady.min.toFixed(0) + ')');
   const nx = 1, ny = 0, far = 400;
-  const steer = b.bandSteer(melee, nx, ny, far, band, 0.016);
+  const steer = b.bandSteer(readyMelee, nx, ny, far, bandReady, 0.016);
   assert.ok(steer.x > 0, 'melee cat closes: far target drives it forward (steer.x=' + steer.x.toFixed(2) + ')');
 }
 
