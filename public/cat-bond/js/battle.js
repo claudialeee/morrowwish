@@ -303,10 +303,8 @@ class CaptureBattle {
     }
     this.skillStrokes.push({kind:'duoImpact',x:target.x,y:target.y,
       firstColor,secondColor,elements:mix,life:2.55,max:2.55});
-    // 泰山压顶: a giant translucent cat silhouette body-slams the target as the
-    // duo's signature finisher — drops from above, lands with a shock ring.
-    this.skillStrokes.push({kind:'giantSlam',x:target.x,y:target.y,
-      firstColor,secondColor,life:1.1,max:1.1});
+    // The arena follow-through is tailored to the actual element pair.
+    // No unrelated boulder drop duplicated across every ultimate.
     const support=art.support||'shield';
     // DEFERRED PAYLOAD — runs at the splash's strike beat (see duoCinematic tick),
     // so the big art shows first and the hit only lands once it clears.
@@ -2664,41 +2662,26 @@ class CaptureBattle {
           ctx.restore();
         }
       }else if(v.kind==='duoImpact'){
-        ctx.translate(v.x,v.y);
-        const element=v.elements||'',rad=24+p*96;
-        ctx.rotate(p*.6);
-        for(let layer=0;layer<2;layer++){
-          ctx.strokeStyle=layer?v.secondColor:v.firstColor;
-          ctx.lineWidth=(layer?5:8)*k;
-          ctx.beginPath();
-          ctx.arc(0,0,rad+layer*17,-2.5+p*.6,1.6+p*.6);
-          ctx.stroke();
+        // Continue the same one-of-21 magical signature seen in the cut-in.
+        // Previously every combo finished with the same three diagonal scratches.
+        const key=v.elements||'fire+fire';
+        ctx.save();ctx.translate(v.x,v.y);
+        const radius=30+p*94;
+        const glow=ctx.createRadialGradient(0,0,1,0,0,radius);
+        glow.addColorStop(0,(v.firstColor||'#ffeaba')+'99');
+        glow.addColorStop(1,(v.secondColor||'#bbe9ff')+'00');
+        ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();
+        if(window.CatBondDuoFinale?.draw){
+          const size=Math.max(145,Math.min(215,160+p*80));
+          ctx.save();ctx.translate(-size/2,-size*.37);
+          ctx.globalAlpha=Math.max(.18,Math.min(.75,k*.65));
+          window.CatBondDuoFinale.draw(ctx,size,size*.76,.17+.53*p,key,2);
+          ctx.restore();
+        }else{
+          ctx.strokeStyle=v.firstColor||'#ffeabc';ctx.lineWidth=6*k;
+          ctx.beginPath();ctx.arc(0,0,radius*.65,0,Math.PI*2);ctx.stroke();
         }
-        for(let i=0;i<3;i++){
-          const yy=(i-1)*13,dir=i%2?-1:1;
-          ctx.strokeStyle=i===1?'#fff9e5':(i===0?v.firstColor:v.secondColor);
-          ctx.lineWidth=4.5*k;ctx.beginPath();
-          ctx.moveTo(-61+p*10,yy-12);
-          ctx.quadraticCurveTo(-4,-16+yy*dir,63-p*14,yy+12);
-          ctx.stroke();
-        }
-        if(element.includes('elec')){
-          ctx.strokeStyle='#ffedaa';ctx.lineWidth=3*k;
-          for(let i=0;i<3;i++){
-            const a=i*Math.PI*2/3+p*2;
-            ctx.save();ctx.rotate(a);
-            ctx.beginPath();ctx.moveTo(15,-8);ctx.lineTo(27,3);ctx.lineTo(21,8);ctx.lineTo(48,24);ctx.stroke();
-            ctx.restore();
-          }
-        }else if(element.includes('grass')){
-          ctx.fillStyle='#c6f4b2';
-          for(let i=0;i<7;i++){
-            const a=i*Math.PI*2/7+p;
-            ctx.save();ctx.rotate(a);ctx.translate(39+p*48,0);
-            ctx.beginPath();ctx.ellipse(0,0,10*k,3.5*k,a,0,Math.PI*2);ctx.fill();
-            ctx.restore();
-          }
-        }
+        ctx.restore();
       }else if(v.kind==='furStorm'){
         const spins=7;
         ctx.save();ctx.translate(v.x,v.y);ctx.rotate(p*2.4);
