@@ -543,6 +543,10 @@ class Game {
       if(menuBtn.textContent!==label)menuBtn.textContent=label;
       menuBtn.setAttribute('aria-label',en?'Open exploration menu':'打开探险管理菜单');
     }
+    if(this.scene==='map' && this.t>=(this._nextExploreHealthTick||0)){
+      this._nextExploreHealthTick=this.t+1;
+      UI.refreshExploreHealth?.();
+    }
     if(this.scene==='yard'){
       this.yard.update(dt);
       if(this.t>=(this._nextQuestTick||0)){
