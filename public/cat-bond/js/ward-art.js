@@ -127,41 +127,42 @@ function drawFlatWall(ctx,w,t){
   ctx.globalAlpha=fade;
   ctx.scale(Math.max(.05,expand),1);
   ctx.lineCap='round';ctx.lineJoin='round';
-  // Two sharp parallel rails over a translucent, very shallow glass panel.
-  const body=ctx.createLinearGradient(0,-31,0,12);
+  // Very thin 28px visual face across a full 220px collision span.
+  const top=-20,bottom=8;
+  const body=ctx.createLinearGradient(0,top,0,bottom);
   body.addColorStop(0,'rgba(232,254,255,.62)');
   body.addColorStop(.30,'rgba(133,238,255,.21)');
   body.addColorStop(.72,'rgba(75,163,238,.095)');
   body.addColorStop(1,'rgba(188,250,255,.24)');
   ctx.fillStyle=body;
-  ctx.beginPath();ctx.moveTo(-half,-31);ctx.lineTo(half,-31);
-  ctx.lineTo(half-5,11);ctx.lineTo(-half+5,11);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(-half,top);ctx.lineTo(half,top);
+  ctx.lineTo(half-5,bottom);ctx.lineTo(-half+5,bottom);ctx.closePath();ctx.fill();
   // Outer mirror rails and gently spiked fur-like ends.
   ctx.strokeStyle='rgba(195,248,255,.93)';ctx.lineWidth=2.8;
   ctx.shadowColor='#80eaff';ctx.shadowBlur=11;
-  ctx.beginPath();ctx.moveTo(-half,-31);ctx.lineTo(half,-31);
-  ctx.moveTo(-half+5,11);ctx.lineTo(half-5,11);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-half,top);ctx.lineTo(half,top);
+  ctx.moveTo(-half+5,bottom);ctx.lineTo(half-5,bottom);ctx.stroke();
   ctx.shadowBlur=0;
   for(const sign of [-1,1]){
-    ctx.beginPath();ctx.moveTo(sign*half,-31);
-    ctx.lineTo(sign*(half+9),-18);ctx.lineTo(sign*half,11);
+    ctx.beginPath();ctx.moveTo(sign*half,top);
+    ctx.lineTo(sign*(half+9),-8);ctx.lineTo(sign*half,bottom);
     ctx.stroke();
   }
   // Subtle mirror facets; readable without filling the combat screen.
   ctx.strokeStyle='rgba(221,251,255,.32)';ctx.lineWidth=1.1;
   for(let i=-3;i<=3;i++){
     const x=i*26;
-    ctx.beginPath();ctx.moveTo(x-13,-27);ctx.lineTo(x+6,7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x-13,top+2);ctx.lineTo(x+6,bottom-2);ctx.stroke();
   }
   const scan=-half+((t*.37)%1)*half*2;
   ctx.strokeStyle='rgba(250,255,255,.78)';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(scan,-30);ctx.lineTo(scan+10,7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(scan,top+1);ctx.lineTo(scan+10,bottom-1);ctx.stroke();
   if(flash>0){
     const hx=w.hitOffset||0;
     ctx.globalAlpha=fade*flash;
     ctx.strokeStyle='#f8ffff';ctx.lineWidth=2+flash*2;
-    ctx.beginPath();ctx.ellipse(hx,-12,10+(1-flash)*21,6+(1-flash)*12,0,0,TAU);ctx.stroke();
-    glint(ctx,hx,-13,5+flash*7,'#ffffff');
+    ctx.beginPath();ctx.ellipse(hx,-7,10+(1-flash)*21,5+(1-flash)*9,0,0,TAU);ctx.stroke();
+    glint(ctx,hx,-7,5+flash*6,'#ffffff');
   }
   ctx.restore();
   return true;
