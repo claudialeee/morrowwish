@@ -139,9 +139,12 @@ function cellRect(panel,tier=1){
 }
 // A separate real painting is decoded per combo AND trust milestone.
 // All 63 illustrations have intact cat bodies rather than generated limbs.
-function gradedScene(key,tier=1){
+function gradedScene(key,tier=1,actorA=null,actorB=null){
  const lv=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
- const cacheKey=key+'|'+lv;
+ const identity=window.CatBondDuoBreedArt;
+ const breedA=identity?.species(actorA)||'original';
+ const breedB=identity?.species(actorB)||'original';
+ const cacheKey=key+'|'+lv+'|'+breedA+'|'+breedB;
  if(gradeCache.has(cacheKey))return gradeCache.get(cacheKey);
  const panel=regions[key];if(panel===undefined||!ready)return null;
  const layer=document.createElement('canvas');
@@ -149,10 +152,18 @@ function gradedScene(key,tier=1){
  const g=layer.getContext('2d');if(!g)return null;
  const rect=cellRect(panel,lv);
  g.drawImage(img,rect.x,rect.y,rect.w,rect.h,0,0,FRAME_W,FRAME_H);
+ // Replace coat texture ON the two existing high-resolution illustrated cats.
+ // No black/white fixed substitutes and no yard kitten stickers.
+ if(breedA!=='original'||breedB!=='original'){
+   identity.paint(g,key,lv,actorA,actorB,Object.keys(regions));
+ }
+ // Bounded gallery cache: switch any of 32 × 32 pairings without ever
+ // leaking another player's earlier pairing into the currently selected cats.
  gradeCache.set(cacheKey,layer);
+ if(gradeCache.size>32)gradeCache.delete(gradeCache.keys().next().value);
  return layer;
 }
-function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null,tier=1){
+function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null,tier=1,actorA=null,actorB=null){
  const srcAspect=source.w/source.h,dstAspect=w/h;
  let sx=source.x,sy=source.y,sw=source.w,sh=source.h;
  if(srcAspect>dstAspect){sw=sh*dstAspect;sx+=(source.w-sw)/2}
@@ -162,7 +173,7 @@ function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=n
  sy+=Math.max(0,(source.h-sh)/2)+offsetY*sh;
  sx=clamp(sx,source.x,source.x+source.w-sw);
  sy=clamp(sy,source.y,source.y+source.h-sh);
- const tex=key&&ready?gradedScene(key,tier):null;
+ const tex=key&&ready?gradedScene(key,tier,actorA,actorB):null;
  if(tex){sx-=source.x;sy-=source.y;}
  ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(tex||pastelAtlas||img,sx,sy,sw,sh,x,y,w,h);ctx.restore();
 }
@@ -275,7 +286,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.23),0,0,1,key,tier);
+ sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.23),0,0,1,key,tier,actorA,actorB);
  ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
@@ -363,6 +374,9 @@ function draw(ctx,W,H,seq,lookup){
 }
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
+ get breedMatchCount(){return window.CatBondDuoBreedArt?.breedCount||0},
+ get activePaintCacheEntries(){return gradeCache.size},
+ coatOf,
  paletteFor,get scenePaletteCount(){return Object.keys(chromaticThemes).length},
  get gradedSceneCount(){return gradeCache.size},tierVariants:3,
  get failed(){return broken},wholeSceneCount:21,paintedFrameCount:63,skillVariants:Object.keys(regions).length,

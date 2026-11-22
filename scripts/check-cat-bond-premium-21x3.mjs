@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source=f=>fs.readFileSync('public/cat-bond/'+f,'utf8');
-const scripts=['js/duo-director.js','js/duo-premium.js','js/duo-hero.js'];
+const scripts=['js/duo-director.js','js/duo-breed-art.js','js/duo-premium.js','js/duo-hero.js'];
 for(const name of scripts)new vm.Script(source(name),{filename:name});
 
 const window={devicePixelRatio:1,dispatchEvent:()=>{},addEventListener:()=>{}};
@@ -25,6 +25,23 @@ for(const name of scripts)vm.runInContext(source(name),sandbox,{filename:name});
 const Director=window.CatBondDuoDirector;
 const Premium=window.CatBondPremiumCinematics;
 const Hero=window.CatBondDuoHero;
+const BreedArt=window.CatBondDuoBreedArt;
+assert.equal(BreedArt.breedCount,32,'Must supply actual illustrated fur profiles for all 32 cats');
+assert.equal(Premium.breedMatchCount,32,'Premium painter must load breed-specific coats');
+const rosterIds=[...source('js/data.js').matchAll(/\bid\s*:\s*['"]([a-z][a-z0-9]*)['"]/g)].map(x=>x[1]);
+assert.equal(rosterIds.length,32,'Actual playable roster must contain exactly 32 collectible IDs');
+assert.deepEqual(new Set(BreedArt.sourceProfiles),new Set(rosterIds),
+  'No missing cat or fabricated non-playable fur profile');
+for(const id of rosterIds){
+ const coat=BreedArt.coat({uid:'test',species:id});
+ assert.equal(coat.id,id,'Actual user-selected species must resolve without a fallback: '+id);
+ assert.equal(coat.base.length,3);
+ assert.ok(coat.base.every(v=>Number.isFinite(v)&&v>=0&&v<=255));
+}
+assert.match(source('js/duo-premium.js'),/identity\.paint\(g,key,lv,actorA,actorB/,
+  'Paint actual selected A/B fur in full high-resolution scene, not just captions');
+assert.match(source('js/duo-bond.js'),/this\.duoCinematic,uid=>/,
+  'Real battle must resolve current team UID to the proper two actual chosen cats');
 assert.equal(Director.keys.length,21,'Must offer 21 real element combinations');
 assert.equal(Premium.scenePaletteCount,21,'Each combo must have its own palette');
 assert.equal(Premium.tierVariants,3,'Three trust tiers must have separate cut-in scripts');
@@ -61,14 +78,18 @@ assert.equal((page.match(/class="skill-preview"/g)||[]).length,21,
  'All 21 gallery cards must include real animation canvases');
 assert.equal((page.match(/<article class="breed-card"/g)||[]).length,32);
 assert.equal((page.match(/class="featured-painting"/g)||[]).length,3);
+assert.match(page,/id="pick-cat-a"/);
+assert.match(page,/id="pick-cat-b"/);
 assert.equal((page.match(/class="source-art-stage"/g)||[]).length,63,
  'Every skill must show three actual painted frames, not just camera presets');
 assert.equal((page.match(/<article class="master-art"/g)||[]).length,21);
 for(const html of [page,game,unlocked]){
+ assert.match(html,/js\/duo-breed-art\.js\?v=32-premium-painted-breeds-20261122/,
+  'Actual game and both review pages MUST load the 32 selected-cat fur painter');
  assert.match(html,/js\/duo-premium\.js\?v=original-painted-21x3-v3-20261122/,
   'Game, review gallery and unlocked preview must load the SAME latest premium painter');
  assert.doesNotMatch(html,/duo-premium-sheet\.webp/, 'Rejected old gray-purple cut-in artwork must never load');
  assert.match(html,/js\/duo-director\.js\?v=three-tiers-21-cameras/,
   'Every entrypoint needs the latest three-stage direction module');
 }
-console.log('CAT BOND PREMIUM 21x3 PASS: 21 unique themes and 63 full-body painted skill-stage frames, original art, 21 live previews, 32 breeds');
+console.log('CAT BOND PREMIUM 21x3 + 32 BREED PASS: full playable 32-breed roster, actual chosen A/B coat painter integrated in real battle, gallery selectors, 21 skills and 63 painted scenes');

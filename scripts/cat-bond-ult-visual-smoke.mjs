@@ -48,12 +48,23 @@ try{
     const stroke=b.skillStrokes.findLast(v=>v.kind==='ultimate'&&v.element===element);
     if(!stroke)throw Error('No element-specific stroke '+element);
     stroke.life=stroke.max*.53;
-    g.draw(); // actual battle composition: cats, terrain, spells, HUD
-    return {cast:cast===true,element,shape:stroke.kind,sk:skill.id,
+    if(!b.ultHero)throw Error('No watercolor hero focus '+element);
+    b.ultHero.age=b.ultHero.max*.42;
+    // Check the ACTUAL watercolor renderer receives a cinematic scale.
+    const oldCatDraw=window.CatArt.drawCat;let heroScale=0;
+    window.CatArt.drawCat=function(ctx,x,y,opts){
+      heroScale=Math.max(heroScale,opts?.scale||0);
+      return oldCatDraw.apply(this,arguments);
+    };
+    try{g.draw();}finally{window.CatArt.drawCat=oldCatDraw;} // actual battle composition: cats, terrain, spells, HUD
+    return {cast:cast===true,element,shape:stroke.kind,hero:!!b.ultHero,heroScale,sk:skill.id,
       isDeathRay:!!b.deathRay,canvasW:g.W,canvasH:g.H};
    },{element,breed,skillId});
    assert.equal(result.cast,true,element+' casts its ultimate');
    assert.equal(result.shape,'ultimate',element+' uses the six-element renderer');
+   assert.ok(result.hero,element+' actually draws large watercolor cat focus');
+   assert.ok(result.heroScale>=2.1,
+     element+' original watercolor kitten must occupy hero-scale pixels: '+result.heroScale);
    if(element==='dark')assert.equal(result.isDeathRay,false,
      'void maw must have a gravitational vortex, never an automatic laser');
    assert.ok(result.canvasW>200&&result.canvasH>250,'arena is visible');
