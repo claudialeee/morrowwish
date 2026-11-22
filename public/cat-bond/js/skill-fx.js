@@ -77,8 +77,28 @@ function draw(ctx,v,time=0){
  const cast=v.kind==='signatureCast',angle=v.angle||0;
  ctx.save();ctx.translate(v.x,v.y);ctx.rotate(angle);
  ctx.globalAlpha=clip(k*(cast?.72:.90));ctx.globalCompositeOperation='source-over';
- const g=spec.seed,style=spec.style,color=spec.color,R=cast?r:Math.min(35,r*.62);
+ const g=spec.seed,style=spec.style,color=spec.color,R=cast?r:Math.min(43,r*.76);
  const spin=(time||0)*2.7+g*.91;
+ // Real-game review found some signatures nearly invisible against the pale
+ // watercolor garden. Paint a LOCAL dark-edged watercolor wash behind each
+ // shape, never an additive/full-screen bloom or giant covering disc.
+ const dark=(
+  ['thunder','chain','orb','dash','wall'].includes(style)?'#56659b':
+  ['flame','ball','claw','comet'].includes(style)?'#9d5049':
+  ['vine','leaf','seed','thorn','sun'].includes(style)?'#4f8158':
+  ['stream','whip','pool','ice','bubble'].includes(style)?'#417e9d':
+  ['shadow','mist','hex','slash'].includes(style)?'#665386':'#8b7883');
+ const wash=ctx.createRadialGradient(0,0,R*.10,0,0,R*.90);
+ wash.addColorStop(0,cast?'rgba(255,250,229,.32)':'rgba(255,252,238,.52)');
+ wash.addColorStop(.38,cast?'rgba(94,72,107,.14)':'rgba(81,58,95,.18)');
+ wash.addColorStop(1,'rgba(50,40,60,0)');
+ ctx.globalAlpha=cast?k*.71:k*.87;
+ ctx.fillStyle=wash;ctx.beginPath();ctx.arc(0,0,R*.9,0,TAU);ctx.fill();
+ // A directional outer rim differentiates cast animation from contact.
+ ctx.globalAlpha=k*(cast?.63:.78);ctx.strokeStyle=dark;
+ ctx.lineWidth=cast?2.4:3.6;ctx.beginPath();
+ ctx.arc(0,0,R*(cast?.57:.72),g*.21+p*.9,g*.21+p*.9+PI*(cast?.7:1.35));ctx.stroke();
+ ctx.globalAlpha=k*(cast?.72:.90);
  if(style==='claw'||style==='slash'||style==='shadow'||style==='fang'){
   for(let j=0;j<(style==='fang'?2:3);j++){
    const yy=(j-1)*9;
@@ -109,8 +129,11 @@ function draw(ctx,v,time=0){
    stroke(ctx,'#e9efff',2,k*.8);
    path(ctx,[[R*.23,0],[R*.40,j?21:-18],[R*.61,j?14:-23]]);
   }
-  if(style==='flame')for(let j=0;j<5;j++){
-   ctx.globalAlpha=k*.34;point(ctx,R*(.2+j*.13),(j-2)*7,6+j%3*2,j%2?'#ffb160':'#ffdf96');
+  if(style==='flame')for(let j=0;j<7;j++){
+   ctx.save();ctx.translate(R*(.16+j*.12),(j-3)*7);ctx.rotate(-.15+j*.09);
+   ctx.globalAlpha=k*(.37+.24*(j%3===0));ctx.fillStyle=j%2?'#ffb160':'#fff0ac';
+   ctx.beginPath();ctx.moveTo(-6,7);ctx.quadraticCurveTo(-9,-5,7,-17);
+   ctx.quadraticCurveTo(3,-2,8,7);ctx.closePath();ctx.fill();ctx.restore();
   }
  }else if(style==='ball'||style==='orb'||style==='bubble'||style==='seed'||style==='spores'){
   for(let j=0;j<5;j++){
@@ -118,7 +141,17 @@ function draw(ctx,v,time=0){
    const x=Math.cos(th)*rr,y=Math.sin(th)*rr*.62;
    stroke(ctx,color,2.4,k*.75);ctx.beginPath();ctx.arc(x,y,style==='spores'?3.5:6.5,0,TAU);ctx.stroke();
   }
-  ctx.globalAlpha=k*.5;point(ctx,R*.22,0,style==='ball'?14:10,color);
+  ctx.globalAlpha=k*.78;point(ctx,R*.22,0,style==='ball'?17:14,color);
+  ctx.globalAlpha=k*.85;point(ctx,R*.18,-3,style==='ball'?7:6,'#fff7e5');
+  if(style==='orb'){
+    for(let j=0;j<5;j++){
+      const a=j*TAU/5+spin*.7,rad=R*.45;
+      stroke(ctx,j%2?'#eef4ff':'#7c83d8',2,k*.85);
+      path(ctx,[[Math.cos(a)*rad,Math.sin(a)*rad],
+        [Math.cos(a+.21)*(rad+7),Math.sin(a+.21)*(rad+7)],
+        [Math.cos(a-.12)*(rad+12),Math.sin(a-.12)*(rad+12)]]);
+    }
+  }
  }else if(style==='leaf'||style==='vine'||style==='ice'||style==='hex'||style==='box'||style==='wall'){
   for(let j=0;j<(style==='wall'?3:5);j++){
    const th=j*TAU/5+spin*.08;
@@ -144,8 +177,16 @@ function draw(ctx,v,time=0){
   }
   if(style==='fur')for(let j=0;j<7;j++)point(ctx,Math.cos(j*TAU/7)*R*.5,Math.sin(j*TAU/7)*R*.4,3,color);
  }
- // Two small distinct glints mark contact; never obscure a kitten's face.
+ // High-contrast contact kick: short directional starbursts, NEVER the giant
+ // near-white disk from an ultimate or a second full-strength generic impact.
  if(!cast){
+  for(let j=0;j<6;j++){
+    const theta=j*TAU/6+g*.31;
+    const r0=R*(.28+.08*(j%2)),r1=R*(.66+.12*(j%3));
+    stroke(ctx,j%2?dark:'#fff7d8',j%2?2.1:3.6,k*(j%2?.68:.95));
+    path(ctx,[[Math.cos(theta)*r0,Math.sin(theta)*r0],
+      [Math.cos(theta)*r1,Math.sin(theta)*r1]]);
+  }
   for(let j=0;j<3;j++){
    const a=j*TAU/3+g*.37,xx=Math.cos(a)*R*.55,yy=Math.sin(a)*R*.55;
    stroke(ctx,'#fffdf3',1.8,k*.92);path(ctx,[[xx-4,yy],[xx+4,yy],[xx,yy-4],[xx,yy+4]]);
