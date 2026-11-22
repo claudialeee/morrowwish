@@ -1138,8 +1138,8 @@ class YardScene {
     }
     return legal||best||{ x: W / 2, y: (top + bot) / 2 };
   }
-  // Physical, player-controlled placement. Nothing is charged before
-  // confirm. Bounds and overlap are the same on phone, desktop and resize.
+  // Physical placement: charge only on mouse click or touch release at
+  // the exact canvas coordinate. Bounds and overlap are cross-device.
   buildingSpotValid(x,y) {
     const {W,H}=this.game;
     // Five structures must fit even in a short phone yard, below the fence.
@@ -1200,7 +1200,8 @@ class YardScene {
     ctx.strokeStyle=p.valid?'#3a826a':'#ae535d';ctx.lineWidth=2;
     ctx.beginPath();ctx.roundRect(p.x-40,p.y-106,80,24,10);ctx.fill();ctx.stroke();
     ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#365943';
-    ctx.fillText(p.valid?'✓ 可建造':'× 有遮挡',p.x,p.y-94);
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    ctx.fillText(p.valid?(en?'✓ Tap to build':'✓ 点击建造'):(en?'× Blocked':'× 有遮挡'),p.x,p.y-94);
     ctx.restore();
   }
   buildStructure(type,spot=null){

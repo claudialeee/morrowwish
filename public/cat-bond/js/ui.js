@@ -53,9 +53,7 @@ const UI = {
       this.game.syncBattleModeUI();
       window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
-    const placementConfirm=document.getElementById('yard-placement-confirm');
     const placementCancel=document.getElementById('yard-placement-cancel');
-    if(placementConfirm)placementConfirm.addEventListener('click',()=>this.confirmBuildingPlacement());
     if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
     this.syncYardNav();
     window.addEventListener('morrowwish-language-change',()=>this.syncYardNav());
@@ -138,6 +136,7 @@ const UI = {
     }
     // Close the build list; player chooses the actual garden ground.
     this.closeAll();
+    this.game._yardPlacementTouchId=null;
     document.getElementById('yard-placement-dock').hidden=false;
     document.body.classList.add('cb-placing-building');
     this.updateBuildingPlacement();
@@ -147,8 +146,7 @@ const UI = {
   updateBuildingPlacement(){
     const p=this.game?.yard?.placement;
     const status=document.getElementById('yard-placement-status');
-    const confirm=document.getElementById('yard-placement-confirm');
-    if(!status||!confirm)return;
+    if(!status)return;
     if(!p){
       document.getElementById('yard-placement-dock').hidden=true;
       document.body.classList.remove('cb-placing-building');
@@ -157,16 +155,12 @@ const UI = {
     const en=this.isEnglish(),def=World.BUILDINGS_BY_ID[p.type];
     const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.name||'Structure'):(def?.name||'设施');
     const compact=window.matchMedia?.('(max-width:700px), (pointer:coarse)')?.matches;
-    // Touch users must see the grass rather than a tall instruction modal.
-    // An invalid tap stays exactly where it was made: guide users to choose clear ground.
+    // One tap/click builds immediately; a touch drag can adjust until release.
     status.textContent=compact
-      ?(name+(en?' · Tap or drag · ':' · 轻触或拖动 · ')+
-        (p.valid?(en?'✓ Ready':'✓ 可建造'):(en?'× Choose clear grass':'× 换块空草坪')))
-      :(en?'Choose a spot for ':'给')+name+
-        (en?' · tap or move to place':'选择位置 · 点击草坪预览')+
-        (p.valid?(en?' · ready':' · 可以建造'):(en?' · blocked':' · 此处有遮挡'));
-    confirm.disabled=!p.valid;
-    confirm.textContent=en?'✓ Build here':'✓ 确认建造';
+      ?(name+(en?' · Tap to build / drag to move':' · 轻触即建造／拖动选位置')+
+        (p.valid?(en?' · ✓ Free spot':' · ✓ 可建造'):(en?' · × Blocked':' · × 有遮挡')))
+      :(name+(en?' · Click grass to build':' · 点击草坪直接建造')+
+        (p.valid?(en?' · ✓ Ready':' · ✓ 可建造'):(en?' · × Blocked':' · × 有遮挡')));
     document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';
   },
   confirmBuildingPlacement(){
@@ -185,6 +179,7 @@ const UI = {
     return true;
   },
   cancelBuildingPlacement(){
+    if(this.game)this.game._yardPlacementTouchId=null;
     this.game?.yard?.cancelPlacement?.();
     this.updateBuildingPlacement();
   },
@@ -1367,7 +1362,7 @@ const UI = {
         <div><h2>${en ? 'My Cat Garden' : '我的猫咪庭院'}</h2>
         <small>${en?'Cozy workshop · Plan your world':'猫咪生活工坊 · 自由布置'}</small></div></div>
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
-        :'先选设施，再到庭院点击位置、确认建造。猫咪会走过去玩，产出资源和默契奖励。'}</p>
+        :'先选设施，再点击草坪直接建造；手机可拖动调整位置。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);

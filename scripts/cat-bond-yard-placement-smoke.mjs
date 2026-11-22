@@ -42,12 +42,14 @@ try{
   assert.equal(await select.isVisible(),true);
   await select.click();
   assert.equal(await page.locator('#yard-placement-dock').isVisible(),true);
+  assert.equal(await page.locator('#yard-placement-confirm').count(),0,
+    'lawn placement must not require an extra confirmation button');
   const choosing=await page.evaluate(()=>{
    const g=window.__game,p=g.yard.placement;
    return {coins:State.S.coins,pair:!!p,buildings:State.S.yardBuildings.length};
   });
   assert.equal(choosing.coins,500,'selecting a facility does not charge money');
-  assert.equal(choosing.buildings,0,'no building placed until user confirms');
+  assert.equal(choosing.buildings,0,'selecting a blueprint must not spend coins');
   assert.ok(choosing.pair);
   if(profile.mobile){
    // Real responsive geometry: the entire placement HUD must be ABOVE the
@@ -67,6 +69,8 @@ try{
       Math.abs(preview.y-(tap.y-stage.y))<2,
      'touch placement preview must stay exactly under the selected finger position');
    assert.equal(preview.valid,false,'tapping outside the grass should show invalid, not snap');
+   assert.deepEqual(await page.evaluate(()=>[State.S.coins,State.S.yardBuildings.length]),[500,0],
+     'invalid touch must not charge coins or place anything');
    await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-placement-preview.png'});
   }
   const valid=await page.evaluate(()=>{
@@ -89,7 +93,9 @@ try{
   assert.equal(valid.invalid,true,'out-of-bounds or overlapping spot must be rejected');
   assert.ok(valid.site&&valid.valid,'at least one valid garden location must be found');
   assert.equal(valid.buildings,0);
-  await page.locator('#yard-placement-confirm').click();
+  const px=stage.x+valid.site.x,py=stage.y+valid.site.y;
+  if(profile.touch)await page.touchscreen.tap(px,py);
+  else await page.mouse.click(px,py);
   const built=await page.evaluate(()=>{
    const g=window.__game,b=State.S.yardBuildings[0];
    return {coins:State.S.coins,count:State.S.yardBuildings.length,type:b?.type,
@@ -99,8 +105,16 @@ try{
   assert.equal(built.count,1);
   assert.equal(built.coins,440,'scratcher cost charged exactly once on confirm');
   assert.equal(built.type,'scratcher');
-  assert.ok(Math.abs(built.x-valid.site.x)<.1&&Math.abs(built.y-valid.site.y)<.1);
+  assert.ok(Math.abs(built.x-valid.site.x)<.1&&Math.abs(built.y-valid.site.y)<.1,
+    'tap/click must build at exactly the chosen spot');
   assert.equal(built.placement,null);
+  assert.equal(await page.locator('#yard-placement-dock').isVisible(),false);
+  if(!profile.touch){
+    await page.mouse.move(stage.x+stage.width*.8,stage.y+stage.height*.7);
+    assert.deepEqual(await page.evaluate(()=>{
+      const b=State.S.yardBuildings[0];return [b.x,b.y];
+    }),[built.x,built.y],'cursor movement must not change the built coordinate');
+  }
   // The play interaction is visible and can be immediately requested by tapping
   // the placed structure; it is not simply a passive income number in a menu.
   const plays=await page.evaluate(()=>{

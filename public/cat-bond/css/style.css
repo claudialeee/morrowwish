@@ -2000,8 +2000,6 @@ body.cb-exploring #map-squad{
 .yard-placement-actions button{min-height:44px;border-radius:11px;border:1px solid #a9c1a6;
  font:900 14px system-ui;padding:8px 16px;cursor:pointer;flex:1}
 #yard-placement-cancel{background:#fff;color:#6d7373}
-#yard-placement-confirm{background:#539b6b;color:#fff;border-color:#4a8860}
-#yard-placement-confirm:disabled{background:#9dafa2;color:#dce5da;cursor:not-allowed}
 body.cb-placing-building #yard-actions,
 body.cb-placing-building #yard-quick-links,
 body.cb-placing-building #tabbar {opacity:.18;pointer-events:none}
@@ -2181,9 +2179,6 @@ body.cb-exploring #yard-placement-dock{display:none!important}
 #yard-placement-dock .cb-placement-heading-text{display:grid;text-align:left;gap:2px}
 #yard-placement-dock .cb-placement-heading-text strong{font:850 14px/1.3 system-ui;color:#56705d}
 #yard-placement-dock .cb-placement-heading-text small{font:550 11px/1.4 system-ui;color:#818b7b}
-#yard-placement-dock #yard-placement-confirm{background:linear-gradient(120deg,#82b88a,#4f9a76);
- box-shadow:0 4px 11px #4e92752d}
-#yard-placement-dock #yard-placement-confirm:disabled{background:#c3d1c2;color:#667e69;box-shadow:none}
 #panel .duo-panel>h2{color:#76617b;font:850 clamp(22px,3vw,30px)/1.28 system-ui;
  text-shadow:0 1px #fff8f4;letter-spacing:.015em}
 #panel .duo-unlocked-section{padding:13px;border:1px solid #e4d7d0;border-radius:21px;
@@ -2516,8 +2511,7 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  box-shadow:0 3px 0 #8a738123;
 }
 #panel .btn.gold,
-#panel .btn:not(.ghost),#panel .capture-mode-option[aria-checked="true"],
-#yard-placement-dock #yard-placement-confirm{
+#panel .btn:not(.ghost),#panel .capture-mode-option[aria-checked="true"]{
  color:#654c66!important;
  background:linear-gradient(135deg,#f9d1dc,#e4d5f6)!important;
  border:1.5px solid #e9c1d9!important;
@@ -4392,4 +4386,16 @@ html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#batt
   #panel #cat-detail .cat-detail-combat-stats{padding:9px}
   #panel #cat-detail .cat-detail-stat-grid{gap:6px}
   #panel #cat-detail .cat-detail-metric{padding:6px 7px}
+}
+
+/* The selected lawn spot builds in one gesture, not via a separate modal. */
+body.cb-placing-building #yard-placement-cancel{
+  flex:0 0 auto;min-width:105px;max-width:140px;justify-self:center;
+}
+@media (min-width:701px) and (pointer:fine){
+  body.cb-placing-building #yard-placement-dock{
+    top:calc(76px + env(safe-area-inset-top,0px));
+    bottom:auto;width:min(92%,440px);padding:10px 14px;gap:6px;
+  }
+  body.cb-placing-building #yard-placement-dock .cb-placement-heading{display:none}
 }

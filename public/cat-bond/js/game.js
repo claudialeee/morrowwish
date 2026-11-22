@@ -619,7 +619,7 @@ class Game {
     const down = e => {
       const { x, y } = pos(e);
       this.mouse.x = x; this.mouse.y = y;
-      if (this.scene === 'yard') this.yardTap(x, y);
+      if (this.scene === 'yard' && e.button === 0) this.yardTap(x, y);
       else if(this.scene==='map'&&window.WorldMap){
         if(WorldMap.mode==='region'){
           this._mapMouseDrag={x,y,lastX:x,lastY:y,moved:false};
@@ -692,7 +692,14 @@ class Game {
           }
         } else {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
-          if (this.scene === 'yard') this.yardTap(p.x, p.y);
+          if (this.scene === 'yard' && this.yard?.placement) {
+            // Release to build: a drag can still adjust the spot on touchscreens.
+            if (this._yardPlacementTouchId == null) {
+              this._yardPlacementTouchId=t.identifier;
+              this.yard.movePlacement(p.x,p.y);
+              window.UI?.updateBuildingPlacement?.();
+            }
+          } else if (this.scene === 'yard') this.yardTap(p.x, p.y);
           else if (this.scene === 'map' && window.WorldMap) {
             if(WorldMap.mode==='region'){
               // Handle taps on release so dragging near the portal does not exit.
@@ -707,7 +714,11 @@ class Game {
       e.preventDefault();
       for (const t of e.changedTouches) {
         const p = touchPos(t);
-        if(this.scene==='map'&&this._worldTouch?.id===t.identifier){
+        if(this.scene==='yard'&&this.yard?.placement&&this._yardPlacementTouchId===t.identifier){
+          this.mouse.x=p.x;this.mouse.y=p.y;this.mouse.active=true;
+          this.yard.movePlacement(p.x,p.y);
+          window.UI?.updateBuildingPlacement?.();
+        }else if(this.scene==='map'&&this._worldTouch?.id===t.identifier){
           const touch=this._worldTouch;
           if(Math.hypot(p.x-touch.x,p.y-touch.y)>10)touch.moved=true;
           if(touch.moved&&window.WorldMap?.mode==='region')
@@ -725,17 +736,20 @@ class Game {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
         } else if (this.scene !== 'battle') {
           this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
-          if (this.scene === 'yard') {
-            if(this.yard?.placement){
-              this.yard.movePlacement(p.x,p.y);
-              window.UI?.updateBuildingPlacement?.();
-            }else this.maybeRevealWild(p.x,p.y);
-          }
+          if (this.scene === 'yard' && !this.yard?.placement)
+            this.maybeRevealWild(p.x,p.y);
         }
       }
     }, { passive: false });
     const endTouch = e => {
       for (const t of e.changedTouches) {
+        if(t.identifier===this._yardPlacementTouchId){
+          this._yardPlacementTouchId=null;
+          if(e.type==='touchend'&&this.scene==='yard'&&this.yard?.placement){
+            const p=touchPos(t);
+            this.yardTap(p.x,p.y);
+          }
+        }
         if(this._worldTouch?.id===t.identifier){
           if(e.type==='touchend'&&this.scene==='map'&&window.WorldMap?.mode==='region'&&!this._worldTouch.moved){
             const p=touchPos(t);
@@ -781,8 +795,11 @@ class Game {
 
   yardTap(x, y) {
     if(this.yard?.placement){
-      this.yard.movePlacement(x,y);
+      // Commit the exact chosen canvas coordinate in this event. The old
+      // two-step confirm allowed mouse movement to shift the selected site.
+      const valid=this.yard.movePlacement(x,y);
       window.UI?.updateBuildingPlacement?.();
+      if(valid)window.UI?.confirmBuildingPlacement?.();
       return;
     }
     const hit = this.yard.handleTap(x, y);
