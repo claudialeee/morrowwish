@@ -27,7 +27,8 @@ try{
     const saved=window.MorrowwishI18n.get;
     window.MorrowwishI18n.get=()=> 'en';
     const englishNames=GameData.SPECIES.map(sp=>GameData.speciesName(sp));
-    const allUnique=new Set(englishNames).size===25;
+    const allUnique=englishNames.length===GameData.SPECIES.length&&
+      new Set(englishNames).size===englishNames.length;
     const a=State.makeCat('tangyuan'),b=State.makeCat('xiaohui');
     S.cats=[a,b];
     const englishTeam=[State.catName(a),State.catName(b)];
@@ -73,7 +74,7 @@ try{
       assetCount:artistic.assetCount,signatureCount:artistic.signatureCount,
       speciesArt,remainingCoins:S.coins};
    });
-   assert.equal(result.allUnique,true,'all 25 cat names must be unique');
+   assert.equal(result.allUnique,true,'all current breed English names must be unique');
    assert.equal(result.chinese,true,'keep original Chinese names untouched');
    assert.deepEqual(result.englishTeam,['Mochi','Misty']);
    assert.equal(result.artSource,'premium-painterly-breed-archetypes');
