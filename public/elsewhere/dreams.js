@@ -45,7 +45,7 @@ const Q={
  recap:L("关键行动","DECISIVE ACTIONS"),replay:L("换一种打法","Try another approach"),
  another:L("体验另一段人生","Another life"),share:L("分享结局","Share this ending"),
  galleryNote:L("只记录这一版真实解锁的结局。","Only outcomes earned in this edition are counted."),
- collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("这段人生仍有美好瞬间，但你最后倚靠的选择还不够有力。试试在前几幕多积累同一种收获，看看结局如何改变。","Your journey had its bright moments, but your final choice needed more support. Build that strength in earlier scenes to change your ending."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
+ collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("这段人生仍有美好瞬间，但你最后倚靠的选择还不够有力。试试在前几幕多积累同一种收获，看看结局如何改变。","Your journey had its bright moments, but your final choice needed more support. Build that strength in earlier scenes to change your ending."),costBecause:L("另一组早期选择，可能让你在关键时刻拥有更多底气。","Different choices earlier in this life could give your final decision the strength it needs."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
 };
 Object.assign(Q,{
  hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end."),
@@ -119,7 +119,7 @@ function resolve(){
  const quality=rare?"perfect":momentum>=2?"strong":"cost",n=rare?9:route*3+choice;
  const entry=rare?story(state.id).rare:endings[route][choice];
  const vibe=window.ELSEWHERE_VIBES?.[state.id];
- const detail=quality==="cost"?Q.partialDesc:quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
+ const detail=quality==="cost"?Q.costBecause:quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
  return {n,kind,momentum,quality,entry,detail,route,choice};
 }
 function badge(kind){
