@@ -21,7 +21,7 @@ let sceneOK=false;
 scene.onload=()=>{sceneOK=scene.naturalWidth===480&&scene.naturalHeight===405;
  window.dispatchEvent(new Event('cat-bond-duo-art-ready'));};
 scene.onerror=()=>{sceneOK=false;};
-scene.src='assets/duo-scene-backgrounds.webp?v=20261121-pastel-v1';
+scene.src=(window.CatBondDuoAssetBase||'assets/')+'duo-scene-backgrounds.webp?v=20261121-pastel-v1';
 const palette={
  storm:['#171333','#36215b','#ab7ef4','#faf0ff'],
  moon:['#d9dbf9','#f3e8ff','#b5b4ef','#524e80'],
