@@ -46,7 +46,7 @@ for(const slug of SLUGS){
     const outcome={slug,status:response?.status(),title:await page.title(),pageUrl:page.url(),buttonInfo,iframes:fr,frames,telemetryPostIntercepted:posted,diagnostic,gameResponses:gameResponses.slice(-15),consoleErrors:consoleErrors.slice(-15),networkErrors:networkErrors.slice(-15)};
     console.log('ITCH_QA '+JSON.stringify(outcome));
     if(response?.status()===429){console.warn('ITCH_QA_RATE_LIMITED '+slug);continue;}
-    if(posted.some(p=>p.data?.kind==='visit'&&p.data?.game===slug&&p.data.utmSource==='itch')&&diagnostic?.recorded===true&&diagnostic?.removed===true){verified++;}
+    if(posted.some(p=>p.data?.kind==='visit'&&p.data?.game===slug&&['itch','itchio','itch.io'].includes(p.data.utmSource))&&diagnostic?.recorded===true&&diagnostic?.removed===true){verified++;}
     else{console.error('ITCH_QA_LIVE_EVENT_NOT_RECORDED '+slug);failures++;}
   }catch(e){console.error('ITCH_QA_EXCEPTION '+slug+' '+String(e.stack||e).slice(0,1000));failures++;}
   await context.close();

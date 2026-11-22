@@ -36,8 +36,8 @@ const req=(route,data)=>new Request('https://morrowwish.pages.dev'+route,{
 for(let i=0;i<games.length;i++){
  const g=games[i],viewId='test-view-'+g;
  for(const event of [
-  {kind:'visit',game:g,viewId,visitor:'test-visitor',utmSource:'bluesky',source:'external'},
-  {kind:'session',game:g,viewId,visitor:'test-visitor',starts:1,ends:1,completion:1,seconds:42,utmSource:'bluesky'}
+  {kind:'visit',game:g,viewId,visitor:'test-visitor',utmSource:g==='cat-bond'?'itchio':'bluesky',source:'external'},
+  {kind:'session',game:g,viewId,visitor:'test-visitor',starts:1,ends:1,completion:1,seconds:42,utmSource:g==='cat-bond'?'itchio':'bluesky'}
  ]){
   const result=await api(req('/api/session',event),env);
   assert.equal(result.status,202,g+' visit or session write');
@@ -77,7 +77,12 @@ for(const g of games){
  assert.equal(row?.abandons,endless?1:0,g+' abandoned runs never count as completions');
  assert.equal(row?.pageviews,endless?2:1,g+' game views counted');
 }
-assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,9,'combined referral starts');
+assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,8,'unrelated referral starts');
+assert.equal(summary.byChannel.find(x=>x.source==='itch')?.pageviews,1,'legacy itchio visit must appear in itch channel');
+assert.equal(summary.byChannel.find(x=>x.source==='itch')?.starts,1,'legacy itchio start must appear in itch channel');
+assert.equal(summary.itch?.pageviews,1,'itch game rollup includes historic itchio campaign visit');
+assert.equal(summary.itch?.starts,1,'itch game rollup includes historic itchio start');
+assert.equal(summary.itch?.games.find(x=>x.game==='cat-bond')?.pageviews,1,'Cat Bond itchio visit mapped back to itch');
 assert.equal(rows.some(x=>x.category==='diagnostic'),false,'no persistent smoke events');
 // A reset must require authenticated same-origin confirmation and clear all
 // reporting categories, while preserving unrelated records and future writes.

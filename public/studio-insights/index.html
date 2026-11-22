@@ -245,7 +245,7 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+num('starts')+startRate+'</td><td>'+finished+'</td><td>'+num('retries')+'</td></tr>';
 }).join("");
 const channels=Array.isArray(j.byChannel)?j.byChannel:[];
-const sourceAliases={itch:['itch','itch.io','itch.zone'],youtube:['youtube','youtube.com','youtu.be','m.youtube.com'],tiktok:['tiktok','tiktok.com'],instagram:['instagram','instagram.com','l.instagram.com'],bluesky:['bluesky','bsky.app','bsky.social']};
+const sourceAliases={itch:['itch','itch.io','itchio','itch.zone'],youtube:['youtube','youtube.com','youtu.be','m.youtube.com'],tiktok:['tiktok','tiktok.com'],instagram:['instagram','instagram.com','l.instagram.com'],bluesky:['bluesky','bsky.app','bsky.social']};
 const siteFor=id=>channels.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));
 const totalOf=(rows,k)=>rows.reduce((n,x)=>n+Number(x[k]||0),0);
 const pulse=j.socialPulse||{},snapshotPlatforms=Array.isArray(pulse.platforms)?pulse.platforms:[];

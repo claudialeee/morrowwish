@@ -29,7 +29,15 @@ function mainStats(x){
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
   const eligible=new Set(["pawsibly-innocent","cat-bond","elsewhere","tiny-town","flip-dash","parcel-panic","pocket-aquarium"]);
-  const normalizeSource=s=>/(^|\.)bsky\.(app|social)$/i.test(s)?"bluesky":s;
+  // itch.io embeds use both utm_source=itch and utm_source=itchio (Cat Bond).
+  // Canonicalize at report time so previously stored visits are re-attributed
+  // without fabricating any new player events or altering the original logs.
+  const normalizeSource=s=>{
+    const v=String(s||"").toLowerCase();
+    if(/(^|\.)bsky\.(app|social)$/.test(v))return "bluesky";
+    if(["itch","itch.io","itchio"].includes(v)||/(^|\.)itch\.(io|zone)$/.test(v))return "itch";
+    return s;
+  };
   const sessionsByView=new Map();
   for(const r of sessions){
     if(!r.view_id||!eligible.has(r.game))continue;
@@ -98,7 +106,7 @@ function mainStats(x){
   for(const v of visits){
     if(!eligible.has(v.game))continue;
     const d=v.data||{},ref=String(d.referrer||"").toLowerCase(),utm=String(d.utmSource||"").toLowerCase();
-    if(utm!=="itch"&&utm!=="itch.io"&&!/(^|\.)itch\.(io|zone)$/.test(ref))continue;
+    if(!["itch","itch.io","itchio"].includes(utm)&&!/(^|\.)itch\.(io|zone)$/.test(ref))continue;
     const id=v.game+":"+(v.view_id||v.visitor+"-"+v.day);
     if(itchSeen.has(id))continue;itchSeen.add(id);
     if(!itchByGame.has(v.game))itchByGame.set(v.game,{game:v.game,pageviews:0,startedViews:0,starts:0,ends:0,completions:0,seconds:0});
