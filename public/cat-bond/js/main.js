@@ -185,10 +185,12 @@ function paintIntroCatGallery() {
     const species=GameData.speciesById(id);
     if (!species) return;
     ctx.save();
-    CatArt.drawCat(ctx,xs[i],144,{
-      // Sprite is taller than the old half-cat crop; center the FULL kitten
-      // in the 720×160 gallery with ears/tail/paws wholly inside the frame.
-      species,scale:i===1?1.16:1.28,face:i%2===0?1:-1,
+    // Match the art bounds: raise and enlarge the cats so the frame is not
+    // mostly empty sky. Reserve six pixels below the paws; never crop ears.
+    const scale=i===1?1.65:1.78;
+    const feetY=h-43*scale-6;
+    CatArt.drawCat(ctx,xs[i],feetY,{
+      species,scale,face:i%2===0?1:-1,
       pose:poses[i],mood:'happy',t:.5+i*.6
     });
     ctx.restore();
