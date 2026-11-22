@@ -1,21 +1,21 @@
-name: Cat Bond silver currency visual QA
+name: Cat Bond gold currency visual QA
 on:
   push:
     branches: [main]
     paths:
-      - 'public/cat-bond/assets/silver-coin.svg'
-      - 'public/cat-bond/js/silver-coins.js'
+      - 'public/cat-bond/assets/gold-coin.svg'
+      - 'public/cat-bond/js/gold-coins.js'
       - 'public/cat-bond/js/world.js'
       - 'public/cat-bond/js/worldmap.js'
       - 'public/cat-bond/css/style.css'
       - 'public/cat-bond/index.html'
-      - 'scripts/cat-bond-silver-smoke.mjs'
-      - '.github/workflows/cat-bond-silver.yml'
+      - 'scripts/cat-bond-gold-smoke.mjs'
+      - '.github/workflows/cat-bond-gold.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  silver-real-browser:
+  gold-real-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -28,16 +28,16 @@ jobs:
           npm ci
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
-      - name: Validate phone and desktop silver coin rendering
+      - name: Validate phone and desktop gold coin rendering
         run: |
-          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/cat-bond-silver-http.log 2>&1 &
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/cat-bond-gold-http.log 2>&1 &
           sleep 2
-          node scripts/cat-bond-silver-smoke.mjs
+          node scripts/cat-bond-gold-smoke.mjs
       - name: Keep actual coin UI screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cat-bond-silver-coin-phone-desktop
-          path: /tmp/cat-bond-silver-*.png
+          name: cat-bond-gold-coin-phone-desktop
+          path: /tmp/cat-bond-gold-*.png
           if-no-files-found: ignore
           retention-days: 14

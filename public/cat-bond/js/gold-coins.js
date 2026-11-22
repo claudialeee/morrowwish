@@ -1,11 +1,11 @@
-// Cat Bond coins are silver. OS-provided U+1FA99 emoji usually looks gold.
+// Cat Bond coins are gold. OS-provided U+1FA99 emoji usually looks gold.
 (()=>{
   'use strict';
-  const SRC='/cat-bond/assets/silver-coin.svg?v=silver-currency-20261122';
+  const SRC='/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122';
   const img=new Image(); img.src=SRC;
   const SKIP='script,style,noscript,textarea,code,pre,svg';
   function icon(){
-    const el=document.createElement('img');el.className='cb-silver-coin';
+    const el=document.createElement('img');el.className='cb-gold-coin';
     el.src=SRC;el.alt='coin';el.draggable=false;return el;
   }
   function replace(node){
@@ -32,12 +32,12 @@
       ctx.drawImage(img,x-size/2,y-size/2,size,size);
     }else{
       const r=size/2,g=ctx.createRadialGradient(x-r*.3,y-r*.4,r*.12,x,y,r);
-      g.addColorStop(0,'#ffffff');g.addColorStop(.45,'#dfe9f2');g.addColorStop(1,'#849bad');
-      ctx.fillStyle=g;ctx.strokeStyle='#72899c';ctx.lineWidth=Math.max(1,r*.11);
+      g.addColorStop(0,'#ffffff');g.addColorStop(.45,'#ffe6a0');g.addColorStop(1,'#c59032');
+      ctx.fillStyle=g;ctx.strokeStyle='#98691f';ctx.lineWidth=Math.max(1,r*.11);
       ctx.beginPath();ctx.arc(x,y,r*.88,0,Math.PI*2);ctx.fill();ctx.stroke();
-      ctx.strokeStyle='#f8fbff';ctx.lineWidth=Math.max(.7,r*.09);
+      ctx.strokeStyle='#fff5cb';ctx.lineWidth=Math.max(.7,r*.09);
       ctx.beginPath();ctx.arc(x,y,r*.65,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle='#8ba1b3';ctx.beginPath();ctx.arc(x,y+r*.06,r*.24,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#dbad42';ctx.beginPath();ctx.arc(x,y+r*.06,r*.24,0,Math.PI*2);ctx.fill();
     }
     ctx.restore();
   }
@@ -54,7 +54,7 @@
     });
     observer.observe(root,{childList:true,subtree:true,characterData:true});
   }
-  window.CatBondSilverCoin={draw,decorate,get ready(){return img.complete&&img.naturalWidth>0;}};
+  window.CatBondGoldCoin={draw,decorate,get ready(){return img.complete&&img.naturalWidth>0;}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
   else mount();
 })();

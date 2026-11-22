@@ -4292,9 +4292,9 @@ html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#batt
   }
 }
 
-/* Silver money is a game-owned asset, not gold platform-specific emoji. */
-.cb-silver-coin{display:inline-block;width:1.08em;height:1.08em;vertical-align:-.18em;object-fit:contain;flex:none;filter:drop-shadow(0 1px 1px #536c8144)}
-#hud .hud-pill .cb-silver-coin{width:16px;height:16px;vertical-align:middle}
+/* User-confirmed GOLD currency uses our own artwork, not OS-specific emoji. */
+.cb-gold-coin{display:inline-block;width:1.08em;height:1.08em;vertical-align:-.18em;object-fit:contain;flex:none;filter:drop-shadow(0 1px 1px #86602a44)}
+#hud .hud-pill .cb-gold-coin{width:16px;height:16px;vertical-align:middle}
 
 /* Enemy poise is intentionally more prominent than HP in both battle HUDs.
    This block changes presentation ONLY, never resource balance. */

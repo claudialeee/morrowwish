@@ -1519,19 +1519,18 @@ assert.ok(laserBattle.enemies.reduce((n,e)=>n+e.hp,0)<rayHpBefore,
 assert.equal(laserBattle.deathRay,null,'dedicated ray ends and clears');
 
 
-// Silver currency is real game art in DOM and Canvas, not gold system emoji.
-const silverCoinSvg=fs.readFileSync(DIR+'assets/silver-coin.svg','utf8');
-const silverCoinJs=fs.readFileSync(DIR+'js/silver-coins.js','utf8');
-const silverCoinWorld=fs.readFileSync(DIR+'js/world.js','utf8');
-const silverCoinHtml=fs.readFileSync(DIR+'index.html','utf8');
-assert.ok(silverCoinSvg.startsWith('<svg')&&silverCoinSvg.includes('Silver cat coin')&&
-  silverCoinSvg.includes('#dce7f1')&&
-  silverCoinJs.includes('window.CatBondSilverCoin=')&&
-  silverCoinWorld.includes('window.CatBondSilverCoin.draw'),
-  'HUD, workshop rewards and yard Canvas must share cool-silver money art');
-assert.ok(silverCoinHtml.includes('js/silver-coins.js')&&
-  !silverCoinHtml.includes('<span class="ico">🪙</span>'),
-  'Silver currency must replace the gold OS emoji in the HUD');
+// GOLD coin art, confirmed by the owner; static art and Canvas binding checks.
+const goldCoinSvg=fs.readFileSync(DIR+'assets/gold-coin.svg','utf8');
+const goldCoinJs=fs.readFileSync(DIR+'js/gold-coins.js','utf8');
+const goldCoinWorld=fs.readFileSync(DIR+'js/world.js','utf8');
+const goldCoinHtml=fs.readFileSync(DIR+'index.html','utf8');
+assert.ok(goldCoinSvg.startsWith('<svg')&&goldCoinSvg.includes('Gold cat coin')&&
+  goldCoinSvg.includes('#ffdf82')&&goldCoinJs.includes('window.CatBondGoldCoin=')&&
+  goldCoinWorld.includes('window.CatBondGoldCoin.draw'),
+  'HUD, menus and yard Canvas must display gold currency');
+assert.ok(goldCoinHtml.includes('js/gold-coins.js')&&goldCoinHtml.includes('gold-coin.svg')&&
+  !goldCoinHtml.includes('silver-coin.svg'),
+  'the game must not load any silver currency art');
 // CHANNELING + melee/dash + progression regressions.
 // These checks use the actual CaptureBattle methods and skill table, not a VFX
 // prototype disconnected from combat or an invented player save.
