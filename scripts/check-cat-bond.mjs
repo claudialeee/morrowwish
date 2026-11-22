@@ -372,6 +372,16 @@ assert.ok(impactBattle.floaters.some(f=>f.max===.62),
 // Damage-vulnerability balance: ordinary Q/E should not explode under layered debuffs.
 assert.equal(Skills.TAG_INFO.expose.dmgTaken,1.2,'expose must remain a modest +20%');
 assert.equal(Skills.TAG_INFO.rust.dmgTaken,1.12,'rust must remain a modest +12%');
+// BASE DAMAGE BALANCE: fighter strength 36 should start near 19.34 attack,
+// rather than the prior 22.46, before bond/difficulty/skill modifiers.
+const baseFighterBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+const baseFighter=baseFighterBattle.me();
+const basePow=baseFighter.cat.stats.pow;
+const baseExpected=(6+basePow*.7)*(baseFighter.bond.dmgMult||1)*.62;
+assert.ok(Math.abs(baseFighter.dmg-baseExpected)<1e-9,
+  'player base attack uses the toned-down 0.62 coefficient');
+
 const damageBalance=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 damageBalance.coach=null;
