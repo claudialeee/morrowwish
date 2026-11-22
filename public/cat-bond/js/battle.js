@@ -1441,6 +1441,7 @@ class CaptureBattle {
         const worst=Object.keys(t.status)[0];
         delete t.status[worst]; t.tags=(t.tags||[]).filter(x=>x!==worst);
         this.vfx.text(t.x,t.y-50,'✦ '+(window.MorrowwishI18n?.get?.()!=='zh'?'cleansed':'净化'),'#cfeed8',13);
+        this.vfx.impactType?.(t.x,t.y,'cleanse',{color:'#bcebd0'});
       }
       this.vfx.impactType?.(t.x,t.y,'heal',{color:'#a8e9b4'});
       this.vfx.text(t.x,t.y-33,'+'+Math.round(amount),'#93dca1',15);
@@ -1632,9 +1633,19 @@ class CaptureBattle {
   // the player-team loop, so ENEMY barriers never expired and stuck on forever
   // ("有些猫身上的防护罩一直都在"). Ticking it in the shared ward tick fixes both sides.
   tickWards(f, dt) {
+    const oldShield=f.shieldT||0,oldProtect=f.protectT||0,oldReflect=f.reflectT||0;
     if (f.shieldT > 0) f.shieldT = Math.max(0, f.shieldT - dt);
     if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
     if (f.reflectT > 0) f.reflectT = Math.max(0, f.reflectT - dt);
+    // One-time local dissolve on shield expiry; never spawn every frame.
+    if(Number.isFinite(f.x)&&Number.isFinite(f.y)){
+      if(oldShield>0&&f.shieldT===0)
+        this.vfx.impactType?.(f.x,f.y+12,'wardFade',{color:'#a5d9ef'});
+      if(oldProtect>0&&f.protectT===0)
+        this.vfx.impactType?.(f.x,f.y+12,'wardFade',{color:'#9ccbb6'});
+      if(oldReflect>0&&f.reflectT===0)
+        this.vfx.impactType?.(f.x,f.y+12,'wardFade',{color:'#b4b9fb'});
+    }
     if (f.rootT > 0) f.rootT = Math.max(0, f.rootT - dt);
     if (f.vulnerableT > 0) f.vulnerableT = Math.max(0, f.vulnerableT - dt);
   }
@@ -4200,7 +4211,14 @@ class CaptureBattle {
     //    An UNBLOCKABLE heavy (must-dodge smash) ignores the shield's big cut — a
     //    barrier only chips it (0.85) so standing in the circle behind a shield still
     //    hurts; the real answer is to leave the telegraphed disc / dodge for i-frames.
-    if ((target.shieldT || 0) > 0) dmg *= (skill && skill.unblockable) ? 0.85 : 0.55;
+    if ((target.shieldT || 0) > 0) {
+      dmg *= (skill && skill.unblockable) ? 0.85 : 0.55;
+      // A contact ripple with channel-hit throttling; no global overlay.
+      if(this.t-(target._lastBarrierFxAt??-99)>.24){
+        target._lastBarrierFxAt=this.t;
+        this.vfx.impactType?.(target.x,target.y,'barrier',{color:'#a2dffc'});
+      }
+    }
     // VULNERABLE after a Protect drops (后遗症): takes extra damage briefly.
     if ((target.vulnerableT || 0) > 0) dmg *= 1.3;
     // land it
