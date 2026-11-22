@@ -47,7 +47,7 @@ jobs:
                   cmp -l "$source" "$live" | head -n 4 || true
                 fi
                 if [ "$ext" = html ]; then
-                  grep -o 'player-visual-20261122' "$live" | head -n 2 || true
+                  grep -oE '/pawsibly-innocent/(game.js|single-screen.css)[?]v=[^"]+' "$live" | head -n 2 || true
                 fi
               else
                 echo "PROBE ${name}: FETCH FAILED"
@@ -61,6 +61,9 @@ jobs:
           test -s public/pawsibly-innocent/game.js
           test -s public/pawsibly-innocent/single-screen.css
           test -s public/pawsibly-innocent/index.html
+          expected_js=$(grep -oE '/pawsibly-innocent/game.js[?]v=[^"]+' public/pawsibly-innocent/index.html | head -1)
+          expected_css=$(grep -oE '/pawsibly-innocent/single-screen.css[?]v=[^"]+' public/pawsibly-innocent/index.html | head -1)
+          test -n "$expected_js" && test -n "$expected_css"
           for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
             ready=0
             for attempt in $(seq 1 12); do
@@ -68,8 +71,8 @@ jobs:
               if curl -fsSL --max-time 18 -o /tmp/pawsibly-live.html "${origin}/pawsibly-innocent/?${query}" &&
                  curl -fsSL --max-time 18 -o /tmp/pawsibly-live-game.js "${origin}/pawsibly-innocent/game.js?${query}" &&
                  curl -fsSL --max-time 18 -o /tmp/pawsibly-live.css "${origin}/pawsibly-innocent/single-screen.css?${query}" &&
-                 grep -Fq '/pawsibly-innocent/game.js?v=player-visual-20261122' /tmp/pawsibly-live.html &&
-                 grep -Fq '/pawsibly-innocent/single-screen.css?v=player-visual-20261122' /tmp/pawsibly-live.html &&
+                 grep -Fq "$expected_js" /tmp/pawsibly-live.html &&
+                 grep -Fq "$expected_css" /tmp/pawsibly-live.html &&
                  grep -Fq 'id="wait"' /tmp/pawsibly-live.html &&
                  grep -Fq 'id="heistStatus"' /tmp/pawsibly-live.html &&
                  grep -Fq 'id="roomNum"' /tmp/pawsibly-live.html &&
