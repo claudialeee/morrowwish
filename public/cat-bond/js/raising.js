@@ -656,7 +656,7 @@ function catchButterfly() {
 // ---------- render-data helpers ----------
 function speciesName(cat) {
   const sp = GameData.speciesById(cat.species);
-  return (cat.shiny ? '✨' : '') + (sp ? sp.name : '猫猫');
+  return (cat.shiny ? '✨' : '') + (sp ? GameData.speciesName(sp) : (window.MorrowwishI18n?.get?.()==='zh'?'猫猫':'Kitten'));
 }
 
 // Badges for a cat detail panel. reveal=true marks the hidden trait discovered.

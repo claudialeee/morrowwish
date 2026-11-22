@@ -1312,3 +1312,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
    throw Error('Returning players must not be forced to read a long skill preview');
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }
+
+// Language QA: every playable route must use the shared English-first selection,
+// and Cat Bond species names must be pronounceable in both locales.
+await import('./check-language.mjs');

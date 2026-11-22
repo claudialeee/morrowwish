@@ -1,7 +1,7 @@
 // main.js — boot sequence, intro screen, first-run starter, idle report.
 
 window.addEventListener('DOMContentLoaded', () => {
-  console.log('%cCat Bond · 猫猫纽带 build v36 — if cats/battles glitch, tap "Reset save" on the intro screen', 'color:#ffb3c7;font-weight:bold');
+  console.log('Cat Bond build v36 — reset save from the intro if a battle cannot start');
   const game = new Game();
   window.__game = game;
   UI.init(game);
@@ -45,7 +45,7 @@ window.addEventListener('DOMContentLoaded', () => {
       starting=false;
       console.error('Cat Bond start failed',error);
       const hint=document.getElementById('start-error');
-      if(hint){hint.hidden=false;hint.textContent='游戏启动失败，请刷新页面重试：'+(error?.message||'');}
+      if(hint){hint.hidden=false;hint.textContent=(window.MorrowwishI18n?.get?.()==='zh'?'游戏启动失败，请刷新页面重试：':'Game failed to start. Please refresh: ')+(error?.message||'');}
       return;
     }
     if (window.Raising) Raising.init();
