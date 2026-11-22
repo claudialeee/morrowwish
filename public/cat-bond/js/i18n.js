@@ -2016,6 +2016,8 @@
   "喂小鱼": "Feed fish",
   "把猫咪送回庭院": "Send cats back to the yard"
 });
+  // Consistent names for the new breed and legacy saved visits.
+  Object.assign(DICT, {'圆宝':'Pudding', '加菲':'Pudding', '奶奶':'Snowball'});
   var KEYS = Object.keys(DICT).sort(function (a, b) { return b.length - a.length; });
   // Han ideographs + CJK symbols/punctuation + fullwidth forms.
   var CJK = /[一-鿿　-〿＀-￯]/;
