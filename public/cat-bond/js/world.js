@@ -898,6 +898,18 @@ class YardScene {
       pose:peeking?'walk':'idle',motion:peeking?.75:0,mood:'alert'
     });
   }
+  // Invite an actual visible kitten to a specific facility immediately.
+  inviteCatToBuilding(b){
+    if(!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
+    const available=this.entities.filter(e=>!(e._playBuildT>0));
+    if(!available.length)return false;
+    const nearest=available.sort((a,c)=>
+      Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(c.x-b.x,c.y-b.y))[0];
+    nearest._buildTarget=b;nearest._playBuildT=0;
+    nearest.setPose('walk',1.4);
+    nearest.emote('🐾',1.6);
+    return true;
+  }
   // ---- resident cats visit their play-structures and PLAY ----
   // Cheap, subtle pathing: on a slow timer, send one idle cat toward a nearby
   // structure. When it arrives, it strikes the structure's pose + emote and its
@@ -929,8 +941,7 @@ class YardScene {
       ? this._newBuildToVisit : builds[Math.floor(Math.random()*builds.length)];
     this._newBuildToVisit=null;
     const cat=idle.sort((a,b2)=>Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(b2.x-b.x,b2.y-b.y))[0];
-    cat._buildTarget=b;
-    cat.emote('🐾',1.4);
+    this.inviteCatToBuilding(b);
   }
   // called from each cat's effective motion: nudge a cat toward its chosen
   // structure, then trigger play on arrival. Invoked from YardScene.update via
@@ -1090,6 +1101,7 @@ class YardScene {
     const b={type,x:chosen.x,y:chosen.y,level:1,lastRewardAt:0};
     (State.S.yardBuildings=State.S.yardBuildings||[]).push(b);
     this._newBuildToVisit=b;this._buildScan=.12;
+    this.inviteCatToBuilding(b);
     // Return the nearest available cat to this facility quickly, instead of
     // forcing a several-second random wait.
     State.save();
