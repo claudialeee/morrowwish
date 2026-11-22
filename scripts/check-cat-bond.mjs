@@ -637,6 +637,39 @@ assert.equal(duoTest.duoField,null,'lingering ultimate always ends without leaki
 assert.ok(duoTest.skillStrokes.some(v=>v.kind==='duoImpact'&&v.life===.65),
   'closing beat is a distinct twin-element flourish');
 assert.equal(Object.keys(sandbox.window.CatRelations.DUO_ARTS).length,21,'all 21 elemental pairs keep authored signatures');
+ 
+// Balance regression: all normal skills respect the difficulty modifier,
+// but a full resonance (opening + field + late cross-claw) cannot one-shot.
+assert.ok(State.DIFFICULTY_MULTS.casual.playerDmg<1.35);
+assert.ok(State.DIFFICULTY_MULTS.hardcore.playerDmg<State.DIFFICULTY_MULTS.casual.playerDmg);
+assert.ok(State.DIFFICULTY_MULTS.hardcore.enemyHp>State.DIFFICULTY_MULTS.casual.enemyHp);
+const savedDifficulty=State.difficulty();
+for(const mode of ['casual','hardcore']){
+  State.setDifficulty(mode);
+  const cfg=State.difficultyMult();
+  const b=new sandbox.window.Battle.CaptureBattle(game,[duoA,duoB],
+    GameData.speciesById('jinwu'));
+  b.coach=null;b.duoCharge=100;b.duoCd=0;
+  assert.equal(b.castDuo(),true,mode+' duo cast succeeds');
+  const foe=b.enemies[0],max=foe.maxhp;
+  b.duoCinematic.payload();
+  for(let step=0;step<900;step++)b.tickDuoField(.016);
+  const delta=max-foe.hp;
+  assert.ok(delta>0,mode+' resonance still does nonzero damage');
+  assert.ok(delta<=max*cfg.duoHpBudget+1e-6,
+    mode+' opening plus persistent field obeys per-cast budget');
+  assert.ok(foe.alive&&foe.hp>=max*.52,
+    mode+' first resonance must leave substantial enemy HP');
+  assert.equal(b.duoDamageMult,cfg.duoDmg);
+  // Direct extra cross-paw hits also share the SAME budget after status
+  // multipliers; new resonance casts start with a fresh Map.
+  b.duoField={damageByEnemy:new Map([[foe.i,delta]])};
+  b.hurtEnemy(foe,max*.8,foe.x,foe.y,true,true);
+  assert.ok(max-foe.hp<=max*cfg.duoHpBudget+1e-6,
+    mode+' a late paw cannot bypass the cap');
+}
+State.setDifficulty(savedDifficulty);
+
 
 // Eight REAL ultimate identities — two fire and two light spells have to draw
 // differently despite sharing an element. None may paint over the whole arena.

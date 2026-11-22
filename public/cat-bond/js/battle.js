@@ -72,7 +72,12 @@ class CaptureBattle {
         // make casual fights stress-free (player hits harder, wild softer + squishier)
         // and keep hardcore at today's lethality. Read once from State at battle start.
         const diff = (window.State && State.difficultyMult) ? State.difficultyMult()
-          : { playerDmg: 1, enemyDmg: 1, enemyHp: 1, gapScale: 1 };
+          : { playerDmg: 1, enemyDmg: 1, enemyHp: 1, gapScale: 1,
+              duoDmg: 1, duoHpBudget: .48 };
+        // Fix these coefficients at battle start so a setting change halfway
+        // through a duo cinematic cannot modify its damage unexpectedly.
+        this.duoDamageMult = diff.duoDmg ?? 1;
+        this.duoHpBudget = diff.duoHpBudget ?? .48;
         const bend = (v, g) => 1 + (v - 1) * g;               // g=0 → neutral 1.0; g=1 → unchanged; g>1 → steeper
         this.playerDmgMult   = bend(this.playerDmgMult,   diff.gapScale) * diff.playerDmg;
         this.enemyDmgMult    = bend(this.enemyDmgMult,    diff.gapScale) * diff.enemyDmg;
@@ -293,7 +298,9 @@ class CaptureBattle {
       pulse:1.65,radius:Math.min(134,96+8*d.tier),
       elements:mix.split('+'),pair:mix,first:firstColor,second:secondColor,
       status:art.status,secondStatus:d.tier>=2?art.secondStatus:null,
-      support:art.support||'shield',tier:d.tier};
+      support:art.support||'shield',tier:d.tier,
+      // One shared per-enemy damage budget for the entire resonance cast.
+      damageByEnemy:new Map()};
     // max ≈ 3.0s splash + a short un-frozen aftermath tail. strikeAt sits at the END of the
     // splash, so the arena stays HARD-FROZEN (dt=0, nobody moves) for essentially the WHOLE
     // cut-in. The splash art plays and fades out, THEN at strikeAt the deferred payload LANDS
@@ -340,7 +347,7 @@ class CaptureBattle {
         const raw=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
           (fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
         const damage=raw*Math.max(.8,Math.min(1.2,art.mult||1));
-        this.hurtEnemy(e,damage,e.x,e.y,true);
+        this.hurtEnemy(e,damage,e.x,e.y,true,true);
         this.vfx.impact(e.x,e.y,hits%2?firstColor:secondColor);hits++;
         e.status=e.status||{};e.tags=e.tags||[];
         // All 21 element pairs use authored statuses; at 60+ trust a
@@ -466,7 +473,7 @@ class CaptureBattle {
       if(Math.hypot(e.x-v.x,e.y-v.y)>v.radius*1.3)continue;
       const damage=Math.min(e.maxhp*(.019+.003*v.tier),
         Math.max(1,(this.team[0]?.dmg||15)*(.2+.035*v.tier)));
-      this.hurtEnemy(e,damage,e.x,e.y,true);
+      this.hurtEnemy(e,damage,e.x,e.y,true,true);
       e.status=e.status||{};e.tags=e.tags||[];
       const tag=v.secondStatus&&v.age>=2.5?v.secondStatus:v.status;
       if(Skills.TAG_INFO?.[tag]){
@@ -3892,7 +3899,10 @@ class CaptureBattle {
     return !hardStun;                                         // false → updateEnemyAI skipped (full lock)
   }
 
-  hurtEnemy(e, dmg, fx, fy, isDot) {
+  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false) {
+    // Resonance gets a separate coefficient: standard attacks retain the
+    // general difficulty curve, while duo is tuned for multi-wave fights.
+    if (fromDuo) dmg *= this.duoDamageMult ?? 1;
     // LEVEL SUPPRESSION: an over-leveled squad's raw damage is softly capped so a
     // fight can't be won by stats alone (see constructor). Applied to ALL player
     // damage (direct + DoT) at this single chokepoint; 1 when near/under level.
@@ -3910,7 +3920,16 @@ class CaptureBattle {
     // ramping toward ×2.5 under 12%. (Playtest P1: there was no closer.)
     const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
     if (!isDot && frac0 < 0.28) dmg *= 1.5 + (1 - clamp(frac0 / 0.28, 0, 1)) * 1.0;
-    const scaled = dmg;
+    let scaled = dmg;
+    if (fromDuo && this.duoField) {
+      // Apply cap AFTER level scaling and vulnerability multipliers; otherwise
+      // status amplifiers can bypass the two-wave pacing guarantee.
+      const field=this.duoField,used=field.damageByEnemy?.get(e.i)||0;
+      const budget=e.maxhp*(this.duoHpBudget??.48);
+      scaled=Math.max(0,Math.min(scaled,budget-used));
+      if (scaled <= 0.00001) return; // no fake zero-damage pop/ult charge
+      field.damageByEnemy?.set(e.i,used+scaled);
+    }
     // Let the player finish movement/attack/skill/dodge practice before
     // an allied AI cat can accidentally end the only guided encounter.
     const lessonPending=this.coach&&this.coach.steps[this.coach.i]?.key!=='finish';

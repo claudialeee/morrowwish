@@ -219,18 +219,15 @@ function claimDaily() {
   return { reward, streak: S.streak };
 }
 
-// Difficulty knobs consumed by battle.js. 'casual' makes fights basically
-// stress-free (player hits harder, wild cats are softer + squishier, and the
-// level-gap 等级压制 is almost flattened). 'hardcore' keeps today's tuning but
-// adds a STRONGER level-gap curve so being under-levelled really bites.
-//   playerDmg : extra multiply on the player's outgoing damage
-//   enemyDmg  : multiply on wild-cat outgoing damage
-//   enemyHp   : multiply on wild-cat max HP
-//   gapScale  : how hard the logistic level-gap suppression is applied (0 = none,
-//               1 = normal curve, >1 = steeper 等级压制)
+// Difficulty affects ordinary player skills, incoming enemy damage and HP.
+// The old casual 1.35x outgoing + 0.80x enemy HP erased enemies during the
+// first resonance. Keep casual forgiving WITHOUT making duo a one-cast wipe.
+// duoHpBudget is a shared per-enemy cap across opening, pulses and crossed paws.
 const DIFFICULTY_MULTS = {
-  casual:   { playerDmg: 1.35, enemyDmg: 0.6,  enemyHp: 0.8, gapScale: 0.25 },
-  hardcore: { playerDmg: 1.0,  enemyDmg: 1.0,  enemyHp: 1.0, gapScale: 1.4  },
+  casual:   { playerDmg: 1.16, enemyDmg: 0.60, enemyHp: 0.95, gapScale: 0.25,
+              duoDmg: 0.80, duoHpBudget: 0.48 },
+  hardcore: { playerDmg: 0.94, enemyDmg: 1.00, enemyHp: 1.10, gapScale: 1.40,
+              duoDmg: 0.72, duoHpBudget: 0.43 },
 };
 function difficulty() { return (S.difficulty === 'hardcore') ? 'hardcore' : 'casual'; }
 function difficultyMult() { return DIFFICULTY_MULTS[difficulty()]; }
