@@ -35,6 +35,24 @@ const regions={
  'grass+light':1,'grass+water':2,'light+light':0,
  'light+water':0,'water+water':2
 };
+// Muted fantasy palettes are coordinated with Cat Bond's actual scenery:
+// gentle lilac skies, sage gardens, warm peach sunlight and pale blue rivers.
+// Never impose a solid purple battle card or a bright saturated rectangle.
+const harmonies={
+ storm:{sky:'#a998ce',mist:'#e7dbf4',ground:'#879bb8',light:'#e7d7ff'},
+ moon:{sky:'#b6b0d5',mist:'#e9e5f7',ground:'#a4bdc4',light:'#fff1dc'},
+ spring:{sky:'#a4c8b9',mist:'#eaf5e8',ground:'#a9cba6',light:'#ffeadb'},
+ water:{sky:'#a5cbd5',mist:'#e2f4ee',ground:'#98bcb7',light:'#e4f7ff'},
+ solar:{sky:'#e3bfa7',mist:'#f8ebd8',ground:'#c5c5ac',light:'#fff2d8'}
+};
+function harmony(key){
+ const els=key.split('+');
+ if(els.includes('elec')&&els.includes('dark'))return harmonies.storm;
+ if(els.includes('water'))return harmonies.water;
+ if(els.includes('grass'))return harmonies.spring;
+ if(els.includes('fire'))return harmonies.solar;
+ return harmonies.moon;
+}
 const accents={
  dark:'#d0a8ff',elec:'#c6d4ff',fire:'#ffcc9b',grass:'#c8f4c6',
  light:'#fff9d9',water:'#c5ecff'
@@ -180,14 +198,24 @@ function draw(ctx,W,H,seq,lookup){
  fade(0,0,0,fy);
  fade(0,sh,0,sh-fy);
  ctx.restore();
- // A restrained color glow connects the stage lighting with the real
- // battle underneath. Only ONE painted two-cat tableau is used.
+ // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
+ // the region's existing battle theme instead of an unrelated purple card.
+ const tone=harmony(key);
  battlefield.save();
- const aura=battlefield.createRadialGradient(W*.5,H*.5,sw*.12,W*.5,H*.5,sw*.72);
- aura.addColorStop(0,(accents[key.split('+')[0]]||'#eacdf5')+'40');
- aura.addColorStop(.65,(accents[key.split('+')[1]]||'#f6e8ee')+'14');
- aura.addColorStop(1,'rgba(255,255,255,0)');
- battlefield.globalAlpha=opacity*.6;
+ const surrounding=battlefield.createLinearGradient(0,H*.15,W,H*.85);
+ surrounding.addColorStop(0,tone.sky+'38');
+ surrounding.addColorStop(.48,tone.mist+'20');
+ surrounding.addColorStop(1,tone.ground+'22');
+ battlefield.globalAlpha=opacity*.55;
+ battlefield.fillStyle=surrounding;
+ battlefield.fillRect(0,0,W,H);
+ // One subtle colored halo belongs to the entire two-cat composition.
+ // Its outer edge blends to the same green/blue/purple as the actual arena.
+ const aura=battlefield.createRadialGradient(W*.5,H*.47,sw*.09,W*.5,H*.47,sw*.7);
+ aura.addColorStop(0,tone.light+'4b');
+ aura.addColorStop(.48,tone.mist+'26');
+ aura.addColorStop(1,tone.ground+'00');
+ battlefield.globalAlpha=opacity*.55;
  battlefield.fillStyle=aura;
  battlefield.fillRect(0,0,W,H);
  battlefield.globalAlpha=1;
