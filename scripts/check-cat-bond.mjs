@@ -245,6 +245,20 @@ new vm.Script(duoSource,{filename:'cat-relationships.js'});
 vm.runInContext(duoSource,sandbox,{filename:'cat-relationships.js'});
 assert.ok(sandbox.window.CatRelations,'Signature relationship system loads');
 const worldMapSource = fs.readFileSync(DIR+'js/worldmap.js','utf8');
+// World order progression: courtyard/home first, Sakura Woods second.
+// Keep stable IDs so explored tiles and already-unlocked old saves survive.
+const regions=sandbox.window.WorldMap.REGIONS;
+assert.deepEqual(Array.from(regions.slice(0,2),r=>r.id),['home','sakura'],
+  'first two explorable regions are courtyard then sakura');
+assert.equal(regions[0].name,'庭院','first region is labeled courtyard');
+assert.equal(regions[0].difficulty,1,'courtyard is the beginner exploration zone');
+assert.equal(regions[0].unlock,null,'courtyard unlocks immediately');
+assert.deepEqual(JSON.parse(JSON.stringify(regions[1].unlock)),
+  {after:'home',explore:.4},'sakura unlocks at 40% courtyard exploration');
+assert.ok(worldMapSource.includes('wm.unlocked.home = true')&&
+  !worldMapSource.includes('wm.unlocked.sakura = true'),
+  'new games must not automatically unlock Sakura before the courtyard');
+
 assert.ok(worldMapSource.includes("kind:'secret'"),'Each region has a unique one-time landmark');
 const qualityGame=fs.readFileSync(DIR+'js/game.js','utf8');
 assert.ok(qualityGame.includes("querySelector('.mv-name')")&&qualityGame.includes("move-new-tag"),
