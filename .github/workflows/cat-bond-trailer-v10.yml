@@ -1,4 +1,5 @@
 name: Review New Cat Bond Ultimate and Quarrel V10 - NO SOCIAL PUBLISH
+# QA repair: do not accept battle footage hidden behind the expedition team dialog.
 on:
   push:
     branches: [main]
