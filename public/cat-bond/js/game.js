@@ -268,7 +268,7 @@ class Game {
     const label=justLearned
       ?(english?'✨ New skills · Workshop · Explore ›':'✨ 新技能 · 工坊赚钱 · 地图探索 ›')
       :status.next===null
-        ?(english?'🏆 Cat Adventure · All 25 breeds! ›':'🏆 猫猫冒险 · 25 种全部收集 ›')
+        ?(english?'🏆 Cat Adventure · All '+status.total+' breeds! ›':'🏆 猫猫冒险 · '+status.total+' 种全部收集 ›')
         :(english?'🧭 Adventure · '+status.count+'/'+status.next+' breeds · Goals ›'
           :'🧭 冒险手册 · 图鉴 '+status.count+'/'+status.next+' · 查看目标 ›');
     if(hint.textContent!==label)hint.textContent=label;
