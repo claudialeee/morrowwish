@@ -37,23 +37,23 @@ try{
   });
   const summary=await page.locator('#panel .map-squad-choice').allTextContents();
   assert.equal(summary.length,3,'expedition must show all owned cats');
-  assert.ok(summary.some(t=>/Lv\.7/.test(t)&&/SR/.test(t)&&/(战力|Power)/.test(t)&&/(负伤|Injured)/.test(t)),
+  assert.ok(summary.some(t=>/(?:Lv\.?\s*7|等级\s*7)/.test(t)&&/SR/.test(t)&&/(战力|Power)/.test(t)&&/(负伤|Injured)/.test(t)),
     'veteran must show correct level, rarity, power and carried wound: '+JSON.stringify(summary));
-  assert.ok(summary.some(t=>/Lv\.1/.test(t)&&/N/.test(t)&&/(生命|HP)/.test(t)),
+  assert.ok(summary.some(t=>/(?:Lv\.?\s*1|等级\s*1)/.test(t)&&/N/.test(t)&&/(生命|HP)/.test(t)),
     'new kitten must show actual level, rarity and HP: '+JSON.stringify(summary));
   const leaderBefore=await page.locator('#panel .battle-order-item.field').first().innerText();
-  assert.match(leaderBefore,/Lv\.1/, 'first starter must be identifiable by level');
+  assert.match(leaderBefore,/(?:Lv\.?\s*1|等级\s*1)/, 'first starter must be identifiable by level');
   // Promote veteran to lead, with its level shown again in the ordered list.
   await page.locator('#panel [data-order-index="1"][data-order-shift="-1"]').click();
   const leaderAfter=await page.locator('#panel .battle-order-item.field').first().innerText();
-  assert.match(leaderAfter,/Lv\.7/,'reordered lead displays its new level and power');
+  assert.match(leaderAfter,/(?:Lv\.?\s*7|等级\s*7)/,'reordered lead displays its new level and power');
   await page.screenshot({path:'/tmp/cat-bond-squad-'+device.name+'-map.png'});
   await page.evaluate(()=>{
    const team=UI.getPreferredBattleTeam();
    UI.openBattleModePrompt(team,{...GameData.speciesById('moqiu'),encounterLevel:4},{origin:'map'});
   });
   const encounter=await page.locator('#panel').innerText();
-  assert.match(encounter,/Lv\.4/,'enemy level visible before fight');
+  assert.match(encounter,/(?:Lv\.?\s*4|等级\s*4)/,'enemy level visible before fight');
   assert.match(encounter,/Lv\.7/,'team levels still visible during encounter');
   assert.equal(await page.locator('#panel .map-squad-choice').count(),3);
   await page.screenshot({path:'/tmp/cat-bond-squad-'+device.name+'-encounter.png'});
@@ -61,9 +61,9 @@ try{
    UI.openCapturePrep({...GameData.speciesById('doudou'),encounterLevel:2});
   });
   const captureCards=await page.locator('#cp-roster .chip').allTextContents();
-  assert.ok(captureCards.some(t=>/Lv\.7/.test(t)&&/SR/.test(t)&&/(负伤|Injured)/.test(t)),
+  assert.ok(captureCards.some(t=>/(?:Lv\.?\s*7|等级\s*7)/.test(t)&&/SR/.test(t)&&/(负伤|Injured)/.test(t)),
     'yard selection must display the injured veteran and rarity');
-  assert.ok(captureCards.some(t=>/Lv\.1/.test(t)&&/(战力|Power)/.test(t)),
+  assert.ok(captureCards.some(t=>/(?:Lv\.?\s*1|等级\s*1)/.test(t)&&/(战力|Power)/.test(t)),
     'yard selection must display the beginner level and combat power');
   assert.ok(captureCards.every(t=>/⚔/.test(t)&&/❤/.test(t)),
     'every capture candidate displays attack and HP');
