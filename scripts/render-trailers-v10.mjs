@@ -16,7 +16,7 @@ const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v10
  method:'Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate.',
  pausedPromoGames:[],scenes:[]};
 const MIN_READING={
- 'cat-bond':{'cat-upgrade':3.0,'duo-partners':2.6,'duo-promise':3.7,'duo-quarrel':5.5,'duo-reconcile':2.7,
+ 'cat-bond':{'cat-upgrade':3.0,'duo-partners':2.6,'duo-promise':3.7,'duo-quarrel':6.0,'duo-reconcile':2.7,
    'ssr-showcase':3.4,'rare-capture':2.8},
  'pawsibly-innocent':{'narrow-achievement':3.2},
  'tiny-town':{'opening-three-choices':6.6,'resident-profile':4.5,'neighbor-story':4.7,'ending':4.9},
@@ -34,14 +34,14 @@ const broll=(label,duration,caption='')=>choose('broll',0,duration,caption,label
 const playlists={
  'cat-bond':[
   // Short-form cut: give the story reading time; keep the gameplay energetic.
-  broll('yard',2.35,'A WORLD FULL OF CATS.'),
+  broll('yard',2.5,'A WORLD FULL OF CATS.'),
   broll('cat-upgrade',3.15,'LEVEL UP WITH ONE TAP.'),
   broll('duo-partners',2.75,'CHOOSE YOUR CAT DUO.'),
   broll('duo-map-walk',1.8),
   broll('duo-promise',3.9,'A SECRET PROMISE UNDER PETALS.'),
-  broll('duo-quarrel',5.6,'EVEN BEST FRIENDS DISAGREE.'),
+  broll('duo-quarrel',6.1,'EVEN BEST FRIENDS DISAGREE.'),
   broll('duo-reconcile',2.9,'HELP THEM MAKE UP.'),
-  broll('work-after',2.25,'SEND CATS OUT TO EARN.'),
+  broll('work-after',2.5,'SEND CATS OUT TO EARN.'),
   broll('tease',2.2,'PLAY WITH YOUR CATS.'),
   broll('map-choice',2.5,'DISCOVER NEW PLACES.'),
   broll('map-explore',2.45,'EXPLORE A LIVING WORLD.'),
