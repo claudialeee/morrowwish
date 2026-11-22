@@ -937,9 +937,9 @@ class CaptureBattle {
     }else{                          // in the band → orbit with a slight range-correction
       const dir=this.orbitSign(f,'_orbit',d);
       mx=-ny*dir;my=nx*dir;
-      // nudge back toward band centre so it doesn't slowly spiral out
+      // nudge toward band centre (too far = inward, too close = outward)
       const mid=(band.min+band.max)*0.5, corr=clamp((dist-mid)/120,-0.5,0.5);
-      mx+=nx*-corr;my+=ny*-corr;
+      mx+=nx*corr;my+=ny*corr;
     }
     const w=this.wanderVec(f,'_wander',d);
     mx+=w.x*0.2;my+=w.y*0.2;
@@ -1089,7 +1089,9 @@ class CaptureBattle {
       // HARD RULE: never fire a reflectable shot (projectile/beam) at a reflect wall —
       // it bounces straight back as self-damage. Melee/aoe/dash still allowed (not reflected).
       if(tgtReflect&&rangedKind(sk.kind))return false;
-      if(sk.kind==='melee')return dist<=106;
+      // Physical claw sweep reaches 64px plus part of the target body radius.
+      // The previous <=106 decision gate spent melee skills outside that geometry.
+      if(sk.kind==='melee')return dist<=64+(tgt.r||18)*.65-2;
       if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
@@ -1150,7 +1152,7 @@ class CaptureBattle {
         }
         case 'dodge':return this.dodge(f);
         case 'skillQ':case 'combo':case 'finisher':
-          if(f.cd.q>0||f.qSkill?.kind==='melee'&&dist>106)return false;
+          if(f.cd.q>0||f.qSkill?.kind==='melee'&&dist>64+(tgt.r||18)*.65-2)return false;
           return this.skillQ(f,aim);
         case 'skillE':case 'approach':
           if(f.cd.e>0)return false;

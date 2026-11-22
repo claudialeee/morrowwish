@@ -168,6 +168,13 @@ for(const kind of ['dash','pounce','melee']){
   for(let k=1;k<b.enemies.length;k++)b.enemies[k].alive=false;   // isolate one target
   e.x=f.x+360; e.y=f.y; e.hp=e.maxhp; e.shieldT=0;e.protectT=0;e.reflectT=0;
   const startHp=e.hp;
+  // A melee cast must not consume cooldown until the claw's physical arc can hit.
+  if(kind==='melee'){
+    const reach=64+(e.r||18)*.65;
+    f.cd.q=0;
+    b.smartAutoAction(f,e,reach+18,null);
+    assert.equal(f.cd.q,0,'INV-2 melee does not waste Q outside the hit arc');
+  }
   // Give it ~6s = enough for several gap-closer cycles (dash cd 3s, tempo 0.8).
   run(b,6.0);
   // The REAL invariant: a committed gap-closer must actually DEAL DAMAGE — not merely
