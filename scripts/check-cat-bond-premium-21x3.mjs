@@ -33,6 +33,7 @@ const sandbox={window,document,Image:ImageMock,Event:EventMock,Math,Number,Objec
 for(const name of scripts)vm.runInContext(source(name),sandbox,{filename:name});
 for(const img of images){
  if(img.src?.includes('32-actors')){img.naturalWidth=1774;img.naturalHeight=887}
+ else if(img.src?.includes('jiafei-watercolor-v1.avif')){img.naturalWidth=228;img.naturalHeight=256}
  else{img.naturalWidth=3584;img.naturalHeight=2592}
  img.onload?.();
 }
@@ -40,8 +41,11 @@ const actors=window.CatBondDuoBreedActors;
 const painter=window.CatBondPremiumCinematics;
 const hero=window.CatBondDuoHero;
 const director=window.CatBondDuoDirector;
-assert.equal(actors.breedCount,32);
-assert.equal(actors.ready,true,'Both 32 breed actors and 21x3 clean scenic atlas must load');
+assert.equal(actors.breedCount,32,'Do not fake a 33rd 8x4 atlas cell');
+assert.equal(actors.supportedBreedCount,33,'32 atlas cats + one standalone AVIF');
+assert.equal(actors.jiafeiArtReady,true,'Dedicated Jiafei raster must decode');
+assert.match(actors.jiafeiSource,/jiafei-watercolor-v1\.avif/);
+assert.equal(actors.ready,true,'32-cell atlas, 21x3 scenery and standalone Jiafei AVIF must all load');
 assert.equal(painter.ready,true,'Premium cutin must not show until selected breeds are decoded');
 assert.equal(painter.breedMatchCount,32);
 assert.equal(painter.liveBreedArtworkEnabled,true);
@@ -57,6 +61,28 @@ for(const id of roster){
 }
 assert.equal(actors.species({species:'not-a-real-breed'}),null,
   'Never substitute a generic fixed gray cat for missing breeds');
+// Draw both UID placements and require the actual Image object, not merely a
+// distinct procedural shape or a passing species() lookup.
+const painted=[];
+const ctx={globalAlpha:1,save:noop,restore:noop,translate:noop,rotate:noop,
+ scale:noop,beginPath:noop,ellipse:noop,fill:noop,
+ drawImage:(img)=>painted.push(img.src)};
+for(const pair of [['jiafei','tangyuan'],['tangyuan','jiafei']]){
+ painted.length=0;
+ assert.equal(actors.draw(ctx,512,288,pair.map((id,i)=>({uid:'q'+i,species:id})),
+   'elec+fire',.44,2),true,'Duo paints both selected species');
+ assert.equal(painted.length,2,'Each side draws exactly one real raster subject');
+ assert.equal(painted.filter(src=>src?.includes('jiafei-watercolor-v1.avif')).length,1,
+   'Jiafei must use its dedicated real watercolor Image on either side');
+ assert.equal(painted.filter(src=>src?.includes('32-actors')).length,1,
+   'Original 32-cell atlas must paint the other selected cat');
+}
+const jiafeiAsset='public/cat-bond/assets/jiafei-watercolor-v1.avif';
+const raster=fs.readFileSync(jiafeiAsset);
+assert.ok(raster.length>4000&&raster.toString('ascii',4,12)==='ftypavif',
+  'Jiafei must have a genuine AVIF resource, not an SVG/text placeholder');
+assert.doesNotMatch(source('js/duo-breed-actors.js'),/CatArt\.drawCat/,
+  'Premium duo must never silently fall back to a procedural Jiafei');
 assert.equal(director.keys.length,21);
 assert.equal(painter.wholeSceneCount,21);
 assert.equal(painter.paintedFrameCount,63);
@@ -86,10 +112,10 @@ assert.equal((page.match(/<article class="breed-card"/g)||[]).length,roster.leng
 assert.match(page,/id="pick-cat-a"/);
 assert.match(page,/id="pick-cat-b"/);
 for(const html of [page,game,unlocked]){
- assert.match(html,/duo-breed-actors\.js\?v=32-watercolor-cats-scenery-v2/);
+ assert.match(html,/duo-breed-actors\.js\?v=32-watercolor-cats-scenery-v3/);
  // Require a real cache-busted premium renderer, without pinning the release to a stale asset version.
  assert.match(html,/duo-premium\.js\?v=[\w-]+-20261122/);
  assert.doesNotMatch(html,/duo-breed-art\.js/,'Unsafe mask shader must stay disabled');
  assert.doesNotMatch(html,/duo-premium-sheet\.webp/,'Rejected low-quality gray cats must not reappear');
 }
-console.log('CAT BOND 32 BREED PREMIUM PASS: 32 original watercolor cats x 2 actual player UID slots; 21 skill backgrounds x 3 tiers; 63 breed-aware thumbnails and premium battle cutin.');
+console.log('CAT BOND PREMIUM PASS: 32 untouched atlas cats + standalone Jiafei AVIF tested in both real actor slots; 21 skill backgrounds x 3 tiers; 63 previews.');
