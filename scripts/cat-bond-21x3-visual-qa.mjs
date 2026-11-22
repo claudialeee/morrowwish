@@ -59,7 +59,7 @@ try{
  });
  assert.equal(result.keys,21);
  assert.equal(result.palettes,21);
- assert.equal(result.grades,21,'All 21 live paintings must be independently graded');
+ assert.equal(result.grades,63,'All 63 real painted stage frames must decode independently');
  assert.equal(result.tiers,3);
  assert.equal(result.source,'approved-complete-painterly-duo-sheet');
  assert.equal(new Set(result.frames.map(x=>x.variants[2].hash)).size,21,
