@@ -52,7 +52,19 @@ h1{font-size:clamp(27px,4.3vw,43px);letter-spacing:-.04em;margin:5px 0 8px;color
 .card-meta{font-size:12px;color:#799081;margin-top:6px;line-height:1.4}
 footer{padding:24px 0 8px;color:#819185;font-size:12px}
 @media(max-width:900px){.viewer-layout{grid-template-columns:1fr}.side-note{display:grid;grid-template-columns:1fr 1fr;gap:12px}.side-note h3,.side-note .note{grid-column:1/-1}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.gallery{gap:8px}.duo-card{border-radius:14px;padding:5px}.duo-card canvas{border-radius:9px}.card-copy{padding:7px 4px}.card-name{font-size:12px}.card-meta{font-size:10px}.side-note{display:flex;padding:16px}h1{font-size:29px}.player{padding:6px;border-radius:16px}.player-stage{border-radius:11px}.controls{gap:6px}.controls button{flex:1 1 auto;padding:10px 9px;font-size:12px}.review{font-size:11px}}
+.breed-gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.breed-card{width:100%;text-align:center;min-width:0;border:1px solid #dce8da;border-radius:16px;
+ background:linear-gradient(160deg,#fffaf1,#eaf5e6);padding:9px 6px;color:#385b49;
+ display:flex;flex-direction:column;gap:4px;align-items:center}
+.breed-card canvas{width:min(100%,130px);height:auto;aspect-ratio:1/1.18;object-fit:contain}
+.breed-card strong{font-size:13px}.breed-card small{font-size:10px;color:#819280}
+.breed-card:hover{background:#fff7e8;border-color:#a6d1b5}
+.actor-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actor-controls label{font-size:11px;font-weight:900;color:#63806e}
+.actor-controls select{display:block;width:100%;min-width:0;min-height:39px;padding:6px;
+ background:#fffdf7;border:1px solid #c5d4be;border-radius:10px;color:#355c46;font:750 13px system-ui}
+@media(max-width:950px){.breed-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:520px){.breed-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.gallery{gap:8px}.duo-card{border-radius:14px;padding:5px}.duo-card canvas{border-radius:9px}.card-copy{padding:7px 4px}.card-name{font-size:12px}.card-meta{font-size:10px}.side-note{display:flex;padding:16px}h1{font-size:29px}.player{padding:6px;border-radius:16px}.player-stage{border-radius:11px}.controls{gap:6px}.controls button{flex:1 1 auto;padding:10px 9px;font-size:12px}.review{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.duo-card{transition:none}}
 </style>
 </head>
@@ -77,7 +89,10 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 <h3>本组出场猫咪</h3>
 <div class="kitten-line"><canvas id="cat-a" width="86" height="72"></canvas><span><b id="cat-name-a">墨球</b><small id="element-a">暗属性</small></span></div>
 <div class="kitten-line"><canvas id="cat-b" width="86" height="72"></canvas><span><b id="cat-name-b">幽灵</b><small id="element-b">暗属性</small></span></div>
-<p id="move-desc" class="details"></p>
+<div class="actor-controls">
+<label>左侧猫咪品种<select id="actor-a" aria-label="左侧猫咪品种"></select></label>
+<label>右侧猫咪品种<select id="actor-b" aria-label="右侧猫咪品种"></select></label>
+</div><p id="move-desc" class="details"></p>
 <div><strong style="font-size:13px;display:block;margin-bottom:8px">动作阶段预览</strong><div class="tier-row">
 <button id="tier-1" type="button" data-tier="1">默契 20</button>
 <button id="tier-2" type="button" data-tier="2">默契 60</button>
@@ -87,32 +102,37 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 </aside></section>
 <section class="section-head"><h2>全部组合</h2><span id="gallery-count">21 / 21</span></section>
 <div id="gallery" class="gallery" aria-label="全部双猫合击动画"></div>
+<section class="section-head"><h2>猫咪品种资料库 · 32 种</h2><span>点击任意猫咪放进合击动画</span></section>
+<div id="breed-gallery" class="breed-gallery" aria-label="全部猫咪品种原画资料库"></div>
 <footer>动画审核专页 · Noindex · 不影响普通玩家存档和游戏平衡</footer>
 </main>
 <script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'};</script>
-<script src="js/data.js"></script>
-<script src="js/skills.js"></script>
+<script src="js/data.js?v=32-cats-20261122"></script>
+<script src="js/skills.js?v=32-cats-20261122"></script>
 <script src="js/state.js"></script>
 <script src="js/cat-relationships.js"></script>
 <script src="js/catart.js"></script>
 <script src="js/real-kittens.js"></script>
-<script src="js/duo-portraits.js?v=cinematic-v5-20261121"></script>
-<script src="js/duo-artwork.js?v=cinematic-20261121"></script>
+<script src="js/duo-portraits.js?v=distinct-breeds-20261122"></script>
+<script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
 <script src="js/duo-signatures.js?v=duo-gallery-20261121"></script>
-<script src="js/duo-director.js?v=all-21-motion-ship-20261122b"></script>
+<script src="js/duo-director.js?v=duo-three-actual-tiers-20261122"></script>
 <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
 <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
 <script src="js/duo-premium.js?v=all-21-effects-ship-20261122b"></script>
-<script src="js/duo-hero.js?v=full-scene-blend-20261122"></script>
+<script src="js/duo-hero.js?v=breed-matched-cinematics-20261122"></script>
 <script>
 (()=>{'use strict';
 const byId=id=>document.getElementById(id);
 const elements={dark:'暗',elec:'电',fire:'火',grass:'草',light:'光',water:'水'};
-const breeds={
- dark:['moqiu','youling'],elec:['xianluo','duanduan'],
- fire:['tangyuan','jinwu'],grass:['doudou','senlin'],
- light:['yunduo','yinghua'],water:['lanbao','xiaohui']
-};
+// Rotate through all playable species: showcasing the same four cats in every
+// attack was hiding the size and personality of the real collection.
+const breedPools=Object.fromEntries(Object.keys(elements).map(el=>[
+ el,GameData.SPECIES.filter(sp=>Skills.elementOf(sp.id)===el).map(sp=>sp.id)
+]));
+const cursors=Object.fromEntries(Object.keys(elements).map(el=>[el,0]));
+const nextBreed=el=>{const pool=breedPools[el];if(!pool?.length)throw Error('Missing cats for '+el);
+ return pool[cursors[el]++%pool.length];};
 const names=[
 ['dark+dark','双影夜巡','Twin Shadow Hunt'],['dark+elec','影雷瞬袭','Shadowbolt Pounce'],
 ['dark+fire','暗焰猫爪','Midnight Ember Claws'],['dark+grass','夜藤伏击','Nightvine Ambush'],
@@ -128,8 +148,8 @@ const names=[
 ];
 const entries=names.map(([key,zh,en],i)=>{
  const [x,y]=key.split('+');
- const a={uid:'gallery_'+i+'_a',species:breeds[x][0]};
- const b={uid:'gallery_'+i+'_b',species:x===y?breeds[y][1]:breeds[y][0]};
+ const a={uid:'gallery_'+i+'_a',species:nextBreed(x)};
+ const b={uid:'gallery_'+i+'_b',species:nextBreed(y)};
  return {key,zh,en,a,b,els:[x,y]};
 });
 const main=byId('duo-player'),ctx=main.getContext('2d'),status=byId('load-status');
@@ -170,6 +190,13 @@ function refresh(){
  byId('current-index').textContent=String(index+1).padStart(2,'0')+' / '+entries.length;
  byId('current-element').textContent=item.els.map(e=>elements[e]).join(' × ');
  byId('move-desc').textContent=CatRelations.title(item.a,item.b).description;
+ for(const side of ['a','b']){
+   const sel=byId('actor-'+side),el=item.els[side==='a'?0:1];
+   sel.innerHTML=breedPools[el].map(id=>{
+     const sp=GameData.speciesById(id);
+     return '<option value="'+id+'"'+(item[side].species===id?' selected':'')+'>'+GameData.speciesName(sp)+'</option>';
+   }).join('');
+ }
  paintCats(item);
  document.querySelectorAll('[data-duo-index]').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
  byId('gallery-count').textContent=entries.length+' / 21';
@@ -205,6 +232,41 @@ byId('pause').onclick=()=>{
  byId('pause').setAttribute('aria-pressed',String(!playing));
 };
 byId('playlist').onclick=()=>setSequence(!sequence);
+for(const side of ['a','b'])byId('actor-'+side).onchange=e=>{
+ entries[index][side].species=e.target.value;
+ previewDone=false;started=performance.now();refresh();
+};
+// The same cinematic breed renderer used for battles appears in this 32-cat
+// reference catalog, including seven new catchable species.
+const breedGallery=byId('breed-gallery');
+breedGallery.innerHTML=GameData.SPECIES.map((sp,i)=>
+ '<button class="breed-card" type="button" data-breed-id="'+sp.id+'" aria-label="预览 '+GameData.speciesName(sp)+'">'+
+ '<canvas width="180" height="215" aria-hidden="true"></canvas>'+
+ '<strong>'+GameData.speciesName(sp)+'</strong><small>'+elements[Skills.elementOf(sp.id)]+
+ '属性 · '+sp.rarity+'</small></button>'
+).join('');
+breedGallery.querySelectorAll('[data-breed-id]').forEach(b=>{
+ const sp=GameData.speciesById(b.dataset.breedId);
+ const cv=b.querySelector('canvas'),c=cv.getContext('2d');
+ c.clearRect(0,0,cv.width,cv.height);
+ c.save();c.translate(cv.width*.50,cv.height*.89);
+ CatBondDuoPortraits.draw(c,sp,cv.height*.70,.43,'sprout','#b9cfb8',3);
+ c.restore();
+ b.onclick=()=>{
+   const el=Skills.elementOf(sp.id);
+   let target=index;
+   if(!entries[target].els.includes(el))
+     target=entries.findIndex(item=>item.els.includes(el));
+   setSequence(false);choose(target);
+   const chosen=entries[target],side=chosen.els[0]===el?'a':'b';
+   chosen[side].species=sp.id;previewDone=false;refresh();
+   document.querySelector('.viewer-layout').scrollIntoView({behavior:'smooth',block:'start'});
+ };
+});
+if(GameData.SPECIES.length!==32||new Set(entries.flatMap(v=>[v.a.species,v.b.species])).size!==32){
+ status.textContent='品种资料库检查失败：应覆盖全部 32 种可收集猫咪。';
+ throw Error('32-breed duo coverage check failed');
+}
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{
  tier=Number(b.dataset.tier);
  document.querySelectorAll('[data-tier]').forEach(el=>el.setAttribute('aria-pressed',String(el===b)));
@@ -237,7 +299,7 @@ function frame(now){
  requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-window.__catBondDuoGallery={get ready(){return previewDone},count:entries.length,get selected(){return entries[index].key},choose};
+window.__catBondDuoGallery={get ready(){return previewDone},count:entries.length,breedCount:GameData.SPECIES.length,get selected(){return entries[index].key},choose};
 })();
 </script>
 </body></html>
