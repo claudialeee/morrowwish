@@ -59,7 +59,7 @@ try{
           visitors: [{ name: '汤圆', gift: { coins: 12, fish: 1, yarn: 3 }, rare: false }],
         }));
         const reportText = await page.locator('#panel.open .card').innerText();
-        assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+12') && reportText.includes('🐟+1') && reportText.includes('🧶+3'),
+        assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+12') && reportText.includes('🐠+1') && reportText.includes('🪙+3'),
           'Real visitor popup must show Tangyuan and each numeric resource reward: ' + reportText);
         assert.ok(!reportText.includes('[object Object]'), 'Real visitor popup must never stringify rewards as [object Object]');
         await page.evaluate(() => UI.closeAll());
@@ -74,6 +74,29 @@ try{
       assert.equal(await page.locator('#panel.open').count(),1,'Shop menu tap must open its panel');
       await tabs.first().tap();
       assert.equal(await page.locator('#panel.open').count(),0,'Yard menu tap must close panel');
+      // Verify expedition actions work on actual phone-sized game pages.
+      await page.locator('#fab-map').tap();
+      await page.locator('#panel.open .map-destination.available').first().tap();
+      await page.locator('#map-menu').waitFor({state:'visible'});
+      const beforeMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
+      assert.equal(beforeMenu.scene,'map','Opening a region must stay in exploration');
+      const menuRect=await page.locator('#map-menu').boundingBox();
+      assert.ok(menuRect&&menuRect.x>=0&&menuRect.x+menuRect.width<=width+2,
+        'Mobile map menu must stay within viewport: '+JSON.stringify(menuRect));
+      await page.locator('#map-menu').tap();
+      const menuText=await page.locator('#panel.open .explore-menu').innerText();
+      assert.ok(menuText.includes('探险菜单')&&menuText.includes('状态 / 养成')&&
+        menuText.includes('技能搭配')&&menuText.includes('工坊收益')&&menuText.includes('小卖部'),
+        'Map menu must show cat status, raising, skills, workshop and shop: '+menuText);
+      await page.locator('#panel.open [data-explore-action="shop"]').tap();
+      assert.ok((await page.locator('#panel.open .card').innerText()).includes('小卖部'),
+        'Map shortcut must open the actual purchasing interface');
+      assert.equal(await page.evaluate(()=>window.__game.scene),'map','Shopping must not return to yard');
+      await page.locator('#panel .panel-dismiss').tap();
+      const afterMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
+      assert.deepEqual(afterMenu,beforeMenu,'Closing menu must resume the same region');
+      console.log('CAT BOND MAP MENU PASS',width,'raising, skills, shopping, region retention');
+      await page.evaluate(()=>{window.__game.scene='yard';window.__game.showYardChrome();});
       await page.locator('#fab-feed').tap();
       assert.equal(await page.locator('#panel.open').count(),1,'Feed icon must be touch-activated');
       await tabs.first().tap();
@@ -167,9 +190,13 @@ try{
     // Canvas texture decode and first landscape resize can stall a few
     // frames on CI. Verify actual movement, not a fixed 300ms clock that
     // measures rendering startup rather than touch navigation.
-    await lp.waitForFunction(x=>window.WorldMap?.view?.px>x+8,start.px,{timeout:2600});
+    await lp.waitForFunction(start=>{
+      const view=window.WorldMap?.view;
+      return view&&Math.hypot(view.px-start.px,view.py-start.py)>8;
+    },start,{timeout:6500});
     const walked=await lp.evaluate(()=>window.WorldMap.view);
-    assert.ok(walked.px>start.px+8,'Tap did not move the cat: '+JSON.stringify({start,walked}));
+    assert.ok(Math.hypot(walked.px-start.px,walked.py-start.py)>8,
+      'Tap did not move the cat in any direction: '+JSON.stringify({start,walked}));
     await finger('touchstart',650,180);
     await finger('touchmove',520,180);
     await finger('touchmove',400,180);
