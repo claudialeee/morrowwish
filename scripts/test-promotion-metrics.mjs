@@ -26,6 +26,25 @@ for(const post of posts){
  assert.ok(post.views==null||(Number.isSafeInteger(post.views)&&post.views>=0),'native views are nonnegative or unreported');
 }
 assert.ok(posts.some(p=>p.platform==='tiktok'&&p.game==='pawsibly-innocent')&&posts.some(p=>p.platform==='tiktok'&&p.game==='elsewhere'),'TikTok original publication baseline preserved');
+const yt=snap.platforms.find(x=>x.id==='youtube');
+const ytPosts=posts.filter(p=>p.platform==='youtube');
+const ytExpected={
+ 'cat-bond':['ELv02K9K294',11],
+ 'pawsibly-innocent':['JUQ8PsYCFG8',38],
+ 'tiny-town':['64Uh0S9dqmQ',1],
+ 'elsewhere':['n8bbePy8Unw',3],
+ 'flip-dash':['cC7akb-kUIo',216],
+ 'parcel-panic':['c1qeZ3tvuLU',16],
+ 'pocket-aquarium':['O3tMbulVPvk',36]
+};
+assert.equal(yt.views,321,'seven current owner-confirmed YouTube Shorts sum to 321');
+assert.equal(ytPosts.length,7,'seven current Shorts only');
+for(const [game,[id,views]] of Object.entries(ytExpected)){
+ const p=ytPosts.find(x=>x.game===game);
+ assert.ok(p?.url.endsWith('/'+id),'expected current approved YouTube Short ID for '+game);
+ assert.equal(p.views,views,'owner-verified play count for '+game);
+ assert.equal(p.dataSource,'vidiq-youtube-owner-uploads-2026-11-22');
+}
 const tk=snap.platforms.find(x=>x.id==='tiktok');
 assert.equal(tk.published,7,'all 7 TikTok videos published');
 assert.equal(tk.publicationEvidence.videoCount,7,'publication count has source evidence');
