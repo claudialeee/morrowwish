@@ -296,6 +296,8 @@
     // Cat detail: upgrade, stat training, and bonding groups.
     '⬆ 升级': '⬆ Level Up',
     '增加等级，解锁技能': 'Gain levels and unlock skills',
+    '⬆ 一键升级': '⬆ One-tap Level Up',
+    '直升下一级 · 消耗 🐠': 'Reach the next level · Cost 🐠',
     '升 1 级': 'Level Up Once',
     '消耗 🐠': 'Cost 🐠',
     '✨ 特训': '✨ Training',
