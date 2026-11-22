@@ -273,7 +273,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .team-slot:hover { transform: scale(1.05); }
 .team-slot canvas { width: 46px; height: 40px; display: block; margin: 0 auto; }
 .team-slot.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,211,107,0.5); }
-.team-slot.fainted { filter: grayscale(1); opacity: 0.4; }
+.team-slot.fainted { filter: none; opacity: 1; }
 .team-slot .slot-key { position: absolute; top: 2px; left: 4px; font-size: 0.7rem; font-weight: 800; color: var(--gold); }
 .team-slot .slot-hp { height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; margin-top: 2px; }
 .team-slot .slot-hp > span { display: block; height: 100%; background: #7ee787; transition: width 0.2s, background 0.2s; }
@@ -3542,3 +3542,68 @@ body.cb-exploring #stage #map-actions > button{
   body.cb-exploring #stage #map-actions > button{height:35px!important;min-height:35px!important;max-height:35px!important}
 }
 @media(prefers-reduced-motion:reduce){#stage #map-actions > button{transition:none}}
+
+/* Combat squad: put bench BELOW the entire live team row. Absolute offsets were
+   covering the second cat's HP on desktop and both phone orientations. */
+#stage #battle-ui #battle-squad-rail{
+ position:absolute;z-index:7;left:10px;right:auto;bottom:auto;
+ top:calc(env(safe-area-inset-top,0px) + 99px);
+ max-width:calc(100% - 132px);width:max-content;
+ display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+ pointer-events:none
+}
+#stage #battle-ui #battle-squad-rail #team-slots{
+ position:relative!important;inset:auto!important;
+ top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;
+ transform:none!important;margin:0!important;
+ width:max-content!important;max-width:100%!important;min-width:0;
+ flex-direction:row!important;align-items:flex-start!important;
+ pointer-events:auto
+}
+#stage #battle-ui #battle-squad-rail #bench-slots{
+ position:relative!important;inset:auto!important;
+ top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;
+ transform:none!important;margin:0!important;
+ box-sizing:border-box;flex:0 0 auto;max-width:100%!important;
+ pointer-events:auto
+}
+#stage #battle-ui #battle-squad-rail #bench-slots[hidden]{display:none!important}
+#stage #battle-ui #battle-squad-rail #bench-slots.is-open{
+ width:min(174px,100%);max-width:100%!important;
+ max-height:min(205px,calc(100dvh - 275px));overflow-y:auto
+}
+#stage #battle-ui #battle-squad-rail .bench-caption{
+ min-height:29px!important;min-width:80px!important
+}
+/* A fainted cat is recognizable by empty HP and warm muted card trim.
+   Never grayscale/dim its face: keep the actual coat, eyes, and artwork. */
+#stage #battle-ui .team-slot.fainted{
+ filter:none!important;opacity:1!important;
+ background:#f8f5ef!important;border-color:#d9cac0!important;
+}
+#stage #battle-ui .team-slot.fainted canvas,
+#stage #battle-ui .team-slot canvas{filter:none!important;opacity:1!important}
+#stage #battle-ui .team-slot.fainted .slot-hp-value{color:#906c5f!important}
+@media(max-width:700px),(pointer:coarse){
+ #stage #battle-ui #battle-squad-rail{
+  left:7px;top:calc(env(safe-area-inset-top,0px) + 99px);
+  max-width:calc(100% - 106px);gap:7px
+ }
+}
+@media(max-height:530px) and (orientation:landscape){
+ #stage #battle-ui #battle-squad-rail{
+  top:calc(env(safe-area-inset-top,0px) + 84px);
+  max-width:calc(100% - 112px);gap:5px
+ }
+ #stage #battle-ui #battle-squad-rail #bench-slots.is-open{
+  max-height:min(140px,calc(100dvh - 205px))
+ }
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #battle-squad-rail{
+ top:calc(env(safe-area-inset-top,0px) + 99px)
+}
+@media(max-height:530px) and (orientation:landscape){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #battle-squad-rail{
+  top:calc(env(safe-area-inset-top,0px) + 84px)
+ }
+}

@@ -32,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=map-actions-unified-20261121-1" />
+  <link rel="stylesheet" href="css/style.css?v=battle-team-rail-resting-colors-20261122-v3" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -113,9 +113,11 @@
           <span class="duo-burst-label">双猫合击</span>
           <span class="duo-burst-track" aria-hidden="true"><i></i></span>
         </button>
-        <!-- team slots (top-left) -->
-        <div id="team-slots"></div>
-        <div id="bench-slots" aria-label="可替换上场的猫咪" hidden></div>
+        <!-- Active cards and reserves share a normal-flow rail. No overlap. -->
+        <div id="battle-squad-rail" aria-label="我方猫咪队伍">
+          <div id="team-slots"></div>
+          <div id="bench-slots" aria-label="可替换上场的猫咪" hidden></div>
+        </div>
 
         <!-- ultimate meter -->
         <div id="ult-wrap">
