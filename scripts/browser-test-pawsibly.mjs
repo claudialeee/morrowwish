@@ -499,12 +499,16 @@ try{
     return {stage:r&&{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height},
       canvas:canvas&&{width:canvas.width,height:canvas.height},hud:document.getElementById('heistStatus')?.textContent,owner:document.getElementById('guardIntent')?.textContent,
       header:getComputedStyle(document.querySelector('.sitebar')).display,
+      studioBack:getComputedStyle(document.getElementById('stageHome')).display,
+      menuBack:getComputedStyle(document.getElementById('back')).display,
       rules:document.querySelectorAll('.explainer').length,
       menuHidden:document.getElementById('gameMenu').hidden,menuButton:!!document.getElementById('menuButton'),
       fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
       totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
    assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
+    assert.equal(v.studioBack,'none','CrazyGames must hide the on-stage external studio link');
+    assert.equal(v.menuBack,'none','CrazyGames game menu must not link to another playable website');
    assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
