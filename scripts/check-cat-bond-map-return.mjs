@@ -34,7 +34,7 @@ for(const {W,H,touch} of [
   let exits=0;
   map.init({W,H,isTouch:touch,toast(){}});
   map.onExit(()=>{exits++});
-  assert.equal(map.enterRegion('sakura'),true,'can enter a real region');
+  assert.equal(map.enterRegion('home'),true,'can enter the default unlocked region (Sakura requires exploration)');
   const narrow=W<=360;
   const button={x:narrow?8:12,y:8,w:narrow?76:120,h:narrow?34:38};
   assert.ok(button.x+button.w<=W&&button.y+button.h<=H,'button stays on screen');
