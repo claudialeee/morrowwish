@@ -115,10 +115,16 @@ function draw(ctx,f,x,y,t,scale=1,layer='front'){
   if(!ctx||!f)return false;
   const type=(f.protectT||0)>0?'protect':(f.reflectT||0)>0?'reflect':(f.shieldT||0)>0?'barrier':null;
   if(!type)return false;
-  const s=cap(scale||1,.8,1.2);
+  // Both the CatMotion and original watercolor renderer draw the feet/shadow
+  // at (worldY + 33 * sourceScale * growthScale). The old y+7*s anchor put
+  // every ward rim near the cat's belly, leaving its paws OUTSIDE the shield.
+  // Anchor to the actual planted paws instead, on both the back/front pass.
+  const growthScale=f.cat?(window.Growth?.visual?.(f.cat)?.scale||1):1;
+  const s=cap(scale||1,.8,1.2)*growthScale;
   const rx=(type==='reflect'?43:48)*s,ry=(type==='reflect'?80:70)*s;
   const pulse=1+.025*Math.sin(t*6);
-  ctx.save();ctx.translate(x,y+7*s);ctx.scale(pulse,pulse);
+  const groundY=y+33*s;
+  ctx.save();ctx.translate(x,groundY);ctx.scale(pulse,pulse);
   // Keep most artwork on the outline rather than washing out the kitten face.
   if(type==='reflect')wall(ctx,rx,ry,t,layer);
   else if(type==='protect')protect(ctx,rx,ry,t,layer);
