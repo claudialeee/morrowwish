@@ -1522,7 +1522,12 @@ class CaptureBattle {
     // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
-    window.MorrowwishAudio?.effect?.(
+    // Unique elemental timbre and skill-ID cadence. Strong AoE/dash skills
+    // gain a low impact layer; actual ultimates get the heaviest accent.
+    const soundPower=sk?.ultCost>0?3:(sk?.windup>=.35||Number(pow)>1.6?2:1);
+    const played=window.MorrowwishAudio?.skillSignature?.(
+      sk?.id||sk?.name,f.element||sk?.element,soundPower);
+    if(!played)window.MorrowwishAudio?.effect?.(
       kind==='melee'?'combat_claw':
       kind==='projectile'?'combat_projectile':
       ['dash','leap'].includes(kind)?'combat_dash':
@@ -1956,7 +1961,8 @@ class CaptureBattle {
     f.inv = 1.0;
     this.flash = Math.max(this.flash, 0.3);
     this.slowmo = Math.max(this.slowmo, 0.18);     // a brief hit-stop beat, not a lockout
-    window.MorrowwishAudio?.effect?.('combat_ultimate');
+    if(!window.MorrowwishAudio?.skillSignature?.(skill?.id||skill?.name,f.element||skill?.element,3))
+      window.MorrowwishAudio?.effect?.('combat_ultimate');
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
     return true;
