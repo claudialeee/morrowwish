@@ -3043,8 +3043,9 @@ body.cb-exploring #yard-placement-dock{display:none!important}
 #battle-ui #battle-skill-tooltip small{font:750 11px/1.3 system-ui;color:#917c91}
 #battle-ui #battle-skill-info-toggle{
  display:none;position:absolute;z-index:30;
- right:clamp(8px,3vw,22px);
- bottom:calc(101px + env(safe-area-inset-bottom,0px));
+ /* Keep touch help under the top HUD, never over the action grid. */
+ right:max(8px,env(safe-area-inset-right,0px) + 8px);
+ top:calc(149px + env(safe-area-inset-top,0px));bottom:auto;
  min-height:35px;padding:7px 12px;
  color:#6b5478;background:rgba(255,245,238,.96);
  border:1.5px solid #dfcce3;border-radius:999px;
@@ -3056,10 +3057,12 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  outline:3px solid #986aa5;outline-offset:2px;
 }
 #battle-ui #battle-skill-guide{
- position:absolute;z-index:46;right:clamp(8px,3vw,22px);
- bottom:calc(146px + env(safe-area-inset-bottom,0px));
+ position:absolute;z-index:46;right:max(8px,env(safe-area-inset-right,0px) + 8px);
+ top:calc(190px + env(safe-area-inset-top,0px));bottom:auto;
  width:min(420px,calc(100% - 16px));
- max-height:min(46vh,335px);padding:11px 14px 13px;
+ /* Scroll the expanded help above both rows of combat buttons. */
+ max-height:min(46dvh,335px,calc(100dvh - 360px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));
+ padding:11px 14px 13px;
  overflow:auto;overscroll-behavior:contain;pointer-events:auto;
 }
 #battle-ui #battle-skill-guide h3{
@@ -3090,13 +3093,13 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #battle-ui .move .mv-icon{font-size:19px!important}
  #battle-ui .move .mv-k{font-size:9px!important}
  #battle-ui #battle-skill-info-toggle{
-   bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:6px 10px;min-height:33px;
+   top:calc(147px + env(safe-area-inset-top,0px));bottom:auto;padding:6px 10px;min-height:33px;
  }
- #battle-ui #battle-skill-guide{bottom:calc(130px + env(safe-area-inset-bottom,0px))}
+ #battle-ui #battle-skill-guide{top:calc(186px + env(safe-area-inset-top,0px));bottom:auto}
 }
 @media(max-height:520px) and (orientation:landscape){
- #battle-ui #battle-skill-info-toggle{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
- #battle-ui #battle-skill-guide{bottom:calc(120px + env(safe-area-inset-bottom,0px));max-height:42vh}
+ #battle-ui #battle-skill-info-toggle{top:calc(112px + env(safe-area-inset-top,0px));bottom:auto}
+ #battle-ui #battle-skill-guide{top:calc(151px + env(safe-area-inset-top,0px));bottom:auto;max-height:min(42dvh,calc(100dvh - 265px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))}
  #battle-ui #battle-skill-tooltip{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
 }
 
