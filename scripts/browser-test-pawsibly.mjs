@@ -557,6 +557,23 @@ try{
  try{
   await waitPage.route('**/api/session',route=>route.fulfill({status:204,body:''}));
   await waitPage.goto(url,{waitUntil:'load',timeout:40000});
+
+  // Both 390px and 320px layouts must keep the entire wait button and
+  // all adjacent controls visible, readable and nonoverlapping.
+  for(const width of [390,320]){
+   await waitPage.setViewportSize({width,height:844});
+   const layout=await waitPage.evaluate(()=>{
+    const root=document.querySelector('.in-game-actions').getBoundingClientRect();
+    const controls=['bonusQuick','tool','wait','restart'].map(id=>document.getElementById(id).getBoundingClientRect());
+    const within=controls.every(r=>r.left>=root.left-1&&r.right<=root.right+1&&r.top>=root.top-1&&r.bottom<=root.bottom+1);
+    const overlap=controls.some((a,i)=>controls.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
+    return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none'};
+   });
+   assert.ok(layout.within&&!layout.overlap,'Every action must fit without overlap at '+width+'px: '+JSON.stringify(layout));
+   assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
+   if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
+  }
+  await waitPage.setViewportSize({width:390,height:844});
   await waitPage.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(4,false);const s=window.__PAWSIBLY_TEST__.getState();s.human={...s.fish[1]}});
   const fish=await waitPage.evaluate(()=>window.__PAWSIBLY_TEST__.getState().fish[1]);
   const box=await waitPage.locator('#board').boundingBox();

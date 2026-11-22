@@ -848,12 +848,15 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
 .single-screen-game .in-game-actions #wait:focus-visible{outline:3px solid #508f81;outline-offset:2px}
 .single-screen-game .in-game-actions #wait .wait-symbol{font:900 19px/1 system-ui,sans-serif}
 @media(max-width:700px){
- .single-screen-game .in-game-actions #wait{flex-basis:44px;min-width:44px;max-width:44px;min-height:46px;padding:4px}
- .single-screen-game .in-game-actions #wait .wait-label{display:none}
+ .single-screen-game .in-game-actions #wait{flex-basis:44px;min-width:44px;max-width:44px;min-height:46px;padding:2px;flex-direction:column;gap:0}
+ .single-screen-game .in-game-actions #wait .wait-symbol{font-size:17px}
+ .single-screen-game .in-game-actions #wait .wait-label{display:inline!important;font:900 10px/1 Nunito,system-ui,sans-serif}
 }
 @media(max-width:360px){
- .single-screen-game .in-game-actions{gap:4px!important}
- .single-screen-game .in-game-actions .board-yarn{min-width:101px!important;max-width:37%!important;padding:4px!important;font-size:10px!important}
- .single-screen-game .in-game-actions #bonusQuick{padding:4px!important}
+ .single-screen-game .in-game-actions{gap:4px!important;flex-wrap:wrap!important}
+ .single-screen-game .in-game-actions #bonusQuick{flex:1 1 100%!important;order:0;min-height:35px!important;padding:4px!important}
+ .single-screen-game .in-game-actions .board-yarn{flex:1 1 auto!important;order:1;min-width:101px!important;max-width:none!important;padding:4px!important;font-size:10px!important}
+ .single-screen-game .in-game-actions #wait{order:2}
+ .single-screen-game .in-game-actions #restart{order:3}
 }
 @media(min-width:701px) and (max-height:500px){.single-screen-game .in-game-actions #wait{min-height:39px}}
