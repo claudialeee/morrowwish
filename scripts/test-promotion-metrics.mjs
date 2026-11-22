@@ -5,7 +5,7 @@ import vm from 'node:vm';
 const snap=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 const posts=snap.metricScope.verifiedPosts;
 const slugs=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
-const minimumCounts={youtube:7,instagram:7,tiktok:2};
+const minimumCounts={youtube:7,instagram:7,tiktok:7};
 assert.ok(posts.length>=16,'new campaign verification baseline must not be lost');
 for(const [platform,minCount] of Object.entries(minimumCounts)){
  const all=posts.filter(p=>p.platform===platform);
@@ -27,9 +27,10 @@ for(const post of posts){
 }
 assert.ok(posts.some(p=>p.platform==='tiktok'&&p.game==='pawsibly-innocent')&&posts.some(p=>p.platform==='tiktok'&&p.game==='elsewhere'),'TikTok original publication baseline preserved');
 const tk=snap.platforms.find(x=>x.id==='tiktok');
-assert.equal(tk.published,7,'public TikTok profile confirms 7 published videos');
+assert.equal(tk.published,7,'all 7 TikTok videos published');
 assert.equal(tk.publicationEvidence.videoCount,7,'publication count has source evidence');
-assert.equal(tk.views,null,'partial per-video feed must not produce a misleading TikTok total');
+assert.equal(posts.filter(p=>p.platform==='tiktok').length,7,'all seven public videos have per-video figures');
+assert.equal(tk.views,94,'seven individually verified TikTok videos sum to 94 plays');
 const historic=snap.accountOverview.platforms.find(x=>x.id==='instagram');
 assert.equal(historic.views,273,'old campaign remains separate');
 assert.equal(historic.posts.length,6,'old Reels not merged');
