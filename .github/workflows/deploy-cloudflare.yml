@@ -236,16 +236,18 @@ jobs:
           verify_live /pawsibly-innocent/game.js /tmp/morrowwish-live-game.js 'function throwYarn'
           # The public player-facing game URL is Vercel, not Pages. Ensure its
           # Cat Bond HTML and all four changed assets match this exact release.
-          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'js/game.js?v=first-adventure-tour-20261121-2'
+          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'js/game.js?v=skill-tooltips-current-cat-20261121-1'
           grep -Fq 'js/main.js?v=original-intro-cats-20261121-2' /tmp/mw-live-catbond.html
-          grep -Fq 'js/ui.js?v=tour-panel-navigation-20261121-2' /tmp/mw-live-catbond.html
-          grep -Fq 'css/style.css?v=guided-tour-restored-hero-20261121-2' /tmp/mw-live-catbond.html
-          verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'firstAdventureTour(){'
-          verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js "completeFirstAdventureStep?.('duo')"
+          grep -Fq 'js/ui.js?v=skill-review-before-battle-20261121-1' /tmp/mw-live-catbond.html
+          grep -Fq 'css/style.css?v=battle-skill-tooltip-cards-20261121-1' /tmp/mw-live-catbond.html
+          grep -Fq 'id="battle-skill-info-toggle"' /tmp/mw-live-catbond.html
+          grep -Fq '<span class="mv-name">小鱼干</span>' /tmp/mw-live-catbond.html
+          verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'battleSkillInfo(slot, fighter=this.battle?.me())'
+          verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js 'battlePrepSkillCard(team,en){'
           verify_live /cat-bond/js/main.js /tmp/mw-live-catbond-main.js 'targetHeight=132,maxWidth=140'
           verify_live /cat-bond/js/world.js /tmp/mw-live-catbond-world.js 'const yardMagnify=Math.min(1.32'
           grep -Fq 'js/world.js?v=smaller-courtyard-cats-20261121-2' /tmp/mw-live-catbond.html
-          verify_live /cat-bond/css/style.css /tmp/mw-live-catbond-style.css '#first-quest.is-tour'
+          verify_live /cat-bond/css/style.css /tmp/mw-live-catbond-style.css '#battle-ui #battle-skill-tooltip'
           for asset in game.js ui.js main.js; do
             cmp -s "public/cat-bond/js/$asset" "/tmp/mw-live-catbond-$asset" || {
               echo "::error::Vercel Cat Bond $asset is not the deployed source"; exit 1;
