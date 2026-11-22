@@ -95,6 +95,9 @@ try {
   assert.equal(await page.evaluate(()=>State.S.cats[0].awaken),'agi');
   await page.goto('http://127.0.0.1:8765/cat-bond/?persist-adult',
     {waitUntil:'domcontentloaded'});
+  // A returning player enters through the start button. Game.start() loads
+  // the saved state; checking before that is a false persistence failure.
+  await page.locator('#intro-start').click();
   await page.waitForFunction(()=>window.State?.S?.cats?.some(c=>c.stage===2),
     null,{timeout:12000});
   const persist=await page.evaluate(()=>State.S.cats.find(c=>c.stage===2));
