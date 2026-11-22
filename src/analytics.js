@@ -209,6 +209,23 @@ export async function api(req,env){
   if(results.length)await env.DB.prepare("DELETE FROM events WHERE category=? AND view_id=?").bind("diagnostic",probe).run();
   return json({recorded:visits.length>0,sessionRecorded:sessions.length>0,startRecorded:sawStart,endRecorded:sawEnd,removed:results.length>0});
  }
+ if(p==="/api/reset-metrics"){
+  if(req.method!=="POST")return json({error:"POST required"},405);
+  if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
+  // Require a first-party browser request, not just an authenticated cross-site form.
+  const caller=req.headers.get("Origin")||req.headers.get("Referer");
+  let callerOrigin;try{callerOrigin=new URL(caller).origin}catch{return json({error:"Origin required"},403)}
+  if(!new Set([new URL(req.url).origin,"https://morrowwish.vercel.app"]).has(callerOrigin))return json({error:"Origin not allowed"},403);
+  if((req.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase()!=="application/json")return json({error:"JSON required"},415);
+  if(req.headers.get("X-Morrowwish-Reset")!=="confirmed")return json({error:"Confirmation header required"},400);
+  if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
+  let data;try{data=await req.json()}catch{return json({error:"Invalid JSON"},400)}
+  if(data?.confirm!=="RESET_METRICS")return json({error:"Confirmation required"},400);
+  // Clear only anonymous dashboard events. Never destroy the D1 table, schema,
+  // player saves, campaign schedules or static provider status snapshots.
+  const result=await env.DB.prepare("DELETE FROM events WHERE category IN ('arcade','elsewhere','diagnostic')").run();
+  return json({ok:true,removed:result.meta?.changes??null});
+ }
  if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(req.method!=="GET")return json({error:"GET required"},405);
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
