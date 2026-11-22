@@ -6,6 +6,8 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-21x3-visual-qa.mjs'
+      - 'scripts/cat-bond-duo-smoke.mjs'
+      - 'public/studio-audio.js'
       - '.github/workflows/cat-bond-cinematic-visual-qa.yml'
   workflow_dispatch:
 
@@ -41,6 +43,8 @@ jobs:
           curl -fsS http://127.0.0.1:8765/cat-bond/duo-showcase.html > /dev/null
       - name: Render all 21 paintings at 3 tiers and inspect mobile/desktop
         run: node scripts/cat-bond-21x3-visual-qa.mjs
+      - name: Verify live duo cast, post-painting VFX and release audio on phone + desktop
+        run: node scripts/cat-bond-duo-smoke.mjs
       - name: Save painted screenshots and pixel-difference report for human review
         if: always()
         uses: actions/upload-artifact@v4
