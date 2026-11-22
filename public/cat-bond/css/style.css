@@ -3570,7 +3570,7 @@ body.cb-exploring #stage #map-actions > button{
  position:absolute;z-index:7;left:10px;right:auto;bottom:auto;
  top:calc(env(safe-area-inset-top,0px) + 99px);
  max-width:calc(100% - 132px);width:max-content;
- display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+ display:flex;flex-direction:column;align-items:flex-start;gap:2px;
  pointer-events:none
 }
 #stage #battle-ui #battle-squad-rail #team-slots{
@@ -3608,13 +3608,13 @@ body.cb-exploring #stage #map-actions > button{
 @media(max-width:700px),(pointer:coarse){
  #stage #battle-ui #battle-squad-rail{
   left:7px;top:calc(env(safe-area-inset-top,0px) + 99px);
-  max-width:calc(100% - 106px);gap:7px
+  max-width:calc(100% - 106px);gap:2px
  }
 }
 @media(max-height:530px) and (orientation:landscape){
  #stage #battle-ui #battle-squad-rail{
   top:calc(env(safe-area-inset-top,0px) + 84px);
-  max-width:calc(100% - 112px);gap:5px
+  max-width:calc(100% - 112px);gap:2px
  }
  #stage #battle-ui #battle-squad-rail #bench-slots.is-open{
   max-height:min(140px,calc(100dvh - 205px))
@@ -3869,7 +3869,7 @@ body.cb-exploring #stage #map-actions > button{
 #stage #battle-ui #ult-wrap,#stage #battle-ui #duo-burst{
  box-sizing:border-box;left:auto!important;bottom:auto!important;transform:none!important;
  right:max(9px,calc(env(safe-area-inset-right,0px) + 9px))!important;
- width:min(39vw,174px)!important;max-width:min(39vw,174px)!important;
+ width:min(35vw,156px)!important;max-width:min(35vw,156px)!important;
  border:1.5px solid #b8ccbb;border-radius:13px;
  background:linear-gradient(135deg,rgba(255,250,241,.98),rgba(239,246,237,.97));
  box-shadow:0 4px 13px #3949392b;
@@ -3986,4 +3986,32 @@ body.cb-exploring #stage #map-actions > button{
  #panel .duo-quarrel-vignette p{font-size:12px;line-height:1.42}
  #panel .duo-quarrel-actions .btn{min-height:36px;padding:6px 10px;font-size:12px}
  #panel .duo-quarrel-footnote{font-size:10px}
+}
+
+
+/* Battle instructions sit immediately LEFT of fullscreen, only while fighting.
+   Move the original button so its listeners and ARIA state remain connected. */
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-help-toggle{
+  display:none!important;position:relative!important;inset:auto!important;
+  align-items:center!important;justify-content:center!important;gap:2px!important;
+  width:auto!important;min-width:34px!important;max-width:110px!important;
+  height:34px!important;min-height:34px!important;max-height:34px!important;
+  padding:0 9px!important;margin:0!important;flex:0 0 auto!important;
+  border:1px solid #c4d5c4!important;border-radius:9px!important;
+  background:#fffaf1!important;color:#46624d!important;
+  box-shadow:0 2px 5px #34293b20!important;
+  font:850 12px/1 system-ui,sans-serif!important;
+  cursor:pointer!important;pointer-events:auto!important;white-space:nowrap!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-actions #battle-help-toggle{
+  display:inline-flex!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-help-toggle:focus-visible{
+  outline:3px solid #6ca27e!important;outline-offset:2px!important;
+}
+@media(max-width:540px){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-help-toggle{
+   width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions #battle-help-toggle .battle-top-label{display:none!important}
 }

@@ -54,6 +54,16 @@
       button.setAttribute('aria-pressed',String(on));
       button.title=label;
     }
+    if(route==='cat-bond'){
+      const help=document.querySelector('#cb-header-actions #battle-help-toggle');
+      if(help){
+        const label=zh()?'战斗说明':'Battle guide';
+        const caption=help.querySelector('.battle-top-label');
+        if(caption&&caption.textContent!==' '+label)caption.textContent=' '+label;
+        help.title=label;
+        help.setAttribute('aria-label',label);
+      }
+    }
     if(on!==wasActive){
       if(!on)requestAnimationFrame(()=>window.scrollTo(0,scrollY));
       wasActive=on;
@@ -126,6 +136,11 @@
       controls.insertBefore(bar,controls.firstChild);
     }else{
       controls.appendChild(button);
+    }
+    // Keep the original help control, including the combat tutorial listener.
+    if(route==='cat-bond'){
+      const help=document.getElementById('battle-help-toggle');
+      if(help)controls.insertBefore(help,button);
     }
     installStyles();
     if(route==='cat-bond'){
