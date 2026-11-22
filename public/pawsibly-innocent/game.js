@@ -279,7 +279,10 @@ function updateDare(){
  if(quick){
   quick.classList.toggle("complete",done);
   quick.setAttribute("aria-label",(done?"✓ ":"★ ")+prefix+" · "+dare[lang]+" · "+progress.label);
-  if($("bonusQuickText"))$("bonusQuickText").textContent=(done?"✓ ":prefix+" · ")+dare[lang];
+  quick.title=prefix+" · "+dare[lang]+" · "+progress.label;
+  if($("bonusQuickText"))$("bonusQuickText").textContent=cgEmbed&&window.innerWidth<=850
+   ?(lang==="zh"?"额外":"BONUS")+(done?" ✓":"")
+   :(done?"✓ ":prefix+" · ")+dare[lang];
   if($("bonusQuickProgress"))$("bonusQuickProgress").textContent=done?"+150":progress.label;
  }
  if(done&&!s.dareAnnounced){

@@ -878,3 +878,43 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
   min-width:120px!important;
  }
 }
+
+/* Narrow-screen player QA: controls may wrap, but ROOM 01/08 must never
+   collapse into a three-line vertical label beside the audio tools. */
+@media(max-width:620px){
+ .single-screen-game .in-game-head-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"controls controls" "room status"!important;
+  align-items:center!important;column-gap:6px!important;row-gap:3px!important;
+  padding:5px 7px!important;
+ }
+ .single-screen-game #stageControls{
+  grid-area:controls!important;display:flex!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  flex:none!important;justify-content:space-between!important;gap:3px!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left{
+  grid-area:room!important;min-width:0!important;max-width:100%!important;
+  width:auto!important;flex:none!important;gap:4px!important;
+  align-items:center!important;
+ }
+ .single-screen-game .in-game-head-row .stage-left .sticker{
+  box-sizing:border-box!important;flex:1 1 auto!important;
+  min-width:0!important;max-width:none!important;
+  padding:3px 6px!important;overflow:hidden!important;
+ }
+ .single-screen-game #roomNum{
+  display:block!important;font-size:9px!important;line-height:1.2!important;
+  white-space:nowrap!important;word-break:normal!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;
+ }
+ .single-screen-game #roomTag{
+  display:block!important;font-size:10px!important;line-height:1.2!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ }
+ .single-screen-game #heistStatus{
+  grid-area:status!important;flex:none!important;justify-self:end!important;
+  min-width:0!important;white-space:nowrap!important;
+ }
+}

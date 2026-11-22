@@ -535,6 +535,7 @@ try{
       fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
       fishOnBoard:window.__PAWSIBLY_TEST__.getState().fish.length,
        bonusWidth:document.getElementById('bonusQuick').getBoundingClientRect().width,
+       bonusText:document.getElementById('bonusQuickText').textContent,
        totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
    await iframe.screenshot({path:`test-results/pawsibly-portal-${w}x${h}.png`});
@@ -545,6 +546,7 @@ try{
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
    assert.ok(v.hud?.includes('0/3')&&v.fishOnBoard===4&&v.owner,'CrazyGames must show the three-fish goal, fourth bonus fish and owner behavior inside iframe');
+    if(w===800)assert.ok(v.bonusText==='BONUS'&&v.bonusWidth>=88,'800px portal must show a legible compact bonus label: '+JSON.stringify(v));
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
@@ -574,11 +576,16 @@ try{
     const controls=['bonusQuick','tool','wait','restart'].map(id=>document.getElementById(id).getBoundingClientRect());
     const within=controls.every(r=>r.left>=root.left-1&&r.right<=root.right+1&&r.top>=root.top-1&&r.bottom<=root.bottom+1);
     const overlap=controls.some((a,i)=>controls.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
-    return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none'};
+    return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none',
+     roomNumWidth:document.getElementById('roomNum').getBoundingClientRect().width,
+     roomNumHeight:document.getElementById('roomNum').getBoundingClientRect().height,
+     roomNameVisible:getComputedStyle(document.getElementById('roomTag')).display!=='none'};
    });
    await waitPage.screenshot({path:`test-results/pawsibly-mobile-${width}.png`});
    assert.ok(layout.within&&!layout.overlap,'Every action must fit without overlap at '+width+'px: '+JSON.stringify(layout));
    assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
+   assert.ok(layout.roomNumWidth>=70&&layout.roomNumHeight<=16&&layout.roomNameVisible,
+     'Room label must be horizontal and name visible at '+width+'px: '+JSON.stringify(layout));
    if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
   }
   await waitPage.setViewportSize({width:390,height:844});
