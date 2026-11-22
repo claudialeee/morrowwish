@@ -246,6 +246,7 @@
     { id: 'boxAmbush',  name: '纸箱埋伏', element: 'grass', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','camo'],   appliesTag: null, vfx: 'ring',      desc: '钻进纸箱短暂隐身不可被选中，下一击必定把目标打得踉跄并造成双倍伤害。' },
     { id: 'quakeStomp', name: '泰山压顶', element: 'grass', kind: 'leap',       power: 1.4, cd: 5.0, ultCost: 0,  heavy: true, tags: ['melee','stagger'], appliesTag: null, vfx: 'impact', desc: '腾空跃起，泰山压顶般砸向目标点，落地小范围震荡并击虚周围敌人。' },
     { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'orb',       desc: '吸收日光回复自身斗志。' },
+    { id: 'knead',      name: '踩奶',     element: 'grass', kind: 'buff',       power: 0,   cd: 2.4, ultCost: 0,  tags: ['buff','knead'],  appliesTag: null,    vfx: 'orb',       desc: '原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。' },
     { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['bind','ult'], appliesTag: 'bind', vfx: 'shockwave', desc: '【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。' },
     // ---- 电 elec ----
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.4, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },

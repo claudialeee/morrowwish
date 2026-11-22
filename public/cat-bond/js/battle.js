@@ -681,7 +681,7 @@ class CaptureBattle {
       // high-AGI cats sprint far too fast to control (restored after a merge reverted it).
       speed: 150 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
-      shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
+      shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,kneadStacks:0,kneadT:0,
       tags: [], status: {}, slowed: false,
       // Projectile speed is decoupled from AGI (flat): the shot's speed belongs to the
       // SHOT, not the cat's legs — AGI should move the cat, not make its toys hypersonic.
@@ -1378,7 +1378,7 @@ class CaptureBattle {
       // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
       // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
       // down (BASIC_SKILL_DMG_MULT). The identical skill in Q/E still pays full power.
-      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * (f.damageBoostT > 0 ? 1.25 : 1) * (f.weakened ? 0.5 : 1);
+      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * (f.damageBoostT > 0 ? 1.25 : 1) * (f.weakened ? 0.5 : 1) * this.kneadMult(f);
       this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
       if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
         window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
@@ -1395,7 +1395,7 @@ class CaptureBattle {
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
     const toy = f._basicTick % 2 ? 'fish' : 'yarn';
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
@@ -1423,6 +1423,9 @@ class CaptureBattle {
     }
     return f;
   }
+  // 踩奶 Knead outgoing-damage multiplier: +12% per active stack (max 4 → +48%).
+  // Folded into every player skill/basic pow calc alongside damageBoost/weaken.
+  kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
     const t = this.supportBeneficiary(f, sk, aim);   // friend or self
@@ -1451,6 +1454,18 @@ class CaptureBattle {
         t.inv=Math.max(t.inv||0,1.2); t._ambush=true;
         this.vfx.ring(t.x,t.y,{r0:14,vr:120,life:.5,color:'#b9e6a0',width:3});
         this.vfx.text(t.x,t.y-34,window.MorrowwishI18n?.get?.()!=='zh'?'ambush!':'埋伏!','#cdeeb4',14);
+      }else if(sk.tags?.includes('knead')){
+        // 踩奶 Knead: a RHYTHM self-buff. Each cast adds a stack (max 4); stacks ramp
+        // outgoing damage via kneadT/kneadStacks (consumed in the damage pow calc) and
+        // refresh a long window, plus a tiny morale (斗志) heal so it rewards cadence.
+        const KMAX=4;
+        t.kneadStacks=Math.min(KMAX,(t.kneadStacks||0)+1);
+        t.kneadT=5.0;                                         // refreshes while you keep kneading
+        t.damageBoostT=Math.max(t.damageBoostT||0,0.01);      // marks "buffed" for AI/label only
+        t.hp=Math.min(t.maxhp,t.hp+Math.max(6,t.maxhp*0.03)); // small morale back per knead
+        const en=window.MorrowwishI18n?.get?.()!=='zh';
+        this.vfx.ring(t.x,t.y,{r0:8,vr:70+t.kneadStacks*22,life:.4,color:'#ffe3c2',width:3});
+        this.vfx.text(t.x,t.y-34,(en?'knead ×':'踩奶 ×')+t.kneadStacks,'#ffe8c8',14);
       }else{
         if(t.damageBoostT>.3)return false;
         t.damageBoostT=6;
@@ -1611,7 +1626,11 @@ class CaptureBattle {
   }
 
   // Tick ward timers for any fighter/enemy; Protect leaves a vulnerable window.
+  // NOTE: shieldT (barrier) is ticked HERE too — it used to be decremented only in
+  // the player-team loop, so ENEMY barriers never expired and stuck on forever
+  // ("有些猫身上的防护罩一直都在"). Ticking it in the shared ward tick fixes both sides.
   tickWards(f, dt) {
+    if (f.shieldT > 0) f.shieldT = Math.max(0, f.shieldT - dt);
     if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
     if (f.reflectT > 0) f.reflectT = Math.max(0, f.reflectT - dt);
     if (f.rootT > 0) f.rootT = Math.max(0, f.rootT - dt);
@@ -1657,7 +1676,7 @@ class CaptureBattle {
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
+    const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f);
     this.castOffensiveSkill(f, aim, sk, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
@@ -2020,7 +2039,7 @@ class CaptureBattle {
     }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 1) * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
+    const pow = (sk ? sk.power : 1) * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f);
     if (sk) {
       this.castOffensiveSkill(f, aim, sk, pow, col);
     } else {
@@ -3061,8 +3080,11 @@ class CaptureBattle {
         f._dashReach=null;f._dashTravel=0;
       }
       if (f.dodgeCd > 0) f.dodgeCd -= dt;
-      if (f.shieldT > 0) f.shieldT=Math.max(0,f.shieldT-dt);
+      // shieldT (barrier) now ticks in tickWards() below — shared by player + enemy so
+      // neither side's barrier sticks forever. (Was double-counted here previously.)
       if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
+      // 踩奶 Knead stacks decay together when the rhythm window lapses.
+      if (f.kneadT > 0) { f.kneadT=Math.max(0,f.kneadT-dt); if(f.kneadT===0) f.kneadStacks=0; }
       if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
       // SAFETY: a root flag with no live cast/beam backing it would freeze the cat
       // forever (the "卡在原地没动" auto-battle bug). Self-heal any orphaned root.
@@ -3115,7 +3137,7 @@ class CaptureBattle {
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + (e.r||18)*.6) {
-          const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
+          const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f);
           const contact=f._pounceSkill;
           this.resolveHit(e, 'me', contact||{element:f.element},dmg,e.x,e.y);
           // Electric pounces are physical lightning impacts, not distant rays.

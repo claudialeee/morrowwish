@@ -430,7 +430,7 @@
     '呼噜光环': 'Purr Aura', '慢眨眼': 'Slow-Blink',
     '炽爪': 'Ember Claw', '喵火球': 'Meow Fireball', '金乌焱': 'Suncrow Blaze',
     '水鞭': 'Water Lash', '泡泡幕': 'Bubble Veil', '潮汐掌': 'Tidal Paw',
-    '叶刃': 'Leaf Blade', '荆缠': 'Thorn Coil', '泰山压顶': 'Mountain Slam', '光合': 'Photosynthesis',
+    '叶刃': 'Leaf Blade', '荆缠': 'Thorn Coil', '泰山压顶': 'Mountain Slam', '光合': 'Photosynthesis', '踩奶': 'Knead',
     '静电扑': 'Static Pounce', '电弧': 'Bolt Arc', '雷鸣啸': 'Thunder Yowl',
     '影袭': 'Shadow Strike', '飞扑': 'Flying Pounce', '猫咒': 'Cat Hex', '虚吞': 'Void Maw',
     '棱光束': 'Prism Beam', '祝福绒': 'Blessed Fluff', '曙光愈': 'Dawn Mend',
