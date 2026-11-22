@@ -22,6 +22,12 @@ h1{font-size:clamp(27px,4.3vw,43px);letter-spacing:-.04em;margin:5px 0 8px;color
 .player{background:#fffdf8;border:1px solid #e1e5dd;border-radius:24px;box-shadow:0 16px 40px #3f58501a;padding:11px;min-width:0}
 .player-stage{position:relative;overflow:hidden;border-radius:17px;background:linear-gradient(120deg,#e9f0e5,#eae5f3 55%,#f2e4df)}
 #duo-player{display:block;width:100%;height:auto;aspect-ratio:16/9}
+@media(max-width:620px) and (orientation:portrait){
+ #duo-player{aspect-ratio:9/16;height:auto;max-height:72dvh}
+}
+@media(orientation:landscape) and (max-height:540px){
+ #duo-player{aspect-ratio:16/9;max-height:72dvh}
+}
 .load-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;background:#e9eeea;color:#658073;padding:20px;font-weight:750;line-height:1.65}
 .load-status[hidden]{display:none}
 .player-meta{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px 7px 5px}
@@ -439,6 +445,14 @@ function frame(now){
        else choose(index+1);
        elapsed=0;
      }else if(playing){started=now;elapsed=0;}
+   }
+   // The review player uses the same portrait/landscape canvas geometry as
+   // real combat, not a stretched fixed 960x540 preview on narrow phones.
+   const bounds=main.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
+   const pixelW=Math.max(1,Math.round(bounds.width*dpr));
+   const pixelH=Math.max(1,Math.round(bounds.height*dpr));
+   if(main.width!==pixelW||main.height!==pixelH){
+     main.width=pixelW;main.height=pixelH;
    }
    drawFrame(ctx,main.width,main.height,entries[index],Math.min(duration-1,elapsed),tier,true);
    byId('progress-fill').style.width=Math.min(100,100*elapsed/duration)+'%';
