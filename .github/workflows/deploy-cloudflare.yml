@@ -11,6 +11,7 @@ on:
       - 'scripts/build-pages.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
       - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
+      - 'scripts/check-cat-bond-invariants.mjs' # Retest new skill/build invariants on release.
       - 'scripts/check-cat-bond-map-return.mjs' # Re-run release gate when map-return regression fixture changes.
       - 'scripts/render-social-v2.sh'
       - 'scripts/record-cat-bond-social.mjs'
