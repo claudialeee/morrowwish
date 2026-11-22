@@ -10,6 +10,7 @@ on:
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
+      - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
       - 'scripts/render-social-v2.sh'
       - 'scripts/record-cat-bond-social.mjs'
       - 'scripts/fetch-cat-music.sh'
@@ -27,7 +28,7 @@ on:
   # not fire another 'push' workflow. This event deploys the completed
   # REVIEW-ONLY files automatically without triggering social publication.
   workflow_run:
-    workflows: ['Render Seven Cinematic V7 Game Trailers — REVIEW ONLY', 'Rerecord Two Updated Cat Game Trailers V8 - REVIEW ONLY', 'Rerecord Owner-Feedback Cat Game Trailers V9 - REVIEW ONLY']
+    workflows: ['Render Seven Cinematic V7 Game Trailers — REVIEW ONLY', 'Rerecord Two Updated Cat Game Trailers V8 - REVIEW ONLY', 'Rerecord Owner-Feedback Cat Game Trailers V9 - REVIEW ONLY', 'Review New Cat Bond Ultimate and Quarrel V10 - NO SOCIAL PUBLISH']
     types: [completed]
     branches: [main]
 
