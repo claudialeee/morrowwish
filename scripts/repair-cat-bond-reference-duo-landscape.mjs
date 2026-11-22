@@ -55,7 +55,7 @@ try{
    ',setpts=PTS-STARTPTS,fps=30,crop=1080:608:0:'+cropY+
    ',scale=1920:1080:flags=lanczos,setsar=1,format=yuv420p'+
    ',drawtext=fontfile='+font+':textfile='+label+
-   ':fontsize=57:fontcolor=white:box=1:boxcolor=black@0.46:boxborderw=15:x=(w-text_w)/2:y=75'+
+   ':fontsize=57:fontcolor=white:box=1:boxcolor=black@0.46:boxborderw=15:x=(w-text_w)/2:y=75:enable=lt(t\\,3.1)'+
    ',drawtext=fontfile='+font+':textfile='+name+
    ':fontsize=51:fontcolor=white:shadowcolor=black@0.8:shadowx=2:shadowy=3:x=(w-text_w)/2:y=975[realDuo]',
   '[0:v]trim=start='+cut.toFixed(3)+':duration='+(end-cut).toFixed(3)+
