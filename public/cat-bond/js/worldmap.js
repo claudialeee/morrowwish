@@ -95,12 +95,12 @@
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
     },
     {
-      id: 'home', name: '庭院', sub: 'Home',
+      id: 'home', name: '阳光花园', sub: 'Sunlit Garden',
       node: { x: 0.37, y: 0.52 }, difficulty: 2,
       theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
       speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
       unlock: { after: 'sakura', explore: 0.3 },
-      desc: '熟悉的后院，新手猫猫的乐园。',
+      desc: '午后的阳光洒满花径，调皮猫咪在这里追逐蝴蝶。',
     },
     {
       id: 'creek', name: '溪谷', sub: 'Creek Valley',
@@ -585,6 +585,9 @@
   // ================================================================
   function backBounds(){
     var compact=game&&game.isTouch&&game.W>game.H&&game.H<520;
+    // The overworld exits to the yard from the upper-left; the region
+    // still goes back to the overworld with its separate lower-left button.
+    if(mode==='map')return {x:compact?64:16,y:game.W<650?76:65,w:compact?104:128,h:compact?38:42};
     return {x:compact?64:20,y:game.H-(compact?50:56),w:compact?100:128,h:compact?36:40};
   }
   function inBackButton(x,y){
@@ -600,7 +603,7 @@
           return true;
         }
       }
-      // tap the back-to-yard button (bottom-left) to leave the overworld
+      // tap the back-to-yard button (upper-left) to leave the overworld
       if (inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
       return false;
     }
@@ -715,7 +718,7 @@
       // label
       ctx.font = '600 14px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       ctx.fillStyle = open ? '#fff' : 'rgba(255,255,255,0.45)';
-      ctx.fillText(reg2.name, mn.px, mn.py + mn.r + 6);
+      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?reg2.name:reg2.sub, mn.px, mn.py + mn.r + 6);
       if (!open) {
         ctx.font = '11px system-ui, sans-serif';
         ctx.fillStyle = PURPLE;
@@ -723,13 +726,13 @@
       }
     }
 
-    // back-to-yard button (bottom-left, clear of the HUD pills)
+    // back-to-yard button (upper-left; below the studio toolbar)
     var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
     ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
     ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText('← 回庭院', bbx + bbw / 2, bby + bbh / 2);
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回庭院':'← Yard', bbx + bbw / 2, bby + bbh / 2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
     ctx.fillText('🗺️ 世界地图', W / 2, W<650?132:83);
@@ -901,7 +904,7 @@
     ctx.strokeStyle='#846b52';ctx.lineWidth=2.5;ctx.strokeRect(por.x-47,por.y-54,94,30);
     ctx.font='700 15px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillStyle='#5d4a3c';
-    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回庭院':'← Yard',por.x,por.y-39);
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回地图':'← Map',por.x,por.y-39);
 
     // Small in-world chests, crystals and five unique secret relics.
     for(var j=0;j<w.nodes.length;j++){
@@ -1043,7 +1046,7 @@
     roundRect(ctx,hx,hy,hw,hh,12);ctx.fill();
     ctx.textAlign='left';ctx.textBaseline='top';
     ctx.font=compact?'700 14px system-ui,sans-serif':'700 18px system-ui,sans-serif';ctx.fillStyle='#fff';
-    ctx.fillText(w.region.name,hx+12,hy+6);
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?w.region.name:w.region.sub,hx+12,hy+6);
     ctx.font=compact?'10px system-ui,sans-serif':'12px system-ui,sans-serif';ctx.fillStyle=w.region.theme.accent;
     ctx.fillText(w.region.sub+' · '+'★'.repeat(w.region.difficulty),hx+12,hy+(compact?28:30),hw-20);
     var bx=hx+12,by=hy+hh+8,bw=hw-24;
