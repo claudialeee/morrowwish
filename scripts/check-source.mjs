@@ -1015,5 +1015,22 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(!settings.includes("['#stageControls','.in-game-controls']")||
     !settings.includes("['.mw-mini-frame-hud'")||!settings.includes("['.top-actions','.header']"))
   throw Error('Language/music/SFX controls must live inside the original toolbar');
+ // Cat Bond: regressions in intro art overlap and duo animation access.
+ const bondIntro=fs.readFileSync('public/cat-bond/index.html','utf8');
+ const bondViewer=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
+ const bondPremium=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
+ const galleryMarkup=bondIntro.match(/<div class="intro-cat-gallery">([\s\S]*?)<\/div>\s*<div class="intro-gallery-caption">/);
+ if(!galleryMarkup||!galleryMarkup[1].includes('id="intro-cats"')||
+    galleryMarkup[1].includes('class="intro-gallery-caption"')||
+    !cbCss.includes('#intro > .intro-gallery-caption')||
+    !cbUi.includes('this.openUnlockedDuoViewer(entry.a,entry.b)')||
+    !cbUi.includes('this.openUnlockedDuoViewer(a,b)')||
+    !cbUi.includes('thumbnail:true')||
+    !cbUi.includes('rel?.value)<20')||
+    !bondPremium.includes('if(!thumbnail&&dual>.09)')||
+    !bondViewer.includes('duo-embedded')||
+    !bondIntro.includes('css/style.css?v=duo-click-intro-caption-20261121-1'))
+   throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
+ new Function(bondPremium);
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }
