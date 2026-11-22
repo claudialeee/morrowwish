@@ -81,6 +81,31 @@ function face(g,sp,dark,light,p){
   el(g,s*64,-146,9,5,'#f5a7a6a0');
  }
 }
+// Motion profiles change actual shoulder, forepaw and body postures, not only
+// particle color. Shared motifs have independently authored beat windows.
+const actionProfiles={
+ shadow:{start:.11,end:.40,lift:.77,spread:-12,lean:-.06},
+ blink:{start:.08,end:.33,lift:1.28,spread:12,lean:.08},
+ ember:{start:.17,end:.48,lift:1.19,spread:9,lean:-.07},
+ vine:{start:.22,end:.58,lift:.72,spread:21,lean:-.04},
+ eclipse:{start:.09,end:.43,lift:.48,spread:-15,lean:.03,both:true},
+ mist:{start:.23,end:.62,lift:.66,spread:15,lean:-.08},
+ zigzag:{start:.10,end:.39,lift:1.16,spread:20,lean:.07},
+ spiral:{start:.15,end:.56,lift:1.21,spread:22,lean:.13,both:true},
+ snare:{start:.19,end:.55,lift:.64,spread:-15,lean:-.06,both:true},
+ dash:{start:.09,end:.37,lift:1.28,spread:19,lean:.09},
+ bubbles:{start:.22,end:.56,lift:.80,spread:13,lean:.04,both:true},
+ fireworks:{start:.12,end:.46,lift:1.24,spread:20,lean:-.05,both:true},
+ petals:{start:.24,end:.60,lift:1.08,spread:12,lean:.08},
+ solar:{start:.13,end:.53,lift:1.12,spread:8,lean:-.07,both:true},
+ cannon:{start:.22,end:.52,lift:1.03,spread:18,lean:.05,both:true},
+ sprout:{start:.25,end:.68,lift:.67,spread:-8,lean:.05,both:true},
+ highfive:{start:.13,end:.49,lift:1.13,spread:5,lean:.03},
+ blossom:{start:.23,end:.58,lift:.88,spread:16,lean:-.04,both:true},
+ stars:{start:.13,end:.47,lift:.93,spread:2,lean:-.06,both:true},
+ lake:{start:.20,end:.63,lift:.54,spread:-12,lean:-.04,both:true},
+ tides:{start:.15,end:.51,lift:1.14,spread:18,lean:.08}
+};
 function draw(g,sp,height,p,style,aura,tier=1){
  const [base,light,dark]=coats[sp.palette]||coats.orange;
  const outline=mix(dark,'#333349',.3);
@@ -88,11 +113,17 @@ function draw(g,sp,height,p,style,aura,tier=1){
  const folded=sp.ears==='fold',tufted=sp.ears==='tufted';
  const bold=['blink','dash','zigzag','shadow','ember','cannon','spiral','fireworks','tides','petals'].includes(style);
  const guard=['eclipse','lake','snare','sprout','solar','highfive','stars'].includes(style);
+ const profile=actionProfiles[style]||actionProfiles.dash;
  const energy=clamp(Math.sin(p*P*1.2));
- const gesture=clamp((p-.08)/.25)*(1-clamp((p-.43)/.3));
- const raise=guard?gesture*.58:gesture;
- const legLift=(bold?46:24)*raise*(tier>=3?1.32:tier===2?1.17:1);
- g.save();const s=height/280;g.scale(s,s);
+ const gesture=clamp((p-profile.start)/.20)*
+   (1-clamp((p-profile.end)/.20));
+ const raise=guard?gesture*.75:gesture;
+ const legLift=(bold?46:34)*raise*profile.lift*
+   (tier>=3?1.23:tier===2?1.11:1);
+ const spread=profile.spread*gesture;
+ // Whole-body motion stays subtle to protect faces and complete silhouettes.
+ const lean=profile.lean*Math.sin(Math.PI*clamp(p/.71));
+ g.save();const s=height/280;g.scale(s,s);g.rotate(lean);
  // Delicate colored character halo, never an opaque cut-out from the map.
  g.save();g.globalAlpha=.4+.26*energy;
  const auraGrad=g.createRadialGradient(0,-163,12,0,-150,160);
@@ -165,8 +196,9 @@ function draw(g,sp,height,p,style,aura,tier=1){
  paw(g,-43,8,31,20,light,outline,dark);paw(g,44,8,31,20,base,outline,dark);
  // Elbows emerge smoothly from chest, wrists and pads remain attached to arms.
  for(const side of [-1,1]){
-  const active=side===1||(tier>=3&&gesture>.46&&side===-1);
-  const handX=side*(active?60+legLift:54);
+  const active=side===1||(profile.both&&gesture>.30)||
+    (tier>=3&&gesture>.36&&side===-1);
+  const handX=side*(active?60+legLift+spread:54+spread*.36);
   const handY=active?-75-legLift*.87:-53-raise*16;
   const shoulderX=side*49,shoulderY=-102;
   const innerX=side*(active?37:39),innerY=-60;
@@ -211,5 +243,5 @@ function draw(g,sp,height,p,style,aura,tier=1){
  }
  g.restore();
 }
-window.CatBondDuoPortraits={draw,version:'storybook-breed-identity-three-stage-v3',breedCount:32};
+window.CatBondDuoPortraits={draw,version:'storybook-21-action-profiles-32-breeds-v4',breedCount:32};
 })();
