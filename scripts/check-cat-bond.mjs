@@ -286,6 +286,40 @@ expireBattle.tickWards(expiring,.05);
 assert.equal(expireBattle.vfx.fx.length,afterExpire,
   'expired barriers must not spray repeated particles');
 
+// DIRECTIONAL REFLECT REGRESSION: half speed, front-only bounce, rear vulnerability,
+// and a fresh shield cast must use the latest direction (not a previous cast).
+const directionalBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+const wardCat=directionalBattle.me();
+wardCat.inv=0;wardCat.flash=0;wardCat.shieldT=0;wardCat.protectT=0;
+wardCat._moveFacing=0;
+assert.equal(directionalBattle.castWard(wardCat,'reflect'),true);
+assert.equal(wardCat.rootT,0,'reflect stance must permit half-speed movement');
+assert.ok(Math.abs(directionalBattle.moveMul(wardCat)-.5)<1e-6,
+  'reflect stance must reduce speed by 50%');
+assert.equal(directionalBattle.reflectCovers(wardCat,wardCat.x+100,wardCat.y),true,
+  'reflect wall covers its facing direction');
+assert.equal(directionalBattle.reflectCovers(wardCat,wardCat.x-100,wardCat.y),false,
+  'reflect wall must not cover behind the cat');
+const incomingFront={x:wardCat.x+20,y:wardCat.y,vx:-200,vy:0,owner:'wild',life:2};
+const frontResult=directionalBattle.resolveHit(wardCat,'wild',{element:'fire'},4,
+  incomingFront.x,incomingFront.y,incomingFront);
+assert.equal(frontResult.reflected,true,'front projectile must bounce');
+assert.equal(incomingFront.owner,'me','reflected projectile must change owner');
+const incomingRear={x:wardCat.x-20,y:wardCat.y,vx:200,vy:0,owner:'wild',life:2};
+const rearResult=directionalBattle.resolveHit(wardCat,'wild',{element:'fire'},4,
+  incomingRear.x,incomingRear.y,incomingRear);
+assert.equal(rearResult.reflected,false,'rear projectile must not bounce');
+assert.equal(incomingRear.owner,'wild','rear projectile must retain owner');
+wardCat.reflectT=0;wardCat._moveFacing=Math.PI;
+assert.equal(directionalBattle.castWard(wardCat,'reflect'),true);
+assert.ok(Math.abs(wardCat._reflectFacing-Math.PI)<1e-6,
+  'recast must face the new travel direction');
+assert.equal(directionalBattle.reflectCovers(wardCat,wardCat.x-100,wardCat.y),true);
+wardCat.reflectT=0;
+assert.equal(directionalBattle.moveMul(wardCat),1,
+  'movement speed must recover after reflect expires');
+
 const skillFx=sandbox.window.CatBondSkillFX;
 // One-use Guard Stance must stop ONE real contact, shatter, then enter
 // vulnerability. A second hit must be able to land, not become 0.8s god mode.
