@@ -295,12 +295,11 @@
     ctx.translate(0,-bob);
     if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-    // Calibrated against the actual decoded reference cat, not nominal
-    // canvas dimensions: the .92 version still occupied ~240px versus 186px
-    // for a normal breed at scale 2.6. At .72, both painted silhouettes
-    // occupy approximately the same 188px height. Preserve paw baseline,
-    // AVIF aspect ratio, gameplay hitboxes, and movement speed.
-    const visualScale=.72;
+    // The approved flat-faced painting has a broad transparent top margin;
+    // calibrate the VISIBLE fur pixels against an ordinary watercolor breed,
+    // not the WebP canvas's empty pixels. Uniform scaling preserves the wide
+    // cheeks, short paws, planted baseline and all gameplay hitboxes.
+    const visualScale=.86;
     const artW=92*visualScale,artH=105*visualScale;
     ctx.drawImage(jiafeiSprite,-artW/2,36-artH,artW,artH);
     if(growth?.gem){ctx.font='12px system-ui';ctx.fillStyle=growth.gemColor||'#e8bb68';ctx.fillText('✦',20,-47);}
