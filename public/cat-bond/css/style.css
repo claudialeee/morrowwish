@@ -4291,3 +4291,7 @@ html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#batt
     content:"?";font:900 18px/1 system-ui,sans-serif!important;
   }
 }
+
+/* Silver money is a game-owned asset, not gold platform-specific emoji. */
+.cb-silver-coin{display:inline-block;width:1.08em;height:1.08em;vertical-align:-.18em;object-fit:contain;flex:none;filter:drop-shadow(0 1px 1px #536c8144)}
+#hud .hud-pill .cb-silver-coin{width:16px;height:16px;vertical-align:middle}

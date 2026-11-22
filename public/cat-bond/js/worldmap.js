@@ -823,7 +823,10 @@
       ctx.quadraticCurveTo(x+28,y+12,x,y+21);ctx.quadraticCurveTo(x-28,y+12,x-16,y-15);ctx.fill();
       ctx.strokeStyle='#f4d39a';ctx.lineWidth=3;ctx.beginPath();
       ctx.moveTo(x-12,y-13);ctx.quadraticCurveTo(x,y-5,x+12,y-13);ctx.stroke();
-      ctx.fillStyle='#f5d384';ctx.beginPath();ctx.arc(x,y+5,7,0,Math.PI*2);ctx.fill();
+      // The visible currency is always a silver minted coin, even inside pouches.
+       ctx.fillStyle='#dce8f3';ctx.strokeStyle='#7e95aa';ctx.lineWidth=1.6;
+       ctx.beginPath();ctx.arc(x,y+5,7,0,Math.PI*2);ctx.fill();ctx.stroke();
+       ctx.strokeStyle='#f9fcff';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y+5,4.7,0,Math.PI*2);ctx.stroke();
     }else{
       // Visual reward identity depends on the biome, never the same box.
       if(region==='sakura'){

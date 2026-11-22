@@ -1381,6 +1381,19 @@ assert.ok(laserBattle.enemies.reduce((n,e)=>n+e.hp,0)<rayHpBefore,
 assert.equal(laserBattle.deathRay,null,'dedicated ray ends and clears');
 
 
+// Silver currency is real game art in DOM and Canvas, not gold system emoji.
+const silverCoinSvg=fs.readFileSync(DIR+'assets/silver-coin.svg','utf8');
+const silverCoinJs=fs.readFileSync(DIR+'js/silver-coins.js','utf8');
+const silverCoinWorld=fs.readFileSync(DIR+'js/world.js','utf8');
+const silverCoinHtml=fs.readFileSync(DIR+'index.html','utf8');
+assert.ok(silverCoinSvg.startsWith('<svg')&&silverCoinSvg.includes('Silver cat coin')&&
+  silverCoinSvg.includes('#dce7f1')&&
+  silverCoinJs.includes('window.CatBondSilverCoin=')&&
+  silverCoinWorld.includes('window.CatBondSilverCoin.draw'),
+  'HUD, workshop rewards and yard Canvas must share cool-silver money art');
+assert.ok(silverCoinHtml.includes('js/silver-coins.js')&&
+  !silverCoinHtml.includes('<span class="ico">🪙</span>'),
+  'Silver currency must replace the gold OS emoji in the HUD');
 // CHANNELING + melee/dash + progression regressions.
 // These checks use the actual CaptureBattle methods and skill table, not a VFX
 // prototype disconnected from combat or an invented player save.

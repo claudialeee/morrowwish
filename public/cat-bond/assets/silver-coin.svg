@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Silver cat coin">
+<defs>
+ <linearGradient id="rim" x1="0" y1="0" x2=".87" y2="1">
+  <stop stop-color="#ffffff"/><stop offset=".18" stop-color="#dce7f1"/>
+  <stop offset=".50" stop-color="#879bae"/><stop offset=".76" stop-color="#d1dbe8"/>
+  <stop offset="1" stop-color="#72859b"/>
+ </linearGradient>
+ <radialGradient id="face" cx=".30" cy=".20" r=".85">
+  <stop stop-color="#ffffff"/><stop offset=".35" stop-color="#e3ebf4"/>
+  <stop offset=".76" stop-color="#adbfcf"/><stop offset="1" stop-color="#7b91a6"/>
+ </radialGradient>
+ <linearGradient id="stamp" x1="0" x2="1" y1="0" y2="1">
+  <stop stop-color="#70869a"/><stop offset="1" stop-color="#d0dfed"/>
+ </linearGradient>
+</defs>
+<circle cx="32" cy="32" r="28.5" fill="url(#rim)" stroke="#617990" stroke-width="2"/>
+<circle cx="32" cy="32" r="25" fill="none" stroke="#fbfdff" stroke-width="2.2" opacity=".84"/>
+<circle cx="32" cy="32" r="22" fill="url(#face)" stroke="#8398aa" stroke-width="2"/>
+<path d="M14 16Q25 5 41 11" fill="none" stroke="#fff" stroke-width="2.3" opacity=".9" stroke-linecap="round"/>
+<path d="M20 48Q33 57 46 45" fill="none" stroke="#6c8197" stroke-width="2" opacity=".44" stroke-linecap="round"/>
+<g fill="url(#stamp)" stroke="#6e8298" stroke-width=".65">
+ <path d="M24 37c-.5-5 5-9 8-9s8.5 4 8 9c-.5 5-5 5-8 3.5-3 1.5-7.5 1.5-8-3.5Z"/>
+ <ellipse cx="20.5" cy="28" rx="3.1" ry="4.4" transform="rotate(-19 20.5 28)"/>
+ <ellipse cx="28" cy="23" rx="3" ry="4.4" transform="rotate(-9 28 23)"/>
+ <ellipse cx="36" cy="23" rx="3" ry="4.4" transform="rotate(9 36 23)"/>
+ <ellipse cx="43.5" cy="28" rx="3.1" ry="4.4" transform="rotate(19 43.5 28)"/>
+</g>
+<path d="M26 36Q32 33 38 37" stroke="#f7fcff" stroke-width="1.7" opacity=".72" fill="none"/>
+</svg>

@@ -785,11 +785,15 @@ class YardScene {
       ctx.save();
       // glowing coin-like bubble
       const gg = ctx.createRadialGradient(b.x, b.y + bob, 2, b.x, b.y + bob, 22);
-      gg.addColorStop(0, 'rgba(255,235,150,0.95)'); gg.addColorStop(1, 'rgba(255,211,107,0.15)');
+      const coinBubble=(b.icon||'🪙')==='🪙';
+       gg.addColorStop(0,coinBubble?'rgba(235,245,255,.95)':'rgba(255,235,150,.95)');
+       gg.addColorStop(1,coinBubble?'rgba(132,161,194,.18)':'rgba(255,211,107,.15)');
       ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(b.x, b.y + bob, 20, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(b.x, b.y + bob, 17, 0, Math.PI * 2); ctx.stroke();
       ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(b.icon || '🪙', b.x, b.y + bob + 1);
+      if(coinBubble&&window.CatBondSilverCoin)
+         window.CatBondSilverCoin.draw(ctx,b.x,b.y+bob+1,23);
+       else ctx.fillText(b.icon || '🪙', b.x, b.y + bob + 1);
       // little "!" pulse to draw the eye
       ctx.globalAlpha = 0.5 + 0.5 * Math.abs(Math.sin(b.t * 5));
       ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('✦', b.x + 15, b.y + bob - 14);
@@ -823,7 +827,10 @@ class YardScene {
     for (const p of this.petParticles) {
       ctx.save(); ctx.globalAlpha = Math.max(0, p.life);
       ctx.fillStyle = p.color; ctx.font = `${p.size}px sans-serif`;
-      ctx.fillText(p.ch, p.x, p.y); ctx.restore();
+      if(p.ch==='🪙'&&window.CatBondSilverCoin)
+         window.CatBondSilverCoin.draw(ctx,p.x,p.y-6,p.size);
+       else ctx.fillText(p.ch,p.x,p.y);
+       ctx.restore();
     }
 
     // --- foreground drifting petals (parallax, soft blur via low alpha) ---
@@ -1267,7 +1274,7 @@ class YardScene {
     const gx = this.golden.x, gy = this.golden.y;
     this.golden = null;
     this.spawnFloat(gx, gy - 10, '🌟 双倍产出!', '#ffd36b');
-    for (let k = 0; k < 24; k++) this.petParticles.push({ x: gx, y: gy, vx: Math.random() * 180 - 90, vy: -60 - Math.random() * 90, life: 1.1, ch: Math.random() < 0.6 ? '🪙' : '✨', color: '#ffd36b', size: 13 + Math.random() * 8 });
+    for (let k = 0; k < 24; k++) this.petParticles.push({ x: gx, y: gy, vx: Math.random() * 180 - 90, vy: -60 - Math.random() * 90, life: 1.1, ch: Math.random() < 0.6 ? '🪙' : '✨', color: '#d4e2ef', size: 13 + Math.random() * 8 });
   }
   handleTap(px, py) {
     // golden cat first (rare, high value)
@@ -1298,7 +1305,7 @@ class YardScene {
     if (window.Raising) { const c = Raising.collect(bubble.stationId); if (c) res.amount = c.amount; }
     this.lootBubbles.splice(idx, 1);
     // sparkle burst where it was
-    for (let k = 0; k < 8; k++) this.petParticles.push({ x: bubble.x, y: bubble.y, vx: Math.random() * 80 - 40, vy: -40 - Math.random() * 50, life: 0.8, ch: bubble.icon || '✨', color: '#ffd36b', size: 13 + Math.random() * 6 });
+    for (let k = 0; k < 8; k++) this.petParticles.push({ x: bubble.x, y: bubble.y, vx: Math.random() * 80 - 40, vy: -40 - Math.random() * 50, life: 0.8, ch: bubble.icon || '✨', color: bubble.res==='coins'?'#d4e2ef':'#ffd36b', size: 13 + Math.random() * 6 });
     return res;
   }
   petEntity(e) {
