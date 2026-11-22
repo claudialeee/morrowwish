@@ -2673,7 +2673,7 @@ const UI = {
       :newBreed?'🐾 新品种发现':'🐾 熟悉的朋友';
     this.panel(`<span class="card-close">×</span>
       <div class="sighting-badge rarity-${wildSp.rarity}">${rareText}</div>
-      <h2>发现野生 <span class="rarity-${wildSp.rarity}">${GameData.speciesName(wildSp)}</span></h2>
+      <h2>${english?'Wild ':'发现野生 '}<span class="rarity-${wildSp.rarity}">${GameData.speciesName(wildSp)}</span></h2>
       <p class="sub">${wildSp.desc}</p>
       <canvas id="cp-wild" width="160" height="120" style="display:block;width:128px;height:96px;margin:2px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">${english?'Wild level':'野猫等级'} <b>Lv.${wildSp.encounterLevel||
@@ -2945,6 +2945,7 @@ const UI = {
           :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 小鱼，不再增加重复个体。')
         +'</p>':''}
       <p class="sub center">${totalText} · ${goalText}</p>
+      ${firstAdventure?'<details class="prep-advanced first-capture-rewards"><summary><strong>'+(english?'Battle rewards & stats':'战斗奖励与详情')+'</strong><span>'+(english?'Expand':'展开')+'</span></summary>':''}
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small>'
          +(performance.autoUsed?'<small class="grade-explain">'+(performance.autoExceptional
            ?(english?'Exceptional automatic performance!':'自动战斗发挥出色！')
@@ -2953,6 +2954,7 @@ const UI = {
       ${xpMessage?'<p class="center collection-reward">⭐ '+xpMessage+'</p>':''}
       ${levelMessage?'<p class="center collection-reward">⬆ '+(english?'LEVEL UP! ':'升级！')+levelMessage+'</p>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
+      ${firstAdventure?'</details>':''}
       ${skillUnlock?'<div class="skill-reveal-card"><b>✨ '+(english?'NEW SKILL UNLOCKED':'新技能觉醒！')
         +'</b><span>'+this.game.skillIcon(skillUnlock.skill)+' '+skillUnlock.skill.name
         +' · '+(english?'A new move for future battles':skillUnlock.skill.desc)+'</span><small>'
@@ -2967,16 +2969,18 @@ const UI = {
         +(english?('Your cats unlocked '+duoUnlock.name+'! Bring them both into the next battle.')
           :('两只猫建立了纽带，解锁「'+duoUnlock.name+'」！下一场组队战斗就能使用合击。'))+'</p></div>':''}
       ${firstAdventure?'<p class="first-adventure-tip">'+(english
-        ?'Your new skill is ready! Try a different move, earn workshop coins, or explore a new region before your next capture.'
-        :'新招式已经就绪！下一步可以试技能、经营工坊赚金币，或者去地图探索，不必一直抓猫。')+'</p>':''}
+        ?'Your duo is ready! Bring both cats to the next hunt to build Duo energy and unleash a special team move.'
+        :'双猫搭档已经准备好！下一场带上两只猫一起战斗，积攒合击能量，释放它们的专属合击。')+'</p>':''}
       <div class="btn-row" style="justify-content:center">
-        ${duoUnlock?'<button class="btn gold" id="cr-duo">'+(english?'See duo skills':'查看双猫纽带')+'</button>':''}
-        ${firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'See my new skill':'查看刚解锁的新技能')+'</button>':''}
-        <button class="btn ${firstAdventure&&!skillUnlock?'gold':firstAdventure?'':'ghost'}" id="cr-journey">${firstAdventure?(english?'Choose my next adventure':'看看接下来能玩什么'):(english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊')}</button>
-        <button class="btn ${firstAdventure?'':'gold'}" id="cr-next">${english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫')}</button>
+        ${duoUnlock&&!firstAdventure?'<button class="btn gold" id="cr-duo">'+(english?'See duo skills':'查看双猫纽带')+'</button>':''}
+        <button class="btn gold" id="cr-next">${firstAdventure
+          ?(english?(exploring?'Explore with your duo':'Try your duo · Find another cat')
+            :(exploring?'双猫搭档继续探索':'双猫出战 · 再找一只伙伴'))
+          :(english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫'))}</button>
+        <button class="btn ghost" id="cr-journey">${firstAdventure?(english?'Explore other activities':'探索其他玩法'):(english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊')}</button>
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
         ${!firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
-        ${masteryReward?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
+        ${masteryReward&&!firstAdventure?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
       </div>`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
