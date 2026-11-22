@@ -31,3 +31,10 @@ jobs:
           jq . <<<"$result"
           jq -e '.bluesky.checkedAt and (.bluesky.status == "ready" or .bluesky.status == "refreshing") and
             ([.youtube, .instagram, .tiktok, .bluesky] | all(.status != "sync_error" and .status != "storage_error"))' <<<"$result" >/dev/null
+          # A green scheduled workflow must not be mistaken for working Instagram
+          # analytics while Meta has not granted the owner's account access.
+          # All seven newly approved Reels must have official, current readings.
+          if ! jq -e '.instagram.status == "ready" and .instagram.postMetricsCount == 7 and .instagram.checkedAt != null' <<<"$result" >/dev/null; then
+            echo "::error title=Instagram native analytics not ready::The official Instagram API has not returned complete readings for all seven approved Reels. Verify Pages production credentials, Meta owner OAuth, and Insights access."
+            exit 1
+          fi
