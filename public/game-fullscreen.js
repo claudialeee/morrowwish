@@ -55,13 +55,12 @@
       button.title=label;
     }
     if(route==='cat-bond'){
-      const help=document.querySelector('#cb-header-actions #battle-help-toggle');
-      if(help){
-        const label=zh()?'战斗说明':'Battle guide';
-        const caption=help.querySelector('.battle-top-label');
-        if(caption&&caption.textContent!==' '+label)caption.textContent=' '+label;
-        help.title=label;
-        help.setAttribute('aria-label',label);
+      const guide=document.querySelector('#cb-header-actions #battle-skill-info-toggle');
+      if(guide){
+        const label=zh()?'技能说明':'Skill guide';
+        if(guide.textContent!=='ⓘ '+label)guide.textContent='ⓘ '+label;
+        guide.title=label;
+        guide.setAttribute('aria-label',label);
       }
     }
     if(on!==wasActive){
@@ -137,10 +136,11 @@
     }else{
       controls.appendChild(button);
     }
-    // Keep the original help control, including the combat tutorial listener.
+    // The '?' controls remain on the combat bar. Move the original skill
+    // reference button instead, keeping its game listener and open state.
     if(route==='cat-bond'){
-      const help=document.getElementById('battle-help-toggle');
-      if(help)controls.insertBefore(help,button);
+      const guide=document.getElementById('battle-skill-info-toggle');
+      if(guide)controls.insertBefore(guide,button);
     }
     installStyles();
     if(route==='cat-bond'){

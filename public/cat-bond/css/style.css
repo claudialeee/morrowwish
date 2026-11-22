@@ -3989,29 +3989,37 @@ body.cb-exploring #stage #map-actions > button{
 }
 
 
-/* Battle instructions sit immediately LEFT of fullscreen, only while fighting.
-   Move the original button so its listeners and ARIA state remain connected. */
-html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-help-toggle{
+
+/* Cat Bond: actual equipped-skill guide belongs immediately left of fullscreen. */
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-skill-info-toggle{
   display:none!important;position:relative!important;inset:auto!important;
-  align-items:center!important;justify-content:center!important;gap:2px!important;
+  align-items:center!important;justify-content:center!important;
   width:auto!important;min-width:34px!important;max-width:110px!important;
   height:34px!important;min-height:34px!important;max-height:34px!important;
-  padding:0 9px!important;margin:0!important;flex:0 0 auto!important;
+  box-sizing:border-box!important;flex:0 0 auto!important;padding:0 9px!important;margin:0!important;
   border:1px solid #c4d5c4!important;border-radius:9px!important;
   background:#fffaf1!important;color:#46624d!important;
   box-shadow:0 2px 5px #34293b20!important;
   font:850 12px/1 system-ui,sans-serif!important;
   cursor:pointer!important;pointer-events:auto!important;white-space:nowrap!important;
 }
-html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-actions #battle-help-toggle{
-  display:inline-flex!important;
-}
-html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-help-toggle:focus-visible{
-  outline:3px solid #6ca27e!important;outline-offset:2px!important;
+html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-actions #battle-skill-info-toggle{display:inline-flex!important}
+html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions #battle-skill-info-toggle:focus-visible{outline:3px solid #6ca27e!important;outline-offset:2px!important}
+#stage #battle-ui #battle-skill-guide{
+  left:auto!important;right:max(9px,calc(env(safe-area-inset-right,0px) + 9px))!important;
+  top:calc(env(safe-area-inset-top,0px) + 45px)!important;
+  width:min(375px,calc(100% - 18px))!important;
+  max-height:min(65dvh,calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 125px))!important;
 }
 @media(max-width:540px){
- html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-help-toggle{
-   width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-skill-info-toggle{
+   width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;font-size:0!important
  }
- html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions #battle-help-toggle .battle-top-label{display:none!important}
+ html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions #battle-skill-info-toggle::before{content:"ⓘ";font:900 18px/1 system-ui,sans-serif!important}
+}
+@media(orientation:landscape) and (max-height:530px){
+ #stage #battle-ui #battle-skill-guide{
+  top:calc(env(safe-area-inset-top,0px) + 43px)!important;
+  max-height:calc(100dvh - 98px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+ }
 }
