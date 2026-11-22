@@ -7,7 +7,7 @@
   'use strict';
   const params=new URLSearchParams(location.search);
   const campaignPortal=params.get('utm_medium')==='portal'&&params.get('utm_source')==='crazygames';
-  const catBondPortal=location.pathname.replace(/\\/+$/,'/')==='/cat-bond/' &&
+  const catBondPortal=location.pathname.replace(/\/+$/,'/')==='/cat-bond/' &&
     window.CatBondPlatform?.externalPortal===true;
   if(!campaignPortal&&!catBondPortal)return;
   document.documentElement.classList.add('mw-third-party-portal');
