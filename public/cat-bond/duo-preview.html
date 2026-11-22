@@ -29,9 +29,17 @@ html.duo-embedded main{width:100%;max-width:none}
 html.duo-embedded header{display:none}
 html.duo-embedded .viewer{border:1px solid #e3d6e7;border-radius:15px;padding:4px;
  background:linear-gradient(130deg,#fff7eb,#ebe9f8,#e9f4ee)}
-html.duo-embedded canvas{aspect-ratio:16/9!important;max-height:55dvh;object-fit:contain}
-html.duo-embedded #skill-title{margin:5px 4px 8px;color:#72557a;
- font-size:clamp(13px,2.5vw,18px);line-height:1.35}
+/* Preserve the artwork aspect ratio when constrained by iframe height:
+   limiting canvas height alone while width stays at 100% squashes and crops cats. */
+html.duo-embedded .viewer{display:flex;justify-content:center;align-items:center;min-width:0}
+html.duo-embedded #duo-canvas{
+ display:block;flex:none;width:auto!important;
+ height:min(62dvh,calc((100vw - 28px)*9/16))!important;
+ max-width:100%;max-height:none;aspect-ratio:16/9!important;
+ object-fit:contain;
+}
+/* Parent dialog supplies the only skill heading. */
+html.duo-embedded #skill-title{display:none!important}
 html.duo-embedded #trust-note{margin:5px 7px;font-size:clamp(11px,1.5vw,13px);
  color:#786b80;line-height:1.4}
 html.duo-embedded .controls{margin:8px 0;justify-content:center}
@@ -40,7 +48,10 @@ html.duo-embedded .controls button{border-color:#dbc5e5;background:#f6e9f9;color
 html.duo-embedded #locked{margin:6px 0 0}
 @media(max-width:550px){
  html.duo-embedded body{padding:5px 4px}
- html.duo-embedded canvas{aspect-ratio:9/16!important;max-height:68dvh}
+ html.duo-embedded #duo-canvas{
+  width:auto!important;height:min(69dvh,calc((100vw - 16px)*16/9))!important;
+  max-width:100%;max-height:none;aspect-ratio:9/16!important;
+ }
  html.duo-embedded .controls{margin:6px 0}
 }
 </style>
@@ -118,6 +129,7 @@ html.duo-embedded #locked{margin:6px 0 0}
   CatBondDuoHero.draw(ctx,w,h,{
    max:duration,t:duration-Math.max(.01,elapsed),strikeAt:.78,
    catUids:[catA.uid,catB.uid],name:duo.name,elements:duo.elementPair,tier,
+   galleryPreview:true,hideCaptions:q.get('embedded')==='1',
    first:colors[first],second:colors[second]
   },lookup);
  }
