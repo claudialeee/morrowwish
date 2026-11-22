@@ -93,7 +93,10 @@ try{
   assert.equal(valid.invalid,true,'out-of-bounds or overlapping spot must be rejected');
   assert.ok(valid.site&&valid.valid,'at least one valid garden location must be found');
   assert.equal(valid.buildings,0);
-  const px=stage.x+valid.site.x,py=stage.y+valid.site.y;
+  // Input is relative to the actual canvas, not a potentially fractional
+  // desktop stage border. Chromium rounds pointer coordinates to CSS pixels.
+  const canvasRect=await page.locator('#scene').boundingBox();
+  const px=canvasRect.x+valid.site.x,py=canvasRect.y+valid.site.y;
   if(profile.touch)await page.touchscreen.tap(px,py);
   else await page.mouse.click(px,py);
   const built=await page.evaluate(()=>{
@@ -103,10 +106,12 @@ try{
      placement:g.yard.placement};
   });
   assert.equal(built.count,1);
-  assert.equal(built.coins,440,'scratcher cost charged exactly once on confirm');
+  assert.equal(built.coins,440,'scratcher cost charged exactly once on the lawn gesture');
   assert.equal(built.type,'scratcher');
-  assert.ok(Math.abs(built.x-valid.site.x)<.1&&Math.abs(built.y-valid.site.y)<.1,
-    'tap/click must build at exactly the chosen spot');
+  const pixelDrift=Math.hypot(built.x-valid.site.x,built.y-valid.site.y);
+  assert.ok(pixelDrift<=1.25,
+    'canvas tap/click must preserve the chosen spot (within pointer pixel rounding): '+
+    JSON.stringify({profile:profile.name,site:valid.site,built,canvasRect,stage,pixelDrift}));
   assert.equal(built.placement,null);
   assert.equal(await page.locator('#yard-placement-dock').isVisible(),false);
   if(!profile.touch){
