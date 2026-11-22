@@ -4249,8 +4249,8 @@ html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage #cb-header #cb
   }
 }
 
-// User-facing phone toolbar: gameplay guide immediately precedes Menu.
-// No more detached '? 玩法' bubble floating on the left of the yard.
+/* User-facing phone toolbar: gameplay guide immediately precedes Menu.
+   No more detached '? 玩法' bubble floating on the left of the yard. */
 html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #guide-help{
   display:inline-flex!important;position:relative!important;
   top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;
@@ -4269,8 +4269,8 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
 html[data-mw-fullscreen-game="cat-bond"] #stage:has(#intro:not(.hide)) #cb-header-actions > #guide-help{
   display:none!important;
 }
-// Exploration map carries its own named region and progress HUD. Resource chips
-// duplicate the yard display and overlap the separate left 'Back to Yard' control.
+/* Exploration map carries its own named region and progress HUD. Resource chips
+   duplicate the yard display and overlap the separate left 'Back to Yard' control. */
 /* The older :not(:has(#battle-ui.on)) HUD override has more IDs than
    ordinary map styles; this rule must win that specificity contest. */
 html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#battle-ui.on)) #cb-header #cb-header-actions > #hud,
