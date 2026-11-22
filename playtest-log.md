@@ -342,3 +342,35 @@ Run wf_ca1f26ac-87f · 59/64 agents ok (5 synth retry-capped) · 46 critiques. F
 **Guardrails (adversary-flagged, carried):** keep casual accessibility + no-death first-fight coach; compress the DPS/difficulty FLOOR without removing the matchup skill-ceiling; fix the dodge GATE before buffing E/ult. Most P1 fixes here are **feedback/legibility** (vignette, DPS-recap, pressure tell, behavioral teach-trigger) — lower-risk than rebalancing; the smash-falloff + `_pressure` re-gate are the only mechanics touches.
 
 **Note for owner:** findings only — no code changed, no push (cron rule). Convergent with prior cycles; the systemic version of the escalation/smash re-gate is already drafted in `.claude/aggro-system-spec.md`.
+
+---
+
+## Cycle (2026-11-22 ~02:35 PST, code @ 1fb5348 / battle.js flame-3-scored-hits) — adversarial playtest, 6 personas × 8 battles (1 round)
+
+**Workflow:** cat-bond-playtest.js, 66 agents, **52 adversary-graded critiques (44 real-problem, 8 opportunity; 42 P1 / 10 P2)**. One Voice agent hit the StructuredOutput retry cap (1 errored) but all 6 personas still voiced and synthesis completed. Code under test = post-merge of owner's 13 commits (currency silver→gold, flame-3-scored-hits/upgrades, poise rework).
+
+**Per-persona verdict (real sim telemetry):** 探索型 fun 7 engaged · 狂按型 6 engaged · 懒人型 6 bored · 谨慎型 4 **quit** · 没耐心型 4 frustrated **quit** · 手忙脚乱型 3 frustrated **quit**. Still 3/6 would quit — unchanged from last cycle; the quitters are the low-APM / patient / overwhelmed personas.
+
+**Headline (synthesized):** "Combat is genuinely deep, but every forcing function, payoff, and teaching surface is gated behind exactly the skill or HP-state the struggling personas lack — so depth exists while legibility, reachability, and a satisfying ending do not."
+
+**Honest novelty note:** mostly RECONFIRMS the standing root (escalation/teaching/feedback keyed to the wrong variables). The genuinely NEW, high-signal finding this cycle is **A** — the adversary proved the engine ALREADY computes the exact loss diagnosis (`_obs.dodgedThreats/threats`, element matchup, combo) and then throws it away instead of showing it. That's a near-zero-risk, high-leverage fix that hasn't been logged before.
+
+**Adversary-confirmed, ranked (findings only — NOT applied, no push):**
+
+- **P1 · A — The loss/timeout screen is a DEAD END that withholds a diagnosis the game already has (NEW, 7 real-problems/6 personas).** Win screen is a parade (grade/XP/coins/duo/unlocks); loss screen (ui.js battleRecoveryMarkup ~2745) says only "野生猫猫跑掉了" + HP-recovery rows. Yet `_obs.dodgedThreats/threats/fires/dmgTaken`, `perfectDodges`, `comboBest`, and leader element matchup are all harvested (battle.js:2475) and folded into the hidden enemy-tuning EMA, then discarded. For the "doesn't read tooltips" masher the loss screen is the ONLY teachable surface and it's empty → player concludes the wall is scripted rather than "I never pressed Space." Fix (low-risk, data already exists): in game.js endBattle loss branch attach `b._obs`/matchup to the recovery object; in ui.js add ONE "死因 / Why you lost" line chosen by the dominant signal (dodge-ratio<0.15 → "空格翻滚有无敌帧"; element<1 → suggest a counter-lead; high fires + low combo → "试试 Q/E").
+
+- **P1 · B — No center-gaze survival cue; hit-feel is keyed to blow size, not remaining HP (10 real-problems/5 personas, recurring + now root-caused).** hurtMe (battle.js ~4672) scales white-flash/shake/hitstop by `dmg/maxhp` with ZERO reference to current HP — a 60-dmg tick at 95% and at 15%→dead look identical; the engine literally cannot express "about to die." Only death cue = a 54px top-left slot `.low-hp` glow (css ~287) the masher never looks at; the one full-screen overlay (battle.js 5035) is PURPLE and fires on the player's OWN casts. This is the self-inflicted cost of task #28 (floating HP bars stripped, never replaced). Fix: a red screen-edge vignette keyed to ACTIVE cat hp<0.35, opacity + heartbeat ramping to 0, drawn in the 5035 overlay block + distinct hue; one-time "危险！翻滚或开盾" teach banner; keep the coach damage-floor so the tutorial never trips it.
+
+- **P1 · D — The `_pressure` rubber-band decouples HP-left from input quality (9 real-problems/4 personas, recurring).** `_pressure` (battle.js:3669, 4162) speeds enemy fire whenever teamHpFrac>0.88 → a clean opening is punished, a sloppy one rewarded, so outcome stops correlating with play and reads as a coin-flip. Fix dir: gate escalation on a no-progress signal (enemy pack HP hasn't dropped in ~5s) instead of "team HP high"; surface it as a small HUD heat/aggro tell so the ramp is visible, not spooky.
+
+- **P1 · C — Hidden damage multipliers never surfaced (5 real-problems/3 personas, recurring).** Element matchup is pure spawn RNG (0.5–2×, a 4× spread); `Skills.effectivenessLabel()` is authored but called ZERO times in battle.js; the un-primed basic silently does ×0.7 (applyHitEffects ~4425). Players can't act on the one real decision (1/2/3 elemental cat-swap) because it's invisible. Fix: matchup badge on the target-lock/斗志 gauge (finally call effectivenessLabel); a "弱" state on the reticle when basics are un-primed; one-line end-of-fight attribution.
+
+- **P1 · E — Dodge/Space never fires for any persona (6 real-problems, recurring).** No forcing function reaches struggling players; the must-dodge smash is still gated/defanged. Fix the GATE (fixed cadence, re-center on player at windup, raise ignore-cost) before buffing E/ult — carried from prior cycles.
+
+- **P1 · F — Patience/kite = silent timeout loss; DPS floor can't close (4 real-problems/2 personas, recurring from last cycle).** 谨慎型 bored→quit again. Same fixes as prior cycle (no-progress pressure, DPS-shortfall recap, poke-payoff).
+
+- **P2 · G — long fights → basic-spam, combo depth unrewarded (3, recurring, lower priority).**
+
+**Guardrails (adversary-flagged, carried):** keep casual accessibility + no-death first fight; compress the DPS/difficulty FLOOR, keep the matchup skill-ceiling; fix the dodge GATE before buffing skills. The top two P1s (A loss-diagnosis, B low-HP vignette) are pure feedback/legibility reusing data the engine already computes — lowest-risk, highest-leverage changes available.
+
+**Note for owner:** findings only — no code changed, no push (cron rule). Theme A (loss screen withholds its own diagnosis) is the new, most actionable item this cycle; everything else reconfirms the standing escalation/legibility root already drafted in `.claude/aggro-system-spec.md`.
