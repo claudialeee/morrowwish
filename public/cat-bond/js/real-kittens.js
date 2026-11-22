@@ -91,8 +91,8 @@
     const t=Math.max(0,Math.min(1,(x-a)/(b-a)));
     return t*t*(3-2*t);
   }
-  function illustratedGaitFrames(art,id,sprint){
-    const key=(breedLoaded?'breed:':'classic:')+(id||art.sx)+':'+art.sw+'x'+art.sh+':'+(sprint?'run':'walk');
+  function illustratedGaitFrames(art,id,sprint,gesture='walk'){
+    const key=(breedLoaded?'breed:':'classic:')+(id||art.sx)+':'+art.sw+'x'+art.sh+':'+(sprint?'run':'walk')+':'+gesture;
     if(animatedRigCache[key])return animatedRigCache[key];
     try{
       const w=Math.min(124,art.sw),h=Math.min(186,art.sh);
@@ -145,8 +145,25 @@
             const reach=(leftWeight*Math.sin(phase)+rightWeight*Math.sin(phase+Math.PI));
             const lift=leftWeight*Math.max(0,Math.cos(phase))
               +rightWeight*Math.max(0,Math.cos(phase+Math.PI));
-            const dx=flex*(sprint?7.6:4.6)*reach;
-            const dy=flex*(sprint?5.2:3.2)*lift;
+            // Paw gestures are smooth *whole-silhouette deformations* from
+            // shoulder to pad. The watercolor remains a contiguous body —
+            // no cutout paws, floating heads or broken limb attachments.
+            const raised=Math.max(0,Math.sin(phase));
+            const guard=Math.max(0,Math.cos(phase));
+            const dx=gesture==='highfive'
+              ?flex*rightWeight*raised*11.0+flex*leftWeight*raised*2.5
+              :gesture==='guard'
+                ?flex*(rightWeight+leftWeight)*guard*3.5
+                :gesture==='swipe'
+                  ?flex*rightWeight*Math.sin(phase)*9.5
+                  :flex*(sprint?7.6:4.6)*reach;
+            const dy=gesture==='highfive'
+              ?flex*rightWeight*raised*11.5+flex*leftWeight*raised*2.8
+              :gesture==='guard'
+                ?-flex*(rightWeight+leftWeight)*guard*3
+                :gesture==='swipe'
+                  ?flex*rightWeight*Math.max(0,Math.cos(phase))*7
+                  :flex*(sprint?5.2:3.2)*lift;
             const i=(y*w+x)*4,px=x-dx,py=y+dy;
             for(let channel=0;channel<4;channel++)dst[i+channel]=sample(px,py,channel);
           }
@@ -160,7 +177,10 @@
     }catch(err){return null;}
   }
   function paintArticulatedCat(ctx,art,dest,options,movement,phase){
-    const sprite=illustratedGaitFrames(art,options.species?.id,options.gait==='sprint');
+    const gesture=options.pose==='duo-highfive'?'highfive':
+      options.pose==='duo-guard'?'guard':
+      options.pose==='duo-swipe'?'swipe':'walk';
+    const sprite=illustratedGaitFrames(art,options.species?.id,options.gait==='sprint',gesture);
     if(!sprite){
       ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);
       return false;
@@ -245,12 +265,14 @@
     // Ease the sprite with a planted-feet pivot. A side-to-side nudge, gentle
     // stretch/compression and stride-dependent lean mimic shifting weight,
     // rather than spinning the entire illustration rigidly around its center.
-    const movement=pose==='walk' ? Math.max(.04,Math.min(1,o.motion??.8)) : 0;
+    const duoMotion=pose==='duo-highfive'||pose==='duo-guard'||pose==='duo-swipe';
+    const movement=pose==='walk'||duoMotion
+      ?Math.max(.04,Math.min(1,o.motion??.8)) : 0;
     const phase=o.stride===undefined?t*(o.gait==='sprint'?11:7):o.stride;
     const footfall=Math.sin(phase),lift=Math.max(0,Math.sin(phase*2));
     const hop=pose==='play'?Math.pow(Math.abs(Math.sin(t*5.2)),1.5)*9:0;
     const breathing=Math.sin(t*1.65)*.008;
-    const sway=pose==='walk'?footfall*.012*movement:
+    const sway=pose==='walk'||duoMotion?footfall*.012*movement:
       pose==='sleep'?Math.sin(t*1.5)*.008:
       pose==='belly'?Math.sin(t*4)*.09:Math.sin(t*1.6)*.012;
     // Keep the painted face and fur proportions intact. The paws are now
@@ -299,7 +321,7 @@
       const feetY=originalDest[1]+originalDest[3];
       return [-width/2,feetY-height,width,height];
     })():originalDest;
-    if(pose==='walk'&&movement>.075){
+    if((pose==='walk'||duoMotion)&&movement>.075){
       paintArticulatedCat(ctx,art,dest,o,movement,phase);
     }else{
       ctx.drawImage(art.image,art.sx,art.sy,art.sw,art.sh,...dest);

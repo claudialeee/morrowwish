@@ -47,22 +47,23 @@ function flourish(ctx,W,H,p,key,tier,kind){
  const colB=colors[pair[1]]||'#a8dce9';
  const hit=Math.max(0,1-Math.abs(p-.284)/.105);
  if(!hit)return;
- const cx=W*.505,cy=H*.58,rad=Math.min(W,H)*(.11+hit*.11);
- ctx.save();ctx.globalAlpha=hit*.72;
- if(kind==='highfive'||kind==='stars'){
-   // Light and a contact ring at the instant both real illustrated paws meet,
-   // not a detached paw sticker or repeated sword swipe.
-   const r=rad*(1+(1-hit)*.75);
-   ctx.strokeStyle='#fff1cd';ctx.lineWidth=Math.max(2,H*.012);
-   ctx.shadowColor='#ffdf9d';ctx.shadowBlur=18;
-   ctx.beginPath();ctx.arc(cx,cy,r*.48,0,Math.PI*2);ctx.stroke();
-   for(let j=0;j<7;j++){
-     const a=j*Math.PI*2/7,r0=r*.72,r1=r*(.92+.12*(j%3));
-     ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r0,cy+Math.sin(a)*r0);
-     ctx.lineTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);ctx.stroke();
+ if(kind==='stars'||kind==='halo'){
+   // Genuine two-cat high five: raised front paws meet once, creating
+   // one visible celebratory burst rather than identical claw streaks.
+   ctx.save();ctx.globalAlpha=hit*.82;
+   const cx=W*.5,cy=H*.50,r=H*(.055+.11*hit);
+   ctx.shadowColor='#fff4ac';ctx.shadowBlur=20;
+   ctx.fillStyle='#fff7cc';ctx.beginPath();ctx.arc(cx,cy,r*.34,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle=kind==='stars'?'#f9e2fd':'#eafed1';ctx.lineWidth=5;
+   for(let n=0;n<8;n++){
+     const a=n*Math.PI/4;
+     ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r*.55,cy+Math.sin(a)*r*.55);
+     ctx.lineTo(cx+Math.cos(a)*r*1.15,cy+Math.sin(a)*r*1.15);ctx.stroke();
    }
    ctx.restore();return;
  }
+ const cx=W*.505,cy=H*.58,rad=Math.min(W,H)*(.11+hit*.11);
+ ctx.save();ctx.globalAlpha=hit*.72;
  ctx.shadowColor=colA;ctx.shadowBlur=Math.min(22,H*.05);
  // White core at the exact strike, only ~100ms wide, so cat faces remain
  // readable throughout the action. One claw at tier 1, crossed at tier 2.

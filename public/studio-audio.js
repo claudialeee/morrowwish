@@ -80,7 +80,7 @@ const combatKinds=new Set(['combat_swing','combat_claw','combat_projectile','com
  'combat_beam','combat_dash','combat_hit','combat_dodge','combat_hurt',
  'combat_duo','combat_duo_impact','combat_ultimate','combat_win']);
 const combatAt=Object.create(null);
-function combatSound(kind,detail){
+function combatSound(kind){
  if(route!=='cat-bond'||!enabled||!unlocked||!ctx||!master)return;
  const now=ctx.currentTime+.007;
  const gaps={combat_hit:.11,combat_hurt:.23,combat_swing:.16,combat_duo:.6,
@@ -119,43 +119,50 @@ function combatSound(kind,detail){
  case 'combat_hit':brush(.075,850,.17);sweep(220,105,.13,.13);break;
  case 'combat_dodge':brush(.17,2450,.13);sweep(630,1190,.16,.06,'sine');break;
  case 'combat_hurt':brush(.10,560,.11);sweep(270,125,.20,.09);break;
- case 'combat_duo':
- case 'combat_duo_impact':{
-  // Unique, layered audio fingerprint for every one of the 21 combos.
-  // The two elements supply different timbres and a distinct melodic
-  // interval / timing. Tier 3 adds deep bass and a longer impact tail.
-  const el=['dark','elec','fire','grass','light','water'];
-  const pair=String(detail?.pair||'light+water').split('+');
-  const a=Math.max(0,el.indexOf(pair[0])),b=Math.max(0,el.indexOf(pair[1]));
-  const id=a*6+b,tier=Math.max(1,Math.min(3,Number(detail?.tier)||1));
-  const hz=[180,410,260,330,530,290];
-  const root=hz[a]*(1+.025*(id%5)),fifth=hz[b]*(.80+.17*(id%4));
-  const hit=kind==='combat_duo_impact',loud=hit?.13:.085;
-  const voice=(e,f,at,v)=>{
-   if(e===1){sweep(f*.75,f*2.4,.18,v,'sawtooth',at);brush(.09,1750,v*.5,at+.04)}
-   else if(e===2){brush(.19,1050,v,at);sweep(f*1.6,f*.55,.23,v*.6,'triangle',at)}
-   else if(e===3){brush(.21,650,v*.62,at);sweep(f*.66,f*1.25,.25,v*.6,'sine',at)}
-   else if(e===4){sweep(f,f*1.73,.28,v*.84,'sine',at);sweep(f*1.5,f*2,.20,v*.42,'triangle',at+.05)}
-   else if(e===5){sweep(f*.65,f*1.42,.27,v*.83,'sine',at);brush(.20,1120,v*.48,at+.08)}
-   else{sweep(f*.84,f*.45,.34,v*.85,'triangle',at);brush(.19,480,v*.5,at+.07)}
-  };
-  voice(a,root,0,loud);
-  voice(b,fifth,.073+.022*(id%5),loud*(tier>=2?1.05:.8));
-  if(hit){
-    const clap=['highfive','stars'].includes(detail?.gesture);
-    brush(clap?.13:.25,clap?2100:850,clap?.21:.18,.025);
-    sweep(tier>=3?115:175,tier>=3?46:85,tier>=3?.46:.29,tier>=3?.20:.15,
-      tier>=3?'sawtooth':'triangle',.03);
-    if(tier>=3){sweep(95,43,.55,.22,'sawtooth',.11);
-      sweep(root,root*.45,.31,.10,'triangle',.19);brush(.37,350,.14,.13);}
-    else if(tier>=2)sweep(root*.8,root*1.7,.26,.084,'triangle',.17);
-  }else if(tier>=2)sweep(root*.72,fifth*1.48,.30,tier>=3?.14:.088,'triangle',.19);
-  break;
- }
+ case 'combat_duo':sweep(170,335,.37,.11);sweep(280,670,.32,.073,'sine',.11);brush(.33,1400,.08,.1);break;
+ case 'combat_duo_impact':brush(.26,860,.25);sweep(175,72,.34,.18,'sawtooth');sweep(800,260,.23,.09,'triangle',.04);break;
  case 'combat_ultimate':brush(.25,1400,.13);sweep(260,730,.27,.1,'sawtooth');sweep(950,360,.25,.06,'sine',.065);break;
  case 'combat_win':sweep(520,660,.17,.048,'sine');sweep(660,880,.21,.044,'triangle',.13);sweep(880,1040,.25,.033,'sine',.27);break;
  }
  effects++;
+}
+
+const duoSoundCatalog={"dark+dark":[43,3,7,10,420,48,0],"dark+elec":[51,12,7,18,1720,80,1],"dark+fire":[47,5,10,14,1150,82,2],"dark+grass":[49,3,8,5,720,57,3],"dark+light":[55,7,12,9,1380,70,4],"dark+water":[46,5,2,9,510,67,5],"elec+elec":[67,9,14,21,2580,90,6],"elec+fire":[52,12,7,20,1840,96,7],"elec+grass":[57,5,8,15,1280,73,8],"elec+light":[65,11,15,24,2400,82,9],"elec+water":[60,7,3,17,1500,76,10],"fire+fire":[48,7,12,19,850,98,11],"fire+grass":[56,4,11,16,1090,73,12],"fire+light":[61,7,14,19,1850,90,13],"fire+water":[45,7,3,12,580,92,14],"grass+grass":[53,4,7,13,870,62,15],"grass+light":[62,4,7,12,1670,74,16],"grass+water":[58,3,10,6,960,70,17],"light+light":[68,4,9,15,2500,82,18],"light+water":[57,7,12,8,1350,77,19],"water+water":[50,7,2,14,680,80,20]};
+let duoSignatureEvents=0,lastSignature=null;
+function duoSignature(pair,tier=1,beat='cast'){
+ if(route!=='cat-bond'||!enabled||!unlocked||!ctx||!master)return false;
+ const v=duoSoundCatalog[pair];if(!v)return false;
+ const [root,d1,d2,d3,color,weight,shape]=v;
+ const lvl=Math.max(1,Math.min(3,Math.floor(Number(tier)||1)));
+ const when=ctx.currentTime+.014,impact=beat==='impact';
+ const timbre=['triangle','sine','sawtooth'][shape%3];
+ const notes=[root,root+d1,root+d2,root+d3];
+ const rhythms=[0,.058+shape%4*.018,.14+shape%5*.021,.23+shape%3*.028];
+ if(impact){
+  tone(root-19-(shape%3)*2,when,.34+(lvl-1)*.05,'sawtooth',.09+weight/1000);
+  tone(root-26,when+.016,.38,'sine',.062+weight/2000);
+  tone(root+d3,when+.043,.23,timbre,.076);
+  if(lvl>=2)tone(root+d2+12,when+.09,.21,'triangle',.060);
+  if(lvl>=3)tone(root+d3+19,when+.15,.30,'sawtooth',.054);
+ }else notes.forEach((note,i)=>
+  tone(note,when+rhythms[i],.12+i*.035,timbre,(i===3?.083:.045)*(1+(lvl-1)*.12)));
+ try{
+  const duration=impact?.26:.15,t=when+(impact?0:.02);
+  const buffer=ctx.createBuffer(1,Math.ceil(duration*ctx.sampleRate),ctx.sampleRate);
+  const data=buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;
+  const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+  src.buffer=buffer;filter.type=shape%4===0?'lowpass':'bandpass';
+  filter.frequency.value=color;filter.Q.value=.8+(shape%3)*.25;
+  gain.gain.setValueAtTime(.0001,t);
+  gain.gain.exponentialRampToValueAtTime((impact?.15:.08)*(1+(lvl-1)*.18),t+.009);
+  gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
+  src.connect(filter);filter.connect(gain);gain.connect(master);
+  src.start(t);src.stop(t+duration+.01);
+ }catch{}
+ duoSignatureEvents++;effects++;
+ lastSignature={pair,beat,tier:lvl,identity:notes.join('-')+'/'+rhythms.join('-')+'/'+color};
+ return true;
 }
 const mappings={
  fish:[77,'success'],win:[74,'success'],bad:[55,'fail'],caught:[52,'fail'],vase:[62,'crash'],
@@ -168,8 +175,8 @@ const mappings={
  // soft channel hiss — previously these keys fell through to the quiet UI blip.
  ultimate:[48,'crash'],ready:[84,'success'],beam:[66,'quiet'],charge:[60,'bounce']
 };
-function effect(kind='tap',detail=null){
- if(combatKinds.has(kind)){combatSound(kind,detail);return;}
+function effect(kind='tap'){
+ if(combatKinds.has(kind)){combatSound(kind);return;}
  // Cat Bond's gentle layered gestures avoid beeps on every canvas movement.
  if(route==='cat-bond'&&['pet','rustle','paw','discover'].includes(kind)){
    if(!enabled||!unlocked||!ctx)return;
@@ -205,8 +212,8 @@ function effect(kind='tap',detail=null){
  const [n,s]=mappings[kind]||mappings.tap;sfx(n,s);
 }
 function note(freq){if(enabled&&unlocked)sfx(69+12*Math.log2(Math.max(40,freq)/440),'pop')}
-function status(){return{profile:route,enabled,unlocked,playing:false,backgroundMusic:false,oscillators:voices,loopSteps:0,effects,audioState:ctx?.state||'not-created',combatSounds:route==='cat-bond'?combatKinds.size:0}}
-window.MorrowwishAudio={start,toggle,effect,note,status,sync,isEnabled:()=>enabled};
+function status(){return{profile:route,enabled,unlocked,playing:false,backgroundMusic:false,oscillators:voices,loopSteps:0,effects,audioState:ctx?.state||'not-created',combatSounds:route==='cat-bond'?combatKinds.size:0,duoSignatureCount:route==='cat-bond'?Object.keys(duoSoundCatalog).length:0,duoSignatureEvents,lastSignature}}
+window.MorrowwishAudio={start,toggle,effect,note,status,sync,duoSignature,isEnabled:()=>enabled};
 // Browsers allow Web Audio only after a user gesture. Unlocking does NOT play a sound.
 function gesture(e){
  if(e.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(e.key))return;
