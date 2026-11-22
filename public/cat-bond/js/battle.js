@@ -1962,12 +1962,13 @@ class CaptureBattle {
   angleDiff(a, b) { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; }
   // 近战范围攻击: an instant arc in front of the caster, hitting enemies within range
   meleeStrike(f, aim, skill, dmg, col) {
-    // Compact close-contact claw arc; no more long-range invisible slashes.
+    // The actual close-contact hit cone remains unchanged. A single short,
+    // three-brush rake now follows this geometry; remove the old duplicate
+    // 170px crescent + extra pre-hit particle fan. Only real contact gets
+    // impact accents through resolveHit and per-skill signatures.
     const RANGE = 64, ARC = .74;
-    // signature melee VFX: owner's authored claw-slash stroke + my sweeping blade.
-    this.skillStrokes.push({kind:'clawSlash',x:f.x,y:f.y,angle:aim,color:col,life:.37,max:.37});
-    this.vfx.slash(f.x, f.y, aim, col, RANGE * 0.9, ARC * 0.92);
-    this.vfx.burst(f.x + Math.cos(aim) * RANGE * 0.6, f.y + Math.sin(aim) * RANGE * 0.6, { count: this.game.isTouch ? 4 : 8, color: col, angle: aim, spread: ARC, speed: 220, life: 0.28, r: 2.5, drag: 3 });
+    this.vfx.slash(f.x, f.y, aim, col, RANGE * .87, ARC * .92,
+      {heavy: !!skill?.heavy});
     let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {
       const d = Math.hypot(e.x - f.x, e.y - f.y);
@@ -3283,12 +3284,6 @@ class CaptureBattle {
             const wave=Math.sin(t*(v.kind==='lightning'?53:20)+this.t*22+layer*2)*amp*k;
             ctx.lineTo(x+nx*wave,y+ny*wave);
           }ctx.stroke();
-        }
-      }else if(v.kind==='clawSlash'){
-        ctx.translate(v.x,v.y);ctx.rotate(v.angle);
-        for(let i=-1;i<=1;i++){
-          ctx.strokeStyle=i===0?'#fffbe6':v.color;ctx.lineWidth=8-i*i*1.5;
-          ctx.beginPath();ctx.arc(24,0,56+i*6,-.95+p*.5,.9+p*.5);ctx.stroke();
         }
       }else if(v.kind==='fireBurst'){
         ctx.strokeStyle=v.color;ctx.lineWidth=11*k;
