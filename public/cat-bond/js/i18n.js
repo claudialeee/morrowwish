@@ -421,6 +421,16 @@
     '传说中背负太阳的火焰之猫。': 'The legendary flame cat said to carry the sun.',
     '踏月而行的云端仙猫，毛泛微光。': 'A celestial cat that walks on moonlight, fur faintly aglow.',
     '身披星河的梦境之猫，极为罕见。': 'A dream cat draped in the galaxy — exceedingly rare.',
+    // Seven additional breeds: without these, English battle prep displays
+    // Chinese-only breed lore and fails the real CrazyGames locale gate.
+    '阿比西尼亚猫，身形轻巧，额头有细细的暖金纹。': 'A lithe Abyssinian cat with fine warm-gold markings on its forehead.',
+    '美短银虎斑，背上是醒目的漩涡纹。': 'An American shorthair silver tabby with bold swirls across its back.',
+    '雪鞋猫，深色面罩配四只白袜子。': 'A Snowshoe cat with a dark face mask and four little white socks.',
+    '孟买猫，一身亮黑毛，像迷你黑豹。': 'A sleek black Bombay cat, like a miniature panther.',
+    '土耳其梵猫，雪白的身体和奶橘色尾巴。': 'A Turkish Van with a snowy coat and a soft orange tail.',
+    '波斯猫，圆圆的娃娃脸，蓬松得像云朵。': 'A Persian cat with a round doll face and a cloud-soft fluffy coat.',
+    '斯芬克斯猫，暖桃色皮肤、大耳朵，活力十足。': 'An energetic Sphynx cat with peach-colored skin and oversized ears.',
+
 
     // ---- skill names ----
     // cat-instinct rework names (Spec A)
