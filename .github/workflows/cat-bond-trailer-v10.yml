@@ -1,5 +1,5 @@
-name: Review New Cat Bond Ultimate and Quarrel V10 - NO SOCIAL PUBLISH
-# QA repair: do not accept battle footage hidden behind the expedition team dialog.
+name: Cat Bond Storybook and Sunlit Garden Trailer V10 - REVIEW ONLY
+# Rerecord from the latest game UI; 9:16, under one minute, no social publishing.
 on:
   push:
     branches: [main]
@@ -41,6 +41,8 @@ jobs:
         run: |
           node --check scripts/capture-trailers-v10.mjs
           node --check scripts/render-trailers-v10.mjs
+          node --check public/cat-bond/js/ui.js
+          node --check public/cat-bond/js/worldmap.js
       - name: Record current Cat Bond in real mobile Chromium
         run: node scripts/capture-trailers-v10.mjs
       - name: Render only the updated Cat Bond review video
@@ -69,7 +71,7 @@ jobs:
           const bond=m.trailers.find(t=>t.slug==='cat-bond');
           if(!bond||!bond.video.includes('trailer-v10')||bond.retainedFrom)
             throw Error('No fresh Cat Bond V10 recording');
-          const required=['raising','cat-upgrade','duo-partners','duo-map-walk','duo-promise',
+          const required=['cat-upgrade','duo-partners','duo-map-walk','duo-promise',
             'duo-quarrel','duo-reconcile','work-after','tease','map-explore','map-management',
             'auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-showcase'];
           for(const scene of required)
@@ -112,6 +114,6 @@ jobs:
           git diff --cached --quiet && exit 0
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'qa(promo): V10 new duo cinematic and cat disagreement, unapproved'
+          git commit -m 'qa(promo): V10 storybook cats, duration, real gameplay, one duo cinematic and reconciliation, unapproved'
           git pull --rebase origin main
           git push origin HEAD:main
