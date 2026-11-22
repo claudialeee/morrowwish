@@ -139,6 +139,40 @@ try{
  assert.notEqual(matches.ordered,matches.reversed,
    'Swapping the two player cats must visibly exchange both painted characters');
  assert.ok(matches.cached<=63,'Changing cats must not create unbounded scene caches');
+ // The optional gallery choice isn't enough: real battle sequences have no
+ // originalArt flag. Jiafei must automatically trigger real breed watercolor
+ // in either active UID slot, leaving the artist's other 63 originals intact.
+ const liveJiafei=await page.evaluate(()=>{
+   const cv=document.createElement('canvas');cv.width=620;cv.height=349;
+   const g=cv.getContext('2d',{willReadFrequently:true});
+   const cats=[{uid:'live-a',species:'jiafei'},{uid:'live-b',species:'tangyuan'}];
+   function fingerprint(mode){
+     g.clearRect(0,0,cv.width,cv.height);
+     const seq={elements:'elec+fire',max:2.75,t:1.18,tier:3,
+       catUids:cats.map(cat=>cat.uid),hideCaptions:true};
+     if(mode!=='default')seq.originalArt=mode==='original';
+     if(!window.CatBondPremiumCinematics.draw(g,620,349,seq,
+       uid=>cats.find(cat=>cat.uid===uid)))throw Error('Live Jiafei duo failed');
+     const pix=g.getImageData(0,0,620,349).data;let h=2166136261>>>0;
+     for(let i=0;i<pix.length;i+=44)
+       h=Math.imul((h^pix[i])>>>0,16777619)>>>0;
+     return h.toString(16);
+   }
+   const left={default:fingerprint('default'),breed:fingerprint('breed'),
+     original:fingerprint('original')};
+   cats[0].species='tangyuan';cats[1].species='jiafei';
+   const right={default:fingerprint('default'),breed:fingerprint('breed'),
+     original:fingerprint('original')};
+   return {left,right};
+ });
+ for(const side of [liveJiafei.left,liveJiafei.right]){
+   assert.equal(side.default,side.breed,
+     'Real battle must automatically draw approved Jiafei selected in either slot');
+   assert.notEqual(side.default,side.original,
+     'Fixed original-cats painting must not replace the player-selected Jiafei');
+ }
+ assert.notEqual(liveJiafei.left.default,liveJiafei.right.default,
+   'Swapping real battle duo positions must visibly swap the actual watercolor cats');
  assert.equal(new Set(result.frames.map(x=>x.variants[2].hash)).size,21,
    '21 skill previews still visually identical; do not release');
  for(const entry of result.frames){
