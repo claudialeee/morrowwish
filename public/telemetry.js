@@ -2,7 +2,10 @@
 const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent","cat-bond"]);
 const route=location.pathname.split("/").filter(Boolean)[0];
 const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
-const disabled=!!(route&&!allowed.has(route)) || (route==='cat-bond' && window.CatBondPlatform?.firstPartyAnalytics===false);
+// Synthetic yard fixtures must not inflate real player conversions.
+const bondQa=route==='cat-bond'&&new URLSearchParams(location.search).has('autodev');
+const disabled=!!(route&&!allowed.has(route)) || bondQa ||
+  (route==='cat-bond' && window.CatBondPlatform?.firstPartyAnalytics===false);
 const site=window.ARCADE_GAME_ID?"legacy":"arcade";
 const collector=window.ARCADE_COLLECTOR||"/api/session";
 const ref=document.referrer;
@@ -48,7 +51,7 @@ const lastSent={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completio
 const signalCounts=Object.create(null),lastSignals=Object.create(null);
 function signal(id){if(!/^[a-z0-9_-]{2,40}$/.test(id))return;signalCounts[id]=(signalCounts[id]||0)+1;}
 let firstMs=-1,firstMsSent=false,level=0,score=0,lastClock=performance.now(),closed=false,flushSeq=0;
-let bondEntryAwaitingFirstBattle=false,townFirstBuildSeen=false;
+let bondEntryAwaitingFirstBattle=false,townFirstBuildSeen=false,bondBattlesThisPage=0;
 // Per-page new-player funnel (aggregate only; no individual click trail).
 // Enter -> first run -> first finished attempt -> replay a finished attempt.
 let firstRunStarted=false,firstRunFinished=false,firstReplaySeen=false;
@@ -129,10 +132,28 @@ if(game==="flip-dash"&&(n==="run_end"||n==="game_over")){signal("flip_finished")
 if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
 
 if(game==="cat-bond"){
- if(n==="bond_wild_spawned"&&["R","SR","SSR"].includes(String(p?.rarity)))signal("bond_rare_encounter");
+ const rare=["R","SR","SSR"].includes(String(p?.rarity));
+ // V2 records comparable battle attempts across both yard and open world.
+ // Historical yard-spawn-only rare encounters remain preserved in D1.
+ if(n==="bond_wild_spawned"&&rare)signal("bond_rare_encounter");
+ const region=["yard","home","sakura","creek","volcano","ruins"].includes(p?.region)?
+   p.region:"unknown";
+ if(n==="game_start"){
+  signal("bond_battle_start_v2");
+  signal("bond_region_"+region+"_start_v2");
+  if(bondBattlesThisPage++>0)signal("bond_next_battle_v2");
+  if(rare&&!p?.practice)signal("bond_rare_attempt_v2");
+ }
+ if(n==="game_complete"||n==="game_over"){
+  signal("bond_battle_end_v2");
+  signal("bond_region_"+region+"_end_v2");
+  if(n==="game_complete")signal("bond_battle_win_v2");
+ }
+ if(n==="game_retry")signal("bond_retry_loss_v2");
  if(n==="cat_capture"){
-  signal("bond_capture");
-  if(["R","SR","SSR"].includes(String(p?.rarity)))signal("bond_rare_capture");
+  signal("bond_capture"); // legacy counter retained for historical reporting
+  signal("bond_capture_v2");
+  if(rare){signal("bond_rare_capture");signal("bond_rare_capture_v2");}
  }
  if(n==="bond_duo_attack")signal("bond_duo_used");
  if(n==="bond_yard_build")signal("bond_yard_built");
@@ -165,7 +186,9 @@ document.addEventListener("click",e=>{
  signal("hub_card_"+dest.replaceAll("-","_"));
  flush(true);
 },true);
-const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign};
+// New Cat Bond acquisition cohort, without modifying past visit rows.
+const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign,
+ trackingVersion:game==="cat-bond"?11:undefined};
 function send(data){if(disabled)return;try{
  const body=JSON.stringify({...shared,...data}),blob=new Blob([body],{type:"text/plain;charset=UTF-8"});
  // Foreground events should be requested immediately. sendBeacon is most

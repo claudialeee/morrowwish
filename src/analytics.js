@@ -10,7 +10,22 @@ const tidy=(s,max=100)=>typeof s==="string"?s.slice(0,max):"";
 const uniq=(a)=>new Set(a.filter(Boolean)).size;
 function dateDays(n){const d=new Date();d.setUTCHours(0,0,0,0);const x=[];for(let i=n-1;i>=0;i--)x.push(new Date(d.getTime()-86400000*i).toISOString().slice(0,10));return x;}
 function params(req){const n=Number(new URL(req.url).searchParams.get("days"));return Number.isFinite(n)&&n>=1?Math.min(90,Math.floor(n)):7;}
-async function read(req,env,category){let days=params(req),dates=dateDays(days);const result=await env.DB.prepare("SELECT category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND day>=? ORDER BY id DESC LIMIT 10000").bind(category,dates[0]).all();return {days,dates,rows:(result.results||[]).map(r=>({...r,data:JSON.parse(r.payload||"{}")})),partial:(result.results||[]).length>=10000};}
+async function read(req,env,category){
+ const days=params(req),dates=dateDays(days);
+ const result=await env.DB.prepare("SELECT category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND day>=? ORDER BY id DESC LIMIT 10000").bind(category,dates[0]).all();
+ const raw=result.results||[],seenSequence=new Set();
+ const rows=raw.map(r=>({...r,data:JSON.parse(r.payload||"{}")})).filter(r=>{
+  // Browser network retry + fallback beacon can repeat an incremental seq.
+  // Preserve unsequenced history; do NOT mutate the production D1 rows.
+  const seq=r.data.seq;
+  if(category!=="arcade"||r.kind!=="session"||!r.view_id||
+     !Number.isInteger(seq)||seq<0)return true;
+  const id=r.game+"|"+r.view_id+"|"+seq;
+  if(seenSequence.has(id))return false;
+  seenSequence.add(id);return true;
+ });
+ return {days,dates,rows,partial:raw.length>=10000};
+}
 function visitors(rows){return uniq(rows.map(r=>r.visitor||r.view_id));}
 function mainStats(x){
   const {rows,dates}=x,visits=rows.filter(r=>r.kind==="visit"),sessions=rows.filter(r=>r.kind==="session");
@@ -20,10 +35,33 @@ function mainStats(x){
     const pageviews=uniq(visitsOf.map(r=>r.view_id||r.visitor+"-"+r.day));
     const startedViews=uniq(sessionsOf.filter(r=>Number(r.data.starts)>0).map(r=>r.view_id));
     const times=sum(sessionsOf,"seconds"),signals={};
+    const visitIds=new Set(visitsOf.map(r=>r.view_id).filter(Boolean));
+    const viewsWith=(predicate)=>new Set(sessionsOf.filter(r=>predicate(r.data))
+      .map(r=>r.view_id).filter(id=>visitIds.has(id)));
+    const startedIds=viewsWith(d=>Number(d.starts)>0);
+    const finishedIds=viewsWith(d=>Number(d.ends)>0);
+    const finishedStarted=[...finishedIds].filter(id=>startedIds.has(id));
+    // Funnel denominators always count unique page visits, never battle-count
+    // / visit. Cat Bond's old starts mixed game entry and fighting, so only
+    // visits explicitly tagged with v11 tracking can enter its new funnel.
+    const v2Ids=new Set(visitsOf.filter(r=>r.game==="cat-bond"&&
+      Number(r.data.trackingVersion)>=11&&r.view_id).map(r=>r.view_id));
+    const v2Entered=new Set(sessionsOf.filter(r=>v2Ids.has(r.view_id)&&
+      Number(r.data.signals?.bond_enter)>0).map(r=>r.view_id));
+    const v2Finished=new Set(sessionsOf.filter(r=>v2Entered.has(r.view_id)&&
+      Number(r.data.signals?.bond_battle_end_v2)>0).map(r=>r.view_id));
+    const isBond=part.every(r=>r.game==="cat-bond"||!r.game)&&
+      part.some(r=>r.game==="cat-bond");
+    const pv=isBond?v2Ids.size:visitIds.size;
+    const entered=isBond?v2Entered.size:startedIds.size;
+    const finished=isBond?v2Finished.size:finishedStarted.length;
+    const conversion={pageviews:pv,startedViews:entered,finishedViews:finished,
+      visitStart:pct(entered,pv),startFinish:pct(finished,entered),
+      visitFinish:pct(finished,pv),version:isBond?11:null};
     for(const r of sessionsOf)for(const [k,v] of Object.entries(r.data.signals||{})){
       if(/^[a-z0-9_-]{2,40}$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>0)signals[k]=(signals[k]||0)+Math.min(10000,Number(v));
     }
-    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals};
+    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);

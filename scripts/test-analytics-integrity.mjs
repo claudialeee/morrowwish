@@ -36,8 +36,10 @@ const req=(route,data)=>new Request('https://morrowwish.pages.dev'+route,{
 for(let i=0;i<games.length;i++){
  const g=games[i],viewId='test-view-'+g;
  for(const event of [
-  {kind:'visit',game:g,viewId,visitor:'test-visitor',utmSource:g==='cat-bond'?'itchio':'bluesky',source:'external'},
-  {kind:'session',game:g,viewId,visitor:'test-visitor',starts:1,ends:1,completion:1,seconds:42,utmSource:g==='cat-bond'?'itchio':'bluesky'}
+  {kind:'visit',game:g,viewId,visitor:'test-visitor',utmSource:g==='cat-bond'?'itchio':'bluesky',source:'external',trackingVersion:g==='cat-bond'?11:undefined},
+  {kind:'session',game:g,viewId,visitor:'test-visitor',starts:1,ends:1,completion:1,seconds:42,utmSource:g==='cat-bond'?'itchio':'bluesky',
+ seq:g==='cat-bond'?0:undefined,
+ signals:g==='cat-bond'?{bond_enter:1,bond_battle_start_v2:1,bond_battle_end_v2:1}:undefined}
  ]){
   const result=await api(req('/api/session',event),env);
   assert.equal(result.status,202,g+' visit or session write');
@@ -62,6 +64,9 @@ for(const g of ['flip-dash','parcel-panic']){
   assert.equal(response.status,202,g+' abandoned-run write');
  }
 }
+// Duplicate delivery of the same incremental session must not inflate counts.
+const oldSession=rows.find(x=>x.game==='cat-bond'&&x.kind==='session');
+rows.push({...oldSession,id:rows.length+1});
 const bad=await api(new Request('https://morrowwish.pages.dev/api/diagnostic-check?probe=bad'),env);
 assert.equal(bad.status,400,'invalid diagnostic token must be rejected');
 const auth=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1'),env);
@@ -78,6 +83,33 @@ for(const g of games){
  assert.equal(row?.pageviews,endless?2:1,g+' game views counted');
 }
 assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,8,'unrelated referral starts');
+const bond=summary.byGame.find(x=>x.game==='cat-bond');
+assert.equal(bond?.conversion?.pageviews,1,'V2 denominator is the new cohort only');
+assert.equal(bond?.conversion?.startedViews,1,'V2 starts count page entry');
+assert.equal(bond?.conversion?.finishedViews,1,'V2 finishes count distinct pages');
+assert.equal(bond?.signals.bond_battle_start_v2,1,'duplicate seq cannot inflate battles');
+assert.equal(bond?.signals.bond_battle_end_v2,1,'duplicate seq cannot inflate results');
+for(const g of summary.byGame.filter(g=>g.game!=='hub')){
+ assert.equal(g.conversion.pageviews,g.pageviews,g.game+' denominator uses pages');
+ assert.equal(g.conversion.visitStart,100,g.game+' visit to play');
+ assert.equal(g.conversion.startFinish,100,g.game+' play to finish');
+ assert.equal(g.conversion.visitFinish,100,g.game+' visit to finish');
+}
+// Legacy rare encounters vs captures: the old 4/57 events must remain in
+// historical reporting but never be mistaken for V2 same-funnel conversions.
+for(const event of [
+ {kind:'visit',game:'cat-bond',viewId:'legacy-bond',visitor:'legacy',source:'direct'},
+ {kind:'session',game:'cat-bond',viewId:'legacy-bond',visitor:'legacy',
+  starts:1,ends:1,signals:{bond_enter:1,bond_rare_encounter:4,bond_rare_capture:57}}
+])assert.equal((await api(req('/api/session',event),env)).status,202,'legacy fixture accepted');
+const mixedResponse=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{
+ headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
+const mixed=(await mixedResponse.json()).byGame.find(g=>g.game==='cat-bond');
+assert.equal(mixed.pageviews,2,'Raw PV preserves legacy visit');
+assert.equal(mixed.conversion.pageviews,1,'Legacy PV excluded from V2 funnel');
+assert.equal(mixed.conversion.finishedViews,1,'Legacy finish excluded from V2 funnel');
+assert.equal(mixed.signals.bond_rare_encounter,4,'Old encounter counts preserved');
+assert.equal(mixed.signals.bond_rare_capture,57,'Old capture counts preserved');
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.pageviews,1,'legacy itchio visit must appear in itch channel');
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.starts,1,'legacy itchio start must appear in itch channel');
 assert.equal(summary.itch?.pageviews,1,'itch game rollup includes historic itchio campaign visit');
@@ -93,7 +125,7 @@ const resetReq=(confirm='RESET_METRICS',extra={})=>new Request(resetUrl,{method:
 },body:JSON.stringify({confirm})});
 const unauth=await api(resetReq(),env);
 assert.equal(unauth.status,401,'unauthenticated reset rejected');
-assert.equal(rows.length,18,'rejected reset must not affect reporting events');
+assert.equal(rows.length,21,'rejected reset must not affect reporting events');
 const wrongOrigin=await api(resetReq('RESET_METRICS',{'Origin':'https://foreign.example','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
 assert.equal(wrongOrigin.status,403,'cross-origin reset rejected even with key');
 const absentOrigin=await api(resetReq('RESET_METRICS',{'Origin':'','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
@@ -113,7 +145,7 @@ assert.ok(cookie?.startsWith('morrowwish_studio_auth='));
 rows.push({category:'other',day:new Date().toISOString().slice(0,10),game:'other',visitor:'control',view_id:'keep-me',payload:'{}',id:999});
 const cleared=await api(resetReq('RESET_METRICS',{Cookie:cookie}),env);
 assert.equal(cleared.status,200,'signed dashboard session can reset metrics');
-assert.deepEqual(await cleared.json(),{ok:true,removed:18},'reset reports removed rows');
+assert.deepEqual(await cleared.json(),{ok:true,removed:21},'reset reports removed rows');
 assert.deepEqual(rows.map(x=>x.category),['other'],'non-dashboard records remain');
 const empty=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{Cookie:cookie}}),env);
 assert.equal((await empty.json()).records,0,'dashboard starts empty after reset');
@@ -121,3 +153,4 @@ const restarted=await api(req('/api/session',{kind:'visit',game:'cat-bond',viewI
 assert.equal(restarted.status,202,'fresh post-reset gameplay events still write normally');
 assert.equal(rows.filter(x=>x.category==='arcade').length,1,'tracking restarted');
 console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
+await import('./test-cat-bond-analytics-funnel.mjs');

@@ -57,7 +57,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 <section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
 <div id="report" hidden><div class="stats" id="stats"></div>
 
-<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th></tr></thead><tbody id="games"></tbody></table></div></section>
+<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th></tr></thead><tbody id="games"></tbody></table></div></section>
 
 <section class="section" id="promotion-channels">
  <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
@@ -93,8 +93,8 @@ intro:"只看真实访问、开局、结算，以及哪个渠道带来玩家。"
 today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",resetMetrics:"重置统计",resetConfirm:"确定永久清除所有历史看板统计吗？包括访问、开局、结算及推广归因。游戏存档与推广配置不会删除。",resetting:"正在清除历史统计……",resetDone:"历史统计已清除，已开始重新记录。",resetFailed:"重置失败，请刷新看板后重试。",
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
-trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"看访问有没有转成开局、开局有没有正常结算。点击任意列的表头排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"重点游戏 · 深度分析",focusDesc:"重点观察猫猫纽带和猫猫捣蛋的真实玩法效果，再看自由小镇和平行人生。",trendMore:"查看流量趋势",
-colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"开局",colRetries:"重玩",colTime:"平均会话",colEnds:"完成",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"六款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
+trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"逐个游戏查看访问→开玩→结算的转化，同次访问多场战斗只算一次。点击表头可排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"重点游戏 · 深度分析",focusDesc:"重点观察猫猫纽带和猫猫捣蛋的真实玩法效果，再看自由小镇和平行人生。",trendMore:"查看流量趋势",
+colGame:"游戏",colPv:"浏览量",colVisitStart:"访问→开玩",colStartFinish:"开玩→结算",colVisitFinish:"访问→结算",colVisitors:"访客",colStarts:"开局",colRetries:"重玩",colTime:"平均会话",colEnds:"完成",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"六款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
 homeFunnelLabel:"主页→游戏（新版）：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelYouTube:"YouTube：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台播放只计入已核实的新视频；访问、开局和结算来自本站真实埋点。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"只显示 11 月 22 日获批宣传片的官方视频指标。点击数字或「打开视频」查看原帖。",
 
 
@@ -114,8 +114,8 @@ intro:"Track real visits, starts, finishes and which channels bring players.",
 today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",resetMetrics:"Reset metrics",resetConfirm:"Permanently delete all historic dashboard metrics (visits, game starts, finishes and campaign attribution)? Player saves and promotion settings will remain.",resetting:"Clearing historic metrics…",resetDone:"Historic metrics cleared. Tracking has restarted.",resetFailed:"Reset failed. Refresh the dashboard and try again.",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
-trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Compare game starts, finishes and replays. Click any column heading to sort.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"Four flagship games · performance",focusDesc:"Prioritize Cat Bond and Cat Heist, then Tiny Town and Elsewhere.",trendMore:"Traffic trends",
-colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Started",colRetries:"Replays",colTime:"Avg. session",colEnds:"Completed",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
+trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Visit → play → finish conversion by game, based on distinct page visits.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"Four flagship games · performance",focusDesc:"Prioritize Cat Bond and Cat Heist, then Tiny Town and Elsewhere.",trendMore:"Traffic trends",
+colGame:"Game",colPv:"PV",colVisitStart:"Visit → play",colStartFinish:"Play → finish",colVisitFinish:"Visit → finish",colVisitors:"Visitors",colStarts:"Started",colRetries:"Replays",colTime:"Avg. session",colEnds:"Completed",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
 homeFunnelLabel:"Homepage → game (new): {clickers}/{visits} visits chose a game ({rate})",homeFunnelYouTube:"YouTube: {clickers}/{visits} visits chose a game ({rate})",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native views include verified new videos only. Visits, starts and finishes use first-party events.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Metrics cover the approved November 22 campaign videos. Select a metric or Open video to view the original post.",
 
 
@@ -197,10 +197,10 @@ function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=
 
 function renderSignals(gameRows){
  const games=new Map((gameRows||[]).map(x=>[x.game,x]));
- const W={zh:{start:"开局率",finish:"结算率",replay:"重玩次数",caught:"成功捕获",rareSeen:"遇见稀有猫",rare:"捕获稀有猫",duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
- en:{start:"Visit → start",finish:"Start → finish",replay:"Replays",caught:"Cats captured",rareSeen:"Rare encounters",rare:"Rare cats caught",duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
+ const W={zh:{start:"访问→开玩",finish:"开玩→结算",replay:"失败后重试",next:"继续挑战（新）",caught:"成功捕获（新）",rareSeen:"稀有猫挑战（新）",rare:"稀有猫捕获（新）",v2Note:"猫猫纽带的新口径从更新后开始；旧数据不补算。",legacyNote:"旧版稀有遭遇仅记庭院草丛，不能与全部捕获比较。",regionTitle:"探索区域战斗结算率（新版）",regionLabels:{yard:"庭院",home:"起始花园",sakura:"樱花林",creek:"溪流谷",volcano:"火山口",ruins:"月影遗迹",unknown:"未知来源"},duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
+ en:{start:"Visit → play",finish:"Play → finish",replay:"Retries after loss",next:"Next battles (new)",caught:"Cats captured (new)",rareSeen:"Rare battles (new)",rare:"Rare captures (new)",v2Note:"New Cat Bond data only; legacy events are not backfilled.",legacyNote:"Old rare encounters counted yard spawns only, not all catches.",regionTitle:"Battle finish rate by region (new)",regionLabels:{yard:"Yard",home:"Home garden",sakura:"Sakura woods",creek:"Creek valley",volcano:"Volcano",ruins:"Moonshadow ruins",unknown:"Unknown"},duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
  const cards=[
- {id:'cat-bond',priority:1,subtitle:W.bond,items:[['caught','bond_capture'],['rareSeen','bond_rare_encounter'],['rare','bond_rare_capture'],['duo','bond_duo_used'],['yard','bond_yard_built'],['surprise','bond_surprise']]},
+ {id:'cat-bond',priority:1,subtitle:W.bond,items:[['caught','bond_capture_v2'],['rareSeen','bond_rare_attempt_v2'],['rare','bond_rare_capture_v2'],['duo','bond_duo_used'],['yard','bond_yard_built'],['surprise','bond_surprise']]},
  {id:'pawsibly-innocent',priority:1,subtitle:W.heist,items:[['room1','cat_room_1'],['room8','cat_room_8'],['escaped','cat_escape'],['seen','cat_caught'],['near','cat_close_call'],['yarn','cat_yarn_distracted']]},
  {id:'tiny-town',priority:0,subtitle:W.town,items:[['combo','town_combo_discovered'],['legend','town_legendary_unlocked'],['resident','town_neighbor_story'],['townWin','town_win'],['townLose','town_lose'],['townReplay','town_replayed']]},
  {id:'elsewhere',priority:0,subtitle:W.story,items:[['storyYes','elsewhere_return_yes'],['storyMaybe','elsewhere_return_maybe']]}
@@ -210,15 +210,36 @@ function renderSignals(gameRows){
   const r=games.get(g.id),valid=!!r&&Number(r.pageviews)>0,signals=r?.signals||{};
   const count=k=>valid&&Number.isFinite(Number(signals[k]))?format(signals[k]):'';
   const ratio=(x,y)=>valid&&Number(y)>0&&Number(x)<=Number(y)?format(x)+' / '+format(y)+' · '+format(pct(x,y))+'%':'';
-  const rows=[line(W.start,ratio(r?.startedViews,r?.pageviews)),line(W.finish,ratio(r?.ends,r?.starts)),line(W.replay,valid?format(r.retries):'')];
+  const bond=g.id==='cat-bond',cv=r?.conversion||{},active=Number(cv.pageviews)>0;
+  const rows=bond?[
+   line(W.start,active?ratio(cv.startedViews,cv.pageviews):''),
+   line(W.finish,active?ratio(signals.bond_battle_end_v2||0,signals.bond_battle_start_v2||0):''),
+   line(W.replay,active?format(signals.bond_retry_loss_v2||0):''),
+   line(W.next,active?format(signals.bond_next_battle_v2||0):'')
+  ]:[
+   line(W.start,ratio(cv.startedViews,cv.pageviews)),
+   line(W.finish,ratio(cv.finishedViews,cv.startedViews)),
+   line(W.replay,valid?format(r.retries):'')
+  ];
   if(g.id==='elsewhere'&&Number(elsewhereData?.summary?.runs)>0){
    const z=elsewhereData.summary;
    rows.push(line(W.storyFinish,z.fullRate==null?'':format(z.fullRate)+'%'),line(W.storyReplay,z.replayRate==null?'':format(z.replayRate)+'%'));
   }
-  for(const [label,key] of g.items)rows.push(line(W[label],count(key)));
+  for(const [label,key] of g.items)rows.push(line(W[label],
+   bond&&key.endsWith('_v2')?(active?format(signals[key]||0):''):count(key)));
   const title=gameNames[g.id]?.[lang]||g.id;
   const feedback=g.id==='pawsibly-innocent'&&Number(signals.play_feedback_fun)>0?'<p class="focus-subtitle">'+escapeHTML(t('feelPrefix'))+' · '+format(signals.play_feedback_fun)+'</p>':'';
-  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+feedback+'</article>';
+  const legacy=bond?'<p class="focus-subtitle">'+escapeHTML(W.v2Note)+'</p>'+
+   (Number(signals.bond_rare_encounter)>0||Number(signals.bond_rare_capture)>0?
+    '<p class="focus-subtitle">'+escapeHTML(W.legacyNote)+'</p>':''):'';
+  const regions=bond&&active?'<details class="studio-advanced"><summary>'+
+   escapeHTML(W.regionTitle)+'</summary>'+['yard','home','sakura','creek','volcano','ruins','unknown']
+   .map(id=>{const start=Number(signals['bond_region_'+id+'_start_v2']||0);
+    const end=Number(signals['bond_region_'+id+'_end_v2']||0);
+    return line(W.regionLabels[id],start>0&&end<=start?
+      format(end)+' / '+format(start)+' · '+format(pct(end,start))+'%':'');
+   }).join('')+'</details>':'';
+  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+regions+legacy+feedback+'</article>';
  }).join('');
 }
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(j.records)>0;
@@ -238,11 +259,23 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  const startRate=known&&x.pageviews>0&&x.startedViews<=x.pageviews?' <small>'+format(x.startRate??pct(x.startedViews,x.pageviews))+'%</small>':'';
  const finishRate=known&&x.starts>0&&x.ends<=x.starts?' <small>'+format(pct(x.ends,x.starts))+'%</small>':'';
  const finished=num('ends')+finishRate;
+ const isBond=x.game==='cat-bond',cv=x.conversion||{},sb=x.signals||{};
+ const bondActive=Number(cv.pageviews)>0;
+ const bondStarts=bondActive?format(sb.bond_battle_start_v2||0):'';
+ const bondEnds=bondActive?format(sb.bond_battle_end_v2||0)+
+  (Number(sb.bond_battle_start_v2)>0&&Number(sb.bond_battle_end_v2)<=Number(sb.bond_battle_start_v2)?
+   ' <small>'+format(pct(sb.bond_battle_end_v2,sb.bond_battle_start_v2))+'%</small>':''):'';
+ const bondRetries=bondActive?format(sb.bond_retry_loss_v2||0):'';
+ const conv=(a,b)=>Number(b)>0&&Number(a)<=Number(b)?
+  format(a)+' / '+format(b)+' · '+format(pct(a,b))+'%':'';
+ const c1=conv(cv.startedViews,cv.pageviews);
+ const c2=conv(cv.finishedViews,cv.startedViews);
+ const c3=conv(cv.finishedViews,cv.pageviews);
  const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url=x.game==="hub"?"/":"/"+encodeURIComponent(x.game)+"/";
  // The homepage is not a game: show its pageviews only. Do not display
  // gameplay counts, placeholder dashes or conversion rates in its row.
- if(x.game==="hub")return '<tr><td><a class="game-name" href="/">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td></td><td></td><td></td></tr>';
- return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+num('starts')+startRate+'</td><td>'+finished+'</td><td>'+num('retries')+'</td></tr>';
+ if(x.game==="hub")return '<tr><td><a class="game-name" href="/">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+ return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+(isBond?bondStarts:num('starts')+startRate)+'</td><td>'+(isBond?bondEnds:finished)+'</td><td>'+(isBond?bondRetries:num('retries'))+'</td><td>'+c1+'</td><td>'+c2+'</td><td>'+c3+'</td></tr>';
 }).join("");
 const channels=Array.isArray(j.byChannel)?j.byChannel:[];
 const sourceAliases={itch:['itch','itch.io','itchio','itch.zone'],youtube:['youtube','youtube.com','youtu.be','m.youtube.com'],tiktok:['tiktok','tiktok.com'],instagram:['instagram','instagram.com','l.instagram.com'],bluesky:['bluesky','bsky.app','bsky.social']};

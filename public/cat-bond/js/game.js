@@ -922,6 +922,9 @@ class Game {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
     this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
+    // Persist the region BEFORE the arena changes this.scene to 'battle'.
+    this.battle._analyticsRegion=this._returnScene==='map'
+      ?(window.WorldMap?.currentRegion||'unknown'):'yard';
     // First duo preview: a ONE-TIME, real playable signature move in the
     // first eligible follow-up hunt. Otherwise the short early battles finish
     // long before duo charge (normally +3.2/s) can reach 100. An S-rank
@@ -945,7 +948,8 @@ class Game {
     // Unified Morrow Wish analytics: a capture battle is a game "run". If the
     // previous run ended in a loss, count this fresh attempt as a retry too.
     if (this._lastBattleLost) { metric('game_retry', { rarity: wildSpecies.rarity }); this._lastBattleLost = false; }
-    metric('game_start', { level: (State.S.catchCount || 0) + 1, rarity: wildSpecies.rarity });
+    metric('game_start', { level: (State.S.catchCount || 0) + 1, rarity: wildSpecies.rarity,
+      region:this.battle._analyticsRegion,practice:!!opts.masteryChallenge });
     document.getElementById('battle-ui').classList.add('on');
     // Garden guidance has a higher z-index than the battle buttons. It must
     // be hidden immediately, not only on the next yard HUD refresh.
@@ -1614,10 +1618,11 @@ class Game {
       const ownedCat=State.S.cats.find(cat=>cat.species===b.wild.id)||b.partner;
       const reward=win?this.recordBattleMastery(b.wild,performance,ownedCat):null;
       if(win){
-        metric('game_complete',{practice:true,rarity:b.wild.rarity,grade:performance.grade});
+        metric('game_complete',{practice:true,rarity:b.wild.rarity,grade:performance.grade,
+          region:b._analyticsRegion});
         metric('bond_mastery_rematch_complete',{breed:b.wild.id,grade:performance.grade});
       }else{
-        metric('game_over',{practice:true,rarity:b.wild.rarity});
+        metric('game_over',{practice:true,rarity:b.wild.rarity,region:b._analyticsRegion});
         this._lastBattleLost=true;
       }
       State.save();this.refreshHUD();
@@ -1723,7 +1728,8 @@ class Game {
       State.save();
       this.refreshHUD();
       // Unified analytics: a won capture completes the run; also a capture event.
-      metric('game_complete', { level: State.S.catchCount, rarity: b.wild.rarity, score: State.S.catchCount });
+      metric('game_complete', { level: State.S.catchCount, rarity: b.wild.rarity,
+        region:b._analyticsRegion, score: State.S.catchCount });
       window.MorrowwishAudio?.effect?.('capture');
       metric('cat_capture', { species: b.wild.id, rarity: b.wild.rarity,addedToRoster:!reunion });
       if(State.S.catchCount===1)metric('bond_first_capture',{rarity:b.wild.rarity});
@@ -1734,7 +1740,8 @@ class Game {
     } else {
       // Unified analytics: fleeing/wiping ends the run as a loss.
       window.MorrowwishAudio?.effect?.('end_fail');
-      metric('game_over', { level: (State.S.catchCount || 0) + 1, rarity: b.wild.rarity });
+      metric('game_over', { level: (State.S.catchCount || 0) + 1, rarity: b.wild.rarity,
+        region:b._analyticsRegion });
       this._lastBattleLost = true;   // a subsequent battle counts as a retry
       this.toast('💨 野生猫猫跑掉了…下次再来！');
       if (!backToMap) document.getElementById('yard-actions').classList.remove('hidden');
