@@ -19,6 +19,39 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    // Every breed has a real English description in all cat, map and battle panels.
+    '爱睡懒觉的橘猫，据说三斤起步。': 'A sleepy orange tabby who believes every nap deserves a snack.',
+    '标准狸花猫，机灵又好动。': 'A bright-eyed brown tabby, always ready for mischief.',
+    '银渐层的雏形，蹲窗台看雨。': 'A soft silver kitten who watches rainy days from the windowsill.',
+    '黑夜里只剩一双发光的眼睛。': 'A tiny midnight shadow with two glowing eyes.',
+    '一身奶白，像落了一层初雪。': 'Snow-white fur, as soft as the first winter snowfall.',
+    '奶油色的小懒猫，踩奶高手。': 'A cream-colored cuddlebug and champion biscuit maker.',
+    '黑白分明的奶牛猫，话痨一只。': 'A chatty black-and-white kitten dressed for adventure.',
+    '三色福猫，传说能招来好运。': 'A lucky calico with three colors and a sunny spirit.',
+    '穿燕尾服的绅士，优雅又傲娇。': 'A dapper tuxedo charmer, equal parts grace and sass.',
+    '英短蓝猫，圆脸包子，捏不腻。': 'A round-cheeked British Blue with irresistible plush fur.',
+    '银渐层，眼线天生，表情包担当。': 'A silver-shaded sweetheart with natural eyeliner.',
+    '布偶幼崽，软成一团云。': 'A fluffy little Ragdoll as soft as a passing cloud.',
+    '折耳小团子，坐姿像佛系大师。': 'A gentle folded-ear kitten who loves peaceful afternoons.',
+    '橘白相间的起司猫，贪吃界冠军。': 'An orange-and-white snack lover with a cheesy smile.',
+    '曼基康矮脚猫，小短腿跑起来超可爱。': 'A tiny Munchkin whose short legs never slow it down.',
+    '金渐层，雍容华贵的小土豪。': 'A golden-shaded kitten with the manners of royalty.',
+    '暹罗贵族，蓝眼如宝石，嗓门极大。': 'A blue-eyed Siamese noble with a very loud opinion.',
+    '粉樱梦幻猫，走过留下花瓣。': 'A dreamy pink-blossom kitten who leaves petals in its wake.',
+    '缅因巨猫，像一头小狮子。': 'A majestic Maine Coon with the heart of a little lion.',
+    '半透明的紫雾猫，来去无声。': 'A misty violet cat who vanishes without a sound.',
+    '挪威森林猫，披着厚毛的山林王者。': 'A forest wanderer wrapped in a thick, glorious coat.',
+    '孟加拉豹猫，野性斑纹，爆发极快。': 'A spotted Bengal with wild markings and lightning-fast paws.',
+    '传说中背负太阳的火焰之猫。': 'A legendary flame cat said to carry the sun.',
+    '踏月而行的云端仙猫，毛泛微光。': 'A moonlit cloud cat whose fur glows softly at night.',
+    '身披星河的梦境之猫，极为罕见。': 'A dream cat wrapped in starlight, rarely seen.',
+    '阿比西尼亚猫，身形轻巧，额头有细细的暖金纹。': 'A nimble Abyssinian with fine golden markings on its brow.',
+    '美短银虎斑，背上是醒目的漩涡纹。': 'A silver American Shorthair with bold swirling stripes.',
+    '雪鞋猫，深色面罩配四只白袜子。': 'A Snowshoe kitten with a dark mask and four white paws.',
+    '孟买猫，一身亮黑毛，像迷你黑豹。': 'A glossy black Bombay, small but fierce as a panther.',
+    '土耳其梵猫，雪白的身体和奶橘色尾巴。': 'A Turkish Van with snowy fur and a soft orange tail.',
+    '波斯猫，圆圆的娃娃脸，蓬松得像云朵。': 'A Persian with a doll-like face and cloud-soft fur.',
+    '斯芬克斯猫，暖桃色皮肤、大耳朵，活力十足。': 'An energetic Sphynx with warm peach skin and enormous ears.',
     // ---- site shell (back link + aria) ----
     '← Morrow Wish 首页': '← Morrow Wish',
     '返回 Morrow Wish': 'Back to Morrow Wish',
@@ -421,6 +454,16 @@
     '传说中背负太阳的火焰之猫。': 'The legendary flame cat said to carry the sun.',
     '踏月而行的云端仙猫，毛泛微光。': 'A celestial cat that walks on moonlight, fur faintly aglow.',
     '身披星河的梦境之猫，极为罕见。': 'A dream cat draped in the galaxy — exceedingly rare.',
+    // Seven additional breeds: without these, English battle prep displays
+    // Chinese-only breed lore and fails the real CrazyGames locale gate.
+    '阿比西尼亚猫，身形轻巧，额头有细细的暖金纹。': 'A lithe Abyssinian cat with fine warm-gold markings on its forehead.',
+    '美短银虎斑，背上是醒目的漩涡纹。': 'An American shorthair silver tabby with bold swirls across its back.',
+    '雪鞋猫，深色面罩配四只白袜子。': 'A Snowshoe cat with a dark face mask and four little white socks.',
+    '孟买猫，一身亮黑毛，像迷你黑豹。': 'A sleek black Bombay cat, like a miniature panther.',
+    '土耳其梵猫，雪白的身体和奶橘色尾巴。': 'A Turkish Van with a snowy coat and a soft orange tail.',
+    '波斯猫，圆圆的娃娃脸，蓬松得像云朵。': 'A Persian cat with a round doll face and a cloud-soft fluffy coat.',
+    '斯芬克斯猫，暖桃色皮肤、大耳朵，活力十足。': 'An energetic Sphynx cat with peach-colored skin and oversized ears.',
+
 
     // ---- skill names ----
     // cat-instinct rework names (Spec A)

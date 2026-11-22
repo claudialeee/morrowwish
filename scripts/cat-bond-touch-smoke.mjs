@@ -77,6 +77,9 @@ try{
       assert.equal(await page.locator('#panel.open').count(),0,'Yard menu tap must close panel');
       // Verify expedition actions work on actual phone-sized game pages.
       await page.locator('#fab-map').tap();
+      // Isolate navigation QA from randomly spawning wild cats that can
+      // immediately open a separate prebattle dialog before the menu tap.
+      await page.evaluate(()=>window.WorldMap.onEncounter(()=>{}));
       await page.locator('#panel.open .map-destination.available').first().tap();
       await page.locator('#map-menu').waitFor({state:'visible'});
       const beforeMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
@@ -93,6 +96,40 @@ try{
       assert.ok((await page.locator('#panel.open .card').innerText()).includes('小卖部'),
         'Map shortcut must open the actual purchasing interface');
       assert.equal(await page.evaluate(()=>window.__game.scene),'map','Shopping must not return to yard');
+      const navBack=page.locator('#panel.open .panel-back');
+      assert.equal(await navBack.isVisible(),true,'A map menu child must offer a visible Back button');
+      const navRect=await navBack.boundingBox();
+      assert.ok(navRect&&navRect.x>=-1&&navRect.x+navRect.width<=width+1&&navRect.height>=40,
+        'The Back control must fit a phone-sized viewport: '+JSON.stringify(navRect));
+      await navBack.tap();
+      assert.equal(await page.locator('#panel.open .explore-menu').count(),1,
+        'Back from Shop returns to the expedition menu, not the yard');
+      await page.locator('#panel.open [data-menu-cat-action="detail"]').first().tap();
+      assert.equal(await page.locator('#panel.open #cat-detail').count(),1,
+        'Cat status opens as a navigable child of the map menu');
+      await page.locator('#panel.open #cd-skills').tap();
+      assert.equal(await page.locator('#panel.open #sk-trainer').count(),1,
+        'Skills page opens as a child of Cat Status');
+      await page.locator('#panel.open .panel-back').tap();
+      assert.equal(await page.locator('#panel.open #cat-detail').count(),1,
+        'Back from Skills returns to the same cat status');
+      await page.locator('#panel.open .panel-back').tap();
+      assert.equal(await page.locator('#panel.open .explore-menu').count(),1,
+        'Back from Cat Status returns to the expedition menu');
+      await page.locator('#panel.open [data-explore-action="cats"]').tap();
+      await page.locator('#panel.open [data-breed]').first().tap();
+      assert.equal(await page.locator('#panel.open #cat-detail').count(),1,
+        'Cat roster opens a cat detail view');
+      await page.locator('#panel.open .panel-back').tap();
+      assert.equal(await page.locator('#panel.open [data-breed]').count()>0,true,
+        'Back from a cat detail in the roster returns to the roster');
+      await page.locator('#panel.open .panel-back').tap();
+      assert.equal(await page.locator('#panel.open .explore-menu').count(),1,
+        'Back from the roster returns to the map menu');
+      await page.locator('#panel.open [data-explore-action="squad"]').tap();
+      await page.locator('#panel.open #map-squad-cancel').tap();
+      assert.equal(await page.locator('#panel.open .explore-menu').count(),1,
+        'Cancel from the team selection returns to the parent menu');
       await page.locator('#panel .panel-dismiss').tap();
       const afterMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
       assert.deepEqual(afterMenu,beforeMenu,'Closing menu must resume the same region');
@@ -177,6 +214,9 @@ try{
     await lp.evaluate(()=>{
       window.WorldMap.onEncounter(()=>{});
       window.WorldMap.enterRegion(window.WorldMap.REGIONS.find(r=>window.WorldMap.isUnlocked(r.id)).id);
+      // Leaving the region picker open freezes map updates intentionally.
+      // Close it exactly as a real player does after entering a destination.
+      window.UI.closeAll();
       // Test setup enters region via API instead of actual map chooser button;
       // dismiss the still-open chooser or Game.update correctly pauses walking.
       UI.closeAll();

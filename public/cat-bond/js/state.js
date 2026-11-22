@@ -179,6 +179,65 @@ function load() {
 }
 function hardReset() { S = DEFAULT_STATE(); save(); }
 
+// Expedition health: casual battles always restore everyone to full HP.
+// Hardcore wounds heal automatically in real time (including while offline):
+// 100% over five minutes, no button or timer required.
+const HEALTH_REGEN_MS = 5 * 60 * 1000;
+const FISH_HEAL_FRACTION = 0.35;
+function catHpFraction(cat, now=Date.now()) {
+  if (!cat || difficulty() === 'casual') return 1;
+  const initial=typeof cat._hpFrac==='number'?Math.max(.15,Math.min(1,cat._hpFrac)):1;
+  if (initial>=1) {
+    delete cat._hpFrac;delete cat._hpAt;
+    return 1;
+  }
+  const at=Number.isFinite(cat._hpAt)?Math.min(now,cat._hpAt):now;
+  const hp=Math.min(1,initial+Math.max(0,now-at)/HEALTH_REGEN_MS);
+  if(hp>=1){delete cat._hpFrac;delete cat._hpAt;return 1;}
+  cat._hpFrac=hp;cat._hpAt=now;
+  return hp;
+}
+function setBattleHealth(cat, ratio, now=Date.now()) {
+  if(!cat)return 1;
+  if(difficulty()==='casual'){delete cat._hpFrac;delete cat._hpAt;return 1;}
+  const hp=Math.max(.15,Math.min(1,Number.isFinite(ratio)?ratio:1));
+  if(hp>=1){delete cat._hpFrac;delete cat._hpAt;return 1;}
+  cat._hpFrac=hp;cat._hpAt=now;
+  return hp;
+}
+function healAllCats() {
+  let count=0;
+  for(const cat of S.cats||[]){
+    if(cat._hpFrac!==undefined || cat._hpAt!==undefined)count++;
+    delete cat._hpFrac;delete cat._hpAt;
+  }
+  if(count)save();
+  return count;
+}
+function feedFishForHealth(cat) {
+  if(!cat)return {ok:false,reason:'cat'};
+  if(difficulty()==='casual')return {ok:false,reason:'full'};
+  const before=catHpFraction(cat);
+  if(before>=.999)return {ok:false,reason:'full'};
+  if((S.fish||0)<1)return {ok:false,reason:'fish'};
+  S.fish--;
+  const after=Math.min(1,before+FISH_HEAL_FRACTION);
+  setBattleHealth(cat,after);
+  save();
+  return {ok:true,cost:1,before,after};
+}
+function feedFishForTeam(cats) {
+  const unique=[...new Map((cats||[]).filter(Boolean).map(c=>[c.uid,c])).values()];
+  if(difficulty()==='casual')return {ok:false,reason:'full'};
+  const wounded=unique.map(c=>({cat:c,before:catHpFraction(c)})).filter(x=>x.before<.999);
+  if(!wounded.length)return {ok:false,reason:'full'};
+  if((S.fish||0)<wounded.length)return {ok:false,reason:'fish',cost:wounded.length};
+  S.fish-=wounded.length;
+  for(const x of wounded)setBattleHealth(x.cat,Math.min(1,x.before+FISH_HEAL_FRACTION));
+  save();
+  return {ok:true,cost:wounded.length,count:wounded.length};
+}
+
 // Offline/idle progression: cats gain a little xp & affinity, lose hunger/joy.
 function applyIdle() {
   const now = Date.now();
@@ -239,6 +298,7 @@ function difficulty() { return (S.difficulty === 'hardcore') ? 'hardcore' : 'cas
 function difficultyMult() { return DIFFICULTY_MULTS[difficulty()]; }
 function setDifficulty(mode) {
   S.difficulty = (mode === 'hardcore') ? 'hardcore' : 'casual';
+  if(S.difficulty==='casual')healAllCats();
   save();
   return S.difficulty;
 }
@@ -248,4 +308,6 @@ window.State = {
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
+  HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
+  healAllCats, feedFishForHealth, feedFishForTeam,
 };

@@ -176,9 +176,11 @@ try{
         'Dodge button must explain its function instead of only showing Space');
       await auto.click();
       assert.equal(await auto.getAttribute('aria-pressed'),'true','Click must turn automatic battle ON');
-      assert.match(await auto.innerText(),/ON|开/,'Button must show CURRENT active mode');
+      assert.match(await auto.innerText(),/Auto|自动/,'Button must name the CURRENT auto mode');
       await auto.click();
       assert.equal(await auto.getAttribute('aria-pressed'),'false','Click must turn automatic battle OFF');
+      assert.match(await auto.innerText(),/Manual|手动/,
+        'Button must name manual mode after switching back');
       assert.equal(await page.evaluate(()=>window.__game.battle.autoUsed),true,
         'Turning off auto must not erase automatic assistance from the rank evaluation');
       if(width===907){
@@ -239,12 +241,20 @@ try{
         // navigation and open the same adventure guide from its own action.
         assert.equal(await page.locator('#collection-goal').isVisible(),false,
           'The removed top combined banner must stay hidden');
-        assert.equal(await page.locator('#yard-quick-skills').isVisible(),true,
-          'Skills should be directly discoverable on the lower edge');
-        assert.equal(await page.locator('#yard-quick-work').isVisible(),true,
-          'Workshop should have a direct lower shortcut');
-        assert.equal(await page.locator('#yard-duo-status').isVisible(),true,
-          'Duo skills should have a clearly labeled right-hand shortcut');
+        // Current navigation consolidated the retired floating shortcuts into
+        // the bottom Cats and Workshop tabs. Verify real discoverability and
+        // the duo sub-tab instead of expecting deleted yard action buttons.
+        const catsNav=page.locator('#tabbar [data-tab="cats"]');
+        const workNav=page.locator('#tabbar [data-tab="work"]');
+        assert.equal(await catsNav.isVisible(),true,
+          'Cats / skills must be directly available in the bottom nav');
+        assert.equal(await workNav.isVisible(),true,
+          'Workshop must be directly available in the bottom nav');
+        await catsNav.click();
+        await page.waitForSelector('.cat-hub-tabs [data-cat-view="duo"]');
+        assert.equal(await page.locator('.cat-hub-tabs [data-cat-view="duo"]').isVisible(),true,
+          'Duo management must be visible from the Cats tab');
+        await page.locator('#tabbar [data-tab="yard"]').click();
         await page.evaluate(()=>UI.openJourney());
         await page.waitForSelector('#journey-collect');
         assert.equal(await page.locator('.journey-path').count(),5,

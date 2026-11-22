@@ -94,10 +94,10 @@ class VFX {
   // Combat mechanics (HP, invulnerability, hitstop) remain battle-owned.
   impactType(x,y,type='light',options={}){
     const color=options.color||({
-      light:'#fff1ce',heavy:'#ffe4a4',stagger:'#ffd888',kill:'#fff1b3',
+      light:'#fff1ce',heavy:'#ffe4a4',crit:'#fff3b4',stagger:'#ffd888',kill:'#fff1b3',
       heal:'#a6e9c5',guard:'#9ce5ce',reflect:'#addaff'
     }[type]||'#fff1ce');
-    const heavy=type==='heavy'||type==='stagger'||type==='kill';
+    const heavy=type==='heavy'||type==='crit'||type==='stagger'||type==='kill';
     const soft=type==='heal'||type==='guard'||type==='reflect';
     const duration=soft?.34:.25;
     this.ring(x,y,{r0:heavy?10:4,vr:(heavy?72:soft?40:32)/duration,
@@ -109,6 +109,7 @@ class VFX {
       grav:type==='heal'?-35:0});
     if(!soft)this.fx.push({type:'flash',x,y,r:heavy?12:7,
       life:heavy?.11:.08,max:heavy?.11:.08});
+    if(type==='crit')this.ring(x,y,{r0:7,vr:280,life:.27,color:'#fff5d4',width:2});
     if(type==='stagger')this.orb(x,y,'#fff0bf',4);
     if(type==='reflect')this.beam(x-8,y-4,x+21,y-16,'#a3d5ff');
     if(type==='heal')this.orb(x,y,'#ace9cd',4);

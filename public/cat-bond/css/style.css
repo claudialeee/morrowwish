@@ -273,7 +273,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .team-slot:hover { transform: scale(1.05); }
 .team-slot canvas { width: 46px; height: 40px; display: block; margin: 0 auto; }
 .team-slot.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(255,211,107,0.5); }
-.team-slot.fainted { filter: grayscale(1); opacity: 0.4; }
+.team-slot.fainted { filter: none; opacity: 1; }
 .team-slot .slot-key { position: absolute; top: 2px; left: 4px; font-size: 0.7rem; font-weight: 800; color: var(--gold); }
 .team-slot .slot-hp { height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; margin-top: 2px; }
 .team-slot .slot-hp > span { display: block; height: 100%; background: #7ee787; transition: width 0.2s, background 0.2s; }
@@ -3462,3 +3462,187 @@ body.cb-exploring #yard-placement-dock{display:none!important}
    height:31px!important;min-height:31px!important
  }
 }
+
+/* Expedition navigation v2: one restrained, accessible row below the studio
+   utility toolbar. Previously the three buttons were independently positioned
+   (including an extra menu row), producing a ragged map overlay. */
+#stage #map-actions{
+  position:absolute;
+  z-index:29;
+  top:calc(env(safe-area-inset-top,0px) + 55px);
+  right:max(8px,env(safe-area-inset-right,0px));
+  left:auto;
+  width:min(382px,calc(100% - 16px));
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:minmax(0,1.16fr) minmax(0,1.13fr) minmax(0,.79fr);
+  align-items:stretch;
+  gap:4px;
+  padding:4px;
+  border:1px solid rgba(133,151,128,.28);
+  border-radius:15px;
+  background:rgba(255,251,243,.91);
+  box-shadow:0 4px 16px rgba(48,67,51,.15);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  pointer-events:auto;
+}
+#stage #map-actions[hidden],
+#stage #map-actions:has(> #map-index[hidden]),
+#stage:has(#battle-ui.on) #map-actions{display:none!important}
+#stage #map-actions > button,
+body.cb-exploring #stage #map-actions > button{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+  display:flex;
+  align-items:center;justify-content:center;
+  width:100%!important;min-width:0!important;
+  height:41px!important;min-height:41px!important;max-height:41px!important;
+  margin:0!important;padding:6px 4px!important;
+  border:1px solid #d8dfd3!important;
+  border-radius:11px!important;
+  background:#f7f7f0!important;
+  color:#48634f!important;
+  box-shadow:none!important;
+  font:800 clamp(11px,1.35vw,12.5px)/1.15 system-ui,sans-serif!important;
+  text-align:center;white-space:nowrap;
+  cursor:pointer;touch-action:manipulation;
+  transition:background-color .15s ease, border-color .15s ease;
+}
+#stage #map-actions > #map-squad{background:#e5f3e5!important;border-color:#aed0b7!important;color:#355a45!important}
+#stage #map-actions > #map-index{background:#fff2d7!important;border-color:#e5cd91!important;color:#615640!important}
+#stage #map-actions > #map-menu{background:#f4eef6!important;border-color:#dfcfe3!important;color:#65506b!important}
+#stage #map-actions > button:hover{filter:brightness(.97)}
+#stage #map-actions > button:active{filter:brightness(.94)}
+#stage #map-actions > button:focus-visible{outline:3px solid #6c9e81!important;outline-offset:2px!important;z-index:1}
+@media(max-width:520px){
+  #stage #map-actions{
+    left:50%;right:auto;
+    transform:translateX(-50%);
+    width:min(382px,calc(100% - 14px));
+    top:calc(env(safe-area-inset-top,0px) + 52px);
+  }
+  #stage #map-actions > button,
+  body.cb-exploring #stage #map-actions > button{
+    font-size:clamp(10.5px,3vw,12px)!important;
+    height:42px!important;min-height:42px!important;max-height:42px!important;
+  }
+}
+@media(max-width:360px){
+  #stage #map-actions{gap:3px;padding:3px;border-radius:13px}
+  #stage #map-actions > button,
+  body.cb-exploring #stage #map-actions > button{padding:5px 1px!important;font-size:10.5px!important}
+}
+@media(orientation:landscape) and (max-height:530px){
+  #stage #map-actions{top:calc(env(safe-area-inset-top,0px) + 50px);right:max(7px,env(safe-area-inset-right,0px));left:auto;transform:none;width:min(365px,calc(100% - 14px));padding:3px}
+  #stage #map-actions > button,
+  body.cb-exploring #stage #map-actions > button{height:35px!important;min-height:35px!important;max-height:35px!important}
+}
+@media(prefers-reduced-motion:reduce){#stage #map-actions > button{transition:none}}
+
+/* Combat squad: put bench BELOW the entire live team row. Absolute offsets were
+   covering the second cat's HP on desktop and both phone orientations. */
+#stage #battle-ui #battle-squad-rail{
+ position:absolute;z-index:7;left:10px;right:auto;bottom:auto;
+ top:calc(env(safe-area-inset-top,0px) + 99px);
+ max-width:calc(100% - 132px);width:max-content;
+ display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+ pointer-events:none
+}
+#stage #battle-ui #battle-squad-rail #team-slots{
+ position:relative!important;inset:auto!important;
+ top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;
+ transform:none!important;margin:0!important;
+ width:max-content!important;max-width:100%!important;min-width:0;
+ flex-direction:row!important;align-items:flex-start!important;
+ pointer-events:auto
+}
+#stage #battle-ui #battle-squad-rail #bench-slots{
+ position:relative!important;inset:auto!important;
+ top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;
+ transform:none!important;margin:0!important;
+ box-sizing:border-box;flex:0 0 auto;max-width:100%!important;
+ pointer-events:auto
+}
+#stage #battle-ui #battle-squad-rail #bench-slots[hidden]{display:none!important}
+#stage #battle-ui #battle-squad-rail #bench-slots.is-open{
+ width:min(174px,100%);max-width:100%!important;
+ max-height:min(205px,calc(100dvh - 275px));overflow-y:auto
+}
+#stage #battle-ui #battle-squad-rail .bench-caption{
+ min-height:29px!important;min-width:80px!important
+}
+/* A fainted cat is recognizable by empty HP and warm muted card trim.
+   Never grayscale/dim its face: keep the actual coat, eyes, and artwork. */
+#stage #battle-ui .team-slot.fainted{
+ filter:none!important;opacity:1!important;
+ background:#f8f5ef!important;border-color:#d9cac0!important;
+}
+#stage #battle-ui .team-slot.fainted canvas,
+#stage #battle-ui .team-slot canvas{filter:none!important;opacity:1!important}
+#stage #battle-ui .team-slot.fainted .slot-hp-value{color:#906c5f!important}
+@media(max-width:700px),(pointer:coarse){
+ #stage #battle-ui #battle-squad-rail{
+  left:7px;top:calc(env(safe-area-inset-top,0px) + 99px);
+  max-width:calc(100% - 106px);gap:7px
+ }
+}
+@media(max-height:530px) and (orientation:landscape){
+ #stage #battle-ui #battle-squad-rail{
+  top:calc(env(safe-area-inset-top,0px) + 84px);
+  max-width:calc(100% - 112px);gap:5px
+ }
+ #stage #battle-ui #battle-squad-rail #bench-slots.is-open{
+  max-height:min(140px,calc(100dvh - 205px))
+ }
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #battle-squad-rail{
+ top:calc(env(safe-area-inset-top,0px) + 99px)
+}
+@media(max-height:530px) and (orientation:landscape){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #battle-ui #battle-squad-rail{
+  top:calc(env(safe-area-inset-top,0px) + 84px)
+ }
+}
+
+/* Cat Bond panel breadcrumb navigation */
+#panel .panel-nav{
+  display:flex;align-items:center;min-height:44px;
+  margin:0 42px 10px 0;padding:0;
+  position:sticky;top:-22px;z-index:4;
+  pointer-events:none;
+}
+#panel .panel-nav .panel-back{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;max-width:100%;padding:9px 14px;
+  background:#eaf4e7;color:#385f48;border:1px solid #b5d2bc;
+  border-radius:12px;font:800 13px/1.3 system-ui,sans-serif;
+  cursor:pointer;touch-action:manipulation;pointer-events:auto;
+  box-shadow:0 3px 9px rgba(43,86,57,.09);
+}
+#panel .panel-nav .panel-back:hover{background:#dcefdc}
+#panel .panel-nav .panel-back:focus-visible{outline:3px solid #639f7b;outline-offset:2px}
+#panel .card:has(.panel-nav) #sk-back,
+#panel .card:has(.panel-nav) #tr-back,
+#panel .card:has(.panel-nav) #breed-back,
+#panel .card:has(.panel-nav) #duo-return{display:none}
+@media(max-width:520px){
+  #panel .panel-nav{top:-12px;margin:0 37px 8px 0}
+  #panel .panel-nav .panel-back{min-height:44px;padding:9px 11px;font-size:12px}
+}
+
+
+/* Difficulty-aware post-battle recovery and direct fish healing on the map. */
+#panel .explore-health-rule{margin:7px 0 10px;padding:8px 11px;border:1px solid #cadcc5;border-radius:11px;background:#f4f9ee;color:#49674f;font:650 12px/1.5 system-ui,sans-serif}
+#panel .explore-cat-buttons .explore-fish-heal{flex:1 1 100%;background:#eaf6ed;border-color:#a7cfad;color:#3b7251;font-weight:800;min-height:37px;white-space:normal;text-align:center}
+#panel .explore-cat-buttons .explore-fish-heal:disabled{opacity:.53;cursor:not-allowed;background:#f5f5f1;color:#717f72}
+#panel .battle-recovery{margin:12px 0;padding:12px 14px;border:1px solid #b7d7bb;border-radius:13px;background:linear-gradient(135deg,#f1f9ef,#fbf6e9);color:#405e49;font:600 12px/1.5 system-ui,sans-serif}
+#panel .battle-recovery-title{display:block;font:850 15px/1.3 system-ui,sans-serif;color:#345c42}
+#panel .battle-recovery p{margin:5px 0 8px;line-height:1.55}
+#panel .battle-recovery-team{display:flex;flex-wrap:wrap;gap:5px 9px}
+#panel .battle-recovery-cat{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid #d8e6d4;border-radius:8px;background:rgba(255,255,255,.72);white-space:normal}
+#panel .battle-recovery-cat b{color:#29734b}
+@media(max-width:440px){#panel .battle-recovery{padding:10px}#panel .battle-recovery-team{flex-direction:column;align-items:flex-start}}

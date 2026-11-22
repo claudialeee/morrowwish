@@ -732,9 +732,9 @@
     ctx.fillText('← 回庭院', bbx + bbw / 2, bby + bbh / 2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText('🗺️ 世界地图', W / 2, game.isTouch&&W<530?120:83);
+    ctx.fillText('🗺️ 世界地图', W / 2, W<650?132:83);
     ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('点击已解锁区域进入探索', W / 2, game.isTouch&&W<530?146:105);
+    ctx.fillText('点击已解锁区域进入探索', W / 2, W<650?158:105);
     ctx.textAlign = 'left';
   }
 
@@ -1034,9 +1034,9 @@
     var compact=game.isTouch&&W>game.H&&game.H<520;
     // The website's home/fullscreen/language/music controls occupy the first
     // 48px. Put the MAP HUD below them, never underneath those buttons.
-    // On narrow portraits the map-selection buttons use the second row,
-    // so place the region label in the third row rather than overlapping.
-    var narrow=game.isTouch&&W<530;
+    // Under 650px, including narrow desktop windows, the unified navigation
+    // takes the second row; region info belongs below it, not behind it.
+    var narrow=W<650;
     var hx=compact?64:(narrow?12:20),hy=narrow?119:62,
       hw=compact?180:220,hh=compact?46:56;
     ctx.fillStyle = 'rgba(27,16,38,0.6)';

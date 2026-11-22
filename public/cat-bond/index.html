@@ -32,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=upgrade-chains-hud-20261122" />
+  <link rel="stylesheet" href="css/style.css?v=expedition-hp-recovery-20261122-1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -57,10 +57,12 @@
       <div id="first-quest" role="region" aria-label="猫猫冒险指引" aria-live="polite" hidden></div>
       <button id="guide-help" type="button" hidden aria-label="重新查看玩法引导">? 玩法</button>
       <button id="yard-surprise" type="button" hidden></button>
-      <!-- Duo is now part of the right-hand action rail. -->
-      <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
-      <button id="map-squad" type="button" hidden aria-label="选择出战猫咪">🐾 出战猫咪</button>
-      <button id="map-menu" type="button" hidden aria-label="打开探险管理菜单" aria-haspopup="dialog" aria-controls="panel" aria-expanded="false">☰ 菜单</button>
+      <!-- Shared exploration action dock: three evenly sized controls, one row. -->
+      <nav id="map-actions" aria-label="地图操作 / Explore actions">
+        <button id="map-squad" type="button" hidden aria-label="选择出战猫咪">🐾 出战猫咪</button>
+        <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
+        <button id="map-menu" type="button" hidden aria-label="打开探险管理菜单" aria-haspopup="dialog" aria-controls="panel" aria-expanded="false">☰ 菜单</button>
+      </nav>
       <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
       <button id="yard-cat-switch" type="button" aria-label="切换庭院中的猫猫" hidden></button>
 
@@ -111,9 +113,11 @@
           <span class="duo-burst-label">双猫合击</span>
           <span class="duo-burst-track" aria-hidden="true"><i></i></span>
         </button>
-        <!-- team slots (top-left) -->
-        <div id="team-slots"></div>
-        <div id="bench-slots" aria-label="可替换上场的猫咪" hidden></div>
+        <!-- Active cards and reserves share a normal-flow rail. No overlap. -->
+        <div id="battle-squad-rail" aria-label="我方猫咪队伍">
+          <div id="team-slots"></div>
+          <div id="bench-slots" aria-label="可替换上场的猫咪" hidden></div>
+        </div>
 
         <!-- ultimate meter -->
         <div id="ult-wrap">
@@ -184,7 +188,7 @@
   </div>
 
   <!-- ?v= cache-buster: bump this number whenever JS changes so the browser can't serve stale code -->
-  <script src="js/vfx.js?v=hitfeel-seven-tiers-20261122"></script>
+  <script src="js/vfx.js?v=hitfeel-eight-tiers-20261122"></script>
   <script src="js/ward-art.js?v=paw-grounded-shield-20261122"></script>
   <script src="js/catart.js?v=36"></script>
 
@@ -196,13 +200,13 @@
   <script src="js/skills.js?v=knead-wardfix-20261122"></script>
   <script src="js/growth.js?v=growth-feature-retired-20261122"></script>
   <script src="js/adult-art.js?v=compact-grown-proportions-20261122"></script>
-  <script src="js/state.js?v=hardcore-gapscale-125-20261122"></script>
+  <script src="js/state.js?v=expedition-hp-recovery-20261122-1"></script>
   <script src="js/cat-relationships.js?v=two-currency-duomem-20261122"></script>
   <script src="js/raising.js?v=two-currency-20261122"></script>
   <script src="js/painted-regions.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/world.js?v=yard-placement-accurate-touch-20261122-v1"></script>
-  <script src="js/worldmap.js?v=compact-grown-proportions-20261122"></script>
+  <script src="js/worldmap.js?v=map-label-clearance-20261121-1"></script>
   <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
   <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
   <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
@@ -213,14 +217,14 @@
 <script src="js/duo-premium.js?v=full-stage-original-63-duo-v4-watercolor-atmosphere-20261122"></script>
   <script src="js/duo-hero.js?v=32-selected-breeds-actual-v2-20261122"></script>
   <script src="js/ult-vfx.js?v=shadow-thunder-contrast-20261122"></script>
-  <script src="js/skill-fx.js?v=all-39-skill-signatures-20261122"></script>
-  <script src="js/battle.js?v=knead-wardfix-20261122"></script>
+  <script src="js/skill-fx.js?v=contrast-audited-39-skills-20261122"></script>
+  <script src="js/battle.js?v=knead-wardfix-expedition-20261122"></script>
   <script src="js/duo-bond.js?v=duo-in-arena-aftershock-v3-20261122"></script>
-  <script src="js/ui.js?v=upgrade-chains-20261122"></script>
-  <script src="js/game.js?v=bench-without-portraits-20261122-v1"></script>
+  <script src="js/ui.js?v=expedition-hp-recovery-20261122-1"></script>
+  <script src="js/game.js?v=expedition-hp-recovery-20261122-1"></script>
   <script src="js/main.js?v=original-intro-cats-20261121-2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
-  <script src="js/i18n.js?v=knead-wardfix-20261122"></script>
+  <script src="js/i18n.js?v=knead-wardfix-i18n-20261122"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js" defer></script>
 <script src="/game-fullscreen.js?v=header-inline-share-20261121-1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>

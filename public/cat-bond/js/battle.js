@@ -671,7 +671,7 @@ class CaptureBattle {
     // Roguelike attrition: a cat carries its wounded HP between field battles via
     // cat._hpFrac (set by game.js after each explore win). Full HP if unset (yard
     // fights, fresh runs). Dead-on-arrival is avoided with a small floor.
-    const carried = (typeof cat._hpFrac === 'number') ? Math.max(0.15, Math.min(1, cat._hpFrac)) : 1;
+    const carried = window.State?.catHpFraction?.(cat) ?? 1;
     return {
       cat, i, element, bond,
       hp: Math.round(maxhp * carried), maxhp,
@@ -3903,6 +3903,10 @@ class CaptureBattle {
     const combo = Skills.checkCombo ? Skills.checkCombo(e.tags, skill) : null;
     if (combo) {
       dmg *= combo.bonusMult || 1;
+      // Real shattered-ice crit receives a distinct gold/icy impact. Other
+      // elemental combos retain their original no-extra-hitstop treatment.
+      if(combo.effect==='shatter')
+        this.vfx.impactType?.(e.x,e.y,'crit',{color:'#dceeff'});
       this.vfx.ring(e.x, e.y, { r0: 8, vr: 460, life: 0.45, color: this.elemColor(skill.element), width: 6 });
       this.vfx.text(e.x, e.y - 50, '✦', '#ffd36b', 12);
       // The paired-element strike and status effect carry the feedback.
