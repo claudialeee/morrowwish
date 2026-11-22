@@ -1017,6 +1017,11 @@ if(cgEmbed&&document.head){
   html.cg-play #stage>.in-game-top{width:100%!important;max-width:990px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}
   html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 138px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 138px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
   html.cg-play #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}
+  @media(max-width:850px){
+   html.cg-play #bonusQuick .bonus-star,html.cg-play #bonusQuickProgress{display:none!important}
+   html.cg-play #bonusQuick{padding:3px 6px!important;gap:0!important}
+   html.cg-play #bonusQuickText{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-height:none!important}
+  }
   html.cg-play .game-menu{inset:0!important}
   html.cg-play .menu-shell{max-height:98%!important}
   @media(max-height:390px){

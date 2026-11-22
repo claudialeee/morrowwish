@@ -536,6 +536,7 @@ try{
       fishOnBoard:window.__PAWSIBLY_TEST__.getState().fish.length,
        bonusWidth:document.getElementById('bonusQuick').getBoundingClientRect().width,
        bonusText:document.getElementById('bonusQuickText').textContent,
+       bonusTextFits:document.getElementById('bonusQuickText').scrollWidth<=document.getElementById('bonusQuickText').clientWidth+1,
        totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
    await iframe.screenshot({path:`test-results/pawsibly-portal-${w}x${h}.png`});
@@ -546,7 +547,7 @@ try{
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
    assert.ok(v.hud?.includes('0/3')&&v.fishOnBoard===4&&v.owner,'CrazyGames must show the three-fish goal, fourth bonus fish and owner behavior inside iframe');
-    if(w===800)assert.ok(v.bonusText==='BONUS'&&v.bonusWidth>=88,'800px portal must show a legible compact bonus label: '+JSON.stringify(v));
+    if(w===800)assert.ok(v.bonusText==='BONUS'&&v.bonusTextFits&&v.bonusWidth>=70,'800px portal must show the complete compact BONUS label: '+JSON.stringify(v));
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
@@ -582,13 +583,18 @@ try{
      roomNameVisible:getComputedStyle(document.getElementById('roomTag')).display!=='none',headDisplay:getComputedStyle(document.querySelector('.in-game-head-row')).display,
      headHeight:document.querySelector('.in-game-head-row').getBoundingClientRect().height,
      headerAreas:getComputedStyle(document.querySelector('.in-game-head-row')).gridTemplateAreas,
-     stageLeftWidth:document.querySelector('.stage-left').getBoundingClientRect().width};
+     stageLeftWidth:document.querySelector('.stage-left').getBoundingClientRect().width,
+     topControlsFit:[...document.querySelectorAll('#stageControls button')].filter(b=>getComputedStyle(b).display!=='none').every(b=>{const r=b.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&r.width>=29}),
+     roomStatusSeparate:(()=>{const a=document.querySelector('.stage-left').getBoundingClientRect(),b=document.getElementById('heistStatus').getBoundingClientRect();return a.right<=b.left+1&&a.bottom>b.top-1&&b.bottom>a.top+1})(),
+     controlsBelowRoom:(()=>{const a=document.querySelector('.stage-left').getBoundingClientRect(),b=document.getElementById('stageControls').getBoundingClientRect();return b.top>=a.bottom-2})()};
    });
    await waitPage.screenshot({path:`test-results/pawsibly-mobile-${width}.png`});
    assert.ok(layout.within&&!layout.overlap,'Every action must fit without overlap at '+width+'px: '+JSON.stringify(layout));
    assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
    assert.ok(layout.roomNumWidth>=70&&layout.roomNumHeight<=16&&layout.roomNameVisible,
      'Room label must be horizontal and name visible at '+width+'px: '+JSON.stringify(layout));
+   assert.ok(layout.topControlsFit&&layout.roomStatusSeparate&&layout.controlsBelowRoom,
+     'All top mobile controls must fit and not overlap room/progress at '+width+'px: '+JSON.stringify(layout));
    if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
   }
   await waitPage.setViewportSize({width:390,height:844});
