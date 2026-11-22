@@ -363,6 +363,8 @@ const UI = {
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'
     })[char]);
     const team=this.getPreferredBattleTeam().slice(0,2);
+    const woundedCount=this.getPreferredBattleTeam()
+      .filter(cat=>State.catHpFraction(cat)<.999).length;
     const region=window.WorldMap?.REGIONS?.find(r=>r.id===WorldMap.currentRegion);
     const regionName=region?(en?region.sub:region.name):(en?'World map':'世界地图');
     const summary=team.map((cat,i)=>{
@@ -407,7 +409,7 @@ const UI = {
       action('duo','💞','双猫纽带','Cat duos')+
       action('workshop','🧶','工坊收益','Workshop')+
       action('shop','🛒','小卖部','Shop')+
-      action('healteam','🐠','小鱼干补血','Heal with fish')+
+      action('healteam','🐠','喂鱼回血 +35% · '+woundedCount+'🐠','Fish heal +35% · '+woundedCount+'🐠')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','切换地图','Regions')+
       '</div><p class="explore-menu-tip">'+(en
