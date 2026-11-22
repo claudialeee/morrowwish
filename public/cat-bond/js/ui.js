@@ -1531,10 +1531,15 @@ const UI = {
     const facts=this.battleCatFacts(cat);
     const primary=window.Skills?.elementOf?.(cat.species)||'light';
     const secondary=window.Skills?.secondaryOf?.(cat)||null;
-    const elNames={fire:[en?'Fire':'火','🔥'],water:[en?'Water':'水','💧'],
-      grass:[en?'Nature':'草','🌿'],elec:[en?'Lightning':'雷','⚡'],
-      dark:[en?'Shadow':'暗','🌙'],light:[en?'Light':'光','✨']};
-    const elLabel=id=>(elNames[id]?.[1]||'✨')+' '+(elNames[id]?.[0]||id);
+    // Use the combat system's actual element names, not independently
+    // authored Chinese labels which can diverge from the skill rules.
+    const namesEn={fire:'Fire',water:'Water',grass:'Nature',
+      elec:'Lightning',dark:'Shadow',light:'Light'};
+    const glyphs={fire:'🔥',water:'💧',grass:'🌿',
+      elec:'⚡',dark:'🌙',light:'✨'};
+    const elLabel=id=>(glyphs[id]||'✨')+' '+(en
+      ?(namesEn[id]||id)
+      :(window.Skills?.ELEMENTS?.[id]?.name||id));
     const sideCap=window.Skills?.secondaryLimit?.(cat)||0;
     const sideChoices=window.Skills?.secondaryChoices?.(cat)||[];
     const sideUnlocked=sideChoices.slice(0,sideCap);
