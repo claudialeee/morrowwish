@@ -19,6 +19,10 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    '%，快捷键 F': '%, shortcut F',
+    '   收服×': '   Captures ×',
+    '技能名 -总伤 · 收服×N': 'Skill name · Total damage · Captures ×N',
+
     // Full English copy for Cat Bond onboarding, arena controls, world discoveries and story scenes.
     '🧰 已给 ': '🧰 Healed ',
     ' 只猫补血，消耗 ': ' cats using ',
