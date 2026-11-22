@@ -158,7 +158,7 @@ class CaptureBattle {
 
     // --- control mode: 'manual' | 'auto' (commander). Toggle in-battle. ---
     this.autoMode = !!(window.State?.S?.battlePrefs?.autoBattle);
-    this.commandTarget = null;    // commander focus-fire marker {x,y}
+    this.commandTarget = null;    // commander focus-fire locked enemy {id}
 
     // --- shared ---
     this.projectiles = [];               // {x,y,vx,vy,r,dmg,owner,life,color,kind}
@@ -545,7 +545,7 @@ class CaptureBattle {
       f.y=clamp(f.y*H/oldH,this.topMargin,Math.max(this.topMargin,H-this.bottomMargin));
     }
     for(const p of this.projectiles){p.x*=W/oldW;p.y*=H/oldH;}
-    if(this.commandTarget){this.commandTarget.x*=W/oldW;this.commandTarget.y*=H/oldH;}
+    // Commander focus stores enemy identity, not screen coordinates.
     this._stars=null;this._motes=null;
   }
 
@@ -1055,7 +1055,7 @@ class CaptureBattle {
     // WARD-AWARE TARGETING: if the chosen enemy is warded (barrier/reflect/protect) and a
     // live un-warded enemy exists, switch to it (sticky, so wards flickering don't cause
     // ping-pong). Re-derive distance/aim for the possibly-new target.
-    const picked=this.unwardedTarget(f,tgt);
+    const picked=this.commandTarget ? tgt : this.unwardedTarget(f,tgt);
     if(picked&&picked!==tgt){ tgt=picked; dist=Math.hypot(tgt.x-f.x,tgt.y-f.y)||1; }
     const tgtWarded=this.enemyWarded(tgt);
     const tgtReflect=!!tgt&&tgt.reflectT>0;   // firing a PROJECTILE at this = self-harm
@@ -1193,11 +1193,27 @@ class CaptureBattle {
     if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)&&!(tgt.reflectT>0))this.fireBasic(f,aim);
   }
 
-  // The commander's click order: the enemy nearest the focus marker. When set, the
-  // WHOLE squad (active cat + allies) prioritizes it, so commanding actually means
-  // "focus-fire THAT one". Falls back to each cat's nearest enemy when no order.
+  // Lock by enemy ID, not a stale tap coordinate: a moving pack must not
+  // silently move the entire squad's focus to a different cat.
+  commandFocusAt(x, y) {
+    if (!this.autoMode) return false;
+    const target = this.nearestEnemy(x, y);
+    if (!target) return false;
+    const radius = Math.max(this.game.isTouch ? 51 : 36,
+      (target.r || 18) + (this.game.isTouch ? 27 : 20));
+    if (Math.hypot(target.x - x, target.y - y) > radius) return false;
+    this.commandTarget = { id: target.i };
+    this._lockIdx = target.i;
+    this.vfx.ring(target.x, target.y,
+      { r0: 12, vr: 180, life: .4, color: '#ff5a7a', width: 3 });
+    return true;
+  }
   commandedTarget(fromX, fromY) {
-    if (this.commandTarget) { const t = this.nearestEnemy(this.commandTarget.x, this.commandTarget.y); if (t) return t; }
+    if (this.commandTarget) {
+      const target = this.liveEnemies().find(e => e.i === this.commandTarget.id);
+      if (target) return target;
+      this.commandTarget = null; // target defeated: resume nearest-enemy AI
+    }
     return this.nearestEnemy(fromX, fromY);
   }
   // An enemy is "warded" while it has a damage-reducing barrier, a reflect wall, or a
@@ -1296,8 +1312,8 @@ class CaptureBattle {
       if (pressedC('q')) { const a = playerAim(); this.aim = a; if (me) me._aim = a; this.skillQ(me, a); }
       if (pressedC('e')) { const a = playerAim(); this.aim = a; if (me) me._aim = a; this.skillE(me, a); }
       if (pressedC(' ')) this.dodge();                             // manual dodge in auto too
-      // click sets a focus/move marker for the squad
-      if (m.down) this.commandTarget = { x: m.x, y: m.y };
+      // Focus is set on pointer-down by game.js, once per click/tap.
+      // Holding or dragging must not silently retarget the squad.
       this._prevKeys = Object.assign({}, K);
       return;
     }
@@ -4130,6 +4146,9 @@ class CaptureBattle {
     // fight can't be won by stats alone (see constructor). Applied to ALL player
     // damage (direct + DoT) at this single chokepoint; 1 when near/under level.
     if (this.levelSuppression) dmg *= this.levelSuppression;   // logistic curve: <1 under-level, >1 over-level
+    // Global player-only balance adjustment: applies once to basics, skills,
+    // damage-over-time, ally attacks and duo hits. Enemy damage is untouched.
+    dmg *= 0.9;
     // a direct player hit extends the combo and gets the combo damage multiplier
     if (!isDot) {
       dmg *= this.comboMult(); this.addCombo(1);
@@ -4880,7 +4899,7 @@ class CaptureBattle {
         ctx.restore();
       }
       // commander focus-fire marker: the enemy the whole squad is ordered onto.
-      if (this.autoMode && this.commandTarget && e === this.commandedTarget(this.commandTarget.x, this.commandTarget.y)) {
+      if (this.autoMode && this.commandTarget?.id === e.i) {
         ctx.save();
         const pulse = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 5));
         ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff5a7a'; ctx.lineWidth = 3;
