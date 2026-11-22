@@ -1,5 +1,6 @@
 name: Rerecord Owner-Feedback Cat Game Trailers V9 - REVIEW ONLY
-# Re-record all old and new shots from current games; verify latest duo-gallery selectors.
+# V9 QA re-run: require game-earned Sakura promise, native HUD, real SSR profile,
+# four distinct room recordings, and readable caption cut lengths.
 on:
   push:
     branches: [main]
