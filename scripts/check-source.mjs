@@ -1254,6 +1254,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
      !cbUi.includes('id="cb-grow-stat-title"')||
      !cbUi.includes('id="cb-grow-bond-title"')||
      !cbUi.includes('id="cd-trainnext"')||
+     !cbUi.includes('<strong>⬆ 一键升级</strong>')||
      !cbUi.includes('id="cd-trainstat"')||
      !cbUi.includes('id="cd-feed"')||
      !cbCss.includes('#panel #cat-detail .cb-grow-interactions'))
