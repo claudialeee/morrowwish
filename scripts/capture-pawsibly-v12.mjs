@@ -52,6 +52,12 @@ function fullBoardCamera(){
  #overlay:not([hidden]) .modal .buttons{margin-top:12px!important}
  `;
  document.head.append(css);
+ // Game's #stage establishes its own stacking context; moving the REAL
+ // result dialog to the body is required for it to appear above our capture
+ // camera. This touches only the isolated promo browser, never the game code.
+ const result=document.getElementById('overlay');
+ if(!result)throw Error('Missing native game settlement overlay');
+ document.body.appendChild(result);
 }
 try{
  await wait(1000);
@@ -144,8 +150,11 @@ try{
         rect=modal.getBoundingClientRect(),s=window.__PAWSIBLY_TEST__.getState();
   return {result:title.textContent,score:score.textContent,retry:retry.textContent,
    fish:s.got,lives:s.lives,done:s.done,winning:s.winning,room:s.room.en,
-   rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height}};
+   rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},
+   modalActuallyOnTop:!!document.elementFromPoint(270,480)?.closest('#overlay'),
+   topElement:document.elementFromPoint(270,480)?.tagName};
  });
+ if(!visual.modalActuallyOnTop)throw Error('Native result is behind recording canvas '+JSON.stringify(visual));
  if(visual.rect.x<0||visual.rect.y<0||visual.rect.x+visual.rect.width>540||
   visual.rect.y+visual.rect.height>960||!visual.retry||!visual.score)
    throw Error('Real native settlement clipped/empty '+JSON.stringify(visual));
