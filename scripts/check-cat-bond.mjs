@@ -158,6 +158,13 @@ for(const type of effectTypes){
   assert.ok(tierFx.fx.length>before,'hit tier generated particles: '+type);
 }
 assert.ok(tierFx.fx.length<160,'hit feedback cannot exhaust the VFX budget');
+const supportFx=new sandbox.window.VFX();
+for(const type of ['cleanse','barrier','wardFade']){
+  const before=supportFx.fx.length;
+  supportFx.impactType(170,200,type);
+  assert.ok(supportFx.fx.length>before,
+    'support transition must be visible: '+type);
+}
 assert.equal(typeof sandbox.window.CatBondWardArt?.draw,'function',
   'three ward VFX must use the same live battle renderer as the kittens');
 for(const ward of ['shieldT','protectT','reflectT']){
@@ -246,6 +253,22 @@ const State = sandbox.window.State, UI = sandbox.window.UI, GameData = sandbox.w
 // Skill design: first battle is simple, first capture guarantees a new move.
 // Ordinary and rare cats must not all start with the same fireball loadout.
 const Skills=sandbox.window.Skills;
+// Shield/Protect/Reflect cannot persist beyond their timers, and a broken
+// or expired shield should dissolve ONCE, never flash repeatedly in the arena.
+const expireBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+const expiring=expireBattle.me();
+expiring.shieldT=.01;expiring.protectT=0;expiring.reflectT=0;
+const beforeExpire=expireBattle.vfx.fx.length;
+expireBattle.tickWards(expiring,.05);
+assert.equal(expiring.shieldT,0,'expired barrier is no longer active');
+assert.ok(expireBattle.vfx.fx.length>beforeExpire,
+  'barrier expiry must create a localized dissolve');
+const afterExpire=expireBattle.vfx.fx.length;
+expireBattle.tickWards(expiring,.05);
+assert.equal(expireBattle.vfx.fx.length,afterExpire,
+  'expired barriers must not spray repeated particles');
+
 const skillFx=sandbox.window.CatBondSkillFX;
 assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
