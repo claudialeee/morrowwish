@@ -2578,7 +2578,7 @@ const UI = {
       </fieldset>
       <div class="btn-row prebattle-actions">
         <button class="btn gold" id="cp-go">${firstCapture?'出发！收服这只猫':'开始战斗'}</button>
-        <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">${english?"⚙️ Auto tactics":"⚙️ 智能策略"}</button>
+
         <button class="btn ghost" id="cp-cancel">放它走</button>
       </div>`);
     this.setupPrebattleDialog();
@@ -2631,7 +2631,6 @@ const UI = {
       };
     });
     document.getElementById('cp-cancel').onclick = () => { this.closeAll(); document.getElementById('yard-actions').classList.remove('hidden'); };
-    document.getElementById('cp-ai').onclick = () => this.openGambitEditor(wildSp);
     document.getElementById('cp-go').onclick = () => {
       // preserve the selection order; fall back to strongest if somehow empty
       const team = this.teamUids.map(uid => cats.find(x => x.uid === uid)).filter(Boolean);
