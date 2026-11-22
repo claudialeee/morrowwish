@@ -55,6 +55,11 @@
       button.title=label;
     }
     if(route==='cat-bond'){
+      const yardReturn=document.getElementById('cb-yard-return');
+      if(yardReturn){
+        yardReturn.textContent=zh()?'← 回庭院':'← Yard';
+        yardReturn.setAttribute('aria-label',zh()?'回庭院':'Back to yard');
+      }
       const guide=document.querySelector('#cb-header-actions #battle-skill-info-toggle');
       if(guide){
         const label=zh()?'技能说明':'Skill guide';
@@ -107,6 +112,18 @@
         const originalHome=document.querySelector('a.cb-home');
         const actions=document.createElement('div');actions.id='cb-header-actions';
         if(originalHome)bar.append(originalHome);
+        // Exploration returns to the yard in a dedicated LEFT header slot.
+        // Never put this button underneath the right-hand settings/menu dock.
+        const yardReturn=document.createElement('button');
+        yardReturn.id='cb-yard-return';yardReturn.type='button';
+        yardReturn.setAttribute('aria-label','Back to yard');
+        yardReturn.textContent='← Yard';
+        yardReturn.addEventListener('click',()=>{
+          if(window.__game?.scene!=='map')return;
+          window.WorldMap?.exitToYard?.();
+          window.UI?.closeAll?.();
+        });
+        bar.append(yardReturn);
         bar.append(actions);surface.prepend(bar);
       }
       controls=bar.querySelector('#cb-header-actions');
