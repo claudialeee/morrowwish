@@ -398,8 +398,8 @@ const UI = {
         '<div class="explore-cat-buttons">'+
         '<button type="button" data-menu-cat-action="detail" data-uid="'+esc(cat.uid)+'">'+(en?'Status / Raise':'状态 / 养成')+'</button>'+
         '<button type="button" data-menu-cat-action="skills" data-uid="'+esc(cat.uid)+'">'+(en?'Skills':'技能搭配')+'</button>'+
-        '<button type="button" class="explore-fish-heal" data-menu-cat-action="heal" data-uid="'+esc(cat.uid)+'" '+(f.hpPercent>=100||State.S.fish<1?'disabled':'')+'>'+
-        (en?'🐠 Heal +35% · 1 fish':'🐠 补血 +35% · 1 小鱼')+'</button>'+
+        '<button type="button" class="explore-fish-heal" data-menu-cat-action="heal" data-uid="'+esc(cat.uid)+'" '+(f.hpPercent>=100||(State.S.medkits||0)<1?'disabled':'')+'>'+
+        (en?'🧰 First-aid kit · +35% HP':'🧰 急救包 · 补血 +35%')+'</button>'+
         '</div></div></article>';
     }).join('')||'<p class="sub">'+(en?'Adopt a kitten to begin exploring.':'先收集一只猫咪，开始探险吧。')+'</p>';
     const action=(id,icon,zh,enLabel)=>'<button type="button" data-explore-action="'+id+'">'+
@@ -408,7 +408,7 @@ const UI = {
       (en?'Expedition management':'探险管理')+'">'+
       '<h2>'+(en?'☰ Expedition menu':'☰ 探险菜单')+'</h2>'+
       '<p class="explore-menu-location">'+(en?'Exploring ':'正在探索：')+esc(regionName)+
-      ' <span>🪙 '+Math.floor(State.S.coins||0)+' · 🐠 '+Math.floor(State.S.fish||0)+'</span></p>'+
+      ' <span>🪙 '+Math.floor(State.S.coins||0)+' · 🐠 '+Math.floor(State.S.fish||0)+' · 🧰 '+Math.floor(State.S.medkits||0)+'</span></p>'+
       '<p class="explore-health-rule">'+(State.difficulty()==='casual'
         ?(en?'🌿 Casual: HP refills after each battle.':'🌿 休闲模式：战后自动回满血。')
         :(en?'🔥 Hardcore: HP regenerates automatically (20% per minute). Returning to the yard heals all cats.':'🔥 硬核模式：每分钟自动恢复 20% 血量；回庭院立即满血。'))+'</p>'+
@@ -421,7 +421,7 @@ const UI = {
       action('duo','💞','双猫纽带','Cat duos')+
       action('workshop','🧶','工坊收益','Workshop')+
       action('shop','🛒','小卖部','Shop')+
-      action('healteam','🐠','喂鱼回血 +35% · '+woundedCount+'🐠','Fish heal +35% · '+woundedCount+'🐠')+
+      action('healteam','🧰','急救包补血 +35% · '+woundedCount+' 个','First-aid kit +35% · '+woundedCount+' needed')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','切换地图','Regions')+
       '</div><p class="explore-menu-tip">'+(en
@@ -439,11 +439,11 @@ const UI = {
         const cat=(State.S.cats||[]).find(c=>c.uid===button.dataset.uid);
         if(!cat)return;
         if(button.dataset.menuCatAction==='heal'){
-          const result=State.feedFishForHealth(cat);
+          const result=State.useMedkitForHealth(cat);
           const message=result.ok
-            ?(en?'🐠 '+State.catName(cat)+': '+Math.round(result.before*100)+'% → '+Math.round(result.after*100)+'% HP'
-              :'🐠 '+State.catName(cat)+'：'+Math.round(result.before*100)+'% → '+Math.round(result.after*100)+'% 血量')
-            :this.fishHealFailureText(result,en);
+            ?(en?'🧰 '+State.catName(cat)+': '+Math.round(result.before*100)+'% → '+Math.round(result.after*100)+'% HP'
+              :'🧰 '+State.catName(cat)+'：'+Math.round(result.before*100)+'% → '+Math.round(result.after*100)+'% 血量')
+            :this.medkitFailureText(result,en);
           if(result.ok){this.openExploreMenu();this.game.refreshHUD();}
           this.game.toast(message);
         }else if(button.dataset.menuCatAction==='skills')this.navigateTo(()=>this.openSkillEditor(cat));
@@ -455,9 +455,9 @@ const UI = {
       duo:()=>this.openCatHub('duo'),workshop:()=>this.openWorkshop(),
       shop:()=>this.openShop(),feed:()=>this.openFeed(),
       healteam:()=>{
-        const r=State.feedFishForTeam(this.getPreferredBattleTeam());
-        const msg=r.ok?(en?'🐠 Healed '+r.count+' cats for '+r.cost+' fish.':'🐠 已给 '+r.count+' 只猫补血，消耗 '+r.cost+' 条小鱼。')
-          :this.fishHealFailureText(r,en);
+        const r=State.useMedkitForTeam(this.getPreferredBattleTeam());
+        const msg=r.ok?(en?'🧰 Healed '+r.count+' cats using '+r.cost+' kits.':'🧰 已给 '+r.count+' 只猫补血，消耗 '+r.cost+' 个急救包。')
+          :this.medkitFailureText(r,en);
         if(r.ok){this.openExploreMenu();this.game.refreshHUD();}
         this.game.toast(msg);
       },
@@ -481,17 +481,17 @@ const UI = {
       const label=card.querySelector('[data-menu-hp]');
       if(label)label.textContent=f.hp+'/'+f.maxHp;
       const button=card.querySelector('[data-menu-cat-action="heal"]');
-      if(button)button.disabled=f.hpPercent>=100||State.S.fish<1;
+      if(button)button.disabled=f.hpPercent>=100||(State.S.medkits||0)<1;
     }
     const injured=squad.filter(cat=>State.catHpFraction(cat)<.999).length;
     const allLabel=host.querySelector('[data-explore-action="healteam"] span:last-child');
     if(allLabel)allLabel.textContent=this.isEnglish()
-      ?'Fish heal +35% · '+injured+'🐠':'喂鱼回血 +35% · '+injured+'🐠';
+      ?'First-aid kits +35% · '+injured+' needed':'急救包补血 +35% · 需要 '+injured+' 个';
   },
 
-  fishHealFailureText(result,en){
-    return result?.reason==='fish'
-      ?(en?'Not enough fish (need '+(result.cost||1)+').':'小鱼不足（需要 '+(result.cost||1)+' 条）。')
+  medkitFailureText(result,en){
+    return result?.reason==='medkit'
+      ?(en?'Need '+(result.cost||1)+' first-aid kits. Buy them in the shop.':'急救包不足（需要 '+(result.cost||1)+' 个），可去小卖部购买。')
       :(en?'All cats are at full HP.':'猫猫血量已经满啦！');
   },
 
@@ -885,7 +885,7 @@ const UI = {
         </section></div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
-        <button class="btn" id="duo-play" ${!ok||sec>0||State.S.fish<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.medkits||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
@@ -1445,7 +1445,7 @@ const UI = {
     const need = State.xpToNext(cat.level);
     const tier = State.bondTier(cat);
     const tierText = ['路人', '熟悉', '亲密', '灵魂纽带'][tier];
-    const feedCost = 5, playCost = 0;
+    const feedCost = 1, playCost = 0;
     const dispName = State.catName(cat);
     const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${GameData.speciesName(sp)}</span>` : '';
     host.innerHTML = `
@@ -1485,7 +1485,7 @@ const UI = {
       <div class="btn-row">
         <button class="btn" id="cd-skills">📖 技能搭配</button>
         <button class="btn ghost" id="cd-pet">🤲 撸猫</button>
-        <button class="btn ghost" id="cd-feed">🍖 喂食 (${feedCost}🪙)</button>
+        <button class="btn ghost" id="cd-feed">🐟 喂小鱼干 (${feedCost}🐠 · 好感+8)</button>
         <button class="btn ghost" id="cd-tease">🪶 逗猫</button>
       </div>`;
     // animated preview
@@ -1513,10 +1513,10 @@ const UI = {
       this.game.toast(unlocked?'✨ 学会新技能：'+unlocked.name+'！':'❤ 好感提升');
     };
     document.getElementById('cd-feed').onclick = () => {
-      if (State.S.coins < feedCost) { this.game.toast('金币不足'); return; }
-      State.S.coins -= feedCost; cat.hunger = Math.min(100, cat.hunger + 35); cat.joy = Math.min(100, cat.joy + 8);
+      if (State.S.fish < feedCost) { this.game.toast('小鱼干不足'); return; }
+      State.S.fish -= feedCost; cat.hunger = Math.min(100, cat.hunger + 35); cat.joy = Math.min(100, cat.joy + 8);
       const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
-      cat.affinity = Math.min(100, cat.affinity + 1); State.addXp(cat, 6);
+      cat.affinity = Math.min(100, cat.affinity + 8); State.addXp(cat, 6);
       window.MorrowwishAudio?.effect?.('feed');
       const unlocked=this.announceSkillMilestone(cat,old);
       State.save();this.game.refreshHUD();this.renderCatDetail(cat);
@@ -1646,12 +1646,12 @@ const UI = {
     const basicOpts = (S.basicChoices ? S.basicChoices(cat) : []);
     const curBasic = cat.loadout[0] ? S.skillById(cat.loadout[0]) : null;
     const toyOn = !curBasic ? 'on' : '';
-    const toyChip = `<button class="sk-chip ${toyOn}" data-slot="0" data-sk="__toy__" title="${en0?'Innate toy toss':'固有扔玩具'}">🐟 ${en0?'Toy toss':'扔玩具'}<span class="tiny">${en0?'innate':'固有'}</span></button>`;
+    const toyChip = `<button class="sk-chip ${toyOn}" data-slot="0" data-sk="__toy__" title="${en0?'Innate fluff attack':'固有毛球攻击'}">🧶 ${en0?'Fluff Attack':'毛球出击'}<span class="tiny">${en0?'innate':'固有'}</span></button>`;
     const basicChips = toyChip + basicOpts.map(s => {
       const on = curBasic && s.id === curBasic.id ? 'on' : '';
       return `<button class="sk-chip ${on}" data-slot="0" data-sk="${s.id}" title="${s.desc || ''}">${icon0(s)} ${s.name}<span class="tiny">${kindName0[s.kind] || ''}·${this.game.elemIcon(s.element)}</span></button>`;
     }).join('');
-    const basicRow = `<div class="sk-slot"><div class="sk-slot-label">${en0?'Basic':'普攻'}<div class="tiny">${curBasic ? curBasic.name : (en0?'toy toss':'扔玩具')}</div></div><div class="sk-opts">${basicChips}</div></div>`;
+    const basicRow = `<div class="sk-slot"><div class="sk-slot-label">${en0?'Basic':'普攻'}<div class="tiny">${curBasic ? curBasic.name : (en0?'Fluff Attack':'毛球出击')}</div></div><div class="sk-opts">${basicChips}</div></div>`;
     const slots = [
       { i: 1, label: '技能1', kinds: ['melee', 'projectile', 'dash', 'leap', 'pounce', 'chain', 'buff', 'heal', 'aoe', 'beam'] },
       { i: 2, label: '技能2', kinds: ['melee', 'projectile', 'dash', 'leap', 'pounce', 'chain', 'buff', 'heal', 'aoe', 'beam'] },
@@ -1987,6 +1987,7 @@ const UI = {
   shopItem(what){
     // 2-currency economy: treat packs now grant 🐠 fish (小鱼干 folded into fish).
     const items={
+      medkit:{icon:'🧰',zh:'猫猫急救包',en:'Kitten First-Aid Kit',coins:30,fish:0,medkitsGain:1},
       treat5:{icon:'🐠',zh:'小鱼 ×5',en:'Fish ×5',coins:30,fish:0,fishGain:5},
       treat15:{icon:'🐠',zh:'小鱼 ×15',en:'Fish ×15',coins:75,fish:0,fishGain:15},
       lure:{icon:'🍀',zh:'幸运诱饵',en:'Lucky lure',coins:0,fish:2,luckLure:1},
@@ -2009,7 +2010,7 @@ const UI = {
       [1,10,50].includes(this._shopQuantity)?this._shopQuantity:1;
     const qtyButton=(n,txt)=>'<button type="button" class="btn '+(n===quantity?'gold':'ghost')+
       '" data-shop-qty="'+n+'" aria-pressed="'+String(n===quantity)+'">'+txt+'</button>';
-    const shopKeys=['treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
+    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
     const rows=shopKeys.map(key=>{
       const item=this.shopItem(key),max=this.shopMaxAffordable(key);
       const count=quantity==='max'?max:quantity;
@@ -2053,6 +2054,7 @@ const UI = {
     S.coins-=costCoins;S.fish-=costFish;
     if(item.luckLure)S.luckLure=(S.luckLure||0)+item.luckLure*count;
     if(item.fishGain)S.fish+=item.fishGain*count;
+    if(item.medkitsGain)S.medkits=(S.medkits||0)+item.medkitsGain*count;
     if(item.stone){
       S.evoStones=S.evoStones||{};
       S.evoStones[item.stone]=(S.evoStones[item.stone]||0)+count;
@@ -2073,15 +2075,15 @@ const UI = {
     if (!cats.length) { this.game.toast('还没有猫猫'); return; }
     this.panel(`<span class="card-close">×</span>
       <h2>喂食全员</h2>
-      <p class="sub">花 ${cats.length * 4}🪙 给所有猫猫加餐</p>
+      <p class="sub">消耗 ${cats.length}🐠 小鱼干，提升好感和饱食</p>
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="feedall">🍖 全部喂食</button>
       </div>`);
     document.getElementById('feedall').onclick = () => {
-      const cost = cats.length * 4;
-      if (State.S.coins < cost) { this.game.toast('金币不足'); return; }
-      State.S.coins -= cost;
-      cats.forEach(c => { c.hunger = Math.min(100, c.hunger + 35); c.joy = Math.min(100, c.joy + 6); State.addXp(c, 4); });
+      const cost = cats.length;
+      if (State.S.fish < cost) { this.game.toast('小鱼干不足'); return; }
+      State.S.fish -= cost;
+      cats.forEach(c => { c.hunger = Math.min(100, c.hunger + 35); c.joy = Math.min(100, c.joy + 6); c.affinity = Math.min(100, c.affinity + 5); State.addXp(c, 4); });
       window.MorrowwishAudio?.effect?.('feed');
       State.save(); this.game.refreshHUD(); this.game.toast('🍖 全员吃饱啦'); this.closeAll();
     };
@@ -2242,8 +2244,8 @@ const UI = {
   },
   battlePrepSkillMarkup(team,en){
     const controls=[
-      ['🐟',en?'Basic · click/J':'普攻 · 左键/J',
-        en?'Fish and yarn attacks; builds ultimate charge.':'小鱼干 / 毛线团攻击，积攒必杀能量。'],
+      ['🧶',en?'Basic · click/J':'普攻 · 左键/J',
+        en?'Fluffy yarn balls build ultimate charge.':'投掷毛线球攻击，积攒必杀能量。'],
       ['🧶',en?'Q · Skill 1':'Q · 技能一',
         en?'Use the active cat’s first equipped skill.':'使用当前猫咪装备的第一个技能。'],
       ['💨',en?'E · Skill 2':'E · 技能二',

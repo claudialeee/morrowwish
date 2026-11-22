@@ -1231,7 +1231,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  }
  // Skill names, hover/focus description, phone info and first-fight preview.
  // The actual fish icon alternates fish + yarn and MUST have a readable name.
- if(!bondIntro.includes('id="mv-basic" data-move="basic"><span class="mv-icon">🐟</span><span class="mv-name">小鱼干</span>')||
+ if(!bondIntro.includes('id="mv-basic" data-move="basic"><span class="mv-icon">🧶</span><span class="mv-name">毛球出击</span>')||
     !bondIntro.includes('id="battle-skill-tooltip"')||
     !bondIntro.includes('id="battle-skill-info-toggle"')||
     !bondIntro.includes('id="battle-skill-guide"')||
@@ -1243,7 +1243,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes("skillsIntroSeen:true")||
     !cbUi.includes('this.refreshBattlePrepSkills(this.teamUids.map(')||
     !cbUi.includes('this.refreshBattlePrepSkills(selected.map(')||
-    !cbGame.includes("fallback:en?'Fish & Yarn':'小鱼干'")||
+    !cbGame.includes("fallback:en?'Fluff Attack':'毛球出击'")||
     !cbGame.includes('battleSkillInfo(slot, fighter=this.battle?.me())')||
     !cbGame.includes('showBattleSkillTooltip(slot){')||
     !cbGame.includes('toggleBattleSkillGuide(open){'))
@@ -1270,7 +1270,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
    qSkill:skillFixtures.q,eSkill:skillFixtures.e,ultSkill:skillFixtures.ult};
  testGame.battle={me:()=>testFighter};
  const basics=testGame.battleSkillInfo('basic',testFighter);
- if(basics.name!=='小鱼干'||!basics.desc.includes('毛线团')||
+ if(basics.name!=='毛球出击'||!basics.desc.includes('毛线球')||
     testGame.battleSkillInfo('q').name!=='炽爪'||
     testGame.battleSkillInfo('e').name!=='泡泡幕'||
     testGame.battleSkillInfo('ult').name!=='喵之怒涛'||

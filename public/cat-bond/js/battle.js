@@ -1396,7 +1396,7 @@ class CaptureBattle {
     // (isBasic) so it's a FINISHER on status-marked targets and weaker on un-marked
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
-    const toy = f._basicTick % 2 ? 'fish' : 'yarn';
+    const toy = 'yarn';
     this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
