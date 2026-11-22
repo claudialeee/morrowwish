@@ -213,7 +213,7 @@ $("chapterSub").textContent=daily?tr("dailySub"):s.room[lang==="zh"?"zhSub":"enS
 const lv=$("levels");lv.innerHTML="";ROOMS.forEach((r,i)=>{const b=document.createElement("button");b.className="level-btn";b.disabled=i>save.unlocked;b.textContent=i+1;b.title=r[lang==="zh"?"zh":"en"];b.setAttribute("aria-current",String(!daily&&stage===i));b.onclick=()=>init(i,false);lv.appendChild(b)});
 const dailyB=document.createElement("button");dailyB.className="level-btn daily";dailyB.textContent=tr("daily");dailyB.setAttribute("aria-current",String(daily));dailyB.onclick=()=>init(0,true);lv.appendChild(dailyB);
 const shelf=$("souvenirShelf");if(shelf){shelf.innerHTML="";RELICS.forEach((relic,i)=>{const b=document.createElement("button");b.className="souvenir-stamp"+(save.souvenirs[i]?" found":"");b.disabled=i>save.unlocked;b.textContent=save.souvenirs[i]?relic.glyph:"?";b.type="button";b.title=(save.souvenirs[i]?relic[lang==="zh"?"zh":"en"]:"???")+" · "+ROOMS[i][lang==="zh"?"zh":"en"];b.onclick=()=>init(i,false);shelf.appendChild(b)})}
-const wd=$("wardrobe");wd.innerHTML="";fur.forEach((f,i)=>{const b=document.createElement("button");b.className="skin"+(save.cat===i?" active":"");b.disabled=allStars()<f[3];b.style.background="#fff5f1";b.style.setProperty("--cat-fur",f[0]);b.style.setProperty("--cat-detail",f[1]);b.innerHTML='<span class="cat-portrait"><b>•ᴗ•</b></span>';b.title=TX[lang].skinNames[i]+(b.disabled?" · "+tr("locked").replace("{n}",f[3]):"");b.setAttribute("aria-label",b.title);b.onclick=()=>{save.cat=i;saveGame();s.yarn=i===0?Math.max(1,s.yarn):s.yarn;translateUI();syncUI();audio("fish")};if(b.disabled){const span=document.createElement("span");span.className="lock";span.textContent="🔒";b.appendChild(span)}wd.appendChild(b)});
+const wd=$("wardrobe");wd.innerHTML="";fur.forEach((f,i)=>{const b=document.createElement("button");b.className="skin"+(save.cat===i?" active":"");const starLocked=allStars()<f[3],runLocked=s.started&&!s.done&&save.cat!==i;b.disabled=starLocked||runLocked;b.style.background="#fff5f1";b.style.setProperty("--cat-fur",f[0]);b.style.setProperty("--cat-detail",f[1]);b.innerHTML='<span class="cat-portrait"><b>•ᴗ•</b></span>';b.title=TX[lang].skinNames[i]+(starLocked?" · "+tr("locked").replace("{n}",f[3]):runLocked?(lang==="zh"?" · 完成本局或重玩后换猫":" · Finish or retry to change cats"):"");b.setAttribute("aria-label",b.title);b.onclick=()=>{if(s.started&&!s.done||allStars()<f[3])return;save.cat=i;saveGame();if(!s.started)s.yarn=i===0?1:0;translateUI();syncUI();audio("fish")};if(b.disabled){const span=document.createElement("span");span.className="lock";span.textContent="🔒";b.appendChild(span)}wd.appendChild(b)});
 }
 let collectionPaintKey="";
 function renderCollections(){
@@ -355,7 +355,7 @@ function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();
  if($("stage"))$("stage").classList.toggle("owner-following-yarn",!!s.yarnAnimating);
  if($("guardIntent"))$("guardIntent").textContent=guardLabel();
  if($("guardStatus"))$("guardStatus").setAttribute("data-mode",s?.guardMode||"patrol");
- renderCollections();updateDare();updateStealthHUD();$("fishCount").textContent=s.got+" / "+s.fish.length;$("meterFill").style.width=100*s.got/s.fish.length+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+s.got+"/"+s.fish.length+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
+ renderCollections();updateDare();updateStealthHUD();const fishProgress=Math.min(NEED,s.got);$("fishCount").textContent=fishProgress+" / "+NEED+(s.got>NEED?(lang==="zh"?" · 额外鱼 ✓":" · bonus fish ✓"):"");$("meterFill").style.width=Math.min(100,100*s.got/NEED)+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+Math.min(s.got,NEED)+"/"+NEED+(s.got>NEED?" ★":"")+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
 const MENU_TEXT={
  en:{rooms:"Rooms",album:"Album",badges:"Badges",cats:"Cats",help:"Help",open:"Open game menu",close:"Close game menu",how:"How to play"},
  zh:{rooms:"关卡",album:"图鉴",badges:"成就",cats:"小猫",help:"帮助",open:"打开游戏菜单",close:"关闭菜单",how:"游戏玩法"}
@@ -395,7 +395,7 @@ function openMenu(tab="rooms"){
  if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];
  if(yarnChaseTimer!==null){clearInterval(yarnChaseTimer);yarnChaseTimer=null;pausedYarn=true}
  menuOpen=true;$("gameMenu").hidden=false;
- setYarnAim(false);setMenuTab(tab);localizeMenu();updateCoach();
+ translateUI();setYarnAim(false);setMenuTab(tab);localizeMenu();updateCoach();
  $("menuClose")?.focus?.();
 }
 function closeMenu(){
@@ -475,6 +475,7 @@ function throwYarn(){
 function throwYarnTo(p){
  if(!aimingYarn||!s||s.done||s.yarnAnimating||menuOpen)return false;
  if(!yarnTarget(p)){popup(YARN_LEGEND[lang].badTarget);return false}
+ if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
  s.noise={...p};s.yarnDestination={...p};s.distractionTurns=0;s.yarnThrows++;s.throwTrail={from:{...s.cat},to:{...p},at:performance.now()};
  s.alert=Math.max(7,pathTo(s.human,p,true,true).length+3);s.lastSeen=null;s.yarn--;s.steps++;
  s.decoyAwareness=Math.max(0,(s.yarnThrows||1)-1);

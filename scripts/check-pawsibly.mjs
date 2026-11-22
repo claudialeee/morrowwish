@@ -70,6 +70,12 @@ assert.notDeepEqual(JSON.parse(JSON.stringify(test.getState().human)),startingHu
 assert.equal(test.isChasing(),true,'Human should be actively walking toward distant yarn');
 assert.equal(test.getState().guardMode,'investigate','Human should investigate yarn, not silently chase the cat');
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().cat)),stationaryCat,'Throwing yarn must not move the cat');
+assert.equal(test.getState().started,true,'A successful yarn throw must start the run, even before any walking');
+nodes.get('menuButton').onclick();
+assert.equal(test.getState().yarnAnimating,true,'Opening the menu must preserve the active yarn investigation');
+assert.equal(test.isChasing(),false,'Opening the menu must pause the moving human');
+nodes.get('menuClose').onclick();
+assert.equal(test.isChasing(),true,'Closing the menu must resume the same human investigation');
 let guardSteps=1;
 while(test.isChasing()&&guardSteps++<25){
  for(const [id,fn] of [...pendingIntervals.entries()])if(pendingIntervals.has(id))fn();
@@ -135,7 +141,7 @@ const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
 assert.equal(earned.best?.['room-0']?.stars,2,'Three fish plus bonus is two stars, NOT three');
 assert.equal(nodes.get('stars').textContent,'★★☆','A fourth fish is required for three stars');
 assert.ok(nodes.get('resultStarGuide').textContent.includes('Missing 1 fish'),'Scoring explains missing fourth fish');
-assert.equal(nodes.get('fishCount').textContent,'3 / 4','Fish meter shows all four available fish');
+assert.equal(nodes.get('fishCount').textContent,'3 / 3','Mission meter shows the three fish needed to escape');
 assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
 if(earned.best['room-0'].stars>=3){
  assert.ok(nodes.get('catUnlocks').innerHTML.includes('Mochi'),'New cat head and name must visibly appear on the victory card');

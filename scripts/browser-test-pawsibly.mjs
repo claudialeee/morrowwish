@@ -355,6 +355,15 @@ try{
  assert.ok(tossed.trail&&tossed.walking&&tossed.mode==='investigate',
   'A long throw must visibly start a multi-step investigation');
  assert.notDeepEqual(tossed.human,humanBefore,'The owner must immediately react to the ball');
+ // Regression: pause must not cancel or irreversibly freeze the yarn investigation.
+ const positionBeforePause=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().human}));
+ await page.locator('#menuButton').click();
+ const paused=await page.evaluate(()=>({animating:window.__PAWSIBLY_TEST__.getState().yarnAnimating,timer:window.__PAWSIBLY_TEST__.isChasing()}));
+ assert.deepEqual(paused,{animating:true,timer:false},'Menu must suspend but preserve the active yarn chase');
+ await page.waitForTimeout(650);
+ assert.deepEqual(await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().human})),positionBeforePause,'Guard must not move under the menu');
+ await page.locator('#menuClose').click();
+ assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.isChasing()),true,'Guard investigation resumes after menu closes');
  await page.waitForFunction(()=>!window.__PAWSIBLY_TEST__.isChasing(),null,{timeout:6500});
  const settled=await page.evaluate(()=>{
   const s=window.__PAWSIBLY_TEST__.getState();
@@ -479,7 +488,23 @@ try{
   await unlock.reload({waitUntil:'load'});
   assert.equal(await unlock.locator('#wardrobe .skin.active').count(),1);
   assert.equal(await unlock.evaluate(()=>[...document.querySelectorAll('#wardrobe .skin')].findIndex(b=>b.classList.contains('active'))),4,'Selected cat must persist after reload');
-  console.log('Cat unlock and persistent selection checked at thresholds:',JSON.stringify({thresholds,selected}));
+  // A loadout is chosen before a run; swapping to regain yarn mid-heist is forbidden.
+  await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.choose(0,false));
+  await unlock.locator('#menuButton').click();
+  await unlock.locator('[data-game-tab="cats"]').click();
+  await unlock.locator('#wardrobe .skin').nth(0).click();
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),1,'Starting as Marmalade grants exactly one yarn');
+  await unlock.locator('#menuClose').click();
+  await unlock.locator('#tool').click();
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.throwYarnTo({x:8,y:1})),true,'Valid yarn throw before movement works');
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().started),true,'First throw starts a session');
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),0,'Throw consumes opening yarn');
+  await unlock.locator('#menuButton').click();
+  await unlock.locator('[data-game-tab="cats"]').click();
+  assert.equal(await unlock.locator('#wardrobe .skin').nth(4).isDisabled(),true,'Other cats must be locked mid-run');
+  assert.equal(await unlock.evaluate(()=>window.__PAWSIBLY_TEST__.getState().yarn),0,'Opening the menu must not refill consumed yarn');
+  await unlock.locator('#menuClose').click();
+  console.log('Cat unlock, persisted selection and finite per-run yarn checked:',JSON.stringify({thresholds,selected}));
  }finally{await unlock.close()}
 
  // Verify the CrazyGames iframe loads directly into a clean, usable game stage
