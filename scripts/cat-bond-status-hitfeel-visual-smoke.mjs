@@ -71,9 +71,16 @@ try{
              !b.vfx.fx.some(x=>x.type==='guardShards'))
             throw Error('Real guard did not consume one hit and create shards');
         }else if(tag==='grooming'){
+          // Water's current heal identity is a persistent area regeneration
+          // field, NOT an instant cleanse. Preserve burn so the test detects
+          // any accidental cross-element cleanse / missing regeneration.
           me.hp=me.maxhp*.55;me.status={burn:2};me.tags=['burn'];
-          if(!b.castSupportSkill(me,sk,0)||me.status.burn)
-            throw Error('Grooming did not heal and cleanse');
+          const before=me.hp;
+          if(sk.healMode!=='area'||!b.castSupportSkill(me,sk,0)||
+             !(me.hotT>=4.9)||!(me.hotRate>0)||!me.status.burn)
+            throw Error('Water grooming did not establish a real area HoT');
+          const delta=Math.min(me.maxhp-before,me.hotRate*.5);
+          if(!(delta>0))throw Error('Water regeneration has no actual healing capacity');
         }else if(tag==='knead'){
           if(!b.castSupportSkill(me,sk,0)||me.kneadStacks!==1)
             throw Error('Knead did not stack');
