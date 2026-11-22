@@ -21,7 +21,7 @@ jobs:
           cache: npm
       - name: Verify database binding, prepare the Pages build
         run: |
-          node -e 'const d=require("./cloudflare-pages/wrangler.jsonc").d1_databases[0];if(d.database_name!=="morrowwish-analytics"||d.database_id!=="fbd62f69-1811-4538-a17f-ecc5be8ad7cc")process.exit(1)'
+          node -e 'const d=JSON.parse(require("fs").readFileSync("./cloudflare-pages/wrangler.jsonc","utf8")).d1_databases[0];if(d.database_name!=="morrowwish-analytics"||d.database_id!=="fbd62f69-1811-4538-a17f-ecc5be8ad7cc")process.exit(1)'
           npm ci
           npm install --no-save --no-package-lock sharp@0.34.5
           bash scripts/fetch-cat-music.sh
