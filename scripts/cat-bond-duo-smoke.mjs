@@ -119,118 +119,69 @@ try{
   assert.equal(sigAudit.count,21,'all elemental combinations need unique choreography');
   assert.equal(sigAudit.unique,21,'motifs should not be mere palette swaps');
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-duo.png'});
-  // Real visual-preview page, not an inert 21-button mockup. Render EVERY
-  // signature at a fixed moment with the connected cat rigs + tier artwork.
-  await page.goto(origin+'/cat-bond/duo-preview.html',{waitUntil:'domcontentloaded',timeout:30000});
-  await page.waitForFunction(()=>window.__duoPreviewReady&&window.__duoPreviewDebug&&
-    window.CatBondDuoHero?.assetReady,{timeout:18000});
-  assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetSource),
-    'species-matched-watercolor-cinematics','do not use fixed illustrated cats for other breeds');
-  assert.equal(await page.evaluate(()=>window.CatBondDuoHero.assetCount),21,
-    'every elemental pair must have its own watercolor-action timeline');
-  assert.equal(await page.locator('.signature').count(),21,'all 21 duos selectable');
-  await page.waitForFunction(()=>window.CatBondDuoArtwork?.ready&&
-    window.CatBondDuoArtwork?.backdropReady,{timeout:15000});
+  // Privately test all 21 dynamic move rigs. This is a QA-only canvas,
+  // not a public list of unearned duo moves.
   const visual=await page.evaluate(()=>{
-    const debug=window.__duoPreviewDebug,keys=debug.getKeys(),cv=document.getElementById('duo-canvas');
+    const Director=window.CatBondDuoDirector,Hero=window.CatBondDuoHero;
+    const pairCats=State.S.cats.slice(0,2);
+    const cv=document.createElement('canvas');cv.width=640;cv.height=360;
     const ctx=cv.getContext('2d',{willReadFrequently:true});
-    const hashes=[],motionHashes=[];
     const hash=()=>{
-      const data=ctx.getImageData(0,0,cv.width,cv.height).data;let x=2166136261;
-      for(let i=0;i<data.length;i+=37)x=Math.imul(x^data[i],16777619)>>>0;
-      return x;
+      const bytes=ctx.getImageData(0,0,640,360).data;let n=2166136261;
+      for(let i=0;i<bytes.length;i+=43)n=Math.imul(n^bytes[i],16777619)>>>0;
+      return n;
     };
-    for(const key of keys){
-      debug.renderAt(key,3,.90);hashes.push(hash());
-      debug.renderAt(key,1,.32);motionHashes.push(hash());
-      const S=window.CatBondDuoSignatures;
-      for(const p of [.12,.32,.53,.79,.95]){
-        for(const width of [320,390,800,1180]){
-          const h=width===800?351:Math.min(380,width*1.1);
-          const pose=S.course(S.get(key).style,p,width,h,h/2,3);
-          const coords=[pose.x1,pose.x2,pose.y1,pose.y2];
-          if(!coords.every(Number.isFinite))throw Error('Broken cat motion for '+key);
-          if(pose.x1>width*.351||pose.x2<width*.649)
-            throw Error('Two kittens overlap at the head: '+key);
-        }
-      }
+    const results=[],second=[];
+    for(const key of Director.keys){
+      ctx.clearRect(0,0,640,360);
+      Hero.draw(ctx,640,360,{max:2.75,t:1.94,catUids:pairCats.map(c=>c.uid),
+        elements:key,tier:3,name:key,strikeAt:.78},uid=>pairCats.find(c=>c.uid===uid));
+      results.push(hash());
+      ctx.clearRect(0,0,640,360);
+      Hero.draw(ctx,640,360,{max:2.75,t:1.14,catUids:pairCats.map(c=>c.uid),
+        elements:key,tier:3,name:key,strikeAt:.78},uid=>pairCats.find(c=>c.uid===uid));
+      second.push(hash());
     }
-    const overflow=document.documentElement.scrollWidth>innerWidth+3;
-    debug.select('elec+fire');
-    const breedShots=[];
-    for(const id of ['tangyuan','sanhua','lanbao','xianluo','yunduo']){
-      debug.setCats(id,'xiaohui');
-      debug.renderAt('grass+water',3,.9);
-      breedShots.push(hash());
-    }
-    const themes=['elec+fire','grass+water','water+water','fire+light','dark+light']
-      .map(key=>{debug.renderAt(key,3,.9);return hash()});
-    return {count:keys.length,distinct:new Set(hashes).size,
-      differentWindups:motionHashes.some((v,i)=>v!==hashes[i]),
-      breedDiff:new Set(breedShots).size,
-      themeDiff:new Set(themes).size,
-      breedReady:debug.getArtStatus().breedReady,
-      scenesReady:debug.getArtStatus().scenesReady,
-      overflow,visibleCanvas:cv.width>0&&cv.height>0};
+    const firstHigh=Director.pose('grass+light',.03,640,360);
+    const high=Director.pose('grass+light',.28,640,360);
+    const sep=poses=>Math.abs(poses[1].x-poses[0].x);
+    const soundCount=window.MorrowwishAudio?.status?.().combatSounds||0;
+    const ids=pairCats.map(c=>c.uid);State.save();
+    return {pairs:Director.keys.length,unique:new Set(results).size,
+      moved:second.some((h,i)=>h!==results[i]),
+      motionUnique:Director.isUnique(),highfive:Director.styles['grass+light'],
+      pawApproach:sep(high)<sep(firstHigh),
+      unlockedPair:ids,a:ids[0],b:ids[1],soundCount};
   });
-  assert.equal(visual.count,21);
-  const motion=await page.evaluate(()=>{
-    const D=window.CatBondDuoDirector,scene=window.CatBondDuoHero;
-    const traces=D.keys.map(key=>[.08,.18,.28,.48,.67]
-      .flatMap(t=>D.pose(key,t,500,280)
-        .flatMap(cat=>[Math.round(cat.x),Math.round(cat.y),Math.round(cat.angle*100)]))
-      .join('|'));
-    const activePairs=Object.keys(scene.scenes).length;
-    const moving=D.keys.filter(key=>{
-      const start=D.pose(key,.06,500,280),hit=D.pose(key,.28,500,280);
-      return Math.hypot(start[0].x-hit[0].x,start[0].y-hit[0].y)>25
-        ||Math.hypot(start[1].x-hit[1].x,start[1].y-hit[1].y)>25;
-    }).length;
-    return {assetReady:scene.assetReady,distinct:new Set(traces).size,
-      moving,activePairs,unique:D.isUnique()};
-  });
-  assert.deepEqual(motion,{assetReady:true,distinct:21,moving:21,
-     activePairs:21,unique:true},
-    '21 duos must have 21 genuinely different moving-cat timelines');
-  assert.equal(visual.distinct,21,'all rendered signature screens must differ');
-  assert.equal(visual.differentWindups,true,'signature key frames must actually animate');
-  assert.equal(visual.overflow,false,'preview must not scroll sideways');
-  assert.equal(visual.visibleCanvas,true);
-  assert.equal(visual.breedDiff,5,'five distinct real cat breeds produce visibly distinct cut-ins');
-  assert.equal(visual.themeDiff,5,'signature backgrounds differ for moon, sun, storm, spring and water');
-  assert.equal(visual.breedReady,true,'Current game watercolor kittens decode for every breed');
-  assert.equal(visual.scenesReady,true,'pastel reference-art backgrounds decode');
-  // Filmstrip of every actual dynamically painted cat action at the HIT beat:
-  // 21 different real compositions, not just 21 text labels in the preview.
-  await page.evaluate(()=>{
-    const d=window.__duoPreviewDebug,all=d.getKeys();
-    d.setCats('sanhua','xianluo'); // visibly different calico + Siamese
-    const stage=document.getElementById('duo-canvas');
-    const grid=document.createElement('canvas');
-    grid.id='duo-qa-contact-sheet';grid.width=960;grid.height=7*208;
-    grid.style.display='block';grid.style.width='960px';grid.style.maxWidth='none';
-    const c=grid.getContext('2d');c.fillStyle='#f8f5ee';c.fillRect(0,0,960,grid.height);
-    for(let i=0;i<all.length;i++){
-      const key=all[i],x=(i%3)*320,y=Math.floor(i/3)*208;
-      d.renderAt(key,3,.78);
-      c.save();c.fillStyle='#fff';c.fillRect(x+2,y+3,316,202);
-      c.drawImage(stage,x+3,y+3,314,176);
-      c.fillStyle='#355448';c.font='bold 13px system-ui';
-      c.fillText(String(i+1).padStart(2,'0')+' '+key,x+9,y+196,300);c.restore();
-    }
-    document.body.appendChild(grid);
-  });
-  await page.locator('#duo-qa-contact-sheet').screenshot({
-    path:'/tmp/cat-bond-'+profile.name+'-preview-contact-sheet.png'});
-  // Hold a visually informative impact frame; snapshots taken during the
-  // first 150ms fade-in look incorrectly dark and cannot assess kitten art.
-  await page.locator('#pause').click();
-  await page.locator('[data-tier="3"]').click();
-  await page.evaluate(()=>window.__duoPreviewDebug.renderAt('elec+fire',3,.95));
-  await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview.png'});
-  // Isolate the actual full viewer instead of a scrolled browser viewport.
+  assert.equal(visual.pairs,21);
+  assert.equal(visual.unique,21,'all 21 duo performances should visibly differ');
+  assert.equal(visual.motionUnique,true);
+  assert.equal(visual.moved,true,'actual poses and magical attacks must move');
+  assert.equal(visual.highfive,'highfive');
+  assert.equal(visual.pawApproach,true,'high-five kittens must approach one another');
+  assert.equal(visual.soundCount,13,'combat sound categories must still load');
+  // No one may browse unearned moves: only the current earned pair opens.
+  await page.goto(origin+'/cat-bond/duo-preview.html?a='+
+    encodeURIComponent(visual.a)+'&b='+encodeURIComponent(visual.b),
+    {waitUntil:'domcontentloaded',timeout:30000});
+  await page.waitForFunction(()=>window.__duoPreviewReady&&window.CatBondDuoHero?.assetReady,
+    {timeout:18000});
+  assert.equal(await page.locator('#duo-canvas').isVisible(),true);
+  assert.equal(await page.locator('#signature-grid').count(),0,
+    'no public 21-move overview, even after unlocking one move');
+  assert.equal(await page.locator('#locked').isVisible(),false);
   await page.locator('.viewer').screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview-stage.png'});
-  console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify({battle:result,signaturePreview:visual}));
+  const stranger=await browser.newContext();
+  const locked=await stranger.newPage();
+  await locked.goto(origin+'/cat-bond/duo-preview.html?a='+
+    encodeURIComponent(visual.a)+'&b='+encodeURIComponent(visual.b),
+    {waitUntil:'domcontentloaded'});
+  assert.equal(await locked.locator('#locked').isVisible(),true,
+    'a saved-game unlock is mandatory before displaying a duo animation');
+  assert.equal(await locked.locator('#unlocked').isVisible(),false);
+  assert.equal(await locked.locator('#signature-grid').count(),0);
+  await stranger.close();
+  console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify({battle:result,visual}));
   await context.close();
  }
  assert.deepEqual(errors,[],'uncaught browser errors');
