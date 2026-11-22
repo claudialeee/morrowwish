@@ -265,6 +265,24 @@ const entries=names.map(([key,zh,en],i)=>{
  const b={uid:'gallery_'+i+'_b',species:nextBreed(y)};
  return {key,zh,en,a,b,els:[x,y]};
 });
+// Ensure every collectible breed is represented without changing the 21
+// elemental pair moves. Replace only duplicated species in same-element slots.
+const allBreedIds=new Set(GameData.SPECIES.map(sp=>sp.id));
+const used=new Map();
+for(const entry of entries)for(const side of ['a','b'])
+ used.set(entry[side].species,(used.get(entry[side].species)||0)+1);
+for(const species of GameData.SPECIES){
+ if(used.has(species.id))continue;
+ const element=Skills.elementOf(species.id);
+ const slot=entries.flatMap(entry=>['a','b'].map(side=>({entry,side})))
+  .find(({entry,side})=>Skills.elementOf(entry[side].species)===element
+    &&used.get(entry[side].species)>1);
+ if(!slot)throw Error('No duplicate '+element+' slot for collectible breed '+species.id);
+ const prior=slot.entry[slot.side].species;
+ used.set(prior,used.get(prior)-1);
+ slot.entry[slot.side].species=species.id;
+ used.set(species.id,1);
+}
 const main=byId('duo-player'),ctx=main.getContext('2d'),status=byId('load-status');
 let index=0,tier=3,playing=true,sequence=false,started=performance.now(),hold=0,previewDone=false;
 let artMode='original';
@@ -412,9 +430,9 @@ breedGallery.querySelectorAll('[data-breed-id]').forEach(b=>{
  const rarity=b.querySelector('.breed-rarity');
  if(rarity)rarity.textContent=sp.rarity;
 });
-if(GameData.SPECIES.length!==32||new Set(entries.flatMap(v=>[v.a.species,v.b.species])).size!==32){
- status.textContent='品种资料库检查失败：应覆盖全部 32 种可收集猫咪。';
- throw Error('32-breed duo coverage check failed');
+if(new Set(entries.flatMap(v=>[v.a.species,v.b.species])).size!==allBreedIds.size){
+ status.textContent='品种资料库检查失败：应覆盖全部 '+allBreedIds.size+' 种可收集猫咪。';
+ throw Error('Collectible breed duo coverage check failed');
 }
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{
  tier=Number(b.dataset.tier);
