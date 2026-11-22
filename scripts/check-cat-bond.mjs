@@ -851,12 +851,13 @@ assert.ok(tankRoster.includes('senlin')&&tankRoster.includes('jiafei'),
   'Maine Coon and Exotic Shorthair fill the heavy tank roles');
 const exotic=GameData.speciesById('jiafei');
 assert.equal(exotic?.rarity,'SR','Jiafei should be collectible as SR, not R');
-const jiafeiSprite=fs.readFileSync(DIR+'assets/jiafei-watercolor-v1.avif');
+const jiafeiSprite=fs.readFileSync(DIR+'assets/jiafei-watercolor-v2.webp');
 const watercolorRenderer=fs.readFileSync(DIR+'js/real-kittens.js','utf8');
-assert.ok(jiafeiSprite.length>4000&&jiafeiSprite.toString('ascii',4,12)==='ftypavif'&&
-  watercolorRenderer.includes('jiafei-watercolor-v1.avif')&&
+assert.ok(jiafeiSprite.length>6000&&jiafeiSprite.toString('ascii',0,4)==='RIFF'&&
+  jiafeiSprite.toString('ascii',8,12)==='WEBP'&&
+  watercolorRenderer.includes('jiafei-watercolor-v2.webp')&&
   watercolorRenderer.includes('paintJiafei(ctx,x,y,o)'),
-  'SR Jiafei must load real transparent watercolor art, not the rejected SVG');
+  'SR Jiafei must load the user-approved authentic transparent WebP watercolor, not the rejected orange-cat SVG');
 assert.ok(!watercolorRenderer.includes('jiafei-sr-tank.svg'),
   'Rejected vector art must not be reachable from the game renderer');
 assert.ok(exotic?.chubby&&exotic?.flatFace&&exotic?.short,
