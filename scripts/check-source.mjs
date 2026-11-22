@@ -120,7 +120,8 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const startRate=")||
    !dashboard.includes("snapshotPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
-   !dashboard.includes("3n2rchppku32o")||
+   !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
+   !dashboard.includes('id="bluesky-engagement-rows"')||
    !dashboard.includes('id="account-overview-rows"')||
    !dashboard.includes('id="video-detail-rows"')||
    !dashboard.includes('accountOverviewNote:'))
