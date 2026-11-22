@@ -51,7 +51,7 @@ let bondEntryAwaitingFirstBattle=false,townFirstBuildSeen=false;
 // Enter -> first run -> first finished attempt -> replay a finished attempt.
 let firstRunStarted=false,firstRunFinished=false,firstReplaySeen=false;
 function event(eventName,p={}){const n=String(eventName||"").toLowerCase();
-const beginsRun=game==="cat-bond"?n==="bond_entered":
+const beginsRun=game==="cat-bond"?(n==="bond_entered"||n==="game_start"):
  game==="tiny-town"?["town_charter_wonder","town_charter_care","town_charter_dream","game_retry"].includes(n):
  n==="run_start"||n==="game_start";
 const finishesRun=["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n);
