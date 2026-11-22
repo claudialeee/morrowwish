@@ -19,6 +19,9 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    '☰ 庭院菜单': '☰ Yard menu',
+    '当前位置：': 'Location: ',
+    '阳光花园': 'Sunlit Garden',
     '%，快捷键 F': '%, shortcut F',
     '   收服×': '   Captures ×',
     '技能名 -总伤 · 收服×N': 'Skill name · Total damage · Captures ×N',
