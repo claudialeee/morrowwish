@@ -370,11 +370,16 @@ function draw(ctx,W,H,seq,lookup){
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
  const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
  const galleryPreview=seq.galleryPreview===true; // Modal: show the complete painting; no camera overscan.
- // Default: restore the 21 x 3 COMPLETE painted storyboards, including
- // their integrated cats. This is the art chosen by the player again.
- // Explicit originalArt:false is retained for the 32 breed-specific
- // alternate rendering mode; NEVER draw both sets of cats together.
- const originalArt=seq.originalArt!==false;
+ // Preserve all 63 complete original paintings for the gallery and standard
+ // cinematics. The 33rd breed is NOT in any of those fixed-cat paintings.
+ // When real battle selects Jiafei, use the independent approved watercolor
+ // actor on the clean matching 21x3 stage instead of showing two WRONG cats.
+ // An explicit originalArt:true remains a reviewer choice in previews.
+ const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));
+ const hasJiafei=actors.some(cat=>
+   window.CatBondDuoBreedActors?.species?.(cat)==='jiafei');
+ const liveJiafei=!thumbnail&&!galleryPreview&&hasJiafei&&seq.originalArt!==true;
+ const originalArt=seq.originalArt!==false&&!liveJiafei;
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
  // A long, eased cinematic dissolve: the painted world grows into view,
  // stays present for the choreography, and releases back to live combat
@@ -386,7 +391,6 @@ function draw(ctx,W,H,seq,lookup){
  const sw=thumbnail?Math.min(W,H*16/9):W;
  const sh=thumbnail?sw*9/16:H;
  const x=thumbnail?(W-sw)/2:0,y=thumbnail?(H-sh)/2:0;
- const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));
  const actorA=actors[0],actorB=actors[1];
  const frame=regions[key];
  const strength=smooth((p-.09)/.19)*(1-smooth((p-.75)/.18));
