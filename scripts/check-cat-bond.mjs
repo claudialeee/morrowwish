@@ -583,8 +583,17 @@ for(const id of ['tangyuan','doudou','xiaohui']){
   const kitten=State.makeCat(id,{affinity:20});
   const ownElement=Skills.elementOf(id);
   const before=Skills.learnableSkills(kitten);
-  assert.ok(before.every(sk=>sk.element===ownElement),
-    'Starter '+id+' begins with understandable own-element skills');
+  // A tank may start with the universal tank-only mirror wall even if its
+  // elemental signature differs. All other starting skills must remain native.
+  // Keep the new tank design while guarding against accidental early splash.
+  const crossElement=before.filter(sk=>sk.element!==ownElement);
+  assert.ok(crossElement.every(sk=>
+    sk.id==='mirrorWall'&&sk.unlock?.build==='tank'&&
+    Skills.buildTypeForBreed(kitten)==='tank'),
+    'Starter '+id+' only receives its own element plus the tank-only wall');
+  assert.ok(before.some(sk=>sk.element===ownElement&&sk.ultCost===0&&
+    ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(sk.kind)),
+    'Starter '+id+' must still have a usable native attacking skill');
   Skills.ensureLoadout(kitten);
   const discovered=Skills.awakenFirstSkill(kitten);
   assert.ok(discovered,'First successful capture must reveal a new skill for '+id);
