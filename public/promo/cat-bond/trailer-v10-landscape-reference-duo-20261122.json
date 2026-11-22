@@ -1,0 +1,23 @@
+{
+  "source": "/promo/cat-bond/trailer-v10-20261121.mp4",
+  "sourceDuoStart": 44.7,
+  "sourceDuoEnd": 47.800000000000004,
+  "originalDuoVideoFramesUsed": true,
+  "originalDuoVideoRetimed": false,
+  "recordedWidescreenBackdrop": "public/promo/cat-bond/trailer-v10-landscape-20261122.mp4",
+  "video": "/promo/cat-bond/trailer-v10-landscape-reference-duo-20261122.mp4",
+  "poster": "/promo/cat-bond/trailer-v10-landscape-reference-duo-20261122.jpg",
+  "proofImages": [
+    "/promo/cat-bond/reference-duo-landscape-1.jpg",
+    "/promo/cat-bond/reference-duo-landscape-2.jpg",
+    "/promo/cat-bond/reference-duo-landscape-3.jpg",
+    "/promo/cat-bond/reference-duo-landscape-4.jpg",
+    "/promo/cat-bond/reference-duo-landscape-5.jpg",
+    "/promo/cat-bond/reference-duo-landscape-6.jpg"
+  ],
+  "width": 1920,
+  "height": 1080,
+  "duration": 59.566667,
+  "bytes": 5739619,
+  "publishedOnYouTube": false
+}
