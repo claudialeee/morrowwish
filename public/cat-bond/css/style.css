@@ -2658,3 +2658,73 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #cb-duo-viewer .cb-duo-viewer-close{right:7px}
  #cb-duo-viewer .cb-duo-viewer-title{left:12px}
 }
+
+
+/* Intro framing 2026-11-21: CTA stays in the first visible viewport even on
+   short windows. The painted kittens use the same full-body CatArt shapes;
+   reduce the empty top rather than clipping their ears or feet. */
+#intro{
+ justify-content:flex-start!important;
+ gap:clamp(5px,.85vh,9px)!important;
+ padding:clamp(42px,5.8vh,58px) 12px max(13px,env(safe-area-inset-bottom,0px))!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;
+ scroll-padding-top:clamp(42px,5.8vh,58px);
+}
+#intro > .intro-cat-gallery{
+ width:min(720px,94vw)!important;
+ height:clamp(120px,19vh,182px)!important;
+ max-height:182px!important;
+ flex-shrink:0!important;
+ margin:0 auto!important;
+}
+#intro #intro-cats{object-fit:contain!important}
+#intro > .intro-gallery-caption{margin:1px auto 0!important;padding:5px 14px!important}
+#intro .studio-badge{flex-shrink:0}
+#intro .game-logo{margin:0 auto!important;line-height:1.06!important}
+#intro .game-logo .logo-en{margin-top:2px!important}
+#intro > p:not(#start-error){margin:0 auto!important;padding:0 8px!important;line-height:1.4!important}
+#intro #intro-start{
+ order:0!important;display:block!important;visibility:visible!important;
+ flex:0 0 auto!important;align-self:center;
+ min-height:50px!important;
+ margin:3px auto!important;
+ padding:10px 30px!important;
+}
+#intro .intro-features{order:1!important;margin:3px auto!important}
+#intro .intro-guide{order:2!important;margin:0 auto!important}
+#intro #intro-reset{order:3!important;margin:0 auto!important}
+#intro #start-error{order:4!important}
+@media(max-width:700px){
+ #intro{
+   padding:calc(43px + env(safe-area-inset-top,0px)) 10px
+    calc(13px + env(safe-area-inset-bottom,0px))!important;
+   gap:6px!important;
+ }
+ #intro > .intro-cat-gallery{
+  width:min(96vw,540px)!important;
+  height:clamp(109px,18vh,155px)!important;
+  max-height:155px!important;
+ }
+ #intro .game-logo{font-size:clamp(29px,8vw,41px)!important}
+ #intro .game-logo .logo-en{font-size:10px!important}
+ #intro #intro-start{
+   width:min(90%,330px)!important;min-height:48px!important;
+   padding:10px 14px!important;order:0!important;
+ }
+ #intro .intro-features span{min-height:38px!important;padding:6px 9px!important}
+ #intro > p:not(#start-error){font-size:12px!important}
+ #intro > .intro-gallery-caption{font-size:clamp(11px,3.1vw,13px)!important}
+}
+@media(max-height:680px){
+ #intro{gap:5px!important}
+ #intro > .intro-cat-gallery{height:clamp(108px,17vh,146px)!important}
+ #intro .game-logo{font-size:clamp(27px,5vh,42px)!important}
+ #intro .intro-features span{min-height:36px!important}
+ #intro #intro-start{min-height:46px!important}
+}
+@media(max-height:480px) and (orientation:landscape){
+ #intro > .intro-cat-gallery{height:110px!important;width:min(580px,80vw)!important}
+ #intro .intro-features{max-width:420px!important}
+ #intro #intro-start{width:min(300px,85%)!important}
+}
