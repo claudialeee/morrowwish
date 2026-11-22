@@ -389,8 +389,8 @@ damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
 assert.ok((1000-balanceEnemy.hp)<160,
   'low-health execution must no longer inflate a 100-base Q/E hit above 160');
 const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
-assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.4'),
-  'existing stagger retains 1.4x, not 2x, vulnerability');
+assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
+  'existing stagger retains 1.3x, not 2x, vulnerability');
 
 assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
