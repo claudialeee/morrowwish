@@ -402,8 +402,10 @@ const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'existing stagger retains 1.3x, not 2x, vulnerability');
 
-// POISE UI + STAGGER: every enemy exposes a readable gauge; a true break
-// opens a five-second damage window, without changing the 1.3x vulnerability.
+// Regular Q/E cause armor break, never poise drain or Stagger. Dedicated
+// 泰山压顶 keeps the five-second Stagger window and visible countdown.
+assert.equal(Skills.TAG_INFO.rust.ttl,10,'armor break persists for ten seconds');
+assert.equal(Skills.TAG_INFO.rust.dps,0,'armor break is not an added DOT');
 const poiseBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 poiseBattle.coach=null;
@@ -413,8 +415,17 @@ poiseEnemy.poise=1;poiseEnemy.staggerT=0;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
   poiseEnemy.x,poiseEnemy.y);
-assert.equal(poiseEnemy.staggerT,5,'breaking enemy poise must stagger for five seconds');
-assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,'poise resets on break');
+assert.equal(poiseEnemy.staggerT,0,'ordinary Q/E cannot trigger stagger');
+assert.equal(poiseEnemy.poise,1,'ordinary Q/E cannot drain poise');
+assert.equal(poiseEnemy.status.rust,10,'ordinary Q/E applies ten-second armor break');
+poiseEnemy.flash=0;poiseEnemy.inv=0;
+const slamCat=poiseBattle.me();
+slamCat._leapTo={x:poiseEnemy.x,y:poiseEnemy.y};
+slamCat._leapR=54;slamCat._leapDmg=10;slamCat._leapCol='#7ee787';
+slamCat._leapSkill={id:'quakeStomp',kind:'leap',element:'grass',tags:['stagger']};
+poiseBattle.leapLand(slamCat);
+assert.equal(poiseEnemy.staggerT,5,'dedicated stagger slam lasts five seconds');
+
 const gaugeText=[];
 const gaugeCtx=new Proxy(canvasCtx,{get(target,key){
   if(key==='fillText')return label=>gaugeText.push(String(label));
