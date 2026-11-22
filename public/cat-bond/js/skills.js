@@ -938,14 +938,36 @@
     const elemAdj=sk=>sk.element===own?OWN_BONUS:sk.element===splash?0:-SPLASH_PENALTY;
     const scored=pool.map(sk=>({sk,s:buildScore(role,sk)+elemAdj(sk)}))
       .filter(x=>x.s>-99).sort((a,b)=>b.s-a.s).map(x=>x.sk);
-    const q=scored[0]||null;
-    // For tank/support, force the E slot to the best defensive verb (own-element-first
-    // via the same ranked order) if one exists and wasn't already picked as Q.
-    let e=null;
-    if((role==='tank'||role==='support')){
-      e=scored.find(sk=>sk!==q&&(isShieldSkill(sk)||sk.kind==='heal'))||null;
+    // Role-constrained Q/E composition, not just two high-scoring neighbors:
+    // each build needs a recognisable active combat loop, with a sensible
+    // fallback only when the cat has not yet unlocked that skill type.
+    const attack=sk=>sk&&['melee','projectile','beam','chain','dash','pounce','leap','aoe'].includes(sk.kind);
+    const ranged=sk=>sk&&['projectile','beam','chain'].includes(sk.kind);
+    const melee=sk=>sk&&['melee','dash','pounce','leap'].includes(sk.kind);
+    const cc=sk=>sk&&(skillCCScore(sk)>0||sk.tags?.includes('stagger'));
+    const pick=(predicate,except)=>scored.find(sk=>sk!==except&&predicate(sk))||null;
+    let q=null,e=null;
+    if(role==='tank'){
+      q=pick(sk=>isShieldSkill(sk))||pick(sk=>sk.kind==='heal');
+      e=pick(attack,q)||pick(sk=>sk.kind==='buff',q);
+    }else if(role==='support'){
+      q=pick(sk=>sk.kind==='heal')||pick(isShieldSkill);
+      e=pick(attack,q)||pick(sk=>sk.kind==='buff',q);
+    }else if(role==='dps'){
+      q=pick(ranged)||pick(attack);
+      e=pick(sk=>attack(sk)&&sk.kind!==q?.kind,q)||pick(attack,q);
+    }else if(role==='assassin'){
+      q=pick(sk=>melee(sk)&&(sk.heavy||['dash','pounce','leap'].includes(sk.kind)))||pick(melee);
+      e=pick(sk=>attack(sk)&&sk!==q,q)||pick(sk=>sk.kind==='buff',q);
+    }else if(role==='control'){
+      q=pick(cc)||pick(attack);
+      e=pick(sk=>attack(sk)&&sk!==q,q)||pick(isShieldSkill,q);
+    }else {
+      q=pick(melee)||pick(attack);
+      e=pick(sk=>attack(sk)&&sk!==q,q)||pick(sk=>sk.kind==='buff',q);
     }
-    if(!e)e=scored.find(sk=>sk!==q)||null;
+    q=q||scored[0]||null;
+    e=e||scored.find(sk=>sk!==q)||null;
     const full=defaultLoadout(cat);                 // reuse its ult-slot resolution (own-element ult)
     return [null, q?.id||full[1]||null, e?.id||full[2]||null, full[3]||null];
   }
