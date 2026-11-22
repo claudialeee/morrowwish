@@ -964,6 +964,30 @@ class CaptureBattle {
     return {x:f._svx/sm,y:f._svy/sm,raw:mag};
   }
 
+  // A held reflect wall is a directional defensive stance, not a kiting buff.
+  // Move *toward* an approaching shot to keep the front hemisphere covered.
+  // Without an incoming shot, guard toward the selected enemy. The movement
+  // heading is also the actual wall heading; no free 360-degree rotation.
+  reflectGuardDirection(f, target, owner) {
+    if (!(f.reflectT > 0)) return null;
+    let best=null, bestTime=Infinity;
+    for(const p of this.projectiles) {
+      if(p.owner!==owner || p.burst)continue;
+      const vx=p.vx||0,vy=p.vy||0,v2=vx*vx+vy*vy;
+      if(v2<1)continue;
+      const rx=f.x-p.x,ry=f.y-p.y;
+      const t=(rx*vx+ry*vy)/v2;
+      if(t<0||t>0.8)continue;
+      if(Math.hypot(rx-vx*t,ry-vy*t)>Math.max(48,(f.r||18)+22))continue;
+      if(t<bestTime){best=p;bestTime=t;}
+    }
+    const source=best||target;
+    if(!source)return null;
+    const dx=source.x-f.x,dy=source.y-f.y,mag=Math.hypot(dx,dy);
+    if(mag<2)return null;
+    return {x:dx/mag,y:dy/mag};
+  }
+
   // Movement and action selection share the same engagement distance, so an
   // autopilot won't stand outside the range of its own basic attack.
   autoDrive(dt) {
@@ -1001,6 +1025,9 @@ class CaptureBattle {
     if(smash){
       const ddx=f.x-smash.x,ddy=f.y-smash.y,dd=Math.hypot(ddx,ddy)||1;
       mx=ddx/dd;my=ddy/dd;evasive=true;         // snap: evasion must stay crisp
+    }else if(f.reflectT>0 && this.reflectGuardDirection(f,tgt,'wild')){
+      const guard=this.reflectGuardDirection(f,tgt,'wild');
+      mx=guard.x;my=guard.y;  // face incoming shot; half-speed stance
     }else if(threat){
       const p=threat.p,sp=Math.hypot(p.vx,p.vy)||1;
       const side=f.i%2?-1:1;
@@ -1058,8 +1085,8 @@ class CaptureBattle {
     // ping-pong). Re-derive distance/aim for the possibly-new target.
     const picked=this.commandTarget ? tgt : this.unwardedTarget(f,tgt);
     if(picked&&picked!==tgt){ tgt=picked; dist=Math.hypot(tgt.x-f.x,tgt.y-f.y)||1; }
-    const tgtWarded=this.enemyWarded(tgt);
-    const tgtReflect=!!tgt&&tgt.reflectT>0;   // firing a PROJECTILE at this = self-harm
+    const tgtWarded=this.enemyWarded(tgt,f);
+    const tgtReflect=this.reflectCovers(tgt,f.x,f.y); // only shots from the ward's front are unsafe
     // Auto fire LEADS the target (true intercept), so basics/projectile skills hit a
     // moving enemy instead of trailing it. Facing uses the same lead so the cat looks
     // where it shoots. Melee/close casts resolve to ~current pos (tiny lead time).
@@ -1186,12 +1213,12 @@ class CaptureBattle {
       const sk=slot==='q'?f.qSkill:f.eSkill;
       if(!sk||(f.cd?.[slot]||0)>0)continue;
       if(sk.kind==='heal'||sk.kind==='buff'||sk.ultCost>0)continue;
-      if(tgt.reflectT>0&&(sk.kind==='projectile'||sk.kind==='beam'))continue;  // don't feed a reflect wall
+      if(this.reflectCovers(tgt,f.x,f.y)&&(sk.kind==='projectile'||sk.kind==='beam'))continue;
       if(inFireRange(sk)){
         if((slot==='q'?this.skillQ(f,aim):this.skillE(f,aim))!==false)return;
       }
     }
-    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)&&!(tgt.reflectT>0))this.fireBasic(f,aim);
+    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)&&!this.reflectCovers(tgt,f.x,f.y))this.fireBasic(f,aim);
   }
 
   // Lock by enemy ID, not a stale tap coordinate: a moving pack must not
@@ -1220,17 +1247,26 @@ class CaptureBattle {
   // An enemy is "warded" while it has a damage-reducing barrier, a reflect wall, or a
   // full protect up — attacking it is wasteful (and firing a projectile into a reflect
   // wall bounces back as SELF-damage). Auto-battle uses this to retarget / hold fire.
-  enemyWarded(e) { return !!e && ((e.shieldT > 0.25) || (e.reflectT > 0) || (e.protectT > 0)); }
+  // Front-facing reflection is dangerous only to attackers in front of the wall.
+  reflectCovers(target, fromX, fromY) {
+    if (!target || !(target.reflectT > 0)) return false;
+    const angle=target._reflectFacing ?? target._moveFacing ?? (target.face<0?Math.PI:0);
+    return (fromX-target.x)*Math.cos(angle)+(fromY-target.y)*Math.sin(angle)>=0;
+  }
+  enemyWarded(e, attacker) {
+    return !!e && ((e.shieldT > 0.25) || (e.protectT > 0) ||
+      (e.reflectT > 0 && (!attacker || this.reflectCovers(e,attacker.x,attacker.y))));
+  }
   // Prefer a live UN-warded enemy when the current pick is warded and another is free.
   // Sticky: once we retarget, keep the new one for ≥0.3s so flickering wards don't cause
   // target ping-pong (which would spread damage and look indecisive).
   unwardedTarget(f, cur) {
-    if (!this.enemyWarded(cur)) return cur;
+    if (!this.enemyWarded(cur,f)) return cur;
     if (f._wardSwitchUntil && this.t < f._wardSwitchUntil && f._wardSwitchTgt &&
-        f._wardSwitchTgt.alive && !this.enemyWarded(f._wardSwitchTgt)) return f._wardSwitchTgt;
+        f._wardSwitchTgt.alive && !this.enemyWarded(f._wardSwitchTgt,f)) return f._wardSwitchTgt;
     let best = null, bd = 1e9;
     for (const e of this.liveEnemies()) {
-      if (this.enemyWarded(e)) continue;
+      if (this.enemyWarded(e,f)) continue;
       const d = Math.hypot(e.x - f.x, e.y - f.y);
       if (d < bd) { bd = d; best = e; }
     }
@@ -1252,6 +1288,9 @@ class CaptureBattle {
     if (near && (f._allyStepUntil == null || this.t > f._allyStepUntil)) { f._allyStep = Math.random() < this.autoDodgeChance(f); f._allyStepUntil = this.t + 0.35; }
     const allySmash = this.incomingSmash(f);
     if (allySmash) { const ax = f.x - allySmash.x, ay = f.y - allySmash.y, ad = Math.hypot(ax, ay) || 1; mx = ax / ad; my = ay / ad; evasive = true; }  // flee the smash disc first
+    else if(f.reflectT>0 && this.reflectGuardDirection(f,tgt,'wild')) {
+      const guard=this.reflectGuardDirection(f,tgt,'wild');mx=guard.x;my=guard.y;
+    }
     else if (near && nd < 100 && f._allyStep) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; evasive = true; }
     else {
       // same KIT-BASED band as the active cat: brawler allies rush, ranged allies
@@ -3668,7 +3707,10 @@ class CaptureBattle {
       if (Math.hypot(e.x - cx, e.y - cy) < 34 && t < threatT) { threat = p; threatT = t; }
     }
     let ax = 0, ay = 0;
-    if (threat && e.dodgeCd <= 0) {
+    const reflectGuard=e.reflectT>0?this.reflectGuardDirection(e,me,'me'):null;
+    if (reflectGuard) {
+      ax=reflectGuard.x;ay=reflectGuard.y; // shield faces toward the player shot
+    } else if (threat && e.dodgeCd <= 0) {
       const pv = Math.hypot(threat.vx, threat.vy) || 1;
       let nx = -threat.vy / pv, ny = threat.vx / pv;
       if ((e.x < this.W / 2) === (nx < 0)) { nx = -nx; ny = -ny; }
@@ -4321,10 +4363,7 @@ class CaptureBattle {
     //    it can't ping-pong forever). Instant melee/aoe/chain are NOT reflected.
     // Only the FORWARD hemisphere catches shots. A shot from the flank/rear
     // passes through and hurts normally. Heading tracks actual movement.
-    const wallFacing = target._reflectFacing ?? target._moveFacing ?? (target.face < 0 ? Math.PI : 0);
-    const fromX = proj ? proj.x - target.x : 0;
-    const fromY = proj ? proj.y - target.y : 0;
-    const frontShot = proj && fromX * Math.cos(wallFacing) + fromY * Math.sin(wallFacing) >= -0.001;
+    const frontShot = proj && this.reflectCovers(target, proj.x, proj.y);
     if ((target.reflectT || 0) > 0 && frontShot && (proj._reflects || 0) < 1) {
       proj._reflects = (proj._reflects || 0) + 1;
       proj.owner = side === 'me' ? 'wild' : 'me';
