@@ -3537,7 +3537,7 @@ body.cb-exploring #stage #map-actions > button{
   body.cb-exploring #stage #map-actions > button{padding:5px 1px!important;font-size:10.5px!important}
 }
 @media(orientation:landscape) and (max-height:530px){
-  #stage #map-actions{top:calc(env(safe-area-inset-top,0px) + 50px);right:max(7px,env(safe-area-inset-right,0px));left:auto;transform:none;width:min(365px,calc(100% - 14px));padding:3px}
+  #stage #map-actions{top:calc(env(safe-area-inset-top,0px) + 57px);right:max(7px,env(safe-area-inset-right,0px));left:auto;transform:none;width:min(365px,calc(100% - 14px));padding:3px}
   #stage #map-actions > button,
   body.cb-exploring #stage #map-actions > button{height:35px!important;min-height:35px!important;max-height:35px!important}
 }
@@ -3731,7 +3731,7 @@ body.cb-exploring #stage #map-actions > button{
 }
 @media(orientation:landscape) and (max-height:530px){
   #stage #map-actions{
-    top:calc(env(safe-area-inset-top,0px) + 50px);
+    top:calc(env(safe-area-inset-top,0px) + 57px);
     right:max(7px,env(safe-area-inset-right,0px));
     left:auto;transform:none;
     width:max-content!important;
