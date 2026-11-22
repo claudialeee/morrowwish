@@ -6,6 +6,7 @@ on:
     paths:
       - 'public/**'
       - 'src/**'
+      - 'promotion/social-metrics-snapshot.json' # Refresh verified provider metrics in the protected Worker.
       # Only scripts that affect the deployed site or release automation.
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
