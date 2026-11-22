@@ -60,7 +60,7 @@ const playlists={
   broll('narrow-achievement',3.4),
   broll('room-kitchen',2.25,'SNEAK THROUGH THE KITCHEN.'),
   broll('room-laundry',2.25,'DODGE THE LAUNDRY PATROL.'),
-  broll('room-library',2.25,'A LIBRARY FULL OF SECRETS.'),
+  broll('room-library',2.65,'A LIBRARY FULL OF SECRETS.'),
   broll('room-garden',2.25,'ESCAPE THROUGH THE GARDEN.'),
   broll('caught-attempt',14,'ONE WRONG TURN... CAUGHT!'),
   cover(3.6,'PLAY FREE')
