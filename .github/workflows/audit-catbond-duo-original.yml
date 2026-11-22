@@ -1,0 +1,44 @@
+name: Inspect original V10 duo frames vs wide rendition
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-catbond-duo-original.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Compare original and landscape duo frame by frame
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          a=public/promo/cat-bond/trailer-v10-20261121.mp4
+          b=public/promo/cat-bond/trailer-v10-landscape-20261122.mp4
+          for t in 44.85 45.25 45.70 46.20 46.65 47.15 47.55; do
+            f=public/promo/cat-bond/duo-original-vs-landscape-$t.jpg
+            ffmpeg -nostdin -y -v error -ss "$t" -i "$a" -ss "$t" -i "$b" -filter_complex '[0:v]scale=-2:480:flags=lanczos,pad=960:480:(ow-iw)/2:0:0x232038[left];[1:v]scale=854:480:flags=lanczos,pad=960:480:(ow-iw)/2:0:0x232038[right];[left][right]hstack=inputs=2[out]' -map '[out]' -frames:v 1 -q:v 3 "$f"
+            test -s "$f"
+          done
+      - name: Save comparisons without changing gameplay
+        run: |
+          set -e
+          git add public/promo/cat-bond/duo-original-vs-landscape-*.jpg
+          git config user.name morrowwish-promo-bot
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'qa(cat-bond): compare duo original V10 frames to proposed horizontal rendering'
+          git restore --worktree .
+          for n in $(seq 1 10); do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
