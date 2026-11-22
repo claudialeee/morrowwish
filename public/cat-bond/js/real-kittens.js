@@ -295,7 +295,12 @@
     ctx.translate(0,-bob);
     if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-    ctx.drawImage(jiafeiSprite,-46,-69,92,105);
+    // Match the perceived height of the other 32 painted kittens. Keep the
+    // feet on the original y=+36 ground line and preserve the AVIF aspect ratio;
+    // only the illustration shrinks, never gameplay hitboxes or movement.
+    const visualScale=.92;
+    const artW=92*visualScale,artH=105*visualScale;
+    ctx.drawImage(jiafeiSprite,-artW/2,36-artH,artW,artH);
     if(growth?.gem){ctx.font='12px system-ui';ctx.fillStyle=growth.gemColor||'#e8bb68';ctx.fillText('✦',20,-47);}
     ctx.restore();
     return true;
