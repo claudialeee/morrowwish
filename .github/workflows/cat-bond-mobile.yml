@@ -6,6 +6,7 @@ on:
       - 'public/cat-bond/**'
       - 'public/game-fullscreen.js'
       - 'scripts/cat-bond-touch-smoke.mjs'
+      - 'scripts/cat-bond-topbar-smoke.mjs'
       - 'scripts/cat-bond-adult-smoke.mjs'
       - 'scripts/cat-bond-ult-visual-smoke.mjs'
       - 'scripts/cat-bond-crazygames-smoke.mjs'
@@ -43,6 +44,9 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-server.log 2>&1 &
           sleep 2
+          # Gate the user's actual right-hand yard toolbar and removed dead tab FIRST.
+          # A broken or offscreen menu must not be hidden by later art-load tests.
+          node scripts/cat-bond-topbar-smoke.mjs
           # Real Chromium checks legacy illustrated cats on phone/desktop and
           # confirms no new growth/awakening controls are available.
           node scripts/cat-bond-adult-smoke.mjs
