@@ -1321,6 +1321,8 @@ assert.equal(State.S.cats.length, before + 1, 'captured cat added to roster');
 assert.deepEqual(Array.from(State.S.battlePrefs.teamUids.slice(0,2)),
   [starter.uid,State.S.cats.at(-1).uid],
   'first catch auto-selects newly unlocked duo as the next battle starters');
+assert.equal(State.S.firstDuoShowcasePending,true,
+  'First capture queues a playable duo move for the next eligible hunt');
 assert.ok(document.getElementById('panel').innerHTML.includes('first-capture-rewards'),
   'first capture result folds secondary rewards to keep the action clear');
 assert.ok(document.getElementById('panel').innerHTML.includes('Try your duo'),
