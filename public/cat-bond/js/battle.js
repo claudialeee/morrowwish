@@ -443,10 +443,6 @@ class CaptureBattle {
     const v=this.duoField;
     if(!v||this.done)return;
     v.age+=dt;v.remaining=Math.max(0,v.duration-v.age);
-    // The resonance follows the nearest living opponent, rather than becoming
-    // useless if the wild cat leaves its starting position.
-    const marked=this.liveEnemies().reduce((best,e)=>!best||Math.hypot(e.x-v.x,e.y-v.y)<Math.hypot(best.x-v.x,best.y-v.y)?e:best,null);
-    if(marked){v.x+=(marked.x-v.x)*Math.min(1,dt*.55);v.y+=(marked.y-v.y)*Math.min(1,dt*.55);}
     if(!v.finisher&&v.remaining<1.15){v.finisher=true;
       this.skillStrokes.push({kind:'duoImpact',x:v.x,y:v.y,firstColor:v.first,secondColor:v.second,elements:v.pair,life:.8,max:.8});}
     // Let the paired-element field drift after the wild pack as it moves.
@@ -468,6 +464,9 @@ class CaptureBattle {
     v.pulse-=dt;
     if(v.pulse>0)return;
     v.pulse+=1.22;
+    // Each pulse visibly propagates from the field rather than only creating
+    // disconnected impact rings on enemies.
+    this.vfx.ring(v.x,v.y,{r0:12,vr:v.radius/0.32,life:.32,color:v.first,width:3});
     for(const e of this.liveEnemies()){
       if(Math.hypot(e.x-v.x,e.y-v.y)>v.radius*1.3)continue;
       const damage=Math.min(e.maxhp*(.019+.003*v.tier),
@@ -528,6 +527,39 @@ class CaptureBattle {
     ctx.globalAlpha=opacity*.65;ctx.strokeStyle='#fff4d1';ctx.lineWidth=2;
     ctx.beginPath();ctx.ellipse(0,0,rad+6,(rad+6)*.64,0,-Math.PI/2,
       -Math.PI/2+2*Math.PI*v.remaining/v.duration);ctx.stroke();
+    ctx.restore();
+    // Readable battlefield HUD for what the field actually DOES. This stays
+    // anchored to the moving resonance, below the ground-ring silhouette.
+    const zh=window.MorrowwishI18n?.get?.()==='zh';
+    const statusNames={burn:'灼烧',soak:'湿润',shock:'感电',oil:'浸油',
+      chill:'冰冻',dizzy:'眩晕',bleed:'流血',blind:'致盲',bind:'束缚',
+      expose:'破绽',weaken:'削弱',rust:'破甲'};
+    const enStatus={burn:'Burn',soak:'Soak',shock:'Shock',oil:'Oil',
+      chill:'Chill',dizzy:'Dizzy',bleed:'Bleed',blind:'Blind',bind:'Bind',
+      expose:'Expose',weaken:'Weaken',rust:'Armor break'};
+    const effect=zh?{
+      heal:'治疗',regen:'持续治疗',shield:'护盾',boost:'增伤',
+      haste:'冷却加速',evade:'闪避',protect:'格挡',charge:'必杀充能',
+      summon:'召唤队友'
+    }:{
+      heal:'Heal',regen:'Regeneration',shield:'Shield',boost:'Attack up',
+      haste:'Cooldown',evade:'Evade',protect:'Guard',charge:'Ult charge',
+      summon:'Summon ally'
+    };
+    const name=zh?(statusNames[v.status]||'异常'):(enStatus[v.status]||'Status');
+    const assist=effect[v.support]||v.support;
+    const summary=zh?('脉冲伤害 · '+name+' · '+assist):('Pulse damage · '+name+' · '+assist);
+    const by=Math.min(this.H-this.bottomMargin-8,Math.max(this.topMargin+12,v.y+rad*.64+18));
+    ctx.save();
+    ctx.globalAlpha=Math.min(1,v.age/.35,v.remaining/.6);
+    ctx.font='700 10px system-ui,sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const label=summary+'  '+Math.ceil(v.remaining)+'s';
+    const width=Math.min(this.W-18,ctx.measureText(label).width+18);
+    const bx=clamp(v.x,width/2+5,this.W-width/2-5);
+    ctx.fillStyle='rgba(32,42,55,.82)';
+    rr(ctx,bx-width/2,by-10,width,20,9);ctx.fill();
+    ctx.fillStyle='#fff5dd';ctx.fillText(label,bx,by,width-12);
     ctx.restore();
   }
 
