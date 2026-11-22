@@ -228,15 +228,18 @@ const UI = {
     card.querySelectorAll('[data-cat-view]').forEach(b=>b.onclick=()=>this.openCatHub(b.dataset.catView));
   },
 
-  // Saved expedition selection never expands to three cats behind the player's back.
-  getPreferredBattleTeam(){
-    const cats=State.S.cats||[],byUid=new Map(cats.map(c=>[c.uid,c]));
-    const saved=(State.S.battlePrefs?.teamUids||[]).map(uid=>byUid.get(uid)).filter(Boolean);
-    if(saved.length)return saved.slice(0,5);
+  // Always fill the five expedition slots when enough cats are available.
+  // Saved player choices keep their exact order (including the two starters);
+  // newly available cats only fill empty slots. Yard callers can pass their
+  // unique-breed roster so both entry points follow the same preference.
+  getPreferredBattleTeam(eligibleCats=State.S.cats){
+    const cats=eligibleCats||[],byUid=new Map(cats.map(c=>[c.uid,c]));
+    const savedIds=State.S.battlePrefs?.teamUids;
+    const saved=(Array.isArray(savedIds)?savedIds:[]).map(uid=>byUid.get(uid)).filter(Boolean);
     const duo=window.CatRelations?.chosen?.()||[];
     const rest=[...cats].sort((a,b)=>State.catPower(b)-State.catPower(a));
     const seen=new Set();
-    return [...duo,...rest].filter(c=>{
+    return [...saved,...duo,...rest].filter(c=>{
       if(!c||!byUid.has(c.uid)||seen.has(c.uid))return false;
       seen.add(c.uid);return true;
     }).slice(0,5);
@@ -347,7 +350,7 @@ const UI = {
       btn.onclick=()=>{
         const i=selected.indexOf(btn.dataset.uid);
         if(i>=0){if(selected.length>1)selected.splice(i,1);}
-        else{if(selected.length>=5)selected.shift();selected.push(btn.dataset.uid);}
+        else{if(selected.length>=5)selected[selected.length-1]=btn.dataset.uid;else selected.push(btn.dataset.uid);}
         refresh();
       };
     });refresh();
@@ -2406,9 +2409,7 @@ const UI = {
     }).filter((c, i, arr) => arr.findIndex(x=>x.species===c.species)===i);
     const preferred=window.CatRelations?.chosen?.()||[];
     const duo=preferred.length===2?preferred.filter(c=>sorted.some(t=>t.uid===c.uid)):[];
-    const saved=this.getPreferredBattleTeam().filter(c=>sorted.some(t=>t.uid===c.uid));
-    const selection=State.S.battlePrefs?.teamUids?.length&&saved.length?saved:[...saved,...duo,...sorted];
-    this.teamUids=selection.filter((c,i,arr)=>arr.findIndex(x=>x.uid===c.uid)===i).slice(0,5).map(c=>c.uid);
+    this.teamUids=this.getPreferredBattleTeam(sorted).map(c=>c.uid);
     const chips = sorted.map(c => {
       const sp = GameData.speciesById(c.species);
       const sel = this.teamUids.includes(c.uid);
@@ -2490,7 +2491,7 @@ const UI = {
         const uid = chip.dataset.uid;
         const idx = this.teamUids.indexOf(uid);
         if (idx >= 0) { if (this.teamUids.length > 1) this.teamUids.splice(idx, 1); }  // keep at least 1
-        else { if (this.teamUids.length >= 5) this.teamUids.shift(); this.teamUids.push(uid); }
+        else { if (this.teamUids.length >= 5) this.teamUids[this.teamUids.length-1]=uid; else this.teamUids.push(uid); }
         refreshSel();
       };
     });
