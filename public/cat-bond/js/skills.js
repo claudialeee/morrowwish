@@ -570,6 +570,39 @@
       ? window.GameData.speciesById(cat.species) : null;
   }
 
+  // A dual-element cat has ONE primary school and exactly two curated side
+  // techniques, not two complete skill libraries. The first secondary move is
+  // an offensive discovery, the second a defensive/support complement (or a
+  // different attack when none exists). Selection is stable by skill IDs and
+  // costs no additional stored state or changes to the save schema.
+  const SECONDARY_ATTACK_KINDS=new Set([
+    'melee','projectile','dash','pounce','chain','beam','leap','aoe']);
+  function secondaryChoices(cat) {
+    const primary=elementOf(cat.species),secondary=SPLASH_ELEMENT[primary];
+    const native=SKILLS.filter(s=>s.element===secondary&&!s.unlock&&!s.ultCost);
+    const attacks=native.filter(s=>SECONDARY_ATTACK_KINDS.has(s.kind));
+    const first=attacks.find(s=>!s.generic)||attacks[0]||null;
+    const support=native.find(s=>(s.kind==='buff'||s.kind==='heal')&&!s.generic)
+      ||native.find(s=>s.kind==='buff'||s.kind==='heal');
+    const second=(support&&support.id!==first?.id?support:null)
+      ||attacks.find(s=>s.id!==first?.id&&!s.generic)
+      ||attacks.find(s=>s.id!==first?.id)||null;
+    return [first,second].filter(Boolean);
+  }
+  function secondaryLimit(cat) {
+    const level=cat.level||1,bond=cat.affinity||0;
+    if(!cat.skillAwakened&&level<4)return 0;
+    // An intentional late-game support technique, never a second entire tree.
+    return level>=12&&bond>=60?2:1;
+  }
+  // Role-exclusive tank training and actual breed-exclusive signatures remain
+  // special exceptions. Other advanced skill gates belong to the cat's OWN
+  // element (also prevents global quests awarding every cat fire/light ults).
+  function gatedElementEligible(cat,s) {
+    return s.element===elementOf(cat.species)||
+      !!s.unlock?.build||!!s.unlock?.species;
+  }
+
   // ==========================================================================
   // 5b. GATED SKILL-LEARNING (付费 / 等级 / 亲密 / 品种 / 领悟)
   // ==========================================================================
@@ -655,7 +688,8 @@
     if (!Array.isArray(cat.learned)) cat.learned = [];
     const fresh = [];
     for (const s of SKILLS) {
-      if (isGated(s) && isAutoLearn(s) && !hasLearned(cat, s.id) && gateMet(cat, s)) {
+      if (isGated(s) && isAutoLearn(s) && gatedElementEligible(cat,s) &&
+          !hasLearned(cat, s.id) && gateMet(cat, s)) {
         cat.learned.push(s.id);
         fresh.push(s);
       }
@@ -667,7 +701,8 @@
   function trainerSkills(cat) {
     const ready = [], locked = [];
     for (const s of SKILLS) {
-      if (!isGated(s) || hasLearned(cat, s.id)) continue;
+      if (!isGated(s) || hasLearned(cat, s.id) ||
+          !gatedElementEligible(cat,s)) continue;
       // Do not show another build's exclusive equipment in the trainer.
       if(s.unlock?.build&&(cat.buildType||buildTypeForBreed(cat))!==s.unlock.build)
         continue;
@@ -684,6 +719,8 @@
     const bond = cat.affinity || 0;
     const rIdx = rarityIdx((speciesOf(cat) || {}).rarity || cat.rarity || 'N');
     const tier = bondTier(bond);
+    const sideChoices=secondaryChoices(cat).map(s=>s.id);
+    const sideLimit=secondaryLimit(cat);
     // Natural 领悟: grant any pure-gate skills the cat now qualifies for before we
     // build the pool, so the auto-loadout immediately sees them.
     autoLearn(cat);
@@ -710,7 +747,8 @@
         (Array.isArray(cat.autoSkillLoadout)&&cat.autoSkillLoadout.includes(s.id));
       let elemOk=s.element===el;
       if(!elemOk&&s.element===splash)
-        elemOk=rIdx>=1||!!cat.skillAwakened||lvl>=4||bond>=40||alreadyEquipped;
+        elemOk=alreadyEquipped||
+          (!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
       if(!elemOk&&alreadyEquipped)elemOk=true;
       if(!elemOk)continue;
       if(!isUlt&&!alreadyEquipped){
@@ -735,25 +773,11 @@
             }
           }
         }else{
-          // SPLASH element (the cat's secondary element): gated behind the Lv4/awaken
-          // discovery moment AND then throttled rank-by-rank like own-element — so it
-          // TRICKLES in instead of the whole secondary pool dumping at once ("4级突然
-          //学会一大堆技能"). Already-equipped (e.g. the awaken pick) bypasses via the
-          // alreadyEquipped guard above. Splash unlocks later than own element.
-          if(lvl<4&&!cat.skillAwakened)continue;
-          const splashNative=SKILLS.filter(k=>k.element===splash&&!k.unlock&&!k.ultCost);
-          const splashAtk=splashNative.filter(k=>
-            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind));
-          if(['heal','buff'].includes(s.kind)){
-            if(lvl<7&&bond<55)continue;                  // splash utility: later than own (3/30)
-          }else{
-            const rank=splashAtk.findIndex(k=>k.id===s.id);
-            if(rank>=1){
-              const threshold=4+rank*4; // 4, 8, 12, 16... one at a time
-              const bondGate=[0,55,75,90,100][Math.min(rank,4)];
-              if(lvl<threshold&&bond<bondGate)continue;
-            }
-          }
+          // Secondary selection and timing were already verified above.
+          // Do NOT silently grant every splash buff and late-game attack.
+          // Explicitly equipped old-save skills are grandfathered.
+          if(!alreadyEquipped&&!sideChoices.slice(0,sideLimit).includes(s.id))
+            continue;
         }
       }
       // An owned rare kitten needs to FEEL different right away, not at Lv.20.
@@ -1050,7 +1074,8 @@
     const sk = skillById(skillId);
     if (!sk || !isGated(sk)) return { ok: false, reason: 'notLearnable' };
     if (hasLearned(cat, skillId)) return { ok: false, reason: 'already' };
-    if (!gateMet(cat, sk)) return { ok: false, reason: 'locked' };
+    if (!gateMet(cat, sk)||!gatedElementEligible(cat,sk))
+      return { ok: false, reason: 'locked' };
     const cost = sk.unlock.cost;
     if (cost) {
       const S = window.State && State.S;
@@ -1213,7 +1238,8 @@
     // --- risky combo-chain ---
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---
-    SIGNATURE_SKILL, SPLASH_ELEMENT, learnableSkills, defaultLoadout, ensureLoadout,
+    SIGNATURE_SKILL, SPLASH_ELEMENT, secondaryChoices, secondaryLimit,
+    learnableSkills, defaultLoadout, ensureLoadout,
     basicEligible, basicChoices,
     // --- build types (按品种 + 流派自动配装) ---
     BUILD_TYPES, BUILD_ORDER, buildTypeForBreed, recommendLoadout, applyBuild,
