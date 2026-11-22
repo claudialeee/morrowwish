@@ -4,7 +4,7 @@
   "nativeWindow": "Official-platform-account/public video readings for published Nov 22 Morrow Wish Shorts/Reels, via connected vidIQ; older videos excluded.",
   "source": "Directly connected platform accounts and public video listings through vidIQ (not Metricool)",
   "refreshMode": "connected-account-refresh",
-  "note": "Native counts snapshot from verified live 2026-11-22 video URLs: YouTube 7, Instagram 7 via owner insights, TikTok 2 visible; five other expected TikTok clips remain unverified, not counted as 0. Instagram's Nov 20 six historical Reels are separately shown and excluded.",
+  "note": "Profile-confirmed TikTok count: 7 public account videos, but only 2 individually identified in video-feed search; show total views as null until full coverage. Other platforms are per-video verified. Historical IG excluded.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -49,12 +49,19 @@
     {
       "id": "tiktok",
       "priority": "P1",
-      "phase": "partial-platform-coverage",
-      "published": 2,
+      "phase": "published-profile-confirmed-partial-metrics",
+      "published": 7,
       "failed": null,
-      "views": 0,
-      "metricScope": "verified-new-short-videos",
-      "note": "2 public TikTok posts verified, 0 plays at retrieval; no native figures for the five other expected new clips."
+      "views": null,
+      "metricScope": "7-published-according-to-public-profile;2-individual-posts-verified",
+      "note": "TikTok public profile reports 7 videos. Native details and view counts fetched for only 2 public URLs (0 views each at capture); other 5 video view counts are unknown, so total is intentionally blank.",
+      "publicationEvidence": {
+        "source": "vidIQ-public-profile",
+        "profileUrl": "https://www.tiktok.com/@morrowwishgames",
+        "videoCount": 7,
+        "verifiedAt": "2026-11-22",
+        "individuallyVerified": 2
+      }
     },
     {
       "id": "instagram",
@@ -89,7 +96,7 @@
     "type": "approved-short-videos-only",
     "campaignTagPrefix": "mw-shorts-v2",
     "historicalExcluded": true,
-    "rule": "Verified publicly accessible newly published video URLs since Nov 21 only; each platform/game video counted once. Missing platform posts are unknown, not zero. Old Instagram Reels are separately tracked.",
+    "rule": "Only individually verified post URLs contribute detailed views. TikTok published count may additionally be sourced from public account profile even when the per-post feed is incomplete; total TikTok views must be null until every counted published video has a view metric.",
     "activeApprovedPosts": 16,
     "verifiedPosts": [
       {
@@ -270,11 +277,11 @@
   },
   "accountOverview": {
     "capturedAt": "2026-11-22",
-    "source": "Metricool Morrow Wish: Instagram Reels IGRE01 IGRE06 IGRE23; TikTok evolution TKEV01 TKEV02",
+    "source": "Mixed sources: historical Instagram from Metricool; current TikTok account publication count from vidIQ public profile.",
     "refreshMode": "manual",
     "windowStart": "2026-11-19",
     "windowEnd": "2026-11-22",
-    "note": "Historical Instagram Nov 20 Reels retrieved through Metricool, strictly excluded from new campaign. New Nov 22 Instagram metrics are fetched from authorized owner insights; TikTok has 2 verified public videos.",
+    "note": "Historical Instagram 6 Reels from Nov 20 retained separately (273 lifetime plays). Current TikTok public profile reports 7 published videos, but only 2 post URLs/metrics can be individually read; TikTok total views are unknown, not zero.",
     "platforms": [
       {
         "id": "instagram",
@@ -317,11 +324,11 @@
       },
       {
         "id": "tiktok",
-        "published": null,
+        "published": 7,
         "views": null,
-        "viewBasis": "provider_unsynced_recent_publications",
+        "viewBasis": "vidIQ-public-profile-count-7;per-video-metrics-for-only-2",
         "posts": [],
-        "status": "see-new-campaign-verifiedPosts"
+        "status": "7-published-2-detailed"
       }
     ]
   }

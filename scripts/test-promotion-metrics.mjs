@@ -11,8 +11,10 @@ for(const [platform,minCount] of Object.entries(minimumCounts)){
  const all=posts.filter(p=>p.platform===platform);
  assert.ok(all.length>=minCount,platform+' known posts must not disappear silently');
  const row=snap.platforms.find(p=>p.id===platform);
- assert.equal(row.published,all.length,platform+' published count reconciled');
- const complete=all.every(p=>p.views!=null);
+ const accountCount=platform==='tiktok'&&row.publicationEvidence?.source==='vidIQ-public-profile'
+   ?row.publicationEvidence.videoCount:all.length;
+ assert.equal(row.published,Math.max(accountCount,all.length),platform+' published count reconciled');
+ const complete=all.length===row.published&&all.length>0&&all.every(p=>p.views!=null);
  assert.equal(row.views,complete?all.reduce((n,p)=>n+p.views,0):null,platform+' verified views reconcile');
 }
 assert.equal(new Set(posts.map(p=>p.url)).size,posts.length,'no duplicates');
@@ -24,6 +26,10 @@ for(const post of posts){
  assert.ok(post.views==null||(Number.isSafeInteger(post.views)&&post.views>=0),'native views are nonnegative or unreported');
 }
 assert.ok(posts.some(p=>p.platform==='tiktok'&&p.game==='pawsibly-innocent')&&posts.some(p=>p.platform==='tiktok'&&p.game==='elsewhere'),'TikTok original publication baseline preserved');
+const tk=snap.platforms.find(x=>x.id==='tiktok');
+assert.equal(tk.published,7,'public TikTok profile confirms 7 published videos');
+assert.equal(tk.publicationEvidence.videoCount,7,'publication count has source evidence');
+assert.equal(tk.views,null,'partial per-video feed must not produce a misleading TikTok total');
 const historic=snap.accountOverview.platforms.find(x=>x.id==='instagram');
 assert.equal(historic.views,273,'old campaign remains separate');
 assert.equal(historic.posts.length,6,'old Reels not merged');

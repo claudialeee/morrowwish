@@ -55,8 +55,16 @@ if(social.schemaVersion!==2||social.metricScope?.type!=='approved-short-videos-o
    social.metricScope.activeApprovedPosts!==verifiedSocialPosts.length||
    newVideoSources.some(id=>{
      const p=social.platforms.find(x=>x.id===id),items=verifiedSocialPosts.filter(x=>x.platform===id);
-     const expectedViews=items.length&&items.every(x=>x.views!=null)?items.reduce((n,x)=>n+x.views,0):null;
-     return !p||(items.length?p.published!==items.length:p.published!==null&&p.published!==0)||p.views!==expectedViews;
+     // The official public profile can confirm more publications than a lagging
+     // per-video feed exposes. Count these videos, but never fabricate views.
+     const profileEvidence=id==='tiktok'&&p?.publicationEvidence?.source==='vidIQ-public-profile'&&
+       p.publicationEvidence.profileUrl==='https://www.tiktok.com/@morrowwishgames'&&
+       Number.isSafeInteger(p.publicationEvidence.videoCount)&&p.publicationEvidence.videoCount>=items.length&&
+       p.published===p.publicationEvidence.videoCount;
+     const normalCount=items.length?p?.published===items.length:p?.published==null||p?.published===0;
+     const expectedViews=items.length&&p?.published===items.length&&items.every(x=>x.views!=null)
+       ?items.reduce((n,x)=>n+x.views,0):null;
+     return !p||(!normalCount&&!profileEvidence)||p.views!==expectedViews;
    }))
  throw Error('New-campaign views require verified public posts newer than Nov 20; old content stays excluded');
 const accountOverview=social.accountOverview;
