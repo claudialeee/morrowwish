@@ -107,10 +107,19 @@ function motionRibbons(ctx,W,H,p,key,tier,positions){
  ctx.restore();
 }
 function render(ctx,W,H,seq,lookup){
- // The old 8-panel premium sheet paints FIXED CAT BREEDS over every skill.
- // Use the high-detail, independent 25-breed portrait renderer instead.
- // Characters therefore match the real cats selected by the player.
  if(!seq||seq.t<=0)return false;
+ // Visual QA rollback: the former "32-breed" procedural portraits DO NOT
+ // match the art direction of our approved complete watercolor paintings.
+ // The approved painted cut-in has priority in the real game AND every
+ // reviewer/player preview. Never substitute crude vector cats on load.
+ if(window.CatBondPremiumCinematics?.ready){
+   return window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup);
+ }
+ if(window.CatBondPremiumCinematics){
+   // An illustration loading delay or image failure must not quietly
+   // resurrect the rejected cheap-cat animation. Combat still resolves.
+   return true;
+ }
  if(!window.CatBondDuoArtwork?.ready)return true;
  const Director=window.CatBondDuoDirector;
  const key=seq.elements&&Director?.styles?.[seq.elements]?seq.elements:'elec+fire';
@@ -214,8 +223,8 @@ function render(ctx,W,H,seq,lookup){
 window.CatBondDuoHero={
  draw:render,scenes:Object.fromEntries(Object.entries(window.CatBondDuoDirector?.styles||{}).map(([k,v])=>[k,v])),
  sceneKeys:window.CatBondDuoDirector?.keys||[],
- get assetReady(){return !!window.CatBondDuoArtwork?.ready},
- get assetSource(){return 'individual-breed-storybook-portraits'},
+ get assetReady(){return !!window.CatBondPremiumCinematics?.ready},
+ get assetSource(){return 'approved-complete-painterly-duo-sheet'},
  assetCount:21,signatureCount:21,breedCount:32,
 };
 })();
