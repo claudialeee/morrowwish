@@ -1,7 +1,7 @@
 /* Cat Bond — 21 distinct, BREED-MATCHED illustrated duo cut-ins.
- * No fixed-pair paintings are shown as combatants. The previous static
+ * No fixed-pair paintings or yard sprites are shown as combatants. The previous static
  * 8-painting strip repeated the same cats across 21 skills; replaced by
- * real selected starters drawn with the game's full watercolor breed art.
+ * original, independent cinematic character portraits matching the selected breeds.
  * Art direction retains approved painterly scenery / palette and distinct
  * elemental attacks with a synchronized .78s strike beat.
  */
@@ -136,7 +136,7 @@ function render(ctx,W,H,seq,lookup){
  // silhouette and markings. Never draw the eight fixed cats from the old sheet.
  // Make the illustrated cats the main subjects (not 60px stickers in an
  // otherwise empty scene). Keep stage-relative limits for landscape/portrait.
- const size=Math.min(335,stageH*.74,stageW*.33);
+ const size=Math.min(302,stageH*.67,stageW*.35);
  for(let i=0;i<2;i++){
   const actor=duo[i]||null,pose=poses[i],color=colors[pair[i]]||'#e5c7ff';
   if(!actor||!window.CatBondDuoArtwork?.drawKitten)continue;
@@ -144,7 +144,7 @@ function render(ctx,W,H,seq,lookup){
   // Rotate the entire coherent illustrated cat: never disassemble legs/head.
   // Keep complete ears and paws in frame even at high leap moments. The
   // horizontal duo choreography remains unchanged, only vertical safety.
-  const groundedY=Math.max(stageH*.35,Math.min(stageH*.82,pose.y));
+  const groundedY=Math.max(stageH*.14+size*.91,Math.min(stageH*.87,pose.y));
   ctx.translate(pose.x,groundedY);ctx.rotate(pose.angle);
   window.CatBondDuoArtwork.drawKitten(ctx,0,0,size*pose.size,actor,i===1,p,
      Director?.styles?.[key]||'dash',color);
@@ -175,7 +175,7 @@ window.CatBondDuoHero={
  draw:render,scenes:Object.fromEntries(Object.entries(window.CatBondDuoDirector?.styles||{}).map(([k,v])=>[k,v])),
  sceneKeys:window.CatBondDuoDirector?.keys||[],
  get assetReady(){return !!(window.CatBondDuoArtwork?.ready&&window.CatBondDuoArtwork?.backdropReady)},
- get assetSource(){return 'species-matched-watercolor-cinematics'},
+ get assetSource(){return 'independent-cinematic-breed-portraits'},
  assetCount:21,signatureCount:21,breedCount:25,
 };
 })();
