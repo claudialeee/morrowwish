@@ -25,7 +25,8 @@ const LIST=[
 ['frostLance','ice','#c6e9fd',66,34],['voltRush','dash','#b6c5ef',79,35],
 ['apexPounce','paw','#b59dca',69,36],['veteranStrike','slash','#d0c3f0',54,37],
 ['tenderPaw','heart','#ffc6d5',44,38],
-['knead','knead','#f7d4b4',49,39]
+['knead','knead','#f7d4b4',49,39],
+['frostClaw','ice','#a5e0f5',40,40]
 ];
 const REG=Object.fromEntries(LIST.map(([id,style,color,r,seed])=>[id,{style,color,r,seed}]));
 // AUTO-REGISTER generic template skills (#56): the factory in skills.js generates one
@@ -172,7 +173,7 @@ function identityDetail(ctx,id,R,k,p,spin,cast){
 }
 // Melee contacts should read as one precise strike, not the generic magic
 // halo + radial wash + six-point fireworks used by ranged spells.
-const MELEE_IDS=new Set(['emberClaw','shadowSwipe','batAround','thornCoil',
+const MELEE_IDS=new Set(['frostClaw','emberClaw','shadowSwipe','batAround','thornCoil',
  'cometClaw','tidalBite','thornLash','veteranStrike']);
 function isMeleeId(id){
  return MELEE_IDS.has(id)||/^gen_(fire|water|grass|elec|dark|light)_melee$/.test(id);
@@ -202,6 +203,18 @@ function drawMeleeContact(ctx,v,spec){
    ctx.globalAlpha=strength*.75;ctx.fillStyle=j===1?'#fff1b8':'#ff9859';
    ctx.beginPath();ctx.moveTo(x-3,y+8);ctx.quadraticCurveTo(x-9,y+1,x+2,y-12-(heavy?4:0));
    ctx.quadraticCurveTo(x+10,y+2,x+4,y+8);ctx.closePath();ctx.fill();
+  }
+ }else if(v.skillId==='frostClaw'){
+  // Frost Claw is a Water-school melee swipe, with tiny icy crystal splinters,
+  // visually distinct from Electric's sharp zigzags or a watery splash.
+  for(let j=-1;j<=1;j++){
+   const x=R*(.13+j*.27),y=-R*(.21+j*.12);
+   ctx.globalAlpha=strength*.85;
+   ctx.fillStyle=j===0?'#f4feff':'#9fdbec';
+   ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x+3,y-1);
+   ctx.lineTo(x,y+6);ctx.lineTo(x-3,y);ctx.closePath();ctx.fill();
+   stroke(ctx,'#e9fcff',1.1,strength*.7);
+   path(ctx,[[x,y-7],[x,y+6]]);
   }
  }else if(el==='water'){
   for(let j=-1;j<=1;j+=2){
