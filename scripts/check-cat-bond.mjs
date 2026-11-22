@@ -233,7 +233,7 @@ assert.doesNotThrow(()=>sandbox.window.CatMotion.draw(canvasCtx,90,90,{
 assert.ok(sandbox.window.Skills, 'Skills global present');
 assert.ok(sandbox.window.Battle, 'Battle global present');
 assert.ok(sandbox.window.CatBondI18n, 'Cat Bond i18n layer present');
-assert.equal(sandbox.window.GameData.SPECIES.length, 32, '32 collectible cat species');
+assert.equal(sandbox.window.GameData.SPECIES.length, 33, '33 collectible cat species');
 const weights = sandbox.window.GameData.RARITY;
 assert.deepEqual(['N', 'R', 'SR', 'SSR'].map(k => weights[k].weight), [68,24,7,1],
   'Base rare-cat odds should be intentionally lower than before');
@@ -654,10 +654,28 @@ const tankRoster=GameData.SPECIES.filter(sp=>
 const fighterRoster=GameData.SPECIES.filter(sp=>
   Skills.buildTypeForBreed({species:sp.id})==='fighter').map(sp=>sp.id);
 assert.equal(tankRoster.length,5,'five true defensive breeds retain tank recommendations');
-assert.equal(fighterRoster.length,4,'two tank-like bruisers move to fighter');
+assert.equal(fighterRoster.length,5,'fighters include the orange cats and agile bruisers');
 assert.ok(fighterRoster.includes('nuowei')&&fighterRoster.includes('meidu'),
   'Norwegian and American Shorthair become fighters');
 assert.ok(tankRoster.includes('lanbao'),'low-AGI Blue remains a tank');
+assert.ok(fighterRoster.includes('tangyuan')&&fighterRoster.includes('qisi'),
+  'Mochi and Cheese are fighters, not tanks');
+assert.ok(tankRoster.includes('senlin')&&tankRoster.includes('jiafei'),
+  'Maine Coon and Exotic Shorthair fill the heavy tank roles');
+const exotic=GameData.speciesById('jiafei');
+assert.ok(exotic?.chubby&&exotic?.flatFace&&exotic?.short,
+  'Exotic Shorthair has a plump, flat-faced silhouette');
+assert.ok(exotic.base.vit>exotic.base.pow+3&&exotic.base.agi<5,
+  'Jiafei has a recognizably slow, durable tank stat profile');
+assert.ok(sandbox.window.WorldMap.REGIONS.find(r=>r.id==='sakura')
+  ?.speciesPool.includes('jiafei'),
+  'Jiafei can be encountered in Sakura Woods');
+const cuteSource=fs.readFileSync(DIR+'js/cute-cats.js','utf8');
+assert.ok(cuteSource.includes('sp.chubby')&&cuteSource.includes('sp.flatFace'),
+  'shared cat-art renderer uses Exotic Shorthair breed traits');
+const fallbackArt=fs.readFileSync(DIR+'js/catart.js','utf8');
+assert.ok(fallbackArt.includes('flatFace:')&&fallbackArt.includes('chubby:'),
+  'fallback cat-art renderer preserves chubby/flat-face traits');
 const wallSpecialist=State.makeCat('xianluo',{affinity:90});
 wallSpecialist.level=12;wallSpecialist.skillAwakened=true;
 Skills.applyBuild(wallSpecialist,'tank');
