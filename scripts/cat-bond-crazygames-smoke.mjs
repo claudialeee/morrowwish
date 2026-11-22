@@ -401,9 +401,16 @@ try{
         const x=canvasBox.x+canvasBox.width*.68,y=canvasBox.y+canvasBox.height*.48;
         await page.mouse.move(x,y);await page.mouse.down();
         await page.mouse.move(x-210,y-12,{steps:8});await page.mouse.up();
-        const view=await page.evaluate(()=>WorldMap.view);
+        const view=await page.evaluate(({x,y})=>({
+          ...WorldMap.view,
+          hitElement:document.elementFromPoint(x,y)?.id||document.elementFromPoint(x,y)?.tagName,
+          canvasRect:document.getElementById('scene')?.getBoundingClientRect().toJSON(),
+          gameScene:window.__game.scene,
+          dragging:window.__game._mapMouseDrag
+        }),{x,y});
+        console.log('MAP PAN INPUT DIAGNOSTIC',JSON.stringify(view));
         assert.ok(view.panMode&&view.camX>30,
-          'Desktop mouse drag must pan the camera rather than only move the cat');
+          'Desktop mouse drag must pan the camera rather than only move the cat: '+JSON.stringify(view));
         await page.mouse.click(canvasBox.x+canvasBox.width*.48,canvasBox.y+canvasBox.height*.45);
         const walk=await page.evaluate(()=>WorldMap.view);
         assert.equal(walk.panMode,false,'Click-to-walk must resume camera follow');
