@@ -68,6 +68,17 @@ const UI = {
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('map-squad')?.addEventListener('click',()=>this.openMapSquad());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
+    // Hover/focus explains the exact active cat's move. On touch, the
+    // standalone info control displays descriptions without casting.
+    document.querySelectorAll('.move-bar .move').forEach(btn=>{
+      const slot=btn.dataset.move==='ult'?'ult':btn.dataset.move;
+      btn.addEventListener('mouseenter',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('mouseleave',()=>this.game.hideBattleSkillTooltip(slot));
+      btn.addEventListener('focus',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('blur',()=>this.game.hideBattleSkillTooltip(slot));
+    });
+    document.getElementById('battle-skill-info-toggle')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide());
+    document.getElementById('battle-skill-guide-close')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide(false));
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2044,6 +2055,51 @@ const UI = {
     anim();
   },
 
+  // Real equipment preview before combat; no additional blocking modal.
+  battlePrepSkillMarkup(cats,en){
+    const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    if(!window.Skills)return '<p>'+(en?'Skill data unavailable.':'暂时无法读取技能。')+'</p>';
+    const rows=(cats||[]).slice(0,5).map((cat,i)=>{
+      if(!cat)return '';
+      const loadout=Skills.ensureLoadout(cat);
+      const name=State.catName(cat);
+      const roles=[en?'Basic':'普攻','Q','E',en?'Ultimate':'必杀'];
+      return '<div class="prebattle-cat-skills">'+
+        '<h4>'+esc((i<2?(en?'START ':'首发 '):(en?'RESERVE ':'替补 '))+name)+
+        ' <small>'+esc(GameData.speciesName(GameData.speciesById(cat.species)))+'</small></h4>'+
+        roles.map((label,index)=>{
+          const sk=loadout?.[index]?Skills.skillById(loadout[index]):null;
+          const move=sk?(en?(window.CatBondI18n?.translate?.(sk.name)||sk.name):sk.name):
+            index===0?(en?'Fish & Yarn Toss':'小鱼干 / 毛线团'):(en?'Not equipped':'尚未装备');
+          const explanation=sk?(en?(window.CatBondI18n?.translate?.(sk.desc)||sk.desc):sk.desc):
+            index===0?(en?'Alternating fish and yarn projectiles. Builds ultimate energy.':'交替扔小鱼干、毛线团攻击野猫，并积攒必杀能量。'):
+              (en?'Equip a skill later from Cats → Skills.':'可以之后在猫咪 → 技能搭配中装备。');
+          const meta=sk?(sk.ultCost>0?(en?'Ultimate charge':'积攒必杀能量'):
+            (en?'Base cooldown ':'基础冷却 ')+sk.cd+'s'):(index===0?(en?'Basic attack':'普通攻击'):'');
+          return '<div class="prebattle-skill-row"><span class="prebattle-skill-key">'+
+            esc(label)+'</span><div><strong>'+esc(move)+'</strong><p>'+esc(explanation)+'</p>'+
+            (meta?'<small>'+esc(meta)+'</small>':'')+'</div></div>';
+        }).join('')+'</div>';
+    }).join('');
+    return rows||'<p>'+(en?'Choose a cat to see its skills.':'选择一只猫咪查看技能。')+'</p>';
+  },
+  battlePrepSkillCard(team,en){
+    const fresh=!State.S.battlePrefs?.skillsIntroSeen;
+    return '<details id="battle-prep-skills" class="prebattle-skills" '+(fresh?'open':'')+'>'+
+      '<summary><span>📖 '+(fresh?(en?'Before your first fight · check your skills!':'开战前先看看猫咪会什么技能！'):
+        (en?'Review your team skills':'查看出战猫咪的技能'))+'</span><small>'+
+      (en?'Tap to expand / collapse':'点击展开 / 收起')+'</small></summary>'+
+      '<p class="prebattle-skills-tip">'+
+        (en?'Your attacks depend on each cat’s equipped moves. Q / E are regular skills; R is an ultimate. You can adjust them later in Cats → Skills.':
+          '每只猫的招式不同。Q / E 是普通技能，R 是必杀技；以后可在「猫咪 → 技能搭配」调整。')+'</p>'+
+      '<div id="battle-prep-skills-body" class="prebattle-skills-body">'+
+      this.battlePrepSkillMarkup(team,en)+'</div></details>';
+  },
+  refreshBattlePrepSkills(team,en){
+    const body=document.getElementById('battle-prep-skills-body');
+    if(body)body.innerHTML=this.battlePrepSkillMarkup(team,en);
+  },
   // Region encounters and grade rematches do not use the capture roster.
   // They must still ask BEFORE launching the real-time encounter.
   openBattleModePrompt(team,wildSp,opts={}){
