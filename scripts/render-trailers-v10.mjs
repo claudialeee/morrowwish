@@ -47,10 +47,12 @@ const playlists={
   broll('map-explore',2.45,'EXPLORE A LIVING WORLD.'),
   broll('map-management',2.15,'ALL IN ONE MENU.'),
   broll('auto-team-saved',2.5,'SAVE YOUR BEST BATTLE TEAM.'),
+  // One continuous real rare encounter, with native bars, skills, finisher, capture.
+  broll('rare-encounter',2.05,'A RARE CAT APPEARS!'),
   broll('battle-hud',2.45,'REAL-TIME HEALTH AND BATTLE.'),
   broll('battle-skills',2.8,'USE DIFFERENT SKILLS.'),
   broll('duo',3.1,'ONE POWERFUL DUO FINISHER!'),
-  broll('rare-encounter',2.05,'A RARE CAT APPEARS!'),
+  broll('rare-aftermath',1.2),
   broll('rare-capture',3.45,'A NEW FRIEND JOINS YOU.'),
   broll('ssr-showcase',3.6,'MEET A LEGENDARY SSR CAT!'),
   cover(3.5,'PLAY FREE')
@@ -248,7 +250,7 @@ function edit(slug){
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
   video:'/promo/'+slug+'/trailer-v10-20261121.mp4',poster:'/promo/'+slug+'/trailer-v10-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
-  sourceClips:'V10 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled',transitions:'clean cuts, no ghosted or blended gameplay UI',
+  sourceClips:'V10 one live rare-cat fight with native HP and skills, one duo finisher, earned capture; no social posting',transitions:'clean cuts, no ghosted or blended gameplay UI',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
  console.log('CINEMATIC V10 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
