@@ -1311,7 +1311,7 @@ class CaptureBattle {
     if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._reflectFacing=f._moveFacing; }
     if (dir && f.dashT <= 0 && f.rootT <= 0 &&
         !(f._beamRoot>0) && !(f._castRoot>0)) {
-      const spd = f.speed * 0.9 * this.moveMul(f);   // same soft-CC slow as the active cat
+      const spd = f.speed * this.moveMul(f);   // equal auto-speed for every team cat
       f.x = clamp(f.x + dir.x * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + dir.y * spd * dt, this.topMargin, this.H - this.bottomMargin);
       if (dir.x < -0.25) f.face = -1; else if (dir.x > 0.25) f.face = 1;
@@ -1319,6 +1319,9 @@ class CaptureBattle {
     } else if (f.dashT <= 0 && f.rootT <= 0) f.moving = false;
     if(near && !(f.reflectT>0 && this.reflectCovers(f,near.x,near.y)) &&
        this.incomingThreat(f) && f.dodgeCd<=0 && Math.random()<this.autoDodgeChance(f)) this.dodge(f);
+    // Shared decision loop for active and allied cats. Only the current active cat
+    // owns the manual aim/UI; its autonomous movement/combat does not differ.
+    if(f===this.me()) this.aim=f._aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
     this.evalGambits(f, tgt, dist, near, nd);
   }
 
@@ -1338,7 +1341,8 @@ class CaptureBattle {
       // skills. autoDrive runs first (and sets this.aim at the AI's target); when the
       // human presses a skill we override aim toward THEIR cursor/locked target so a
       // directional/AOE/heal cast goes where they intend, not where the AI was facing.
-      this.autoDrive(dt);
+      // The selected cat uses the same autonomy, range bands and speed as teammates.
+      this.updateAllyAI(dt, this.me());
       const pressedC = k => K[k] && !this._prevKeys[k];
       const me = this.me();
       const playerAim = () => {
