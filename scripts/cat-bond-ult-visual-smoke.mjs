@@ -13,6 +13,8 @@ const pairs=[
   ['elec','xianluo','thunderYowl'],
   ['dark','xingchen','voidMaw'],
   ['light','yuelian','moonlitHalo'],
+  ['light','yuelian','moonfang'],
+  ['fire','jinwu','purrNova'],
 ];
 const browser=await chromium.launch({headless:true});
 try{
@@ -45,39 +47,39 @@ try{
       e.maxhp=5000;e.hp=5000;e.inv=0;e.flash=0;
     }
     const cast=b.ultimate();
-    const stroke=b.skillStrokes.findLast(v=>v.kind==='ultimate'&&v.element===element);
+    const stroke=b.skillStrokes.findLast(v=>v.kind==='ultimate'&&v.skillId===skillId);
     if(!stroke)throw Error('No element-specific stroke '+element);
     stroke.life=stroke.max*.53;
-    if(!b.ultHero)throw Error('No watercolor hero focus '+element);
-    b.ultHero.age=b.ultHero.max*.42;
-    // Check the ACTUAL watercolor renderer receives a cinematic scale.
-    const oldCatDraw=window.CatArt.drawCat;let heroScale=0;
+    if(b.ultHero||window.CatBondUltHero)throw Error('Full-screen cat cut-in is forbidden');
+    if(!window.CatBondUltVFX?.has(skillId))throw Error('No unique VFX '+skillId);
+    // Keep all combatants at regular world scale; no giant full-stage cat.
+    const oldCatDraw=window.CatArt.drawCat;let maxCatScale=0;
     window.CatArt.drawCat=function(ctx,x,y,opts){
-      heroScale=Math.max(heroScale,opts?.scale||0);
+      maxCatScale=Math.max(maxCatScale,opts?.scale||0);
       return oldCatDraw.apply(this,arguments);
     };
-    try{g.draw();}finally{window.CatArt.drawCat=oldCatDraw;} // actual battle composition: cats, terrain, spells, HUD
-    return {cast:cast===true,element,shape:stroke.kind,hero:!!b.ultHero,heroScale,sk:skill.id,
+    try{g.draw();}finally{window.CatArt.drawCat=oldCatDraw;}
+    return {cast:cast===true,element,shape:stroke.kind,local:true,maxCatScale,sk:skill.id,
       isDeathRay:!!b.deathRay,canvasW:g.W,canvasH:g.H};
    },{element,breed,skillId});
    assert.equal(result.cast,true,element+' casts its ultimate');
    assert.equal(result.shape,'ultimate',element+' uses the six-element renderer');
-   assert.ok(result.hero,element+' actually draws large watercolor cat focus');
-   assert.ok(result.heroScale>=2.1,
-     element+' original watercolor kitten must occupy hero-scale pixels: '+result.heroScale);
+   assert.ok(result.local,skillId+' draws in the battle arena');
+   assert.ok(result.maxCatScale<=1.2,
+     skillId+' must not change normal cat size: '+result.maxCatScale);
    if(element==='dark')assert.equal(result.isDeathRay,false,
      'void maw must have a gravitational vortex, never an automatic laser');
    assert.ok(result.canvasW>200&&result.canvasH>250,'arena is visible');
-   const path='/tmp/cat-bond-ult-'+spec.name+'-'+element+'.png';
+   const path='/tmp/cat-bond-ult-'+spec.name+'-'+skillId+'.png';
    await page.screenshot({path,animations:'disabled'});
    const data=fs.readFileSync(path);
    assert.ok(data.length>15000,'screenshot should contain a real rendered game: '+element);
    hashes.push(crypto.createHash('sha256').update(data).digest('hex'));
-   console.log('ULT REAL-BROWSER FRAME '+spec.name+' '+element+' '+JSON.stringify(result));
+   console.log('ULT REAL-BROWSER FRAME '+spec.name+' '+skillId+' '+JSON.stringify(result));
   }
-  assert.equal(new Set(hashes).size,6,'all six element frames must differ');
+  assert.equal(new Set(hashes).size,8,'all eight separate skill effects must differ');
   assert.deepEqual(errors,[],'no JS exceptions in real-browser battle render');
   await page.close();
  }
- console.log('CAT BOND SIX REALTIME ULT VFX SCREENSHOT QA PASS');
+ console.log('CAT BOND EIGHT LOCAL ULT VFX SCREENSHOT QA PASS');
 }finally{await browser.close()}
