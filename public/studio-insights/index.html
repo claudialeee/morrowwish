@@ -39,7 +39,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 .ew-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.ew-dropoff{background:#fff9f2;padding:13px 16px;border:1px solid #efded6;border-radius:14px;font-size:13px;line-height:1.7;margin:8px 0 14px}.ew-details{background:#fffdf9;border:1px solid #efded6;border-radius:16px;padding:13px;margin-top:12px}.ew-details summary{cursor:pointer;color:#925f82;font-weight:800;font-size:13px}.ew-details[open] summary{margin-bottom:14px}.studio-advanced{margin:14px 0 20px}.studio-advanced summary{font-size:13px}.studio-advanced .section{margin-top:19px}.signal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.signal-card{padding:16px;background:#fffdf9;border:1px solid #efded6;border-radius:17px}.signal-card h3{font-size:14px;color:#5e4b62;margin:0 0 9px}.signal-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:12px}.signal-row b{font-variant-numeric:tabular-nums}.signal-card p{margin:10px 0 0}
 .signal-card .signal-row span{color:#837381}.signal-card .signal-row b{color:#5c4b61}
 .signal-card .signal-feedback{border-top:1px solid #f1e6e2;margin-top:7px;padding-top:7px;color:#8d7482;font-size:10px;line-height:1.4;font-weight:650}
-.compact-channels{table-layout:auto;min-width:650px}.compact-channels th:first-child,.compact-channels td:first-child{min-width:115px;overflow:hidden;text-overflow:ellipsis}
+.focus-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.focus-card{background:#fffdfa;border:1px solid #eadbd5;border-radius:18px;padding:18px}.focus-card.priority{background:#fff9f9;border-color:#e5bfc8}.focus-card h3{font-size:17px;margin:0 0 5px;color:#73536a}.focus-card h3 a{color:inherit}.focus-subtitle{font-size:12px;color:#967e8a;margin:0 0 15px}.focus-line{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #f0e5df;font-size:13px}.focus-line span{color:#786978}.focus-line b{font-size:14px;color:#72566c;white-space:nowrap;font-variant-numeric:tabular-nums}.focus-card.priority .focus-line b{color:#a35c87}@media(max-width:740px){.focus-grid{grid-template-columns:1fr}.focus-card{padding:14px}.focus-line{font-size:12px}.focus-line b{font-size:13px}}.compact-channels{table-layout:auto;min-width:650px}.compact-channels th:first-child,.compact-channels td:first-child{min-width:115px;overflow:hidden;text-overflow:ellipsis}
 .compact-channels td:nth-child(2){font-variant-numeric:tabular-nums}
 .device-summary{max-width:430px;margin:8px 0}.device-details{margin-top:10px}
 @media(max-width:540px){.compact-channels th,.compact-channels td{padding:10px 7px;font-size:11px}}
@@ -58,24 +58,16 @@ a{color:#a56a83}a:hover{color:#684f7f}
 
 <section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th></tr></thead><tbody id="games"></tbody></table></div></section>
 
-<details class="ew-details studio-advanced" id="game-details"><summary data-i18n="gameMore"></summary>
-<section class="section"><div class="section-head"><h2 data-i18n="signalTitle">玩法观察</h2><p class="description" data-i18n="signalDesc">只保留能指导下一次改版的数据。</p></div><div class="signal-grid" id="signal-grid"></div></section>
-<section class="section elsewhere-section" id="elsewhere-analytics" aria-labelledby="ew-title">
- <div class="section-head"><div><div class="ew-kicker">ELSEWHERE · OTHER LIVES</div><h2 id="ew-title" data-ew="title"></h2><p class="description" data-ew="desc"></p></div><a href="/elsewhere/" class="ew-link" data-ew="open"></a></div>
- <div class="ew-state" id="ew-state"></div><div id="ew-report" hidden>
- <div class="ew-dropoff" id="ew-dropoff"></div>
- <details class="ew-details"><summary data-ew="more">展开五幕明细</summary>
-  <div class="split"><div class="panel"><h3 data-ew="funnel"></h3><div class="ew-funnel" id="ew-funnel"></div></div><div class="panel"><h3 data-ew="continue"></h3><div class="ew-continue" id="ew-continue"></div></div></div>
-  <div class="section"><h2 data-ew="worlds"></h2><div class="panel table-wrap"><table class="table"><thead><tr><th data-ew="world"></th><th data-ew="runs"></th><th data-ew="finished"></th><th data-ew="finishRate"></th></tr></thead><tbody id="ew-worlds"></tbody></table></div></div>
- </details><p class="ew-coverage description" id="ew-coverage"></p></div>
-</section>
-</details>
 <section class="section" id="promotion-channels">
  <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
  <div class="panel table-wrap"><table class="table compact-channels">
   <thead><tr><th data-i18n="channelSource"></th><th data-i18n="nativeViews"></th><th data-i18n="colHomeVisits"></th><th data-i18n="colGameVisits"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th></tr></thead>
   <tbody id="channel-rows"></tbody>
  </table></div><details class="ew-details device-details" id="future-channels"><summary data-i18n="channelFuture"></summary><div id="future-channel-list" class="description" style="margin-top:10px;line-height:1.7"></div></details><p id="social-pulse-note" class="description" style="margin:9px 1px 0;font-size:12px;line-height:1.6"></p><p id="hub-funnel" class="description" style="margin:12px 1px 0;font-size:12px;line-height:1.7"></p>
+</section>
+<section class="section" id="game-details" aria-labelledby="focus-title">
+ <div class="section-head"><div><h2 id="focus-title" data-i18n="gameMore"></h2><p class="description" data-i18n="focusDesc"></p></div></div>
+ <div id="focus-grid" class="focus-grid"></div>
 </section>
 <p class="description" id="coverage"></p></div>
 <div class="fineprint" data-i18n="footnote"></div></main><script>
@@ -88,7 +80,7 @@ intro:"只看真实访问、开局、结算，以及哪个渠道带来玩家。"
 today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
-trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"看访问有没有转成开局、开局有没有正常结算。点击任意列的表头排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"展开玩法反馈",trendMore:"查看流量趋势",
+trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"看访问有没有转成开局、开局有没有正常结算。点击任意列的表头排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"重点游戏 · 深度分析",focusDesc:"重点观察猫猫纽带和猫猫捣蛋的真实玩法效果，再看自由小镇和平行人生。",trendMore:"查看流量趋势",
 colGame:"游戏",colPv:"浏览量",colVisitors:"访客",colStarts:"开局",colRetries:"重玩",colTime:"平均会话",colEnds:"完成",colDone:"获胜/通关",notAvailable:"未获取",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"六款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"等待新版游玩数据",
 homeFunnelLabel:"主页→游戏（新版）：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelYouTube:"YouTube：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"新的主页点击数据尚未产生。",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台播放只计入已核实的新视频；访问、开局和结算来自本站真实埋点。",channelState:"当前进度",acquisitionVisits:"进站访问（首页 / 游戏）",channelFuture:"后续待推进平台（展开查看）",nativeViews:"平台播放",syncPending:"待同步",socialSourceNote:"YouTube/TikTok 官方有播放量，但 Metricool 当前查询未返回明细；这里不显示虚假的 0。点击平台名称可查看官方页面。",nativePublished:"已发布",socialSnapshotNote:"视频播放为已核实的新视频快照，不是实时平台接口；旧视频不计入。",blueskyPublished:"已发布 {n} 条",channelGame:"游戏",colHomeVisits:"首页访问",colGameVisits:"游戏访问",channelSource:"来源渠道",channelVisits:"首页/游戏页访问",channelDirect:"直接 / 未识别",channelOther:"其他来源",deviceMore:"查看设备分布",flipSignal:"Flip Dash",parcelSignal:"Parcel Panic",elsewhereSignal:"平行人生",flipRuns:"结束的局数",flip10:"存活至少 10 秒",flip30:"存活至少 30 秒",parcelSorted:"正确分拣",parcelMissed:"漏接 / 分错",parcel10:"完成至少 10 件的局数",elsewhereFirst:"首幕完成率",elsewhereFull:"故事完读率",elsewhereReplay:"重玩率",channelCampaign:"活动",sourcesTitle:"访客从哪里来",sourcesDesc:"区分直接访问、站内跳转和外部网站。直接打开网页或浏览器隐藏来源时，不会有来源网站域名。",sourceType:"流量类型",deviceType:"设备类型",referrerHosts:"来源网站 / 直接访问",websites:"访问网址",
 itchTitle:"itch.io 游戏内游玩",itchDesc:"展示从 itch.io 加载本站游戏页的访问；未开局可能是在开始界面离开，也可能是开局事件未回传。",itchViews:"已追踪游戏页访问",itchNote:"访问＝从 itch.io 加载本站游戏页；开局＝实际开始事件成功回传。这不是 itch.io 官方 Browser Plays 或项目页浏览量。独立上传版与历史数据无法补录。",itchNoData:"尚无可归因的 itch.io 游玩数据。请确认已发布的 iframe 使用带 utm_source=itch 的本站游戏链接。",coverageTitle:"数据口径与覆盖范围",footnote:"统计基于匿名游戏事件与粗粒度流量来源，不记录姓名、邮箱或完整 IP 地址。独立浏览器通过本站随机标识估算，不等于真实人数。尊重浏览器的“不追踪”和“全局隐私控制”设置。历史访问数据不会自动补录。",
@@ -102,7 +94,7 @@ intro:"Track real visits, starts, finishes and which channels bring players.",
 today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
-trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Compare game starts, finishes and replays. Click any column heading to sort.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"Gameplay signals",trendMore:"Traffic trends",
+trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Compare game starts, finishes and replays. Click any column heading to sort.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"Four flagship games · performance",focusDesc:"Prioritize Cat Bond and Cat Heist, then Tiny Town and Elsewhere.",trendMore:"Traffic trends",
 colGame:"Game",colPv:"PV",colVisitors:"Visitors",colStarts:"Started",colRetries:"Replays",colTime:"Avg. session",colEnds:"Completed",colDone:"Wins / clears",notAvailable:"Unavailable",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"Awaiting new gameplay data",
 homeFunnelLabel:"Homepage → game (new): {clickers}/{visits} visits chose a game ({rate})",homeFunnelYouTube:"YouTube: {clickers}/{visits} visits chose a game ({rate})",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"No new homepage click data yet.",channelTitle:"Promotion · actual results",channelDesc:"Native views include verified new videos only. Visits, starts and finishes use first-party events.",channelState:"Status",acquisitionVisits:"Site visits (home / game)",channelFuture:"Future platforms (expand)",nativeViews:"Platform views",syncPending:"Sync pending",socialSourceNote:"YouTube/TikTok have native views but Metricool currently returns no rows. Never show a fabricated zero; click the platform name to check its own page.",nativePublished:"Published",socialSnapshotNote:"Video views are a verified new-campaign snapshot, not a live platform feed. Old videos are excluded.",blueskyPublished:"{n} published",channelGame:"Game",colHomeVisits:"Home visits",colGameVisits:"Game visits",channelSource:"Source",channelVisits:"Home/game visits",channelDirect:"Direct / unknown",channelOther:"Other sources",deviceMore:"Show device breakdown",flipSignal:"Flip Dash",parcelSignal:"Parcel Panic",elsewhereSignal:"Elsewhere",flipRuns:"Finished runs",flip10:"Survived 10+ sec",flip30:"Survived 30+ sec",parcelSorted:"Correctly sorted",parcelMissed:"Missed / wrong",parcel10:"Runs with 10+ parcels",elsewhereFirst:"First scene completed",elsewhereFull:"Story finish rate",elsewhereReplay:"Replay rate",channelCampaign:"Campaign",sourcesTitle:"Where visitors come from",sourcesDesc:"Traffic sources, devices, referring sites and the original standalone site.",sourceType:"Traffic type",deviceType:"Device type",referrerHosts:"Referring sites (domains)",websites:"Website",
 itchTitle:"itch.io gameplay",itchDesc:"Game-page loads referred from itch.io. A visit without a start may mean a player left on the start screen, or the start event was not received.",itchViews:"Tracked game views",itchNote:"Visit means a game page loaded from itch.io; start means the game start event reached our tracker. These are not itch.io native Browser Plays or project-page views; standalone uploads and old data are not backfilled.",itchNoData:"No attributable itch.io gameplay yet. Make sure the published iframe uses the game URL with utm_source=itch.",coverageTitle:"Metrics & coverage",footnote:"Anonymous gameplay and coarse traffic attribution; no names, emails or complete IP addresses. Browser counts use random first-party identifiers, not people. Do Not Track and Global Privacy Control are respected.",
@@ -117,12 +109,12 @@ let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
 try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
 const t=(id,params={})=>{let s=I18N[lang][id]||id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
-const tableSorts=new Map(),sortableBodies=new Set(["games","channel-rows","ew-worlds"]);
+const tableSorts=new Map(),sortableBodies=new Set(["games","channel-rows"]);
 function sortCellValue(row,index,id){
  const cell=row.cells[index];if(!cell)return null;
  const value=(cell.dataset.sortValue!==undefined?cell.dataset.sortValue:cell.textContent).trim();
  if(!value||["—","待同步","未获取","Sync pending","Unavailable"].includes(value))return null;
- if(index===0||(id==="channel-rows"&&index===1))return value;
+ if(index===0)return value;
  const m=/^-?\d+(?:\.\d+)?/.exec(value.replaceAll(",","").replaceAll(" ",""));
  return m?Number(m[0]):null;
 }
@@ -151,7 +143,7 @@ function enhanceSortableTables(){
  for(const table of document.querySelectorAll("#report table.table")){
   const id=table.tBodies[0]?.id;if(!sortableBodies.has(id))continue;
   Array.from(table.tHead?.rows[0]?.cells||[]).forEach((th,index)=>{
-   const label=th.dataset.i18n?t(th.dataset.i18n):th.dataset.ew?ewText(th.dataset.ew):th.textContent.replace(/[↕▲▼]$/,"").trim();
+   const label=th.dataset.i18n?t(th.dataset.i18n):th.textContent.replace(/[↕▲▼]$/,"").trim();
    const button=document.createElement("button");button.type="button";button.className="sort-trigger";button.dataset.index=String(index);
    button.setAttribute("aria-label",(lang==="zh"?"按":"Sort by ")+label+(lang==="zh"?"排序":""));
    const name=document.createElement("span");name.textContent=label;
@@ -162,7 +154,7 @@ function enhanceSortableTables(){
    table.addEventListener("click",event=>{
     const button=event.target.closest?.("button.sort-trigger");if(!button||!table.contains(button))return;
     const index=Number(button.dataset.index),old=tableSorts.get(id);
-    const numeric=index>0&&!(id==="channel-rows"&&index===1);
+    const numeric=index>0;
     tableSorts.set(id,{index,direction:old?.index===index?(old.direction==="asc"?"desc":"asc"):(numeric?"desc":"asc")});
     sortDataTable(table);
    });
@@ -176,40 +168,33 @@ function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$
 function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
 function nameFor(x){return t(x)===x?x:t(x);}
 function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=Math.max(1,...data.map(a=>Number(a.value)||0));el.innerHTML=data.length?data.map(x=>{const label=nameFor(x.name||"unknown"),number=Math.max(0,Number(x.value)||0);return '<div class="metric-row"><div class="name" title="'+escapeHTML(label)+'">'+escapeHTML(label)+'</div><div class="track"><div class="fill" style="width:'+Math.max(1,Math.min(100,100*number/max))+'%"></div></div><div class="n">'+format(number)+'</div></div>';}).join(""):'<p class="description">'+escapeHTML(t("none"))+'</p>';}
+
 function renderSignals(gameRows){
- const byGame=new Map((gameRows||[]).map(x=>[x.game,x])),signalFor=id=>byGame.get(id)?.signals||{};
- const chapters=elsewhereData?.funnel||[],story=elsewhereData?.summary||{};
- const chapterVal=name=>chapters.find(x=>x.step===name)?.value||0;
- const firstViews=chapterVal('1-view'),firstDone=chapterVal('1-complete');
- const percentage=(v,known=true)=>known&&v!=null?Number(v).toFixed(1)+'%':t('empty');
- const view=elsewhereData&&Number(story.runs)>0;
+ const games=new Map((gameRows||[]).map(x=>[x.game,x]));
+ const W={zh:{start:"开局率",finish:"结算率",replay:"重玩次数",caught:"成功捕获",rareSeen:"遇见稀有猫",rare:"捕获稀有猫",duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
+ en:{start:"Visit → start",finish:"Start → finish",replay:"Replays",caught:"Cats captured",rareSeen:"Rare encounters",rare:"Rare cats caught",duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
  const cards=[
-  {id:'pawsibly-innocent',fields:[['catRoom1','cat_room_1'],['catRoom8','cat_room_8'],['catCaught','cat_caught']]},
-  {id:'elsewhere',values:[['elsewhereFirst',percentage(firstViews?firstDone/firstViews*100:null,firstViews>0)],['elsewhereFull',percentage(story.fullRate,view)],['elsewhereReplay',percentage(story.replayRate,view)]]},
-  {id:'tiny-town',fields:[['townWin','town_win'],['townLose','town_lose'],['townConfusing','town_feedback_confusing']]},
-  {id:'flip-dash',fields:[['flipRuns','flip_finished'],['flip10','flip_10s'],['flip30','flip_30s']]},
-  {id:'parcel-panic',fields:[['parcelSorted','parcel_sorted'],['parcelMissed','parcel_missed'],['parcel10','parcel_ten_sorted']]},
-  {id:'pocket-aquarium',fields:[['fishGood','aquarium_grade_good'],['fishFed','feed_success'],['fishFinished','aquarium_completed']]}
+ {id:'cat-bond',priority:1,subtitle:W.bond,items:[['caught','bond_capture'],['rareSeen','bond_rare_encounter'],['rare','bond_rare_capture'],['duo','bond_duo_used'],['yard','bond_yard_built'],['surprise','bond_surprise']]},
+ {id:'pawsibly-innocent',priority:1,subtitle:W.heist,items:[['room1','cat_room_1'],['room8','cat_room_8'],['escaped','cat_escape'],['seen','cat_caught'],['near','cat_close_call'],['yarn','cat_yarn_distracted']]},
+ {id:'tiny-town',priority:0,subtitle:W.town,items:[['combo','town_combo_discovered'],['legend','town_legendary_unlocked'],['resident','town_neighbor_story'],['townWin','town_win'],['townLose','town_lose'],['townReplay','town_replayed']]},
+ {id:'elsewhere',priority:0,subtitle:W.story,items:[['storyYes','elsewhere_return_yes'],['storyMaybe','elsewhere_return_maybe']]}
  ];
- $('signal-grid').innerHTML=cards.map(g=>{
-  const nm=gameNames[g.id],name=nm?.[lang]||g.id,metrics=signalFor(g.id);
-  const active=g.id==='elsewhere'?view:Object.values(metrics).some(x=>Number(x)>0);
-  const values=g.values||g.fields.map(([label,key])=>[label,String(key==='aquarium_grade_good'?Number(metrics.aquarium_grade_s||0)+Number(metrics.aquarium_grade_a||0):Number(metrics[key]||0))]);
-  const body=active?values.map(([label,value])=>'<div class="signal-row"><span>'+escapeHTML(t(label))+'</span><b>'+escapeHTML(value)+'</b></div>').join(''):'';
-  // A single unobtrusive feedback line when real player votes exist.
-  // Elsewhere already has its own detailed ending feedback section.
-  const prefix=g.id==='tiny-town'?'town_feedback_':'play_feedback_';
-  const votes=[Number(metrics[prefix+'fun']||0),Number(metrics[prefix+'confusing']||0),Number(metrics[prefix+(g.id==='tiny-town'?'not-fun':'not_fun')]||0)];
-  const feeling=(g.id!=='elsewhere'&&votes.some(x=>x>0))?'<div class="signal-feedback">'+escapeHTML(t('feelPrefix'))+' · '+escapeHTML(t('feelFun'))+' '+votes[0]+' · '+escapeHTML(t('feelConfusing'))+' '+votes[1]+' · '+escapeHTML(t('feelNotFun'))+' '+votes[2]+'</div>':'';
-  // Elsewhere's ending question asks whether a player wants another life;
-  // keep it separate from "fun/confusing/not fun" votes.
-  const returnVotes=['yes','maybe','no'].map(key=>Number(metrics['elsewhere_return_'+key]||0));
-  const returnLine=g.id==='elsewhere'&&returnVotes.some(n=>n>0)
-    ?'<div class="signal-feedback">'+(lang==='zh'?'愿意再来':'Play another life')+' · '+(lang==='zh'?'愿意 ':'Yes ')+returnVotes[0]+' · '+(lang==='zh'?'也许 ':'Maybe ')+returnVotes[1]+' · '+(lang==='zh'?'暂时不会 ':'No ')+returnVotes[2]+'</div>':'';
-  return '<div class="signal-card"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(name)+'</a></h3>'+body+feeling+returnLine+'</div>';
+ const line=(key,value)=>'<div class="focus-line"><span>'+escapeHTML(key)+'</span><b>'+escapeHTML(value)+'</b></div>';
+ $('focus-grid').innerHTML=cards.map(g=>{
+  const r=games.get(g.id),valid=!!r&&Number(r.pageviews)>0,signals=r?.signals||{};
+  const count=k=>valid&&Number.isFinite(Number(signals[k]))?format(signals[k]):'';
+  const ratio=(x,y)=>valid&&Number(y)>0&&Number(x)<=Number(y)?format(x)+' / '+format(y)+' · '+format(pct(x,y))+'%':'';
+  const rows=[line(W.start,ratio(r?.startedViews,r?.pageviews)),line(W.finish,ratio(r?.ends,r?.starts)),line(W.replay,valid?format(r.retries):'')];
+  if(g.id==='elsewhere'&&Number(elsewhereData?.summary?.runs)>0){
+   const z=elsewhereData.summary;
+   rows.push(line(W.storyFinish,z.fullRate==null?'':format(z.fullRate)+'%'),line(W.storyReplay,z.replayRate==null?'':format(z.replayRate)+'%'));
+  }
+  for(const [label,key] of g.items)rows.push(line(W[label],count(key)));
+  const title=gameNames[g.id]?.[lang]||g.id;
+  const feedback=g.id==='pawsibly-innocent'&&Number(signals.play_feedback_fun)>0?'<p class="focus-subtitle">'+escapeHTML(t('feelPrefix'))+' · '+format(signals.play_feedback_fun)+'</p>':'';
+  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+feedback+'</article>';
  }).join('');
 }
-
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(j.records)>0;
 $("stats").innerHTML=[
  metricCard(t("statPv"),hasData?format(r.pageviews):"",t("statPvNote")),
@@ -274,39 +259,21 @@ const chunks=[t("coverageDays",{days:format(j.days),records:format(j.records)}),
 if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=hasData?chunks.join(" "):"";$("report").hidden=false;enhanceSortableTables();}
 
 let elsewhereData=null;
-const EW={
-zh:{title:'平行人生 · 故事表现',desc:'只保留完读率、重玩率和最明显的流失点。',open:'打开平行人生 ↗',starts:'开始人生',finishRate:'完读率',replayRate:'重玩率',replayHint:'重玩访客 / 开始过的访客',dropoff:'最明显的流失点',dropoffMessage:'第 {n} 幕之后，有 {lost} 次未进入下一幕（续读率 {rate}）',dropoffEmpty:'暂无足够数据判断流失点',more:'查看五幕及人生明细',funnel:'五幕故事进度',continue:'每幕续读率',worlds:'六种人生比较',world:'人生',runs:'开始',finished:'完读',noData:'',pending:'正在读取五幕梦幻人生数据…',empty:'',coverage:'多风格人生新版记录 {n} 条匿名事件；旧版故事数据保留，不混算。',partial:' 已达读取上限。',denom:'样本 {n}',chapter:'第 {n} 幕',started:'进入',done:'完成'},
-en:{title:'Elsewhere · Story engagement',desc:'Finish rate, replay rate and the biggest drop-off; details available on demand.',open:'Play Elsewhere ↗',starts:'Lives started',finishRate:'Finish rate',replayRate:'Replay rate',replayHint:'Replay visitors / visitors who started',dropoff:'Biggest drop-off',dropoffMessage:'After scene {n}, {lost} stopped before the next scene ({rate} continued)',dropoffEmpty:'Not enough data yet to identify a drop-off',more:'Expand five-scene and life details',funnel:'Five-scene progress',continue:'Scene continuation',worlds:'Six-life comparison',world:'Life',runs:'Starts',finished:'Finished',noData:'',pending:'Loading dream-life data…',empty:'',coverage:'{n} anonymous new dream-life events. Previous stories remain stored but are excluded.',partial:' Read limit reached.',denom:'Sample: {n}',chapter:'Scene {n}',started:'Viewed',done:'Completed'}
-};
-const worldLabels={amalfi:{zh:'阿马尔菲海边别墅',en:'Amalfi Villa'},paris:{zh:'巴黎浪漫人生',en:'Paris Romance'},tokyo:{zh:'东京世界巨星',en:'Tokyo Superstar'},iceland:{zh:'冰岛极光奇迹',en:'Iceland Aurora'},maldives:{zh:'马尔代夫私人岛',en:'Maldives Island'},swiss:{zh:'瑞士豪华列车',en:'Swiss Alpine Train'}};const worldName=id=>worldLabels[id]?.[lang]||id;
-
-const ewText=(k,p={})=>{let x=EW[lang][k]||k;for(const [name,val] of Object.entries(p))x=x.replaceAll('{'+name+'}',String(val));return x};
-const ewPct=n=>n==null?ewText('empty'):(Number(n).toFixed(1)+'%');
-function updateEWLabels(){for(const node of document.querySelectorAll('[data-ew]'))node.textContent=ewText(node.dataset.ew);}
-function renderElsewhere(j){
- elsewhereData=j;updateEWLabels();const d=j.summary||{},f=j.funnel||[],rates=j.continueRates||[],worlds=j.worlds||[];
- if(lastData)renderSignals(lastData.byGame||[]);
- if(!Number(j.records)){ $('ew-state').hidden=true;$('ew-report').hidden=true;return; }
- $('ew-dropoff').innerHTML=d.dropoffChapter?'<b>'+escapeHTML(ewText('dropoff'))+': </b>'+escapeHTML(ewText('dropoffMessage',{n:d.dropoffChapter,lost:format(d.dropoffLost),rate:ewPct(d.dropoffRate)})):'';
- const max=Math.max(1,...f.map(x=>x.value||0));
- $('ew-funnel').innerHTML=f.filter(x=>Number(x.value)>0).map(x=>{const m=/^(\d)-(view|complete)$/.exec(x.step)||[];return '<div class="ew-funnel-row"><span>'+escapeHTML(ewText('chapter',{n:m[1]||'?'})+' · '+ewText(m[2]==='view'?'started':'done'))+'</span><div class="ew-bar"><span style="width:'+100*(x.value||0)/max+'%"></span></div><strong>'+format(x.value)+'</strong></div>'}).join('');
- $('ew-continue').innerHTML=rates.filter(x=>Number(x.eligible)>0).map(x=>'<div class="ew-continue-row"><span>'+escapeHTML(ewText('chapter',{n:x.from}))+' → '+escapeHTML(ewText('chapter',{n:x.to}))+'</span><b>'+escapeHTML(ewPct(x.rate))+'</b></div>').join('');
- $('ew-worlds').innerHTML=worlds.filter(x=>Number(x.starts)>0).map(x=>'<tr><td>'+escapeHTML(worldName(x.world))+'</td><td>'+format(x.starts)+'</td><td>'+format(x.ends)+'</td><td>'+escapeHTML(ewPct(x.fullRate))+'</td></tr>').join('');
- $('ew-coverage').textContent=ewText('coverage',{n:format(j.records)})+(j.partial?ewText('partial'):'');
- $('ew-state').hidden=true;$('ew-report').hidden=false;enhanceSortableTables();
-}
 async function loadElsewhere(){
- elsewhereData=null;if(lastData)renderSignals(lastData.byGame||[]);
- $('ew-state').hidden=false;$('ew-state').className='ew-state';$('ew-state').textContent=ewText('pending');$('ew-report').hidden=true;
- try{const response=await fetch('/api/elsewhere-summary?days='+$('days').value,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});const j=await response.json();if(!response.ok)throw new Error(j.error||'HTTP '+response.status);renderElsewhere(j)}
- catch(e){$('ew-state').textContent=ewText('noData')+' · '+(lang==='zh'?t('failGeneric'):(e.message||'Unavailable'));$('ew-state').className='ew-state error';}
+ elsewhereData=null;
+ try{
+  const res=await fetch('/api/elsewhere-summary?days='+$('days').value,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});
+  if(!res.ok)throw Error('Story API unavailable');
+  elsewhereData=await res.json();
+ }catch{elsewhereData=null}
+ if(lastData)renderSignals(lastData.byGame||[]);
 }
 function applyLanguage(next){lang=next==="en"?"en":"zh";document.documentElement.lang=lang==="en"?"en":"zh-CN";document.title=t("pageTitle");
 try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL(location.href);uri.searchParams.set('lang',lang);history.replaceState(history.state,'',uri.pathname+uri.search+uri.hash);}catch{}
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
-if(lastData)render(lastData);if(elsewhereData)renderElsewhere(elsewhereData);else updateEWLabels();enhanceSortableTables();setStatus(statusKind,lastError);
+if(lastData)render(lastData);enhanceSortableTables();setStatus(statusKind,lastError);
 }
 async function load(){setStatus("loading");$("reload").disabled=true;
 try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);

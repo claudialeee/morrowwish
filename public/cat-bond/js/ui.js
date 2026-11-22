@@ -1024,6 +1024,17 @@ const UI = {
     this._teaseStop?.();
     const p = document.getElementById('panel');
     p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
+    // The expedition menu is a root page, but phones still need an explicit
+    // back-to-map control. Keep it outside the scrollable card, beside Close.
+    if(!this._navStack.length && p.querySelector('.explore-menu')){
+      const backToMap=document.createElement('button');
+      backToMap.type='button';
+      backToMap.className='panel-map-back';
+      backToMap.textContent=this.isEnglish()?'← Back to map':'← 返回地图';
+      backToMap.setAttribute('aria-label',this.isEnglish()?'Back to map':'返回地图');
+      backToMap.onclick=e=>{e.stopPropagation();this.closeAll();};
+      p.appendChild(backToMap);
+    }
     // A child page retains an explicit way home without closing the map or yard.
     if(this._navStack.length){
       const nav=document.createElement('nav');
