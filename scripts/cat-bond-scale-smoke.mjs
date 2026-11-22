@@ -124,12 +124,31 @@ try{
       'Every skill must have finger-sized width and height: '+JSON.stringify(battleStats.buttons));
    }
    if(spec.touch&&spec.height<470){
+    // Real pointer targeting is essential: a visible bench button is not
+    // playable if the floating skill-help button steals its touch events.
+    // Do not force the click or use DOM dispatch (both conceal the bug).
+    const tapTargets=await page.evaluate(()=>{
+      const bench=document.querySelector('#bench-slots .bench-caption');
+      const help=document.querySelector('#battle-skill-info-toggle');
+      const b=bench?.getBoundingClientRect(),h=help?.getBoundingClientRect();
+      const overlap=b&&h&&getComputedStyle(help).display!=='none'&&
+        b.left<h.right&&h.left<b.right&&b.top<h.bottom&&h.top<b.bottom;
+      const center=b?document.elementFromPoint(b.left+b.width/2,b.top+b.height/2):null;
+      return {bench:b?{x:b.x,y:b.y,w:b.width,h:b.height}:null,
+        help:h?{x:h.x,y:h.y,w:h.width,h:h.height}:null,
+        overlap:!!overlap,hit:center?.id||center?.className||center?.tagName};
+    });
+    assert.ok(!tapTargets.overlap,
+      'Skill-help must not cover the reserve bench tap region: '+JSON.stringify(tapTargets));
+    assert.ok(/bench-caption/.test(String(tapTargets.hit)),
+      'Bench center must receive the actual pointer: '+JSON.stringify(tapTargets));
+    await page.screenshot({path:'/tmp/cat-bond-scale-'+spec.name+'-touch-targets.png'});
     assert.equal(battleStats.benchOpen,false,
       'Reserves must start collapsed on compact landscape to keep the fighter visible');
-    await page.locator('#bench-slots .bench-caption').click();
+    await page.locator('#bench-slots .bench-caption').click({timeout:7000});
     assert.equal(await page.locator('#bench-slots').evaluate(el=>el.classList.contains('is-open')),
       true,'Tap must expand substitutes');
-    await page.locator('#bench-slots .bench-caption').click();
+    await page.locator('#bench-slots .bench-caption').click({timeout:7000});
     assert.equal(await page.locator('#bench-slots').evaluate(el=>el.classList.contains('is-open')),
       false,'Second tap must collapse substitutes');
    }
