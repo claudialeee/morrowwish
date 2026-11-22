@@ -4049,5 +4049,56 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
  }
 }
 
+/* Fixed: the map's Yard return always owns the far-left corner.
+   Settings + menu remain on the RIGHT, with reserved space even at 320px. */
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{
+  display:none!important;position:relative!important;inset:auto!important;
+  box-sizing:border-box!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;width:118px!important;min-width:0!important;height:34px!important;
+  padding:0 9px!important;margin:0!important;border-radius:9px!important;
+  border:1px solid #e6b8c6!important;background:rgba(36,26,51,.95)!important;
+  box-shadow:0 2px 6px #34293b28!important;color:#fff!important;
+  font:800 12px/1 system-ui,sans-serif!important;white-space:nowrap!important;
+  touch-action:manipulation!important;pointer-events:auto!important;cursor:pointer!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#battle-ui.on)) #cb-header #cb-yard-return{
+  display:inline-flex!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return:focus-visible{
+  outline:3px solid #f2c1d1!important;outline-offset:2px!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions{
+  min-width:0!important;max-width:calc(100% - 126px)!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #mw-game-settings{
+  margin:0!important;
+}
+@media(max-width:420px){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{
+   width:82px!important;padding:0 3px!important;font-size:11px!important;
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions{
+   gap:2px!important;max-width:calc(100% - 88px)!important;
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu{
+   width:34px!important;min-width:34px!important;max-width:34px!important;
+   padding:0!important;font-size:0!important;margin:0!important;
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu::before{
+   content:"☰";font:900 18px/1 system-ui,sans-serif!important;
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #mw-game-settings{
+   gap:2px!important;
+ }
+}
+@media(max-width:340px){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{
+   width:76px!important;font-size:10px!important;
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions{
+   max-width:calc(100% - 79px)!important;
+ }
+}
+
 /* Hide the untranslated initial Cat Bond DOM until the English display layer is ready. */
 html[lang="en"]:not(.cb-i18n-ready) #game-root{visibility:hidden}
