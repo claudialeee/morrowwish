@@ -84,8 +84,8 @@ assert.equal((page.match(/<article class="breed-card"/g)||[]).length,32);
 assert.match(page,/id="pick-cat-a"/);
 assert.match(page,/id="pick-cat-b"/);
 for(const html of [page,game,unlocked]){
- assert.match(html,/duo-breed-actors\.js\?v=32-original-watercolor-actors/);
- assert.match(html,/duo-premium\.js\?v=actual-selected-32-watercolor-actors-v1/);
+ assert.match(html,/duo-breed-actors\.js\?v=32-watercolor-cats-scenery-v2/);
+ assert.match(html,/duo-premium\.js\?v=32-cat-fullbleed-magic-behind-v2/);
  assert.doesNotMatch(html,/duo-breed-art\.js/,'Unsafe mask shader must stay disabled');
  assert.doesNotMatch(html,/duo-premium-sheet\.webp/,'Rejected low-quality gray cats must not reappear');
 }
