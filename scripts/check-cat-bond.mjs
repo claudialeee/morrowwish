@@ -680,6 +680,22 @@ assert.equal(barrierBattle.castWard(protector,'barrier',darkWard),true);
 assert.equal(protector._wardReduction,.55,'dark ward prevents 55%');
 assert.ok(darkWard.wardDuration<grassWard.wardDuration,
   'dark mitigation trades duration against grass regeneration');
+// Verify the real hit resolver uses per-ward mitigation, not a hardcoded 45%.
+const shieldTarget=barrierBattle.enemies[0];
+shieldTarget.hp=1000;shieldTarget.maxhp=1000;
+shieldTarget.flash=0;shieldTarget.inv=0;shieldTarget.status={};shieldTarget.tags=[];
+shieldTarget.staggerT=0;shieldTarget.shieldT=0;shieldTarget.protectT=0;
+barrierBattle.combo=0;
+barrierBattle.resolveHit(shieldTarget,'me',{element:null},100,
+  shieldTarget.x,shieldTarget.y);
+const baseline=1000-shieldTarget.hp;
+shieldTarget.hp=1000;shieldTarget.flash=0;shieldTarget.inv=0;
+shieldTarget.shieldT=3;shieldTarget._wardReduction=.55;barrierBattle.combo=0;
+barrierBattle.resolveHit(shieldTarget,'me',{element:null},100,
+  shieldTarget.x,shieldTarget.y);
+const reduced=1000-shieldTarget.hp;
+assert.ok(baseline>0 && Math.abs(reduced/baseline-.45)<.001,
+  'a dark 55% ward really reduces damage by 55% inside resolveHit');
 
 // Pellet fan has a shared per-enemy budget, not five full-damage hits.
 const projectileCheck=fs.readFileSync(DIR+'js/battle.js','utf8');
