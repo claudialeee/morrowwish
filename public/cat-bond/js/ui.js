@@ -67,6 +67,7 @@ const UI = {
     });
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('map-squad')?.addEventListener('click',()=>this.openMapSquad());
+    document.getElementById('map-menu')?.addEventListener('click',()=>this.openExploreMenu());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
     // Hover/focus explains the exact active cat's move. On touch, the
     // standalone info control displays descriptions without casting.
@@ -348,6 +349,85 @@ const UI = {
       };
     });refresh();
   },
+  // An expedition never needs to return to the yard to inspect, train,
+  // equip, feed, or shop. Reuse the same panels and the same saved cat objects.
+  openExploreMenu(){
+    if(this.game?.scene!=='map')return;
+    const en=this.isEnglish();
+    const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'
+    })[char]);
+    const team=this.getPreferredBattleTeam().slice(0,2);
+    const region=window.WorldMap?.REGIONS?.find(r=>r.id===WorldMap.currentRegion);
+    const regionName=region?(en?region.sub:region.name):(en?'World map':'世界地图');
+    const summary=team.map((cat,i)=>{
+      const sp=GameData.speciesById(cat.species);
+      if(!sp)return '';
+      const f=this.battleCatFacts(cat);
+      const slotNames=Array.isArray(cat.loadout)?cat.loadout.slice(1,4):[];
+      const moves=slotNames.map(id=>window.Skills?.skillById?.(id)?.name).filter(Boolean);
+      const skills=moves.length?moves.map(name=>'<span>'+esc(name)+'</span>').join('')
+        :'<span>'+(en?'Train to unlock moves':'培养后解锁新技能')+'</span>';
+      return '<article class="explore-cat" data-menu-cat="'+esc(cat.uid)+'">'+
+        '<canvas width="72" height="68" aria-hidden="true"></canvas>'+
+        '<div class="explore-cat-summary"><strong>'+esc(State.catName(cat))+'</strong>'+
+        '<small>'+(i===0?(en?'Leader':'领队'):(en?'Partner':'搭档'))+
+        ' · Lv.'+f.level+' · '+esc(f.rarity)+' · '+(en?'Power ':'战力 ')+f.power+'</small>'+
+        '<small>❤ '+f.hp+'/'+f.maxHp+' · '+(en?'Bond ':'好感 ')+f.affinity+
+        ' · '+(en?'Full ':'饱食 ')+Math.round(cat.hunger||0)+'%</small>'+
+        '<div class="explore-cat-skills">'+skills+'</div>'+
+        '<div class="explore-cat-buttons">'+
+        '<button type="button" data-menu-cat-action="detail" data-uid="'+esc(cat.uid)+'">'+(en?'Status / Raise':'状态 / 养成')+'</button>'+
+        '<button type="button" data-menu-cat-action="skills" data-uid="'+esc(cat.uid)+'">'+(en?'Skills':'技能搭配')+'</button>'+
+        '</div></div></article>';
+    }).join('')||'<p class="sub">'+(en?'Adopt a kitten to begin exploring.':'先收集一只猫咪，开始探险吧。')+'</p>';
+    const action=(id,icon,zh,enLabel)=>'<button type="button" data-explore-action="'+id+'">'+
+      '<span aria-hidden="true">'+icon+'</span><span>'+(en?enLabel:zh)+'</span></button>';
+    this.panel('<span class="card-close">×</span><section class="explore-menu" aria-label="'+
+      (en?'Expedition management':'探险管理')+'">'+
+      '<h2>'+(en?'☰ Expedition menu':'☰ 探险菜单')+'</h2>'+
+      '<p class="explore-menu-location">'+(en?'Exploring ':'正在探索：')+esc(regionName)+
+      ' <span>🪙 '+Math.floor(State.S.coins||0)+' · 🐠 '+Math.floor(State.S.fish||0)+'</span></p>'+
+      '<h3>'+(en?'On your team · tap to manage':'出战猫咪 · 直接管理')+'</h3>'+
+      '<div class="explore-cat-list">'+summary+'</div>'+
+      '<h3>'+(en?'More to do':'其他功能')+'</h3>'+
+      '<div class="explore-menu-actions">'+
+      action('cats','🐾','全部猫咪','All cats')+
+      action('squad','⚔️','出战编队','Battle team')+
+      action('duo','💞','双猫纽带','Cat duos')+
+      action('workshop','🧶','工坊收益','Workshop')+
+      action('shop','🛒','小卖部','Shop')+
+      action('feed','🍖','喂食全员','Feed all')+
+      action('regions','🗺️','切换地图','Regions')+
+      '</div><p class="explore-menu-tip">'+(en
+        ?'Close × to resume exploring exactly where you left off.'
+        :'点击 × 就能回到刚才的位置，继续探索。')+'</p></section>');
+    document.getElementById('map-menu')?.setAttribute('aria-expanded','true');
+    const host=document.querySelector('#panel .explore-menu');
+    host?.querySelectorAll('.explore-cat').forEach(card=>{
+      const cat=team.find(c=>c.uid===card.dataset.menuCat);
+      if(cat)CatArt.renderCatThumb(card.querySelector('canvas'),
+        GameData.speciesById(cat.species),cat);
+    });
+    host?.querySelectorAll('[data-menu-cat-action]').forEach(button=>{
+      button.onclick=()=>{
+        const cat=(State.S.cats||[]).find(c=>c.uid===button.dataset.uid);
+        if(!cat)return;
+        if(button.dataset.menuCatAction==='skills')this.openSkillEditor(cat);
+        else this.openCatDetail(cat);
+      };
+    });
+    const actions={
+      cats:()=>this.openCatHub('solo'),squad:()=>this.openMapSquad(),
+      duo:()=>this.openCatHub('duo'),workshop:()=>this.openWorkshop(),
+      shop:()=>this.openShop(),feed:()=>this.openFeed(),
+      regions:()=>this.openMapChooser()
+    };
+    host?.querySelectorAll('[data-explore-action]').forEach(button=>{
+      button.onclick=()=>actions[button.dataset.exploreAction]?.();
+    });
+  },
+
   openMapSquad(){
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
@@ -849,6 +929,7 @@ const UI = {
     p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
     p.dataset.mandatory = 'false';
     p.classList.add('open');
+    document.getElementById('map-menu')?.setAttribute('aria-expanded','false');
     // The × remains accessible regardless of card scroll position.
     p.querySelector('.panel-dismiss').onclick = e => {e.stopPropagation();this.closeAll();};
     p.onclick = e => { if (e.target === p) this.closeAll(); };
@@ -859,6 +940,7 @@ const UI = {
     panel.classList.remove('open');
     delete panel.dataset.mandatory;
     this.openCatUid = null;
+    document.getElementById('map-menu')?.setAttribute('aria-expanded','false');
     // Dismissing any optional overlay must never leave the yard action strip
     // hidden after a previous encounter or canceled pre-battle choice.
     if(this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
