@@ -24,6 +24,11 @@ on:
       - 'package-lock.json'
       - '.github/workflows/deploy-cloudflare.yml'
   workflow_dispatch:
+    inputs:
+      generate_promos:
+        description: 'Also regenerate all promo source footage and clips'
+        type: boolean
+        default: false
   # GitHub Actions pushes rendered MP4 files using GITHUB_TOKEN, which does
   # not fire another 'push' workflow. This event deploys the completed
   # REVIEW-ONLY files automatically without triggering social publication.
@@ -65,25 +70,25 @@ jobs:
       - name: Fetch CC0 recorded cat soundtrack
         run: bash scripts/fetch-cat-music.sh
       - name: Install ffmpeg for promotional video audio
-        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
+        if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: |
           if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
             sudo apt-get update -qq
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg >/dev/null
           fi
       - name: Add CC0 audio to six social promotion video clips
-        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
+        if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: bash scripts/add-promo-audio.sh
       - name: Install Chromium to capture authentic Cat Bond play
-        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
+        if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: |
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
       - name: Record Cat Bond in the actual browser game
-        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
+        if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: node scripts/record-cat-bond-social.mjs
       - name: Render seven polished mobile-first gameplay trailers
-        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
+        if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: bash scripts/render-social-v2.sh
       - name: Verify source, game ordering, and D1 binding
         run: |
@@ -197,7 +202,7 @@ jobs:
           done
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
       - name: Verify seven real-gameplay promotion assets are live (not HTML fallbacks)
-        if: github.event_name == 'workflow_dispatch' # QA hold: do not auto-run promotion generation
+        if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: |
           set -eu
           for game in elsewhere tiny-town pawsibly-innocent cat-bond flip-dash parcel-panic pocket-aquarium; do
