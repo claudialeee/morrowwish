@@ -506,6 +506,7 @@ poiseBattle.resolveHit(poiseEnemy,'me',
   poiseEnemy.x,poiseEnemy.y);
 assert.ok(poiseEnemy.poise<poiseEnemy.poiseMax,'a Q/E skill hit chips the poise gauge');
 assert.equal(poiseEnemy.status.rust,10,'ordinary Q/E applies ten-second armor break');
+{
 // Real starter Q/E (skills absent) must actually reduce the targeted enemy poise.
 const starterBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
@@ -611,6 +612,7 @@ for(const id of ['waterLash','frostLance','boltArc']){
 }
 
 
+}
 // draining poise to empty via skill hits opens the Stagger window
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=1;poiseEnemy.staggerT=0;
 poiseBattle.resolveHit(poiseEnemy,'me',
