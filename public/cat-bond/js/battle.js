@@ -624,7 +624,12 @@ class CaptureBattle {
     let affMult = 1 + 0.15 * ((aff - 50) / 50);          // aff 50 → 1.0, 100 → 1.15, 0 → 0.85
     if (cat._deathPenaltyUntil && Date.now() < cat._deathPenaltyUntil) affMult *= 0.88;  // recent faint: shaken
     affMult = Math.max(0.80, Math.min(1.15, affMult));
-    const maxhp = Math.round((55 + s.vit * 5) * affMult);
+    // HP is BREED-EXPRESSED: a bigger base pool + a stronger VIT weight so cats are
+    // beefier overall AND a tanky breed (森林/缅因 vit12, 蓝宝 vit9) is visibly more
+    // durable than a lean one (暹罗/樱花 lean on dodge, not HP). VIT also grows with
+    // level, so the spread widens over a run. Base 55→80, VIT ×5→×8 lifts everyone
+    // off the old flat ~95-115 band (e.g. 汤圆 95→144, 森林 115→176).
+    const maxhp = Math.round((80 + s.vit * 8) * affMult);
     // element + a learned loadout from the skill library (Q / E slots)
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(cat.species) : null;
     let loadout = null;
