@@ -163,6 +163,12 @@ if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||
    !studioAudioSource.includes("beat==='release'"))
  throw Error('Cat Bond premium duo must fill mobile/desktop arena and keep post-cut-in VFX + audio');
+const unlockedPreview=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
+if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!important}')||
+   !unlockedPreview.includes('height:min(75dvh')||
+   !unlockedPreview.includes("hideCaptions:q.get('embedded')==='1'")||
+   !unlockedPreview.includes('full-frame-gallery-no-crop-20261122'))
+ throw Error('Unlocked duo modal must show uncropped artwork without duplicate titles');
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
  if(!bondScriptSources.some(src=>src.startsWith(asset+'?v=')&&src.slice(asset.length+3).length>0))
