@@ -208,18 +208,20 @@ return{
     txt(x,845,zh()?zhLabels[i]:labels[i],17,col);
    }
    box(30,18,480,61,"#342b56",15,"#a98eaf");
-   txt(270,43,L("TAP THE MATCHING COLOR LANE","点击对应颜色的通道"),17,"#f6eeff");
+   txt(270,43,shiftLabel(),20,"#f6eeff");
+   txt(270,67,L("MATCH COLORS · PLAN THE NEXT ORDER","按颜色分拣 · 提前看下件"),13,"#ddcee9");
    for(let i=0;i<4;i++)circ(40+i*21,95,7,i<life?"#ff859c":"#735c83");
    const b=boxes[0];
    if(b){
     const x=xOf(b.x),y=yOf(b.y),col=colors[b.color];
-    glow(x,y,59,col+"54");box(x-39,y-34,78,68,col,12,"#ffffffae");
+    glow(x,y,59,col+"54");box(x-39,y-34,78,68,col,12,b.kind==="normal"?"#ffffffae":"#fff1ae");
     box(x-25,y-19,50,35,"#ffffff44",6);
-    txt(x,y-8,L("NEXT","下一件"),11,"#24364c");
+    txt(x,y-8,kindLabel(b),11,"#24364c");
     txt(x,y+15,zh()?zhLabels[b.color]:labels[b.color],16,"#24364c");
     const ratio=Math.max(0,Math.min(1,(433-b.y)/325));
     box(112,84,316,7,"#796b86",4);box(112,84,316*ratio,7,col,4);
    }else txt(270,296,L("Next parcel incoming…","下一件快递马上到！"),17,"#f6edff");
+   txt(270,715,nextLabel(),17,"#fff1b9");
    if(feedback)txt(xOf(feedback.x),yOf(feedback.y)-(.9-feedback.life)*20,feedback.text,22,feedback.good?"#b4ffdc":"#ffc4d2");
    return;
   }
@@ -234,14 +236,14 @@ return{
    txt(x,497,L("CLICK","点击"),13,"#e8efff");
   }
   box(206,12,548,60,"#213c63",15,"#557497");
-  txt(480,35,L("NEXT PARCEL → CLICK ITS COLOR","看包裹颜色 → 点击对应通道"),18,"#f2f5ff");
-  txt(480,55,L("Also: keyboard 1 / 2 / 3","也可按键盘 1 / 2 / 3"),12,"#cadcf3");
+  txt(480,35,shiftLabel()+" · "+L("COMBO ","连击 ")+combo,18,"#f2f5ff");
+  txt(480,55,nextLabel(),14,"#f6e4b4");
   for(let i=0;i<4;i++)circ(34+i*22,38,7,i<life?"#ff859c":"#59718d");
   const b=boxes[0];
   if(b){
-   glow(b.x,b.y,64,colors[b.color]+"4e");box(b.x-52,b.y-39,104,78,colors[b.color],15,"#ffffffa0");
+   glow(b.x,b.y,64,colors[b.color]+"4e");box(b.x-52,b.y-39,104,78,colors[b.color],15,b.kind==="normal"?"#ffffffa0":"#fff1ae");
    box(b.x-30,b.y-20,60,40,"#ffffff55",7);
-   txt(b.x,b.y-2,L("NEXT","下一件"),13,"#223652");
+   txt(b.x,b.y-2,kindLabel(b),13,"#223652");
    txt(b.x,b.y+18,zh()?zhLabels[b.color]:labels[b.color],20,"#243755");
    // Time pressure increases gradually, not through complicated gestures.
    const ratio=Math.max(0,Math.min(1,(433-b.y)/(433-108)));
@@ -276,7 +278,7 @@ function showReadyScreen(){
  document.getElementById("overlay-kicker").textContent=zh?"玩法说明":"HOW TO PLAY";
  overTitle.textContent=names[id]||document.querySelector(".game-title")?.textContent||id;
  overDesc.textContent=zh?
-  (id==="parcel-panic"?"看下一件包裹的颜色，点击对应通道投递；也可以按 1、2、3 键。错投会失去一次机会。":
+  (id==="parcel-panic"?"按颜色点击对应通道（或按 1、2、3）。注意下一件提示：加急包裹更快，奖励包裹加分。每送达 8 件完成一个班次，获得积分并恢复一次机会。":
    id==="flip-dash"?"点击画面或按空格键切换重力，避开粉色障碍。坚持越久，得分越高。":document.body.dataset.instructions):
   document.body.dataset.instructions;
  goBtn.textContent=zh?"开始游戏":"START GAME";
