@@ -146,9 +146,12 @@ function render(ctx,W,H,seq,lookup){
   // Rotate the entire coherent illustrated cat: never disassemble legs/head.
   // Keep complete ears and paws in frame even at high leap moments. The
   // horizontal duo choreography remains unchanged, only vertical safety.
-  const groundedY=Math.max(stageH*.12+size*1.05,Math.min(stageH*.83,pose.y));
+  // Director poses expose .scale, not .size. A NaN canvas transform made
+  // the portraits render enormous and clip out of the animation viewport.
+  const actorSize=size*(Number.isFinite(pose.scale)?pose.scale:1);
+  const groundedY=Math.max(stageH*.07+actorSize*1.17,Math.min(stageH*.83,pose.y));
   ctx.translate(pose.x,groundedY);ctx.rotate(pose.angle);
-  window.CatBondDuoArtwork.drawKitten(ctx,0,0,size*pose.size,actor,i===1,p,
+  window.CatBondDuoArtwork.drawKitten(ctx,0,0,actorSize,actor,i===1,p,
      Director?.styles?.[key]||'dash',color);
   ctx.restore();
  }
