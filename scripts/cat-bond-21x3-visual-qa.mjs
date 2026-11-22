@@ -126,11 +126,11 @@ try{
    return {n:art.breedCount,firstSide,secondSide,ordered,reversed,
      cached:painter.activePaintCacheEntries};
  });
- assert.equal(matches.n,32,'All 32 collectible breeds must have their own painted character');
- assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,32,
-   'All 32 first-side breeds must produce visibly distinct actual watercolor cats');
- assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,32,
-   'All 32 second-side breeds must produce visibly distinct actual watercolor cats');
+ assert.equal(matches.n,33,'All 33 collectible breeds must have their own painted character');
+ assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,33,
+   'All 33 first-side breeds must produce visibly distinct actual watercolor cats');
+ assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,33,
+   'All 33 second-side breeds must produce visibly distinct actual watercolor cats');
  assert.notEqual(matches.ordered,matches.reversed,
    'Swapping the two player cats must visibly exchange both painted characters');
  assert.ok(matches.cached<=63,'Changing cats must not create unbounded scene caches');
