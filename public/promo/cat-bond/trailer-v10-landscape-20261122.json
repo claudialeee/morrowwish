@@ -7,7 +7,7 @@
   "width": 1920,
   "height": 1080,
   "duration": 59.566667,
-  "bytes": 5305441,
+  "bytes": 5302365,
   "identicalSourceShotCount": 21,
   "shots": [
     {
@@ -16,7 +16,7 @@
       "caption": "A WORLD FULL OF CATS.",
       "seconds": 2.5,
       "startAt": 0,
-      "recordingAt": 0.768
+      "recordingAt": 0.622
     },
     {
       "scene": "cat-upgrade",
@@ -24,7 +24,7 @@
       "caption": "LEVEL UP WITH ONE TAP.",
       "seconds": 3.15,
       "startAt": 2.5,
-      "recordingAt": 9.683
+      "recordingAt": 9.394
     },
     {
       "scene": "duo-partners",
@@ -32,7 +32,7 @@
       "caption": "CHOOSE YOUR CAT DUO.",
       "seconds": 2.75,
       "startAt": 5.65,
-      "recordingAt": 16.5
+      "recordingAt": 16.163
     },
     {
       "scene": "duo-map-walk",
@@ -40,7 +40,7 @@
       "caption": "",
       "seconds": 1.8,
       "startAt": 8.4,
-      "recordingAt": 23.323
+      "recordingAt": 22.92
     },
     {
       "scene": "duo-promise",
@@ -48,7 +48,7 @@
       "caption": "A SECRET PROMISE UNDER PETALS.",
       "seconds": 3.9,
       "startAt": 10.2,
-      "recordingAt": 26.118
+      "recordingAt": 25.676
     },
     {
       "scene": "duo-quarrel",
@@ -56,7 +56,7 @@
       "caption": "EVEN BEST FRIENDS DISAGREE.",
       "seconds": 6.1,
       "startAt": 14.1,
-      "recordingAt": 30.433
+      "recordingAt": 29.988
     },
     {
       "scene": "duo-reconcile",
@@ -64,7 +64,7 @@
       "caption": "HELP THEM MAKE UP.",
       "seconds": 2.9,
       "startAt": 20.2,
-      "recordingAt": 38.74
+      "recordingAt": 37.931
     },
     {
       "scene": "work-after",
@@ -72,7 +72,7 @@
       "caption": "SEND CATS OUT TO EARN.",
       "seconds": 2.5,
       "startAt": 23.1,
-      "recordingAt": 45.958
+      "recordingAt": 44.907
     },
     {
       "scene": "tease",
@@ -80,7 +80,7 @@
       "caption": "PLAY WITH YOUR CATS.",
       "seconds": 2.2,
       "startAt": 25.6,
-      "recordingAt": 50.133
+      "recordingAt": 49.034
     },
     {
       "scene": "map-choice",
@@ -88,7 +88,7 @@
       "caption": "DISCOVER NEW PLACES.",
       "seconds": 2.5,
       "startAt": 27.8,
-      "recordingAt": 60.192
+      "recordingAt": 56.81
     },
     {
       "scene": "map-explore",
@@ -96,7 +96,7 @@
       "caption": "EXPLORE A LIVING WORLD.",
       "seconds": 2.45,
       "startAt": 30.3,
-      "recordingAt": 65.512
+      "recordingAt": 62.113
     },
     {
       "scene": "map-management",
@@ -104,7 +104,7 @@
       "caption": "ALL IN ONE MENU.",
       "seconds": 2.15,
       "startAt": 32.75,
-      "recordingAt": 70.165
+      "recordingAt": 66.725
     },
     {
       "scene": "auto-team-saved",
@@ -112,7 +112,7 @@
       "caption": "SAVE YOUR BEST BATTLE TEAM.",
       "seconds": 2.5,
       "startAt": 34.9,
-      "recordingAt": 76.457
+      "recordingAt": 72.922
     },
     {
       "scene": "rare-encounter",
@@ -120,7 +120,7 @@
       "caption": "A RARE CAT APPEARS!",
       "seconds": 2.05,
       "startAt": 37.4,
-      "recordingAt": 79.629
+      "recordingAt": 75.947
     },
     {
       "scene": "battle-hud",
@@ -128,7 +128,7 @@
       "caption": "REAL-TIME HEALTH AND BATTLE.",
       "seconds": 2.45,
       "startAt": 39.45,
-      "recordingAt": 82.294
+      "recordingAt": 78.535
     },
     {
       "scene": "battle-skills",
@@ -136,7 +136,7 @@
       "caption": "USE DIFFERENT SKILLS.",
       "seconds": 2.8,
       "startAt": 41.9,
-      "recordingAt": 85.181
+      "recordingAt": 81.441
     },
     {
       "scene": "duo",
@@ -144,7 +144,7 @@
       "caption": "ONE POWERFUL DUO FINISHER!",
       "seconds": 3.1,
       "startAt": 44.7,
-      "recordingAt": 89.278
+      "recordingAt": 85.906
     },
     {
       "scene": "rare-aftermath",
@@ -152,7 +152,7 @@
       "caption": "",
       "seconds": 1.2,
       "startAt": 47.8,
-      "recordingAt": 92.378
+      "recordingAt": 89.006
     },
     {
       "scene": "rare-capture",
@@ -160,7 +160,7 @@
       "caption": "A NEW FRIEND JOINS YOU.",
       "seconds": 3.45,
       "startAt": 49,
-      "recordingAt": 113.546
+      "recordingAt": 104.157
     },
     {
       "scene": "ssr-showcase",
@@ -168,7 +168,7 @@
       "caption": "MEET A LEGENDARY SSR CAT!",
       "seconds": 3.6,
       "startAt": 52.45,
-      "recordingAt": 119.001
+      "recordingAt": 109.6
     },
     {
       "scene": "end-card",
@@ -192,5 +192,5 @@
   "youtubePublished": false,
   "video": "/promo/cat-bond/trailer-v10-landscape-20261122.mp4",
   "poster": "/promo/cat-bond/trailer-v10-landscape-20261122.jpg",
-  "createdAt": "2026-11-22T23:36:03.681Z"
+  "createdAt": "2026-11-22T23:52:40.432Z"
 }
