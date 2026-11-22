@@ -340,7 +340,9 @@ function draw(ctx,W,H,seq,lookup){
  // the live battle without placing a rectangular 16:9 card on the arena.
  // The mask follows the SCREEN, not the rotated/zoomed scenery.
  ctx.restore();
- featherScenery(ctx,sw,sh);
+ // Gallery thumbnails retain every pixel of the 63 original paintings.
+ // Only the in-battle animated cut-in fades at the four perimeter edges.
+ if(!thumbnail)featherScenery(ctx,sw,sh);
  // The restored original artwork ALREADY contains both illustrated cats.
  // Do not paste a second pair on it. For breed-specific alternate scenes,
  // paint the two selected transparent watercolor cats AFTER the matte.
@@ -366,8 +368,8 @@ function draw(ctx,W,H,seq,lookup){
   glow.addColorStop(1,'#fffefa00');
   ctx.fillStyle=glow;ctx.fillRect(0,0,sw,sh);ctx.restore();
  }
- // The actor-only scenic atlas contains NO baked English skill title.
- // Never paint the old rectangular veil over either cat's head or tail.
+ // Titles stay localized in the active game language; the original
+ // 63 paintings are otherwise untouched and never covered by grey panels.
  if(!seq.hideCaptions){
  const en=window.MorrowwishI18n?.get?.()!=='zh';
  const title=seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||(en?'Duo Special':'双猫合击');
@@ -379,7 +381,8 @@ function draw(ctx,W,H,seq,lookup){
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
  // Breed information is shown in the separate roster UI; never overlay
  // a false claim of exact painted breed identity over fixed artist subjects.
- if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.945,sw*.86);
+ if(!originalArt&&actorA&&actorB)
+   ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.945,sw*.86);
  ctx.restore();
  }
  ctx.restore();
