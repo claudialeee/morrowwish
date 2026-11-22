@@ -1048,7 +1048,7 @@ c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPr
  if(menuOpen)return;
  if(s?.outro){if(["Escape","Enter"," "].includes(e.key)){e.preventDefault();endOutro()}return}
  if(e.key==="Escape"&&s?.done&&!$("overlay").hidden){e.preventDefault();closeResult();return}
-  if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if(e.key==="."&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();waitTurn();return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
+  if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if(e.key==="."&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();waitTurn();return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
 $("menuButton").onclick=()=>openMenu("rooms");
 $("bonusQuick").onclick=()=>openMenu("rooms");

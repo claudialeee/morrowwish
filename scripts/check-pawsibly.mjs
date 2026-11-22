@@ -50,7 +50,7 @@ listeners['board:pointerdown']({pointerType:'mouse',button:0,clientX:(guardFish.
 assert.match(nodes.get('visionTip').textContent,/human blocks a fish/i,'Blocked human needs actionable help');
 nodes.get('wait').onclick();
 assert.ok(w.human.x!==guardFish.x||w.human.y!==guardFish.y,'Wait frees guard-blocked fish');
-test.choose(3,false);const v=test.getState(),robotFish=v.fish[1];v.vacuum={...robotFish};
+test.choose(3,false);const v=test.getState(),robotFish=v.fish[2];v.vacuum={...robotFish};
 listeners['board:pointerdown']({pointerType:'mouse',button:0,clientX:(robotFish.x+.5)*84,clientY:(robotFish.y+.5)*84});
 assert.match(nodes.get('visionTip').textContent,/vacuum blocks a fish/i,'Blocked robot needs actionable help');
 nodes.get('wait').onclick();nodes.get('wait').onclick();
