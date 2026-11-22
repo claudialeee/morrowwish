@@ -167,6 +167,10 @@ class CaptureBattle {
     this.t = 0;
     this.done = false; this.result = null;
     this.shakeT = 0; this.flash = 0;
+    // HIT-FEEL: trauma-based camera shake (Nijman). On a hit we add trauma (0..1);
+    // the camera offset in draw() = maxShake * trauma² (squared falloff), decaying
+    // ~1.8/s. shakeTrauma replaces the old shakeT-that-never-moved-the-camera.
+    this.shakeTrauma = 0; this.shakeDirX = 0; this.shakeDirY = 0;
     this.hint = '鼠标瞄准 · 左键猫爪 · 空格闪避 · 斗志清零即收服';
     this.captureReady = false;
     this._ultAnnounced = false; this._ultReadyBanner = 0; this._captureBanner = 0;
@@ -2753,6 +2757,15 @@ class CaptureBattle {
     }
   }
 
+  // HIT-FEEL: add camera trauma (0..1 clamp) with an optional hit-normal direction
+  // so the first shake frames kick along the blow. mag ~0.15 basic / 0.35 skill /
+  // 0.7 stagger-ult. Also keeps shakeT alive for any legacy reader.
+  addShake(mag, aim) {
+    this.shakeTrauma = Math.min(1, this.shakeTrauma + mag);
+    if (aim != null) { this.shakeDirX = -Math.cos(aim); this.shakeDirY = -Math.sin(aim); }
+    this.shakeT = Math.max(this.shakeT, mag * 0.3);
+  }
+
   // ---------------- update ----------------
   update(dt) {
     if (this.done) return;
@@ -2769,14 +2782,17 @@ class CaptureBattle {
     else this.tickUltReminder(dt);     // re-arm "press R" + failsafe auto-cast (not during the cinematic)
     // perfect-dodge bullet-time: slow the WORLD but keep input responsive
     if (this.slowmo > 0) { this.slowmo -= dt; dt *= 0.35; }
-    // hitstop: a few frames of near-freeze on a solid hit makes impacts feel weighty.
-    // It scales the SIMULATION dt only (input was already polled by the loop), and
-    // never stacks on top of bullet-time. Mobile uses a shorter freeze to avoid jank.
-    if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
+    // HITSTOP: a true near-freeze of the SIMULATION (actors/projectiles/AI) on a solid
+    // hit — the classic "weight" beat. Crucially the VFX layer keeps running at real
+    // time (this._vfxDt below) so impact sparks SNAP outward *during* the freeze (the
+    // freeze-then-pop that sells the punch). Never stacks on bullet-time.
+    this._vfxDt = dt;                                   // real dt for the vfx layer
+    if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.02; }
     this.t += dt;
     this._lastDt = dt;                                  // shared by steering helpers (orbit/wander timers)
     if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
     if (this.shakeT > 0) this.shakeT -= dt;
+    if (this.shakeTrauma > 0) this.shakeTrauma = Math.max(0, this.shakeTrauma - 1.8 * dt);
     if (this.flash > 0) this.flash -= dt;
     if (this.comboFlash > 0) this.comboFlash -= dt;
     // 合体技 cut-in: the whole arena is HARD-FROZEN (nobody moves) while the splash
@@ -2820,6 +2836,13 @@ class CaptureBattle {
     // tick player cooldowns & timers
     for (const f of this.team) {
       f.t = (f.t || 0) + dt;
+      // apply + decay hit knockback on player cats too (boop when struck)
+      if (f.kbx || f.kby) {
+        f.x = clamp(f.x + f.kbx * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+        f.y = clamp(f.y + f.kby * dt, this.topMargin, this.H - this.bottomMargin);
+        const kd = Math.exp(-6 * dt); f.kbx *= kd; f.kby *= kd;
+        if (Math.abs(f.kbx) < 4 && Math.abs(f.kby) < 4) { f.kbx = 0; f.kby = 0; }
+      }
       for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt;
       if (f.inv > 0) f.inv -= dt;
       if (f.dashT > 0) f.dashT -= dt; else f.pounce = false;
@@ -2830,6 +2853,11 @@ class CaptureBattle {
       this.tickWards(f, dt);
       this.tickCatStatus(f, dt);              // DoT + soft-CC (slow) the enemy inflicted
       if (f.hitFlash > 0) f.hitFlash -= dt;
+      const vdt2 = this._vfxDt != null ? this._vfxDt : dt;
+      if (f.hitWhite > 0) f.hitWhite -= vdt2;
+      if (f.hitSquash > 0) f.hitSquash = Math.max(0, f.hitSquash - vdt2 * 2.2);
+      if (f._recoilX) f._recoilX *= Math.exp(-10 * vdt2);
+      if (f._recoilY) f._recoilY *= Math.exp(-10 * vdt2);
     }
     // Retire a timed bond reinforcement when its window ends.
     if (this.reinforceT > 0) {
@@ -2933,7 +2961,14 @@ class CaptureBattle {
     // First-fight coach: while teaching move/attack/skill, enemies stand down so a
     // brand-new player can learn the controls without taking damage.
     const coachHold = this.coachHoldsEnemies();
-    for (const e of this.enemies) { if (e.flash > 0) e.flash -= dt; }
+    const vdt = this._vfxDt != null ? this._vfxDt : dt;   // hit-feel visuals run real-time
+    for (const e of this.enemies) {
+      if (e.flash > 0) e.flash -= dt;
+      if (e.hitWhite > 0) e.hitWhite -= vdt;
+      if (e.hitSquash > 0) e.hitSquash = Math.max(0, e.hitSquash - vdt * 2.2);
+      if (e._recoilX) e._recoilX *= Math.exp(-10 * vdt);
+      if (e._recoilY) e._recoilY *= Math.exp(-10 * vdt);
+    }
     for (const e of this.liveEnemies()) {
       this.tickWards(e, dt);                           // protect/reflect/barrier timers
       if (e.wardCd > 0) e.wardCd -= dt;
@@ -2943,7 +2978,7 @@ class CaptureBattle {
       if (e.kbx || e.kby) {
         e.x = clamp(e.x + e.kbx * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
         e.y = clamp(e.y + e.kby * dt, this.topMargin, this.H - this.bottomMargin);
-        const decay = Math.exp(-9 * dt); e.kbx *= decay; e.kby *= decay;
+        const decay = Math.exp(-6 * dt); e.kbx *= decay; e.kby *= decay;   // slower = knockback reads over ~5-6 frames
         if (Math.abs(e.kbx) < 4 && Math.abs(e.kby) < 4) { e.kbx = 0; e.kby = 0; }
       }
       // CONTACT SWIPE: a wild cat that gets right on top of a cat claws it (short
@@ -3040,7 +3075,7 @@ class CaptureBattle {
     this.tickBeams(dt);                  // channeled 水枪/flamethrower continuous damage
     this.tickFields(dt);                 // Terraformer elemental ground zones (drip + detonate)
 
-    this.vfx.update(dt);
+    this.vfx.update(this._vfxDt != null ? this._vfxDt : dt);   // VFX run real-time so sparks pop DURING hitstop
     for (const q of this.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 60 * dt; q.life -= dt; }
     this.particles = this.particles.filter(q => q.life > 0);
     for (const fl of this.floaters) { fl.y -= 40 * dt; fl.life -= dt; }
@@ -3733,22 +3768,36 @@ class CaptureBattle {
     // CAST-INTERRUPT accumulator: damage dealt while an enemy is winding up a heavy
     // counts toward cancelling it (checked in the AI telegraph tick).
     if (e.castInterruptible && e.telegraph > 0) e.castDmgTaken = (e.castDmgTaken || 0) + scaled;
-    e.flash = 0.16;
-    // Weighty impact on DIRECT hits only (DoT ticks stay quiet to avoid noise):
-    // a short damage-scaled hitstop + a micro screen-shake that grows with combo heat.
+    e.flash = 0.16;                                   // i-frame timer (gates re-hits)
+    // Weighty impact on DIRECT hits only (DoT ticks stay quiet to avoid noise).
     if (!isDot) {
       const touch = !!this.game.isTouch;
       const frac = e.maxhp ? Math.min(1, scaled / e.maxhp) : 0.2;
-      const stop = (touch ? 0.03 : 0.045 + frac * 0.06);          // ~30ms mobile, 45-105ms desktop
+      // HIT-FEEL: true short hitstop (consumed as a hard freeze in update), strength-scaled.
+      const stop = (touch ? 0.035 : 0.05) + frac * 0.07;          // ~35ms mobile, 50-120ms desktop
       this.hitstop = Math.max(this.hitstop, stop);
+      // CAMERA SHAKE scaled by HIT STRENGTH (not just combo heat), kicked along the blow.
       const heat = Math.min(1, this.combo / 20);
-      this.shakeT = Math.max(this.shakeT, (touch ? 0.04 : 0.06) + 0.05 * heat);
-      // KNOCKBACK (Hades-style punch): shove the enemy away from the hit point,
-      // scaled by how big the hit was. Heavier enemies (SR/SSR) resist more.
+      this.addShake((touch ? 0.10 : 0.15) + 0.35 * frac + 0.06 * heat,
+        Math.atan2(e.y - fy, e.x - fx));
+      // WHITE connect-flash on the body silhouette (separate from the i-frame fade).
+      e.hitWhite = 0.09;
+      // On-hit SQUASH: the struck cat compresses then springs back (draw-only).
+      e.hitSquash = Math.min(0.28, 0.12 + 0.14 * frac);
+      // KNOCKBACK (now VISIBLE): bigger base, softer rarity resist, slower decay so the
+      // boop reads over ~5-6 frames. basic≈20-26px, heavy≈55px. Playful, not brutal.
       const kx = e.x - fx, ky = e.y - fy, kl = Math.hypot(kx, ky) || 1;
-      const power = (90 + 240 * frac) / (1 + e.rIdx * 0.6);
+      const power = (160 + 320 * frac) / (1 + e.rIdx * 0.3);
       e.kbx = (e.kbx || 0) + (kx / kl) * power;
       e.kby = (e.kby || 0) + (ky / kl) * power;
+      // ATTACKER SELF-RECOIL: the striker rocks back a touch along -normal (draw-only
+      // offset), selling the force exchange. me() for basics/melee; harmless if attacker
+      // unknown.
+      const atk = this.me && this.me();
+      if (atk && atk.alive) { atk._recoilX = -(kx / kl) * 7; atk._recoilY = -(ky / kl) * 7; }
+      // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
+      // scaled by hit strength — reads as force, not a symmetric puff.
+      this.vfx.impact(e.x, e.y, '#fff2c0', Math.atan2(ky, kx));
       // CONNECT TICK: a short, combo-pitched pop so every landed hit is audible
       // (previously only the swing had sound → players couldn't tell a hit landed).
       // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
@@ -3781,7 +3830,19 @@ class CaptureBattle {
     }
     if (this._obs) this._obs.dmgTaken += dmg;            // anti-stomp signal (see commitAiProfile)
     f.hitFlash = 0.14; f.inv = 0.3;
-    if (f === this.me()) this.shakeT = 0.18;
+    // HIT-FEEL on the player's cat taking a hit: white connect-flash, squash, a short
+    // hitstop + strength-scaled camera shake, and knockback away from the blow.
+    if (dmg > 0) {
+      const frac = f.maxhp ? Math.min(1, dmg / f.maxhp) : 0.2;
+      f.hitWhite = 0.09;
+      f.hitSquash = Math.min(0.28, 0.12 + 0.14 * frac);
+      this.hitstop = Math.max(this.hitstop, (this.game.isTouch ? 0.03 : 0.04) + frac * 0.06);
+      this.addShake((this.game.isTouch ? 0.12 : 0.18) + 0.3 * frac, Math.atan2(f.y - fy, f.x - fx));
+      const kx = f.x - fx, ky = f.y - fy, kl = Math.hypot(kx, ky) || 1;
+      const power = 120 + 220 * frac;
+      f.kbx = (f.kbx || 0) + (kx / kl) * power;
+      f.kby = (f.kby || 0) + (ky / kl) * power;
+    }
     // priority floater so damage taken on ANY of your cats (active or ally) is never
     // dropped by the active cat's own outgoing-number spam. Slightly larger + red.
     this.floater(f.x, f.y - 26, '-' + Math.round(dmg), '#ff5a7a', 15, true);
@@ -4024,10 +4085,27 @@ class CaptureBattle {
   // ---------------- draw ----------------
   draw(ctx) {
     const { W, H } = this;
-    // Keep the arena camera fixed during combat. Translating the entire canvas
-    // exposed undrawn side strips on narrow portrait screens, especially when
-    // big elemental skills hit. Impact rings and flashes still communicate hits.
     ctx.save();
+    // HIT-FEEL camera shake (resurrected): offset the whole scene by maxShake*trauma²
+    // with a directional kick along the last hit normal + decaying random jitter. The
+    // old code deleted shake to avoid exposing letterbox strips on portrait; we instead
+    // CLAMP the offset small and the background (drawArenaBackground) paints the full
+    // canvas, so a few px of translate never reveals an undrawn edge.
+    let _shx = 0, _shy = 0;
+    if (this.shakeTrauma > 0.001) {
+      const maxShake = this.game.isTouch ? 2.5 : 5;
+      const amt = maxShake * this.shakeTrauma * this.shakeTrauma;
+      const rnd = () => (Math.random() * 2 - 1);
+      _shx = this.shakeDirX * amt * 0.6 + rnd() * amt;
+      _shy = this.shakeDirY * amt * 0.6 + rnd() * amt;
+      _shx = Math.max(-maxShake, Math.min(maxShake, _shx));
+      _shy = Math.max(-maxShake, Math.min(maxShake, _shy));
+      // Fill the untranslated canvas with the backdrop sky first, so the ≤maxShake
+      // translate can never reveal an undrawn edge (the old letterbox bug).
+      ctx.fillStyle = (this.theme && this.theme.sky2) || '#4a3570';
+      ctx.fillRect(0, 0, W, H);
+      ctx.translate(_shx, _shy);
+    }
 
     this.drawArenaBackground(ctx, W, H);
     this.drawDuoField(ctx);
@@ -4261,7 +4339,13 @@ class CaptureBattle {
       } else { e._castShakeX = 0; e._castShakeY = 0; }
       ctx.save();
       if (e._castShakeX || e._castShakeY) ctx.translate(e._castShakeX, e._castShakeY);
-      if (e.flash > 0) ctx.globalAlpha = 0.6;
+      // HIT-FEEL: self-recoil shove (draw-only) + on-hit squash (compress toward ground,
+      // springs back). Applied as a transform around the body so the struck cat reacts.
+      if (e._recoilX || e._recoilY) ctx.translate(e._recoilX || 0, e._recoilY || 0);
+      if (e.hitSquash > 0) {
+        const q = e.hitSquash;
+        ctx.translate(e.x, e.y + 24 * q); ctx.scale(1 + q * 0.6, 1 - q); ctx.translate(-e.x, -(e.y + 24 * q));
+      }
       if(e.phase>0){
         ctx.strokeStyle=e.phase>1?'#ff794f':'#ffc16e';ctx.lineWidth=3;
         ctx.beginPath();ctx.arc(e.x,e.y,31+Math.sin(this.t*4)*3,0,Math.PI*2);ctx.stroke();
@@ -4291,6 +4375,20 @@ class CaptureBattle {
         mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
       });
       if (_pouncePrep) ctx.restore();
+      // WHITE connect-flash: an additive white bloom over the body for 1-2 frames so a
+      // landed hit POPS (replaces the old translucent fade that read as "vanish").
+      if (e.hitWhite > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const a = Math.min(1, e.hitWhite / 0.09);
+        const r = 30 * this.catScale('enemy') / 0.62;
+        const g = ctx.createRadialGradient(e.x, e.y - 6, 0, e.x, e.y - 6, r);
+        g.addColorStop(0, 'rgba(255,255,255,' + (0.9 * a) + ')');
+        g.addColorStop(0.6, 'rgba(255,255,255,' + (0.35 * a) + ')');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(e.x, e.y - 6, r, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
       this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
       // 虚弱 stagger: a pulsing gold ring + dizzy mark so the open window reads clearly
       if (e.staggerT > 0) {
@@ -4365,10 +4463,17 @@ class CaptureBattle {
           :route.fromY+(route.toY-route.fromY)*eased;
         visualPose=pct>.51&&pct<.70?'play':pct<.15?'idle':'run';
       }
+      // HIT-FEEL: self-recoil shove on the struck cat (draw-only).
+      if (tf._recoilX) visualX += tf._recoilX;
+      if (tf._recoilY) visualY += tf._recoilY;
       ctx.save();
       if (!isMe) ctx.globalAlpha = 0.9;
       if (tf.inv > 0 && Math.floor(this.t * 20) % 2 === 0) ctx.globalAlpha = 0.5;
-      if (tf.hitFlash > 0) ctx.globalAlpha = 0.5;
+      // HIT-FEEL on-hit squash (compress + spring back), draw-only around the body.
+      if (tf.hitSquash > 0) {
+        const q = tf.hitSquash;
+        ctx.translate(visualX, visualY + 22 * q); ctx.scale(1 + q * 0.6, 1 - q); ctx.translate(-visualX, -(visualY + 22 * q));
+      }
       // active cat gets a soft golden ground ring so you know who you control
       if (isMe) {
         // A clear grounded control marker; never obscure the kitten face.
@@ -4387,6 +4492,18 @@ class CaptureBattle {
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
         stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
       });
+      // WHITE connect-flash on a struck player cat (additive bloom, not a vanish-fade).
+      if (tf.hitWhite > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const a = Math.min(1, tf.hitWhite / 0.09), r = 30 * this.catScale(isMe?'active':'ally') / 0.62;
+        const g = ctx.createRadialGradient(visualX, visualY - 6, 0, visualX, visualY - 6, r);
+        g.addColorStop(0, 'rgba(255,255,255,' + (0.9 * a) + ')');
+        g.addColorStop(0.6, 'rgba(255,255,255,' + (0.35 * a) + ')');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(visualX, visualY - 6, r, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
       ctx.restore();
       // Player HP/ult now live in the sleek top-left squad panel (drawSquadPanel),
       // not floating over the cat. Keep only a tiny active-cat chevron so you can
