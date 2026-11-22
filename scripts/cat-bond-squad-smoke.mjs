@@ -132,6 +132,47 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+5);
   assert.equal(overflow,false,'prebattle stats must fit device width');
   await page.screenshot({path:'/tmp/cat-bond-squad-'+device.name+'-yard.png'});
+  // Saved menu lineup must survive yard/map encounter, actual combat and reload.
+  // Two cats of the same breed are separate owned cats with separate UIDs.
+  await page.evaluate(()=>{
+    const a=[...State.S.cats],twin=State.makeCat(a[0].species);
+    const fifth=State.makeCat('moqiu');twin.level=12;
+    State.S.cats=[...a,twin,fifth];
+    State.S.battlePrefs.teamUids=[a[1].uid,a[0].uid,a[2].uid,twin.uid,fifth.uid];
+    UI.openMapSquad();
+  });
+  await page.locator('#panel [data-order-index="1"][data-order-shift="-1"]').click();
+  await page.locator('#map-squad-save').click();
+  const saved=await page.evaluate(()=>State.S.battlePrefs.teamUids.slice());
+  assert.equal(saved.length,5,'the menu must save five individual cats');
+  await page.evaluate(()=>UI.openCapturePrep({
+    ...GameData.speciesById('moqiu'),encounterLevel:2
+  }));
+  assert.deepEqual(await page.evaluate(()=>UI.teamUids.slice()),saved,
+    'yard pre-battle must keep menu lineup, including duplicate breeds');
+  assert.deepEqual((await page.locator('#cp-roster .chip').evaluateAll(
+    els=>els.map(e=>e.dataset.uid))).sort(),saved.slice().sort(),
+    'yard picker must display every individual saved cat');
+  await page.locator('#cp-go').click();
+  const actual=await page.evaluate(()=>[
+    ...__game.battle.team.map(f=>f.cat.uid),
+    ...__game.battle.reserve.map(c=>c.uid)
+  ]);
+  assert.deepEqual(actual,saved,'combat starters and bench must follow saved order');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>!!window.UI&&!!window.State&&!!window.__game);
+  assert.deepEqual(await page.evaluate(()=>State.S.battlePrefs.teamUids),saved,
+    'saved squad must survive a page reload');
+  assert.deepEqual(await page.evaluate(()=>UI.getPreferredBattleTeam().map(c=>c.uid)),saved,
+    'map pre-battle must read the same lineup');
+  const unchanged=await page.evaluate(()=>{
+    const old=State.S.battlePrefs.teamUids.slice(0,3);
+    State.S.battlePrefs.teamUids=old;
+    UI._chooseRunSquad(State.S.cats[4]);
+    return [old,State.S.battlePrefs.teamUids];
+  });
+  assert.deepEqual(unchanged[1],unchanged[0],
+    'capturing another cat should not silently rewrite an existing lineup');
   console.log('SQUAD SELECTION STATS PASS '+device.name+
     JSON.stringify({mapChoices:summary.length,enemyLevel:4,ranked:leaderAfter,
       captureChoices:captureCards.length}));
