@@ -582,12 +582,9 @@
   // INPUT (world-map nodes and the in-scene upper-left yard button)
   // ================================================================
   function backBounds(){
-    var compact=game&&game.isTouch&&game.W>game.H&&game.H<520;
-    // The world map AND each explorable scene have a direct "Back to yard"
-    // control in the upper-left. On narrow phones it sits below the map
-    // action toolbar rather than overlapping the squad / map / menu buttons.
-    if(mode==='map')return {x:compact?64:16,y:game.W<650?76:65,w:compact?104:128,h:compact?38:42};
-    return {x:compact?64:16,y:game.W<650?106:65,w:compact?104:128,h:compact?38:42};
+    // Direct in-scene top-left courtyard navigation, away from the header menu.
+    var narrow=game&&game.W<=360;
+    return {x:narrow?8:12,y:8,w:narrow?76:120,h:narrow?34:38};
   }
   function inBackButton(x,y){
     var b=backBounds();return x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h;
@@ -607,7 +604,7 @@
       return false;
     }
     // In a region, only the upper-left action returns to the courtyard.
-    // Use the existing "地图目录" utility to choose another map.
+    // Use the header exploration menu’s 世界目录 to change regions.
     if (world && inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
     return false;
   }
@@ -728,10 +725,11 @@
     ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回庭院':'← Yard', bbx + bbw / 2, bby + bbh / 2);
+    ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText('🗺️ 世界地图', W / 2, W<650?132:83);
+    ctx.fillText('🗺️ 世界地图', W / 2, W<650?105:83);
     ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('点击已解锁区域进入探索', W / 2, W<650?158:105);
     ctx.textAlign = 'left';
@@ -1022,15 +1020,14 @@
     var prog = ensureSave().regions[w.region.id];
     // Compact safe-side HUD for landscape phone screens.
     var compact=game.isTouch&&W>game.H&&game.H<520;
-    // The website's home/fullscreen/language/music controls occupy the first
-    // 48px. Put the MAP HUD below them, never underneath those buttons.
-    // Under 650px, including narrow desktop windows, the unified navigation
-    // takes the second row; region info belongs below it, not behind it.
+    // Header menu/fullscreen/language/audio now occupy only the right side.
+    // Keep the scene title just beneath the first row.
+    // Region title sits slightly higher now that redundant second-row controls are gone.
     var narrow=W<650;
     // Leave a full touch-sized gap under the scene's upper-left yard button.
     // The progress bar stays in its own readable block, never underneath it.
     var back=backBounds();
-    var hx=compact?64:(narrow?12:20),hy=Math.max(narrow?119:62,back.y+back.h+12),
+    var hx=compact?64:(narrow?12:20),hy=Math.max(narrow?125:80,back.y+back.h+14),
       hw=compact?180:220,hh=compact?46:56;
     ctx.fillStyle = 'rgba(27,16,38,0.6)';
     roundRect(ctx,hx,hy,hw,hh,12);ctx.fill();
@@ -1059,7 +1056,8 @@
     ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回庭院':'← Yard', bbx + bbw / 2, bby + bbh / 2);
+    ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
 
