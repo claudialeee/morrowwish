@@ -811,10 +811,12 @@ assert.ok(!startSkills.some(sk=>sk.id==='boltArc'),
   'a fresh level-1 cat should not already know the full second attack');
 assert.equal(Skills.defaultLoadout(newbie)[2],null,
   'the E slot unlocks with growth, not as a free starting ability');
-const grown=State.makeCat('xianluo',{level:5,affinity:0});
+const grown=State.makeCat('xianluo',{affinity:0});
+grown.level=5; // makeCat takes species/affinity, not a level constructor option.
 assert.ok(Skills.learnableSkills(grown).some(sk=>sk.id==='lightningOrb'),
   'electric cats learn the slow homing orb by Lv.5');
-const nonElectric=State.makeCat('jinwu',{level:5,affinity:0});
+const nonElectric=State.makeCat('jinwu',{affinity:0});
+nonElectric.level=5;
 assert.ok(!Skills.learnableSkills(nonElectric).some(sk=>sk.id==='lightningOrb'),
   'element-locked orb must not appear on a fire-only cat');
 newbie.loadout=[null,'boltArc',null,null];newbie.skillEdited=true;
