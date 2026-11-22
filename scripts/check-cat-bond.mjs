@@ -917,6 +917,21 @@ for(const sp of GameData.SPECIES){
   assert.ok(rec.slice(1).filter(Boolean).every(id=>all.some(s=>s.id===id)),
     sp.id+' recommended build must stay inside valid element pool');
  }
+ // The first-capture awakening is audited for every one of the 33 breeds:
+ // ordinary cats learn a second NATIVE move; only curated duals get a
+ // secondary move. A player must never receive random elemental magic.
+ const kitten=State.makeCat(sp.id,{affinity:12});
+ Skills.ensureLoadout(kitten);
+ const awakened=Skills.awakenFirstSkill(kitten);
+ assert.ok(awakened,sp.id+' must receive a real first-capture skill');
+ assert.equal(awakened.element,second||el,
+   sp.id+' awakening must honor reviewed breed element identity');
+ assert.ok(Skills.learnableSkills(kitten).some(s=>s.id===awakened.id),
+   sp.id+' awakened ability must actually be equippable');
+ assert.equal(kitten.loadout?.[2],awakened.id,
+   sp.id+' first capture must put the new technique in E');
+ assert.equal(Skills.awakenFirstSkill(kitten),null,
+   sp.id+' first-capture unlock occurs exactly once');
 }
 const blueberry=State.makeCat('lanbao',{affinity:90});blueberry.level=18;
 blueberry.skillAwakened=true;blueberry.skillEdited=true;
