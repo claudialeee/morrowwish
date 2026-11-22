@@ -29,6 +29,8 @@ jobs:
           sleep 2
           node scripts/cat-bond-yard-placement-smoke.mjs
           node scripts/cat-bond-art-review.mjs
+          python3 scripts/build-cat-bond-owner-gallery.py
+          node scripts/cat-bond-owner-gallery-smoke.mjs
       - name: Save screenshots for owner review
         if: always()
         uses: actions/upload-artifact@v4
@@ -37,5 +39,14 @@ jobs:
           path: |
             /tmp/cat-bond-*-yard-placement.png
             /tmp/catbond-review-*.png
+            /tmp/catbond-review-gallery-21.png
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Save private full-resolution 21-animation owner viewer
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-premium-21-animations-offline
+          path: /tmp/cat-bond-premium-21-duos-review.html
           retention-days: 7
           if-no-files-found: warn
