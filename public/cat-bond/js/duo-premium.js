@@ -1,12 +1,7 @@
-/* Premium Cat Bond duo cinematic renderer.
- * Uses the studio's high-resolution PAINTED ACTION ART, not schematic
- * yard sprites or reused procedural cartoon heads. The illustrated cut-in
- * is composed from the true pair's closest coat archetypes, while each
- * of the 21 elemental pairs retains its own motion / finisher.
- *
- * IMPORTANT: the current 8 painting panels contain 9 coat archetypes,
- * not a full 25-breed art inventory. Keep this in studio review until
- * all breed-specific final paintings are approved.
+/* Premium duo cinematic renderer: one uninterrupted watercolor painting
+ * showing both complete cats in a shared setting. No clipped or pasted
+ * silhouettes. 21 elemental choreographies over eight complete painted scenes.
+ * Further breed-specific scenes can be added without reintroducing seams.
  */
 (function(){
 'use strict';
@@ -111,35 +106,19 @@ function draw(ctx,W,H,seq,lookup){
  const sw=Math.min(W*.97,H*.93*16/9),sh=sw*9/16,x=(W-sw)/2,y=(H-sh)/2;
  const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));
  const actorA=actors[0],actorB=actors[1];
- const frame=regions[key],W2=sw*.5;
+ const frame=regions[key];
  const strength=smooth((p-.09)/.19)*(1-smooth((p-.75)/.18));
  const dual=clamp(strength);
  ctx.save();ctx.globalAlpha*=opacity;
  ctx.beginPath();ctx.roundRect(x,y,sw,sh,Math.max(11,Math.min(22,sw*.025)));ctx.clip();
  ctx.translate(x,y);
- // First establish a distinct painted landscape and then bring each REAL
- // pair's closest full illustrated cat into the middle of the cut-in.
- sourceCover(ctx,cellRect(frame),0,0,sw,sh,1.13-.09*smooth(p/.31),
-    Math.sin(p*4.8)*.013,Math.cos(p*3)*.012,1);
- if(dual>.01&&actorA&&actorB){
-  const sources=[actorSource(actorA),actorSource(actorB)];
-  for(let i=0;i<2;i++){
-    const src=cellRect(sources[i][0],sources[i][1]);
-    ctx.save();
-    ctx.beginPath();ctx.rect(i*W2,0,W2,sh);ctx.clip();
-    // Move the CAMERA inside each crop, not the painted panels. Sliding the
-    // panels exposed an ugly vertical stripe from the unrelated backdrop.
-    const speed=1-smooth((p-.16)/.20);
-    const zoom=1.09+.035*Math.sin(p*7+i*2);
-    sourceCover(ctx,src,i*W2,0,W2,sh,zoom,
-      (i===0?-.07:.07)*speed+(i===0?-.012:.012)*Math.sin(p*7),
-      -.018*Math.sin(p*3+i),dual*.99);
-    ctx.restore();
-  }
-  const blend=ctx.createLinearGradient(sw*.36,0,sw*.64,0);
-  blend.addColorStop(0,'#fff8ee00');blend.addColorStop(.5,'#fff9eb7b');blend.addColorStop(1,'#fff8ee00');
-  ctx.save();ctx.globalAlpha*=dual*.75;ctx.fillStyle=blend;ctx.fillRect(sw*.36,0,sw*.28,sh);ctx.restore();
- }
+ // One complete, illustrated two-cat tableau per attack, NEVER two sliced
+ // paintings or a pair of cropped heads glued across a visible vertical seam.
+ // Pan and zoom the entire coherent painting together.
+ const driftX=Math.sin(p*4.1+frame*.7)*.012;
+ const driftY=Math.cos(p*3.3+frame*.4)*.008;
+ const zoom=1.04+.035*smooth(p/.30)+.009*Math.sin(p*4);
+ sourceCover(ctx,cellRect(frame),0,0,sw,sh,zoom,driftX,driftY,1);
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
  if(dual>.10){
@@ -176,7 +155,7 @@ function draw(ctx,W,H,seq,lookup){
 }
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
- get failed(){return broken},paintedCatArchetypes:9,skillVariants:Object.keys(regions).length,
+ get failed(){return broken},wholeSceneCount:8,skillVariants:Object.keys(regions).length,
  get source(){return img.src}
 };
 })();
