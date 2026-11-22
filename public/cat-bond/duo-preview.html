@@ -1,182 +1,103 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="robots" content="noindex,follow">
-  <title>双猫合击演出总览 · Cat Bond | Morrow Wish</title>
-  <style>
-    :root{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-      color:#2e4650;background:#f6f3eb;--paper:#fffdfa;--line:#d8ddce}
-    *{box-sizing:border-box}body{margin:0;padding:clamp(12px,3vw,32px)}
-    main{max-width:1120px;margin:auto}header{display:flex;align-items:center;gap:15px;justify-content:space-between;flex-wrap:wrap}
-    h1{margin:0;font-size:clamp(23px,4vw,35px);letter-spacing:-.035em}
-    h2{font-size:17px;margin:20px 0 10px}
-    .intro{font-size:13px;line-height:1.6;color:#647877;margin:8px 0 15px}
-    a{color:#3b6e5d;text-decoration:none}a:hover{text-decoration:underline}
-    .viewer{background:linear-gradient(130deg,#29414c,#162c3e);border-radius:18px;
-      padding:8px;box-shadow:0 13px 38px #273a3821;overflow:hidden}
-    #duo-canvas{display:block;width:100%;aspect-ratio:16/9;height:auto;border-radius:12px;touch-action:pan-y}
-    .controls{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:12px 0}
-    button{font:inherit;cursor:pointer;touch-action:manipulation}
-    .ctl{background:#fff;border:1px solid #b8c9c1;padding:9px 13px;border-radius:10px;color:#305a4a}
-    .ctl[aria-pressed=true],.signature.selected{background:#365e55;color:#fff;border-color:#365e55}
-    .tier{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-    #now-playing{font-weight:750;font-size:15px;color:#284b40;margin:8px 0}
-    #signature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:8px}
-    .signature{text-align:left;display:flex;align-items:center;gap:7px;min-height:58px;
-      padding:9px 11px;border-radius:12px;background:var(--paper);border:1px solid var(--line);
-      color:#34494a;transition:background .12s,border .12s}
-    .signature:hover{border-color:#9bbaa8}.signature .number{display:inline-block;min-width:24px;
-      color:inherit;opacity:.57;font-size:11px;font-variant-numeric:tabular-nums}
-    .signature .caption{font-size:12px;font-weight:700;line-height:1.38}
-    .footer{font-size:12px;line-height:1.65;color:#6c7777;margin:16px 0 25px}
-    #breed-controls{padding:9px 11px;background:#fdfcf8;border:1px solid #d7e1d6;border-radius:12px}
-    #breed-controls label{font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px;flex:1;min-width:135px}
-    #breed-controls select{background:#fff;border:1px solid #cbd8ca;border-radius:8px;padding:7px 8px;
-      max-width:100%;min-width:0;flex:1;color:#476259}
-    @media(max-width:520px){#duo-canvas{aspect-ratio:5/4}#signature-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-      .signature{padding:7px 8px;min-height:52px}.signature .caption{font-size:11px}
-      .controls .ctl{padding:8px 9px}#now-playing{font-size:14px}}
-    @media(prefers-reduced-motion:reduce){.signature{transition:none}}
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Unlocked Duo Move | Cat Bond</title>
+<style>
+:root{font:16px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:#344e55;background:#f8f5ee}
+*{box-sizing:border-box}body{margin:0;padding:clamp(14px,3vw,28px)}
+main{max-width:900px;margin:auto}header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:clamp(20px,4vw,30px);margin:0}a{color:#376b5d;text-decoration:none;font-weight:700}
+p{color:#62757b}.viewer{background:#e8e4f0;border:2px solid #d7cde0;border-radius:16px;padding:6px;overflow:hidden}
+canvas{width:100%;height:auto;aspect-ratio:16/9;display:block;border-radius:12px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+button{background:#fff;border:1px solid #b6c5c4;border-radius:10px;padding:10px 16px;min-height:44px;cursor:pointer;color:#35544e;font:700 14px system-ui}
+button:hover{background:#f1faf6}#locked{margin:28px 0;padding:25px;background:#fff;border:1px solid #d9ddd9;border-radius:16px}
+#skill-title{color:#415d64;font-weight:800}
+[hidden]{display:none!important}
+@media(max-width:550px){canvas{aspect-ratio:5/4}}
+</style>
 </head>
-<body>
-<main>
-<header>
-  <h1>双猫合击 · 21 种独立演出</h1>
-  <a href="./">返回《猫猫纽带》游戏</a>
-</header>
-<p class="intro">以之前确认的月光守护、春雨、潮汐和雷电原画为视觉参考，制作 21 套不同的动作与元素演出。切换下方猫咪品种时，演出的两只猫也会同步更换真实的水彩品种造型；默契 20／60／90 对应升级招式。本页面只供预览，不修改存档。</p>
-<div class="viewer"><canvas id="duo-canvas" width="960" height="540" role="img" aria-label="当前双猫合击动态演出"></canvas></div>
-<div class="controls">
-  <button id="restart" class="ctl">重播</button>
-  <button id="pause" class="ctl" aria-pressed="false">暂停</button>
-  <div class="tier" role="group" aria-label="默契等级">
-    <button class="ctl" data-tier="1" aria-pressed="false">20 · 联手</button>
-    <button class="ctl" data-tier="2" aria-pressed="false">60 · 交叉</button>
-    <button class="ctl" data-tier="3" aria-pressed="true">90 · 终结</button>
-  </div>
-</div>
-<div id="now-playing" aria-live="polite">正在加载合击演出…</div>
-<div class="controls" id="breed-controls" aria-label="按实际上场猫咪预览">
- <label>第一只猫 <select id="preview-cat-a"></select></label>
- <label>第二只猫 <select id="preview-cat-b"></select></label>
-</div>
-<h2>选择合击技能</h2>
-<div id="signature-grid" role="group" aria-label="21 种双猫合击"></div>
-<p class="footer">演示展示每种元素组合的独特编排及视觉演出。实际战斗中的伤害、控制、治疗和冷却仍由游戏决定。动画自动循环；为避免破图，合击以完整连贯的小猫身体绘制。</p>
+<body><main>
+<header><h1 id="page-title">已解锁的双猫合击</h1><a href="./" id="back">返回《猫猫纽带》</a></header>
+<section id="locked"><h2 id="locked-title">🔒 合击尚未解锁</h2>
+<p id="locked-body">让这对猫咪培养默契，到达 20 后才能解锁对应技能。本页没有全部技能总览。</p></section>
+<section id="unlocked" hidden>
+<p id="skill-title" aria-live="polite"></p>
+<div class="viewer"><canvas id="duo-canvas" width="960" height="540" aria-label="已解锁双猫动态合击演出"></canvas></div>
+<div class="controls"><button id="replay">重新观看</button><button id="pause" aria-pressed="false">暂停</button></div>
+<p id="trust-note"></p></section>
 </main>
 <script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'};</script>
-<script src="js/data.js?v=duo-preview-pastel"></script>
-<script src="js/catart.js?v=duo-preview-pastel"></script>
-<script src="js/real-kittens.js?v=complete-watercolor-v2-20261121-1"></script>
-<script src="js/duo-artwork.js?v=duo-watercolor-20261121"></script>
-<script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
-<script src="js/duo-director.js?v=21-unique-breed-motion-20261121"></script>
-<script src="js/duo-hero.js?v=21-unique-breed-motion-20261121"></script>
+<script src="js/data.js"></script>
+<script src="js/skills.js"></script>
+<script src="js/state.js"></script>
+<script src="js/cat-relationships.js"></script>
+<script src="js/catart.js"></script>
+<script src="js/real-kittens.js"></script>
+<script src="js/duo-artwork.js"></script>
+<script src="js/duo-signatures.js"></script>
+<script src="js/duo-director.js"></script>
+<script src="js/duo-hero.js"></script>
 <script>
-(()=>{
-'use strict';
-const names={
- 'dark+dark':'双影夜巡','dark+elec':'影雷瞬袭','dark+fire':'暗焰猫爪','dark+grass':'夜藤伏击',
- 'dark+light':'星月交辉','dark+water':'深海迷雾','elec+elec':'双雷连闪','elec+fire':'雷火喵旋风',
- 'elec+grass':'雷芽缠锁','elec+light':'闪光连击','elec+water':'闪电泡泡雨','fire+fire':'双焰喵盛典',
- 'fire+grass':'花火猫爪舞','fire+light':'日曜喵闪','fire+water':'蒸汽喵喵炮',
- 'grass+grass':'双叶春醒','grass+light':'晨光花环','grass+water':'春雨绽放',
- 'light+light':'双星祝福','light+water':'月湖屏障','water+water':'双潮回响'
-};
-const keys=window.CatBondDuoSignatures?.keys||[];
-const cv=document.getElementById('duo-canvas'),ctx=cv.getContext('2d');
-let selected='elec+fire',tier=3,start=performance.now(),paused=false,hold=0;
-const colors={dark:'#bcb0ea',elec:'#ffe58a',fire:'#ffab80',grass:'#b2e3a1',light:'#fff0bd',water:'#9fdbf7'};
-const q=new URLSearchParams(location.search);
-const valid=new Set(window.GameData.SPECIES.map(sp=>sp.id));
-const cats={previewA:{uid:'previewA',species:valid.has(q.get('a'))?q.get('a'):'tangyuan'},
- previewB:{uid:'previewB',species:valid.has(q.get('b'))?q.get('b'):'xiaohui'}};
-const breeds=window.GameData?.SPECIES||[];
-for(const [id,slot,initial] of [['preview-cat-a','previewA','tangyuan'],['preview-cat-b','previewB','xiaohui']]){
- const control=document.getElementById(id);
- for(const breed of breeds){
-  const opt=document.createElement('option');opt.value=breed.id;
-  opt.textContent=GameData.speciesName(breed);control.append(opt);
+(function(){'use strict';
+ const english=MorrowwishI18n.get()==='en';
+ const msg=(id,cn,en)=>document.getElementById(id).textContent=english?en:cn;
+ msg('page-title','已解锁的双猫合击','Your Unlocked Duo Move');
+ msg('back','返回《猫猫纽带》','Back to Cat Bond');
+ msg('locked-title','🔒 合击尚未解锁','🔒 Duo move locked');
+ msg('locked-body','需要先在游戏中培养两只猫的默契，达到20后解锁对应的合击。没有公开的全部技能总览。',
+    'Grow trust between your two cats to 20 to unlock their duo technique. No complete move gallery is available.');
+ msg('replay','重新观看','Replay');
+ msg('pause','暂停','Pause');
+ if(!State.load())return;
+ const q=new URLSearchParams(location.search);
+ const roster=State.S.cats||[],active=State.S.duoRelations?.active||[];
+ const uidA=q.get('a')||active[0],uidB=q.get('b')||active[1];
+ const catA=roster.find(c=>c.uid===uidA),catB=roster.find(c=>c.uid===uidB);
+ if(!catA||!catB||catA.uid===catB.uid)return;
+ const key=[catA.uid,catB.uid].sort().join(':');
+ const rel=State.S.duoRelations?.pairs?.[key];
+ if(!rel||rel.value<20)return;
+ const trust=rel.value,tier=trust>=90?3:trust>=60?2:1;
+ const duo=CatRelations.title(catA,catB);
+ if(!duo||!window.CatBondDuoHero)return;
+ document.getElementById('locked').hidden=true;
+ document.getElementById('unlocked').hidden=false;
+ msg('trust-note','默契 '+trust+'/100 · 已解锁等级 '+tier+' · 继续一起冒险才能解锁更高级动作',
+   'Trust '+trust+'/100 · Unlocked tier '+tier+' · Grow closer to unlock later stages');
+ document.getElementById('skill-title').textContent=duo.name+' · '+State.catName(catA)+' × '+State.catName(catB);
+ const cv=document.getElementById('duo-canvas'),ctx=cv.getContext('2d');
+ const lookup=uid=>uid===catA.uid?catA:uid===catB.uid?catB:null;
+ const duration=2.75,colors={dark:'#bba5df',elec:'#d9b2f4',fire:'#ffa77c',
+  grass:'#8ccb9f',light:'#fff1bc',water:'#9cd7f7'};
+ const first=Skills.elementOf(catA.species),second=Skills.elementOf(catB.species);
+ let start=performance.now(),paused=false,held=0;
+ function render(ms){
+  const rect=cv.getBoundingClientRect(),w=Math.max(1,rect.width),h=Math.max(1,rect.height);
+  const pixel=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*pixel),ph=Math.round(h*pixel);
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
+  ctx.setTransform(pixel,0,0,pixel,0,0);
+  ctx.clearRect(0,0,w,h);
+  if(!CatBondDuoHero.assetReady){
+   ctx.fillStyle='#e8e2f1';ctx.fillRect(0,0,w,h);return;
+  }
+  const elapsed=(ms/1000)%duration;
+  CatBondDuoHero.draw(ctx,w,h,{
+   max:duration,t:duration-Math.max(.01,elapsed),strikeAt:.78,
+   catUids:[catA.uid,catB.uid],name:duo.name,elements:duo.elementPair,tier,
+   first:colors[first],second:colors[second]
+  },lookup);
  }
- control.value=cats[slot].species;
- control.onchange=()=>{cats[slot].species=control.value;render(.8)};
-}
-function measure(){
- const rect=cv.getBoundingClientRect(),w=Math.max(1,rect.width),h=Math.max(1,rect.height),dpr=Math.min(2,window.devicePixelRatio||1);
- const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
- if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph}
- ctx.setTransform(dpr,0,0,dpr,0,0);return {w,h};
-}
-function render(seconds){
- const {w,h}=measure(),es=selected.split('+'),t=2.75-Math.min(2.05,seconds);
- ctx.clearRect(0,0,w,h);ctx.fillStyle='#162c3a';ctx.fillRect(0,0,w,h);
- window.CatBondDuoHero.draw(ctx,w,h,{
-   max:2.75,t,catUids:['previewA','previewB'],tier,
-   name:window.MorrowwishI18n.get()==='en'?(window.CatBondDuoSignatures.get(selected)?.label||selected):names[selected],elements:selected,
-   first:colors[es[0]],second:colors[es[1]]},
-   uid=>cats[uid]);
-}
-function choose(key){
- if(!keys.includes(key))return;
- selected=key;start=performance.now();hold=0;
- document.querySelectorAll('.signature').forEach(b=>{
-  b.classList.toggle('selected',b.dataset.pair===key);
-  b.setAttribute('aria-pressed',String(b.dataset.pair===key));
- });
- const english=window.MorrowwishI18n.get()==='en';
- document.getElementById('now-playing').textContent=
-   (english?(window.CatBondDuoSignatures.get(key)?.label||key):names[key])+
-   ' · '+key.replace('+',' + ')+(english?' · Trust ':' · 默契 ')+
-   (tier===1?'20':tier===2?'60':'90');
- render(.55);
-}
-for(const [i,key] of keys.entries()){
- const b=document.createElement('button');
- b.className='signature';b.dataset.pair=key;b.type='button';
- b.innerHTML='<span class="number">'+String(i+1).padStart(2,'0')+'</span>'+
-   '<span class="caption"></span>';
- b.querySelector('.caption').textContent=names[key]||key;
- b.onclick=()=>choose(key);
- document.getElementById('signature-grid').append(b);
-}
-document.getElementById('restart').onclick=()=>{start=performance.now();hold=0;paused=false;
- document.getElementById('pause').textContent='暂停';document.getElementById('pause').setAttribute('aria-pressed','false')};
-document.getElementById('pause').onclick=()=>{
- paused=!paused;
- if(!paused)start=performance.now()-hold*1000;
- document.getElementById('pause').textContent=paused?'继续':'暂停';
- document.getElementById('pause').setAttribute('aria-pressed',String(paused));
-};
-document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{
- tier=Number(b.dataset.tier);
- document.querySelectorAll('[data-tier]').forEach(x=>x.setAttribute('aria-pressed',String(Number(x.dataset.tier)===tier)));
- choose(selected);
-});
-function frame(now){
- const t=paused?hold:((now-start)/1000)%2.10;
- if(!paused)hold=t;
- if(!paused&&document.visibilityState!=='hidden')render(t);
- requestAnimationFrame(frame);
-}
-if(keys.length===21&&window.CatBondDuoHero){
- choose(keys.includes(q.get('pair'))?q.get('pair'):selected);requestAnimationFrame(frame);
+ function frame(now){render(paused?held:now-start);requestAnimationFrame(frame);}
+ document.getElementById('replay').onclick=()=>{start=performance.now();held=0;paused=false;
+   document.getElementById('pause').setAttribute('aria-pressed','false');};
+ document.getElementById('pause').onclick=()=>{
+   paused=!paused;if(paused)held=performance.now()-start;else start=performance.now()-held;
+   document.getElementById('pause').setAttribute('aria-pressed',String(paused));
+ };
  window.__duoPreviewReady=true;
- window.__duoPreviewDebug={renderAt:(key,lvl,s)=>{
-    selected=key;tier=lvl;render(s);return cv.toDataURL('image/png')
-   },select:choose,getKeys:()=>keys.slice(),
-   setCats:(a,b)=>{
-     cats.previewA.species=a;cats.previewB.species=b;
-     document.getElementById('preview-cat-a').value=a;
-     document.getElementById('preview-cat-b').value=b;render(.8);
-   },
-   getArtStatus:()=>({breedReady:!!window.CatBondDuoArtwork?.ready,
-     scenesReady:!!window.CatBondDuoArtwork?.backdropReady,
-     breeds:window.CatBondDuoArtwork?.breedCount})};
-}else document.getElementById('now-playing').textContent='演出资源加载失败。';
+ requestAnimationFrame(frame);
 })();
-</script>
-</body>
-</html>
+</script></body></html>
