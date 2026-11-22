@@ -382,7 +382,7 @@ const UI = {
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const duoArt=ok?CatRelations.title(a,b):null;
-    const name=duoArt?.name||'—';
+    const name=p>=20?(duoArt?.name||'—'):(en?'🔒 Unknown duo move':'🔒 尚未解锁的合击');
     const personalityNotes=[a,b].map(c=>{
       const notes=en?{
         gentle:'Protector · shields a vulnerable partner',
@@ -426,16 +426,16 @@ const UI = {
       <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
       <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
       <div class="duo-relation"><strong>${name}</strong>
-        <p class="duo-art-description">✨ ${esc(duoArt?.description||'')}${p>=60?' · '+(en?'Enhanced synergy unlocked':'进阶合击已觉醒'):''}</p>
+        <p class="duo-art-description">✨ ${p>=20?(esc(duoArt?.description||'')+(p>=60?' · '+(en?'Enhanced synergy unlocked':'进阶合击已觉醒'):'')):(en?'Reach Trust 20 to discover this duo technique.':'将这对猫咪的默契提升至20，才能发现它们的专属合击。')}</p>
         <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
         <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
         <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
         <div class="duo-personality-list">${personalityNotes.map(note=>'<p>'+esc(note)+'</p>').join('')}</div>
         <div class="duo-meter"><span style="width:${p}%"></span></div>
         <div class="duo-move-evolution" aria-label="${en?'Duo move upgrades':'双猫合击升级'}">
-          <div class="${p>=20?'unlocked':''}"><b>20 · ${en?'Twin Pounce':'联手飞扑'}</b><span>${en?'Two kittens launch and claw together':'双猫突进，挥出第一道爪痕'}</span></div>
-          <div class="${p>=60?'unlocked':''}"><b>60 · ${en?'Cross Claws':'交叉爪击'}</b><span>${en?'Crossed strikes and stronger elemental reactions':'两猫交叉挥爪，追加元素连锁效果'}</span></div>
-          <div class="${p>=90?'unlocked':''}"><b>90 · ${en?'Soulbound Finale':'终极连斩'}</b><span>${en?'Three claw waves with staggering force':'三重爪光与终结冲击，打出虚弱破绽'}</span></div>
+          <div class="${p>=20?'unlocked':''}"><b>20 · ${p>=20?(en?'Twin Pounce':'联手飞扑'):'🔒 ???'}</b><span>${p>=20?(en?'New duo action unlocked':'已解锁新合击动作'):(en?'Unlock at Trust 20':'默契20解锁')}</span></div>
+          <div class="${p>=60?'unlocked':''}"><b>60 · ${p>=60?(en?'Cross Claws':'交叉爪击'):'🔒 ???'}</b><span>${p>=60?(en?'New duo action unlocked':'已解锁新合击动作'):(en?'Unlock at Trust 60':'默契60解锁')}</span></div>
+          <div class="${p>=90?'unlocked':''}"><b>90 · ${p>=90?(en?'Soulbound Finale':'终极连斩'):'🔒 ???'}</b><span>${p>=90?(en?'New duo action unlocked':'已解锁新合击动作'):(en?'Unlock at Trust 90':'默契90解锁')}</span></div>
         </div>
         ${p>=60?'<p class="duo-secret-story">🌟 '+(en?'SECRET DUO STORY':'搭档秘密故事')+'<span>'
           +CatRelations.secretStory(a,b)+'</span></p>':''}
@@ -451,7 +451,7 @@ const UI = {
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button>
-        <button class="btn ghost" id="duo-preview">${en?'Preview illustrated duo attack':'预览原画合击动画'}</button></div>
+        ${ok&&p>=20?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked duo move':'观看已解锁合击')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
     for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
@@ -467,12 +467,12 @@ const UI = {
       window.arcadeMetric?.('bond_duo_selected',{elementPair:CatRelations.title(a,b).elementPair});
       this.openBondPanel();
     };
-    document.getElementById('duo-preview').onclick=()=>{
-      const pair=ok?CatRelations.title(a,b).elementPair:'dark+light';
+    const previewButton=document.getElementById('duo-preview');
+    if(previewButton)previewButton.onclick=()=>{
+      if(!ok||p<20)return;
       const url=new URL('duo-preview.html',window.location.href);
-      url.searchParams.set('pair',pair);
-      if(a?.species)url.searchParams.set('a',a.species);
-      if(b?.species)url.searchParams.set('b',b.species);
+      url.searchParams.set('a',a.uid);
+      url.searchParams.set('b',b.uid);
       url.searchParams.set('lang',en?'en':'zh');
       window.open(url.href,'_blank','noopener');
     };
