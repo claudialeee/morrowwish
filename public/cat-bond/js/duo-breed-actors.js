@@ -65,6 +65,9 @@ function drawActor(g,sp,x,y,height,rotation,flip,opacity=1){
    // Paint the *actual* independent transparent watercolor artwork. Never
    // call CatArt here: a procedural fallback can pass silhouette-only checks.
    if(!jiafeiReady)return false;
+   // Slightly smaller than the sheet actors, with feet anchored at the
+   // same baseline; never enlarge this cat to fill a narrow portrait.
+   height*=.92;
    const side=height*jiafei.naturalWidth/jiafei.naturalHeight;
    g.save();g.globalAlpha*=opacity;
    g.translate(x,y);g.rotate(rotation);
