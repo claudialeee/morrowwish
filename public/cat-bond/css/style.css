@@ -4023,3 +4023,28 @@ html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions #battle-skill-info-t
   max-height:calc(100dvh - 98px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
  }
 }
+
+/* One exploration menu in the top utility row; legacy secondary toolbar hidden. */
+#stage #map-actions,body.cb-exploring #stage #map-actions{display:none!important}
+body:has(#intro.hide) #cb-home{display:none!important}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu{
+  position:relative!important;inset:auto!important;transform:none!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:65px!important;height:34px!important;min-height:34px!important;
+  max-height:34px!important;margin:0 2px 0 0!important;padding:0 8px!important;
+  border:1px solid #d8c8dd!important;border-radius:9px!important;
+  background:#f5edf7!important;color:#64526e!important;
+  box-shadow:0 2px 5px #34293b20!important;
+  font:850 12px/1 system-ui,sans-serif!important;
+  white-space:nowrap!important;touch-action:manipulation!important;pointer-events:auto!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu[hidden],
+html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-actions > #map-menu{display:none!important}
+@media(max-width:380px){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu{
+  width:34px!important;min-width:34px!important;max-width:34px!important;padding:0!important;font-size:0!important
+ }
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu::before{
+  content:"☰";font:900 18px/1 system-ui,sans-serif!important
+ }
+}
