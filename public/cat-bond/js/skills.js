@@ -336,7 +336,22 @@
       tags: [], appliesTag: null, vfx: t.vfx,
       desc: kit[t.nameKey] + '：' + t.descZh,
     };
-    if (arch === 'shield') { sk.shieldType = tw.variant || 'barrier'; sk.tags = ['shield', kit.tag]; }
+    if (arch === 'shield') {
+      sk.shieldType=tw.variant||'barrier';
+      sk.tags=['shield',kit.tag];
+      // Different-element barriers share a mechanic, not identical outcomes.
+      const wards={
+        fire:{reduction:.40,duration:3.6,retaliateBurn:true},
+        grass:{reduction:.30,duration:5.2,regenPct:.015},
+        dark:{reduction:.55,duration:3.3}
+      };
+      const w=wards[el]||{reduction:.45,duration:4.8};
+      sk.wardReduction=w.reduction;sk.wardDuration=w.duration;
+      if(w.retaliateBurn)sk.wardRetaliateBurn=true;
+      if(w.regenPct)sk.wardRegenPct=w.regenPct;
+      sk.desc=sk.name+'：'+Math.round(w.reduction*100)+'%减伤，持续'+w.duration+'秒'+
+        (w.retaliateBurn?'；近身受击灼烧攻击者':w.regenPct?'；护盾期间缓慢恢复生命':'')+'。';
+    }
     else if (arch === 'heal') { sk.tags = ['heal']; }
     else { sk.tags = [kit.tag]; sk.appliesTag = kit.tag; }
     // carry the element micro-tweaks forward so battle.js can read them if it wants
