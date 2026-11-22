@@ -66,16 +66,20 @@ assert.equal(actors.species({species:'not-a-real-breed'}),null,
 const painted=[];
 const ctx={globalAlpha:1,save:noop,restore:noop,translate:noop,rotate:noop,
  scale:noop,beginPath:noop,ellipse:noop,fill:noop,
- drawImage:(img)=>painted.push(img.src)};
+ drawImage:(img,...args)=>painted.push({src:img.src,args})};
 for(const pair of [['jiafei','tangyuan'],['tangyuan','jiafei']]){
  painted.length=0;
  assert.equal(actors.draw(ctx,512,288,pair.map((id,i)=>({uid:'q'+i,species:id})),
-   'elec+fire',.44,2),true,'Duo paints both selected species');
+   'elec+fire',.44,1),true,'Duo paints both selected species');
  assert.equal(painted.length,2,'Each side draws exactly one real raster subject');
- assert.equal(painted.filter(src=>src?.includes('jiafei-watercolor-v1.avif')).length,1,
+ const jf=painted.filter(x=>x.src?.includes('jiafei-watercolor-v1.avif'));
+ const orig=painted.filter(x=>x.src?.includes('32-actors'));
+ assert.equal(jf.length,1,
    'Jiafei must use its dedicated real watercolor Image on either side');
- assert.equal(painted.filter(src=>src?.includes('32-actors')).length,1,
+ assert.equal(orig.length,1,
    'Original 32-cell atlas must paint the other selected cat');
+ assert.ok(Math.abs(jf[0].args[3]/orig[0].args[7]-.92)<.0001,
+   'Jiafei duo art must be 8% smaller than its partner at the same pose height');
 }
 const jiafeiAsset='public/cat-bond/assets/jiafei-watercolor-v1.avif';
 const raster=fs.readFileSync(jiafeiAsset);
@@ -83,6 +87,8 @@ assert.ok(raster.length>4000&&raster.toString('ascii',4,12)==='ftypavif',
   'Jiafei must have a genuine AVIF resource, not an SVG/text placeholder');
 assert.doesNotMatch(source('js/duo-breed-actors.js'),/CatArt\.drawCat/,
   'Premium duo must never silently fall back to a procedural Jiafei');
+assert.match(source('js/real-kittens.js'),/const visualScale=\.92;/,
+  'Yard, normal battle and portraits must shrink the same Jiafei raster by 8%');
 assert.equal(director.keys.length,21);
 assert.equal(painter.wholeSceneCount,21);
 assert.equal(painter.paintedFrameCount,63);
@@ -112,7 +118,7 @@ assert.equal((page.match(/<article class="breed-card"/g)||[]).length,roster.leng
 assert.match(page,/id="pick-cat-a"/);
 assert.match(page,/id="pick-cat-b"/);
 for(const html of [page,game,unlocked]){
- assert.match(html,/duo-breed-actors\.js\?v=32-watercolor-cats-scenery-v3/);
+ assert.match(html,/duo-breed-actors\.js\?v=32-watercolor-cats-scenery-v4/);
  // Require a real cache-busted premium renderer, without pinning the release to a stale asset version.
  assert.match(html,/duo-premium\.js\?v=[\w-]+-20261122/);
  assert.doesNotMatch(html,/duo-breed-art\.js/,'Unsafe mask shader must stay disabled');
