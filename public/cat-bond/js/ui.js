@@ -1406,7 +1406,7 @@ const UI = {
    const en=window.MorrowwishI18n?.get?.()!=='zh';
    const sp=GameData.speciesById(cat.species);
    const awakened=cat.stage>=2;
-   const color=awakened?(window.Growth?.AWAKEN[cat.awakened]?.color||'#a5b7f1'):'#d7a579';
+   const color=awakened?(window.Growth?.AWAKEN[cat.awaken]?.color||'#a5b7f1'):'#d7a579';
    const safe=str=>String(str??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
    const oldLabel=beforeStage===0?(en?'Kitten':'幼猫'):(en?'Adult':'成年');
    const newLabel=awakened?(en?'Awakened Adult':'灵·觉醒'):(en?'Adult':'成年');
