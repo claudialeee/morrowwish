@@ -1,0 +1,24 @@
+name: Cat Bond export owner-only animation review
+on:
+  push:
+    branches:
+      - review/catbond-yard-controls-placement-20261121
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-showcase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build complete private animation HTML (no deployment)
+        run: |
+          python3 scripts/build-cat-bond-owner-gallery.py
+          test -s /tmp/cat-bond-premium-21-duos-review.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-21-premium-moves-offline-preview
+          path: /tmp/cat-bond-premium-21-duos-review.html
+          retention-days: 7
+          if-no-files-found: error
