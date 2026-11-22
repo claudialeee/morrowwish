@@ -154,11 +154,15 @@ class VFX {
   beam(x1, y1, x2, y2, color) {
     this.fx.push({ type: 'beam', x1, y1, x2, y2, life: 0.28, max: 0.28, color: color || '#ffd36b', seed: (x1 * 13 + y2 * 7) % 100 });
   }
-  // sweeping curved slash blade in front of the caster (melee signature VFX).
-  // Draws a crescent along `radius` spanning ±arc around `aim`, that wipes from
-  // one edge to the other over its short life.
-  slash(x, y, aim, color, radius, arc) {
-    this.fx.push({ type: 'slash', x, y, aim, color: color || '#fff', radius: radius || 92, arc: arc || 1.0, life: 0.26, max: 0.26 });
+  // A compact three-claw brush stroke, not a giant circular sword arc. radius
+  // is VISUAL reach and is capped below the melee hit geometry. Same primitive
+  // serves enemy swipes; heavy player strikes get a longer, weighted follow-through.
+  slash(x, y, aim, color, radius, arc, options = {}) {
+    const reach = Math.max(24, Math.min(64, Number(radius) || 52));
+    const life = options.heavy ? 0.255 : 0.205;
+    this.fx.push({ type: 'slash', x, y, aim, color: color || '#f8ddbe',
+      radius: reach, arc: Math.max(.35, Math.min(.95, Number(arc) || .7)),
+      heavy: !!options.heavy, life, max: life });
   }
 
   update(dt) {
@@ -255,21 +259,57 @@ class VFX {
           ctx.lineTo(5*k,-1*k);ctx.stroke();ctx.restore();
         }
       } else if (e.type === 'slash') {
-        // a crescent blade that wipes across the frontal arc as it fades
-        const sweep = 1 - k;                                   // 0→1 over life
-        const a0 = e.aim - e.arc, a1 = e.aim + e.arc;
-        const lead = a0 + (a1 - a0) * sweep;                   // leading edge angle
-        ctx.translate(e.x, e.y);
-        // soft wide crescent body
-        ctx.globalAlpha = k * 0.5; ctx.strokeStyle = e.color;
-        ctx.lineWidth = 10 * k + 2; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.arc(0, 0, e.radius, a0, a1); ctx.stroke();
-        // bright thin leading slash
-        ctx.globalAlpha = k; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(0, 0, e.radius, Math.max(a0, lead - 0.5), lead); ctx.stroke();
-        // white hot tip
-        ctx.fillStyle = '#fff'; ctx.globalAlpha = k;
-        ctx.beginPath(); ctx.arc(Math.cos(lead) * e.radius, Math.sin(lead) * e.radius, 3.5 * k + 1, 0, Math.PI * 2); ctx.fill();
+        // Three hand-painted tapered claw marks: quick reveal, narrow follow-
+        // through and empty space between the marks. Never a full crescent,
+        // circular aura, giant flash or opaque stamp over the attacking cat.
+        const age = 1 - k, lead = Math.min(1, age * (e.heavy ? 3.65 : 4.8));
+        const tail = Math.max(0, lead - (e.heavy ? .70 : .59));
+        const visibility = Math.min(1, age * 15) * Math.min(1, k * 3.7);
+        const R = e.radius, bend = e.arc / .7;
+        ctx.translate(e.x, e.y); ctx.rotate(e.aim);
+        const pos = (t, row) => ({
+          x: R * (.20 + .75 * t),
+          y: R * (.20 - .48 * t * bend) + (row - 1) * R * .137 +
+            Math.sin(t * Math.PI) * R * .047
+        });
+        // Each brush is a filled ribbon tapered at both ends. Three passes
+        // give a restrained ink edge, element pigment and warm thin highlight.
+        const ribbon = (row, width, fill, alpha) => {
+          const upper = [], lower = [];
+          for (let j = 0; j <= 12; j++) {
+            const t = tail + (lead - tail) * j / 12;
+            const q = pos(t, row), q2 = pos(Math.min(1, t + .006), row);
+            const dx = q2.x - q.x, dy = q2.y - q.y, norm = Math.hypot(dx, dy) || 1;
+            const edge = Math.pow(Math.max(0, Math.sin(Math.PI * (t * .91 + .045))), .66);
+            const cut = Math.min(1, (t - tail) * 9 + .17,
+              (lead - t) * 11 + .10);
+            const w = width * edge * cut;
+            const nx = -dy / norm, ny = dx / norm;
+            upper.push([q.x + nx * w, q.y + ny * w]);
+            lower.push([q.x - nx * w, q.y - ny * w]);
+          }
+          ctx.globalAlpha = visibility * alpha;
+          ctx.fillStyle = fill; ctx.beginPath();
+          upper.forEach(([x, y], j) => j ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+          for (let j = lower.length - 1; j >= 0; j--) ctx.lineTo(lower[j][0], lower[j][1]);
+          ctx.closePath(); ctx.fill();
+        };
+        for (let row = 0; row < 3; row++) {
+          const weight = (e.heavy ? 1.24 : 1) * (row === 1 ? 1.08 : .86);
+          ribbon(row, 4.5 * weight, '#44354b', .38);
+          ribbon(row, 3.35 * weight, e.color, .94);
+          ribbon(row, 1.05 * weight, '#fff6df', .93);
+        }
+        // One short glint follows the leading claw (no detached glitter cloud).
+        if (lead > .2 && lead < .98) {
+          const tip = pos(lead, 1), glint = (e.heavy ? 3.5 : 2.5) * visibility;
+          ctx.globalAlpha = visibility * .76;
+          ctx.strokeStyle = '#fff9e8'; ctx.lineWidth = 1.15;
+          ctx.beginPath(); ctx.moveTo(tip.x - glint, tip.y);
+          ctx.lineTo(tip.x + glint, tip.y);
+          ctx.moveTo(tip.x, tip.y - glint * .8);
+          ctx.lineTo(tip.x, tip.y + glint * .8); ctx.stroke();
+        }
       }
       ctx.restore();
     }
