@@ -1026,6 +1026,7 @@ class CaptureBattle {
     // doesn't snap when the desired direction jumps. Evasion (smash/threat) re-aims
     // much faster (K≈22, near-instant) so dodging stays crisp; cruising uses K≈8.
     const dir=this.smoothSteer(f,mx,my,evasive?22:8);
+    if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._reflectFacing=f._moveFacing; }
     if(dir && !(f.dashT>0&&f.pounce) && !(f._leapT>0) && f.rootT<=0 && !(f._beamRoot>0) && !(f._castRoot>0)){
       const spd=(f.dashT>0?f.speed*3:f.speed)*this.moveMul(f);
       f.x=clamp(f.x+dir.x*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
@@ -1267,6 +1268,7 @@ class CaptureBattle {
     // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
+    if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._reflectFacing=f._moveFacing; }
     if (dir && f.dashT <= 0 && f.rootT <= 0 &&
         !(f._beamRoot>0) && !(f._castRoot>0)) {
       const spd = f.speed * 0.9 * this.moveMul(f);   // same soft-CC slow as the active cat
@@ -1344,6 +1346,8 @@ class CaptureBattle {
     f._mvx = mx; f._mvy = my;                            // remember input so dodge can flee the right way
     if (mx || my) {
       const l = Math.hypot(mx, my);
+      f._moveFacing = Math.atan2(my, mx);
+      if (f.reflectT > 0) f._reflectFacing = f._moveFacing;
       const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * this.moveMul(f);   // 冰冻/束缚/感电 减速
       f.x += (mx / l) * spd * dt;
       f.y += (my / l) * spd * dt;
@@ -1622,7 +1626,9 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
-      f.reflectT = 2.2; f.rootT = 2.2;
+      f.reflectT = 2.2;
+      // Face the direction of travel; if stationary, keep the last heading.
+      f._reflectFacing ??= f._moveFacing ?? (f.face < 0 ? Math.PI : 0);
       this.vfx.ring(f.x,f.y,{r0:18,vr:70,life:.5,color:'#b8e0ff',width:5});
       this.vfx.text(f.x,f.y-34,'反弹壁','#b8e0ff',14);
     } else {
@@ -2176,6 +2182,7 @@ class CaptureBattle {
   moveMul(f){
     let m = f.slowed ? 0.55 : 1;
     if (f._castSlow > 0) m *= 0.5;          // sluggish recovery after a heavy cast
+    if ((f.reflectT || 0) > 0) m *= 0.5; // directional reflect wall: half movement speed
     return m;
   }
   canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
@@ -3701,9 +3708,13 @@ class CaptureBattle {
       }
     }
     // 束缚 bind ROOTS the enemy (no movement) but it can still aim + fire below.
-    const spd=e.rooted?0:e.speed*(1+e.aggro*.4+e.phase*.16)*(e.slowed?.5:1)*(e._castSlow>0?.5:1);   // 感电减速 + 后遗症
+    const spd=e.rooted?0:e.speed*(1+e.aggro*.4+e.phase*.16)*this.moveMul(e); // all slows, including reflect wall
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
+    if (spd>0.001 && Math.hypot(ax,ay)>0.07) {
+      e._moveFacing=Math.atan2(ay,ax);
+      if(e.reflectT>0)e._reflectFacing=e._moveFacing;
+    }
     if(Math.abs(ax)>.07)e.face=ax<0?-1:1;
     e.motion=(ax||ay)?Math.min(1,Math.hypot(ax,ay)):.05;
     e.stride=(e.stride||0)+dt*(6+spd*.052)*e.motion;
@@ -4308,7 +4319,13 @@ class CaptureBattle {
     }
     // 2) REFLECT (反弹壁): flip a flying projectile back at its owner (capped so
     //    it can't ping-pong forever). Instant melee/aoe/chain are NOT reflected.
-    if ((target.reflectT || 0) > 0 && proj && (proj._reflects || 0) < 1) {
+    // Only the FORWARD hemisphere catches shots. A shot from the flank/rear
+    // passes through and hurts normally. Heading tracks actual movement.
+    const wallFacing = target._reflectFacing ?? target._moveFacing ?? (target.face < 0 ? Math.PI : 0);
+    const fromX = proj ? proj.x - target.x : 0;
+    const fromY = proj ? proj.y - target.y : 0;
+    const frontShot = proj && fromX * Math.cos(wallFacing) + fromY * Math.sin(wallFacing) >= -0.001;
+    if ((target.reflectT || 0) > 0 && frontShot && (proj._reflects || 0) < 1) {
       proj._reflects = (proj._reflects || 0) + 1;
       proj.owner = side === 'me' ? 'wild' : 'me';
       proj.vx = -proj.vx; proj.vy = -proj.vy; proj.life = Math.max(proj.life, 1.2);
