@@ -7,6 +7,46 @@ const P=window.Battle?.CaptureBattle?.prototype;
 if(!P)return;
 const en=()=>window.MorrowwishI18n?.get?.()!=='zh';
 const cap=(n,a,b)=>Math.max(a,Math.min(b,n));
+// A dedicated, short in-arena finishing strike. It survives the painting's
+// retreat and follows the CURRENT battle target; never a pasted image panel.
+function drawDuoRelease(g,W,H,release){
+ const u=cap(release.age/release.max,0,1),fade=Math.pow(1-u,1.35);
+ if(fade<=.002)return;
+ const x=cap(release.x,W*.15,W*.85);
+ const y=cap(release.y,H*.20,H*.82);
+ const size=Math.min(340,Math.max(115,Math.min(W*.65,H*.78)));
+ const [first,second]=(release.elements||'fire+light').split('+');
+ const colors={dark:'#c4a5e6',elec:'#fbdf95',fire:'#ffb78e',
+   grass:'#b5e2ad',light:'#fff1b1',water:'#9adbe9'};
+ const c1=colors[first]||release.first||'#dcc6f4',c2=colors[second]||release.second||'#b8e9da';
+ g.save();
+ g.globalAlpha*=fade*.84;
+ g.globalCompositeOperation='screen';
+ // Large effects stay around the actual enemy and do not conceal the HUD.
+ const radius=size*(.12+.32*u);
+ const halo=g.createRadialGradient(x,y,2,x,y,radius);
+ halo.addColorStop(0,c1+'99');
+ halo.addColorStop(.48,c2+'40');
+ halo.addColorStop(1,c2+'00');
+ g.fillStyle=halo;g.beginPath();g.arc(x,y,radius,0,Math.PI*2);g.fill();
+ g.lineCap='round';g.lineJoin='round';
+ for(let n=0;n<(release.tier>=3?3:2);n++){
+  const r=radius*(.7+n*.16),spin=u*2.8+n*2.1;
+  g.globalAlpha=fade*(.76-n*.13);
+  g.strokeStyle=n%2?c2:c1;
+  g.lineWidth=Math.max(2,(release.tier>=3?5:4)*(1-u*.7));
+  g.beginPath();g.arc(x,y,r,spin,spin+Math.PI*(.92+n*.12));g.stroke();
+ }
+ if(window.CatBondDuoFinale?.draw){
+  g.save();
+  g.globalAlpha=fade*.78;
+  g.translate(x-size*.5,y-size*.39);
+  window.CatBondDuoFinale.draw(g,size,size*.78,.22+.45*u,release.elements,release.tier);
+  g.restore();
+ }
+ g.restore();
+}
+window.CatBondDuoReleaseVFX={draw:drawDuoRelease,duration:1.1};
 P.bondFighters=function(){
  if(!this.duo)return null;
  const a=this.team.find(f=>f.alive&&f.cat.uid===this.duo.a.uid);
@@ -127,6 +167,38 @@ const originalUpdate=P.update;
 P.update=function(dt){
  const result=originalUpdate.call(this,dt);
  if(!this.done){
+  // The real game resumes as the full-screen painting dissolves. Keep
+  // a separately clocked elemental payoff alive AFTER the cut-in clears.
+  const c=this.duoCinematic;
+  if(c&&!c._afterglowStarted&&c.max-c.t>=(c.strikeAt??3)){
+   c._afterglowStarted=true;
+   this._duoRelease={age:0,max:1.1,x:c.x,y:c.y,
+     elements:c.elements,first:c.first,second:c.second,tier:c.tier||this.duo?.tier||1,
+     sounded:false,echoed:false};
+   for(const foe of this.liveEnemies()){
+    this.vfx.ring(foe.x,foe.y,{r0:12,vr:265,life:.62,color:c.first,width:4});
+    this.vfx.slash(foe.x,foe.y,.42,c.second,88,1.06);
+   }
+  }
+  const release=this._duoRelease;
+  if(release){
+   release.age+=Math.max(0,dt);
+   if(!release.sounded&&release.age>=.20){
+    release.sounded=true;
+    if(!window.MorrowwishAudio?.duoSignature?.(release.elements,release.tier,'release'))
+      window.MorrowwishAudio?.effect?.('combat_duo_impact');
+   }
+   if(!release.echoed&&release.age>=.33){
+    release.echoed=true;
+    const foe=this.lockedEnemy()||this.nearestEnemy(release.x,release.y);
+    if(foe){release.x=foe.x;release.y=foe.y;}
+    this.vfx.burst(release.x,release.y,{
+      count:release.tier>=3?18:12,color:release.second,speed:200,life:.58,r:2});
+    this.vfx.ring(release.x,release.y,{
+      r0:20,vr:260,life:.52,color:release.first,width:4});
+   }
+   if(release.age>=release.max)this._duoRelease=null;
+  }
   this.tickBondStory();
   // Crossed-claw paw-impact: gated to the SAME strike beat as the main deferred
   // payload (the END of the frozen splash), never mid-splash. The whole arena is
@@ -158,6 +230,10 @@ P.castDuo=function(){
   this.duoCinematic.tier=this.duo?.tier||1;
   this.duoCinematic.variant=this.duoCinematic.tier>=3?'finale':
    this.duoCinematic.tier>=2?'cross':'pounce';
+  this._duoRelease=null;
+  // Preserve the whole entrance/exit and the in-arena audio tail instead
+  // of restoring full-volume background music before the impact arrives.
+  window.MorrowwishMusic?.duckFor?.(3800);
   // Earn the first-strike memory only by actually casting a charged duo move.
   if(this.duo?.a&&this.duo?.b&&window.CatRelations?.remember){
     const memory=CatRelations.remember(this.duo.a,this.duo.b,'duo-strike');
@@ -173,8 +249,8 @@ P.drawCatCutin=function(ctx,W,H){
   window.CatBondDuoHero.draw(ctx,W,H,this.duoCinematic,uid=>
     this.team.find(f=>f.cat.uid===uid)?.cat||
     this._benchFighters?.get(uid)?.cat||this.reserve.find(c=>c.uid===uid));
-  return;
- }
- return originalCutin.call(this,ctx,W,H);
+ }else originalCutin.call(this,ctx,W,H);
+ if(this._duoRelease&&window.CatBondDuoReleaseVFX)
+  window.CatBondDuoReleaseVFX.draw(ctx,W,H,this._duoRelease);
 };
 })();
