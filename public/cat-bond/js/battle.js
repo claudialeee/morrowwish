@@ -1144,104 +1144,11 @@ class CaptureBattle {
     }
   }
 
-  // Custom gambits are strictly top-down; default and legacy presets use the
-  // smarter contextual planner. Custom conditions do not silently change.
+  // All auto-controlled cats use the same adaptive, kit-aware planner.
+  // Legacy saved gambit arrays remain in save data but do not affect behavior.
   evalGambits(f,tgt,dist,nearProj,nd) {
-    if(!tgt)return;
-    const threat=this.incomingThreat(f);
-    if(this.isDefaultGambit(f.cat)){
-      this.smartAutoAction(f,tgt,dist,threat);
-      return;
-    }
-    const rules=f.cat.gambits;
-    const tags=tgt.tags||[];
-    const aim=this.autoAim(f,tgt,f.projSpeed);
-    f._aim=aim;
-    // Anti-starvation for custom gambits: a ready ranged Q/E must not be
-    // postponed forever by an earlier 'always basic', 'combo' or buff rule.
-    // Preserve custom rule ordering for the first 1.2s; then let an overdue
-    // ranged attack fire once when the enemy is actually in range.
-    f._autoRangedReadyAt=f._autoRangedReadyAt||{};
-    for(const slot of ['q','e']){
-      const sk=slot==='q'?f.qSkill:f.eSkill, cd=f.cd?.[slot]??Infinity;
-      const ranged=sk&&['projectile','beam','chain'].includes(sk.kind);
-      if(!ranged||cd>0){delete f._autoRangedReadyAt[slot];continue;}
-      if(f._autoRangedReadyAt[slot]==null)f._autoRangedReadyAt[slot]=this.t;
-      const reach=sk.id==='prismBeam'?525:(sk.reach||460);
-      const reflectable=sk.kind==='projectile'||sk.kind==='beam';
-      if(this.t-f._autoRangedReadyAt[slot]>=1.2&&dist<=reach&&
-         !(reflectable&&this.reflectCovers(tgt,f.x,f.y))){
-        if(this.castSlot(f,slot,aim)!==false){
-          delete f._autoRangedReadyAt[slot];
-          this.markAutoAction(f,'技能：'+sk.name);
-          return;
-        }
-      }
-    }
-    const condition=k=>{
-      switch(k){
-        case 'always':return true;
-        case 'enemyHpBelow30':return tgt.hp/tgt.maxhp<.30;
-        case 'enemyHpBelow50':return tgt.hp/tgt.maxhp<.50;
-        case 'selfHpBelow40':return f.hp/f.maxhp<.40;
-        case 'selfHpBelow25':return f.hp/f.maxhp<.25;
-        case 'ultReady':return this.canUltimate();
-        case 'comboPrimed':case 'enemyHasTag':return tags.length>0;
-        case 'enemyClose':return dist<145;
-        case 'enemyFar':return dist>260;
-        case 'incomingProj':return !!threat;
-        case 'bondHigh':return (f.cat.affinity||0)>=60;
-        default:return false;
-      }
-    };
-    const action=act=>{
-      switch(act){
-        case 'ult':return f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)?this.ultimate():false;
-        case 'heal':{
-          const slot=this.supportSlot(f,'heal')||this.supportSlot(f,'shield');
-          return slot?this.castSlot(f,slot,aim):false;
-        }
-        case 'dodge':return this.dodge(f);
-        case 'skillQ':case 'combo':case 'finisher':
-          if(f.cd.q>0||f.qSkill?.kind==='melee'&&dist>64+(tgt.r||18)*.65-2)return false;
-          return this.skillQ(f,aim);
-        case 'skillE':case 'approach':
-          if(f.cd.e>0)return false;
-          if(f.eSkill?.kind==='dash'&&(dist<60||dist>260))return false;
-          return this.skillE(f,aim);
-        case 'retreat':return f.hp/f.maxhp<.4?true:false; // spacing owned by movement AI
-        case 'basic':
-          if(dist>Math.min(175,f.projSpeed*.45+25)||f.cd.basic>0)return false;
-          this.fireBasic(f,aim);return true;
-        default:return false;
-      }
-    };
-    for(const r of rules){
-      if(condition(r.cond)&&action(r.act)!==false)return;
-    }
-    // RANGED-OFFENSE FALLBACK: the default gambits gate the Q/E skills behind
-    // enemyClose(<145)/enemyFar(>260), but a RANGED attacker (projectile/beam/chain)
-    // — e.g. a support/light cat holding 棱光束 while hanging back at 230-320px — never
-    // satisfies enemyClose, so it would just stand there doing nothing. Before giving up,
-    // fire any ready offensive Q/E that's actually in its own firing range.
-    const inFireRange=sk=>{
-      if(!sk)return false;
-      if(sk.kind==='melee')return dist<=64+(tgt.r||18)*.65-2;
-      if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
-      if(sk.kind==='leap')return dist>70&&dist<240;
-      if(sk.kind==='pounce')return dist>60&&dist<300;
-      return dist<(sk.id==='prismBeam'?525:(sk.reach||460));   // actual ranged reach
-    };
-    for(const slot of ['q','e']){
-      const sk=slot==='q'?f.qSkill:f.eSkill;
-      if(!sk||(f.cd?.[slot]||0)>0)continue;
-      if(sk.kind==='heal'||sk.kind==='buff'||sk.ultCost>0)continue;
-      if(this.reflectCovers(tgt,f.x,f.y)&&(sk.kind==='projectile'||sk.kind==='beam'))continue;
-      if(inFireRange(sk)){
-        if((slot==='q'?this.skillQ(f,aim):this.skillE(f,aim))!==false)return;
-      }
-    }
-    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)&&!this.reflectCovers(tgt,f.x,f.y))this.fireBasic(f,aim);
+    if (!tgt || !f?.alive) return;
+    this.smartAutoAction(f,tgt,dist,this.incomingThreat(f));
   }
 
   // Lock by enemy ID, not a stale tap coordinate: a moving pack must not
@@ -3357,7 +3264,7 @@ class CaptureBattle {
           f._dashReach=null;f._dashTravel=0;f.dashT=0;
         }
       }
-      // non-active alive cats fight autonomously via their gambits
+      // non-active alive cats fight through the shared adaptive planner
       if (f !== me) this.updateAllyAI(dt, f);
     }
 
