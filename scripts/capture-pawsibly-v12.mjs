@@ -41,7 +41,7 @@ function fullBoardCamera(){
  if(badge){Object.assign(badge.style,{position:'fixed',top:'13%',left:'50%',width:'min(470px,88vw)',
   zIndex:'2147483643'});}
  const css=document.createElement('style');
- css.textContent=String.raw\`
+ css.textContent=`
  #overlay:not([hidden]){position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
    z-index:2147483647!important;display:grid!important;place-items:center!important;
    padding:13px!important;box-sizing:border-box!important;background:rgba(40,28,49,.76)!important}
@@ -50,7 +50,7 @@ function fullBoardCamera(){
  #overlay:not([hidden]) .modal h2{font-size:30px!important;line-height:1.15!important}
  #overlay:not([hidden]) .cat-medal{font-size:58px!important}
  #overlay:not([hidden]) .modal .buttons{margin-top:12px!important}
- \`;
+ `;
  document.head.append(css);
 }
 try{
