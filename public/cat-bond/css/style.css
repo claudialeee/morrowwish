@@ -2019,3 +2019,55 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #panel .duo-skill-identity{padding:8px;gap:5px}
  #panel #duo-skill-canvas{aspect-ratio:16/10}
 }
+
+
+/* Cat Bond unlocked duo gallery: no dropdowns, no locked-skill spoilers.
+ * Each visible card belongs to a saved pair with actual trust >= 20.
+ * The canvas image is the very same continuous duo painting as in battle. */
+#panel>.card:has(.duo-panel){width:min(790px,calc(100vw - 24px));max-width:min(790px,calc(100vw - 24px))}
+#panel .duo-panel{max-width:none;margin:0 auto;gap:12px}
+#panel .duo-unlocked-section{display:grid;gap:9px}
+#panel .duo-unlocked-section>h3{margin:0;font:850 clamp(15px,2.4vw,19px)/1.25 system-ui;color:#695679}
+#panel .duo-unlocked-section>h3 small{font-weight:750;color:#887b91}
+#panel .duo-unlocked-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:10px}
+#panel .duo-unlocked-card{width:100%;min-width:0;min-height:0;padding:7px;
+ border:1.5px solid #dac9d8;border-radius:15px;
+ background:linear-gradient(150deg,#fffcf7,#f4edfa);
+ color:#4c4956;cursor:pointer;text-align:left;display:grid;gap:7px;
+ box-shadow:0 3px 14px #947a9b16;transition:border-color .18s,box-shadow .18s}
+#panel .duo-unlocked-card.chosen,
+#panel .duo-unlocked-card:hover{border-color:#9c83bd;box-shadow:0 4px 18px #8e76b63c}
+#panel .duo-unlocked-card:focus-visible{outline:3px solid #8a73af;outline-offset:2px}
+#panel .duo-gallery-thumb{display:block;width:100%;height:auto;aspect-ratio:16/9;
+ border-radius:10px;background:linear-gradient(130deg,#ebdcf3,#e2f2ed)}
+#panel .duo-card-body{padding:1px 5px 6px;display:grid;gap:3px}
+#panel .duo-card-body strong{font:800 clamp(13px,2vw,15px)/1.35 system-ui;color:#60516f}
+#panel .duo-card-body b{font:900 clamp(14px,2.2vw,17px)/1.35 system-ui;color:#7a508b}
+#panel .duo-card-body small{font:500 12px/1.5 system-ui;color:#6d6171}
+#panel .duo-card-trust{font:750 12px/1.45 system-ui;color:#4b876c}
+#panel .duo-new-pair-toggle{justify-self:start;font-size:13px;min-height:40px}
+#panel .duo-empty{padding:17px 15px;border:1px dashed #d1c2d7;
+ border-radius:13px;background:#fff9f1;color:#73647a;line-height:1.65}
+#panel .duo-direct-chooser{display:grid;gap:8px;padding:13px 14px;
+ border:1px solid #d7c8d5;border-radius:13px;background:#fffaf2}
+#panel .duo-direct-chooser>p{margin:0}
+#panel .duo-direct-chooser>strong{font:800 12px/1.4 system-ui;color:#655274}
+#panel .duo-cat-chip-list{display:flex;flex-wrap:wrap;gap:6px;max-height:116px;
+ overflow:auto;scrollbar-width:thin}
+#panel .duo-cat-chip{border:1px solid #c3b3cb;border-radius:10px;
+ background:#fffdf9;color:#5d5369;min-height:38px;padding:7px 10px;
+ font:700 12px system-ui;cursor:pointer;touch-action:manipulation}
+#panel .duo-cat-chip.selected{background:#eee4f7;border-color:#9b7cbc;color:#614178}
+#panel .duo-cat-chip:focus-visible{outline:3px solid #8a73af}
+#panel .duo-relation{padding:clamp(10px,2vw,18px)}
+@media(max-width:520px){
+ #panel>.card:has(.duo-panel){width:calc(100vw - 16px);max-width:calc(100vw - 16px)}
+ #panel .duo-unlocked-grid{grid-template-columns:1fr}
+ #panel .duo-gallery-thumb{max-height:196px;object-fit:cover}
+ #panel .duo-panel{gap:9px}
+ #panel .duo-unlocked-card{grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:8px;align-items:center}
+ #panel .duo-unlocked-card .duo-gallery-thumb{aspect-ratio:3/4;height:100%;min-height:120px}
+ #panel .duo-card-body strong{font-size:12px}
+ #panel .duo-card-body b{font-size:14px}
+ #panel .duo-card-body small{font-size:11px}
+}
