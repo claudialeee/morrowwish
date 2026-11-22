@@ -1046,7 +1046,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const featuresIndex=bondIntro.indexOf('class="intro-features"');
  const captionIndex=bondIntro.indexOf('class="intro-gallery-caption"');
  if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
-    !cbMain.includes('ctx.getImageData(0,0,240,240)')||
+    !cbMain.includes('sc.getImageData(0,0,240,240)')||
     !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
     !bondIntro.includes('js/main.js?v=catbond-equal-cat-silhouettes-20261121-2')||
     !cbCss.includes('background:linear-gradient(125deg,#9c547f 0%,#7853a5 50%,#65569e 100%)!important'))
