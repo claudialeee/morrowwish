@@ -745,3 +745,10 @@ html.cg-play #stageHome{display:none!important}
 @media(min-width:701px) and (max-height:500px){
  .single-screen-game .in-game-actions #restart{min-height:39px}
 }
+
+/* Results can be dismissed without restarting; retain board and main toolbar. */
+.single-screen-game .overlay .modal{position:relative;overflow-y:auto;overscroll-behavior:contain}
+.single-screen-game .overlay .result-close{position:absolute;right:8px;top:8px;display:grid;place-items:center;width:42px;height:42px;min-width:42px;min-height:42px;border:1px solid #e7cbda;border-radius:13px;background:#fff0f3;color:#89586d;font:700 27px/1 system-ui;cursor:pointer;z-index:2;touch-action:manipulation}
+.single-screen-game .overlay .result-close:hover,.single-screen-game .overlay .result-close:focus-visible{background:#fbdce7;outline:2px solid #c583a1;outline-offset:1px}
+.single-screen-game .overlay .cat-medal{padding-top:12px}
+@media(max-width:620px){.single-screen-game .overlay .result-close{right:5px;top:5px;width:40px;height:40px;min-width:40px;min-height:40px}}

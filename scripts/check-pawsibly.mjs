@@ -222,4 +222,22 @@ test.move(1,0);
 assert.equal(earlyWin.outro,null,'Earlier rooms should keep their simple results');
 assert.equal(nodes.get('overlay').hidden,false,'Non-final room results remain immediate');
 
+// Closing the score card leaves the completed board visible, with room navigation available.
+assert.ok(reviewStyle.includes('id="closeResult"'),'Result card needs an accessible close button');
+nodes.get('closeResult').onclick();
+assert.equal(nodes.get('overlay').hidden,true,'Closing results should reveal the board');
+nodes.get('menuButton').onclick();
+assert.equal(nodes.get('gameMenu').hidden,false,'Menu should remain usable after closing results');
+nodes.get('menuClose').onclick();
+assert.equal(nodes.get('gameMenu').hidden,true,'Completed board menu should be closable');
+// Higher rooms escalate after the published step target, while room one stays instructional.
+test.choose(5,false);
+const hard=test.getState();
+assert.equal(hard.pressure,false,'Later room must start without time-pressure vision');
+hard.steps=hard.room.goal-1;
+test.move(1,0);
+assert.equal(hard.pressure,true,'Spending the room step budget should raise guard alertness');
+assert.ok(nodes.get('visionTip').textContent.includes('High alert'),'Rising pressure must be explained in HUD');
+assert.ok(source.includes('s.index>=3?1:0')&&source.includes('s.searchTurns=s.index>=5'),
+ 'Later rooms must widen sight and extend guard search memory');
 console.log('Pawsibly Innocent: QA PASS (animated final chase, 8 rooms, real multi-step yarn lure, persistent achievements, named collectibles, compact UI, first-two-room playability).');
