@@ -691,7 +691,8 @@
 
   // Can this gated skill be LEARNED now? (gate met AND not already learned)
   function canLearn(cat, skill) {
-    return isGated(skill) && !hasLearned(cat, skill.id) && gateMet(cat, skill);
+    return isGated(skill) && !hasLearned(cat, skill.id) &&
+      gateMet(cat, skill) && gatedElementEligible(cat, skill);
   }
   // Only earned quest milestones are automatic. Level, affection, species and
   // build gates REVEAL trainer choices rather than quietly filling the book.
