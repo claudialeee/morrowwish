@@ -85,6 +85,9 @@ try{
    // Check the responsive guidance continues during actual controlled practice.
    const card=document.getElementById('battle-coach-card');
    return {guard,courage,feint,focus,ambush,cast,cutin,tier:first.duoCinematic?.tier,
+      breedMatched:first.duoCinematic?.originalArt===false,
+      selectedBreeds:first.duoCinematic?.catUids?.map(uid=>
+        first.team.find(f=>f.cat.uid===uid)?.cat?.species),
       variant:first.duoCinematic?.variant,cardPresent:!!card,hero:typeof window.CatBondDuoHero.draw};
   });
   assert.ok(result.guard>=1,'gentle partner must actually defend vulnerable shy cat');
@@ -92,6 +95,10 @@ try{
   assert.ok(result.feint>=1&&result.focus,'clever or mischievous cat must redirect enemy AI');
   assert.ok(result.ambush>=1,'partner must actually follow up with ambush damage');
   assert.equal(result.cast,true,'duo should be castable at full meter');
+  assert.equal(result.breedMatched,true,
+    'Real battle duo must use selected watercolor breeds, not fixed painting cats');
+  assert.deepEqual(result.selectedBreeds,['tangyuan','xiaohui'],
+    'Real duo must retain the actual player cats in UID order');
   assert.ok(result.cutin>=1,'game must draw new moving kitten art');
   assert.equal(result.tier,3,'90+ trust yields tier-3 art');
   assert.equal(result.variant,'finale','high trust must unlock finishing claw variant');
