@@ -670,7 +670,7 @@ class CaptureBattle {
       // Partial poise losses persist. Only reaching ZERO unlocks recovery:
       // after the stagger window, refill the gauge during a separate recovery phase.
       poise: Math.round(maxhp * 0.6), poiseMax: Math.round(maxhp * 0.6), staggerT: 0,
-      poiseRecovering: false,
+      poiseRecovering: false, poiseComboHits: 0, poiseLastHitAt: -99,
       tags: [], alive: true,
     };
   }
@@ -2185,6 +2185,7 @@ class CaptureBattle {
     if (!e || !e.alive) return;
     e.poise=0;
     e.poiseRecovering=true;
+    e.poiseComboHits=0;e.poiseLastHitAt=-99;
     e.staggerT=Math.max(e.staggerT||0,seconds);
   }
   // land the leap: AOE slam + stagger under the impact point
@@ -3689,8 +3690,9 @@ class CaptureBattle {
       // Never regenerate partially damaged poise. ONLY a full break unlocks
       // recovery, and the stagger vulnerability must finish before any refill.
       if(e.poiseRecovering && e.staggerT<=0){
-        e.poise=Math.min(e.poiseMax,e.poise+e.poiseMax*dt/3);
-        if(e.poise>=e.poiseMax)e.poiseRecovering=false;
+        // At the end of the 3s stagger, instantly refill and unlock another break.
+        e.poise=e.poiseMax;e.poiseRecovering=false;
+        e.poiseComboHits=0;e.poiseLastHitAt=-99;
       }
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
@@ -4417,29 +4419,33 @@ class CaptureBattle {
     return dmg;
   }
 
-  // One poise budget per ACTUAL, successful skill impact on this enemy.
-  // A basic toy shot and periodic DoT ticks do not drain poise. Continuous
-  // beams may deal 8 HP ticks/sec, but earn only ONE poise hit per target
-  // during the entire channel, so they can't instantly drain a full gauge.
-  applyPoiseOnSkillHit(e, skill) {
-    if (!e?.alive || !skill?.id || skill.isBasic || (e.staggerT||0)>0 ||
-        !(e.poise>0) || !(e.poiseMax>0)) return false;
-    if (skill.isChanneledTick && skill._poiseSource) {
-      const source=skill._poiseSource;
-      source._poiseTargets??=new WeakSet();
-      if(source._poiseTargets.has(e))return false;
-      source._poiseTargets.add(e);
+  // Per-enemy short-window poise combo: a basic hit removes 8%, an
+  // offensive skill 16%, a heavy skill 24%. Every successful successive
+  // hit within 1.6s boosts poise loss 20%, capped at 2x. Partial loss
+  // never regenerates; missed/blocked contacts and DoT earn no combo.
+  applyPoiseOnSkillHit(e,skill){
+    if(!e?.alive||!skill||(!skill.id&&!skill.isBasic)||
+       (e.staggerT||0)>0||!(e.poise>0)||!(e.poiseMax>0))return false;
+    // Channeled HP ticks do NOT multiply combo stacks. A flame SWEEP pass
+    // has its own pass key and may score once against the same enemy.
+    if(skill.isChanneledTick&&skill._poiseSource){
+      const source=skill._poiseSource;source._poiseTargets??=new WeakMap();
+      const pass=skill._poisePass??'channel';
+      if(source._poiseTargets.get(e)===pass)return false;
+      source._poiseTargets.set(e,pass);
     }
-    // The previous break's refill is canceled by the first subsequent hit.
-    // Any remaining partial poise must then stay lost until the NEXT break.
     e.poiseRecovering=false;
-    const dedicated=skill.id==='quakeStomp'||skill.tags?.includes('stagger');
-    if(dedicated){
-      this.triggerStagger(e);
-      return true;
+    if(skill.id==='quakeStomp'||skill.tags?.includes('stagger')){
+      this.triggerStagger(e);return true;
     }
+    const now=Number.isFinite(this.t)?this.t:0;
+    const last=Number.isFinite(e.poiseLastHitAt)?e.poiseLastHitAt:-99;
+    const streak=now>=last&&now-last<=1.6?Math.min(5,e.poiseComboHits||0):0;
     const heavy=!!skill.heavy||['dash','pounce','leap'].includes(skill.kind);
-    e.poise=Math.max(0,e.poise-e.poiseMax*(heavy?.28:.20));
+    const base=skill.isBasic?.08:heavy?.24:.16;
+    const fraction=Math.min(.48,base*(1+.20*streak));
+    e.poise=Math.max(0,e.poise-e.poiseMax*fraction);
+    e.poiseComboHits=Math.min(6,streak+1);e.poiseLastHitAt=now;
     if(e.poise<=0)this.triggerStagger(e);
     return true;
   }
@@ -5813,12 +5819,12 @@ class CaptureBattle {
   hpTag(ctx, x, y, frac, color, label, poise=null) {
     // Enemy health cards show a WIDER, THICKER poise meter than HP.
     // Display-only: restored warm gold poise; red while staggered/broken.
-    const w=86,h=6,poiseW=106,poiseH=11,cardW=poise?poiseW+14:w+14;
+    const w=86,h=6,poiseW=96,poiseH=5,cardW=poise?poiseW+10:w+14;
     ctx.save();
     ctx.fillStyle='rgba(255,250,239,.94)';
     ctx.strokeStyle='rgba(114,124,101,.28)';
     ctx.lineWidth=1;
-    rr(ctx,x-cardW/2,y-23,cardW,poise?61:36,12);ctx.fill();ctx.stroke();
+    rr(ctx,x-cardW/2,y-23,cardW,poise?52:36,12);ctx.fill();ctx.stroke();
     ctx.textAlign='center';ctx.font='700 11px system-ui, sans-serif';
     ctx.fillStyle='#4d5b49';ctx.fillText(label,x,y-9);
     ctx.fillStyle='rgba(112,132,110,.16)';
@@ -5839,7 +5845,7 @@ class CaptureBattle {
         ctx.fillStyle='#e3b84f';
         rr(ctx,x-poiseW/2,yy,poiseW*amount,poiseH,5);ctx.fill();
         ctx.fillStyle='rgba(255,248,202,.75)';
-        rr(ctx,x-poiseW/2+2,yy+1,Math.max(0,poiseW*amount-4),3,2);ctx.fill();
+        rr(ctx,x-poiseW/2+2,yy+1,Math.max(0,poiseW*amount-4),1.5,1);ctx.fill();
       }
       if(broken||shattered){
         ctx.strokeStyle='#df847d';ctx.lineWidth=1.6;

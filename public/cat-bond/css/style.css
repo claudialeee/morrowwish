@@ -4310,16 +4310,16 @@ html[data-mw-fullscreen-game="cat-bond"] body.cb-exploring #stage:not(:has(#batt
 }
 #battle-ui .battle-poise-label{
   flex:none;min-width:22px;font:850 9px/1 system-ui,sans-serif;
-  color:#59558e;white-space:nowrap
+  color:#987024;white-space:nowrap
 }
 #battle-ui .battle-poise-track{
-  display:block;flex:1 1 auto;min-width:20px;height:11px!important;
-  border-radius:999px;border:1px solid #aaa6d7;box-sizing:border-box;
-  background:#deddf1;overflow:hidden
+  display:block;flex:1 1 auto;min-width:20px;height:6px!important;
+  border-radius:999px;border:1px solid #c7a866;box-sizing:border-box;
+  background:#e9dfc7;overflow:hidden
 }
 #battle-ui #battle-enemy-poise-fill{
   display:block;width:100%;height:100%;border-radius:inherit;
-  background:linear-gradient(90deg,#7474c4,#a6a2e7);
+  background:linear-gradient(90deg,#d29c37,#f1d26b);
   transition:width .13s linear
 }
 #battle-ui .battle-poise-track.is-staggered{

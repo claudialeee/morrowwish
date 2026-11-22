@@ -477,7 +477,7 @@ const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('vulnerabilityBonus += 0.30') && !battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'stagger belongs to the additive vulnerability bucket, not a separate multiplier');
 
-// Q/E skills chip gold poise (basics do not). Partial losses never regenerate;
+// Basic and skill hits build per-enemy poise combos; partial loss stays.
 // only breaking to zero unlocks stagger then post-break recovery. Dedicated
 // 泰山压顶 zeroes instantly. The ten-second rust mark is unchanged.
 assert.equal(Skills.TAG_INFO.rust.ttl,10,'armor break persists for ten seconds');
@@ -486,13 +486,21 @@ const poiseBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 poiseBattle.coach=null;
 const poiseEnemy=poiseBattle.enemies[0];
-// a BASIC hit must NOT drain poise (mashing can't crack it)
+// Basic attacks chip poise; a rapid second hit is boosted.
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
 poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
-assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,'basic attacks cannot drain poise');
-assert.equal(poiseEnemy.staggerT,0,'basic attacks cannot trigger stagger');
+assert.ok(Math.abs(poiseEnemy.poise/poiseEnemy.poiseMax-.92)<.00001,
+  'first basic reduces poise by eight percent');
+poiseEnemy.inv=0;poiseEnemy.flash=0;poiseBattle.t+=.35;
+poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
+assert.ok(Math.abs(poiseEnemy.poise/poiseEnemy.poiseMax-(1-.08-.096))<.00001,
+  'rapid second basic chips 20% more poise');
+poiseEnemy.inv=0;poiseEnemy.flash=0;poiseBattle.t+=2;
+poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
+assert.equal(poiseEnemy.poiseComboHits,1,'idle resets per-enemy combo');
 // a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
+poiseEnemy.poiseComboHits=0;poiseEnemy.poiseLastHitAt=-99;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
   poiseEnemy.x,poiseEnemy.y);
@@ -510,8 +518,8 @@ const pellet=starterBattle.projectiles.find(p=>p.skill?.id==='starterQFan');
 assert.ok(pellet,'starter Q sends an identifiable projectile');
 victim.flash=0;victim.inv=0;
 starterBattle.resolveHit(victim,'me',pellet.skill,10,victim.x,victim.y);
-assert.ok(Math.abs(victim.poise/victim.poiseMax-.8)<.00001,
-  'starter Q must reduce an individual target\'s poise by 20%');
+assert.ok(Math.abs(victim.poise/victim.poiseMax-.84)<.00001,
+  'starter Q must remove 16% on first hit');
 assert.equal(starterBattle._lastPoiseHitEnemy,victim.i,
   'real hit selects the damaged enemy for the top poise HUD');
 victim.flash=0;victim.inv=0;
@@ -530,14 +538,14 @@ for(let i=0;i<8;i++){
     {id:'waterJet',kind:'beam',element:'water',isChanneledTick:true,
      _poiseSource:channel},2,victim.x,victim.y);
 }
-assert.ok(Math.abs(victim.poise/victim.poiseMax-.8)<.00001,
-  'channel hits must remove only 20% per cast');
+assert.ok(victim.poise<victim.poiseMax*.84&&victim.poise>victim.poiseMax*.55,
+  'channel may contribute once per cast only');
 victim.flash=0;victim.inv=0;
 starterBattle.resolveHit(victim,'me',
   {id:'waterJet',kind:'beam',element:'water',isChanneledTick:true,
    _poiseSource:{}},2,victim.x,victim.y);
-assert.ok(Math.abs(victim.poise/victim.poiseMax-.6)<.00001,
-  'separate beam casts should each consume their own poise budget');
+assert.ok(victim.poise<victim.poiseMax*.6&&victim.poise>victim.poiseMax*.2,
+  'different beam casts count as new combo hits');
 // Interrupt a prior break-triggered recovery: the remainder must stay lost.
 victim.poise=victim.poiseMax*.75;
 victim.poiseRecovering=true;victim.staggerT=0;victim.flash=0;victim.inv=0;
@@ -596,12 +604,15 @@ assert.equal(poiseEnemy.poiseRecovering,true,'break enables the delayed refill')
 for(let frame=0;frame<4;frame++)poiseBattle.update(.1);
 assert.equal(poiseEnemy.poise,0,'no refill during the stagger window');
 poiseEnemy.staggerT=0;
-for(let frame=0;frame<4;frame++)poiseBattle.update(.1);
-assert.ok(poiseEnemy.poise>0&&poiseEnemy.poise<poiseEnemy.poiseMax,
-  'after full break and stagger, refill gradually');
-for(let frame=0;frame<50;frame++)poiseBattle.update(.1);
-assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,'post-break recovery reaches full');
-assert.equal(poiseEnemy.poiseRecovering,false,'recovery stops when full');
+poiseBattle.update(.1);
+assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,
+  'poise instantly refills once stagger expires');
+assert.equal(poiseEnemy.poiseRecovering,false,'instant refill ends immediately');
+poiseEnemy.inv=0;poiseEnemy.flash=0;
+poiseBattle.resolveHit(poiseEnemy,'me',{isBasic:true,element:'fire'},10,
+  poiseEnemy.x,poiseEnemy.y);
+assert.ok(poiseEnemy.poise<poiseEnemy.poiseMax,
+  'after refill a new basic may begin the next poise break');
 poiseEnemy.poise=0;poiseEnemy.staggerT=3;
 
 const gaugeText=[];
@@ -635,12 +646,12 @@ assert.ok(!gaugeText.includes('韧性'),'normal HP labels should not gain enemy 
 const battleHtml=fs.readFileSync(DIR+'index.html','utf8');
 const battleCss=fs.readFileSync(DIR+'css/style.css','utf8');
 const battleGameSource=fs.readFileSync(DIR+'js/game.js','utf8');
-assert.ok(battleSource.includes('poiseW=106,poiseH=11')&&
+assert.ok(battleSource.includes('poiseW=96,poiseH=5')&&
   battleSource.includes('const w=86,h=6'),
   'enemy floating poise bar must be both wider and thicker than HP');
 assert.ok(battleHtml.includes('id="battle-enemy-poise-fill"')&&
   battleHtml.includes('id="battle-poise-label"')&&
-  battleCss.includes('height:11px!important')&&
+  battleCss.includes('height:6px!important')&&
   battleGameSource.includes("poiseFill.style.width=percentage.toFixed(1)+'%'"),
   'top HUD must expose and live-update a larger separate poise bar');
 assert.ok(battleGameSource.includes("poiseTrack.classList.toggle('is-staggered',!!(enemy?.staggerT>0))"),
