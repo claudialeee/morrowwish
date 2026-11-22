@@ -164,44 +164,51 @@ try{
  assert.ok(mobileLayout.documentWidth<=mobileLayout.viewport+4,
    'Mobile art gallery scrolls horizontally '+JSON.stringify(mobileLayout));
  await mobile.screenshot({path:DIR+'/gallery-mobile.png',fullPage:true,animations:'disabled'});
- // Regression: the old premium animation was pasted into the real phone battle
- // as an opaque 16:9 rectangle. Test its REAL pixels against a dark battlefield,
- // including the 320px narrowest supported screen, not just gallery CSS.
- const mobileEdges=await mobile.evaluate(()=>{
-   const results=[];
-   const painter=window.CatBondPremiumCinematics;
+ // Real viewport coverage: 320px portrait, 390px portrait, 844px
+ // landscape, and 1280px desktop. The painting must fill the entire
+ // arena, keep cat anatomy intact, and dissolve at both ends of playback.
+ const fullStage=await mobile.evaluate(()=>{
+   const results=[],painter=window.CatBondPremiumCinematics;
    const pair=[{uid:'edge-a',species:'tangyuan'},
                {uid:'edge-b',species:'mengmai'}];
-   for(const W of [320,390]){
-     const H=W===320?640:844;
+   const base=[45,61,57];
+   for(const [W,H] of [[320,640],[390,844],[844,390],[1280,720]]){
      const cv=document.createElement('canvas');cv.width=W;cv.height=H;
      const g=cv.getContext('2d',{willReadFrequently:true});
-     const base=[45,61,57];g.fillStyle='rgb('+base.join(',')+')';
-     g.fillRect(0,0,W,H);
-     const success=painter.draw(g,W,H,{
-       elements:'fire+grass',max:2.75,t:2.75*.44,tier:3,
-       catUids:pair.map(cat=>cat.uid),name:'Duo',hideCaptions:true
-     },uid=>pair.find(cat=>cat.uid===uid));
-     const top=(H-W*9/16)/2;
-     const pix=(x,y)=>[...g.getImageData(x,y,1,1).data].slice(0,3);
-     const delta=(rgb)=>rgb.reduce((a,n,i)=>a+Math.abs(n-base[i]),0);
-     const outer=delta(pix(Math.floor(W/2),Math.floor(top)-2));
-     const topInside=delta(pix(Math.floor(W/2),Math.floor(top)+2));
-     const leftInside=delta(pix(2,Math.floor(H/2)));
-     const inner=delta(pix(Math.floor(W/2),Math.floor(H/2)));
-     results.push({W,H,success,outer,topInside,leftInside,inner});
+     function render(progress){
+       g.fillStyle='rgb('+base.join(',')+')';g.fillRect(0,0,W,H);
+       return painter.draw(g,W,H,{
+         elements:'fire+grass',max:3.2,t:3.2*(1-progress),tier:3,
+         catUids:pair.map(cat=>cat.uid),hideCaptions:true
+       },uid=>pair.find(cat=>cat.uid===uid));
+     }
+     const rgb=(x,y)=>[...g.getImageData(Math.floor(x),Math.floor(y),1,1).data].slice(0,3);
+     const diff=c=>c.reduce((sum,v,i)=>sum+Math.abs(v-base[i]),0);
+     render(.008);const entrance=diff(rgb(W*.5,H*.5));
+     const drawn=render(.53);
+     const center=diff(rgb(W*.5,H*.5));
+     const top=diff(rgb(W*.5,H*.12)),bottom=diff(rgb(W*.5,H*.88));
+     const left=diff(rgb(W*.15,H*.5)),right=diff(rgb(W*.85,H*.5));
+     const corner=diff(rgb(1,1));
+     render(.985);const exited=diff(rgb(W*.5,H*.5));
+     results.push({W,H,drawn,entrance,center,top,bottom,left,right,corner,exited});
    }
    return results;
  });
- for(const edge of mobileEdges){
-   assert.equal(edge.success,true,'Duo cutin did not render at '+edge.W+'px');
-   assert.equal(edge.outer,0,'Duo cinematic drew outside its stage at '+edge.W+'px');
-   assert.ok(edge.topInside<55,'Hard top rectangular edge at '+edge.W+'px: '+JSON.stringify(edge));
-   assert.ok(edge.leftInside<55,'Hard side rectangular edge at '+edge.W+'px: '+JSON.stringify(edge));
-   assert.ok(edge.inner>75,'Soft edge mask erased the artwork at '+edge.W+'px: '+JSON.stringify(edge));
+ for(const p of fullStage){
+   assert.equal(p.drawn,true,'Duo art did not render at '+p.W+'x'+p.H);
+   assert.ok(p.center>65,'Center artwork missing '+JSON.stringify(p));
+   assert.ok(p.top>40&&p.bottom>40,
+     'Visible letterboxing instead of continuous painted scenery '+JSON.stringify(p));
+   assert.ok(p.left>40&&p.right>40,
+     'Painting leaves hard sidebars '+JSON.stringify(p));
+   assert.ok(p.corner<55,'Hard rectangular painting edge '+JSON.stringify(p));
+   assert.ok(p.entrance<30,'Painting enters too abruptly '+JSON.stringify(p));
+   assert.ok(p.exited<8,'Painting does not disappear before impact '+JSON.stringify(p));
  }
+ assert.equal(await mobile.evaluate(()=>CatBondPremiumCinematics.fullBleedResponsive),true);
  await mobile.close();
  assert.deepEqual(errors,[],'No uncaught JavaScript runtime errors');
- fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,errors},null,2));
- console.log('CAT BOND ACTUAL BREED CHROMIUM PASS: all 32 watercolor breeds in both team slots, 21x3 scenes, 63 breed-aware illustrations, no fixed-cat masking, mobile and desktop.');
+ fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,fullStage,errors},null,2));
+ console.log('CAT BOND FULL-STAGE CINEMATIC PASS: original 63 frames, all 32 optional breeds, 320/390 portrait, 844 landscape, 1280 desktop, eased in/out and afterglow-safe screen edges.');
 }finally{await browser.close()}
