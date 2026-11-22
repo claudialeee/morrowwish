@@ -104,8 +104,9 @@ window.addEventListener('DOMContentLoaded', () => {
   window.__CAT_BOND_READY__=true;
 
   // dev screenshot harness: ?autodev seeds a lively yard & skips the intro
-  if (location.search.includes('autodev')) {
-    try { localStorage.clear(); } catch (e) {}
+  if (location.search.includes('autodev') && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    // Development fixture must never erase progress from unrelated games.
+    try { localStorage.removeItem('catbond_save_v1'); } catch (e) {}
     setTimeout(() => {
       document.getElementById('intro').classList.add('hide');
       game.start(); if (window.Raising) Raising.init();
@@ -118,7 +119,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // auto-save periodically
   setInterval(() => { if (game._lastTs) State.save(); }, 8000);
+  // A native app or Steam wrapper can suspend the WebView without unloading.
+  // Persist on both pagehide and backgrounding; keep the save key compatible
+  // with existing browser players for eventual cloud-save migration.
   window.addEventListener('beforeunload', () => State.save());
+  window.addEventListener('pagehide', () => State.save());
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden') State.save();
+  });
 });
 
 // Animated starfield + drifting moons behind the intro title.
