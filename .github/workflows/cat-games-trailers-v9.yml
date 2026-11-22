@@ -1,0 +1,109 @@
+name: Rerecord Owner-Feedback Cat Game Trailers V9 - REVIEW ONLY
+# Re-record all old and new shots from current games; verify latest duo-gallery selectors.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cat-games-trailers-v9.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: morrowwish-cat-v9-review
+  cancel-in-progress: false
+jobs:
+  record-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    env:
+      MW_PROMO_ONLY: 'cat-bond,pawsibly-innocent'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install browser and ffmpeg
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+      - name: Fetch music licensed for each game
+        run: |
+          bash scripts/fetch-cat-music.sh
+          MW_PROMO_ONLY=cat-bond node scripts/fetch-promo-audio.mjs
+          MW_PROMO_ONLY=pawsibly-innocent node scripts/fetch-promo-audio.mjs
+          node scripts/test-promo-music.mjs
+      - name: Validate current recording and editing source
+        run: |
+          node --check scripts/capture-trailers-v9.mjs
+          node --check scripts/render-trailers-v9.mjs
+          node --check scripts/check-pawsibly.mjs
+      - name: Record two newly updated games in actual mobile Chromium
+        run: node scripts/capture-trailers-v9.mjs
+      - name: Render targeted V9 owner-review trailers
+        run: node scripts/render-trailers-v9.mjs
+      - name: Reject missing, corrupted, unreadable or unverifiable footage
+        shell: bash
+        run: |
+          set -euo pipefail
+          for slug in cat-bond pawsibly-innocent; do
+            mp4="public/promo/$slug/trailer-v9-20261121.mp4"
+            poster="public/promo/$slug/trailer-v9-20261121.jpg"
+            test -s "$mp4" && test -s "$poster"
+            test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$mp4")" = "1080x1920"
+            test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$mp4")" = "audio"
+            for i in 1 2 3; do test -s "public/promo/$slug/v9-review-$i.jpg"; done
+            echo "$slug $(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$mp4") sec"
+          done
+          test -s public/promo/pawsibly-innocent/narrow-escape-card-proof.png
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=require('./public/promo/v9-review.json');
+          const a=require('./public/promo/readability-audit-v9.json');
+          if(m.version!=='V9'||m.trailers.length!==7||m.socialAutopublish!==false||m.trailers.some(t=>t.published||t.paused))throw Error('Invalid approval-safe manifest');
+          const bond=m.trailers.find(x=>x.slug==='cat-bond');
+          const heist=m.trailers.find(x=>x.slug==='pawsibly-innocent');
+          for(const name of ['raising','cat-upgrade','duo-partners','duo-map-walk','duo-promise','work-after','tease','map-explore','map-management','auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-encounter']){
+            if(!bond.shots.some(s=>s.scene===name&&s.seconds>=1.5))throw Error('Cat Bond missing new real footage: '+name);
+          }
+          for(const name of ['escape-attempt','narrow-pursuit','narrow-achievement','room-kitchen','room-laundry','room-library','room-garden','caught-attempt']){
+            if(!heist.shots.some(s=>s.scene===name))throw Error('Heist missing real result: '+name);
+          }
+          const sc=bond.shots.map(s=>s.scene);
+          if(sc.includes('duo-surprise')||sc.includes('duo-surprise-outcome')||sc.includes('ultimate')||
+              sc.filter(s=>s==='duo').length!==1)
+            throw Error('V9 must show only ONE finisher and the REAL map promise, no old yard event');
+          if(!sc.includes('duo-promise')||!sc.includes('ssr-encounter')||
+              !sc.includes('battle-hud')||!sc.includes('battle-skills'))
+            throw Error('Owner-requested new Cat Bond features missing');
+          if(['room-kitchen','room-laundry','room-library','room-garden'].some(s=>
+              !heist.shots.find(x=>x.scene===s&&x.seconds>=2)))
+            throw Error('Distinct Pawsibly Innocent room tour missing');
+          if(!a.scenes.length||a.scenes.some(s=>!s.passed)||!a.scenes.some(s=>s.game==='cat-bond'&&s.scene==='rare-capture'))throw Error('Readability QA failed');
+          const v9=m.trailers.filter(x=>!x.retainedFrom);
+          if(v9.length!==2)throw Error('Unexpected non-target video regeneration');
+          for(const x of m.trailers){if(!fs.existsSync('public'+x.video))throw Error('Manifest has absent video '+x.slug)}
+          console.log('V9 independent scene requirements checked; review only, no social release');
+          NODE
+      - name: Save owner-review clips only; DO NOT post to social or reschedule
+        shell: bash
+        run: |
+          set -euo pipefail
+          for slug in cat-bond pawsibly-innocent; do
+            git add "public/promo/$slug/trailer-v9-20261121.mp4" "public/promo/$slug/trailer-v9-20261121.jpg"
+            git add "public/promo/$slug/v9-review-"*.jpg
+          done
+          git add public/promo/v9-review.json public/promo/readability-audit-v9.json
+          git add public/promo/cat-bond/cover-portrait.png public/promo/pawsibly-innocent/narrow-escape-card-proof.png
+          git diff --cached --quiet && exit 0
+          git config user.name 'morrowwish-promo-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'qa(promo): new V9 cat-game gameplay footage, still unapproved'
+          git pull --rebase origin main
+          git push origin HEAD:main
