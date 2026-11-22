@@ -236,16 +236,29 @@ jobs:
           verify_live /pawsibly-innocent/game.js /tmp/morrowwish-live-game.js 'function throwYarn'
           # The public player-facing game URL is Vercel, not Pages. Ensure its
           # Cat Bond HTML and all four changed assets match this exact release.
-          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'js/game.js?v=first-adventure-tour-20261121-2'
-          grep -Fq 'js/main.js?v=original-intro-cats-20261121-2' /tmp/mw-live-catbond.html
-          grep -Fq 'js/ui.js?v=tour-panel-navigation-20261121-2' /tmp/mw-live-catbond.html
-          grep -Fq 'css/style.css?v=guided-tour-restored-hero-20261121-2' /tmp/mw-live-catbond.html
-          verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'firstAdventureTour(){'
-          verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js "completeFirstAdventureStep?.('duo')"
+          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'id="battle-skill-info-toggle"'
+          # Read the current cache-busted asset references from source instead
+          # of assuming previous version names are still in the live HTML.
+          for asset in css/style.css js/main.js js/ui.js js/game.js js/world.js js/adult-art.js; do
+            expected=$(grep -oE "$asset[?]v=[^\" ]+" public/cat-bond/index.html | head -1)
+            if [ -z "$expected" ] || ! grep -Fq "$expected" /tmp/mw-live-catbond.html; then
+              echo "::error::Vercel Cat Bond HTML is missing the source asset $asset"
+              exit 1
+            fi
+          done
+          grep -Fq 'id="battle-skill-info-toggle"' /tmp/mw-live-catbond.html
+          grep -Fq '<span class="mv-name">小鱼干</span>' /tmp/mw-live-catbond.html
+          verify_live /cat-bond/adult-preview.html /tmp/mw-live-adult-preview.html '32 种猫咪'
+          verify_live /cat-bond/js/adult-art.js /tmp/mw-live-catbond-adult-art.js 'CatBondAdultArt'
+          cmp -s public/cat-bond/js/adult-art.js /tmp/mw-live-catbond-adult-art.js || {
+            echo '::error::Adult cat art is missing or stale on the player URL'; exit 1;
+          }
+          verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'battleSkillInfo(slot, fighter=this.battle?.me())'
+          verify_live /cat-bond/js/ui.js /tmp/mw-live-catbond-ui.js 'battlePrepSkillCard(team,en){'
           verify_live /cat-bond/js/main.js /tmp/mw-live-catbond-main.js 'targetHeight=132,maxWidth=140'
           verify_live /cat-bond/js/world.js /tmp/mw-live-catbond-world.js 'const yardMagnify=Math.min(1.32'
           grep -Fq 'js/world.js?v=smaller-courtyard-cats-20261121-2' /tmp/mw-live-catbond.html
-          verify_live /cat-bond/css/style.css /tmp/mw-live-catbond-style.css '#first-quest.is-tour'
+          verify_live /cat-bond/css/style.css /tmp/mw-live-catbond-style.css '#battle-ui #battle-skill-tooltip'
           for asset in game.js ui.js main.js; do
             cmp -s "public/cat-bond/js/$asset" "/tmp/mw-live-catbond-$asset" || {
               echo "::error::Vercel Cat Bond $asset is not the deployed source"; exit 1;

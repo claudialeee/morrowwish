@@ -35,6 +35,7 @@ class Game {
         this.syncBattleControlHelp();this.syncBattleModeUI();
         if(this.battleHelpOpen)this.renderBattleHelp();
         this.syncTouchBattleUI();
+        this.updateSkillLabels();
       }
     });
   }
@@ -894,6 +895,10 @@ class Game {
     document.getElementById('wild-name').textContent =
       `野生 ${GameData.speciesName(wildSpecies)} · Lv.${this.battle.wildLevel} · ${wildSpecies.rarity}`;
     this.buildTeamSlots();
+    this._battleHoveredSkill=null;
+    this.hideBattleSkillTooltip();
+    this.toggleBattleSkillGuide(false);
+    this._lastActiveIdx=-1;
     this.updateSkillLabels();
     this.updateBattleUI();
     // Display current battle state, including keyboard P toggles.
@@ -909,29 +914,122 @@ class Game {
     }
   }
 
-  updateSkillLabels() {
+  // The *actual equipped* skill for the currently controlled cat. Used by
+  // button captions, keyboard/hover hints, and the phone skill reference.
+  battleSkillInfo(slot, fighter=this.battle?.me()){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const translate=text=>en?(window.CatBondI18n?.translate?.(text)||text):text;
+    const tap=this.isTouch;
+    const defs={
+      basic: {skill:fighter?.basicSkill,icon:'🐟',
+        fallback:en?'Fish & Yarn':'小鱼干',
+        desc:en?'Alternately toss dried fish and yarn balls to damage wild cats. Basic attacks also build ultimate energy.':
+          '交替投掷小鱼干和毛线团攻击野猫，积攒必杀能量。可衔接其他技能触发连击。',
+        key:tap?(en?'Tap':'点击'):(en?'Click / J':'左键 / J'),
+        extra:en?'Basic attack · short cooldown':'普通攻击 · 短冷却'},
+      q: {skill:fighter?.qSkill,icon:'🧶',fallback:en?'Skill 1':'技能一',
+        desc:en?'Equip a skill in Cats → Skills to use this slot.':'前往猫咪 → 技能搭配装备技能。',
+        key:'Q',extra:en?'Skill 1':'技能一'},
+      e: {skill:fighter?.eSkill,icon:'💨',fallback:en?'Skill 2':'技能二',
+        desc:en?'Equip a skill in Cats → Skills to use this slot.':'前往猫咪 → 技能搭配装备技能。',
+        key:'E',extra:en?'Skill 2':'技能二'},
+      ult: {skill:fighter?.ultSkill,icon:'🌪️',fallback:en?'Ultimate':'必杀技',
+        desc:en?'Build ultimate energy by attacking, then unleash a powerful move.':
+          '通过攻击积攒必杀能量，满能量后释放强力技能。',
+        key:'R',extra:en?'Ultimate · full meter':'必杀技 · 能量满后释放'},
+      dodge:{icon:'🌀',fallback:en?'Dodge':'闪避',
+        desc:en?'Quickly evade an attack and briefly become invulnerable.':
+          '快速闪避攻击，短时间无敌。',
+        key:tap?(en?'Tap':'点按'):(en?'Space':'空格'),extra:en?'Cooldown ~1.2s':'冷却约 1.2 秒'},
+      lock:{icon:'◎',fallback:en?'Target lock':'锁定目标',
+        desc:en?'Switch the focused wild cat so attacks aim more reliably.':
+          '切换锁定的野猫，让攻击更容易瞄准目标。',
+        key:tap?(en?'Tap':'点按'):'Tab',extra:en?'Target control':'目标控制'}
+    };
+    const data=defs[slot]||defs.basic;
+    const sk=data.skill;
+    const name=sk?translate(sk.name):data.fallback;
+    const desc=sk?translate(sk.desc||''):data.desc;
+    const extra=sk?(sk.ultCost>0?(en?'Ultimate · charge to 100%':'必杀技 · 蓄满能量'):
+      (en?'Base cooldown ':'基础冷却 ')+(Number(sk.cd)||0).toFixed(1)+'s · '+
+      (en?'affected by bond':'受亲密度影响')):data.extra;
+    return {name,desc,extra,key:data.key,icon:sk?this.skillIcon(sk):data.icon,skill:sk,slot};
+  }
+
+  updateSkillLabels(){
     const b=this.battle;if(!b)return;
-    const active=b.me(),en=window.MorrowwishI18n?.get?.()!=='zh';
-    for(const [id,skill,fallback,key] of [
-      ['mv-basic',null,en?'Toss':'丢猫玩具',this.isTouch?(en?'Tap':'点击'):'J'],
-      ['mv-q',active.qSkill,en?'Skill Q':'技能一','Q'],
-      ['mv-e',active.eSkill,en?'Skill E':'技能二','E'],
-      ['ult-btn',active.ultSkill,en?'Cat Storm':'喵之怒涛','R']
-    ]){
+    const ids=[['mv-basic','basic'],['mv-q','q'],['mv-e','e'],
+      ['ult-btn','ult'],['mv-dodge','dodge'],['mv-lock','lock']];
+    for(const [id,slot] of ids){
       const btn=document.getElementById(id);if(!btn)continue;
-      if(skill&&btn.querySelector('.mv-icon'))btn.querySelector('.mv-icon').textContent=this.skillIcon(skill);
-      const displayName=skill?(en?(window.CatBondI18n?.translate?.(skill.name)||skill.name):skill.name):fallback;
-      const displayDesc=skill?(en?(window.CatBondI18n?.translate?.(skill.desc||'')||skill.desc||''):(skill.desc||'')):'';
-      if(btn.querySelector('.mv-name'))btn.querySelector('.mv-name').textContent=displayName;
-      if(btn.querySelector('.mv-k'))btn.querySelector('.mv-k').textContent=key;
-      btn.title=skill?(displayName+' · '+displayDesc):fallback;
-      btn.setAttribute('aria-label',displayName+' · '+key);
-      const newMove=!!(skill&&active.cat.unseenSkills?.includes(skill.id));
+      const info=this.battleSkillInfo(slot,b.me());
+      const icon=btn.querySelector('.mv-icon');
+      const name=btn.querySelector('.mv-name');
+      const key=btn.querySelector('.mv-k');
+      if(icon&&icon.textContent!==info.icon)icon.textContent=info.icon;
+      if(name&&name.textContent!==info.name)name.textContent=info.name;
+      if(key&&key.textContent!==info.key)key.textContent=info.key;
+      const explanation=[info.name,info.desc,info.extra,info.key].filter(Boolean).join(' · ');
+      btn.title=explanation;
+      btn.setAttribute('aria-label',explanation);
+      btn.dataset.skillSlot=slot;
+      const newMove=!!(info.skill&&b.me()?.cat?.unseenSkills?.includes(info.skill.id));
       btn.classList.toggle('newly-learned',newMove);
       let tag=btn.querySelector('.move-new-tag');
       if(newMove&&!tag){tag=document.createElement('span');tag.className='move-new-tag';tag.textContent='NEW';btn.appendChild(tag);}
       if(!newMove&&tag)tag.remove();
     }
+    if(this._battleHoveredSkill)this.showBattleSkillTooltip(this._battleHoveredSkill);
+    if(!document.getElementById('battle-skill-guide')?.hidden)this.refreshBattleSkillGuide();
+  }
+
+  // Hover or keyboard focus: one unclipped tooltip above the controls.
+  showBattleSkillTooltip(slot){
+    const info=this.battleSkillInfo(slot);
+    const box=document.getElementById('battle-skill-tooltip');
+    if(!box||this.scene!=='battle'||!this.battle)return;
+    this._battleHoveredSkill=slot;
+    box.replaceChildren();
+    const heading=document.createElement('strong');
+    heading.textContent=info.icon+' '+info.name+' · '+info.key;
+    const desc=document.createElement('p');desc.textContent=info.desc;
+    const detail=document.createElement('small');detail.textContent=info.extra;
+    box.append(heading,desc,detail);
+    box.hidden=false;
+  }
+  hideBattleSkillTooltip(slot){
+    if(slot&&this._battleHoveredSkill!==slot)return;
+    this._battleHoveredSkill=null;
+    const box=document.getElementById('battle-skill-tooltip');
+    if(box)box.hidden=true;
+  }
+  refreshBattleSkillGuide(){
+    const box=document.getElementById('battle-skill-guide');
+    const body=document.getElementById('battle-skill-guide-body');
+    const title=document.getElementById('battle-skill-guide-title');
+    if(!box||!body||box.hidden||!this.battle)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    if(title)title.textContent=(en?'Skills · ':'当前猫咪技能 · ')+
+      (this.battle.me()?.cat?State.catName(this.battle.me().cat):'');
+    body.replaceChildren();
+    for(const slot of ['basic','q','e','ult','dodge','lock']){
+      if(slot==='lock'&&!this.isTouch)continue;
+      const info=this.battleSkillInfo(slot);
+      const row=document.createElement('div');row.className='battle-skill-guide-row';
+      const label=document.createElement('strong');label.textContent=info.icon+' '+info.name+' ('+info.key+')';
+      const desc=document.createElement('p');desc.textContent=info.desc;
+      const detail=document.createElement('small');detail.textContent=info.extra;
+      row.append(label,desc,detail);body.appendChild(row);
+    }
+  }
+  toggleBattleSkillGuide(open){
+    const guide=document.getElementById('battle-skill-guide');
+    const btn=document.getElementById('battle-skill-info-toggle');
+    if(!guide||!btn)return;
+    const visible=typeof open==='boolean'?open:guide.hidden;
+    guide.hidden=!visible;
+    btn.setAttribute('aria-expanded',String(visible));
+    if(visible){this.hideBattleSkillTooltip();this.refreshBattleSkillGuide();}
   }
 
   elemIcon(el) {
@@ -969,7 +1067,7 @@ class Game {
       el.title=en?'Tap to control '+State.catName(f.cat):'点击控制 '+State.catName(f.cat);
       el.setAttribute('aria-label',el.title);
       host.appendChild(el);
-      CatArt.renderCatThumb(el.querySelector('canvas'),GameData.speciesById(f.cat.species));
+      CatArt.renderCatThumb(el.querySelector('canvas'),GameData.speciesById(f.cat.species),f.cat);
       el.addEventListener('click',()=>{b.switchTo(i);this.updateBattleUI();});
     });
     if(!bench)return;
@@ -997,7 +1095,7 @@ class Game {
       btn.innerHTML='<span class="bench-number"></span><canvas width="88" height="78" aria-hidden="true"></canvas><span class="bench-health"></span>';
       btn.querySelector('.bench-number').textContent=String(i+1);
       btn.dataset.benchIndex=String(i);
-      CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species));
+      CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species),cat);
       bench.appendChild(btn);
       btn.addEventListener('click',()=>b.rotateReserve(i));
     });
@@ -1016,7 +1114,9 @@ class Game {
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       const label=en?(this.touchAutoFire?'Auto claw ON · tap to pause':'Claw OFF · tap to attack'):
         (this.touchAutoFire?'猫爪连击中 · 点击暂停':'猫爪已暂停 · 点击开启');
-      attack.title=label;attack.setAttribute('aria-label',label);
+      const info=this.battleSkillInfo('basic');
+      const full=label+' · '+info.name+'：'+info.desc;
+      attack.title=full;attack.setAttribute('aria-label',full);
       const key=attack.querySelector('.mv-k');if(key&&manual)key.textContent=en?(this.touchAutoFire?'ON':'OFF'):(this.touchAutoFire?'攻击中':'已暂停');
     }
     const lock=document.getElementById('mv-lock');
@@ -1051,7 +1151,11 @@ class Game {
     const dodgeTip=this.isTouch
       ?(english?'Tap to dodge attacks (brief invincibility)':'点击闪避攻击（短暂无敌）')
       :(english?'Dodge attacks (Space; brief invincibility)':'闪避攻击（空格键；短暂无敌）');
-    if(dodge){dodge.title=dodgeTip;dodge.setAttribute('aria-label',dodgeTip);}
+    if(dodge){
+      const info=this.battleSkillInfo('dodge');
+      const full=info.name+' · '+dodgeTip+' · '+info.extra;
+      dodge.title=full;dodge.setAttribute('aria-label',full);
+    }
     const basic=document.getElementById('mv-basic')?.querySelector('.mv-k');
     if(basic&&this.isTouch)basic.textContent=english?'Tap':'点按';
     const helpBtn=document.getElementById('battle-help-toggle');

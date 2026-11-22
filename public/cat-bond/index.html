@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta name="catbond-original-art-21x3-release" content="63-painted-poses-v3-20261122">
-  <link rel="preload" as="image" href="assets/duo-storyboard-21x3-v3.webp">
+  <link rel="preload" as="image" href="assets/duo-watercolor-32-actors-v1.webp">
+  <link rel="preload" as="image" href="assets/duo-stage-clean-21x3-v1.webp">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#e4ede0" />
@@ -31,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=guided-tour-restored-hero-20261121-2" />
+  <link rel="stylesheet" href="css/style.css?v=skill-help-no-overlap-20261122" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=all-skill-elemental-sfx-20261121" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -117,9 +118,19 @@
           <div class="ult-track"><span id="ult-bar"></span></div>
         </div>
 
+        <!-- A single readable skill card (hover/focus) and explicit touch help.
+             Kept OUTSIDE the action buttons so it never casts by accident. -->
+        <div id="battle-skill-tooltip" class="battle-skill-tooltip" role="status" hidden></div>
+        <button type="button" id="battle-skill-info-toggle" class="battle-skill-info-toggle"
+          aria-expanded="false" aria-controls="battle-skill-guide">ⓘ 技能说明</button>
+        <section id="battle-skill-guide" class="battle-skill-guide" aria-label="技能说明" hidden>
+          <button type="button" id="battle-skill-guide-close" aria-label="关闭技能说明">×</button>
+          <h3 id="battle-skill-guide-title">当前猫咪的技能</h3>
+          <div id="battle-skill-guide-body"></div>
+        </section>
         <!-- move bar (bottom) -->
         <div class="move-bar">
-          <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐟</span><span class="mv-k">左键/J</span></button>
+          <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🐟</span><span class="mv-name">小鱼干</span><span class="mv-k">左键/J</span></button>
           <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-name">技能一</span><span class="mv-k">Q</span></button>
           <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-name">技能二</span><span class="mv-k">E</span></button>
           <button class="move" id="mv-lock" type="button" data-move="lock" aria-label="锁定野猫"><span class="mv-icon">◎</span><span class="mv-name">锁定</span><span class="mv-k">切换</span></button>
@@ -180,28 +191,29 @@
   <script src="js/data.js?v=32-cat-breeds-20261122"></script>
   <script src="js/running-cats.js?v=seamless-illustrated-sprites-20261120"></script>
   <script src="js/skills.js?v=sunbloom-grass-ult-20261122"></script>
-  <script src="js/growth.js?v=36"></script>
+  <script src="js/growth.js?v=adult-growth-ceremony-20261122"></script>
+  <script src="js/adult-art.js?v=original-watercolor-growth-fix-20261122"></script>
   <script src="js/state.js?v=two-currency-20261122"></script>
   <script src="js/cat-relationships.js?v=two-currency-duomem-20261122"></script>
   <script src="js/raising.js?v=two-currency-20261122"></script>
   <script src="js/painted-regions.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/world.js?v=smaller-courtyard-cats-20261121-2"></script>
-  <script src="js/worldmap.js?v=two-currency-duomoments-20261122"></script>
+  <script src="js/worldmap.js?v=adult-expedition-20261122"></script>
   <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
   <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
   <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
   <script src="js/duo-director.js?v=three-tiers-21-cameras-20261122"></script>
   <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
   <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
-  <script src="js/duo-breed-art.js?v=32-premium-painted-breeds-20261122"></script>
-  <script src="js/duo-premium.js?v=original-painted-21x3-v3-20261122"></script>
+  <script src="js/duo-breed-actors.js?v=32-original-watercolor-actors-20261122"></script>
+<script src="js/duo-premium.js?v=actual-selected-32-watercolor-actors-v1"></script>
   <script src="js/duo-hero.js?v=high-res-watercolor-21-20261122"></script>
-  <script src="js/ult-hero.js?v=hero-scale-fix-20261122"></script>
+  <script src="js/ult-vfx.js?v=shadow-thunder-contrast-20261122"></script>
   <script src="js/battle.js?v=ai-hitrun-ward-20261122"></script>
   <script src="js/duo-bond.js?v=duo-memory-strike-20261122"></script>
-  <script src="js/ui.js?v=tour-panel-navigation-20261121-2"></script>
-  <script src="js/game.js?v=first-adventure-tour-20261121-2"></script>
+  <script src="js/ui.js?v=adult-duo-gallery-select-20261122"></script>
+  <script src="js/game.js?v=adult-form-consistency-20261122"></script>
   <script src="js/main.js?v=original-intro-cats-20261121-2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=catbond-32-breed-lang-20261122"></script>

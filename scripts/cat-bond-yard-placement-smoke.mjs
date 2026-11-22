@@ -23,17 +23,18 @@ try{
    State.S.coins=500;
    State.S.yardBuildings=[];g.yard.rebuild();g.refreshYardSurprise();
    UI.syncYardNav();
-   return {coins:State.S.coins,duoText:document.getElementById('yard-duo-status').textContent,
+   return {coins:State.S.coins,
+    catsNav:document.querySelector('.tab[data-tab="cats"] .nav-caption')?.textContent,
     hidden:document.getElementById('collection-goal').hidden};
   });
   assert.equal(init.coins,500);
-  assert.match(init.duoText,/双猫合击/,'duo shortcut must be labeled explicitly');
+  assert.match(init.catsNav,/猫咪/,'bottom cat hub must show the solo and duo features');
   assert.equal(init.hidden,true,'do not keep the broad top combined banner');
-  const duoVisible=await page.locator('#yard-duo-status').isVisible();
-  assert.equal(duoVisible,true,'duo should be visible on the right once two cats exist');
-  const rect=await page.locator('#yard-duo-status').boundingBox();
+  const duoVisible=await page.locator('.tab[data-tab="cats"]').isVisible();
+  assert.equal(duoVisible,true,'cat-and-duo hub must be reachable from bottom navigation');
+  const rect=await page.locator('.tab[data-tab="cats"]').boundingBox();
   const stage=await page.locator('#stage').boundingBox();
-  assert.ok(rect.x>stage.x+stage.width*.48,'duo CTA must live on right, not left/top');
+  assert.ok(rect.y>stage.y+stage.height*.55,'cat hub should live below the main yard');
   await page.evaluate(()=>UI.openBuild());
   const select=await page.locator('[data-build="scratcher"]');
   assert.equal(await select.isVisible(),true);

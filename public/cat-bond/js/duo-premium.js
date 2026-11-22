@@ -1,7 +1,8 @@
 /* Premium duo cinematic renderer: one uninterrupted watercolor painting
  * showing both complete cats in a shared setting. No clipped or pasted
- * silhouettes. 21 elemental choreographies over eight complete painted scenes.
- * Further breed-specific scenes can be added without reintroducing seams.
+ * silhouettes. 21 elemental choreographies over 63 cat-free watercolor
+ * SCENES with the player's two real breed portraits as separate characters.
+ * Never overlay fixed illustrated cats or use destructive fur recoloring.
  */
 (function(){
 'use strict';
@@ -11,7 +12,7 @@ img.decoding='async';
 // into the playable arena instead of drawing a hard-edged rectangular card.
 const cinematicLayer=document.createElement('canvas');
 const cinematicCtx=cinematicLayer.getContext('2d',{alpha:true});
-let ready=false,broken=false;
+let ready=false,broken=false,originalReady=false;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const label=(cat)=>{
@@ -107,15 +108,24 @@ const gradeCache=new Map();
 // The new atlas arrives already painted in warm, varied storybook colors.
 // Do NOT gray-wash the new cats or layer earlier rejected paintings underneath.
 function preparePastelAtlas(){pastelAtlas=null;retouchedPixels=0;return true;}
-img.onload=()=>{
- ready=img.naturalWidth===3584&&img.naturalHeight===2592;broken=!ready;
+function syncArtwork(){
+ const actors=window.CatBondDuoBreedActors;
+ ready=originalReady&&!!actors?.ready;
+ if(actors?.failed)broken=true;
  if(ready){
-  try{preparePastelAtlas();}
-  catch(err){pastelAtlas=null;console.warn('[Cat Bond] pastel art fallback',err)}
+  gradeCache.clear();
+  window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
+ }else if(broken){
+  window.dispatchEvent(new Event('cat-bond-premium-art-error'));
  }
- window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
+}
+window.addEventListener('cat-bond-breed-art-ready',syncArtwork);
+window.addEventListener('cat-bond-breed-art-error',syncArtwork);
+img.onload=()=>{
+ originalReady=img.naturalWidth===3584&&img.naturalHeight===2592;
+ broken=!originalReady;syncArtwork();
 };
-img.onerror=()=>{broken=true;window.dispatchEvent(new Event('cat-bond-premium-art-error'))};
+img.onerror=()=>{broken=true;syncArtwork()};
 img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-storyboard-21x3-v3.webp?v=original-63-poses-20261122';
 
 function coatOf(cat){
@@ -137,30 +147,21 @@ function cellRect(panel,tier=1){
          y:(Math.floor(panel/7)*3+(lv-1))*FRAME_H,
          w:FRAME_W,h:FRAME_H};
 }
-// A separate real painting is decoded per combo AND trust milestone.
-// All 63 illustrations have intact cat bodies rather than generated limbs.
+// Separate the 63 premium storybook SCENES from the two actor portraits.
+// Every selected breed is an actual painterly transparent character in front
+// of a cat-free scenic frame. Old baked-in cats can NEVER appear behind them.
 function gradedScene(key,tier=1,actorA=null,actorB=null){
  const lv=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
- const identity=window.CatBondDuoBreedArt;
- const breedA=identity?.species(actorA)||'original';
- const breedB=identity?.species(actorB)||'original';
- const cacheKey=key+'|'+lv+'|'+breedA+'|'+breedB;
+ const cacheKey=key+'|'+lv;
  if(gradeCache.has(cacheKey))return gradeCache.get(cacheKey);
  const panel=regions[key];if(panel===undefined||!ready)return null;
  const layer=document.createElement('canvas');
  layer.width=FRAME_W;layer.height=FRAME_H;
  const g=layer.getContext('2d');if(!g)return null;
  const rect=cellRect(panel,lv);
- g.drawImage(img,rect.x,rect.y,rect.w,rect.h,0,0,FRAME_W,FRAME_H);
- // Replace coat texture ON the two existing high-resolution illustrated cats.
- // No black/white fixed substitutes and no yard kitten stickers.
- if(breedA!=='original'||breedB!=='original'){
-   identity.paint(g,key,lv,actorA,actorB,Object.keys(regions));
- }
- // Bounded gallery cache: switch any of 32 × 32 pairings without ever
- // leaking another player's earlier pairing into the currently selected cats.
+ const breedArt=window.CatBondDuoBreedActors;
+ if(!breedArt?.paintScene(g,key,lv,Object.keys(regions)))return null;
  gradeCache.set(cacheKey,layer);
- if(gradeCache.size>32)gradeCache.delete(gradeCache.keys().next().value);
  return layer;
 }
 function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null,tier=1,actorA=null,actorB=null){
@@ -254,9 +255,9 @@ function draw(ctx,W,H,seq,lookup){
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
  const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
- const opacity=smooth(p/.07)*(1-smooth((p-.89)/.11));
+ const opacity=smooth(p/.028)*(1-smooth((p-.965)/.035));
  if(opacity<=0)return true;
- const sw=Math.min(W*.97,H*.93*16/9),sh=sw*9/16,x=(W-sw)/2,y=(H-sh)/2;
+ const sw=Math.min(W,H*16/9),sh=sw*9/16,x=(W-sw)/2,y=(H-sh)/2;
  const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));
  const actorA=actors[0],actorB=actors[1];
  const frame=regions[key];
@@ -274,11 +275,9 @@ function draw(ctx,W,H,seq,lookup){
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,sw,sh);
  ctx.save();ctx.globalAlpha=opacity;
- // One complete, illustrated two-cat tableau per attack, NEVER two sliced
- // paintings or a pair of cropped heads glued across a visible vertical seam.
- // The 21 independently authored cinematic storyboards control camera
- // charge, dodge, lunge, rise, arc, rebound and finish. We transform ONE
- // complete illustration (both cats and scenery together), not crop/tile cats.
+ // Each 21x3 background is clean of fixed cat bodies; two TRUE species
+ // watercolor portraits travel together with the same cinematic camera.
+ // There is no fur polygon masking and no ghost of the old painted pair.
  const cam=thumbnail?{dx:0,dy:0,zoom:1.025,angle:0}:
    (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
     {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
@@ -286,7 +285,11 @@ function draw(ctx,W,H,seq,lookup){
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.23),0,0,1,key,tier,actorA,actorB);
+ sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.16),0,0,1,key,tier,actorA,actorB);
+ const painted=window.CatBondDuoBreedActors?.draw?.(
+   ctx,sw,sh,[actorA,actorB],key,p,tier);
+ // An absent player breed may not be replaced by a generic grey cat.
+ if(!painted){ctx.restore();ctx.restore();return true;}
  ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
@@ -295,7 +298,7 @@ function draw(ctx,W,H,seq,lookup){
   // opacity on top of signature opacity. Let the player actually distinguish
   // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
   // while keeping the watercolor painting beneath them readable.
-  ctx.save();ctx.globalAlpha*=Math.min(.92,dual*.83);
+  ctx.save();ctx.globalAlpha*=Math.min(.24,dual*.22);
   window.CatBondDuoDirector?.footwork?.(ctx,sw,sh,p,key,tier);
   const fxTime=tier===1?p:tier===2?(p<.36?p+.09:p-.23):
      (p<.29?p+.10:p<.55?p-.11:p-.44);
@@ -303,10 +306,10 @@ function draw(ctx,W,H,seq,lookup){
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,fxTime,key,tier);
   ctx.restore();
  }
- if(!thumbnail)bondTierChoreography(ctx,sw,sh,p,key,tier);
+ if(!thumbnail){ctx.save();ctx.globalAlpha*=.22;bondTierChoreography(ctx,sw,sh,p,key,tier);ctx.restore();}
  // The old generic claw stamp made all 21 skills look identical; the
  // individually drawn finale and key-specific palette now carry the impact.
- if(!thumbnail)paper(ctx,0,0,sw,sh);
+ // Do not wash out the artist's real watercolor with a grey film.
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
  if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
@@ -325,48 +328,21 @@ function draw(ctx,W,H,seq,lookup){
  ctx.shadowColor='#2d244a';ctx.shadowBlur=8;ctx.fillStyle='#fffbed';
  const px=clamp(sw*.054,17,36);
  ctx.font='900 '+Math.round(px)+'px system-ui,sans-serif';
- ctx.fillText(title,sw*.5,sh*.76,sw*.91);
+ ctx.fillText(title,sw*.5,sh*.925,sw*.92);
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
- if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.855,sw*.88);
+ // Breed information is shown in the separate roster UI; never overlay
+ // a false claim of exact painted breed identity over fixed artist subjects.
+ if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.984,sw*.86);
  ctx.restore();
  }
  ctx.restore();
- // Four overlapping soft alpha masks: zero visible hard edges, even in
- // portrait / landscape game modes. No rectangular stroke or clip border.
- if(!thumbnail){ctx.save();
- ctx.globalCompositeOperation='destination-in';
- const fx=Math.max(14,sw*.085),fy=Math.max(12,sh*.13);
- function fade(x0,y0,x1,y1){
-   const m=ctx.createLinearGradient(x0,y0,x1,y1);
-   m.addColorStop(0,'rgba(255,255,255,0)');
-   m.addColorStop(1,'rgba(255,255,255,1)');
-   ctx.fillStyle=m;ctx.fillRect(0,0,sw,sh);
- }
- fade(0,0,fx,0);
- fade(sw,0,sw-fx,0);
- fade(0,0,0,fy);
- fade(0,sh,0,sh-fy);
- ctx.restore();}
+ // Keep the full painted scene opaque and intact. The old four-sided
+ // destination-in fade cut away fur, paws and scenery, making cats translucent.
  // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
  // the region's existing battle theme instead of an unrelated purple card.
  const tone=harmony(key);
  battlefield.save();
- const surrounding=battlefield.createLinearGradient(0,H*.15,W,H*.85);
- surrounding.addColorStop(0,tone.sky+'38');
- surrounding.addColorStop(.48,tone.mist+'20');
- surrounding.addColorStop(1,tone.ground+'22');
- battlefield.globalAlpha=opacity*.55;
- battlefield.fillStyle=surrounding;
- battlefield.fillRect(0,0,W,H);
- // One subtle colored halo belongs to the entire two-cat composition.
- // Its outer edge blends to the same green/blue/purple as the actual arena.
- const aura=battlefield.createRadialGradient(W*.5,H*.47,sw*.09,W*.5,H*.47,sw*.7);
- aura.addColorStop(0,tone.light+'4b');
- aura.addColorStop(.48,tone.mist+'26');
- aura.addColorStop(1,tone.ground+'00');
- battlefield.globalAlpha=opacity*.55;
- battlefield.fillStyle=aura;
- battlefield.fillRect(0,0,W,H);
+ // No washed-out halo or colored rectangle behind the full bleed painting.
  battlefield.globalAlpha=1;
  battlefield.drawImage(cinematicLayer,x,y,sw,sh);
  battlefield.restore();
@@ -374,14 +350,18 @@ function draw(ctx,W,H,seq,lookup){
 }
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
- get breedMatchCount(){return window.CatBondDuoBreedArt?.breedCount||0},
+ get breedMatchCount(){return window.CatBondDuoBreedActors?.ready?32:0},
+ get breedProfileCount(){return window.CatBondDuoBreedActors?.breedCount||0},
+ get liveBreedArtworkEnabled(){return !!window.CatBondDuoBreedActors?.ready},
  get activePaintCacheEntries(){return gradeCache.size},
+ get realBreedOverpaintEnabled(){return false},
  coatOf,
  paletteFor,get scenePaletteCount(){return Object.keys(chromaticThemes).length},
  get gradedSceneCount(){return gradeCache.size},tierVariants:3,
  get failed(){return broken},wholeSceneCount:21,paintedFrameCount:63,skillVariants:Object.keys(regions).length,
  get pastelAdjusted(){return ready},
  get pastelPixelCount(){return retouchedPixels},
- get source(){return img.src}
+ get source(){return window.CatBondDuoBreedActors?.sceneSource||img.src},
+ get characterSource(){return window.CatBondDuoBreedActors?.catSource||''}
 };
 })();

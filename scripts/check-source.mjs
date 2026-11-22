@@ -1036,7 +1036,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('rel?.value)<20')||
     !bondPremium.includes('if(!thumbnail&&dual>.09)')||
     !bondViewer.includes('duo-embedded')||
-    !bondIntro.includes('css/style.css?v=guided-tour-restored-hero-20261121-2'))
+    !/href="css\/style\.css\?v=[^\"]+"/.test(bondIntro))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
  // Returning from battle must never leave stale additive blend/alpha/filter
@@ -1055,7 +1055,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
     !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
     !yardIndex.includes('js/world.js?v=smaller-courtyard-cats-20261121-2')||
-    !yardIndex.includes('js/game.js?v=first-adventure-tour-20261121-2'))
+    !/src="js\/game\.js\?v=[^"]+"/.test(yardIndex))
    throw Error('Cat Bond post-battle garden requires crisp kittens, spatial layout, and reset canvas state');
  const fakeWindow={};
  const fakeState={S:{cats:[{uid:'1',species:'orange',joy:90},
@@ -1127,8 +1127,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  // Tour must progress through real post-capture actions and remain optional.
  if(!bondIntro.includes('id="guide-help"')||
     !bondIntro.includes('role="region" aria-label="猫猫冒险指引"')||
-    !bondIntro.includes('js/game.js?v=first-adventure-tour-20261121-2')||
-    !bondIntro.includes('js/ui.js?v=tour-panel-navigation-20261121-2')||
+    !/src="js\/game\.js\?v=[^\"]+"/.test(bondIntro)||
+    !/src="js\/ui\.js\?v=[^\"]+"/.test(bondIntro)||
     !cbMain.includes('targetHeight=132,maxWidth=140')||
     !cbCss.includes('#first-quest.is-tour')||
     !cbCss.includes('#stage .cb-guide-target')||
@@ -1194,5 +1194,69 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
    if(!hit||!hit.hit||hit.element!==element)throw Error('Missing regular hit accent: '+element);
    fake.drawRegularSkillAccent(ctx,hit,.5,.5);
  }
+ // Skill names, hover/focus description, phone info and first-fight preview.
+ // The actual fish icon alternates fish + yarn and MUST have a readable name.
+ if(!bondIntro.includes('id="mv-basic" data-move="basic"><span class="mv-icon">🐟</span><span class="mv-name">小鱼干</span>')||
+    !bondIntro.includes('id="battle-skill-tooltip"')||
+    !bondIntro.includes('id="battle-skill-info-toggle"')||
+    !bondIntro.includes('id="battle-skill-guide"')||
+    !cbCss.includes('#battle-ui .move .mv-name{')||
+    !cbCss.includes('#panel .prebattle-skills{')||
+    !cbUi.includes("btn.addEventListener('mouseenter',()=>this.game.showBattleSkillTooltip(slot))")||
+    !cbUi.includes("btn.addEventListener('focus',()=>this.game.showBattleSkillTooltip(slot))")||
+    !cbUi.includes('battlePrepSkillCard(team,en){')||
+    !cbUi.includes("skillsIntroSeen:true")||
+    !cbUi.includes('this.refreshBattlePrepSkills(this.teamUids.map(')||
+    !cbUi.includes('this.refreshBattlePrepSkills(selected.map(')||
+    !cbGame.includes("fallback:en?'Fish & Yarn':'小鱼干'")||
+    !cbGame.includes('battleSkillInfo(slot, fighter=this.battle?.me())')||
+    !cbGame.includes('showBattleSkillTooltip(slot){')||
+    !cbGame.includes('toggleBattleSkillGuide(open){'))
+   throw Error('Cat Bond skill labels, hovered tooltips, mobile reference or prebattle preview missing');
+ const skillFixtures={
+   q:{id:'testQ',name:'炽爪',desc:'造成灼烧',element:'fire',cd:3,ultCost:0},
+   e:{id:'testE',name:'泡泡幕',desc:'减伤',element:'water',cd:7,ultCost:0},
+   ult:{id:'testUlt',name:'喵之怒涛',desc:'范围伤害',element:'light',cd:0,ultCost:80}
+ };
+ const mockSkills={
+   ensureLoadout:cat=>cat.loadout,
+   skillById:id=>Object.values(skillFixtures).find(sk=>sk.id===id)||null
+ };
+ const testState={S:{battlePrefs:{}},catName:()=>'<bad & name>'};
+ const testGameData={speciesById:id=>({id}),speciesName:sp=>sp.id};
+ const testWindow={MorrowwishI18n:{get:()=> 'zh'},Skills:mockSkills,
+   CatBondI18n:{translate:s=>s}};
+ const TestedGame=new Function('window',cbGame+';return Game;')(testWindow);
+ const testGame=Object.create(TestedGame.prototype);
+ testGame.isTouch=false;testGame.scene='battle';testGame.skillIcon=()=> '🐾';
+ const testCat={uid:'first',species:'tangyuan',
+   loadout:[null,'testQ','testE','testUlt']};
+ const testFighter={cat:testCat,basicSkill:null,
+   qSkill:skillFixtures.q,eSkill:skillFixtures.e,ultSkill:skillFixtures.ult};
+ testGame.battle={me:()=>testFighter};
+ const basics=testGame.battleSkillInfo('basic',testFighter);
+ if(basics.name!=='小鱼干'||!basics.desc.includes('毛线团')||
+    testGame.battleSkillInfo('q').name!=='炽爪'||
+    testGame.battleSkillInfo('e').name!=='泡泡幕'||
+    testGame.battleSkillInfo('ult').name!=='喵之怒涛'||
+    !testGame.battleSkillInfo('dodge').desc.includes('闪避'))
+   throw Error('Skill tooltip must use active kitten loadout, not static labels');
+ const testUI=new Function('window','Skills','State','GameData',
+   cbUi+';return UI;')(testWindow,mockSkills,testState,testGameData);
+ const listHtml=testUI.battlePrepSkillMarkup([testCat],false);
+ if(!listHtml.includes('普攻')||!listHtml.includes('技能一')||
+    !listHtml.includes('技能二')||!listHtml.includes('闪避')||
+    !listHtml.includes('必杀技')||!listHtml.includes('锁定目标')||
+    listHtml.includes('炽爪')||listHtml.includes('<bad & name>'))
+   throw Error('Pre-battle guide must describe actual battle buttons, not each cat skill');
+ if(!testUI.battleTeamSummary([testCat],false).includes('首发：')||
+    !testUI.battlePrepEsc(testUI.battleTeamSummary([testCat],false)).includes('&lt;bad &amp; name&gt;'))
+   throw Error('Pre-battle team summary must remain accurate and escape cat names');
+ if(testUI.battlePrepSkillCard([testCat],false).includes('class="prebattle-skills" open')||
+    !testUI.battlePrepSkillCard([testCat],false).includes('战斗按钮说明'))
+   throw Error('Pre-battle skill help should remain collapsed and concise');
+ testState.S.battlePrefs.skillsIntroSeen=true;
+ if(testUI.battlePrepSkillCard([testCat],false).includes('class="prebattle-skills" open'))
+   throw Error('Returning players must not be forced to read a long skill preview');
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }

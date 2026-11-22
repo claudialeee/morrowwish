@@ -2085,7 +2085,7 @@ class CaptureBattle {
     const skill=f.ultSkill, el=skill&&skill.ultCost>0?skill.element:null;
     const diag=Math.hypot(this.W,this.H);
     const live=this.liveEnemies(); if(!live.length) return false;
-    if(el==='fire'){
+    if(el==='fire'&&skill.id!=='purrNova'){
       const aim=(f===this.me())?this.aim:(f._aim||0), half=0.6, reach=diag*0.5;
       return live.some(e=>{
         if(Math.hypot(e.x-f.x,e.y-f.y)>reach) return false;
@@ -2125,12 +2125,13 @@ class CaptureBattle {
     // cinematic (only the 合体技/duo combo does that). Keep a short i-frame + a punchy
     // flash/shake so it still feels big, then run the elemental payload right now.
     f.inv = 1.0;
-    this.flash = Math.max(this.flash, 0.3);
+    // Solo ULT never washes the whole arena with a flash.
     this.slowmo = Math.max(this.slowmo, 0.18);     // a brief hit-stop beat, not a lockout
     if(!window.MorrowwishAudio?.skillSignature?.(skill?.id||skill?.name,f.element||skill?.element,3))
       window.MorrowwishAudio?.effect?.('combat_ultimate');
-    this._ultCastTargets=this.liveEnemies().slice(0,6).map(e=>({x:e.x,y:e.y}));
-    this.ultHero=window.CatBondUltHero?.begin(this,f,skill)||null;
+    const ordered=this.liveEnemies();
+    this._ultCastTargets=(locked?[locked,...ordered.filter(e=>e!==locked)]:ordered)
+      .slice(0,7).map(e=>({x:e.x,y:e.y}));
     this.addShake?.(.55,this.aim);
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
@@ -2153,7 +2154,30 @@ class CaptureBattle {
     const diag = Math.hypot(this.W, this.H);
     const el = skill.element;
     const aim = (f === this.me()) ? this.aim : (f._aim || 0);
-    if (el === 'fire') {
+    if(skill.id==='purrNova'){
+      // 呼噜新星: a genuine 360-degree fire explosion (not sunflare's cone).
+      const R=diag*.4;
+      for(const e of this.liveEnemies().slice()){
+        if(Math.hypot(e.x-f.x,e.y-f.y)<=R)strike(e,1.05);
+      }
+      this.vfx.ring(f.x,f.y,{r0:20,vr:R*2.4,life:.5,color:'#ffb66d',width:9});
+      for(let i=0;i<22;i++){
+        const a=i*2*Math.PI/22,r=28+Math.random()*R;
+        this.vfx.burst(f.x+Math.cos(a)*r,f.y+Math.sin(a)*r,
+          {count:2,color,speed:95,life:.55,r:3,grav:-34});
+      }
+    }else if(skill.id==='moonfang'){
+      // 月噬牙: slash the target with two moon fangs, not a self-centered halo.
+      const target=this.lockedEnemy()||this.nearestEnemy(f.x,f.y);
+      const px=target?.x??(f.x+Math.cos(aim)*170);
+      const py=target?.y??(f.y+Math.sin(aim)*170);
+      const R=diag*.25;
+      for(const e of this.liveEnemies().slice()){
+        if(Math.hypot(e.x-px,e.y-py)<=R)strike(e,1.08);
+      }
+      this.vfx.burst(px,py,{count:16,color:'#d0d9ff',speed:170,life:.4,r:3});
+      this.vfx.shockwave(px,py,'#f5e4d4');
+    }else if (el === 'fire') {
       // 烈焰喷涌: a forward blaze CONE — hits enemies in a wide arc ahead, big on-aim.
       const half = 0.6, reach = diag * 0.5;
       for (const e of this.liveEnemies().slice()) {
@@ -2192,7 +2216,9 @@ class CaptureBattle {
         if (d > 30) { const a = Math.atan2(f.y - e.y, f.x - e.x); e.kbx = (e.kbx || 0) + Math.cos(a) * 320; e.kby = (e.kby || 0) + Math.sin(a) * 320; }
         strike(e, 1.2);
       }
-      this.vfx.ring(f.x, f.y, { r0: R, vr: -R * 1.8, life: 0.5, color, width: 10 });    // imploding ring
+      // Keep implosion inside the local fight, never a screen-spanning arc.
+      this.vfx.ring(f.x, f.y, { r0: Math.min(170,R*.34), vr: -240,
+        life: .42, color: '#8a55bb', width: 4 });
       this.vfx.burst(f.x, f.y, { count: 28, color, speed: 300, life: 0.55, r: 3 });
     } else {
       // light (and any fallback): 圣耀爆发: radiant NOVA around the caster.
@@ -2209,7 +2235,7 @@ class CaptureBattle {
     const p=this._pendingUlt; if(!p)return; this._pendingUlt=null;
     const f=p.f, skill=p.skill;
     if(!f||!f.alive)return;
-    this.shakeT=.6;this.flash=.5;
+    this.shakeT=.6; // impact stays in arena; no full-screen flash
     if(skill&&skill.ultCost>0){
       // Each ELEMENT's ultimate is a genuinely different attack shape (not one AOE
       // recolored): fire = forward blaze cone, water = giant tidal wave ring, elec =
@@ -2219,8 +2245,10 @@ class CaptureBattle {
       const dmg=f.dmg*skill.power*.42;                    // shared per-target base
       const {total,kos,hits}=this.ultArchetype(f,skill,color,dmg);
       this._ultConsequence(f,skill,color,total,kos,hits);
-      const duration=skill.element==='grass'?2.0:1.5;
-      this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,color,
+      const duration=skill.id==='sunbloom'?1.9:skill.id==='voidMaw'?1.65:
+        skill.id==='tsunamiPaw'?1.5:1.36;
+      this.skillStrokes.push({kind:'ultimate',skillId:skill.id,
+        x:f.x,y:f.y,element:skill.element,color,
         angle:f===this.me()?this.aim:(f._aim||0),targets:this._ultCastTargets||[],
         life:duration,max:duration});
       this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
@@ -2262,7 +2290,7 @@ class CaptureBattle {
     // Consequence-scaled juice + cinematic pacing.
     const big=kos>=2|| (hits>=3);
     this.shakeT=Math.max(this.shakeT, big?0.75:hits>0?0.5:0.3);
-    this.flash=Math.max(this.flash, big?0.6:0.4);
+    // No full-screen color wash for solo ultimate consequences.
     if(this.ultCinematic){
       if(kos>0){ this.ultCinematic.t=Math.max(this.ultCinematic.t, kos>=2?1.9:1.4); } // lingering kill-cam
       else { this.ultCinematic.t=Math.min(this.ultCinematic.t, 1.0); }                // snappy cut when it fizzled
@@ -2866,155 +2894,7 @@ class CaptureBattle {
         }
         ctx.restore();
       }else if(v.kind==='ultimate'){
-        // Six unique REALTIME silhouettes, not six recolored radial explosions.
-        // Renders below kittens/HP bars. No external PNG or shader dependencies.
-        const el=v.element,fade=Math.min(1,k*1.65),t=1-Math.pow(k,2);
-        const R=Math.min(350,Math.hypot(this.W,this.H)*.36);
-        const d=this.game?.isTouch?.65:1,TAU=Math.PI*2;
-        const hash=n=>{let x=Math.sin(n*78.233+15.27)*43758.545;return x-Math.floor(x)};
-        const glow=(x,y,r,col,a)=>{
-          const g=ctx.createRadialGradient(x,y,0,x,y,r);
-          g.addColorStop(0,col);g.addColorStop(.23,col);g.addColorStop(1,'rgba(0,0,0,0)');
-          ctx.globalAlpha=a*fade;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
-        };
-        const ring=(x,y,rx,ry,col,w,a)=>{
-          ctx.globalAlpha=a*fade;ctx.strokeStyle=col;ctx.lineWidth=w;
-          ctx.beginPath();ctx.ellipse(x,y,Math.max(1,rx),Math.max(1,ry),0,0,TAU);ctx.stroke();
-        };
-        const star=(x,y,r,col,a)=>{
-          ctx.globalAlpha=a*fade;ctx.lineCap='round';ctx.lineWidth=Math.max(1,r*.24);
-          ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);
-          ctx.moveTo(x,y-r);ctx.lineTo(x,y+r);ctx.stroke();
-        };
-        ctx.save();ctx.globalCompositeOperation='lighter';
-        if(el==='fire'){
-          // Roaring directional fire cone, flickering tongues and molten embers.
-          ctx.translate(v.x,v.y);ctx.rotate(v.angle||0);
-          glow(R*.25,0,R,'#e97745',.18);
-          for(let i=0;i<21*d;i++){
-            const a=(hash(i+2)-.5)*1.2,L=R*t*(.48+hash(i+49)*.58);
-            ctx.save();ctx.rotate(a);ctx.globalAlpha=fade*(i%3===0?.82:.54);
-            ctx.fillStyle=i%3===0?'#fff0a3':i%3===1?'#ffac4f':'#ff6335';
-            ctx.beginPath();ctx.moveTo(8,-6);ctx.quadraticCurveTo(L*.28,-20,L*.75,-11);
-            ctx.quadraticCurveTo(L+21,0,L*.78,12);
-            ctx.quadraticCurveTo(L*.35,21,8,6);ctx.closePath();ctx.fill();ctx.restore();
-          }
-          glow(18,0,70,'#fff9ce',.27);
-          for(let i=0;i<17*d;i++){
-            const a=(hash(i+18)-.5)*1.18,r=17+hash(i+62)*R*t;
-            star(Math.cos(a)*r,Math.sin(a)*r,2+hash(i)*4,'#fff0c6',.7);
-          }
-        }else if(el==='water'){
-          // Three cresting tidal arches, ring of surf and airborne foam droplets.
-          const r=27+R*t*1.09;glow(v.x,v.y,r,'#55bddb',.17);
-          for(let b=0;b<3;b++){
-            ctx.globalAlpha=fade*(b===2?.9:.52);
-            ctx.lineWidth=b===2?4:b===1?10:18;ctx.lineCap='round';
-            ctx.strokeStyle=b===2?'#f0ffff':b===1?'#8aeeff':'#2b96c4';
-            ctx.beginPath();
-            for(let j=0;j<=40;j++){
-              const a=Math.PI+j*Math.PI/40,rj=r-b*16+Math.sin(j*.83+this.t*10)*7;
-              const xx=v.x+Math.cos(a)*rj,yy=v.y+Math.sin(a)*rj*.78;
-              j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);
-            }ctx.stroke();
-          }
-          ring(v.x,v.y,r,r*.37,'#d7ffff',4,.58);
-          for(let i=0;i<25*d;i++){
-            const a=i*2.399,rr=22+R*t*(.48+hash(i)*.58);
-            const x=v.x+Math.cos(a)*rr,y=v.y+Math.sin(a)*rr*.68;
-            ctx.globalAlpha=fade*(.42+hash(i+17)*.45);ctx.fillStyle=i%3?'#b5f3ff':'#fff';
-            ctx.beginPath();ctx.arc(x,y,2+hash(i+23)*3.5,0,TAU);ctx.fill();
-          }
-        }else if(el==='grass'){
-          // Living vines extend from the ground while golden sunlight blooms.
-          ctx.translate(v.x,v.y);glow(0,0,R,'#96cb83',.16);
-          for(let i=0;i<16*d;i++){
-            const a=i*TAU/16+hash(i)*.14,L=R*t*(.73+hash(i+8)*.27);
-            ctx.save();ctx.rotate(a);ctx.globalAlpha=fade*.84;
-            ctx.strokeStyle=i%2?'#81c47a':'#cbef9b';ctx.lineWidth=3.6;ctx.lineCap='round';
-            ctx.beginPath();ctx.moveTo(8,0);ctx.bezierCurveTo(L*.23,-21,L*.54,25,L,Math.sin(i)*9);ctx.stroke();
-            for(let j=1;j<=3;j++){
-              ctx.save();ctx.translate(L*j/4,Math.sin(i+j*1.3)*8);
-              ctx.rotate(j%2?-.67:.67);ctx.fillStyle=j%2?'#7dc581':'#d9ed9d';
-              ctx.beginPath();ctx.ellipse(0,0,9*t+1,4*t+1,0,0,TAU);ctx.fill();ctx.restore();
-            }ctx.restore();
-          }
-          for(let i=0;i<16;i++){
-            const a=i*TAU/16;ctx.globalAlpha=.13*fade;ctx.strokeStyle='#fff1af';ctx.lineWidth=10;
-            ctx.beginPath();ctx.moveTo(Math.cos(a)*12,Math.sin(a)*12);
-            ctx.lineTo(Math.cos(a)*R*t,Math.sin(a)*R*t);ctx.stroke();
-          }
-          glow(0,-20,94,'#fff5b4',.34);
-          for(let i=0;i<14*d;i++){
-            const a=i*2.399,r=20+R*t*(.24+hash(i)*.74);
-            star(Math.cos(a)*r,Math.sin(a)*r,2.8,'#fffbd5',.72);
-          }
-        }else if(el==='elec'){
-          // Forked multi-target chain lightning, not a single mouth beam.
-          glow(v.x,v.y,R*.7,'#9bb5fc',.19);
-          const dest=v.targets?.length?v.targets:[
-            {x:v.x+R,y:v.y-R*.24},{x:v.x-R*.85,y:v.y-R*.14},{x:v.x,y:v.y-R}];
-          for(let i=0;i<Math.min(6,dest.length);i++){
-            const q=dest[i],ex=v.x+(q.x-v.x)*t,ey=v.y+(q.y-v.y)*t;
-            const dist=Math.hypot(ex-v.x,ey-v.y)||1,nx=-(ey-v.y)/dist,ny=(ex-v.x)/dist;
-            const pts=[[v.x,v.y]];
-            for(let j=1;j<11;j++){
-              const a=j/11,off=(hash(i*41+j+Math.floor(this.t*17))-.5)*dist*.12;
-              pts.push([v.x+(ex-v.x)*a+off*nx,v.y+(ey-v.y)*a+off*ny]);
-            }
-            pts.push([ex,ey]);ctx.lineJoin='round';ctx.lineCap='round';
-            for(const [w,col,alpha] of [[15,'#778bff',.16],[8,'#c5d7ff',.39],[3.5,'#ffe9aa',.83],[1.5,'#ffffff',1]]){
-              ctx.globalAlpha=fade*alpha;ctx.lineWidth=w;ctx.strokeStyle=col;ctx.beginPath();
-              pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
-            }
-            for(let j=3;j<9;j+=3){
-              const [x,y]=pts[j],a=i%2?-.9:.9;ctx.globalAlpha=.55*fade;
-              ctx.strokeStyle='#f2ffff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);
-              ctx.lineTo(x+Math.cos(a)*dist*.23,y+Math.sin(a)*dist*.23);ctx.stroke();
-            }
-            star(ex,ey,6,'#fff',.8);
-          }
-          for(let i=0;i<13*d;i++){
-            const a=i*TAU/13+this.t*1.7,r=30+R*t*.65;
-            star(v.x+Math.cos(a)*r,v.y+Math.sin(a)*r,3,'#ffe2a3',.7);
-          }
-        }else if(el==='dark'){
-          // Purple-black imploding spiral + gravitational maw, never a death ray.
-          ctx.translate(v.x,v.y);const radius=30+R*(1-t*.76);
-          glow(0,0,radius,'#66529f',.35);ring(0,0,radius,radius*.8,'#cbb5ff',4,.77);
-          for(let i=0;i<7;i++){
-            const a0=i*TAU/7+this.t*3.2;
-            ctx.strokeStyle=i%2?'#9f81e0':'#e0cfff';ctx.lineWidth=i%2?7:3;
-            ctx.globalAlpha=fade*(i%2?.69:.86);ctx.lineCap='round';ctx.beginPath();
-            for(let j=0;j<=25;j++){
-              const u=j/25,a=a0+u*Math.PI*1.7,r=radius*(1-u*.83);
-              const x=Math.cos(a)*r,y=Math.sin(a)*r*.8;
-              j?ctx.lineTo(x,y):ctx.moveTo(x,y);
-            }ctx.stroke();
-          }
-          for(let i=0;i<17*d;i++){
-            const a=i*2.399+this.t,r=radius*(.2+hash(i)*.8);
-            star(Math.cos(a)*r,Math.sin(a)*r*.78,2.5,'#f4eaff',.72);
-          }
-        }else if(el==='light'){
-          // Luminous moon ring, white-gold radial rays and celestial glitter.
-          ctx.translate(v.x,v.y);glow(0,0,R,'#ffefc2',.18);
-          for(let i=0;i<22*d;i++){
-            const a=i*TAU/22+this.t*.12,r=R*t;
-            ctx.globalAlpha=.22*fade;ctx.strokeStyle=i%2?'#fff2ce':'#cfeaff';
-            ctx.lineWidth=i%2?4:9;ctx.lineCap='round';ctx.beginPath();
-            ctx.moveTo(Math.cos(a)*23,Math.sin(a)*23);
-            ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);ctx.stroke();
-          }
-          ring(0,0,38+R*t*.84,38+R*t*.84,'#fff7d5',6,.82);
-          ring(0,0,25+R*t*.54,25+R*t*.54,'#cfecff',3,.75);
-          glow(0,0,104,'#fff8d3',.27);
-          for(let i=0;i<20*d;i++){
-            const a=i*2.399,r=29+R*t*(.34+hash(i)*.6);
-            star(Math.cos(a)*r,Math.sin(a)*r,2.7,'#fffcf1',.84);
-          }
-        }
-        ctx.restore();
+        window.CatBondUltVFX?.draw(ctx,v,this.W,this.H,this.t,'back');
       }
       ctx.restore();
     }
@@ -3055,8 +2935,6 @@ class CaptureBattle {
     // weighty beat but the cat can still inch/dodge; the per-hit `stop` is already brief.
     if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
     this.t += dt;
-    // Single-cat hero focus advances on real time even during combat hitstop.
-    window.CatBondUltHero?.update(this,realDt);
     this._lastDt = dt;                                  // shared by steering helpers (orbit/wander timers)
     if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
     if (this.shakeT > 0) this.shakeT -= dt;
@@ -4404,7 +4282,7 @@ class CaptureBattle {
 
     if (this.flash > 0) { ctx.fillStyle = `rgba(157,123,255,${this.flash})`; ctx.fillRect(0, 0, W, H); }
 
-    this.drawUltCinematic(ctx, W, H);
+    // Legacy full-screen ULT cinematic disabled; duo animations are separate.
 
     this.drawPackMorale(ctx, W);
 
@@ -4771,7 +4649,8 @@ class CaptureBattle {
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
         species:sp2,scale:this.catScale(isMe?'active':'ally'),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
-        stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
+        stride:route?this.duoRun.age*26:tf.t*13,mood:'happy',
+        growth:window.Growth?.visual(tf.cat)||null
       });
       // WHITE connect-flash on a struck player cat (additive bloom, not a vanish-fade).
       if (tf.hitWhite > 0) {
@@ -4798,6 +4677,10 @@ class CaptureBattle {
       }
     }
 
+    // Distinct ULT glints above combatants, below damage floaters and HUD.
+    for(const v of this.skillStrokes){
+      if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
+    }
     // particles & floaters
     for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
     for (const fl of this.floaters) { ctx.save(); ctx.globalAlpha = Math.max(0, fl.life); ctx.fillStyle = fl.color; ctx.font = 'bold ' + (fl.size || 15) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.strokeText(fl.text, fl.x, fl.y); ctx.fillText(fl.text, fl.x, fl.y); ctx.restore(); }
@@ -4904,8 +4787,6 @@ class CaptureBattle {
       ctx.restore();
     }
 
-    // Brief original watercolor cat close-up, layered over the LIVE arena.
-    window.CatBondUltHero?.draw(ctx,this,W,H);
     this.drawCatCutin(ctx,W,H);
     ctx.restore();
   }
@@ -4996,7 +4877,7 @@ class CaptureBattle {
     if(!species||!window.CatArt?.renderCatThumb)return null;
     const canvas=document.createElement('canvas');
     canvas.width=200;canvas.height=180;
-    CatArt.renderCatThumb(canvas,species);
+    CatArt.renderCatThumb(canvas,species,cat);
     this._cinematicPortraits.set(uid,canvas);
     return canvas;
   }

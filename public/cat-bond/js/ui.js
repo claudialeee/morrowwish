@@ -68,6 +68,17 @@ const UI = {
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('map-squad')?.addEventListener('click',()=>this.openMapSquad());
     document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
+    // Hover/focus explains the exact active cat's move. On touch, the
+    // standalone info control displays descriptions without casting.
+    document.querySelectorAll('.move-bar .move').forEach(btn=>{
+      const slot=btn.dataset.move==='ult'?'ult':btn.dataset.move;
+      btn.addEventListener('mouseenter',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('mouseleave',()=>this.game.hideBattleSkillTooltip(slot));
+      btn.addEventListener('focus',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('blur',()=>this.game.hideBattleSkillTooltip(slot));
+    });
+    document.getElementById('battle-skill-info-toggle')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide());
+    document.getElementById('battle-skill-guide-close')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide(false));
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -317,10 +328,11 @@ const UI = {
       const count=document.querySelector('#panel .map-squad-count');
       if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只');
       this.refreshSquadOrder(selected,refresh);
+      this.refreshBattlePrepSkills(selected.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),en);
     };
     buttons.forEach(btn=>{
       const cat=cats.find(c=>c.uid===btn.dataset.uid);
-      if(cat)CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species));
+      if(cat)CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species),cat);
       btn.onclick=()=>{
         const i=selected.indexOf(btn.dataset.uid);
         if(i>=0){if(selected.length>1)selected.splice(i,1);}
@@ -722,6 +734,10 @@ const UI = {
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
       const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
       if(!entry||entry.trust<20)return;
+      // Selecting a gallery card should update the highlighted duo and
+      // detailed relationship panel, without changing the battle lineup.
+      this._duoPicked=[entry.a.uid,entry.b.uid];
+      this.openBondPanel();
       this.openUnlockedDuoViewer(entry.a,entry.b);
     });
     document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
@@ -994,7 +1010,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span><h2>${title}</h2><div class="roster">${chips}</div>`);
     document.querySelectorAll('#panel .chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
-      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
+      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species),c);
       chip.onclick = () => onPick(chip.dataset.uid);
     });
   },
@@ -1005,7 +1021,7 @@ const UI = {
       this.panel(`<span class="card-close">×</span><h2>🥚 选两只猫繁育</h2><p class="sub">已选 ${this._breedSel.length}/2</p><div class="roster">${chips}</div><div class="btn-row"><button class="btn gold" id="bp-go" ${this._breedSel.length === 2 ? '' : 'disabled'}>开始孵化</button></div>`);
       document.querySelectorAll('#panel .chip').forEach(chip => {
         const c = cats.find(x => x.uid === chip.dataset.uid);
-        CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
+        CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species),c);
         chip.onclick = () => { const u = chip.dataset.uid; const i = this._breedSel.indexOf(u); if (i >= 0) this._breedSel.splice(i, 1); else if (this._breedSel.length < 2) this._breedSel.push(u); render(); };
       });
       const go = document.getElementById('bp-go'); if (go) go.onclick = () => { const r = Raising.startBreeding(this._breedSel[0], this._breedSel[1]); this.game.toast(r && r.ok ? '🥚 开始孵化！' : (r && r.msg) || '无法繁育'); State.save(); this.openWorkshop(); };
@@ -1161,7 +1177,9 @@ const UI = {
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel [data-breed]').forEach(cell=>{
       const sp=GameData.speciesById(cell.dataset.breed);
-      CatArt.renderCatThumb(cell.querySelector('canvas'),sp);
+      const group=speciesGroups.get(sp.id)||[];
+      const showCat=group.reduce((best,cat)=>!best||State.catPower(cat)>State.catPower(best)?cat:best,null);
+      CatArt.renderCatThumb(cell.querySelector('canvas'),sp,showCat);
       cell.addEventListener('click',()=>{
         const group=speciesGroups.get(sp.id);
         if(group.length===1)this.openCatDetail(group[0]);
@@ -1201,7 +1219,7 @@ const UI = {
     document.querySelectorAll('#panel [data-cat-uid]').forEach(button=>{
       const cat=all.find(v=>v.uid===button.dataset.catUid);
       if(!cat)return;
-      CatArt.renderCatThumb(button.querySelector('canvas'),species);
+      CatArt.renderCatThumb(button.querySelector('canvas'),species,cat);
       button.onclick=()=>this.openCatDetail(cat);
     });
     document.getElementById('breed-prev').onclick=()=>this.openBreedRoster(species,current-1);
@@ -1377,39 +1395,79 @@ const UI = {
     return times;
   },
   doGrow(cat, awakenKey) {
-    const G = window.Growth; if (!G) return;
-    const before = cat.stage || 0;
-    const r = G.advance(cat, awakenKey);
-    if (!r.ok) { this.game.toast('条件不足'); return; }
-    State.save(); this.game.rebuildYard(); this.game.refreshHUD();
-    const name = G.stageName(cat);
-    if (cat.stage >= 2) this.openGrowthAnim(cat, name);
-    else { this.renderCatDetail(cat); this.game.toast('🌟 成长为 ' + name + '！'); }
-  },
-  openGrowthAnim(cat, name) {
-    const sp = GameData.speciesById(cat.species);
-    const aw = window.Growth.AWAKEN[cat.awaken];
-    const col = aw ? aw.color : '#ffd36b';
-    this.panel(`<span class="card-close">×</span>
-      <h2 class="center">★ 觉醒！</h2>
-      <canvas id="evo-cv" width="200" height="170" style="display:block;margin:10px auto"></canvas>
-      <p class="center">${GameData.speciesName(sp)} 觉醒为 <b style="color:${col}">${name}</b>！</p>
-      <p class="sub center">${aw ? aw.desc : ''}</p>
-      <div class="btn-row" style="justify-content:center"><button class="btn gold" onclick="UI.closeAll()">太棒了</button></div>`);
-    const cv = document.getElementById('evo-cv'); const cx = cv.getContext('2d'); let tt = 0;
-    const anim = () => {
-      if (!document.getElementById('evo-cv')) return;
-      tt += 0.04; cx.clearRect(0, 0, 200, 170);
-      cx.save(); cx.translate(100, 95); cx.globalAlpha = 0.5;
-      for (let i = 0; i < 14; i++) { cx.rotate(Math.PI / 7 + tt * 0.6); cx.fillStyle = withA2(col, 0.3); cx.fillRect(0, -3, 120, 6); }
-      cx.restore();
-      CatArt.drawCat(cx, 100, 105, { species: sp, scale: 1.3, face: 1, t: tt, pose: 'sit', mood: 'happy', growth: window.Growth.visual(cat) });
-      requestAnimationFrame(anim);
-    };
-    anim();
-  },
+   const G=window.Growth;if(!G)return;
+   const beforeStage=cat.stage||0,oldStats={...cat.stats};
+   const result=G.advance(cat,awakenKey);
+   if(!result.ok){this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'成长条件不足':'Growth requirements not met');return;}
+   State.save();this.game.rebuildYard();this.game.refreshHUD();
+   this.openGrowthAnim(cat,G.stageName(cat),beforeStage,oldStats);
+ },
+  openGrowthAnim(cat,name,beforeStage,oldStats) {
+   const en=window.MorrowwishI18n?.get?.()!=='zh';
+   const sp=GameData.speciesById(cat.species);
+   const awakened=cat.stage>=2;
+   const color=awaken?(window.Growth?.AWAKEN[cat.awaken]?.color||'#a5b7f1'):'#d7a579';
+   const safe=str=>String(str??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+   const oldLabel=beforeStage===0?(en?'Kitten':'幼猫'):(en?'Adult':'成年');
+   const newLabel=awaken?(en?'Awakened Adult':'灵·觉醒'):(en?'Adult':'成年');
+   const stats=[['pow',en?'Power':'力量'],['agi',en?'Agility':'敏捷'],['vit',en?'Vitality':'体力'],['cha',en?'Charm':'魅力']];
+   const gains=stats.map(([key,label])=>`<span class="cb-growth-stat">${label} <strong>+${Math.max(0,cat.stats[key]-(oldStats?.[key]||0))}</strong></span>`).join('');
+   this.panel(`<span class="card-close">×</span>
+     <section class="cb-growth-ceremony" aria-label="${en?'Cat growth celebration':'猫咪成长演出'}">
+       <p class="cb-growth-overline">${en?'A new chapter together':'一起长大 · 新的冒险'}</p>
+       <h2>${en?'Growth complete!':'成长成功！'}</h2>
+       <div class="cb-growth-stage-names"><span>${oldLabel}</span><b aria-label="${en?'becomes':'成长为'}">✦</b><span>${newLabel}</span></div>
+       <canvas id="cb-growth-canvas" width="360" height="220" role="img" aria-label="${en?'Illustrated before-and-after growth for '+safe(GameData.speciesName(sp)):'成长前后：'+safe(GameData.speciesName(sp))}"></canvas>
+       <h3>${safe(State.catName(cat))} · ${safe(name)}</h3>
+       <p class="cb-growth-caption">${awaken?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'Your companion has grown! Original watercolor features stay intact, with a larger body and a growth badge.':'伙伴长大啦！保留原版水彩脸型和毛色，体型自然成长，新增成长饰标。')}</p>
+       <div class="cb-growth-stats">${gains}</div>
+       <button class="btn gold" id="cb-growth-done" type="button">${en?'Continue adventure':'继续冒险'}</button>
+     </section>`);
+   document.getElementById('cb-growth-done')?.addEventListener('click',()=>this.closeAll());
+   const cv=document.getElementById('cb-growth-canvas');
+   if(!cv)return;
+   const ctx=cv.getContext('2d');if(!ctx)return;
+   const start=performance.now();
+   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+   const oldForm=beforeStage===0?null:{stage:1,scale:1.07,gem:true,gemColor:'#cbd4ff'};
+   const newForm=Growth.visual(cat);
+   const drawForm=(x,y,scale,form,opacity,pose='sit')=>{
+     ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,opacity));
+     CatArt.drawCat(ctx,x,y,{species:sp,growth:form,face:1,scale,t:performance.now()*.001,pose,mood:'happy'});
+     ctx.restore();
+   };
+   const frame=now=>{
+     if(!cv.isConnected)return;
+     const t=reduced?1:Math.min(1,(now-start)/2600);
+     ctx.clearRect(0,0,360,220);
+     const glow=ctx.createRadialGradient(180,112,8,180,112,154);
+     glow.addColorStop(0,color+'50');glow.addColorStop(1,color+'00');
+     ctx.fillStyle=glow;ctx.fillRect(0,0,360,220);
+     // Fade only COMPLETE painted poses, never separate an ear or paw.
+     const reveal=Math.max(0,Math.min(1,(t-.30)/.40));
+     const eased=reveal*reveal*(3-2*reveal);
+     drawForm(125,144,1.35-eased*.18,oldForm,1-eased);
+     drawForm(210,144,1.07+eased*.30,newForm,eased);
+     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;
+     const ring=12+eased*112;
+     ctx.globalAlpha=(1-eased)*.35;
+     ctx.beginPath();ctx.ellipse(180,108,ring,ring*.64,0,0,Math.PI*2);ctx.stroke();
+     ctx.restore();
+     for(let i=0;i<12;i++){
+       const a=i*Math.PI/6+now*.00025,r=30+eased*(58+i%3*8);
+       const x=180+Math.cos(a)*r,y=108+Math.sin(a)*r*.68;
+       ctx.fillStyle=color;ctx.globalAlpha=Math.min(.7,Math.max(0,(t-.08)*1.4)*(1-t*.28));
+       ctx.beginPath();ctx.arc(x,y,2+i%3,0,Math.PI*2);ctx.fill();
+     }
+     ctx.globalAlpha=1;
+     if(t<1)requestAnimationFrame(frame);
+   };
+   requestAnimationFrame(frame);
+   const refresh=()=>{if(cv.isConnected)frame(performance.now());};
+   window.addEventListener('cat-bond-adult-art-ready',refresh,{once:true});
+ },
 
-  // growth-form (成长形态) row + optional species 蜕变 row
+    // growth-form (成长形态) row + optional species 蜕变 row
   evoRowHtml(cat) {
     let html = this.growthRowHtml(cat);
     html += this.speciesEvoRowHtml(cat);
@@ -1720,7 +1778,8 @@ const UI = {
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
       const sp = GameData.speciesById(cell.dataset.id);
       if (!cell.classList.contains('locked')) {
-        CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
+        const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
+        CatArt.renderCatThumb(cell.querySelector('canvas'), sp,featured);
         cell.tabIndex=0;cell.setAttribute('role','button');
         cell.addEventListener('keydown',e=>{
           if(e.key==='Enter'||e.key===' '){e.preventDefault();cell.click();}
@@ -1771,7 +1830,8 @@ const UI = {
           <p class="tiny center">${en?'Rank challenge: no duplicate cats or repeat capture rewards.'
             :'评级挑战不会重复捕捉猫咪，也不会重复领取金币。'}</p>`);
         document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
-        CatArt.renderCatThumb(document.getElementById('dx'),sp);
+        const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
+        CatArt.renderCatThumb(document.getElementById('dx'),sp,featured);
         document.getElementById('dx-back').onclick=()=>this.openDex();
         const fight=document.getElementById('dx-rematch');
         if(fight&&canRematch)fight.onclick=()=>{
@@ -2030,7 +2090,8 @@ const UI = {
       // cat
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,cx,cy,{
         species:sp,scale:1.2,face:fx<cx?-1:1,t:tt,
-        pose:pounce>0?'play':'walk',motion:1,mood:'alert'
+        pose:pounce>0?'play':'walk',motion:1,mood:'alert',
+        growth:window.Growth?.visual(cat)||null
       });
       // feather toy
       ctx.save(); ctx.translate(fx, fy);
@@ -2044,6 +2105,54 @@ const UI = {
     anim();
   },
 
+  // Compact controls glossary: actual HUD buttons, never one list per kitten.
+  battlePrepEsc(value){
+    return String(value??'').replace(/[&<>"']/g,ch=>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  },
+  battleTeamSummary(cats,en){
+    const team=(cats||[]).filter(Boolean);
+    if(!team.length)return en?'No cats selected':'尚未选择猫咪';
+    const starters=team.slice(0,2).map(cat=>State.catName(cat)).join(' + ');
+    const bench=team.length>2?' · '+(en?team.length-2+' reserve':team.length-2+' 只替补'):'';
+    return (en?'Starting: ':'首发：')+starters+bench;
+  },
+  battlePrepSkillMarkup(team,en){
+    const controls=[
+      ['🐟',en?'Basic · click/J':'普攻 · 左键/J',
+        en?'Fish and yarn attacks; builds ultimate charge.':'小鱼干 / 毛线团攻击，积攒必杀能量。'],
+      ['🧶',en?'Q · Skill 1':'Q · 技能一',
+        en?'Use the active cat’s first equipped skill.':'使用当前猫咪装备的第一个技能。'],
+      ['💨',en?'E · Skill 2':'E · 技能二',
+        en?'Use the active cat’s second equipped skill.':'使用当前猫咪装备的第二个技能。'],
+      ['◎',en?'Lock target':'锁定目标',
+        en?'Lock onto or switch the wild-cat target.':'锁定或切换要攻击的野猫。'],
+      ['🌀',en?'Dodge · Space':'闪避 · 空格',
+        en?'Quickly evade a hit; briefly invulnerable.':'快速躲开攻击，获得短暂的无敌时间。'],
+      ['🌪️',en?'R · Ultimate':'R · 必杀技',
+        en?'Cast when the ultimate meter is charged.':'必杀能量攒满后释放强力技能。']
+    ];
+    const duo=window.CatRelations?.chosen?.()||[];
+    if(duo.length===2&&duo.every(partner=>(team||[]).slice(0,2).some(cat=>cat?.uid===partner.uid))){
+      controls.push(['✦',en?'Duo combo':'双猫合击',
+        en?'Tap when the bond meter is ready.':'默契能量攒满后点击，发动双猫合击。']);
+    }
+    return '<div class="prebattle-control-grid">'+controls.map(([icon,key,desc])=>
+      '<div class="prebattle-control-item"><b>'+icon+' '+key+'</b><span>'+desc+'</span></div>').join('')+'</div>';
+  },
+  battlePrepSkillCard(team,en){
+    return '<details id="battle-prep-skills" class="prebattle-skills">'+
+      '<summary><span>ⓘ '+(en?'Battle buttons · Basic / Q / E / R / Dodge':'战斗按钮说明 · 普攻 / Q / E / R / 闪避')+'</span>'+
+      '<small>'+(en?'Expand':'展开')+'</small></summary>'+
+      '<div id="battle-prep-skills-body" class="prebattle-skills-body">'+
+      this.battlePrepSkillMarkup(team,en)+'</div></details>';
+  },
+  refreshBattlePrepSkills(team,en){
+    const summary=document.getElementById('battle-team-summary');
+    if(summary)summary.textContent=this.battleTeamSummary(team,en);
+    const help=document.getElementById('battle-prep-skills-body');
+    if(help)help.innerHTML=this.battlePrepSkillMarkup(team,en);
+  },
   // Region encounters and grade rematches do not use the capture roster.
   // They must still ask BEFORE launching the real-time encounter.
   openBattleModePrompt(team,wildSp,opts={}){
@@ -2052,9 +2161,13 @@ const UI = {
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
     const selected=opts.origin==='map'?this.getPreferredBattleTeam().map(c=>c.uid):[];
-    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (pick up to 5)':'选择出战猫咪（最多 5 只）')+'</h3>'
-      +'<p class="sub" style="margin:-2px 0 8px">'+(en?'2 fight on the field; the rest sub in when a cat faints.':'场上出战 2 只；其余在后备席，猫倒下时替补上场。')+'</p>'
-      +this.squadPickerMarkup(selected):'';
+    const squadMarkup=opts.origin==='map'?
+      '<details class="prep-advanced prep-team-details" id="battle-team-details">'+
+      '<summary><strong>'+(en?'Battle team · edit':'出战队伍 · 点击调整')+'</strong>'+
+      '<span id="battle-team-summary">'+this.battlePrepEsc(
+        this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
+      '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
+      this.squadPickerMarkup(selected)+'</details>':'';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
@@ -2066,8 +2179,11 @@ const UI = {
         ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
-      <p class="sub">${en?'Choose your cats and control mode before entering the arena.':'先选择出战猫咪，再决定自动或手动战斗。'}</p>
+      <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
+      ${this.battlePrepSkillCard(opts.origin==='map'
+        ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
+        :team,en)}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Battle mode':'战斗模式'}">
@@ -2084,6 +2200,9 @@ const UI = {
           (en?'First encounter includes a skippable tutorial.':'首次战斗附带可跳过的新手教学。'):
           (en?'The game remembers your last selection.':'系统会记住上一次选择。')}</p>
       </fieldset>
+      <details class="prep-advanced prep-difficulty" id="battle-difficulty-details">
+        <summary><strong>${en?'Difficulty · change':'难度 · 点击调整'}</strong>
+        <span id="battle-difficulty-summary">${State.difficulty()==='casual'?(en?'Casual':'休闲'):(en?'Hardcore':'硬核')}</span></summary>
       <fieldset class="capture-mode-picker">
         <legend>${en?'Difficulty':'难度'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Difficulty':'难度'}">
@@ -2096,10 +2215,13 @@ const UI = {
             <span>${en?'Full lethality and strong level suppression — fighting above your level really bites.':'完整难度 + 较强等级压制 — 越级挑战非常危险。'}</span>
           </button>
         </div>
-      </fieldset>
-      <div class="btn-row"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
+      </fieldset></details>
+      <div class="btn-row prebattle-actions"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
     if(opts.origin==='map')this.bindSquadPicker(selected);
+    this.refreshBattlePrepSkills(opts.origin==='map'
+      ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
+      :team,en);
     const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
     for(const button of options){
       button.onclick=()=>{
@@ -2122,6 +2244,8 @@ const UI = {
           opt.classList.toggle('selected',on);
           opt.setAttribute('aria-checked',String(on));
         }
+        const summary=document.getElementById('battle-difficulty-summary');
+        if(summary)summary.textContent=State.difficulty()==='casual'?(en?'Casual':'休闲'):(en?'Hardcore':'硬核');
       };
     }
     document.getElementById('bp-cancel').onclick=()=>{
@@ -2135,7 +2259,7 @@ const UI = {
       else if(this.game.scene==='yard')this.game.showYardChrome();
     };
     document.getElementById('bp-go').onclick=()=>{
-      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true};
+      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,skillsIntroSeen:true};
       State.save();this.closeAll();
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true);return;}
       let fighters=team;
@@ -2206,16 +2330,22 @@ const UI = {
       <div class="sighting-badge rarity-${wildSp.rarity}">${rareText}</div>
       <h2>发现野生 <span class="rarity-${wildSp.rarity}">${GameData.speciesName(wildSp)}</span></h2>
       <p class="sub">${wildSp.desc}</p>
-      <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
+      <canvas id="cp-wild" width="160" height="120" style="display:block;width:128px;height:96px;margin:2px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">${english?'Wild level':'野猫等级'} <b>Lv.${wildSp.encounterLevel||
           window.Battle?.CaptureBattle?.previewWildLevel?.(wildSp,'yard',cats.slice(0,5))||1}</b>
           · ${english?'Rarity':'稀有度'} <span class="rarity-${wildSp.rarity}">◆${wildSp.rarity} · ${english?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):rar.name}</span></p>
-      ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
-      ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
-      <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建双猫队伍（首发 2 只 + 替补最多 3 只，点击选择）'}</h3>
-      ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
-      <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
-      ${this.squadOrderMarkup()}
+      ${skillPreview||!firstCapture?'<details class="prep-advanced prep-rewards"><summary><strong>'+(english?'Rewards & challenges':'奖励与挑战')+'</strong><span>'+(english?'Details':'展开')+'</span></summary>'+
+        (skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':'')+
+        (!firstCapture?'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>':'')+'</details>':''}
+      <details class="prep-advanced prep-team-details" id="battle-team-details">
+        <summary><strong>${english?'Battle team · edit':'出战队伍 · 点击调整'}</strong>
+          <span id="battle-team-summary">${this.battlePrepEsc(this.battleTeamSummary(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english))}</span>
+        </summary>
+        ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
+        <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
+        ${this.squadOrderMarkup()}
+      </details>
+      ${this.battlePrepSkillCard(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english)}
       <fieldset class="capture-mode-picker" aria-label="${english?'Battle control':'选择战斗方式'}">
         <legend>${english?'How would you like to fight?':'这场战斗怎么打？'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${english?'Battle control':'战斗方式'}">
@@ -2232,7 +2362,7 @@ const UI = {
           ?(english?'Your first fight starts with a short, skippable tutorial.':'第一次战斗会有简短教学，可以跳过。')
           :(english?'Your previous choice is remembered; switch anytime during battle.':'记住你上次的选择，战斗中也能随时切换。')}</p>
       </fieldset>
-      <div class="btn-row">
+      <div class="btn-row prebattle-actions">
         <button class="btn gold" id="cp-go">${firstCapture?'出发！收服这只猫':'开始战斗'}</button>
         <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">${english?"⚙️ Auto tactics":"⚙️ 智能策略"}</button>
         <button class="btn ghost" id="cp-cancel">放它走</button>
@@ -2248,10 +2378,11 @@ const UI = {
         ch.dataset.orderRole=order<0?'':(order<2?(english?'START '+(order+1):'首发 '+(order+1)):(english?'BENCH '+(order-1):'替补 '+(order-1)));
       });
       this.refreshSquadOrder(this.teamUids,refreshSel);
+      this.refreshBattlePrepSkills(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english);
     };
     roster.querySelectorAll('.chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
-      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
+      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species),c);
       chip.onclick = () => {
         const uid = chip.dataset.uid;
         const idx = this.teamUids.indexOf(uid);
@@ -2286,7 +2417,9 @@ const UI = {
       // preserve the selection order; fall back to strongest if somehow empty
       const team = this.teamUids.map(uid => cats.find(x => x.uid === uid)).filter(Boolean);
       changeBattleMode(this.prepAutoBattle);
-      State.S.battlePrefs.teamUids=[...this.teamUids];State.save();
+      State.S.battlePrefs.teamUids=[...this.teamUids];
+      State.S.battlePrefs.skillsIntroSeen=true;
+      State.save();
       this.closeAll();
       this.game.startBattle(team.length ? team : [sorted[0]], wildSp);
     };

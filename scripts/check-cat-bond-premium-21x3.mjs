@@ -27,7 +27,10 @@ const Premium=window.CatBondPremiumCinematics;
 const Hero=window.CatBondDuoHero;
 const BreedArt=window.CatBondDuoBreedArt;
 assert.equal(BreedArt.breedCount,32,'Must supply actual illustrated fur profiles for all 32 cats');
-assert.equal(Premium.breedMatchCount,32,'Premium painter must load breed-specific coats');
+assert.equal(BreedArt.maskSourceCount,23,'All 23 unique high-res watercolor scene mask contours must be traced');
+assert.equal(Premium.breedMatchCount,0,'Do not falsely claim broken fur repainting is active');
+assert.equal(Premium.realBreedOverpaintEnabled,false,'Broken fur recolor must remain off');
+assert.equal(Premium.breedProfileCount,32,'Real cat roster still supports all 32 species');
 const rosterIds=[...source('js/data.js').matchAll(/\bid\s*:\s*['"]([a-z][a-z0-9]*)['"]/g)].map(x=>x[1]);
 assert.equal(rosterIds.length,32,'Actual playable roster must contain exactly 32 collectible IDs');
 assert.deepEqual(new Set(BreedArt.sourceProfiles),new Set(rosterIds),
@@ -38,8 +41,8 @@ for(const id of rosterIds){
  assert.equal(coat.base.length,3);
  assert.ok(coat.base.every(v=>Number.isFinite(v)&&v>=0&&v<=255));
 }
-assert.match(source('js/duo-premium.js'),/identity\.paint\(g,key,lv,actorA,actorB/,
-  'Paint actual selected A/B fur in full high-resolution scene, not just captions');
+assert.doesNotMatch(source('js/duo-premium.js'),/identity\.paint\(/,
+  'Unsafe wide-area fur repaint must never be enabled: it destroys painted cats');
 assert.match(source('js/duo-bond.js'),/this\.duoCinematic,uid=>/,
   'Real battle must resolve current team UID to the proper two actual chosen cats');
 assert.equal(Director.keys.length,21,'Must offer 21 real element combinations');
@@ -84,12 +87,12 @@ assert.equal((page.match(/class="source-art-stage"/g)||[]).length,63,
  'Every skill must show three actual painted frames, not just camera presets');
 assert.equal((page.match(/<article class="master-art"/g)||[]).length,21);
 for(const html of [page,game,unlocked]){
- assert.match(html,/js\/duo-breed-art\.js\?v=32-premium-painted-breeds-20261122/,
+ assert.match(html,/js\/duo-breed-art\.js\?v=32-traced-breed-coats-20261122-v2/,
   'Actual game and both review pages MUST load the 32 selected-cat fur painter');
- assert.match(html,/js\/duo-premium\.js\?v=original-painted-21x3-v3-20261122/,
-  'Game, review gallery and unlocked preview must load the SAME latest premium painter');
+ assert.match(html,/js\/duo-premium\.js\?v=art-integrity-no-fur-bleed-20261122-v9/,
+  'All public entrypoints must load the artwork-preserving corrected painter');
  assert.doesNotMatch(html,/duo-premium-sheet\.webp/, 'Rejected old gray-purple cut-in artwork must never load');
  assert.match(html,/js\/duo-director\.js\?v=three-tiers-21-cameras/,
   'Every entrypoint needs the latest three-stage direction module');
 }
-console.log('CAT BOND PREMIUM 21x3 + 32 BREED PASS: full playable 32-breed roster, actual chosen A/B coat painter integrated in real battle, gallery selectors, 21 skills and 63 painted scenes');
+console.log('CAT BOND ART INTEGRITY PASS: clean 63 original paintings, 32 roster species, 21 skills × 3 trust tiers, forbidden fur-masking disabled until individually validated');
