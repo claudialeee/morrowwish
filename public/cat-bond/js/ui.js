@@ -1530,7 +1530,7 @@ const UI = {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const facts=this.battleCatFacts(cat);
     const primary=window.Skills?.elementOf?.(cat.species)||'light';
-    const secondary=window.Skills?.SPLASH_ELEMENT?.[primary]||null;
+    const secondary=window.Skills?.secondaryOf?.(cat)||null;
     const elNames={fire:[en?'Fire':'火','🔥'],water:[en?'Water':'水','💧'],
       grass:[en?'Nature':'草','🌿'],elec:[en?'Lightning':'雷','⚡'],
       dark:[en?'Shadow':'暗','🌙'],light:[en?'Light':'光','✨']};
@@ -1562,10 +1562,13 @@ const UI = {
           <span><strong>${en?'Secondary':'副属性'}：</strong>${secondary?elLabel(secondary):(en?'None':'无')}</span>
         </div>
         <p class="tiny cat-detail-side-hint">
-          ${en?'Secondary skills':'副属性技能'}：${sideCap}/${sideChoices.length}
-          ${sideCap===0?(en?' · First capture or Lv.4 unlocks the first move':' · 首次收服伙伴或 Lv.4 解锁第一招'):
-            sideCap<2?(en?' · Second move: Lv.12 and affinity 60':' · 第二招需 Lv.12 且好感达到 60'):''}
-          ${sideUnlocked.length?' · '+sideUnlocked.map(s=>s.name).join(' / '):''}
+          ${secondary
+            ?(en?'Secondary moves':'副属性技能')+'：'+sideCap+'/'+sideChoices.length+
+              (sideCap===0?(en?' · First move: capture a friend or Lv.4':' · 首次收服伙伴或 Lv.4 解锁第一招'):
+               sideCap<2?(en?' · Second move: Lv.12 + affinity 60':' · 第二招需 Lv.12 且好感达到 60'):'')+
+              (sideUnlocked.length?' · '+sideUnlocked.map(s=>s.name).join(' / '):'')
+            :(en?'Single-element specialist · no cross-element abilities':
+              '单属性专精 · 不会学习其他元素技能')}
         </p>
         <div class="cat-detail-stat-grid">
           ${statLine(en?'Power':'力量',cat.stats.pow)}
