@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','ult-hero','catart','cute-cats','real-kittens','data','running-cats','skills','growth','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ult-vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -628,18 +628,33 @@ assert.ok(duoTest.skillStrokes.some(v=>v.kind==='duoImpact'&&v.life===.65),
   'closing beat is a distinct twin-element flourish');
 assert.equal(Object.keys(sandbox.window.CatRelations.DUO_ARTS).length,21,'all 21 elemental pairs keep authored signatures');
 
-// Six authentic ultimate signatures: each element has its own real-time
-// Canvas silhouette. The storybook spell renderer must never throw on a phone.
+// Eight REAL ultimate identities — two fire and two light spells have to draw
+// differently despite sharing an element. None may paint over the whole arena.
+const ultIDs=['sunflare','tsunamiPaw','sunbloom','thunderYowl',
+  'voidMaw','moonlitHalo','moonfang','purrNova'];
+assert.deepEqual(Array.from(sandbox.window.CatBondUltVFX.ids),ultIDs,
+  'all eight skill-id renderers are registered');
+assert.ok(!sandbox.window.CatBondUltHero,'no full-screen ultimate art module');
 const ultBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
-const ultimateElements=['fire','water','grass','elec','dark','light'];
-for(const element of ultimateElements){
-  for(const phase of [0.15,0.45,0.75]){
-    ultBattle.skillStrokes=[{kind:'ultimate',element,
-      x:ultBattle.me().x,y:ultBattle.me().y,angle:0,
+const localCtx=new Proxy(canvasCtx,{get(target,key){
+  if(key==='fillRect')return ()=>{throw Error('VFX cannot cover full screen');};
+  return target[key];
+}});
+for(const id of ultIDs){
+  const skill=Skills.skillById(id);
+  assert.ok(skill&&skill.ultCost>0,'valid ULT skill '+id);
+  for(const phase of [.15,.45,.75]){
+    const spell={kind:'ultimate',skillId:id,element:skill.element,
+      x:ultBattle.me().x,y:ultBattle.me().y,angle:.12,
       targets:[{x:ultBattle.me().x+140,y:ultBattle.me().y-15}],
-      life:1.5*(1-phase),max:1.5}];
+      life:1.5*(1-phase),max:1.5};
+    assert.doesNotThrow(()=>{
+      assert.equal(sandbox.window.CatBondUltVFX.draw(localCtx,spell,1000,700,1,'back'),true);
+      assert.equal(sandbox.window.CatBondUltVFX.draw(localCtx,spell,1000,700,1,'front'),true);
+    },id+' must draw a local spell, not a full-screen sprite');
+    ultBattle.skillStrokes=[spell];
     assert.doesNotThrow(()=>ultBattle.drawSkillStrokes(canvasCtx),
-      element+' ultimate draws at phase '+phase);
+      id+' must draw through the real combat integration');
   }
 }
 const bloom=Skills.skillById('sunbloom');
@@ -661,8 +676,8 @@ const voidHpBefore=voidBattle.enemies.reduce((n,e)=>n+e.hp,0);
 voidBattle.ult=100;voidBattle.ultCd=0;
 assert.equal(voidBattle.ultimate(),true,'void maw ultimate casts');
 assert.ok(!voidBattle.deathRay,'void maw must not be silently replaced by a death ray');
-assert.ok(voidBattle.ultHero,'void maw starts the watercolor hero focus');
-assert.ok(voidBattle.skillStrokes.some(x=>x.kind==='ultimate'&&x.element==='dark'),
+assert.ok(!voidBattle.ultHero,'void maw must not spawn a full-screen hero cut-in');
+assert.ok(voidBattle.skillStrokes.some(x=>x.kind==='ultimate'&&x.skillId==='voidMaw'),
   'void maw must spawn a dark vortex silhouette');
 assert.ok(voidBattle.enemies.some(e=>Math.abs(e.kbx||0)+Math.abs(e.kby||0)>0),
   'void maw must physically pull at least one enemy');
