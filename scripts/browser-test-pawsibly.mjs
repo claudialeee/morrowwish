@@ -380,7 +380,7 @@ try{
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
  assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
- assert.equal(await page.locator('.cat-sound-controls #music, .cat-sound-controls #sound').count(),2,'Music and sound effects must both remain in the header');
+ assert.equal(await page.locator('#stageControls #music, #stageControls #sound').count(),2,'Music and sound effects must both remain in the visible game HUD');
  await page.locator('#menuClose').click();
  const audioButton=page.locator('#sound');
  await audioButton.evaluate(button=>button.click());

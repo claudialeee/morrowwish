@@ -11,7 +11,7 @@
   const header=route==='cat-bond'?document.querySelector('#stage'):
     route==='tiny-town'?document.querySelector('.top'):
     route==='elsewhere'?document.querySelector('.topbar'):
-    route==='pawsibly-innocent'?document.querySelector('.cat-sound-controls'):
+    route==='pawsibly-innocent'?document.querySelector('#stageControls'):
     route==='pocket-aquarium'?document.querySelector('body>header'):
     document.querySelector('.game-top');
   if(!header)return;

@@ -48,8 +48,28 @@ try{
         assert.equal(await dock.count(),1,game.slug+' missing unified audio controls');
         assert.equal(await dock.locator('button').count(),2,game.slug+' should offer music and sound switches');
         const audioBox=await dock.boundingBox();
-        assert.ok(audioBox&&audioBox.x+audioBox.width<=width+3,game.slug+' audio controls overflow the phone');
-        if(game.slug==='pawsibly-innocent')await page.locator('#menuClose').tap();
+        assert.ok(audioBox&&audioBox.x>=-2&&audioBox.x+audioBox.width<=width+2,game.slug+' audio controls overflow the phone');
+         if(game.slug==='pawsibly-innocent'){
+           assert.equal(await dock.evaluate(el=>el.closest('#stageControls')!==null),true,'Cat music and sound controls must live in the VISIBLE game header');
+           const bounds=await dock.locator('button').evaluateAll(items=>items.map(el=>{const r=el.getBoundingClientRect();return{left:r.left,right:r.right,width:r.width,height:r.height,visible:r.width>0&&r.height>0}}));
+           assert.ok(bounds.every(b=>b.visible&&b.left>=-2&&b.right<=width+2&&b.width>=38&&b.height>=40),
+             'Both cat audio controls must be visible and tap-sized inside the mobile viewport: '+JSON.stringify(bounds));
+         }
+        if(game.slug==='pawsibly-innocent'){
+          await page.locator('#menuClose').tap();
+          const sound=page.locator('#stageControls #sound');
+          const wasPressed=await sound.getAttribute('aria-pressed');
+          await sound.tap();
+          assert.notEqual(await sound.getAttribute('aria-pressed'),wasPressed,'Visible mobile sound button should toggle');
+          await sound.tap();
+          assert.equal(await sound.getAttribute('aria-pressed'),wasPressed,'Mobile sound button should restore');
+          const music=page.locator('#stageControls #music');
+          const musicPressed=await music.getAttribute('aria-pressed');
+          await music.tap();
+          assert.notEqual(await music.getAttribute('aria-pressed'),musicPressed,'Visible mobile music button should toggle');
+          await music.tap();
+          assert.equal(await music.getAttribute('aria-pressed'),musicPressed,'Mobile music button should restore');
+         }
         if(width!==390)continue;
         if(game.slug==='flip-dash'||game.slug==='parcel-panic'){
           const play=page.locator('#play-btn');assert.equal(await play.isVisible(),true,'PLAY NOW clipped');
