@@ -95,10 +95,11 @@ class VFX {
   impactType(x,y,type='light',options={}){
     const color=options.color||({
       light:'#fff1ce',heavy:'#ffe4a4',crit:'#fff3b4',stagger:'#ffd888',kill:'#fff1b3',
-      heal:'#a6e9c5',guard:'#9ce5ce',reflect:'#addaff'
+      heal:'#a6e9c5',guard:'#9ce5ce',reflect:'#addaff',
+      barrier:'#a5e4fb',wardFade:'#c5dbe4',cleanse:'#c7f2d6'
     }[type]||'#fff1ce');
     const heavy=type==='heavy'||type==='crit'||type==='stagger'||type==='kill';
-    const soft=type==='heal'||type==='guard'||type==='reflect';
+    const soft=['heal','guard','reflect','barrier','wardFade','cleanse'].includes(type);
     const duration=soft?.34:.25;
     this.ring(x,y,{r0:heavy?10:4,vr:(heavy?72:soft?40:32)/duration,
       life:duration,color,width:heavy?4.5:2.4});
@@ -113,6 +114,9 @@ class VFX {
     if(type==='stagger')this.orb(x,y,'#fff0bf',4);
     if(type==='reflect')this.beam(x-8,y-4,x+21,y-16,'#a3d5ff');
     if(type==='heal')this.orb(x,y,'#ace9cd',4);
+    if(type==='barrier')this.ring(x,y,{r0:11,vr:72,life:.18,color:'#e8fcff',width:2.5});
+    if(type==='wardFade')this.ring(x,y,{r0:20,vr:62,life:.32,color,width:2});
+    if(type==='cleanse')this.orb(x,y,'#f2ffec',3);
   }
   // `angle` (optional) sprays sparks directionally along the hit normal — reads as
   // force far better than a symmetric puff. A brief white flash pop sells the connect.
