@@ -87,20 +87,20 @@
   // ---------------------------------------------------------------
   var REGIONS = [
     {
-      id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
+      id: 'home', name: '庭院', sub: 'Courtyard',
       node: { x: 0.16, y: 0.74 }, difficulty: 1,
-      theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
-      speciesPool: ['nainai', 'moqiu', 'sanhua', 'yunduo', 'yinghua'],
-      unlock: null, // cinematic opening region
-      desc: '粉樱纷飞的林间，稀有猫猫出没。',
-    },
-    {
-      id: 'home', name: '阳光花园', sub: 'Sunlit Garden',
-      node: { x: 0.37, y: 0.52 }, difficulty: 2,
       theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
       speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
-      unlock: { after: 'sakura', explore: 0.3 },
-      desc: '午后的阳光洒满花径，调皮猫咪在这里追逐蝴蝶。',
+      unlock: null, // first explorable area, separate from the home yard scene
+      desc: '从熟悉的庭院出发，在阳光和花径间寻找野猫与宝藏。',
+    },
+    {
+      id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
+      node: { x: 0.37, y: 0.52 }, difficulty: 2,
+      theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
+      speciesPool: ['nainai', 'moqiu', 'sanhua', 'yunduo', 'yinghua'],
+      unlock: { after: 'home', explore: 0.4 },
+      desc: '粉樱纷飞的林间，稀有猫猫出没。',
     },
     {
       id: 'creek', name: '溪谷', sub: 'Creek Valley',
@@ -166,16 +166,16 @@
   // ================================================================
   function ensureSave() {
     var S = window.State.S;
-    if (!S.worldmap) S.worldmap = { current: 'sakura', unlocked: {}, regions: {} };
+    if (!S.worldmap) S.worldmap = { current: 'home', unlocked: {}, regions: {} };
     var wm = S.worldmap;
     if (!wm.unlocked) wm.unlocked = {};
     if (!wm.regions) wm.regions = {};
-    wm.unlocked.sakura = true;     // the cherry-blossom forest is the new opening map
+    wm.unlocked.home = true;       // courtyard is the permanent starting region
     for (var i = 0; i < REGIONS.length; i++) {
       var id = REGIONS[i].id;
       if (!wm.regions[id]) wm.regions[id] = { explored: 0, nodes: [], cleared: false };
     }
-    if (!wm.current) wm.current = 'sakura';
+    if (!wm.current) wm.current = 'home';
     return wm;
   }
 
@@ -229,7 +229,7 @@
   function init(g) {
     game = g;
     ensureSave();
-    cur = window.State.S.worldmap.current || 'sakura';
+    cur = window.State.S.worldmap.current || 'home';
     refreshUnlocks();
   }
   function onEncounter(fn) { cbEncounter = fn; }
