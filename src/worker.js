@@ -14,10 +14,11 @@ export default {async fetch(request,env,ctx){
       return new Response("Not found",{status:404,headers:{"cache-control":"no-store"}});
     if(request.method!=="GET"&&request.method!=="HEAD")
       return new Response("Method not allowed",{status:405,headers:{Allow:"GET, HEAD"}});
-    const target=new URL(game?"/"+game+"/":"/","https://morrowwish.vercel.app");
+    const profileGame=!game&&["youtube","tiktok","instagram","bluesky"].includes(source)?"cat-bond":null;
+    const target=new URL(game?"/"+game+"/":profileGame?"/"+profileGame+"/":"/","https://morrowwish.vercel.app");
     target.searchParams.set("utm_source",source);
     target.searchParams.set("utm_medium",game?"post":"profile");
-    target.searchParams.set("utm_campaign",game||"studio");
+    target.searchParams.set("utm_campaign",game||profileGame||"studio");
     return new Response(null,{status:302,headers:{
       Location:target.toString(),"Cache-Control":"no-store, max-age=0",
       "X-Robots-Tag":"noindex, nofollow"

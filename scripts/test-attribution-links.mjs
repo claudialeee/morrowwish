@@ -17,19 +17,22 @@ for(const provider of providers){
   assert.equal(response.headers.get('cache-control'),'no-store, max-age=0');
   const u=new URL(response.headers.get('location'));
   assert.equal(u.origin,base);
-  assert.equal(u.pathname,'/');
+  const directToCatBond=['youtube','tiktok','instagram','bluesky'].includes(provider);
+  assert.equal(u.pathname,directToCatBond?'/cat-bond/':'/');
   assert.equal(u.searchParams.get('utm_source'),provider);
   assert.equal(u.searchParams.get('utm_medium'),'profile');
-  assert.equal(u.searchParams.get('utm_campaign'),'studio');
+  assert.equal(u.searchParams.get('utm_campaign'),directToCatBond?'cat-bond':'studio');
 }
-for(const game of ['cat-bond','tiny-town','pawsibly-innocent','elsewhere','flip-dash','parcel-panic','pocket-aquarium']){
-  const res=await handler.fetch(new Request(base+'/go/youtube/'+game),{ASSETS:assets},{});
-  assert.equal(res.status,302);
-  const u=new URL(res.headers.get('location'));
-  assert.equal(u.pathname,'/'+game+'/');
-  assert.equal(u.searchParams.get('utm_source'),'youtube');
-  assert.equal(u.searchParams.get('utm_medium'),'post');
-  assert.equal(u.searchParams.get('utm_campaign'),game);
+for(const provider of providers){
+  for(const game of ['cat-bond','tiny-town','pawsibly-innocent','elsewhere','flip-dash','parcel-panic','pocket-aquarium']){
+    const res=await handler.fetch(new Request(base+'/go/'+provider+'/'+game),{ASSETS:assets},{});
+    assert.equal(res.status,302);
+    const u=new URL(res.headers.get('location'));
+    assert.equal(u.pathname,'/'+game+'/');
+    assert.equal(u.searchParams.get('utm_source'),provider);
+    assert.equal(u.searchParams.get('utm_medium'),'post');
+    assert.equal(u.searchParams.get('utm_campaign'),game);
+  }
 }
 for(const bad of ['/go/unknown','/go/youtube/not-a-game','/go/youtube/cat-bond/extra']){
   const res=await handler.fetch(new Request(base+bad),{ASSETS:assets},{});
@@ -43,4 +46,4 @@ const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 for(const marker of ['utm_source','utm_campaign','morrowwish-session-campaign','sessionStorage.setItem']){
   assert.ok(telemetry.includes(marker),'Existing JS attribution missing: '+marker);
 }
-console.log('Social short links: 7 profile sources, 7 game links, no open redirects, existing landing attribution verified.');
+console.log('Social short links: 4 featured Cat Bond profiles, 3 studio profiles, 49 game-specific links, no open redirects, existing landing attribution verified.');
