@@ -597,6 +597,15 @@ class Game {
     }
     const hit = this.yard.handleTap(x, y);
     if (!hit) return;
+    if (hit.type === 'building') {
+      const started=this.yard.inviteCatToBuilding(hit.building);
+      this.toast(started
+        ?(window.MorrowwishI18n?.get?.()==='zh'
+            ?'猫猫正在过来使用设施！':'A kitten is on its way to play!')
+        :(window.MorrowwishI18n?.get?.()==='zh'
+            ?'猫猫正在忙，稍后再试':'The cats are busy right now'));
+      return;
+    }
     if (hit.type === 'loot') {
       const r = this.yard.collectLoot(hit.bubble, hit.idx);
       if (r.amount > 0) {
