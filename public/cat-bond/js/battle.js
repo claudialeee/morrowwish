@@ -670,11 +670,15 @@ class CaptureBattle {
       hp: Math.round(maxhp * carried), maxhp,
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
-      speed: 120 + s.agi * 2.8,            // trimmed ~20%: cats were a touch too zippy to control
+      // AGI gives at most +30% move speed (hard cap) — an uncapped agi*k let leveled
+      // high-AGI cats sprint far too fast to control (restored after a merge reverted it).
+      speed: 150 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,
       tags: [], status: {}, slowed: false,
-      projSpeed: 250 + s.agi * 4,          // trimmed ~17%: projectiles read calmer/more dodgeable
+      // Projectile speed is decoupled from AGI (flat): the shot's speed belongs to the
+      // SHOT, not the cat's legs — AGI should move the cat, not make its toys hypersonic.
+      projSpeed: 300,
       // Opening cooldowns: skills start on cooldown so a fight can't open with an
       // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
       cd: { basic: 0, q: 1.6, e: 2.4 },
@@ -1875,6 +1879,11 @@ class CaptureBattle {
       this.vfx.ring(f.x, f.y, { r0: 34 * (1 - k) + 6, vr: 0, life: 0.06, color: c.col, width: 3 });
       if (c.t <= 0) { f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true); }
     }
+    // Drop finished/aborted casts AND always clear the caster's root flag as they leave,
+    // so a cast removed via the dead/invalid path (c.t=0 + continue above) or any early
+    // abort can never leave a cat permanently rooted ("卡在原地没动" in auto-battle).
+    const dropped = this.pendingCasts.filter(c => c.t <= 0);
+    for (const c of dropped) if (c.f && c.f._castRoot) c.f._castRoot = 0;
     this.pendingCasts = this.pendingCasts.filter(c => c.t > 0);
   }
   tickBeams(dt) {
@@ -1905,6 +1914,10 @@ class CaptureBattle {
         this.vfx.trail(sx, sy, b.col, 3);
       }
     }
+    // Clear the anchor flag as a beam ends so the channeler is never left stuck in
+    // place (same permanent-root guard as pending casts).
+    const endedBeams = this.beams.filter(b => b.t <= 0);
+    for (const b of endedBeams) if (b.f && b.f._beamRoot) b.f._beamRoot = 0;
     this.beams = this.beams.filter(b => b.t > 0);
   }
   // perpendicular distance from point (px,py) to segment (ax,ay)-(bx,by)
@@ -2988,7 +3001,10 @@ class CaptureBattle {
     // time (this._vfxDt below) so impact sparks SNAP outward *during* the freeze (the
     // freeze-then-pop that sells the punch). Never stacks on bullet-time.
     this._vfxDt = dt;                                   // real dt for the vfx layer
-    if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.02; }
+    // A short SLOW (not a dead freeze): 0.02 froze the player cat solid so it couldn't
+    // nudge out of a follow-up during fast exchanges ("卡原地硬吃技能"). 0.12 keeps the
+    // weighty beat but the cat can still inch/dodge; the per-hit `stop` is already brief.
+    if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
     this.t += dt;
     this._lastDt = dt;                                  // shared by steering helpers (orbit/wander timers)
     if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
@@ -3051,6 +3067,10 @@ class CaptureBattle {
       if (f.shieldT > 0) f.shieldT=Math.max(0,f.shieldT-dt);
       if (f.damageBoostT > 0) f.damageBoostT=Math.max(0,f.damageBoostT-dt);
       if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
+      // SAFETY: a root flag with no live cast/beam backing it would freeze the cat
+      // forever (the "卡在原地没动" auto-battle bug). Self-heal any orphaned root.
+      if (f._castRoot > 0 && !(this.pendingCasts||[]).some(c=>c.f===f)) f._castRoot = 0;
+      if (f._beamRoot > 0 && !(this.beams||[]).some(b=>b.f===f)) f._beamRoot = 0;
       this.tickWards(f, dt);
       this.tickCatStatus(f, dt);              // DoT + soft-CC (slow) the enemy inflicted
       if (f.hitFlash > 0) f.hitFlash -= dt;
