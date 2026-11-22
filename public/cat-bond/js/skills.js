@@ -582,8 +582,8 @@
   //   quest: 'id'                — a quirky "领悟" condition (see QUEST_CHECKS)
   // A skill is LEARNABLE when every NON-cost gate is met (the player can afford
   // or not); it is EQUIPPABLE only once its id is in cat.learned. Pure non-cost
-  // gates (level/affinity/species/quest with no cost) auto-learn the moment the
-  // gate is met, so they feel like natural 领悟 moments.
+  // quest rewards auto-learn on completion; other free gates only reveal
+  // trainer choices so a cat's move list does not suddenly balloon.
 
   // Quirky "领悟" conditions, keyed by unlock.quest. Each is a pure predicate over
   // the cat + global State — small by design, reusing counters that already tick.
@@ -640,11 +640,12 @@
   function canLearn(cat, skill) {
     return isGated(skill) && !hasLearned(cat, skill.id) && gateMet(cat, skill);
   }
-  // A pure non-cost gate (level/affinity/species/quest, no coins/fish) is a
-  // natural 领悟 — once its condition is met the cat learns it automatically.
+  // Only earned quest milestones are automatic. Level, affection, species and
+  // build gates REVEAL trainer choices rather than quietly filling the book.
+  // Do not delete pre-existing learned skills from older save games.
   function isAutoLearn(skill) {
     const u = skill && skill.unlock;
-    return !!u && !u.cost;
+    return !!u && !u.cost && !!u.quest;
   }
   // Auto-grant any pure-gate skills the cat now qualifies for. Returns the list of
   // skills freshly learned (so the UI can toast / metric them). ensureLoadout and
@@ -700,22 +701,18 @@
       }
       const isUlt = s.ultCost > 0;
       const sig = SIGNATURE_SKILL[cat.species] === s.id;
-      // Progressive discovery: a beginner uses its own element first; its
-      // first successful capture reveals an extra element. Later growth works
-      // the same way even if that first capture used another teammate.
-      let elemOk = (s.element === el);
-      if (!elemOk && s.element === splash)
-        elemOk = (rIdx>=1 || !!cat.skillAwakened || lvl>=4 || bond>=40
-          || (Array.isArray(cat.loadout)&&cat.loadout.includes(s.id))); // old saves
-      const third=SPLASH_ELEMENT[splash];
-      if (!elemOk && s.element===third && lvl>=10 && bond>=60)elemOk=true;
-      // Advanced rare cats eventually learn more than two elements.
-      if (!elemOk && rIdx >= 2 && lvl >= 12) elemOk = true;
-      if (!elemOk) continue;
-      // Learn innate skills progressively. Never strip a saved manual or
-      // previous automatic loadout: those slots are grandfathered in.
+      // Each cat discovers its OWN element gradually and can later branch to
+      // ONE secondary element. Previously a high-level rare cat suddenly got
+      // all six elemental libraries; that made every breed feel identical.
+      // Grandfather in individually equipped legacy skills without widening
+      // the free pool for new cats or deleting any saved build.
       const alreadyEquipped=(Array.isArray(cat.loadout)&&cat.loadout.includes(s.id))||
         (Array.isArray(cat.autoSkillLoadout)&&cat.autoSkillLoadout.includes(s.id));
+      let elemOk=s.element===el;
+      if(!elemOk&&s.element===splash)
+        elemOk=rIdx>=1||!!cat.skillAwakened||lvl>=4||bond>=40||alreadyEquipped;
+      if(!elemOk&&alreadyEquipped)elemOk=true;
+      if(!elemOk)continue;
       if(!isUlt&&!alreadyEquipped){
         if(s.element===el){
           // The first STARTER ATTACK must be available regardless of where
@@ -730,8 +727,11 @@
           }else{
             const rank=attacking.findIndex(k=>k.id===s.id);
             if(rank>=1){
-              const threshold=rank===1?3:rank===2?5:7;
-              if(lvl<threshold&&bond<(rank===1?30:rank===2?55:75))continue;
+              // One new attack per milestone, not every remaining native
+              // attack on reaching Lv.7. Affection can advance ONE step.
+              const threshold=rank===1?3:3+(rank-1)*3;
+              const bondGate=[0,30,55,75,90,100][Math.min(rank,5)];
+              if(lvl<threshold&&bond<bondGate)continue;
             }
           }
         }else{
@@ -749,8 +749,9 @@
           }else{
             const rank=splashAtk.findIndex(k=>k.id===s.id);
             if(rank>=1){
-              const threshold=rank===1?6:rank===2?9:12;  // splash attacks trickle: 6/9/12
-              if(lvl<threshold&&bond<(rank===1?45:rank===2?70:90))continue;
+              const threshold=4+rank*4; // 4, 8, 12, 16... one at a time
+              const bondGate=[0,55,75,90,100][Math.min(rank,4)];
+              if(lvl<threshold&&bond<bondGate)continue;
             }
           }
         }
@@ -1080,14 +1081,11 @@
     if(rare===1&&(lv<3||bond<20))
       return en?'Next: Lv.3 + affection 20 to unlock an elemental ultimate'
         :'下一阶段：Lv.3 + 好感20 → 元素必杀技';
-    if(rare<2&&(lv<10||bond<60))
-      return en?'Advanced: Lv.10 + affection 60 for a third element'
-        :'进阶修炼：Lv.10 + 好感60 → 第三种元素技能';
-    if(rare>=2&&lv<12)
-      return en?'Special elemental skills are innate; Lv.12 reveals broader combinations'
-        :'天生掌握高级元素技能；Lv.12 可探索更多元素搭配';
-    return en?'Keep training to master more elemental combinations'
-      :'继续提升等级与羁绊，尝试搭配不同元素连携';
+    if(lv<12)
+      return en?'Learn more attacks one at a time; advanced moves are at the trainer'
+        :'攻击技能逐级学会；高阶招式需到训练师处主动学习';
+    return en?'Keep growing your native and secondary skill branches at the trainer'
+      :'继续培养本系与副系技能，并到训练师处学习高阶招式';
   }
 
   // ==========================================================================
