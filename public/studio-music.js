@@ -34,6 +34,11 @@
    }
  };
  const track=catalog[slug];if(!track)return;
+ // CC0 battle cue, quieter than the garden track so paw/element SFX stay clear.
+ const combatTrack={title:'Jungle Mission',zh:'猫猫战斗',genre:'playful pursuit',
+  url:'https://en.freepd.cn/api/music/436f6d6564792f4a756e676c65204d697373696f6e2e6d7033',volume:.042};
+ let scene='yard',duckTimer=null;
+ const active=()=>slug==='cat-bond'&&scene==='battle'?combatTrack:track;
  const KEY='morrowwish-music-enabled';
  let enabled=true;try{enabled=localStorage.getItem(KEY)!=='0'}catch{}
  let audio=null,button=null,gestureSeen=false,blocked=false,unavailable=false;
@@ -49,7 +54,7 @@
  function sync(){
   if(!button)return;
   button.textContent=label();
-  button.title=(zh()?'轻盈配乐：':'Light background music: ')+(zh()?track.zh:track.title)+' · FreePD CC0';
+  button.title=(zh()?'轻盈配乐：':'Light background music: ')+(zh()?active().zh:active().title)+' · FreePD CC0';
   button.setAttribute('aria-label',label());
   button.setAttribute('aria-pressed',String(enabled));
   button.classList.toggle('mw-music-off',!enabled);
@@ -59,17 +64,17 @@
   // HTMLMediaElement handles browser sleep, uninterrupted playback and looping
   // natively; the old Web Audio scheduler could get stuck after suspension.
   audio=document.createElement('audio');
-  audio.preload='auto';audio.loop=true;audio.volume=track.volume;
+  audio.preload='auto';audio.loop=true;audio.volume=active().volume;
   audio.setAttribute('playsinline','');
   audio.setAttribute('aria-hidden','true');
-  audio.src=track.url;
+  audio.src=active().url;
   audio.addEventListener('playing',()=>{blocked=false;unavailable=false;sync()});
   audio.addEventListener('pause',()=>{if(enabled&&!document.hidden&&!audio.ended){blocked=!audio.error;sync()}});
   audio.addEventListener('error',()=>{
    // Optional local recorded-CC0 fallback for Cat Bond if the CDN is offline.
    if(slug==='cat-bond'&&!audio.dataset.catBondFallback){
      audio.dataset.catBondFallback='1';
-     audio.src='/audio/cat-happy-clappy.ogg';
+     audio.src=scene==='battle'?catalog['flip-dash'].url:catalog['tiny-town'].url;
      audio.load();if(enabled&&gestureSeen)play();
      return;
    }
@@ -90,6 +95,27 @@
    }else{blocked=false;sync()}
   }catch{blocked=true;sync();return false}
   return true;
+ }
+ function switchScene(next){
+  if(slug!=='cat-bond')return false;
+  const desired=next==='battle'?'battle':'yard';
+  if(scene===desired)return true;
+  scene=desired;
+  if(duckTimer){clearTimeout(duckTimer);duckTimer=null;}
+  if(audio){
+   audio.pause();audio.dataset.catBondFallback='';
+   audio.src=active().url;audio.volume=active().volume;audio.load();
+  }
+  unavailable=false;blocked=false;sync();
+  if(enabled&&gestureSeen)play();
+  return true;
+ }
+ function duckFor(ms=2200){
+  if(slug!=='cat-bond'||scene!=='battle'||!audio)return;
+  if(duckTimer)clearTimeout(duckTimer);
+  audio.volume=Math.min(active().volume,.016);
+  duckTimer=setTimeout(()=>{duckTimer=null;if(audio)audio.volume=active().volume;},
+    Math.max(300,Math.min(4500,ms)));
  }
  function pause(){
   if(audio&&!audio.paused)audio.pause();
@@ -135,8 +161,8 @@
  if(slug==='pocket-aquarium')document.addEventListener('click',e=>{if(e.target.closest?.('.languages'))setTimeout(sync,0)});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
  if(enabled)play(); // Attempt immediately; browsers may require first user gesture.
- window.MorrowwishMusic={start:play,stop:pause,toggle,sync,status:()=>({
+ window.MorrowwishMusic={start:play,stop:pause,toggle,sync,switchScene,duckFor,status:()=>({scene,volume:audio?.volume??active().volume,
   game:slug,enabled,playing:!!audio&&!audio.paused,blocked,unavailable,source:audio?.currentSrc||audio?.src||track.url,
-  track:track.title,currentTime:audio?.currentTime||0,loop:audio?.loop===true
+  track:active().title,currentTime:audio?.currentTime||0,loop:audio?.loop===true
  })};
 })();
