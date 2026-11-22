@@ -115,7 +115,7 @@ function render(ctx,W,H,seq,lookup){
  const opacity=smooth(age/.13)*(1-smooth((age-2.50)/.24));
  if(opacity<=0)return true;
  // A 16:9 animated watercolor cut-in; fits portrait and short landscape.
- const stageW=Math.min(W*.965,H*.82*650/366),
+ const stageW=Math.min(W*.965,H*.91*650/366),
  stageH=stageW*366/650,stageX=(W-stageW)/2,stageY=(H-stageH)/2;
  const duo=(seq.catUids||[]).map(uid=>lookup?.(uid));
  const pair=key.split('+');
@@ -134,13 +134,18 @@ function render(ctx,W,H,seq,lookup){
  motionRibbons(ctx,stageW,stageH,p,key,tier,poses);
  // Each selected cat retains its species-specific watercolor fur, ears,
  // silhouette and markings. Never draw the eight fixed cats from the old sheet.
- const size=Math.min(290,stageH*.68,stageW*.31);
+ // Make the illustrated cats the main subjects (not 60px stickers in an
+ // otherwise empty scene). Keep stage-relative limits for landscape/portrait.
+ const size=Math.min(335,stageH*.74,stageW*.33);
  for(let i=0;i<2;i++){
   const actor=duo[i]||null,pose=poses[i],color=colors[pair[i]]||'#e5c7ff';
   if(!actor||!window.CatBondDuoArtwork?.drawKitten)continue;
   ctx.save();ctx.globalAlpha=pose.opacity;
   // Rotate the entire coherent illustrated cat: never disassemble legs/head.
-  ctx.translate(pose.x,pose.y);ctx.rotate(pose.angle);
+  // Keep complete ears and paws in frame even at high leap moments. The
+  // horizontal duo choreography remains unchanged, only vertical safety.
+  const groundedY=Math.max(stageH*.35,Math.min(stageH*.82,pose.y));
+  ctx.translate(pose.x,groundedY);ctx.rotate(pose.angle);
   window.CatBondDuoArtwork.drawKitten(ctx,0,0,size*pose.size,actor,i===1,p,
      Director?.styles?.[key]||'dash',color);
   ctx.restore();
