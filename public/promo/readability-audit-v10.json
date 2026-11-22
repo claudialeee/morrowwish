@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-22T08:52:21.788Z",
+  "createdAt": "2026-11-22T09:00:34.367Z",
   "version": "readability-review-v10",
   "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate.",
   "pausedPromoGames": [],
@@ -110,6 +110,14 @@
     },
     {
       "game": "cat-bond",
+      "scene": "rare-encounter",
+      "seconds": 2.05,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
       "scene": "battle-hud",
       "seconds": 2.45,
       "captionWords": 4,
@@ -134,10 +142,10 @@
     },
     {
       "game": "cat-bond",
-      "scene": "rare-encounter",
-      "seconds": 2.05,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
+      "scene": "rare-aftermath",
+      "seconds": 1.2,
+      "captionWords": 0,
+      "requiredSeconds": 0,
       "passed": true
     },
     {
