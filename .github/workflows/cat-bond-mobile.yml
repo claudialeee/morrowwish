@@ -8,6 +8,9 @@ on:
       - 'scripts/cat-bond-touch-smoke.mjs'
       - 'scripts/cat-bond-crazygames-smoke.mjs'
       - 'scripts/cat-bond-duo-smoke.mjs'
+      - 'scripts/cat-bond-single-painting-smoke.mjs'
+      - 'scripts/cat-bond-locked-duo-review.mjs'
+      - 'scripts/cat-bond-yard-placement-smoke.mjs'
       - 'scripts/cat-bond-audio-smoke.mjs'
       - 'scripts/cat-bond-balance-smoke.mjs'
       - 'scripts/cat-bond-progression-smoke.mjs'
@@ -41,6 +44,9 @@ jobs:
           # private QA first, so unrelated map browser failures cannot hide
           # regressions in the core cat-bond abilities.
           node scripts/cat-bond-duo-smoke.mjs
+          node scripts/cat-bond-single-painting-smoke.mjs
+          node scripts/cat-bond-locked-duo-review.mjs
+          node scripts/cat-bond-yard-placement-smoke.mjs
           node scripts/cat-bond-audio-smoke.mjs
           node scripts/cat-bond-balance-smoke.mjs
           node scripts/cat-bond-progression-smoke.mjs

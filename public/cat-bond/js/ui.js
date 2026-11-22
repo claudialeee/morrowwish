@@ -50,6 +50,20 @@ const UI = {
       this.game.syncBattleModeUI();
       window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
+    const placementConfirm=document.getElementById('yard-placement-confirm');
+    const placementCancel=document.getElementById('yard-placement-cancel');
+    if(placementConfirm)placementConfirm.addEventListener('click',()=>this.confirmBuildingPlacement());
+    if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
+    document.getElementById('yard-quick-skills')?.addEventListener('click',()=>{
+      // Prefer the cat with a newly unlocked skill; otherwise use the starter.
+      const cat=State.S.cats?.find(c=>Array.isArray(c.unseenSkills)&&c.unseenSkills.length)
+        ||State.S.cats?.[0];
+      if(cat)this.openSkillEditor(cat);
+      else this.game.toast(this.isEnglish()?'Adopt a cat first':'先领养一只小猫');
+    });
+    document.getElementById('yard-quick-work')?.addEventListener('click',()=>this.openWorkshop());
+    this.syncYardNav();
+    window.addEventListener('morrowwish-language-change',()=>this.syncYardNav());
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
@@ -99,6 +113,70 @@ const UI = {
         this.closeAll();
       }
     });
+  },
+
+  isEnglish(){return window.MorrowwishI18n?.get?.()!=='zh';},
+  syncYardNav(){
+    const en=this.isEnglish();
+    const tabCats=document.querySelector('[data-tab="cats"] .nav-caption');
+    const tabWork=document.querySelector('[data-tab="work"] .nav-caption');
+    if(tabCats)tabCats.textContent=en?'Cats / Skills':'猫咪·技能';
+    if(tabWork)tabWork.textContent=en?'Earn in Workshop':'工坊赚钱';
+    const skill=document.getElementById('yard-quick-skills');
+    const work=document.getElementById('yard-quick-work');
+    if(skill)skill.textContent=en?'✨ New Skills':'✨ 新技能';
+    if(work)work.textContent=en?'🪙 Workshop':'🪙 工坊赚钱';
+  },
+  startBuildingPlacement(type){
+    const en=this.isEnglish();
+    if(!this.game?.yard?.beginPlacement?.(type)){
+      this.game.toast(en?'Not enough coins or no free spot':'金币不足或暂无空地');
+      return false;
+    }
+    // Close the build list; player chooses the actual garden ground.
+    this.closeAll();
+    document.getElementById('yard-placement-dock').hidden=false;
+    document.body.classList.add('cb-placing-building');
+    this.updateBuildingPlacement();
+    window.arcadeMetric?.('bond_yard_placement_preview',{type});
+    return true;
+  },
+  updateBuildingPlacement(){
+    const p=this.game?.yard?.placement;
+    const status=document.getElementById('yard-placement-status');
+    const confirm=document.getElementById('yard-placement-confirm');
+    if(!status||!confirm)return;
+    if(!p){
+      document.getElementById('yard-placement-dock').hidden=true;
+      document.body.classList.remove('cb-placing-building');
+      return;
+    }
+    const en=this.isEnglish(),def=World.BUILDINGS_BY_ID[p.type];
+    status.textContent=(en?'Choose a spot for ':'给')+(def?def.name:'设施')+
+      (en?' · tap or move to place':'选择位置 · 点击草坪预览')+
+      (p.valid?(en?' · ready':' · 可以建造'):(en?' · blocked':' · 此处有遮挡'));
+    confirm.disabled=!p.valid;
+    confirm.textContent=en?'✓ Build here':'✓ 确认建造';
+    document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';
+  },
+  confirmBuildingPlacement(){
+    const en=this.isEnglish(),p=this.game?.yard?.placement;
+    if(!p||!p.valid)return false;
+    const name=World.BUILDINGS_BY_ID[p.type]?.name||p.type;
+    if(!this.game.yard.confirmPlacement()){
+      this.updateBuildingPlacement();
+      this.game.toast(en?'Cannot build here':'此处无法建造');
+      return false;
+    }
+    this.updateBuildingPlacement();
+    this.game.refreshHUD();
+    this.game.toast(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！');
+    window.MorrowwishAudio?.effect?.('discover');
+    return true;
+  },
+  cancelBuildingPlacement(){
+    this.game?.yard?.cancelPlacement?.();
+    this.updateBuildingPlacement();
   },
 
   onTab(tab) {
@@ -369,20 +447,90 @@ const UI = {
     };
     document.getElementById('quarrel-later').onclick=()=>this.closeAll();
   },
+  // A real in-panel cut-in is shown BEFORE duo selection, with the actual
+  // two selected breeds. Preview availability never changes skill unlocks.
+  showPairSkillAnimation(a,b,name,elementPair,tier=1){
+    const canvas=document.getElementById('duo-skill-canvas');
+    if(!canvas||!window.CatBondDuoHero)return;
+    const lookup=uid=>uid===a.uid?a:uid===b.uid?b:null;
+    const start=performance.now();
+    let lastPaint=0;
+    const draw=now=>{
+      if(!canvas.isConnected)return; // panels are rebuilt when either cat changes
+      requestAnimationFrame(draw);
+      if(now-lastPaint<45||document.hidden)return;
+      lastPaint=now;
+      const rect=canvas.getBoundingClientRect();
+      const w=rect.width,h=rect.height;if(w<10||h<10)return;
+      const scale=Math.min(2,window.devicePixelRatio||1);
+      const pw=Math.round(w*scale),ph=Math.round(h*scale);
+      if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
+      const ctx=canvas.getContext('2d');
+      ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,w,h);
+      if(!window.CatBondDuoHero.assetReady)return;
+      const len=2.75,elapsed=((now-start)/1000)%len;
+      window.CatBondDuoHero.draw(ctx,w,h,{
+        max:len,t:len-Math.max(.01,elapsed),strikeAt:.78,
+        catUids:[a.uid,b.uid],name,elements:elementPair,tier
+      },lookup);
+    };
+    requestAnimationFrame(draw);
+  },
+  // Paint each unlocked pair ONCE with the same full-illustration renderer
+  // as combat. Locked records never create canvases or preview requests.
+  renderUnlockedDuoCards(entries){
+    const paint=()=>{
+      if(!window.CatBondDuoHero?.assetReady)return;
+      document.querySelectorAll('#panel canvas[data-duo-thumb]').forEach(canvas=>{
+        const entry=entries[Number(canvas.dataset.duoThumb)];
+        if(!entry||entry.trust<20||!canvas.isConnected)return;
+        const art=CatRelations.title(entry.a,entry.b);
+        const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+        ctx.clearRect(0,0,w,h);
+        window.CatBondDuoHero.draw(ctx,w,h,{
+          max:2.75,t:1.80,catUids:[entry.a.uid,entry.b.uid],
+          elements:art.elementPair,name:art.name,
+          tier:entry.trust>=90?3:entry.trust>=60?2:1
+        },uid=>uid===entry.a.uid?entry.a:uid===entry.b.uid?entry.b:null);
+      });
+    };
+    if(window.CatBondDuoHero?.assetReady)requestAnimationFrame(paint);
+    else window.addEventListener('cat-bond-premium-art-ready',paint,{once:true});
+  },
   openBondPanel(preferUnresolved=false){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');return;}
     const pendingPair=preferUnresolved?CatRelations.unresolved?.()[0]:null;
+    // Build the visible gallery from EARNED relationship records only.
+    // Simply owning two cats does not reveal their ability or cinematics.
+    const unlockedPairs=Object.entries(State.S.duoRelations?.pairs||{})
+      .filter(([,rel])=>Number(rel?.value)>=20)
+      .map(([key,rel])=>{
+        const [uidA,uidB]=key.split(':');
+        const a=cats.find(c=>c.uid===uidA),b=cats.find(c=>c.uid===uidB);
+        return a&&b?{a,b,trust:rel.value}:null;
+      }).filter(Boolean)
+      .sort((x,y)=>y.trust-x.trust);
     let picked=pendingPair?[pendingPair.a.uid,pendingPair.b.uid]:
       (this._duoPicked?.slice()||CatRelations.chosen().map(c=>c.uid));
     if(picked.length!==2||!picked.every(id=>cats.some(c=>c.uid===id))){
       const pending=CatRelations.unresolved?.()[0];
       picked=pending?[pending.a.uid,pending.b.uid]:[cats[0].uid,cats[1].uid];
     }
+    if(unlockedPairs.length&&!this._duoChangeOpen&&!preferUnresolved){
+      const saved=[picked[0],picked[1]].sort().join(':');
+      if(!unlockedPairs.some(entry=>[entry.a.uid,entry.b.uid].sort().join(':')===saved)){
+        picked=[unlockedPairs[0].a.uid,unlockedPairs[0].b.uid];
+        this._duoPicked=picked.slice();
+      }
+    }
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const duoArt=ok?CatRelations.title(a,b):null;
-    const name=p>=20?(duoArt?.name||'—'):(en?'🔒 Unknown duo move':'🔒 尚未解锁的合击');
+    // Locked duo moves remain secret: no name, description, rendered cut-in
+    // or full-screen route before the actual trust threshold is reached.
+    const unlocked=ok&&p>=20;
+    const name=unlocked?(duoArt?.name||'—'):(ok?'🔒 ???':(en?'Choose two different cats':'请选择两只不同的猫'));
     const personalityNotes=[a,b].map(c=>{
       const notes=en?{
         gentle:'Protector · shields a vulnerable partner',
@@ -406,7 +554,31 @@ const UI = {
     const selected=ok&&CatRelations.chosen().map(c=>c.uid).join('|')===picked.join('|');
     const mood=ok?CatRelations.mood(a,b):'unknown';
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-    const select=which=>cats.map(c=>'<option value="'+esc(c.uid)+'" '+(c.uid===which?'selected':'')+'>'+esc(State.catName(c))+'</option>').join('');
+    const unlockedCards=unlockedPairs.map((entry,i)=>{
+      const art=CatRelations.title(entry.a,entry.b);
+      const active=CatRelations.chosen().map(c=>c.uid).sort().join(':')===
+        [entry.a.uid,entry.b.uid].sort().join(':');
+      const selected=[entry.a.uid,entry.b.uid].sort().join(':')===
+        picked.slice().sort().join(':');
+      return '<button type="button" class="duo-unlocked-card '+(selected?'chosen':'')+
+        '" data-duo-index="'+i+'" aria-pressed="'+String(selected)+'">'+
+        '<canvas class="duo-gallery-thumb" data-duo-thumb="'+i+'" width="300" height="169" aria-hidden="true"></canvas>'+
+        '<span class="duo-card-body"><strong>'+esc(State.catName(entry.a))+' × '+esc(State.catName(entry.b))+'</strong>'+
+        '<b>'+esc(art.name)+'</b><small>'+esc(art.description)+'</small>'+
+        '<span class="duo-card-trust">'+(active?'✓ '+(en?'Active · ':'出战中 · '):'')+
+        (en?'Trust ':'默契 ')+Math.floor(entry.trust)+'/100</span></span></button>';
+    }).join('');
+    const catButtons=side=>cats.map(c=>
+      '<button class="duo-cat-chip '+(picked[side]===c.uid?'selected':'')+
+      '" type="button" data-duo-cat="'+side+'" data-cat-uid="'+esc(c.uid)+
+      '" aria-pressed="'+String(picked[side]===c.uid)+'">'+esc(State.catName(c))+'</button>'
+    ).join('');
+    const showPairChooser=!unlockedPairs.length||this._duoChangeOpen;
+    const pairChooser='<div class="duo-direct-chooser" id="duo-direct-chooser">'+
+      '<p class="tiny">'+(en?'Tap two cats to raise another pairing (skills remain secret until unlocked).':
+        '直接点选两只猫培养新的搭档；未解锁的技能不会提前显示。')+'</p>'+
+      '<strong>'+(en?'First cat':'第一只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(0)+'</div>'+
+      '<strong>'+(en?'Second cat':'第二只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(1)+'</div></div>';
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
     const memories=ok?CatRelations.memoryList(a,b):[];
     const journey=window.WorldMap?.REGIONS||[];
@@ -423,10 +595,24 @@ const UI = {
         (en?State.catName(a)+' and '+State.catName(b)+' are upset. Make up for free to gain +6 trust.':
           State.catName(a)+' 和 '+State.catName(b)+' 闹别扭了，点下面的按钮免费和好，还能增加 6 点默契。')+
         '</p><button type="button" class="btn gold" id="duo-soothe">'+(en?'Make up · Free':'哄一哄 · 免费')+'</button></section>':''}
-      <div class="duo-picker"><label>${en?'Cat 1':'第一只'}<select id="duo-a">${select(picked[0])}</select></label>
-      <label>${en?'Cat 2':'第二只'}<select id="duo-b">${select(picked[1])}</select></label></div>
-      <div class="duo-relation"><strong>${name}</strong>
-        <p class="duo-art-description">✨ ${p>=20?(esc(duoArt?.description||'')+(p>=60?' · '+(en?'Enhanced synergy unlocked':'进阶合击已觉醒'):'')):(en?'Reach Trust 20 to discover this duo technique.':'将这对猫咪的默契提升至20，才能发现它们的专属合击。')}</p>
+      <section class="duo-unlocked-section">
+        <h3>${en?'Unlocked cat duos':'已解锁的双猫合击'} <small>${unlockedPairs.length}</small></h3>
+        ${unlockedPairs.length?'<div class="duo-unlocked-grid">'+unlockedCards+'</div>':
+          '<p class="duo-empty">'+(en?'No duo moves unlocked yet. Play together to reach 20 trust.':
+            '暂时还没有解锁合击。选好搭档后一起玩、撸猫，默契达到 20 才会揭晓技能。')+'</p>'}
+      </section>
+      ${unlockedPairs.length?'<button id="duo-change-cats" type="button" class="btn ghost duo-new-pair-toggle">'+
+         (this._duoChangeOpen?(en?'Hide new pairing':'收起新搭档'):
+           (en?'Raise another pairing':'培养其他搭档'))+'</button>':''}
+      ${showPairChooser?pairChooser:''}
+      <div class="duo-relation">
+        <div class="duo-skill-identity" aria-label="${en?'Selected duo special move':'当前组合合体技能'}">
+          <span class="duo-skill-kicker">${en?'THIS PAIR’S DUO SKILL':'这对猫的专属合体技'}</span>
+          <strong>${esc(name)}</strong>
+          <p class="duo-art-description">${unlocked?'✨ '+esc(duoArt?.description||''):(en?'Keep building trust to discover your duo move.':'继续培养默契，解锁后才会揭晓专属合体技。')}</p>
+          ${unlocked?'<canvas id="duo-skill-canvas" role="img" aria-label="'+esc(en?'Your unlocked duo move':'已解锁的合体技演出')+'"></canvas>':''}
+          <span class="duo-skill-unlock ${unlocked?'unlocked':'locked'}">${unlocked?(en?'✓ Unlocked · Charge your duo meter in battle':'✓ 已解锁 · 战斗中攒满合击能量后施放'):(en?'🔒 Locked · Reach trust 20 to discover the move':'🔒 尚未解锁 · 默契达到 20 后揭晓')}</span>
+        </div>
         <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
         <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
         <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
@@ -451,12 +637,33 @@ const UI = {
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button>
-        ${ok&&p>=20?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked duo move':'观看已解锁合击')+'</button>':''}</div>
+        ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
-    for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
-      const ids=picked.slice();ids[i]=e.target.value;this._duoPicked=ids;this.openBondPanel();
-    };
+    if(unlocked&&duoArt)this.showPairSkillAnimation(a,b,duoArt.name,duoArt.elementPair,
+      p>=90?3:p>=60?2:1);
+    document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
+      const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
+      if(!entry)return;
+      this._duoPicked=[entry.a.uid,entry.b.uid];
+      this._duoChangeOpen=false;this.openBondPanel();
+    });
+    document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
+      this._duoChangeOpen=!this._duoChangeOpen;
+      this.openBondPanel();
+    });
+    document.querySelectorAll('#panel [data-duo-cat]').forEach(btn=>btn.onclick=()=>{
+      const side=Number(btn.dataset.duoCat),uid=btn.dataset.catUid;
+      if(!cats.some(c=>c.uid===uid)||![0,1].includes(side))return;
+      this._duoPicked=picked.slice();this._duoPicked[side]=uid;
+      if(this._duoPicked[0]===this._duoPicked[1]){
+        const other=cats.find(c=>c.uid!==uid);
+        if(other)this._duoPicked[1-side]=other.uid;
+      }
+      this._duoChangeOpen=true;
+      this.openBondPanel();
+    });
+    this.renderUnlockedDuoCards(unlockedPairs);
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
       CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
@@ -469,7 +676,9 @@ const UI = {
     };
     const previewButton=document.getElementById('duo-preview');
     if(previewButton)previewButton.onclick=()=>{
-      if(!ok||p<20)return;
+      if(!unlocked)return;
+      // This player page reads actual saved relationship trust; a URL alone
+      // never grants access to a locked animation.
       const url=new URL('duo-preview.html',window.location.href);
       url.searchParams.set('a',a.uid);
       url.searchParams.set('b',b.uid);
@@ -723,7 +932,7 @@ const UI = {
           <div class="work-income">${en ? 'Cost' : '花费'}：<b>${def.cost} 🪙</b></div>
         </div>
         <div class="st-btns">
-          <button class="btn gold tiny-btn" data-build="${def.id}" ${afford ? '' : 'disabled'}>${en ? 'Build' : '建造'}</button>
+          <button class="btn gold tiny-btn" data-build="${def.id}" ${afford ? '' : 'disabled'}>${en ? 'Choose spot' : '选位置建造'}</button>
         </div>
       </div>`;
     }).join('');
@@ -742,6 +951,7 @@ const UI = {
           ${en?(up?.kind||'items'):(up?.name||'资源')} · ${en?'More joy at higher levels':'升级提高心情奖励'}
           · ${en?'Two cats playing builds trust':'两猫轮流玩会提升默契'}</p></div>
         <div class="st-btns">
+          <button class="btn ghost tiny-btn" data-visit="${i}">${en?'Let cats play':'叫猫来玩'}</button>
           <button class="btn gold tiny-btn" data-upgrade="${i}"
             ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
           <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
@@ -750,22 +960,23 @@ const UI = {
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2>🏗️ ${en ? 'Build the Yard' : '庭院建造'}</h2>
-      <p class="sub">${en?'Build facilities, upgrade them to Lv.3 and earn resources every time cats visit. Friends who play together grow closer.'
-        :'建造并升级设施到 3 级，猫咪来玩会产出资源、增加心情；两只猫轮流玩还能增进默契。'}</p>
+      <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
+        :'先选设施，再到庭院点击位置、确认建造。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
     const host = document.getElementById('panel');
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
-      if (this.game.yard.buildStructure(btn.dataset.build)) {
-        window.MorrowwishAudio?.effect?.('discover');
-        this.game.refreshHUD();
-        this.game.toast((en ? '🏗️ Built ' : '🏗️ 已建造 ') + (def ? def.name : ''));
-        this.openBuild();
-      } else {
-        this.game.toast(en ? 'Not enough coins' : '金币不足');
-      }
+      this.startBuildingPlacement(btn.dataset.build);
+    });
+    host.querySelectorAll('[data-visit]').forEach(btn => btn.onclick = () => {
+      const b=State.S.yardBuildings?.[Number(btn.dataset.visit)];
+      if(!b)return;
+      const ok=this.game.yard.inviteCatToBuilding(b);
+      this.closeAll();
+      if(!ok)this.game.toast(en?'Catch a cat first!':'先收集猫咪，它才会过来玩！');
+      else this.game.toast(en?'Look! A kitten is coming to play':'看！有猫咪跑来玩啦！');
     });
     host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
       const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);

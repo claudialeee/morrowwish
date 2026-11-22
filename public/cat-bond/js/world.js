@@ -153,10 +153,17 @@ class CatEntity {
       ctx.beginPath(); ctx.arc(this.x, this.y, 36, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
-    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x, this.y, {
+    const atPlay=!!(this._playBuildT>0&&this._playBuilding);
+    const sleepy=atPlay&&this._playBuildDef?.pose==='sleep';
+    // The CAT itself hops and lifts its forepaws at a real structure.
+    // No floating cat heads or limb stickers are substituted.
+    const bob=atPlay&&!sleepy?2+Math.sin(this.t*9)*3:0;
+    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x, this.y-bob, {
       species: sp, scale: depth, face: this.face, t: this.t,
-      motion: this.motion, stride: this.stride,
-      pose: this.pose, mood: this.mood(),
+      motion: atPlay&&!sleepy?.98:this.motion,
+      stride: atPlay&&!sleepy?this.stride+this.t*4:this.stride,
+      pose: atPlay?(sleepy?'sleep':'play'):this.pose,
+      mood: atPlay?'happy':this.mood(),
       growth: window.Growth ? Growth.visual(this.cat) : null,
     });
     // name + level tag
@@ -605,8 +612,12 @@ class YardScene {
   update(dt) {
     const mouse = this.game.mouse;
     // A cat heading to a structure steers itself first, then runs normal motion.
-    for (const e of this.entities) { if (e._buildTarget && !(mouse && mouse.active)) this.stepBuildTarget(e, dt); }
-    for(const e of this.entities)e.update(dt,mouse);
+    for(const e of this.entities){
+      if(e._buildTarget)this.stepBuildTarget(e,dt);
+      // Cursor-following must never steal a cat from the structure it is
+      // walking toward or playing at. Regular petting still works normally.
+      e.update(dt,(e._buildTarget||e._playBuildT>0)?null:mouse);
+    }
     this.updateBuildingPlay(dt);
     const duo=window.CatRelations?.chosen?.()||[];
     if(duo.length===2){
@@ -709,7 +720,11 @@ class YardScene {
     const drawables = [];
     for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
     for (const b of (State.S.yardBuildings || [])) drawables.push({ y: b.y, kind: 'building', ref: b });
-    for (const e of this.entities) drawables.push({ y: e.y, kind: 'cat', ref: e });
+    // While visibly using a structure, render the whole kitten in front of
+    // its object (not hidden behind the post it is scratching).
+    for(const e of this.entities)drawables.push({
+      y:e.y+(e._playBuilding&&e._playBuildT>0?20:0),kind:'cat',ref:e
+    });
     if (this.hide && !this.hide.found) drawables.push({ y: this.hide.spot.y + 0.1, kind: 'hide', ref: this.hide });
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) {
@@ -719,6 +734,8 @@ class YardScene {
       else if (d.kind === 'hide') this.drawHide(ctx, d.ref);
     }
 
+    // Preview is drawn on the actual yard canvas, not as a separate menu image.
+    if(this.placement)this.drawPlacement(ctx);
     // --- idle loot bubbles (tap to collect; the AFK payoff on the main screen) ---
     if (this.lootBubbles) for (const b of this.lootBubbles) {
       const bob = Math.sin(b.t * 2.5) * 3;
@@ -821,6 +838,26 @@ class YardScene {
     const depth = 0.8 + (b.y / this.game.H) * 0.5;
     def.draw(ctx, b.x, b.y, depth, this.game.t);
     const lvl=buildingLevel(b);
+    const playing=this.entities.filter(e=>e._playBuilding===b&&e._playBuildT>0);
+    if(playing.length){
+      // Visible, attached paw-to-facility action. Paw sparks are emitted
+      // at the cat's position and move toward the structure it is using.
+      const tick=this.game.t,shine=.55+.45*Math.sin(tick*6);
+      ctx.save();ctx.strokeStyle='#ffe6a2';ctx.lineWidth=2.4;
+      ctx.shadowColor='#f6d9a5';ctx.shadowBlur=11;
+      for(const e of playing){
+        const pawX=e.x+e.face*13,pawY=e.y-18*depth;
+        ctx.globalAlpha=.5+shine*.48;
+        for(let i=0;i<3;i++){
+          const a=tick*2.7+i*2.09,px=pawX+Math.cos(a)*13,py=pawY+Math.sin(a)*9;
+          ctx.beginPath();ctx.moveTo(px-4,py);ctx.lineTo(px+4,py);
+          ctx.moveTo(px,py-4);ctx.lineTo(px,py+4);ctx.stroke();
+        }
+        ctx.globalAlpha=.78;
+        ctx.beginPath();ctx.ellipse(b.x,b.y-26*depth,23*depth,9*depth,0,0,Math.PI*2);ctx.stroke();
+      }
+      ctx.restore();
+    }
     if(lvl>1){
       ctx.save();ctx.fillStyle='#fff5d9eb';ctx.strokeStyle='#ba965f';ctx.lineWidth=1.1;
       ctx.beginPath();ctx.roundRect(b.x-15,b.y-96*depth,30,18,7);ctx.fill();ctx.stroke();
@@ -872,6 +909,18 @@ class YardScene {
       pose:peeking?'walk':'idle',motion:peeking?.75:0,mood:'alert'
     });
   }
+  // Invite an actual visible kitten to a specific facility immediately.
+  inviteCatToBuilding(b){
+    if(!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
+    const available=this.entities.filter(e=>!(e._playBuildT>0));
+    if(!available.length)return false;
+    const nearest=available.sort((a,c)=>
+      Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(c.x-b.x,c.y-b.y))[0];
+    nearest._buildTarget=b;nearest._playBuildT=0;
+    nearest.setPose('walk',1.4);
+    nearest.emote('🐾',1.6);
+    return true;
+  }
   // ---- resident cats visit their play-structures and PLAY ----
   // Cheap, subtle pathing: on a slow timer, send one idle cat toward a nearby
   // structure. When it arrives, it strikes the structure's pose + emote and its
@@ -890,16 +939,20 @@ class YardScene {
         if (e._playBuildT <= 0) { e._playBuildDef = null; }
       }
     }
-    this._buildScan = (this._buildScan || 2 + Math.random() * 3) - dt;
+    this._buildScan = (this._buildScan == null ? 2 : this._buildScan) - dt;
     if (this._buildScan > 0) return;
     this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
     // pick an idle, not-already-busy cat and a free-ish structure to visit
-    const idle = this.entities.filter(e => e._playBuildT <= 0 && !e._buildTarget &&
+    const idle = this.entities.filter(e => !(e._playBuildT > 0) && !e._buildTarget &&
       ['idle', 'sit', 'walk', 'loaf'].includes(e.pose));
     if (!idle.length) return;
-    const cat = idle[Math.floor(Math.random() * idle.length)];
-    const b = builds[Math.floor(Math.random() * builds.length)];
-    cat._buildTarget = b;
+    // Prefer the nearest idle cat and the newest available structure so a
+    // freshly placed building produces an observable visit without waiting.
+    const b = this._newBuildToVisit && builds.includes(this._newBuildToVisit)
+      ? this._newBuildToVisit : builds[Math.floor(Math.random()*builds.length)];
+    this._newBuildToVisit=null;
+    const cat=idle.sort((a,b2)=>Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(b2.x-b.x,b2.y-b.y))[0];
+    this.inviteCatToBuilding(b);
   }
   // called from each cat's effective motion: nudge a cat toward its chosen
   // structure, then trigger play on arrival. Invoked from YardScene.update via
@@ -907,20 +960,24 @@ class YardScene {
   stepBuildTarget(e, dt) {
     const b = e._buildTarget; if (!b) return;
     const def = BUILDINGS_BY_ID[b.type];
-    const dx = b.x - e.x, dy = (b.y - 4) - e.y, dist = Math.hypot(dx, dy);
+    const dx = b.x - e.x, dy = (b.y + 16) - e.y, dist = Math.hypot(dx, dy);
     if (dist > 20) {
       e.pose = 'walk'; e.timer = 1;
       e.vx = (dx / dist) * 34; e.vy = (dy / dist) * 20;
     } else {
       // arrived: play!
       e.vx = e.vy = 0;
-      e.setPose(def ? def.pose : 'play', 2.2 + Math.random() * 1.8);
+      e.setPose(def?.pose==='sleep'?'sleep':'play', 3.0 + Math.random() * 1.2);
       e.emote(def ? def.emote : '🐾', 2.2);
       e.cat.joy = Math.min(100,e.cat.joy+
         (def?def.joy*(1+.35*(buildingLevel(b)-1)):5));
-      e._playBuildT=e.timer;e._playBuildDef=def;e._playBuilding=b;
+      e._playBuildT=e.timer;e._playBuildMax=e.timer;e._playBuildDef=def;e._playBuilding=b;
       e._buildTarget=null;
       this.rewardBuildingVisit(e.cat,b,def);
+      this.spawnFloat(b.x,b.y-66,
+        window.MorrowwishI18n?.get?.()==='zh'
+          ?State.catName(e.cat)+' 在玩 '+(def?.name||'设施')+'！'
+          :State.catName(e.cat)+' is playing!', '#fff5cd');
     }
   }
   // Cat visits now have real income and relationship consequences, but a
@@ -986,17 +1043,80 @@ class YardScene {
     }
     return best || { x: W / 2, y: (top + bot) / 2 };
   }
-  // Spend coins and place a structure; returns true on success.
-  buildStructure(type) {
-    const def = BUILDINGS_BY_ID[type]; if (!def) return false;
-    if ((State.S.coins || 0) < def.cost) return false;
-    State.S.coins -= def.cost;
-    const spot = this.freeBuildingSpot();
-    (State.S.yardBuildings = State.S.yardBuildings || []).push({
-      type,x:spot.x,y:spot.y,level:1,lastRewardAt:0
-    });
+  // Physical, player-controlled placement. Nothing is charged before
+  // confirm. Bounds and overlap are the same on phone, desktop and resize.
+  buildingSpotValid(x,y) {
+    const {W,H}=this.game;
+    const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+    const side=Math.min(56,Math.max(30,W*.10));
+    if(!Number.isFinite(x)||!Number.isFinite(y)||
+        x<side||x>W-side||y<top||y>bottom)return false;
+    if((State.S.yardBuildings||[]).some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
+    if(this.bushes.some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<32))return false;
+    return true;
+  }
+  beginPlacement(type){
+    const def=BUILDINGS_BY_ID[type];
+    if(!def||(State.S.coins||0)<def.cost)return false;
+    const spot=this.freeBuildingSpot();
+    this.placement={type,x:spot.x,y:spot.y,valid:false};
+    this.movePlacement(spot.x,spot.y);
+    return true;
+  }
+  movePlacement(x,y){
+    if(!this.placement)return false;
+    const {W,H}=this.game;
+    const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+    this.placement.x=Math.max(0,Math.min(W,x));
+    this.placement.y=Math.max(top,Math.min(bottom,y));
+    this.placement.valid=this.buildingSpotValid(this.placement.x,this.placement.y);
+    return this.placement.valid;
+  }
+  cancelPlacement(){this.placement=null;}
+  confirmPlacement(){
+    const p=this.placement;
+    if(!p||!p.valid)return false;
+    const success=this.buildStructure(p.type,{x:p.x,y:p.y});
+    if(success)this.placement=null;
+    return success;
+  }
+  drawPlacement(ctx){
+    const p=this.placement,def=BUILDINGS_BY_ID[p?.type];
+    if(!p||!def)return;
+    ctx.save();
+    ctx.strokeStyle=p.valid?'rgba(137,213,163,.78)':'rgba(239,128,133,.76)';
+    ctx.fillStyle=p.valid?'rgba(139,230,160,.18)':'rgba(255,132,139,.17)';
+    const cell=Math.max(26,Math.min(38,this.game.W/12));
+    const X=Math.floor(p.x/cell)*cell,Y=Math.floor(p.y/cell)*cell;
+    ctx.lineWidth=2;ctx.setLineDash([6,5]);
+    for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){
+      ctx.fillRect(X+a*cell,Y+b*cell,cell,cell);
+      ctx.strokeRect(X+a*cell,Y+b*cell,cell,cell);
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha=.86;
+    def.draw(ctx,p.x,p.y,.8+(p.y/this.game.H)*.5,this.game.t);
+    ctx.globalAlpha=1;
+    ctx.fillStyle=p.valid?'#f5ffed':'#fff2ee';
+    ctx.strokeStyle=p.valid?'#3a826a':'#ae535d';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(p.x-40,p.y-106,80,24,10);ctx.fill();ctx.stroke();
+    ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#365943';
+    ctx.fillText(p.valid?'✓ 可建造':'× 有遮挡',p.x,p.y-94);
+    ctx.restore();
+  }
+  buildStructure(type,spot=null){
+    const def=BUILDINGS_BY_ID[type];if(!def||(State.S.coins||0)<def.cost)return false;
+    const chosen=spot||this.freeBuildingSpot();
+    if(!this.buildingSpotValid(chosen.x,chosen.y))return false;
+    State.S.coins-=def.cost;
+    const b={type,x:chosen.x,y:chosen.y,level:1,lastRewardAt:0};
+    (State.S.yardBuildings=State.S.yardBuildings||[]).push(b);
+    this._newBuildToVisit=b;this._buildScan=.12;
+    this.inviteCatToBuilding(b);
+    // Return the nearest available cat to this facility quickly, instead of
+    // forcing a several-second random wait.
     State.save();
-    window.arcadeMetric?.('bond_yard_build', { type, cost: def.cost });
+    window.arcadeMetric?.('bond_yard_build',{type,cost:def.cost,manual:!!spot});
     return true;
   }
   // Remove a placed structure by index, refunding half its cost.
@@ -1006,7 +1126,10 @@ class YardScene {
     const def = BUILDINGS_BY_ID[b.type];
     const refund=def?Math.floor((def.cost+(b.upgradeSpend||0)*.5)/2):0;
     builds.splice(index, 1);
-    for (const e of this.entities) { if (e._buildTarget === b) e._buildTarget = null; }
+    for (const e of this.entities) {
+      if(e._buildTarget===b)e._buildTarget=null;
+      if(e._playBuilding===b){e._playBuilding=null;e._playBuildT=0;}
+    }
     State.S.coins = (State.S.coins || 0) + refund;
     State.save();
     window.arcadeMetric?.('bond_yard_remove', { type: b.type, refund });
@@ -1071,6 +1194,11 @@ class YardScene {
     // topmost cat (largest y first)
     const sorted = [...this.entities].sort((a, b) => b.y - a.y);
     for (const e of sorted) { if (e.hit(px, py)) return { type: 'cat', entity: e }; }
+    // Tapping the structure itself directly invites a kitten to play.
+    const buildings=[...(State.S.yardBuildings||[])].sort((a,b)=>b.y-a.y);
+    for(const b of buildings){
+      if(Math.abs(px-b.x)<39 && py<b.y+16 && py>b.y-75)return {type:'building',building:b};
+    }
     return null;
   }
   collectLoot(bubble, idx) {
