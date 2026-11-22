@@ -97,7 +97,7 @@ class CaptureBattle {
     }
 
     // --- build the player team — up to 2 cats ON FIELD (roguelike squad cap). A
-    // bond ult can summon a temporary 3rd reinforcement mid-fight (see castDuo). ---
+    // only the dedicated summon resonance can briefly call a 3rd cat. ---
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
     this.FIELD_CAP = 2;                          // only 2 cats fight on the field at once
     this.team = cats.slice(0, this.FIELD_CAP).map((c, i) => this.makeFighter(c, i));
@@ -387,10 +387,9 @@ class CaptureBattle {
       }
       if(support==='charge')this.gainUlt(11+8*d.tier);
       this.gainUlt(16);
-      // BOND REINFORCEMENT (羁绊支援): the bond ult temporarily calls a benched cat
-      // onto the field to fight alongside the duo for a short window (~12s), then it
-      // leaves. The exception to the 2-on-field cap.
-      this.summonReinforcement(12 + d.tier * 1.5);
+      // Only the dedicated 召唤队友 resonance brings in a third cat.
+      // All other duo resonances keep the usual two-cat field composition.
+      if(support==='summon')this.summonReinforcement(12 + d.tier * 1.5);
       window.arcadeMetric?.('bond_duo_attack',{elementPair:mix,tier:d.tier,hits,style:support});
     };
     window.MorrowwishMusic?.duckFor?.(2500);
@@ -3172,7 +3171,7 @@ class CaptureBattle {
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
-        this.duoCharge=Math.min(100,this.duoCharge+dt*3.2);   // bond support charges SLOWER than the ult (it's the bigger moment: reinforcement + duo strike)
+        this.duoCharge=Math.min(100,this.duoCharge+dt*3.2);   // bond resonance charges more slowly than a regular ultimate
     }
     // combo chain decays if you stop landing hits (需持续操作维持)
     if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0 && this.combo > 0) this.breakCombo(); }
