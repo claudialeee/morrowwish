@@ -1,0 +1,52 @@
+// Regression: the in-scene top-left button returns to the yard, not the map.
+// Runs without a browser using the real WorldMap module and a minimal game stub.
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+
+const source=fs.readFileSync('public/cat-bond/js/worldmap.js','utf8');
+const html=fs.readFileSync('public/cat-bond/index.html','utf8');
+assert.match(html,/worldmap\.js\?v=region-yard-upper-left-20261122/);
+assert.match(source,/← 回庭院/);
+assert.match(source,/← 回地图/); // Keep the portal route to the world map.
+
+for(const {W,H,touch} of [
+  {W:390,H:844,touch:true},      // portrait phone
+  {W:320,H:568,touch:true},      // narrow phone
+  {W:568,H:320,touch:true},      // small landscape phone
+  {W:800,H:400,touch:true},      // wide landscape phone
+  {W:1280,H:720,touch:false},    // desktop
+]){
+  const state={cats:[],dex:{},coins:0,fish:0};
+  const window={
+    State:{S:state,save(){}},
+    GameData:{
+      speciesById(id){return {id,rarity:'R'}},
+      RARITY:{R:{weight:1}},
+    },
+    MorrowwishI18n:{get:()=> 'zh'},
+  };
+  vm.runInNewContext(source,{window,console});
+  const map=window.WorldMap;
+  let exits=0;
+  map.init({W,H,isTouch:touch,toast(){}});
+  map.onExit(()=>{exits++});
+  assert.equal(map.enterRegion('sakura'),true,'can enter a real region');
+  const compact=touch&&W>H&&H<520;
+  const button={x:compact?64:16,y:W<650?106:65,w:compact?104:128,h:compact?38:42};
+  assert.ok(button.x+button.w<=W&&button.y+button.h<=H,'button stays on screen');
+  const hudY=Math.max(W<650?119:62,button.y+button.h+12);
+  assert.ok(hudY>=button.y+button.h+12,'region status stays below button');
+  assert.equal(map.handleTap(button.x+button.w/2,button.y+button.h/2),true,
+    'upper-left tap is handled in region');
+  assert.equal(exits,1,'region control returns directly to yard');
+
+  // Lower-left old button no longer functions as a hidden duplicate.
+  map.handleTap(20,H-24);
+  assert.equal(exits,1,'no hidden legacy bottom-left return');
+  map.enterMap();
+  const worldButton={x:compact?64:16,y:W<650?76:65,w:compact?104:128,h:compact?38:42};
+  map.handleTap(worldButton.x+worldButton.w/2,worldButton.y+worldButton.h/2);
+  assert.equal(exits,2,'world map still returns to yard');
+}
+console.log('Cat Bond in-scene upper-left yard return passed in portrait, landscape and desktop');
