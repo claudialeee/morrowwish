@@ -840,9 +840,9 @@ class CaptureBattle {
     e[kT]=(e[kT]||0)-(dt||0);
     if(e[kT]<=0){
       e[kS]=-e[kS];
-      e[kT]=0.8+Math.random()*1.7;                   // next scheduled flip
-      // ~22% of flips are a "feint": reverse again almost immediately
-      e[kF]=Math.random()<0.22?0.12+Math.random()*0.12:0;
+      e[kT]=1.6+Math.random()*1.8;                   // next scheduled flip (1.6–3.4s: a deliberate direction change, not a vibration)
+      // ~10% of flips are a "feint": reverse again almost immediately (rare, so it reads as a juke not jitter)
+      e[kF]=Math.random()<0.10?0.14+Math.random()*0.12:0;
     }
     if(e[kF]>0){e[kF]-=(dt||0);if(e[kF]<=0){e[kS]=-e[kS];}}
     return e[kS];
@@ -852,8 +852,14 @@ class CaptureBattle {
   // ahead of the fighter. Cheap, bounded, and gives movement organic drift so two
   // cats with the same band don't trace identical arcs. Returns a unit-ish vector.
   wanderVec(e,key,dt){
-    const k=key+'Theta';
-    e[k]=(e[k]==null?Math.random()*Math.PI*2:e[k])+(Math.random()*2-1)*2.5*(dt||0.016);
+    const k=key+'Theta',kr=key+'WRate';
+    // Low-frequency drift: theta advances at a per-fighter rate that itself slews only
+    // gently, so the heading sweeps smoothly instead of jumping every frame. (The old
+    // version re-rolled a full ±2.5 rad/s step each frame → that read as jitter.)
+    if(e[k]==null){e[k]=Math.random()*Math.PI*2;e[kr]=(Math.random()*2-1)*0.9;}
+    // nudge the drift rate slowly (bounded) so the wander isn't perfectly periodic
+    e[kr]=clamp(e[kr]+(Math.random()*2-1)*0.4*(dt||0.016),-1.1,1.1);
+    e[k]+=e[kr]*(dt||0.016);
     return {x:Math.cos(e[k]),y:Math.sin(e[k])};
   }
 
@@ -862,12 +868,26 @@ class CaptureBattle {
   // a light wander. nx,ny = unit vector toward the target; dist = current distance.
   bandSteer(f,nx,ny,dist,band,dt){
     const d=dt!=null?dt:(this._lastDt||0.016);
+    // HYSTERESIS: switch mode only when CLEARLY past a threshold, and switch back only
+    // when clearly returned — so a cat sitting right on band.min/band.max doesn't flip
+    // between rush and strafe every frame (that boundary chatter was a big twitch source).
+    const BUF=22;
+    let mode=f._steerMode||'hold';
+    if(mode==='hold'){
+      if(dist<band.min-BUF)mode='retreat';
+      else if(dist>band.max+BUF)mode='rush';
+    }else if(mode==='retreat'){
+      if(dist>band.min+BUF)mode='hold';           // re-entered the band comfortably
+    }else if(mode==='rush'){
+      if(dist<band.max-BUF)mode='hold';
+    }
+    f._steerMode=mode;
     let mx,my;
-    if(dist<band.min-6){           // too close → back off (kite / keep melee from overshooting)
+    if(mode==='retreat'){           // too close → back off (kite / keep melee from overshooting)
       mx=-nx;my=-ny;
-    }else if(dist>band.max+6){     // too far → close in
+    }else if(mode==='rush'){        // too far → close in
       mx=nx;my=ny;
-    }else{                         // in the band → orbit with a slight range-correction
+    }else{                          // in the band → orbit with a slight range-correction
       const dir=this.orbitSign(f,'_orbit',d);
       mx=-ny*dir;my=nx*dir;
       // nudge back toward band centre so it doesn't slowly spiral out
@@ -877,6 +897,24 @@ class CaptureBattle {
     const w=this.wanderVec(f,'_wander',d);
     mx+=w.x*0.2;my+=w.y*0.2;
     return {x:mx,y:my};
+  }
+
+  // STEERING INERTIA: the raw per-frame desired direction (mx,my) can swing wildly
+  // frame-to-frame (orbit flip, wander, rush↔strafe transitions, separation). Applying
+  // it straight to position makes the cat snap/vibrate. Instead keep a per-fighter
+  // smoothed steering velocity and ease it toward the desired unit heading each frame,
+  // then move by the SMOOTHED heading. This removes the twitch while staying responsive
+  // (K≈8 → it re-aims in ~1/8s, fast enough to still kite/dodge). Returns the moved-by
+  // unit vector (or null if effectively idle). Does NOT change top speed.
+  smoothSteer(f,mx,my,K){
+    const mag=Math.hypot(mx,my);
+    const dx=mag>1e-4?mx/mag:0, dy=mag>1e-4?my/mag:0;   // desired unit heading
+    const a=Math.min(1,(this._lastDt||0.016)*(K||8));
+    f._svx=(f._svx||0)+(dx-(f._svx||0))*a;
+    f._svy=(f._svy||0)+(dy-(f._svy||0))*a;
+    const sm=Math.hypot(f._svx,f._svy);
+    if(sm<0.04)return null;
+    return {x:f._svx/sm,y:f._svy/sm,raw:mag};
   }
 
   // Movement and action selection share the same engagement distance, so an
@@ -909,17 +947,17 @@ class CaptureBattle {
       }
       if(!this._sidestep)threat=null;
     }
-    let mx=0,my=0;
+    let mx=0,my=0,evasive=false;
     // TOP PRIORITY: get out of a telegraphed must-dodge smash disc (auto-mode must
     // respect the same forcing function the player does) — flee straight out of it.
     const smash=this.incomingSmash(f);
     if(smash){
       const ddx=f.x-smash.x,ddy=f.y-smash.y,dd=Math.hypot(ddx,ddy)||1;
-      mx=ddx/dd;my=ddy/dd;
+      mx=ddx/dd;my=ddy/dd;evasive=true;         // snap: evasion must stay crisp
     }else if(threat){
       const p=threat.p,sp=Math.hypot(p.vx,p.vy)||1;
       const side=f.i%2?-1:1;
-      mx=-p.vy/sp*side;my=p.vx/sp*side;
+      mx=-p.vy/sp*side;my=p.vx/sp*side;evasive=true;
     }else{
       // KIT-BASED engagement: a melee/dash cat RUSHES in, a ranged/beam cat KITES at
       // its band, a support cat HANGS BACK. The band comes from the equipped skills
@@ -937,12 +975,17 @@ class CaptureBattle {
         if(sd2<3600&&sd2>1){const sd=Math.sqrt(sd2);mx+=sx/sd*0.45;my+=sy/sd*0.45;}
       }
     }
-    const mag=Math.hypot(mx,my);
-    if(mag>0.04 && !(f.dashT>0&&f.pounce) && !(f._leapT>0) && f.rootT<=0 && !(f._beamRoot>0) && !(f._castRoot>0)){
+    // Ease the desired heading through the per-fighter smoothed velocity so the cat
+    // doesn't snap when the desired direction jumps. Evasion (smash/threat) re-aims
+    // much faster (K≈22, near-instant) so dodging stays crisp; cruising uses K≈8.
+    const dir=this.smoothSteer(f,mx,my,evasive?22:8);
+    if(dir && !(f.dashT>0&&f.pounce) && !(f._leapT>0) && f.rootT<=0 && !(f._beamRoot>0) && !(f._castRoot>0)){
       const spd=(f.dashT>0?f.speed*3:f.speed)*this.moveMul(f);
-      f.x=clamp(f.x+mx/mag*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
-      f.y=clamp(f.y+my/mag*spd*dt,this.topMargin,this.H-this.bottomMargin);
-      f.face=mx<0?-1:mx>0?1:f.face;
+      f.x=clamp(f.x+dir.x*spd*dt,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+      f.y=clamp(f.y+dir.y*spd*dt,this.topMargin,this.H-this.bottomMargin);
+      // facing follows the smoothed heading, and only flips on a meaningful horizontal
+      // component so micro dx doesn't strobe the sprite left/right every frame.
+      if(dir.x<-0.25)f.face=-1;else if(dir.x>0.25)f.face=1;
       f.moving=true;
     }else f.moving=false;
     const near=threat?.p||null;
@@ -1084,12 +1127,12 @@ class CaptureBattle {
     // flee nearest enemy projectile
     let near = null, nd = 1e9;
     for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < nd) { nd = d; near = p; } }
-    let mx = 0, my = 0;
+    let mx = 0, my = 0, evasive = false;
     // allies also only juke SOME incoming shots (per-ally sticky roll), not all.
     if (near && (f._allyStepUntil == null || this.t > f._allyStepUntil)) { f._allyStep = Math.random() < this.autoDodgeChance(f); f._allyStepUntil = this.t + 0.35; }
     const allySmash = this.incomingSmash(f);
-    if (allySmash) { const ax = f.x - allySmash.x, ay = f.y - allySmash.y, ad = Math.hypot(ax, ay) || 1; mx = ax / ad; my = ay / ad; }  // flee the smash disc first
-    else if (near && nd < 100 && f._allyStep) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; }
+    if (allySmash) { const ax = f.x - allySmash.x, ay = f.y - allySmash.y, ad = Math.hypot(ax, ay) || 1; mx = ax / ad; my = ay / ad; evasive = true; }  // flee the smash disc first
+    else if (near && nd < 100 && f._allyStep) { const pv = Math.hypot(near.vx, near.vy) || 1; mx = -near.vy / pv; my = near.vx / pv; evasive = true; }
     else {
       // same KIT-BASED band as the active cat: brawler allies rush, ranged allies
       // kite, support allies hang back — each on its own flipping orbit + wander.
@@ -1100,12 +1143,18 @@ class CaptureBattle {
       // separation from the active cat & other allies (sq-dist early-out)
       for (const o of this.team) { if (o === f || !o.alive) continue; const sx = f.x - o.x, sy = f.y - o.y, sd2 = sx * sx + sy * sy; if (sd2 < 3600 && sd2 > 1) { const sd = Math.sqrt(sd2); mx += sx / sd * 0.6; my += sy / sd * 0.6; } }
     }
-    if (f.dashT <= 0 && f.rootT <= 0) {
+    // Same steering inertia as the active cat: ease the desired heading through the
+    // fighter's smoothed velocity so allies glide instead of twitching. Note the old
+    // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
+    // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
+    const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
+    if (dir && f.dashT <= 0 && f.rootT <= 0) {
       const spd = f.speed * 0.9 * this.moveMul(f);   // same soft-CC slow as the active cat
-      f.x = clamp(f.x + mx * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-      f.y = clamp(f.y + my * spd * dt, this.topMargin, this.H - this.bottomMargin);
-      f.face = dx < 0 ? -1 : 1; f.moving = (mx || my) ? true : false;
-    }
+      f.x = clamp(f.x + dir.x * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+      f.y = clamp(f.y + dir.y * spd * dt, this.topMargin, this.H - this.bottomMargin);
+      if (dir.x < -0.25) f.face = -1; else if (dir.x > 0.25) f.face = 1;
+      f.moving = true;
+    } else if (f.dashT <= 0 && f.rootT <= 0) f.moving = false;
     if(near && this.incomingThreat(f) && f.dodgeCd<=0 && Math.random()<this.autoDodgeChance(f)) this.dodge(f);
     this.evalGambits(f, tgt, dist, near, nd);
   }
