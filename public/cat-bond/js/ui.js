@@ -1478,7 +1478,7 @@ const UI = {
           <section class="cb-grow-section" aria-labelledby="cb-grow-level-title">
             <h3 id="cb-grow-level-title">⬆ 升级</h3>
             <p class="cb-grow-help">增加等级，解锁技能</p>
-            <button type="button" class="btn gold cb-grow-action" id="cd-trainnext"><strong>升 1 级</strong><small>消耗 🐠${fishToNext}</small></button>
+            <button type="button" class="btn gold cb-grow-action" id="cd-trainnext"><strong>⬆ 一键升级</strong><small>直升下一级 · 消耗 🐠${fishToNext}</small></button>
           </section>
           <section class="cb-grow-section" aria-labelledby="cb-grow-stat-title">
             <h3 id="cb-grow-stat-title">✨ 特训</h3>
