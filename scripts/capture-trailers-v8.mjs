@@ -105,7 +105,8 @@ try{
    CatRelations.grow(cats[0],cats[1],35);
    CatRelations.choose(cats[0],cats[1]);UI.closeAll();UI.openBondPanel();
    return !!document.querySelector('#panel.open .duo-panel #duo-choose')&&
-    !!document.querySelector('#panel.open .duo-picker');
+    !!document.querySelector('#panel.open .duo-unlocked-section')&&
+    !!document.querySelector('#panel.open .duo-relation');
   });
   if(!duoPanel)throw Error('V8 real cat duo partner panel missing');
   await mark('duo-partners',6750);
