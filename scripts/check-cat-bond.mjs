@@ -402,6 +402,37 @@ const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'existing stagger retains 1.3x, not 2x, vulnerability');
 
+// POISE UI + STAGGER: every enemy exposes a readable gauge; a true break
+// opens a five-second damage window, without changing the 1.3x vulnerability.
+const poiseBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+poiseBattle.coach=null;
+const poiseEnemy=poiseBattle.enemies[0];
+poiseEnemy.inv=0;poiseEnemy.flash=0;
+poiseEnemy.poise=1;poiseEnemy.staggerT=0;
+poiseBattle.resolveHit(poiseEnemy,'me',
+  {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
+  poiseEnemy.x,poiseEnemy.y);
+assert.equal(poiseEnemy.staggerT,5,'breaking enemy poise must stagger for five seconds');
+assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,'poise resets on break');
+const gaugeText=[];
+const gaugeCtx=new Proxy(canvasCtx,{get(target,key){
+  if(key==='fillText')return label=>gaugeText.push(String(label));
+  return target[key];
+}});
+poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa',
+  'Wild Cat',{current:poiseEnemy.poise,max:poiseEnemy.poiseMax,stagger:poiseEnemy.staggerT});
+assert.ok(gaugeText.some(x=>x.includes('虚弱 5.0s')),
+  'enemy poise gauge must display stagger countdown');
+poiseEnemy.staggerT=0;
+gaugeText.length=0;
+poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa',
+  'Wild Cat',{current:poiseEnemy.poiseMax*.3,max:poiseEnemy.poiseMax,stagger:0});
+assert.ok(gaugeText.includes('韧性'),'enemy poise gauge must show toughness label');
+gaugeText.length=0;
+poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa','Friendly Cat');
+assert.ok(!gaugeText.includes('韧性'),'normal HP labels should not gain enemy poise gauge');
+
 assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
 const normalIDs=Skills.SKILLS.filter(sk=>!sk.ultCost).map(sk=>sk.id);
