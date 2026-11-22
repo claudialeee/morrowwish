@@ -138,6 +138,8 @@ class Game {
   }
   showYardChrome() {
     if(this.scene!=='yard')return;
+    // Resting at home instantly heals all expedition wounds, including bench cats.
+    State.healAllCats?.();
     document.body.classList.remove('cb-exploring');
     document.getElementById('yard-actions').classList.remove('hidden');
     document.getElementById('tabbar').classList.remove('hidden');
@@ -1461,21 +1463,25 @@ class Game {
     // Fold this battle's observations into the persistent adaptive-AI profile so
     // enemies evolve to the player's habits over time. (Save happens below.)
     try { b.commitAiProfile(win); } catch (e) {}
-    // ROGUELIKE ATTRITION: on an EXPLORE win, each field cat carries its wounds to
-    // the next battle, healing only HALF the HP it lost (not a full refill). Stored
-    // as cat._hpFrac, read by makeFighter next fight. Any other exit (yard fight,
-    // loss, flee) clears it so those start fresh.
+    // One authoritative post-battle recovery snapshot for every result screen.
+    // Casual: full heal. Hardcore field encounters: remaining HP carries on,
+    // and State.catHpFraction replenishes it continuously over five minutes.
+    const recovery={mode:State.difficulty(),fromMap,team:[]};
     try {
-      if (win && fromMap && Array.isArray(b.team)) {
-        for (const f of [...b.team,...(b._benchFighters?.values()||[])]) {
-          if (!f || !f.cat || f._reinforcement) continue;   // temp reinforcements don't persist
-          const frac = f.alive ? Math.max(0, Math.min(1, f.hp / f.maxhp)) : 0.15;
-          f.cat._hpFrac = frac + (1 - frac) * 0.5;           // heal half the lost HP
-        }
-      } else {
-        for (const c of State.S.cats) if (c && c._hpFrac != null) delete c._hpFrac;
+      const seen=new Set();
+      for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
+        if(!f?.cat || f._reinforcement || seen.has(f.cat.uid))continue;
+        seen.add(f.cat.uid);
+        const before=f.alive?Math.max(.15,Math.min(1,f.hp/f.maxhp)):0.15;
+        const after=fromMap&&recovery.mode==='hardcore'
+          ?State.setBattleHealth(f.cat,before):1;
+        if(after===1){delete f.cat._hpFrac;delete f.cat._hpAt;}
+        recovery.team.push({name:State.catName(f.cat),
+          before:Math.round(before*100),after:Math.round(after*100)});
       }
-    } catch (e) {}
+      if(recovery.mode==='casual')State.healAllCats();
+    }catch(e){console.error('Battle recovery error',e);}
+    this._battleRecovery=recovery;
     document.getElementById('battle-ui').classList.remove('on');
     const duoButton=document.getElementById('duo-burst');if(duoButton)duoButton.hidden=true;
     this.setBattleHelpVisible(false);
@@ -1619,6 +1625,7 @@ class Game {
       this.toast('💨 野生猫猫跑掉了…下次再来！');
       if (!backToMap) document.getElementById('yard-actions').classList.remove('hidden');
       State.save();   // persist the adaptive-AI profile folded in above, even on a loss
+      UI.openBattleRecoveryResult?.(recovery);
     }
     this.battle = null;
   }
