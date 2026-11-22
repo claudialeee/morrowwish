@@ -95,7 +95,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('intro-start').addEventListener('click', startGame);
   // CrazyGames asks users to reach real gameplay immediately; skip the full
   // studio intro and present the starter choice as the first interactive action.
-  if(window.CatBondPlatform?.externalPortal){
+  if(window.CatBondPlatform?.crazygames){
     document.getElementById('cb-home')?.remove();
     startGame();
   }
