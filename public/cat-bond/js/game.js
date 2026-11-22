@@ -1083,27 +1083,26 @@ class Game {
     if(!b.reserve.length){bench.hidden=true;return;}
     bench.hidden=false;
     const label=document.createElement('button');label.className='bench-caption';
-    label.type='button';label.textContent=en?'SWAP':'替补';
+    label.type='button';label.textContent=(en?'Reserves':'替补')+' · '+b.reserve.length+' ▾';
     label.title=en?'Show or hide reserve cats':'展开或收起替补猫咪';
     label.setAttribute('aria-label',label.title);
-    // In short landscape, showing all three reserves permanently covers the
-    // fighter at its normal left-side spawn point. The toggle remains visible.
-    const compact=this.isTouch&&this.H<470&&this.W>this.H;
-    bench.classList.toggle('is-open',!compact);
-    label.setAttribute('aria-expanded',String(!compact));
+    // Fold the reserve menu by default. No duplicate cat portraits in the arena.
+    bench.classList.remove('is-open');
+    label.setAttribute('aria-expanded','false');
     label.addEventListener('click',()=>{
       const expanded=bench.classList.toggle('is-open');
       label.setAttribute('aria-expanded',String(expanded));
+      label.textContent=(en?'Reserves':'替补')+' · '+b.reserve.length+(expanded?' ▴':' ▾');
     });
     bench.appendChild(label);
     b.reserve.forEach((cat,i)=>{
       const btn=document.createElement('button');btn.type='button';
       btn.className='bench-slot';btn.title=(en?'Swap active cat with ':'替换当前出战猫：')+State.catName(cat);
       btn.setAttribute('aria-label',btn.title);
-      btn.innerHTML='<span class="bench-number"></span><canvas width="88" height="78" aria-hidden="true"></canvas><span class="bench-health"></span>';
+      btn.innerHTML='<span class="bench-number"></span><span class="bench-name"></span><span class="bench-health"></span>';
       btn.querySelector('.bench-number').textContent=String(i+1);
+      btn.querySelector('.bench-name').textContent=State.catName(cat);
       btn.dataset.benchIndex=String(i);
-      CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species),cat);
       bench.appendChild(btn);
       btn.addEventListener('click',()=>b.rotateReserve(i));
     });
@@ -1312,15 +1311,15 @@ class Game {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     // The compact phone HUD names the ACTIVE mode. Full explanation remains
     // in the accessible label, and players can switch without opening a menu.
-    const label=this.isTouch?(en?(on?'🤖 Auto':'🎮 Manual'):(on?'🤖 自动':'🎮 手动'))
-      :(en?(on?'🤖 Auto Battle: ON':'🎮 Manual Battle')
-      :(on?'🤖 自动战斗':'🎮 手动战斗'));
+    const label=en?(on?'🤖 Auto':'🎮 Manual'):(on?'🤖 自动':'🎮 手动');
     if(btn.textContent!==label)btn.textContent=label;
     btn.setAttribute('aria-pressed',String(on));
     btn.setAttribute('aria-label',en?(on?'Disable automatic battle':'Enable automatic battle')
       :(on?'关闭自动战斗':'开启自动战斗'));
     btn.classList.toggle('is-auto',on);
     btn.classList.toggle('gold',on);
+    const group=document.querySelector('#battle-ui .battle-tools');
+    if(group)group.setAttribute('aria-label',en?'Battle controls':'战斗操作');
     document.getElementById('battle-hint')?.classList.toggle('auto-active',on);
   }
 

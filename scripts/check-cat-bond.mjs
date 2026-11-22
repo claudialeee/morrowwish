@@ -139,6 +139,16 @@ assert.ok(sandbox.window.GameData, 'GameData global present');
 // WARD-ART REGRESSION: the shield rim must be at the kitten's PLANTED PAWS,
 // not 26px too high across every device / ally / enemy. Growth multiplies
 // both the rendered cat and shield by exactly the same scale.
+// Standardized local hit feedback: every hit tier produces a different
+// bounded effect mix without painting a full-screen frame.
+const effectTypes=['light','heavy','stagger','kill','heal','guard','reflect'];
+const tierFx=new sandbox.window.VFX();
+for(const type of effectTypes){
+  const before=tierFx.fx.length;
+  assert.doesNotThrow(()=>tierFx.impactType(180,245,type,{color:'#ffe19a'}));
+  assert.ok(tierFx.fx.length>before,'hit tier generated particles: '+type);
+}
+assert.ok(tierFx.fx.length<160,'hit feedback cannot exhaust the VFX budget');
 assert.equal(typeof sandbox.window.CatBondWardArt?.draw,'function',
   'three ward VFX must use the same live battle renderer as the kittens');
 for(const ward of ['shieldT','protectT','reflectT']){

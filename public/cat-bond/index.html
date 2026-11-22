@@ -32,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=upgrade-chains-20261122" />
+  <link rel="stylesheet" href="css/style.css?v=upgrade-chains-hud-20261122" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -89,9 +89,11 @@
             <span id="wild-name">野生猫猫</span>
             <div class="battle-enemy-track" role="progressbar" aria-label="Enemy health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="battle-enemy-hp-fill"></span></div>
           </div>
-          <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看战斗操作说明">?<span class="battle-top-label"> 操作</span></button>
-          <button class="btn ghost tiny-btn" id="btn-auto" type="button" aria-pressed="false" title="自动控制移动、攻击、技能及闪避">🤖 自动战斗：关</button>
-          <button class="btn ghost tiny-btn" id="btn-flee" title="撤退">🏳️<span class="battle-top-label"> 撤退</span></button>
+          <div class="battle-tools" role="group" aria-label="战斗操作">
+            <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看战斗操作说明">?<span class="battle-top-label"> 操作</span></button>
+            <button class="btn ghost tiny-btn" id="btn-auto" type="button" aria-pressed="false" title="自动控制移动、攻击、技能及闪避">🤖 自动战斗：关</button>
+            <button class="btn ghost tiny-btn" id="btn-flee" title="撤退">🏳️<span class="battle-top-label"> 撤退</span></button>
+          </div>
         </div>
         <div class="battle-hint" id="battle-hint">WASD 移动 · 鼠标瞄准 · 左键攻击 · 空格键闪避</div>
         <div id="battle-coach-card" role="status" aria-live="polite" hidden></div>
@@ -182,7 +184,7 @@
   </div>
 
   <!-- ?v= cache-buster: bump this number whenever JS changes so the browser can't serve stale code -->
-  <script src="js/vfx.js?v=charged-bolt-20261121"></script>
+  <script src="js/vfx.js?v=hitfeel-seven-tiers-20261122"></script>
   <script src="js/ward-art.js?v=paw-grounded-shield-20261122"></script>
   <script src="js/catart.js?v=36"></script>
 
@@ -212,10 +214,10 @@
   <script src="js/duo-hero.js?v=32-selected-breeds-actual-v2-20261122"></script>
   <script src="js/ult-vfx.js?v=shadow-thunder-contrast-20261122"></script>
   <script src="js/skill-fx.js?v=all-39-skill-signatures-20261122"></script>
-  <script src="js/battle.js?v=skill-id-hitfeel-and-status-20261122"></script>
+  <script src="js/battle.js?v=hitfeel-seven-tiers-20261122"></script>
   <script src="js/duo-bond.js?v=duo-in-arena-aftershock-v3-20261122"></script>
   <script src="js/ui.js?v=upgrade-chains-20261122"></script>
-  <script src="js/game.js?v=explore-menu-map-20261122-v1"></script>
+  <script src="js/game.js?v=bench-without-portraits-20261122-v1"></script>
   <script src="js/main.js?v=original-intro-cats-20261121-2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=catbond-32-breed-lang-20261122"></script>
