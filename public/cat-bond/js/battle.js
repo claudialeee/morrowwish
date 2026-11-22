@@ -1463,7 +1463,7 @@ class CaptureBattle {
       // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
       // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
       // down (BASIC_SKILL_DMG_MULT). The identical skill in Q/E still pays full power.
-      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * (f.damageBoostT > 0 ? 1.25 : 1) * (f.weakened ? 0.5 : 1) * this.kneadMult(f);
+      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * this.outgoingBuffMult(f);
       this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
       if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
         window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
@@ -1480,7 +1480,7 @@ class CaptureBattle {
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
     const toy = 'yarn';
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
@@ -1508,8 +1508,8 @@ class CaptureBattle {
     }
     return f;
   }
-  // 踩奶 Knead outgoing-damage multiplier: +12% per active stack (max 4 → +48%).
-  // Folded into every player skill/basic pow calc alongside damageBoost/weaken.
+  // Positive outgoing buffs share one additive bucket; weakness is a penalty.
+  outgoingBuffMult(f){ return (1 + (f.damageBoostT > 0 ? 0.25 : 0) + 0.12 * (f.kneadStacks || 0)) * (f.weakened ? 0.5 : 1); }
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
@@ -1775,7 +1775,7 @@ class CaptureBattle {
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 0.8)*(f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f);
+    const pow = (sk ? sk.power : 0.8)*this.outgoingBuffMult(f);
     this.castOffensiveSkill(f, aim, sk, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
@@ -2141,7 +2141,7 @@ class CaptureBattle {
     }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 1) * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f);
+    const pow = (sk ? sk.power : 1) * this.outgoingBuffMult(f);
     if (sk) {
       this.castOffensiveSkill(f, aim, sk, pow, col);
     } else {
@@ -2719,7 +2719,7 @@ class CaptureBattle {
   // Combo bonus with DIMINISHING returns so it can't stack multiplicatively with
   // element-effectiveness + STAB into a one-shot. Square-root curve: ~×1.35 at 10
   // combo, ~×1.55 at 25, caps ~×1.7 at 50 (was a runaway linear ×2.5).
-  comboMult() { return 1 + Math.sqrt(Math.min(this.combo, 50)) * 0.1; }
+  comboMult() { return 1 + Math.min(0.15, Math.sqrt(Math.min(this.combo, 50)) * 0.026); }
   addCombo(n) {
     this.combo += (n || 1);
     this.comboT = 1.3;                                          // drop window (需持续命中)
@@ -3316,7 +3316,7 @@ class CaptureBattle {
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
         if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + (e.r||18)*.6) {
-          const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1)*this.kneadMult(f);
+          const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * this.outgoingBuffMult(f);
           const contact=f._pounceSkill;
           this.resolveHit(e, 'me', contact||{element:f.element},dmg,e.x,e.y);
           // Electric pounces are physical lightning impacts, not distant rays.
@@ -4113,8 +4113,8 @@ class CaptureBattle {
     // itself, but roars on a target already afflicted (+45% per active status tag)
     // and lands softer on an un-marked target — so Q/E priming carries the fight.
     if (skill.isBasic) {
-      const nTags = e.tags.filter(t => t !== 'rust').length; // universal armor break must not inflate basic finisher damage
-      if (nTags > 0) dmg *= 1 + 0.45 * nTags;
+      const nTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
+      if (nTags > 0) dmg *= 1 + Math.min(0.30, 0.10 * nTags);
       else dmg *= 0.7;
     }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
@@ -4224,12 +4224,14 @@ class CaptureBattle {
     // Global player-only balance adjustment: applies once to basics, skills,
     // damage-over-time, ally attacks and duo hits. Enemy damage is untouched.
     dmg *= 0.9;
-    // a direct player hit extends the combo and gets the combo damage multiplier
+    // Snapshot combo before increment so the hit that earns a chain level
+    // only benefits subsequent hits. DoT never gains the direct-hit combo bonus.
+    const comboBonus = isDot ? 0 : this.comboMult() - 1;
     if (!isDot) {
-      dmg *= this.comboMult(); this.addCombo(1);
-      if(this.duo)this.duoCharge=Math.min(100,this.duoCharge+7);   // per-hit bond charge (slower than ult)
+      this.addCombo(1);
+      if(this.duo)this.duoCharge=Math.min(100,this.duoCharge+7);
     }
-    // vulnerability debuffs amplify incoming damage (破绽/破甲)
+    // Incoming vulnerability effects share an additive bucket.
     const TAG = (window.Skills && Skills.TAG_INFO) || {};
     // Multiple vulnerabilities should not compound into a runaway one-shot.
     let vulnerabilityBonus = 0;
@@ -4237,13 +4239,18 @@ class CaptureBattle {
       const info = TAG[tg];
       if (info?.dmgTaken > 1) vulnerabilityBonus += info.dmgTaken - 1;
     }
-    dmg *= 1 + Math.min(0.30, vulnerabilityBonus);
-    // Low-HP finisher keeps battles moving but no longer compounds into huge
-    // normal-skill spikes with stagger and vulnerability tags (1.2x..1.55x).
+    // Stagger is a unique 3s window, not a second multiplicative vulnerability.
+    // Combined vulnerability cap allows stagger (+30%) and armor break (+12%)
+    // while preventing status stacking from outgrowing intended skill damage.
+    if ((e.staggerT || 0) > 0) vulnerabilityBonus += 0.30;
+    const vulnBonus = Math.min(0.50, vulnerabilityBonus);
     const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
-    // Bosses are immune to automatic low-HP execution; SSR/elite alone is NOT a boss flag.
+    // Bosses remain immune; ordinary/elite enemies keep their execution effect,
+    // but it adds to (not multiplies with) vulnerability and combo bonuses.
     const boss = e.isBoss === true || e.boss === true || e.role === 'boss';
-    if (!boss && !isDot && frac0 < 0.28) dmg *= 1.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35;
+    const executeBonus = (!boss && !isDot && frac0 < 0.28)
+      ? 0.2 + (1 - clamp(frac0 / 0.28, 0, 1)) * 0.35 : 0;
+    dmg *= 1 + vulnBonus + comboBonus + executeBonus;
     let scaled = dmg;
     if (fromDuo && this.duoField) {
       // Apply cap AFTER level scaling and vulnerability multipliers; otherwise
@@ -4424,13 +4431,7 @@ class CaptureBattle {
       const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
       const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 3); }
-      if (target.poiseMax) {
-        if (target.staggerT > 0) dmg *= 1.3; // stagger remains rewarding without doubling every Q/E
-        // No generic poise drain: poise is exclusive to authored stagger moves.
-        // Direct stagger sources set staggerT at their hit/interrupt sites.
-        // Basics still finish low-HP enemies; Q/E now set up armor-break damage
-        // while dedicated stagger skills provide the five-second burst window.
-      }
+      // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       // Channel damage is steady pressure, not a rapid sequence of hard
       // camera pauses. Normal melee/chain/projectiles retain their hitstop.
