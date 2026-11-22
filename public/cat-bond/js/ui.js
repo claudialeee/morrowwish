@@ -50,6 +50,18 @@ const UI = {
       this.game.syncBattleModeUI();
       window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
+    const placementConfirm=document.getElementById('yard-placement-confirm');
+    const placementCancel=document.getElementById('yard-placement-cancel');
+    if(placementConfirm)placementConfirm.addEventListener('click',()=>this.confirmBuildingPlacement());
+    if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
+    document.getElementById('yard-quick-skills')?.addEventListener('click',()=>{
+      const cat=State.S.cats?.[0];
+      if(cat)this.openSkillEditor(cat);
+      else this.game.toast(this.isEnglish()?'Adopt a cat first':'先领养一只小猫');
+    });
+    document.getElementById('yard-quick-work')?.addEventListener('click',()=>this.openWorkshop());
+    this.syncYardNav();
+    window.addEventListener('morrowwish-language-change',()=>this.syncYardNav());
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
@@ -99,6 +111,70 @@ const UI = {
         this.closeAll();
       }
     });
+  },
+
+  isEnglish(){return window.MorrowwishI18n?.get?.()!=='zh';},
+  syncYardNav(){
+    const en=this.isEnglish();
+    const tabCats=document.querySelector('[data-tab="cats"] .nav-caption');
+    const tabWork=document.querySelector('[data-tab="work"] .nav-caption');
+    if(tabCats)tabCats.textContent=en?'Cats / Skills':'猫咪·技能';
+    if(tabWork)tabWork.textContent=en?'Earn in Workshop':'工坊赚钱';
+    const skill=document.getElementById('yard-quick-skills');
+    const work=document.getElementById('yard-quick-work');
+    if(skill)skill.textContent=en?'✨ New Skills':'✨ 新技能';
+    if(work)work.textContent=en?'🪙 Workshop':'🪙 工坊赚钱';
+  },
+  startBuildingPlacement(type){
+    const en=this.isEnglish();
+    if(!this.game?.yard?.beginPlacement?.(type)){
+      this.game.toast(en?'Not enough coins or no free spot':'金币不足或暂无空地');
+      return false;
+    }
+    // Close the build list; player chooses the actual garden ground.
+    this.closeAll();
+    document.getElementById('yard-placement-dock').hidden=false;
+    document.body.classList.add('cb-placing-building');
+    this.updateBuildingPlacement();
+    window.arcadeMetric?.('bond_yard_placement_preview',{type});
+    return true;
+  },
+  updateBuildingPlacement(){
+    const p=this.game?.yard?.placement;
+    const status=document.getElementById('yard-placement-status');
+    const confirm=document.getElementById('yard-placement-confirm');
+    if(!status||!confirm)return;
+    if(!p){
+      document.getElementById('yard-placement-dock').hidden=true;
+      document.body.classList.remove('cb-placing-building');
+      return;
+    }
+    const en=this.isEnglish(),def=World.BUILDINGS_BY_ID[p.type];
+    status.textContent=(en?'Choose a spot for ':'给')+(def?def.name:'设施')+
+      (en?' · tap or move to place':'选择位置 · 点击草坪预览')+
+      (p.valid?(en?' · ready':' · 可以建造'):(en?' · blocked':' · 此处有遮挡'));
+    confirm.disabled=!p.valid;
+    confirm.textContent=en?'✓ Build here':'✓ 确认建造';
+    document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';
+  },
+  confirmBuildingPlacement(){
+    const en=this.isEnglish(),p=this.game?.yard?.placement;
+    if(!p||!p.valid)return false;
+    const name=World.BUILDINGS_BY_ID[p.type]?.name||p.type;
+    if(!this.game.yard.confirmPlacement()){
+      this.updateBuildingPlacement();
+      this.game.toast(en?'Cannot build here':'此处无法建造');
+      return false;
+    }
+    this.updateBuildingPlacement();
+    this.game.refreshHUD();
+    this.game.toast(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！');
+    window.MorrowwishAudio?.effect?.('discover');
+    return true;
+  },
+  cancelBuildingPlacement(){
+    this.game?.yard?.cancelPlacement?.();
+    this.updateBuildingPlacement();
   },
 
   onTab(tab) {
@@ -723,7 +799,7 @@ const UI = {
           <div class="work-income">${en ? 'Cost' : '花费'}：<b>${def.cost} 🪙</b></div>
         </div>
         <div class="st-btns">
-          <button class="btn gold tiny-btn" data-build="${def.id}" ${afford ? '' : 'disabled'}>${en ? 'Build' : '建造'}</button>
+          <button class="btn gold tiny-btn" data-build="${def.id}" ${afford ? '' : 'disabled'}>${en ? 'Choose spot' : '选位置建造'}</button>
         </div>
       </div>`;
     }).join('');
@@ -742,6 +818,7 @@ const UI = {
           ${en?(up?.kind||'items'):(up?.name||'资源')} · ${en?'More joy at higher levels':'升级提高心情奖励'}
           · ${en?'Two cats playing builds trust':'两猫轮流玩会提升默契'}</p></div>
         <div class="st-btns">
+          <button class="btn ghost tiny-btn" data-visit="${i}">${en?'Let cats play':'叫猫来玩'}</button>
           <button class="btn gold tiny-btn" data-upgrade="${i}"
             ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
           <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
@@ -750,22 +827,23 @@ const UI = {
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2>🏗️ ${en ? 'Build the Yard' : '庭院建造'}</h2>
-      <p class="sub">${en?'Build facilities, upgrade them to Lv.3 and earn resources every time cats visit. Friends who play together grow closer.'
-        :'建造并升级设施到 3 级，猫咪来玩会产出资源、增加心情；两只猫轮流玩还能增进默契。'}</p>
+      <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
+        :'先选设施，再到庭院点击位置、确认建造。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
     const host = document.getElementById('panel');
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
-      if (this.game.yard.buildStructure(btn.dataset.build)) {
-        window.MorrowwishAudio?.effect?.('discover');
-        this.game.refreshHUD();
-        this.game.toast((en ? '🏗️ Built ' : '🏗️ 已建造 ') + (def ? def.name : ''));
-        this.openBuild();
-      } else {
-        this.game.toast(en ? 'Not enough coins' : '金币不足');
-      }
+      this.startBuildingPlacement(btn.dataset.build);
+    });
+    host.querySelectorAll('[data-visit]').forEach(btn => btn.onclick = () => {
+      const b=State.S.yardBuildings?.[Number(btn.dataset.visit)];
+      if(!b)return;
+      const ok=this.game.yard.inviteCatToBuilding(b);
+      this.closeAll();
+      if(!ok)this.game.toast(en?'Catch a cat first!':'先收集猫咪，它才会过来玩！');
+      else this.game.toast(en?'Look! A kitten is coming to play':'看！有猫咪跑来玩啦！');
     });
     host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
       const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);
