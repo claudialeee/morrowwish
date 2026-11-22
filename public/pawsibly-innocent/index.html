@@ -275,7 +275,7 @@ html.cg-play .stealth-actionbar{min-height:0}
 .stage.victory .modal{animation:heist-celebrate .38s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes heist-celebrate{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.stage.victory .modal{animation:none}}
-</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=challenge-close-20261121-2"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js?v=full-share-yarn-20261121-2" defer></script><script src="/pawsibly-innocent/game.js?v=pressure-hint-priority-20261122" defer></script><meta name="twitter:card" content="summary_large_image"></head>
+</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=all-four-fish-three-stars-20261122"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js?v=full-share-yarn-20261121-2" defer></script><script src="/pawsibly-innocent/game.js?v=all-four-fish-three-stars-20261122" defer></script><meta name="twitter:card" content="summary_large_image"></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></header>
 <main class="wrap single-screen-game">
 <div class="board-layout">
@@ -321,7 +321,7 @@ html.cg-play .stealth-actionbar{min-height:0}
      <button class="result-close" type="button" id="closeResult" aria-label="Close results" title="Close results">×</button>
      <div class="cat-medal" id="medal">🐱</div><div class="stars" id="stars">★★★</div>
      <h2 id="resultTitle">Purrfect escape!</h2><p id="resultDesc"></p>
-     <div id="catUnlocks" class="new-cats" role="status" aria-live="polite" hidden></div><p id="resultScore"></p><p id="resultUnlocks" class="result-unlocks"></p>
+     <div id="catUnlocks" class="new-cats" role="status" aria-live="polite" hidden></div><p id="resultScore"></p><p id="resultStarGuide" class="result-star-guide" role="status"></p><p id="resultUnlocks" class="result-unlocks"></p>
      <div class="buttons"><button class="button secondary" id="retryResult">Try again</button><button class="button" id="nextResult">Next room →</button><button class="button mint wide" id="shareResult">Share your chaos ♡</button></div>
     </div>
    </div>
@@ -343,7 +343,7 @@ html.cg-play .stealth-actionbar{min-height:0}
      <section data-tab-panel="rooms">
       <div class="row"><span class="mini-label" id="missionLabel">CURRENT HEIST</span><span class="hearts" id="hearts">♥ ♥ ♥</span></div>
       <h3 class="chapter" id="chapter">The Sunny Lounge</h3><p class="chapter-sub" id="chapterSub">Grab the nearby fish first.</p>
-      <div class="meter-label"><span id="snackLabel">FISH STOLEN</span><b id="fishCount">0 / 3</b></div><div class="meter"><i id="meterFill"></i></div>
+      <div class="meter-label"><span id="snackLabel">FISH STOLEN</span><b id="fishCount">0 / 4</b></div><div class="meter"><i id="meterFill"></i></div>
       <p class="mission" id="mission">Collect three fish and escape.</p>
       <div class="stats"><div class="stat"><strong id="score">0</strong><small id="scoreLabel">SCORE</small></div><div class="stat"><strong id="moves">0</strong><small id="moveLabel">STEPS</small></div><div class="stat"><strong id="starTotal">0</strong><small id="starLabel">STARS</small></div></div>
       <div class="menu-challenge" id="bonusDare">☆ BONUS DARE · Knock over a vase</div>
@@ -377,6 +377,7 @@ html.cg-play .stealth-actionbar{min-height:0}
       <div class="menu-help-step"><strong id="ruleStep2Title">Steal 3 fish</strong><span id="ruleStep2Text">Pink tiles show the owner's vision.</span></div>
       <div class="menu-help-step"><strong id="ruleStep3Title">Escape</strong><span id="ruleStep3Text">Reach the cat flap with 3 fish.</span></div>
       <p id="ruleBonus">Tap toss yarn, then tap the floor. The owner walks there and pauses.</p>
+       <p id="starRuleHelp" class="star-rule-help">★ Escape with 3 fish · ★★ All 4 fish or bonus quest · ★★★ All 4 fish + bonus quest + no captures + efficient steps</p>
       <p id="yarnExplain" hidden>Yarn distracts the human.</p>
       <div class="menu-help-legend" id="helpLegend">🐟 3 fish · 🧶 distract · 📦 hide · 🚪 escape</div>
       <p class="music-credit" id="musicCredit"><a href="https://opengameart.org/content/happy-clappy-loop" target="_blank" rel="noopener noreferrer">Music: Happy Clappy Loop — OwlishMedia · CC0</a></p>
@@ -389,4 +390,4 @@ html.cg-play .stealth-actionbar{min-height:0}
  </div>
 </div>
 </main>
-<script src="/pawsibly-innocent/cat-music.js" defer></script><script src="/telemetry.js" defer></script><script src="/playtest-pulse.js" defer></script><script src="/audio-dock.js?v=cat-header-audio-20261121-1"></script><script src="/game-fullscreen.js?v=mobile-topbar-20261121-3" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body></html>
+<script src="/pawsibly-innocent/cat-music.js" defer></script><script src="/telemetry.js" defer></script><script src="/playtest-pulse.js" defer></script><script src="/audio-dock.js?v=in-game-audio-20261122-1"></script><script src="/game-fullscreen.js?v=mobile-topbar-20261121-3" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body></html>

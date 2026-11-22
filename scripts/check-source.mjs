@@ -854,8 +854,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
   throw new Error('Cat Help must not duplicate header language or sound controls');
  const audioDock=fs.readFileSync('public/audio-dock.js','utf8');
  if(!html.includes('class="cat-sound-controls"')||!html.includes('id="music"')||!html.includes('id="sound"')||
-    !audioDock.includes("route==='pawsibly-innocent'?document.querySelector('.cat-sound-controls')"))
-  throw new Error('Cat music and sound controls must live together in the page header');
+    !audioDock.includes("route==='pawsibly-innocent'?document.querySelector('#stageControls')"))
+  throw new Error('Cat music and sound controls must live in the visible game header');
  if(!stage.includes('data-game-tab="rooms"')||!stage.includes('data-game-tab="album"')||
     !stage.includes('data-game-tab="badges"')||!stage.includes('data-game-tab="help"'))
   throw new Error('Game menu tabs missing');
@@ -971,8 +971,10 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(new Set(artPairs).size!==21||
     !cbBattle.includes('art.secondStatus')||
     !cbBattle.includes("const support=art.support||'shield'")||
-    !cbUi.includes('duo-art-description'))
-   throw Error('Cat Bond must keep all 21 playable two-cat elemental combinations');
+    !cbUi.includes('duo-unlocked-card')||
+    !cbUi.includes('renderUnlockedDuoCards(unlockedPairs)')||
+    cbUi.includes('<canvas id="duo-skill-canvas"'))
+   throw Error('Cat Bond must keep all 21 playable duo combinations without duplicating or revealing locked skill art');
  const upgraded=fs.readFileSync('public/upgrade.js','utf8');new Function(upgraded);
  // The upgraded game factories replace the base Flip Dash/Parcel Panic
  // renderers. Guard their own portrait painting and hit targets.

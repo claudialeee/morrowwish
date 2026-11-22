@@ -361,7 +361,13 @@
     const expeditionPair=activeDuo()?.cats;
     const remembered=expeditionPair&&window.CatRelations?.memoryList?.(expeditionPair[0],expeditionPair[1])||[];
     nodes.push({id:duoId,x:WORLD_W*.42,y:WORLD_H*.77,
-      taken:remembered.includes(id),kind:'duo',bob:1.8});
+      memoryId:id,taken:remembered.includes(id),kind:'duo',bob:1.8});
+    // A second, distinct duet moment in each region: extra discovery, not
+    // a second prize for the same memory and not a crowded field of icons.
+    const extraMemory=id+'-moment';
+    nodes.push({id:id+'_duo_moment',x:WORLD_W*.71,y:WORLD_H*.66,
+      memoryId:extraMemory,taken:remembered.includes(extraMemory),
+      kind:'duo',bob:3.2});
     // parallax decor blobs (themed shrubs / rocks / crystals)
     for (var k = 0; k < 40; k++) {
       decor.push({
@@ -491,7 +497,7 @@
       var n = w.nodes[j];
       if (n.taken) continue;
       if (Math.hypot(w.px - n.x, w.py - n.y) < 48) {
-        if(n.kind==='duo'&&activeDuo()?.cats&&window.CatRelations?.memoryList?.(...activeDuo().cats)?.includes(w.region.id))n.taken=true;
+        if(n.kind==='duo'&&activeDuo()?.cats&&window.CatRelations?.memoryList?.(...activeDuo().cats)?.includes(n.memoryId||w.region.id))n.taken=true;
         else if(n.kind==='duo'&&!activeDuo()?.ready){
           if(toastCd<=0&&game?.toast){
             const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -546,14 +552,25 @@
       const disc=DISCOVERIES[world.region.id];
       reward=Object.assign({discovery:Object.assign({id:world.region.id},disc)},disc.reward);
     }else if(n.kind==='duo'){
-      const entry=DUO_MEMORIES[world.region.id],duo=activeDuo();
-      const disc={id:world.region.id+'_duo',icon:entry[0],name:entry[1],en:entry[2],
-        story:entry[3],storyEn:entry[4]};
-      const extra=({home:{coins:50},sakura:{fish:3,coins:22},
-        creek:{fish:3},volcano:{luck:2,coins:25},ruins:{luck:2,fish:2}})[world.region.id];
-      reward=Object.assign({discovery:disc,duoMemory:true,duoTrust:12,
+      const memoryId=n.memoryId||world.region.id,duo=activeDuo();
+      const album=window.CatRelations?.MEMORY_CATALOG||[];
+      const moment=album.find(m=>m.id===memoryId);
+      const entry=DUO_MEMORIES[world.region.id];
+      const disc=memoryId===world.region.id
+        ?{id:memoryId+'_duo',icon:entry[0],name:entry[1],en:entry[2],
+          story:entry[3],storyEn:entry[4]}
+        :{id:memoryId,icon:moment?.icon||'🐾',
+          name:moment?.zh||'双猫小回忆',en:moment?.en||'Duo memory',
+          story:moment?.zhStory||'',storyEn:moment?.enStory||''};
+      // currency folded to 2-resource: yarn→coins (×10), treats→fish
+      const extra=memoryId===world.region.id
+        ?({home:{coins:30},sakura:{fish:3,coins:22},
+          creek:{fish:3},volcano:{luck:2,coins:25},ruins:{luck:2,fish:2}})[world.region.id]
+        :{coins:12};
+      reward=Object.assign({discovery:disc,duoMemory:true,duoMemoryId:memoryId,
+        duoTrust:memoryId===world.region.id?12:4,
         duoNames:duo?.cats.map(c=>window.State.catName(c))||[]},extra);
-      window.arcadeMetric?.('bond_duo_map_memory',{region:world.region.id});
+      window.arcadeMetric?.('bond_duo_map_memory',{region:world.region.id,memory:memoryId});
     }else{
       const en=window.MorrowwishI18n?.get?.()!=='zh',info=n.find;
       reward=Object.assign({},info?info[3]:{coins:12+d*8},

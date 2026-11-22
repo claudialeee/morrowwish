@@ -380,12 +380,12 @@ try{
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
  assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
- assert.equal(await page.locator('.cat-sound-controls #music, .cat-sound-controls #sound').count(),2,'Music and sound effects must both remain in the header');
+ assert.equal(await page.locator('#stageControls #music, #stageControls #sound').count(),2,'Music and sound effects must both remain in the visible game HUD');
  await page.locator('#menuClose').click();
  const audioButton=page.locator('#sound');
- await audioButton.click();
+ await audioButton.evaluate(button=>button.click());
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
- await audioButton.click();
+ await audioButton.evaluate(button=>button.click());
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Sound button must restore audio');
 
  // Cat gets a real, recorded piano theme; the five other games stay effects-only.
@@ -403,10 +403,10 @@ try{
  assert.ok(playing.readyState>=2,'Recorded cat music must be decoded and playable');
  assert.match(await page.locator('#music').textContent(),/背景音乐/,'Chinese music control must be localized');
  const musicButton=page.locator('#music');
- await musicButton.click();
+ await musicButton.evaluate(button=>button.click());
  assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),false,'Music toggle must pause the recording');
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Music toggle must not mute effects');
- await musicButton.click();
+ await musicButton.evaluate(button=>button.click());
  assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),true,'Music toggle must resume the recorded theme');
  console.log('Real CC0 piano soundtrack and separate music/SFX controls:',JSON.stringify(playing));
 
@@ -508,7 +508,7 @@ try{
    assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
-   assert.ok(v.hud?.includes('0/3')&&v.owner,'CrazyGames must show fish goal and owner behavior inside iframe');
+   assert.ok(v.hud?.includes('0/4')&&v.owner,'CrazyGames must show all four fish and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,

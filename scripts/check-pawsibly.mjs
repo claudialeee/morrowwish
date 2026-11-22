@@ -132,7 +132,10 @@ assert.ok(nodes.get('bonusQuickText').textContent.includes('Knock over a vase'),
  'The extra task must be readable without opening a sidebar');
 assert.ok(test.getState().winning,'First room should be winnable without special tools');
 const earned=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
-assert.ok(earned.best?.['room-0']?.stars>=1&&earned.best?.['room-0']?.stars<=3,'Winning a room must save real stars toward new cats');
+assert.equal(earned.best?.['room-0']?.stars,2,'Three fish plus bonus is two stars, NOT three');
+assert.equal(nodes.get('stars').textContent,'★★☆','A fourth fish is required for three stars');
+assert.ok(nodes.get('resultStarGuide').textContent.includes('Missing 1 fish'),'Scoring explains missing fourth fish');
+assert.equal(nodes.get('fishCount').textContent,'3 / 4','Fish meter shows all four available fish');
 assert.ok(earned.unlocked>=1,'Winning a room should unlock the next room');
 if(earned.best['room-0'].stars>=3){
  assert.ok(nodes.get('catUnlocks').innerHTML.includes('Mochi'),'New cat head and name must visibly appear on the victory card');
@@ -240,4 +243,74 @@ assert.equal(hard.pressure,true,'Spending the room step budget should raise guar
 assert.ok(nodes.get('visionTip').textContent.includes('High alert'),'Rising pressure must be explained in HUD');
 assert.ok(source.includes('s.index>=3?1:0')&&source.includes('s.searchTurns=s.index>=5'),
  'Later rooms must widen sight and extend guard search memory');
-console.log('Pawsibly Innocent: QA PASS (animated final chase, 8 rooms, real multi-step yarn lure, persistent achievements, named collectibles, compact UI, first-two-room playability).');
+// Real step-by-step solutions through the post-balance guard AI (no shortcuts,
+// no debug teleports, no special-cat abilities and no yarn). Protect against
+// future difficulty changes accidentally making any of the 8 rooms unwinnable.
+const solvableRoutes=["RDDRDRRRRURRD","RDDRRRDRRRDRUD","DDDRRDDLRRUDRRRRR","RRURDDDDRRRDRRD","RURRRRRDDDLLDDRDRRR","RUDDDDDRRRRRDRR","RRURLDDDDDRRDRRRR","RRULDDRDDLRRRRRDRRD"];
+const stepDelta={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]};
+for(let room=0;room<solvableRoutes.length;room++){
+ test.choose(room,false);
+ const state=test.getState();
+ for(const letter of solvableRoutes[room]){
+  assert.equal(state.done,false,'Room '+(room+1)+' should not finish before its route ends');
+  test.move(...stepDelta[letter]);
+ }
+ assert.equal(state.winning,true,'Room '+(room+1)+' must still be beatable under stronger detection');
+ assert.equal(state.got,3,'Room '+(room+1)+' must collect three actual fish');
+ assert.equal(state.lives,3,'Room '+(room+1)+' should have a fair no-hit solution');
+ assert.equal(state.yarnThrows,0,'Room '+(room+1)+' proof should not depend on unlimited distractions');
+}
+
+// Verify a REAL 4-fish, no-hit 3-star route. No teleport, free fish or cheats.
+test.choose(0,false);
+for(const direction of 'RUURDDLDDRDLURRURRRUDDRRD'){
+ const delta={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]}[direction];
+ assert.equal(test.getState().done,false,'Perfect-route cat cannot finish before exit');
+ test.move(...delta);
+}
+const perfect=test.getState();
+assert.equal(perfect.winning,true,'Four fish and escape must still be possible');
+assert.equal(perfect.got,4,'Perfect run must collect all four fish');
+assert.equal(perfect.caughtCount,0,'Perfect run has zero captures');
+assert.equal(perfect.lives,3,'Perfect run retains all hearts');
+assert.equal(perfect.broken.size,1,'Perfect run completes bonus vase challenge');
+assert.ok(perfect.steps<=perfect.room.goal+4,'Perfect run meets step budget');
+assert.equal(nodes.get('stars').textContent,'★★★','Full-fish, no-hit bonus run must award three stars');
+assert.ok(nodes.get('resultStarGuide').textContent.includes('Perfect heist'),'Perfect result confirms achievement');
+const updated=JSON.parse(saved['pawsibly-innocent-save-v1']||'{}');
+assert.equal(updated.best['room-0'].stars,3,'New 3-star run persists');
+assert.ok(events.some(e=>e.name==='cat_skin_unlocked'&&e.payload.cat===1),'3-star cat unlock remains attainable');
+test.choose(0,false);
+const healed=test.getState();healed.cat={x:8,y:6};healed.catFrom={...healed.cat};
+healed.got=4;healed.broken.add('3,2');healed.caughtCount=1;healed.lives=3;
+test.move(1,0);
+assert.equal(nodes.get('stars').textContent,'★★☆','Regained hearts never erase a prior capture');
+test.choose(0,false);
+const missedBonus=test.getState();missedBonus.cat={x:8,y:6};missedBonus.catFrom={...missedBonus.cat};missedBonus.got=4;
+test.move(1,0);
+assert.equal(nodes.get('stars').textContent,'★★☆','All fish without bonus cannot award three stars');
+// A perfect 3-star result must remain ACHIEVABLE in ALL eight rooms.
+// Paths are deterministic under the real heightened guard AI. Room 4 spends
+// one real yarn throw before following its perfect 4-fish escape path.
+const perfectRoutes=["RRLURDLDDRDLURRURRRUDDRRD","RDDRRRDUURUDLDDRLUUURRRRDDDD","DDDRRDDURULRRUULLUURRRRRRDDDDDD","RRUDLURRRRRRRDDDLDLLLLUUUDDDRRDRRRD","RURRRRRDDDRDDLLLLLRRRDRRR","DDDRDUUUUURDRRDRRDDDDRR","RDRUDUURRRRRDLDDDLLLLDDRRRLRRRR","DDDDRUURLUURURRRRRDDDDLDDRR"];
+for(let i=0;i<perfectRoutes.length;i++){
+ test.choose(i,false);
+ if(i===3){
+  test.throwYarn();
+  assert.equal(test.throwYarnTo({x:7,y:2}),true,'Room 4 bonus needs a real yarn toss');
+  let guardTurns=0;
+  while(test.isChasing()&&guardTurns++<24)test.advanceYarnChase();
+  assert.equal(test.isChasing(),false,'Room 4 yarn investigation must finish');
+ }
+ const state=test.getState();
+ for(const step of perfectRoutes[i]){
+  assert.equal(state.done,false,'Room '+(i+1)+' perfect route exited too soon');
+  test.move(...stepDelta[step]);
+ }
+ assert.equal(state.winning,true,'Room '+(i+1)+' perfect escape must succeed');
+ assert.equal(state.got,4,'Room '+(i+1)+' perfect escape must steal all four fish');
+ assert.equal(state.caughtCount,0,'Room '+(i+1)+' must allow a perfect no-capture route');
+ assert.ok(state.steps<=state.room.goal+4,'Room '+(i+1)+' perfect run must meet the step budget');
+ assert.equal(nodes.get('stars').textContent,'★★★','Room '+(i+1)+' must still allow earning 3 stars');
+}
+console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings and recovery regression).');

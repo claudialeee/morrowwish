@@ -491,7 +491,7 @@ const UI = {
         const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
         ctx.clearRect(0,0,w,h);
         window.CatBondDuoHero.draw(ctx,w,h,{
-          max:2.75,t:1.80,catUids:[entry.a.uid,entry.b.uid],
+          max:2.75,t:1.80,catUids:[entry.a.uid,entry.b.uid],hideCaptions:true,
           elements:art.elementPair,name:art.name,
           tier:entry.trust>=90?3:entry.trust>=60?2:1
         },uid=>uid===entry.a.uid?entry.a:uid===entry.b.uid?entry.b:null);
@@ -533,7 +533,6 @@ const UI = {
     // Locked duo moves remain secret: no name, description, rendered cut-in
     // or full-screen route before the actual trust threshold is reached.
     const unlocked=ok&&p>=20;
-    const name=unlocked?(duoArt?.name||'—'):(ok?'🔒 ???':(en?'Choose two different cats':'请选择两只不同的猫'));
     const personalityNotes=[a,b].map(c=>{
       const notes=en?{
         gentle:'Protector · shields a vulnerable partner',
@@ -584,13 +583,16 @@ const UI = {
       '<strong>'+(en?'Second cat':'第二只猫')+'</strong><div class="duo-cat-chip-list">'+catButtons(1)+'</div></div>';
     const sec=rel?Math.max(0,Math.ceil((60000-(Date.now()-rel.lastPlay))/1000)):0;
     const memories=ok?CatRelations.memoryList(a,b):[];
-    const journey=window.WorldMap?.REGIONS||[];
-    const album=journey.map(r=>{
-      const found=memories.includes(r.id);
-      const icon=({sakura:'🌸',home:'🏡',creek:'🐚',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
-      return '<span class="duo-memory-stamp '+(found?'found':'missing')+'" title="'+esc(en?r.sub:r.name)+'">'+
-        (found?icon:'?')+'<small>'+esc(en?r.sub:r.name)+'</small></span>';
+    const memoryCount=CatRelations.MEMORY_CATALOG.filter(m=>memories.includes(m.id)).length;
+    const memoryTiles=kind=>CatRelations.MEMORY_CATALOG.filter(m=>m.kind===kind).map(m=>{
+      const found=memories.includes(m.id),info=CatRelations.memoryInfo(a,b,m.id);
+      return '<button type="button" class="duo-memory-stamp '+(found?'found':'missing')+
+        '" '+(found?'data-duo-memory="'+esc(m.id)+'"':'disabled')+
+        ' aria-label="'+esc(found?info.title:info.hint)+'">'+
+        '<span class="duo-memory-icon">'+(found?info.icon:'?')+'</span>'+
+        '<small>'+esc(found?info.title:info.hint)+'</small></button>';
     }).join('');
+    const album=memoryTiles('map'),specialAlbum=memoryTiles('moment');
     this.panel(`<span class="card-close">×</span><div class="duo-panel">
       <h2>💞 ${en?'Your Cat Duo':'双猫纽带'}</h2>
       <p>${en?'Raise two best friends: explore together, collect shared memories and unlock powerful duo moves.':'让两只小猫从陌生到形影不离：一起探索、收集专属回忆、解锁强力合击。'}</p>
@@ -609,13 +611,10 @@ const UI = {
            (en?'Raise another pairing':'培养其他搭档'))+'</button>':''}
       ${showPairChooser?pairChooser:''}
       <div class="duo-relation">
-        <div class="duo-skill-identity" aria-label="${en?'Selected duo special move':'当前组合合体技能'}">
-          <span class="duo-skill-kicker">${en?'THIS PAIR’S DUO SKILL':'这对猫的专属合体技'}</span>
-          <strong>${esc(name)}</strong>
-          <p class="duo-art-description">${unlocked?'✨ '+esc(duoArt?.description||''):(en?'Keep building trust to discover your duo move.':'继续培养默契，解锁后才会揭晓专属合体技。')}</p>
-          ${unlocked?'<canvas id="duo-skill-canvas" role="img" aria-label="'+esc(en?'Your unlocked duo move':'已解锁的合体技演出')+'"></canvas>':''}
-          <span class="duo-skill-unlock ${unlocked?'unlocked':'locked'}">${unlocked?(en?'✓ Unlocked · Charge your duo meter in battle':'✓ 已解锁 · 战斗中攒满合击能量后施放'):(en?'🔒 Locked · Reach trust 20 to discover the move':'🔒 尚未解锁 · 默契达到 20 后揭晓')}</span>
-        </div>
+        <h3 class="duo-relation-heading">${en?'Pair bonding':'双猫相处'}</h3>
+        <strong class="duo-current-pair">${esc(State.catName(a))} × ${esc(State.catName(b))}</strong>
+        ${unlocked?'':('<span class="duo-skill-unlock locked">'+
+          (en?'🔒 Duo ability hidden until trust reaches 20':'🔒 默契达到 20 才会揭晓专属合击')+'</span>')}
         <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
         <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
         <small>${CatRelations.personality(a)} + ${CatRelations.personality(b)}</small>
@@ -632,10 +631,14 @@ const UI = {
           +(en?'Even in the fullest garden, these two will always find each other. Their team move has reached its final form.'
             :'即使庭院住满了小猫，它们也能一眼找到彼此。双猫合击终于达到最终形态。')
           +'</span></p>':''}
-        <section class="duo-memory-album" aria-label="${en?'Travel memories':'双猫旅行回忆'}">
-          <strong>${en?'🐾 Travel memories':'🐾 双猫旅行回忆'} · ${memories.length}/5</strong>
-          <p class="tiny">${en?'Bring this duo to different regions. Trust 20 unlocks each shared memory.':'带上这组搭档探索不同地图，默契达到20就能解锁各地区的双猫回忆。'}</p>
+        <section class="duo-memory-album" aria-label="${en?'Duo memory album':'双猫回忆册'}">
+          <strong>${en?'🐾 Our memories':'🐾 双猫回忆册'} · ${memoryCount}/${CatRelations.MEMORY_CATALOG.length}</strong>
+          <p class="tiny">${en?'Explore together, play, reconcile after a quarrel, and use a real duo move to collect moments.':'一起探索地图、玩耍、闹别扭后和好，以及在战斗中合击，都能留下不同的回忆。'}</p>
+          <span class="duo-memory-group-title">${en?'Journey · 5':'旅行回忆 · 5'}</span>
           <div class="duo-memory-grid">${album}</div>
+          <span class="duo-memory-group-title">${en?'Little moments · 3':'相处回忆 · 3'}</span>
+          <div class="duo-memory-grid duo-memory-moments">${specialAlbum}</div>
+          <div class="duo-memory-note" id="duo-memory-note" aria-live="polite">${en?'Tap an unlocked memory to read its story.':'点击已解锁的回忆，可以重温两只猫的故事。'}</div>
         </section></div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
@@ -643,8 +646,6 @@ const UI = {
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
-    if(unlocked&&duoArt)this.showPairSkillAnimation(a,b,duoArt.name,duoArt.elementPair,
-      p>=90?3:p>=60?2:1);
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
       const entry=unlockedPairs[Number(btn.dataset.duoIndex)];
       if(!entry)return;
@@ -667,6 +668,14 @@ const UI = {
       this.openBondPanel();
     });
     this.renderUnlockedDuoCards(unlockedPairs);
+    document.querySelectorAll('#panel [data-duo-memory]').forEach(btn=>btn.onclick=()=>{
+      const info=CatRelations.memoryInfo(a,b,btn.dataset.duoMemory);
+      if(!info||!CatRelations.memoryList(a,b).includes(info.id))return;
+      document.querySelectorAll('#panel [data-duo-memory]').forEach(item=>
+        item.setAttribute('aria-pressed',String(item===btn)));
+      const note=document.getElementById('duo-memory-note');
+      if(note)note.textContent=info.icon+' '+info.title+' — '+info.story;
+    });
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
       CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
@@ -690,10 +699,19 @@ const UI = {
     };
     const soothe=document.getElementById('duo-soothe');
     if(soothe)soothe.onclick=()=>{
-      if(CatRelations.soothe(a,b)){this.game.toast(en?'💗 Made up! Trust +6':'💗 和好啦！默契 +6');this.game.refreshYardSurprise();this.openBondPanel();}
+      const already=CatRelations.memoryList(a,b).includes('make-up');
+      if(CatRelations.soothe(a,b)){
+        this.game.toast(!already?(en?'💗 Made up! New memory unlocked':'💗 和好啦！解锁双猫回忆'):
+          (en?'💗 Made up! Trust +6':'💗 和好啦！默契 +6'));
+        this.game.refreshYardSurprise();this.openBondPanel();
+      }
     };
     document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
-      if(v.ok){this.game.toast(en?'💞 Friendship +13!':'💞 双猫默契 +13！');this.game.refreshHUD();}
+      if(v.ok){
+        this.game.toast(v.memoryUnlocked?(en?'🧶 A new duo memory!':'🧶 解锁双猫回忆：毛线团的秘密'):
+          (en?'💞 Friendship +13!':'💞 双猫默契 +13！'));
+        this.game.refreshHUD();
+      }
       else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
       else if(v.reason==='fish')this.game.toast(en?'Not enough fish':'小鱼不够啦');
       this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
@@ -805,6 +823,9 @@ const UI = {
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
           <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
+          <button class="btn ghost tiny-btn" data-act="upgrade5" data-id="${st.id}"
+            ${State.S.coins<cost.coins?'disabled':''}>
+            ${en?'Upgrade up to 5':'一键连升 5 级'}</button>
         </div>
       </div>`;
     }).join('');
@@ -868,6 +889,19 @@ const UI = {
       const x=R.upgrade(id);
       this.game.toast(x?.ok?(en?'Upgrade complete!':'升级成功！'):(x?.msg||'资源不足'));
       State.save();this.game.refreshHUD();this.openWorkshop();
+    }else if(act==='upgrade5'){
+      let upgraded=0;
+      for(let i=0;i<5;i++){
+        const cost=R.upgradeCost(id);
+        if(!cost||State.S.coins<cost.coins)break;
+        const done=R.upgrade(id);
+        if(!done?.ok)break;
+        upgraded++;
+      }
+      this.game.toast(upgraded?(en?'Upgraded '+upgraded+' levels':'工坊连升 '+upgraded+' 级'):
+        (en?'Not enough materials':'升级材料不足'));
+      if(upgraded)State.save();
+      this.game.refreshHUD();this.openWorkshop();
     }else if(act==='assign'){
       this.openCatPicker(en?'Choose a working cat':'选择上工的猫',uid=>{
         const x=R.assignCat(id,uid);
@@ -929,7 +963,8 @@ const UI = {
       const title=en?(prod?.nameEn||def.name):def.name;
       const desc=en?(prod?.purposeEn||def.desc):def.desc;
       const res=prod?(' · '+(en?'Produces':'产出')+' '+(prod.kind==='fish'?'🐠':'🪙')+' ×'+prod.base+' / '+(en?'visit':'次互动')):'';
-      return `<div class="st-row" data-type="${def.id}">
+      return `<div class="st-row cb-build-blueprint-card" data-type="${def.id}">
+        <canvas class="cb-build-thumb" data-building-thumb="${def.id}" width="144" height="110" aria-hidden="true"></canvas>
         <div class="st-ico">${def.icon}</div>
         <div class="st-main">
           <div class="st-name">${title}${owned ? ' <span class="tiny">×' + owned + '</span>' : ''}</div>
@@ -964,13 +999,28 @@ const UI = {
       </div>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
-      <h2>🏗️ ${en ? 'Build the Yard' : '庭院建造'}</h2>
+      <div class="cb-blueprint-heading"><span aria-hidden="true">✿</span>
+        <div><h2>${en ? 'My Cat Garden' : '我的猫咪庭院'}</h2>
+        <small>${en?'Cozy workshop · Plan your world':'猫咪生活工坊 · 自由布置'}</small></div></div>
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
         :'先选设施，再到庭院点击位置、确认建造。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
     const host = document.getElementById('panel');
+    // Render REAL facility artwork into a scene-style blueprint preview. It
+    // matches what players will place in the yard instead of a misleading
+    // stock picture, while the tactile card follows the cozy concept panel.
+    host.querySelectorAll('canvas[data-building-thumb]').forEach(canvas=>{
+      const def=World.BUILDINGS_BY_ID?.[canvas.dataset.buildingThumb];
+      if(!def?.draw)return;
+      const cx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+      const sky=cx.createLinearGradient(0,0,0,h);
+      sky.addColorStop(0,'#f8f5e6');sky.addColorStop(.60,'#e7f2e1');sky.addColorStop(1,'#c9e0bf');
+      cx.fillStyle=sky;cx.fillRect(0,0,w,h);
+      cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
+      def.draw(cx,w*.5,h*.89,1.15,1.3);
+    });
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
       this.startBuildingPlacement(btn.dataset.build);
@@ -1133,6 +1183,12 @@ const UI = {
         <button class="btn gold" id="cd-trainxp">🐠 喂鱼练级 (×3🐠 → +经验)</button>
         <button class="btn" id="cd-trainstat">🪙 金币特训 (×80🪙 → 全属性+)</button>
       </div>
+      <div class="btn-row cb-lazy-training">
+        <button class="btn gold" id="cd-trainnext">⬆ 一键升下一级</button>
+        <button class="btn" id="cd-trainfive">⬆ 连升最多 5 级</button>
+        <button class="btn" id="cd-stat-ten">🧶 特训 ×10</button>
+      </div>
+      <p class="tiny cb-train-note">批量操作按实际每级经验与材料计算；资源不足会停止，不会出现负数。成长形态需满足条件后手动选择。</p>
       <div class="btn-row">
         <button class="btn" id="cd-skills">📖 技能搭配</button>
         <button class="btn ghost" id="cd-pet">🤲 撸猫</button>
@@ -1196,6 +1252,9 @@ const UI = {
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat);
       this.game.toast('🪙 特训完成！全属性 +1');
     };
+    document.getElementById('cd-trainnext').onclick=()=>this.quickTrainCat(cat,1);
+    document.getElementById('cd-trainfive').onclick=()=>this.quickTrainCat(cat,5);
+    document.getElementById('cd-stat-ten').onclick=()=>this.quickStatCat(cat,10);
     const renameBtn = document.getElementById('cd-rename');
     if (renameBtn) renameBtn.onclick = () => {
       const cur = cat.nickname || '';
@@ -1207,6 +1266,44 @@ const UI = {
     const growBtn = document.getElementById('cd-grow');
     if (growBtn) growBtn.onclick = () => this.doGrow(cat, null);
     document.querySelectorAll('#cat-detail [data-awaken]').forEach(b => b.onclick = () => this.doGrow(cat, b.dataset.awaken));
+  },
+  // Batch XP by whole LEVELS, using the same fish cost / skill unlock
+  // formulas as individual training. Never overspend to stop halfway through
+  // an advertised level, and do not bypass the intentional growth-form choice.
+  quickTrainCat(cat,levels=1){
+    const limit=Math.max(1,Math.min(5,Math.floor(levels)||1));
+    const was=cat.level;
+    const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
+    let paid=0;
+    for(let i=0;i<limit;i++){
+      const needed=Math.max(0,State.xpToNext(cat.level)-(cat.xp||0));
+      const per=20+cat.level*12;
+      const sets=Math.max(1,Math.ceil(needed/per));
+      const fishCost=sets*3;
+      if(!Number.isSafeInteger(fishCost)||State.S.fish<fishCost)break;
+      State.S.fish-=fishCost;paid+=fishCost;
+      State.addXp(cat,sets*per);
+      cat.hunger=Math.min(100,(cat.hunger||0)+20);
+    }
+    if(cat.level===was){
+      this.game.toast('🐟 小鱼干不足以升满下一级');return 0;
+    }
+    const learned=this.announceSkillMilestone(cat,old);
+    State.save();this.game.refreshHUD();this.renderCatDetail(cat);
+    this.game.toast('⬆ '+State.catName(cat)+' '+was+' → '+cat.level+
+      '级 · 消耗'+paid+'🐟'+(learned?' · 解锁'+learned.name:''));
+    return cat.level-was;
+  },
+  quickStatCat(cat,batches=10){
+    // 2-currency: stat-training now costs 🪙 coins (毛线 folded into coins, ×80/batch).
+    const coins=State.S.coins||0, per=80;
+    const times=Math.min(10,Math.max(0,Math.floor(coins/per)),Math.max(0,Math.floor(batches)));
+    if(!times){this.game.toast('🪙 金币不足');return 0;}
+    State.S.coins-=per*times;
+    for(const k of ['pow','agi','vit','cha'])cat.stats[k]+=times;
+    State.save();this.game.refreshHUD();this.renderCatDetail(cat);
+    this.game.toast('🪙 特训 ×'+times+' · 四项属性均 +'+times);
+    return times;
   },
   doGrow(cat, awakenKey) {
     const G = window.Growth; if (!G) return;
@@ -1634,44 +1731,88 @@ const UI = {
     };
   },
 
-  // ---------- shop ----------
-  openShop() {
-    this.panel(`<span class="card-close">×</span>
-      <h2>小卖部</h2>
-      <p class="sub">用金币换小鱼与运气</p>
-      <div class="btn-row" style="flex-direction:column;align-items:stretch">
-        <button class="btn gold" data-buy="treat5">🐠 小鱼 ×5 — 30🪙</button>
-        <button class="btn gold" data-buy="treat15">🐠 小鱼 ×15 — 75🪙</button>
-        <button class="btn" data-buy="lure">🍀 幸运诱饵 ×1 (下次捉迷藏更易遇稀有) — 2🐠</button>
-        <button class="btn ghost" data-buy="fish">🐠 用 60🪙 兑换 1 小鱼</button>
-      </div>
-      <p class="sub" style="margin-top:14px">💎 进化石（猫咪进化所需）</p>
-      <div class="btn-row" style="flex-direction:column;align-items:stretch">
-        <button class="btn" data-buy="stone:夜影石">🌑 夜影石 ×1 — 3🐠</button>
-        <button class="btn" data-buy="stone:月华露">🌙 月华露 ×1 — 4🐠</button>
-        <button class="btn" data-buy="stone:赤焰晶">🔥 赤焰晶 ×1 — 4🐠</button>
-      </div>
-      <p class="tiny center" style="margin-top:12px">小鱼也可每日签到获得</p>`);
-    document.querySelectorAll('#panel [data-buy]').forEach(b => {
-      b.onclick = () => this.buy(b.dataset.buy);
-    });
-  },
-  buy(what) {
-    const S = State.S;
-    const spend = (coins = 0, fish = 0) => {
-      if (S.coins < coins || S.fish < fish) { this.game.toast('资源不足'); return false; }
-      S.coins -= coins; S.fish -= fish; return true;
+  // ---------- shop: atomic lazy purchasing (bulk ×1/×10/×50/max) ----------
+  shopItem(what){
+    // 2-currency economy: treat packs now grant 🐠 fish (小鱼干 folded into fish).
+    const items={
+      treat5:{icon:'🐠',zh:'小鱼 ×5',en:'Fish ×5',coins:30,fish:0,fishGain:5},
+      treat15:{icon:'🐠',zh:'小鱼 ×15',en:'Fish ×15',coins:75,fish:0,fishGain:15},
+      lure:{icon:'🍀',zh:'幸运诱饵',en:'Lucky lure',coins:0,fish:2,luckLure:1},
+      fish:{icon:'🐠',zh:'小鱼',en:'Fish',coins:60,fish:0,fishGain:1},
+      'stone:夜影石':{icon:'🌑',zh:'夜影石',en:'Shadow Stone',coins:0,fish:3,stone:'夜影石'},
+      'stone:月华露':{icon:'🌙',zh:'月华露',en:'Moon Dew',coins:0,fish:4,stone:'月华露'},
+      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'}
     };
-    if (what === 'treat5' && spend(30)) { S.fish += 5; this.game.toast('+5 小鱼'); }
-    else if (what === 'treat15' && spend(75)) { S.fish += 15; this.game.toast('+15 小鱼'); }
-    else if (what === 'lure' && spend(0, 2)) { S.luckLure += 1; this.game.toast('🍀 幸运诱饵就绪'); }
-    else if (what === 'fish' && spend(60)) { S.fish += 1; this.game.toast('+1 小鱼'); }
-    else if (what && what.indexOf('stone:') === 0) {
-      const name = what.slice(6);
-      const cost = name === '夜影石' ? 3 : 4;
-      if (spend(0, cost)) { S.evoStones = S.evoStones || {}; S.evoStones[name] = (S.evoStones[name] || 0) + 1; this.game.toast('获得 ' + name); }
+    return items[what]||null;
+  },
+  shopMaxAffordable(what){
+    const item=this.shopItem(what);
+    if(!item)return 0;
+    return Math.min(1000,item.coins?Math.floor((State.S.coins||0)/item.coins):Infinity,
+      item.fish?Math.floor((State.S.fish||0)/item.fish):Infinity);
+  },
+  openShop(){
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const quantity=this._shopQuantity=== 'max'?'max':
+      [1,10,50].includes(this._shopQuantity)?this._shopQuantity:1;
+    const qtyButton=(n,txt)=>'<button type="button" class="btn '+(n===quantity?'gold':'ghost')+
+      '" data-shop-qty="'+n+'" aria-pressed="'+String(n===quantity)+'">'+txt+'</button>';
+    const shopKeys=['treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
+    const rows=shopKeys.map(key=>{
+      const item=this.shopItem(key),max=this.shopMaxAffordable(key);
+      const count=quantity==='max'?max:quantity;
+      const totalCoins=item.coins*count,totalFish=item.fish*count;
+      const price=(totalCoins?totalCoins+'🪙':'')+(totalCoins&&totalFish?' + ':'')+
+        (totalFish?totalFish+'🐠':'');
+      const section=key.startsWith('stone:')?'stone':'supplies';
+      return '<button type="button" class="btn shop-bulk-item" data-buy="'+key+
+        '" data-shop-group="'+section+'" '+(max<count||!count?'disabled':'')+'>'+
+        '<span>'+item.icon+' '+(en?item.en:item.zh)+' ×'+count+'</span>'+
+        '<small>'+price+(quantity==='max'?' · '+(en?'affordable max':'可买最多'):'')+'</small></button>';
+    }).join('');
+    this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Corner Shop':'小卖部')+
+      '</h2><p class="sub">'+(en?'Choose a batch size, then buy once. Costs are shown before checkout.':
+        '先选择购买数量，再点商品一次买齐。扣费前显示合计价格。')+'</p>'+
+      '<div class="shop-qty-options" role="group" aria-label="'+(en?'Quantity':'购买数量')+'">'+
+      qtyButton(1,'×1')+qtyButton(10,'×10')+qtyButton(50,'×50')+
+      qtyButton('max',en?'Max affordable':'一键买满')+'</div>'+
+      '<div class="shop-bulk-list">'+rows+'</div>'+
+      '<p class="tiny center">'+(en?'Max 1,000 packs per transaction. Existing items and prices are unchanged.':
+        '一次最多购买 1000 份；原有商品价格不变，不会透支资源。')+'</p>');
+    document.querySelectorAll('#panel [data-shop-qty]').forEach(b=>b.onclick=()=>{
+      const v=b.dataset.shopQty;this._shopQuantity=v==='max'?'max':Number(v);
+      this.openShop();
+    });
+    document.querySelectorAll('#panel [data-buy]').forEach(b=>
+      b.onclick=()=>this.buy(b.dataset.buy,quantity));
+  },
+  buy(what,quantity=1){
+    const item=this.shopItem(what),S=State.S;
+    if(!item){this.game.toast('未找到商品');return {ok:false};}
+    const max=this.shopMaxAffordable(what);
+    const requested=quantity==='max'?max:Math.floor(Number(quantity));
+    const count=Math.min(1000,requested);
+    if(!Number.isSafeInteger(count)||count<1||count>max){
+      this.game.toast('资源不足，无法完成这批购买');
+      return {ok:false};
     }
-    State.save(); this.game.refreshHUD();
+    const costCoins=item.coins*count,costFish=item.fish*count;
+    if(S.coins<costCoins||S.fish<costFish)return {ok:false};
+    S.coins-=costCoins;S.fish-=costFish;
+    if(item.luckLure)S.luckLure=(S.luckLure||0)+item.luckLure*count;
+    if(item.fishGain)S.fish+=item.fishGain*count;
+    if(item.stone){
+      S.evoStones=S.evoStones||{};
+      S.evoStones[item.stone]=(S.evoStones[item.stone]||0)+count;
+    }
+    State.save();this.game.refreshHUD();
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    this.game.toast(item.icon+' '+(en?item.en:item.zh)+' ×'+count+
+      (en?' purchased':' 购买成功'));
+    // Refresh quantities/prices so the next purchase can never use a stale
+    // total after spending resources.
+    if(document.querySelector('#panel [data-shop-qty]'))this.openShop();
+    return {ok:true,count,coins:costCoins,fish:costFish};
   },
 
   // ---------- feed (quick) ----------

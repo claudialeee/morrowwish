@@ -5,20 +5,79 @@ function pair(a,b){if(!a||!b||a.uid===b.uid)return null;const d=db(),k=[a.uid,b.
 function grow(a,b,n){const p=pair(a,b);if(!p)return null;const old=p.value;p.value=Math.min(100,old+Math.max(0,n));if(!db().active.length)db().active=[a.uid,b.uid];return {value:p.value,levelUp:(old<20&&p.value>=20)||(old<60&&p.value>=60)||(old<90&&p.value>=90)};}
 function chosen(){const c=State.S.cats,u=db().active;return u.map(id=>c.find(x=>x.uid===id)).filter(Boolean);}
 function choose(a,b){if(!pair(a,b))return false;db().active=[a.uid,b.uid];State.save();return true;}
-// A different memory album for each cat duo — not one global achievement.
+// Every duo owns its own eight-moment journal. The five existing map
+// memories retain their stable IDs so every previous save remains intact.
+// Three new memories are earned through DIFFERENT real activities.
+const MEMORY_CATALOG=[
+ {id:'home',kind:'map',icon:'☀️',zh:'暖阳里的好朋友',en:'Sunbeam Friends',
+  zhStory:'两只小猫挤进同一缕阳光，谁都不愿先离开。',
+  enStory:'Two kittens squeeze into one sunbeam, and neither wants to leave.'},
+ {id:'sakura',kind:'map',icon:'🌸',zh:'花瓣下的双猫约定',en:'Promise Under Petals',
+  zhStory:'花瓣落在它们的耳朵上，它们约好来年春天还一起回来。',
+  enStory:'Petals land on their ears; they promise to return together next spring.'},
+ {id:'creek',kind:'map',icon:'🐚',zh:'一起越过小溪',en:'Across the Creek Together',
+  zhStory:'一只猫伸出小爪子，另一只已经在石头上等着它。',
+  enStory:'One kitten stretches out a paw; the other waits patiently on the stepping stone.'},
+ {id:'volcano',kind:'map',icon:'🔥',zh:'并肩的勇气',en:'Brave Little Paws',
+  zhStory:'面对炙热的石头，两只猫紧紧相随，找到了安全的路。',
+  enStory:'Side by side, the kittens find a safe way through the hot stones.'},
+ {id:'ruins',kind:'map',icon:'🌙',zh:'双猫星座',en:'Two-Cat Constellation',
+  zhStory:'古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。',
+  enStory:'Two new stars appear on the old astrolabe, carrying their names side by side.'},
+ {id:'home-moment',kind:'map',icon:'🍃',zh:'阳光里的捉迷藏',en:'Hide and Seek in Sunlight',
+  zhStory:'在院子的草影间，一只小猫藏了起来，另一只循着轻轻摇晃的尾巴找到了它。',
+  enStory:'One kitten hides among the garden shadows. The other spots a gently swaying tail and finds its friend.'},
+ {id:'sakura-moment',kind:'map',icon:'🪷',zh:'花雨双猫舞',en:'Dance in Petal Rain',
+  zhStory:'它们踩着飘落的花瓣转圈，追上彼此的脚步后，在同一片花影里打了个滚。',
+  enStory:'They twirl among falling petals, catch each other\'s steps, then tumble into the same patch of flower shade.'},
+ {id:'creek-moment',kind:'map',icon:'💧',zh:'石头上的小鱼影',en:'Two Shadows by the Creek',
+  zhStory:'小溪里的鱼影一闪而过，两只小猫同时伸爪，结果只溅起两朵水花。',
+  enStory:'A fish darts by. Both kittens reach for it together, making nothing but two tiny splashes.'},
+ {id:'volcano-moment',kind:'map',icon:'♨️',zh:'暖石上的午睡',en:'Warm Stone Nap',
+  zhStory:'冒险回来后，它们找到了一块温暖的石头，挨在一起睡得比谁都香。',
+  enStory:'After exploring, they find a sun-warmed stone and fall asleep side by side.'},
+ {id:'ruins-moment',kind:'map',icon:'⭐',zh:'星光中的碰爪',en:'Paws Under the Stars',
+  zhStory:'夜空划过一颗流星，它们同时抬起小爪子，像是交换了一个只有彼此知道的愿望。',
+  enStory:'A star crosses the sky. They raise their paws together and share a wish only they understand.'},
+ {id:'play-together',kind:'moment',icon:'🧶',zh:'毛线团的秘密',en:'The Yarn Ball Pact',
+  zhHint:'一起玩一次',enHint:'Play together once',
+  zhStory:'一颗毛线球滚进草丛，两只小猫同时追了过去。出来时，毛线缠住了尾巴，它们却笑得停不下来。',
+  enStory:'A yarn ball rolls into the grass and both cats give chase. They emerge with tangled tails, but neither can stop purring.'},
+ {id:'make-up',kind:'moment',icon:'💗',zh:'雨过天晴',en:'After the Storm',
+  zhHint:'闹别扭后和好',enHint:'Make up after a quarrel',
+  zhStory:'闹别扭后，一只猫悄悄让出了最软的睡垫。另一只蹭了蹭它的耳朵，这次它们谁也没有走开。',
+  enStory:'After their quarrel, one cat quietly offers the softest cushion. The other nuzzles its ears, and this time neither walks away.'},
+ {id:'duo-strike',kind:'moment',icon:'✨',zh:'第一次并肩出击',en:'The First Twin Strike',
+  zhHint:'战斗中释放合体技',enHint:'Use a duo move in battle',
+  zhStory:'第一次合击时，两道爪印几乎同时落下。战斗结束后它们互相碰了碰爪，像在说：下次还一起。',
+  enStory:'Their first synchronized strike lands at the same instant. Afterwards their paws meet again, as if to say: next time, together.'}
+];
+const MEMORY_IDS=new Set(MEMORY_CATALOG.map(m=>m.id));
 function memoryList(a,b){
   return (pair(a,b)?.memories||[]).slice();
 }
-function remember(a,b,regionId){
-  if(!a||!b||!regionId)return {ok:false};
+function memoryInfo(a,b,id){
+ const entry=MEMORY_CATALOG.find(m=>m.id===id);
+ if(!entry)return null;
+ const en=window.MorrowwishI18n?.get?.()!=='zh';
+ let story=en?entry.enStory:entry.zhStory;
+ // The memory belongs to THESE two cats, not a generic global collectible.
+ const names=a&&b?State.catName(a)+' × '+State.catName(b):'';
+ return {id:entry.id,kind:entry.kind,icon:entry.icon,
+   title:en?entry.en:entry.zh,story:names?names+' — '+story:story,
+   hint:en?(entry.enHint||'Explore together'):(entry.zhHint||'双猫探索地图')};
+}
+function remember(a,b,memoryId){
+  if(!a||!b||!MEMORY_IDS.has(memoryId))return {ok:false,reason:'unknown-memory'};
   const p=pair(a,b);
   if(!Array.isArray(p.memories))p.memories=[];
-  if(p.memories.includes(regionId))return {ok:false,reason:'already-found'};
-  p.memories.push(regionId);
-  const grown=grow(a,b,12);
+  if(p.memories.includes(memoryId))return {ok:false,reason:'already-found'};
+  p.memories.push(memoryId);
+  // Special moments are small bonuses; 5 original map memories keep +12.
+  const grown=grow(a,b,MEMORY_CATALOG.find(m=>m.id===memoryId)?.kind==='moment'||memoryId.endsWith('-moment')?4:12);
   State.save();
-  window.arcadeMetric?.('bond_duo_memory',{region:regionId,trust:grown.value,total:p.memories.length});
-  return {ok:true,trust:grown.value,total:p.memories.length};
+  window.arcadeMetric?.('bond_duo_memory',{region:memoryId,trust:grown.value,total:p.memories.length});
+  return {ok:true,id:memoryId,trust:grown.value,total:p.memories.length};
 }
 function personality(cat){
   const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -64,7 +123,8 @@ function moodLabel(a,b){
 }
 function soothe(a,b){
   const p=pair(a,b);if(!p||mood(a,b)!=='sulky')return false;
-  p.sulkyUntil=0;p.sulkyPending=false;grow(a,b,6);State.save();
+  p.sulkyUntil=0;p.sulkyPending=false;grow(a,b,6);
+  remember(a,b,'make-up');State.save();
   window.arcadeMetric?.('bond_duo_reconcile',{});
   return true;
 }
@@ -147,8 +207,10 @@ function play(a,b){const p=pair(a,b);if(!p)return {ok:false,reason:'pair'};
  // Playing together now costs 1 🐠 fish (the old 零食/treats currency folded into fish).
  if(State.S.fish<1)return {ok:false,reason:'fish'};
  if(Date.now()-p.lastPlay<60000)return {ok:false,reason:'cooldown'};
- State.S.fish--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
- window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v};
+ State.S.fish--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);const m=remember(a,b,'play-together');
+ v.value=p.value;
+ State.save();
+ window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v,memoryUnlocked:m.ok?'play-together':null};
 }
-window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,memoryList,remember,DUO_ARTS};
+window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,memoryList,memoryInfo,remember,MEMORY_CATALOG,DUO_ARTS};
 })();

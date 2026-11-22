@@ -752,3 +752,87 @@ html.cg-play #stageHome{display:none!important}
 .single-screen-game .overlay .result-close:hover,.single-screen-game .overlay .result-close:focus-visible{background:#fbdce7;outline:2px solid #c583a1;outline-offset:1px}
 .single-screen-game .overlay .cat-medal{padding-top:12px}
 @media(max-width:620px){.single-screen-game .overlay .result-close{right:5px;top:5px;width:40px;height:40px;min-width:40px;min-height:40px}}
+
+/* Cat sound controls belong inside the playable game, not the hidden legacy
+   page header. Keep both switches accessible and within 320px phone widths. */
+.single-screen-game #stageControls .mw-audio-dock{
+  display:inline-flex!important;align-items:center;gap:4px!important;
+  flex:0 0 auto;min-width:0;max-width:100%;margin:0!important;order:0!important;
+}
+.single-screen-game #stageControls .mw-audio-dock button{
+  display:inline-flex!important;position:relative!important;flex:0 0 40px!important;
+  box-sizing:border-box!important;width:40px!important;min-width:40px!important;
+  max-width:40px!important;height:42px!important;min-height:42px!important;
+  padding:0!important;margin:0!important;border-radius:12px!important;
+  background:#fff9f3!important;border:1px solid #e9d8df!important;
+  color:#78566e!important;font-size:0!important;line-height:1!important;
+  white-space:nowrap!important;box-shadow:0 2px 5px #70526620!important;
+  touch-action:manipulation;
+}
+.single-screen-game #stageControls #music::before{
+  content:"♫";font:900 23px/1 system-ui;opacity:1;
+}
+.single-screen-game #stageControls #sound::before{
+  content:"🔊";font:900 20px/1 system-ui;opacity:1;
+}
+.single-screen-game #stageControls #sound[aria-pressed="false"]::before{content:"🔇"}
+.single-screen-game #stageControls #music[aria-pressed="false"]::before{opacity:.45}
+.single-screen-game #stageControls .mw-audio-dock button:focus-visible{
+  outline:3px solid #9d6ba6!important;outline-offset:1px!important;
+}
+@media(max-width:700px){
+ .single-screen-game #stageControls .mw-audio-dock{gap:3px!important}
+ .single-screen-game #stageControls .mw-audio-dock button{
+  width:40px!important;min-width:40px!important;max-width:40px!important;
+  height:42px!important;min-height:42px!important;padding:0!important;
+ }
+}
+@media(max-width:600px){
+ .single-screen-game .in-game-head-row{flex-wrap:wrap!important;row-gap:2px!important}
+ .single-screen-game #stageControls{
+  display:flex!important;width:100%!important;flex:1 1 100%!important;
+  justify-content:flex-end!important;align-items:center!important;
+  min-width:0!important;gap:4px!important;
+ }
+ .single-screen-game .in-game-head-row .heist-status{margin-left:auto!important}
+ .single-screen-game #stageControls .mw-audio-dock{margin:0!important}
+}
+
+/* Shared fullscreen chrome uses a 34px cap. The cat HUD needs the real
+   44px finger-sized control on desktop AND mobile, not just under 700px. */
+html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscreen-toggle{
+ box-sizing:border-box!important;width:44px!important;min-width:44px!important;
+ max-width:44px!important;height:44px!important;min-height:44px!important;
+ max-height:44px!important;flex:0 0 44px!important;
+}
+
+/* Short desktop windows: audio joins a compact ONE-LINE toolbar instead of
+   adding a second row and forcing the board below the viewport. Help remains
+   available through the visible Menu button; Home retains its back arrow. */
+@media(min-width:701px) and (max-height:760px){
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game #quickHelp{display:none!important}
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game #stageHomeLabel{display:none!important}
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game #stageHome{
+  width:40px!important;min-width:40px!important;max-width:40px!important;
+  padding:0!important;
+ }
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game #menuButton{
+  min-width:80px!important;padding:0 6px!important;
+ }
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game .in-game-head-row{
+  flex-wrap:nowrap!important;align-items:center!important;gap:4px!important;
+ }
+}
+
+/* Communicate why a perfect escape earned or missed three stars. */
+.single-screen-game .overlay .modal .result-star-guide{
+ margin:5px auto 9px;max-width:100%;padding:7px 9px;
+ background:#f4edf7;border:1px solid #e8d7eb;border-radius:10px;
+ color:#765774;font:800 12px/1.4 Nunito,system-ui,sans-serif;overflow-wrap:anywhere;
+}
+.single-screen-game .overlay .modal .result-star-guide:empty{display:none}
+.single-screen-game #gameMenu .star-rule-help{
+ background:#fff3d9;border-left:3px solid #d8ac64;border-radius:7px;
+ margin:7px 0 9px;padding:7px 10px;font:800 12px/1.5 Nunito,system-ui,sans-serif;
+ color:#70566b;overflow-wrap:anywhere;
+}

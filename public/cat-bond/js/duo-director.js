@@ -72,8 +72,88 @@ function accent(ctx,W,H,p,key,tier){
  window.CatBondDuoSignatures.paint(ctx,W,H,p,tier,key);
  ctx.restore();
 }
+// Cinematic storyboard: 21 distinct FULL-SCENE movement tracks.
+// Format per beat: [pan X %, pan Y %, camera zoom, camera rotation degrees].
+// Track acts on the ENTIRE intact illustrated two-cat scene, never on two
+// cropped portraits. Skill-specific impact glyphs remain in duo-finale.js.
+const beats=[0,.12,.28,.48,.70,1];
+const motionTracks={
+ 'dark+dark': [[0,0,1.08,0],[-.025,-.012,1.16,-2],[.039,-.029,1.27,2],[-.036,.021,1.18,-2],[.017,0,1.13,0],[0,0,1.08,0]],
+ 'dark+elec': [[0,0,1.09,0],[.030,-.028,1.21,3],[-.035,.032,1.27,-3],[.036,-.016,1.24,2],[-.023,.018,1.14,-1],[0,0,1.09,0]],
+ 'dark+fire': [[0,0,1.09,0],[-.011,.025,1.11,-2],[.017,-.048,1.29,2],[.035,-.023,1.21,-3],[-.014,.022,1.14,1],[0,0,1.09,0]],
+ 'dark+grass': [[0,0,1.08,0],[-.014,.029,1.14,1],[.014,-.040,1.19,-2],[0,-.048,1.25,0],[.026,-.011,1.11,2],[0,0,1.08,0]],
+ 'dark+light': [[0,0,1.10,0],[.018,.006,1.13,2],[0,-.019,1.30,0],[-.020,.010,1.19,-2],[0,-.006,1.16,0],[0,0,1.10,0]],
+ 'dark+water': [[0,0,1.08,0],[-.041,0,1.13,-1],[.025,-.045,1.26,1],[.041,.023,1.16,2],[-.035,-.005,1.11,-1],[0,0,1.08,0]],
+ 'elec+elec': [[0,0,1.09,0],[.037,-.019,1.24,3],[-.029,.026,1.28,-3],[.040,-.030,1.25,4],[-.036,.029,1.16,-2],[0,0,1.09,0]],
+ 'elec+fire': [[0,0,1.09,0],[.020,-.033,1.15,3],[.035,-.016,1.27,5],[-.033,.009,1.28,-5],[.024,.021,1.16,2],[0,0,1.09,0]],
+ 'elec+grass': [[0,0,1.08,0],[0,.031,1.16,-2],[-.034,-.032,1.26,1],[.024,-.008,1.20,-3],[0,.022,1.13,1],[0,0,1.08,0]],
+ 'elec+light': [[0,0,1.09,0],[-.033,.011,1.13,-2],[.040,-.033,1.31,2],[-.032,.020,1.21,-2],[.028,-.004,1.15,1],[0,0,1.09,0]],
+ 'elec+water': [[0,0,1.08,0],[.007,.031,1.13,-1],[.030,-.040,1.23,2],[-.025,-.035,1.26,-2],[.014,.026,1.14,1],[0,0,1.08,0]],
+ 'fire+fire': [[0,0,1.07,0],[-.009,.029,1.13,-2],[0,-.043,1.34,0],[.017,-.027,1.18,2],[-.021,.027,1.12,-1],[0,0,1.07,0]],
+ 'fire+grass': [[0,0,1.08,0],[.038,.005,1.13,3],[.003,-.028,1.27,-1],[-.030,-.031,1.23,-3],[.026,.009,1.13,2],[0,0,1.08,0]],
+ 'fire+light': [[0,0,1.11,0],[0,.023,1.18,0],[0,-.035,1.31,0],[.014,-.011,1.26,1],[-.015,.017,1.18,-1],[0,0,1.11,0]],
+ 'fire+water': [[0,0,1.08,0],[-.035,.024,1.16,-3],[-.026,-.009,1.25,3],[.042,-.024,1.29,-2],[-.015,.025,1.13,1],[0,0,1.08,0]],
+ 'grass+grass': [[0,0,1.08,0],[0,.039,1.11,0],[0,-.018,1.20,0],[0,-.050,1.28,0],[.014,-.012,1.16,1],[0,0,1.08,0]],
+ 'grass+light': [[0,0,1.08,0],[-.027,.003,1.16,-2],[0,-.031,1.28,0],[.023,-.015,1.24,2],[0,.013,1.12,0],[0,0,1.08,0]],
+ 'grass+water': [[0,0,1.08,0],[.034,.018,1.13,2],[-.009,-.036,1.23,-2],[-.042,-.015,1.21,-2],[.026,.006,1.13,1],[0,0,1.08,0]],
+ 'light+light': [[0,0,1.09,0],[-.012,.014,1.17,-2],[0,-.030,1.33,0],[.013,-.013,1.25,2],[0,.016,1.12,0],[0,0,1.09,0]],
+ 'light+water': [[0,0,1.08,0],[.020,-.006,1.13,1],[-.014,-.025,1.23,-1],[0,-.030,1.27,0],[-.013,.019,1.14,0],[0,0,1.08,0]],
+ 'water+water': [[0,0,1.08,0],[-.039,.013,1.14,-3],[.024,-.037,1.24,2],[.039,.016,1.28,3],[-.028,.024,1.14,-2],[0,0,1.08,0]]
+};
+function camera(key,p,W,H){
+ const track=motionTracks[key]||motionTracks['grass+light'];
+ const progress=clamp(p);
+ let i=0;while(i<beats.length-2&&progress>beats[i+1])i++;
+ const k=ease((progress-beats[i])/(beats[i+1]-beats[i]));
+ const at=n=>track[i][n]+(track[i+1][n]-track[i][n])*k;
+ return {dx:at(0)*W,dy:at(1)*H,zoom:at(2),
+   angle:at(3)*Math.PI/180,kind:styles[key]||'highfive',
+   phase:progress};
+}
+// Follow BOTH cats' separately-authored routes with restrained calligraphic
+// movement streaks. These are NOT pasted-on heads/paws: watercolor light
+// traces behind full intact illustrated characters, like traditional animation
+// action lines. Movement follows each of the 21 unique staging trajectories.
+const tracePalette={
+ dark:'#d3badb',elec:'#e9d8a6',fire:'#f1c0aa',
+ grass:'#c7d8ba',light:'#f7e7bf',water:'#c4dfe0'
+};
+function footwork(ctx,W,H,p,key,tier=1){
+ if(p<.12||p>.79)return;
+ const pair=key.split('+'),from=Math.max(.12,p-.11);
+ const col=[tracePalette[pair[0]]||'#e0d0df',tracePalette[pair[1]]||'#e0dfe8'];
+ const enter=ease((p-.12)/.1),leave=1-ease((p-.57)/.22);
+ const fade=enter*leave;
+ if(fade<=0)return;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ for(let member=0;member<2;member++){
+  const points=[];
+  for(let j=0;j<=7;j++){
+   const t=from+(p-from)*j/7;
+   const a=pose(key,t,W,H)[member];
+   points.push([a.x,a.y-H*.17]);
+  }
+  const c=col[member];
+  ctx.strokeStyle=c;ctx.shadowColor=c;ctx.shadowBlur=6;
+  ctx.globalAlpha=.36*fade;ctx.lineWidth=Math.max(1.2,H*.009);
+  ctx.beginPath();ctx.moveTo(...points[0]);
+  for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);
+  ctx.stroke();
+  // The pair converge for a high-five; lightning duos blink at different
+  // corners, while flower/water duos leave a rounded, flowing afterimage.
+  const final=points[points.length-1],at=pose(key,p,W,H)[member];
+  ctx.globalAlpha=.66*fade;ctx.fillStyle=c;
+  const size=Math.max(2,H*.010);
+  const angle=(p*8+member*2.4),offset=Math.max(4,H*.042);
+  ctx.save();ctx.translate(final[0],final[1]);ctx.rotate(angle);
+  ctx.beginPath();ctx.moveTo(0,-size*1.7);ctx.lineTo(size*.8,0);
+  ctx.lineTo(0,size*1.8);ctx.lineTo(-size*.8,0);ctx.closePath();ctx.fill();
+  ctx.restore();
+ }
+ ctx.restore();
+}
 window.CatBondDuoDirector={
- keys:Object.keys(map),styles,map,pose,accent,
+ keys:Object.keys(map),styles,map,pose,camera,motionTracks,footwork,accent,
  isUnique:()=>new Set(Object.values(map).map(v=>JSON.stringify(v[1]))).size===21
 };
 })();
