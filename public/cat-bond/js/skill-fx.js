@@ -72,6 +72,79 @@ function hit(b,target,sk,dealt,continuous=false){
   life:dur,max:dur,seed:g.seed,heavy:!!big});
  return true;
 }
+// Certain move families share a grammar (claw, dash, heal, pounce), but an
+// individual skill should still read correctly without color or name labels.
+// These SHORT secondary silhouettes are tied to skill.id, not element.
+function identityDetail(ctx,id,R,k,p,spin,cast){
+ const a=k*(cast?.63:.83);
+ ctx.save();ctx.globalAlpha=a;ctx.lineCap='round';ctx.lineJoin='round';
+ if(id==='emberClaw'){
+   // Two molten claw-tip teardrops, separate from the longer comet claw.
+   for(let i=0;i<3;i++){
+     const x=R*(.17+i*.14),y=-R*.2+i*6;
+     ctx.fillStyle=i%2?'#ffd789':'#ff7946';ctx.beginPath();
+     ctx.moveTo(x-3,y+6);ctx.quadraticCurveTo(x-6,y-5,x+1,y-13);
+     ctx.quadraticCurveTo(x+9,y-3,x+3,y+7);ctx.fill();
+   }
+ }else if(id==='cometClaw'){
+   ctx.strokeStyle='#fff5cb';ctx.lineWidth=5;ctx.beginPath();
+   ctx.moveTo(-R*.65,R*.32);ctx.quadraticCurveTo(R*.2,-R*.60,R*.7,-R*.36);ctx.stroke();
+   ctx.fillStyle='#ffd28c';ctx.beginPath();ctx.arc(R*.63,-R*.39,6,0,TAU);ctx.fill();
+ }else if(id==='batAround'){
+   // A single dark rotating paw orbit — different from fire claws.
+   ctx.strokeStyle='#745898';ctx.lineWidth=4;ctx.beginPath();
+   ctx.arc(0,0,R*.58,spin*.42,spin*.42+PI*1.25);ctx.stroke();
+   point(ctx,R*.53*Math.cos(spin*.42),R*.53*Math.sin(spin*.42),5,'#d9bde9');
+ }else if(id==='staticPounce'){
+   // The cat's SHAPE moves; arrows follow its body, no lightning projectile.
+   for(let i=-1;i<=1;i++){
+     ctx.strokeStyle=i===0?'#fff5b7':'#8b92c9';ctx.lineWidth=i===0?3.5:2.3;
+     path(ctx,[[-R*.68,i*10],[-R*.33,i*10-6],[-R*.05,i*10-6]]);
+   }
+ }else if(id==='voltRush'){
+   // Up-close electric shoulder-check, with snapping forks.
+   ctx.strokeStyle='#fff1aa';ctx.lineWidth=3.5;
+   for(let i=0;i<3;i++)path(ctx,[[0,i*12-13],[R*.23,i*12-19],[R*.33,i*12-8],[R*.54,i*12-13]]);
+ }else if(id==='highGround'){
+   // Diving comet: downward strike marker, distinct from comet claw.
+   ctx.strokeStyle='#fff4c9';ctx.lineWidth=4;
+   path(ctx,[[0,-R*.66],[0,R*.1],[-R*.16,-R*.03]]);
+   path(ctx,[[0,R*.1],[R*.16,-R*.03]]);
+ }else if(id==='apexPounce'){
+   // Heaviest leap ends in a compressed paw-wave at ground level.
+   ctx.strokeStyle='#c8a9ec';ctx.lineWidth=4;ctx.beginPath();
+   ctx.ellipse(0,R*.31,R*.67,R*.18,0,0,TAU);ctx.stroke();
+   for(let i=-1;i<=1;i++)point(ctx,i*10,R*.2,2.7,'#fff6db');
+ }else if(id==='grooming'){
+   // Lick/cleanse has aqua droplets, not a generic healing halo.
+   for(let i=0;i<3;i++){
+     ctx.fillStyle=i%2?'#cdf8ee':'#7bcddd';ctx.beginPath();
+     const x=(i-1)*13,y=-R*.32+Math.sin(spin+i)*5;
+     ctx.moveTo(x,y-6);ctx.quadraticCurveTo(x-9,y+5,x,y+9);
+     ctx.quadraticCurveTo(x+9,y+5,x,y-6);ctx.fill();
+   }
+ }else if(id==='dawnHeal'){
+   // Slow blink: two mirrored eyelid crescents.
+   ctx.strokeStyle='#fff8e4';ctx.lineWidth=3.2;
+   for(const side of [-1,1]){ctx.beginPath();ctx.arc(side*R*.18,-R*.15,R*.22,0,PI);ctx.stroke();}
+ }else if(id==='tenderPaw'){
+   // A supportive open paw with a separate rising heart.
+   ctx.fillStyle='#fff0eb';point(ctx,0,R*.16,8,'#ffe3d8');
+   for(let i=0;i<3;i++)point(ctx,(i-1)*10,-R*.14,3.5,'#f9b6c5');
+ }else if(id==='veteranStrike'){
+   // A compressed, precise veteran X slash, no wide generic arc.
+   ctx.strokeStyle='#f7eaff';ctx.lineWidth=3.5;
+   path(ctx,[[-R*.43,-R*.35],[R*.46,R*.36]]);
+   path(ctx,[[-R*.32,R*.39],[R*.35,-R*.42]]);
+ }else if(id==='tidalBite'){
+   // Fang tips with a water-droplet between them.
+   ctx.strokeStyle='#e3faff';ctx.lineWidth=4;
+   path(ctx,[[-R*.27,-R*.24],[-R*.15,R*.12],[-R*.02,-R*.09]]);
+   path(ctx,[[R*.27,-R*.24],[R*.15,R*.12],[R*.02,-R*.09]]);
+   point(ctx,0,R*.13,3.3,'#83daf4');
+ }
+ ctx.restore();
+}
 function draw(ctx,v,time=0){
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
  const p=1-clip(v.life/Math.max(.001,v.max)),k=clip(v.life/v.max),r=spec.r;
@@ -196,6 +269,8 @@ function draw(ctx,v,time=0){
   }
   if(style==='fur')for(let j=0;j<7;j++)point(ctx,Math.cos(j*TAU/7)*R*.5,Math.sin(j*TAU/7)*R*.4,3,color);
  }
+ // Every duplicated attack family gets its own recognizable secondary shape.
+ identityDetail(ctx,v.skillId,R,k,p,spin,cast);
  // High-contrast contact kick: short directional starbursts, NEVER the giant
  // near-white disk from an ultimate or a second full-strength generic impact.
  if(!cast){
