@@ -7,7 +7,11 @@ try{
  const page=await browser.newPage({viewport:{width:1200,height:780}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:8765/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
- await page.waitForFunction(()=>!!window.CatBondPremiumCinematics?.ready&&window.CatBondDuoDirector?.keys?.length===21,{timeout:20000});
+ // Both the original full-painting scene and optional breed-accurate actor
+ // atlas must be ready before comparing actual drawing calls.
+ await page.waitForFunction(()=>!!window.CatBondPremiumCinematics?.ready&&
+   window.CatBondDuoDirector?.keys?.length===21&&window.CatBondDuoBreedActors?.ready,
+   {timeout:20000});
  const records=await page.evaluate(()=>{
   const pair=[{uid:'a',species:'tangyuan'},{uid:'b',species:'sanhua'}];
   const orig=CanvasRenderingContext2D.prototype.drawImage;
@@ -21,32 +25,46 @@ try{
      return orig.apply(this,args);
    };
    return CatBondDuoDirector.keys.map(key=>{
-     calls=[];
-     const ctx=cv.getContext('2d');ctx.clearRect(0,0,640,360);
+     const ctx=cv.getContext('2d');
+     // Actual game default: one WHOLE original 63-frame painting with cats
+     // already illustrated. Never add duplicate live cat sprites over it.
+     calls=[];ctx.clearRect(0,0,640,360);
      CatBondPremiumCinematics.draw(ctx,640,360,{
        elements:key,max:2.75,t:1.85,tier:3,catUids:['a','b'],name:key
      },uid=>pair.find(c=>c.uid===uid));
-     return {key,calls:[...calls]};
+     const original=[...calls];
+     // Optional breed-specific alternate: a cat-free painted landscape, plus
+     // TWO correctly selected complete watercolor cats from the 32-breed atlas.
+     calls=[];ctx.clearRect(0,0,640,360);
+     CatBondPremiumCinematics.draw(ctx,640,360,{
+       elements:key,max:2.75,t:1.85,tier:3,catUids:['a','b'],
+       name:key,originalArt:false
+     },uid=>pair.find(c=>c.uid===uid));
+     return {key,original,alternate:[...calls]};
    });
   }finally{CanvasRenderingContext2D.prototype.drawImage=orig}
  });
  assert.equal(records.length,21);
  for(const item of records){
-  // Current watercolor system uses one clean 21x3 scene, then two WHOLE
-  // illustrated players from the transparent 8x4 actual-breed atlas.
-  // Checking merely "two 9-arg drawImage calls" is an obsolete assumption:
-  // it incorrectly rejects the correct two-actor composition.
-  const fullFrames=item.calls.filter(call=>call.argc===9);
-  const sceneFrames=fullFrames.filter(call=>call.sourceWidth===3584&&call.sourceHeight===2592);
-  const actorFrames=fullFrames.filter(call=>call.sourceWidth===1774&&call.sourceHeight===887);
-  const compositeDraws=item.calls.filter(call=>call.argc===5);
-  assert.equal(sceneFrames.length,1,item.key+' needs a single intact cat-free background frame');
-  assert.equal(actorFrames.length,2,item.key+' must paint both complete selected watercolor cats');
-  assert.ok(actorFrames.every(call=>call.srcW>215&&call.srcH>215&&call.h>175),
-    item.key+' should not crop into a tiny or sliced cat body');
-  assert.equal(compositeDraws.length,1,item.key+' must blend one complete scene into battle');
-  assert.ok(compositeDraws[0].w>400,item.key+' needs full-width cinematic composition');
+  const orig=item.original.filter(call=>call.argc===9);
+  const origAtlas=orig.filter(call=>call.sourceWidth===3584&&call.sourceHeight===2592);
+  const origActors=orig.filter(call=>call.sourceWidth===1774&&call.sourceHeight===887);
+  const origComposite=item.original.filter(call=>call.argc===5);
+  assert.equal(origAtlas.length,1,item.key+' must display ONE complete original artwork');
+  assert.equal(origActors.length,0,item.key+' must NOT paste duplicate actor sprites over painted cats');
+  assert.equal(origComposite.length,1,item.key+' blends one complete painting into live battle');
+  assert.ok(origComposite[0].w>400,item.key+' original painting spans the scene');
+
+  const alternate=item.alternate.filter(call=>call.argc===9);
+  const cleanScene=alternate.filter(call=>call.sourceWidth===512&&call.sourceHeight===288);
+  const actors=alternate.filter(call=>call.sourceWidth===1774&&call.sourceHeight===887);
+  const altComposite=item.alternate.filter(call=>call.argc===5);
+  assert.equal(cleanScene.length,1,item.key+' alternate needs one CAT-FREE scene');
+  assert.equal(actors.length,2,item.key+' alternate draws both WHOLE selected watercolor cats');
+  assert.ok(actors.every(call=>call.srcW>215&&call.srcH>215&&call.h>175),
+    item.key+' must retain both ears, tails and paws');
+  assert.equal(altComposite.length,1,item.key+' alternate is composited only once');
  }
  assert.deepEqual(errors,[]);
- console.log('ONE CONTINUOUS PAINTING PER DUO PASS; verified all 21 element combinations');
+ console.log('DUO ART PASS: 21 original complete paintings without duplicates AND 21 breed-matched alternatives with two whole cats');
 }finally{await browser.close()}
