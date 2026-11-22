@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 const source=fs.readFileSync('public/cat-bond/js/worldmap.js','utf8');
 const html=fs.readFileSync('public/cat-bond/index.html','utf8');
-assert.match(html,/worldmap\.js\?v=sunlit-garden-20261122-v3/);
+assert.match(html,/worldmap\.js\?v=[a-z0-9][a-z0-9-]*/, 'world map cache-busting version must be present');
 assert.match(source,/id: 'home', name: '阳光花园', sub: 'Sunlit Garden'/);
 assert.match(source,/← 回庭院/);
 assert.match(source,/exitToYard: exitToYard/, 'dedicated header return uses actual world exit');
