@@ -191,7 +191,9 @@
     // SSR
     jinwu:    'fire',   // 火焰金乌
     yuelian:  'light',  // 踏月仙猫
-    xingchen: 'dark',   // 星河梦境
+    xingchen: 'dark', // 星河梦境
+    abi: 'fire', meidu: 'grass', xuewa: 'water', mengmai: 'dark',
+    fanmao: 'water', bosi: 'light', wumao: 'elec',
   };
 
   function elementOf(speciesId) { return SPECIES_ELEMENT[speciesId] || 'light'; }
