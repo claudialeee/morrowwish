@@ -380,7 +380,7 @@ const UI = {
         '<div class="explore-cat-summary"><strong>'+esc(State.catName(cat))+'</strong>'+
         '<small>'+(i===0?(en?'Leader':'领队'):(en?'Partner':'搭档'))+
         ' · Lv.'+f.level+' · '+esc(f.rarity)+' · '+(en?'Power ':'战力 ')+f.power+'</small>'+
-        '<small>❤ '+f.hp+'/'+f.maxHp+' · '+(en?'Bond ':'好感 ')+f.affinity+
+        '<small>❤ <span data-menu-hp="'+esc(cat.uid)+'">'+f.hp+'/'+f.maxHp+'</span> · '+(en?'Bond ':'好感 ')+f.affinity+
         ' · '+(en?'Full ':'饱食 ')+Math.round(cat.hunger||0)+'%</small>'+
         '<div class="explore-cat-skills">'+skills+'</div>'+
         '<div class="explore-cat-buttons">'+
@@ -454,6 +454,27 @@ const UI = {
     host?.querySelectorAll('[data-explore-action]').forEach(button=>{
       button.onclick=()=>{const open=actions[button.dataset.exploreAction];if(open)this.navigateTo(open);};
     });
+  },
+
+  // Live HP readout while the expedition menu stays open. No tapping required.
+  refreshExploreHealth(){
+    const host=document.querySelector('#panel .explore-menu');
+    if(!host)return;
+    const squad=this.getPreferredBattleTeam();
+    const cats=new Map((State.S.cats||[]).map(c=>[c.uid,c]));
+    for(const card of host.querySelectorAll('[data-menu-cat]')){
+      const cat=cats.get(card.dataset.menuCat);
+      if(!cat)continue;
+      const f=this.battleCatFacts(cat);
+      const label=card.querySelector('[data-menu-hp]');
+      if(label)label.textContent=f.hp+'/'+f.maxHp;
+      const button=card.querySelector('[data-menu-cat-action="heal"]');
+      if(button)button.disabled=f.hpPercent>=100||State.S.fish<1;
+    }
+    const injured=squad.filter(cat=>State.catHpFraction(cat)<.999).length;
+    const allLabel=host.querySelector('[data-explore-action="healteam"] span:last-child');
+    if(allLabel)allLabel.textContent=this.isEnglish()
+      ?'Fish heal +35% · '+injured+'🐠':'喂鱼回血 +35% · '+injured+'🐠';
   },
 
   fishHealFailureText(result,en){
