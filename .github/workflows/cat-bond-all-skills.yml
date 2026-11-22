@@ -1,0 +1,46 @@
+name: Cat Bond all 39 normal skills visual QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/js/skill-fx.js'
+      - 'public/cat-bond/js/vfx.js'
+      - 'public/cat-bond/js/battle.js'
+      - 'public/cat-bond/index.html'
+      - 'scripts/cat-bond-all-skills-visual-smoke.mjs'
+      - '.github/workflows/cat-bond-all-skills.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  all-skill-vfx:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Verify combat hit-feel and all skill effect registry
+        run: node scripts/check-cat-bond.mjs
+      - name: Render 39 skill ID effects on real desktop and phone battle canvases
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-all-skills-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-all-skills-visual-smoke.mjs
+      - name: Save all 78 original watercolor skill screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-39-skills-in-real-battle
+          path: /tmp/cat-bond-all-skills-*.png
+          if-no-files-found: warn
+          retention-days: 7
