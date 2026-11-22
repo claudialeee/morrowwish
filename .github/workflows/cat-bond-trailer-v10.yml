@@ -70,6 +70,8 @@ jobs:
             throw Error('V10 must remain owner-review only');
           const bond=m.trailers.find(t=>t.slug==='cat-bond');
           if(!bond||!bond.video.includes('trailer-v10')||bond.retainedFrom)
+           if(bond.duration<55||bond.duration>=60)throw Error('Short-form cut must be 55–60 seconds');
+           if(!bond.shots.some(x=>x.scene==='duo-quarrel'&&x.seconds>=6))throw Error('Readable two-cat story below six seconds');
             throw Error('No fresh Cat Bond V10 recording');
           const required=['cat-upgrade','duo-partners','duo-map-walk','duo-promise',
             'duo-quarrel','duo-reconcile','work-after','tease','map-explore','map-management',
