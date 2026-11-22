@@ -81,9 +81,11 @@ try{
   // The play interaction is visible and can be immediately requested by tapping
   // the placed structure; it is not simply a passive income number in a menu.
   const plays=await page.evaluate(()=>{
-   const g=window.__game,b=State.S.yardBuildings[0],cat=g.yard.entities[0];
+   const g=window.__game,b=State.S.yardBuildings[0];
    const invited=g.yard.inviteCatToBuilding(b);
    if(!invited)return {invited:false};
+   const cat=g.yard.entities.find(e=>e._buildTarget===b);
+   if(!cat)return {invited:false};
    cat.x=b.x-18;cat.y=b.y-2;
    g.yard.stepBuildTarget(cat,.033);
    g.yard.update(.033);
