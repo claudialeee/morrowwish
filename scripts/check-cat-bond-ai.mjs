@@ -108,9 +108,11 @@ const b = new sandbox.window.Battle.CaptureBattle(game, [starter], wild);
 const f = b.me();
 
 // ---- helper: a synthetic fighter at (x,y) carrying a forced skill kit ----
-function fighterWithSkills(kinds) {
+function fighterWithSkills(kinds, build='fighter') {
   const skills = kinds.map((kind, i) => ({ id: 'test' + i, name: 'test' + i, kind, element: 'fire' }));
   return Object.assign({}, f, {
+    // Do not accidentally inherit Tangyuan's fighter build in a backline test.
+    cat: Object.assign({}, f.cat, { buildType: build }),
     qSkill: skills[0] || null, eSkill: skills[1] || null,
     hp: 100, maxhp: 100, projSpeed: 300, speed: 150,
   });
@@ -119,7 +121,7 @@ function fighterWithSkills(kinds) {
 // 1) RANGED kit → KITES: band inner edge should sit well off the target (not ~0),
 //    and bandSteer on a target that is TOO CLOSE should push the cat AWAY.
 {
-  const ranged = fighterWithSkills(['projectile', 'projectile']);
+  const ranged = fighterWithSkills(['projectile', 'projectile'], 'dps');
   const band = b.kitRangeBand(ranged);
   assert.equal(band.role, 'ranged', 'two projectile skills → ranged role');
   assert.ok(band.min > 95 && band.min < band.max && band.max < b.basicAttackRange(ranged),
@@ -149,9 +151,37 @@ function fighterWithSkills(kinds) {
   assert.ok(steer.x > 0, 'melee cat closes: far target drives it forward (steer.x=' + steer.x.toFixed(2) + ')');
 }
 
+// 2a) REGRESSION: BUILD role wins over equipped skill range.
+// A fighter with a projectile and heal, a tank with only ranged/buff skills,
+// and an assassin with a ranged spell must still close on the target.
+{
+  for(const [build,kinds] of [
+    ['fighter',['projectile','heal']],
+    ['fighter',['projectile','melee']],
+    ['tank',['buff','projectile']],
+    ['assassin',['projectile','beam']],
+  ]){
+    const cat=fighterWithSkills(kinds,build);
+    cat.cd={basic:0,q:0,e:0};
+    const band=b.kitRangeBand(cat);
+    assert.notEqual(band.role,'ranged',
+      build+' must not become a ranged kiter just because Q/E includes '+kinds.join('/'));
+    assert.ok(band.max<=120,
+      build+' must advance to a close-range band even with '+kinds.join('/')+' (max='+band.max+')');
+    // At a spell's ordinary max range the cat must actively approach, not orbit.
+    const approach=b.bandSteer(cat,1,0,240,band,.016);
+    assert.ok(approach.x>0,
+      build+' with '+kinds.join('/')+' must close from 240px instead of kiting');
+  }
+  // An explicit DPS/backline build using the same projectiles SHOULD kite.
+  const backliner=fighterWithSkills(['projectile','beam'],'dps');
+  assert.equal(b.kitRangeBand(backliner).role,'ranged',
+    'DPS retain ranged positioning instead of all cats becoming melee');
+}
+
 // 2b) SUPPORT keeps standoff but must be within basic-toy attack reach.
 {
-  const support = fighterWithSkills(['heal', 'buff']);
+  const support = fighterWithSkills(['heal', 'buff'], 'support');
   const band = b.kitRangeBand(support);
   assert.equal(band.role, 'support', 'heal+buff → support role');
   assert.ok(band.min > 90 && band.min < band.max && band.max < b.basicAttackRange(support),
