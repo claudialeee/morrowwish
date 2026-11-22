@@ -95,7 +95,7 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  const pop=ease(p/.33),dash=ease((p-.22)/.44);
  const lead=['blink','dash','zigzag','shadow','ember'].includes(style);
  const spin=['spiral','tides','fireworks','petals'].includes(style);
- const highFive=['stars','halo'].includes(style);
+ const highFive=['stars','halo','highfive'].includes(style);
  const protector=['eclipse','lake','snare'].includes(style);
  const gesture=highFive?'duo-highfive':
    protector&&!flip?'duo-guard':
