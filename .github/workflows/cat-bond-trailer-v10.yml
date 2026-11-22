@@ -41,6 +41,7 @@ jobs:
         run: |
           node --check scripts/capture-trailers-v10.mjs
           node --check scripts/render-trailers-v10.mjs
+          node --check scripts/merge-latest-catbond-review.mjs
           node --check public/cat-bond/js/ui.js
           node --check public/cat-bond/js/worldmap.js
       - name: Record current Cat Bond in real mobile Chromium
@@ -58,6 +59,7 @@ jobs:
           test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$mp4")" = "audio"
           for i in 1 2 3; do test -s "public/promo/cat-bond/v10-review-$i.jpg"; done
           test -s public/promo/cat-bond/v10-quarrel-proof.png
+          test -s public/promo/cat-bond/v10-map-navigation-proof.png
           test -s public/promo/cat-bond/v10-duo-actual-render-proof.png
           test -s public/promo/cat-bond/ssr-showcase-proof.png
           node - <<'NODE'
@@ -103,6 +105,8 @@ jobs:
               throw Error('Unrendered media in seven-game review: '+t.slug);
           console.log('V10 real quarrel, reconciliation, one new duo cinematic and all media verified');
           NODE
+      - name: Merge Cat Bond into the latest seven-game review, preserving all other videos
+        run: node scripts/merge-latest-catbond-review.mjs
       - name: Commit owner-review assets only; never post to social media
         shell: bash
         run: |
@@ -111,10 +115,11 @@ jobs:
           git add public/promo/cat-bond/trailer-v10-20261121.jpg
           git add public/promo/cat-bond/v10-review-*.jpg
           git add public/promo/cat-bond/v10-quarrel-proof.png
+          git add public/promo/cat-bond/v10-map-navigation-proof.png
           git add public/promo/cat-bond/v10-duo-actual-render-proof.png
           git add public/promo/cat-bond/cover-portrait.png
           git add public/promo/cat-bond/ssr-showcase-proof.png
-          git add public/promo/v10-review.json public/promo/readability-audit-v10.json
+          git add public/promo/v*-review.json public/promo/readability-audit-v*.json public/promo/readability-audit.json
           git diff --cached --quiet && exit 0
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
