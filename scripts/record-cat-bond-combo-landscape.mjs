@@ -150,7 +150,7 @@ try{
   '-map','[v]','-map','1:a:0','-t',duration.toFixed(2),'-r','30',
   '-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p',
   '-c:a','aac','-b:a','144k','-af','volume=0.25,afade=t=out:st='+
-     (duration-.6).toFixed(2)+':d=.6',
+     (duration-.6).toFixed(2)+':d=0.6',
   '-movflags','+faststart',out],{stdio:'inherit',timeout:240000});
  execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','3','-i',out,
   '-frames:v','1','-q:v','3',poster],{stdio:'inherit',timeout:30000});
