@@ -797,3 +797,11 @@ html.cg-play #stageHome{display:none!important}
  .single-screen-game .in-game-head-row .heist-status{margin-left:auto!important}
  .single-screen-game #stageControls .mw-audio-dock{margin:0!important}
 }
+
+/* Shared fullscreen chrome uses a 34px cap. The cat HUD needs the real
+   44px finger-sized control on desktop AND mobile, not just under 700px. */
+html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscreen-toggle{
+ box-sizing:border-box!important;width:44px!important;min-width:44px!important;
+ max-width:44px!important;height:44px!important;min-height:44px!important;
+ max-height:44px!important;flex:0 0 44px!important;
+}
