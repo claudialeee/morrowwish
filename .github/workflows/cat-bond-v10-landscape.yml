@@ -43,7 +43,24 @@ jobs:
         run: |
           node --check scripts/capture-trailers-v10-landscape.mjs
           node --check scripts/render-cat-bond-v10-landscape.mjs
+      - name: Create isolated 16:9 renderer matching reference cat art scale
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a public /tmp/mw-catbond-v10-safe-wide
+          python3 - <<'PY'
+          from pathlib import Path
+          f=Path('/tmp/mw-catbond-v10-safe-wide/cat-bond/js/duo-premium.js')
+          s=f.read_text()
+          old='const width=Math.min(W*.985,H*16/9*.985),height=width*9/16;'
+          new="const width=Math.min(W*.985,H*(W/H>1.25?1.14:16/9*.985)),height=width*9/16;"
+          if s.count(old)!=1: raise RuntimeError("Source duo premium renderer has changed")
+          f.write_text(s.replace(old,new))
+          print("Capture-only responsive art cap ready; production source untouched")
+          PY
       - name: Re-record all the original V10 gameplay actions in native 16:9
+        env:
+          MW_LANDSCAPE_CAPTURE_PUBLIC: /tmp/mw-catbond-v10-safe-wide
         run: node scripts/capture-trailers-v10-landscape.mjs
       - name: Assemble the complete 21-shot trailer
         run: node scripts/render-cat-bond-v10-landscape.mjs
