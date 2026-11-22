@@ -35,34 +35,10 @@
   function stageTag(cat) { var s = STAGES[cat.stage || 0]; return s ? s.tag : ''; }
 
   // can this cat advance now? returns {ok, req, missing:[..]}
-  function canAdvance(cat) {
-    var st = cat.stage || 0;
-    if (st >= 2) return { ok: false, maxed: true };
-    var r = req(st, cat); if (!r) return { ok: false, maxed: true };
-    var shards = (window.State && State.S.raising && State.S.raising.starShards) || 0;
-    var missing = [];
-    if (cat.level < r.level) missing.push('Lv.' + r.level);
-    if ((cat.affinity || 0) < (r.bond || 0)) missing.push('好感' + r.bond);
-    if (r.shards && shards < r.shards) missing.push('星魂×' + r.shards);
-    return { ok: missing.length === 0, req: r, missing: missing };
-  }
-
-  // advance stage. For stage1→2 you MUST pass an awaken branch key.
-  function advance(cat, awakenKey) {
-    var chk = canAdvance(cat); if (!chk.ok) return { ok: false, msg: '条件不足' };
-    var r = chk.req;
-    if (r.shards && window.State) State.S.raising.starShards = Math.max(0, (State.S.raising.starShards || 0) - r.shards);
-    cat.stage = (cat.stage || 0) + 1;
-    // stat growth on每 stage
-    var boost = cat.stage === 2 ? 1.0 : 0.5;  // the 灵 form is the big glow-up
-    ['pow', 'agi', 'vit', 'cha'].forEach(function (k) { cat.stats[k] = Math.round(cat.stats[k] * (1 + boost * 0.3) + (cat.stage === 2 ? 6 : 3)); });
-    if (cat.stage === 2) {
-      cat.awaken = (awakenKey && AWAKEN[awakenKey]) ? awakenKey : 'pow';
-      var m = AWAKEN[cat.awaken].mult;
-      ['pow', 'agi', 'vit', 'cha'].forEach(function (k) { cat.stats[k] = Math.round(cat.stats[k] * m[k]); });
-    }
-    return { ok: true, stage: cat.stage, awaken: cat.awaken };
-  }
+  // Growth progression has been retired. Keep visual helpers below solely
+  // for backwards compatibility with existing player saves.
+  function canAdvance() { return { ok: false, disabled: true }; }
+  function advance() { return { ok: false, disabled: true, msg: '成长功能已移除' }; }
 
   // visual descriptor consumed by catart to render the glow-up
   function visual(cat) {
