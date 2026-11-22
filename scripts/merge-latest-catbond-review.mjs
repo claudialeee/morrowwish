@@ -20,6 +20,12 @@ const newCat=fresh.trailers.find(t=>t.slug==='cat-bond');
 if(!newCat||newCat.duration<55||newCat.duration>=60||
   newCat.shots?.filter(x=>x.scene==='duo').length!==1||
   newCat.shots?.filter(x=>x.scene==='map-explore').length!==1||
+  newCat.shots?.filter(x=>x.scene==='rare-encounter').length!==1||
+  newCat.shots?.filter(x=>x.scene==='rare-aftermath').length!==1||
+  !(['rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture']
+    .every((scene,i,ordered)=>i===0||
+      newCat.shots.findIndex(x=>x.scene===ordered[i-1])<
+      newCat.shots.findIndex(x=>x.scene===scene)))||
   !newCat.shots?.some(x=>x.scene==='duo-quarrel'&&x.seconds>=6)||
   fresh.socialAutopublish!==false)
   throw Error('New Cat Bond trailer did not pass independent short-form review');
@@ -36,7 +42,7 @@ const auditPath=path.join(root,'readability-audit-v'+latest.n+'.json');
 if(!fs.existsSync(auditPath))throw Error('Latest review has no matched readability audit');
 const audit=read(auditPath);
 const freshCatScenes=freshAudit.scenes.filter(s=>s.game==='cat-bond');
-if(freshCatScenes.length!==20||freshCatScenes.some(x=>!x.passed))
+if(freshCatScenes.length!==21||freshCatScenes.some(x=>!x.passed))
   throw Error('Missing complete and readable latest Cat Bond scenes');
 audit.scenes=[...freshCatScenes,...audit.scenes.filter(s=>s.game!=='cat-bond')];
 if(audit.scenes.some(x=>!x.passed))throw Error('Latest review contains unreadable shots');
