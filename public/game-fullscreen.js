@@ -162,6 +162,10 @@
       // immediately to the LEFT of fullscreen on phones and desktop.
       const menu=document.getElementById('map-menu');
       if(menu)controls.insertBefore(menu,guide||button);
+      // Resource counters and exploration menu share one top header row.
+      // Reparent the real HUD so coin/fish updates keep their existing IDs.
+      const resources=document.getElementById('hud');
+      if(resources)controls.insertBefore(resources,menu||guide||button);
     }
     installStyles();
     if(route==='cat-bond'){
