@@ -20,18 +20,7 @@
   <meta property="og:description" content="Collect 33 cute cat breeds, earn Golden Paw S-rank medals, and grow your own cozy cat family. Free browser adventure by Morrow Wish." />
   <meta property="og:image" content="https://morrowwish.vercel.app/social/share-20261120/cat-bond.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:image" content="https://morrowwish.vercel.app/social/share-20261120/cat-bond.png">
   <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
-  <script>
-  // Identical game, platform-specific presentation: no Morrow Wish exit link or
-  // in-game fullscreen when embedded by CrazyGames.
-  (() => {
-    const params = new URLSearchParams(location.search);
-    let fromPortal = false;
-    try { fromPortal = /(^|\.)crazygames\.com$/i.test(new URL(document.referrer).hostname); } catch (_) {}
-    const crazygames = fromPortal || params.get('platform') === 'crazygames' || params.get('isCrazyGames') === 'true';
-    window.CatBondPlatform = { crazygames };
-    if (crazygames) document.documentElement.classList.add('cb-cg');
-  })();
-  </script>
+  <script src="js/platform.js?v=host-adapter-20261122"></script>
   <link rel="stylesheet" href="css/style.css?v=duo-mobile-stable-scroll-20261122-v2" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
