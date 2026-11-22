@@ -384,16 +384,48 @@ try{
    throw Error('One-tap strongest team was not saved '+JSON.stringify(strongest));
   await page.evaluate(()=>UI.openMapSquad());
   await mark('auto-team-saved',3000);
-  await page.evaluate(()=>{
-   window.__V4_CAMERA__.show(false);UI.closeAll();window.__game.scene='yard';window.__game.showYardChrome();
-   const cats=State.S.cats.slice(0,3);
-   CatRelations.grow(cats[0],cats[1],75);CatRelations.choose(cats[0],cats[1]);
-   State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
-   const wild=GameData.SPECIES.find(s=>s.rarity==='R')||GameData.SPECIES.find(s=>s.rarity==='N')||GameData.SPECIES[0];
-   window.__game.startBattle(cats,wild);
-   UI.closeAll(); // Never film an obscuring expedition-selection modal.
-   window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
+  // Capture ONE continuous, genuine rare-cat fight. The same enemy shown
+  // with native health bars / skills is defeated by the single duo finisher,
+  // and its real game result screen is used for the rare-capture shot.
+  const rare=await page.evaluate(()=>{
+   window.__V4_CAMERA__.show(false);UI.closeAll();
+   window.__game.scene='yard';window.__game.showYardChrome();
+   const wild=GameData.SPECIES.find(sp=>sp.rarity==='R'&&!State.S.dex[sp.id])||
+     GameData.SPECIES.find(sp=>sp.rarity==='R');
+   if(!wild)throw Error('No real Rare species exists');
+   const before=State.S.dex[wild.id]||0;
+   const team=State.S.cats.slice(0,3);
+   team.forEach(cat=>State.addXp(cat,15000));
+   CatRelations.grow(team[0],team[1],75);
+   CatRelations.choose(team[0],team[1]);
+   State.S.battlePrefs={...(State.S.battlePrefs||{}),
+     manualTutorialSeen:true,tutorialSeen:true,modeChosen:true,autoBattle:false};
+   window.__game.startBattle(team,wild);
+   UI.closeAll();
+   const b=window.__game.battle;
+   b.autoMode=false;b.duoCharge=0;b.duoCd=999;
+   return {id:wild.id,rarity:wild.rarity,before,team:b.team.length,
+     active:!b.done,duo:!!b.duo,nativeHud:document.getElementById('battle-ui')?.classList.contains('on')};
   });
+  if(rare.rarity!=='R'||!rare.active||!rare.duo||!rare.nativeHud)
+    throw Error('Not a live rare-cat battle with native HUD '+JSON.stringify(rare));
+  const nativeRareHud=await page.evaluate(()=>{
+    const b=window.__game.battle,visible=id=>{
+      const el=document.getElementById(id),r=el?.getBoundingClientRect();
+      return !!r&&r.width>8&&r.height>8&&getComputedStyle(el).visibility!=='hidden';
+    };
+    return {wildName:document.getElementById('wild-name')?.textContent?.trim(),
+      allyHp:b.me()?.hp,enemyHp:b.liveEnemies()[0]?.hp,
+      skills:['mv-basic','mv-q','mv-e','mv-dodge'].filter(visible).length,
+      cameraHidden:getComputedStyle(document.getElementById('mw-v5-camera')).display==='none'};
+  });
+  if(!nativeRareHud.wildName||!Number.isFinite(nativeRareHud.allyHp)||
+     !Number.isFinite(nativeRareHud.enemyHp)||nativeRareHud.skills<4||
+     !nativeRareHud.cameraHidden)
+    throw Error('Rare encounter hides blood bars or native skill HUD '+JSON.stringify(nativeRareHud));
+  await mark('rare-encounter',2200);
+  await page.screenshot({path:'public/promo/cat-bond/v10-rare-native-hud-proof.png'});
+  console.log('V10 SAME-BATTLE RARE ENCOUNTER WITH NATIVE HP '+JSON.stringify({rare,nativeRareHud}));
   if(!await page.evaluate(()=>!!window.__game.battle?.duo))throw Error('V6 no actual two-cat combo');
   if(await page.evaluate(()=>!!document.querySelector('#panel.open')))
     throw Error('Expedition selection still covers live combat footage');
@@ -458,60 +490,26 @@ try{
   // Trim the genuine single cast before its after-action effects can resemble
   // a second finisher. The untouched raw recording is retained for QA.
   shots.push({label:'duo',start:duoStart,duration:Math.min(3.1,stamp()-duoStart-.08)});
+  // Preserve the one natural on-screen follow-through: finisher art fades,
+  // native arena health bars return and the real rare-cat capture resolves.
+  // This is contiguous raw footage, not a second duo cast or another fight.
+  shots.push({label:'rare-aftermath',start:duoStart+3.1,duration:1.2});
   console.log('V10 VERIFIED NEW DUO CINEMATIC '+JSON.stringify(cinematicSource));
-  // One cinematic finisher ONLY. The older V8 edit separately showed a
-  // second solo ultimate, making the promo look like the same move repeated.
-  // The authentic Q/E skill buttons, health bars and one duo finisher replace it.
-  // Show a real rare-species encounter and earned capture. A seasoned team is
-  // prepared solely in this isolated recording; wild HP / win state is untouched.
-  const rare=await page.evaluate(()=>{
-   window.__V4_CAMERA__.show(false);
-   UI.closeAll();window.__game.scene='yard';window.__game.showYardChrome();
-   const wild=GameData.SPECIES.find(sp=>sp.rarity==='R'&&!State.S.dex[sp.id])||
-    GameData.SPECIES.find(sp=>sp.rarity==='R');
-   if(!wild)throw Error('No real Rare species exists');
-   const before=State.S.dex[wild.id]||0;
-   const team=State.S.cats.slice(0,3);
-   team.forEach(cat=>State.addXp(cat,15000));
-   CatRelations.choose(team[0],team[1]);
-   State.S.battlePrefs={...(State.S.battlePrefs||{}),
-    manualTutorialSeen:true,tutorialSeen:true,modeChosen:true,autoBattle:true};
-   window.__game.startBattle(team,wild);
-   // The rare encounter teaser is NOT a second ultimate: hold auto combat
-   // until after the teaser, then let the separate (unselected) actual fight
-   // complete naturally for the earned capture result.
-   const b=window.__game.battle;b.autoMode=false;b.duoCharge=0;b.duoCd=999;
-   window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
-   return {id:wild.id,rarity:wild.rarity,before,team:b.team.length,active:!b.done};
-  });
-  if(rare.rarity!=='R'||!rare.active)throw Error('Rare encounter is not real '+JSON.stringify(rare));
-  await mark('rare-encounter',2200);
-  const noRepeat=await page.evaluate(()=>{
+  const postDuo=await page.evaluate(()=>{
     const b=window.__game.battle;
-    return {casts:b?.duoUses||0,cinematic:!!b?.duoCinematic,auto:b?.autoMode};
+    if(b&&!b.done)b.autoMode=true;
+    return {rareId:rare.id,duoUses:b?.duoUses||0,auto:b?.autoMode||false};
   });
-  if(noRepeat.casts!==0||noRepeat.cinematic||noRepeat.auto)
-    throw Error('Repeated duo cinematic in rare encounter trailer teaser '+JSON.stringify(noRepeat));
-  const rareCast=await page.evaluate(()=>{
-   const b=window.__game.battle;
-   if(!b||b.done)return {cast:false,done:true};
-   b.duoCharge=100;b.duoCd=0;
-   // Continue the genuine fight after the teaser; this unseen cast earns
-   // the real capture result, but must never be edited into the trailer.
-   const cast=b.castDuo();b.autoMode=true;
-   return {cast,uses:b.duoUses};
-  });
-  if(!rareCast.cast)throw Error('Could not demonstrate real duo-assisted rare battle '+JSON.stringify(rareCast));
-  await mark('rare-fight',4500);
+  if(postDuo.duoUses!==1)throw Error('Rare fight must contain exactly one finisher '+JSON.stringify(postDuo));
   await page.waitForFunction(({id,before})=>(State.S.dex[id]||0)>before,
-   {id:rare.id,before:rare.before},{timeout:35000,polling:250});
+    {id:rare.id,before:rare.before},{timeout:35000,polling:250});
   await page.evaluate(()=>window.__V4_CAMERA__.show(false));
   const caught=await page.evaluate(id=>({
-   count:State.S.dex[id],name:GameData.speciesName(GameData.speciesById(id)),
-   resultVisible:!!document.querySelector('#panel.open')
+    count:State.S.dex[id],name:GameData.speciesName(GameData.speciesById(id)),
+    resultVisible:!!document.querySelector('#panel.open')
   }),rare.id);
   if(!caught.resultVisible||caught.count<=rare.before)
-   throw Error('No earned rare-cat capture result screen '+JSON.stringify(caught));
+    throw Error('No real captured rare cat after the single combo '+JSON.stringify({rare,caught,postDuo}));
   await mark('rare-capture',5400);
   // Official real-game SSR species and detail interface. For a marketing
   // showcase, preload one veteran cat into this isolated browser session.
@@ -538,10 +536,10 @@ try{
   await mark('ssr-showcase',4200);
   await page.screenshot({path:'public/promo/cat-bond/ssr-showcase-proof.png'});
   console.log('V9 REAL GAME SSR SPECIES PROFILE '+JSON.stringify(ssrProof));
-  console.log('V9 REAL RARE CAT CAPTURE '+JSON.stringify({rare,caught,rareCast}));
+  console.log('V10 ONE-BATTLE RARE CAT CAPTURE '+JSON.stringify({rare,caught,postDuo}));
   console.log('V9 REAL CAT COMBAT '+JSON.stringify({duo,battleHud,castSkills}));
   const labels=shots.map(s=>s.label);
-  for(const required of ['raising','duo-map-walk','duo-promise','duo-quarrel','duo-reconcile','work-after','tease','map-explore','map-management','team-chooser','auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-showcase'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
+  for(const required of ['raising','duo-map-walk','duo-promise','duo-quarrel','duo-reconcile','work-after','tease','map-explore','map-management','team-chooser','auto-team-saved','rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture','ssr-showcase'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
  }));
  } // end new Cat Bond gameplay capture.
