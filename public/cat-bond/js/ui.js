@@ -168,8 +168,10 @@ const UI = {
       +'<span class="squad-element">'+f.elementLabel+'</span></span>'
       +'<span class="squad-statline squad-statline-secondary">'
       +'<span>'+(en?'Power ':'战力 ')+f.power+'</span>'
-      +'<span>⚔ '+f.pow+'</span><span>⚡ '+f.agi+'</span>'
-      +'<span>❤ '+f.hp+'/'+f.maxHp+'</span></span>'
+      +'<span>⚔ '+(en?'ATK ':'攻击 ')+f.pow+'</span>'
+      +'<span>⚡ '+(en?'AGI ':'敏捷 ')+f.agi+'</span>'
+      +'<span>❤ '+(en?'HP ':'生命 ')+f.hp+'/'+f.maxHp+'</span>'
+      +'<span>'+(en?'Bond ':'亲密 ')+f.affinity+'</span></span>'
       +(f.wounded?'<span class="squad-health-warning">'+(en?'Injured · recovery recommended':'负伤 · 建议先恢复')+'</span>':'');
   },
   // Chosen first two start together; remaining chosen cats form an ordered bench.
