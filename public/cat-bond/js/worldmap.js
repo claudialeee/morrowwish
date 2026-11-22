@@ -257,11 +257,27 @@
 
   // Resume the region the player left for a battle WITHOUT rebuilding it — keeps
   // their explored position, camera and entities exactly where they were, instead
-  // of snapping back to the portal. The den that triggered the fight goes on a
-  // short cooldown so you don't instantly re-encounter it on the same tile.
-  function resumeRegion() {
+  // of snapping back to the portal.
+  //
+  // `outcome` is whether the battle was a WIN (the wild cat was captured and now
+  // lives in the player's yard). On a WIN we REMOVE that cat from world.spawns so
+  // it no longer draws or roams the map. On a FLEE/LOSS (or an undefined outcome,
+  // for backward compatibility) we keep the cat but drop its cooldown from the
+  // 9999 "handed-off-to-battle" sentinel back to a short value, so the updateRegion
+  // movement loop resumes animating it after a brief pause instead of letting the
+  // player instantly re-encounter it on the same tile.
+  function resumeRegion(outcome) {
     if (!world || !world.region) return enterRegion(cur);   // nothing to resume → fresh enter
-    if (world._lastEncounter) { world._lastEncounter.cd = 2.5; world._lastEncounter = null; }
+    var s = world._lastEncounter;
+    if (s) {
+      if (outcome === true) {
+        var idx = world.spawns ? world.spawns.indexOf(s) : -1;
+        if (idx >= 0) world.spawns.splice(idx, 1);          // captured → remove from the map entirely
+      } else {
+        s.cd = 2.5;                                         // fled/lost → short cooldown, then resume motion
+      }
+      world._lastEncounter = null;
+    }
     mode = 'region';
     return true;
   }

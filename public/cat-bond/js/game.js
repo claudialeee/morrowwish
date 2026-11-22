@@ -1188,8 +1188,9 @@ class Game {
       this.scene = 'map';
       document.body.classList.add('cb-exploring');
       // Resume the region at the exact spot the player left for the fight, instead
-      // of rebuilding it and snapping back to the portal entry.
-      if (WorldMap.resumeRegion) WorldMap.resumeRegion();
+      // of rebuilding it and snapping back to the portal entry. Pass the outcome so
+      // a captured (won) cat is removed from the map; a fled/lost one resumes roaming.
+      if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
       else WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
       this.scene = 'yard';

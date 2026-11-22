@@ -599,7 +599,7 @@ console.log('Elsewhere launches directly into its illustration-led adventures.')
 const immediateMusic=fs.readFileSync('public/studio-music.js','utf8');
 for(const marker of ['if(enabled)play(); // Attempt immediately','audio.loop=true',
  'audio.addEventListener(\'playing\'','audio.addEventListener(\'error\'',
- 'audio.src=track.url',"evt.target?.closest?.('[data-mw-music]')"]){
+ 'audio.src=active().url',"evt.target?.closest?.('[data-mw-music]')"]){
  if(!immediateMusic.includes(marker))throw new Error('Robust licensed BGM missing: '+marker);
 }
 for(const slug of ['tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
