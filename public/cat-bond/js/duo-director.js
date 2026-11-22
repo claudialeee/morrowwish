@@ -39,7 +39,7 @@ const styleAngle={
  halo:[0,-.22],highfive:[.085,-.085],blossom:[.10,-.30],stars:[.12,-.11],lake:[0,-.24],tides:[.18,-.25]
 };
 const styles=Object.fromEntries(Object.entries(map).map(([k,v])=>[k,v[0]]));
-function pose(key,p,W,H){
+function pose(key,p,W,H,tier=1){
  const [style,poses]=map[key]||map['light+water'];p=clamp(p);
  let idx=0;while(idx<stage.length-2&&p>stage[idx+1])idx++;
  const t=ease((p-stage[idx])/(stage[idx+1]-stage[idx]));
@@ -63,6 +63,42 @@ function pose(key,p,W,H){
   const touch=ease((p-.13)/.15)*(1-ease((p-.33)/.29));
   a.angle+=touch*.07;b.angle-=touch*.07;
   a.scale*=1+touch*.055;b.scale*=1+touch*.055;
+ }
+ // The three trust milestones are THREE DIFFERENT PHYSICAL CHOREOGRAPHIES:
+ // 20: synchronized pounce; 60: crossing attacks on upper/lower lanes;
+ // 90: protect, aerial vault, reversal and two-cat finishing strike.
+ // The original key-specific beats remain, so each elemental pair still has
+ // its own speed, rhythm, and route. No limb is separated from its body.
+ const level=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
+ const seed=Math.max(0,Object.keys(map).indexOf(key));
+ const soften=1+.07*Math.sin(seed*1.91);
+ const bank=1+.07*Math.cos(seed*2.21);
+ if(level===2){
+  const across=ease((p-.13)/.20)*(1-ease((p-.67)/.19));
+  const lift=ease((p-.13)/.16)*(1-ease((p-.54)/.20));
+  a.x+=W*.47*across*soften;
+  b.x-=W*.47*across*soften;
+  a.y-=H*(.17+.014*(seed%4))*lift;
+  b.y+=H*(.04+.012*(seed%3))*lift;
+  a.angle+=.28*lift;b.angle-=.30*lift;
+  a.scale*=1+.08*lift;b.scale*=1+.07*lift;
+ }else if(level===3){
+  const guard=ease((p-.05)/.12)*(1-ease((p-.24)/.10));
+  const vault=ease((p-.15)/.20)*(1-ease((p-.44)/.13));
+  const counter=ease((p-.39)/.17)*(1-ease((p-.68)/.13));
+  const finale=ease((p-.59)/.18)*(1-ease((p-.92)/.07));
+  // Staggered rising arcs; the second cat reverses the first one's route.
+  a.x+=W*(-.09*guard+.17*vault-.09*counter+.22*finale)*soften;
+  b.x+=W*(.07*guard-.09*vault-.19*counter-.17*finale)*bank;
+  a.y-=H*(.29*vault+.13*finale)*bank;
+  b.y-=H*(.08*guard+.23*counter+.15*finale)*soften;
+  a.angle+=.21*vault-.20*counter;b.angle-=.22*counter-.08*finale;
+  a.scale*=1+.09*vault+.10*finale;b.scale*=1+.10*counter+.10*finale;
+ }
+ // Visible whole-body rigs must stay in the frame even on a phone.
+ for(const c of [a,b]){
+  c.x=Math.max(W*.14,Math.min(W*.86,c.x));
+  c.y=Math.max(H*.28,Math.min(H*.87,c.y));
  }
  return [a,b];
 }
@@ -130,7 +166,7 @@ function footwork(ctx,W,H,p,key,tier=1){
   const points=[];
   for(let j=0;j<=7;j++){
    const t=from+(p-from)*j/7;
-   const a=pose(key,t,W,H)[member];
+   const a=pose(key,t,W,H,tier)[member];
    points.push([a.x,a.y-H*.17]);
   }
   const c=col[member];
@@ -141,7 +177,7 @@ function footwork(ctx,W,H,p,key,tier=1){
   ctx.stroke();
   // The pair converge for a high-five; lightning duos blink at different
   // corners, while flower/water duos leave a rounded, flowing afterimage.
-  const final=points[points.length-1],at=pose(key,p,W,H)[member];
+  const final=points[points.length-1],at=pose(key,p,W,H,tier)[member];
   ctx.globalAlpha=.66*fade;ctx.fillStyle=c;
   const size=Math.max(2,H*.010);
   const angle=(p*8+member*2.4),offset=Math.max(4,H*.042);
