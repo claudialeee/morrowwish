@@ -831,7 +831,7 @@ const UI = {
       // detailed relationship panel, without changing the battle lineup.
       this._duoPicked=[entry.a.uid,entry.b.uid];
       this.openBondPanel();
-      this.navigateTo(()=>this.openUnlockedDuoViewer(entry.a,entry.b));
+      this.openUnlockedDuoViewer(entry.a,entry.b);
     });
     document.getElementById('duo-change-cats')?.addEventListener('click',()=>{
       this._duoChangeOpen=!this._duoChangeOpen;
@@ -869,7 +869,7 @@ const UI = {
     };
     const previewButton=document.getElementById('duo-preview');
     if(previewButton)previewButton.onclick=()=>{
-      if(unlocked)this.navigateTo(()=>this.openUnlockedDuoViewer(a,b));
+      if(unlocked)this.openUnlockedDuoViewer(a,b);
     };
     const soothe=document.getElementById('duo-soothe');
     if(soothe)soothe.onclick=()=>{
