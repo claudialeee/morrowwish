@@ -328,6 +328,7 @@ const UI = {
       const count=document.querySelector('#panel .map-squad-count');
       if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只');
       this.refreshSquadOrder(selected,refresh);
+      this.refreshBattlePrepSkills(selected.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),en);
     };
     buttons.forEach(btn=>{
       const cat=cats.find(c=>c.uid===btn.dataset.uid);
@@ -2124,6 +2125,9 @@ const UI = {
       </p>
       <p class="sub">${en?'Choose your cats and control mode before entering the arena.':'先选择出战猫咪，再决定自动或手动战斗。'}</p>
       ${squadMarkup}
+      ${this.battlePrepSkillCard(opts.origin==='map'
+        ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
+        :team,en)}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Battle mode':'战斗模式'}">
@@ -2156,6 +2160,9 @@ const UI = {
       <div class="btn-row"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
     if(opts.origin==='map')this.bindSquadPicker(selected);
+    this.refreshBattlePrepSkills(opts.origin==='map'
+      ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
+      :team,en);
     const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
     for(const button of options){
       button.onclick=()=>{
@@ -2191,7 +2198,7 @@ const UI = {
       else if(this.game.scene==='yard')this.game.showYardChrome();
     };
     document.getElementById('bp-go').onclick=()=>{
-      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true};
+      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,skillsIntroSeen:true};
       State.save();this.closeAll();
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true);return;}
       let fighters=team;
@@ -2272,6 +2279,7 @@ const UI = {
       ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
       <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       ${this.squadOrderMarkup()}
+      ${this.battlePrepSkillCard(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english)}
       <fieldset class="capture-mode-picker" aria-label="${english?'Battle control':'选择战斗方式'}">
         <legend>${english?'How would you like to fight?':'这场战斗怎么打？'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${english?'Battle control':'战斗方式'}">
@@ -2304,6 +2312,7 @@ const UI = {
         ch.dataset.orderRole=order<0?'':(order<2?(english?'START '+(order+1):'首发 '+(order+1)):(english?'BENCH '+(order-1):'替补 '+(order-1)));
       });
       this.refreshSquadOrder(this.teamUids,refreshSel);
+      this.refreshBattlePrepSkills(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english);
     };
     roster.querySelectorAll('.chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
@@ -2342,7 +2351,9 @@ const UI = {
       // preserve the selection order; fall back to strongest if somehow empty
       const team = this.teamUids.map(uid => cats.find(x => x.uid === uid)).filter(Boolean);
       changeBattleMode(this.prepAutoBattle);
-      State.S.battlePrefs.teamUids=[...this.teamUids];State.save();
+      State.S.battlePrefs.teamUids=[...this.teamUids];
+      State.S.battlePrefs.skillsIntroSeen=true;
+      State.save();
       this.closeAll();
       this.game.startBattle(team.length ? team : [sorted[0]], wildSp);
     };
