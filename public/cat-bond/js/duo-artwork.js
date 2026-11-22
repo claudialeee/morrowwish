@@ -122,17 +122,10 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  const sp=window.GameData?.speciesById?.(speciesId)||
     {id:speciesId,palette:'orange',pattern:'tabby',eyeColor:'#688c88'};
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
- window.CatArt?.drawCat?.(ctx,0,scale*.04,{
-   // Full-size original watercolor, NOT a small floating-cat sticker.
-   // Still limited on tiny viewports so both complete bodies stay visible.
-   species:sp,scale:Math.min(6.5,scale/46),face:1,
-   pose:p>.07&&p<.76?gesture:'idle',
-   motion:Math.max(.35,Math.sin(Math.PI*p)),
-   // Align the watercolor paw-raise frame with the real hit (p=.28).
-   stride:gesture==='duo-highfive'?Math.max(0,p-.06)*9:
-     gesture==='duo-guard'?p*7:p*10,
-   t:p*2.5,mood:highFive?'happy':'alert'
- });
+ // Independent full-canvas cinematic artwork: absolutely no yard/map sprite
+ // reuse in a special attack. Coat, ear silhouette, eyes and markings come
+ // from the player's selected cat's actual GameData species.
+ window.CatBondDuoPortraits?.draw(ctx,sp,scale,p,style,color);;
  // Paw spark originates BESIDE the leading actual illustrated forepaw.
  if(p>.20){
   // Each special reaches its forepaw differently; the actual watercolor
@@ -159,6 +152,6 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
    atlas:watercolorsReady(),x,y};
 }
 window.CatBondDuoArtwork={backdrop,drawKitten,theme,speciesOf,
- get ready(){return watercolorsReady()},get backdropReady(){return sceneOK},
+ get ready(){return !!window.CatBondDuoPortraits?.draw},get backdropReady(){return true},
  breedCount:order.length,sceneKinds:Object.keys(palette)};
 })();
