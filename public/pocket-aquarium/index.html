@@ -73,7 +73,7 @@ main{max-width:1080px;margin:auto;padding:10px 22px 38px}.heading{text-align:cen
 <link rel="stylesheet" href="/mini-frame-fullscreen.css?v=4">
 <meta name="twitter:card" content="summary_large_image"></head>
 <body data-game="pocket-aquarium">
-<header><a id="home" class="brand" href="../">MORROW WISH</a><div class="languages"><button id="en" type="button">EN</button><button id="zh" type="button">中文</button></div></header>
+<header><a id="home" class="brand" href="../">MORROW WISH</a><div class="languages" style="display:none!important"><button id="en" type="button">EN</button><button id="zh" type="button">中文</button></div></header>
 <main><div class="heading"><div class="eyebrow" data-i="eyebrow">A LITTLE OCEAN · A BIG CHALLENGE</div><h1 data-i="gameName">Pocket Aquarium</h1><p data-i="subtitle">Feed the right fish at the right time.</p></div>
 <div class="shell"><div class="scores"><div class="stat"><label data-i="score">SCORE</label><strong id="score">0</strong></div><div class="stat"><label data-i="time">TIME LEFT</label><strong id="time">60</strong></div><div class="stat"><label data-i="best">BEST</label><strong id="best">0</strong></div></div>
 <div id="tank" class="tank"><canvas id="sea" aria-label="Interactive fish-feeding game"></canvas><div class="in-water" data-i="inWater">Tap near hungry fish to drop matching food</div><div id="overlay" class="overlay"><div class="dialog"><div class="fish-icon" id="endIcon">🐠</div><h2 id="modalTitle"></h2><p id="modalDescription"></p><p class="small" id="modalTip"></p><button class="play" id="start" type="button"></button></div></div></div>
@@ -171,6 +171,7 @@ document.querySelectorAll('.food').forEach(b=>b.addEventListener('click',()=>cho
 canvas.addEventListener('pointerdown',drop);$('start').addEventListener('click',begin);
 $('restart').addEventListener('click',begin);
 $('en').addEventListener('click',()=>language('en'));$('zh').addEventListener('click',()=>language('zh'));
+window.addEventListener('morrowwish-language-change',event=>language(event.detail?.lang==='zh'?'zh':'en'));
 window.addEventListener('keydown',e=>{if(['1','2','3'].includes(e.key))choose(Number(e.key)-1);});
 window.addEventListener('resize',size);document.addEventListener('visibilitychange',()=>{previous=performance.now()});
 size();init();language(lang);previous=performance.now();frameId=requestAnimationFrame(animate);
