@@ -175,6 +175,31 @@ try{
   if(!entered.ok)throw Error('V9 real exploration region not entered '+JSON.stringify(entered));
   console.log('V9 REAL CURRENT REGION '+JSON.stringify(entered));
   await mark('map-explore',4300);
+  // The expedition menu and auto-team selection are both NEW game features,
+  // recorded from their actual controls without mock panels or fake data.
+  const mapMenu=await page.evaluate(()=>{
+   window.__V4_CAMERA__.show(false);
+   UI.openExploreMenu();
+   return {open:!!document.querySelector('#panel.open .explore-menu'),
+    actions:document.querySelectorAll('#panel [data-explore-action]').length,
+    cats:document.querySelectorAll('#panel .explore-cat').length};
+  });
+  if(!mapMenu.open||mapMenu.actions<5||mapMenu.cats<1)
+   throw Error('Real on-map cat-management menu missing '+JSON.stringify(mapMenu));
+  await mark('map-management',3500);
+  await page.locator('#panel [data-explore-action="squad"]').click();
+  await page.waitForSelector('#map-squad-best');
+  await mark('team-chooser',2400);
+  await page.locator('#map-squad-best').click();
+  await page.locator('#map-squad-save').click();
+  const strongest=await page.evaluate(()=>({
+   selected:State.S.battlePrefs?.teamUids?.length||0,
+   expected:UI.getStrongestBattleTeam().length
+  }));
+  if(strongest.selected!==strongest.expected||strongest.selected<2)
+   throw Error('One-tap strongest team was not saved '+JSON.stringify(strongest));
+  await page.evaluate(()=>UI.openMapSquad());
+  await mark('auto-team-saved',3000);
   await page.evaluate(()=>{
    window.__V4_CAMERA__.show(false);window.__game.scene='yard';window.__game.showYardChrome();
    const cats=State.S.cats.slice(0,3);
@@ -272,7 +297,7 @@ try{
   console.log('V8 REAL RARE CAT CAPTURE '+JSON.stringify({rare,caught,rareCast}));
   console.log('V8 REAL CAT COMBAT '+JSON.stringify({duo,ult}));
   const labels=shots.map(s=>s.label);
-  for(const required of ['raising','duo-surprise','duo-surprise-outcome','work-after','tease','map-explore','battle-intro','duo','ultimate','rare-encounter','rare-fight','rare-capture'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
+  for(const required of ['raising','duo-surprise','duo-surprise-outcome','work-after','tease','map-explore','map-management','team-chooser','auto-team-saved','battle-intro','duo','ultimate','rare-encounter','rare-fight','rare-capture'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
  }));
  } // end new Cat Bond gameplay capture.
