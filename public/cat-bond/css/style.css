@@ -3936,3 +3936,54 @@ body.cb-exploring #stage #map-actions > button{
  }
 }
 
+
+/* Quarrel storybook v2 — readable in the actual game AND the recorded trailer. */
+#panel.open:has(.duo-quarrel-story){align-items:center!important;justify-content:center!important}
+#panel.open > .card:has(.duo-quarrel-story){
+ box-sizing:border-box!important;width:min(510px,calc(100% - 20px))!important;
+ min-height:0!important;height:auto!important;max-height:100%!important;
+ padding:clamp(14px,2.3vw,24px)!important;overflow-x:hidden!important;
+ overflow-y:auto!important;overscroll-behavior-y:contain;
+ border:2px solid #efc5c5;background:linear-gradient(165deg,#fffcf5,#fff0e9 58%,#f6edf7);
+ box-shadow:0 18px 55px rgba(65,42,60,.28);
+}
+#panel .duo-quarrel-story{width:100%;max-width:465px;margin:0 auto;display:flex;flex-direction:column;
+ align-items:center;gap:10px;text-align:center;color:#5b4857}
+#panel .duo-quarrel-story .duo-quarrel-eyebrow{font:850 10px/1.4 system-ui,sans-serif;
+ letter-spacing:.14em;color:#a36782}
+#panel .duo-quarrel-story h2{font:850 clamp(20px,3.3vw,27px)/1.23 system-ui,sans-serif;
+ color:#62435d;margin:0;letter-spacing:-.02em}
+#panel .duo-quarrel-cats{display:flex;align-items:center;justify-content:center;gap:clamp(8px,4vw,22px);width:100%}
+#panel .duo-quarrel-cats figure{margin:0;min-width:0;display:flex;flex-direction:column;
+ align-items:center;gap:5px;flex:0 1 136px}
+#panel .duo-quarrel-cats canvas{display:block;width:clamp(86px,22vw,116px);height:clamp(86px,22vw,116px);
+ max-width:100%;object-fit:contain;border:2px solid #efd8d6;border-radius:23px;
+ background:radial-gradient(circle at 50% 30%,#fffdfa,#f3e7e1)}
+#panel .duo-quarrel-cats figcaption{font:850 13px/1.35 system-ui,sans-serif;max-width:100%;
+ overflow-wrap:anywhere;color:#614f61}
+#panel .duo-quarrel-heart{font:900 33px/1 system-ui,sans-serif;color:#cc91a3;flex:0 0 auto}
+#panel .duo-quarrel-vignette{width:100%;box-sizing:border-box;padding:14px 17px;
+ border-radius:15px;border:1px solid #f2d1cf;background:rgba(255,255,255,.76)}
+#panel .duo-quarrel-vignette p{margin:0;font:600 clamp(14px,2.5vw,16px)/1.65 system-ui,sans-serif;
+ color:#644e59;text-wrap:pretty}
+#panel .duo-quarrel-story .duo-quarrel-help{font:750 13px/1.5 system-ui,sans-serif;
+ margin:0;color:#82627a}
+#panel .duo-quarrel-actions{width:100%;margin:1px 0 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+#panel .duo-quarrel-actions .btn{min-height:44px;padding:11px 18px;font-size:14px;flex:1 1 140px}
+#panel .duo-quarrel-footnote{font:550 11px/1.45 system-ui,sans-serif;color:#937e8a;margin:0}
+@media(max-width:520px){
+ #panel.open>.card:has(.duo-quarrel-story){padding:15px 13px!important}
+ #panel .duo-quarrel-story{gap:8px}
+ #panel .duo-quarrel-vignette{padding:11px 12px}
+}
+@media(orientation:landscape) and (max-height:530px){
+ #panel.open>.card:has(.duo-quarrel-story){padding:8px 13px!important}
+ #panel .duo-quarrel-story{gap:5px}
+ #panel .duo-quarrel-story h2{font-size:19px}
+ #panel .duo-quarrel-cats canvas{width:65px;height:65px;border-radius:14px}
+ #panel .duo-quarrel-heart{font-size:24px}
+ #panel .duo-quarrel-vignette{padding:7px 11px}
+ #panel .duo-quarrel-vignette p{font-size:12px;line-height:1.42}
+ #panel .duo-quarrel-actions .btn{min-height:36px;padding:6px 10px;font-size:12px}
+ #panel .duo-quarrel-footnote{font-size:10px}
+}
