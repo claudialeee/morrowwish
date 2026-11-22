@@ -74,8 +74,15 @@ function addMetadata(html, game) {
   if (!html.includes('"@type":"VideoGame"')) tags.push('<script type="application/ld+json">'+JSON.stringify(schema).replace(/</g,'\\u003c')+'</script>');
   return html.replace(/<\/head>/i,tags.join('\n')+'\n</head>');
 }
+function homepageModified() {
+  try {
+    const date=execFileSync('git',['log','-1','--format=%cI','--','public/index.html'],{cwd:ROOT,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
+    if (date && !Number.isNaN(Date.parse(date))) return date;
+  } catch {}
+  return '';
+}
 function makeSitemap(games) {
-  const pages=[{url:ORIGIN+'/',modified:''},...games];
+  const pages=[{url:ORIGIN+'/',modified:homepageModified()},...games];
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+pages.map(g=>'  <url><loc>'+xml(g.url)+'</loc>'+(g.modified?'<lastmod>'+xml(g.modified.slice(0,10))+'</lastmod>':'')+'</url>').join('\n')+'\n</urlset>\n';
 }
 function makeFeed(games) {

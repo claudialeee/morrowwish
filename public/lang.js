@@ -11,6 +11,8 @@ let lang=(()=>{let explicit=null;
 try{document.documentElement.lang=lang==="zh"?"zh-CN":"en";}catch(_){}
 const words={
 "an indie game studio":"独立游戏工作室",
+"Follow":"关注我们",
+"Social media":"社交媒体",
 "Meet our CEO (honorary title)":"认识一下我们的 CEO（荣誉职位）",
 "MEET THE BOSS":"认识我们的老板",
 "Meet the Boss":"认识我们的老板",
