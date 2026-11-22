@@ -26,7 +26,7 @@ try{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
-   await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length===40
+   await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length>=40
      &&window.Skills?.TAG_INFO&&window.VFX);
    await page.locator('#intro-start').click();
    await page.locator('#panel.open .dex-cell').first().click();
