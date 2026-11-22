@@ -1,9 +1,10 @@
 // Local end-to-end contract for the D1-bound analytics handler.
 // No production events, API secrets or internet access are used.
-import fs from 'node:fs';
 import assert from 'node:assert/strict';
-const source=fs.readFileSync('src/analytics.js','utf8').replace('export async function api','async function api');
-const {api}=new Function(source+';return {api};')();
+// Exercise the REAL deployed ESM handler, including its imported native
+// routes. Rewriting an ESM module as new Function() breaks on genuine imports
+// and does not faithfully test production module loading.
+const {api}=await import('../src/analytics.js');
 const games=['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium','cat-bond'];
 const rows=[];
 const DB={prepare(sql){
