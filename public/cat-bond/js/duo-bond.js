@@ -205,7 +205,7 @@ P.update=function(dt){
   // hard-frozen while the big art plays; once it clears, this extra hit + the main
   // payload land together as ONE connect and animate in the revealed arena.
   // Higher trust unlocks extra real attacks and stagger.
-  const c=this.duoCinematic;
+  // Reuse the cinematic captured above for the first impact and its echo.
   if(c&&!c._pawImpact&&c.max-c.t>=(c.strikeAt??.76)){
    c._pawImpact=true;
    const tier=c.tier||this.duo?.tier||1;
