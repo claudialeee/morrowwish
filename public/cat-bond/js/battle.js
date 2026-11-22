@@ -3183,9 +3183,30 @@ class CaptureBattle {
       ctx.restore();
     }
   }
+  // VISUAL-ONLY beam endpoint: cut the DRAWN stream at the first enemy body the beam centerline
+  // crosses, so a water-jet/water-whip visually STOPS on its target instead of always drawing to
+  // full reach past it. Damage/tick geometry is untouched (still uses b._ex/_ey) — this only
+  // shortens how far the stream is painted. Returns {ex,ey} (full reach if nothing is hit).
+  beamVisualEnd(b){
+    const ox=b._ox, oy=b._oy, fx=b._ex, fy=b._ey;
+    const dx=fx-ox, dy=fy-oy, full=Math.hypot(dx,dy)||1, ux=dx/full, uy=dy/full;
+    const list = b.owner==='me' ? this.liveEnemies() : this.team.filter(t=>t.alive);
+    let best=full;
+    for(const e of list){
+      const t=(e.x-ox)*ux+(e.y-oy)*uy;            // projection of enemy onto beam axis
+      if(t<=6||t>=best)continue;                   // behind caster or farther than current cut
+      if(this.pointToSeg(e.x,e.y,ox,oy,fx,fy) <= b.width + (e.r||18)*0.5)
+        best=t + (e.r||18)*0.5;                    // stop just past the hit body's near edge
+    }
+    if(best>=full)return {ex:fx,ey:fy};
+    return {ex:ox+ux*best, ey:oy+uy*best};
+  }
   drawBeams(ctx){
     for(const b of this.beams){
       if(b._ox==null)continue;
+      // paint only up to the first enemy the stream hits (visual; damage uses b._ex/_ey)
+      const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
+      b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
         ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
@@ -3213,6 +3234,7 @@ class CaptureBattle {
           ctx.lineTo(tx+px*sign*21+vx/mag*10,ty+py*sign*21+vy/mag*10);
           ctx.stroke();
         }
+        b._ex=_ex0; b._ey=_ey0;                      // restore full-reach for damage tick
         ctx.restore();continue;
       }
       if(b.sk?.id==='flameSweep'){
@@ -3264,6 +3286,7 @@ class CaptureBattle {
         // White-hot throat at the muzzle; helps follow the sweeping motion.
         ctx.globalAlpha=.77*k;ctx.fillStyle='#fff0b1';
         ctx.beginPath();ctx.ellipse(originX+dx*10,originY+dy*10,10,5,angle,0,Math.PI*2);ctx.fill();
+        b._ex=_ex0; b._ey=_ey0;                      // restore full-reach for damage tick
         ctx.restore();continue;
       }
       // Additive gradient stream (VFX research): overlaps sum to white, a prism
@@ -3287,6 +3310,7 @@ class CaptureBattle {
       // white-hot nozzle
       ctx.globalAlpha=k; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(b._ox,b._oy,b.width*0.4,0,Math.PI*2); ctx.fill();
       ctx.restore();
+      b._ex=_ex0; b._ey=_ey0;                        // restore full-reach for damage tick
     }
   }
   // Six distinct tiny motifs, drawn BELOW fighters so no face is covered.
