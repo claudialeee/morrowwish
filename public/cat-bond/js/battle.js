@@ -162,7 +162,7 @@ class CaptureBattle {
 
     // --- shared ---
     this.projectiles = [];               // {x,y,vx,vy,r,dmg,owner,life,color,kind}
-    this.barrierWalls = [];              // world-space team-protecting reflect panels
+    this.barrierWalls = [];              // mobile directional walls; cover allies behind their span
     this.beams = [];                     // channeled beam skills (水枪/flamethrower): continuous line damage
     this.fields = [];                    // lingering elemental ground zones (Terraformer): apply tags, can be detonated
     this.skillStrokes=[]; // Short-lived authored 2D spell shapes (not recolored bullets)
@@ -1244,6 +1244,7 @@ class CaptureBattle {
     const tgt = this.commandedTarget(f.x, f.y);
     if (!tgt) return;
     const dx = tgt.x - f.x, dy = tgt.y - f.y, dist = Math.hypot(dx, dy) || 1;
+    if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(dy,dx);
     // flee nearest enemy projectile
     let near = null, nd = 1e9;
     for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < nd) { nd = d; near = p; } }
@@ -1344,6 +1345,8 @@ class CaptureBattle {
     } else {
       this.aim = Math.atan2(m.y - f.y, m.x - f.x);
     }
+
+    if(f.reflectT>0)f._wallDesiredAngle=this.aim; // stationary cats turn too (slowly)
 
     // movement: WASD/arrows OR the virtual joystick
     let mx = 0, my = 0;
@@ -1666,6 +1669,7 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
+      if(f._flatWall)f._flatWall.remaining=0;
       f.reflectT=2.2;
       // Hold a 220px flat barrier 42px in front of the caster. It follows the
       // caster at reduced speed, with capped turn rate instead of instant flips.
@@ -3846,6 +3850,7 @@ class CaptureBattle {
       me=this.team.find(f=>f.alive&&f.cat.uid===e._bondLureUid)||me;
     if (!me) return;
     const dx = me.x - e.x, dy = me.y - e.y;
+    if(e.reflectT>0)e._wallDesiredAngle=Math.atan2(dy,dx);
     const dist = Math.hypot(dx, dy) || 1;
     e.t += dt;
     e.face = dx < 0 ? -1 : 1;
