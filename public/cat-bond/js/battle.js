@@ -23,6 +23,13 @@ const BASIC_SKILL_DMG_MULT = 0.5;
 class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies) {
     this.game = game;
+    // DETERMINISM HOOK (world-model verifier): by default this.rng() === Math.random so
+    // LIVE gameplay is byte-for-byte unchanged. A headless sim calls seedRng(seed) to swap
+    // in a reproducible mulberry32 stream, making a battle a pure function of (seed,inputs)
+    // for snapshot/replay + counterfactual rollouts. Only DECISION-relevant randomness is
+    // routed through this.rng() (dodge rolls, target pick, pack build); cosmetic VFX jitter
+    // stays on Math.random (determinism of OUTCOME, not pixels).
+    this._rngState = 0; this._seeded = false;
     this.W = game.W; this.H = game.H;
     this.topMargin = this.H<540&&this.W>this.H ? Math.max(58,Math.min(105,this.H*.26)) : Math.max(85,Math.min(238,this.H*.40));
     this.bottomMargin = this.H<540&&this.W>this.H ? Math.max(38,Math.min(64,this.H*.15)) : Math.max(54,Math.min(112,this.H*.16));
@@ -199,6 +206,20 @@ class CaptureBattle {
     // actually performs the action, so they LEARN by doing. While coaching the
     // early steps, enemies hold fire so a beginner isn't overwhelmed. ---
     this.coach = this.initCoach();
+  }
+
+  // Seeded RNG for the deterministic world-model verifier (sim/tests only). After this,
+  // this.rng() yields a reproducible mulberry32 stream; getRngState()/setRngState() let a
+  // snapshot capture+restore the exact stream position. Live gameplay never calls this.
+  seedRng(seed) { this._seeded = true; this._rngState = (seed >>> 0) || 1; }
+  getRngState() { return this._rngState; }
+  setRngState(s) { this._rngState = s >>> 0; }
+  rng() {
+    if (!this._seeded) return Math.random();           // LIVE path: unchanged
+    let t = (this._rngState = (this._rngState + 0x6D2B79F5) >>> 0);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   }
 
   // Build the tutorial state, or null if this isn't the first battle.
@@ -1098,7 +1119,7 @@ class CaptureBattle {
     // life) so the squad eats some hits instead of ping-ponging untouchably.
     if(threat){
       if(this._sidestepUntil==null||this.t>this._sidestepUntil){
-        this._sidestep=Math.random()<this.autoDodgeChance(f); this._sidestepUntil=this.t+0.35;
+        this._sidestep=this.rng()<this.autoDodgeChance(f); this._sidestepUntil=this.t+0.35;
       }
       if(!this._sidestep)threat=null;
     }
@@ -1181,7 +1202,7 @@ class CaptureBattle {
     // reacts to ~55% of threats (less when it's cruising unhurt), so the player still
     // takes hits and the fight has stakes. (Playtest: auto evasion was too strong.)
     if(threat && !(f.reflectT>0 && threat.p && this.reflectCovers(f,threat.p.x,threat.p.y)) &&
-       f.dodgeCd<=0&&Math.random()<this.autoDodgeChance(f)){
+       f.dodgeCd<=0&&this.rng()<this.autoDodgeChance(f)){
       if(this.dodge(f)!==false){this.markAutoAction(f,'闪避危险弹幕');return;}
     }
     const hp=f.hp/f.maxhp;
@@ -1298,7 +1319,7 @@ class CaptureBattle {
     for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < nd) { nd = d; near = p; } }
     let mx = 0, my = 0, evasive = false;
     // allies also only juke SOME incoming shots (per-ally sticky roll), not all.
-    if (near && (f._allyStepUntil == null || this.t > f._allyStepUntil)) { f._allyStep = Math.random() < this.autoDodgeChance(f); f._allyStepUntil = this.t + 0.35; }
+    if (near && (f._allyStepUntil == null || this.t > f._allyStepUntil)) { f._allyStep = this.rng() < this.autoDodgeChance(f); f._allyStepUntil = this.t + 0.35; }
     const allySmash = this.incomingSmash(f);
     if (allySmash) { const ax = f.x - allySmash.x, ay = f.y - allySmash.y, ad = Math.hypot(ax, ay) || 1; mx = ax / ad; my = ay / ad; evasive = true; }  // flee the smash disc first
     else if(f.reflectT>0 && this.reflectGuardDirection(f,tgt,'wild')) {
@@ -1335,7 +1356,7 @@ class CaptureBattle {
       f.moving = true;
     } else if (f.dashT <= 0 && f.rootT <= 0) f.moving = false;
     if(near && !(f.reflectT>0 && this.reflectCovers(f,near.x,near.y)) &&
-       this.incomingThreat(f) && f.dodgeCd<=0 && Math.random()<this.autoDodgeChance(f)) this.dodge(f);
+       this.incomingThreat(f) && f.dodgeCd<=0 && this.rng()<this.autoDodgeChance(f)) this.dodge(f);
     // Shared decision loop for active and allied cats. Only the current active cat
     // owns the manual aim/UI; its autonomous movement/combat does not differ.
     if(f===this.me()) this.aim=f._aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
