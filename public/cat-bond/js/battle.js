@@ -2001,8 +2001,11 @@ class CaptureBattle {
     this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.05);
     for (const e of this.liveEnemies()) {
       if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
-      this.resolveHit(e, 'me', f._leapSkill || { element: f.element }, f._leapDmg, e.x, e.y);
-      e.staggerT = Math.max(e.staggerT || 0, 5);        // landing briefly rattles the target
+      const result=this.resolveHit(e, 'me', f._leapSkill || { element: f.element }, f._leapDmg, e.x, e.y);
+      // Only 泰山压顶 has the dedicated stagger trait. Other leap skills
+      // apply armor break through resolveHit and cannot skip the poise rules.
+      if (result.dealt>0 && (f._leapSkill?.id==='quakeStomp' || f._leapSkill?.tags?.includes('stagger')))
+        e.staggerT = Math.max(e.staggerT || 0, 5);
     }
     window.MorrowwishAudio?.effect?.('crash');
     f._leapT = 0; f._leapSkill = null;
