@@ -958,7 +958,8 @@ const UI = {
       const title=en?(prod?.nameEn||def.name):def.name;
       const desc=en?(prod?.purposeEn||def.desc):def.desc;
       const res=prod?(' · '+(en?'Produces':'产出')+' '+(prod.kind==='coins'?'🪙':prod.kind==='yarn'?'🧶':prod.kind==='fish'?'🐟':'🍖')+' ×'+prod.base+' / '+(en?'visit':'次互动')):'';
-      return `<div class="st-row" data-type="${def.id}">
+      return `<div class="st-row cb-build-blueprint-card" data-type="${def.id}">
+        <canvas class="cb-build-thumb" data-building-thumb="${def.id}" width="144" height="110" aria-hidden="true"></canvas>
         <div class="st-ico">${def.icon}</div>
         <div class="st-main">
           <div class="st-name">${title}${owned ? ' <span class="tiny">×' + owned + '</span>' : ''}</div>
@@ -993,13 +994,28 @@ const UI = {
       </div>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
-      <h2>🏗️ ${en ? 'Build the Yard' : '庭院建造'}</h2>
+      <div class="cb-blueprint-heading"><span aria-hidden="true">✿</span>
+        <div><h2>${en ? 'My Cat Garden' : '我的猫咪庭院'}</h2>
+        <small>${en?'Cozy workshop · Plan your world':'猫咪生活工坊 · 自由布置'}</small></div></div>
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
         :'先选设施，再到庭院点击位置、确认建造。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
     const host = document.getElementById('panel');
+    // Render REAL facility artwork into a scene-style blueprint preview. It
+    // matches what players will place in the yard instead of a misleading
+    // stock picture, while the tactile card follows the cozy concept panel.
+    host.querySelectorAll('canvas[data-building-thumb]').forEach(canvas=>{
+      const def=World.BUILDINGS_BY_ID?.[canvas.dataset.buildingThumb];
+      if(!def?.draw)return;
+      const cx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+      const sky=cx.createLinearGradient(0,0,0,h);
+      sky.addColorStop(0,'#f8f5e6');sky.addColorStop(.60,'#e7f2e1');sky.addColorStop(1,'#c9e0bf');
+      cx.fillStyle=sky;cx.fillRect(0,0,w,h);
+      cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
+      def.draw(cx,w*.5,h*.89,1.15,1.3);
+    });
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
       this.startBuildingPlacement(btn.dataset.build);
