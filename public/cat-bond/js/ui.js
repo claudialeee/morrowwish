@@ -466,7 +466,7 @@ const UI = {
         if(r.ok){this.openExploreMenu();this.game.refreshHUD();}
         this.game.toast(msg);
       },
-      regions:()=>this.openMapChooser()
+      regions:()=>this.game.scene==='yard'?this.game.openWorldMap():this.openMapChooser()
     };
     host?.querySelectorAll('[data-explore-action]').forEach(button=>{
       button.onclick=()=>{const open=actions[button.dataset.exploreAction];if(open)this.navigateTo(open);};

@@ -101,10 +101,15 @@ try{
     document.getElementById('map-menu').click();
     const opened=!!document.querySelector('#panel.open .explore-menu')&&
       !!document.querySelector('#panel.open [data-explore-action="regions"]');
+    document.querySelector('#panel [data-explore-action="regions"]')?.click();
+    const chooser=!!document.querySelector('#panel.open .map-destination');
+    const enteredMap=window.__game.scene==='map';
+    WorldMap.exitToYard();
     UI.closeAll();
-    return opened;
+    return {opened,chooser,enteredMap,returned:window.__game.scene==='yard'};
   });
-  if(!yardMenu)throw Error('Yard menu did not open real shared management panel');
+  if(!yardMenu.opened||!yardMenu.chooser||!yardMenu.enteredMap||!yardMenu.returned)
+    throw Error('Yard menu → world directory → yard round-trip failed '+JSON.stringify(yardMenu));
   console.log('YARD TOOLBAR AND SUNLIT GARDEN VERIFIED '+JSON.stringify(yardHeader));
   await page.evaluate(realVerticalCamera,'scene');
   const shots=[];
