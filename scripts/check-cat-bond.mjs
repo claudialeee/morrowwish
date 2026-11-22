@@ -300,39 +300,45 @@ expireBattle.tickWards(expiring,.05);
 assert.equal(expireBattle.vfx.fx.length,afterExpire,
   'expired barriers must not spray repeated particles');
 
-// DIRECTIONAL REFLECT REGRESSION: half speed, front-only bounce, rear vulnerability,
-// and a fresh shield cast must use the latest direction (not a previous cast).
+// FLAT MIRROR WALL: 220px physical interception of hostile projectiles for
+// ANY teammate behind it, half movement speed, slow turn and front-only block.
 const directionalBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 const wardCat=directionalBattle.me();
 wardCat.inv=0;wardCat.flash=0;wardCat.shieldT=0;wardCat.protectT=0;
 wardCat._moveFacing=0;
 assert.equal(directionalBattle.castWard(wardCat,'reflect'),true);
-assert.equal(wardCat.rootT,0,'reflect stance must permit half-speed movement');
+const flatWall=wardCat._flatWall;
+assert.equal(flatWall.halfLength,110,'mirror wall covers 220px span');
+assert.equal(wardCat.rootT,0,'wall permits slow movement instead of rooting');
 assert.ok(Math.abs(directionalBattle.moveMul(wardCat)-.5)<1e-6,
-  'reflect stance must reduce speed by 50%');
-assert.equal(directionalBattle.reflectCovers(wardCat,wardCat.x+100,wardCat.y),true,
-  'reflect wall covers its facing direction');
-assert.equal(directionalBattle.reflectCovers(wardCat,wardCat.x-100,wardCat.y),false,
-  'reflect wall must not cover behind the cat');
-const incomingFront={x:wardCat.x+20,y:wardCat.y,vx:-200,vy:0,owner:'wild',life:2};
-const frontResult=directionalBattle.resolveHit(wardCat,'wild',{element:'fire'},4,
-  incomingFront.x,incomingFront.y,incomingFront);
-assert.equal(frontResult.reflected,true,'front projectile must bounce');
-assert.equal(incomingFront.owner,'me','reflected projectile must change owner');
-const incomingRear={x:wardCat.x-20,y:wardCat.y,vx:200,vy:0,owner:'wild',life:2};
-const rearResult=directionalBattle.resolveHit(wardCat,'wild',{element:'fire'},4,
-  incomingRear.x,incomingRear.y,incomingRear);
-assert.equal(rearResult.reflected,false,'rear projectile must not bounce');
-assert.equal(incomingRear.owner,'wild','rear projectile must retain owner');
-wardCat.reflectT=0;wardCat._moveFacing=Math.PI;
-assert.equal(directionalBattle.castWard(wardCat,'reflect'),true);
-assert.ok(Math.abs(wardCat._reflectFacing-Math.PI)<1e-6,
-  'recast must face the new travel direction');
-assert.equal(directionalBattle.reflectCovers(wardCat,wardCat.x-100,wardCat.y),true);
-wardCat.reflectT=0;
+  'mirror wall reduces movement speed to 50%');
+assert.equal(directionalBattle.wallBlockingLine(
+  flatWall.x+60,flatWall.y+55,flatWall.x-70,flatWall.y+55,'wild'),flatWall,
+  'shots toward a nearby teammate behind the same wall are covered');
+const incomingFront={x:flatWall.x-12,y:flatWall.y+55,
+  vx:-200,vy:0,owner:'wild',life:2,r:7};
+assert.equal(directionalBattle.interceptWallProjectile(
+  incomingFront,flatWall.x+30,incomingFront.y),true,
+  'wall actually catches incoming front shot across its 220px span');
+assert.equal(incomingFront.owner,'me','first frontal shot is reflected at reduced damage');
+const incomingRear={x:flatWall.x+20,y:flatWall.y,
+  vx:200,vy:0,owner:'wild',life:2,r:7};
+assert.equal(directionalBattle.interceptWallProjectile(
+  incomingRear,flatWall.x-30,incomingRear.y),false,
+  'rear-to-front shots pass through the directional wall');
+wardCat._wallDesiredAngle=Math.PI;
+directionalBattle.tickWards(wardCat,.1);
+assert.ok(Math.abs(wardCat._reflectFacing)<.3,
+  'mirror wall turns gradually rather than snapping by 180 degrees');
+wardCat.x+=8;
+directionalBattle.tickWards(wardCat,.1);
+assert.ok(flatWall.x>wardCat.x+30,'carried wall stays in front as caster moves');
+wardCat.reflectT=0;directionalBattle.tickWards(wardCat,.1);
 assert.equal(directionalBattle.moveMul(wardCat),1,
-  'movement speed must recover after reflect expires');
+  'movement speed recovers after mirror wall expires');
+assert.ok(!directionalBattle.barrierWalls.length,
+  'expired physical wall is removed from battlefield');
 
 const skillFx=sandbox.window.CatBondSkillFX;
 // One-use Guard Stance must stop ONE real contact, shatter, then enter
@@ -632,6 +638,32 @@ assert.equal(roleBattle.me().qSkill?.id,dpsKit[1],
 assert.equal(roleBattle.me().eSkill?.id,dpsKit[2],
   'battle E reads equipped build skill');
 
+
+// Role distribution and active build gate for the flat mirror wall.
+const tankRoster=GameData.SPECIES.filter(sp=>
+  Skills.buildTypeForBreed({species:sp.id})==='tank').map(sp=>sp.id);
+const fighterRoster=GameData.SPECIES.filter(sp=>
+  Skills.buildTypeForBreed({species:sp.id})==='fighter').map(sp=>sp.id);
+assert.equal(tankRoster.length,5,'five true defensive breeds retain tank recommendations');
+assert.equal(fighterRoster.length,4,'two tank-like bruisers move to fighter');
+assert.ok(fighterRoster.includes('nuowei')&&fighterRoster.includes('meidu'),
+  'Norwegian and American Shorthair become fighters');
+assert.ok(tankRoster.includes('lanbao'),'low-AGI Blue remains a tank');
+const wallSpecialist=State.makeCat('xianluo',{affinity:90});
+wallSpecialist.level=12;wallSpecialist.skillAwakened=true;
+Skills.applyBuild(wallSpecialist,'tank');
+assert.ok(Skills.learnableSkills(wallSpecialist).some(sk=>sk.id==='mirrorWall'),
+  'any tank BD can learn the shield, not just a particular breed');
+assert.ok(wallSpecialist.loadout.includes('mirrorWall'),
+  'tank BD recommendation includes mirror wall');
+Skills.applyBuild(wallSpecialist,'dps');
+Skills.ensureLoadout(wallSpecialist);
+assert.ok(!Skills.learnableSkills(wallSpecialist).some(sk=>sk.id==='mirrorWall'),
+  'non-tanks cannot keep mirror wall after changing builds');
+assert.ok(!wallSpecialist.loadout.includes('mirrorWall'),
+  'changing to DPS unequips the tank-only shield');
+assert.ok(wallSpecialist.learned.includes('mirrorWall'),
+  'changing BD preserves learned skill history for future tank switching');
 
 // Skill consolidation: all seven upgrade families remain resolvable, while a
 // learned tier-2 replaces tier-1 in equipped gear and new build recommendations.
