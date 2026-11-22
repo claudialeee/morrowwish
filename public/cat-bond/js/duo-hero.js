@@ -107,6 +107,11 @@ function motionRibbons(ctx,W,H,p,key,tier,positions){
  ctx.restore();
 }
 function render(ctx,W,H,seq,lookup){
+ if(window.CatBondPremiumCinematics?.ready)
+   return window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup);
+ // Never flash previously rejected procedural kittens in the split second
+ // while the premium art is decoding; wait for the real paintings.
+ if(window.CatBondPremiumCinematics&&!window.CatBondPremiumCinematics.failed)return true;
  if(!seq||seq.t<=0)return false;
  const Director=window.CatBondDuoDirector;
  const key=seq.elements&&Director?.styles?.[seq.elements]?seq.elements:'elec+fire';
@@ -182,8 +187,8 @@ function render(ctx,W,H,seq,lookup){
 window.CatBondDuoHero={
  draw:render,scenes:Object.fromEntries(Object.entries(window.CatBondDuoDirector?.styles||{}).map(([k,v])=>[k,v])),
  sceneKeys:window.CatBondDuoDirector?.keys||[],
- get assetReady(){return !!(window.CatBondDuoArtwork?.ready&&window.CatBondDuoArtwork?.backdropReady)},
- get assetSource(){return 'independent-cinematic-breed-portraits'},
+ get assetReady(){return !!window.CatBondPremiumCinematics?.ready},
+ get assetSource(){return 'premium-painterly-breed-archetypes'},
  assetCount:21,signatureCount:21,breedCount:25,
 };
 })();
