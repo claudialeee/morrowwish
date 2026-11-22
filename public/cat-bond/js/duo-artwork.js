@@ -22,12 +22,37 @@ scene.onload=()=>{sceneOK=scene.naturalWidth===480&&scene.naturalHeight===405;
  window.dispatchEvent(new Event('cat-bond-duo-art-ready'));};
 scene.onerror=()=>{sceneOK=false;};
 scene.src=(window.CatBondDuoAssetBase||'assets/')+'duo-scene-backgrounds.webp?v=20261121-pastel-v1';
+// Warm, storybook environments. Avoid uniform solid-blue / solid-purple shots.
 const palette={
- storm:['#171333','#36215b','#ab7ef4','#faf0ff'],
- moon:['#d9dbf9','#f3e8ff','#b5b4ef','#524e80'],
- spring:['#d2f7e8','#faf4ec','#b5e9d5','#376e72'],
- water:['#c9eff8','#f2fcff','#8bcee6','#396e95'],
- solar:['#ffebcf','#fff7e9','#ffcd93','#92604b']
+ storm:['#f1e9e4','#faf2e9','#d9e9d6','#71857d'],
+ moon:['#f3e9e6','#faf3e9','#dfdfcb','#847d82'],
+ spring:['#f9eddf','#fff6e8','#cbe8c6','#5e8068'],
+ water:['#f2f1dc','#fdf6eb','#bcded0','#5f8c84'],
+ solar:['#ffe3c9','#fff8e6','#ebd9b8','#926f69']
+};
+// Variations make all 21 skill environments feel individually recognizable.
+const localScenes={
+ 'dark+dark':['#f0e7e1','#faf3e9','#d8d9cd'],
+ 'dark+elec':['#f5e7dc','#fff8ea','#d2e7d7'],
+ 'dark+fire':['#f3e0d5','#fff0da','#e6cfb8'],
+ 'dark+grass':['#f6eada','#fff8e9','#c5ddbd'],
+ 'dark+light':['#f7e7e3','#fff7ed','#dcdcc4'],
+ 'dark+water':['#edede0','#fbf7e8','#c3dfcc'],
+ 'elec+elec':['#fbe8da','#fff5e5','#e5ddbd'],
+ 'elec+fire':['#f9dec8','#fff2dc','#f2d3ae'],
+ 'elec+grass':['#f4e5cf','#fdf6e8','#c6dfb8'],
+ 'elec+light':['#f8e5ce','#fff8ea','#dedfc1'],
+ 'elec+water':['#f1ecdc','#fff8ed','#c8e3cc'],
+ 'fire+fire':['#fad9c1','#fff0d9','#f1cfad'],
+ 'fire+grass':['#fbe6d8','#fff7ed','#d4e8c7'],
+ 'fire+light':['#ffe4ca','#fff9ec','#eed4b3'],
+ 'fire+water':['#f9e7d8','#fff6ed','#d0e4d3'],
+ 'grass+grass':['#f6e5ce','#fff8e7','#bedfbb'],
+ 'grass+light':['#f9e8dc','#fff9ee','#d7e7bd'],
+ 'grass+water':['#f3ecdd','#fff9ed','#b9ddca'],
+ 'light+light':['#fcf0dc','#fff9ef','#eadfbe'],
+ 'light+water':['#f1ebdb','#fff8ec','#c7dfcf'],
+ 'water+water':['#edeadc','#fff9ed','#b9d9c7']
 };
 const clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n));
 const ease=n=>1-Math.pow(1-clamp(n),3);
@@ -40,19 +65,19 @@ function theme(key){
  return 'moon';
 }
 function backdrop(ctx,W,H,p,key){
- const kind=theme(key),colors=palette[kind],idx=['storm','moon','spring','water','solar'].indexOf(kind);
+ const kind=theme(key),colors=[...(localScenes[key]||palette[kind]),palette[kind][3]],idx=['storm','moon','spring','water','solar'].indexOf(kind);
  ctx.save();const gradient=ctx.createLinearGradient(0,0,W,H);
  gradient.addColorStop(0,colors[0]);gradient.addColorStop(.55,colors[1]);gradient.addColorStop(1,colors[2]);
  ctx.fillStyle=gradient;ctx.fillRect(0,0,W,H);
  if(sceneOK){
-  ctx.save();ctx.globalAlpha=kind==='storm'?.67:.46;
+  ctx.save();ctx.globalAlpha=kind==='storm'?.16:.20;
   const sx=(idx%2)*240,sy=Math.floor(idx/2)*135;
   ctx.drawImage(scene,sx,sy,240,135,0,0,W,H);
   ctx.restore();
  }
  // Lightweight mist and directional motion: different elements are never
  // dark-purple copies of each other.
- ctx.save();ctx.globalAlpha=kind==='storm'?.10:.16;
+ ctx.save();ctx.globalAlpha=kind==='storm'?.07:.12;
  for(let i=0;i<7;i++){
   const x=W*(i+.15)/7+p*W*.065;
   ctx.fillStyle=colors[i%2?0:1];
@@ -61,7 +86,7 @@ function backdrop(ctx,W,H,p,key){
  ctx.restore();
  ctx.strokeStyle=colors[2];ctx.lineWidth=2;
  if(kind==='storm'){
-  ctx.save();ctx.globalAlpha=.48;ctx.shadowColor='#a678ff';ctx.shadowBlur=13;
+  ctx.save();ctx.globalAlpha=.31;ctx.shadowColor='#e3c8a0';ctx.shadowBlur=8;
   for(let i=0;i<5;i++){
    const x=W*(i+.65)/6;
    ctx.beginPath();ctx.moveTo(x,H*.09);ctx.lineTo(x+9,H*.22);
@@ -83,6 +108,21 @@ function backdrop(ctx,W,H,p,key){
   ctx.save();ctx.globalAlpha=.38;ctx.fillStyle='#fffdf8';ctx.beginPath();
   ctx.arc(W*.74,H*.27,Math.max(17,H*.16),0,Math.PI*2);ctx.fill();ctx.restore();
  }
+ // Quiet illustrated scenery creates depth without swallowing the kittens.
+ ctx.save();ctx.globalAlpha=.78;
+ const hill=ctx.createLinearGradient(0,H*.56,0,H);
+ hill.addColorStop(0,colors[2]+'11');hill.addColorStop(1,colors[2]+'cf');
+ ctx.fillStyle=hill;ctx.beginPath();ctx.moveTo(0,H*.81);
+ ctx.quadraticCurveTo(W*.29,H*.67,W*.52,H*.81);
+ ctx.quadraticCurveTo(W*.77,H*.70,W,H*.77);
+ ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+ // Tiny meadow lights and blossom petals are on the floor, away from faces.
+ for(let i=0;i<11;i++){
+  const x=W*(.06+i*.088),y=H*(.78+.035*Math.sin(i*3.1));
+  ctx.fillStyle=i%3===0?'#f9d1ce':i%3===1?'#fff5cf':'#d4e7c6';
+  ctx.beginPath();ctx.ellipse(x,y,3.2,6,Math.sin(i)*.4,0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();
  ctx.restore();
  return {kind,colors};
 }
@@ -90,7 +130,7 @@ function speciesOf(cat){
  const raw=typeof cat?.species==='string'?cat.species:cat?.species?.id||cat?.id;
  return atIndex[raw]!==undefined?raw:'tangyuan';
 }
-function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
+function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,tier=1,label){
  const speciesId=speciesOf(cat),index=atIndex[speciesId],scale=clamp(ht,90,300);
  const pop=ease(p/.33),dash=ease((p-.22)/.44);
  const lead=['blink','dash','zigzag','shadow','ember'].includes(style);
@@ -125,7 +165,7 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  // Independent full-canvas cinematic artwork: absolutely no yard/map sprite
  // reuse in a special attack. Coat, ear silhouette, eyes and markings come
  // from the player's selected cat's actual GameData species.
- window.CatBondDuoPortraits?.draw(ctx,sp,scale,p,style,color);;
+ window.CatBondDuoPortraits?.draw(ctx,sp,scale,p,style,color,tier);
  // Paw spark originates BESIDE the leading actual illustrated forepaw.
  if(p>.20){
   // Each special reaches its forepaw differently; the actual watercolor
