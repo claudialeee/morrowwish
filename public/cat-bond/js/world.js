@@ -956,7 +956,7 @@ class YardScene {
   stepBuildTarget(e, dt) {
     const b = e._buildTarget; if (!b) return;
     const def = BUILDINGS_BY_ID[b.type];
-    const dx = b.x - e.x, dy = (b.y - 4) - e.y, dist = Math.hypot(dx, dy);
+    const dx = b.x - e.x, dy = (b.y + 16) - e.y, dist = Math.hypot(dx, dy);
     if (dist > 20) {
       e.pose = 'walk'; e.timer = 1;
       e.vx = (dx / dist) * 34; e.vy = (dy / dist) * 20;
