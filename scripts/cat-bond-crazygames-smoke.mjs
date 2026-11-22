@@ -234,7 +234,18 @@ try{
         assert.equal(await page.evaluate(()=>State.S.cats.length),2);
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
-        await page.locator('#collection-goal').click();
+        // The old top omnibus collection-goal banner was deliberately
+        // removed in favor of real bottom / right shortcuts. Verify the new
+        // navigation and open the same adventure guide from its own action.
+        assert.equal(await page.locator('#collection-goal').isVisible(),false,
+          'The removed top combined banner must stay hidden');
+        assert.equal(await page.locator('#yard-quick-skills').isVisible(),true,
+          'Skills should be directly discoverable on the lower edge');
+        assert.equal(await page.locator('#yard-quick-work').isVisible(),true,
+          'Workshop should have a direct lower shortcut');
+        assert.equal(await page.locator('#yard-duo-status').isVisible(),true,
+          'Duo skills should have a clearly labeled right-hand shortcut');
+        await page.evaluate(()=>UI.openJourney());
         await page.waitForSelector('#journey-collect');
         assert.equal(await page.locator('.journey-path').count(),5,
           'Collection, skills, workshop, bonding and exploration should all be discoverable');
