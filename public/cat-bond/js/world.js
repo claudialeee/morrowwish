@@ -154,16 +154,26 @@ class CatEntity {
       ctx.restore();
     }
     const atPlay=!!(this._playBuildT>0&&this._playBuilding);
-    const sleepy=atPlay&&this._playBuildDef?.pose==='sleep';
-    // The CAT itself hops and lifts its forepaws at a real structure.
-    // No floating cat heads or limb stickers are substituted.
-    const bob=atPlay&&!sleepy?2+Math.sin(this.t*9)*3:0;
-    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x, this.y-bob, {
-      species: sp, scale: depth, face: this.face, t: this.t,
-      motion: atPlay&&!sleepy?.98:this.motion,
-      stride: atPlay&&!sleepy?this.stride+this.t*4:this.stride,
-      pose: atPlay?(sleepy?'sleep':'play'):this.pose,
-      mood: atPlay?'happy':this.mood(),
+    const use=atPlay?this._buildUse:null;
+    const mode=use?.mode;
+    const sleepy=atPlay&&(use?use.pose==='sleep':this._playBuildDef?.pose==='sleep');
+    // Each structure animates the cat differently: scratcher hops at the post, cave/tree
+    // breathe gently asleep, hammock sways with the sling, catnip rolls belly-up.
+    let bob=0, dx=0, drawScale=depth;
+    if(use){
+      drawScale=depth*(use.scale||1);
+      if(mode==='post') bob=2+Math.sin(this.t*9)*3;             // lively scratch hops
+      else if(mode==='hammock'){ bob=Math.sin(this.t*1.6)*3; dx=Math.sin(this.t*1.6)*4; } // sway with cloth
+      else if(mode==='nip') bob=Math.sin(this.t*4)*2;           // happy little rolls
+      else bob=Math.sin(this.t*2.2)*1.5;                        // cave/tree: slow sleepy breathing
+    } else if(atPlay && !sleepy){ bob=2+Math.sin(this.t*9)*3; }
+    const playful=mode==='post'||mode==='nip'||(atPlay&&!sleepy&&!use);
+    (window.CatMotion?.draw||CatArt.drawCat)(ctx, this.x+dx, this.y-bob, {
+      species: sp, scale: drawScale, face: this.face, t: this.t,
+      motion: playful?.98:this.motion,
+      stride: playful?this.stride+this.t*4:this.stride,
+      pose: atPlay?(use?use.pose:(sleepy?'sleep':'play')):this.pose,
+      mood: atPlay?(sleepy?'sleepy':'happy'):this.mood(),
       growth: window.Growth ? Growth.visual(this.cat) : null,
     });
     // name + level tag
@@ -722,11 +732,14 @@ class YardScene {
     const drawables = [];
     for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
     for (const b of (State.S.yardBuildings || [])) drawables.push({ y: b.y, kind: 'building', ref: b });
-    // While visibly using a structure, render the whole kitten in front of
-    // its object (not hidden behind the post it is scratching).
-    for(const e of this.entities)drawables.push({
-      y:e.y+(e._playBuilding&&e._playBuildT>0?20:0),kind:'cat',ref:e
-    });
+    // While visibly using a structure, render the kitten in front of its object
+    // (scratching/rolling/lounging) — EXCEPT a 'behind' use (tucked inside the cave),
+    // where it must render behind the dome so only its front half peeks out.
+    for(const e of this.entities){
+      const using=e._playBuilding&&e._playBuildT>0;
+      const behind=using&&e._buildUse?.behind;
+      drawables.push({ y:e.y+(using?(behind?-24:20):0), kind:'cat', ref:e });
+    }
     if (this.hide && !this.hide.found) drawables.push({ y: this.hide.spot.y + 0.1, kind: 'hide', ref: this.hide });
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) {
@@ -842,21 +855,31 @@ class YardScene {
     const lvl=buildingLevel(b);
     const playing=this.entities.filter(e=>e._playBuilding===b&&e._playBuildT>0);
     if(playing.length){
-      // Visible, attached paw-to-facility action. Paw sparks are emitted
-      // at the cat's position and move toward the structure it is using.
-      const tick=this.game.t,shine=.55+.45*Math.sin(tick*6);
-      ctx.save();ctx.strokeStyle='#ffe6a2';ctx.lineWidth=2.4;
-      ctx.shadowColor='#f6d9a5';ctx.shadowBlur=11;
-      for(const e of playing){
-        const pawX=e.x+e.face*13,pawY=e.y-18*depth;
-        ctx.globalAlpha=.5+shine*.48;
-        for(let i=0;i<3;i++){
-          const a=tick*2.7+i*2.09,px=pawX+Math.cos(a)*13,py=pawY+Math.sin(a)*9;
-          ctx.beginPath();ctx.moveTo(px-4,py);ctx.lineTo(px+4,py);
-          ctx.moveTo(px,py-4);ctx.lineTo(px,py+4);ctx.stroke();
-        }
-        ctx.globalAlpha=.78;
-        ctx.beginPath();ctx.ellipse(b.x,b.y-26*depth,23*depth,9*depth,0,0,Math.PI*2);ctx.stroke();
+      // Per-building ambient VFX that reads the ACTIVITY, not one shared paw-spark:
+      //   scratcher → wood shavings flicking off the post
+      //   cave/hammock → floating 💤 Zzz (napping)
+      //   catnip → musical notes + dizzy swirl (rolling happily)
+      //   cattree → sparkly 😸 up at the perch
+      const tick=this.game.t;
+      ctx.save();ctx.textAlign='center';
+      if(b.type==='scratcher'){
+        ctx.fillStyle='#c9a877';
+        for(let i=0;i<4;i++){const ph=(tick*1.8+i*0.9)%1;const fx=b.x+8*depth+Math.sin(i*2)*4;
+          const fy=b.y-30*depth-ph*22*depth;ctx.globalAlpha=(1-ph)*0.8;
+          ctx.fillRect(fx,fy,2.4*depth,1.4*depth);}
+      }else if(b.type==='cave'||b.type==='hammock'){
+        ctx.font=(13*depth|0)+'px system-ui';ctx.fillStyle='#9fb6d8';
+        for(let i=0;i<3;i++){const ph=(tick*0.6+i*0.4)%1;ctx.globalAlpha=(1-ph)*0.85;
+          ctx.fillText('z',b.x+10*depth+ph*10*depth,b.y-34*depth-ph*20*depth);}
+      }else if(b.type==='catnip'){
+        ctx.font=(13*depth|0)+'px system-ui';
+        for(let i=0;i<3;i++){const ph=(tick*1.1+i*0.6)%1;ctx.globalAlpha=(1-ph)*0.9;
+          ctx.fillText(i%2?'🎵':'♪',b.x-12*depth+i*12*depth+Math.sin(tick*2+i)*4,
+            b.y-24*depth-ph*24*depth);}
+      }else{ // cattree perch sparkle
+        ctx.font=(12*depth|0)+'px system-ui';
+        for(let i=0;i<3;i++){const ph=(tick*1.4+i*0.7)%1;ctx.globalAlpha=(1-ph)*0.9;
+          ctx.fillText('✨',b.x-8*depth+i*8*depth,b.y-86*depth-ph*14*depth);}
       }
       ctx.restore();
     }
@@ -938,7 +961,7 @@ class YardScene {
         const def = e._playBuildDef;
         if (def) e.cat.joy = Math.min(100, e.cat.joy +
           def.joy*(1+.30*(buildingLevel(e._playBuilding)-1))*dt*.5);
-        if (e._playBuildT <= 0) { e._playBuildDef = null; }
+        if (e._playBuildT <= 0) { e._playBuildDef = null; e._buildUse = null; e._playBuilding = null; }
       }
     }
     this._buildScan = (this._buildScan == null ? 2 : this._buildScan) - dt;
@@ -956,24 +979,46 @@ class YardScene {
     const cat=idle.sort((a,b2)=>Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(b2.x-b.x,b2.y-b.y))[0];
     this.inviteCatToBuilding(b);
   }
+  // Where (and how) a cat sits/lies when it is actually USING a structure. Returns
+  // {x,y,pose,mode,scale,behind}: mode drives the bespoke draw in CatEntity.draw —
+  //   'cave'   → tucked into the entrance, drawn BEHIND the dome (only front shows)
+  //   'hammock'→ lying on the sling, swaying with the cloth
+  //   'tree'   → curled in the top cup perch, up high
+  //   'nip'    → rolling belly-up in the planter bed
+  //   'post'   → reaching up the scratching post (default play)
+  buildingUseSpot(b, def) {
+    const s = 0.8 + (b.y / this.game.H) * 0.5;   // same depth scale drawBuilding uses
+    switch (b?.type) {
+      case 'cave':    return { x: b.x,         y: b.y - 6*s,  pose: 'sleep', mode: 'cave',    scale: 0.82, behind: true };
+      case 'hammock': return { x: b.x,         y: b.y - 20*s, pose: 'sleep', mode: 'hammock', scale: 0.9,  behind: false };
+      case 'cattree': return { x: b.x,         y: b.y - 74*s, pose: 'sleep', mode: 'tree',    scale: 0.72, behind: false };
+      case 'catnip':  return { x: b.x,         y: b.y - 4*s,  pose: 'belly', mode: 'nip',     scale: 1.0,  behind: false };
+      default:        return { x: b.x - 14*s,  y: b.y + 14*s, pose: 'play',  mode: 'post',    scale: 1.0,  behind: false };
+    }
+  }
   // called from each cat's effective motion: nudge a cat toward its chosen
   // structure, then trigger play on arrival. Invoked from YardScene.update via
   // the per-cat hook below (kept here so all building logic lives together).
   stepBuildTarget(e, dt) {
     const b = e._buildTarget; if (!b) return;
     const def = BUILDINGS_BY_ID[b.type];
-    const dx = b.x - e.x, dy = (b.y + 16) - e.y, dist = Math.hypot(dx, dy);
-    if (dist > 20) {
+    // BESPOKE USE SPOT: each structure draws the cat where it would actually BE while
+    // using it (inside the cave, on the hammock sling, up on the cat-tree perch, rolling
+    // in the catnip bed), instead of everyone standing at a generic (x, y+16) offset.
+    const spot = this.buildingUseSpot(b, def);
+    const dx = spot.x - e.x, dy = spot.y - e.y, dist = Math.hypot(dx, dy);
+    if (dist > 18) {
       e.pose = 'walk'; e.timer = 1;
       e.vx = (dx / dist) * 34; e.vy = (dy / dist) * 20;
     } else {
-      // arrived: play!
-      e.vx = e.vy = 0;
-      e.setPose(def?.pose==='sleep'?'sleep':'play', 3.0 + Math.random() * 1.2);
+      // arrived: actually USE the structure
+      e.vx = e.vy = 0; e.x = spot.x; e.y = spot.y;
+      e.setPose(spot.pose, 3.0 + Math.random() * 1.2);
       e.emote(def ? def.emote : '🐾', 2.2);
       e.cat.joy = Math.min(100,e.cat.joy+
         (def?def.joy*(1+.35*(buildingLevel(b)-1)):5));
       e._playBuildT=e.timer;e._playBuildMax=e.timer;e._playBuildDef=def;e._playBuilding=b;
+      e._buildUse=spot;                      // render hint: how to draw the cat using it
       e._buildTarget=null;
       this.rewardBuildingVisit(e.cat,b,def);
       this.spawnFloat(b.x,b.y-66,
