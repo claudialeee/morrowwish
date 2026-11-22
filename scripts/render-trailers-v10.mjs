@@ -12,7 +12,7 @@ const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
 const manifest={version:'V10',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
  socialAutopublish:false,historicalVideoViewsExcluded:true,readabilityChecked:true,pausedPromoGames:[],trailers:[]};
-const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v9',
+const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v10',
  method:'Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.',
  pausedPromoGames:[],scenes:[]};
 const MIN_READING={
@@ -256,19 +256,19 @@ function edit(slug){
 }
 
 try{
-  // V10 is a targeted fresh rerecord of TWO updated cat games.
-  // The other five V7 trailers are retained byte-for-byte.
+  // V10 re-records Cat Bond only; the other six previous approved-for-review
+  // files are retained byte-for-byte (not approved for publication).
   const old=JSON.parse(fs.readFileSync('public/promo/v9-review.json','utf8'));
   const active=['cat-bond'];
   if(Object.keys(proofs).length!==1||active.some(slug=>!proofs[slug]))
-    throw Error('V10 must capture exactly Cat Bond and Pawsibly Innocent');
+    throw Error('V10 must capture exactly Cat Bond');
   for(const slug of active)edit(slug);
   for(const slug of ['pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium']){
     const retained=old.trailers?.find(t=>t.slug===slug);
     if(!retained?.video||!retained?.poster||!fs.existsSync('public'+retained.video)||
        !fs.existsSync('public'+retained.poster))
-      throw Error('Missing previous V7 trailer for untouched game '+slug);
-    manifest.trailers.push({...retained,approved:false,published:false,retainedFrom:retained.retainedFrom||'V10'});
+      throw Error('Missing previous V9/V7 trailer for untouched game '+slug);
+    manifest.trailers.push({...retained,approved:false,published:false,retainedFrom:retained.retainedFrom||'V9'});
   }
   if(manifest.trailers.length!==7||manifest.trailers.some(t=>t.paused))throw Error('Invalid V10 review roster');
   const oldAudit=JSON.parse(fs.readFileSync('public/promo/readability-audit-v9.json','utf8'));
@@ -276,5 +276,5 @@ try{
   if(readingAudit.scenes.some(x=>!x.passed))throw Error('Previous reading audit has failures');
   fs.writeFileSync('public/promo/v10-review.json',JSON.stringify(manifest,null,2)+'\n');
   fs.writeFileSync('public/promo/readability-audit-v10.json',JSON.stringify(readingAudit,null,2)+'\n');
-  console.log('V10 TARGETED TWO-GAME TRAILERS READY FOR OWNER REVIEW, NOT PUBLISHED');
+  console.log('V10 UPDATED CAT BOND TRAILER READY FOR OWNER REVIEW, NOT PUBLISHED');
 }finally{fs.rmSync(work,{recursive:true,force:true})}
