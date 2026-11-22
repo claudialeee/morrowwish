@@ -9,7 +9,7 @@ const ctx=new Proxy({createLinearGradient:()=>({addColorStop:nop})},{get(o,k){re
 function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop,toggle:nop},hidden:false,appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
 addEventListener(type,callback){listeners[id+':'+type]=callback},getContext:()=>ctx,
 getBoundingClientRect:()=>({left:0,top:0,width:840,height:588})}}
-const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id)},createElement:element,querySelectorAll:()=>[]};
+const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id)},createElement:element,querySelector:()=>null,querySelectorAll:()=>[]};
 const window={MorrowwishI18n:{get:()=>'en'},arcadeMetric:(name,payload)=>events.push({name,payload}),addEventListener(name,handler){listeners[name]=handler}};
 let frames=0;
 vm.runInNewContext(source,{window,document,performance:{now:()=>1000},navigator:{},Date,Math,console,
