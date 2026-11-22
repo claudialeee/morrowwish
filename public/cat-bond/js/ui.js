@@ -308,7 +308,7 @@ const UI = {
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const role=i=>i<2?(en?'START '+(i+1):'首发 '+(i+1)):(en?'BENCH '+(i-1):'替补 '+(i-1));
     host.innerHTML='<strong>'+(en?'Your lineup · reorder with arrows':'双猫首发与替补顺序')+'</strong>'
-      +'<p>'+(en?'Two cats fight together; use arrows to choose who starts. Bench cats can swap in (6s cooldown).':'两只猫并肩战斗。用箭头指定首发与替补；战斗中可主动换猫（冷却 6 秒）。')+'</p>'
+      +'<p>'+(en?'Use ↑ ↓ to change starting cats and reserves. Tap a cat below to add or remove it.':'用 ↑ ↓ 调整首发和替补顺序，点击下方猫咪可更换队员。')+'</p>'
       +'<div class="battle-order-items">'+selected.map((uid,i)=>{
         const cat=cats.get(uid),name=cat?State.catName(cat):uid;
         const facts=cat?this.battleCatFacts(cat):null;
@@ -323,8 +323,8 @@ const UI = {
         const i=Number(btn.dataset.orderIndex),j=i+Number(btn.dataset.orderShift);
         if(j<0||j>=selected.length)return;
         [selected[i],selected[j]]=[selected[j],selected[i]];
-        this.refreshSquadOrder(selected,onReorder);
-        onReorder?.();
+        if(onReorder)onReorder();
+        else this.refreshSquadOrder(selected,onReorder);
       };
     });
   },
@@ -332,12 +332,14 @@ const UI = {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const cats=[...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a));
-    return '<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
+    return this.squadOrderMarkup()
+      +'<p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'
+      +'<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
       +cats.map(c=>'<button type="button" class="map-squad-choice '+(selected.includes(c.uid)?'sel':'')+'" data-uid="'+esc(c.uid)+'" aria-pressed="'+selected.includes(c.uid)+'">'
         +'<canvas width="58" height="50" aria-hidden="true"></canvas>'
         +'<span class="squad-cat-info"><strong>'+esc(State.catName(c))+'</strong>'
         +this.battleCatStatsMarkup(c)+'</span></button>').join('')
-      +'</div><p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'+this.squadOrderMarkup();
+      +'</div>';
   },
   bindSquadPicker(selected){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats||[];
@@ -347,6 +349,8 @@ const UI = {
       buttons.forEach(btn=>{
         const yes=selected.includes(btn.dataset.uid);
         btn.classList.toggle('sel',yes);btn.setAttribute('aria-pressed',String(yes));
+        const order=selected.indexOf(btn.dataset.uid);
+        btn.dataset.orderRole=order<0?'':(order<2?(en?'START '+(order+1):'首发 '+(order+1)):(en?'BENCH '+(order-1):'替补 '+(order-1)));
       });
       const count=document.querySelector('#panel .map-squad-count');
       if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只');
@@ -1019,6 +1023,24 @@ const UI = {
     if(!prev){this.closeAll();return;}
     this._navCurrent=prev;
     prev();
+  },
+  // An encounter is a bounded dialog with ONE scroll surface. Move the
+  // action row OUTSIDE the scroll area so it never obscures the lineup arrows.
+  setupPrebattleDialog(){
+    const card=document.querySelector('#panel > .card');
+    const actions=card?.querySelector('.prebattle-actions');
+    if(!card||!actions)return;
+    const scroll=document.createElement('div');
+    scroll.className='prebattle-scroll';
+    scroll.tabIndex=0;
+    scroll.setAttribute('role','region');
+    scroll.setAttribute('aria-label',this.isEnglish()?'Battle preparation':'开战前设置');
+    for(const node of [...card.childNodes]){
+      if(node===actions||node.nodeType===1&&node.classList.contains('card-close'))continue;
+      scroll.appendChild(node);
+    }
+    card.classList.add('prebattle-dialog');
+    card.insertBefore(scroll,actions);
   },
   panel(html) {
     this._teaseStop?.();
@@ -2369,6 +2391,7 @@ const UI = {
       </fieldset></details>
       <div class="btn-row prebattle-actions"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
+    this.setupPrebattleDialog();
     this.bindSquadPicker(selected);
     this.refreshBattlePrepSkills(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en);
     document.getElementById('bp-best-team').onclick=()=>{
@@ -2492,8 +2515,8 @@ const UI = {
           <span id="battle-team-summary">${this.battlePrepEsc(this.battleTeamSummary(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english))}</span>
         </summary>
         ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
-        <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
         ${this.squadOrderMarkup()}
+        <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       </details>
       <div class="prebattle-quick-select"><button id="cp-best-team" type="button" class="btn ghost">${english?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button></div>
       ${this.battlePrepSkillCard(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english)}
@@ -2518,6 +2541,7 @@ const UI = {
         <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">${english?"⚙️ Auto tactics":"⚙️ 智能策略"}</button>
         <button class="btn ghost" id="cp-cancel">放它走</button>
       </div>`);
+    this.setupPrebattleDialog();
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     CatArt.renderCatThumb(document.getElementById('cp-wild'), wildSp);
     const roster = document.getElementById('cp-roster');
