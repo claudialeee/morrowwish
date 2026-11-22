@@ -275,7 +275,7 @@ html.cg-play .stealth-actionbar{min-height:0}
 .stage.victory .modal{animation:heist-celebrate .38s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes heist-celebrate{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.stage.victory .modal{animation:none}}
-</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=reset-visible-20261122-2"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js?v=full-share-yarn-20261121-2" defer></script><script src="/pawsibly-innocent/game.js?v=reset-visible-20261122-2" defer></script><meta name="twitter:card" content="summary_large_image"></head>
+</style><link rel="stylesheet" href="/pawsibly-innocent/single-screen.css?v=replay-menu-badge-20261122-4"><link rel="preload" href="/audio/cat-happy-clappy.ogg" as="audio" type="audio/ogg"><script src="/lang.js" defer></script><script src="/studio-audio.js" defer></script><script src="/social-share.js?v=full-share-yarn-20261121-2" defer></script><script src="/pawsibly-innocent/game.js?v=replay-menu-badge-20261122-4" defer></script><meta name="twitter:card" content="summary_large_image"></head>
 <body><audio id="catRecordedMusic" preload="auto" loop src="/audio/cat-happy-clappy.ogg" aria-hidden="true" hidden></audio><button id="musicPermission" class="music-permission" type="button" hidden aria-label="Play background music">♫ Play music</button><header class="sitebar"><div class="cat-sound-controls" aria-label="Audio settings"><button class="button music-button" id="music" type="button" aria-pressed="true">♫ Music: On</button><button class="button mint" id="sound" type="button">🔊 Sound effects: On</button></div></header>
 <main class="wrap single-screen-game">
 <div class="board-layout">
@@ -289,7 +289,6 @@ html.cg-play .stealth-actionbar{min-height:0}
      <div id="heistStatus" class="heist-status" role="status" aria-label="Fish and lives">🐟 0/3 · ♥♥♥</div>
      <div class="in-game-controls" id="stageControls">
       <button id="quickHelp" class="hud-icon" type="button" aria-label="How to play" title="How to play">?</button>
-      <button id="achievementPocket" class="hud-icon achievement-pocket" type="button" aria-label="Achievements" title="Achievements"><span aria-hidden="true">🏅</span><small id="badgePocketCount">0</small></button>
        <button id="menuButton" class="hud-icon" type="button" aria-label="Open game menu" title="Open game menu"><span aria-hidden="true">☰</span><span id="menuButtonLabel">Menu</span></button>
      </div>
     </div>
@@ -307,8 +306,10 @@ html.cg-play .stealth-actionbar{min-height:0}
       </button>
       <button class="button yarn board-yarn" id="tool" type="button">🧶 Toss yarn</button>
       <button class="wait-control" id="wait" type="button" title="Wait a turn" aria-label="Wait a turn"><span class="wait-symbol" aria-hidden="true">⏳</span><span id="waitLabel" class="wait-label">Wait</span></button>
-      <button class="restart-control" id="restart" type="button" title="Restart this room" aria-label="Restart this room"><span class="restart-symbol" aria-hidden="true">↻</span><span id="restartLabel" class="restart-label">Retry</span></button>
-       <button class="reset-all-control" id="resetGameQuick" type="button" aria-haspopup="dialog" aria-controls="resetConfirm" title="Reset all progress"><span class="reset-all-symbol" aria-hidden="true">↺</span><span id="resetQuickLabel">Reset game</span></button>
+      <div class="replay-controls" role="group" aria-label="Replay options">
+        <button class="restart-control" id="restart" type="button" title="Replay only this room" aria-label="Replay only this room"><span class="restart-symbol" aria-hidden="true">↻</span><span id="restartLabel" class="restart-label">Retry room</span></button>
+        <button class="reset-all-control" id="resetGameQuick" type="button" aria-haspopup="dialog" aria-controls="resetConfirm" title="Restart entire game and erase saved progress"><span class="reset-all-symbol" aria-hidden="true">↺</span><span id="resetQuickLabel">Restart game</span></button>
+       </div>
      </div>
     </div>
    </div>
@@ -342,9 +343,6 @@ html.cg-play .stealth-actionbar{min-height:0}
      <button type="button" data-game-tab="cats" aria-selected="false">🐱 <span data-menu-label="cats">Cats</span></button>
      <button type="button" data-game-tab="help" aria-selected="false">? <span data-menu-label="help">Help</span></button>
     </nav>
-    <div class="reset-progress-section reset-progress-menu-action">
-     <button type="button" id="resetGame" class="reset-progress-button" aria-haspopup="dialog" aria-controls="resetConfirm">↺ Reset all game progress</button>
-    </div>
     <aside class="panel game-menu-body" aria-label="Game progress and controls">
      <section data-tab-panel="rooms">
       <div class="row"><span class="mini-label" id="missionLabel">CURRENT HEIST</span><span class="hearts" id="hearts">♥ ♥ ♥</span></div>
@@ -395,11 +393,11 @@ html.cg-play .stealth-actionbar{min-height:0}
    <div id="resetConfirm" class="reset-confirm" role="alertdialog" aria-modal="true" aria-labelledby="resetTitle" aria-describedby="resetDescription" hidden>
     <div class="reset-confirm-card">
      <div class="reset-confirm-icon" aria-hidden="true">↺</div>
-     <h3 id="resetTitle">Reset all game progress?</h3>
-     <p id="resetDescription">This permanently clears unlocked rooms, stars, achievements, souvenirs and game records on this device. You will return to Room 1.</p>
+     <h3 id="resetTitle">Restart the entire game?</h3>
+     <p id="resetDescription">This will permanently erase saved rooms, stars, achievements, and collectibles on this device and restart from Room 1. To replay this room without losing progress, choose Retry room instead.</p>
      <div class="reset-confirm-actions">
       <button type="button" id="cancelReset" class="reset-cancel">Keep my progress</button>
-      <button type="button" id="confirmReset" class="reset-danger">Yes, reset everything</button>
+      <button type="button" id="confirmReset" class="reset-danger">Erase progress &amp; restart</button>
      </div>
     </div>
    </div>
