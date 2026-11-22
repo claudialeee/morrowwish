@@ -477,22 +477,33 @@ const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('vulnerabilityBonus += 0.30') && !battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'stagger belongs to the additive vulnerability bucket, not a separate multiplier');
 
-// Regular Q/E cause armor break, never poise drain or Stagger. Dedicated
-// 泰山压顶 keeps the three-second Stagger window and visible countdown.
+// Q/E SKILL hits now CHIP the poise gauge (owner-approved design change so the 韧性 bar
+// visibly depletes as you use skills); BASICS never drain it; emptying opens a Stagger
+// window; a dedicated 泰山压顶 zeroes it instantly. Also keeps the 10s 破甲 (rust) mark.
 assert.equal(Skills.TAG_INFO.rust.ttl,10,'armor break persists for ten seconds');
 assert.equal(Skills.TAG_INFO.rust.dps,0,'armor break is not an added DOT');
 const poiseBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 poiseBattle.coach=null;
 const poiseEnemy=poiseBattle.enemies[0];
-poiseEnemy.inv=0;poiseEnemy.flash=0;
-poiseEnemy.poise=1;poiseEnemy.staggerT=0;
+// a BASIC hit must NOT drain poise (mashing can't crack it)
+poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
+poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
+assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,'basic attacks cannot drain poise');
+assert.equal(poiseEnemy.staggerT,0,'basic attacks cannot trigger stagger');
+// a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark
+poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
   poiseEnemy.x,poiseEnemy.y);
-assert.equal(poiseEnemy.staggerT,0,'ordinary Q/E cannot trigger stagger');
-assert.equal(poiseEnemy.poise,1,'ordinary Q/E cannot drain poise');
+assert.ok(poiseEnemy.poise<poiseEnemy.poiseMax,'a Q/E skill hit chips the poise gauge');
 assert.equal(poiseEnemy.status.rust,10,'ordinary Q/E applies ten-second armor break');
+// draining poise to empty via skill hits opens the Stagger window
+poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=1;poiseEnemy.staggerT=0;
+poiseBattle.resolveHit(poiseEnemy,'me',
+  {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
+  poiseEnemy.x,poiseEnemy.y);
+assert.ok(poiseEnemy.staggerT>0,'emptying poise with skill hits triggers stagger');
 poiseEnemy.flash=0;poiseEnemy.inv=0;
 const slamCat=poiseBattle.me();
 slamCat._leapTo={x:poiseEnemy.x,y:poiseEnemy.y};

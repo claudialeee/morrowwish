@@ -4303,10 +4303,19 @@ class CaptureBattle {
         if (fresh) this.controlFx(e, tg, info ? info.color : '#fff');   // distinct "it's controlled!" burst
       }
     }
-    // Ordinary Q/E/ultimate hits apply ARMOR BREAK rather than draining poise.
-    // Only dedicated stagger skills (泰山压顶, 纸箱埋伏) and cast interrupts
-    // open a Stagger window. Keep any elemental debuffs the skill already has.
-    if (skill.id && !skill.isBasic && skill.id !== 'quakeStomp' && !skill.tags?.includes('stagger')) {
+    // POISE DRAIN (韧性) — owner-approved design change: non-basic SKILL hits now CHIP
+    // the poise gauge (basics do NOT), so the 韧性 bar visibly depletes as you use skills
+    // instead of sitting full until a special stagger (the "不减/没用" complaint). Drain a
+    // fixed fraction of poiseMax per skill hit (~20% light / 28% heavy → ~4-5 skill hits to
+    // break); emptying it opens the 2× 虚弱 window. Dedicated stagger skills (泰山压顶 /
+    // 纸箱埋伏 / cast interrupt) still ZERO it instantly. Also keep the 10s 破甲 (rust) mark.
+    if (skill.id && !skill.isBasic && (e.staggerT||0) <= 0) {
+      const isDedicatedStagger = skill.id === 'quakeStomp' || skill.tags?.includes('stagger');
+      if (!isDedicatedStagger && (e.poise||0) > 0) {
+        const heavy = !!skill.heavy || ['dash','pounce','leap'].includes(skill.kind);
+        e.poise = Math.max(0, e.poise - e.poiseMax * (heavy ? 0.28 : 0.20));
+        if (e.poise <= 0) this.triggerStagger(e);      // emptied → 虚弱 window opens
+      }
       const fresh = !e.status.rust;
       e.status.rust = TAG.rust.ttl;
       if (!e.tags.includes('rust')) e.tags.push('rust');
