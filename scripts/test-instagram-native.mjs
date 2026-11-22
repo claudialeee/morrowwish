@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {igOverlay,nativeInstagramSnapshot} from '../src/instagram-native.js';
+const base=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
+const posts=base.metricScope.verifiedPosts.filter(x=>x.platform==='instagram');
+assert.equal(posts.length,7);
+const state={checkedAt:'2026-11-22T23:45:00.000Z',posts:posts.map((p,i)=>({...p,views:i+5,likes:i,comments:0,dataSource:'instagram-graph-insights'}))};
+const o=igOverlay(base,state,'ready');
+assert.equal(o.platforms.find(p=>p.id==='instagram').views,56);
+assert.equal(o.nativeInstagram.postMetricsCount,7);
+assert.equal(o.metricScope.verifiedPosts.length,28);
+const partial=igOverlay(base,{...state,posts:state.posts.slice(0,6)},'ready');
+assert.equal(partial.platforms.find(p=>p.id==='instagram').views,null);
+assert.equal(partial.metricScope.verifiedPosts.find(p=>p.platform==='instagram'&&p.game==='pocket-aquarium').views,null);
+const noView=igOverlay(base,{...state,posts:state.posts.map((p,i)=>i===2?{...p,views:null}:p)},'ready');
+assert.equal(noView.platforms.find(p=>p.id==='instagram').views,null);
+assert.equal((await nativeInstagramSnapshot({},base)).nativeInstagram.status,'needs_developer_app');
+console.log('Instagram owner Insights integration guards missing metrics and older Reels.');
