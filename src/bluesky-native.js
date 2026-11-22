@@ -4,7 +4,21 @@ const BSKY_ACTOR = "did:plc:d55banmfpsnzmt35hqmmwha7";
 const BSKY_HANDLE = "morrowwishgames.bsky.social";
 const BSKY_API = "https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed";
 const BSKY_CACHE_MS = 10 * 60 * 1000;
-const BSKY_START = "2026-11-21";
+const BSKY_START = "2026-11-22";
+// Launch-campaign allowlist. Never read/track other posts, even if their
+// captions also link to a Morrow Wish game.
+const BSKY_APPROVED={
+  "cat-bond":"3n2wcn56m33kj",
+  "pawsibly-innocent":"3n2wcqugab5jq",
+  "tiny-town":"3n2wcr7nylvrr",
+  "elsewhere":"3n2wcraws7xga",
+  "flip-dash":"3n2wcrc4lqcyn",
+  "parcel-panic":"3n2wcrdnc2owx",
+  "pocket-aquarium":"3n2wcreq5hq3p"
+};
+const BSKY_STORE_KEY="bluesky:approved-20261122:v1";
+const bskyApprovedPost=p=>p&&p.publishedAt>=BSKY_START&&
+  BSKY_APPROVED[p.game]===/\/post\/([a-z0-9]+)$/.exec(p.url||"")?.[1];
 const BSKY_GAMES = ["cat-bond","pawsibly-innocent","tiny-town","elsewhere","flip-dash","parcel-panic","pocket-aquarium"];
 const BSKY_HINTS = {
   "cat-bond": /cat bond|rare cat|combo attack|cat crew|猫猫纽带/i,
@@ -30,7 +44,7 @@ export function bskyPost(item) {
   if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0,10) < BSKY_START) return null;
   const game = bskyGame(rec.text);
   const id = String(p.uri || "").match(/^at:\/\/did:plc:[a-z0-9]+\/app\.bsky\.feed\.post\/([a-z0-9]+)$/i)?.[1];
-  if (!game || !id) return null;
+  if (!game || !id || BSKY_APPROVED[game]!==id) return null;
   return {
     platform:"bluesky", game,
     url:"https://bsky.app/profile/" + BSKY_HANDLE + "/post/" + id,
@@ -42,15 +56,17 @@ export function bskyPost(item) {
 }
 async function bskyStore(env) {
   await env.DB.prepare("CREATE TABLE IF NOT EXISTS social_native_store (key TEXT PRIMARY KEY, payload TEXT NOT NULL, updated_at INTEGER NOT NULL)").run();
+  // Retire and purge the old broad-feed cache (it may contain legacy promos).
+  await env.DB.prepare("DELETE FROM social_native_store WHERE key='bluesky:posts'").run();
 }
 async function bskyGet(env) {
-  const row = await env.DB.prepare("SELECT payload, updated_at FROM social_native_store WHERE key=?").bind("bluesky:posts").first();
+  const row = await env.DB.prepare("SELECT payload, updated_at FROM social_native_store WHERE key=?").bind(BSKY_STORE_KEY).first();
   if(!row) return null;
   return {data:JSON.parse(row.payload),updatedAt:row.updated_at};
 }
 async function bskySet(env,state) {
   await env.DB.prepare("INSERT INTO social_native_store(key,payload,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at")
-    .bind("bluesky:posts",JSON.stringify(state),Date.now()).run();
+    .bind(BSKY_STORE_KEY,JSON.stringify(state),Date.now()).run();
 }
 async function bskyList(env) {
   let cursor=null, pages=0;
@@ -82,11 +98,11 @@ async function bskyList(env) {
 export function bskyOverlay(base,state,status) {
   const result=structuredClone(base||{});
   const row=result.platforms?.find(p=>p.id==="bluesky");
-  result.nativeBluesky={status,checkedAt:state?.checkedAt||null,postMetricsCount:state?.posts?.length??0,source:"bluesky-public-appview"};
-  if(!row || !state?.posts?.length)return result;
+  const current=Array.isArray(state?.posts)?state.posts.filter(bskyApprovedPost):[];
+  result.nativeBluesky={status,checkedAt:state?.checkedAt||null,postMetricsCount:current.length,source:"bluesky-public-appview"};
+  if(!row || !current.length)return result;
   // Replace previous Bluesky readings atomically; do not accumulate snapshots.
   const prev=result.metricScope?.verifiedPosts||[];
-  const current=state.posts;
   if(result.metricScope){
     result.metricScope.verifiedPosts=[...prev.filter(p=>p.platform!=="bluesky"),...current];
     result.metricScope.activeApprovedPosts=result.metricScope.verifiedPosts.length;
