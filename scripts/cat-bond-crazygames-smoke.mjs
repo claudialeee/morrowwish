@@ -257,7 +257,8 @@ try{
         // Cats is a modal panel over the bottom nav. Dismiss through the real UI
         // before tapping Yard; never force-click through the panel backdrop.
         await page.evaluate(()=>UI.closeAll());
-        await page.locator('#tabbar [data-tab="yard"]').click();
+        assert.equal(await page.locator('#tabbar [data-tab="yard"]').count(),0,
+          'A no-op Yard tab should not be displayed in the Yard');
         await page.evaluate(()=>UI.openJourney());
         await page.waitForSelector('#journey-collect');
         assert.equal(await page.locator('.journey-path').count(),5,

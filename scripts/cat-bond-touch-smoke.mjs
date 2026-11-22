@@ -66,15 +66,18 @@ try{
         await page.evaluate(() => UI.closeAll());
       }
       const tabs=page.locator('#tabbar .tab');
-      assert.equal(await tabs.count(),6,'All six cat game tabs must be present');
+      assert.equal(await tabs.count(),5,'Five useful yard tabs; redundant Yard button removed');
+      assert.equal(await page.locator('#tabbar [data-tab="yard"]').count(),0,'Do-nothing Yard tab must not exist');
+      assert.deepEqual(await page.locator('#tabbar .tab').evaluateAll(els=>els.map(e=>e.dataset.tab)),
+        ['cats','work','dex','daily','shop'],'Yard menu order remains consistent');
       const layout=await page.evaluate(()=>({width:innerWidth,docScroll:document.documentElement.scrollWidth,
         buttons:[...document.querySelectorAll('#tabbar .tab')].map(el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,height:b.height}})}));
       assert.ok(layout.docScroll<=width+3,'Cat Bond has horizontal overflow: '+JSON.stringify(layout));
       assert.ok(layout.buttons.every(b=>b.left>=-2&&b.right<=width+2&&b.height>=43),'All cat menu buttons must fit and remain tappable: '+JSON.stringify(layout));
       await tabs.last().tap();
       assert.equal(await page.locator('#panel.open').count(),1,'Shop menu tap must open its panel');
-      await tabs.first().tap();
-      assert.equal(await page.locator('#panel.open').count(),0,'Yard menu tap must close panel');
+      await page.locator('#panel.open .panel-dismiss').tap();
+      assert.equal(await page.locator('#panel.open').count(),0,'Close must return to yard without a redundant Yard tab');
       // Verify expedition actions work on actual phone-sized game pages.
       await page.locator('#fab-map').tap();
       // Isolate navigation QA from randomly spawning wild cats that can
@@ -152,7 +155,8 @@ try{
       await page.evaluate(()=>{window.__game.scene='yard';window.__game.showYardChrome();});
       await page.locator('#fab-feed').tap();
       assert.equal(await page.locator('#panel.open').count(),1,'Feed icon must be touch-activated');
-      await tabs.first().tap();
+      await page.locator('#panel.open .panel-dismiss').tap();
+      assert.equal(await page.locator('#panel.open').count(),0,'Feeding panel can close without a Yard tab');
       if(width===390){
         // No injected webpage fullscreen: only the play stage gets immersive mode.
         await page.evaluate(()=>Object.defineProperty(document.getElementById('stage'),'requestFullscreen',{value:undefined,configurable:true}));

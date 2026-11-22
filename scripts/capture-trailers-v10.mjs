@@ -88,14 +88,18 @@ try{
     const hud=document.getElementById('hud').getBoundingClientRect();
     const menu=document.getElementById('map-menu');
     const mr=menu.getBoundingClientRect();
+    const yardBack=document.getElementById('cb-yard-return');
     const region=WorldMap.REGIONS.find(r=>r.id==='home');
     return {name:region?.name,englishName:region?.sub,menuVisible:!menu.hidden&&
       getComputedStyle(menu).display!=='none',rightAligned:actions.right>=stage.right-20,
       resourcesSameRow:Math.abs(hud.top-mr.top)<=8&&hud.right<=mr.left+2,
-      actionFits:actions.left>=stage.left&&actions.right<=stage.right+2};
+      actionFits:actions.left>=stage.left&&actions.right<=stage.right+2,
+      redundantTabAbsent:!document.querySelector('#tabbar [data-tab="yard"]'),
+      yardBackHidden:!!yardBack&&getComputedStyle(yardBack).display==='none'};
   });
   if(yardHeader.name!=='阳光花园'||yardHeader.englishName!=='Sunlit Garden'||
-      !yardHeader.menuVisible||!yardHeader.rightAligned||!yardHeader.resourcesSameRow||!yardHeader.actionFits)
+      !yardHeader.menuVisible||!yardHeader.rightAligned||!yardHeader.resourcesSameRow||!yardHeader.actionFits||
+      !yardHeader.redundantTabAbsent||!yardHeader.yardBackHidden)
     throw Error('Yard toolbar / Sunlit Garden regression: '+JSON.stringify(yardHeader));
   const yardMenu=await page.evaluate(()=>{
     document.getElementById('map-menu').click();
