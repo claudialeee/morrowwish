@@ -399,6 +399,20 @@ try{
           'Exploration must display physical animated roaming wild cats plus the player');
         assert.equal(await page.evaluate(()=>WorldMap.mode),'region',
           'Clicking a region must open a playable walking world');
+        // A roaming wild cat can legitimately offer a prebattle dialog before
+        // the camera test. Dismiss the real modal first: pointer input must not
+        // pass through gameplay dialogs. Do not misdiagnose this as broken panning.
+        const blockedByEncounter=await page.evaluate(()=>{
+          const overlay=document.querySelector('#panel.open .prebattle-dialog');
+          if(!overlay)return false;
+          UI.closeAll();
+          return true;
+        });
+        if(blockedByEncounter){
+          await page.waitForFunction(()=>!document.querySelector('#panel.open .prebattle-dialog'));
+          assert.equal(await page.evaluate(()=>window.__game.scene),'map',
+            'Dismissing a wild encounter must resume exploration');
+        }
         const canvasBox=await page.locator('#scene').boundingBox();
         assert.ok(canvasBox,'World must have a playable canvas');
         const x=canvasBox.x+canvasBox.width*.68,y=canvasBox.y+canvasBox.height*.48;
