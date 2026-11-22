@@ -50,8 +50,19 @@ try {
     const c=State.S.cats[0];c.level=8;c.affinity=30;
     UI.openCatDetail(c);return c.uid;
   });
+  const ready=await page.evaluate(()=>({uid:UI.openCatUid,level:State.S.cats[0]?.level,
+    affinity:State.S.cats[0]?.affinity,stage:State.S.cats[0]?.stage,
+    canGrow:Growth.canAdvance(State.S.cats[0]),button:!!document.getElementById('cd-grow')}));
+  console.log('GROWTH BEFORE CLICK',JSON.stringify(ready));
   await page.locator('#cd-grow').click();
-  await page.locator('#cb-growth-canvas').waitFor();
+  const grew=await page.evaluate(()=>({stage:State.S.cats[0]?.stage,
+    modal:!!document.getElementById('cb-growth-canvas'),
+    panelOpen:document.getElementById('panel')?.className,
+    text:document.getElementById('panel')?.innerText.slice(0,200)}));
+  console.log('GROWTH AFTER CLICK',JSON.stringify(grew));
+  assert.equal(grew.stage,1,'growth must mutate the saved cat');
+  assert.equal(grew.modal,true,'stage0 to stage1 must show an illustrated ceremony');
+  await page.locator('#cb-growth-canvas').waitFor({state:'visible',timeout:3000});
   assert.equal(await page.evaluate(()=>State.S.cats[0].stage),1);
   assert.match(await page.locator('.cb-growth-ceremony').innerText(),/成长成功/);
   await page.screenshot({path:'/tmp/cat-bond-adult-growth-phone.png'});
