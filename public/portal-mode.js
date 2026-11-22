@@ -6,7 +6,10 @@
 (() => {
   'use strict';
   const params=new URLSearchParams(location.search);
-  if(params.get('utm_medium')!=='portal'||params.get('utm_source')!=='crazygames')return;
+  const campaignPortal=params.get('utm_medium')==='portal'&&params.get('utm_source')==='crazygames';
+  const catBondPortal=location.pathname.replace(/\\/+$/,'/')==='/cat-bond/' &&
+    window.CatBondPlatform?.externalPortal===true;
+  if(!campaignPortal&&!catBondPortal)return;
   document.documentElement.classList.add('mw-third-party-portal');
   function hideCrossPromotion(){
     const here=location.pathname.replace(/\/+$/,'/');
