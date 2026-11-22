@@ -2879,19 +2879,8 @@ body.cb-exploring #yard-placement-dock{display:none!important}
 }
 
 
-/* Post-capture adventure guide + quieter hero portrait, Nov 2026.
-   Small visual hint, direct actions and real target highlights; all
-   optional, save-backed and keyboard accessible. */
-#intro > .intro-cat-gallery{
- width:min(660px,92vw)!important;
- height:clamp(112px,17vh,148px)!important;
- max-height:148px!important;
- margin:0 auto!important;
- flex:0 0 auto!important;
-}
-#intro #intro-cats{
- object-fit:contain!important;
-}
+/* Post-capture adventure guide, independent of the full-size intro cats.
+   Compact walkthrough, real target highlights; optional and save-backed. */
 #first-quest.is-tour{
  position:absolute!important;
  top:calc(108px + env(safe-area-inset-top,0px))!important;
@@ -2985,11 +2974,6 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  50%{filter:brightness(1.1);box-shadow:0 0 0 8px #f7c4e382!important}
 }
 @media(max-width:700px){
- #intro > .intro-cat-gallery{
-  width:min(94vw,530px)!important;
-  height:clamp(98px,15.5vh,123px)!important;
-  max-height:123px!important;
- }
  #first-quest.is-tour{
   top:calc(108px + env(safe-area-inset-top,0px))!important;
   width:calc(100% - 20px)!important;
@@ -3004,7 +2988,6 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #guide-help{top:calc(108px + env(safe-area-inset-top,0px));left:9px}
 }
 @media(orientation:landscape) and (max-height:520px){
- #intro > .intro-cat-gallery{height:105px!important;width:min(520px,78vw)!important}
  #first-quest.is-tour{
   top:calc(87px + env(safe-area-inset-top,0px))!important;
   left:10px!important;transform:none!important;

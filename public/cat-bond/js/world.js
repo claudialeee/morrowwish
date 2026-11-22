@@ -165,11 +165,12 @@ class CatEntity {
     // Each structure animates the cat differently: scratcher hops at the post, cave/tree
     // breathe gently asleep, hammock sways with the sling, catnip rolls belly-up.
     let bob=0, dx=0, drawScale=depth;
-    // Yard kittens must stay visible on a large screen: the shared CatMotion
-    // adapter clamps all cats to .86 scale for *battle*. Keep that small scale
-    // in combat, but render the cozy courtyard with full-size breed art.
-    const yardMagnify=Math.min(2.05,Math.max(1.22,
-      Math.min(this.W/880,this.H/490)*1.12));
+    // In the courtyard (NOT the homepage or combat) size cats like small
+    // residents of the garden. The previous 2.05x maximum made kittens huge,
+    // especially on desktop. Keep their distinct painted breeds and poses.
+    // On a phone maintain a touch-friendly minimum despite smaller visuals.
+    const yardMagnify=Math.min(1.32,Math.max(.94,
+      Math.min(this.W/880,this.H/490)*.79));
     if(use){
       drawScale=depth*(use.scale||1);
       if(mode==='post') bob=2+Math.sin(this.t*9)*3;             // lively scratch hops
