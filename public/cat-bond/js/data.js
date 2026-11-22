@@ -26,11 +26,6 @@ const SPECIES = [
   { id: 'sanhua',   name: '花花',   palette: 'calico',      pattern: 'calico',  eyeColor: '#f2c94c', rarity: 'R', desc: '三色福猫，传说能招来好运。',           base: { pow: 7, agi: 7, vit: 7, cha: 9 } },
   { id: 'lixiao',   name: '绅绅',   palette: 'tux',         pattern: 'tuxedo',  eyeColor: '#7ee787', rarity: 'R', desc: '穿燕尾服的绅士，优雅又傲娇。',         base: { pow: 8, agi: 8, vit: 6, cha: 8 } },
   { id: 'lanbao',   name: '蓝莓',   palette: 'blue',        pattern: 'solid',   eyeColor: '#f6b93b', rarity: 'R', desc: '英短蓝猫，圆脸包子，捏不腻。',         base: { pow: 7, agi: 5, vit: 9, cha: 7 } },
-  // Exotic Shorthair (加菲猫): round, flat-faced plush kitten.
-  { id: 'jiafei', name: '圆宝', palette: 'orange', pattern: 'tabby',
-    eyeColor: '#aa713f', rarity: 'R', chubby: true, flatFace: true, short: true,
-    desc: '加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。',
-    base: { pow: 6, agi: 3, vit: 11, cha: 8 } },
   { id: 'dundun',   name: '团团',   palette: 'silver',      pattern: 'silver',  eyeColor: '#7ee7c4', rarity: 'R', desc: '银渐层，眼线天生，表情包担当。',       base: { pow: 6, agi: 7, vit: 8, cha: 8 } },
   { id: 'yunduo',   name: '云朵',   palette: 'ragdoll',     pattern: 'pointed', eyeColor: '#56ccf2', rarity: 'R', fluffy: true, point: '#6b5244', desc: '布偶幼崽，软成一团云。', base: { pow: 6, agi: 6, vit: 8, cha: 9 } },
   { id: 'zherdd',   name: '布丁',   palette: 'cream',       pattern: 'solid',   eyeColor: '#f2994a', rarity: 'R', ears: 'fold', desc: '折耳小团子，坐姿像佛系大师。',          base: { pow: 6, agi: 6, vit: 7, cha: 9 } },
@@ -39,6 +34,11 @@ const SPECIES = [
   { id: 'jinjc',    name: '金豆',   palette: 'goldShaded',  pattern: 'silver',  eyeColor: '#7ee7c4', rarity: 'R', desc: '金渐层，雍容华贵的小土豪。',           base: { pow: 7, agi: 6, vit: 9, cha: 10 } },
 
   // ---------- SR (史诗) ----------
+  // Exotic Shorthair (加菲猫): round, flat-faced plush kitten.
+  { id: 'jiafei', name: '圆宝', palette: 'orange', pattern: 'tabby',
+    eyeColor: '#aa713f', rarity: 'SR', chubby: true, flatFace: true, short: true,
+    desc: '加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。',
+    base: { pow: 6, agi: 3, vit: 11, cha: 8 } },
   { id: 'xianluo',  name: '露露',   palette: 'siamese',     pattern: 'pointed', eyeColor: '#56ccf2', rarity: 'SR', point: '#443529', desc: '暹罗贵族，蓝眼如宝石，嗓门极大。', base: { pow: 9, agi: 11, vit: 8, cha: 11 } },
   { id: 'yinghua',  name: '樱桃',   palette: 'white',       pattern: 'bicolor', eyeColor: '#eb5e9b', rarity: 'SR', fluffy: true, desc: '粉樱梦幻猫，走过留下花瓣。',         base: { pow: 9, agi: 11, vit: 8, cha: 12 } },
   { id: 'senlin',   name: '松松',   palette: 'maine',       pattern: 'tabby',   eyeColor: '#7ee787', rarity: 'SR', fluffy: true, ears: 'tufted', desc: '缅因巨猫，像一头小狮子。', base: { pow: 13, agi: 9, vit: 12, cha: 8 } },
