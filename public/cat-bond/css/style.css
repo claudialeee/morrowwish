@@ -3359,3 +3359,104 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #panel .explore-cat-list{grid-template-columns:repeat(2,minmax(0,1fr))}
  #panel .explore-menu-actions button{min-height:53px}
 }
+
+/* Battle HUD: one coherent segmented tool rail, with text-only reserves. */
+#battle-ui .battle-topbar{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:7px!important;padding:4px 8px!important
+}
+#battle-ui .battle-tools{
+  grid-column:2;grid-row:1;display:inline-flex;align-items:stretch;
+  gap:0;flex:0 0 auto;padding:2px;border-radius:10px;
+  background:rgba(231,240,227,.85);border:1px solid rgba(132,159,133,.25)
+}
+#battle-ui .battle-tools .tiny-btn{
+  grid-column:auto!important;grid-row:auto!important;display:inline-flex;
+  align-items:center;justify-content:center;min-height:31px!important;
+  min-width:34px!important;width:auto!important;max-width:140px!important;
+  margin:0!important;padding:3px 9px!important;white-space:nowrap;
+  border:0!important;border-radius:7px!important;
+  background:transparent!important;box-shadow:none!important;color:#4b6655!important;
+  font:800 11px/1.2 system-ui,sans-serif!important
+}
+#battle-ui .battle-tools .tiny-btn + .tiny-btn{
+  border-left:1px solid rgba(109,143,118,.25)!important;
+  border-top-left-radius:0!important;border-bottom-left-radius:0!important
+}
+#battle-ui .battle-tools #btn-auto.is-auto{
+  background:#d7ebdb!important;color:#286447!important
+}
+#battle-ui .battle-tools .tiny-btn:hover{background:rgba(255,255,255,.85)!important}
+#battle-ui .battle-tools .tiny-btn:focus-visible{
+  outline:2px solid #479471!important;outline-offset:-2px!important
+}
+#battle-ui #bench-slots{
+  left:9px;top:calc(env(safe-area-inset-top,0px) + 196px);
+  flex-direction:column;align-items:flex-start;gap:3px;
+  max-width:min(174px,calc(100% - 130px))
+}
+#battle-ui #bench-slots:not(.is-open) .bench-slot{display:none!important}
+#battle-ui #bench-slots .bench-caption{
+  min-width:80px!important;width:auto!important;min-height:28px!important;
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:5px 9px!important;border-radius:9px!important;
+  border:1px solid #bed5c4!important;
+  background:rgba(251,252,245,.95)!important;
+  box-shadow:0 2px 8px rgba(57,83,65,.1);cursor:pointer;
+  color:#3d6652!important;font:800 11px/1.15 system-ui,sans-serif!important
+}
+#battle-ui #bench-slots.is-open{
+  align-items:stretch;flex-wrap:nowrap!important;gap:3px!important;
+  max-width:min(174px,calc(100% - 130px))!important;
+  padding:5px!important;background:rgba(255,251,243,.97)!important;
+  border:1px solid #d0decf;border-radius:12px;
+  box-shadow:0 7px 20px rgba(43,73,55,.17);
+  max-height:min(208px,55dvh);overflow-y:auto;overscroll-behavior:contain
+}
+#battle-ui #bench-slots .bench-slot{
+  box-sizing:border-box;position:relative;display:flex;flex-direction:row;
+  justify-content:space-between;align-items:center;gap:5px;
+  width:100%!important;min-width:0!important;
+  height:32px!important;min-height:32px!important;padding:4px 6px!important;
+  border:1px solid #d5e3d4;border-radius:8px;
+  box-shadow:none;background:#fffdf8
+}
+#battle-ui #bench-slots .bench-slot .bench-number{
+  position:static;flex:none;min-width:15px;text-align:center;
+  font:800 10px/1.2 system-ui;color:#557564;background:#eaf1e6;
+  padding:3px;border-radius:5px
+}
+#battle-ui #bench-slots .bench-slot .bench-name{
+  display:block;flex:1;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;text-align:left;
+  font:750 11px/1.2 system-ui;color:#3f5748
+}
+#battle-ui #bench-slots .bench-slot .bench-health{
+  flex:none;font:750 10px/1.2 system-ui;color:#65836d
+}
+@media(max-width:520px){
+ #battle-ui .battle-topbar{gap:4px!important;padding:3px 5px!important}
+ #battle-ui .battle-tools .tiny-btn{
+   min-width:31px!important;padding:3px 5px!important;font-size:10px!important
+ }
+ #battle-ui .battle-tools #btn-auto{min-width:62px!important;max-width:85px!important}
+ #battle-ui .battle-tools .battle-top-label{display:none!important}
+}
+@media(max-height:530px) and (orientation:landscape){
+ #battle-ui #bench-slots{
+   top:calc(env(safe-area-inset-top,0px) + 156px)!important;
+   max-width:166px!important;gap:3px!important
+ }
+ #battle-ui #bench-slots .bench-caption{
+   min-height:28px!important;min-width:80px!important;
+   border:1px solid #bed5c4!important
+ }
+ #battle-ui #bench-slots.is-open{
+   max-width:166px!important;max-height:min(150px,45dvh);
+   flex-wrap:nowrap!important;padding:4px!important
+ }
+ #battle-ui #bench-slots .bench-slot{
+   min-width:0!important;width:100%!important;
+   height:31px!important;min-height:31px!important
+ }
+}
