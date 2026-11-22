@@ -86,7 +86,7 @@ try{
    if(!invited)return {invited:false};
    const cat=g.yard.entities.find(e=>e._buildTarget===b);
    if(!cat)return {invited:false};
-   cat.x=b.x-18;cat.y=b.y-2;
+   cat.x=b.x-8;cat.y=b.y+14;
    g.yard.stepBuildTarget(cat,.033);
    g.yard.update(.033);
    return {invited,playing:g.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0),
