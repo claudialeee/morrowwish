@@ -116,7 +116,8 @@ function resolve(){
  if(!Array.isArray(endings?.[route])||!endings[route][choice])throw Error("Missing unique ending for "+state.id+"/"+route+"/"+choice);
  const momentum=state.scores[kind];
  const rare=momentum>=3&&state.secret&&(state.id!=="tokyo"||(state.scores.proof>=2&&state.scores.allies>=2));
- const quality=rare?"perfect":momentum>=2?"strong":"cost",n=rare?9:route*3+choice;
+ // Amalfi explicitly promises a carefree life: never turn it into a losing ending.
+ const quality=rare?"perfect":(state.id==="amalfi"||momentum>=2)?"strong":"cost",n=rare?9:route*3+choice;
  const entry=rare?story(state.id).rare:endings[route][choice];
  const vibe=window.ELSEWHERE_VIBES?.[state.id];
  const detail=quality==="cost"?Q.costBecause:quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
