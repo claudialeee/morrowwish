@@ -593,6 +593,7 @@ try{
    assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
    assert.ok(layout.roomNumWidth>=70&&layout.roomNumHeight<=16&&layout.roomNameVisible,
      'Room label must be horizontal and name visible at '+width+'px: '+JSON.stringify(layout));
+   assert.equal(layout.headDisplay,'flex','Computed mobile header must use the intended flex layout at '+width+'px');
    assert.ok(layout.topControlsFit&&layout.roomStatusSeparate&&layout.controlsBelowRoom,
      'All top mobile controls must fit and not overlap room/progress at '+width+'px: '+JSON.stringify(layout));
    if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');

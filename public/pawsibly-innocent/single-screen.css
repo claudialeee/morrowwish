@@ -950,7 +950,8 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
    icon toolbar on the same line. The room/status line and wrapped
    controls must each own genuine space and remain fully clickable. */
 @media(max-width:620px){
- html:not(.cg-play) .single-screen-game .in-game-head-row{
+ html:not(.mw-fs-active):not(.cg-play) .single-screen-game .in-game-head-row,
+ html.mw-fs-active:not(.cg-play) .single-screen-game .in-game-head-row{
   position:relative!important;display:flex!important;flex-direction:column!important;
   justify-content:flex-start!important;align-items:stretch!important;
   height:auto!important;min-height:0!important;max-height:none!important;
