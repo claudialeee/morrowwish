@@ -1,4 +1,4 @@
-// Chromium QA: all 32 watercolor cats must retain original proportions as they grow.
+// Chromium QA: every collectible cat must retain original illustrated proportions as it grows.
 // Regression guard for the skinny synthetic SVG adults shown in Moonshadow Ruins.
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
@@ -12,8 +12,10 @@ try {
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:8765/cat-bond/adult-preview.html',
       {waitUntil:'domcontentloaded'});
+    const expectedBreeds=await page.evaluate(()=>window.GameData?.SPECIES?.length||0);
+    assert.ok(expectedBreeds>=32,'All established breeds and new playable cats are present');
     try {
-      await page.waitForFunction(()=>window.CatBondAdultArt?.loadedCount===32,
+      await page.waitForFunction(()=>window.CatBondAdultArt?.loadedCount===window.GameData?.SPECIES?.length,
         null,{timeout:25000});
     } catch(error) {
       const diagnostics=await page.evaluate(()=>({
@@ -58,22 +60,22 @@ try {
         changed:thumbs.every(v=>v[0].toDataURL()!==v[1].toDataURL()),
         maxAspectChange};
     });
-    assert.equal(check.breeds,32);
-    assert.equal(check.loaded,32);
+    assert.equal(check.breeds,expectedBreeds);
+    assert.equal(check.loaded,expectedBreeds);
     assert.equal(check.failed,0);
     assert.equal(check.sourceKind,'original-watercolor-atlas',
       'adult should preserve watercolor breed fur and facial proportions');
     assert.equal(check.preservesOriginalProportions,true);
     assert.equal(check.matureArtIsSeparateImage,false,
       'adult cannot replace painted cat with a narrow SVG model');
-    assert.equal(check.adultUnique,32,'all 32 breeds must retain unique coats');
+    assert.equal(check.adultUnique,expectedBreeds,'all collectible breeds must retain unique coats');
     assert.ok(check.allVisible,'no blank illustration at any growth stage');
     assert.ok(check.changed,'growth must be visible');
     assert.ok(check.maxAspectChange<1.35,
       'grown cat changed aspect ratio beyond original watercolor proportions: '+check.maxAspectChange);
     assert.deepEqual(errors,[]);
     await page.screenshot({path:'/tmp/cat-bond-adult-'+p.name+'.png',fullPage:true});
-    console.log('32 ADULT BREEDS REAL CHROMIUM PASS',p.name,JSON.stringify(check));
+    console.log(expectedBreeds+' ADULT BREEDS REAL CHROMIUM PASS',p.name,JSON.stringify(check));
     await context.close();
   }
   // Growth feature retired: assert neither a button nor an awakening option

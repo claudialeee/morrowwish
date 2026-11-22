@@ -20,7 +20,7 @@ try{
    window.CatBondDuoBreedActors?.ready&&
    document.querySelectorAll('.stage-breed-preview').length===63&&
    document.querySelectorAll('.duo-card .skill-preview').length===21&&
-   document.querySelectorAll('.breed-card').length===32,{timeout:40000});
+   document.querySelectorAll('.breed-card').length===window.GameData?.SPECIES?.length,{timeout:40000});
  const result=await page.evaluate(()=>{
   const keys=window.CatBondDuoDirector.keys;
   const painter=window.CatBondPremiumCinematics;
@@ -160,7 +160,7 @@ try{
     breeds:document.querySelectorAll('.breed-card').length
  }));
  assert.equal(mobileLayout.cards,21);
- assert.equal(mobileLayout.breeds,32);
+ assert.equal(mobileLayout.breeds,await mobile.evaluate(()=>window.GameData?.SPECIES?.length));
  assert.ok(mobileLayout.documentWidth<=mobileLayout.viewport+4,
    'Mobile art gallery scrolls horizontally '+JSON.stringify(mobileLayout));
  await mobile.screenshot({path:DIR+'/gallery-mobile.png',fullPage:true,animations:'disabled'});
