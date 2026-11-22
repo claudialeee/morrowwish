@@ -3900,7 +3900,10 @@ body.cb-exploring #stage #map-actions > button{
   min-height:39px;padding:4px 7px 9px;
  }
  #stage #battle-ui #battle-skill-info-toggle{
-  top:calc(env(safe-area-inset-top,0px) + 195px)!important;
+  /* Landscape: roster + bench occupy the left edge, joystick the lower left.
+     Put help in the unused gap immediately beside the team (still left half). */
+  top:calc(env(safe-area-inset-top,0px) + 128px)!important;
+  left:clamp(160px,29vw,246px)!important;
   min-height:33px;padding:5px 10px;
  }
  #stage #battle-ui #battle-skill-guide{
