@@ -228,7 +228,13 @@
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
     { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 156, width: 22, sweep: .72, sweepPasses: 3, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
-    // ---- 水 water ----
+    // ---- 水 / 冰 water ----
+    // All Water cats (including 蓝莓) receive an actual water-typed ice claw,
+    // never an electric claw borrowed from an invented elemental ring.
+    { id: 'frostClaw', name: '寒冰爪', element: 'water', kind: 'melee',
+      power: 1.22, cd: 2.05, ultCost: 0, tags: ['soak','frost'],
+      appliesTag: 'soak', vfx: 'ice',
+      desc: '短距离挥出霜晶爪痕，使目标湿润；更强的霜锥需向训练师学习。' },
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
     { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
     { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 斗士能领悟。', unlock: { element: 'water', role: ['tank','fighter'] } },
@@ -543,20 +549,29 @@
   // ==========================================================================
   // 5. SKILL LEARNING / LOADOUTS
   // ==========================================================================
-  // Gates: level, bond(affinity) and rarity decide the learnable pool. A cat can
-  // ALWAYS use skills of its own element; it unlocks a second (splash) element as
-  // bond/rarity grow, and ult skills unlock with level + bond. Signature ult is
-  // gated behind max bond (see bondBonuses.unlockSignature).
+  // Gates: native element, earned training, and rare explicit dual-element
+  // breeds. No arbitrary elemental cycle or rarity-based off-element unlocks.
   const RARITY_ORDER = ['N', 'R', 'SR', 'SSR'];
   function rarityIdx(r) { return Math.max(0, RARITY_ORDER.indexOf(r)); }
 
-  // Each element can also dip into ONE "splash" element for variety. A balanced
-  // ring so every element is both a source and a target exactly once (all 6 are
-  // reachable — no orphan element): fire→grass→water→elec→dark→light→fire.
-  const SPLASH_ELEMENT = {
-    fire: 'grass', grass: 'water', water: 'elec',
-    elec: 'dark', dark: 'light', light: 'fire',
-  };
+  // DELIBERATELY CURATED SECONDARY BREEDS, not primary-element → next-element.
+  // Only 6 fantasy-themed cats have a second element. The other 27—including
+  // 蓝莓/lanbao, 雪团, 圆宝, all ordinary water cats—are single-element.
+  // These are gameplay affinities, not claims about real-world cat breeds.
+  const SPECIES_SECONDARY = Object.freeze({
+    xianluo: 'light', // electric Siamese: bright-focus technique
+    yinghua: 'grass', // cherry blossom / flowering greenery
+    youling: 'light', // ghostly dusk / spectral glow
+    jinwu: 'light',   // sun = flame + daylight
+    yuelian: 'water', // moon / tidal mist
+    xingchen: 'light' // starry dark sky / starlight
+  });
+  function secondaryOf(catOrId){
+    const id=typeof catOrId==='string'?catOrId:catOrId?.species;
+    const primary=elementOf(id);
+    const secondary=SPECIES_SECONDARY[id]||null;
+    return secondary&&secondary!==primary?secondary:null;
+  }
 
   // Which species owns which signature ult (unlocked at max bond).
   const SIGNATURE_SKILL = {
@@ -578,7 +593,8 @@
   const SECONDARY_ATTACK_KINDS=new Set([
     'melee','projectile','dash','pounce','chain','beam','leap','aoe']);
   function secondaryChoices(cat) {
-    const primary=elementOf(cat.species),secondary=SPLASH_ELEMENT[primary];
+    const secondary=secondaryOf(cat);
+    if(!secondary)return [];
     const native=SKILLS.filter(s=>s.element===secondary&&!s.unlock&&!s.ultCost);
     const attacks=native.filter(s=>SECONDARY_ATTACK_KINDS.has(s.kind));
     const first=attacks.find(s=>!s.generic)||attacks[0]||null;
@@ -590,6 +606,7 @@
     return [first,second].filter(Boolean);
   }
   function secondaryLimit(cat) {
+    if(!secondaryOf(cat))return 0; // A single-element cat NEVER opens a secondary tree.
     const level=cat.level||1,bond=cat.affinity||0;
     if(!cat.skillAwakened&&level<4)return 0;
     // An intentional late-game support technique, never a second entire tree.
@@ -599,8 +616,11 @@
   // special exceptions. Other advanced skill gates belong to the cat's OWN
   // element (also prevents global quests awarding every cat fire/light ults).
   function gatedElementEligible(cat,s) {
+    // A tank build is NOT an elemental license. Electric mirrorWall must
+    // never be learned by a Water tank such as 蓝莓.
     return s.element===elementOf(cat.species)||
-      !!s.unlock?.build||!!s.unlock?.species;
+      (s.unlock?.species?.includes(cat.species)&&
+       (s.element===secondaryOf(cat)||s.id==='moonfang'));
   }
 
   // ==========================================================================
@@ -714,7 +734,7 @@
   // learnableSkills(cat) -> array of skill objects the cat is allowed to slot.
   function learnableSkills(cat) {
     const el = elementOf(cat.species);
-    const splash = SPLASH_ELEMENT[el];
+    const splash = secondaryOf(cat);
     const lvl = cat.level || 1;
     const bond = cat.affinity || 0;
     const rIdx = rarityIdx((speciesOf(cat) || {}).rarity || cat.rarity || 'N');
@@ -732,8 +752,9 @@
       if (isGated(s)) {
         // A remembered skill is NOT automatically legal after changing builds.
         // For mirrorWall the role gate is active at equip/battle time as well.
-        if (hasLearned(cat, s.id) && (!s.unlock?.build ||
-            (cat.buildType||buildTypeForBreed(cat))===s.unlock.build))out.push(s);
+        if (hasLearned(cat, s.id)&&gatedElementEligible(cat,s)&&
+            (!s.unlock?.build||
+             (cat.buildType||buildTypeForBreed(cat))===s.unlock.build))out.push(s);
         continue;
       }
       const isUlt = s.ultCost > 0;
@@ -741,17 +762,16 @@
       // Each cat discovers its OWN element gradually and can later branch to
       // ONE secondary element. Previously a high-level rare cat suddenly got
       // all six elemental libraries; that made every breed feel identical.
-      // Grandfather in individually equipped legacy skills without widening
-      // the free pool for new cats or deleting any saved build.
+      // Old cross-element skills remain in saved history, but can no longer
+      // equip on a breed without that element. The next ensureLoadout() repairs
+      // active slots without deleting levels, learned IDs, XP, or currencies.
       const alreadyEquipped=(Array.isArray(cat.loadout)&&cat.loadout.includes(s.id))||
         (Array.isArray(cat.autoSkillLoadout)&&cat.autoSkillLoadout.includes(s.id));
-      let elemOk=s.element===el;
-      if(!elemOk&&s.element===splash)
-        elemOk=alreadyEquipped||
-          (!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
-      if(!elemOk&&alreadyEquipped)elemOk=true;
+      const elemOk=s.element===el||
+        (s.element===splash&&!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
       if(!elemOk)continue;
-      if(!isUlt&&!alreadyEquipped){
+      const awakenedNative=cat.skillAwakened&&cat.awakenedSkill===s.id&&s.element===el;
+      if(!isUlt&&!alreadyEquipped&&!awakenedNative){
         if(s.element===el){
           // The first STARTER ATTACK must be available regardless of where
           // utility/shield definitions appear in SKILLS. E.g. electric has
@@ -832,7 +852,7 @@
   function defaultLoadout(cat){
     const pool=learnableSkills(cat);
     const own=pool.filter(sk=>sk.element===elementOf(cat.species)&&!sk.ultCost);
-    const splash=pool.filter(sk=>sk.element===SPLASH_ELEMENT[elementOf(cat.species)]&&!sk.ultCost);
+    const splash=pool.filter(sk=>sk.element===secondaryOf(cat.species)&&!sk.ultCost);
     const attackKinds=['melee','projectile','dash','leap','pounce'];
     const isAttack=sk=>['melee','projectile','dash','leap','pounce','chain','aoe'].includes(sk.kind);
     // Slot 0 (left-click BASIC) is the innate cat-toy toss (小鱼干/毛线团) — it is NOT
@@ -845,13 +865,14 @@
     // visible in play. Prefer a shield the cat knows, then a heal, then a buff;
     // only fall back to a splash attack when the cat has no defensive option.
     const isShield=sk=>sk.kind==='buff'&&(sk.shieldType||(sk.tags||[]).includes('shield'));
-    const e=pool.find(sk=>isShield(sk)&&sk!==basic&&sk!==q)
-      ||pool.find(sk=>sk.kind==='heal'&&sk!==basic&&sk!==q)
-      ||splash.find(sk=>sk.kind==='dash'||sk.kind==='melee')
-      ||splash.find(sk=>sk.kind==='buff'||sk.kind==='heal')
-      ||splash.find(sk=>sk!==q&&sk!==basic)
+    const e=own.find(sk=>isShield(sk)&&sk!==basic&&sk!==q)
+      ||own.find(sk=>sk.kind==='heal'&&sk!==basic&&sk!==q)
       ||own.find(sk=>['buff','heal'].includes(sk.kind)&&sk!==basic&&sk!==q)
-      ||own.find(sk=>sk!==basic&&sk!==q)||null;
+      ||own.find(sk=>sk!==basic&&sk!==q)
+      // A true dual breed MAY slot a side skill; it never displaces an
+      // available primary move in the default recommendations.
+      ||splash.find(sk=>sk.kind==='buff'||sk.kind==='heal')
+      ||splash.find(sk=>sk!==q&&sk!==basic)||null;
     const starterE=(cat.level||1)<3&&!cat.skillAwakened&&
       !(Array.isArray(cat.loadout)&&cat.loadout[2])?null:e;
     const ult=pool.find(sk=>sk.ultCost>0&&SIGNATURE_SKILL[cat.species]===sk.id)
@@ -982,7 +1003,7 @@
   function recommendLoadout(cat, role){
     role=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
     const own=elementOf(cat.species);
-    const splash=SPLASH_ELEMENT[own];
+    const splash=secondaryOf(cat);
     const allUnlocked=(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0);
     const unlockedIds=new Set(allUnlocked.map(sk=>sk.id));
     const pool=allUnlocked.filter(sk=>!upgradeTargetOf(sk.id)||
@@ -992,8 +1013,9 @@
     // identical Q/E kits for different builds. Prefer own-element skills only
     // as a moderate tie-breaker, never at the expense of the selected role.
     // Only skills the cat has actually unlocked are eligible.
-    const OWN_BONUS=1.5, SPLASH_PENALTY=1;
-    const elemAdj=sk=>sk.element===own?OWN_BONUS:sk.element===splash?0:-SPLASH_PENALTY;
+    const OWN_BONUS=3, SPLASH_PENALTY=2;
+    const elemAdj=sk=>sk.element===own?OWN_BONUS:
+      sk.element===splash?-SPLASH_PENALTY:-6;
     const scored=pool.map(sk=>({sk,s:buildScore(role,sk)+elemAdj(sk)}))
       .filter(x=>x.s>-99).sort((a,b)=>b.s-a.s).map(x=>x.sk);
     // Role-constrained Q/E composition, not just two high-scoring neighbors:
@@ -1053,11 +1075,15 @@
     const prevDefault=defaultLoadout(cat);
     const known=new Set(learnableSkills(cat).map(sk=>sk.id));
     cat.skillAwakened=true;
-    const candidates=learnableSkills(cat).filter(sk=>
-      sk.ultCost===0&&!known.has(sk.id)&&sk.element===SPLASH_ELEMENT[elementOf(cat.species)]);
-    const selected=candidates.find(sk=>sk.kind==='dash'||sk.kind==='melee')
+    const secondary=secondaryOf(cat);
+    const candidates=secondary
+      ?secondaryChoices(cat).filter(sk=>!known.has(sk.id))
+      :SKILLS.filter(sk=>sk.element===elementOf(cat.species)&&
+         !sk.unlock&&!sk.ultCost&&!known.has(sk.id));
+    const selected=candidates.find(sk=>SECONDARY_ATTACK_KINDS.has(sk.kind))
       ||candidates.find(sk=>sk.kind==='buff'||sk.kind==='heal')
       ||candidates[0]||null;
+    if(!secondary&&selected)cat.awakenedSkill=selected.id;
     if(!cat.skillEdited&&(previous[2]===prevDefault[2]||previous[2]==null)){
       cat.loadout=previous;
       if(selected)cat.loadout[2]=selected.id;
@@ -1098,8 +1124,9 @@
     const lv=cat.level||1,bond=cat.affinity||0;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     if(rare===0&&!cat.skillAwakened&&lv<4&&bond<40)
-      return en?'Catch your first friend for a new elemental skill (or reach Lv.4 / affection 40)'
-        :'首次收服伙伴后学会跨元素技能（也可提升至 Lv.4 或好感40）';
+      return secondaryOf(cat)
+        ?(en?'First capture unlocks one secondary-element move':'首次收服伙伴解锁一招副属性技能')
+        :(en?'First capture awakens another native-element move':'首次收服伙伴领悟另一招本系技能');
     if(rare===0&&(lv<8||bond<40))
       return en?'Next: Lv.8 + affection 40 to unlock an elemental ultimate'
         :'下一阶段：Lv.8 + 好感40 → 元素必杀技';
@@ -1109,8 +1136,9 @@
     if(lv<12)
       return en?'Learn more attacks one at a time; advanced moves are at the trainer'
         :'攻击技能逐级学会；高阶招式需到训练师处主动学习';
-    return en?'Keep growing your native and secondary skill branches at the trainer'
-      :'继续培养本系与副系技能，并到训练师处学习高阶招式';
+    return secondaryOf(cat)
+      ?(en?'Develop primary moves; study up to two secondary techniques':'主属性为核心；副属性最多两招，高阶技能到训练师学习')
+      :(en?'Develop your native-element skills at the trainer':'专精本系技能，高阶招式到训练师处学习');
   }
 
   // ==========================================================================
@@ -1238,7 +1266,7 @@
     // --- risky combo-chain ---
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---
-    SIGNATURE_SKILL, SPLASH_ELEMENT, secondaryChoices, secondaryLimit,
+    SIGNATURE_SKILL, SPECIES_SECONDARY, secondaryOf, secondaryChoices, secondaryLimit,
     learnableSkills, defaultLoadout, ensureLoadout,
     basicEligible, basicChoices,
     // --- build types (按品种 + 流派自动配装) ---
