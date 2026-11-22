@@ -320,10 +320,9 @@ try{
     const yardOnScreen=!!yr&&yr.width>=65&&yr.height>=30&&
       getComputedStyle(yard).display!=='none'&&yr.left>=0&&yr.top>=0&&
       yr.right<=innerWidth+1&&yr.bottom<=innerHeight+1;
-    const hr=hud?.getBoundingClientRect();
-    const resourcesSameRow=!!hr&&hr.height>=28&&getComputedStyle(hud).display!=='none'&&
-      !!rect&&Math.abs(hr.top-rect.top)<=8&&Math.abs(hr.bottom-rect.bottom)<=8&&
-      hr.right<=rect.left+2;
+    // Maps have their own region title/progress. The player explicitly removed
+    // the duplicated coins/fish chips, which used to overlap Back to Yard.
+    const mapResourcesHidden=!!hud&&getComputedStyle(hud).display==='none';
     const utilities=[menu,full,...document.querySelectorAll('#mw-game-settings button')];
     const yardClear=yardOnScreen&&utilities.every(el=>{
       const b=el.getBoundingClientRect();
@@ -335,11 +334,11 @@ try{
       legacyHidden:!!nav&&getComputedStyle(nav).display==='none',
       homeHidden:!home||getComputedStyle(home).display==='none',
       beforeFullscreen:!!fr&&rect.right<=fr.left+2&&rect.top<fr.bottom&&rect.bottom>fr.top,
-      yardOnScreen,yardClear,yardClickable,resourcesSameRow,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
+      yardOnScreen,yardClear,yardClickable,mapResourcesHidden,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
   });
   if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||
       !regionNav.beforeFullscreen||!regionNav.legacyHidden||!regionNav.homeHidden||
-      !regionNav.yardOnScreen||!regionNav.yardClear||!regionNav.yardClickable||!regionNav.resourcesSameRow||!regionNav.cameraOff)
+      !regionNav.yardOnScreen||!regionNav.yardClear||!regionNav.yardClickable||!regionNav.mapResourcesHidden||!regionNav.cameraOff)
     throw Error('New top-left yard / header menu cut off in actual promo '+JSON.stringify(regionNav));
   await page.screenshot({path:'public/promo/cat-bond/v10-map-navigation-proof.png'});
   const returned=await page.evaluate(()=>{
