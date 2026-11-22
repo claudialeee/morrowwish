@@ -47,7 +47,7 @@ function flourish(ctx,W,H,p,key,tier,kind){
  const colB=colors[pair[1]]||'#a8dce9';
  const hit=Math.max(0,1-Math.abs(p-.284)/.105);
  if(!hit)return;
- if(kind==='stars'||kind==='halo'){
+ if(kind==='stars'||kind==='halo'||kind==='highfive'){
    // Genuine two-cat high five: raised front paws meet once, creating
    // one visible celebratory burst rather than identical claw streaks.
    ctx.save();ctx.globalAlpha=hit*.82;
