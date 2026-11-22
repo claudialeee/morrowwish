@@ -12,6 +12,11 @@ img.decoding='async';
 // into the playable arena instead of drawing a hard-edged rectangular card.
 const cinematicLayer=document.createElement('canvas');
 const cinematicCtx=cinematicLayer.getContext('2d',{alpha:true});
+// Portrait phones need tall scenery without cropping either cat from the
+// original wide painting. This separate focus is a soft extension of the
+// SAME storyboard, not a new card, stretched cat, or duplicated pair.
+const portraitFocus=document.createElement('canvas');
+const portraitFocusCtx=portraitFocus.getContext('2d',{alpha:true});
 let ready=false,broken=false,originalReady=false;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -275,6 +280,32 @@ function featherScenery(g,W,H){
  g.fillStyle=fade;g.fillRect(0,0,W,H);
  g.restore();
 }
+function drawPortraitStory(g,W,H,frame,tier,cam,scale){
+ // Use the full 16:9 original in a wide, unbroken central composition,
+ // while the cat-free, matching scene extends across the portrait viewport.
+ // A little side overscan keeps both cats prominent without stretching.
+ const width=W*1.17,height=width*9/16;
+ const x=(W-width)/2,y=(H-height)/2-H*.014;
+ const dpr=scale;
+ const pw=Math.max(1,Math.round(width*dpr)),ph=Math.max(1,Math.round(height*dpr));
+ if(portraitFocus.width!==pw||portraitFocus.height!==ph){
+  portraitFocus.width=pw;portraitFocus.height=ph;
+ }
+ const pctx=portraitFocusCtx;
+ pctx.setTransform(dpr,0,0,dpr,0,0);
+ pctx.clearRect(0,0,width,height);
+ pctx.save();
+ pctx.translate(width*.5+cam.dx*.18,height*.5+cam.dy*.08);
+ pctx.rotate(cam.angle*.16);
+ pctx.translate(-width*.5,-height*.5);
+ sourceCover(pctx,cellRect(frame,tier),0,0,width,height,
+   Math.min(1.065,Math.max(1.005,cam.zoom*.96)),0,0,1,null,tier);
+ pctx.restore();
+ // The perimeter melts into the clean tall watercolor scenery; no 16:9
+ // rectangle, black bars, second cat outline, or blurred pair of ghosts.
+ featherScenery(pctx,width,height);
+ g.drawImage(portraitFocus,x,y,width,height);
+}
 function draw(ctx,W,H,seq,lookup){
  if(!seq||seq.t<=0)return false;
  if(!ready)return true; // avoid flashing the rejected procedural kittens during load
@@ -286,9 +317,15 @@ function draw(ctx,W,H,seq,lookup){
  // alternate rendering mode; NEVER draw both sets of cats together.
  const originalArt=seq.originalArt!==false;
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
- const opacity=smooth(p/.028)*(1-smooth((p-.965)/.035));
+ // A long, eased cinematic dissolve: the painted world grows into view,
+ // stays present for the choreography, and releases back to live combat
+ // BEFORE the separate elemental hit. No instantaneous pop-in/out.
+ const opacity=thumbnail?1:smooth(p/.19)*(1-smooth((p-.70)/.23));
  if(opacity<=0)return true;
- const sw=Math.min(W,H*16/9),sh=sw*9/16,x=(W-sw)/2,y=(H-sh)/2;
+ const portrait=!thumbnail&&W/H<.90;
+ const sw=thumbnail?Math.min(W,H*16/9):W;
+ const sh=thumbnail?sw*9/16:H;
+ const x=thumbnail?(W-sw)/2:0,y=thumbnail?(H-sh)/2:0;
  const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));
  const actorA=actors[0],actorB=actors[1];
  const frame=regions[key];
@@ -319,8 +356,12 @@ function draw(ctx,W,H,seq,lookup){
  // Extend ONLY scenery past the camera viewport. Rotated camera tracks
  // must never expose white triangular edges or a tilted image rectangle.
  // The character actors retain their original uncropped scale.
+ // Landscape/desktop: cover the entire battle canvas with the full
+ // original 63-scene painting. Portrait: cover ALL of the phone with its
+ // matching cat-free scenery first; the complete original pair is overlaid
+ // as a soft central focus, without sacrificing either cat to a 16:9 crop.
  sourceCover(ctx,cellRect(frame,tier),-sw*.13,-sh*.13,sw*1.26,sh*1.26,
-   Math.min(cam.zoom,1.16),0,0,1,originalArt?null:key,tier,actorA,actorB);
+   Math.min(cam.zoom,1.16),0,0,1,(originalArt&&!portrait)?null:key,tier,actorA,actorB);
  // Paint all large magical symbols, circles and sparkles BEHIND the cats.
  // Never overlay even translucent giant rings on their faces and ears.
  if(!thumbnail&&dual>.09){
@@ -343,6 +384,7 @@ function draw(ctx,W,H,seq,lookup){
  // Gallery thumbnails retain every pixel of the 63 original paintings.
  // Only the in-battle animated cut-in fades at the four perimeter edges.
  if(!thumbnail)featherScenery(ctx,sw,sh);
+ if(originalArt&&portrait)drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr);
  // The restored original artwork ALREADY contains both illustrated cats.
  // Do not paste a second pair on it. For breed-specific alternate scenes,
  // paint the two selected transparent watercolor cats AFTER the matte.
@@ -351,8 +393,12 @@ function draw(ctx,W,H,seq,lookup){
   ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
   ctx.rotate(cam.angle);
   ctx.translate(-sw*.5,-sh*.5);
+  // Breed-matched alternative uses compact, intact watercolor characters
+  // on tall phones rather than growing them to >600px and cropping tails.
+  const actorH=portrait?Math.min(sh,sw*.69):sh;
+  if(portrait)ctx.translate(0,(sh-actorH)*.51);
   const painted=window.CatBondDuoBreedActors?.draw?.(
-    ctx,sw,sh,[actorA,actorB],key,p,tier);
+    ctx,sw,actorH,[actorA,actorB],key,p,tier);
   if(!painted){ctx.restore();ctx.restore();return true;}
   ctx.restore();
  }
@@ -414,6 +460,8 @@ window.CatBondPremiumCinematics={
  get originalPaintingSource(){return img.src},
  get originalPaintingDefault(){return true},
  get restoredOriginalFrameCount(){return 63},
+ get fullBleedResponsive(){return true},
+ get portraitComposition(){return 'clean-matching-scene-plus-feathered-original-63'},
  get characterSource(){return window.CatBondDuoBreedActors?.catSource||''}
 };
 })();
