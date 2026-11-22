@@ -164,7 +164,10 @@ try{
       },{type,x,y});
     };
     await finger('touchstart',680,195);await finger('touchend',680,195);
-    await lp.waitForTimeout(300);
+    // Canvas texture decode and first landscape resize can stall a few
+    // frames on CI. Verify actual movement, not a fixed 300ms clock that
+    // measures rendering startup rather than touch navigation.
+    await lp.waitForFunction(x=>window.WorldMap?.view?.px>x+8,start.px,{timeout:2600});
     const walked=await lp.evaluate(()=>window.WorldMap.view);
     assert.ok(walked.px>start.px+8,'Tap did not move the cat: '+JSON.stringify({start,walked}));
     await finger('touchstart',650,180);
