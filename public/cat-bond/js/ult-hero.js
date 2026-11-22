@@ -129,7 +129,10 @@ function draw(ctx,b,W,H){
  if(cat){
   ctx.save();ctx.globalAlpha=alpha;ctx.shadowColor=edge;ctx.shadowBlur=19;
   const scale=Math.min(3.8,Math.max(2.15,Math.min(W*.62,H*.46)/90));
-  (window.CatMotion?.draw||window.CatArt?.drawCat)?.(ctx,cx,cy+R*.48,{
+  // CatMotion caps artwork at 0.86 world-scale and shifts its foot baseline.
+  // Hero focus intentionally renders the SAME illustrated CatArt directly at
+  // 2–4x scale; it never changes combat/world cat sizing.
+  window.CatArt?.drawCat?.(ctx,cx,cy+R*.10,{
     species:cat,scale,pose:h.element==='fire'||h.element==='elec'?'play':'idle',
     face:1,t:b.t,motion:0,stride:0,mood:'happy'
   });ctx.restore();
