@@ -154,11 +154,14 @@ export function tkOverlay(base,state,status){
   if(!state?.posts?.length)return result;
   const keep=(result.metricScope?.verifiedPosts||[]).filter(p=>p.platform!=="tiktok");
   const previously=(result.metricScope?.verifiedPosts||[]).filter(p=>p.platform==="tiktok");
-  const combined=new Map(previously.map(p=>[p.url,p]));
+  // TikTok returns different share_url handles for the same video ID.
+  // Identify a post by provider ID, never by URL or username presentation.
+  const postKey=p=>/\/video\/(\d{15,22})/.exec(p.url||"")?.[1]||p.url;
+  const combined=new Map(previously.map(p=>[postKey(p),p]));
   for(const post of state.posts){
-    const prior=combined.get(post.url);
-    // Reconcile provider readings without regressing a newer visible count.
-    combined.set(post.url,prior?.views!=null&&post.views!=null
+    const key=postKey(post),prior=combined.get(key);
+    // Preserve a more recent positive count if a provider cache regresses.
+    combined.set(key,prior?.views!=null&&post.views!=null
       ?{...post,views:Math.max(prior.views,post.views)}:post);
   }
   const posts=[...combined.values()];
