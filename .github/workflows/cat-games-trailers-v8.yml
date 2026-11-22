@@ -1,5 +1,5 @@
 name: Rerecord Two Updated Cat Game Trailers V8 - REVIEW ONLY
-# Fresh capture for BOTH updated games; no prior footage reused. Syntax checked before re-run.
+# Re-record all old and new shots from current games; verify latest duo-gallery selectors.
 on:
   push:
     branches: [main]
