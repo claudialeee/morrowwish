@@ -1099,10 +1099,21 @@ const UI = {
     const S = window.Skills; if (!S) { this.openCatDetail(cat); return; }
     S.ensureLoadout(cat);
     const learn = S.learnableSkills(cat) || [];          // skills actually unlocked
-    // Slot 0 (普攻) is the FIXED innate cat-toy toss — not a chooseable skill — so it's
-    // shown as a fixed info row, not an editable slot. The player equips 技能1/技能2/必杀.
+    // Slot 0 (普攻) defaults to the innate cat-toy toss, but the player MAY slot a
+    // low-power attack skill (incl. 烈焰猫爪) as their left-click basic. Only
+    // basic-eligible skills show up as options; the toy toss is always available.
     const en0 = window.MorrowwishI18n?.get?.() !== 'zh';
-    const basicRow = `<div class="sk-slot"><div class="sk-slot-label">${en0?'Basic':'普攻'}<div class="tiny">${en0?'Toss fish / yarn':'扔小鱼干 / 毛线团'}</div></div><div class="sk-opts"><span class="tiny">${en0?'Innate — always your left-click poke':'固有普攻 · 始终是你的左键攻击'}</span></div></div>`;
+    const icon0 = sk => this.game.skillIcon ? this.game.skillIcon(sk) : '🐾';
+    const kindName0 = { melee: '近战', projectile: '远程', dash: '突进', pounce: '飞扑', chain: '连锁' };
+    const basicOpts = (S.basicChoices ? S.basicChoices(cat) : []);
+    const curBasic = cat.loadout[0] ? S.skillById(cat.loadout[0]) : null;
+    const toyOn = !curBasic ? 'on' : '';
+    const toyChip = `<button class="sk-chip ${toyOn}" data-slot="0" data-sk="__toy__" title="${en0?'Innate toy toss':'固有扔玩具'}">🐟 ${en0?'Toy toss':'扔玩具'}<span class="tiny">${en0?'innate':'固有'}</span></button>`;
+    const basicChips = toyChip + basicOpts.map(s => {
+      const on = curBasic && s.id === curBasic.id ? 'on' : '';
+      return `<button class="sk-chip ${on}" data-slot="0" data-sk="${s.id}" title="${s.desc || ''}">${icon0(s)} ${s.name}<span class="tiny">${kindName0[s.kind] || ''}·${this.game.elemIcon(s.element)}</span></button>`;
+    }).join('');
+    const basicRow = `<div class="sk-slot"><div class="sk-slot-label">${en0?'Basic':'普攻'}<div class="tiny">${curBasic ? curBasic.name : (en0?'toy toss':'扔玩具')}</div></div><div class="sk-opts">${basicChips}</div></div>`;
     const slots = [
       { i: 1, label: '技能1', kinds: ['melee', 'projectile', 'dash', 'leap', 'pounce', 'chain', 'buff', 'heal', 'aoe', 'beam'] },
       { i: 2, label: '技能2', kinds: ['melee', 'projectile', 'dash', 'leap', 'pounce', 'chain', 'buff', 'heal', 'aoe', 'beam'] },
@@ -1129,7 +1140,16 @@ const UI = {
       <div class="btn-row"><button class="btn" id="sk-trainer">🎓 ${en0?'Learn new skills':'学习新技能'}</button><button class="btn gold" id="sk-back">← 返回</button></div>`);
     this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
       const slotI = +b.dataset.slot, skId = b.dataset.sk;
-      cat.loadout = cat.loadout.slice(); cat.loadout[slotI] = skId;
+      cat.loadout = cat.loadout.slice();
+      // Slot 0 basic: "__toy__" = revert to the innate toy toss (null).
+      if (slotI === 0 && skId === '__toy__') {
+        cat.loadout[0] = null;
+        cat.skillEdited = true;
+        State.save(); this.openSkillEditor(cat);
+        this.game.toast(en0 ? 'Basic: toy toss' : '普攻：扔玩具');
+        return;
+      }
+      cat.loadout[slotI] = skId;
       cat.skillEdited=true;
       State.save(); this.openSkillEditor(cat);
       this.game.toast('已装备 ' + (S.skillById(skId) || {}).name);

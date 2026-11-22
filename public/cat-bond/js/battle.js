@@ -658,6 +658,9 @@ class CaptureBattle {
       // instant alpha-strike of every ability. Basic (poke) is ready; Q/E wind up.
       cd: { basic: 0, q: 1.6, e: 2.4 },
       // the two active skills this cat actually knows (from its element loadout)
+      // basicSkill: slot 0 may hold a low-power attack skill chosen as the basic
+      // (incl. 烈焰猫爪); null = the innate cat-toy toss. Only accept basic-eligible.
+      basicSkill: (loadout && loadout[0] && Skills.basicEligible?.(skillOf(loadout[0]))) ? skillOf(loadout[0]) : null,
       qSkill: loadout ? skillOf(loadout[1]) : null,
       eSkill: loadout ? skillOf(loadout[2]) : null,
       ultSkill: loadout ? skillOf(loadout[3]) : null,
@@ -1216,6 +1219,22 @@ class CaptureBattle {
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
     if (f === this.me() && this._obs) this._obs.fires++;    // aggression signal
     if (f === this.me()) this._coachAttacked = (this._coachAttacked || 0) + 1;   // coach: step 2
+    // CHOSEN BASIC SKILL: if the player slotted a low-power attack as their basic
+    // (incl. 烈焰猫爪), fire THAT as the left-click attack instead of the toy toss.
+    // It keeps a short, basic-like cadence (floored CD) and still marks itself isBasic
+    // so the finisher-on-marked / weaker-on-unmarked basic economy is preserved.
+    if (f.basicSkill) {
+      const sk = f.basicSkill;
+      f.cd.basic = Math.max(this.moves[0].cd, sk.cd * 0.6) * (f.bond.cdReduction || 1);
+      const col = this.elemColor(sk.element || f.element);
+      const pow = (sk.power || 1) * (f.damageBoostT > 0 ? 1.25 : 1) * (f.weakened ? 0.5 : 1);
+      this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
+      if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
+        window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
+      }
+      this.gainUlt(2);
+      return;
+    }
     f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;

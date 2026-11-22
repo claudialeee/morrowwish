@@ -560,6 +560,26 @@
     return out;
   }
 
+  // BASIC-ELIGIBLE: a skill the player may slot as their LEFT-CLICK basic attack.
+  // The basic should stay light + spammable, so only low/mid-power attack skills
+  // qualify — NOT heavy hitters, wind-up casts, channels, ults or gated signatures.
+  // Threshold 1.35 intentionally INCLUDES 烈焰猫爪/炽爪 (emberClaw, power 1.3) per
+  // design, while excluding 彗星爪 1.7 / 潮汐咬 1.5 and the like.
+  const BASIC_MAX_POWER = 1.35;
+  function basicEligible(sk){
+    if(!sk)return false;
+    const atk=['melee','projectile','dash','pounce','chain'];   // no leap/aoe (too splashy for a basic)
+    return atk.includes(sk.kind)
+      && (sk.ultCost||0)===0
+      && (sk.power||0)>0 && (sk.power||0)<=BASIC_MAX_POWER
+      && !sk.heavy && !sk.windup && !sk.channel && !sk.unlock;   // light, instant, innate only
+  }
+  // The pool of basic-eligible skills a given cat can actually equip (already-learned
+  // / innate only — mirrors learnableSkills). UI reads this to populate the basic slot.
+  function basicChoices(cat){
+    return learnableSkills(cat).filter(basicEligible);
+  }
+
   // Slots have strict gameplay meaning: [basic, Q, E, ultimate].
   // Earlier builds filled the first four arbitrary skills and accidentally
   // put an ultimate in Q/E; every cat then appeared to have the same attacks.
@@ -610,6 +630,11 @@
     }
     const next=Array.from({length:4},(_,idx)=>{
       const id=current[idx],sk=id?skillById(id):null;
+      // Slot 0 (basic): null (=innate toy toss) is valid, else must be basic-eligible.
+      if(idx===0){
+        if(id==null)return null;
+        return (sk&&basicEligible(sk)&&available.has(id))?id:defaults[0];
+      }
       const legal=idx===3?sk&&sk.ultCost>0:sk&&sk.ultCost===0;
       return legal&&available.has(id)?id:defaults[idx];
     });
@@ -814,6 +839,7 @@
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---
     SIGNATURE_SKILL, SPLASH_ELEMENT, learnableSkills, defaultLoadout, ensureLoadout,
+    basicEligible, basicChoices,
     awakenFirstSkill, progressionHint,
     // --- gated skill-learning (付费/等级/亲密/品种/领悟) ---
     QUEST_CHECKS, questProgress, questMet, gateMet, hasLearned, isGated,
