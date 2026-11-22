@@ -584,6 +584,13 @@
     '× 换块空草坪': '× Choose an empty patch',
     '选择位置 · 点击草坪预览': 'Choose a spot · Tap grass to preview',
     ' · 可以建造': ' · Ready to build',
+    ' · 轻触即建造／拖动选位置': ' · Tap to build / drag to move',
+    ' · ✓ 可建造': ' · ✓ Ready',
+    ' · × 有遮挡': ' · × Blocked',
+    ' · 点击草坪直接建造': ' · Click the grass to build',
+    '✓ 点击建造': '✓ Tap to build',
+    '点击草坪直接建造 · 拖动调整位置': 'Tap the grass to build · Drag to adjust',
+
     ' · 此处有遮挡': ' · Space is occupied',
     '点击草坪直接建造 · 无需确认': 'Tap the grass to build immediately · No confirmation needed',
     '此处无法建造': 'Can\'t build here',
