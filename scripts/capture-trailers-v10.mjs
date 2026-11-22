@@ -155,9 +155,7 @@ try{
   // V10: Capture the actual sudden disagreement that follows petting in the yard.
   // A capture-only save fixture puts the cats one pet away from the game's
   // existing ninth-interaction trigger, not a fabricated story overlay.
-  // Preserve the real event and its buttons, but frame it over the actual
-  // garden instead of a giant blank mobile modal in the promo-only capture.
-  await page.addStyleTag({content:'#panel.open:has(.duo-quarrel-story){top:68px!important;bottom:76px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px!important}#panel.open>.card:has(.duo-quarrel-story){height:auto!important;min-height:0!important;max-height:410px!important;flex:0 0 auto!important;overflow:visible!important;align-self:center!important}'});
+  // Film the game using its shipped full-size storybook CSS, without overrides.
   const quarrel=await page.evaluate(()=>{
     UI.closeAll();window.__V4_CAMERA__.show(false);
     window.__game.scene='yard';window.__game.showYardChrome();
@@ -178,11 +176,23 @@ try{
       hasPending:pending.some(p=>[p.a.uid,p.b.uid].sort().join(':')===
         [duo[0].uid,duo[1].uid].sort().join(':')),
       nativePanel:!!document.querySelector('#panel.open .duo-quarrel-story'),
-      button:!!document.getElementById('quarrel-fix')};
+      button:!!document.getElementById('quarrel-fix'),
+      portraits:[...document.querySelectorAll('#panel.open .duo-quarrel-cats canvas')].filter(c=>{
+        const pixels=c.getContext('2d')?.getImageData(0,0,c.width,c.height)?.data||[];
+        return pixels.length&&pixels.some((p,i)=>i%4===3&&p>0);
+      }).length,
+      story:document.querySelector('#panel.open .duo-quarrel-vignette')?.innerText||'',
+      fits:(()=>{
+        const card=document.querySelector('#panel.open>.card:has(.duo-quarrel-story)');
+        const box=card?.getBoundingClientRect(),panel=document.querySelector('#panel.open')?.getBoundingClientRect();
+        return !!box&&!!panel&&box.width>=290&&box.width<=panel.width+1
+          &&box.top>=panel.top-2&&box.bottom<=panel.bottom+2
+          &&card.scrollWidth<=card.clientWidth+2;
+      })()};
   });
-  if(quarrel.count!==9||!quarrel.sulky||!quarrel.hasPending||!quarrel.nativePanel||!quarrel.button)
+  if(quarrel.count!==9||!quarrel.sulky||!quarrel.hasPending||!quarrel.nativePanel||!quarrel.button||quarrel.portraits!==2||!quarrel.story||!quarrel.fits)
     throw Error('Real persistent two-cat quarrel not shown '+JSON.stringify(quarrel));
-  await mark('duo-quarrel',3700);
+  await mark('duo-quarrel',6550);
   await page.screenshot({path:'public/promo/cat-bond/v10-quarrel-proof.png'});
   await page.locator('#quarrel-fix').click();
   await page.waitForSelector('#duo-soothe');
