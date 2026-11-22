@@ -616,20 +616,29 @@ const UI = {
     if(!a||!b)return this.openBondPanel();
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const esc=x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[ch]));
-    this.panel(`<span class="card-close">×</span><div class="duo-quarrel-story">
-      <div class="duo-quarrel-icon" aria-hidden="true">💢</div>
-      <h2>${en?'Two little cats had a disagreement':'两只小猫闹别扭了'}</h2>
-      <p><strong>${esc(State.catName(a))}</strong> ${en?'and':'和'} <strong>${esc(State.catName(b))}</strong>
-       ${en?'are giving each other the cold shoulder.':'现在正互相不理睬。'}</p>
-      <p>${en?'They need a little attention. You can help them make up for free and earn +6 trust.':
-        '别担心，在「双猫搭档」里点「哄一哄」，就能免费让它们和好，并增加 6 点默契。'}</p>
-      <div class="btn-row">
-        <button type="button" id="quarrel-fix" class="btn gold">${en?'Help them make up':'去哄一哄'}</button>
-        <button type="button" id="quarrel-later" class="btn ghost">${en?'Later':'稍后处理'}</button>
+    this.panel(`<span class="card-close">×</span><section class="duo-quarrel-story" aria-label="${en?'A little cat story':'双猫小故事'}">
+      <span class="duo-quarrel-eyebrow">${en?'A LITTLE STORY FROM THE GARDEN':'庭院里的双猫小故事'}</span>
+      <h2>${en?'The Great Yarn-Ball Dispute':'一颗毛线球引发的小别扭'}</h2>
+      <div class="duo-quarrel-cats" aria-label="${en?'The two cats':'两只小猫'}">
+        <figure><canvas data-duo-quarrel-cat="a" width="116" height="116" aria-hidden="true"></canvas><figcaption>${esc(State.catName(a))}</figcaption></figure>
+        <span class="duo-quarrel-heart" aria-hidden="true">↯</span>
+        <figure><canvas data-duo-quarrel-cat="b" width="116" height="116" aria-hidden="true"></canvas><figcaption>${esc(State.catName(b))}</figcaption></figure>
       </div>
-      <p class="tiny">${en?'You can return using the pink duo notice in the garden.':
-        '稍后还可以点击庭院里的粉色搭档提示，随时回来处理。'}</p>
-    </div>`);
+      <div class="duo-quarrel-vignette">
+        <p>${en?'A yarn ball rolls between them. Both pounce at once, neither wants to share—and now they sit back-to-back.':'毛线球滚到两只小猫中间，它们同时扑了过去。谁也不肯让步，最后竟背对背生起了闷气。'}</p>
+      </div>
+      <p class="duo-quarrel-help">${en?'Can you help these two make up? +6 bond when they reconcile.':'去哄哄它们吧！和好后，默契还能提升 6 点。'}</p>
+      <div class="btn-row duo-quarrel-actions">
+        <button type="button" id="quarrel-fix" class="btn gold">${en?'Help them make up':'去哄一哄'}</button>
+        <button type="button" id="quarrel-later" class="btn ghost">${en?'Later':'稍后再说'}</button>
+      </div>
+      <p class="duo-quarrel-footnote">${en?'The pink garden notice will bring you back to this story.':'庭院里的粉色搭档提示会保留这件小事。'}</p>
+    </section>`);
+    // Portraits must use the player's actual cats, not generic emoji or map art.
+    for(const [i,cat] of [a,b].entries()){
+      const canvas=document.querySelectorAll('#panel.open [data-duo-quarrel-cat]')[i];
+      if(canvas)CatArt.renderCatThumb(canvas,GameData.speciesById(cat.species),cat);
+    }
     document.getElementById('quarrel-fix').onclick=()=>{
       this._duoPicked=[a.uid,b.uid];
       this.openBondPanel();
