@@ -136,6 +136,15 @@ new vm.Script(i18nSrc, { filename: 'i18n.js' });
 vm.runInContext(i18nSrc, sandbox, { filename: 'i18n.js' });
 
 assert.ok(sandbox.window.GameData, 'GameData global present');
+// Every breed's lore must be translated in English battle, starter and dex
+// panels, not just its displayed nickname. Seven new species were missing.
+const allBreeds=sandbox.window.GameData.SPECIES;
+assert.equal(allBreeds.length,32,'full breed roster remains intact');
+for(const breed of allBreeds){
+  assert.equal(typeof sandbox.window.CatBondI18n?.dict?.[breed.desc],'string',
+    'English breed description missing for '+breed.id);
+}
+
 // WARD-ART REGRESSION: the shield rim must be at the kitten's PLANTED PAWS,
 // not 26px too high across every device / ally / enemy. Growth multiplies
 // both the rendered cat and shield by exactly the same scale.
