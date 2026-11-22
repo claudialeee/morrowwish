@@ -900,21 +900,35 @@ class CaptureBattle {
     const meleeReach=Math.max(...skills.filter(isMelee).map(sk=>(
       sk.kind==='melee'?76:sk.kind==='dash'?122:sk.kind==='leap'?165:152)),0);
     const hasMelee=skills.some(isMelee), hasRanged=skills.some(isRanged);
+    // Combat positioning is owned by the CAT'S BUILD, not by whichever skill
+    // happens to be slotted in Q/E. A tank/fighter/assassin may equip a ranged
+    // poke without turning into a backline kiter.
+    const build=f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat);
+    const frontliner=build==='tank'||build==='fighter'||build==='assassin';
     // Is a melee/gap-closer skill READY right now? (drives hit-and-run: commit when the
     // skill is up, kite out while it recharges instead of hugging and eating free hits).
     const meleeReady=['q','e'].some(slot=>{
       const sk=slot==='q'?f.qSkill:f.eSkill;
       return isMelee(sk) && (f.cd?.[slot]||0)<=0;
     });
-    if(hasMelee&&!hasRanged){
-      // BRAWLER hit-and-run (sim-confirmed fix): skill READY → commit at reach with a
-      // modest inner standoff (48, not the old glued-at-0 that made it hug+tank); skill
-      // ON COOLDOWN → widen the band so it kites OUT, waits for CD, then re-commits —
-      // no more "charge in and tank in place" (was min=0 → retreat% flat 0, 25-77% of
-      // damage eaten hugging). Harness after: hug 19.7/33%→3.7/5%, dmgInHug→0/10.7%.
+    if(frontliner){
+      // Keep frontline breeds at contact range even with ranged Q/E or a
+      // defensive-only kit. Ranged skills are opportunistic pokes WHILE closing.
+      // When a melee special is on cooldown, allow a little breathing room but
+      // NEVER fall back to a 190–230px ranged orbit.
+      role=build==='tank'?'tank':build==='assassin'?'assassin':'melee';
+      const readyReach=hasMelee&&meleeReady
+        ?Math.min(96,Math.max(70,meleeReach*.77))
+        :build==='tank'?96:build==='assassin'?82:90;
+      min=build==='tank'?45:build==='assassin'?32:38;
+      max=readyReach;
+      if(hasMelee&&!meleeReady){min+=22;max+=20;}
+    }else if(hasMelee&&!hasRanged){
+      // Explicit backline builds with a melee-only loadout still need to close
+      // enough to land those skills. Reposition briefly between skill casts.
       role='melee';
-      if(meleeReady){ min=38; max=Math.max(68,meleeReach*.89); }     // skill up → commit to reach
-      else { min=Math.max(120,meleeReach*1.15); max=Math.max(190,meleeReach*1.7); } // skill down → kite out & wait (don't hug)
+      if(meleeReady){min=38;max=Math.max(68,Math.min(110,meleeReach*.89));}
+      else {min=96;max=150;}
     }else if(hasRanged&&!hasMelee){
       // kiter: sit at 0.55–0.85 of the projectile reach, flee if closer, seek if farther
       role='ranged';
