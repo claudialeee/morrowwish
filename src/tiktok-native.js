@@ -6,7 +6,19 @@ const TK_API="https://open.tiktokapis.com";
 const TK_GAMES=["cat-bond","pawsibly-innocent","tiny-town","elsewhere","flip-dash","parcel-panic","pocket-aquarium"];
 const TK_MAX_AGE_MS=15*60*1000;
 const TK_FIELDS="id,create_time,share_url,video_description,title,view_count,like_count,comment_count,share_count";
-const TK_CUTOFF="2026-11-21";
+const TK_CUTOFF="2026-11-22";
+// Only the owner's seven explicitly approved launch promos belong in this
+// dashboard. A similarly titled older/future post is never auto-imported.
+const TK_APPROVED={
+  "cat-bond":"7711071401913896206",
+  "pawsibly-innocent":"7711071409966943502",
+  "tiny-town":"7711071395941240095",
+  "elsewhere":"7711071458256112909",
+  "flip-dash":"7711071406368312589",
+  "parcel-panic":"7711071416099032333",
+  "pocket-aquarium":"7711071765379829005"
+};
+const tkApprovedPost=p=>p&&TK_APPROVED[p.game]===/\/video\/(\d{15,22})/.exec(p.url||"")?.[1]&&p.publishedAt>=TK_CUTOFF;
 const TK_ENCODER=new TextEncoder();
 
 async function tkDb(env){
@@ -103,7 +115,7 @@ export function tkPost(video){
   const date=new Date(Number(video.create_time)*1000);
   if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)<TK_CUTOFF)return null;
   const game=tkGame(video);
-  if(!game)return null;
+  if(!game||TK_APPROVED[game]!==String(video.id))return null;
   const fallback="https://www.tiktok.com/@morrowwishgames/video/"+video.id;
   let url=fallback;
   try{
@@ -146,19 +158,20 @@ export function tkOverlay(base,state,status){
   const row=result.platforms.find(p=>p.id==="tiktok");
   if(!row)return result;
   if(state?.checkedAt)result.capturedAt=state.checkedAt.slice(0,10);
+  const approvedStatePosts=Array.isArray(state?.posts)?state.posts.filter(tkApprovedPost):[];
   result.nativeTikTok={status,source:"tiktok-display-api-v2",
     checkedAt:state?.checkedAt||null,
-    postMetricsCount:state?.posts?.length||0,
+    postMetricsCount:approvedStatePosts.length,
     feedCount:state?.feedCount??null,
     unmatchedCount:state?.unmatchedCount??null};
-  if(!state?.posts?.length)return result;
+  if(!approvedStatePosts.length)return result;
   const keep=(result.metricScope?.verifiedPosts||[]).filter(p=>p.platform!=="tiktok");
-  const previously=(result.metricScope?.verifiedPosts||[]).filter(p=>p.platform==="tiktok");
+  const previously=(result.metricScope?.verifiedPosts||[]).filter(p=>p.platform==="tiktok"&&tkApprovedPost(p));
   // TikTok returns different share_url handles for the same video ID.
   // Identify a post by provider ID, never by URL or username presentation.
   const postKey=p=>/\/video\/(\d{15,22})/.exec(p.url||"")?.[1]||p.url;
   const combined=new Map(previously.map(p=>[postKey(p),p]));
-  for(const post of state.posts){
+  for(const post of approvedStatePosts){
     const key=postKey(post),prior=combined.get(key);
     // Preserve a more recent positive count if a provider cache regresses.
     combined.set(key,prior?.views!=null&&post.views!=null
