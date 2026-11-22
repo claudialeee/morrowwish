@@ -2,7 +2,7 @@
 const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent","cat-bond"]);
 const route=location.pathname.split("/").filter(Boolean)[0];
 const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
-const disabled=!!(route&&!allowed.has(route));
+const disabled=!!(route&&!allowed.has(route)) || (route==='cat-bond' && window.CatBondPlatform?.firstPartyAnalytics===false);
 const site=window.ARCADE_GAME_ID?"legacy":"arcade";
 const collector=window.ARCADE_COLLECTOR||"/api/session";
 const ref=document.referrer;
@@ -19,6 +19,7 @@ if(!utmSource&&/(^|\.)itch\.(io|zone)$/i.test(referrer)){
 // Preserve first campaign attribution on same-site hops (homepage -> game -> replay).
 // Avoid carrying stale campaigns into a completely separate visit.
 try{
+ if(!disabled){
  const key="morrowwish-session-campaign";
  if(ref&&source==="internal"&&!utmSource&&!utmCampaign){
   const saved=JSON.parse(sessionStorage.getItem(key)||"null");
@@ -33,9 +34,10 @@ try{
  }else if(source!=="internal"||utmSource||utmCampaign){
   sessionStorage.setItem(key,JSON.stringify({entrySource:source,referrer,utmSource,utmMedium,utmCampaign,at:Date.now()}));
  }
+ }
 }catch{}
 let visitor="",firstSeen="",persistent=false;
-try{if(navigator.globalPrivacyControl!==true&&navigator.doNotTrack!=="1"){
+try{if(!disabled&&navigator.globalPrivacyControl!==true&&navigator.doNotTrack!=="1"){
 visitor=localStorage.getItem("arcade-visitor-v2")||"";
 firstSeen=localStorage.getItem("arcade-visitor-day-v2")||"";
 if(!/^[0-9a-f-]{20,64}$/i.test(visitor)){visitor=globalThis.crypto?.randomUUID?.()||"";firstSeen=day;localStorage.setItem("arcade-visitor-v2",visitor);localStorage.setItem("arcade-visitor-day-v2",firstSeen);}
