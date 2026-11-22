@@ -58,7 +58,7 @@ try{
         b.vfx.impactType(enemy.x,enemy.y,tag,{color:'#fff0be'});
         if(!b.vfx.fx.length)throw Error('Missing hit-feel '+tag);
        }else{
-        const sk=tag==='protect'?Skills.skillById('guardStance'):
+        const sk=(tag==='protect'||tag==='guardBreak')?Skills.skillById('guardStance'):
           Skills.skillById(tag);
         if(!sk)throw Error('Unknown support skill '+tag);
         if(tag==='guardBreak'){
