@@ -1,0 +1,93 @@
+name: Pawsibly Innocent Cliffhanger Trailer V11 - REVIEW ONLY
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pawsibly-teaser-v11.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: morrowwish-pawsibly-cliffhanger-v11
+  cancel-in-progress: false
+jobs:
+  render-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Verify FFmpeg and edit syntax
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+          node --check scripts/render-pawsibly-teaser-v11.mjs
+      - name: Edit real gameplay into anti-spoiler cliffhanger
+        run: node scripts/render-pawsibly-teaser-v11.mjs
+      - name: Independent narrative and encoding QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          video=public/promo/pawsibly-innocent/trailer-v11-20261121.mp4
+          test -s "$video"
+          test -s public/promo/pawsibly-innocent/trailer-v11-20261121.jpg
+          for n in 1 2 3; do test -s "public/promo/pawsibly-innocent/v11-review-$n.jpg"; done
+          test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$video")" = '1080x1920'
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$video")" = audio
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const m=JSON.parse(fs.readFileSync('public/promo/v11-review.json','utf8'));
+          const v10=JSON.parse(fs.readFileSync('public/promo/v10-review.json','utf8'));
+          const audit=JSON.parse(fs.readFileSync('public/promo/readability-audit-v11.json','utf8'));
+          if(m.version!=='V11'||m.trailers.length!==7||m.socialAutopublish!==false||
+             m.trailers.some(t=>t.approved||t.published))throw Error('V11 review-only gate broken');
+          const p=m.trailers.find(x=>x.slug==='pawsibly-innocent');
+          const scenes=p?.shots.map(x=>x.scene);
+          const expected=['narrow-pursuit','narrow-achievement','fish-tease','room-kitchen',
+                          'room-library','room-garden','caught-attempt'];
+          if(!p||JSON.stringify(scenes)!==JSON.stringify(expected))
+            throw Error('Cliffhanger sequence changed: '+JSON.stringify(scenes));
+          if(p.duration<13||p.duration>16||p.shots.some(s=>s.scene==='escape-attempt')||
+             p.shots.some(s=>s.source==='cover')||p.shots.at(-1).seconds<2.6)
+            throw Error('Spoiler/ending risk in new cut');
+          if(p.shots.find(s=>s.scene==='narrow-achievement').seconds<3.2)
+            throw Error('Native achievement must be readable');
+          if(audit.scenes.some(s=>!s.passed))throw Error('Reading audit failed');
+          for(const old of v10.trailers.filter(t=>t.slug!=='pawsibly-innocent')){
+            const current=m.trailers.find(t=>t.slug===old.slug);
+            if(current.video!==old.video||current.poster!==old.poster)
+              throw Error('Unrequested game changed '+old.slug);
+          }
+          if(!fs.existsSync('public'+p.video)||!fs.existsSync('public'+p.poster))
+            throw Error('New review media absent');
+          console.log('V11 QA passed: 14s disconnected shots, authentic escape achievement, caught final frame, no solution route or end card');
+          NODE
+      - name: Save new video and seven-game review manifest, never release to social
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/promo/pawsibly-innocent/trailer-v11-20261121.mp4
+          git add public/promo/pawsibly-innocent/trailer-v11-20261121.jpg
+          git add public/promo/pawsibly-innocent/v11-review-*.jpg
+          git add public/promo/v11-review.json public/promo/readability-audit-v11.json
+          git diff --cached --quiet && exit 0
+          git config user.name morrowwish-promo-bot
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'qa(promo): suspense-only Pawsibly Innocent V11 teaser; real caught ending'
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Request existing Cloudflare production deployment for new review MP4
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run deploy-cloudflare.yml --ref main
+          echo 'Requested official Cloudflare deploy; no Vercel changes and no social posting.'
