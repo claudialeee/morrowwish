@@ -28,6 +28,7 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/cat-bond-duo-memory-server.log 2>&1 &
           sleep 2
           node scripts/cat-bond-lazy-memory-smoke.mjs
+          node scripts/cat-bond-premium-motion-panel-smoke.mjs
           node scripts/cat-bond-locked-duo-review.mjs
           node scripts/cat-bond-duo-smoke.mjs
           node scripts/cat-bond-progression-smoke.mjs
@@ -38,6 +39,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-duo-memories-bulk-review
-          path: /tmp/catbond-bulk-memories-*.png
+          path: |
+            /tmp/catbond-bulk-memories-*.png
+            /tmp/catbond-premium-*.png
           retention-days: 7
           if-no-files-found: warn
