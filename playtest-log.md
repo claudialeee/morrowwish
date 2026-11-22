@@ -374,3 +374,30 @@ Run wf_ca1f26ac-87f · 59/64 agents ok (5 synth retry-capped) · 46 critiques. F
 **Guardrails (adversary-flagged, carried):** keep casual accessibility + no-death first fight; compress the DPS/difficulty FLOOR, keep the matchup skill-ceiling; fix the dodge GATE before buffing skills. The top two P1s (A loss-diagnosis, B low-HP vignette) are pure feedback/legibility reusing data the engine already computes — lowest-risk, highest-leverage changes available.
 
 **Note for owner:** findings only — no code changed, no push (cron rule). Theme A (loss screen withholds its own diagnosis) is the new, most actionable item this cycle; everything else reconfirms the standing escalation/legibility root already drafted in `.claude/aggro-system-spec.md`.
+
+---
+
+## Cycle (2026-11-22 ~03:10 PST, code @ b035744 post-merge) — adversarial playtest, 6 personas × 8 battles (1 round)
+
+**Workflow:** cat-bond-playtest.js, 64 agents, **49 adversary-graded critiques (41 real-problem, 8 opportunity; 1 P0 / 37 P1 / 11 P2)**. 2 Voice agents hit the StructuredOutput retry cap; all 6 personas still voiced, synthesis completed. Code under test = post-merge of owner's 3 commits (showcase + QA scripts; battle.js unchanged this fetch).
+
+**Per-persona verdict:** 探索型 fun 7 engaged · 狂按型 6 engaged · 懒人型 6 bored · 谨慎型 4 **quit** · 手忙脚乱型 4 frustrated **quit** · 没耐心型 3 bored **quit**. Still 3/6 quit — same low-APM/patient cluster.
+
+**Headline (synthesized):** "Combat is mechanically rich but systemically illegible — a verified silent 70s loss-cap, a dead 28% capture threshold, and an anti-one-shot combo cap mean every persona either loses fights they are winning or mashes into a payoff they never feel. Fix outcome/clock legibility first, then the reward loops."
+
+**MAJOR NEW FINDING this cycle — the adversary went past feedback/legibility into three *mechanical* defects verified in code (not seen in prior cycles):**
+
+- **P0 · A — You LOSE fights you are WINNING: the silent 70s time-cap stamps LOSS (18 real-problems/5 personas).** 没耐心/谨慎型 lose ~87% of battles with **faints 0 and avgHpFracLeft 0.86** — i.e. never in danger; nearly every loss is the hard 70s cap `finish(false)` (battle.js:3685), not a death. The clock is invisible and the wild cat just "runs away" with the player at 86% HP. This is the single worst combat read in the game: the player did everything right and the game says they failed, silently. Fix dir: (1) make the 70s cap HP-aware — if the player is comfortably alive, resolve as a *draw/escape*, not a LOSS; (2) better, decay the wild cat's 斗志 / collapse its range band via the existing `_pressure` after ~40s so even a 0.7×-basics kiter's DPS actually closes the fight; (3) show the clock.
+
+- **P1 · B — The 28% capture threshold is effectively DEAD, so the core reward loop never fires (14 crit, 9 real/5 personas).** `captureReady` arms at wild HP <0.28 (battle.js:3836) but is cosmetic — a kiting/low-DPS player can't drive the enemy that low before the 70s cap, and when they do, nothing converts it to a win. Fix: make capture *mechanical* — when `captureReady`, a dedicated capture key (reuse R/ult slot) throws a bond → `finish(true)`; surface the threshold on the enemy HP bar so the player can see "almost catchable."
+
+- **P1 · C — The combo cap is stuck at 0.15 while the code's own comment promises ~0.7 (anti-one-shot cap misfire; 11 crit, 9 real/6 personas).** `comboMult()` (battle.js:3000) does `Math.min(0.15, …)` so a maintained chain barely matters — every persona mashes into a payoff they never feel; the documented ×1.35/1.55/1.70 curve is unreachable. Fix: honor the curve — `Math.min(0.7, sqrt(min(combo,50))*0.10)` so sustained combos actually swing damage, giving skilled/engaged play a real reward and converting basic-spam into chaining.
+
+**Recurring (reconfirmed, lower novelty this cycle):**
+- **P1 · D — death is silent / no center-screen peril cue** (HP signal lives in the 54px top-left panel; arena shows only a 12px chevron — task #28's cost). Add a `_peril` red-edge vignette keyed to teamHpFrac<0.35 + a distinct low-HP heartbeat SFX in hurtMe (~4684).
+- **P1 · E — hidden damage multipliers** (enemy→player element 0.5–2×, un-marked basic ×0.7, ±1 level noise feeding enemyDmgMult→1.9) are invisible AND uncounterable for the no-swap masher. Fix: dampen incoming element mult to ~0.75–1.5 (leave player OUTGOING at full so deliberate swaps still reward), cut level-noise amplitude (computeWildLevel L624 ×1.2→×0.6).
+- **P1 · F — defense is taught only in the pressure-free first battle** (coachHoldsEnemies freezes the foe); add a reactive "闪避!空格" panic prompt reusing the existing `_coachHighlight` control-pulse when active hp<0.25 AND a threat telegraphs AND everUsedDodge is false.
+
+**Guardrails (carried):** keep casual accessibility + no-death first fight; compress the difficulty FLOOR, keep matchup skill-ceiling; fix the capture/clock legibility (A/B) BEFORE rebalancing — they are the highest-leverage, lowest-risk and explain most quits.
+
+**Note for owner:** findings only — no code changed, no push (cron rule). This cycle is the most actionable yet: **A (silent 70s loss-cap) is a P0** — players at 86% HP are told they lost — and **B (dead capture) + C (combo cap at 0.15 vs documented 0.7)** are concrete, code-pinpointed mechanical bugs, not just feedback polish. Recommend owner look at A/B/C first.
