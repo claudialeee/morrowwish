@@ -1406,10 +1406,10 @@ const UI = {
    const en=window.MorrowwishI18n?.get?.()!=='zh';
    const sp=GameData.speciesById(cat.species);
    const awakened=cat.stage>=2;
-   const color=awaken?(window.Growth?.AWAKEN[cat.awaken]?.color||'#a5b7f1'):'#d7a579';
+   const color=awakened?(window.Growth?.AWAKEN[cat.awakened]?.color||'#a5b7f1'):'#d7a579';
    const safe=str=>String(str??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
    const oldLabel=beforeStage===0?(en?'Kitten':'幼猫'):(en?'Adult':'成年');
-   const newLabel=awaken?(en?'Awakened Adult':'灵·觉醒'):(en?'Adult':'成年');
+   const newLabel=awakened?(en?'Awakened Adult':'灵·觉醒'):(en?'Adult':'成年');
    const stats=[['pow',en?'Power':'力量'],['agi',en?'Agility':'敏捷'],['vit',en?'Vitality':'体力'],['cha',en?'Charm':'魅力']];
    const gains=stats.map(([key,label])=>`<span class="cb-growth-stat">${label} <strong>+${Math.max(0,cat.stats[key]-(oldStats?.[key]||0))}</strong></span>`).join('');
    this.panel(`<span class="card-close">×</span>
@@ -1419,7 +1419,7 @@ const UI = {
        <div class="cb-growth-stage-names"><span>${oldLabel}</span><b aria-label="${en?'becomes':'成长为'}">✦</b><span>${newLabel}</span></div>
        <canvas id="cb-growth-canvas" width="360" height="220" role="img" aria-label="${en?'Illustrated before-and-after growth for '+safe(GameData.speciesName(sp)):'成长前后：'+safe(GameData.speciesName(sp))}"></canvas>
        <h3>${safe(State.catName(cat))} · ${safe(name)}</h3>
-       <p class="cb-growth-caption">${awaken?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'Your companion has grown! Original watercolor features stay intact, with a larger body and a growth badge.':'伙伴长大啦！保留原版水彩脸型和毛色，体型自然成长，新增成长饰标。')}</p>
+       <p class="cb-growth-caption">${awakened?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'Your companion has grown! Original watercolor features stay intact, with a larger body and a growth badge.':'伙伴长大啦！保留原版水彩脸型和毛色，体型自然成长，新增成长饰标。')}</p>
        <div class="cb-growth-stats">${gains}</div>
        <button class="btn gold" id="cb-growth-done" type="button">${en?'Continue adventure':'继续冒险'}</button>
      </section>`);
