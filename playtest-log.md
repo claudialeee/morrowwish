@@ -237,3 +237,76 @@ Run wf_ca1f26ac-87f · 59/64 agents ok (5 synth retry-capped) · 46 critiques. F
 - **P2:** basic input buffering + ready-tick; combo-heat crescendo on sustained on-cadence mashing.
 
 **Note for owner:** Same conclusion as cycle #1 — combat does NOT read healthy; mash-monotone reproducible across all 6 personas. These overlap heavily with the in-flight hit-feel + difficulty/skill-tree work. The `1514` stompStreak fix + `_pressure` decoupling remain the two cheapest high-impact levers.
+
+---
+
+## Cycle (2026-11-21, code @ ef379ec→c4895c1) — adversarial playtest, 6 personas × 8 battles
+
+**Headline:** "Combat depth is fully built but structurally defanged — the adaptive-difficulty ramp, the one must-dodge 'stick,' and the skill forcing-function all key off conditions the dominant playstyles never trigger, so every persona coasts in a flat, consequence-free sandbox." 49 critiques; mash-monotone STILL the dominant finding (unchanged from cycles #1-#2 — it is the standing #1 issue, not new).
+
+**Adversary-confirmed pain points (ranked):**
+
+- **P0 — Defense has no STICK (confirmed 3rd cycle running).** Every "difficulty lever" is actually a carrot: unmarked-basic 0.7× tax, poise/stagger, cast-interrupt all REWARD using the kit; none PUNISH ignoring it. A masher eats the 0.7× and wins by attrition — the execute-phase closer (battle.js ~4144, up to ×2.5 under 12% HP) actively *guarantees* the finish that "basics alone can't end."
+- **P0 — The one real stick (telegraphed smash) is defanged 3 ways for the exact persona it should catch:** (1) gated behind `catchCount>=2` (~3733) so the first 2 fights have zero forcing function; (2) smash center is FROZEN at cast-start (`e.smashTarget={x:me.x,y:me.y}` ~3748, re-read at release ~3919) + only R=86 / 1.4s windup → incidental strafe-drift escapes it for free (why dmgTaken~14.75 with dodge=0); (3) the mash-stall detector (~3313-3327) SUSPENDS `_pressure` when a masher pins a low-HP enemy → turns OFF the `dominating` gate that spawns the smash at the exact moment the player is most passive. Plus manual players get an unconditional +12% fire cushion (`manualEase=1.12` ~3776).
+- **P1 — "Must-dodge" smash deals only flat `e.dmg`, shield-chipped to 0.85** (resolveHit ~4304) → a masher face-tanks the very hit designed to force a dodge. The telegraph shipped; its teeth did not.
+- **P1 — Poise forcing-function reads as "mashing works":** the 2× 虚弱 stagger multiplier (~4327) is shared by basics, and the 虚弱! callout pops on the ENEMY decoupled from the Q press → an 8-dmg-no-Q run and a 21-dmg-with-Q run look identical to the player.
+
+**Ranked fix directions (adversary's, for owner review — NOT applied):**
+- **P0:** add an input-diversity signal (rolling "basic-only ≥6s" flag from the existing `_obs` fires/dodgeN) and point the smash at IT instead of (or alongside) the HP-based `dominating` gate; drop the `catchCount>=2` freebie to `>=1`; retarget `smashTarget` to the player's LIVE position at release (or R→~110 / windup→~1.0s) so passive drift no longer dodges it for free; collapse `manualEase→1.0` while basic-only.
+- **P1:** give the smash a real `SMASH_DMG` as % of MAX HP scaled by difficulty (~35-45% 硬核 / ~18-22% 休闲), non-lethal from full (preserves the no-death coach + casual accessibility), + short vulnerableT/slow tail; keep the 0.85 shield-chip so DODGE (i-frames), not shield, is the answer; scale smash FREQUENCY with `stompStreak` so flawless-mashers see it more until the dodge button earns its place.
+- **Guardrail the adversary itself flagged:** do NOT reintroduce a global mash-lock or kill casual — casual mode, the no-death first-fight coach, and "flawless runs still take hits but survive" are deliberate accessibility choices.
+
+**Carrots to LEAVE ALONE:** 0.7× unmarked penalty, poise/stagger, cast-interrupt — the gap is the missing defensive stick, not the existing rewards.
+
+**Note for owner:** This is the 3rd consecutive cycle converging on the same root — "all forcing functions key off team-HP/flawless-streak, never off what the player is DOING." The cheapest high-impact lever remains: compute a basic-only/no-defense input signal and route the already-built smash at it. Findings only — no code changed, no push (cron rule).
+
+---
+
+## Cycle (2026-11-21 late, code @ 9684079) — adversarial playtest, 6 personas × 8 battles
+
+**Headline:** "Combat is a confident victory lap for every persona because its two escalation systems are gated on FLAWLESSNESS (not dominance) and its flagship skill-forcing function (poise) is effectively dead for a masher — so no playstyle can ever be invalidated and the whole kit stays optional." 48 critiques. This cycle produced a SHARPER mechanism-level diagnosis than cycles #1–#3 (which said "no stick"): the sticks EXIST but are **mis-gated** so they can never fire for the dominant casual profile.
+
+**NEW adversary-confirmed root cause — escalation gated on flawlessness, not dominance:**
+- **Cross-fight anti-stomp is unreachable:** `stompStreak` only increments on `won && dmgTaken<=0` (battle.js:1712) — a *literally zero-damage* win. A masher takes ~47 dmg/fight, so stompStreak **resets to 0 after every battle** → the foe-sharpening (snappier windups, less aim-slop, extra telegraphs at _stomp lines 145-150) NEVER engages for someone who dominates by 80% but isn't surgically perfect.
+- **Within-fight `_pressure` collapses on first scratch:** only accrues while `teamHpFrac>0.88` (battle.js:3379). The moment the enemy lands one chip and HP dips <88%, the rubber-band DECAYS → the must-dodge smash / double-telegraph **switches OFF as soon as the fight gets slightly real**. The masher floats in 0.80–0.88 (below the pressure gate, above any danger) — the exact fixed point this gating converges to.
+- **Net:** the game punishes PERFECTION and rewards sloppy DOMINANCE with the easiest experience — tension reaches only the players who least need it.
+
+**Ranked fix directions (adversary's, for owner review — NOT applied):**
+- **P0 — re-anchor both gates from flawless → margin-of-dominance:** (1) battle.js:1712 change stompStreak increment from `won && dmgTaken<=0` to a final-HP test e.g. `won && hpFrac>=0.75` (hpFrac already computed line 1706) — an 80%-HP win now counts as a stomp, so enemies progressively sharpen and the smash starts firing across an 8-fight run; (2) battle.js:3379 lower the `_pressure` accrual gate from `>0.88` to ~`>0.60` so the rubber-band keeps climbing while the player is clearly winning instead of collapsing on the first scratch. Keep the smash a readable 1.4s interruptible reaction test. **Validation target:** masher's lowest hpFracLeft should drop below ~0.5 and ≥1 of 8 fights approaches a faint.
+- **P1 — give the masher a wall it can't brute-force:** on the same `dominating` gate, a periodic "armored guard" enemy state: ~80% flat reduction vs unmarked basics, decaying only to burst/stagger/ult — so inside the 70s cap a cruising masher MUST press one Q/E/R or land a stagger-break. Converts the toothless `_stalled` nag into a real wall.
+- **P2 — surface the already-computed perf score (battle.js:1707) on the result screen (~5163)** as a visible tool-usage grade ("0 技能 · 0 闪避 — C") so even a win teaches that the toolbox was left on the floor. Also noted: poise tuned so "unmarked basics barely dent it" means a masher literally cannot reach the 2× 虚弱 window — reward desert.
+
+**Guardrails the adversary itself flagged:** keep casual's 0.60 enemyDmg flat mult (accessibility); keep smash readable/interruptible (tension, not unfair burst); the gating fix alone should suffice before touching damage mults.
+
+**Note for owner:** This refines the standing mash-monotone finding into a concrete, low-risk 2-line gating change (`dmgTaken<=0` → `hpFrac>=0.75`, and `0.88` → `0.60`). It's a difficulty/feel DESIGN decision, so logged for owner decision — findings only, no code changed, no push (cron rule).
+
+---
+
+## Cycle (2026-11-22, code @ d94db8b) — adversarial playtest, 6 personas × 8 battles
+
+**Headline:** "Combat is mechanically rich but every layer of depth, feedback, and win-condition is INVISIBLE or mis-gated — all six personas lose to or get bored by systems they literally cannot see." 52 critiques. This cycle reframes the standing mash-monotone root as a **legibility/feedback** problem (new angle) on top of the escalation-gating finding from prior cycles.
+
+**NEW adversary-confirmed pain points (ranked):**
+
+- **P1 — danger feedback is pointed where the masher never looks.** The low-HP cue is a tiny box-shadow pulse in the TOP-LEFT team slot (game.js:1438); a masher's eyes are center-arena on their own cat. hurtMe (battle.js:4450-4466) caps hitSquash at 0.28 so a 180-dmg lethal spike feels ~identical to a 20-dmg chip — the one moment that should scream gets the same thump. Fix: a center/edge-anchored `dangerVignette` (pulsing red screen-edge) when active-cat hp<~0.35 or a smash disc is live on the cat; + spike detection in hurtMe (single hit >25% maxhp → bigger flash/shake/hitstop + low-pitch cue). Couple feedback intensity to LETHALITY, anchor it where eyes already are.
+
+- **P2 — invisible pre-fight RNG decides no-dodge fights.** buildPack (battle.js:611-613) rolls pack size as two coin flips → silently solo/duo/trio (~2-3× incoming DPS), × element matchup 0.5–2× — all unseen before the fight when swapping lead cat is still free. A masher eats 100% of whatever spawns → 95% HP vs resisted solo, 10% vs advantaged trio, with no attributable reason. Fix: a ~1.5s pre-fight banner (野猫 ×1/×2/×3 + lead matchup arrow + flag the favorable lead cat so even a masher taps 1/2/3 once); soften pack variance (each extra enemy outgoing dmg ×~0.7).
+
+- **P1 (STANDING, now 5th cycle) — the must-dodge smash is still defanged.** Gated behind `dominating`+`pastTutorial`, snapshots a STATIC smashTarget at telegraph start (battle.js:3926, R=86), only ~26% maxhp → a masher who strolls while mashing drifts out for free; `dodge:0 / everUsedDodge=false` across 8 battles proves it never lands. Fix (depth-tier): fire on a fixed cadence (drop `dominating`, keep `pastTutorial`); RE-CENTER smashTarget on the player at ~60% windup (flash the recenter — fair, not gotcha) so a committed dash i-frame is the clean answer; raise ignore-cost to ~40% maxhp + bleed so two ignored smashes credibly threaten a KO; keep unblockable so dodge>shield.
+
+**Guardrails (adversary-flagged):** keep casual accessibility + no-death first-fight coach; keep the matchup skill-ceiling (compress the floor, don't remove variance); fix the dodge GATE before buffing E/ult or touching passive ult/combo charging.
+
+**Note for owner:** This cycle's framing is useful — the fixes are mostly FEEDBACK/LEGIBILITY (vignette, spike juice, pre-fight banner) which are lower-risk than rebalancing, plus the recurring smash-recenter. The aggro-system spec (.claude/aggro-system-spec.md) already proposes the systemic version of the smash re-gate. Findings only — no code changed, no push (cron rule).
+
+---
+
+## Cycle (2026-11-22, code @ 97981f5) — adversarial playtest, 6 personas × 8 battles
+
+**Headline:** "Real depth + good telegraphs, but escalation, teaching, and feedback are all keyed to the WRONG variables — combat silently demands one playstyle and reads as noise to everyone else." 48 critiques. Converges with prior cycles but adds sharp mechanism-level fixes.
+
+**Adversary-confirmed, ranked (findings only — NOT applied):**
+- **P1 — the 20-vs-428 dmg swing is 5 hidden multiplicative systems, not noise, and none are legible.** pack-size RNG (buildPack 1/2/3 = 2-3× incoming), level-gap (enemyDmgMult [0.9,1.9] × enemyHpScaleGap [0.85,1.35] double-compounds), element matchup (0.5-2×), carried-HP attrition (enter at 40% from prior explore), and the smash = `max(e.dmg*1.6, maxhp*0.26)` UNBLOCKABLE (battle.js:4284). Fix dir: a pre-Start 危险度 low/med/high tag from enemyDmgMult+packSize+levelGap; taper the smash floor toward ~0.14 maxhp as the cat bleeds (gate behind difficultyMult so hardcore keeps lethality); confirm _novaLock caps concurrent smashes to 1 in a pack.
+- **P1 — the mash-stall teach fires on the wrong variable.** The "use a skill" banner only arms at enemy hp<0.2 (battle.js ~3651), but a pure masher plateaus ABOVE 20% → banner never fires, fight dies at t>70s as a flat LOSS. Fix: arm on "basic-only >3.5s AND fight >20-25s AND enemy lost <15% HP in last 5s"; make the hard-resolve non-punitive (neutral "cat escaped" not a defeat) for onboarding.
+- **P1 — the only danger cue is a 46px top-left tile pulse at hp≤0.25**, where a masher never looks, binary not gradient. Fix: a center/edge red vignette ramping CONTINUOUSLY as teamHpFrac<0.40 + heartbeat/slowmo tick at <0.15 (reuse teamHpFrac@3642, the purple flash@4978 site). Offense got all the juice; the "I'm in danger" state got none.
+
+**Note for owner:** these are feedback/legibility + one smash-taper — lower-risk than rebalancing. Consistent with the standing escalation-gating root across cycles. No code changed, no push (cron rule).

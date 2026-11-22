@@ -57,13 +57,38 @@ are worthless without it.
   36 healthy cells regression-locked + 12 tracked-broken, wired into CI. npm run check green 3x.
   Real stable baseline captured: ranged/beam/support=100%, dash/leap~90%, melee~48% (natural),
   pounce~60-79%, HYBRID=6-47% inWin / up to 40% loiter (the real target).
-- Phase ② IN PROGRESS: challenger agent adversarially attacking the simulator (validity holes:
-  high-inWindow-but-zero-dmg? multi-enemy? reflect-wall suicide? low-HP retreat?) + finding new
-  reproducible failing scenarios → will add metrics (dmg/whiff/retreat-correctness) + scenarios
-  (multi-enemy, reflect, low-HP) to make the verifier stronger.
-- Phase ③ (engageRange unification to fix the 12 broken cells) = HELD: changes combat FEEL/
-  positioning → needs owner awake. Verifier is ready to grade it the moment it's attempted.
-- HONEST NOTE: I initially over-claimed determinism (a 60-frame dash trace looked identical but
-  720-frame runs diverged ~1-30%); the matrix caught it; root cause was unseeded _autoDecCd +
-  init animation phase. Now genuinely bit-deterministic. This is exactly why the verifier-first
-  ordering matters — it caught my own mistake.
+- Phase ② METRIC OVERHAUL (uncommitted, in 2-round review): two challenger rounds DEMOLISHED the
+  original inWindow/loiter metric as a LIE, twice:
+    R1: the "hybrid 6-47% broken" verdict was a Q-only-inWindow artifact (a hybrid poking with its
+        ranged E read as loiter). Widened to per-skill (Q OR E OR basic) inWindow → every cell 93-100%.
+    R1 (deeper): even per-skill inWindow was contaminated — simCell re-pinned only e.y and let the
+        enemy AI drive e.x to CHASE, so inWindow measured the enemy closing, not the cat. A FROZEN cat
+        passed 6/8 archetypes. For ranged/support/hybrid the union window = 460px = whole arena →
+        structurally unfailable. VERDICT NO-GO.
+    R2: bandHold (first fix attempt) was CIRCULAR — it graded the cat against its OWN
+        kitRangeBand(f), the very function a positioning bug lives in. Injecting the historical
+        brawler-backline bug (kitRangeBand→[230,320]) scored 76% "healthy" because the cat obeys
+        the broken ruler. VERDICT NO-GO again.
+  FINAL FIX (GO — same adversary, R3): enemy FULLY pinned (reassert e.x+e.y+zero velocity every
+  frame → no chase); THREE ground-truth signals graded against a FIXED verifier-OWNED envelope
+  (NOT kitRangeBand):
+    inEnv% = frames the cat's distance is inside ENVELOPE[kind] (brawlers ≤185-200, kiters ≤245-250).
+             Fixed constant → a band bug can't self-certify. Floor 70 (worst healthy 90; every
+             regression ≤26).
+    acts%  = frames the cat actually attacked (enemy lost HP, or a live player projectile). Floor 10
+             (worst healthy 22). Catches "positions but never fights" (incl. band-widened-to-arena).
+    dmg    = PER-ARCHETYPE floor at ~45% of each kind's worst-healthy (dash 450, leap 360, hybrid 500…).
+  COMMITTED NEGATIVE CONTROLS (all must FAIL inEnv, for every applicable archetype): frozen,
+  450px-runaway, backline-band [230,320] (brawlers), widened-band [0,1000]+frozen@300. All caught
+  (inEnv 0-26%). All 48 cells + controls green 3×; every gate proven to bite (sed self-tests). The
+  SAME challenger that issued both NO-GOs re-ran its own killer attacks and returned GO. COMMITTED.
+- Phase ③ (engageRange unification) = NOT NEEDED as originally framed. The "12 broken cells" was a
+  metric phantom across TWO bad metrics; under the honest envelope verifier all 48 cells position
+  correctly and deal damage. Verifier survives owner's battle.js churn (re-ran post-merge vs owner's
+  poise-rework: identical within noise). Any FUTURE positioning change is now graded honestly.
+- Verifier SCOPE (printed by the test): certifies single-enemy engagement distance + offensive
+  output + action-taken vs a stationary target. Does NOT certify survivability (pinned enemy barely
+  attacks — decertified honestly rather than faked), target-switching, or multi-enemy (future work).
+- HONEST NOTE: the verifier-first + two-round-review discipline caught my OWN lies FOUR times
+  (under-claimed determinism; Q-only inWindow artifact; enemy-chase contamination; circular bandHold).
+  Every one found by the adversary, not me. This is exactly why the mandatory two-round rule exists.
