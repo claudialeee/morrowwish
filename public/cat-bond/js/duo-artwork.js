@@ -7,7 +7,8 @@
 'use strict';
 const order=['tangyuan','doudou','xiaohui','moqiu','nainai','nietu','niuniu',
  'sanhua','lixiao','lanbao','dundun','yunduo','zherdd','qisi','duanduan',
- 'jinjc','xianluo','yinghua','senlin','youling','nuowei','baomao','jinwu','yuelian','xingchen'];
+ 'jinjc','xianluo','yinghua','senlin','youling','nuowei','baomao','jinwu','yuelian','xingchen',
+ 'abi','meidu','xuewa','mengmai','fanmao','bosi','wumao'];
 const atIndex=Object.fromEntries(order.map((s,i)=>[s,i]));
 // Reuse the game's CURRENT source-of-truth complete watercolor kittens.
 // Loading an obsolete 5x5 atlas would change the visual style and violate the
