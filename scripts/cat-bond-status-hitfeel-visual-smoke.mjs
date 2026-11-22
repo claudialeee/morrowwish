@@ -9,8 +9,9 @@ const categories=[
   ...['burn','soak','shock','oil','chill','dizzy','bleed','blind',
       'bind','expose','weaken','rust','rewind'].map(tag=>({type:'status',tag})),
   ...['light','heavy','crit','stagger','kill','heal','guard','reflect',
-      'cleanse','barrier','wardFade'].map(tag=>({type:'impact',tag})),
+      'cleanse','barrier','wardFade','shieldBreak'].map(tag=>({type:'impact',tag})),
   {type:'support',tag:'grooming'},{type:'support',tag:'bubbleVeil'},
+  {type:'support',tag:'guardBreak'},
   {type:'support',tag:'protect'},{type:'support',tag:'mirrorWall'},
   {type:'support',tag:'knead'}
 ];
@@ -57,10 +58,19 @@ try{
         b.vfx.impactType(enemy.x,enemy.y,tag,{color:'#fff0be'});
         if(!b.vfx.fx.length)throw Error('Missing hit-feel '+tag);
        }else{
-        const sk=tag==='protect'?Skills.skillById('guardStance'):
+        const sk=(tag==='protect'||tag==='guardBreak')?Skills.skillById('guardStance'):
           Skills.skillById(tag);
         if(!sk)throw Error('Unknown support skill '+tag);
-        if(tag==='grooming'){
+        if(tag==='guardBreak'){
+          me.protectT=0;me.shieldT=0;me.reflectT=0;me.inv=0;me.flash=0;
+          if(!b.castWard(me,'protect'))throw Error('Guard Stance did not raise shield');
+          const hp=me.hp;
+          const blocked=b.resolveHit(me,'wild',
+            {id:'wildStrike',kind:'melee',element:'grass'},10,me.x,me.y);
+          if(!blocked.blocked||me.protectT!==0||me.hp!==hp||
+             !b.vfx.fx.some(x=>x.type==='guardShards'))
+            throw Error('Real guard did not consume one hit and create shards');
+        }else if(tag==='grooming'){
           me.hp=me.maxhp*.55;me.status={burn:2};me.tags=['burn'];
           if(!b.castSupportSkill(me,sk,0)||me.status.burn)
             throw Error('Grooming did not heal and cleanse');
@@ -94,5 +104,5 @@ try{
    assert.deepEqual(errors,[],'No unhandled combat render errors on '+device.name);
   }finally{await page.close()}
  }
- console.log('CAT BOND 13 STATUS + 11 HIT FEEL + 5 SUPPORT REAL BROWSER QA PASS');
+ console.log('CAT BOND 13 STATUS + 12 HIT FEEL + 6 SUPPORT REAL BROWSER QA PASS');
 }finally{await browser.close()}

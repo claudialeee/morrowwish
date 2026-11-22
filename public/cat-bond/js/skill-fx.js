@@ -305,9 +305,12 @@ function drawStatus(ctx,unit,time=0){
  ctx.save();
  tags.forEach((tag,i)=>{
   const col=ACTIVE[tag],phase=time*(tag==='shock'?13:3.3)+i*1.6;
-  // Offset details from the face and preserve the original watercolor kitten.
-  const x=unit.x+Math.cos(phase+i*2.1)*(24+i*3);
-  const y=unit.y-7+Math.sin(phase+i*.8)*(12+i*2);
+  // Keep each status around the OUTER silhouette, not across the eyes.
+  // Draw close to the planted paws; dizzy stars float to either side of ears.
+  const rad=31+i*4,a0=phase+i*2.1;
+  const x=unit.x+Math.cos(a0)*rad;
+  const y=unit.y+(tag==='dizzy'?-23:17)+
+    Math.sin(a0)*(tag==='dizzy'?4:5);
   const a=Math.max(.4,Math.min(.83,(unit.status[tag]||0)*1.8));
   ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=col;ctx.fillStyle=col;
   ctx.lineWidth=2.4;ctx.lineCap='round';ctx.lineJoin='round';

@@ -5059,18 +5059,28 @@ class CaptureBattle {
     if (!e.status) return;
     const s = e.status, T = this.t;
     ctx.save();
-    if (s.dizzy != null) {                 // orbiting stars overhead
-      ctx.fillStyle = '#ffe08a';
-      for (let i = 0; i < 3; i++) { const a = T * 4 + i * (Math.PI * 2 / 3); ctx.globalAlpha = 0.9; ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('✦', e.x + Math.cos(a) * 16, e.y - 34 + Math.sin(a) * 5); }
+    // Controls must remain obvious without painting vines/snowflakes over
+    // the original watercolor cat's EYES. The previous stacked full-body
+    // vines and freeze shell visibly hid the breed-specific face on phones.
+    if(s.dizzy!=null){
+      ctx.globalAlpha=.64;ctx.fillStyle='#f2d990';ctx.font='11px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText('✦',e.x-29,e.y-23+Math.sin(T*4)*3);
+      ctx.fillText('✦',e.x+29,e.y-23-Math.sin(T*4)*3);
     }
-    if (s.chill != null) {                 // pale ice shell
-      ctx.globalAlpha = 0.35 + 0.1 * Math.sin(T * 3); ctx.strokeStyle = '#bfe6ff'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, 26, 32, 0, 0, Math.PI * 2); ctx.stroke();
-      ctx.globalAlpha = 0.9; ctx.fillStyle = '#eaf7ff'; for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; ctx.fillText('❄', e.x + Math.cos(a) * 24, e.y + 2 + Math.sin(a) * 28); }
+    if(s.chill!=null){
+      ctx.globalAlpha=.49;ctx.strokeStyle='#a9daf0';ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(e.x,e.y+21,25,7,0,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=.72;ctx.fillStyle='#e7f8ff';ctx.font='12px system-ui';
+      ctx.textAlign='center';ctx.fillText('❄',e.x-31,e.y+13);
+      ctx.fillText('❄',e.x+31,e.y+13);
     }
-    if (s.bind != null) {                  // green vines wrapping
-      ctx.globalAlpha = 0.8; ctx.strokeStyle = '#6fcf5f'; ctx.lineWidth = 3;
-      for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(e.x, e.y + 4 + i * 8 - 8, 22 - i * 2, 7, 0.2 * Math.sin(T * 2 + i), 0, Math.PI * 2); ctx.stroke(); }
+    if(s.bind!=null){
+      // Two thin ground-level roots, never three chest/face-wrapping hoops.
+      ctx.globalAlpha=.48;ctx.strokeStyle='#6abb73';ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(e.x,e.y+21,25,8,0,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.arc(e.x-26,e.y+17,8,-1.1,.6);ctx.stroke();
+      ctx.beginPath();ctx.arc(e.x+26,e.y+17,8,2.5,4.4);ctx.stroke();
     }
     if (s.blind != null) {                 // Blinded: visible ground ring instead of ugly black face.
       ctx.globalAlpha = .73;ctx.strokeStyle = '#b49bdb';ctx.lineWidth = 2.2;

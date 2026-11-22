@@ -280,8 +280,13 @@ try{
           'The newly learned skill must have a visible progression route');
         await page.locator('#journey-skills').click();
         await page.waitForSelector('#panel .skill-roadmap');
-        assert.equal(await page.locator('#panel .sk-slot').count(),4,
-          'The skill route must open the four-slot playable skill loadout');
+        // A fifth .sk-slot is a BUILD PRESET selector, not a battle action.
+        // Count only the real Basic/Q/E/ULT slots while also ensuring players
+        // can switch the new six-role auto-build in this screen.
+        assert.equal(await page.locator('#panel .sk-slot:not(.build-row)').count(),4,
+          'The skill route must open the four playable Basic/Q/E/ULT slots');
+        assert.equal(await page.locator('#panel .sk-slot.build-row .build-chip').count(),6,
+          'Skill route must expose all six build presets separately');
         await page.evaluate(()=>UI.openJourney());
         await page.locator('#journey-mastery').click();
         await page.waitForSelector('.golden-paw-stamp');

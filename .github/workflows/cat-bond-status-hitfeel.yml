@@ -40,7 +40,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cat-bond-58-status-hitfeel-support-screenshots
+          name: cat-bond-62-status-hitfeel-support-screenshots
           path: /tmp/cat-bond-fx-review-*.png
           if-no-files-found: warn
           retention-days: 7
