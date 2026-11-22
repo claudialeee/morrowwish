@@ -520,7 +520,8 @@ class YardScene {
       b.y=Math.max(top,Math.min(bottom,b.y));
     }
     for(const b of (State.S.yardBuildings||[])){
-      const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+      // Five structures must fit even in a short phone yard, below the fence.
+      const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
       b.x=Math.min(W-40,Math.max(40,b.x));
       b.y=Math.max(top,Math.min(bottom,b.y));
     }
@@ -1100,7 +1101,7 @@ class YardScene {
   // away from existing buildings/bushes). Returns {x,y} in current canvas space.
   freeBuildingSpot() {
     const { W, H } = this.game;
-    const top = Math.min(H * 0.6, H - 90), bot = Math.max(top + 10, H - 70);
+    const top = Math.min(H*.50,H-96), bot = Math.max(top+20,H-56);
     const builds = State.S.yardBuildings || [];
     let best = null, bestGap = -1;
     for (let i = 0; i < 24; i++) {
@@ -1134,7 +1135,8 @@ class YardScene {
   // confirm. Bounds and overlap are the same on phone, desktop and resize.
   buildingSpotValid(x,y) {
     const {W,H}=this.game;
-    const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+    // Five structures must fit even in a short phone yard, below the fence.
+      const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
     const side=Math.min(56,Math.max(30,W*.10));
     if(!Number.isFinite(x)||!Number.isFinite(y)||
         x<side||x>W-side||y<top||y>bottom)return false;
@@ -1153,7 +1155,8 @@ class YardScene {
   movePlacement(x,y){
     if(!this.placement)return false;
     const {W,H}=this.game;
-    const top=Math.min(H*.6,H-90),bottom=Math.max(top+10,H-70);
+    // Five structures must fit even in a short phone yard, below the fence.
+      const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
     // Follow the actual finger/cursor, even when the spot is invalid. Clamping
     // to the grass boundary made a tap above it silently jump elsewhere.
     this.placement.x=Math.max(0,Math.min(W,x));
