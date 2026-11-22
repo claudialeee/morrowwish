@@ -50,9 +50,10 @@ a{color:#a56a83}a:hover{color:#684f7f}
 
 /* Compact release status: native video metrics are deliberately kept separate from release readiness. */
 #video-release-details{margin:0 0 24px}#video-release-details summary{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#video-release-details summary small{font-size:11px;color:#a47e8d;font-weight:650}#video-release-details .description{margin:12px 0}.video-states td{white-space:nowrap}.video-states a{font-weight:800}.video-states .paused{color:#996979}.video-states .pending{color:#9f8b8b}.video-states .scheduled{color:#6e8c76}.video-states .verified{color:#4c947d}
+.period .reset-metrics{background:#fff9f7;color:#a25761;border:1px solid #e5bfc0;box-shadow:none}.period .reset-metrics:hover{background:#ffece8}.period .reset-metrics:disabled{opacity:.5;cursor:wait}
 </style></head><body><main class="wrap">
 <div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
-<div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><select id="days" aria-label="Date range / 日期范围"><option value="1" data-i18n="today"></option><option value="3" data-i18n="day3"></option><option value="7" data-i18n="day7" selected></option><option value="14" data-i18n="day14"></option></select><button id="reload" type="button" data-i18n="refresh"></button></div></div>
+<div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><select id="days" aria-label="Date range / 日期范围"><option value="1" data-i18n="today"></option><option value="3" data-i18n="day3"></option><option value="7" data-i18n="day7" selected></option><option value="14" data-i18n="day14"></option></select><button id="reload" type="button" data-i18n="refresh"></button><button id="reset-metrics" class="reset-metrics" type="button" data-i18n="resetMetrics"></button></div></div>
 <section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
 <div id="report" hidden><div class="stats" id="stats"></div>
 
@@ -77,7 +78,7 @@ const I18N={
 zh:{
 pageTitle:"Morrow Wish · 统一数据中心",back:"返回游戏首页 ↗",tag:"私人工作室 · 统一看板",title:"统一数据中心",
 intro:"只看真实访问、开局、结算，以及哪个渠道带来玩家。",
-today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",
+today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",resetMetrics:"重置统计",resetConfirm:"确定永久清除所有历史看板统计吗？包括访问、开局、结算及推广归因。游戏存档与推广配置不会删除。",resetting:"正在清除历史统计……",resetDone:"历史统计已清除，已开始重新记录。",resetFailed:"重置失败，请刷新看板后重试。",
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
 trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"看访问有没有转成开局、开局有没有正常结算。点击任意列的表头排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"重点游戏 · 深度分析",focusDesc:"重点观察猫猫纽带和猫猫捣蛋的真实玩法效果，再看自由小镇和平行人生。",trendMore:"查看流量趋势",
@@ -91,7 +92,7 @@ direct:"直接访问",internal:"站内跳转",external:"外部网站",mobile:"�
 en:{
 pageTitle:"Morrow Wish · Studio Analytics",back:"Back to games ↗",tag:"PRIVATE STUDIO · ONE DASHBOARD",title:"Studio Analytics",
 intro:"Track real visits, starts, finishes and which channels bring players.",
-today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",
+today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",resetMetrics:"Reset metrics",resetConfirm:"Permanently delete all historic dashboard metrics (visits, game starts, finishes and campaign attribution)? Player saves and promotion settings will remain.",resetting:"Clearing historic metrics…",resetDone:"Historic metrics cleared. Tracking has restarted.",resetFailed:"Reset failed. Refresh the dashboard and try again.",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
 trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Compare game starts, finishes and replays. Click any column heading to sort.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"Four flagship games · performance",focusDesc:"Prioritize Cat Bond and Cat Heist, then Tiny Town and Elsewhere.",trendMore:"Traffic trends",
@@ -282,6 +283,21 @@ render(j);loadElsewhere();$("login").hidden=true;$("period").hidden=false;setSta
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLanguage(b.dataset.lang)));
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load();}catch(err){setStatus("error",err.message||t("failGeneric"));}});
 $("reload").addEventListener("click",load);$("days").addEventListener("change",load);
+$("reset-metrics").addEventListener("click",async()=>{
+ if(!window.confirm(t("resetConfirm")))return;
+ const button=$("reset-metrics");button.disabled=true;$("reload").disabled=true;setStatus("resetting");
+ try{
+  const response=await fetch("/api/reset-metrics",{
+   method:"POST",credentials:"same-origin",cache:"no-store",
+   headers:{"Content-Type":"application/json","X-Morrowwish-Reset":"confirmed"},
+   body:JSON.stringify({confirm:"RESET_METRICS"})
+  });
+  if(!response.ok)throw Error("HTTP "+response.status);
+  await load();
+  if(statusKind==="loaded")setStatus("resetDone");
+ }catch(e){setStatus("resetFailed");}
+ finally{button.disabled=false;$("reload").disabled=false;}
+});
 applyLanguage(lang);load();
 })();
 </script></body></html>
