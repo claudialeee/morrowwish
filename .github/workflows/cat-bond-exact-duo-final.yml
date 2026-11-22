@@ -1,0 +1,70 @@
+name: Cat Bond exact latest V12 duo horizontal final
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cat-bond-exact-duo-final.yml'
+      - 'scripts/repair-cat-bond-reference-duo-landscape.mjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: catbond-exact-duo-final
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ensure FFmpeg
+        run: |
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+      - name: Reframe the ACTUAL original 4.3-second duo and aftermath
+        run: node scripts/repair-cat-bond-reference-duo-landscape.mjs
+      - name: Confirm source-locked correct film
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.json'));
+          const v=JSON.parse(fs.readFileSync('public/promo/v12-review.json')).trailers.find(x=>x.slug==='cat-bond');
+          if(m.sourceVideo!==v.video||m.sourceDuo.start!==44.7||m.sourceDuo.seconds!==3.1||
+            m.duoCount!==1||m.shots!==21||m.sideBars||m.stretch||m.seconds<59.4||m.seconds>59.8)
+             throw Error('Non-matching duo source or invalid 16:9 reconstruction');
+          console.log('ORIGINAL DUO MOVEMENT GUARANTEED: source exact V12 animated video frames');
+          NODE
+      - name: Preserve completed movie and proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: catbond-landscape-source-exact-duo
+          path: |
+            public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.mp4
+            public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.jpg
+            public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.json
+            public/promo/cat-bond/v10-exact-duo-*.jpg
+          retention-days: 14
+      - name: Commit source-derived real cinematic wide master
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.mp4
+          git add public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.jpg
+          git add public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.json
+          git add public/promo/cat-bond/v10-exact-duo-*.jpg
+          git config user.name morrowwish-promo-bot
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'media(cat-bond): original latest dual-cat animation in native wide film'
+          git restore --worktree .
+          for a in $(seq 1 15); do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
