@@ -33,7 +33,7 @@ const sandbox={window,document,Image:ImageMock,Event:EventMock,Math,Number,Objec
 for(const name of scripts)vm.runInContext(source(name),sandbox,{filename:name});
 for(const img of images){
  if(img.src?.includes('32-actors')){img.naturalWidth=1774;img.naturalHeight=887}
- else if(img.src?.includes('jiafei-watercolor-v1.avif')){img.naturalWidth=228;img.naturalHeight=256}
+ else if(img.src?.includes('jiafei-watercolor-v2.webp')){img.naturalWidth=160;img.naturalHeight=180}
  else{img.naturalWidth=3584;img.naturalHeight=2592}
  img.onload?.();
 }
@@ -42,10 +42,10 @@ const painter=window.CatBondPremiumCinematics;
 const hero=window.CatBondDuoHero;
 const director=window.CatBondDuoDirector;
 assert.equal(actors.breedCount,32,'Do not fake a 33rd 8x4 atlas cell');
-assert.equal(actors.supportedBreedCount,33,'32 atlas cats + one standalone AVIF');
+assert.equal(actors.supportedBreedCount,33,'32 atlas cats + one independent user-approved watercolor WebP');
 assert.equal(actors.jiafeiArtReady,true,'Dedicated Jiafei raster must decode');
-assert.match(actors.jiafeiSource,/jiafei-watercolor-v1\.avif/);
-assert.equal(actors.ready,true,'32-cell atlas, 21x3 scenery and standalone Jiafei AVIF must all load');
+assert.match(actors.jiafeiSource,/jiafei-watercolor-v2\.webp/);
+assert.equal(actors.ready,true,'32-cell atlas, 21x3 scenery and approved Jiafei watercolor must all load');
 assert.equal(painter.ready,true,'Premium cutin must not show until selected breeds are decoded');
 assert.equal(painter.breedMatchCount,32);
 assert.equal(painter.liveBreedArtworkEnabled,true);
@@ -72,7 +72,7 @@ for(const pair of [['jiafei','tangyuan'],['tangyuan','jiafei']]){
  assert.equal(actors.draw(ctx,512,288,pair.map((id,i)=>({uid:'q'+i,species:id})),
    'elec+fire',.44,1),true,'Duo paints both selected species');
  assert.equal(painted.length,2,'Each side draws exactly one real raster subject');
- const jf=painted.filter(x=>x.src?.includes('jiafei-watercolor-v1.avif'));
+ const jf=painted.filter(x=>x.src?.includes('jiafei-watercolor-v2.webp'));
  const orig=painted.filter(x=>x.src?.includes('32-actors'));
  assert.equal(jf.length,1,
    'Jiafei must use its dedicated real watercolor Image on either side');
@@ -81,10 +81,11 @@ for(const pair of [['jiafei','tangyuan'],['tangyuan','jiafei']]){
  assert.ok(Math.abs(jf[0].args[3]/orig[0].args[7]-.92)<.0001,
    'Jiafei duo art must be 8% smaller than its partner at the same pose height');
 }
-const jiafeiAsset='public/cat-bond/assets/jiafei-watercolor-v1.avif';
+const jiafeiAsset='public/cat-bond/assets/jiafei-watercolor-v2.webp';
 const raster=fs.readFileSync(jiafeiAsset);
-assert.ok(raster.length>4000&&raster.toString('ascii',4,12)==='ftypavif',
-  'Jiafei must have a genuine AVIF resource, not an SVG/text placeholder');
+assert.ok(raster.length>6000&&raster.toString('ascii',0,4)==='RIFF'&&
+  raster.toString('ascii',8,12)==='WEBP',
+  'Jiafei must have genuine painted transparent WebP pixels, not an SVG/text placeholder');
 assert.doesNotMatch(source('js/duo-breed-actors.js'),/CatArt\.drawCat/,
   'Premium duo must never silently fall back to a procedural Jiafei');
 assert.match(source('js/real-kittens.js'),/const visualScale=\.72;/,
