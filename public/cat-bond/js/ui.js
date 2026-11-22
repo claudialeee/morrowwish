@@ -1736,7 +1736,12 @@ const UI = {
         const base=S.upgradeBaseOf?.(sk.id);
         const baseSk=base?S.skillById(base):null;
         const upgrade=baseSk?`<span class="tiny sk-up">⬆${baseSk.name}</span>`:'';
-        return `<button class="sk-chip ${on?'on':''}" data-slot="${slot.i}" data-sk="${sk.id}" title="${sk.desc||''}">${icon(sk)} ${sk.name}<span class="tiny">${kindName[sk.kind]||''}·${this.game.elemIcon(sk.element)}</span>${upgrade}</button>`;
+        // Mobile can't hover tooltips: show distinct elemental ward strengths
+        // and utility directly on the equipment chip.
+        const wardInfo=sk.shieldType==='barrier'
+          ?`${Math.round((sk.wardReduction??.45)*100)}%${en0?' DR':'减伤'} · ${sk.wardDuration||4.8}s${sk.wardRetaliateBurn?(en0?' · Burn':' · 反灼'):sk.wardRegenPct?(en0?' · Regen':' · 回血'):''}`
+          :'';
+        return `<button class="sk-chip ${on?'on':''}" data-slot="${slot.i}" data-sk="${sk.id}" title="${sk.desc||''}">${icon(sk)} ${sk.name}<span class="tiny">${kindName[sk.kind]||''}·${this.game.elemIcon(sk.element)}${wardInfo?' · '+wardInfo:''}</span>${upgrade}</button>`;
       };
       const chips=featured.map(chip).join('')||
         '<span class="tiny">暂无可选（提升等级/好感解锁）</span>';
