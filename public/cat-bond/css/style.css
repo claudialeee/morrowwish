@@ -3295,3 +3295,67 @@ body.cb-exploring #yard-placement-dock{display:none!important}
     min-height:36px;padding:4px 7px;
   }
 }
+
+
+/* Exploration has its own compact menu, independent of the hidden yard tabbar.
+   On 320px portrait the menu sits to the right of the left-side region HUD,
+   rather than adding a third top-row button or covering the player's cat. */
+#map-menu{
+ position:absolute;z-index:24;right:max(8px,env(safe-area-inset-right,0px));
+ top:calc(env(safe-area-inset-top,0px) + 111px);
+ min-height:42px;min-width:83px;padding:8px 11px;
+ border:2px solid #e6c58c;border-radius:12px;
+ background:linear-gradient(135deg,#fffaf0,#f4e7cf);
+ box-shadow:0 3px 12px #343b3440;color:#465945;
+ font:850 13px/1.2 system-ui,sans-serif;cursor:pointer;
+ touch-action:manipulation;
+}
+#map-menu[hidden],#stage:has(#battle-ui.on) #map-menu{display:none!important}
+#map-menu:focus-visible{outline:3px solid #537c65;outline-offset:2px}
+#panel .explore-menu{width:min(100%,600px);margin:auto;color:#415c48}
+#panel .explore-menu h2{font:900 clamp(19px,3vw,24px)/1.3 system-ui,sans-serif;margin:0 45px 5px 0}
+#panel .explore-menu h3{font:850 14px/1.3 system-ui,sans-serif;margin:13px 0 8px}
+#panel .explore-menu-location{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 12px;
+ padding:8px 10px;background:#f0f5eb;border-radius:11px;font:700 12px/1.4 system-ui,sans-serif}
+#panel .explore-menu-location span{white-space:nowrap}
+#panel .explore-cat-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#panel .explore-cat{display:flex;align-items:flex-start;gap:8px;min-width:0;padding:10px 8px;
+ border:1.5px solid #d7e4d5;border-radius:13px;background:#fffdf8}
+#panel .explore-cat canvas{width:68px!important;height:64px!important;flex:0 0 68px;object-fit:contain}
+#panel .explore-cat-summary{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1;
+ font:700 11px/1.4 system-ui,sans-serif}
+#panel .explore-cat-summary strong{font:850 14px/1.2 system-ui,sans-serif;overflow-wrap:anywhere}
+#panel .explore-cat-summary small{font:650 11px/1.35 system-ui,sans-serif;color:#68806d}
+#panel .explore-cat-skills{display:flex;flex-wrap:wrap;gap:4px;margin:3px 0}
+#panel .explore-cat-skills span{padding:3px 6px;border-radius:6px;
+ background:#e9f1e4;color:#4e6a53;font:750 10px/1.25 system-ui,sans-serif}
+#panel .explore-cat-buttons{display:flex;flex-wrap:wrap;gap:5px}
+#panel .explore-cat-buttons button{min-height:35px;padding:6px 8px;border:1px solid #a6c9ae;
+ border-radius:9px;background:#edf5e9;color:#315b42;font:800 11px/1.3 system-ui,sans-serif;
+ cursor:pointer;touch-action:manipulation}
+#panel .explore-cat-buttons button:last-child{background:#f7ebfa;border-color:#d3b9df;color:#694e80}
+#panel .explore-menu-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#panel .explore-menu-actions button{display:flex;flex-direction:column;align-items:center;justify-content:center;
+ min-width:0;min-height:70px;gap:5px;padding:8px 4px;border:1.5px solid #d6e5d6;border-radius:12px;
+ background:#f6f9f1;color:#3e624b;font:800 11px/1.35 system-ui,sans-serif;
+ cursor:pointer;touch-action:manipulation;text-align:center}
+#panel .explore-menu-actions button span:first-child{font-size:23px;line-height:1.1}
+#panel .explore-menu-actions button:focus-visible,#panel .explore-cat-buttons button:focus-visible{
+ outline:3px solid #5c9981;outline-offset:2px}
+#panel .explore-menu-tip{margin:12px 0 0;font:650 11px/1.5 system-ui,sans-serif;color:#718171}
+@media(max-width:650px){
+ #panel .explore-cat-list{grid-template-columns:minmax(0,1fr)}
+ #panel .explore-menu-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #panel .explore-menu-actions button{min-height:61px}
+}
+@media(max-width:360px){
+ #map-menu{min-width:76px;padding:8px 7px}
+ #panel .explore-cat{padding:7px}
+ #panel .explore-cat canvas{width:56px!important;height:53px!important;flex-basis:56px}
+ #panel .explore-menu-actions{gap:5px}
+}
+@media(max-height:530px) and (orientation:landscape){
+ #map-menu{top:calc(env(safe-area-inset-top,0px) + 105px);min-height:36px}
+ #panel .explore-cat-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #panel .explore-menu-actions button{min-height:53px}
+}

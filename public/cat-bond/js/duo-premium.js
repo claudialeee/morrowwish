@@ -17,6 +17,12 @@ const cinematicCtx=cinematicLayer.getContext('2d',{alpha:true});
 // SAME storyboard, not a new card, stretched cat, or duplicated pair.
 const portraitFocus=document.createElement('canvas');
 const portraitFocusCtx=portraitFocus.getContext('2d',{alpha:true});
+// Cached, soft-focus environmental color from the SAME original storyboard.
+// The original cats appear only once in the sharp focal artwork. This avoids
+// a featureless portrait gradient or visible duplicate silhouettes.
+const portraitAtmosphere=document.createElement('canvas');
+const portraitAtmosphereCtx=portraitAtmosphere.getContext('2d',{alpha:true});
+let portraitAtmosphereKey='';
 let ready=false,broken=false,originalReady=false;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -280,6 +286,27 @@ function featherScenery(g,W,H){
  g.fillStyle=fade;g.fillRect(0,0,W,H);
  g.restore();
 }
+function portraitEnvironment(key,frame,tier,W,H){
+ const id=key+'/'+tier+'/'+Math.round(W)+'x'+Math.round(H);
+ if(portraitAtmosphereKey!==id){
+  portraitAtmosphereKey=id;
+  portraitAtmosphere.width=Math.max(1,Math.round(W));
+  portraitAtmosphere.height=Math.max(1,Math.round(H));
+  const pctx=portraitAtmosphereCtx;
+  pctx.setTransform(1,0,0,1,0,0);
+  pctx.clearRect(0,0,W,H);
+  // Real clean 63-stage scenery covers the ENTIRE tall viewport.
+  sourceCover(pctx,cellRect(frame,tier),0,0,W,H,1.035,0,0,1,key,tier);
+  // Extremely soft original-paint color accents give upper/lower thirds
+  // depth without creating recognizable second cats or rectangular seams.
+  pctx.save();pctx.globalAlpha=.30;
+  pctx.filter='blur('+Math.round(Math.max(24,Math.min(38,W*.085)))+'px) saturate(1.12)';
+  sourceCover(pctx,cellRect(frame,tier),-W*.09,-H*.09,W*1.18,H*1.18,
+    1.015,0,0,1,null,tier);
+  pctx.restore();
+ }
+ return portraitAtmosphere;
+}
 function drawPortraitStory(g,W,H,frame,tier,cam,scale){
  // Use the full 16:9 original in a wide, unbroken central composition,
  // while the cat-free, matching scene extends across the portrait viewport.
@@ -360,8 +387,12 @@ function draw(ctx,W,H,seq,lookup){
  // original 63-scene painting. Portrait: cover ALL of the phone with its
  // matching cat-free scenery first; the complete original pair is overlaid
  // as a soft central focus, without sacrificing either cat to a 16:9 crop.
- sourceCover(ctx,cellRect(frame,tier),-sw*.13,-sh*.13,sw*1.26,sh*1.26,
-   Math.min(cam.zoom,1.16),0,0,1,(originalArt&&!portrait)?null:key,tier,actorA,actorB);
+ if(originalArt&&portrait){
+  ctx.drawImage(portraitEnvironment(key,frame,tier,sw,sh),0,0,sw,sh);
+ }else{
+  sourceCover(ctx,cellRect(frame,tier),-sw*.13,-sh*.13,sw*1.26,sh*1.26,
+    Math.min(cam.zoom,1.16),0,0,1,(originalArt&&!portrait)?null:key,tier,actorA,actorB);
+ }
  // Paint all large magical symbols, circles and sparkles BEHIND the cats.
  // Never overlay even translucent giant rings on their faces and ears.
  if(!thumbnail&&dual>.09){

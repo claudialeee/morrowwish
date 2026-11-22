@@ -71,6 +71,10 @@ try{
     'yard selection must display the beginner level and combat power');
   assert.ok(captureCards.every(t=>/⚔/.test(t)&&/❤/.test(t)),
     'every capture candidate displays attack and HP');
+  // Capture roster is deliberately behind a collapsed <details> disclosure.
+  // An actual player opens "Battle team · edit" before tapping a chip.
+  // Clicking a hidden button without opening it was a stale test bug.
+  await page.locator('#battle-team-details > summary').click();
   await page.locator('#cp-roster .chip').last().click();
   const pressed=await page.locator('#cp-roster .chip').last().getAttribute('aria-pressed');
   assert.ok(['true','false'].includes(pressed),'yard picker remains accessible');

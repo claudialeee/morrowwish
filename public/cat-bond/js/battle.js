@@ -1443,7 +1443,9 @@ class CaptureBattle {
     }else if(sk.kind==='buff'){
       const shield=sk.tags?.includes('shield');
       if(shield){
-        return this.castWard(t, sk.shieldType || 'barrier');   // three shield verbs (on friend or self)
+        const wardPlaced=this.castWard(t, sk.shieldType || 'barrier');
+        if(wardPlaced)window.CatBondSkillFX?.support(this,t,sk);
+        return wardPlaced;  // three shield verbs (on friend or self)
       }else if(sk.tags?.includes('camo')){
         // 纸箱埋伏 Box Ambush: brief untargetable (i-frames) + prime the next hit to stagger.
         t.inv=Math.max(t.inv||0,1.2); t._ambush=true;
@@ -1465,6 +1467,7 @@ class CaptureBattle {
       }
     }else return false;
     this.gainUlt(6);
+    window.CatBondSkillFX?.support(this,t,sk);
     // Skill impact visual and icon communicate the attack; no repeated toast.
     return true;
   }
@@ -1704,6 +1707,9 @@ class CaptureBattle {
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
     if((sk?.ultCost||0)===0)this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
+    // Skill IDs select 39 different local silhouettes; generic element accents
+    // remain as a subtle baseline and projectile mechanics are untouched.
+    window.CatBondSkillFX?.cast(this,f,sk,aim);
     // Unique elemental timbre and skill-ID cadence. Strong AoE/dash skills
     // gain a low impact layer; actual ultimates get the heaviest accent.
     const soundPower=sk?.ultCost>0?3:(sk?.windup>=.35||Number(pow)>1.6?2:1);
@@ -2830,7 +2836,9 @@ class CaptureBattle {
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
-      if(v.kind==='regularAccent'){
+      if(v.kind==='signatureCast'||v.kind==='signatureHit'){
+        window.CatBondSkillFX?.draw(ctx,v,this.t);
+      }else if(v.kind==='regularAccent'){
         this.drawRegularSkillAccent(ctx,v,k,p);
       }else if(v.kind==='water'||v.kind==='prism'||v.kind==='lightning'){
         const dx=v.x2-v.x,dy=v.y2-v.y,len=Math.hypot(dx,dy)||1;
@@ -4167,10 +4175,15 @@ class CaptureBattle {
       // camera pauses. Normal melee/chain/projectiles retain their hitstop.
       const continuous=!!skill?.isChanneledTick;
       this.hurtEnemy(target,dealt,x,y,continuous);
+      // Additional authored contact mark is strictly local. Continuous beams
+      // are throttled per skill/target to avoid particle and audio overload.
+      if(dealt>0)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);
       if(continuous){
         this.vfx.trail(x,y,col,2.5);
       }else{
-        this.vfx.impact(x,y,col);
+        // hurtEnemy() already created the white-hot connect spark and hitstop.
+        // Do not double-spawn the same impact here; authored skill-id hit art
+        // provides the distinct accent instead.
         // A small localized impact accent makes heavy physical hits feel
         // decisive without painting the whole screen or enlarging hitboxes.
         if(skill?.heavy||['dash','pounce','leap','melee'].includes(skill?.kind)){
@@ -4787,6 +4800,9 @@ class CaptureBattle {
         ctx.restore();
       }
       window.CatBondWardArt?.draw(ctx,tf,visualX,visualY,this.t,this.catScale(isMe?'active':'ally'),'front');
+      // Player cats also display persistent burn/shock/bleed/exposure instead
+      // of an invisible debuff that only exists in damage numbers.
+      window.CatBondSkillFX?.drawStatus(ctx,tf,this.t);
       ctx.restore();
       // Player HP/ult now live in the sleek top-left squad panel (drawSquadPanel),
       // not floating over the cat. Keep only a tiny active-cat chevron so you can
@@ -4937,6 +4953,7 @@ class CaptureBattle {
       ctx.globalAlpha = 0.5; ctx.fillStyle = '#2a2036';
       ctx.beginPath(); ctx.ellipse(e.x, e.y - 8, 24, 12, 0, 0, Math.PI * 2); ctx.fill();
     }
+    window.CatBondSkillFX?.drawStatus(ctx,e,this.t);
     ctx.restore();
   }
 
