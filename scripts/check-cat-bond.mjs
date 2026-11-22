@@ -404,8 +404,12 @@ assert.ok(Math.abs((1000-balanceEnemy.hp)-90)<.001,
   'explicit boss role ignores automatic low-HP execute bonus');
 balanceEnemy.hp=1000;balanceEnemy.flash=0;balanceEnemy.role='elite';damageBalance.combo=0;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok((1000-balanceEnemy.hp)>90,
-  'elite rarity is not silently classified as a boss');
+assert.ok(Math.abs((1000-balanceEnemy.hp)-108)<.001,
+  'elite execution is fixed +20% rather than escalating toward +55%');
+balanceEnemy.hp=100;balanceEnemy.flash=0;damageBalance.combo=0;
+damageBalance.hurtEnemy(balanceEnemy,30,balanceEnemy.x,balanceEnemy.y,false);
+assert.ok(Math.abs((100-balanceEnemy.hp)-32.4)<.001,
+  'even near zero HP elite execute remains a fixed +20%');
 balanceEnemy.role='boss';
 // Audited damage buckets: 100 raw x [1 + .30 stagger + .12 armor +
 // .15 combo] x .9 = 141.3, NOT a stack of four multipliers.
