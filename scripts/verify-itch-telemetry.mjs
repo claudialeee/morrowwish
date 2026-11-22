@@ -1,17 +1,26 @@
 import {chromium} from 'playwright';
+import {randomUUID} from 'node:crypto';
 
 const SLUGS=['cat-bond','pawsibly-innocent'];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-let failures=0;
+let failures=0,verified=0;
 for(const slug of SLUGS){
   const context=await browser.newContext({viewport:{width:1250,height:920},ignoreHTTPSErrors:false});
   const page=await context.newPage();
   const posted=[],consoleErrors=[],networkErrors=[],gameResponses=[];
+  const probe='mw-qa-'+randomUUID();
+  let intercepted=0;
   await context.route('**/api/session',async route=>{
     let payload=null;
     try{payload=JSON.parse(route.request().postData()||'{}');}catch{}
     posted.push({url:route.request().url(),method:route.request().method(),origin:route.request().headers()['origin']||'',data:payload&&{game:payload.game,kind:payload.kind,source:payload.source,referrer:payload.referrer,utmSource:payload.utmSource}});
-    await route.fulfill({status:202,headers:{'access-control-allow-origin':'*','content-type':'application/json'},body:'{"ok":true}'});
+    // Forward ONLY isolated diagnostic records, never user gameplay metrics.
+    // The production API stores smokeProbe in category=diagnostic and
+    // /api/diagnostic-check immediately deletes it after verification.
+    if(payload?.game===slug&&['visit','session'].includes(payload.kind)){
+      intercepted++;
+      await route.continue({postData:JSON.stringify({...payload,viewId:probe,smokeProbe:'mw-qa-v1'})});
+    } else await route.abort();
   });
   page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text().slice(0,300))});
   page.on('pageerror',e=>consoleErrors.push(e.message.slice(0,300)));
@@ -29,11 +38,19 @@ for(const slug of SLUGS){
     const frames=page.frames().map(f=>({name:f.name(),url:f.url().slice(0,400)}));
     const fr=await page.evaluate(()=>[...document.querySelectorAll('iframe')].map(x=>({src:x.src,outer:x.outerHTML.slice(0,420)})));
     const expected='morrowwish.vercel.app/'+slug+'/';
-    const outcome={slug,status:response?.status(),title:await page.title(),pageUrl:page.url(),buttonInfo,iframes:fr,frames,telemetryPostIntercepted:posted,gameResponses:gameResponses.slice(-15),consoleErrors:consoleErrors.slice(-15),networkErrors:networkErrors.slice(-15)};
+    let diagnostic=null;
+    if(response?.status()===200&&intercepted>0){
+      try{const check=await fetch('https://morrowwish.vercel.app/api/diagnostic-check?probe='+encodeURIComponent(probe));diagnostic={status:check.status,...await check.json()};}
+      catch(e){diagnostic={error:String(e).slice(0,200)};}
+    }
+    const outcome={slug,status:response?.status(),title:await page.title(),pageUrl:page.url(),buttonInfo,iframes:fr,frames,telemetryPostIntercepted:posted,diagnostic,gameResponses:gameResponses.slice(-15),consoleErrors:consoleErrors.slice(-15),networkErrors:networkErrors.slice(-15)};
     console.log('ITCH_QA '+JSON.stringify(outcome));
-    if(!posted.some(p=>p.data?.kind==='visit'&&p.data?.game===slug)) {console.error('ITCH_QA_MISSING_VISIT '+slug); failures++;}
+    if(response?.status()===429){console.warn('ITCH_QA_RATE_LIMITED '+slug);continue;}
+    if(posted.some(p=>p.data?.kind==='visit'&&p.data?.game===slug&&p.data.utmSource==='itch')&&diagnostic?.recorded===true&&diagnostic?.removed===true){verified++;}
+    else{console.error('ITCH_QA_LIVE_EVENT_NOT_RECORDED '+slug);failures++;}
   }catch(e){console.error('ITCH_QA_EXCEPTION '+slug+' '+String(e.stack||e).slice(0,1000));failures++;}
   await context.close();
 }
 await browser.close();
-process.exitCode=failures?1:0;
+console.log('ITCH_QA_SUMMARY '+JSON.stringify({verified,failures}));
+process.exitCode=failures||verified===0?1:0;
