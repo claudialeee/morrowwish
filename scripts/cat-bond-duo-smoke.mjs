@@ -182,25 +182,11 @@ try{
   assert.equal(await locked.locator('#signature-grid').count(),0);
   await stranger.close();
   console.log('DUO BOND PASS '+profile.name+' '+JSON.stringify({battle:result,visual}));
-  // Full gallery is a standalone preview requested by the studio; the
-  // existing unlocked-only player preview still remains a separate route.
-  await page.goto(origin+'/cat-bond/duo-gallery.html',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.CatBondGalleryQA?.ready&&
-    window.CatBondGalleryQA.total===21,{timeout:15000});
-  assert.equal(await page.locator('#gallery button.skill').count(),21,
-    'every element-pair needs a playable card in the full preview gallery');
-  const proof=await page.evaluate(()=>{
-    const cv=document.getElementById('show'),g=cv.getContext('2d');
-    const pixels=g.getImageData(0,0,cv.width,cv.height).data;
-    let occupied=0;for(let i=3;i<pixels.length;i+=101)if(pixels[i]>10)occupied++;
-    return {occupied,title:document.getElementById('name').textContent};
-  });
-  assert.ok(proof.occupied>300,'gallery must draw actual nonblank gameplay cut-in frames');
-  await page.locator('#next').click();
-  assert.equal(await page.locator('#counter').innerText(),'2 / 21');
-  await page.locator('#all').click();
-  assert.equal(await page.locator('#all').getAttribute('aria-pressed'),'true');
-  console.log('DUO GALLERY PASS '+profile.name+' 21 frames, timeline, controls');
+  // Player routes must never expose every unearned combo animation.
+  const publicGallery=await page.request.get(origin+'/cat-bond/duo-gallery.html');
+  assert.equal(publicGallery.status(),404,
+    'complete developer-only gallery must not be served by public games');
+  console.log('GALLERY GATE PASS '+profile.name+' 21-move index not publicly served');
   await context.close();
  }
  assert.deepEqual(errors,[],'uncaught browser errors');
