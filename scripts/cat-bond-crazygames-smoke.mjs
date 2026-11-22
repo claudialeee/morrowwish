@@ -250,6 +250,32 @@ try{
           'The next hunt must actually field the unlocked two-cat duo');
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
+        // A real second hunt must introduce the signature duo attack, not
+        // quietly leave the player in another solo fight after the unlock.
+        await page.evaluate(()=>{
+          const game=window.__game,spot=game.yard.hide.spot;
+          game.yardTap(spot.x,spot.y);
+        });
+        await page.waitForSelector('#cp-go',{timeout:8000});
+        await page.locator('#cp-go').click();
+        await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
+        const duoPreview=await page.evaluate(()=>{
+          const b=window.__game.battle;
+          return {team:b.team.map(f=>f.cat.uid),duo:!!b.duo,
+            charge:b.duoCharge,ready:b.duoReady()};
+        });
+        assert.equal(duoPreview.team.length,2,'Follow-up fight must field two cats');
+        assert.equal(duoPreview.duo,true,'First duo must be active in combat');
+        assert.equal(duoPreview.charge,100,'First duo demonstration starts ready');
+        assert.equal(duoPreview.ready,true,'Duo is immediately castable');
+        assert.equal(await page.evaluate(()=>window.__game.battle.castDuo()),true,
+          'First duo cinematic must actually execute');
+        await page.evaluate(()=>{
+          const game=window.__game,b=game.battle;
+          b.finish(false);game.endBattle();UI.closeAll();
+        });
+        assert.equal(await page.evaluate(()=>State.S.firstDuoShowcasePending),false,
+          'Using the first duo move consumes its one-time invitation');
         // The old top omnibus collection-goal banner was deliberately
         // removed in favor of real bottom / right shortcuts. Verify the new
         // navigation and open the same adventure guide from its own action.
