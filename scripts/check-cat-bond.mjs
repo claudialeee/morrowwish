@@ -369,6 +369,29 @@ assert.ok(impactBattle.floaters.some(f=>f.size===21&&f.color==='#ffe2a2'),
 assert.ok(impactBattle.floaters.some(f=>f.max===.62),
   'damage popups have normalized timing for animation across frame rates');
 
+// Damage-vulnerability balance: ordinary Q/E should not explode under layered debuffs.
+assert.equal(Skills.TAG_INFO.expose.dmgTaken,1.2,'expose must remain a modest +20%');
+assert.equal(Skills.TAG_INFO.rust.dmgTaken,1.12,'rust must remain a modest +12%');
+const damageBalance=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+damageBalance.coach=null;
+damageBalance.levelSuppression=1;
+damageBalance.combo=0;
+const balanceEnemy=damageBalance.enemies[0];
+balanceEnemy.maxhp=10000;balanceEnemy.hp=10000;balanceEnemy.alive=true;
+balanceEnemy.status={expose:4,rust:4};
+damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,true);
+assert.ok(Math.abs((10000-balanceEnemy.hp)-117)<.001,
+  'stacked expose/rust vulnerability is additive (+30% cap) and player damage is 0.9x');
+balanceEnemy.hp=1000;balanceEnemy.flash=0;
+balanceEnemy.status={};
+damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
+assert.ok((1000-balanceEnemy.hp)<160,
+  'low-health execution must no longer inflate a 100-base Q/E hit above 160');
+const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
+assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.4'),
+  'existing stagger retains 1.4x, not 2x, vulnerability');
+
 assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
 const normalIDs=Skills.SKILLS.filter(sk=>!sk.ultCost).map(sk=>sk.id);
