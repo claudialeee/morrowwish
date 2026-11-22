@@ -2765,20 +2765,69 @@ class CaptureBattle {
           }
           ctx.stroke();
         }
+        // Small forks peel away from the main electrical trunk; they remain
+        // subordinate to the actual attack line and never cover the screen.
+        const vx=b._ex-b._ox,vy=b._ey-b._oy,mag=Math.hypot(vx,vy)||1;
+        const px=-vy/mag,py=vx/mag;
+        ctx.strokeStyle='#fff4c2';ctx.lineWidth=1.5;ctx.globalAlpha=.66*k;
+        for(let j=2;j<=9;j+=3){
+          const u=j/12,sign=j%2?1:-1,
+            tx=b._ox+vx*u,ty=b._oy+vy*u;
+          ctx.beginPath();ctx.moveTo(tx,ty);
+          ctx.lineTo(tx+px*sign*12+vx/mag*5,ty+py*sign*12+vy/mag*5);
+          ctx.lineTo(tx+px*sign*21+vx/mag*10,ty+py*sign*21+vy/mag*10);
+          ctx.stroke();
+        }
         ctx.restore();continue;
       }
       if(b.sk?.id==='flameSweep'){
-        ctx.save();ctx.globalCompositeOperation='lighter';
-        const angle=b.aim,nx=-Math.sin(angle),ny=Math.cos(angle);
-        for(let j=0;j<11;j++){
-          const u=(j+.35)/11,dist=u*b.len,
-            flick=Math.sin(this.t*24+j*1.9)*8;
-          const x=b._ox+Math.cos(angle)*dist+nx*flick,
-            y=b._oy+Math.sin(angle)*dist+ny*flick;
-          const r=(8+u*24)*(1+Math.sin(this.t*13+j)*.11);
-          ctx.globalAlpha=k*(.37+.33*(1-u));ctx.fillStyle=j%3===0?'#fff0a9':j%3===1?'#ffb057':'#f66737';
-          ctx.beginPath();ctx.ellipse(x,y,r*.95,r*.51,angle,0,Math.PI*2);ctx.fill();
+        // A true SHORT-RANGE CHANNELED FIRE FAN. Two warm outer flames, a
+        // narrower white-hot core, travelling tongues and glowing embers;
+        // follow b.aim so the cat visibly sweeps its head LEFT↔RIGHT.
+        // Never fill the viewport or extend beyond the real 156px hit reach.
+        const angle=b.aim,dx=Math.cos(angle),dy=Math.sin(angle),
+          nx=-dy,ny=dx,originX=b._ox,originY=b._oy;
+        const length=Math.min(160,Math.hypot(b._ex-originX,b._ey-originY));
+        ctx.save();ctx.globalCompositeOperation='source-over';ctx.lineCap='round';
+        const fan=ctx.createLinearGradient(originX,originY,b._ex,b._ey);
+        fan.addColorStop(0,'rgba(211,66,38,.72)');
+        fan.addColorStop(.5,'rgba(255,126,56,.64)');
+        fan.addColorStop(1,'rgba(255,210,115,.08)');
+        // Two shifting exterior contours read as a sheet of fire, rather
+        // than eleven disconnected orange coins.
+        ctx.fillStyle=fan;ctx.globalAlpha=.77*k;ctx.beginPath();
+        const seg=16;
+        for(let side of [-1,1]){
+          for(let j=0;j<=seg;j++){
+            const u=j/seg,w=(5+u*24)*(1-.25*u),
+              wob=Math.sin(this.t*24+u*15+side)*5*u,
+              x=originX+dx*length*u+nx*side*(w+wob),
+              y=originY+dy*length*u+ny*side*(w+wob);
+            if(side===-1&&j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+          }
+          // The other edge must return from tip to nozzle.
+          if(side===-1)ctx.lineTo(originX+dx*length+nx*29,originY+dy*length+ny*29);
         }
+        ctx.closePath();ctx.fill();
+        ctx.globalCompositeOperation='lighter';
+        for(let j=0;j<18;j++){
+          const u=(j+.25)/18,dist=u*length,
+            sway=Math.sin(this.t*26+j*2.3)*(.8+u*12),
+            x=originX+dx*dist+nx*sway,
+            y=originY+dy*dist+ny*sway,r=(5+u*21)*(1+.13*Math.sin(this.t*18+j));
+          ctx.globalAlpha=k*(.34+.28*(1-u));
+          ctx.fillStyle=j%4===0?'#fff5bc':j%3===0?'#ffcb71':'#f87335';
+          ctx.beginPath();ctx.ellipse(x,y,r*1.05,r*.43,angle,0,Math.PI*2);ctx.fill();
+          if(j%3===0){
+            ctx.strokeStyle='#fff3c0';ctx.lineWidth=1.5;
+            const bx=x+dx*r*.7,by=y+dy*r*.7;
+            ctx.globalAlpha=.52*k;ctx.beginPath();ctx.moveTo(bx,by);
+            ctx.lineTo(bx+dx*(11+u*9)+nx*6,by+dy*(11+u*9)+ny*6);ctx.stroke();
+          }
+        }
+        // White-hot throat at the muzzle; helps follow the sweeping motion.
+        ctx.globalAlpha=.77*k;ctx.fillStyle='#fff0b1';
+        ctx.beginPath();ctx.ellipse(originX+dx*10,originY+dy*10,10,5,angle,0,Math.PI*2);ctx.fill();
         ctx.restore();continue;
       }
       // Additive gradient stream (VFX research): overlaps sum to white, a prism
