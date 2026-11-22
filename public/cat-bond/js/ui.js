@@ -7,6 +7,7 @@ const UI = {
 
   init(game) {
     this.game = game;
+    document.getElementById('guide-help')?.addEventListener('click',()=>this.game?.replayFirstAdventureTour?.());
     // tab bar
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => this.onTab(btn.dataset.tab));
@@ -175,7 +176,7 @@ const UI = {
     }
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     if (tab === 'yard') { this.closeAll(); }
-    else if (tab === 'cats') this.openCatHub('solo');
+    else if (tab === 'cats') this.openCatHub(this.game?.firstAdventureTour?.()?.step===1?'duo':'solo');
     else if (tab === 'work') this.openWorkshop();
     else if (tab === 'dex') this.openDex();
     else if (tab === 'daily') this.openDaily();
@@ -346,6 +347,7 @@ const UI = {
   // Five real playable locations, with their exact unlocking conditions.
   openMapChooser(){
     if(!window.WorldMap)return;
+    this.game?.completeFirstAdventureStep?.('map');
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const rows=WorldMap.REGIONS.map(r=>{
       const open=WorldMap.isUnlocked(r.id);
@@ -566,6 +568,7 @@ const UI = {
   },
   openBondPanel(preferUnresolved=false){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats;
+    if(cats.length>=2)this.game?.completeFirstAdventureStep?.('duo');
     if(cats.length<2){this.panel('<span class="card-close">×</span><h2>'+(en?'Cat Duos':'双猫搭档')+'</h2><p>'+(en?'Befriend a second cat first!':'先收服第二只猫，就能建立纽带！')+'</p>');this.catHubTabs('duo');return;}
     const pendingPair=preferUnresolved?CatRelations.unresolved?.()[0]:null;
     // Build the visible gallery from EARNED relationship records only.
@@ -838,6 +841,7 @@ const UI = {
     // dismissed. Previously refreshing while the panel was open set
     // yard-duo-status.hidden=true and never restored it after closing.
     this.game?.refreshYardSurprise?.();
+    this.game?.refreshFirstQuest?.();
   },
 
   // ---------- roster ----------
@@ -846,6 +850,7 @@ const UI = {
   // staffed Sun station, stored locally, then manually collected to the wallet.
   openWorkshop() {
     if(!window.Raising){this.panel('<span class="card-close">×</span><h2>工坊</h2><p>加载中…</p>');return;}
+    this.game?.completeFirstAdventureStep?.('workshop');
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const stations=Raising.stationsView().filter(st=>st.res)
       .sort((a,b)=>['sun','fishing','yarn','watch'].indexOf(a.type)-['sun','fishing','yarn','watch'].indexOf(b.type));
@@ -1922,6 +1927,7 @@ const UI = {
       </div>
       <p class="center" style="margin-top:8px">${en?"Score":"得分"} <b id="tz-score">0</b> / 10</p>
       <div class="btn-row" style="justify-content:center"><button class="btn ghost" id="tz-done" type="button">${en?"Finish":"结束"}</button></div>`);
+    this.game?.completeFirstAdventureStep?.('play');
     this.runTease(target);
   },
 
