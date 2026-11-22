@@ -939,7 +939,10 @@ const UI = {
       else if(v.reason==='fish')this.game.toast(en?'Not enough fish':'小鱼不够啦');
       this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
     };
-    document.getElementById('duo-return').onclick=()=>this._navStack.length?this.navigateBack():this.openCatHub('solo');
+    // The duo page is reachable directly from the adventure guide without a
+    // navigation-stack entry. Its visible “Back to adventure” control must
+    // return to that guide, not silently jump to the unrelated solo cat hub.
+    document.getElementById('duo-return').onclick=()=>this._navStack.length?this.navigateBack():this.openJourney();
   },
 
   // ---- 欢迎回来 (offline raising report) ----
