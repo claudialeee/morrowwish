@@ -162,6 +162,7 @@ class CaptureBattle {
 
     // --- shared ---
     this.projectiles = [];               // {x,y,vx,vy,r,dmg,owner,life,color,kind}
+    this.barrierWalls = [];              // world-space team-protecting reflect panels
     this.beams = [];                     // channeled beam skills (水枪/flamethrower): continuous line damage
     this.fields = [];                    // lingering elemental ground zones (Terraformer): apply tags, can be detonated
     this.skillStrokes=[]; // Short-lived authored 2D spell shapes (not recolored bullets)
@@ -576,6 +577,7 @@ class CaptureBattle {
       f.y=clamp(f.y*H/oldH,this.topMargin,Math.max(this.topMargin,H-this.bottomMargin));
     }
     for(const p of this.projectiles){p.x*=W/oldW;p.y*=H/oldH;}
+    for(const w of this.barrierWalls||[]){w.x*=W/oldW;w.y*=H/oldH;}
     // Commander focus stores enemy identity, not screen coordinates.
     this._stars=null;this._motes=null;
   }
@@ -1210,7 +1212,7 @@ class CaptureBattle {
   // wall bounces back as SELF-damage). Auto-battle uses this to retarget / hold fire.
   // Front-facing reflection is dangerous only to attackers in front of the wall.
   reflectCovers(target, fromX, fromY) {
-    if (!target || !(target.reflectT > 0)) return false;
+    if (!target || !(target.reflectT > 0) || target._flatWall) return false;
     const angle=target._reflectFacing ?? target._moveFacing ?? (target.face<0?Math.PI:0);
     return (fromX-target.x)*Math.cos(angle)+(fromY-target.y)*Math.sin(angle)>=0;
   }
@@ -1477,7 +1479,8 @@ class CaptureBattle {
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
-    const t = this.supportBeneficiary(f, sk, aim);   // friend or self
+    // A flat mirror wall belongs to its caster, but physically protects the team.
+    const t = sk?.shieldType==='reflect' ? f : this.supportBeneficiary(f, sk, aim);
     if(sk.kind==='heal'){
       // ELEMENT HEAL IDENTITY (#56):
       //   water  healMode:'area'  — a lingering area HoT: every teammate within radius
@@ -1522,7 +1525,7 @@ class CaptureBattle {
     }else if(sk.kind==='buff'){
       const shield=sk.tags?.includes('shield');
       if(shield){
-        const wardPlaced=this.castWard(t, sk.shieldType || 'barrier', sk);
+        const wardPlaced=this.castWard(t, sk.shieldType || 'barrier', sk, aim);
         if(wardPlaced)window.CatBondSkillFX?.support(this,t,sk);
         return wardPlaced;  // three shield verbs (on friend or self)
       }else if(sk.tags?.includes('camo')){
@@ -1648,7 +1651,7 @@ class CaptureBattle {
   // ---- the three shield verbs (players AND enemies) ----
   // Each sets a short-lived field resolveHit() consults, with its own limit and
   // after-effect. Shared so enemy AI can cast the exact same wards.
-  castWard(f, type, sk=null) {
+  castWard(f, type, sk=null, aim=null) {
     if ((f.protectT||0)>0 || (f.reflectT||0)>0 || (f.shieldT||0)>.25) return false;  // one ward at a time
     if (type === 'protect') {
       // Protect 守护: full block, tiny window, then a vulnerable 后遗症.
@@ -1657,12 +1660,22 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
-      f.reflectT = 2.2;
-      // Face the direction of travel; if stationary, keep the last heading.
-      // Every new cast starts from CURRENT travel direction, not a stale previous ward.
-      f._reflectFacing = f._moveFacing ?? (f.face < 0 ? Math.PI : 0);
-      this.vfx.ring(f.x,f.y,{r0:18,vr:70,life:.5,color:'#b8e0ff',width:5});
-      this.vfx.text(f.x,f.y-34,'反弹壁','#b8e0ff',14);
+      f.reflectT=2.2;
+      // Hold a deployed, WORLD-SPACE 220px line 42px in front of the caster.
+      // The flat panel doesn't teleport when the caster moves or changes aim.
+      const heading=Number.isFinite(aim)?aim:
+        (f._moveFacing??f._reflectFacing??(f.face<0?Math.PI:0));
+      f._reflectFacing=heading;
+      const nx=Math.cos(heading),ny=Math.sin(heading);
+      const wall={owner:f,side:this.team.includes(f)?'me':'wild',
+        x:f.x+nx*42,y:f.y+ny*42,angle:heading,nx,ny,
+        halfLength:110,remaining:f.reflectT,age:0,hitAge:0,
+        hitOffset:0,hits:0};
+      this.barrierWalls=this.barrierWalls||[];
+      this.barrierWalls.push(wall);
+      f._flatWall=wall;
+      this.vfx.ring(f.x,f.y,{r0:14,vr:110,life:.25,color:'#b8e0ff',width:3});
+      this.vfx.text(f.x,f.y-34,'炸毛墙','#b8e0ff',14);
     } else {
       // Barrier 护盾: % reduction for a duration (the classic bubble).
       f.shieldT=sk?.wardDuration||4.8;
@@ -1674,6 +1687,46 @@ class CaptureBattle {
     }
     return true;
   }
+  // Segment/plane interception: p's previous/current positions must cross
+  // from the incoming (front) half-space through the panel, within its length.
+  // This is checked before target collision and works for ANY ally behind it.
+  interceptWallProjectile(p,oldX,oldY){
+    if(!p||p.burst||p.life<=0||!['me','wild'].includes(p.owner))return false;
+    if((p._wallIgnoreUntil||0)>this.t)return false;
+    for(const wall of this.barrierWalls||[]){
+      if(wall.remaining<=0||!wall.owner?.alive||wall.side===p.owner)continue;
+      const start=(oldX-wall.x)*wall.nx+(oldY-wall.y)*wall.ny;
+      const end=(p.x-wall.x)*wall.nx+(p.y-wall.y)*wall.ny;
+      // Only block attacks arriving from the face of the barrier, not the rear.
+      if(start<=0||end>0)continue;
+      const frac=start/(start-end);
+      if(frac<0||frac>1)continue;
+      const hitX=oldX+(p.x-oldX)*frac,hitY=oldY+(p.y-oldY)*frac;
+      const along=(hitX-wall.x)*(-wall.ny)+(hitY-wall.y)*wall.nx;
+      if(Math.abs(along)>wall.halfLength+(p.r||0))continue;
+      wall.hitAge=.28;wall.hitOffset=Math.max(-wall.halfLength,Math.min(wall.halfLength,along));
+      wall.hits=(wall.hits||0)+1;
+      p.x=hitX;p.y=hitY;
+      this.vfx.ring(hitX,hitY,{r0:5,vr:100,life:.24,color:'#d6faff',width:3});
+      this.vfx.burst(hitX,hitY,{count:this.game.isTouch?5:9,
+        color:'#c4f8ff',speed:90,life:.2,r:2});
+      // Every other shot reflects at reduced power; the rest are absorbed.
+      // A single shot may reflect only once, preventing infinite ping-pong.
+      const reflect=wall.hits%2===1&&(p._reflects||0)<1;
+      if(reflect){
+        const incoming=p.vx*wall.nx+p.vy*wall.ny;
+        p.vx-=2*incoming*wall.nx;p.vy-=2*incoming*wall.ny;
+        p.ang=Math.atan2(p.vy,p.vx);p.spd=Math.hypot(p.vx,p.vy);
+        p.owner=wall.side;p.dmg*=.55;p._reflects=(p._reflects||0)+1;
+        p.life=Math.max(p.life,1.15);
+        p._wallIgnoreUntil=this.t+.12;
+        p.x+=wall.nx*4;p.y+=wall.ny*4;
+      }else p.life=0;
+      return true;
+    }
+    return false;
+  }
+
   // ---- adaptive AI profile (tiny online statistics, all clamped) ----
   normalizeAiProfile(p) {
     const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true, stompStreak: 0 };
@@ -1722,7 +1775,15 @@ class CaptureBattle {
       f._wardReduction=null;f._wardRegenPct=0;f._wardRetaliateBurn=false;
     }
     if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
-    if (f.reflectT > 0) f.reflectT = Math.max(0, f.reflectT - dt);
+    if(f.reflectT>0)f.reflectT=Math.max(0,f.reflectT-dt);
+    if(f._flatWall){
+      f._flatWall.remaining=f.reflectT;
+      f._flatWall.age+=dt;
+      f._flatWall.hitAge=Math.max(0,(f._flatWall.hitAge||0)-dt);
+      if(f.reflectT<=0||!f.alive)f._flatWall=null;
+    }
+    if(this.barrierWalls?.length)
+      this.barrierWalls=this.barrierWalls.filter(w=>w.remaining>0&&w.owner?.alive);
     // One-time local dissolve on shield expiry; never spawn every frame.
     if(Number.isFinite(f.x)&&Number.isFinite(f.y)){
       if(oldShield>0&&f.shieldT===0)
@@ -3487,6 +3548,7 @@ class CaptureBattle {
           p.ang += turn; p.vx = Math.cos(p.ang) * p.spd; p.vy = Math.sin(p.ang) * p.spd;
         }
       }
+      const previousX=p.x,previousY=p.y;
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       // GROW: radius swells over flight for a widening hitbox / bigger area coverage.
       if (p.grow) { const age = 1 - Math.max(0, p.life) / (p.maxLife || 2.2); p.r = p.r0 * (1 + (p.grow - 1) * age); }
@@ -3506,6 +3568,9 @@ class CaptureBattle {
         if (p.life <= 0 || Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16) { this.burstAt(p); p.life = 0; }
         continue;
       }
+      // Intercept at the physical wall plane BEFORE the projectile reaches a
+      // teammate. One mirror wall shields all cats standing behind its span.
+      if(this.interceptWallProjectile(p,previousX,previousY))continue;
       if (p.owner === 'me') {
         for (const e of this.liveEnemies()) {
           if (e.flash <= 0 && e.inv <= 0 && Math.hypot(p.x - e.x, p.y - e.y) < p.r + 22) {
@@ -4753,6 +4818,8 @@ class CaptureBattle {
     }
 
     this.drawFields(ctx);                // elemental ground zones, beneath the action
+    for(const wall of this.barrierWalls||[])
+      window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
     this.vfx.draw(ctx);
     this.drawSkillStrokes(ctx);
