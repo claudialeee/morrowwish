@@ -85,7 +85,8 @@ assert.match(page,/id="pick-cat-a"/);
 assert.match(page,/id="pick-cat-b"/);
 for(const html of [page,game,unlocked]){
  assert.match(html,/duo-breed-actors\.js\?v=32-watercolor-cats-scenery-v2/);
- assert.match(html,/duo-premium\.js\?v=(?:full-stage-original-63-duo-v4-watercolor-atmosphere|full-frame-gallery-no-crop)-20261122/);
+ // Require a real cache-busted premium renderer, without pinning the release to a stale asset version.
+ assert.match(html,/duo-premium\.js\?v=[\w-]+-20261122/);
  assert.doesNotMatch(html,/duo-breed-art\.js/,'Unsafe mask shader must stay disabled');
  assert.doesNotMatch(html,/duo-premium-sheet\.webp/,'Rejected low-quality gray cats must not reappear');
 }

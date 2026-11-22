@@ -44,8 +44,8 @@ footer{max-width:1260px;margin:auto;padding:2px 22px 32px;font-size:12px;color:#
 <script>
 const names={'cat-bond':'猫猫纽带','pawsibly-innocent':'猫猫捣蛋','tiny-town':'自由小镇','elsewhere':'平行人生','flip-dash':'Flip Dash','parcel-panic':'快递大作战','pocket-aquarium':'口袋水族馆'};
 const highlights={
- 'cat-bond':[['cat-upgrade','猫咪升级'],['duo-partners','双猫搭档'],['work-after','猫咪打工'],['tease','逗猫'],['map-explore','探索地图'],['duo','双猫合击'],['ultimate','必杀技']],
- 'pawsibly-innocent':[['escape-attempt','偷鱼逃脱'],['narrow-pursuit','险些被抓'],['narrow-achievement','侥幸逃脱成就'],['caught-attempt','被抓住']],
+ 'cat-bond':[['cat-upgrade','一键升级'],['duo-partners','双猫搭档'],['duo-map-walk','前往双猫约定'],['duo-promise','地图双猫约定'],['work-after','猫咪打工'],['tease','逗猫'],['map-explore','探索地图'],['map-management','地图养成'],['battle-hud','血条与技能栏'],['battle-skills','技能实战'],['duo','双猫合击'],['rare-capture','收服稀有猫'],['ssr-showcase','SSR传说猫']],
+ 'pawsibly-innocent':[['escape-attempt','客厅偷鱼'],['narrow-pursuit','险些被抓'],['narrow-achievement','侥幸逃脱成就'],['room-kitchen','厨房'],['room-laundry','洗衣房'],['room-library','图书馆'],['room-garden','花园'],['caught-attempt','被抓住']],
  'tiny-town':[['opening-three-choices','开场三个选择'],['board','小镇棋盘'],['resident-profile','居民喜好'],['combination','组合碰撞'],['neighbor-story','居民故事'],['legendary','传奇建筑'],['ending','小镇结局']],
  'elsewhere':[['moon-surprise','月球奇遇'],['moon-ending','月球人生结局'],['paris-romance','巴黎邂逅'],['paris-ending','巴黎爱情结局']],
  'flip-dash':[['first-coin','开局吃金币'],['coin-collect','连续吃金币'],['crash','撞击失败']],
@@ -62,9 +62,10 @@ async function refresh(){
  $('error').textContent='';$('version').textContent='正在检查最新视频…';
  try{
   const response=await fetch('/promo/latest-review.json?check='+Date.now(),{cache:'no-store'});
-  if(!response.ok)throw Error('审核清单尚未就绪');
+  if(!response.ok)throw Error('审核清单尚未就绪（最新版本可能仍在部署）');
   const data=await response.json();
   if(!Array.isArray(data.trailers)||data.trailers.length!==7)throw Error('最新审核视频不完整');
+  if(data.trailers.some(entry=>!entry.video||!names[entry.slug]))throw Error('最新视频清单存在无效项目');
   const box=$('videos');box.replaceChildren();
   for(const entry of data.trailers){
    if(!names[entry.slug]||typeof entry.video!=='string'||!entry.video.startsWith('/promo/'))continue;
@@ -86,6 +87,7 @@ async function refresh(){
    a.className='video-link';a.href=video.src;a.target='_blank';a.rel='noopener';a.textContent='单独打开 MP4';
    note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · '+(entry.paused?'该游戏宣传片暂停制作，保留上一审核版 · ':'')+'未批准发布';
    video.addEventListener('play',()=>box.querySelectorAll('video').forEach(other=>{if(other!==video)other.pause()}));
+   video.addEventListener('error',()=>{note.textContent='播放器载入失败，请点「单独打开 MP4」重试';note.style.color='#ffd4da'});
    article.append(heading,video,nav,a,note);box.append(article);
   }
   $('version').textContent=(data.latestVersion||data.version||'最新版本')+(data.createdAt?' · '+formatDate(data.createdAt)+' 更新':'')+' · '+box.children.length+' 条';
