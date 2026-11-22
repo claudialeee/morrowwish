@@ -122,7 +122,8 @@ function fighterWithSkills(kinds) {
   const ranged = fighterWithSkills(['projectile', 'projectile']);
   const band = b.kitRangeBand(ranged);
   assert.equal(band.role, 'ranged', 'two projectile skills → ranged role');
-  assert.ok(band.min > 120, 'ranged cat keeps a real standoff distance (min=' + band.min.toFixed(0) + ')');
+  assert.ok(band.min > 95 && band.min < band.max && band.max < b.basicAttackRange(ranged),
+    'ranged cat maintains spacing while staying inside basic-attack range (min=' + band.min.toFixed(0) + ')');
   // target 40px away (inside the band) → steer should have an outward (flee) component
   const nx = 1, ny = 0, close = 40;
   const steer = b.bandSteer(ranged, nx, ny, close, band, 0.016);
