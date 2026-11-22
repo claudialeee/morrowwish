@@ -221,4 +221,48 @@ for(const kind of ['dash','pounce','melee']){
   }
 }
 
-console.log('Cat Bond combat INVARIANTS: wards expire both sides (INV-1), gap-closers commit (INV-2), timers/HP/stacks bounded (INV-3), 15s sim clean + no orphan root (INV-4) — all PASS.');
+// ===========================================================================
+// INV-5: build-type auto-recommendation (#60) is DIVERSE and LEGAL.
+// (Regression: a weighted-score mapping collapsed ~60% of breeds into tank/support
+// and made dps/control unreachable — "怎么那么多猫都是坦克".)
+// ===========================================================================
+{
+  const breeds = (GameData.SPECIES || []);
+  assert.ok(breeds.length >= 20, 'breed roster present');
+  const dist = {};
+  for (const sp of breeds) {
+    const c = State.makeCat(sp.id, { affinity: 0 }); c.level = 4;
+    const role = Skills.buildTypeForBreed(c);
+    assert.ok(Skills.BUILD_TYPES[role], 'INV-5 '+sp.id+' maps to a valid role ('+role+')');
+    dist[role] = (dist[role] || 0) + 1;
+    // recommendLoadout must return a legal [null,q,e,ult] from the cat's own pool
+    const lo = Skills.recommendLoadout(c, role);
+    assert.equal(lo.length, 4, 'INV-5 loadout has 4 slots');
+    assert.equal(lo[0], null, 'INV-5 basic stays the innate toy toss');
+    const pool = new Set(Skills.learnableSkills(c).map(s => s.id));
+    for (const idx of [1, 2]) if (lo[idx]) assert.ok(pool.has(lo[idx]), 'INV-5 slot '+idx+' is learnable');
+    if (lo[3]) assert.ok(Skills.skillById(lo[3])?.ultCost > 0, 'INV-5 ult slot holds an ult');
+  }
+  // No single role may dominate (>55% of breeds) and at least 4 of 6 roles must appear.
+  const top = Math.max(...Object.values(dist));
+  assert.ok(top <= breeds.length * 0.55, 'INV-5 no role dominates (>55%): '+JSON.stringify(dist));
+  assert.ok(Object.keys(dist).length >= 4, 'INV-5 at least 4 of 6 roles are reachable: '+JSON.stringify(dist));
+}
+
+// ===========================================================================
+// INV-6: skill unlocks are PACED — a low-level cat doesn't learn a huge pool at once.
+// (Regression: the splash element dumped its whole pool at Lv4 → "4级学一堆技能".)
+// ===========================================================================
+{
+  for (const id of ['tangyuan', 'qisi', 'xiaohui']) {
+    const c = State.makeCat(id, { affinity: 0 }); c.level = 4;
+    const n = Skills.learnableSkills(c).length;
+    assert.ok(n <= 6, 'INV-6 '+id+' Lv4/aff0 learnable pool is paced (<=6), got '+n);
+  }
+  // but growth still DELIVERS more over time (not permanently starved)
+  const grown = State.makeCat('tangyuan', { affinity: 80 }); grown.level = 14;
+  assert.ok(Skills.learnableSkills(grown).length > Skills.learnableSkills(State.makeCat('tangyuan',{affinity:0})).length,
+    'INV-6 leveling/bonding unlocks strictly more skills');
+}
+
+console.log('Cat Bond combat INVARIANTS: wards expire both sides (INV-1), gap-closers commit (INV-2), timers/HP/stacks bounded (INV-3), 15s sim clean + no orphan root (INV-4), build-type diversity (INV-5), paced unlocks (INV-6) — all PASS.');

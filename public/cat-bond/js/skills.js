@@ -593,7 +593,26 @@
               if(lvl<threshold&&bond<(rank===1?30:rank===2?55:75))continue;
             }
           }
-        }else if(lvl<4&&!cat.skillAwakened)continue;
+        }else{
+          // SPLASH element (the cat's secondary element): gated behind the Lv4/awaken
+          // discovery moment AND then throttled rank-by-rank like own-element — so it
+          // TRICKLES in instead of the whole secondary pool dumping at once ("4级突然
+          //学会一大堆技能"). Already-equipped (e.g. the awaken pick) bypasses via the
+          // alreadyEquipped guard above. Splash unlocks later than own element.
+          if(lvl<4&&!cat.skillAwakened)continue;
+          const splashNative=SKILLS.filter(k=>k.element===splash&&!k.unlock&&!k.ultCost);
+          const splashAtk=splashNative.filter(k=>
+            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind));
+          if(['heal','buff'].includes(s.kind)){
+            if(lvl<7&&bond<55)continue;                  // splash utility: later than own (3/30)
+          }else{
+            const rank=splashAtk.findIndex(k=>k.id===s.id);
+            if(rank>=1){
+              const threshold=rank===1?6:rank===2?9:12;  // splash attacks trickle: 6/9/12
+              if(lvl<threshold&&bond<(rank===1?45:rank===2?70:90))continue;
+            }
+          }
+        }
       }
       // An owned rare kitten needs to FEEL different right away, not at Lv.20.
       // N earns an ultimate by training; R earns it with some bonding; SR and
@@ -740,26 +759,26 @@
     }
     return 0;
   }
-  // Recommend a build for a breed purely from its base stat profile. POW-heavy →
-  // fighter/assassin, VIT-heavy → tank, CHA-heavy → support/control, AGI-heavy →
-  // dps/assassin. Returns a BUILD_TYPES key. Deterministic (no RNG) so the same
-  // breed always suggests the same identity.
+  // Recommend a build from a breed's PRIMARY × SECONDARY stat — a deterministic
+  // matrix, NOT weighted magic numbers (the old weight-salad collapsed ~60% of breeds
+  // into tank/support and made dps/control unreachable). Each stat "owns" roles:
+  //   POW → fighter(+vit) / assassin(+agi)   VIT → tank
+  //   AGI → dps(+pow) / assassin(+pow)        CHA → support(+vit) / control(+agi)
+  // The runner-up stat breaks ties so the full 6-role spread is reachable and every
+  // breed's identity reads from its own numbers. Deterministic (no RNG).
   function buildTypeForBreed(cat){
     const sp=speciesOf(cat), b=(sp&&sp.base)||{pow:6,agi:6,vit:6,cha:6};
-    const total=(b.pow+b.agi+b.vit+b.cha)||1;
-    const pw=b.pow/total, ag=b.agi/total, vt=b.vit/total, ch=b.cha/total;
-    // weighted affinity of each role for this stat spread
-    const score={
-      tank:     vt*3 + pw*0.6,
-      fighter:  pw*2.4 + vt*1.1,
-      dps:      ag*2.2 + pw*1.0,
-      assassin: pw*1.6 + ag*1.8,
-      control:  ch*1.8 + ag*1.0,
-      support:  ch*2.6 + vt*0.8,
+    // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
+    const order=['pow','agi','vit','cha'];
+    const ranked=order.slice().sort((a,b2)=> (b[b2]-b[a]) || (order.indexOf(a)-order.indexOf(b2)));
+    const p=ranked[0], s=ranked[1];
+    const MATRIX={
+      pow:{ agi:'assassin', vit:'fighter', cha:'fighter', pow:'fighter' },
+      agi:{ pow:'assassin', vit:'dps',      cha:'dps',      agi:'dps' },
+      vit:{ pow:'tank',     agi:'tank',     cha:'tank',     vit:'tank' },
+      cha:{ agi:'control',  pow:'support',  vit:'support',  cha:'support' },
     };
-    let best='fighter', bv=-1;
-    for(const r of BUILD_ORDER){ if(score[r]>bv){ bv=score[r]; best=r; } }
-    return best;
+    return (MATRIX[p] && MATRIX[p][s]) || 'fighter';
   }
   // Build a [basic,Q,E,ult] loadout for a role from the cat's learnable pool.
   // Basic stays the innate toy toss (null). Ult stays the cat's element/signature
