@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-22T08:33:29.849Z",
+  "createdAt": "2026-11-22T08:37:13.680Z",
   "version": "readability-review-v10",
   "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate.",
   "pausedPromoGames": [],
@@ -127,7 +127,7 @@
     {
       "game": "cat-bond",
       "scene": "duo",
-      "seconds": 4.25,
+      "seconds": 3.1,
       "captionWords": 4,
       "requiredSeconds": 2.09,
       "passed": true

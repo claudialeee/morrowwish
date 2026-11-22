@@ -1,6 +1,6 @@
 {
   "version": "V12",
-  "createdAt": "2026-11-22T08:33:29.849Z",
+  "createdAt": "2026-11-22T08:37:13.680Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -17,7 +17,7 @@
         "/promo/cat-bond/v10-review-2.jpg",
         "/promo/cat-bond/v10-review-3.jpg"
       ],
-      "duration": 59.5,
+      "duration": 58.4,
       "shots": [
         {
           "source": "broll",
@@ -113,7 +113,7 @@
           "source": "broll",
           "scene": "duo",
           "caption": "ONE POWERFUL DUO FINISHER!",
-          "seconds": 4.25
+          "seconds": 3.1
         },
         {
           "source": "broll",
