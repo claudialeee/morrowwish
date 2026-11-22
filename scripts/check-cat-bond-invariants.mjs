@@ -264,13 +264,14 @@ for(const kind of ['dash','pounce','melee']){
   for (const id of ['tangyuan', 'qisi', 'xiaohui']) {
     const c = State.makeCat(id, { affinity: 0 }); c.level = 4;
     const pool = Skills.learnableSkills(c);
-    const roleWall = pool.filter(sk=>sk.id==='mirrorWall');
-    assert.ok(roleWall.length<=1 && (!roleWall.length || Skills.buildTypeForBreed(c)==='tank'),
-      'INV-6 only a genuine tank may learn the universal mirror wall');
-    // A tank's defensive wall is an explicit role ability, not a free flood
-    // of secondary elemental attacks. Keep the original <=6 pace for attacks
-    // and other ordinary unlocks.
-    const n = pool.filter(sk=>sk.id!=='mirrorWall').length;
+    // Water/Fire ordinary cats stay monotype even at the former forced-splash
+    // Lv4 milestone. Tank is a ROLE, not permission for electric abilities.
+    assert.equal(Skills.secondaryOf(id),null,'INV-6 '+id+' is a mono-element cat');
+    assert.ok(pool.every(sk=>sk.element===Skills.elementOf(id)),
+      'INV-6 '+id+' must never acquire an unrelated second elemental tree');
+    assert.ok(!pool.some(sk=>sk.id==='mirrorWall'),
+      'INV-6 a Water/Fire tank may not borrow Electric mirror wall');
+    const n = pool.length;
     assert.ok(n <= 6, 'INV-6 '+id+' Lv4/aff0 normal pool is paced (<=6), got '+n);
   }
   // but growth still DELIVERS more over time (not permanently starved)
