@@ -17,7 +17,12 @@ button{background:#fff;border:1px solid #b6c5c4;border-radius:10px;padding:10px 
 button:hover{background:#f1faf6}#locked{margin:28px 0;padding:25px;background:#fff;border:1px solid #d9ddd9;border-radius:16px}
 #skill-title{color:#415d64;font-weight:800}
 [hidden]{display:none!important}
-@media(max-width:550px){canvas{aspect-ratio:5/4}}
+@media(max-width:550px) and (orientation:portrait){
+ canvas{aspect-ratio:9/16;max-height:68dvh}
+}
+@media(max-width:550px) and (orientation:landscape){
+ canvas{aspect-ratio:16/9;max-height:68dvh}
+}
 /* When opened from an unlocked duo card, play in the game's closable modal. */
 html.duo-embedded body{margin:0;padding:7px 8px 10px;overflow:auto}
 html.duo-embedded main{width:100%;max-width:none}
@@ -35,7 +40,7 @@ html.duo-embedded .controls button{border-color:#dbc5e5;background:#f6e9f9;color
 html.duo-embedded #locked{margin:6px 0 0}
 @media(max-width:550px){
  html.duo-embedded body{padding:5px 4px}
- html.duo-embedded canvas{aspect-ratio:16/9!important;max-height:none}
+ html.duo-embedded canvas{aspect-ratio:9/16!important;max-height:68dvh}
  html.duo-embedded .controls{margin:6px 0}
 }
 </style>
