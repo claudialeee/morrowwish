@@ -391,11 +391,13 @@ const BUILDINGS = [
 const BUILDINGS_BY_ID = Object.fromEntries(BUILDINGS.map(b => [b.id, b]));
 // Localized facility purpose and real, limited production. Building a toy
 // is now a growth choice, not just permanently adding a small emoji prop.
+// Only 🪙 coins and 🐠 fish are produced now: the old yarn facility earns coins
+// (×10 scale) and the old treats facility earns fish.
 const BUILDING_PRODUCTION={
-  scratcher:{kind:'yarn',base:1,nameEn:'Scratching Post',purposeEn:'Scratch and unwind; make yarn while cats play.',name:'毛线'},
-  cave:{kind:'fish',base:1,nameEn:'Cozy Cat Cave',purposeEn:'A quiet hideaway; collect dried fish after a visit.',name:'小鱼干'},
+  scratcher:{kind:'coins',base:10,nameEn:'Scratching Post',purposeEn:'Scratch and unwind; earn a few coins while cats play.',name:'金币'},
+  cave:{kind:'fish',base:1,nameEn:'Cozy Cat Cave',purposeEn:'A quiet hideaway; collect fish after a visit.',name:'小鱼'},
   cattree:{kind:'coins',base:3,nameEn:'Climbing Tower',purposeEn:'Play high above the garden; earn a little extra income.',name:'金币'},
-  catnip:{kind:'treats',base:1,nameEn:'Catnip Garden',purposeEn:'Fresh catnip and happy naps; earn treats.',name:'零食'},
+  catnip:{kind:'fish',base:1,nameEn:'Catnip Garden',purposeEn:'Fresh catnip and happy naps; earn fish.',name:'小鱼'},
   hammock:{kind:'coins',base:2,nameEn:'Sunny Hammock',purposeEn:'A lazy sunny rest; earn coins as cats relax.',name:'金币'}
 };
 function buildingLevel(b){return Math.max(1,Math.min(3,Math.round(Number(b?.level)||1)));}
@@ -408,8 +410,8 @@ function upgradeCost(b){
 function eNotification(game,cat,kind,amount){
  // Once per payout, very short text; do not block the yard canvas.
  const english=window.MorrowwishI18n?.get?.()!=='zh';
- const names=english?{coins:'coins',yarn:'yarn',fish:'fish',treats:'treats'}
-   :{coins:'金币',yarn:'毛线',fish:'小鱼干',treats:'零食'};
+ const names=english?{coins:'coins',fish:'fish'}
+   :{coins:'金币',fish:'小鱼'};
  game.toast?.((english?'Facility reward +':'设施收获 +')+amount+' '+(names[kind]||kind));
 }
 
@@ -1003,12 +1005,9 @@ class YardScene {
     if(now-(b.lastRewardAt||0)<interval)return;
     b.lastRewardAt=now;
     const n=up.base*level;
-    if(up.kind==='yarn'){
-      if(!State.S.raising&&window.Raising?.init)Raising.init();
-      State.S.raising??={yarn:0};State.S.raising.yarn=(State.S.raising.yarn||0)+n;
-    }else if(up.kind==='coins')State.S.coins=(State.S.coins||0)+n;
-    else if(up.kind==='fish')State.S.fish=(State.S.fish||0)+n;
-    else if(up.kind==='treats')State.S.treats=(State.S.treats||0)+n;
+    // Yard facilities only pay 🪙 coins or 🐠 fish now (legacy yarn→coins, treats→fish).
+    if(up.kind==='coins'||up.kind==='yarn')State.S.coins=(State.S.coins||0)+n;
+    else if(up.kind==='fish'||up.kind==='treats')State.S.fish=(State.S.fish||0)+n;
     State.save();
     this.game.refreshHUD?.();
     eNotification(this.game,cat,up.kind,n);

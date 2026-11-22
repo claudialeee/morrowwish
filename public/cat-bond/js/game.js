@@ -92,10 +92,11 @@ class Game {
       UI.openBattleModePrompt(team,species,{origin:'map',theme:region?.theme||null});
     });
     WorldMap.onCollect((reward) => {
+      // Two currencies only: retired treats fold into 🐠 fish, retired yarn into 🪙 coins.
       if (reward.coins) State.S.coins += reward.coins;
-      if (reward.treats) State.S.treats += reward.treats;
+      if (reward.yarn) State.S.coins += reward.yarn;
       if (reward.fish) State.S.fish += reward.fish;
-      if(reward.yarn){Raising.init();State.S.raising.yarn+=reward.yarn;}
+      if (reward.treats) State.S.fish += reward.treats;
       if(reward.luck)State.S.luckLure=(State.S.luckLure||0)+reward.luck;
       if(reward.discovery){
         const pair=window.CatRelations?.chosen?.()||[];
@@ -108,8 +109,11 @@ class Game {
       if(reward.discovery)UI.openRegionSecret(reward);
       else{
         const en=window.MorrowwishI18n?.get?.()!=='zh';
-        const amounts=[['coins','🪙'],['fish','🐠'],['treats','🐟'],['yarn','🧶'],['luck','✨']]
-          .filter(([key])=>reward[key]).map(([key,icon])=>icon+'+'+reward[key]).join(' ');
+        // Collapse to the two surviving currencies: yarn adds to 🪙 coins, treats to 🐠 fish.
+        const coinAmt=(reward.coins||0)+(reward.yarn||0);
+        const fishAmt=(reward.fish||0)+(reward.treats||0);
+        const amounts=[['🪙',coinAmt],['🐠',fishAmt],['✨',reward.luck||0]]
+          .filter(([,n])=>n).map(([icon,n])=>icon+'+'+n).join(' ');
         this.toast((reward.label||(en?'Treasure found!':'发现宝贝'))+' '+amounts);
       }
     });
@@ -185,9 +189,10 @@ class Game {
     const grade=autoUsed
       ?(autoExceptional?'S':points>=2?'A':points===1?'B':'C')
       :(manualExceptional?'S':points>=2?'A':points===1?'B':'C');
+    // [coins, fish] bonus per grade; the old treats bonus now pays out as 🐠 fish.
     const bonuses={S:[42,2],A:[24,1],B:[14,0],C:[8,0]};
-    const [bonusCoins,bonusTreats]=bonuses[grade];
-    return {grade,bonusCoins,bonusTreats,seconds:Math.round(b.t||0),
+    const [bonusCoins,bonusFish]=bonuses[grade];
+    return {grade,bonusCoins,bonusFish,seconds:Math.round(b.t||0),
       combo:b.comboBest||0,perfectDodges:b.perfectDodges||0,
       healthy,swift,clever,timeLimit,autoUsed,autoExceptional,manualExceptional,hpRatio,
       ratedSeconds:Math.round(ratedSeconds),novice:criteria.novice,
@@ -226,13 +231,14 @@ class Game {
     return {count,total,next:thresholds.find(n=>count<n)??null};
   }
   grantCollectionMilestones(){
+    // Milestone rewards now pay 🪙 coins + 🐠 fish (old treats folded into fish).
     const milestones=[
-      {count:3,coins:60,treats:2},
-      {count:5,coins:100,treats:3},
-      {count:10,coins:180,treats:5},
-      {count:15,coins:260,treats:6},
-      {count:20,coins:350,treats:8},
-      {count:GameData.SPECIES.length,coins:500,treats:12},
+      {count:3,coins:60,fish:2},
+      {count:5,coins:100,fish:3},
+      {count:10,coins:180,fish:5},
+      {count:15,coins:260,fish:6},
+      {count:20,coins:350,fish:8},
+      {count:GameData.SPECIES.length,coins:500,fish:12},
     ];
     const S=State.S;
     if(!Array.isArray(S.collectionMilestones))S.collectionMilestones=[];
@@ -241,7 +247,7 @@ class Game {
     for(const m of milestones){
       if(collected>=m.count&&!S.collectionMilestones.includes(m.count)){
         S.collectionMilestones.push(m.count);
-        S.coins+=m.coins;S.treats+=m.treats;
+        S.coins+=m.coins;S.fish+=m.fish;
         granted.push(m);
         metric('bond_collection_milestone',{species:collected,target:m.count});
       }
@@ -278,12 +284,12 @@ class Game {
   grantBondingRewards(){
     const S=State.S;
     if(!Array.isArray(S.bondingRewards))S.bondingRewards=[];
-    const goals=[{n:3,coins:35,treats:2},{n:10,coins:100,treats:3},{n:25,coins:250,treats:5}];
+    const goals=[{n:3,coins:35,fish:2},{n:10,coins:100,fish:3},{n:25,coins:250,fish:5}];
     const rewards=[];
     for(const g of goals){
       if((S.petCount||0)>=g.n&&!S.bondingRewards.includes(g.n)){
         S.bondingRewards.push(g.n);
-        S.coins+=g.coins;S.treats+=g.treats;
+        S.coins+=g.coins;S.fish+=g.fish;
         metric('bond_bonding_milestone',{pets:S.petCount,target:g.n});
         rewards.push(g);
       }
@@ -343,18 +349,18 @@ class Game {
   claimYardSurprise(choice){
     const d=State.S.yardStory;if(!d?.pending||![0,1].includes(choice))return false;
     const kind=d.pending.kind;d.pending=null;
+    // Rewards use only 🪙 coins + 🐠 fish now (old treats → fish, old yarn → coins).
     const rewards=[
-      [{coins:24},{treats:2}],
+      [{coins:24},{fish:2}],
       [{fish:2},{coins:28}],
-      [{yarn:3},{treats:3}],
-      [{coins:18,duo:6},{treats:1,duo:10}],
+      [{coins:30},{fish:3}],
+      [{coins:18,duo:6},{fish:1,duo:10}],
       [{fish:2,duo:4},{coins:16,duo:8}],
-      [{treats:3},{yarn:2,duo:5}],
+      [{fish:3},{coins:20,duo:5}],
       [{coins:30},{fish:2,duo:6}]
-    ][kind]||[{coins:12},{treats:1}];
+    ][kind]||[{coins:12},{fish:1}];
     const r=rewards[choice];
-    State.S.coins+=(r.coins||0);State.S.treats+=(r.treats||0);State.S.fish+=(r.fish||0);
-    if(r.yarn){Raising.init();State.S.raising.yarn+=r.yarn;}
+    State.S.coins+=(r.coins||0);State.S.fish+=(r.fish||0);
     if(r.duo&&window.CatRelations){
       const members=CatRelations.chosen();
       if(members.length===2)CatRelations.grow(members[0],members[1],r.duo);
@@ -1276,7 +1282,7 @@ class Game {
       }else{
         newCat.affinity=Math.min(100,(newCat.affinity||0)+8);
         State.addXp(newCat,45);
-        State.S.treats+=2;
+        State.S.fish+=2;
         metric('bond_repeat_reunion',{species:b.wild.id,owned:sameBreed.length});
       }
       State.S.dex[b.wild.id] = (State.S.dex[b.wild.id] || 0) + 1;
@@ -1285,7 +1291,7 @@ class Game {
       const performance=this.gradeBattle(b);
       const masteryReward=this.recordBattleMastery(b.wild,performance,newCat);
       State.S.coins+=performance.bonusCoins;
-      State.S.treats+=performance.bonusTreats;
+      State.S.fish+=performance.bonusFish;
       // reward: partner gains affinity, coins
       const skillsBefore=new Set(window.Skills?.learnableSkills(b.partner).map(sk=>sk.id)||[]);
       b.partner.affinity = Math.min(100, b.partner.affinity + 6);
@@ -1363,11 +1369,12 @@ class Game {
 
   // ---------- helpers ----------
   refreshHUD() {
-    document.getElementById('coins').textContent = State.S.coins;
-    document.getElementById('treats').textContent = State.S.treats;
-    document.getElementById('fish').textContent = State.S.fish;
-    const yarnEl = document.getElementById('yarn');
-    if (yarnEl) yarnEl.textContent = (State.S.raising && State.S.raising.yarn) || 0;
+    // Only two currencies remain: 🪙 coins and 🐠 fish. The old 🐟 treats / 🧶 yarn
+    // pills were removed from the HUD, so guard those lookups defensively.
+    const coinsEl = document.getElementById('coins');
+    if (coinsEl) coinsEl.textContent = State.S.coins;
+    const fishEl = document.getElementById('fish');
+    if (fishEl) fishEl.textContent = State.S.fish;
     const dailyBtn = document.getElementById('daily-dot');
     if (dailyBtn) dailyBtn.classList.toggle('hidden', !State.dailyAvailable());
     this.refreshCollectionGoal();

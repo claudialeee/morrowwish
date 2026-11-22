@@ -144,9 +144,10 @@ function pet(cat){
   return result;
 }
 function play(a,b){const p=pair(a,b);if(!p)return {ok:false,reason:'pair'};
- if(State.S.treats<1)return {ok:false,reason:'treats'};
+ // Playing together now costs 1 🐠 fish (the old 零食/treats currency folded into fish).
+ if(State.S.fish<1)return {ok:false,reason:'fish'};
  if(Date.now()-p.lastPlay<60000)return {ok:false,reason:'cooldown'};
- State.S.treats--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
+ State.S.fish--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);State.save();
  window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v};
 }
 window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,memoryList,remember,DUO_ARTS};

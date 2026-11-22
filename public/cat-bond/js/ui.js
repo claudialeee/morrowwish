@@ -390,10 +390,10 @@ const UI = {
     const events=[
       ['🔔','草丛的小铃铛','A bell in the grass','带走铃铛','Take the bell','一起玩铃铛','Play with the bell'],
       ['🦋','蝴蝶的秘密路线','Follow the butterfly','寻找鱼干','Find fish','在花丛打滚','Play in the flowers'],
-      ['🧶','猫咪的宝藏','A kitten treasure','保存毛线','Keep yarn','交换零食','Trade for treats'],
+      ['🧶','猫咪的宝藏','A kitten treasure','换成金币','Keep the coins','换成小鱼','Trade for fish'],
       ['🐾','两只猫争夺毛线球','A yarn-ball disagreement','两只都安慰','Comfort them both','帮助它们一起玩','Help them share'],
       ['📦','神秘纸箱大探险','The mysterious cardboard box','打开纸箱','Open the box','一起钻进去','Explore together'],
-      ['🐟','小鱼干不翼而飞','The disappearing fish','揭开秘密','Find the culprit','悄悄补充零食','Refill the treats'],
+      ['🐠','小鱼不翼而飞','The disappearing fish','揭开秘密','Find the culprit','悄悄补充小鱼','Refill the fish'],
       ['🌠','流星落在屋顶上','A shooting star over the roof','收下星光','Collect starlight','许一个伙伴愿望','Wish for friendship']
     ];
     const e=events[d.kind]||events[0];
@@ -403,7 +403,7 @@ const UI = {
         d.kind===5?'Someone stole the fish. Tiny pawprints lead into the flowers!':
         'Your cat found something unexpected. What should you do?')
         :(d.kind===3?'两只猫抢同一个毛线球，谁也不肯松爪。你准备怎么办？':
-          d.kind===5?'小鱼干桶空了，地上却留着两串神秘脚印！':'猫猫意外发现了一件小宝贝，你想怎么做？')}</p>
+          d.kind===5?'小鱼桶空了，地上却留着两串神秘脚印！':'猫猫意外发现了一件小宝贝，你想怎么做？')}</p>
       <div class="btn-row"><button class="btn gold" id="surprise-a">${en?e[4]:e[3]}</button>
       <button class="btn" id="surprise-b">${en?e[6]:e[5]}</button></div></div>`);
     for(const [id,choice] of [['surprise-a',0],['surprise-b',1]])document.getElementById(id).onclick=()=>{
@@ -416,7 +416,10 @@ const UI = {
     const duoLabel=reward.duoMemory
       ?'<p class="duo-discovery-names">'+duoNames.map(n=>String(n).replace(/[&<>"']/g,'')).join(' + ')+
         ' · '+(en?'Trust +12':'默契 +12')+'</p>':'';
-    const items=['coins','fish','treats','yarn','luck'].filter(k=>reward[k]).map(k=>'+'+reward[k]+' '+({coins:'🪙',fish:'🐠',treats:'🐟',yarn:'🧶',luck:'✨'}[k])).join(' · ');
+    // Only 🪙 coins + 🐠 fish (+ ✨ luck) remain; fold any legacy yarn→coins, treats→fish.
+    const coinAmt=(reward.coins||0)+(reward.yarn||0),fishAmt=(reward.fish||0)+(reward.treats||0);
+    const items=[['coins','🪙',coinAmt],['fish','🐠',fishAmt],['luck','✨',reward.luck||0]]
+      .filter(([,,n])=>n).map(([,icon,n])=>'+'+n+' '+icon).join(' · ');
     this.panel(`<span class="card-close">×</span><div class="yard-surprise-story">
       <div class="yard-surprise-icon">${d.icon}</div><h2>${en?d.en:d.name}</h2>
       <p>${en?d.storyEn:d.story}</p>${duoLabel}<p class="secret-reward">${reward.duoMemory?(en?'Duo expedition memory':'双猫旅行回忆'):(en?'Unique discovery':'地区专属发现')} · ${items}</p>
@@ -636,7 +639,7 @@ const UI = {
         </section></div>
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
-        <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||State.S.fish<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
@@ -692,7 +695,7 @@ const UI = {
     document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
       if(v.ok){this.game.toast(en?'💞 Friendship +13!':'💞 双猫默契 +13！');this.game.refreshHUD();}
       else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
-      else if(v.reason==='treats')this.game.toast(en?'Not enough treats':'零食不够啦');
+      else if(v.reason==='fish')this.game.toast(en?'Not enough fish':'小鱼不够啦');
       this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
     };
     document.getElementById('duo-return').onclick=()=>this.openJourney();
@@ -730,7 +733,9 @@ const UI = {
       .map(([resource, amount]) => `${this.resIcon(resource) || resource}+${amount}`)
       .join(' ');
   },
-  resIcon(k) { return ({ coins: '🪙', fish: '🐟', yarn: '🧶', luck: '🍀', xp: '✨', treats: '🍖' })[k] || ''; },
+  // Two currencies remain (🪙 coins, 🐠 fish); legacy yarn→coins icon, treats→fish icon
+  // keep old in-flight reward dicts rendering sensibly.
+  resIcon(k) { return ({ coins: '🪙', fish: '🐠', yarn: '🪙', luck: '🍀', xp: '✨', treats: '🐠' })[k] || ''; },
 
   panel(html) {
     this._teaseStop?.();
@@ -772,9 +777,9 @@ const UI = {
     const pending=stations.reduce((n,st)=>n+st.stored,0);
     const firstPay=!!(State.S.raising?.firstSunPay&&!State.S.raising?.firstSunCollected&&sun?.stored>0);
     const descriptions={
-      sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on food, treats and upgrades':'金币用于喂猫、买零食、升级工坊'],
-      fishing:[en?'Catch fish':'钓小鱼干',en?'Train cat levels and buy rare-cat lures':'小鱼干用于练级、买稀有诱饵'],
-      yarn:[en?'Make yarn':'织毛线',en?'Increase stats and upgrade stations':'毛线用于猫咪属性特训与升级'],
+      sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on feeding, buildings and upgrades':'金币用于喂猫、建造、升级工坊'],
+      fishing:[en?'Catch fish':'钓小鱼',en?'Fish feed cats, train levels and buy rare-cat lures':'小鱼用于喂猫、练级、买稀有诱饵'],
+      yarn:[en?'Earn coins':'织物赚金币',en?'More coins for upgrades and stat training':'金币用于升级与属性特训'],
       watch:[en?'Collect luck':'瞭望好运',en?'Boost the next rare-cat sighting':'好运用于提高下一次野猫的稀有机会'],
     };
     const cards=stations.map(st=>{
@@ -799,7 +804,7 @@ const UI = {
         <div class="st-btns">
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
-          <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙+${cost.yarn}🧶</small></button>
+          <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
         </div>
       </div>`;
     }).join('');
@@ -923,7 +928,7 @@ const UI = {
       const prod=window.World?.BUILDING_PRODUCTION?.[def.id];
       const title=en?(prod?.nameEn||def.name):def.name;
       const desc=en?(prod?.purposeEn||def.desc):def.desc;
-      const res=prod?(' · '+(en?'Produces':'产出')+' '+(prod.kind==='coins'?'🪙':prod.kind==='yarn'?'🧶':prod.kind==='fish'?'🐟':'🍖')+' ×'+prod.base+' / '+(en?'visit':'次互动')):'';
+      const res=prod?(' · '+(en?'Produces':'产出')+' '+(prod.kind==='fish'?'🐠':'🪙')+' ×'+prod.base+' / '+(en?'visit':'次互动')):'';
       return `<div class="st-row" data-type="${def.id}">
         <div class="st-ico">${def.icon}</div>
         <div class="st-main">
@@ -1125,8 +1130,8 @@ const UI = {
       ${this.evoRowHtml(cat)}
       <p class="sub" style="margin:12px 0 4px">🎣 用挂机产出培养它变强</p>
       <div class="btn-row">
-        <button class="btn gold" id="cd-trainxp">🐟 喂鱼练级 (×3🐟 → +经验)</button>
-        <button class="btn" id="cd-trainstat">🧶 毛线特训 (×8🧶 → 全属性+)</button>
+        <button class="btn gold" id="cd-trainxp">🐠 喂鱼练级 (×3🐠 → +经验)</button>
+        <button class="btn" id="cd-trainstat">🪙 金币特训 (×80🪙 → 全属性+)</button>
       </div>
       <div class="btn-row">
         <button class="btn" id="cd-skills">📖 技能搭配</button>
@@ -1170,9 +1175,9 @@ const UI = {
     };
     document.getElementById('cd-tease').onclick = () => this.openTease(cat);
     document.getElementById('cd-skills').onclick = () => this.openSkillEditor(cat);
-    // 培养: fish → XP (scaled to level so it stays useful), yarn → permanent stats
+    // 培养: fish → XP (scaled to level so it stays useful), coins → permanent stats
     document.getElementById('cd-trainxp').onclick = () => {
-      if (State.S.fish < 3) { this.game.toast('小鱼干不足（去钓鱼位产出）'); return; }
+      if (State.S.fish < 3) { this.game.toast('小鱼不足（去钓鱼位产出）'); return; }
       const old=new Set(window.Skills?.learnableSkills(cat).map(sk=>sk.id)||[]);
       State.S.fish -= 3;
       const gain = 20 + cat.level * 12;        // scales so high-level cats still progress
@@ -1181,15 +1186,15 @@ const UI = {
       const unlocked=this.announceSkillMilestone(cat,old);
       State.save();this.game.refreshHUD();this.renderCatDetail(cat);
       this.game.toast(unlocked?'✨ '+State.catName(cat)+' 学会 '+unlocked.name+'！'
-        :(lv?`🎉 ${this.levelText(cat.level)}！(+${gain}经验)`:`🐟 +${gain} 经验`));
+        :(lv?`🎉 ${this.levelText(cat.level)}！(+${gain}经验)`:`🐠 +${gain} 经验`));
     };
     document.getElementById('cd-trainstat').onclick = () => {
-      const yarn = (State.S.raising && State.S.raising.yarn) || 0;
-      if (yarn < 8) { this.game.toast('毛线不足（去毛线坊产出）'); return; }
-      State.S.raising.yarn -= 8;
+      // Stat training now costs 🪙 coins (old yarn cost ×10 scale).
+      if ((State.S.coins || 0) < 80) { this.game.toast('金币不足（去工坊赚金币）'); return; }
+      State.S.coins -= 80;
       cat.stats.pow += 1; cat.stats.agi += 1; cat.stats.vit += 1; cat.stats.cha += 1;
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat);
-      this.game.toast('🧶 特训完成！全属性 +1');
+      this.game.toast('🪙 特训完成！全属性 +1');
     };
     const renameBtn = document.getElementById('cd-rename');
     if (renameBtn) renameBtn.onclick = () => {
@@ -1391,7 +1396,6 @@ const UI = {
       const parts = [];
       if (cost.coins) parts.push('🪙' + cost.coins);
       if (cost.fish) parts.push('🐠' + cost.fish);
-      if (cost.yarn) parts.push('🧶' + cost.yarn);
       return parts.join(' ');
     };
     const card = (sk, canBuy) => {
@@ -1424,8 +1428,8 @@ const UI = {
   },
   canAffordSkill(sk) {
     const cost = sk.unlock && sk.unlock.cost; if (!cost) return true;
-    const S = State.S, yarn = (S.raising && S.raising.yarn) || 0;
-    return (cost.coins||0) <= (S.coins||0) && (cost.fish||0) <= (S.fish||0) && (cost.yarn||0) <= yarn;
+    const S = State.S;
+    return (cost.coins||0) <= (S.coins||0) && (cost.fish||0) <= (S.fish||0);
   },
   // Bilingual unlock-condition + live status for a gated skill.
   skillUnlockText(cat, sk) {
@@ -1433,7 +1437,7 @@ const UI = {
     const bits = [];
     if (u.cost) {
       const c = u.cost, p = [];
-      if (c.coins) p.push('🪙' + c.coins); if (c.fish) p.push('🐠' + c.fish); if (c.yarn) p.push('🧶' + c.yarn);
+      if (c.coins) p.push('🪙' + c.coins); if (c.fish) p.push('🐠' + c.fish);
       bits.push((en?'Pay ':'付费 ') + p.join(' '));
     }
     if (u.level) bits.push((en?'Lv.':'Lv.') + u.level + (cat.level>=u.level?' ✓':` (${en?'now':'当前'} ${cat.level||1})`));
@@ -1457,8 +1461,7 @@ const UI = {
     const r = S.learnSkill(cat, skillId);
     if (!r.ok) {
       const msg = r.reason==='coins' ? (en?'Not enough coins':'金币不足')
-        : r.reason==='fish' ? (en?'Not enough fish':'小鱼干不足')
-        : r.reason==='yarn' ? (en?'Not enough yarn':'毛线不足')
+        : r.reason==='fish' ? (en?'Not enough fish':'小鱼不足')
         : r.reason==='locked' ? (en?'Condition not met yet':'条件尚未满足')
         : (en?'Cannot learn this skill':'无法学习该技能');
       this.game.toast(msg); return;
@@ -1615,7 +1618,7 @@ const UI = {
     const avail = State.dailyAvailable();
     this.panel(`<span class="card-close">×</span>
       <h2>每日签到</h2>
-      <p class="sub">连续登录领更多奖励，第7天必得小鱼干！</p>
+      <p class="sub">连续登录领更多奖励，第7天必得额外小鱼！</p>
       <p class="center" style="font-size:1.1rem;margin:14px 0">🔥 连续签到 <b>${State.S.streak}</b> 天</p>
       <div class="btn-row" style="justify-content:center">
         <button class="btn gold" id="claim" ${avail ? '' : 'disabled'}>${avail ? '🎁 领取今日奖励' : '✅ 今日已领取'}</button>
@@ -1625,8 +1628,7 @@ const UI = {
     if (btn && avail) btn.onclick = () => {
       const { reward, streak } = State.claimDaily();
       State.save(); this.game.refreshHUD();
-      let msg = `+${reward.coins}🪙 +${reward.treats}🐟零食`;
-      if (reward.fish) msg += ` +${reward.fish}🐠`;
+      const msg = `+${reward.coins}🪙 +${reward.fish}🐠小鱼`;
       this.game.toast(`签到成功！${msg}`);
       this.openDaily();
     };
@@ -1636,12 +1638,12 @@ const UI = {
   openShop() {
     this.panel(`<span class="card-close">×</span>
       <h2>小卖部</h2>
-      <p class="sub">用金币与小鱼干换补给与运气</p>
+      <p class="sub">用金币换小鱼与运气</p>
       <div class="btn-row" style="flex-direction:column;align-items:stretch">
-        <button class="btn gold" data-buy="treat5">🐟 零食 ×5 — 30🪙</button>
-        <button class="btn gold" data-buy="treat15">🐟 零食 ×15 — 75🪙</button>
+        <button class="btn gold" data-buy="treat5">🐠 小鱼 ×5 — 30🪙</button>
+        <button class="btn gold" data-buy="treat15">🐠 小鱼 ×15 — 75🪙</button>
         <button class="btn" data-buy="lure">🍀 幸运诱饵 ×1 (下次捉迷藏更易遇稀有) — 2🐠</button>
-        <button class="btn ghost" data-buy="fish">🐠 用 60🪙 兑换 1 小鱼干</button>
+        <button class="btn ghost" data-buy="fish">🐠 用 60🪙 兑换 1 小鱼</button>
       </div>
       <p class="sub" style="margin-top:14px">💎 进化石（猫咪进化所需）</p>
       <div class="btn-row" style="flex-direction:column;align-items:stretch">
@@ -1649,7 +1651,7 @@ const UI = {
         <button class="btn" data-buy="stone:月华露">🌙 月华露 ×1 — 4🐠</button>
         <button class="btn" data-buy="stone:赤焰晶">🔥 赤焰晶 ×1 — 4🐠</button>
       </div>
-      <p class="tiny center" style="margin-top:12px">小鱼干也可每日签到获得</p>`);
+      <p class="tiny center" style="margin-top:12px">小鱼也可每日签到获得</p>`);
     document.querySelectorAll('#panel [data-buy]').forEach(b => {
       b.onclick = () => this.buy(b.dataset.buy);
     });
@@ -1660,10 +1662,10 @@ const UI = {
       if (S.coins < coins || S.fish < fish) { this.game.toast('资源不足'); return false; }
       S.coins -= coins; S.fish -= fish; return true;
     };
-    if (what === 'treat5' && spend(30)) { S.treats += 5; this.game.toast('+5 零食'); }
-    else if (what === 'treat15' && spend(75)) { S.treats += 15; this.game.toast('+15 零食'); }
+    if (what === 'treat5' && spend(30)) { S.fish += 5; this.game.toast('+5 小鱼'); }
+    else if (what === 'treat15' && spend(75)) { S.fish += 15; this.game.toast('+15 小鱼'); }
     else if (what === 'lure' && spend(0, 2)) { S.luckLure += 1; this.game.toast('🍀 幸运诱饵就绪'); }
-    else if (what === 'fish' && spend(60)) { S.fish += 1; this.game.toast('+1 小鱼干'); }
+    else if (what === 'fish' && spend(60)) { S.fish += 1; this.game.toast('+1 小鱼'); }
     else if (what && what.indexOf('stone:') === 0) {
       const name = what.slice(6);
       const cost = name === '夜影石' ? 3 : 4;
@@ -2191,8 +2193,8 @@ const UI = {
       :'';
     const gradeLabel=english?'Battle grade':'战斗评级';
     const battleResult=performance
-      ?(english?'Bonus: +'+performance.bonusCoins+' coins'+(performance.bonusTreats?' · +'+performance.bonusTreats+' treats':'')
-        :'战斗奖励：+'+performance.bonusCoins+' 金币'+(performance.bonusTreats?' · +'+performance.bonusTreats+' 零食':''))
+      ?(english?'Bonus: +'+performance.bonusCoins+' coins'+(performance.bonusFish?' · +'+performance.bonusFish+' fish':'')
+        :'战斗奖励：+'+performance.bonusCoins+' 金币'+(performance.bonusFish?' · +'+performance.bonusFish+' 小鱼':''))
       :'';
     const earnedXp=this.game._battleXp;
     const xpMessage=earnedXp&&earnedXp.n
@@ -2203,8 +2205,8 @@ const UI = {
       ?earnedXp.leveled.map(c=>c.name+' Lv.'+c.level).join(' · ') :'';
     const rewardText=rewards.length
       ?rewards.map(r=>english
-        ?('Collection bonus: +'+r.coins+' coins, +'+r.treats+' treats')
-        :('图鉴奖励：+'+r.coins+' 金币，+'+r.treats+' 零食')).join(' · ')
+        ?('Collection bonus: +'+r.coins+' coins, +'+r.fish+' fish')
+        :('图鉴奖励：+'+r.coins+' 金币，+'+r.fish+' 小鱼')).join(' · ')
       :'';
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">🎉 ${headline}</h2>
@@ -2213,8 +2215,8 @@ const UI = {
         ?(english?'made your bond stronger':'让你们的纽带更深了')
         :(english?'joined your yard':'已加入庭院')}</p>
       ${reunion?'<p class="center reunion-reward">'
-        +(english?'💞 This breed already has 2 resident cats. Strongest cat: +8 affection, +45 XP, plus 2 treats.'
-          :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 零食，不再增加重复个体。')
+        +(english?'💞 This breed already has 2 resident cats. Strongest cat: +8 affection, +45 XP, plus 2 fish.'
+          :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 小鱼，不再增加重复个体。')
         +'</p>':''}
       <p class="sub center">${totalText} · ${goalText}</p>
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small>'

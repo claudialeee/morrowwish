@@ -269,7 +269,7 @@
     // ---- 付费领悟 (pay a trainer) ----
     { id: 'cometClaw',  name: '彗星爪',   element: 'fire',  kind: 'melee',      power: 1.7, cd: 3.2, ultCost: 0, heavy: true, tags: ['burn','heavy'],   appliesTag: 'burn',  vfx: 'impact',    desc: '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。', unlock: { cost: { coins: 150 } } },
     { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
-    { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用毛线换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { yarn: 12 } } },
+    { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
     // ---- 等级 / 亲密 / 组合门槛 ----
     { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.45,cd: 2.8, ultCost: 0, precise: true, tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标。达到等级方可领悟。', unlock: { level: 10 } },
     { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.6, cd: 4.2, ultCost: 0, heavy: true, tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
@@ -424,7 +424,7 @@
   // ==========================================================================
   // A skill may carry an `unlock` descriptor; skills without one stay innate and
   // follow the classic element/level rules below. An `unlock` can combine any of:
-  //   cost:{coins?,fish?,yarn?}  — pay at the trainer (deducted on learn)
+  //   cost:{coins?,fish?}  — pay at the trainer (deducted on learn)
   //   level: N                   — cat.level must be >= N
   //   affinity: N                — cat.affinity (亲密) must be >= N
   //   species: ['id',...]        — cat.species must be one of these (品种专属)
@@ -478,7 +478,7 @@
   function canLearn(cat, skill) {
     return isGated(skill) && !hasLearned(cat, skill.id) && gateMet(cat, skill);
   }
-  // A pure non-cost gate (level/affinity/species/quest, no coins/fish/yarn) is a
+  // A pure non-cost gate (level/affinity/species/quest, no coins/fish) is a
   // natural 领悟 — once its condition is met the cat learns it automatically.
   function isAutoLearn(skill) {
     const u = skill && skill.unlock;
@@ -677,13 +677,11 @@
     if (cost) {
       const S = window.State && State.S;
       if (!S) return { ok: false, reason: 'noState' };
-      const yarn = (S.raising && S.raising.yarn) || 0;
+      // Only 🪙 coins + 🐠 fish costs exist now (yarn costs were converted to coins).
       if ((cost.coins || 0) > (S.coins || 0)) return { ok: false, reason: 'coins' };
       if ((cost.fish || 0) > (S.fish || 0)) return { ok: false, reason: 'fish' };
-      if ((cost.yarn || 0) > yarn) return { ok: false, reason: 'yarn' };
       if (cost.coins) S.coins -= cost.coins;
       if (cost.fish) S.fish -= cost.fish;
-      if (cost.yarn) { S.raising = S.raising || {}; S.raising.yarn = yarn - cost.yarn; }
     }
     if (!Array.isArray(cat.learned)) cat.learned = [];
     cat.learned.push(skillId);

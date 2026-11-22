@@ -479,7 +479,8 @@ UI.closeAll();
 // Later encounters of a breed with two residents become helpful reunions.
 State.S.cats.push(State.makeCat('doudou'));
 const previousDupRoster=State.S.cats.length;
-const prevTreats=State.S.treats;
+// Currencies collapsed to coins + fish; the old reunion treats reward now pays fish.
+const prevFish=State.S.fish;
 game.startBattle([starter],targetBreed);
 const duplicateBattle=game.battle;
 duplicateBattle.team.forEach(f=>{f.hp=f.maxhp;});
@@ -489,34 +490,34 @@ assert.equal(State.S.cats.length,previousDupRoster,
   'After two residents, repeat capture should nurture them, not add another clone');
 assert.ok(document.getElementById('panel').innerHTML.includes('reunion-reward'),
   'Repeat catch result should communicate the useful bonding reward');
-assert.ok(State.S.treats>=prevTreats+2,'Repeated catch awards treats instead of clutter');
+assert.ok(State.S.fish>=prevFish+2,'Repeated catch awards fish instead of clutter');
 assert.ok(events.some(e=>e.name==='bond_repeat_reunion'),
   'Reunion analytics distinguishes real new catches from duplicates');
 UI.closeAll();
 
 // One-time collection milestones reward actual new species, not repeated grinding.
-const priorCoins=State.S.coins, priorTreats=State.S.treats, priorMilestones=[...(State.S.collectionMilestones||[])];
+const priorCoins=State.S.coins, priorFish=State.S.fish, priorMilestones=[...(State.S.collectionMilestones||[])];
 State.S.dex['xiaohui']=1;
 const milestones=game.grantCollectionMilestones();
 assert.equal(milestones.length,1,'Third distinct breed grants exactly one milestone');
 assert.equal(milestones[0].count,3);
 assert.equal(State.S.coins,priorCoins+60);
-assert.equal(State.S.treats,priorTreats+2);
+assert.equal(State.S.fish,priorFish+2);   // milestone treats reward folded into fish
 assert.equal(game.grantCollectionMilestones().length,0,'Collection rewards cannot be claimed twice');
 assert.equal(game.collectionStatus().next,5,'Next collection goal progresses');
 assert.ok(events.some(e=>e.name==='bond_collection_milestone'));
-delete State.S.dex['xiaohui'];State.S.coins=priorCoins;State.S.treats=priorTreats;
+delete State.S.dex['xiaohui'];State.S.coins=priorCoins;State.S.fish=priorFish;
 State.S.collectionMilestones=priorMilestones;
 
 // Bonding milestones require actual affection interactions and only pay once.
 const oldPets=State.S.petCount,oldBond=State.S.bondingRewards?.slice()||[];
-const bondCoins=State.S.coins,bondTreats=State.S.treats;
+const bondCoins=State.S.coins,bondFish=State.S.fish;
 State.S.petCount=3;
 const bondRewards=game.grantBondingRewards();
 assert.equal(bondRewards.length,1,'Three real pet interactions grant first bonding reward');
 assert.equal(bondRewards[0].coins,35);
 assert.equal(State.S.coins,bondCoins+35);
-assert.equal(State.S.treats,bondTreats+2);
+assert.equal(State.S.fish,bondFish+2);   // bonding treats reward folded into fish
 assert.equal(game.grantBondingRewards().length,0,'Bonding milestone can only be claimed once');
 const adventure=game.adventureStatus();
 assert.ok(adventure.totalRegions>=5&&adventure.unlocked>=1,'Explore track uses real world unlocks');
@@ -526,7 +527,7 @@ assert.ok(['journey-collect','journey-bond','journey-workshop','journey-explore'
   'Adventures must offer collecting, bonding and exploration actions');
 UI.closeAll();
 State.S.petCount=oldPets;State.S.bondingRewards=oldBond;
-State.S.coins=bondCoins;State.S.treats=bondTreats;
+State.S.coins=bondCoins;State.S.fish=bondFish;
 
 // ---- loss path fires game_over ----
 events.length = 0;
@@ -543,17 +544,18 @@ game.endBattle();
 assert.ok(events.some(e => e.name === 'game_over'), 'game_over analytics fired on loss');
 
 // ---- offline visitor gifts: never stringify an object into [object Object] ----
+// Only 🪙 coins + 🐠 fish currencies remain (treats/yarn were merged away).
 const welcome = {
-  minutes: 120, capped: false, produced: {}, gains: { coins: 21, fish: 1, yarn: 3 },
+  minutes: 120, capped: false, produced: {}, gains: { coins: 21, fish: 1 },
   visitors: [
-    { name: '汤圆', gift: { coins: 12, fish: 1, yarn: 3 }, rare: false },
+    { name: '汤圆', gift: { coins: 12, fish: 1 }, rare: false },
     { name: '豆豆', gift: { coins: 9 }, rare: true },
     { name: '小灰', gift: {}, rare: false },
   ],
 };
 UI.openWelcomeBack(welcome);
 const welcomeHtml = document.getElementById('panel').innerHTML;
-assert.ok(welcomeHtml.includes('<b>汤圆</b> 来访 · 留下 🪙+12 🐟+1 🧶+3'), 'Visitor gifts should list resource icons and exact quantities');
+assert.ok(welcomeHtml.includes('<b>汤圆</b> 来访 · 留下 🪙+12 🐠+1'), 'Visitor gifts should list resource icons and exact quantities');
 assert.ok(welcomeHtml.includes('<b>豆豆</b> 来访 · 留下 🪙+9 ✨稀客!'), 'Rare visitor gift should also render correctly');
 assert.ok(welcomeHtml.includes('<b>小灰</b> 来访</div>'), 'Empty visitor gifts must not show a placeholder');
 assert.ok(!welcomeHtml.includes('[object Object]'), 'Welcome-back panel must not display object Object');
@@ -561,10 +563,10 @@ UI.closeAll();
 
 // ---- bilingual layer: representative ZH strings must resolve to pure English ----
 const tr = sandbox.window.CatBondI18n.translate;
-const enVisit=tr('汤圆 来访 · 留下 🪙+12 🐟+1 🧶+3');
+const enVisit=tr('汤圆 来访 · 留下 🪙+12 🐠+1');
 assert.match(enVisit, /Tangyuan/, 'Visitor name translates into English');
 assert.match(enVisit, /visited|left/, 'Visitor action translates into English');
-assert.ok(enVisit.includes('🪙+12') && enVisit.includes('🐟+1') && enVisit.includes('🧶+3'), 'Gift amounts survive English conversion');
+assert.ok(enVisit.includes('🪙+12') && enVisit.includes('🐠+1'), 'Gift amounts survive English conversion');
 
 const HAN = /[一-鿿]/;
 for (const [zh, mustInclude] of [

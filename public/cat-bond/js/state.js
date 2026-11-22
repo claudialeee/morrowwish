@@ -3,9 +3,8 @@
 const SAVE_KEY = 'catbond_save_v1';
 
 const DEFAULT_STATE = () => ({
-  coins: 50,
-  treats: 8,           // used in capture battles
-  fish: 5,             // premium-ish currency for luck lures
+  coins: 50,           // general currency (shop, buildings, skill learning, upgrades)
+  fish: 5,             // cat-raising / feeding / premium currency (luck lures, old treats folded in)
   luckLure: 0,         // active luck boost charges
   cats: [],            // owned cats (instances)
   dex: {},             // speciesId -> count caught
@@ -159,6 +158,14 @@ function load() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       S = Object.assign(DEFAULT_STATE(), JSON.parse(raw));
+      // Currency migration (4 resources → 2): fold the retired 小鱼干 treats into
+      // 🐠 fish and the retired 🧶 yarn into 🪙 coins, ONCE per old key. Guarding on
+      // key presence (and deleting afterwards) keeps repeated load()s idempotent so
+      // balances never double-count. Legacy yarn lived both at the top level and
+      // under raising.yarn — fold and clear both.
+      if ('treats' in S) { S.fish = (S.fish || 0) + (S.treats || 0); delete S.treats; }
+      if ('yarn' in S) { S.coins = (S.coins || 0) + (S.yarn || 0); delete S.yarn; }
+      if (S.raising && 'yarn' in S.raising) { S.coins = (S.coins || 0) + (S.raising.yarn || 0); delete S.raising.yarn; }
       // Migrate older saves: every cat must carry a learned-skills list and a
       // per-cat win counter so the gated skill-learning system never sees undefined.
       if (Array.isArray(S.cats)) for (const c of S.cats) {
@@ -202,12 +209,13 @@ function claimDaily() {
   const gapDays = Math.floor((Date.now() - prev) / oneDay);
   S.streak = (prev && gapDays <= 2) ? S.streak + 1 : 1;
   S.lastDaily = Date.now();
+  // Both the old daily 小鱼干 (treats) and the premium 🐠 (fish) now pay out as
+  // one 🐠 fish currency, so the daily reward grants a single combined fish amount.
   const reward = {
     coins: 40 + S.streak * 10,
-    treats: 2 + Math.floor(S.streak / 2),
-    fish: S.streak % 7 === 0 ? 5 : (S.streak % 3 === 0 ? 1 : 0),
+    fish: (2 + Math.floor(S.streak / 2)) + (S.streak % 7 === 0 ? 5 : (S.streak % 3 === 0 ? 1 : 0)),
   };
-  S.coins += reward.coins; S.treats += reward.treats; S.fish += reward.fish;
+  S.coins += reward.coins; S.fish += reward.fish;
   return { reward, streak: S.streak };
 }
 

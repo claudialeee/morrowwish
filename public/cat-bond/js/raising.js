@@ -22,8 +22,8 @@
 //    `report` = {
 //        minutes,                // real elapsed minutes (pre-cap, for display)
 //        capped,                 // true if elapsed exceeded the 8h cap
-//        produced:{coins?,fish?,yarn?,luck?},  // PENDING in stations, must be collected
-//        gains:{coins,fish,yarn,luck},         // auto-granted (visitor gifts, already added to S)
+//        produced:{coins?,fish?,luck?},  // PENDING in stations, must be collected
+//        gains:{coins,fish,luck},         // auto-granted (visitor gifts, already added to S)
 //        visitors:[ {name,speciesId,rarity,gift,memento,rare} ],  // for a reveal animation
 //        events:[ {type:'egg'|'butterfly', text} ]
 //    }
@@ -32,7 +32,7 @@
 //
 // 3) GAME LOOP: once per frame call `Raising.tick(dt)` (dt in SECONDS). This is
 //    the ONE reducer — online == offline. It returns a small delta:
-//        { coins, fish, yarn, luck, xp, butterfly:bool }
+//        { coins, fish, luck, xp, butterfly:bool }
 //    `butterfly:true` on the frame a golden butterfly spawned → spawn a yard
 //    sprite; call Raising.catchButterfly() when the player taps it.
 //    Check Raising.butterflyActive() to know if one is currently out.
@@ -49,11 +49,11 @@
 //        Raising.unassignCat(stationId)
 //        Raising.collect(stationId)  -> {res, amount}   // moves stored → wallet
 //        Raising.collectAll()        -> { coins?,fish?,... }
-//        Raising.upgradeCost(stationId) -> {coins, yarn}
+//        Raising.upgradeCost(stationId) -> {coins}
 //        Raising.upgrade(stationId)  -> {ok, msg?}       // deducts cost, +1 level
 //    Collected resources route to: fish→State.S.fish, coins→State.S.coins,
-//    luck→State.S.luckLure (feeds GameData.rollSpecies), yarn→State.S.raising.yarn
-//    (a NEW currency used only for upgrades — add a HUD chip if you like).
+//    luck→State.S.luckLure (feeds GameData.rollSpecies). (The retired yarn currency
+//    is folded into coins everywhere; only coins + fish remain.)
 //    Use Raising.isBusy(uid) to grey out cats that are working/breeding.
 //
 // 6) BREEDING (nursery). Raising.startBreeding(uidA, uidB) -> {ok,msg?}.
@@ -69,7 +69,7 @@
 //    Raising.recycleCat(uid) -> {shards} (adds to State.S.raising.starShards),
 //    or query Raising.shardValue(rarity). Pity counter persists in save.
 //
-// 8) BOND via gift. Raising.giftCat(uid) spends 1 State.S.treats ->
+// 8) BOND via gift. Raising.giftCat(uid) spends 1 State.S.fish ->
 //    {ok, bond, leveled, story, msg?}. Higher bond = passive production buff
 //    (auto-applied in station rate) + unlocks a one-line story (show `story`).
 //    Badges for a cat detail panel: Raising.catBadges(cat) -> array of
@@ -89,8 +89,10 @@ const BREED_SECONDS = 2 * 3600;   // 2h egg timer (advances via tick, offline to
 // ---------- station catalogue ----------
 // base = units PER HOUR at level 1 (scaled by 1.15^(level-1) and the cat).
 const STATION_TYPES = {
-  fishing: { name: '钓鱼位',   icon: '🎣', res: 'fish',  base: 2.5, cap: 20,  desc: '派猫钓鱼，攒小鱼干。' },
-  yarn:    { name: '毛线坊',   icon: '🧶', res: 'yarn',  base: 9,   cap: 60,  desc: '织毛线团，升级站点的材料。' },
+  fishing: { name: '钓鱼位',   icon: '🎣', res: 'fish',  base: 2.5, cap: 20,  desc: '派猫钓鱼，攒小鱼。' },
+  // 毛线坊 now earns 🪙 coins (yarn merged into coins). Kept as a second coin earner
+  // so existing saves with a staffed st_yarn station keep producing meaningfully.
+  yarn:    { name: '毛线坊',   icon: '🧶', res: 'coins', base: 60,  cap: 180, desc: '编织小物售卖，攒金币升级站点。' },
   sun:     { name: '晒太阳位', icon: '☀️', res: 'coins', base: 90,  cap: 270, desc: '持续赚金币：派猫上岗后约每分钟赚 1 枚，离线也继续生产；回工坊点收取到账。' },
   watch:   { name: '瞭望台',   icon: '🔭', res: 'luck',  base: 0.5, cap: 5,   desc: '瞭望远方，积攒好运（提升野猫稀有度）。' },
   nursery: { name: '暖窝',     icon: '🥚', res: null,    base: 0,   cap: 0,   desc: '把两只猫放进暖窝，孵化小猫。' },
@@ -112,7 +114,7 @@ const TRAITS = {
   none:    { name: '—',    icon: '·',  weight: 55, note: '没有特殊天赋。', },
   goldpaw: { name: '金爪',  icon: '🐾', weight: 10, note: '金币产出 +12%。', res: { coins: 1.12 } },
   angler:  { name: '钓王',  icon: '🎣', weight: 9,  note: '小鱼干产出 +20%。', res: { fish: 1.20 } },
-  weaver:  { name: '巧手',  icon: '🧶', weight: 9,  note: '毛线产出 +20%。', res: { yarn: 1.20 } },
+  weaver:  { name: '巧手',  icon: '🧶', weight: 9,  note: '金币产出 +20%。', res: { coins: 1.20 } },
   charm:   { name: '招财',  icon: '🧧', weight: 7,  note: '访客更慷慨。', visitor: 1.4 },
   warrior: { name: '斗志',  icon: '⚔️', weight: 6,  note: '战斗力 +8%（战斗系统可读取 trait）。', battle: 1.08 },
   fortune: { name: '福星',  icon: '🍀', weight: 4,  note: '异色后代概率翻倍。', shiny: 2 },
@@ -168,7 +170,6 @@ function defaultStations() {
 function defaultRaising() {
   return {
     ver: 1,
-    yarn: 0,
     starShards: 0,
     offlineCapH: OFFLINE_CAP_H,
     stations: defaultStations(),
@@ -189,7 +190,8 @@ function init() {
   if (!r.stations) r.stations = defaultStations();
   if (!r.pity) r.pity = { count: 0 };
   if (!r.butterfly) r.butterfly = { active: false, spawnAt: 0 };
-  if (r.yarn == null) r.yarn = 0;
+  // Legacy raising.yarn is migrated into coins in State.load(); never resurrect it here.
+  if ('yarn' in r) delete r.yarn;
   if (r.starShards == null) r.starShards = 0;
   if (r.offlineCapH == null) r.offlineCapH = OFFLINE_CAP_H;
   if (!('breeding' in r)) r.breeding = null;
@@ -285,7 +287,7 @@ function resWallet(res, amount) {
   if (amount <= 0) return;
   if (res === 'coins') State.S.coins += amount;
   else if (res === 'fish') State.S.fish += amount;
-  else if (res === 'yarn') raising().yarn += amount;
+  else if (res === 'yarn') State.S.coins += amount;   // legacy yarn folds into coins
   else if (res === 'luck') State.S.luckLure = (State.S.luckLure || 0) + amount;
 }
 
@@ -314,10 +316,11 @@ function collectAll() {
 
 function upgradeCost(stationId) {
   const st = stationById(stationId);
-  if (!st) return { coins: 0, yarn: 0 };
+  if (!st) return { coins: 0 };
+  // Single-currency upgrades: the old coins + yarn cost now reads as one 🪙 coins
+  // sum (the retired yarn portion folded in at the ×10 premium-small scale).
   return {
-    coins: Math.round(25 * Math.pow(1.15, st.level)),
-    yarn: Math.round(8 * Math.pow(1.15, st.level)),
+    coins: Math.round((25 + 8 * 10) * Math.pow(1.15, st.level)),
   };
 }
 
@@ -327,9 +330,7 @@ function upgrade(stationId) {
   if (!st) return { ok: false, msg: '没有这个站点' };
   const cost = upgradeCost(stationId);
   if (State.S.coins < cost.coins) return { ok: false, msg: '金币不够' };
-  if (raising().yarn < cost.yarn) return { ok: false, msg: '毛线不够' };
   State.S.coins -= cost.coins;
-  raising().yarn -= cost.yarn;
   st.level++;
   return { ok: true, level: st.level };
 }
@@ -356,7 +357,7 @@ function stationsView() {
 function tick(dt) {
   init();
   const r = raising();
-  const delta = { coins: 0, fish: 0, yarn: 0, luck: 0, xp: 0, butterfly: false };
+  const delta = { coins: 0, fish: 0, luck: 0, xp: 0, butterfly: false };
   if (!(dt > 0)) return delta;
   const hours = dt / 3600;
 
@@ -433,7 +434,7 @@ function applyOffline(now) {
 
   // visitors leave gifts directly into the wallet (Neko-Atsume charm)
   const visitors = rollVisitors(minutes);
-  const gains = { coins: 0, fish: 0, yarn: 0, luck: 0 };
+  const gains = { coins: 0, fish: 0, luck: 0 };
   for (const v of visitors) {
     for (const k in v.gift) gains[k] = (gains[k] || 0) + v.gift[k];
     if (v.memento) r.mementos[v.memento] = (r.mementos[v.memento] || 0) + 1;
@@ -472,15 +473,14 @@ function rollVisitors(minutes) {
     // 招财 trait makes visitors more generous (works even if still hidden)
     let charm = 1;
     owned.forEach(c => { if (c.trait === 'charm') charm = Math.max(charm, TRAITS.charm.visitor); });
+    // Only 🪙 coins + 🐠 fish gifts now; the old 🧶 yarn gift folds into coins (×10 scale).
     const gift = {};
     if (rare) {
-      gift.coins = Math.round(randInt(40, 80) * charm);
+      gift.coins = Math.round(randInt(40, 80) * charm) + randInt(4, 10) * 10;
       gift.fish = 2;
-      gift.yarn = randInt(4, 10);
     } else {
-      gift.coins = Math.round(randInt(6, 18) * charm);
+      gift.coins = Math.round(randInt(6, 18) * charm) + (chance(0.3) ? randInt(2, 6) * 10 : 0);
       if (chance(0.3)) gift.fish = 1;
-      if (chance(0.3)) gift.yarn = randInt(2, 6);
     }
     out.push({
       name: sp.name, speciesId: sp.id, rarity: sp.rarity,
@@ -613,9 +613,9 @@ function giftCat(uid) {
   init();
   const cat = findCat(uid);
   if (!cat) return { ok: false, msg: '找不到猫猫' };
-  if ((State.S.treats || 0) <= 0) return { ok: false, msg: '没有零食了' };
+  if ((State.S.fish || 0) <= 0) return { ok: false, msg: '没有小鱼了' };
   ensureCatFields(cat);
-  State.S.treats--;
+  State.S.fish--;
   const p = PERSONALITIES[cat.personality];
   const bondMul = p && p.bond ? p.bond : 1;
   cat.bondXp += Math.round(10 * bondMul);
@@ -646,10 +646,9 @@ function catchButterfly() {
   if (!r.butterfly.active) return { ok: false };
   r.butterfly.active = false;
   const reward = { coins: randInt(30, 70) };
-  if (chance(0.4)) reward.treats = 1;
-  if (chance(0.15)) reward.fish = 1;
+  // Old treats drop folds into the 🐠 fish drop (one cat-raising currency now).
+  if (chance(0.4) || chance(0.15)) reward.fish = 1;
   resWallet('coins', reward.coins);
-  if (reward.treats) State.S.treats += reward.treats;
   if (reward.fish) State.S.fish += reward.fish;
   return { ok: true, reward };
 }

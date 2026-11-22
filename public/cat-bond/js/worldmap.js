@@ -21,9 +21,8 @@
 //        //   this.scene = 'map'; WorldMap.enterRegion(WorldMap.currentRegion);
 //      });
 //      WorldMap.onCollect((reward) => {
-//        // reward = { coins, treats, fish, label }  (any field may be 0/absent)
+//        // reward = { coins, fish, label }  (any field may be 0/absent)
 //        if (reward.coins)  State.S.coins  += reward.coins;
-//        if (reward.treats) State.S.treats += reward.treats;
 //        if (reward.fish)   State.S.fish   += reward.fish;
 //        State.save(); this.refreshHUD();
 //        this.toast('📦 ' + (reward.label || '拾获补给'));
@@ -129,14 +128,15 @@
     },
   ];
   var DISCOVERIES={
-    home:{icon:'🧶',name:'旧院子的毛线盒',en:'The old yarn box',story:'木凳下藏着一盒毛线，像是为新猫咪准备的礼物。',storyEn:'A hidden box of yarn welcomes your kitten.',reward:{coins:12,yarn:2}},
-    sakura:{icon:'🌸',name:'樱花的许愿信',en:'A wish in the blossoms',story:'信上写着：愿每只流浪小猫都找到自己的家。',storyEn:'A note wishes that every stray cat finds a home.',reward:{treats:4,coins:18}},
+    home:{icon:'🧶',name:'旧院子的毛线盒',en:'The old yarn box',story:'木凳下藏着一盒毛线，像是为新猫咪准备的礼物。',storyEn:'A hidden box of yarn welcomes your kitten.',reward:{coins:32}},
+    sakura:{icon:'🌸',name:'樱花的许愿信',en:'A wish in the blossoms',story:'信上写着：愿每只流浪小猫都找到自己的家。',storyEn:'A note wishes that every stray cat finds a home.',reward:{fish:4,coins:18}},
     creek:{icon:'🐚',name:'溪谷的蓝贝壳',en:'The blue creek shell',story:'溪水里的贝壳闪闪发亮，里面藏着小鱼干。',storyEn:'A sparkling shell holds a stash of fish.',reward:{fish:3,coins:20}},
     volcano:{icon:'🔥',name:'火山暖光石',en:'The warm ember stone',story:'温暖的石头带来了寻找稀有猫咪的好运。',storyEn:'A warm stone brings luck for the next rare friend.',reward:{luck:2,coins:30}},
     ruins:{icon:'🌙',name:'月影星光匣',en:'The moonlit star box',story:'古老的匣子为一路冒险到这里的猫咪留下祝福。',storyEn:'An ancient chest rewards cats that made it this far.',reward:{luck:3,fish:3,coins:40}}
   };
   // Native physical finds for each region; old saved node IDs stay stable.
-  var REGION_FINDS={"home":[["forage","窗台猫薄荷","Catnip on the windowsill",{"treats":2,"yarn":1}],["play","午后的晒太阳角","The sunny corner",{"coins":14,"yarn":2}],["cache","花盆下的零钱","Coins beneath a planter",{"coins":28}],["forage","厨房掉落的小鱼干","A fish treat by the kitchen",{"fish":2,"treats":1}],["rare","幸运许愿铃","The lucky wishing bell",{"luck":1,"coins":18}],["play","篱笆边的毛线球","Yarn by the garden fence",{"yarn":3}]],"sakura":[["forage","樱花蜜糖","Blossom nectar",{"treats":3}],["play","飘落的发光花瓣","Glowing falling petals",{"yarn":2,"coins":20}],["cache","神社祈愿签","Shrine fortune slip",{"luck":1,"coins":22}],["forage","樱树根下的鱼干","Fish beneath the cherry tree",{"fish":2}],["rare","樱色琥珀","Cherry blossom amber",{"luck":2,"coins":28}],["play","小猫的花环","A kitten flower crown",{"treats":2,"yarn":2}]],"creek":[["forage","小溪里的银鱼","Silver minnows",{"fish":3}],["play","石头跳跳乐","Stepping-stone game",{"coins":25,"treats":1}],["cache","水车边的宝贝","Waterwheel keepsake",{"yarn":2,"fish":1}],["forage","苔藓里的猫薄荷","Catnip in the moss",{"treats":3}],["rare","月光珍珠","Moonwater pearl",{"luck":2,"fish":2}],["play","贝壳寻宝","Shell treasure hunt",{"coins":34,"fish":1}]],"volcano":[["forage","暖石上的零食","Treats on warm stone",{"treats":4}],["play","火山温泉","Volcanic hot spring",{"coins":36,"yarn":2}],["cache","矿工遗落的金币","Forgotten prospector coins",{"coins":50}],["forage","岩洞秘密鱼干","Hidden cave fish",{"fish":3}],["rare","余烬晶石","Ember crystal",{"luck":3,"coins":22}],["play","火山流星雨","Ember meteor shower",{"luck":1,"treats":2}]],"ruins":[["forage","星光小鱼干","Starlit fish",{"fish":3}],["play","月光下的约定","A promise in moonlight",{"yarn":3,"coins":32}],["cache","遗迹古币","Ancient coins",{"coins":60}],["forage","夜花蜜露","Nightflower nectar",{"treats":4}],["rare","星河碎片","Stardust fragment",{"luck":3,"fish":2}],["play","旋转的星盘","The turning astrolabe",{"luck":2,"yarn":2}]]};
+  // Rewards use only 🪙 coins + 🐠 fish (old treats→fish 1:1, old yarn→coins ×10, merged).
+  var REGION_FINDS={"home":[["forage","窗台猫薄荷","Catnip on the windowsill",{"fish":2,"coins":10}],["play","午后的晒太阳角","The sunny corner",{"coins":34}],["cache","花盆下的零钱","Coins beneath a planter",{"coins":28}],["forage","厨房掉落的小鱼干","A fish treat by the kitchen",{"fish":3}],["rare","幸运许愿铃","The lucky wishing bell",{"luck":1,"coins":18}],["play","篱笆边的毛线球","Yarn by the garden fence",{"coins":30}]],"sakura":[["forage","樱花蜜糖","Blossom nectar",{"fish":3}],["play","飘落的发光花瓣","Glowing falling petals",{"coins":40}],["cache","神社祈愿签","Shrine fortune slip",{"luck":1,"coins":22}],["forage","樱树根下的鱼干","Fish beneath the cherry tree",{"fish":2}],["rare","樱色琥珀","Cherry blossom amber",{"luck":2,"coins":28}],["play","小猫的花环","A kitten flower crown",{"fish":2,"coins":20}]],"creek":[["forage","小溪里的银鱼","Silver minnows",{"fish":3}],["play","石头跳跳乐","Stepping-stone game",{"coins":25,"fish":1}],["cache","水车边的宝贝","Waterwheel keepsake",{"coins":20,"fish":1}],["forage","苔藓里的猫薄荷","Catnip in the moss",{"fish":3}],["rare","月光珍珠","Moonwater pearl",{"luck":2,"fish":2}],["play","贝壳寻宝","Shell treasure hunt",{"coins":34,"fish":1}]],"volcano":[["forage","暖石上的零食","Treats on warm stone",{"fish":4}],["play","火山温泉","Volcanic hot spring",{"coins":56}],["cache","矿工遗落的金币","Forgotten prospector coins",{"coins":50}],["forage","岩洞秘密鱼干","Hidden cave fish",{"fish":3}],["rare","余烬晶石","Ember crystal",{"luck":3,"coins":22}],["play","火山流星雨","Ember meteor shower",{"luck":1,"fish":2}]],"ruins":[["forage","星光小鱼干","Starlit fish",{"fish":3}],["play","月光下的约定","A promise in moonlight",{"coins":62}],["cache","遗迹古币","Ancient coins",{"coins":60}],["forage","夜花蜜露","Nightflower nectar",{"fish":4}],["rare","星河碎片","Stardust fragment",{"luck":3,"fish":2}],["play","旋转的星盘","The turning astrolabe",{"luck":2,"coins":20}]]};
   var DUO_MEMORIES={"home":["☀️","暖阳里的好朋友","Sunbeam Friends","两只小猫挤进同一缕阳光，谁都不愿先离开。","Two kittens squeeze into one sunbeam, and neither wants to leave."],"sakura":["🌸","花瓣下的双猫约定","Promise Under Petals","花瓣落在它们的耳朵上，它们约好来年春天还一起回来。","Petals land on their ears; they promise to return together next spring."],"creek":["🐚","一起越过小溪","Across the Creek Together","一只猫伸出小爪子，另一只已经在石头上等着它。","One kitten stretches out a paw; the other waits patiently on the stepping stone."],"volcano":["🔥","并肩的勇气","Brave Little Paws","面对炙热的石头，两只猫紧紧相随，找到了安全的路。","Side by side, the kittens find a safe way through the hot stones."],"ruins":["🌙","双猫星座","Two-Cat Constellation","古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。","Two new stars appear on the old astrolabe, carrying their names side by side."]};
   var SPOT_COORDS=[[330,610],[590,345],[875,475],[1150,950],[1490,445],[1360,1070]];
   function activeDuo(){
@@ -549,7 +549,7 @@
       const entry=DUO_MEMORIES[world.region.id],duo=activeDuo();
       const disc={id:world.region.id+'_duo',icon:entry[0],name:entry[1],en:entry[2],
         story:entry[3],storyEn:entry[4]};
-      const extra=({home:{yarn:3,coins:20},sakura:{treats:3,coins:22},
+      const extra=({home:{coins:50},sakura:{fish:3,coins:22},
         creek:{fish:3},volcano:{luck:2,coins:25},ruins:{luck:2,fish:2}})[world.region.id];
       reward=Object.assign({discovery:disc,duoMemory:true,duoTrust:12,
         duoNames:duo?.cats.map(c=>window.State.catName(c))||[]},extra);
