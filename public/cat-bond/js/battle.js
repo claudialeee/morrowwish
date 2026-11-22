@@ -677,9 +677,9 @@ class CaptureBattle {
       hp: Math.round(maxhp * carried), maxhp,
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
       r: 20, inv: 0, dashT: 0,
-      // AGI contributes a modest mobility advantage (+15% maximum).
-      // Each AGI point adds 0.35% before the cap; high-level cats stay controllable.
-      speed: 150 * (1 + Math.min(0.15, Math.max(0, s.agi || 0) * 0.0035)),
+      // Base movement reduced to 120. AGI grants +0.35% per point,
+      // capped at +20% (maximum normal run speed 144).
+      speed: 120 * (1 + Math.min(0.20, Math.max(0, s.agi || 0) * 0.0035)),
       dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.62,   // lower player base damage ~14%; keep skill ratios and enemy damage unchanged
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,kneadStacks:0,kneadT:0,
       tags: [], status: {}, slowed: false,
