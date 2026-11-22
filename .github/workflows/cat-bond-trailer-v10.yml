@@ -134,5 +134,15 @@ jobs:
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'qa(promo): V10 storybook cats, duration, real gameplay, one duo cinematic and reconciliation, unapproved'
-          git pull --rebase origin main
-          git push origin HEAD:main
+          # Other gameplay and promotion workers update main concurrently.
+          # A single pull-then-push can lose the race. Retry safely without force.
+          for attempt in $(seq 1 20); do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Main moved during promo publish (attempt $attempt); retrying..."
+            sleep 3
+          done
+          echo "::error::Cannot push owner-review assets after 20 safe retries"
+          exit 1
