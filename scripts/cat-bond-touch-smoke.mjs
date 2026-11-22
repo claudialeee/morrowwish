@@ -77,6 +77,9 @@ try{
       assert.equal(await page.locator('#panel.open').count(),0,'Yard menu tap must close panel');
       // Verify expedition actions work on actual phone-sized game pages.
       await page.locator('#fab-map').tap();
+      // Isolate navigation QA from randomly spawning wild cats that can
+      // immediately open a separate prebattle dialog before the menu tap.
+      await page.evaluate(()=>window.WorldMap.onEncounter(()=>{}));
       await page.locator('#panel.open .map-destination.available').first().tap();
       await page.locator('#map-menu').waitFor({state:'visible'});
       const beforeMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
