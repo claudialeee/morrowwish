@@ -2570,3 +2570,91 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #tabbar .tab:nth-child(2)::after{width:13px;height:13px;right:2px}
  #yard-actions .fab::after{width:14px;height:14px}
 }
+
+
+/* 2026-11-21: real intro collision fix. The caption is a separate flex child
+   AFTER the cat gallery, never a floating layer across illustrated paws. */
+#intro > .intro-cat-gallery{margin-bottom:0!important;}
+#intro > .intro-gallery-caption{
+ position:static!important;inset:auto!important;left:auto!important;bottom:auto!important;
+ transform:none!important;z-index:1;display:block;flex:0 0 auto;
+ align-self:center;max-width:min(92%,490px);width:max-content;
+ margin:0 auto 3px;padding:6px 16px;
+ background:rgba(255,248,243,.72);border:1px solid #ffffffb5;
+ border-radius:999px;box-shadow:0 3px 11px #8c719321;
+ color:#775f7d;font:850 clamp(12px,2.1vw,16px)/1.45 system-ui,sans-serif;
+ white-space:normal;text-align:center;overflow-wrap:anywhere;
+}
+@media(max-width:650px){
+ #intro > .intro-cat-gallery{margin-bottom:0!important}
+ #intro > .intro-gallery-caption{font-size:clamp(11px,3.3vw,14px);padding:5px 12px;
+   max-width:calc(100% - 24px);margin:0 auto 2px}
+}
+@media(max-height:620px){
+ #intro > .intro-gallery-caption{padding:4px 10px;font-size:12px;margin:0 auto}
+}
+
+/* Every earned duo tile is a direct viewer action, not a pair selector. */
+#panel .duo-unlocked-card{
+ cursor:pointer;touch-action:manipulation;transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+#panel .duo-unlocked-card:hover{transform:translateY(-2px)}
+#panel .duo-unlocked-card:active{transform:translateY(1px) scale(.992)}
+#panel .duo-unlocked-card:focus-visible{outline:3px solid #a07ebe;outline-offset:3px}
+#panel .duo-card-watch{display:inline-flex;align-items:center;justify-content:center;
+ width:fit-content;max-width:100%;gap:6px;min-height:29px;
+ border-radius:999px;padding:5px 11px;
+ font:850 12px/1.25 system-ui,sans-serif;
+ color:#724e7b;background:linear-gradient(115deg,#f9e5f1,#eee2fd);
+ border:1px solid #d9bfdc;box-shadow:0 2px 5px #9b829525;
+}
+#panel .duo-unlocked-card:hover .duo-card-watch{background:#f6d9ed}
+#panel .duo-unlocked-card .duo-gallery-thumb{
+ aspect-ratio:16/9!important;width:100%;height:auto!important;
+ border-radius:13px;object-fit:contain;filter:contrast(1.07) saturate(1.07);
+ background:linear-gradient(150deg,#fffbf4,#f1e9f5 48%,#e7f0ea);
+}
+
+/* Accessible, same-page animation viewer. Close is always above its iframe,
+   including narrow portrait phones with safe-area cutouts. */
+#cb-duo-viewer{
+ position:fixed;inset:0;z-index:2147482500;display:flex;
+ align-items:center;justify-content:center;padding:clamp(9px,2.5vw,22px);
+ background:rgba(36,25,46,.67);backdrop-filter:blur(9px);
+}
+#cb-duo-viewer[hidden]{display:none!important}
+#cb-duo-viewer .cb-duo-viewer-shell{
+ width:min(920px,100%);max-height:calc(100dvh - 18px);
+ position:relative;overflow:hidden;border-radius:23px;
+ border:2px solid #fff9ef;box-shadow:0 22px 70px #24142d85;
+ background:linear-gradient(155deg,#fff8ef,#f2e9fa);
+ padding:48px 9px 8px;display:flex;flex-direction:column;
+}
+#cb-duo-viewer .cb-duo-viewer-close{
+ position:absolute;z-index:2;top:8px;right:10px;
+ width:38px;height:38px;border-radius:50%;
+ border:2px solid #f6f0ec;background:#f7e1f0;
+ color:#684d70;font:bold 25px/1 system-ui;cursor:pointer;
+ box-shadow:0 3px 8px #9b82942b;
+}
+#cb-duo-viewer .cb-duo-viewer-close:focus-visible{
+ outline:3px solid #8d73a2;outline-offset:2px;
+}
+#cb-duo-viewer .cb-duo-viewer-title{
+ position:absolute;top:11px;left:18px;right:58px;text-align:left;
+ color:#735c7d;font:850 clamp(13px,2.2vw,18px)/1.3 system-ui;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+#cb-duo-viewer iframe{
+ border:0;display:block;width:100%;
+ height:min(73dvh,660px);min-height:250px;border-radius:16px;
+ background:#f7f0e9;
+}
+@media(max-width:600px){
+ #cb-duo-viewer{padding:7px}
+ #cb-duo-viewer .cb-duo-viewer-shell{padding:47px 5px 5px;border-radius:16px;
+   max-height:calc(100dvh - 14px)}
+ #cb-duo-viewer iframe{height:min(75dvh,590px);min-height:280px}
+ #cb-duo-viewer .cb-duo-viewer-close{right:7px}
+ #cb-duo-viewer .cb-duo-viewer-title{left:12px}
+}
