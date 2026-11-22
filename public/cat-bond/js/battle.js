@@ -2797,16 +2797,17 @@ class CaptureBattle {
         // than eleven disconnected orange coins.
         ctx.fillStyle=fan;ctx.globalAlpha=.77*k;ctx.beginPath();
         const seg=16;
+        // Trace nozzle→tip on one side, tip→nozzle on the other:
+        // the old forward-forward edges formed a self-intersecting fan.
         for(let side of [-1,1]){
-          for(let j=0;j<=seg;j++){
-            const u=j/seg,w=(5+u*24)*(1-.25*u),
+          for(let step=0;step<=seg;step++){
+            const j=side===-1?step:seg-step,u=j/seg,
+              w=(5+u*24)*(1-.25*u),
               wob=Math.sin(this.t*24+u*15+side)*5*u,
               x=originX+dx*length*u+nx*side*(w+wob),
               y=originY+dy*length*u+ny*side*(w+wob);
-            if(side===-1&&j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+            if(side===-1&&step===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
           }
-          // The other edge must return from tip to nozzle.
-          if(side===-1)ctx.lineTo(originX+dx*length+nx*29,originY+dy*length+ny*29);
         }
         ctx.closePath();ctx.fill();
         ctx.globalCompositeOperation='lighter';
