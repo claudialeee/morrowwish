@@ -70,6 +70,8 @@ function cast(b,f,sk,aim){
 }
 function support(b,recipient,sk){
  if(!b||!recipient||!REG[sk?.id])return false;
+ // The deployed mirror wall has its own world-space effect; no circular burst.
+ if(sk.id==='mirrorWall')return true;
  const g=REG[sk.id],dur=.63;
  push(b,{kind:'signatureCast',skillId:sk.id,x:recipient.x,y:recipient.y,
   angle:0,life:dur,max:dur,seed:g.seed});
