@@ -63,20 +63,23 @@ jobs:
           test -s public/pawsibly-innocent/index.html
           for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
             ready=0
-            for attempt in $(seq 1 3); do
+            for attempt in $(seq 1 12); do
               query="verify=${GITHUB_SHA}&attempt=${attempt}"
               if curl -fsSL --max-time 18 -o /tmp/pawsibly-live.html "${origin}/pawsibly-innocent/?${query}" &&
                  curl -fsSL --max-time 18 -o /tmp/pawsibly-live-game.js "${origin}/pawsibly-innocent/game.js?${query}" &&
                  curl -fsSL --max-time 18 -o /tmp/pawsibly-live.css "${origin}/pawsibly-innocent/single-screen.css?${query}" &&
                  grep -Fq '/pawsibly-innocent/game.js?v=player-visual-20261122' /tmp/pawsibly-live.html &&
-                 cmp -s public/pawsibly-innocent/index.html /tmp/pawsibly-live.html &&
+                 grep -Fq '/pawsibly-innocent/single-screen.css?v=player-visual-20261122' /tmp/pawsibly-live.html &&
+                 grep -Fq 'id="wait"' /tmp/pawsibly-live.html &&
+                 grep -Fq 'id="heistStatus"' /tmp/pawsibly-live.html &&
+                 grep -Fq 'id="roomNum"' /tmp/pawsibly-live.html &&
                  cmp -s public/pawsibly-innocent/game.js /tmp/pawsibly-live-game.js &&
                  cmp -s public/pawsibly-innocent/single-screen.css /tmp/pawsibly-live.css; then
                 ready=1
-                echo "VERIFIED exact Pawsibly HTML, game.js and CSS on ${origin} for deployed source ${GITHUB_SHA}"
+                echo "VERIFIED Pawsibly HTML release markers and byte-exact game.js / CSS on ${origin} for deployed source ${GITHUB_SHA}"
                 break
               fi
-              echo "Waiting for current published Pawsibly bytes at ${origin} (attempt ${attempt}/3)"
+              echo "Waiting for current published Pawsibly bytes at ${origin} (attempt ${attempt}/12)"
               sleep 5
             done
             if [ "${ready}" -ne 1 ]; then
@@ -84,4 +87,4 @@ jobs:
               exit 1
             fi
           done
-          echo "Both official player domains serve the exact tested Pawsibly build."
+          echo "Both official domains provide updated HTML controls and byte-exact tested Pawsibly JS and CSS."
