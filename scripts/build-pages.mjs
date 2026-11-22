@@ -58,7 +58,7 @@ const analytics = 'const SOCIAL_SNAPSHOT='+JSON.stringify(social)+';\n'
   + fs.readFileSync(path.join(base, 'src', 'analytics.js'), 'utf8')
     .replace('import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";','')
     .replace('import {nativeBlueskySnapshot} from "./bluesky-native.js";','')
-    .replace('import {nativeYouTubeSnapshot} from "./youtube-native.js";','')
+    .replace('import {nativeYouTubeSnapshot,nativeYouTubeRoute} from "./youtube-native.js";','')
     .replace('import {nativeInstagramSnapshot,nativeInstagramRoute} from "./instagram-native.js";','')
     .replace('export async function api', 'async function api');
 const router = fs.readFileSync(path.join(base, 'src', 'worker.js'), 'utf8')
