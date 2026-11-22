@@ -49,8 +49,8 @@ const Q={
 };
 Object.assign(Q,{
  hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end."),
- intro:L("在巴黎开启全新恋情，住进海边豪宅享受自由，也可以成为万人追捧的巨星。换一段人生，尽情去活。","Fall in love for the first time in Paris, enjoy your own Amalfi villa, or live as a superstar. A new life is yours."),
- tiny:L("八种人生 · 五个精彩瞬间 · 80 种结局","8 DREAM LIVES · 5 MOMENTS · 80 ENDINGS"),
+ intro:L("在巴黎邂逅新恋情，醒来就住进海边豪宅，或一夜成为巨星。选一种人生，立刻去活。","Find love in Paris, wake up in a seaside villa, or become a superstar overnight. Choose a life. Live it now."),
+ tiny:L("八种人生 · 点选就能开始","8 DREAM LIVES · CHOOSE ONE TO BEGIN"),
  choice:L("接下来，你想怎么活？","WHAT HAPPENS NEXT?"),
  stake:L("这一生的心愿","THE LIFE YOU WANT"),
  next:L("接下来会怎样","See what happens next"),
