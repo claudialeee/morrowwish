@@ -302,7 +302,8 @@ function draw(ctx,W,H,seq,lookup){
   window.CatBondDuoDirector?.footwork?.(ctx,sw,sh,p,key,tier);
   const fxTime=tier===1?p:tier===2?(p<.36?p+.09:p-.23):
      (p<.29?p+.10:p<.55?p-.11:p-.44);
-  window.CatBondDuoDirector?.accent?.(ctx,sw,sh,fxTime,key,tier);
+  // Old oversized signature glyphs sit on TOP of kitten faces; remove that
+  // entire intrusive stamp. 21 unique real attack effects remain in Finale.
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,fxTime,key,tier);
   ctx.restore();
  }
@@ -313,14 +314,8 @@ function draw(ctx,W,H,seq,lookup){
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
  if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
- // No English-only baked labels over the player's translated skill name.
- // One atlas panel contains a decorative old English title in the far top-right.
- // A soft semitransparent enamel banner reduces it behind localized UI.
- if(frame===0){
-   const veil=ctx.createLinearGradient(sw*.58,0,sw,0);
-   veil.addColorStop(0,'#e9e0f100');veil.addColorStop(.48,'#d9ccef99');veil.addColorStop(1,'#d5cdf0dc');
-   ctx.fillStyle=veil;ctx.fillRect(sw*.57,0,sw*.43,sh*.155);
- }
+ // The actor-only scenic atlas contains NO baked English skill title.
+ // Never paint the old rectangular veil over either cat's head or tail.
  if(!seq.hideCaptions){
  const en=window.MorrowwishI18n?.get?.()!=='zh';
  const title=seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||(en?'Duo Special':'双猫合击');
