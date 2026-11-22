@@ -10,7 +10,7 @@ const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
  for(const spec of [
-  {name:'phone',width:390,height:844,mobile:true},
+  {name:'phone',width:400,height:844,mobile:true},
   {name:'desktop',width:1180,height:760,mobile:false}
  ]){
   const page=await browser.newPage({viewport:{width:spec.width,height:spec.height},
@@ -18,12 +18,12 @@ try{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
-   await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length===39
+   await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length===40
      &&window.CatBondArtworkStatus?.breedsLoaded,{timeout:30000});
    await page.locator('#intro-start').click();
    await page.locator('#panel.open .dex-cell').first().click();
    const ids=await page.evaluate(()=>Array.from(CatBondSkillFX.ids));
-   assert.equal(ids.length,39);
+   assert.equal(ids.length,40);
    const hashes=[];
    for(const id of ids){
     const record=await page.evaluate(id=>{
@@ -71,11 +71,11 @@ try{
     hashes.push(crypto.createHash('sha256').update(bytes).digest('hex'));
     console.log('SKILL-ID REAL BATTLE '+spec.name+' '+JSON.stringify(record));
    }
-   assert.equal(new Set(hashes).size,39,
-     '39 original-skill silhouettes must be distinct on '+spec.name);
+   assert.equal(new Set(hashes).size,40,
+     '40 original-skill silhouettes must be distinct on '+spec.name);
    assert.deepEqual(errors,[],'unhandled game errors on '+spec.name);
-   console.log('ALL 39 NORMAL SKILLS PASS '+spec.name);
+   console.log('ALL 40 NORMAL SKILLS PASS '+spec.name);
   }finally{await page.close();}
  }
- console.log('CAT BOND ALL 39 SKILL-ID ARENA VISUAL QA PASS');
+ console.log('CAT BOND ALL 40 SKILL-ID ARENA VISUAL QA PASS');
 }finally{await browser.close();}

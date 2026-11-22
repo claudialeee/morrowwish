@@ -36,6 +36,12 @@ try{
    State.S.catchCount=3;
    State.S.battlePrefs={autoBattle:false,teamUids:[beginner.uid,veteran.uid,partner.uid]};
    window.MorrowwishI18n.get=()=> 'zh';
+   // CASUAL mode auto-heals carried expedition wounds by design. Use
+   // HARDCORE to verify the exact wounded-HP UI rather than asserting an
+   // impossible wound against the casual game rules.
+   State.setDifficulty('hardcore');
+   if(State.catHpFraction(veteran)>.90)
+     throw Error('The veteran wound failed to persist in hardcore mode');
    window.UI.openMapSquad();
   });
   const summary=await page.locator('#panel .map-squad-choice').allTextContents();

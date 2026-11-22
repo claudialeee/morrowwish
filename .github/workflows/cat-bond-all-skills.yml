@@ -1,4 +1,4 @@
-name: Cat Bond all 39 normal skills visual QA
+name: Cat Bond all 40 normal skills visual QA
 
 on:
   push:
@@ -31,16 +31,16 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Verify combat hit-feel and all skill effect registry
         run: node scripts/check-cat-bond.mjs
-      - name: Render 39 skill ID effects on real desktop and phone battle canvases
+      - name: Render 40 skill ID effects on real desktop and phone battle canvases
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-all-skills-server.log 2>&1 &
           sleep 2
           node scripts/cat-bond-all-skills-visual-smoke.mjs
-      - name: Save all 78 original watercolor skill screenshots
+      - name: Save all 80 original watercolor skill screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cat-bond-39-skills-in-real-battle
+          name: cat-bond-40-skills-in-real-battle
           path: /tmp/cat-bond-all-skills-*.png
           if-no-files-found: warn
           retention-days: 7

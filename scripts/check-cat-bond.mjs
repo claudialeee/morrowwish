@@ -247,10 +247,14 @@ const State = sandbox.window.State, UI = sandbox.window.UI, GameData = sandbox.w
 // Ordinary and rare cats must not all start with the same fireball loadout.
 const Skills=sandbox.window.Skills;
 const skillFx=sandbox.window.CatBondSkillFX;
-assert.ok(skillFx,'39 skill-signature renderer must load');
+assert.ok(skillFx,'all 40 normal skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
-assert.equal(signatureIDs.length,39,'every one of the 39 normal skills has a signature');
-assert.equal(new Set(signatureIDs).size,39,'signature ids must be unique');
+const normalIDs=Skills.SKILLS.filter(sk=>!sk.ultCost).map(sk=>sk.id);
+assert.equal(normalIDs.length,40,'skill list contains 40 normal moves');
+assert.equal(signatureIDs.length,40,'all 40 normal skills must have VFX');
+assert.equal(new Set(signatureIDs).size,40,'each signature id must be unique');
+assert.deepEqual([...signatureIDs].sort(),[...normalIDs].sort(),
+  'new moves (including Knead) may not be omitted from VFX registry');
 for(const id of signatureIDs){
   const skill=Skills.skillById(id);
   assert.ok(skill&&!(skill.ultCost>0),'normal skill has registered FX: '+id);
@@ -264,6 +268,15 @@ for(const id of signatureIDs){
 }
 assert.equal(skillFx.drawStatus(canvasCtx,{x:0,y:0,status:{shock:1,burn:2,expose:3}},1),true,
   'persistent status overlays render for ongoing debuffs');
+for(const tag of Object.keys(Skills.TAG_INFO)){
+  assert.equal(skillFx.drawStatus(canvasCtx,{x:120,y:180,status:{[tag]:2}},1),true,
+    'missing localized battle status symbol: '+tag);
+}
+assert.equal(skillFx.drawStatus(canvasCtx,{
+ x:120,y:180,status:{},kneadStacks:4,kneadT:3},1),true,
+ 'Knead buffs require on-cat paw-pad stack feedback');
+assert.equal(skillFx.drawStatus(canvasCtx,{x:120,y:180,status:{}},1),false,
+ 'no phantom status VFX on a healthy unbuffed cat');
 
  
 
