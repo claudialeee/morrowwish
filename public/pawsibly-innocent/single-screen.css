@@ -995,14 +995,18 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
 
 /* 2026-11-22: Desktop HUD must reserve actual width for the room title,
    instead of squeezing it between the score and duplicate audio controls. */
-.single-screen-game .achievement-pocket{position:relative;flex-shrink:0;overflow:visible!important}
-.single-screen-game .achievement-pocket>span{font-size:18px;line-height:1}
-.single-screen-game #badgePocketCount{
- position:absolute;right:-5px;bottom:-5px;min-width:17px;height:17px;
- padding:1px 3px;border-radius:9px;background:#704c82;color:white;
- border:1px solid #fffaf4;font:900 10px/14px Nunito,system-ui;text-align:center;
+.single-screen-game #menuButton{position:relative!important}
+.single-screen-game #menuButton.badge-received{animation:pocketPulse .5s ease-out}
+.single-screen-game #menuButton.badge-received::after{
+ content:"🏅";position:absolute;top:-12px;right:-9px;pointer-events:none;
+ font-size:14px;filter:drop-shadow(0 2px 2px #442a4259);
+ animation:menuBadgeArrive .5s ease-out both;
 }
-.single-screen-game .achievement-pocket.badge-received{animation:pocketPulse .5s ease-out}
+@keyframes menuBadgeArrive{
+ from{opacity:0;transform:translateY(7px) scale(.5)}
+ 45%{opacity:1;transform:translateY(-2px) scale(1.2)}
+ to{opacity:0;transform:translateY(-5px) scale(.85)}
+}
 @keyframes pocketPulse{0%{box-shadow:0 0 0 0 #c68ab9}50%{box-shadow:0 0 0 7px #c68ab966}100%{box-shadow:0 0 0 0 #c68ab900}}
 @media (min-width:701px){
  .single-screen-game .in-game-head-row{
@@ -1058,15 +1062,7 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  .single-screen-game .in-game-head-row .heist-status{grid-area:status!important}
  .single-screen-game .in-game-head-row #stageControls{grid-area:tools!important;justify-content:flex-end!important}
 }
-@media(max-width:700px){
- .single-screen-game #stageControls>.achievement-pocket{
-  width:34px!important;min-width:34px!important;max-width:34px!important;
-  height:35px!important;min-height:35px!important;padding:0!important
- }
- .single-screen-game .achievement-pocket>span{font-size:15px}
- .single-screen-game #badgePocketCount{font-size:9px;min-width:15px;height:15px;line-height:12px}
-}
-/* Reward acknowledgement: compact for 850ms, then visibly flies into the badges pocket. */
+/* Compact reward appears briefly, then flies to the existing menu button (Badges tab). */
 .single-screen-game .achievement-toast{
  top:17%!important;width:max-content!important;max-width:min(300px,83%)!important;
  min-height:0!important;gap:8px!important;padding:8px 10px!important;
@@ -1097,7 +1093,7 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
   animation:none!important;transition:opacity .15s ease!important
  }
  .single-screen-game .achievement-toast.collecting{opacity:0}
- .single-screen-game .achievement-pocket.badge-received{animation:none}
+ .single-screen-game #menuButton.badge-received,.single-screen-game #menuButton.badge-received::after{animation:none}
 }
 /* Richer, readable end-of-room recap. */
 .single-screen-game .overlay .modal .result-verdict{
@@ -1233,27 +1229,69 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  .single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{font-size:16px!important}
  .single-screen-game .in-game-actions #resetQuickLabel{font-size:9px!important}
 }
-/* Reset is now pinned immediately under the menu tabs on every menu page. */
-.single-screen-game #gameMenu .reset-progress-menu-action{
- box-sizing:border-box!important;display:block!important;flex:0 0 auto!important;
- margin:0!important;padding:6px 12px 10px!important;border:0!important;
- background:linear-gradient(90deg,#fff9f2,#ffe9ec)!important;
+
+/* The two replay choices are ONE contextual action group, without duplicate menu entries.
+   A room retry preserves save data; a whole-game restart erases it only after confirmation. */
+.single-screen-game .in-game-actions .replay-controls{
+ box-sizing:border-box!important;display:flex!important;align-items:stretch!important;
+ justify-content:flex-end!important;gap:5px!important;min-width:0!important;
+ flex:0 0 auto!important;
 }
-.single-screen-game #gameMenu .reset-progress-menu-action .reset-progress-button{
- box-sizing:border-box!important;display:flex!important;width:100%!important;
- min-height:44px!important;padding:9px 12px!important;
- background:#c65876!important;border:2px solid #9b405e!important;
- color:white!important;font:900 13px/1.2 Nunito,system-ui,sans-serif!important;
- box-shadow:0 3px 0 #9d5068!important;border-radius:12px!important;
+.single-screen-game .in-game-actions .replay-controls #restart{
+ box-sizing:border-box!important;display:inline-flex!important;flex:0 0 102px!important;
+ width:102px!important;min-width:102px!important;max-width:102px!important;
+ min-height:45px!important;gap:3px!important;padding:6px 7px!important;
+ white-space:normal!important;text-align:center!important;
 }
-.single-screen-game #gameMenu .reset-progress-menu-action .reset-progress-button:hover{
- background:#aa4264!important;
+.single-screen-game .in-game-actions .replay-controls #restart .restart-symbol{
+ font-size:20px!important;flex:0 0 auto!important;
 }
-@media(max-width:600px){
- .single-screen-game #gameMenu .reset-progress-menu-action{
-  padding:4px 8px 8px!important;
+.single-screen-game .in-game-actions .replay-controls #restart .restart-label{
+ display:inline!important;font:900 11px/1.15 Nunito,system-ui,sans-serif!important;
+ white-space:normal!important;
+}
+.single-screen-game .in-game-actions .replay-controls #resetGameQuick{
+ flex:0 0 116px!important;width:116px!important;min-width:116px!important;
+ max-width:116px!important;min-height:45px!important;
+}
+.single-screen-game .in-game-actions .replay-controls #resetQuickLabel{
+ display:inline!important;font:900 11px/1.15 Nunito,system-ui,sans-serif!important;
+}
+@media(min-width:701px) and (max-width:1250px){
+ .single-screen-game .in-game-actions{flex-wrap:wrap!important;gap:5px!important}
+ .single-screen-game .in-game-actions .replay-controls{
+  flex:1 1 100%!important;justify-content:flex-end!important;
  }
- .single-screen-game #gameMenu .reset-progress-menu-action .reset-progress-button{
-  min-height:42px!important;font-size:12px!important;
+}
+@media(max-width:700px){
+ .single-screen-game .in-game-actions .replay-controls{
+  order:4!important;flex:1 1 100%!important;width:100%!important;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+ }
+ .single-screen-game .in-game-actions .replay-controls #restart,
+ .single-screen-game .in-game-actions .replay-controls #resetGameQuick{
+  box-sizing:border-box!important;flex:none!important;width:100%!important;
+  min-width:0!important;max-width:100%!important;min-height:40px!important;
+  height:auto!important;padding:6px 7px!important;
+ }
+ .single-screen-game .in-game-actions .replay-controls #restart .restart-label,
+ .single-screen-game .in-game-actions .replay-controls #resetQuickLabel{
+  display:inline!important;font-size:12px!important;
+ }
+ .single-screen-game .in-game-actions .replay-controls #restart .restart-symbol,
+ .single-screen-game .in-game-actions .replay-controls #resetGameQuick .reset-all-symbol{
+  font-size:19px!important;
  }
 }
+@media(max-width:360px){
+ .single-screen-game .in-game-actions .replay-controls #restart,
+ .single-screen-game .in-game-actions .replay-controls #resetGameQuick{
+  min-height:40px!important;padding:4px 5px!important;
+ }
+ .single-screen-game .in-game-actions .replay-controls #restart .restart-label,
+ .single-screen-game .in-game-actions .replay-controls #resetQuickLabel{
+  font-size:11px!important;
+ }
+}
+/* Show exactly the existing menu. Its 'Badges' tab is the collection destination. */
