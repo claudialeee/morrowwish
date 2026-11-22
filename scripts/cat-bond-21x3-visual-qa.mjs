@@ -131,7 +131,7 @@ try{
  assert.equal(matches.originalAtlasCount,32,'The immutable 8x4 sheet must retain its original 32 cats');
  assert.equal(matches.n,33,'32 atlas cats + standalone Jiafei must all render');
  assert.equal(matches.jiafeiArtReady,true,'Real browser must decode the separate Jiafei watercolor');
- assert.match(matches.jiafeiSource,/jiafei-watercolor-v1\.avif/);
+ assert.match(matches.jiafeiSource,/jiafei-watercolor-v2\.webp/);
  assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,33,
    'All 33 first-side breeds must produce visibly distinct actual watercolor cats');
  assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,33,
