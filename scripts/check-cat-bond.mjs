@@ -1393,6 +1393,8 @@ for(const [id,element] of [['waterJet','water'],['thunderStream','elec'],['flame
   const f=spellBattle.me();
   spellBattle.castBeam(f,0,sk,12,'#ffdfa2');
   assert.equal(spellBattle.beams.length,1,id+' registers a live beam');
+  const activeBeam=spellBattle.beams[0];
+  const fxBefore=spellBattle.vfx.fx.length;
   assert.ok(f._beamRoot>0,id+' roots its caster while channeling');
   const target=spellBattle.enemies[0];
   target.x=f.x+Math.min(sk.reach-28,116);target.y=f.y;
@@ -1405,6 +1407,12 @@ for(const [id,element] of [['waterJet','water'],['thunderStream','elec'],['flame
   assert.equal(spellBattle.beams.length,0,id+' ends its channel');
   assert.ok(!f._beamRoot,id+' releases its caster root when done');
   assert.ok(target.hp<hp,id+' deals periodic line damage in combat');
+  assert.ok(activeBeam._impactCount>=1,id+' shows contact feedback on a real landed beam tick');
+  assert.ok(target.hitWhite>0&&target.hitSquash>0,
+    id+' flashes and recoils locally when a channel tick actually lands');
+  assert.ok(spellBattle.vfx.fx.length>fxBefore,id+' creates visible contact particles/ripples');
+  assert.ok(spellBattle.hitstop<=.020,
+    id+' must not freeze the whole fight repeatedly on continuous damage');
 }
 const flame=Skills.skillById('flameSweep');
 assert.ok(flame.sweep>=.65&&flame.reach<=160,
