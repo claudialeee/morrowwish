@@ -1,4 +1,4 @@
-name: Compare actual V10 portrait and landscape duo frames
+name: Compare V10 review with corrected wide-animation render
 on:
   push:
     branches: [main]
