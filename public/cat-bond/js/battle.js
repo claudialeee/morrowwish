@@ -850,6 +850,36 @@ class CaptureBattle {
     this._autoLastAt=this.t;
   }
 
+  // BASIC attacks are independent of the Q/E planner. An equipped melee basic
+  // must close into claw contact; the fallback toy projectile expires after 0.5s.
+  basicAttackRange(f,target=null) {
+    const sk=f.basicSkill, r=target?.r||18;
+    if(sk?.kind==='melee')return 64+r*.6-2;
+    if(sk?.kind==='dash')return 112;
+    if(sk?.kind==='pounce')return 135;
+    if(sk?.kind==='chain')return 200;
+    // Toy toss spawns 22px ahead and travels at projSpeed for 0.5s.
+    // Leave a small margin for moving targets and lead-angle error.
+    return Math.min(175,22+(f.projSpeed||300)*.5+r*.35-9);
+  }
+
+  autoBasicAttack(f,tgt) {
+    if(!f?.alive||!tgt?.alive||f.cd.basic>0||f._castRoot>0||f._beamRoot>0)return false;
+    const target=this.commandTarget?tgt:this.unwardedTarget(f,tgt);
+    if(!target?.alive)return false;
+    const dist=Math.hypot(target.x-f.x,target.y-f.y);
+    if(dist>this.basicAttackRange(f,target))return false;
+    // Only projectile-based basics can bounce off the enemy's reflect wall.
+    const kind=f.basicSkill?.kind||'projectile';
+    if(['projectile','beam'].includes(kind) &&
+       (this.reflectCovers(target,f.x,f.y)||this.wallBlockingLine(f.x,f.y,target.x,target.y,'me')))
+      return false;
+    const aim=this.autoAim(f,target,f.projSpeed||300);
+    f._aim=aim;
+    this.fireBasic(f,aim);
+    return true;
+  }
+
   // ---- KIT-BASED RANGE BAND ---------------------------------------------------
   // A fighter's preferred engagement distance should come from the TOOLS it carries,
   // not one fixed number. A brawler (melee/dash/leap/pounce kit) wants to be on top
@@ -865,7 +895,7 @@ class CaptureBattle {
     const isMelee=sk=>sk&&(sk.kind==='melee'||sk.kind==='dash'||sk.kind==='leap'||sk.kind==='pounce');
     const isRanged=sk=>sk&&(sk.kind==='projectile'||sk.kind==='beam'||sk.kind==='aoe');
     const isSupport=sk=>sk&&(sk.kind==='heal'||sk.kind==='buff');
-    const basicRange=Math.min(175,f.projSpeed*.45+25);     // the innate toy-toss reach
+    const basicRange=this.basicAttackRange(f);           // keep movement inside the actual basic's hit reach
     let role,min,max;
     const meleeReach=Math.max(...skills.filter(isMelee).map(sk=>(
       sk.kind==='melee'?76:sk.kind==='dash'?122:sk.kind==='leap'?165:152)),0);
@@ -887,21 +917,22 @@ class CaptureBattle {
       else { min=Math.max(120,meleeReach*1.15); max=Math.max(190,meleeReach*1.7); } // skill down → kite out & wait (don't hug)
     }else if(hasRanged&&!hasMelee){
       // kiter: sit at 0.55–0.85 of the projectile reach, flee if closer, seek if farther
-      role='ranged'; const pr=Math.max(basicRange, f.projSpeed*.9);
-      min=pr*0.55; max=pr*0.85;
+      role='ranged';
+      // Ranged Q/E attacks reach farther than the basic toy. Holding the old
+      // 150–230px Q/E-only band left the cat forever outside basic range.
+      min=Math.max(95,basicRange*.66); max=Math.max(min+18,basicRange*.94);
     }else if(skills.length&&skills.every(isSupport)){
-      // SUPPORT: a heal/buff cat's only offense is its basic toss (~160px). As an ALLY it
-      // hangs back and babysits (230-320) — but when it's the ACTIVE/solo cat it must be
-      // able to actually land its basic, so pull the band into its own attack range.
-      role='support';
-      if(f===this.me()){ min=90; max=Math.max(140,basicRange); }
-      else { min=230; max=320; }
+      // SUPPORT cats must still be able to use their only offensive action.
+      // Their old 230–320px ally band exceeded their ~170px basic shot lifetime,
+      // so teammates literally never fired a basic. Stay behind melee fighters
+      // but inside basic reach, regardless of who the active cat is.
+      role='support'; min=Math.max(90,basicRange*.7); max=Math.max(min+18,basicRange*.94);
     }else if(hasMelee&&hasRanged){
       // hybrid: a brawler who can also poke — favour the aggressive band but keep poke
       role='bruiser'; min=Math.max(55,meleeReach*0.4); max=Math.max(130,meleeReach*0.95);
     }else{
       // no offensive kit yet → fight at basic-toy range
-      role='basic'; min=Math.max(55,basicRange-55); max=basicRange-10;
+      role='basic'; min=Math.max(35,basicRange*.68); max=Math.max(min+12,basicRange-10);
     }
     // HP-gated retreat: shift the band outward + widen as HP drops below 30%.
     const hp=f.hp/f.maxhp;
@@ -1171,11 +1202,8 @@ class CaptureBattle {
     if(buff&&dist<290){
       if(this.castSlot(f,buff,aim)!==false){this.markAutoAction(f,'强化自身');return;}
     }
-    // Basic is the innate toy TOSS (a projectile) → don't lob it into a reflect wall.
-    if(f.cd.basic<=0&&!tgtReflect&&dist<Math.min(175,f.projSpeed*.45+25)){
-      this.fireBasic(f,aim);
-      // Basic attack intentionally does not overwrite the last skill label.
-    }
+    // Basic runs on its OWN cooldown from updateAllyAI every frame.
+    // Never gate it behind successful Q/E/heal/ultimate decision returns.
   }
 
   // All auto-controlled cats use the same adaptive, kit-aware planner.
@@ -1291,7 +1319,10 @@ class CaptureBattle {
     // Shared decision loop for active and allied cats. Only the current active cat
     // owns the manual aim/UI; its autonomous movement/combat does not differ.
     if(f===this.me()) this.aim=f._aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
-    this.evalGambits(f, tgt, dist, near, nd);
+    // Fire independent of the skill decision cadence, for active-auto and ALL
+    // allied cats alike. Range is evaluated AFTER movement this frame.
+    this.autoBasicAttack(f,tgt);
+    this.evalGambits(f, tgt, Math.hypot(tgt.x-f.x,tgt.y-f.y), near, nd);
   }
 
   // ---------------- input (polled from game.keys / game.mouse) ----------------
