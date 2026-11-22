@@ -1658,10 +1658,23 @@ const UI = {
           (en?'First encounter includes a skippable tutorial.':'首次战斗附带可跳过的新手教学。'):
           (en?'The game remembers your last selection.':'系统会记住上一次选择。')}</p>
       </fieldset>
+      <fieldset class="capture-mode-picker">
+        <legend>${en?'Difficulty':'难度'}</legend>
+        <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Difficulty':'难度'}">
+          <button type="button" class="capture-mode-option ${State.difficulty()==='casual'?'selected':''}" role="radio" data-diff="casual" aria-checked="${State.difficulty()==='casual'}">
+            <strong>${en?'🌿 Casual':'🌿 休闲'}</strong>
+            <span>${en?'Relaxed fights — your cats hit harder, wild cats are gentle, almost no level pressure.':'轻松战斗 — 你的猫更强、野猫更温和，几乎没有等级压制。'}</span>
+          </button>
+          <button type="button" class="capture-mode-option ${State.difficulty()==='hardcore'?'selected':''}" role="radio" data-diff="hardcore" aria-checked="${State.difficulty()==='hardcore'}">
+            <strong>${en?'🔥 Hardcore':'🔥 硬核'}</strong>
+            <span>${en?'Full lethality and strong level suppression — fighting above your level really bites.':'完整难度 + 较强等级压制 — 越级挑战非常危险。'}</span>
+          </button>
+        </div>
+      </fieldset>
       <div class="btn-row"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
     if(opts.origin==='map')this.bindSquadPicker(selected);
-    const options=[...document.querySelectorAll('#panel .capture-mode-option')];
+    const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
     for(const button of options){
       button.onclick=()=>{
         auto=button.dataset.battleAuto==='true';
@@ -1669,6 +1682,19 @@ const UI = {
           const selected=(opt.dataset.battleAuto==='true')===auto;
           opt.classList.toggle('selected',selected);
           opt.setAttribute('aria-checked',String(selected));
+        }
+      };
+    }
+    // Difficulty radio: persist immediately so it applies to THIS fight (battle.js
+    // reads State.difficulty() at construction, which happens after Start below).
+    const diffOptions=[...document.querySelectorAll('#panel .capture-mode-option[data-diff]')];
+    for(const button of diffOptions){
+      button.onclick=()=>{
+        State.setDifficulty(button.dataset.diff);
+        for(const opt of diffOptions){
+          const on=opt.dataset.diff===button.dataset.diff;
+          opt.classList.toggle('selected',on);
+          opt.setAttribute('aria-checked',String(on));
         }
       };
     }

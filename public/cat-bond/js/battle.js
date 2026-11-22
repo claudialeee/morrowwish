@@ -62,6 +62,18 @@ class CaptureBattle {
         this.enemyDmgMult  = 0.90 + 1.00 * Le;                // ∈ [0.90, 1.90]
         const Lh = 1 / (1 + Math.exp( 0.5 * (gap + 1.69)));   // enemy tankiness
         this.enemyHpScaleGap = 0.85 + 0.50 * Lh;              // ∈ [0.85, 1.35]
+        // DIFFICULTY (休闲/硬核): gapScale bends each level-gap factor toward its
+        // neutral (1.0) — casual (gapScale≈0.25) nearly flattens 等级压制 so being
+        // under-levelled barely stings; hardcore (≈1.4) steepens it. Flat mults then
+        // make casual fights stress-free (player hits harder, wild softer + squishier)
+        // and keep hardcore at today's lethality. Read once from State at battle start.
+        const diff = (window.State && State.difficultyMult) ? State.difficultyMult()
+          : { playerDmg: 1, enemyDmg: 1, enemyHp: 1, gapScale: 1 };
+        const bend = (v, g) => 1 + (v - 1) * g;               // g=0 → neutral 1.0; g=1 → unchanged; g>1 → steeper
+        this.playerDmgMult   = bend(this.playerDmgMult,   diff.gapScale) * diff.playerDmg;
+        this.enemyDmgMult    = bend(this.enemyDmgMult,    diff.gapScale) * diff.enemyDmg;
+        this.enemyHpScaleGap = bend(this.enemyHpScaleGap, diff.gapScale) * diff.enemyHp;
+        this.difficultyMode  = (window.State && State.difficulty) ? State.difficulty() : 'casual';
         if(this.starterRegion){
           // In the starter map, the player's FIRST TWO cats should be able to
           // beat one ordinary wild cat without perfect skill timing.

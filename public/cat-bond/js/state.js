@@ -20,6 +20,11 @@ const DEFAULT_STATE = () => ({
   collectionMilestones: [], // one-time, cumulative codex discovery rewards
   repeatSightings: 0, // repeated already-owned species encountered while searching
   battlePrefs: { autoBattle: false }, // remember the last combat control choice across captures and reloads
+  // Difficulty mode: 'casual' (战斗力求没难度 — player hits harder, wild cats are
+  // softer, level-gap suppression nearly off) or 'hardcore' (current tuning + a
+  // STRONGER level-gap 等级压制). Default casual so the game is approachable; hardcore
+  // is an opt-in toggle in the pause/settings menu. battle.js reads this.
+  difficulty: 'casual',
   bestGrades: {}, // speciesId -> best capture score (C/B/A/S), for rematches
   masteryBadges: {}, // speciesId -> true; only a first S earns a permanent Golden Paw
   // Tiny adaptive-AI profile: enemies learn the player's habits across battles.
@@ -206,8 +211,30 @@ function claimDaily() {
   return { reward, streak: S.streak };
 }
 
+// Difficulty knobs consumed by battle.js. 'casual' makes fights basically
+// stress-free (player hits harder, wild cats are softer + squishier, and the
+// level-gap 等级压制 is almost flattened). 'hardcore' keeps today's tuning but
+// adds a STRONGER level-gap curve so being under-levelled really bites.
+//   playerDmg : extra multiply on the player's outgoing damage
+//   enemyDmg  : multiply on wild-cat outgoing damage
+//   enemyHp   : multiply on wild-cat max HP
+//   gapScale  : how hard the logistic level-gap suppression is applied (0 = none,
+//               1 = normal curve, >1 = steeper 等级压制)
+const DIFFICULTY_MULTS = {
+  casual:   { playerDmg: 1.35, enemyDmg: 0.6,  enemyHp: 0.8, gapScale: 0.25 },
+  hardcore: { playerDmg: 1.0,  enemyDmg: 1.0,  enemyHp: 1.0, gapScale: 1.4  },
+};
+function difficulty() { return (S.difficulty === 'hardcore') ? 'hardcore' : 'casual'; }
+function difficultyMult() { return DIFFICULTY_MULTS[difficulty()]; }
+function setDifficulty(mode) {
+  S.difficulty = (mode === 'hardcore') ? 'hardcore' : 'casual';
+  save();
+  return S.difficulty;
+}
+
 window.State = {
   get S() { return S; },
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
+  difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
 };
