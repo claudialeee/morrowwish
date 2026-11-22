@@ -34,7 +34,7 @@ with tempfile.TemporaryDirectory(prefix='source-duo-wide-') as folder:
    t=max(0,min(1,(rr-.79)/.20))
    pix[x,y]=round(255*(1-t*t*(3-2*t)))
  a.save(mask)
- run(['ffmpeg','-nostdin','-y','-v','error','-ss',str(start-.18),'-i',str(wide),'-frames:v','1',str(backdrop)])
+ run(['ffmpeg','-nostdin','-y','-v','error','-ss',str(start+.55),'-i',str(wide),'-frames:v','1',str(backdrop)])
  caption=d/'caption.txt';caption.write_text('ONE POWERFUL DUO FINISHER!',encoding='utf-8')
  name=d/'move.txt';name.write_text('Blossomfire Pawdance',encoding='utf-8')
  f=('[1:v]crop=1080:850:0:510,scale=1080:850:flags=lanczos,fps=30,format=rgba[fg];'
