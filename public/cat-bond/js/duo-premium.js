@@ -296,6 +296,7 @@ function draw(ctx,W,H,seq,lookup){
  if(!seq||seq.t<=0)return false;
  if(!ready)return true; // avoid flashing the rejected procedural kittens during load
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
+ const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
  const p=clamp((seq.max-seq.t)/(seq.max||2.75)),tier=clamp(Number(seq.tier)||1,1,3);
  const opacity=smooth(p/.07)*(1-smooth((p-.89)/.11));
  if(opacity<=0)return true;
@@ -322,8 +323,9 @@ function draw(ctx,W,H,seq,lookup){
  // The 21 independently authored cinematic storyboards control camera
  // charge, dodge, lunge, rise, arc, rebound and finish. We transform ONE
  // complete illustration (both cats and scenery together), not crop/tile cats.
- const cam=window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
-   {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'};
+ const cam=thumbnail?{dx:0,dy:0,zoom:1.025,angle:0}:
+   (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
+    {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
  ctx.save();
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
@@ -332,7 +334,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
- if(dual>.09){
+ if(!thumbnail&&dual>.09){
   // Previously both authored VFX layers were almost invisible: .27 × .31
   // opacity on top of signature opacity. Let the player actually distinguish
   // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
@@ -345,13 +347,13 @@ function draw(ctx,W,H,seq,lookup){
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,fxTime,key,tier);
   ctx.restore();
  }
- bondTierChoreography(ctx,sw,sh,p,key,tier);
+ if(!thumbnail)bondTierChoreography(ctx,sw,sh,p,key,tier);
  // The old generic claw stamp made all 21 skills look identical; the
  // individually drawn finale and key-specific palette now carry the impact.
- paper(ctx,0,0,sw,sh);
+ if(!thumbnail)paper(ctx,0,0,sw,sh);
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
- if(flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
+ if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
  // No English-only baked labels over the player's translated skill name.
  // One atlas panel contains a decorative old English title in the far top-right.
  // A soft semitransparent enamel banner reduces it behind localized UI.
@@ -375,7 +377,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.restore();
  // Four overlapping soft alpha masks: zero visible hard edges, even in
  // portrait / landscape game modes. No rectangular stroke or clip border.
- ctx.save();
+ if(!thumbnail){ctx.save();
  ctx.globalCompositeOperation='destination-in';
  const fx=Math.max(14,sw*.085),fy=Math.max(12,sh*.13);
  function fade(x0,y0,x1,y1){
@@ -388,7 +390,7 @@ function draw(ctx,W,H,seq,lookup){
  fade(sw,0,sw-fx,0);
  fade(0,0,0,fy);
  fade(0,sh,0,sh-fy);
- ctx.restore();
+ ctx.restore();}
  // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
  // the region's existing battle theme instead of an unrelated purple card.
  const tone=harmony(key);
