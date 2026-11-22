@@ -44,7 +44,8 @@ jobs:
           node --check scripts/merge-latest-catbond-review.mjs
           node --check public/cat-bond/js/ui.js
           node --check public/cat-bond/js/worldmap.js
-      - name: Record current Cat Bond in real mobile Chromium
+      - name: Record full map navigation and current Cat Bond in real mobile Chromium
+        # The map shot must display both edge controls; cropping the game canvas fails QA.
         run: node scripts/capture-trailers-v10.mjs
       - name: Render only the updated Cat Bond review video
         run: node scripts/render-trailers-v10.mjs
