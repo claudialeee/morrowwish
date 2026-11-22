@@ -30,10 +30,12 @@ async function scan(page,slug,lang,phase){
    }
   }
   const b=document.querySelector('#mw-game-settings .mw-settings-language, #mw-language');
-  return{lang:document.documentElement.lang,issues:issues.slice(0,25),count:issues.length,hanCount,button:b?.textContent?.trim()||null};
+  return{lang:document.documentElement.lang,issues:issues.slice(0,25),count:issues.length,hanCount,button:b?.textContent?.trim()||null,canvas:window.__mwLanguageCanvasLeaks||[],title:document.title};
  });
  assert.equal(v.lang,lang==='en'?'en':'zh-CN','Incorrect document language: '+slug);
  if(lang==='en')assert.equal(v.count,0,'Chinese text in '+slug+' '+phase+': '+JSON.stringify(v.issues));
+ if(lang==='en')assert.equal(v.canvas.length,0,'Chinese in Canvas on '+slug+' '+phase+': '+JSON.stringify(v.canvas));
+ if(lang==='en')assert.ok(!/[\u3400-\u9fff]/.test(v.title),'Chinese page title: '+slug);
  if(v.button)assert.equal(v.button,lang==='en'?'EN':'中文','Mixed language toggle in '+slug);
  checks++;console.log('PASS '+(slug||'home')+' '+lang+' '+phase);
 }
@@ -41,6 +43,22 @@ try{
  for(const width of [390,1280])for(const lang of ['en','zh'])for(const slug of slugs){
   const ctx=await browser.newContext({viewport:{width,height:844}});
   const page=await ctx.newPage(),key=(slug||'home')+' '+lang+' '+width;
+  // Capture the final text that actually reaches Canvas after game i18n hooks.
+  // Checking DOM alone misses skill callouts and HUD drawn directly on Canvas.
+  await page.addInitScript(()=>{
+   window.__mwLanguageCanvasLeaks=[];
+   for(const method of ['fillText','strokeText']){
+    const proto=CanvasRenderingContext2D.prototype,original=proto[method];
+    proto[method]=function(label,...args){
+     const s=String(label);
+     if(document.documentElement.lang==='en'&&/[\u3400-\u9fff]/.test(s)){
+      const issues=window.__mwLanguageCanvasLeaks;
+      if(issues.length<25&&!issues.includes(s))issues.push(s.slice(0,120));
+     }
+     return original.call(this,label,...args);
+    };
+   }
+  });
   try{
    await page.goto(root+(slug?'/'+slug+'/':'/')+'?lang='+lang,{waitUntil:'domcontentloaded',timeout:30000});
    await page.waitForTimeout(slug==='cat-bond'?850:550);
