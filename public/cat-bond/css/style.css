@@ -3201,3 +3201,94 @@ body.cb-exploring #yard-placement-dock{display:none!important}
 .cb-growth-stat strong {color:#af8054}
 .cb-growth-ceremony #cb-growth-done {min-width:164px;min-height:43px;font-weight:800}
 @media(max-width:420px) {.cb-growth-ceremony {padding:0 1px 8px}.cb-growth-stats {gap:4px}.cb-growth-stat {font-size:.68rem}}
+
+
+/* Cat Bond mobile interaction clearance: duo ultimate and yard placement (2026-11-21). */
+/* The two-row touch attack grid owns the bottom-right corner. Duo is a
+   separate battle action in the upper-right, below the HP/skill-help HUD. */
+@media (max-width:700px), (pointer:coarse) {
+  #battle-ui #duo-burst {
+    top:calc(197px + env(safe-area-inset-top,0px))!important;
+    bottom:auto!important;
+    right:max(8px,env(safe-area-inset-right,0px) + 8px)!important;
+    left:auto!important;
+    max-width:min(44vw,188px)!important;
+    min-height:44px;
+    padding:5px 8px 8px;
+    box-sizing:border-box;
+  }
+  #battle-ui #duo-burst .duo-burst-label {
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+    font-size:clamp(10px,2.8vw,12px);
+    line-height:1.18;
+  }
+  /* The skill guide is temporary; keep its scroll sheet tappable. */
+  #battle-ui:has(#battle-skill-guide:not([hidden])) #duo-burst {
+    visibility:hidden;pointer-events:none;
+  }
+
+  /* During yard placement the only HUD occupies a short strip at the top,
+     outside the lower-ground area where players tap or drag structures. */
+  body.cb-placing-building #yard-placement-dock {
+    top:calc(102px + env(safe-area-inset-top,0px))!important;
+    bottom:auto!important;
+    left:50%;
+    right:auto;
+    transform:translateX(-50%);
+    width:min(92%,344px);
+    padding:8px 10px 9px;
+    gap:6px;
+    border-radius:15px!important;
+    box-sizing:border-box;
+  }
+  body.cb-placing-building #yard-placement-dock .cb-placement-heading {
+    display:none!important;
+  }
+  body.cb-placing-building #yard-placement-status {
+    font:800 11px/1.35 system-ui,sans-serif;
+  }
+  body.cb-placing-building .yard-placement-actions {gap:7px}
+  body.cb-placing-building .yard-placement-actions button {
+    min-height:42px;
+    padding:6px 9px;
+    font:850 12px/1.2 system-ui,sans-serif;
+    border-radius:10px!important;
+    touch-action:manipulation;
+  }
+  body.cb-placing-building #first-quest,
+  body.cb-placing-building #guide-help,
+  body.cb-placing-building #yard-cat-switch,
+  body.cb-placing-building #yard-duo-status {
+    display:none!important;
+  }
+}
+/* Landscape combat: center the duo control between the team HUD and the
+   right-hand attack grid; it cannot cover the thumb joystick or skill keys. */
+@media (orientation:landscape) and (max-height:530px) {
+  #battle-ui #duo-burst {
+    top:calc(112px + env(safe-area-inset-top,0px))!important;
+    bottom:auto!important;
+    left:50%!important;
+    right:auto!important;
+    transform:translateX(-50%)!important;
+    max-width:min(32vw,178px)!important;
+    min-height:35px;
+    padding:4px 7px 7px;
+  }
+  body.cb-placing-building #yard-placement-dock {
+    top:calc(83px + env(safe-area-inset-top,0px))!important;
+    bottom:auto!important;
+    left:auto;
+    right:max(7px,env(safe-area-inset-right,0px) + 7px);
+    transform:none;
+    width:min(43vw,270px);
+    padding:5px 7px;
+    gap:4px;
+  }
+  body.cb-placing-building .yard-placement-actions button {
+    min-height:36px;padding:4px 7px;
+  }
+}
