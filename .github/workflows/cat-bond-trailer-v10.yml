@@ -73,6 +73,7 @@ jobs:
           test -s public/promo/cat-bond/v10-quarrel-proof.png
           test -s public/promo/cat-bond/v10-map-navigation-proof.png
           test -s public/promo/cat-bond/v10-duo-actual-render-proof.png
+          test -s public/promo/cat-bond/v10-rare-native-hud-proof.png
           test -s public/promo/cat-bond/ssr-showcase-proof.png
           node - <<'NODE'
           const fs=require('fs');
@@ -91,7 +92,7 @@ jobs:
             throw Error('Readable two-cat story below six seconds');
           const required=['cat-upgrade','duo-partners','duo-map-walk','duo-promise',
             'duo-quarrel','duo-reconcile','work-after','tease','map-explore','map-management',
-            'auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-showcase'];
+            'auto-team-saved','rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture','ssr-showcase'];
           for(const scene of required)
             if(!bond.shots.some(s=>s.scene===scene&&s.seconds>=1.5))
               throw Error('Missing verified real Cat Bond feature: '+scene);
@@ -101,9 +102,13 @@ jobs:
               scenes.includes('ultimate'))
             throw Error('Finisher must be one short, complete sequence without a second cast');
           for(const [first,next] of [['duo-promise','duo-quarrel'],['duo-quarrel','duo-reconcile'],
-              ['battle-skills','duo'],['duo','rare-encounter']])
+              ['rare-encounter','battle-hud'],['battle-hud','battle-skills'],
+              ['battle-skills','duo'],['duo','rare-aftermath'],['rare-aftermath','rare-capture']])
             if(scenes.indexOf(first)===-1||scenes.indexOf(first)>=scenes.indexOf(next))
               throw Error('Story continuity broken: '+first+' -> '+next);
+          if(!(scenes.indexOf('duo')+1===scenes.indexOf('rare-aftermath')&&
+              scenes.indexOf('rare-aftermath')+1===scenes.indexOf('rare-capture')))
+            throw Error('The unique duo finisher must resolve into the same battle rare capture');
           if(!audit.scenes.length||audit.scenes.some(s=>!s.passed))
             throw Error('Unacceptable phone reading duration');
           for(const slug of ['pawsibly-innocent','tiny-town','elsewhere','flip-dash',
@@ -131,6 +136,7 @@ jobs:
           git add public/promo/cat-bond/v10-quarrel-proof.png
           git add public/promo/cat-bond/v10-map-navigation-proof.png
           git add public/promo/cat-bond/v10-duo-actual-render-proof.png
+          git add public/promo/cat-bond/v10-rare-native-hud-proof.png
           git add public/promo/cat-bond/cover-portrait.png
           git add public/promo/cat-bond/ssr-showcase-proof.png
           git add public/promo/v*-review.json public/promo/readability-audit-v*.json public/promo/readability-audit.json
