@@ -65,6 +65,11 @@ assert.ok(dashboard.includes("verifiedVideos.filter(p=>p.platform===platform&&p.
 assert.ok(!dashboard.includes('id="native-account-overview"'),'old and duplicate promo overview hidden permanently');
 assert.ok(!dashboard.includes('instagram-historical')&&!dashboard.includes('Nov 20 old Reels'),'no historical promo presentation');
 assert.ok(!dashboard.includes('pulse.accountOverview'),'old promo metrics never read by dashboard');
+const liveChannels=['itch','youtube','tiktok','instagram','bluesky'];
+assert.deepEqual(snap.platforms.map(x=>x.id),liveChannels,'do not include unlaunched promo channels in snapshot');
+assert.ok(dashboard.includes("const fallbackIds=['itch','youtube','tiktok','instagram','bluesky'];"),'only live sources rendered');
+for(const name of ['crazygames','kongregate','search'])assert.ok(!snap.platforms.some(p=>p.id===name),'future channel not stored: '+name);
+for(const keyword of ['id="future-channels"','id="future-channel-list"','channelFuture:', 'Poki:', 'GamePix:', 'GameDistribution:'])assert.ok(!dashboard.includes(keyword),'future work must not appear in dashboard: '+keyword);
 const inline=dashboard.match(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i)?.[1];
 assert.doesNotThrow(()=>new vm.Script(inline),'dashboard script parses');
 console.log('Direct connected-platform snapshot reconciled dynamically; initial publication coverage preserved and historical video views excluded.');

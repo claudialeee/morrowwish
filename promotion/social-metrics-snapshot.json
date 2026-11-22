@@ -21,22 +21,6 @@
       "views": null
     },
     {
-      "id": "crazygames",
-      "priority": "P0",
-      "phase": "quality-hold",
-      "published": null,
-      "failed": null,
-      "views": null
-    },
-    {
-      "id": "kongregate",
-      "priority": "P0",
-      "phase": "not-submitted",
-      "published": 0,
-      "failed": null,
-      "views": null
-    },
-    {
       "id": "youtube",
       "priority": "P1",
       "phase": "verified-platform-publications",
@@ -44,7 +28,7 @@
       "failed": null,
       "views": 327,
       "metricScope": "verified-new-short-videos",
-      "note": "Seven approved Nov 22 Shorts individually verified in the connected YouTube owner library; 321 views at capture on 2026-11-22. Snapshot is not continuously live.",
+      "note": "Seven approved Nov 22 Shorts individually verified in the connected YouTube owner library; 327 views at capture on 2026-11-22. Snapshot is not continuously live.",
       "likes": 3
     },
     {
@@ -85,14 +69,6 @@
       "views": null,
       "note": "Externally published content reported; native metrics not yet returned for newly published campaign videos. Publication count pending URL verification; zero is not asserted.",
       "metricScope": "approved-new-short-videos"
-    },
-    {
-      "id": "search",
-      "priority": "P2",
-      "phase": "passive",
-      "published": null,
-      "failed": null,
-      "views": null
     }
   ],
   "metricScope": {

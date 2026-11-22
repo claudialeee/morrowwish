@@ -105,16 +105,18 @@ if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid
  throw Error('Dashboard must show meaningful results and leave missing data blank');
 // Primary dashboard must preserve visit-to-start and start-to-finish context
 // and not show unsupported portals as native social-view channels.
-const requiredChannels=['itch','crazygames','kongregate','youtube','tiktok','instagram','bluesky','search'];
+const requiredChannels=['itch','youtube','tiktok','instagram','bluesky'];
 const channelIds=dashboard.match(/const fallbackIds=\[([^\]]+)\];/)?.[1]||'';
 if(requiredChannels.some(name=>!channelIds.includes("'"+name+"'"))||
-   !dashboard.includes('id="future-channels"')||
-   !dashboard.includes('id="future-channel-list"')||
+   ['crazygames','kongregate','search'].some(name=>channelIds.includes("'"+name+"'"))||
+   dashboard.includes('id="future-channels"')||
+   dashboard.includes('id="future-channel-list"')||
+   dashboard.includes('channelFuture:')||
    !dashboard.includes('colHomeVisits:')||
    !dashboard.includes('colGameVisits:')||
    dashboard.includes('id="itch-rows"')||
    dashboard.includes("t('notApplicable')"))
- throw Error('Promotion pipeline channels must stay visible; irrelevant metrics stay blank, not N/A');
+ throw Error('Only launched channels may be shown; omit future promo work and leave unavailable metrics blank');
 if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const finishRate=")||
    !dashboard.includes("const startRate=")||
