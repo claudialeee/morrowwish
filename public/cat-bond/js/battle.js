@@ -3974,9 +3974,9 @@ class CaptureBattle {
       case 'dizzy':   // spinning stars ring overhead
         this.vfx.ring(e.x, e.y - 30, { r0: 4, vr: 120, life: 0.5, color, width: 3 });
         this.vfx.text(e.x, e.y - 52, '✦ ✦ ✦', color, 14); break;
-      case 'blind':   // dark wash + shrinking veil
-        this.vfx.ring(e.x, e.y, { r0: 34, vr: -60, life: 0.45, color: '#5a4a6a', width: 10 });
-        this.vfx.burst(e.x, e.y, { count: 8, color: '#2a2030', speed: 90, life: 0.4, r: 4 }); break;
+      case 'blind':   // Pale lavender floor effect, never darken the cat face.
+        this.vfx.ring(e.x, e.y + 15, { r0: 32, vr: -32, life: 0.45, color: '#bba6db', width: 3 });
+        this.vfx.burst(e.x, e.y + 17, { count: 7, color: '#d6c7f0', speed: 58, life: 0.4, r: 2.5 }); break;
       case 'chill':   // ice shards snapping inward
         this.vfx.ring(e.x, e.y, { r0: 40, vr: -140, life: 0.4, color: '#bfe6ff', width: 4 });
         this.vfx.burst(e.x, e.y, { count: 10, color: '#d6f2ff', speed: 70, life: 0.5, r: 3 }); break;
@@ -5022,9 +5022,11 @@ class CaptureBattle {
       ctx.globalAlpha = 0.8; ctx.strokeStyle = '#6fcf5f'; ctx.lineWidth = 3;
       for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(e.x, e.y + 4 + i * 8 - 8, 22 - i * 2, 7, 0.2 * Math.sin(T * 2 + i), 0, Math.PI * 2); ctx.stroke(); }
     }
-    if (s.blind != null) {                 // dark veil over the eyes
-      ctx.globalAlpha = 0.5; ctx.fillStyle = '#2a2036';
-      ctx.beginPath(); ctx.ellipse(e.x, e.y - 8, 24, 12, 0, 0, Math.PI * 2); ctx.fill();
+    if (s.blind != null) {                 // Blinded: visible ground ring instead of ugly black face.
+      ctx.globalAlpha = .73;ctx.strokeStyle = '#b49bdb';ctx.lineWidth = 2.2;
+      ctx.beginPath();ctx.ellipse(e.x,e.y + 14,29,9,0,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha = .88;ctx.fillStyle = '#dcc9f2';ctx.font = '13px system-ui,sans-serif';
+      ctx.textAlign = 'center';ctx.fillText('✧',e.x-28,e.y+7);ctx.fillText('✧',e.x+28,e.y+7);
     }
     window.CatBondSkillFX?.drawStatus(ctx,e,this.t);
     ctx.restore();
