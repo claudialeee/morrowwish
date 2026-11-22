@@ -4284,6 +4284,7 @@ class CaptureBattle {
         ctx.scale(1 + crouch * 0.5, 1 - crouch);              // wider + lower = coiled to spring
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
+      window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
         species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
         stride:e.stride,motion:e.motion||0,
@@ -4291,6 +4292,7 @@ class CaptureBattle {
         mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
       });
       if (_pouncePrep) ctx.restore();
+      window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'front');
       this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
       // 虚弱 stagger: a pulsing gold ring + dizzy mark so the open window reads clearly
       if (e.staggerT > 0) {
@@ -4382,11 +4384,13 @@ class CaptureBattle {
       const visualFace=route?(route.toX-route.fromX)*(this.duoRun.age/this.duoRun.duration<.70?1:-1)<0?-1:1
         :(tf.face||(Math.cos(fAim)<0?-1:1));
       visualY-=hop;
+      window.CatBondWardArt?.draw(ctx,tf,visualX,visualY,this.t,this.catScale(isMe?'active':'ally'),'back');
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
         species:sp2,scale:this.catScale(isMe?'active':'ally'),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
         stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
       });
+      window.CatBondWardArt?.draw(ctx,tf,visualX,visualY,this.t,this.catScale(isMe?'active':'ally'),'front');
       ctx.restore();
       // Player HP/ult now live in the sleek top-left squad panel (drawSquadPanel),
       // not floating over the cat. Keep only a tiny active-cat chevron so you can
