@@ -628,34 +628,72 @@ assert.ok(duoTest.skillStrokes.some(v=>v.kind==='duoImpact'&&v.life===.65),
   'closing beat is a distinct twin-element flourish');
 assert.equal(Object.keys(sandbox.window.CatRelations.DUO_ARTS).length,21,'all 21 elemental pairs keep authored signatures');
 
-// 破坏死光 · DESTRUCTION DEATH-RAY: the dark elemental ultimate fires a wide
-// charged beam that SWEEPS a 120° arc on its own timeline, damaging enemies it
-// crosses over the sweep (throttled, never a one-shot) and drawing without throwing.
-const drBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
-const drFighter=drBattle.me();
-drFighter.ultSkill={id:'voidMaw',name:'虚吞',element:'dark',kind:'aoe',power:2.5,ultCost:80,appliesTag:'dizzy'};
-// Pin two enemies in front of the caster so the sweeping beam must cross them.
-drBattle.enemies.forEach((e,i)=>{e.x=drFighter.x+180+i*20;e.y=drFighter.y;e.hp=e.maxhp;e.inv=0;e.flash=0;});
-drBattle.ult=100;drBattle.ultCd=0;
-assert.equal(drBattle.ultimate(),true,'dark ultimate casts the sweeping death-ray');
-assert.ok(drBattle.deathRay,'death-ray effect state is created');
-assert.ok(Math.abs((drBattle.deathRay.end-drBattle.deathRay.start)-Math.PI*120/360)<1e-6,
-  'the death-ray sweeps a 120° arc');
-assert.ok(drBattle.deathRay.total>=1.9&&drBattle.deathRay.total<=2.1,
-  'charge → sweep → cutoff timeline runs ~2 seconds');
-const drHpBefore=drBattle.enemies.reduce((n,e)=>n+e.hp,0);
-let drStartedFiring=false;
-assert.doesNotThrow(()=>{
-  for(let k=0;k<150;k++){
-    drBattle.tickDeathRay(0.016);
-    drBattle.drawDeathRay(canvasCtx);                 // additive layers + scorch, must not throw
-    if(drBattle.deathRay&&drBattle._deathRayFrame()?.firing)drStartedFiring=true;
+// Six authentic ultimate signatures: each element has its own real-time
+// Canvas silhouette. The storybook spell renderer must never throw on a phone.
+const ultBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
+const ultimateElements=['fire','water','grass','elec','dark','light'];
+for(const element of ultimateElements){
+  for(const phase of [0.15,0.45,0.75]){
+    ultBattle.skillStrokes=[{kind:'ultimate',element,
+      x:ultBattle.me().x,y:ultBattle.me().y,angle:0,
+      targets:[{x:ultBattle.me().x+140,y:ultBattle.me().y-15}],
+      life:1.5*(1-phase),max:1.5}];
+    assert.doesNotThrow(()=>ultBattle.drawSkillStrokes(canvasCtx),
+      element+' ultimate draws at phase '+phase);
   }
-},'death-ray ticks and draws against a stub 2D context without throwing');
-const drHpAfter=drBattle.enemies.reduce((n,e)=>n+e.hp,0);
-assert.ok(drStartedFiring,'the beam reaches its firing (sweep) phase');
-assert.ok(drHpAfter<drHpBefore,'enemies crossed by the sweeping beam take damage');
-assert.ok(drHpAfter>0||drBattle.enemies.every(e=>!e.alive),'throttled sweep damage is not an instant one-shot wipe');
-assert.equal(drBattle.deathRay,null,'the death-ray always collapses and clears after its cutoff');
+}
+const bloom=Skills.skillById('sunbloom');
+assert.ok(bloom&&bloom.element==='grass'&&bloom.ultCost>0,
+  'grass must have an actual equipable ultimate, not an unused branch');
+assert.equal(Skills.SIGNATURE_SKILL.senlin,'sunbloom',
+  'forest cat signature points at the real grass ultimate');
+
+// 虚吞/VOID MAW is NOT the generic destruction beam: it must pull a nearby
+// enemy pack into a vortex and run resolveHit (which includes its rewind tag).
+const voidBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
+const vf=voidBattle.me();
+vf.ultSkill={id:'voidMaw',name:'虚吞',element:'dark',kind:'aoe',power:2.5,
+  ultCost:80,appliesTag:['dizzy','rewind']};
+voidBattle.enemies.forEach((e,i)=>{
+  e.x=vf.x+140+i*20;e.y=vf.y+20;e.hp=e.maxhp;e.inv=0;e.flash=0;
+});
+const voidHpBefore=voidBattle.enemies.reduce((n,e)=>n+e.hp,0);
+voidBattle.ult=100;voidBattle.ultCd=0;
+assert.equal(voidBattle.ultimate(),true,'void maw ultimate casts');
+assert.ok(!voidBattle.deathRay,'void maw must not be silently replaced by a death ray');
+assert.ok(voidBattle.skillStrokes.some(x=>x.kind==='ultimate'&&x.element==='dark'),
+  'void maw must spawn a dark vortex silhouette');
+assert.ok(voidBattle.enemies.some(e=>Math.abs(e.kbx||0)+Math.abs(e.kby||0)>0),
+  'void maw must physically pull at least one enemy');
+assert.ok(voidBattle.enemies.reduce((n,e)=>n+e.hp,0)<voidHpBefore,
+  'void maw must actually damage the enemies');
+
+// Destruction Death-Ray remains available as a SEPARATE VFX archetype for a
+// future dedicated skill; it is no longer automatically mapped to all dark ults.
+const laserBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
+const lf=laserBattle.me();
+laserBattle.enemies.forEach((e,i)=>{
+  e.x=lf.x+180+i*20;e.y=lf.y;e.hp=e.maxhp;e.inv=0;e.flash=0;
+});
+const ray={id:'deathRay',name:'破坏死光',element:'dark',kind:'beam',
+  power:2.5,ultCost:80,appliesTag:'dizzy'};
+assert.equal(laserBattle.castDeathRay(lf,ray),true,
+  'dedicated death ray can still cast independently');
+assert.ok(laserBattle.deathRay,'dedicated death ray creates state');
+assert.ok(Math.abs((laserBattle.deathRay.end-laserBattle.deathRay.start)-Math.PI/3)<1e-6,
+  'dedicated death ray has a 120 degree sweep');
+const rayHpBefore=laserBattle.enemies.reduce((n,e)=>n+e.hp,0);
+let rayFired=false;
+assert.doesNotThrow(()=>{
+  for(let i=0;i<150;i++){
+    laserBattle.tickDeathRay(.016);
+    laserBattle.drawDeathRay(canvasCtx);
+    if(laserBattle.deathRay&&laserBattle._deathRayFrame()?.firing)rayFired=true;
+  }
+},'dedicated ray ticks and draws cleanly');
+assert.ok(rayFired,'dedicated ray reaches its sweep phase');
+assert.ok(laserBattle.enemies.reduce((n,e)=>n+e.hp,0)<rayHpBefore,
+  'dedicated ray deals throttled sweep damage');
+assert.equal(laserBattle.deathRay,null,'dedicated ray ends and clears');
 
 console.log('Cat Bond: 13 modules loaded, starter + capture win/loss driven, game_start/complete/over/cat_capture analytics, and bilingual ZH->EN layer (incl. live zh<->en toggle) PASS.');
