@@ -880,17 +880,26 @@ class Game {
     }
     const team=UI.getPreferredBattleTeam();
     if(!modeConfirmed){UI.openBattleModePrompt(team,species,{mastery:true});return true;}
-    this.startBattle(selectedTeam?.length?selectedTeam:team,species);
+    this.startBattle(selectedTeam?.length?selectedTeam:team,species,{masteryChallenge:true});
     this.battle.masteryChallenge=true;
     metric('bond_mastery_rematch_start',{breed:species.id,rarity:species.rarity});
     return true;
   }
 
   // team = ordered lineup of up to 5 cats (2 starters + 3 reserves)
-  startBattle(team, wildSpecies) {
+  startBattle(team, wildSpecies, opts={}) {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
     this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
+    // First duo preview: a ONE-TIME, real playable signature move in the
+    // first eligible follow-up hunt. Otherwise the short early battles finish
+    // long before duo charge (normally +3.2/s) can reach 100. An S-rank
+    // rematch never receives this assist. If a player does not cast, keep the
+    // invitation for the next eligible duel rather than silently lose it.
+    if(!opts.masteryChallenge&&State.S.firstDuoShowcasePending&&this.battle.duo){
+      this.battle.duoCharge=100;
+      this.battle._firstDuoShowcase=true;
+    }
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
     this.scene = 'battle';
@@ -921,6 +930,11 @@ class Game {
     document.getElementById('wild-name').textContent =
       `野生 ${GameData.speciesName(wildSpecies)} · Lv.${this.battle.wildLevel} · ${wildSpecies.rarity}`;
     this.buildTeamSlots();
+    if(this.battle._firstDuoShowcase){
+      this.toast(window.MorrowwishI18n?.get?.()==='zh'
+        ?'💞 双猫合击已就绪！按 F 或点击双猫合击，释放首次搭档绝招！'
+        :'💞 Duo is ready! Press F or tap Duo for your first team move!');
+    }
     this._battleHoveredSkill=null;
     this.hideBattleSkillTooltip();
     this.toggleBattleSkillGuide(false);
@@ -1507,6 +1521,10 @@ class Game {
     if (!b) return;
     window.MorrowwishMusic?.switchScene?.('yard');                 // already ended (loop may call this once on finish)
     const win = b.result === 'win';
+    if(b._firstDuoShowcase&&b.duoUses>0){
+      State.S.firstDuoShowcasePending=false;
+      metric('bond_first_duo_showcased',{uses:b.duoUses});
+    }
     const fromMap = this._returnScene === 'map';
     // Fold this battle's observations into the persistent adaptive-AI profile so
     // enemies evolve to the player's habits over time. (Save happens below.)
@@ -1648,6 +1666,7 @@ class Game {
         CatRelations.grow(b.partner,newCat,State.S.catchCount===1?26:7);
         if(State.S.catchCount===1){CatRelations.choose(b.partner,newCat);
           firstDuo={...CatRelations.title(b.partner,newCat),value:26};
+          State.S.firstDuoShowcasePending=true;
           metric('bond_duo_unlocked',{elementPair:firstDuo.elementPair});
         }
       }
