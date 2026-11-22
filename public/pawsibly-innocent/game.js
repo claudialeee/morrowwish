@@ -213,10 +213,10 @@ $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INN
 $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
 document.title=lang==="zh"?"猫猫绝对无辜！— Morrow Wish":"Pawsibly Innocent! — A Little Cat, A Lot of Trouble | Morrow Wish";localizeMenu();
 const ids={back:"back",eyebrow:"eyebrow",subtitle:"subtitle",missionLabel:"missionLabel",snackLabel:"snackLabel",scoreLabel:"scoreLabel",moveLabel:"moveLabel",starLabel:"starLabel",roomLabel:"roomLabel",closetLabel:"closetLabel",skinHint:"skinHint",rulesKicker:"rulesKicker",howTitle:"howTitle",ruleStep1Title:"ruleStep1Title",ruleStep1Text:"ruleStep1Text",ruleStep2Title:"ruleStep2Title",ruleStep2Text:"ruleStep2Text",ruleStep3Title:"ruleStep3Title",ruleStep3Text:"ruleStep3Text",ruleBonus:"ruleBonus",mission:"mission"};for(const [id,k]of Object.entries(ids))$(id).textContent=tr(k);
- if($("restartLabel"))$("restartLabel").textContent=lang==="zh"?"重玩本关":"Retry room";
+ if($("restartLabel"))$("restartLabel").textContent=lang==="zh"?"重玩":"Replay";
  if($("wait")){const tip=lang==="zh"?"等待一回合：猫不动，主人和扫地机继续巡逻（消耗一步）":"Wait a turn: cat stays still, patrol moves (costs a step)";$("wait").setAttribute("aria-label",tip);$("wait").title=tip}
  if($("waitLabel"))$("waitLabel").textContent=lang==="zh"?"等待":"Wait";
- if($("restart")){const tip=lang==="zh"?"重玩本关：保留所有星星、解锁和成就":"Retry this room without losing any unlocked progress";$("restart").setAttribute("aria-label",tip);$("restart").title=tip;}
+ if($("restart")){const tip=lang==="zh"?"重玩选项：重玩本关或从头重玩游戏":"Replay options: retry this room or restart the whole game";$("restart").setAttribute("aria-label",tip);$("restart").title=tip;}
  if($("resetGameQuick")){const tip=lang==="zh"?"重玩游戏：清空全部游戏进度并从第一关重新开始（需要确认）":"Restart entire game: erase all progress and begin at Room 1 (confirmation required)";$("resetGameQuick").setAttribute("aria-label",tip);$("resetGameQuick").title=tip;}
 $("howBody").textContent=tr("howBody");if($("visionTip"))$("visionTip").textContent=YARN_LEGEND[lang].vision;if($("yarnAimBanner"))$("yarnAimBanner").textContent=YARN_LEGEND[lang].aim;c.setAttribute("aria-label",lang==="zh"?"猫猫捣蛋游戏。点击地板移动，收集三条鱼，再从粉色猫门逃走。":"Cat stealth adventure. Tap a floor tile to move. Collect three fish and reach the pink cat flap.");if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collectionHint"))$("collectionHint").textContent=lang==="zh"?"每个房间都藏着一件纪念品，成功逃脱才能收藏。":"Each room hides a souvenir. Escape to add it to your album.";
  if($("starRuleHelp"))$("starRuleHelp").textContent=lang==="zh"?"★ 偷到 3 条鱼逃脱即通关  ·  ★★ 偷齐 4 条鱼或完成额外任务  ·  ★★★ 4 条鱼＋额外任务＋全程未被抓＋步数达标":"★ Escape with 3 fish  ·  ★★ Collect all 4 fish or complete the bonus quest  ·  ★★★ All 4 fish + bonus + no captures + efficient steps";if($("ability"))$("ability").textContent=et("ability")[save.cat];const total=allStars(),nextCat=fur.findIndex((f,i)=>i>0&&total<f[3]);if($("skinHint"))$("skinHint").textContent=nextCat<0?(lang==="zh"?"全部 5 只小猫已解锁！":"All 5 cats unlocked!"):(lang==="zh"?"累计 "+total+" 星 · 再得 "+(fur[nextCat][3]-total)+" 星解锁「"+TX.zh.skinNames[nextCat]+"」":total+" stars · "+(fur[nextCat][3]-total)+" more to unlock "+TX.en.skinNames[nextCat]);if($("tool"))$("tool").setAttribute("aria-label",aimingYarn?YARN_LEGEND[lang].cancel:YARN_LEGEND[lang].tool);$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff");
@@ -394,7 +394,7 @@ function updateCoach(){
  if(show&&tile){el.style.left=((tile.x+.5)/W*100)+"%";el.style.top=((tile.y+.5)/H*100)+"%";}
 }
 function setMenuTab(name){
- const tabs=["rooms","album","badges","cats","help"];
+ const tabs=["rooms","album","badges","cats","help","replay"];
  currentMenuTab=tabs.includes(name)?name:"rooms";
  document.querySelectorAll("[data-game-tab]").forEach(button=>{
   const on=button.getAttribute("data-game-tab")===currentMenuTab;
@@ -417,7 +417,12 @@ function localizeMenu(){
  if($("menuButtonLabel"))$("menuButtonLabel").textContent=lang==="zh"?"菜单":"Menu";
  const zh=lang==="zh";
  for(const [id,english,chinese] of [
-  ["resetQuickLabel","Restart game","重玩游戏"],
+  ["replayTitle","Choose how to replay","选择重玩方式"],
+  ["replayIntro","Retry the room without losing progress, or start the entire game fresh.","重玩本关不会丢失进度；从头重玩游戏会清空所有记录。"],
+  ["retryRoomTitle","Retry this room","重玩本关"],
+  ["retryRoomDescription","Keep stars, achievements and unlocked rooms.","保留星星、成就和已解锁关卡"],
+  ["resetQuickLabel","Restart the whole game","从头重玩游戏"],
+  ["resetGameDescription","Erase this game's saved progress and return to Room 1 (confirmation required).","清空本游戏的存档，从第一关开始（需要确认）"],
   ["resetTitle","Restart the entire game?","确定从头重玩整个游戏？"],
   ["resetDescription","This permanently erases unlocked rooms, stars, achievements and collectibles on this device, and restarts from Room 1. To keep your progress, choose Retry room instead.","这将清空本设备保存的关卡、星星、成就和收藏，从第 1 关重新开始，无法撤销。如需保留进度，请选择「重玩本关」。"],
   ["cancelReset","Keep my progress","保留游戏进度"],
@@ -444,13 +449,12 @@ function closeMenu(){
 function showResetConfirm(){
  if(!s||!$("resetConfirm")||!$("resetConfirm").hidden)return;
  // Pause queued movement and yarn by opening the existing game menu.
- if(!menuOpen)openMenu("rooms");
+ if(!menuOpen)openMenu("replay");
  $("resetConfirm").hidden=false;
  $("cancelReset")?.focus?.({preventScroll:true});
 }
 function cancelResetConfirm(){
  if($("resetConfirm"))$("resetConfirm").hidden=true;
- closeMenu();
  $("resetGameQuick")?.focus?.({preventScroll:true});
 }
 function resetAllProgress(){
@@ -1159,7 +1163,8 @@ $("menuClose").onclick=closeMenu;
 $("gameMenu").addEventListener("pointerdown",e=>{if(e.target===$("gameMenu"))closeMenu()});
 document.querySelectorAll("[data-game-tab]").forEach(el=>el.onclick=()=>setMenuTab(el.getAttribute("data-game-tab")));
 $("wait").onclick=waitTurn;
-$("restart").onclick=()=>{metric("game_retry");init(stage,daily)};
+$("restart").onclick=()=>openMenu("replay");
+$("retryRoomAction").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("retryResult").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("nextResult").onclick=()=>{if(!s.winning)metric("game_retry");init(s.winning&&!daily?Math.min(7,stage+1):stage,daily)};
 $("shareResult").onclick=share;
