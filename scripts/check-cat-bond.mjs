@@ -614,6 +614,7 @@ for(const id of ['waterLash','frostLance','boltArc']){
 
 }
 // draining poise to empty via skill hits opens the Stagger window
+poiseEnemy.alive=true;poiseEnemy.maxhp=poiseEnemy.hp=20000;
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=1;poiseEnemy.staggerT=0;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
