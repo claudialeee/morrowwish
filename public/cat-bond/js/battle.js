@@ -835,7 +835,7 @@ class CaptureBattle {
     const basicRange=Math.min(175,f.projSpeed*.45+25);     // the innate toy-toss reach
     let role,min,max;
     const meleeReach=Math.max(...skills.filter(isMelee).map(sk=>(
-      sk.kind==='melee'?106:sk.kind==='dash'?f.speed*3*.26+42:sk.kind==='leap'?240:300)),0);
+      sk.kind==='melee'?76:sk.kind==='dash'?122:sk.kind==='leap'?165:152)),0);
     const hasMelee=skills.some(isMelee), hasRanged=skills.some(isRanged);
     // Is a melee/gap-closer skill READY right now? (drives hit-and-run: commit when the
     // skill is up, kite out while it recharges instead of hugging and eating free hits).
@@ -850,7 +850,7 @@ class CaptureBattle {
       // no more "charge in and tank in place" (was min=0 → retreat% flat 0, 25-77% of
       // damage eaten hugging). Harness after: hug 19.7/33%→3.7/5%, dmgInHug→0/10.7%.
       role='melee';
-      if(meleeReady){ min=48; max=Math.max(80,meleeReach*1.0); }     // skill up → commit to reach
+      if(meleeReady){ min=38; max=Math.max(68,meleeReach*.89); }     // skill up → commit to reach
       else { min=Math.max(120,meleeReach*1.15); max=Math.max(190,meleeReach*1.7); } // skill down → kite out & wait (don't hug)
     }else if(hasRanged&&!hasMelee){
       // kiter: sit at 0.55–0.85 of the projectile reach, flee if closer, seek if farther
@@ -1528,6 +1528,14 @@ class CaptureBattle {
       this.vfx.burst(ex,ey,{count:9,color:'#c0f4ab',angle:aim,spread:.6,speed:170,life:.32});
       return true;
     }
+    if(id==='lightningOrb'){
+      // Slow, turning ball lightning — NOT instant chain lightning.
+      this.spawnProj(ex,ey,aim,108,baseDmg,'me','#ffe5a0',
+        13,'lightningOrb',sk,3.3);
+      this.vfx.burst(ex,ey,{count:7,color:'#e1f3ff',
+        speed:70,life:.25,r:2});
+      return true;
+    }
     if(id==='fireballMeow'){
       this.spawnProj(ex,ey,aim,f.projSpeed*.75,baseDmg*1.5,'me','#ff9752',15,'fireball',sk,1.8);
       this.vfx.burst(ex,ey,{count:16,color:'#ffdb84',angle:aim,spread:.65,speed:175,life:.38});
@@ -1654,7 +1662,8 @@ class CaptureBattle {
   angleDiff(a, b) { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; }
   // 近战范围攻击: an instant arc in front of the caster, hitting enemies within range
   meleeStrike(f, aim, skill, dmg, col) {
-    const RANGE = 90, ARC = 1.1;
+    // Compact close-contact claw arc; no more long-range invisible slashes.
+    const RANGE = 64, ARC = .74;
     // signature melee VFX: owner's authored claw-slash stroke + my sweeping blade.
     this.skillStrokes.push({kind:'clawSlash',x:f.x,y:f.y,angle:aim,color:col,life:.37,max:.37});
     this.vfx.slash(f.x, f.y, aim, col, RANGE * 0.9, ARC * 0.92);
@@ -1662,7 +1671,7 @@ class CaptureBattle {
     let hit = false;
     for (const e of this.liveEnemies()) {
       const d = Math.hypot(e.x - f.x, e.y - f.y);
-      if (d > RANGE + 22) continue;
+      if (d > RANGE + (e.r||18)*.65) continue;
       const ang = Math.atan2(e.y - f.y, e.x - f.x);
       if (Math.abs(this.angleDiff(ang, aim)) > ARC) continue;   // must be in the frontal arc
       const r = this.resolveHit(e, 'me', skill, dmg, e.x, e.y);  // melee can't be reflected (no proj)
@@ -1828,15 +1837,13 @@ class CaptureBattle {
   // Dash lunge: the caster leaps along aim; enemies crossed along the lunge line
   // are struck once. A gap-closer, not a ranged poke.
   dashLunge(f, aim, sk, dmg, col) {
-    f.dashT = 0.24; f.inv = 0.28; f._dashAim = aim;
-    const x2 = f.x + Math.cos(aim) * 190, y2 = f.y + Math.sin(aim) * 190;
-    this.vfx.trail(f.x, f.y, col, 10); this.vfx.beam(f.x, f.y, x2, y2, col);
-    const hitThisLunge = new Set();
-    for (const e of this.liveEnemies()) {
-      // distance from the enemy to the lunge segment
-      const d = this.pointToSeg(e.x, e.y, f.x, f.y, x2, y2);
-      if (d <= 34 && !hitThisLunge.has(e.i)) { hitThisLunge.add(e.i); this.resolveHit(e, 'me', sk, dmg, e.x, e.y); }
-    }
+    // A DASH IS PHYSICAL MOVEMENT. Damage only on real contact during tick.
+    // Never draw the old 190px laser or pre-hit every enemy on its segment.
+    f.dashT=.24;f.inv=.28;f.pounce=true;f._dashAim=aim;
+    f._dashReach=120;f._dashTravel=0;f._pounceSkill=sk;f._pounceDmg=dmg;
+    this.vfx.trail(f.x,f.y,col,9);
+    this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim+Math.PI,
+      spread:.7,speed:110,life:.24,r:2});
   }
   // 泰山压顶 — LEAP SLAM: the cat springs into the air (brief i-frames, rooted-in-
   // flight) and crashes down on a target point for a punchy small-radius AOE that
@@ -1912,7 +1919,7 @@ class CaptureBattle {
     f._beamRoot = dur;                                          // anchors movement (see readInput/autoDrive)
     this.beams.push({
       uid: f.cat.uid, owner: 'me', f, sk, col,
-      aim, len, width, dps: Math.max(1, dmgPerSec), t: dur, max: dur,
+      aim,baseAim:aim,len,width,dps:Math.max(1,dmgPerSec),t:dur,max:dur,
       tickAcc: 0, element: sk?.element,
     });
     window.MorrowwishAudio?.effect?.('beam');
@@ -1947,8 +1954,12 @@ class CaptureBattle {
       b.t -= dt;
       const f = b.f;
       if (!f || !f.alive) { b.t = 0; continue; }
-      // beam follows the live aim of the active cat (feels like you're sweeping it)
-      if (f === this.me()) b.aim = this.aim;
+      // Water and lightning may steer using live aim. Fire's short channel
+      // sweeps left-right-left on a fixed arc (physical head movement).
+      if(b.sk?.sweep){
+        const progress=1-Math.max(0,b.t)/b.max;
+        b.aim=b.baseAim-Math.cos(progress*Math.PI*2)*b.sk.sweep;
+      }else if(f===this.me())b.aim=this.aim;
       if (f._beamRoot != null) f._beamRoot = Math.max(0, b.t);  // stay anchored while it lasts
       const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
       const ex = ox + Math.cos(b.aim) * b.len, ey = oy + Math.sin(b.aim) * b.len;
@@ -2693,6 +2704,35 @@ class CaptureBattle {
     for(const b of this.beams){
       if(b._ox==null)continue;
       const k=Math.max(0,b.t/b.max);
+      if(b.sk?.id==='thunderStream'){
+        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+        for(const [w,color,a] of [[12,'#4756ae',.37],[5,'#aecbff',.86],[2,'#fff1b4',.97]]){
+          ctx.lineWidth=w;ctx.strokeStyle=color;ctx.globalAlpha=a*k;ctx.beginPath();
+          ctx.moveTo(b._ox,b._oy);
+          const nx=b._ey-b._oy,ny=-(b._ex-b._ox),len=Math.hypot(nx,ny)||1;
+          for(let j=1;j<=13;j++){
+            const u=j/13,off=(Math.sin(j*31.7+Math.floor(this.t*24)*7.1))*9*(1-u*.4);
+            ctx.lineTo(b._ox+(b._ex-b._ox)*u+nx/len*off,
+              b._oy+(b._ey-b._oy)*u+ny/len*off);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();continue;
+      }
+      if(b.sk?.id==='flameSweep'){
+        ctx.save();ctx.globalCompositeOperation='lighter';
+        const angle=b.aim,nx=-Math.sin(angle),ny=Math.cos(angle);
+        for(let j=0;j<11;j++){
+          const u=(j+.35)/11,dist=u*b.len,
+            flick=Math.sin(this.t*24+j*1.9)*8;
+          const x=b._ox+Math.cos(angle)*dist+nx*flick,
+            y=b._oy+Math.sin(angle)*dist+ny*flick;
+          const r=(8+u*24)*(1+Math.sin(this.t*13+j)*.11);
+          ctx.globalAlpha=k*(.37+.33*(1-u));ctx.fillStyle=j%3===0?'#fff0a9':j%3===1?'#ffb057':'#f66737';
+          ctx.beginPath();ctx.ellipse(x,y,r*.95,r*.51,angle,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();continue;
+      }
       // Additive gradient stream (VFX research): overlaps sum to white, a prism
       // gradient flows along the axis, a dashed inner core streams toward the target.
       const grad=ctx.createLinearGradient(b._ox,b._oy,b._ex,b._ey);
@@ -3037,15 +3077,23 @@ class CaptureBattle {
       }
       // dash-pounce travel (active or ally)
       if (f.dashT > 0 && f.pounce) {
-        const aim = (f === me) ? (f._dashAim != null ? f._dashAim : this.aim) : (f._dashAim || f._aim || 0);
-        const spd = f._pounceSkill ? f.speed * 3.6 : f.speed * 3;     // flying pounce travels faster/farther
-        f.x = clamp(f.x + Math.cos(aim) * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-        f.y = clamp(f.y + Math.sin(aim) * spd * dt, this.topMargin, this.H - this.bottomMargin);
+        const aim=f._dashAim!=null?f._dashAim:(f._aim||this.aim);
+        const spd=f.speed*(f._pounceSkill?.kind==='dash'?3.2:3.6);
+        const step=f._dashReach!=null?Math.min(spd*dt,
+          Math.max(0,f._dashReach-(f._dashTravel||0))):spd*dt;
+        const x0=f.x,y0=f.y;
+        f.x=clamp(f.x+Math.cos(aim)*step,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+        f.y=clamp(f.y+Math.sin(aim)*step,this.topMargin,this.H-this.bottomMargin);
+        f._dashTravel=(f._dashTravel||0)+Math.hypot(f.x-x0,f.y-y0);
+        if(f._dashReach!=null&&f._dashTravel>=f._dashReach-.01)f.dashT=0;
+        // Short moving spark tail, unlike a beam held fixed to the origin.
+        if(f._pounceSkill?.element==='elec')
+          this.vfx.trail(f.x,f.y,'#ffe6a1',3);
       }
       // pounce contact damage on nearest enemy
       if (f.pounce) {
         const e = this.nearestEnemy(f.x, f.y);
-        if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + 22) {
+        if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + (e.r||18)*.6) {
           const dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (f.damageBoostT>0?1.25:1)*(f.weakened?0.5:1);
           this.resolveHit(e, 'me', f._pounceSkill || { element: f.element }, dmg, e.x, e.y);
           this.hurtEnemy && (e.kbx = (e.kbx||0) + Math.cos(f._dashAim||0) * 260, e.kby = (e.kby||0) + Math.sin(f._dashAim||0) * 260);  // knockback
@@ -3199,6 +3247,11 @@ class CaptureBattle {
           if (e.flash <= 0 && e.inv <= 0 && Math.hypot(p.x - e.x, p.y - e.y) < p.r + 22) {
             const r = this.resolveHit(e, 'me', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
             if (r.reflected) break;            // bounced back — projectile lives, now enemy-owned
+            if(p.kind==='lightningOrb'&&r.dealt>0){
+              this.vfx.impact(p.x,p.y,'#ffe1a1');
+              this.vfx.burst(p.x,p.y,{count:15,color:'#b6d5ff',
+                speed:130,life:.28,r:2.5});
+            }
             // fireball keeps its owner-authored area splash (routed through resolveHit)
             if (p.kind === 'fireball' && r.dealt > 0) {
               this.vfx.shockwave(p.x, p.y, '#ffc16e');
@@ -4392,6 +4445,20 @@ class CaptureBattle {
         ctx.quadraticCurveTo(2,-9,16,0);ctx.quadraticCurveTo(2,9,-14,0);ctx.fill();
         ctx.strokeStyle='#efffd5';ctx.lineWidth=1.5;
         ctx.beginPath();ctx.moveTo(-11,0);ctx.lineTo(13,0);ctx.stroke();
+      }else if(p.kind==='lightningOrb'){
+        // Unmistakable slow, crackling ORB, not a yellow generic bullet.
+        const pulse=.94+.10*Math.sin(this.t*21);
+        ctx.globalAlpha=.58;ctx.strokeStyle='#5367bb';ctx.lineWidth=3;
+        ctx.beginPath();ctx.arc(0,0,p.r*pulse+3,0,Math.PI*2);ctx.stroke();
+        ctx.globalAlpha=.89;ctx.fillStyle='#ffdfa3';
+        ctx.beginPath();ctx.arc(0,0,p.r*pulse,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fffaf3';ctx.beginPath();ctx.arc(-2,-2,p.r*.51,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#7489d2';ctx.lineWidth=2;ctx.globalAlpha=.85;
+        for(let j=0;j<5;j++){
+          const a=j*Math.PI*2/5+this.t*7;
+          ctx.beginPath();ctx.moveTo(Math.cos(a)*p.r*.67,Math.sin(a)*p.r*.67);
+          ctx.lineTo(Math.cos(a+.35)*(p.r+6),Math.sin(a+.35)*(p.r+6));ctx.stroke();
+        }
       }else if(p.kind==='fireball'){
         ctx.rotate(p.ang);
         const flicker=Math.sin(this.t*26)*3;
