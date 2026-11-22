@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.56.1
       - run: npx playwright install --with-deps chromium
       - name: Inspect real itch.io player frames and intercept telemetry without writing production events
         run: node scripts/verify-itch-telemetry.mjs
