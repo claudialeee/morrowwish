@@ -38,19 +38,27 @@ if(md.width!==800||md.height!==1200){
     .png().toBuffer();
   fs.writeFileSync(portrait,resized);
 }
-const landArt=await sharp(portrait).resize(770,1060,{fit:'contain'})
+// The original portrait has a purple top margin; cropping it avoids
+// unexpected opaque black letterboxing from Sharp's 'contain' default.
+const landArt=await sharp(portrait).extract({left:0,top:105,width:800,height:1095})
+  .resize(770,1060,{fit:'cover'})
   .png().toBuffer();
 await sharp(await bg(1920,1080))
   .composite([
     {input:landArt,left:120,top:10},
     {input:safeTitle(930,400,136),left:890,top:305},
   ]).png({compressionLevel:9}).toFile(landscape);
-const squareArt=await sharp(portrait).resize(680,1020,{fit:'cover',position:'attention'})
-  .extract({left:0,top:100,width:680,height:800}).png().toBuffer();
+const squareArt=await sharp(portrait).extract({left:0,top:130,width:800,height:800})
+  .png().toBuffer();
 await sharp(await bg(800,800))
-  .composite([{input:squareArt,left:60,top:0},
-    {input:safeTitle(760,170,96),left:20,top:585}])
+  .composite([{input:squareArt,left:0,top:0},
+    {input:safeTitle(760,150,82),left:20,top:0}])
   .png({compressionLevel:9}).toFile(square);
+// Use the portrait's existing purple header for the name, without covering cats.
+const portraitWithTitle=await sharp(portrait)
+  .composite([{input:safeTitle(780,104,80),left:10,top:0}])
+  .png({compressionLevel:9}).toBuffer();
+fs.writeFileSync(portrait,portraitWithTitle);
 
 // Transcode separately recorded REAL game sessions in native landscape and
 // portrait aspect ratios; never repurpose/crop a vertical social reel as a
