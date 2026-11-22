@@ -84,6 +84,7 @@ for(const g of games){
 }
 assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,8,'unrelated referral starts');
 const bond=summary.byGame.find(x=>x.game==='cat-bond');
+assert.deepEqual([bond?.historicalVisitFunnel?.pageviews,bond?.historicalVisitFunnel?.startedViews,bond?.historicalVisitFunnel?.finishedViews],[1,1,1],'Joined all-version visit funnel');
 assert.equal(bond?.conversion?.pageviews,1,'V2 denominator is the new cohort only');
 assert.equal(bond?.conversion?.startedViews,1,'V2 starts count page entry');
 assert.equal(bond?.conversion?.finishedViews,1,'V2 finishes count distinct pages');
@@ -103,12 +104,16 @@ for(const g of summary.byGame.filter(g=>g.game!=='hub')){
 for(const event of [
  {kind:'visit',game:'cat-bond',viewId:'legacy-bond',visitor:'legacy',source:'direct'},
  {kind:'session',game:'cat-bond',viewId:'legacy-bond',visitor:'legacy',
-  starts:1,ends:1,signals:{bond_enter:1,bond_rare_encounter:4,bond_rare_capture:57}}
+  starts:4,ends:3,signals:{bond_enter:1,bond_rare_encounter:4,bond_rare_capture:57}}
 ])assert.equal((await api(req('/api/session',event),env)).status,202,'legacy fixture accepted');
 const mixedResponse=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{
  headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 const mixed=(await mixedResponse.json()).byGame.find(g=>g.game==='cat-bond');
 assert.equal(mixed.pageviews,2,'Raw PV preserves legacy visit');
+assert.equal(mixed.starts,5,'Preserve five raw battle starts across two visits');
+assert.equal(mixed.ends,4,'Preserve four raw battle finishes across two visits');
+assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[2,2,2],
+  'A legacy visit with four battle starts counts as one distinct visit in conversion');
 assert.equal(mixed.conversion.pageviews,1,'Legacy PV excluded from V2 funnel');
 assert.equal(mixed.conversion.finishedViews,1,'Legacy finish excluded from V2 funnel');
 assert.equal(mixed.signals.bond_rare_encounter,4,'Old encounter counts preserved');
