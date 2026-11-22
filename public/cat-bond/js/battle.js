@@ -4601,7 +4601,8 @@ class CaptureBattle {
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
         species:sp2,scale:this.catScale(isMe?'active':'ally'),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
-        stride:route?this.duoRun.age*26:tf.t*13,mood:'happy'
+        stride:route?this.duoRun.age*26:tf.t*13,mood:'happy',
+        growth:window.Growth?.visual(tf.cat)||null
       });
       // WHITE connect-flash on a struck player cat (additive bloom, not a vanish-fade).
       if (tf.hitWhite > 0) {
@@ -4828,7 +4829,7 @@ class CaptureBattle {
     if(!species||!window.CatArt?.renderCatThumb)return null;
     const canvas=document.createElement('canvas');
     canvas.width=200;canvas.height=180;
-    CatArt.renderCatThumb(canvas,species);
+    CatArt.renderCatThumb(canvas,species,cat);
     this._cinematicPortraits.set(uid,canvas);
     return canvas;
   }

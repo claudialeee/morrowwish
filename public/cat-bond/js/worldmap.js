@@ -960,7 +960,8 @@
         const x=Math.max(53,Math.min(WORLD_W-53,w.px-(w.face||1)*gap));
         try{render(ctx,x,w.py+18,{
           species:partnerSpecies,scale:game.H<480?.78:.83,face:w.face,t:w.t,
-          stride:w.walkT*11,motion:w.moving?.85:0,pose:w.moving?'walk':'idle',mood:'happy'
+          stride:w.walkT*11,motion:w.moving?.85:0,pose:w.moving?'walk':'idle',mood:'happy',
+          growth:window.Growth?.visual(companion)||null
         });}catch(e){}
       }
     }
@@ -974,7 +975,8 @@
     if (window.CatArt) {
       try { (window.CatMotion?.draw||CatArt.drawCat)(ctx,w.px,w.py,{
         species:playerSpecies(),scale:game.H<480?.95:1,face:w.face,t:w.t,
-        stride:w.walkT*13,motion:w.moving?1:0,pose,mood:'happy'
+        stride:w.walkT*13,motion:w.moving?1:0,pose,mood:'happy',
+        growth:leadCat&&window.Growth?Growth.visual(leadCat):null
       }); }
       catch (e2) { ctx.fillStyle = PINK; ctx.beginPath(); ctx.arc(w.px, w.py, 18, 0, Math.PI * 2); ctx.fill(); }
     }

@@ -1067,7 +1067,7 @@ class Game {
       el.title=en?'Tap to control '+State.catName(f.cat):'点击控制 '+State.catName(f.cat);
       el.setAttribute('aria-label',el.title);
       host.appendChild(el);
-      CatArt.renderCatThumb(el.querySelector('canvas'),GameData.speciesById(f.cat.species));
+      CatArt.renderCatThumb(el.querySelector('canvas'),GameData.speciesById(f.cat.species),f.cat);
       el.addEventListener('click',()=>{b.switchTo(i);this.updateBattleUI();});
     });
     if(!bench)return;
@@ -1095,7 +1095,7 @@ class Game {
       btn.innerHTML='<span class="bench-number"></span><canvas width="88" height="78" aria-hidden="true"></canvas><span class="bench-health"></span>';
       btn.querySelector('.bench-number').textContent=String(i+1);
       btn.dataset.benchIndex=String(i);
-      CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species));
+      CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species),cat);
       bench.appendChild(btn);
       btn.addEventListener('click',()=>b.rotateReserve(i));
     });

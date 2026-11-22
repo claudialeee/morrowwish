@@ -332,7 +332,7 @@ const UI = {
     };
     buttons.forEach(btn=>{
       const cat=cats.find(c=>c.uid===btn.dataset.uid);
-      if(cat)CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species));
+      if(cat)CatArt.renderCatThumb(btn.querySelector('canvas'),GameData.speciesById(cat.species),cat);
       btn.onclick=()=>{
         const i=selected.indexOf(btn.dataset.uid);
         if(i>=0){if(selected.length>1)selected.splice(i,1);}
@@ -1006,7 +1006,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span><h2>${title}</h2><div class="roster">${chips}</div>`);
     document.querySelectorAll('#panel .chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
-      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
+      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species),c);
       chip.onclick = () => onPick(chip.dataset.uid);
     });
   },
@@ -1017,7 +1017,7 @@ const UI = {
       this.panel(`<span class="card-close">×</span><h2>🥚 选两只猫繁育</h2><p class="sub">已选 ${this._breedSel.length}/2</p><div class="roster">${chips}</div><div class="btn-row"><button class="btn gold" id="bp-go" ${this._breedSel.length === 2 ? '' : 'disabled'}>开始孵化</button></div>`);
       document.querySelectorAll('#panel .chip').forEach(chip => {
         const c = cats.find(x => x.uid === chip.dataset.uid);
-        CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
+        CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species),c);
         chip.onclick = () => { const u = chip.dataset.uid; const i = this._breedSel.indexOf(u); if (i >= 0) this._breedSel.splice(i, 1); else if (this._breedSel.length < 2) this._breedSel.push(u); render(); };
       });
       const go = document.getElementById('bp-go'); if (go) go.onclick = () => { const r = Raising.startBreeding(this._breedSel[0], this._breedSel[1]); this.game.toast(r && r.ok ? '🥚 开始孵化！' : (r && r.msg) || '无法繁育'); State.save(); this.openWorkshop(); };
@@ -1173,7 +1173,9 @@ const UI = {
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel [data-breed]').forEach(cell=>{
       const sp=GameData.speciesById(cell.dataset.breed);
-      CatArt.renderCatThumb(cell.querySelector('canvas'),sp);
+      const group=speciesGroups.get(sp.id)||[];
+      const showCat=group.reduce((best,cat)=>!best||State.catPower(cat)>State.catPower(best)?cat:best,null);
+      CatArt.renderCatThumb(cell.querySelector('canvas'),sp,showCat);
       cell.addEventListener('click',()=>{
         const group=speciesGroups.get(sp.id);
         if(group.length===1)this.openCatDetail(group[0]);
@@ -1213,7 +1215,7 @@ const UI = {
     document.querySelectorAll('#panel [data-cat-uid]').forEach(button=>{
       const cat=all.find(v=>v.uid===button.dataset.catUid);
       if(!cat)return;
-      CatArt.renderCatThumb(button.querySelector('canvas'),species);
+      CatArt.renderCatThumb(button.querySelector('canvas'),species,cat);
       button.onclick=()=>this.openCatDetail(cat);
     });
     document.getElementById('breed-prev').onclick=()=>this.openBreedRoster(species,current-1);
@@ -1389,39 +1391,79 @@ const UI = {
     return times;
   },
   doGrow(cat, awakenKey) {
-    const G = window.Growth; if (!G) return;
-    const before = cat.stage || 0;
-    const r = G.advance(cat, awakenKey);
-    if (!r.ok) { this.game.toast('条件不足'); return; }
-    State.save(); this.game.rebuildYard(); this.game.refreshHUD();
-    const name = G.stageName(cat);
-    if (cat.stage >= 2) this.openGrowthAnim(cat, name);
-    else { this.renderCatDetail(cat); this.game.toast('🌟 成长为 ' + name + '！'); }
-  },
-  openGrowthAnim(cat, name) {
-    const sp = GameData.speciesById(cat.species);
-    const aw = window.Growth.AWAKEN[cat.awaken];
-    const col = aw ? aw.color : '#ffd36b';
-    this.panel(`<span class="card-close">×</span>
-      <h2 class="center">★ 觉醒！</h2>
-      <canvas id="evo-cv" width="200" height="170" style="display:block;margin:10px auto"></canvas>
-      <p class="center">${GameData.speciesName(sp)} 觉醒为 <b style="color:${col}">${name}</b>！</p>
-      <p class="sub center">${aw ? aw.desc : ''}</p>
-      <div class="btn-row" style="justify-content:center"><button class="btn gold" onclick="UI.closeAll()">太棒了</button></div>`);
-    const cv = document.getElementById('evo-cv'); const cx = cv.getContext('2d'); let tt = 0;
-    const anim = () => {
-      if (!document.getElementById('evo-cv')) return;
-      tt += 0.04; cx.clearRect(0, 0, 200, 170);
-      cx.save(); cx.translate(100, 95); cx.globalAlpha = 0.5;
-      for (let i = 0; i < 14; i++) { cx.rotate(Math.PI / 7 + tt * 0.6); cx.fillStyle = withA2(col, 0.3); cx.fillRect(0, -3, 120, 6); }
-      cx.restore();
-      CatArt.drawCat(cx, 100, 105, { species: sp, scale: 1.3, face: 1, t: tt, pose: 'sit', mood: 'happy', growth: window.Growth.visual(cat) });
-      requestAnimationFrame(anim);
-    };
-    anim();
-  },
+   const G=window.Growth;if(!G)return;
+   const beforeStage=cat.stage||0,oldStats={...cat.stats};
+   const result=G.advance(cat,awakenKey);
+   if(!result.ok){this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'成长条件不足':'Growth requirements not met');return;}
+   State.save();this.game.rebuildYard();this.game.refreshHUD();
+   this.openGrowthAnim(cat,G.stageName(cat),beforeStage,oldStats);
+ },
+  openGrowthAnim(cat,name,beforeStage,oldStats) {
+   const en=window.MorrowwishI18n?.get?.()!=='zh';
+   const sp=GameData.speciesById(cat.species);
+   const awakened=cat.stage>=2;
+   const color=awaken?(window.Growth?.AWAKEN[cat.awaken]?.color||'#a5b7f1'):'#d7a579';
+   const safe=str=>String(str??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+   const oldLabel=beforeStage===0?(en?'Kitten':'幼猫'):(en?'Adult':'成年');
+   const newLabel=awaken?(en?'Awakened Adult':'灵·觉醒'):(en?'Adult':'成年');
+   const stats=[['pow',en?'Power':'力量'],['agi',en?'Agility':'敏捷'],['vit',en?'Vitality':'体力'],['cha',en?'Charm':'魅力']];
+   const gains=stats.map(([key,label])=>`<span class="cb-growth-stat">${label} <strong>+${Math.max(0,cat.stats[key]-(oldStats?.[key]||0))}</strong></span>`).join('');
+   this.panel(`<span class="card-close">×</span>
+     <section class="cb-growth-ceremony" aria-label="${en?'Cat growth celebration':'猫咪成长演出'}">
+       <p class="cb-growth-overline">${en?'A new chapter together':'一起长大 · 新的冒险'}</p>
+       <h2>${en?'Growth complete!':'成长成功！'}</h2>
+       <div class="cb-growth-stage-names"><span>${oldLabel}</span><b aria-label="${en?'becomes':'成长为'}">✦</b><span>${newLabel}</span></div>
+       <canvas id="cb-growth-canvas" width="360" height="220" role="img" aria-label="${en?'Illustrated before-and-after growth for '+safe(GameData.speciesName(sp)):'成长前后：'+safe(GameData.speciesName(sp))}"></canvas>
+       <h3>${safe(State.catName(cat))} · ${safe(name)}</h3>
+       <p class="cb-growth-caption">${awaken?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'A fully illustrated adult form, ready for new adventures!':'专属成年原画已解锁！庭院、战斗与猫咪详情同步更新。')}</p>
+       <div class="cb-growth-stats">${gains}</div>
+       <button class="btn gold" id="cb-growth-done" type="button">${en?'Continue adventure':'继续冒险'}</button>
+     </section>`);
+   document.getElementById('cb-growth-done')?.addEventListener('click',()=>this.closeAll());
+   const cv=document.getElementById('cb-growth-canvas');
+   if(!cv)return;
+   const ctx=cv.getContext('2d');if(!ctx)return;
+   const start=performance.now();
+   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+   const oldForm=beforeStage===0?null:{stage:1,scale:1.07,gem:true,gemColor:'#cbd4ff'};
+   const newForm=Growth.visual(cat);
+   const drawForm=(x,y,scale,form,opacity,pose='sit')=>{
+     ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,opacity));
+     CatArt.drawCat(ctx,x,y,{species:sp,growth:form,face:1,scale,t:performance.now()*.001,pose,mood:'happy'});
+     ctx.restore();
+   };
+   const frame=now=>{
+     if(!cv.isConnected)return;
+     const t=reduced?1:Math.min(1,(now-start)/2600);
+     ctx.clearRect(0,0,360,220);
+     const glow=ctx.createRadialGradient(180,112,8,180,112,154);
+     glow.addColorStop(0,color+'50');glow.addColorStop(1,color+'00');
+     ctx.fillStyle=glow;ctx.fillRect(0,0,360,220);
+     // Fade only COMPLETE painted poses, never separate an ear or paw.
+     const reveal=Math.max(0,Math.min(1,(t-.30)/.40));
+     const eased=reveal*reveal*(3-2*reveal);
+     drawForm(125,144,1.35-eased*.18,oldForm,1-eased);
+     drawForm(210,144,1.07+eased*.30,newForm,eased);
+     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;
+     const ring=12+eased*112;
+     ctx.globalAlpha=(1-eased)*.35;
+     ctx.beginPath();ctx.ellipse(180,108,ring,ring*.64,0,0,Math.PI*2);ctx.stroke();
+     ctx.restore();
+     for(let i=0;i<12;i++){
+       const a=i*Math.PI/6+now*.00025,r=30+eased*(58+i%3*8);
+       const x=180+Math.cos(a)*r,y=108+Math.sin(a)*r*.68;
+       ctx.fillStyle=color;ctx.globalAlpha=Math.min(.7,Math.max(0,(t-.08)*1.4)*(1-t*.28));
+       ctx.beginPath();ctx.arc(x,y,2+i%3,0,Math.PI*2);ctx.fill();
+     }
+     ctx.globalAlpha=1;
+     if(t<1)requestAnimationFrame(frame);
+   };
+   requestAnimationFrame(frame);
+   const refresh=()=>{if(cv.isConnected)frame(performance.now());};
+   window.addEventListener('cat-bond-adult-art-ready',refresh,{once:true});
+ },
 
-  // growth-form (成长形态) row + optional species 蜕变 row
+    // growth-form (成长形态) row + optional species 蜕变 row
   evoRowHtml(cat) {
     let html = this.growthRowHtml(cat);
     html += this.speciesEvoRowHtml(cat);
@@ -1732,7 +1774,8 @@ const UI = {
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
       const sp = GameData.speciesById(cell.dataset.id);
       if (!cell.classList.contains('locked')) {
-        CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
+        const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
+        CatArt.renderCatThumb(cell.querySelector('canvas'), sp,featured);
         cell.tabIndex=0;cell.setAttribute('role','button');
         cell.addEventListener('keydown',e=>{
           if(e.key==='Enter'||e.key===' '){e.preventDefault();cell.click();}
@@ -1783,7 +1826,8 @@ const UI = {
           <p class="tiny center">${en?'Rank challenge: no duplicate cats or repeat capture rewards.'
             :'评级挑战不会重复捕捉猫咪，也不会重复领取金币。'}</p>`);
         document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
-        CatArt.renderCatThumb(document.getElementById('dx'),sp);
+        const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
+        CatArt.renderCatThumb(document.getElementById('dx'),sp,featured);
         document.getElementById('dx-back').onclick=()=>this.openDex();
         const fight=document.getElementById('dx-rematch');
         if(fight&&canRematch)fight.onclick=()=>{
@@ -2042,7 +2086,8 @@ const UI = {
       // cat
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,cx,cy,{
         species:sp,scale:1.2,face:fx<cx?-1:1,t:tt,
-        pose:pounce>0?'play':'walk',motion:1,mood:'alert'
+        pose:pounce>0?'play':'walk',motion:1,mood:'alert',
+        growth:window.Growth?.visual(cat)||null
       });
       // feather toy
       ctx.save(); ctx.translate(fx, fy);
@@ -2316,7 +2361,7 @@ const UI = {
     };
     roster.querySelectorAll('.chip').forEach(chip => {
       const c = cats.find(x => x.uid === chip.dataset.uid);
-      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species));
+      CatArt.renderCatThumb(chip.querySelector('canvas'), GameData.speciesById(c.species),c);
       chip.onclick = () => {
         const uid = chip.dataset.uid;
         const idx = this.teamUids.indexOf(uid);

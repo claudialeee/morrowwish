@@ -3153,3 +3153,19 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #panel .prebattle-skills summary small{font-size:9px}
  #panel .prebattle-skills-body{max-height:min(29vh,200px)}
 }
+
+
+/* Growth ceremony: responsive animated illustrated before/after. */
+.cb-growth-ceremony {text-align:center;max-width:520px;margin:0 auto;padding:4px 4px 12px;color:#475266}
+.cb-growth-ceremony .cb-growth-overline {font-size:.73rem;text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:#a17d83;margin:2px 0 6px}
+.cb-growth-ceremony h2 {font-size:clamp(1.35rem,4vw,1.85rem);color:#72566c;margin:4px 0 8px}
+.cb-growth-stage-names {display:flex;align-items:center;justify-content:center;gap:16px;font-weight:800;color:#8d6f7d}
+.cb-growth-stage-names b {font-size:1.55rem;color:#d4a564}
+#cb-growth-canvas {display:block;width:min(100%,360px);height:auto;aspect-ratio:18/11;max-height:220px;margin:4px auto 0}
+.cb-growth-ceremony h3 {margin:4px 0;color:#79576a;font-size:1.22rem}
+.cb-growth-caption {margin:7px auto 10px;font-size:.9rem;line-height:1.5;max-width:390px}
+.cb-growth-stats {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px auto 14px}
+.cb-growth-stat {border-radius:9px;background:#fff6ed;color:#725a61;padding:8px 2px;font-size:.74rem;white-space:nowrap}
+.cb-growth-stat strong {color:#af8054}
+.cb-growth-ceremony #cb-growth-done {min-width:164px;min-height:43px;font-weight:800}
+@media(max-width:420px) {.cb-growth-ceremony {padding:0 1px 8px}.cb-growth-stats {gap:4px}.cb-growth-stat {font-size:.68rem}}
