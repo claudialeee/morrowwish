@@ -794,22 +794,23 @@ for(const id of ['tangyuan','doudou','xiaohui']){
   const kitten=State.makeCat(id,{affinity:20});
   const ownElement=Skills.elementOf(id);
   const before=Skills.learnableSkills(kitten);
-  // A tank may start with the universal tank-only mirror wall even if its
-  // elemental signature differs. All other starting skills must remain native.
-  // Keep the new tank design while guarding against accidental early splash.
+  // Common Water/Fire/Grass kittens are SINGLE element. Even switching
+  // builds or capturing another friend must never grant a random next-element.
   const crossElement=before.filter(sk=>sk.element!==ownElement);
-  assert.ok(crossElement.every(sk=>
-    sk.id==='mirrorWall'&&sk.unlock?.build==='tank'&&
-    Skills.buildTypeForBreed(kitten)==='tank'),
-    'Starter '+id+' only receives its own element plus the tank-only wall');
+  assert.equal(crossElement.length,0,
+    'Starter '+id+' must not borrow a skill from an unrelated element');
   assert.ok(before.some(sk=>sk.element===ownElement&&sk.ultCost===0&&
     ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(sk.kind)),
     'Starter '+id+' must still have a usable native attacking skill');
   Skills.ensureLoadout(kitten);
   const discovered=Skills.awakenFirstSkill(kitten);
   assert.ok(discovered,'First successful capture must reveal a new skill for '+id);
-  assert.equal(discovered.element,Skills.SPLASH_ELEMENT[ownElement],
-    'Skill discovery must reveal a DIFFERENT element');
+  assert.equal(Skills.secondaryOf(id),null,
+    'An ordinary cat has no made-up elemental secondary type');
+  assert.equal(discovered.element,ownElement,
+    'Ordinary cat first-capture skill awakening must stay native');
+  assert.equal(kitten.awakenedSkill,discovered.id,
+    'Native awakening must record its own skill and preserve it across saves');
   assert.equal(kitten.loadout[2],discovered.id,
     'The first discovered ability is already equipped to E');
   assert.equal(Skills.awakenFirstSkill(kitten),null,
@@ -869,6 +870,80 @@ assert.equal(fighterRoster.length,5,'fighters include the orange cats and agile 
 assert.ok(fighterRoster.includes('nuowei')&&fighterRoster.includes('meidu'),
   'Norwegian and American Shorthair become fighters');
 assert.ok(tankRoster.includes('lanbao'),'low-AGI Blue remains a tank');
+// One authoritative type map for every collectible cat: 27 mono-element,
+// six curated mythical duals. Blueberry is Water/Ice, not Water/Electric.
+const expectedPrimary={
+ tangyuan:'fire',doudou:'grass',xiaohui:'water',moqiu:'dark',
+ nainai:'light',nietu:'grass',niuniu:'elec',sanhua:'light',
+ lixiao:'dark',lanbao:'water',dundun:'water',yunduo:'light',
+ zherdd:'grass',qisi:'fire',duanduan:'elec',jinjc:'light',
+ nuowei:'grass',baomao:'dark',jiafei:'fire',xianluo:'elec',
+ yinghua:'light',senlin:'grass',youling:'dark',jinwu:'fire',
+ yuelian:'light',xingchen:'dark',abi:'fire',meidu:'grass',
+ xuewa:'water',mengmai:'dark',fanmao:'water',bosi:'light',
+ wumao:'elec'
+};
+const expectedSecondary={
+ xianluo:'light',yinghua:'grass',youling:'light',
+ jinwu:'light',yuelian:'water',xingchen:'light'
+};
+assert.equal(GameData.SPECIES.length,33,'Audit exactly all 33 collectible breeds');
+assert.deepEqual(Object.keys(expectedPrimary).sort(),
+  GameData.SPECIES.map(sp=>sp.id).sort(),
+  'Every collectible breed must have an individually reviewed primary element');
+assert.deepEqual(Object.keys(Skills.SPECIES_SECONDARY).sort(),
+  Object.keys(expectedSecondary).sort(),'No forced element ring / extra dual species');
+for(const sp of GameData.SPECIES){
+ const el=expectedPrimary[sp.id],second=expectedSecondary[sp.id]||null;
+ assert.equal(Skills.elementOf(sp.id),el,sp.id+' primary element identity');
+ assert.equal(Skills.secondaryOf(sp.id),second,sp.id+' curated secondary element');
+ for(const [level,bond,awakened] of [[1,0,false],[4,25,false],[15,95,true]]){
+  const c=State.makeCat(sp.id,{affinity:bond});c.level=level;c.skillAwakened=awakened;
+  const all=Skills.learnableSkills(c),side=all.filter(s=>s.element!==el);
+  const invalid=side.filter(s=>s.element!==second||
+    (s.ultCost>0&&s.id!=='moonfang'));
+  assert.equal(invalid.length,0,
+    sp.id+' Lv'+level+' may equip only native/curated secondary moves: '+
+    invalid.map(s=>s.id).join(','));
+  assert.ok(side.filter(s=>!s.ultCost).length<=2,
+    sp.id+' secondary skills must never grow into a second full library');
+  if(!second)assert.equal(side.length,0,
+    sp.id+' is monotype and must have zero cross-element skills');
+  const trainer=Skills.trainerSkills(c);
+  assert.ok([...trainer.ready,...trainer.locked].every(s=>
+    s.element===el||s.unlock?.species?.includes(sp.id)),
+    sp.id+' trainer must not advertise unrelated-element techniques');
+  const rec=Skills.recommendLoadout(c,Skills.buildTypeForBreed(c));
+  assert.ok(rec.slice(1).filter(Boolean).every(id=>all.some(s=>s.id===id)),
+    sp.id+' recommended build must stay inside valid element pool');
+ }
+}
+const blueberry=State.makeCat('lanbao',{affinity:90});blueberry.level=18;
+blueberry.skillAwakened=true;blueberry.skillEdited=true;
+blueberry.loadout=[null,'gen_elec_melee','boltArc','thunderYowl'];
+blueberry.autoSkillLoadout=blueberry.loadout.slice();
+blueberry.learned=['mirrorWall'];
+Skills.ensureLoadout(blueberry);
+assert.equal(Skills.defaultLoadout(State.makeCat('lanbao'))[1],'frostClaw',
+  'Blueberry should begin with WATER Frost Claw, never Electric Lightning Claw');
+assert.ok(blueberry.loadout.filter(Boolean).every(id=>
+  Skills.skillById(id)?.element==='water'),
+  'Legacy Water tank saves must automatically repair forbidden Electric equipment');
+assert.ok(blueberry.learned.includes('mirrorWall'),
+  'Legacy skill history may remain in save data but cannot be equipped');
+assert.ok(!Skills.trainerSkills(blueberry).ready.some(s=>s.element==='elec'),
+  'Even a high-level Blueberry tank cannot study lightning moves');
+assert.equal(Skills.learnSkill(blueberry,'mirrorWall').ok,false,
+  'Tank build is not permission to learn Electric on a Water cat');
+assert.ok(Skills.learnableSkills(blueberry).every(s=>s.element==='water'),
+  'Every stage of Blueberry must remain Water/Ice only');
+const dualKitten=State.makeCat('jinwu');Skills.ensureLoadout(dualKitten);
+const dualDiscovery=Skills.awakenFirstSkill(dualKitten);
+assert.ok(dualDiscovery&&dualDiscovery.element==='light',
+  'A true Sun Fire+Light dual may discover one curated Light technique');
+assert.ok(Skills.learnableSkills(dualKitten)
+  .filter(s=>s.element!=='fire').length<=1,
+  'Early dual may have ONE secondary technique only');
 assert.ok(fighterRoster.includes('tangyuan')&&fighterRoster.includes('qisi'),
   'Mochi and Cheese are fighters, not tanks');
 assert.ok(tankRoster.includes('senlin')&&tankRoster.includes('jiafei'),
@@ -901,7 +976,7 @@ const wallSpecialist=State.makeCat('xianluo',{affinity:90});
 wallSpecialist.level=12;wallSpecialist.skillAwakened=true;
 Skills.applyBuild(wallSpecialist,'tank');
 assert.ok(Skills.trainerSkills(wallSpecialist).ready.some(sk=>sk.id==='mirrorWall'),
-  'any tank build may study the shield at the trainer');
+  'an ELECTRIC tank can study its native-element reflect wall');
 assert.ok(!Skills.learnableSkills(wallSpecialist).some(sk=>sk.id==='mirrorWall'),
   'building as tank alone must not automatically learn the shield');
 assert.ok(Skills.learnSkill(wallSpecialist,'mirrorWall').ok,
