@@ -31,7 +31,7 @@ const hostCases=[
   ['crazygames','https://morrowwish.pages.dev/cat-bond/?platform=crazygames','',false,true],
   ['steam','https://morrowwish.pages.dev/cat-bond/?platform=steam','',true,true],
   ['ios','https://morrowwish.pages.dev/cat-bond/?platform=ios','',true,true],
-  ['portal','https://morrowwish.pages.dev/cat-bond/?utm_source=itch&utm_medium=portal','',false,false],
+  ['portal','https://morrowwish.pages.dev/cat-bond/?utm_source=itch&utm_medium=portal','',true,false],
 ];
 for(const [host,url,referrer,analytics,ownsFullscreen] of hostCases){
   const {win,classes}=boot(url,referrer);
