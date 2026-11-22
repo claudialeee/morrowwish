@@ -18,9 +18,35 @@ p{line-height:1.6}a{color:#836290;text-decoration:none;font-weight:700}
 .stages>div:nth-child(2){background:#f0e5e6}
 .stages>div:nth-child(3){background:#e8edf4}
 @media(max-width:360px){main{padding:14px 8px}.grid{grid-template-columns:1fr}.breed-card{padding:10px 6px}}
+
+/* Isolated gallery-only player: the in-game growth cinematic uses the same poses/timing. */
+.demo{background:#fffaf9;border:1px solid #e6d9df;border-radius:22px;padding:18px;margin:12px 0 25px;box-shadow:0 6px 24px #a4818d15}
+.demo h2{color:#70576b;font-size:1.25rem;margin:0 0 5px}
+.demo p{font-size:.9rem;margin:0 0 10px;color:#8c7885}
+.demo-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:9px;margin:14px 0}
+.demo-controls label{font-size:.85rem;font-weight:700}
+.demo-controls select,.demo-controls button{border:1px solid #dfcdd9;background:#fff;border-radius:13px;padding:10px 12px;font:600 .9rem system-ui;color:#76536e;max-width:100%}
+.demo-controls button{background:#83658c;color:#fff;cursor:pointer;border-color:#83658c}
+.demo-controls button:hover,.demo-controls button:focus-visible{background:#6f4d7b}
+.demo-controls button:disabled{opacity:.6;cursor:wait}
+.demo-canvas{display:block;width:min(100%,540px);height:auto;aspect-ratio:18/11;margin:0 auto;background:radial-gradient(ellipse,#fffdf7 30%,#f5edf2 100%);border-radius:17px}
+.demo #demo-caption{text-align:center;font-weight:700;margin:7px 0 0}
+@media(max-width:580px){.demo{padding:12px 8px}.demo-controls{display:grid;grid-template-columns:1fr 1fr}.demo-controls label{grid-column:span 2}.demo-controls select{grid-column:span 2;width:100%}.demo-controls button{font-size:.82rem;padding:10px 5px}}
 </style></head><body><main><a href="/cat-bond/">← 返回猫猫纽带游戏</a>
 <h1>32 种猫咪 · 水彩成长形态</h1><p>保留原版水彩猫画风，成年体型仅比幼年大约 6%，觉醒约 10%；地图、庭院、战斗尺寸保持协调，不拉伸脸型、毛色和身体比例。</p>
-<p class="meta"><span id="load-status">正在加载水彩猫原画…</span> · <span id="gallery-count">0</span> 种品种</p><div id="breed-grid" class="grid"></div></main>
+<p class="meta"><span id="load-status">正在加载水彩猫原画…</span> · <span id="gallery-count">0</span> 种品种</p><section class="demo" aria-label="成长动画预览">
+<h2>成长动画 · 实际水彩猫演出</h2>
+<p>选择任意一种猫，直接播放游戏同款 2.6 秒幼猫成长／成年觉醒演出。仅用于展示，不会修改你的游戏存档。</p>
+<div class="demo-controls">
+<label for="demo-breed">选择猫种</label><select id="demo-breed" aria-label="选择猫种"></select>
+<button type="button" id="demo-adult">▶ 幼猫 → 成年</button>
+<button type="button" id="demo-awaken">▶ 成年 → 觉醒</button>
+<label for="demo-path">觉醒分支</label><select id="demo-path" aria-label="觉醒分支"><option value="pow">力量 · 暖橙</option><option value="agi" selected>速度 · 冰蓝</option><option value="cha">心灵 · 浅粉</option></select>
+</div>
+<canvas class="demo-canvas" id="demo-growth" width="720" height="440" role="img" aria-label="成长过程动态预览"></canvas>
+<p id="demo-caption" aria-live="polite">载入猫咪原画后即可播放</p>
+</section>
+<div id="breed-grid" class="grid"></div></main>
 <script src="js/catart.js?v=36"></script><script src="js/cute-cats.js?v=1-storybook"></script>
 <script src="js/real-kittens.js?v=complete-watercolor-v2-32-breed-20261122"></script>
 <script src="js/data.js?v=32-cat-breeds-20261122"></script>
@@ -58,6 +84,79 @@ p{line-height:1.6}a{color:#836290;text-decoration:none;font-weight:700}
    const count=window.CatBondAdultArt?.loadedCount||0;
    status.textContent=(en?'Original watercolor breeds loaded: ':'原版水彩猫已载入：')+count+' / '+ids.length;
  }
+
+ // This gallery-only cinematic duplicates the exact timing, painted poses,
+ // crossfade, glow/ring and particle logic of UI.openGrowthAnim, without
+ // invoking UI.doGrow or changing player save data.
+ const demoBreed=document.getElementById('demo-breed');
+ const demoCanvas=document.getElementById('demo-growth');
+ const demoCtx=demoCanvas.getContext('2d');
+ const demoCaption=document.getElementById('demo-caption');
+ const demoPath=document.getElementById('demo-path');
+ let demoToken=0,demoAwaken=false;
+ for(const id of ids){
+   const sp=window.GameData?.speciesById?.(id);if(!sp)continue;
+   const opt=document.createElement('option');
+   opt.value=id;opt.textContent=(GameData.speciesName?.(sp)||id);
+   demoBreed.appendChild(opt);
+ }
+ function playDemo(awakened){
+   if(!demoCtx)return;
+   demoAwaken=!!awakened;
+   const sp=window.GameData?.speciesById?.(demoBreed.value);
+   if(!sp)return;
+   const branch=window.Growth?.AWAKEN?.[demoPath.value]||window.Growth?.AWAKEN?.agi;
+   const oldForm=awakened?window.Growth?.visual?.({stage:1}):null;
+   const newForm=window.Growth?.visual?.({stage:awakened?2:1,awaken:demoPath.value});
+   const color=awakened?(branch?.color||'#a5b7f1'):'#d7a579';
+   const label=GameData.speciesName?.(sp)||sp.id;
+   demoCaption.textContent=label+' · '+(awakened?'成年 → '+(branch?.name||'觉醒'):'幼猫 → 成年')+' · 动画播放中';
+   const token=++demoToken,started=performance.now();
+   function drawForm(x,y,scale,form,opacity,now){
+     demoCtx.save();demoCtx.globalAlpha=Math.max(0,Math.min(1,opacity));
+     CatArt.drawCat(demoCtx,x,y,{species:sp,growth:form,face:1,scale,t:now*.001,pose:'sit',mood:'happy'});
+     demoCtx.restore();
+   }
+   function draw(now){
+     if(token!==demoToken||!demoCanvas.isConnected)return;
+     const t=Math.min(1,(now-started)/2600);
+     demoCtx.setTransform(1,0,0,1,0,0);
+     demoCtx.clearRect(0,0,720,440);
+     demoCtx.save();demoCtx.setTransform(2,0,0,2,0,0);
+     const glow=demoCtx.createRadialGradient(180,112,8,180,112,154);
+     glow.addColorStop(0,color+'50');glow.addColorStop(1,color+'00');
+     demoCtx.fillStyle=glow;demoCtx.fillRect(0,0,360,220);
+     const reveal=Math.max(0,Math.min(1,(t-.30)/.40));
+     const eased=reveal*reveal*(3-2*reveal);
+     drawForm(125,144,1.35-eased*.18,oldForm,1-eased,now);
+     drawForm(210,144,1.07+eased*.30,newForm,eased,now);
+     demoCtx.save();demoCtx.strokeStyle=color;demoCtx.lineWidth=2;
+     const ring=12+eased*112;
+     demoCtx.globalAlpha=(1-eased)*.35;
+     demoCtx.beginPath();demoCtx.ellipse(180,108,ring,ring*.64,0,0,Math.PI*2);
+     demoCtx.stroke();demoCtx.restore();
+     for(let i=0;i<12;i++){
+       const a=i*Math.PI/6+now*.00025,r=30+eased*(58+i%3*8);
+       demoCtx.fillStyle=color;
+       demoCtx.globalAlpha=Math.min(.7,Math.max(0,(t-.08)*1.4)*(1-t*.28));
+       demoCtx.beginPath();
+       demoCtx.arc(180+Math.cos(a)*r,108+Math.sin(a)*r*.68,2+i%3,0,Math.PI*2);
+       demoCtx.fill();
+     }
+     demoCtx.restore();demoCtx.globalAlpha=1;
+     if(t<1)requestAnimationFrame(draw);
+     else demoCaption.textContent=label+' · '+(awakened?'觉醒形态':'成年形态')+' · 可重新播放';
+   }
+   requestAnimationFrame(draw);
+ }
+ document.getElementById('demo-adult').addEventListener('click',()=>playDemo(false));
+ document.getElementById('demo-awaken').addEventListener('click',()=>playDemo(true));
+ demoBreed.addEventListener('change',()=>playDemo(demoAwaken));
+ demoPath.addEventListener('change',()=>playDemo(true));
+ // Replay once the actual watercolor atlas is decoded. Never show vector fallback as final.
+ window.addEventListener('cat-bond-illustrations-ready',()=>playDemo(demoAwaken));
+ playDemo(false);
+
  window.addEventListener('cat-bond-adult-art-ready',update);
  window.addEventListener('cat-bond-illustrations-ready',update);
  update();
