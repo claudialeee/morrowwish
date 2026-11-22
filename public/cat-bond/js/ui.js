@@ -176,7 +176,10 @@ const UI = {
     }
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     if (tab === 'yard') { this.closeAll(); }
-    else if (tab === 'cats') this.openCatHub(this.game?.firstAdventureTour?.()?.step===1?'duo':'solo');
+    else if (tab === 'cats') {
+      const tour=this.game?.firstAdventureTour?.();
+      this.openCatHub(tour&&!tour.done&&!tour.skipped&&tour.step===1?'duo':'solo');
+    }
     else if (tab === 'work') this.openWorkshop();
     else if (tab === 'dex') this.openDex();
     else if (tab === 'daily') this.openDaily();
