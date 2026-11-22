@@ -156,7 +156,7 @@ function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1){
 }
 function paper(g,x,y,w,h){
  const v=g.createLinearGradient(0,y,0,y+h);
- v.addColorStop(0,'#ebe0f933');v.addColorStop(.68,'#f5e9f100');v.addColorStop(1,'#1b1d3bb9');
+ v.addColorStop(0,'#f8f8ed18');v.addColorStop(.62,'#f7f2e100');v.addColorStop(1,'#6c77704f');
  g.fillStyle=v;g.fillRect(x,y,w,h);
 }
 function slash(g,W,H,p,key,tier){
@@ -206,15 +206,25 @@ function draw(ctx,W,H,seq,lookup){
  ctx.save();ctx.globalAlpha=opacity;
  // One complete, illustrated two-cat tableau per attack, NEVER two sliced
  // paintings or a pair of cropped heads glued across a visible vertical seam.
- // Pan and zoom the entire coherent painting together.
- const driftX=Math.sin(p*4.1+frame*.7)*.012;
- const driftY=Math.cos(p*3.3+frame*.4)*.008;
- const zoom=1.04+.035*smooth(p/.30)+.009*Math.sin(p*4);
- sourceCover(ctx,cellRect(frame),0,0,sw,sh,zoom,driftX,driftY,1);
+ // The 21 independently authored cinematic storyboards control camera
+ // charge, dodge, lunge, rise, arc, rebound and finish. We transform ONE
+ // complete illustration (both cats and scenery together), not crop/tile cats.
+ const cam=window.CatBondDuoDirector?.camera?.(key,p,sw,sh)||
+   {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'};
+ ctx.save();
+ ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
+ ctx.rotate(cam.angle);
+ ctx.translate(-sw*.5,-sh*.5);
+ sourceCover(ctx,cellRect(frame),0,0,sw,sh,cam.zoom,0,0,1);
+ ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
- if(dual>.10){
-  ctx.save();ctx.globalAlpha*=Math.min(.31,dual*.27);
+ if(dual>.09){
+  // Previously both authored VFX layers were almost invisible: .27 × .31
+  // opacity on top of signature opacity. Let the player actually distinguish
+  // different attacks (starfall, jump, lightning, tide, vines, fireworks...)
+  // while keeping the watercolor painting beneath them readable.
+  ctx.save();ctx.globalAlpha*=Math.min(.92,dual*.83);
   window.CatBondDuoDirector?.accent?.(ctx,sw,sh,p,key,tier);
   window.CatBondDuoFinale?.draw?.(ctx,sw,sh,p,key,tier);
   ctx.restore();
