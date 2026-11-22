@@ -15,6 +15,16 @@ assert.ok(html.includes('data-sort-value='),'Site game visits must sort numerica
 assert.ok(html.indexOf('id="promotion-channels"')<html.indexOf('id="game-details"'),'Channel metrics second');
 assert.ok(!html.includes('id="ew-funnel"')&&!html.includes('id="signal-grid"'),'Remove stale story and gameplay metrics');
 assert.ok(html.includes('aria-sort'),'Sort direction must be accessible');
+const missingKeys=['none','empty','notAvailable','syncPending','signalWait','homeFunnelEmpty','itchNoData','lastEventMissing'];
+const fieldRe=/\b(none|empty|notAvailable|syncPending|signalWait|homeFunnelEmpty|itchNoData|lastEventMissing):"([^"]*)"/g;
+const fields=[...html.matchAll(fieldRe)];
+for(const key of missingKeys){
+ const matches=fields.filter(m=>m[1]===key);
+ assert.equal(matches.length,2,key+' must exist in zh/en');
+ assert.ok(matches.every(m=>m[2]===''),key+' must stay blank');
+}
+assert.ok(!html.includes('escapeHTML(t("none"))'),'Do not render empty-state text');
+assert.ok(!html.includes("pulse.capturedAt||'—'"),'Missing social snapshot cannot render dash');
 assert.ok(html.includes('enhanceSortableTables()'),'Sort must survive dashboard refresh');
 const block=html.slice(html.indexOf('const tableSorts='),html.indexOf('function dateFormat('));
 assert.ok(block.includes('function sortCellValue')&&block.includes('function sortDataTable'),'Sort functions missing');
