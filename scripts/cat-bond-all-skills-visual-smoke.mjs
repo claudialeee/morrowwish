@@ -53,13 +53,30 @@ try{
         throw Error('Contact art failed '+id);
       b.skillStrokes.forEach(s=>s.life=s.max*.64);
       target.status={...(target.status||{}),burn:1.6,shock:1};
-      const original=CatBondSkillFX.draw;let drawn=0;
+      // mirrorWall deliberately uses a physical, world-space reflect ward
+      // instead of a fake circular cast burst. Verify the real shield pass
+      // on the painted fighter, not a signatureCast that should not exist.
+      const isMirror=id==='mirrorWall';
+      if(isMirror)f.reflectT=3;
+      const original=CatBondSkillFX.draw,originalWard=window.CatBondWardArt?.draw;
+      let drawn=0,wardDrawn=0;
       CatBondSkillFX.draw=function(ctx,s,time){
         if(s?.skillId===id)drawn++;
         return original.apply(this,arguments);
       };
-      try{g.draw()}finally{CatBondSkillFX.draw=original;}
-      if(drawn<(support?1:2))throw Error('Signature not in actual battle '+id+': '+drawn);
+      if(isMirror&&originalWard)CatBondWardArt.draw=function(ctx,unit,...args){
+        if(unit===f)wardDrawn++;
+        return originalWard.call(this,ctx,unit,...args);
+      };
+      try{g.draw()}finally{
+        CatBondSkillFX.draw=original;
+        if(isMirror&&originalWard)CatBondWardArt.draw=originalWard;
+      }
+      if(isMirror){
+        if(wardDrawn<2||!f.reflectT)throw Error('Physical mirror wall not in real battle '+id+': '+wardDrawn);
+      }else if(drawn<(support?1:2)){
+        throw Error('Signature not in actual battle '+id+': '+drawn);
+      }
       if(window.CatBondUltHero||b.ultHero)throw Error('full-screen art during normal skill');
       return {id,skillName:sk.name,style:sk.kind,drawn,
         hasCast:b.skillStrokes.some(s=>s.kind==='signatureCast'),
