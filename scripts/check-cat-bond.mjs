@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','ult-vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ult-vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -148,6 +148,16 @@ assert.ok(sandbox.window.CatMotion.scaleRatio<=.72
   'All moving kittens must remain small relative to the game world');
 assert.equal(sandbox.window.CatMotion.artStyle,'original-illustrated-25-breed',
   'No alternate vector/cartoony character style may replace the original kitten art');
+assert.equal(sandbox.window.CatBondAdultArt?.sourceKind,'original-watercolor-atlas',
+  'Adult growth must preserve the same authentic watercolor breed art used by kittens');
+assert.equal(sandbox.window.CatBondAdultArt?.preservesOriginalProportions,true,
+  'Growth must not stretch the cat silhouette or replace its face');
+assert.equal(sandbox.window.CatBondAdultArt?.matureArtIsSeparateImage,false,
+  'Never substitute a procedural SVG for the painted cat when it matures');
+const growthSource=fs.readFileSync(DIR+'js/adult-art.js','utf8');
+assert.ok(!growthSource.includes('data:image/svg+xml')&&!growthSource.includes('drawImage(entry.img'),
+  'Reject the stretched procedural adult renderer seen in Moonshadow Ruins');
+
 assert.doesNotThrow(()=>sandbox.window.CatMotion.draw(canvasCtx,90,90,{
   species:sandbox.window.GameData.SPECIES[0],face:-1,t:1,
   pose:'run',motion:1,stride:1.3,scale:1
