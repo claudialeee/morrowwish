@@ -508,10 +508,8 @@
       }
     }
 
-    // ---- return portal ----
-    if (Math.hypot(w.px - w.portal.x, w.py - w.portal.y) < 54) {
-      enterMap();
-    }
+    // Map switching is intentionally controlled by the top-right map directory.
+    // Walking through the old entrance no longer teleports the player out.
   }
 
   function commitExplore() {
@@ -581,7 +579,7 @@
   }
 
   // ================================================================
-  // INPUT (map-view clicks; region taps for portal convenience)
+  // INPUT (world-map nodes and the in-scene upper-left yard button)
   // ================================================================
   function backBounds(){
     var compact=game&&game.isTouch&&game.W>game.H&&game.H<520;
@@ -608,14 +606,9 @@
       if (inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
       return false;
     }
-    // region mode: tapping near the portal glyph returns to the node map
-    if (world) {
-      // Return to the courtyard directly; the in-world signpost remains
-      // available for players who want to go back to the world map.
-      if (inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
-      var sx = world.portal.x - world.cam.x, sy = world.portal.y - world.cam.y;
-      if (Math.hypot(x - sx, y - sy) < 34) { enterMap(); return true; }
-    }
+    // In a region, only the upper-left action returns to the courtyard.
+    // Use the existing "地图目录" utility to choose another map.
+    if (world && inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
     return false;
   }
 
@@ -897,17 +890,8 @@
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
 
-    // A garden signpost physically planted on the ground, replacing
-    // a black portal with a floating house emoji.
-    var por=w.portal;
-    ctx.fillStyle='rgba(38,47,38,.23)';
-    ctx.beginPath();ctx.ellipse(por.x+5,por.y+15,36,8,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#816954';ctx.fillRect(por.x-7,por.y-40,14,59);
-    ctx.fillStyle='#cfb49a';ctx.fillRect(por.x-47,por.y-54,94,30);
-    ctx.strokeStyle='#846b52';ctx.lineWidth=2.5;ctx.strokeRect(por.x-47,por.y-54,94,30);
-    ctx.font='700 15px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillStyle='#5d4a3c';
-    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回地图':'← Map',por.x,por.y-39);
+    // No duplicate back-to-map signpost in the scenery: the right-side
+    // map directory is the single explicit region-switching control.
 
     // Small in-world chests, crystals and five unique secret relics.
     for(var j=0;j<w.nodes.length;j++){
