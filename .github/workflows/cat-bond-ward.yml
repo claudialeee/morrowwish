@@ -1,0 +1,41 @@
+name: Cat Bond ward-grounding visual QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/js/ward-art.js'
+      - 'public/cat-bond/index.html'
+      - 'scripts/cat-bond-ward-smoke.mjs'
+      - '.github/workflows/cat-bond-ward.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ward-grounding:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Node.js runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Chromium dependency
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Screenshot and verify every ward on phone and desktop
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-ward-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-ward-smoke.mjs
+      - name: Preserve real screenshots for art review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-ward-paw-grounding-12-screenshots
+          path: /tmp/cat-bond-ward-*.png
+          if-no-files-found: warn
+          retention-days: 7
