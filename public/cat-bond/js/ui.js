@@ -371,7 +371,7 @@ const UI = {
   // An expedition never needs to return to the yard to inspect, train,
   // equip, feed, or shop. Reuse the same panels and the same saved cat objects.
   openExploreMenu(){
-    if(this.game?.scene!=='map')return;
+    if(this.game?.scene!=='map'&&this.game?.scene!=='yard')return;
     this.resetNavigation();
     this._navCurrent=()=>this.openExploreMenu();
     const en=this.isEnglish();
@@ -381,8 +381,9 @@ const UI = {
     const team=this.getPreferredBattleTeam().slice(0,2);
     const woundedCount=this.getPreferredBattleTeam()
       .filter(cat=>State.catHpFraction(cat)<.999).length;
-    const region=window.WorldMap?.REGIONS?.find(r=>r.id===WorldMap.currentRegion);
-    const regionName=region?(en?region.sub:region.name):(en?'World map':'世界地图');
+    const isYard=this.game.scene==='yard';
+    const region=isYard?null:window.WorldMap?.REGIONS?.find(r=>r.id===WorldMap.currentRegion);
+    const regionName=isYard?(en?'Yard':'庭院'):(region?(en?region.sub:region.name):(en?'World map':'世界地图'));
     const summary=team.map((cat,i)=>{
       const sp=GameData.speciesById(cat.species);
       if(!sp)return '';
@@ -410,8 +411,8 @@ const UI = {
       '<span aria-hidden="true">'+icon+'</span><span>'+(en?enLabel:zh)+'</span></button>';
     this.panel('<span class="card-close">×</span><section class="explore-menu" aria-label="'+
       (en?'Expedition management':'探险管理')+'">'+
-      '<h2>'+(en?'☰ Expedition menu':'☰ 探险菜单')+'</h2>'+
-      '<p class="explore-menu-location">'+(en?'Exploring ':'正在探索：')+esc(regionName)+
+      '<h2>'+(isYard?(en?'☰ Yard menu':'☰ 庭院菜单'):(en?'☰ Expedition menu':'☰ 探险菜单'))+'</h2>'+
+      '<p class="explore-menu-location">'+(isYard?(en?'At ':'当前位置：'):(en?'Exploring ':'正在探索：'))+esc(regionName)+
       ' <span>🪙 '+Math.floor(State.S.coins||0)+' · 🐠 '+Math.floor(State.S.fish||0)+' · 🧰 '+Math.floor(State.S.medkits||0)+'</span></p>'+
       '<p class="explore-health-rule">'+(State.difficulty()==='casual'
         ?(en?'🌿 Casual: HP refills after each battle.':'🌿 休闲模式：战后自动回满血。')

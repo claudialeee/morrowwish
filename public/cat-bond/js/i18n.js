@@ -1362,7 +1362,7 @@
     '继续提升等级与羁绊，尝试搭配不同元素连携': 'Keep leveling and bonding; try mixing elements for combos',
     '新招式已经就绪！下一步可以试技能、经营工坊赚金币，或者去地图探索，不必一直抓猫。':
       'A new move is ready! Next, try skills, earn coins in the workshop, or explore the map — you don\'t have to keep catching cats.',
-    '探索庭院地区 40%，解锁樱花林': 'Explore 40% of the Yard to unlock Sakura Woods',
+    '探索阳光花园 40%，解锁樱花林': 'Explore 40% of Sunlit Garden to unlock Sakura Woods',
     // codex / mastery
     '发现不同猫咪，为每个品种挑战 S 级「金爪徽章」。':
       'Discover different cats and earn each breed its S-rank "Golden Paw" medal.',

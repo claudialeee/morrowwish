@@ -4193,5 +4193,33 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#intro:not(.hide)) #cb-heade
  }
 }
 
+/* Stable right-edge toolbar on BOTH the yard and the exploration map.
+   The left-side yard-return / opening home link retain their own slot. */
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header{
+  justify-content:flex-end!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{
+  margin-right:auto!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-header-actions{
+  margin-left:auto!important;justify-content:flex-end!important;
+  flex-wrap:nowrap!important;max-width:min(100%,calc(100% - 126px))!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #hud{
+  margin-left:0!important;flex-shrink:1!important;overflow:hidden!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage:has(#intro:not(.hide)) #cb-header-actions > #map-menu{
+  display:none!important;
+}
+@media(max-width:420px){
+  html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-header-actions{
+    max-width:calc(100% - 84px)!important;
+  }
+}
+@media(max-width:340px){
+  html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-header-actions{
+    max-width:calc(100% - 62px)!important;
+  }
+}
 /* Hide the untranslated initial Cat Bond DOM until the English display layer is ready. */
 html[lang="en"]:not(.cb-i18n-ready) #game-root{visibility:hidden}

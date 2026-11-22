@@ -87,7 +87,7 @@
   // ---------------------------------------------------------------
   var REGIONS = [
     {
-      id: 'home', name: '庭院', sub: 'Courtyard',
+      id: 'home', name: '阳光花园', sub: 'Sunlit Garden',
       node: { x: 0.16, y: 0.74 }, difficulty: 1,
       theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
       speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],

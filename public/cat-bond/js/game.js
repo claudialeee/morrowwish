@@ -537,7 +537,7 @@ class Game {
     }
     const menuBtn=document.getElementById('map-menu');
     if(menuBtn){
-      menuBtn.hidden=this.scene!=='map';
+      menuBtn.hidden=this.scene!=='map'&&this.scene!=='yard';
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       const label=en?'☰ Menu':'☰ 菜单';
       if(menuBtn.textContent!==label)menuBtn.textContent=label;

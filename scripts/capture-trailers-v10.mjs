@@ -79,6 +79,33 @@ try{
  result.push(await capture(browser,'cat-bond',async({page,stamp})=>{
   await page.goto(host+'/cat-bond/?autodev&lang=en',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.__game?.yard&&window.State?.S?.cats?.length>=3,{timeout:19000});
+  // The owner-approved opening region must not regress to "Courtyard / 庭院".
+  // Verify the real live yard toolbar before filming; no mocked HUD.
+  await page.waitForFunction(()=>!!document.querySelector('#cb-header-actions #hud')&&!!document.querySelector('#cb-header-actions #map-menu'));
+  const yardHeader=await page.evaluate(()=>{
+    const stage=document.getElementById('stage').getBoundingClientRect();
+    const actions=document.getElementById('cb-header-actions').getBoundingClientRect();
+    const hud=document.getElementById('hud').getBoundingClientRect();
+    const menu=document.getElementById('map-menu');
+    const mr=menu.getBoundingClientRect();
+    const region=WorldMap.REGIONS.find(r=>r.id==='home');
+    return {name:region?.name,englishName:region?.sub,menuVisible:!menu.hidden&&
+      getComputedStyle(menu).display!=='none',rightAligned:actions.right>=stage.right-20,
+      resourcesSameRow:Math.abs(hud.top-mr.top)<=8&&hud.right<=mr.left+2,
+      actionFits:actions.left>=stage.left&&actions.right<=stage.right+2};
+  });
+  if(yardHeader.name!=='阳光花园'||yardHeader.englishName!=='Sunlit Garden'||
+      !yardHeader.menuVisible||!yardHeader.rightAligned||!yardHeader.resourcesSameRow||!yardHeader.actionFits)
+    throw Error('Yard toolbar / Sunlit Garden regression: '+JSON.stringify(yardHeader));
+  const yardMenu=await page.evaluate(()=>{
+    document.getElementById('map-menu').click();
+    const opened=!!document.querySelector('#panel.open .explore-menu')&&
+      !!document.querySelector('#panel.open [data-explore-action="regions"]');
+    UI.closeAll();
+    return opened;
+  });
+  if(!yardMenu)throw Error('Yard menu did not open real shared management panel');
+  console.log('YARD TOOLBAR AND SUNLIT GARDEN VERIFIED '+JSON.stringify(yardHeader));
   await page.evaluate(realVerticalCamera,'scene');
   const shots=[];
   const mark=async(label,ms)=>{

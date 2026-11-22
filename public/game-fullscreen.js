@@ -162,7 +162,7 @@
       // immediately to the LEFT of fullscreen on phones and desktop.
       const menu=document.getElementById('map-menu');
       if(menu)controls.insertBefore(menu,guide||button);
-      // Resource counters and exploration menu share one top header row.
+      // Yard and expedition share a single right-aligned resource/menu/settings row.
       // Reparent the real HUD so coin/fish updates keep their existing IDs.
       const resources=document.getElementById('hud');
       if(resources)controls.insertBefore(resources,menu||guide||button);
@@ -184,8 +184,8 @@
     style.textContent=[
 
        'html[data-mw-fullscreen-game] .mw-fullscreen-toggle{width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;min-height:34px!important;max-height:34px!important;border-radius:9px!important;padding:0!important;font-size:20px!important;line-height:1!important;letter-spacing:0!important;box-shadow:0 2px 5px #34293b20!important}',
-       'html[data-mw-fullscreen-game="cat-bond"] #cb-header{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:calc(env(safe-area-inset-left,0px) + 8px)!important;right:calc(env(safe-area-inset-right,0px) + 8px)!important;height:36px!important;z-index:110!important;display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:space-between!important;gap:3px!important;pointer-events:none!important}',
-       'html[data-mw-fullscreen-game="cat-bond"] #cb-header .cb-home{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;max-width:calc(100% - 188px)!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;padding:7px 9px!important;height:34px!important;display:flex!important;align-items:center!important;pointer-events:auto!important;font-size:11px!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #cb-header{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 6px)!important;left:calc(env(safe-area-inset-left,0px) + 8px)!important;right:calc(env(safe-area-inset-right,0px) + 8px)!important;height:36px!important;z-index:110!important;display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important;pointer-events:none!important}',
+       'html[data-mw-fullscreen-game="cat-bond"] #cb-header .cb-home{position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;max-width:calc(100% - 188px)!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;padding:7px 9px!important;margin-right:auto!important;height:34px!important;display:flex!important;align-items:center!important;pointer-events:auto!important;font-size:11px!important}',
        'html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important;flex:0 0 auto!important;pointer-events:auto!important}',
        'html[data-mw-fullscreen-game="cat-bond"] #cb-header-actions>.mw-fullscreen-toggle{position:relative!important;inset:auto!important;right:auto!important;top:auto!important;transform:none!important;z-index:auto!important}',
        'html[data-mw-fullscreen-game="cat-bond"] #stage #hud{top:calc(env(safe-area-inset-top,0px) + 50px)!important;padding:4px 7px!important;justify-content:flex-start!important}',
