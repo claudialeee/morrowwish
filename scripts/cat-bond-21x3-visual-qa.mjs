@@ -59,9 +59,45 @@ try{
  });
  assert.equal(result.keys,21);
  assert.equal(result.palettes,21);
- assert.equal(result.grades,63,'All 63 real painted stage frames must decode independently');
+ assert.ok(result.grades>=21&&result.grades<=32,'Actor-specific scene cache must be bounded after all 63 painted stages');
  assert.equal(result.tiers,3);
  assert.equal(result.source,'approved-complete-painterly-duo-sheet');
+ const matches=await page.evaluate(()=>{
+   const painter=window.CatBondPremiumCinematics;
+   const art=window.CatBondDuoBreedArt;
+   const breeds=window.GameData.SPECIES.map(s=>s.id);
+   const cv=document.createElement('canvas');cv.width=480;cv.height=270;
+   const c=cv.getContext('2d',{willReadFrequently:true});
+   const actorA={uid:'qa-A',species:'tangyuan'},actorB={uid:'qa-B',species:'mengmai'};
+   function hash(){
+     c.clearRect(0,0,480,270);
+     painter.draw(c,480,270,{elements:'dark+light',max:2.75,t:1.20,tier:3,
+       catUids:['qa-A','qa-B'],hideCaptions:true,thumbnail:true},
+       id=>id==='qa-A'?actorA:actorB);
+     const pix=c.getImageData(0,0,480,270).data;
+     let h=2166136261>>>0;
+     for(let i=0;i<pix.length;i+=44)
+       h=Math.imul((h^pix[i])>>>0,16777619)>>>0;
+     return h.toString(16);
+   }
+   const firstSide=breeds.map(id=>{actorA.species=id;return [id,hash()]});
+   actorA.species='xuewa';
+   const secondSide=breeds.map(id=>{actorB.species=id;return [id,hash()]});
+   actorB.species='mengmai';
+   const ordered=hash();
+   actorA.species='mengmai';actorB.species='xuewa';
+   const reversed=hash();
+   return {n:art.breedCount,firstSide,secondSide,ordered,reversed,
+     cached:painter.activePaintCacheEntries};
+ });
+ assert.equal(matches.n,32,'All 32 collectible breeds must have an actual painted coat profile');
+ assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,32,
+   'Each of 32 actual selected left-side species must produce visibly different PREMIUM artwork');
+ assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,32,
+   'Each of 32 actual selected right-side species must produce visibly different PREMIUM artwork');
+ assert.notEqual(matches.ordered,matches.reversed,
+   'Swapping actual team A/B must change the painted cats, not just captions');
+ assert.ok(matches.cached<=32,'Changing cats must not grow an unbounded texture cache');
  assert.equal(new Set(result.frames.map(x=>x.variants[2].hash)).size,21,
    '21 skill previews still visually identical; do not release');
  for(const entry of result.frames){
@@ -70,6 +106,12 @@ try{
   for(const v of entry.variants)assert.ok(v.avgBrightness>30,
     entry.key+' rendered black/blank tier '+v.tier);
  }
+ // Gallery UI must be actionable, not just a decorative list of cat names.
+ await page.selectOption('#pick-cat-a','mengmai');
+ await page.selectOption('#pick-cat-b','bosi');
+ assert.equal(await page.locator('#pick-cat-a').inputValue(),'mengmai');
+ assert.equal(await page.locator('#pick-cat-b').inputValue(),'bosi');
+ await page.screenshot({path:DIR+'/gallery-32-breed-pickers.png',fullPage:false,animations:'disabled'});
  await page.screenshot({path:DIR+'/gallery-desktop.png',fullPage:true,animations:'disabled'});
  for(const [key,name] of [['dark+light','moon'],['fire+light','sun'],['grass+grass','spring'],['dark+elec','shadow-storm']]){
   for(const tier of [1,2,3]){
@@ -108,5 +150,5 @@ try{
  await mobile.close();
  assert.deepEqual(errors,[],'No uncaught JavaScript runtime errors');
  fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,errors},null,2));
- console.log('CAT BOND REAL CHROMIUM QA PASS: 21 visibly distinct paintings; 3 visually distinct stage frames per skill; original artwork retained; 21 desktop and mobile catalog cards.');
+ console.log('CAT BOND REAL CHROMIUM QA PASS: 21 painted skills × 3 stages, 32 distinct breed coats on EACH actor, selectable real-time previews, original artwork retained, responsive mobile.');
 }finally{await browser.close()}
