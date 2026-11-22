@@ -115,7 +115,7 @@ function draw(g,sp,height,p,style,aura,tier=1){
   for(let i=0;i<4;i++)line(g,[84+i*8,-48-i*19,89+i*7,-52-i*22,99+i*8,-54-i*22,105+i*8,-58-i*22],dark,6);
  }
  // Body and plush neck bib, painterly gradient and shadows.
- const rx=fluff?76:sp.short?65:68;
+ const rx=fluff?76:sp.id==='wumao'?55:sp.short?65:68;
  const bodyGrad=grad(g,light,base,mix(dark,base,.6),-175,30);
  el(g,0,-67,rx,105,bodyGrad);
  // Coat pattern is visible on the WHOLE body, not only on a shared face.
@@ -140,6 +140,17 @@ function draw(g,sp,height,p,style,aura,tier=1){
    el(g,0,-74,30,83,mix(light,'#ffffff',.48));
  }
  if(sp.id==='sanhua')el(g,36,-106,17,21,'#a57965');
+ if(sp.id==='xuewa'){el(g,-53,-22,18,28,'#fffaf2');el(g,53,-22,18,28,'#fffaf2')}
+ if(sp.id==='mengmai')for(let i=0;i<3;i++)star(g,-39+i*38,-111+i%2*18,2.6,'#f3d9a6');
+ if(sp.id==='fanmao'){el(g,-49,-124,22,18,'#e9b17b');el(g,41,-102,18,15,'#e9b17b')}
+ if(sp.id==='meidu')for(let i=0;i<4;i++)el(g,Math.sin(i*2)*36,-134+i*31,5,11,'#657d8b');
+ if(sp.id==='wumao'){
+   g.strokeStyle='#ba8480';g.lineWidth=2.4;
+   for(let i=0;i<4;i++){g.beginPath();g.moveTo(-29,-105+i*18);
+      g.quadraticCurveTo(0,-113+i*18,29,-105+i*18);g.stroke()}
+ }
+ if(sp.id==='bosi')el(g,0,-130,42,17,'#faf0dc');
+ if(sp.id==='abi')for(let i=0;i<7;i++)el(g,-38+i*12,-119+(i%2)*13,2.5,5,'#b27e51');
  if(sp.id==='jinwu')for(let i=0;i<5;i++)star(g,-43+i*21,-115+i%2*15,3,'#fff0a1');
  if(sp.id==='xingchen')for(let i=0;i<9;i++)star(g,Math.sin(i*5)*56,-137+(i%4)*33,3,'#fff7b3');
  g.restore();
@@ -167,8 +178,9 @@ function draw(g,sp,height,p,style,aura,tier=1){
  // Head, integrated cheek tufts and triangular folded/tufted ear silhouettes.
  const ears=[-1,1];
  for(const side of ears){
-  const tipY=folded?-237:-274-(tufted?6:0);
-  const topX=side*(folded?66:79);
+  const tall=sp.ears==='large';
+  const tipY=folded?-237:tall?-298:-274-(tufted?6:0);
+  const topX=side*(folded?66:tall?89:79);
   curve(g,[side*38,-191,side*45,-225,side*60,tipY,topX,tipY+6,
     side*94,-263,side*89,-196,side*76,-168,side*55,-173,side*38,-191],
     grad(g,light,base,dark,-268,-150),outline,2.3);
@@ -199,5 +211,5 @@ function draw(g,sp,height,p,style,aura,tier=1){
  }
  g.restore();
 }
-window.CatBondDuoPortraits={draw,version:'storybook-breed-identity-three-stage-v2',breedCount:25};
+window.CatBondDuoPortraits={draw,version:'storybook-breed-identity-three-stage-v3',breedCount:32};
 })();
