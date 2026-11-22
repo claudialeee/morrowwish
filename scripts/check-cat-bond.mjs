@@ -593,6 +593,31 @@ assert.equal(legendaryThunder.loadout[3],'thunderYowl',
 assert.equal(legendary.loadout[0],null,'Basic (slot 0) is the innate toy toss, not a chosen skill');
 assert.notEqual(legendary.loadout[1],legendaryThunder.loadout[1],
   'Legendary and epic cats should have distinct equipped Q skills');
+// Role-build regression: a developed cat with a broad unlocked pool should
+// have genuinely different Q/E choices; manual equipment survives battle init.
+const roleCat=State.makeCat('yinghua',{affinity:90});
+roleCat.level=15;roleCat.skillAwakened=true;
+const dpsKit=Skills.recommendLoadout(roleCat,'dps');
+const tankKit=Skills.recommendLoadout(roleCat,'tank');
+const controlKit=Skills.recommendLoadout(roleCat,'control');
+assert.ok([dpsKit,tankKit,controlKit].some((kit,i,all)=>all.some(other=>
+  kit[1]!==other[1]||kit[2]!==other[2])),
+  'distinct build roles should yield different Q/E skills when the unlocked pool allows');
+Skills.applyBuild(roleCat,'dps');
+assert.deepEqual(Array.from(roleCat.loadout),Array.from(dpsKit),
+  'applying a build immediately installs its recommended skill IDs');
+assert.equal(roleCat.buildType,'dps','build choice is stored on the cat');
+assert.equal(roleCat.skillEdited,true,'builds are protected from default loadout reset');
+Skills.ensureLoadout(roleCat);
+assert.deepEqual(Array.from(roleCat.loadout),Array.from(dpsKit),
+  'ensureLoadout does not overwrite a manually selected build');
+const roleBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [roleCat],GameData.speciesById('doudou'));
+assert.equal(roleBattle.me().qSkill?.id,dpsKit[1],
+  'battle Q reads equipped build skill');
+assert.equal(roleBattle.me().eSkill?.id,dpsKit[2],
+  'battle E reads equipped build skill');
+
 
 // ---- GATED SKILL-LEARNING: powerful skills must be LEARNED, not free ----
 // A paid skill (cometClaw: 🪙150) is invisible to learnableSkills until bought;
