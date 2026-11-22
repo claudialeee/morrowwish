@@ -257,6 +257,33 @@ try{
   if(!entered.ok)throw Error('V9 real exploration region not entered '+JSON.stringify(entered));
   console.log('V9 REAL CURRENT REGION '+JSON.stringify(entered));
   await mark('map-explore',4300);
+  // The public promo must show the NEW navigation: top-left goes straight to
+  // the courtyard and the top-right map directory is the only map switcher.
+  // Proof screenshot captures real in-game pixels, not a composited mock.
+  const regionNav=await page.evaluate(()=>{
+    const mapButton=document.getElementById('map-index'),rect=mapButton?.getBoundingClientRect();
+    const visible=!!rect&&!mapButton.hidden&&rect.width>=38&&rect.height>=30&&
+      getComputedStyle(mapButton).display!=='none';
+    return {visible,scene:window.__game.scene,mode:WorldMap.mode,topRight:!!rect&&rect.right>innerWidth/2};
+  });
+  if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||!regionNav.topRight)
+    throw Error('Map directory no longer visible at top-right during real exploration '+JSON.stringify(regionNav));
+  await page.screenshot({path:'public/promo/cat-bond/v10-map-navigation-proof.png'});
+  const returned=await page.evaluate(()=>{
+    document.getElementById('map-index').click();
+    const chooser=!!document.querySelector('#panel.open .map-destination');
+    UI.closeAll();
+    const g=window.__game,compact=g.isTouch&&g.W>g.H&&g.H<520;
+    const button={x:compact?64:16,y:g.W<650?106:65,w:compact?104:128,h:compact?38:42};
+    const handled=WorldMap.handleTap(button.x+button.w/2,button.y+button.h/2);
+    const yard=handled&&g.scene==='yard'&&!document.body.classList.contains('cb-exploring');
+    g.openWorldMap();UI.closeAll();
+    const resumed=WorldMap.enterRegion('sakura');
+    return {chooser,handled,yard,resumed,mode:WorldMap.mode,scene:g.scene};
+  });
+  if(!returned.chooser||!returned.yard||!returned.resumed||returned.mode!=='region')
+    throw Error('Real new map directory or upper-left yard navigation failed '+JSON.stringify(returned));
+  console.log('V10 VERIFIED RIGHT MAP DIRECTORY + LEFT YARD NAV '+JSON.stringify(returned));
   // The expedition menu and auto-team selection are both NEW game features,
   // recorded from their actual controls without mock panels or fake data.
   const mapMenu=await page.evaluate(()=>{
