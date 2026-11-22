@@ -1,7 +1,7 @@
 /* Premium duo cinematic renderer: one uninterrupted watercolor painting
  * showing both complete cats in a shared setting. No clipped or pasted
- * silhouettes. 21 elemental choreographies over eight complete painted scenes.
- * Further breed-specific scenes can be added without reintroducing seams.
+ * silhouettes. 21 elemental choreographies over 63 complete painted frames.
+ * Unsafe automatic coat recoloring was removed after visual QA found bleed.
  */
 (function(){
 'use strict';
@@ -139,12 +139,15 @@ function cellRect(panel,tier=1){
 }
 // A separate real painting is decoded per combo AND trust milestone.
 // All 63 illustrations have intact cat bodies rather than generated limbs.
+// Art-integrity gate: never alter pixels of the painter-approved complete
+// cat illustrations with the rejected approximate fur masks. Those masks
+// crossed paws, faces, flowers and scenery and produced giant color blocks.
+// Preserve all 63 actual paintings, independent of preview-roster selection.
+// The selected cats remain authoritative for battle logic, labels and thumbnails;
+// no false claim of inside-the-painting breed replacement until verified assets.
 function gradedScene(key,tier=1,actorA=null,actorB=null){
  const lv=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
- const identity=window.CatBondDuoBreedArt;
- const breedA=identity?.species(actorA)||'original';
- const breedB=identity?.species(actorB)||'original';
- const cacheKey=key+'|'+lv+'|'+breedA+'|'+breedB;
+ const cacheKey=key+'|'+lv;
  if(gradeCache.has(cacheKey))return gradeCache.get(cacheKey);
  const panel=regions[key];if(panel===undefined||!ready)return null;
  const layer=document.createElement('canvas');
@@ -152,15 +155,7 @@ function gradedScene(key,tier=1,actorA=null,actorB=null){
  const g=layer.getContext('2d');if(!g)return null;
  const rect=cellRect(panel,lv);
  g.drawImage(img,rect.x,rect.y,rect.w,rect.h,0,0,FRAME_W,FRAME_H);
- // Replace coat texture ON the two existing high-resolution illustrated cats.
- // No black/white fixed substitutes and no yard kitten stickers.
- if(breedA!=='original'||breedB!=='original'){
-   identity.paint(g,key,lv,actorA,actorB,Object.keys(regions));
- }
- // Bounded gallery cache: switch any of 32 × 32 pairings without ever
- // leaking another player's earlier pairing into the currently selected cats.
  gradeCache.set(cacheKey,layer);
- if(gradeCache.size>32)gradeCache.delete(gradeCache.keys().next().value);
  return layer;
 }
 function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null,tier=1,actorA=null,actorB=null){
@@ -376,6 +371,7 @@ window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
  get breedMatchCount(){return window.CatBondDuoBreedArt?.breedCount||0},
  get activePaintCacheEntries(){return gradeCache.size},
+ get realBreedOverpaintEnabled(){return false},
  coatOf,
  paletteFor,get scenePaletteCount(){return Object.keys(chromaticThemes).length},
  get gradedSceneCount(){return gradeCache.size},tierVariants:3,
