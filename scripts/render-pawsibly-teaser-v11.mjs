@@ -53,7 +53,7 @@ filters.push(spans.map((_,i)=>`[v${i}]`).join('')+`concat=n=${spans.length}:v=1:
 const cmd=['-nostdin','-y','-hide_banner','-loglevel','error','-i',input,
  '-filter_complex',filters.join(';'),'-map','[vout]','-map','0:a:0','-t',fmt(total),
  '-r','30','-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p',
- '-c:a','aac','-b:a','144k','-af',`afade=t=in:st=0:d=.15,afade=t=out:st=${fmt(total-.22)}:d=.22`,
+ '-c:a','aac','-b:a','144k','-af',`afade=t=in:st=0:d=0.15,afade=t=out:st=${fmt(total-.22)}:d=0.22`,
  '-movflags','+faststart',output];
 execFileSync('ffmpeg',cmd,{stdio:'inherit',timeout:240000});
 const probe=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','format=duration:stream=codec_type,width,height','-of','json',output],{encoding:'utf8'}));
