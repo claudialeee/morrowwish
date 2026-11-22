@@ -24,8 +24,8 @@
   const ownsFullscreen = crazygames || native;
   const platform = Object.freeze({
     host, crazygames, native, externalPortal, ownsFullscreen,
-    // Portal pages use the host's reporting rather than a persistent
-    // first-party visitor identifier, until consent/SDK integration exists.
+    // CrazyGames uses its own reporting rather than a persistent
+    // first-party visitor ID; other portals retain existing attribution.
     firstPartyAnalytics: !crazygames,
   });
   window.CatBondPlatform = platform;
