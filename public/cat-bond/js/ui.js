@@ -55,7 +55,9 @@ const UI = {
     if(placementConfirm)placementConfirm.addEventListener('click',()=>this.confirmBuildingPlacement());
     if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
     document.getElementById('yard-quick-skills')?.addEventListener('click',()=>{
-      const cat=State.S.cats?.[0];
+      // Prefer the cat with a newly unlocked skill; otherwise use the starter.
+      const cat=State.S.cats?.find(c=>Array.isArray(c.unseenSkills)&&c.unseenSkills.length)
+        ||State.S.cats?.[0];
       if(cat)this.openSkillEditor(cat);
       else this.game.toast(this.isEnglish()?'Adopt a cat first':'先领养一只小猫');
     });
