@@ -866,7 +866,7 @@ class Game {
     if(!owned.length){
       this.toast('先收服这个品种，才能挑战金爪评级。');return false;
     }
-    const team=State.S.cats.slice().sort((a,b)=>State.catPower(b)-State.catPower(a)).slice(0,3);
+    const team=UI.getPreferredBattleTeam();
     if(!modeConfirmed){UI.openBattleModePrompt(team,species,{mastery:true});return true;}
     this.startBattle(team,species);
     this.battle.masteryChallenge=true;
@@ -874,7 +874,7 @@ class Game {
     return true;
   }
 
-  // team = array of up to 3 cat instances (or a single cat for back-compat)
+  // team = ordered lineup of up to 5 cats (2 starters + 3 reserves)
   startBattle(team, wildSpecies) {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
