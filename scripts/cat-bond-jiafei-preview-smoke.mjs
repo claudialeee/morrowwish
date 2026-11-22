@@ -57,6 +57,10 @@ try {
       drawing:canvas.toDataURL('image/png'),
       portrait:thumb.toDataURL('image/png')};
   });
+  console.log('JIAFEI APPROVED ART PIXEL METRICS',spec.name,JSON.stringify({
+    opaque:check.opaque,box:check.box,referenceBox:check.referenceBox,
+    downloaded:check.resource,decoded:check.loaded
+  }));
   assert.equal(check.rarity,'SR');
   assert.equal(check.buildType,'tank');
   assert.equal(check.loaded,true);
