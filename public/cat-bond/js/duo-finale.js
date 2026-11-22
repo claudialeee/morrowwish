@@ -9,7 +9,7 @@ const palette={dark:'#baa4ef',elec:'#f8d577',fire:'#ffac88',grass:'#98cba7',ligh
 function stroke(g,c,w=3){g.strokeStyle=c;g.lineWidth=w;g.lineCap='round';g.lineJoin='round'}
 function dot(g,x,y,r,c){g.fillStyle=c;g.beginPath();g.arc(x,y,Math.max(.1,r),0,TAU);g.fill()}
 function ring(g,x,y,r,c,w=4){stroke(g,c,w);g.beginPath();g.arc(x,y,Math.max(1,r),0,TAU);g.stroke()}
-function path(g,pts,c,w=4){stroke(g,c,w);g.beginPath();g.moveTo(pts[0],pts[1]);for(let i=2;i<pts.length;i+=6)g.bezierCurveTo(...pts.slice(i,i+6));g.stroke()}
+function path(g,pts,c,w=4){stroke(g,c,w);g.beginPath();g.moveTo(pts[0],pts[1]);for(let i=2;i+5<pts.length;i+=6)g.bezierCurveTo(...pts.slice(i,i+6));g.stroke()}
 function ray(g,x,y,dx,dy,c,w=4){stroke(g,c,w);g.beginPath();g.moveTo(x,y);g.lineTo(x+dx,y+dy);g.stroke()}
 function rays(g,x,y,r,c,n=12){for(let i=0;i<n;i++){let a=TAU*i/n;ray(g,x+Math.cos(a)*r*.60,y+Math.sin(a)*r*.60,Math.cos(a)*r*.51,Math.sin(a)*r*.51,c,i%3===0?5:2)}}
 function star(g,x,y,r,c,n=5){g.fillStyle=c;g.beginPath();for(let i=0;i<n*2;i++){let a=i*PI/n-PI/2,d=i%2?r*.43:r;if(i)g.lineTo(x+Math.cos(a)*d,y+Math.sin(a)*d);else g.moveTo(x+Math.cos(a)*d,y+Math.sin(a)*d)}g.closePath();g.fill()}
