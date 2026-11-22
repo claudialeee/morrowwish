@@ -49,7 +49,7 @@ try {
     thumb.width=160;thumb.height=160;
     CatArt.renderCatThumb(thumb,cat);
     const resource=performance.getEntriesByType('resource')
-      .find(r=>r.name.includes('/cat-bond/assets/jiafei-watercolor-v1.avif'));
+      .find(r=>r.name.includes('/cat-bond/assets/jiafei-watercolor-v2.webp'));
     return {rarity:cat?.rarity,buildType:Skills.buildTypeForBreed({species:'jiafei'}),
       loaded:CatBondArtworkStatus.jiafeiLoaded,resource:!!resource,
       opaque,box:{left,right,top,bottom},
