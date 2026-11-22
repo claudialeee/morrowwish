@@ -48,10 +48,22 @@ try {
       const el=document.getElementById('guide-help');
       el.hidden=false;el.click();
       const visible=getComputedStyle(el).display!=='none';
+      const bb=elem=>elem.getBoundingClientRect();
+      const hud=bb(document.getElementById('hud')),help=bb(el),
+        menu=bb(document.getElementById('map-menu')),
+        stage=bb(document.getElementById('stage')),
+        bar=bb(document.getElementById('cb-header-actions'));
+      const noOverlap=hud.right<=help.left+3&&help.right<=menu.left+3;
+      const fits=bar.left>=stage.left-2&&bar.right<=stage.right+2;
       window.__game.replayFirstAdventureTour=original;el.hidden=true;
-      return {called,visible};
+      return {called,visible,noOverlap,fits,
+        positions:{hudRight:hud.right,helpLeft:help.left,helpRight:help.right,menuLeft:menu.left,
+          toolbarLeft:bar.left,stageLeft:stage.left}};
     });
-    assert.deepEqual(guideClick,{called:1,visible:true},'Gameplay guide is visible and keeps its click action');
+    assert.equal(guideClick.called,1,'Guide retains its original click handler');
+    assert.equal(guideClick.visible,true,'Guide is visible as a real top-right button');
+    assert.ok(guideClick.noOverlap&&guideClick.fits,
+      'When Guide is shown, it must not overlap currency or Menu '+JSON.stringify(guideClick));
     assert.ok(yard.actions.left>=yard.stage.left-1&&yard.actions.right<=yard.stage.right+2,
       'right-hand toolbar must stay inside stage '+JSON.stringify(yard));
     assert.ok(yard.actions.right>=yard.stage.right-22,'yard header must align RIGHT '+JSON.stringify(yard));
