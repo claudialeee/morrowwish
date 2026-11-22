@@ -122,9 +122,9 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
    !dashboard.includes('id="bluesky-engagement-rows"')||
-   !dashboard.includes('id="account-overview-rows"')||
+   dashboard.includes('id="account-overview-rows"')||
    !dashboard.includes('id="video-detail-rows"')||
-   !dashboard.includes('accountOverviewNote:'))
+   dashboard.includes('accountOverviewNote:'))
  throw Error('Dashboard must preserve conversion context and links without counting old Bluesky posts as new videos');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
