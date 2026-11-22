@@ -278,21 +278,27 @@ try{
     const visible=!!rect&&!menu.hidden&&rect.width>=34&&rect.height>=30&&
       getComputedStyle(menu).display!=='none'&&rect.top>=0&&rect.bottom<=innerHeight;
     const canvas=document.getElementById('scene'),cr=canvas.getBoundingClientRect();
-    const narrow=g.W<=360,yard={x:narrow?8:12,y:8,w:narrow?76:120,h:narrow?34:38};
-    const yardScreen={left:cr.left+yard.x*cr.width/g.W,top:cr.top+yard.y*cr.height/g.H,
-      right:cr.left+(yard.x+yard.w)*cr.width/g.W,bottom:cr.top+(yard.y+yard.h)*cr.height/g.H};
-    const yardOnScreen=yardScreen.left>=-1&&yardScreen.top>=-1&&
-      yardScreen.right<=innerWidth+1&&yardScreen.bottom<=innerHeight+1;
+    const yard=document.getElementById('cb-yard-return'),yr=yard?.getBoundingClientRect();
+    const yardScreen=yr&&{left:yr.left,top:yr.top,right:yr.right,bottom:yr.bottom};
+    const yardOnScreen=!!yr&&yr.width>=65&&yr.height>=30&&
+      getComputedStyle(yard).display!=='none'&&yr.left>=0&&yr.top>=0&&
+      yr.right<=innerWidth+1&&yr.bottom<=innerHeight+1;
+    const utilities=[menu,full,...document.querySelectorAll('#mw-game-settings button')];
+    const yardClear=yardOnScreen&&utilities.every(el=>{
+      const b=el.getBoundingClientRect();
+      return yr.right<=b.left-2||yr.left>=b.right+2||yr.bottom<=b.top-2||yr.top>=b.bottom+2;
+    });
+    const yardClickable=yardClear&&document.elementFromPoint(yr.left+yr.width/2,yr.top+yr.height/2)===yard;
     const cameraOff=getComputedStyle(document.getElementById('mw-v5-camera')).display==='none';
     return{visible,scene:g.scene,mode:WorldMap.mode,
       legacyHidden:!!nav&&getComputedStyle(nav).display==='none',
       homeHidden:!home||getComputedStyle(home).display==='none',
       beforeFullscreen:!!fr&&rect.right<=fr.left+2&&rect.top<fr.bottom&&rect.bottom>fr.top,
-      yardOnScreen,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
+      yardOnScreen,yardClear,yardClickable,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
   });
   if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||
       !regionNav.beforeFullscreen||!regionNav.legacyHidden||!regionNav.homeHidden||
-      !regionNav.yardOnScreen||!regionNav.cameraOff)
+      !regionNav.yardOnScreen||!regionNav.yardClear||!regionNav.yardClickable||!regionNav.cameraOff)
     throw Error('New top-left yard / header menu cut off in actual promo '+JSON.stringify(regionNav));
   await page.screenshot({path:'public/promo/cat-bond/v10-map-navigation-proof.png'});
   const returned=await page.evaluate(()=>{
@@ -301,9 +307,10 @@ try{
     document.querySelector('#panel [data-explore-action="regions"]')?.click();
     const chooser=!!document.querySelector('#panel.open .map-destination');
     UI.closeAll();
-    const g=window.__game,narrow=g.W<=360,button={x:narrow?8:12,y:8,w:narrow?76:120,h:narrow?34:38};
-    const handled=WorldMap.handleTap(button.x+button.w/2,button.y+button.h/2);
-    const yard=handled&&g.scene==='yard'&&!document.body.classList.contains('cb-exploring');
+    const g=window.__game,back=document.getElementById('cb-yard-return');
+    back.click(); // Test the actual visible, unobstructed return button.
+    const handled=!!back&&!document.body.classList.contains('cb-exploring');
+    const yard=handled&&g.scene==='yard';
     g.openWorldMap();UI.closeAll();
     const resumed=WorldMap.enterRegion('sakura');
     return{menuOpened,chooser,handled,yard,resumed,mode:WorldMap.mode,scene:g.scene};
