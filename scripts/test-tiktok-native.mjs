@@ -11,10 +11,11 @@ for(const game of games){
  assert.equal(tkGame({video_description:caption,title:'Test'}),game);
 }
 const day=Math.floor(Date.parse('2026-11-22T12:00:00Z')/1000);
+const ids=['7711071500000000001','7711071409966943502','7711071500000000003',
+  '7711071458256112909','7711071500000000005','7711071500000000006','7711071500000000007'];
 const raw=games.map((game,index)=>({
- id:String(7711071409966943502n+BigInt(index)),
- create_time:day+index,video_description:'Play: https://morrowwish.vercel.app/'+game+'/',
- share_url:'https://www.tiktok.com/@morrowwishgames/video/'+String(7711071409966943502n+BigInt(index)),
+ id:ids[index],create_time:day+index,video_description:'Play: https://morrowwish.vercel.app/'+game+'/',
+ share_url:'https://www.tiktok.com/@morrowwishgames/video/'+ids[index],
  view_count:index+10
 }));
 const posts=raw.map(tkPost);
@@ -23,7 +24,7 @@ assert.ok(posts.every(p=>p.publicVerified&&p.approved&&p.dataSource==='tiktok-di
 let partial=tkOverlay(baseline,{posts:posts.slice(0,2),feedCount:2,checkedAt:'2026-11-22T20:00:00.000Z'},'ready');
 assert.equal(partial.platforms.find(p=>p.id==='tiktok').published,7);
 assert.equal(partial.platforms.find(p=>p.id==='tiktok').views,null,'partial feed total must not be an invented zero');
-assert.equal(partial.metricScope.verifiedPosts.filter(p=>p.platform==='tiktok').length,4,'never drop baseline verified videos on partial provider feed');
+assert.equal(partial.metricScope.verifiedPosts.filter(p=>p.platform==='tiktok').length,3,'never drop baseline verified videos on partial provider feed');
 const complete=tkOverlay(baseline,{posts,feedCount:7,checkedAt:'2026-11-22T20:05:00.000Z'},'ready');
 assert.equal(complete.platforms.find(p=>p.id==='tiktok').published,7);
 assert.equal(complete.platforms.find(p=>p.id==='tiktok').views,91,'only complete seven-post feed totals are displayed');
