@@ -78,5 +78,22 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 - Do not disable actual deployment or gameplay checks just to suppress errors. Fix obsolete assertions when the authored assets or requirements legitimately change.
 - Use the latest successful Cloudflare deploy as release evidence; standalone test failures and superseded/cancelled deploys are not evidence that the live site is down.
 
+## Mandatory adversarial Supervisor Review — owner's standing instruction (2026-11-22)
+
+The owner explicitly required: “call one supervior to always challenge your shit and keep up the bar。如果做的很垃圾/偷懒了，就督促你重做。把这个作为你每完成一项任务后的固定流程”.
+
+**This is a mandatory delivery gate for EVERY task, not a congratulatory self-check.** After implementing and before declaring completion:
+
+1. **Builder proof:** Enumerate the exact user requirements, reference assets/style and non-negotiable constraints. Point to changed source/assets, actual outputs, tests and game-screen evidence, not plans or mockups.
+2. **Adversarial reviewer:** Run a distinctly separate review pass; challenge laziness, shortcuts, generic replacements, missing details, visual mismatch, integration bugs, regressions and deployment assumptions. The reviewer must be allowed to reject the work and require a new implementation. Do not claim a separate human/model reviewed it unless one actually did. If independence is unavailable, label the check as self-review and mark that limitation.
+3. **Only PASS / FAIL / PARTIAL:** PASS means all requirements plus evidence are satisfied. FAIL means the deliverable is poor, wrong, misleading, or materially below reference; **rework before delivery**. PARTIAL means there is real progress, but important evidence or requirements remain; report blockers precisely and NEVER say "done"/"live"/"verified". No cosmetic checklist can turn an unknown into PASS.
+4. **Supervisor report:** Include requirements met/unmet; suspected shortcuts; quality versus the real reference; strongest counterexamples; actual test and live proof; decision PASS/FAIL/PARTIAL; and concrete forced rework items. Rerun the gate after rework, not only once.
+5. **Art-specific hard fail:** In Cat Bond, a crude vector/SVG, collage crop, upscaled small sprite, unrelated 3D mockup, procedural stand-in or generic cat is **not** a substitute for the approved original kitten's consistent **2D watercolor** style. Inspect real existing art first, compare proportions, texture, line, palette, lighting, visible face/eyes, outline and silhouette side by side at native resolution and in in-game battle/yard/portrait/duo, on phone and desktop. Test transparency, alpha edges and resolution; capture actual game frames. A code import or headless render test does not prove art quality.
+6. **Art approval gate:** For a newly requested cat illustration, share the exact prospective **in-game 2D artwork** for owner review BEFORE calling the art approved or shipping it as final. Rejected art remains FAIL even if committed, present in the renderer or already publicly served. Preserve any underlying playable game functionality while replacing unapproved art.
+7. **Release proof:** Commit != completed task; green headless tests != visually approved; ongoing/cancelled workflow != deployed. Verify correct git SHA, all pertinent CI gates, Cloudflare production and player-facing Vercel proxy separately before any "live" claim. If a test or source-version mismatch blocks release, fix or accurately mark PARTIAL.
+8. **Repeated failure:** Preserve root-cause observations. Reattempt only with a substantive change/hypothesis, and do not weaken tests solely to greenwash. A Supervisor FAIL triggers implementation rework, tests, and another adversarial review.
+
+**2026-11-22 negative example — SR Exotic Shorthair 圆宝/Jiafei:** The ad-hoc SVG committed at `public/cat-bond/assets/jiafei-sr-tank.svg` was rejected by the owner as ugly. Its existence, a successful renderer import, and previous "done" claims are NOT proof of acceptable artwork. Treat **dedicated character art as FAIL/unapproved** until redrawn to match the existing watercolor references, shown to the owner and accepted, tested in actual scenes, and deployed with evidence. See issue #57. The SR tank species data does not need to be deleted.
+
 ## Final report
 Report: files changed; game URLs and gameplay changes; `npm run check` results; bilingual and analytics checks; Git commit SHA; GitHub Actions run URL and conclusion; live URL checks; and any genuine remaining blocker.
