@@ -9,12 +9,14 @@ import sharp from 'sharp';
 
 const dir=process.env.CAT_BOND_MEDIA_DIR||'public/promo/cat-bond';
 const image=path.join(dir,'cover-portrait.png');
-const sourceVideo=path.join(dir,'trailer-v10-20261121.mp4');
+const rawVideoDir='.check/crazygames';
 const required=['cover-landscape.png','cover-portrait.png','cover-square.png',
   'real-gameplay-landscape.mp4','real-gameplay-portrait.mp4'];
 const assert=(ok,msg)=>{if(!ok)throw Error(msg);};
 assert(fs.existsSync(image),'Missing original Cat Bond portrait artwork');
-assert(fs.existsSync(sourceVideo),'Missing existing Cat Bond gameplay trailer');
+assert(fs.existsSync(path.join(rawVideoDir,'cat-bond-gameplay-landscape.webm')) &&
+  fs.existsSync(path.join(rawVideoDir,'cat-bond-gameplay-portrait.webm')),
+  'Missing authentic native-aspect gameplay recordings. Run record-cat-bond-crazygames-previews.mjs first.');
 const md=await sharp(image).metadata();
 assert(md.width>=400&&md.height>=600,'Cover source is too small: '+md.width+'x'+md.height);
 
@@ -50,19 +52,19 @@ await sharp(await bg(800,800))
     {input:safeTitle(760,170,96),left:20,top:585}])
   .png({compressionLevel:9}).toFile(square);
 
-// Crop real gameplay to the required portal frame without stretching. Remove
-// soundtrack completely and stay within the platform's 20-second maximum.
-// A human must still reject footage containing social overlays, fake gameplay,
-// black intros or promotional captions before approval.
-function runVideo(w,h,name){
+// Transcode separately recorded REAL game sessions in native landscape and
+// portrait aspect ratios; never repurpose/crop a vertical social reel as a
+// landscape gameplay preview. Remove all sound. Manual review remains mandatory.
+function runVideo(w,h,name,rawName){
   const out=path.join(dir,name);
+  const sourceVideo=path.join(rawVideoDir,rawName);
   const filter=`scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},setsar=1,fps=30`;
   execFileSync('ffmpeg',['-y','-hide_banner','-loglevel','error','-i',sourceVideo,
     '-t','18','-vf',filter,'-an','-c:v','libx264','-preset','veryfast',
     '-crf','26','-pix_fmt','yuv420p','-movflags','+faststart',out],{stdio:'pipe',timeout:180000});
 }
-runVideo(1920,1080,'real-gameplay-landscape.mp4');
-runVideo(1080,1620,'real-gameplay-portrait.mp4');
+runVideo(1920,1080,'real-gameplay-landscape.mp4','cat-bond-gameplay-landscape.webm');
+runVideo(1080,1620,'real-gameplay-portrait.mp4','cat-bond-gameplay-portrait.webm');
 for(const [f,w,h] of [['cover-landscape.png',1920,1080],
   ['cover-portrait.png',800,1200],['cover-square.png',800,800]]){
   const info=await sharp(path.join(dir,f)).metadata();
