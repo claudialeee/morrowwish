@@ -235,6 +235,7 @@
   function onEncounter(fn) { cbEncounter = fn; }
   function onCollect(fn) { cbCollect = fn; }
   function onExit(fn) { cbExit = fn; }
+  function exitToYard() { if (cbExit) cbExit(); }
 
   function enterMap() {
     mode = 'map';
@@ -719,14 +720,17 @@
       }
     }
 
-    // back-to-yard button (upper-left; below the studio toolbar)
-    var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
-    ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
-    ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
-    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
+    // A real, accessible return button is now in the left header slot.
+    // Draw the legacy canvas affordance only when the shared header is absent.
+    if (!globalThis.document?.getElementById('cb-yard-return')) {
+      var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
+      ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
+      ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
+      ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
+      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
+    }
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
     ctx.fillText('🗺️ 世界地图', W / 2, W<650?105:83);
@@ -1050,14 +1054,16 @@
       ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='13px system-ui,sans-serif';ctx.textBaseline='middle';
       ctx.fillText('点击行走 · 按住鼠标拖拽视角 · WASD也可移动',W/2,game.H-30);
     }
-    // Direct back-to-yard control in the upper-left of the playable scene.
-    var bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
-    ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
-    ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
-    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
+    // Keep the legacy canvas control only as a standalone fallback.
+    if (!globalThis.document?.getElementById('cb-yard-return')) {
+      var bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
+      ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
+      ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
+      ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
+      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
+    }
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
 
@@ -1078,6 +1084,7 @@
     onEncounter: onEncounter,
     onCollect: onCollect,
     onExit: onExit,
+    exitToYard: exitToYard,
     isUnlocked: isUnlocked,
     REGIONS: REGIONS,
     get currentRegion() { return cur; },
