@@ -236,10 +236,10 @@ function edit(slug){
   const file=base+'/v8-review-'+(i+1)+'.jpg';
   execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',fmt(seconds),'-i',output,'-frames:v','1','-q:v','3',file],{timeout:24000});
   if(fs.statSync(file).size<12000)throw Error('Blank review thumbnail '+file);
-  review.push('/promo/'+slug+'/v7-review-'+(i+1)+'.jpg');
+  review.push('/promo/'+slug+'/v8-review-'+(i+1)+'.jpg');
  }
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
-  video:'/promo/'+slug+'/trailer-v7-20261121.mp4',poster:'/promo/'+slug+'/trailer-v7-20261121.jpg',
+  video:'/promo/'+slug+'/trailer-v8-20261121.mp4',poster:'/promo/'+slug+'/trailer-v8-20261121.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
   sourceClips:'V8 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled',transitions:'clean cuts, no ghosted or blended gameplay UI',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
