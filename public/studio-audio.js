@@ -134,11 +134,18 @@ function duoSignature(pair,tier=1,beat='cast'){
  const v=duoSoundCatalog[pair];if(!v)return false;
  const [root,d1,d2,d3,color,weight,shape]=v;
  const lvl=Math.max(1,Math.min(3,Math.floor(Number(tier)||1)));
- const when=ctx.currentTime+.014,impact=beat==='impact';
+ const when=ctx.currentTime+.014,impact=beat==='impact',release=beat==='release';
  const timbre=['triangle','sine','sawtooth'][shape%3];
  const notes=[root,root+d1,root+d2,root+d3];
  const rhythms=[0,.058+shape%4*.018,.14+shape%5*.021,.23+shape%3*.028];
- if(impact){
+ if(release){
+  // Short, satisfying elemental echo AFTER the painting clears, not a
+  // replay of the cast melody. Existing mute/unlock rules still apply.
+  tone(root+d2+7,when,.26,'triangle',.064);
+  tone(root+d3+12,when+.085,.32,'sine',.056);
+  if(lvl>=2)tone(root+d1+19,when+.15,.22,timbre,.040);
+  if(lvl>=3)tone(root+12,when+.22,.34,'triangle',.043);
+ }else if(impact){
   tone(root-19-(shape%3)*2,when,.34+(lvl-1)*.05,'sawtooth',.09+weight/1000);
   tone(root-26,when+.016,.38,'sine',.062+weight/2000);
   tone(root+d3,when+.043,.23,timbre,.076);
@@ -147,7 +154,7 @@ function duoSignature(pair,tier=1,beat='cast'){
  }else notes.forEach((note,i)=>
   tone(note,when+rhythms[i],.12+i*.035,timbre,(i===3?.083:.045)*(1+(lvl-1)*.12)));
  try{
-  const duration=impact?.26:.15,t=when+(impact?0:.02);
+  const duration=release?.31:impact?.26:.15,t=when+(impact||release?0:.02);
   const buffer=ctx.createBuffer(1,Math.ceil(duration*ctx.sampleRate),ctx.sampleRate);
   const data=buffer.getChannelData(0);
   for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;
@@ -155,7 +162,7 @@ function duoSignature(pair,tier=1,beat='cast'){
   src.buffer=buffer;filter.type=shape%4===0?'lowpass':'bandpass';
   filter.frequency.value=color;filter.Q.value=.8+(shape%3)*.25;
   gain.gain.setValueAtTime(.0001,t);
-  gain.gain.exponentialRampToValueAtTime((impact?.15:.08)*(1+(lvl-1)*.18),t+.009);
+  gain.gain.exponentialRampToValueAtTime((impact?.15:release?.085:.08)*(1+(lvl-1)*.18),t+.009);
   gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
   src.connect(filter);filter.connect(gain);gain.connect(master);
   src.start(t);src.stop(t+duration+.01);
