@@ -229,9 +229,9 @@ const UI = {
   },
 
   // Always fill the five expedition slots when enough cats are available.
-  // Saved player choices keep their exact order (including the two starters);
-  // newly available cats only fill empty slots. Yard callers can pass their
-  // unique-breed roster so both entry points follow the same preference.
+  // Saved player choices keep their exact order and cat identities, including
+  // two cats of the same breed. Both map and yard battles use this same roster;
+  // unsaved/unselected cats may only fill genuinely empty expedition slots.
   getPreferredBattleTeam(eligibleCats=State.S.cats){
     const cats=eligibleCats||[],byUid=new Map(cats.map(c=>[c.uid,c]));
     const savedIds=State.S.battlePrefs?.teamUids;
@@ -2500,15 +2500,13 @@ const UI = {
       this.panel(`<span class="card-close">×</span><h2>发现野生猫猫</h2><p class="sub">你还没有伙伴猫，无法发起捕捉。</p>`);
       return;
     }
-    // "My Cats" groups by breed; battle selection must use the same
-    // representation. A duplicate breed is not a second battle character.
-    // Keep all owned instances intact; choose the strongest for each breed.
-    const sortedAll = [...cats].sort((a, b) => State.catPower(b) - State.catPower(a));
+    // The player's saved expedition stores individual cat UIDs, not breed IDs.
+    // Deduplicating by breed here silently discarded chosen cats before a yard
+    // battle and replaced them with stronger cats of the same breed.
+    const sorted = [...cats].sort((a, b) => State.catPower(b) - State.catPower(a));
     const breedCounts = new Map();
-    const sorted = sortedAll.filter(c => {
-      breedCounts.set(c.species,(breedCounts.get(c.species)||0)+1);
-      return true;
-    }).filter((c, i, arr) => arr.findIndex(x=>x.species===c.species)===i);
+    for(const cat of sorted)
+      breedCounts.set(cat.species,(breedCounts.get(cat.species)||0)+1);
     const preferred=window.CatRelations?.chosen?.()||[];
     const duo=preferred.length===2?preferred.filter(c=>sorted.some(t=>t.uid===c.uid)):[];
     this.teamUids=this.getPreferredBattleTeam(sorted).map(c=>c.uid);
@@ -2547,7 +2545,7 @@ const UI = {
         <summary><strong>${english?'Battle team · edit':'出战队伍 · 点击调整'}</strong>
           <span id="battle-team-summary">${this.battlePrepEsc(this.battleTeamSummary(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english))}</span>
         </summary>
-        ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
+        ${duo.length===2&&duo.every(c=>this.teamUids.includes(c.uid))&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo is on this team.':'💞 当前双猫搭档已在出战队伍中。')+'</p>':''}
         ${this.squadOrderMarkup()}
         <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
       </details>
@@ -2855,10 +2853,8 @@ const UI = {
     const medalButton=document.getElementById('cr-medal');
     if(medalButton)medalButton.onclick=()=>this.openDex();
     document.getElementById('cr-next').onclick=()=>{
-      // Keep-which-cat: on an explore run, your field squad is capped at 2. After a
-      // capture the run roster (prior field cats + the new cat) may exceed that, so
-      // let the player choose which 2 continue; the rest are "sent home" (still
-      // owned, just benched from the current expedition).
+      // If adding the captured cat exceeds five expedition slots, offer an
+      // explicit choice. Otherwise the saved lineup must stay untouched.
       if(exploring&&!reunion&&this._chooseRunSquad(newCat)){return;}  // chooser took over
       dismiss();
       if(this.game.scene==='yard'&&!this.game.yard.hide)this.game.yard.startHideAndSeek();
@@ -2866,9 +2862,9 @@ const UI = {
     };
   },
 
-  // After an explore capture, if the continuing field squad would exceed the
-  // 2-cat field cap, prompt the player to keep exactly 2. Returns true if it
-  // opened a chooser (caller should stop), false to proceed normally.
+  // After an explore capture, only ask for a new five-cat roster when the
+  // previous team plus the captured cat exceeds the expedition capacity.
+  // Otherwise keep the player's saved lineup unchanged.
   _chooseRunSquad(newCat){
     const FIELD_CAP=5;   // two active field cats + up to three chosen bench cats
     const byUid=new Map((State.S.cats||[]).map(c=>[c.uid,c]));
@@ -2877,9 +2873,8 @@ const UI = {
     const roster=[];const seen=new Set();
     for(const c of [...prior,newCat]){ if(c&&!seen.has(c.uid)){seen.add(c.uid);roster.push(c);} }
     if(roster.length<=FIELD_CAP){
-      // fits — just make sure the new cat is on the field team
-      const uids=roster.map(c=>c.uid).slice(0,FIELD_CAP);
-      State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:uids};State.save();
+      // A new capture enters the collection, not the player's saved lineup.
+      // Never silently rewrite the chosen starters or bench on Continue.
       return false;
     }
     const en=window.MorrowwishI18n?.get?.()!=='zh';
