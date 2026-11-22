@@ -2990,9 +2990,9 @@ const UI = {
     const starter=State.S.cats[0]||null;
     const skillHint=starter&&window.Skills?.progressionHint?.(starter)||'';
     const exploreText=en
-      ?(adv.unlocked<=1?'Explore 40% of Home to unlock Sakura Woods'
+      ?(adv.unlocked<=1?'Explore 40% of Sunlit Garden to unlock Sakura Woods'
         :adv.unlocked+'/'+adv.totalRegions+' regions unlocked')
-      :(adv.unlocked<=1?'探索庭院地区 40%，解锁樱花林'
+      :(adv.unlocked<=1?'探索阳光花园 40%，解锁樱花林'
         :'已解锁 '+adv.unlocked+'/'+adv.totalRegions+' 个探索区域');
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">${en?'🧭 Your Cat Adventure':'🧭 猫猫冒险手册'}</h2>
