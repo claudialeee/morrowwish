@@ -680,7 +680,7 @@ class CaptureBattle {
       // AGI gives at most +30% move speed (hard cap) — an uncapped agi*k let leveled
       // high-AGI cats sprint far too fast to control (restored after a merge reverted it).
       speed: 150 * (1 + Math.min(0.30, (s.agi || 0) * 0.007)),
-      dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.72,   // trimmed: fights were ending too fast
+      dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.62,   // lower player base damage ~14%; keep skill ratios and enemy damage unchanged
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,kneadStacks:0,kneadT:0,
       tags: [], status: {}, slowed: false,
       // Projectile speed is decoupled from AGI (flat): the shot's speed belongs to the
