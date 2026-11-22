@@ -1,0 +1,46 @@
+name: Cat Bond all status and hit-feel real-browser QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/js/vfx.js'
+      - 'public/cat-bond/js/skill-fx.js'
+      - 'public/cat-bond/js/battle.js'
+      - 'public/cat-bond/index.html'
+      - 'scripts/cat-bond-status-hitfeel-visual-smoke.mjs'
+      - '.github/workflows/cat-bond-status-hitfeel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  status-hitfeel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Check every status and hit feedback in the real battle
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-status-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-status-hitfeel-visual-smoke.mjs
+      - name: Preserve desktop and mobile screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-58-status-hitfeel-support-screenshots
+          path: /tmp/cat-bond-fx-review-*.png
+          if-no-files-found: warn
+          retention-days: 7
