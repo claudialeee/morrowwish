@@ -236,10 +236,16 @@ jobs:
           verify_live /pawsibly-innocent/game.js /tmp/morrowwish-live-game.js 'function throwYarn'
           # The public player-facing game URL is Vercel, not Pages. Ensure its
           # Cat Bond HTML and all four changed assets match this exact release.
-          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'js/game.js?v=skill-tooltips-current-cat-20261121-1'
-          grep -Fq 'js/main.js?v=original-intro-cats-20261121-2' /tmp/mw-live-catbond.html
-          grep -Fq 'js/ui.js?v=skill-review-before-battle-20261121-1' /tmp/mw-live-catbond.html
-          grep -Fq 'css/style.css?v=battle-skill-tooltip-cards-20261121-1' /tmp/mw-live-catbond.html
+          verify_live /cat-bond/ /tmp/mw-live-catbond.html 'id="battle-skill-info-toggle"'
+          # Read the current cache-busted asset references from source instead
+          # of assuming previous version names are still in the live HTML.
+          for asset in css/style.css js/main.js js/ui.js js/game.js js/world.js; do
+            expected=$(grep -oE "$asset[?]v=[^\" ]+" public/cat-bond/index.html | head -1)
+            if [ -z "$expected" ] || ! grep -Fq "$expected" /tmp/mw-live-catbond.html; then
+              echo "::error::Vercel Cat Bond HTML is missing the source asset $asset"
+              exit 1
+            fi
+          done
           grep -Fq 'id="battle-skill-info-toggle"' /tmp/mw-live-catbond.html
           grep -Fq '<span class="mv-name">小鱼干</span>' /tmp/mw-live-catbond.html
           verify_live /cat-bond/js/game.js /tmp/mw-live-catbond-game.js 'battleSkillInfo(slot, fighter=this.battle?.me())'
