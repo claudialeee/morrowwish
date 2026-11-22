@@ -4540,7 +4540,9 @@ class CaptureBattle {
     // CLAMP the offset small and the background (drawArenaBackground) paints the full
     // canvas, so a few px of translate never reveals an undrawn edge.
     let _shx = 0, _shy = 0;
-    if (this.shakeTrauma > 0.001) {
+    // Cinematic paintings stay screen-anchored: shake the impact VFX after the
+    // cut-in, never the full-screen artwork or its feathered perimeter.
+    if (this.shakeTrauma > 0.001 && !this.ultCinematic && !(this.duoCinematic?.t > 0)) {
       const maxShake = this.game.isTouch ? 2.5 : 5;
       const amt = maxShake * this.shakeTrauma * this.shakeTrauma;
       const rnd = () => (Math.random() * 2 - 1);
@@ -5121,7 +5123,12 @@ class CaptureBattle {
       ctx.restore();
     }
 
+    // The final cut-in is composited in screen coordinates, even when the
+    // underlying combat scene has a small directional hit shake.
+    ctx.save();
+    ctx.translate(-_shx,-_shy);
     this.drawCatCutin(ctx,W,H);
+    ctx.restore();
     ctx.restore();
   }
 
@@ -5241,14 +5248,16 @@ class CaptureBattle {
     const bandY=Math.max(this.topMargin*.65,H*.18),bandH=Math.min(H*.55,290);
     const artSize=Math.min(duo?W*.32:W*.43,bandH*.83,duo?188:236);
     ctx.save();ctx.globalAlpha=opacity;
-    const grad=ctx.createLinearGradient(0,bandY,W,bandY+bandH);
-    grad.addColorStop(0,'rgba(31,54,58,.94)');
-    grad.addColorStop(.55,'rgba(63,62,91,.90)');
-    grad.addColorStop(1,'rgba(27,65,62,.94)');
+    // Soft stage lighting instead of the legacy hard-edged rectangular card.
+    // The portrait and skill title can still read over the live battlefield.
+    const stageCenterY=bandY+bandH*.49;
+    const grad=ctx.createRadialGradient(W*.5,stageCenterY,bandH*.12,
+      W*.5,stageCenterY,Math.max(W*.63,bandH*.9));
+    grad.addColorStop(0,'rgba(43,52,70,.75)');
+    grad.addColorStop(.55,'rgba(54,61,83,.40)');
+    grad.addColorStop(1,'rgba(43,52,70,0)');
     ctx.fillStyle=grad;
-    ctx.beginPath();ctx.roundRect(W*.035,bandY,W*.93,bandH,Math.min(22,W*.05));ctx.fill();
-    ctx.strokeStyle=c.first||c.color||'#f9dd9f';ctx.lineWidth=3;
-    ctx.strokeRect(W*.06,bandY+8,W*.88,bandH-16);
+    ctx.fillRect(0,0,W,H);
     const drawPortrait=(uid,x,flip=false)=>{
       const art=this.cinematicPortrait(uid);if(!art)return;
       const centerY=bandY+bandH*.43;
