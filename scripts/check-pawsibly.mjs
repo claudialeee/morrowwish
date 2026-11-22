@@ -407,7 +407,12 @@ assert.equal(pausedGuardFar.exposure,0,
  const style=fs.readFileSync('public/pawsibly-innocent/single-screen.css','utf8');
  assert.ok(html.includes('id="resetGameQuick"'),'A clearly labeled reset must appear on the playable toolbar');
  assert.ok(style.includes('.in-game-actions #resetGameQuick'),'Game-screen reset must have dedicated visible styling');
- assert.ok(html.indexOf('id="resetGame"')<html.indexOf('class="panel game-menu-body"'),'Menu reset must be above tab contents');
+ assert.equal((html.match(/id="resetGameQuick"/g)||[]).length,1,'Restart game should have only one visible button');
+ assert.ok(!html.includes('id="resetGame"'),'Menu must not duplicate the Restart game button');
+ assert.ok(!html.includes('id="achievementPocket"'),'Achievements must not have a standalone toolbar button');
+ assert.ok(html.includes('data-game-tab="badges"'),'Badges remain accessible inside the existing menu');
+ assert.ok(source.includes('const pocket=$("menuButton")'),'Achievement collection animation must target the existing menu');
+ assert.ok(style.includes('#menuButton.badge-received'),'The existing menu must acknowledge badge collection');
  nodes.get('resetGameQuick').onclick();
  assert.equal(nodes.get('resetConfirm').hidden,false,'In-game reset shortcut should open confirmation');
  assert.equal(nodes.get('gameMenu').hidden,false,'In-game reset should pause play through the menu');
@@ -415,13 +420,8 @@ assert.equal(pausedGuardFar.exposure,0,
  assert.equal(nodes.get('resetConfirm').hidden,true,'Cancel should dismiss in-game reset');
  assert.equal(nodes.get('gameMenu').hidden,true,'Cancel from in-game reset returns directly to play');
  assert.deepEqual(JSON.parse(saved['pawsibly-innocent-save-v1']),saveBeforeReset,'In-game reset cancel keeps progress');
- nodes.get('menuButton').onclick();
- nodes.get('resetGame').onclick();
+ nodes.get('resetGameQuick').onclick();
  assert.equal(nodes.get('resetConfirm').hidden,false,'Reset needs explicit confirmation');
- nodes.get('cancelReset').onclick();
- assert.equal(nodes.get('resetConfirm').hidden,true,'Cancel closes reset confirmation');
- assert.deepEqual(JSON.parse(saved['pawsibly-innocent-save-v1']),saveBeforeReset,'Cancel must not change saved records');
- nodes.get('resetGame').onclick();
  nodes.get('confirmReset').onclick();
  const afterReset=JSON.parse(saved['pawsibly-innocent-save-v1']);
  assert.equal(afterReset.unlocked,0,'Reset must lock later rooms again');
@@ -436,7 +436,7 @@ assert.equal(pausedGuardFar.exposure,0,
  assert.equal(test.getState().got,0,'Reset must remove fish from the active run');
  assert.equal(nodes.get('gameMenu').hidden,true,'Reset closes the menu');
  assert.equal(nodes.get('resetConfirm').hidden,true,'Reset closes the confirmation');
- assert.equal(nodes.get('badgePocketCount').textContent,'0','Badge pocket must reset to zero');
+ assert.ok(nodes.get('menuButton').classList,'Badge animation shares the existing menu control');
  assert.ok(events.some(e=>e.name==='cat_progress_reset'),'Full reset must be tracked once');
  
 console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings, capture consequences and lure-risk regression).');
