@@ -1538,6 +1538,8 @@ const UI = {
     const sideCap=window.Skills?.secondaryLimit?.(cat)||0;
     const sideChoices=window.Skills?.secondaryChoices?.(cat)||[];
     const sideUnlocked=sideChoices.slice(0,sideCap);
+    const battleMetric=(name,value)=>'<div class="cat-detail-metric"><span>'+name+
+      '</span><strong>'+value+'</strong></div>';
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
@@ -1573,10 +1575,10 @@ const UI = {
         </div>
         <h3>${en?'Battle stats':'战斗数值'}</h3>
         <div class="cat-detail-stat-grid">
-          ${statLine(en?'HP':'生命',facts.hp+'/'+facts.maxHp)}
-          ${statLine(en?'Base damage':'基础伤害',facts.damage)}
-          ${statLine(en?'Move speed':'移动速度',facts.speed)}
-          ${statLine(en?'Battle power':'战力',facts.power)}
+          ${battleMetric(en?'HP':'生命',facts.hp+'/'+facts.maxHp)}
+          ${battleMetric(en?'Base damage':'基础伤害',facts.damage)}
+          ${battleMetric(en?'Move speed':'移动速度',facts.speed)}
+          ${battleMetric(en?'Battle power':'战力',facts.power)}
         </div>
         ${facts.wounded?'<p class="squad-health-warning">'+(en?'Injured; recover before battle':'负伤中，建议战前恢复')+'</p>':''}
       </section>
