@@ -26,7 +26,7 @@
     host, crazygames, native, externalPortal, ownsFullscreen,
     // Portal pages use the host's reporting rather than a persistent
     // first-party visitor identifier, until consent/SDK integration exists.
-    firstPartyAnalytics: !externalPortal,
+    firstPartyAnalytics: !crazygames,
   });
   window.CatBondPlatform = platform;
   if (crazygames) document.documentElement.classList.add('cb-cg');
