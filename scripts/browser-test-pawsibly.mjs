@@ -508,7 +508,7 @@ try{
    assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
-   assert.ok(v.hud?.includes('0/3')&&v.owner,'CrazyGames must show fish goal and owner behavior inside iframe');
+   assert.ok(v.hud?.includes('0/4')&&v.owner,'CrazyGames must show all four fish and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
