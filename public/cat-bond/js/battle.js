@@ -4110,7 +4110,7 @@ class CaptureBattle {
     // itself, but roars on a target already afflicted (+45% per active status tag)
     // and lands softer on an un-marked target — so Q/E priming carries the fight.
     if (skill.isBasic) {
-      const nTags = e.tags.length;
+      const nTags = e.tags.filter(t => t !== 'rust').length; // universal armor break must not inflate basic finisher damage
       if (nTags > 0) dmg *= 1 + 0.45 * nTags;
       else dmg *= 0.7;
     }
@@ -4125,6 +4125,18 @@ class CaptureBattle {
         const nm = info ? info.name : tg;
         this.vfx.text(e.x + (Math.random() * 20 - 10), e.y - 30, nm, info ? info.color : '#fff', 12);
         if (fresh) this.controlFx(e, tg, info ? info.color : '#fff');   // distinct "it's controlled!" burst
+      }
+    }
+    // Ordinary Q/E/ultimate hits apply ARMOR BREAK rather than draining poise.
+    // Only dedicated stagger skills (泰山压顶, 纸箱埋伏) and cast interrupts
+    // open a Stagger window. Keep any elemental debuffs the skill already has.
+    if (skill.id && !skill.isBasic && skill.id !== 'quakeStomp' && !skill.tags?.includes('stagger')) {
+      const fresh = !e.status.rust;
+      e.status.rust = TAG.rust.ttl;
+      if (!e.tags.includes('rust')) e.tags.push('rust');
+      if (fresh) {
+        this.vfx.text(e.x,e.y-38,TAG.rust.name,TAG.rust.color,12);
+        this.controlFx(e,'rust',TAG.rust.color);
       }
     }
     return dmg;
@@ -4400,31 +4412,19 @@ class CaptureBattle {
     if ((target.vulnerableT || 0) > 0) dmg *= 1.3;
     // land it
     if (side === 'me') {
-      // ---- POISE / 虚弱 (forcing function) ----
-      // SKILLS/combos/beam/ult drain the enemy's poise; breaking it staggers the
-      // enemy into a 虚弱 window (2x damage). Unmarked BASICS barely touch poise AND
-      // can't push a non-staggered enemy below a floor — so you must use skills to
-      // actually finish a fight, not just hold attack.
+      // STAGGER is an exclusive control payoff (leap slam, ambush, interrupt).
+      // Ordinary attacks may inflict armor break but NEVER drain the poise gauge.
       const isBasic = skill && skill.isBasic;
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
-      // 纸箱埋伏 Box Ambush: the primed cat's NEXT hit forces a stagger + double damage.
+      // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
       const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 5); }
       if (target.poiseMax) {
         if (target.staggerT > 0) dmg *= 1.3; // stagger remains rewarding without doubling every Q/E
-        if (!isBasic) {                                    // skills/combos/ult/beam crack poise
-          target.poise = Math.max(0, (target.poise ?? target.poiseMax) - dmg);
-          if (target.poise <= 0 && target.staggerT <= 0) {
-            target.staggerT = 5; target.poise = target.poiseMax;   // break → 虚弱 window
-            this.vfx.impactType?.(target.x,target.y,'stagger',{color:'#ffd36b'});
-            this.vfx.text(target.x, target.y - 46, window.MorrowwishI18n?.get?.()==='zh'?'虚弱!':'STAGGER!', '#ffd36b', 16);
-            this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.08);
-            window.MorrowwishAudio?.effect?.('crash');
-          }
-        }
-        // (The old 12% basic mash-floor was removed per design: basics can finish a
-        // fight. Skills still crack poise for the 2x 虚弱 payoff, so they stay worth
-        // using, but a basics-only player is no longer soft-locked near 12% HP.)
+        // No generic poise drain: poise is exclusive to authored stagger moves.
+        // Direct stagger sources set staggerT at their hit/interrupt sites.
+        // Basics still finish low-HP enemies; Q/E now set up armor-break damage
+        // while dedicated stagger skills provide the five-second burst window.
       }
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       // Channel damage is steady pressure, not a rapid sequence of hard
