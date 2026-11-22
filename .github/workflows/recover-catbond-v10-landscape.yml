@@ -1,0 +1,63 @@
+name: Recover verified Cat Bond native V10 landscape master
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/recover-catbond-v10-landscape.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: recover-catbond-v10-landscape
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Retrieve already QA-verified 59.57-second source-matched master
+        uses: actions/download-artifact@v4
+        with:
+          name: cat-bond-v10-native-landscape
+          run-id: 45083370623
+          github-token: ${{ github.token }}
+          path: public/promo/cat-bond
+      - name: Verify recovered assets and compare to exact V12 reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=public/promo/cat-bond/trailer-v10-landscape-20261122.mp4
+          test -s "$f"
+          test -s public/promo/cat-bond/trailer-v10-landscape-20261122.json
+          test -s public/promo/cat-bond/v10-landscape-duo-proof.jpg
+          test -s public/promo/cat-bond/v10-landscape-capture-proof.jpg
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=JSON.parse(fs.readFileSync('public/promo/cat-bond/trailer-v10-landscape-20261122.json'));
+          const b=JSON.parse(fs.readFileSync('public/promo/v12-review.json')).trailers.find(x=>x.slug==='cat-bond');
+          if(a.sourceVideo!==b.video||a.shots.length!==21||a.shots.some((x,i)=>x.scene!==(b.shots[i].scene||'end-card')||x.seconds!==b.shots[i].seconds)||a.width!==1920||a.height!==1080||a.duration<59.3||a.duration>59.8)throw Error('Artifact is not identical source-matched native 16:9 film');
+          console.log('RECOVERED ORIGINAL V10 21-SHOT LANDSCAPE MASTER',a.duration,a.bytes);
+          NODE
+      - name: Commit ONLY validated landscape masters
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/promo/cat-bond/trailer-v10-landscape-20261122.mp4
+          git add public/promo/cat-bond/trailer-v10-landscape-20261122.jpg
+          git add public/promo/cat-bond/trailer-v10-landscape-20261122.json
+          git add public/promo/cat-bond/v10-landscape-*-proof.jpg
+          git diff --cached --quiet && exit 0
+          git config user.name morrowwish-promo-bot
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'media(cat-bond): recover validated V10 21-shot landscape film'
+          for attempt in $(seq 1 20); do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 3
+          done
+          exit 1
