@@ -398,6 +398,15 @@ balanceEnemy.status={};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
 assert.ok((1000-balanceEnemy.hp)<160,
   'low-health execution must no longer inflate a 100-base Q/E hit above 160');
+balanceEnemy.hp=1000;balanceEnemy.flash=0;balanceEnemy.role='boss';
+damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
+assert.ok(Math.abs((1000-balanceEnemy.hp)-90)<.001,
+  'explicit boss role ignores automatic low-HP execute bonus');
+balanceEnemy.hp=1000;balanceEnemy.flash=0;balanceEnemy.role='elite';
+damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
+assert.ok((1000-balanceEnemy.hp)>90,
+  'elite rarity is not silently classified as a boss');
+balanceEnemy.role='boss';
 const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'existing stagger retains 1.3x, not 2x, vulnerability');
