@@ -558,11 +558,21 @@
         (Array.isArray(cat.autoSkillLoadout)&&cat.autoSkillLoadout.includes(s.id));
       if(!isUlt&&!alreadyEquipped){
         if(s.element===el){
-          const rank=SKILLS.filter(k=>k.element===el&&!k.unlock&&!k.ultCost)
-            .findIndex(k=>k.id===s.id);
-          if(rank>=1){
-            const threshold=rank===1?3:rank===2?5:7;
-            if(lvl<threshold&&bond<(rank===1?30:rank===2?55:75))continue;
+          // The first STARTER ATTACK must be available regardless of where
+          // utility/shield definitions appear in SKILLS. E.g. electric has
+          // mirrorWall defined before staticPounce; previously Lv.1 electric
+          // cats were left with no native Q skill.
+          const native=SKILLS.filter(k=>k.element===el&&!k.unlock&&!k.ultCost);
+          const attacking=native.filter(k=>
+            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind));
+          if(['heal','buff'].includes(s.kind)){
+            if(lvl<3&&bond<30)continue;
+          }else{
+            const rank=attacking.findIndex(k=>k.id===s.id);
+            if(rank>=1){
+              const threshold=rank===1?3:rank===2?5:7;
+              if(lvl<threshold&&bond<(rank===1?30:rank===2?55:75))continue;
+            }
           }
         }else if(lvl<4&&!cat.skillAwakened)continue;
       }
