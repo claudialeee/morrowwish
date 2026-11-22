@@ -1124,6 +1124,7 @@ class CaptureBattle {
       if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
+      if(sk.id==='prismBeam')return dist<525;                // actual piercing ray reach
       return dist<460;
     };
     if(f.cd.q<=0&&offensive(f.qSkill,'q')){
@@ -1154,8 +1155,29 @@ class CaptureBattle {
     }
     const rules=f.cat.gambits;
     const tags=tgt.tags||[];
-    const aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
+    const aim=this.autoAim(f,tgt,f.projSpeed);
     f._aim=aim;
+    // Anti-starvation for custom gambits: a ready ranged Q/E must not be
+    // postponed forever by an earlier 'always basic', 'combo' or buff rule.
+    // Preserve custom rule ordering for the first 1.2s; then let an overdue
+    // ranged attack fire once when the enemy is actually in range.
+    f._autoRangedReadyAt=f._autoRangedReadyAt||{};
+    for(const slot of ['q','e']){
+      const sk=slot==='q'?f.qSkill:f.eSkill, cd=f.cd?.[slot]??Infinity;
+      const ranged=sk&&['projectile','beam','chain'].includes(sk.kind);
+      if(!ranged||cd>0){delete f._autoRangedReadyAt[slot];continue;}
+      if(f._autoRangedReadyAt[slot]==null)f._autoRangedReadyAt[slot]=this.t;
+      const reach=sk.id==='prismBeam'?525:(sk.reach||460);
+      const reflectable=sk.kind==='projectile'||sk.kind==='beam';
+      if(this.t-f._autoRangedReadyAt[slot]>=1.2&&dist<=reach&&
+         !(reflectable&&this.reflectCovers(tgt,f.x,f.y))){
+        if(this.castSlot(f,slot,aim)!==false){
+          delete f._autoRangedReadyAt[slot];
+          this.markAutoAction(f,'技能：'+sk.name);
+          return;
+        }
+      }
+    }
     const condition=k=>{
       switch(k){
         case 'always':return true;
@@ -1208,7 +1230,7 @@ class CaptureBattle {
       if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
       if(sk.kind==='leap')return dist>70&&dist<240;
       if(sk.kind==='pounce')return dist>60&&dist<300;
-      return dist<460;   // projectile / beam / chain / aoe
+      return dist<(sk.id==='prismBeam'?525:(sk.reach||460));   // actual ranged reach
     };
     for(const slot of ['q','e']){
       const sk=slot==='q'?f.qSkill:f.eSkill;
