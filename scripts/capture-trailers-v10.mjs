@@ -498,11 +498,11 @@ try{
   // This is contiguous raw footage, not a second duo cast or another fight.
   shots.push({label:'rare-aftermath',start:duoStart+3.1,duration:1.2});
   console.log('V10 VERIFIED NEW DUO CINEMATIC '+JSON.stringify(cinematicSource));
-  const postDuo=await page.evaluate(()=>{
+  const postDuo=await page.evaluate(rareId=>{
     const b=window.__game.battle;
     if(b&&!b.done)b.autoMode=true;
-    return {rareId:rare.id,duoUses:b?.duoUses||0,auto:b?.autoMode||false};
-  });
+    return {rareId,duoUses:b?.duoUses||0,auto:b?.autoMode||false};
+  },rare.id);
   if(postDuo.duoUses!==1)throw Error('Rare fight must contain exactly one finisher '+JSON.stringify(postDuo));
   await page.waitForFunction(({id,before})=>(State.S.dex[id]||0)>before,
     {id:rare.id,before:rare.before},{timeout:55000,polling:250});
