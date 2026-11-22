@@ -1316,3 +1316,5 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
 // Language QA: every playable route must use the shared English-first selection,
 // and Cat Bond species names must be pronounceable in both locales.
 await import('./check-language.mjs');
+// Include every hidden and legacy narrative branch in the production gate.
+await import('./check-hidden-story-language.mjs');
