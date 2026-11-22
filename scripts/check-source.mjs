@@ -971,8 +971,10 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(new Set(artPairs).size!==21||
     !cbBattle.includes('art.secondStatus')||
     !cbBattle.includes("const support=art.support||'shield'")||
-    !cbUi.includes('duo-art-description'))
-   throw Error('Cat Bond must keep all 21 playable two-cat elemental combinations');
+    !cbUi.includes('duo-unlocked-card')||
+    !cbUi.includes('renderUnlockedDuoCards(unlockedPairs)')||
+    cbUi.includes('<canvas id="duo-skill-canvas"'))
+   throw Error('Cat Bond must keep all 21 playable duo combinations without duplicating or revealing locked skill art');
  const upgraded=fs.readFileSync('public/upgrade.js','utf8');new Function(upgraded);
  // The upgraded game factories replace the base Flip Dash/Parcel Panic
  // renderers. Guard their own portrait painting and hit targets.
