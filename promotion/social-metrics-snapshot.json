@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "capturedAt": "2026-11-22",
-  "nativeWindow": "Official-platform-account/public video readings for published Nov 22 Morrow Wish Shorts/Reels, via connected vidIQ; older videos excluded.",
+  "nativeWindow": "Verified public native short-video stats on 2026-11-22; historic content excluded. TikTok verified snapshot; Bluesky public feed refreshed by Worker.",
   "source": "Directly connected platform accounts and public video listings through vidIQ (not Metricool)",
-  "refreshMode": "connected-account-refresh",
-  "note": "Profile-confirmed TikTok count: 7 public account videos, but only 2 individually identified in video-feed search; show total views as null until full coverage. Other platforms are per-video verified. Historical IG excluded.",
+  "refreshMode": "tiktok-verified-snapshot;bluesky-live-refresh",
+  "note": "All 7 new TikTok videos individually verified via connected vidIQ public profile; 94 plays at 2026-11-22 capture. Bluesky reactions are refreshed from the native public feed where available; no Bluesky play count is inferred.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -49,19 +49,20 @@
     {
       "id": "tiktok",
       "priority": "P1",
-      "phase": "published-profile-confirmed-partial-metrics",
+      "phase": "seven-public-videos-verified",
       "published": 7,
       "failed": null,
-      "views": null,
-      "metricScope": "7-published-according-to-public-profile;2-individual-posts-verified",
-      "note": "TikTok public profile reports 7 videos. Native details and view counts fetched for only 2 public URLs (0 views each at capture); other 5 video view counts are unknown, so total is intentionally blank.",
+      "views": 94,
+      "metricScope": "7-public-videos-verified-with-per-post-play-count",
+      "note": "All 7 Morrow Wish videos individually verified on TikTok through vidIQ public feed on 2026-11-22; 94 plays total at capture, not live API.",
       "publicationEvidence": {
-        "source": "vidIQ-public-profile",
+        "source": "vidIQ-public-videos",
         "profileUrl": "https://www.tiktok.com/@morrowwishgames",
         "videoCount": 7,
         "verifiedAt": "2026-11-22",
-        "individuallyVerified": 2
-      }
+        "individuallyVerified": 7
+      },
+      "likes": 1
     },
     {
       "id": "instagram",
@@ -96,8 +97,8 @@
     "type": "approved-short-videos-only",
     "campaignTagPrefix": "mw-shorts-v2",
     "historicalExcluded": true,
-    "rule": "Only individually verified post URLs contribute detailed views. TikTok published count may additionally be sourced from public account profile even when the per-post feed is incomplete; total TikTok views must be null until every counted published video has a view metric.",
-    "activeApprovedPosts": 16,
+    "rule": "Only individually verified public post metrics are aggregated; figures are verified snapshots, not live counters. Bluesky reactions and video plays are different metrics.",
+    "activeApprovedPosts": 21,
     "verifiedPosts": [
       {
         "platform": "youtube",
@@ -255,33 +256,111 @@
       },
       {
         "platform": "tiktok",
+        "game": "cat-bond",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7711071401913896206",
+        "publishedAt": "2026-11-22",
+        "views": 12,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "tiktok",
         "game": "pawsibly-innocent",
         "url": "https://www.tiktok.com/@morrowwishgames/video/7711071409966943502",
         "publishedAt": "2026-11-22",
-        "views": 0,
+        "views": 21,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-tiktok-public"
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "tiktok",
+        "game": "tiny-town",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7711071395941240095",
+        "publishedAt": "2026-11-22",
+        "views": 18,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
       },
       {
         "platform": "tiktok",
         "game": "elsewhere",
         "url": "https://www.tiktok.com/@morrowwishgames/video/7711071458256112909",
         "publishedAt": "2026-11-22",
-        "views": 0,
+        "views": 23,
+        "likes": 1,
+        "comments": 0,
+        "shares": 0,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-tiktok-public"
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "tiktok",
+        "game": "flip-dash",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7711071406368312589",
+        "publishedAt": "2026-11-22",
+        "views": 2,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "tiktok",
+        "game": "parcel-panic",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7711071416099032333",
+        "publishedAt": "2026-11-22",
+        "views": 18,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
+      },
+      {
+        "platform": "tiktok",
+        "game": "pocket-aquarium",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7711071765379829005",
+        "publishedAt": "2026-11-22",
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "approved": true,
+        "publicVerified": true,
+        "dataSource": "vidiq-tiktok-public",
+        "lastVerifiedAt": "2026-11-22"
       }
     ]
   },
   "accountOverview": {
     "capturedAt": "2026-11-22",
-    "source": "Mixed sources: historical Instagram from Metricool; current TikTok account publication count from vidIQ public profile.",
+    "source": "Historical Instagram from Metricool; TikTok seven video views from public vidIQ listing.",
     "refreshMode": "manual",
     "windowStart": "2026-11-19",
     "windowEnd": "2026-11-22",
-    "note": "Historical Instagram 6 Reels from Nov 20 retained separately (273 lifetime plays). Current TikTok public profile reports 7 published videos, but only 2 post URLs/metrics can be individually read; TikTok total views are unknown, not zero.",
+    "note": "Historical Instagram 6 Reels from Nov 20 kept separate. TikTok has all 7 published 2026-11-22 videos verified individually (94 plays at capture), not continuously fetched until direct OAuth is configured.",
     "platforms": [
       {
         "id": "instagram",
@@ -325,10 +404,53 @@
       {
         "id": "tiktok",
         "published": 7,
-        "views": null,
-        "viewBasis": "vidIQ-public-profile-count-7;per-video-metrics-for-only-2",
-        "posts": [],
-        "status": "7-published-2-detailed"
+        "views": 94,
+        "viewBasis": "7-individual-tiktok-videos-public-vidIQ-2026-11-22",
+        "posts": [
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071401913896206",
+            "publishedAt": "2026-11-22",
+            "views": 12,
+            "likes": 0
+          },
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071409966943502",
+            "publishedAt": "2026-11-22",
+            "views": 21,
+            "likes": 0
+          },
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071395941240095",
+            "publishedAt": "2026-11-22",
+            "views": 18,
+            "likes": 0
+          },
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071458256112909",
+            "publishedAt": "2026-11-22",
+            "views": 23,
+            "likes": 1
+          },
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071406368312589",
+            "publishedAt": "2026-11-22",
+            "views": 2,
+            "likes": 0
+          },
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071416099032333",
+            "publishedAt": "2026-11-22",
+            "views": 18,
+            "likes": 0
+          },
+          {
+            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071765379829005",
+            "publishedAt": "2026-11-22",
+            "views": 0,
+            "likes": 0
+          }
+        ],
+        "status": "7-videos-verified-snapshot"
       }
     ]
   }
