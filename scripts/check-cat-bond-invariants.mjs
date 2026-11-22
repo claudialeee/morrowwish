@@ -272,4 +272,33 @@ for(const kind of ['dash','pounce','melee']){
     'INV-6 leveling/bonding unlocks strictly more skills');
 }
 
-console.log('Cat Bond combat INVARIANTS: wards expire both sides (INV-1), gap-closers commit (INV-2), timers/HP/stacks bounded (INV-3), 15s sim clean + no orphan root (INV-4), build-type diversity (INV-5), paced unlocks (INV-6) — all PASS.');
+// ===========================================================================
+// INV-7: a SUPPORT cat (heal/buff kit) that ALSO carries a ranged offensive skill
+// actually ATTACKS as an ALLY — it must not hang back at 230-320px doing nothing.
+// (Regression: ally gambits gated Q on enemyClose<145, but the support band never let
+// it that close → "辅助的猫不会用远程灵光束攻击".)
+// ===========================================================================
+{
+  const active = State.makeCat('tangyuan', { affinity: 40 }); active.level = 14;
+  active.stats = { pow: 70, agi: 80, vit: 110, cha: 60 };
+  const sup = State.makeCat('nainai', { affinity: 60 }); sup.level = 14;
+  Skills.ensureLoadout(sup);
+  const b = new sandbox.window.Battle.CaptureBattle(game, [active, sup], GameData.speciesById('doudou'));
+  b.coach = null; b.autoMode = true;
+  const ally = b.team[1];
+  // ensure the support ally actually holds a ranged offensive skill (else this is moot)
+  const hasRanged = [ally.qSkill, ally.eSkill].some(sk => sk && ['projectile','beam','chain'].includes(sk.kind));
+  if (hasRanged) {
+    let qFires = 0, lq = ally.cd.q || 0;
+    for (let i = 0; i < 900; i++) {           // 15s
+      for (const e of b.enemies) e.hp = e.maxhp;   // immortal: measure offense, not kill
+      b.update(0.016);
+      if ((ally.cd.q || 0) > lq + 0.1) qFires++;
+      lq = ally.cd.q || 0;
+      if (b.done) break;
+    }
+    assert.ok(qFires >= 1, 'INV-7 support ally with a ranged skill fires it (no idle backline): qFires='+qFires);
+  }
+}
+
+console.log('Cat Bond combat INVARIANTS: wards expire both sides (INV-1), gap-closers commit (INV-2), timers/HP/stacks bounded (INV-3), 15s sim clean + no orphan root (INV-4), build-type diversity (INV-5), paced unlocks (INV-6), support ally attacks (INV-7) — all PASS.');

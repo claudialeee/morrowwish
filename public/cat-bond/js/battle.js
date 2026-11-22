@@ -1168,7 +1168,29 @@ class CaptureBattle {
     for(const r of rules){
       if(condition(r.cond)&&action(r.act)!==false)return;
     }
-    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25))this.fireBasic(f,aim);
+    // RANGED-OFFENSE FALLBACK: the default gambits gate the Q/E skills behind
+    // enemyClose(<145)/enemyFar(>260), but a RANGED attacker (projectile/beam/chain)
+    // — e.g. a support/light cat holding 棱光束 while hanging back at 230-320px — never
+    // satisfies enemyClose, so it would just stand there doing nothing. Before giving up,
+    // fire any ready offensive Q/E that's actually in its own firing range.
+    const inFireRange=sk=>{
+      if(!sk)return false;
+      if(sk.kind==='melee')return dist<=64+(tgt.r||18)*.65-2;
+      if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
+      if(sk.kind==='leap')return dist>70&&dist<240;
+      if(sk.kind==='pounce')return dist>60&&dist<300;
+      return dist<460;   // projectile / beam / chain / aoe
+    };
+    for(const slot of ['q','e']){
+      const sk=slot==='q'?f.qSkill:f.eSkill;
+      if(!sk||(f.cd?.[slot]||0)>0)continue;
+      if(sk.kind==='heal'||sk.kind==='buff'||sk.ultCost>0)continue;
+      if(tgt.reflectT>0&&(sk.kind==='projectile'||sk.kind==='beam'))continue;  // don't feed a reflect wall
+      if(inFireRange(sk)){
+        if((slot==='q'?this.skillQ(f,aim):this.skillE(f,aim))!==false)return;
+      }
+    }
+    if(f.cd.basic<=0&&dist<Math.min(175,f.projSpeed*.45+25)&&!(tgt.reflectT>0))this.fireBasic(f,aim);
   }
 
   // The commander's click order: the enemy nearest the focus marker. When set, the
