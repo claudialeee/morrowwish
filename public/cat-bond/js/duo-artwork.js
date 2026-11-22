@@ -94,11 +94,19 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  const speciesId=speciesOf(cat),index=atIndex[speciesId],scale=clamp(ht,90,300);
  const pop=ease(p/.33),dash=ease((p-.22)/.44);
  const lead=['blink','dash','zigzag','shadow','ember'].includes(style);
- const spin=['spiral','tides','fireworks','petals','stars'].includes(style);
+ const spin=['spiral','tides','fireworks','petals'].includes(style);
+ const highFive=['stars','halo'].includes(style);
+ const protector=['eclipse','lake','snare'].includes(style);
+ const gesture=highFive?'duo-highfive':
+   protector&&!flip?'duo-guard':
+   ['shadow','blink','dash','ember','zigzag','cannon','blossom','vine'].includes(style)
+     ?'duo-swipe':'walk';
  const guard=['eclipse','lake','halo','snare','sprout','solar'].includes(style);
  const direction=flip?1:-1;
- const launch=style==='highfive'?Math.sin(Math.PI*clamp((p-.13)/.48))*scale*.06:spin?Math.sin(Math.PI*p)*scale*.22:guard&&!flip?0:Math.sin(Math.PI*p)*scale*.12;
- const tilt=spin?direction*(.16*Math.sin(Math.PI*p)):(lead?direction*.14*dash:direction*.07*dash);
+ const launch=spin?Math.sin(Math.PI*p)*scale*.22:guard&&!flip?0:Math.sin(Math.PI*p)*scale*.12;
+ const tilt=highFive?direction*.045*Math.sin(Math.PI*p):
+   spin?direction*(.16*Math.sin(Math.PI*p)):
+   lead?direction*.14*dash:direction*.07*dash;
  const width=scale*200/300;
  ctx.save();ctx.translate(x,y-launch);
  ctx.rotate(tilt);ctx.scale(flip?-1:1,1);
@@ -113,20 +121,31 @@ function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,label){
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
  window.CatArt?.drawCat?.(ctx,0,scale*.04,{
    species:sp,scale:Math.min(3.2,scale/96),face:1,
-   pose:style==='highfive'&&p>.12&&p<.53?'play':(p>.10&&p<.78?'walk':'idle'),
+   pose:p>.07&&p<.76?gesture:'idle',
    motion:Math.max(.35,Math.sin(Math.PI*p)),
-   stride:p*10,t:p*2.5,mood:'alert'
+   // Align the watercolor paw-raise frame with the real hit (p=.28).
+   stride:gesture==='duo-highfive'?Math.max(0,p-.06)*9:
+     gesture==='duo-guard'?p*7:p*10,
+   t:p*2.5,mood:highFive?'happy':'alert'
  });
  // Paw spark originates BESIDE the leading actual illustrated forepaw.
- if(p>.38&&style!=='highfive'){
-  const f=Math.sin(clamp((p-.38)/.46)*Math.PI);
+ if(p>.20){
+  // Each special reaches its forepaw differently; the actual watercolor
+  // hand and wrist are animated in real-kittens.js before this glow is drawn.
+  const f=Math.sin(clamp((p-.20)/.30)*Math.PI);
   ctx.globalAlpha=Math.max(0,f)*.79;
-  const px=width*.22,py=scale*.13;
+  const px=width*(highFive?.33:protector?.12:.22),
+    py=scale*(highFive?-.09:protector?.06:.13);
   ctx.strokeStyle=color||'#d5a2f2';ctx.shadowColor=color||'#e3c5fb';
   ctx.shadowBlur=11;ctx.lineWidth=3;ctx.lineCap='round';
-  for(let k=-1;k<=1;k++){
-   ctx.beginPath();ctx.moveTo(px-3,py+k*8);
-   ctx.quadraticCurveTo(px+width*.21,py+k*8-10,px+width*.39,py+k*10+7);ctx.stroke();
+  if(highFive){
+    // One brief paw contact spark (not a generic three-slash overlay).
+    ctx.beginPath();ctx.arc(px+width*.15,py,5+f*8,0,Math.PI*2);ctx.stroke();
+  }else if(protector){
+    ctx.beginPath();ctx.arc(px+width*.20,py,12+f*12,-1.7,1.7);ctx.stroke();
+  }else for(let k=-1;k<=1;k++){
+    ctx.beginPath();ctx.moveTo(px-3,py+k*8);
+    ctx.quadraticCurveTo(px+width*.21,py+k*8-10,px+width*.39,py+k*10+7);ctx.stroke();
   }
  }
  ctx.restore();
