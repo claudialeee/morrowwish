@@ -27,6 +27,7 @@ const Premium=window.CatBondPremiumCinematics;
 const Hero=window.CatBondDuoHero;
 const BreedArt=window.CatBondDuoBreedArt;
 assert.equal(BreedArt.breedCount,32,'Must supply actual illustrated fur profiles for all 32 cats');
+assert.equal(BreedArt.maskSourceCount,23,'All 23 unique high-res watercolor scene mask contours must be traced');
 assert.equal(Premium.breedMatchCount,32,'Premium painter must load breed-specific coats');
 const rosterIds=[...source('js/data.js').matchAll(/\bid\s*:\s*['"]([a-z][a-z0-9]*)['"]/g)].map(x=>x[1]);
 assert.equal(rosterIds.length,32,'Actual playable roster must contain exactly 32 collectible IDs');
@@ -84,9 +85,9 @@ assert.equal((page.match(/class="source-art-stage"/g)||[]).length,63,
  'Every skill must show three actual painted frames, not just camera presets');
 assert.equal((page.match(/<article class="master-art"/g)||[]).length,21);
 for(const html of [page,game,unlocked]){
- assert.match(html,/js\/duo-breed-art\.js\?v=32-premium-painted-breeds-20261122/,
+ assert.match(html,/js\/duo-breed-art\.js\?v=32-traced-breed-coats-20261122-v2/,
   'Actual game and both review pages MUST load the 32 selected-cat fur painter');
- assert.match(html,/js\/duo-premium\.js\?v=original-painted-21x3-v3-20261122/,
+ assert.match(html,/js\/duo-premium\.js\?v=32-breed-premium-cinemas-20261122-v2/,
   'Game, review gallery and unlocked preview must load the SAME latest premium painter');
  assert.doesNotMatch(html,/duo-premium-sheet\.webp/, 'Rejected old gray-purple cut-in artwork must never load');
  assert.match(html,/js\/duo-director\.js\?v=three-tiers-21-cameras/,
