@@ -27,18 +27,44 @@ function drawMagic(g,type,cx,cy,R,p,alpha,front){
  if(!front){
   mist(g,0,-R*.25,R*1.1,m,e,.23*alpha);
   if(type==='fire'){
-   for(let i=0;i<16;i++){
-    const x=(i-7.5)*R*.11,r=R*(.55+rnd(i)*.5),w=R*.15;
-    g.globalAlpha=alpha*(i%3===0?.82:.51);g.fillStyle=i%3===0?'#ffec9e':i%3===1?'#ffab52':'#fa6937';
-    g.beginPath();g.moveTo(x,R*.3);
-    g.bezierCurveTo(x-w,-r*.2,x+w*1.7,-r*.77,x+Math.sin(i+spin)*R*.11,-r);
-    g.bezierCurveTo(x+w*1.5,-r*.42,x+w,R*.1,x+w*.8,R*.3);g.closePath();g.fill();
+   // Curved phoenix plumes with translucent watercolor-hot gradients.
+   // Avoid uniform vertical spikes that look like a row of fence posts.
+   for(let i=0;i<13;i++){
+    const angle=(i-6)*.27+Math.sin(i+spin)*.08;
+    const len=R*(.60+rnd(i+3)*.42),width=R*(.09+rnd(i+17)*.07);
+    g.save();g.translate(Math.sin(i*2.31)*R*.13,R*.22);g.rotate(angle);
+    g.globalAlpha=alpha*(i%3===0?.8:.57);
+    const flame=g.createLinearGradient(0,0,0,-len);
+    flame.addColorStop(0,'#ad3b2b');flame.addColorStop(.33,'#f17737');
+    flame.addColorStop(.7,i%2?'#ffcc76':'#ffac50');
+    flame.addColorStop(1,'#fff2b6');g.fillStyle=flame;
+    g.beginPath();g.moveTo(-width,0);
+    g.bezierCurveTo(-width*1.7,-len*.29,width*2.2,-len*.65,Math.sin(i*.7+spin)*len*.18,-len);
+    g.bezierCurveTo(width*.5,-len*.54,width*1.3,-len*.26,width,0);
+    g.closePath();g.fill();g.restore();
    }
   }else if(type==='water'){
-   for(let i=0;i<3;i++){
-    g.strokeStyle=i===2?'#f5ffff':i===1?'#9aeaff':'#36b7d7';g.lineWidth=i===2?5:i===1?12:25;
-    g.globalAlpha=alpha*(i===2?.92:.5);g.beginPath();g.moveTo(-R,-R*.06);
-    g.bezierCurveTo(-R*.69,-R*1.24,R*.64,-R*1.22,R,-R*.14);g.stroke();
+   // A real painted tidal body beneath the curling crest, plus spray.
+   const wash=g.createLinearGradient(0,-R,0,R*.3);
+   wash.addColorStop(0,'rgba(220,251,255,.65)');
+   wash.addColorStop(.35,'rgba(65,198,230,.43)');
+   wash.addColorStop(1,'rgba(21,113,171,.02)');
+   g.globalAlpha=alpha*.76;g.fillStyle=wash;g.beginPath();
+   g.moveTo(-R*.96,R*.15);
+   g.bezierCurveTo(-R*1.06,-R*1.21,R*.30,-R*1.45,R*.98,-R*.20);
+   g.bezierCurveTo(R*.56,-R*.72,-R*.47,-R*.67,-R*.96,R*.15);
+   g.closePath();g.fill();
+   for(let i=0;i<4;i++){
+    g.strokeStyle=i===3?'#f5ffff':i===2?'#99eefe':'#42b5d5';
+    g.lineWidth=i===3?4:i===2?8:16;g.globalAlpha=alpha*(i===3?.84:.35);
+    g.beginPath();g.moveTo(-R*.93,R*.12);
+    g.bezierCurveTo(-R*.72,-R*(1.18-i*.07),R*.53,-R*(1.22-i*.07),R*.92,-R*.15);
+    g.stroke();
+   }
+   for(let i=0;i<23;i++){
+    const t=i*2.399,r=R*(.66+.31*rnd(i)),x=Math.cos(t)*r,y=Math.sin(t)*r*.65-R*.36;
+    g.globalAlpha=alpha*(.26+rnd(i+8)*.36);g.fillStyle=i%2?'#e7ffff':'#79ddea';
+    g.beginPath();g.arc(x,y,R*(.012+.014*rnd(i+12)),0,TAU);g.fill();
    }
   }else if(type==='grass'){
    for(let i=0;i<13;i++){
@@ -70,15 +96,17 @@ function drawMagic(g,type,cx,cy,R,p,alpha,front){
     }g.stroke();
    }
   }else{
-   mist(g,0,-R*.35,R*.82,'#fffae4','#d8c7ea',alpha*.62);
+   mist(g,0,-R*.35,R*.82,'#fff6db','#d4c0eb',alpha*.24);
    for(let i=0;i<21;i++){
     const a=i*TAU/21;g.strokeStyle=i%2?'#fff5d9':'#d9edff';g.lineWidth=i%2?4:9;
-    g.globalAlpha=alpha*.4;g.beginPath();
+    g.globalAlpha=alpha*.23;g.beginPath();
     g.moveTo(Math.cos(a)*R*.45,Math.sin(a)*R*.45-R*.35);
     g.lineTo(Math.cos(a)*R*.99,Math.sin(a)*R*.99-R*.35);g.stroke();
    }
    g.strokeStyle='#fffaf0';g.globalAlpha=alpha*.88;g.lineWidth=4;
    g.beginPath();g.arc(0,-R*.35,R*.68,0,TAU);g.stroke();
+   g.globalAlpha=alpha*.42;g.lineWidth=2;g.strokeStyle='#d7e1ff';
+   g.beginPath();g.arc(0,-R*.35,R*.81,0,TAU);g.stroke();
   }
  }else{
   if(type==='water'){g.strokeStyle='#efffff';g.lineWidth=6;g.globalAlpha=alpha*.8;
