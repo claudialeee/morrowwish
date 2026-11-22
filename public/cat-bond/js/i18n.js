@@ -19,6 +19,25 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    // Reviewed 33-breed elemental identities and attribute cards.
+    '寒冰爪': 'Frost Claw',
+    '短距离挥出霜晶爪痕，使目标湿润；更强的霜锥需向训练师学习。': 'A short icy claw swipe inflicts Soak; train to learn the stronger Frost Lance.',
+    '猫猫属性与战斗数值': 'Cat attributes and combat statistics',
+    '猫猫属性': 'Cat attributes',
+    '主属性': 'Primary element',
+    '副属性': 'Secondary element',
+    '副属性技能': 'Secondary techniques',
+    '单属性专精 · 不会学习其他元素技能': 'Single-element specialist · cannot learn other elements',
+    '首次收服伙伴领悟另一招本系技能': 'First capture awakens a new native-element skill',
+    '首次收服伙伴解锁一招副属性技能': 'First capture unlocks one secondary-element technique',
+    '主属性为核心；副属性最多两招，高阶技能到训练师学习': 'Main element first · at most two secondary moves · advanced moves require training',
+    '专精本系技能，高阶招式到训练师处学习': 'Specialize in native moves and learn advanced ones at the trainer',
+    '战斗数值': 'Battle statistics',
+    '基础伤害': 'Base damage',
+    '移动速度': 'Move speed',
+    '负伤中，建议战前恢复': 'Injured · recover before battle',
+    '首次收服伙伴或 Lv.4 解锁第一招': 'First move on first capture or Lv.4',
+    '第二招需 Lv.12 且好感达到 60': 'Second move at Lv.12 and bond 60',
     '☰ 庭院菜单': '☰ Yard menu',
     // Manual skill-tree progression and the compact phone duo form.
     '攻击技能逐级学会；高阶招式需到训练师处主动学习': 'Unlock attacks gradually; learn advanced moves deliberately with a trainer',
