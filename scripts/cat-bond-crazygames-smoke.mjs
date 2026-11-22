@@ -250,6 +250,9 @@ try{
           'The next hunt must actually field the unlocked two-cat duo');
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>!!window.__game.yard.hide),true,'Second collection starts with one click');
+        await page.waitForFunction(()=>document.getElementById('first-quest')?.textContent?.includes('duo'),null,{timeout:5000});
+        assert.match(await page.locator('#first-quest').innerText(),/duo/i,
+          'After the first win the live guide should point to the duo hunt, not petting');
         // A real second hunt must introduce the signature duo attack, not
         // quietly leave the player in another solo fight after the unlock.
         await page.evaluate(()=>{
