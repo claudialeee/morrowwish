@@ -252,8 +252,7 @@ const UI = {
     if(cat._deathPenaltyUntil&&Date.now()<cat._deathPenaltyUntil)mult*=.88;
     mult=Math.max(.80,Math.min(1.15,mult));
     const maxHp=Math.round((55+(s.vit||0)*5)*mult);
-    const carried=typeof cat._hpFrac==='number'?
-      Math.max(.15,Math.min(1,cat._hpFrac)):1;
+    const carried=State.catHpFraction?.(cat)??1;
     const hp=Math.round(maxHp*carried);
     const rarity=sp.rarity||'N';
     const r={N:en?'Common':'普通',R:en?'Rare':'稀有',
@@ -385,6 +384,8 @@ const UI = {
         '<div class="explore-cat-buttons">'+
         '<button type="button" data-menu-cat-action="detail" data-uid="'+esc(cat.uid)+'">'+(en?'Status / Raise':'状态 / 养成')+'</button>'+
         '<button type="button" data-menu-cat-action="skills" data-uid="'+esc(cat.uid)+'">'+(en?'Skills':'技能搭配')+'</button>'+
+        '<button type="button" class="explore-fish-heal" data-menu-cat-action="heal" data-uid="'+esc(cat.uid)+'" '+(f.hpPercent>=100||State.S.fish<1?'disabled':'')+'>'+
+        (en?'🐠 Heal +35% · 1 fish':'🐠 补血 +35% · 1 小鱼')+'</button>'+
         '</div></div></article>';
     }).join('')||'<p class="sub">'+(en?'Adopt a kitten to begin exploring.':'先收集一只猫咪，开始探险吧。')+'</p>';
     const action=(id,icon,zh,enLabel)=>'<button type="button" data-explore-action="'+id+'">'+
@@ -394,6 +395,9 @@ const UI = {
       '<h2>'+(en?'☰ Expedition menu':'☰ 探险菜单')+'</h2>'+
       '<p class="explore-menu-location">'+(en?'Exploring ':'正在探索：')+esc(regionName)+
       ' <span>🪙 '+Math.floor(State.S.coins||0)+' · 🐠 '+Math.floor(State.S.fish||0)+'</span></p>'+
+      '<p class="explore-health-rule">'+(State.difficulty()==='casual'
+        ?(en?'🌿 Casual: HP refills after each battle.':'🌿 休闲模式：战后自动回满血。')
+        :(en?'🔥 Hardcore: HP regenerates automatically (20% per minute). Returning to the yard heals all cats.':'🔥 硬核模式：每分钟自动恢复 20% 血量；回庭院立即满血。'))+'</p>'+
       '<h3>'+(en?'On your team · tap to manage':'出战猫咪 · 直接管理')+'</h3>'+
       '<div class="explore-cat-list">'+summary+'</div>'+
       '<h3>'+(en?'More to do':'其他功能')+'</h3>'+
@@ -403,6 +407,7 @@ const UI = {
       action('duo','💞','双猫纽带','Cat duos')+
       action('workshop','🧶','工坊收益','Workshop')+
       action('shop','🛒','小卖部','Shop')+
+      action('healteam','🐠','小鱼干补血','Heal with fish')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','切换地图','Regions')+
       '</div><p class="explore-menu-tip">'+(en
@@ -419,7 +424,15 @@ const UI = {
       button.onclick=()=>{
         const cat=(State.S.cats||[]).find(c=>c.uid===button.dataset.uid);
         if(!cat)return;
-        if(button.dataset.menuCatAction==='skills')this.navigateTo(()=>this.openSkillEditor(cat));
+        if(button.dataset.menuCatAction==='heal'){
+          const result=State.feedFishForHealth(cat);
+          const message=result.ok
+            ?(en?'🐠 '+State.catName(cat)+': '+Math.round(result.before*100)+'% → '+Math.round(result.after*100)+'% HP'
+              :'🐠 '+State.catName(cat)+'：'+Math.round(result.before*100)+'% → '+Math.round(result.after*100)+'% 血量')
+            :this.fishHealFailureText(result,en);
+          if(result.ok){this.openExploreMenu();this.game.refreshHUD();}
+          this.game.toast(message);
+        }else if(button.dataset.menuCatAction==='skills')this.navigateTo(()=>this.openSkillEditor(cat));
         else this.navigateTo(()=>this.openCatDetail(cat));
       };
     });
@@ -427,11 +440,24 @@ const UI = {
       cats:()=>this.openCatHub('solo'),squad:()=>this.openMapSquad(),
       duo:()=>this.openCatHub('duo'),workshop:()=>this.openWorkshop(),
       shop:()=>this.openShop(),feed:()=>this.openFeed(),
+      healteam:()=>{
+        const r=State.feedFishForTeam(this.getPreferredBattleTeam());
+        const msg=r.ok?(en?'🐠 Healed '+r.count+' cats for '+r.cost+' fish.':'🐠 已给 '+r.count+' 只猫补血，消耗 '+r.cost+' 条小鱼。')
+          :this.fishHealFailureText(r,en);
+        if(r.ok){this.openExploreMenu();this.game.refreshHUD();}
+        this.game.toast(msg);
+      },
       regions:()=>this.openMapChooser()
     };
     host?.querySelectorAll('[data-explore-action]').forEach(button=>{
       button.onclick=()=>{const open=actions[button.dataset.exploreAction];if(open)this.navigateTo(open);};
     });
+  },
+
+  fishHealFailureText(result,en){
+    return result?.reason==='fish'
+      ?(en?'Not enough fish (need '+(result.cost||1)+').':'小鱼不足（需要 '+(result.cost||1)+' 条）。')
+      :(en?'All cats are at full HP.':'猫猫血量已经满啦！');
   },
 
   openMapSquad(){
@@ -2532,6 +2558,35 @@ const UI = {
     document.getElementById('gb-back').onclick = () => this.openCapturePrep(wildSp);
   },
 
+  // Persistent, readable recovery notice in EVERY battle result, not a fading toast.
+  battleRecoveryMarkup(recovery=this.game?._battleRecovery){
+    if(!recovery)return '';
+    const en=this.isEnglish(),casual=recovery.mode==='casual';
+    const heading=casual?(en?'🌿 Casual · Fully healed':'🌿 休闲模式 · 战后满血')
+      :(en?'🔥 Hardcore · Recovering automatically':'🔥 硬核模式 · 自动恢复中');
+    const detail=casual
+      ?(en?'All cats return to full health after battle.':'战斗结束后，所有猫咪立即恢复满血。')
+      :recovery.fromMap
+        ?(en?'Health regenerates 20% per minute without tapping. Back at the yard: full HP. On the map: feed fish to heal +35% per fish.'
+          :'血量每分钟自动恢复 20%，无需点击。返回庭院立即满血；地图菜单可喂小鱼，每条恢复 35%。')
+        :(en?'Returning to the yard restores all HP.':'已返回庭院，所有猫咪恢复满血。');
+    const rows=(recovery.team||[]).map(c=>'<span class="battle-recovery-cat"><strong>'+
+      this.battlePrepEsc(c.name)+'</strong> '+c.before+'% → <b>'+c.after+'%</b></span>').join('');
+    return '<section class="battle-recovery" aria-label="'+(en?'Post-battle recovery':'战后回血')+'">'+
+      '<strong class="battle-recovery-title">'+heading+'</strong>'+
+      '<p>'+detail+'</p>'+(rows?'<div class="battle-recovery-team">'+rows+'</div>':'')+'</section>';
+  },
+  openBattleRecoveryResult(recovery){
+    const en=this.isEnglish(),exploring=this.game?.scene==='map';
+    this.panel('<span class="card-close">×</span><h2 class="center">'+
+      (en?'The wild cat got away':'野生猫猫跑掉了')+'</h2>'+
+      this.battleRecoveryMarkup(recovery)+
+      '<div class="btn-row" style="justify-content:center"><button type="button" class="btn gold" id="battle-recovery-ok">'+
+      (en?(exploring?'Continue exploring':'Back to yard'):(exploring?'继续探索':'回庭院'))+
+      '</button></div>');
+    document.getElementById('battle-recovery-ok').onclick=()=>this.closeAll();
+  },
+
   // Repeatable *skill* challenge, deliberately separate from capturing cats.
   openMasteryChallengeResult(wildSp,performance,reward,won){
     const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -2549,6 +2604,7 @@ const UI = {
         <div><strong>${en?'Battle result':'挑战结果'}</strong><small>${en?'Best record':'历史最佳'} ${best}
           · ${en?'Medals':'金爪徽章'} ${this.game.masteryStatus().medals}/${GameData.SPECIES.length}</small></div>
       </div>
+      ${this.battleRecoveryMarkup()}
       <p class="center mastery-challenge-note">${note}</p>
       ${won&&performance?.autoUsed?'<p class="center mastery-grade-hint">'+(performance.autoExceptional
         ?(en?'Exceptional auto run!':'自动战斗发挥出色！')
@@ -2620,6 +2676,7 @@ const UI = {
          +(performance.autoUsed?'<small class="grade-explain">'+(performance.autoExceptional
            ?(english?'Exceptional automatic performance!':'自动战斗发挥出色！')
            :this.rankSHelp(wildSp.rarity,true))+'</small>':'')+'</div></div>':''}
+      ${this.battleRecoveryMarkup()}
       ${xpMessage?'<p class="center collection-reward">⭐ '+xpMessage+'</p>':''}
       ${levelMessage?'<p class="center collection-reward">⬆ '+(english?'LEVEL UP! ':'升级！')+levelMessage+'</p>':''}
       ${rewardText?'<p class="center collection-reward">🎁 '+rewardText+'</p>':''}
