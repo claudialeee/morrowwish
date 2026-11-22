@@ -2058,15 +2058,8 @@ class CaptureBattle {
     this.ult=0;
     this._ultAnnounced=false; this._ultReadyT=0; this._ultRemindT=0; this._ultAutoFired=false;   // re-arm reminder for the next charge
     this.ultCd=ULT_COOLDOWN_SECONDS;
-    // DARK elemental ult (虚吞/voidMaw) manifests as the 破坏死光 sweeping death-ray,
-    // which plays on its OWN timeline (no arena-freeze cinematic) and deals its
-    // damage across the sweep rather than in one deferred detonation.
-    if(skill&&skill.ultCost>0&&skill.element==='dark'){
-      this.spotlightCinematic={endsAt:Date.now()+1350,max:1.35,uid:f.cat.uid,
-        name:window.CatBondI18n?.translate?.(skill.name)||skill.name,
-        color:this.elemColor(skill.element),targetUid:locked?.i};
-      return this.castDeathRay(f,skill);
-    }
+    // 虚吞 now uses its intended gravity-vortex/rewind archetype.
+    // castDeathRay remains available for a future dedicated laser spell.
     // SINGLE-CAT ult: fires IN PLACE immediately — NO arena-freeze, NO full-screen
     // cinematic (only the 合体技/duo combo does that). Keep a short i-frame + a punchy
     // flash/shake so it still feels big, then run the elemental payload right now.
@@ -2075,6 +2068,8 @@ class CaptureBattle {
     this.slowmo = Math.max(this.slowmo, 0.18);     // a brief hit-stop beat, not a lockout
     if(!window.MorrowwishAudio?.skillSignature?.(skill?.id||skill?.name,f.element||skill?.element,3))
       window.MorrowwishAudio?.effect?.('combat_ultimate');
+    this._ultCastTargets=this.liveEnemies().slice(0,6).map(e=>({x:e.x,y:e.y}));
+    this.addShake?.(.55,this.aim);
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
     return true;
@@ -2162,7 +2157,10 @@ class CaptureBattle {
       const dmg=f.dmg*skill.power*.42;                    // shared per-target base
       const {total,kos,hits}=this.ultArchetype(f,skill,color,dmg);
       this._ultConsequence(f,skill,color,total,kos,hits);
-      this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,color,life:.92,max:.92});
+      const duration=skill.element==='grass'?2.0:1.5;
+      this.skillStrokes.push({kind:'ultimate',x:f.x,y:f.y,element:skill.element,color,
+        angle:f===this.me()?this.aim:(f._aim||0),targets:this._ultCastTargets||[],
+        life:duration,max:duration});
       this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
       this.game.toast(this.elemSymbol(skill.element)+' '+(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · ':'Ultimate · ')+(window.CatBondI18n?.translate?.(skill.name)||skill.name)+(window.MorrowwishI18n?.get?.()==='zh'?'！':'!'));
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
@@ -2806,34 +2804,155 @@ class CaptureBattle {
         }
         ctx.restore();
       }else if(v.kind==='ultimate'){
-        const el=v.element,count=el==='grass'?18:el==='water'?14:el==='elec'?20:12;
-        for(let i=0;i<count;i++){
-          const ang=i*Math.PI*2/count+this.t*(el==='elec'?5:2);
-          const rad=45+p*(el==='water'?225:165);
-          const x=v.x+Math.cos(ang)*rad,y=v.y+Math.sin(ang)*rad;
-          ctx.save();ctx.translate(x,y);ctx.rotate(ang+this.t*2);
-          if(el==='grass'){
-            ctx.fillStyle='#b9ec9f';ctx.beginPath();ctx.ellipse(0,0,13,5,0,0,Math.PI*2);ctx.fill();
-          }else if(el==='water'){
-            ctx.strokeStyle='#adf3ff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,14,-2.7,.8);ctx.stroke();
-          }else if(el==='elec'){
-            ctx.strokeStyle='#f8e985';ctx.lineWidth=4;ctx.beginPath();
-            ctx.moveTo(-7,-13);ctx.lineTo(1,-2);ctx.lineTo(-4,3);ctx.lineTo(9,13);ctx.stroke();
-          }else if(el==='fire'){
-            ctx.fillStyle='#ffb46d';ctx.beginPath();
-            ctx.moveTo(-8,7);ctx.quadraticCurveTo(-15,-5,1,-20);
-            ctx.quadraticCurveTo(6,-7,10,-9);ctx.quadraticCurveTo(17,9,-8,7);ctx.fill();
-          }else if(el==='dark'){
-            ctx.strokeStyle='#d6bce9';ctx.lineWidth=3;ctx.beginPath();
-            for(let j=0;j<6;j++){
-              const a=j*Math.PI/3;
-              j?ctx.lineTo(Math.cos(a)*11,Math.sin(a)*11):ctx.moveTo(Math.cos(a)*11,Math.sin(a)*11);
-            }ctx.closePath();ctx.stroke();
-          }else{
-            ctx.fillStyle='#fff0bd';ctx.beginPath();ctx.moveTo(0,-13);
-            ctx.lineTo(8,0);ctx.lineTo(0,13);ctx.lineTo(-8,0);ctx.closePath();ctx.fill();
-          }ctx.restore();
+        // Six unique REALTIME silhouettes, not six recolored radial explosions.
+        // Renders below kittens/HP bars. No external PNG or shader dependencies.
+        const el=v.element,fade=Math.min(1,k*1.65),t=1-Math.pow(k,2);
+        const R=Math.min(350,Math.hypot(this.W,this.H)*.36);
+        const d=this.game?.isTouch?.65:1,TAU=Math.PI*2;
+        const hash=n=>{let x=Math.sin(n*78.233+15.27)*43758.545;return x-Math.floor(x)};
+        const glow=(x,y,r,col,a)=>{
+          const g=ctx.createRadialGradient(x,y,0,x,y,r);
+          g.addColorStop(0,col);g.addColorStop(.23,col);g.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.globalAlpha=a*fade;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+        };
+        const ring=(x,y,rx,ry,col,w,a)=>{
+          ctx.globalAlpha=a*fade;ctx.strokeStyle=col;ctx.lineWidth=w;
+          ctx.beginPath();ctx.ellipse(x,y,Math.max(1,rx),Math.max(1,ry),0,0,TAU);ctx.stroke();
+        };
+        const star=(x,y,r,col,a)=>{
+          ctx.globalAlpha=a*fade;ctx.lineCap='round';ctx.lineWidth=Math.max(1,r*.24);
+          ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x+r,y);
+          ctx.moveTo(x,y-r);ctx.lineTo(x,y+r);ctx.stroke();
+        };
+        ctx.save();ctx.globalCompositeOperation='lighter';
+        if(el==='fire'){
+          // Roaring directional fire cone, flickering tongues and molten embers.
+          ctx.translate(v.x,v.y);ctx.rotate(v.angle||0);
+          glow(R*.25,0,R,'#e97745',.18);
+          for(let i=0;i<21*d;i++){
+            const a=(hash(i+2)-.5)*1.2,L=R*t*(.48+hash(i+49)*.58);
+            ctx.save();ctx.rotate(a);ctx.globalAlpha=fade*(i%3===0?.82:.54);
+            ctx.fillStyle=i%3===0?'#fff0a3':i%3===1?'#ffac4f':'#ff6335';
+            ctx.beginPath();ctx.moveTo(8,-6);ctx.quadraticCurveTo(L*.28,-20,L*.75,-11);
+            ctx.quadraticCurveTo(L+21,0,L*.78,12);
+            ctx.quadraticCurveTo(L*.35,21,8,6);ctx.closePath();ctx.fill();ctx.restore();
+          }
+          glow(18,0,70,'#fff9ce',.27);
+          for(let i=0;i<17*d;i++){
+            const a=(hash(i+18)-.5)*1.18,r=17+hash(i+62)*R*t;
+            star(Math.cos(a)*r,Math.sin(a)*r,2+hash(i)*4,'#fff0c6',.7);
+          }
+        }else if(el==='water'){
+          // Three cresting tidal arches, ring of surf and airborne foam droplets.
+          const r=27+R*t*1.09;glow(v.x,v.y,r,'#55bddb',.17);
+          for(let b=0;b<3;b++){
+            ctx.globalAlpha=fade*(b===2?.9:.52);
+            ctx.lineWidth=b===2?4:b===1?10:18;ctx.lineCap='round';
+            ctx.strokeStyle=b===2?'#f0ffff':b===1?'#8aeeff':'#2b96c4';
+            ctx.beginPath();
+            for(let j=0;j<=40;j++){
+              const a=Math.PI+j*Math.PI/40,rj=r-b*16+Math.sin(j*.83+this.t*10)*7;
+              const xx=v.x+Math.cos(a)*rj,yy=v.y+Math.sin(a)*rj*.78;
+              j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);
+            }ctx.stroke();
+          }
+          ring(v.x,v.y,r,r*.37,'#d7ffff',4,.58);
+          for(let i=0;i<25*d;i++){
+            const a=i*2.399,rr=22+R*t*(.48+hash(i)*.58);
+            const x=v.x+Math.cos(a)*rr,y=v.y+Math.sin(a)*rr*.68;
+            ctx.globalAlpha=fade*(.42+hash(i+17)*.45);ctx.fillStyle=i%3?'#b5f3ff':'#fff';
+            ctx.beginPath();ctx.arc(x,y,2+hash(i+23)*3.5,0,TAU);ctx.fill();
+          }
+        }else if(el==='grass'){
+          // Living vines extend from the ground while golden sunlight blooms.
+          ctx.translate(v.x,v.y);glow(0,0,R,'#96cb83',.16);
+          for(let i=0;i<16*d;i++){
+            const a=i*TAU/16+hash(i)*.14,L=R*t*(.73+hash(i+8)*.27);
+            ctx.save();ctx.rotate(a);ctx.globalAlpha=fade*.84;
+            ctx.strokeStyle=i%2?'#81c47a':'#cbef9b';ctx.lineWidth=3.6;ctx.lineCap='round';
+            ctx.beginPath();ctx.moveTo(8,0);ctx.bezierCurveTo(L*.23,-21,L*.54,25,L,Math.sin(i)*9);ctx.stroke();
+            for(let j=1;j<=3;j++){
+              ctx.save();ctx.translate(L*j/4,Math.sin(i+j*1.3)*8);
+              ctx.rotate(j%2?-.67:.67);ctx.fillStyle=j%2?'#7dc581':'#d9ed9d';
+              ctx.beginPath();ctx.ellipse(0,0,9*t+1,4*t+1,0,0,TAU);ctx.fill();ctx.restore();
+            }ctx.restore();
+          }
+          for(let i=0;i<16;i++){
+            const a=i*TAU/16;ctx.globalAlpha=.13*fade;ctx.strokeStyle='#fff1af';ctx.lineWidth=10;
+            ctx.beginPath();ctx.moveTo(Math.cos(a)*12,Math.sin(a)*12);
+            ctx.lineTo(Math.cos(a)*R*t,Math.sin(a)*R*t);ctx.stroke();
+          }
+          glow(0,-20,94,'#fff5b4',.34);
+          for(let i=0;i<14*d;i++){
+            const a=i*2.399,r=20+R*t*(.24+hash(i)*.74);
+            star(Math.cos(a)*r,Math.sin(a)*r,2.8,'#fffbd5',.72);
+          }
+        }else if(el==='elec'){
+          // Forked multi-target chain lightning, not a single mouth beam.
+          glow(v.x,v.y,R*.7,'#9bb5fc',.19);
+          const dest=v.targets?.length?v.targets:[
+            {x:v.x+R,y:v.y-R*.24},{x:v.x-R*.85,y:v.y-R*.14},{x:v.x,y:v.y-R}];
+          for(let i=0;i<Math.min(6,dest.length);i++){
+            const q=dest[i],ex=v.x+(q.x-v.x)*t,ey=v.y+(q.y-v.y)*t;
+            const dist=Math.hypot(ex-v.x,ey-v.y)||1,nx=-(ey-v.y)/dist,ny=(ex-v.x)/dist;
+            const pts=[[v.x,v.y]];
+            for(let j=1;j<11;j++){
+              const a=j/11,off=(hash(i*41+j+Math.floor(this.t*17))-.5)*dist*.12;
+              pts.push([v.x+(ex-v.x)*a+off*nx,v.y+(ey-v.y)*a+off*ny]);
+            }
+            pts.push([ex,ey]);ctx.lineJoin='round';ctx.lineCap='round';
+            for(const [w,col,alpha] of [[15,'#778bff',.16],[8,'#c5d7ff',.39],[3.5,'#ffe9aa',.83],[1.5,'#ffffff',1]]){
+              ctx.globalAlpha=fade*alpha;ctx.lineWidth=w;ctx.strokeStyle=col;ctx.beginPath();
+              pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+            }
+            for(let j=3;j<9;j+=3){
+              const [x,y]=pts[j],a=i%2?-.9:.9;ctx.globalAlpha=.55*fade;
+              ctx.strokeStyle='#f2ffff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);
+              ctx.lineTo(x+Math.cos(a)*dist*.23,y+Math.sin(a)*dist*.23);ctx.stroke();
+            }
+            star(ex,ey,6,'#fff',.8);
+          }
+          for(let i=0;i<13*d;i++){
+            const a=i*TAU/13+this.t*1.7,r=30+R*t*.65;
+            star(v.x+Math.cos(a)*r,v.y+Math.sin(a)*r,3,'#ffe2a3',.7);
+          }
+        }else if(el==='dark'){
+          // Purple-black imploding spiral + gravitational maw, never a death ray.
+          ctx.translate(v.x,v.y);const radius=30+R*(1-t*.76);
+          glow(0,0,radius,'#66529f',.35);ring(0,0,radius,radius*.8,'#cbb5ff',4,.77);
+          for(let i=0;i<7;i++){
+            const a0=i*TAU/7+this.t*3.2;
+            ctx.strokeStyle=i%2?'#9f81e0':'#e0cfff';ctx.lineWidth=i%2?7:3;
+            ctx.globalAlpha=fade*(i%2?.69:.86);ctx.lineCap='round';ctx.beginPath();
+            for(let j=0;j<=25;j++){
+              const u=j/25,a=a0+u*Math.PI*1.7,r=radius*(1-u*.83);
+              const x=Math.cos(a)*r,y=Math.sin(a)*r*.8;
+              j?ctx.lineTo(x,y):ctx.moveTo(x,y);
+            }ctx.stroke();
+          }
+          for(let i=0;i<17*d;i++){
+            const a=i*2.399+this.t,r=radius*(.2+hash(i)*.8);
+            star(Math.cos(a)*r,Math.sin(a)*r*.78,2.5,'#f4eaff',.72);
+          }
+        }else if(el==='light'){
+          // Luminous moon ring, white-gold radial rays and celestial glitter.
+          ctx.translate(v.x,v.y);glow(0,0,R,'#ffefc2',.18);
+          for(let i=0;i<22*d;i++){
+            const a=i*TAU/22+this.t*.12,r=R*t;
+            ctx.globalAlpha=.22*fade;ctx.strokeStyle=i%2?'#fff2ce':'#cfeaff';
+            ctx.lineWidth=i%2?4:9;ctx.lineCap='round';ctx.beginPath();
+            ctx.moveTo(Math.cos(a)*23,Math.sin(a)*23);
+            ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);ctx.stroke();
+          }
+          ring(0,0,38+R*t*.84,38+R*t*.84,'#fff7d5',6,.82);
+          ring(0,0,25+R*t*.54,25+R*t*.54,'#cfecff',3,.75);
+          glow(0,0,104,'#fff8d3',.27);
+          for(let i=0;i<20*d;i++){
+            const a=i*2.399,r=29+R*t*(.34+hash(i)*.6);
+            star(Math.cos(a)*r,Math.sin(a)*r,2.7,'#fffcf1',.84);
+          }
         }
+        ctx.restore();
       }
       ctx.restore();
     }
