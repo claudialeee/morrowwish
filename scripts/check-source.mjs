@@ -1063,7 +1063,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
     !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
-    !yardIndex.includes('js/world.js?v=smaller-courtyard-cats-20261121-2')||
+    !cbWorld.includes('this._renderedYardVisualScale=this._renderedYardScale*(growthForm?.scale||1)')||
+    !/src="js\/world\.js\?v=[^"]+"/.test(yardIndex)||
     !/src="js\/game\.js\?v=[^"]+"/.test(yardIndex))
    throw Error('Cat Bond post-battle garden requires crisp kittens, spatial layout, and reset canvas state');
  const fakeWindow={};
