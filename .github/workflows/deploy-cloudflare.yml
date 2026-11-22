@@ -10,6 +10,8 @@ on:
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
+      - 'scripts/check-language.mjs' # Locale regression is a production release gate.
+      - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
       - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
       - 'scripts/check-cat-bond-invariants.mjs' # Retest new skill/build invariants on release.
       - 'scripts/check-cat-bond-map-return.mjs' # Re-run release gate when map-return regression fixture changes.
@@ -110,6 +112,13 @@ jobs:
           }
           console.log('Existing Morrow Wish Pages project and production D1 binding verified.');
           NODE
+      - name: Verify every game in English and Chinese in real Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+          npx playwright install --with-deps chromium
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/mw-language-server.log 2>&1 &
+          sleep 2
+          node scripts/language-browser-smoke.mjs
       - name: Verify discovery and launch automation
         run: |
           node --check scripts/discovery.mjs
