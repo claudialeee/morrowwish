@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','ult-vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ward-art','ult-vfx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -136,6 +136,32 @@ new vm.Script(i18nSrc, { filename: 'i18n.js' });
 vm.runInContext(i18nSrc, sandbox, { filename: 'i18n.js' });
 
 assert.ok(sandbox.window.GameData, 'GameData global present');
+ 
+// WARD-ART REGRESSION: the shield rim must be at the kitten's PLANTED PAWS,
+// not 26px too high across every device / ally / enemy. Growth multiplies
+// both the rendered cat and shield by exactly the same scale.
+assert.equal(typeof sandbox.window.CatBondWardArt?.draw,'function',
+  'three ward VFX must use the same live battle renderer as the kittens');
+for(const ward of ['shieldT','protectT','reflectT']){
+  for(const stage of [0,1,2]){
+    for(const layer of ['back','front']){
+      const cat={stage},fighter={cat,[ward]:1},origin=[];
+      const capture=new Proxy(canvasCtx,{get(target,key){
+        if(key==='translate')return(x,y)=>origin.push({x,y});
+        return target[key];
+      }});
+      assert.equal(sandbox.window.CatBondWardArt.draw(capture,fighter,136,281,1.1,1.04,layer),true);
+      const effectiveScale=1.04*(sandbox.window.Growth?.visual?.(cat)?.scale||1);
+      assert.ok(origin.length>0,ward+' must issue a translate on '+layer);
+      assert.ok(Math.abs(origin[0].x-136)<1e-5);
+      assert.ok(Math.abs(origin[0].y-(281+33*effectiveScale))<.01,
+        ward+' '+layer+' stage '+stage+' must touch planted kitten paws');
+    }
+  }
+}
+assert.equal(sandbox.window.CatBondWardArt.draw(canvasCtx,{shieldT:0},136,281,1,1,'front'),false,
+  'inactive shield must never appear');
+
 assert.equal(sandbox.window.CatBondPaintedRegions?.ids?.join(','),'home,sakura,creek,volcano,ruins',
   'Every one of the five exploration maps has distinct authored scenery');
 const paintedSource=fs.readFileSync(DIR+'js/painted-regions.js','utf8');
