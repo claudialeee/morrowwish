@@ -44,13 +44,33 @@ try{
       if(!target||!f)throw Error('No real combatants '+id);
       f.x=g.W*.32;f.y=g.H*.60;target.x=g.W*.64;target.y=g.H*.60;
       target.hp=target.maxhp=5000;target.speed=0;target.kbx=0;target.kby=0;
-      b.skillStrokes=[];
+      target.inv=0;target.flash=0;
+      b.skillStrokes=[];b.vfx.clear();
       const support=sk.kind==='heal'||sk.kind==='buff';
+      const melee=sk.kind==='melee';
       const emitted=support?CatBondSkillFX.support(b,f,sk):
         CatBondSkillFX.cast(b,f,sk,0);
       if(!emitted)throw Error('Cast signature failed '+id);
-      if(!support&&!CatBondSkillFX.hit(b,target,sk,24,false))
+      if(melee){
+        // Drive ACTUAL close-range damage + physical brush VFX, rather than
+        // faking a signatureCast circle at the caster and a separate magic hit.
+        target.x=f.x+52;target.y=f.y;
+        const before=target.hp;
+        b.meleeStrike(f,0,sk,24,'#e6b7fa');
+        const blades=b.vfx.fx.filter(effect=>effect.type==='slash');
+        if(!(target.hp<before))throw Error('Real melee contact did not land '+id);
+        if(blades.length!==1||blades[0].radius>60||blades[0].max>.27)
+          throw Error('Melee must use exactly one short brush stroke '+id);
+        if(b.skillStrokes.some(stroke=>stroke.kind==='clawSlash'||
+          stroke.kind==='signatureCast'))throw Error('Duplicate melee cast layers '+id);
+        if(!b.skillStrokes.some(stroke=>stroke.kind==='signatureHit'&&stroke.skillId===id))
+          throw Error('Melee contact did not spawn its own skill accent '+id);
+        // Sample mid-sweep; the first frame correctly contains no teleporting
+        // fully painted slash, and the last frame is almost transparent.
+        b.vfx.update(.055);
+      }else if(!support&&!CatBondSkillFX.hit(b,target,sk,24,false)){
         throw Error('Contact art failed '+id);
+      }
       b.skillStrokes.forEach(s=>s.life=s.max*.64);
       target.status={...(target.status||{}),burn:1.6,shock:1};
       // mirrorWall deliberately uses a physical, world-space reflect ward
@@ -74,7 +94,7 @@ try{
       }
       if(isMirror){
         if(wardDrawn<2||!f.reflectT)throw Error('Physical mirror wall not in real battle '+id+': '+wardDrawn);
-      }else if(drawn<(support?1:2)){
+      }else if(drawn<(support||melee?1:2)){
         throw Error('Signature not in actual battle '+id+': '+drawn);
       }
       if(window.CatBondUltHero||b.ultHero)throw Error('full-screen art during normal skill');
