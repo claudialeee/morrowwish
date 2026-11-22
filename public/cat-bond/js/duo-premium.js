@@ -285,7 +285,11 @@ function draw(ctx,W,H,seq,lookup){
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.16),0,0,1,key,tier,actorA,actorB);
+ // Extend ONLY scenery past the camera viewport. Rotated camera tracks
+ // must never expose white triangular edges or a tilted image rectangle.
+ // The character actors retain their original uncropped scale.
+ sourceCover(ctx,cellRect(frame,tier),-sw*.13,-sh*.13,sw*1.26,sh*1.26,
+   Math.min(cam.zoom,1.16),0,0,1,key,tier,actorA,actorB);
  // Paint all large magical symbols, circles and sparkles BEHIND the cats.
  // Never overlay even translucent giant rings on their faces and ears.
  if(!thumbnail&&dual>.09){
