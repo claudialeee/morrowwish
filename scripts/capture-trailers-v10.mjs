@@ -155,6 +155,9 @@ try{
   // V10: Capture the actual sudden disagreement that follows petting in the yard.
   // A capture-only save fixture puts the cats one pet away from the game's
   // existing ninth-interaction trigger, not a fabricated story overlay.
+  // Preserve the real event and its buttons, but frame it over the actual
+  // garden instead of a giant blank mobile modal in the promo-only capture.
+  await page.addStyleTag({content:'#panel.open:has(.duo-quarrel-story){top:68px!important;bottom:76px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px!important}#panel.open>.card:has(.duo-quarrel-story){height:auto!important;min-height:0!important;max-height:410px!important;flex:0 0 auto!important;overflow:visible!important;align-self:center!important}'});
   const quarrel=await page.evaluate(()=>{
     UI.closeAll();window.__V4_CAMERA__.show(false);
     window.__game.scene='yard';window.__game.showYardChrome();
@@ -270,15 +273,18 @@ try{
   await page.evaluate(()=>UI.openMapSquad());
   await mark('auto-team-saved',3000);
   await page.evaluate(()=>{
-   window.__V4_CAMERA__.show(false);window.__game.scene='yard';window.__game.showYardChrome();
+   window.__V4_CAMERA__.show(false);UI.closeAll();window.__game.scene='yard';window.__game.showYardChrome();
    const cats=State.S.cats.slice(0,3);
    CatRelations.grow(cats[0],cats[1],75);CatRelations.choose(cats[0],cats[1]);
    State.S.battlePrefs={...(State.S.battlePrefs||{}),manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
    const wild=GameData.SPECIES.find(s=>s.rarity==='R')||GameData.SPECIES.find(s=>s.rarity==='N')||GameData.SPECIES[0];
    window.__game.startBattle(cats,wild);
+   UI.closeAll(); // Never film an obscuring expedition-selection modal.
    window.__V4_CAMERA__.setMode('arena');window.__V4_CAMERA__.show(true);
   });
   if(!await page.evaluate(()=>!!window.__game.battle?.duo))throw Error('V6 no actual two-cat combo');
+  if(await page.evaluate(()=>!!document.querySelector('#panel.open')))
+    throw Error('Expedition selection still covers live combat footage');
   const battleHud=await page.evaluate(()=>{
     window.__V4_CAMERA__.show(false);
     const b=window.__game.battle,btns=['mv-basic','mv-q','mv-e','mv-dodge','ult-btn'];
@@ -327,6 +333,14 @@ try{
   if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
   const duoStart=stamp();
   await sleep(1800);
+  const duoProof=await page.evaluate(()=>{
+    const b=window.__game.battle;
+    return{active:!!b?.duoCinematic,duoRemaining:b?.duoCinematic?.t,
+      visiblePanel:!!document.querySelector('#panel.open'),
+      battleUI:document.getElementById('battle-ui')?.classList.contains('on')};
+  });
+  if(!duoProof.active||duoProof.visiblePanel||!duoProof.battleUI)
+    throw Error('Duo animation is obscured or finished in filmed segment '+JSON.stringify(duoProof));
   await page.screenshot({path:'public/promo/cat-bond/v10-duo-actual-render-proof.png'});
   await sleep(3000);
   shots.push({label:'duo',start:duoStart,duration:stamp()-duoStart-.08});
