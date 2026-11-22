@@ -1,6 +1,6 @@
 {
   "version": "V12",
-  "createdAt": "2026-11-22T07:02:24.593Z",
+  "createdAt": "2026-11-22T07:05:12.756Z",
   "approval": "NOT APPROVED — REVIEW ONLY",
   "socialAutopublish": false,
   "historicalVideoViewsExcluded": true,
@@ -140,12 +140,11 @@
           "seconds": 3.5
         }
       ],
-      "sourceClips": "V10 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled; uncropped map scene verified with top-left yard and top-right map directory; old portal removed",
+      "sourceClips": "V10 freshly recorded live game actions with in-game catch/achievement outcomes; no simulated rewards, social posting disabled",
       "transitions": "clean cuts, no ghosted or blended gameplay UI",
       "aspect": "native 9:16, game shot aspect unchanged",
       "approved": false,
-      "published": false,
-      "mapNavigationProof": "/promo/cat-bond/v10-map-navigation-proof.png"
+      "published": false
     },
     {
       "slug": "pawsibly-innocent",
