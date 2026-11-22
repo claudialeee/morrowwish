@@ -152,9 +152,16 @@ const UI = {
       return;
     }
     const en=this.isEnglish(),def=World.BUILDINGS_BY_ID[p.type];
-    status.textContent=(en?'Choose a spot for ':'给')+(def?def.name:'设施')+
-      (en?' · tap or move to place':'选择位置 · 点击草坪预览')+
-      (p.valid?(en?' · ready':' · 可以建造'):(en?' · blocked':' · 此处有遮挡'));
+    const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.name||'Structure'):(def?.name||'设施');
+    const compact=window.matchMedia?.('(max-width:700px), (pointer:coarse)')?.matches;
+    // Touch users must see the grass rather than a tall instruction modal.
+    // An invalid tap stays exactly where it was made: guide users to choose clear ground.
+    status.textContent=compact
+      ?(name+(en?' · Tap or drag · ':' · 轻触或拖动 · ')+
+        (p.valid?(en?'✓ Ready':'✓ 可建造'):(en?'× Choose clear grass':'× 换块空草坪')))
+      :(en?'Choose a spot for ':'给')+name+
+        (en?' · tap or move to place':'选择位置 · 点击草坪预览')+
+        (p.valid?(en?' · ready':' · 可以建造'):(en?' · blocked':' · 此处有遮挡'));
     confirm.disabled=!p.valid;
     confirm.textContent=en?'✓ Build here':'✓ 确认建造';
     document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';
