@@ -8,7 +8,9 @@ const source=fs.readFileSync('public/cat-bond/js/worldmap.js','utf8');
 const html=fs.readFileSync('public/cat-bond/index.html','utf8');
 assert.match(html,/worldmap\.js\?v=region-yard-upper-left-20261122/);
 assert.match(source,/← 回庭院/);
-assert.match(source,/← 回地图/); // Keep the portal route to the world map.
+assert.doesNotMatch(source,/← 回地图|← Map/, 'no redundant scene return-to-map sign');
+assert.doesNotMatch(source,/Math\.hypot\(w\.px - w\.portal\.x/, 'no automatic portal exit');
+assert.match(html,/id="map-index"/, 'top-right map directory remains accessible');
 
 for(const {W,H,touch} of [
   {W:390,H:844,touch:true},      // portrait phone
@@ -41,9 +43,11 @@ for(const {W,H,touch} of [
     'upper-left tap is handled in region');
   assert.equal(exits,1,'region control returns directly to yard');
 
-  // Lower-left old button no longer functions as a hidden duplicate.
-  map.handleTap(20,H-24);
-  assert.equal(exits,1,'no hidden legacy bottom-left return');
+  // The old bottom-left control and in-world map portal are fully inert.
+  assert.equal(map.handleTap(20,H-24),false,'no hidden bottom-left map control');
+  assert.equal(map.handleTap(144,650),false,'old portal cannot open world map');
+  assert.equal(map.mode,'region','old map exit does not change the current scene');
+  assert.equal(exits,1,'no duplicate back-to-map / yard action');
   map.enterMap();
   const worldButton={x:compact?64:16,y:W<650?76:65,w:compact?104:128,h:compact?38:42};
   map.handleTap(worldButton.x+worldButton.w/2,worldButton.y+worldButton.h/2);
