@@ -37,6 +37,8 @@ function look(o) {
     ears: o.ears || sp.ears || 'normal',
     point: o.point || sp.point || null,
     short: (o.short !== undefined ? o.short : sp.short) || false,   // 矮脚/曼基康: stubby legs
+    chubby: (o.chubby !== undefined ? o.chubby : sp.chubby) || false,
+    flatFace: (o.flatFace !== undefined ? o.flatFace : sp.flatFace) || false,
   };
 }
 
@@ -74,7 +76,7 @@ function sphere(ctx, cx, cy, rx, ry, base) {
 function drawCat(ctx, x, y, opts) {
   const o = opts || {};
   const L = look(o);
-  const pal = L.pal, pattern = L.pattern, fluffy = L.fluffy, ears = L.ears, short = L.short;
+  const pal = L.pal, pattern = L.pattern, fluffy = L.fluffy, ears = L.ears, short = L.short, chubby=L.chubby;
   const point = L.point || pal.point;
   const gr = o.growth || null;          // growth-form visual descriptor (js/growth.js)
   const s = (o.scale || 1) * (gr ? gr.scale : 1), face = o.face || 1, t = o.t || 0;
@@ -119,8 +121,8 @@ function drawCat(ctx, x, y, opts) {
   // ---- body (smaller egg BELOW the head, clear silhouette; 矮脚=lower & wider) ----
   const bcx = 0;
   const bcy = (sit ? 22 : 21) + by + (short ? 3 : 0);
-  const brx = (sit ? 13 : 14) + (short ? 3 : 0);
-  const bry = (sit ? 14 : 12) + (short ? -1 : 0);
+  const brx = chubby?22:(sit ? 13 : 14) + (short ? 3 : 0);
+  const bry = chubby?18:(sit ? 14 : 12) + (short ? -1 : 0);
   if (fluffy) { ctx.fillStyle = shade(pal.body, 0.05); fluff(ctx, bcx, bcy, brx + 3, bry + 2, 1.13, 15); }
   sphere(ctx, bcx, bcy, brx, bry, pal.body);
 
@@ -153,7 +155,7 @@ function drawCat(ctx, x, y, opts) {
   }
 
   // ---- head (oversized round — the Party-Animals signature, clearly ON TOP) ----
-  const hcx = 0, hcy = (sit ? -8 : -7) + by, hr = 18;
+  const hcx = 0, hcy = (sit ? -8 : -7) + by, hr = chubby?22:18;
   // little neck connector so head & body read as attached, not merged
   ctx.fillStyle = shade(pal.body, 0.06);
   el(ctx, bcx, hcy + hr * 0.72, brx * 0.6, bry * 0.5); ctx.fill();
@@ -164,7 +166,7 @@ function drawCat(ctx, x, y, opts) {
   headMarks(ctx, pattern, pal, point, hcx, hcy, hr);
   ctx.restore();
 
-  drawFace(ctx, hcx, hcy, mood, t, L.eyeColor);
+  drawFace(ctx, hcx, hcy, mood, t, L.eyeColor, L.flatFace);
 
   if (mood === 'love') { ctx.fillStyle = '#ff7b9c'; heart(ctx, hcx + 18, hcy - 15 - Math.sin(t * 3) * 2, 4.5); }
   else if (mood === 'sleepy') { ctx.fillStyle = 'rgba(150,170,210,0.85)'; ctx.font = 'bold 10px sans-serif'; ctx.save(); ctx.scale(face, 1); ctx.fillText('z', face * (hcx + 14), hcy - 15); ctx.restore(); }
@@ -193,7 +195,13 @@ function drawCat(ctx, x, y, opts) {
 }
 
 // ---- face (soft, with glossy-but-small eyes to read as 3D) ----
-function drawFace(ctx, cx, cy, mood, t, eyeColor) {
+function drawFace(ctx, cx, cy, mood, t, eyeColor, flatFace=false) {
+  if(flatFace){
+    // Exotic Shorthair snub muzzle: two puffed cheeks and a tiny nose bridge.
+    ctx.fillStyle='rgba(255,246,225,.68)';
+    el(ctx,cx-8,cy+6,10,7);ctx.fill();
+    el(ctx,cx+8,cy+6,10,7);ctx.fill();
+  }
   const blink = ((t * 0.5) % 4) > 3.86;
   const ex = 5.5, ey = cy - 1;
   // soft cheeks
