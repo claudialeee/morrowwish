@@ -416,18 +416,18 @@ const UI = {
       '<p class="explore-health-rule">'+(State.difficulty()==='casual'
         ?(en?'🌿 Casual: HP refills after each battle.':'🌿 休闲模式：战后自动回满血。')
         :(en?'🔥 Hardcore: HP regenerates automatically (20% per minute). Returning to the yard heals all cats.':'🔥 硬核模式：每分钟自动恢复 20% 血量；回庭院立即满血。'))+'</p>'+
-      '<h3>'+(en?'On your team · tap to manage':'出战猫咪 · 直接管理')+'</h3>'+
+      '<h3>'+(en?'Battle team · tap to manage':'出战队伍 · 直接管理')+'</h3>'+
       '<div class="explore-cat-list">'+summary+'</div>'+
       '<h3>'+(en?'More to do':'其他功能')+'</h3>'+
       '<div class="explore-menu-actions">'+
       action('cats','🐾','全部猫咪','All cats')+
-      action('squad','⚔️','出战编队','Battle team')+
+      action('squad','⚔️','出战队伍','Battle team')+
       action('duo','💞','双猫纽带','Cat duos')+
       action('workshop','🧶','工坊收益','Workshop')+
       action('shop','🛒','小卖部','Shop')+
       action('healteam','🧰','急救包补血 +35% · '+woundedCount+' 个','First-aid kit +35% · '+woundedCount+' needed')+
       action('feed','🍖','喂食全员','Feed all')+
-      action('regions','🗺️','切换地图','Regions')+
+      action('regions','🗺️','世界目录','World directory')+
       '</div><p class="explore-menu-tip">'+(en
         ?'Close × to resume exploring exactly where you left off.'
         :'点击 × 就能回到刚才的位置，继续探索。')+'</p></section>');
@@ -503,7 +503,7 @@ const UI = {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
     if(!selected.length){this.game.toast(en?'Adopt a kitten first':'请先领养一只小猫');return;}
-    this.panel('<span class="card-close">×</span><h2>'+(en?'🐾 Expedition team':'🐾 地图出战队伍')+'</h2>'
+    this.panel('<span class="card-close">×</span><h2>'+(en?'🐾 Battle team':'🐾 出战队伍')+'</h2>'
       +'<p class="sub">'+(en?'Pick up to 5; 2 fight on the field, the rest are bench subs that tag in when a cat faints (a bond ult can also call one in). The first is your leader.':'最多挑 5 只：场上出战 2 只，其余在后备席，场上猫倒下时自动替补上场（羁绊必杀也能临时召唤一只）。第一只是领队。')+'</p>'
       +'<div class="prebattle-quick-select"><button id="map-squad-best" type="button" class="btn ghost">'+(en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵')+'</button></div>'
       +this.squadPickerMarkup(selected)
@@ -516,7 +516,7 @@ const UI = {
     };
     document.getElementById('map-squad-save').onclick=()=>{
       State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids:[...selected]};
-      State.save();this.closeAll();this.game.toast(en?'Expedition team saved!':'出战猫咪已更新！');
+      State.save();this.closeAll();this.game.toast(en?'Battle team saved!':'出战队伍已保存！');
       window.arcadeMetric?.('bond_squad_changed',{size:selected.length});
     };
     document.getElementById('map-squad-cancel').onclick=()=>this._navStack.length?this.navigateBack():this.closeAll();
