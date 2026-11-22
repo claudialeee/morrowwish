@@ -378,15 +378,15 @@ const baseFighterBattle=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
 const baseFighter=baseFighterBattle.me();
 const basePow=baseFighter.cat.stats.pow;
-const baseSpeedExpected=150*(1+Math.min(.15,Math.max(0,baseFighter.cat.stats.agi||0)*.0035));
+const baseSpeedExpected=120*(1+Math.min(.20,Math.max(0,baseFighter.cat.stats.agi||0)*.0035));
 assert.ok(Math.abs(baseFighter.speed-baseSpeedExpected)<1e-9,
-  'AGI move bonus uses 0.35% per point, capped at +15%');
+  'AGI move bonus uses 0.35% per point, capped at +20%');
 const fastCat=State.makeCat('tangyuan');
 fastCat.stats={...fastCat.stats,agi:200};
 const fastBattle=new sandbox.window.Battle.CaptureBattle(game,
   [fastCat],GameData.speciesById('doudou'));
-assert.ok(fastBattle.me().speed<=172.5+1e-9,
-  'even extremely high AGI cannot increase run speed above 115%');
+assert.ok(fastBattle.me().speed<=144+1e-9,
+  'even extremely high AGI cannot increase run speed above 120%');
 const baseExpected=(6+basePow*.7)*(baseFighter.bond.dmgMult||1)*.62;
 assert.ok(Math.abs(baseFighter.dmg-baseExpected)<1e-9,
   'player base attack uses the toned-down 0.62 coefficient');
@@ -497,6 +497,21 @@ assert.ok(gaugeText.includes('韧性'),'enemy poise gauge must show toughness la
 gaugeText.length=0;
 poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa','Friendly Cat');
 assert.ok(!gaugeText.includes('韧性'),'normal HP labels should not gain enemy poise gauge');
+
+// Even legacy 'always basic' gambits cannot prevent adaptive ranged skills.
+const prismAutoBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('yinghua')],GameData.speciesById('doudou'));
+prismAutoBattle.coach=null;
+const prismCat=prismAutoBattle.me(),prismTarget=prismAutoBattle.enemies[0];
+prismCat.qSkill=Skills.skillById('prismBeam');
+prismCat.cd.q=0;
+prismCat.cat.gambits=[{cond:'always',act:'basic'}];
+prismTarget.x=prismCat.x+480;prismTarget.y=prismCat.y;
+prismAutoBattle.evalGambits(prismCat,prismTarget,480,null,Infinity);
+assert.ok(prismCat.cd.q>0,
+  'adaptive AI casts ready prism beam at 480px despite legacy basic gambit');
+assert.equal(prismCat.cat.gambits[0].act,'basic',
+  'existing saved gambit data is preserved without being executed');
 
 assert.ok(skillFx,'skill-signature renderers must load');
 const signatureIDs=Array.from(skillFx.ids);
