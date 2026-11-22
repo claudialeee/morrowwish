@@ -489,9 +489,10 @@ const UI = {
     const [a,b]=picked.map(id=>cats.find(c=>c.uid===id)),ok=a.uid!==b.uid;
     const rel=ok?CatRelations.pair(a,b):null,p=rel?.value||0;
     const duoArt=ok?CatRelations.title(a,b):null;
-    // Show what this pair can become before the player commits to the duo.
-    // Lock affects combat activation, not information needed for a decision.
-    const name=ok?(duoArt?.name||'—'):(en?'Choose two different cats':'请选择两只不同的猫');
+    // Locked duo moves remain secret: no name, description, rendered cut-in
+    // or full-screen route before the actual trust threshold is reached.
+    const unlocked=ok&&p>=20;
+    const name=unlocked?(duoArt?.name||'—'):(ok?'🔒 ???':(en?'Choose two different cats':'请选择两只不同的猫'));
     const personalityNotes=[a,b].map(c=>{
       const notes=en?{
         gentle:'Protector · shields a vulnerable partner',
@@ -538,9 +539,9 @@ const UI = {
         <div class="duo-skill-identity" aria-label="${en?'Selected duo special move':'当前组合合体技能'}">
           <span class="duo-skill-kicker">${en?'THIS PAIR’S DUO SKILL':'这对猫的专属合体技'}</span>
           <strong>${esc(name)}</strong>
-          <p class="duo-art-description">✨ ${ok?esc(duoArt?.description||''):(en?'Choose two different cats':'请选择两只不同的猫')}</p>
-          ${ok?'<canvas id="duo-skill-canvas" role="img" aria-label="'+esc(en?'Selected pair special move animation':'当前两只猫的合体技实际演出')+'"></canvas>':''}
-          <span class="duo-skill-unlock ${p>=20?'unlocked':'locked'}">${p>=20?(en?'✓ Unlocked · Ready to charge in battle':'✓ 已解锁 · 战斗中攒满合击能量后施放'):(en?'🔒 Preview only · Reach trust 20 to use in battle':'🔒 演出预览 · 默契达到20后才可在战斗中使用')}</span>
+          <p class="duo-art-description">${unlocked?'✨ '+esc(duoArt?.description||''):(en?'Keep building trust to discover your duo move.':'继续培养默契，解锁后才会揭晓专属合体技。')}</p>
+          ${unlocked?'<canvas id="duo-skill-canvas" role="img" aria-label="'+esc(en?'Your unlocked duo move':'已解锁的合体技演出')+'"></canvas>':''}
+          <span class="duo-skill-unlock ${unlocked?'unlocked':'locked'}">${unlocked?(en?'✓ Unlocked · Charge your duo meter in battle':'✓ 已解锁 · 战斗中攒满合击能量后施放'):(en?'🔒 Locked · Reach trust 20 to discover the move':'🔒 尚未解锁 · 默契达到 20 后揭晓')}</span>
         </div>
         <span class="duo-active-status">${selected?(en?'✓ Current battle duo':'✓ 已组成出战搭档'):(en?'Not yet assigned':'尚未设为出战搭档')}</span>
         <span>${en?'Trust':'默契'} ${p}/100 · ${ok?CatRelations.moodLabel(a,b):''}</span>
@@ -566,10 +567,10 @@ const UI = {
       <div class="btn-row">
         <button class="btn gold" id="duo-choose" ${!ok?'disabled':''}>${selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档')}</button>
         <button class="btn" id="duo-play" ${!ok||sec>0||State.S.treats<1?'disabled':''}>${en?'Play (1 treat)':'一起玩（1零食）'}</button>
-        ${ok?'<button class="btn ghost" id="duo-preview">'+(en?'Full-screen animation':'全屏观看这招演出')+'</button>':''}</div>
+        ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`);
-    if(ok&&duoArt)this.showPairSkillAnimation(a,b,duoArt.name,duoArt.elementPair,
+    if(unlocked&&duoArt)this.showPairSkillAnimation(a,b,duoArt.name,duoArt.elementPair,
       p>=90?3:p>=60?2:1);
     for(const [id,i] of [['duo-a',0],['duo-b',1]])document.getElementById(id).onchange=e=>{
       const ids=picked.slice();ids[i]=e.target.value;this._duoPicked=ids;this.openBondPanel();
@@ -586,13 +587,12 @@ const UI = {
     };
     const previewButton=document.getElementById('duo-preview');
     if(previewButton)previewButton.onclick=()=>{
-      if(!ok)return;
-      // Select-before-commit previews are intentionally non-playable.
-      // This route is an animation showcase, not a combat unlock.
-      const url=new URL('duo-gallery.html',window.location.href);
-      url.searchParams.set('pair',duoArt.elementPair);
-      url.searchParams.set('a',a.species);
-      url.searchParams.set('b',b.species);
+      if(!unlocked)return;
+      // This player page reads actual saved relationship trust; a URL alone
+      // never grants access to a locked animation.
+      const url=new URL('duo-preview.html',window.location.href);
+      url.searchParams.set('a',a.uid);
+      url.searchParams.set('b',b.uid);
       url.searchParams.set('lang',en?'en':'zh');
       window.open(url.href,'_blank','noopener');
     };
