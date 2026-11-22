@@ -47,7 +47,20 @@ const signalCounts=Object.create(null),lastSignals=Object.create(null);
 function signal(id){if(!/^[a-z0-9_-]{2,40}$/.test(id))return;signalCounts[id]=(signalCounts[id]||0)+1;}
 let firstMs=-1,firstMsSent=false,level=0,score=0,lastClock=performance.now(),closed=false,flushSeq=0;
 let bondEntryAwaitingFirstBattle=false,townFirstBuildSeen=false;
+// Per-page new-player funnel (aggregate only; no individual click trail).
+// Enter -> first run -> first finished attempt -> replay a finished attempt.
+let firstRunStarted=false,firstRunFinished=false,firstReplaySeen=false;
 function event(eventName,p={}){const n=String(eventName||"").toLowerCase();
+const beginsRun=game==="cat-bond"?(n==="bond_entered"||n==="game_start"):
+ game==="tiny-town"?["town_charter_wonder","town_charter_care","town_charter_dream","game_retry"].includes(n):
+ n==="run_start"||n==="game_start";
+const finishesRun=["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n);
+if(beginsRun){
+ if(!firstRunStarted){firstRunStarted=true;signal("funnel_first_run");}
+ else if(firstRunFinished&&!firstReplaySeen){firstReplaySeen=true;signal("funnel_replay_after_finish");}
+}
+if(finishesRun&&firstRunStarted&&!firstRunFinished){firstRunFinished=true;signal("funnel_first_finish");}
+
 // Count a deliberate entry into an interactive game as its start, not a later
 // combat/building milestone. Battle attempts and fresh-town replays are still
 // counted as further runs, without counting the first battle twice.

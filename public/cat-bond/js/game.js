@@ -358,14 +358,18 @@ class Game {
     this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
-    const first=State.S.cats.length>0&&(State.S.catchCount||0)===0;
+    const firstCapture=State.S.cats.length>0&&(State.S.catchCount||0)===0;
+    const firstPet=State.S.cats.length>0&&(State.S.catchCount||0)>0&&(State.S.petCount||0)===0;
     const panelOpen=document.getElementById('panel')?.classList.contains('open');
-    hint.hidden=!first||this.scene!=='yard'||!!panelOpen;
+    hint.hidden=!(firstCapture||firstPet)||this.scene!=='yard'||!!panelOpen;
     if(hint.hidden)return;
     const english=window.MorrowwishI18n?.get?.()!=='zh';
-    const label=this.yard?.hide
-      ? (english?'🌿 First capture: tap the glowing bush!':'🌿 第一次收集：点击发光的草丛，找到新伙伴')
-      : (english?'🌿 First capture: tap the grass button to find a wild cat':'🌿 第一次收集：点击右下角的草丛按钮寻找野猫');
+    // Teach one delightful action at a time. Never force a separate tutorial modal.
+    const label=firstPet
+      ? (english?'🐾 Your next step: tap a cat to pet it and grow your bond!':'🐾 下一步：点击庭院里的小猫，摸摸它，培养感情！')
+      : this.yard?.hide
+        ? (english?'🌿 First adventure: tap the glowing bush to meet a new cat!':'🌿 第一次冒险：点击发光的草丛，遇见新伙伴！')
+        : (english?'🌿 First adventure: tap the grass button to find a cat':'🌿 第一次冒险：点击草丛按钮寻找野猫');
     if(hint.textContent!==label)hint.textContent=label;
   }
 
@@ -681,6 +685,7 @@ class Game {
     }
     State.save();
     this.refreshYardSurprise();
+    this.refreshFirstQuest(); // The first-pet prompt disappears immediately after the interaction.
     // If a cat detail panel is open, refresh BEFORE any important modal.
     // Previously this refresh replaced the quarrel story immediately after
     // showing it (an apparent one-frame flash).

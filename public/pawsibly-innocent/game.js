@@ -834,6 +834,20 @@ label("⌂",s.door.x*T+42,s.door.y*T+61,"bold 46px system-ui",s.got>=NEED?"#6894
 for(const p of s.boxes)boxDraw(p.x*T+42,p.y*T+42);
 for(const p of s.vases)vaseDraw(p.x*T+42,p.y*T+42,s.broken.has(key(p)),time);
 for(const p of s.fish)if(!s.taken.has(key(p)))fishDraw(p.x*T+42,p.y*T+40,time);
+// A quiet in-world first action cue, not another blocking explanation panel.
+// It disappears as soon as the player takes a step; it does not change difficulty.
+if(!daily&&s.index===0&&s.steps===0&&s.got===0){
+ const firstFish=s.fish.find(f=>Math.abs(f.x-s.cat.x)+Math.abs(f.y-s.cat.y)===1&&!s.taken.has(key(f)));
+ if(firstFish){
+  const fx=(firstFish.x+.5)*T,fy=(firstFish.y+.5)*T;
+  ctx.save();
+  ctx.strokeStyle='#fff4c6';ctx.lineWidth=4;
+  ctx.shadowColor='#db8cba';ctx.shadowBlur=15;
+  ctx.beginPath();ctx.arc(fx,fy,33+3*Math.sin(time*.006),0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+  label(lang==='zh'?'点这条鱼':'TAP FISH',fx,fy-43,'800 13px Nunito,system-ui','#895679');
+ }
+}
 if(s.yarnBall&&!s.itemsTaken.has("yarn"))yarnDraw((s.yarnBall.x+.5)*T,(s.yarnBall.y+.5)*T,time);
 if(s.relic&&!s.itemsTaken.has("relic"))relicDraw((s.relic.x+.5)*T,(s.relic.y+.5)*T,time,s.index);
 if(s.light&&!s.itemsTaken.has("light"))lampDraw((s.light.x+.5)*T,(s.light.y+.5)*T,false,time);

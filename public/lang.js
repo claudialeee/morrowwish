@@ -91,6 +91,7 @@ const words={
 "One-button Runner":"一键跑酷","Reflex / Sorting":"反应与分类","Idle Collection":"休闲收集",
 "Flip gravity. Dodge danger. Beat the daily challenge.":"翻转重力，躲开危险，挑战今日纪录。",
 "Tap or press Space to flip gravity and dodge the pink hazards.":"点击或按空格键翻转重力，躲开粉色障碍。",
+"Tap or press Space to flip. Grab gold coins and dodge pink hazards.":"点击或按空格键翻转重力，吃金币、躲开粉色障碍。",
 "Drag the parcel into the right dock before it falls.":"在包裹掉落前，把它拖到对应颜色的货位。",
 "Drag a package to its matching colored dock.":"将包裹拖到同颜色的货位。",
 "Feed fish and build your little ocean world.":"给鱼儿喂食，建造自己的海底小天地。",
