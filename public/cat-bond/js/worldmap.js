@@ -98,7 +98,7 @@
       id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
       node: { x: 0.37, y: 0.52 }, difficulty: 2,
       theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
-      speciesPool: ['nainai', 'moqiu', 'sanhua', 'yunduo', 'yinghua'],
+      speciesPool: ['nainai', 'moqiu', 'sanhua', 'jiafei', 'yunduo', 'yinghua'],
       unlock: { after: 'home', explore: 0.4 },
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
     },
