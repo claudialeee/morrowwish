@@ -249,6 +249,29 @@ function bondTierChoreography(g,W,H,p,key,tier){
  }
  g.restore();
 }
+// Only the painted scenery/effects dissolve into the real battlefield.
+// The two complete, transparent watercolor cats are drawn AFTER this matte,
+// so their ears, paws and tails never become translucent or clipped by it.
+function featherScenery(g,W,H){
+ const edgeX=clamp(25/W,.035,.115);
+ const edgeY=clamp(43/H,.085,.245);
+ g.save();
+ g.globalAlpha=1;
+ g.globalCompositeOperation='destination-in';
+ let fade=g.createLinearGradient(0,0,W,0);
+ fade.addColorStop(0,'rgba(255,255,255,0)');
+ fade.addColorStop(edgeX,'#fff');
+ fade.addColorStop(1-edgeX,'#fff');
+ fade.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=fade;g.fillRect(0,0,W,H);
+ fade=g.createLinearGradient(0,0,0,H);
+ fade.addColorStop(0,'rgba(255,255,255,0)');
+ fade.addColorStop(edgeY,'#fff');
+ fade.addColorStop(1-edgeY,'#fff');
+ fade.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=fade;g.fillRect(0,0,W,H);
+ g.restore();
+}
 function draw(ctx,W,H,seq,lookup){
  if(!seq||seq.t<=0)return false;
  if(!ready)return true; // avoid flashing the rejected procedural kittens during load
@@ -305,7 +328,17 @@ function draw(ctx,W,H,seq,lookup){
   bondTierChoreography(ctx,sw,sh,p,key,tier);
   ctx.restore();
  }
- // Both ACTUAL selected watercolor cats are always the top subject layer.
+ // Complete the camera-transformed scenic pass first. Fade it against
+ // the live battle without placing a rectangular 16:9 card on the arena.
+ // The mask follows the SCREEN, not the rotated/zoomed scenery.
+ ctx.restore();
+ featherScenery(ctx,sw,sh);
+ // Draw BOTH whole watercolor actors on top of the matte, using the exact
+ // same camera track. Their transparent silhouette edges remain pristine.
+ ctx.save();
+ ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
+ ctx.rotate(cam.angle);
+ ctx.translate(-sw*.5,-sh*.5);
  const painted=window.CatBondDuoBreedActors?.draw?.(
    ctx,sw,sh,[actorA,actorB],key,p,tier);
  if(!painted){ctx.restore();ctx.restore();return true;}
@@ -315,7 +348,13 @@ function draw(ctx,W,H,seq,lookup){
  // Do not wash out the artist's real watercolor with a grey film.
  // Soft intro and final flare preserve the exquisite artwork (no full whiteout).
  const flare=Math.max(0,1-Math.abs(p-.31)/.065);
- if(!thumbnail&&flare>.01){ctx.save();ctx.globalAlpha=.055*flare;ctx.fillStyle='#fffef9';ctx.fillRect(0,0,sw,sh);ctx.restore()}
+ if(!thumbnail&&flare>.01){
+  ctx.save();ctx.globalAlpha=.065*flare;
+  const glow=ctx.createRadialGradient(sw*.5,sh*.51,0,sw*.5,sh*.51,sw*.56);
+  glow.addColorStop(0,'#fffefa');glow.addColorStop(.50,'#fffef999');
+  glow.addColorStop(1,'#fffefa00');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,sw,sh);ctx.restore();
+ }
  // The actor-only scenic atlas contains NO baked English skill title.
  // Never paint the old rectangular veil over either cat's head or tail.
  if(!seq.hideCaptions){
@@ -325,21 +364,19 @@ function draw(ctx,W,H,seq,lookup){
  ctx.shadowColor='#2d244a';ctx.shadowBlur=8;ctx.fillStyle='#fffbed';
  const px=clamp(sw*.054,17,36);
  ctx.font='900 '+Math.round(px)+'px system-ui,sans-serif';
- ctx.fillText(title,sw*.5,sh*.925,sw*.92);
+ ctx.fillText(title,sw*.5,sh*.865,sw*.90);
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
  // Breed information is shown in the separate roster UI; never overlay
  // a false claim of exact painted breed identity over fixed artist subjects.
- if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.984,sw*.86);
+ if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.945,sw*.86);
  ctx.restore();
  }
  ctx.restore();
- // Keep the full painted scene opaque and intact. The old four-sided
- // destination-in fade cut away fur, paws and scenery, making cats translucent.
- // A quiet seamless backdrop in Cat Bond's pastoral palette, tinted by
- // the region's existing battle theme instead of an unrelated purple card.
+ // The scenery feather is applied BEFORE the intact selected cats.
+ // No hard rectangular boundary, clipped fur, or gray overlay in mobile combat.
  const tone=harmony(key);
  battlefield.save();
- // No washed-out halo or colored rectangle behind the full bleed painting.
+ // Transparent feathered scene merges directly with the live arena.
  battlefield.globalAlpha=1;
  battlefield.drawImage(cinematicLayer,x,y,sw,sh);
  battlefield.restore();
