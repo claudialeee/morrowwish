@@ -2168,7 +2168,9 @@ class CaptureBattle {
         if (d > 30) { const a = Math.atan2(f.y - e.y, f.x - e.x); e.kbx = (e.kbx || 0) + Math.cos(a) * 320; e.kby = (e.kby || 0) + Math.sin(a) * 320; }
         strike(e, 1.2);
       }
-      this.vfx.ring(f.x, f.y, { r0: R, vr: -R * 1.8, life: 0.5, color, width: 10 });    // imploding ring
+      // Keep implosion inside the local fight, never a screen-spanning arc.
+      this.vfx.ring(f.x, f.y, { r0: Math.min(170,R*.34), vr: -240,
+        life: .42, color: '#8a55bb', width: 4 });
       this.vfx.burst(f.x, f.y, { count: 28, color, speed: 300, life: 0.55, r: 3 });
     } else {
       // light (and any fallback): 圣耀爆发: radiant NOVA around the caster.

@@ -40,7 +40,8 @@ function bolt(c,x,y,ex,ey,i,time,alpha){
   const t=j/10,off=(h(i*23+j*1.2+tick)-.5)*d*.13;
   pts.push([x+dx*t+nx*off,y+dy*t+ny*off]);
  }pts.push([ex,ey]);
- for(const [w,color,a] of [[12,'#788ddd',.22],[6,'#c3d9fb',.54],[2.6,'#ffefa7',.95],[1.1,'#fff',1]]){
+ // Indigo outline preserves contrast on the bright watercolor garden floor.
+ for(const [w,color,a] of [[15,'#4b55aa',.29],[8,'#5f80d5',.60],[3.5,'#ffe5a0',1],[1.6,'#fffdf0',1]]){
   c.globalAlpha=alpha*a;c.lineWidth=w;c.strokeStyle=color;c.beginPath();
   pts.forEach((p,j)=>j?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke();
  }
@@ -128,19 +129,25 @@ function sunbloom(c,s){
 }
 function thunderYowl(c,s){
  const {x,y,R,p,a,front,targets,time}=s;
+ const dst=targets.length?targets:[{x:x+R,y:y-80},{x:x-R*.64,y:y-45},{x,y:y-R}];
+ // Arcs must finish reaching real enemy positions early in the cast. The
+ // old p fraction only reached half the target at the hero frame.
+ const reach=Math.min(1,p*2.8);
  if(front){
+  for(let j=0;j<Math.min(6,dst.length);j++){
+   const d=dst[j];bolt(c,x,y,x+(d.x-x)*reach,y+(d.y-y)*reach,j,time,a*.70);
+  }
   for(let j=0;j<11;j++){
    const th=j*T/11+time*2,rr=20+R*p*.82;
-   star(c,x+Math.cos(th)*rr,y+Math.sin(th)*rr,2.8,'#fff6c1',a*.75);
+   star(c,x+Math.cos(th)*rr,y+Math.sin(th)*rr,2.8,'#ffe7a1',a*.85);
   }
  }else{
-  const dst=targets.length?targets:[{x:x+R,y:y-80},{x:x-R*.64,y:y-45},{x,y:y-R}];
   for(let j=0;j<Math.min(7,dst.length);j++){
    const d=dst[j],dx=d.x-x,dy=d.y-y;
-   bolt(c,x,y,x+dx*p,y+dy*p,j,time,a);
-   star(c,x+dx*p,y+dy*p,4.8,'#fff',a*.8);
+   bolt(c,x,y,x+dx*reach,y+dy*reach,j,time,a*.78);
+   star(c,x+dx*reach,y+dy*reach,4.8,'#fff8e4',a*.8);
   }
-  ring(c,x,y,16+R*.45*p,'#f4e1ac',2.8,a*.32,.70);
+  ring(c,x,y,16+R*.45*p,'#eccf71',2.8,a*.32,.70);
  }
 }
 function voidMaw(c,s){
@@ -152,9 +159,12 @@ function voidMaw(c,s){
   }
  }else{
   const r=Math.max(18,R*(1-.82*p));
-  glow(c,x,y,r*.86,'#614081',a*.23);
+  // A true dark event horizon UNDER the existing cat, not white rings on grass.
+  c.globalAlpha=a*.23;c.fillStyle='#32204f';c.beginPath();
+  c.ellipse(x,y,r*.67,r*.52,0,0,T);c.fill();
+  glow(c,x,y,r*.86,'#57327d',a*.17);
   for(let j=0;j<8;j++){
-   c.strokeStyle=j%2?'#9d7add':'#d5b7fb';c.lineWidth=j%2?7:3;
+   c.strokeStyle=j%2?'#7447b3':'#ac78d3';c.lineWidth=j%2?7:3;
    c.globalAlpha=a*(j%2?.6:.91);c.beginPath();
    for(let k=0;k<=26;k++){
     const t=k/26,theta=j*T/8+t*PI*1.8-time*2.4,rad=r*(1-t*.86);
@@ -162,7 +172,7 @@ function voidMaw(c,s){
     k?c.lineTo(px,py):c.moveTo(px,py);
    }c.stroke();
   }
-  ring(c,x,y,r,'#cab2f9',2.3,a*.69,.82);
+  ring(c,x,y,r,'#8652c0',2.8,a*.66,.82);
  }
 }
 function moonlitHalo(c,s){
