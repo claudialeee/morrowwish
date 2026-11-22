@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "capturedAt": "2026-11-22",
-  "nativeWindow": "Lifetime stats for seven 2026-11-22 Instagram Reels and seven TikTok videos from owner/public platform readings; separately identified older IG Reels never merged.",
+  "nativeWindow": "Only seven approved 2026-11-22 promo videos per YouTube, Instagram and TikTok; Bluesky only its seven verified 2026-11-22 posts. Older promo content is never included.",
   "source": "Instagram owner Insights + TikTok public video listing from connected vidIQ; Bluesky public AppView",
   "refreshMode": "instagram-owner-verified-snapshot;tiktok-public-verified-snapshot;bluesky-native-10-min-refresh",
-  "note": "Instagram 7 Nov 22 Reels: 305 views, 10 likes (owner Insights); TikTok 7 Nov 22 videos: 94 views, 1 like (public feed). Both as-of snapshots, not continuous live counters. Bluesky public likes/reposts refresh in Worker.",
+  "note": "Only current approved 2026-11-22 game promo campaign. Earlier Instagram Reels and all older promo material are excluded from the dashboard, snapshots, source sync, and promotion aggregates.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -96,9 +96,9 @@
   ],
   "metricScope": {
     "type": "approved-short-videos-only",
-    "campaignTagPrefix": "mw-shorts-v2",
+    "campaignTagPrefix": "mw-shorts-20261122",
     "historicalExcluded": true,
-    "rule": "Only individually verified public post metrics are aggregated; figures are verified snapshots, not live counters. Bluesky reactions and video plays are different metrics.",
+    "rule": "Strict allowlist of seven approved 2026-11-22 promo videos per platform; older videos never counted, imported or backfilled. Only approved individual URLs with verified metrics contribute to aggregates.",
     "activeApprovedPosts": 21,
     "verifiedPosts": [
       {
@@ -374,160 +374,7 @@
         "dataSource": "vidiq-instagram-owner-insights",
         "lastVerifiedAt": "2026-11-22"
       }
-    ]
-  },
-  "accountOverview": {
-    "capturedAt": "2026-11-22",
-    "source": "Instagram native owner insights and public TikTok feed through connected vidIQ; historical IG kept in separate row.",
-    "refreshMode": "manual",
-    "windowStart": "2026-11-20",
-    "windowEnd": "2026-11-22",
-    "note": "New 2026-11-22 Instagram campaign: seven Reels individually verified (305 plays, 10 likes), kept separate from six older Nov 20 Reels (273 historical plays). TikTok: seven verified videos (94 plays). All counts are as-of snapshots.",
-    "platforms": [
-      {
-        "id": "instagram",
-        "published": 7,
-        "views": 305,
-        "likes": 10,
-        "viewBasis": "7-new-reels-published-2026-11-22-instagram-owner-insights",
-        "posts": [
-          {
-            "url": "https://www.instagram.com/reel/DgDdwz6T4Gy/",
-            "publishedAt": "2026-11-22",
-            "views": 4,
-            "likes": 1
-          },
-          {
-            "url": "https://www.instagram.com/reel/DgDfM-DBb1K/",
-            "publishedAt": "2026-11-22",
-            "views": 9,
-            "likes": 1
-          },
-          {
-            "url": "https://www.instagram.com/reel/DgDfO6ztxnM/",
-            "publishedAt": "2026-11-22",
-            "views": 2,
-            "likes": 1
-          },
-          {
-            "url": "https://www.instagram.com/reel/DgDfQqkT6Gx/",
-            "publishedAt": "2026-11-22",
-            "views": 0,
-            "likes": 1
-          },
-          {
-            "url": "https://www.instagram.com/reel/DgDfUwbB4EP/",
-            "publishedAt": "2026-11-22",
-            "views": 227,
-            "likes": 2
-          },
-          {
-            "url": "https://www.instagram.com/reel/DgDfRCJAF83/",
-            "publishedAt": "2026-11-22",
-            "views": 34,
-            "likes": 2
-          },
-          {
-            "url": "https://www.instagram.com/reel/DgDfRT3O7EK/",
-            "publishedAt": "2026-11-22",
-            "views": 29,
-            "likes": 2
-          }
-        ],
-        "status": "seven-reels-verified",
-        "label": "Instagram Nov 22"
-      },
-      {
-        "id": "tiktok",
-        "published": 7,
-        "views": 94,
-        "viewBasis": "7-individual-tiktok-videos-public-vidIQ-2026-11-22",
-        "posts": [
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071401913896206",
-            "publishedAt": "2026-11-22",
-            "views": 12,
-            "likes": 0
-          },
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071409966943502",
-            "publishedAt": "2026-11-22",
-            "views": 21,
-            "likes": 0
-          },
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071395941240095",
-            "publishedAt": "2026-11-22",
-            "views": 18,
-            "likes": 0
-          },
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071458256112909",
-            "publishedAt": "2026-11-22",
-            "views": 23,
-            "likes": 1
-          },
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071406368312589",
-            "publishedAt": "2026-11-22",
-            "views": 2,
-            "likes": 0
-          },
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071416099032333",
-            "publishedAt": "2026-11-22",
-            "views": 18,
-            "likes": 0
-          },
-          {
-            "url": "https://www.tiktok.com/@morrowwishgames/video/7711071765379829005",
-            "publishedAt": "2026-11-22",
-            "views": 0,
-            "likes": 0
-          }
-        ],
-        "status": "7-videos-verified-snapshot"
-      },
-      {
-        "id": "instagram-historical",
-        "published": 6,
-        "views": 273,
-        "viewBasis": "lifetime_views_of_reels_published_in_window",
-        "posts": [
-          {
-            "url": "https://www.instagram.com/reel/Df9CJXwttqy/",
-            "publishedAt": "2026-11-20",
-            "views": 44
-          },
-          {
-            "url": "https://www.instagram.com/reel/Df87XKxS4Jy/",
-            "publishedAt": "2026-11-20",
-            "views": 133
-          },
-          {
-            "url": "https://www.instagram.com/reel/Df80eunpptl/",
-            "publishedAt": "2026-11-20",
-            "views": 84
-          },
-          {
-            "url": "https://www.instagram.com/reel/Df8tj4HB7Ge/",
-            "publishedAt": "2026-11-20",
-            "views": 4
-          },
-          {
-            "url": "https://www.instagram.com/reel/Df8mrfBuMha/",
-            "publishedAt": "2026-11-20",
-            "views": 6
-          },
-          {
-            "url": "https://www.instagram.com/reel/Df8f0EFBdCl/",
-            "publishedAt": "2026-11-20",
-            "views": 2
-          }
-        ],
-        "status": "historical-nov-20-only",
-        "label": "Instagram Nov 20 (historical)"
-      }
-    ]
+    ],
+    "campaignStart": "2026-11-22"
   }
 }
