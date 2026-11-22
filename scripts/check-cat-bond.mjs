@@ -477,9 +477,9 @@ const battleSource=fs.readFileSync(DIR+'js/battle.js','utf8');
 assert.ok(battleSource.includes('vulnerabilityBonus += 0.30') && !battleSource.includes('target.staggerT > 0) dmg *= 1.3'),
   'stagger belongs to the additive vulnerability bucket, not a separate multiplier');
 
-// Q/E SKILL hits now CHIP the poise gauge (owner-approved design change so the 韧性 bar
-// visibly depletes as you use skills); BASICS never drain it; emptying opens a Stagger
-// window; a dedicated 泰山压顶 zeroes it instantly. Also keeps the 10s 破甲 (rust) mark.
+// Q/E skills chip gold poise (basics do not). Partial losses never regenerate;
+// only breaking to zero unlocks stagger then post-break recovery. Dedicated
+// 泰山压顶 zeroes instantly. The ten-second rust mark is unchanged.
 assert.equal(Skills.TAG_INFO.rust.ttl,10,'armor break persists for ten seconds');
 assert.equal(Skills.TAG_INFO.rust.dps,0,'armor break is not an added DOT');
 const poiseBattle=new sandbox.window.Battle.CaptureBattle(game,
@@ -512,14 +512,28 @@ slamCat._leapSkill={id:'quakeStomp',kind:'leap',element:'grass',tags:['stagger']
 poiseBattle.leapLand(slamCat);
 assert.equal(poiseEnemy.staggerT,3,'dedicated stagger slam lasts three seconds');
 assert.equal(poiseEnemy.poise,0,'dedicated stagger visibly empties the poise gauge');
+// Partial damage should NOT self-heal, even after many gameplay ticks.
 poiseEnemy.staggerT=0;
-poiseEnemy.poise=0;
+poiseEnemy.poise=poiseEnemy.poiseMax*.35;
+poiseEnemy.poiseRecovering=false;
 poiseEnemy.swipeCd=999;
+for(let frame=0;frame<12;frame++)poiseBattle.update(.1);
+assert.ok(Math.abs(poiseEnemy.poise-poiseEnemy.poiseMax*.35)<.0001,
+  'poise above zero never self-recovers');
+// An actual zero-break is the ONLY trigger for the recovery phase.
+poiseBattle.triggerStagger(poiseEnemy,1);
+assert.equal(poiseEnemy.poise,0,'break zeros out the gauge');
+assert.equal(poiseEnemy.poiseRecovering,true,'break enables the delayed refill');
 for(let frame=0;frame<4;frame++)poiseBattle.update(.1);
-assert.equal(poiseEnemy.poise,0,'broken poise must NEVER regenerate on combat ticks');
-assert.ok(!battleSource.includes('e.poise = Math.min(e.poiseMax'),
-  'do not bring back frame-based poise refilling');
-poiseEnemy.staggerT=3;
+assert.equal(poiseEnemy.poise,0,'no refill during the stagger window');
+poiseEnemy.staggerT=0;
+for(let frame=0;frame<4;frame++)poiseBattle.update(.1);
+assert.ok(poiseEnemy.poise>0&&poiseEnemy.poise<poiseEnemy.poiseMax,
+  'after full break and stagger, refill gradually');
+for(let frame=0;frame<50;frame++)poiseBattle.update(.1);
+assert.equal(poiseEnemy.poise,poiseEnemy.poiseMax,'post-break recovery reaches full');
+assert.equal(poiseEnemy.poiseRecovering,false,'recovery stops when full');
+poiseEnemy.poise=0;poiseEnemy.staggerT=3;
 
 const gaugeText=[];
 const gaugeCtx=new Proxy(canvasCtx,{get(target,key){
@@ -535,9 +549,9 @@ gaugeText.length=0;
 poiseBattle.hpTag(gaugeCtx,poiseEnemy.x,poiseEnemy.y-42,.8,'#aaaaaa',
   'Wild Cat',{current:0,max:poiseEnemy.poiseMax,stagger:0});
 assert.ok(gaugeText.includes('破防'),
-  'after stagger expires, permanently empty poise must show 破防, never a refilled gauge');
+  'the moment between stagger and recovery must display 破防');
 poiseEnemy.staggerT=3;
-assert.ok(battleSource.includes('const amount=broken?0:'),
+assert.ok(battleSource.includes('const amount=shattered?0:'),
   'stagger empties the gauge rather than drawing the countdown as remaining poise');
 poiseEnemy.staggerT=0;
 gaugeText.length=0;

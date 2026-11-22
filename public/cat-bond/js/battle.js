@@ -667,8 +667,10 @@ class CaptureBattle {
       skill: this.pickWildSkillFor(element, rIdx),
       // POISE/韧性: only authored stagger actions (泰山压顶, 纸箱埋伏,
       // cast interrupts) break poise. Ordinary hits cause armor break instead.
-      // Each enemy's poise only decreases in this encounter; a zero gauge stays broken.
+      // Partial poise losses persist. Only reaching ZERO unlocks recovery:
+      // after the stagger window, refill the gauge during a separate recovery phase.
       poise: Math.round(maxhp * 0.6), poiseMax: Math.round(maxhp * 0.6), staggerT: 0,
+      poiseRecovering: false,
       tags: [], alive: true,
     };
   }
@@ -2173,11 +2175,13 @@ class CaptureBattle {
     this.vfx.ring(tx, ty, { r0: f._leapR, vr: -120, life: 0.44, color: col, width: 3 });   // shrinking target reticle
     window.MorrowwishAudio?.effect?.('charge');
   }
-  // A dedicated stagger consumes the entire poise gauge. The stagger vulnerability
-  // expires after its timed window, but depleted poise never regenerates this fight.
+  // Zero poise is the sole recovery trigger. Vulnerability lasts for the
+  // stagger window; only then does gradual refilling begin.
+  // A partially depleted gauge never regenerates automatically.
   triggerStagger(e,seconds=3) {
     if (!e || !e.alive) return;
     e.poise=0;
+    e.poiseRecovering=true;
     e.staggerT=Math.max(e.staggerT||0,seconds);
   }
   // land the leap: AOE slam + stagger under the impact point
@@ -3674,8 +3678,12 @@ class CaptureBattle {
       }
       if (e.staggerT > 0) e.staggerT = Math.max(0, e.staggerT - dt); // 3s break window
       if (e._castSlow > 0) e._castSlow = Math.max(0, e._castSlow - dt);
-      // No automatic poise recovery: once the gauge is depleted, it remains
-      // shattered for this entire encounter. Stagger vulnerability still times out.
+      // Never regenerate partially damaged poise. ONLY a full break unlocks
+      // recovery, and the stagger vulnerability must finish before any refill.
+      if(e.poiseRecovering && e.staggerT<=0){
+        e.poise=Math.min(e.poiseMax,e.poise+e.poiseMax*dt/3);
+        if(e.poise>=e.poiseMax)e.poiseRecovering=false;
+      }
       const canAct = this.tickStatus(e, dt);          // DoT + CC; false = frozen this frame
       if (coachHold) { e.pose = 'idle'; e.telegraph = 0; }   // tutorial: hold fire
       else if (e.alive && canAct) this.updateEnemyAI(dt, e, me);
@@ -5271,7 +5279,7 @@ class CaptureBattle {
       }
       const elemSym = this.elemSymbol(e.element);
       this.hpTag(ctx, e.x, e.y - 78, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
-        `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT});
+        `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
       // Compact status grid BELOW the HP + poise card. Lift the card to reserve
       // two rows between its bottom edge and the cat's head.
       if (e.status) {
@@ -5774,7 +5782,7 @@ class CaptureBattle {
 
   hpTag(ctx, x, y, frac, color, label, poise=null) {
     // Enemy health cards show a WIDER, THICKER poise meter than HP.
-    // Display-only. Never change poise damage, regeneration or stagger timings.
+    // Display-only: restored warm gold poise; red while staggered/broken.
     const w=86,h=6,poiseW=106,poiseH=11,cardW=poise?poiseW+14:w+14;
     ctx.save();
     ctx.fillStyle='rgba(255,250,239,.94)';
@@ -5795,12 +5803,12 @@ class CaptureBattle {
       const shattered=(poise.current||0)<=0;
       const amount=shattered?0:Math.max(0,Math.min(1,poise.current/poise.max));
       const yy=y+5;
-      ctx.fillStyle=(broken||shattered)?'rgba(210,95,90,.19)':'rgba(119,119,173,.23)';
+      ctx.fillStyle=(broken||shattered)?'rgba(210,95,90,.19)':'rgba(205,161,65,.24)';
       rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.fill();
       if(amount>0){
-        ctx.fillStyle='#8582d5';
+        ctx.fillStyle='#e3b84f';
         rr(ctx,x-poiseW/2,yy,poiseW*amount,poiseH,5);ctx.fill();
-        ctx.fillStyle='rgba(246,245,255,.55)';
+        ctx.fillStyle='rgba(255,248,202,.75)';
         rr(ctx,x-poiseW/2+2,yy+1,Math.max(0,poiseW*amount-4),3,2);ctx.fill();
       }
       if(broken||shattered){
@@ -5808,8 +5816,9 @@ class CaptureBattle {
         rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.stroke();
       }
       ctx.textAlign='center';ctx.font='800 10px system-ui, sans-serif';
-      ctx.fillStyle=(broken||shattered)?'#ae534b':'#615c96';
-      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):(shattered?'破防':'韧性'),x,y+29);
+      ctx.fillStyle=(broken||shattered)?'#ae534b':'#90641e';
+      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):
+        (shattered?'破防':(poise.recovering?'恢复中':'韧性')),x,y+29);
     }
     ctx.restore();
   }
