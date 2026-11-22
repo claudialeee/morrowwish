@@ -14,7 +14,8 @@ try {
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8765/cat-bond/?lang=zh',
     {waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.CatBondArtworkStatus?.jiafeiLoaded===true,
+  await page.waitForFunction(()=>window.CatBondArtworkStatus?.jiafeiLoaded===true&&
+    window.CatBondArtworkStatus?.breedsLoaded===true,
     null,{timeout:15000});
   const check=await page.evaluate(()=>{
     const cat=GameData.speciesById('jiafei');
@@ -30,6 +31,20 @@ try {
        top=Math.min(top,y);bottom=Math.max(bottom,y);
       }
     }
+    // Reference is a normal production watercolor breed with identical scale.
+    const refCanvas=document.createElement('canvas');
+    refCanvas.width=400;refCanvas.height=390;
+    const refCtx=refCanvas.getContext('2d',{willReadFrequently:true});
+    CatArt.drawCat(refCtx,200,208,{species:GameData.speciesById('tangyuan'),
+      scale:2.6,pose:'sit',t:0.7});
+    const refPixels=refCtx.getImageData(0,0,400,390).data;
+    let refTop=390,refBottom=-1,refLeft=400,refRight=-1;
+    for(let y=0;y<390;y++)for(let x=0;x<400;x++){
+      if(refPixels[(y*400+x)*4+3]>75){
+        refTop=Math.min(refTop,y);refBottom=Math.max(refBottom,y);
+        refLeft=Math.min(refLeft,x);refRight=Math.max(refRight,x);
+      }
+    }
     const thumb=document.createElement('canvas');
     thumb.width=160;thumb.height=160;
     CatArt.renderCatThumb(thumb,cat);
@@ -37,7 +52,9 @@ try {
       .find(r=>r.name.includes('/cat-bond/assets/jiafei-watercolor-v1.avif'));
     return {rarity:cat?.rarity,buildType:Skills.buildTypeForBreed({species:'jiafei'}),
       loaded:CatBondArtworkStatus.jiafeiLoaded,resource:!!resource,
-      opaque,box:{left,right,top,bottom},drawing:canvas.toDataURL('image/png'),
+      opaque,box:{left,right,top,bottom},
+      referenceBox:{left:refLeft,right:refRight,top:refTop,bottom:refBottom},
+      drawing:canvas.toDataURL('image/png'),
       portrait:thumb.toDataURL('image/png')};
   });
   assert.equal(check.rarity,'SR');
@@ -48,6 +65,10 @@ try {
   assert.ok(check.box.left>1&&check.box.right<399&&check.box.top>1&&check.box.bottom<389,
     'Jiafei must fit within the illustrated portrait and not be clipped: '+
       JSON.stringify(check.box));
+  assert.ok(check.box.bottom-check.box.top<=251,
+    'Jiafei image must be perceptibly smaller than prior 262px watercolor bounds');
+  assert.ok(check.referenceBox.bottom>check.referenceBox.top,
+    'Normal watercolor breed must actually decode for meaningful scale QA');
   const save=(path,data)=>fs.writeFileSync(path,Buffer.from(data.split(',')[1],'base64'));
   save('/tmp/jiafei-review-'+spec.name+'-illustration.png',check.drawing);
   save('/tmp/jiafei-review-'+spec.name+'-portrait.png',check.portrait);
