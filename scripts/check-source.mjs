@@ -153,6 +153,7 @@ const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
 if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
    !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr)')||
+   !premiumScene.includes('portraitEnvironment(key,frame,tier,sw,sh)')||
    !premiumScene.includes('const opacity=thumbnail?1:smooth(p/.19)')||
    !premiumScene.includes('originalArt?null:key')&&
       !premiumScene.includes('(originalArt&&!portrait)?null:key')||
