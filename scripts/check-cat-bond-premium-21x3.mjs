@@ -12,10 +12,10 @@ const scripts=['js/duo-director.js','js/duo-premium.js','js/duo-hero.js'];
 for(const name of scripts)new vm.Script(source(name),{filename:name});
 
 const window={devicePixelRatio:1,dispatchEvent:()=>{},addEventListener:()=>{}};
-const mockCanvas=()=>({width:1152,height:1296,getContext:()=>({})});
+const mockCanvas=()=>({width:3584,height:2592,getContext:()=>({})});
 const document={createElement:()=>mockCanvas()};
 class ImageMock{
- constructor(){this.naturalWidth=1152;this.naturalHeight=1296;this.onload=null}
+ constructor(){this.naturalWidth=3584;this.naturalHeight=2592;this.onload=null}
  set src(v){this._src=v}
  get src(){return this._src}
 }
@@ -28,6 +28,11 @@ const Hero=window.CatBondDuoHero;
 assert.equal(Director.keys.length,21,'Must offer 21 real element combinations');
 assert.equal(Premium.scenePaletteCount,21,'Each combo must have its own palette');
 assert.equal(Premium.tierVariants,3,'Three trust tiers must have separate cut-in scripts');
+assert.equal(Premium.wholeSceneCount,21,'No more 8 repeated grey/purple paintings');
+assert.equal(Premium.paintedFrameCount,63,'Must have 21 element pairs with 3 real pose images each');
+assert.match(Premium.source,/duo-storyboard-21x3-v3.webp/);
+const asset='public/cat-bond/assets/duo-storyboard-21x3-v3.webp';
+assert.ok(fs.existsSync(asset) && fs.statSync(asset).size>1500000,'Real 63-frame atlas must exist in production source');
 assert.equal(Hero.assetSource,'approved-complete-painterly-duo-sheet',
  'Do not silently replace painted cats with rejected cheap procedural actors');
 const paletteIds=Director.keys.map(key=>{
@@ -56,10 +61,14 @@ assert.equal((page.match(/class="skill-preview"/g)||[]).length,21,
  'All 21 gallery cards must include real animation canvases');
 assert.equal((page.match(/<article class="breed-card"/g)||[]).length,32);
 assert.equal((page.match(/class="featured-painting"/g)||[]).length,3);
+assert.equal((page.match(/class="source-art-stage"/g)||[]).length,63,
+ 'Every skill must show three actual painted frames, not just camera presets');
+assert.equal((page.match(/<article class="master-art"/g)||[]).length,21);
 for(const html of [page,game,unlocked]){
- assert.match(html,/js\/duo-premium\.js\?v=21-tinted-scenes-3-cinematic-tiers/,
+ assert.match(html,/js\/duo-premium\.js\?v=original-painted-21x3-v3-20261122/,
   'Game, review gallery and unlocked preview must load the SAME latest premium painter');
+ assert.doesNotMatch(html,/duo-premium-sheet\.webp/, 'Rejected old gray-purple cut-in artwork must never load');
  assert.match(html,/js\/duo-director\.js\?v=three-tiers-21-cameras/,
   'Every entrypoint needs the latest three-stage direction module');
 }
-console.log('CAT BOND PREMIUM 21x3 PASS: 21 distinct painted palettes, 63 tier camera edits, original high-quality cats, 21 live previews, 32 breeds');
+console.log('CAT BOND PREMIUM 21x3 PASS: 21 unique themes and 63 full-body painted skill-stage frames, original art, 21 live previews, 32 breeds');
