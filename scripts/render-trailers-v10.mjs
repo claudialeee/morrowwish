@@ -13,10 +13,10 @@ const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
 const manifest={version:'V10',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
  socialAutopublish:false,historicalVideoViewsExcluded:true,readabilityChecked:true,pausedPromoGames:[],trailers:[]};
 const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v10',
- method:'Caption words at 3.1 words/sec + 0.8 sec orientation; scene-specific minimums for dense menus and story; three choices shown together.',
+ method:'Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate.',
  pausedPromoGames:[],scenes:[]};
 const MIN_READING={
- 'cat-bond':{'cat-upgrade':3.0,'duo-partners':2.6,'duo-promise':3.7,'duo-quarrel':3.1,'duo-reconcile':2.7,
+ 'cat-bond':{'cat-upgrade':3.0,'duo-partners':2.6,'duo-promise':3.7,'duo-quarrel':5.5,'duo-reconcile':2.7,
    'ssr-showcase':3.4,'rare-capture':2.8},
  'pawsibly-innocent':{'narrow-achievement':3.2},
  'tiny-town':{'opening-three-choices':6.6,'resident-profile':4.5,'neighbor-story':4.7,'ending':4.9},
@@ -33,28 +33,27 @@ const game=(start,duration,caption='',label='')=>choose('game',start,duration,ca
 const broll=(label,duration,caption='')=>choose('broll',0,duration,caption,label);
 const playlists={
  'cat-bond':[
-  broll('yard',2.7,'A WORLD FULL OF CATS.'),
-  broll('raising',2.25,'MEET YOUR CAT TEAM.'),
-  broll('cat-upgrade',3.25,'LEVEL UP WITH ONE TAP.'),
-  broll('duo-partners',2.85,'CHOOSE YOUR CAT DUO.'),
+  // Short-form cut: give the story reading time; keep the gameplay energetic.
+  broll('yard',2.35,'A WORLD FULL OF CATS.'),
+  broll('cat-upgrade',3.15,'LEVEL UP WITH ONE TAP.'),
+  broll('duo-partners',2.75,'CHOOSE YOUR CAT DUO.'),
   broll('duo-map-walk',1.8),
-  broll('duo-promise',3.85,'A SECRET PROMISE UNDER PETALS.'),
-  broll('duo-quarrel',3.5,'EVEN BEST FRIENDS DISAGREE.'),
+  broll('duo-promise',3.9,'A SECRET PROMISE UNDER PETALS.'),
+  broll('duo-quarrel',5.6,'EVEN BEST FRIENDS DISAGREE.'),
   broll('duo-reconcile',2.9,'HELP THEM MAKE UP.'),
-  broll('work-before',2.5,'SEND CATS OUT TO WORK.'),
-  broll('work-after',2.25,'EARN COINS TO GROW.'),
-  broll('tease',2.45,'PLAY WITH YOUR CATS.'),
-  broll('map-choice',2.8,'DISCOVER NEW PLACES.'),
-  broll('map-explore',2.7,'EXPLORE A LIVING WORLD.'),
-  broll('map-management',2.25,'MANAGE CATS ANYWHERE.'),
+  broll('work-after',2.25,'SEND CATS OUT TO EARN.'),
+  broll('tease',2.2,'PLAY WITH YOUR CATS.'),
+  broll('map-choice',2.5,'DISCOVER NEW PLACES.'),
+  broll('map-explore',2.45,'EXPLORE A LIVING WORLD.'),
+  broll('map-management',2.15,'MANAGE CATS ANYWHERE.'),
   broll('auto-team-saved',2.5,'AUTO-DEPLOY YOUR BEST TEAM.'),
-  broll('battle-hud',2.5,'REAL-TIME HEALTH AND BATTLE.'),
-  broll('battle-skills',3.0,'USE DIFFERENT SKILLS.'),
+  broll('battle-hud',2.45,'REAL-TIME HEALTH AND BATTLE.'),
+  broll('battle-skills',2.8,'USE DIFFERENT SKILLS.'),
   broll('duo',4.25,'ONE POWERFUL DUO FINISHER!'),
   broll('rare-encounter',2.05,'A RARE CAT APPEARS!'),
   broll('rare-capture',3.45,'A NEW FRIEND JOINS YOU.'),
-  broll('ssr-showcase',3.9,'MEET A LEGENDARY SSR CAT!'),
-  cover(3.6,'PLAY FREE')
+  broll('ssr-showcase',3.6,'MEET A LEGENDARY SSR CAT!'),
+  cover(3.2,'PLAY FREE')
  ],
  'pawsibly-innocent':[
   broll('escape-attempt',24,'STEAL THREE FISH. ESCAPE!'),
