@@ -26,7 +26,7 @@ try{
   await sleep(300);
  }
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
- context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1,
+ context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1,isMobile:true,hasTouch:true,
   recordVideo:{dir:root,size:{width:1280,height:720}},locale:'en-US',
   reducedMotion:'no-preference'});
  const page=await context.newPage(),born=Date.now(),errors=[];
