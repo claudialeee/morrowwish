@@ -57,8 +57,69 @@ const accents={
  dark:'#d0a8ff',elec:'#c6d4ff',fire:'#ffcc9b',grass:'#c8f4c6',
  light:'#fff9d9',water:'#c5ecff'
 };
-img.onload=()=>{ready=img.naturalWidth>=512&&img.naturalHeight>=512;broken=!ready;
- window.dispatchEvent(new Event('cat-bond-premium-art-ready'))};
+// The source illustration's final four frames are deep neon purple.
+// Regrade ONLY purple-heavy pixels ONCE when the asset loads, preserving
+// the painted cats, facial details, black coats, paws, outfits and line work.
+// This changes the actual painted BACKGROUND, not merely an external overlay.
+let pastelAtlas=null,retouchedPixels=0;
+const panelTones=[
+ [211,226,235], // moon: pale blue-white / silver mist
+ [210,237,222], // blossoms: soft garden mint
+ [207,233,245], // water: clear cloud blue
+ [248,227,211], // sunlight: peach cream
+ [215,223,230], // shadow: pearl silver, never deep violet
+ [205,233,236], // storm: pale rainy cyan
+ [246,224,205], // embers: pastel peach
+ [221,235,220]  // moonlit wards: sage-white
+];
+function preparePastelAtlas(){
+ const w=img.naturalWidth,h=img.naturalHeight;
+ const off=document.createElement('canvas');off.width=w;off.height=h;
+ const cx=off.getContext('2d',{willReadFrequently:true});
+ if(!cx)return false;
+ cx.drawImage(img,0,0);
+ const frame=cx.getImageData(0,0,w,h),rgba=frame.data;
+ const cellW=w/2,cellH=h/4;
+ for(let y=0;y<h;y++){
+   const row=Math.min(3,Math.floor(y/cellH));
+   // Top floral / water / peach scenes are intentionally almost untouched.
+   if(row===1)continue;
+   for(let x=0;x<w;x++){
+     const panel=row*2+Math.min(1,Math.floor(x/cellW));
+     if(panel===1||panel===2||panel===3)continue;
+     const i=(y*w+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];
+     const luminance=r*.299+g*.587+b*.114,avg=(r+g+b)/3;
+     const purple=clamp((Math.min(r,b)-g-4)/52)*
+       clamp((b-g)/43);
+     // Areas below brightness 75 are often black coats, eye details and
+     // whisker outlines. Protect them from being washed to white.
+     const darkProtect=Math.max(r,g,b)<75?.37:1;
+     const alpha=panel>=4?Math.min(.92,.22+purple*.72)*darkProtect:
+       Math.min(.65,purple*.65)*darkProtect;
+     if(alpha<.015)continue;
+     const tone=panelTones[panel];
+     for(let ch=0;ch<3;ch++){
+       const desired=panel>=4?
+         clamp((tone[ch]+(luminance-105)*.59+
+            ([r,g,b][ch]-avg)*.16)/255,65/255,1)*255:
+         clamp((tone[ch]+(luminance-145)*.40)/255,90/255,1)*255;
+       rgba[i+ch]=Math.round([r,g,b][ch]*(1-alpha)+desired*alpha);
+     }
+     retouchedPixels++;
+   }
+ }
+ cx.putImageData(frame,0,0);
+ pastelAtlas=off;
+ return true;
+}
+img.onload=()=>{
+ ready=img.naturalWidth>=512&&img.naturalHeight>=512;broken=!ready;
+ if(ready){
+  try{preparePastelAtlas();}
+  catch(err){pastelAtlas=null;console.warn('[Cat Bond] pastel art fallback',err)}
+ }
+ window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
+};
 img.onerror=()=>{broken=true;window.dispatchEvent(new Event('cat-bond-premium-art-error'))};
 img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-premium-sheet.webp?v=duo-studio-approved-art';
 
@@ -91,7 +152,7 @@ function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1){
  sy+=Math.max(0,(source.h-sh)/2)+offsetY*sh;
  sx=clamp(sx,source.x,source.x+source.w-sw);
  sy=clamp(sy,source.y,source.y+source.h-sh);
- ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);ctx.restore();
+ ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(pastelAtlas||img,sx,sy,sw,sh,x,y,w,h);ctx.restore();
 }
 function paper(g,x,y,w,h){
  const v=g.createLinearGradient(0,y,0,y+h);
@@ -226,6 +287,8 @@ function draw(ctx,W,H,seq,lookup){
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
  get failed(){return broken},wholeSceneCount:8,skillVariants:Object.keys(regions).length,
+ get pastelAdjusted(){return !!pastelAtlas&&retouchedPixels>0},
+ get pastelPixelCount(){return retouchedPixels},
  get source(){return img.src}
 };
 })();
