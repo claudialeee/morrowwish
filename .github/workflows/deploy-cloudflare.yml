@@ -130,8 +130,8 @@ jobs:
           set -eu
           # A successful Pages command alone does not prove the public alias
           # updated. Check exact source-asset versions plus JS/CSS bytes.
-          expected_css=$(grep -oE 'css/style.css\\?v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_js=$(grep -oE 'js/main.js\\?v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_css=$(grep -oE 'css/style.css[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_js=$(grep -oE 'js/main.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           test -n "$expected_css" && test -n "$expected_js"
           latest=0
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
