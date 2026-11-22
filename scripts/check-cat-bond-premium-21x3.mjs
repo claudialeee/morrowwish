@@ -88,8 +88,8 @@ assert.ok(raster.length>6000&&raster.toString('ascii',0,4)==='RIFF'&&
   'Jiafei must have genuine painted transparent WebP pixels, not an SVG/text placeholder');
 assert.doesNotMatch(source('js/duo-breed-actors.js'),/CatArt\.drawCat/,
   'Premium duo must never silently fall back to a procedural Jiafei');
-assert.match(source('js/real-kittens.js'),/const visualScale=\.72;/,
-  'Yard, normal battle and portraits must shrink the same Jiafei raster by 8%');
+assert.match(source('js/real-kittens.js'),/const visualScale=\.86;/,
+  'Yard, normal battle and portraits must calibrate approved Jiafei visible fur uniformly');
 assert.equal(director.keys.length,21);
 assert.equal(painter.wholeSceneCount,21);
 assert.equal(painter.paintedFrameCount,63);
