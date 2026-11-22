@@ -4,6 +4,9 @@ on:
     branches:
       - review/catbond-yard-controls-placement-20261121
   workflow_dispatch:
+concurrency:
+  group: cat-bond-review-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
