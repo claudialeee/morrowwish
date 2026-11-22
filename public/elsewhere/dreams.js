@@ -73,7 +73,7 @@ Object.assign(Q,{
  collected:L("你解锁了这一生的结局","ENDING UNLOCKED")
 });
 let lang=(()=>{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en"){try{localStorage.setItem("morrowwish.language",q)}catch{}return q}
-try{const x=localStorage.getItem("morrowwish.language");if(x==="zh"||x==="en")return x}catch{}return navigator.language?.toLowerCase().startsWith("zh")?"zh":"en"})();
+try{const x=localStorage.getItem("morrowwish.language");if(x==="zh"||x==="en")return x}catch{}return "en"})();
 const T=v=>Array.isArray(v)?v[lang==="zh"?0:1]:v;
 const esc=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
 const Qe=k=>esc(T(Q[k])), $=s=>document.querySelector(s);

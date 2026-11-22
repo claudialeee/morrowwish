@@ -25,6 +25,7 @@ const CSS=`
 body [data-mw-music],body [data-mw-audio],body .lab-mute,body #music,body #sound,body .elsewhere-music{display:none!important}
 .home-audio,.game-tools .dream-sound{display:none!important}
 html[data-mw-settings-game="elsewhere"] .top-right .language-switch{display:none!important}
+html[data-mw-settings-game="pocket-aquarium"] header .languages{display:none!important}
 @media(max-width:700px){
 html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-head-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'room tools' 'status status'!important;gap:3px!important;align-items:center!important}
 html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .sticker{grid-area:room!important;max-width:100%!important;min-width:0!important}
@@ -170,8 +171,8 @@ function gameTapSound(event){
 function sync(){
  if(!dock)return;
  const chinese=zh();
- btnLang.textContent=chinese?'EN':'中文';
- btnLang.title=chinese?'Switch to English':'切换成中文';
+ btnLang.textContent=chinese?'中文':'EN';
+ btnLang.title=chinese?'当前中文，切换到 English':'Language: English. Switch to Chinese';
  btnLang.setAttribute('aria-label',btnLang.title);
  const api=musicAPI(),status=api?.status?.();
  const on=status?.musicOn??status?.enabled??fallbackEnabled;

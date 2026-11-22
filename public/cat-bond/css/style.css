@@ -4048,3 +4048,6 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   content:"☰";font:900 18px/1 system-ui,sans-serif!important
  }
 }
+
+/* Hide the untranslated initial Cat Bond DOM until the English display layer is ready. */
+html[lang="en"]:not(.cb-i18n-ready) #game-root{visibility:hidden}

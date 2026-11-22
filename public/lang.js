@@ -5,8 +5,10 @@ let lang=(()=>{let explicit=null;
  try{const q=new URLSearchParams(location.search).get("lang");if(q==="zh"||q==="en")explicit=q;}catch(_){}
  if(explicit){try{localStorage.setItem(KEY,explicit)}catch(_){}return explicit;}
  try{const saved=localStorage.getItem(KEY);if(saved==="zh"||saved==="en")return saved;}catch(_){}
- return (navigator.language||"en").toLowerCase().startsWith("zh")?"zh":"en";
+ return "en"; // English for first-time visitors; explicit choices remain persistent.
 })();
+// Prevent a first-paint language mismatch on all game pages.
+try{document.documentElement.lang=lang==="zh"?"zh-CN":"en";}catch(_){}
 const words={
 "an indie game studio":"独立游戏工作室",
 "Meet our CEO (honorary title)":"认识一下我们的 CEO（荣誉职位）",
@@ -175,7 +177,7 @@ function translateNode(n){
 }
 let observer, busy=false;
 function process(root){if(!root)return;translateNode(root);let walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);while(walker.nextNode())translateNode(walker.currentNode);}
-function render(){if(!document.body)return;busy=true;observer?.disconnect();process(document.body);document.documentElement.lang=lang==="zh"?"zh-CN":"en";const control=document.getElementById("mw-language");if(control){control.setAttribute("aria-label",lang==="zh"?"Language / 语言":"Language / 语言");control.innerHTML=lang==="zh"?'<span class="mw-language-active">中文</span><span>EN</span>':'<span>中文</span><span class="mw-language-active">EN</span>';}
+function render(){if(!document.body)return;busy=true;observer?.disconnect();process(document.body);document.documentElement.lang=lang==="zh"?"zh-CN":"en";const control=document.getElementById("mw-language");if(control){control.setAttribute("aria-label",lang==="zh"?"当前中文，切换到 English":"Language: English. Switch to Chinese");control.title=lang==="zh"?"切换到 English":"Switch to Chinese";control.innerHTML=lang==="zh"?'<span class="mw-language-active">中文</span>':'<span class="mw-language-active">EN</span>';}
  if(document.title){let dt=originals.get(document)||document.title;originals.set(document,dt);if(lang==="zh"){document.title=dt.replace(" — Free Browser Game"," — 免费网页游戏").replace(" | Morrow Wish"," | Morrow Wish");}else document.title=dt;}
  observer?.observe(document.body,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:["title","aria-label","placeholder","data-instructions"]});busy=false;
 }
