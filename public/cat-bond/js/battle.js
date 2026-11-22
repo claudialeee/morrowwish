@@ -920,7 +920,9 @@ class CaptureBattle {
       role='ranged';
       // Ranged Q/E attacks reach farther than the basic toy. Holding the old
       // 150–230px Q/E-only band left the cat forever outside basic range.
-      min=Math.max(95,basicRange*.66); max=Math.max(min+18,basicRange*.94);
+      // Keep a real minimum standoff (>120 px) but remain inside basic attack reach.
+      min=Math.min(Math.max(124,basicRange*.66),Math.max(40,basicRange-28));
+      max=Math.max(min+18,basicRange*.94);
     }else if(skills.length&&skills.every(isSupport)){
       // SUPPORT cats must still be able to use their only offensive action.
       // Their old 230–320px ally band exceeded their ~170px basic shot lifetime,
