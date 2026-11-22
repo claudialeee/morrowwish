@@ -236,7 +236,7 @@
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
     { id: 'guardStance', name: '守护',   element: 'light', kind: 'buff', shieldType: 'protect', power: 0, cd: 9.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '极短时间完全格挡下一次攻击；结束后短暂易伤。' },
-    { id: 'mirrorWall',  name: '炸毛墙', element: 'elec',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '全身毛炸成一道静电墙，弹回飞行弹体；架墙期间自身被定住。' },
+    { id: 'mirrorWall',  name: '炸毛墙', element: 'elec',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', unlock: { build: 'tank' }, desc: '坦克专属：在身前架起长形镜面护墙，为身后队友阻挡或反弹远程弹体。持墙期间移速减半，转向缓慢。' },
     { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
     // ---- 草 grass ----
     { id: 'leafDart',   name: '叶刃',     element: 'grass', kind: 'projectile', power: 1.0, cd: 1.6, ultCost: 0,  tags: ['ranged'],        appliesTag: null,    vfx: 'muzzle',    desc: '锋利草叶高速飞射。' },
@@ -619,6 +619,9 @@
     if (u.element && elementOf(cat.species)!==u.element) return false;
     if (u.affinity && (cat.affinity || 0) < u.affinity) return false;
     if (u.species && (!Array.isArray(u.species) || u.species.indexOf(cat.species) < 0)) return false;
+    // The mirror wall is a TANK BUILD skill, not an electric-cat or breed
+    // exclusive skill. Switching away from tank must revoke equipment use.
+    if (u.build && (cat.buildType || buildTypeForBreed(cat)) !== u.build) return false;
     if (u.quest && !questMet(cat, u.quest)) return false;
     // ROLE gate: only cats whose breed recommends one of these build-types may learn it
     // (e.g. 舔毛理顺 team-heal is a Tank/Fighter skill — 收割 assassins can't learn it).
@@ -686,7 +689,10 @@
       // when explicitly learned (via trainer or auto-领悟). This keeps powerful
       // skills out of the free pool until their condition is met + learned.
       if (isGated(s)) {
-        if (hasLearned(cat, s.id)) out.push(s);
+        // A remembered skill is NOT automatically legal after changing builds.
+        // For mirrorWall the role gate is active at equip/battle time as well.
+        if (hasLearned(cat, s.id) && (!s.unlock?.build ||
+            (cat.buildType||buildTypeForBreed(cat))===s.unlock.build))out.push(s);
         continue;
       }
       const isUlt = s.ultCost > 0;
@@ -927,9 +933,13 @@
     const MATRIX={
       pow:{ agi:'assassin', vit:'fighter', cha:'fighter', pow:'fighter' },
       agi:{ pow:'assassin', vit:'dps',      cha:'dps',      agi:'dps' },
-      vit:{ pow:'tank',     agi:'tank',     cha:'tank',     vit:'tank' },
+      vit:{ pow:'fighter',  agi:'tank',     cha:'tank',     vit:'tank' },
       cha:{ agi:'control',  pow:'support',  vit:'support',  cha:'support' },
     };
+    // Close VIT/POW breeds are bruisers rather than static frontline walls.
+    // This shifts high-attack Norwegian and American Shorthair to fighter,
+    // leaving low-POW VIT cats as tanks and preserving every saved explicit BD.
+    if(p==='vit'&&s==='pow'&&b.pow>=7&&b.vit-b.pow<=2)return 'fighter';
     return (MATRIX[p] && MATRIX[p][s]) || 'fighter';
   }
   // Build a [basic,Q,E,ult] loadout for a role from the cat's learnable pool.
@@ -991,10 +1001,12 @@
   }
   // Apply a recommended build to the cat (marks it edited so growth won't override).
   function applyBuild(cat, role){
-    const next=recommendLoadout(cat, role);
+    // Set the build FIRST; build-specific eligibility must be evaluated
+    // against the selected role, not the previously equipped role.
+    cat.buildType=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
+    const next=recommendLoadout(cat,cat.buildType);
     cat.loadout=next.slice();
     cat.autoSkillLoadout=next.slice();
-    cat.buildType=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
     cat.skillEdited=true;                            // respect the player's explicit choice
     return cat.loadout;
   }
