@@ -7,6 +7,10 @@
 'use strict';
 const img=new Image();
 img.decoding='async';
+// Reuse a dedicated high-resolution compositing layer. We feather its alpha
+// into the playable arena instead of drawing a hard-edged rectangular card.
+const cinematicLayer=document.createElement('canvas');
+const cinematicCtx=cinematicLayer.getContext('2d',{alpha:true});
 let ready=false,broken=false;
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
@@ -109,9 +113,18 @@ function draw(ctx,W,H,seq,lookup){
  const frame=regions[key];
  const strength=smooth((p-.09)/.19)*(1-smooth((p-.75)/.18));
  const dual=clamp(strength);
- ctx.save();ctx.globalAlpha*=opacity;
- ctx.beginPath();ctx.roundRect(x,y,sw,sh,Math.max(11,Math.min(22,sw*.025)));ctx.clip();
- ctx.translate(x,y);
+ // Render the complete illustration, signatures and captions together into
+ // a scratch canvas so all edges can fade naturally into the battle behind it.
+ const battlefield=ctx;
+ const dpr=Math.min(2,window.devicePixelRatio||1);
+ const pw=Math.max(1,Math.round(sw*dpr)),ph=Math.max(1,Math.round(sh*dpr));
+ if(cinematicLayer.width!==pw||cinematicLayer.height!==ph){
+   cinematicLayer.width=pw;cinematicLayer.height=ph;
+ }
+ ctx=cinematicCtx;
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,sw,sh);
+ ctx.save();ctx.globalAlpha=opacity;
  // One complete, illustrated two-cat tableau per attack, NEVER two sliced
  // paintings or a pair of cropped heads glued across a visible vertical seam.
  // Pan and zoom the entire coherent painting together.
@@ -146,11 +159,40 @@ function draw(ctx,W,H,seq,lookup){
  ctx.shadowColor='#2d244a';ctx.shadowBlur=8;ctx.fillStyle='#fffbed';
  const px=clamp(sw*.054,17,36);
  ctx.font='900 '+Math.round(px)+'px system-ui,sans-serif';
- ctx.fillText(title,sw*.5,sh*.82,sw*.91);
+ ctx.fillText(title,sw*.5,sh*.76,sw*.91);
  ctx.font='750 '+Math.round(clamp(sw*.024,10,16))+'px system-ui,sans-serif';
- if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.915,sw*.88);
+ if(actorA&&actorB)ctx.fillText(label(actorA)+'  ×  '+label(actorB),sw*.5,sh*.855,sw*.88);
  ctx.restore();
  ctx.restore();
+ // Four overlapping soft alpha masks: zero visible hard edges, even in
+ // portrait / landscape game modes. No rectangular stroke or clip border.
+ ctx.save();
+ ctx.globalCompositeOperation='destination-in';
+ const fx=Math.max(14,sw*.085),fy=Math.max(12,sh*.13);
+ function fade(x0,y0,x1,y1){
+   const m=ctx.createLinearGradient(x0,y0,x1,y1);
+   m.addColorStop(0,'rgba(255,255,255,0)');
+   m.addColorStop(1,'rgba(255,255,255,1)');
+   ctx.fillStyle=m;ctx.fillRect(0,0,sw,sh);
+ }
+ fade(0,0,fx,0);
+ fade(sw,0,sw-fx,0);
+ fade(0,0,0,fy);
+ fade(0,sh,0,sh-fy);
+ ctx.restore();
+ // A restrained color glow connects the stage lighting with the real
+ // battle underneath. Only ONE painted two-cat tableau is used.
+ battlefield.save();
+ const aura=battlefield.createRadialGradient(W*.5,H*.5,sw*.12,W*.5,H*.5,sw*.72);
+ aura.addColorStop(0,(accents[key.split('+')[0]]||'#eacdf5')+'40');
+ aura.addColorStop(.65,(accents[key.split('+')[1]]||'#f6e8ee')+'14');
+ aura.addColorStop(1,'rgba(255,255,255,0)');
+ battlefield.globalAlpha=opacity*.6;
+ battlefield.fillStyle=aura;
+ battlefield.fillRect(0,0,W,H);
+ battlefield.globalAlpha=1;
+ battlefield.drawImage(cinematicLayer,x,y,sw,sh);
+ battlefield.restore();
  return true;
 }
 window.CatBondPremiumCinematics={
