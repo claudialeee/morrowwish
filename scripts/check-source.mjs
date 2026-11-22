@@ -1030,8 +1030,45 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('rel?.value)<20')||
     !bondPremium.includes('if(!thumbnail&&dual>.09)')||
     !bondViewer.includes('duo-embedded')||
-    !bondIntro.includes('css/style.css?v=duo-click-intro-caption-20261121-1'))
+    !bondIntro.includes('css/style.css?v=intro-compact-elements-20261121-1'))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
  new Function(bondPremium);
+ // First-run CTA precedes optional feature cards so short screens never cut it
+ // off; six normal skill elements have animated casts + readable hit marks.
+ const cbMain=fs.readFileSync('public/cat-bond/js/main.js','utf8');
+ const startIndex=bondIntro.indexOf('id="intro-start"');
+ const featuresIndex=bondIntro.indexOf('class="intro-features"');
+ if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
+    !cbMain.includes("const feetY=h-43*scale-6")||
+    !cbCss.includes("#intro #intro-start{")||
+    !cbCss.includes("order:0!important")||
+    !cbCss.includes("overflow-y:auto!important")||
+    !cbBattle.includes("regularSkillAccent(f,element,angle=0,isBasic=false,hit=false)")||
+    !cbBattle.includes("drawRegularSkillAccent(ctx,v,k,p)")||
+    !cbBattle.includes("this.regularSkillAccent(f,f.element,aim,true)")||
+    !cbBattle.includes("this.regularSkillAccent({x,y},skill.element"))
+   throw Error('Cat Bond first-screen CTA and six-element ordinary-skill VFX regressions');
+ // Lightweight canvas stub exercises basic, Q/E and hit accents for every
+ // element without modifying game rules or loading illustration assets.
+ const mockWindow={};
+ const CaptureForFx=new Function('window',cbBattle+';return window.Battle.CaptureBattle;')(mockWindow);
+ const fake=Object.create(CaptureForFx.prototype);
+ fake.skillStrokes=[];
+ const ctx={globalAlpha:1};
+ for(const m of ['beginPath','arc','ellipse','stroke','fill','save','restore','translate',
+                 'rotate','moveTo','lineTo','quadraticCurveTo','bezierCurveTo','closePath'])
+   ctx[m]=()=>{};
+ for(const element of ['fire','water','grass','elec','dark','light']){
+   for(const basic of [true,false]){
+     fake.regularSkillAccent({x:120,y:120},element,0,basic);
+     const v=fake.skillStrokes.pop();
+     if(!v||v.element!==element||v.hit)throw Error('Missing regular cast accent: '+element);
+     fake.drawRegularSkillAccent(ctx,v,.7,.33);
+   }
+   fake.regularSkillAccent({x:155,y:110},element,0,false,true);
+   const hit=fake.skillStrokes.pop();
+   if(!hit||!hit.hit||hit.element!==element)throw Error('Missing regular hit accent: '+element);
+   fake.drawRegularSkillAccent(ctx,hit,.5,.5);
+ }
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }
