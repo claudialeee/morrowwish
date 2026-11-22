@@ -6,8 +6,14 @@ import assert from 'node:assert/strict';
 
 const source=fs.readFileSync('public/cat-bond/js/worldmap.js','utf8');
 const html=fs.readFileSync('public/cat-bond/index.html','utf8');
-assert.match(html,/worldmap\.js\?v=top-left-yard-and-raised-region-20261122/);
+assert.match(html,/worldmap\.js\?v=yard-return-separated-20261122-v2/);
 assert.match(source,/← 回庭院/);
+assert.match(source,/exitToYard: exitToYard/, 'dedicated header return uses actual world exit');
+const full=fs.readFileSync('public/game-fullscreen.js','utf8');
+const css=fs.readFileSync('public/cat-bond/css/style.css','utf8');
+assert.match(full,/yardReturn\.id='cb-yard-return'/);
+assert.match(full,/window\.WorldMap\?\.exitToYard\?\.\(\)/);
+assert.match(css,/#cb-header #cb-yard-return/, 'real left header control styled');
 assert.doesNotMatch(source,/← 回地图|← Map/, 'no redundant scene return-to-map sign');
 assert.doesNotMatch(source,/Math\.hypot\(w\.px - w\.portal\.x/, 'no automatic portal exit');
 assert.match(html,/id="map-menu"/, 'top-header menu opens world directory');
