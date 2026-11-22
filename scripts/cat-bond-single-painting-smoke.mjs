@@ -30,8 +30,11 @@ try{
  });
  assert.equal(records.length,21);
  for(const item of records){
-  assert.equal(item.calls.length,1,item.key+' must draw one full painting, not multiple cuts');
-  assert.ok(item.calls[0].w>400,item.key+' should render a full-sized coherent painting');
+  const atlasDraws=item.calls.filter(call=>call.argc===9);
+  const compositeDraws=item.calls.filter(call=>call.argc===5);
+  assert.equal(atlasDraws.length,1,item.key+' must read one full illustrated atlas panel');
+  assert.equal(compositeDraws.length,1,item.key+' must blend one stage into battle');
+  assert.ok(atlasDraws[0].w>400,item.key+' should render a full-sized coherent painting');
  }
  assert.deepEqual(errors,[]);
  console.log('ONE CONTINUOUS PAINTING PER DUO PASS; verified all 21 element combinations');
