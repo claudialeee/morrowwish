@@ -94,12 +94,27 @@ try{
     const ok=dirs.map(([dx,dy])=>({dx,dy,x:s.cat.x+dx,y:s.cat.y+dy}))
       .filter(p=>p.x>=0&&p.x<10&&p.y>=0&&p.y<7&&
         !['#','S'].includes(s.grid[p.y][p.x])&&
+        (p.x!==s.human.x||p.y!==s.human.y)&&
         (!s.vacuum||p.x!==s.vacuum.x||p.y!==s.vacuum.y));
     if(!ok.length)throw Error('Cat cannot take any legal step');
-    // Avoid walking into the pink exit, which the cat cannot use without fish.
-    ok.sort((a,b)=>(
-      Math.abs(a.x-s.human.x)+Math.abs(a.y-s.human.y))-
-      (Math.abs(b.x-s.human.x)+Math.abs(b.y-s.human.y)));
+    // Genuine line-of-sight exposure, not illegal overlap with the owner.
+    // When adjacent, alternate safe open tiles so the detection meter fills.
+    // Keep moving in/near the owner's visible zone, never edit lives/done.
+    const visibility=p=>{
+      const dist=Math.abs(p.x-s.human.x)+Math.abs(p.y-s.human.y);
+      if(dist<=1)return 3;
+      if(dist>3)return 0;
+      if(p.x===s.human.x||p.y===s.human.y)return 2;
+      return dist===2?1:0;
+    };
+    ok.sort((a,b)=>{
+      const rate=p=>{
+        const dist=Math.abs(p.x-s.human.x)+Math.abs(p.y-s.human.y);
+        return visibility(p)*8-dist*2+
+          ((s.exposure>0&&visibility(p)>0)?6:0);
+      };
+      return rate(b)-rate(a);
+    });
     const target=ok[0];
     api.move(target.dx,target.dy);
     const after=api.getState();
