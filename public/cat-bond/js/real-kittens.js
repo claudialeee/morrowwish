@@ -277,6 +277,10 @@
   }
   function render(ctx,x,y,options){
     const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
+    // The new Exotic Shorthair is not painted into the original immutable
+    // 8x4 watercolor atlas. Use its dedicated chubby, flat-faced shared
+    // storybook renderer rather than silently reusing Mochi's cat artwork.
+    if(o.species?.id==='jiafei'){fallbackDraw(ctx,x,y,o);return;}
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
     if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
