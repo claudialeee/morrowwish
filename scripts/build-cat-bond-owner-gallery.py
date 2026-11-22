@@ -11,7 +11,7 @@ png=base64.b64encode((root/"assets/duo-premium-sheet.webp").read_bytes()).decode
 def inline(match):
     filename=match.group(1)
     body=(root/"js"/(filename+".js")).read_text(encoding="utf-8")
-    if filename=="duo-premium.js":
+    if filename=="duo-premium":
         old="img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-premium-sheet.webp?v=duo-studio-approved-art';"
         new="img.src='data:image/webp;base64,"+png+"';"
         assert old in body, "Illustration asset loading changed"
