@@ -28,7 +28,9 @@ function walk(node,place,order){
  if(Array.isArray(node)){
   if(node.length===2 && node.every(v=>typeof v==='string') && order!=='english-only'){
    const en=order==='english-first'?node[0]:node[1];
+   const zh=order==='english-first'?node[1]:node[0];
    validEnglish(en,place+' English');
+   if(!HAN.test(zh))issue(place+': Chinese storyline translation missing: '+zh.slice(0,135));
    checked.paired++;
    return;
   }
@@ -95,6 +97,7 @@ if(old.ELSEWHERE_EXTRA_SCENES)walk(old.ELSEWHERE_EXTRA_SCENES,'ELSEWHERE_EXTRA_S
 for(const [original,translated] of Object.entries(old.MORROW_ZH_STORIES||{})){
  validEnglish(original,'historical translation source');
  assert.equal(typeof translated,'string','Legacy Chinese translation must be text');
+ if(!HAN.test(translated))issue('Legacy Chinese storyline translation missing: '+original.slice(0,75));
 }
 // Cat Bond: hidden duo journals, all 21 element combinations and their stories
 // use explicit locale-specific fields. Scanning raw Chinese originals as leaks
