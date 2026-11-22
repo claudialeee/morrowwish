@@ -112,7 +112,7 @@ function badgeToast(names,ids=[]){
  badgeToastIds=ids.slice();
  clearTimeout(badgeTimer);clearTimeout(badgeCollectTimer);
  el.classList.remove("collecting");
- el.style.removeProperty("--badge-dx");el.style.removeProperty("--badge-dy");
+ el.style.setProperty("--badge-dx","0px");el.style.setProperty("--badge-dy","0px");
  el.hidden=false;refreshBadgeToast();
  badgeCollectTimer=setTimeout(()=>{
   const pocket=$("achievementPocket");
@@ -738,12 +738,12 @@ function renderResultBreakdown(){
   [zh?"行动步数":"Steps",String(s.steps)],
   [zh?"额外任务":"Bonus dare",s.resultBonus?(zh?"完成 ✓":"Done ✓"):(zh?"未完成":"Missed")]
  ];
- root.replaceChildren();
+ root.innerHTML="";
  for(const [name,value] of items){
   const cell=document.createElement("div");cell.className="result-stat";
   const label=document.createElement("span");label.textContent=name;
   const strong=document.createElement("strong");strong.textContent=value;
-  cell.append(label,strong);root.appendChild(cell);
+  cell.appendChild(label);cell.appendChild(strong);root.appendChild(cell);
  }
 }
 function resultDescription(){
