@@ -1699,6 +1699,7 @@
     "弓背炸毛": "Arched-Fur Guard",
     "横扫喷焰": "Sweeping Flame",
     "猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。": "The cat sweeps a short-range stream of fire left and right, burning nearby enemies.",
+    "左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。": "Sweep back and forth three times; each pass deals one moderate hit without repeat tick damage.",
     "金乌焱": "Solar Ember",
     "拨下桌": "Paw Swipe",
     "舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 斗士能领悟。": "Soothe nearby allies with grooming and create a healing mist. Only tanks and fighters can learn it.",
