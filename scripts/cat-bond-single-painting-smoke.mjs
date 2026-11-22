@@ -32,7 +32,7 @@ try{
  for(const item of records){
   const atlasDraws=item.calls.filter(call=>call.argc===9);
   const compositeDraws=item.calls.filter(call=>call.argc===5);
-  assert.equal(atlasDraws.length,1,item.key+' must read one full illustrated atlas panel');
+  assert.equal(atlasDraws.length,2,item.key+' must decode one atlas frame and paint one complete picture; never splice cat halves');
   assert.equal(compositeDraws.length,1,item.key+' must blend one stage into battle');
   assert.ok(atlasDraws[0].w>400,item.key+' should render a full-sized coherent painting');
  }
