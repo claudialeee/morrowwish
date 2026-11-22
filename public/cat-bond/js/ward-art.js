@@ -125,8 +125,26 @@ function draw(ctx,f,x,y,t,scale=1,layer='front'){
   const pulse=1+.025*Math.sin(t*6);
   const groundY=y+33*s;
   ctx.save();ctx.translate(x,groundY);ctx.scale(pulse,pulse);
+  // A reflect ward is a single forward-facing panel, not a surrounding dome.
+  // Keep the panel upright while positioning its base in front of movement.
+  if(type==='reflect'){
+    const heading=f._reflectFacing ?? f._moveFacing ?? (f.face<0?Math.PI:0);
+    const fx=Math.cos(heading),fy=Math.sin(heading);
+    // A top-down floor ellipse identifies the one protected side and heading.
+    if(layer==='front'){
+      ctx.save();ctx.translate(fx*20*s,fy*13*s);
+      ctx.rotate(heading-Math.PI/2);
+      ctx.strokeStyle='rgba(107,236,255,.85)';ctx.lineWidth=3*s;
+      ctx.beginPath();ctx.arc(0,0,24*s,Math.PI*.12,Math.PI*.88);ctx.stroke();
+      ctx.restore();
+    }
+    ctx.translate(fx*22*s,fy*12*s);
+    // Lean toward travel while retaining a readable vertical silhouette.
+    ctx.transform(1,0,fx*.18,1,0,0);
+    wall(ctx,rx*.73,ry*.86,t,layer);
+    ctx.restore();return true;
+  }
   // Keep most artwork on the outline rather than washing out the kitten face.
-  if(type==='reflect')wall(ctx,rx,ry,t,layer);
   else if(type==='protect')protect(ctx,rx,ry,t,layer);
   else {bubble(ctx,rx,ry,t,layer);if(layer==='front')hexGrid(ctx,rx,ry,t);}
   ctx.restore();return true;
