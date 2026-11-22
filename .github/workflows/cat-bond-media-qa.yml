@@ -1,0 +1,49 @@
+name: Cat Bond CrazyGames media preflight (review artifacts only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/record-cat-bond-crazygames-previews.mjs'
+      - 'scripts/prepare-cat-bond-crazygames-media.mjs'
+      - '.github/workflows/cat-bond-media-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-media-review
+  cancel-in-progress: true
+jobs:
+  generate-review-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install isolated media QA toolchain
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+          npx playwright install --with-deps chromium
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+      - name: Record live engine at native landscape and portrait ratios
+        run: node scripts/record-cat-bond-crazygames-previews.mjs
+      - name: Convert, validate exact cover/video formats
+        run: node scripts/prepare-cat-bond-crazygames-media.mjs
+      - name: Preserve real media candidates for independent visual and rights signoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-crazygames-media-candidates
+          path: |
+            public/promo/cat-bond/cover-landscape.png
+            public/promo/cat-bond/cover-portrait.png
+            public/promo/cat-bond/cover-square.png
+            public/promo/cat-bond/real-gameplay-landscape.mp4
+            public/promo/cat-bond/real-gameplay-portrait.mp4
+          if-no-files-found: error
+          retention-days: 14
