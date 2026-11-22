@@ -367,6 +367,12 @@
         if (!covered) out.push(_genSkill(el, arch));
       }
     }
+    // Keep former duplicate dash IDs parseable for historical saves, without
+    // offering them to new players. Never delete a stored player's old skill.
+    for(const el of ['water','grass','dark','light']){
+      const old=_genSkill(el,'dash');
+      old.legacy=true;out.push(old);
+    }
     return out;
   }
   // Inject the generated gap-fillers into the live roster BEFORE the lookup map builds.
@@ -960,8 +966,11 @@
       q=pick(ranged)||pick(attack);
       e=pick(sk=>attack(sk)&&sk.kind!==q?.kind,q)||pick(attack,q);
     }else if(role==='assassin'){
-      q=pick(sk=>melee(sk)&&(sk.heavy||['dash','pounce','leap'].includes(sk.kind)))||pick(melee);
-      e=pick(sk=>attack(sk)&&sk!==q,q)||pick(sk=>sk.kind==='buff',q);
+      // Assassin should prioritize a genuine gap closer over fighter's
+      // sustained melee/leap choice when both are unlocked.
+      q=pick(sk=>['dash','pounce'].includes(sk.kind))||
+        pick(sk=>melee(sk)&&sk.heavy)||pick(melee);
+      e=pick(sk=>cc(sk)&&attack(sk),q)||pick(attack,q);
     }else if(role==='control'){
       q=pick(cc)||pick(attack);
       e=pick(sk=>attack(sk)&&sk!==q,q)||pick(isShieldSkill,q);
