@@ -44,10 +44,8 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Fetch CC0 recorded cat soundtrack
         run: bash scripts/fetch-cat-music.sh
-      - name: Run core rules and source quality gate
-        run: |
-          node scripts/check-pawsibly.mjs
-          npm run check
+      - name: Run Pawsibly core rules
+        run: node scripts/check-pawsibly.mjs
       - name: Run Chromium test against local source
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-local.log 2>&1 &
@@ -56,6 +54,8 @@ jobs:
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/mobile-playtest.mjs
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/fullscreen-smoke.mjs
 
+      - name: Run full repository source gate (includes other games)
+        run: npm run check
       - name: Archive Pawsibly Chromium screenshots
         if: always()
         uses: actions/upload-artifact@v4
