@@ -333,7 +333,7 @@ function contextualHint(){
  if(!s)return "";
  if(s.blockedTarget&&equal(s.blockedTarget,s.human))return lang==="zh"?"主人挡着鱼！在安全处点「等待」，或扔毛球引开。":"The human blocks a fish. Wait from a safe tile or throw yarn.";
  if(s.blockedTarget&&s.vacuum&&equal(s.blockedTarget,s.vacuum))return lang==="zh"?"扫地机挡着鱼！点「等待」让它巡逻，或改偷另一条。":"The vacuum blocks a fish. Tap Wait or choose another fish.";
- if(s.exposure>0)return lang==="zh"?"被发现，自动行走已停止。请点视野外的地板或躲纸箱。":"Spotted: auto-walk stopped. Tap a safe tile or hide in a box.";
+ if(s.exposure>0&&!s.pressure&&!s.finalAlert)return lang==="zh"?"被发现，自动行走已停止。请点视野外的地板或躲纸箱。":"Spotted: auto-walk stopped. Tap a safe tile or hide in a box.";
  if(aimingYarn)return lang==="zh"?"点地图上的空地板，主人会走向毛球。":"Tap a floor tile. The owner will walk to your yarn.";
  if(s.yarnAnimating)return lang==="zh"?"主人正被毛球引开！现在就可以移动，去偷鱼！":"The owner is following the yarn! Move now and steal the fish.";
  if(s.distractionTurns>0)return lang==="zh"?"主人分心了！趁这 "+s.distractionTurns+" 步偷鱼开溜。":"The owner is distracted! You have "+s.distractionTurns+" safe moves.";
