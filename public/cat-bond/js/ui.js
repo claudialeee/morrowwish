@@ -1826,9 +1826,10 @@ const UI = {
           :'当前已解锁技能不足，这个流派的 Q/E 配装与原来相同；可先学习更多技能。'));
       window.arcadeMetric?.('bond_build_applied', { breed: cat.species, build: role, changed });
     });
-    this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
-      // Build-type chips share the .sk-chip class but carry data-build (no data-sk) and
-      // have their own handler above — skip them here so we never equip "undefined".
+    // Build chips have their own click handler; never overwrite it with the
+    // ordinary slot handler when binding choices below.
+    document.querySelectorAll('#panel .sk-chip:not(.build-chip)').forEach(b => b.onclick = () => {
+      // Only real skill choices carry data-sk.
       if (b.dataset.build != null || b.dataset.sk == null) return;
       const slotI = +b.dataset.slot, skId = b.dataset.sk;
       cat.loadout = cat.loadout.slice();
