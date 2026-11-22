@@ -139,7 +139,7 @@ assert.ok(sandbox.window.GameData, 'GameData global present');
 // Every breed's lore must be translated in English battle, starter and dex
 // panels, not just its displayed nickname. Seven new species were missing.
 const allBreeds=sandbox.window.GameData.SPECIES;
-assert.equal(allBreeds.length,32,'full breed roster remains intact');
+assert.ok(allBreeds.length>=33,'all original breeds plus new Exotic Shorthair remain collectible');
 for(const breed of allBreeds){
   assert.equal(typeof sandbox.window.CatBondI18n?.dict?.[breed.desc],'string',
     'English breed description missing for '+breed.id);
