@@ -404,6 +404,11 @@ try{
         const view=await page.evaluate(({x,y})=>({
           ...WorldMap.view,
           hitElement:document.elementFromPoint(x,y)?.id||document.elementFromPoint(x,y)?.tagName,
+          hitStack:document.elementsFromPoint(x,y).slice(0,8).map(el=>({
+            tag:el.tagName,id:el.id,cls:typeof el.className==='string'?el.className:'',
+            parent:el.parentElement?.id||el.parentElement?.className||'',
+            pointer:getComputedStyle(el).pointerEvents
+          })),
           canvasRect:document.getElementById('scene')?.getBoundingClientRect().toJSON(),
           gameScene:window.__game.scene,
           dragging:window.__game._mapMouseDrag
