@@ -46,3 +46,24 @@ are worthless without it.
 - No push. Owner churns battle.js every few min → small diffs, merge cleanly, stop on conflict.
 - Phase ③ changes combat feel → land infra (①②) + propose, let owner decide before shipping feel.
 - Seeded RNG must not change live gameplay feel when unseeded (default path = Math.random()).
+
+---
+## Progress log (local, unpushed — user asleep)
+- Phase ①a DONE (commit 3c08a63): seeded RNG hook. this.rng() defaults to Math.random (live
+  unchanged); seedRng/ctor{seed} → mulberry32. Verified same seed=identical, unseeded=varies.
+- Phase ①b DONE (commit 2bcfc87): completed decision-path RNG retrofit (auto-decision cadence
+  was the dominant leak — found honestly after the matrix exposed non-determinism I'd
+  under-claimed). scripts/check-cat-bond-combat-matrix.mjs: deterministic kit×build verifier,
+  36 healthy cells regression-locked + 12 tracked-broken, wired into CI. npm run check green 3x.
+  Real stable baseline captured: ranged/beam/support=100%, dash/leap~90%, melee~48% (natural),
+  pounce~60-79%, HYBRID=6-47% inWin / up to 40% loiter (the real target).
+- Phase ② IN PROGRESS: challenger agent adversarially attacking the simulator (validity holes:
+  high-inWindow-but-zero-dmg? multi-enemy? reflect-wall suicide? low-HP retreat?) + finding new
+  reproducible failing scenarios → will add metrics (dmg/whiff/retreat-correctness) + scenarios
+  (multi-enemy, reflect, low-HP) to make the verifier stronger.
+- Phase ③ (engageRange unification to fix the 12 broken cells) = HELD: changes combat FEEL/
+  positioning → needs owner awake. Verifier is ready to grade it the moment it's attempted.
+- HONEST NOTE: I initially over-claimed determinism (a 60-frame dash trace looked identical but
+  720-frame runs diverged ~1-30%); the matrix caught it; root cause was unseeded _autoDecCd +
+  init animation phase. Now genuinely bit-deterministic. This is exactly why the verifier-first
+  ordering matters — it caught my own mistake.
