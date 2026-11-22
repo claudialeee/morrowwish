@@ -222,6 +222,21 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .stage{gap:8px}
  .charter-select{gap:5px}.legend-counter{font-size:9px}
  #moveWish{margin:5px 0;padding:8px;font-size:10px}
 }
+
+/* Progressive first-day reveal: keep the three opening choices and resident
+   ribbon visible, but let the player make one wish before seeing the advanced
+   strategy dashboards. No gameplay or scoring rules are removed. */
+#intro .charter:not(.active) .charter-bonus{display:none}
+#intro .charter:focus-visible .charter-bonus,
+#intro .charter:hover .charter-bonus{display:block}
+body.town-first-wish .city-extras,
+body.town-first-wish .town-tabs,
+body.town-first-wish .citizen-panel,
+body.town-first-wish .petition,
+body.town-first-wish .tip-box{display:none!important}
+body.town-first-wish .wish-variety,
+body.town-first-wish .wish-reactions,
+body.town-first-wish .wish-copy em{display:none!important}
 </style>
 <link rel="stylesheet" href="/tiny-town/freedom-scenes.css?v=1">
 <link rel="stylesheet" href="/tiny-town/compact-v5.css?v=prompt-top-20261121-1">
