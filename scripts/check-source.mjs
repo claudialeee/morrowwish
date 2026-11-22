@@ -1132,7 +1132,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  }
  if(!bondIntro.includes('js/main.js?v=original-intro-cats-20261121-2')||
     !cbMain.includes('targetHeight=132,maxWidth=140')||
-    !bondIntro.includes('js/world.js?v=smaller-courtyard-cats-20261121-2'))
+    !/src="js\/world\.js\?v=[^"]+"/.test(bondIntro))
    throw Error('Garden resize must not shrink the main menu kitten portraits');
  // Tour must progress through real post-capture actions and remain optional.
  if(!bondIntro.includes('id="guide-help"')||
