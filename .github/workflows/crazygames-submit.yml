@@ -55,7 +55,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - name: Install free Playwright driver (runner Chrome is preinstalled)
+      - name: Install browser driver and image pipeline for approved media
         run: |
           npm ci
           npm install --no-save --no-package-lock playwright sharp@0.34.5
