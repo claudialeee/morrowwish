@@ -37,10 +37,10 @@ try{
   });
   const summary=await page.locator('#panel .map-squad-choice').allTextContents();
   assert.equal(summary.length,3,'expedition must show all owned cats');
-  assert.ok(summary.some(t=>/Lv\.7/.test(t)&&/SR/.test(t)&&/战力/.test(t)&&/负伤/.test(t)),
-    'veteran must show correct level, rarity, power and carried wound');
-  assert.ok(summary.some(t=>/Lv\.1/.test(t)&&/N/.test(t)&&/❤/.test(t)),
-    'new kitten must show actual level, rarity and HP');
+  assert.ok(summary.some(t=>/Lv\.7/.test(t)&&/SR/.test(t)&&/(战力|Power)/.test(t)&&/(负伤|Injured)/.test(t)),
+    'veteran must show correct level, rarity, power and carried wound: '+JSON.stringify(summary));
+  assert.ok(summary.some(t=>/Lv\.1/.test(t)&&/N/.test(t)&&/(生命|HP)/.test(t)),
+    'new kitten must show actual level, rarity and HP: '+JSON.stringify(summary));
   const leaderBefore=await page.locator('#panel .battle-order-item.field').first().innerText();
   assert.match(leaderBefore,/Lv\.1/, 'first starter must be identifiable by level');
   // Promote veteran to lead, with its level shown again in the ordered list.
@@ -61,9 +61,9 @@ try{
    UI.openCapturePrep({...GameData.speciesById('doudou'),encounterLevel:2});
   });
   const captureCards=await page.locator('#cp-roster .chip').allTextContents();
-  assert.ok(captureCards.some(t=>/Lv\.7/.test(t)&&/SR/.test(t)&&/负伤/.test(t)),
+  assert.ok(captureCards.some(t=>/Lv\.7/.test(t)&&/SR/.test(t)&&/(负伤|Injured)/.test(t)),
     'yard selection must display the injured veteran and rarity');
-  assert.ok(captureCards.some(t=>/Lv\.1/.test(t)&&/战力/.test(t)),
+  assert.ok(captureCards.some(t=>/Lv\.1/.test(t)&&/(战力|Power)/.test(t)),
     'yard selection must display the beginner level and combat power');
   assert.ok(captureCards.every(t=>/⚔/.test(t)&&/❤/.test(t)),
     'every capture candidate displays attack and HP');
