@@ -8,10 +8,12 @@ const html=fs.readFileSync('public/studio-insights/index.html','utf8');
 const inlineScript=html.match(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i)?.[1];
 assert.ok(inlineScript,'Dashboard inline application script missing');
 assert.doesNotThrow(()=>new vm.Script(inlineScript,{filename:'studio-insights/index.html'}),'Dashboard full-page JavaScript syntax must be valid');
-for(const name of ['games','channel-rows','ew-worlds']){
+for(const name of ['games','channel-rows']){
  assert.ok(html.includes('id="'+name+'"'),'Missing sortable dashboard table: '+name);
 }
-assert.ok(html.includes('data-sort-value='),'Compound home/game visits need a numeric key');
+assert.ok(html.includes('data-sort-value='),'Site game visits must sort numerically');
+assert.ok(html.indexOf('id="promotion-channels"')<html.indexOf('id="game-details"'),'Channel metrics second');
+assert.ok(!html.includes('id="ew-funnel"')&&!html.includes('id="signal-grid"'),'Remove stale story and gameplay metrics');
 assert.ok(html.includes('aria-sort'),'Sort direction must be accessible');
 assert.ok(html.includes('enhanceSortableTables()'),'Sort must survive dashboard refresh');
 const block=html.slice(html.indexOf('const tableSorts='),html.indexOf('function dateFormat('));
@@ -23,7 +25,7 @@ const cell=(text,sortValue)=>({textContent:text,dataset:sortValue===undefined?{}
 const row=(name,metric,sortValue)=>({cells:[cell(name),cell(metric,sortValue)]});
 assert.equal(sortCellValue(row('A','1,230'),1,'games'),1230,'Thousands separator');
 assert.equal(sortCellValue(row('A','34 (21%)'),1,'games'),34,'Primary metric, not commentary percentage');
-assert.equal(sortCellValue(row('A','14.7%'),1,'ew-worlds'),14.7,'Percentage');
+assert.equal(sortCellValue(row('A','14.7%'),1,'games'),14.7,'Percentage');
 assert.equal(sortCellValue({cells:[cell('YouTube'),cell('2,345')]},1,'channel-rows'),2345,'Native platform views must sort numerically');
 assert.equal(sortCellValue(row('A',''),1,'games'),null,'Missing metrics not fabricated as zero');
 assert.equal(sortCellValue(row('A','0'),1,'itch-rows'),0,'True zero not treated as missing');

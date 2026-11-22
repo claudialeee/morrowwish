@@ -52,7 +52,7 @@ const miniUpgrade=fs.readFileSync('public/upgrade.js','utf8');
 const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
-if(!dashboard.includes('id="game-details"')||!dashboard.includes('data-i18n="gameMore"')||
+if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid"')||
    !dashboard.includes('metricCard(t("statPv")')||
    !dashboard.includes('metricCard(t("statFinished")')||
    dashboard.includes('data-i18n="colDone"')||
@@ -269,9 +269,11 @@ if(!trackerSource.includes('"cat-bond","elsewhere"'))throw Error('Cat Bond acqui
 if(!dashboard.includes('id="hub-funnel"'))throw Error('Homepage conversion data must appear in compact dashboard');
 
 const arcadeSource=fs.readFileSync('public/upgrade.js','utf8');
-for(const id of ['pawsibly-innocent','elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium']){
- if(!dashboard.includes("id:'"+id+"'"))throw new Error('Gameplay insight missing published game '+id);
+for(const id of ['cat-bond','pawsibly-innocent','tiny-town','elsewhere']){
+ if(!dashboard.includes("id:'"+id+"'"))throw new Error('Missing flagship metrics for '+id);
 }
+if(!(dashboard.indexOf('id="promotion-channels"')>dashboard.indexOf('id="stats"')&&dashboard.indexOf('id="promotion-channels"')<dashboard.indexOf('id="game-details"')))throw Error('Promotion must be the second section');
+if(dashboard.includes('id="ew-funnel"')||dashboard.includes('id="signal-grid"'))throw Error('Old gameplay detail cards must be removed');
 for(const metric of ['flip_finished','flip_10s','flip_30s','parcel_sorted','parcel_missed','parcel_ten_sorted']){
  if(!telemetry.includes(metric))throw new Error('Missing game telemetry signal '+metric);
 }
@@ -284,8 +286,7 @@ if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel
 // instead of hard-coding a presentation implementation from another release.
 if(!dashboard.includes('id="channel-rows"') || !dashboard.includes('j.byChannel'))
  throw new Error('Promotion channel UI must retain source-attributed analytics');
-if(!dashboard.includes('<details class="ew-details"><summary data-ew="more">'))
- throw new Error('Elsewhere scene details should remain collapsed by default');
+if(!dashboard.includes('id="focus-grid"'))throw new Error('Flagship performance metrics must be visible');
 console.log('Six game analytics cards, compact acquisition channels and actionable telemetry checked.');
 
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
@@ -830,9 +831,8 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
    throw Error('Aquarium should complete 60s with restorative, non-punishing water mechanics');
  const dashboardText=fs.readFileSync('public/studio-insights/index.html','utf8');
  const trackerText=fs.readFileSync('public/telemetry.js','utf8');
- if(!dashboardText.includes("['fishFinished','aquarium_completed']")||
-    !trackerText.includes('signal("aquarium_completed")'))
-   throw Error('Aquarium 60-second completion telemetry missing from unified dashboard');
+ if(!trackerText.includes('signal("aquarium_completed")'))
+   throw Error('Aquarium 60-second completion telemetry missing');
  console.log('Five aquarium endings and click-to-start arcade flow verified.');
 }
 
