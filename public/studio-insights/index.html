@@ -122,7 +122,7 @@ function sortCellValue(row,index,id){
  const cell=row.cells[index];if(!cell)return null;
  const value=(cell.dataset.sortValue!==undefined?cell.dataset.sortValue:cell.textContent).trim();
  if(!value||["—","待同步","未获取","Sync pending","Unavailable"].includes(value))return null;
- if(index===0||(id==="channel-rows"&&index===1))return value;
+ if(index===0)return value;
  const m=/^-?\d+(?:\.\d+)?/.exec(value.replaceAll(",","").replaceAll(" ",""));
  return m?Number(m[0]):null;
 }
@@ -162,7 +162,7 @@ function enhanceSortableTables(){
    table.addEventListener("click",event=>{
     const button=event.target.closest?.("button.sort-trigger");if(!button||!table.contains(button))return;
     const index=Number(button.dataset.index),old=tableSorts.get(id);
-    const numeric=index>0&&!(id==="channel-rows"&&index===1);
+    const numeric=index>0;
     tableSorts.set(id,{index,direction:old?.index===index?(old.direction==="asc"?"desc":"asc"):(numeric?"desc":"asc")});
     sortDataTable(table);
    });

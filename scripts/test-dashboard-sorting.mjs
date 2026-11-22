@@ -24,6 +24,7 @@ const row=(name,metric,sortValue)=>({cells:[cell(name),cell(metric,sortValue)]})
 assert.equal(sortCellValue(row('A','1,230'),1,'games'),1230,'Thousands separator');
 assert.equal(sortCellValue(row('A','34 (21%)'),1,'games'),34,'Primary metric, not commentary percentage');
 assert.equal(sortCellValue(row('A','14.7%'),1,'ew-worlds'),14.7,'Percentage');
+assert.equal(sortCellValue({cells:[cell('YouTube'),cell('2,345')]},1,'channel-rows'),2345,'Native platform views must sort numerically');
 assert.equal(sortCellValue(row('A',''),1,'games'),null,'Missing metrics not fabricated as zero');
 assert.equal(sortCellValue(row('A','0'),1,'itch-rows'),0,'True zero not treated as missing');
 assert.equal(sortCellValue({cells:[cell('itch.io'),cell(''),cell('2'),cell('19','19'),cell('4'),cell('1')]},3,'channel-rows'),19,'Site visit column sorts by real game-page visits');
