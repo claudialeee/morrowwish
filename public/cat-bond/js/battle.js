@@ -1095,7 +1095,8 @@ class CaptureBattle {
     // Auto-battle dodges like a competent human, NOT a frame-perfect robot: it only
     // reacts to ~55% of threats (less when it's cruising unhurt), so the player still
     // takes hits and the fight has stakes. (Playtest: auto evasion was too strong.)
-    if(threat&&f.dodgeCd<=0&&Math.random()<this.autoDodgeChance(f)){
+    if(threat && !(f.reflectT>0 && threat.p && this.reflectCovers(f,threat.p.x,threat.p.y)) &&
+       f.dodgeCd<=0&&Math.random()<this.autoDodgeChance(f)){
       if(this.dodge(f)!==false){this.markAutoAction(f,'闪避危险弹幕');return;}
     }
     const hp=f.hp/f.maxhp;
@@ -1316,7 +1317,8 @@ class CaptureBattle {
       if (dir.x < -0.25) f.face = -1; else if (dir.x > 0.25) f.face = 1;
       f.moving = true;
     } else if (f.dashT <= 0 && f.rootT <= 0) f.moving = false;
-    if(near && this.incomingThreat(f) && f.dodgeCd<=0 && Math.random()<this.autoDodgeChance(f)) this.dodge(f);
+    if(near && !(f.reflectT>0 && this.reflectCovers(f,near.x,near.y)) &&
+       this.incomingThreat(f) && f.dodgeCd<=0 && Math.random()<this.autoDodgeChance(f)) this.dodge(f);
     this.evalGambits(f, tgt, dist, near, nd);
   }
 
