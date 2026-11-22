@@ -131,6 +131,13 @@ try{
       for(let i=0;i<bytes.length;i+=43)n=Math.imul(n^bytes[i],16777619)>>>0;
       return n;
     };
+    // Guard against invalid transforms: an earlier .size/.scale mismatch
+    // silently drew giant cropped cats on phone even though images differed.
+    const nativeScale=CanvasRenderingContext2D.prototype.scale;
+    CanvasRenderingContext2D.prototype.scale=function(x,y){
+      if(!Number.isFinite(x)||!Number.isFinite(y))throw Error('NaN cinematic scale');
+      return nativeScale.call(this,x,y);
+    };
     const results=[],second=[];
     for(const key of Director.keys){
       ctx.clearRect(0,0,640,360);
@@ -142,6 +149,7 @@ try{
         elements:key,tier:3,name:key,strikeAt:.78},uid=>pairCats.find(c=>c.uid===uid));
       second.push(hash());
     }
+    CanvasRenderingContext2D.prototype.scale=nativeScale;
     const firstHigh=Director.pose('grass+light',.03,640,360);
     const high=Director.pose('grass+light',.28,640,360);
     const sep=poses=>Math.abs(poses[1].x-poses[0].x);
