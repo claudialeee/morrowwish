@@ -671,7 +671,7 @@ class CaptureBattle {
     // Roguelike attrition: a cat carries its wounded HP between field battles via
     // cat._hpFrac (set by game.js after each explore win). Full HP if unset (yard
     // fights, fresh runs). Dead-on-arrival is avoided with a small floor.
-    const carried = (typeof cat._hpFrac === 'number') ? Math.max(0.15, Math.min(1, cat._hpFrac)) : 1;
+    const carried = window.State?.catHpFraction?.(cat) ?? 1;
     return {
       cat, i, element, bond,
       hp: Math.round(maxhp * carried), maxhp,
