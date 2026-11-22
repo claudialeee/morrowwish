@@ -214,7 +214,7 @@ function edit(slug){
    if(sh.caption.length>31)throw Error('V10 subtitle exceeds phone-safe width '+slug+'/'+sh.label+': '+sh.caption);
     const txtFile=path.join(work,slug+'-'+i+'.txt');fs.writeFileSync(txtFile,sh.caption);
    f+=',drawtext=fontfile='+font+':textfile='+txtFile+
-      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='elsewhere'?1650:slug==='pawsibly-innocent'?110:slug==='pocket-aquarium'?1360:1705)+
+      ':fontcolor=white:fontsize='+fontSize+':x=(w-text_w)/2:y='+(slug==='cat-bond'&&['rare-encounter','battle-hud','battle-skills','duo','rare-capture'].includes(sh.label)?1430:slug==='elsewhere'?1650:slug==='pawsibly-innocent'?110:slug==='pocket-aquarium'?1360:1705)+
       ':shadowcolor=black@0.8:shadowx=2:shadowy=3:box=1:boxcolor=black@0.40:boxborderw=12';
    captionsUsed++;
   }
