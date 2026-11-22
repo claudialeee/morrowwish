@@ -525,11 +525,14 @@ class Game {
   }
 
   update(dt) {
+    // The unified exploration Menu owns Regions and Battle Team now.
+    // Keep the old floating map buttons hidden even while exploring: they
+    // overlap mobile battle controls and compete with the single menu entry.
     const mapIndex=document.getElementById('map-index');
-    if(mapIndex)mapIndex.hidden=this.scene!=='map';
+    if(mapIndex)mapIndex.hidden=true;
     const squadBtn=document.getElementById('map-squad');
     if(squadBtn){
-      squadBtn.hidden=this.scene!=='map';
+      squadBtn.hidden=true;
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       const label=en?'🐾 Battle team':'🐾 出战猫咪';
       if(squadBtn.textContent!==label)squadBtn.textContent=label;
