@@ -266,7 +266,7 @@ jobs:
           done
           grep -Fq 'id="battle-skill-info-toggle"' /tmp/mw-live-catbond.html
           grep -Fq '<span class="mv-name">毛球出击</span>' /tmp/mw-live-catbond.html
-          verify_live /cat-bond/adult-preview.html /tmp/mw-live-adult-preview.html '32 种猫咪'
+          verify_live /cat-bond/adult-preview.html /tmp/mw-live-adult-preview.html 'id="adult-gallery-title"'
           verify_live /cat-bond/js/adult-art.js /tmp/mw-live-catbond-adult-art.js 'CatBondAdultArt'
           cmp -s public/cat-bond/js/adult-art.js /tmp/mw-live-catbond-adult-art.js || {
             echo '::error::Adult cat art is missing or stale on the player URL'; exit 1;
