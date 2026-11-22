@@ -1,7 +1,7 @@
 
 import {nativeTikTokRoute,nativeTikTokSnapshot} from "./tiktok-native.js";
 import {nativeBlueskySnapshot} from "./bluesky-native.js";
-import {nativeYouTubeSnapshot} from "./youtube-native.js";
+import {nativeYouTubeSnapshot,nativeYouTubeRoute} from "./youtube-native.js";
 import {nativeInstagramSnapshot,nativeInstagramRoute} from "./instagram-native.js";
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"}});
 const pct=(a,b)=>b?Math.round(a*1000/b)/10:null;
@@ -192,6 +192,8 @@ export async function api(req,env){
  if(p.startsWith("/api/tiktok/"))return nativeTikTokRoute(req,env,
    async()=>!!env.ARCADE_ANALYTICS_KEY&&(req.headers.get("x-analytics-key")===env.ARCADE_ANALYTICS_KEY||await hasSession(req,env)),json);
  if(p.startsWith("/api/instagram/"))return nativeInstagramRoute(req,env,
+   async()=>!!env.ARCADE_ANALYTICS_KEY&&(req.headers.get("x-analytics-key")===env.ARCADE_ANALYTICS_KEY||await hasSession(req,env)),json);
+ if(p.startsWith("/api/youtube/"))return nativeYouTubeRoute(req,env,
    async()=>!!env.ARCADE_ANALYTICS_KEY&&(req.headers.get("x-analytics-key")===env.ARCADE_ANALYTICS_KEY||await hasSession(req,env)),json);
  if(p==="/api/session"||p==="/api/elsewhere-collect"){
   if(req.method!=="POST")return json({error:"POST required"},405);
