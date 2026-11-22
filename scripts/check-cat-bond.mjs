@@ -1013,6 +1013,34 @@ assert.equal(duoTest.duoField,null,'lingering ultimate always ends without leaki
 assert.ok(duoTest.skillStrokes.some(v=>v.kind==='duoImpact'&&v.life===.65),
   'closing beat is a distinct twin-element flourish');
 assert.equal(Object.keys(sandbox.window.CatRelations.DUO_ARTS).length,21,'all 21 elemental pairs keep authored signatures');
+// Dedicated summon resonance only: other element pairs cannot call a reserve.
+const grassPair=[State.makeCat('senlin',{affinity:90}),State.makeCat('zherdd',{affinity:90})];
+const bench=State.makeCat('yinghua',{affinity:90});
+sandbox.window.CatRelations.choose(grassPair[0],grassPair[1]);
+sandbox.window.CatRelations.pair(grassPair[0],grassPair[1]).value=95;
+const summonBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [...grassPair,bench],GameData.speciesById('doudou'));
+assert.equal(summonBattle.duo?.effect?.support,'summon',
+  'grass-grass duo alone has the team summon effect');
+summonBattle.duoCharge=100;summonBattle.duoCd=0;
+assert.equal(summonBattle.castDuo(),true,'summon-type resonance is castable');
+summonBattle.duoCinematic.payload();
+assert.equal(summonBattle.team.length,3,'summon duo calls a third reserve');
+assert.ok(summonBattle.reinforceT>12,'summoned ally remains temporarily');
+const normalPair=[duoA,duoB];
+sandbox.window.CatRelations.choose(normalPair[0],normalPair[1]);
+sandbox.window.CatRelations.pair(normalPair[0],normalPair[1]).value=95;
+const noSummonBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [...normalPair,bench],GameData.speciesById('doudou'));
+noSummonBattle.duoCharge=100;noSummonBattle.duoCd=0;
+assert.equal(noSummonBattle.castDuo(),true,'normal duo resonance castable');
+noSummonBattle.duoCinematic.payload();
+assert.equal(noSummonBattle.team.length,2,'normal duo does not call third cat');
+const fieldVisualSource=fs.readFileSync(DIR+'js/battle.js','utf8');
+assert.ok(fieldVisualSource.includes('Pulse damage')&&
+  fieldVisualSource.includes('v.remaining')&&fieldVisualSource.includes('召唤队友'),
+  'resonance shows pulse damage, support identity and timer on the battlefield');
+
  
 // Balance regression: all normal skills respect the difficulty modifier,
 // but a full resonance (opening + field + late cross-claw) cannot one-shot.
