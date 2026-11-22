@@ -1159,3 +1159,101 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
 .single-screen-game .reset-cancel{background:#eee2f0;color:#654c6c;border-color:#d9c4dc!important}
 .single-screen-game .reset-danger{background:#c2516b;color:#fff}
 .single-screen-game .reset-confirm-actions button:focus-visible{outline:3px solid #b36bac;outline-offset:2px}
+
+
+/* Always visible reset is intentionally distinct from Retry (current room).
+   The destructive action is confirmation-gated and never icon-only. */
+.single-screen-game .in-game-actions #resetGameQuick{
+ box-sizing:border-box!important;display:inline-flex!important;flex:0 0 116px!important;
+ align-items:center!important;justify-content:center!important;gap:5px!important;
+ min-width:105px!important;max-width:116px!important;min-height:45px!important;
+ margin:0!important;padding:6px 9px!important;
+ background:#c65876!important;color:#fff!important;border:2px solid #9b405e!important;
+ border-radius:11px!important;box-shadow:0 3px 0 #8d4660!important;
+ font:900 12px/1.2 Nunito,system-ui,sans-serif!important;
+ white-space:normal!important;text-align:center!important;
+ cursor:pointer!important;touch-action:manipulation;
+}
+.single-screen-game .in-game-actions #resetGameQuick:hover{
+ background:#aa4264!important;box-shadow:0 3px 0 #75334a!important;
+}
+.single-screen-game .in-game-actions #resetGameQuick:focus-visible{
+ outline:3px solid #77409c!important;outline-offset:2px!important;
+}
+.single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{
+ font:900 23px/1 system-ui!important;flex:0 0 auto;
+}
+.single-screen-game .in-game-actions #resetQuickLabel{
+ display:inline!important;font:900 12px/1.15 Nunito,system-ui,sans-serif!important;
+ white-space:normal!important;
+}
+@media(min-width:1201px){
+ .single-screen-game .in-game-guidance{
+  grid-template-columns:minmax(0,.6fr) minmax(0,1.5fr)!important;
+  column-gap:10px!important;
+ }
+}
+@media(min-width:701px) and (max-width:1200px){
+ .single-screen-game .in-game-guidance{grid-template-columns:minmax(0,1fr)!important;row-gap:5px!important}
+ .single-screen-game .in-game-actions{width:100%!important;justify-content:space-between!important}
+ .single-screen-game .in-game-actions #bonusQuick{min-width:130px!important}
+}
+@media(max-width:700px){
+ .single-screen-game .in-game-actions{
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  flex-wrap:wrap!important;gap:5px!important;justify-content:space-between!important;
+ }
+ .single-screen-game .in-game-actions #bonusQuick{
+  order:0!important;flex:1 1 100%!important;min-width:0!important;
+  max-width:100%!important;min-height:35px!important;
+ }
+ .single-screen-game .in-game-actions .board-yarn{
+  order:1!important;flex:1 1 auto!important;min-width:110px!important;
+  max-width:none!important;margin:0!important;
+ }
+ .single-screen-game .in-game-actions #wait{order:2!important}
+ .single-screen-game .in-game-actions #restart{order:3!important}
+ .single-screen-game .in-game-actions #resetGameQuick{
+  order:4!important;flex:0 0 91px!important;min-width:91px!important;
+  max-width:91px!important;min-height:46px!important;padding:4px!important;
+  gap:2px!important;
+ }
+ .single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{font-size:18px!important}
+ .single-screen-game .in-game-actions #resetQuickLabel{font-size:10px!important}
+}
+@media(max-width:360px){
+ .single-screen-game .in-game-actions{gap:3px!important}
+ .single-screen-game .in-game-actions .board-yarn{
+  flex:1 1 94px!important;min-width:94px!important;font-size:10px!important;padding:3px!important;
+ }
+ .single-screen-game .in-game-actions #resetGameQuick{
+  flex:0 0 78px!important;min-width:78px!important;max-width:78px!important;
+  gap:1px!important;
+ }
+ .single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{font-size:16px!important}
+ .single-screen-game .in-game-actions #resetQuickLabel{font-size:9px!important}
+}
+/* Reset is now pinned immediately under the menu tabs on every menu page. */
+.single-screen-game #gameMenu .reset-progress-menu-action{
+ box-sizing:border-box!important;display:block!important;flex:0 0 auto!important;
+ margin:0!important;padding:6px 12px 10px!important;border:0!important;
+ background:linear-gradient(90deg,#fff9f2,#ffe9ec)!important;
+}
+.single-screen-game #gameMenu .reset-progress-menu-action .reset-progress-button{
+ box-sizing:border-box!important;display:flex!important;width:100%!important;
+ min-height:44px!important;padding:9px 12px!important;
+ background:#c65876!important;border:2px solid #9b405e!important;
+ color:white!important;font:900 13px/1.2 Nunito,system-ui,sans-serif!important;
+ box-shadow:0 3px 0 #9d5068!important;border-radius:12px!important;
+}
+.single-screen-game #gameMenu .reset-progress-menu-action .reset-progress-button:hover{
+ background:#aa4264!important;
+}
+@media(max-width:600px){
+ .single-screen-game #gameMenu .reset-progress-menu-action{
+  padding:4px 8px 8px!important;
+ }
+ .single-screen-game #gameMenu .reset-progress-menu-action .reset-progress-button{
+  min-height:42px!important;font-size:12px!important;
+ }
+}
