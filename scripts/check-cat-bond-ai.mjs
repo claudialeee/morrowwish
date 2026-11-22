@@ -178,18 +178,30 @@ function fighterWithSkills(kinds) {
   b.autoMode = true;
   b.coach = null;                 // skip the first-fight tutorial hold
   let threw = null;
-  const startEnemyX = b.enemies.map(e => e.x);
+  // Level-20 starter had been one-shotting the unscaled low-level wild cat,
+  // which gave enemy AI zero opportunity to move. Keep a *durable* target for
+  // this movement test. The separate damage/balance suites test actual HP.
+  for(const enemy of b.enemies){
+    enemy.maxhp=100000;enemy.hp=100000;enemy.inv=0;enemy.speed=Math.max(enemy.speed||0,85);
+    enemy.x=b.W*.78;enemy.y=b.H*.33;
+  }
+  const start=b.enemies.map(e=>({x:e.x,y:e.y}));
+  let maxTravel=0,updateFrames=0;
   try {
     for (let i = 0; i < 625; i++) {    // 625 * 0.016 = 10s
-      for (const fr of b.team) if (fr.hp < fr.maxhp * 0.5) fr.hp = fr.maxhp * 0.6;  // keep it alive, not a wipe
-      b.update(0.016);
+      for (const fr of b.team) if (fr.hp < fr.maxhp * 0.5) fr.hp = fr.maxhp * 0.6;
+      b.update(0.016);updateFrames++;
+      for(let k=0;k<b.enemies.length;k++){
+        const enemy=b.enemies[k],p=start[k];
+        maxTravel=Math.max(maxTravel,Math.hypot(enemy.x-p.x,enemy.y-p.y));
+      }
       if (b.done) break;
     }
   } catch (e) { threw = e; }
   assert.equal(threw, null, '10s auto-battle sim threw nothing' + (threw ? ': ' + threw.stack : ''));
-  // enemies that were alive should have actually moved (AI steering is live)
-  const moved = b.enemies.some((e, i) => e.alive && Math.abs(e.x - startEnemyX[i]) > 2);
-  assert.ok(moved || b.done, 'enemy AI produced real movement over the sim');
+  assert.ok(updateFrames>40,'AI sim must run enough real frames for movement');
+  assert.ok(maxTravel>2,
+    'enemy AI should move in either axis during actual combat, maximum travel='+maxTravel.toFixed(2));
 }
 
 console.log('Cat Bond combat AI: kit range bands (ranged kites / melee closes / support hangs back), true intercept lead, and a 10s auto-battle sim all PASS.');
