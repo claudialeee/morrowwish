@@ -5,7 +5,7 @@ The private [Studio Insights dashboard](https://morrowwish.vercel.app/studio-ins
 | Platform | First-party API | Production setup | Metrics |
 | --- | --- | --- | --- |
 | YouTube | Data API v3 `videos.list` | `YOUTUBE_DATA_API_KEY` restricted to YouTube Data API v3 | Views, likes, comments |
-| Instagram | Instagram API with Instagram Login, Reel Insights | `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`, owner OAuth with `instagram_business_basic` and `instagram_business_manage_insights` | Views, likes, comments, shares |
+| Instagram | Instagram API with Unified Login, Reel Insights | `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`, `INSTAGRAM_CONFIG_ID`; business OAuth with `instagram_basic` and `instagram_manage_insights` | Views, likes, comments, shares |
 | TikTok | Display API v2 `video/query` | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, owner OAuth with `user.info.basic` and `video.list` | Views, likes, comments, shares |
 | Bluesky | AppView `app.bsky.feed.getPosts` | No credentials | Likes, reposts, replies, quotes. Views are unavailable. |
 
@@ -14,7 +14,7 @@ The existing D1 cache has a refresh lease per provider. Bluesky reads refresh af
 ## Production activation
 
 - Add credentials only as Cloudflare Pages production secrets for `morrowwish`, then deploy. Never put credential values in a commit or command output.
-- Instagram requires the studio's Professional account. Owned and managed test accounts can use Standard Access when added to the app. Set the Instagram Login callback to `https://morrowwish.vercel.app/api/instagram/callback`.
+- Instagram requires the studio's Professional account in a business portfolio and a Facebook Login for Business configuration that requests only an Instagram account and the app's required read scopes. Meta's Unified Login configuration also requires `instagram_manage_messages`. Set its callback to `https://morrowwish.vercel.app/api/instagram/callback`. The app receives a system-user token; keep it encrypted in D1. Standard Access is for app-role testing; connections outside app roles require Meta App Review and Advanced Access.
 - For TikTok configure Login Kit for Web and the Display API `video.list` scope. Use callback `https://morrowwish.vercel.app/api/tiktok/callback`. Production access can require TikTok review. See [TikTok setup](tiktok-native-analytics.md).
 - Sign in to Studio Insights on the canonical hostname before opening [Instagram OAuth](https://morrowwish.vercel.app/api/instagram/connect) or [TikTok OAuth](https://morrowwish.vercel.app/api/tiktok/connect). Each provider stores the studio token encrypted in D1. The optional dedicated storage key names are `INSTAGRAM_TOKEN_KEY` and `TIKTOK_TOKEN_KEY`. Otherwise the dashboard's existing key is used for encryption.
 
