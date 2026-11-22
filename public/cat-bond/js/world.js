@@ -1112,7 +1112,23 @@ class YardScene {
       if (gap > bestGap) { bestGap = gap; best = { x, y }; }
       if (gap > 72) break;   // good enough
     }
-    return best || { x: W / 2, y: (top + bot) / 2 };
+    // A random sample can miss the last legal pocket on a narrow phone yard,
+    // causing a paid-for facility to appear impossible despite available grass.
+    // Exhaustively inspect a bounded grid before declaring the yard full.
+    // The same buildingSpotValid predicate protects player-placed structures.
+    if(best && this.buildingSpotValid(best.x,best.y))return best;
+    const side=Math.min(56,Math.max(30,W*.10));
+    let legal=null,legalGap=-1;
+    for(let y=top;y<=bot+0.01;y+=8){
+      for(let x=side;x<=W-side+0.01;x+=8){
+        if(!this.buildingSpotValid(x,y))continue;
+        let gap=Infinity;
+        for(const o of builds)gap=Math.min(gap,Math.hypot(o.x-x,(o.y-y)*1.6));
+        for(const o of this.bushes)gap=Math.min(gap,Math.hypot(o.x-x,(o.y-y)*1.6));
+        if(gap>legalGap){legal={x,y};legalGap=gap;}
+      }
+    }
+    return legal||best||{ x: W / 2, y: (top + bot) / 2 };
   }
   // Physical, player-controlled placement. Nothing is charged before
   // confirm. Bounds and overlap are the same on phone, desktop and resize.
