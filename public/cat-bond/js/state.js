@@ -230,7 +230,12 @@ function claimDaily() {
 //               1 = normal curve, >1 = steeper 等级压制)
 const DIFFICULTY_MULTS = {
   casual:   { playerDmg: 1.35, enemyDmg: 0.6,  enemyHp: 0.8, gapScale: 0.25 },
-  hardcore: { playerDmg: 1.0,  enemyDmg: 1.0,  enemyHp: 1.0, gapScale: 1.4  },
+  // gapScale 1.25 (was 1.4): a balance sim showed 1.4 overtuned the 等级压制 into a
+  // ~1-in-4 WIPE at a moderate under-level (gap −3) — "硬核打得太快". 1.25 is the
+  // HIGHEST value that pulls that wipe rate back to ~9% ("punishing, not a coin-flip")
+  // while leaving ON-LEVEL hardcore completely unchanged (bend() is insensitive to
+  // gapScale at gap 0) — so strong 等级压制 is preserved, just no longer a cliff.
+  hardcore: { playerDmg: 1.0,  enemyDmg: 1.0,  enemyHp: 1.0, gapScale: 1.25 },
 };
 function difficulty() { return (S.difficulty === 'hardcore') ? 'hardcore' : 'casual'; }
 function difficultyMult() { return DIFFICULTY_MULTS[difficulty()]; }
