@@ -1559,7 +1559,7 @@ const UI = {
         <h3>${en?'Cat attributes':'猫猫属性'}</h3>
         <div class="cat-detail-element-row">
           <span><strong>${en?'Primary':'主属性'}：</strong>${elLabel(primary)}</span>
-          <span><strong>${en?'Secondary':'副属性'}：</strong>${secondary?elLabel(secondary):(en?'None':'无')}</span>
+          <span><strong>${en?'Secondary':'副属性'}：</strong>${secondary?elLabel(secondary):(en?'None':'—')}</span>
         </div>
         <p class="tiny cat-detail-side-hint">
           ${secondary
