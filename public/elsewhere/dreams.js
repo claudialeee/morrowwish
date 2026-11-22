@@ -45,7 +45,7 @@ const Q={
  recap:L("关键行动","DECISIVE ACTIONS"),replay:L("换一种打法","Try another approach"),
  another:L("体验另一段人生","Another life"),share:L("分享结局","Share this ending"),
  galleryNote:L("只记录这一版真实解锁的结局。","Only outcomes earned in this edition are counted."),
- collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("你拖住了对方，但这次还不足以让他们彻底认输。","You stopped them for now, but the case is not fully won."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
+ collected:L("收藏了一张结局明信片","ENDING POSTCARD UNLOCKED"),partialDesc:L("这段人生仍有美好瞬间，但你最后倚靠的选择还不够有力。试试在前几幕多积累同一种收获，看看结局如何改变。","Your journey had its bright moments, but your final choice needed more support. Build that strength in earlier scenes to change your ending."),notCollected:L("再多一点线索，你就能彻底逆转","Find more evidence to earn a decisive ending"),goal:L("最后选择对应的证据、支援或筹码，累计至少 2 项才能彻底获胜","Your final action needs at least 2 in its resource to succeed decisively")
 };
 Object.assign(Q,{
  hero:L("醒来，活一种舍不得结束的人生。","Wake up to a life too good to end."),
@@ -114,18 +114,18 @@ function resolve(){
  const last=state.history[4],kind=last.gain,choice=types.indexOf(kind),route=state.route;
  const endings=window.ELSEWHERE_ROUTE_ENDINGS?.[state.id];
  if(!Array.isArray(endings?.[route])||!endings[route][choice])throw Error("Missing unique ending for "+state.id+"/"+route+"/"+choice);
- const rare=state.secret&&(state.id!=="tokyo"||(state.scores.proof>=2&&state.scores.allies>=2));
- const quality=rare?"perfect":"strong",n=rare?9:route*3+choice;
+ const momentum=state.scores[kind];
+ const rare=momentum>=3&&state.secret&&(state.id!=="tokyo"||(state.scores.proof>=2&&state.scores.allies>=2));
+ const quality=rare?"perfect":momentum>=2?"strong":"cost",n=rare?9:route*3+choice;
  const entry=rare?story(state.id).rare:endings[route][choice];
  const vibe=window.ELSEWHERE_VIBES?.[state.id];
- const detail=quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
- return {n,kind,quality,entry,detail,route,choice};
+ const detail=quality==="cost"?Q.partialDesc:quality==="perfect"?(vibe?.rare||Q.perfectBecause):(vibe?.quality||Q.strongBecause);
+ return {n,kind,momentum,quality,entry,detail,route,choice};
 }
 function badge(kind){
- return '<span class="case-gain '+kind+'">'+esc(T(localResource(kind)))+(["amalfi","paris"].includes(state?.id)?"":" +1")+'</span>';
+ return '<span class="case-gain '+kind+'">'+esc(T(localResource(kind)))+" +1"+'</span>';
 }
 function counters(){
- if(["amalfi","paris","moon","monday","tokyo"].includes(state?.id))return "";
  return '<div class="case-resources" aria-label="'+(lang==="zh"?"人生收获":"Life experiences")+'">'+types.map(t=>'<span>'+esc(T(localResource(t)))+' <b>'+state.scores[t]+'</b></span>').join("")+'</div>';
 }
 function closeToTop(){window.scrollTo({top:0,behavior:"instant"})}
