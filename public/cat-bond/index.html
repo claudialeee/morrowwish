@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preload" as="image" href="assets/duo-premium-sheet.webp">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#e4ede0" />
@@ -29,7 +30,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=prebattle-stat-cards-20261121" />
+  <link rel="stylesheet" href="css/style.css?v=unlocked-pairs-20261122" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=all-skill-elemental-sfx-20261121" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -55,7 +56,7 @@
       <div id="toasts"></div>
       <div id="first-quest" role="status" hidden></div>
       <button id="yard-surprise" type="button" hidden></button>
-      <button id="yard-duo-status" type="button" hidden aria-label="查看双猫搭档"></button>
+      <!-- Duo is now part of the right-hand action rail. -->
       <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
       <button id="map-squad" type="button" hidden aria-label="选择出战猫咪">🐾 出战猫咪</button>
       <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
@@ -63,6 +64,7 @@
 
       <!-- Yard floating actions -->
       <div id="yard-actions">
+        <button id="yard-duo-status" type="button" hidden aria-label="双猫搭档与合击技能"></button>
         <button class="fab map-fab" id="fab-map" title="查看五个探索地区" aria-label="探索五张地图">🗺️<small>地图</small></button>
         <button class="fab" id="fab-build" title="庭院建造" aria-label="庭院建造游乐设施">🏗️</button>
         <button class="fab" id="fab-seek" title="主动寻找野猫（不会自动刷新）" aria-label="主动寻找野猫">🌿</button>
@@ -70,6 +72,18 @@
         <button class="fab" id="fab-feed" title="喂食">🍖</button>
       </div>
 
+      <!-- Dedicated skill and workshop shortcuts instead of one top banner. -->
+      <div id="yard-quick-links" aria-label="技能与工坊快捷入口">
+        <button id="yard-quick-skills" type="button">✨ 新技能</button>
+        <button id="yard-quick-work" type="button">🪙 工坊赚钱</button>
+      </div>
+      <div id="yard-placement-dock" hidden role="group" aria-label="庭院设施放置">
+        <span id="yard-placement-status">在草坪点击建造位置</span>
+        <div class="yard-placement-actions">
+          <button id="yard-placement-cancel" type="button">取消</button>
+          <button id="yard-placement-confirm" type="button">✓ 确认建造</button>
+        </div>
+      </div>
       <!-- Battle UI (real-time arena) -->
       <div id="battle-ui">
         <div class="battle-topbar">
@@ -117,8 +131,8 @@
       <!-- Bottom tabs -->
       <div id="tabbar">
         <button class="tab active" data-tab="yard"><span class="ico">🏡</span>庭院</button>
-        <button class="tab" data-tab="cats"><span class="ico">🐾</span>猫猫</button>
-        <button class="tab" data-tab="work"><span class="ico">🧶</span>工坊</button>
+        <button class="tab" data-tab="cats"><span class="ico">🐾</span><span class="nav-caption">猫咪·技能</span></button>
+        <button class="tab" data-tab="work"><span class="ico">🧶</span><span class="nav-caption">工坊赚钱</span></button>
         <button class="tab" data-tab="dex"><span class="ico">📖</span>图鉴</button>
         <button class="tab" data-tab="daily"><span class="ico" style="position:relative">🎁<span id="daily-dot" class="hidden" style="position:absolute;top:-2px;right:-4px;width:8px;height:8px;background:#ff5a5a;border-radius:50%"></span></span>签到</button>
         <button class="tab" data-tab="shop"><span class="ico">🛒</span>商店</button>
@@ -170,7 +184,7 @@
   <script src="js/raising.js?v=shy-trickster-duo-20261121-m"></script>
   <script src="js/painted-regions.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
-  <script src="js/world.js?v=encounter-level-preflight-v1"></script>
+  <script src="js/world.js?v=placement-review-20261121"></script>
   <script src="js/worldmap.js?v=capture-despawn-20261122"></script>
   <script src="js/duo-portraits.js?v=cinematic-v5-20261121"></script>
   <script src="js/duo-artwork.js?v=cinematic-20261121"></script>
@@ -178,11 +192,12 @@
   <script src="js/duo-director.js?v=highfive-natural-20261121"></script>
   <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
   <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
-  <script src="js/duo-hero.js?v=cinematic-clear-v7"></script>
+  <script src="js/duo-premium.js?v=full-scene-blend-20261122"></script>
+  <script src="js/duo-hero.js?v=full-scene-blend-20261122"></script>
   <script src="js/battle.js?v=basic-dmg-half-20261122"></script>
   <script src="js/duo-bond.js?v=paw-impact-strikebeat-20261122"></script>
-  <script src="js/ui.js?v=difficulty-picker-20261122"></script>
-  <script src="js/game.js?v=capture-despawn-bgm-20261122"></script>
+  <script src="js/ui.js?v=unlocked-pairs-20261122"></script>
+  <script src="js/game.js?v=placement-review-20261121"></script>
   <script src="js/main.js?v=no-empty-welcomeback-20261121"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=gated-skill-locale-20261121"></script>
