@@ -54,7 +54,7 @@ try{
   });
   const encounter=await page.locator('#panel').innerText();
   assert.match(encounter,/(?:Lv\.?\s*4|等级\s*4)/,'enemy level visible before fight');
-  assert.match(encounter,/Lv\.7/,'team levels still visible during encounter');
+  assert.match(encounter,/(?:Lv\.?\s*7|等级\s*7)/,'team levels still visible during encounter in both languages');
   assert.equal(await page.locator('#panel .map-squad-choice').count(),3);
   await page.screenshot({path:'/tmp/cat-bond-squad-'+device.name+'-encounter.png'});
   await page.evaluate(()=>{
