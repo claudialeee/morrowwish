@@ -118,6 +118,24 @@ for(const marker of ['game_start','game_complete','game_over','game_retry','cat_
 const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
 // Every active game module must keep a cache-buster, but the CI test must
 // not pin a stale version when the game's battle mechanics are improved.
+
+// Regression guard for the user's approved high-quality full-painting attacks.
+// The rejected primitive/vector cat cut-ins must NEVER be promoted back as
+// the production renderer simply to claim 32 species or three skill tiers.
+// Artwork is shared by battle, unlocked private preview and full review gallery.
+const approvedDuo=fs.readFileSync('public/cat-bond/js/duo-hero.js','utf8');
+for(const path of ['public/cat-bond/index.html','public/cat-bond/duo-showcase.html','public/cat-bond/duo-preview.html']){
+ const page=fs.readFileSync(path,'utf8');
+ const oldArt=page.indexOf('src="js/duo-premium.js?v=');
+ const mainArt=page.indexOf('src="js/duo-hero.js?v=');
+ if(oldArt<0||mainArt<=oldArt)
+   throw Error('Original approved painted duo attack sheet not loaded before the hero renderer in '+path);
+}
+if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
+   !approvedDuo.includes('window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup)')||
+   !approvedDuo.includes("approved-complete-painterly-duo-sheet"))
+ throw Error('Do not replace approved complete painted cats with procedural duo portraits again');
+
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
  if(!bondScriptSources.some(src=>src.startsWith(asset+'?v=')&&src.slice(asset.length+3).length>0))
