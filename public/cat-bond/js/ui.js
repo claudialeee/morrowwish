@@ -1419,7 +1419,7 @@ const UI = {
        <div class="cb-growth-stage-names"><span>${oldLabel}</span><b aria-label="${en?'becomes':'成长为'}">✦</b><span>${newLabel}</span></div>
        <canvas id="cb-growth-canvas" width="360" height="220" role="img" aria-label="${en?'Illustrated before-and-after growth for '+safe(GameData.speciesName(sp)):'成长前后：'+safe(GameData.speciesName(sp))}"></canvas>
        <h3>${safe(State.catName(cat))} · ${safe(name)}</h3>
-       <p class="cb-growth-caption">${awaken?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'A fully illustrated adult form, ready for new adventures!':'专属成年原画已解锁！庭院、战斗与猫咪详情同步更新。')}</p>
+       <p class="cb-growth-caption">${awaken?(en?'Your companion awakened a new aura and stronger abilities!':'新的觉醒光芒！和伙伴一起继续冒险吧。'):(en?'Your companion has grown! Original watercolor features stay intact, with a larger body and a growth badge.':'伙伴长大啦！保留原版水彩脸型和毛色，体型自然成长，新增成长饰标。')}</p>
        <div class="cb-growth-stats">${gains}</div>
        <button class="btn gold" id="cb-growth-done" type="button">${en?'Continue adventure':'继续冒险'}</button>
      </section>`);
