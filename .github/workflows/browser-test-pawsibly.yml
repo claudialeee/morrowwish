@@ -1,7 +1,7 @@
 name: Real-browser cat adventure smoke test
 on:
   push:
-    branches: [main, qa/pawsibly-core-loop-gate-20261122]
+    branches: [main]
     paths:
       - 'public/pawsibly-innocent/**'
       - 'public/studio-audio.js'
@@ -55,3 +55,12 @@ jobs:
           node scripts/browser-test-pawsibly.mjs
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/mobile-playtest.mjs
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/fullscreen-smoke.mjs
+
+      - name: Archive Pawsibly Chromium screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pawsibly-chromium-qa
+          path: test-results/pawsibly-*.png
+          if-no-files-found: warn
+          retention-days: 7

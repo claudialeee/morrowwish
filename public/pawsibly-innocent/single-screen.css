@@ -860,3 +860,21 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  .single-screen-game .in-game-actions #restart{order:3}
 }
 @media(min-width:701px) and (max-height:500px){.single-screen-game .in-game-actions #wait{min-height:39px}}
+
+/* 900x520: previously the optional goal collapsed to 22px. A full-width
+   action row on short desktop windows preserves instructions and readable CTA. */
+@media(min-width:701px) and (max-height:830px){
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .stage{
+  width:min(1040px,calc(100vw - 28px),calc(128dvh - 188px))!important;
+ }
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .in-game-guidance{
+  grid-template-columns:minmax(0,1fr)!important;gap:3px!important;
+  padding:5px 9px!important;
+ }
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .in-game-actions{
+  width:100%!important;max-width:100%!important;
+ }
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game .in-game-actions #bonusQuick{
+  min-width:120px!important;
+ }
+}

@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
+await mkdir('test-results',{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage({viewport:{width:1250,height:900},deviceScaleFactor:1});
 // Local Python HTTP server cannot accept analytics POSTs; fulfill them in-browser.
@@ -72,6 +74,8 @@ try{
    'Top HUD must exactly match the canvas width at '+viewport.width+'x'+viewport.height);
   assert.ok(Math.abs(fit.guide.left-fit.board.left)<=2&&Math.abs(fit.guide.right-fit.board.right)<=2,
    'Guidance and bonus row must be flush with the game map at '+viewport.width+'x'+viewport.height);
+  assert.ok(fit.bonus.width>=120,'Bonus button unreadably squeezed at '+viewport.width+'x'+viewport.height+': '+JSON.stringify(fit));
+  if(viewport.width===900)await page.screenshot({path:'test-results/pawsibly-desktop-900x520.png'});
   assert.ok(fit.tool.bottom<=fit.board.top+2&&fit.bonus.bottom<=fit.board.top+2,
    'Objectives and yarn must remain visible ABOVE the board');
  }
@@ -529,15 +533,18 @@ try{
       rules:document.querySelectorAll('.explainer').length,
       menuHidden:document.getElementById('gameMenu').hidden,menuButton:!!document.getElementById('menuButton'),
       fullscreen:document.getElementById('mw-fullscreen-toggle')?getComputedStyle(document.getElementById('mw-fullscreen-toggle')).display:'absent',
-      totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
+      fishOnBoard:window.__PAWSIBLY_TEST__.getState().fish.length,
+       bonusWidth:document.getElementById('bonusQuick').getBoundingClientRect().width,
+       totalWidth:document.documentElement.scrollWidth,totalHeight:document.documentElement.scrollHeight};
    });
-   assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
+   await iframe.screenshot({path:`test-results/pawsibly-portal-${w}x${h}.png`});
+    assert.equal(v.header,'none','CrazyGames must not display back-to-site chrome');
     assert.equal(v.studioBack,'none','CrazyGames must hide the on-stage external studio link');
     assert.equal(v.menuBack,'none','CrazyGames game menu must not link to another playable website');
    assert.equal(v.rules,0,'Gameplay must appear without a duplicate long tutorial');
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
-   assert.ok(v.hud?.includes('0/4')&&v.owner,'CrazyGames must show all four fish and owner behavior inside iframe');
+   assert.ok(v.hud?.includes('0/3')&&v.fishOnBoard===4&&v.owner,'CrazyGames must show the three-fish goal, fourth bonus fish and owner behavior inside iframe');
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
@@ -569,6 +576,7 @@ try{
     const overlap=controls.some((a,i)=>controls.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
     return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none'};
    });
+   await waitPage.screenshot({path:`test-results/pawsibly-mobile-${width}.png`});
    assert.ok(layout.within&&!layout.overlap,'Every action must fit without overlap at '+width+'px: '+JSON.stringify(layout));
    assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
    if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
