@@ -307,11 +307,11 @@ function portraitEnvironment(key,frame,tier,W,H){
  }
  return portraitAtmosphere;
 }
-function drawPortraitStory(g,W,H,frame,tier,cam,scale){
+function drawPortraitStory(g,W,H,frame,tier,cam,scale,galleryPreview=false){
  // Use the full 16:9 original in a wide, unbroken central composition,
  // while the cat-free, matching scene extends across the portrait viewport.
  // A little side overscan keeps both cats prominent without stretching.
- const width=W*1.17,height=width*9/16;
+ const width=W*(galleryPreview?.97:1.17),height=width*9/16;
  const x=(W-width)/2,y=(H-height)/2-H*.014;
  const dpr=scale;
  const pw=Math.max(1,Math.round(width*dpr)),ph=Math.max(1,Math.round(height*dpr));
@@ -326,7 +326,7 @@ function drawPortraitStory(g,W,H,frame,tier,cam,scale){
  pctx.rotate(cam.angle*.16);
  pctx.translate(-width*.5,-height*.5);
  sourceCover(pctx,cellRect(frame,tier),0,0,width,height,
-   Math.min(1.065,Math.max(1.005,cam.zoom*.96)),0,0,1,null,tier);
+   galleryPreview?1:Math.min(1.065,Math.max(1.005,cam.zoom*.96)),0,0,1,null,tier);
  pctx.restore();
  // The perimeter melts into the clean tall watercolor scenery; no 16:9
  // rectangle, black bars, second cat outline, or blurred pair of ghosts.
@@ -338,6 +338,7 @@ function draw(ctx,W,H,seq,lookup){
  if(!ready)return true; // avoid flashing the rejected procedural kittens during load
  const key=regions[seq.elements]!==undefined?seq.elements:'grass+light';
  const thumbnail=seq.thumbnail===true; // Gallery art must never have vines or flashes over faces.
+ const galleryPreview=seq.galleryPreview===true; // Modal: show the complete painting; no camera overscan.
  // Default: restore the 21 x 3 COMPLETE painted storyboards, including
  // their integrated cats. This is the art chosen by the player again.
  // Explicit originalArt:false is retained for the 32 breed-specific
@@ -373,7 +374,7 @@ function draw(ctx,W,H,seq,lookup){
  // Paint ONE original 63-scene storyboard (cats + scenery together)
  // or, in optional breed-matched mode, its cat-free backdrop.
  // No superimposed duplicate cats and no rectangle pasted over combat.
- const cam=thumbnail?{dx:0,dy:0,zoom:1.025,angle:0}:
+ const cam=(thumbnail||galleryPreview)?{dx:0,dy:0,zoom:1,angle:0}:
    (window.CatBondDuoDirector?.camera?.(key,p,sw,sh,tier)||
     {dx:0,dy:0,zoom:1.12,angle:0,kind:'highfive'});
  ctx.save();
@@ -390,8 +391,10 @@ function draw(ctx,W,H,seq,lookup){
  if(originalArt&&portrait){
   ctx.drawImage(portraitEnvironment(key,frame,tier,sw,sh),0,0,sw,sh);
  }else{
-  sourceCover(ctx,cellRect(frame,tier),-sw*.13,-sh*.13,sw*1.26,sh*1.26,
-    Math.min(cam.zoom,1.16),0,0,1,(originalArt&&!portrait)?null:key,tier,actorA,actorB);
+  sourceCover(ctx,cellRect(frame,tier),galleryPreview?0:-sw*.13,galleryPreview?0:-sh*.13,
+    galleryPreview?sw:sw*1.26,galleryPreview?sh:sh*1.26,
+    galleryPreview?1:Math.min(cam.zoom,1.16),0,0,1,
+    (originalArt&&!portrait)?null:key,tier,actorA,actorB);
  }
  // Paint all large magical symbols, circles and sparkles BEHIND the cats.
  // Never overlay even translucent giant rings on their faces and ears.
@@ -415,7 +418,7 @@ function draw(ctx,W,H,seq,lookup){
  // Gallery thumbnails retain every pixel of the 63 original paintings.
  // Only the in-battle animated cut-in fades at the four perimeter edges.
  if(!thumbnail)featherScenery(ctx,sw,sh);
- if(originalArt&&portrait)drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr);
+ if(originalArt&&portrait)drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview);
  // The restored original artwork ALREADY contains both illustrated cats.
  // Do not paste a second pair on it. For breed-specific alternate scenes,
  // paint the two selected transparent watercolor cats AFTER the matte.
