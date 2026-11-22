@@ -1,0 +1,43 @@
+name: Cat Bond Jiafei watercolor real-game QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/check-cat-bond.mjs'
+      - 'scripts/cat-bond-jiafei-preview-smoke.mjs'
+      - '.github/workflows/cat-bond-jiafei-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  jiafei-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate complete game logic and real raster asset
+        run: |
+          node scripts/check-cat-bond.mjs
+          node scripts/check-cat-bond-ai.mjs
+      - name: Install browser for authentic game screenshots
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Render real Jiafei sprite and live battle on phone and desktop
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/jiafei-preview-http.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-jiafei-preview-smoke.mjs
+      - name: Retain screenshots for Supervisor art review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jiafei-watercolor-candidate-real-game-screens
+          path: /tmp/jiafei-review-*.png
+          retention-days: 14
+          if-no-files-found: ignore

@@ -676,12 +676,14 @@ assert.ok(tankRoster.includes('senlin')&&tankRoster.includes('jiafei'),
   'Maine Coon and Exotic Shorthair fill the heavy tank roles');
 const exotic=GameData.speciesById('jiafei');
 assert.equal(exotic?.rarity,'SR','Jiafei should be collectible as SR, not R');
-const jiafeiSprite=fs.readFileSync(DIR+'assets/jiafei-sr-tank.svg','utf8');
+const jiafeiSprite=fs.readFileSync(DIR+'assets/jiafei-watercolor-v1.avif');
 const watercolorRenderer=fs.readFileSync(DIR+'js/real-kittens.js','utf8');
-assert.ok(jiafeiSprite.startsWith('<svg')&&jiafeiSprite.includes('viewBox=')&&
-  watercolorRenderer.includes('jiafeiSprite.src=')&&
+assert.ok(jiafeiSprite.length>4000&&jiafeiSprite.toString('ascii',4,12)==='ftypavif'&&
+  watercolorRenderer.includes('jiafei-watercolor-v1.avif')&&
   watercolorRenderer.includes('paintJiafei(ctx,x,y,o)'),
-  'SR Jiafei needs a dedicated 2D game sprite wired into the shared renderer');
+  'SR Jiafei must load real transparent watercolor art, not the rejected SVG');
+assert.ok(!watercolorRenderer.includes('jiafei-sr-tank.svg'),
+  'Rejected vector art must not be reachable from the game renderer');
 assert.ok(exotic?.chubby&&exotic?.flatFace&&exotic?.short,
   'Exotic Shorthair has a plump, flat-faced silhouette');
 assert.ok(exotic.base.vit>exotic.base.pow+3&&exotic.base.agi<5,
