@@ -292,6 +292,7 @@ console.log('Six game analytics cards, compact acquisition channels and actionab
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
 await import('./check-pawsibly.mjs');
 await import('./check-cat-bond.mjs');
+await import('./check-cat-bond-map-return.mjs');
 await import('./check-cat-bond-ai.mjs');
 await import('./check-cat-bond-invariants.mjs');
 await import('./check-cat-bond-premium-21x3.mjs');
