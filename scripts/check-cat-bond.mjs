@@ -683,8 +683,8 @@ assert.ok(darkWard.wardDuration<grassWard.wardDuration,
 
 // Pellet fan has a shared per-enemy budget, not five full-damage hits.
 const projectileCheck=fs.readFileSync(DIR+'js/battle.js','utf8');
-assert.ok(projectileCheck.includes('maxHitsPerEnemy:2') &&
-  projectileCheck.includes('f.dmg*pow*.5') &&
+assert.ok(projectileCheck.includes('maxHitsPerEnemy:1') &&
+  projectileCheck.includes("f.dmg*pow,'me'") &&
   projectileCheck.includes('hitsByEnemy.set(e.i,count+1)'),
   'five shot generic fan is limited to one total base hit per enemy');
 
