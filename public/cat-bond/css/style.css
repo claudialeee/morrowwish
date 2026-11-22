@@ -3154,6 +3154,35 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #panel .prebattle-skills-body{max-height:min(29vh,200px)}
 }
 
+/* Compact pre-battle setup: optional team, rewards and difficulty fold away. */
+#panel .prep-advanced{display:block;margin:8px 0;padding:8px 11px;border:1px solid #d8cce1;border-radius:13px;background:#fffaf0;color:#66516d}
+#panel .prep-advanced>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;font:800 12px/1.35 system-ui}
+#panel .prep-advanced>summary::-webkit-details-marker,#panel .prebattle-skills>summary::-webkit-details-marker{display:none}
+#panel .prep-advanced>summary::after,#panel .prebattle-skills>summary::after{content:"⌄";font:900 18px/1 system-ui;color:#8a6e98;flex:none}
+#panel .prep-advanced[open]>summary::after,#panel .prebattle-skills[open]>summary::after{transform:rotate(180deg)}
+#panel .prep-advanced>summary:focus-visible{outline:3px solid #b58bc2;outline-offset:3px}
+#panel .prep-advanced>summary span{font:650 11px/1.35 system-ui;color:#7c7181;text-align:right;min-width:0;overflow-wrap:anywhere}
+#panel .prep-advanced .capture-mode-picker{margin:9px 0 0}
+#panel .prep-team-details .roster,#panel .prep-team-details .map-squad-roster{margin-top:9px}
+#panel .prep-team-details .battle-order{margin-bottom:3px}
+#panel .prebattle-skills{margin:8px 0;padding:8px 11px}
+#panel .prebattle-skills summary{list-style:none}
+#panel .prebattle-skills summary small{margin-left:auto}
+#panel .prebattle-skills-body{max-height:none;overflow:visible;padding:8px 0 2px}
+#panel .prebattle-control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#panel .prebattle-control-item{display:flex;flex-direction:column;gap:2px;min-width:0;padding:7px 9px;background:#fffdf9;border:1px solid #eadfeb;border-radius:9px}
+#panel .prebattle-control-item b{font:850 11.5px/1.4 system-ui;color:#64496b}
+#panel .prebattle-control-item span{font:550 11px/1.42 system-ui;color:#706478}
+#panel .prebattle-actions{position:sticky;bottom:0;z-index:4;padding:9px 2px 5px;margin-top:8px;background:linear-gradient(to bottom,rgba(255,249,239,0),#fff8ef 22%)}
+#panel .prebattle-actions .btn.gold{flex:1 1 165px;min-height:44px}
+#panel .prebattle-actions .btn.ghost{min-height:44px}
+@media(max-width:440px){
+ #panel .prep-advanced{padding:8px}
+ #panel .prebattle-control-grid{grid-template-columns:1fr}
+ #panel .prebattle-actions{gap:7px}
+ #panel .prebattle-actions .btn{padding:9px 12px}
+}
+
 
 /* Growth ceremony: responsive animated illustrated before/after. */
 .cb-growth-ceremony {text-align:center;max-width:520px;margin:0 auto;padding:4px 4px 12px;color:#475266}

@@ -1244,16 +1244,19 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const testUI=new Function('window','Skills','State','GameData',
    cbUi+';return UI;')(testWindow,mockSkills,testState,testGameData);
  const listHtml=testUI.battlePrepSkillMarkup([testCat],false);
- if(!listHtml.includes('小鱼干 / 毛线团')||
-    !listHtml.includes('炽爪')||!listHtml.includes('泡泡幕')||
-    !listHtml.includes('喵之怒涛')||
-    listHtml.includes('<bad & name>')||
-    !listHtml.includes('&lt;bad &amp; name&gt;'))
-   throw Error('Pre-battle kitten skill previews must be accurate and HTML-escaped');
- if(!testUI.battlePrepSkillCard([testCat],false).includes('class="prebattle-skills" open'))
-   throw Error('First battle must introduce actual kitten skills before starting');
+ if(!listHtml.includes('普攻')||!listHtml.includes('技能一')||
+    !listHtml.includes('技能二')||!listHtml.includes('闪避')||
+    !listHtml.includes('必杀技')||!listHtml.includes('锁定目标')||
+    listHtml.includes('炽爪')||listHtml.includes('<bad & name>'))
+   throw Error('Pre-battle guide must describe actual battle buttons, not each cat skill');
+ if(!testUI.battleTeamSummary([testCat],false).includes('首发：')||
+    !testUI.battlePrepEsc(testUI.battleTeamSummary([testCat],false)).includes('&lt;bad &amp; name&gt;'))
+   throw Error('Pre-battle team summary must remain accurate and escape cat names');
+ if(testUI.battlePrepSkillCard([testCat],false).includes('class="prebattle-skills" open')||
+    !testUI.battlePrepSkillCard([testCat],false).includes('战斗按钮说明'))
+   throw Error('Pre-battle skill help should remain collapsed and concise');
  testState.S.battlePrefs.skillsIntroSeen=true;
  if(testUI.battlePrepSkillCard([testCat],false).includes('class="prebattle-skills" open'))
-   throw Error('Returning players must not be forced to read skill preview every fight');
+   throw Error('Returning players must not be forced to read a long skill preview');
  console.log('All 15 games: universal language/audio controls and portrait touch safeguards verified.');
 }

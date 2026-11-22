@@ -2101,50 +2101,53 @@ const UI = {
     anim();
   },
 
-  // Real equipment preview before combat; no additional blocking modal.
-  battlePrepSkillMarkup(cats,en){
-    const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>
+  // Compact controls glossary: actual HUD buttons, never one list per kitten.
+  battlePrepEsc(value){
+    return String(value??'').replace(/[&<>"']/g,ch=>
       ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-    if(!window.Skills)return '<p>'+(en?'Skill data unavailable.':'暂时无法读取技能。')+'</p>';
-    const rows=(cats||[]).slice(0,5).map((cat,i)=>{
-      if(!cat)return '';
-      const loadout=Skills.ensureLoadout(cat);
-      const name=State.catName(cat);
-      const roles=[en?'Basic':'普攻','Q','E',en?'Ultimate':'必杀'];
-      return '<div class="prebattle-cat-skills">'+
-        '<h4>'+esc((i<2?(en?'START ':'首发 '):(en?'RESERVE ':'替补 '))+name)+
-        ' <small>'+esc(GameData.speciesName(GameData.speciesById(cat.species)))+'</small></h4>'+
-        roles.map((label,index)=>{
-          const sk=loadout?.[index]?Skills.skillById(loadout[index]):null;
-          const move=sk?(en?(window.CatBondI18n?.translate?.(sk.name)||sk.name):sk.name):
-            index===0?(en?'Fish & Yarn Toss':'小鱼干 / 毛线团'):(en?'Not equipped':'尚未装备');
-          const explanation=sk?(en?(window.CatBondI18n?.translate?.(sk.desc)||sk.desc):sk.desc):
-            index===0?(en?'Alternating fish and yarn projectiles. Builds ultimate energy.':'交替扔小鱼干、毛线团攻击野猫，并积攒必杀能量。'):
-              (en?'Equip a skill later from Cats → Skills.':'可以之后在猫咪 → 技能搭配中装备。');
-          const meta=sk?(sk.ultCost>0?(en?'Ultimate charge':'积攒必杀能量'):
-            (en?'Base cooldown ':'基础冷却 ')+sk.cd+'s'):(index===0?(en?'Basic attack':'普通攻击'):'');
-          return '<div class="prebattle-skill-row"><span class="prebattle-skill-key">'+
-            esc(label)+'</span><div><strong>'+esc(move)+'</strong><p>'+esc(explanation)+'</p>'+
-            (meta?'<small>'+esc(meta)+'</small>':'')+'</div></div>';
-        }).join('')+'</div>';
-    }).join('');
-    return rows||'<p>'+(en?'Choose a cat to see its skills.':'选择一只猫咪查看技能。')+'</p>';
+  },
+  battleTeamSummary(cats,en){
+    const team=(cats||[]).filter(Boolean);
+    if(!team.length)return en?'No cats selected':'尚未选择猫咪';
+    const starters=team.slice(0,2).map(cat=>State.catName(cat)).join(' + ');
+    const bench=team.length>2?' · '+(en?team.length-2+' reserve':team.length-2+' 只替补'):'';
+    return (en?'Starting: ':'首发：')+starters+bench;
+  },
+  battlePrepSkillMarkup(team,en){
+    const controls=[
+      ['🐟',en?'Basic · click/J':'普攻 · 左键/J',
+        en?'Fish and yarn attacks; builds ultimate charge.':'小鱼干 / 毛线团攻击，积攒必杀能量。'],
+      ['🧶',en?'Q · Skill 1':'Q · 技能一',
+        en?'Use the active cat’s first equipped skill.':'使用当前猫咪装备的第一个技能。'],
+      ['💨',en?'E · Skill 2':'E · 技能二',
+        en?'Use the active cat’s second equipped skill.':'使用当前猫咪装备的第二个技能。'],
+      ['◎',en?'Lock target':'锁定目标',
+        en?'Lock onto or switch the wild-cat target.':'锁定或切换要攻击的野猫。'],
+      ['🌀',en?'Dodge · Space':'闪避 · 空格',
+        en?'Quickly evade a hit; briefly invulnerable.':'快速躲开攻击，获得短暂的无敌时间。'],
+      ['🌪️',en?'R · Ultimate':'R · 必杀技',
+        en?'Cast when the ultimate meter is charged.':'必杀能量攒满后释放强力技能。']
+    ];
+    const duo=window.CatRelations?.chosen?.()||[];
+    if(duo.length===2&&duo.every(partner=>(team||[]).slice(0,2).some(cat=>cat?.uid===partner.uid))){
+      controls.push(['✦',en?'Duo combo':'双猫合击',
+        en?'Tap when the bond meter is ready.':'默契能量攒满后点击，发动双猫合击。']);
+    }
+    return '<div class="prebattle-control-grid">'+controls.map(([icon,key,desc])=>
+      '<div class="prebattle-control-item"><b>'+icon+' '+key+'</b><span>'+desc+'</span></div>').join('')+'</div>';
   },
   battlePrepSkillCard(team,en){
-    const fresh=!State.S.battlePrefs?.skillsIntroSeen;
-    return '<details id="battle-prep-skills" class="prebattle-skills" '+(fresh?'open':'')+'>'+
-      '<summary><span>📖 '+(fresh?(en?'Before your first fight · check your skills!':'开战前先看看猫咪会什么技能！'):
-        (en?'Review your team skills':'查看出战猫咪的技能'))+'</span><small>'+
-      (en?'Tap to expand / collapse':'点击展开 / 收起')+'</small></summary>'+
-      '<p class="prebattle-skills-tip">'+
-        (en?'Your attacks depend on each cat’s equipped moves. Q / E are regular skills; R is an ultimate. You can adjust them later in Cats → Skills.':
-          '每只猫的招式不同。Q / E 是普通技能，R 是必杀技；以后可在「猫咪 → 技能搭配」调整。')+'</p>'+
+    return '<details id="battle-prep-skills" class="prebattle-skills">'+
+      '<summary><span>ⓘ '+(en?'Battle buttons · Basic / Q / E / R / Dodge':'战斗按钮说明 · 普攻 / Q / E / R / 闪避')+'</span>'+
+      '<small>'+(en?'Expand':'展开')+'</small></summary>'+
       '<div id="battle-prep-skills-body" class="prebattle-skills-body">'+
       this.battlePrepSkillMarkup(team,en)+'</div></details>';
   },
   refreshBattlePrepSkills(team,en){
-    const body=document.getElementById('battle-prep-skills-body');
-    if(body)body.innerHTML=this.battlePrepSkillMarkup(team,en);
+    const summary=document.getElementById('battle-team-summary');
+    if(summary)summary.textContent=this.battleTeamSummary(team,en);
+    const help=document.getElementById('battle-prep-skills-body');
+    if(help)help.innerHTML=this.battlePrepSkillMarkup(team,en);
   },
   // Region encounters and grade rematches do not use the capture roster.
   // They must still ask BEFORE launching the real-time encounter.
@@ -2154,9 +2157,13 @@ const UI = {
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
     const selected=opts.origin==='map'?this.getPreferredBattleTeam().map(c=>c.uid):[];
-    const squadMarkup=opts.origin==='map'?'<h3 class="map-squad-heading">'+(en?'Choose battle cats (pick up to 5)':'选择出战猫咪（最多 5 只）')+'</h3>'
-      +'<p class="sub" style="margin:-2px 0 8px">'+(en?'2 fight on the field; the rest sub in when a cat faints.':'场上出战 2 只；其余在后备席，猫倒下时替补上场。')+'</p>'
-      +this.squadPickerMarkup(selected):'';
+    const squadMarkup=opts.origin==='map'?
+      '<details class="prep-advanced prep-team-details" id="battle-team-details">'+
+      '<summary><strong>'+(en?'Battle team · edit':'出战队伍 · 点击调整')+'</strong>'+
+      '<span id="battle-team-summary">'+this.battlePrepEsc(
+        this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
+      '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
+      this.squadPickerMarkup(selected)+'</details>':'';
     const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
@@ -2168,7 +2175,7 @@ const UI = {
         ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
-      <p class="sub">${en?'Choose your cats and control mode before entering the arena.':'先选择出战猫咪，再决定自动或手动战斗。'}</p>
+      <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
       ${this.battlePrepSkillCard(opts.origin==='map'
         ?selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean)
@@ -2189,6 +2196,9 @@ const UI = {
           (en?'First encounter includes a skippable tutorial.':'首次战斗附带可跳过的新手教学。'):
           (en?'The game remembers your last selection.':'系统会记住上一次选择。')}</p>
       </fieldset>
+      <details class="prep-advanced prep-difficulty" id="battle-difficulty-details">
+        <summary><strong>${en?'Difficulty · change':'难度 · 点击调整'}</strong>
+        <span id="battle-difficulty-summary">${State.difficulty()==='casual'?(en?'Casual':'休闲'):(en?'Hardcore':'硬核')}</span></summary>
       <fieldset class="capture-mode-picker">
         <legend>${en?'Difficulty':'难度'}</legend>
         <div class="capture-mode-options" role="radiogroup" aria-label="${en?'Difficulty':'难度'}">
@@ -2201,8 +2211,8 @@ const UI = {
             <span>${en?'Full lethality and strong level suppression — fighting above your level really bites.':'完整难度 + 较强等级压制 — 越级挑战非常危险。'}</span>
           </button>
         </div>
-      </fieldset>
-      <div class="btn-row"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
+      </fieldset></details>
+      <div class="btn-row prebattle-actions"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
     if(opts.origin==='map')this.bindSquadPicker(selected);
     this.refreshBattlePrepSkills(opts.origin==='map'
@@ -2230,6 +2240,8 @@ const UI = {
           opt.classList.toggle('selected',on);
           opt.setAttribute('aria-checked',String(on));
         }
+        const summary=document.getElementById('battle-difficulty-summary');
+        if(summary)summary.textContent=State.difficulty()==='casual'?(en?'Casual':'休闲'):(en?'Hardcore':'硬核');
       };
     }
     document.getElementById('bp-cancel').onclick=()=>{
@@ -2314,16 +2326,21 @@ const UI = {
       <div class="sighting-badge rarity-${wildSp.rarity}">${rareText}</div>
       <h2>发现野生 <span class="rarity-${wildSp.rarity}">${GameData.speciesName(wildSp)}</span></h2>
       <p class="sub">${wildSp.desc}</p>
-      <canvas id="cp-wild" width="160" height="120" style="display:block;margin:4px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
+      <canvas id="cp-wild" width="160" height="120" style="display:block;width:128px;height:96px;margin:2px auto;background:rgba(255,255,255,0.04);border-radius:12px"></canvas>
       <p class="center tiny">${english?'Wild level':'野猫等级'} <b>Lv.${wildSp.encounterLevel||
           window.Battle?.CaptureBattle?.previewWildLevel?.(wildSp,'yard',cats.slice(0,5))||1}</b>
           · ${english?'Rarity':'稀有度'} <span class="rarity-${wildSp.rarity}">◆${wildSp.rarity} · ${english?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):rar.name}</span></p>
-      ${skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':''}
-      ${firstCapture?'':'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>'}
-      <h3 style="margin:14px 0 6px;font-size:0.95rem">${firstCapture?'你的猫咪准备好出战啦！':'组建双猫队伍（首发 2 只 + 替补最多 3 只，点击选择）'}</h3>
-      ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
-      <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
-      ${this.squadOrderMarkup()}
+      ${skillPreview||!firstCapture?'<details class="prep-advanced prep-rewards"><summary><strong>'+(english?'Rewards & challenges':'奖励与挑战')+'</strong><span>'+(english?'Details':'展开')+'</span></summary>'+
+        (skillPreview?'<p class="center tiny skill-discovery">'+(english?'Elemental ultimate to unlock: ':'可培养解锁元素必杀：')+skillPreview+'</p>':'')+
+        (!firstCapture?'<p class="center tiny capture-challenge">'+masteryChallenge+'</p>':'')+'</details>':''}
+      <details class="prep-advanced prep-team-details" id="battle-team-details">
+        <summary><strong>${english?'Battle team · edit':'出战队伍 · 点击调整'}</strong>
+          <span id="battle-team-summary">${this.battlePrepEsc(this.battleTeamSummary(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english))}</span>
+        </summary>
+        ${duo.length===2&&!firstCapture?'<p class="duo-team-hint">'+(english?'💞 Your chosen duo has joined this battle team.':'💞 已自动选中当前双猫搭档，一起出战。')+'</p>':''}
+        <div class="roster" id="cp-roster" style="${firstCapture?'display:none':''}">${chips}</div>
+        ${this.squadOrderMarkup()}
+      </details>
       ${this.battlePrepSkillCard(this.teamUids.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),english)}
       <fieldset class="capture-mode-picker" aria-label="${english?'Battle control':'选择战斗方式'}">
         <legend>${english?'How would you like to fight?':'这场战斗怎么打？'}</legend>
@@ -2341,7 +2358,7 @@ const UI = {
           ?(english?'Your first fight starts with a short, skippable tutorial.':'第一次战斗会有简短教学，可以跳过。')
           :(english?'Your previous choice is remembered; switch anytime during battle.':'记住你上次的选择，战斗中也能随时切换。')}</p>
       </fieldset>
-      <div class="btn-row">
+      <div class="btn-row prebattle-actions">
         <button class="btn gold" id="cp-go">${firstCapture?'出发！收服这只猫':'开始战斗'}</button>
         <button class="btn" id="cp-ai" style="${firstCapture?'display:none':''}">${english?"⚙️ Auto tactics":"⚙️ 智能策略"}</button>
         <button class="btn ghost" id="cp-cancel">放它走</button>
