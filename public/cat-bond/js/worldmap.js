@@ -585,10 +585,11 @@
   // ================================================================
   function backBounds(){
     var compact=game&&game.isTouch&&game.W>game.H&&game.H<520;
-    // The overworld exits to the yard from the upper-left; the region
-    // still goes back to the overworld with its separate lower-left button.
+    // The world map AND each explorable scene have a direct "Back to yard"
+    // control in the upper-left. On narrow phones it sits below the map
+    // action toolbar rather than overlapping the squad / map / menu buttons.
     if(mode==='map')return {x:compact?64:16,y:game.W<650?76:65,w:compact?104:128,h:compact?38:42};
-    return {x:compact?64:20,y:game.H-(compact?50:56),w:compact?100:128,h:compact?36:40};
+    return {x:compact?64:16,y:game.W<650?106:65,w:compact?104:128,h:compact?38:42};
   }
   function inBackButton(x,y){
     var b=backBounds();return x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h;
@@ -609,9 +610,11 @@
     }
     // region mode: tapping near the portal glyph returns to the node map
     if (world) {
+      // Return to the courtyard directly; the in-world signpost remains
+      // available for players who want to go back to the world map.
+      if (inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
       var sx = world.portal.x - world.cam.x, sy = world.portal.y - world.cam.y;
       if (Math.hypot(x - sx, y - sy) < 34) { enterMap(); return true; }
-      if (inBackButton(x,y)) { enterMap(); return true; }
     }
     return false;
   }
@@ -1040,7 +1043,10 @@
     // Under 650px, including narrow desktop windows, the unified navigation
     // takes the second row; region info belongs below it, not behind it.
     var narrow=W<650;
-    var hx=compact?64:(narrow?12:20),hy=narrow?119:62,
+    // Leave a full touch-sized gap under the scene's upper-left yard button.
+    // The progress bar stays in its own readable block, never underneath it.
+    var back=backBounds();
+    var hx=compact?64:(narrow?12:20),hy=Math.max(narrow?119:62,back.y+back.h+12),
       hw=compact?180:220,hh=compact?46:56;
     ctx.fillStyle = 'rgba(27,16,38,0.6)';
     roundRect(ctx,hx,hy,hw,hh,12);ctx.fill();
@@ -1063,13 +1069,13 @@
       ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='13px system-ui,sans-serif';ctx.textBaseline='middle';
       ctx.fillText('点击行走 · 按住鼠标拖拽视角 · WASD也可移动',W/2,game.H-30);
     }
-    // back-to-map button (bottom-left)
-    var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
+    // Direct back-to-yard control in the upper-left of the playable scene.
+    var bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
     ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
     ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText('← 回地图', bbx + bbw / 2, bby + bbh / 2);
+    ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?'← 回庭院':'← Yard', bbx + bbw / 2, bby + bbh / 2);
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
 
