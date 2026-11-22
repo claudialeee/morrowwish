@@ -5,6 +5,7 @@
   "description": "Morrow Wish browser games and unified analytics on Cloudflare",
   "scripts": {
     "check": "node scripts/check-source.mjs",
+    "check:cat-bond-host": "node scripts/check-cat-bond-host.mjs",
     "playtest": "node scripts/playtest-sim.mjs",
     "deploy": "npm run deploy:pages",
     "build:pages": "node scripts/build-pages.mjs",
