@@ -2002,7 +2002,7 @@ class CaptureBattle {
     for (const e of this.liveEnemies()) {
       if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
       this.resolveHit(e, 'me', f._leapSkill || { element: f.element }, f._leapDmg, e.x, e.y);
-      e.staggerT = Math.max(e.staggerT || 0, 1.2);        // landing briefly rattles the target
+      e.staggerT = Math.max(e.staggerT || 0, 5);        // landing briefly rattles the target
     }
     window.MorrowwishAudio?.effect?.('crash');
     f._leapT = 0; f._leapSkill = null;
@@ -3946,7 +3946,7 @@ class CaptureBattle {
   interruptEnemyCast(e) {
     e.telegraph = 0; e.telegraphKind = null; e.castInterruptible = false;
     e.smashTarget = null;
-    e.staggerT = Math.max(e.staggerT || 0, 1.6);         // 虚弱: open to follow-up
+    e.staggerT = Math.max(e.staggerT || 0, 5);         // 虚弱: open to follow-up
     e.special = Math.max(e.special, 1.4);                // brief recovery before it can try again
     this._novaLock = 0;                                  // free the pack cast-lock
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
@@ -4409,13 +4409,13 @@ class CaptureBattle {
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's NEXT hit forces a stagger + double damage.
-      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 1.6); }
+      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 5); }
       if (target.poiseMax) {
         if (target.staggerT > 0) dmg *= 1.3; // stagger remains rewarding without doubling every Q/E
         if (!isBasic) {                                    // skills/combos/ult/beam crack poise
           target.poise = Math.max(0, (target.poise ?? target.poiseMax) - dmg);
           if (target.poise <= 0 && target.staggerT <= 0) {
-            target.staggerT = 2.2; target.poise = target.poiseMax;   // break → 虚弱 window
+            target.staggerT = 5; target.poise = target.poiseMax;   // break → 虚弱 window
             this.vfx.impactType?.(target.x,target.y,'stagger',{color:'#ffd36b'});
             this.vfx.text(target.x, target.y - 46, window.MorrowwishI18n?.get?.()==='zh'?'虚弱!':'STAGGER!', '#ffd36b', 16);
             this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.08);
@@ -4977,7 +4977,8 @@ class CaptureBattle {
         ctx.restore();
       }
       const elemSym = this.elemSymbol(e.element);
-      this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color, `${elemSym} ${e.sp.name} Lv.${e.level}`);
+      this.hpTag(ctx, e.x, e.y - 42, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
+        `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT});
       // status icons row under the HP tag
       if (e.status) {
         const keys = Object.keys(e.status); const TAG = Skills.TAG_INFO || {};
@@ -5472,14 +5473,14 @@ class CaptureBattle {
     ctx.restore();
   }
 
-  hpTag(ctx, x, y, frac, color, label) {
-    // Cream game-card label: more legible over the illustrated garden.
+  hpTag(ctx, x, y, frac, color, label, poise=null) {
+    // Enemy health cards also show a distinct poise bar underneath HP.
     const w=86,h=6;
     ctx.save();
     ctx.fillStyle='rgba(255,250,239,.92)';
     ctx.strokeStyle='rgba(114,124,101,.28)';
     ctx.lineWidth=1;
-    rr(ctx,x-w/2-7,y-23,w+14,36,12);ctx.fill();ctx.stroke();
+    rr(ctx,x-w/2-7,y-23,w+14,poise?51:36,12);ctx.fill();ctx.stroke();
     ctx.textAlign='center';ctx.font='700 11px system-ui, sans-serif';
     ctx.fillStyle='#4d5b49';ctx.fillText(label,x,y-9);
     ctx.fillStyle='rgba(112,132,110,.16)';
@@ -5488,6 +5489,21 @@ class CaptureBattle {
     if(health>0){
       ctx.fillStyle=health>.3?'#8fbb9d':'#e7a38d';
       rr(ctx,x-w/2,y-3,w*health,h,3);ctx.fill();
+    }
+    if(poise && poise.max>0){
+      const broken=(poise.stagger||0)>0;
+      const amount=broken?Math.max(0,Math.min(1,poise.stagger/5)):
+        Math.max(0,Math.min(1,(poise.current||0)/poise.max));
+      const yy=y+7;
+      ctx.fillStyle='rgba(112,132,110,.18)';
+      rr(ctx,x-w/2,yy,w,4,2);ctx.fill();
+      if(amount>0){
+        ctx.fillStyle=broken?'#f0b66a':'#d4b66c';
+        rr(ctx,x-w/2,yy,w*amount,4,2);ctx.fill();
+      }
+      ctx.textAlign='center';ctx.font='700 9px system-ui, sans-serif';
+      ctx.fillStyle=broken?'#b46b32':'#7e7358';
+      ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):'韧性',x,y+21);
     }
     ctx.restore();
   }
