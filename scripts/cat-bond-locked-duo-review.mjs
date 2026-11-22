@@ -24,6 +24,12 @@ try{
       return {name:CatRelations.title(a,b).name,uidA:a.uid,uidB:b.uid};
     });
     assert.equal(await page.locator('#duo-skill-canvas').count(),0,'NO locked animated canvas');
+    assert.equal(await page.locator('select#duo-a,select#duo-b').count(),0,
+      'Cat duo selection must not use the old dropdowns');
+    assert.equal(await page.locator('#duo-direct-chooser .duo-cat-chip').count(),4,
+      'Before a duo is earned, show direct cat choices without move spoilers');
+    assert.equal(await page.locator('.duo-unlocked-card').count(),0,
+      'Unconfirmed or locked pair must never be shown as unlocked');
     assert.equal(await page.locator('#duo-preview').count(),0,'NO locked animation link');
     const lockedText=await page.locator('#panel .duo-skill-identity').innerText();
     assert.match(lockedText,/🔒/);
@@ -39,6 +45,11 @@ try{
     assert.equal(unlocked,20);
     assert.equal(await page.locator('#duo-skill-canvas').count(),1,'earned tier1 cut-in');
     assert.equal(await page.locator('#duo-preview').count(),1,'earned full-screen animation link');
+    assert.equal(await page.locator('.duo-unlocked-card').count(),1,
+      'Earned pair should appear as a direct visual card');
+    assert.match(await page.locator('.duo-unlocked-card').innerText(),new RegExp(init.name));
+    assert.equal(await page.locator('select#duo-a,select#duo-b').count(),0,
+      'No cat dropdowns even after unlocking');
     assert.match(await page.locator('#panel .duo-skill-identity').innerText(),new RegExp(init.name));
     assert.match(await page.locator('.duo-move-evolution').innerText(),/🔒 \?\?\?/);
     const link=await page.evaluate(()=>{
@@ -59,6 +70,19 @@ try{
     assert.equal(await denied.locator('#unlocked').isVisible(),false,'unearned querystring pair remains locked');
     assert.equal(await denied.locator('#locked').isVisible(),true);
     await denied.close();
+    // A second earned pair should show up immediately without cat dropdowns.
+    const second=await page.evaluate(()=>{
+      const cats=State.S.cats;
+      const rel=CatRelations.pair(cats[1],cats[2]);
+      rel.value=25;
+      State.save();
+      UI.openBondPanel();
+      return CatRelations.title(cats[1],cats[2]).name;
+    });
+    assert.equal(await page.locator('.duo-unlocked-card').count(),2);
+    assert.match(await page.locator('.duo-unlocked-section').innerText(),new RegExp(second));
+    await page.locator('.duo-unlocked-card').filter({hasText:second}).click();
+    assert.match(await page.locator('#panel .duo-skill-identity').innerText(),new RegExp(second));
     assert.deepEqual(errors,[],'no game page errors');
     console.log('LOCKED DUO SPOILER TEST PASS',profile.name,'no canvas until trust 20, gated direct route');
     await context.close();
