@@ -145,6 +145,21 @@ if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
    !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v2.webp'))
  throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
 
+// Full-stage 63-frame cinematic and its AFTER-PAINTING impact are gameplay,
+// not just a gallery preview. Gate the three orientation layouts and the
+// separate audio/VFX release beat so a cache-buster-only regression fails CI.
+const duoBondSource=fs.readFileSync('public/cat-bond/js/duo-bond.js','utf8');
+const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
+if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
+   !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
+   !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr)')||
+   !premiumScene.includes('const opacity=thumbnail?1:smooth(p/.19)')||
+   !premiumScene.includes('originalArt?null:key')&&
+      !premiumScene.includes('(originalArt&&!portrait)?null:key')||
+   !duoBondSource.includes('window.CatBondDuoReleaseVFX=')||
+   !duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||
+   !studioAudioSource.includes("beat==='release'"))
+ throw Error('Cat Bond premium duo must fill mobile/desktop arena and keep post-cut-in VFX + audio');
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
  if(!bondScriptSources.some(src=>src.startsWith(asset+'?v=')&&src.slice(asset.length+3).length>0))
