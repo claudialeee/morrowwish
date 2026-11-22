@@ -81,7 +81,10 @@ try{
   }else if(s.caption){
    const txt=path.join(root,'caption-'+i+'.txt');
    fs.writeFileSync(txt,s.caption);
-   const y=['rare-encounter','battle-hud','battle-skills','duo','rare-capture'].includes(s.scene)?885:945;
+   // Keep the authentic "Blossomfire Pawdance" move name at lower center unobscured.
+   // Keep the earned rare-cat result and Golden Paw panel legible too.
+   const y=s.scene==='duo'?220:s.scene==='rare-capture'?980:
+     ['rare-encounter','battle-hud','battle-skills'].includes(s.scene)?885:945;
    vf+=',drawtext=fontfile='+font+':textfile='+txt+
      ':fontcolor=white:fontsize=50:x=(w-text_w)/2:y='+y+
      ':shadowcolor=black@0.85:shadowx=2:shadowy=3:box=1:boxcolor=black@0.42:boxborderw=13';
