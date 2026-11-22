@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "capturedAt": "2026-11-21",
-  "nativeWindow": "Approved Morrow Wish short-video campaign only; no accepted/published videos at this snapshot",
+  "capturedAt": "2026-11-22",
+  "nativeWindow": "New externally published videos are awaiting native analytics synchronization; previous approved-campaign baseline has no verified per-post metrics yet",
   "source": "Metricool Morrow Wish connected account",
   "refreshMode": "manual",
-  "note": "Older social videos were expressly excluded from the studio dashboard. The 25 rejected Nov 21–28 videos are paused drafts, not published or approved. Null native views mean no eligible, verified data; never copy account-wide views or historic counts.",
+  "note": "Nov 22: owner confirms external publication. Metricool per-post queries still return no new videos for Instagram, TikTok or YouTube. Null means provider data not yet synced; never misstate it as zero views or no published videos. Nov 20 historical Instagram Reels shown separately.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -39,41 +39,41 @@
     {
       "id": "youtube",
       "priority": "P1",
-      "phase": "quality-review-paused",
-      "published": 0,
+      "phase": "awaiting-provider-sync",
+      "published": null,
       "failed": null,
       "views": null,
       "metricScope": "approved-new-short-videos",
-      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet."
+      "note": "Externally published content reported; native metrics not yet returned for newly published campaign videos. Publication count pending URL verification; zero is not asserted."
     },
     {
       "id": "tiktok",
       "priority": "P1",
-      "phase": "quality-review-paused",
-      "published": 0,
+      "phase": "awaiting-provider-sync",
+      "published": null,
       "failed": null,
       "views": null,
       "metricScope": "approved-new-short-videos",
-      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet."
+      "note": "Externally published content reported; native metrics not yet returned for newly published campaign videos. Publication count pending URL verification; zero is not asserted."
     },
     {
       "id": "instagram",
       "priority": "P1",
-      "phase": "quality-review-paused",
-      "published": 0,
+      "phase": "awaiting-provider-sync",
+      "published": null,
       "failed": null,
       "views": null,
       "metricScope": "approved-new-short-videos",
-      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet."
+      "note": "Externally published content reported; native metrics not yet returned for newly published campaign videos. Publication count pending URL verification; zero is not asserted."
     },
     {
       "id": "bluesky",
       "priority": "P2",
-      "phase": "quality-review-paused",
-      "published": 0,
+      "phase": "awaiting-provider-sync",
+      "published": null,
       "failed": null,
       "views": null,
-      "note": "Old short-video posts excluded. 25 rejected scheduled campaign posts are paused drafts; no approved videos released yet.",
+      "note": "Externally published content reported; native metrics not yet returned for newly published campaign videos. Publication count pending URL verification; zero is not asserted.",
       "metricScope": "approved-new-short-videos"
     },
     {
@@ -89,7 +89,7 @@
     "type": "approved-short-videos-only",
     "campaignTagPrefix": "mw-shorts-v2",
     "historicalExcluded": true,
-    "rule": "Only count per-post native views and publications verified for approved new reels. Older YouTube/TikTok/Instagram/Bluesky posts and their aggregate account totals are excluded.",
+    "rule": "Only include real, verified public campaign video URLs and their native per-video metrics. Null is unknown, not zero. Historical posts remain separated.",
     "activeApprovedPosts": 0,
     "verifiedPosts": []
   },
@@ -99,7 +99,7 @@
     "refreshMode": "manual",
     "windowStart": "2026-11-19",
     "windowEnd": "2026-11-22",
-    "note": "Account native data is distinct from approved-new-video campaign results. Instagram lifetime Reel plays vs. TikTok window evolution views.",
+    "note": "Older Instagram posts were retrieved; Metricool has no new Instagram/TikTok per-post metrics yet. TikTok zero in the provider's recent evolution response does not prove the newly published videos have zero actual views.",
     "platforms": [
       {
         "id": "instagram",
@@ -137,14 +137,16 @@
             "publishedAt": "2026-11-20",
             "views": 2
           }
-        ]
+        ],
+        "status": "historical-only-awaiting-new-reels"
       },
       {
         "id": "tiktok",
-        "published": 0,
-        "views": 0,
-        "viewBasis": "evolution_videos_and_views_in_window",
-        "posts": []
+        "published": null,
+        "views": null,
+        "viewBasis": "provider_unsynced_recent_publications",
+        "posts": [],
+        "status": "awaiting-provider-sync"
       }
     ]
   }

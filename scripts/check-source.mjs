@@ -56,7 +56,7 @@ if(social.schemaVersion!==2||social.metricScope?.type!=='approved-short-videos-o
    newVideoSources.some(id=>{
      const p=social.platforms.find(x=>x.id===id),items=verifiedSocialPosts.filter(x=>x.platform===id);
      const expectedViews=items.length&&items.every(x=>x.views!=null)?items.reduce((n,x)=>n+x.views,0):null;
-     return !p||p.published!==items.length||p.views!==expectedViews;
+     return !p||(items.length?p.published!==items.length:p.published!==null&&p.published!==0)||p.views!==expectedViews;
    }))
  throw Error('New-campaign views require verified public posts newer than Nov 20; old content stays excluded');
 const accountOverview=social.accountOverview;
@@ -67,7 +67,8 @@ if(accountOverview){
     ig.published!==ig.posts.length||ig.views!==ig.posts.reduce((n,p)=>n+p.views,0)||
     ig.posts.some(p=>!p.url?.startsWith('https://www.instagram.com/reel/')||!Number.isSafeInteger(p.views)||p.views<0)||
     (tk.posts.length>0&&tk.published!==tk.posts.length)||
-    !Number.isSafeInteger(tk.published)||tk.published<0||!Number.isSafeInteger(tk.views)||tk.views<0)
+    (tk.published!=null&&(!Number.isSafeInteger(tk.published)||tk.published<0))||
+    (tk.views!=null&&(!Number.isSafeInteger(tk.views)||tk.views<0)))
    throw Error('Metricool overview must match real per-post Instagram readings and valid TikTok provider totals');
 }
 if(!fs.readFileSync('scripts/build-pages.mjs','utf8').includes('SOCIAL_SNAPSHOT'))throw Error('Metrics must be embedded in the protected analytics worker');
