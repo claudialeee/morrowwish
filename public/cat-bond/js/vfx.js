@@ -96,16 +96,17 @@ class VFX {
     const color=options.color||({
       light:'#fff1ce',heavy:'#ffe4a4',crit:'#fff3b4',stagger:'#ffd888',kill:'#fff1b3',
       heal:'#a6e9c5',guard:'#9ce5ce',reflect:'#addaff',
-      barrier:'#a5e4fb',wardFade:'#c5dbe4',cleanse:'#c7f2d6'
+      barrier:'#a5e4fb',wardFade:'#c5dbe4',cleanse:'#c7f2d6',shieldBreak:'#d8f8ff'
     }[type]||'#fff1ce');
     const heavy=type==='heavy'||type==='crit'||type==='stagger'||type==='kill';
     const soft=['heal','guard','reflect','barrier','wardFade','cleanse'].includes(type);
+    const shatter=type==='shieldBreak';
     const duration=soft?.34:.25;
-    this.ring(x,y,{r0:heavy?10:4,vr:(heavy?72:soft?40:32)/duration,
-      life:duration,color,width:heavy?4.5:2.4});
-    this.burst(x,y,{count:type==='kill'?15:heavy?11:soft?7:5,
-      color,speed:heavy?180:soft?85:130,life:soft?.38:.26,
-      r:heavy?2.8:2.2,angle:options.angle,
+    this.ring(x,y,{r0:heavy?10:4,vr:(heavy?72:shatter?58:soft?40:32)/duration,
+      life:duration,color,width:heavy?4.5:shatter?3.6:2.4});
+    this.burst(x,y,{count:type==='kill'?15:shatter?11:heavy?11:soft?7:5,
+      color,speed:heavy?180:shatter?150:soft?85:130,life:soft?.38:.26,
+      r:heavy?2.8:shatter?3.2:2.2,angle:options.angle,
       spread:options.angle==null?Math.PI*2:1.1,
       grav:type==='heal'?-35:0});
     if(!soft)this.fx.push({type:'flash',x,y,r:heavy?12:7,
@@ -117,6 +118,8 @@ class VFX {
     if(type==='barrier')this.ring(x,y,{r0:11,vr:72,life:.18,color:'#e8fcff',width:2.5});
     if(type==='wardFade')this.ring(x,y,{r0:20,vr:62,life:.32,color,width:2});
     if(type==='cleanse')this.orb(x,y,'#f2ffec',3);
+    if(shatter)this.fx.push({type:'guardShards',x,y,life:.31,max:.31,
+      color,seed:Math.abs(x*71+y*19)%7});
   }
   // `angle` (optional) sprays sparks directionally along the hit normal — reads as
   // force far better than a symmetric puff. A brief white flash pop sells the connect.
@@ -165,6 +168,7 @@ class VFX {
       if (e.type === 'spark' || e.type === 'fade') {
         if (e.vx != null) { e.x += e.vx * dt; e.y += e.vy * dt; e.vx *= (1 - (e.drag || 0) * dt); e.vy = e.vy * (1 - (e.drag || 0) * dt) + (e.grav || 0) * dt; }
       } else if (e.type === 'ring') { e.r += e.vr * dt; }
+      else if(e.type==='text'){ e.y-=34*dt; }
     }
     this.fx = this.fx.filter(e => e.life > 0);
   }
@@ -202,7 +206,7 @@ class VFX {
         ctx.beginPath(); ctx.moveTo(0, -6 * k); ctx.lineTo(e.len * (0.5 + k), 0); ctx.lineTo(0, 6 * k); ctx.closePath(); ctx.fill();
         // No circular muzzle stamp; the directional cone is the visual cue.
       } else if (e.type === 'text') {
-        e.y -= 34 * dtGuess; ctx.fillStyle = e.color; ctx.font = `bold ${e.size}px sans-serif`; ctx.textAlign = 'center';
+        ctx.fillStyle = e.color; ctx.font = `bold ${e.size}px sans-serif`; ctx.textAlign = 'center';
         ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.strokeText(e.str, e.x, e.y); ctx.fillText(e.str, e.x, e.y);
       } else if (e.type === 'orb') {
         const a=e.baseA+(1-k)*6,rad=e.rad*k,x=e.x+Math.cos(a)*rad,y=e.y+Math.sin(a)*rad;
@@ -238,6 +242,18 @@ class VFX {
           }
         }
         ctx.restore();
+      } else if (e.type === 'guardShards') {
+        // A consumed protect ward breaks into seven small watercolor shards.
+        ctx.translate(e.x,e.y);ctx.rotate(e.seed);
+        ctx.lineCap='round';
+        for(let i=0;i<7;i++){
+          const a=i*Math.PI*2/7,rad=6+(1-k)*29;
+          ctx.save();ctx.translate(Math.cos(a)*rad,Math.sin(a)*rad);
+          ctx.rotate(a+Math.PI/4);ctx.globalAlpha=k*.86;
+          ctx.strokeStyle=i%2?e.color:'#fffdf4';ctx.lineWidth=1.8;
+          ctx.beginPath();ctx.moveTo(-5*k,-2*k);ctx.lineTo(0,-6*k);
+          ctx.lineTo(5*k,-1*k);ctx.stroke();ctx.restore();
+        }
       } else if (e.type === 'slash') {
         // a crescent blade that wipes across the frontal arc as it fades
         const sweep = 1 - k;                                   // 0→1 over life
@@ -259,8 +275,5 @@ class VFX {
     }
   }
 }
-
-// text particles rise using a small fixed step (fine for the short lifetime)
-const dtGuess = 1 / 60;
 
 window.VFX = VFX;
