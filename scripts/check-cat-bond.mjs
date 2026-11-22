@@ -619,6 +619,16 @@ assert.equal(roleBattle.me().eSkill?.id,dpsKit[2],
   'battle E reads equipped build skill');
 
 
+// Consolidated picker must not erase choices, including legacy generic moves.
+const skillPickerSource=fs.readFileSync(DIR+'js/ui.js','utf8');
+assert.ok(skillPickerSource.includes('skill-extra-options') &&
+  skillPickerSource.includes('展开其他已解锁技能') &&
+  skillPickerSource.includes('const extra=ordered.filter'),
+  'skill picker offers compact featured moves and a full expandable library');
+assert.ok(skillPickerSource.includes('data-sk=') &&
+  skillPickerSource.includes('extra.map(chip)'),
+  'hidden-by-default learned moves remain selectable through the full library');
+
 // ---- GATED SKILL-LEARNING: powerful skills must be LEARNED, not free ----
 // A paid skill (cometClaw: 🪙150) is invisible to learnableSkills until bought;
 // buying deducts coins and adds the id to cat.learned, then it becomes equippable.
