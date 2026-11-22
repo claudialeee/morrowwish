@@ -1447,6 +1447,8 @@ const UI = {
     const tierText = ['路人', '熟悉', '亲密', '灵魂纽带'][tier];
     const feedCost = 1, playCost = 0;
     const dispName = State.catName(cat);
+    const xpPerFeed = 20 + cat.level * 12;
+    const fishToNext = Math.max(1, Math.ceil(Math.max(0, need - (cat.xp || 0)) / xpPerFeed)) * 3;
     const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${GameData.speciesName(sp)}</span>` : '';
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
@@ -1471,23 +1473,38 @@ const UI = {
       <div class="stat-row"><span class="label">心情</span><div class="bar aff"><span style="width:${cat.joy}%"></span></div><span class="val">${Math.round(cat.joy)}</span></div>
       <p class="tiny" style="margin-top:8px">战力 ⚔ ${State.catPower(cat)}${cat.personality ? ' · 性格: ' + cat.personality : ''}${cat.trait ? ' · 特性: ' + cat.trait : ''}</p>
       ${this.speciesEvoRowHtml(cat)}
-      <p class="sub" style="margin:12px 0 4px">🎣 用挂机产出培养它变强</p>
-      <div class="btn-row">
-        <button class="btn gold" id="cd-trainxp">🐠 喂鱼练级 (×3🐠 → +经验)</button>
-        <button class="btn" id="cd-trainstat">🪙 金币特训 (×80🪙 → 全属性+)</button>
+      <div class="cb-grow" aria-label="猫咪养成">
+        <div class="cb-grow-grid">
+          <section class="cb-grow-section" aria-labelledby="cb-grow-level-title">
+            <h3 id="cb-grow-level-title">⬆ 升级</h3>
+            <p class="cb-grow-help">增加等级，解锁技能</p>
+            <button type="button" class="btn gold cb-grow-action" id="cd-trainnext"><strong>升 1 级</strong><small>消耗 🐠${fishToNext}</small></button>
+          </section>
+          <section class="cb-grow-section" aria-labelledby="cb-grow-stat-title">
+            <h3 id="cb-grow-stat-title">✨ 特训</h3>
+            <p class="cb-grow-help">四项属性永久 +1</p>
+            <button type="button" class="btn cb-grow-action" id="cd-trainstat"><strong>特训 1 次</strong><small>消耗 🪙80</small></button>
+          </section>
+          <section class="cb-grow-section cb-grow-interact" aria-labelledby="cb-grow-bond-title">
+            <h3 id="cb-grow-bond-title">🐾 互动</h3>
+            <p class="cb-grow-help">陪伴猫猫，提升好感和心情</p>
+            <div class="cb-grow-interactions">
+              <button type="button" class="btn ghost cb-grow-action" id="cd-pet"><strong>🤲 摸摸</strong><small>好感 +3</small></button>
+              <button type="button" class="btn ghost cb-grow-action" id="cd-feed"><strong>🐟 喂小鱼干</strong><small>1🐠 · 好感 +8</small></button>
+              <button type="button" class="btn ghost cb-grow-action" id="cd-tease"><strong>🪶 逗猫</strong><small>玩小游戏</small></button>
+            </div>
+          </section>
+        </div>
+        <details class="cb-grow-more" id="cd-grow-more" ${this._catGrowMore===cat.uid?'open':''}>
+          <summary>更多培养方式</summary>
+          <div class="cb-grow-advanced">
+            <button type="button" class="btn ghost cb-grow-action" id="cd-trainxp"><strong>🐠 补充经验</strong><small>3🐠 · +${xpPerFeed}经验</small></button>
+            <button type="button" class="btn ghost cb-grow-action" id="cd-trainfive"><strong>⬆ 最多连升 5 级</strong><small>逐级计算花费</small></button>
+            <button type="button" class="btn ghost cb-grow-action" id="cd-stat-ten"><strong>✨ 连续特训</strong><small>最多 10 次 · 每次 80🪙</small></button>
+          </div>
+        </details>
       </div>
-      <div class="btn-row cb-lazy-training">
-        <button class="btn gold" id="cd-trainnext">⬆ 一键升下一级</button>
-        <button class="btn" id="cd-trainfive">⬆ 连升最多 5 级</button>
-        <button class="btn" id="cd-stat-ten">🧶 特训 ×10</button>
-      </div>
-      <p class="tiny cb-train-note">批量操作按实际每级经验与材料计算；资源不足会停止，不会出现负数。</p>
-      <div class="btn-row">
-        <button class="btn" id="cd-skills">📖 技能搭配</button>
-        <button class="btn ghost" id="cd-pet">🤲 撸猫</button>
-        <button class="btn ghost" id="cd-feed">🐟 喂小鱼干 (${feedCost}🐠 · 好感+8)</button>
-        <button class="btn ghost" id="cd-tease">🪶 逗猫</button>
-      </div>`;
+      <button type="button" class="cb-grow-skills" id="cd-skills">📖 查看与搭配技能 <span aria-hidden="true">›</span></button>`;
     // animated preview
     const cv = document.getElementById('cd-canvas');
     const cx = cv.getContext('2d');
@@ -1545,6 +1562,9 @@ const UI = {
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat);
       this.game.toast('🪙 特训完成！全属性 +1');
     };
+    document.getElementById('cd-grow-more')?.addEventListener('toggle',e=>{
+      if(e.currentTarget===document.getElementById('cd-grow-more'))this._catGrowMore=e.currentTarget.open?cat.uid:null;
+    });
     document.getElementById('cd-trainnext').onclick=()=>this.quickTrainCat(cat,1);
     document.getElementById('cd-trainfive').onclick=()=>this.quickTrainCat(cat,5);
     document.getElementById('cd-stat-ten').onclick=()=>this.quickStatCat(cat,10);
