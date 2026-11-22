@@ -44,3 +44,14 @@ The local Cat Bond directory contained 60 files totaling approximately 7.1 MiB a
 ## Portability
 
 This iteration keeps gameplay state and all Duo logic in HTML5/Canvas code, not the portal adapter. Future iOS/Android or Steam editions need their own OS lifecycle, offline packaging, save export/cloud-sync conflict handling, platform UX and store compliance. No native release is represented as built.
+
+
+## CrazyGames submission-media preflight (added)
+
+The CrazyGames submission script expects three correctly sized covers and both portrait/landscape preview videos. Only a portrait cover had been checked into the repository. An approved-only, reproducible preparation pipeline is now supplied:
+
+1. `scripts/record-cat-bond-crazygames-previews.mjs` runs the **real game in Playwright** in 1920×1080 and 1080×1620 viewports, using a playable mid/late-game pair and true in-game duo effects. Outputs local, untracked WebM captures under `.check/crazygames/`.
+2. `scripts/prepare-cat-bond-crazygames-media.mjs` constructs 1920×1080, 800×1200 and 800×800 artwork from owned cover imagery. It opens each silent 17–18 second MP4 on the matching cover, then cuts to native-aspect gameplay instead of cropping vertical social reels into a landscape video.
+3. The gated `.github/workflows/crazygames-submit.yml` runs these steps **only for QA-approved Cat Bond submissions**. Source media and final metadata are technically validated. Media are deliberately not marked visually approved and generated binaries are not permanently committed.
+
+Still required before actually submitting: inspect the 5 generated assets at full resolution, ensure all text and real gameplay scenes are accurate, confirm their copyrights, and verify their upload on the developer portal. Neither a scripted successful encode nor code review is equivalent to an editorial signoff.
