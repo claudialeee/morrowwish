@@ -2019,6 +2019,7 @@
   // Consistent names for the new breed and legacy saved visits.
   Object.assign(DICT, {'圆宝':'Pudding', '加菲':'Pudding', '奶奶':'Snowball'});
   DICT["加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。"] = "Pudding is a plush Exotic Shorthair with round cheeks and a chubby belly. This brave kitten loves protecting friends.";
+  DICT['地图'] = 'Map'; // Prevent a stray Chinese map label on the English home screen.
   var KEYS = Object.keys(DICT).sort(function (a, b) { return b.length - a.length; });
   // Han ideographs + CJK symbols/punctuation + fullwidth forms.
   var CJK = /[一-鿿　-〿＀-￯]/;
