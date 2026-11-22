@@ -169,6 +169,14 @@ if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||
    !studioAudioSource.includes("beat==='release'"))
  throw Error('Cat Bond premium duo must fill mobile/desktop arena and keep post-cut-in VFX + audio');
+// One primary duo finisher in owner-review trailers; the rare-cat teaser
+// must not trigger another auto-battle cast while the camera is recording.
+const duoPromoCapture=fs.readFileSync('scripts/capture-trailers-v10.mjs','utf8');
+const duoPromoEdit=fs.readFileSync('scripts/render-trailers-v10.mjs','utf8');
+if(!duoPromoCapture.includes('b.autoMode=false;b.duoCharge=0;b.duoCd=999')||
+   !duoPromoCapture.includes('Repeated duo cinematic in rare encounter trailer teaser')||
+   !duoPromoEdit.includes("broll('duo',3.1,'ONE POWERFUL DUO FINISHER!')"))
+ throw Error('Cat Bond trailer must show only one duo finisher, with no rare-encounter replay');
 const unlockedPreview=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
 if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!important}')||
    !unlockedPreview.includes('height:min(75dvh')||
