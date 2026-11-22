@@ -62,6 +62,7 @@ jobs:
             echo "$slug $(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$mp4") sec"
           done
           test -s public/promo/pawsibly-innocent/narrow-escape-card-proof.png
+          test -s public/promo/cat-bond/ssr-showcase-proof.png
           node - <<'NODE'
           const fs=require('fs');
           const m=require('./public/promo/v9-review.json');
@@ -69,7 +70,7 @@ jobs:
           if(m.version!=='V9'||m.trailers.length!==7||m.socialAutopublish!==false||m.trailers.some(t=>t.published||t.paused))throw Error('Invalid approval-safe manifest');
           const bond=m.trailers.find(x=>x.slug==='cat-bond');
           const heist=m.trailers.find(x=>x.slug==='pawsibly-innocent');
-          for(const name of ['raising','cat-upgrade','duo-partners','duo-map-walk','duo-promise','work-after','tease','map-explore','map-management','auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-encounter']){
+          for(const name of ['raising','cat-upgrade','duo-partners','duo-map-walk','duo-promise','work-after','tease','map-explore','map-management','auto-team-saved','battle-hud','battle-skills','duo','rare-encounter','rare-capture','ssr-showcase']){
             if(!bond.shots.some(s=>s.scene===name&&s.seconds>=1.5))throw Error('Cat Bond missing new real footage: '+name);
           }
           for(const name of ['escape-attempt','narrow-pursuit','narrow-achievement','room-kitchen','room-laundry','room-library','room-garden','caught-attempt']){
@@ -79,7 +80,7 @@ jobs:
           if(sc.includes('duo-surprise')||sc.includes('duo-surprise-outcome')||sc.includes('ultimate')||
               sc.filter(s=>s==='duo').length!==1)
             throw Error('V9 must show only ONE finisher and the REAL map promise, no old yard event');
-          if(!sc.includes('duo-promise')||!sc.includes('ssr-encounter')||
+          if(!sc.includes('duo-promise')||!sc.includes('ssr-showcase')||
               !sc.includes('battle-hud')||!sc.includes('battle-skills'))
             throw Error('Owner-requested new Cat Bond features missing');
           if(['room-kitchen','room-laundry','room-library','room-garden'].some(s=>
@@ -101,6 +102,7 @@ jobs:
           done
           git add public/promo/v9-review.json public/promo/readability-audit-v9.json
           git add public/promo/cat-bond/cover-portrait.png public/promo/pawsibly-innocent/narrow-escape-card-proof.png
+          git add public/promo/cat-bond/ssr-showcase-proof.png
           git diff --cached --quiet && exit 0
           git config user.name 'morrowwish-promo-bot'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
