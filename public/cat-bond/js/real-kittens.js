@@ -463,7 +463,7 @@
   breedSheet.onerror=()=>{pendingPortraits.clear();console.warn('Breed illustrations unavailable; original cat sprites retained')};
   breedSheet.src='/cat-bond/assets/watercolor-cats-v2.webp';
   jiafeiSprite.onload=()=>{
-    jiafeiLoaded=jiafeiSprite.naturalWidth===228&&jiafeiSprite.naturalHeight===256;
+    jiafeiLoaded=jiafeiSprite.naturalWidth===160&&jiafeiSprite.naturalHeight===180;
     if(!jiafeiLoaded)return;
     try{window.paintIntroCatGallery?.()}catch(_){}
     for(const [canvas,species] of jiafeiPortraits){
@@ -473,6 +473,6 @@
     window.dispatchEvent?.(new Event('cat-bond-illustrations-ready'));
   };
   jiafeiSprite.onerror=()=>{console.warn('Jiafei 2D sprite unavailable; keeping playable fallback');};
-  jiafeiSprite.src='/cat-bond/assets/jiafei-watercolor-v1.avif?v=art-approved-for-release-20261122';
+  jiafeiSprite.src='/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122';
   
 })();
