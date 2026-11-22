@@ -273,7 +273,8 @@ try{
     const g=window.__game,menu=document.getElementById('map-menu'),
       full=document.getElementById('mw-fullscreen-toggle'),
       nav=document.getElementById('map-actions'),
-      home=document.getElementById('cb-home');
+      home=document.getElementById('cb-home'),
+      hud=document.getElementById('hud');
     const rect=menu?.getBoundingClientRect(),fr=full?.getBoundingClientRect();
     const visible=!!rect&&!menu.hidden&&rect.width>=34&&rect.height>=30&&
       getComputedStyle(menu).display!=='none'&&rect.top>=0&&rect.bottom<=innerHeight;
@@ -283,6 +284,10 @@ try{
     const yardOnScreen=!!yr&&yr.width>=65&&yr.height>=30&&
       getComputedStyle(yard).display!=='none'&&yr.left>=0&&yr.top>=0&&
       yr.right<=innerWidth+1&&yr.bottom<=innerHeight+1;
+    const hr=hud?.getBoundingClientRect();
+    const resourcesSameRow=!!hr&&hr.height>=28&&getComputedStyle(hud).display!=='none'&&
+      !!rect&&Math.abs(hr.top-rect.top)<=8&&Math.abs(hr.bottom-rect.bottom)<=8&&
+      hr.right<=rect.left+2;
     const utilities=[menu,full,...document.querySelectorAll('#mw-game-settings button')];
     const yardClear=yardOnScreen&&utilities.every(el=>{
       const b=el.getBoundingClientRect();
@@ -294,11 +299,11 @@ try{
       legacyHidden:!!nav&&getComputedStyle(nav).display==='none',
       homeHidden:!home||getComputedStyle(home).display==='none',
       beforeFullscreen:!!fr&&rect.right<=fr.left+2&&rect.top<fr.bottom&&rect.bottom>fr.top,
-      yardOnScreen,yardClear,yardClickable,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
+      yardOnScreen,yardClear,yardClickable,resourcesSameRow,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
   });
   if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||
       !regionNav.beforeFullscreen||!regionNav.legacyHidden||!regionNav.homeHidden||
-      !regionNav.yardOnScreen||!regionNav.yardClear||!regionNav.yardClickable||!regionNav.cameraOff)
+      !regionNav.yardOnScreen||!regionNav.yardClear||!regionNav.yardClickable||!regionNav.resourcesSameRow||!regionNav.cameraOff)
     throw Error('New top-left yard / header menu cut off in actual promo '+JSON.stringify(regionNav));
   await page.screenshot({path:'public/promo/cat-bond/v10-map-navigation-proof.png'});
   const returned=await page.evaluate(()=>{
