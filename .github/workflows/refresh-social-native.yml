@@ -1,6 +1,10 @@
 name: Refresh first-party video metrics
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-social-native.yml'
   schedule:
     - cron: '7,37 * * * *'
   workflow_dispatch:
