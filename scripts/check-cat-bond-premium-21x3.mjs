@@ -100,6 +100,8 @@ assert.match(source('js/duo-premium.js'),/CatBondDuoBreedActors\?\.draw\?/,
   'Real battle must draw two actual selected full-body watercolor cats');
 assert.match(source('js/duo-bond.js'),/this\.duoCinematic,uid=>/,
   'Battle must resolve player-selected UIDs to live player cats');
+assert.match(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=false/,
+  'Actual battles must select two real 33-roster cats, never fixed storyboard cats');
 for(const [path,min] of [
  ['assets/duo-watercolor-32-actors-v1.webp',750000],
  ['assets/duo-stage-clean-21x3-v2.webp',150000]]){
