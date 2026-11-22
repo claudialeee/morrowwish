@@ -29,7 +29,7 @@ const SPECIES = [
   // Exotic Shorthair (加菲猫): round, flat-faced plush kitten.
   { id: 'jiafei', name: '圆宝', palette: 'orange', pattern: 'tabby',
     eyeColor: '#aa713f', rarity: 'R', chubby: true, flatFace: true, short: true,
-    desc: '异国短毛猫，扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。',
+    desc: '加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。',
     base: { pow: 6, agi: 3, vit: 11, cha: 8 } },
   { id: 'dundun',   name: '团团',   palette: 'silver',      pattern: 'silver',  eyeColor: '#7ee7c4', rarity: 'R', desc: '银渐层，眼线天生，表情包担当。',       base: { pow: 6, agi: 7, vit: 8, cha: 8 } },
   { id: 'yunduo',   name: '云朵',   palette: 'ragdoll',     pattern: 'pointed', eyeColor: '#56ccf2', rarity: 'R', fluffy: true, point: '#6b5244', desc: '布偶幼崽，软成一团云。', base: { pow: 6, agi: 6, vit: 8, cha: 9 } },
