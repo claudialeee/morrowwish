@@ -78,3 +78,24 @@ export async function nativeYouTubeSnapshot(env,base){
    return ytOverlay(base,cached?.data||null,status);
  }catch(e){console.error("YouTube cache error:",String(e?.message||e).slice(0,80));return ytOverlay(base,null,"storage_error");}
 }
+
+// Private owner controls. Never return provider keys or unverified metrics.
+export async function nativeYouTubeRoute(req,env,hasAdminSession,json){
+ const p=new URL(req.url).pathname;
+ if(!["/api/youtube/status","/api/youtube/refresh"].includes(p))return null;
+ if(req.method!=="GET"&&!(p==="/api/youtube/refresh"&&req.method==="POST"))return json({error:"Unsupported method"},405);
+ if(!await hasAdminSession())return json({error:"Not authorized"},401);
+ if(!env.YOUTUBE_DATA_API_KEY)return json({status:"needs_api_key",required:["YOUTUBE_DATA_API_KEY"]},503);
+ if(!env.DB)return json({error:"D1 unavailable"},503);
+ await ytStorage(env);
+ if(p==="/api/youtube/status"){
+   const cached=await ytRead(env);
+   return json({status:"configured",checkedAt:cached?.data?.checkedAt||null,
+     postMetricsCount:cached?.data?.posts?.length??0,expectedPublished:7});
+ }
+ try{
+   const state=await ytFetch(env);
+   return json({ok:true,checkedAt:state.checkedAt,postMetricsCount:state.posts.length,
+     expectedPublished:7,completeViews:state.posts.length===7&&state.posts.every(x=>x.views!=null)});
+ }catch(e){return json({error:"YouTube native refresh failed",details:String(e?.message||e).slice(0,75)},502);}
+}
