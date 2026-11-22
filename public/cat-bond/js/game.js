@@ -1368,21 +1368,29 @@ class Game {
     const poiseLabel=document.getElementById('battle-poise-label');
     if(poiseTrack&&poiseFill&&poiseLabel){
       const alive=(b.enemies||[]).filter(e=>e.alive);
-      let current=0,maximum=0,broken=0,longestStagger=0;
-      for(const e of alive){
-        maximum+=Math.max(0,e.poiseMax||0);
-        current+=Math.max(0,Math.min(e.poiseMax||0,e.poise||0));
-        if((e.staggerT||0)>0){broken++;longestStagger=Math.max(longestStagger,e.staggerT);}
-      }
+      // Show the INDIVIDUAL enemy being hit, never the pack-average meter:
+      // 20% lost from 1 of 6 cats used to look like barely 3% movement.
+      const recent=alive.find(e=>e.i===b._lastPoiseHitEnemy &&
+        b.t-(b._lastPoiseHitAt??-99)<3.5);
+      const active=b.me?.();
+      const enemy=recent||b.lockedEnemy?.()||
+        (active&&b.nearestEnemy?.(active.x,active.y))||alive[0]||null;
+      const maximum=enemy?.poiseMax||0;
+      const current=Math.max(0,Math.min(maximum,enemy?.poise||0));
       const percentage=maximum?Math.max(0,Math.min(100,current/maximum*100)):0;
       const en=window.MorrowwishI18n?.get?.()!=='zh';
-      const label=broken>0?(en?'Staggered':'虚弱')+
-        (alive.length===1?' '+longestStagger.toFixed(1)+'s':' '+broken+'/'+alive.length)
+      const enemyName=enemy?(window.CatBondI18n?.translate?.(enemy.sp?.name)||
+        enemy.sp?.name|| (en?'Enemy':'野猫')):'';
+      const status=enemy?.staggerT>0
+        ?(en?'Staggered':'虚弱')+' '+enemy.staggerT.toFixed(1)+'s'
+        :enemy&&current<=0?(en?'Guard Broken':'破防')
+        :enemy?.poiseRecovering?(en?'Recovering':'恢复中')
         :(en?'POISE':'韧性');
+      const label=(enemyName?enemyName+' · ':'')+status;
       poiseFill.style.width=percentage.toFixed(1)+'%';
-      poiseTrack.setAttribute('aria-label',en?'Enemy poise':'野猫韧性');
+      poiseTrack.setAttribute('aria-label',(en?'Enemy poise: ':'野猫韧性：')+enemyName);
       poiseTrack.setAttribute('aria-valuenow',String(Math.round(percentage)));
-      poiseTrack.classList.toggle('is-staggered',broken>0);
+      poiseTrack.classList.toggle('is-staggered',!!(enemy?.staggerT>0));
       if(poiseLabel.textContent!==label)poiseLabel.textContent=label;
     }
     document.getElementById('ult-bar').style.width = b.ult + '%';

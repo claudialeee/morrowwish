@@ -1950,7 +1950,10 @@ class CaptureBattle {
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
     const pow = (sk ? sk.power : 0.8)*this.outgoingBuffMult(f);
-    this.castOffensiveSkill(f, aim, sk, pow, col);
+    // The starter Q fan is an actual damaging skill even before a named Q unlock.
+    // Give it an ID so a successful hit participates in skill-driven poise break.
+    const attack=sk||{id:'starterQFan',kind:'projectile',element:f.element,power:.8,ultCost:0};
+    this.castOffensiveSkill(f, aim, attack, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
     // Suppress repeated action labels; they used to cover the health bars.
@@ -2245,7 +2248,10 @@ class CaptureBattle {
     f._beamRoot = dur;                                          // anchors movement (see readInput/autoDrive)
     this.beams.push({
       uid: f.cat.uid, owner: 'me', f, sk, col,
-      aim,baseAim:aim,len,width,dps:Math.max(1,dmgPerSec),t:dur,max:dur,
+      aim,baseAim:aim,len,width,
+      // Longer repeated flame swings must NOT multiply total damage.
+      dps:Math.max(1,dmgPerSec)*Math.min(1,(sk?.damageChannel||dur)/dur),
+      t:dur,max:dur,
       tickAcc: 0, element: sk?.element,
       // Use per-beam elapsed seconds rather than wall time to throttle feedback.
       _impactAt:new Map(), _impactCount:0, _lastPulseAt:-99,
@@ -2282,11 +2288,12 @@ class CaptureBattle {
       b.t -= dt;
       const f = b.f;
       if (!f || !f.alive) { b.t = 0; continue; }
-      // Water and lightning may steer using live aim. Fire's short channel
-      // sweeps left-right-left on a fixed arc (physical head movement).
+      // Water and lightning follow live aim. Fire now completes 3 FULL
+      // left-right-left oscillations rather than just one wobble.
       if(b.sk?.sweep){
         const progress=1-Math.max(0,b.t)/b.max;
-        b.aim=b.baseAim-Math.cos(progress*Math.PI*2)*b.sk.sweep;
+        const cycles=Math.max(1,b.sk.sweepCycles||1);
+        b.aim=b.baseAim-Math.cos(progress*Math.PI*2*cycles)*b.sk.sweep;
       }else if(f===this.me())b.aim=this.aim;
       if (f._beamRoot != null) f._beamRoot = Math.max(0, b.t);  // stay anchored while it lasts
       const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
@@ -2303,7 +2310,7 @@ class CaptureBattle {
             // A sustained stream makes small damage ticks, not four huge
             // hit-stops/shakes per second. Contact feedback remains localized.
             const contact=this.resolveHit(e,b.owner,
-              {...(b.sk||{element:b.element}),isChanneledTick:true},
+              {...(b.sk||{element:b.element}),isChanneledTick:true,_poiseSource:b},
               hitDmg,e.x,e.y);
             if(contact?.dealt>0)this.beamHitFeedback(b,e);
           }
@@ -2379,7 +2386,8 @@ class CaptureBattle {
     } else {
       // no learned E skill → the classic pounce (contact-damage lunge)
       f.dashT=.26;f.inv=.3;
-      f.pounce=true;f._dashAim=aim;f._pounceSkill=null;
+      f.pounce=true;f._dashAim=aim;
+      f._pounceSkill={id:'starterEPounce',kind:'pounce',element:f.element,power:1,ultCost:0};
       f._dashReach=135;f._dashTravel=0;f._pounceDmg=null;
       this.vfx.shockwave(f.x,f.y,col);
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
@@ -4395,19 +4403,9 @@ class CaptureBattle {
         if (fresh) this.controlFx(e, tg, info ? info.color : '#fff');   // distinct "it's controlled!" burst
       }
     }
-    // POISE DRAIN (韧性) — owner-approved design change: non-basic SKILL hits now CHIP
-    // the poise gauge (basics do NOT), so the 韧性 bar visibly depletes as you use skills
-    // instead of sitting full until a special stagger (the "不减/没用" complaint). Drain a
-    // fixed fraction of poiseMax per skill hit (~20% light / 28% heavy → ~4-5 skill hits to
-    // break); emptying it opens the 2× 虚弱 window. Dedicated stagger skills (泰山压顶 /
-    // 纸箱埋伏 / cast interrupt) still ZERO it instantly. Also keep the 10s 破甲 (rust) mark.
+    // Armor break remains a status applied by authored skills. Poise loss is
+    // handled AFTER landed damage inside resolveHit(), not before contact.
     if (skill.id && !skill.isBasic && (e.staggerT||0) <= 0) {
-      const isDedicatedStagger = skill.id === 'quakeStomp' || skill.tags?.includes('stagger');
-      if (!isDedicatedStagger && (e.poise||0) > 0) {
-        const heavy = !!skill.heavy || ['dash','pounce','leap'].includes(skill.kind);
-        e.poise = Math.max(0, e.poise - e.poiseMax * (heavy ? 0.28 : 0.20));
-        if (e.poise <= 0) this.triggerStagger(e);      // emptied → 虚弱 window opens
-      }
       const fresh = !e.status.rust;
       e.status.rust = TAG.rust.ttl;
       if (!e.tags.includes('rust')) e.tags.push('rust');
@@ -4417,6 +4415,33 @@ class CaptureBattle {
       }
     }
     return dmg;
+  }
+
+  // One poise budget per ACTUAL, successful skill impact on this enemy.
+  // A basic toy shot and periodic DoT ticks do not drain poise. Continuous
+  // beams may deal 8 HP ticks/sec, but earn only ONE poise hit per target
+  // during the entire channel, so they can't instantly drain a full gauge.
+  applyPoiseOnSkillHit(e, skill) {
+    if (!e?.alive || !skill?.id || skill.isBasic || (e.staggerT||0)>0 ||
+        !(e.poise>0) || !(e.poiseMax>0)) return false;
+    if (skill.isChanneledTick && skill._poiseSource) {
+      const source=skill._poiseSource;
+      source._poiseTargets??=new WeakSet();
+      if(source._poiseTargets.has(e))return false;
+      source._poiseTargets.add(e);
+    }
+    // The previous break's refill is canceled by the first subsequent hit.
+    // Any remaining partial poise must then stay lost until the NEXT break.
+    e.poiseRecovering=false;
+    const dedicated=skill.id==='quakeStomp'||skill.tags?.includes('stagger');
+    if(dedicated){
+      this.triggerStagger(e);
+      return true;
+    }
+    const heavy=!!skill.heavy||['dash','pounce','leap'].includes(skill.kind);
+    e.poise=Math.max(0,e.poise-e.poiseMax*(heavy?.28:.20));
+    if(e.poise<=0)this.triggerStagger(e);
+    return true;
   }
 
   // A distinct cast flourish per status so a control landing READS as control,
@@ -4712,8 +4737,8 @@ class CaptureBattle {
     if ((target.vulnerableT || 0) > 0) dmg *= 1.3;
     // land it
     if (side === 'me') {
-      // STAGGER is an exclusive control payoff (leap slam, ambush, interrupt).
-      // Ordinary attacks may inflict armor break but NEVER drain the poise gauge.
+      // An authored skill drains poise only after its hit successfully lands;
+      // toy basics, DoTs, blocked shots and pure support actions never do.
       const isBasic = skill && skill.isBasic;
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
@@ -4727,6 +4752,11 @@ class CaptureBattle {
       const heavyMove=!!skill?.heavy||['melee','dash','pounce','leap'].includes(skill?.kind);
       const hitTier=continuous?null:alreadyStaggered?'crit':heavyMove?'heavy':'light';
       this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier);
+      if(dealt>0){
+        this._lastPoiseHitEnemy=target.i;
+        this._lastPoiseHitAt=this.t;
+        this.applyPoiseOnSkillHit(target,skill);
+      }
       // Additional authored contact mark is strictly local. Continuous beams
       // are throttled per skill/target to avoid particle and audio overload.
       if(dealt>0)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);

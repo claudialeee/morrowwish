@@ -498,6 +498,75 @@ poiseBattle.resolveHit(poiseEnemy,'me',
   poiseEnemy.x,poiseEnemy.y);
 assert.ok(poiseEnemy.poise<poiseEnemy.poiseMax,'a Q/E skill hit chips the poise gauge');
 assert.equal(poiseEnemy.status.rust,10,'ordinary Q/E applies ten-second armor break');
+// Real starter Q/E (skills absent) must actually reduce the targeted enemy poise.
+const starterBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
+starterBattle.coach=null;
+const starter=starterBattle.me(),victim=starterBattle.enemies[0];
+victim.hp=victim.maxhp=10000;
+starter.qSkill=null;starter.eSkill=null;starter.cd.q=0;starter.cd.e=0;
+starterBattle.skillQ(starter,0);
+const pellet=starterBattle.projectiles.find(p=>p.skill?.id==='starterQFan');
+assert.ok(pellet,'starter Q sends an identifiable projectile');
+victim.flash=0;victim.inv=0;
+starterBattle.resolveHit(victim,'me',pellet.skill,10,victim.x,victim.y);
+assert.ok(Math.abs(victim.poise/victim.poiseMax-.8)<.00001,
+  'starter Q must reduce an individual target\'s poise by 20%');
+assert.equal(starterBattle._lastPoiseHitEnemy,victim.i,
+  'real hit selects the damaged enemy for the top poise HUD');
+victim.flash=0;victim.inv=0;
+starterBattle.skillE(starter,0);
+assert.equal(starter._pounceSkill?.id,'starterEPounce','default E has an ID');
+const prior=victim.poise;
+starterBattle.resolveHit(victim,'me',starter._pounceSkill,10,victim.x,victim.y);
+assert.ok(victim.poise<prior,'default E pounce must reduce poise');
+// Beams tick damage frequently, but a single cast gets ONE poise hit per
+// target; a second cast can hit poise again without 8x over-drain.
+victim.poise=victim.poiseMax;victim.poiseRecovering=false;victim.staggerT=0;
+const channel={};
+for(let i=0;i<8;i++){
+  victim.flash=0;victim.inv=0;
+  starterBattle.resolveHit(victim,'me',
+    {id:'waterJet',kind:'beam',element:'water',isChanneledTick:true,
+     _poiseSource:channel},2,victim.x,victim.y);
+}
+assert.ok(Math.abs(victim.poise/victim.poiseMax-.8)<.00001,
+  'channel hits must remove only 20% per cast');
+victim.flash=0;victim.inv=0;
+starterBattle.resolveHit(victim,'me',
+  {id:'waterJet',kind:'beam',element:'water',isChanneledTick:true,
+   _poiseSource:{}},2,victim.x,victim.y);
+assert.ok(Math.abs(victim.poise/victim.poiseMax-.6)<.00001,
+  'separate beam casts should each consume their own poise budget');
+// Interrupt a prior break-triggered recovery: the remainder must stay lost.
+victim.poise=victim.poiseMax*.75;
+victim.poiseRecovering=true;victim.staggerT=0;victim.flash=0;victim.inv=0;
+starterBattle.resolveHit(victim,'me',
+  {id:'leafDart',kind:'projectile',element:'grass'},10,victim.x,victim.y);
+assert.equal(victim.poiseRecovering,false,'landed skill cancels refill');
+const lockedPoise=victim.poise;victim.swipeCd=999;
+starterBattle.update(.1);
+assert.equal(victim.poise,lockedPoise,'partial poise stays depleted');
+// User requested AT LEAST three repeat flame sweeps, not one left-right-left.
+// Time budget doubles for visible animation, while damage stays unchanged.
+const flameSkill=Skills.skillById('flameSweep');
+assert.ok(flameSkill?.sweepCycles>=3&&flameSkill.channel>=2.4);
+const flameBattle=new sandbox.window.Battle.CaptureBattle(game,
+  [State.makeCat('jinwu')],GameData.speciesById('doudou'));
+flameBattle.coach=null;flameBattle.enemies=[];
+flameBattle.castBeam(flameBattle.me(),0,flameSkill,20,'#ff9a56');
+const flame=flameBattle.beams[0],flameAngles=[];
+assert.ok(flame&&Math.abs(flame.dps*flame.max-20*flameSkill.damageChannel)<.00001,
+  'triple flame sweep must NOT increase total damage');
+for(let tick=0;tick<100;tick++){
+  flameBattle.tickBeams(flameSkill.channel/100);
+  flameAngles.push(flame.aim);
+}
+const signs=flameAngles.map(a=>Math.sign(a)).filter(Boolean);
+let flips=0;for(let k=1;k<signs.length;k++)if(signs[k]!==signs[k-1])flips++;
+assert.ok(flips>=6,'fire must cross arena six times for three cycles: '+flips);
+assert.equal(flameBattle.beams.length,0,'flame channel expires on schedule');
+
 // draining poise to empty via skill hits opens the Stagger window
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=1;poiseEnemy.staggerT=0;
 poiseBattle.resolveHit(poiseEnemy,'me',
@@ -574,8 +643,11 @@ assert.ok(battleHtml.includes('id="battle-enemy-poise-fill"')&&
   battleCss.includes('height:11px!important')&&
   battleGameSource.includes("poiseFill.style.width=percentage.toFixed(1)+'%'"),
   'top HUD must expose and live-update a larger separate poise bar');
-assert.ok(battleGameSource.includes("poiseTrack.classList.toggle('is-staggered',broken>0)"),
-  'stagger must be visible in the fixed combat UI');
+assert.ok(battleGameSource.includes("poiseTrack.classList.toggle('is-staggered',!!(enemy?.staggerT>0))"),
+  'the selected enemy stagger must show in the HUD');
+assert.ok(battleGameSource.includes('b._lastPoiseHitEnemy')&&
+  battleGameSource.includes('const enemy=recent||b.lockedEnemy'),
+  'HUD must follow the attacked enemy instead of averaging the whole pack');
 
 // Even legacy 'always basic' gambits cannot prevent adaptive ranged skills.
 const prismAutoBattle=new sandbox.window.Battle.CaptureBattle(game,
