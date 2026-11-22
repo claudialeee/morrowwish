@@ -25,6 +25,7 @@
     '双猫搭档已经准备好！下一场带上两只猫一起战斗，积攒合击能量，释放它们的专属合击。': 'Your duo is ready! Bring both cats to the next hunt to build Duo energy and unleash a special team move.',
     '双猫出战 · 再找一只伙伴': 'Try your duo · Find another cat',
     '双猫搭档继续探索': 'Explore with your duo',
+    '💞 双猫合击已就绪！按 F 或点击双猫合击，释放首次搭档绝招！': '💞 Duo is ready! Press F or tap Duo for your first team move!',
     '探索其他玩法': 'Explore other activities',
     // Reviewed 33-breed elemental identities and attribute cards.
     '寒冰爪': 'Frost Claw',
