@@ -437,11 +437,16 @@ class Game {
       help.setAttribute('aria-label',english?'Replay guided tour':'重新查看玩法引导');
     }
     hint.hidden=!visible||!(firstCapture||tourActive);
-    if(this._tourTarget){
-      this._tourTarget.classList.remove('cb-guide-target');
-      this._tourTarget=null;
-    }
-    if(hint.hidden)return;
+    // Keep the highlight node stable between 300ms HUD refreshes. Otherwise
+    // the CSS pulse restarts and stutters instead of guiding the eye.
+    const highlight=selector=>{
+      const next=selector?document.querySelector(selector):null;
+      if(this._tourTarget===next)return;
+      this._tourTarget?.classList.remove('cb-guide-target');
+      this._tourTarget=next;
+      next?.classList.add('cb-guide-target');
+    };
+    if(hint.hidden){highlight(null);return;}
     if(firstCapture){
       hint.classList.remove('is-tour');
       const label=this.yard?.hide
@@ -449,10 +454,7 @@ class Game {
         :(english?'🌿 Tap the grass button to search for a cat.':'🌿 点击右侧草丛按钮，寻找野猫！');
       if(hint.textContent!==label)hint.textContent=label;
       hint.dataset.guideKey='capture';
-      if(!this.yard?.hide){
-        this._tourTarget=document.getElementById('fab-seek');
-        this._tourTarget?.classList.add('cb-guide-target');
-      }
+      highlight(!this.yard?.hide?'#fab-seek':null);
       return;
     }
     const steps=[
@@ -502,10 +504,7 @@ class Game {
       hint.querySelector('.cb-guide-action').onclick=()=>this.performFirstAdventureAction();
       hint.querySelector('.cb-guide-skip').onclick=()=>this.finishFirstAdventureTour(true);
     }
-    if(data.target){
-      this._tourTarget=document.querySelector(data.target);
-      this._tourTarget?.classList.add('cb-guide-target');
-    }
+    highlight(data.target||null);
   }
 
   loop(ts) {
