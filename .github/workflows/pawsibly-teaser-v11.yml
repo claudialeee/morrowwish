@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/pawsibly-teaser-v11.yml'
+      - 'scripts/render-pawsibly-teaser-v11.mjs'
   workflow_dispatch:
 permissions:
   contents: write
