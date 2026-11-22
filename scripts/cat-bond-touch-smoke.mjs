@@ -58,7 +58,13 @@ try{
           minutes: 120, capped: false, produced: {}, gains: { coins: 12 },
           visitors: [{ name: '汤圆', gift: { coins: 12, fish: 1, yarn: 3 }, rare: false }],
         }));
-        const reportText = await page.locator('#panel.open .card').innerText();
+        // Chromium innerText can omit descendants while the panel opening transition
+        // is active. Assert actual DOM rewards AND that the visitor row is
+        // rendered on screen, rather than sampling mid-transition.
+        await page.locator('#panel.open .wb-visitor').waitFor({state:'visible'});
+        const reportText = await page.locator('#panel.open .card').textContent();
+        assert.ok(await page.locator('#panel.open .wb-visitor').isVisible(),
+          'The visitor reward must be visibly displayed in the welcome panel');
         assert.ok(reportText.includes('汤圆') && reportText.includes('🪙+15') && reportText.includes('🐠+1') &&
           !reportText.includes('🧶'),
           'Welcome popup must aggregate legacy yarn into 12+3 coins, retain fish: ' + reportText);
