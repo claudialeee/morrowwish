@@ -15,7 +15,9 @@ try{
   let calls=[];
   try{
    CanvasRenderingContext2D.prototype.drawImage=function(...args){
-     calls.push({argc:args.length,srcW:args[3],srcH:args[4],x:args[5],y:args[6],w:args[7],h:args[8]});
+     calls.push({argc:args.length,sourceWidth:args[0]?.naturalWidth||args[0]?.width,
+       sourceHeight:args[0]?.naturalHeight||args[0]?.height,
+       srcW:args[3],srcH:args[4],x:args[5],y:args[6],w:args[7],h:args[8]});
      return orig.apply(this,args);
    };
    return CatBondDuoDirector.keys.map(key=>{
@@ -30,11 +32,20 @@ try{
  });
  assert.equal(records.length,21);
  for(const item of records){
-  const atlasDraws=item.calls.filter(call=>call.argc===9);
+  // Current watercolor system uses one clean 21x3 scene, then two WHOLE
+  // illustrated players from the transparent 8x4 actual-breed atlas.
+  // Checking merely "two 9-arg drawImage calls" is an obsolete assumption:
+  // it incorrectly rejects the correct two-actor composition.
+  const fullFrames=item.calls.filter(call=>call.argc===9);
+  const sceneFrames=fullFrames.filter(call=>call.sourceWidth===3584&&call.sourceHeight===2592);
+  const actorFrames=fullFrames.filter(call=>call.sourceWidth===1774&&call.sourceHeight===887);
   const compositeDraws=item.calls.filter(call=>call.argc===5);
-  assert.equal(atlasDraws.length,2,item.key+' must decode one atlas frame and paint one complete picture; never splice cat halves');
-  assert.equal(compositeDraws.length,1,item.key+' must blend one stage into battle');
-  assert.ok(atlasDraws[0].w>400,item.key+' should render a full-sized coherent painting');
+  assert.equal(sceneFrames.length,1,item.key+' needs a single intact cat-free background frame');
+  assert.equal(actorFrames.length,2,item.key+' must paint both complete selected watercolor cats');
+  assert.ok(actorFrames.every(call=>call.srcW>215&&call.srcH>215&&call.h>175),
+    item.key+' should not crop into a tiny or sliced cat body');
+  assert.equal(compositeDraws.length,1,item.key+' must blend one complete scene into battle');
+  assert.ok(compositeDraws[0].w>400,item.key+' needs full-width cinematic composition');
  }
  assert.deepEqual(errors,[]);
  console.log('ONE CONTINUOUS PAINTING PER DUO PASS; verified all 21 element combinations');
