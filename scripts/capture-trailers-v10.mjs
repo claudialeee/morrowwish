@@ -251,7 +251,9 @@ try{
      WorldMap.REGIONS.find(r=>WorldMap.isUnlocked(r.id))?.id;
    if(!chosen)return{ok:false,reason:'no unlocked map'};
    const ok=WorldMap.enterRegion(chosen);
-   window.__V4_CAMERA__.show(true);
+   // Film the entire in-game HUD for this map-navigation shot. The custom
+   // scene-only camera hides the left yard button and right map directory.
+   window.__V4_CAMERA__.show(false);
    return{ok:!!ok&&window.__game.scene==='map'&&WorldMap.mode==='region',region:chosen,mode:WorldMap.mode};
   });
   if(!entered.ok)throw Error('V9 real exploration region not entered '+JSON.stringify(entered));
@@ -261,13 +263,26 @@ try{
   // the courtyard and the top-right map directory is the only map switcher.
   // Proof screenshot captures real in-game pixels, not a composited mock.
   const regionNav=await page.evaluate(()=>{
-    const mapButton=document.getElementById('map-index'),rect=mapButton?.getBoundingClientRect();
+    const g=window.__game,mapButton=document.getElementById('map-index');
+    const rect=mapButton?.getBoundingClientRect();
     const visible=!!rect&&!mapButton.hidden&&rect.width>=38&&rect.height>=30&&
-      getComputedStyle(mapButton).display!=='none';
-    return {visible,scene:window.__game.scene,mode:WorldMap.mode,topRight:!!rect&&rect.right>innerWidth/2};
+      getComputedStyle(mapButton).display!=='none'&&rect.top>=0&&rect.bottom<=innerHeight;
+    const canvas=document.getElementById('scene'),cr=canvas.getBoundingClientRect();
+    const compact=g.isTouch&&g.W>g.H&&g.H<520;
+    const yardX=compact?64:16,yardY=g.W<650?106:65;
+    const yardScreen={left:cr.left+yardX*cr.width/g.W,top:cr.top+yardY*cr.height/g.H,
+      right:cr.left+(yardX+(compact?104:128))*cr.width/g.W,
+      bottom:cr.top+(yardY+(compact?38:42))*cr.height/g.H};
+    const yardOnScreen=yardScreen.left>=-1&&yardScreen.top>=-1&&
+      yardScreen.right<=innerWidth+1&&yardScreen.bottom<=innerHeight+1;
+    const cameraOff=getComputedStyle(document.getElementById('mw-v5-camera')).display==='none';
+    return {visible,scene:g.scene,mode:WorldMap.mode,
+      topRight:!!rect&&rect.right>innerWidth/2,
+      yardOnScreen,cameraOff,canvas:{x:cr.x,y:cr.y,w:cr.width,h:cr.height},yardScreen};
   });
-  if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||!regionNav.topRight)
-    throw Error('Map directory no longer visible at top-right during real exploration '+JSON.stringify(regionNav));
+  if(!regionNav.visible||regionNav.scene!=='map'||regionNav.mode!=='region'||
+      !regionNav.topRight||!regionNav.yardOnScreen||!regionNav.cameraOff)
+    throw Error('Native left yard/right map navigation clipped by mobile promo camera '+JSON.stringify(regionNav));
   await page.screenshot({path:'public/promo/cat-bond/v10-map-navigation-proof.png'});
   const returned=await page.evaluate(()=>{
     document.getElementById('map-index').click();
