@@ -47,9 +47,10 @@ assert.equal(painter.breedMatchCount,32);
 assert.equal(painter.liveBreedArtworkEnabled,true);
 assert.equal(hero.assetSource,'32-actual-breed-watercolor-actors');
 const roster=[...source('js/data.js').matchAll(/\bid\s*:\s*['"]([a-z][a-z0-9]*)['"]/g)].map(x=>x[1]);
-assert.equal(roster.length,32);
-assert.deepEqual([...actors.breedIds],roster,
-  'Transparent whole-body watercolor atlas must use exact collectible roster order');
+assert.equal(roster.length,33,'The full roster includes the new Exotic Shorthair');
+assert.deepEqual([...actors.breedIds],roster.filter(id=>id!=='jiafei'),
+  'The original 32-cell watercolor atlas must remain unchanged');
+assert.ok(roster.includes('jiafei'),'Exotic Shorthair is a real playable cat');
 for(const id of roster){
  assert.equal(actors.species({uid:'current-player',species:id}),id,
    'Actual selected species must map to its own painted character: '+id);
