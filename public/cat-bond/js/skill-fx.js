@@ -63,6 +63,7 @@ function push(b,v){
 }
 function cast(b,f,sk,aim){
  if(!b||!f||!REG[sk?.id]||sk?.ultCost||sk?.isBasic)return false;
+ if(sk.id==='mirrorWall')return true; // the physical 220px panel owns all visual feedback
  const g=REG[sk.id],dur=['beam','aoe','pounce','dash'].includes(sk.kind)?.51:.36;
  push(b,{kind:'signatureCast',skillId:sk.id,x:f.x,y:f.y,angle:aim||0,
   life:dur,max:dur,seed:g.seed});
