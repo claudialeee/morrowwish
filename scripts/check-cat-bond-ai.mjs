@@ -148,12 +148,29 @@ function fighterWithSkills(kinds) {
   assert.ok(steer.x > 0, 'melee cat closes: far target drives it forward (steer.x=' + steer.x.toFixed(2) + ')');
 }
 
-// 2b) SUPPORT kit → HANGS BACK: largest band of all.
+// 2b) SUPPORT keeps standoff but must be within basic-toy attack reach.
 {
   const support = fighterWithSkills(['heal', 'buff']);
   const band = b.kitRangeBand(support);
   assert.equal(band.role, 'support', 'heal+buff → support role');
-  assert.ok(band.min >= 200, 'support cat hangs well back (min=' + band.min.toFixed(0) + ')');
+  assert.ok(band.min > 90 && band.min < band.max && band.max < b.basicAttackRange(support),
+    'support basic attack is in range while staying behind melee (band=' +
+      band.min.toFixed(0) + '–' + band.max.toFixed(0) + ')');
+}
+
+// 2c) AI basic is a separate attack loop — it fires even while Q/E are ready,
+// and never fires outside true basic geometry or through cooldown.
+{
+  const target=b.enemies[0];
+  f.x=180; f.y=210; target.x=325; target.y=210; target.alive=true;
+  f.cd.basic=0; f.cd.q=0; f.cd.e=0;
+  f.basicSkill=null; f._castRoot=0; f._beamRoot=0;
+  const old=b.projectiles.length;
+  assert.equal(b.autoBasicAttack(f,target),true,'AI fires basic despite both skills ready');
+  assert.ok(b.projectiles.length>old && f.cd.basic>0,'basic projectile launched and cooldown applied');
+  assert.equal(b.autoBasicAttack(f,target),false,'cooldown blocks immediate extra basic');
+  target.x=575; f.cd.basic=0;
+  assert.equal(b.autoBasicAttack(f,target),false,'out-of-reach basic does not fire');
 }
 
 // 3) INTERCEPT aim LEADS a moving target: a target crossing perpendicular to the
