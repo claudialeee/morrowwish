@@ -1710,15 +1710,40 @@ const UI = {
       const cur = S.skillById(cat.loadout[slot.i]);
       // candidates: learnable, matching the slot's allowed kinds, ult-slot only ults
       const opts = learn.filter(s => (slot.ult ? s.ultCost > 0 : s.ultCost === 0) && slot.kinds.indexOf(s.kind) >= 0);
-      const chips = opts.map(s => {
-        const on = cur && s.id === cur.id;
-        // Upgrade-chain badge (升级链): a tier2 skill shows ⬆ + the base it supersedes.
-        const base = S.upgradeBaseOf ? S.upgradeBaseOf(s.id) : null;
-        const baseSk = base ? S.skillById(base) : null;
-        const upBadge = baseSk ? `<span class="tiny sk-up">⬆${baseSk.name}</span>` : '';
-        return `<button class="sk-chip ${on ? 'on' : ''}" data-slot="${slot.i}" data-sk="${s.id}" title="${s.desc || ''}${baseSk?`（${en0?'upgrade of ':'升级版·'}${baseSk.name}）`:''}">${icon(s)} ${s.name}<span class="tiny">${kindName[s.kind] || ''}·${this.game.elemIcon(s.element)}</span>${upBadge}</button>`;
-      }).join('') || '<span class="tiny">暂无可选（提升等级/好感解锁）</span>';
-      return `<div class="sk-slot"><div class="sk-slot-label">${slot.label}<div class="tiny">${cur ? cur.name : '空'}</div></div><div class="sk-opts">${chips}</div></div>`;
+      // Keep the entire unlocked library, but make the default view usable on phones.
+      // Prioritize the equipped skill, an option matching the selected build,
+      // and distinctive hand-authored skills over the generic fallback templates.
+      const role=cat.buildType||S.buildTypeForBreed?.(cat)||'dps';
+      const recommended=S.recommendLoadout?.(cat,role)||[];
+      const score=sk=>{
+        if(sk.id===cat.loadout[slot.i])return 100;
+        if(sk.id===recommended[slot.i])return 90;
+        let val=sk.generic?0:12;
+        if(S.upgradeBaseOf?.(sk.id))val+=5;
+        if(sk.element===S.elementOf(cat.species))val+=2;
+        if(role==='dps'&&['projectile','chain','beam'].includes(sk.kind))val+=4;
+        if(role==='tank'&&(sk.shieldType||sk.kind==='heal'))val+=5;
+        if(role==='support'&&['buff','heal'].includes(sk.kind))val+=5;
+        if(['assassin','fighter'].includes(role)&&['melee','pounce','dash','leap'].includes(sk.kind))val+=4;
+        if(role==='control'&&['bind','dizzy','blind','chill'].some(t=>[sk.appliesTag].flat().includes(t)))val+=5;
+        return val;
+      };
+      const ordered=opts.slice().sort((a,b)=>score(b)-score(a));
+      const featured=ordered.slice(0,slot.ult?4:6);
+      const extra=ordered.filter(sk=>!featured.includes(sk));
+      const chip=sk=>{
+        const on=cur&&sk.id===cur.id;
+        const base=S.upgradeBaseOf?.(sk.id);
+        const baseSk=base?S.skillById(base):null;
+        const upgrade=baseSk?`<span class="tiny sk-up">⬆${baseSk.name}</span>`:'';
+        return `<button class="sk-chip ${on?'on':''}" data-slot="${slot.i}" data-sk="${sk.id}" title="${sk.desc||''}">${icon(sk)} ${sk.name}<span class="tiny">${kindName[sk.kind]||''}·${this.game.elemIcon(sk.element)}</span>${upgrade}</button>`;
+      };
+      const chips=featured.map(chip).join('')||
+        '<span class="tiny">暂无可选（提升等级/好感解锁）</span>';
+      const more=extra.length
+        ?`<details class="skill-extra-options"><summary class="tiny">${en0?'More unlocked skills':'展开其他已解锁技能'} (${extra.length})</summary><div class="sk-opts">${extra.map(chip).join('')}</div></details>`
+        :'';
+      return `<div class="sk-slot"><div class="sk-slot-label">${slot.label}<div class="tiny">${cur?cur.name:'空'}</div></div><div class="sk-opts">${chips}</div>${more}</div>`;
     }).join('');
     // ---- 一键配装 (按品种 + 流派自动推荐) ----
     // Six build types; the one that best fits this breed's stats is marked 推荐.
