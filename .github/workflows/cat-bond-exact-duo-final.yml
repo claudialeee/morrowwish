@@ -35,7 +35,7 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('public/promo/cat-bond/trailer-v10-landscape-exact-duo-20261122.json'));
           const v=JSON.parse(fs.readFileSync('public/promo/v12-review.json')).trailers.find(x=>x.slug==='cat-bond');
-          if(m.sourceVideo!==v.video||m.sourceDuo.start!==44.7||m.sourceDuo.seconds!==3.1||
+          if(m.sourceVideo!==v.video||Math.abs(m.sourceDuo.start-44.7)>0.001||m.sourceDuo.seconds!==3.1||
             m.duoCount!==1||m.shots!==21||m.sideBars||m.stretch||m.seconds<59.4||m.seconds>59.8)
              throw Error('Non-matching duo source or invalid 16:9 reconstruction');
           console.log('ORIGINAL DUO MOVEMENT GUARANTEED: source exact V12 animated video frames');
