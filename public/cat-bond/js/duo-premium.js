@@ -26,14 +26,30 @@ const coats={
  mystic:[5,1],norwegian:[0,1],bengal:[1,1],
  flame:[3,1],cloud:[0,0]
 };
+// All 21 skill pairs now resolve to their OWN painted storyboard row,
+// not 8 recycled two-cat paintings. The four rejected old frames are gone.
 const regions={
- 'dark+dark':4,'dark+elec':5,'dark+fire':6,'dark+grass':7,
- 'dark+light':0,'dark+water':2,
- 'elec+elec':5,'elec+fire':6,'elec+grass':1,'elec+light':0,
- 'elec+water':2,'fire+fire':3,'fire+grass':1,
- 'fire+light':3,'fire+water':2,'grass+grass':1,
- 'grass+light':1,'grass+water':2,'light+light':0,
- 'light+water':0,'water+water':2
+ 'dark+dark':0,
+ 'dark+elec':1,
+ 'dark+fire':2,
+ 'dark+grass':3,
+ 'dark+light':4,
+ 'dark+water':5,
+ 'elec+elec':6,
+ 'elec+fire':7,
+ 'elec+grass':8,
+ 'elec+light':9,
+ 'elec+water':10,
+ 'fire+fire':11,
+ 'fire+grass':12,
+ 'fire+light':13,
+ 'fire+water':14,
+ 'grass+grass':15,
+ 'grass+light':16,
+ 'grass+water':17,
+ 'light+light':18,
+ 'light+water':19,
+ 'water+water':20
 };
 // Per-PAIR, not per-element: 21 independent watercolor scene color scripts.
 // All inks use the approved muted, warm storybook aesthetic; no solid blue
@@ -88,58 +104,11 @@ const accents={
 // This changes the actual painted BACKGROUND, not merely an external overlay.
 let pastelAtlas=null,retouchedPixels=0;
 const gradeCache=new Map();
-const panelTones=[
- [211,226,235], // moon: pale blue-white / silver mist
- [210,237,222], // blossoms: soft garden mint
- [207,233,245], // water: clear cloud blue
- [248,227,211], // sunlight: peach cream
- [215,223,230], // shadow: pearl silver, never deep violet
- [205,233,236], // storm: pale rainy cyan
- [246,224,205], // embers: pastel peach
- [221,235,220]  // moonlit wards: sage-white
-];
-function preparePastelAtlas(){
- const w=img.naturalWidth,h=img.naturalHeight;
- const off=document.createElement('canvas');off.width=w;off.height=h;
- const cx=off.getContext('2d',{willReadFrequently:true});
- if(!cx)return false;
- cx.drawImage(img,0,0);
- const frame=cx.getImageData(0,0,w,h),rgba=frame.data;
- const cellW=w/2,cellH=h/4;
- for(let y=0;y<h;y++){
-   const row=Math.min(3,Math.floor(y/cellH));
-   // Top floral / water / peach scenes are intentionally almost untouched.
-   if(row===1)continue;
-   for(let x=0;x<w;x++){
-     const panel=row*2+Math.min(1,Math.floor(x/cellW));
-     if(panel===1||panel===2||panel===3)continue;
-     const i=(y*w+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];
-     const luminance=r*.299+g*.587+b*.114,avg=(r+g+b)/3;
-     const purple=clamp((Math.min(r,b)-g-4)/52)*
-       clamp((b-g)/43);
-     // Areas below brightness 75 are often black coats, eye details and
-     // whisker outlines. Protect them from being washed to white.
-     const darkProtect=Math.max(r,g,b)<75?.37:1;
-     const alpha=panel>=4?Math.min(.92,.22+purple*.72)*darkProtect:
-       Math.min(.65,purple*.65)*darkProtect;
-     if(alpha<.015)continue;
-     const tone=panelTones[panel];
-     for(let ch=0;ch<3;ch++){
-       const desired=panel>=4?
-         clamp((tone[ch]+(luminance-105)*.59+
-            ([r,g,b][ch]-avg)*.16)/255,65/255,1)*255:
-         clamp((tone[ch]+(luminance-145)*.40)/255,90/255,1)*255;
-       rgba[i+ch]=Math.round([r,g,b][ch]*(1-alpha)+desired*alpha);
-     }
-     retouchedPixels++;
-   }
- }
- cx.putImageData(frame,0,0);
- pastelAtlas=off;
- return true;
-}
+// The new atlas arrives already painted in warm, varied storybook colors.
+// Do NOT gray-wash the new cats or layer earlier rejected paintings underneath.
+function preparePastelAtlas(){pastelAtlas=null;retouchedPixels=0;return true;}
 img.onload=()=>{
- ready=img.naturalWidth>=512&&img.naturalHeight>=512;broken=!ready;
+ ready=img.naturalWidth===3584&&img.naturalHeight===2592;broken=!ready;
  if(ready){
   try{preparePastelAtlas();}
   catch(err){pastelAtlas=null;console.warn('[Cat Bond] pastel art fallback',err)}
@@ -147,7 +116,7 @@ img.onload=()=>{
  window.dispatchEvent(new Event('cat-bond-premium-art-ready'));
 };
 img.onerror=()=>{broken=true;window.dispatchEvent(new Event('cat-bond-premium-art-error'))};
-img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-premium-sheet.webp?v=duo-studio-approved-art';
+img.src=(window.CatBondDuoAssetBase||'assets/')+'duo-storyboard-21x3-v3.webp?v=original-63-poses-20261122';
 
 function coatOf(cat){
  const species=window.GameData?.speciesById?.(
@@ -161,53 +130,29 @@ function actorSource(cat){
  // monochrome kitten for dramatic effect.
  return coats[coat]||coats.orange;
 }
-function cellRect(panel,half=null){
- const cellW=img.naturalWidth/2,cellH=img.naturalHeight/4;
- if(half===null)return {x:(panel%2)*cellW,y:Math.floor(panel/2)*cellH,w:cellW,h:cellH};
- const fraction=.59,start=half===0?.005:.405;
- return {x:(panel%2)*cellW+cellW*start,y:Math.floor(panel/2)*cellH+cellH*.014,
-   w:cellW*fraction,h:cellH*.97};
+const FRAME_W=512,FRAME_H=288;
+function cellRect(panel,tier=1){
+ const lv=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
+ return {x:(panel%7)*FRAME_W,
+         y:(Math.floor(panel/7)*3+(lv-1))*FRAME_H,
+         w:FRAME_W,h:FRAME_H};
 }
-
-// Bake the exact scene palette into the REAL watercolour painting for each
-// pairing. Keep photographed-looking cat anatomy, inking and fine fur intact;
-// focus re-grading on chromatic purple/blue scenery and high-lit environment.
-function gradedScene(key){
- if(gradeCache.has(key))return gradeCache.get(key);
- const frame=regions[key],w=img.naturalWidth/2,h=img.naturalHeight/4;
+// A separate real painting is decoded per combo AND trust milestone.
+// All 63 illustrations have intact cat bodies rather than generated limbs.
+function gradedScene(key,tier=1){
+ const lv=Math.max(1,Math.min(3,Math.round(Number(tier)||1)));
+ const cacheKey=key+'|'+lv;
+ if(gradeCache.has(cacheKey))return gradeCache.get(cacheKey);
+ const panel=regions[key];if(panel===undefined||!ready)return null;
  const layer=document.createElement('canvas');
- layer.width=w;layer.height=h;
- const g=layer.getContext('2d',{willReadFrequently:true});
- g.drawImage(pastelAtlas||img,(frame%2)*w,Math.floor(frame/2)*h,w,h,0,0,w,h);
- const pixels=g.getImageData(0,0,w,h),a=pixels.data;
- const palette=paletteFor(key);
- const target=tintRGB(palette[0]),highlight=tintRGB(palette[1]);
- for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-   const i=(y*w+x)*4,r=a[i],gg=a[i+1],b=a[i+2];
-   const lum=r*.299+gg*.587+b*.114;
-   const violet=clamp((Math.min(r,b)-gg+3)/78);
-   const cold=clamp((b-Math.max(r,gg)+2)/86);
-   const warm=clamp((r-gg-10)/115);
-   // Deep fur, eye outlines and jewellery stay close to the original.
-   const blackProtect=lum<94?.16:lum<135?.48:1;
-   // Bright cats also retain their cream highlights / tabby markings.
-   const focal=x>w*.19&&x<w*.81&&y>h*.11&&y<h*.91?.67:1;
-   const weight=clamp((.19+.58*violet+.21*cold+.08*warm)
-     *(frame>=4?1.18:1)*blackProtect*focal,0,.87);
-   const texture=[r,gg,b];
-   for(let j=0;j<3;j++){
-     const ink=target[j]+(lum-146)*.61+(texture[j]-lum)*.18;
-     const pale=highlight[j]+(lum-200)*.54;
-     const desired=ink*(1-clamp((lum-190)/95))+
-       pale*clamp((lum-190)/95);
-     a[i+j]=Math.max(0,Math.min(255,Math.round(texture[j]*(1-weight)+desired*weight)));
-   }
- }
- g.putImageData(pixels,0,0);
- gradeCache.set(key,layer);
+ layer.width=FRAME_W;layer.height=FRAME_H;
+ const g=layer.getContext('2d');if(!g)return null;
+ const rect=cellRect(panel,lv);
+ g.drawImage(img,rect.x,rect.y,rect.w,rect.h,0,0,FRAME_W,FRAME_H);
+ gradeCache.set(cacheKey,layer);
  return layer;
 }
-function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null){
+function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=null,tier=1){
  const srcAspect=source.w/source.h,dstAspect=w/h;
  let sx=source.x,sy=source.y,sw=source.w,sh=source.h;
  if(srcAspect>dstAspect){sw=sh*dstAspect;sx+=(source.w-sw)/2}
@@ -217,7 +162,7 @@ function sourceCover(ctx,source,x,y,w,h,zoom=1,offsetX=0,offsetY=0,alpha=1,key=n
  sy+=Math.max(0,(source.h-sh)/2)+offsetY*sh;
  sx=clamp(sx,source.x,source.x+source.w-sw);
  sy=clamp(sy,source.y,source.y+source.h-sh);
- const tex=key&&ready?gradedScene(key):null;
+ const tex=key&&ready?gradedScene(key,tier):null;
  if(tex){sx-=source.x;sy-=source.y;}
  ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(tex||pastelAtlas||img,sx,sy,sw,sh,x,y,w,h);ctx.restore();
 }
@@ -330,7 +275,7 @@ function draw(ctx,W,H,seq,lookup){
  ctx.translate(sw*.5+cam.dx,sh*.5+cam.dy);
  ctx.rotate(cam.angle);
  ctx.translate(-sw*.5,-sh*.5);
- sourceCover(ctx,cellRect(frame),0,0,sw,sh,cam.zoom,0,0,1,key);
+ sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,Math.min(cam.zoom,1.23),0,0,1,key,tier);
  ctx.restore();
  // Elemental choreography is individually authored for all 21 combinations.
  // The photography-like painted cats are NOT replaced by canvas line drawings.
@@ -420,8 +365,8 @@ window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
  paletteFor,get scenePaletteCount(){return Object.keys(chromaticThemes).length},
  get gradedSceneCount(){return gradeCache.size},tierVariants:3,
- get failed(){return broken},wholeSceneCount:8,skillVariants:Object.keys(regions).length,
- get pastelAdjusted(){return !!pastelAtlas&&retouchedPixels>0},
+ get failed(){return broken},wholeSceneCount:21,paintedFrameCount:63,skillVariants:Object.keys(regions).length,
+ get pastelAdjusted(){return ready},
  get pastelPixelCount(){return retouchedPixels},
  get source(){return img.src}
 };
