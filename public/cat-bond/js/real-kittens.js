@@ -7,7 +7,11 @@
   const drawing=window.CatArt;
   const source=new Image();
   const breedSheet=new Image();
-  let loaded=false,breedLoaded=false;
+  // The SR Exotic Shorthair has its own real illustrated 2D sprite, not the
+  // generic fallback or an out-of-bounds 33rd atlas cell.
+  const jiafeiSprite=new Image();
+  let loaded=false,breedLoaded=false,jiafeiLoaded=false;
+  const jiafeiPortraits=new Map();
   // One illustrated frame per species, matching the order in data.js.
   const BREED_ORDER=[
     'tangyuan','doudou','xiaohui','moqiu','nainai',
@@ -270,6 +274,32 @@
     return {image:canvas,sx:0,sy:0,sw:canvas.width,sh:canvas.height};
   }
   const fallbackDraw=drawing.drawCat;
+  function paintJiafei(ctx,x,y,o){
+    if(!jiafeiLoaded)return false;
+    const growth=o.growth||null,s=(o.scale||1)*(growth?.scale||1);
+    const face=o.face===-1?-1:1,t=o.t||0,pose=o.pose||'idle';
+    const moving=pose==='walk'||pose==='run'||pose==='dash'||pose.startsWith('duo-');
+    const bob=moving?Math.abs(Math.sin(t*8))*.8:
+      pose==='play'?Math.abs(Math.sin(t*7))*5:Math.sin(t*2)*.3;
+    ctx.save();ctx.translate(x,y);ctx.scale(face*s,s);
+    if(growth?.aura){
+      const grad=ctx.createRadialGradient(0,0,2,0,0,56);
+      grad.addColorStop(0,'rgba(255,255,255,0)');
+      grad.addColorStop(.6,growth.aura+'33');
+      grad.addColorStop(1,growth.aura+'00');
+      ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,56,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='rgba(73,63,51,.15)';
+    ctx.beginPath();ctx.ellipse(0,32,31,5,0,0,Math.PI*2);ctx.fill();
+    // Feet stay planted at y≈+33 as in the 32 watercolor breeds.
+    ctx.translate(0,-bob);
+    if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+    ctx.drawImage(jiafeiSprite,-49,-65,98,101);
+    if(growth?.gem){ctx.font='12px system-ui';ctx.fillStyle=growth.gemColor||'#e8bb68';ctx.fillText('✦',20,-47);}
+    ctx.restore();
+    return true;
+  }
   function indexOf(options){
     const sp=options.species||{};
     if(sp.id&&Object.prototype.hasOwnProperty.call(indices,sp.id)) return indices[sp.id];
@@ -280,7 +310,10 @@
     // The new Exotic Shorthair is not painted into the original immutable
     // 8x4 watercolor atlas. Use its dedicated chubby, flat-faced shared
     // storybook renderer rather than silently reusing Mochi's cat artwork.
-    if(o.species?.id==='jiafei'){fallbackDraw(ctx,x,y,o);return;}
+    if(o.species?.id==='jiafei'){
+      if(!paintJiafei(ctx,x,y,o))fallbackDraw(ctx,x,y,o);
+      return;
+    }
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
     if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
@@ -382,6 +415,7 @@
     render(ctx,logicalW/2,logicalH*.60,{
       species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
+    if(species?.id==='jiafei'&&!jiafeiLoaded)jiafeiPortraits.set(canvas,species);
     if(!breedLoaded)pendingPortraits.set(canvas,species);
   }
   drawing.drawCat=render;
@@ -391,6 +425,7 @@
     get breedsLoaded(){return breedLoaded;},
     get originalLoaded(){return loaded;},
     get gaitLayersBuilt(){return gaitLayersBuilt;},
+    get jiafeiLoaded(){return jiafeiLoaded;},
     breedCount:BREED_ORDER.length,
   };
   source.onload=()=>{
@@ -421,5 +456,17 @@
   };
   breedSheet.onerror=()=>{pendingPortraits.clear();console.warn('Breed illustrations unavailable; original cat sprites retained')};
   breedSheet.src='/cat-bond/assets/watercolor-cats-v2.webp';
+  jiafeiSprite.onload=()=>{
+    jiafeiLoaded=jiafeiSprite.naturalWidth>0&&jiafeiSprite.naturalHeight>0;
+    if(!jiafeiLoaded)return;
+    try{window.paintIntroCatGallery?.()}catch(_){}
+    for(const [canvas,species] of jiafeiPortraits){
+      if(canvas?.isConnected!==false)thumbnail(canvas,species);
+    }
+    jiafeiPortraits.clear();
+    window.dispatchEvent?.(new Event('cat-bond-illustrations-ready'));
+  };
+  jiafeiSprite.onerror=()=>{console.warn('Jiafei 2D sprite unavailable; keeping playable fallback');};
+  jiafeiSprite.src='/cat-bond/assets/jiafei-sr-tank.svg?v=sr-tank-20261122';
   
 })();
