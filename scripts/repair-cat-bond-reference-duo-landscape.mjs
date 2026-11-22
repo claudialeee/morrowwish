@@ -47,7 +47,7 @@ try{
  // the cut. This authentic camera tracks those poses and keeps both ears,
  // tails and paws within a full-width 16:9 movie. Never stretch pixels.
  // Portrait scene: source t=44.7..49.0 -> output t=44.7..49.0.
- const cropY='760-120*sin(PI*t/4.3)';
+ const cropY='900-250*sin(PI*t/4.3)'; // preserve full paws at entrance and exit while tracking ears mid-move
  const filters=[
   '[0:v]trim=start=0:duration='+start.toFixed(3)+
    ',setpts=PTS-STARTPTS,fps=30,scale=1920:1080,setsar=1,format=yuv420p[before]',
