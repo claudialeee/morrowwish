@@ -1729,7 +1729,13 @@ const UI = {
       const b = S.BUILD_TYPES[role];
       const on = curBuild === role ? 'on' : '';
       const rec = role === suggested ? `<span class="tiny">${en0?'suggested':'推荐'}</span>` : '';
-      return `<button class="sk-chip build-chip ${on}" data-build="${role}" title="${en0?b.en:b.zh}">${b.icon} ${en0?b.en:b.zh}${rec}</button>`;
+      const proposal=S.recommendLoadout(cat,role);
+      const unchanged=proposal[1]===cat.loadout[1]&&proposal[2]===cat.loadout[2];
+      const qName=S.skillById(proposal[1])?.name||(en0?'Empty':'空');
+      const eName=S.skillById(proposal[2])?.name||(en0?'Empty':'空');
+      const preview=`${qName} / ${eName}`;
+      const same=unchanged?`<span class="tiny">${en0?'Same skills':'技能不变'}</span>`:'';
+      return `<button class="sk-chip build-chip ${on}" data-build="${role}" title="${en0?b.en:b.zh} · ${preview}">${b.icon} ${en0?b.en:b.zh}${rec}<span class="tiny">${preview}</span>${same}</button>`;
     }).join('');
     const buildRow = `<div class="sk-slot build-row"><div class="sk-slot-label">${en0?'Auto build':'一键配装'}<div class="tiny">${en0?'by breed + role':'按品种 + 流派'}</div></div><div class="sk-opts">${buildChips}</div></div>`;
     this.panel(`<span class="card-close">×</span>
@@ -1741,11 +1747,16 @@ const UI = {
       <div class="btn-row"><button class="btn" id="sk-trainer">🎓 ${en0?'Learn new skills':'学习新技能'}</button><button class="btn gold" id="sk-back">← 返回</button></div>`);
     document.querySelectorAll('#panel .build-chip').forEach(b => b.onclick = () => {
       const role = b.dataset.build;
+      const before=(cat.loadout||[]).slice();
       if (S.applyBuild) S.applyBuild(cat, role);
+      const changed=before[1]!==cat.loadout?.[1]||before[2]!==cat.loadout?.[2];
       State.save(); this.openSkillEditor(cat);
       const bt = S.BUILD_TYPES[role];
-      this.game.toast((en0 ? 'Build: ' : '流派：') + (en0 ? bt.en : bt.zh));
-      window.arcadeMetric?.('bond_build_applied', { breed: cat.species, build: role });
+      this.game.toast(changed
+        ?((en0?'Equipped ':'已切换')+(en0?bt.en:bt.zh)+' · '+['Q','E'].map((slot,i)=>slot+': '+(S.skillById(cat.loadout[i+1])?.name||(en0?'Empty':'空'))).join(' / '))
+        :(en0?'This build uses the same unlocked Q/E skills; learn more skills to diversify.'
+          :'当前已解锁技能不足，这个流派的 Q/E 配装与原来相同；可先学习更多技能。'));
+      window.arcadeMetric?.('bond_build_applied', { breed: cat.species, build: role, changed });
     });
     this.panel && document.querySelectorAll('#panel .sk-chip').forEach(b => b.onclick = () => {
       // Build-type chips share the .sk-chip class but carry data-build (no data-sk) and
