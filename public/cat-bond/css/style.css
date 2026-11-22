@@ -1934,3 +1934,69 @@ body.cb-exploring #map-squad{
 @media(max-height:480px) and (orientation:landscape){
  #panel .map-squad-roster,#panel #cp-roster{max-height:28vh}
 }
+
+/* ---------------- REVIEW: CLEAN YARD CONTROLS & PLACE MODE --------------- */
+/* An unrelated all-purpose marquee should never block the painted garden. */
+#collection-goal{display:none!important}
+#yard-actions #yard-duo-status{
+ position:absolute!important;inset:auto 0 calc(100% + 9px) auto!important;
+ z-index:35!important;width:max-content;max-width:min(248px,68vw);
+ padding:9px 12px;min-height:42px;border:2px solid #c495b7;
+ border-radius:15px;background:linear-gradient(135deg,#fff8ec,#f7eaf7);
+ color:#704d70;font:850 12px/1.3 system-ui;box-shadow:0 6px 19px #65476530;
+ text-align:center;white-space:normal;cursor:pointer;
+}
+#yard-actions #yard-duo-status:hover{background:#fbedf5;transform:translateY(-2px)}
+#yard-actions #yard-duo-status:focus-visible{outline:3px solid #7561a5}
+#yard-quick-links{
+ position:absolute;z-index:29;left:clamp(8px,2%,16px);bottom:88px;
+ display:flex;flex-direction:row;gap:7px;max-width:48%;
+}
+#yard-quick-links button{
+ border:1.5px solid #b4c7ad;border-radius:12px;
+ background:#fffaf0e9;color:#4b6a50;min-height:43px;
+ font:900 clamp(11px,1.3vw,14px)/1.2 system-ui;
+ box-shadow:0 3px 12px #46553c20;padding:8px 10px;cursor:pointer;
+}
+#yard-quick-links button:focus-visible{outline:3px solid #46754c;outline-offset:2px}
+#yard-quick-links button:hover{background:#eaf3e4}
+#yard-placement-dock{
+ position:absolute;z-index:66;left:50%;bottom:calc(77px + env(safe-area-inset-bottom,0px));
+ transform:translateX(-50%);width:min(92%,460px);
+ display:grid;gap:9px;padding:13px 16px;
+ background:rgba(255,249,235,.97);color:#53664f;
+ border:2px solid #a0c7a4;border-radius:17px;
+ box-shadow:0 13px 40px #28352458;text-align:center;
+}
+#yard-placement-dock[hidden]{display:none!important}
+#yard-placement-status{font:850 clamp(12px,2vw,15px)/1.45 system-ui}
+.yard-placement-actions{display:flex;gap:9px;justify-content:center}
+.yard-placement-actions button{min-height:44px;border-radius:11px;border:1px solid #a9c1a6;
+ font:900 14px system-ui;padding:8px 16px;cursor:pointer;flex:1}
+#yard-placement-cancel{background:#fff;color:#6d7373}
+#yard-placement-confirm{background:#539b6b;color:#fff;border-color:#4a8860}
+#yard-placement-confirm:disabled{background:#9dafa2;color:#dce5da;cursor:not-allowed}
+body.cb-placing-building #yard-actions,
+body.cb-placing-building #yard-quick-links,
+body.cb-placing-building #tabbar {opacity:.18;pointer-events:none}
+body.cb-placing-building #scene{cursor:crosshair}
+#stage:has(#battle-ui.on) #yard-quick-links,
+#stage:has(#panel.open) #yard-quick-links,
+body.cb-exploring #yard-quick-links,
+body.cb-exploring #yard-placement-dock{display:none!important}
+@media(max-width:650px){
+ #yard-quick-links{left:7px;bottom:calc(116px + env(safe-area-inset-bottom,0px));
+  flex-direction:column;gap:5px;max-width:36%}
+ #yard-quick-links button{font-size:10px;min-height:37px;padding:6px 8px}
+ #yard-actions #yard-duo-status{font-size:11px;max-width:min(238px,68vw);min-height:40px}
+ #tabbar .tab .nav-caption{font-size:clamp(8px,2.25vw,11px);text-align:center}
+ #yard-placement-dock{bottom:calc(66px + env(safe-area-inset-bottom,0px));
+  padding:10px 12px;gap:7px}
+}
+@media(orientation:landscape) and (max-height:530px){
+ #yard-quick-links{bottom:calc(95px + env(safe-area-inset-bottom,0px));left:8px;
+  flex-direction:row;max-width:45%}
+ #yard-quick-links button{min-height:36px}
+ #yard-actions #yard-duo-status{bottom:calc(100% + 8px)!important;max-width:min(48vw,280px)}
+ #yard-placement-dock{bottom:calc(61px + env(safe-area-inset-bottom,0px));padding:7px 12px}
+}
