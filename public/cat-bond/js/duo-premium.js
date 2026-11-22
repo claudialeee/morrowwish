@@ -342,7 +342,8 @@ function draw(ctx,W,H,seq,lookup){
 }
 window.CatBondPremiumCinematics={
  draw,actorSource,regionFor:key=>regions[key],get ready(){return ready},
- get breedMatchCount(){return window.CatBondDuoBreedArt?.breedCount||0},
+ get breedMatchCount(){return 0}, // No longer claim unsafe coat repainting works
+ get breedProfileCount(){return window.CatBondDuoBreedArt?.breedCount||0},
  get activePaintCacheEntries(){return gradeCache.size},
  get realBreedOverpaintEnabled(){return false},
  coatOf,
