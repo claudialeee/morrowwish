@@ -1,5 +1,5 @@
 name: Rerecord Two Updated Cat Game Trailers V8 - REVIEW ONLY
-# Rerun after V8 manifest/MP4 paths were corrected; keep review-only.
+# Fresh capture for BOTH updated games; no prior footage reused. Syntax checked before re-run.
 on:
   push:
     branches: [main]
