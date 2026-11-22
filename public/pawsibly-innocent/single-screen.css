@@ -1156,142 +1156,78 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
 .single-screen-game .reset-danger{background:#c2516b;color:#fff}
 .single-screen-game .reset-confirm-actions button:focus-visible{outline:3px solid #b36bac;outline-offset:2px}
 
-
-/* Always visible reset is intentionally distinct from Retry (current room).
-   The destructive action is confirmation-gated and never icon-only. */
-.single-screen-game .in-game-actions #resetGameQuick{
- box-sizing:border-box!important;display:inline-flex!important;flex:0 0 116px!important;
- align-items:center!important;justify-content:center!important;gap:5px!important;
- min-width:105px!important;max-width:116px!important;min-height:45px!important;
- margin:0!important;padding:6px 9px!important;
- background:#c65876!important;color:#fff!important;border:2px solid #9b405e!important;
- border-radius:11px!important;box-shadow:0 3px 0 #8d4660!important;
- font:900 12px/1.2 Nunito,system-ui,sans-serif!important;
- white-space:normal!important;text-align:center!important;
- cursor:pointer!important;touch-action:manipulation;
+/* Compact single replay control. Keep the action bar playable on narrow screens.
+   Actual choices appear only in the existing game menu; never duplicate them. */
+.single-screen-game .in-game-actions #restart.replay-menu-trigger{
+ box-sizing:border-box!important;display:inline-flex!important;
+ flex:0 0 auto!important;align-items:center!important;justify-content:center!important;
+ min-width:82px!important;width:auto!important;max-width:100px!important;
+ min-height:42px!important;max-height:none!important;
+ gap:4px!important;padding:5px 10px!important;margin:0!important;
+ border:1px solid #d6bfd1!important;border-radius:10px!important;
+ background:#fffaf6!important;color:#674b65!important;box-shadow:0 2px 0 #ddc4d2!important;
+ white-space:nowrap!important;text-align:center!important;
+ font:900 12px/1.15 Nunito,system-ui,sans-serif!important;
+ cursor:pointer!important;
 }
-.single-screen-game .in-game-actions #resetGameQuick:hover{
- background:#aa4264!important;box-shadow:0 3px 0 #75334a!important;
-}
-.single-screen-game .in-game-actions #resetGameQuick:focus-visible{
- outline:3px solid #77409c!important;outline-offset:2px!important;
-}
-.single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{
- font:900 23px/1 system-ui!important;flex:0 0 auto;
-}
-.single-screen-game .in-game-actions #resetQuickLabel{
+.single-screen-game .in-game-actions #restart.replay-menu-trigger:hover{background:#f9e8f0!important}
+.single-screen-game .in-game-actions #restart.replay-menu-trigger:focus-visible{outline:3px solid #a776a1!important;outline-offset:2px!important}
+.single-screen-game .in-game-actions #restart.replay-menu-trigger .restart-symbol{font:900 19px/1 system-ui,sans-serif!important}
+.single-screen-game .in-game-actions #restart.replay-menu-trigger .restart-label{
  display:inline!important;font:900 12px/1.15 Nunito,system-ui,sans-serif!important;
- white-space:normal!important;
-}
-@media(min-width:1201px){
- .single-screen-game .in-game-guidance{
-  grid-template-columns:minmax(0,.6fr) minmax(0,1.5fr)!important;
-  column-gap:10px!important;
- }
-}
-@media(min-width:701px) and (max-width:1200px){
- .single-screen-game .in-game-guidance{grid-template-columns:minmax(0,1fr)!important;row-gap:5px!important}
- .single-screen-game .in-game-actions{width:100%!important;justify-content:space-between!important}
- .single-screen-game .in-game-actions #bonusQuick{min-width:130px!important}
+ white-space:nowrap!important;
 }
 @media(max-width:700px){
- .single-screen-game .in-game-actions{
-  width:100%!important;min-width:0!important;max-width:100%!important;
-  flex-wrap:wrap!important;gap:5px!important;justify-content:space-between!important;
- }
- .single-screen-game .in-game-actions #bonusQuick{
-  order:0!important;flex:1 1 100%!important;min-width:0!important;
-  max-width:100%!important;min-height:35px!important;
- }
- .single-screen-game .in-game-actions .board-yarn{
-  order:1!important;flex:1 1 auto!important;min-width:110px!important;
-  max-width:none!important;margin:0!important;
- }
- .single-screen-game .in-game-actions #wait{order:2!important}
- .single-screen-game .in-game-actions #restart{order:3!important}
- .single-screen-game .in-game-actions #resetGameQuick{
-  order:4!important;flex:0 0 91px!important;min-width:91px!important;
-  max-width:91px!important;min-height:46px!important;padding:4px!important;
-  gap:2px!important;
- }
- .single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{font-size:18px!important}
- .single-screen-game .in-game-actions #resetQuickLabel{font-size:10px!important}
-}
-@media(max-width:360px){
- .single-screen-game .in-game-actions{gap:3px!important}
- .single-screen-game .in-game-actions .board-yarn{
-  flex:1 1 94px!important;min-width:94px!important;font-size:10px!important;padding:3px!important;
- }
- .single-screen-game .in-game-actions #resetGameQuick{
-  flex:0 0 78px!important;min-width:78px!important;max-width:78px!important;
-  gap:1px!important;
- }
- .single-screen-game .in-game-actions #resetGameQuick .reset-all-symbol{font-size:16px!important}
- .single-screen-game .in-game-actions #resetQuickLabel{font-size:9px!important}
-}
-
-/* The two replay choices are ONE contextual action group, without duplicate menu entries.
-   A room retry preserves save data; a whole-game restart erases it only after confirmation. */
-.single-screen-game .in-game-actions .replay-controls{
- box-sizing:border-box!important;display:flex!important;align-items:stretch!important;
- justify-content:flex-end!important;gap:5px!important;min-width:0!important;
- flex:0 0 auto!important;
-}
-.single-screen-game .in-game-actions .replay-controls #restart{
- box-sizing:border-box!important;display:inline-flex!important;flex:0 0 102px!important;
- width:102px!important;min-width:102px!important;max-width:102px!important;
- min-height:45px!important;gap:3px!important;padding:6px 7px!important;
- white-space:normal!important;text-align:center!important;
-}
-.single-screen-game .in-game-actions .replay-controls #restart .restart-symbol{
- font-size:20px!important;flex:0 0 auto!important;
-}
-.single-screen-game .in-game-actions .replay-controls #restart .restart-label{
- display:inline!important;font:900 11px/1.15 Nunito,system-ui,sans-serif!important;
- white-space:normal!important;
-}
-.single-screen-game .in-game-actions .replay-controls #resetGameQuick{
- flex:0 0 116px!important;width:116px!important;min-width:116px!important;
- max-width:116px!important;min-height:45px!important;
-}
-.single-screen-game .in-game-actions .replay-controls #resetQuickLabel{
- display:inline!important;font:900 11px/1.15 Nunito,system-ui,sans-serif!important;
-}
-@media(min-width:701px) and (max-width:1250px){
- .single-screen-game .in-game-actions{flex-wrap:wrap!important;gap:5px!important}
- .single-screen-game .in-game-actions .replay-controls{
-  flex:1 1 100%!important;justify-content:flex-end!important;
- }
-}
-@media(max-width:700px){
- .single-screen-game .in-game-actions .replay-controls{
-  order:4!important;flex:1 1 100%!important;width:100%!important;
-  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:6px!important;
- }
- .single-screen-game .in-game-actions .replay-controls #restart,
- .single-screen-game .in-game-actions .replay-controls #resetGameQuick{
-  box-sizing:border-box!important;flex:none!important;width:100%!important;
-  min-width:0!important;max-width:100%!important;min-height:40px!important;
-  height:auto!important;padding:6px 7px!important;
- }
- .single-screen-game .in-game-actions .replay-controls #restart .restart-label,
- .single-screen-game .in-game-actions .replay-controls #resetQuickLabel{
-  display:inline!important;font-size:12px!important;
- }
- .single-screen-game .in-game-actions .replay-controls #restart .restart-symbol,
- .single-screen-game .in-game-actions .replay-controls #resetGameQuick .reset-all-symbol{
-  font-size:19px!important;
+ .single-screen-game .in-game-actions #restart.replay-menu-trigger{
+  order:3!important;min-width:74px!important;max-width:88px!important;
+  min-height:44px!important;padding:4px 8px!important;
  }
 }
 @media(max-width:360px){
- .single-screen-game .in-game-actions .replay-controls #restart,
- .single-screen-game .in-game-actions .replay-controls #resetGameQuick{
-  min-height:40px!important;padding:4px 5px!important;
+ .single-screen-game .in-game-actions #restart.replay-menu-trigger{
+  min-width:70px!important;max-width:79px!important;gap:2px!important;padding:4px!important;
  }
- .single-screen-game .in-game-actions .replay-controls #restart .restart-label,
- .single-screen-game .in-game-actions .replay-controls #resetQuickLabel{
-  font-size:11px!important;
- }
+ .single-screen-game .in-game-actions #restart.replay-menu-trigger .restart-symbol{font-size:17px!important}
+ .single-screen-game .in-game-actions #restart.replay-menu-trigger .restart-label{font-size:11px!important}
 }
-/* Show exactly the existing menu. Its 'Badges' tab is the collection destination. */
+/* Replay is a separate temporary view INSIDE the one existing game menu. */
+.single-screen-game #gameMenu [data-tab-panel="replay"]{min-width:0!important;}
+.single-screen-game #gameMenu .replay-choice-heading{
+ margin:0 0 6px!important;font:700 clamp(19px,3vw,23px)/1.2 Fredoka,system-ui,sans-serif!important;
+ color:#725273!important;
+}
+.single-screen-game #gameMenu .replay-choice-intro{
+ margin:0 0 16px!important;font:700 12px/1.5 Nunito,system-ui,sans-serif!important;
+ color:#806e7a!important;
+}
+.single-screen-game #gameMenu .replay-choice-list{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;}
+.single-screen-game #gameMenu .replay-choice{
+ display:flex!important;align-items:center!important;gap:12px!important;
+ box-sizing:border-box!important;min-width:0!important;width:100%!important;
+ min-height:74px!important;padding:12px 14px!important;
+ border-radius:14px!important;text-align:left!important;
+ background:#fff8f3!important;color:#624963!important;border:2px solid #e5d1da!important;
+ box-shadow:0 3px 0 #e2d1db!important;cursor:pointer!important;touch-action:manipulation!important;
+}
+.single-screen-game #gameMenu .replay-choice-room:hover{background:#f8edf2!important;border-color:#c7a9c3!important}
+.single-screen-game #gameMenu .replay-choice-all{
+ background:#fff0f1!important;border-color:#eab8c5!important;color:#933f5c!important;
+}
+.single-screen-game #gameMenu .replay-choice-all:hover{background:#ffe3e8!important;border-color:#ce6e8b!important}
+.single-screen-game #gameMenu .replay-choice:focus-visible{outline:3px solid #a8759e!important;outline-offset:3px!important}
+.single-screen-game #gameMenu .replay-choice-icon{
+ display:grid!important;place-items:center!important;flex:0 0 39px!important;width:39px!important;height:39px!important;
+ border-radius:12px!important;background:#eee2ee!important;color:#795777!important;
+ font:900 25px/1 system-ui,sans-serif!important;
+}
+.single-screen-game #gameMenu .replay-choice-all .replay-choice-icon{background:#f9dbe2!important;color:#a94f6c!important}
+.single-screen-game #gameMenu .replay-choice-text{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:3px!important;min-width:0!important}
+.single-screen-game #gameMenu .replay-choice-text strong{font:900 15px/1.3 Nunito,system-ui,sans-serif!important}
+.single-screen-game #gameMenu .replay-choice-text small{font:700 11px/1.4 Nunito,system-ui,sans-serif!important;color:#856e82!important}
+.single-screen-game #gameMenu .replay-choice-chevron{flex:0 0 auto!important;font:700 24px/1 system-ui,sans-serif!important;color:#a793a2!important}
+@media(max-width:390px){
+ .single-screen-game #gameMenu .replay-choice{gap:8px!important;padding:10px!important;min-height:68px!important}
+ .single-screen-game #gameMenu .replay-choice-icon{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:21px!important}
+ .single-screen-game #gameMenu .replay-choice-text strong{font-size:14px!important}
+ .single-screen-game #gameMenu .replay-choice-text small{font-size:10px!important}
+}
