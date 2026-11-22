@@ -4411,7 +4411,7 @@ class CaptureBattle {
       // 纸箱埋伏 Box Ambush: the primed cat's NEXT hit forces a stagger + double damage.
       const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; target.staggerT = Math.max(target.staggerT || 0, 1.6); }
       if (target.poiseMax) {
-        if (target.staggerT > 0) dmg *= 1.4; // stagger remains rewarding without doubling every Q/E
+        if (target.staggerT > 0) dmg *= 1.3; // stagger remains rewarding without doubling every Q/E
         if (!isBasic) {                                    // skills/combos/ult/beam crack poise
           target.poise = Math.max(0, (target.poise ?? target.poiseMax) - dmg);
           if (target.poise <= 0 && target.staggerT <= 0) {
