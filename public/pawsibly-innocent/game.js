@@ -691,6 +691,7 @@ const bonus=win&&dareDone();
  // Three fish open the exit; only all fish + bonus + no captures + a clean
  // route earn three stars. Recovering hearts never erases a capture.
  const stars=win?(allFish&&bonus&&s.caughtCount===0&&cleanRun?3:(allFish||bonus?2:1)):0;
+ s.resultStars=stars;s.resultBonus=bonus;
 if(win){s.score+=Math.max(80,300-s.steps*3)+s.lives*50+(s.everSpotted?0:125)+(bonus?150:0);if(daily||s.index!==7)audio("win");if(!daily&&stage<=save.unlocked)save.unlocked=Math.max(save.unlocked,Math.min(7,stage+1));if(s.hasRelic){save.souvenirs[s.index]=true;s.score+=75;metric("cat_relic_saved",{level:s.index+1})}
 const starsBefore=allStars();
 const id=daily?"daily-"+today:"room-"+stage;const old=save.best[id]||{stars:0,score:0};save.best[id]={stars:Math.max(old.stars,stars),score:Math.max(old.score,s.score)};save.stats.wins=(Number(save.stats.wins)||0)+1;
@@ -700,7 +701,7 @@ const id=daily?"daily-"+today:"room-"+stage;const old=save.best[id]||{stars:0,sc
  saveGame();for(const i of s.newCats)metric("cat_skin_unlocked",{cat:i,stars:allStars()});checkBadges();
  metric("cat_level_won",{level:daily?9:stage+1,score:s.score});}
 metric(win?"game_complete":"game_over",{level:daily?9:stage+1,score:s.score,stars,bonus:bonus?1:0,steps:s.steps,duration:s.startedAt?Math.round((performance.now()-s.startedAt)/1000):0});syncUI();translateUI();
-$("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();
+$("medal").textContent=win?"😼":"😿";$("stars").textContent=win?"★".repeat(stars)+"☆".repeat(3-stars):"☆☆☆";$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();renderResultBreakdown();
 $("resultScore").textContent=resultLine();$("resultStarGuide").textContent=resultStarGuide();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();renderNewCatUnlocks();$("stage").classList.toggle("victory",win);
 $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResultLabel();$("shareResult").textContent=tr("share");$("closeResult").setAttribute("aria-label",lang==="zh"?"关闭结算":"Close results");$("closeResult").title=lang==="zh"?"关闭结算":"Close results";
  if(win&&!daily&&s.index===7){
@@ -712,9 +713,38 @@ $("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResu
 }
 function closeResult(){if(!s?.done)return;$("overlay").hidden=true;$("menuButton")?.focus?.({preventScroll:true})}
 function resultHeading(){
- return s.winning&&!daily&&s.index===7
-  ?(lang==="zh"?"猫猫大逃亡成功！":"THE GREAT CAT ESCAPE!")
-  :tr(s.winning?"winTitle":"loseTitle");
+ if(!s.winning)return tr("loseTitle");
+ if(!daily&&s.index===7)return lang==="zh"?"猫猫大逃亡成功！":"THE GREAT CAT ESCAPE!";
+ const headings=lang==="zh"
+  ?{1:"险险开溜！",2:"机灵脱身！",3:"完美开溜！"}
+  :{1:"A close escape!",2:"Clever getaway!",3:"Purrfect escape!"};
+ return headings[s.resultStars]||headings[1];
+}
+function resultVerdict(){
+ const zh=lang==="zh";
+ if(!s.winning)return zh?"被主人逮到了！换条路线，利用纸箱和毛线球再试一次。":"The owner caught on! Try hiding in a box or using yarn to change their route.";
+ if(s.resultStars===3)return zh?"四条小鱼全部到手，额外任务完成，路线也够漂亮！":"All four fish, the bonus dare, and a clean getaway. Legendary mischief!";
+ if(s.resultStars===2)return zh?"干得漂亮！再挑战第四条鱼、额外任务和无伤潜行，冲击三星。":"Nice work! Go after the fourth fish, the bonus dare, and a clean run for three stars.";
+ return zh?"带着小鱼逃出来了！这是一次成功通关，想得高星还可以再冒一点险。":"You got away with the fish! Replay for bonus mischief and a higher rating.";
+}
+function renderResultBreakdown(){
+ const root=$("resultBreakdown");if(!root||!s)return;
+ if($("resultVerdict"))$("resultVerdict").textContent=resultVerdict();
+ const zh=lang==="zh",items=[
+  [zh?"小鱼到手":"Fish stolen",s.got+"/"+s.fish.length],
+  [zh?"被发现":"Spotted",String(s.spottedCount||0)+(zh?" 次":"×")],
+  [zh?"被抓次数":"Captures",String(s.caughtCount||0)],
+  [zh?"剩余爱心":"Hearts left",String(s.lives)+"/3"],
+  [zh?"行动步数":"Steps",String(s.steps)],
+  [zh?"额外任务":"Bonus dare",s.resultBonus?(zh?"完成 ✓":"Done ✓"):(zh?"未完成":"Missed")]
+ ];
+ root.replaceChildren();
+ for(const [name,value] of items){
+  const cell=document.createElement("div");cell.className="result-stat";
+  const label=document.createElement("span");label.textContent=name;
+  const strong=document.createElement("strong");strong.textContent=value;
+  cell.append(label,strong);root.appendChild(cell);
+ }
 }
 function resultDescription(){
  return s.winning&&!daily&&s.index===7
@@ -1105,7 +1135,7 @@ $("closeResult").onclick=closeResult;
 $("tool")&&($("tool").onclick=throwYarn);
 $("sound").onclick=()=>{window.MorrowwishAudio?.toggle?.();$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff")};
 window.addEventListener("morrowwish-language-change",e=>{lang=e.detail.lang==="zh"?"zh":"en";translateUI();syncUI();refreshToasts();if(s.done)finishOverlayTranslate()});
-function finishOverlayTranslate(){renderNewCatUnlocks();$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();$("resultScore").textContent=resultLine();$("resultStarGuide").textContent=resultStarGuide();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResultLabel();$("shareResult").textContent=tr("share");$("closeResult").setAttribute("aria-label",lang==="zh"?"关闭结算":"Close results");$("closeResult").title=lang==="zh"?"关闭结算":"Close results"}
+function finishOverlayTranslate(){renderNewCatUnlocks();$("resultTitle").textContent=resultHeading();$("resultDesc").textContent=resultDescription();renderResultBreakdown();$("resultScore").textContent=resultLine();$("resultStarGuide").textContent=resultStarGuide();if($("resultUnlocks"))$("resultUnlocks").textContent=resultLoot();$("retryResult").textContent=tr("tryAgain");$("nextResult").textContent=nextResultLabel();$("shareResult").textContent=tr("share");$("closeResult").setAttribute("aria-label",lang==="zh"?"关闭结算":"Close results");$("closeResult").title=lang==="zh"?"关闭结算":"Close results"}
 window.__PAWSIBLY_TEST__={getState:()=>s,move:single,choose:init,throwYarn,throwYarnTo,advanceYarnChase,isChasing:()=>yarnChaseTimer!==null,isAiming:()=>aimingYarn,rooms:ROOMS};
 window.addEventListener("resize",fitCanvasPixels);
 fitCanvasPixels();checkBadges(true);init(entryRoom,entryDaily);requestAnimationFrame(draw);
