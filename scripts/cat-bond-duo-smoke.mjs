@@ -96,6 +96,50 @@ try{
   assert.equal(result.tier,3,'90+ trust yields tier-3 art');
   assert.equal(result.variant,'finale','high trust must unlock finishing claw variant');
   assert.equal(result.cardPresent,true);
+  // A complete real cast must release a visible, element-matched impact
+  // AFTER the full-stage painting retreats. Verify the post-cut-in audio
+  // request and live VFX on both real phone/desktop battle canvases.
+  const aftershock=await page.evaluate(()=>{
+    const b=window.__game.battle,c=b?.duoCinematic;
+    if(!c)throw Error('Duo cut-in was not created');
+    const audio=window.MorrowwishAudio;
+    const orig=audio?.duoSignature;
+    const requested=[];
+    if(audio)audio.duoSignature=function(...args){
+      requested.push({pair:args[0],tier:args[1],beat:args[2]});
+      return orig?.apply(this,args);
+    };
+    try{
+      // Jump to the end of the real 3.2s painting without resetting combat.
+      // The first update resolves the deferred payload, the second must
+      // produce a distinct audible/visible 1.1s arena aftershock.
+      c.t=Math.max(.035,c.max-c.strikeAt+.012);
+      b.update(.06);
+      b.update(.22);
+      const release=b._duoRelease;
+      const state={alive:!!release,age:release?.age||0,pair:release?.elements||'',
+        effects:b.vfx?.fx?.length||0,requested};
+      if(release){
+        let draws=0;
+        const origDraw=window.CatBondDuoReleaseVFX.draw;
+        window.CatBondDuoReleaseVFX.draw=function(...args){
+          draws++;return origDraw(...args);
+        };
+        // Ensure the second wave still renders after the painting's removal.
+        b.duoCinematic=null;
+        try{b.draw(document.getElementById('scene').getContext('2d'));}
+        finally{window.CatBondDuoReleaseVFX.draw=origDraw;}
+        state.drawsAfterCutin=draws;
+      }
+      return state;
+    }finally{if(audio)audio.duoSignature=orig;}
+  });
+  assert.equal(aftershock.alive,true,'Finisher VFX must survive the painting');
+  assert.ok(aftershock.age>.20,'Finisher must advance in real combat time');
+  assert.ok(aftershock.drawsAfterCutin>=1,'Finisher should draw in the revealed arena');
+  assert.ok(aftershock.effects>=1,'Hit must spawn actual particles and rings');
+  assert.ok(aftershock.requested.some(x=>x.beat==='release'&&x.pair),
+    'The 21-element audio catalogue must receive a distinct RELEASE sound');
   const sigAudit=await page.evaluate(()=>{
     const S=window.CatBondDuoSignatures,keys=S?.keys||[];
     const canvas=document.createElement('canvas');canvas.width=480;canvas.height=290;
