@@ -429,6 +429,10 @@ class Game {
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const count=State.S.catchCount||0;
     const firstCapture=(State.S.cats?.length||0)>0&&count===0;
+    // After the first capture, the player may choose 'Try your duo' directly.
+    // Do not cover the glowing next-hunt bush with an unrelated petting tour.
+    const duoPreviewReady=!!State.S.firstDuoShowcasePending&&
+      (State.S.cats?.length||0)>=2&&!!this.yard?.hide;
     const tour=count>0?this.firstAdventureTour():null;
     const tourActive=!!tour&&!tour.done&&!tour.skipped;
     const panelOpen=!!document.getElementById('panel')?.classList.contains('open');
@@ -439,7 +443,7 @@ class Game {
       help.textContent=english?'? Guide':'? 玩法';
       help.setAttribute('aria-label',english?'Replay guided tour':'重新查看玩法引导');
     }
-    hint.hidden=!visible||!(firstCapture||tourActive);
+    hint.hidden=!visible||!(firstCapture||tourActive||duoPreviewReady);
     // Keep the highlight node stable between 300ms HUD refreshes. Otherwise
     // the CSS pulse restarts and stutters instead of guiding the eye.
     const highlight=selector=>{
@@ -458,6 +462,16 @@ class Game {
       if(hint.textContent!==label)hint.textContent=label;
       hint.dataset.guideKey='capture';
       highlight(!this.yard?.hide?'#fab-seek':null);
+      return;
+    }
+    if(duoPreviewReady){
+      hint.classList.remove('is-tour');
+      const label=english
+        ?'💞 Your duo is ready! Tap the glowing bush to fight together. Press F or tap Duo when the battle begins.'
+        :'💞 双猫搭档就绪！点击发光草丛一起出战，开战后按 F 或点双猫合击！';
+      if(hint.textContent!==label)hint.textContent=label;
+      hint.dataset.guideKey='first-duo-hunt';
+      highlight(null);
       return;
     }
     const steps=[
