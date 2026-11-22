@@ -91,7 +91,7 @@ try{
   // Actual cat management/training interface and in-game training transaction.
   const trained=await page.evaluate(()=>{
    const cat=State.S.cats[0],before=cat.level,oldXp=cat.xp;
-   State.S.fish=Math.max(3,State.S.fish||0); // capture-only resource fixture
+   State.S.fish=Math.max(300,State.S.fish||0); // capture-only resource fixture
    UI.closeAll();UI.openCatDetail(cat);
    document.getElementById('cd-trainnext')?.click();
    return {visible:!!document.querySelector('#cat-detail #cd-trainnext'),before,after:cat.level,oldXp,newXp:cat.xp};
@@ -270,7 +270,7 @@ try{
    throw Error('No earned rare-cat capture result screen '+JSON.stringify(caught));
   await mark('rare-capture',5400);
   console.log('V8 REAL RARE CAT CAPTURE '+JSON.stringify({rare,caught,rareCast}));
-  console.log('V6 REAL CAT COMBAT +JSON.stringify({duo,ult}));
+  console.log('V8 REAL CAT COMBAT '+JSON.stringify({duo,ult}));
   const labels=shots.map(s=>s.label);
   for(const required of ['raising','duo-surprise','duo-surprise-outcome','work-after','tease','map-explore','battle-intro','duo','ultimate','rare-encounter','rare-fight','rare-capture'])if(!labels.includes(required))throw Error('Missing actual Cat Bond feature '+required);
   return shots;
