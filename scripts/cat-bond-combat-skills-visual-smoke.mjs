@@ -65,6 +65,20 @@ try{
       for(let t=0;t<5;t++)b.tickBeams(.08);
       if(b.beams.length!==1)throw Error('channel ended too soon '+id);
       if(target.hp>=hp)throw Error('channel never dealt any damage '+id);
+      // A real hit must feel like CONTACT, not merely subtract HP.
+      // Exercise actual game-owned impact state after the first successful
+      // 8Hz channel tick, independent of color or screenshot file size.
+      const beam=b.beams[0];
+      if(!(beam._impactCount>0)||!beam._impactAt?.has(target))
+        throw Error('channel missing target-confirmed contact pulse '+id);
+      if(!(target.hitWhite>0)||!(target.hitSquash>0)||
+         !(Math.hypot(target._recoilX||0,target._recoilY||0)>0))
+        throw Error('channel missing flash, squash or visual recoil '+id);
+      if(!b.vfx.fx.some(effect=>effect.type==='ring'&&
+          Math.hypot(effect.x-target.x,effect.y-target.y)<4))
+        throw Error('channel missing target-local impact ring '+id);
+      if((b.hitstop||0)>.04)
+        throw Error('channel must not hard-freeze the arena on contact '+id);
       mode='continuous';
       if(id==='flameSweep'){
         const a=b.beams[0].aim;
