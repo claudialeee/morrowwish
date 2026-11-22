@@ -16,10 +16,17 @@ try {
     const measure=()=>page.evaluate(()=>{
       const rect=id=>document.getElementById(id)?.getBoundingClientRect();
       const stage=rect('stage'),actions=rect('cb-header-actions'),hud=rect('hud'),
-        menu=rect('map-menu'),back=rect('cb-yard-return');
+        menu=rect('map-menu'),back=rect('cb-yard-return'),guide=rect('guide-help');
+      const hudElement=document.getElementById('hud'),guideElement=document.getElementById('guide-help');
+      const menuElement=document.getElementById('map-menu');
       return {scene:window.__game?.scene,mode:window.WorldMap?.mode,
         stage:{left:stage.left,right:stage.right},actions:{left:actions.left,right:actions.right,top:actions.top},
-        hud:{left:hud.left,right:hud.right,top:hud.top},
+        hud:{left:hud.left,right:hud.right,top:hud.top,
+          visible:getComputedStyle(hudElement).display!=='none'},
+        guide:{left:guide.left,right:guide.right,top:guide.top,
+          visible:!guideElement.hidden&&getComputedStyle(guideElement).display!=='none',
+          immediatelyBeforeMenu:guideElement.nextElementSibling===menuElement,
+          parent:guideElement.parentElement?.id},
         menu:{left:menu.left,right:menu.right,top:menu.top,
           visible:!document.getElementById('map-menu').hidden&&getComputedStyle(document.getElementById('map-menu')).display!=='none'},
         back:{left:back.left,right:back.right,visible:getComputedStyle(document.getElementById('cb-yard-return')).display!=='none'},
@@ -30,6 +37,21 @@ try {
     assert.deepEqual(yard.tabs,['cats','work','dex','daily','shop'],'remove the do-nothing Yard bottom tab');
     assert.equal(yard.back.visible,false,'Back to yard must be invisible while already in yard');
     assert.equal(yard.menu.visible,true,'Yard menu stays visible on every viewport');
+    assert.equal(yard.hud.visible,true,'Currency remains visible in the Yard');
+    assert.equal(yard.guide.parent,'cb-header-actions','Gameplay guide is mounted in the right toolbar');
+    assert.equal(yard.guide.immediatelyBeforeMenu,true,'Gameplay guide sits immediately left of Menu');
+    // The tutorial button retains its real click handler after moving into the header.
+    const guideClick=await page.evaluate(()=>{
+      const original=window.__game.replayFirstAdventureTour;
+      let called=0;
+      window.__game.replayFirstAdventureTour=()=>{called++};
+      const el=document.getElementById('guide-help');
+      el.hidden=false;el.click();
+      const visible=getComputedStyle(el).display!=='none';
+      window.__game.replayFirstAdventureTour=original;el.hidden=true;
+      return {called,visible};
+    });
+    assert.deepEqual(guideClick,{called:1,visible:true},'Gameplay guide is visible and keeps its click action');
     assert.ok(yard.actions.left>=yard.stage.left-1&&yard.actions.right<=yard.stage.right+2,
       'right-hand toolbar must stay inside stage '+JSON.stringify(yard));
     assert.ok(yard.actions.right>=yard.stage.right-22,'yard header must align RIGHT '+JSON.stringify(yard));
@@ -43,6 +65,8 @@ try {
       getComputedStyle(document.getElementById('cb-yard-return')).display!=='none');
     const map=await measure();
     assert.equal(map.back.visible,true,'Only exploration gets Back to Yard');
+    assert.equal(map.hud.visible,false,'Map must NOT display duplicate coin/fish resource chips');
+    assert.equal(map.guide.visible,false,'Detached guide never overlaps the left map return');
     assert.ok(map.back.right<=map.actions.left+2,'Back to Yard must not overlap resources/menu '+JSON.stringify(map));
     assert.ok(map.actions.right<=map.stage.right+2&&map.menu.visible,
       'exploration toolbar must remain inside the screen '+JSON.stringify(map));

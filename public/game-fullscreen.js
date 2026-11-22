@@ -162,10 +162,14 @@
       // immediately to the LEFT of fullscreen on phones and desktop.
       const menu=document.getElementById('map-menu');
       if(menu)controls.insertBefore(menu,guide||button);
-      // Yard and expedition share a single right-aligned resource/menu/settings row.
+      // The gameplay guide shares the same toolbar immediately LEFT of Menu.
+      // Reparent the actual button without losing UI.init's existing click handler.
+      const yardHelp=document.getElementById('guide-help');
+      if(yardHelp)controls.insertBefore(yardHelp,menu||guide||button);
+      // Yard resources stay live; hide them completely in exploration maps.
       // Reparent the real HUD so coin/fish updates keep their existing IDs.
       const resources=document.getElementById('hud');
-      if(resources)controls.insertBefore(resources,menu||guide||button);
+      if(resources)controls.insertBefore(resources,yardHelp||menu||guide||button);
     }
     installStyles();
     if(route==='cat-bond'){
