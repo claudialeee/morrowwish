@@ -14,7 +14,7 @@ const window={MorrowwishI18n:{get:()=>'en'},arcadeMetric:(name,payload)=>events.
 let frames=0;
 vm.runInNewContext(source,{window,document,performance:{now:()=>1000},navigator:{},Date,Math,console,
  URLSearchParams,location:{search:''},
- localStorage:{getItem:key=>saved[key]??null,setItem:(key,value)=>saved[key]=value},
+ localStorage:{getItem:key=>saved[key]??null,setItem:(key,value)=>saved[key]=value,removeItem:key=>delete saved[key]},
  requestAnimationFrame:fn=>{if(frames++===0)fn(1250)},setInterval:fn=>{pendingIntervals.set(++intervalId,fn);return intervalId},clearInterval:id=>pendingIntervals.delete(id),setTimeout:()=>1,clearTimeout:nop},{timeout:2500});
 const test=window.__PAWSIBLY_TEST__;
 assert.equal(test.rooms.length,8);
@@ -397,4 +397,34 @@ test.move(1,0);
 assert.equal(pausedGuardFar.exposure,0,
  'Yarn distraction must still offer safe distant movement for ordinary players');
 
+
+ // Complete save reset: cancellation must preserve progress, confirmation must
+ // return every collection and gameplay stat to a fresh install, without affecting other games.
+ const saveBeforeReset=JSON.parse(saved['pawsibly-innocent-save-v1']);
+ assert.ok(saveBeforeReset.stats.wins>=1,'Test must have earned a real win before resetting');
+ saved['another-game-preference']='keep';
+ nodes.get('menuButton').onclick();
+ nodes.get('resetGame').onclick();
+ assert.equal(nodes.get('resetConfirm').hidden,false,'Reset needs explicit confirmation');
+ nodes.get('cancelReset').onclick();
+ assert.equal(nodes.get('resetConfirm').hidden,true,'Cancel closes reset confirmation');
+ assert.deepEqual(JSON.parse(saved['pawsibly-innocent-save-v1']),saveBeforeReset,'Cancel must not change saved records');
+ nodes.get('resetGame').onclick();
+ nodes.get('confirmReset').onclick();
+ const afterReset=JSON.parse(saved['pawsibly-innocent-save-v1']);
+ assert.equal(afterReset.unlocked,0,'Reset must lock later rooms again');
+ assert.equal(afterReset.cat,0,'Reset must restore the original cat');
+ assert.deepEqual(afterReset.best,{},'Reset must clear star and high-score records');
+ assert.deepEqual(afterReset.souvenirs,{},'Reset must clear collectibles');
+ assert.deepEqual(afterReset.achievements,{},'Reset must clear earned badges');
+ assert.ok(Object.values(afterReset.stats).every(value=>value===0),'Reset must clear every accumulated stat');
+ assert.equal(saved['another-game-preference'],'keep','Reset must not touch unrelated game preferences');
+ assert.equal(test.getState().index,0,'Reset must return to room one');
+ assert.equal(test.getState().steps,0,'Reset must restart the playable board');
+ assert.equal(test.getState().got,0,'Reset must remove fish from the active run');
+ assert.equal(nodes.get('gameMenu').hidden,true,'Reset closes the menu');
+ assert.equal(nodes.get('resetConfirm').hidden,true,'Reset closes the confirmation');
+ assert.equal(nodes.get('badgePocketCount').textContent,'0','Badge pocket must reset to zero');
+ assert.ok(events.some(e=>e.name==='cat_progress_reset'),'Full reset must be tracked once');
+ 
 console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings, capture consequences and lure-risk regression).');
