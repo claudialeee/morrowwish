@@ -21,3 +21,6 @@ Reviewed canonical source `public/pawsibly-innocent/`: eight maps, stealth AI, t
 
 ## Required for release PASS
 Execute `npm ci && npm run check` and the full Chromium/mobile/fullscreen Playwright workflows on the exact commit. Inspect deployment and 907×510/800×450 portal embeds, phone 320/390px input, FPS and visual clipping. Gather unprompted first-time-player evidence and retention; conduct a separate adversarial playability review before changing HOLD to approved.
+ 
+## Simulated player follow-up · 2026-11-22
+The novice click-nearest-fish test completed rooms 1,2,3,6,7, stalled on rooms 4 and 5, and lost room 8. Root causes for stalls: a robot occupied a fish in room 4 and the human occupied one in room 5. Both only advance on turns. Re-clicking the occupied fish did nothing and no wait option existed. Implemented a new ⏳ Wait action (period key) which spends a step and advances patrol, robot and sight without moving the cat. Added specific bilingual occupied-fish guidance and rendered the hidden fish marker atop its blocker. Waiting while spotted remains dangerous. Regression checks cover both blockers and exposure. The release gate stays HOLD.

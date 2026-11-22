@@ -37,6 +37,27 @@ for(let i=0;i<8;i++){
  assert.ok(s.fish.length>=3&&s.fish.every(p=>path(s,s.cat,p)!==null));
  assert.ok(path(s,s.cat,s.door)!==null);
 }
+// Player QA: blocked collectibles must have a real, costly way to advance patrols.
+test.choose(4,false);
+let w=test.getState(),initialHuman={...test.getState().human};
+nodes.get('wait').onclick();
+assert.equal(w.steps,1,'Wait spends one turn');
+assert.equal(w.started,true,'Wait begins the run');
+assert.notDeepEqual(JSON.parse(JSON.stringify(w.human)),initialHuman,'Wait advances human');
+test.choose(4,false);w=test.getState();
+const guardFish=w.fish[1];w.human={...guardFish};
+listeners['board:pointerdown']({pointerType:'mouse',button:0,clientX:(guardFish.x+.5)*84,clientY:(guardFish.y+.5)*84});
+assert.match(nodes.get('visionTip').textContent,/human blocks a fish/i,'Blocked human needs actionable help');
+nodes.get('wait').onclick();
+assert.ok(w.human.x!==guardFish.x||w.human.y!==guardFish.y,'Wait frees guard-blocked fish');
+test.choose(3,false);const v=test.getState(),robotFish=v.fish[1];v.vacuum={...robotFish};
+listeners['board:pointerdown']({pointerType:'mouse',button:0,clientX:(robotFish.x+.5)*84,clientY:(robotFish.y+.5)*84});
+assert.match(nodes.get('visionTip').textContent,/vacuum blocks a fish/i,'Blocked robot needs actionable help');
+nodes.get('wait').onclick();nodes.get('wait').onclick();
+assert.ok(v.vacuum.x!==robotFish.x||v.vacuum.y!==robotFish.y,'Wait frees robot-blocked fish');
+test.choose(0,false);w=test.getState();w.cat={x:3,y:3};w.human={x:5,y:3};w.catFrom={...w.cat};
+nodes.get('wait').onclick();
+assert.ok(w.exposure>0,'Visible waiting must still cause detection');
 // Review-gate regressions: distinct room mechanics must be real, not descriptions.
 test.choose(3,false);
 let special=test.getState(),sleeper={...special.human};

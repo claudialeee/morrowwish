@@ -836,3 +836,24 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  margin:7px 0 9px;padding:7px 10px;font:800 12px/1.5 Nunito,system-ui,sans-serif;
  color:#70566b;overflow-wrap:anywhere;
 }
+
+/* A fair Wait turn also resolves fish temporarily blocked by moving actors. */
+.single-screen-game .in-game-actions #wait{
+ box-sizing:border-box;display:inline-flex;flex:0 0 65px;align-items:center;justify-content:center;gap:3px;
+ min-width:65px;max-width:65px;min-height:45px;padding:5px 7px;border:1px solid #c5d5d0;
+ border-radius:11px;background:#effaf6;color:#456f65;font:900 12px/1.1 Nunito,system-ui,sans-serif;
+ cursor:pointer;touch-action:manipulation;
+}
+.single-screen-game .in-game-actions #wait:disabled{opacity:.55;cursor:default}
+.single-screen-game .in-game-actions #wait:focus-visible{outline:3px solid #508f81;outline-offset:2px}
+.single-screen-game .in-game-actions #wait .wait-symbol{font:900 19px/1 system-ui,sans-serif}
+@media(max-width:700px){
+ .single-screen-game .in-game-actions #wait{flex-basis:44px;min-width:44px;max-width:44px;min-height:46px;padding:4px}
+ .single-screen-game .in-game-actions #wait .wait-label{display:none}
+}
+@media(max-width:360px){
+ .single-screen-game .in-game-actions{gap:4px!important}
+ .single-screen-game .in-game-actions .board-yarn{min-width:101px!important;max-width:37%!important;padding:4px!important;font-size:10px!important}
+ .single-screen-game .in-game-actions #bonusQuick{padding:4px!important}
+}
+@media(min-width:701px) and (max-height:500px){.single-screen-game .in-game-actions #wait{min-height:39px}}

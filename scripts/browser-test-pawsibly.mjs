@@ -552,6 +552,23 @@ try{
   }finally{await iframe.close();}
  }
 
+ // Browser test: player can use the Wait control at mobile width.
+ const waitPage=await browser.newPage({viewport:{width:390,height:844}});
+ try{
+  await waitPage.route('**/api/session',route=>route.fulfill({status:204,body:''}));
+  await waitPage.goto(url,{waitUntil:'load',timeout:40000});
+  await waitPage.evaluate(()=>{window.__PAWSIBLY_TEST__.choose(4,false);const s=window.__PAWSIBLY_TEST__.getState();s.human={...s.fish[1]}});
+  const fish=await waitPage.evaluate(()=>window.__PAWSIBLY_TEST__.getState().fish[1]);
+  const box=await waitPage.locator('#board').boundingBox();
+  await waitPage.locator('#board').click({position:{x:box.width*(fish.x+.5)/10,y:box.height*(fish.y+.5)/7}});
+  assert.match(await waitPage.locator('#visionTip').textContent(),/human blocks a fish/i,'Explain occupied fish');
+  await waitPage.locator('#wait').click();
+  const result=await waitPage.evaluate(()=>{const s=window.__PAWSIBLY_TEST__.getState();return{steps:s.steps,started:s.started,human:{...s.human}}});
+  assert.equal(result.steps,1,'Wait spends a turn');assert.equal(result.started,true,'Wait starts run');
+  assert.notDeepEqual(result.human,fish,'Owner vacates fish on wait');
+  await waitPage.keyboard.press('Period');
+  assert.equal(await waitPage.evaluate(()=>window.__PAWSIBLY_TEST__.getState().steps),2,'Period key waits');
+ }finally{await waitPage.close()}
  // Five non-cat studio games remain effects-only; never synthesize melodies.
  const routes=['elsewhere','tiny-town','flip-dash','parcel-panic','pocket-aquarium'];
  const noMusicAudit=[],separateAudioGames=[];

@@ -78,8 +78,8 @@ const BADGES=[
  {id:"perfect-diversion",glyph:"🎭",en:"The perfect distraction",zh:"声东击西",enDesc:"Steal a fish while the human investigates a distraction",zhDesc:"趁主人调查声音时偷走小鱼",ok:()=>save.stats.combos>=1}
 ];
 const TX={
-en:{startHint:"Tap a tile to walk",back:"← Morrow Wish",eyebrow:"A LITTLE CAT. A LOT OF TROUBLE.",subtitle:"Steal the snacks. Outsmart the human. Leave a little chaos.",missionLabel:"TODAY'S MISSION",snackLabel:"FISH ACQUIRED",scoreLabel:"SCORE",moveLabel:"STEPS",starLabel:"STARS",roomLabel:"CHOOSE A ROOM",closetLabel:"YOUR LITTLE TROUBLEMAKER",skinHint:"Earn 1–3 stars per room to unlock new cats.",retry:"↻ Retry",soundOn:"🔊 Sound effects: On",soundOff:"🔇 Sound effects: Off",rulesKicker:"HOW TO PLAY · 30 SECOND GUIDE",howTitle:"Three steps to a purrfect escape",howBody:"Stay out of pink sight zones. The owner chases when they see you; hiding in a box breaks the pursuit.",ruleStep1Title:"1 · Tap to move",ruleStep1Text:"Tap the floor or use arrow keys.",ruleStep2Title:"2 · Steal three fish",ruleStep2Text:"Pink means visible. Hide before the alert fills! Boxes conceal you.",ruleStep3Title:"3 · Escape through the pink flap",ruleStep3Text:"Reach the cat door with three fish to win.",ruleBonus:"🧶 Toss yarn (or press Space), then tap a floor tile. The owner will investigate the landing spot. Tap again to cancel.",tip:"<span><strong>①</strong> Tap floor to walk</span><span><strong>②</strong> Collect 3 fish</span><span><strong>③</strong> Reach pink cat flap</span>",mission:"Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.",daily:"☼ Daily",room:"ROOM",dailyRoom:"DAILY CHAOS",closed:"Grab three fish first!",blocked:"Something is blocking the way!",caught:"Caught! Try a different hiding spot.",closeCall:"Narrow escape! +40",bonusDone:"Bonus dare cleared! Escape for +150.",spotted:"SPOTTED! Break line of sight!",last:"Last life! Be sneaky.",fish:"Fish acquired! Delicious.",ready:"The cat flap is open. Run for it!",vase:"CRASH! The human heard that.",box:"A cardboard box! The perfect hiding place.",hide:"The human can't see inside the box.",winTitle:"Purrfect escape!",win:"Fish stolen, chaos delivered. The human is absolutely baffled.",loseTitle:"Caught red-pawed!",lose:"A small setback for a very ambitious cat. Try a different route.",tryAgain:"Try again",nextRoom:"Next room →",again:"Play again →",share:"Share your chaos ♡",shared:"Challenge link copied!",shareText:"I escaped in Pawsibly Innocent! Can you steal three fish without getting caught?",locked:"Earn {n} stars to unlock",dailyName:"Daily House Remix",dailySub:"A familiar house with a fresh secret snack stash.",skinNames:["Marmalade","Mochi","Shadow","Peaches","Blueberry"]},
-zh:{startHint:"点地板，小猫就会走",back:"← Morrow Wish 首页",eyebrow:"一只小猫，搞出天大的动静。",subtitle:"偷零食、躲主人，顺便把家里闹个天翻地覆。",missionLabel:"本关任务",snackLabel:"偷到的小鱼",scoreLabel:"得分",moveLabel:"步数",starLabel:"星星",roomLabel:"选择房间",closetLabel:"你的捣蛋小猫",skinHint:"每关可得 1–3 星，累计星星解锁新猫。",retry:"↻ 重玩",soundOn:"🔊 音效：开",soundOff:"🔇 音效：关",rulesKicker:"游戏规则 · 30 秒看懂",howTitle:"三步学会猫猫大捣蛋",howBody:"粉色区域是主人的视野。被发现会引来追逐，躲进纸箱就能摆脱视线。",ruleStep1Title:"① 点击地板移动",ruleStep1Text:"点地板或按方向键，让小猫走过去。",ruleStep2Title:"② 偷到三条小鱼",ruleStep2Text:"粉色是主人视野！连续暴露会被抓，赶快躲进纸箱。",ruleStep3Title:"③ 从粉色猫门逃走",ruleStep3Text:"带着三条小鱼走到猫门，就成功过关。",ruleBonus:"🧶 点击「扔毛球」（或按空格），再点地板选落点。主人会走过去；再次点击可取消。",tip:"<span><strong>①</strong> 点击地板移动</span><span><strong>②</strong> 收集 3 条小鱼</span><span><strong>③</strong> 走进粉色猫门</span>",mission:"偷到三条鱼，再从粉色猫门溜走。经过花瓶就能把它打翻，引开主人。",daily:"☼ 每日挑战",room:"房间",dailyRoom:"每日捣蛋",closed:"先偷够三条鱼！",blocked:"有东西挡住路啦！",caught:"糟糕，被主人抓到了！",closeCall:"差点被抓！+40 分",bonusDone:"额外挑战完成！逃脱后加 150 分。",spotted:"被发现啦！快躲进纸箱！",last:"只剩一颗心了，轻手轻脚！",fish:"小鱼到手！好吃！",ready:"猫门打开了！快溜！",vase:"哐当！主人听见了。",box:"纸箱！躲猫猫的好地方。",hide:"主人看不见纸箱里的猫。",winTitle:"完美开溜！",win:"小鱼到手，家里一团乱，主人还没回过神。",loseTitle:"当场抓包！",lose:"捣蛋事业暂时受挫。换条路线再试一次！",tryAgain:"再试一次",nextRoom:"下一间 →",again:"再玩一局 →",share:"分享战绩 ♡",shared:"挑战链接已复制！",shareText:"我在《猫猫绝对无辜！》成功偷鱼逃脱！来看看你能不能骗过主人。",locked:"累计 {n} 星解锁",dailyName:"每日猫猫大捣蛋",dailySub:"熟悉的房间，小鱼藏在了新地方。",skinNames:["橘子糖","糯米","小黑","蜜桃","蓝莓"]}
+en:{startHint:"Tap a tile to walk",back:"← Morrow Wish",eyebrow:"A LITTLE CAT. A LOT OF TROUBLE.",subtitle:"Steal the snacks. Outsmart the human. Leave a little chaos.",missionLabel:"TODAY'S MISSION",snackLabel:"FISH ACQUIRED",scoreLabel:"SCORE",moveLabel:"STEPS",starLabel:"STARS",roomLabel:"CHOOSE A ROOM",closetLabel:"YOUR LITTLE TROUBLEMAKER",skinHint:"Earn 1–3 stars per room to unlock new cats.",retry:"↻ Retry",soundOn:"🔊 Sound effects: On",soundOff:"🔇 Sound effects: Off",rulesKicker:"HOW TO PLAY · 30 SECOND GUIDE",howTitle:"Three steps to a purrfect escape",howBody:"Stay out of pink sight zones. The owner chases when they see you; hiding in a box breaks the pursuit.",ruleStep1Title:"1 · Tap to move",ruleStep1Text:"Tap the floor or use arrow keys.",ruleStep2Title:"2 · Steal three fish",ruleStep2Text:"Pink means visible. Hide before the alert fills! Boxes conceal you.",ruleStep3Title:"3 · Escape through the pink flap",ruleStep3Text:"Reach the cat door with three fish to win.",ruleBonus:"🧶 Toss yarn (Space) and tap a floor tile to lure the owner. ⏳ Wait (.) spends a step to advance patrols without moving; it is unsafe in sight.",tip:"<span><strong>①</strong> Tap floor to walk</span><span><strong>②</strong> Collect 3 fish</span><span><strong>③</strong> Reach pink cat flap</span>",mission:"Collect three fish and slip through the pink cat flap. Topple a vase to distract the human.",daily:"☼ Daily",room:"ROOM",dailyRoom:"DAILY CHAOS",closed:"Grab three fish first!",blocked:"Something is blocking the way!",caught:"Caught! Try a different hiding spot.",closeCall:"Narrow escape! +40",bonusDone:"Bonus dare cleared! Escape for +150.",spotted:"SPOTTED! Break line of sight!",last:"Last life! Be sneaky.",fish:"Fish acquired! Delicious.",ready:"The cat flap is open. Run for it!",vase:"CRASH! The human heard that.",box:"A cardboard box! The perfect hiding place.",hide:"The human can't see inside the box.",winTitle:"Purrfect escape!",win:"Fish stolen, chaos delivered. The human is absolutely baffled.",loseTitle:"Caught red-pawed!",lose:"A small setback for a very ambitious cat. Try a different route.",tryAgain:"Try again",nextRoom:"Next room →",again:"Play again →",share:"Share your chaos ♡",shared:"Challenge link copied!",shareText:"I escaped in Pawsibly Innocent! Can you steal three fish without getting caught?",locked:"Earn {n} stars to unlock",dailyName:"Daily House Remix",dailySub:"A familiar house with a fresh secret snack stash.",skinNames:["Marmalade","Mochi","Shadow","Peaches","Blueberry"]},
+zh:{startHint:"点地板，小猫就会走",back:"← Morrow Wish 首页",eyebrow:"一只小猫，搞出天大的动静。",subtitle:"偷零食、躲主人，顺便把家里闹个天翻地覆。",missionLabel:"本关任务",snackLabel:"偷到的小鱼",scoreLabel:"得分",moveLabel:"步数",starLabel:"星星",roomLabel:"选择房间",closetLabel:"你的捣蛋小猫",skinHint:"每关可得 1–3 星，累计星星解锁新猫。",retry:"↻ 重玩",soundOn:"🔊 音效：开",soundOff:"🔇 音效：关",rulesKicker:"游戏规则 · 30 秒看懂",howTitle:"三步学会猫猫大捣蛋",howBody:"粉色区域是主人的视野。被发现会引来追逐，躲进纸箱就能摆脱视线。",ruleStep1Title:"① 点击地板移动",ruleStep1Text:"点地板或按方向键，让小猫走过去。",ruleStep2Title:"② 偷到三条小鱼",ruleStep2Text:"粉色是主人视野！连续暴露会被抓，赶快躲进纸箱。",ruleStep3Title:"③ 从粉色猫门逃走",ruleStep3Text:"带着三条小鱼走到猫门，就成功过关。",ruleBonus:"🧶 按「扔毛球」（空格）后点地板引开主人。⏳ 点「等待」（电脑按句号）可消耗一步推进巡逻；主人看得见你时等待依然危险。",tip:"<span><strong>①</strong> 点击地板移动</span><span><strong>②</strong> 收集 3 条小鱼</span><span><strong>③</strong> 走进粉色猫门</span>",mission:"偷到三条鱼，再从粉色猫门溜走。经过花瓶就能把它打翻，引开主人。",daily:"☼ 每日挑战",room:"房间",dailyRoom:"每日捣蛋",closed:"先偷够三条鱼！",blocked:"有东西挡住路啦！",caught:"糟糕，被主人抓到了！",closeCall:"差点被抓！+40 分",bonusDone:"额外挑战完成！逃脱后加 150 分。",spotted:"被发现啦！快躲进纸箱！",last:"只剩一颗心了，轻手轻脚！",fish:"小鱼到手！好吃！",ready:"猫门打开了！快溜！",vase:"哐当！主人听见了。",box:"纸箱！躲猫猫的好地方。",hide:"主人看不见纸箱里的猫。",winTitle:"完美开溜！",win:"小鱼到手，家里一团乱，主人还没回过神。",loseTitle:"当场抓包！",lose:"捣蛋事业暂时受挫。换条路线再试一次！",tryAgain:"再试一次",nextRoom:"下一间 →",again:"再玩一局 →",share:"分享战绩 ♡",shared:"挑战链接已复制！",shareText:"我在《猫猫绝对无辜！》成功偷鱼逃脱！来看看你能不能骗过主人。",locked:"累计 {n} 星解锁",dailyName:"每日猫猫大捣蛋",dailySub:"熟悉的房间，小鱼藏在了新地方。",skinNames:["橘子糖","糯米","小黑","蜜桃","蓝莓"]}
 };
 const fur=[["#f5b46d","#ce8952","#fff1cc",0],["#f5eeec","#c5a8a6","#fff",3],["#575065","#373347","#b5a9c4",7],["#f1a8ab","#c77590","#ffdfdb",12],["#a8b4df","#7b8ab7","#e5e7fe",18]];
 const entryParams=new URLSearchParams(location.search),entryRoomRaw=Number(entryParams.get("room")),entryRoom=entryParams.has("room")&&Number.isInteger(entryRoomRaw)&&entryRoomRaw>=1&&entryRoomRaw<=8?entryRoomRaw-1:0,entryDaily=entryParams.get("daily")==="1",challengeGoal=Math.max(0,Math.min(9999999,Number(entryParams.get("beat"))||0));
@@ -159,6 +159,8 @@ let stage=0,daily=false,s=null,route=[],movingTimer=null,msgTimer=null,currentTo
 const seedDay=Number(today.replaceAll("-",""));
 function randomRoom(){return Math.floor(rnd(seedDay)()*ROOMS.length)}
 function toastText(k){
+ if(k==="guardedFish")return lang==="zh"?"主人站在鱼上！在安全位置等待，或扔毛球引开。":"The human blocks this fish! Wait safely or lure them with yarn.";
+ if(k==="vacuumFish")return lang==="zh"?"扫地机挡住鱼啦！点「等待」让它移动。":"The vacuum blocks this fish! Tap Wait to move it.";
  if(k==="bonus-completed")return lang==="zh"?"★ 额外任务完成！成功逃脱再得 150 分":"★ Bonus complete! Escape to claim +150";
   if(k==="pressure")return lang==="zh"?"主人开始加强巡逻！注意视野变大了。":"The human is on high alert! Watch their wider sight.";
   if(k==="heat")return lang==="zh"?"偷了两条鱼，主人开始留意小猫了！":"Two fish gone — the human is getting suspicious!";
@@ -189,7 +191,7 @@ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=grid[y][x];if(t==="C"){cat={x,y
 if(daily){const r=rnd(seedDay*13+91),possible=[],visited=new Set([key(cat)]),queue=[cat];for(let i=0;i<queue.length;i++){for(const p of neighbors(queue[i])){if(visited.has(key(p))||grid[p.y][p.x]==="#"||grid[p.y][p.x]==="S"||grid[p.y][p.x]==="E")continue;visited.add(key(p));queue.push(p)}}
 for(const p of queue)if(Math.abs(p.x-cat.x)+Math.abs(p.y-cat.y)>=3&&!equal(p,human)&&!vases.some(v=>equal(v,p))&&!boxes.some(b=>equal(b,p))&&!Object.values(extras).some(v=>Array.isArray(v)&&v[0]===p.x&&v[1]===p.y))possible.push(p);
 if(possible.length>=4){fish.length=0;while(fish.length<4){fish.push(possible.splice(Math.floor(r()*possible.length),1)[0]);}}}
-return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
+return{room,index,extras,scene:SCENES[index],yarnBall:P(extras.yarn),relic:P(extras.relic),light:P(extras.light),milk:P(extras.milk),vacuum:P(extras.robot),vacuumDir:1,itemsTaken:new Set(),yarn:save.cat===0?1:0,lightTurns:index===6?8:0,hasRelic:false,blockedTarget:null,room,grid,cat:{...cat},start:{...cat},human:{...human},humanStart:{...human},door,fish,vases,boxes,got:0,taken:new Set(),fishHaul:[],broken:new Set(),lives:3,caughtCount:0,steps:0,score:0,patrol:0,noise:null,throwTrail:null,alert:0,lastSeen:null,guardMode:index===3?"sleep":"patrol",guardTarget:null,searchTurns:0,curiosityCooldown:0,reaction:"",reactionUntil:0,reactionAt:0,distractionTurns:0,yarnAnimating:false,yarnDestination:null,sleepTurns:index===3?9:0,creak:P(CREAKY_TILES[index]),creakTriggered:false,finalAlert:false,pressure:false,started:false,done:false,winning:false,invincible:0,exposure:0,everSpotted:false,dangerActive:false,nearMisses:0,yarnThrows:0,dareAnnounced:false,outro:null,newBadges:[],newCats:[],startedAt:0,catFrom:{...cat},humanFrom:{...human},movedAt:0,humanMovedAt:0};}
 function init(index=0,isDaily=false){menuOpen=false;pausedYarn=false;if($("gameMenu"))$("gameMenu").hidden=true;clearTimeout(msgTimer);clearTimeout(badgeTimer);if($("achievementToast"))$("achievementToast").hidden=true;badgeToastIds=[];currentToastKey=null;stopYarnChase();if(movingTimer){clearInterval(movingTimer);movingTimer=null}route=[];fx=[];aimingYarn=false;yarnPreview=null;yarnTargets.clear();daily=isDaily;stage=index;s=readRoom();$("stage").classList.remove("yarn-aiming");$("stage").classList.remove("victory");$("stage").classList.remove("outro-active");if($("yarnAimBanner"))$("yarnAimBanner").hidden=true;$("overlay").hidden=true;$("toast").classList.remove("on");translateUI();syncUI();}
 function translateUI(){
 $("gameTitle").innerHTML=lang==="zh"?"猫猫绝对无辜！":"PAWSIBLY <span>INNOCENT!</span>";
@@ -197,6 +199,8 @@ $("studioByline").textContent=lang==="zh"?"出品 ♡":"presents ♡";
 document.title=lang==="zh"?"猫猫绝对无辜！— Morrow Wish":"Pawsibly Innocent! — A Little Cat, A Lot of Trouble | Morrow Wish";localizeMenu();
 const ids={back:"back",eyebrow:"eyebrow",subtitle:"subtitle",missionLabel:"missionLabel",snackLabel:"snackLabel",scoreLabel:"scoreLabel",moveLabel:"moveLabel",starLabel:"starLabel",roomLabel:"roomLabel",closetLabel:"closetLabel",skinHint:"skinHint",rulesKicker:"rulesKicker",howTitle:"howTitle",ruleStep1Title:"ruleStep1Title",ruleStep1Text:"ruleStep1Text",ruleStep2Title:"ruleStep2Title",ruleStep2Text:"ruleStep2Text",ruleStep3Title:"ruleStep3Title",ruleStep3Text:"ruleStep3Text",ruleBonus:"ruleBonus",mission:"mission"};for(const [id,k]of Object.entries(ids))$(id).textContent=tr(k);
  if($("restartLabel"))$("restartLabel").textContent=lang==="zh"?"重玩":"Retry";
+ if($("wait")){const tip=lang==="zh"?"等待一回合：猫不动，主人和扫地机继续巡逻（消耗一步）":"Wait a turn: cat stays still, patrol moves (costs a step)";$("wait").setAttribute("aria-label",tip);$("wait").title=tip}
+ if($("waitLabel"))$("waitLabel").textContent=lang==="zh"?"等待":"Wait";
  if($("restart")){const tip=lang==="zh"?"重新开始当前关卡":"Restart this room";$("restart").setAttribute("aria-label",tip);$("restart").title=tip;}
 $("howBody").textContent=tr("howBody");if($("visionTip"))$("visionTip").textContent=YARN_LEGEND[lang].vision;if($("yarnAimBanner"))$("yarnAimBanner").textContent=YARN_LEGEND[lang].aim;c.setAttribute("aria-label",lang==="zh"?"猫猫捣蛋游戏。点击地板移动，收集三条鱼，再从粉色猫门逃走。":"Cat stealth adventure. Tap a floor tile to move. Collect three fish and reach the pink cat flap.");if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("collectionHint"))$("collectionHint").textContent=lang==="zh"?"每个房间都藏着一件纪念品，成功逃脱才能收藏。":"Each room hides a souvenir. Escape to add it to your album.";
  if($("starRuleHelp"))$("starRuleHelp").textContent=lang==="zh"?"★ 偷到 3 条鱼逃脱即通关  ·  ★★ 偷齐 4 条鱼或完成额外任务  ·  ★★★ 4 条鱼＋额外任务＋全程未被抓＋步数达标":"★ Escape with 3 fish  ·  ★★ Collect all 4 fish or complete the bonus quest  ·  ★★★ All 4 fish + bonus + no captures + efficient steps";if($("ability"))$("ability").textContent=et("ability")[save.cat];const total=allStars(),nextCat=fur.findIndex((f,i)=>i>0&&total<f[3]);if($("skinHint"))$("skinHint").textContent=nextCat<0?(lang==="zh"?"全部 5 只小猫已解锁！":"All 5 cats unlocked!"):(lang==="zh"?"累计 "+total+" 星 · 再得 "+(fur[nextCat][3]-total)+" 星解锁「"+TX.zh.skinNames[nextCat]+"」":total+" stars · "+(fur[nextCat][3]-total)+" more to unlock "+TX.en.skinNames[nextCat]);if($("tool"))$("tool").setAttribute("aria-label",aimingYarn?YARN_LEGEND[lang].cancel:YARN_LEGEND[lang].tool);$("sound").textContent=tr(window.MorrowwishAudio?.isEnabled?.()?"soundOn":"soundOff");
@@ -327,6 +331,9 @@ function resultLine(){
 }
 function contextualHint(){
  if(!s)return "";
+ if(s.blockedTarget&&equal(s.blockedTarget,s.human))return lang==="zh"?"主人挡着鱼！在安全处点「等待」，或扔毛球引开。":"The human blocks a fish. Wait from a safe tile or throw yarn.";
+ if(s.blockedTarget&&s.vacuum&&equal(s.blockedTarget,s.vacuum))return lang==="zh"?"扫地机挡着鱼！点「等待」让它巡逻，或改偷另一条。":"The vacuum blocks a fish. Tap Wait or choose another fish.";
+ if(s.exposure>0)return lang==="zh"?"被发现，自动行走已停止。请点视野外的地板或躲纸箱。":"Spotted: auto-walk stopped. Tap a safe tile or hide in a box.";
  if(aimingYarn)return lang==="zh"?"点地图上的空地板，主人会走向毛球。":"Tap a floor tile. The owner will walk to your yarn.";
  if(s.yarnAnimating)return lang==="zh"?"主人正被毛球引开！现在就可以移动，去偷鱼！":"The owner is following the yarn! Move now and steal the fish.";
  if(s.distractionTurns>0)return lang==="zh"?"主人分心了！趁这 "+s.distractionTurns+" 步偷鱼开溜。":"The owner is distracted! You have "+s.distractionTurns+" safe moves.";
@@ -355,7 +362,7 @@ function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();
  if($("stage"))$("stage").classList.toggle("owner-following-yarn",!!s.yarnAnimating);
  if($("guardIntent"))$("guardIntent").textContent=guardLabel();
  if($("guardStatus"))$("guardStatus").setAttribute("data-mode",s?.guardMode||"patrol");
- renderCollections();updateDare();updateStealthHUD();const fishProgress=Math.min(NEED,s.got);$("fishCount").textContent=fishProgress+" / "+NEED+(s.got>NEED?(lang==="zh"?" · 额外鱼 ✓":" · bonus fish ✓"):"");$("meterFill").style.width=Math.min(100,100*s.got/NEED)+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+Math.min(s.got,NEED)+"/"+NEED+(s.got>NEED?" ★":"")+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
+ renderCollections();updateDare();updateStealthHUD();const fishProgress=Math.min(NEED,s.got);$("fishCount").textContent=fishProgress+" / "+NEED+(s.got>NEED?(lang==="zh"?" · 额外鱼 ✓":" · bonus fish ✓"):"");$("meterFill").style.width=Math.min(100,100*s.got/NEED)+"%";if($("tool")){$("tool").classList.toggle("aiming",aimingYarn);$("tool").classList.toggle("teach-yarn",!daily&&s.index===0&&s.got===1&&s.yarnThrows===0&&s.yarn>0&&!s.yarnAnimating);$("tool").textContent=aimingYarn?YARN_LEGEND[lang].cancel:s.yarn>0?YARN_LEGEND[lang].tool+" · "+s.yarn:YARN_LEGEND[lang].need;$("tool").disabled=s.yarn===0||s.yarnAnimating}if($("yarnExplain"))$("yarnExplain").textContent=YARN_LEGEND[lang][s.yarn>0?"ready":"empty"];if($("yarnQuickHint"))$("yarnQuickHint").textContent=YARN_LEGEND[lang][aimingYarn?"quickAim":s.yarnAnimating?"quickChase":s.yarn>0?"quickReady":"quickEmpty"];if($("wait"))$("wait").disabled=!!s.done||aimingYarn||s.yarnAnimating;$("score").textContent=s.score;$("moves").textContent=s.steps;$("starTotal").textContent=allStars();$("hearts").setAttribute("aria-label",lang==="zh"?"剩余 "+s.lives+" 颗心":s.lives+" hearts left");$("hearts").innerHTML=Array.from({length:3},(_,i)=>'<span class="'+(i>=s.lives?"empty":"")+'">♥</span>').join("");if($("heistStatus"))$("heistStatus").textContent="🐟 "+Math.min(s.got,NEED)+"/"+NEED+(s.got>NEED?" ★":"")+" · "+"♥".repeat(s.lives)+"♡".repeat(3-s.lives);}
 const MENU_TEXT={
  en:{rooms:"Rooms",album:"Album",badges:"Badges",cats:"Cats",help:"Help",open:"Open game menu",close:"Close game menu",how:"How to play"},
  zh:{rooms:"关卡",album:"图鉴",badges:"成就",cats:"小猫",help:"帮助",open:"打开游戏菜单",close:"关闭菜单",how:"游戏玩法"}
@@ -476,7 +483,7 @@ function throwYarnTo(p){
  if(!aimingYarn||!s||s.done||s.yarnAnimating||menuOpen)return false;
  if(!yarnTarget(p)){popup(YARN_LEGEND[lang].badTarget);return false}
  if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
- s.noise={...p};s.yarnDestination={...p};s.distractionTurns=0;s.yarnThrows++;s.throwTrail={from:{...s.cat},to:{...p},at:performance.now()};
+ s.blockedTarget=null;s.noise={...p};s.yarnDestination={...p};s.distractionTurns=0;s.yarnThrows++;s.throwTrail={from:{...s.cat},to:{...p},at:performance.now()};
  s.alert=Math.max(7,pathTo(s.human,p,true,true).length+3);s.lastSeen=null;s.yarn--;s.steps++;
  s.decoyAwareness=Math.max(0,(s.yarnThrows||1)-1);
  setYarnAim(false);
@@ -529,7 +536,7 @@ function soundApproachPoint(target){
    .sort((a,b)=>a.path.length-b.path.length);
  return reachable[0]?.p||target;
 }
-function guardMove(){
+function guardMove(silent=false){
  const h=s.human;let target=null;
  if(s.sleepTurns>0&&!s.noise){
   s.sleepTurns--;s.guardMode="sleep";s.guardTarget=null;
@@ -563,7 +570,7 @@ function guardMove(){
  }
  // Hearing footsteps pulls the owner toward a tile the cat JUST LEFT.
  // A short cooldown gives the player time to hide, rather than a psychic constant chase.
- if(!target&&!hidden(s.cat)&&s.steps>=2&&s.curiosityCooldown===0&&ownerDistance()<=(s.index>=4?6:4)){
+ if(!target&&!silent&&!hidden(s.cat)&&s.steps>=2&&s.curiosityCooldown===0&&ownerDistance()<=(s.index>=4?6:4)){
   target={...s.catFrom};s.lastSeen={...target};s.searchTurns=1;
   s.curiosityCooldown=s.index<=1?4:s.index>=5?1:2;
   s.guardMode="curious";guardReaction("footsteps");
@@ -613,7 +620,7 @@ function resolveDetection(){
 }
 function moveTo(p){if(s.done||!pass(p)||Math.abs(p.x-s.cat.x)+Math.abs(p.y-s.cat.y)!==1)return;
 if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
-s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
+s.blockedTarget=null;s.catFrom={...s.cat};s.cat={...p};s.movedAt=performance.now();s.steps++;s.invincible=Math.max(0,s.invincible-1);
 const fishIndex=s.fish.findIndex(f=>equal(f,p)&&!s.taken.has(key(f)));if(fishIndex>=0){s.taken.add(key(p));s.got++;addStat("fish");const fishValue=save.cat===4?135:100; s.score+=fishValue;
  const combo=!!(s.guardMode==="distracted"||s.guardMode==="investigate")&&!visible(p);
  if(combo){
@@ -773,7 +780,8 @@ function command(x,y){
  if(!s||s.done||menuOpen||aimingYarn)return;
  if(x===s.cat.x&&y===s.cat.y){if(route.length)stopWalking();return}
  const target={x,y};
- if(s.vacuum&&equal(target,s.vacuum)){popup("robot");return}
+ if(equal(target,s.human)){s.blockedTarget={...target};popup(s.fish.some(f=>equal(f,target)&&!s.taken.has(key(f)))?"guardedFish":"blocked");syncUI();return}
+ if(s.vacuum&&equal(target,s.vacuum)){s.blockedTarget={...target};popup(s.fish.some(f=>equal(f,target)&&!s.taken.has(key(f)))?"vacuumFish":"robot");syncUI();return}
  if(!pass(target)){popup("blocked");return}
  if(movingTimer&&equal(route[route.length-1],target))return;
  route=catPathTo(s.cat,target);
@@ -781,6 +789,21 @@ function command(x,y){
  if(movingTimer===null){advanceCatRoute();if(route.length)movingTimer=setInterval(advanceCatRoute,300)}
 }
 function single(dx,dy){if(!s||s.done||menuOpen)return;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
+// Wait consumes a turn, even when the cat stays still. Enemies and sight advance.
+function waitTurn(){
+ if(!s||s.done||menuOpen||aimingYarn||s.yarnAnimating)return;
+ stopWalking();
+ if(!s.started){s.started=true;s.startedAt=performance.now();metric("game_start",{level:daily?9:stage+1})}
+ s.steps++;s.invincible=Math.max(0,s.invincible-1);s.catFrom={...s.cat};s.movedAt=performance.now();
+ if(s.index>=2&&s.steps>=s.room.goal&&!s.pressure){s.pressure=true;if(!s.finalAlert)popup("pressure");guardReaction("footsteps",2)}
+ guardMove(true);s.lightTurns=Math.max(0,s.lightTurns-1);
+ if(s.vacuum&&(s.index===2||s.index===7||s.steps%2===0)){
+  const p={x:s.vacuum.x+s.vacuumDir,y:s.vacuum.y};
+  if(!pass(p,true)||equal(p,s.door)||equal(p,s.cat))s.vacuumDir*=-1;else s.vacuum=p;
+ }
+ if(equal(s.cat,s.human))hurt();else resolveDetection();
+ syncUI();
+}
 function shape(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function round(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
 function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill()}
@@ -900,6 +923,12 @@ const hu=s.human,ca=s.cat;
  const hx=(s.humanFrom.x+(hu.x-s.humanFrom.x)*easing+.5)*T;
  const hy=(s.humanFrom.y+(hu.y-s.humanFrom.y)*easing+.5)*T;
  humanDraw(hx,hy+10,time);
+ // Occupied collectibles must remain legible above an owner or vacuum.
+ for(const obstacle of [s.human,s.vacuum])if(obstacle&&s.fish.some(f=>equal(f,obstacle)&&!s.taken.has(key(f)))){
+  const x=obstacle===s.human?hx:(obstacle.x+.5)*T,y=obstacle===s.human?hy:(obstacle.y+.5)*T;
+  const px=Math.min(804,x+17),py=Math.max(5,y-46);
+  round(px,py,31,28,9,"#fff8ec");label("🐟",px+15,py+21,"19px system-ui","#8c6082");
+ }
  // In-world intent follows the owner, but never overlaps their reaction speech.
  const speaking=s.reaction&&s.steps<=s.reactionUntil&&time-(s.reactionAt||0)<1850;
  if(!speaking&&!s.yarnAnimating&&!s.done){
@@ -1019,7 +1048,7 @@ c.addEventListener("pointermove",e=>{if(aimingYarn){const p=canvasTile(e);yarnPr
  if(menuOpen)return;
  if(s?.outro){if(["Escape","Enter"," "].includes(e.key)){e.preventDefault();endOutro()}return}
  if(e.key==="Escape"&&s?.done&&!$("overlay").hidden){e.preventDefault();closeResult();return}
-  if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
+  if(e.key==="Escape"&&aimingYarn){e.preventDefault();setYarnAim(false);return}if(e.key==="."&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();waitTurn();return}if((e.code==="Space"||e.key===" ")&&!["INPUT","TEXTAREA","SELECT","BUTTON"].includes(e.target?.tagName)){e.preventDefault();throwYarn();return}const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]}[e.key];if(k&&!["INPUT","TEXTAREA","SELECT"].includes(e.target?.tagName)){e.preventDefault();single(...k)}});
 
 $("menuButton").onclick=()=>openMenu("rooms");
 $("bonusQuick").onclick=()=>openMenu("rooms");
@@ -1027,6 +1056,7 @@ $("quickHelp").onclick=()=>openMenu("help");
 $("menuClose").onclick=closeMenu;
 $("gameMenu").addEventListener("pointerdown",e=>{if(e.target===$("gameMenu"))closeMenu()});
 document.querySelectorAll("[data-game-tab]").forEach(el=>el.onclick=()=>setMenuTab(el.getAttribute("data-game-tab")));
+$("wait").onclick=waitTurn;
 $("restart").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("retryResult").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("nextResult").onclick=()=>{if(!s.winning)metric("game_retry");init(s.winning&&!daily?Math.min(7,stage+1):stage,daily)};
