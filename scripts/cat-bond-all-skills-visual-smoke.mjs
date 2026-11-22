@@ -27,6 +27,22 @@ try{
    assert.ok(ids.length>=40,'At least 40 hand-authored normal VFX must remain');
    assert.deepEqual(new Set(ids),new Set(expected),
      'Every real normal skill, including generated archetypes, must have an individual VFX ID');
+   assert.ok(ids.includes('frostClaw'),
+     'Approved Water Frost Claw must receive real per-skill battle VFX on both devices');
+   const blueberry=await page.evaluate(()=>{
+     const c=State.makeCat('lanbao',{affinity:95});
+     c.level=18;c.skillAwakened=true;c.skillEdited=true;
+     c.loadout=[null,'gen_elec_melee','boltArc','thunderYowl'];
+     c.autoSkillLoadout=c.loadout.slice();c.learned=['mirrorWall'];
+     Skills.ensureLoadout(c);
+     return {primary:Skills.elementOf(c.species),secondary:Skills.secondaryOf(c.species),
+       equipped:c.loadout.filter(Boolean).map(id=>Skills.skillById(id)?.element),
+       native:Skills.learnableSkills(c).map(s=>s.element)};
+   });
+   assert.equal(blueberry.primary,'water');
+   assert.equal(blueberry.secondary,null);
+   assert.ok([...blueberry.equipped,...blueberry.native].every(el=>el==='water'),
+     'Water/Ice Blueberry must NEVER equip old Electric saves or learn Electricity');
    const hashes=[];
    for(const id of ids){
     const record=await page.evaluate(id=>{
