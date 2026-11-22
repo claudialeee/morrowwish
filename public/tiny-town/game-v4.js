@@ -426,11 +426,16 @@ function goal(){return S.legends.length>=1&&S.peace>=3;}
 function translate(){document.querySelectorAll('[data-en][data-zh]').forEach(el=>el.textContent=t(el.dataset.en,el.dataset.zh));document.title=t('No More Mondays: Wish Cascade','自由小镇：愿望连锁反应');}
 function render(){
  translate();if(!S)return;
+ // On the first wish, keep the board and the action itself in focus.
+ document.body.classList.toggle('town-first-wish',!!S.started&&!S.ended&&S.places.length===0);
  $('day').textContent=S.day+' / 7';$('wonder').textContent=S.wonder;$('peace').textContent=S.peace+'/10';$('comboNum').textContent=S.found.length;
  $('progressFill').style.width=((S.ended?7:S.day-1)/7*100)+'%';
  $('mapTitle').textContent=S.mutation?t('A world you made possible','你亲手创造的奇妙世界'):t('Make a life worth remembering','创造你真正想过的生活');
  $('mapWrap').dataset.theme=S.mutation||'normal';
- $('guide').textContent=selected?t('Choose where your dream comes alive. Gold means a surprise.','选一个让梦想发生的地方。金光代表惊喜！'):t('Choose a dream. Every small decision changes the scenery.','今天做什么，由你决定。每个小愿望都会改变风景。');
+ $('guide').textContent=!S.places.length
+   ?(selected?t('Step 2: tap a glowing empty plot to build your first wish.','第 2 步：点击发光的空地，建造你的第一个愿望。'):t('Step 1: choose a wish from the cards below.','第 1 步：从下面的卡片选一个愿望。'))
+   :selected?t('Tap a glowing plot. Place related wishes beside each other for surprises.','点击发光的空地。把相关愿望建在一起，会有惊喜！')
+   :t('Choose your next wish. Try placing it beside something related!','选下一个愿望，试试建在有关联的建筑旁边！');
  renderBoard();renderCards();renderNews();renderPeople();renderScenery();window.TownV5?.render?.();
 }
 function renderScenery(){
