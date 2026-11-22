@@ -6,7 +6,7 @@ const source=fs.readFileSync('public/pawsibly-innocent/game.js','utf8');
 new vm.Script(source,{filename:'game.js'});
 const nop=()=>{},nodes=new Map(),events=[],listeners={},saved={},pendingIntervals=new Map();let intervalId=0;
 const ctx=new Proxy({createLinearGradient:()=>({addColorStop:nop})},{get(o,k){return o[k]??nop}});
-function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop,toggle:nop},hidden:false,appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
+function element(id){return{id,style:{setProperty:nop},classList:{add:nop,remove:nop,toggle:nop},hidden:id==="resetConfirm",appendChild:nop,setAttribute:nop,querySelectorAll:()=>[],
 addEventListener(type,callback){listeners[id+':'+type]=callback},getContext:()=>ctx,
 getBoundingClientRect:()=>({left:0,top:0,width:840,height:588})}}
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id)},createElement:element,querySelector:()=>null,querySelectorAll:()=>[]};
@@ -403,6 +403,18 @@ assert.equal(pausedGuardFar.exposure,0,
  const saveBeforeReset=JSON.parse(saved['pawsibly-innocent-save-v1']);
  assert.ok(saveBeforeReset.stats.wins>=1,'Test must have earned a real win before resetting');
  saved['another-game-preference']='keep';
+ const html=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
+ const style=fs.readFileSync('public/pawsibly-innocent/single-screen.css','utf8');
+ assert.ok(html.includes('id="resetGameQuick"'),'A clearly labeled reset must appear on the playable toolbar');
+ assert.ok(style.includes('.in-game-actions #resetGameQuick'),'Game-screen reset must have dedicated visible styling');
+ assert.ok(html.indexOf('id="resetGame"')<html.indexOf('class="panel game-menu-body"'),'Menu reset must be above tab contents');
+ nodes.get('resetGameQuick').onclick();
+ assert.equal(nodes.get('resetConfirm').hidden,false,'In-game reset shortcut should open confirmation');
+ assert.equal(nodes.get('gameMenu').hidden,false,'In-game reset should pause play through the menu');
+ nodes.get('cancelReset').onclick();
+ assert.equal(nodes.get('resetConfirm').hidden,true,'Cancel should dismiss in-game reset');
+ assert.equal(nodes.get('gameMenu').hidden,true,'Cancel from in-game reset returns directly to play');
+ assert.deepEqual(JSON.parse(saved['pawsibly-innocent-save-v1']),saveBeforeReset,'In-game reset cancel keeps progress');
  nodes.get('menuButton').onclick();
  nodes.get('resetGame').onclick();
  assert.equal(nodes.get('resetConfirm').hidden,false,'Reset needs explicit confirmation');
