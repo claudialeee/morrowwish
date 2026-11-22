@@ -123,7 +123,7 @@ try{
    });
    if(result.lives<startLives)break;
    if(result.done)throw Error('Unexpected win or early end before all captures');
-   await wait(170);
+   await wait(attempt===2?550:170);
   }
   if(!result||result.lives!==startLives-1||!!result.winning)
    throw Error('Actual capture '+(attempt+1)+' was not earned '+JSON.stringify(result));
