@@ -32,7 +32,7 @@
     if (crazygames) document.documentElement.classList.add('cb-cg');
   })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=upgrade-chains-hud-20261122" />
+  <link rel="stylesheet" href="css/style.css?v=map-actions-unified-20261121-1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -57,10 +57,12 @@
       <div id="first-quest" role="region" aria-label="猫猫冒险指引" aria-live="polite" hidden></div>
       <button id="guide-help" type="button" hidden aria-label="重新查看玩法引导">? 玩法</button>
       <button id="yard-surprise" type="button" hidden></button>
-      <!-- Duo is now part of the right-hand action rail. -->
-      <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
-      <button id="map-squad" type="button" hidden aria-label="选择出战猫咪">🐾 出战猫咪</button>
-      <button id="map-menu" type="button" hidden aria-label="打开探险管理菜单" aria-haspopup="dialog" aria-controls="panel" aria-expanded="false">☰ 菜单</button>
+      <!-- Shared exploration action dock: three evenly sized controls, one row. -->
+      <nav id="map-actions" aria-label="地图操作 / Explore actions">
+        <button id="map-squad" type="button" hidden aria-label="选择出战猫咪">🐾 出战猫咪</button>
+        <button id="map-index" type="button" hidden>🗺️ 地图目录</button>
+        <button id="map-menu" type="button" hidden aria-label="打开探险管理菜单" aria-haspopup="dialog" aria-controls="panel" aria-expanded="false">☰ 菜单</button>
+      </nav>
       <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
       <button id="yard-cat-switch" type="button" aria-label="切换庭院中的猫猫" hidden></button>
 
