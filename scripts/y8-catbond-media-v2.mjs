@@ -182,7 +182,8 @@ try{
   // One raw video file; every screen transition happens in the running game.
   // Reset to the REAL first-cat picker for the continuous recording. Later
   // unlocked states use a documented demo save, not fake screenshots or edits.
-  await page.evaluate(()=>localStorage.removeItem('catbond_save_v1'));
+  // Reset state itself: removing localStorage alone gets undone by the game's pagehide autosave.
+  await page.evaluate(()=>State.hardReset());
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true,{timeout:45000});
   if(await page.locator('#intro-start').isVisible())await page.locator('#intro-start').click();
