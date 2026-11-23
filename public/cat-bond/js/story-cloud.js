@@ -439,8 +439,9 @@ function renderCloudPanel(){
  function render(statusText=''){
   currentStatus=statusText;
   const token=localStorage.getItem(CLOUD_KEY)||'';
+  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
   if(token){
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||t('云存档已启用。','Cloud save is enabled.'))+'</div>'+
+   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||(paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.'):t('云存档已启用。','Cloud save is enabled.')) )+'</div>'+
     '<label class="cb-cloud-label">'+t('跨设备恢复码（请妥善保存）','Cross-device recovery code (keep it safe)')+'</label>'+
     '<div class="cb-cloud-code" id="cb-cloud-code">'+esc(CODE_PREFIX+token)+'</div>'+
     '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="copy">'+t('复制恢复码','Copy recovery code')+'</button>'+
