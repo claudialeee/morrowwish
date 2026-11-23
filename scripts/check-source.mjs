@@ -169,11 +169,9 @@ const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
 // Every active game module must keep a cache-buster, but the CI test must
 // not pin a stale version when the game's battle mechanics are improved.
 
-// Art-quality gate: real battles must show the TWO SELECTED watercolor
-// breeds over the clean 21x3 painted scenes, not arbitrary fixed cats baked
-// into the gallery paintings. Keep every complete original 63-panel painting
-// available for art previews; never silently replace the live actors with
-// generic procedural cats.
+// Art-quality gate: the approved complete original 63 paintings are the
+// live battle finisher, not optional alternative breed-actor composites.
+// Preserve alternate cat art for separate gallery previews only.
 const approvedDuo=fs.readFileSync('public/cat-bond/js/duo-hero.js','utf8');
 const watercolorActors=fs.readFileSync('public/cat-bond/js/duo-breed-actors.js','utf8');
 const premiumScene=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
@@ -198,20 +196,19 @@ if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
  throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
 
 // This gate is paired with check-cat-bond-premium-21x3.mjs and real browser duo QA.
-// Live Cat Bond duel: 21x3 *cat-free* illustrated stages with the player's
-// selected watercolor actors; the complete 63 original fixed paintings are
-// still kept for gallery previews. This must match the real browser duo QA,
-// not contradict it. Also gate the post-cut-in audio and elemental impact.
+// Live Cat Bond duo uses the approved 21x3 full original storyboards.
+// Maintain separate optional breed-matched previews; this source gate must
+// agree with real browser QA and preserve the release audio/VFX sequence.
 const duoBondSource=fs.readFileSync('public/cat-bond/js/duo-bond.js','utf8');
 const duoBattleSource=fs.readFileSync('public/cat-bond/js/battle.js','utf8');
-if(!duoBondSource.includes('this.duoCinematic.originalArt=false')||
-   duoBondSource.includes('this.duoCinematic.originalArt=true')||
-   !duoBattleSource.includes('originalArt:false')||
+if(!duoBondSource.includes('this.duoCinematic.originalArt=true')||
+   duoBondSource.includes('this.duoCinematic.originalArt=false')||
+   !duoBattleSource.includes('originalArt:true')||
    !premiumScene.includes('const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));')||
    !premiumScene.includes('const originalArt=seq.originalArt!==false&&!liveJiafei')||
    !premiumScene.includes('CatBondDuoBreedActors?.draw?.(')||
    !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview)'))
- throw Error('Cat Bond duo must use selected real watercolor breeds in battle and preserve original gallery art');
+ throw Error('Cat Bond live duo must use the owner-approved complete 63 original watercolor paintings');
 const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
 if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
