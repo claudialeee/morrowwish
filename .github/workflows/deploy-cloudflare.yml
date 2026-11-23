@@ -280,7 +280,7 @@ jobs:
           verify_live /cat-bond/ /tmp/mw-live-catbond.html 'id="battle-skill-info-toggle"'
           # Read the current cache-busted asset references from source instead
           # of assuming previous version names are still in the live HTML.
-          for asset in css/style.css js/main.js js/ui.js js/game.js js/world.js js/adult-art.js js/ward-art.js; do
+          for asset in css/style.css js/platform.js js/i18n.js js/main.js js/ui.js js/game.js js/world.js js/adult-art.js js/ward-art.js; do
             expected=$(grep -oE "$asset[?]v=[^\" ]+" public/cat-bond/index.html | head -1)
             if [ -z "$expected" ] || ! grep -Fq "$expected" /tmp/mw-live-catbond.html; then
               echo "::error::Vercel Cat Bond HTML is missing the source asset $asset"
@@ -318,6 +318,14 @@ jobs:
           cmp -s public/cat-bond/css/style.css /tmp/mw-live-catbond-style.css || {
             echo '::error::Vercel Cat Bond stylesheet remains stale'; exit 1;
           }
+          # Portal layout and language need exact fresh bytes: index.html version
+          # strings alone are insufficient when CDN caches an old script.
+          for asset in platform.js i18n.js; do
+            curl -fsSL --max-time 20 -o "/tmp/mw-live-catbond-$asset" "https://morrowwish.vercel.app/cat-bond/js/$asset?verify=$GITHUB_SHA"
+            cmp -s "public/cat-bond/js/$asset" "/tmp/mw-live-catbond-$asset" || {
+              echo "::error::Vercel Cat Bond $asset is stale or missing after deployment"; exit 1;
+            }
+          done
           echo 'Official Vercel Cat Bond URL checked: guided intro and all updated JS/CSS bytes match production.'
           echo 'Public homepage slogan, cat link, and playable game markup verified.'
       - name: Verify live platform tracking links on both domains
