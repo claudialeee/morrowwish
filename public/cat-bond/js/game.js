@@ -936,7 +936,7 @@ class Game {
   startBattle(team, wildSpecies, opts={}) {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
-    this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
+    this.battle = new Battle.CaptureBattle(this, team, wildSpecies, opts);
     this.battle.storyBoss=!!opts.storyBoss;
     // Persist the region BEFORE the arena changes this.scene to 'battle'.
     this.battle._analyticsRegion=this._returnScene==='map'
