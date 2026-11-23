@@ -74,6 +74,27 @@ try{
     State.S.cats.push(b);
     State.S.coins=10000;State.S.fish=1000;State.save();
    });
+   const toastLocale=await page.evaluate(async()=>{
+    const original=MorrowwishI18n.get();
+    const game=Object.create(Game.prototype);game.scene='yard';
+    game.toast({zh:'厨房掉落的小鱼干 🐠+3',en:'A fish treat by the kitchen 🐠+3'});
+    const el=document.querySelector('#toasts .toast:last-child');
+    if(!el)throw Error('Localized reward toast was not created');
+    const read=()=>el.textContent.trim();
+    const pause=()=>new Promise(resolve=>setTimeout(resolve,30));
+    MorrowwishI18n.set('en');await pause();const en=read();
+    MorrowwishI18n.set('zh');await pause();const zh=read();
+    MorrowwishI18n.set('en');await pause();const enAgain=read();
+    MorrowwishI18n.set(original);await pause();
+    return {en,zh,enAgain,restored:read(),original};
+   });
+   if(toastLocale.en!=='A fish treat by the kitchen 🐠+3'||
+      toastLocale.zh!=='厨房掉落的小鱼干 🐠+3'||
+      toastLocale.enAgain!=='A fish treat by the kitchen 🐠+3'){
+    failures.push(p.host+' '+p.lang+' live reward toast language switch: '+JSON.stringify(toastLocale));
+   }
+   results.push({host:p.host,lang:p.lang,width:p.width,
+    action:'live-reward-toast-language-switch',result:toastLocale});
    const actions=[
     {name:'train-once',setup:()=>{UI.openCatDetail(State.S.cats[0]);},selector:'#cd-trainstat'},
     {name:'train-batch',setup:()=>{UI.openCatDetail(State.S.cats[0]);document.getElementById('cd-grow-more').open=true;},selector:'#cd-stat-ten'},
