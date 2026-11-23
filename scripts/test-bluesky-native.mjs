@@ -35,5 +35,5 @@ assert.equal(result.metricScope.verifiedPosts.length,28);
 assert.equal(bskyOverlay(result,{posts:[cat,town]},'ready').metricScope.verifiedPosts.length,28,'refresh replaces, not duplicates, old values');
 const failed=await nativeBlueskySnapshot({DB:{prepare(){throw Error('not available')}}},baseline);
 assert.equal(failed.nativeBluesky.status,'storage_error');
-assert.equal(failed.platforms.find(p=>p.id==='tiktok').views,94);
+assert.equal(failed.platforms.find(p=>p.id==='tiktok').views,null,'deleted Cat Bond TikTok totals stay unavailable on Bluesky storage failure');
 console.log('Bluesky native engagement: identity, campaign matching, accurate public reactions, isolation and fail-safe verified.');
