@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: morrowwish-d1-recovery
+  cancel-in-progress: false
+
 jobs:
   audit:
     runs-on: ubuntu-latest
