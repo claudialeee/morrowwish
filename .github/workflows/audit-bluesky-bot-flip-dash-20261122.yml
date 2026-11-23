@@ -51,6 +51,17 @@ jobs:
           console.log('REPEATED_AUTHORS '+JSON.stringify(Object.entries(seen).filter(([k,v])=>v>=2).sort((a,b)=>b[1]-a[1]).slice(0,25)));
           const ownerReposts=all.filter(x=>x.authorDid===target);
           console.log('MORROW_IN_BOT_FEED '+JSON.stringify(ownerReposts));
+          const fullReposts=all.filter(x=>x.type.includes('reasonRepost'));
+          const byAuthor=new Map();
+          for(const e of fullReposts){
+            const arr=byAuthor.get(e.author)||[];
+            arr.push(e.time);
+            byAuthor.set(e.author,arr);
+          }
+          const histogram={};
+          for(const arr of byAuthor.values())histogram[arr.length]=(histogram[arr.length]||0)+1;
+          console.log('REPOST_AUTHOR_HISTOGRAM '+JSON.stringify({sampleSize:fullReposts.length,authorCount:byAuthor.size,frequencyHistogram:histogram,mostRepeated:[...byAuthor].sort((a,b)=>b[1].length-a[1].length).slice(0,18)}));
+          
           NODE
       - name: Check latest owner posts, video embeds, facets and reposting accounts
         env:
