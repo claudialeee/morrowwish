@@ -1,11 +1,30 @@
 {
-  "checkedAt": "2026-11-23T02:22:39.478Z",
-  "workflowStatus": "failure",
+  "checkedAt": "2026-11-23T02:51:07.548Z",
+  "workflowStatus": "success",
   "portalDraftId": "cda65c21-75f7-4ce5-b717-62b425097981",
-  "portalScriptStatus": "not-run-or-blocked-before-portal",
-  "uploaded": [],
-  "verifiedDraftVisible": false,
-  "confirmedOriginal63": false,
+  "portalScriptStatus": "saved-final-step-unsubmitted",
+  "uploaded": [
+    "cover-landscape.png",
+    "cover-portrait.png",
+    "cover-square.png",
+    "real-gameplay-landscape.mp4",
+    "real-gameplay-portrait.mp4"
+  ],
+  "verifiedDraftVisible": true,
+  "confirmedOriginal63": true,
   "error": null,
-  "submittedForReview": false
+  "submittedForReview": false,
+  "workflowRunId": 45102338281,
+  "phases": {
+    "sourcecheck": "success",
+    "playableqa": "success",
+    "liveparity": "success",
+    "media": "success",
+    "formats": "success",
+    "upload": "success",
+    "receipt": "success"
+  },
+  "originalSceneCount": 63,
+  "polishedPreviewDurationSeconds": 17.5,
+  "mediaArtifactId": 14785279032
 }
