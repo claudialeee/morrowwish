@@ -108,8 +108,8 @@ function storyState(){
     if(page&&!story.fragments.includes(page.id))story.fragments.push(page.id);
    }
   }
-  if(old.ruins?.nodes?.includes('ruins_secret')&&!story.fragments.includes(LAST_PAGE.id))
-    story.fragments.push(LAST_PAGE.id);
+  // A previously collected ruins secret is revealed only after all five
+  // regional memories have been restored (see onRegionEntered below).
   story.migrated=true;
   save();
  }
@@ -167,7 +167,7 @@ function renderPortraits(root){
  if(player&&cat&&window.CatArt?.renderCatThumb)
   window.CatArt.renderCatThumb(player,window.GameData?.speciesById?.(cat.species),cat);
  const muling=root.querySelector('[data-cb-muling-portrait]');
- const sp=window.GameData?.speciesById?.('xingchen');
+ const sp=bossSpecies();
  if(muling&&sp&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(muling,sp);
 }
 function showSequence(kind,pages,done,options={}){
@@ -264,7 +264,7 @@ function onRegionEntered(id){
 }
 function onRegionDiscovery(regionId,reward){
  if(regionId!=='ruins'||reward?.discovery?.id!=='ruins')return;
- const s=storyState();if(!s||!s.introSeen)return;
+ const s=storyState();if(!s||!s.introSeen||!hasAllRegionPages(s))return;
  if(markFragment(LAST_PAGE.id)){
   setTimeout(()=>afterPanelClosed(()=>showSequence('reveal',[LAST_PAGE],()=>{
    if(allSix(storyState()))showBossReveal();
