@@ -32,10 +32,10 @@
   if (crazygames) document.documentElement.classList.add('cb-cg');
   if (externalPortal) document.documentElement.classList.add('cb-third-party');
   if (native) document.documentElement.classList.add('cb-native-host');
-  // CrazyGames has no Morrow Wish fullscreen toolbar. Anchor all ten yard
-  // menu/action buttons to ONE compact bottom-right, two-column dock so
-  // they preserve the original site's right-side navigation and never
-  // span across or hide the painted yard.
+  // CrazyGames has no Morrow Wish fullscreen toolbar. Reuse the two
+  // original yard groups in ONE non-intercepting overlay: 5 named tabs
+  // horizontal at bottom-centre and 5 garden icon actions vertical at right.
+  // Hide both groups during map and battle; keep top settings independent.
   // Reparent the original nodes so existing game listeners and IDs survive.
   if(crazygames && typeof document.addEventListener==='function'){
     const mountYardDock=()=>{
