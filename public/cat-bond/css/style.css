@@ -5118,3 +5118,24 @@ body.cb-exploring #stage #yard-actions{
 #panel .cb-dex-story-record strong{display:block;font:850 12px/1.4 system-ui,sans-serif;color:#5c523e}
 #panel .cb-dex-story-record small{display:block;margin-top:2px;font:600 10px/1.4 system-ui,sans-serif;color:#887b61}
 #panel .cb-dex-story-record>b{margin-left:auto;color:#728c6c;font:850 10px/1.2 system-ui,sans-serif;white-space:nowrap}
+
+
+/* Slow painterly camera movement makes each chapter and ending feel like a cutscene. */
+.cb-story-art{transform:scale(1.035);transform-origin:center;animation:cb-story-pan 22s ease-in-out infinite alternate;will-change:transform}
+.cb-story-card{animation:cb-story-card-in .62s cubic-bezier(.2,.72,.2,1) both}
+.cb-story-scene-glow{animation:cb-story-light 8s ease-in-out infinite alternate}
+@keyframes cb-story-pan{
+ from{transform:scale(1.035) translate3d(0,0,0)}
+ to{transform:scale(1.12) translate3d(-.8%,-1.2%,0)}
+}
+@keyframes cb-story-card-in{
+ from{opacity:0;transform:translate3d(0,22px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes cb-story-light{
+ from{filter:brightness(.94)}
+ to{filter:brightness(1.12)}
+}
+@media(prefers-reduced-motion:reduce){
+ .cb-story-art,.cb-story-card,.cb-story-scene-glow{animation:none;will-change:auto}
+}
