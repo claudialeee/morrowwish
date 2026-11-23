@@ -72,7 +72,15 @@ const UI = {
     const placementCancel=document.getElementById('yard-placement-cancel');
     if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
     this.syncYardNav();
-    window.addEventListener('morrowwish-language-change',()=>this.syncYardNav());
+    window.addEventListener('morrowwish-language-change',()=>{
+      this.syncYardNav();
+      this.updateBuildingPlacement();
+      // Many panel headings are generated from en?zh:en branches, not
+      // dictionary-backed Chinese originals. The DOM translator can reverse
+      // existing Chinese text, but it cannot know how to translate native
+      // English UI labels into Chinese. Rebuild safe, open panels in place.
+      setTimeout(()=>this.refreshOpenPanelLocale(),0);
+    });
     const journey=document.getElementById('collection-goal');
     if(journey)journey.addEventListener('click',()=>this.openJourney());
     document.getElementById('yard-surprise')?.addEventListener('click',()=>this.openYardSurprise());
@@ -143,6 +151,37 @@ const UI = {
     const tabWork=document.querySelector('[data-tab="work"] .nav-caption');
     if(tabCats)tabCats.textContent=en?'Cats':'猫咪';
     if(tabWork)tabWork.textContent=en?'Workshop':'工坊';
+  },
+  refreshOpenPanelLocale(){
+    const panel=document.getElementById('panel');
+    const route=this._localePanelRoute;
+    if(!panel?.classList.contains('open')||!route||this._localePanelRerendering)return;
+    if(typeof this[route.method]!=='function')return;
+    const scrollTop=panel.scrollTop;
+    const card=panel.querySelector(':scope > .card');
+    const cardTop=card?.scrollTop||0;
+    const details=[...panel.querySelectorAll('details')].map((d,i)=>({
+      id:d.id,index:i,open:d.open
+    }));
+    const stack=this._navStack.slice(),current=this._navCurrent;
+    this._localePanelRerendering=true;
+    try{
+      this[route.method](...route.args);
+      this._navStack=stack;this._navCurrent=current;
+      const next=document.getElementById('panel');
+      details.forEach(({id,index,open})=>{
+        const item=(id?next.querySelector('#'+CSS.escape(id)):null)
+          ||next.querySelectorAll('details')[index];
+        if(item)item.open=open;
+      });
+      const nextCard=next.querySelector(':scope > .card');
+      if(nextCard)nextCard.scrollTop=cardTop;
+      next.scrollTop=scrollTop;
+    }catch(error){console.warn('Cat Bond locale panel refresh failed',error)}
+    finally{
+      this._navStack=stack;this._navCurrent=current;
+      this._localePanelRerendering=false;
+    }
   },
   startBuildingPlacement(type){
     const en=this.isEnglish();
@@ -1103,6 +1142,9 @@ const UI = {
   // SAME form (skill selection / duo pairing). Full navigation still starts
   // at the top; never force the whole window to scroll on a button tap.
   panel(html,preserveScroll=false) {
+    // An untracked/interactive modal replaces any stale saved locale route.
+    if(!this._localePanelDepth&&!this._localePanelRerendering)
+      this._localePanelRoute=null;
     this._teaseStop?.();
     const p = document.getElementById('panel');
     const before=p.querySelector(':scope > .card');
@@ -1161,6 +1203,7 @@ const UI = {
     p.onclick = e => { if (e.target === p) this.closeAll(); };
   },
   closeAll() {
+    this._localePanelRoute=null;
     this.resetNavigation();
     this._teaseFromCatDetail=false;
     this._teaseStop?.();
@@ -3269,5 +3312,30 @@ function statLine(label, val) {
   return `<div class="stat-row"><span class="label">${label}</span><div class="bar xp"><span style="width:${pct}%"></span></div><span class="val">${val}</span></div>`;
 }
 function withA2(h, a) { if (!h || h[0] !== '#') return h || '#fff'; const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+
+// Keep every safely repeatable panel in sync when players switch EN ↔ ZH.
+// Store its latest route even when it was opened by another panel or navigation.
+const LOCALIZED_PANEL_ROUTES=[
+  'openCatHub','openRoster','openBreedRoster','openCatDetail',
+  'openWorkshop','openBuild','openDex','openDaily','openShop',
+  'openFeed','openSkillEditor','openTrainer','openMapChooser',
+  'openMapSquad','openExploreMenu','openJourney','openCapturePrep',
+  'openBattleModePrompt','openCatPicker'
+];
+for(const method of LOCALIZED_PANEL_ROUTES){
+  const original=UI[method];
+  if(typeof original!=='function')continue;
+  UI[method]=function(...args){
+    this._localePanelDepth=(this._localePanelDepth||0)+1;
+    try{
+      const result=original.apply(this,args);
+      if(!this._localePanelRerendering &&
+        document.getElementById('panel')?.classList.contains('open')){
+        this._localePanelRoute={method,args};
+      }
+      return result;
+    }finally{this._localePanelDepth--}
+  };
+}
 
 window.UI = UI;
