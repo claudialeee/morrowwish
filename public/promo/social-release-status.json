@@ -358,17 +358,18 @@
       "music": "distinct licensed recording",
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/c1qeZ3tvuLU",
+        "youtube": "https://www.youtube.com/shorts/dHD2UnbmSqU",
         "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071416099032333",
         "instagram": "https://www.instagram.com/morrowwishgames/reel/DgEOAAcJ74v/",
         "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wyfh4x63vg"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "owner-supplied-current-short-url",
           "publicVerified": true,
-          "views": 16,
-          "likes": 1
+          "views": null,
+          "likes": null,
+          "pendingNativeRefresh": true
         },
         "tiktok": {
           "source": "vidiq-tiktok-public",
