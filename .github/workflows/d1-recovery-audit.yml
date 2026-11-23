@@ -39,12 +39,12 @@ jobs:
           const root='/accounts/'+account+'/d1/database/'+db;
           const database=await api(root);
           const timestamps=[
-            '2026-11-22T00:00:00-08:00',
-            '2026-11-22T06:00:00-08:00',
-            '2026-11-22T12:00:00-08:00',
-            '2026-11-22T18:00:00-08:00',
-            '2026-11-23T00:00:00-08:00',
-            '2026-11-23T06:00:00-08:00'
+            '2026-11-22T00:00:00.000-08:00',
+            '2026-11-22T06:00:00.000-08:00',
+            '2026-11-22T12:00:00.000-08:00',
+            '2026-11-22T18:00:00.000-08:00',
+            '2026-11-23T00:00:00.000-08:00',
+            '2026-11-23T06:00:00.000-08:00'
           ];
           const [currentBookmark,...historical]=await Promise.all([
             api(root+'/time_travel/bookmark'),
@@ -61,7 +61,7 @@ jobs:
           const totals=hasEvents?await query("SELECT category,game,kind,COUNT(*) AS rows,MIN(day) AS first_day,MAX(day) AS last_day FROM events GROUP BY category,game,kind ORDER BY category,game,kind"):[];
           const output={
             generatedAt:new Date().toISOString(),
-            targetRangeStart:'2026-11-22T00:00:00-08:00',
+            targetRangeStart:'2026-11-22T00:00:00.000-08:00',
             database:{name:database.name,uuid:database.uuid,version:database.version,created_at:database.created_at,file_size:database.file_size},
             currentBookmark:currentBookmark?.bookmark||null,
             historicalBookmarks:timestamps.map((timestamp,i)=>({timestamp,bookmark:historical[i]?.bookmark||null,error:historical[i]?.error||null})),
