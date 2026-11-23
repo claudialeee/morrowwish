@@ -434,9 +434,12 @@ const UI = {
       action('regions','🗺️','世界目录','World directory')+
       '</div><p class="explore-menu-tip">'+(en
         ?'Close × to resume exploring exactly where you left off.'
-        :'点击 × 就能回到刚才的位置，继续探索。')+'</p></section>');
+        :'点击 × 就能回到刚才的位置，继续探索。')+'</p>'+
+      '<button type="button" class="cb-menu-reset" id="cb-menu-reset">'+
+      (en?'Reset game':'重置游戏')+'</button></section>');
     document.getElementById('map-menu')?.setAttribute('aria-expanded','true');
     const host=document.querySelector('#panel .explore-menu');
+    window.CatBondBindResetButton?.(host?.querySelector('#cb-menu-reset'));
     host?.querySelectorAll('.explore-cat').forEach(card=>{
       const cat=team.find(c=>c.uid===card.dataset.menuCat);
       if(cat)CatArt.renderCatThumb(card.querySelector('canvas'),
