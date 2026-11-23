@@ -4736,3 +4736,114 @@ html.cb-cg #stage #battle-ui #cg-battle-hud #cg-battle-charges #duo-burst{
     max-width:100%!important;
   }
 }
+
+
+/* CrazyGames full-name action bar, no ellipsis.
+   A skill's real in-game name must be visible, not e.g. "Fluf..." or "Fro...".
+   Full descriptions remain in the existing Controls sheet. Every move
+   expands to fit its label instead of clipping it inside a fixed 48px tile. */
+html.cb-cg #stage #battle-ui .move-bar{
+  position:absolute!important;
+  display:flex!important;flex-wrap:nowrap!important;
+  left:50%!important;right:auto!important;
+  transform:translateX(-50%)!important;
+  bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
+  width:max-content!important;max-width:calc(100% - 16px)!important;
+  height:auto!important;
+  box-sizing:border-box!important;align-items:flex-end!important;
+  justify-content:center!important;
+  gap:clamp(5px,.9vw,11px)!important;
+  margin:0!important;padding:2px!important;
+  z-index:26!important;pointer-events:auto!important;
+}
+html.cb-cg #stage #battle-ui .move-bar .move{
+  position:relative!important;
+  display:flex!important;flex-direction:column!important;
+  flex:0 1 auto!important;
+  align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;
+  width:clamp(80px,10.5vw,118px)!important;
+  min-width:0!important;max-width:none!important;
+  height:auto!important;min-height:83px!important;max-height:none!important;
+  padding:7px 6px!important;
+  border-radius:17px!important;
+  gap:3px!important;
+  overflow:visible!important;
+  white-space:normal!important;
+}
+html.cb-cg #stage #battle-ui .move-bar .mv-name,
+html.cb-cg #stage #battle-ui .move-bar #ult-btn .mv-name{
+  display:block!important;flex:0 0 auto!important;
+  position:relative!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  height:auto!important;max-height:none!important;
+  margin:0!important;padding:0!important;
+  overflow:visible!important;text-overflow:clip!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  font:850 clamp(10px,1.12vw,13px)/1.14 system-ui,sans-serif!important;
+  text-align:center!important;
+}
+html.cb-cg #stage #battle-ui .move-bar .mv-icon{
+  display:block!important;flex:0 0 auto!important;
+  font-size:clamp(19px,2.2vw,27px)!important;
+  line-height:1.1!important;
+}
+html.cb-cg #stage #battle-ui .move-bar .mv-k{
+  display:block!important;flex:0 0 auto!important;
+  max-width:100%!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+  text-overflow:clip!important;
+  font:800 10px/1.1 system-ui,sans-serif!important;
+}
+@media(max-width:700px) and (pointer:fine){
+  html.cb-cg #stage #battle-ui .move-bar .move{
+    width:clamp(54px,12.6vw,88px)!important;
+    min-height:78px!important;padding:5px 3px!important;
+    border-radius:13px!important;
+  }
+  html.cb-cg #stage #battle-ui .move-bar .mv-name{
+    font-size:10px!important;
+  }
+}
+@media(pointer:coarse){
+  /* Touch gets 3x2 buttons near the right thumb, leaving the left joystick
+     unobstructed. Use content-sized rows, not the legacy 43/48/52px boxes. */
+  html.cb-cg #stage #battle-ui .move-bar{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,clamp(61px,16vw,82px)))!important;
+    grid-template-rows:repeat(2,minmax(78px,max-content))!important;
+    grid-auto-rows:minmax(78px,max-content)!important;
+    width:max-content!important;max-width:calc(100% - 10px)!important;
+    left:auto!important;right:max(7px,env(safe-area-inset-right,0px))!important;
+    transform:none!important;bottom:max(6px,env(safe-area-inset-bottom,0px))!important;
+    align-items:stretch!important;justify-content:end!important;
+    gap:4px!important;
+  }
+  html.cb-cg #stage #battle-ui .move-bar .move{
+    width:100%!important;min-width:0!important;max-width:none!important;
+    height:100%!important;min-height:78px!important;max-height:none!important;
+    padding:5px 3px!important;gap:2px!important;
+    border-radius:12px!important;
+  }
+  html.cb-cg #stage #battle-ui .move-bar .mv-name,
+  html.cb-cg #stage #battle-ui .move-bar #ult-btn .mv-name{
+    font-size:10px!important;line-height:1.11!important;
+  }
+  html.cb-cg #stage #battle-ui .move-bar .mv-icon{font-size:20px!important}
+  html.cb-cg #stage #battle-ui .move-bar .mv-k{
+    font-size:9px!important;line-height:1.1!important;
+  }
+}
+@media(max-height:470px) and (pointer:coarse) and (orientation:landscape){
+  html.cb-cg #stage #battle-ui .move-bar{
+    grid-template-rows:repeat(2,minmax(69px,max-content))!important;
+    grid-auto-rows:minmax(69px,max-content)!important;
+  }
+  html.cb-cg #stage #battle-ui .move-bar .move{
+    min-height:69px!important;padding:3px 2px!important;gap:1px!important;
+  }
+  html.cb-cg #stage #battle-ui .move-bar .mv-icon{font-size:17px!important}
+  html.cb-cg #stage #battle-ui .move-bar .mv-name{font-size:9.5px!important}
+  html.cb-cg #stage #battle-ui .move-bar .mv-k{font-size:8.5px!important}
+}
