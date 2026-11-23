@@ -170,62 +170,21 @@ const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
 // Every active game module must keep a cache-buster, but the CI test must
 // not pin a stale version when the game's battle mechanics are improved.
 
-// Art-quality gate: the approved complete original 63 paintings are the
-// live battle finisher, not optional alternative breed-actor composites.
-// Preserve alternate cat art for separate gallery previews only.
+// Art-quality gate: all 63 approved complete watercolor paintings are the ONLY duo cinematic.
+// The rejected two-actor convergence renderer and its assets must stay deleted.
 const approvedDuo=fs.readFileSync('public/cat-bond/js/duo-hero.js','utf8');
-const watercolorActors=fs.readFileSync('public/cat-bond/js/duo-breed-actors.js','utf8');
 const premiumScene=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
-for(const path of ['public/cat-bond/index.html','public/cat-bond/duo-showcase.html','public/cat-bond/duo-preview.html']){
- const page=fs.readFileSync(path,'utf8');
- const actors=page.indexOf('src="js/duo-breed-actors.js?v=');
- const scene=page.indexOf('src="js/duo-premium.js?v=');
- const hero=page.indexOf('src="js/duo-hero.js?v=');
- if(actors<0||scene<=actors||hero<=scene||
-   page.includes('src="js/duo-breed-art.js'))
-   throw Error('Breed-specific premium watercolor actors must load BEFORE the duo scene and hero in '+path);
-}
-if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
-   !approvedDuo.includes('window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup)')||
-   !approvedDuo.includes("32-actual-breed-watercolor-actors")||
-   !premiumScene.includes('CatBondDuoBreedActors?.draw')||
-   premiumScene.includes('identity.paint(')||
-   !watercolorActors.includes('duo-watercolor-32-actors-v1.webp')||
-   !watercolorActors.includes('duo-stage-clean-21x3-v2.webp')||
-   !fs.existsSync('public/cat-bond/assets/duo-watercolor-32-actors-v1.webp')||
-   !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v2.webp'))
- throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
-
-// This gate is paired with the 21x3 browser QA and release VFX/audio checks.
-// The original 63 paintings remain the default in natural 16:9 compositions;
-// other aspect ratios use the same clean scenic stage with selected watercolor cats.
 const duoBondSource=fs.readFileSync('public/cat-bond/js/duo-bond.js','utf8');
 const duoBattleSource=fs.readFileSync('public/cat-bond/js/battle.js','utf8');
-if(!duoBondSource.includes('this.duoCinematic.originalArt=true')||
-   duoBondSource.includes('this.duoCinematic.originalArt=false')||
-   !duoBattleSource.includes('originalArt:true')||
-   !premiumScene.includes('const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));')||
-   !premiumScene.includes('const wideOriginalComposition=thumbnail||(W/H>=1.68&&W/H<=1.88)')||
-   !premiumScene.includes('const originalArt=seq.originalArt!==false&&!liveJiafei&&wideOriginalComposition')||
-   !premiumScene.includes('CatBondDuoBreedActors?.draw?.(')||
-   premiumScene.includes('drawPortraitStory(')||premiumScene.includes('portraitEnvironment('))
- throw Error('Cat Bond must use one full-bleed original painting or a breed-matched full-stage composition');
+for(const path of ['public/cat-bond/index.html','public/cat-bond/duo-showcase.html','public/cat-bond/duo-preview.html']){
+ const page=fs.readFileSync(path,'utf8'),scene=page.indexOf('src="js/duo-premium.js?v='),hero=page.indexOf('src="js/duo-hero.js?v=');
+ if(scene<0||hero<=scene||page.includes('duo-breed-actors.js')||page.includes('mode-breeds')||page.includes('pick-cat-a'))throw Error('Non-original duo entry point: '+path);
+}
+for(const path of ['public/cat-bond/js/duo-breed-actors.js','public/cat-bond/assets/duo-watercolor-32-actors-v1.webp','public/cat-bond/assets/duo-stage-clean-21x3-v2.webp'])if(fs.existsSync(path))throw Error('Rejected actor asset remains: '+path);
+if(!approvedDuo.includes('63-original-painted-storyboards')||!approvedDuo.includes('window.CatBondPremiumCinematics.draw(ctx,W,H,seq,lookup)')||approvedDuo.includes('CatBondDuoArtwork')||approvedDuo.includes('drawKitten')||premiumScene.includes('CatBondDuoBreedActors')||premiumScene.includes('drawKitten')||premiumScene.includes('originalArt:false')||!premiumScene.includes('const artW=Math.min(W,H*ASPECT)')||!premiumScene.includes('feather(paintingCtx,artW,artH)')||!premiumScene.includes('atmosphere(stageCtx,W,H,index)'))throw Error('Duo renderer must use complete original paintings only.');
+if(!duoBondSource.includes('this.duoCinematic.originalArt=true')||duoBondSource.includes('this.duoCinematic.originalArt=false')||!duoBattleSource.includes('originalArt:true'))throw Error('Live battle must always use original 63 paintings');
 const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
-if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
-   !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
-   !premiumScene.includes('const galleryPreview=seq.galleryPreview===true')||
-   !premiumScene.includes('const zoom=thumbnail||galleryPreview?1:1.015+.02*smooth(p/.62)')||
-   !premiumScene.includes('sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,zoom,0,0,1,null,tier)')||
-   !premiumScene.includes('galleryPreview?1:Math.min(cam.zoom,1.16)')||
-   !premiumScene.includes('const opacity=(thumbnail||galleryPreview)?1:')||
-   !premiumScene.includes('smooth(p/.22)*(1-smooth((p-.71)/.275))')||
-   !premiumScene.includes('featherScenery(ctx,sw,sh)')||
-   !premiumScene.includes('const edgeX=clamp(148/W,.20,.32)')||
-   premiumScene.includes('drawPortraitStory(')||premiumScene.includes('portraitEnvironment(')||
-   !duoBondSource.includes('window.CatBondDuoReleaseVFX=')||
-   !duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||
-   !studioAudioSource.includes("beat==='release'"))
- throw Error('Cat Bond premium duo must fill mobile/desktop arena and keep post-cut-in VFX + audio');
+if(!premiumScene.includes('const alpha=still?1:')||!premiumScene.includes('ASPECT=16/9')||!premiumScene.includes('get actorFallbackEnabled(){return false}')||!duoBondSource.includes('window.CatBondDuoReleaseVFX=')||!duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||!studioAudioSource.includes("beat==='release'"))throw Error('Responsive original art or post-cut-in VFX/audio regression');
 // Trailer must show one uninterrupted real rare-cat battle: native HP/skills,
 // exactly one duo finisher and earned capture (never a second encounter).
 const duoPromoCapture=fs.readFileSync('scripts/capture-trailers-v10.mjs','utf8');

@@ -22,9 +22,7 @@ h1{font-size:clamp(27px,4.3vw,43px);letter-spacing:-.04em;margin:5px 0 8px;color
 .player{background:#fffdf8;border:1px solid #e1e5dd;border-radius:24px;box-shadow:0 16px 40px #3f58501a;padding:11px;min-width:0}
 .player-stage{position:relative;overflow:hidden;border-radius:17px;background:linear-gradient(120deg,#e9f0e5,#eae5f3 55%,#f2e4df)}
 #duo-player{display:block;width:100%;height:auto;aspect-ratio:16/9}
-@media(max-width:620px) and (orientation:portrait){
- #duo-player{aspect-ratio:9/16;height:auto;max-height:72dvh}
-}
+@media(max-width:620px){#duo-player{aspect-ratio:16/9;height:auto;max-height:42dvh}}
 @media(orientation:landscape) and (max-height:540px){
  #duo-player{aspect-ratio:16/9;max-height:72dvh}
 }
@@ -66,10 +64,7 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 .breed-card canvas{width:min(100%,130px);height:auto;aspect-ratio:1/1.18;object-fit:contain}
 .breed-card strong{font-size:13px}.breed-card small{font-size:10px;color:#819280}
 .breed-card:hover{background:#fff7e8;border-color:#a6d1b5}
-.actor-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.actor-controls label{font-size:11px;font-weight:900;color:#63806e}
-.actor-controls select{display:block;width:100%;min-width:0;min-height:39px;padding:6px;
- background:#fffdf7;border:1px solid #c5d4be;border-radius:10px;color:#355c46;font:750 13px system-ui}
+
 @media(max-width:950px){.breed-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .tier-row button{min-height:46px;font-size:clamp(10px,1.2vw,13px);padding:7px 9px}
 @media(max-width:520px){.breed-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.gallery{gap:8px}.duo-card{border-radius:14px;padding:5px}.duo-card canvas{border-radius:9px}.card-copy{padding:7px 4px}.card-name{font-size:12px}.card-meta{font-size:10px}.side-note{display:flex;padding:16px}h1{font-size:29px}.player{padding:6px;border-radius:16px}.player-stage{border-radius:11px}.controls{gap:6px}.controls button{flex:1 1 auto;padding:10px 9px;font-size:12px}.review{font-size:11px}}
@@ -192,17 +187,10 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 </div></div>
 <aside class="side-note">
 <h3>完整原画 / 品种适配</h3>
-<div class="art-mode-controls" role="group" aria-label="原画风格">
-<button id="mode-original" type="button" aria-pressed="true">完整 63 幅原画</button>
-<button id="mode-breeds" type="button" aria-pressed="false">按所选品种替换</button>
-</div>
+
 <div class="kitten-line"><canvas id="cat-a" width="86" height="72"></canvas><span><b id="cat-name-a">墨球</b><small id="element-a">暗属性</small></span></div>
 <div class="kitten-line"><canvas id="cat-b" width="86" height="72"></canvas><span><b id="cat-name-b">幽灵</b><small id="element-b">暗属性</small></span></div>
-<div class="actor-controls">
- <label for="pick-cat-a">左侧参战猫<select id="pick-cat-a" aria-label="选左侧猫咪品种"></select></label>
- <label for="pick-cat-b">右侧参战猫<select id="pick-cat-b" aria-label="选右侧猫咪品种"></select></label>
-</div>
-<p class="note">完整原画包含原本画好的双猫形象；如需与所选猫咪品种及毛色完全对应，请使用「按所选品种替换」模式。仅改变预览，不会修改游戏存档。</p><p id="move-desc" class="details"></p><div style="display:flex;align-items:center;gap:9px;font-size:12px;color:#6c806e"><span id="scene-theme-indicator" class="scene-palette-swatch"></span><span>本合击的独立柔和调色</span></div>
+<p class="note">此审核页与正式游戏统一使用 63 幅完整水彩原画；不提供双猫居中拼接或品种替换动画。</p><p id="move-desc" class="details"></p><div style="display:flex;align-items:center;gap:9px;font-size:12px;color:#6c806e"><span id="scene-theme-indicator" class="scene-palette-swatch"></span><span>本合击的独立柔和调色</span></div>
 <div><strong style="font-size:13px;display:block;margin-bottom:8px">默契阶段 · 三种不同原画动作</strong><div class="tier-row">
 <button id="tier-1" type="button" data-tier="1" aria-pressed="false">默契 20 · 双猫飞扑</button>
 <button id="tier-2" type="button" data-tier="2" aria-pressed="false">默契 60 · 交叉双击</button>
@@ -231,9 +219,8 @@ footer{padding:24px 0 8px;color:#819185;font-size:12px}
 <script src="js/duo-director.js?v=three-tiers-21-cameras-20261122"></script>
 <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
 <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
-  <script src="js/duo-breed-actors.js?v=32-watercolor-cats-scenery-v5-20261122"></script>
-<script src="js/duo-premium.js?v=fullbleed-single-layer-feather-20261123-v1"></script>
-<script src="js/duo-hero.js?v=32-selected-breeds-actual-v2-20261122"></script>
+<script src="js/duo-premium.js?v=original-art-only-full-stage-20261123-v2"></script>
+<script src="js/duo-hero.js?v=original-63-only-20261123-v1"></script>
 <script>
 (()=>{'use strict';
 const byId=id=>document.getElementById(id);
@@ -285,44 +272,12 @@ for(const species of GameData.SPECIES){
 }
 const main=byId('duo-player'),ctx=main.getContext('2d'),status=byId('load-status');
 let index=0,tier=3,playing=true,sequence=false,started=performance.now(),hold=0,previewDone=false;
-let artMode='original';
-function setArtMode(mode){
- artMode=mode==='breeds'?'breeds':'original';
- byId('mode-original').setAttribute('aria-pressed',String(artMode==='original'));
- byId('mode-breeds').setAttribute('aria-pressed',String(artMode==='breeds'));
- started=performance.now();hold=0;playing=true;previewDone=false;
- refresh();paintThumbs();
-}
-byId('mode-original').onclick=()=>setArtMode('original');
-byId('mode-breeds').onclick=()=>setArtMode('breeds');
-for(const side of ['a','b']){
- const select=byId('pick-cat-'+side);
- for(const sp of GameData.SPECIES){
-  const opt=document.createElement('option');
-  opt.value=sp.id;opt.textContent=GameData.speciesName(sp);
-  select.appendChild(opt);
- }
- select.onchange=()=>{
-   const item=entries[index];
-   if(!GameData.speciesById(select.value))return;
-   item[side].species=select.value;
-   // Selecting a new breed deliberately switches from fixed classic
-   // illustrations to the breed-matched 32-cat scene mode.
-   artMode='breeds';
-   byId('mode-original').setAttribute('aria-pressed','false');
-   byId('mode-breeds').setAttribute('aria-pressed','true');
-   // Change both the actual high-resolution cats AND the catalogue portraits.
-   started=performance.now();hold=0;playing=true;
-   refresh();
-   previewDone=false;paintThumbs();
- };
-}
 const duration=2750;
 function sequenceFor(item,t,tier,showLabels=true){
  return {max:2.75,t:Math.max(.001,2.75-(t/1000)),strikeAt:.78,
    catUids:[item.a.uid,item.b.uid],elements:item.key,name:item.zh,tier,
    hideCaptions:!showLabels,thumbnail:!showLabels,
-   originalArt:artMode==='original'};
+   originalArt:true};
 }
 function drawFrame(c,w,h,item,t,lv=3,showLabels=true){
  c.clearRect(0,0,w,h);
@@ -360,9 +315,7 @@ function paintCats(item){
 }
 function refresh(){
  const item=entries[index];
- byId('pick-cat-a').value=item.a.species;
- byId('pick-cat-b').value=item.b.species;
- byId('current-title').textContent=item.zh;
+byId('current-title').textContent=item.zh;
  byId('current-en').textContent=item.en;
  byId('current-index').textContent=String(index+1).padStart(2,'0')+' / '+entries.length;
  byId('current-element').textContent=item.els.map(e=>elements[e]).join(' × ');

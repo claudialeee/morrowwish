@@ -17,27 +17,17 @@ button{background:#fff;border:1px solid #b6c5c4;border-radius:10px;padding:10px 
 button:hover{background:#f1faf6}#locked{margin:28px 0;padding:25px;background:#fff;border:1px solid #d9ddd9;border-radius:16px}
 #skill-title{color:#415d64;font-weight:800}
 [hidden]{display:none!important}
-@media(max-width:550px) and (orientation:portrait){
- canvas{aspect-ratio:9/16;max-height:68dvh}
-}
-@media(max-width:550px) and (orientation:landscape){
- canvas{aspect-ratio:16/9;max-height:68dvh}
-}
+@media(max-width:550px){canvas{aspect-ratio:16/9;max-height:42dvh}}
+
 /* When opened from an unlocked duo card, play in the game's closable modal. */
 html.duo-embedded body{margin:0;padding:7px 8px 10px;overflow:auto}
 html.duo-embedded main{width:100%;max-width:none}
 html.duo-embedded header{display:none}
-html.duo-embedded .viewer{border:1px solid #e3d6e7;border-radius:15px;padding:4px;
- background:linear-gradient(130deg,#fff7eb,#ebe9f8,#e9f4ee)}
+html.duo-embedded .viewer{display:block;min-width:0;padding:0;border:0;border-radius:0;background:transparent;overflow:visible;box-shadow:none}
 /* Preserve the artwork aspect ratio when constrained by iframe height:
    limiting canvas height alone while width stays at 100% squashes and crops cats. */
-html.duo-embedded .viewer{display:flex;justify-content:center;align-items:center;min-width:0}
-html.duo-embedded #duo-canvas{
- display:block;flex:none;width:auto!important;
- height:min(75dvh,calc((100vw - 28px)*9/16))!important;
- max-width:100%;max-height:none;aspect-ratio:16/9!important;
- object-fit:contain;
-}
+html.duo-embedded .viewer{display:block;min-width:0}
+html.duo-embedded #duo-canvas{display:block;width:100%!important;height:auto!important;max-width:100%;max-height:42dvh;aspect-ratio:16/9!important;object-fit:contain;border-radius:0}
 /* Parent dialog supplies the only skill heading. */
 html.duo-embedded #skill-title{display:none!important}
 html.duo-embedded #trust-note{margin:5px 7px;font-size:clamp(11px,1.5vw,13px);
@@ -48,10 +38,7 @@ html.duo-embedded .controls button{border-color:#dbc5e5;background:#f6e9f9;color
 html.duo-embedded #locked{margin:6px 0 0}
 @media(max-width:550px){
  html.duo-embedded body{padding:5px 4px}
- html.duo-embedded #duo-canvas{
-  width:auto!important;height:min(69dvh,calc((100vw - 16px)*16/9))!important;
-  max-width:100%;max-height:none;aspect-ratio:9/16!important;
- }
+ html.duo-embedded #duo-canvas{width:100%!important;height:auto!important;max-height:40dvh;aspect-ratio:16/9!important}
  html.duo-embedded .controls{margin:6px 0}
 }
 </style>
@@ -79,9 +66,8 @@ html.duo-embedded #locked{margin:6px 0 0}
 <script src="js/duo-director.js?v=three-tiers-21-cameras-20261122"></script>
 <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
 <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
-  <script src="js/duo-breed-actors.js?v=32-watercolor-cats-scenery-v5-20261122"></script>
-<script src="js/duo-premium.js?v=fullbleed-single-layer-feather-20261123-v1"></script>
-  <script src="js/duo-hero.js?v=32-selected-breeds-actual-v2-20261122"></script>
+<script src="js/duo-premium.js?v=original-art-only-full-stage-20261123-v2"></script>
+  <script src="js/duo-hero.js?v=original-63-only-20261123-v1"></script>
 <script>
 (function(){'use strict';
  const english=MorrowwishI18n.get()==='en';
@@ -129,7 +115,7 @@ html.duo-embedded #locked{margin:6px 0 0}
   CatBondDuoHero.draw(ctx,w,h,{
    max:duration,t:duration-Math.max(.01,elapsed),strikeAt:.78,
    catUids:[catA.uid,catB.uid],name:duo.name,elements:duo.elementPair,tier,
-   galleryPreview:true,hideCaptions:q.get('embedded')==='1',
+   galleryPreview:true,originalArt:true,hideCaptions:q.get('embedded')==='1',
    first:colors[first],second:colors[second]
   },lookup);
  }
