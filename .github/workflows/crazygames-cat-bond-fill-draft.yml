@@ -1,5 +1,6 @@
 name: Fill Cat Bond CrazyGames draft (never submit for review)
-# Resume Cat Bond draft and choose actual singular Cat and Animal tags; never submit for review.
+# Regenerate from live 63-original Cat Bond, replace the existing draft ONLY.
+# Never reuse an old ZIP or submit for approval.
 on:
   push:
     branches: [main]
@@ -15,7 +16,7 @@ concurrency:
 jobs:
   fill-only:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,14 +26,38 @@ jobs:
       - name: Install studio browser driver
         run: |
           npm ci
-          npm install --no-save --no-package-lock playwright
-      - name: Restore the five authenticated current-game media files generated this session
-        uses: actions/download-artifact@v4
-        with:
-          name: cat-bond-portal-saved-draft-and-media
-          run-id: 45096410159
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: .
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+          npx playwright install --with-deps chromium
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+      - name: Validate new media generation code
+        run: |
+          node --check scripts/record-cat-bond-crazygames-previews.mjs
+          node --check scripts/crazygames-cat-bond-cover-from-gameplay.mjs
+          node --check scripts/prepare-cat-bond-crazygames-media.mjs
+          node --check scripts/crazygames-cat-bond-save-draft.mjs
+          node scripts/check-cat-bond-original-art.mjs --source-only
+      - name: Verify current deployed iframe is really on approved original-63 art
+        run: |
+          set -eu
+          for i in $(seq 1 24); do
+            if curl -fsSL --max-time 12 "https://morrowwish.vercel.app/cat-bond/js/duo-bond.js?fresh=$i" | grep -Fq "this.duoCinematic.originalArt=true;" &&
+               curl -fsSL --max-time 12 "https://morrowwish.vercel.app/cat-bond/js/battle.js?fresh=$i" | grep -Fq "originalArt:true"; then
+              echo "Verified current live iframe approved 63-original renderer."
+              exit 0
+            fi
+            echo "Waiting for live iframe release $i/24"
+            sleep 15
+          done
+          echo "Live game does not yet match canonical originals: block portal upload." >&2
+          exit 1
+      - name: Record actual original-63 duo, create NEW covers and silent previews
+        run: |
+          node scripts/record-cat-bond-crazygames-previews.mjs
+          node scripts/crazygames-cat-bond-cover-from-gameplay.mjs
+          node scripts/prepare-cat-bond-crazygames-media.mjs
       - name: Check reused files before portal upload
         run: |
           node --input-type=module <<'NODE'
@@ -41,7 +66,7 @@ jobs:
             const p='public/promo/cat-bond/'+file;
             if(!fs.existsSync(p)||fs.statSync(p).size<1000)throw Error('Missing media: '+p);
           }
-          console.log('Five approved-format files restored for Cat Bond portal-only retry.');
+          console.log('Five NEW verified 63-original Cat Bond files prepared for portal replacement.');
           NODE
       - name: Login, create or resume Cat Bond, save draft only — NEVER submit
         env:
@@ -54,6 +79,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-crazygames-saved-draft-receipt
-          path: .check/crazygames/cat-bond-draft-fill.json
+          path: |
+            .check/crazygames/cat-bond-draft-fill.json
+            .check/crazygames/cat-bond-trim-portrait.json
+            .check/crazygames/cat-bond-trim-landscape.json
+            .check/crazygames/cat-bond-original-duo-portrait.png
+            .check/crazygames/cat-bond-original-duo-landscape.png
+            public/promo/cat-bond/cover-landscape.png
+            public/promo/cat-bond/cover-portrait.png
+            public/promo/cat-bond/cover-square.png
+            public/promo/cat-bond/real-gameplay-landscape.mp4
+            public/promo/cat-bond/real-gameplay-portrait.mp4
           if-no-files-found: warn
           retention-days: 14
