@@ -204,7 +204,7 @@ try{
         for(const jinwu of jinwus){
           const distance=Math.hypot(jinwu.x-start.x,jinwu.y-start.y);
           const clear=spawns.filter(s=>s.sp!=='jinwu')
-            .every(s=>segmentDistance(s,start,jinwu)>105);
+            .every(s=>segmentDistance(s,start,jinwu)>150);
           if(distance<780&&clear){chosen=seed;break;}
         }
         if(chosen!==null)break;
@@ -378,10 +378,26 @@ try{
     return {id:target.sp,level:target.level,
       x:r.left+sx*r.width/canvas.width,y:r.top+sy*r.height/canvas.height};
   });
-  // A physical click sets the avatar's walking destination. WorldMap detects
-  // proximity to the live roaming cat and opens the native battle-prep dialog.
-  await page.mouse.click(ssrTarget.x,ssrTarget.y);
-  await page.waitForSelector('#panel.open #bp-go',{timeout:18000});
+  // Physically chase the live roaming SSR with ordinary canvas clicks.
+  // Each click is a real browser mouse event; proximity—not this script—opens
+  // WorldMap's encounter callback and the native battle-prep panel.
+  let mapEncounterOpened=false;
+  for(let chase=0;chase<8&&!mapEncounterOpened;chase++){
+    const target=await page.evaluate(()=>{
+      const s=WorldMap.spawns.find(x=>x.sp==='jinwu');
+      if(!s)throw Error('Jinwu roamer disappeared before contact');
+      const canvas=document.getElementById('scene'),r=canvas.getBoundingClientRect(),v=WorldMap.view;
+      const sx=s.x-v.camX,sy=s.y-v.camY;
+      if(sx<8||sy<8||sx>canvas.width-8||sy>canvas.height-8)
+        return null;
+      return {x:r.left+sx*r.width/canvas.width,y:r.top+sy*r.height/canvas.height};
+    });
+    if(!target)throw Error('Jinwu roamer left the visible map before contact');
+    await page.mouse.click(target.x,target.y);
+    await page.waitForTimeout(420);
+    mapEncounterOpened=await page.locator('#panel.open #bp-go').count()>0;
+  }
+  if(!mapEncounterOpened)throw Error('Walking into the real SSR roamer never opened battle preparation');
   const mapBattlePrompt=await page.locator('#panel.open').innerText();
   const jinwuName=await page.evaluate(()=>GameData.speciesName(GameData.speciesById('jinwu')));
   if(!mapBattlePrompt.includes('SSR')||!mapBattlePrompt.includes(jinwuName))
