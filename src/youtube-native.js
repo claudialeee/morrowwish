@@ -5,16 +5,16 @@ const YT_API="https://www.googleapis.com/youtube/v3/videos";
 const YT_CHANNEL="UC9v31QGhSfBASDsbXMjch4Q";
 const YT_TTL=15*60*1000;
 const YT_APPROVED={
- "cat-bond":"2hd2LMg9iJY",
- "pawsibly-innocent":"JUQ8PsYCFG8",
- "tiny-town":"64Uh0S9dqmQ",
- "elsewhere":"n8bbePy8Unw",
- "flip-dash":"cC7akb-kUIo",
- "parcel-panic":"dHD2UnbmSqU",
- "pocket-aquarium":"O3tMbulVPvk"
+ "cat-bond":"JoDtL_gIk4M",
+ "pawsibly-innocent":"-Xkue1ZSG8Y",
+ "tiny-town":"z_TnR8X7hjk",
+ "elsewhere":"6_Q1t7AmdnM",
+ "flip-dash":"w8K468QRebU",
+ "parcel-panic":"iytuR8G7UjQ",
+ "pocket-aquarium":"vMeqdhGaPf4"
 };
 const ytIdOf=p=>/\/(?:shorts\/|watch\?v=)([\w-]{11})/.exec(p?.url||"")?.[1]||null;
-const YT_CACHE="youtube:approved:20261122:v14-parcel-replacement";
+const YT_CACHE="youtube:approved:20261122:v14-full-relaunch-28";
 async function ytFetch(env){
  const q=new URL(YT_API);
  q.searchParams.set("part","snippet,statistics,status");

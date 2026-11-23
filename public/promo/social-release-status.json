@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-23T01:42:16.450Z",
+  "updatedAt": "2026-11-23T04:00:41.086Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "Cat Bond Bluesky current V13 release 3n2x2cih2fq2r is the sole tracked post. Deleted predecessors 3n2wzprxlt63l and 3n2wu5hqa4gl3 are excluded from all source allowlists and metrics; other six Bluesky games and other platform URLs unchanged.",
+  "accuracyNote": "Only 28 newly completed V14 relaunch videos on 2026-11-22 Pacific. YouTube official channel RSS; Instagram/TikTok completed publisher destination URLs; Bluesky official AppView native video posts. All replaced historical video IDs excluded. New videos have no inherited views.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -16,8 +16,8 @@
       "slug": "pawsibly-innocent",
       "name": "Cat Heist",
       "hook": "Near catch → yarn decoy → steal three fish",
-      "media": "/promo/pawsibly-innocent/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/pawsibly-innocent/trailer-v12-20261121.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
@@ -26,7 +26,7 @@
       },
       "cover": "/promo/pawsibly-innocent/hook-v3-20261121.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/pawsibly-innocent/hook-v3-review-1.jpg",
         "/promo/pawsibly-innocent/hook-v3-review-2.jpg",
@@ -42,35 +42,49 @@
       },
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/JUQ8PsYCFG8",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071409966943502",
-        "instagram": "https://www.instagram.com/reel/DgDfM-DBb1K/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcqugab5jq"
+        "youtube": "https://www.youtube.com/shorts/-Xkue1ZSG8Y",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711202671830519054",
+        "instagram": "https://www.instagram.com/reel/DgEaP0UxXKj/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x7kwq5xn27"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": 39,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "tiktok": {
-          "source": "vidiq-tiktok-public",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 21,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 11,
-          "likes": 2
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "bluesky-public-appview",
           "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
-          "likes": null
+          "likes": 2,
+          "comments": 0,
+          "reposts": 1,
+          "replies": 0,
+          "quotes": 0
         }
       },
       "metricoolV12PostId": 437823865
@@ -89,7 +103,7 @@
       },
       "cover": "/promo/cat-bond/trailer-v13-20261122.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "V13 full 59.6s vertical trailer published across four channels; previously deleted V12 posts excluded",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/cat-bond/v13-review-1.jpg",
         "/promo/cat-bond/v13-review-2.jpg",
@@ -105,38 +119,49 @@
       },
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/2hd2LMg9iJY",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711158345406680334",
-        "instagram": "https://www.instagram.com/reel/DgEGgecOxst/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2x2cih2fq2r"
+        "youtube": "https://www.youtube.com/shorts/JoDtL_gIk4M",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711203988582010126",
+        "instagram": "https://www.instagram.com/reel/DgEawn_x8GT/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x7ul3ndo2k"
       },
       "socialVerification": {
         "youtube": {
-          "source": "owner-provided-new-short-link",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": null,
-          "likes": null
-        },
-        "tiktok": {
-          "source": "vidiq-new-video-publication-completed",
-          "publicVerified": true,
-          "views": null,
-          "likes": null
-        },
-        "instagram": {
-          "source": "vidiq-new-video-publication-completed",
-          "publicVerified": true,
-          "views": null,
-          "likes": null
-        },
-        "bluesky": {
-          "source": "vidiq-publication-completed-current-v13",
-          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
           "likes": null,
-          "reposts": null,
-          "pendingNativeRefresh": true,
-          "publishedVideoVersion": "V13"
+          "comments": null,
+          "pendingNativeRefresh": true
+        },
+        "tiktok": {
+          "source": "vidiq-publish-completed-destination",
+          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
+        },
+        "instagram": {
+          "source": "vidiq-publish-completed-destination",
+          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
+        },
+        "bluesky": {
+          "source": "bluesky-public-appview",
+          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": 2,
+          "comments": 0,
+          "reposts": 1,
+          "replies": 0,
+          "quotes": 0
         }
       },
       "trackedTrailerVersion": "V13",
@@ -147,8 +172,8 @@
       "slug": "tiny-town",
       "name": "No More Mondays",
       "hook": "Seven days without work → building magical wishes",
-      "media": "/promo/tiny-town/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/tiny-town/trailer-v7-20261121.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
@@ -157,7 +182,7 @@
       },
       "cover": "/promo/tiny-town/hook-v3-20261121.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/tiny-town/hook-v3-review-1.jpg",
         "/promo/tiny-town/hook-v3-review-2.jpg",
@@ -173,35 +198,49 @@
       "music": "distinct licensed recording",
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/64Uh0S9dqmQ",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071395941240095",
-        "instagram": "https://www.instagram.com/reel/DgDfO6ztxnM/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcr7nylvrr"
+        "youtube": "https://www.youtube.com/shorts/z_TnR8X7hjk",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711201350918475022",
+        "instagram": "https://www.instagram.com/reel/DgEZpBfNovK/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x7ihevdy2a"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": 1,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "tiktok": {
-          "source": "vidiq-tiktok-public",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 18,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 3,
-          "likes": 1
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "bluesky-public-appview",
           "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
-          "likes": null
+          "likes": 2,
+          "comments": 0,
+          "reposts": 2,
+          "replies": 0,
+          "quotes": 0
         }
       },
       "metricoolV12PostId": 437823895
@@ -210,8 +249,8 @@
       "slug": "elsewhere",
       "name": "Elsewhere",
       "hook": "Private island → Paris → hotel on the moon",
-      "media": "/promo/elsewhere/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/elsewhere/trailer-v7-20261121.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
@@ -220,7 +259,7 @@
       },
       "cover": "/promo/elsewhere/hook-v3-20261121.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/elsewhere/hook-v3-review-1.jpg",
         "/promo/elsewhere/hook-v3-review-2.jpg",
@@ -236,35 +275,49 @@
       "music": "distinct licensed recording",
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/n8bbePy8Unw",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071458256112909",
-        "instagram": "https://www.instagram.com/reel/DgDfQqkT6Gx/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcraws7xga"
+        "youtube": "https://www.youtube.com/shorts/6_Q1t7AmdnM",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711200127616175373",
+        "instagram": "https://www.instagram.com/reel/DgEZCmQywBy/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x774tt2v2o"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": 3,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "tiktok": {
-          "source": "vidiq-tiktok-public",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 23,
-          "likes": 1
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 1,
-          "likes": 1
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "bluesky-public-appview",
           "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
-          "likes": null
+          "likes": 3,
+          "comments": 0,
+          "reposts": 2,
+          "replies": 0,
+          "quotes": 0
         }
       },
       "metricoolV12PostId": 437823929
@@ -273,8 +326,8 @@
       "slug": "flip-dash",
       "name": "Flip Dash",
       "hook": "Near misses and fast gravity flips",
-      "media": "/promo/flip-dash/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/flip-dash/trailer-v7-20261121.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
@@ -283,7 +336,7 @@
       },
       "cover": "/promo/flip-dash/hook-v3-20261121.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/flip-dash/hook-v3-review-1.jpg",
         "/promo/flip-dash/hook-v3-review-2.jpg",
@@ -299,35 +352,49 @@
       "music": "distinct licensed recording",
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/cC7akb-kUIo",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071406368312589",
-        "instagram": "https://www.instagram.com/reel/DgDfUwbB4EP/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcrc4lqcyn"
+        "youtube": "https://www.youtube.com/shorts/w8K468QRebU",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711198829915213069",
+        "instagram": "https://www.instagram.com/reel/DgEYd0Xh93-/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x6vrtv2226"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": 219,
-          "likes": 2
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "tiktok": {
-          "source": "vidiq-tiktok-public",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 2,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 254,
-          "likes": 2
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "bluesky-public-appview",
           "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
-          "likes": null
+          "likes": 2,
+          "comments": 1,
+          "reposts": 2,
+          "replies": 1,
+          "quotes": 0
         }
       },
       "metricoolV12PostId": 437823958
@@ -336,8 +403,8 @@
       "slug": "parcel-panic",
       "name": "Parcel Panic",
       "hook": "Real color-sorting streak under pressure",
-      "media": "/promo/parcel-panic/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/parcel-panic/trailer-challenge-20261122.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
@@ -346,7 +413,7 @@
       },
       "cover": "/promo/parcel-panic/hook-v3-20261121.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/parcel-panic/hook-v3-review-1.jpg",
         "/promo/parcel-panic/hook-v3-review-2.jpg",
@@ -362,41 +429,49 @@
       "music": "distinct licensed recording",
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/dHD2UnbmSqU",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071416099032333",
-        "instagram": "https://www.instagram.com/morrowwishgames/reel/DgEOAAcJ74v/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wyfh4x63vg"
+        "youtube": "https://www.youtube.com/shorts/iytuR8G7UjQ",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711197500115406094",
+        "instagram": "https://www.instagram.com/reel/DgEX5QUzyj3/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x6mhxl3t2n"
       },
       "socialVerification": {
         "youtube": {
-          "source": "owner-supplied-current-short-url",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": null,
-          "likes": null,
-          "pendingNativeRefresh": true
-        },
-        "tiktok": {
-          "source": "vidiq-tiktok-public",
-          "publicVerified": true,
-          "views": 18,
-          "likes": 0
-        },
-        "instagram": {
-          "source": "owner-supplied-current-reel-url",
-          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
           "likes": null,
           "comments": null,
-          "shares": null,
+          "pendingNativeRefresh": true
+        },
+        "tiktok": {
+          "source": "vidiq-publish-completed-destination",
+          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
+        },
+        "instagram": {
+          "source": "vidiq-publish-completed-destination",
+          "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
           "pendingNativeRefresh": true
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "bluesky-public-appview",
           "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
-          "likes": null,
-          "reposts": null,
-          "pendingNativeRefresh": true
+          "likes": 2,
+          "comments": 0,
+          "reposts": 3,
+          "replies": 0,
+          "quotes": 0
         }
       },
       "metricoolV12PostId": 437823979
@@ -405,8 +480,8 @@
       "slug": "pocket-aquarium",
       "name": "Pocket Aquarium",
       "hook": "Real matching feeds and rising combo",
-      "media": "/promo/pocket-aquarium/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "media": "/promo/pocket-aquarium/trailer-v7-20261121.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
@@ -415,7 +490,7 @@
       },
       "cover": "/promo/pocket-aquarium/hook-v3-20261121.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V14 latest review video verified in the 2026-11-22 relaunch across four social platforms",
       "reviewImages": [
         "/promo/pocket-aquarium/hook-v3-review-1.jpg",
         "/promo/pocket-aquarium/hook-v3-review-2.jpg",
@@ -431,35 +506,49 @@
       "music": "distinct licensed recording",
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/O3tMbulVPvk",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071765379829005",
-        "instagram": "https://www.instagram.com/reel/DgDfRT3O7EK/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcreq5hq3p"
+        "youtube": "https://www.youtube.com/shorts/vMeqdhGaPf4",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711196256051154189",
+        "instagram": "https://www.instagram.com/reel/DgEXVLtCNH-/",
+        "bluesky": "https://bsky.app/profile/morrowwishgames.bsky.social/post/3n2x6da4kyl2d"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "youtube-official-channel-feed",
           "publicVerified": true,
-          "views": 36,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "tiktok": {
-          "source": "vidiq-tiktok-public",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 0,
-          "likes": 0
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "vidiq-publish-completed-destination",
           "publicVerified": true,
-          "views": 43,
-          "likes": 2
+          "checkedAt": "2026-11-23T04:00:41.086Z",
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "pendingNativeRefresh": true
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "bluesky-public-appview",
           "publicVerified": true,
+          "checkedAt": "2026-11-23T04:00:41.086Z",
           "views": null,
-          "likes": null
+          "likes": 6,
+          "comments": 0,
+          "reposts": 5,
+          "replies": 0,
+          "quotes": 0
         }
       },
       "metricoolV12PostId": 437823999

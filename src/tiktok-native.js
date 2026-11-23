@@ -10,13 +10,13 @@ const TK_CUTOFF="2026-11-22";
 // Only the owner's seven explicitly approved launch promos belong in this
 // dashboard. A similarly titled older/future post is never auto-imported.
 const TK_APPROVED={
-  "cat-bond":"7711158345406680334",
-  "pawsibly-innocent":"7711071409966943502",
-  "tiny-town":"7711071395941240095",
-  "elsewhere":"7711071458256112909",
-  "flip-dash":"7711071406368312589",
-  "parcel-panic":"7711071416099032333",
-  "pocket-aquarium":"7711071765379829005"
+  "cat-bond":"7711203988582010126",
+  "pawsibly-innocent":"7711202671830519054",
+  "tiny-town":"7711201350918475022",
+  "elsewhere":"7711200127616175373",
+  "flip-dash":"7711198829915213069",
+  "parcel-panic":"7711197500115406094",
+  "pocket-aquarium":"7711196256051154189"
 };
 const tkApprovedPost=p=>p&&TK_APPROVED[p.game]===/\/video\/(\d{15,22})/.exec(p.url||"")?.[1]&&p.publishedAt>=TK_CUTOFF;
 const TK_ENCODER=new TextEncoder();
@@ -82,7 +82,7 @@ async function tkAuthorizedToken(env){
   await socialWrite(env,"tiktok:token",{cipher:await tkEncrypt(env,next)});
   return next.access_token;
 }
-const TK_CACHE="tiktok:approved:20261122:v13";
+const TK_CACHE="tiktok:approved:20261122:v14-full-relaunch-28";
 const TK_GAME_BY_ID=new Map(Object.entries(TK_APPROVED).map(([game,id])=>[id,game]));
 export function tkPost(video){
   const game=TK_GAME_BY_ID.get(video?.id);

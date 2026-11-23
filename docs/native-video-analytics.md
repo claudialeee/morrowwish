@@ -1,6 +1,6 @@
 # Morrow Wish native campaign video analytics
 
-The private [Studio Insights dashboard](https://morrowwish.vercel.app/studio-insights/) tracks the seven approved November 22, 2026 campaign videos on each platform. The approved releases ledger supplies the 28 permanent links. Cat Bond uses the V13 replacement videos (YouTube 2hd2LMg9iJY; TikTok 7711158345406680334; Instagram DgEGgecOxst; Bluesky 3n2x2cih2fq2r). Deleted V12 Cat Bond videos are excluded; the replacement's unknown metrics remain null until first-party refresh. Numeric results come only from the first-party APIs.
+The private [Studio Insights dashboard](https://morrowwish.vercel.app/studio-insights/) tracks only the 28 published V14 relaunch videos (seven games × YouTube, TikTok, Instagram Reels and Bluesky) on November 22, 2026 Pacific. Public YouTube IDs are verified from the channel RSS feed, Instagram/TikTok URLs from completed provider publication statuses, and Bluesky IDs plus likes/reposts/replies from public AppView. All 28 canonical links live in `public/promo/social-release-status.json` and `promotion/social-metrics-snapshot.json`, and the native provider allowlists match them exactly. Previously posted, cancelled and deleted videos are excluded; no counts are migrated from previous video IDs. YouTube, Instagram and TikTok initial counts remain null until first-party metric refresh succeeds. The supplied V14 review manifest is the video reference, not publication status.
 
 | Platform | First-party API | Production setup | Metrics |
 | --- | --- | --- | --- |
