@@ -24,7 +24,7 @@ try{
     await page.route('**/api/session',route=>route.fulfill({status:204,body:''}));
     try{
       const response=await page.goto(
-        origin+'/cat-bond/?platform=crazygames&lang=en',
+        origin+'/cat-bond/?utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-playtest&lang=en',
         {waitUntil:'load',timeout:40000});
       assert.equal(response?.status(),200,'Playable route did not load');
       await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
