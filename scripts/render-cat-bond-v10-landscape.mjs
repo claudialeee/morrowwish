@@ -8,13 +8,13 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {promoTrack} from './promo-audio.mjs';
 
-const dir=process.env.MW_V7_BROLL_DIR||path.join(process.env.RUNNER_TEMP||os.tmpdir(),'morrowwish-v10-landscape-broll');
+const dir=process.env.MW_V7_BROLL_DIR||path.join(process.env.RUNNER_TEMP||os.tmpdir(),'morrowwish-v13-landscape-broll');
 const root=fs.mkdtempSync(path.join(os.tmpdir(),'mw-v10-wide-edit-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const base='public/promo/cat-bond';
-const output=base+'/trailer-v10-landscape-20261122.mp4';
-const poster=base+'/trailer-v10-landscape-20261122.jpg';
-const metadata=base+'/trailer-v10-landscape-20261122.json';
+const output=base+'/trailer-v13-landscape-20261122.mp4';
+const poster=base+'/trailer-v13-landscape-20261122.jpg';
+const metadata=base+'/trailer-v13-landscape-20261122.json';
 const fmt=n=>Math.max(0,n).toFixed(3);
 function probe(file){
  const d=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries','format=duration,size:stream=codec_type,width,height','-of','json',file],{encoding:'utf8'}));
@@ -34,6 +34,10 @@ try{
   throw Error('Missing or duplicate reference shots in native 16:9 recording');
  const duo=original.shots.filter(x=>x.scene==='duo');
  if(duo.length!==1||duo[0].seconds!==3.1)throw Error('Not the single exact 3.1-second source duet');
+ const painted=broll.shots.find(x=>x.label==='duo');
+ if(painted?.originalArt!==true||painted?.artMode!=='63-original-painted-storyboards'||
+    !painted?.artSource?.includes('duo-storyboard-21x3-v3.webp'))
+   throw Error('Never render v13 wide from old v10 alternate duo artwork '+JSON.stringify(painted));
  const events=['rare-encounter','battle-hud','battle-skills','duo','rare-aftermath','rare-capture'];
  if(events.some((s,i)=>required.indexOf(s)===-1||(i&&required.indexOf(s)<=required.indexOf(events[i-1]))))
   throw Error('Rare cat real-fight narrative out of original order');
@@ -111,20 +115,22 @@ try{
  const frames=[];
  for(const [label,idx] of [['opening',0],['quarrel',5],['duo',16],['capture',18],['end',20]]){
   const sh=shotData[idx],mid=Math.min(result.duration-.25,sh.startAt+Math.min(1.4,sh.seconds*.5));
-  const out=base+'/v10-landscape-'+label+'-proof.jpg';
+  const out=base+'/v13-landscape-'+label+'-proof.jpg';
   execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',fmt(mid),'-i',output,
     '-frames:v','1','-q:v','3',out],{timeout:30000});
   if(fs.statSync(out).size<7000)throw Error('Invalid scene frame '+label);
   frames.push('/promo/cat-bond/'+path.basename(out));
  }
- const m={kind:'cat-bond-landscape-source-matched',sourceReview:'V12',sourceVideo:original.video,
+ const m={kind:'cat-bond-native-16x9-original-painted-duo-v13',sourceReview:'V12 shot order only',
+  referenceOldVideoForTimingOnly:original.video,oldVideoFramesUsed:false,
+  originalDuoArtSource:painted.artSource,originalDuoArtMode:painted.artMode,originalDuoCasts:1,
   title:'Cat Bond',aspect:'16:9',width:1920,height:1080,
   duration:result.duration,bytes:result.bytes,
   identicalSourceShotCount:original.shots.length,shots:shotData,frames,
-  proof:'Fresh native horizontal capture following original V10 actual game actions, one cinematic Blossomfire Pawdance, same battle capture',
+  proof:'Fresh native 16:9 gameplay recording with canonical 63-panel original painting, one true duo finisher, earned rare cat capture',
   sourceRuntime:broll.file,readyForCreativeReview:true,youtubePublished:false,
   video:'/promo/cat-bond/'+path.basename(output),poster:'/promo/cat-bond/'+path.basename(poster),
   createdAt:new Date().toISOString()};
  fs.writeFileSync(metadata,JSON.stringify(m,null,2)+'\n');
- console.log('EXACT 21 SCENE LANDSCAPE V10 QA PASS',JSON.stringify({duration:result.duration,bytes:result.bytes,frames,source:original.video}));
+ console.log('V13 NATIVE LANDSCAPE ORIGINAL-PAINTED DUO QA PASS',JSON.stringify({duration:result.duration,bytes:result.bytes,frames,source:original.video}));
 }finally{fs.rmSync(root,{recursive:true,force:true})}
