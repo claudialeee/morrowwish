@@ -1,17 +1,139 @@
 {
-  "generatedAt": "2026-11-23T23:02:45.502Z",
-  "targetTimestamp": "2026-11-23T00:59:00.000Z",
+  "generatedAt": "2026-11-23T23:05:25.024Z",
+  "targetTimestamp": "2026-11-22T20:00:00.000Z",
   "backup": {
-    "atBookmark": "00000281-00000000-0000512c-2cb5df4fdf48be93172d7effddbb8daa",
+    "atBookmark": "00000285-00000000-0000512c-0d5ebe359039f5a27b3e8b2e0c612ea5",
     "bytes": 300472,
     "sha256": "6443ebaf3ebb6b629b6a367e76e045ebc9277cc45320bcfdc57698610586c4d3",
     "keptOnlyOnEphemeralRunner": true
   },
-  "historicalRows": [],
-  "historicalTotalRows": 0,
+  "historicalRows": [
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "session",
+      "rows": 347,
+      "first_id": 12701,
+      "last_id": 13446,
+      "first_ts": 1795371261004,
+      "last_ts": 1795376906970
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "visit",
+      "rows": 15,
+      "first_id": 12696,
+      "last_id": 13493,
+      "first_ts": 1795371253257,
+      "last_ts": 1795377527197
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "visit",
+      "rows": 4,
+      "first_id": 13248,
+      "last_id": 13440,
+      "first_ts": 1795375006109,
+      "last_ts": 1795376564427
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "visit",
+      "rows": 3,
+      "first_id": 13232,
+      "last_id": 13257,
+      "first_ts": 1795374855015,
+      "last_ts": 1795375037247
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "session",
+      "rows": 16,
+      "first_id": 12698,
+      "last_id": 13490,
+      "first_ts": 1795371259813,
+      "last_ts": 1795377497818
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "visit",
+      "rows": 10,
+      "first_id": 12697,
+      "last_id": 13492,
+      "first_ts": 1795371258256,
+      "last_ts": 1795377514546
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "visit",
+      "rows": 4,
+      "first_id": 13262,
+      "last_id": 13361,
+      "first_ts": 1795375090671,
+      "last_ts": 1795375834728
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "visit",
+      "rows": 3,
+      "first_id": 13165,
+      "last_id": 13435,
+      "first_ts": 1795374282549,
+      "last_ts": 1795376319658
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "visit",
+      "rows": 5,
+      "first_id": 13266,
+      "last_id": 13471,
+      "first_ts": 1795375120788,
+      "last_ts": 1795377386918
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "session",
+      "rows": 2,
+      "first_id": 13173,
+      "last_id": 13200,
+      "first_ts": 1795374317744,
+      "last_ts": 1795374437827
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "visit",
+      "rows": 5,
+      "first_id": 13167,
+      "last_id": 13439,
+      "first_ts": 1795374296485,
+      "last_ts": 1795376462071
+    }
+  ],
+  "historicalTotalRows": 414,
   "currentRowsBefore": 397,
   "currentRowsAfter": 397,
-  "rollbackBookmark": "00000281-ffffffff-0000512c-40763a020bf662645fff666972a9d226",
+  "rollbackBookmark": "00000285-ffffffff-0000512c-19788c61b2109da07fdde1dbaf0e0c08",
   "currentStateRestored": true,
   "error": null,
   "rollbackError": null,
@@ -21,6 +143,6 @@
     "version": "production",
     "fileSize": 335872
   },
-  "targetBookmark": "00000202-00000006-0000512c-6954dcca3512d4ed65fa27db547abb16",
-  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 00000202-00000006-0000512c-6954dcca3512d4ed65fa27db547abb16"
+  "targetBookmark": "000001ba-00000040-0000512b-da06b0e9b1f40c05d2f98d1684da5521",
+  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001ba-00000040-0000512b-da06b0e9b1f40c05d2f98d1684da5521"
 }
