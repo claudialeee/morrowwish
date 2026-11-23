@@ -308,9 +308,9 @@ class CaptureBattle {
     // and the arena un-freezes so the skill's hit VFX animate in the revealed arena —
     // "先显示合体大图，然后消失，然后发出技能". duo-bond.js's crossed-claw paw-impact is gated to this
     // same strikeAt beat so the big hit + slashes read as ONE connect once the art clears.
-    // Live fights must render the two SELECTED watercolor breeds on the clean
-    // 21x3 stage. Original fixed-cat storyboard remains for the art gallery.
-    this.duoCinematic={t:3.2,max:3.2,strikeAt:3.0,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix,originalArt:false};
+    // Owner-approved 63 original painted full-scene frames are the LIVE
+    // battle finisher. Do not substitute the alternate breed-actor composites.
+    this.duoCinematic={t:3.2,max:3.2,strikeAt:3.0,name:d.name,x,y,first:firstColor,second:secondColor,elements:mix,originalArt:true};
     // Two actual fighters sprint toward the enemy, cross paths and sprint home.
     // Positions are visual only, leaving actual combat collision and saves intact.
     const target=this.lockedEnemy()||this.nearestEnemy(x,y)||{x,y};
