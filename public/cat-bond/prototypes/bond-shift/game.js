@@ -121,8 +121,9 @@ function activateSkill(){
     hitEnemy(foe,40,'hunter');g.slashes.push({x:foe.x,y:foe.y,life:.42,max:.42,color:'#ffa965',size:112});
     say('疾风猎手：瞬身疾扑！',1.15);
   }else{
-    p.skillCd=7.2;g.shield=3.1;
+    p.skillCd=7.2;
     const power=shieldStrength({guardianUnlocked:g.guardianUnlocked,reunited:g.reunited,companionPresent:g.companion.present});
+    g.shield=3.1*power; // Companion presence genuinely changes defensive uptime.
     p.hp=clamp(p.hp+Math.round(4*power),0,p.maxHp);
     if(g.companion.present)g.companion.hp=clamp(g.companion.hp+Math.round(12*power),0,g.companion.maxHp);
     sparks(p.x,p.y,'#99e9ed',20);say(g.reunited?'重逢·双潮守护！':'潮汐守卫：守护泡泡！',1.6);
@@ -156,7 +157,8 @@ function intercept(e,target){
   const p=g.player;
   const close=dist(p,g.companion);
   const intercepted=canIntercept({guarding:p.guard>0,distanceToCompanion:close,companionPresent:g.companion.present,enemyTarget:e.target});
-  const bubble=g.shield>0&&dist(p,target)<150;
+  const strength=shieldStrength({guardianUnlocked:g.guardianUnlocked,reunited:g.reunited,companionPresent:g.companion.present});
+  const bubble=g.shield>0&&dist(p,target)<115*strength;
   if(intercepted||bubble){
     const added=!g.protectedOnce?23:10;
     g.trust=clamp(g.trust+added,0,100);
