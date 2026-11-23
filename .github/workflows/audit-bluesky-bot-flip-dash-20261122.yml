@@ -11,6 +11,47 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Analyze Indie Dev Bot behavior during Morrow Wish seven-post release
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://public.api.bsky.app/xrpc/';
+          const bot='indiedevbot.bsky.social', target='did:plc:d55banmfpsnzmt35hqmmwha7';
+          const start=Date.parse('2026-11-23T03:15:00Z'),stop=Date.parse('2026-11-23T04:15:00Z');
+          async function req(method,args) {
+            const url=base+method+'?'+new URLSearchParams(args);
+            for(let i=0;i<4;i++) {
+              try {
+                const r=await fetch(url,{signal:AbortSignal.timeout(20000)});
+                if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,250));
+                return await r.json();
+              } catch(e) { if(i===3)throw e;await new Promise(ok=>setTimeout(ok,1000*(i+1))); }
+            }
+          }
+          const p=await req('app.bsky.actor.getProfile',{actor:bot});
+          console.log('BOT_PROFILE '+JSON.stringify({handle:p.handle,did:p.did,description:p.description,followersCount:p.followersCount,followsCount:p.followsCount,postsCount:p.postsCount}));
+          const all=[];
+          let cursor,earliest='',page=0;
+          do {
+            const out=await req('app.bsky.feed.getAuthorFeed',{actor:bot,limit:'100',...(cursor?{cursor}:{})});
+            if(!out.feed?.length)break;
+            page++;
+            for(const item of out.feed){
+              const t=item.reason?.indexedAt||item.post.indexedAt;
+              all.push({time:t,by:item.reason?.by?.handle||null,type:item.reason?.$type||'post',author:item.post.author.handle,authorDid:item.post.author.did,uri:item.post.uri});
+            }
+            earliest=all.at(-1)?.time||'';
+            cursor=out.cursor;
+          }while(cursor&&page<12&&Date.parse(earliest)>=start);
+          const window=all.filter(a=>Date.parse(a.time)>=start&&Date.parse(a.time)<=stop);
+          const reposts=window.filter(a=>a.type.includes('reasonRepost'));
+          console.log('BOT_ACTIVITY '+JSON.stringify({totalEntries:all.length,pages:page,earliest,latest:all[0]?.time,windowEntries:window.length,windowReposts:reposts.length,windowOriginalPosts:window.length-reposts.length,distinctAuthors:new Set(reposts.map(x=>x.authorDid)).size}));
+          console.log('BOT_REPOSTS_WINDOW '+JSON.stringify(reposts.slice().reverse().map(x=>({time:x.time,author:x.author,own:x.authorDid===target})).slice(-180)));
+          const seen={};
+          for(const x of reposts){seen[x.author]=(seen[x.author]||0)+1;}
+          console.log('REPEATED_AUTHORS '+JSON.stringify(Object.entries(seen).filter(([k,v])=>v>=2).sort((a,b)=>b[1]-a[1]).slice(0,25)));
+          const ownerReposts=all.filter(x=>x.authorDid===target);
+          console.log('MORROW_IN_BOT_FEED '+JSON.stringify(ownerReposts));
+          NODE
       - name: Check latest owner posts, video embeds, facets and reposting accounts
         env:
           OWNER_DID: did:plc:d55banmfpsnzmt35hqmmwha7
