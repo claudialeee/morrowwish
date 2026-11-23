@@ -234,6 +234,13 @@ function startPrologue(done){
   persistIntroSeen();done?.();
  },{canSkip:true});
 }
+function afterPanelClosed(callback,attempt=0){
+ const panel=document.getElementById('panel');
+ if(panel?.classList.contains('open')&&attempt<40){
+  setTimeout(()=>afterPanelClosed(callback,attempt+1),250);return;
+ }
+ callback();
+}
 function onRegionEntered(id){
  const s=storyState();if(!s||!REGIONS.includes(id))return;
  if(!s.introSeen)return;
@@ -249,7 +256,7 @@ function onRegionEntered(id){
  }
  if(pages.length){
   save();
-  setTimeout(()=>showSequence('memory',pages,()=>{updateTracker();if(allSix(storyState()))showBossReveal();}),140);
+  setTimeout(()=>afterPanelClosed(()=>showSequence('memory',pages,()=>{updateTracker();if(allSix(storyState()))showBossReveal();})),140);
  }else{
   updateTracker();
   if(allSix(s)&&!s.bossDefeated&&id==='ruins')setTimeout(showBossReveal,140);
@@ -259,9 +266,9 @@ function onRegionDiscovery(regionId,reward){
  if(regionId!=='ruins'||reward?.discovery?.id!=='ruins')return;
  const s=storyState();if(!s||!s.introSeen)return;
  if(markFragment(LAST_PAGE.id)){
-  setTimeout(()=>showSequence('reveal',[LAST_PAGE],()=>{
+  setTimeout(()=>afterPanelClosed(()=>showSequence('reveal',[LAST_PAGE],()=>{
    if(allSix(storyState()))showBossReveal();
-  }),220);
+  })),220);
  }
 }
 function updateTracker(){
