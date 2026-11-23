@@ -309,7 +309,9 @@ const platformNames={itch:'itch.io',youtube:'YouTube Shorts',tiktok:'TikTok',ins
 // an explicit channel allowlist update, not a speculative future placeholder.
 // Blank native-view cells indicate that comparable video views are unavailable.
 const platformIds=new Set(fallbackIds);
-const platforms=reportedPlatforms.length?reportedPlatforms.filter(p=>platformIds.has(p.id)).sort((a,b)=>fallbackIds.indexOf(a.id)-fallbackIds.indexOf(b.id)):fallbackIds.map(id=>({id,priority:'',views:null,published:null}));
+const platforms=reportedPlatforms.length?reportedPlatforms.filter(p=>platformIds.has(p.id)):fallbackIds.map(id=>({id,priority:'',views:null,published:null}));
+// Keep itch.io at the bottom of the channel table, regardless of API order.
+platforms.sort((a,b)=>(a.id==='itch')-(b.id==='itch')||fallbackIds.indexOf(a.id)-fallbackIds.indexOf(b.id));
 const homeSources=(j.homeFunnel&&Array.isArray(j.homeFunnel.bySource))?j.homeFunnel.bySource:[];
 const homeFor=id=>homeSources.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));
 const nativeStates={youtube:pulse.nativeYouTube,tiktok:pulse.nativeTikTok,instagram:pulse.nativeInstagram,bluesky:pulse.nativeBluesky};
