@@ -32,4 +32,28 @@
   if (crazygames) document.documentElement.classList.add('cb-cg');
   if (externalPortal) document.documentElement.classList.add('cb-third-party');
   if (native) document.documentElement.classList.add('cb-native-host');
+  // CrazyGames has no Morrow Wish fullscreen toolbar. Anchor all ten yard
+  // menu/action buttons to ONE responsive bottom dock instead of allowing
+  // two independent absolute-positioned groups to float over the scenery.
+  // Reparent the original nodes so existing game listeners and IDs survive.
+  if(crazygames && typeof document.addEventListener==='function'){
+    const mountYardDock=()=>{
+      const stage=document.getElementById('stage');
+      const tabs=document.getElementById('tabbar');
+      const actions=document.getElementById('yard-actions');
+      if(!stage||!tabs||!actions||document.getElementById('cg-yard-dock'))return;
+      const dock=document.createElement('div');
+      dock.id='cg-yard-dock';
+      dock.setAttribute('role','group');
+      dock.setAttribute('aria-label','Cat Bond game menus and yard actions');
+      tabs.setAttribute('aria-label','Cat Bond game menus');
+      actions.setAttribute('aria-label','Cat Bond yard actions');
+      dock.appendChild(tabs);
+      dock.appendChild(actions);
+      stage.appendChild(dock);
+    };
+    if(document.readyState==='loading')
+      document.addEventListener('DOMContentLoaded',mountYardDock,{once:true});
+    else mountYardDock();
+  }
 })();
