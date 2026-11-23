@@ -86,7 +86,7 @@ async function igAuthorizedToken(env){
  if(token.expiresAt&&token.expiresAt<=Date.now())throw new SocialSyncError("needs_owner_authorization");
  return token;
 }
-const IG_CACHE="instagram:approved:20261122:v13";
+const IG_CACHE="instagram:approved:20261122:v13-pacific";
 async function igFetch(env){
  const auth=await igAuthorizedToken(env);
  if(!auth)throw new SocialSyncError("needs_owner_authorization");
