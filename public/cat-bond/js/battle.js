@@ -64,6 +64,7 @@ class CaptureBattle {
       const cats0 = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
       const avgLv = cats0.length ? cats0.reduce((s, c) => s + (c.level || 1), 0) / cats0.length : 1;
       const gap = avgLv - this.wildLevel;                  // + = you out-level; − = wild out-levels you
+      this._levelGap = gap;                                // stored so makeEnemy can taper rare-HP by gap
       // LOGISTIC level-gap scaling (researched): smooth S-curves, no piecewise cliffs.
       // ±1 level barely matters; gaps of 3–7 do the real work; huge gaps asymptote.
       // Advantage lives mostly in DAMAGE RATE (Pokémon/WoW lesson), a little in enemy
@@ -94,10 +95,17 @@ class CaptureBattle {
         this.difficultyMode  = (window.State && State.difficulty) ? State.difficulty() : 'casual';
         if(this.starterRegion){
           // In the starter map, the player's FIRST TWO cats should be able to
-          // beat one ordinary wild cat without perfect skill timing.
+          // beat one ordinary wild cat without perfect skill timing. The player-damage
+          // FLOOR always applies (new cats always hit for something). But the enemy
+          // softening clamps (min 1.08 on enemy dmg/HP) only protect the player who is
+          // AT OR BELOW the wild's level (gap<=0 — the true new-player case): when the
+          // player OUT-levels the wild (gap>0), the normal logistic suppression runs
+          // UNCLAMPED so out-levelling actually feels like a crush (owner 2026-11-22).
           this.playerDmgMult=Math.max(.94,this.playerDmgMult);
-          this.enemyDmgMult=Math.min(1.08,this.enemyDmgMult);
-          this.enemyHpScaleGap=Math.min(1.08,this.enemyHpScaleGap);
+          if(gap<=0){
+            this.enemyDmgMult=Math.min(1.08,this.enemyDmgMult);
+            this.enemyHpScaleGap=Math.min(1.08,this.enemyHpScaleGap);
+          }
         }
         // aliases for the existing hit sites (player-out / enemy-out damage)
         this.levelSuppression = this.playerDmgMult;
@@ -132,6 +140,11 @@ class CaptureBattle {
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
     this.ultCd = 0;                       // shared across fighter swaps
+    // GLOBAL COMBAT TEMPO (single source of truth): the whole simulation (movement, projectiles,
+    // AI, cooldowns, timers) is scaled by this each frame so fights read calm, not twitchy. Pacing
+    // only — TTK/matchups/difficulty are unchanged (everything scales together). Tests read this to
+    // convert sim-seconds→real-seconds so a tempo change never silently breaks a duration assertion.
+    this.tempoScale = 0.64;               // owner: 0.8 still felt too fast → 0.64 (~36% below original)
     // --- COMBO system: hits chain a multiplier; drops after a gap (需要操作维持) ---
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
@@ -181,6 +194,13 @@ class CaptureBattle {
     this.vfx = new VFX();                // juicy skill effects
     this.t = 0;
     this.done = false; this.result = null;
+    // DEBUG COMBAT LOG — opt-in per fight via the 🐛 button (shown only when ?debug=1 is in the URL,
+    // so live players never see it). Recording is OFF by default EACH battle; the button toggles it,
+    // so you only capture the fights you care about (not every fight). When on, every resolved hit is
+    // logged with its damage-factor breakdown and dumped/stashed at battle end for export.
+    try { this._debugAvailable = new URLSearchParams(location.search).get('debug') === '1'; } catch (_) { this._debugAvailable = false; }
+    this._debug = false;              // live recording flag (button-toggled)
+    this._dbgLog = [];                // always allocated so the recorder guard is simple; stays empty unless recording
     this.shakeT = 0; this.flash = 0;
     // HIT-FEEL: trauma-based camera shake (Nijman). On a hit we add trauma (0..1);
     // the camera offset in draw() = maxShake * trauma² (squared falloff), decaying
@@ -343,10 +363,17 @@ class CaptureBattle {
     this.duoCinematic.x=target.x;this.duoCinematic.y=target.y;
     // The resonance should surround enemies, not the point where the two cats stood.
     this.duoField.x=target.x;this.duoField.y=target.y;
-    this.duoRun={age:0,duration:2.40,runners:fs.map((f,i)=>({
-      uid:f.cat.uid,fromX:f.x,fromY:f.y,
-      toX:target.x+(i?21:-21),toY:target.y+(i?-11:11)
-    }))};
+    // DUO choreography: each cat lunges a SHORT step toward the enemy FROM WHERE IT STANDS, rather
+    // than both being yanked onto the enemy's position (owner: "能不能不要强行把两只猫拉到一起"). The
+    // combo's power comes from the beams/impact that already fire at the target — the cats don't need
+    // to converge on it. Cap the forward lunge at ~90px so they stay roughly in place; if a cat is
+    // already close, it barely moves. Purely visual (real tf.x/tf.y untouched).
+    this.duoRun={age:0,duration:2.40,runners:fs.map((f,i)=>{
+      const ang=Math.atan2(target.y-f.y,target.x-f.x), gap=Math.hypot(target.x-f.x,target.y-f.y)||1;
+      const lunge=Math.min(90,gap*0.45);          // a committed step, not a teleport-to-enemy
+      return { uid:f.cat.uid, fromX:f.x, fromY:f.y,
+        toX:f.x+Math.cos(ang)*lunge, toY:f.y+Math.sin(ang)*lunge };
+    })};
     this.flash=.10;this.shakeT=.24;this.slowmo=.11;
     // Composition uses *two running bodies*, sharp impact marks and a restrained
     // elemental afterimage — not dozens of floating globes or kitten stickers.
@@ -471,14 +498,20 @@ class CaptureBattle {
     v.age+=dt;v.remaining=Math.max(0,v.duration-v.age);
     if(!v.finisher&&v.remaining<1.15){v.finisher=true;
       this.skillStrokes.push({kind:'duoImpact',x:v.x,y:v.y,firstColor:v.first,secondColor:v.second,elements:v.pair,life:.8,max:.8});}
-    // Let the paired-element field drift after the wild pack as it moves.
-    // It is ground-level and never becomes a large foreground overlay.
+    // Let the paired-element field track its ENEMY as it moves. Follow a SINGLE target
+    // (the locked enemy, else the nearest live one) — NOT the pack centroid, which for a
+    // spread-out pack lands on empty ground between cats and covers nobody (the bug where the
+    // field sat mid-screen while 焰焰 stood in the corner). Snappier follow so a fast SSR can't
+    // outrun the zone it's standing in. It stays ground-level, never a foreground overlay.
     const moving=this.liveEnemies();
     if(moving.length){
-      const x=moving.reduce((sum,e)=>sum+e.x,0)/moving.length;
-      const y=moving.reduce((sum,e)=>sum+e.y,0)/moving.length;
-      const follow=Math.min(1,dt*2.5);
-      v.x+=(x-v.x)*follow;v.y+=(y-v.y)*follow;
+      const locked=this._lockIdx!=null?moving.find(e=>e.i===this._lockIdx):null;
+      let tgt=locked;
+      if(!tgt){ let bd=1e9; for(const e of moving){const d=Math.hypot(e.x-v.x,e.y-v.y); if(d<bd){bd=d;tgt=e;}} }
+      if(tgt){
+        const follow=Math.min(1,dt*6);
+        v.x+=(tgt.x-v.x)*follow;v.y+=(tgt.y-v.y)*follow;
+      }
     }
     if(!v.remaining){
       // A restrained final echo, so the special has a clear ending.
@@ -655,7 +688,11 @@ class CaptureBattle {
     const lvScale = 1 + (level - 1) * 0.08;               // +8% stats per level
     // Only SR/SSR receive an extra challenge: normal and R encounters remain
     // accessible early. Existing roster levels and cat stats are untouched.
-    const eliteFactor = rIdx === 3 ? 1.22 : rIdx === 2 ? 1.12 : 1;
+    // SSR (rIdx 3) eliteFactor pulled 1.22→1.08: at the levels the owner plays (wildLevel ~20) an SSR
+    // such as 焰焰 reached ~1072 HP — 2.5–3.5× the player's own cats (~312–472) — which the owner called
+    // 超模 ("压低 ssr 的血量"). This trims the SSR pool ~11% (→ ~950 @ wl20) so it stays a beefy boss,
+    // not an un-killable sponge. SR/R/N are unchanged (owner only flagged SSR).
+    const eliteFactor = rIdx === 3 ? 1.08 : rIdx === 2 ? 1.12 : 1;
     // EARLY-GAME onboarding damp: a fresh-save opener drags because the ~196 HP floor
     // sits in front of a ~12-DPS Lv1 cat. Low-level enemies start with much less HP
     // (Lv1 ~55%), ramping to full by Lv6, so the first fight is short + winnable.
@@ -663,7 +700,11 @@ class CaptureBattle {
       (this.starterRegion ? .32 : .45) * Math.min(1, (level - 1) / 5);
     // enemyHpScaleGap (logistic, from the constructor): a little extra HP when the
     // wild out-levels you, gentle so a gap feels tankier without being spongy.
-    const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.6) * lvScale * eliteFactor
+    // RARITY HP: a rare wild is tankier, but the old (1 + rIdx*0.6) made an SR a 2.8× / SSR a 2.8×
+    // sponge — stacked on eliteFactor that's a 3.4× base pool, so a lv9 SR 露露 had ~595 HP vs a
+    // player cat's ~267 (owner measured: "他的血有500多 → 打不动"). Halve the rarity slope to
+    // (1 + rIdx*0.3): SR 2.8→1.9, SSR 2.8→1.9. Rare cats stay meaningfully beefier, not un-killable.
+    const maxhp = Math.round((140 + wv.vit * 7) * (1 + rIdx * 0.3) * lvScale * eliteFactor
                              * earlyDamp * (this.enemyHpScaleGap || 1));
     // First two battles teach controls; later battles ask for dodging and team skill timing.
     const captures=State.S.catchCount||0;
@@ -681,7 +722,13 @@ class CaptureBattle {
       x: this.W * col, y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(0.30+(i%2)*0.22);})(), vx: 0, vy: 0,
       face: -1, t: this.rng() * 3, pose: "idle",
       shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+this.rng()*3,swipeCd:1,
-      fireCd: 0.6 + this.rng() * 0.8, dodgeCd: 0, special: 2 + this.rng() * 2,
+      // SPECIAL ENERGY (敌我同一套): every enemy charges a special meter from 0 — like the player's
+      // ult — instead of starting with a nearly-ready cooldown. It fills over time + on dealing/taking
+      // hits; only at 100 can it fire a nova/lob/barrage heavy, then resets to 0. So a fresh pack can
+      // NEVER unload a big move at the opening (owner: "每只猫独立从头开始攒"), and each cat's meter is
+      // its own. A small per-slot head-start spread (i) keeps packmates from syncing to the same tick.
+      fireCd: 0.6 + this.rng() * 0.8, dodgeCd: 0, special: 0,
+      specialMeter: -(i * 8) - this.rng() * 10,   // start at/below 0, staggered; must climb to 100
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
       dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*
@@ -689,7 +736,19 @@ class CaptureBattle {
       speed:92+rIdx*22+challenge*14,
       fireRate:this.starterRegion?Math.max(.85,1.08-rIdx*.06):
         Math.max(.38,0.8-rIdx*.14-challenge*.1),
-      skill: this.pickWildSkillFor(element, rIdx),
+      skill: this.pickWildSkillFor(element, rIdx, sp.id, level),
+      kit: this.__lastKit,                 // gated kit (role + legal ward flags) — set by pickWildSkillFor
+      // REAL SKILL ROTATION (敌我同一套): up to 2 equipped skills the wild cat casts on cooldown, like a
+      // player's Q/E, delivered BY KIND (castEnemySkill). Per-slot cd + a staggered opener so the fight
+      // doesn't start with an instant skill dump. Fixes "敌人全程只发 projectile，没用我们的技能".
+      rotation: (this.__lastKit && this.__lastKit.rotation) || [],
+      skillCd: [0, 0],
+      rotReady: 1.2 + this.rng() * 1.1,    // quiet opener (1.2–2.3s) before the first real skill cast
+      // CHARGED ULT (SR+ only): a signature ult the enemy charges over the fight and fires ONCE,
+      // telegraphed + interruptible, at reduced power. Mirrors the player's ult meter so the
+      // enemy's biggest move is an EARNED, readable event — not a free per-cast nuke (the old bug).
+      ultSkill: rIdx >= 2 ? (this.__lastKit && this.__lastKit.ult) || null : null,
+      ultMeter: 0, ultFired: false,        // 0..100; one charged ult per fight
       // POISE/韧性: only authored stagger actions (泰山压顶, 纸箱埋伏,
       // cast interrupts) break poise. Ordinary hits cause armor break instead.
       // Partial poise losses persist. Only reaching ZERO unlocks recovery:
@@ -736,11 +795,22 @@ class CaptureBattle {
       cat, i, element, bond,
       hp: Math.round(maxhp * carried), maxhp,
       x: this.W * 0.3, y: this.H * 0.6, vx: 0, vy: 0,
-      r: 20, inv: 0, dashT: 0,
+      r: 20, inv: 0, dashT: 0, dodgeCd: 0,   // MUST init: both auto-dodge gates test f.dodgeCd<=0, and undefined<=0 is false → without this the player's auto cats NEVER dodge a shot (enemy builder sets it; the player's was missing — a shipped P0 where cats just stood eating darts)
       // Base movement reduced to 120. AGI grants +0.35% per point,
       // capped at +20% (maximum normal run speed 144).
       speed: 120 * (1 + Math.min(0.20, Math.max(0, s.agi || 0) * 0.0035)),
-      dmg: (6 + s.pow * 0.7) * (bond.dmgMult || 1) * 0.62,   // lower player base damage ~14%; keep skill ratios and enemy damage unchanged
+      // Damage scales off the cat's TOP offensive stat — POWER or AGILITY — so an agile striker
+      // (暹罗/桃桃/豹猫: agi>pow) hits as hard as a bruiser of equal investment instead of its
+      // signature stat being dead weight (owner: agi-dps "打不动"). A small slice of the OTHER of
+      // the two still counts so a balanced spread isn't punished.
+      // GLOBAL COEFFICIENT 0.52 (was briefly 0.78 — an over-correction that inflated EVERY cat's base
+      // damage +36–50% over origin, owner: "伤害过分高了"). 0.52 restores a balanced/bruiser/max-level
+      // cat to ~0.89–1.01× its origin output (Lv1 pure-pow starters dip to ~0.89; the min(pow,agi)*0.15
+      // term offsets the coefficient drop so pow cats land near origin, not the naive 0.52/0.62=0.84).
+      // The agi term keeps an agi-heavy dps at ~1.1–1.26× its origin (pow-only) output — these breeds
+      // carry real pow so were never truly "near-zero"; the term still ends their signature stat being
+      // dead weight (the agi-dps fix) WITHOUT the across-the-board spike. Skill ratios + enemy dmg unchanged.
+      dmg: (6 + Math.max(s.pow, s.agi) * 0.7 + Math.min(s.pow, s.agi) * 0.15) * (bond.dmgMult || 1) * 0.52,
       shieldT:0,damageBoostT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,kneadStacks:0,kneadT:0,
       tags: [], status: {}, slowed: false,
       // Projectile speed is decoupled from AGI (flat): the shot's speed belongs to the
@@ -829,17 +899,25 @@ class CaptureBattle {
   // Predict projectile collision, not merely projectile proximity. A shot
   // traveling away does not waste an evasive cooldown.
   incomingThreat(f) {
-    let nearest=null, best=Infinity;
+    let nearest=null, best=Infinity, converging=0;
     for(const p of this.projectiles){
       if(p.owner!=='wild'||p.life<=0)continue;
       const speed2=p.vx*p.vx+p.vy*p.vy;
       const dx=f.x-p.x,dy=f.y-p.y;
       const eta=speed2>1?(dx*p.vx+dy*p.vy)/speed2:0;
-      if(eta<-.04||eta>.45)continue;
+      // Look a bit FURTHER ahead (0.62s, was 0.45) so a cat flags a shot in time to actually move
+      // out of it instead of noticing it 2 frames before impact and eating it.
+      if(eta<-.04||eta>.62)continue;
       const t=Math.max(0,eta);
       const miss=Math.hypot(p.x+p.vx*t-f.x,p.y+p.vy*t-f.y);
-      if(miss<(p.r||7)+f.r*.8+13 && eta<best){nearest={p,d:Math.hypot(dx,dy),eta};best=eta;}
+      if(miss<(p.r||7)+f.r*.8+13){
+        converging++;                                       // how many wild shots are about to land
+        if(eta<best){nearest={p,d:Math.hypot(dx,dy),eta};best=eta;}
+      }
     }
+    // A MULTI-PELLET VOLLEY (≥2 shots converging) is flagged so the dodge decision can't dismiss
+    // the whole burst on one failed coin-flip — eating 3 darts at once is a spike, not "a hit".
+    if(nearest)nearest.volley=converging;
     return nearest;
   }
 
@@ -877,11 +955,22 @@ class CaptureBattle {
     this._autoLastAt=this.t;
   }
 
+  // SINGLE SOURCE OF TRUTH for melee (claw) hit reach. basicAttackRange, the offensive()
+  // fire-gate, and skillEngageReach ALL derive from this so the engagement band can never
+  // drift past the distance a claw actually connects (the "前排站远挨打" bug). Keyed to the
+  // target body radius so a fat enemy is reachable at its edge; ~50px for a standard r=18.
+  meleeReach(target=null){ const r=(target&&target.r)||18; return 42+r*0.45; }
+
   // BASIC attacks are independent of the Q/E planner. An equipped melee basic
   // must close into claw contact; the fallback toy projectile expires after 0.5s.
   basicAttackRange(f,target=null) {
     const sk=f.basicSkill, r=target?.r||18;
-    if(sk?.kind==='melee')return 64+r*.6-2;
+    // A MELEE basic fires out to the actual claw-arc reach (meleeStrike uses 64 + r*0.65 ≈ 75px),
+    // NOT the tight ~50px engagement anchor (meleeReach). The anchor is where a frontliner PREFERS
+    // to stand; the swing connects farther. Gating the basic trigger at the anchor meant a cat with
+    // e.g. 寒冰爪 as its basic would never auto-swing from where it could actually hit — the basic
+    // "一直不触发" the owner reported. +4 margin so a target on the very edge still triggers it.
+    if(sk?.kind==='melee')return 64 + r*0.65 + 4;
     if(sk?.kind==='dash')return 112;
     if(sk?.kind==='pounce')return 135;
     if(sk?.kind==='chain')return 200;
@@ -907,81 +996,151 @@ class CaptureBattle {
     return true;
   }
 
-  // ---- KIT-BASED RANGE BAND ---------------------------------------------------
-  // A fighter's preferred engagement distance should come from the TOOLS it carries,
-  // not one fixed number. A brawler (melee/dash/leap/pounce kit) wants to be on top
-  // of the target; a ranged/projectile/beam kit wants to kite at a comfortable band;
-  // a support kit (heal/buff only) hangs well back. Returns {min,max,rush} (px) plus
-  // a 'role' tag the steering + action layers read. HP-gate: when badly hurt the
-  // whole band shifts outward (retreat) so a dying cat backs off like a human would.
-  //   rush  : below min → close the gap hard (seek)
-  //   min..max : hold the band → strafe
-  //   above max : too far → re-approach (seek)
+  // The ENGAGEMENT REACH of one skill — the farthest distance from which it can actually connect.
+  // SINGLE SOURCE OF TRUTH shared by kitRangeBand (below) and the offensive() fire-gate in
+  // smartAutoAction: both must agree on "can this fire from here", or the cat parks at a distance
+  // its own skill can't reach (the 水枪-beam-at-150 bug) or kites outside its basic (the old ranged
+  // bug). Numbers mirror offensive()'s per-kind gates and each skill's geometry:
+  //   melee arc ≈ 74 • dash lunge ≈ 150 • leap ≈ 200 • pounce gap-close ≈ 240 • chain ≈ 240 •
+  //   beam = its own sk.reach (水枪 300) • projectile fan = its reach or the generous ~240 poke •
+  //   heal/buff have no offensive reach → fall back to the basic-toy reach.
+  skillEngageReach(sk,basicRange){
+    if(!sk)return 0;
+    switch(sk.kind){
+      case 'melee':return this.meleeReach();   // claw contact (single source of truth)
+      case 'dash':return 175;    // matches dashLunge _dashReach (closes a ranged kiter's standoff)
+      case 'leap':return 215;    // matches leapSlam max
+      case 'pounce':return 240;  // flyingPounce reaches 210; AI may commit from a touch farther
+      case 'chain':return 240;
+      case 'beam':return sk.reach||300;
+      // A plain fan/toss projectile flies about as far as the basic toy, so its band should hug
+      // like the basic (holding farther only trades away the basic's steady DPS — verified). Only
+      // a skill that DECLARES a long reach (or a known long-range id like prismBeam) stands off.
+      case 'projectile':return sk.id==='prismBeam'?520:Math.max(basicRange,sk.reach||0);
+      case 'aoe':return sk.reach||240;
+      default:return basicRange;                 // heal/buff: fight at basic-toy range
+    }
+  }
+
+  // ---- UTILITY-SCORED ENGAGEMENT BAND -----------------------------------------
+  // A fighter's preferred engagement distance comes from the TOOLS it carries, scored as a small
+  // utility AI (Dave-Mark IAUS style: enumerate candidate standoff distances, score each by a few
+  // weighted CONSIDERATIONS through response curves, pick the best) instead of a hand-written
+  // if/else per build. The design is "skill-reach-primary, build micro-tweak": engagement distance
+  // is driven by the equipped skill's REAL reach (skillEngageReach — the same gate offensive()
+  // fires on), and the BUILD only nudges in/out within that; it does NOT decide the band outright.
+  // Returns {min,max,rush} (px) + a 'role' tag the steering/action layers read. HP-gate: when badly
+  // hurt the whole band shifts outward (retreat) like a human backing off.
+  //   rush : below min → close the gap hard (seek)   min..max : hold → strafe   above max : re-approach
+  //
+  // CONSIDERATIONS (per candidate distance d), each a response curve in [0,1], combined by weight:
+  //   (a) canOutput  — can the equipped Q/E/basic actually FIRE from d. The basic toss (reach ≈
+  //        basicRange) is a kiter's DPS backbone (near-constant uptime); the special is a cooldown
+  //        commit — so output rewards being inside basicRange, with partial credit out to skillReach.
+  //        This is why a beam does NOT want to sit at its full 300 reach: standing past basicRange
+  //        trades away the basic's steady DPS (verified in scripts/check-cat-bond-band-fitness.mjs).
+  //   (b) safety    — a bell curve around THIS build's preferred standoff (a fraction of skillReach);
+  //        frontliners prefer contact (wide tolerance, they don't mind being close), backliners
+  //        prefer the skill-reach standoff (tight tolerance — they want their spacing).
+  //   (c) closeness — an extra penalty for a BACKLINE build hugging below its preferred standoff
+  //        (dps/control/support want to kite); ~0 for frontliners (tank/fighter/assassin fight close
+  //        even with a ranged poke equipped — the owner's existing intent).
+  // HARD CONSTRAINT: the retreat floor (min) is clamped ≤ basicAttackRange so the basic always
+  // connects — the exact "ranged cat can't basic-attack" regression we must not reintroduce.
   kitRangeBand(f) {
     const skills=[f.qSkill,f.eSkill].filter(Boolean);
     const isMelee=sk=>sk&&(sk.kind==='melee'||sk.kind==='dash'||sk.kind==='leap'||sk.kind==='pounce');
-    const isRanged=sk=>sk&&(sk.kind==='projectile'||sk.kind==='beam'||sk.kind==='aoe');
-    const isSupport=sk=>sk&&(sk.kind==='heal'||sk.kind==='buff');
-    const basicRange=this.basicAttackRange(f);           // keep movement inside the actual basic's hit reach
-    let role,min,max;
-    const meleeReach=Math.max(...skills.filter(isMelee).map(sk=>(
-      sk.kind==='melee'?76:sk.kind==='dash'?122:sk.kind==='leap'?165:152)),0);
-    const hasMelee=skills.some(isMelee), hasRanged=skills.some(isRanged);
-    // Combat positioning is owned by the CAT'S BUILD, not by whichever skill
-    // happens to be slotted in Q/E. A tank/fighter/assassin may equip a ranged
-    // poke without turning into a backline kiter.
+    const isOffensive=sk=>sk&&['melee','projectile','beam','chain','dash','pounce','leap','aoe'].includes(sk.kind);
+    const basicRange=this.basicAttackRange(f);           // keep the retreat floor inside the basic's hit reach
+    // Combat positioning is owned by the CAT'S BUILD, not by whichever skill happens to be slotted:
+    // a tank/fighter/assassin may equip a ranged poke without turning into a backline kiter.
     const build=f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat);
     const frontliner=build==='tank'||build==='fighter'||build==='assassin';
-    // Is a melee/gap-closer skill READY right now? (drives hit-and-run: commit when the
-    // skill is up, kite out while it recharges instead of hugging and eating free hits).
+    // Is a melee/gap-closer skill READY right now? (drives hit-and-run: commit when it's up, kite
+    // out while it recharges instead of hugging and eating free hits).
     const meleeReady=['q','e'].some(slot=>{
       const sk=slot==='q'?f.qSkill:f.eSkill;
       return isMelee(sk) && (f.cd?.[slot]||0)<=0;
     });
-    if(frontliner){
-      // Keep frontline breeds at contact range even with ranged Q/E or a
-      // defensive-only kit. Ranged skills are opportunistic pokes WHILE closing.
-      // When a melee special is on cooldown, allow a little breathing room but
-      // NEVER fall back to a 190–230px ranged orbit.
-      role=build==='tank'?'tank':build==='assassin'?'assassin':'melee';
-      const readyReach=hasMelee&&meleeReady
-        ?Math.min(96,Math.max(70,meleeReach*.77))
-        :build==='tank'?96:build==='assassin'?82:90;
-      min=build==='tank'?45:build==='assassin'?32:38;
-      max=readyReach;
-      if(hasMelee&&!meleeReady){min+=22;max+=20;}
-    }else if(hasMelee&&!hasRanged){
-      // Explicit backline builds with a melee-only loadout still need to close
-      // enough to land those skills. Reposition briefly between skill casts.
-      role='melee';
-      if(meleeReady){min=38;max=Math.max(68,Math.min(110,meleeReach*.89));}
-      else {min=96;max=150;}
-    }else if(hasRanged&&!hasMelee){
-      // kiter: sit at 0.55–0.85 of the projectile reach, flee if closer, seek if farther
-      role='ranged';
-      // Ranged Q/E attacks reach farther than the basic toy. Holding the old
-      // 150–230px Q/E-only band left the cat forever outside basic range.
-      // Keep a real minimum standoff (>120 px) but remain inside basic attack reach.
-      min=Math.min(Math.max(124,basicRange*.66),Math.max(40,basicRange-28));
-      max=Math.max(min+18,basicRange*.94);
-    }else if(skills.length&&skills.every(isSupport)){
-      // SUPPORT cats must still be able to use their only offensive action.
-      // Their old 230–320px ally band exceeded their ~170px basic shot lifetime,
-      // so teammates literally never fired a basic. Stay behind melee fighters
-      // but inside basic reach, regardless of who the active cat is.
-      role='support'; min=Math.max(90,basicRange*.7); max=Math.max(min+18,basicRange*.94);
-    }else if(hasMelee&&hasRanged){
-      // hybrid: a brawler who can also poke — favour the aggressive band but keep poke
-      role='bruiser'; min=Math.max(55,meleeReach*0.4); max=Math.max(130,meleeReach*0.95);
-    }else{
-      // no offensive kit yet → fight at basic-toy range
-      role='basic'; min=Math.max(35,basicRange*.68); max=Math.max(min+12,basicRange-10);
+    const hasMelee=skills.some(isMelee);
+    // SINGLE SOURCE OF TRUTH for "how far can I fight from": the longest reach among equipped
+    // offensive skills, else the basic toy. The band is DERIVED from this, so it can never contradict
+    // the fire-gate (fixes 水枪 reach-300 parking at basic range).
+    const offensive=skills.filter(isOffensive);
+    // A BACKLINER (dps/control/support) anchors its standoff on its RANGED reach — a stray gap-closer
+    // (dash/pounce/leap) in the kit is an ESCAPE/engage tool, NOT a reason to stand at melee range.
+    // Without this, a dps that auto-equipped e.g. 疯跑冲刺(dash) got classed as a mid-range bruiser
+    // and hugged to ~139px (owner: "露露 站太近"). Frontliners still use the full set (they want in).
+    const reachSkills=frontliner
+      ? offensive
+      : (offensive.filter(sk=>!isMelee(sk)).length ? offensive.filter(sk=>!isMelee(sk)) : offensive);
+    const skillReach=reachSkills.length
+      ? Math.max(...reachSkills.map(sk=>this.skillEngageReach(sk,basicRange)))
+      : basicRange;
+    // per-build engagement profile: pref = preferred standoff as a FRACTION of skillReach, tol =
+    // width of the safety bell (how far from pref is still comfortable), close = how much a backliner
+    // hates hugging. Frontliners: low pref, wide tol, ~0 closeness penalty.
+    const P={
+      tank:     {pref:0.30,tol:1.00,close:0.15},
+      fighter:  {pref:0.34,tol:0.95,close:0.18},
+      assassin: {pref:0.26,tol:1.00,close:0.12},
+      dps:      {pref:0.62,tol:0.48,close:0.95},
+      control:  {pref:0.60,tol:0.52,close:0.90},
+      support:  {pref:0.66,tol:0.48,close:1.00},
+    }[build] || {pref:0.50,tol:0.60,close:0.60};
+    const clampN=(v,a,c)=>v<a?a:v>c?c:v;
+    // ANCHOR reach for the preferred standoff. A FRONTLINER wants CONTACT: a gap-closer's long
+    // travel (pounce 240 / leap 200) is how far it LUNGES to reach the target, NOT a distance to
+    // sit at — so cap the frontliner's anchor near contact (≈ basicRange) so a brawler never drifts
+    // to a standoff just because it carries a leap. Backliners anchor on the full skill reach.
+    const anchorReach=frontliner?Math.min(skillReach,Math.max(96,basicRange*0.7)):skillReach;
+    const pref=clampN(P.pref*anchorReach, frontliner?40:Math.min(120,basicRange*0.7), skillReach);
+    const tolBand=Math.max(60,anchorReach*P.tol);
+    // enumerate candidate standoff distances, score each by the weighted considerations, keep best.
+    let bestScore=-1e9,bestD=pref;
+    const top=Math.max(skillReach,basicRange);
+    // A frontliner leans on the basic toss (DPS backbone, near-constant uptime); a BACKLINER leans
+    // on its ranged SKILL and shouldn't crowd forward just to keep the weak toy-toss basic in range
+    // (that pulled 露露/dps to ~139px). Flip the output weighting by line.
+    const wBasic=frontliner?0.62:0.34, wSkill=frontliner?0.38:0.66;
+    for(let d=20;d<=top;d+=5){
+      const basicOk=d<=basicRange?1:0;                   // (a) canOutput
+      const skillOk=d<=skillReach?1:0;
+      const output=wBasic*basicOk+wSkill*skillOk;        // frontline = basic-led; backline = skill-led
+      const dev=(d-pref)/tolBand;                        // (b) safety — bell around preferred standoff
+      const safety=clampN(1-dev*dev,0,1);
+      const under=d<pref?(pref-d)/Math.max(1,pref):0;    // (c) closeness — backliner hug penalty
+      const closePen=P.close*under*under;
+      const score=1.05*output + 0.95*safety - 0.9*closePen;
+      if(score>bestScore){bestScore=score;bestD=d;}
     }
+    // Build the band around the best-scoring distance. HARD CONSTRAINT: min ≤ basicRange so the
+    // basic always connects (the old "ranged cat can't basic" bug). Frontliners keep a close floor.
+    const halfLo=frontliner?(meleeReady?20:26):24, halfHi=frontliner?26:22;
+    let min=clampN(bestD-halfLo, frontliner?32:40, basicRange);
+    let max=Math.max(min+16, bestD+halfHi);
+    // Frontline breed with its melee special on cooldown: a little breathing room while it recharges
+    // (hit-and-run), but it NEVER becomes a backline kiter — bestD already sits at contact for them.
+    if(frontliner&&hasMelee&&!meleeReady){min+=18;max+=18;}
+    // HARD CAP for frontliners: never strafe past the reach of the longest offensive skill they
+    // carry. For a PURE-melee brawler skillReach == meleeReach (~50) so the band can't drift out to
+    // where the claw whiffs (the owner's "前排站远挨打"); a bruiser with a ranged poke has a larger
+    // skillReach, so its breathing-room/standoff is preserved. Keep ≥16 wide and min ≤ the cap.
+    if(frontliner){ max=Math.min(max,Math.round(skillReach)); min=Math.min(min,Math.max(32,max-16)); }
+    const isSupport=sk=>sk&&(sk.kind==='heal'||sk.kind==='buff');
+    // A BACKLINER (dps/control/support) is ALWAYS 'ranged' even if it carries a gap-closer — the
+    // dash is an escape, not a brawl commitment, so it must not read as 'bruiser' and crowd forward.
+    // 'bruiser' (melee + ranged mix that fights mid) is reserved for FRONTLINE builds only.
+    const role=frontliner
+      ? (build==='tank'?'tank':build==='assassin'?'assassin'
+        : (hasMelee&&skills.some(sk=>!isMelee(sk)&&isOffensive(sk)) ? 'bruiser' : 'melee'))
+      : (offensive.length ? 'ranged'
+        : skills.length&&skills.every(isSupport) ? 'support' : 'basic');
     // HP-gated retreat: shift the band outward + widen as HP drops below 30%.
     const hp=f.hp/f.maxhp;
     if(hp<0.3){const push=(0.3-hp)/0.3*120;min+=push;max+=push;}
     const rush=min; // alias for readability at the call site
-    return {min,max,rush,role,hp};
+    return {min:Math.round(min),max:Math.round(max),rush:Math.round(rush),role,hp};
   }
 
   // Per-fighter orbit sign (±1) that flips on a random 0.8–2.5s cadence, with the
@@ -1112,7 +1271,8 @@ class CaptureBattle {
       }
     }
     const f=this.me();
-    const tgt=this.commandedTarget(f.x,f.y);
+    let tgt=this.commandedTarget(f.x,f.y);
+    if (tgt && !this.commandTarget) { const ex=this.focusException(f,tgt); if(ex) tgt=ex; }   // soft focus-fire (assassin pick-off)
     if(!tgt)return;
     const dx=tgt.x-f.x,dy=tgt.y-f.y,dist=Math.hypot(dx,dy)||1;
     const aim=Math.atan2(dy,dx);this.aim=aim;f._aim=aim;
@@ -1123,6 +1283,10 @@ class CaptureBattle {
       if(this._sidestepUntil==null||this.t>this._sidestepUntil){
         this._sidestep=this.rng()<this.autoDodgeChance(f); this._sidestepUntil=this.t+0.35;
       }
+      // A MULTI-PELLET VOLLEY (≥2 converging) ALWAYS triggers a sidestep — one failed coin-flip must
+      // not let a cat stand and eat 3 darts at once (owner: 桃桃 "硬生生吃了三发"). Single shots keep
+      // the probabilistic "eat some hits so fights have stakes" behaviour.
+      if((threat.volley||1)>=2)this._sidestep=true;
       if(!this._sidestep)threat=null;
     }
     let mx=0,my=0,evasive=false;
@@ -1136,9 +1300,25 @@ class CaptureBattle {
       const guard=this.reflectGuardDirection(f,tgt,'wild');
       mx=guard.x;my=guard.y;  // face incoming shot; half-speed stance
     }else if(threat){
+      // SIDESTEP a shot — but a FRONTLINER must keep CLOSING while it jukes, else a
+      // melee cat facing continuous fire (an SSR's barrage fires nearly every frame)
+      // gets permanently pinned in pure perpendicular dodging and never reaches contact
+      // ("突不到敌人" — band says rush 100% of the time but this branch overrode it). So
+      // blend the perpendicular dodge with a forward (toward-target) component whose weight
+      // comes from the kit band: a melee/dash build that is OUTSIDE its band still advances
+      // ~70% toward the enemy while shaving sideways; a ranged kiter dodges mostly sideways.
       const p=threat.p,sp=Math.hypot(p.vx,p.vy)||1;
       const side=f.i%2?-1:1;
-      mx=-p.vy/sp*side;my=p.vx/sp*side;evasive=true;
+      const perpX=-p.vy/sp*side, perpY=p.vx/sp*side;
+      const band=this.kitRangeBand(f);
+      const frontliner=band.role==='melee'||band.role==='tank'||band.role==='assassin'||band.role==='bruiser';
+      // how far outside the band we are (0 = in band, 1 = far past max) → how hard to keep closing
+      const over=clamp((dist-band.max)/160,0,1);
+      const closeW=frontliner?0.85*over:0.25*over;   // frontliners commit to the gap-close; kiters barely
+      const tnx=dx/dist, tny=dy/dist;                // unit vector toward the target
+      mx=perpX*(1-closeW*0.6)+tnx*closeW;
+      my=perpY*(1-closeW*0.6)+tny*closeW;
+      evasive=true;
     }else{
       // KIT-BASED engagement: a melee/dash cat RUSHES in, a ranged/beam cat KITES at
       // its band, a support cat HANGS BACK. The band comes from the equipped skills
@@ -1220,7 +1400,12 @@ class CaptureBattle {
       if(this.castSlot(f,heal,aim)!==false){this.markAutoAction(f,'恢复斗志');return;}
     }
     const shield=this.supportSlot(f,'shield');
-    if(shield&&(hp<.70||dist<145)){
+    // FRONTLINER shield uptime: a tank/fighter re-raises its barrier the instant it's off-cooldown
+    // and down (supportSlot already requires shieldT<.25), WITHOUT waiting for hp<70% — a wall that
+    // only shields when already hurt isn't a wall. Backliners keep the hp/proximity gate.
+    const frontline=(f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat))==='tank'
+      ||(f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat))==='fighter';
+    if(shield&&(frontline||hp<.70||dist<145)){
       if(this.castSlot(f,shield,aim)!==false){this.markAutoAction(f,'展开护盾');return;}
     }
     if(f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)){
@@ -1233,10 +1418,9 @@ class CaptureBattle {
       // HARD RULE: never fire a reflectable shot (projectile/beam) at a reflect wall —
       // it bounces straight back as self-damage. Melee/aoe/dash still allowed (not reflected).
       if(tgtReflect&&rangedKind(sk.kind))return false;
-      // Physical claw sweep reaches 64px plus part of the target body radius.
-      // The previous <=106 decision gate spent melee skills outside that geometry.
-      if(sk.kind==='melee')return dist<=64+(tgt.r||18)*.65-2;
-      if(sk.kind==='dash')return dist>55&&dist<f.speed*3*.26+42;
+      // Physical claw sweep — single source of truth so the band can't drift past it.
+      if(sk.kind==='melee')return dist<=this.meleeReach(tgt);
+      if(sk.kind==='dash')return dist>55&&dist<185;         // fire while the 175px dash can still reach
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
       if(sk.id==='prismBeam')return dist<525;                // actual piercing ray reach
@@ -1278,13 +1462,84 @@ class CaptureBattle {
       { r0: 12, vr: 180, life: .4, color: '#ff5a7a', width: 3 });
     return true;
   }
+  // ---- SQUAD COORDINATION (S1: soft focus-fire) --------------------------------------------------
+  // A 3-cat auto squad used to fight as 3 independent bots, each picking its own nearest enemy — so
+  // damage sprayed across the whole pack and nothing died (owner log: 3 cats hit 3 different enemies,
+  // first kill ~9s, pack uncleared in 25s). This computes ONE shared TEAM FOCUS per frame that the
+  // squad collapses onto, MOBA-style. SOFT focus (owner's choice): most cats converge on the focus,
+  // but role exceptions still apply at the per-cat layer (assassin pick-off, support heal — see
+  // commandedTarget). Cheap + deterministic: no Date.now/Math.random, O(enemies) once per frame.
+  updateTeamBlackboard() {
+    const tb = this._team || (this._team = { focus: null });
+    // Manual focus-fire always wins — the player's tap is intent (handled in commandedTarget too).
+    if (this.commandTarget) {
+      const t = this.liveEnemies().find(e => e.i === this.commandTarget.id);
+      tb.focus = t || null;
+      if (t) return;
+      this.commandTarget = null;
+    }
+    tb.focus = this.pickTeamFocus(tb.focus);
+  }
+  // Choose the ONE enemy the squad collapses onto, by a small utility score. Sticky with hysteresis so
+  // the focus doesn't ping-pong (which would re-spray damage). Passed the previous focus to bias toward
+  // keeping it. Falls back to nearest-to-centroid if nothing scores (e.g. everyone warded).
+  pickTeamFocus(prev) {
+    const live = this.liveEnemies();
+    if (!live.length) return null;
+    // squad centroid (reachability bias): the focus should be one the team can actually converge on.
+    let cx = 0, cy = 0, n = 0;
+    for (const f of this.team) { if (f && f.alive) { cx += f.x; cy += f.y; n++; } }
+    if (n) { cx /= n; cy /= n; } else { cx = this.W / 2; cy = this.H / 2; }
+    const diag = Math.hypot(this.W, this.H) || 1;
+    const score = e => {
+      const hurt = 1 - (e.hp / (e.maxhp || 1));                 // finish the wounded (secure the kill)
+      const squish = e.maxhp ? 1 - Math.min(1, e.maxhp / 900) : 0.5;   // softer targets first
+      const near = 1 - Math.min(1, Math.hypot(e.x - cx, e.y - cy) / diag);  // reachable, not the far kiter
+      const warded = this.enemyWarded(e, null) ? 0 : 1;          // don't feed a ward/reflect
+      return hurt * 0.40 + squish * 0.20 + near * 0.20 + warded * 0.20;
+    };
+    let best = null, bestS = -1e9;
+    for (const e of live) { const s = score(e); if (s > bestS) { bestS = s; best = e; } }
+    // HYSTERESIS: keep the previous focus unless a candidate is CLEARLY better (>12% score), so the
+    // squad commits to a kill instead of flip-flopping as positions jitter.
+    if (prev && prev.alive) {
+      const ps = score(prev);
+      if (bestS <= ps * 1.12) return prev;
+    }
+    return best || this.nearestEnemy(cx, cy);
+  }
   commandedTarget(fromX, fromY) {
     if (this.commandTarget) {
       const target = this.liveEnemies().find(e => e.i === this.commandTarget.id);
       if (target) return target;
       this.commandTarget = null; // target defeated: resume nearest-enemy AI
     }
+    // SOFT FOCUS-FIRE: default to the shared team focus so the squad concentrates damage, instead of
+    // each cat independently chasing its own nearest (the damage-spray bug). Returns nearest only when
+    // there's no focus yet. Role exceptions (assassin pick-off, support peel) are applied by the caller
+    // via focusException() so this stays the single focus source.
+    const focus = this._team && this._team.focus;
+    if (focus && focus.alive) return focus;
     return this.nearestEnemy(fromX, fromY);
+  }
+  // Per-cat SOFT deviation from the shared focus (role identity). Returns an enemy to target INSTEAD of
+  // the focus, or null to stay on focus. Keeps "soft" focus-fire: the team mostly collapses one target,
+  // but an assassin peels to a reachable low-HP backliner (pick-off), matching the owner's "保留一些
+  // 分配 / 软集火" choice. Everyone still avoids feeding a reflect wall (unwardedTarget downstream).
+  focusException(f, focus) {
+    const build = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
+    if (build !== 'assassin' || !focus) return null;
+    // assassin: if a DIFFERENT enemy is low-HP (≤35%) and clearly closer, dive it for the pick-off.
+    let best = null, bestD = 1e9;
+    for (const e of this.liveEnemies()) {
+      if (e === focus || !e.alive) continue;
+      if ((e.hp / (e.maxhp || 1)) > 0.35) continue;
+      const d = Math.hypot(e.x - f.x, e.y - f.y);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    // only deviate if the pick-off is meaningfully closer than the focus (don't cross the whole arena)
+    if (best && bestD < Math.hypot(focus.x - f.x, focus.y - f.y) * 0.8) return best;
+    return null;
   }
   // An enemy is "warded" while it has a damage-reducing barrier, a reflect wall, or a
   // full protect up — attacking it is wasteful (and firing a projectile into a reflect
@@ -1319,7 +1574,10 @@ class CaptureBattle {
   // Ally AI: a non-active team cat fights on its own — flanks near the player,
   // dodges incoming fire, and focus-fires the commander's target when one is set.
   updateAllyAI(dt, f) {
-    const tgt = this.commandedTarget(f.x, f.y);
+    let tgt = this.commandedTarget(f.x, f.y);
+    // SOFT focus-fire role exception: an assassin may peel off the shared focus to a reachable
+    // low-HP pick-off (manual commandTarget still overrides — skip the exception then).
+    if (tgt && !this.commandTarget) { const ex = this.focusException(f, tgt); if (ex) tgt = ex; }
     if (!tgt) return;
     const dx = tgt.x - f.x, dy = tgt.y - f.y, dist = Math.hypot(dx, dy) || 1;
     if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(dy,dx);
@@ -1356,9 +1614,15 @@ class CaptureBattle {
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
     if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(tgt.y-f.y,tgt.x-f.x); }
-    if (dir && f.dashT <= 0 && f.rootT <= 0 &&
+    // Freeze a cat's REAL position while it's performing the duo-combo run: its SPRITE is drawn along a
+    // visual lunge (out-and-back to fromX), so if the AI kept moving the real body underneath, the sprite
+    // would SNAP from the visual spot to the drifted real position when duoRun ends (owner: "放了合体技之
+    // 后就会出现很多瞬移" — a 90px jump measured). Holding the real body still = the sprite lands where it
+    // was drawn, no teleport.
+    const inDuoRun = this.duoRun && this.duoRun.runners.some(r=>r.uid===f.cat?.uid);
+    if (dir && !inDuoRun && f.dashT <= 0 && f.rootT <= 0 &&
         !(f._beamRoot>0) && !(f._castRoot>0)) {
-      const spd = f.speed * this.moveMul(f);   // equal auto-speed for every team cat
+      const spd = f.speed * this.moveMul(f) * this.chaseMul(f,dt);   // equal auto-speed + frontliner pursuit chase
       f.x = clamp(f.x + dir.x * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + dir.y * spd * dt, this.topMargin, this.H - this.bottomMargin);
       if (dir.x < -0.25) f.face = -1; else if (dir.x > 0.25) f.face = 1;
@@ -1505,6 +1769,7 @@ class CaptureBattle {
   // actions accept an optional fighter + aim so ALLIES can use them too.
   fireBasic(f, aim) {
     f = f || this.me(); if (f.cd.basic > 0) return;
+    if (this._debug) this._dbgFiringCat = f;   // debug-log: who is actually firing this basic
     if (aim == null) aim = (f === this.me()) ? this.aim : f._aim || 0;
     if (f === this.me() && this._obs) this._obs.fires++;    // aggression signal
     if (f === this.me()) this._coachAttacked = (this._coachAttacked || 0) + 1;   // coach: step 2
@@ -1748,8 +2013,11 @@ class CaptureBattle {
       this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
+      // Duration 2.2→5.0s (owner: "反弹墙的维持时间太短了") — a tank's signature wall should hold a real
+      // defensive window, in line with the barrier's 4.8s, not blink out after ~2s. The caster is move-
+      // slowed while it's up (see moveMul reflectT branch) + the 10s cooldown both keep it fair.
       if(f._flatWall)f._flatWall.remaining=0;
-      f.reflectT=2.2;
+      f.reflectT=5.0;
       // Hold a 220px flat barrier 42px in front of the caster. It follows the
       // caster at reduced speed, with capped turn rate instead of instant flips.
       const heading=Number.isFinite(aim)?aim:
@@ -2021,6 +2289,7 @@ class CaptureBattle {
   // geometry: projectile=flying fan, melee=arc, aoe=slow placed lob, dash=lunge,
   // chain=jump. Support kinds (heal/buff) are handled by the callers before this.
   castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
+    if (this._debug) this._dbgFiringCat = f;   // debug-log: who is actually firing this skill
     this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
     // WIND-UP (前摇): heavy skills charge for sk.windup seconds before firing — a
     // brief commit that roots the caster and shows a growing charge ring, so big
@@ -2067,6 +2336,12 @@ class CaptureBattle {
       this.chainBolt(f, aim, sk, f.dmg * pow, col);
     } else if (kind === 'beam') {
       this.castBeam(f, aim, sk, f.dmg * pow, col);
+    } else if (sk && sk.shots > 1) {
+      // MULTI-SHOT (弹幕/追踪弹群): fire sk.shots projectiles in a spread. Straight when no
+      // homing; tracking when sk.homing is set. Per-pellet power is already low in the skill data
+      // so the volley SUM stays modest. Shared single-target budget so a fan can't multi-hit a
+      // wide/hugging enemy for shots× power. Player + enemy both reach this path (same skill data).
+      this.castVolley(f, aim, sk, f.dmg * pow, col, 'me');
     } else if (!this.castDistinctProjectile(f, sk, aim, col, f.dmg * pow)) {
       // Owner's per-skill elemental geometry (lances/fireball/hex/etc.) takes
       // priority; fall back to a directional projectile fan for plain skills.
@@ -2081,6 +2356,34 @@ class CaptureBattle {
       this.vfx.muzzle(f.x, f.y, aim, col);
       this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim, spread: 1.4, speed: 160, life: 0.35 });
     }
+  }
+
+  // MULTI-SHOT VOLLEY (弹幕/追踪弹群) — fire sk.shots projectiles in a spread fan around `aim`.
+  // Straight darts by default; if sk.homing is set each pellet tracks the target (spawnProj reads
+  // skill.homing). All pellets SHARE one per-cast single-target budget so a fan can't deal
+  // shots×power to one hugging enemy. `dmg` is already f.dmg*pow for one pellet. owner = 'me'|'wild'.
+  // This is the SINGLE path both the player skill and the enemy barrage delivery fire through.
+  castVolley(f, aim, sk, dmg, col, owner='me') {
+    const n = Math.max(2, Math.min(9, sk.shots || 5));
+    const spread = sk.spread || 0.24;
+    const spd = (f.projSpeed || 300) * (sk.homing ? 0.5 : 0.92);
+    const life = sk.maxProjLife || (sk.homing ? 2.4 : 1.1);
+    const kindSprite = sk.homing ? (sk.element==='elec'?'lightningOrb':'orb') : 'ball';
+    // Single-target budget: a straight fan may land up to 2 pellets on one enemy (so against a lone
+    // wild it isn't strictly worse than a plain bolt — the old 1-hit cap made 弹幕 a trap), while a
+    // homing swarm lets EVERY pellet connect (its low per-pellet power is the balance lever, not a
+    // hit cap — all pellets chase the same target so a 1-cap made it ~4× worse than a bolt). Spread
+    // across multiple enemies is unchanged (each enemy tracked separately).
+    const perEnemyCap = sk.homing ? (sk.shots || 4) : 2;
+    const volley = { hitsByEnemy: new Map(), maxHitsPerEnemy: perEnemyCap };
+    const ex = f.x + Math.cos(aim)*20, ey = f.y + Math.sin(aim)*20;
+    for (let i = 0; i < n; i++) {
+      const off = (i - (n-1)/2) * spread;
+      const p = this.spawnProj(ex, ey, aim + off, spd, dmg, owner, col, sk.homing?11:6, kindSprite, sk, life);
+      if (p) p._volley = volley;
+    }
+    this.vfx.muzzle(ex, ey, aim, col);
+    this.vfx.burst(ex, ey, { count: 8, color: col, angle: aim, spread: spread*n+0.3, speed: 150, life: 0.3 });
   }
 
   // Placed AOE: a slow projectile lobbed toward a target POINT; on arrival it
@@ -2199,7 +2502,10 @@ class CaptureBattle {
     // 元素冲刺微调: stealthFrames (dark) = longer i-frames through the dash; knockMul
     // (water) = heavier shove on contact (read in the contact-knockback at tick time).
     f.dashT=.24;f.inv=sk&&sk.stealthFrames?.5:.28;f.pounce=true;f._dashAim=aim;
-    f._dashReach=120;f._dashTravel=0;f._pounceSkill=sk;f._pounceDmg=dmg;f._dashKnockMul=(sk&&sk.knockMul)||1;
+    // Gap-closer travel must actually REACH a ranged kiter (who holds ~200px, enemyRangeBand max
+    // ~248). The old 120px lunge fell 30–80px short every time, so a melee frontliner could never
+    // stick to a kiting enemy ("突不到敌人"). 175px closes that gap in one dash.
+    f._dashReach=175;f._dashTravel=0;f._pounceSkill=sk;f._pounceDmg=dmg;f._dashKnockMul=(sk&&sk.knockMul)||1;
     this.vfx.trail(f.x,f.y,col,9);
     this.vfx.burst(f.x,f.y,{count:8,color:col,angle:aim+Math.PI,
       spread:.7,speed:110,life:.24,r:2});
@@ -2212,8 +2518,9 @@ class CaptureBattle {
     let tx, ty;
     if (f === this.me() && !this.game.isTouch) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
     else { const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (t) { tx = t.x; ty = t.y; } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; } }
-    // cap leap range so it stays a reach, not a teleport
-    const d = Math.hypot(tx - f.x, ty - f.y), max = 170;
+    // cap leap range so it stays a reach, not a teleport — but long enough to reach a ranged
+    // kiter's ~200px standoff (泰山压顶 is a committed mid-range gap-closer, not a short hop).
+    const d = Math.hypot(tx - f.x, ty - f.y), max = 215;
     if (d > max) { const a = Math.atan2(ty - f.y, tx - f.x); tx = f.x + Math.cos(a) * max; ty = f.y + Math.sin(a) * max; }
     f._leapT = 0.44; f._leapMax = 0.44; f._leapFrom = { x: f.x, y: f.y }; f._leapTo = { x: tx, y: ty };
     f._leapSkill = sk; f._leapDmg = dmg; f._leapCol = col; f.inv = 0.46; f._leapR = 54;
@@ -2229,6 +2536,71 @@ class CaptureBattle {
     e.poiseRecovering=true;
     e.poiseComboHits=0;e.poiseLastHitAt=-99;
     e.staggerT=Math.max(e.staggerT||0,seconds);
+    // A STAGGER (韧性 broken) is a hard-CC break — it must CANCEL any special the enemy is winding
+    // up, including the smash red-circle / nova / charged ult. Without this the enemy kept charging
+    // and still FIRED its biggest move while visibly staggered (owner: "怎么还在放这个" — 焰焰 韧性 -6
+    // yet still holding the smash). A charged ult that gets staggered mid-windup wastes the charge.
+    if (e.telegraph > 0) {
+      if (e.telegraphKind === 'enemyUlt') { e.ultFired = true; e.ultMeter = 0; }
+      e.telegraph = 0; e.telegraphKind = null; e.castInterruptible = false;
+      e.smashTarget = null; e.special = Math.max(e.special || 0, 1.2);
+      e.specialMeter = Math.min(e.specialMeter || 0, 35);   // staggering a cast drains most of its charge
+      this._novaLock = 0;
+    }
+  }
+  // SHARED dash/pounce/leap TRAVEL — the SINGLE source both player cats AND enemies use so a gap-closer
+  // always GLIDES over frames (never a one-frame teleport, owner: "突进/飞扑都要有一定动画速度，不要一瞬间；
+  // 这难道不应该和我们的技能共享源代码吗"). `actor` is the cat/enemy; `foes` is the opposing live list;
+  // `side` is the attacker tag for resolveHit ('me' | 'wild'). Returns nothing; mutates actor position +
+  // resolves contact on arrival. Mirrors the player block that used to be inlined in update().
+  advanceLunge(actor, foes, side, dt) {
+    const f = actor;
+    // 泰山压顶-style leap arc (launch → landing lerp, then slam via leapLand which is player-only art;
+    // enemies don't set _leapT, so this branch is player-only in practice).
+    if (f._leapT > 0) {
+      f._leapT -= dt;
+      const k = 1 - Math.max(0, f._leapT) / f._leapMax;
+      f.x = f._leapFrom.x + (f._leapTo.x - f._leapFrom.x) * k;
+      f.y = f._leapFrom.y + (f._leapTo.y - f._leapFrom.y) * k;
+      f._hop = Math.sin(k * Math.PI) * 58;
+      if (f._leapT <= 0 && side === 'me') this.leapLand(f);
+    }
+    // dash / pounce glide: step toward _dashAim each frame, capped by _dashReach, until spent.
+    if (f.dashT > 0 && f.pounce) {
+      const aim = f._dashAim != null ? f._dashAim : (f._aim || this.aim || 0);
+      const spd = f.speed * (f._pounceSkill?.kind === 'dash' ? 3.2 : 3.6);
+      const step = f._dashReach != null ? Math.min(spd * dt, Math.max(0, f._dashReach - (f._dashTravel || 0))) : spd * dt;
+      const x0 = f.x, y0 = f.y;
+      f.x = clamp(f.x + Math.cos(aim) * step, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+      f.y = clamp(f.y + Math.sin(aim) * step, this.topMargin, this.H - this.bottomMargin);
+      f._dashTravel = (f._dashTravel || 0) + Math.hypot(f.x - x0, f.y - y0);
+      if (f._dashReach != null && f._dashTravel >= f._dashReach - .01) f.dashT = 0;
+      if (f._pounceSkill?.element === 'elec') this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
+    }
+    // contact on the nearest foe (resolves ONCE, then ends the pounce)
+    if (f.pounce) {
+      let tgt = null, td = 1e9;
+      for (const o of foes) { if (!o || !o.alive) continue; const d = Math.hypot(o.x - f.x, o.y - f.y); if (d < td) { td = d; tgt = o; } }
+      if (tgt && (tgt.flash || 0) <= 0 && (tgt.inv || 0) <= 0 && td < (f.r || 18) + ((tgt.r || 18) * .6)) {
+        let dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (side === 'me' ? this.outgoingBuffMult(f) : 1);
+        const contact = f._pounceSkill;
+        if (contact?.backstab) {
+          const facing = Math.atan2((tgt._vy || 0), (tgt._vx || 0));
+          const fromBehind = Math.abs(((f._dashAim || 0) - facing + Math.PI) % (Math.PI * 2)) < 1.1;
+          if (fromBehind || this.rng() < 0.5) dmg *= contact.backstab;
+        }
+        this.resolveHit(tgt, side, contact || { element: f.element }, dmg, tgt.x, tgt.y);
+        const steal = contact && (contact.lifesteal || contact.leech);
+        if (steal && f.alive) f.hp = Math.min(f.maxhp, f.hp + dmg * steal);
+        if (contact?.element === 'elec') {
+          this.vfx.burst(tgt.x, tgt.y, { count: this.game.isTouch ? 9 : 15, color: '#ffe29a', speed: 150, life: .34, r: 3.2 });
+          this.vfx.ring(tgt.x, tgt.y, { r0: 9, vr: 120, life: .25, color: '#8da8ef', width: 4 });
+        }
+        { const kb = 260 * (f._dashKnockMul || 1); tgt.kbx = (tgt.kbx || 0) + Math.cos(f._dashAim || 0) * kb; tgt.kby = (tgt.kby || 0) + Math.sin(f._dashAim || 0) * kb; }
+        f.pounce = false; f._pounceDmg = null; f._pounceSkill = null;
+        f._dashReach = null; f._dashTravel = 0; f.dashT = 0;
+      }
+    }
   }
   // land the leap: AOE slam + stagger under the impact point
   leapLand(f) {
@@ -2256,7 +2628,9 @@ class CaptureBattle {
   // reaches farther and hits harder than the default dash leap.
   flyingPounce(f, aim, sk, dmg, col) {
     f.dashT = 0.29; f.inv = 0.32; f.pounce = true; f._dashAim = aim; f._pounceSkill = sk;
-    f._pounceDmg=dmg;f._dashReach=155;f._dashTravel=0;
+    // 飞扑 reaches FARther than the dash (it's the dedicated gap-closer): 210px fully closes a
+    // ranged kiter's ~200px standoff so a melee frontliner can land on a fleeing target.
+    f._pounceDmg=dmg;f._dashReach=210;f._dashTravel=0;
     this.vfx.trail(f.x, f.y, col, 11);
     // A physical lunge is not a 150-unit glowing ranged laser.
     this.vfx.burst(f.x, f.y, { count: 10, color: col, angle: aim + Math.PI, spread: 1.0, speed: 230 });
@@ -2515,8 +2889,25 @@ class CaptureBattle {
     } else {
       let threat = null, td = 1e9;
       for (const p of this.projectiles) { if (p.owner !== 'wild') continue; const d = Math.hypot(p.x - f.x, p.y - f.y); if (d < td) { td = d; threat = p; } }
-      if (threat && td < 140) dir = Math.atan2(f.y - threat.y, f.x - threat.x);   // away from the shot
-      else { const ne = this.nearestEnemy(f.x, f.y); if (ne) dir = Math.atan2(f.y - ne.y, f.x - ne.x); }  // away from enemy
+      // AUTO dodge rolls PERPENDICULAR to the danger (a sidestep), NOT straight back. A pure
+      // retreat made an auto frontliner abandon its chase on every poke — it rolled away from the
+      // very kiter it was trying to catch, so TTK got WORSE once the roll actually moved (R1-F5).
+      // A lateral i-frame roll dodges the shot/enemy just as well while preserving the engagement
+      // (frontliner keeps closing, kiter keeps its range). Pick the perpendicular side that points
+      // more toward the target so a brawler sidesteps INWARD, not out of the fight. Ranged cats are
+      // unaffected in practice (they dodge then re-kite via their band).
+      const ne = this.nearestEnemy(f.x, f.y);
+      const src = (threat && td < 140) ? threat : ne;
+      if (src) {
+        const toEnemy = ne ? Math.atan2(ne.y - f.y, ne.x - f.x) : Math.atan2(src.y - f.y, src.x - f.x);
+        const away = Math.atan2(f.y - src.y, f.x - src.x);          // radial escape (from the shot/enemy)
+        const perpA = away + Math.PI / 2, perpB = away - Math.PI / 2;
+        // choose the perpendicular whose heading is closer to "toward the enemy" (keeps the chase);
+        // blend 70% sidestep + 30% radial so there's still a touch of real spacing off a shot.
+        const ang = (a) => { const d = Math.abs(((a - toEnemy + Math.PI) % (Math.PI * 2)) - Math.PI); return d; };
+        const perp = ang(perpA) < ang(perpB) ? perpA : perpB;
+        dir = Math.atan2(Math.sin(perp) * 0.7 + Math.sin(away) * 0.3, Math.cos(perp) * 0.7 + Math.cos(away) * 0.3);
+      }
     }
     if (dir != null) f._dashAim = dir;
     // LEARN the player's habits: which way they strafe when dodging, and whether a
@@ -2545,9 +2936,11 @@ class CaptureBattle {
       this.vfx.text(f.x, f.y - 46, '完美闪避!', '#9d7bff', 18);
       this.game.toast('✨ 完美闪避！子弹时间 + 充能');
     } else {
-      // Even an ordinary dodge briefly slows the world (enemies + their shots), so
-      // it reliably creates space to reposition — the "freeze time" the dash needs.
-      if (f === this.me()) this.slowmo = Math.max(this.slowmo, 0.35);
+      // ORDINARY dodge no longer triggers bullet-time. Auto-battle dodges CONSTANTLY, so a 0.35× world-
+      // slow on every ordinary dodge made the fight lurch between speeds — "一会加速一会减速，时间流速不
+      // 一致" (owner), worsened by the calmer 0.64 global tempo. Bullet-time is now reserved for the big,
+      // INFREQUENT beats (perfect dodge, ult, duo, capture) where it reads as drama, not a stutter. The
+      // dodge still gives i-frames + the roll travel to create space; it just doesn't warp time.
       this.vfx.ring(f.x, f.y, { r0: 6, vr: 300, life: 0.35, color: '#bfe9ff', width: 3 });
       this.vfx.burst(f.x, f.y, { count: 8, color: '#bfe9ff', speed: 170, life: 0.32, r: 2 });
     }
@@ -2564,6 +2957,28 @@ class CaptureBattle {
   }
   // Combined movement multiplier: soft-CC slow (冰冻/束缚/感电) AND the post-cast
   // 后遗症 recovery slow left after a heavy skill. Shared by player + enemy movement.
+  // PURSUIT CHASE (MOBA "close the gap"): a FRONTLINER (tank/fighter/assassin) whose base speed only
+  // barely out-paces a fleeing ranged kiter would otherwise take ~5s of straight-line chase to close
+  // a ~135px gap (net approach ≈ speed − kiterSpeed ≈ 2px/s) — the "焰焰 开局几秒不打伤害" bug: the
+  // melee cat is stranded outside its own attack range eating free pokes. While it's clearly RUSHING
+  // (bandSteer flagged it past band.max), ramp a chase bonus (up to +55% over ~0.9s) so it catches the
+  // kiter. It stays at full bonus for as long as the chase continues (a kiter who keeps running keeps
+  // the cat in 'rush' — that's intended: the whole point is to catch a target that outruns a base-speed
+  // pursuit); _chaseT only decays once the cat re-enters its band (steerMode leaves 'rush') or isn't a
+  // frontliner. HP GATE: a badly-hurt frontliner (hp<30%) does NOT get the chase buff — at that point it
+  // should be retreating/kiting, not rushing a kiter into its own death (R1-F6). Returns a mult ≥1.
+  // Dash frames (already ×3) are left to the caller to skip.
+  chaseMul(f,dt){
+    const fb=f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat);
+    const frontliner=fb==='tank'||fb==='fighter'||fb==='assassin';
+    const healthy=!f.maxhp||f.hp/f.maxhp>=0.30;
+    if(frontliner&&healthy&&f._steerMode==='rush'&&f.dashT<=0){
+      f._chaseT=Math.min(0.9,(f._chaseT||0)+dt);
+      return 1+0.55*(f._chaseT/0.9);
+    }
+    if(f._chaseT)f._chaseT=Math.max(0,f._chaseT-dt*2);   // decay once in-band / not rushing / hurt / not frontline
+    return 1;
+  }
   moveMul(f){
     let m = f.slowed ? 0.55 : 1;
     // 淋湿 (soak): water's signature debuff is a MILD slow (×0.8) — lighter than hard soft-CC
@@ -2584,6 +2999,12 @@ class CaptureBattle {
     f = f || this.me(); if(!f) return false;
     const skill=f.ultSkill, el=skill&&skill.ultCost>0?skill.element:null;
     const diag=Math.hypot(this.W,this.H);
+    // HEAL ULT needs no enemy target — auto-fire it when the team is meaningfully hurt (avg <72% HP),
+    // so it's spent on real recovery, not wasted at full health. (owner: light ult = team heal.)
+    if(skill&&skill.healUlt){
+      let hp=0,mx=0; for(const t of this.team){ if(!t.alive)continue; hp+=Math.max(0,t.hp); mx+=t.maxhp||0; }
+      return mx>0 && hp/mx < 0.72;
+    }
     const live=this.liveEnemies(); if(!live.length) return false;
     if(el==='fire'&&skill.id!=='purrNova'){
       const aim=(f===this.me())?this.aim:(f._aim||0), half=0.6, reach=diag*0.5;
@@ -2736,6 +3157,30 @@ class CaptureBattle {
     const f=p.f, skill=p.skill;
     if(!f||!f.alive)return;
     this.shakeT=.6; // impact stays in arena; no full-screen flash
+    // HEAL ULT (owner: light ult → team-heal): restore healPct of EVERY living team cat's max HP, no
+    // damage. A support-defining big button — the light element's signature team recovery.
+    if(skill&&skill.ultCost>0&&skill.healUlt){
+      const color=this.elemColor(skill.element);
+      const pct=skill.healPct||0.6;
+      let healedAny=false;
+      for(const t of this.team){
+        if(!t.alive)continue;
+        const before=t.hp;
+        t.hp=Math.min(t.maxhp,t.hp+t.maxhp*pct);
+        if(t.hp>before+0.01){ healedAny=true;
+          this.vfx.ring(t.x,t.y,{r0:8,vr:260,life:.5,color,width:6});
+          this.vfx.burst(t.x,t.y,{count:this.game.isTouch?8:14,color,speed:120,life:.5,r:3,grav:-40});
+          this.vfx.text(t.x,t.y-46,'+'+Math.round(t.maxhp*pct),color,14);
+        }
+      }
+      this.vfx.ring(f.x,f.y,{r0:14,vr:520,life:.55,color:'#fff1a8',width:8});
+      window.MorrowwishAudio?.effect?.('combat_heal');
+      this.skillStrokes.push({kind:'ultimate',skillId:skill.id,x:f.x,y:f.y,element:skill.element,color,
+        angle:f===this.me()?this.aim:(f._aim||0),targets:[],life:1.4,max:1.4});
+      const zhHeal=window.MorrowwishI18n?.get?.()==='zh';
+      this.game.toast(this.elemSymbol(skill.element)+' '+(zhHeal?'必杀 · ':'Ultimate · ')+(window.CatBondI18n?.translate?.(skill.name)||skill.name)+(zhHeal?`！全体回血`:'! Team heal'));
+      return;
+    }
     if(skill&&skill.ultCost>0){
       // Each ELEMENT's ultimate is a genuinely different attack shape (not one AOE
       // recolored): fire = forward blaze cone, water = giant tidal wave ring, elec =
@@ -3026,6 +3471,11 @@ class CaptureBattle {
     this.vfx.ring(nf.x, nf.y, { r0: 8, vr: 280, life: 0.35, color: '#9be7c4', width: 3 });
     this.vfx.burst(nf.x, nf.y, { count: 10, color: '#9be7c4', speed: 180, life: 0.4 });
     this.game.toast((window.MorrowwishI18n?.get?.()==='zh'?'切换到 ':'Switched to ')+State.catName(nf.cat)+'！');
+    // IMMEDIATELY refresh the move-bar to the new cat's Q/E/basic/ult — do not wait for the
+    // per-frame safety net (game.js updateBattleUI _lastActiveIdx check), which left the bottom
+    // skill labels showing the PREVIOUS cat's moves after a swap (owner-reported). Keep the frame
+    // net too; this just makes the update instant + independent of the UI tick running that frame.
+    this.game.updateSkillLabels?.();
   }
 
   gainUlt(n) {
@@ -3087,6 +3537,7 @@ class CaptureBattle {
   spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill, life) {
     const L = life || 2.2;
     const p = { x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, r0: r, kind, life: L, maxLife: L, ang, skill: skill || null };
+    if (this._debug && owner === 'me') p._firedBy = this._dbgFiringCat;   // debug-log: tag the actual firing cat so projectile hits name the right ally
     // Optional projectile behaviours carried from the skill:
     //  grow  — radius expands over flight (bigger area the longer it travels)
     //  homing— turns toward the owner's target each frame, up to homingTurn rad/s
@@ -3540,10 +3991,8 @@ class CaptureBattle {
     const realDt = dt;                 // unscaled frame time for cinematic timers
     if(this.coach)this.coachSeconds+=dt;
     this.ultCd=Math.max(0,this.ultCd-dt); // real frame time, before simulation slowdown
-    // Global combat tempo: scale the whole simulation (movement, projectiles, enemy
-    // AI, cooldowns) so fights read calmer and the cat isn't twitchy-fast. One knob,
-    // everything stays proportional/balanced. 1 = old speed; 0.8 = 20% slower.
-    dt *= 0.8;
+    // Global combat tempo (see this.tempoScale in the constructor — the single source of truth).
+    dt *= (this.tempoScale != null ? this.tempoScale : 0.64);
     // Ultimate cinematic: the arena nearly freezes so the full-screen sequence
     // reads as a dramatic beat. Ticks on REAL dt (pre-freeze) so it always lasts 3s.
     if (this.ultCinematic) { this.tickUltCinematic(dt); dt *= 0.06; }
@@ -3601,8 +4050,18 @@ class CaptureBattle {
     if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0 && this.combo > 0) this.breakCombo(); }
     this.gainUlt(8 * dt);                  // passive charge; active combat charges faster
 
+    this.updateTeamBlackboard();           // SQUAD COORDINATION: shared focus target, computed once/frame
     this.readInput(dt);
-    if(this.autoMode&&this.duoReady())this.castDuo();
+    // AUTO duo-cast: do NOT dump it at the very opening. The first-duo SHOWCASE pre-charges duoCharge to
+    // 100 (game.js) so a new player sees their duo early — but on AUTO-battle that made the combo fire on
+    // frame 1 of the follow-up fight, yanking both cats onto the enemy before anything happened (owner:
+    // "第一场收伙伴，第二场一开战就发合体技，被聚到敌方猫身上"). Hold the auto-cast until the fight is a few
+    // seconds in AND the duo pair has closed to a sensible range, so it reads as a real mid-fight beat.
+    if(this.autoMode&&this.duoReady()&&this.t>=2.4){
+      const near=this.liveEnemies().some(e=>this.team.some(f=>f.alive&&
+        [this.duo.a.uid,this.duo.b.uid].includes(f.cat.uid)&&Math.hypot(e.x-f.x,e.y-f.y)<360));
+      if(near)this.castDuo();
+    }
 
     // tick player cooldowns & timers
     for (const f of this.team) {
@@ -3654,57 +4113,22 @@ class CaptureBattle {
     // ALL your cats are on the field: you control the active one, allies auto-fight.
     for (const f of this.team) {
       if (!f.alive) continue;
-      // 泰山压顶 leap travel: follow the arc from launch to landing, then slam
-      if (f._leapT > 0) {
-        f._leapT -= dt;
-        const k = 1 - Math.max(0, f._leapT) / f._leapMax;             // 0→1 flight progress
-        f.x = f._leapFrom.x + (f._leapTo.x - f._leapFrom.x) * k;
-        f.y = f._leapFrom.y + (f._leapTo.y - f._leapFrom.y) * k;
-        f._hop = Math.sin(k * Math.PI) * 58;                          // visual arc height (drawn as y-offset)
-        if (f._leapT <= 0) this.leapLand(f);
-      }
-      // dash-pounce travel (active or ally)
-      if (f.dashT > 0 && f.pounce) {
-        const aim=f._dashAim!=null?f._dashAim:(f._aim||this.aim);
-        const spd=f.speed*(f._pounceSkill?.kind==='dash'?3.2:3.6);
-        const step=f._dashReach!=null?Math.min(spd*dt,
-          Math.max(0,f._dashReach-(f._dashTravel||0))):spd*dt;
-        const x0=f.x,y0=f.y;
-        f.x=clamp(f.x+Math.cos(aim)*step,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
-        f.y=clamp(f.y+Math.sin(aim)*step,this.topMargin,this.H-this.bottomMargin);
-        f._dashTravel=(f._dashTravel||0)+Math.hypot(f.x-x0,f.y-y0);
-        if(f._dashReach!=null&&f._dashTravel>=f._dashReach-.01)f.dashT=0;
-        // Short moving spark tail, unlike a beam held fixed to the origin.
-        if(f._pounceSkill?.element==='elec')
-          this.vfx.trail(f.x,f.y,'#ffe6a1',3);
-      }
-      // pounce contact damage on nearest enemy
-      if (f.pounce) {
-        const e = this.nearestEnemy(f.x, f.y);
-        if (e && e.flash <= 0 && e.inv <= 0 && Math.hypot(f.x - e.x, f.y - e.y) < f.r + (e.r||18)*.6) {
-          let dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * this.outgoingBuffMult(f);
-          const contact=f._pounceSkill;
-          // 暗影微调 backstab: a dash/pounce landing from behind the target hits harder.
-          if(contact?.backstab){
-            const facing=Math.atan2((e._vy||0),(e._vx||0));
-            const fromBehind=Math.abs(((f._dashAim||0)-facing+Math.PI)%(Math.PI*2))<1.1;
-            if(fromBehind||this.rng()<0.5) dmg*=contact.backstab;
-          }
-          this.resolveHit(e, 'me', contact||{element:f.element},dmg,e.x,e.y);
-          // lifesteal/leech (grass melee / dark heal-type tweak): caster recovers a cut of it.
-          const steal=contact&&(contact.lifesteal||contact.leech);
-          if(steal&&f.alive) f.hp=Math.min(f.maxhp,f.hp+dmg*steal);
-          // Electric pounces are physical lightning impacts, not distant rays.
-          if(contact?.element==='elec'){
-            this.vfx.burst(e.x,e.y,{count:this.game.isTouch?9:15,
-              color:'#ffe29a',speed:150,life:.34,r:3.2});
-            this.vfx.ring(e.x,e.y,{r0:9,vr:120,
-              life:.25,color:'#8da8ef',width:4});
-          }
-          { const kb=260*(f._dashKnockMul||1); e.kbx=(e.kbx||0)+Math.cos(f._dashAim||0)*kb; e.kby=(e.kby||0)+Math.sin(f._dashAim||0)*kb; }  // knockback (×knockMul: water dash shoves harder)
-          f.pounce=false;f._pounceDmg=null;f._pounceSkill=null;
-          f._dashReach=null;f._dashTravel=0;f.dashT=0;
-        }
+      // SHARED dash/pounce/leap travel (same advanceLunge enemies use) — glides over frames, resolves
+      // contact on the nearest wild on arrival. (leap arc, dash/pounce glide, contact all inside.)
+      this.advanceLunge(f, this.liveEnemies(), 'me', dt);
+      // DODGE-ROLL travel (player-only): the dodge sets dashT (i-frames) + _dashAim (flee heading) but is
+      // NOT a pounce, so it falls through advanceLunge; give it a brisk sidestep so the roll actually
+      // MOVES (the old no-travel dodge froze a chasing frontliner in place). GUARD uses !(f._leapT>0) —
+      // `undefined<=0` is false, which once made this dead code. manualActive carve-out: in MANUAL mode
+      // readInput already dash-moves the active cat (avoid double-move); AUTO active cat needs it.
+      const manualActive = f === this.me() && !this.autoMode;
+      const rollBuild = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
+      const rollFront = rollBuild === 'tank' || rollBuild === 'fighter' || rollBuild === 'assassin';
+      if (!manualActive && rollFront && f.dashT > 0 && !f.pounce && !(f._leapT > 0) && f.rootT <= 0 && !(f._beamRoot > 0) && !(f._castRoot > 0)) {
+        const aim = f._dashAim != null ? f._dashAim : (f._aim != null ? f._aim : this.aim);
+        const spd = f.speed * 1.9 * this.moveMul(f);          // brisk evasive roll
+        f.x = clamp(f.x + Math.cos(aim) * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+        f.y = clamp(f.y + Math.sin(aim) * spd * dt, this.topMargin, this.H - this.bottomMargin);
       }
       // non-active alive cats fight through the shared adaptive planner
       if (f !== me) this.updateAllyAI(dt, f);
@@ -3909,9 +4333,19 @@ class CaptureBattle {
         }
       } else {
         // enemy shot hits ANY alive team cat it overlaps
-        for (const tf of this.team) {
+        for (let ti = 0; ti < this.team.length; ti++) {
+          const tf = this.team[ti];
           if (!tf.alive || tf.inv > 0) continue;
           if (Math.hypot(p.x - tf.x, p.y - tf.y) < p.r + tf.r * 0.7) {
+            // VOLLEY BUDGET (symmetric with the player path above): a multi-pellet enemy fan
+            // (弹幕/castVolley owner 'wild') may hit the SAME cat at most maxHitsPerEnemy times,
+            // so a 5-dart barrage can't delete one frontliner in a single cast. Keyed on the team
+            // slot index. Without this, every pellet lands on whoever it overlaps (蓝莓 "like paper").
+            if (p._volley) {
+              const count = p._volley.hitsByEnemy.get(ti) || 0;
+              if (count >= p._volley.maxHitsPerEnemy) { p.life = 0; break; }
+              p._volley.hitsByEnemy.set(ti, count + 1);
+            }
             const r = this.resolveHit(tf, 'wild', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
             if (r.reflected) break;
             p.life = 0;
@@ -4072,8 +4506,8 @@ class CaptureBattle {
     const ranged = sk && (sk.kind === 'projectile' || sk.kind === 'beam' || sk.kind === 'aoe');
     let min, max;
     if (e.role === 'ambusher' || melee) { min = 40; max = 120; }        // rush into claw range
-    else if (e.role === 'sharpshooter' || ranged) { min = 170; max = 250; }  // kite at range
-    else { min = 120; max = 200; }                                      // skirmisher / elite mid band
+    else if (e.role === 'sharpshooter' || ranged) { min = 120; max = 185; }  // ranged standoff pulled in from 170/250 so a melee cat can actually catch a fleeing shooter (owner: reduce kiting)
+    else { min = 95; max = 165; }                                       // skirmisher / elite mid band
     // aggro (1 − hp) pulls the band slightly inward as it gets desperate
     const pull = (e.aggro || 0) * 40; min = Math.max(32, min - pull); max = Math.max(min + 40, max - pull);
     // LEARNED: slide the band to attack the player's comfort zone (crowd a kiter / kite a brawler)
@@ -4104,7 +4538,7 @@ class CaptureBattle {
     // Elites visibly change behavior at half HP; SSR have a second last stand.
     const nextPhase=e.rIdx>=3&&hpFrac<.24?2:e.rIdx>=2&&hpFrac<.52?1:0;
     if(nextPhase>e.phase){
-      e.phase=nextPhase;e.special=Math.min(e.special,.45);e.dodgeCd=0;
+      e.phase=nextPhase;e.specialMeter=Math.max(e.specialMeter||0,78);e.dodgeCd=0;   // phase change primes (not instant-fires) the next special
       this.vfx.ring(e.x,e.y,{r0:18,vr:540,life:.65,color:'#ffb370',width:7});
       this.vfx.burst(e.x,e.y,{count:17,color:'#ff9c82',speed:220,life:.6});
       const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -4153,8 +4587,12 @@ class CaptureBattle {
         const aimX = me.x + (me._vx || 0) * tl, aimY = me.y + (me._vy || 0) * tl;
         const gl = Math.hypot(aimX - e.x, aimY - e.y) || 1;
         ax = (aimX - e.x) / gl; ay = (aimY - e.y) / gl;
-      } else if (dp < band.min - 6) {          // EVADE: back off to the band (kite)
-        ax = -nx; ay = -ny;
+      } else if (dp < band.min - 6) {          // EVADE: back off toward the band — but only HALF-
+        // heartedly (mix in a sideways strafe), so a melee cat that has closed the gap can stick to
+        // it instead of being out-run forever. A pure −nx/−ny full-speed flee made ranged enemies
+        // un-catchable for a no-gap-closer frontliner (owner: "降低 kite"). 60% back-off, 40% orbit.
+        const dir = this.orbitSign(e, '_eorbit', dt);
+        ax = -nx * 0.6 - ny * dir * 0.4; ay = -ny * 0.6 + nx * dir * 0.4;
       } else {                                 // STRAFE: orbit on a flipping sign + range-correction
         const dir = this.orbitSign(e, '_eorbit', dt);
         ax = -ny * dir; ay = nx * dir;
@@ -4202,13 +4640,38 @@ class CaptureBattle {
       return;
     }
     e.special -= dt;
+    // CHARGE the SPECIAL meter from 0 → 100 (each enemy its own, like the player's ult). Rate is
+    // derived from the old specialCd so cadence is preserved once charged: a cat that used to re-fire
+    // every ~specialCd seconds fills 100 in ~specialCd seconds. A hurt/aggressive cat charges a touch
+    // faster. The meter (not a cooldown) is the sole gate below, so the opening is always quiet.
+    if ((e.specialMeter || 0) < 100) {
+      // Refill to 100 over ~(specialCd + 5)s — the +5 makes the FIRST special land mid-fight (~8–10s
+      // from a −headstart) instead of the old 3s cooldown, while later recharges still pace at roughly
+      // specialCd once the meter's rolling. Aggro/pressure nudge it faster so a heated fight escalates.
+      const fillSecs = Math.max(2.4, (e.specialCd || 3.2)) + 5;
+      const rate = 100 / fillSecs;
+      e.specialMeter = Math.min(100, (e.specialMeter || 0) + dt * rate * (1 + (e.aggro || 0) * 0.4));
+    }
+    // CHARGE the enemy ult meter over the fight (SR+ with a signature ult only). Fills steadily
+    // plus a little faster while hurt, so it becomes available roughly once mid-to-late fight —
+    // reaching full is the cue for the charged-ult telegraph below. One per fight (ultFired).
+    if (e.ultSkill && !e.ultFired && e.ultMeter < 100) {
+      const hurt = 1 - e.hp / e.maxhp;
+      // Do NOT pile the ult onto a LOSING player: when the team is badly hurt (avg HP < ~40%) the
+      // charge nearly stalls, so the enemy's biggest move lands on players who are CRUISING (and can
+      // read/interrupt it), not on those already drowning — the one-directional problem the playtests
+      // flagged. Full speed when the player is healthy; a trickle when the player is on the ropes.
+      const teamFrac = (() => { let hp = 0, mx = 0; for (const t of this.team) { if (!t) continue; hp += Math.max(0, t.hp); mx += t.maxhp || 0; } return mx ? hp / mx : 1; })();
+      const losing = teamFrac < 0.40 ? Math.max(0.15, teamFrac / 0.40) : 1;   // 0.15–1 throttle
+      e.ultMeter = Math.min(100, e.ultMeter + dt * (6.5 + hurt * 5) * losing);
+    }
     // Per-kind engagement: nova is a point-blank punish, pounce is an ambusher's
     // close leap, barrage is mid-range, AoE-lob reaches out. Pick the kind that
     // fits the CURRENT distance instead of casting from across the arena. Only one
     // enemy telegraphs at a time.
     // Under high within-fight pressure a SECOND enemy may telegraph at once.
     const lockCap = (this._pressure || 0) > 0.6 ? 2 : 1;
-    if (e.special <= 0 && (this._novaLock || 0) < lockCap) {
+    if ((e.specialMeter || 0) >= 100 && (this._novaLock || 0) < lockCap) {
       let kind = null;
       // MUST-DODGE HEAVY (重击): when the player is dominating — either across fights
       // (stompStreak) or cruising untouched within THIS fight (_pressure) — a wild cat
@@ -4223,7 +4686,10 @@ class CaptureBattle {
       // faster accrual mean a cruising player meets a "leave the circle" test early.
       const pastTutorial = (State.S.catchCount || 0) >= 2;
       const dominating = (this._stomp || 0) >= 0.3 || (this._pressure || 0) >= 0.35;
-      if (pastTutorial && dominating && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
+      // CHARGED ULT first: meter full → the enemy commits its signature ult (telegraphed +
+      // interruptible, reduced power). Highest priority so a full meter always resolves.
+      if (e.ultSkill && !e.ultFired && e.ultMeter >= 100 && dist < 360) kind = 'enemyUlt';
+      else if (pastTutorial && dominating && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
       else if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
@@ -4239,24 +4705,59 @@ class CaptureBattle {
           e.smashTarget = { x: me.x, y: me.y };
         }
         e.special = Math.max(2.6, e.specialCd - e.aggro * 1.5) + this.rng();          // +recovery floor
+        e.specialMeter = 0;                                                            // spent → recharge from 0
         e.telegraphKind = kind;
         this._novaLock = 1;                                   // pack cast-lock: others keep basic-firing
-        // the heavy winds up longer (readable) than ordinary specials
-        e.telegraph = (kind === 'smash' ? 1.4 : Math.min(1.2, 0.8 + e.rIdx * 0.1)) * (this.aiReact || 1);
+        // the heavy winds up longer (readable) than ordinary specials; the charged ult is the
+        // longest/most readable wind-up of all (a clear "burst it or brace" moment).
+        e.telegraph = (kind === 'enemyUlt' ? 1.7 : kind === 'smash' ? 1.4 : Math.min(1.2, 0.8 + e.rIdx * 0.1)) * (this.aiReact || 1);
         e.telegraphMax = e.telegraph;
-        // INTERRUPT WINDOW: the heavy casts (nova + smash) can be CANCELLED if you
-        // burst the enemy hard enough during the windup — a read-and-punish, not just
-        // a dodge. Budget ~22% of max HP of raw damage during the telegraph.
-        e.castInterruptible = (kind === 'nova' || kind === 'smash');
-        e.castDmgBudget = e.maxhp * 0.22;
+        // INTERRUPT WINDOW: the heavy casts (nova + smash + the charged ult) can be CANCELLED if
+        // you burst the enemy hard enough during the windup — a read-and-punish, not just a dodge.
+        // The ult has a slightly larger budget (it's the biggest commit) but is still interruptible —
+        // bursting it both cancels the hit AND wastes the whole charge.
+        e.castInterruptible = (kind === 'nova' || kind === 'smash' || kind === 'enemyUlt');
+        // Interrupt budget as a fraction of enemy maxHP. For the charged ult, scale the fraction UP
+        // when the player out-levels the wild (easy to deny a weak over-leveled SR's ult) and DOWN
+        // when under-leveled (so it isn't trivially cheesed, but isn't unreachable either). Flat
+        // ~0.28 at level; clamps to a fair 0.18–0.40 band across the gap.
+        const ultBudgetFrac = kind === 'enemyUlt'
+          ? Math.max(0.18, Math.min(0.40, 0.28 + (this._levelGap || 0) * 0.02))
+          : 0.22;
+        e.castDmgBudget = e.maxhp * ultBudgetFrac;
         e.castDmgTaken = 0;
         e.telegraphAim = this.leadAngle(e, me, 300);          // predictive lead (see leadAngle)
-        if (kind === 'nova') this.game.toast('⚠️ 野猫在蓄力大招！');
+        if (kind === 'enemyUlt') this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'⚠️ 野猫蓄力必杀 — 打断它！':'⚠️ Wild cat charging its ULTIMATE — interrupt it!');
+        else if (kind === 'nova') this.game.toast('⚠️ 野猫在蓄力大招！');
         else if (kind === 'smash') this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'⚠️ 重击来袭 — 离开红圈！':'⚠️ Heavy smash — leave the red circle!');
         return;
       }
     }
 
+    // REAL SKILL ROTATION (敌我同一套): before the hardcoded basic pellet, if a rotation skill is
+    // off-cooldown AND in reach, CAST IT BY ITS KIND (castEnemySkill) — so a wild cat actually uses
+    // 咳毛球/烈焰罩/横扫 like a player's Q/E, not just basic + the big special. One cast per frame; the
+    // quiet opener (rotReady) + per-slot cd floor keep it from machine-gunning real skills.
+    if (e.rotReady > 0) e.rotReady -= dt;
+    for (let s = 0; s < (e.rotation ? e.rotation.length : 0); s++) {
+      if ((e.skillCd[s] || 0) > 0) e.skillCd[s] -= dt;
+    }
+    if (e.rotReady <= 0 && e.telegraph <= 0 && !(e._castSlow > 0) && e.rotation && e.rotation.length) {
+      for (let s = 0; s < e.rotation.length; s++) {
+        if ((e.skillCd[s] || 0) > 0) continue;
+        const sk = e.rotation[s];
+        if (!sk) continue;
+        const reach = this.skillEngageReach(sk, 169);          // SAME reach gate the player uses
+        if (dist > reach) continue;
+        // never fire a reflectable shot into a cat's reflect wall (bounces back as self-damage)
+        if ((sk.kind === 'projectile' || sk.kind === 'beam' || sk.kind === 'chain') &&
+            (this.reflectCovers(me, e.x, e.y) || this.wallBlockingLine(e.x, e.y, me.x, me.y, 'wild'))) continue;
+        this.castEnemySkill(e, me, sk);
+        e.skillCd[s] = Math.max(2.4, sk.cd || 3);              // honour the skill's own cd, floored
+        e._castSlow = sk.castSlow || 0.6;                       // 后遗症: a readable/punishable recovery
+        return;                                                 // one action this frame
+      }
+    }
     // normal aimed fire — only within effective range, with a cadence floor so a
     // wounded enemy can't machine-gun. Predictively led.
     e.fireCd -= dt;
@@ -4272,10 +4773,16 @@ class CaptureBattle {
       if (e.blinded) lead += (this.rng() - 0.5) * 1.2;                    // 失明→乱射
       const wc = this.elemColor(e.element);
       const dd = e.dmg * (e.status && e.status.weaken ? 0.5 : 1);            // 虚弱→伤害减半
-      this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, 'ball');
+      // The enemy's NORMAL fire uses the SAME "basic attack" model as a player cat: a shot that
+      // carries the cat's ELEMENT (and, if it has one, its primary skill's status tag) so it runs
+      // through the shared element-effectiveness pipeline — NOT a bare elementless pellet. This is
+      // the last enemy attack path that was hardcoded; now every enemy shot is element-tagged like
+      // ours (owner: "敌人的常规攻击也用我们的常规攻击的 skill set"). isBasic marks it a light basic.
+      const basicSk = { element: e.element, isBasic: true, appliesTag: (e.kit && e.kit.primary && e.kit.primary.appliesTag) || null };
+      this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, 'ball', basicSk);
       if (e.rIdx >= 2) {
-        this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball');
-        this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball');
+        this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball', basicSk);
+        this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball', basicSk);
       }
     }
   }
@@ -4363,6 +4870,9 @@ class CaptureBattle {
   // Cancel a heavy enemy cast mid-windup (the player bursted it in time) and leave
   // the enemy staggered/open — the reward for reading and punishing the telegraph.
   interruptEnemyCast(e) {
+    // Interrupting a charged ult WASTES the whole charge (ultFired + meter drained) — the big
+    // payoff for reading and bursting it. Ordinary heavies just get cancelled/staggered.
+    if (e.telegraphKind === 'enemyUlt') { e.ultFired = true; e.ultMeter = 0; }
     e.telegraph = 0; e.telegraphKind = null; e.castInterruptible = false;
     e.smashTarget = null;
     this.triggerStagger(e);                             // break poise and open 3s window
@@ -4385,22 +4895,42 @@ class CaptureBattle {
     if (!me) return;
     const dist = Math.hypot(me.x - e.x, me.y - e.y);
     if (e.telegraphKind === 'nova' && dist > 180) e.telegraphKind = 'barrage';   // too far for a self-burst
+    // CHARGED ULT release: fire the breed's signature ult ONCE at REDUCED power (×0.6 so a wild
+    // ult never out-damages a player ult of the same tier), applying its element + status tag as a
+    // wide radial burst. Consumes the charge (ultFired). This is the symmetric answer to the player
+    // ult — an earned, telegraphed, interruptible event, NOT the old free-nuke bug.
+    if (e.telegraphKind === 'enemyUlt') {
+      const ult = e.ultSkill || { element: e.element, power: 2.0, appliesTag: null };
+      e.ultFired = true; e.ultMeter = 0;
+      const ucol = this.elemColor(ult.element || e.element);
+      const dmg = e.dmg * (ult.power || 2.0) * 0.6;              // reduced-power enemy ult
+      const n = 16 + e.rIdx * 4;
+      const off = this.rng() * Math.PI;
+      for (let i = 0; i < n; i++)
+        this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 230, dmg, 'wild', ucol, 8, 'ball', { element: ult.element || e.element, appliesTag: ult.appliesTag });
+      this.vfx.shockwave(e.x, e.y, ucol);
+      this.vfx.ring(e.x, e.y, { r0: 12, vr: 620, life: 0.5, color: ucol, width: 8 });
+      this.vfx.ring(e.x, e.y, { r0: 24, vr: 420, life: 0.4, color: '#fff', width: 3 });
+      this.vfx.burst(e.x, e.y, { count: this.game.isTouch ? 14 : 24, color: ucol, speed: 300, life: 0.55, r: 4 });
+      this.shakeT = Math.max(this.shakeT, 0.3); this.hitstop = Math.max(this.hitstop, 0.06);
+      window.MorrowwishAudio?.effect?.('crash');
+      e.inv = 0.3; e._castSlow = 1.4;                            // 后遗症: wide-open after the big commit
+      return;
+    }
     const sk = e.skill;
     const col = sk ? this.elemColor(sk.element) : '#ff4d6d';
     const pow = sk ? sk.power : 0.9;
     const kindName = { nova: '猫猫怒涛', barrage: '连射', lob: '落雷', pounce: '猛扑' };
     // Enemy windup ring and projectile trajectory are the warning; do not flood the HUD.
     if (e.telegraphKind === 'pounce') {
-      // ambusher leap — routed through resolveHit so cat shields still apply
+      // ambusher leap — set up a POUNCE the SHARED advanceLunge animates over frames (never a one-frame
+      // teleport; same gap-closer code the player uses). Contact resolveHit (shields apply) on arrival.
       const aim = Math.atan2(me.y - e.y, me.x - e.x);
       this.vfx.beam(e.x, e.y, me.x, me.y, '#fb7c65');
       this.vfx.burst(e.x, e.y, { count: 12, color: col, speed: 200, life: .4 });
-      const leap = Math.min(95, Math.hypot(me.x - e.x, me.y - e.y) * .42);
-      e.x = clamp(e.x + Math.cos(aim) * leap, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-      e.y = clamp(e.y + Math.sin(aim) * leap, this.topMargin, this.H - this.bottomMargin);
-      for (const f of this.team.filter(f => f.alive)) {
-        if (Math.hypot(f.x - e.x, f.y - e.y) < 95) this.resolveHit(f, 'wild', sk || { element: e.element }, e.dmg * 1.25, e.x, e.y);
-      }
+      const reach = Math.min(240, Math.hypot(me.x - e.x, me.y - e.y) + 10);
+      e._dashAim = aim; e.pounce = true; e.dashT = 0.34; e._dashReach = reach; e._dashTravel = 0;
+      e._pounceSkill = sk || { element: e.element }; e._pounceDmg = e.dmg * 1.25; e._dashKnockMul = 1;
       return;
     }
     if (e.telegraphKind === 'smash') {
@@ -4433,11 +4963,67 @@ class CaptureBattle {
     } else if (e.telegraphKind === 'lob') {
       this.enemyLobAoe(e, me, col);
     } else {
-      // rapid aimed barrage, predictively led + element-tinted
+      // rapid aimed barrage, predictively led + element-tinted. If the enemy's EQUIPPED skill is a
+      // real multi-shot/homing volley (弹幕/追踪弹群 — same skills.js data the player uses), fire THAT
+      // through the shared castVolley so damage/pellets/homing come from the skill, not a hardcode.
       const base = this.leadAngle(e, me, 300);
-      for (let i = 0; i < 5; i++) this.spawnProj(e.x, e.y, base + (i - 2) * 0.12, 300, e.dmg * 0.85, 'wild', col, 6, 'ball', sk);
-      this.vfx.muzzle(e.x, e.y, base, col);
+      // Route EVERY enemy barrage through the shared castVolley so the fan honours the equipped
+      // skill's power AND carries the single-target budget (max 2 pellets/cat) — without this, the
+      // 26/33 breeds whose primary isn't a multi-shot fell to a hardcoded 5×(e.dmg*0.85) fan with
+      // NO budget, so one barrage could multi-hit a single cat (R1-F7). A skill that already
+      // declares shots keeps its own count; others synthesise a 5-dart fan at the skill's power.
+      const volleySk = (sk && sk.shots > 1)
+        ? sk
+        : { ...(sk || { element: e.element }), shots: 5, spread: 0.12, power: (sk && sk.power) || 0.85 };
+      this.castVolley(e, base, volleySk, e.dmg * (volleySk.power || 0.85), col, 'wild');
     }
+  }
+  // ENEMY REAL-SKILL DISPATCH (敌我同一套): deliver a rotation skill BY ITS KIND, mirroring the
+  // player's castOffensiveSkill but owner='wild'. Routes through the SAME resolveHit / castVolley /
+  // enemyLobAoe pipelines, so damage still passes element-matchup + level-suppression + ward checks
+  // (a rotation skill is NOT a bypass nuke; its power ≈ the skill's own, ~1.0–1.4). beam has no enemy
+  // renderer → delivered as a tight fast dart burst (reads as a focused ray). Fixes the owner's
+  // "敌人全程只发 projectile" — a wild cat now actually casts 咳毛球/烈焰罩/横扫 etc.
+  castEnemySkill(e, me, sk) {
+    if (!me || !me.alive) { me = this.nearestEnemyTeamCat(e); if (!me) return; }
+    const aim = Math.atan2(me.y - e.y, me.x - e.x);
+    const col = this.elemColor(sk.element || e.element);
+    const dmg = e.dmg * (sk.power || 1) * (e.status && e.status.weaken ? 0.5 : 1);
+    const k = sk.kind;
+    this.vfx.muzzle(e.x, e.y, aim, col);
+    if (k === 'aoe') { this.enemyLobAoe(e, me, col); e.inv = Math.max(e.inv || 0, 0.12); return; }
+    if (k === 'dash' || k === 'leap' || k === 'pounce') {
+      // GAP-CLOSER: set up a POUNCE that the SHARED advanceLunge animates over frames (same code the
+      // player uses) — never a one-frame teleport (owner: "突进/飞扑都要有一定动画速度，不要一瞬间；应该和
+      // 我们的技能共享源代码"). advanceLunge glides e toward _dashAim up to _dashReach and resolveHits the
+      // nearest cat on contact. Reach capped to the skill's declared reach so it can't cross the arena.
+      const dist = Math.hypot(me.x - e.x, me.y - e.y);
+      const reachCap = Math.min(this.skillEngageReach(sk, 169) + 20, dist + 10);
+      e._dashAim = aim;
+      e.pounce = true; e.dashT = 0.34; e._dashReach = reachCap; e._dashTravel = 0;
+      e._pounceSkill = sk; e._pounceDmg = dmg * 1.15; e._dashKnockMul = (sk && sk.knockMul) || 1;
+      e.inv = Math.max(e.inv || 0, 0.14);
+      this.vfx.beam(e.x, e.y, e.x + Math.cos(aim) * Math.min(reachCap, 120), e.y + Math.sin(aim) * Math.min(reachCap, 120), col);
+      return;
+    }
+    if (k === 'melee') {
+      // MELEE = in-place frontal strike (mirror the player's meleeStrike — no cross-gap lunge). Only
+      // connects on cats already within the claw arc NOW; the enemy's band keeps it close enough.
+      const ARC = 0.74, reach = (e.r || 18) + 56;
+      for (const f of this.team) {
+        if (!f.alive || Math.hypot(f.x - e.x, f.y - e.y) >= reach) continue;
+        const toF = Math.atan2(f.y - e.y, f.x - e.x);
+        if (Math.abs(((toF - aim + Math.PI) % (Math.PI * 2)) - Math.PI) > ARC) continue;
+        this.resolveHit(f, 'wild', sk, dmg * 1.15, e.x, e.y);
+      }
+      e.inv = Math.max(e.inv || 0, 0.12);
+      return;
+    }
+    // beam → a tight 3-dart fast burst; projectile/chain/multi-shot → the shared budget-safe volley
+    const volleySk = (k === 'beam')
+      ? { ...sk, shots: 3, spread: 0.06, homing: false }
+      : (sk.shots > 1 ? sk : { ...sk, shots: 3, spread: 0.12 });
+    this.castVolley(e, aim, volleySk, dmg, col, 'wild');
   }
   // nearest alive team cat to an enemy (release-time retarget helper)
   nearestEnemyTeamCat(e) {
@@ -4460,13 +5046,21 @@ class CaptureBattle {
   // Enemy ward decision: Protect a big incoming hit, Reflect projectile spam,
   // Barrier under general pressure. Timing/decision only — no damage/HP change.
   enemyMaybeWard(e, me, dist) {
+    // ROLE GATE (shared with players): a wild cat may only cast a ward its breed role could
+    // legally learn. reflect (炸毛墙) is tank-only; barrier/protect are shield verbs allowed to
+    // tank/support/fighter. A dps/control/assassin wild cat casts NO ward — 露露(暹罗 dps) can
+    // never open the reflect wall, exactly as the player's 暹罗 can't. Default-open if no kit
+    // (legacy fallback) so behaviour is unchanged when the gated kit is unavailable.
+    const kit = e.kit;
+    const canReflect = !kit || kit.canReflect;
+    const canShield  = !kit || kit.canShield;
     let incoming = 0;
     for (const p of this.projectiles) { if (p.owner === 'me' && Math.hypot(p.x - e.x, p.y - e.y) < 220) incoming++; }
     const playerUltSoon = this.ult >= 95 && this.ultCd<=0 && !this.ultCinematic;
     let type = null;
-    if (playerUltSoon && dist < 260) type = 'protect';     // eat the ultimate (not reflectable)
-    else if (incoming >= 3) type = 'reflect';              // bounce a projectile spammer
-    else if (e.hp / e.maxhp < 0.6 && incoming >= 1) type = 'barrier';
+    if (playerUltSoon && dist < 260 && canShield) type = 'protect';     // eat the ultimate (not reflectable)
+    else if (incoming >= 3 && canReflect) type = 'reflect';             // bounce a projectile spammer (tank only)
+    else if (e.hp / e.maxhp < 0.6 && incoming >= 1 && canShield) type = 'barrier';
     if (type && this.castWard(e, type)) {
       e.wardCd = (e.rIdx >= 2 ? 6 : 9) + this.rng() * 2;
       // Ward visuals show protection without stacking language-specific combat toasts.
@@ -4482,14 +5076,26 @@ class CaptureBattle {
     return ({ fire: '🔥', water: '💧', grass: '🌿', elec: '⚡', dark: '🌑', light: '✨' })[el] || '';
   }
   // pick a signature skill from an element pool for a given rarity
-  pickWildSkillFor(element, rIdx) {
+  // Pick a wild cat's signature skill from the SHARED skills.js library through the SAME
+  // role×category gate the player obeys (Skills.enemyKitFor). A wild cat therefore can never
+  // wield an ult as a normal attack (ults excluded) nor a skill its breed role can't learn —
+  // e.g. 桃桃 no 雷鸣啸 ult, 露露(暹罗 dps) no tank-only 炸毛墙. The kit is cached on the enemy
+  // (see makeEnemy call site reads this.__lastKit) so enemyMaybeWard can role-gate wards.
+  pickWildSkillFor(element, rIdx, speciesId, level) {
+    this.__lastKit = null;
     if (!window.Skills) return null;
+    if (Skills.enemyKitFor && speciesId) {
+      const kit = Skills.enemyKitFor(speciesId, level || 1);
+      this.__lastKit = kit;
+      if (kit && kit.primary) return kit.primary;
+      // kit exists but breed has no legal attack skill in-element → generic dart barrage (element only)
+      if (kit) return null;
+    }
+    // Legacy fallback (no species / no helper): element pool, ults excluded (no free ults).
     const pool = Skills.skillsByElement ? Skills.skillsByElement(element) : null;
     if (!pool || !pool.length) return null;
-    const castable = pool.filter(s => s.kind === 'projectile' || s.kind === 'aoe');
-    const ults = pool.filter(s => s.ultCost > 0);
-    if (rIdx >= 2 && ults.length && this.rng() < 0.5) return ults[0];
-    return (castable[0] || pool[0]);
+    const castable = pool.filter(s => (s.ultCost || 0) === 0 && (s.kind === 'projectile' || s.kind === 'aoe'));
+    return (castable[0] || pool.find(s => (s.ultCost || 0) === 0) || null);
   }
   // effectiveness multiplier atk-element vs a target species' element
   elemMult(atkEl, targetSpeciesId) {
@@ -4515,6 +5121,13 @@ class CaptureBattle {
     let bonus = 0;                                   // sum of (factor-1) contributions
     if (combo) bonus += (combo.bonusMult || 1) - 1;
     bonus += elem - 1;
+    // CONDUCTIVE (水是电的 setup): a SOAKED (湿身) target conducts — ELECTRIC hits deal +20%.
+    // This is water's identity as an ENABLER: water doesn't burst, it wets the field so ELEC
+    // follows up harder. Deliberately ONLY the elec element benefits (a water attacker's own
+    // hit on a wet target gets nothing — water sets up, it doesn't cash in). Persistent (does
+    // NOT consume soak), additive in the shared bucket, separate from the one-shot soak|elec
+    // chain reaction. +0.20 is modest so it stacks fairly atop the 2× elec→water matchup.
+    if (skill.element === 'elec' && (e.status.soak || 0) > 0) bonus += 0.20;
     dmg *= Math.max(0.25, 1 + bonus);                // floor so stacked reductions never zero out
     if (combo) {
       if(combo.effect==='shatter')
@@ -4929,6 +5542,7 @@ class CaptureBattle {
       const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
       // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
+      if (this._debug) this._dbg('me→enemy', skill, dmg, dealt, target, proj);
       // Channel damage is steady pressure, not a rapid sequence of hard
       // camera pauses. Normal melee/chain/projectiles retain their hitstop.
       const continuous=!!skill?.isChanneledTick;
@@ -4972,6 +5586,7 @@ class CaptureBattle {
       // Enemy hit on a cat: type matchup matters defensively too, and an enemy
       // special can leave a DoT/soft-CC on the cat (mirror of applyHitEffects).
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
+      if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
       this.hurtMe(dealt, x, y, target);
       this.vfx.impactType?.(x,y,'light',{color:col});
       return { blocked: false, reflected: false, dealt };
@@ -5071,7 +5686,87 @@ class CaptureBattle {
     return true;
   }
 
-  finish(win) { this.done = true; this.result = win ? 'win' : 'flee'; this.shakeT = 0.5; }
+  // DEBUG (?debug=1): record one resolved hit with its full damage factor breakdown so a real
+  // fight can be inspected/exported afterward — settles "why this damage" without guessing.
+  _dbg(dir, skill, rawDmg, dealt, target, proj) {
+    if (!this._dbgLog) return;
+    const playerHits = dir === 'me→enemy';                         // attacker is YOUR cat
+    const el = skill && skill.element;
+    const defSpecies = target?.sp?.id || target?.cat?.species;
+    const elem = (el && defSpecies && window.Skills) ? window.Skills.effectiveness(el, window.Skills.elementOf(defSpecies)) : 1;
+    const nameOf = f => (f?.cat && window.State?.catName?.(f.cat)) || f?.sp?.name || f?.sp?.id || f?.cat?.species || '?';
+    // Resolve the actual ATTACKER so each row names BOTH sides with an unambiguous 🟢(yours)/🔴(wild)
+    // tag — the old log showed only the target's bare cat-name, so a 露露-vs-露露-ish fight was
+    // impossible to read (owner: "分不清哪个是我的"). Attacker = the active player cat when WE hit;
+    // for an enemy hit we can't always know which wild fired, so tag by SIDE only.
+    const MINE = 'ALLY:', FOE = 'WILD:';   // debug-log side tags (ASCII — console/clipboard only, not player UI)
+    let atkName;
+    // The firing cat is set by the cast entry points (fireBasic/castOffensiveSkill set _dbgFiringCat
+    // to the fighter that is attacking RIGHT NOW). Use it, NOT this.me() — an ALLY's shot was being
+    // mislabeled with the active cat's name (owner saw fire-cat 圆宝 "firing" an ally's elec skills).
+    if (playerHits) atkName = MINE + nameOf((proj && proj._firedBy) || this._dbgFiringCat || this.me() || this.team?.find(c => c.alive));
+    else {
+      const live = this.liveEnemies ? this.liveEnemies() : (this.enemies || []).filter(e => e.alive);
+      const byElem = el ? live.find(e => e.element === el) : null;
+      atkName = FOE + nameOf(byElem || live[0] || target);
+    }
+    const tgtName = (playerHits ? FOE : MINE) + nameOf(target);
+    this._dbgLog.push({
+      t: +this.t.toFixed(2),
+      who: atkName + ' → ' + tgtName,                              // e.g. 我方·蓝莓 → 敌方·露露
+      attacker: atkName, target: tgtName,
+      skill: (skill && (skill.id || skill.name)) || (skill && skill.isBasic ? 'basic' : 'toy'),
+      kind: skill && skill.kind || (skill && skill.isBasic ? 'basic' : '-'),
+      element: el || '-',
+      raw: Math.round(rawDmg), dealt: Math.round(dealt),
+      elemMult: +elem.toFixed(2),
+      lvlSuppress: +((playerHits ? this.levelSuppression : this.enemyLevelMult) || 1).toFixed(2),
+      tgtHp: Math.round(target?.hp ?? 0) + '/' + Math.round(target?.maxhp ?? 0),
+    });
+  }
+  // DEBUG: toggle live recording for THIS fight (button-driven). Returns the new state.
+  toggleDebugRecord() {
+    this._debug = !this._debug;
+    if (this._debug) { this._dbgLog.length = 0; }   // fresh capture each time you turn it on
+    return this._debug;
+  }
+  // DEBUG: copy the current fight log to the clipboard as readable text (one row per hit).
+  copyDebugLog() {
+    const rows = (this._dbgLog && this._dbgLog.length) ? this._dbgLog : (window.CatBondDebugLast || []);
+    if (!rows.length) return false;
+    const header = 't\twho\tskill\tkind\telem\traw\tdealt\telemMult\tlvlSup\ttgtHp';
+    const body = rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.elemMult, r.lvlSuppress, r.tgtHp].join('\t')).join('\n');
+    const text = header + '\n' + body;
+    try { navigator.clipboard?.writeText(text); } catch (_) {}
+    console.log(text);
+    return true;
+  }
+  // DEBUG: dump + stash the whole fight log at battle end (console.table + window.CatBondDebugLast).
+  _dbgDump() {
+    if (!this._dbgLog || !this._dbgLog.length) return;
+    try {
+      const rows = this._dbgLog.slice();            // snapshot — the live array is reused next battle
+      console.log('%c[Cat Bond debug] fight log — ' + rows.length + ' hits, result=' + this.result, 'color:#6cf;font-weight:bold');
+      console.table(rows);
+      // totals by SIDE (ally outgoing vs wild incoming) — keyed on the attacker's side tag.
+      const bySide = {};
+      for (const r of rows) { const k = (r.attacker || '').startsWith('ALLY') ? 'ALLY→WILD' : 'WILD→ALLY'; (bySide[k] ??= { hits: 0, dealt: 0 }); bySide[k].hits++; bySide[k].dealt += r.dealt; }
+      console.log('[Cat Bond debug] totals by side:', bySide);
+      window.CatBondDebugLast = rows;               // survives the auto-return to the yard
+      // AUTO-COPY to clipboard the instant a recorded fight ends — the battle UI (and the 🐛 button)
+      // vanish on the auto-return to the yard, so there was no chance to click "export" (owner:
+      // "打完就直接退出了"). Now the log is already in your clipboard; a toast confirms it.
+      const header = 't\twho\tskill\tkind\telem\traw\tdealt\telemMult\tlvlSup\ttgtHp';
+      const text = header + '\n' + rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.elemMult, r.lvlSuppress, r.tgtHp].join('\t')).join('\n');
+      window.CatBondDebugText = text;               // plain-text form, also grabbable via copy(CatBondDebugText)
+      try { navigator.clipboard?.writeText(text); } catch (_) {}
+      this.game?.toast?.(window.MorrowwishI18n?.get?.()==='zh'?'🐛 战斗日志已复制到剪贴板':'🐛 Fight log copied to clipboard');
+    } catch (_) {}
+  }
+  finish(win) {
+    this.done = true; this.result = win ? 'win' : 'flee'; this.shakeT = 0.5;
+    if (this._debug) this._dbgDump();
+  }
 
   // themed battle backdrop; recolors per world-map region (this.theme)
   drawArenaBackground(ctx, W, H) {
@@ -5361,6 +6056,17 @@ class CaptureBattle {
           ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, Math.PI * 2); ctx.fill();
           ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff4d6d'; ctx.lineWidth = 4;
           ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, Math.PI * 2); ctx.stroke();
+        } else if (e.telegraphKind === 'enemyUlt') {
+          // CHARGED ULT: a big RADIAL danger disc (the release is a 360° burst, NOT a cone), in the
+          // ult's element colour + double ring so it reads as the biggest, all-around threat.
+          const uc = e.ultSkill ? this.elemColor(e.ultSkill.element || e.element) : '#ffd36b';
+          const R = 70 + k * 90;
+          ctx.globalAlpha = pulse * 0.26; ctx.fillStyle = uc;
+          ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = Math.min(1, pulse + 0.2); ctx.strokeStyle = uc; ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(e.x, e.y, R * 0.6, 0, Math.PI * 2); ctx.stroke();
         } else if (e.telegraphKind === 'pounce') {
           // ambusher leap: pulsing ring + dashed line to the target it will jump
           ctx.globalAlpha = pulse; ctx.strokeStyle = '#fb745d'; ctx.lineWidth = 4;
@@ -5387,6 +6093,7 @@ class CaptureBattle {
         const k = Math.max(0, Math.min(1, 1 - e.telegraph / (e.telegraphMax || 0.8)));  // 0→1 charge
         const col = e.telegraphKind === 'smash' ? '#ff2d55'
           : e.telegraphKind === 'nova' ? '#ff4d6d'
+          : e.telegraphKind === 'enemyUlt' ? (e.ultSkill ? this.elemColor(e.ultSkill.element || e.element) : '#ffd36b')
           : (e.element ? this.elemColor(e.element) : '#ff7b9c');
         // converging ring that tightens onto the body as the cast completes
         ctx.save();

@@ -238,14 +238,28 @@
       power: 1.22, cd: 2.05, ultCost: 0, tags: ['soak','frost'],
       appliesTag: 'soak', vfx: 'ice',
       desc: '短距离挥出霜晶爪痕，使目标湿润；更强的霜锥需向训练师学习。' },
-    { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿。' },
+    { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿——淋湿会减速移动，并为元素反应铺垫。' },
     { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
     { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 辅助能领悟。', unlock: { element: 'water', role: ['tank','support'] } },
     { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.3, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
-    { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 7.0, ultCost: 0, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，短时减伤（减伤 45%）。' },
+    { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 5.0, ultCost: 0, wardDuration: 5.2, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，减伤 45%，持续约 5 秒——前排的持续减伤罩。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
+    // GRASS mirror of 潮汐池: a lingering aoe FIELD that BINDS (束缚) enemies standing in it, instead of
+    // soaking them (owner: "草系也要有类似的，但是是束缚住对面"). Same aoe/field delivery (lobAoe reads
+    // sk.field → spawnField applies the tag each frame); bind is a real soft-CC (roots movement, slows).
+    { id: 'vineMire',   name: '藤蔓沼泽', element: 'grass', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, windup: 1.4, castSlow: 0.8, field: { element: 'grass', tag: 'bind', life: 6 }, tags: ['bind','field'], appliesTag: 'bind', vfx: 'ring', desc: '长时间吟唱后抛出一片缠绕藤蔓的沼泽：站在其中的敌人被持续束缚、难以移动；吟唱期间可被打断，是草系控制流的领域技。' },
+    // FIRE heavy-aoe mirror (owner: "火系要有类似的 比如陨石"): a long-channel BURST aoe that drops a
+    // meteor for big area damage + leaves a burning field (burn tag). High power (1.6 → ranged-strong =
+    // a dps nuke), long windup so it's a readable, interruptible commit like vineMire. Same aoe/field
+    // delivery path (lobAoe reads sk.field → spawnField), cd floored higher for the payoff.
+    { id: 'meteor',     name: '陨石术',   element: 'fire',  kind: 'aoe', power: 1.6, cd: 7.0, ultCost: 0, windup: 1.5, castSlow: 0.9, field: { element: 'fire', tag: 'burn', life: 5 }, tags: ['burn','field'], appliesTag: 'burn', vfx: 'shockwave', desc: '长时间吟唱后召唤一颗燃烧陨石砸向目标：巨额范围爆发伤害，并在落点留下灼烧火场；吟唱期间可被打断。' },
+    // LIGHT field mirror (owner: light had NO regular aoe-blind — only ult moonlitHalo/moonfang). A long
+    // -channel aoe that leaves a dazzling light zone: enemies inside are continually BLINDED (miss/stray
+    // their shots). Symmetric to 潮汐池 soak / 藤蔓沼泽 bind / 陨石 burn — same aoe+windup+field delivery;
+    // low power (0.6) so it's a control-field, not a nuke → control/dps/support can learn it.
+    { id: 'glareField', name: '炫目光域', element: 'light', kind: 'aoe', power: 0.6, cd: 4.5, ultCost: 0, windup: 1.4, castSlow: 0.8, field: { element: 'light', tag: 'blind', life: 5 }, tags: ['blind','field'], appliesTag: 'blind', vfx: 'ring', desc: '长时间吟唱后在目标区域炸开刺目光幕：站在其中的敌人被持续致盲、攻击频频失准；吟唱期间可被打断，是光系的控制领域技。' },
     { id: 'guardStance', name: '守护',   element: 'light', kind: 'buff', shieldType: 'protect', power: 0, cd: 9.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '极短时间完全格挡下一次攻击；结束后短暂易伤。' },
-    { id: 'mirrorWall',  name: '炸毛墙', element: 'elec',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', unlock: { build: 'tank' }, desc: '坦克专属：在身前架起长形镜面护墙，为身后队友阻挡或反弹远程弹体。持墙期间移速减半，转向缓慢。' },
+    { id: 'mirrorWall',  name: '炸毛墙', element: 'neutral',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', unlock: { build: 'tank' }, desc: '坦克专属：在身前架起长形镜面护墙，为身后队友阻挡或反弹远程弹体。持墙期间移速减半，转向缓慢。' },
     { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
     // ---- 草 grass ----
     { id: 'leafDart',   name: '叶刃',     element: 'grass', kind: 'projectile', power: 1.0, cd: 1.6, ultCost: 0,  tags: ['ranged'],        appliesTag: null,    vfx: 'muzzle',    desc: '锋利草叶高速飞射。' },
@@ -274,7 +288,7 @@
     { id: 'highGround', name: '居高临下', element: 'light', kind: 'leap',       power: 1.4, cd: 4.5, ultCost: 0,  heavy: true, tags: ['melee','blind'], appliesTag: 'blind', vfx: 'impact', desc: '抢占高处俯冲而下的一记重扑，眩光致盲。侧后方突袭更狠。' },
     { id: 'blessFur',   name: '呼噜光环', element: 'light', kind: 'buff',       power: 0,   cd: 9.0, ultCost: 0,  tags: ['buff','regen'],  appliesTag: null,    vfx: 'orb',       desc: '发出安心的呼噜声形成光环，提升自身伤害。' },
     { id: 'dawnHeal',   name: '慢眨眼',   element: 'light', kind: 'heal', healMode: 'single',       power: 0,   cd: 7.5, ultCost: 0,  tags: ['heal'],          appliesTag: null,    vfx: 'ring',      desc: '对你缓缓眨眼表达信任，回复斗志。' },
-    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 60, tags: ['buff','ult','weaken'],    appliesTag: ['blind','weaken'], vfx: 'ring',      desc: '【必杀】月华绽放，致盲并削弱——敌人伤害减半。' },
+    { id: 'moonlitHalo',name: '月华环',   element: 'light', kind: 'heal',       power: 0,   cd: 0,   ultCost: 60, healUlt: true, healPct: 0.6, tags: ['heal','ult'], appliesTag: null, vfx: 'ring',      desc: '【必杀】月华绽放，为全体队友回复 60% 生命——光系的团队治疗大招。' },
 
     // ========================================================================
     // GATED / LEARNED skills — NOT innate. Each carries an `unlock` descriptor
@@ -289,6 +303,13 @@
     // ---- 等级 / 亲密 / 组合门槛 ----
     { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.6,cd: 2.2, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。', unlock: { level: 10 } },
     { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.85, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
+    // ---- 多发追踪弹幕 (homing VOLLEY — the multi-shot cousin of 球状闪电/追踪草种) ----
+    // Fires `shots` tracking projectiles in a spread; each turns toward the target (homing) and
+    // expires after maxLife. Per-pellet power is modest so the SUM isn't a nuke. ranged-weak →
+    // control-legal; dps/control learn it (not tanks/fighters — no backline guns; not assassin —
+    // beam/aoe/long-gun banned, but a thrown homing swarm is a gun, so gated off assassin too).
+    { id: 'boltSwarm',  name: '雷弹群',   element: 'elec',  kind: 'projectile', power: 0.34, cd: 5.0, ultCost: 0, shots: 4, spread: 0.5, homing: 2.6, maxProjLife: 2.4, tags: ['shock','ranged'], appliesTag: 'shock', vfx: 'orb',    desc: '一次放出数枚会追踪目标的小电弹，单发威力低但成群压制；数秒后消散。达到等级方可领悟。', unlock: { level: 8, element: 'elec', role: ['dps','control'] } },
+    { id: 'prismSwarm', name: '棱光群',   element: 'light', kind: 'projectile', power: 0.34, cd: 5.0, ultCost: 0, shots: 4, spread: 0.5, homing: 2.6, maxProjLife: 2.4, tags: ['ranged','blind'], appliesTag: 'blind', vfx: 'orb',    desc: '折射出数道会追踪目标的光弹，单发威力低但成群致盲；数秒后消散。达到等级方可领悟。', unlock: { level: 8, element: 'light', role: ['dps','control'] } },
     { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 1.8, cd: 4.0, ultCost: 0, heavy: true, upgradeOf: 'shadeLeap', tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
     // ---- 品种专属 (breed-locked signature) ----
     { id: 'moonfang',   name: '月噬牙',   element: 'light', kind: 'aoe',        power: 2.6, cd: 0,   ultCost: 70, tags: ['light','ult','weaken'], appliesTag: ['blind','weaken'], vfx: 'ring', desc: '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。', unlock: { species: ['yuelian','xingchen','yinghua'] } },
@@ -308,17 +329,22 @@
   // "碧波爪" feel different, not reskinned. The factory only fills a (element,archetype)
   // slot that the hand-authored roster is MISSING — it never duplicates a signature skill.
   const ELEMENT_KIT = {
-    fire:  { tag: 'burn',  color: '#ff7a3c', claw: '烈焰爪', bolt: '焰弹',   rush: '炽焰冲', ward: '烈焰罩', heal: '暖阳舔毛', tw: { melee: { powMul: 1.05 }, dash: { trail: true }, shield: { variant: 'barrier', reflectBurn: true }, heal: { selfBuff: true } } },
-    water: { tag: 'soak',  color: '#4aa8ff', claw: '碧波爪', bolt: '水弹',   rush: '潮涌冲', ward: '碧波罩', heal: '润泽舔毛', tw: { dash: { knockMul: 1.4 }, heal: { hot: true } } },
-    grass: { tag: 'bind',  color: '#6fcf5f', claw: '藤蔓爪', bolt: '草弹',   rush: '疾藤冲', ward: '藤甲罩', heal: '光合舔毛', tw: { melee: { lifesteal: 0.1 }, dash: { bindOnHit: true }, shield: { variant: 'barrier', regen: true } } },
-    elec:  { tag: 'shock', color: '#ffd23c', claw: '雷光爪', bolt: '电弹',   rush: '迅雷冲', ward: '雷光罩', heal: '静电舔毛', tw: { melee: { cdMul: 0.85 }, heal: { haste: true } } },
-    dark:  { tag: 'bleed', color: '#8a6bff', claw: '暗影爪', bolt: '影弹',   rush: '幽影冲', ward: '暗影罩', heal: '夜舔毛',   tw: { melee: { backstab: 1.25 }, dash: { stealthFrames: true }, shield: { variant: 'barrier' }, heal: { leech: true } } },
-    light: { tag: 'blind', color: '#ffe9a8', claw: '耀光爪', bolt: '光弹',   rush: '流光冲', ward: '耀光罩', heal: '晨光舔毛', tw: { melee: { powMul: 1.0 }, dash: { trail: true }, heal: { ally: true, big: true } } },
+    fire:  { tag: 'burn',  color: '#ff7a3c', claw: '烈焰爪', bolt: '焰弹',   rush: '炽焰冲', ward: '烈焰罩', heal: '暖阳舔毛', volley: '焰花连射', tw: { melee: { powMul: 1.05 }, dash: { trail: true }, shield: { variant: 'barrier', reflectBurn: true }, heal: { selfBuff: true } } },
+    water: { tag: 'soak',  color: '#4aa8ff', claw: '碧波爪', bolt: '水弹',   rush: '潮涌冲', ward: '碧波罩', heal: '润泽舔毛', volley: '水珠连射', tw: { dash: { knockMul: 1.4 }, heal: { hot: true } } },
+    grass: { tag: 'bind',  color: '#6fcf5f', claw: '藤蔓爪', bolt: '草弹',   rush: '疾藤冲', ward: '藤甲罩', heal: '光合舔毛', volley: '飞叶连射', tw: { melee: { lifesteal: 0.1 }, dash: { bindOnHit: true }, shield: { variant: 'barrier', regen: true } } },
+    elec:  { tag: 'shock', color: '#ffd23c', claw: '雷光爪', bolt: '电弹',   rush: '迅雷冲', ward: '雷光罩', heal: '静电舔毛', volley: '电弹连射', tw: { melee: { cdMul: 0.85 }, heal: { haste: true } } },
+    dark:  { tag: 'bleed', color: '#8a6bff', claw: '暗影爪', bolt: '影弹',   rush: '幽影冲', ward: '暗影罩', heal: '夜舔毛',   volley: '影弹连射', tw: { melee: { backstab: 1.25 }, dash: { stealthFrames: true }, shield: { variant: 'barrier' }, heal: { leech: true } } },
+    light: { tag: 'blind', color: '#ffe9a8', claw: '耀光爪', bolt: '光弹',   rush: '流光冲', ward: '耀光罩', heal: '晨光舔毛', volley: '光弹连射', tw: { melee: { powMul: 1.0 }, dash: { trail: true }, heal: { ally: true, big: true } } },
   };
   // Base stats per archetype (balance here once → all six elements inherit).
   const TEMPLATES = {
     melee:  { kind: 'melee',      power: 1.25, cd: 1.6, vfx: 'muzzle', nameKey: 'claw', descZh: '元素猫爪撕击，附带元素效果。' },
     ranged: { kind: 'projectile', power: 1.0,  cd: 2.0, vfx: 'impact', nameKey: 'bolt', descZh: '射出元素弹丸，附带元素效果。' },
+    // 直线多发弹幕 (barrage): a FAN of straight low-power darts. Per-pellet power is deliberately
+    // low (stays ranged-weak → control-legal, never a nuke) and the suppression comes from volume,
+    // not a single big hit. Role-gated to dps/control (backline suppression/zoning) — tanks/fighters
+    // get no ranged, assassins no long gun. This is the skill the enemy barrage delivery now casts.
+    barrage:{ kind: 'projectile', power: 0.42, cd: 4.6, vfx: 'muzzle', nameKey: 'volley', descZh: '一次扇形射出多枚弹丸压制，单发威力低但覆盖面广。' },
     dash:   { kind: 'dash',       power: 1.35, cd: 4.0, vfx: 'beam',   nameKey: 'rush', descZh: '带电般冲刺撞击，侧后方突袭更狠。' },
     shield: { kind: 'buff',       power: 0,    cd: 7.0, vfx: 'ring',   nameKey: 'ward', descZh: '展开元素护罩，短时减伤。', shield: true },
     heal:   { kind: 'heal',       power: 0,    cd: 7.5, vfx: 'orb',    nameKey: 'heal', descZh: '安抚自身，回复斗志。' },
@@ -362,6 +388,14 @@
         (w.retaliateBurn?'；近身受击灼烧攻击者':w.regenPct?'；护盾期间缓慢恢复生命':'')+'。';
     }
     else if (arch === 'heal') { sk.tags = ['heal']; }
+    else if (arch === 'barrage') {
+      // Straight multi-dart fan. Low per-pellet power keeps the SUM modest. Authored for
+      // dps (ranged suppression) + fighter (a frontline burst-forward volley) via allowRoles —
+      // this is the ONE ranged skill a fighter may learn, overriding its usual no-ranged rule.
+      // The enemy barrage delivery casts this exact skill.
+      sk.shots = 5; sk.spread = 0.24; sk.tags = [kit.tag, 'ranged']; sk.appliesTag = kit.tag;
+      sk.allowRoles = ['dps','fighter'];
+    }
     else { sk.tags = [kit.tag]; sk.appliesTag = kit.tag; }
     // carry the element micro-tweaks forward so battle.js can read them if it wants
     Object.assign(sk, tw);
@@ -375,6 +409,9 @@
         const covered = SKILLS.some(s => s.element === el && _archOf(s) === arch);
         if (!covered) out.push(_genSkill(el, arch));
       }
+      // Every element gets its own straight multi-dart barrage (role-gated to dps/control). It is a
+      // distinct archetype (not covered by the 5 above), so it always generates for all six elements.
+      out.push(_genSkill(el, 'barrage'));
     }
     // Keep former duplicate dash IDs parseable for historical saves, without
     // offering them to new players. Never delete a stored player's old skill.
@@ -493,6 +530,11 @@
     // --- 光/失明 reactions ---
     'blind|light': { name: '炫目爆闪!', bonusMult: 1.3, effect: 'shatter',  consumes: true },  // 失明叠光 → 爆闪
     'burn|fire':   { name: '烈焰叠烧!', bonusMult: 1.25, effect: 'bloom',    consumes: false }, // 同系叠烧(本系也有小反应)
+
+    // --- CARRIER↔REAPER axis completion (火↔草, 暗↔光 made fully two-way) ---
+    'bleed|fire':  { name: '焚血!',     bonusMult: 1.3,  effect: 'explode',  consumes: true },  // 火↔草: 火点爆草的流血伤口
+    'expose|light':{ name: '圣光曝击!', bonusMult: 1.4,  effect: 'shatter',  consumes: true },  // 暗↔光: 光制裁暗揭露的破绽
+    'bleed|light': { name: '净血裁决!', bonusMult: 1.3,  effect: 'shatter',  consumes: false }, // 暗↔光: 光引爆暗的流血
   };
 
   // checkCombo(targetTags, skill) -> null | {name, bonusMult, effect, consumes, tag}
@@ -619,8 +661,14 @@
   // special exceptions. Other advanced skill gates belong to the cat's OWN
   // element (also prevents global quests awarding every cat fire/light ults).
   function gatedElementEligible(cat,s) {
-    // A tank build is NOT an elemental license. Electric mirrorWall must
-    // never be learned by a Water tank such as 蓝莓.
+    // An ELEMENT-NEUTRAL skill carries no element identity (e.g. 炸毛墙 reflect wall — a pure TANK
+    // BUILD utility, owner: "反弹墙应该做成无属性的"). Its only gate is its build/role, so it's
+    // element-eligible for ANY cat; the build gate (unlock.build) still restricts WHO can learn it.
+    // This is what lets a FIRE tank like 圆宝 learn the wall (owner: "元宝怎么没有学反弹墙的地方") —
+    // previously the wall was elec-tagged so gatedElementEligible rejected every non-elec tank.
+    if (s.element==='neutral'||s.element==null) return true;
+    // An elemental skill still needs the cat's own or curated-splash element (a tank build is NOT an
+    // elemental license — a Water tank such as 蓝莓 still can't learn an electric-tagged skill).
     return s.element===elementOf(cat.species)||
       (s.unlock?.species?.includes(cat.species)&&
        (s.element===secondaryOf(cat)||s.id==='moonfang'));
@@ -692,6 +740,10 @@
   // Returns false if this role may NOT learn this skill. Mirror of the audited DENY policy.
   function roleAllowsSkill(role, sk) {
     if (!sk || sk.ultCost > 0) return true;          // ults/signatures exempt
+    // AUTHORED override: a skill may carry an explicit allow-list (e.g. 弹幕 barrage is a
+    // suppression fan authored for dps+fighter) that wins over the category rules below — a
+    // fighter's "no ranged" identity bends ONLY for the specific skills we opt in, nothing else.
+    if (Array.isArray(sk.allowRoles)) return sk.allowRoles.includes(role);
     const c = skillCategory(sk);
     switch (role) {
       case 'tank':     return c !== 'ranged-weak' && c !== 'ranged-strong';            // wall: no backline guns
@@ -772,6 +824,12 @@
       // Do not show another build's exclusive equipment in the trainer.
       if(s.unlock?.build&&(cat.buildType||buildTypeForBreed(cat))!==s.unlock.build)
         continue;
+      // Do not list skills the cat's ROLE×CATEGORY identity can never learn (e.g. an assassin
+      // such as 焰焰 can never wield a beam like 横扫喷焰). Otherwise they'd fall into "locked"
+      // while their ONLY visible unlock line (Lv.6 ✓) reads as satisfied — a contradictory
+      // "condition met but still locked" entry. The real blocker (role) isn't a level/pay gate,
+      // so hiding it mirrors the build-exclusive skip above. Switching build re-reveals it.
+      if(!roleAllowsSkill(cat.buildType||buildTypeForBreed(cat), s)) continue;
       (gateMet(cat, s) ? ready : locked).push(s);
     }
     return { ready, locked };
@@ -924,7 +982,15 @@
     // a chosen skill, so it stays null. This stops a real skill from being duplicated
     // into both the basic slot AND Q. Q/E/ult are the three skills the player equips.
     const basic=null;
-    const q=own.find(sk=>attackKinds.includes(sk.kind))
+    // Q = the primary attack. A BACKLINE role (dps/control/support) prefers a RANGED attack
+    // (projectile/beam/chain/aoe) so it fights at distance — without this a dps whose element lists a
+    // dash first (e.g. elec 疯跑冲刺) got a melee gap-closer as its main attack and stood too close
+    // (owner: "露露站太近"). Frontline roles keep the original first-attack pick (they want melee).
+    const role=cat.buildType||buildTypeForBreed(cat);
+    const backline=role==='dps'||role==='control'||role==='support';
+    const rangedKind=sk=>['projectile','beam','chain','aoe'].includes(sk.kind);
+    const q=(backline?(own.find(rangedKind)||pool.find(rangedKind)):null)
+      ||own.find(sk=>attackKinds.includes(sk.kind))
       ||pool.find(sk=>attackKinds.includes(sk.kind))||null;
     // E is the DEFENSIVE / utility slot so the shield + heal verbs are actually
     // visible in play. Prefer a shield the cat knows, then a heal, then a buff;
@@ -1049,7 +1115,8 @@
     // dark element and give each element a varied role spread. (蓝莓/豆豆/杏仁 reach their new roles
     // via base-stat tweaks in data.js, so they are NOT listed here.)
     const BREED_ROLES={tangyuan:'tank',qisi:'fighter',senlin:'fighter',jiafei:'tank',
-      youling:'dps',mengmai:'control',lixiao:'fighter',meidu:'control'};
+      youling:'dps',mengmai:'control',lixiao:'fighter',meidu:'control',
+      sanhua:'fighter'};   // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
@@ -1067,6 +1134,77 @@
     if(p==='vit'&&b.pow>=7&&b.agi>=7&&b.vit-b.pow<=2)return 'fighter';
     return (MATRIX[p] && MATRIX[p][s]) || 'fighter';
   }
+  // ---- ENEMY / WILD-CAT KIT (shared gate with players) -------------------------------
+  // A wild cat fights with the SAME skills.js library and the SAME role×category gate as a
+  // player cat — no parallel enemy-only skill table. Given a species + level, return the set of
+  // skills this breed could LEGALLY use (its element + splash element, role-gated, NO ults in the
+  // normal rotation), plus the breed's build role and a chosen primary offensive skill + a legal
+  // ward (only if the role may shield). This is the single source of truth battle.js reads so
+  // 桃桃(elec SR) can never wield the 雷鸣啸 ult as a normal attack and 露露(暹罗 dps/control) can
+  // never open the tank-only 炸毛墙 reflect wall — exactly the gates the player is held to.
+  function enemyKitFor(speciesId, level){
+    const pseudo={ species: speciesId, level: level||1, affinity: 50 };
+    const role=buildTypeForBreed(pseudo);
+    const own=elementOf(speciesId), splash=secondaryOf(speciesId);
+    // Element pool: own + splash element skills, LEVEL/ELEMENT/ROLE gated via the player gate.
+    // Ults are excluded from the normal rotation (enemy ults, if ever added, must charge — see spec).
+    const legal=SKILLS.filter(sk=>
+      (sk.element===own||sk.element===splash) &&
+      (sk.ultCost||0)===0 &&
+      gateMet(pseudo, sk));
+    const atk=k=>['melee','projectile','beam','chain','dash','pounce','leap','aoe'].includes(k);
+    const ranged=k=>['projectile','beam','chain','aoe'].includes(k);
+    const attacks=legal.filter(sk=>atk(sk.kind));
+    // Primary offensive skill: the enemy delivers it as a telegraphed barrage/nova (ranged darts),
+    // so prefer a RANGED own-element skill (matches the delivery), then any ranged, then own-element
+    // melee, then any attack. Falls back to null (battle.js then uses its generic dart barrage with
+    // the enemy's element — still gate-clean, never an ult).
+    const primary=
+      attacks.find(sk=>sk.element===own&&ranged(sk.kind))||
+      attacks.find(sk=>ranged(sk.kind))||
+      attacks.find(sk=>sk.element===own)||
+      attacks[0]||null;
+    // Ward (shield/reflect/protect) ONLY if the breed's role may legally learn a shield. This is
+    // the SAME roleAllowsSkill test the player uses — a dps/control/assassin wild cat gets none.
+    const wardOk=sk=>sk&&roleAllowsSkill(role,{kind:'buff',shieldType:sk,tags:['shield']});
+    // Signature ULT for this breed's element — surfaced so a tough wild cat can CHARGE and fire it
+    // ONCE as a telegraphed heavy (battle.js gates charge on rarity + reduces power). Prefer a
+    // breed-locked signature, else the element's generic ult. NOT in the normal rotation (above).
+    // A wild cat's charged ult must be an OFFENSIVE one — skip healUlt (team-heal) skills like
+    // 月华环, which make no sense as an enemy nuke (and whose power:0 would fall back to a generic
+    // burst). A light wild cat with only a heal ult simply charges no ult (battle.js gates on e.ultSkill).
+    const ult=SKILLS.find(sk=>sk.ultCost>0 && !sk.healUlt && SIGNATURE_SKILL[speciesId]===sk.id && (!sk.unlock?.species||sk.unlock.species.includes(speciesId)))
+      ||SKILLS.find(sk=>sk.ultCost>0 && !sk.healUlt && sk.element===own && (!sk.unlock?.species||sk.unlock.species.includes(speciesId)))
+      ||null;
+    // ROTATION: up to 2 DISTINCT real skills the wild cat casts on cooldown, mirroring a player's Q/E
+    // (battle.js delivers each BY ITS OWN KIND — a beam as a beam, aoe as a lob, melee as a lunge —
+    // instead of only ever reshaping `primary` into a generic barrage/nova). Prefer primary + one more
+    // of a DIFFERENT kind so the wild cat shows two real moves, not two identical pokes. Ults excluded
+    // (they remain the separate charged event). Fixes owner: "敌人全程还是在发射 projectile，没有使用我们的技能".
+    // Prefer HAND-AUTHORED signature skills over generic templates so a wild cat shows its breed's
+    // real moves (咳毛球/烈焰罩/彗星爪), not a generic barrage. Lead with an authored own-element
+    // attack; add a second of a DIFFERENT kind (also authored-first) for variety.
+    const authored = attacks.filter(sk => !sk.generic);
+    const rotLead = authored.find(sk => sk.element === own) || authored[0] || primary;
+    const rotation = [];
+    if (rotLead) rotation.push(rotLead);
+    const second = authored.find(sk => sk.id !== (rotLead && rotLead.id) && sk.kind !== (rotLead && rotLead.kind))
+                || attacks.find(sk => sk.id !== (rotLead && rotLead.id) && sk.kind !== (rotLead && rotLead.kind))
+                || attacks.find(sk => sk.id !== (rotLead && rotLead.id));
+    if (second) rotation.push(second);
+    return {
+      role, element: own,
+      skills: legal,
+      attacks,
+      primary,
+      rotation,                                                    // real Q/E-style skills cast on cooldown by kind
+      ult,                                                         // element signature ult (charged event, reduced power)
+      // which ward verbs this breed may cast (battle.js enemyMaybeWard consults this)
+      canReflect: role==='tank',                                   // mirrorWall 炸毛墙 is tank-only
+      canShield: wardOk('barrier'),                                // barrier/protect: tank/support/fighter-small
+    };
+  }
+
   // Build a [basic,Q,E,ult] loadout for a role from the cat's learnable pool.
   // Basic stays the innate toy toss (null). Ult stays the cat's element/signature
   // ult. Q/E are the two highest-scoring distinct non-ult skills for the role,
@@ -1086,7 +1224,11 @@
     // as a moderate tie-breaker, never at the expense of the selected role.
     // Only skills the cat has actually unlocked are eligible.
     const OWN_BONUS=3, SPLASH_PENALTY=2;
-    const elemAdj=sk=>sk.element===own?OWN_BONUS:
+    // ELEMENT-NEUTRAL skills (e.g. 炸毛墙 reflect wall) carry no element identity — they're build
+    // utilities, so they get the SAME treatment as an own-element skill (no cross-element penalty).
+    // Without this a neutral tank-signature wall scored −6 and lost auto-equip to a generic
+    // same-element shield on, e.g., an elec tank (owner wanted the wall element-free, not demoted).
+    const elemAdj=sk=>(sk.element===own||sk.element==='neutral'||sk.element==null)?OWN_BONUS:
       sk.element===splash?-SPLASH_PENALTY:-6;
     const scored=pool.map(sk=>({sk,s:buildScore(role,sk)+elemAdj(sk)}))
       .filter(x=>x.s>-99).sort((a,b)=>b.s-a.s).map(x=>x.sk);
@@ -1342,7 +1484,7 @@
     learnableSkills, defaultLoadout, ensureLoadout,
     basicEligible, basicChoices,
     // --- build types (按品种 + 流派自动配装) ---
-    BUILD_TYPES, BUILD_ORDER, buildTypeForBreed, recommendLoadout, applyBuild,
+    BUILD_TYPES, BUILD_ORDER, buildTypeForBreed, enemyKitFor, recommendLoadout, applyBuild, roleAllowsSkill,
     awakenFirstSkill, progressionHint,
     // --- gated skill-learning (付费/等级/亲密/品种/领悟) ---
     QUEST_CHECKS, questProgress, questMet, gateMet, hasLearned, isGated,

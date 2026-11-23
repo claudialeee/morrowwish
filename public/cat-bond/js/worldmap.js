@@ -343,6 +343,75 @@
         ?window.Battle.CaptureBattle.previewWildLevel(sp,id,preferred.length?preferred:roster.slice(0,5))
         :1;
     }
+    // COUNTER-CAT FLOOR (owner: "玩家可能拿不到克制 SR/SSR 的猫"): if this region holds a gated SR/SSR
+    // whose element the player CANNOT counter (owns no cat strong vs it), make sure a CAPTURABLE
+    // counter roams here too — convert one ambient low-rarity spawn to a counter-element N/R from the
+    // region pool. SR/SSR DENS are untouched (we only re-skin a common roamer), so the world layout and
+    // the boss encounters are preserved; the player just gets a reachable answer in the same region.
+    try {
+      var S = window.Skills, GD = window.GameData;
+      if (S && S.effectiveness && S.elementOf) {
+        var owned = (window.State && window.State.S && window.State.S.cats) || [];
+        var poolSp = pool.map(function(pid){ return GD.speciesById(pid); }).filter(Boolean);
+        // gated SR/SSR species present in this region's pool
+        var bosses = poolSp.filter(function(sp){ return sp.rarity==='SR'||sp.rarity==='SSR'; });
+        for (var bi=0; bi<bosses.length; bi++) {
+          var bEl = S.elementOf(bosses[bi].id);
+          var ownsCounter = owned.some(function(c){ return S.effectiveness(S.elementOf(c.species), bEl) > 1; });
+          // "already roaming" only counts a CAPTURABLE (N/R) counter — an SR/SSR counter (e.g. grass
+          // 松松 vs elec 露露) is itself a boss the player can't easily capture to USE, so it doesn't
+          // discharge the floor. Must match the seed's own capturability bar.
+          var alreadyRoaming = spawns.some(function(sp0){ var s0=GD.speciesById(sp0.sp); return s0 && (s0.rarity==='N'||s0.rarity==='R') && S.effectiveness(S.elementOf(s0.id), bEl) > 1; });
+          if (ownsCounter || alreadyRoaming) continue;        // player can already answer it, or a CAPTURABLE counter already roams
+          // find a CAPTURABLE (N/R) counter-element species — prefer one native to THIS region pool,
+          // but fall back to the GLOBAL N/R roster. The fallback matters: a boss region's pool can be
+          // ALL SR/SSR (e.g. volcano = 松松/露露/焰焰) with zero native commons, so without a global
+          // reach a 露露 region could never offer the grass counter the player needs.
+          // Prefer the STRONGEST matchup (a 2× hard counter over a 1.5× advantage), then lowest rarity,
+          // then id — so a 露露 player is handed the breed that most decisively answers it (R1 MINOR-1),
+          // deterministically. Search the region pool first, then the global N/R roster.
+          var pickCounter = function(list){
+            return list.filter(function(sp){ return (sp.rarity==='N'||sp.rarity==='R') && S.effectiveness(S.elementOf(sp.id), bEl) > 1; })
+              .sort(function(a,b){
+                var o={N:0,R:1};
+                return (S.effectiveness(S.elementOf(b.id),bEl) - S.effectiveness(S.elementOf(a.id),bEl))  // 2× before 1.5×
+                    || (o[a.rarity]-o[b.rarity])                                                          // N before R
+                    || (a.id<b.id?-1:1);                                                                   // stable
+              })[0] || null;
+          };
+          var counterSp = pickCounter(poolSp) || pickCounter(GD.SPECIES||[]);
+          if (!counterSp) continue;                           // no N/R counter exists anywhere → leave as-is
+          // Pick a victim spawn to re-skin as the counter. Prefer a COMMON roamer (N/R) if any exist;
+          // otherwise (an all-boss region like volcano) re-skin a REDUNDANT boss copy — the one whose
+          // species appears most often among spawns — so every boss type still roams at least once and
+          // we only ever thin a duplicate. Never convert the LAST copy of any boss.
+          var countBySp = {};
+          spawns.forEach(function(s0){ countBySp[s0.sp]=(countBySp[s0.sp]||0)+1; });
+          var alreadySeeded = {};   // don't stack two seeds onto the same spawn across boss iterations
+          var ord={N:0,R:1,SR:2,SSR:3};
+          var victim = spawns.slice().filter(function(s0){ return !s0._counterSeed; }).sort(function(a,b){
+            var ra=(GD.speciesById(a.sp)||{}).rarity||'N', rb=(GD.speciesById(b.sp)||{}).rarity||'N';
+            // commons first; among same rarity, the most-duplicated species first (safe to thin)
+            return (ord[ra]-ord[rb]) || (countBySp[b.sp]-countBySp[a.sp]);
+          }).find(function(s0){
+            var r0=(GD.speciesById(s0.sp)||{}).rarity;
+            // if it's a boss, only convert when it's a DUPLICATE (>=2 of that species remain)
+            return (r0==='N'||r0==='R') || countBySp[s0.sp] >= 2;
+          });
+          if (victim) {
+            countBySp[victim.sp]--;                            // consume one copy
+            victim.sp = counterSp.id;
+            victim._counterSeed = bEl;                         // mark (debug/telemetry; not gameplay)
+            // recompute this spawn's immutable encounter level for its NEW species (the level loop
+            // above already ran, so set it here to keep the preview/encounter level honest).
+            victim.level = window.Battle && window.Battle.CaptureBattle && window.Battle.CaptureBattle.previewWildLevel
+              ? window.Battle.CaptureBattle.previewWildLevel(counterSp, id, preferred.length?preferred:roster.slice(0,5))
+              : (victim.level||1);
+          }
+        }
+      }
+    } catch(e) { /* floor is best-effort; never block region build */ }
+
     // Place local finds at recognizable permanent spots; no boxes randomly
     // reshuffled between visits. A later visit keeps the same landmarks.
     var nativeFinds=REGION_FINDS[id]||REGION_FINDS.home;
@@ -1092,5 +1161,8 @@
     REGIONS: REGIONS,
     get currentRegion() { return cur; },
     get mode() { return mode; },
+    // read-only view of the current region's roaming spawns (species id + encounter level + any
+    // counter-seed mark) — for the counter-floor regression test + telemetry. Never mutate via this.
+    get spawns(){ return world && Array.isArray(world.spawns) ? world.spawns.map(function(s){ return {sp:s.sp, level:s.level, counterSeed:s._counterSeed||null}; }) : []; },
   };
 })();

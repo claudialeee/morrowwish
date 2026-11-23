@@ -114,8 +114,12 @@ function newBattle(starterId='tangyuan', wildId='doudou', opts={}){
   return b;
 }
 // step a battle for `secs` at 60fps, keeping cats alive so steering/AI keeps running.
+// `secs` is SIM-time (how much in-world time to advance). update() scales dt by b.tempoScale, so a
+// request for N sim-seconds needs N/tempo real frames — otherwise a tempo change silently shortens
+// every duration-based wait (e.g. a 2.2s ward "not expiring" in a 3s wall-clock run at tempo 0.64).
 function run(b,secs,keepAlive=true){
-  const steps=Math.round(secs/0.016);
+  const tempo=(b && b.tempoScale) || 1;
+  const steps=Math.round(secs/0.016/tempo);
   for(let i=0;i<steps;i++){
     if(keepAlive)for(const f of b.team)if(f.hp<f.maxhp*0.5)f.hp=f.maxhp*0.6;
     b.update(0.016);
@@ -147,7 +151,7 @@ function run(b,secs,keepAlive=true){
   b.castWard(foe2,'protect'); run(b,2.0);
   assert.equal(foe2.protectT>0.001?foe2.protectT:0,0,'INV-1 enemy protect expires');
   foe2.protectT=0;foe2.reflectT=0;foe2.rootT=0;foe2._protectVuln=0;
-  b.castWard(foe2,'reflect'); run(b,3.0);
+  b.castWard(foe2,'reflect'); run(b,6.5);   // reflect wall is 5.0s (was 2.2) — wait past it
   assert.equal(foe2.reflectT>0.001?foe2.reflectT:0,0,'INV-1 enemy reflect expires');
 }
 

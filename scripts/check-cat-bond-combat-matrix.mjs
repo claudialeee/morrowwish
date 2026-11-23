@@ -152,7 +152,13 @@ const ENVELOPE = {
 //            on the tight cells (dash 1049, leap 819, hybrid 1129) is actually locked, not just
 //            the zero-output case. (Round-2 challenger: a single global floor was too loose.)
 const INENV_FLOOR = 70, ACTS_FLOOR = 10;
-const DMG_FLOOR = { melee:2000, ranged:1900, dash:450, pounce:1900, leap:360, beam:1900, support:0, hybrid:500 };
+// pounce floor 1900→1400→700: a pounce cat's lunge→contact→recovery cycle has the lowest sustained
+// output of any kind, and it dropped further when the player base-damage coefficient was restored
+// 0.78→0.52 (un-inflating all output to origin levels — owner: "伤害过分高了"). Real pounce min output
+// at 0.52 is ~1042; floor 700 sits well below that yet far above a frozen/broken cat (~0), so the "cat
+// actually attacks + closes" guard is intact. Other kinds clear with wide margin at 0.52 (melee 3897,
+// ranged 7768, leap 5519, beam 6301) and keep their floors.
+const DMG_FLOOR = { melee:2000, ranged:1900, dash:450, pounce:700, leap:360, beam:1900, support:0, hybrid:500 };
 
 function makeCell(kind,build,seed){
   const starter=Object.assign(State.makeCat("tangyuan",{affinity:60}),{level:16,buildType:build,stats:{pow:70,agi:80,vit:110,cha:60}});
@@ -185,12 +191,29 @@ function simCell(kind,build,seed,opts={}){
   const e=b.enemies[0];
   const ex=f.x+300, ey=f.y;
   e.x=ex; e.y=ey; e.maxhp=e.hp=100000;                   // tanky → survives 12s → measures output, not kill
+  // This cell measures the PLAYER's kit against a PASSIVE target — so disable the enemy's own real-skill
+  // rotation here (it would lunge/poke back and perturb the player's distance/output signal, which is
+  // NOT what this verifier grades). Enemy rotation behavior is covered by its own dedicated assertions.
+  e.rotation=[]; e.rotReady=Infinity;
+  // Likewise SUPPRESS the player cat's auto-dodge in this cell: the verifier grades offensive ENVELOPE
+  // + OUTPUT, not evasion. Now that cats correctly auto-dodge (the dodgeCd-init P0 fix) + reposition on
+  // a dodge (the sidestep roll), an unsuppressed cat would break off-target to dodge the pinned enemy's
+  // basic fire and under-report its true DPS. Pin dodgeCd high so the offensive signal stays clean;
+  // dodge behavior is exercised by the live TTK sims + invariants, not this output-envelope cell.
+  f.dodgeCd = Infinity;
   if(opts.band) b.kitRangeBand=()=>opts.band;            // inject a broken band (control only)
   const hp0=e.hp, fx0=f.x, fy0=f.y, [lo,hi]=ENVELOPE[kind];
   let frames=0,inEnv=0,acts=0,prevHp=e.hp;
-  for(let i=0;i<720;i++){                                // 12s
+  // Hold the SIM-TIME window constant across tempo changes. These floors were calibrated at 720
+  // frames under the historical 0.8 tempo (= 720·0.8 = 576 sim-units of in-world time). update() now
+  // scales dt by b.tempoScale, so to preserve that SAME in-world window the frame count scales as
+  // 576/tempo — otherwise a tempo drop changes total output and spuriously trips the dmg/inEnv/ctrl
+  // thresholds. Tempo is pacing only; the graded in-world window is invariant.
+  const SIMFRAMES=Math.round(720*0.8/((b.tempoScale)||0.8));
+  for(let i=0;i<SIMFRAMES;i++){                          // 12 sim-seconds
     b.update(0.016);
     e.x=ex; e.y=ey; if(e.vx!=null)e.vx=0; if(e.vy!=null)e.vy=0;   // FULLY pin the enemy (no chase)
+    f.dodgeCd=Infinity;                                          // keep auto-dodge suppressed (output-envelope cell)
     if(opts.mutate)opts.mutate(f,fx0,fy0,ex,ey);         // degenerate position (control only)
     frames++;
     const d=Math.hypot(e.x-f.x,e.y-f.y);
@@ -251,6 +274,105 @@ for(const kind of Object.keys(KINDS)) for(const build of BUILDS){
   assert.ok(ac>=ACTS_FLOOR,'MATRIX '+cell+' must act (attack) >= '+ACTS_FLOOR+'% of frames (got '+ac.toFixed(0)+'%)');
   const dfloor=DMG_FLOOR[kind]??300;
   if(dfloor>0) assert.ok(dm>=dfloor,'MATRIX '+cell+' must deal >= '+dfloor+' dmg over 12s (got '+dm.toFixed(0)+')');
+}
+// ---- DODGE-ROLL TRAVEL invariant (R1-F1 regression lock) --------------------------------------
+// The auto-dodge sets dashT (i-frames) + _dashAim (flee heading); the roll MUST translate the cat,
+// not freeze it in place. This was once dead code: the guard read `f._leapT <= 0`, but _leapT is
+// undefined until a cat leaps and `undefined <= 0` is false, so the block never ran and a dodging
+// cat froze for the whole 0.32s. Drive a real dodge and assert nonzero, bounded travel. Also assert
+// an undefined _leapT does NOT block it (the exact failure mode).
+{
+  const b = newBattle('tangyuan','senlin',{lvl:8});
+  b.coach=null; b.autoMode=true;
+  const f = b.me();
+  assert.equal(f._leapT, undefined, 'precondition: a fresh cat has undefined _leapT (the dead-code trigger)');
+  // force a clean dodge state and a known flee heading, then run the travel for a few frames
+  f.dashT = 0.3; f.pounce = false; f.rootT = 0; f._beamRoot = 0; f._castRoot = 0;
+  f._dashAim = Math.PI; f.slowed = false;        // roll due-west
+  const x0 = f.x, y0 = f.y;
+  for (let i=0;i<6;i++){ f.dashT = 0.3; b.update(0.016); }   // keep dashT alive across the sampled frames
+  const moved = Math.hypot(f.x - x0, f.y - y0);
+  assert.ok(moved > 2, 'DODGE-ROLL must TRAVEL (moved '+moved.toFixed(1)+'px > 2) — not freeze in place (R1-F1)');
+  assert.ok(moved < 220, 'DODGE-ROLL travel stays bounded (moved '+moved.toFixed(1)+'px < 220) — no fling');
+}
+
+// ---- SQUAD COORDINATION S1 (soft focus-fire) regression lock ----------------------------------
+// A 3-cat squad must share ONE team focus (not each chase its own nearest) so damage concentrates;
+// a 1-cat squad must be UNCHANGED (focus == its nearest). Owner: "应该是所有的 AI 协同逻辑".
+{
+  // solo invariant: 1-cat squad focus equals its own nearest (zero behavior change for solo play)
+  const bs=newBattle('tangyuan','doudou',{lvl:12});
+  bs.coach=null; bs.autoMode=true;
+  for(let i=0;i<20;i++) bs.update(1/60);
+  const soloFocus=bs._team&&bs._team.focus, soloNear=bs.nearestEnemy(bs.me().x,bs.me().y);
+  assert.ok(soloFocus&&soloNear&&soloFocus.i===soloNear.i,'S1: solo squad focus == nearest (solo play unchanged)');
+  // multi invariant: with a live 3-pack, all non-exception allies share the SAME commandedTarget
+  const starter=State.makeCat('tangyuan',{affinity:40}); starter.level=12; starter.stats={pow:70,agi:60,vit:120,cha:60};
+  const b=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
+  b.coach=null; b.autoMode=true;
+  b.enemies=['senlin','doudou','tangyuan'].map((id,i)=>b.makeEnemy(GameData.speciesById(id),i,3));
+  for(let i=0;i<30;i++) b.update(1/60);
+  assert.ok(b._team&&b._team.focus&&b._team.focus.alive,'S1: a team focus is chosen when enemies are alive');
+  // focus stability: over 2s the focus must not thrash (hysteresis) — <8 switches
+  let sw=0,prev=null; for(let i=0;i<120;i++){ b.update(1/60); const fi=b._team&&b._team.focus?b._team.focus.i:null; if(fi!=null){ if(prev!=null&&fi!==prev)sw++; prev=fi; } }
+  assert.ok(sw<8,'S1: team focus is sticky (hysteresis) — '+sw+' switches in 2s < 8');
+}
+
+// ---- DUO showcase auto-cast timing (new-player opening bug regression lock) --------------------
+// The first-duo SHOWCASE pre-charges duoCharge=100 so a new player sees their duo early; on AUTO-battle
+// that made the combo fire on frame 1 of the follow-up fight (owner: "第一场收伙伴，第二场一开战就发合
+// 体技，被聚到敌方猫身上"). The auto-cast must HOLD until the fight is underway (t>=2.4) + the pair has
+// engaged — never at the opening.
+{
+  const CR=sandbox.window.CatRelations;
+  const a=State.makeCat('tangyuan',{affinity:80}), b=State.makeCat('doudou',{affinity:80});
+  State.S.cats=[a,b]; CR.grow(a,b,50);                 // bond past the duo threshold
+  const bt=new sandbox.window.Battle.CaptureBattle(game,[a,b],GameData.speciesById('niuniu'));
+  bt.coach=null; bt.autoMode=true;
+  assert.ok(bt.duo,'duo forms for a bonded pair (test precondition)');
+  bt.duoCharge=100;                                    // simulate the first-duo showcase pre-charge
+  let firstCast=null; const orig=bt.castDuo.bind(bt);
+  bt.castDuo=()=>{ const r=orig(); if(r!==false&&firstCast==null)firstCast=bt.t; return r; };
+  for(let i=0;i<60*12 && firstCast==null;i++) bt.update(1/60);
+  assert.ok(firstCast!=null,'DUO showcase still auto-casts in auto-battle (just not at the opening)');
+  assert.ok(firstCast>=2.4,'DUO showcase auto-cast HOLDS until the fight is underway (t='+(firstCast||0).toFixed(2)+'s >= 2.4) — not frame 1 (new-player opening bug)');
+}
+
+// ---- ENEMY REAL-SKILL ROTATION invariant (敌人不放真技能 bug regression lock) -------------------
+// A wild cat must actually CAST a real equipped skill (by kind, via castEnemySkill) during a live
+// fight — not just basic pellets + the one special. Directly refutes "敌人全程只发 projectile".
+{
+  const b = newBattle('lanbao','jinwu',{lvl:10});   // player water vs wild fire SSR (rotation = emberClaw melee + highGround leap)
+  b.coach=null; b.autoMode=true;
+  const e = b.enemies[0];
+  const casts = [];
+  const orig = b.castEnemySkill.bind(b);
+  b.castEnemySkill = (en,me,sk) => { casts.push(sk.id); return orig(en,me,sk); };
+  for (let i=0;i<60*14 && e.alive && b.me().alive;i++) b.update(1/60);
+  assert.ok(casts.length >= 1, 'ENEMY must cast a real rotation skill in a live fight (got '+casts.length+') — not only basic/special');
+  assert.ok(casts.some(id => !/^gen_/.test(id)),
+    'ENEMY rotation casts include a real AUTHORED skill (non-gen_), not only generic fillers (got '+[...new Set(casts)].join(',')+')');
+}
+// Lunge rotation casts must CLOSE TO CONTACT, not whiff short of their reach gate (R1-A/F1: the lunge
+// once traveled min(90,dist*0.45) but the gate allowed casting from up to 240px, so it landed ~125px
+// short of a ≤58px hit check → ~98% whiff). DETERMINISTIC mechanic test: a STATIONARY player cat at a
+// gate-legal lunge distance must take damage from a forced melee/leap cast.
+{
+  const b = newBattle('lanbao','jinwu',{lvl:10});
+  b.coach=null; b.autoMode=false;                 // no auto-dodge/move — isolate the lunge mechanic
+  const e = b.enemies[0], f = b.me();
+  for (const kind of ['melee','leap','pounce','dash']) {
+    f.x = 500; f.y = 350; f.hp = f.maxhp; f.inv = 0; f.shieldT = 0; f.protectT = 0;   // clear prior-cast i-frames/wards
+    e.x = f.x; e.y = f.y; e.dashT = 0; e.pounce = false; e._dashReach = null;         // reset enemy lunge state
+    const reach = b.skillEngageReach({kind}, 169);
+    e.x = f.x - (reach - 5); e.y = f.y;           // just inside the skill's own reach gate
+    const hp0 = f.hp;
+    b.castEnemySkill(e, f, { kind, element:'fire', power:1 });
+    // melee strikes in place immediately; dash/leap/pounce now GLIDE over frames (shared advanceLunge,
+    // no teleport) — advance the enemy lunge a few frames so the animated gap-close can connect.
+    if (kind !== 'melee') for (let i = 0; i < 40 && f.hp >= hp0 - 0.01; i++) b.advanceLunge(e, b.team, 'wild', 1/60);
+    assert.ok(f.hp < hp0 - 0.01, 'ENEMY '+kind+' lunge CLOSES to contact and connects from its reach gate ('+reach.toFixed(0)+'px), animated not teleported (R1-A/F1); hp '+hp0.toFixed(0)+'→'+f.hp.toFixed(0));
+  }
 }
 if(process.env.DUMP_MATRIX)console.log(report.join('\n'));
 console.log('Cat Bond COMBAT MATRIX (deterministic, seeded): '+checked+' cells regression-locked (inEnv/acts/dmg vs FIXED envelope) + negative controls (frozen/runaway/backline-band/wideband) — all PASS.');

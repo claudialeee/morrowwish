@@ -1358,6 +1358,12 @@ body.cb-exploring #scene{cursor:grab}
 #panel .capture-mode-option span{font:650 11px/1.5 system-ui,sans-serif;color:#687968}
 #panel .capture-mode-option:focus-visible{outline:3px solid #659e80;outline-offset:2px}
 #panel .capture-mode-note{font:700 11px/1.55 system-ui;color:#687d65;margin:9px 2px 0}
+/* 克制预警: pre-battle matchup read — colour-codes whether the squad counters the wild */
+#panel .matchup-read{font:750 12px/1.5 system-ui;margin:-6px 2px 14px;padding:7px 11px;border-radius:10px;border:1px solid transparent}
+#panel .matchup-read.mu-good{color:#2f7d4f;background:rgba(126,231,135,.16);border-color:rgba(126,231,135,.5)}
+#panel .matchup-read.mu-hint{color:#2f6a9e;background:rgba(86,204,242,.14);border-color:rgba(86,204,242,.45)}
+#panel .matchup-read.mu-warn{color:#b26a1c;background:rgba(255,176,60,.15);border-color:rgba(255,176,60,.5)}
+#panel .matchup-read.mu-neutral{color:#6a6478;background:rgba(150,140,170,.12);border-color:rgba(150,140,170,.35)}
 @media(max-width:410px){
  #panel .capture-mode-picker{padding:9px 7px}
  #panel .capture-mode-options{gap:6px}

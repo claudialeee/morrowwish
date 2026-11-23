@@ -987,6 +987,10 @@ class Game {
     this.updateBattleUI();
     // Display current battle state, including keyboard P toggles.
     this.touchAutoFire=this.isTouch&&!this.battle.autoMode&&!this.battle.coach;
+    // DEBUG 🐛 button: reveal + reset only when ?debug=1 (battle._debugAvailable). Hidden otherwise,
+    // and reset to its un-pressed state each new battle so recording is opt-in per fight.
+    const dbgBtn=document.getElementById('btn-debug');
+    if(dbgBtn){ dbgBtn.hidden=!this.battle._debugAvailable; dbgBtn.setAttribute('aria-pressed','false'); dbgBtn.classList.remove('is-active'); }
     this.syncBattleModeUI();
     this.syncBattleControlHelp();
     // The first-ever encounter begins paused with a short guided tour.
@@ -1132,6 +1136,8 @@ class Game {
       cometClaw: '☄️', tidalBite: '🦷', thornLash: '🌵', frostLance: '❄️',
       voltRush: '🏃', apexPounce: '🐆', moonfang: '🌝', veteranStrike: '⚔️',
       purrNova: '💥', tenderPaw: '🫶',
+      // element-NEUTRAL tank reflect wall — a wall/shield icon, not the generic element-fallback paw
+      mirrorWall: '🪞',
     };
     return byId[sk.id] || this.elemIcon(sk.element);
   }

@@ -544,10 +544,17 @@ class YardScene {
     if(!this.bushes||this.bushes.length===0)this.buildScenery();
     const roster=State.S.cats||[];
     const representatives=new Map();
-    // Recently captured breed first; one portrait per species in the yard.
-    for(let i=roster.length-1;i>=0;i--){
-      const cat=roster[i];
-      if(!representatives.has(cat.species))representatives.set(cat.species,cat);
+    // One portrait per species in the yard — represented by the STRONGEST (highest-level) instance of
+    // that breed, i.e. the one the player actually BATTLES with. Previously it picked the most-recently
+    // CAPTURED instance, so catching a fresh Lv.1 duplicate made the yard show a Lv.1 cat while the
+    // player fought with their Lv.10 of the same breed (owner: "庭院里的猫的等级应该和打架的猫差不多").
+    // Tie-break by catPower so stat growth, not just the level integer, picks the real battler.
+    for(const cat of roster){
+      const cur=representatives.get(cat.species);
+      if(!cur) { representatives.set(cat.species,cat); continue; }
+      const better=(cat.level||1)>(cur.level||1) ||
+        ((cat.level||1)===(cur.level||1) && State.catPower(cat)>State.catPower(cur));
+      if(better) representatives.set(cat.species,cat);
     }
     this.uniqueBreeds=representatives.size;
     this.totalCats=roster.length;

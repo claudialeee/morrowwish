@@ -26,7 +26,10 @@ const LIST=[
 ['apexPounce','paw','#b59dca',69,36],['veteranStrike','slash','#d0c3f0',54,37],
 ['tenderPaw','heart','#ffc6d5',44,38],
 ['knead','knead','#f7d4b4',49,39],
-['frostClaw','ice','#a5e0f5',40,40]
+['frostClaw','ice','#a5e0f5',40,40],
+['boltSwarm','orb','#dce8fe',48,41],['prismSwarm','orb','#fff0c7',48,42],
+['vineMire','pool','#8fcf86',68,43],['meteor','shockwave','#ff7a3c',74,44],
+['glareField','ring','#fff1a8',70,45]
 ];
 const REG=Object.fromEntries(LIST.map(([id,style,color,r,seed])=>[id,{style,color,r,seed}]));
 // AUTO-REGISTER generic template skills (#56): the factory in skills.js generates one

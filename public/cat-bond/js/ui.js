@@ -53,6 +53,22 @@ const UI = {
       this.game.syncBattleModeUI();
       window.arcadeMetric?.('bond_auto_mode',{enabled:on});
     });
+    // DEBUG 🐛 record button — only functional/visible when ?debug=1. First click: start recording
+    // this fight's damage breakdown. Click again while a log exists (same or ended fight): copy it
+    // to the clipboard (+ console) for export. Never shown to normal players (stays hidden).
+    const dbgBtn=document.getElementById('btn-debug');
+    if(dbgBtn)dbgBtn.addEventListener('click',()=>{
+      const b=this.game.battle; if(!b||!b._debugAvailable)return;
+      // If we already have a captured log (recording was on and/or fight ended), this click EXPORTS it.
+      if(b._dbgLog&&b._dbgLog.length&&(!b._debug||b.done)){
+        if(b.copyDebugLog())this.game.toast?.('🐛 战斗日志已复制到剪贴板');
+        return;
+      }
+      const on=b.toggleDebugRecord();
+      dbgBtn.setAttribute('aria-pressed',String(on));
+      dbgBtn.classList.toggle('is-active',on);
+      this.game.toast?.(on?'🐛 开始记录本场伤害明细':'🐛 停止记录');
+    });
     const placementCancel=document.getElementById('yard-placement-cancel');
     if(placementCancel)placementCancel.addEventListener('click',()=>this.cancelBuildingPlacement());
     this.syncYardNav();
@@ -225,6 +241,21 @@ const UI = {
 
   // Always fill the five expedition slots when enough cats are available.
   // Saved player choices keep their exact order and cat identities, including
+  // Collapse a roster to ONE entry per species — the strongest (by catPower) of each breed — so the
+  // battle-team picker + duo chooser don't list five copies of the same cat (owner: "战斗界面里每一种猫
+  // 默认只显示战力最高的；选双猫羁绊也是"). `keepUids` (e.g. already-selected cats) are ALWAYS kept even
+  // if a stronger same-breed sibling exists, so the player can still see/deselect a benched pick.
+  // Preserves input order (input should already be power-sorted where ordering matters).
+  strongestPerSpecies(cats, keepUids){
+    const keep = keepUids instanceof Set ? keepUids : new Set(keepUids || []);
+    const bestOf = new Map();                       // species -> strongest cat
+    for (const c of cats) {
+      const cur = bestOf.get(c.species);
+      if (!cur || State.catPower(c) > State.catPower(cur)) bestOf.set(c.species, c);
+    }
+    const keptBest = new Set([...bestOf.values()].map(c => c.uid));
+    return cats.filter(c => keptBest.has(c.uid) || keep.has(c.uid));
+  },
   // two cats of the same breed. Both map and yard battles use this same roster;
   // unsaved/unselected cats may only fill genuinely empty expedition slots.
   getPreferredBattleTeam(eligibleCats=State.S.cats){
@@ -334,7 +365,10 @@ const UI = {
   squadPickerMarkup(selected){
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const cats=[...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a));
+    // One chip per breed — the strongest — plus any already-selected cat (so a benched same-breed pick
+    // stays visible/deselectable). Power-sorted first so "strongest" + display order are consistent.
+    const cats=this.strongestPerSpecies(
+      [...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a)), selected);
     return this.squadOrderMarkup()
       +'<p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'
       +'<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
@@ -833,7 +867,11 @@ const UI = {
         (en?'Trust ':'默契 ')+Math.floor(entry.trust)+'/100</span>'+
         '<span class="duo-card-watch">'+(en?'▶ Watch animation':'▶ 点击观看合击')+'</span></span></button>';
     }).join('');
-    const catButtons=side=>cats.map(c=>
+    // One chip per breed — the strongest — so the duo chooser isn't cluttered with same-breed dupes
+    // (owner: "选双猫羁绊也是"). Keep whichever cats are already picked for the pairing, power-sorted.
+    const duoCats=this.strongestPerSpecies(
+      [...cats].sort((a,b)=>State.catPower(b)-State.catPower(a)), picked.filter(Boolean));
+    const catButtons=side=>duoCats.map(c=>
       '<button class="duo-cat-chip '+(picked[side]===c.uid?'selected':'')+
       '" type="button" data-duo-cat="'+side+'" data-cat-uid="'+esc(c.uid)+
       '" aria-pressed="'+String(picked[side]===c.uid)+'">'+esc(State.catName(c))+'</button>'
@@ -2501,6 +2539,47 @@ const UI = {
   },
   // Region encounters and grade rematches do not use the capture roster.
   // They must still ask BEFORE launching the real-time encounter.
+  // 克制预警: a one-line, bilingual matchup read for the pre-battle prompt. Purely informational —
+  // no gameplay effect — so a 逆风 (bad-matchup) fight is VISIBLE before the player commits, and a
+  // player who OWNS a counter (just hasn't fielded it) is told to swap it in. Addresses owner:
+  // "玩家可能不能获得对应属性克制的猫咪来打 ssr/sr，比如露露很难打" + the playtest "danger is invisible".
+  matchupWarning(selectedCats, wildSp, en){
+    const S=window.Skills; if(!S||!S.effectiveness||!S.elementOf) return '';
+    const wildEl=S.elementOf(wildSp.id);
+    const elName={fire:en?'Fire':'火',water:en?'Water':'水',grass:en?'Grass':'草',elec:en?'Elec':'电',dark:en?'Dark':'暗',light:en?'Light':'光'};
+    const icon=el=>this.game.elemIcon?this.game.elemIcon(el):'';
+    // does a given cat counter / get countered by the wild? effectiveness() returns ~1.5 (advantage)
+    // or ~2 (hard counter) for super-effective and ~0.5 for resisted, so threshold on >1 / <1, not ==2.
+    const counters=c=>S.effectiveness(S.elementOf(c.species),wildEl)>1;       // my cat is strong vs wild
+    const counteredBy=c=>S.effectiveness(wildEl,S.elementOf(c.species))>1;    // wild is strong vs my cat
+    const field=(selectedCats||[]).filter(Boolean);
+    const haveCounter=field.find(counters);
+    const weak=field.find(counteredBy);
+    // a counter the player OWNS but hasn't fielded (bench)
+    const fieldUids=new Set(field.map(c=>c.uid));
+    const benchCounter=(State.S.cats||[]).find(c=>!fieldUids.has(c.uid)&&counters(c));
+    // what element beats the wild (for the "go find one" hint)
+    const needEls=['fire','water','grass','elec','dark','light'].filter(a=>S.effectiveness(a,wildEl)>1);
+    const needStr=needEls.map(e=>elName[e]).join('/')+(en?'':' 系');
+    let cls,msg;
+    if(haveCounter){
+      cls='mu-good';
+      msg=(en?`✓ Your `:`✓ 队伍中 `)+State.catName(haveCounter)+(en?` counters ${elName[wildEl]}`:` 克制 ${elName[wildEl]}系`);
+    } else if(benchCounter){
+      cls='mu-hint';
+      msg=(en?`💡 Bench ${State.catName(benchCounter)} (${elName[S.elementOf(benchCounter.species)]}) counters this — field it`
+             :`💡 替补 ${State.catName(benchCounter)}（${elName[S.elementOf(benchCounter.species)]}系）能克制，建议上场`);
+    } else if(weak){
+      cls='mu-warn';
+      msg=(en?`⚠ It resists/counters your ${State.catName(weak)} — ${needStr} counters it`
+             :`⚠ 对方克制你的 ${State.catName(weak)} — 用 ${needStr}克制它`);
+    } else {
+      cls='mu-neutral';
+      msg=(en?`No counter on your team — ${needStr} is strong vs ${elName[wildEl]}`
+             :`队伍暂无克制 — ${needStr}克制 ${elName[wildEl]}系`);
+    }
+    return `<p class="sub matchup-read ${cls}">${icon(wildEl)} ${msg}</p>`;
+  },
   openBattleModePrompt(team,wildSp,opts={}){
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const prefs=State.S.battlePrefs||{};
@@ -2525,6 +2604,7 @@ const UI = {
         ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
+      ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
       <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button></div>

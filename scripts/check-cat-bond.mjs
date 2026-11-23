@@ -432,9 +432,12 @@ const fastBattle=new sandbox.window.Battle.CaptureBattle(game,
   [fastCat],GameData.speciesById('doudou'));
 assert.ok(fastBattle.me().speed<=144+1e-9,
   'even extremely high AGI cannot increase run speed above 120%');
-const baseExpected=(6+basePow*.7)*(baseFighter.bond.dmgMult||1)*.62;
+// Damage scales off the TOP offensive stat (pow OR agi) + a slice of the other, ×0.52 global
+// (0.52 restores origin balance after the 0.78 over-correction that spiked every cat +36–50%).
+const baseAgi=baseFighter.cat.stats.agi;
+const baseExpected=(6+Math.max(basePow,baseAgi)*.7+Math.min(basePow,baseAgi)*.15)*(baseFighter.bond.dmgMult||1)*.52;
 assert.ok(Math.abs(baseFighter.dmg-baseExpected)<1e-9,
-  'player base attack uses the toned-down 0.62 coefficient');
+  'player base attack scales off max(pow,agi) with the 0.52 coefficient');
 
 const damageBalance=new sandbox.window.Battle.CaptureBattle(game,
   [State.makeCat('tangyuan')],GameData.speciesById('doudou'));
@@ -948,6 +951,86 @@ for(const sp of GameData.SPECIES){
     assert.ok(!sk||sk.ultCost>0||Skills.gateMet(cat,sk),
       'auto-equip must not hand '+sp.name+' ('+role+') the gate-denied skill '+id); }
 }
+
+// ENEMY / WILD-CAT KIT shares the SAME role×category gate as players (Skills.enemyKitFor).
+// A wild cat can NEVER wield an ult as a normal attack nor a skill its breed role can't learn.
+// Guards the fixed bugs: 桃桃(elec SR) no 雷鸣啸 ult-primary, 露露(暹罗 dps) no tank-only 炸毛墙 reflect.
+assert.ok(typeof Skills.enemyKitFor==='function','Skills.enemyKitFor exists (shared enemy kit)');
+for(const sp of GameData.SPECIES){
+  const kit=Skills.enemyKitFor(sp.id, 10);
+  assert.ok(kit && kit.role,'enemyKitFor('+sp.name+') returns a role');
+  // no ult may ever enter a wild cat's normal rotation
+  assert.ok(!kit.skills.some(s=>(s.ultCost||0)>0),'wild '+sp.name+' kit excludes all ults');
+  assert.ok(!kit.primary||(kit.primary.ultCost||0)===0,'wild '+sp.name+' primary is never an ult');
+  // every kit skill must pass the SAME player gate for this breed's role
+  for(const s of kit.skills)
+    assert.ok(Skills.gateMet({species:sp.id,level:10,affinity:50},s),
+      'wild '+sp.name+' kit skill '+s.id+' passes the shared role gate');
+  // reflect (炸毛墙) is tank-ONLY — no non-tank wild cat may reflect
+  assert.ok(!(kit.canReflect&&kit.role!=='tank'),'wild '+sp.name+' ('+kit.role+') may reflect only if tank');
+}
+// Headline bug assertions (exact breeds the owner reported):
+const taoKit=Skills.enemyKitFor('wumao',3);   // 桃桃 elec SR
+assert.ok(taoKit.primary && taoKit.primary.id!=='thunderYowl' && (taoKit.primary.ultCost||0)===0,
+  '桃桃(lv3 elec) primary is a gated non-ult skill, not the 雷鸣啸 ult (got '+(taoKit.primary?.id)+')');
+assert.ok(!taoKit.skills.some(s=>s.id==='thunderYowl'),'桃桃 kit never contains the 雷鸣啸 ult');
+const luluKit=Skills.enemyKitFor('xianluo',9); // 露露 暹罗 elec SR, agi11/cha11 = dps
+assert.equal(luluKit.canReflect,false,'露露(暹罗 '+luluKit.role+') cannot open the tank-only 炸毛墙 reflect wall');
+assert.ok(!luluKit.skills.some(s=>s.id==='mirrorWall'),'露露 kit never contains the tank-only 炸毛墙');
+// exactly the four tanks may reflect
+const reflectors=GameData.SPECIES.filter(sp=>Skills.enemyKitFor(sp.id,10).canReflect).map(sp=>sp.id).sort().join(',');
+assert.equal(reflectors,['dundun','jiafei','nietu','tangyuan'].sort().join(','),
+  'only the four tank breeds (团团/圆宝/奶酥/汤圆) may cast the reflect wall as enemies');
+
+// ENEMY REAL-SKILL ROTATION (敌我同一套): a wild cat must cast its real equipped skills on cooldown,
+// not just basic pellets + the one special (owner: "敌人全程还是在发射 projectile，没有使用我们的技能").
+for(const sp of GameData.SPECIES){
+  const kit=Skills.enemyKitFor(sp.id,10);
+  assert.ok(Array.isArray(kit.rotation),'enemyKitFor('+sp.name+').rotation is an array');
+  assert.ok(kit.rotation.length>=1,'enemyKitFor('+sp.name+') has >=1 rotation skill');
+  // rotation never contains an ULT (those are the separate charged event) and never a role-illegal skill
+  for(const sk of kit.rotation){
+    assert.ok((sk.ultCost||0)===0,'rotation skill is never an ult ('+sp.name+' '+sk.id+')');
+    assert.ok(Skills.roleAllowsSkill(kit.role,sk),'rotation skill is role-legal ('+sp.name+'/'+kit.role+' '+sk.id+')');
+  }
+}
+// PREFER AUTHORED signatures over generic fillers: a breed WITH authored attacks must lead its
+// rotation with a non-generic skill (so wild 圆宝 shows 咳毛球/烈焰罩, not a generic barrage).
+const jiafeiRot=Skills.enemyKitFor('jiafei',10).rotation;
+assert.ok(jiafeiRot[0] && !jiafeiRot[0].generic,'圆宝 rotation leads with an authored (non-generic) skill, got '+(jiafeiRot[0]&&jiafeiRot[0].id));
+const xianluoRot=Skills.enemyKitFor('xianluo',10).rotation;
+assert.ok(xianluoRot[0] && !xianluoRot[0].generic,'露露 rotation leads with an authored skill, got '+(xianluoRot[0]&&xianluoRot[0].id));
+
+// BARRAGE (直线多发弹幕) is authored for dps + fighter ONLY (allowRoles override of the usual
+// "fighter learns no ranged" rule), and stays LOW per-pellet power (never a nuke).
+for(const el of Skills.ELEMENT_ORDER){
+  const bar=Skills.skillById('gen_'+el+'_barrage');
+  assert.ok(bar&&bar.shots>=4,'每系都有 barrage 弹幕技能 ('+el+')');
+  assert.ok(bar.power<0.6,'barrage 单发低伤 (ranged-weak, '+el+' power='+bar.power+')');
+  assert.equal((bar.allowRoles||[]).slice().sort().join(','),'dps,fighter','barrage 仅 dps+fighter ('+el+')');
+}
+const barGate=(role,sp)=>Skills.roleAllowsSkill(role,Skills.skillById('gen_'+Skills.elementOf(sp)+'_barrage'));
+assert.ok(barGate('dps','youling')&&barGate('fighter','senlin'),'dps+fighter 可学 barrage');
+assert.ok(!barGate('tank','tangyuan')&&!barGate('control','mengmai')&&!barGate('assassin','doudou')&&!barGate('support','rongrong'),
+  'tank/control/assassin/support 不可学 barrage');
+// 追踪弹群 (homing volley): elec + light, multi-shot + homing, low per-pellet.
+for(const [id,el] of [['boltSwarm','elec'],['prismSwarm','light']]){
+  const sw=Skills.skillById(id);
+  assert.ok(sw&&sw.shots>=3&&sw.homing>0,id+' 多发追踪弹群');
+  assert.ok(sw.power<0.8,id+' 单发低伤 (power='+sw.power+')');
+  assert.equal(sw.element,el,id+' 属于 '+el+' 系');
+}
+
+// ENEMY CHARGED ULT: enemyKitFor surfaces the breed's element signature ult SEPARATELY from the
+// normal rotation (so it's a charged event, never a free per-cast nuke). The ult is NOT the primary.
+const taoK=Skills.enemyKitFor('wumao',6);   // 桃桃 elec SR
+assert.ok(taoK.ult&&taoK.ult.ultCost>0&&taoK.ult.element==='elec','桃桃 kit 暴露电系必杀作为充能事件');
+assert.ok(taoK.primary&&(taoK.primary.ultCost||0)===0&&taoK.primary.id!==taoK.ult.id,
+  '充能必杀与常规 primary 分离 (primary 非必杀)');
+for(const sp of GameData.SPECIES){
+  const k=Skills.enemyKitFor(sp.id,10);
+  if(k.ult) assert.ok((k.ult.ultCost||0)>0,'enemyKitFor('+sp.name+').ult is a real ultimate');
+}
 // One authoritative type map for every collectible cat: 27 mono-element,
 // six curated mythical duals. Blueberry is Water/Ice, not Water/Electric.
 const expectedPrimary={
@@ -989,8 +1072,8 @@ for(const sp of GameData.SPECIES){
     sp.id+' is monotype and must have zero cross-element skills');
   const trainer=Skills.trainerSkills(c);
   assert.ok([...trainer.ready,...trainer.locked].every(s=>
-    s.element===el||s.unlock?.species?.includes(sp.id)),
-    sp.id+' trainer must not advertise unrelated-element techniques');
+    s.element===el||s.element==='neutral'||s.unlock?.species?.includes(sp.id)),
+    sp.id+' trainer must not advertise unrelated-element techniques (element-NEUTRAL build skills like 炸毛墙 are allowed — they carry no element identity)');
   const rec=Skills.recommendLoadout(c,Skills.buildTypeForBreed(c));
   assert.ok(rec.slice(1).filter(Boolean).every(id=>all.some(s=>s.id===id)),
     sp.id+' recommended build must stay inside valid element pool');
@@ -1061,6 +1144,37 @@ assert.ok(exotic.base.vit>exotic.base.pow+3&&exotic.base.agi<5,
 assert.ok(sandbox.window.WorldMap.REGIONS.find(r=>r.id==='sakura')
   ?.speciesPool.includes('jiafei'),
   'Jiafei can be encountered in Sakura Woods');
+// COUNTER-CAT FLOOR: a player who lacks a counter for a region's gated SR/SSR must find a CAPTURABLE
+// (N/R) counter roaming there (owner: "玩家可能拿不到克制 SR/SSR 的猫"). volcano pool is all-boss
+// (松松 grass SR / 露露 elec SR / 焰焰 fire SSR). The floor can only re-skin spawns that actually
+// rolled, so the DETERMINISTIC guarantee is conditional: IF an uncounterable boss is present in the
+// spawns, a capturable counter for its element is ALSO present. Assert that invariant over MANY builds
+// (not "boss X always spawns" — a weight-1 SSR only rolls into 9 slots ~46% of the time: R1-challenger
+// BLOCKER was this test asserting RNG-dependent boss presence).
+{
+  const WM=sandbox.window.WorldMap, S=sandbox.window.Skills, GD=sandbox.window.GameData, St=sandbox.window.State;
+  WM.init(sandbox.window.__game);
+  const wm=St.S.worldmap=St.S.worldmap||{}; wm.unlocked=wm.unlocked||{}; wm.unlocked.volcano=true; wm.regions=wm.regions||{}; wm.nodes=wm.nodes||[];
+  const savedCats=St.S.cats;
+  const hasCapCounter=(sp,el)=>sp.some(s=>{const x=GD.speciesById(s.sp);return x&&(x.rarity==='N'||x.rarity==='R')&&S.effectiveness(S.elementOf(x.id),el)>1;});
+  const bossPresent=(sp,el)=>sp.some(s=>{const x=GD.speciesById(s.sp);return x&&(x.rarity==='SR'||x.rarity==='SSR')&&S.elementOf(x.id)===el&&!s.counterSeed;});
+  St.S.cats=[St.makeCat('jinwu',{affinity:50})];          // fire only → cannot counter elec 露露 or fire 焰焰
+  let sawElecBoss=0, sawFireBoss=0, lastSp=null;
+  for(let i=0;i<40;i++){                                   // many builds: the conditional invariant must hold EVERY time
+    WM.enterRegion('volcano'); const sp=WM.spawns; lastSp=sp;
+    if(bossPresent(sp,'elec')){ sawElecBoss++; assert.ok(hasCapCounter(sp,'elec'),'counter-floor: when elec 露露 roams, a CAPTURABLE grass counter also roams (build '+i+')'); }
+    if(bossPresent(sp,'fire')){ sawFireBoss++; assert.ok(hasCapCounter(sp,'fire'),'counter-floor: when fire 焰焰 roams, a CAPTURABLE water/light counter also roams (build '+i+')'); }
+  }
+  assert.ok(sawElecBoss>0,'counter-floor test actually exercised an elec-boss build (saw '+sawElecBoss+'/40)');
+  // never thins the LAST copy of a boss: any boss species present appears at least once un-seeded
+  // (checked implicitly by bossPresent above requiring !counterSeed). Prefer-HARD-counter (2x) check:
+  // for the elec boss, the seeded grass counter must be a real >1 counter (grass is 1.5 vs elec — fine).
+  // stand-down: a player who ALREADY owns a grass counter gets NO elec seed, across builds.
+  St.S.cats=[St.makeCat('jinwu',{affinity:50}),St.makeCat('doudou',{affinity:50})]; // doudou grass
+  let elecSeeds=0; for(let i=0;i<20;i++){ WM.enterRegion('volcano'); elecSeeds+=WM.spawns.filter(s=>s.counterSeed==='elec').length; }
+  assert.equal(elecSeeds,0,'counter-floor stands down vs elec when the player already owns a grass counter');
+  St.S.cats=savedCats;                                     // restore
+}
 const cuteSource=fs.readFileSync(DIR+'js/cute-cats.js','utf8');
 assert.ok(cuteSource.includes('sp.chubby')&&cuteSource.includes('sp.flatFace'),
   'shared cat-art renderer uses Exotic Shorthair breed traits');
@@ -1385,8 +1499,8 @@ const eliteBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],eliteSp
 const eliteLead=eliteBattle.enemies[0];
 const eliteScale=1+(eliteLead.level-1)*0.08;
 assert.equal(eliteLead.maxhp,
-  Math.round((140+eliteSpecies.base.vit*7)*(1+3*0.6)*eliteScale*1.22*edamp(eliteLead.level,eliteBattle.starterRegion)*(eliteBattle.enemyHpScaleGap||1)),
-  'Legendary cat encounter should have extra defensive challenge');
+  Math.round((140+eliteSpecies.base.vit*7)*(1+3*0.3)*eliteScale*1.08*edamp(eliteLead.level,eliteBattle.starterRegion)*(eliteBattle.enemyHpScaleGap||1)),
+  'Legendary (SSR) cat HP: halved rarity slope (1+rIdx*0.3) × trimmed SSR eliteFactor 1.08 (was 1.22) so 焰焰 is a beefy boss, not a 超模 sponge');
 assert.ok(eliteLead.dmg>(5+3*2.2)*eliteScale,
   'Legendary cat should hit harder than before');
 let guard = 0;
@@ -1860,8 +1974,8 @@ const dashBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],
 const df=dashBattle.me(),targetDash=dashBattle.enemies[0];
 targetDash.x=df.x+88;targetDash.y=df.y;targetDash.hp=targetDash.maxhp;
 dashBattle.dashLunge(df,0,Skills.skillById('voltRush'),14,'#ffe5a0');
-assert.ok(df.pounce&&df._dashReach<=130,
-  'Volt Rush is physical movement and has a short max travel');
+assert.ok(df.pounce&&df._dashReach<=185,
+  'Volt Rush is physical movement with a bounded travel (gap-closer reach, not a teleport)');
 assert.equal(targetDash.hp,targetDash.maxhp,
   'Volt Rush must NOT deal ranged damage at cast time');
 const newbie=State.makeCat('xianluo',{level:1,affinity:0});
