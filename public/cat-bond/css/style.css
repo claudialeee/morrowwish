@@ -4463,12 +4463,12 @@ html.cb-cg #cg-yard-dock #tabbar .tab{
   flex-direction:column;
   flex:none;
   min-width:0!important;
-  width:clamp(54px,5.3vw,78px);
+  width:clamp(68px,6.2vw,90px);
   height:clamp(49px,5.2vw,61px);
   min-height:0!important;
   padding:4px 5px!important;
   border-radius:14px!important;
-  font-size:clamp(10px,1.1vw,13px)!important;
+  font-size:clamp(11px,1.13vw,14px)!important;
   line-height:1.12;
   white-space:nowrap;
 }
@@ -4514,7 +4514,7 @@ html.cb-cg #cg-yard-dock #fab-map.map-fab small{
     width:auto!important;
     max-width:92px;
     height:46px;
-    font-size:clamp(9px,2.3vw,12px)!important;
+    font-size:clamp(10px,2.3vw,12px)!important;
     padding:3px 2px!important;
   }
   html.cb-cg #cg-yard-dock #yard-actions .fab,
