@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "game": "cat-bond",
+  "title": "Cat Bond",
+  "publisher": "Morrow Wish",
+  "createdAt": "2026-11-22",
+  "status": "prepared-off-platform-not-submitted",
+  "portal": "https://developer.crazygames.com/games",
+  "playableUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-playtest",
+  "buildType": "Externally hosted (iframe)",
+  "defaultLanguage": "English",
+  "suggestedCategory": "Adventure",
+  "suggestedTags": [
+    "Cats",
+    "Animals",
+    "Cute",
+    "Action",
+    "Adventure",
+    "Simulation"
+  ],
+  "shortDescription": "Find wild cats, build your dream duo, and unleash their special bond.",
+  "description": "Choose your first kitten and discover a world full of new feline friends. Search the garden for wild cats, take on real-time battles, and welcome new companions into your collection. Explore five illustrated regions, discover 33 cat breeds, care for your Sunlit Garden, and strengthen the bond between your favorite two cats. Play battles manually for hands-on action, or use Auto Battle for a relaxed adventure. Charge your Duo meter and unleash a special team attack when your cats fight together.",
+  "instructions": "Start by choosing a kitten, then click or tap the glowing bush to find your first wild cat. Win the battle to welcome a second cat and build your duo. On desktop, use WASD or arrow keys to move, the mouse to aim, left click or J to attack, Q/E for abilities, Space to dodge, R for your ultimate, and F for your Duo Special when ready. Auto Battle can be selected before an encounter. On mobile, move with the on-screen joystick and tap the action buttons. Visit the map, explore new regions, collect cats, and develop your garden.",
+  "savedProgress": "The game saves locally in the browser. Saves are not synced to a CrazyGames account; clearing site storage can erase progress. Do not declare that the game needs no saves.",
+  "orientation": "Responsive landscape desktop and portrait/landscape mobile",
+  "monetization": "No in-game purchases or external ads for CrazyGames Basic Launch",
+  "requiredAssets": {
+    "landscapeCover": {
+      "file": "cover-landscape.png",
+      "pixels": "1920x1080"
+    },
+    "portraitCover": {
+      "file": "cover-portrait.png",
+      "pixels": "800x1200"
+    },
+    "squareCover": {
+      "file": "cover-square.png",
+      "pixels": "800x800"
+    },
+    "landscapePreview": {
+      "file": "real-gameplay-landscape.mp4",
+      "pixels": "1920x1080",
+      "duration": "<=20s",
+      "audio": false
+    },
+    "portraitPreview": {
+      "file": "real-gameplay-portrait.mp4",
+      "pixels": "1080x1620",
+      "duration": "<=20s",
+      "audio": false
+    }
+  },
+  "submissionBoundaries": [
+    "Do not submit for review",
+    "Do not acknowledge unverified first-time external-player testing, licensing or eligibility declarations",
+    "Before proceeding, verify actual Developer Portal preview and rights signoff",
+    "Do not create a duplicate Cat Bond game if the portal already contains one"
+  ],
+  "rightsAndQA": {
+    "gameplaySmoke": "Passed in prior CI; see docs/cat-bond-crazygames-recheck-2026-11-22.md",
+    "strangerPlaytest": "Not verified",
+    "portalPreview": "Not verified",
+    "assetRights": "Needs studio signoff",
+    "visualAssets": "Review candidate outputs before publishing"
+  },
+  "externalPortalDraftId": null
+}
