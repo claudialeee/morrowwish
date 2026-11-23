@@ -893,7 +893,6 @@
     // Locale-safe personality/trait fallback labels in the cat detail.
     '未知': 'Unknown',
     '未揭晓': 'Undiscovered',
-    '无': 'None',
     '特训 1 次': 'Train Once',
     '消耗 🪙80': 'Cost 🪙80',
     // gold-coins.js converts 🪙 into an <img> and splits DOM text nodes.
