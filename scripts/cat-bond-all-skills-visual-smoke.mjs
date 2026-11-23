@@ -48,7 +48,10 @@ try{
     const record=await page.evaluate(id=>{
       const g=window.__game,sk=Skills.skillById(id);
       if(!sk||sk.ultCost)throw Error('No normal skill '+id);
-      const native=GameData.SPECIES.find(sp=>Skills.elementOf(sp.id)===sk.element);
+      // Element-neutral utility skills (e.g. the reflect wall) match no element;
+      // any painted cat can showcase them, so fall back to the roster's first.
+      const native=GameData.SPECIES.find(sp=>Skills.elementOf(sp.id)===sk.element)
+        ||(sk.element==='neutral'?GameData.SPECIES[0]:null);
       if(!native)throw Error('No cat for element '+sk.element);
       const cat=State.makeCat(native.id,{affinity:70});
       cat.level=15;State.S.cats=[cat];
