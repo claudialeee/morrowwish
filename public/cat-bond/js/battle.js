@@ -175,7 +175,7 @@ class CaptureBattle {
     // --- wild cat PACK: 1~3 enemies (rarer / commander-seeded = bigger packs) ---
     // The pack can be passed in via opts.pack (array of species); otherwise we
     // roll a size based on rarity and fill with the lead species + weaker friends.
-    this.enemies = this.buildPack(wildSpecies);
+    this.enemies = this.buildPack(wildSpecies, opts?.pack);
     this.captureReady = false;
 
     // --- control mode: 'manual' | 'auto' (commander). Toggle in-battle. ---
@@ -663,7 +663,12 @@ class CaptureBattle {
 
   // Build a wild pack of 1~3 enemies. Lead = the encountered species; rarer
   // encounters bring more/tougher friends.
-  buildPack(lead) {
+  buildPack(lead, packOverride) {
+    // A story encounter may supply a deliberate authored lineup (e.g. a solo
+    // named boss). Ordinary wild encounters keep their existing 1–3 roll.
+    if(Array.isArray(packOverride)&&packOverride.length){
+      return packOverride.map((sp,i)=>this.makeEnemy(sp,i,packOverride.length));
+    }
     // Fewer wild cats on screen: with a 3-cat player team, big packs overcrowd the
     // arena. Solo is the norm; a 2nd joins sometimes, a 3rd only for rare encounters.
     const packSize = this.starterRegion ? 1 :
