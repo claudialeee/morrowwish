@@ -1,1 +1,1 @@
-Probe the noon-Pacific Nov 22 snapshot to locate the earliest metrics reset.
+Probe the 16:00 Pacific Nov 22 checkpoint using the latest target in d1-recovery-probe.mjs.
