@@ -320,11 +320,31 @@ export async function api(req,env){
    if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
    if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
    const days=params(req),from=dateDays(days)[0];
-   const d=await env.DB.prepare("SELECT day,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit' AND day>=? GROUP BY day ORDER BY day").bind(from).all();
+   const d=await env.DB.prepare(`
+     WITH page_visits AS (
+       SELECT day,COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day) AS visit_key,COUNT(*) AS raw_visits
+       FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit' AND day>=?
+       GROUP BY day,visit_key
+     ), session_views AS (
+       SELECT view_id,
+         MAX(CASE WHEN CAST(json_extract(payload,'$.starts') AS REAL)>0 THEN 1 ELSE 0 END) AS started,
+         MAX(CASE WHEN CAST(json_extract(payload,'$.ends') AS REAL)>0 THEN 1 ELSE 0 END) AS finished
+       FROM events WHERE category='arcade' AND game='cat-bond' AND kind='session' AND day>=? AND view_id<>''
+       GROUP BY view_id
+     )
+     SELECT v.day AS day,COUNT(*) AS pageviews,SUM(v.raw_visits) AS rawVisits,
+       SUM(CASE WHEN s.started=1 THEN 1 ELSE 0 END) AS startedViews,
+       SUM(CASE WHEN s.started=1 AND s.finished=1 THEN 1 ELSE 0 END) AS finishedViews
+     FROM page_visits v LEFT JOIN session_views s ON v.visit_key=s.view_id
+     GROUP BY v.day ORDER BY v.day
+   `).bind(from,from).all();
    const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
-   const byDay=(d.results||[]).map(r=>({day:String(r.day),rawVisits:Number(r.rawVisits)||0,pageviews:Number(r.pageviews)||0}));
+   const byDay=(d.results||[]).map(r=>({day:String(r.day),rawVisits:Number(r.rawVisits)||0,pageviews:Number(r.pageviews)||0,
+     startedViews:Number(r.startedViews)||0,finishedViews:Number(r.finishedViews)||0}));
    const history=(h.results||[])[0]||{};
-   return json({game:"cat-bond",days,from,source:"uncapped-d1-aggregate",total:byDay.reduce((n,r)=>n+r.pageviews,0),byDay,history:{
+   const totals=byDay.reduce((sum,r)=>({pageviews:sum.pageviews+r.pageviews,startedViews:sum.startedViews+r.startedViews,
+     finishedViews:sum.finishedViews+r.finishedViews}),{pageviews:0,startedViews:0,finishedViews:0});
+   return json({game:"cat-bond",days,from,source:"uncapped-d1-aggregate",total:totals.pageviews,totals,byDay,history:{
      firstDay:history.firstDay||null,lastDay:history.lastDay||null,
      pageviews:Number(history.pageviews)||0,rawVisits:Number(history.rawVisits)||0
    }});
