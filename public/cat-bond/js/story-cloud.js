@@ -500,9 +500,9 @@ function renderCloudPanel(){
    if(action==='replace'){
     if(!confirm(t('将用当前设备的存档覆盖云端版本。继续吗？','Replace the cloud version with this device’s save?')))return;
     const token=localStorage.getItem(CLOUD_KEY);
-    localStorage.removeItem(CLOUD_PAUSE_KEY);
     let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
     localStorage.setItem(REV_KEY,String(remote.revision||0));
+    localStorage.removeItem(CLOUD_PAUSE_KEY);
     const result=await syncNow(true);
     say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.')
      :result.ok?t('云端已更新为本机存档。','Cloud save replaced with this device.')
