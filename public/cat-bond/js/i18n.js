@@ -1375,9 +1375,6 @@
     '魅力与纽带增益': 'Charm and bond boost',
     '星魂×': 'Star Souls ×',
     '形态': 'Form',
-    '幼': 'Kit',
-    '成': 'Adult',
-    '灵': 'Spirit',
     // misc
     '← 返回': '← Back',
     '🪶 逗猫': '🪶 Tease',
