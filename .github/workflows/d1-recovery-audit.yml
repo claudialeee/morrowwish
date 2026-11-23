@@ -17,14 +17,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+      - name: Install pinned Wrangler
+        run: npm ci
       - name: Read D1 bookmarks and current analytics aggregates (read-only)
         env:
           CLOUDFLARE_D1_RECOVERY_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
           D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
           const token=process.env.CLOUDFLARE_D1_RECOVERY_TOKEN;
           const account=process.env.CLOUDFLARE_ACCOUNT_ID;
           const db=process.env.D1_DATABASE_ID;
@@ -39,19 +44,28 @@ jobs:
           const root='/accounts/'+account+'/d1/database/'+db;
           const database=await api(root);
           const timestamps=[
-            '2026-11-22T08:00:00+00:00',
-            '2026-11-22T12:00:00+00:00',
-            '2026-11-22T16:00:00+00:00',
-            '2026-11-22T20:00:00+00:00',
-            '2026-11-23T00:00:00+00:00',
-            '2026-11-23T04:00:00+00:00',
-            '2026-11-23T08:00:00+00:00',
-            '2026-11-23T12:00:00+00:00',
-            '2026-11-23T16:00:00+00:00'
-          ];          const [currentBookmark,...historical]=await Promise.all([
-            api(root+'/time_travel/bookmark'),
-            ...timestamps.map(timestamp=>api(root+'/time_travel/bookmark?timestamp='+encodeURIComponent(timestamp)).catch(e=>({error:String(e)})))
-          ]);
+            '2026-11-22T08:00:00.000Z',
+            '2026-11-22T12:00:00.000Z',
+            '2026-11-22T16:00:00.000Z',
+            '2026-11-22T20:00:00.000Z',
+            '2026-11-23T00:00:00.000Z',
+            '2026-11-23T04:00:00.000Z',
+            '2026-11-23T08:00:00.000Z',
+            '2026-11-23T12:00:00.000Z',
+            '2026-11-23T16:00:00.000Z'
+          ];
+          const currentBookmark=await api(root+'/time_travel/bookmark');
+          const historical=[];
+          for(const timestamp of timestamps){
+            try{
+              const output=execFileSync('npx',['wrangler','d1','time-travel','info','morrowwish-analytics','--config','wrangler.jsonc','--timestamp',timestamp,'--json'],{
+                cwd:'cloudflare-pages',encoding:'utf8',env:process.env
+              });
+              let parsed=null;try{parsed=JSON.parse(output)}catch{}
+              const bookmark=parsed?.bookmark||parsed?.result?.bookmark||output.match(/[0-9a-f]{8}-[0-9a-f]{8}-[0-9a-f]{8}-[0-9a-f]{32}/i)?.[0]||null;
+              historical.push({timestamp,bookmark,output:bookmark?undefined:output.slice(-1800)});
+            }catch(e){historical.push({timestamp,error:String(e.stderr||e.message||e).slice(-1800)});}
+          }
           async function query(sql) {
             const result=await api(root+'/query',{method:'POST',body:JSON.stringify({sql})});
             return result?.[0]?.results||[];
@@ -63,10 +77,10 @@ jobs:
           const totals=hasEvents?await query("SELECT category,game,kind,COUNT(*) AS rows,MIN(day) AS first_day,MAX(day) AS last_day FROM events GROUP BY category,game,kind ORDER BY category,game,kind"):[];
           const output={
             generatedAt:new Date().toISOString(),
-            targetRangeStart:'2026-11-22T00:00:00.000-08:00',
+            targetRangeStart:'2026-11-22T00:00:00-08:00',
             database:{name:database.name,uuid:database.uuid,version:database.version,created_at:database.created_at,file_size:database.file_size},
             currentBookmark:currentBookmark?.bookmark||null,
-            historicalBookmarks:timestamps.map((timestamp,i)=>({timestamp,bookmark:historical[i]?.bookmark||null,error:historical[i]?.error||null})),
+            historicalBookmarks:historical,
             tables:tables.map(t=>({name:t.name,sql:t.sql})),
             eventsSchema:eventsSchema.map(c=>({name:c.name,type:c.type,notnull:c.notnull,pk:c.pk})),
             currentEventsSinceNov22:currentEvents,
