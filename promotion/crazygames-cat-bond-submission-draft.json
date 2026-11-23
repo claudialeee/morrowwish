@@ -61,28 +61,31 @@
     "strangerPlaytest": "Studio owner confirmed independent start-to-finish human playtest in this chat; no test-session recording retained.",
     "portalPreview": "CrazyGames developer preview reached, seven Basic Launch QA answers recorded, and Finalize submission draft page verified.",
     "assetRights": "Studio owner confirmed rights to code, art, and sound in this chat; original licenses not independently audited.",
-    "visualAssets": "Three polished covers and both native-aspect silent previews rebuilt from verified original-63 art; visually reviewed by assistant, five files saved and verified in CrazyGames draft 2026-11-22 18:51 PT. Final studio owner signoff remains separate."
+    "visualAssets": "Three studio-approved muted gameplay-variety illustrative covers uploaded to existing CrazyGames draft; two authentic 17.5-second silent gameplay previews kept byte-for-byte unchanged; portal confirmed saved 2026-11-22 19:15 PT. Covers are promotional illustrations, not literal screenshots."
   },
   "externalPortalDraftId": "cda65c21-75f7-4ce5-b717-62b425097981",
   "portalDraftUrl": "https://developer.crazygames.com/games/cda65c21-75f7-4ce5-b717-62b425097981",
-  "portalSavedAt": "2026-11-23T02:51:07.548Z",
+  "portalSavedAt": "2026-11-23T03:15:02.274Z",
   "submissionForReview": false,
-  "mediaReplacedAt": "2026-11-23T02:51:07.548Z",
-  "mediaArtSource": "duo-storyboard-21x3-v3.webp: approved complete 63 original painted duo scenes",
-  "mediaArtifactSource": "GitHub Actions 45102338281; newly polished covers and 17.5s silent genuine game footage",
+  "mediaReplacedAt": "2026-11-23T03:15:02.274Z",
+  "mediaArtSource": "Covers: approved muted gameplay-variety illustrations; existing gameplay previews: canonical approved 63 original painted duo scenes",
+  "mediaArtifactSource": "GitHub Actions 45104693348; final result artifact 14786228843",
   "mediaVerification": {
-    "runId": 45102338281,
-    "artifactId": 14785279032,
+    "runId": 45104693348,
+    "artifactId": 14786228843,
     "draftId": "cda65c21-75f7-4ce5-b717-62b425097981",
-    "originalSceneCount": 63,
-    "filesUploaded": [
+    "images": [
       "cover-landscape.png",
       "cover-portrait.png",
-      "cover-square.png",
-      "real-gameplay-landscape.mp4",
-      "real-gameplay-portrait.mp4"
+      "cover-square.png"
     ],
+    "videosPreservedUnchanged": true,
+    "videoSHA256": {
+      "real-gameplay-landscape.mp4": "6b97167d4ba99e6b2a8c2e569c1426dfa961352e8bd985a86d934907f7cbbbd3",
+      "real-gameplay-portrait.mp4": "ffba89313aa6e501b52734d844c58242408a195f2b52a52b5590dfbc91b15b8e"
+    },
     "platformDraftVisibleAfterSave": true,
     "reviewSubmitted": false
-  }
+  },
+  "coverArtSource": "User-approved muted Cat Bond gameplay-variety cover illustrations (landscape, portrait, square), stored in promotion/crazygames-covers-approved-20261122/"
 }
