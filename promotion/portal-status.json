@@ -19,9 +19,9 @@
     {
       "slug": "cat-bond",
       "priority": 2,
-      "status": "not-created",
-      "readiness": "qa-needed",
-      "notes": "Validate mobile landscape panning/fullscreen and gameplay before review submission"
+      "status": "draft",
+      "readiness": "draft-saved-not-submitted",
+      "notes": "CrazyGames draft contains three 1920/800 px cover formats and two silent 17.5s gameplay videos, English copy and seven QA answers; saved at Finalize submission without pressing Submit for approval. Draft ID cda65c21-75f7-4ce5-b717-62b425097981. Final release gate remains HOLD."
     },
     {
       "slug": "tiny-town",

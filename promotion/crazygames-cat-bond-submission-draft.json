@@ -4,7 +4,7 @@
   "title": "Cat Bond",
   "publisher": "Morrow Wish",
   "createdAt": "2026-11-22",
-  "status": "prepared-off-platform-not-submitted",
+  "status": "saved-in-crazygames-portal-draft-not-submitted",
   "portal": "https://developer.crazygames.com/games",
   "playableUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-playtest",
   "buildType": "Externally hosted (iframe)",
@@ -51,17 +51,20 @@
     }
   },
   "submissionBoundaries": [
-    "Do not submit for review",
-    "Do not acknowledge unverified first-time external-player testing, licensing or eligibility declarations",
-    "Before proceeding, verify actual Developer Portal preview and rights signoff",
-    "Do not create a duplicate Cat Bond game if the portal already contains one"
+    "Do not click Submit for approval without explicit authorization.",
+    "Keep promotion/crazygames-quality-gate.json on HOLD until all final release checks are evidenced.",
+    "Do not create duplicate Cat Bond entries; existing ID cda65c21-75f7-4ce5-b717-62b425097981.",
+    "No CrazyGames public listing or submitted review receipt exists."
   ],
   "rightsAndQA": {
     "gameplaySmoke": "Passed in prior CI; see docs/cat-bond-crazygames-recheck-2026-11-22.md",
-    "strangerPlaytest": "Not verified",
-    "portalPreview": "Not verified",
-    "assetRights": "Needs studio signoff",
-    "visualAssets": "Review candidate outputs before publishing"
+    "strangerPlaytest": "Studio owner confirmed independent start-to-finish human playtest in this chat; no test-session recording retained.",
+    "portalPreview": "CrazyGames developer preview reached, seven Basic Launch QA answers recorded, and Finalize submission draft page verified.",
+    "assetRights": "Studio owner confirmed rights to code, art, and sound in this chat; original licenses not independently audited.",
+    "visualAssets": "All five game-cover and preview assets uploaded and saved; independent human visual signoff for release not yet separately recorded."
   },
-  "externalPortalDraftId": null
+  "externalPortalDraftId": "cda65c21-75f7-4ce5-b717-62b425097981",
+  "portalDraftUrl": "https://developer.crazygames.com/games/cda65c21-75f7-4ce5-b717-62b425097981",
+  "portalSavedAt": "2026-11-23T01:59:23Z",
+  "submissionForReview": false
 }

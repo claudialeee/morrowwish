@@ -917,14 +917,17 @@
         },
         "crazygames": {
           "priority": "P0",
-          "status": "not-created",
+          "status": "draft",
           "platformId": null,
           "publicUrl": null,
           "scheduledAt": null,
           "utm_source": "crazygames",
           "utm_campaign": "cat-bond-playtest",
           "trackedUrl": "https://morrowwish.vercel.app/cat-bond/?utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-playtest",
-          "reviewSubmittedAt": null
+          "reviewSubmittedAt": null,
+          "draftPreviewId": "cda65c21-75f7-4ce5-b717-62b425097981",
+          "draftVerifiedAt": "2026-11-23T01:59:23Z",
+          "draftMediaUploaded": true
         },
         "itch": {
           "priority": "P0",
