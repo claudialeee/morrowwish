@@ -1,0 +1,529 @@
+{
+  "version": "V14",
+  "createdAt": "2026-11-23T00:35:20.171Z",
+  "approval": "NOT APPROVED — REVIEW ONLY",
+  "socialAutopublish": false,
+  "historicalVideoViewsExcluded": true,
+  "readabilityChecked": true,
+  "pausedPromoGames": [],
+  "trailers": [
+    {
+      "slug": "cat-bond",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/cat-bond/trailer-v13-20261122.mp4",
+      "poster": "/promo/cat-bond/trailer-v13-20261122.jpg",
+      "review": [
+        "/promo/cat-bond/v13-review-1.jpg",
+        "/promo/cat-bond/v13-review-2.jpg",
+        "/promo/cat-bond/v13-review-3.jpg"
+      ],
+      "duration": 59.6,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "yard",
+          "caption": "A WORLD FULL OF CATS.",
+          "seconds": 2.5
+        },
+        {
+          "source": "broll",
+          "scene": "cat-upgrade",
+          "caption": "LEVEL UP WITH ONE TAP.",
+          "seconds": 3.15
+        },
+        {
+          "source": "broll",
+          "scene": "duo-partners",
+          "caption": "CHOOSE YOUR CAT DUO.",
+          "seconds": 2.75
+        },
+        {
+          "source": "broll",
+          "scene": "duo-map-walk",
+          "caption": "",
+          "seconds": 1.8
+        },
+        {
+          "source": "broll",
+          "scene": "duo-promise",
+          "caption": "A SECRET PROMISE UNDER PETALS.",
+          "seconds": 3.9
+        },
+        {
+          "source": "broll",
+          "scene": "duo-quarrel",
+          "caption": "EVEN BEST FRIENDS DISAGREE.",
+          "seconds": 6.1
+        },
+        {
+          "source": "broll",
+          "scene": "duo-reconcile",
+          "caption": "HELP THEM MAKE UP.",
+          "seconds": 2.9
+        },
+        {
+          "source": "broll",
+          "scene": "work-after",
+          "caption": "SEND CATS OUT TO EARN.",
+          "seconds": 2.5
+        },
+        {
+          "source": "broll",
+          "scene": "tease",
+          "caption": "PLAY WITH YOUR CATS.",
+          "seconds": 2.2
+        },
+        {
+          "source": "broll",
+          "scene": "map-choice",
+          "caption": "DISCOVER NEW PLACES.",
+          "seconds": 2.5
+        },
+        {
+          "source": "broll",
+          "scene": "map-explore",
+          "caption": "EXPLORE A LIVING WORLD.",
+          "seconds": 2.45
+        },
+        {
+          "source": "broll",
+          "scene": "map-management",
+          "caption": "ALL IN ONE MENU.",
+          "seconds": 2.15
+        },
+        {
+          "source": "broll",
+          "scene": "auto-team-saved",
+          "caption": "SAVE YOUR BEST BATTLE TEAM.",
+          "seconds": 2.5
+        },
+        {
+          "source": "broll",
+          "scene": "rare-encounter",
+          "caption": "A RARE CAT APPEARS!",
+          "seconds": 2.05
+        },
+        {
+          "source": "broll",
+          "scene": "battle-hud",
+          "caption": "REAL-TIME HEALTH AND BATTLE.",
+          "seconds": 2.45
+        },
+        {
+          "source": "broll",
+          "scene": "battle-skills",
+          "caption": "USE DIFFERENT SKILLS.",
+          "seconds": 2.8
+        },
+        {
+          "source": "broll",
+          "scene": "duo",
+          "caption": "ONE POWERFUL DUO FINISHER!",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "rare-aftermath",
+          "caption": "",
+          "seconds": 1.2
+        },
+        {
+          "source": "broll",
+          "scene": "rare-capture",
+          "caption": "A NEW FRIEND JOINS YOU.",
+          "seconds": 3.45
+        },
+        {
+          "source": "broll",
+          "scene": "ssr-showcase",
+          "caption": "MEET A LEGENDARY SSR CAT!",
+          "seconds": 3.6
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 3.5
+        }
+      ],
+      "sourceClips": "V13 one live rare-cat fight with native HP and skills, one duo finisher, earned capture; no social posting",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
+      "originalDuoArtSource": "http://127.0.0.1:8795/cat-bond/assets/duo-storyboard-21x3-v3.webp?v=original-63-poses-20261122",
+      "originalDuoArtMode": "63-original-painted-storyboards",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "pawsibly-innocent",
+      "kind": "coherent-single-room-stealth-cliffhanger",
+      "video": "/promo/pawsibly-innocent/trailer-v12-20261121.mp4",
+      "poster": "/promo/pawsibly-innocent/trailer-v12-20261121.jpg",
+      "review": [
+        "/promo/pawsibly-innocent/v12-review-1.jpg",
+        "/promo/pawsibly-innocent/v12-review-2.jpg",
+        "/promo/pawsibly-innocent/v12-review-3.jpg"
+      ],
+      "duration": 13.7,
+      "shots": [
+        {
+          "source": "fresh-real-gameplay",
+          "scene": "first-fish",
+          "seconds": 2.32,
+          "caption": ""
+        },
+        {
+          "source": "verified-v9-gameplay",
+          "scene": "narrow-pursuit",
+          "seconds": 2.3,
+          "caption": ""
+        },
+        {
+          "source": "verified-v9-gameplay",
+          "scene": "narrow-achievement",
+          "seconds": 3.32,
+          "caption": ""
+        },
+        {
+          "source": "fresh-real-gameplay",
+          "scene": "last-chase",
+          "seconds": 2.8,
+          "caption": ""
+        },
+        {
+          "source": "fresh-real-gameplay",
+          "scene": "failure-result",
+          "seconds": 2.9,
+          "caption": ""
+        }
+      ],
+      "sourceClips": "One real Sunny Lounge room, genuine collected fish and earned Narrow Escape badge; three real captures lead to native Caught red-pawed result modal",
+      "transitions": "Only same-room continuity with new-try narrative cue, no random map switches, no solution path, native final result",
+      "aspect": "1080x1920 portrait",
+      "approved": false,
+      "published": false,
+      "retainedFrom": "V9"
+    },
+    {
+      "slug": "tiny-town",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/tiny-town/trailer-v7-20261121.mp4",
+      "poster": "/promo/tiny-town/trailer-v7-20261121.jpg",
+      "review": [
+        "/promo/tiny-town/v7-review-1.jpg",
+        "/promo/tiny-town/v7-review-2.jpg",
+        "/promo/tiny-town/v7-review-3.jpg"
+      ],
+      "duration": 40.2,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "opening-three-choices",
+          "caption": "",
+          "seconds": 7
+        },
+        {
+          "source": "broll",
+          "scene": "board",
+          "caption": "NO JOBS. BUILD YOUR TOWN.",
+          "seconds": 3
+        },
+        {
+          "source": "broll",
+          "scene": "resident-reactions",
+          "caption": "FIVE NEIGHBORS. FIVE DREAMS.",
+          "seconds": 2.9
+        },
+        {
+          "source": "broll",
+          "scene": "resident-profile",
+          "caption": "THEY HAVE THEIR OWN OPINIONS.",
+          "seconds": 4.7
+        },
+        {
+          "source": "broll",
+          "scene": "combination",
+          "caption": "TWO WISHES BECOME ONE!",
+          "seconds": 3.5
+        },
+        {
+          "source": "broll",
+          "scene": "neighbor-story",
+          "caption": "THE NEIGHBORS HAVE STORIES.",
+          "seconds": 5
+        },
+        {
+          "source": "broll",
+          "scene": "legendary",
+          "caption": "UNLOCK A LEGENDARY WONDER.",
+          "seconds": 3.2
+        },
+        {
+          "source": "broll",
+          "scene": "board-mature",
+          "caption": "WATCH THE WHOLE TOWN CHANGE.",
+          "seconds": 2.6
+        },
+        {
+          "source": "broll",
+          "scene": "ending",
+          "caption": "SEVEN DAYS. YOUR OWN ENDING.",
+          "seconds": 5.2
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 3.1
+        }
+      ],
+      "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false,
+      "retainedFrom": "V7"
+    },
+    {
+      "slug": "elsewhere",
+      "kind": "cinematic-story-trailer",
+      "video": "/promo/elsewhere/trailer-v7-20261121.mp4",
+      "poster": "/promo/elsewhere/trailer-v7-20261121.jpg",
+      "review": [
+        "/promo/elsewhere/v7-review-1.jpg",
+        "/promo/elsewhere/v7-review-2.jpg",
+        "/promo/elsewhere/v7-review-3.jpg"
+      ],
+      "duration": 37.7,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "choose-life",
+          "caption": "",
+          "seconds": 3.2
+        },
+        {
+          "source": "broll",
+          "scene": "amalfi",
+          "caption": "A VILLA ON THE AMALFI COAST.",
+          "seconds": 2.75
+        },
+        {
+          "source": "broll",
+          "scene": "tokyo",
+          "caption": "BE A SUPERSTAR TONIGHT.",
+          "seconds": 2.6
+        },
+        {
+          "source": "broll",
+          "scene": "moon-opening",
+          "caption": "OR OWN A HOTEL ON THE MOON.",
+          "seconds": 3.1
+        },
+        {
+          "source": "broll",
+          "scene": "moon-surprise",
+          "caption": "SURPRISES IN EVERY LIFE.",
+          "seconds": 2.9
+        },
+        {
+          "source": "broll",
+          "scene": "moon-ending",
+          "caption": "EVERY LIFE HAS AN ENDING.",
+          "seconds": 5.35
+        },
+        {
+          "source": "broll",
+          "scene": "paris",
+          "caption": "A NEW LOVE STORY IN PARIS.",
+          "seconds": 4.25
+        },
+        {
+          "source": "broll",
+          "scene": "paris-romance",
+          "caption": "YOUR STORY. YOUR CHOICES.",
+          "seconds": 4.9
+        },
+        {
+          "source": "broll",
+          "scene": "paris-ending",
+          "caption": "YOUR CHOICES. YOUR ENDING.",
+          "seconds": 5.5
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 3.1
+        }
+      ],
+      "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false,
+      "retainedFrom": "V7"
+    },
+    {
+      "slug": "flip-dash",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/flip-dash/trailer-v7-20261121.mp4",
+      "poster": "/promo/flip-dash/trailer-v7-20261121.jpg",
+      "review": [
+        "/promo/flip-dash/v7-review-1.jpg",
+        "/promo/flip-dash/v7-review-2.jpg",
+        "/promo/flip-dash/v7-review-3.jpg"
+      ],
+      "duration": 19.9,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "first-coin",
+          "caption": "GRAB GOLD FROM THE START!",
+          "seconds": 3.1200000000000006
+        },
+        {
+          "source": "broll",
+          "scene": "coin-collect",
+          "caption": "COLLECT GOLD. DODGE PINK.",
+          "seconds": 9.939
+        },
+        {
+          "source": "broll",
+          "scene": "danger",
+          "caption": "",
+          "seconds": 0.48899999999999866
+        },
+        {
+          "source": "broll",
+          "scene": "crash",
+          "caption": "CAN YOU LAST LONGER?",
+          "seconds": 2.7
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 3.6
+        }
+      ],
+      "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false,
+      "retainedFrom": "V7"
+    },
+    {
+      "slug": "parcel-panic",
+      "kind": "real-gameplay-challenge-ad",
+      "video": "/promo/parcel-panic/trailer-challenge-20261122.mp4",
+      "poster": "/promo/parcel-panic/trailer-challenge-20261122.jpg",
+      "review": [
+        "/promo/parcel-panic/challenge-review-1.jpg",
+        "/promo/parcel-panic/challenge-review-2.jpg",
+        "/promo/parcel-panic/challenge-review-3.jpg"
+      ],
+      "duration": 20.6,
+      "shots": [
+        {
+          "source": "real-gameplay",
+          "scene": "opening",
+          "caption": "LOOKS EASY?",
+          "seconds": 2.162
+        },
+        {
+          "source": "real-gameplay",
+          "scene": "express",
+          "caption": "EXPRESS RUSH!",
+          "seconds": 3.288
+        },
+        {
+          "source": "real-gameplay",
+          "scene": "speed-up",
+          "caption": "THE PACE PICKS UP.",
+          "seconds": 4.3
+        },
+        {
+          "source": "real-gameplay",
+          "scene": "one-life",
+          "caption": "THREE MISSES. ONE LIFE.",
+          "seconds": 4.2
+        },
+        {
+          "source": "real-gameplay",
+          "scene": "clutch",
+          "caption": "DON'T BLINK.",
+          "seconds": 1.924
+        },
+        {
+          "source": "real-gameplay",
+          "scene": "shift-clear",
+          "caption": "SHIFT CLEARED!",
+          "seconds": 1.12
+        },
+        {
+          "source": "end-card",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 3.6
+        }
+      ],
+      "sourceClips": "Fresh browser recording of current Parcel Panic; authentic express, gift, real timeouts, one-life recovery and three completed shifts",
+      "transitions": "clean cuts; no fabricated packages or HUD",
+      "aspect": "real portrait game 9:16; no stretched landscape",
+      "approved": false,
+      "published": false
+    },
+    {
+      "slug": "pocket-aquarium",
+      "kind": "challenge-failure-ad",
+      "video": "/promo/pocket-aquarium/trailer-v7-20261121.mp4",
+      "poster": "/promo/pocket-aquarium/trailer-v7-20261121.jpg",
+      "review": [
+        "/promo/pocket-aquarium/v7-review-1.jpg",
+        "/promo/pocket-aquarium/v7-review-2.jpg",
+        "/promo/pocket-aquarium/v7-review-3.jpg"
+      ],
+      "duration": 18.9,
+      "shots": [
+        {
+          "source": "broll",
+          "scene": "feeding",
+          "caption": "FEED THE HUNGRY FISH.",
+          "seconds": 3.2399999999999998
+        },
+        {
+          "source": "broll",
+          "scene": "more-feeding",
+          "caption": "KEEP PLAYING. BUILD A SCORE.",
+          "seconds": 4.245
+        },
+        {
+          "source": "broll",
+          "scene": "water-cloudy",
+          "caption": "TIME IS RUNNING OUT.",
+          "seconds": 4.65
+        },
+        {
+          "source": "broll",
+          "scene": "timeout",
+          "caption": "TIME UP. BEAT THE GRADE!",
+          "seconds": 3.1
+        },
+        {
+          "source": "cover",
+          "scene": null,
+          "caption": "PLAY FREE",
+          "seconds": 3.6
+        }
+      ],
+      "sourceClips": "V7 real game controls; verified resident responses, five-stage story, earned failure and separate typeset end card",
+      "transitions": "clean cuts, no ghosted or blended gameplay UI",
+      "aspect": "native 9:16, game shot aspect unchanged",
+      "approved": false,
+      "published": false,
+      "retainedFrom": "V7"
+    }
+  ]
+}

@@ -1,0 +1,499 @@
+{
+  "createdAt": "2026-11-23T00:35:20.171Z",
+  "version": "readability-review-v14",
+  "method": "Authentic parcel gameplay, phone-safe headline captions, 2+ seconds per scene.",
+  "pausedPromoGames": [],
+  "scenes": [
+    {
+      "game": "cat-bond",
+      "scene": "yard",
+      "seconds": 2.5,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "cat-upgrade",
+      "seconds": 3.15,
+      "captionWords": 5,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-partners",
+      "seconds": 2.75,
+      "captionWords": 4,
+      "requiredSeconds": 2.6,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-map-walk",
+      "seconds": 1.8,
+      "captionWords": 0,
+      "requiredSeconds": 0,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-promise",
+      "seconds": 3.9,
+      "captionWords": 5,
+      "requiredSeconds": 3.7,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-quarrel",
+      "seconds": 6.1,
+      "captionWords": 4,
+      "requiredSeconds": 6,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo-reconcile",
+      "seconds": 2.9,
+      "captionWords": 4,
+      "requiredSeconds": 2.7,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "work-after",
+      "seconds": 2.5,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "tease",
+      "seconds": 2.2,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "map-choice",
+      "seconds": 2.5,
+      "captionWords": 3,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "map-explore",
+      "seconds": 2.45,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "map-management",
+      "seconds": 2.15,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "auto-team-saved",
+      "seconds": 2.5,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "rare-encounter",
+      "seconds": 2.05,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "battle-hud",
+      "seconds": 2.45,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "battle-skills",
+      "seconds": 2.8,
+      "captionWords": 3,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "duo",
+      "seconds": 3.1,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "rare-aftermath",
+      "seconds": 1.2,
+      "captionWords": 0,
+      "requiredSeconds": 0,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "rare-capture",
+      "seconds": 3.45,
+      "captionWords": 5,
+      "requiredSeconds": 2.8,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "ssr-showcase",
+      "seconds": 3.6,
+      "captionWords": 5,
+      "requiredSeconds": 3.4,
+      "passed": true
+    },
+    {
+      "game": "cat-bond",
+      "scene": "end-card",
+      "seconds": 3.5,
+      "captionWords": 2,
+      "requiredSeconds": 3.5,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "opening-three-choices",
+      "seconds": 7,
+      "captionWords": 0,
+      "requiredSeconds": 6.6,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "board",
+      "seconds": 3,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "resident-reactions",
+      "seconds": 2.9,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "resident-profile",
+      "seconds": 4.7,
+      "captionWords": 5,
+      "requiredSeconds": 4.5,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "combination",
+      "seconds": 3.5,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "neighbor-story",
+      "seconds": 5,
+      "captionWords": 4,
+      "requiredSeconds": 4.7,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "legendary",
+      "seconds": 3.2,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "board-mature",
+      "seconds": 2.6,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "ending",
+      "seconds": 5.2,
+      "captionWords": 5,
+      "requiredSeconds": 4.9,
+      "passed": true
+    },
+    {
+      "game": "tiny-town",
+      "scene": "end-card",
+      "seconds": 3.1,
+      "captionWords": 2,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "flip-dash",
+      "scene": "first-coin",
+      "seconds": 3.12,
+      "captionWords": 5,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "flip-dash",
+      "scene": "coin-collect",
+      "seconds": 9.94,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "flip-dash",
+      "scene": "danger",
+      "seconds": 0.49,
+      "captionWords": 0,
+      "requiredSeconds": 0,
+      "passed": true
+    },
+    {
+      "game": "flip-dash",
+      "scene": "crash",
+      "seconds": 2.7,
+      "captionWords": 4,
+      "requiredSeconds": 2.5,
+      "passed": true
+    },
+    {
+      "game": "flip-dash",
+      "scene": "end-card",
+      "seconds": 3.6,
+      "captionWords": 2,
+      "requiredSeconds": 3.5,
+      "passed": true
+    },
+    {
+      "game": "pocket-aquarium",
+      "scene": "feeding",
+      "seconds": 3.24,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "pocket-aquarium",
+      "scene": "more-feeding",
+      "seconds": 4.25,
+      "captionWords": 5,
+      "requiredSeconds": 2.41,
+      "passed": true
+    },
+    {
+      "game": "pocket-aquarium",
+      "scene": "water-cloudy",
+      "seconds": 4.65,
+      "captionWords": 4,
+      "requiredSeconds": 2.09,
+      "passed": true
+    },
+    {
+      "game": "pocket-aquarium",
+      "scene": "timeout",
+      "seconds": 3.1,
+      "captionWords": 5,
+      "requiredSeconds": 2.9,
+      "passed": true
+    },
+    {
+      "game": "pocket-aquarium",
+      "scene": "end-card",
+      "seconds": 3.6,
+      "captionWords": 2,
+      "requiredSeconds": 3.5,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "choose-life",
+      "seconds": 3.2,
+      "captionWords": 0,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "amalfi",
+      "seconds": 2.75,
+      "captionWords": 6,
+      "requiredSeconds": 2.74,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "tokyo",
+      "seconds": 2.6,
+      "captionWords": 4,
+      "requiredSeconds": 2.45,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "moon-opening",
+      "seconds": 3.1,
+      "captionWords": 7,
+      "requiredSeconds": 3.06,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "moon-surprise",
+      "seconds": 2.9,
+      "captionWords": 4,
+      "requiredSeconds": 2.7,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "moon-ending",
+      "seconds": 5.35,
+      "captionWords": 5,
+      "requiredSeconds": 5,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "paris",
+      "seconds": 4.25,
+      "captionWords": 6,
+      "requiredSeconds": 4,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "paris-romance",
+      "seconds": 4.9,
+      "captionWords": 4,
+      "requiredSeconds": 4.6,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "paris-ending",
+      "seconds": 5.5,
+      "captionWords": 4,
+      "requiredSeconds": 5.2,
+      "passed": true
+    },
+    {
+      "game": "elsewhere",
+      "scene": "end-card",
+      "seconds": 3.1,
+      "captionWords": 2,
+      "requiredSeconds": 3,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "first-fish",
+      "seconds": 2.32,
+      "requiredSeconds": 1.8,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "narrow-pursuit",
+      "seconds": 2.3,
+      "requiredSeconds": 1.8,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "narrow-achievement",
+      "seconds": 3.32,
+      "requiredSeconds": 3.2,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "last-chase",
+      "seconds": 2.8,
+      "requiredSeconds": 1.8,
+      "passed": true
+    },
+    {
+      "game": "pawsibly-innocent",
+      "scene": "failure-result",
+      "seconds": 2.9,
+      "requiredSeconds": 2.8,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "opening",
+      "seconds": 2.16,
+      "captionWords": 2,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "express",
+      "seconds": 3.29,
+      "captionWords": 2,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "speed-up",
+      "seconds": 4.3,
+      "captionWords": 4,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "one-life",
+      "seconds": 4.2,
+      "captionWords": 4,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "clutch",
+      "seconds": 1.92,
+      "captionWords": 2,
+      "requiredSeconds": 1.4,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "shift-clear",
+      "seconds": 1.12,
+      "captionWords": 2,
+      "requiredSeconds": 0.85,
+      "passed": true
+    }
+  ]
+}

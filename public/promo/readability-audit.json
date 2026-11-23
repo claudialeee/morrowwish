@@ -1,7 +1,7 @@
 {
-  "createdAt": "2026-11-23T00:11:24.225Z",
-  "version": "readability-review-v12",
-  "method": "Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate. · Other games retain current review scene timings.",
+  "createdAt": "2026-11-23T00:35:20.171Z",
+  "version": "readability-review-v14",
+  "method": "Authentic parcel gameplay, phone-safe headline captions, 2+ seconds per scene.",
   "pausedPromoGames": [],
   "scenes": [
     {
@@ -293,38 +293,6 @@
       "passed": true
     },
     {
-      "game": "parcel-panic",
-      "scene": "deliveries",
-      "seconds": 8.14,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "parcel-panic",
-      "scene": "mistakes",
-      "seconds": 4.88,
-      "captionWords": 4,
-      "requiredSeconds": 2.09,
-      "passed": true
-    },
-    {
-      "game": "parcel-panic",
-      "scene": "game-over",
-      "seconds": 2.9,
-      "captionWords": 4,
-      "requiredSeconds": 2.7,
-      "passed": true
-    },
-    {
-      "game": "parcel-panic",
-      "scene": "end-card",
-      "seconds": 3.6,
-      "captionWords": 2,
-      "requiredSeconds": 3.5,
-      "passed": true
-    },
-    {
       "game": "pocket-aquarium",
       "scene": "feeding",
       "seconds": 3.24,
@@ -477,6 +445,54 @@
       "scene": "failure-result",
       "seconds": 2.9,
       "requiredSeconds": 2.8,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "opening",
+      "seconds": 2.16,
+      "captionWords": 2,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "express",
+      "seconds": 3.29,
+      "captionWords": 2,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "speed-up",
+      "seconds": 4.3,
+      "captionWords": 4,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "one-life",
+      "seconds": 4.2,
+      "captionWords": 4,
+      "requiredSeconds": 2,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "clutch",
+      "seconds": 1.92,
+      "captionWords": 2,
+      "requiredSeconds": 1.4,
+      "passed": true
+    },
+    {
+      "game": "parcel-panic",
+      "scene": "shift-clear",
+      "seconds": 1.12,
+      "captionWords": 2,
+      "requiredSeconds": 0.85,
       "passed": true
     }
   ]
