@@ -135,7 +135,9 @@
           "views": null,
           "likes": null,
           "reposts": null,
-          "pendingNativeRefresh": true
+          "pendingNativeRefresh": true,
+          "postUrlVerifiedAt": "2026-11-22T18:03:00-08:00",
+          "publishedVideoVersion": "V13"
         }
       },
       "trackedTrailerVersion": "V13",
