@@ -7,6 +7,7 @@ on:
       - '.github/workflows/prepare-y8-cat-bond.yml'
       - 'scripts/y8-catbond-build.py'
       - 'scripts/y8-catbond-media.mjs'
+      - 'scripts/y8-catbond-media-v2.mjs'
   workflow_dispatch:
 
 permissions:
@@ -39,7 +40,7 @@ jobs:
           Y8_GAME_ID: ${{ vars.Y8_GAME_ID }}
         run: python3 scripts/y8-catbond-build.py
       - name: Capture actual in-game screenshots and continuous gameplay video
-        run: node scripts/y8-catbond-media.mjs
+        run: node scripts/y8-catbond-media-v2.mjs
       - name: Confirm ZIP and media
         run: |
           python3 - <<'PY'
@@ -51,7 +52,7 @@ jobs:
           assert 'assets/duo-storyboard-21x3-v3.webp' in z.namelist()
           assert z.testzip() is None
           s=json.loads((d/'media-report.json').read_text())
-          assert len(s['assets'])==6 and s['acceptedFileSpecs']
+          assert len(s['assets'])==8 and s['acceptedFileSpecs']
           print('Y8 DRAFT EXPORT VERIFIED',len(z.namelist()),'ZIP files,',len(s['assets']),'media assets')
           PY
       - name: Upload Y8 draft package and media (not public game submission)
