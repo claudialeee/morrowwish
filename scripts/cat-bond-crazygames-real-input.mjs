@@ -3,12 +3,14 @@
 // each real encounter. Test-position reads are observational only.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const sizes=[
   [907,510,false],[1216,684,false],[1077,606,false],
   [821,462,false],[1366,768,false],[1920,1080,false],
   [1536,864,false],[1280,720,false],[800,450,true],[1080,607,true],
+  [390,844,true],
 ];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
@@ -33,6 +35,55 @@ try{
       const starter=page.locator('#panel.open .dex-cell').first();
       if(touch)await starter.tap();else await starter.click();
       await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
+      // A real player must see one coherent, clickable dock in the CrazyGames
+      // iframe. The old independent absolute HUDs floated half-way up the yard.
+      const menuLayout=await page.evaluate(()=>{
+        const dock=document.getElementById('cg-yard-dock');
+        const tabs=document.getElementById('tabbar');
+        const actions=document.getElementById('yard-actions');
+        if(!dock||!tabs||!actions)return null;
+        const rect=el=>{
+          const r=el.getBoundingClientRect();
+          return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
+            width:r.width,height:r.height};
+        };
+        const buttons=[...tabs.querySelectorAll('button'),
+          ...actions.querySelectorAll('button')];
+        const visible=buttons.map(el=>{
+          const r=el.getBoundingClientRect();
+          const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+          return {button:el.id||el.dataset.tab||el.textContent.trim().slice(0,12),
+            rect:rect(el),clickable:el.contains(hit)};
+        });
+        return {dock:rect(dock),tabs:rect(tabs),actions:rect(actions),
+          directParent:tabs.parentElement===dock&&actions.parentElement===dock,
+          count:buttons.length,visible,viewport:{width:innerWidth,height:innerHeight}};
+      });
+      assert.ok(menuLayout?.directParent,
+        'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
+      assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
+      assert.ok(menuLayout.dock.bottom<=height+2&&menuLayout.dock.bottom>=height-25,
+        'Yard controls must sit at bottom of iframe: '+JSON.stringify(menuLayout));
+      for(const item of menuLayout.visible){
+        const r=item.rect;
+        assert.ok(r.width>=40&&r.height>=40&&r.left>=-1&&r.right<=width+1&&
+          r.top>=0&&r.bottom<=height+1&&item.clickable,
+          'Yard control must be visible and clickable: '+JSON.stringify(item));
+      }
+      if(width>740){
+        assert.ok(Math.abs(menuLayout.tabs.bottom-menuLayout.actions.bottom)<12,
+          'Wide CrazyGames menus should share one bottom baseline: '+JSON.stringify(menuLayout));
+        assert.ok(menuLayout.tabs.right+3<=menuLayout.actions.left,
+          'Wide CrazyGames menu groups overlap: '+JSON.stringify(menuLayout));
+      }else{
+        assert.ok(menuLayout.actions.bottom+2<=menuLayout.tabs.top,
+          'Narrow CrazyGames garden actions should sit above bottom tabs: '+JSON.stringify(menuLayout));
+      }
+      if([907,1366,390].includes(width)){
+        const dir='.check/crazygames-yard-dock';
+        fs.mkdirSync(dir,{recursive:true});
+        await page.screenshot({path:dir+'/'+width+'x'+height+'-yard.png'});
+      }
       const target=await page.evaluate(()=>{
         const g=window.__game,cv=document.getElementById('scene'),r=cv.getBoundingClientRect();
         const spot=g?.yard?.hide?.spot;
