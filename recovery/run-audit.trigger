@@ -1,1 +1,1 @@
-Run the read-only D1 recovery audit using the latest workflow definition.
+Run historical bookmark query probe after latest workflow change.
