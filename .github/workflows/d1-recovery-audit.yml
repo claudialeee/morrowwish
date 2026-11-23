@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/d1-recovery-audit.yml'
       - 'recovery/run-audit.trigger'
+      - 'recovery/d1-recovery-merge.mjs'
   workflow_dispatch:
 
 permissions:
