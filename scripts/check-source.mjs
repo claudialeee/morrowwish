@@ -775,7 +775,7 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
  const factory=src.slice(from,to);
  function play(actions,lang='en'){
   const G={},events=[];let points=0,finishes=0,status='';
-  const env={G,seeded:()=>()=>.5,seed:'test',combo:0,shake:0,
+  const env={G,seeded:()=>()=>.5,seed:'test',combo:0,shake:0,portrait:false,
    colors:['#47ddfc','#ffcb68','#fd79a8'],clamp:(x,a,b)=>Math.min(b,Math.max(a,x)),
    info:v=>status=v,add:x=>{points+=x},winEffect:()=>{env.combo++},
    finish:()=>{finishes++},burst:()=>{},tone:()=>{},vibrate:()=>{},rnd:()=>1,
@@ -858,7 +858,7 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
  // Verify the current actual pacing rather than blocking every deploy on
  // obsolete speed constants from its previous harder build.
  if(!parcel.includes('life=4')||
-    !parcel.includes('RUNWAY_START=108,RUNWAY_END=477')||
+    !parcel.includes('runwayStart=()=>portrait?108:120,runwayEnd=()=>portrait?477:617')||
     !parcel.includes('Math.min(235,108+Math.max(0,delivered-8)*2.8+Math.max(0,time-22)*.16)')||
     !parcel.includes('p?.kind==="express"?1.16')||
     !parcel.includes('queue.shift()'))
