@@ -471,12 +471,12 @@ try{
 
   const cinematicSource=await page.evaluate(()=>{
     const art=window.CatBondPremiumCinematics;
-    return {ready:art?.ready,failed:art?.failed,breedMatchCount:art?.breedMatchCount,
-      frames:art?.paintedFrameCount,feather:art?.fullBleedResponsive,
+    return {ready:art?.ready,failed:art?.failed,actorFallback:art?.actorFallbackEnabled,
+      original:art?.originalPaintingDefault,frames:art?.paintedFrameCount,feather:art?.fullBleedResponsive,
       source:art?.source||''};
   });
   if(!cinematicSource.ready||cinematicSource.failed||cinematicSource.frames!==63||
-     cinematicSource.breedMatchCount!==32||!cinematicSource.feather||
+     cinematicSource.actorFallback!==false||!cinematicSource.original||!cinematicSource.feather||
      !cinematicSource.source.includes('duo-storyboard-21x3-v3.webp'))
     throw Error('New full-screen breed-matched duo renderer not loaded '+JSON.stringify(cinematicSource));
   const duo=await page.evaluate(()=>{
