@@ -1,0 +1,51 @@
+name: Bond Shift challenger prototype (isolated branch)
+
+on:
+  push:
+    branches: [prototype/bond-shift-challenger-v1]
+    paths:
+      - 'public/cat-bond/prototypes/bond-shift/**'
+      - 'scripts/check-bond-shift-prototype.mjs'
+      - 'scripts/bond-shift-browser-smoke.mjs'
+      - '.github/workflows/bond-shift-prototype.yml'
+      - 'docs/cat-bond-bond-shift-challenger-plan.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bond-shift-prototype-isolated
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate prototype JS syntax
+        run: |
+          node --input-type=module --check < public/cat-bond/prototypes/bond-shift/game.js
+          node --check public/cat-bond/prototypes/bond-shift/logic.mjs
+      - name: Deterministic model and save-isolation tests
+        run: node --test scripts/check-bond-shift-prototype.mjs
+      - name: Install Chromium browser QA
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Real keyboard and touch QA
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/bond-shift-server.log 2>&1 &
+          sleep 2
+          node scripts/bond-shift-browser-smoke.mjs
+      - name: Preserve QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bond-shift-prototype-screenshots
+          path: artifacts/bond-shift/
+          if-no-files-found: ignore
