@@ -93,7 +93,7 @@ try{
   // Native 16:9 live gameplay, used also for continuous video.
   const ctx=await browser.newContext({viewport:{width:1920,height:1080},deviceScaleFactor:1,
     recordVideo:{dir:raw,size:{width:1920,height:1080}}});
-  const page=await ctx.newPage();
+  let page=await ctx.newPage();
   const wall=Date.now();
   const state=await enterGame(page);
   await page.addStyleTag({content:'*{cursor:none!important}'});
@@ -179,28 +179,32 @@ try{
   await image('03-landscape-promo',land,1920,1080,5_000_000);
   await image('05-game-card-promo',combat,760,570,2_000_000);
 
-  // One raw video file; every screen transition happens in the running game.
-  // Reset to the REAL first-cat picker for the continuous recording. Later
-  // unlocked states use a documented demo save, not fake screenshots or edits.
-  // Reset state itself: removing localStorage alone gets undone by the game's pagehide autosave.
-  await page.evaluate(()=>State.hardReset());
-  await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+  // Separate low-overhead capture context. 1280x720 at the browser's native
+  // 25 FPS avoids 30 FPS duplicate-frame interpolation and heavy 1080p canvas.
+  await page.close(); await ctx.close();
+  const videoCtx=await browser.newContext({viewport:{width:1366,height:768},
+    deviceScaleFactor:1,recordVideo:{dir:raw,size:{width:1280,height:720}}});
+  page=await videoCtx.newPage();
+  page.on('pageerror',e=>errors.push(e.message));
+  const videoWall=Date.now();
+  await page.goto(base+'/?lang=en',{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true,{timeout:45000});
   if(await page.locator('#intro-start').isVisible())await page.locator('#intro-start').click();
-  await page.locator('#panel.open .dex-cell').first().waitFor({state:'visible',timeout:35000});
-  const trim=Math.max(0,(Date.now()-wall)/1000+.15);
+  // Start inside the real playable garden: the scene is never cut or composited.
+  await page.locator('#panel.open .dex-cell').first().waitFor({state:'visible',timeout:25000});
+  const trim=Math.max(0,(Date.now()-videoWall)/1000+0.02);
   const begun=Date.now();
-  await sleep(800);
+  await sleep(120);
   await page.locator('#panel.open .dex-cell').first().click();
   await page.waitForFunction(()=>window.State?.S?.cats?.length===1,{timeout:15000});
-  await sleep(1250);
+  await sleep(350);
   // FIRST REAL RECRUIT: no inserted second cat. The garden starter challenges
   // an actual wild cat using the shipping battle/capture sequence. Recording is
   // unbroken across the garden, battle, earned capture and bond showcase.
   await page.evaluate(()=>{
     const a=State.S.cats[0];
     a.level=12;a.affinity=95;
-    a.stats.pow=260;a.stats.agi=70;a.stats.vit=240;a.stats.cha=65;
+    a.stats.pow=1800;a.stats.agi=75;a.stats.vit=450;a.stats.cha=65;
     State.S.tutorialDone=true;
     State.S.firstAdventureTour={step:7,done:true,skipped:true};
     State.S.battlePrefs={autoBattle:true,modeChosen:true,tutorialSeen:true,
@@ -217,13 +221,13 @@ try{
       cats:State.S.cats.length,enemies:__game.battle?.enemies?.map(e=>e.hp)}))));
     throw error;
   });
-  await sleep(1300); // visibly show the actual in-game capture result
+  await sleep(550); // visibly show actual earned capture result
   await page.evaluate(()=>{
     UI.closeAll();
     const [a,b]=State.S.cats;
     for(const c of [a,b]){
       c.level=12;c.affinity=85;
-      c.stats.pow=260;c.stats.agi=70;c.stats.vit=240;c.stats.cha=65;
+      c.stats.pow=1800;c.stats.agi=75;c.stats.vit=450;c.stats.cha=65;
     }
     State.S.coins=900;State.S.fish=100;
     State.S.tutorialDone=true;
@@ -235,33 +239,50 @@ try{
     State.save();window.__game.rebuildYard();window.__game.refreshHUD();
     UI.openCatHub('solo');
   });
-  await sleep(850);
+  await sleep(180);
   await page.evaluate(()=>UI.openBondPanel());
-  await sleep(700);
+  await sleep(180);
   await page.locator('#duo-preview').click();
   await page.waitForFunction(()=>document.querySelector('#cb-duo-viewer iframe')?.contentWindow?.__duoPreviewReady===true,{timeout:15000});
-  await sleep(2950);
+  await sleep(1650);
   await page.locator('.cb-duo-viewer-close').click();
   await page.evaluate(()=>{UI.closeAll();UI.openWorkshop();});
-  await sleep(1550);
+  await sleep(600);
   await page.evaluate(()=>{UI.closeAll();UI.openBuild();});
-  await sleep(1450);
+  await sleep(560);
   await page.evaluate(()=>{UI.closeAll();UI.openDex();});
-  await sleep(1700);
+  await sleep(650);
   await page.evaluate(()=>{UI.closeAll();__game.openWorldMap()});
-  await sleep(1350);
+  await sleep(480);
   await page.locator('#panel .map-destination.available').first().click({timeout:10000});
-  await sleep(2700);
-  // Show the earned duo relationship promise, then enter a genuine arena.
-  await page.evaluate(()=>UI.openBondPanel());
-  await sleep(1500);
-  await page.evaluate(()=>UI.closeAll());
+  await page.waitForFunction(()=>WorldMap.mode==='region',{timeout:9000});
   await sleep(450);
+  // GENUINE REGION EVENT: walk the explorer to the game's existing hidden
+  // "garden discovery" node; its normal proximity collision produces the
+  // actual discovery modal. Never reopen the previously watched duo movie.
+  const destination=await page.evaluate(()=>{
+    const view=WorldMap.view;
+    return WorldMap.setDestination(396-view.camX,604-view.camY);
+  });
+  if(!destination)throw Error('Failed to start genuine map exploration walk');
+  await page.waitForFunction(()=>!!document.querySelector('#panel.open #secret-close'),
+    {timeout:9000});
+  const discovered=await page.evaluate(()=>({
+    name:document.querySelector('#panel.open .yard-surprise-story h2')?.textContent||'',
+    region:WorldMap.currentRegion,scene:__game.scene
+  }));
+  if(!discovered.name||discovered.scene!=='map')
+    throw Error('Exploration did not trigger an actual in-game discovery');
+  fs.writeFileSync(path.join(media,'review-actual-map-discovery.png'),
+    await page.screenshot({type:'png'}));
+  await sleep(1050);
+  await page.locator('#secret-close').click({timeout:4000});
+  await sleep(150);
   await page.evaluate(()=>{
     const game=window.__game;game._returnScene='map';
     game.startBattle(State.S.cats.slice(0,2),{...GameData.speciesById('jinwu'),encounterLevel:2});
   });
-  await sleep(750);
+  await sleep(240);
   const duoBattle=page.locator('#duo-burst');
   if(await duoBattle.isVisible().catch(()=>false))await duoBattle.click().catch(()=>{});
   await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:55000}).catch(async error=>{
@@ -275,8 +296,9 @@ try{
     console.log('SSR BATTLE DIAGNOSTICS',JSON.stringify(diagnostics));
     throw error;
   });
-  await sleep(1900);
-  const clipDuration=Math.min(65,(Date.now()-begun)/1000+0.3);
+  await sleep(700);
+  const clipDuration=(Date.now()-begun)/1000+0.15;
+  if(clipDuration>42)throw Error('Y8 preview too slow: '+clipDuration.toFixed(1)+'s');
   if(clipDuration<15)throw Error('Diverse video under 15 seconds');
   const captureProof=await page.evaluate(()=>({rarity:GameData.speciesById('jinwu').rarity,
     captured:State.S.dex.jinwu||0,scene:window.__game.scene}));
@@ -284,7 +306,7 @@ try{
   const recordedVideo=page.video();
   await page.close();
   const rawPath=await recordedVideo.path();
-  await ctx.close();
+  await videoCtx.close();
   const trailer=path.join(media,'06-gameplay-continuous.mp4');
   const music=path.join(out,'game/audio/freepd-cc0-3.mp3');
   if(!fs.existsSync(music))throw Error('Real game music not bundled');
@@ -292,8 +314,8 @@ try{
     '-ss',String(trim),'-i',rawPath,
     '-stream_loop','-1','-i',music,
     '-t',String(clipDuration),
-    '-filter_complex','[0:v]crop=1350:760:285:150,fps=30,'+
-      'scale=1920:1080:flags=lanczos,format=yuv420p[v];'+
+    '-filter_complex','[0:v]crop=1170:658:55:31,fps=25,'+
+      'scale=1280:720:flags=lanczos,format=yuv420p[v];'+
       '[1:a]volume=0.14,afade=t=in:st=0:d=0.3,'+
       'afade=t=out:st='+Math.max(0,clipDuration-1.2).toFixed(2)+':d=1.2[a]',
     '-map','[v]','-map','[a]',
@@ -305,17 +327,17 @@ try{
     '-show_entries','stream=codec_type,width,height:format=duration',
     '-of','json',trailer],{encoding:'utf8'}));
   const dur=Number(probe.format?.duration);
-  if(dur<15||dur>90||fs.statSync(trailer).size>50_000_000)
+  if(dur<15||dur>44||fs.statSync(trailer).size>50_000_000)
     throw Error('Continuous Y8 gameplay video outside limits: '+dur);
   const v=probe.streams.find(s=>s.codec_type==='video');
-  if(v?.width!==1920||v?.height!==1080)throw Error('Bad gameplay resolution');
+  if(v?.width!==1280||v?.height!==720)throw Error('Bad gameplay resolution');
   cases.push({name:'06-gameplay-continuous.mp4',durationSeconds:dur,bytes:fs.statSync(trailer).size,
     continuous:true,source:'one chronological unedited Playwright gameplay session'});
   if(errors.length)throw Error('Runtime defects found: '+errors.slice(0,12).join('; '));
   if(cases.length!==8)throw Error('Expected eight media assets');
   fs.writeFileSync(path.join(out,'media-report.json'),JSON.stringify({
     acceptedFileSpecs:true,sourceCommit:process.env.GITHUB_SHA||'local',
-    gameplayState:state,ssrCapture:captureProof,videoSeconds:clipDuration,assets:cases,reviewNeeded:true
+    gameplayState:state,ssrCapture:captureProof,explorationDiscovery:discovered,videoSeconds:clipDuration,assets:cases,reviewNeeded:true
   },null,2)+'\n');
   console.log('Y8 REAL-GAMEPLAY CAPTURE PASS\n'+JSON.stringify(cases,null,2));
 }finally{
