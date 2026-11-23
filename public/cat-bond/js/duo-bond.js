@@ -227,10 +227,10 @@ const originalCast=P.castDuo;
 P.castDuo=function(){
  const ok=originalCast.call(this);
  if(ok&&this.duoCinematic){
-  // Real battle must show the actual two selected cat breeds. The fixed
-  // 63 painted storyboards remain intact in the gallery's original-art mode,
-  // but cannot stand in for a player-owned Jiafei (or any other breed).
-  this.duoCinematic.originalArt=false;
+  // Canonical original 21 x 3 painted storyboards are the approved battle
+  // ultimate and must remain the source of every promotional capture.
+  // Never silently switch to the older procedural/breed-actor cut-in.
+  this.duoCinematic.originalArt=true;
   this.duoCinematic.tier=this.duo?.tier||1;
   this.duoCinematic.variant=this.duoCinematic.tier>=3?'finale':
    this.duoCinematic.tier>=2?'cross':'pounce';
