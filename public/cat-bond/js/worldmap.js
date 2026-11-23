@@ -641,8 +641,10 @@
       window.arcadeMetric?.('bond_duo_map_memory',{region:world.region.id,memory:memoryId});
     }else{
       const en=window.MorrowwishI18n?.get?.()!=='zh',info=n.find;
+      const labelZh=info?info[1]:'发现宝贝';
+      const labelEn=info?info[2]:'Found a treasure';
       reward=Object.assign({},info?info[3]:{coins:12+d*8},
-        {label:info?(en?info[2]:info[1]):(en?'Found a treasure':'发现宝贝'),kind:n.kind});
+        {label:en?labelEn:labelZh,labelZh,labelEn,kind:n.kind});
     }
     window.State.save();
     if (cbCollect) cbCollect(reward);
