@@ -321,8 +321,7 @@ const nativeNum=(n,id,published)=>{
  if(!nativeStates[id]?.checkedAt||!["youtube","tiktok","instagram"].includes(id)||published===0)return "";
  if(id==='instagram'&&(n==null||!Number.isFinite(Number(n)))&&igNativePosts.length){
   const total=igNativePosts.reduce((sum,p)=>sum+p.views,0);
-  const coverage=igNativePosts.length+'/'+(nativeStates.instagram.expectedPosts||7);
-  return format(total)+' ('+coverage+' '+(lang==='zh'?'条已同步':'synced')+')';
+  return format(total);
  }
  return n==null||!Number.isFinite(Number(n))?"":format(n);
 };
