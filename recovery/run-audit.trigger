@@ -1,1 +1,1 @@
-Run D1 checkpoint lookup for the last hour before the suspected reset.
+Read-only current bookmark check after the reversible probe attempt.
