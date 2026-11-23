@@ -36,7 +36,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=last-page-rpg-cloud-save-20261123-v10','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
+ ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=last-page-rpg-cloud-save-20261123-v11','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
