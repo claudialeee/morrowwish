@@ -343,7 +343,8 @@ jobs:
             ready=0
             for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
               if curl -fsSL --max-time 15 -o /tmp/mw-studio-live.html "$origin/studio-insights/?verify=$GITHUB_SHA&attempt=$attempt" \
-                 && grep -Fq "const fallbackIds=['itch','youtube','tiktok','instagram','bluesky'];" /tmp/mw-studio-live.html \
+                 && grep -Fq "const fallbackIds=['youtube','tiktok','instagram','bluesky','itch'];" /tmp/mw-studio-live.html \
+               && grep -Fq "platforms.sort((a,b)=>(a.id==='itch')-(b.id==='itch')" /tmp/mw-studio-live.html \
                  && ! grep -Eq 'id="future-channels"|id="future-channel-list"|channelFuture:|Poki:|GamePix:|GameDistribution:' /tmp/mw-studio-live.html \
                  && ! grep -Fq 'instagram-historical' /tmp/mw-studio-live.html; then
                 ready=1; break
