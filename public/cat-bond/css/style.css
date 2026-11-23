@@ -4714,3 +4714,25 @@ html.cb-cg #stage #battle-ui #cg-battle-hud #cg-battle-charges #duo-burst{
     min-height:41px!important;
   }
 }
+
+
+/* CrazyGames compact portrait combat header, v2: do not squeeze enemy HP and
+   the three battle controls into the same 390px row. Both stack in normal flow,
+   pushing the squad and gauges below the complete header automatically. */
+@media(max-width:520px){
+  html.cb-cg #stage #battle-ui #cg-battle-hud > .battle-topbar{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    row-gap:6px!important;
+    min-height:0!important;
+  }
+  html.cb-cg #stage #battle-ui #cg-battle-hud > .battle-topbar .battle-enemy-summary{
+    grid-row:1!important;grid-column:1!important;
+    min-width:0!important;width:100%!important;
+  }
+  html.cb-cg #stage #battle-ui #cg-battle-hud > .battle-topbar .battle-tools{
+    grid-row:2!important;grid-column:1!important;
+    justify-self:end!important;
+    max-width:100%!important;
+  }
+}
