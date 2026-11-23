@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self'; img-src 'self' data:; connect-src 'self' https://www.googleapis.com; frame-src https://accounts.google.com; base-uri 'none'; form-action 'none'">
+<title>Morrow Wish · YouTube 官方上传</title>
+<link rel="stylesheet" href="./uploader.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="./uploader.js" defer></script>
+</head>
+<body>
+<main>
+<div class="eyebrow">MORROW WISH / OWNER TOOL</div>
+<h1>YouTube Shorts · 官方上传</h1>
+<p class="lead">直接使用 Google / YouTube Data API，上传最新审核页指定的七条视频。不使用 Metricool 或 vidIQ，无需本地仓库或安装软件。</p>
+<div class="card" id="setup">
+<h2>1. 一次性 Google 授权</h2>
+<p>在 Google Cloud 创建 <strong>OAuth Client ID → Web application</strong>，将下方地址添加到 <strong>Authorized JavaScript origins</strong>。只复制公开 Client ID；不要粘贴 Client Secret、API Key、密码或 OAuth Token。</p>
+<div class="origin"><span id="origin">https://morrowwish.vercel.app</span><button id="copy-origin" type="button">复制</button></div>
+<label for="client-id">Google OAuth Client ID</label>
+<input id="client-id" type="text" spellcheck="false" placeholder="123456789-xxxxx.apps.googleusercontent.com" autocomplete="off">
+<div class="button-row"><button id="connect" type="button">使用 Google 授权并核对频道</button><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">打开 Google Cloud Credentials</a></div>
+<div class="hint">只要求频道读取和视频上传权限；Token 仅留在当前网页内存中，不上传到 Morrow Wish 服务器。</div>
+</div>
+<div class="card" id="video-card">
+<h2>2. 最新视频与顺序</h2>
+<p class="hint" id="manifest-status">加载审核清单中…</p>
+<div class="table-wrap"><table><thead><tr><th>顺序</th><th>游戏</th><th>审核版</th><th>原计划（PST）</th><th>实际状态</th></tr></thead><tbody id="list"></tbody></table></div>
+</div>
+<div class="card">
+<h2>3. 上传至 YouTube</h2>
+<p id="channel-state" class="hint">等待 Google 授权后验证频道。</p>
+<label class="checkrow"><input id="confirm" type="checkbox"> 我确认将这七条 V14 审核视频上传至 @morrowwishgames。已过的计划时间立即公开，其余按计划设为定时公开。</label>
+<div class="button-row"><button id="start" type="button" disabled>开始上传 7 条 Shorts</button><button id="check" type="button" disabled>刷新已上传视频状态</button></div>
+<div class="progress"><div class="progress-bar" id="progress"></div></div>
+<p id="state" role="status" aria-live="polite">当前未上传。</p>
+<div id="results" class="results"></div>
+</div>
+<p class="footer">此页面不会自动发布。只有你点击「开始上传」才调用 YouTube 官方上传接口。请在上传完毕之前保持此标签页打开。已存在的相同活动视频将跳过；YouTube 自身可能限制上传或暂时保留处理状态。</p>
+</main>
+</body></html>
