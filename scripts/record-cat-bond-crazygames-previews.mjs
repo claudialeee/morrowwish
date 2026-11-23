@@ -82,7 +82,7 @@ try {
         originalArt:fight?.duoCinematic?.originalArt,
         tutorialVisible:!!window.__game?.battleHelpOpen};
     });
-    if(filmed.uses<1||filmed.tutorialVisible||filmed.originalArt!==false)
+    if(filmed.uses<1||filmed.tutorialVisible||filmed.originalArt!==true)
       throw Error('Duo action was not visibly filmed: '+JSON.stringify(filmed));
     await sleep(18000);
     if(errors.length)throw Error('Gameplay capture errors: '+errors.join('; '));
