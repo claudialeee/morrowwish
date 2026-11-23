@@ -231,7 +231,7 @@ function persistIntroSeen(){
 }
 function startPrologue(done){
  showSequence('prologue',PROLOGUE,()=>{
-  persistIntroSeen();save();done?.();
+  persistIntroSeen();done?.();
  },{canSkip:true});
 }
 function onRegionEntered(id){
@@ -267,7 +267,7 @@ function onRegionDiscovery(regionId,reward){
 function updateTracker(){
  const host=document.getElementById('cb-story-tracker');
  const game=window.__game,s=storyState();
- if(!host||!s||!game)return;
+ if(!host||!s||!game||!window.__CAT_BOND_STARTED__)return;
  const visible=game.scene==='map';
  host.classList.toggle('is-visible',visible);
  const count=Math.min(6,s.fragments.length);
@@ -392,7 +392,7 @@ function createTracker(){
  el.innerHTML='<span class="cb-story-tracker-top"><strong class="cb-story-tracker-title"></strong><b class="cb-story-tracker-count"></b></span><span class="cb-story-tracker-next"></span>';
  el.addEventListener('click',openJournal);stage.append(el);
 }
-function openCloudPanel(){
+function renderCloudPanel(){
  document.querySelector('.cb-cloud-overlay')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
  overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
@@ -544,7 +544,7 @@ async function syncNow(force=false){
   const expected=Number(localStorage.getItem(REV_KEY)||0);
   const response=await fetch('/api/cat-bond-cloud-save',{
    method:'PUT',headers:{'content-type':'application/json',Authorization:'Bearer '+token},
-   body:JSON.stringify({...encrypted,expectedRevision:expected}),cache:'no-store',keepalive:!!force
+   body:JSON.stringify({...encrypted,expectedRevision:expected}),cache:'no-store'
   });
   const data=await response.json().catch(()=>({}));
   if(response.status===409){setSyncStatus(t('云端版本已变化，需要手动选择同步方向。','Cloud version changed; choose a sync direction manually.'));return {ok:false,conflict:true,revision:data.revision};}
@@ -577,7 +577,7 @@ async function copyText(value){
 function openCloudPanel(){openCloudPanelImpl();}
 function openCloudPanelImpl(){
  if(!window.crypto?.subtle){alert(t('当前浏览器不支持加密云存档。','This browser does not support encrypted cloud saves.'));return;}
- openCloudPanel();
+ renderCloudPanel();
 }
 // Patch the existing menu, rather than adding another floating HUD button.
 if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
@@ -631,12 +631,11 @@ function installIntro(){
    game.__cbStoryUpdate=true;
   }
  }
- updateTracker();
 }
 window.addEventListener('DOMContentLoaded',installIntro,{once:true});
 window.addEventListener('morrowwish-language-change',updateTracker);
 window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(true);});
-window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(true);});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(true);});
 window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
  onBossVictory,playEnding,updateTracker
