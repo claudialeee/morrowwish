@@ -1351,7 +1351,7 @@ class Game {
         const label=document.createElement('strong');
         label.textContent=info.icon+' '+info.name+' ('+info.key+')';
         const desc=document.createElement('p');desc.textContent=info.desc;
-        row.append(label,desc);details.appendChild(row);
+        row.appendChild(label);row.appendChild(desc);details.appendChild(row);
       }
       host.appendChild(details);
     }
