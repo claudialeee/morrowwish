@@ -100,7 +100,8 @@ async function main(){
       await page.waitForFunction(old=>window.__PARCEL_AD_STATE__().delivered===old+1,
         oldDelivered,{timeout:2500,polling:40});
       const after=await state();
-      assert(after.life===before.life,'Unexpected missed parcel during real delivery: '+JSON.stringify({before,live,after}));
+      const expectedLife=after.delivered%8===0?Math.min(4,before.life+1):before.life;
+      assert(after.life===expectedLife,'Unexpected life change during real delivery: '+JSON.stringify({before,live,after,expectedLife}));
       if(closeCall)proof.closeCall={color,y:live.boxes[0].y,delivered:after.delivered};
       return after;
     }
