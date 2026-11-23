@@ -207,7 +207,8 @@ if(!duoPromoCapture.includes('b.autoMode=false;b.duoCharge=0;b.duoCd=999')||
 
 const unlockedPreview=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
 if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!important}')||
-   !unlockedPreview.includes('height:min(75dvh')||
+   !unlockedPreview.includes('aspect-ratio:16/9!important')||
+   !unlockedPreview.includes('max-height:40dvh')||
    !unlockedPreview.includes("hideCaptions:q.get('embedded')==='1'")||
    !/duo-premium\.js\?v=[\w-]+/.test(unlockedPreview))
  throw Error('Unlocked duo modal must show uncropped artwork without duplicate titles');
