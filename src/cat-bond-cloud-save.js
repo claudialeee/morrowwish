@@ -37,7 +37,7 @@ export async function catBondCloudSave(request,env){
       ).bind(keyHash).first();
       return row
         ?cloudJson({exists:true,iv:row.iv,ciphertext:row.ciphertext,revision:row.revision,updatedAt:row.updated_at})
-        :json({exists:false,revision:0});
+        :cloudJson({exists:false,revision:0});
     }
 
     const declared=Number(request.headers.get("content-length")||0);
