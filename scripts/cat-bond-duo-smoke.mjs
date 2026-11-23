@@ -1,7 +1,9 @@
 // Real browser regression for duo personalities, kinetic claw art and
 // four-step pre-battle manual controls on both phone and desktop.
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {chromium} from 'playwright';
+fs.mkdirSync('artifacts/cat-bond-21x3',{recursive:true});
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const browser=await chromium.launch({headless:true});
 const errors=[];
@@ -169,7 +171,7 @@ try{
   });
   assert.equal(sigAudit.count,21,'all elemental combinations need unique choreography');
   assert.equal(sigAudit.unique,21,'motifs should not be mere palette swaps');
-  await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-duo.png'});
+  await page.screenshot({path:'artifacts/cat-bond-21x3/'+profile.name+'-duo-battle.png'});
   // Privately test all 21 dynamic move rigs. This is a QA-only canvas,
   // not a public list of unearned duo moves.
   const visual=await page.evaluate(()=>{
@@ -223,7 +225,7 @@ try{
   assert.equal(await page.locator('#signature-grid').count(),0,
     'no public 21-move overview, even after unlocking one move');
   assert.equal(await page.locator('#locked').isVisible(),false);
-  await page.locator('.viewer').screenshot({path:'/tmp/cat-bond-'+profile.name+'-preview-stage.png'});
+  await page.locator('.viewer').screenshot({path:'artifacts/cat-bond-21x3/'+profile.name+'-unlocked-duo-preview.png'});
   const stranger=await browser.newContext();
   const locked=await stranger.newPage();
   await locked.goto(origin+'/cat-bond/duo-preview.html?a='+
