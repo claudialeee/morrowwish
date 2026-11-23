@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cat Bond · Bond Shift Challenger Prototype</title>
+<style>
+:root{color-scheme:light;font-family:"Trebuchet MS","PingFang SC","Microsoft YaHei",sans-serif;background:#192c2b;color:#2b423e}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:flex;justify-content:center;align-items:center;background:radial-gradient(circle at 50% -10%,#486d60,#182a2b 70%);padding:10px}
+.shell{width:min(1160px,100%);background:#fcf8ef;border-radius:22px;overflow:hidden;box-shadow:0 20px 80px #0412118a;border:2px solid #d6c5a8}
+header{padding:12px 18px 8px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fcf8ef}
+.brand{font-size:19px;font-weight:900;letter-spacing:.03em}.brand small{display:block;font-size:10px;letter-spacing:.15em;font-weight:700;color:#777d6e}
+.prototype{font-size:11px;font-weight:800;color:#806f58;border:1px solid #cbbba2;border-radius:99px;padding:7px 10px}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:0 14px 10px}
+.stat{background:#e9ede1;border:1px solid #d1d9c7;border-radius:11px;padding:7px 10px;min-width:0}
+.stat .label{display:block;font-size:10px;color:#667a72;font-weight:bold}.stat strong{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arena-wrap{position:relative;background:#e8ead5;overflow:hidden}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;touch-action:none}
+#notice{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:max-content;max-width:92%;padding:10px 15px;text-align:center;border-radius:11px;color:#233f37;background:#fffff1e8;border:1px solid #c1cfb8;box-shadow:0 3px 20px #192c2b24;font-weight:850;font-size:13px;pointer-events:none;transition:opacity .2s}
+#notice:empty{opacity:0}
+#modal{position:absolute;inset:0;display:grid;place-items:center;background:#122b30a8;padding:18px}
+#modal[hidden]{display:none}
+.panel{max-width:510px;background:#fffaf1;color:#283e37;border:2px solid #d0bd95;padding:26px;border-radius:19px;text-align:center;box-shadow:0 18px 60px #13202388}
+.panel .eyebrow{text-transform:uppercase;letter-spacing:.15em;color:#648f86;font-size:11px;font-weight:850}
+.panel h1{font-size:29px;margin:10px 0 9px;line-height:1.2}
+.panel p{line-height:1.7;font-size:15px;margin:10px 0 20px}
+button{font:inherit;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.primary{background:#297d72;color:white;border:0;padding:12px 22px;border-radius:12px;font-weight:850;box-shadow:0 5px 0 #185c55}
+.primary:focus-visible,.key:focus-visible{outline:3px solid #e6b961;outline-offset:2px}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px 14px;background:#fcf8ef}
+#goal{font-size:12px;font-weight:800;max-width:72%;line-height:1.45}
+#status{font-size:11px;color:#6f807a;text-align:right}
+#mobile{display:none;position:absolute;inset:auto 8px 8px;pointer-events:none;justify-content:space-between;align-items:end}
+#joystick{pointer-events:auto;width:108px;height:108px;background:#fffdf7a6;border:2px solid #537e7b88;border-radius:100%;position:relative;touch-action:none}
+#stick{width:43px;height:43px;border-radius:100%;background:#5a918ac9;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.actions{pointer-events:auto;display:grid;grid-template-columns:repeat(3,52px);gap:7px;align-items:end}
+.key{background:#fbf8eddf;color:#2b554e;border:2px solid #5c948c;border-radius:12px;height:46px;font-size:11px;font-weight:850;touch-action:none;box-shadow:0 3px 5px #20382b33}
+.key.attack{height:61px;border-radius:20px;background:#f9d7a2;border-color:#d09355}
+kbd{display:inline-block;padding:2px 5px;background:#e3eadd;border-radius:5px;border:1px solid #c4cfc4}
+@media(pointer:coarse),(max-width:650px){body{padding:0;align-items:start}.shell{border-radius:0;border:0;min-height:100dvh}.hud{grid-template-columns:repeat(2,1fr);gap:4px;padding:0 8px 7px}.stat{padding:5px 8px}.stat strong{font-size:13px}header{padding:10px}.brand{font-size:16px}#mobile{display:flex}#notice{font-size:11px;top:7px;padding:7px 10px}.footer{padding:8px 10px 13px}#goal{max-width:100%}#status{display:none}.panel{padding:18px}.panel h1{font-size:23px}.panel p{font-size:13px}}
+@media(max-width:460px){.actions{grid-template-columns:repeat(3,43px);gap:4px}.key{height:39px;font-size:10px}.key.attack{height:55px}#joystick{width:94px;height:94px}.arena-wrap{min-height:200px}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header><div class="brand">CAT BOND <small>EVERY BOND CHANGES WHO YOU BECOME</small></div><span class="prototype">CHALLENGER · V1</span></header>
+<section class="hud" aria-label="游戏状态">
+<div class="stat"><span class="label">主角 · HP</span><strong id="hp">100 / 100</strong></div>
+<div class="stat"><span class="label">当前形态</span><strong id="form">疾风猎手</strong></div>
+<div class="stat"><span class="label">小雾 · 信任</span><strong id="bond">初识 · 0</strong></div>
+<div class="stat"><span class="label">章节</span><strong id="chapter">相遇</strong></div>
+</section>
+<div class="arena-wrap">
+<canvas id="arena" width="960" height="540" tabindex="0" aria-label="Cat Bond 羁绊变身战斗试玩"></canvas>
+<div id="notice" role="status"></div>
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="panel">
+    <div class="eyebrow" id="modal-eyebrow">Gameplay prototype · not a release build</div>
+    <h1 id="modal-title">羁绊会改变你</h1>
+    <p id="modal-body">控制一只主角猫，在战斗中保护小雾。共同冒险、分别与重逢将改变你的战斗形态。<br>这是独立实验，不使用也不修改任何正式游戏存档。</p>
+    <button class="primary" id="modal-btn" type="button">开始试玩</button>
+  </div>
+</div>
+<div id="mobile" aria-label="触屏操作">
+<div id="joystick" aria-label="移动摇杆"><div id="stick"></div></div>
+<div class="actions">
+<button class="key" data-act="form" aria-label="切换形态">形态</button>
+<button class="key" data-act="guard" aria-label="保护伙伴">保护</button>
+<button class="key" data-act="dash" aria-label="闪避">闪避</button>
+<button class="key" data-act="skill" aria-label="特殊技能">技能</button>
+<button class="key attack" data-act="attack" aria-label="持续攻击">攻击</button>
+<button class="key" data-act="pause" aria-label="暂停">暂停</button>
+</div></div>
+</div>
+<div class="footer">
+<div id="goal">保护小雾，建立真正的羁绊</div>
+<div id="status"><kbd>WASD</kbd> 移动 · <kbd>J</kbd>/鼠标 攻击 · <kbd>Q</kbd> 技能 · <kbd>E</kbd> 保护 · <kbd>空格</kbd> 闪避 · <kbd>1</kbd>/<kbd>2</kbd> 形态 · <kbd>P</kbd> 暂停</div>
+</div>
+</main>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
