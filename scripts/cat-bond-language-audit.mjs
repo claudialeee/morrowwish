@@ -80,7 +80,10 @@ try{
               'map-squad':()=>UI.openMapSquad(),
               'yard-menu':()=>UI.openExploreMenu(),
               'journey':()=>UI.openJourney(),
-              'capture-prep':()=>UI.openCapturePrep(GameData.SPECIES[0]),
+              'capture-prep':()=>{
+                State.S.catchCount=1; // Expose editable squad controls, not the first-time tutorial shortcut.
+                UI.openCapturePrep(GameData.SPECIES[0]);
+              },
               'gambit-editor':()=>{
                 UI.teamUids=State.S.cats.map(c=>c.uid);
                 UI.openGambitEditor(GameData.SPECIES[0]);
@@ -216,10 +219,45 @@ try{
           }else{
             const norm=t=>String(t||'').replace(/\\s+/g,' ').trim()
               .replace(/\\b\\d+\\s*(?:s|秒)\\b/g,'<time>');
+            // Exercise real unsaved battle setup choices BEFORE changing
+            // language. A locale refresh may never reset the chosen squad or
+            // auto/manual mode; the prior QA did not verify any form state.
+            if(key==='map-squad'||key==='capture-prep'){
+              await page.evaluate(key=>{
+                const chosen=key==='map-squad'
+                  ?document.querySelector('#panel .map-squad-choice[aria-pressed="true"]')
+                  :document.querySelector('#panel #cp-roster .chip[aria-pressed="true"]');
+                chosen?.click();
+                document.querySelector('#panel .capture-mode-option[data-battle-auto="false"]')?.click();
+              },key);
+              await page.waitForTimeout(75);
+            }
+            const savedChoices=await page.evaluate(()=>({
+              team:document.querySelector('#cp-roster')
+                ?[...(UI.teamUids||[])]
+                :document.querySelector('.map-squad-roster')
+                  ?[...(UI._localeLiveTeamSelection||[])]:null,
+              mode:document.querySelector('.capture-mode-option[data-battle-auto][aria-checked="true"]')
+                ?.dataset.battleAuto||null,
+              coins:State.S.coins,fish:State.S.fish,cats:State.S.cats.length
+            }));
             const beforeEnglish=norm(await page.locator('#panel .card').innerText());
             await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
             await page.waitForTimeout(180);
             const switchedZh=norm(await page.locator('#panel .card').innerText());
+            const postChoices=await page.evaluate(()=>({
+              team:document.querySelector('#cp-roster')
+                ?[...(UI.teamUids||[])]
+                :document.querySelector('.map-squad-roster')
+                  ?[...(UI._localeLiveTeamSelection||[])]:null,
+              mode:document.querySelector('.capture-mode-option[data-battle-auto][aria-checked="true"]')
+                ?.dataset.battleAuto||null,
+              coins:State.S.coins,fish:State.S.fish,cats:State.S.cats.length
+            }));
+            if(JSON.stringify(savedChoices)!==JSON.stringify(postChoices))
+              failures.push(profile.host+' '+profile.width+' '+key+
+                ' language toggle changed gameplay selections or resources: '+
+                JSON.stringify({before:savedChoices,after:postChoices}));
             const ref=await page.evaluate(()=>{
               const route=UI._localePanelRoute;
               if(!route)return {found:false};
