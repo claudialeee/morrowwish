@@ -41,6 +41,8 @@ async function enterGame(page){
   });
   await page.goto(base+'/?lang=en',{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true,{timeout:45000});
+  // Latest website preserves Start Adventure on all portals; start it explicitly.
+  if(await page.locator('#intro-start').isVisible())await page.locator('#intro-start').click();
   const starter=page.locator('#panel.open .dex-cell').first();
   await starter.waitFor({state:'visible',timeout:30000});
   await starter.click({timeout:20000});
@@ -182,6 +184,8 @@ try{
   // unlocked states use a documented demo save, not fake screenshots or edits.
   await page.evaluate(()=>localStorage.removeItem('catbond_save_v1'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+  await page.waitForFunction(()=>window.__CAT_BOND_READY__===true,{timeout:45000});
+  if(await page.locator('#intro-start').isVisible())await page.locator('#intro-start').click();
   await page.locator('#panel.open .dex-cell').first().waitFor({state:'visible',timeout:35000});
   const trim=Math.max(0,(Date.now()-wall)/1000+.15);
   const begun=Date.now();
