@@ -71,6 +71,20 @@ try{
       assert.ok(menuLayout?.directParent,
         'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
       assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
+      // The unified settings row must NEVER live inside a HUD hidden on the map
+      // or during battle. This caught missing top-right controls in portal QA.
+      await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+      await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
+      assert.equal(await page.locator('#cg-top-tools #mw-game-settings button').count(),4,
+        'CrazyGames top-right language/music/sound/share controls must survive scene changes');
+      const topTools=await page.evaluate(()=>{
+        const top=document.getElementById('cg-top-tools').getBoundingClientRect();
+        const button=document.getElementById('map-menu').getBoundingClientRect();
+        const hit=document.elementFromPoint(button.left+button.width/2,button.top+button.height/2);
+        return {right:top.right,bottom:top.bottom,menuClickable:document.getElementById('map-menu').contains(hit)};
+      });
+      assert.ok(topTools.right<=width+2&&topTools.bottom<80&&topTools.menuClickable,
+        'CrazyGames upper-right game Menu is missing or blocked: '+JSON.stringify(topTools));
       assert.ok(menuLayout.dock.bottom<=height+2&&menuLayout.dock.bottom>=height-25,
         'Yard controls must sit at bottom of iframe: '+JSON.stringify(menuLayout));
       for(const item of menuLayout.visible){
@@ -132,6 +146,54 @@ try{
         'Detached skill reference panel obstructs CrazyGames battle');
       const tutorial=page.locator('#battle-tutorial-skip');
       if(await tutorial.isVisible().catch(()=>false))await tutorial.click();
+      const battleHUD=await page.evaluate(()=>{
+        const rect=s=>{const el=document.querySelector(s);if(!el)return null;
+          const css=getComputedStyle(el),r=el.getBoundingClientRect();
+          if(css.display==='none'||el.hidden)return null;
+          return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,
+            scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,
+            scrollHeight:el.scrollHeight,clientHeight:el.clientHeight};
+        };
+        return {
+          stack:rect('#cg-battle-hud'),
+          header:rect('#cg-battle-hud > .battle-topbar'),
+          enemy:rect('#cg-battle-hud .battle-enemy-summary'),
+          health:rect('#cg-battle-hud .battle-enemy-track'),
+          poise:rect('#cg-battle-hud .battle-poise-track'),
+          squad:rect('#cg-battle-hud #battle-squad-rail'),
+          team:rect('#cg-battle-hud #team-slots'),
+          bench:rect('#cg-battle-hud #bench-slots'),
+          charges:rect('#cg-battle-hud #cg-battle-charges'),
+          ultimate:rect('#cg-battle-hud #ult-wrap'),
+          duo:rect('#cg-battle-hud #duo-burst'),
+          tools:rect('#cg-top-tools #mw-game-settings'),
+          portalMenu:rect('#cg-top-tools #map-menu')
+        };
+      });
+      const B=battleHUD;
+      const noOverlap=(a,b,pad=2)=>!a||!b||
+        a.bottom+pad<=b.top||b.bottom+pad<=a.top||
+        a.right+pad<=b.left||b.right+pad<=a.left;
+      assert.ok(B.stack&&B.header&&B.enemy&&B.health&&B.poise&&B.squad&&B.team&&
+        B.charges&&B.ultimate&&B.tools,
+        'Missing combat HUD sections in CrazyGames: '+JSON.stringify(B));
+      assert.ok(B.header.bottom+2<=B.squad.top&&B.header.bottom+2<=B.ultimate.top,
+        'Enemy name/health/poise overlaps player cats or ultimate charge: '+JSON.stringify(B));
+      assert.ok(B.squad.right+2<=B.charges.left,
+        'Active/reserve cats intersect right-side charge gauges: '+JSON.stringify(B));
+      assert.ok(!B.duo||B.ultimate.bottom+2<=B.duo.top,
+        'Ultimate charge overlaps duo burst: '+JSON.stringify(B));
+      assert.ok(B.enemy.left<=B.health.left+2&&B.health.right<=B.enemy.right+2&&
+        B.enemy.left<=B.poise.left+60&&B.poise.right<=B.enemy.right+2,
+        'Enemy HP or stagger meter spills outside its header: '+JSON.stringify(B));
+      assert.ok(B.header.top>=B.tools.bottom+3,
+        'Combat status overlaps upper-right settings: '+JSON.stringify(B));
+      assert.equal(B.portalMenu,null,'Explore Menu must hide during active combat');
+      if([907,1366,390].includes(width)){
+        const dir='.check/crazygames-yard-dock';
+        fs.mkdirSync(dir,{recursive:true});
+        await page.screenshot({path:dir+'/'+width+'x'+height+'-battle.png'});
+      }
       // Full genuine first combat on the primary desktop iframe: do not fake
       // enemies' HP, call b.finish() or execute internal endBattle() helpers.
       if(width===907){
@@ -141,6 +203,19 @@ try{
         await page.locator('#cr-next').click();
         assert.equal(await page.evaluate(()=>State.S.battlePrefs.teamUids.length>=2),true,
           'Second combat must actually use the unlocked duo');
+        // Actually enter the exploration scene after real combat; its Menu
+        // and global settings must remain visible/clickable without site chrome.
+        const mapButton=page.locator('#fab-map');
+        await mapButton.waitFor({state:'visible',timeout:12000});
+        await mapButton.click();
+        await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
+        const mapPanel=page.locator('#panel.open');
+        if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
+        await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
+        await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+        await page.locator('#cg-top-tools #map-menu').click();
+        await page.locator('#panel.open .explore-menu').waitFor({state:'visible',timeout:10000});
+        await page.locator('#panel.open .panel-dismiss').click();
       }
       assert.deepEqual(errors,[],'Uncaught runtime errors: '+errors.join(' | '));
       console.log('CAT BOND REAL INPUT PASS',width+'x'+height,
