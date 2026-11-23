@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T23:17:22.434Z",
+  "generatedAt": "2026-11-23T23:22:03.600Z",
   "targetRangeStart": "2026-11-22T00:00:00-08:00",
   "database": {
     "name": "morrowwish-analytics",
@@ -8,7 +8,7 @@
     "created_at": "2026-11-19T08:12:57.602Z",
     "file_size": 352256
   },
-  "currentBookmark": "00000294-00000000-0000512c-073cbd412fbb51632acc2c076aa34de8",
+  "currentBookmark": "0000029b-00000000-0000512c-b9a5fc62ae2324e4832ac9adde678006",
   "historicalBookmarks": [
     {
       "timestamp": "2026-11-22T08:00:00.000Z",

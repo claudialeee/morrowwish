@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-23T23:17:22.473Z",
-  "targetTimestamp": "2026-11-23T00:15:00.000Z",
+  "generatedAt": "2026-11-23T23:22:03.655Z",
+  "targetTimestamp": "2026-11-23T00:30:00.000Z",
   "backup": {
-    "atBookmark": "00000294-00000000-0000512c-073cbd412fbb51632acc2c076aa34de8",
+    "atBookmark": "0000029b-00000000-0000512c-b9a5fc62ae2324e4832ac9adde678006",
     "bytes": 317113,
     "sha256": "aa7a9a907cd8ea436c0fce1f1673d936279ca3d2dbca431c49b230a1da75f118",
     "keptOnlyOnEphemeralRunner": true
@@ -211,28 +211,28 @@
       "category": "arcade",
       "game": "hub",
       "kind": "session",
-      "rows": 2,
+      "rows": 3,
       "first_id": 14432,
-      "last_id": 14433,
+      "last_id": 14510,
       "first_ts": 1795392038420,
-      "last_ts": 1795392038554
+      "last_ts": 1795393083381
     },
     {
       "day": "2026-11-23",
       "category": "arcade",
       "game": "hub",
       "kind": "visit",
-      "rows": 1,
+      "rows": 2,
       "first_id": 14431,
-      "last_id": 14431,
+      "last_id": 14509,
       "first_ts": 1795392037291,
-      "last_ts": 1795392037291
+      "last_ts": 1795393079617
     }
   ],
-  "historicalTotalRows": 817,
+  "historicalTotalRows": 819,
   "currentRowsBefore": 419,
   "currentRowsAfter": 419,
-  "rollbackBookmark": "00000294-ffffffff-0000512c-ac0813548bda19f1c409481c1a5e866a",
+  "rollbackBookmark": "0000029b-ffffffff-0000512c-ebb6696e1d9c211c65a3714341c1319e",
   "currentStateRestored": true,
   "error": null,
   "rollbackError": null,
@@ -242,6 +242,6 @@
     "version": "production",
     "fileSize": 352256
   },
-  "targetBookmark": "000001fa-00000036-0000512c-9d3e8606af8e33297272f8c2271487ab",
-  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001fa-00000036-0000512c-9d3e8606af8e33297272f8c2271487ab"
+  "targetBookmark": "000001fe-0000002f-0000512c-4f81c1e31e73f83a5b4b1902c8243f9f",
+  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001fe-0000002f-0000512c-4f81c1e31e73f83a5b4b1902c8243f9f"
 }
