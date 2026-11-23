@@ -159,3 +159,52 @@ Notes:
 4. Re-run role table (verify exactly 11 changed); per-(element,role) legal-loadout audit.
 5. Update any test that pins old roles; `npm run check` green.
 6. Two-round challenger review (balance + content-gap). THEN land locally, no push without owner.
+
+---
+
+# ROLE-REBALANCE v2 — grass / water / light identity pass (owner-approved 2026-11-22, NOT yet implemented)
+
+Status: DESIGN only. To implement AFTER the element-axes WIP + band-builder WIP land & review (they
+hold battle.js/skills.js). Must pass two-round challenger + the same (element×role) legal-skill
+audit + auto-equip-no-denied check as v1. Verify exactly the intended cats move, nothing collateral.
+
+## grass → lean FIGHTER + CONTROL (owner: "草应该是 fighter control 多")
+Grass fantasy = 缠斗 bruiser + 束缚控场 (bind/bleed). Current grass: tank 奶酥 / fighter 松松,枫枫 /
+assassin 豆豆 / control 圈圈 / support 布丁. Target: weight toward fighter + control.
+- Keep: 松松 fighter, 枫枫 fighter, 圈圈 control (v1), 豆豆 assassin (owner kept), 布丁 support.
+- 奶酥 (nietu 5/5/7/6, grass tank): candidate to shift — but 奶酥 is one of only 4 tanks. DECISION:
+  keep 奶酥 tank (grass still needs its one frontline wall; grass is already fighter-heavy). The
+  "fighter+control 多" goal is met by 松松+枫枫(fighter) + 圈圈(control); optionally add a 2nd control
+  if a grass cat fits (none obvious by stats — revisit only if a new grass breed is added).
+  → Net grass: tank1 / fighter2 / assassin1 / control1 / support1 — fighter is the plurality. OK.
+
+## water → more BALANCED stats + WATER/ICE can FREEZE (owner: "水应该平均一点，水+寒冰还能冰冻")
+Water identity (locked): carrier + control; it wets the field for elec AND can freeze (chill) as its
+own soft-control. Current water: tank 团团 / fighter 蓝莓 / dps 小雾 / control 奶糖 / support 雪袜.
+- STATS: make water breeds less tank-skewed / more even. 团团 (6/7/8/8) stays the water tank; 蓝莓
+  (7/7/9/7 v1) fighter. Avoid pushing more water cats to extreme-vit; prefer balanced spreads so the
+  element reads as "jack-of-trades controller," not a wall class. (No specific stat edits locked yet —
+  flag any water breed with a lopsided spread during implementation and even it out.)
+- FREEZE: water/ice skills already apply chill (frostClaw, frostLance). Reinforce the "water+ice →
+  freeze" identity: ensure water CONTROL cats (奶糖) and the ice skills lean on chill as a soft-CC,
+  consistent with chill being water's control axis (chill|fire 冰火爆裂, chill|light 折射冰华 already
+  detonate it). No new mechanic needed — this is a loadout/identity emphasis, confirm chill is
+  reachable on water control/carrier builds under the skill gate.
+
+## light → SUPPORT + CONTROL + exactly ONE FIGHTER (owner: "光 就 支援 控制和一个fighter")
+Light fantasy = 支援(heal/shield/buff) + 致盲控制(blind) + 对暗轴线的收割(圣光制裁/曝击). Problem:
+current light = support×5 / control×1(樱桃) / dps×1(月月) — zero frontline, too support-heavy.
+- ADD one fighter: **花花 (sanhua) → fighter** via BREED_ROLES. 7/7/7/9 is the most balanced light cat
+  (pow7 supports a bruiser; not vit/cha-locked like 绒绒). 招福三花 as a scrappy frontline reads fine.
+  绒绒 (vit11 波斯) stays support (cha14 = healer identity).
+- Keep: 樱桃 control, 月月 dps, 雪团/云朵/金豆/绒绒 support.
+  → Net light: fighter1 / control1 / dps1 / support4. Has a frontline now; still support-flavored. OK.
+- (Optional later: a 2nd light control to widen the control axis — defer, no obvious stat fit.)
+
+## Implementation notes (v2)
+- 花花→fighter = BREED_ROLES add `sanhua:'fighter'`. Water/grass changes are mostly "keep v1 + maybe
+  even out a lopsided water stat spread" — minimal BREED_ROLES churn.
+- Re-run: full role table (only intended cats move), (element×role) ≥4 legal skills, ensureLoadout
+  0 denied / 0 attackless. Update the roster assertions in check-cat-bond.mjs.
+- Grass fighter-plurality + light gaining a fighter both pull from the "too many support / too many
+  of one role" imbalance v1 started fixing. Final global spread shifts slightly; recompute and record.

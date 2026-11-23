@@ -1,0 +1,228 @@
+{
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "note": "PROPOSED AI params — NOT auto-applied to battle.js. A human/integrator reads this.",
+  "searchSeed": 20260101,
+  "iters": 18,
+  "frames": 800,
+  "trainSeeds": [
+    7,
+    42,
+    101
+  ],
+  "heldoutSeeds": [
+    13,
+    202,
+    999
+  ],
+  "rewardModel": "baseline-weighted-sum",
+  "defaultWeights": {
+    "win": 0.3,
+    "survival": 0.25,
+    "output": 0.2,
+    "positioning": 0.12,
+    "speed": 0.08,
+    "efficiency": 0.05
+  },
+  "paramSpace": [
+    {
+      "name": "min",
+      "lo": 20,
+      "hi": 260
+    },
+    {
+      "name": "max",
+      "lo": 35,
+      "hi": 360
+    },
+    {
+      "name": "dodge",
+      "lo": 0,
+      "hi": 1
+    }
+  ],
+  "cells": {
+    "fighter/melee": {
+      "config": {
+        "cat": {
+          "build": "fighter",
+          "stats": {
+            "pow": 90,
+            "agi": 80,
+            "vit": 130,
+            "cha": 60
+          },
+          "loadout": {
+            "q": {
+              "kind": "melee",
+              "power": 1.4,
+              "cd": 1.1
+            },
+            "e": {
+              "kind": "projectile",
+              "power": 1.1,
+              "cd": 1
+            }
+          }
+        },
+        "enemy": {
+          "species": "doudou",
+          "hp": 900,
+          "dmg": 60
+        }
+      },
+      "proposedParams": {
+        "min": 36,
+        "max": 208,
+        "dodge": 0.31
+      },
+      "defaultBand": {
+        "min": 90,
+        "max": 220,
+        "dodge": 0.25
+      },
+      "scores": {
+        "engineNativeDefault": {
+          "train": 0.5430435625217848,
+          "held": 0.5350017860976487
+        },
+        "defaultBand": {
+          "train": 0.55684,
+          "held": 0.55767
+        },
+        "optimizedBand": {
+          "train": 0.56135,
+          "held": 0.55743
+        }
+      },
+      "trainGain": 0.00451,
+      "heldoutGain": -0.00025,
+      "generalizes": false,
+      "verdict": "OVERFIT (held-out gain ~0 or negative — NOT a real win)",
+      "searchEvals": 19
+    },
+    "assassin/melee": {
+      "config": {
+        "cat": {
+          "build": "assassin",
+          "stats": {
+            "pow": 105,
+            "agi": 110,
+            "vit": 95,
+            "cha": 55
+          },
+          "loadout": {
+            "q": {
+              "kind": "melee",
+              "power": 1.6,
+              "cd": 0.9
+            },
+            "e": {
+              "kind": "dash",
+              "power": 0.8,
+              "cd": 2
+            }
+          }
+        },
+        "enemy": {
+          "species": "doudou",
+          "hp": 900,
+          "dmg": 60
+        }
+      },
+      "proposedParams": {
+        "min": 78,
+        "max": 199,
+        "dodge": 0.58
+      },
+      "defaultBand": {
+        "min": 90,
+        "max": 220,
+        "dodge": 0.25
+      },
+      "scores": {
+        "engineNativeDefault": {
+          "train": 0.5339736778950502,
+          "held": 0.5417670189388955
+        },
+        "defaultBand": {
+          "train": 0.55692,
+          "held": 0.54724
+        },
+        "optimizedBand": {
+          "train": 0.58288,
+          "held": 0.55106
+        }
+      },
+      "trainGain": 0.02596,
+      "heldoutGain": 0.00381,
+      "generalizes": false,
+      "verdict": "WEAK (held-out gain << training gain — treat with caution)",
+      "searchEvals": 19
+    },
+    "dps/projectile": {
+      "config": {
+        "cat": {
+          "build": "dps",
+          "stats": {
+            "pow": 100,
+            "agi": 85,
+            "vit": 100,
+            "cha": 60
+          },
+          "loadout": {
+            "q": {
+              "kind": "projectile",
+              "power": 1.3,
+              "cd": 0.8
+            },
+            "e": {
+              "kind": "projectile",
+              "power": 1.2,
+              "cd": 1.4
+            }
+          }
+        },
+        "enemy": {
+          "species": "doudou",
+          "hp": 900,
+          "dmg": 60
+        }
+      },
+      "proposedParams": {
+        "min": 55,
+        "max": 360,
+        "dodge": 0.41
+      },
+      "defaultBand": {
+        "min": 90,
+        "max": 220,
+        "dodge": 0.25
+      },
+      "scores": {
+        "engineNativeDefault": {
+          "train": 0.5584378119002122,
+          "held": 0.6172825268611022
+        },
+        "defaultBand": {
+          "train": 0.6481,
+          "held": 0.65172
+        },
+        "optimizedBand": {
+          "train": 0.65975,
+          "held": 0.64983
+        }
+      },
+      "trainGain": 0.01164,
+      "heldoutGain": -0.0019,
+      "generalizes": false,
+      "verdict": "OVERFIT (held-out gain ~0 or negative — NOT a real win)",
+      "searchEvals": 19
+    }
+  },
+  "summary": {
+    "cellsImprovedHeldOut": 1,
+    "cellsGeneralized": 0,
+    "cellsTotal": 3,
+    "honest": "No cell generalized to held-out seeds → the engine-native/default band is hard to beat with a constant band here; reported as such (no fake win)."
+  }
+}
