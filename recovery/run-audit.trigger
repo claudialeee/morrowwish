@@ -1,1 +1,1 @@
-Run the enabled, reversible D1 historical snapshot probe and verify restoration.
+Probe the noon-Pacific Nov 22 snapshot to locate the earliest metrics reset.
