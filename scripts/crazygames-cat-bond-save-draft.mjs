@@ -320,8 +320,14 @@ async function createDraft(ctx,page,rec){
   await page.goto(ROOT+'/submit',{waitUntil:'domcontentloaded',timeout:35000});
   await sleep(1400);
   const boxes=page.locator('input[type=checkbox]');
+  await boxes.first().waitFor({state:'visible',timeout:16000}).catch(()=>{});
+  await sleep(1300);
   const claims=await boxes.evaluateAll(xs=>xs.map(el=>
-    (el.closest('label')||el.parentElement?.parentElement)?.innerText?.trim()||''));
+    (el.closest('label')||el.parentElement?.parentElement||el.parentElement)?.innerText?.trim()||''));
+  rec.eligibilityLabelCount=claims.length;
+  rec.eligibilityLabels=claims.map(x=>safeText(x,250));
+  rec.eligibilityPagePath=new URL(page.url()).pathname;
+  save();
   const required=[
     'desktop Chrome within 20 seconds',
     'Tested and works on mobile',
@@ -331,7 +337,7 @@ async function createDraft(ctx,page,rec){
     'rights to all code'
   ];
   if(claims.length!==6||!required.every(k=>claims.some(v=>v.toLowerCase().includes(k.toLowerCase()))))
-    blocked('CrazyGames eligibility labels changed; no declarations made');
+    blocked('CrazyGames eligibility: '+claims.length+' labels; missing '+required.filter(k=>!claims.some(v=>v.toLowerCase().includes(k.toLowerCase()))).join('|'))
   for(let i=0;i<6;i++)await boxes.nth(i).evaluate(e=>{if(!e.checked)e.click()});
   rec.eligibilityUserConfirmed=true;
   rec.status='eligibility-confirmed';save();

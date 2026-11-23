@@ -7,50 +7,52 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: cat-bond-crazygames-write-draft
   cancel-in-progress: false
 jobs:
   fill-only:
     runs-on: ubuntu-latest
-    timeout-minutes: 27
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - name: Install media generation and browser
+      - name: Install studio browser driver
         run: |
           npm ci
-          npm install --no-save --no-package-lock playwright sharp@0.34.5
-          npx playwright install --with-deps chromium
-          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
-            sudo apt-get update -qq
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
-          fi
-      - name: Generate current Cat Bond watercolor media for all five portal inputs
+          npm install --no-save --no-package-lock playwright
+      - name: Restore the five authenticated current-game media files generated this session
+        uses: actions/download-artifact@v4
+        with:
+          name: cat-bond-portal-saved-draft-and-media
+          run-id: 45096410159
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .
+      - name: Check reused files before portal upload
         run: |
-          node scripts/record-cat-bond-crazygames-previews.mjs
-          node scripts/crazygames-cat-bond-cover-from-gameplay.mjs
-          node scripts/prepare-cat-bond-crazygames-media.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          for(const file of ['cover-landscape.png','cover-portrait.png','cover-square.png','real-gameplay-landscape.mp4','real-gameplay-portrait.mp4']){
+            const p='public/promo/cat-bond/'+file;
+            if(!fs.existsSync(p)||fs.statSync(p).size<1000)throw Error('Missing media: '+p);
+          }
+          console.log('Five approved-format files restored for Cat Bond portal-only retry.');
+          NODE
       - name: Login, create or resume Cat Bond, save draft only — NEVER submit
         env:
           CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
           CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
           CRAZYGAMES_TARGET_SLUGS: cat-bond
         run: node scripts/crazygames-cat-bond-save-draft.mjs
-      - name: Keep portal draft receipt and authentic upload candidates
+      - name: Keep draft evidence and failure diagnostics, no publication
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cat-bond-portal-saved-draft-and-media
-          path: |
-            .check/crazygames/cat-bond-draft-fill.json
-            public/promo/cat-bond/cover-landscape.png
-            public/promo/cat-bond/cover-portrait.png
-            public/promo/cat-bond/cover-square.png
-            public/promo/cat-bond/real-gameplay-landscape.mp4
-            public/promo/cat-bond/real-gameplay-portrait.mp4
+          name: cat-bond-crazygames-saved-draft-receipt
+          path: .check/crazygames/cat-bond-draft-fill.json
           if-no-files-found: warn
           retention-days: 14
