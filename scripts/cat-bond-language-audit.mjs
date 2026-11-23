@@ -9,7 +9,8 @@ const origin=(process.env.CAT_BOND_QA_ORIGIN||'http://127.0.0.1:8765').replace(/
 const cases=[
   'cat-detail','cat-detail-advanced','roster','breed-roster','workshop',
   'build','cat-dex','daily','shop','feed','tease','cat-duos','skill-editor',
-  'trainer','world-map','map-squad','yard-menu','journey','capture-prep'
+  'trainer','world-map','map-squad','yard-menu','journey','capture-prep',
+  'gambit-editor','welcome-back','battle-recovery','mastery-result'
 ];
 const profiles=[
   // Both languages on BOTH hosts and BOTH input/viewport sizes. The older
@@ -79,7 +80,21 @@ try{
               'map-squad':()=>UI.openMapSquad(),
               'yard-menu':()=>UI.openExploreMenu(),
               'journey':()=>UI.openJourney(),
-              'capture-prep':()=>UI.openCapturePrep(GameData.SPECIES[0])
+              'capture-prep':()=>UI.openCapturePrep(GameData.SPECIES[0]),
+              'gambit-editor':()=>{
+                UI.teamUids=State.S.cats.map(c=>c.uid);
+                UI.openGambitEditor(GameData.SPECIES[0]);
+              },
+              'welcome-back':()=>UI.openWelcomeBack({
+                minutes:15,capped:false,produced:{coins:25,fish:2},
+                gains:{coins:3},visitors:[{name:'Test Visitor',gift:{coins:1},rare:true}]
+              }),
+              'battle-recovery':()=>UI.openBattleRecoveryResult({
+                mode:'casual',fromMap:false,
+                team:[{name:State.catName(cat),before:38,after:100}]
+              }),
+              'mastery-result':()=>UI.openMasteryChallengeResult(
+                GameData.SPECIES[0],{grade:'A'},false,true)
             };
             routes[key]();
             const panel=document.querySelector('#panel');
