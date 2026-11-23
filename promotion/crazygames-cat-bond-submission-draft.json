@@ -18,9 +18,9 @@
     "Adventure",
     "Simulation"
   ],
-  "shortDescription": "Find wild cats, build your dream duo, and unleash their special bond.",
-  "description": "Choose your first kitten and discover a world full of new feline friends. Search the garden for wild cats, take on real-time battles, and welcome new companions into your collection. Explore five illustrated regions, discover 33 cat breeds, care for your Sunlit Garden, and strengthen the bond between your favorite two cats. Play battles manually for hands-on action, or use Auto Battle for a relaxed adventure. Charge your Duo meter and unleash a special team attack when your cats fight together.",
-  "instructions": "Start by choosing a kitten, then click or tap the glowing bush to find your first wild cat. Win the battle to welcome a second cat and build your duo. On desktop, use WASD or arrow keys to move, the mouse to aim, left click or J to attack, Q/E for abilities, Space to dodge, R for your ultimate, and F for your Duo Special when ready. Auto Battle can be selected before an encounter. On mobile, move with the on-screen joystick and tap the action buttons. Visit the map, explore new regions, collect cats, and develop your garden.",
+  "shortDescription": "Collect 33 cats, explore five illustrated regions, and build a team whose friendships grow along the way.",
+  "description": "Your adventure begins with one curious kitten. Explore five illustrated regions, discover 33 collectible cats, and welcome new companions into your Sunlit Garden. Train your favorites, send them to work for rewards, and uncover friendship stories and shared memories as your cats grow closer. Choose a two-cat team for lively real-time encounters, time your skills and dodges, or turn on Auto Battle for a more relaxed adventure. Keep exploring—your next rare feline friend may be just around the corner.",
+  "instructions": "Choose a starter kitten, then click or tap the glowing grass to encounter your first wild cat. Win the encounter to welcome a new friend. Open Cats to care for and train companions, choose your duo, and visit the map to explore new regions. In manual battles, move with WASD or arrow keys, aim with the mouse, left-click or press J to attack, use Q/E for skills, Space to dodge, R for an ultimate, and F for the Duo Special when charged. You can select Auto Battle before an encounter. On mobile, use the virtual joystick and on-screen buttons. Progress is saved locally in your browser.",
   "savedProgress": "The game saves locally in the browser. Saves are not synced to a CrazyGames account; clearing site storage can erase progress. Do not declare that the game needs no saves.",
   "orientation": "Responsive landscape desktop and portrait/landscape mobile",
   "monetization": "No in-game purchases or external ads for CrazyGames Basic Launch",
@@ -87,5 +87,17 @@
     "platformDraftVisibleAfterSave": true,
     "reviewSubmitted": false
   },
-  "coverArtSource": "User-approved muted Cat Bond gameplay-variety cover illustrations (landscape, portrait, square), stored in promotion/crazygames-covers-approved-20261122/"
+  "coverArtSource": "User-approved muted Cat Bond gameplay-variety cover illustrations (landscape, portrait, square), stored in promotion/crazygames-covers-approved-20261122/",
+  "copyVerification": {
+    "checkedAgainst": [
+      "public/cat-bond/js/data.js",
+      "public/cat-bond/js/worldmap.js",
+      "public/cat-bond/js/battle.js",
+      "public/promo/v14-review.json"
+    ],
+    "speciesCount": 33,
+    "regionCount": 5,
+    "avoidUnimplementedFeatures": true,
+    "reviewStatus": "copy ready; portal confirmation required"
+  }
 }
