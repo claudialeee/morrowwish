@@ -35,9 +35,10 @@ if(!socialRouter.includes('if(p.startsWith("/go/"))')||
    !dashboard.includes("siteNum(homeFor(p.id),'visits')")||
    !dashboard.includes("siteNum(z,'pageviews')"))
  throw Error('Tracking links and homepage/game attribution data must be preserved');
-if(!dashboard.includes('if(x.game==="hub")return')||
-   !dashboard.includes("num('pageviews')+'</td><td></td><td></td><td></td>"))
- throw Error('Homepage overview: show pageviews only and leave gameplay cells blank');
+if(!dashboard.includes('const homePageviews=games.find(x=>x.game==="hub")?.pageviews;')||
+   !dashboard.includes('metricCard(t("statHome"),homeKnown?format(homePageviews):"",t("statHomeNote"))')||
+   displayOrder.includes("'hub'")||dashboard.includes('if(x.game==="hub")return'))
+ throw Error('Homepage overview must appear as one top-level pageview metric, not a game-table row');
 
 const social=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 const newVideoSources=['youtube','tiktok','instagram','bluesky'];
@@ -146,7 +147,7 @@ if(config.name!=='morrowwish')throw Error('Wrong Cloudflare Pages project');
 if(config.d1_databases?.[0]?.database_name!=='morrowwish-analytics')throw Error('Wrong D1 database');
 if(!dashboard.includes('zh:"平行人生",en:"Elsewhere"'))throw Error('Dashboard must show 平行人生 in Chinese and Elsewhere in English');
 const displayOrder=dashboard.match(/const displayOrder=\[([^\]]+)\];/)?.[1]||'';
-for(const name of ['hub','elsewhere','tiny-town','pawsibly-innocent','cat-bond','flip-dash','parcel-panic','pocket-aquarium']){
+for(const name of ['elsewhere','tiny-town','pawsibly-innocent','cat-bond','flip-dash','parcel-panic','pocket-aquarium']){
  if(!displayOrder.includes("'"+name+"'"))throw Error('Dashboard missing visible game: '+name);
 }
 if(!dashboard.includes("'pocket-aquarium'"))throw Error('Pocket Aquarium must remain in dashboard order');
@@ -324,7 +325,7 @@ if(JSON.stringify(featuredIds)!==JSON.stringify(['cat-bond','pawsibly-innocent',
 const zhCard=featured.match(/<article class="feature-card cat-feature-card">([\s\S]*?)<\/article>/)?.[1]||'';
 if(!zhCard.includes('猫猫绝对无辜！')||zhCard.includes('cat-original'))throw Error('Chinese homepage card must not display the English Pawsibly subtitle');
 if(!homepage.includes('Three fish to steal. One human to fool.'))throw Error('Cat game marketing hook is missing');
-if(!displayOrder.startsWith("'hub','cat-bond','pawsibly-innocent','tiny-town','elsewhere'"))throw Error('Studio dashboard game order must follow the homepage');
+if(!displayOrder.startsWith("'cat-bond','pawsibly-innocent','tiny-town','elsewhere'"))throw Error('Studio dashboard game order must follow the homepage');
 if(minis.includes('href="/pawsibly-innocent/"')||minis.includes('href="/cat-bond/"'))throw Error('Cat worlds must not be in mini-games');
 for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souvenirs','function vacuumDraw','function roomDecor']){
  if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);
