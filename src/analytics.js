@@ -313,6 +313,22 @@ export async function api(req,env){
   const result=await env.DB.prepare("DELETE FROM events WHERE category IN ('arcade','elsewhere','diagnostic')").run();
   return json({ok:true,removed:result.meta?.changes??null});
  }
+ // Read-only owner audit: full D1 visit aggregates, not limited by the
+ // 10,000 most recent gameplay events used for the interactive report.
+ if(p==="/api/cat-bond-traffic-audit"){
+   if(req.method!=="GET")return json({error:"GET required"},405);
+   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
+   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
+   const days=params(req),from=dateDays(days)[0];
+   const d=await env.DB.prepare("SELECT day,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit' AND day>=? GROUP BY day ORDER BY day").bind(from).all();
+   const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
+   const byDay=(d.results||[]).map(r=>({day:String(r.day),rawVisits:Number(r.rawVisits)||0,pageviews:Number(r.pageviews)||0}));
+   const history=(h.results||[])[0]||{};
+   return json({game:"cat-bond",days,from,source:"uncapped-d1-aggregate",total:byDay.reduce((n,r)=>n+r.pageviews,0),byDay,history:{
+     firstDay:history.firstDay||null,lastDay:history.lastDay||null,
+     pageviews:Number(history.pageviews)||0,rawVisits:Number(history.rawVisits)||0
+   }});
+ }
  if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(req.method!=="GET")return json({error:"GET required"},405);
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
