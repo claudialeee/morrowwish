@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-23T02:51:07.548Z",
+  "checkedAt": "2026-11-23T04:45:23.353Z",
   "workflowStatus": "success",
   "portalDraftId": "cda65c21-75f7-4ce5-b717-62b425097981",
   "portalScriptStatus": "saved-final-step-unsubmitted",
@@ -14,7 +14,7 @@
   "confirmedOriginal63": true,
   "error": null,
   "submittedForReview": false,
-  "workflowRunId": 45102338281,
+  "workflowRunId": 45113554927,
   "phases": {
     "sourcecheck": "success",
     "playableqa": "success",
@@ -25,6 +25,9 @@
     "receipt": "success"
   },
   "originalSceneCount": 63,
-  "polishedPreviewDurationSeconds": 17.5,
-  "mediaArtifactId": 14785279032
+  "polishedPreviewDurationSeconds": 18.866016,
+  "mediaArtifactId": 14790428789,
+  "previewContainsFullOriginalDuoCinematic": false,
+  "previewSource": "V14 actual gameplay, exploration and cat collection first",
+  "copyVerifiedOnPortalForm": true
 }
