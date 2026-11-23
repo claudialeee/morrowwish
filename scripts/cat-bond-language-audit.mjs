@@ -145,8 +145,15 @@ try{
         if(['cat-detail','cat-detail-advanced','shop'].includes(key)){
           // Force screenshots to show the actual problematic lower training
           // controls, not merely the upper half of the tall scrollable panel.
-          if(key==='cat-detail')await page.locator('#cd-trainstat').scrollIntoViewIfNeeded();
-          if(key==='cat-detail-advanced')await page.locator('#cd-stat-ten').scrollIntoViewIfNeeded();
+          if(key==='cat-detail'||key==='cat-detail-advanced'){
+            // Direct scroll avoids Playwright actionability waits when the
+            // target sits in a long, internally scrolling game modal.
+            await page.evaluate(key=>{
+              const id=key==='cat-detail'?'cd-trainstat':'cd-stat-ten';
+              document.getElementById(id)?.scrollIntoView({block:'center',behavior:'instant'});
+            },key);
+            await page.waitForTimeout(90);
+          }
           await page.screenshot({path:dir+'/'+profile.host+'-'+profile.lang+
             '-'+profile.width+'-'+key+'.png',fullPage:false});
         }
