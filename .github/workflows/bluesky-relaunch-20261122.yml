@@ -1,4 +1,5 @@
 name: Owner-approved V14 Bluesky video relaunch (one-time)
+# Authorized re-launch after Bluesky App Password was configured.
 on:
   push:
     branches: [main]
