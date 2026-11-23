@@ -20,6 +20,8 @@
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
     '守铃者': 'The Bellkeeper',
+    '☁️ 云存档': '☁️ Cloud save',
+    '云存档': 'Cloud save',
     '最后一页': 'The Last Page',
     '已完成': 'Complete',
     // Newly surfaced first-capture conversion and progress CTAs. Keep both
