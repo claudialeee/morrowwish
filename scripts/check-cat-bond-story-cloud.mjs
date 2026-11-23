@@ -34,7 +34,7 @@ for(const [name,source,needles] of [
  ['Pages worker bundling',buildSource,['src', 'cat-bond-cloud-save.js','async function catBondCloudSave','cloudSave + \'\\n\' + router']],
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
+ ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=last-page-rpg-cloud-save-20261123-v10','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
