@@ -6,6 +6,7 @@ const SAVE_KEY='catbond_save_v1';
 const CLOUD_KEY='catbond_cloud_key_v1';
 const REV_KEY='catbond_cloud_revision_v1';
 const SYNC_KEY='catbond_cloud_synced_at_v1';
+const CLOUD_PAUSE_KEY='catbond_cloud_paused_v1';
 const CODE_PREFIX='CB1.';
 const REGIONS=['home','sakura','creek','volcano','ruins'];
 const REGION_PAGES={
@@ -464,7 +465,7 @@ function renderCloudPanel(){
   try{
    if(action==='enable'){
     const hasLocal=!!localStorage.getItem(SAVE_KEY);
-    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');
+    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');localStorage.removeItem(CLOUD_PAUSE_KEY);
     render(hasLocal
      ?t('已生成恢复码，正在安排首次加密同步。','Recovery code created. Initial encrypted sync is queued.')
      :t('已生成恢复码。开始游戏并创建存档后会自动上传。','Recovery code created. It will upload automatically after your first game save.'));
@@ -477,6 +478,10 @@ function renderCloudPanel(){
     return;
    }
    if(action==='sync'){
+    if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'){
+     if(!confirm(t('检测到本机进度刚刚被重置。要用新进度覆盖旧云存档吗？','This device was just reset. Replace the previous cloud save with this new progress?')))return;
+     localStorage.removeItem(CLOUD_PAUSE_KEY);
+    }
     say(t('正在加密并同步…','Encrypting and syncing…'));
     const result=await syncNow(true);
     say(result.conflict?t('检测到另一台设备有更新。请选择恢复云端或覆盖云端。','A newer save exists on another device. Restore it or explicitly replace it.')
@@ -494,6 +499,7 @@ function renderCloudPanel(){
    if(action==='replace'){
     if(!confirm(t('将用当前设备的存档覆盖云端版本。继续吗？','Replace the cloud version with this device’s save?')))return;
     const token=localStorage.getItem(CLOUD_KEY);
+    localStorage.removeItem(CLOUD_PAUSE_KEY);
     let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
     localStorage.setItem(REV_KEY,String(remote.revision||0));
     const result=await syncNow(true);
@@ -573,6 +579,7 @@ async function restoreWithToken(token){
   throw Error(t('云存档内容无效，未覆盖本机存档。','Cloud save is invalid; local progress was not changed.'));
  localStorage.setItem(SAVE_KEY,raw);
  localStorage.setItem(CLOUD_KEY,token);
+ localStorage.removeItem(CLOUD_PAUSE_KEY);
  localStorage.setItem(REV_KEY,String(remote.revision||0));
  localStorage.setItem(SYNC_KEY,String(remote.updatedAt||Date.now()));
  location.reload();
@@ -585,6 +592,10 @@ function setSyncStatus(status){
 async function syncNow(force=false){
  const token=localStorage.getItem(CLOUD_KEY);
  if(!token)return {ok:false,disabled:true};
+ if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'&&!force){
+  setSyncStatus(t('本机重置后已暂停自动同步。请先恢复旧云档，或明确选择覆盖。','Auto-sync is paused after a local reset. Restore the old cloud save or explicitly replace it.'));
+  return {ok:false,paused:true};
+ }
  if(syncPromise){syncPending=true;return syncPromise;}
  syncPromise=(async()=>{
   const raw=localStorage.getItem(SAVE_KEY);
@@ -612,7 +623,7 @@ async function syncNow(force=false){
  return syncPromise;
 }
 function queueSync(){
- if(!localStorage.getItem(CLOUD_KEY))return;
+ if(!localStorage.getItem(CLOUD_KEY)||localStorage.getItem(CLOUD_PAUSE_KEY)==='1')return;
  clearTimeout(syncTimer);
  syncTimer=setTimeout(()=>syncNow(false),2200);
 }
@@ -647,6 +658,14 @@ if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
   return result;
  };
  wrapped.__lastPage=true;window.UI.openExploreMenu=wrapped;
+}
+if(window.State?.hardReset&&!window.State.hardReset.__cbCloudWrapped){
+ const original=window.State.hardReset.bind(window.State);
+ const wrapped=function(...args){
+  if(localStorage.getItem(CLOUD_KEY))localStorage.setItem(CLOUD_PAUSE_KEY,'1');
+  return original(...args);
+ };
+ wrapped.__cbCloudWrapped=true;window.State.hardReset=wrapped;
 }
 if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  const original=window.State.save.bind(window.State);
@@ -686,8 +705,8 @@ function installIntro(){
 }
 window.addEventListener('DOMContentLoaded',installIntro,{once:true});
 window.addEventListener('morrowwish-language-change',updateTracker);
-window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(true);});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(true);});
+window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(false);});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(false);});
 window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
  onBossVictory,playEnding,updateTracker
