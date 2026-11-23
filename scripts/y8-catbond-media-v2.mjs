@@ -282,9 +282,12 @@ try{
       }))));
       throw error;
     });
-  await sleep(600); // show the actual new-friend result
+  await page.waitForSelector('#panel.open #cr-ok',{timeout:10000});
+  await sleep(550); // show the actual "A new friend joined" result
+  await page.locator('#panel.open #cr-ok').click();
+  await page.waitForFunction(()=>__game.scene==='yard'&&
+    !document.querySelector('#panel.open #cr-ok'),{timeout:8000});
   await page.evaluate(()=>{
-    UI.closeAll();
     const [a,b]=State.S.cats;
     if(!a||!b)throw Error('The first wild cat was not actually recruited');
     for(const c of [a,b]){
