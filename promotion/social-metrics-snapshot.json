@@ -138,13 +138,14 @@
       {
         "platform": "youtube",
         "game": "parcel-panic",
-        "url": "https://www.youtube.com/shorts/c1qeZ3tvuLU",
+        "url": "https://www.youtube.com/shorts/dHD2UnbmSqU",
         "publishedAt": "2026-11-22",
-        "views": 16,
+        "views": null,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
-        "likes": 1
+        "dataSource": null,
+        "likes": null,
+        "pendingNativeRefresh": true
       },
       {
         "platform": "youtube",
