@@ -53,7 +53,7 @@ HOST_JS=r"""/* GamePix SDK-free isolation: no third-party analytics or outbound 
 })();
 """
 HOST_CSS="""/* No links to the Morrow Wish hub, publishers or external services. */
-a[href]:not([href^="#"]){display:none!important}
+a[href]:not([href^="#"]){display:none!important}\n#musicPermission{display:none!important}
 html,body{max-width:100%;overflow-x:hidden}
 """
 MUSIC_STUB=r"""/* Streamed FreePD soundtrack intentionally excluded from GamePix offline ZIP.
@@ -104,6 +104,7 @@ def strip_online(html):
  html=re.sub(r'<script\b[^>]*type\s*=\s*["\x27]application/ld\+json["\x27][^>]*>.*?</script\s*>','',html,flags=re.I|re.S)
  html=re.sub(r'<script\b[^>]*src\s*=\s*["\x27](?:https?:)?//[^"\x27]+["\x27][^>]*>\s*</script\s*>','',html,flags=re.I|re.S)
  html=re.sub(r'<script\b[^>]*src\s*=\s*["\x27][^"\x27]*(?:telemetry|social-share|playtest-pulse)\.js[^"\x27]*["\x27][^>]*>\s*</script\s*>','',html,flags=re.I|re.S)
+ html=re.sub(r'<script\b[^>]*src\s*=\s*["\x27][^"\x27]*_vercel/insights/script\.js[^"\x27]*["\x27][^>]*>\s*</script\s*>','',html,flags=re.I|re.S)
  html=re.sub(r'<link\b[^>]*(?:https?://|rel\s*=\s*["\x27]canonical["\x27])[^>]*>','',html,flags=re.I|re.S)
  html=re.sub(r'<meta\b[^>]*(?:property\s*=\s*["\x27]og:|name\s*=\s*["\x27]twitter:)[^>]*>','',html,flags=re.I|re.S)
  html=re.sub(r'@import\s+(?:url\()?["\x27]?https?://[^;\n]+;','',html,flags=re.I)
@@ -148,7 +149,14 @@ def assemble(slug):
    p.write_text(DREAM_AUDIO_STUB,encoding="utf-8")
   elif p.suffix.lower()==".html":
    data=p.read_text(encoding="utf-8")
-   if p==target/slug/"index.html":data=strip_online(data)
+   if p==target/slug/"index.html":
+    data=strip_online(data)
+    if slug=="pawsibly-innocent":
+     # The upstream repo currently does not contain this recorded music track.
+     # Avoid a broken preload and use the original synth-based local SFX instead.
+     data=re.sub(r'<link[^>]*cat-happy-clappy\.ogg[^>]*>','',data,flags=re.I)
+     data=data.replace('src="../audio/cat-happy-clappy.ogg"','')
+     data=data.replace('src="/audio/cat-happy-clappy.ogg"','')
    p.write_text(data,encoding="utf-8")
   elif p.suffix.lower()==".css":
    p.write_text(scrub_css(p.read_text(encoding="utf-8")),encoding="utf-8")
