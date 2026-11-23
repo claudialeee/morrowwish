@@ -1,0 +1,113 @@
+name: Replace Cat Bond CrazyGames draft art with polished original-63 media
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/crazygames-cat-bond-polish-draft.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: cat-bond-crazygames-write-draft
+  cancel-in-progress: false
+jobs:
+  polish-existing-draft-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record live Actions run ID for verification
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const file='promotion/crazygames-cat-bond-current-run.json';
+          fs.writeFileSync(file,JSON.stringify({
+            runId:Number(process.env.GITHUB_RUN_ID),
+            commit:process.env.GITHUB_SHA,
+            startedAt:new Date().toISOString(),
+            scope:'polish-63-original-media-on-existing-draft-only'},null,2)+'\n');
+          NODE
+          git config user.name morrowwish-crazygames-qa-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add promotion/crazygames-cat-bond-current-run.json
+          git commit -m "ops(crazygames): identify polish run for existing Cat Bond draft"
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install authenticated portal browser and image support
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          python3 -m pip install pillow==11.3.0
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+      - name: Retrieve ONLY verified fresh original-63 game footage from successful draft-save
+        uses: actions/download-artifact@v4
+        with:
+          name: cat-bond-crazygames-saved-draft-receipt
+          run-id: 45100812099
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .
+      - name: Validate and polish all 3 covers and 2 real gameplay clips
+        run: |
+          python3 scripts/polish-cat-bond-crazygames-media.py
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p='.check/crazygames/cat-bond-draft-fill.json';
+          const old=JSON.parse(fs.readFileSync(p,'utf8')).results?.[0];
+          if(old?.status!=='saved-final-step-unsubmitted'||old.artProvenance?.originalArt!==true||
+             old.artProvenance?.originalSceneCount!==63||
+             old.platformDraftId!=='cda65c21-75f7-4ce5-b717-62b425097981')
+            throw Error('Old verified media artifact is not the approved 63-original Cat Bond draft');
+          fs.unlinkSync(p); // new upload must generate a NEW receipt
+          NODE
+      - name: Update exactly the EXISTING CrazyGames Cat Bond draft, no submission
+        env:
+          CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
+          CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
+          CRAZYGAMES_TARGET_SLUGS: cat-bond
+        run: node scripts/crazygames-cat-bond-save-draft.mjs
+      - name: Require verified new portal save receipt before declaring done
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const rec=JSON.parse(fs.readFileSync('.check/crazygames/cat-bond-draft-fill.json','utf8')).results?.[0];
+          const expected=['cover-landscape.png','cover-portrait.png','cover-square.png',
+            'real-gameplay-landscape.mp4','real-gameplay-portrait.mp4'];
+          if(rec?.status!=='saved-final-step-unsubmitted'||
+             rec.platformDraftId!=='cda65c21-75f7-4ce5-b717-62b425097981'||
+             rec.reviewSubmitted!==false||rec.finalSubmitClicked!==false||
+             rec.verifiedDraftVisible!==true||
+             rec.artProvenance?.originalArt!==true||rec.artProvenance?.originalSceneCount!==63||
+             expected.some(f=>!rec.uploaded?.includes(f)))
+            throw Error('The real CrazyGames portal did NOT confirm replacement: '+JSON.stringify({
+              status:rec?.status,uploaded:rec?.uploaded,verified:rec?.verifiedDraftVisible,
+              error:rec?.error}));
+          console.log('PORTAL POLISHED 63-ORIGINAL MEDIA REPLACEMENT CONFIRMED',JSON.stringify({
+            id:rec.platformDraftId,savedAt:rec.savedAt,uploaded:rec.uploaded,
+            submittedForReview:false
+          }));
+          NODE
+      - name: Preserve final polished media and actual authenticated portal receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-crazygames-polished-original-63-final
+          path: |
+            .check/crazygames/cat-bond-draft-fill.json
+            .check/crazygames/cat-bond-trim-portrait.json
+            .check/crazygames/cat-bond-trim-landscape.json
+            public/promo/cat-bond/cover-landscape.png
+            public/promo/cat-bond/cover-portrait.png
+            public/promo/cat-bond/cover-square.png
+            public/promo/cat-bond/real-gameplay-landscape.mp4
+            public/promo/cat-bond/real-gameplay-portrait.mp4
+          if-no-files-found: warn
+          retention-days: 30
