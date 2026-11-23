@@ -10,7 +10,8 @@ const cases=[
   'cat-detail','cat-detail-advanced','roster','breed-roster','workshop',
   'build','cat-dex','daily','shop','feed','tease','cat-duos','skill-editor',
   'trainer','world-map','map-squad','yard-menu','journey','capture-prep',
-  'gambit-editor','welcome-back','battle-recovery','mastery-result'
+  'gambit-editor','welcome-back','battle-recovery','mastery-result',
+  'region-secret','yard-surprise','duo-quarrel'
 ];
 const profiles=[
   // Both languages on BOTH hosts and BOTH input/viewport sizes. The older
@@ -102,7 +103,18 @@ try{
                 team:[{name:State.catName(cat),before:38,after:100}]
               }),
               'mastery-result':()=>UI.openMasteryChallengeResult(
-                GameData.SPECIES[0],{grade:'A'},false,true)
+                GameData.SPECIES[0],{grade:'A'},false,true),
+              'region-secret':()=>UI.openRegionSecret({
+                discovery:{icon:'🐚',en:'The blue creek shell',name:'蓝溪贝壳',
+                  storyEn:'A sparkling shell holds a stash of fish.',
+                  story:'一枚闪闪发光的贝壳里藏着小鱼。'},
+                coins:20,fish:3
+              }),
+              'yard-surprise':()=>{
+                State.S.yardStory={...(State.S.yardStory||{}),pending:{kind:0}};
+                UI.openYardSurprise();
+              },
+              'duo-quarrel':()=>UI.openDuoQuarrel(State.S.cats[0],State.S.cats[1])
             };
             routes[key]();
             const panel=document.querySelector('#panel');
@@ -300,7 +312,9 @@ try{
               'roster':'我的猫猫','cat-detail':'特训',
               'cat-detail-advanced':'连续特训','shop':'小卖部',
               'skill-editor':'技能搭配','workshop':'工坊',
-              'cat-duos':'双猫纽带','trainer':'技能训练师'
+              'cat-duos':'双猫纽带','trainer':'技能训练师',
+              'region-secret':'蓝溪贝壳','yard-surprise':'草丛的小铃铛',
+              'duo-quarrel':'一颗毛线球引发的小别扭'
             };
             if(keyChinese[key]&&!nativeZh.includes(keyChinese[key]))
               failures.push(profile.host+' '+profile.width+' '+key+
