@@ -224,6 +224,86 @@ function ruins(c,w,h,p,r){
  for(let i=0;i<9;i++){const a=i*2.4;oval(c,Math.cos(a)*113,Math.sin(a)*76,3,3,'#f5e8c7');}c.restore();
  for(let i=0;i<20;i++)stone(c,r()*w,r()*h,10+r()*17,4+r()*10,'#a2a6b9');
 }
+function bellLandmark(c,x,y,s){
+ c.save();c.translate(x,y);c.scale(s,s);
+ c.shadowColor='rgba(255,215,145,.5)';c.shadowBlur=28;
+ const brass=c.createLinearGradient(-28,-20,28,34);
+ brass.addColorStop(0,'#f5e3b2');brass.addColorStop(.42,'#c69c61');brass.addColorStop(1,'#8b6749');
+ c.beginPath();c.moveTo(-19,-4);c.quadraticCurveTo(-18,-30,0,-32);
+ c.quadraticCurveTo(18,-30,19,-4);c.lineTo(29,17);
+ c.quadraticCurveTo(0,29,-29,17);c.closePath();
+ c.fillStyle=brass;c.fill();c.strokeStyle='rgba(255,246,218,.82)';c.lineWidth=2;c.stroke();
+ c.beginPath();c.moveTo(-21,7);c.quadraticCurveTo(0,15,21,7);c.strokeStyle='rgba(92,64,48,.55)';c.stroke();
+ c.beginPath();c.arc(0,24,5,0,Math.PI*2);c.fillStyle='#e7c37f';c.fill();
+ c.beginPath();c.arc(0,-34,4,0,Math.PI*2);c.fillStyle='#f7e4b5';c.fill();
+ c.restore();
+}
+function storyLandmarks(c,w,h,id,r){
+ // A different hand-painted story landmark and atmosphere for each existing region.
+ const centers={
+  home:[920,390,420,'rgba(255,230,166,.22)'],
+  sakura:[1180,360,470,'rgba(255,190,214,.19)'],
+  creek:[1460,850,420,'rgba(157,224,230,.2)'],
+  volcano:[1270,420,440,'rgba(255,157,91,.2)'],
+  ruins:[990,300,520,'rgba(190,180,255,.23)']
+ };
+ const [cx,cy,rad,color]=centers[id];
+ const glow=c.createRadialGradient(cx,cy,4,cx,cy,rad);
+ glow.addColorStop(0,color);glow.addColorStop(1,'rgba(255,255,255,0)');
+ c.save();c.globalCompositeOperation='screen';c.fillStyle=glow;c.fillRect(0,0,w,h);c.restore();
+ c.save();
+ if(id==='home'){
+  // A weathered bell frame tucked into the courtyard's old garden path.
+  path(c,[[835,535],[835,365],[1000,365],[1000,535]],15,'#80634f');
+  path(c,[[817,371],[917,325],[1018,371]],13,'#9a765a');
+  path(c,[[835,392],[1000,392]],5,'rgba(245,221,184,.72)');
+  bellLandmark(c,918,430,.78);
+  for(const [x,y] of [[855,550],[980,550]])stone(c,x,y,32,13,'#d7c3a5');
+  for(let i=0;i<5;i++)bloom(c,850+i*32,580,6,'#f7d6a2',2400+i);
+ }else if(id==='sakura'){
+  // Prayer ribbons and a small bronze bell complete the existing shrine approach.
+  for(let i=0;i<5;i++){
+   const x=1100+i*35,y=485+(i%2)*13;
+   path(c,[[x,y],[x-7,y+44],[x+4,y+61]],3,i%2?'#f6e4d7':'#f1c2d1');
+   polygon(c,[[x-9,y+42],[x+8,y+42],[x+5,y+58],[x-7,y+58]],i%2?'#fff0df':'#f5d3dc');
+  }
+  bellLandmark(c,1200,535,.58);
+  for(const [x,y] of [[1030,545],[1360,555]]){oval(c,x,y,25,12,'rgba(90,62,70,.16)');stone(c,x,y,29,17,'#bda7a4');}
+ }else if(id==='creek'){
+  // A shell-shaped echo spring sits on the far bank, separate from the bridge.
+  oval(c,1460,900,96,42,'rgba(38,73,77,.2)');
+  stone(c,1460,874,82,42,'#9dbbb0');stone(c,1400,903,45,24,'#b4c9b7');stone(c,1525,904,48,25,'#c3d4c4');
+  c.save();c.shadowColor='rgba(159,234,240,.8)';c.shadowBlur=24;
+  c.beginPath();c.ellipse(1460,861,28,18,-.15,Math.PI,Math.PI*2);
+  c.lineTo(1487,865);c.quadraticCurveTo(1460,887,1433,865);c.closePath();
+  c.fillStyle='#d6eee5';c.fill();c.strokeStyle='#f7fff3';c.lineWidth=2;c.stroke();c.restore();
+  for(let i=0;i<5;i++)path(c,[[1440+i*10,857],[1441+i*10,844-i*2]],2,'rgba(255,255,255,.68)');
+ }else if(id==='volcano'){
+  // A cooled basalt forge holds one ember from the first Star Bell.
+  polygon(c,[[1160,470],[1245,425],[1360,468],[1350,525],[1170,530]],'#51474b','#b28a73');
+  polygon(c,[[1190,454],[1250,420],[1320,454],[1308,475],[1200,475]],'#88736d','#d1a28a');
+  c.save();c.shadowColor='rgba(255,166,85,.9)';c.shadowBlur=34;
+  polygon(c,[[1240,438],[1268,385],[1292,438],[1277,469],[1250,466]],'#edaa65','#ffe2aa');
+  oval(c,1266,448,9,16,'#fff0b8');c.restore();
+  for(let i=0;i<7;i++)oval(c,1190+i*24,510,4,2,'rgba(255,210,155,.72)');
+ }else if(id==='ruins'){
+  // The reversed Star Bell hangs above the old astrolabe; concentric rings
+  // visually connect the final story landmark to the existing observatory.
+  c.save();c.translate(990,270);
+  for(const [rx,ry,a] of [[175,54,-.18],[142,43,.22],[108,31,-.3]]){
+   c.strokeStyle='rgba(232,218,255,.58)';c.lineWidth=5;c.beginPath();c.ellipse(0,0,rx,ry,a,0,Math.PI*2);c.stroke();
+  }
+  path(c,[[-8,-150],[-8,-78],[0,-48]],5,'#b8b2ce');
+  path(c,[[8,-150],[8,-78],[0,-48]],3,'rgba(255,242,213,.75)');
+  bellLandmark(c,0,-12,1.35);
+  c.restore();
+  for(let i=0;i<12;i++){
+   const a=i*Math.PI/6,x=990+Math.cos(a)*205,y=270+Math.sin(a)*65;
+   oval(c,x,y,4,4,i%2?'#f9e4bc':'#d8c9ff');
+  }
+ }
+ c.restore();
+}
 function paint(id,w,h){
  if(!colors[id]||typeof document==='undefined')return null;
  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
@@ -231,6 +311,7 @@ function paint(id,w,h){
  if(!c)return null;
  const p=colors[id],r=base(c,w,h,id);
  ({home,sakura,creek,volcano,ruins})[id](c,w,h,p,r);
+ storyLandmarks(c,w,h,id,r);
  // Plant some fine foreground accents after paths and structures.
  for(let i=0;i<140;i++){
   const x=r()*w,y=r()*h;
