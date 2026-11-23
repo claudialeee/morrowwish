@@ -26,14 +26,15 @@ new Function(battle);
 new Function(ui);
 
 for(const [name,source,needles] of [
- ['story',story,['The Last Page','Hollow','暮铃','逆响之主','startPrologue','onRegionEntered','onRegionDiscovery','playEnding','AES-GCM','catbond_cloud_key_v1','expectedRevision']],
+ ['story',story,['The Last Page','Hollow','暮铃','逆响之主','startPrologue','onRegionEntered','onRegionDiscovery','!hasAllRegionPages(s)','ruinsNodes.includes(\'ruins_secret\')','playEnding','AES-GCM','catbond_cloud_key_v1','expectedRevision']],
  ['map landmarks',painted,['storyLandmarks(c,w,h,id,r)',"id==='home'","id==='sakura'","id==='creek'","id==='volcano'","id==='ruins'"]],
  ['world map story hooks',worldmap,['onRegionEntered?.(id)','onRegionDiscovery?.(world.region.id,reward)']],
  ['final boss',game,['this.battle.storyBoss=!!opts.storyBoss','new Battle.CaptureBattle(this, team, wildSpecies, opts)','if(b.storyBoss)','onBossVictory']],
  ['authored solo boss pack',battle,['this.enemies = this.buildPack(wildSpecies, opts?.pack)','buildPack(lead, packOverride)','packOverride.map((sp,i)=>this.makeEnemy(sp,i,packOverride.length))']],
  ['Pages worker bundling',buildSource,['src', 'cat-bond-cloud-save.js','async function catBondCloudSave','cloudSave + \'\\n\' + router']],
+ ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points',index,['id="intro-cloud-save"','js/story-cloud.js?v=']],
+ ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
