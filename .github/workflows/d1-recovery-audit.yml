@@ -1,0 +1,86 @@
+name: D1 recovery read-only audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/d1-recovery-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inspect D1 metadata, Time Travel bookmarks, and current aggregate state (read-only)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+          D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          const db=process.env.D1_DATABASE_ID;
+          if(!token||!account||!db) throw new Error('Missing Cloudflare configuration');
+          const base='https://api.cloudflare.com/client/v4';
+          async function api(path,init={}) {
+            const res=await fetch(base+path,{...init,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',...(init.headers||{})}});
+            const body=await res.json();
+            if(!res.ok||!body.success) throw new Error('Cloudflare API '+res.status+': '+JSON.stringify(body.errors||body.messages||[]));
+            return body.result;
+          }
+          const root='/accounts/'+account+'/d1/database/'+db;
+          const database=await api(root);
+          const current=await api(root+'/time_travel/bookmark');
+          const targetTimestamp='2026-11-22T00:00:00-08:00';
+          let target=null,targetError=null;
+          try { target=await api(root+'/time_travel/bookmark?timestamp='+encodeURIComponent(targetTimestamp)); }
+          catch(e) { targetError=String(e); }
+          async function query(sql) {
+            const result=await api(root+'/query',{method:'POST',body:JSON.stringify({sql})});
+            return result?.[0]?.results||[];
+          }
+          const tables=await query("SELECT name, sql FROM sqlite_master WHERE type='table' ORDER BY name");
+          let eventsSchema=[],currentEvents=[];
+          if(tables.some(t=>t.name==='events')) {
+            eventsSchema=await query('PRAGMA table_info(events)');
+            currentEvents=await query("SELECT category, game, COUNT(*) AS rows, MIN(day) AS first_day, MAX(day) AS last_day, MIN(ts) AS first_ts, MAX(ts) AS last_ts FROM events GROUP BY category, game ORDER BY category, game");
+          }
+          const output={
+            generatedAt:new Date().toISOString(),
+            targetTimestamp,
+            database:{name:database.name,uuid:database.uuid,version:database.version,created_at:database.created_at},
+            currentBookmarkAvailable:!!current?.bookmark,
+            targetBookmarkAvailable:!!target?.bookmark,
+            targetBookmarkError:targetError,
+            tables:tables.map(t=>({name:t.name,sql:t.sql})),
+            eventsSchema:eventsSchema.map(c=>({name:c.name,type:c.type,notnull:c.notnull,pk:c.pk})),
+            currentEvents
+          };
+          fs.mkdirSync('recovery',{recursive:true});
+          fs.writeFileSync('recovery/d1-audit.json',JSON.stringify(output,null,2)+'\n');
+          console.log(JSON.stringify({
+            database:output.database,
+            targetTimestamp,
+            currentBookmarkAvailable:output.currentBookmarkAvailable,
+            targetBookmarkAvailable:output.targetBookmarkAvailable,
+            targetBookmarkError:targetError,
+            tables:output.tables.map(t=>t.name),
+            eventsSchema:output.eventsSchema,
+            currentEvents
+          },null,2));
+          NODE
+      - name: Commit non-sensitive audit summary
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add recovery/d1-audit.json
+          git commit -m "chore(recovery): record read-only D1 audit" || exit 0
+          git push
