@@ -106,7 +106,9 @@ const L=(en,cn)=>zh()?cn:en;
 const lane=x=>x<0||x>960?-1:Math.min(2,Math.floor(x/320));
 // A longer runway plus a relaxed opening shift; difficulty ramps after the first 8 deliveries.
 // Portrait keeps its full 9:16 runway; the taller desktop board provides a genuinely longer track.
-const runwayStart=()=>portrait?108:120,runwayEnd=()=>portrait?477:617;
+const isPortrait=()=>typeof portrait!=="undefined"&&portrait;
+const stageHeight=()=>typeof cv!=="undefined"?cv.height:(isPortrait()?960:720);
+const runwayStart=()=>isPortrait()?108:120,runwayEnd=()=>isPortrait()?477:617;
 const speed=p=>Math.min(235,108+Math.max(0,delivered-8)*2.8+Math.max(0,time-22)*.16)*(p?.kind==="express"?1.16:1);
 // The next two orders are planned in advance so the player can anticipate a rush.
 function plan(index){
@@ -143,8 +145,8 @@ function send(target,input="click"){
  event("parcel_sorted",{input,color:target,delivered,kind:b.kind,shift:Math.floor((delivered-1)/8)+1});
  if(delivered===10)event("parcel_ten_sorted");
  const gain=14+Math.min(combo,12)*3+(b.kind==="express"?24:b.kind==="gift"?36:0);
- add(gain);winEffect(docks[target],portrait?449:604);
- feedback={x:docks[target],y:portrait?354:517,text:kindLabel(b)+" +"+gain,life:.85,good:true};
+ add(gain);winEffect(docks[target],isPortrait()?449:604);
+ feedback={x:docks[target],y:isPortrait()?354:517,text:kindLabel(b)+" +"+gain,life:.85,good:true};
  if(delivered%8===0){
   const recovered=life<4;life=Math.min(4,life+1);add(80);
   window.mwMiniStats.shifts++;
@@ -158,9 +160,9 @@ function release(x,y,gesture){
  const target=lane(x);
  if(gesture.dragged){
   // Drag-to-sort remains available for touch users.
-  if(target>=0&&y>=95&&y<=cv.height)send(target,"drag");
-  else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,portrait?380:560)}
- }else if(target>=0&&((typeof portrait!=="undefined"&&portrait)||y>=0&&y<=cv.height)){
+  if(target>=0&&y>=95&&y<=stageHeight())send(target,"drag");
+  else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,isPortrait()?380:560)}
+ }else if(target>=0&&((typeof portrait!=="undefined"&&portrait)||y>=0&&y<=stageHeight())){
   // Tap wins even if a moving box happens to overlap this lane.
   send(target,"click");
  }else if(gesture.fromParcel){
@@ -189,7 +191,7 @@ return{
  move(x,y){
   if(!press||!press.fromParcel||!boxes[0])return;
   if(Math.hypot(x-press.x,y-press.y)>15)press.dragged=true;
-  if(press.dragged){drag=boxes[0];drag.x=clamp(x,95,865);drag.y=clamp(y,90,cv.height-22)}
+  if(press.dragged){drag=boxes[0];drag.x=clamp(x,95,865);drag.y=clamp(y,90,stageHeight()-22)}
  },
  up(x,y){const gesture=press;press=null;release(x,y,gesture);drag=null},
  key(k){
