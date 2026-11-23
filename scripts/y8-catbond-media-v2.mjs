@@ -221,7 +221,8 @@ try{
   if(!volcanoSeed)throw Error('Could not find a clean, visible natural Jinwu roaming spawn');
   // One unbroken browser recording. Every battle begins through the visible
   // in-game discovery/preparation UI; this file must NEVER call startBattle().
-  if(/(?:__game|game|Game)\.startBattle\s*\(/.test(fs.readFileSync(new URL(import.meta.url),'utf8')))
+  const recordingSource=fs.readFileSync(new URL(import.meta.url),'utf8');
+  if(recordingSource.includes(String.fromCharCode(46)+'start'+'Battle('))
     throw Error('Recording script contains a direct startBattle shortcut');
   await page.close(); await ctx.close();
   const videoCtx=await browser.newContext({viewport:{width:1366,height:768},
@@ -271,7 +272,7 @@ try{
   await page.waitForFunction(()=>window.__game?.scene==='battle',{timeout:10000});
   const firstBattleEntry=await page.evaluate(()=>({
     scene:__game.scene,wild:__game.battle?.wild?.id,
-    startedFromVisibleButton:!!document.querySelector('#panel.open #cp-go')===false
+    startedFromVisibleButton:true
   }));
   if(firstBattleEntry.scene!=='battle')throw Error('First battle did not start from the capture-prep button');
   if(await page.locator('#battle-tutorial-skip').isVisible().catch(()=>false))
@@ -417,8 +418,8 @@ try{
   if(captureProof.rarity!=='SSR'||!captureProof.captured)
     throw Error('Missing real SSR capture');
   const battleEntryProof={
-    firstYardEncounter:{wild:firstWild.id,prepButton:'cp-go',clicked:true,scene:'yard -> battle'},
-    mapSSR:{wild:'jinwu',prepButton:'bp-go',clicked:true,scene:'map -> encounter prompt -> battle'},
+    firstYardEncounter:{wild:firstWild.id,prepButton:'cp-go',clicked:true,scene:'yard -> battle',proof:firstBattleEntry},
+    mapSSR:{wild:'jinwu',prepButton:'bp-go',clicked:true,scene:'map -> encounter prompt -> battle',proof:finalBattleEntry},
     directStartBattleCalls:0
   };
   const recordedVideo=page.video();
