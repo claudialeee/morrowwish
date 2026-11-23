@@ -47,7 +47,7 @@
     if(!area)return;
     if(!active()){frame.style.removeProperty('--mw-mini-canvas-width');return;}
     const rect=area.getBoundingClientRect();
-    const aspect=portrait?9/16:16/9;
+    const aspect=portrait?9/16:(route==='parcel-panic'?4/3:16/9);
     const width=Math.max(1,Math.floor(Math.min(rect.width,rect.height*aspect)));
     frame.style.setProperty('--mw-mini-canvas-width',width+'px');
   }
