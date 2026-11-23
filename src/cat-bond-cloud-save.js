@@ -43,7 +43,8 @@ export async function catBondCloudSave(request,env){
     const declared=Number(request.headers.get("content-length")||0);
     if(declared>700000)return json({error:"Save is too large"},413);
     const raw=await request.text();
-    if(raw.length>700000)return json({error:"Save is too large"},413);
+    const byteLength=new TextEncoder().encode(raw).byteLength;
+    if(byteLength>700000)return json({error:"Save is too large"},413);
     let body;
     try{body=JSON.parse(raw);}catch{return json({error:"Invalid save payload"},400);}
     const iv=body?.iv,ciphertext=body?.ciphertext,expected=body?.expectedRevision;
@@ -72,7 +73,7 @@ export async function catBondCloudSave(request,env){
         byte_length=excluded.byte_length
       WHERE cat_bond_cloud_saves.revision=?
       RETURNING revision,updated_at
-    `).bind(keyHash,iv,ciphertext,now,ciphertext.length,expected).first();
+    `).bind(keyHash,iv,ciphertext,now,byteLength,expected).first();
 
     if(!saved){
       const latest=await env.DB.prepare(
