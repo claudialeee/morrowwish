@@ -245,3 +245,8 @@ html.mw-mini-fullscreen-on .mw-language-float{
 .mw-mini-echo-frame>.tools .controls{width:100%;justify-content:center}
 .mw-mini-echo-frame>.tools .msg{font-size:11px;text-align:center}
 }
+
+/* Parcel Panic now has a genuine 960x720 landscape board; never squash it to 16:9. */
+body[data-game="parcel-panic"] .mw-mini-arcade-frame .mw-mini-playfield canvas{aspect-ratio:4/3}
+body[data-game="parcel-panic"] .mw-mini-arcade-frame:fullscreen:not(.mw-mini-portrait) .mw-mini-playfield canvas,
+body[data-game="parcel-panic"] .mw-mini-arcade-frame.mw-mini-fullscreen-fallback:not(.mw-mini-portrait) .mw-mini-playfield canvas{aspect-ratio:4/3!important}
