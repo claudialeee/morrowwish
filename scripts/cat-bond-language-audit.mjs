@@ -149,6 +149,36 @@ try{
         if(profile.lang==='en'&&!audit.leaks.length)console.log('CAT BOND LOCALE PASS',
           profile.host,profile.width+'x'+profile.height,key);
       }
+      if(profile.host==='site'&&profile.lang==='en'){
+        // Switching while the coin icon has replaced its original text node
+        // must restore Chinese correctly, then English, without rerendering
+        // the cat-detail panel or dropping the embedded coin images.
+        await page.evaluate(()=>{
+          UI.closeAll();UI.openCatDetail(State.S.cats[0]);
+          document.getElementById('cd-grow-more').open=true;
+          window.MorrowwishI18n.set('zh');
+        });
+        await page.waitForTimeout(220);
+        const zh=await page.evaluate(()=>({
+          price:document.querySelector('#cd-trainstat small')?.textContent||'',
+          bulk:document.querySelector('#cd-stat-ten small')?.textContent||'',
+          icons:document.querySelectorAll('#panel .cb-gold-coin').length
+        }));
+        if(!zh.price.includes('消耗')||!zh.bulk.includes('最多')||zh.icons<2)
+          failures.push('Live English→Chinese toggle lost original coin labels: '+JSON.stringify(zh));
+        await page.screenshot({path:dir+'/site-zh-toggle-cat-detail.png'});
+        await page.evaluate(()=>window.MorrowwishI18n.set('en'));
+        await page.waitForTimeout(220);
+        const en=await page.evaluate(()=>({
+          price:document.querySelector('#cd-trainstat small')?.textContent||'',
+          bulk:document.querySelector('#cd-stat-ten small')?.textContent||''
+        }));
+        if(!en.price.startsWith('Cost ')||!en.bulk.startsWith('Up to 10 times'))
+          failures.push('Live Chinese→English toggle failed to restore costs: '+JSON.stringify(en));
+        reports.push({host:'site',locale:'toggle-en-zh-en',screen:'live-cat-detail-currency',
+          zh,en,issues:[]});
+        await page.screenshot({path:dir+'/site-en-toggle-cat-detail.png'});
+      }
       if(pageErrors.length)failures.push(profile.host+' '+profile.lang+
         ' uncaught errors: '+JSON.stringify(pageErrors.slice(0,12)));
     }catch(error){failures.push(profile.host+' '+profile.lang+' setup: '+error.message)}
