@@ -60,8 +60,8 @@ try{
    const cells=(await gameRow.locator('td').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
    assert.equal(cells[1],'26','Historical pageviews erased');
-   assert.equal(cells[2],language==='zh'?'82 场战斗':'82 battles','Historic battle starts not preserved or mislabeled');
-   assert.equal(cells[3],language==='zh'?'79 场结算':'79 battle finishes','Historic battle finishes not preserved or mislabeled');
+   assert.equal(cells[2],'8 30.8%','Main-table starts must be unique play visits');
+   assert.equal(cells[3],'7 87.5%','Main-table completions must be unique finished visits');
    assert.equal(cells[4],'1','Historical replay total erased');
    assert.deepEqual(cells.slice(5,8),['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
@@ -78,7 +78,9 @@ try{
     assert.ok(lines.some(line=>line.includes(label)&&line.endsWith(String(value))),
       language+' historical Cat Bond '+label+'='+value+' is not visible');
    }
-   for(const rate of ['8 / 26 · 30.8%','79 / 82 · 96.3%'])
+   assert.ok(lines.some(line=>line.includes('82'))&&lines.some(line=>line.includes('79')),
+     'Raw historic battle counts must remain in the game details');
+   for(const rate of ['8 / 26 · 30.8%','7 / 8 · 87.5%'])
     assert.ok(lines.some(line=>line.includes(rate)),
       language+' historical ratio missing: '+rate);
    assert.ok(lines.some(line=>line.endsWith('1')&&
