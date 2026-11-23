@@ -377,7 +377,7 @@ function startBoss(){
  if(!team.length){openJournal();return;}
  const region=window.WorldMap?.REGIONS?.find(r=>r.id==='ruins');
  game._returnScene='map';game._battleTheme=region?.theme||{region:'ruins'};
- game.startBattle(team,boss,{storyBoss:true});
+ game.startBattle(team,boss,{storyBoss:true,pack:[boss]});
 }
 function showBossRetry(){
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-boss-overlay';
