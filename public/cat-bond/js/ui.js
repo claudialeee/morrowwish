@@ -157,6 +157,25 @@ const UI = {
     const route=this._localePanelRoute;
     if(!panel?.classList.contains('open')||!route||this._localePanelRerendering)return;
     if(typeof this[route.method]!=='function')return;
+    // Don't restart a running feather-catch minigame just to relabel it.
+    if(route.method==='openTease'){
+      const en=this.isEnglish();
+      const cat=route.args[0]||State.S.cats[0];
+      const title=panel.querySelector('.card h2');
+      const desc=panel.querySelector('.card p.sub');
+      const score=panel.querySelector('#tz-score')?.parentElement;
+      const finish=panel.querySelector('#tz-done');
+      if(title)title.textContent=en?'Cat Teaser 🪶':'逗猫 🪶';
+      if(desc&&cat){
+        const name=GameData.speciesName(cat.species);
+        desc.textContent=en
+          ?'Tap the feather toy and help '+name+' catch it. More catches improve affection and mood.'
+          :'点击逗猫棒，让 '+name+' 扑抓！抓中越多，好感与心情涨得越快。';
+      }
+      if(score?.firstChild)score.firstChild.textContent=en?'Score ':'得分 ';
+      if(finish)finish.textContent=en?'Finish':'结束';
+      return;
+    }
     const scrollTop=panel.scrollTop;
     const card=panel.querySelector(':scope > .card');
     const cardTop=card?.scrollTop||0;
@@ -3320,7 +3339,7 @@ const LOCALIZED_PANEL_ROUTES=[
   'openWorkshop','openBuild','openDex','openDaily','openShop',
   'openFeed','openSkillEditor','openTrainer','openMapChooser',
   'openMapSquad','openExploreMenu','openJourney','openCapturePrep',
-  'openBattleModePrompt','openCatPicker','openBondPanel','openGambitEditor',
+  'openBattleModePrompt','openCatPicker','openBondPanel','openTease','openGambitEditor',
   'openWelcomeBack','openBattleRecoveryResult','openMasteryChallengeResult',
   'openCatchResult'
 ];
