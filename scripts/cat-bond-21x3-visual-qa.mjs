@@ -10,13 +10,28 @@ try{
   const p=window.CatBondPremiumCinematics,cv=document.createElement('canvas');cv.width=620;cv.height=349;
   const c=cv.getContext('2d',{willReadFrequently:true}),hashes=[],frames=[];
   for(const key of p.keys)for(const tier of [1,2,3]){
-   c.clearRect(0,0,cv.width,cv.height);p.draw(c,cv.width,cv.height,{elements:key,max:2.75,t:1.2,tier,galleryPreview:true,originalArt:true,hideCaptions:true});
+   c.clearRect(0,0,cv.width,cv.height);p.draw(c,cv.width,cv.height,{elements:key,max:2.75,t:1.2,tier,thumbnail:true,originalArt:true,hideCaptions:true});
    const d=c.getImageData(0,0,cv.width,cv.height).data;let h=2166136261>>>0,visible=0;
    for(let i=0;i<d.length;i+=40){h=Math.imul((h^d[i])>>>0,16777619)>>>0;h=Math.imul((h^d[i+1])>>>0,16777619)>>>0;h=Math.imul((h^d[i+2])>>>0,16777619)>>>0;if(d[i+3]>200)visible++;}
    hashes.push(h.toString(16));frames.push({key,tier,visible});
   }
+  const motionPhases=[.14,.40,.73],motionHashes=[],motionLayouts=[];
+  for(const phase of motionPhases){
+   c.clearRect(0,0,cv.width,cv.height);
+   p.draw(c,cv.width,cv.height,{elements:'fire+light',max:2.75,t:2.75*(1-phase),
+     tier:3,galleryPreview:true,originalArt:true,hideCaptions:true});
+   const d=c.getImageData(0,0,cv.width,cv.height).data;let h=2166136261>>>0;
+   for(let i=0;i<d.length;i+=16)h=Math.imul((h^d[i])>>>0,16777619)>>>0;
+   motionHashes.push(h.toString(16));motionLayouts.push(p.lastLayout);
+  }
+  const zooms=motionLayouts.map(x=>x.camera.zoom);
+  const cameraMoves=Math.max(...zooms)-Math.min(...zooms)>.0005||
+    new Set(motionLayouts.map(x=>JSON.stringify([x.camera.panX,x.camera.panY,x.camera.rotationRadians]))).size===3;
   return{keys:p.keys.length,count:frames.length,unique:new Set(hashes).size,frames,original:p.originalPaintingDefault,
-   actorFallback:p.actorFallbackEnabled,heroSource:window.CatBondDuoHero.assetSource};
+   actorFallback:p.actorFallbackEnabled,heroSource:window.CatBondDuoHero.assetSource,
+   motionUnique:new Set(motionHashes).size,cameraMoves,
+   paintingDrawCount:motionLayouts[2].paintingDrawCount,actorLayerCount:motionLayouts[2].actorLayerCount,
+   animatedEffects:motionLayouts[2].animatedEffects};
  });
  assert.equal(audit.keys,21);assert.equal(audit.count,63);assert.equal(audit.unique,63,'all 63 paintings should be distinct');
  assert.equal(audit.original,true);assert.equal(audit.actorFallback,false);assert.equal(audit.heroSource,'63-original-painted-storyboards');
