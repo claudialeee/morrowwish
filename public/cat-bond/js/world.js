@@ -644,7 +644,9 @@ class YardScene {
       :sp.rarity==='SR'?'🌟 不寻常的闪光！有史诗猫咪藏在草丛里！'
       :sp.rarity==='R'?'✨ 草丛里传来稀有猫咪的脚步声！'
       :'🌿 草丛里有只野猫在探头…点它！';
-    this.game.toast(sighting);
+    // The first CrazyGames encounter is already highlighted by a dedicated
+    // first-quest card. A redundant toast overlaps it on narrow portrait screens.
+    if(!(first&&window.CatBondPlatform?.crazygames))this.game.toast(sighting);
     return true;
   }
   // spawn the hiding wild cat at whichever bush is closest to (x,y)
