@@ -1,4 +1,4 @@
-const json=(body,status=200)=>new Response(JSON.stringify(body),{
+const cloudJson=(body,status=200)=>new Response(JSON.stringify(body),{
   status,headers:{
     "content-type":"application/json; charset=utf-8",
     "cache-control":"no-store, max-age=0",
@@ -13,12 +13,12 @@ async function tokenHash(token){
 }
 
 export async function catBondCloudSave(request,env){
-  if(!env?.DB)return json({error:"Cloud save storage unavailable"},503);
+  if(!env?.DB)return cloudJson({error:"Cloud save storage unavailable"},503);
   if(request.method!=="GET"&&request.method!=="PUT")
-    return json({error:"Method not allowed"},405);
+    return cloudJson({error:"Method not allowed"},405);
 
   const match=(request.headers.get("authorization")||"").match(/^Bearer ([A-Za-z0-9_-]{43})$/);
-  if(!match)return json({error:"A valid recovery code is required"},401);
+  if(!match)return cloudJson({error:"A valid recovery code is required"},401);
 
   const keyHash=await tokenHash(match[1]);
   try{
@@ -36,30 +36,30 @@ export async function catBondCloudSave(request,env){
         "SELECT iv,ciphertext,revision,updated_at FROM cat_bond_cloud_saves WHERE key_hash=?"
       ).bind(keyHash).first();
       return row
-        ?json({exists:true,iv:row.iv,ciphertext:row.ciphertext,revision:row.revision,updatedAt:row.updated_at})
+        ?cloudJson({exists:true,iv:row.iv,ciphertext:row.ciphertext,revision:row.revision,updatedAt:row.updated_at})
         :json({exists:false,revision:0});
     }
 
     const declared=Number(request.headers.get("content-length")||0);
-    if(declared>700000)return json({error:"Save is too large"},413);
+    if(declared>700000)return cloudJson({error:"Save is too large"},413);
     const raw=await request.text();
     const byteLength=new TextEncoder().encode(raw).byteLength;
-    if(byteLength>700000)return json({error:"Save is too large"},413);
+    if(byteLength>700000)return cloudJson({error:"Save is too large"},413);
     let body;
-    try{body=JSON.parse(raw);}catch{return json({error:"Invalid save payload"},400);}
+    try{body=JSON.parse(raw);}catch{return cloudJson({error:"Invalid save payload"},400);}
     const iv=body?.iv,ciphertext=body?.ciphertext,expected=body?.expectedRevision;
     if(typeof iv!=="string"||!/^[A-Za-z0-9_-]{16}$/.test(iv)||
        typeof ciphertext!=="string"||ciphertext.length<24||
        ciphertext.length>680000||!/^[A-Za-z0-9_-]+$/.test(ciphertext)||
        !Number.isSafeInteger(expected)||expected<0)
-      return json({error:"Invalid encrypted save"},400);
+      return cloudJson({error:"Invalid encrypted save"},400);
 
     const current=await env.DB.prepare(
       "SELECT revision FROM cat_bond_cloud_saves WHERE key_hash=?"
     ).bind(keyHash).first();
     const currentRevision=current?.revision??0;
     if(currentRevision!==expected)
-      return json({error:"Save changed on another device",conflict:true,revision:currentRevision},409);
+      return cloudJson({error:"Save changed on another device",conflict:true,revision:currentRevision},409);
 
     const now=Date.now();
     const saved=await env.DB.prepare(`
@@ -79,11 +79,11 @@ export async function catBondCloudSave(request,env){
       const latest=await env.DB.prepare(
         "SELECT revision FROM cat_bond_cloud_saves WHERE key_hash=?"
       ).bind(keyHash).first();
-      return json({error:"Save changed on another device",conflict:true,revision:latest?.revision??0},409);
+      return cloudJson({error:"Save changed on another device",conflict:true,revision:latest?.revision??0},409);
     }
-    return json({ok:true,revision:saved.revision,updatedAt:saved.updated_at});
+    return cloudJson({ok:true,revision:saved.revision,updatedAt:saved.updated_at});
   }catch(error){
     console.warn("Cat Bond cloud save failed",String(error?.message||error).slice(0,160));
-    return json({error:"Cloud save temporarily unavailable"},503);
+    return cloudJson({error:"Cloud save temporarily unavailable"},503);
   }
 }
