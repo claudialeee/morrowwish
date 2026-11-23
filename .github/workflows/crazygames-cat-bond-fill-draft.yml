@@ -8,11 +8,11 @@ on:
       - '.github/workflows/crazygames-cat-bond-fill-draft.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   actions: read
 concurrency:
   group: cat-bond-crazygames-write-draft
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   fill-only:
     runs-on: ubuntu-latest
@@ -39,6 +39,14 @@ jobs:
           node --check scripts/prepare-cat-bond-crazygames-media.mjs
           node --check scripts/crazygames-cat-bond-save-draft.mjs
           node scripts/check-cat-bond-original-art.mjs --source-only
+          node scripts/check-cat-bond-host.mjs
+          node scripts/check-cat-bond-premium-21x3.mjs
+      - name: QA portal mouse/touch navigation, English and responsive iframe
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/catbond-qa-server.log 2>&1 &
+          srv=$!
+          trap 'kill "$srv" 2>/dev/null || true' EXIT
+          node scripts/cat-bond-crazygames-real-input.mjs
       - name: Verify current deployed iframe is really on approved original-63 art
         run: |
           set -eu
@@ -74,6 +82,41 @@ jobs:
           CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
           CRAZYGAMES_TARGET_SLUGS: cat-bond
         run: node scripts/crazygames-cat-bond-save-draft.mjs
+      - name: Confirm actual portal save and persist verifiable draft receipt
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const evidence=JSON.parse(fs.readFileSync('.check/crazygames/cat-bond-draft-fill.json','utf8'));
+          const r=evidence.results?.[0];
+          const want=['cover-landscape.png','cover-portrait.png','cover-square.png',
+            'real-gameplay-landscape.mp4','real-gameplay-portrait.mp4'];
+          if(r?.status!=='saved-final-step-unsubmitted'||r.verifiedDraftVisible!==true||
+             r.platformDraftId!=='cda65c21-75f7-4ce5-b717-62b425097981'||
+             r.reviewSubmitted!==false||r.finalSubmitClicked!==false||
+             r.artProvenance?.originalArt!==true||r.artProvenance?.originalSceneCount!==63||
+             want.some(x=>!r.uploaded?.includes(x)))
+            throw Error('Draft media replacement NOT independently confirmed: '+JSON.stringify({
+              status:r?.status,id:r?.platformDraftId,uploaded:r?.uploaded,
+              verified:r?.verifiedDraftVisible,error:r?.error}));
+          const path='promotion/crazygames-cat-bond-submission-draft.json';
+          const data=JSON.parse(fs.readFileSync(path,'utf8'));
+          data.portalSavedAt=r.savedAt;
+          data.mediaReplacedAt=r.savedAt;
+          data.mediaArtSource='63-original-painted-storyboards';
+          data.mediaArtifactSource='fresh current-game native landscape + portrait recordings';
+          data.rightsAndQA.visualAssets='Five newly recorded original-63 assets uploaded to the existing portal draft; human final visual QA not yet separately recorded.';
+          data.submissionForReview=false;
+          fs.writeFileSync(path,JSON.stringify(data,null,2)+'\n');
+          console.log('CONFIRMED existing CrazyGames draft updated with all 5 original-63 assets at',r.savedAt);
+          NODE
+          git config user.name morrowwish-crazygames-qa-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add promotion/crazygames-cat-bond-submission-draft.json
+          if ! git diff --cached --quiet; then
+            git commit -m "ops(crazygames): verify original-63 media replaced in existing Cat Bond draft"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
       - name: Keep draft evidence and failure diagnostics, no publication
         if: always()
         uses: actions/upload-artifact@v4
