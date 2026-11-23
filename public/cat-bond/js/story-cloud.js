@@ -37,45 +37,45 @@ const LAST_PAGE={
  region:'ruins',chapter:'终章 · 最后一页',chapterEn:'FINAL CHAPTER · THE LAST PAGE'
 };
 const PROLOGUE=[
- {region:'home',kicker:'CAT BOND · THE LAST PAGE',kickerEn:'CAT BOND · THE LAST PAGE',
+ {region:'home',kicker:'猫猫纽带 · 最后一页',kickerEn:'CAT BOND · THE LAST PAGE',
   title:'每只猫，都有一页自己的故事。',titleEn:'Every cat has a page of its own.',
   text:'在这片世界，名字、经历与羁绊，都被写进一本会呼吸的书——Catdex。它记录每只猫曾经是谁，也记得它们与谁并肩。',
   textEn:'In this world, names, memories and bonds are written in a living book: the Catdex. It remembers who every cat has been, and who stood beside them.'},
- {region:'sakura',kicker:'THE HOLLOW',kickerEn:'THE HOLLOW',
+ {region:'sakura',kicker:'空白蔓延之地',kickerEn:'THE HOLLOW',
   title:'被遗忘的地方，会慢慢变空。',titleEn:'Where memories vanish, the world grows hollow.',
   text:'当一段重要记忆消失，Catdex 就会留下空白。空白蔓延之处，被称为 Hollow。没有名字的猫，也会逐渐从世界上消失。',
   textEn:'When an important memory disappears, the Catdex leaves a blank page. Where the blankness spreads, the world becomes Hollow. A nameless cat can slowly vanish from it.'},
- {region:'creek',kicker:'A STRANGE AWAKENING',kickerEn:'A STRANGE AWAKENING',
+ {region:'creek',kicker:'初醒之时',kickerEn:'A STRANGE AWAKENING',
   title:'你在一座安静的庭院醒来。',titleEn:'You wake in a quiet garden.',
   text:'你没有名字，也想不起自己从哪里来。但你能听见空白页的声音——那是一声倒着响的铃。',
   textEn:'You have no name and no memory of where you came from. Yet you can hear the blank pages: a bell ringing backward.'},
- {region:'volcano',kicker:'A VOICE IN THE BELL',kickerEn:'A VOICE IN THE BELL',
+ {region:'volcano',kicker:'星铃中的声音',kickerEn:'A VOICE IN THE BELL',
   title:'远处有人在呼唤你。',titleEn:'Someone is calling from beyond the bell.',
   text:'“这一次，我不会再让你离开。”声音很轻，却像等了很久。你不知道它是谁，只知道它认得你。',
   textEn:'“This time, I will not let you leave again.” The voice is quiet, but it sounds as if it has waited a very long time. You do not know who it is. It knows you.'},
- {region:'ruins',kicker:'YOUR JOURNEY BEGINS',kickerEn:'YOUR JOURNEY BEGINS',
+ {region:'ruins',kicker:'旅程开始',kickerEn:'YOUR JOURNEY BEGINS',
   title:'去找回那些被抹去的名字。',titleEn:'Find the names that were erased.',
   text:'探索五片土地，结识新的伙伴，收集散落的记忆。可那本书似乎早已为你留好最后一页。',
   textEn:'Explore five lands, meet new companions and gather the memories scattered across the world. Yet the book seems to have reserved its final page for you.'}
 ];
 const ENDING=[
- {region:'ruins',kicker:'THE REVERSED BELL FALLS SILENT',kickerEn:'THE REVERSED BELL FALLS SILENT',
+ {region:'ruins',kicker:'逆响之钟归于沉寂',kickerEn:'THE REVERSED BELL FALLS SILENT',
   title:'暮铃终于停下了。',titleEn:'At last, Muling falls silent.',
   text:'六道记忆锁在伙伴们的羁绊中逐一解开。逆响停止，其他猫咪的名字与记忆从钟声里回到它们身边。',
   textEn:'One by one, the six memory locks yield to the bonds you have built. The reversed bell falls silent, and every stolen name and memory returns to its owner.'},
- {region:'volcano',kicker:'THE MEMORY RETURNS',kickerEn:'THE MEMORY RETURNS',
+ {region:'volcano',kicker:'记忆归来',kickerEn:'THE MEMORY RETURNS',
   title:'你从未抛下暮铃。',titleEn:'You never abandoned Muling.',
   text:'暮铃终于看见那一天的完整记忆：你不是离开它，而是留下来封住灾变。它等了这么久，却一直把牺牲当成了告别。',
   textEn:'Muling finally sees the whole memory: you did not leave them. You stayed behind to seal the catastrophe. They waited all this time, mistaking your sacrifice for goodbye.'},
- {region:'creek',kicker:'A DIFFERENT KIND OF BOND',kickerEn:'A DIFFERENT KIND OF BOND',
+ {region:'creek',kicker:'另一种羁绊',kickerEn:'A DIFFERENT KIND OF BOND',
   title:'羁绊不是把谁留在原地。',titleEn:'A bond is not a chain.',
   text:'你没有要求暮铃忘记过去，也没有答应永远不再离开。你们选择从今天开始重新同行——这一次，不再靠夺取记忆证明彼此重要。',
   textEn:'You do not ask Muling to forget the past, and you do not promise never to leave again. You choose to walk together from today—not by taking memories, but by making new ones.'},
- {region:'ruins',kicker:'THE CATDEX · PAGE ONE',kickerEn:'THE CATDEX · PAGE ONE',
+ {region:'ruins',kicker:'CATDEX · 第一页',kickerEn:'THE CATDEX · PAGE ONE',
   title:'最后一页，写回了你的名字。',titleEn:'The last page writes your name again.',
   text:'Catdex 恢复了你曾经的记忆，却没有抹去现在的你。第一页记录着你的新名字、你的伙伴，以及你们共同完成的故事。',
   textEn:'The Catdex restores your old memories without erasing who you are now. Its first page records your new name, your companions and the story you wrote together.'},
- {region:'home',kicker:'A NEW MORNING',kickerEn:'A NEW MORNING',
+ {region:'home',kicker:'新的清晨',kickerEn:'A NEW MORNING',
   title:'星铃再次响起。',titleEn:'The Star Bell rings once more.',
   text:'清晨，你和暮铃坐在庭院门口。伙伴们在阳光里追逐，Catdex 翻开了新的空白页。故事没有回到从前——它终于有了未来。',
   textEn:'At dawn, you and Muling sit by the garden gate. Your companions chase the sunlight, and the Catdex opens a fresh blank page. The story does not return to what it was. At last, it has a future.'}
@@ -181,7 +181,7 @@ function showSequence(kind,pages,done,options={}){
   '<section class="cb-story-card"><div class="cb-story-card-top"><span class="cb-story-brand">MORROW · WISH</span><span class="cb-story-step"></span></div>'+
   '<p class="cb-story-kicker"></p><h1 class="cb-story-title"></h1><p class="cb-story-copy"></p>'+
   '<div class="cb-story-portraits"><figure><canvas data-cb-player-portrait width="180" height="150"></canvas><figcaption></figcaption></figure>'+
-  '<span class="cb-story-portrait-link" aria-hidden="true">✦</span><figure><canvas data-cb-muling-portrait width="180" height="150"></canvas><figcaption>暮铃 · Muling</figcaption></figure></div>'+
+  '<span class="cb-story-portrait-link" aria-hidden="true">✦</span><figure><canvas data-cb-muling-portrait width="180" height="150"></canvas><figcaption></figcaption></figure></div>'+
   '<div class="cb-story-progress"></div><div class="cb-story-actions"><button type="button" class="cb-story-skip"></button><button type="button" class="cb-story-next"></button></div></section>';
  document.body.append(overlay);
  const canvas=overlay.querySelector('.cb-story-art');
@@ -192,6 +192,8 @@ function showSequence(kind,pages,done,options={}){
   overlay.querySelector('.cb-story-kicker').textContent=en?(page.kickerEn||page.chapterEn||'THE LAST PAGE'):(page.kicker||page.chapter||'最后一页');
   overlay.querySelector('.cb-story-title').textContent=en?(page.titleEn||page.title):(page.title||page.titleEn);
   overlay.querySelector('.cb-story-copy').textContent=en?(page.textEn||page.text):(page.text||page.textEn);
+  const mulingCaption=overlay.querySelector('.cb-story-portraits figure:last-child figcaption');
+  if(mulingCaption)mulingCaption.textContent=t('暮铃','Muling');
   const progress=overlay.querySelector('.cb-story-progress');
   progress.innerHTML=pages.map((_,i)=>'<span class="'+(i<=index?'is-lit':'')+'"></span>').join('');
   const portraits=overlay.querySelector('.cb-story-portraits');
@@ -342,7 +344,7 @@ function showBossReveal(){
  const s=storyState();if(!s||!allSix(s)||s.bossDefeated)return;
  document.querySelector('.cb-story-overlay')?.remove();
  showSequence('reveal',[{
-  region:'ruins',kicker:'THE LAST PAGE',kickerEn:'THE LAST PAGE',
+  region:'ruins',kicker:'最后一页',kickerEn:'THE LAST PAGE',
   title:'那道声音，终于有了名字。',titleEn:'The voice finally has a name.',
   text:'暮铃就在星盘另一端。六段旋律已经启动逆响仪式。现在，你必须阻止它继续夺走其他猫咪的记忆。',
   textEn:'Muling is waiting beyond the astrolabe. The six melodies have started the reversed-bell ritual. You must stop it before more memories are taken.'
@@ -360,7 +362,7 @@ function bossSpecies(){
 }
 function showBossGate(){
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-boss-overlay';
- overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">FINAL CHAPTER · THE REVERSED BELL</p>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">'+t('终章 · 逆响之钟','FINAL CHAPTER · THE REVERSED BELL')+'</p>'+
   '<h2>'+t('暮铃 · 逆响之主','Muling · Lord of the Reversed Bell')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('它不是为了毁灭世界而战。它只是想让你回来——哪怕代价是夺走所有人的记忆。','Muling does not fight to destroy the world. It only wants you back—even if every other memory must be taken.')+'</p>'+
   '<div class="cb-boss-emblem">✧</div><p>'+t('带上两位最信任的伙伴，结束逆响仪式。','Bring the two companions you trust most and end the reversed-bell ritual.')+'</p>'+
@@ -384,7 +386,7 @@ function startBoss(){
 }
 function showBossRetry(){
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-boss-overlay';
- overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">THE BELL IS STILL RINGING</p>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">'+t('逆响仍在继续','THE BELL IS STILL RINGING')+'</p>'+
   '<h2>'+t('逆响仍未停止','The reversed bell still rings')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('暮铃的记忆还被困在星铃里。调整队伍、恢复状态，再试一次。','Muling’s memories are still trapped in the Star Bell. Adjust your team, recover, and try again.')+'</p>'+
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-retry>'+t('再次挑战','Try again')+'</button>'+
