@@ -1,0 +1,56 @@
+name: Fill Cat Bond CrazyGames draft (never submit for review)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/crazygames-cat-bond-fill-draft.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-crazygames-write-draft
+  cancel-in-progress: false
+jobs:
+  fill-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install media generation and browser
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+          npx playwright install --with-deps chromium
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
+      - name: Generate current Cat Bond watercolor media for all five portal inputs
+        run: |
+          node scripts/record-cat-bond-crazygames-previews.mjs
+          node scripts/crazygames-cat-bond-cover-from-gameplay.mjs
+          node scripts/prepare-cat-bond-crazygames-media.mjs
+      - name: Login, create or resume Cat Bond, save draft only — NEVER submit
+        env:
+          CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
+          CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
+          CRAZYGAMES_TARGET_SLUGS: cat-bond
+        run: node scripts/crazygames-cat-bond-save-draft.mjs
+      - name: Keep portal draft receipt and authentic upload candidates
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-portal-saved-draft-and-media
+          path: |
+            .check/crazygames/cat-bond-draft-fill.json
+            public/promo/cat-bond/cover-landscape.png
+            public/promo/cat-bond/cover-portrait.png
+            public/promo/cat-bond/cover-square.png
+            public/promo/cat-bond/real-gameplay-landscape.mp4
+            public/promo/cat-bond/real-gameplay-portrait.mp4
+          if-no-files-found: warn
+          retention-days: 14
