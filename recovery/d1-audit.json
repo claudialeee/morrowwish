@@ -1,0 +1,378 @@
+{
+  "generatedAt": "2026-11-23T22:42:57.363Z",
+  "targetRangeStart": "2026-11-22T00:00:00-08:00",
+  "database": {
+    "name": "morrowwish-analytics",
+    "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
+    "version": "production",
+    "created_at": "2026-11-19T08:12:57.602Z",
+    "file_size": 335872
+  },
+  "currentBookmark": "00000275-00000016-0000512c-55c502a9963063858bb40c1482289c69",
+  "historicalBookmarks": [
+    {
+      "timestamp": "2026-11-22T00:00:00-08:00",
+      "bookmark": null,
+      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+    },
+    {
+      "timestamp": "2026-11-22T06:00:00-08:00",
+      "bookmark": null,
+      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+    },
+    {
+      "timestamp": "2026-11-22T12:00:00-08:00",
+      "bookmark": null,
+      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+    },
+    {
+      "timestamp": "2026-11-22T18:00:00-08:00",
+      "bookmark": null,
+      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+    },
+    {
+      "timestamp": "2026-11-23T00:00:00-08:00",
+      "bookmark": null,
+      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+    },
+    {
+      "timestamp": "2026-11-23T06:00:00-08:00",
+      "bookmark": null,
+      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+    }
+  ],
+  "tables": [
+    {
+      "name": "_cf_KV",
+      "sql": "CREATE TABLE _cf_KV (\n        key TEXT PRIMARY KEY,\n        value BLOB\n      ) WITHOUT ROWID"
+    },
+    {
+      "name": "events",
+      "sql": "CREATE TABLE events(id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT NOT NULL, day TEXT NOT NULL, ts INTEGER NOT NULL, game TEXT, visitor TEXT, view_id TEXT, run_id TEXT, event_name TEXT, kind TEXT, payload TEXT NOT NULL)"
+    },
+    {
+      "name": "social_native_oauth",
+      "sql": "CREATE TABLE social_native_oauth (state TEXT PRIMARY KEY, created_at INTEGER NOT NULL)"
+    },
+    {
+      "name": "social_native_store",
+      "sql": "CREATE TABLE social_native_store (key TEXT PRIMARY KEY, payload TEXT NOT NULL, updated_at INTEGER NOT NULL)"
+    },
+    {
+      "name": "sqlite_sequence",
+      "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+    }
+  ],
+  "eventsSchema": [
+    {
+      "name": "id",
+      "type": "INTEGER",
+      "notnull": 0,
+      "pk": 1
+    },
+    {
+      "name": "category",
+      "type": "TEXT",
+      "notnull": 1,
+      "pk": 0
+    },
+    {
+      "name": "day",
+      "type": "TEXT",
+      "notnull": 1,
+      "pk": 0
+    },
+    {
+      "name": "ts",
+      "type": "INTEGER",
+      "notnull": 1,
+      "pk": 0
+    },
+    {
+      "name": "game",
+      "type": "TEXT",
+      "notnull": 0,
+      "pk": 0
+    },
+    {
+      "name": "visitor",
+      "type": "TEXT",
+      "notnull": 0,
+      "pk": 0
+    },
+    {
+      "name": "view_id",
+      "type": "TEXT",
+      "notnull": 0,
+      "pk": 0
+    },
+    {
+      "name": "run_id",
+      "type": "TEXT",
+      "notnull": 0,
+      "pk": 0
+    },
+    {
+      "name": "event_name",
+      "type": "TEXT",
+      "notnull": 0,
+      "pk": 0
+    },
+    {
+      "name": "kind",
+      "type": "TEXT",
+      "notnull": 0,
+      "pk": 0
+    },
+    {
+      "name": "payload",
+      "type": "TEXT",
+      "notnull": 1,
+      "pk": 0
+    }
+  ],
+  "currentEventsSinceNov22": [
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "session",
+      "rows": 100
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "visit",
+      "rows": 36
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "session",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "visit",
+      "rows": 8
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "session",
+      "rows": 2
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "visit",
+      "rows": 1
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "session",
+      "rows": 86
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "visit",
+      "rows": 48
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "session",
+      "rows": 17
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "session",
+      "rows": 41
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "visit",
+      "rows": 3
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "session",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "session",
+      "rows": 17
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "visit",
+      "rows": 11
+    }
+  ],
+  "currentTotals": [
+    {
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "session",
+      "rows": 100,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "visit",
+      "rows": 36,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "session",
+      "rows": 6,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "visit",
+      "rows": 8,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "session",
+      "rows": 2,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "visit",
+      "rows": 1,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "hub",
+      "kind": "session",
+      "rows": 86,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "hub",
+      "kind": "visit",
+      "rows": 48,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "session",
+      "rows": 17,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "visit",
+      "rows": 6,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "session",
+      "rows": 41,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "visit",
+      "rows": 3,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "session",
+      "rows": 6,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "visit",
+      "rows": 6,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "session",
+      "rows": 17,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    },
+    {
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "visit",
+      "rows": 11,
+      "first_day": "2026-11-23",
+      "last_day": "2026-11-23"
+    }
+  ]
+}
