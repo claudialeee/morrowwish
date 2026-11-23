@@ -99,7 +99,7 @@ async function toDetails(page,ctx,id,log){
     text=await body(qa);
     if(text.includes('QA Results')){
        const yes=qa.getByText('Yes',{exact:true}),no=qa.getByText('No',{exact:true});
-       if(await yes.count()!==6||await no.count()!==6){
+       if(await yes.count()!==7||await no.count()!==7){
          results[0].qaDiagnostics={
            path:new URL(qa.url()).pathname,
            body:mask(await qa.locator('body').innerText(),5000),
@@ -110,9 +110,14 @@ async function toDetails(page,ctx,id,log){
          save();
          throw Error('QA result form structure changed: '+results[0].qaDiagnostics.yesCount+'/'+results[0].qaDiagnostics.noCount);
        }
-       // The final "No" is truthful: these games do not feature an in-game T&C or Privacy link.
-       for(let i=0;i<5;i++)await yes.nth(i).evaluate(e=>(e.closest('button')||e.closest('label')||e).click());
-       await no.nth(5).evaluate(e=>(e.closest('button')||e.closest('label')||e).click());
+       // Latest Basic Implementation has SEVEN checks, not six.
+       // Gameplay, CrazyGames domains, browsers, mobile, no third-party ads,
+       // and no third-party login all pass the game's verified basic tests.
+       // T&C / privacy notice is not displayed inside the game => truthful No.
+       for(let i=0;i<6;i++)await yes.nth(i).evaluate(e=>(e.closest('button')||e.closest('label')||e).click());
+       await no.nth(6).evaluate(e=>(e.closest('button')||e.closest('label')||e).click());
+       results[0].qaAnswered={total:7,yes:6,no:1,details:'No in-game terms/privacy link'};
+       save();
        const acknowledge=qa.locator('input[type=checkbox]').first();
        await acknowledge.evaluate(el=>{if(!el.checked)el.click()});
        if(!await click(qa,'Continue'))throw Error('QA checklist Continue disabled after truthful answers');
