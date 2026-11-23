@@ -14,6 +14,7 @@ on:
       - 'public/game-fullscreen.js'
       - 'scripts/capture-trailers-v10.mjs'
       - 'scripts/render-trailers-v10.mjs'
+      - 'scripts/cut-cat-bond-premium-hook-v13.mjs'
       - 'scripts/check-cat-bond-original-art.mjs'
       - 'scripts/check-cat-bond-map-return.mjs'
   workflow_dispatch:
@@ -127,7 +128,11 @@ jobs:
               throw Error('Unrendered media in seven-game review: '+t.slug);
           console.log('V13 genuine original-painted duo, reconciliation, rare capture, all media verified');
           NODE
-      - name: Verify independent V13 original-art trailer manifest
+      - name: Cut a genuinely new 10-second original-painted social correction
+        run: |
+          node --check scripts/cut-cat-bond-premium-hook-v13.mjs
+          node scripts/cut-cat-bond-premium-hook-v13.mjs
+      - name: Verify independent V13 original-art trailer and corrected short
         run: node scripts/check-cat-bond-original-art.mjs
       - name: Commit owner-review assets only; never post to social media
         shell: bash
@@ -135,6 +140,11 @@ jobs:
           set -euo pipefail
           git add public/promo/cat-bond/trailer-v13-20261122.mp4
           git add public/promo/cat-bond/trailer-v13-20261122.jpg
+          git add public/promo/cat-bond/hook-v13-original-duo-20261122.mp4
+          git add public/promo/cat-bond/hook-v13-original-duo-20261122.jpg
+          git add public/promo/cat-bond/hook-v13-original-duo-20261122.json
+          git add public/promo/cat-bond/hook-v13-original-duo-proof.jpg
+          git add public/promo/cat-bond/hook-v13-rare-result-proof.jpg
           git add public/promo/cat-bond/v13-review-*.jpg
           git add public/promo/cat-bond/v10-quarrel-proof.png
           git add public/promo/cat-bond/v10-map-navigation-proof.png
