@@ -88,7 +88,7 @@ async function main(){
       const before=await state();
       assert(before.life>0&&before.boxes.length===1,'No live parcel');
       const oldDelivered=before.delivered;
-      const targetY=closeCall?310:220;
+      const targetY=before.life===1?(closeCall?265:145):(closeCall?290:190);
       await page.waitForFunction(y=>{
         const s=window.__PARCEL_AD_STATE__();
         return s.boxes.length===1&&s.boxes[0].y>=y;
@@ -100,7 +100,7 @@ async function main(){
       await page.waitForFunction(old=>window.__PARCEL_AD_STATE__().delivered===old+1,
         oldDelivered,{timeout:2500,polling:40});
       const after=await state();
-      assert(after.life===before.life,'Unexpected wrong delivery');
+      assert(after.life===before.life,'Unexpected missed parcel during real delivery: '+JSON.stringify({before,live,after}));
       if(closeCall)proof.closeCall={color,y:live.boxes[0].y,delivered:after.delivered};
       return after;
     }
@@ -133,7 +133,6 @@ async function main(){
     snap=await state();
     assert(snap.life===1&&snap.stats.misses===3,
       'Genuine one-life cliffhanger not achieved: '+JSON.stringify(snap));
-    await page.screenshot({path:BASE+'/challenge-one-life-proof.png'});
     phase=clock();
     for(let i=16;i<21;i++)await send(i===19);
     mark('clutch',phase);
@@ -147,7 +146,6 @@ async function main(){
     snap=await state();
     assert(snap.delivered===24&&snap.stats.shifts===3&&snap.life===2,
       'Final shift and recovered life were not earned: '+JSON.stringify(snap));
-    await page.screenshot({path:BASE+'/challenge-shift-clear-proof.png'});
     proof.final=snap;
     assert(!errors.length,'Real-game recording browser errors: '+errors.join(' | '));
     const video=page.video();
@@ -161,6 +159,18 @@ async function main(){
     server.kill('SIGTERM');
   }
   assert(videoFile&&fs.existsSync(videoFile),'No authentic game recording');
+  // Proof frames come from recorded pixels AFTER the run: screenshots during
+  // a one-life real-time rush can consume the final life before the next key.
+  for(const [scene,file] of [
+    ['one-life',BASE+'/challenge-one-life-proof.png'],
+    ['shift-clear',BASE+'/challenge-shift-clear-proof.png']]){
+    const shot=shots.find(x=>x.label===scene);
+    assert(shot,'Missing real proof scene '+scene);
+    const at=shot.start+Math.max(.15,shot.duration-.25);
+    command('ffmpeg',['-nostdin','-y','-v','error','-i',videoFile,
+      '-ss',at.toFixed(3),'-frames:v','1',file],35000);
+    assert(fs.existsSync(file)&&fs.statSync(file).size>10000,'Blank proof frame '+scene);
+  }
   const timeline=[
     ['opening',2.9,'LOOKS EASY?'],
     ['express',3.5,'EXPRESS RUSH!'],
