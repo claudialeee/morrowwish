@@ -744,6 +744,7 @@
     '🎮 手动': '🎮 Manual',
     '🏳️ 撤退': '🏳️ Retreat',
     '撤退': 'Retreat',
+    '调试': 'Debug', '记录本场伤害明细（调试）': 'Record this fight’s damage (debug)',
     ' 记录': ' Log',
     '记录本场战斗的伤害明细（仅调试）': 'Log this fight’s damage breakdown (debug only)',
     '🐛 开始记录本场伤害明细': '🐛 Recording this fight’s damage',

@@ -4644,6 +4644,16 @@ class CaptureBattle {
   // different angles, and stagger their telegraphed specials so the player
   // always has a gap to dodge into (no simultaneous novas).
   updateEnemyAI(dt, e, meIgnored) {
+    // IN-FLIGHT GAP-CLOSER: if a dash/leap/pounce skill set up a pounce, glide it over frames via the
+    // SHARED advanceLunge (the exact code the player uses) BEFORE any other AI — so an enemy 突进/飞扑
+    // travels + resolves on contact instead of sitting still (the pounce state was being set by
+    // castEnemySkill but never advanced in the live loop → the enemy leap never animated). Mirrors the
+    // player loop's advanceLunge(f,…,'me',dt) call. While lunging, skip normal movement/fire this frame.
+    if (e.pounce && e.dashT > 0) {
+      this.advanceLunge(e, this.team, 'wild', dt);
+      e.pose = 'pounce';
+      return;
+    }
     // target the nearest ALIVE team cat (so the enemy engages whoever's closest)
     let me = null, md = 1e9;
     for (const tf of this.team) { if (!tf.alive) continue; const d = Math.hypot(tf.x - e.x, tf.y - e.y); if (d < md) { md = d; me = tf; } }
