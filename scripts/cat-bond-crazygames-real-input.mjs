@@ -189,6 +189,48 @@ try{
       assert.ok(B.header.top>=B.tools.bottom+3,
         'Combat status overlaps upper-right settings: '+JSON.stringify(B));
       assert.equal(B.portalMenu,null,'Explore Menu must hide during active combat');
+      // Regression stress for the reported two-cat + Reserves screenshot.
+      // Clone only a visual card, measure the real CSS geometry synchronously,
+      // then restore the live game DOM without changing battle state.
+      const duoLayout=await page.evaluate(()=>{
+        const host=document.getElementById('team-slots');
+        const template=host?.querySelector('.team-slot');
+        const bench=document.getElementById('bench-slots');
+        if(!host||!template||!bench)return null;
+        const copy=template.cloneNode(true);
+        copy.dataset.qaLayoutOnly='true';
+        const wasHidden=bench.hidden;
+        const wasOpen=bench.classList.contains('is-open');
+        const caption=document.createElement('button');
+        caption.className='bench-caption';caption.textContent='Reserves · 1';
+        const rect=el=>{const r=el.getBoundingClientRect();
+          return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
+        try{
+          host.appendChild(copy);
+          bench.hidden=false;
+          bench.classList.remove('is-open');
+          bench.appendChild(caption);
+          return {
+            cards:[...host.querySelectorAll('.team-slot')].map(rect),
+            bench:rect(bench),
+            enemy:rect(document.querySelector('#cg-battle-hud > .battle-topbar')),
+            charges:rect(document.querySelector('#cg-battle-charges'))
+          };
+        }finally{
+          copy.remove();caption.remove();bench.hidden=wasHidden;
+          bench.classList.toggle('is-open',wasOpen);
+        }
+      });
+      assert.ok(duoLayout?.cards?.length>=2,
+        'Two-cat combat layout was not exercised: '+JSON.stringify(duoLayout));
+      for(const card of duoLayout.cards){
+        assert.ok(card.top>=duoLayout.enemy.bottom+2 &&
+          card.right+2<=duoLayout.charges.left,
+          'Two-cat roster overlaps enemy health or ultimate charge: '+JSON.stringify(duoLayout));
+      }
+      assert.ok(duoLayout.bench.top>=Math.max(...duoLayout.cards.map(r=>r.bottom))+2 &&
+        duoLayout.bench.right+2<=duoLayout.charges.left,
+        'Reserves overlaps cat HP or charge controls: '+JSON.stringify(duoLayout));
       if([907,1366,390].includes(width)){
         const dir='.check/crazygames-yard-dock';
         fs.mkdirSync(dir,{recursive:true});
