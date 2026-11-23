@@ -105,13 +105,14 @@ const zh=()=>window.MorrowwishI18n?.get?.()==="zh"||document.documentElement.lan
 const L=(en,cn)=>zh()?cn:en;
 const lane=x=>x<0||x>960?-1:Math.min(2,Math.floor(x/320));
 // A longer runway plus a relaxed opening shift; difficulty ramps after the first 8 deliveries.
-const RUNWAY_START=108,RUNWAY_END=477;
+// Portrait keeps its full 9:16 runway; the taller desktop board provides a genuinely longer track.
+const runwayStart=()=>portrait?108:120,runwayEnd=()=>portrait?477:617;
 const speed=p=>Math.min(235,108+Math.max(0,delivered-8)*2.8+Math.max(0,time-22)*.16)*(p?.kind==="express"?1.16:1);
 // The next two orders are planned in advance so the player can anticipate a rush.
 function plan(index){
  const color=index<3?index:Math.floor(rnd()*3);
  const kind=index>=5&&index%7===5?"express":index>=8&&index%9===8?"gift":"normal";
- return {x:480,y:RUNWAY_START,color,kind};
+ return {x:480,y:runwayStart(),color,kind};
 }
 function fillQueue(){while(queue.length<2)queue.push(plan(planned++));}
 function next(){
@@ -142,8 +143,8 @@ function send(target,input="click"){
  event("parcel_sorted",{input,color:target,delivered,kind:b.kind,shift:Math.floor((delivered-1)/8)+1});
  if(delivered===10)event("parcel_ten_sorted");
  const gain=14+Math.min(combo,12)*3+(b.kind==="express"?24:b.kind==="gift"?36:0);
- add(gain);winEffect(docks[target],449);
- feedback={x:docks[target],y:354,text:kindLabel(b)+" +"+gain,life:.85,good:true};
+ add(gain);winEffect(docks[target],portrait?449:604);
+ feedback={x:docks[target],y:portrait?354:517,text:kindLabel(b)+" +"+gain,life:.85,good:true};
  if(delivered%8===0){
   const recovered=life<4;life=Math.min(4,life+1);add(80);
   window.mwMiniStats.shifts++;
@@ -157,9 +158,9 @@ function release(x,y,gesture){
  const target=lane(x);
  if(gesture.dragged){
   // Drag-to-sort remains available for touch users.
-  if(target>=0&&y>=95&&y<=520)send(target,"drag");
-  else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,380)}
- }else if(target>=0&&((typeof portrait!=="undefined"&&portrait)||y>=0&&y<=540)){
+  if(target>=0&&y>=95&&y<=cv.height)send(target,"drag");
+  else if(boxes[0]){boxes[0].x=480;boxes[0].y=Math.min(boxes[0].y,portrait?380:560)}
+ }else if(target>=0&&((typeof portrait!=="undefined"&&portrait)||y>=0&&y<=cv.height)){
   // Tap wins even if a moving box happens to overlap this lane.
   send(target,"click");
  }else if(gesture.fromParcel){
@@ -178,7 +179,7 @@ return{
   next();
   if(boxes[0]&&!drag){
    boxes[0].y+=speed(boxes[0])*dt;
-   if(boxes[0].y>RUNWAY_END)miss(boxes[0]);
+   if(boxes[0].y>runwayEnd())miss(boxes[0]);
   }
   info(L(life+" LIVES · "+delivered+" DELIVERED · COMBO "+combo+" · "+shiftLabel(),life+" 次机会 · 已送达 "+delivered+" 件 · 连击 "+combo+" · "+shiftLabel()));
  },
@@ -188,7 +189,7 @@ return{
  move(x,y){
   if(!press||!press.fromParcel||!boxes[0])return;
   if(Math.hypot(x-press.x,y-press.y)>15)press.dragged=true;
-  if(press.dragged){drag=boxes[0];drag.x=clamp(x,95,865);drag.y=clamp(y,90,508)}
+  if(press.dragged){drag=boxes[0];drag.x=clamp(x,95,865);drag.y=clamp(y,90,cv.height-22)}
  },
  up(x,y){const gesture=press;press=null;release(x,y,gesture);drag=null},
  key(k){
@@ -220,7 +221,7 @@ return{
     box(x-25,y-19,50,35,"#ffffff44",6);
     txt(x,y-8,kindLabel(b),11,"#24364c");
     txt(x,y+15,zh()?zhLabels[b.color]:labels[b.color],16,"#24364c");
-    const ratio=Math.max(0,Math.min(1,(RUNWAY_END-b.y)/(RUNWAY_END-RUNWAY_START)));
+    const ratio=Math.max(0,Math.min(1,(runwayEnd()-b.y)/(runwayEnd()-runwayStart())));
     box(112,84,316,7,"#796b86",4);box(112,84,316*ratio,7,col,4);
    }else txt(270,296,L("Next parcel incoming…","下一件快递马上到！"),17,"#f6edff");
    // Keep the upcoming order outside the active travel path.
@@ -231,12 +232,12 @@ return{
   bg("#182b49","#283f61");
   for(let i=0;i<3;i++){
    const x=docks[i],selected=press&&lane(press.x)===i,hover=drag&&lane(drag.x)===i;
-   box(x-108,92,216,436,hover||selected?colors[i]+"56":colors[i]+"19",20,hover||selected?colors[i]:colors[i]+"79");
-   box(x-99,399,198,110,colors[i]+"46",15,colors[i]);
-   for(let yy=122;yy<393;yy+=43)line(x-88,yy,x+88,yy,colors[i]+"24",2);
-   txt(x,442,"123"[i],29,"#ffffff");
-   txt(x,472,zh()?zhLabels[i]:labels[i],20,colors[i]);
-   txt(x,497,L("CLICK","点击"),13,"#e8efff");
+   box(x-108,94,216,593,hover||selected?colors[i]+"56":colors[i]+"19",20,hover||selected?colors[i]:colors[i]+"79");
+   box(x-99,575,198,113,colors[i]+"46",15,colors[i]);
+   for(let yy=132;yy<558;yy+=43)line(x-88,yy,x+88,yy,colors[i]+"24",2);
+   txt(x,610,"123"[i],29,"#ffffff");
+   txt(x,646,zh()?zhLabels[i]:labels[i],20,colors[i]);
+   txt(x,670,L("CLICK","点击"),13,"#e8efff");
   }
   box(206,12,548,60,"#213c63",15,"#557497");
   txt(480,35,shiftLabel()+" · "+L("COMBO ","连击 ")+combo,18,"#f2f5ff");
@@ -249,7 +250,7 @@ return{
    txt(b.x,b.y-2,kindLabel(b),13,"#223652");
    txt(b.x,b.y+18,zh()?zhLabels[b.color]:labels[b.color],20,"#243755");
    // Time pressure increases gradually, not through complicated gestures.
-   const ratio=Math.max(0,Math.min(1,(RUNWAY_END-b.y)/(RUNWAY_END-RUNWAY_START)));
+   const ratio=Math.max(0,Math.min(1,(runwayEnd()-b.y)/(runwayEnd()-runwayStart())));
    box(323,81,314,9,"#54708c",5);
    box(323,81,314*ratio,9,colors[b.color],5);
   }else{
