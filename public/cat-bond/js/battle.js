@@ -645,13 +645,20 @@ class CaptureBattle {
     const caught = (window.State && State.S.catchCount) || 0;
     // Regional tiers, not a hidden '+1 level every 3 captures' treadmill.
     // First map is ALWAYS Lv1-3, even after a player catches 15+ cats.
-    const caps={sakura:3,yard:3,home:5,creek:7,volcano:9,ruins:12};
+    // sakura stays the guaranteed Lv1-3 starter MAP. The YARD (home base), however, FOLLOWS the
+    // squad's level so a leveled-up player meeting a wild cat at home faces a matched fight, not a
+    // trivial Lv1-3 (owner: "庭院的野猫等级还是很低 → 跟随队伍等级"). Yard tracks team avg, a touch below
+    // so home stays the easiest place to catch (matches the earlier "可低 1-2 级" intent), floored at 1.
+    const caps={sakura:3,home:5,creek:7,volcano:9,ruins:12};
     const region=this.encounterRegion;
-    const cap=caps[region]??Math.max(3,Math.ceil(avg)+2);
+    const cap=region==='yard' ? Math.max(3,Math.ceil(avg)+1)
+      : (caps[region]??Math.max(3,Math.ceil(avg)+2));
     // Advanced locations are intentionally tougher than the starter meadow,
     // even if a player explores ahead with an under-leveled team.
-    const floors={sakura:1,yard:1,home:2,creek:3,volcano:4,ruins:5};
-    const minLv=floors[region]??1;
+    const floors={sakura:1,home:2,creek:3,volcano:4,ruins:5};
+    // Yard floor tracks the squad too (team avg −2, min 1) so a leveled player never rolls a trivial
+    // noise-driven Lv1 at home — the yard fight stays matched to the current team, slightly easier.
+    const minLv=region==='yard' ? Math.max(1,Math.round(avg)-2) : (floors[region]??1);
     const progress=Math.min(1.5,caught*.12);
     const rarityBonus=Math.min(1.5,this.rarIdx*.65);
     const noise=((this.rng?this.rng():Math.random())-.5)*1.2;
@@ -4896,10 +4903,17 @@ class CaptureBattle {
       // the last enemy attack path that was hardcoded; now every enemy shot is element-tagged like
       // ours (owner: "敌人的常规攻击也用我们的常规攻击的 skill set"). isBasic marks it a light basic.
       const basicSk = { element: e.element, isBasic: true, appliesTag: (e.kit && e.kit.primary && e.kit.primary.appliesTag) || null };
-      this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, 'ball', basicSk);
+      // SHARE THE PLAYER BASIC's visual treatment, not a bare pellet (owner: "野猫的普攻动画还是老的；
+      // 应该和我们一样"). The player basic (fireBasic) fires a themed toy projectile + a muzzle flash +
+      // regularSkillAccent wind-up; mirror all three here so a wild cat's normal attack reads as the
+      // same cat-themed strike, element-tagged through the shared damage pipeline — not a generic ball.
+      const mx = e.x + Math.cos(lead) * ((e.r || 18) + 4), my = e.y + Math.sin(lead) * ((e.r || 18) + 4);
+      this.regularSkillAccent(e, e.element, lead, true);
+      this.vfx.muzzle(mx, my, lead, wc);
+      this.spawnProj(mx, my, lead, shotSpeed, dd, 'wild', wc, 7, 'yarn', basicSk);
       if (e.rIdx >= 2) {
-        this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball', basicSk);
-        this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball', basicSk);
+        this.spawnProj(mx, my, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'yarn', basicSk);
+        this.spawnProj(mx, my, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'yarn', basicSk);
       }
     }
   }
