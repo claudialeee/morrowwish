@@ -790,7 +790,9 @@ html.cb-cg #stage{width:100%;height:100%;border-radius:0;box-shadow:none}
 html.cb-cg .cb-home,html.cb-cg #mw-fullscreen-toggle{display:none!important}
 html.cb-cg .panel{padding:clamp(6px,2vh,14px)}
 html.cb-cg .card{max-height:94%;max-width:min(540px,98%);padding:clamp(10px,2vh,22px);overscroll-behavior:contain}
-html.cb-cg #intro{display:none!important}
+/* CrazyGames shares the same player-facing Start Adventure intro.
+   The button begins play on demand; compact landscape iframes can scroll. */
+html.cb-cg #intro{overflow-y:auto;overscroll-behavior:contain}
 /* CrazyGames touch view: long-press/double-tap should not select game text. */
 html.cb-cg body,html.cb-cg #game-root{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.cb-cg .mw-language-float{z-index:22!important;top:6px!important;right:6px!important}
@@ -4888,3 +4890,40 @@ html.cb-cg #stage #battle-ui .move-bar .mv-k{
     color:#4b6655!important;
   }
 }
+
+/* Context ownership: the five Cat Bond menu tabs and five garden actions
+   belong ONLY on the playable yard. Never force them visible in world-map
+   scenes, during battles, or over the Start Adventure screen.
+   Keep #cg-top-tools / #cb-header-actions independent and always available;
+   exploration's top Menu and all language/audio/share utilities stay put. */
+html.cb-cg #stage:has(#intro:not(.hide)) #cg-yard-dock,
+html.cb-cg #stage:has(#battle-ui.on) #cg-yard-dock,
+html.cb-cg body.cb-exploring #stage #cg-yard-dock{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+/* The same ownership rule applies to the original website. Previous late
+   fullscreen-specific CSS could override the scene's .hidden class. */
+#stage:has(#intro:not(.hide)) #tabbar,
+#stage:has(#intro:not(.hide)) #yard-actions,
+#stage:has(#battle-ui.on) #tabbar,
+#stage:has(#battle-ui.on) #yard-actions,
+body.cb-exploring #stage #tabbar,
+body.cb-exploring #stage #yard-actions{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+/* An unobtrusive destructive action inside Menu, never another floating FAB. */
+#panel .explore-menu #cb-menu-reset{
+  display:block;width:auto;min-width:0;max-width:100%;
+  margin:10px 0 0 auto;padding:5px 9px;
+  background:#fff7f4;border:1px solid #e2c9c7;border-radius:9px;
+  color:#95736b;font:750 11px/1.25 system-ui,sans-serif;
+  box-shadow:none;cursor:pointer;
+}
+#panel .explore-menu #cb-menu-reset.cb-reset-armed{
+  color:#862e2e;background:#ffe9e3;border-color:#b85d56;
+  font-weight:850;
+}
+#panel .explore-menu #cb-menu-reset:focus-visible{
+  outline:2px solid #b85d56;outline-offset:2px;
+}
+
