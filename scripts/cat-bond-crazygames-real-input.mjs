@@ -35,7 +35,7 @@ try{
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
         'Yard-only menu must not appear over the opening intro');
       assert.equal(await page.locator('#cb-home').count(),0,'No outbound studio home link');
-      assert.equal(await page.locator('#mw-fullscreen-toggle').isVisible().catch(()=>false),
+      assert.equal(await page.locator('#mw-fullscreen-toggle').isVisible().catch(()=>false),false,
         'Host must own fullscreen');
       if(touch)await page.locator('#intro-start').tap();
       else await page.locator('#intro-start').click();
