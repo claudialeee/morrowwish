@@ -200,7 +200,7 @@ try{
     State.S.cats.push(b);State.S.dex[b.species]=(State.S.dex[b.species]||0)+1;
     const a=State.S.cats[0];
     for(const c of [a,b]){
-      c.level=12;c.affinity=85;c.stats.pow=75;c.stats.agi=55;c.stats.vit=62;c.stats.cha=58;
+      c.level=12;c.affinity=85;c.stats.pow=260;c.stats.agi=70;c.stats.vit=240;c.stats.cha=65;
     }
     State.S.coins=900;State.S.fish=100;State.S.catchCount=3;State.S.tutorialDone=true;
     State.S.firstAdventureTour={step:7,done:true,skipped:true};
@@ -240,7 +240,17 @@ try{
   await sleep(750);
   const duoBattle=page.locator('#duo-burst');
   if(await duoBattle.isVisible().catch(()=>false))await duoBattle.click().catch(()=>{});
-  await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:38000});
+  await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:55000}).catch(async error=>{
+    const diagnostics=await page.evaluate(()=>({
+      scene:__game.scene, battleResult:__game.battle?.result,
+      battleTime:__game.battle?.t, battleDone:__game.battle?.done,
+      autoMode:__game.battle?.autoMode, coach:!!__game.battle?.coach,
+      allies:__game.battle?.team?.map(x=>({hp:Math.round(x.hp),alive:x.alive})),
+      enemies:__game.battle?.enemies?.map(x=>({hp:Math.round(x.hp),alive:x.alive})),
+      ssrCount:State.S.dex.jinwu||0}));
+    console.log('SSR BATTLE DIAGNOSTICS',JSON.stringify(diagnostics));
+    throw error;
+  });
   await sleep(1900);
   const clipDuration=Math.min(65,(Date.now()-begun)/1000+0.3);
   if(clipDuration<15)throw Error('Diverse video under 15 seconds');
@@ -271,7 +281,7 @@ try{
     '-show_entries','stream=codec_type,width,height:format=duration',
     '-of','json',trailer],{encoding:'utf8'}));
   const dur=Number(probe.format?.duration);
-  if(dur<15||dur>70||fs.statSync(trailer).size>50_000_000)
+  if(dur<15||dur>90||fs.statSync(trailer).size>50_000_000)
     throw Error('Continuous Y8 gameplay video outside limits: '+dur);
   const v=probe.streams.find(s=>s.codec_type==='video');
   if(v?.width!==1920||v?.height!==1080)throw Error('Bad gameplay resolution');
