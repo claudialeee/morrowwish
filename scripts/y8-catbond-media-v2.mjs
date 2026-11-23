@@ -193,24 +193,48 @@ try{
   await sleep(800);
   await page.locator('#panel.open .dex-cell').first().click();
   await page.waitForFunction(()=>window.State?.S?.cats?.length===1,{timeout:15000});
-  await sleep(1450);
+  await sleep(1250);
+  // FIRST REAL RECRUIT: no inserted second cat. The garden starter challenges
+  // an actual wild cat using the shipping battle/capture sequence. Recording is
+  // unbroken across the garden, battle, earned capture and bond showcase.
   await page.evaluate(()=>{
-    const State=window.State,game=window.__game;
-    const b=State.makeCat('xiaohui',{affinity:85});
-    State.S.cats.push(b);State.S.dex[b.species]=(State.S.dex[b.species]||0)+1;
     const a=State.S.cats[0];
+    a.level=12;a.affinity=95;
+    a.stats.pow=260;a.stats.agi=70;a.stats.vit=240;a.stats.cha=65;
+    State.S.tutorialDone=true;
+    State.S.firstAdventureTour={step:7,done:true,skipped:true};
+    State.S.battlePrefs={autoBattle:true,modeChosen:true,tutorialSeen:true,
+      manualTutorialSeen:true,teamUids:[a.uid]};
+    State.save();
+    window.__game._returnScene='yard';
+    window.__game.startBattle([a],{...GameData.speciesById('xiaohui'),encounterLevel:1});
+  });
+  await page.waitForFunction(()=>State.S.cats.length>=2 &&
+    (State.S.dex.xiaohui||0)>=1,{timeout:45000}).catch(async error=>{
+    console.log('FIRST CAPTURE DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>({
+      scene:__game.scene,done:__game.battle?.done,
+      result:__game.battle?.result,auto:__game.battle?.autoMode,
+      cats:State.S.cats.length,enemies:__game.battle?.enemies?.map(e=>e.hp)}))));
+    throw error;
+  });
+  await sleep(1300); // visibly show the actual in-game capture result
+  await page.evaluate(()=>{
+    UI.closeAll();
+    const [a,b]=State.S.cats;
     for(const c of [a,b]){
-      c.level=12;c.affinity=85;c.stats.pow=260;c.stats.agi=70;c.stats.vit=240;c.stats.cha=65;
+      c.level=12;c.affinity=85;
+      c.stats.pow=260;c.stats.agi=70;c.stats.vit=240;c.stats.cha=65;
     }
-    State.S.coins=900;State.S.fish=100;State.S.catchCount=3;State.S.tutorialDone=true;
+    State.S.coins=900;State.S.fish=100;
+    State.S.tutorialDone=true;
     State.S.firstAdventureTour={step:7,done:true,skipped:true};
     State.S.firstDuoShowcasePending=true;
     State.S.battlePrefs={autoBattle:true,modeChosen:true,tutorialSeen:true,
       manualTutorialSeen:true,teamUids:[a.uid,b.uid]};
     CatRelations.pair(a,b).value=95;CatRelations.choose(a,b);
-    State.save();game.rebuildYard();game.refreshHUD();
+    State.save();window.__game.rebuildYard();window.__game.refreshHUD();
+    UI.openCatHub('solo');
   });
-  await page.locator('[data-tab="cats"]').click();
   await sleep(850);
   await page.evaluate(()=>UI.openBondPanel());
   await sleep(700);
