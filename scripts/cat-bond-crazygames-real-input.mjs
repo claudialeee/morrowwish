@@ -189,6 +189,25 @@ try{
       assert.ok(B.header.top>=B.tools.bottom+3,
         'Combat status overlaps upper-right settings: '+JSON.stringify(B));
       assert.equal(B.portalMenu,null,'Explore Menu must hide during active combat');
+      const toolsLayout=await page.evaluate(()=>{
+        const el=id=>document.getElementById(id);
+        const box=id=>{const r=el(id).getBoundingClientRect();
+          return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}};
+        return {help:box('battle-help-toggle'),auto:box('btn-auto'),
+          retreat:box('btn-flee'),
+          fontSize:getComputedStyle(el('battle-help-toggle')).fontSize,
+          pseudo:getComputedStyle(el('battle-help-toggle'),'::before').content,
+          helpName:el('battle-help-toggle').getAttribute('aria-label')};
+      });
+      assert.ok(toolsLayout.help.right<=toolsLayout.auto.left+1 &&
+        toolsLayout.auto.right<=toolsLayout.retreat.left+1,
+        'Combat help/Auto/Retreat labels overlap: '+JSON.stringify(toolsLayout));
+      if(width<=520){
+        assert.equal(toolsLayout.fontSize,'0px',
+          'Compact Controls text must be icon-only below 521px: '+JSON.stringify(toolsLayout));
+        assert.ok(toolsLayout.pseudo.includes('?')&&toolsLayout.helpName,
+          'Help must show a ? icon and remain accessible: '+JSON.stringify(toolsLayout));
+      }
       // A clipped name ("Fluf...", "Fro...", "Bub...") is a RELEASE FAILURE,
       // even if the action button itself is clickable. Inspect live computed
       // text layout for every equipped skill in every CrazyGames viewport.
