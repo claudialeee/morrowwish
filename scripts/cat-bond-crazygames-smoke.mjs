@@ -11,6 +11,10 @@ try{
     await page.route('**/api/session',route=>route.fulfill({status:204,body:''}));
     try{
       await page.goto(origin+'/cat-bond/?platform=crazygames&lang=en',{waitUntil:'load',timeout:40000});
+      await page.locator('#intro-start').waitFor({state:'visible',timeout:15000});
+      assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
+        'The portal Start Adventure screen must not show yard-only buttons');
+      await page.locator('#intro-start').click();
       await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
       await page.waitForSelector('#panel.open .dex-cell',{timeout:12000});
       if(width===907){
@@ -49,7 +53,7 @@ try{
           screen:{width:innerWidth,height:innerHeight},questText:quest?.textContent||''};
       });
       assert.equal(layout.cg,true,'Portal mode class must be present');
-      assert.equal(layout.hiddenIntro,true,'Player must not be blocked by the studio intro');
+      assert.equal(layout.hiddenIntro,true,'Intro must dismiss after Start Adventure, before starter selection');
       assert.equal(layout.home,false,'No external home link inside CrazyGames');
       assert.equal(layout.fullscreen,false,'Host controls fullscreen; no internal button');
       assert.ok(layout.stage.width>=width-3&&layout.stage.height>=height-3,'Canvas stage must fill portal iframe: '+JSON.stringify(layout));
