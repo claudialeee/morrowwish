@@ -10,9 +10,9 @@ const brollDir=process.env.MW_V7_BROLL_DIR||path.join(process.env.RUNNER_TEMP||o
 const work=fs.mkdtempSync(path.join(os.tmpdir(),'mw-edit-v7-'));
 const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 const hero=new Set(['pawsibly-innocent','cat-bond','tiny-town','elsewhere']);
-const manifest={version:'V10',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
+const manifest={version:'V13',createdAt:new Date().toISOString(),approval:'NOT APPROVED — REVIEW ONLY',
  socialAutopublish:false,historicalVideoViewsExcluded:true,readabilityChecked:true,pausedPromoGames:[],trailers:[]};
-const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v10',
+const readingAudit={createdAt:manifest.createdAt,version:'readability-review-v13',
  method:'Caption words at 3.1 words/sec + 0.8 sec orientation; 5.5 seconds minimum for the native two-cat story; gameplay shots are brief, with no repeated ultimate.',
  pausedPromoGames:[],scenes:[]};
 const MIN_READING={
@@ -225,7 +225,7 @@ function edit(slug){
  const timeline=chosen.reduce((sum,sh)=>sum+sh.duration,0);
  filters.push(chosen.map((_,i)=>'[v'+i+']').join('')+
    'concat=n='+n+':v=1:a=0,format=yuv420p[vout]');
- const output=base+'/trailer-v10-20261121.mp4',poster=base+'/trailer-v10-20261121.jpg';
+ const output=base+'/trailer-v13-20261122.mp4',poster=base+'/trailer-v13-20261122.jpg';
  const command=[...args,'-filter_complex',filters.join(';'),'-map','[vout]',
   '-map',musicIndex+':a:0','-t',fmt(timeline),'-r','30',
   '-c:v','libx264','-preset','veryfast','-crf','22','-pix_fmt','yuv420p',
@@ -242,24 +242,24 @@ function edit(slug){
  execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss','0.9','-i',output,'-frames:v','1','-q:v','3',poster],{timeout:24000});
  const review=[];
  for(const [i,seconds] of [1.1,meta.seconds*.50,Math.max(0,meta.seconds-0.85)].entries()){
-  const file=base+'/v10-review-'+(i+1)+'.jpg';
+  const file=base+'/v13-review-'+(i+1)+'.jpg';
   execFileSync('ffmpeg',['-nostdin','-y','-v','error','-ss',fmt(seconds),'-i',output,'-frames:v','1','-q:v','3',file],{timeout:24000});
   if(fs.statSync(file).size<12000)throw Error('Blank review thumbnail '+file);
-  review.push('/promo/'+slug+'/v10-review-'+(i+1)+'.jpg');
+  review.push('/promo/'+slug+'/v13-review-'+(i+1)+'.jpg');
  }
  const result={slug,kind:isHero?'cinematic-story-trailer':'challenge-failure-ad',
-  video:'/promo/'+slug+'/trailer-v10-20261121.mp4',poster:'/promo/'+slug+'/trailer-v10-20261121.jpg',
+  video:'/promo/'+slug+'/trailer-v13-20261122.mp4',poster:'/promo/'+slug+'/trailer-v13-20261122.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
-  sourceClips:'V10 one live rare-cat fight with native HP and skills, one duo finisher, earned capture; no social posting',transitions:'clean cuts, no ghosted or blended gameplay UI',
+  sourceClips:'V13 one live rare-cat fight with native HP and skills, one duo finisher, earned capture; no social posting',transitions:'clean cuts, no ghosted or blended gameplay UI',
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
- console.log('CINEMATIC V10 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
+ console.log('CINEMATIC V13 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
 }
 
 try{
   // V10 re-records Cat Bond only; the other six previous approved-for-review
   // files are retained byte-for-byte (not approved for publication).
-  const old=JSON.parse(fs.readFileSync('public/promo/v9-review.json','utf8'));
+  const old=JSON.parse(fs.readFileSync('public/promo/v12-review.json','utf8'));
   const active=['cat-bond'];
   if(Object.keys(proofs).length!==1||active.some(slug=>!proofs[slug]))
     throw Error('V10 must capture exactly Cat Bond');
@@ -272,10 +272,10 @@ try{
     manifest.trailers.push({...retained,approved:false,published:false,retainedFrom:retained.retainedFrom||'V9'});
   }
   if(manifest.trailers.length!==7||manifest.trailers.some(t=>t.paused))throw Error('Invalid V10 review roster');
-  const oldAudit=JSON.parse(fs.readFileSync('public/promo/readability-audit-v9.json','utf8'));
+  const oldAudit=JSON.parse(fs.readFileSync('public/promo/readability-audit-v12.json','utf8'));
   readingAudit.scenes.push(...(oldAudit.scenes||[]).filter(x=>!active.includes(x.game)));
   if(readingAudit.scenes.some(x=>!x.passed))throw Error('Previous reading audit has failures');
-  fs.writeFileSync('public/promo/v10-review.json',JSON.stringify(manifest,null,2)+'\n');
-  fs.writeFileSync('public/promo/readability-audit-v10.json',JSON.stringify(readingAudit,null,2)+'\n');
-  console.log('V10 UPDATED CAT BOND TRAILER READY FOR OWNER REVIEW, NOT PUBLISHED');
+  fs.writeFileSync('public/promo/v13-review.json',JSON.stringify(manifest,null,2)+'\n');
+  fs.writeFileSync('public/promo/readability-audit-v13.json',JSON.stringify(readingAudit,null,2)+'\n');
+  console.log('V13 APPROVED-ART CAT BOND TRAILER READY FOR OWNER REVIEW, NOT PUBLISHED');
 }finally{fs.rmSync(work,{recursive:true,force:true})}
