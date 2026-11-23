@@ -1335,6 +1335,26 @@ class Game {
         <p><strong>攻击：</strong>按住鼠标左键或 J；Q / E 放技能；空格键闪避。</p>
         <p><strong>必杀：</strong>R；1 / 2 / 3 换猫；P 切换自动战斗。</p></section>
         <p class="battle-help-note">查看说明时战斗会暂停。自动模式会代替你移动、攻击和闪避。</p>`;
+    // Keep the equipped-skill reference inside the existing paused Controls
+    // help. No detached button or skill panel should cover active gameplay.
+    if(this.battle){
+      const details=document.createElement('details');
+      details.className='battle-help-skills';
+      const summary=document.createElement('summary');
+      summary.textContent=(en?'Current cat skills · ':'当前猫咪技能 · ')+
+        (this.battle.me()?.cat?State.catName(this.battle.me().cat):'');
+      details.appendChild(summary);
+      for(const slot of ['basic','q','e','ult','dodge','lock']){
+        if(slot==='lock'&&!this.isTouch)continue;
+        const info=this.battleSkillInfo(slot);
+        const row=document.createElement('div');row.className='battle-help-skill-row';
+        const label=document.createElement('strong');
+        label.textContent=info.icon+' '+info.name+' ('+info.key+')';
+        const desc=document.createElement('p');desc.textContent=info.desc;
+        row.append(label,desc);details.appendChild(row);
+      }
+      host.appendChild(details);
+    }
   }
   advanceBattleTutorial(){
     if(!this.battleTutorial){this.setBattleHelpVisible(false);return;}
