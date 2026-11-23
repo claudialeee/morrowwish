@@ -331,9 +331,12 @@ function openJournal(){
 }
 function openWorldMapForBoss(){
  const game=window.__game;if(!game)return;
- if(game.scene==='yard')game.openWorldMap();
- else if(game.scene==='map'&&window.WorldMap?.currentRegion!=='ruins')window.UI?.openMapChooser?.();
- else if(game.scene==='map'&&window.WorldMap?.currentRegion==='ruins')showBossReveal();
+ if(game.scene==='yard'){game.openWorldMap();return;}
+ if(game.scene==='map'&&window.WorldMap?.currentRegion!=='ruins'){
+  window.UI?.openMapChooser?.();return;
+ }
+ if(game.scene==='map'&&window.WorldMap?.currentRegion==='ruins'&&!state()?.story?.bossDefeated)
+  showBossReveal();
 }
 function showBossReveal(){
  const s=storyState();if(!s||!allSix(s)||s.bossDefeated)return;
