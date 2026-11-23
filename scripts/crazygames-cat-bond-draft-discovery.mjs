@@ -5,7 +5,7 @@ import {chromium} from 'playwright';
 
 const ROOT='https://developer.crazygames.com';
 const out='.check/crazygames/cat-bond-draft-discovery.json';
-const safe=s=>String(s||'').replace(/\\S+@\\S+/g,'[private-email]').replace(/https?:\\/\\/\\S+/g,'[private-link]').slice(0,350);
+const safe=s=>String(s||'').replace(/\S+@\S+/g,'[private-email]').replace(/https?:\/\/\S+/g,'[private-link]').slice(0,350);
 const report={checkedAt:new Date().toISOString(),status:'unknown',game:'Cat Bond',readOnly:true,existingDraftId:null,submitForReviewClicked:false,eligibilityChecked:false};
 let browser;
 try{
@@ -30,15 +30,15 @@ try{
  report.catBondExactCount=await page.getByText('Cat Bond',{exact:true}).count();
  report.catBondPartialCount=await page.getByText(/Cat Bond/i).count();
  report.rowSummaries=await page.locator('tr,[role=row]').evaluateAll(ns=>ns
-  .map(el=>({text:(el.innerText||'').trim().replace(/\\s+/g,' ').slice(0,210),
-    hrefs:[...el.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>/^\\/games\\//.test(h||'')).slice(0,3)}))
+  .map(el=>({text:(el.innerText||'').trim().replace(/\s+/g,' ').slice(0,210),
+    hrefs:[...el.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(h=>/^\/games\//.test(h||'')).slice(0,3)}))
   .filter(x=>/cat bond|pawsibly|tiny town|elsewhere|draft|review/i.test(x.text)).slice(0,28));
  const matching=report.rowSummaries.filter(x=>/cat bond/i.test(x.text));
  if(matching.length===1){
   report.status=/review|approved|published/i.test(matching[0].text)?'existing-nondraft':'existing-draft-candidate';
-  const path=matching[0].hrefs.find(h=>/^\\/games\\/[a-z0-9-]+/.test(h));
+  const path=matching[0].hrefs.find(h=>/^\/games\/[a-z0-9-]+/.test(h));
   if(path){
-   const m=path.match(/\\/games\\/([a-z0-9-]+)/i);
+   const m=path.match(/\/games\/([a-z0-9-]+)/i);
    if(m)report.existingDraftId=m[1];
    await page.goto(ROOT+path,{waitUntil:'domcontentloaded',timeout:30000});
    await page.waitForTimeout(1500);
