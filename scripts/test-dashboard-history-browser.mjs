@@ -44,6 +44,15 @@ try{
   await page.route('**/api/summary*',route=>route.fulfill({
    status:200,contentType:'application/json',body:JSON.stringify(summary)
   }));
+  const auditedPV=mixed?121:26;
+  await page.route('**/api/cat-bond-traffic-audit*',route=>route.fulfill({
+   status:200,contentType:'application/json',body:JSON.stringify({
+    game:'cat-bond',days:7,source:'uncapped-d1-aggregate',total:auditedPV,
+    totals:{pageviews:auditedPV,startedViews:8,finishedViews:7},
+    byDay:[{day:'2026-11-22',pageviews:auditedPV,startedViews:8,finishedViews:7}],
+    history:{firstDay:'2026-11-16',lastDay:'2026-11-22',pageviews:auditedPV,rawVisits:auditedPV}
+   })
+  }));
   await page.route('**/api/elsewhere-summary*',route=>route.fulfill({
    status:200,contentType:'application/json',body:JSON.stringify({summary:{}})
   }));
@@ -52,6 +61,8 @@ try{
     waitUntil:'domcontentloaded',timeout:15000
    });
    await page.locator('#report:not([hidden])').waitFor({timeout:12000});
+   await page.waitForFunction(()=>document.querySelector('#cat-bond-traffic-audit')?.textContent?.includes('数据库全量核对')||
+     document.querySelector('#cat-bond-traffic-audit')?.textContent?.includes('Full D1 audit'),null,{timeout:12000});
    assert.deepEqual(exceptions,[],'Dashboard JS exceptions: '+exceptions.join('; '));
    const gameRow=page.locator('#games tr').filter({
     has:page.locator('a[href="/cat-bond/"]')
@@ -59,11 +70,12 @@ try{
    assert.equal(await gameRow.count(),1,'Cat Bond game row missing');
    const cells=(await gameRow.locator('td').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
-   assert.equal(cells[1],'26','Historical pageviews erased');
-   assert.equal(cells[2],'8 30.8%','Main-table starts must be unique play visits');
+   assert.equal(cells[1],String(auditedPV),'Main table PV must use full D1 aggregate');
+   assert.equal(cells[2],mixed?'8 6.6%':'8 30.8%','Main-table starts must use full D1 denominator');
    assert.equal(cells[3],'7 87.5%','Main-table completions must be unique finished visits');
    assert.equal(cells[4],'1','Historical replay total erased');
-   assert.deepEqual(cells.slice(5,8),['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'],
+   assert.deepEqual(cells.slice(5,8),[mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%',
+    '7 / 8 · 87.5%',mixed?'7 / 121 · 5.8%':'7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
    const cards=await page.locator('#focus-grid .focus-card h3 a').evaluateAll(
     nodes=>nodes.map(n=>n.getAttribute('href')));
@@ -80,7 +92,7 @@ try{
    }
    assert.ok(lines.some(line=>line.includes('82'))&&lines.some(line=>line.includes('79')),
      'Raw historic battle counts must remain in the game details');
-   for(const rate of ['8 / 26 · 30.8%','7 / 8 · 87.5%'])
+   for(const rate of [mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%','7 / 8 · 87.5%'])
     assert.ok(lines.some(line=>line.includes(rate)),
       language+' historical ratio missing: '+rate);
    assert.ok(lines.some(line=>line.endsWith('1')&&
