@@ -3384,7 +3384,7 @@ const LOCALIZED_PANEL_ROUTES=[
   'openMapSquad','openExploreMenu','openJourney','openCapturePrep',
   'openBattleModePrompt','openCatPicker','openBondPanel','openTease','openGambitEditor',
   'openWelcomeBack','openBattleRecoveryResult','openMasteryChallengeResult',
-  'openCatchResult'
+  'openCatchResult','openRegionSecret','openYardSurprise','openDuoQuarrel'
 ];
 for(const method of LOCALIZED_PANEL_ROUTES){
   const original=UI[method];
