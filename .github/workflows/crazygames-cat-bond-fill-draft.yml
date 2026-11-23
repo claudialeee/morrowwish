@@ -135,3 +135,33 @@ jobs:
             public/promo/cat-bond/real-gameplay-portrait.mp4
           if-no-files-found: warn
           retention-days: 14
+      - name: Persist truthful draft-repair status, including failures
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const path='.check/crazygames/cat-bond-draft-fill.json';
+          const rec=fs.existsSync(path)?JSON.parse(fs.readFileSync(path,'utf8')).results?.[0]:null;
+          const status={
+            checkedAt:new Date().toISOString(),
+            workflowStatus:process.env.JOB_STATUS,
+            portalDraftId:'cda65c21-75f7-4ce5-b717-62b425097981',
+            portalScriptStatus:rec?.status||'not-run-or-blocked-before-portal',
+            uploaded:rec?.uploaded||[],
+            verifiedDraftVisible:rec?.verifiedDraftVisible===true,
+            confirmedOriginal63:rec?.artProvenance?.originalArt===true&&rec?.artProvenance?.originalSceneCount===63,
+            error:rec?.error||null,submittedForReview:false
+          };
+          fs.writeFileSync('promotion/crazygames-cat-bond-repair-status.json',JSON.stringify(status,null,2)+'\n');
+          console.log('CRAZYGAMES_REPAIR_STATUS',JSON.stringify(status));
+          NODE
+          git config user.name morrowwish-crazygames-qa-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add promotion/crazygames-cat-bond-repair-status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "ops(crazygames): record verified Cat Bond draft repair status"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
