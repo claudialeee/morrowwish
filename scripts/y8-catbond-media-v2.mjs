@@ -218,11 +218,11 @@ try{
   await page.waitForFunction(()=>document.querySelector('#cb-duo-viewer iframe')?.contentWindow?.__duoPreviewReady===true,{timeout:15000});
   await sleep(2950);
   await page.locator('.cb-duo-viewer-close').click();
-  await page.locator('[data-tab="work"]').click();
+  await page.evaluate(()=>{UI.closeAll();UI.openWorkshop();});
   await sleep(1550);
   await page.evaluate(()=>{UI.closeAll();UI.openBuild();});
   await sleep(1450);
-  await page.locator('[data-tab="dex"]').click();
+  await page.evaluate(()=>{UI.closeAll();UI.openDex();});
   await sleep(1700);
   await page.evaluate(()=>{UI.closeAll();__game.openWorldMap()});
   await sleep(1350);
