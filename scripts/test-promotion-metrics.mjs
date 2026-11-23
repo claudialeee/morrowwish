@@ -60,7 +60,7 @@ const igExpected={
  'tiny-town':['DgDfO6ztxnM',3],
  'elsewhere':['DgDfQqkT6Gx',1],
  'flip-dash':['DgDfUwbB4EP',254],
- 'parcel-panic':['DgDfRCJAF83',45],
+ 'parcel-panic':['DgEOAAcJ74v',null],
  'pocket-aquarium':['DgDfRT3O7EK',43]
 };
 for(const [game,[shortcode,views]] of Object.entries(igExpected)){
@@ -107,3 +107,25 @@ for(const oldId of ['ELv02K9K294','7711071401913896206','DgDdwz6T4Gy','3n2wcn56m
   assert.ok(!JSON.stringify(posts).includes(oldId),'deleted Cat Bond metrics remain');
 }
 assert.equal(cat.media,'/promo/cat-bond/trailer-v13-20261122.mp4');
+
+// Parcel Panic: only the two replaced social videos changed; do not reuse deleted-post counts.
+const parcel=release.games.find(x=>x.slug==='parcel-panic');
+const parcelIds={instagram:'DgEOAAcJ74v',bluesky:'3n2wyfh4x63vg'};
+for(const [platform,id] of Object.entries(parcelIds)){
+ const current=posts.find(x=>x.platform===platform&&x.game==='parcel-panic');
+ assert.ok(current?.url.includes(id),'Parcel Panic current '+platform+' video missing');
+ assert.equal(current.url,parcel.socialUrls[platform]);
+ assert.equal(current.views,null,'Parcel Panic replacement cannot inherit deleted views');
+ assert.equal(current.likes,null,'Parcel Panic replacement cannot inherit deleted likes');
+}
+for(const old of ['DgDfRCJAF83','3n2wcrdnc2owx']){
+ assert.ok(!JSON.stringify(posts).includes(old),'deleted Parcel Panic post retained in metrics');
+ assert.ok(!JSON.stringify(parcel.socialUrls).includes(old),'deleted Parcel Panic link retained in release');
+}
+const igSource=fs.readFileSync('src/instagram-native.js','utf8');
+const bskySource=fs.readFileSync('src/bluesky-native.js','utf8');
+assert.ok(igSource.includes('"parcel-panic":"DgEOAAcJ74v"')&&!igSource.includes(oldIG),'Instagram native allowlist must use replacement');
+assert.ok(bskySource.includes('"parcel-panic":"3n2wyfh4x63vg"')&&!bskySource.includes(oldB),'Bluesky native allowlist must use replacement');
+assert.ok(igSource.includes('v14-parcel-replacement')&&bskySource.includes('v14-parcel-replacement'),'native cache version must rotate');
+assert.ok(igSource.includes('morrowwishgames/reel/'),'account-qualified Instagram Reel link must be supported');
+console.log('Parcel Panic replacement links and native allowlists verified; old metrics excluded.');

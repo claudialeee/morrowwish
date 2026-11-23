@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "capturedAt": "2026-11-22T13:05:00-08:00",
   "nativeWindow": "Only seven approved 2026-11-22 posts per platform: new Cat Bond V13 plus six unchanged game promos; deleted Cat Bond V12 content excluded.",
-  "source": "Current approved 28 post URLs; preserved historical metrics for unchanged six games; Cat Bond V13 awaits first-party refresh.",
+  "source": "Approved 28 current campaign video URLs including updated Parcel Panic Instagram and Bluesky; other historical verified readings retained only for unchanged videos.",
   "refreshMode": "youtube-data-api-v3;instagram-graph-insights; tiktok-display-api-v2; bluesky-public-appview; authorized-owner-worker-cache",
-  "note": "Replacement Cat Bond posts have no native metric reading yet; unknown stays null, never old video numbers or fabricated zero.",
+  "note": "Current Parcel Panic Instagram and Bluesky URLs were replaced on Nov 22; old video metrics excluded. New metric values remain null until native provider refresh.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -76,7 +76,7 @@
     "type": "approved-short-videos-only",
     "campaignTagPrefix": "mw-shorts-20261122",
     "historicalExcluded": true,
-    "rule": "Exact 28 video URL allowlist including four Cat Bond V13 replacements; old Cat Bond IDs excluded. First-party readings only.",
+    "rule": "Exact current 28 video URL allowlist. Deleted Cat Bond and Parcel Panic video identifiers excluded; first-party readings only.",
     "activeApprovedPosts": 28,
     "verifiedPosts": [
       {
@@ -328,16 +328,16 @@
       {
         "platform": "instagram",
         "game": "parcel-panic",
-        "url": "https://www.instagram.com/reel/DgDfRCJAF83/",
+        "url": "https://www.instagram.com/morrowwishgames/reel/DgEOAAcJ74v/",
         "publishedAt": "2026-11-22",
-        "views": 45,
-        "likes": 2,
-        "comments": 0,
-        "shares": 0,
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "shares": null,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
-        "lastVerifiedAt": "2026-11-22"
+        "dataSource": null,
+        "pendingNativeRefresh": true
       },
       {
         "platform": "instagram",
@@ -426,7 +426,7 @@
       {
         "platform": "bluesky",
         "game": "parcel-panic",
-        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcrdnc2owx",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wyfh4x63vg",
         "publishedAt": "2026-11-22",
         "views": null,
         "likes": null,
@@ -435,7 +435,7 @@
         "approved": true,
         "publicVerified": true,
         "dataSource": "vidiq-bluesky-publish-completed-permalink",
-        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+        "pendingNativeRefresh": true
       },
       {
         "platform": "bluesky",

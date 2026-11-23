@@ -13,10 +13,10 @@ const IG_APPROVED={
  "tiny-town":"DgDfO6ztxnM",
  "elsewhere":"DgDfQqkT6Gx",
  "flip-dash":"DgDfUwbB4EP",
- "parcel-panic":"DgDfRCJAF83",
+ "parcel-panic":"DgEOAAcJ74v",
  "pocket-aquarium":"DgDfRT3O7EK"
 };
-const igCode=p=>/instagram[.]com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(p||"")?.[1]||null;
+const igCode=p=>/instagram[.]com\/(?:[A-Za-z0-9_.]+\/)?(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(p||"")?.[1]||null;
 // Match the exact seven approved video shortcodes, not the UTC date of posting.
 // Meta timestamps are UTC: an upload at 4:30pm Pacific on Nov 22 is Nov 23 UTC,
 // and must not be silently dropped from the launch-campaign dashboard.
@@ -86,7 +86,7 @@ async function igAuthorizedToken(env){
  if(token.expiresAt&&token.expiresAt<=Date.now())throw new SocialSyncError("needs_owner_authorization");
  return token;
 }
-const IG_CACHE="instagram:approved:20261122:v13-pacific";
+const IG_CACHE="instagram:approved:20261122:v14-parcel-replacement";
 async function igFetch(env){
  const auth=await igAuthorizedToken(env);
  if(!auth)throw new SocialSyncError("needs_owner_authorization");
@@ -101,7 +101,7 @@ async function igFetch(env){
    for(const p of response.data){
      const game=igApprovedReel(p);
      if(!game||matched.has(game))continue;
-     matched.set(game,{platform:"instagram",game,url:"https://www.instagram.com/reel/"+IG_APPROVED[game]+"/",
+     matched.set(game,{platform:"instagram",game,url:"https://www.instagram.com/morrowwishgames/reel/"+IG_APPROVED[game]+"/",
        publishedAt:"2026-11-22",views:null,likes:socialCount(p.like_count),comments:socialCount(p.comments_count),
        approved:true,publicVerified:true,dataSource:"instagram-graph-insights",mediaId:p.id});
    }

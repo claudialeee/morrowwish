@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-22T17:16:00-08:00",
+  "updatedAt": "2026-11-23T01:42:16.450Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "Seven-game 2026-11-22 campaign. Cat Bond switched to V13 59.6s replacement posts on all four platforms; deleted V12 videos excluded from the dashboard and native analytics. Unknown replacement post metrics remain null until official refresh. Other six game posts unchanged.",
+  "accuracyNote": "Parcel Panic Instagram and Bluesky videos replaced; previous post metrics excluded. New engagement awaits native refresh.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -360,8 +360,8 @@
       "socialUrls": {
         "youtube": "https://www.youtube.com/shorts/c1qeZ3tvuLU",
         "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071416099032333",
-        "instagram": "https://www.instagram.com/reel/DgDfRCJAF83/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcrdnc2owx"
+        "instagram": "https://www.instagram.com/morrowwishgames/reel/DgEOAAcJ74v/",
+        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wyfh4x63vg"
       },
       "socialVerification": {
         "youtube": {
@@ -377,16 +377,21 @@
           "likes": 0
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "owner-supplied-current-reel-url",
           "publicVerified": true,
-          "views": 45,
-          "likes": 2
+          "views": null,
+          "likes": null,
+          "comments": null,
+          "shares": null,
+          "pendingNativeRefresh": true
         },
         "bluesky": {
           "source": "vidiq-bluesky-publish-completed-permalink",
           "publicVerified": true,
           "views": null,
-          "likes": null
+          "likes": null,
+          "reposts": null,
+          "pendingNativeRefresh": true
         }
       },
       "metricoolV12PostId": 437823979
