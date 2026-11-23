@@ -45,6 +45,15 @@ try{
       await page.waitForFunction(()=>window.UI&&window.State&&window.CatBondI18n,
         {timeout:15000});
       await page.locator('#intro-start').click({timeout:10000});
+      // New players see the cinematic prologue before the starter picker.
+      // Skip it in this setup fixture so the audit can continue into the
+      // real starter-selection and in-game panels without mutating story state.
+      const prologue=page.locator('.cb-story-overlay');
+      if(await prologue.count()){
+        await prologue.waitFor({state:'visible',timeout:5000});
+        await prologue.locator('.cb-story-skip').click({timeout:5000});
+        await prologue.waitFor({state:'detached',timeout:5000});
+      }
       await page.locator('#panel.open .dex-cell').first().click({timeout:10000});
       await page.waitForFunction(()=>State.S.cats.length>=1,{timeout:10000});
       await page.evaluate(()=>{
