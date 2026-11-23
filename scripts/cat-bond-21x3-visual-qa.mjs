@@ -35,6 +35,11 @@ try{
  });
  assert.equal(audit.keys,21);assert.equal(audit.count,63);assert.equal(audit.unique,63,'all 63 paintings should be distinct');
  assert.equal(audit.original,true);assert.equal(audit.actorFallback,false);assert.equal(audit.heroSource,'63-original-painted-storyboards');
+ assert.equal(audit.motionUnique,3,'the same original painting must visibly animate at three cinematic beats');
+ assert.equal(audit.cameraMoves,true,'the original painting camera must gently drift without splitting characters');
+ assert.equal(audit.paintingDrawCount,1,'the complete original painting must be composited exactly once');
+ assert.equal(audit.actorLayerCount,0,'no second cat actor layer may be added');
+ assert.equal(audit.animatedEffects,true,'the original-art preview must retain animated effects');
  assert.ok(audit.frames.every(x=>x.visible>1000));
  assert.equal(await page.locator('#mode-breeds').count(),0);assert.equal(await page.locator('#pick-cat-a').count(),0);
  assert.equal(await page.locator('script[src*="duo-breed-actors"]').count(),0);
