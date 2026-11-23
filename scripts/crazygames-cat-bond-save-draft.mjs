@@ -99,7 +99,17 @@ async function toDetails(page,ctx,id,log){
     text=await body(qa);
     if(text.includes('QA Results')){
        const yes=qa.getByText('Yes',{exact:true}),no=qa.getByText('No',{exact:true});
-       if(await yes.count()!==6||await no.count()!==6)throw Error('QA result form structure changed');
+       if(await yes.count()!==6||await no.count()!==6){
+         results[0].qaDiagnostics={
+           path:new URL(qa.url()).pathname,
+           body:mask(await qa.locator('body').innerText(),5000),
+           yesCount:await yes.count(),noCount:await no.count(),
+           buttons:(await qa.locator('button:visible').allTextContents().catch(()=>[]))
+             .map(x=>mask(x,140)).slice(-45)
+         };
+         save();
+         throw Error('QA result form structure changed: '+results[0].qaDiagnostics.yesCount+'/'+results[0].qaDiagnostics.noCount);
+       }
        // The final "No" is truthful: these games do not feature an in-game T&C or Privacy link.
        for(let i=0;i<5;i++)await yes.nth(i).evaluate(e=>(e.closest('button')||e.closest('label')||e).click());
        await no.nth(5).evaluate(e=>(e.closest('button')||e.closest('label')||e).click());
@@ -395,6 +405,17 @@ async function main(){
     const row=ledger.games.find(x=>x.slug==='cat-bond');
     if(!row)blocked('Catalog row for Cat Bond missing');
     let id=await findDraft(page);
+    if(!id){
+      // Reuse the platform-created Cat Bond ID; never create a second game.
+      const priorId='cda65c21-75f7-4ce5-b717-62b425097981';
+      await page.goto(ROOT+'/games/'+priorId,{waitUntil:'domcontentloaded',timeout:30000});
+      await sleep(1700);
+      const priorText=await body(page);
+      if(/Cat Bond/i.test(priorText)&&/game|upload|qa|draft/i.test(priorText)){
+        id=priorId;
+        rec.stages.push({label:'resume-verified-platform-draft',path:'/games/'+priorId});
+      }else blocked('Existing Cat Bond draft unavailable; refusing duplicate creation');
+    }
     if(id){
       rec.status='existing-platform-draft-found';
       rec.platformDraftId=id;save();
