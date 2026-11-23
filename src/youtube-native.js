@@ -10,11 +10,11 @@ const YT_APPROVED={
  "tiny-town":"64Uh0S9dqmQ",
  "elsewhere":"n8bbePy8Unw",
  "flip-dash":"cC7akb-kUIo",
- "parcel-panic":"c1qeZ3tvuLU",
+ "parcel-panic":"dHD2UnbmSqU",
  "pocket-aquarium":"O3tMbulVPvk"
 };
 const ytIdOf=p=>/\/(?:shorts\/|watch\?v=)([\w-]{11})/.exec(p?.url||"")?.[1]||null;
-const YT_CACHE="youtube:approved:20261122:v13";
+const YT_CACHE="youtube:approved:20261122:v14-parcel-replacement";
 async function ytFetch(env){
  const q=new URL(YT_API);
  q.searchParams.set("part","snippet,statistics,status");
