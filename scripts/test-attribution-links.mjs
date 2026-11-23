@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 
 const source=fs.readFileSync('src/worker.js','utf8')
  .replace('import {api} from "./analytics.js";','')
+ .replace('import {catBondCloudSave} from "./cat-bond-cloud-save.js";','')
  .replace('export default','const handler =');
-const handler=new Function('api',source+';return handler;')(
-  ()=>new Response('api stub',{status:200})
+const handler=new Function('api','catBondCloudSave',source+';return handler;')(
+  ()=>new Response('api stub',{status:200}),
+  async()=>new Response('cloud save stub',{status:200})
 );
 const assets={fetch:()=>new Response('assets stub',{status:200})};
 const base='https://morrowwish.vercel.app';
