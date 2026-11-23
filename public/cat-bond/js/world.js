@@ -464,7 +464,11 @@ class YardScene {
     const spots = 6;
     // keep bushes down in the painted meadow (below the horizon) so they never
     // float in the sky or sit on the lake — y from ~58% down to the foreground.
-    const bushTop = Math.min(H*.58,H-90), bushBot = Math.max(bushTop+10,H-74);
+    // Reserve space for the bottom navigation and the whole 58px tap target.
+    // At tall iframe sizes the former H-74 bound could hide the first encounter
+    // behind the tabbar and make it impossible to click.
+    const bushTop = Math.min(H*.58,H-90);
+    const bushBot = Math.max(bushTop+10,H-Math.max(126,H*.16));
     for (let i = 0; i < spots; i++) {
       this.bushes.push({
         x: 70 + (W - 140) * (i / (spots - 1)) + (Math.random() * 40 - 20),
@@ -516,7 +520,8 @@ class YardScene {
       e.y=Math.max(top,Math.min(bottom,e.y*fy));
     }
     for(const b of this.bushes){
-      const top=Math.min(H*.58,H-90),bottom=Math.max(top+10,H-74);
+      const top=Math.min(H*.58,H-90);
+      const bottom=Math.max(top+10,H-Math.max(126,H*.16));
       b.y=Math.max(top,Math.min(bottom,b.y));
     }
     for(const b of (State.S.yardBuildings||[])){
