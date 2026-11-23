@@ -82,7 +82,7 @@ try{
         'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
       assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),true,
-        'The complete right-hand Cat Bond menu must appear only in the yard');
+        'Both independent yard-only navigation groups must appear only in the yard');
       // The unified settings row must NEVER live inside a HUD hidden on the map
       // or during battle. This caught missing top-right controls in portal QA.
       await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
@@ -105,14 +105,31 @@ try{
           r.top>=0&&r.bottom<=height+1&&item.clickable&&item.contentFits,
           'Yard control must be visible and clickable: '+JSON.stringify(item));
       }
-      assert.ok(menuLayout.dock.right<=width+2&&menuLayout.dock.right>=width-24,
-        'CrazyGames yard controls must stay on the right, not form a screen-wide bottom row: '+JSON.stringify(menuLayout));
-      assert.ok(menuLayout.dock.width<=175,
-        'CrazyGames right-side control dock must remain compact: '+JSON.stringify(menuLayout));
-      assert.ok(menuLayout.tabs.right+3<=menuLayout.actions.left,
-        'CrazyGames menu tabs and yard actions must be separate right-hand columns: '+JSON.stringify(menuLayout));
-      assert.ok(Math.abs(menuLayout.tabs.bottom-menuLayout.actions.bottom)<12,
-        'CrazyGames two menu columns must share a bottom baseline: '+JSON.stringify(menuLayout));
+      // Match the actual Morrow Wish website: FIVE bottom-centre tabs in
+      // a horizontal row + FIVE separate vertically stacked right-hand FABs.
+      // The previous QA asserted two right-side columns and validated a
+      // visually wrong interface; do not let that regression pass again.
+      assert.ok(menuLayout.tabs.width>=menuLayout.actions.width*3 &&
+        menuLayout.tabs.height<84,
+        'Named menu tabs must form a wide, shallow horizontal bottom row: '+JSON.stringify(menuLayout));
+      assert.ok(menuLayout.actions.height>=menuLayout.tabs.height*3,
+        'Only icon garden actions may stack in the right vertical rail: '+JSON.stringify(menuLayout));
+      assert.ok(menuLayout.tabs.left>=-1&&menuLayout.tabs.right<=menuLayout.actions.left-4,
+        'Bottom-centre nav must not overlap the separate right garden rail: '+JSON.stringify(menuLayout));
+      assert.ok(menuLayout.actions.right>=width-26&&menuLayout.actions.right<=width+2,
+        'Garden icon rail must hug the right edge: '+JSON.stringify(menuLayout));
+      assert.ok(menuLayout.tabs.bottom>=height-24&&menuLayout.tabs.bottom<=height+2 &&
+        menuLayout.actions.bottom<=menuLayout.tabs.top-3,
+        'Vertical garden rail must stop ABOVE the bottom menu row: '+JSON.stringify(menuLayout));
+      const tabButtons=menuLayout.visible.slice(0,5),gardenButtons=menuLayout.visible.slice(5);
+      for(let i=1;i<tabButtons.length;i++){
+        assert.ok(tabButtons[i].rect.left>=tabButtons[i-1].rect.right-2 &&
+          Math.abs(tabButtons[i].rect.top-tabButtons[0].rect.top)<3,
+          'The five named tabs must be arranged side by side: '+JSON.stringify(tabButtons));
+        assert.ok(gardenButtons[i].rect.top>=gardenButtons[i-1].rect.bottom-2 &&
+          Math.abs(gardenButtons[i].rect.left-gardenButtons[0].rect.left)<3,
+          'The five garden FABs must form a right-side vertical stack: '+JSON.stringify(gardenButtons));
+      }
       const target=await page.evaluate(()=>{
         const g=window.__game,cv=document.getElementById('scene'),r=cv.getBoundingClientRect();
         const spot=g?.yard?.hide?.spot;
