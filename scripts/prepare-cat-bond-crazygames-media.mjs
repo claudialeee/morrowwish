@@ -68,6 +68,9 @@ function runVideo(w,h,name,rawName){
   const sourceVideo=path.join(rawVideoDir,rawName);
   const cover=path.join(dir,h>w?'cover-portrait.png':'cover-landscape.png');
   const size=`scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h},setsar=1,fps=30`;
+  const m=JSON.parse(fs.readFileSync(path.join(rawVideoDir,'cat-bond-trim-'+(h>w?'portrait':'landscape')+'.json'),'utf8'));
+  assert(m.originalArt===true&&m.originalSceneCount===63&&m.artSource?.includes('duo-storyboard-21x3-v3.webp'),
+    'Wrong original painting source: refuse video export');
   // Begin on the SAME cover image players see in the game listing.
   // Then show ~17 seconds of genuine recorded gameplay, beginning after
   // the initial browser navigation. Never use blank/logo transitions.
@@ -76,7 +79,7 @@ function runVideo(w,h,name,rawName){
     '[cover][game]concat=n=2:v=1:a=0[v]';
   execFileSync('ffmpeg',['-y','-hide_banner','-loglevel','error',
     '-loop','1','-framerate','30','-t','0.5','-i',cover,
-    '-ss','1','-i',sourceVideo,'-filter_complex',filters,
+    '-ss',String(m.trimStartSeconds),'-i',sourceVideo,'-filter_complex',filters,
     '-map','[v]','-an','-c:v','libx264','-preset','veryfast',
     '-crf','24','-pix_fmt','yuv420p','-movflags','+faststart',out],
     {stdio:'pipe',timeout:180000});
@@ -93,6 +96,7 @@ for(const [f,w,h] of [['real-gameplay-landscape.mp4',1920,1080],
   const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_entries',
     'stream=width,height:format=duration','-of','json',path.join(dir,f)],{encoding:'utf8'}));
   assert(info.streams?.[0]?.width===w&&info.streams?.[0]?.height===h,f+' invalid aspect');
+  assert(info.streams?.every(s=>s.codec_type!=='audio'),f+' preview must be silent');
   assert(Number(info.format?.duration)>0&&Number(info.format.duration)<=20.1,f+' invalid duration');
   assert(fs.statSync(path.join(dir,f)).size<50e6,f+' exceeds 50MB');
 }
