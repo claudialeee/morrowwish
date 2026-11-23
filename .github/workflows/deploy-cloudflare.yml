@@ -13,6 +13,7 @@ on:
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
       - 'scripts/test-analytics-integrity.mjs' # Analytics contract is a required pre-deploy gate.
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
+      - 'scripts/cat-bond-language-audit.mjs' # 19 game screens across desktop, mobile, site, portal.
       - 'scripts/check-hidden-story-language.mjs' # Hidden endings and secret event translations are release gates.
       - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
       - 'scripts/test-dashboard-history-browser.mjs' # Historical analytics DOM preservation is a release gate.
@@ -133,6 +134,8 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/mw-language-server.log 2>&1 &
           sleep 2
           node scripts/language-browser-smoke.mjs
+          # Broad rendered localization checks, including gold-coin DOM splitting.
+          node scripts/cat-bond-language-audit.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
@@ -143,6 +146,14 @@ jobs:
         with:
           name: cat-bond-crazygames-yard-dock
           path: .check/crazygames-yard-dock/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Save Cat Bond bilingual whole-game screenshots and audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-language-audit
+          path: .check/cat-bond-language-audit/*
           if-no-files-found: ignore
           retention-days: 7
       - name: Verify discovery and launch automation
