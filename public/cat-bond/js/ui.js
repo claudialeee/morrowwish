@@ -176,6 +176,15 @@ const UI = {
       if(finish)finish.textContent=en?'Finish':'结束';
       return;
     }
+    // Preserve UNSAVED battle choices across language toggles. Rebuilding
+    // pre-battle cards from persisted preferences otherwise drops the squad,
+    // order and auto/manual choice the player just selected.
+    this._localePanelRerenderTeam=panel.querySelector('.map-squad-roster')
+      ?[...(this._localeLiveTeamSelection||[])]:panel.querySelector('#cp-roster')
+        ?[...(this.teamUids||[])]:null;
+    const activeMode=panel.querySelector('.capture-mode-option[data-battle-auto][aria-checked="true"]');
+    this._localePanelRerenderAuto=activeMode
+      ?activeMode.dataset.battleAuto==='true':null;
     const scrollTop=panel.scrollTop;
     const card=panel.querySelector(':scope > .card');
     const cardTop=card?.scrollTop||0;
@@ -200,6 +209,8 @@ const UI = {
     finally{
       this._navStack=stack;this._navCurrent=current;
       this._localePanelRerendering=false;
+      this._localePanelRerenderTeam=null;
+      this._localePanelRerenderAuto=null;
     }
   },
   startBuildingPlacement(type){
@@ -317,6 +328,11 @@ const UI = {
   // two cats of the same breed. Both map and yard battles use this same roster;
   // unsaved/unselected cats may only fill genuinely empty expedition slots.
   getPreferredBattleTeam(eligibleCats=State.S.cats){
+    if(this._localePanelRerendering&&Array.isArray(this._localePanelRerenderTeam)){
+      const allowed=new Map((eligibleCats||[]).map(cat=>[cat.uid,cat]));
+      const chosen=this._localePanelRerenderTeam.map(uid=>allowed.get(uid)).filter(Boolean);
+      if(chosen.length)return chosen;
+    }
     const cats=eligibleCats||[],byUid=new Map(cats.map(c=>[c.uid,c]));
     const savedIds=State.S.battlePrefs?.teamUids;
     const saved=(Array.isArray(savedIds)?savedIds:[]).map(uid=>byUid.get(uid)).filter(Boolean);
@@ -441,6 +457,7 @@ const UI = {
     const host=document.querySelector('#panel .map-squad-roster');if(!host)return;
     const buttons=[...host.querySelectorAll('.map-squad-choice')];
     const refresh=()=>{
+      this._localeLiveTeamSelection=[...selected];
       buttons.forEach(btn=>{
         const yes=selected.includes(btn.dataset.uid);
         btn.classList.toggle('sel',yes);btn.setAttribute('aria-pressed',String(yes));
@@ -2647,6 +2664,8 @@ const UI = {
     const prefs=State.S.battlePrefs||{};
     let auto=prefs.modeChosen?!!prefs.autoBattle:
       ((State.S.catchCount||0)===0?true:!!prefs.autoBattle);
+    if(this._localePanelRerendering&&this._localePanelRerenderAuto!==null)
+      auto=!!this._localePanelRerenderAuto;
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
     const squadMarkup=
       '<details class="prep-advanced prep-team-details" id="battle-team-details">'+
@@ -2770,8 +2789,10 @@ const UI = {
     // First visit starts with the friendly auto recommendation; subsequent
     // battles honor the last explicit auto/manual choice from the save.
     const prefs=State.S.battlePrefs||{};
-    const initialAuto=prefs.modeChosen?!!prefs.autoBattle
+    let initialAuto=prefs.modeChosen?!!prefs.autoBattle
       :(firstCapture?true:!!prefs.autoBattle);
+    if(this._localePanelRerendering&&this._localePanelRerenderAuto!==null)
+      initialAuto=!!this._localePanelRerenderAuto;
     this.prepAutoBattle=initialAuto;
     const hasMedal=!!State.S.masteryBadges?.[wildSp.id];
     const masteryChallenge='🏅 '+this.rankSHelp(wildSp.rarity)+'. '+this.rankSHelp(wildSp.rarity,true)+'. '
