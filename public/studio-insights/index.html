@@ -57,7 +57,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 <section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
 <div id="report" hidden><div class="stats" id="stats"></div>
 
-<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th></tr></thead><tbody id="games"></tbody></table></div><p class="description" data-i18n="bondHistoryNote" style="margin:9px 2px 0;line-height:1.6"></p></section>
+<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th></tr></thead><tbody id="games"></tbody></table></div><p class="description" data-i18n="bondHistoryNote" style="margin:9px 2px 0;line-height:1.6"></p><p id="cat-bond-traffic-audit" class="description" aria-live="polite" style="margin:9px 2px 0;line-height:1.7"></p></section>
 
 <section class="section" id="promotion-channels">
  <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
@@ -131,7 +131,7 @@ direct:"Direct",internal:"Internal navigation",external:"External website",mobil
 const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"},"pawsibly-innocent":{zh:"猫猫绝对无辜！",en:"Pawsibly Innocent!"},"cat-bond":{zh:"猫猫纽带",en:"Cat Bond"}};
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
-let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
+let lang="zh",key="",lastData=null,catBondAudit=null,statusKind="ready",lastError="";
 try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
 const t=(id,params={})=>{let s=Object.prototype.hasOwnProperty.call(I18N[lang],id)?I18N[lang][id]:id;for(const [k,v] of Object.entries(params))s=s.replaceAll("{"+k+"}",String(v));return s;};
 const format=n=>Number(n||0).toLocaleString(lang==="zh"?"zh-CN":"en-US");
@@ -391,16 +391,41 @@ async function loadElsewhere(){
  }catch{elsewhereData=null}
  if(lastData)renderSignals(lastData.byGame||[]);
 }
+
+function renderCatBondAudit(){
+ const el=$("cat-bond-traffic-audit");if(!el)return;
+ if(!catBondAudit||!lastData){el.textContent="";return;}
+ const a=catBondAudit, shown=Number(lastData.byGame?.find(x=>x.game==="cat-bond")?.pageviews||0),full=Number(a.total||0);
+ const daily=(a.byDay||[]).map(x=>x.day.slice(5)+": "+format(x.pageviews)).join(" · ");
+ const history=a.history||{};
+ const mismatch=shown!==full;
+ el.textContent=lang==="zh"?
+   "猫猫纽带 · 数据库全量核对："+a.days+" 天内 "+format(full)+" 次访问；主表 "+format(shown)+" 次。"+
+   (mismatch?" 注意：主表存在漏计，可能达到事件读取上限。":" 两者一致。")+
+   " 当前保留的历史浏览量 "+format(history.pageviews||0)+"，最早记录 "+(history.firstDay||"无")+"。逐日："+(daily||"无记录"):
+   "Cat Bond · Full D1 audit: "+a.days+"-day visits "+format(full)+"; main table "+format(shown)+". "+
+   (mismatch?"Main table undercounts, possibly due to its event limit.":"Counts match.")+
+   " Lifetime visits retained "+format(history.pageviews||0)+", earliest "+(history.firstDay||"none")+". Daily: "+(daily||"none");
+}
+async function loadCatBondAudit(){
+ try{
+  const response=await fetch("/api/cat-bond-traffic-audit?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const data=await response.json();
+  if(Number(data.days)!==Number($("days").value))return;
+  catBondAudit=data;renderCatBondAudit();
+ }catch{catBondAudit=null;const el=$("cat-bond-traffic-audit");if(el)el.textContent=lang==="zh"?"数据库全量核对暂不可用。":"Full database audit unavailable.";}
+}
 function applyLanguage(next){lang=next==="en"?"en":"zh";document.documentElement.lang=lang==="en"?"en":"zh-CN";document.title=t("pageTitle");
 try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL(location.href);uri.searchParams.set('lang',lang);history.replaceState(history.state,'',uri.pathname+uri.search+uri.hash);}catch{}
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
-if(lastData)render(lastData);enhanceSortableTables();setStatus(statusKind,lastError);
+if(lastData)render(lastData);renderCatBondAudit();enhanceSortableTables();setStatus(statusKind,lastError);
 }
 async function load(){setStatus("loading");$("reload").disabled=true;
 try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
-render(j);loadElsewhere();$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
+render(j);loadElsewhere();loadCatBondAudit();$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
 }catch(e){$("report").hidden=true;setStatus("error",e.message||t("failGeneric"));}finally{$("reload").disabled=false;}}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLanguage(b.dataset.lang)));
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load();}catch(err){setStatus("error",err.message||t("failGeneric"));}});
