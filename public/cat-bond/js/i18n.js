@@ -2148,7 +2148,7 @@
     // Normalize CJK punctuation, but preserve a source fragment's trailing
     // space. Gold-coin icons split "消耗 🪙80" into "消耗 " + <img> + "80":
     // trimEnd() would otherwise turn the correct "Cost 🪙80" into "Cost🪙80".
-    var endedInSpace = /\\s$/.test(str);
+    var endedInSpace = /\s$/.test(str);
     out = out.replace(PUNCT_RE, function (c) { return PUNCT[c]; }).replace(/ +/g, ' ').replace(/ ([.,!?:;]) ?/g, '$1 ').trimEnd();
     return out && endedInSpace ? out + ' ' : out;
   }
