@@ -323,8 +323,8 @@ try{
 
   // 4) Use the real yard Map FAB -> world map -> region directory UI.
   await page.locator('#fab-map').click();
-  await page.waitForFunction(()=>__game.scene==='map'&&WorldMap.mode==='map',{timeout:8000});
-  await page.locator('#map-index').click();
+  await page.waitForFunction(()=>__game.scene==='map'&&WorldMap.mode==='map'&&
+    !!document.querySelector('#panel.open .map-destination[data-region="home"]'),{timeout:8000});
   await page.locator('#panel.open .map-destination[data-region="home"]').click();
   await page.waitForFunction(()=>__game.scene==='map'&&WorldMap.mode==='region'&&
     WorldMap.currentRegion==='home',{timeout:10000});
