@@ -458,7 +458,8 @@ class Game {
       hint.classList.remove('is-tour');
       const label=this.yard?.hide
         ?(english?'🌿 Tap the glowing bush to meet your first new friend!':'🌿 点击发光的草丛，遇见第一位新伙伴！')
-        :(english?'🌿 Tap the grass button to search for a cat.':'🌿 点击右侧草丛按钮，寻找野猫！');
+        :(english?'🌿 Tap the grass button to search for a cat.':
+          (window.CatBondPlatform?.crazygames?'🌿 点击底部草丛按钮，寻找野猫！':'🌿 点击右侧草丛按钮，寻找野猫！'));
       if(hint.textContent!==label)hint.textContent=label;
       hint.dataset.guideKey='capture';
       highlight(!this.yard?.hide?'#fab-seek':null);
@@ -484,16 +485,24 @@ class Game {
         enText:'Open Cats → Cat Duos below to see your pair, trust and duo moves.',
         zhAction:'查看双猫',enAction:'See cat duos',target:'[data-tab="cats"]'},
       {icon:'🗺️',zhTitle:'探索五张地图',enTitle:'Explore five regions',
-        zhText:'右侧「地图」可以去新地区，遇见不同野猫、宝藏和故事。',
-        enText:'Use Map on the right to discover new cats, treasures and places.',
+        zhText:window.CatBondPlatform?.crazygames
+          ?'点击底部的「地图」，探索新地区，寻找野猫、宝藏和故事。'
+          :'右侧「地图」可以去新地区，遇见不同野猫、宝藏和故事。',
+        enText:window.CatBondPlatform?.crazygames
+          ?'Use Map in the bottom controls to explore new regions, cats, treasures and stories.'
+          :'Use Map on the right to discover new cats, treasures and places.',
         zhAction:'打开地图',enAction:'Open map',target:'#fab-map'},
       {icon:'🧶',zhTitle:'派猫咪去工坊',enTitle:'Let cats earn resources',
         zhText:'返回庭院后，点下方「工坊」。派猫咪工作赚金币和小鱼。',
         enText:'Back in the yard, open Workshop below to earn coins and fish.',
         zhAction:'前往工坊',enAction:'Open workshop',target:'[data-tab="work"]'},
       {icon:'🪶',zhTitle:'还有逗猫与建造',enTitle:'Play and decorate',
-        zhText:'右侧羽毛可以逗猫；建造按钮能自由布置庭院。先玩一次逗猫吧！',
-        enText:'The feather starts a cat game; Build lets you decorate the yard. Try playing!',
+        zhText:window.CatBondPlatform?.crazygames
+          ?'底部的羽毛按钮可以逗猫，建造按钮可以布置庭院。先玩一次逗猫吧！'
+          :'右侧羽毛可以逗猫；建造按钮能自由布置庭院。先玩一次逗猫吧！',
+        enText:window.CatBondPlatform?.crazygames
+          ?'Use the Feather and Build buttons along the bottom to play and decorate the yard.'
+          :'The feather starts a cat game; Build lets you decorate the yard. Try playing!',
         zhAction:'试试逗猫',enAction:'Play with cats',target:'#fab-play'},
       {icon:'🌟',zhTitle:'现在自由冒险吧！',enTitle:'Your adventure begins!',
         zhText:'你已经认识主要玩法！继续收服猫、解锁技能、提升双猫默契，也可以随时重看指引。',
