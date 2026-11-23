@@ -251,3 +251,5 @@ try{
   await browser?.close().catch(()=>{});
   server.kill('SIGTERM');
 }
+
+// Y8 assets: recapture distinct authentic gameplay scenes for user-feedback revision.
