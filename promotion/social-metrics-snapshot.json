@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "capturedAt": "2026-11-22T13:05:00-08:00",
-  "nativeWindow": "Only seven approved 2026-11-22 promo videos per YouTube, Instagram and TikTok; Bluesky only its seven verified 2026-11-22 posts. Older promo content is never included.",
-  "source": "Dated Nov 22 owner-verified video snapshots (historical baseline); official first-party APIs supply subsequent refreshes when independently authorized",
+  "nativeWindow": "Only seven approved 2026-11-22 posts per platform: new Cat Bond V13 plus six unchanged game promos; deleted Cat Bond V12 content excluded.",
+  "source": "Current approved 28 post URLs; preserved historical metrics for unchanged six games; Cat Bond V13 awaits first-party refresh.",
   "refreshMode": "youtube-data-api-v3;instagram-graph-insights; tiktok-display-api-v2; bluesky-public-appview; authorized-owner-worker-cache",
-  "note": "Only the 2026-11-22 seven-game campaign. Original snapshots are dated and NOT live; as soon as official owner-authorized sources are enabled, the protected Worker refreshes the exact allowlisted posts. No Metricool or vidIQ analytics refresh. Missing native coverage stays null. Older posts excluded.",
+  "note": "Replacement Cat Bond posts have no native metric reading yet; unknown stays null, never old video numbers or fabricated zero.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -26,10 +26,10 @@
       "phase": "verified-platform-publications",
       "published": 7,
       "failed": null,
-      "views": 327,
+      "views": null,
       "metricScope": "verified-new-short-videos",
-      "note": "Seven approved Nov 22 Shorts individually verified in the connected YouTube owner library; 327 views at capture on 2026-11-22. Snapshot is not continuously live.",
-      "likes": 3
+      "note": "Cat Bond was replaced by V13. Campaign totals are null until all seven approved native videos return verified readings; old Cat Bond counts are never reused.",
+      "likes": null
     },
     {
       "id": "tiktok",
@@ -37,9 +37,9 @@
       "phase": "seven-public-videos-verified",
       "published": 7,
       "failed": null,
-      "views": 94,
+      "views": null,
       "metricScope": "7-public-videos-verified-with-per-post-play-count",
-      "note": "All 7 Morrow Wish videos individually verified on TikTok through vidIQ public feed on 2026-11-22; 94 plays total at capture, not live API.",
+      "note": "Cat Bond was replaced by V13. Campaign totals are null until all seven approved native videos return verified readings; old Cat Bond counts are never reused.",
       "publicationEvidence": {
         "source": "vidIQ-public-videos",
         "profileUrl": "https://www.tiktok.com/@morrowwishgames",
@@ -47,7 +47,7 @@
         "verifiedAt": "2026-11-22",
         "individuallyVerified": 7
       },
-      "likes": 1
+      "likes": null
     },
     {
       "id": "instagram",
@@ -55,10 +55,10 @@
       "phase": "verified-seven-reels-owner-insights",
       "published": 7,
       "failed": null,
-      "views": 363,
+      "views": null,
       "metricScope": "seven-2026-11-22-reels-instagram-owner-lifetime-plays",
-      "note": "Seven Nov 22 Reels rechecked through connected Instagram owner Insights: 363 current campaign plays, 11 likes at capture; old promo excluded. Snapshot requires further owner refresh.",
-      "likes": 11
+      "note": "Cat Bond was replaced by V13. Campaign totals are null until all seven approved native videos return verified readings; old Cat Bond counts are never reused.",
+      "likes": null
     },
     {
       "id": "bluesky",
@@ -76,19 +76,20 @@
     "type": "approved-short-videos-only",
     "campaignTagPrefix": "mw-shorts-20261122",
     "historicalExcluded": true,
-    "rule": "Strict allowlist of seven approved 2026-11-22 promo videos per platform; older videos never counted, imported or backfilled. Only approved individual URLs with verified metrics contribute to aggregates.",
+    "rule": "Exact 28 video URL allowlist including four Cat Bond V13 replacements; old Cat Bond IDs excluded. First-party readings only.",
     "activeApprovedPosts": 28,
     "verifiedPosts": [
       {
         "platform": "youtube",
         "game": "cat-bond",
-        "url": "https://www.youtube.com/shorts/ELv02K9K294",
+        "url": "https://www.youtube.com/shorts/2hd2LMg9iJY",
         "publishedAt": "2026-11-22",
-        "views": 13,
+        "views": null,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-youtube-owner-uploads-2026-11-22",
-        "likes": 0
+        "dataSource": null,
+        "likes": null,
+        "pendingNativeRefresh": true
       },
       {
         "platform": "youtube",
@@ -159,16 +160,16 @@
       {
         "platform": "tiktok",
         "game": "cat-bond",
-        "url": "https://www.tiktok.com/@morrowwishgames/video/7711071401913896206",
+        "url": "https://www.tiktok.com/@morrowwishgames/video/7711158345406680334",
         "publishedAt": "2026-11-22",
-        "views": 12,
-        "likes": 0,
-        "comments": 0,
-        "shares": 0,
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "shares": null,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-tiktok-public",
-        "lastVerifiedAt": "2026-11-22"
+        "dataSource": null,
+        "pendingNativeRefresh": true
       },
       {
         "platform": "tiktok",
@@ -257,16 +258,16 @@
       {
         "platform": "instagram",
         "game": "cat-bond",
-        "url": "https://www.instagram.com/reel/DgDdwz6T4Gy/",
+        "url": "https://www.instagram.com/reel/DgEGgecOxst/",
         "publishedAt": "2026-11-22",
-        "views": 6,
-        "likes": 1,
-        "comments": 0,
-        "shares": 0,
+        "views": null,
+        "likes": null,
+        "comments": null,
+        "shares": null,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-instagram-owner-insights",
-        "lastVerifiedAt": "2026-11-22"
+        "dataSource": null,
+        "pendingNativeRefresh": true
       },
       {
         "platform": "instagram",
@@ -355,7 +356,7 @@
       {
         "platform": "bluesky",
         "game": "cat-bond",
-        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcn56m33kj",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wu5hqa4gl3",
         "publishedAt": "2026-11-22",
         "views": null,
         "likes": null,
@@ -363,8 +364,8 @@
         "reposts": null,
         "approved": true,
         "publicVerified": true,
-        "dataSource": "vidiq-bluesky-publish-completed-permalink",
-        "lastVerifiedAt": "2026-11-22T13:05:00-08:00"
+        "dataSource": null,
+        "pendingNativeRefresh": true
       },
       {
         "platform": "bluesky",

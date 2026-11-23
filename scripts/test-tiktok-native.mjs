@@ -4,10 +4,10 @@ import fs from 'node:fs';
 
 const baseline=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 assert.equal(baseline.platforms.find(p=>p.id==='tiktok').published,7,'seven account-level TikTok videos preserved');
-assert.equal(baseline.platforms.find(p=>p.id==='tiktok').views,94,'verified snapshot includes all seven videos');
+assert.equal(baseline.platforms.find(p=>p.id==='tiktok').views,null,'V13 data excludes old play counts');
 const games=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
 const day=Math.floor(Date.parse('2026-11-22T12:00:00Z')/1000);
-const ids=['7711071401913896206','7711071409966943502','7711071395941240095',
+const ids=['7711158345406680334','7711071409966943502','7711071395941240095',
   '7711071458256112909','7711071406368312589','7711071416099032333','7711071765379829005'];
 const raw=games.map((game,index)=>({
  id:ids[index],create_time:day+index,video_description:'Play: https://morrowwish.vercel.app/'+game+'/',
@@ -30,7 +30,7 @@ assert.equal(complete.platforms.find(p=>p.id==='tiktok').comments,0);
 assert.equal(complete.platforms.find(p=>p.id==='tiktok').shares,28);
 assert.equal(partial.nativeTikTok.status,"partial");
 assert.equal(partial.metricScope.verifiedPosts.find(p=>p.platform==="tiktok"&&p.game==="tiny-town").views,null);
-assert.equal(baseline.platforms.find(p=>p.id==='tiktok').views,94,'baseline snapshot stays immutable');
+assert.equal(baseline.platforms.find(p=>p.id==='tiktok').views,null,'baseline snapshot stays immutable');
 const noMetric=tkOverlay(baseline,{posts:posts.map((p,i)=>i===4?{...p,views:null}:p),feedCount:7,checkedAt:'2026-11-22T20:00:00.000Z'},'ready');
 assert.equal(noMetric.platforms.find(p=>p.id==='tiktok').views,null,'incomplete provider metrics are not zero');
 assert.equal(tkPost({...raw[0],id:'invalid'}),null);

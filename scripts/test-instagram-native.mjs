@@ -4,6 +4,8 @@ import {igOverlay,nativeInstagramSnapshot} from '../src/instagram-native.js';
 const base=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 const posts=base.metricScope.verifiedPosts.filter(x=>x.platform==='instagram');
 assert.equal(posts.length,7);
+assert.ok(posts.find(x=>x.game==='cat-bond')?.url.includes('/DgEGgecOxst/'));
+assert.ok(!JSON.stringify(posts).includes('DgDdwz6T4Gy'));
 const state={checkedAt:'2026-11-22T23:45:00.000Z',posts:posts.map((p,i)=>({...p,views:i+5,likes:i,comments:0,dataSource:'instagram-graph-insights'}))};
 const o=igOverlay(base,state,'ready');
 assert.equal(o.platforms.find(p=>p.id==='instagram').views,56);

@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-11-22T13:05:00-08:00",
+  "updatedAt": "2026-11-22T17:16:00-08:00",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "2026-11-22 V12 campaign only. Metricool free-tier blocked native publishing; six paused drafts remain disabled. Native publishing via vidIQ/other channels supersedes Metricool ERROR. Per-platform URL records are sourced from approved-campaign social-metrics-snapshot.json; no historic posts. Some YouTube native publication evidence was recorded earlier in snapshot; the vidIQ upload draft status alone is not definitive for separate direct uploads.",
+  "accuracyNote": "Seven-game 2026-11-22 campaign. Cat Bond switched to V13 59.6s replacement posts on all four platforms; deleted V12 videos excluded from the dashboard and native analytics. Unknown replacement post metrics remain null until official refresh. Other six game posts unchanged.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -78,65 +78,64 @@
     {
       "slug": "cat-bond",
       "name": "Cat Bond",
-      "hook": "Two-cat combination → ultimate finisher",
-      "media": "/promo/cat-bond/hook-v3-20261121.mp4",
-      "production": "needs-recut",
+      "hook": "Build your dream cat team; duo ultimate; rare new friends",
+      "media": "/promo/cat-bond/trailer-v13-20261122.mp4",
+      "production": "ready",
       "social": {
         "youtube": "published",
         "tiktok": "published",
         "instagram": "published",
         "bluesky": "published"
       },
-      "cover": "/promo/cat-bond/hook-v3-20261121.jpg",
+      "cover": "/promo/cat-bond/trailer-v13-20261122.jpg",
       "timezone": "America/Los_Angeles",
-      "reviewStatus": "2026-11-22 approved V12 promotional video; current campaign native platform records",
+      "reviewStatus": "V13 full 59.6s vertical trailer published across four channels; previously deleted V12 posts excluded",
       "reviewImages": [
-        "/promo/cat-bond/hook-v3-review-1.jpg",
-        "/promo/cat-bond/hook-v3-review-2.jpg",
-        "/promo/cat-bond/hook-v3-review-3.jpg"
+        "/promo/cat-bond/v13-review-1.jpg",
+        "/promo/cat-bond/v13-review-2.jpg",
+        "/promo/cat-bond/v13-duo-original-art-proof.png"
       ],
       "music": "distinct licensed recording",
-      "outcomeVerified": "Blossomfire Pawdance + Claw Cyclone; scan of entire English video pending",
+      "outcomeVerified": "Hand-painted duo ultimate followed by rare cat capture",
       "evidence": {
-        "kind": "real duo+ultimate",
-        "outcome": "Blossomfire Pawdance + Claw Cyclone; scan of entire English video pending",
-        "qaRun": 44878977106,
-        "seconds": 8.1
+        "kind": "v13-original-art-duo-ultimate",
+        "outcome": "Hand-painted duo ultimate followed by rare cat capture",
+        "qaRun": 45087457119,
+        "seconds": 59.6
       },
       "approved": true,
       "socialUrls": {
-        "youtube": "https://www.youtube.com/shorts/ELv02K9K294",
-        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711071401913896206",
-        "instagram": "https://www.instagram.com/reel/DgDdwz6T4Gy/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wcn56m33kj"
+        "youtube": "https://www.youtube.com/shorts/2hd2LMg9iJY",
+        "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711158345406680334",
+        "instagram": "https://www.instagram.com/reel/DgEGgecOxst/",
+        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wu5hqa4gl3"
       },
       "socialVerification": {
         "youtube": {
-          "source": "vidiq-youtube-owner-uploads-2026-11-22",
+          "source": "owner-provided-new-short-link",
           "publicVerified": true,
-          "views": 13,
-          "likes": 0
+          "views": null,
+          "likes": null
         },
         "tiktok": {
-          "source": "vidiq-tiktok-public",
+          "source": "vidiq-new-video-publication-completed",
           "publicVerified": true,
-          "views": 12,
-          "likes": 0
+          "views": null,
+          "likes": null
         },
         "instagram": {
-          "source": "vidiq-instagram-owner-insights",
+          "source": "vidiq-new-video-publication-completed",
           "publicVerified": true,
-          "views": 6,
-          "likes": 1
+          "views": null,
+          "likes": null
         },
         "bluesky": {
-          "source": "vidiq-bluesky-publish-completed-permalink",
+          "source": "vidiq-new-video-publication-completed",
           "publicVerified": true,
           "views": null,
           "likes": null
         }
-      },
-      "metricoolV12PostId": 437817071
+      }
     },
     {
       "slug": "tiny-town",

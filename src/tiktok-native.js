@@ -10,7 +10,7 @@ const TK_CUTOFF="2026-11-22";
 // Only the owner's seven explicitly approved launch promos belong in this
 // dashboard. A similarly titled older/future post is never auto-imported.
 const TK_APPROVED={
-  "cat-bond":"7711071401913896206",
+  "cat-bond":"7711158345406680334",
   "pawsibly-innocent":"7711071409966943502",
   "tiny-town":"7711071395941240095",
   "elsewhere":"7711071458256112909",
@@ -82,7 +82,7 @@ async function tkAuthorizedToken(env){
   await socialWrite(env,"tiktok:token",{cipher:await tkEncrypt(env,next)});
   return next.access_token;
 }
-const TK_CACHE="tiktok:approved:20261122:v2";
+const TK_CACHE="tiktok:approved:20261122:v13";
 const TK_GAME_BY_ID=new Map(Object.entries(TK_APPROVED).map(([game,id])=>[id,game]));
 export function tkPost(video){
   const game=TK_GAME_BY_ID.get(video?.id);

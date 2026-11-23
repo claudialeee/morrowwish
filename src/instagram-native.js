@@ -8,7 +8,7 @@ const IG_CONFIG="2480710455789845";
 const IG_REDIRECT="https://morrowwish.vercel.app/api/instagram/callback";
 const IG_TTL=15*60*1000;
 const IG_APPROVED={
- "cat-bond":"DgDdwz6T4Gy",
+ "cat-bond":"DgEGgecOxst",
  "pawsibly-innocent":"DgDfM-DBb1K",
  "tiny-town":"DgDfO6ztxnM",
  "elsewhere":"DgDfQqkT6Gx",
@@ -78,7 +78,7 @@ async function igAuthorizedToken(env){
  if(token.expiresAt&&token.expiresAt<=Date.now())throw new SocialSyncError("needs_owner_authorization");
  return token;
 }
-const IG_CACHE="instagram:approved:20261122";
+const IG_CACHE="instagram:approved:20261122:v13";
 async function igFetch(env){
  const auth=await igAuthorizedToken(env);
  if(!auth)throw new SocialSyncError("needs_owner_authorization");

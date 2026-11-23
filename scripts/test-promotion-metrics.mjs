@@ -29,7 +29,7 @@ assert.ok(posts.some(p=>p.platform==='tiktok'&&p.game==='pawsibly-innocent')&&po
 const yt=snap.platforms.find(x=>x.id==='youtube');
 const ytPosts=posts.filter(p=>p.platform==='youtube');
 const ytExpected={
- 'cat-bond':['ELv02K9K294',13],
+ 'cat-bond':['2hd2LMg9iJY',null],
  'pawsibly-innocent':['JUQ8PsYCFG8',39],
  'tiny-town':['64Uh0S9dqmQ',1],
  'elsewhere':['n8bbePy8Unw',3],
@@ -37,25 +37,25 @@ const ytExpected={
  'parcel-panic':['c1qeZ3tvuLU',16],
  'pocket-aquarium':['O3tMbulVPvk',36]
 };
-assert.equal(yt.views,327,'seven current owner-confirmed YouTube Shorts sum to 327');
+assert.equal(yt.views,null,'deleted Cat Bond YouTube counts must not be reused');
 assert.equal(ytPosts.length,7,'seven current Shorts only');
 for(const [game,[id,views]] of Object.entries(ytExpected)){
  const p=ytPosts.find(x=>x.game===game);
  assert.ok(p?.url.endsWith('/'+id),'expected current approved YouTube Short ID for '+game);
  assert.equal(p.views,views,'owner-verified play count for '+game);
- assert.equal(p.dataSource,'vidiq-youtube-owner-uploads-2026-11-22');
+ assert.equal(p.dataSource,game==='cat-bond'?null:'vidiq-youtube-owner-uploads-2026-11-22');
 }
 const tk=snap.platforms.find(x=>x.id==='tiktok');
 assert.equal(tk.published,7,'all 7 TikTok videos published');
 assert.equal(tk.publicationEvidence.videoCount,7,'publication count has source evidence');
 assert.equal(posts.filter(p=>p.platform==='tiktok').length,7,'all seven public videos have per-video figures');
-assert.equal(tk.views,94,'seven individually verified TikTok videos sum to 94 plays');
+assert.equal(tk.views,null,'deleted Cat Bond TikTok counts must not be reused');
 const ig=snap.platforms.find(x=>x.id==='instagram');
 assert.equal(ig.published,7,'seven current Instagram Reels');
-assert.equal(ig.views,363,'Instagram owner Insights seven-reel plays');
-assert.equal(ig.likes,11,'Instagram owner Insights seven-reel likes');
+assert.equal(ig.views,null,'deleted Cat Bond Instagram views must not be reused');
+assert.equal(ig.likes,null,'deleted Cat Bond Instagram likes must not be reused');
 const igExpected={
- 'cat-bond':['DgDdwz6T4Gy',6],
+ 'cat-bond':['DgEGgecOxst',null],
  'pawsibly-innocent':['DgDfM-DBb1K',11],
  'tiny-town':['DgDfO6ztxnM',3],
  'elsewhere':['DgDfQqkT6Gx',1],
@@ -88,3 +88,20 @@ for(const keyword of ['id="future-channels"','id="future-channel-list"','channel
 const inline=dashboard.match(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i)?.[1];
 assert.doesNotThrow(()=>new vm.Script(inline),'dashboard script parses');
 console.log('Direct connected-platform snapshot reconciled dynamically; initial publication coverage preserved and historical video views excluded.');
+
+
+const release=JSON.parse(fs.readFileSync('public/promo/social-release-status.json','utf8'));
+const cat=release.games.find(x=>x.slug==='cat-bond');
+const newIds={youtube:'2hd2LMg9iJY',tiktok:'7711158345406680334',instagram:'DgEGgecOxst',bluesky:'3n2wu5hqa4gl3'};
+for(const [platform,id] of Object.entries(newIds)){
+  const post=posts.find(x=>x.platform===platform&&x.game==='cat-bond');
+  assert.ok(post?.url.includes(id),'new Cat Bond video allowlist missing: '+platform);
+  assert.equal(post.url,cat.socialUrls[platform]);
+  assert.equal(post.views,null,'V13 cannot inherit deleted V12 plays');
+  assert.equal(post.likes,null,'V13 cannot inherit deleted V12 likes');
+}
+for(const oldId of ['ELv02K9K294','7711071401913896206','DgDdwz6T4Gy','3n2wcn56m33kj']){
+  assert.ok(!JSON.stringify(cat).includes(oldId),'deleted Cat Bond link remains');
+  assert.ok(!JSON.stringify(posts).includes(oldId),'deleted Cat Bond metrics remain');
+}
+assert.equal(cat.media,'/promo/cat-bond/trailer-v13-20261122.mp4');

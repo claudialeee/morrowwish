@@ -5,7 +5,7 @@ const YT_API="https://www.googleapis.com/youtube/v3/videos";
 const YT_CHANNEL="UC9v31QGhSfBASDsbXMjch4Q";
 const YT_TTL=15*60*1000;
 const YT_APPROVED={
- "cat-bond":"ELv02K9K294",
+ "cat-bond":"2hd2LMg9iJY",
  "pawsibly-innocent":"JUQ8PsYCFG8",
  "tiny-town":"64Uh0S9dqmQ",
  "elsewhere":"n8bbePy8Unw",
@@ -14,7 +14,7 @@ const YT_APPROVED={
  "pocket-aquarium":"O3tMbulVPvk"
 };
 const ytIdOf=p=>/\/(?:shorts\/|watch\?v=)([\w-]{11})/.exec(p?.url||"")?.[1]||null;
-const YT_CACHE="youtube:approved:20261122";
+const YT_CACHE="youtube:approved:20261122:v13";
 async function ytFetch(env){
  const q=new URL(YT_API);
  q.searchParams.set("part","snippet,statistics,status");
