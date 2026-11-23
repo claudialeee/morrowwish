@@ -8,7 +8,7 @@ function box(x,y,w,h,color,r=12,stroke){c.fillStyle=color;c.beginPath();c.roundR
 function circ(x,y,r,color){c.beginPath();c.arc(x,y,r,0,TAU);c.fillStyle=color;c.fill();}
 function line(x,y,X,Y,color="#fff",wid=3){c.strokeStyle=color;c.lineWidth=wid;c.lineCap="round";c.beginPath();c.moveTo(x,y);c.lineTo(X,Y);c.stroke();}
 function txt(x,y,str,size=20,color="#eff7ff",align="center",weight=800){c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";c.font=weight+" "+size+"px system-ui,Segoe UI,sans-serif";c.fillText(str,x,y);}
-function bg(a="#09172d",b="#112b4d"){const palette=({["flip-dash"]:["#3e3157","#7b4e79"],["parcel-panic"]:["#4d355c","#805565"],["tower-tuck"]:["#403653","#765779"],["traffic-tangle"]:["#344e57","#61766a"]})[GAME];if(palette){a=palette[0];b=palette[1];}const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,a);g.addColorStop(1,b);c.fillStyle=g;c.fillRect(0,0,W,H);for(let i=0;i<25;i++){circ((i*167+53)%960,(i*131+27)%540,1+(i%3), "#ffffff12");}}
+function bg(a="#09172d",b="#112b4d"){const palette=({["flip-dash"]:["#3e3157","#7b4e79"],["parcel-panic"]:["#4d355c","#805565"],["tower-tuck"]:["#403653","#765779"],["traffic-tangle"]:["#344e57","#61766a"]})[GAME];if(palette){a=palette[0];b=palette[1];}const stageH=GAME==="parcel-panic"?cv.height:H;const g=c.createLinearGradient(0,0,0,stageH);g.addColorStop(0,a);g.addColorStop(1,b);c.fillStyle=g;c.fillRect(0,0,W,stageH);for(let i=0;i<25;i++){circ((i*167+53)%960,(i*131+27)%540,1+(i%3), "#ffffff12");}}
 function glow(x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,"transparent");c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
 let score=0,level=1,running=false,mode=null,last=performance.now(),elapsed=0,portrait=false;
 // Match the orientation chosen at fullscreen entry, not device rotation events.
@@ -17,7 +17,7 @@ function setArcadePortrait(next){
  // Fullscreen controller and renderer must share one canvas orientation.
  // On iOS a stale 960x540 backing canvas displayed as 9:16 clips the right
  // half of both minigames. Check intrinsic pixels as well as the flag.
- const w=next?540:960,h=next?960:540;
+ const w=next?540:960,h=next?960:(GAME==="parcel-panic"?720:540);
  if(portrait===next&&cv.width===w&&cv.height===h)return;
  portrait=next;cv.width=w;cv.height=h;
 }
@@ -282,7 +282,7 @@ function point(e){syncCanvasViewport();const a=cv.getBoundingClientRect();
   const x=(e.clientX-a.left)*540/a.width,y=(e.clientY-a.top)*960/a.height;
   return{x:clamp(960-y,0,W),y:clamp(x,0,H)};
  }
- return{x:clamp((e.clientX-a.left)*W/a.width,0,W),y:clamp((e.clientY-a.top)*H/a.height,0,H)};
+ return{x:clamp((e.clientX-a.left)*W/a.width,0,W),y:clamp((e.clientY-a.top)*cv.height/a.height,0,cv.height)};
 }
 let held=false;cv.style.touchAction='none';
 cv.addEventListener("pointerdown",e=>{
