@@ -11,6 +11,7 @@ on:
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
+      - 'scripts/check-cat-bond-story-cloud.mjs' # RPG progression, cloud-save API and worker bundling regression gate.
       - 'scripts/check-cat-bond-premium-21x3.mjs' # Keep the complete duo-art release gate deployable.
       - 'scripts/test-analytics-integrity.mjs' # Analytics contract is a required pre-deploy gate.
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
