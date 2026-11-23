@@ -5104,3 +5104,17 @@ body.cb-exploring #stage #yard-actions{
  .cb-story-overlay,.cb-cloud-overlay{transition:none}
  .cb-story-scene-mark{animation:none}
 }
+
+#panel .cb-dex-story-record{
+ display:flex;align-items:center;gap:11px;margin:14px 0 18px;padding:12px 14px;
+ border:1px solid #d9c99f;border-radius:13px;
+ background:linear-gradient(115deg,#fff9e9,#f1e7d1);
+ color:#5c523e;box-shadow:inset 0 1px rgba(255,255,255,.85)
+}
+#panel .cb-dex-story-mark{
+ width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:50%;
+ color:#a17c42;background:#ead8b4;font-size:19px
+}
+#panel .cb-dex-story-record strong{display:block;font:850 12px/1.4 system-ui,sans-serif;color:#5c523e}
+#panel .cb-dex-story-record small{display:block;margin-top:2px;font:600 10px/1.4 system-ui,sans-serif;color:#887b61}
+#panel .cb-dex-story-record>b{margin-left:auto;color:#728c6c;font:850 10px/1.2 system-ui,sans-serif;white-space:nowrap}
