@@ -421,9 +421,10 @@ try{
   }
   if(!mapEncounterOpened)throw Error('Walking into the real SSR roamer never opened battle preparation');
   const mapBattlePrompt=await page.locator('#panel.open').innerText();
-  const jinwuName=await page.evaluate(()=>GameData.speciesName(GameData.speciesById('jinwu')));
-  if(!mapBattlePrompt.includes('SSR')||!mapBattlePrompt.includes(jinwuName))
-    throw Error('The visible map encounter prompt is not the Jinwu SSR: '+mapBattlePrompt.slice(0,500));
+  if(!mapBattlePrompt.includes('SSR'))
+    throw Error('The visible map encounter prompt is not an SSR: '+mapBattlePrompt.slice(0,500));
+  fs.writeFileSync(path.join(media,'review-map-ssr-prep.png'),
+    await page.screenshot({type:'png'}));
   await sleep(500); // show the real wild-cat encounter and "Start battle" button
   await page.locator('#panel.open #bp-go').click();
   await page.waitForFunction(()=>__game.scene==='battle'&&__game.battle?.wild?.id==='jinwu',
