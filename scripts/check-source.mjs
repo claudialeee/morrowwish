@@ -218,7 +218,7 @@ if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,zoom,0,0,1,null,tier)')||
    !premiumScene.includes('galleryPreview?1:Math.min(cam.zoom,1.16)')||
    !premiumScene.includes('const opacity=(thumbnail||galleryPreview)?1:')||
-   !premiumScene.includes('smooth(p/.22)*(1-smooth((p-.71)/.29))')||
+   !premiumScene.includes('smooth(p/.22)*(1-smooth((p-.71)/.275))')||
    !premiumScene.includes('featherScenery(ctx,sw,sh)')||
    !premiumScene.includes('const edgeX=clamp(148/W,.20,.32)')||
    premiumScene.includes('drawPortraitStory(')||premiumScene.includes('portraitEnvironment(')||
