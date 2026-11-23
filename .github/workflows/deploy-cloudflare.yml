@@ -200,7 +200,16 @@ jobs:
           # updated. Check exact source-asset versions plus JS/CSS bytes.
           expected_css=$(grep -oE 'css/style.css[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_js=$(grep -oE 'js/main.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          test -n "$expected_css" && test -n "$expected_js"
+          expected_story=$(grep -oE 'js/story-cloud.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_game=$(grep -oE 'js/game.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_battle=$(grep -oE 'js/battle.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_worldmap=$(grep -oE 'js/worldmap.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_painted=$(grep -oE 'js/painted-regions.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_ui=$(grep -oE 'js/ui.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          expected_i18n=$(grep -oE 'js/i18n.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          test -n "$expected_css" && test -n "$expected_js" && test -n "$expected_story" \
+            && test -n "$expected_game" && test -n "$expected_battle" && test -n "$expected_worldmap" \
+            && test -n "$expected_painted" && test -n "$expected_ui" && test -n "$expected_i18n"
           latest=0
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
             if curl -fsSL --max-time 20 -o /tmp/catbond-live.html "https://morrowwish.pages.dev/cat-bond/?verify=$GITHUB_SHA&attempt=$attempt" \
@@ -210,16 +219,39 @@ jobs:
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-style.css "https://morrowwish.pages.dev/cat-bond/css/style.css?verify=$GITHUB_SHA&attempt=$attempt" \
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-world.js "https://morrowwish.pages.dev/cat-bond/js/world.js?verify=$GITHUB_SHA&attempt=$attempt" \
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-yard.svg "https://morrowwish.pages.dev/cat-bond/assets/yard-storybook.svg?verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-story.js "https://morrowwish.pages.dev/cat-bond/$expected_story&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-game.js "https://morrowwish.pages.dev/cat-bond/$expected_game&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-battle.js "https://morrowwish.pages.dev/cat-bond/$expected_battle&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-worldmap.js "https://morrowwish.pages.dev/cat-bond/$expected_worldmap&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-painted.js "https://morrowwish.pages.dev/cat-bond/$expected_painted&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-ui.js "https://morrowwish.pages.dev/cat-bond/$expected_ui&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/catbond-live-i18n.js "https://morrowwish.pages.dev/cat-bond/$expected_i18n&verify=$GITHUB_SHA&attempt=$attempt" \
               && cmp -s public/cat-bond/js/main.js /tmp/catbond-live-main.js \
               && cmp -s public/cat-bond/css/style.css /tmp/catbond-live-style.css \
               && cmp -s public/cat-bond/js/world.js /tmp/catbond-live-world.js \
-              && cmp -s public/cat-bond/assets/yard-storybook.svg /tmp/catbond-live-yard.svg; then
+              && cmp -s public/cat-bond/assets/yard-storybook.svg /tmp/catbond-live-yard.svg \
+              && cmp -s public/cat-bond/js/story-cloud.js /tmp/catbond-live-story.js \
+              && cmp -s public/cat-bond/js/game.js /tmp/catbond-live-game.js \
+              && cmp -s public/cat-bond/js/battle.js /tmp/catbond-live-battle.js \
+              && cmp -s public/cat-bond/js/worldmap.js /tmp/catbond-live-worldmap.js \
+              && cmp -s public/cat-bond/js/painted-regions.js /tmp/catbond-live-painted.js \
+              && cmp -s public/cat-bond/js/ui.js /tmp/catbond-live-ui.js \
+              && cmp -s public/cat-bond/js/i18n.js /tmp/catbond-live-i18n.js; then
               latest=1; break
             fi
             sleep 4
           done
           test "$latest" = 1 || { echo "::error::Cloudflare Cat Bond HTML/JS/CSS still stale after deployment"; exit 1; }
-          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact main/world JS, CSS, and garden SVG bytes."
+          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact story, map, boss, UI, locale, CSS and garden artwork bytes."
+          # Exercise the deployed D1-backed cloud-save endpoint without creating a save row.
+          unauth_code=$(curl -sSL --max-time 15 -o /tmp/catbond-cloud-unauth.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
+          test "$unauth_code" = 401 || { echo "::error::Cloud-save API unauthenticated GET returned $unauth_code; expected 401"; exit 1; }
+          test_token=$(printf '%s' "$GITHUB_SHA" | sha256sum | cut -c1-43)
+          code=$(curl -sSL --max-time 15 -H "Authorization: Bearer $test_token" -o /tmp/catbond-cloud-save.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
+          test "$code" = 200 && grep -Fq '"exists":false' /tmp/catbond-cloud-save.json || { echo "::error::Cloud-save API/D1 check failed on Pages (HTTP $code)"; cat /tmp/catbond-cloud-save.json; exit 1; }
+          code=$(curl -sSL --max-time 15 -H "Authorization: Bearer $test_token" -o /tmp/catbond-cloud-save-proxy.json -w '%{http_code}' "https://morrowwish.vercel.app/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
+          test "$code" = 200 && grep -Fq '"exists":false' /tmp/catbond-cloud-save-proxy.json || { echo "::error::Cloud-save API/D1 check failed through the public proxy (HTTP $code)"; cat /tmp/catbond-cloud-save-proxy.json; exit 1; }
+          echo 'Encrypted Cat Bond cloud-save API, D1 binding, and public Vercel proxy verified.'
           for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /pawsibly-innocent/cat-music.js /audio/cat-happy-clappy.ogg /icons/pawsibly-innocent.svg /studio-insights/; do
             ready=0
             for attempt in 1 2 3 4 5 6; do
