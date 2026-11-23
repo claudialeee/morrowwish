@@ -60,8 +60,13 @@ const coinPricePieces=[
  ['最多 10 次 · 每次 80','Up to 10 times · 80']
 ];
 for(const [zh,en] of coinPricePieces)
- assert.equal(i18n.toEnglish(zh).trim(),en.trim(),
-   'Coin icon splitting must not strand a Chinese price fragment: '+zh);
+ assert.equal(i18n.toEnglish(zh),en,
+   'Coin icon splitting must preserve translated words and spaces: '+zh);
+for(const phrase of [
+ '消耗 2🐠 小鱼干，提升好感和饱食',
+ '已解锁 1 种技能 · 点击替换 Q / E / 必杀。每只猫拥有不同的元素技能与解锁路线。'
+])assert.ok(!/[\\u3400-\\u9fff]/.test(i18n.toEnglish(phrase)),
+  'Dynamic bilingual panel copy must not leak Han characters: '+phrase);
 for(const source of mustTranslate){
  const output=i18n.toEnglish(source);
  assert.ok(!/[\u3400-\u9fff]/.test(output),'English translation leaked Chinese: '+source+' -> '+output);
