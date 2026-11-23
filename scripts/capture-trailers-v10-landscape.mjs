@@ -481,9 +481,14 @@ try{
     throw Error('New full-screen breed-matched duo renderer not loaded '+JSON.stringify(cinematicSource));
   const duo=await page.evaluate(()=>{
    const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
-   b.duoCharge=100;b.duoCd=0;const ready=b.duoReady();const status=b.team.map(f=>({id:f.cat.uid,alive:f.alive,hp:Math.round(f.hp)}));return{ready,status,cast:b.castDuo(),uses:b.duoUses,cinematic:!!b.duoCinematic};
+   b.duoCharge=100;b.duoCd=0;const ready=b.duoReady();const status=b.team.map(f=>({id:f.cat.uid,alive:f.alive,hp:Math.round(f.hp)}));
+    const cast=b.castDuo();return {ready,status,cast,uses:b.duoUses,cinematic:!!b.duoCinematic,
+      originalArt:b.duoCinematic?.originalArt===true,
+      artSource:window.CatBondPremiumCinematics?.originalPaintingSource||''};
   });
-  if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
+  if(!duo.cast||duo.uses!==1||!duo.cinematic||!duo.originalArt||
+     !duo.artSource.includes('duo-storyboard-21x3-v3.webp'))
+     throw Error('Refuse old v10 landscape duo instead of original watercolor: '+JSON.stringify(duo));
   const duoStart=stamp();
   await sleep(1800);
   const duoProof=await page.evaluate(()=>{
@@ -494,12 +499,13 @@ try{
   });
   if(!duoProof.active||duoProof.visiblePanel||!duoProof.battleUI)
     throw Error('Duo animation is obscured or finished in filmed segment '+JSON.stringify(duoProof));
-  await page.screenshot({path:'public/promo/cat-bond/v10-duo-actual-render-proof.png'});
+  await page.screenshot({path:'public/promo/cat-bond/v13-landscape-original-art-proof.png'});
   await sleep(3000);
   // Trim the genuine single cast before its after-action effects can resemble
   // a second finisher. The untouched raw recording is retained for QA.
   const duoOffset=0.42; // Reference-video phase alignment; keeps full 3.1s authentic duel.
-   shots.push({label:'duo',start:duoStart+duoOffset,duration:3.1});
+   shots.push({label:'duo',start:duoStart+duoOffset,duration:3.1,originalArt:duo.originalArt,
+      artMode:'63-original-painted-storyboards',artSource:duo.artSource});
   // Preserve the one natural on-screen follow-through: finisher art fades,
   // native arena health bars return and the real rare-cat capture resolves.
   // This is contiguous raw footage, not a second duo cast or another fight.
