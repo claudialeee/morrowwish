@@ -226,14 +226,38 @@ async function details(page,slug,rec){
  if(await editors.count()!==2)throw Error('Expected two Quill editors for description and controls');
  await editors.nth(0).fill(game.description);
  await editors.nth(1).fill(game.controls);
+ const descriptionInForm=(await editors.nth(0).innerText()).trim();
+ const controlsInForm=(await editors.nth(1).innerText()).trim();
+ if(descriptionInForm!==game.description||controlsInForm!==game.controls)
+   throw Error('CrazyGames form copy does not match approved game copy; refusing save');
+ rec.copyVerifiedOnForm=true;
+ rec.finalDescription=descriptionInForm;
+ rec.finalControls=controlsInForm;
  const uploads=['cover-landscape.png','cover-portrait.png','cover-square.png','real-gameplay-landscape.mp4','real-gameplay-portrait.mp4'];
  if(await page.locator('input[type=file]').count()!==5)throw Error('Expected three cover and two gameplay video upload controls');
  rec.uploaded=[];
- const provenance=JSON.parse(fs.readFileSync('.check/crazygames/cat-bond-trim-portrait.json','utf8'));
- if(provenance.originalArt!==true||provenance.originalSceneCount!==63||
-    !provenance.artSource?.includes('duo-storyboard-21x3-v3.webp'))
-   throw Error('Refusing wrong or stale CrazyGames assets: original 63-painted art proof absent');
- rec.artProvenance={originalArt:true,originalSceneCount:63};
+ if(process.env.CRAZYGAMES_PREVIEW_MODE==='v14-variety-real-gameplay'){
+   const m=JSON.parse(fs.readFileSync('.check/crazygames-v14-variety/shot-plan-and-qa.json','utf8'));
+   if(m.kind!=='real-gameplay-V14-creative-recut-not-ai'||
+      m.reference!=='public/promo/v14-review.json'||
+      m.containsOriginal63DuoCinematic!==false||
+      !(m.battleFraction<.15)||m.crazygamesDraftTouched!==false||
+      !Array.isArray(m.showcases)||m.showcases.some(x=>x.scene==='duo')||
+      !m.videos?.landscape?.video?.endsWith('cat-bond-crazygames-v14-variety-landscape.mp4')||
+      !m.videos?.portrait?.video?.endsWith('cat-bond-crazygames-v14-variety-portrait.mp4'))
+      throw Error('Refusing unreviewed V14 preview: authentic, varied, no full duo proof required');
+   rec.artProvenance={
+     source:'actual-V14-gameplay-recut',hasFullDuoCinematic:false,
+     originalV14Review:m.reference,battleFraction:m.battleFraction,
+     landscapeSeconds:m.videos.landscape.duration,
+     portraitSeconds:m.videos.portrait.duration};
+ }else{
+   const provenance=JSON.parse(fs.readFileSync('.check/crazygames/cat-bond-trim-portrait.json','utf8'));
+   if(provenance.originalArt!==true||provenance.originalSceneCount!==63||
+      !provenance.artSource?.includes('duo-storyboard-21x3-v3.webp'))
+     throw Error('Refusing wrong or stale CrazyGames assets: original 63-painted art proof absent');
+   rec.artProvenance={originalArt:true,originalSceneCount:63};
+ }
  for(let i=0;i<uploads.length;i++){
    await page.locator('input[type=file]').nth(i).setInputFiles(path.join(dir,uploads[i]));
    rec.uploaded.push(uploads[i]);await sleep(900);
