@@ -4544,7 +4544,8 @@ html.cb-cg #stage #cg-top-tools{
   right:max(7px,env(safe-area-inset-right,0px))!important;
   left:auto!important;bottom:auto!important;
   display:flex!important;justify-content:flex-end;align-items:center;
-  z-index:72!important;
+  /* Above gameplay, but BELOW modal overlays (z40), so popups stay usable. */
+  z-index:32!important;
   max-width:calc(100% - 14px);
   box-sizing:border-box;pointer-events:none;
 }
