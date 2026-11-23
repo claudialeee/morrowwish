@@ -75,6 +75,8 @@ assert.ok(JSON.stringify(snap).indexOf('instagram-historical')<0,'legacy posts a
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 assert.ok(dashboard.includes('id="video-detail-rows"'),'per-game detail table present');
 assert.ok(dashboard.includes("post.checkedAt&&Number.isSafeInteger(post[key])"),'unknown views blank, not zero');
+assert.ok(dashboard.includes('igNativePosts.length'), 'partial Instagram provider totals must show verified coverage');
+assert.ok(dashboard.includes("p.checkedAt&&"), 'partial Instagram totals must exclude missing native readings');
 assert.ok(dashboard.includes("verifiedVideos.find(p=>p.platform===platform&&p.game===id)"),'individual game/medium cells');
 assert.ok(!dashboard.includes('id="native-account-overview"'),'old and duplicate promo overview hidden permanently');
 assert.ok(!dashboard.includes('instagram-historical')&&!dashboard.includes('Nov 20 old Reels'),'no historical promo presentation');

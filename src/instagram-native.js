@@ -16,7 +16,15 @@ const IG_APPROVED={
  "parcel-panic":"DgDfRCJAF83",
  "pocket-aquarium":"DgDfRT3O7EK"
 };
-const igCode=p=>/instagram\.com\/reel\/([A-Za-z0-9_-]+)/.exec(p||"")?.[1]||null;
+const igCode=p=>/instagram\\.com\\/(?:reel|p)\\/([A-Za-z0-9_-]+)/.exec(p||"")?.[1]||null;
+// Match the exact seven approved video shortcodes, not the UTC date of posting.
+// Meta timestamps are UTC: an upload at 4:30pm Pacific on Nov 22 is Nov 23 UTC,
+// and must not be silently dropped from the launch-campaign dashboard.
+export function igApprovedReel(p){
+ if(p?.media_type!=="VIDEO"||p.media_product_type!=="REELS")return null;
+ const shortcode=igCode(p.permalink);
+ return Object.keys(IG_APPROVED).find(game=>IG_APPROVED[game]===shortcode)||null;
+}
 async function igKey(env){
  const pass=env.INSTAGRAM_TOKEN_KEY||env.ARCADE_ANALYTICS_KEY;
  if(!pass)throw Error("Instagram encryption key is not configured");
@@ -91,9 +99,8 @@ async function igFetch(env){
    const response=await igRequest("/"+userId+"/media",token,q);
    if(!Array.isArray(response.data))throw Error("Instagram media listing missing");
    for(const p of response.data){
-     const game=Object.keys(IG_APPROVED).find(k=>IG_APPROVED[k]===igCode(p.permalink));
-     if(!game||matched.has(game)||String(p.timestamp||"").slice(0,10)!=="2026-11-22")continue;
-     if(p.media_type!=="VIDEO"||p.media_product_type!=="REELS")continue;
+     const game=igApprovedReel(p);
+     if(!game||matched.has(game))continue;
      matched.set(game,{platform:"instagram",game,url:"https://www.instagram.com/reel/"+IG_APPROVED[game]+"/",
        publishedAt:"2026-11-22",views:null,likes:socialCount(p.like_count),comments:socialCount(p.comments_count),
        approved:true,publicVerified:true,dataSource:"instagram-graph-insights",mediaId:p.id});

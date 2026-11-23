@@ -311,7 +311,21 @@ const platforms=reportedPlatforms.length?reportedPlatforms.filter(p=>platformIds
 const homeSources=(j.homeFunnel&&Array.isArray(j.homeFunnel.bySource))?j.homeFunnel.bySource:[];
 const homeFor=id=>homeSources.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));
 const nativeStates={youtube:pulse.nativeYouTube,tiktok:pulse.nativeTikTok,instagram:pulse.nativeInstagram,bluesky:pulse.nativeBluesky};
-const nativeNum=(n,id,published)=>!nativeStates[id]?.checkedAt||!["youtube","tiktok","instagram"].includes(id)||published===0||n==null||!Number.isFinite(Number(n))?"":format(n);
+// Instagram's Reel inventory can be incomplete (for example, a deleted Reel).
+// Display only the known native-view subtotal with explicit coverage, never
+// reuse deleted-video counts or pretend the subtotal is a complete total.
+const igNativePosts=(pulse.metricScope?.verifiedPosts||[]).filter(p=>
+ p.platform==='instagram'&&p.approved===true&&p.publicVerified===true&&p.checkedAt&&
+ Number.isSafeInteger(p.views)&&p.views>=0);
+const nativeNum=(n,id,published)=>{
+ if(!nativeStates[id]?.checkedAt||!["youtube","tiktok","instagram"].includes(id)||published===0)return "";
+ if(id==='instagram'&&(n==null||!Number.isFinite(Number(n)))&&igNativePosts.length){
+  const total=igNativePosts.reduce((sum,p)=>sum+p.views,0);
+  const coverage=igNativePosts.length+'/'+(nativeStates.instagram.expectedPosts||7);
+  return format(total)+' ('+coverage+' '+(lang==='zh'?'条已同步':'synced')+')';
+ }
+ return n==null||!Number.isFinite(Number(n))?"":format(n);
+};
 const siteNum=(rows,key)=>rows.length?format(totalOf(rows,key)):'';
 const platformLinks={itch:'https://morrowwishgames.itch.io/',youtube:'https://www.youtube.com/channel/UC9v31QGhSfBASDsbXMjch4Q/shorts',tiktok:'https://www.tiktok.com/@morrowwishgames',instagram:'https://www.instagram.com/morrowwishgames/',bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'};
 $("channel-rows").innerHTML=platforms.map(p=>{const z=siteFor(p.id),label=escapeHTML(platformNames[p.id]||p.id);
