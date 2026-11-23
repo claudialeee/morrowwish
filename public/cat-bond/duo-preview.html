@@ -30,8 +30,7 @@ html.duo-embedded .viewer{
  overflow:hidden;box-shadow:0 5px 18px #8b789018;
 }
 html.duo-embedded #duo-canvas{
- display:block;flex:none;width:auto!important;
- height:min(65dvh,calc((100vw - 28px)*9/16))!important;
+ display:block;flex:none;width:100%!important;height:auto!important;
  max-width:100%;max-height:none;aspect-ratio:16/9!important;
  object-fit:contain;border-radius:10px;
 }
@@ -54,7 +53,7 @@ html.duo-embedded #locked{margin:6px 0 0}
 @media(max-width:550px){
  html.duo-embedded body{padding:5px 4px 6px}
  html.duo-embedded #duo-canvas{
-  height:min(52dvh,calc((100vw - 16px)*9/16))!important;
+  width:100%!important;height:auto!important;max-height:none;aspect-ratio:16/9!important;
  }
  html.duo-embedded .controls{margin:6px 0 3px}
  html.duo-embedded .controls button{min-height:40px}
@@ -143,7 +142,7 @@ html.duo-embedded #locked{margin:6px 0 0}
   grass:'#8ccb9f',light:'#fff1bc',water:'#9cd7f7'};
  const first=Skills.elementOf(catA.species),second=Skills.elementOf(catB.species);
  let start=performance.now(),paused=false,held=0,sequenceMode=true;
- let selectedTier=1,currentTier=0;
+ let selectedTier=1,currentTier=1;
  const pauseButton=document.getElementById('pause');
  function setActiveTier(t){
   currentTier=t;
