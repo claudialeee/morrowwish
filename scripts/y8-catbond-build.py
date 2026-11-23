@@ -71,6 +71,8 @@ audio_file = GAME / "studio-audio.js"
 audio_code = audio_file.read_text().replace(
     "const route=location.pathname.split('/').filter(Boolean)[0];",
     "const route='cat-bond';")
+# Expose the existing stop() implementation to the isolated Y8 blur handler.
+audio_code = audio_code.replace("window.MorrowwishAudio={start,toggle", "window.MorrowwishAudio={start,stop,toggle")
 audio_file.write_text(audio_code)
 
 
