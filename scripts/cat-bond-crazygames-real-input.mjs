@@ -213,6 +213,9 @@ try{
         if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
         await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
         await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+        const dir='.check/crazygames-yard-dock';
+        fs.mkdirSync(dir,{recursive:true});
+        await page.screenshot({path:dir+'/'+width+'x'+height+'-map.png'});
         await page.locator('#cg-top-tools #map-menu').click();
         await page.locator('#panel.open .explore-menu').waitFor({state:'visible',timeout:10000});
         await page.locator('#panel.open .panel-dismiss').click();
