@@ -271,14 +271,22 @@ try{
   });
   await page.mouse.click(firstBush.x,firstBush.y);
   await page.waitForSelector('#panel.open #cp-go',{timeout:10000});
-  await sleep(420); // hold on the actual "Go! Catch this cat" preparation screen
-  await page.locator('#panel.open #cp-go').click();
+  const firstStartButton=page.locator('#panel.open #cp-go');
+  await firstStartButton.waitFor({state:'visible',timeout:10000});
+  await firstStartButton.scrollIntoViewIfNeeded();
+  await firstStartButton.hover();
+  const firstPrepShownAt=Date.now();
+  await sleep(1500); // visibly hold the real Start Battle button with pointer on it
+  await firstStartButton.click();
   await page.waitForFunction(()=>window.__game?.scene==='battle',{timeout:10000});
   const firstBattleEntry=await page.evaluate(()=>({
     scene:__game.scene,wild:__game.battle?.wild?.id,
     startedFromVisibleButton:true
   }));
-  if(firstBattleEntry.scene!=='battle')throw Error('First battle did not start from the capture-prep button');
+  const firstPrepVisibleMs=Date.now()-firstPrepShownAt;
+  if(firstBattleEntry.scene!=='battle'||firstPrepVisibleMs<1450)
+    throw Error('First battle prep screen was not visibly held before Start Battle');
+  await sleep(650); // show the actual battle scene after the button press
   if(await page.locator('#battle-tutorial-skip').isVisible().catch(()=>false))
     await page.locator('#battle-tutorial-skip').click();
   await page.waitForFunction(id=>State.S.cats.some(c=>c.species===id)&&
@@ -425,11 +433,19 @@ try{
     throw Error('The visible map encounter prompt is not an SSR: '+mapBattlePrompt.slice(0,500));
   fs.writeFileSync(path.join(media,'review-map-ssr-prep.png'),
     await page.screenshot({type:'png'}));
-  await sleep(500); // show the real wild-cat encounter and "Start battle" button
-  await page.locator('#panel.open #bp-go').click();
+  const ssrStartButton=page.locator('#panel.open #bp-go');
+  await ssrStartButton.waitFor({state:'visible',timeout:10000});
+  await ssrStartButton.scrollIntoViewIfNeeded();
+  await ssrStartButton.hover();
+  const ssrPrepShownAt=Date.now();
+  await sleep(1500); // visibly show the SSR encounter and Start Battle button
+  await ssrStartButton.click();
   await page.waitForFunction(()=>__game.scene==='battle'&&__game.battle?.wild?.id==='jinwu',
     {timeout:10000});
+  const ssrPrepVisibleMs=Date.now()-ssrPrepShownAt;
   const finalBattleEntry={scene:'battle',wild:'jinwu',startedFromVisibleButton:true};
+  if(ssrPrepVisibleMs<1450)throw Error('SSR Start Battle screen was not held visibly');
+  await sleep(650); // show the battle transition before resolving the encounter
   if(await page.locator('#battle-tutorial-skip').isVisible().catch(()=>false))
     await page.locator('#battle-tutorial-skip').click();
   await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:45000}).catch(async error=>{
@@ -456,7 +472,7 @@ try{
   const battleEntryProof={
     firstYardEncounter:{wild:firstWild.id,prepButton:'cp-go',clicked:true,scene:'yard -> battle',proof:firstBattleEntry},
     mapSSR:{wild:'jinwu',prepButton:'bp-go',clicked:true,scene:'map -> encounter prompt -> battle',proof:finalBattleEntry},
-    directStartBattleCalls:0
+    directStartBattleCalls:0,firstPrepVisibleMs,ssrPrepVisibleMs
   };
   const recordedVideo=page.video();
   await page.close();
@@ -469,8 +485,7 @@ try{
     '-ss',String(trim),'-i',rawPath,
     '-stream_loop','-1','-i',music,
     '-t',String(clipDuration),
-    '-filter_complex','[0:v]crop=1170:658:55:31,fps=25,'+
-      'scale=1280:720:flags=lanczos,format=yuv420p[v];'+
+    '-filter_complex','[0:v]fps=25,scale=1280:720:flags=lanczos,format=yuv420p[v];'+
       '[1:a]volume=0.14,afade=t=in:st=0:d=0.3,'+
       'afade=t=out:st='+Math.max(0,clipDuration-1.2).toFixed(2)+':d=1.2[a]',
     '-map','[v]','-map','[a]',
