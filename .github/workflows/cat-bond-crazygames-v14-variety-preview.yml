@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/cat-bond-crazygames-v14-variety-preview.yml'
+      - 'scripts/recut-cat-bond-crazygames-variety-v14.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -34,7 +35,7 @@ jobs:
             sudo apt-get update -qq
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
           fi
-      - name: Recut V14 real gameplay (exploration, cats, growth, story, brief battle)
+      - name: Recut V14 real gameplay (exploration, interaction, collection, growth, brief battle)
         run: python3 scripts/recut-cat-bond-crazygames-variety-v14.py
       - name: Final video and content guard
         run: |
