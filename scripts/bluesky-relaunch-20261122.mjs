@@ -73,7 +73,9 @@ const session=await json(api+'com.atproto.server.createSession',{
 });
 if(session.did!==expectedDid)throw Error('BLUESKY_DID_MISMATCH: refuse to post to unexpected account');
 const auth={'Authorization':'Bearer '+session.accessJwt,'content-type':'application/json'};
-const serviceAud='did:web:video.bsky.app';
+const pdsEndpoint=session.didDoc?.service?.find(x=>x.id?.endsWith('#atproto_pds'))?.serviceEndpoint;
+if(!pdsEndpoint)throw Error('Bluesky session didDoc missing atproto PDS endpoint');
+const serviceAud='did:web:'+new URL(pdsEndpoint).host;
 const existing=await json(api+'com.atproto.repo.listRecords?'+new URLSearchParams({repo:session.did,collection:'app.bsky.feed.post',limit:'100'}),{headers:{Authorization:auth.Authorization}});
 const previous=new Map(existing.records?.map(x=>[x.value?.text,x.uri])||[]);
 console.log('Owner-approved V14 campaign; account DID verified; seven 5-minute slots, Cat Bond last');
@@ -90,7 +92,7 @@ for(let i=0;i<games.length;i++){
   const bytes=Buffer.from(await res.arrayBuffer());
   if(bytes.length===0||bytes.length>50000000)throw Error('Invalid or too large source MP4 for '+g.slug);
   const svc=await json(api+'com.atproto.server.getServiceAuth?'+new URLSearchParams({
-    aud:serviceAud,lxm:'app.bsky.video.uploadVideo',exp:String(Math.floor(Date.now()/1000)+1800)
+    aud:serviceAud,lxm:'com.atproto.repo.uploadBlob',exp:String(Math.floor(Date.now()/1000)+1800)
   }),{headers:{Authorization:auth.Authorization}});
   const uploadUrl='https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?'+new URLSearchParams({did:session.did,name:g.video.split('/').at(-1)});
   const upload=await json(uploadUrl,{method:'POST',
@@ -119,7 +121,7 @@ for(let i=0;i<games.length;i++){
     try{
       const thread=await json('https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?'+new URLSearchParams({uri:created.uri,depth:'0'}),{});
       const found=thread.thread?.post?.record;
-      verified=found?.text===g.text && found?.facets?.some(f=>f.features?.some(x=>x.$type==='app.bsky.richtext.facet#link')) && found?.embed?.$type==='app.bsky.embed.video';
+      verified=found?.text===g.text && found?.facets?.some(f=>f.features?.some(x=>x.$type==='app.bsky.richtext.facet#link' && x.uri===base+'/'+g.slug+'/')) && found?.embed?.$type==='app.bsky.embed.video';
     }catch(e){console.log('Visibility check pending for '+g.slug);}
   }
   if(!verified)throw Error('Posted but PUBLIC_FACET_OR_VIDEO_UNVERIFIED '+page);
