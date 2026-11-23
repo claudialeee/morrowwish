@@ -12,10 +12,16 @@ const cases=[
   'trainer','world-map','map-squad','yard-menu','journey','capture-prep'
 ];
 const profiles=[
+  // Both languages on BOTH hosts and BOTH input/viewport sizes. The older
+  // 77-check smoke skipped Chinese portal entirely and English site-mobile.
   {host:'site',width:1280,height:800,touch:false,lang:'en'},
+  {host:'site',width:1280,height:800,touch:false,lang:'zh'},
+  {host:'site',width:390,height:844,touch:true,lang:'en'},
   {host:'site',width:390,height:844,touch:true,lang:'zh'},
   {host:'crazygames',width:907,height:510,touch:false,lang:'en'},
-  {host:'crazygames',width:390,height:844,touch:true,lang:'en'}
+  {host:'crazygames',width:907,height:510,touch:false,lang:'zh'},
+  {host:'crazygames',width:390,height:844,touch:true,lang:'en'},
+  {host:'crazygames',width:390,height:844,touch:true,lang:'zh'}
 ];
 const dir='.check/cat-bond-language-audit';
 fs.mkdirSync(dir,{recursive:true});
@@ -156,6 +162,60 @@ try{
           }
           await page.screenshot({path:dir+'/'+profile.host+'-'+profile.lang+
             '-'+profile.width+'-'+key+'.png',fullPage:false});
+        }
+        // Deliberate LIVE language switching while the current screen stays
+        // open. Compare its rendered Chinese copy with the canonical output
+        // of opening THAT SAME screen directly in Chinese. Unlike a mere
+        // "no Han text in English" detector this catches English surviving
+        // inside Chinese panels, too.
+        if(profile.lang==='en'&&!['tease'].includes(key)){
+          const route=await page.evaluate(()=>UI._localePanelRoute?.method||null);
+          if(!route){
+            failures.push(profile.host+' '+profile.width+' '+key+
+              ' has no tracked locale route; cannot verify bilingual switching');
+          }else{
+            const norm=t=>String(t||'').replace(/\\s+/g,' ').trim()
+              .replace(/\\b\\d+\\s*(?:s|秒)\\b/g,'<time>');
+            const beforeEnglish=norm(await page.locator('#panel .card').innerText());
+            await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
+            await page.waitForTimeout(180);
+            const switchedZh=norm(await page.locator('#panel .card').innerText());
+            const ref=await page.evaluate(()=>{
+              const route=UI._localePanelRoute;
+              if(!route)return {found:false};
+              UI[route.method](...route.args);
+              return {found:true};
+            });
+            await page.waitForTimeout(100);
+            const nativeZh=norm(await page.locator('#panel .card').innerText());
+            if(!ref.found||switchedZh!==nativeZh){
+              failures.push(profile.host+' '+profile.width+' '+key+
+                ' EN→ZH does not match a genuinely Chinese-rendered panel: '+
+                JSON.stringify({switched:switchedZh.slice(0,420),
+                  native:nativeZh.slice(0,420)}));
+            }
+            const keyChinese={
+              'roster':'我的猫猫','cat-detail':'特训',
+              'cat-detail-advanced':'连续特训','shop':'小卖部',
+              'skill-editor':'技能搭配','workshop':'工坊',
+              'cat-duos':'双猫纽带','trainer':'技能训练师'
+            };
+            if(keyChinese[key]&&!nativeZh.includes(keyChinese[key]))
+              failures.push(profile.host+' '+profile.width+' '+key+
+                ' native Chinese title missing: '+keyChinese[key]);
+            await page.evaluate(()=>window.MorrowwishI18n.set('en'));
+            await page.waitForTimeout(180);
+            const backToEnglish=norm(await page.locator('#panel .card').innerText());
+            if(beforeEnglish!==backToEnglish)
+              failures.push(profile.host+' '+profile.width+' '+key+
+                ' ZH→EN did not restore original text: '+
+                JSON.stringify({before:beforeEnglish.slice(0,350),
+                  after:backToEnglish.slice(0,350)}));
+            reports.push({host:profile.host,locale:'en-zh-en',
+              viewport:profile.width+'x'+profile.height,screen:key,
+              ok:switchedZh===nativeZh&&beforeEnglish===backToEnglish,
+              issues:[]});
+          }
         }
         if(profile.lang==='en'&&!audit.leaks.length)console.log('CAT BOND LOCALE PASS',
           profile.host,profile.width+'x'+profile.height,key);
