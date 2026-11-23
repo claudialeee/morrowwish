@@ -283,6 +283,12 @@ try{
   // target; recording temporarily runs without an activated expedition duo.
   await page.evaluate(()=>{
     const game=window.__game;game._returnScene='map';
+    // The engine also auto-selects any high-trust pair as a fallback,
+    // even with active=[]; reset only this ephemeral demo pair's trust here.
+    // This is recording state, NOT a code/gameplay change to Cat Bond.
+    const [a,b]=State.S.cats;
+    const pair=CatRelations.pair(a,b);
+    if(pair)pair.value=0;
     if(State.S.duoRelations)State.S.duoRelations.active=[];
     State.save();
     game.startBattle(State.S.cats.slice(0,2),{...GameData.speciesById('jinwu'),encounterLevel:2});
