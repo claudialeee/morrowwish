@@ -232,6 +232,8 @@ async function main() {
   }
   output.currentStateRestored = true;
   output.currentRowsBeforeMerge = liveRowsAfterProbe.length;
+  const liveTotalBeforeMerge = await query("SELECT COUNT(*) AS rows FROM events");
+  output.totalRowsBeforeMerge = Number(liveTotalBeforeMerge[0]?.rows || 0);
   output.historicalTotalRows = historicalRows.length;
   output.historicalRowsByGame = summarize(historicalRows);
 
@@ -252,7 +254,7 @@ async function main() {
     }
   }
 
-  const batchSize = 20; // 200 bound parameters per statement
+  const batchSize = 8; // 80 bound parameters; stay below D1's SQLite variable limit
   for (let offset = 0; offset < toInsert.length; offset += batchSize) {
     const batch = toInsert.slice(offset, offset + batchSize);
     const rowPlaceholders = "(" + columns.map(() => "?").join(",") + ")";
