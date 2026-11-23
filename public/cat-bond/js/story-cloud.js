@@ -456,7 +456,8 @@ function renderCloudPanel(){
    }
    if(action==='replace'){
     if(!confirm(t('将用当前设备的存档覆盖云端版本。继续吗？','Replace the cloud version with this device’s save?')))return;
-    const token=localStorage.getItem(CLOUD_KEY),remote=await fetchCloud(token);
+    const token=localStorage.getItem(CLOUD_KEY);
+    let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
     localStorage.setItem(REV_KEY,String(remote.revision||0));
     const result=await syncNow(true);
     say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.'):t('云端已更新为本机存档。','Cloud save replaced with this device.'));
@@ -602,7 +603,7 @@ if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
 }
 if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  const original=window.State.save.bind(window.State);
- const wrapped=function(...args){const result=original(...args);queueSync();return result;};
+ const wrapped=function(...args){const result=original(...args);try{queueSync();}catch{}return result;};
  wrapped.__cbCloudWrapped=true;window.State.save=wrapped;
 }
 function installIntro(){
