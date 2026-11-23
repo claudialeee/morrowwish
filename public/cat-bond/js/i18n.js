@@ -116,6 +116,11 @@
     '重新查看玩法引导': 'Review gameplay guide',
     '🌿 点击发光的草丛，遇见第一位新伙伴！': '🌿 Tap the glowing bush to meet your first new friend!',
     '🌿 点击右侧草丛按钮，寻找野猫！': '🌿 Tap the grass button on the right to find a wild cat!',
+    // Portal-specific directions after CrazyGames moves both menu groups
+    // into the unified bottom dock.
+    '🌿 点击底部草丛按钮，寻找野猫！': '🌿 Tap the grass button along the bottom to find a wild cat!',
+    '点击底部的「地图」，探索新地区，寻找野猫、宝藏和故事。': 'Use Map in the bottom controls to explore new regions, cats, treasures and stories.',
+    '底部的羽毛按钮可以逗猫，建造按钮可以布置庭院。先玩一次逗猫吧！': 'Use the bottom Feather button to play with cats, or Build to decorate the yard.',
     '收服成功！点击庭院里的小猫，摸摸它，亲密度会提高。': 'Captured! Pet your new kitten in the yard to raise affection.',
     '摸摸小猫': 'Pet your kitten',
     '下方「猫咪」→「双猫」可以查看搭档、默契和合击技能。': 'Open Cats → Duo to view partners, bond level and duo attacks.',
