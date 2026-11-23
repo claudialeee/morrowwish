@@ -93,15 +93,14 @@ try{
           r.top>=0&&r.bottom<=height+1&&item.clickable&&item.contentFits,
           'Yard control must be visible and clickable: '+JSON.stringify(item));
       }
-      if(width>740){
-        assert.ok(Math.abs(menuLayout.tabs.bottom-menuLayout.actions.bottom)<12,
-          'Wide CrazyGames menus should share one bottom baseline: '+JSON.stringify(menuLayout));
-        assert.ok(menuLayout.tabs.right+3<=menuLayout.actions.left,
-          'Wide CrazyGames menu groups overlap: '+JSON.stringify(menuLayout));
-      }else{
-        assert.ok(menuLayout.actions.bottom+2<=menuLayout.tabs.top,
-          'Narrow CrazyGames garden actions should sit above bottom tabs: '+JSON.stringify(menuLayout));
-      }
+      assert.ok(menuLayout.dock.right<=width+2&&menuLayout.dock.right>=width-24,
+        'CrazyGames yard controls must stay on the right, not form a screen-wide bottom row: '+JSON.stringify(menuLayout));
+      assert.ok(menuLayout.dock.width<=175,
+        'CrazyGames right-side control dock must remain compact: '+JSON.stringify(menuLayout));
+      assert.ok(menuLayout.tabs.right+3<=menuLayout.actions.left,
+        'CrazyGames menu tabs and yard actions must be separate right-hand columns: '+JSON.stringify(menuLayout));
+      assert.ok(Math.abs(menuLayout.tabs.bottom-menuLayout.actions.bottom)<12,
+        'CrazyGames two menu columns must share a bottom baseline: '+JSON.stringify(menuLayout));
       const target=await page.evaluate(()=>{
         const g=window.__game,cv=document.getElementById('scene'),r=cv.getBoundingClientRect();
         const spot=g?.yard?.hide?.spot;
@@ -233,6 +232,13 @@ try{
       assert.ok(actionLayout.bar.left>=-2&&actionLayout.bar.right<=width+2&&
         actionLayout.bar.top>=B.stack.bottom+3&&actionLayout.bar.bottom<=height+2,
         'Combat skill bar is outside the iframe or crosses HUD: '+JSON.stringify(actionLayout));
+      if(!touch){
+        assert.ok(actionLayout.bar.height<=80,
+          'Desktop CrazyGames skill dock is too tall: '+JSON.stringify(actionLayout));
+        for(const button of actionLayout.buttons)
+          assert.ok(button.button.width<=84&&button.button.height<=80,
+            'Desktop CrazyGames skill card is too large: '+JSON.stringify(button));
+      }
       for(const item of actionLayout.buttons){
         assert.ok(item.fullName.length>0&&!/[.…]{2,}$/.test(item.fullName),
           'Skill has an abbreviated or missing label: '+JSON.stringify(item));
