@@ -26,6 +26,10 @@ const copy={
  'pocket-aquarium':{category:'Puzzle',tags:['Fish','Aquarium','Casual','Cozy','Puzzle'],title:'Pocket Aquarium',description:'Feed hungry fish in a tiny aquarium. Match the right food color, time your drops and see how many fish you can care for in sixty seconds.',controls:'Select the matching food color and feed each fish before its timer runs out. Keep the water clean.'},
  'flip-dash':{category:'Arcade',tags:['Runner','Platform','Skill','Arcade','Jumping'],title:'Flip Dash',description:'A one-button gravity runner. Flip between floor and ceiling, avoid obstacles and chase a new high score in a quick arcade challenge.',controls:'Press Space or tap to flip gravity and avoid the next obstacle. Retry instantly to beat your previous run.'}
 };
+// Use the submission copy the studio has already prepared and reviewed.
+const draftCopy=JSON.parse(fs.readFileSync('promotion/crazygames-cat-bond-submission-draft.json','utf8'));
+copy['cat-bond'].description=draftCopy.description;
+copy['cat-bond'].controls=draftCopy.instructions;
 const time=()=>new Date().toISOString();
 const sleep=n=>new Promise(r=>setTimeout(r,n));
 const mask=(x,n=1900)=>String(x||'').replace(/\S+@\S+/g,'[EMAIL]').replace(/https?:\/\/\S+/g,'[URL]').slice(-n);
@@ -271,8 +275,10 @@ async function setIframe(page,game,channel){
  const urlField=page.locator('input[type=url]').first();
  if(!await urlField.count())throw Error('IFrame link input missing');
  await urlField.fill(channel.trackedUrl);
- const noSave=page.getByText('No, the game does not need progress save',{exact:true}).first();
- if(await noSave.count())await noSave.evaluate(e=>e.click());
+ // Cat Bond uses localStorage for game progress. Never assert that it does
+ // not save. Select the accurate option when the platform offers one.
+ const needsSave=page.getByText(/yes.*(?:need|save).*progress|progress.*save.*yes/i).first();
+ if(await needsSave.count())await needsSave.evaluate(e=>e.click());
  await sleep(500);
  if((await urlField.inputValue())!==channel.trackedUrl)throw Error('IFrame URL mismatched');
  if((await field.inputValue())!==game.title)throw Error('Game title mismatched');
@@ -338,7 +344,7 @@ async function createDraft(ctx,page,rec){
   const tracked=row.channels.crazygames.trackedUrl;
   await setIframe(page,game,{trackedUrl:tracked});
   await inspectAt(page,'iframe-configured',rec);
-  const previous=page.getByText('No, the game does not need progress save',{exact:true});
+  // No false 'progress save not needed' declaration.
   const values=(await page.locator('input[type=radio]').evaluateAll(xs=>xs.map(x=>x.closest('label')?.innerText||x.parentElement?.parentElement?.innerText||'')));
   rec.saveOptions=values.map(x=>safeText(x,200));
   rec.progressSave={mode:'browser-localStorage',noCloudSync:true};
