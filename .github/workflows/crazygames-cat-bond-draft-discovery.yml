@@ -1,0 +1,35 @@
+name: Discover existing Cat Bond CrazyGames draft without altering portal
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/crazygames-cat-bond-draft-discovery.mjs'
+      - '.github/workflows/crazygames-cat-bond-draft-discovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+      - name: Inspect games dashboard and eligibility labels without changes
+        env:
+          CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
+          CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
+        run: node scripts/crazygames-cat-bond-draft-discovery.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-crazygames-draft-discovery
+          path: .check/crazygames/cat-bond-draft-discovery.json
+          if-no-files-found: warn
+          retention-days: 14
