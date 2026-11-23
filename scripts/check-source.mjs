@@ -1414,3 +1414,6 @@ await import('./check-hidden-story-language.mjs');
 // Universal preflight: dashboards may NEVER erase previously reported metrics.
 // This is intentionally part of npm run check, not only the deployment workflow.
 await import('./test-dashboard-sorting.mjs');
+
+// The Cat Bond RPG and encrypted cloud-save path are part of the production gate.
+await import('./check-cat-bond-story-cloud.mjs');
