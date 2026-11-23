@@ -475,9 +475,16 @@ try{
     throw Error('New full-screen breed-matched duo renderer not loaded '+JSON.stringify(cinematicSource));
   const duo=await page.evaluate(()=>{
    const b=window.__game.battle;if(!b||b.done)return{cast:false,reason:'battle ended'};
-   b.duoCharge=100;b.duoCd=0;const ready=b.duoReady();const status=b.team.map(f=>({id:f.cat.uid,alive:f.alive,hp:Math.round(f.hp)}));return{ready,status,cast:b.castDuo(),uses:b.duoUses,cinematic:!!b.duoCinematic};
+   b.duoCharge=100;b.duoCd=0;const ready=b.duoReady();const status=b.team.map(f=>({id:f.cat.uid,alive:f.alive,hp:Math.round(f.hp)}));
+    const cast=b.castDuo();
+    return {ready,status,cast,uses:b.duoUses,cinematic:!!b.duoCinematic,
+      originalArt:b.duoCinematic?.originalArt===true,
+      pair:b.duoCinematic?.elements,
+      artSource:window.CatBondPremiumCinematics?.originalPaintingSource||''};
   });
-  if(!duo.cast||duo.uses<1||!duo.cinematic)throw Error('V6 real duo missing '+JSON.stringify(duo));
+  if(!duo.cast||duo.uses!==1||!duo.cinematic||!duo.originalArt||
+     !duo.artSource.includes('duo-storyboard-21x3-v3.webp'))
+     throw Error('Reject old v10 duo: capture must cast exactly one approved original painting '+JSON.stringify(duo));
   const duoStart=stamp();
   await sleep(1800);
   const duoProof=await page.evaluate(()=>{
