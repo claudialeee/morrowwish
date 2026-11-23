@@ -303,13 +303,13 @@ const sourceAliases={itch:['itch','itch.io','itchio','itch.zone'],youtube:['yout
 const siteFor=id=>channels.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));
 const totalOf=(rows,k)=>rows.reduce((n,x)=>n+Number(x[k]||0),0);
 const pulse=j.socialPulse||{},reportedPlatforms=Array.isArray(pulse.platforms)?pulse.platforms:[];
-const fallbackIds=['itch','youtube','tiktok','instagram','bluesky'];
+const fallbackIds=['youtube','tiktok','instagram','bluesky','itch'];
 const platformNames={itch:'itch.io',youtube:'YouTube Shorts',tiktok:'TikTok',instagram:'Instagram Reels',bluesky:'Bluesky'};
 // The dashboard lists only live channels. A launch-status change requires
 // an explicit channel allowlist update, not a speculative future placeholder.
 // Blank native-view cells indicate that comparable video views are unavailable.
 const platformIds=new Set(fallbackIds);
-const platforms=reportedPlatforms.length?reportedPlatforms.filter(p=>platformIds.has(p.id)):fallbackIds.map(id=>({id,priority:'',views:null,published:null}));
+const platforms=reportedPlatforms.length?reportedPlatforms.filter(p=>platformIds.has(p.id)).sort((a,b)=>fallbackIds.indexOf(a.id)-fallbackIds.indexOf(b.id)):fallbackIds.map(id=>({id,priority:'',views:null,published:null}));
 const homeSources=(j.homeFunnel&&Array.isArray(j.homeFunnel.bySource))?j.homeFunnel.bySource:[];
 const homeFor=id=>homeSources.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));
 const nativeStates={youtube:pulse.nativeYouTube,tiktok:pulse.nativeTikTok,instagram:pulse.nativeInstagram,bluesky:pulse.nativeBluesky};
