@@ -127,6 +127,12 @@ function ffprobe(file){
 function edit(slug){
  const base='public/promo/'+slug,coverFile=base+'/cover-portrait.png',music=promoTrack(slug),b=proofs[slug]||null;
  if(!b||!fs.existsSync(coverFile))throw Error('Missing newly recorded authentic scene or official cover for '+slug);
+  if(slug==='cat-bond'){
+    const painted=b.shots?.find(x=>x.label==='duo');
+    if(painted?.originalArt!==true||painted.artMode!=='63-original-painted-storyboards'||
+      !painted.artSource?.includes('duo-storyboard-21x3-v3.webp'))
+      throw Error('V13 refuses rejected v10 painted-cut-in replacement: '+JSON.stringify(painted));
+  }
  const chosen=[];
  const rawInfo=b?ffprobe(b.file):null;
  if(b?.errors?.length)throw Error('Browser errors in recorded game: '+slug);
@@ -251,6 +257,8 @@ function edit(slug){
   video:'/promo/'+slug+'/trailer-v13-20261122.mp4',poster:'/promo/'+slug+'/trailer-v13-20261122.jpg',
   review,duration:Number(meta.seconds.toFixed(1)),shots:chosen.map(x=>({source:x.src,scene:x.label||null,caption:x.caption,seconds:x.duration})),
   sourceClips:'V13 one live rare-cat fight with native HP and skills, one duo finisher, earned capture; no social posting',transitions:'clean cuts, no ghosted or blended gameplay UI',
+   originalDuoArtSource:slug==='cat-bond'?b.shots.find(x=>x.label==='duo').artSource:undefined,
+   originalDuoArtMode:slug==='cat-bond'?'63-original-painted-storyboards':undefined,
   aspect:'native 9:16, game shot aspect unchanged',approved:false,published:false};
  manifest.trailers.push(result);
  console.log('CINEMATIC V13 REVIEW ONLY '+JSON.stringify({slug,seconds:result.duration,kind:result.kind,bytes,captionsUsed,shots:n}));
