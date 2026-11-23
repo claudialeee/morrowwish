@@ -45,7 +45,7 @@ try {
     await page.waitForFunction(()=>State.S.cats.length===1,{timeout:10000});
     // Premium duo artwork must be decoded before any recording begins.
     await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready===true &&
-      window.CatBondDuoBreedActors?.ready===true,{timeout:20000});
+      window.CatBondDuoHero?.assetReady===true,{timeout:20000});
     // Capture an attainable late-game two-cat action scene. All characters,
     // stats, damage and VFX come from the actual shipping game engine.
     const setup=await page.evaluate(()=>{
