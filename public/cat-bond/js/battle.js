@@ -1287,16 +1287,21 @@ class CaptureBattle {
     const dx=tgt.x-f.x,dy=tgt.y-f.y,dist=Math.hypot(dx,dy)||1;
     const aim=Math.atan2(dy,dx);this.aim=aim;f._aim=aim;
     let threat=this.incomingThreat(f);
+    // REACTION DELAY (owner: "躲得太准"): a human can't dodge a shot in the last ~0.12s before impact.
+    // Ignore threats whose ETA is below that window so the cat no longer makes frame-perfect last-
+    // instant jukes — it either reacts early like a person or eats the hit.
+    if(threat && (threat.eta!=null) && threat.eta < 0.12) threat=null;
     // Don't juke away from EVERY shot — a per-threat roll (sticky for the threat's
     // life) so the squad eats some hits instead of ping-ponging untouchably.
     if(threat){
       if(this._sidestepUntil==null||this.t>this._sidestepUntil){
-        this._sidestep=this.rng()<this.autoDodgeChance(f); this._sidestepUntil=this.t+0.35;
+        // A multi-pellet volley RAISES the dodge chance (don't want to eat a whole burst), but no
+        // longer FORCES it — a healthy cat can still occasionally take a volley (owner: 躲得太多). Only
+        // a big ≥3-pellet burst still (almost) always dodges, via the boosted chance, not a hard true.
+        const vol=(threat.volley||1);
+        const chance=Math.min(0.9, this.autoDodgeChance(f) + (vol>=3?0.4:vol>=2?0.22:0));
+        this._sidestep=this.rng()<chance; this._sidestepUntil=this.t+0.35;
       }
-      // A MULTI-PELLET VOLLEY (≥2 converging) ALWAYS triggers a sidestep — one failed coin-flip must
-      // not let a cat stand and eat 3 darts at once (owner: 桃桃 "硬生生吃了三发"). Single shots keep
-      // the probabilistic "eat some hits so fights have stakes" behaviour.
-      if((threat.volley||1)>=2)this._sidestep=true;
       if(!this._sidestep)threat=null;
     }
     let mx=0,my=0,evasive=false;
@@ -3077,8 +3082,10 @@ class CaptureBattle {
   // an untouchable robot that strafes every shot. (Playtest + owner feedback.)
   autoDodgeChance(f){
     const hp = f && f.maxhp ? f.hp / f.maxhp : 1;
-    // 0.45 while healthy → up to ~0.8 when badly hurt
-    return hp > 0.6 ? 0.45 : hp > 0.3 ? 0.62 : 0.8;
+    // Lowered (owner: auto cats "躲得太准/太多", played like a robot): a healthy squad now eats
+    // a clear MAJORITY of single shots. Still ramps up when badly hurt so a near-death cat defends
+    // harder — just never the old near-perfect strafer. 0.32 healthy → ~0.68 badly hurt.
+    return hp > 0.6 ? 0.32 : hp > 0.3 ? 0.48 : 0.68;
   }
   // Combined movement multiplier: soft-CC slow (冰冻/束缚/感电) AND the post-cast
   // 后遗症 recovery slow left after a heavy skill. Shared by player + enemy movement.
