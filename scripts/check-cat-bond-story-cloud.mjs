@@ -4,29 +4,34 @@ import {webcrypto} from 'node:crypto';
 
 globalThis.crypto??=webcrypto;
 const read=path=>fs.readFile(new URL('../'+path,import.meta.url),'utf8');
-const [story,painted,worldmap,game,ui,index,worker,state,serverSource]=await Promise.all([
+const [story,painted,worldmap,game,battle,ui,index,worker,state,serverSource,buildSource]=await Promise.all([
  read('public/cat-bond/js/story-cloud.js'),
  read('public/cat-bond/js/painted-regions.js'),
  read('public/cat-bond/js/worldmap.js'),
  read('public/cat-bond/js/game.js'),
+ read('public/cat-bond/js/battle.js'),
  read('public/cat-bond/js/ui.js'),
  read('public/cat-bond/index.html'),
  read('src/worker.js'),
  read('public/cat-bond/js/state.js'),
- read('src/cat-bond-cloud-save.js')
+ read('src/cat-bond-cloud-save.js'),
+ read('scripts/build-pages.mjs')
 ]);
 
 new Function(story);
 new Function(painted);
 new Function(worldmap);
 new Function(game);
+new Function(battle);
 new Function(ui);
 
 for(const [name,source,needles] of [
  ['story',story,['The Last Page','Hollow','暮铃','逆响之主','startPrologue','onRegionEntered','onRegionDiscovery','playEnding','AES-GCM','catbond_cloud_key_v1','expectedRevision']],
  ['map landmarks',painted,['storyLandmarks(c,w,h,id,r)',"id==='home'","id==='sakura'","id==='creek'","id==='volcano'","id==='ruins'"]],
  ['world map story hooks',worldmap,['onRegionEntered?.(id)','onRegionDiscovery?.(world.region.id,reward)']],
- ['final boss',game,['this.battle.storyBoss=!!opts.storyBoss','if(b.storyBoss)','onBossVictory']],
+ ['final boss',game,['this.battle.storyBoss=!!opts.storyBoss','new Battle.CaptureBattle(this, team, wildSpecies, opts)','if(b.storyBoss)','onBossVictory']],
+ ['authored solo boss pack',battle,['this.enemies = this.buildPack(wildSpecies, opts?.pack)','buildPack(lead, packOverride)','packOverride.map((sp,i)=>this.makeEnemy(sp,i,packOverride.length))']],
+ ['Pages worker bundling',buildSource,['src', 'cat-bond-cloud-save.js','async function catBondCloudSave','cloudSave + \'\\n\' + router']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
  ['entry points',index,['id="intro-cloud-save"','js/story-cloud.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
