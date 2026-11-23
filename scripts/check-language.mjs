@@ -47,11 +47,21 @@ const mustTranslate=[
  '猫咪左右摆头，短距离持续扫射火焰，烧灼附近敌人。',
  '古老星盘为它们亮起了两颗星，这次它们的名字并排写在星空里。',
  '🏆 猫猫冒险 · '+cats.length+' 种全部收集 ›',
- '目标锁定','雪团', '奶酥', '奥利奥', '圆宝', '加菲'
+ '目标锁定','雪团', '奶酥', '奥利奥', '圆宝', '加菲',
+ // Real DOM gold-coin renderer replaces the emoji with an <img> and splits
+ // translation into multiple text nodes, exposing these partial strings.
+ '消耗 ', '最多 10 次 · 每次 80', '每次 ', '最多 '
 ];
 for(const [source,value] of Object.entries(i18n.dict)){
  assert.ok(!/[\u3400-\u9fff]/.test(value),'English dictionary contains Chinese: '+source);
 }
+const coinPricePieces=[
+ ['消耗 ','Cost '],
+ ['最多 10 次 · 每次 80','Up to 10 times · 80']
+];
+for(const [zh,en] of coinPricePieces)
+ assert.equal(i18n.toEnglish(zh).trim(),en.trim(),
+   'Coin icon splitting must not strand a Chinese price fragment: '+zh);
 for(const source of mustTranslate){
  const output=i18n.toEnglish(source);
  assert.ok(!/[\u3400-\u9fff]/.test(output),'English translation leaked Chinese: '+source+' -> '+output);
