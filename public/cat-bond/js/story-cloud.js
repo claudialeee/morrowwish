@@ -530,7 +530,7 @@ async function restoreWithToken(token){
  const remote=await fetchCloud(token);
  const raw=await decrypt(remote,token);
  const parsed=JSON.parse(raw);
- if(!parsed||typeof parsed!=='object'||!Array.isArray(parsed.cats)||!parsed.worldmap)
+ if(!parsed||typeof parsed!=='object'||!Array.isArray(parsed.cats))
   throw Error(t('云存档内容无效，未覆盖本机存档。','Cloud save is invalid; local progress was not changed.'));
  localStorage.setItem(SAVE_KEY,raw);
  localStorage.setItem(CLOUD_KEY,token);
