@@ -196,32 +196,32 @@ if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
    !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v2.webp'))
  throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
 
-// This gate is paired with check-cat-bond-premium-21x3.mjs and real browser duo QA.
-// Live Cat Bond duo uses the approved 21x3 full original storyboards.
-// Maintain separate optional breed-matched previews; this source gate must
-// agree with real browser QA and preserve the release audio/VFX sequence.
+// This gate is paired with the 21x3 browser QA and release VFX/audio checks.
+// The original 63 paintings remain the default in natural 16:9 compositions;
+// other aspect ratios use the same clean scenic stage with selected watercolor cats.
 const duoBondSource=fs.readFileSync('public/cat-bond/js/duo-bond.js','utf8');
 const duoBattleSource=fs.readFileSync('public/cat-bond/js/battle.js','utf8');
 if(!duoBondSource.includes('this.duoCinematic.originalArt=true')||
    duoBondSource.includes('this.duoCinematic.originalArt=false')||
    !duoBattleSource.includes('originalArt:true')||
    !premiumScene.includes('const actors=(seq.catUids||[]).map(uid=>lookup?.(uid));')||
-   !premiumScene.includes('const originalArt=seq.originalArt!==false&&!liveJiafei')||
+   !premiumScene.includes('const wideOriginalComposition=thumbnail||(W/H>=1.68&&W/H<=1.88)')||
+   !premiumScene.includes('const originalArt=seq.originalArt!==false&&!liveJiafei&&wideOriginalComposition')||
    !premiumScene.includes('CatBondDuoBreedActors?.draw?.(')||
-   !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview)'))
- throw Error('Cat Bond live duo must use the owner-approved complete 63 original watercolor paintings');
+   premiumScene.includes('drawPortraitStory(')||premiumScene.includes('portraitEnvironment('))
+ throw Error('Cat Bond must use one full-bleed original painting or a breed-matched full-stage composition');
 const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
 if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
-   !premiumScene.includes('drawPortraitStory(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview)')||
    !premiumScene.includes('const galleryPreview=seq.galleryPreview===true')||
+   !premiumScene.includes('const zoom=thumbnail||galleryPreview?1:1.015+.02*smooth(p/.62)')||
+   !premiumScene.includes('sourceCover(ctx,cellRect(frame,tier),0,0,sw,sh,zoom,0,0,1,null,tier)')||
    !premiumScene.includes('galleryPreview?1:Math.min(cam.zoom,1.16)')||
-   !premiumScene.includes('portraitEnvironment(key,frame,tier,sw,sh)')||
    !premiumScene.includes('const opacity=(thumbnail||galleryPreview)?1:')||
    !premiumScene.includes('smooth(p/.22)*(1-smooth((p-.71)/.29))')||
    !premiumScene.includes('featherScenery(ctx,sw,sh)')||
-   !premiumScene.includes('originalArt?null:key')&&
-      !premiumScene.includes('(originalArt&&!portrait)?null:key')||
+   !premiumScene.includes('const edgeX=clamp(148/W,.20,.32)')||
+   premiumScene.includes('drawPortraitStory(')||premiumScene.includes('portraitEnvironment(')||
    !duoBondSource.includes('window.CatBondDuoReleaseVFX=')||
    !duoBondSource.includes("duoSignature?.(release.elements,release.tier,'release')")||
    !studioAudioSource.includes("beat==='release'"))
