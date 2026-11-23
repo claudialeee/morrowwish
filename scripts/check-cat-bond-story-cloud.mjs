@@ -4,7 +4,7 @@ import {webcrypto} from 'node:crypto';
 
 globalThis.crypto??=webcrypto;
 const read=path=>fs.readFile(new URL('../'+path,import.meta.url),'utf8');
-const [story,painted,worldmap,game,battle,ui,index,worker,state,serverSource,buildSource]=await Promise.all([
+const [story,painted,worldmap,game,battle,ui,index,worker,state,serverSource,buildSource,deploySource]=await Promise.all([
  read('public/cat-bond/js/story-cloud.js'),
  read('public/cat-bond/js/painted-regions.js'),
  read('public/cat-bond/js/worldmap.js'),
@@ -15,7 +15,8 @@ const [story,painted,worldmap,game,battle,ui,index,worker,state,serverSource,bui
  read('src/worker.js'),
  read('public/cat-bond/js/state.js'),
  read('src/cat-bond-cloud-save.js'),
- read('scripts/build-pages.mjs')
+ read('scripts/build-pages.mjs'),
+ read('.github/workflows/deploy-cloudflare.yml')
 ]);
 
 new Function(story);
@@ -33,6 +34,7 @@ for(const [name,source,needles] of [
  ['authored solo boss pack',battle,['this.enemies = this.buildPack(wildSpecies, opts?.pack)','buildPack(lead, packOverride)','packOverride.map((sp,i)=>this.makeEnemy(sp,i,packOverride.length))']],
  ['Pages worker bundling',buildSource,['src', 'cat-bond-cloud-save.js','async function catBondCloudSave','cloudSave + \'\\n\' + router']],
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
+ ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
  ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=last-page-rpg-cloud-save-20261123-v10','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
