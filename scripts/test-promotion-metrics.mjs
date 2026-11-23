@@ -127,6 +127,7 @@ const igSource=fs.readFileSync('src/instagram-native.js','utf8');
 const bskySource=fs.readFileSync('src/bluesky-native.js','utf8');
 assert.ok(igSource.includes('"parcel-panic":"DgEOAAcJ74v"')&&!igSource.includes('DgDfRCJAF83'),'Instagram native allowlist must use replacement');
 assert.ok(bskySource.includes('"parcel-panic":"3n2wyfh4x63vg"')&&!bskySource.includes('3n2wcrdnc2owx'),'Bluesky native allowlist must use replacement');
-assert.ok(igSource.includes('v14-parcel-replacement')&&bskySource.includes('v14-parcel-replacement'),'native cache version must rotate');
+assert.ok(igSource.includes('v14-parcel-replacement')&&bskySource.includes('v15-cat-bond-resubmission'),'native caches must rotate after each replacement');
+assert.ok(bskySource.includes('"cat-bond":"3n2wzprxlt63l"')&&!bskySource.includes('3n2wu5hqa4gl3'),'Bluesky tracks the newly confirmed Cat Bond V13 repost only');
 assert.ok(igSource.includes('morrowwishgames/reel/'),'account-qualified Instagram Reel link must be supported');
 console.log('Parcel Panic replacement links and native allowlists verified; old metrics excluded.');
