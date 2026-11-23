@@ -2,7 +2,7 @@
   "updatedAt": "2026-11-23T01:42:16.450Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "Seven-game 2026-11-22 campaign. Cat Bond V13 replacements on all four platforms and Parcel Panic V14 replacements on Instagram and Bluesky; previous videos excluded from dashboard analytics. New replacement metrics remain null until first-party refresh.",
+  "accuracyNote": "Only current November 22 approved campaign videos. Cat Bond Bluesky replaced again by confirmed V13 video 3n2wzprxlt63l; previously deleted Bluesky post 3n2wu5hqa4gl3 is excluded from the dashboard and first-party AppView counters. Other games unchanged.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -108,7 +108,7 @@
         "youtube": "https://www.youtube.com/shorts/2hd2LMg9iJY",
         "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711158345406680334",
         "instagram": "https://www.instagram.com/reel/DgEGgecOxst/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wu5hqa4gl3"
+        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wzprxlt63l"
       },
       "socialVerification": {
         "youtube": {
@@ -130,14 +130,17 @@
           "likes": null
         },
         "bluesky": {
-          "source": "vidiq-new-video-publication-completed",
+          "source": "vidiq-publish-status-completed-v13-repost",
           "publicVerified": true,
           "views": null,
-          "likes": null
+          "likes": null,
+          "reposts": null,
+          "pendingNativeRefresh": true
         }
       },
       "trackedTrailerVersion": "V13",
-      "legacyCatBondPostsExcluded": true
+      "legacyCatBondPostsExcluded": true,
+      "previousDeletedBlueskyPostExcluded": true
     },
     {
       "slug": "tiny-town",

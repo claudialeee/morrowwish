@@ -95,7 +95,7 @@ console.log('Direct connected-platform snapshot reconciled dynamically; initial 
 
 const release=JSON.parse(fs.readFileSync('public/promo/social-release-status.json','utf8'));
 const cat=release.games.find(x=>x.slug==='cat-bond');
-const newIds={youtube:'2hd2LMg9iJY',tiktok:'7711158345406680334',instagram:'DgEGgecOxst',bluesky:'3n2wu5hqa4gl3'};
+const newIds={youtube:'2hd2LMg9iJY',tiktok:'7711158345406680334',instagram:'DgEGgecOxst',bluesky:'3n2wzprxlt63l'};
 for(const [platform,id] of Object.entries(newIds)){
   const post=posts.find(x=>x.platform===platform&&x.game==='cat-bond');
   assert.ok(post?.url.includes(id),'new Cat Bond video allowlist missing: '+platform);

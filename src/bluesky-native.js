@@ -9,7 +9,7 @@ const BSKY_START = "2026-11-22";
 // Launch-campaign allowlist. Never read/track other posts, even if their
 // captions also link to a Morrow Wish game.
 const BSKY_APPROVED={
-  "cat-bond":"3n2wu5hqa4gl3",
+  "cat-bond":"3n2wzprxlt63l",
   "pawsibly-innocent":"3n2wcqugab5jq",
   "tiny-town":"3n2wcr7nylvrr",
   "elsewhere":"3n2wcraws7xga",
@@ -17,7 +17,7 @@ const BSKY_APPROVED={
   "parcel-panic":"3n2wyfh4x63vg",
   "pocket-aquarium":"3n2wcreq5hq3p"
 };
-const BSKY_STORE_KEY="bluesky:approved-20261122:v14-parcel-replacement";
+const BSKY_STORE_KEY="bluesky:approved-20261122:v15-cat-bond-resubmission";
 const BSKY_URI_PREFIX = "at://" + BSKY_ACTOR + "/app.bsky.feed.post/";
 const BSKY_GAME_BY_URI = new Map(Object.entries(BSKY_APPROVED).map(([game,id])=>[BSKY_URI_PREFIX+id,game]));
 export function bskyPost(post) {
