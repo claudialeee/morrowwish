@@ -104,12 +104,14 @@ let time=0,boxes=[],spawn=.42,life=4,delivered=0,press=null,drag=null,feedback=n
 const zh=()=>window.MorrowwishI18n?.get?.()==="zh"||document.documentElement.lang.startsWith("zh");
 const L=(en,cn)=>zh()?cn:en;
 const lane=x=>x<0||x>960?-1:Math.min(2,Math.floor(x/320));
-const speed=p=>Math.min(315,148+delivered*5+time*.3)*(p?.kind==="express"?1.25:1);
+// A longer runway plus a relaxed opening shift; difficulty ramps after the first 8 deliveries.
+const RUNWAY_START=108,RUNWAY_END=477;
+const speed=p=>Math.min(235,108+Math.max(0,delivered-8)*2.8+Math.max(0,time-22)*.16)*(p?.kind==="express"?1.16:1);
 // The next two orders are planned in advance so the player can anticipate a rush.
 function plan(index){
  const color=index<3?index:Math.floor(rnd()*3);
  const kind=index>=5&&index%7===5?"express":index>=8&&index%9===8?"gift":"normal";
- return {x:480,y:108,color,kind};
+ return {x:480,y:RUNWAY_START,color,kind};
 }
 function fillQueue(){while(queue.length<2)queue.push(plan(planned++));}
 function next(){
@@ -176,7 +178,7 @@ return{
   next();
   if(boxes[0]&&!drag){
    boxes[0].y+=speed(boxes[0])*dt;
-   if(boxes[0].y>433)miss(boxes[0]);
+   if(boxes[0].y>RUNWAY_END)miss(boxes[0]);
   }
   info(L(life+" LIVES · "+delivered+" DELIVERED · COMBO "+combo+" · "+shiftLabel(),life+" 次机会 · 已送达 "+delivered+" 件 · 连击 "+combo+" · "+shiftLabel()));
  },
@@ -218,19 +220,20 @@ return{
     box(x-25,y-19,50,35,"#ffffff44",6);
     txt(x,y-8,kindLabel(b),11,"#24364c");
     txt(x,y+15,zh()?zhLabels[b.color]:labels[b.color],16,"#24364c");
-    const ratio=Math.max(0,Math.min(1,(433-b.y)/325));
+    const ratio=Math.max(0,Math.min(1,(RUNWAY_END-b.y)/(RUNWAY_END-RUNWAY_START)));
     box(112,84,316,7,"#796b86",4);box(112,84,316*ratio,7,col,4);
    }else txt(270,296,L("Next parcel incoming…","下一件快递马上到！"),17,"#f6edff");
-   txt(270,715,nextLabel(),17,"#fff1b9");
+   // Keep the upcoming order outside the active travel path.
+   txt(270,923,nextLabel(),17,"#fff1b9");
    if(feedback)txt(xOf(feedback.x),yOf(feedback.y)-(.9-feedback.life)*20,feedback.text,22,feedback.good?"#b4ffdc":"#ffc4d2");
    return;
   }
   bg("#182b49","#283f61");
   for(let i=0;i<3;i++){
    const x=docks[i],selected=press&&lane(press.x)===i,hover=drag&&lane(drag.x)===i;
-   box(x-108,111,216,403,hover||selected?colors[i]+"56":colors[i]+"19",20,hover||selected?colors[i]:colors[i]+"79");
+   box(x-108,92,216,436,hover||selected?colors[i]+"56":colors[i]+"19",20,hover||selected?colors[i]:colors[i]+"79");
    box(x-99,399,198,110,colors[i]+"46",15,colors[i]);
-   for(let yy=143;yy<369;yy+=43)line(x-88,yy,x+88,yy,colors[i]+"24",2);
+   for(let yy=122;yy<393;yy+=43)line(x-88,yy,x+88,yy,colors[i]+"24",2);
    txt(x,442,"123"[i],29,"#ffffff");
    txt(x,472,zh()?zhLabels[i]:labels[i],20,colors[i]);
    txt(x,497,L("CLICK","点击"),13,"#e8efff");
@@ -246,7 +249,7 @@ return{
    txt(b.x,b.y-2,kindLabel(b),13,"#223652");
    txt(b.x,b.y+18,zh()?zhLabels[b.color]:labels[b.color],20,"#243755");
    // Time pressure increases gradually, not through complicated gestures.
-   const ratio=Math.max(0,Math.min(1,(433-b.y)/(433-108)));
+   const ratio=Math.max(0,Math.min(1,(RUNWAY_END-b.y)/(RUNWAY_END-RUNWAY_START)));
    box(323,81,314,9,"#54708c",5);
    box(323,81,314*ratio,9,colors[b.color],5);
   }else{
