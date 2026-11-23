@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T22:47:23.504Z",
+  "generatedAt": "2026-11-23T22:49:58.752Z",
   "targetRangeStart": "2026-11-22T00:00:00-08:00",
   "database": {
     "name": "morrowwish-analytics",
@@ -8,7 +8,7 @@
     "created_at": "2026-11-19T08:12:57.602Z",
     "file_size": 335872
   },
-  "currentBookmark": "00000276-00000000-0000512c-dfbf5b1b24e35c58668ec9eb2f49e324",
+  "currentBookmark": "00000277-00000000-0000512c-550e767323804ae28193597ded9d2ae9",
   "historicalBookmarks": [
     {
       "timestamp": "2026-11-22T08:00:00.000Z",
@@ -220,7 +220,121 @@
       "category": "arcade",
       "game": "pawsibly-innocent",
       "kind": "visit",
-      "rows": 3
+      "rows": 4
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "session",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "session",
+      "rows": 17
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "visit",
+      "rows": 11
+    }
+  ],
+  "historicalQueryTest": [
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "session",
+      "rows": 100
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "visit",
+      "rows": 36
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "session",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "visit",
+      "rows": 8
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "session",
+      "rows": 2
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "visit",
+      "rows": 1
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "session",
+      "rows": 86
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "visit",
+      "rows": 48
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "session",
+      "rows": 17
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "session",
+      "rows": 41
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "visit",
+      "rows": 4
     },
     {
       "day": "2026-11-23",
@@ -344,7 +458,7 @@
       "category": "arcade",
       "game": "pawsibly-innocent",
       "kind": "visit",
-      "rows": 3,
+      "rows": 4,
       "first_day": "2026-11-23",
       "last_day": "2026-11-23"
     },
