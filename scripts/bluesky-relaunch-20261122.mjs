@@ -3,7 +3,7 @@
 // No third-party posting quota, no secrets in source, and duplicate-safe.
 const base = 'https://morrowwish.vercel.app';
 const api = 'https://bsky.social/xrpc/';
-const handle = process.env.MORROW_BLUESKY_HANDLE;
+const handle = process.env.MORROW_BLUESKY_HANDLE || 'morrowwishgames.bsky.social';
 const password = process.env.MORROW_BLUESKY_APP_PASSWORD;
 const expectedDid = 'did:plc:d55banmfpsnzmt35hqmmwha7';
 const sleep = ms => new Promise(ok => setTimeout(ok, ms));
@@ -39,7 +39,8 @@ const games = [
     text:'WAIT... TWO CATS CAN UNLEASH A LEGENDARY COMBO?! 🐱⚡\n\nBuild your dream cat team, unlock duo attacks, and collect rare cats!\n\nPlay free: '+base+'/cat-bond/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   }
 ];
-const releaseStart = Date.parse('2026-11-23T03:00:00.000Z');
+// Preserve the approved 19:00 release time, or begin at the next safe slot if setup is late.
+const releaseStart = Math.max(Date.parse('2026-11-23T03:00:00.000Z'), Date.now() + 30000);
 for (const [i,g] of games.entries()) {
   if ([...g.text].length > 300) throw Error('Bluesky 300-char limit exceeded for '+g.slug);
   if (g.text.includes('hook-v3')) throw Error('Wrong media for '+g.slug);
@@ -77,9 +78,10 @@ const existing=await json(api+'com.atproto.repo.listRecords?'+new URLSearchParam
 const previous=new Map(existing.records?.map(x=>[x.value?.text,x.uri])||[]);
 console.log('Owner-approved V14 campaign; account DID verified; seven 5-minute slots, Cat Bond last');
 const live=[];
+let lastPublishedAt = 0;
 for(let i=0;i<games.length;i++){
   const g=games[i], start=releaseStart+i*5*60000;
-  const gap=start-Date.now();
+  const gap=Math.max(start,lastPublishedAt+5*60000)-Date.now();
   if(gap>0){console.log('Waiting for '+g.slug+' slot');await sleep(gap);}
   if(previous.has(g.text)){const uri=previous.get(g.text);console.log('Duplicate prevented: '+g.slug+' '+uri);continue;}
   const url=base+g.video;
@@ -109,6 +111,7 @@ for(let i=0;i<games.length;i++){
   const created=await json(api+'com.atproto.repo.createRecord',{method:'POST',headers:auth,
     body:JSON.stringify({repo:session.did,collection:'app.bsky.feed.post',record})});
   const rkey=created.uri.split('/').at(-1),page='https://bsky.app/profile/'+session.did+'/post/'+rkey;
+  lastPublishedAt = Date.now();
   console.log('POSTED '+g.slug+' '+page);
   let verified=false;
   for(let tries=0;tries<8&&!verified;tries++){
