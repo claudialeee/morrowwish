@@ -35,6 +35,8 @@ try{
       const starter=page.locator('#panel.open .dex-cell').first();
       if(touch)await starter.tap();else await starter.click();
       await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
+      assert.equal(await page.locator('#toasts .toast').count(),0,
+        'CrazyGames first quest should not have duplicate overlay toasts');
       // A real player must see one coherent, clickable dock in the CrazyGames
       // iframe. The old independent absolute HUDs floated half-way up the yard.
       const menuLayout=await page.evaluate(()=>{
