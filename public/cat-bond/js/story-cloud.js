@@ -350,7 +350,8 @@ function bossSpecies(){
  if(!base)return null;
  const team=window.UI?.getPreferredBattleTeam?.()||state()?.cats||[];
  const avg=team.length?team.reduce((n,c)=>n+(c.level||1),0)/team.length:1;
- return {...base,name:'暮铃·逆响之主',nameEn:'Muling, Lord of the Reversed Bell',
+ return {...base,id:'xingchen',name:'暮铃·逆响之主',nameEn:'Muling, Lord of the Reversed Bell',
+  palette:'black',pattern:'spotted',eyeColor:'#e5b6ff',point:'#79648f',fluffy:true,ears:'tufted',
   desc:'被逆向星铃吞噬记忆后显现的暮铃。',encounterLevel:Math.max(10,Math.round(avg+3)),
   base:{pow:26,agi:23,vit:30,cha:26},__storyBoss:true};
 }
