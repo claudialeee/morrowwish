@@ -27,21 +27,24 @@
     },
     {
       "slug": "cat-bond",
-      "video": "/promo/cat-bond/hook-v3-20261121.mp4",
-      "cover": "/promo/cat-bond/hook-v3-20261121.jpg",
+      "video": "/promo/cat-bond/hook-v13-original-duo-20261122.mp4",
+      "cover": "/promo/cat-bond/hook-v13-original-duo-20261122.jpg",
       "reviewFrames": [
-        "/promo/cat-bond/hook-v3-review-1.jpg",
-        "/promo/cat-bond/hook-v3-review-2.jpg",
-        "/promo/cat-bond/hook-v3-review-3.jpg"
+        "/promo/cat-bond/hook-v13-original-duo-proof.jpg",
+        "/promo/cat-bond/hook-v13-rare-result-proof.jpg"
       ],
-      "production": "rejected-unapproved",
+      "production": "v13-original-art-review-only",
       "approvedForSocial": false,
       "scheduledNetworks": [
         "youtube",
         "tiktok",
         "instagram",
         "bluesky"
-      ]
+      ],
+      "oldPublishedMedia": "/promo/cat-bond/hook-v3-20261121.mp4",
+      "verifiedArtwork": "63-original-painted-storyboards",
+      "newDuoCasts": 1,
+      "ownerApprovalRequired": true
     },
     {
       "slug": "tiny-town",
