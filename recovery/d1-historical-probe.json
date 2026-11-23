@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-23T23:10:02.825Z",
+  "generatedAt": "2026-11-23T23:15:26.339Z",
   "targetTimestamp": "2026-11-23T00:00:00.000Z",
   "backup": {
-    "atBookmark": "0000028c-00000014-0000512c-20f7c175352c213c83eb3a2b2c9054aa",
-    "bytes": 313204,
-    "sha256": "04e2852ae91d8ebfb187a68f4519bb64375f3c63b9f70d4a57d88a1a62ec739c",
+    "atBookmark": "00000290-00000000-0000512c-4c401c86ea0653e30d359b625fe84caf",
+    "bytes": 317113,
+    "sha256": "aa7a9a907cd8ea436c0fce1f1673d936279ca3d2dbca431c49b230a1da75f118",
     "keptOnlyOnEphemeralRunner": true
   },
   "historicalRows": [
@@ -186,9 +186,9 @@
     }
   ],
   "historicalTotalRows": 803,
-  "currentRowsBefore": 414,
-  "currentRowsAfter": 414,
-  "rollbackBookmark": "0000028c-ffffffff-0000512c-ff70facb045cbd7f236b12244590fa5a",
+  "currentRowsBefore": 419,
+  "currentRowsAfter": 419,
+  "rollbackBookmark": "00000290-ffffffff-0000512c-0945ddc82bfec283b10fec30671bbf07",
   "currentStateRestored": true,
   "error": null,
   "rollbackError": null,
@@ -196,7 +196,7 @@
     "name": "morrowwish-analytics",
     "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
     "version": "production",
-    "fileSize": 348160
+    "fileSize": 352256
   },
   "targetBookmark": "000001f7-00000054-0000512c-1193dc9939b5eac58397d3c967a507d8",
   "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001f7-00000054-0000512c-1193dc9939b5eac58397d3c967a507d8"
