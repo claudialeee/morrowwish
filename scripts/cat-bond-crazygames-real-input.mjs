@@ -357,7 +357,7 @@ try{
         await reset.click();
         assert.match(await reset.textContent(),/Erase Cat Bond progress/i);
         assert.equal(await page.evaluate(()=>State.S.cats.length),2,
-          'First reset click must never delete a player's cats');
+          'First reset click must not delete owned cats');
         // The second deliberate click wipes ONLY Cat Bond progress.
         await page.evaluate(()=>localStorage.setItem('unrelated_game_qa_key','keep'));
         await reset.click();
