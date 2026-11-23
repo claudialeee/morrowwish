@@ -135,10 +135,16 @@ try{
       assert.equal(state.tutorial,true,'First wild must have a highlighted target');
       assert.equal(state.rarity,'N','First wild should be a learnable common');
       assert.notEqual(state.species,state.owned,'First catch must reveal a new breed');
-      await page.evaluate(()=>{
-        const game=window.__game,spot=game.yard.hide.spot;
-        game.yardTap(spot.x,spot.y);
+      // Drive the actual canvas input path. Calling game.yardTap() here would
+      // miss an overlay, pointer-event regression or a blocked click target.
+      const firstBushPoint=await page.evaluate(()=>{
+        const cv=document.querySelector('#scene');
+        const r=cv.getBoundingClientRect(),spot=window.__game.yard.hide.spot;
+        const x=r.left+spot.x,y=r.top+spot.y;
+        return {x,y,hit:document.elementFromPoint(x,y)?.id||''};
       });
+      assert.equal(firstBushPoint.hit,'scene','First wild bush is obscured by UI: '+JSON.stringify(firstBushPoint));
+      await page.mouse.click(firstBushPoint.x,firstBushPoint.y);
       await page.waitForSelector('#cp-go',{timeout:8000});
       await page.waitForTimeout(80);
       const battlePrepCopy=await page.locator('#panel.open').innerText();
@@ -255,10 +261,14 @@ try{
           'After the first win the live guide should point to the duo hunt, not petting');
         // A real second hunt must introduce the signature duo attack, not
         // quietly leave the player in another solo fight after the unlock.
-        await page.evaluate(()=>{
-          const game=window.__game,spot=game.yard.hide.spot;
-          game.yardTap(spot.x,spot.y);
+        const nextBushPoint=await page.evaluate(()=>{
+          const cv=document.querySelector('#scene');
+          const r=cv.getBoundingClientRect(),spot=window.__game.yard.hide.spot;
+          const x=r.left+spot.x,y=r.top+spot.y;
+          return {x,y,hit:document.elementFromPoint(x,y)?.id||''};
         });
+        assert.equal(nextBushPoint.hit,'scene','Duo hunt bush is obscured: '+JSON.stringify(nextBushPoint));
+        await page.mouse.click(nextBushPoint.x,nextBushPoint.y);
         await page.waitForSelector('#cp-go',{timeout:8000});
         await page.locator('#cp-go').click();
         await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});

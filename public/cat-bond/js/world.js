@@ -1278,7 +1278,13 @@ class YardScene {
     for (let k = 0; k < 24; k++) this.petParticles.push({ x: gx, y: gy, vx: Math.random() * 180 - 90, vy: -60 - Math.random() * 90, life: 1.1, ch: Math.random() < 0.6 ? '🪙' : '✨', color: '#f6d781', size: 13 + Math.random() * 8 });
   }
   handleTap(px, py) {
-    // golden cat first (rare, high value)
+    // The visible wild-cat encounter is the primary first-run action. Its
+    // bush must win over an overlapping golden visitor or resource bubble;
+    // otherwise a correct tap can collect loot instead of starting the fight.
+    if (this.hide && !this.hide.found &&
+        Math.hypot(px - this.hide.spot.x, py - this.hide.spot.y) < 58)
+      return { type: 'hide' };
+    // Golden cat when there is no wild encounter at the tapped location.
     if (this.golden && Math.hypot(px - this.golden.x, py - this.golden.y) < 44) return { type: 'golden' };
     // 1) tap an idle loot bubble to collect it (biggest AFK payoff on the main screen)
     if (this.lootBubbles) {
@@ -1286,10 +1292,6 @@ class YardScene {
         const b = this.lootBubbles[i];
         if (Math.hypot(px - b.x, py - b.y) < 26) { return { type: 'loot', bubble: b, idx: i }; }
       }
-    }
-    if (this.hide && !this.hide.found) {
-      const d = Math.hypot(px - this.hide.spot.x, py - this.hide.spot.y);
-      if (d < 58) { return { type: 'hide' }; }
     }
     // topmost cat (largest y first)
     const sorted = [...this.entities].sort((a, b) => b.y - a.y);

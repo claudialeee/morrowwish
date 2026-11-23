@@ -130,6 +130,8 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/mw-language-server.log 2>&1 &
           sleep 2
           node scripts/language-browser-smoke.mjs
+          # Actual mouse/touch on ten official CrazyGames viewport sizes.
+          node scripts/cat-bond-crazygames-real-input.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
       - name: Verify discovery and launch automation

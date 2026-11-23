@@ -791,6 +791,8 @@ html.cb-cg .cb-home,html.cb-cg #mw-fullscreen-toggle{display:none!important}
 html.cb-cg .panel{padding:clamp(6px,2vh,14px)}
 html.cb-cg .card{max-height:94%;max-width:min(540px,98%);padding:clamp(10px,2vh,22px);overscroll-behavior:contain}
 html.cb-cg #intro{display:none!important}
+/* CrazyGames touch view: long-press/double-tap should not select game text. */
+html.cb-cg body,html.cb-cg #game-root{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.cb-cg .mw-language-float{z-index:22!important;top:6px!important;right:6px!important}
 html.cb-cg .mw-audio-fixed{z-index:22!important;top:46px!important;right:6px!important}
 @media(max-height:500px){
