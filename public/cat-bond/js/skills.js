@@ -911,6 +911,13 @@
       const elemOk=s.element===el||
         (s.element===splash&&!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
       if(!elemOk)continue;
+      // ROLE × CATEGORY identity gate — the SAME rule trainerSkills + battle-time equip use. Without
+      // it a non-gated skill (no `unlock`, e.g. the aoe field skills 陨石术/潮汐池) slipped into the
+      // slot pool for any element-matching cat regardless of role, so a FIGHTER could equip 陨石术
+      // (ranged-strong aoe) the trainer would never teach (owner: "陨石术 斗士为什么能学"). Ults are
+      // exempt (roleAllowsSkill returns true for ultCost>0). Already-equipped IDs are grandfathered
+      // below (alreadyEquipped) so a legacy save isn't stripped mid-slot.
+      if(!alreadyEquipped && !roleAllowsSkill(cat.buildType||buildTypeForBreed(cat), s)) continue;
       const awakenedNative=cat.skillAwakened&&cat.awakenedSkill===s.id&&s.element===el;
       if(!isUlt&&!alreadyEquipped&&!awakenedNative){
         if(s.element===el){
@@ -919,8 +926,14 @@
           // mirrorWall defined before staticPounce; previously Lv.1 electric
           // cats were left with no native Q skill.
           const native=SKILLS.filter(k=>k.element===el&&!k.unlock&&!k.ultCost);
+          // Rank only the attacks this cat's ROLE can actually equip — otherwise a role-forbidden
+          // native (e.g. grass 藤蔓沼泽 aoe for an assassin) would occupy rank 0 and gate out the
+          // role-LEGAL first attack (leafDart), leaving a Lv1 starter with no usable attack. Role
+          // was just applied globally above; mirror it here so the milestone order matches it.
+          const role=cat.buildType||buildTypeForBreed(cat);
           const attacking=native.filter(k=>
-            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind));
+            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind)
+            && roleAllowsSkill(role,k));
           if(['heal','buff'].includes(s.kind)){
             if(lvl<3&&bond<30)continue;
           }else{

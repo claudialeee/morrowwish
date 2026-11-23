@@ -332,6 +332,21 @@
         pace:.5+Math.random()*.5,
       });
     }
+    // PROGRESSION-KEY FLOOR: a later region can gate behind `unlock.own: <speciesId>` (e.g. volcano
+    // needs 幽幽/youling, which lives ONLY here in creek at SR weight 7). With rarity-weighted rolls +
+    // ~8 spawns, that key cat can fail to appear across a FULL exploration → the map soft-locks and the
+    // player "一直找不到幽幽，无法推进地图" (owner). Guarantee it: if THIS region's pool contains a key
+    // species that a gated region requires AND the player doesn't own it yet, force one spawn to be it.
+    try {
+      const owned = new Set((window.State?.S?.cats || []).map(function (c) { return c.species; }));
+      const keys = REGIONS.map(function (rr) { return rr.unlock && rr.unlock.own; })
+        .filter(function (sp) { return sp && pool.indexOf(sp) >= 0 && !owned.has(sp); });
+      for (const keySp of keys) {
+        if (!spawns.some(function (s) { return s.sp === keySp; }) && spawns.length) {
+          spawns[Math.floor(Math.random() * spawns.length)].sp = keySp;   // re-skin one existing spawn
+        }
+      }
+    } catch (_) {}
     // Every visible roaming cat has an immutable encounter level, before
     // contact, regardless of changes to the team chooser afterward.
     const roster=window.State?.S?.cats||[];
