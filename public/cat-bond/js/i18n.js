@@ -897,6 +897,11 @@
     // unsplit strings. This affects Cat Bond on both our site and portals.
     '消耗 ': 'Cost ',
     '最多 10 次 · 每次 80': 'Up to 10 times · 80',
+    // Full suffixes must win before generic "fish", "element" or "click"
+    // fragments. These strings contain a dynamic number before the suffix.
+    ' 小鱼干，提升好感和饱食': ' fish treats to boost affection and fullness',
+    ' 种技能 · 点击替换 Q / E / 必杀。每只猫拥有不同的元素技能与解锁路线。':
+      ' skills · Tap to replace Q / E / Ultimate. Each cat has its own elemental skills and unlock path.',
     '每次 ': 'Each ',
     '最多 ': 'Up to ',
     ' 次 · 每次 ': ' times · each ',
