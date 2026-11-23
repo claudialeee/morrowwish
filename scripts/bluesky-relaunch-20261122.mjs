@@ -12,35 +12,35 @@ if (!/^(?:@?morrowwishgames(?:\.bsky\.social)?)$/i.test(handle)) throw Error('Wr
 const games = [
   {
     slug:'pocket-aquarium', video:'/promo/pocket-aquarium/trailer-v7-20261121.mp4',
-    text:'Looks peaceful... until the timer starts! 🐠\n\nFeed your fish, build combos, and beat the clock. How high can you score?\n\nPlay free: '+base+'/pocket-aquarium/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'Looks peaceful... until the timer starts! 🐠\n\nFeed your fish, build combos, and beat the clock. How high can you score?\n\nPlay free: '+base+'/pocket-aquarium/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   },
   {
     slug:'parcel-panic', video:'/promo/parcel-panic/trailer-challenge-20261122.mp4',
-    text:'Looks easy? 📦 Wait until the express orders hit!\n\nOne mistake could end your shift. Can you keep up?\n\nPlay free: '+base+'/parcel-panic/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'Looks easy? 📦 Wait until the express orders hit!\n\nOne mistake could end your shift. Can you keep up?\n\nPlay free: '+base+'/parcel-panic/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   },
   {
     slug:'flip-dash',video:'/promo/flip-dash/trailer-v7-20261121.mp4',
-    text:'ONE wrong flip. Game over. ⚡\n\nFlip gravity, dodge obstacles, and push your reflexes to the limit. Can you beat my run?\n\nPlay free: '+base+'/flip-dash/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'ONE wrong flip. Game over. ⚡\n\nFlip gravity, dodge obstacles, and push your reflexes to the limit. Can you beat my run?\n\nPlay free: '+base+'/flip-dash/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   },
   {
     slug:'elsewhere',video:'/promo/elsewhere/trailer-v7-20261121.mp4',
-    text:'What if you could live a completely different life? 🌙\n\nParis, Tokyo, or even a hotel on the moon. Every choice changes your story.\n\nPlay free: '+base+'/elsewhere/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'What if you could live a completely different life? 🌙\n\nParis, Tokyo, or even a hotel on the moon. Every choice changes your story.\n\nPlay free: '+base+'/elsewhere/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   },
   {
     slug:'tiny-town',video:'/promo/tiny-town/trailer-v7-20261121.mp4',
-    text:'No jobs. Just dreams. 🌸\n\nSeven days to build a little town, meet five neighbors, and make their wishes come true.\n\nPlay free: '+base+'/tiny-town/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'No jobs. Just dreams. 🌸\n\nSeven days to build a little town, meet five neighbors, and make their wishes come true.\n\nPlay free: '+base+'/tiny-town/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   },
   {
     slug:'pawsibly-innocent',video:'/promo/pawsibly-innocent/trailer-v12-20261121.mp4',
-    text:'Three fish. One sneaky cat. Zero evidence. 🐈\n\nDistract the human, steal the fish, and escape before you\'re caught!\n\nPlay free: '+base+'/pawsibly-innocent/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'Three fish. One sneaky cat. Zero evidence. 🐈\n\nDistract the human, steal the fish, and escape before you\'re caught!\n\nPlay free: '+base+'/pawsibly-innocent/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   },
   {
     slug:'cat-bond',video:'/promo/cat-bond/trailer-v13-20261122.mp4',
-    text:'WAIT... TWO CATS CAN UNLEASH A LEGENDARY COMBO?! 🐱⚡\n\nBuild your dream cat team, unlock duo attacks, and collect rare cats!\n\nPlay free: '+base+'/cat-bond/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
+    text:'WAIT... TWO CATS CAN UNLEASH A LEGENDARY COMBO?! 🐱⚡\n\nBuild your dream cat team, unlock duo attacks, and collect rare cats!\n\nPlay free: '+base+'/cat-bond/\n\n@indiedevbot.bsky.social @newindiedevbot.bsky.social\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   }
 ];
 // Preserve the approved 19:00 release time, or begin at the next safe slot if setup is late.
-const releaseStart = Math.max(Date.parse('2026-11-23T03:00:00.000Z'), Date.now() + 30000);
+const releaseStart = Date.now() + 30000; // resume remaining posts only, preserving five-minute gaps
 for (const [i,g] of games.entries()) {
   if ([...g.text].length > 300) throw Error('Bluesky 300-char limit exceeded for '+g.slug);
   if (g.text.includes('hook-v3')) throw Error('Wrong media for '+g.slug);
@@ -53,18 +53,23 @@ async function json(url, opts={}) {
 }
 function facets(text) {
   const spans = [];
-  const re=/https:\/\/[^\s]+|#[A-Za-z][A-Za-z0-9]*/g;
+  const re=/https:\/\/[^\s]+|@[A-Za-z0-9_.-]+|#[A-Za-z][A-Za-z0-9]*/g;
   for (const match of text.matchAll(re)) {
     const token=match[0], index=match.index;
     const byteStart=Buffer.byteLength(text.slice(0,index),'utf8');
     const byteEnd=byteStart+Buffer.byteLength(token,'utf8');
+    const mentionDids={'@indiedevbot.bsky.social':'did:plc:mxpuaozhcvmu2fazmn2lyjnj','@newindiedevbot.bsky.social':'did:plc:nptvomhr2s2m7fduabripuyj'};
     const feature=token.startsWith('#')
       ? {$type:'app.bsky.richtext.facet#tag',tag:token.slice(1)}
-      : {$type:'app.bsky.richtext.facet#link',uri:token};
+      : token.startsWith('@')
+        ? {$type:'app.bsky.richtext.facet#mention',did:mentionDids[token]}
+        : {$type:'app.bsky.richtext.facet#link',uri:token};
+    if(token.startsWith('@')&&!feature.did)throw Error('Unknown bot handle: '+token);
     spans.push({index:{byteStart,byteEnd},features:[feature]});
   }
   if(spans.filter(x=>x.features[0].$type.endsWith('#link')).length!==1)throw Error('Expected one clickable game link');
   if(spans.filter(x=>x.features[0].$type.endsWith('#tag')).length!==4)throw Error('Expected four discoverable hashtags');
+  if(spans.filter(x=>x.features[0].$type.endsWith('#mention')).length!==2)throw Error('Expected two true bot mentions');
   return spans;
 }
 const session=await json(api+'com.atproto.server.createSession',{
@@ -77,15 +82,25 @@ const pdsEndpoint=session.didDoc?.service?.find(x=>x.id?.endsWith('#atproto_pds'
 if(!pdsEndpoint)throw Error('Bluesky session didDoc missing atproto PDS endpoint');
 const serviceAud='did:web:'+new URL(pdsEndpoint).host;
 const existing=await json(api+'com.atproto.repo.listRecords?'+new URLSearchParams({repo:session.did,collection:'app.bsky.feed.post',limit:'100'}),{headers:{Authorization:auth.Authorization}});
-const previous=new Map(existing.records?.map(x=>[x.value?.text,x.uri])||[]);
+// Resume safely after canceling the earlier workflow: deduplicate by game and published video,
+// not exact post text (new copy includes two explicit bot mentions).
+const previous=new Map();
+for(const item of existing.records||[]){
+  for(const g of games){
+    if(item.value?.text?.includes('Play free: '+base+'/'+g.slug+'/') && item.value?.embed?.$type==='app.bsky.embed.video'){
+      previous.set(g.slug,item.uri);
+    }
+  }
+}
+const remaining=games.filter(g=>!previous.has(g.slug));
+console.log('Existing verified video games '+JSON.stringify([...previous.keys()]));
 console.log('Owner-approved V14 campaign; account DID verified; seven 5-minute slots, Cat Bond last');
 const live=[];
 let lastPublishedAt = 0;
-for(let i=0;i<games.length;i++){
-  const g=games[i], start=releaseStart+i*5*60000;
+for(let i=0;i<remaining.length;i++){
+  const g=remaining[i], start=releaseStart+i*5*60000;
   const gap=Math.max(start,lastPublishedAt+5*60000)-Date.now();
   if(gap>0){console.log('Waiting for '+g.slug+' slot');await sleep(gap);}
-  if(previous.has(g.text)){const uri=previous.get(g.text);console.log('Duplicate prevented: '+g.slug+' '+uri);continue;}
   const url=base+g.video;
   const res=await fetch(url,{signal:AbortSignal.timeout(120000)});
   if(!res.ok)throw Error('Failed to fetch V14 source MP4 '+g.slug+' '+res.status);
@@ -121,7 +136,7 @@ for(let i=0;i<games.length;i++){
     try{
       const thread=await json('https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?'+new URLSearchParams({uri:created.uri,depth:'0'}),{});
       const found=thread.thread?.post?.record;
-      verified=found?.text===g.text && found?.facets?.some(f=>f.features?.some(x=>x.$type==='app.bsky.richtext.facet#link' && x.uri===base+'/'+g.slug+'/')) && found?.embed?.$type==='app.bsky.embed.video';
+      verified=found?.text===g.text && found?.facets?.some(f=>f.features?.some(x=>x.$type==='app.bsky.richtext.facet#link' && x.uri===base+'/'+g.slug+'/')) && found?.facets?.filter(f=>f.features?.some(x=>x.$type==='app.bsky.richtext.facet#mention')).length===2 && found?.embed?.$type==='app.bsky.embed.video';
     }catch(e){console.log('Visibility check pending for '+g.slug);}
   }
   if(!verified)throw Error('Posted but PUBLIC_FACET_OR_VIDEO_UNVERIFIED '+page);
