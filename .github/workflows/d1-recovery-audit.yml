@@ -76,6 +76,17 @@ jobs:
           const eventsSchema=hasEvents?await query('PRAGMA table_info(events)'):[];
           const currentEvents=hasEvents?await query("SELECT day,category,game,kind,COUNT(*) AS rows FROM events WHERE day >= '2026-11-22' GROUP BY day,category,game,kind ORDER BY day,category,game,kind"):[];
           const totals=hasEvents?await query("SELECT category,game,kind,COUNT(*) AS rows,MIN(day) AS first_day,MAX(day) AS last_day FROM events GROUP BY category,game,kind ORDER BY category,game,kind"):[];
+          const candidate=historical.find(x=>x.timestamp==='2026-11-23T00:00:00.000Z')?.bookmark;
+          let historicalQueryTest=null;
+          if(candidate){
+            try{
+              const result=await api(root+'/query',{method:'POST',body:JSON.stringify({
+                sql:"SELECT day,category,game,kind,COUNT(*) AS rows FROM events WHERE day >= '2026-11-22' GROUP BY day,category,game,kind ORDER BY day,category,game,kind",
+                params:[],bookmark:candidate
+              })});
+              historicalQueryTest=result?.[0]?.results||result;
+            }catch(e){historicalQueryTest={error:String(e)};}
+          }
           const output={
             generatedAt:new Date().toISOString(),
             targetRangeStart:'2026-11-22T00:00:00-08:00',
@@ -85,6 +96,7 @@ jobs:
             tables:tables.map(t=>({name:t.name,sql:t.sql})),
             eventsSchema:eventsSchema.map(c=>({name:c.name,type:c.type,notnull:c.notnull,pk:c.pk})),
             currentEventsSinceNov22:currentEvents,
+            historicalQueryTest,
             currentTotals:totals
           };
           fs.mkdirSync('recovery',{recursive:true});
