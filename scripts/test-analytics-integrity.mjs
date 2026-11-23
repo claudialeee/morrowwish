@@ -24,6 +24,20 @@ const DB={prepare(sql){
   },
   async all(){
    if(sql.startsWith('SELECT kind,payload FROM events'))return {results:rows.filter(r=>r.category===args[0]&&r.view_id===args[1]).sort((a,b)=>a.id-b.id)};
+   if(sql.startsWith('SELECT day,COUNT(*) AS rawVisits')){
+    const counts=new Map();
+    for(const r of rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit'&&r.day>=args[0])){
+     const item=counts.get(r.day)||{day:r.day,rawVisits:0,keys:new Set()};
+     item.rawVisits++;item.keys.add(r.view_id||'legacy:'+r.visitor+':'+r.day);counts.set(r.day,item);
+    }
+    return {results:[...counts.values()].sort((a,b)=>a.day.localeCompare(b.day)).map(r=>({day:r.day,rawVisits:r.rawVisits,pageviews:r.keys.size}))};
+   }
+   if(sql.startsWith('SELECT MIN(day) AS firstDay')){
+    const visits=rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit');
+    const days=visits.map(r=>r.day).sort();
+    return {results:[{firstDay:days[0]||null,lastDay:days.at(-1)||null,rawVisits:visits.length,
+     pageviews:new Set(visits.map(r=>r.view_id||'legacy:'+r.visitor+':'+r.day)).size}]};
+   }
    assert.match(sql,/SELECT category,day,game/);
    return {results:rows.filter(r=>r.category===args[0]&&r.day>=args[1]).sort((a,b)=>b.id-a.id)};
   }
@@ -118,6 +132,17 @@ assert.equal(mixed.conversion.pageviews,1,'Legacy PV excluded from V2 funnel');
 assert.equal(mixed.conversion.finishedViews,1,'Legacy finish excluded from V2 funnel');
 assert.equal(mixed.signals.bond_rare_encounter,4,'Old encounter counts preserved');
 assert.equal(mixed.signals.bond_rare_capture,57,'Old capture counts preserved');
+const auditDenied=await api(new Request('https://morrowwish.pages.dev/api/cat-bond-traffic-audit?days=1'),env);
+assert.equal(auditDenied.status,401,'Owner audit must require authentication');
+const auditResponse=await api(new Request('https://morrowwish.pages.dev/api/cat-bond-traffic-audit?days=1',{
+ headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
+assert.equal(auditResponse.status,200,'Owner D1 audit should succeed');
+const audit=await auditResponse.json();
+assert.equal(audit.source,'uncapped-d1-aggregate');
+assert.equal(audit.total,2,'Full D1 audit counts legacy and v11 visits');
+assert.equal(audit.history.pageviews,2,'Stored lifetime count must not be sampled');
+assert.equal(audit.byDay.reduce((n,r)=>n+r.pageviews,0),2,'Daily counts must reconcile');
+
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.pageviews,1,'legacy itchio visit must appear in itch channel');
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.starts,1,'legacy itchio start must appear in itch channel');
 assert.equal(summary.itch?.pageviews,1,'itch game rollup includes historic itchio campaign visit');
