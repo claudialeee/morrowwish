@@ -77,8 +77,8 @@ try{
    assert.equal(result.allUnique,true,'all current breed English names must be unique');
    assert.equal(result.chinese,true,'keep original Chinese names untouched');
    assert.deepEqual(result.englishTeam,['Mochi','Misty']);
-   assert.equal(result.artSource,'32-actual-breed-watercolor-actors',
-     'duo scenes must use current 32-breed watercolor actors, not retired generic archetypes');
+   assert.equal(result.artSource,'63-original-painted-storyboards',
+     'duo scenes must use the approved complete original paintings on every device');
    assert.equal(result.assetCount,21,'all 21 unique dynamic duo cut-ins');
    assert.equal(result.signatureCount,21,'element-specific signature catalogue');
    assert.equal(result.buildingResults.length,5);
