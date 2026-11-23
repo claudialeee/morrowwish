@@ -169,9 +169,10 @@ const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
 // Every active game module must keep a cache-buster, but the CI test must
 // not pin a stale version when the game's battle mechanics are improved.
 
-// Art-quality gate: 32 DISTINCT hand-painted watercolor cat portraits
-// must replace the original two fixed cats for all 21x3 cutins. Never regress
-// to unsafe polygon-based fur overpaint or unapproved procedural silhouettes.
+// Art-quality gate: retain the high-quality original 21x3 storyboard as the
+// REAL in-battle duo ultimate. The 32 distinct watercolor actors remain for
+// breed-matched previews and selected-cat presentation, never as a silent
+// fallback replacing the approved complete painting in a live finisher.
 const approvedDuo=fs.readFileSync('public/cat-bond/js/duo-hero.js','utf8');
 const watercolorActors=fs.readFileSync('public/cat-bond/js/duo-breed-actors.js','utf8');
 const premiumScene=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
@@ -199,6 +200,9 @@ if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
 // not just a gallery preview. Gate the three orientation layouts and the
 // separate audio/VFX release beat so a cache-buster-only regression fails CI.
 const duoBondSource=fs.readFileSync('public/cat-bond/js/duo-bond.js','utf8');
+if(!duoBondSource.includes('this.duoCinematic.originalArt=true')||
+   duoBondSource.includes('this.duoCinematic.originalArt=false'))
+ throw Error('Cat Bond battle must render the approved original watercolor duo, not rejected v10 actors');
 const studioAudioSource=fs.readFileSync('public/studio-audio.js','utf8');
 if(!premiumScene.includes('const sw=thumbnail?Math.min(W,H*16/9):W')||
    !premiumScene.includes('const portrait=!thumbnail&&W/H<.90')||
