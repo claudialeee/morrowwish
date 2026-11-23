@@ -77,7 +77,23 @@ async function toDetails(page,ctx,id,log){
  await sleep(1300);
  let text=await body(page);
  if(/You already have a game waiting for review/i.test(text))throw Error('CRAZYGAMES_REVIEW_SLOT_OCCUPIED');
- if(text.includes('Finalize submission')&&text.includes('Ready to submit?'))return page;
+ if(text.includes('Finalize submission')&&text.includes('Ready to submit?')){
+   // Existing game is already at the last step; safely navigate back to
+   // media details without pressing "Submit for approval".
+   const nav=[
+     page.getByRole('button',{name:/^(back|go back|edit details|edit game details|previous)$/i}).first(),
+     page.getByRole('link',{name:/^(back|edit details|edit game details)$/i}).first()
+   ];
+   for(const el of nav){
+     if(!await el.count()||!await el.isEnabled().catch(()=>false))continue;
+     await el.evaluate(e=>e.click());await sleep(1200);
+     if((await body(page)).includes('Cover images'))return page;
+   }
+   await page.goto(ROOT+'/qa-continue/'+id,{waitUntil:'domcontentloaded',timeout:30000});
+   await sleep(1600);
+   if((await body(page)).includes('Cover images'))return page;
+   throw Error('Existing Finalize-step draft cannot navigate back to editable media: '+JSON.stringify(await readStage(page)));
+ }
  if(text.includes('Game details') && text.includes('Cover images'))return page;
  if(!/Upload your game|Game name/.test(text))throw Error('Draft editing view unavailable: '+mask(text,1500));
  const go=await button(page,'Go to QA');
@@ -198,6 +214,11 @@ async function details(page,slug,rec){
  const uploads=['cover-landscape.png','cover-portrait.png','cover-square.png','real-gameplay-landscape.mp4','real-gameplay-portrait.mp4'];
  if(await page.locator('input[type=file]').count()!==5)throw Error('Expected three cover and two gameplay video upload controls');
  rec.uploaded=[];
+ const provenance=JSON.parse(fs.readFileSync('.check/crazygames/cat-bond-trim-portrait.json','utf8'));
+ if(provenance.originalArt!==true||provenance.originalSceneCount!==63||
+    !provenance.artSource?.includes('duo-storyboard-21x3-v3.webp'))
+   throw Error('Refusing wrong or stale CrazyGames assets: original 63-painted art proof absent');
+ rec.artProvenance={originalArt:true,originalSceneCount:63};
  for(let i=0;i<uploads.length;i++){
    await page.locator('input[type=file]').nth(i).setInputFiles(path.join(dir,uploads[i]));
    rec.uploaded.push(uploads[i]);await sleep(900);
@@ -428,6 +449,8 @@ async function main(){
       await inspectAt(page,'dashboard-no-cat-bond',rec);
       id=await createDraft(ctx,page,rec);
     }
+    if(id!=='cda65c21-75f7-4ce5-b717-62b425097981')
+      blocked('Refusing to modify a different Cat Bond draft ID: '+id);
     // The portal may offer a "Go to QA" button; this is NOT "Submit for review".
     // Continue through authentic game-preview QA to the upload details form.
     // No final terms/rights checkbox on the last step, no publishing action.
