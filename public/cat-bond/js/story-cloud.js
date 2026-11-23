@@ -432,9 +432,12 @@ function renderCloudPanel(){
   const say=msg=>{if(status)status.textContent=msg;};
   try{
    if(action==='enable'){
-    if(!localStorage.getItem(SAVE_KEY))say(t('先开始一次游戏，创建本机存档，再启用云同步。','Start the game once to create a local save, then enable cloud sync.'));
+    const hasLocal=!!localStorage.getItem(SAVE_KEY);
     const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');
-    render(t('已生成恢复码。游戏保存后会自动上传。','Recovery code created. Your save will upload automatically after the next game save.'));
+    render(hasLocal
+     ?t('已生成恢复码，正在安排首次加密同步。','Recovery code created. Initial encrypted sync is queued.')
+     :t('已生成恢复码。开始游戏并创建存档后会自动上传。','Recovery code created. It will upload automatically after your first game save.'));
+    if(hasLocal)queueSync();
     return;
    }
    if(action==='copy'){
@@ -445,7 +448,10 @@ function renderCloudPanel(){
    if(action==='sync'){
     say(t('正在加密并同步…','Encrypting and syncing…'));
     const result=await syncNow(true);
-    say(result.conflict?t('检测到另一台设备有更新。请选择恢复云端或覆盖云端。','A newer save exists on another device. Restore it or explicitly replace it.'):t('云存档已同步。','Cloud save synced.'));
+    say(result.conflict?t('检测到另一台设备有更新。请选择恢复云端或覆盖云端。','A newer save exists on another device. Restore it or explicitly replace it.')
+     :result.ok?t('云存档已同步。','Cloud save synced.')
+     :result.empty?t('当前设备还没有游戏存档。','This device has no game save yet.')
+     :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and try again.'));
     return;
    }
    if(action==='restore'){
@@ -460,7 +466,9 @@ function renderCloudPanel(){
     let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
     localStorage.setItem(REV_KEY,String(remote.revision||0));
     const result=await syncNow(true);
-    say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.'):t('云端已更新为本机存档。','Cloud save replaced with this device.'));
+    say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.')
+     :result.ok?t('云端已更新为本机存档。','Cloud save replaced with this device.')
+     :t('本机存档尚未同步，请稍后重试。','The local save could not be uploaded. Please retry.'));
     return;
    }
    if(action==='import'){
