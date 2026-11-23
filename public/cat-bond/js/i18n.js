@@ -1191,6 +1191,7 @@
     // ---- status tags ----
     '灼烧': 'Burn', '淋湿': 'Soak', '感电': 'Shock', '浸油': 'Oil',
     '冰冻': 'Freeze', '眩晕': 'Dizzy', '流血': 'Bleed', '失明': 'Blind', '束缚': 'Bind',
+    '烫伤': 'Scald', '烫伤重创!': 'Scald — grievous!', '烫伤 治疗↓': 'Scald — healing cut', '治疗被烫伤削弱': 'healing cut by scald',
 
     // ---- bond tiers ----
     '灵魂纽带': 'Soul Bond',

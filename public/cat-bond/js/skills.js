@@ -467,6 +467,11 @@
     weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5
     rust:  { name: '破甲', ttl: 10.0,dps: 0,    color: '#c98a4a', dmgTaken: 1.12 },  // 破甲: 10s +12% incoming damage, no passive HP drain
     rewind:{ name: '回溯', ttl: 0.1, dps: 0,    color: '#9d7bff', rewind: true },    // 时间倒流: 回退到数秒前的血量
+    // 烫伤 (grievous / anti-sustain): a soaked target hit by FIRE scalds — its wounds
+    // steam and won't close. healTaken<1 means ALL healing it receives is cut (−65%),
+    // the hard counter to sustain/regen enemies (SSR bosses that heal). Separate axis
+    // from DoT/CC/vulnerability — the only heal-reduction debuff in the game.
+    scald: { name: '烫伤', ttl: 5.0, dps: 0,    color: '#ff9a52', healTaken: 0.35 },
   };
 
   // ==========================================================================
@@ -479,8 +484,9 @@
     'soak|elec':   { name: '导电连锁!', bonusMult: 1.5, effect: 'chainAll', consumes: true },
     // oil(浸油) + 火 = 爆炸
     'oil|fire':    { name: '浸油爆燃!', bonusMult: 1.45, effect: 'explode',  consumes: true },
-    // soak(淋湿) + 火 = 蒸发(减伤, 清除淋湿)
-    'soak|fire':   { name: '蒸发…',     bonusMult: 0.6, effect: 'steam',    consumes: true },
+    // soak(淋湿) + 火 = 烫伤: 水汽蒸腾灼烧伤口 → 目标受到的治疗-65%(反续航)。不再是伤害惩罚，
+    // 而是把水的「淋湿」转化成克制回血型敌人的核心手段。consumes 清除 soak 并挂 scald。
+    'soak|fire':   { name: '烫伤重创!', bonusMult: 1.0, effect: 'scald', applyTag: 'scald', consumes: true },
     // chill(冰冻) + 扑击(dash) = 碎冰暴击
     'chill|@staticPounce': { name: '碎冰暴击!', bonusMult: 1.5, effect: 'shatter', consumes: true },
     'chill|@thornCoil':    { name: '碎冰缠绕!', bonusMult: 1.4,  effect: 'shatter', consumes: true },
@@ -549,6 +555,37 @@
       if (byEl && !elHit) elHit = Object.assign({ tag }, byEl);
     }
     return elHit;
+  }
+
+  // reactionCatalog() — the COMBO table pre-indexed in BOTH directions so the squad
+  // AI (battle.js) can ask "which setup tags does my element detonate?" (DETONATOR) and
+  // "if I apply tag X, who on my team can cash it in?" (SETTER) without hardcoding any
+  // element chemistry. Only BENEFICIAL, element-keyed reactions participate (bonusMult>1;
+  // skill-specific @id keys and the <1 counter-reactions like soak|fire steam are skipped —
+  // the AI must never set up a tag that only HELPS the enemy). Cached: the table is static.
+  //   { byDetonator: { elec:[{setupTag,bonusMult,effect,consumes}, …], … },   // element -> tags it pops
+  //     bySetupTag:  { soak:[{element,bonusMult,effect,consumes}, …], … } }    // tag -> elements that pop it
+  let _reactionCatalog = null;
+  function reactionCatalog() {
+    if (_reactionCatalog) return _reactionCatalog;
+    const byDetonator = {}, bySetupTag = {};
+    for (const key in COMBO) {
+      const bar = key.indexOf('|');
+      const setupTag = key.slice(0, bar);
+      const deton = key.slice(bar + 1);
+      if (deton[0] === '@') continue;                 // skill-specific key: not a general element reaction
+      const r = COMBO[key];
+      if (!r) continue;
+      // BENEFICIAL reactions only: a damage amp (bonusMult>1) OR a utility reaction that applies a
+      // debuff at no damage loss (applyTag with bonusMult>=1, e.g. soak|fire→scald anti-heal). The
+      // AI must never set up a <1 penalty reaction (old steam) that only helps the enemy.
+      const beneficial = r.bonusMult > 1 || (r.applyTag && (r.bonusMult || 1) >= 1);
+      if (!beneficial) continue;
+      const entry = { bonusMult: r.bonusMult, effect: r.effect, applyTag: r.applyTag || null, consumes: !!r.consumes };
+      (byDetonator[deton] = byDetonator[deton] || []).push(Object.assign({ setupTag }, entry));
+      (bySetupTag[setupTag] = bySetupTag[setupTag] || []).push(Object.assign({ element: deton }, entry));
+    }
+    return (_reactionCatalog = { byDetonator, bySetupTag });
   }
 
   // ==========================================================================
@@ -1476,7 +1513,7 @@
     // --- upgrade chains (升级链) ---
     upgradeTargetOf, upgradeBaseOf, upgradeChainFor,
     // --- combos ---
-    COMBO, checkCombo,
+    COMBO, checkCombo, reactionCatalog,
     // --- risky combo-chain ---
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---

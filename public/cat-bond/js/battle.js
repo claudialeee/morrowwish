@@ -420,9 +420,7 @@ class CaptureBattle {
       for(const f of allies){
         if(support==='heal'||support==='regen'){
           const pct=(support==='regen'?.07:.11)+d.tier*.027;
-          const heal=Math.min(f.maxhp-f.hp,f.maxhp*pct);
-          f.hp=Math.min(f.maxhp,f.hp+heal);
-          if(heal>1)this.vfx.text(f.x,f.y-48,'+'+Math.round(heal),'#8be7ac',15);
+          this.healUnit(f,f.maxhp*pct);
           if(support==='regen')f.shieldT=Math.max(f.shieldT||0,3.2+.45*d.tier);
         }else if(support==='shield'){
           f.shieldT=Math.max(f.shieldT||0,5.8+.95*d.tier);
@@ -542,7 +540,7 @@ class CaptureBattle {
     }
     for(const ally of this.team.filter(f=>f.alive)){
       if(v.support==='heal'||v.support==='regen'){
-        ally.hp=Math.min(ally.maxhp,ally.hp+ally.maxhp*(v.support==='regen'?.025:.018));
+        this.healUnit(ally,ally.maxhp*(v.support==='regen'?.025:.018),{float:false});
       }else if(v.support==='shield')ally.shieldT=Math.max(ally.shieldT||0,1.45);
       else if(v.support==='boost')ally.damageBoostT=Math.max(ally.damageBoostT||0,1.9);
       else if(v.support==='haste'){
@@ -592,10 +590,10 @@ class CaptureBattle {
     const zh=window.MorrowwishI18n?.get?.()==='zh';
     const statusNames={burn:'灼烧',soak:'湿润',shock:'感电',oil:'浸油',
       chill:'冰冻',dizzy:'眩晕',bleed:'流血',blind:'致盲',bind:'束缚',
-      expose:'破绽',weaken:'削弱',rust:'破甲'};
+      expose:'破绽',weaken:'削弱',rust:'破甲',scald:'烫伤'};
     const enStatus={burn:'Burn',soak:'Soak',shock:'Shock',oil:'Oil',
       chill:'Chill',dizzy:'Dizzy',bleed:'Bleed',blind:'Blind',bind:'Bind',
-      expose:'Expose',weaken:'Weaken',rust:'Armor break'};
+      expose:'Expose',weaken:'Weaken',rust:'Armor break',scald:'Scald'};
     const effect=zh?{
       heal:'治疗',regen:'持续治疗',shield:'护盾',boost:'增伤',
       haste:'冷却加速',evade:'闪避',protect:'格挡',charge:'必杀充能',
@@ -1367,6 +1365,45 @@ class CaptureBattle {
     }
   }
 
+  // S2 — which equipped slot (q/e) BEST advances an element reaction on `focus`, or null if
+  // neither matters. Table-driven off Skills.reactionCatalog() so new COMBO entries auto-participate.
+  //   DETONATOR (higher priority): focus already carries a tag THIS cat's element pops → fire the
+  //     skill that cashes it in NOW (before it expires/consumes).
+  //   SETTER: focus has NO reactable tag yet, but a skill THIS cat can cast applies a setup tag that
+  //     SOME OTHER live ally's element will detonate → apply it so the ally follows up harder (the
+  //     owner's water→soak-for-elec, generalised to every COMBO). Only when a real ally detonator
+  //     is on the field — never set up a tag nobody can cash.
+  // Returns 'q' | 'e' | null. Pure: reads tags + team elements + the static catalog. Default-null so
+  // a 1-cat squad (no allies to set up for) and non-reaction kits behave exactly as before.
+  reactionSlotPref(f, focus) {
+    if (!focus || !focus.alive) return null;
+    const SK = window.Skills; if (!SK?.reactionCatalog) return null;
+    const cat = SK.reactionCatalog();
+    const tags = focus.tags || [];
+    const skillOf = slot => slot === 'q' ? f.qSkill : f.eSkill;
+    const isOffensive = sk => sk && sk.kind !== 'heal' && sk.kind !== 'buff';
+    // DETONATOR: does focus carry a tag my element pops, and do I have an offensive skill of my element?
+    const myEl = f.element;
+    const myPops = cat.byDetonator[myEl] || [];
+    if (myPops.length && myPops.some(r => tags.includes(r.setupTag))) {
+      for (const slot of ['q', 'e']) { const sk = skillOf(slot); if (isOffensive(sk) && (sk.element || myEl) === myEl) return slot; }
+    }
+    // SETTER: only if the focus has NO reactable tag yet AND a different ally can detonate what I'd set.
+    const allies = this.team.filter(a => a && a.alive && a !== f);
+    if (!allies.length) return null;
+    const alreadyReactable = tags.some(t => (cat.bySetupTag[t] || []).some(r => allies.some(a => a.element === r.element) || r.element === myEl));
+    if (alreadyReactable) return null;                // a tag is already up for someone — don't double-set
+    for (const slot of ['q', 'e']) {
+      const sk = skillOf(slot);
+      if (!isOffensive(sk)) continue;
+      const applies = sk.appliesTag;
+      if (!applies) continue;
+      const detonators = (cat.bySetupTag[applies] || []);
+      if (detonators.some(r => allies.some(a => a.element === r.element))) return slot;
+    }
+    return null;
+  }
+
   // Context-sensitive default planner: defence, sustain, burst, elemental
   // skills, pounce and basic attacks. Never spend heals at full HP or melee
   // skills outside their hit radius.
@@ -1431,12 +1468,17 @@ class CaptureBattle {
       if(sk.id==='prismBeam')return dist<525;                // actual piercing ray reach
       return dist<460;
     };
-    if(f.cd.q<=0&&offensive(f.qSkill,'q')){
-      if(this.skillQ(f,aimFor(f.qSkill))!==false){this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射'));return;}
-    }
-    if(f.cd.e<=0&&offensive(f.eSkill,'e')){
-      if(this.skillE(f,aimFor(f.eSkill))!==false){this.markAutoAction(f,'技能：'+(f.eSkill?.name||'疾扑'));return;}
-    }
+    // S2 ELEMENT-REACTION SETUP: a SOFT reorder of which equipped skill fires first, keyed on the
+    // SHARED team focus. SETTER applies a setup tag an ally will detonate; DETONATOR cashes a tag
+    // already on the focus. Only reorders Q vs E — never overrides the dodge/heal/shield/ult gates
+    // above, and both slots still pass the same reach/ward `offensive()` test. See reactionSlotPref.
+    const fireQ=()=>f.cd.q<=0&&offensive(f.qSkill,'q')&&this.skillQ(f,aimFor(f.qSkill))!==false
+      &&(this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射')),true);
+    const fireE=()=>f.cd.e<=0&&offensive(f.eSkill,'e')&&this.skillE(f,aimFor(f.eSkill))!==false
+      &&(this.markAutoAction(f,'技能：'+(f.eSkill?.name||'疾扑')),true);
+    const eFirst = !this.commandTarget && this.reactionSlotPref(f,tgt)==='e';
+    if(eFirst){ if(fireE())return; if(fireQ())return; }
+    else { if(fireQ())return; if(fireE())return; }
     const buff=this.supportSlot(f,'buff');
     if(buff&&dist<290){
       if(this.castSlot(f,buff,aim)!==false){this.markAutoAction(f,'强化自身');return;}
@@ -1866,12 +1908,13 @@ class CaptureBattle {
       const hasHot = !!sk.hot;
       if(t.hp>=t.maxhp-.5 && !canCleanse && !hasHot)return false;
       const pct = sk.healPct ?? ((sk.healMode==='single'||sk.big) ? 0.46 : 0.34); // learned heal upgrade matters
-      const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*pct));
-      t.hp=Math.min(t.maxhp,t.hp+amount);
+      // Route the restore through the single chokepoint so 烫伤(scald) cuts it; healUnit draws
+      // its own +N float, so suppress it here and use the returned ACTUAL amount for leech/line art.
+      const amount=this.healUnit(t,Math.max(14,t.maxhp*pct),{float:false});
       if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035; }   // ~3.5%/s for 4s (water)
       if(sk.selfBuff){ f.damageBoostT=Math.max(f.damageBoostT||0,3.0); }       // fire self-heal also buffs
       if(sk.haste){ t.hasteT=Math.max(t.hasteT||0,4.0); }                      // elec heal → brief speed-up
-      if(sk.leech){ f.hp=Math.min(f.maxhp,f.hp+amount*0.5); }                  // dark heal also siphons for the caster
+      if(sk.leech){ this.healUnit(f,amount*0.5,{float:false}); }               // dark heal also siphons for the caster
       // 舔毛理顺 Grooming: wash off the worst debuff as well as healing.
       if(canCleanse){
         const worst=Object.keys(t.status)[0];
@@ -1880,7 +1923,8 @@ class CaptureBattle {
         this.vfx.impactType?.(t.x,t.y,'cleanse',{color:'#bcebd0'});
       }
       this.vfx.impactType?.(t.x,t.y,'heal',{color:'#a8e9b4'});
-      this.vfx.text(t.x,t.y-33,'+'+Math.round(amount),'#93dca1',15);
+      if(amount>1)this.vfx.text(t.x,t.y-33,'+'+Math.round(amount),'#93dca1',15);
+      else if((t.status?.scald||0)>0)this.vfx.text(t.x,t.y-33,window.MorrowwishI18n?.get?.()!=='zh'?'healing blocked':'治疗被烫伤削弱','#ff9a52',13);
       if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#a8e9b4');   // show the aid link
     }else if(sk.kind==='buff'){
       const shield=sk.tags?.includes('shield');
@@ -1901,7 +1945,7 @@ class CaptureBattle {
         t.kneadStacks=Math.min(KMAX,(t.kneadStacks||0)+1);
         t.kneadT=5.0;                                         // refreshes while you keep kneading
         t.damageBoostT=Math.max(t.damageBoostT||0,0.01);      // marks "buffed" for AI/label only
-        t.hp=Math.min(t.maxhp,t.hp+Math.max(6,t.maxhp*0.03)); // small morale back per knead
+        this.healUnit(t,Math.max(6,t.maxhp*0.03),{float:false}); // small morale back per knead
         const en=window.MorrowwishI18n?.get?.()!=='zh';
         this.vfx.ring(t.x,t.y,{r0:8,vr:70+t.kneadStacks*22,life:.4,color:'#ffe3c2',width:3});
         this.vfx.text(t.x,t.y-34,(en?'knead ×':'踩奶 ×')+t.kneadStacks,'#ffe8c8',14);
@@ -2184,7 +2228,7 @@ class CaptureBattle {
     if(f.shieldT>0){
       f.shieldT=Math.max(0,f.shieldT-dt);
       if(f._wardRegenPct&&f.alive&&f.hp<f.maxhp)
-        f.hp=Math.min(f.maxhp,f.hp+f.maxhp*f._wardRegenPct*dt);
+        this.healUnit(f,f.maxhp*f._wardRegenPct*dt,{float:false});
     }
     if(f.shieldT<=0){
       f._wardReduction=null;f._wardRegenPct=0;f._wardRetaliateBurn=false;
@@ -2286,7 +2330,7 @@ class CaptureBattle {
     if (hit) this.shakeT = Math.max(this.shakeT, 0.1);
     // 藤蔓爪微调 lifesteal: a grass melee heals the caster a cut of damage it landed.
     const steal = skill && skill.lifesteal;
-    if (steal && dealtTotal > 0 && f.alive) f.hp = Math.min(f.maxhp, f.hp + dealtTotal * steal);
+    if (steal && dealtTotal > 0 && f.alive) this.healUnit(f, dealtTotal * steal, {float:false});
   }
 
   // ---------------- offensive skill dispatch by KIND ----------------
@@ -2596,7 +2640,7 @@ class CaptureBattle {
         }
         this.resolveHit(tgt, side, contact || { element: f.element }, dmg, tgt.x, tgt.y);
         const steal = contact && (contact.lifesteal || contact.leech);
-        if (steal && f.alive) f.hp = Math.min(f.maxhp, f.hp + dmg * steal);
+        if (steal && f.alive) this.healUnit(f, dmg * steal, {float:false});
         if (contact?.element === 'elec') {
           this.vfx.burst(tgt.x, tgt.y, { count: this.game.isTouch ? 9 : 15, color: '#ffe29a', speed: 150, life: .34, r: 3.2 });
           this.vfx.ring(tgt.x, tgt.y, { r0: 9, vr: 120, life: .25, color: '#8da8ef', width: 4 });
@@ -3170,12 +3214,11 @@ class CaptureBattle {
       let healedAny=false;
       for(const t of this.team){
         if(!t.alive)continue;
-        const before=t.hp;
-        t.hp=Math.min(t.maxhp,t.hp+t.maxhp*pct);
-        if(t.hp>before+0.01){ healedAny=true;
+        const got=this.healUnit(t,t.maxhp*pct,{float:false});
+        if(got>0.01){ healedAny=true;
           this.vfx.ring(t.x,t.y,{r0:8,vr:260,life:.5,color,width:6});
           this.vfx.burst(t.x,t.y,{count:this.game.isTouch?8:14,color,speed:120,life:.5,r:3,grav:-40});
-          this.vfx.text(t.x,t.y-46,'+'+Math.round(t.maxhp*pct),color,14);
+          this.vfx.text(t.x,t.y-46,'+'+Math.round(got),color,14);
         }
       }
       this.vfx.ring(f.x,f.y,{r0:14,vr:520,life:.55,color:'#fff1a8',width:8});
@@ -4092,7 +4135,7 @@ class CaptureBattle {
       // 踩奶 Knead stacks decay together when the rhythm window lapses.
       if (f.kneadT > 0) { f.kneadT=Math.max(0,f.kneadT-dt); if(f.kneadT===0) f.kneadStacks=0; }
       // HoT regen from a `hot` heal (water template tweak): drip until the window lapses.
-      if (f.hotT > 0) { f.hotT=Math.max(0,f.hotT-dt); if(f.alive&&f.hp<f.maxhp) f.hp=Math.min(f.maxhp,f.hp+(f.hotRate||0)*dt); }
+      if (f.hotT > 0) { f.hotT=Math.max(0,f.hotT-dt); if(f.alive&&f.hp<f.maxhp) this.healUnit(f,(f.hotRate||0)*dt,{float:false}); }
       if (f.hasteT > 0) f.hasteT=Math.max(0,f.hasteT-dt);   // 静电舔毛 haste window (elec heal tweak)
       if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
       // SAFETY: a root flag with no live cast/beam backing it would freeze the cat
@@ -5140,6 +5183,14 @@ class CaptureBattle {
       this.vfx.ring(e.x, e.y, { r0: 8, vr: 460, life: 0.45, color: this.elemColor(skill.element), width: 6 });
       this.vfx.text(e.x, e.y - 50, '✦', '#ffd36b', 12);
       if (combo.consumes && e.tags.includes(combo.tag)) { e.tags = e.tags.filter(t => t !== combo.tag); delete e.status[combo.tag]; }
+      // Some reactions APPLY a new debuff as their payload (e.g. soak|fire → 烫伤 anti-heal). Seed
+      // the tag + its TTL so tickStatus/healUnit read it, same as any skill-applied status.
+      if (combo.applyTag) {
+        const info = Skills.TAG_INFO?.[combo.applyTag];
+        if (!e.tags.includes(combo.applyTag)) e.tags.push(combo.applyTag);
+        e.status[combo.applyTag] = Math.max(e.status[combo.applyTag] || 0, info?.ttl || 5);
+        if (combo.applyTag === 'scald') this.vfx.text(e.x, e.y - 64, '烫伤 治疗↓', '#ff9a52', 13);
+      }
     }
     // Readable effectiveness call-out (效果拔群! / 效果不佳…) so a mis-/super-matched hit tells
     // the player WHY the number is big or small — using the authored Skills.effectivenessLabel
@@ -5250,6 +5301,29 @@ class CaptureBattle {
       default:
         this.vfx.ring(e.x, e.y, { r0: 8, vr: 160, life: 0.3, color, width: 3 });
     }
+  }
+
+  // SINGLE heal chokepoint. Every HP gain — duo support, ally regen, heal skills, lifesteal,
+  // ward regen, HoT ticks, knead morale, enemy self-heal — routes through here so the 烫伤(scald)
+  // anti-sustain debuff reliably cuts ALL healing a scalded unit receives (healTaken<1). Returns
+  // the ACTUAL amount restored (0..raw), clamped to maxhp, and floats a small +N when meaningful.
+  healUnit(u, raw, opts) {
+    if (!u || !u.alive || !(raw > 0)) return 0;
+    let mult = 1;
+    if (u.status) {
+      for (const tg in u.status) {
+        if (!(u.status[tg] > 0)) continue;
+        const info = window.Skills?.TAG_INFO?.[tg];
+        if (info && info.healTaken != null) mult *= info.healTaken;   // stacks multiplicatively if ever >1 debuff
+      }
+    }
+    const want = raw * mult;
+    const amount = Math.min(u.maxhp - u.hp, want);
+    if (amount <= 0) return 0;
+    u.hp = Math.min(u.maxhp, u.hp + amount);
+    if ((!opts || opts.float !== false) && amount > 1)
+      this.vfx.text(u.x, u.y - (opts?.dy || 48), '+' + Math.round(amount), opts?.color || '#8be7ac', opts?.size || 15);
+    return amount;
   }
 
   // per-enemy status tick: DoT (burn/bleed/shock), crowd-control (chill/bind/dizzy),

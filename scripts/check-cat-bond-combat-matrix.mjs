@@ -374,7 +374,70 @@ for(const kind of Object.keys(KINDS)) for(const build of BUILDS){
     assert.ok(f.hp < hp0 - 0.01, 'ENEMY '+kind+' lunge CLOSES to contact and connects from its reach gate ('+reach.toFixed(0)+'px), animated not teleported (R1-A/F1); hp '+hp0.toFixed(0)+'→'+f.hp.toFixed(0));
   }
 }
+// ============================================================================
+// 烫伤 (scald) ANTI-SUSTAIN DEBUFF — soak|fire reaction cuts ALL healing a unit receives.
+// Repurposed from the old dead-weight "蒸发" (0.6× damage penalty that only helped the enemy).
+// DETERMINISTIC: heal a unit with/without scald through the single healUnit() chokepoint and
+// assert the scalded heal is reduced by exactly healTaken (0.35 → −65%). Also prove the soak|fire
+// combo APPLIES scald (consuming soak) rather than wasting the setup. Locks the owner's
+// "克制续航型敌人" ask: water sets up, fire detonates → the target can't heal back.
+{
+  const b = newBattle('lanbao','jinwu',{lvl:12});
+  const e = b.enemies[0];
+  const info = Skills.TAG_INFO.scald;
+  assert.ok(info && info.healTaken > 0 && info.healTaken < 1, 'scald must be a heal-reduction debuff (healTaken<1)');
+  // (a) healUnit respects scald multiplicatively
+  e.hp = 10; e.maxhp = 1000; e.status = {}; e.tags = [];
+  const clean = b.healUnit(e, 200, {float:false});
+  e.hp = 10; e.status = { scald: 4 }; e.tags = ['scald'];
+  const scalded = b.healUnit(e, 200, {float:false});
+  assert.ok(Math.abs(scalded - clean*info.healTaken) < 0.5,
+    'scald cuts healing by healTaken: clean='+clean.toFixed(0)+' scalded='+scalded.toFixed(0)+' (expect '+(clean*info.healTaken).toFixed(0)+')');
+  assert.ok(scalded < clean*0.5, 'a scalded unit heals for well under half the normal amount');
+  // (b) the soak|fire combo APPLIES scald + consumes soak (not the old damage penalty)
+  const r = Skills.checkCombo(['soak'], { element:'fire', id:'x' });
+  assert.ok(r && r.applyTag === 'scald' && (r.bonusMult||1) >= 1,
+    'soak|fire reaction applies scald at no damage loss (not the old 0.6× steam trap)');
+  // (c) the reaction catalog surfaces fire→scald so the squad AI can set it up
+  const cat = Skills.reactionCatalog();
+  assert.ok((cat.byDetonator.fire||[]).some(x => x.setupTag==='soak' && x.applyTag==='scald'),
+    'reactionCatalog exposes fire detonating soak into scald for SETTER/DETONATOR nudges');
+}
+// ============================================================================
+// S2 COORDINATION — reactionSlotPref prefers the Q/E slot that advances an element reaction on the
+// SHARED focus, table-driven off reactionCatalog(). Two behaviors, both SOFT (null when irrelevant):
+//   SETTER: a water cat with an ELEC ally on the field prefers the slot that SOAKS the focus (so the
+//           ally's elec follows up harder — the owner's exact reported-missing behavior, generalised).
+//   DETONATOR: a cat whose element pops a tag ALREADY on the focus prefers the slot that cashes it.
+//   SOLO GUARD: a 1-cat squad (no ally to set up for) returns null → zero behavior change.
+{
+  const b = newBattle('lanbao','jinwu',{lvl:12});          // lanbao = water
+  const water = b.me();
+  water.element = 'water';
+  water.qSkill = { id:'wq', name:'wq', element:'water', kind:'projectile', appliesTag:null };
+  water.eSkill = { id:'we', name:'we', element:'water', kind:'projectile', appliesTag:'soak' };  // the setter
+  const focus = b.enemies[0]; focus.tags = []; focus.status = {}; focus.alive = true;
+  // SOLO: no ally → no setter preference
+  b.team = [water];
+  assert.equal(b.reactionSlotPref(water, focus), null, 'solo squad: reactionSlotPref stays null (no regression)');
+  // SETTER: add an elec ally → prefer the soak slot (E)
+  const elec = { alive:true, element:'elec', x:0, y:0, qSkill:null, eSkill:null };
+  b.team = [water, elec];
+  assert.equal(b.reactionSlotPref(water, focus), 'e',
+    'water cat with an elec ally prefers the slot that SOAKS the focus (sets up conductive)');
+  // DETONATOR: an elec cat whose focus is ALREADY soaked prefers its elec slot to cash the chain
+  const elecCat = b.me();
+  elecCat.element = 'elec';
+  elecCat.qSkill = { id:'eq', name:'eq', element:'elec', kind:'projectile', appliesTag:null };
+  elecCat.eSkill = { id:'ee', name:'ee', element:'elec', kind:'projectile', appliesTag:null };
+  focus.tags = ['soak']; focus.status = { soak: 3 };
+  b.team = [elecCat, { alive:true, element:'water', x:0, y:0 }];
+  assert.ok(['q','e'].includes(b.reactionSlotPref(elecCat, focus)),
+    'elec cat detonates a pre-soaked focus (prefers an elec offensive slot to cash the reaction)');
+}
+
 if(process.env.DUMP_MATRIX)console.log(report.join('\n'));
 console.log('Cat Bond COMBAT MATRIX (deterministic, seeded): '+checked+' cells regression-locked (inEnv/acts/dmg vs FIXED envelope) + negative controls (frozen/runaway/backline-band/wideband) — all PASS.');
+console.log('  + 烫伤 scald anti-sustain (healUnit heal-cut, soak|fire→scald reaction) and S2 reactionSlotPref (setter/detonator/solo-guard) regression-locked.');
 console.log('  CERTIFIES: single-enemy engagement distance + offensive output + that an action is taken, vs a stationary target.');
 console.log('  Does NOT certify: survivability (pinned enemy barely attacks), target-switching, or multi-enemy behavior (future verifier extension).');
