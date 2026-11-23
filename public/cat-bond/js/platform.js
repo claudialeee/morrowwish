@@ -51,6 +51,49 @@
       dock.appendChild(tabs);
       dock.appendChild(actions);
       stage.appendChild(dock);
+
+      // The ordinary fullscreen header is intentionally absent on CrazyGames,
+      // but the game settings and exploration Menu must NEVER inherit the yard
+      // resource HUD's hidden state. Keep one permanent portal utility anchor.
+      if(!document.getElementById('cg-top-tools')){
+        const top=document.createElement('div');
+        top.id='cg-top-tools';
+        top.setAttribute('role','group');
+        top.setAttribute('aria-label','Cat Bond game settings and menu');
+        const controls=document.createElement('div');
+        controls.id='cb-header-actions';
+        const menu=document.getElementById('map-menu');
+        if(menu)controls.appendChild(menu);
+        top.appendChild(controls);
+        stage.appendChild(top);
+      }
+
+      // Single real-flow battle status stack. Previous unrelated absolute
+      // offsets had the enemy poise/HP row clipping the cat cards, and the
+      // ultimate/duo gauges crossing the enemy header on short iframes.
+      if(!document.getElementById('cg-battle-hud')){
+        const combat=document.getElementById('battle-ui');
+        const header=combat?.querySelector('.battle-topbar');
+        const squad=document.getElementById('battle-squad-rail');
+        const ult=document.getElementById('ult-wrap');
+        const duo=document.getElementById('duo-burst');
+        if(combat&&header&&squad&&ult&&duo){
+          const hud=document.createElement('div');
+          hud.id='cg-battle-hud';
+          hud.setAttribute('aria-label','Combat status');
+          const lower=document.createElement('div');
+          lower.id='cg-battle-lower';
+          const charges=document.createElement('div');
+          charges.id='cg-battle-charges';
+          charges.appendChild(ult);
+          charges.appendChild(duo);
+          lower.appendChild(squad);
+          lower.appendChild(charges);
+          hud.appendChild(header);
+          hud.appendChild(lower);
+          combat.insertBefore(hud,combat.firstChild);
+        }
+      }
     };
     if(document.readyState==='loading')
       document.addEventListener('DOMContentLoaded',mountYardDock,{once:true});
