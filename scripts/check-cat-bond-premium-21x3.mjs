@@ -105,8 +105,14 @@ assert.match(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=true/,
   'Live battle must draw the complete approved original 63 watercolor scenes');
 assert.doesNotMatch(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=false/,
   'Live battle must never replace approved original watercolor scenes with breed-actor composites');
-assert.match(source('js/duo-premium.js'),/drawPortraitStory\(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview\)/,
-  'Preserve the full 63 original storybook paintings in dedicated previews');
+assert.match(source('js/duo-premium.js'),/const wideOriginalComposition=thumbnail\|\|\(W\/H>=1\.68&&W\/H<=1\.88\)/,
+  'Use complete original paintings only when their 16:9 composition fits the viewport');
+assert.match(source('js/duo-premium.js'),/sourceCover\(ctx,cellRect\(frame,tier\),0,0,sw,sh,zoom,0,0,1,null,tier\)/,
+  'Draw the original painting once as a full-bleed scene, not as a second overlay');
+assert.match(source('js/duo-premium.js'),/const edgeX=clamp\(148\/W,\.20,\.32\)/,
+  'Feather the complete scene across broad, soft margins');
+assert.doesNotMatch(source('js/duo-premium.js'),/drawPortraitStory\(/,
+  'Never stack a second oval painting over a full-screen scenic layer');
 for(const [path,min] of [
  ['assets/duo-watercolor-32-actors-v1.webp',750000],
  ['assets/duo-stage-clean-21x3-v2.webp',150000]]){
