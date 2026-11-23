@@ -525,8 +525,11 @@ function renderCloudPanel(){
  }
  const updateLocale=()=>{
   const input=body.querySelector('#cb-cloud-code-input')?.value||'';
-  render(localStorage.getItem(CLOUD_KEY)
-   ?t('云存档已启用。','Cloud save is enabled.')
+  const token=localStorage.getItem(CLOUD_KEY);
+  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
+  render(token
+   ?paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.')
+    :t('云存档已启用。','Cloud save is enabled.')
    :t('还没有启用云存档。','Cloud save is not enabled yet.'));
   const nextInput=body.querySelector('#cb-cloud-code-input');if(nextInput)nextInput.value=input;
  };
