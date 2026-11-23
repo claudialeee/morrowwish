@@ -1,6 +1,7 @@
-// Prevent stale v10/alternate-actor duo artwork from entering Cat Bond's V13
-// owner-review trailer. This deliberately checks the real game source and
-// freshly encoded media, never simply trusting a positive workflow result.
+// Verify the archived V13 original storyboard footage AND the current live
+// game separately. Current battles must show the selected watercolor breeds.
+// Old trailer metadata remains a historical record, not permission for fixed
+// actors to reappear in newly captured live gameplay.
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 
@@ -13,8 +14,10 @@ const capture=read('scripts/capture-trailers-v10.mjs');
 const render=read('scripts/render-trailers-v10.mjs');
 const art='public/cat-bond/assets/duo-storyboard-21x3-v3.webp';
 must(fs.existsSync(art)&&fs.statSync(art).size>2_000_000,'63-frame approved atlas missing');
-must(original.includes('this.duoCinematic.originalArt=true;'),'Live battle is not forced to render original paintings');
-must(!original.includes('this.duoCinematic.originalArt=false;'),'Rejected alternate cut-in still active in the real battle');
+// The published V13 artwork is historical; the live game must display
+// the actual player's two selected watercolor cats, not fixed gallery cats.
+must(original.includes('this.duoCinematic.originalArt=false;'),'Current live duo must use actual watercolor cat breeds');
+must(!original.includes('this.duoCinematic.originalArt=true;'),'Current live duo cannot substitute fixed painting subjects');
 must(painter.includes('duo-storyboard-21x3-v3.webp'),'Premium cinematic no longer loads the canonical atlas');
 must(loader.includes('approved-painted-duo-v13-20261122'),'Old battle JS may remain in browser cache');
 must(capture.includes("artMode:'63-original-painted-storyboards'") &&

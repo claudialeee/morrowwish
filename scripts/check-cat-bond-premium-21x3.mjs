@@ -101,10 +101,12 @@ assert.match(source('js/duo-premium.js'),/CatBondDuoBreedActors\?\.draw\?/,
   'Real battle must draw two actual selected full-body watercolor cats');
 assert.match(source('js/duo-bond.js'),/this\.duoCinematic,uid=>/,
   'Battle must resolve player-selected UIDs to live player cats');
-assert.match(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=true/,
-  'Actual battles must play the approved 21 x 3 original watercolor cut-in');
-assert.doesNotMatch(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=false/,
-  'The rejected alternate v10 animation cannot replace approved original paintings');
+assert.match(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=false/,
+  'Live battle must draw the two selected original watercolor breeds on their painted stage');
+assert.doesNotMatch(source('js/duo-bond.js'),/this\.duoCinematic\.originalArt=true/,
+  'Live game must not replace the selected cats with fixed gallery subjects');
+assert.match(source('js/duo-premium.js'),/drawPortraitStory\(ctx,sw,sh,frame,tier,cam,dpr,galleryPreview\)/,
+  'Preserve the full 63 original storybook paintings in dedicated previews');
 for(const [path,min] of [
  ['assets/duo-watercolor-32-actors-v1.webp',750000],
  ['assets/duo-stage-clean-21x3-v2.webp',150000]]){
