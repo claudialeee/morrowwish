@@ -1816,7 +1816,7 @@ const UI = {
       State.S.coins -= 80;
       cat.stats.pow += 1; cat.stats.agi += 1; cat.stats.vit += 1; cat.stats.cha += 1;
       State.save(); this.game.refreshHUD(); this.renderCatDetail(cat);
-      this.game.toast('🪙 特训完成！全属性 +1');
+      this.game.toast(this.isEnglish()?'🪙 Training complete! All four stats +1':'🪙 特训完成！全属性 +1');
     };
     document.getElementById('cd-grow-more')?.addEventListener('toggle',e=>{
       if(e.currentTarget===document.getElementById('cd-grow-more'))this._catGrowMore=e.currentTarget.open?cat.uid:null;
@@ -1849,12 +1849,13 @@ const UI = {
       cat.hunger=Math.min(100,(cat.hunger||0)+20);
     }
     if(cat.level===was){
-      this.game.toast('🐟 小鱼干不足以升满下一级');return 0;
+      this.game.toast(this.isEnglish()?'🐟 Not enough fish to reach the next level':'🐟 小鱼干不足以升满下一级');return 0;
     }
     const learned=this.announceSkillMilestone(cat,old);
     State.save();this.game.refreshHUD();this.renderCatDetail(cat);
-    this.game.toast('⬆ '+State.catName(cat)+' '+was+' → '+cat.level+
-      '级 · 消耗'+paid+'🐟'+(learned?' · 解锁'+learned.name:''));
+    this.game.toast(this.isEnglish()?
+      ('⬆ '+State.catName(cat)+' Lv.'+was+' → Lv.'+cat.level+' · Cost '+paid+'🐟'+(learned?' · Unlocked '+learned.name:'')):
+      ('⬆ '+State.catName(cat)+' '+was+' → '+cat.level+'级 · 消耗'+paid+'🐟'+(learned?' · 解锁'+learned.name:'')));
     return cat.level-was;
   },
   quickStatCat(cat,batches=10){
@@ -1865,7 +1866,7 @@ const UI = {
     State.S.coins-=per*times;
     for(const k of ['pow','agi','vit','cha'])cat.stats[k]+=times;
     State.save();this.game.refreshHUD();this.renderCatDetail(cat);
-    this.game.toast('🪙 特训 ×'+times+' · 四项属性均 +'+times);
+    this.game.toast(this.isEnglish()?'🪙 Training ×'+times+' · All four stats +'+times:'🪙 特训 ×'+times+' · 四项属性均 +'+times);
     return times;
   },
   // species 蜕变 (the rarer, flavor evolution that swaps species)
