@@ -53,7 +53,7 @@ jobs:
           node --check scripts/capture-trailers-v10.mjs
           node --check scripts/render-trailers-v10.mjs
           node --check scripts/check-cat-bond-original-art.mjs
-          node scripts/check-cat-bond-original-art.mjs
+          node scripts/check-cat-bond-original-art.mjs --source-only
           node --check public/cat-bond/js/ui.js
           node --check public/cat-bond/js/worldmap.js
           node --check public/game-fullscreen.js
@@ -138,7 +138,7 @@ jobs:
           git add public/promo/cat-bond/v13-review-*.jpg
           git add public/promo/cat-bond/v10-quarrel-proof.png
           git add public/promo/cat-bond/v10-map-navigation-proof.png
-          git add public/promo/cat-bond/v10-duo-actual-render-proof.png
+          git add public/promo/cat-bond/v13-duo-original-art-proof.png
           git add public/promo/cat-bond/v10-rare-native-hud-proof.png
           git add public/promo/cat-bond/cover-portrait.png
           git add public/promo/cat-bond/ssr-showcase-proof.png
