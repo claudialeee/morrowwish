@@ -22,7 +22,7 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 - `public/<slug>/`: playable game source and game assets.
 - `public/telemetry.js`: canonical session/visit analytics; `window.arcadeMetric(event, payload)`.
 - `public/lang.js`, `public/zh-site.js`, `public/zh-stories.js`, `public/zh-polish.js`: current bilingual UI translations. Inspect all relevant translation paths.
-- `public/studio-insights/index.html`: ONE unified dashboard, homepage-first ordering matching visible homepage games; preserve the dedicated Elsewhere detail section.
+- `public/studio-insights/index.html`: ONE unified dashboard, homepage pageviews as a separate top KPI and game-only table ordered to match visible homepage games; preserve the dedicated Elsewhere detail section.
 - `src/analytics.js`: analytics collection, summaries, D1 access, session login and allowed event payloads.
 - `src/worker.js`: API routing, bundled as `_worker.js`.
 - `scripts/build-pages.mjs`: copies source and builds Cloudflare Pages output.
@@ -35,7 +35,7 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 2. Follow the existing site visual language and responsive layout; make it understandable within roughly 30 seconds, with clear controls, feedback, retry/replay and meaningful challenge or choices. Check desktop and mobile.
 3. Add the real game link and appropriate thumbnail/metadata to `public/index.html`; keep only launched games in the public list and choose a sensible order.
 4. Update canonical analytics: register the slug in the allowlist in `public/telemetry.js`, include the script on the game page, use `window.arcadeMetric` for game start, completion/end, retries, and relevant game-specific interactions. Ensure `/api/session` receives visit/session events; do not pretend that calling an arbitrary event records a new database category. Respect browser Do Not Track and Global Privacy Control.
-5. Add a matching bilingual game label and row in `public/studio-insights/index.html`; place **homepage (hub) first**, then games in exactly the public homepage display order. Update the dashboard displayOrder and name mappings, not just text labels. Do not add dashboards for games that are not on the homepage.
+5. Add a matching bilingual game label and row in `public/studio-insights/index.html`; show **homepage (hub) pageviews as a standalone top metric**, then list only games in exactly the public homepage display order. Update the dashboard displayOrder and name mappings, not just text labels. Do not add dashboards for games that are not on the homepage.
 6. Update translations everywhere they apply; check language toggling on the homepage, game, and dashboard. No stray English text in Chinese mode, duplicated translated fragments, or split-word translation bugs.
 7. Preserve existing games (especially Tiny Town and Elsewhere), their analytics, D1 records and dashboard authentication. **Elsewhere** must be capitalized in English.
 8. Update `scripts/check-source.mjs` if the new game needs coverage, and update `README.md` if architecture or visible game inventory changes.
