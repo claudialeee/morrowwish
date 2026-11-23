@@ -37,10 +37,10 @@ jobs:
           node scripts/test-youtube-native.mjs
           node scripts/test-instagram-native.mjs
           node scripts/test-bluesky-native.mjs
-          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const p=s.metricScope.verifiedPosts.find(x=>x.game==='cat-bond'&&x.platform==='bluesky'); if(!p || !p.url.endsWith('/post/3n2x2cih2fq2r') || p.views!==null || p.likes!==null || p.reposts!==null) process.exit(1)"
+          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const p=s.metricScope.verifiedPosts.find(x=>x.game==='cat-bond'&&x.platform==='bluesky'); if(!p || !p.url.endsWith('/post/3n2x7ul3ndo2k') || p.views!==null || p.likes!==2 || p.reposts!==1) process.exit(1)"
           node scripts/test-promotion-metrics.mjs
           node scripts/test-social-refresh.mjs
-          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const rows=s.metricScope.verifiedPosts; for (const [platform,id] of [['youtube','dHD2UnbmSqU'],['instagram','DgEOAAcJ74v'],['bluesky','3n2wyfh4x63vg']]) {const p=rows.find(x=>x.platform===platform&&x.game==='parcel-panic'); if(!p || !p.url.includes(id) || p.views!==null || p.likes!==null) process.exit(1);} "
+          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const rows=s.metricScope.verifiedPosts; for (const [platform,id] of [['youtube','iytuR8G7UjQ'],['instagram','DgEX5QUzyj3'],['bluesky','3n2x6mhxl3t2n']]) {const p=rows.find(x=>x.platform===platform&&x.game==='parcel-panic'); if(!p || !p.url.includes(id) || p.views!==null || (platform==='bluesky'?p.likes!==2:p.likes!==null)) process.exit(1);} "
       - name: Build current Cloudflare Pages site and Worker
         run: npm run build:pages
       - name: Publish current production site
@@ -57,13 +57,14 @@ jobs:
           ok=0
           for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
             if curl -fsSL --max-time 20 -o /tmp/studio-release.json "https://morrowwish.pages.dev/promo/social-release-status.json?version=$GITHUB_SHA&attempt=$attempt" &&
-              grep -Fq 'dHD2UnbmSqU' /tmp/studio-release.json &&
-              grep -Fq 'DgEOAAcJ74v' /tmp/studio-release.json &&
-              grep -Fq '3n2wyfh4x63vg' /tmp/studio-release.json &&
+              grep -Fq 'iytuR8G7UjQ' /tmp/studio-release.json &&
+              grep -Fq 'DgEX5QUzyj3' /tmp/studio-release.json &&
+              grep -Fq '3n2x6mhxl3t2n' /tmp/studio-release.json &&
               ! grep -Fq 'c1qeZ3tvuLU' /tmp/studio-release.json &&
               ! grep -Fq 'DgDfRCJAF83' /tmp/studio-release.json &&
               ! grep -Fq '3n2wcrdnc2owx' /tmp/studio-release.json &&
-              grep -Fq '3n2x2cih2fq2r' /tmp/studio-release.json &&
+              ! grep -Fq '3n2x2cih2fq2r' /tmp/studio-release.json &&
+              grep -Fq '3n2x7ul3ndo2k' /tmp/studio-release.json &&
               ! grep -Fq '3n2wzprxlt63l' /tmp/studio-release.json; then
               ok=1; break
             fi

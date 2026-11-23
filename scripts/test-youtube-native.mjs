@@ -4,7 +4,7 @@ import {ytOverlay,nativeYouTubeSnapshot} from '../src/youtube-native.js';
 const base=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
 const approved=base.metricScope.verifiedPosts.filter(x=>x.platform==='youtube');
 assert.equal(approved.length,7);
-assert.ok(approved.find(x=>x.game==='cat-bond')?.url.endsWith('/2hd2LMg9iJY'));
+assert.ok(approved.find(x=>x.game==='cat-bond')?.url.endsWith('/JoDtL_gIk4M'));
 assert.ok(!JSON.stringify(approved).includes('ELv02K9K294'));
 const state={checkedAt:'2026-11-22T23:45:00.000Z',posts:approved.map((p,i)=>({...p,views:i+3,likes:i,comments:0,dataSource:'youtube-data-api-v3'}))};
 const o=ytOverlay(base,state,'ready');

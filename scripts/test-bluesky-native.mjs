@@ -8,14 +8,14 @@ const make=(rkey, likes, reposts)=>({
   author:{did},uri:'at://'+did+'/app.bsky.feed.post/'+rkey,
   embed:{$type:'app.bsky.embed.video#view'}, likeCount:likes,repostCount:reposts,replyCount:0,quoteCount:0
 });
-const cat=bskyPost(make('3n2x2cih2fq2r',3,2));
-const town=bskyPost(make('3n2wcr7nylvrr',1,4));
+const cat=bskyPost(make('3n2x7ul3ndo2k',3,2));
+const town=bskyPost(make('3n2x7ihevdy2a',1,4));
 assert.equal(cat.game,'cat-bond');
 assert.equal(cat.likes,3);
 assert.equal(cat.reposts,2);
-assert.ok(cat.url.endsWith('/post/3n2x2cih2fq2r'));
-assert.equal(bskyPost({...make('3n2x2cih2fq2r',3,2),embed:null}),null);
-assert.equal(bskyPost({...make('3n2x2cih2fq2r',3,2),author:{did:'did:plc:other'}}),null);
+assert.ok(cat.url.endsWith('/post/3n2x7ul3ndo2k'));
+assert.equal(bskyPost({...make('3n2x7ul3ndo2k',3,2),embed:null}),null);
+assert.equal(bskyPost({...make('3n2x7ul3ndo2k',3,2),author:{did:'did:plc:other'}}),null);
 assert.equal(bskyPost(make('3n2notapproved',500,1000)),null);
 assert.equal(bskyPost(make('3n2wu5hqa4gl3',900,900)),null,'deleted previous Cat Bond post must never contribute native engagement');
 assert.equal(bskyPost(make('3n2wzprxlt63l',900,900)),null,'immediately deleted previous Cat Bond post must be excluded');

@@ -29,21 +29,22 @@ assert.ok(posts.some(p=>p.platform==='tiktok'&&p.game==='pawsibly-innocent')&&po
 const yt=snap.platforms.find(x=>x.id==='youtube');
 const ytPosts=posts.filter(p=>p.platform==='youtube');
 const ytExpected={
- 'cat-bond':['2hd2LMg9iJY',null],
- 'pawsibly-innocent':['JUQ8PsYCFG8',39],
- 'tiny-town':['64Uh0S9dqmQ',1],
- 'elsewhere':['n8bbePy8Unw',3],
- 'flip-dash':['cC7akb-kUIo',219],
- 'parcel-panic':['dHD2UnbmSqU',null],
- 'pocket-aquarium':['O3tMbulVPvk',36]
+ 'cat-bond':'JoDtL_gIk4M',
+ 'pawsibly-innocent':'-Xkue1ZSG8Y',
+ 'tiny-town':'z_TnR8X7hjk',
+ 'elsewhere':'6_Q1t7AmdnM',
+ 'flip-dash':'w8K468QRebU',
+ 'parcel-panic':'iytuR8G7UjQ',
+ 'pocket-aquarium':'vMeqdhGaPf4'
 };
-assert.equal(yt.views,null,'deleted Cat Bond YouTube counts must not be reused');
-assert.equal(ytPosts.length,7,'seven current Shorts only');
-for(const [game,[id,views]] of Object.entries(ytExpected)){
+assert.equal(yt.views,null,'new Shorts must not inherit historical views');
+assert.equal(ytPosts.length,7,'exactly seven new Shorts');
+for(const [game,id] of Object.entries(ytExpected)){
  const p=ytPosts.find(x=>x.game===game);
  assert.ok(p?.url.endsWith('/'+id),'expected current approved YouTube Short ID for '+game);
- assert.equal(p.views,views,'owner-verified play count for '+game);
- assert.equal(p.dataSource,['cat-bond','parcel-panic'].includes(game)?null:'vidiq-youtube-owner-uploads-2026-11-22');
+ assert.equal(p.views,null,'new Short cannot inherit historical views for '+game);
+ assert.equal(p.likes,null,'new Short cannot inherit historical likes for '+game);
+ assert.equal(p.dataSource,null,'new Short waits for native API refresh');
 }
 const tk=snap.platforms.find(x=>x.id==='tiktok');
 assert.equal(tk.published,7,'all 7 TikTok videos published');
@@ -55,18 +56,19 @@ assert.equal(ig.published,7,'seven current Instagram Reels');
 assert.equal(ig.views,null,'deleted Cat Bond Instagram views must not be reused');
 assert.equal(ig.likes,null,'deleted Cat Bond Instagram likes must not be reused');
 const igExpected={
- 'cat-bond':['DgEGgecOxst',null],
- 'pawsibly-innocent':['DgDfM-DBb1K',11],
- 'tiny-town':['DgDfO6ztxnM',3],
- 'elsewhere':['DgDfQqkT6Gx',1],
- 'flip-dash':['DgDfUwbB4EP',254],
- 'parcel-panic':['DgEOAAcJ74v',null],
- 'pocket-aquarium':['DgDfRT3O7EK',43]
+ 'cat-bond':'DgEawn_x8GT',
+ 'pawsibly-innocent':'DgEaP0UxXKj',
+ 'tiny-town':'DgEZpBfNovK',
+ 'elsewhere':'DgEZCmQywBy',
+ 'flip-dash':'DgEYd0Xh93-',
+ 'parcel-panic':'DgEX5QUzyj3',
+ 'pocket-aquarium':'DgEXVLtCNH-'
 };
-for(const [game,[shortcode,views]] of Object.entries(igExpected)){
+for(const [game,shortcode] of Object.entries(igExpected)){
  const post=posts.find(p=>p.platform==='instagram'&&p.game===game);
- assert.ok(post?.url.includes(shortcode),'canonical current Reel for '+game);
- assert.equal(post.views,views,'Instagram nonzero native views for '+game);
+ assert.ok(post?.url.includes(shortcode),'canonical V14 Reel for '+game);
+ assert.equal(post.views,null,'new Instagram video must not inherit previous views');
+ assert.equal(post.likes,null,'new Instagram video must not inherit previous likes');
 }
 assert.equal(snap.accountOverview,undefined,'historical promo summaries must never ship');
 assert.equal(snap.metricScope.campaignStart,'2026-11-22','approved campaign begins Nov 22');
@@ -96,13 +98,13 @@ console.log('Direct connected-platform snapshot reconciled dynamically; initial 
 
 const release=JSON.parse(fs.readFileSync('public/promo/social-release-status.json','utf8'));
 const cat=release.games.find(x=>x.slug==='cat-bond');
-const newIds={youtube:'2hd2LMg9iJY',tiktok:'7711158345406680334',instagram:'DgEGgecOxst',bluesky:'3n2x2cih2fq2r'};
+const newIds={youtube:'JoDtL_gIk4M',tiktok:'7711203988582010126',instagram:'DgEawn_x8GT',bluesky:'3n2x7ul3ndo2k'};
 for(const [platform,id] of Object.entries(newIds)){
-  const post=posts.find(x=>x.platform===platform&&x.game==='cat-bond');
-  assert.ok(post?.url.includes(id),'new Cat Bond video allowlist missing: '+platform);
-  assert.equal(post.url,cat.socialUrls[platform]);
-  assert.equal(post.views,null,'V13 cannot inherit deleted V12 plays');
-  assert.equal(post.likes,null,'V13 cannot inherit deleted V12 likes');
+ const post=posts.find(x=>x.platform===platform&&x.game==='cat-bond');
+ assert.ok(post?.url.includes(id),'latest Cat Bond video allowlist missing: '+platform);
+ assert.equal(post.url,cat.socialUrls[platform]);
+ assert.equal(post.views,null,'new campaign never inherits older views');
+ assert.equal(post.likes,platform==='bluesky'?2:null,'Cat Bond must use new native engagement only');
 }
 for(const oldId of ['ELv02K9K294','7711071401913896206','DgDdwz6T4Gy','3n2wcn56m33kj']){
   assert.ok(!JSON.stringify(cat).includes(oldId),'deleted Cat Bond link remains');
@@ -110,15 +112,15 @@ for(const oldId of ['ELv02K9K294','7711071401913896206','DgDdwz6T4Gy','3n2wcn56m
 }
 assert.equal(cat.media,'/promo/cat-bond/trailer-v13-20261122.mp4');
 
-// Parcel Panic: only the two replaced social videos changed; do not reuse deleted-post counts.
+// Parcel Panic: only the latest video URLs may be tracked, with native Bluesky readings.
 const parcel=release.games.find(x=>x.slug==='parcel-panic');
-const parcelIds={instagram:'DgEOAAcJ74v',bluesky:'3n2wyfh4x63vg'};
+const parcelIds={youtube:'iytuR8G7UjQ',instagram:'DgEX5QUzyj3',bluesky:'3n2x6mhxl3t2n',tiktok:'7711197500115406094'};
 for(const [platform,id] of Object.entries(parcelIds)){
  const current=posts.find(x=>x.platform===platform&&x.game==='parcel-panic');
  assert.ok(current?.url.includes(id),'Parcel Panic current '+platform+' video missing');
  assert.equal(current.url,parcel.socialUrls[platform]);
- assert.equal(current.views,null,'Parcel Panic replacement cannot inherit deleted views');
- assert.equal(current.likes,null,'Parcel Panic replacement cannot inherit deleted likes');
+ assert.equal(current.views,null,'replacement video never inherits prior views');
+ assert.equal(current.likes,platform==='bluesky'?2:null,'only native Bluesky likes may exist');
 }
 for(const old of ['DgDfRCJAF83','3n2wcrdnc2owx']){
  assert.ok(!JSON.stringify(posts).includes(old),'deleted Parcel Panic post retained in metrics');
@@ -126,9 +128,13 @@ for(const old of ['DgDfRCJAF83','3n2wcrdnc2owx']){
 }
 const igSource=fs.readFileSync('src/instagram-native.js','utf8');
 const bskySource=fs.readFileSync('src/bluesky-native.js','utf8');
-assert.ok(igSource.includes('"parcel-panic":"DgEOAAcJ74v"')&&!igSource.includes('DgDfRCJAF83'),'Instagram native allowlist must use replacement');
-assert.ok(bskySource.includes('"parcel-panic":"3n2wyfh4x63vg"')&&!bskySource.includes('3n2wcrdnc2owx'),'Bluesky native allowlist must use replacement');
-assert.ok(igSource.includes('v14-parcel-replacement')&&bskySource.includes('v16-cat-bond-bot-triggered-repost'),'native caches must rotate after each replacement');
-assert.ok(bskySource.includes('"cat-bond":"3n2x2cih2fq2r"')&&!bskySource.includes('3n2wu5hqa4gl3')&&!bskySource.includes('3n2wzprxlt63l'),'Bluesky tracks the latest Cat Bond V13 repost and excludes both deleted predecessors');
-assert.ok(igSource.includes('morrowwishgames/reel/'),'account-qualified Instagram Reel link must be supported');
+const ytSource=fs.readFileSync('src/youtube-native.js','utf8');
+const tkSource=fs.readFileSync('src/tiktok-native.js','utf8');
+assert.ok(igSource.includes('"parcel-panic":"DgEX5QUzyj3"')&&!igSource.includes('DgEOAAcJ74v'),'Instagram V14 native allowlist');
+assert.ok(bskySource.includes('"parcel-panic":"3n2x6mhxl3t2n"')&&!bskySource.includes('3n2wyfh4x63vg'),'Bluesky V14 native allowlist');
+assert.ok(ytSource.includes('"cat-bond":"JoDtL_gIk4M"')&&!ytSource.includes('"cat-bond":"2hd2LMg9iJY"'),'YouTube V14 native allowlist');
+assert.ok(tkSource.includes('"cat-bond":"7711203988582010126"')&&!tkSource.includes('"cat-bond":"7711158345406680334"'),'TikTok V14 native allowlist');
+for(const source of [igSource,bskySource,ytSource,tkSource])assert.ok(source.includes('v14-full-relaunch-28'),'every native cache must rotate for new IDs');
+assert.ok(bskySource.includes('"cat-bond":"3n2x7ul3ndo2k"')&&!bskySource.includes('3n2wu5hqa4gl3')&&!bskySource.includes('3n2wzprxlt63l'),'Bluesky latest native Cat Bond V14 excludes deleted precursors');
+assert.ok(igSource.includes('morrowwishgames/reel/'),'account-qualified Instagram Reel link remains');
 console.log('Parcel Panic replacement links and native allowlists verified; old metrics excluded.');

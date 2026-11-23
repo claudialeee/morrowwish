@@ -7,8 +7,8 @@ assert.equal(baseline.platforms.find(p=>p.id==='tiktok').published,7,'seven acco
 assert.equal(baseline.platforms.find(p=>p.id==='tiktok').views,null,'V13 data excludes old play counts');
 const games=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
 const day=Math.floor(Date.parse('2026-11-22T12:00:00Z')/1000);
-const ids=['7711158345406680334','7711071409966943502','7711071395941240095',
-  '7711071458256112909','7711071406368312589','7711071416099032333','7711071765379829005'];
+const ids=['7711203988582010126','7711202671830519054','7711201350918475022',
+  '7711200127616175373','7711198829915213069','7711197500115406094','7711196256051154189'];
 const raw=games.map((game,index)=>({
  id:ids[index],create_time:day+index,video_description:'Play: https://morrowwish.vercel.app/'+game+'/',
  share_url:'https://www.tiktok.com/@morrowwishgames/video/'+ids[index],
