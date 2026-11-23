@@ -591,7 +591,8 @@ class Game {
       // prompt that pops the instant you touch a wild cat): the scene is still 'map'
       // until the player taps Start, so without this the roamers keep wandering
       // behind the dialog. A full-screen lock on encounter is the intended feel.
-      const panelOpen = document.getElementById('panel')?.classList.contains('open');
+      const panelOpen = document.getElementById('panel')?.classList.contains('open') ||
+        !!document.querySelector('.cb-story-overlay,.cb-cloud-overlay');
       if (!panelOpen) WorldMap.update(dt);
     }
     else if (this.scene === 'battle' && this.battle) {
@@ -1679,10 +1680,12 @@ class Game {
       if(win){
         if(!State.S.story||typeof State.S.story!=='object')State.S.story={version:1,fragments:[],visited:{}};
         State.S.story.bossDefeated=true;
+        metric('game_complete',{level:(State.S.catchCount||0)+1,rarity:b.wild.rarity,region:'ruins'});
         State.save();this.refreshHUD();
         window.CatBondStory?.onBossVictory?.();
       }else{
         this._lastBattleLost=true;
+        metric('game_over',{level:(State.S.catchCount||0)+1,rarity:b.wild.rarity,region:'ruins'});
         State.save();this.refreshHUD();
         window.CatBondStory?.showBossRetry?.();
       }
