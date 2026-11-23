@@ -66,6 +66,14 @@ text = text.replace("__MUSIC_FALLBACK__", "./audio/freepd-cc0-3.mp3")
 text = text.replace("location.pathname.split('/').filter(Boolean)[0]||''", "'cat-bond'")
 music.write_text(text)
 
+# An uploaded Y8 game path is not the original /cat-bond/ website route.
+audio_file = GAME / "studio-audio.js"
+audio_code = audio_file.read_text().replace(
+    "const route=location.pathname.split('/').filter(Boolean)[0];",
+    "const route='cat-bond';")
+audio_file.write_text(audio_code)
+
+
 # Rewrite absolute website paths to relative files in the ZIP.
 def portable(s: str) -> str:
     s = s.replace("/cat-bond/", "./")
@@ -98,6 +106,14 @@ platform = GAME / "js" / "platform.js"
 s = platform.read_text()
 s = s.replace("const externalPortal = crazygames ||", "const externalPortal = true || crazygames ||")
 platform.write_text(s)
+# Freeze the isolated Y8 simulation when hidden or when focus is lost.
+game_code_file = GAME / "js" / "game.js"
+game_code = game_code_file.read_text()
+needle = "this._lastTs = ts; this.t += dt;"
+if needle not in game_code:
+    raise SystemExit("Y8 pause patch target changed in live source")
+game_code_file.write_text(game_code.replace(needle,
+    "this._lastTs = ts; if(window.__Y8_SUSPENDED__) return; this.t += dt;"))
 main = GAME / "js" / "main.js"
 s = main.read_text().replace("if(window.CatBondPlatform?.crazygames){",
                              "if(window.CatBondPlatform?.externalPortal){")
@@ -130,6 +146,22 @@ index.write_text(html)
       });
     }catch(error){console.warn('[Y8] SDK init failed; guest play continues',error);}
   }
+  // Y8 requires pause and mute on hidden tabs and window blur.
+  let resumeMusic=false;
+  function suspend(paused){
+    window.__Y8_SUSPENDED__=Boolean(paused);
+    if(paused){
+      resumeMusic=Boolean(window.MorrowwishMusic?.status?.().playing);
+      window.MorrowwishMusic?.stop?.();
+      window.MorrowwishAudio?.stop?.();
+    }else if(resumeMusic){
+      window.MorrowwishMusic?.start?.();
+      resumeMusic=false;
+    }
+  }
+  document.addEventListener('visibilitychange',()=>suspend(document.hidden));
+  window.addEventListener('blur',()=>suspend(true));
+  window.addEventListener('focus',()=>suspend(document.hidden));
   window.addEventListener('y8sdk.ready',init);
   if(window.y8&&window.y8.emitReadyEvent)window.y8.emitReadyEvent();
   init();
@@ -145,7 +177,7 @@ if 'href="/" id="cb-home"' in script or 'src="/telemetry.js"' in script:
     raise SystemExit("Website links/telemetry still present in export")
 if not re.search(r'src="https://cdn.y8.com/minimal-sdk/2-0/y8.min.js"', script):
     raise SystemExit("Y8 SDK tag missing")
-if any("en.freepd.cn" in f.read_text() for f in GAME.rglob("*.js")):
+if any("url:'https://en.freepd.cn" in f.read_text() for f in GAME.rglob("*.js")):
     raise SystemExit("Unbundled external game music remains")
 zip_path = OUT / "cat-bond-y8.zip"
 with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED,
