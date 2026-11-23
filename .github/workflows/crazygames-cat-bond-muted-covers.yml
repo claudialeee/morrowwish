@@ -35,6 +35,30 @@ jobs:
           run-id: 45102338281
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: .
+      - name: Retrieve trusted original-63 provenance manifests only (separate directory)
+        uses: actions/download-artifact@v4
+        with:
+          name: cat-bond-crazygames-saved-draft-receipt
+          run-id: 45100812099
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: original-provenance-evidence
+      - name: Restore original-gameplay proof without overwriting new covers or previews
+        run: |
+          mkdir -p .check/crazygames
+          for aspect in portrait landscape; do
+            test -s "original-provenance-evidence/.check/crazygames/cat-bond-trim-${aspect}.json"
+            cp "original-provenance-evidence/.check/crazygames/cat-bond-trim-${aspect}.json" ".check/crazygames/cat-bond-trim-${aspect}.json"
+          done
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          for(const n of ['portrait','landscape']){
+            const x=JSON.parse(fs.readFileSync('.check/crazygames/cat-bond-trim-'+n+'.json','utf8'));
+            if(x.originalArt!==true||x.originalSceneCount!==63||
+               !x.artSource?.includes('duo-storyboard-21x3-v3.webp'))
+              throw Error('Original artwork provenance not verified: '+n);
+          }
+          console.log('Approved original 63-scene provenance restored without changing video files.');
+          NODE
       - name: Replace three cover files with exactly user-approved muted artwork
         run: |
           python3 - <<'PY'
