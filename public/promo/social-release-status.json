@@ -135,7 +135,9 @@
           "views": null,
           "likes": null
         }
-      }
+      },
+      "trackedTrailerVersion": "V13",
+      "legacyCatBondPostsExcluded": true
     },
     {
       "slug": "tiny-town",
