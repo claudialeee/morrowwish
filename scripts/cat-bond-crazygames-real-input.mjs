@@ -69,6 +69,12 @@ try{
       if(await auto.count())await auto.click();
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game?.scene==='battle',{timeout:10000});
+      // CrazyGames owns the embedding viewport. No floating skill reference
+      // button or free-standing panel may cover the arena in any portal size.
+      assert.equal(await page.locator('#battle-skill-info-toggle').isVisible(),false,
+        'Floating Skill guide obstructs CrazyGames battle viewport');
+      assert.equal(await page.locator('#battle-skill-guide').isVisible(),false,
+        'Detached skill reference panel obstructs CrazyGames battle');
       const tutorial=page.locator('#battle-tutorial-skip');
       if(await tutorial.isVisible().catch(()=>false))await tutorial.click();
       // Full genuine first combat on the primary desktop iframe: do not fake
