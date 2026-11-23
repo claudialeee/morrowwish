@@ -23,7 +23,7 @@ if GAME.exists():
     shutil.rmtree(GAME)
 GAME.mkdir(parents=True)
 shutil.copytree(SOURCE / "cat-bond", GAME, dirs_exist_ok=True,
-                ignore=shutil.ignore_patterns("adult-preview.html", "duo-preview.html", "duo-showcase.html"))
+                ignore=shutil.ignore_patterns("adult-preview.html", "duo-showcase.html"))
 for name in ("lang.js", "studio-audio.js", "studio-music.js"):
     shutil.copy2(SOURCE / name, GAME / name)
 (GAME / "icons").mkdir(exist_ok=True)
