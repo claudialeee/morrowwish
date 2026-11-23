@@ -11,6 +11,58 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Examine morning indie-bot reposts and archived public repost records
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://public.api.bsky.app/xrpc/';
+          const bot='did:plc:mxpuaozhcvmu2fazmn2lyjnj', owner='did:plc:d55banmfpsnzmt35hqmmwha7';
+          const since=Date.parse('2026-11-22T13:00:00Z');
+          const morningEnd=Date.parse('2026-11-22T22:00:00Z');
+          const pause=ms=>new Promise(r=>setTimeout(r,ms));
+          async function req(method,params,host=base){
+            const url=host+method+'?'+new URLSearchParams(params);
+            for(let i=0;i<4;i++){
+              try{
+                const r=await fetch(url,{signal:AbortSignal.timeout(24000)});
+                if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,300));
+                return await r.json();
+              }catch(e){if(i===3)throw e;await pause(1000*(i+1));}
+            }
+          }
+          const feed=[]; let cursor,pages=0,earliest=null;
+          do{
+            const r=await req('app.bsky.feed.getAuthorFeed',{actor:bot,limit:'100',...(cursor?{cursor}:{})});
+            pages++;
+            for(const a of r.feed||[]){
+              const t=a.reason?.indexedAt||a.post.indexedAt;
+              feed.push({time:t,author:a.post.author.handle,authorDid:a.post.author.did,uri:a.post.uri,reason:a.reason?.$type});
+            }
+            earliest=feed.at(-1)?.time||null;
+            cursor=r.cursor;
+            if(!r.feed?.length)break;
+          }while(cursor && pages<15 && Date.parse(earliest)>=since);
+          const morning=feed.filter(x=>Date.parse(x.time)>=since&&Date.parse(x.time)<=morningEnd);
+          const mo=morning.filter(x=>x.authorDid===owner);
+          const hist={};
+          for(const x of morning)hist[x.author]=(hist[x.author]||0)+1;
+          console.log('BOT_MORNING_SUMMARY '+JSON.stringify({pages,feedTotal:feed.length,earliest,latest:feed[0]?.time,morningEntries:morning.length,uniqueAuthors:Object.keys(hist).length,repeatedAuthors:Object.entries(hist).filter(([k,v])=>v>=2).sort((a,b)=>b[1]-a[1]).slice(0,22),morrowMorning:mo}));
+          // Raw AT Proto repost collection is useful even when the reposted original has since been deleted.
+          const raw=[];let rcursor=null,rpages=0;
+          do{
+            const p=await req('com.atproto.repo.listRecords',{repo:bot,collection:'app.bsky.feed.repost',limit:'100',...(rcursor?{cursor:rcursor}:{})});
+            rpages++;
+            for(const r of p.records||[]){
+              const uri=r.value?.subject?.uri||'';
+              const date=r.value?.createdAt||'';
+              raw.push({repost:r.uri,subject:uri,time:date,owner:uri.startsWith('at://'+owner+'/')});
+            }
+            rcursor=p.cursor;
+            if(!p.records?.length)break;
+          }while(rcursor&&rpages<20&&Date.parse(raw.at(-1)?.time)>=since);
+          const ownerRecords=raw.filter(x=>x.owner);
+          const morningOwnerRecords=ownerRecords.filter(x=>Date.parse(x.time)>=since && Date.parse(x.time)<morningEnd);
+          console.log('BOT_REPOST_RECORDS '+JSON.stringify({pages:rpages,total:raw.length,earliest:raw.at(-1)?.time,ownerTotal:ownerRecords.length,ownerRecords:ownerRecords.slice(0,40),morningOwnerRecords,deletedOrNotInFeed:morningOwnerRecords.filter(x=>!feed.some(f=>f.uri===x.subject))}));
+          NODE
       - name: Analyze Indie Dev Bot behavior during Morrow Wish seven-post release
         run: |
           node --input-type=module <<'NODE'
