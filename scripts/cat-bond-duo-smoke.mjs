@@ -225,6 +225,35 @@ try{
   assert.equal(await page.locator('#signature-grid').count(),0,
     'no public 21-move overview, even after unlocking one move');
   assert.equal(await page.locator('#locked').isVisible(),false);
+  assert.equal(await page.locator('.tier-controls [data-tier]').count(),3,
+    'all three trust-tier animations must be selectable');
+  assert.equal(await page.locator('#tier-1').isDisabled(),false);
+  assert.equal(await page.locator('#tier-2').isDisabled(),false);
+  assert.equal(await page.locator('#tier-3').isDisabled(),false);
+  assert.ok((await page.locator('#trust-note').innerText()).includes('全部三档合击演出')||
+    (await page.locator('#trust-note').innerText()).includes('All three duo tiers unlocked'));
+  const initialTierState=await page.evaluate(()=>({
+    maxTier:window.__duoPreviewState.maxTier,mode:window.__duoPreviewState.mode,
+    activeTier:window.__duoPreviewState.activeTier
+  }));
+  assert.deepEqual(initialTierState,{maxTier:3,mode:'sequence',activeTier:1},
+    'a fully unlocked pair must begin the three-animation sequence');
+  await page.locator('#tier-2').click();
+  assert.equal(await page.evaluate(()=>window.__duoPreviewState.mode),'single');
+  assert.equal(await page.evaluate(()=>window.__duoPreviewState.activeTier),2,
+    'tier 2 button must play its own original painting');
+  await page.locator('#tier-3').click();
+  assert.equal(await page.evaluate(()=>window.__duoPreviewState.activeTier),3,
+    'tier 3 button must play its own original painting');
+  await page.locator('#replay').click();
+  assert.equal(await page.evaluate(()=>window.__duoPreviewState.mode),'sequence',
+    'Replay must run all three unlocked animations in order');
+  assert.equal(await page.evaluate(()=>window.__duoPreviewState.activeTier),1);
+  const previewFrame=await page.locator('#duo-canvas').evaluate(el=>{
+    const r=el.getBoundingClientRect();return {width:r.width,height:r.height,ratio:r.width/r.height};
+  });
+  assert.ok(Math.abs(previewFrame.ratio-16/9)<.02,
+    'original art must remain true 16:9 without stretched color side bands');
   await page.locator('.viewer').screenshot({path:'artifacts/cat-bond-21x3/'+profile.name+'-unlocked-duo-preview.png'});
   const stranger=await browser.newContext();
   const locked=await stranger.newPage();

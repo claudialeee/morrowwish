@@ -804,6 +804,7 @@ const UI = {
     url.searchParams.set('b',b.uid);
     url.searchParams.set('lang',english?'en':'zh');
     url.searchParams.set('embedded','1');
+    url.searchParams.set('preview','original-three-tier-20261123-v4');
     document.getElementById('cb-duo-viewer')?.remove();
     const previousFocus=document.activeElement;
     const overlay=document.createElement('div');

@@ -19,27 +19,45 @@ button:hover{background:#f1faf6}#locked{margin:28px 0;padding:25px;background:#f
 [hidden]{display:none!important}
 @media(max-width:550px){canvas{aspect-ratio:16/9;max-height:42dvh}}
 
-/* When opened from an unlocked duo card, play in the game's closable modal. */
-html.duo-embedded body{margin:0;padding:7px 8px 10px;overflow:auto}
+/* Original 16:9 painting centered in the same soft watercolor frame as the game modal. */
+html.duo-embedded body{margin:0;padding:7px 8px 8px;overflow:auto;background:transparent}
 html.duo-embedded main{width:100%;max-width:none}
 html.duo-embedded header{display:none}
-html.duo-embedded .viewer{display:block;min-width:0;padding:0;border:0;border-radius:0;background:transparent;overflow:visible;box-shadow:none}
-/* Preserve the artwork aspect ratio when constrained by iframe height:
-   limiting canvas height alone while width stays at 100% squashes and crops cats. */
-html.duo-embedded .viewer{display:block;min-width:0}
-html.duo-embedded #duo-canvas{display:block;width:100%!important;height:auto!important;max-width:100%;max-height:42dvh;aspect-ratio:16/9!important;object-fit:contain;border-radius:0}
+html.duo-embedded .viewer{
+ display:flex;justify-content:center;align-items:center;min-width:0;
+ border:1px solid #e3d6e7;border-radius:15px;padding:4px;
+ background:linear-gradient(130deg,#fff7eb,#ebe9f8,#e9f4ee);
+ overflow:hidden;box-shadow:0 5px 18px #8b789018;
+}
+html.duo-embedded #duo-canvas{
+ display:block;flex:none;width:auto!important;
+ height:min(65dvh,calc((100vw - 28px)*9/16))!important;
+ max-width:100%;max-height:none;aspect-ratio:16/9!important;
+ object-fit:contain;border-radius:10px;
+}
 /* Parent dialog supplies the only skill heading. */
 html.duo-embedded #skill-title{display:none!important}
 html.duo-embedded #trust-note{margin:5px 7px;font-size:clamp(11px,1.5vw,13px);
- color:#786b80;line-height:1.4}
-html.duo-embedded .controls{margin:8px 0;justify-content:center}
+ color:#786b80;line-height:1.4;text-align:center}
+html.duo-embedded .controls{margin:8px 0 5px;justify-content:center}
 html.duo-embedded .controls button{border-color:#dbc5e5;background:#f6e9f9;color:#694e77;
  border-radius:14px;min-height:42px}
+.tier-controls{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:5px 0 2px}
+.tier-controls button{min-width:108px;padding:8px 12px;border:1px solid #dbc5e5;
+ border-radius:12px;background:#fff9ff;color:#73577d;font:750 13px system-ui;min-height:40px}
+.tier-controls button[aria-pressed=true]{background:linear-gradient(135deg,#eadcf4,#f8e5ee);
+ border-color:#b99acb;box-shadow:inset 0 0 0 1px #b99acb}
+.tier-controls button:disabled{opacity:.38;cursor:not-allowed}
+html.duo-embedded .tier-controls{gap:6px;margin:4px 0 0}
+html.duo-embedded .tier-controls button{min-width:0;flex:1 1 0;padding:7px 8px;font-size:12px;min-height:38px}
 html.duo-embedded #locked{margin:6px 0 0}
 @media(max-width:550px){
- html.duo-embedded body{padding:5px 4px}
- html.duo-embedded #duo-canvas{width:100%!important;height:auto!important;max-height:40dvh;aspect-ratio:16/9!important}
- html.duo-embedded .controls{margin:6px 0}
+ html.duo-embedded body{padding:5px 4px 6px}
+ html.duo-embedded #duo-canvas{
+  height:min(52dvh,calc((100vw - 16px)*9/16))!important;
+ }
+ html.duo-embedded .controls{margin:6px 0 3px}
+ html.duo-embedded .controls button{min-height:40px}
 }
 </style>
 </head>
@@ -50,7 +68,12 @@ html.duo-embedded #locked{margin:6px 0 0}
 <section id="unlocked" hidden>
 <p id="skill-title" aria-live="polite"></p>
 <div class="viewer"><canvas id="duo-canvas" width="960" height="540" aria-label="已解锁双猫动态合击演出"></canvas></div>
-<div class="controls"><button id="replay">重新观看</button><button id="pause" aria-pressed="false">暂停</button></div>
+<div class="controls"><button id="replay">重播全部三档</button><button id="pause" aria-pressed="false">暂停</button></div>
+<div class="tier-controls" role="group" aria-label="选择已解锁的合击等级">
+ <button id="tier-1" type="button" data-tier="1" aria-pressed="true">等级 1 · 默契 20</button>
+ <button id="tier-2" type="button" data-tier="2" aria-pressed="false">等级 2 · 默契 60</button>
+ <button id="tier-3" type="button" data-tier="3" aria-pressed="false">等级 3 · 默契 90</button>
+</div>
 <p id="trust-note"></p></section>
 </main>
 <script>window.MorrowwishI18n={get:()=>new URLSearchParams(location.search).get('lang')==='en'?'en':'zh'};</script>
@@ -77,7 +100,6 @@ html.duo-embedded #locked{margin:6px 0 0}
  msg('locked-title','🔒 合击尚未解锁','🔒 Duo move locked');
  msg('locked-body','需要先在游戏中培养两只猫的默契，达到20后解锁对应的合击。没有公开的全部技能总览。',
     'Grow trust between your two cats to 20 to unlock their duo technique. No complete move gallery is available.');
- msg('replay','重新观看','Replay');
  msg('pause','暂停','Pause');
  if(!State.load())return;
  const q=new URLSearchParams(location.search);
@@ -88,20 +110,56 @@ html.duo-embedded #locked{margin:6px 0 0}
  const key=[catA.uid,catB.uid].sort().join(':');
  const rel=State.S.duoRelations?.pairs?.[key];
  if(!rel||rel.value<20)return;
- const trust=rel.value,tier=trust>=90?3:trust>=60?2:1;
+ const trust=Number(rel.value),maxTier=trust>=90?3:trust>=60?2:1;
  const duo=CatRelations.title(catA,catB);
  if(!duo||!window.CatBondDuoHero)return;
  document.getElementById('locked').hidden=true;
  document.getElementById('unlocked').hidden=false;
- msg('trust-note','默契 '+trust+'/100 · 已解锁等级 '+tier+' · 继续一起冒险才能解锁更高级动作',
-   'Trust '+trust+'/100 · Unlocked tier '+tier+' · Grow closer to unlock later stages');
+ const note=maxTier===3
+  ?'默契 '+trust+'/100 · 已解锁全部三档合击演出 · 可单独切换或依次观看'
+  :'默契 '+trust+'/100 · 已解锁等级 '+maxTier+' · 继续一起冒险即可解锁下一档';
+ const noteEn=maxTier===3
+  ?'Trust '+trust+'/100 · All three duo tiers unlocked · Select one or replay all three'
+  :'Trust '+trust+'/100 · Tier '+maxTier+' unlocked · Keep adventuring to unlock the next tier';
+ document.getElementById('trust-note').textContent=english?noteEn:note;
  document.getElementById('skill-title').textContent=duo.name+' · '+State.catName(catA)+' × '+State.catName(catB);
+ const tierNames={
+  1:['等级 1 · 默契 20','Tier 1 · Trust 20'],
+  2:['等级 2 · 默契 60','Tier 2 · Trust 60'],
+  3:['等级 3 · 默契 90','Tier 3 · Trust 90']
+ };
+ for(let n=1;n<=3;n++){
+  const b=document.getElementById('tier-'+n);
+  b.textContent=tierNames[n][english?1:0];
+  b.disabled=n>maxTier;
+ }
+ const replayButton=document.getElementById('replay');
+ replayButton.textContent=maxTier===3
+  ?(english?'Replay all three tiers':'重播全部三档')
+  :(english?'Replay unlocked tier(s)':'重播已解锁动作');
  const cv=document.getElementById('duo-canvas'),ctx=cv.getContext('2d');
  const lookup=uid=>uid===catA.uid?catA:uid===catB.uid?catB:null;
  const duration=2.75,colors={dark:'#bba5df',elec:'#d9b2f4',fire:'#ffa77c',
   grass:'#8ccb9f',light:'#fff1bc',water:'#9cd7f7'};
  const first=Skills.elementOf(catA.species),second=Skills.elementOf(catB.species);
- let start=performance.now(),paused=false,held=0;
+ let start=performance.now(),paused=false,held=0,sequenceMode=true;
+ let selectedTier=1,currentTier=0;
+ const pauseButton=document.getElementById('pause');
+ function setActiveTier(t){
+  currentTier=t;
+  for(let n=1;n<=3;n++)document.getElementById('tier-'+n).setAttribute('aria-pressed',String(n===t));
+ }
+ function selectTier(t){
+  if(t<1||t>maxTier)return;
+  selectedTier=t;sequenceMode=false;start=performance.now();held=0;paused=false;
+  pauseButton.textContent=english?'Pause':'暂停';
+  pauseButton.setAttribute('aria-pressed','false');setActiveTier(t);
+ }
+ function replayAll(){
+  sequenceMode=true;selectedTier=1;start=performance.now();held=0;paused=false;
+  pauseButton.textContent=english?'Pause':'暂停';
+  pauseButton.setAttribute('aria-pressed','false');setActiveTier(1);
+ }
  function render(ms){
   const rect=cv.getBoundingClientRect(),w=Math.max(1,rect.width),h=Math.max(1,rect.height);
   const pixel=Math.min(2,window.devicePixelRatio||1),pw=Math.round(w*pixel),ph=Math.round(h*pixel);
@@ -111,7 +169,16 @@ html.duo-embedded #locked{margin:6px 0 0}
   if(!CatBondDuoHero.assetReady){
    ctx.fillStyle='#e8e2f1';ctx.fillRect(0,0,w,h);return;
   }
-  const elapsed=(ms/1000)%duration;
+  let tier,elapsed;
+  const seconds=Math.max(0,ms/1000);
+  if(sequenceMode){
+   const position=(seconds%(duration*maxTier));
+   tier=Math.min(maxTier,Math.floor(position/duration)+1);
+   elapsed=position%duration;
+  }else{
+   tier=selectedTier;elapsed=seconds%duration;
+  }
+  if(tier!==currentTier)setActiveTier(tier);
   CatBondDuoHero.draw(ctx,w,h,{
    max:duration,t:duration-Math.max(.01,elapsed),strikeAt:.78,
    catUids:[catA.uid,catB.uid],name:duo.name,elements:duo.elementPair,tier,
@@ -120,13 +187,22 @@ html.duo-embedded #locked{margin:6px 0 0}
   },lookup);
  }
  function frame(now){render(paused?held:now-start);requestAnimationFrame(frame);}
- document.getElementById('replay').onclick=()=>{start=performance.now();held=0;paused=false;
-   document.getElementById('pause').setAttribute('aria-pressed','false');};
- document.getElementById('pause').onclick=()=>{
-   paused=!paused;if(paused)held=performance.now()-start;else start=performance.now()-held;
-   document.getElementById('pause').setAttribute('aria-pressed',String(paused));
+ replayButton.onclick=replayAll;
+ pauseButton.onclick=()=>{
+  paused=!paused;
+  if(paused){held=performance.now()-start;pauseButton.textContent=english?'Resume':'继续';}
+  else{start=performance.now()-held;pauseButton.textContent=english?'Pause':'暂停';}
+  pauseButton.setAttribute('aria-pressed',String(paused));
+ };
+ for(let n=1;n<=3;n++)document.getElementById('tier-'+n).onclick=()=>selectTier(n);
+ window.__duoPreviewState={
+  get maxTier(){return maxTier;},
+  get mode(){return sequenceMode?'sequence':'single';},
+  get activeTier(){return currentTier;},
+  get paused(){return paused;},
+  selectTier,replayAll
  };
  window.__duoPreviewReady=true;
  requestAnimationFrame(frame);
-})();
+})();;
 </script></body></html>

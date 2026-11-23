@@ -2676,14 +2676,14 @@ body.cb-exploring #yard-placement-dock{display:none!important}
 }
 #cb-duo-viewer iframe{
  border:0;display:block;width:100%;
- height:min(73dvh,660px);min-height:250px;border-radius:16px;
+ height:min(65dvh,620px);min-height:350px;border-radius:16px;
  background:#f7f0e9;
 }
 @media(max-width:600px){
  #cb-duo-viewer{padding:7px}
  #cb-duo-viewer .cb-duo-viewer-shell{padding:47px 5px 5px;border-radius:16px;
    max-height:calc(100dvh - 14px)}
- #cb-duo-viewer iframe{height:min(75dvh,590px);min-height:280px}
+ #cb-duo-viewer iframe{height:min(44dvh,380px);min-height:330px}
  #cb-duo-viewer .cb-duo-viewer-close{right:7px}
  #cb-duo-viewer .cb-duo-viewer-title{left:12px}
 }
