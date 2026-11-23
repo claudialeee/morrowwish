@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/d1-recovery-audit.yml'
+      - 'recovery/run-audit.trigger'
 
 permissions:
   contents: write
