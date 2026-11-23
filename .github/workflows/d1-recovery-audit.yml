@@ -1,5 +1,5 @@
 name: D1 recovery read-only audit
-# Recovery probe target is selected by recovery/d1-recovery-probe.mjs.
+# Recovery probe checks the 16:00 Pacific Nov 22 snapshot.
 
 on:
   push:
