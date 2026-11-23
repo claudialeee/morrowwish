@@ -40,6 +40,16 @@ jobs:
           run-id: 45111398602
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: .
+      - name: Restore flat Actions artifact layout and independently pinned review manifest
+        run: |
+          mkdir -p .check/crazygames-v14-variety
+          for aspect in landscape portrait; do
+            test -s "cat-bond-crazygames-v14-variety-${aspect}.mp4"
+            mv "cat-bond-crazygames-v14-variety-${aspect}.mp4" ".check/crazygames-v14-variety/"
+          done
+          test -s promotion/cat-bond-crazygames-v14-variety-verified.json
+          cp promotion/cat-bond-crazygames-v14-variety-verified.json .check/crazygames-v14-variety/shot-plan-and-qa.json
+          echo "Restored two V14 real gameplay clips and independent non-hidden source manifest"
       - name: Strict authentic gameplay, silent clip, size and copy preflight
         run: |
           set -eu
@@ -62,6 +72,7 @@ jobs:
           for aspect,shape in [('landscape',(1920,1080)),('portrait',(1080,1620))]:
             source=q/f'cat-bond-crazygames-v14-variety-{aspect}.mp4'
             assert source.is_file() and source.stat().st_size>100000
+            assert hashlib.sha256(source.read_bytes()).hexdigest()==j['videos'][aspect]['sha256'],(aspect,'wrong source video')
             data=json.loads(subprocess.check_output(['ffprobe','-v','error',
               '-show_entries','stream=codec_type,width,height:format=duration,size',
               '-of','json',str(source)]))
