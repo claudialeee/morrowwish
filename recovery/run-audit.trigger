@@ -1,1 +1,1 @@
-Read-only current bookmark check after the reversible probe attempt.
+Run the enabled, reversible D1 historical snapshot probe and verify restoration.
