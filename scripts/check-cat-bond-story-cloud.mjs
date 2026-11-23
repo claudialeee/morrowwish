@@ -4,11 +4,12 @@ import {webcrypto} from 'node:crypto';
 
 globalThis.crypto??=webcrypto;
 const read=path=>fs.readFile(new URL('../'+path,import.meta.url),'utf8');
-const [story,painted,worldmap,game,index,worker,state,serverSource]=await Promise.all([
+const [story,painted,worldmap,game,ui,index,worker,state,serverSource]=await Promise.all([
  read('public/cat-bond/js/story-cloud.js'),
  read('public/cat-bond/js/painted-regions.js'),
  read('public/cat-bond/js/worldmap.js'),
  read('public/cat-bond/js/game.js'),
+ read('public/cat-bond/js/ui.js'),
  read('public/cat-bond/index.html'),
  read('src/worker.js'),
  read('public/cat-bond/js/state.js'),
@@ -25,6 +26,7 @@ for(const [name,source,needles] of [
  ['map landmarks',painted,['storyLandmarks(c,w,h,id,r)',"id==='home'","id==='sakura'","id==='creek'","id==='volcano'","id==='ruins'"]],
  ['world map story hooks',worldmap,['onRegionEntered?.(id)','onRegionDiscovery?.(world.region.id,reward)']],
  ['final boss',game,['this.battle.storyBoss=!!opts.storyBoss','if(b.storyBoss)','onBossVictory']],
+ ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
  ['entry points',index,['id="intro-cloud-save"','js/story-cloud.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
