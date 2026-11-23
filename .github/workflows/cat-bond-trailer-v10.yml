@@ -9,10 +9,12 @@ on:
       - 'public/cat-bond/css/style.css'
       - 'public/cat-bond/js/ui.js'
       - 'public/cat-bond/js/duo-premium.js'
+      - 'public/cat-bond/js/duo-bond.js'
       - 'public/cat-bond/js/worldmap.js'
       - 'public/game-fullscreen.js'
       - 'scripts/capture-trailers-v10.mjs'
       - 'scripts/render-trailers-v10.mjs'
+      - 'scripts/check-cat-bond-original-art.mjs'
       - 'scripts/check-cat-bond-map-return.mjs'
   workflow_dispatch:
 permissions:
@@ -50,7 +52,8 @@ jobs:
         run: |
           node --check scripts/capture-trailers-v10.mjs
           node --check scripts/render-trailers-v10.mjs
-          node --check scripts/merge-latest-catbond-review.mjs
+          node --check scripts/check-cat-bond-original-art.mjs
+          node scripts/check-cat-bond-original-art.mjs
           node --check public/cat-bond/js/ui.js
           node --check public/cat-bond/js/worldmap.js
           node --check public/game-fullscreen.js
@@ -64,28 +67,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mp4=public/promo/cat-bond/trailer-v10-20261121.mp4
-          poster=public/promo/cat-bond/trailer-v10-20261121.jpg
+          mp4=public/promo/cat-bond/trailer-v13-20261122.mp4
+          poster=public/promo/cat-bond/trailer-v13-20261122.jpg
           test -s "$mp4" && test -s "$poster"
           test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$mp4")" = "1080x1920"
           test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$mp4")" = "audio"
-          for i in 1 2 3; do test -s "public/promo/cat-bond/v10-review-$i.jpg"; done
+          for i in 1 2 3; do test -s "public/promo/cat-bond/v13-review-$i.jpg"; done
           test -s public/promo/cat-bond/v10-quarrel-proof.png
           test -s public/promo/cat-bond/v10-map-navigation-proof.png
-          test -s public/promo/cat-bond/v10-duo-actual-render-proof.png
+          test -s public/promo/cat-bond/v13-duo-original-art-proof.png
           test -s public/promo/cat-bond/v10-rare-native-hud-proof.png
           test -s public/promo/cat-bond/ssr-showcase-proof.png
           node - <<'NODE'
           const fs=require('fs');
-          const m=require('./public/promo/v10-review.json');
-          const audit=require('./public/promo/readability-audit-v10.json');
-          const previous=require('./public/promo/v9-review.json');
-          if(m.version!=='V10'||m.trailers.length!==7||m.socialAutopublish!==false||
+          const m=require('./public/promo/v13-review.json');
+          const audit=require('./public/promo/readability-audit-v13.json');
+          const previous=require('./public/promo/v12-review.json');
+          if(m.version!=='V13'||m.trailers.length!==7||m.socialAutopublish!==false||
              m.trailers.some(t=>t.approved||t.published||t.paused))
-            throw Error('V10 must remain owner-review only');
+            throw Error('V13 must remain owner-review only');
           const bond=m.trailers.find(t=>t.slug==='cat-bond');
-          if(!bond||!bond.video.includes('trailer-v10')||bond.retainedFrom)
-            throw Error('No fresh Cat Bond V10 recording');
+          if(!bond||!bond.video.includes('trailer-v13')||bond.retainedFrom)
+            throw Error('No fresh Cat Bond V13 recording');
           if(bond.duration<55||bond.duration>=60)
             throw Error('Short-form cut must be 55–60 seconds');
           if(!bond.shots.some(x=>x.scene==='duo-quarrel'&&x.seconds>=6))
@@ -122,28 +125,28 @@ jobs:
           for(const t of m.trailers)
             if(!fs.existsSync('public'+t.video)||!fs.existsSync('public'+t.poster))
               throw Error('Unrendered media in seven-game review: '+t.slug);
-          console.log('V10 real quarrel, reconciliation, one new duo cinematic and all media verified');
+          console.log('V13 genuine original-painted duo, reconciliation, rare capture, all media verified');
           NODE
-      - name: Merge Cat Bond into the latest seven-game review, preserving all other videos
-        run: node scripts/merge-latest-catbond-review.mjs
+      - name: Verify independent V13 original-art trailer manifest
+        run: node scripts/check-cat-bond-original-art.mjs
       - name: Commit owner-review assets only; never post to social media
         shell: bash
         run: |
           set -euo pipefail
-          git add public/promo/cat-bond/trailer-v10-20261121.mp4
-          git add public/promo/cat-bond/trailer-v10-20261121.jpg
-          git add public/promo/cat-bond/v10-review-*.jpg
+          git add public/promo/cat-bond/trailer-v13-20261122.mp4
+          git add public/promo/cat-bond/trailer-v13-20261122.jpg
+          git add public/promo/cat-bond/v13-review-*.jpg
           git add public/promo/cat-bond/v10-quarrel-proof.png
           git add public/promo/cat-bond/v10-map-navigation-proof.png
           git add public/promo/cat-bond/v10-duo-actual-render-proof.png
           git add public/promo/cat-bond/v10-rare-native-hud-proof.png
           git add public/promo/cat-bond/cover-portrait.png
           git add public/promo/cat-bond/ssr-showcase-proof.png
-          git add public/promo/v*-review.json public/promo/readability-audit-v*.json public/promo/readability-audit.json
+          git add public/promo/v13-review.json public/promo/readability-audit-v13.json
           git diff --cached --quiet && exit 0
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'qa(promo): V10 storybook cats, duration, real gameplay, one duo cinematic and reconciliation, unapproved'
+          git commit -m 'qa(promo): V13 verified original-painted duo, gameplay and single rare capture, unapproved'
           # Other gameplay and promotion workers update main concurrently.
           # A single pull-then-push can lose the race. Retry safely without force.
           for attempt in $(seq 1 20); do
