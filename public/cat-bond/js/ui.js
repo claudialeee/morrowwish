@@ -1659,7 +1659,7 @@ const UI = {
         :(window.Raising?.PERSONALITIES?.[cat.personality]?.name||'未知'))
       :null;
     const traitLabel=cat.trait
-      ?(cat.trait==='none'?(en?'None':'无')
+      ?(cat.trait==='none'?(en?'None':'—')
         :!cat.traitRevealed?(en?'Undiscovered':'未揭晓')
         :en?(traitNamesEn[cat.trait]||'Unknown')
         :(window.Raising?.TRAITS?.[cat.trait]?.name||'未知'))
