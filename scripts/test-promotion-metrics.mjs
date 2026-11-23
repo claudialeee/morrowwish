@@ -84,7 +84,8 @@ assert.ok(!dashboard.includes('pulse.accountOverview'),'old promo metrics never 
 const liveChannels=['itch','youtube','tiktok','instagram','bluesky'];
 assert.deepEqual(snap.platforms.map(x=>x.id),liveChannels,'do not include unlaunched promo channels in snapshot');
 assert.ok(dashboard.includes("const fallbackIds=['youtube','tiktok','instagram','bluesky','itch'];"),'only live sources rendered and itch.io ordered last');
-assert.ok(dashboard.includes('.sort((a,b)=>fallbackIds.indexOf(a.id)-fallbackIds.indexOf(b.id))'), 'reported channel rows must honor requested order');
+assert.ok(dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))"), 'only approved live channels can appear in reported channel rows');
+assert.ok(dashboard.includes("platforms.sort((a,b)=>(a.id==='itch')-(b.id==='itch')||fallbackIds.indexOf(a.id)-fallbackIds.indexOf(b.id))"), 'reported channel rows must preserve live-channel order and keep itch.io last');
 assert.ok(dashboard.includes("itch:['itch','itch.io','itchio','itch.zone']"),'Cat Bond itch.io old UTM alias cannot disappear');
 for(const name of ['crazygames','kongregate','search'])assert.ok(!snap.platforms.some(p=>p.id===name),'future channel not stored: '+name);
 for(const keyword of ['id="future-channels"','id="future-channel-list"','channelFuture:', 'Poki:', 'GamePix:', 'GameDistribution:', 'tiktok-native-status', 'nativeTikTokNeedsApp:', 'Connect TikTok account'])assert.ok(!dashboard.includes(keyword),'future work must not appear in dashboard: '+keyword);
