@@ -1,7 +1,6 @@
-// Verify the archived V13 original storyboard footage AND the current live
-// game separately. Current battles must show the selected watercolor breeds.
-// Old trailer metadata remains a historical record, not permission for fixed
-// actors to reappear in newly captured live gameplay.
+// Lock the owner-approved complete 63 original two-cat watercolor
+// paintings as both the live battle finisher and V13 trailer art source.
+// Never silently replace them with alternate breed-actor composites.
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 
@@ -14,12 +13,12 @@ const capture=read('scripts/capture-trailers-v10.mjs');
 const render=read('scripts/render-trailers-v10.mjs');
 const art='public/cat-bond/assets/duo-storyboard-21x3-v3.webp';
 must(fs.existsSync(art)&&fs.statSync(art).size>2_000_000,'63-frame approved atlas missing');
-// The published V13 artwork is historical; the live game must display
-// the actual player's two selected watercolor cats, not fixed gallery cats.
-must(original.includes('this.duoCinematic.originalArt=false;'),'Current live duo must use actual watercolor cat breeds');
-must(!original.includes('this.duoCinematic.originalArt=true;'),'Current live duo cannot substitute fixed painting subjects');
+// The same approved 63 original paintings must remain active in live combat.
+must(original.includes('this.duoCinematic.originalArt=true;'),'Current live duo must use the approved 63 original painted frames');
+must(!original.includes('this.duoCinematic.originalArt=false;'),'Current live duo must never silently enable the alternate breed-actor mode');
 must(painter.includes('duo-storyboard-21x3-v3.webp'),'Premium cinematic no longer loads the canonical atlas');
-must(/js\/duo-bond\.js\?v=[\w-]+/.test(loader),'Current selected-cat duo JS must be cache-busted');
+must(read('public/cat-bond/js/battle.js').includes('originalArt:true'),'Duo cast must also choose the approved original paintings');
+must(/js\/duo-bond\.js\?v=[\w-]+/.test(loader),'Current original-art duo JS must be cache-busted');
 must(capture.includes("artMode:'63-original-painted-storyboards'") &&
   capture.includes("originalArt:b.duoCinematic?.originalArt===true"),
   'Capture does not prove real art mode at cast time');
