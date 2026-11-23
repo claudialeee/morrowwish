@@ -8,6 +8,7 @@ on:
       - '.github/workflows/d1-recovery-audit.yml'
       - 'recovery/run-audit.trigger'
       - 'recovery/d1-recovery-merge.mjs'
+      - 'recovery/d1-analytics-audit.mjs'
   workflow_dispatch:
 
 permissions:
@@ -124,6 +125,13 @@ jobs:
           D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
           D1_TARGET_TIMESTAMP: 2026-11-23T00:36:56.250Z
         run: node recovery/d1-recovery-merge.mjs
+      - name: Audit restored raw analytics totals since Nov 22 Pacific midnight
+        if: always()
+        env:
+          CLOUDFLARE_D1_RECOVERY_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+          D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
+        run: node recovery/d1-analytics-audit.mjs
       - name: Upload non-sensitive recovery audit report
         if: always()
         uses: actions/upload-artifact@v4
@@ -132,6 +140,7 @@ jobs:
           path: |
             recovery/d1-audit.json
             recovery/d1-merge-report.json
+            recovery/d1-analytics-audit.json
           retention-days: 7
           if-no-files-found: warn
       - name: Fail if historical probe did not restore production safely
