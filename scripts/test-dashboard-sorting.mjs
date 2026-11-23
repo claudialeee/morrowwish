@@ -36,7 +36,8 @@ for(const locale of ['zh','en']){
  for(const key of missingKeys)assert.equal(context.translate(key),'',locale+' '+key+' must render blank at runtime');
  assert.equal(context.translate('nonexistent-test-key'),'nonexistent-test-key','Unknown translations may still fall back to the key');
 }
-assert.ok(html.includes("const num=k=>known?format(x[k]??0):'';"),'Missing game rows must use empty cells directly');
+assert.ok(html.includes("const known=Number(x.pageviews)>0;"),'Session-only records without a visit must render blank');
+assert.ok(html.includes("const num=k=>known&&x[k]!=null&&Number.isFinite(Number(x[k]))?format(x[k]):'';"),'Missing metric fields must not be converted into zero');
 assert.ok(html.includes('enhanceSortableTables()'),'Sort must survive dashboard refresh');
 const block=html.slice(html.indexOf('const tableSorts='),html.indexOf('function dateFormat('));
 assert.ok(block.includes('function sortCellValue')&&block.includes('function sortDataTable'),'Sort functions missing');
@@ -146,3 +147,33 @@ for(const locale of ['zh','en']){
     locale+' missing game telemetry '+label+' = '+number);
 }
 console.log('All seven gameplay worlds: detailed cards, real event keys, and zh/en labels verified.');
+
+
+// Late post-reset session events without visits must not display zeros.
+for(const language of ['zh','en'])for(const fixture of [
+ {game:'flip-dash',pageviews:0,starts:0,ends:0,retries:0,
+  conversion:{pageviews:0,startedViews:0,finishedViews:0}},
+ {game:'flip-dash',pageviews:2,starts:null,ends:null,retries:null},
+ {game:'flip-dash',pageviews:2,starts:0,ends:0,retries:0}
+]){
+ const nodes={};
+ const env={lang:language,fixture:[fixture],gameNames:{'flip-dash':{zh:'翻转冲刺',en:'Flip Dash'}},
+  escapeHTML:s=>String(s??''),format:n=>String(n),pct:(a,b)=>b?Math.round(a*1000/b)/10:0,
+  $:id=>(nodes[id]??={innerHTML:''})};
+ const script=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
+  inlineScript.indexOf('\nconst channels=Array.isArray'));
+ vm.runInNewContext('const games=globalThis.fixture;\n'+script,env);
+ const segment=nodes.games.innerHTML.split('href="/flip-dash/"')[1]?.split('</tr>')[0];
+ assert.ok(segment,'Flip Dash row exists even with no metric data');
+ const cells=[...segment.matchAll(/<td>(.*?)<\/td>/g)].map(m=>m[1]);
+ assert.equal(cells.length,7,'All game columns still render');
+ if(fixture.pageviews===0)
+  assert.ok(cells.every(c=>c===''),'Post-reset session-only event must leave every metric blank');
+ else if(fixture.starts===null)
+  assert.deepEqual(cells.slice(0,4),['2','','',''],
+   'Missing fields remain blank despite a real PV');
+ else
+  assert.deepEqual(cells.slice(0,4),['2','0','0','0'],
+   'Verified zero activity remains zero when real visits exist');
+}
+console.log('Reset-safe game table gate: orphan session rows empty; missing fields blank; confirmed zeros retained.');
