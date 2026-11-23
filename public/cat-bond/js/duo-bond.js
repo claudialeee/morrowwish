@@ -227,10 +227,10 @@ const originalCast=P.castDuo;
 P.castDuo=function(){
  const ok=originalCast.call(this);
  if(ok&&this.duoCinematic){
-  // Canonical original 21 x 3 painted storyboards are the approved battle
-  // ultimate and must remain the source of every promotional capture.
-  // Never silently switch to the older procedural/breed-actor cut-in.
-  this.duoCinematic.originalArt=true;
+  // Live combat must show the two ACTIVE cats in the original watercolor
+  // breed-actor art on the 21x3 cat-free painted scenery. The gallery keeps
+  // the fixed 63 illustrative storyboards; never use their wrong cats here.
+  this.duoCinematic.originalArt=false;
   this.duoCinematic.tier=this.duo?.tier||1;
   this.duoCinematic.variant=this.duoCinematic.tier>=3?'finale':
    this.duoCinematic.tier>=2?'cross':'pounce';
