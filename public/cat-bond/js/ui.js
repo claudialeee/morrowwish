@@ -1643,6 +1643,27 @@ const UI = {
     const fishToNext = Math.max(1, Math.ceil(Math.max(0, need - (cat.xp || 0)) / xpPerFeed)) * 3;
     const sub = cat.nickname ? ` <span class="tiny" style="font-weight:400">· ${GameData.speciesName(sp)}</span>` : '';
     const en=window.MorrowwishI18n?.get?.()!=='zh';
+    // Never expose internal English save IDs (clever, diligent, fortune,
+    // none...) as player-facing prose. Hidden traits must remain secret
+    // until discovery rather than leaking through this stats summary.
+    const personalityNamesEn={
+      glutton:'Food-loving',diligent:'Diligent',lazy:'Laid-back',
+      clever:'Clever',gentle:'Gentle',shy:'Shy',mischievous:'Mischievous'
+    };
+    const traitNamesEn={
+      none:'None',goldpaw:'Golden Paw',angler:'Angler',weaver:'Weaver',
+      charm:'Charmer',warrior:'Warrior',fortune:'Lucky Star'
+    };
+    const personalityLabel=cat.personality
+      ?(en?(personalityNamesEn[cat.personality]||'Unknown')
+        :(window.Raising?.PERSONALITIES?.[cat.personality]?.name||'未知'))
+      :null;
+    const traitLabel=cat.trait
+      ?(cat.trait==='none'?(en?'None':'无')
+        :!cat.traitRevealed?(en?'Undiscovered':'未揭晓')
+        :en?(traitNamesEn[cat.trait]||'Unknown')
+        :(window.Raising?.TRAITS?.[cat.trait]?.name||'未知'))
+      :null;
     const facts=this.battleCatFacts(cat);
     const primary=window.Skills?.elementOf?.(cat.species)||'light';
     const secondary=window.Skills?.secondaryOf?.(cat)||null;
@@ -1707,7 +1728,7 @@ const UI = {
       </section>
       <div class="stat-row" style="margin-top:12px"><span class="label">饱食</span><div class="bar hp"><span style="width:${cat.hunger}%"></span></div><span class="val">${Math.round(cat.hunger)}</span></div>
       <div class="stat-row"><span class="label">心情</span><div class="bar aff"><span style="width:${cat.joy}%"></span></div><span class="val">${Math.round(cat.joy)}</span></div>
-      <p class="tiny" style="margin-top:8px">战力 ⚔ ${State.catPower(cat)}${cat.personality ? ' · 性格: ' + cat.personality : ''}${cat.trait ? ' · 特性: ' + cat.trait : ''}</p>
+      <p class="tiny cat-traits-summary" style="margin-top:8px">${en?'Power':'战力'} ⚔ ${State.catPower(cat)}${personalityLabel ? ' · '+(en?'Personality':'性格')+': '+personalityLabel : ''}${traitLabel ? ' · '+(en?'Trait':'特性')+': '+traitLabel : ''}</p>
       ${this.speciesEvoRowHtml(cat)}
       <div class="cb-grow" aria-label="猫咪养成">
         <div class="cb-grow-grid">
