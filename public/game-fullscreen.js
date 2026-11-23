@@ -153,23 +153,17 @@
     }else{
       controls.appendChild(button);
     }
-    // The '?' controls remain on the combat bar. Move the original skill
-    // reference button instead, keeping its game listener and open state.
+    // Keep the combat skill reference within the existing Controls help
+    // dialog; do not insert a detached help button in the top toolbar.
     if(route==='cat-bond'){
-      const guide=document.getElementById('battle-skill-info-toggle');
-      if(guide)controls.insertBefore(guide,button);
-      // Preserve its existing event listeners while placing the map menu
-      // immediately to the LEFT of fullscreen on phones and desktop.
+      // Keep the existing exploration menu next to fullscreen.
       const menu=document.getElementById('map-menu');
-      if(menu)controls.insertBefore(menu,guide||button);
-      // The gameplay guide shares the same toolbar immediately LEFT of Menu.
-      // Reparent the actual button without losing UI.init's existing click handler.
+      if(menu)controls.insertBefore(menu,button);
+      // Reparent the yard guide and resource HUD without losing listeners.
       const yardHelp=document.getElementById('guide-help');
-      if(yardHelp)controls.insertBefore(yardHelp,menu||guide||button);
-      // Yard resources stay live; hide them completely in exploration maps.
-      // Reparent the real HUD so coin/fish updates keep their existing IDs.
+      if(yardHelp)controls.insertBefore(yardHelp,menu||button);
       const resources=document.getElementById('hud');
-      if(resources)controls.insertBefore(resources,yardHelp||menu||guide||button);
+      if(resources)controls.insertBefore(resources,yardHelp||menu||button);
     }
     installStyles();
     if(route==='cat-bond'){
