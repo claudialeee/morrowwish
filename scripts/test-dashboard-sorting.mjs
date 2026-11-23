@@ -8,6 +8,25 @@ const html=fs.readFileSync('public/studio-insights/index.html','utf8');
 const inlineScript=html.match(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/i)?.[1];
 assert.ok(inlineScript,'Dashboard inline application script missing');
 assert.doesNotThrow(()=>new vm.Script(inlineScript,{filename:'studio-insights/index.html'}),'Dashboard full-page JavaScript syntax must be valid');
+
+// The homepage is a single KPI above the table, never a fake eighth game.
+// The selected-period hub count must not be replaced by the all-site total.
+const statsPrefix=inlineScript.slice(inlineScript.indexOf('function render(j)'),inlineScript.indexOf('const displayOrder='));
+assert.ok(statsPrefix.startsWith('function render(j)')&&statsPrefix.includes('metricCard(t("statHome")'),'Top homepage metric missing');
+for(const locale of ['zh','en']){
+ const nodes={};const label=locale==='zh'?'网站首页浏览量':'Homepage views';
+ const env={lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
+  t:key=>key==='statHome'?label:key,format:n=>String(n),
+  metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
+ vm.runInNewContext(statsPrefix+"}\\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});".replace('\\n','\n'),env);
+ const html=nodes.stats.innerHTML;
+ assert.ok(html.startsWith('<div data-name="'+label+'">37</div>'),locale+' homepage KPI must show 37 views');
+ assert.ok(html.includes('<div data-name="statPv">123</div>'),locale+' all-site PV total must remain 123');
+}
+assert.ok(html.includes("const displayOrder=['cat-bond'"),'Game table must start with Cat Bond');
+assert.ok(!html.includes('if(x.game==="hub")return'),'Homepage row must not appear in game table');
+console.log('Homepage pageviews shown once above seven games; all-site rollup preserved.');
+
 for(const name of ['games','channel-rows']){
  assert.ok(html.includes('id="'+name+'"'),'Missing sortable dashboard table: '+name);
 }
