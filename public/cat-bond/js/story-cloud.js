@@ -374,7 +374,7 @@ function playEnding(replay=false){
  if(!replay&&!s.bossDefeated)return;
  s.completed=true;s.endingSeen=true;s.playerRecorded=true;
  const lead=state()?.cats?.find(c=>c.uid===state()?.battlePrefs?.teamUids?.[0])||state()?.cats?.[0];
- s.recordedName=lead?window.State.catName(lead):'';
+ s.recordedUid=lead?.uid||'';
  save();
  showSequence('ending',ENDING,()=>{
   window.WorldMap?.exitToYard?.();
