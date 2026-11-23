@@ -104,8 +104,9 @@ try{
   try{await page.locator('#fab-seek').click({force:true,timeout:2500})}catch{}
   await sleep(11500);
   // Keep recording long enough to survive capture startup/frame latency.
+  const recordedVideo=page.video();
   await page.close();
-  const rawPath=await page.video().path();
+  const rawPath=await recordedVideo.path();
   await ctx.close();
   const trailer=path.join(media,'06-gameplay-continuous.mp4');
   execFileSync('ffmpeg',['-nostdin','-y','-hide_banner','-loglevel','error',
