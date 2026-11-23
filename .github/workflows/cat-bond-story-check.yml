@@ -1,0 +1,46 @@
+name: Cat Bond The Last Page — branch checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/**'
+      - 'src/cat-bond-cloud-save.js'
+      - 'src/worker.js'
+      - 'scripts/build-pages.mjs'
+      - 'scripts/check-source.mjs'
+      - 'scripts/check-cat-bond-story-cloud.mjs'
+      - '.github/workflows/cat-bond-story-check.yml'
+      - '.github/workflows/deploy-cloudflare.yml'
+      - 'README.md'
+  push:
+    branches: ['feat/cat-bond-last-page-cloud-save-20261123']
+    paths:
+      - 'public/cat-bond/**'
+      - 'src/cat-bond-cloud-save.js'
+      - 'src/worker.js'
+      - 'scripts/build-pages.mjs'
+      - 'scripts/check-source.mjs'
+      - 'scripts/check-cat-bond-story-cloud.mjs'
+      - '.github/workflows/cat-bond-story-check.yml'
+      - 'README.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cat-bond-last-page-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-and-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Run full source and game regression suite
+        run: npm run check

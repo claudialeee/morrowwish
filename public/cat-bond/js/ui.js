@@ -2243,6 +2243,13 @@ const UI = {
     }).join('');
     const total = GameData.SPECIES.length;
     const owned = GameData.SPECIES.filter(s => State.S.dex[s.id]).length;
+    const story=State.S.story;
+    const recordCat=story?.playerRecorded
+      ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
+    const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
+      .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const storyRecord=story?.playerRecorded
+      ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
       <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
       <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
@@ -2254,6 +2261,7 @@ const UI = {
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
       <div class="dex-grid">${cells}</div>
+      ${storyRecord}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {

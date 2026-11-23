@@ -591,7 +591,8 @@ class Game {
       // prompt that pops the instant you touch a wild cat): the scene is still 'map'
       // until the player taps Start, so without this the roamers keep wandering
       // behind the dialog. A full-screen lock on encounter is the intended feel.
-      const panelOpen = document.getElementById('panel')?.classList.contains('open');
+      const panelOpen = document.getElementById('panel')?.classList.contains('open') ||
+        !!document.querySelector('.cb-story-overlay,.cb-cloud-overlay');
       if (!panelOpen) WorldMap.update(dt);
     }
     else if (this.scene === 'battle' && this.battle) {
@@ -935,7 +936,8 @@ class Game {
   startBattle(team, wildSpecies, opts={}) {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
-    this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
+    this.battle = new Battle.CaptureBattle(this, team, wildSpecies, opts);
+    this.battle.storyBoss=!!opts.storyBoss;
     // Persist the region BEFORE the arena changes this.scene to 'battle'.
     this.battle._analyticsRegion=this._returnScene==='map'
       ?(window.WorldMap?.currentRegion||'unknown'):'yard';
@@ -1635,8 +1637,12 @@ class Game {
       // Resume the region at the exact spot the player left for the fight, instead
       // of rebuilding it and snapping back to the portal entry. Pass the outcome so
       // a captured (won) cat is removed from the map; a fled/lost one resumes roaming.
-      if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
-      else WorldMap.enterRegion(WorldMap.currentRegion);
+      // The story boss is staged on top of the current region, not handed off
+      // from a roaming spawn. Do not remove that region's pending encounter.
+      if(!b.storyBoss){
+        if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
+        else WorldMap.enterRegion(WorldMap.currentRegion);
+      }
     } else {
       this.scene = 'yard';
       // Reset transient battlefield paint state before the very next yard frame.
@@ -1669,6 +1675,24 @@ class Game {
       if(!backToMap)document.getElementById('yard-actions').classList.remove('hidden');
       this.battle=null;
       UI.openMasteryChallengeResult(b.wild,performance,reward,win);
+      return;
+    }
+    // The final story encounter uses the existing real-time battle engine, but
+    // defeating Muling is a story resolution, never a cat capture or dex entry.
+    if(b.storyBoss){
+      this.battle=null;
+      if(win){
+        if(!State.S.story||typeof State.S.story!=='object')State.S.story={version:1,fragments:[],visited:{}};
+        State.S.story.bossDefeated=true;
+        metric('game_complete',{level:(State.S.catchCount||0)+1,rarity:b.wild.rarity,region:'ruins'});
+        State.save();this.refreshHUD();
+        window.CatBondStory?.onBossVictory?.();
+      }else{
+        this._lastBattleLost=true;
+        metric('game_over',{level:(State.S.catchCount||0)+1,rarity:b.wild.rarity,region:'ruins'});
+        State.save();this.refreshHUD();
+        window.CatBondStory?.showBossRetry?.();
+      }
       return;
     }
     if (win) {

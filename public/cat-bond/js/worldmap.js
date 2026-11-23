@@ -253,6 +253,7 @@
     window.State.save();
     buildRegion(id);
     mode = 'region';
+    window.CatBondStory?.onRegionEntered?.(id);
     return true;
   }
 
@@ -648,6 +649,7 @@
     }
     window.State.save();
     if (cbCollect) cbCollect(reward);
+    window.CatBondStory?.onRegionDiscovery?.(world.region.id,reward);
   }
 
   // ================================================================

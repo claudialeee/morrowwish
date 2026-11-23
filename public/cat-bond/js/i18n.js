@@ -19,6 +19,11 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    '守铃者': 'The Bellkeeper',
+    '☁️ 云存档': '☁️ Cloud save',
+    '云存档': 'Cloud save',
+    '最后一页': 'The Last Page',
+    '已完成': 'Complete',
     // Newly surfaced first-capture conversion and progress CTAs. Keep both
     // locales explicit so the English portal never leaks Han characters.
     '战斗奖励与详情': 'Battle rewards & stats',
