@@ -31,13 +31,15 @@ jobs:
       - name: Test current native-video IDs and zero inherited metrics
         run: |
           set -eu
+          node --check src/youtube-native.js
           node --check src/instagram-native.js
           node --check src/bluesky-native.js
+          node scripts/test-youtube-native.mjs
           node scripts/test-instagram-native.mjs
           node scripts/test-bluesky-native.mjs
           node scripts/test-promotion-metrics.mjs
           node scripts/test-social-refresh.mjs
-          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const rows=s.metricScope.verifiedPosts; for (const [platform,id] of [['instagram','DgEOAAcJ74v'],['bluesky','3n2wyfh4x63vg']]) {const p=rows.find(x=>x.platform===platform&&x.game==='parcel-panic'); if(!p || !p.url.includes(id) || p.views!==null || p.likes!==null) process.exit(1);} "
+          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const rows=s.metricScope.verifiedPosts; for (const [platform,id] of [['youtube','dHD2UnbmSqU'],['instagram','DgEOAAcJ74v'],['bluesky','3n2wyfh4x63vg']]) {const p=rows.find(x=>x.platform===platform&&x.game==='parcel-panic'); if(!p || !p.url.includes(id) || p.views!==null || p.likes!==null) process.exit(1);} "
       - name: Build current Cloudflare Pages site and Worker
         run: npm run build:pages
       - name: Publish current production site
@@ -54,17 +56,19 @@ jobs:
           ok=0
           for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
             if curl -fsSL --max-time 20 -o /tmp/studio-release.json "https://morrowwish.pages.dev/promo/social-release-status.json?version=$GITHUB_SHA&attempt=$attempt" &&
+              grep -Fq 'dHD2UnbmSqU' /tmp/studio-release.json &&
               grep -Fq 'DgEOAAcJ74v' /tmp/studio-release.json &&
               grep -Fq '3n2wyfh4x63vg' /tmp/studio-release.json &&
+              ! grep -Fq 'c1qeZ3tvuLU' /tmp/studio-release.json &&
               ! grep -Fq 'DgDfRCJAF83' /tmp/studio-release.json &&
               ! grep -Fq '3n2wcrdnc2owx' /tmp/studio-release.json; then
               ok=1; break
             fi
             sleep 5
           done
-          test "$ok" = 1 || { echo '::error::Current Parcel Panic URLs are not live'; exit 1; }
+          test "$ok" = 1 || { echo '::error::Current Parcel Panic YouTube/Instagram/Bluesky URLs are not live'; exit 1; }
           curl -fsSL --max-time 20 https://morrowwish.pages.dev/studio-insights/ -o /tmp/studio-dashboard.html
           grep -Fq 'video-detail-rows' /tmp/studio-dashboard.html
           code=$(curl -sSL --max-time 20 -o /dev/null -w '%{http_code}' 'https://morrowwish.pages.dev/api/summary?days=7')
           test "$code" = 401 || { echo "::error::Analytics endpoint unexpectedly returned $code"; exit 1; }
-          echo 'Production dashboard and both Parcel Panic replacement URLs verified live.'
+          echo 'Production dashboard and all Parcel Panic replacement URLs verified live.'
