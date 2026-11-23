@@ -887,6 +887,14 @@
     '四项属性永久 +1': 'Permanent +1 to all four stats',
     '特训 1 次': 'Train Once',
     '消耗 🪙80': 'Cost 🪙80',
+    // gold-coins.js converts 🪙 into an <img> and splits DOM text nodes.
+    // Translate the *individual surviving text fragments*, not only the
+    // unsplit strings. This affects Cat Bond on both our site and portals.
+    '消耗 ': 'Cost ',
+    '最多 10 次 · 每次 80': 'Up to 10 times · 80',
+    '每次 ': 'Each ',
+    '最多 ': 'Up to ',
+    ' 次 · 每次 ': ' times · each ',
     '🐾 互动': '🐾 Bonding',
     '陪伴猫猫，提升好感和心情': 'Spend time together and raise affection',
     '🤲 摸摸': '🤲 Pet',
