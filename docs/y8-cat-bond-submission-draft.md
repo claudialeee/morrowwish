@@ -1,5 +1,5 @@
 # Y8 submission draft — Cat Bond (Morrow Wish)
-Prepared: 2026-11-22. **DRAFT ONLY — do not request review before all requirements pass.**
+Prepared: 2026-11-22; updated 2026-11-23. **DRAFT ONLY — do not request review before App ID and Y8 portal validation are complete.**
 
 ## Verified portal state
 - Studio: **Morrow Wish**, visible in the signed-in Y8 Developer Portal.
@@ -38,12 +38,12 @@ Start by choosing your first kitten. Use your mouse or touch screen to interact 
 
 | Slot | Exact pixel dimensions | Max bytes | Status |
 | --- | ---: | ---: | --- |
-| Standard Screenshot | 760 × 570 (4:3) | 2 MB | NOT PRODUCED |
-| Widescreen Screenshot | 1280 × 720 (16:9) | 5 MB | NOT PRODUCED |
-| Landscape Promo | 1920 × 1080 (16:9) | 5 MB | NOT PRODUCED |
-| Portrait Promo | 1080 × 1920 (9:16) | 5 MB | NOT PRODUCED |
-| Game Card Promo | 760 × 570 (4:3) | 2 MB | NOT PRODUCED |
-| Gameplay video | min. 1280 × 720 (16:9), min. 15 s, MP4/MOV | 50 MB | NOT PRODUCED |
+| Standard Screenshot | 760 × 570 (4:3) | 2 MB | GENERATED; size verified; portal upload pending |
+| Widescreen Screenshot | 1280 × 720 (16:9) | 5 MB | GENERATED; size verified; portal upload pending |
+| Landscape Promo | 1920 × 1080 (16:9) | 5 MB | GENERATED; size verified; portal upload pending |
+| Portrait Promo | 1080 × 1920 (9:16) | 5 MB | GENERATED; size verified; portal upload pending |
+| Game Card Promo | 760 × 570 (4:3) | 2 MB | GENERATED; size verified; portal upload pending |
+| Gameplay video | min. 1280 × 720 (16:9), min. 15 s, MP4/MOV | 50 MB | GENERATED; size verified; portal upload pending |
 
 Proposed media themes: lively cat garden; cat interaction and care; the five-region exploration map; workshop/courtyard building; a short ordinary battle/capture; different cats to collect. Prefer multiple gameplay themes; **do not feature the full-screen duo finisher**.
 
@@ -66,18 +66,27 @@ Potential source material (not validated for Y8 media dimensions or eligibility)
 7. **Rights and AI declaration.** Verify third-party audio/font/art rights and fill Y8's AI Declaration accurately. Avoid misrepresenting AI asset provenance.
 8. **No live game modifications.** Never change production Cat Bond, homepage, analytics or existing CrazyGames draft as a side effect of preparing this Y8-specific build.
 
+## Latest export and validation
+- GitHub Actions **PASS**: https://github.com/claudialeee/morrowwish/actions/runs/45114981291
+- Downloadable artifact: `y8-cat-bond-draft-7`; includes `cat-bond-y8.zip`, five JPG image slots, continuous 19-second MP4 and JSON QA reports.
+- Automatic game bootstrap and real player garden screenshot capture succeeded in landscape and portrait Chromium sessions.
+- ZIP contains the approved original 63-painting source; original production game files and CrazyGames submission were not changed.
+- Images have exact Y8 dimensions and stay beneath published size limits. Continuous video is 1920×1080/19s, real recorded gameplay from the shipping game. Videos/media were also visually inspected.
+- **Remaining blocker:** The studio's My Games panel had no Cat Bond entry when checked; App ID and Game ID were not available. The SDK loader is present but its config is blank. This ZIP is a technical draft and is **not yet a complete Y8-ready SDK integration**. Enter the real portal credentials and rebuild before requesting review.
+- Rights/AI declaration and Y8's own upload/preview validation still require review.
+
 ## Submission QA gates
 - [ ] Studio approval shown, if required
 - [ ] Y8 game record created; App ID known
 - [ ] Y8 SDK initialized without page errors
-- [ ] Standalone ZIP builds and launches on Y8
+- [x] Standalone ZIP builds and launches locally under HTTP (Y8 hosting not yet verified)
 - [ ] No external site navigation; no 404s
 - [ ] Guest play; save and reload
-- [ ] Correct game mechanics and original assets (not old duo variant)
+- [x] Original 63-painting Cat Bond assets present; basic boot/starter/garden browser smoke passed
 - [ ] Browser blur/hidden gameplay and audio pause
-- [ ] Five media slots; dimensions/byte sizes checked
-- [ ] Gameplay preview continuous, actual gameplay, minimum 15 s
-- [ ] Gameplay/screenshots visually inspected
+- [x] Five media slots; dimensions/byte sizes checked
+- [x] Gameplay preview continuous, actual gameplay, 19 seconds
+- [x] Gameplay/screenshots visually inspected
 - [ ] AI declaration and content settings verified
 - [ ] Only then request Y8 review
 
