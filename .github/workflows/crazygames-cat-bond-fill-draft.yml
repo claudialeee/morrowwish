@@ -1,5 +1,5 @@
 name: Fill Cat Bond CrazyGames draft (never submit for review)
-# Resume existing Cat Bond draft ID; inspect questionnaire, never duplicate or submit.
+# Resume confirmed Cat Bond draft; answer seven current Basic QA items, upload media; stop before submission.
 on:
   push:
     branches: [main]
