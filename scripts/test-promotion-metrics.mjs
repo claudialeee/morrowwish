@@ -95,7 +95,7 @@ console.log('Direct connected-platform snapshot reconciled dynamically; initial 
 
 const release=JSON.parse(fs.readFileSync('public/promo/social-release-status.json','utf8'));
 const cat=release.games.find(x=>x.slug==='cat-bond');
-const newIds={youtube:'2hd2LMg9iJY',tiktok:'7711158345406680334',instagram:'DgEGgecOxst',bluesky:'3n2wzprxlt63l'};
+const newIds={youtube:'2hd2LMg9iJY',tiktok:'7711158345406680334',instagram:'DgEGgecOxst',bluesky:'3n2x2cih2fq2r'};
 for(const [platform,id] of Object.entries(newIds)){
   const post=posts.find(x=>x.platform===platform&&x.game==='cat-bond');
   assert.ok(post?.url.includes(id),'new Cat Bond video allowlist missing: '+platform);
@@ -127,7 +127,7 @@ const igSource=fs.readFileSync('src/instagram-native.js','utf8');
 const bskySource=fs.readFileSync('src/bluesky-native.js','utf8');
 assert.ok(igSource.includes('"parcel-panic":"DgEOAAcJ74v"')&&!igSource.includes('DgDfRCJAF83'),'Instagram native allowlist must use replacement');
 assert.ok(bskySource.includes('"parcel-panic":"3n2wyfh4x63vg"')&&!bskySource.includes('3n2wcrdnc2owx'),'Bluesky native allowlist must use replacement');
-assert.ok(igSource.includes('v14-parcel-replacement')&&bskySource.includes('v15-cat-bond-resubmission'),'native caches must rotate after each replacement');
-assert.ok(bskySource.includes('"cat-bond":"3n2wzprxlt63l"')&&!bskySource.includes('3n2wu5hqa4gl3'),'Bluesky tracks the newly confirmed Cat Bond V13 repost only');
+assert.ok(igSource.includes('v14-parcel-replacement')&&bskySource.includes('v16-cat-bond-bot-triggered-repost'),'native caches must rotate after each replacement');
+assert.ok(bskySource.includes('"cat-bond":"3n2x2cih2fq2r"')&&!bskySource.includes('3n2wu5hqa4gl3')&&!bskySource.includes('3n2wzprxlt63l'),'Bluesky tracks the latest Cat Bond V13 repost and excludes both deleted predecessors');
 assert.ok(igSource.includes('morrowwishgames/reel/'),'account-qualified Instagram Reel link must be supported');
 console.log('Parcel Panic replacement links and native allowlists verified; old metrics excluded.');

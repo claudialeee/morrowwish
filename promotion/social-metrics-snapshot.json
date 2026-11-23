@@ -4,7 +4,7 @@
   "nativeWindow": "Only seven approved 2026-11-22 posts per platform: new Cat Bond V13 plus six unchanged game promos; deleted Cat Bond V12 content excluded.",
   "source": "Approved 28 current campaign video URLs including updated Parcel Panic Instagram and Bluesky; other historical verified readings retained only for unchanged videos.",
   "refreshMode": "youtube-data-api-v3;instagram-graph-insights; tiktok-display-api-v2; bluesky-public-appview; authorized-owner-worker-cache",
-  "note": "Only current approved posts are tracked. Cat Bond Bluesky was re-posted and now uses 3n2wzprxlt63l; the deleted earlier Cat Bond Bluesky post 3n2wu5hqa4gl3 is excluded. Do not inherit deleted post interactions or invent zero.",
+  "note": "Cat Bond Bluesky source is the current verified V13 post 3n2x2cih2fq2r. The deleted Cat Bond predecessors 3n2wzprxlt63l and 3n2wu5hqa4gl3 are excluded from AppView collection; no deleted-post interactions transferred. New native likes/reposts populate on the next successful refresh.",
   "accounts": {
     "bluesky": "morrowwishgames.bsky.social",
     "instagram": "morrowwishgames",
@@ -357,7 +357,7 @@
       {
         "platform": "bluesky",
         "game": "cat-bond",
-        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wzprxlt63l",
+        "url": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2x2cih2fq2r",
         "publishedAt": "2026-11-22",
         "views": null,
         "likes": null,
@@ -366,7 +366,9 @@
         "approved": true,
         "publicVerified": true,
         "dataSource": null,
-        "pendingNativeRefresh": true
+        "pendingNativeRefresh": true,
+        "replies": null,
+        "quotes": null
       },
       {
         "platform": "bluesky",

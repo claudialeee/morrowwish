@@ -2,7 +2,7 @@
   "updatedAt": "2026-11-23T01:42:16.450Z",
   "studio": "Morrow Wish",
   "goal": "attributed homepage visitors and real game starts, not video impressions",
-  "accuracyNote": "Only current November 22 approved campaign videos. Cat Bond Bluesky replaced again by confirmed V13 video 3n2wzprxlt63l; previously deleted Bluesky post 3n2wu5hqa4gl3 is excluded from the dashboard and first-party AppView counters. Other games unchanged.",
+  "accuracyNote": "Cat Bond Bluesky current V13 release 3n2x2cih2fq2r is the sole tracked post. Deleted predecessors 3n2wzprxlt63l and 3n2wu5hqa4gl3 are excluded from all source allowlists and metrics; other six Bluesky games and other platform URLs unchanged.",
   "statusLegend": {
     "ready": "video verified and saved",
     "rendering": "recording or rendering",
@@ -108,7 +108,7 @@
         "youtube": "https://www.youtube.com/shorts/2hd2LMg9iJY",
         "tiktok": "https://www.tiktok.com/@morrowwishgames/video/7711158345406680334",
         "instagram": "https://www.instagram.com/reel/DgEGgecOxst/",
-        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2wzprxlt63l"
+        "bluesky": "https://bsky.app/profile/did:plc:d55banmfpsnzmt35hqmmwha7/post/3n2x2cih2fq2r"
       },
       "socialVerification": {
         "youtube": {
@@ -130,13 +130,12 @@
           "likes": null
         },
         "bluesky": {
-          "source": "vidiq-publish-status-completed-v13-repost",
+          "source": "vidiq-publication-completed-current-v13",
           "publicVerified": true,
           "views": null,
           "likes": null,
           "reposts": null,
           "pendingNativeRefresh": true,
-          "postUrlVerifiedAt": "2026-11-22T18:03:00-08:00",
           "publishedVideoVersion": "V13"
         }
       },

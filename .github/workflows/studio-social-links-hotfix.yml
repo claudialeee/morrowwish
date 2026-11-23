@@ -37,6 +37,7 @@ jobs:
           node scripts/test-youtube-native.mjs
           node scripts/test-instagram-native.mjs
           node scripts/test-bluesky-native.mjs
+          node -e "const s=require('./promotion/social-metrics-snapshot.json'); const p=s.metricScope.verifiedPosts.find(x=>x.game==='cat-bond'&&x.platform==='bluesky'); if(!p || !p.url.endsWith('/post/3n2x2cih2fq2r') || p.views!==null || p.likes!==null || p.reposts!==null) process.exit(1)"
           node scripts/test-promotion-metrics.mjs
           node scripts/test-social-refresh.mjs
           node -e "const s=require('./promotion/social-metrics-snapshot.json'); const rows=s.metricScope.verifiedPosts; for (const [platform,id] of [['youtube','dHD2UnbmSqU'],['instagram','DgEOAAcJ74v'],['bluesky','3n2wyfh4x63vg']]) {const p=rows.find(x=>x.platform===platform&&x.game==='parcel-panic'); if(!p || !p.url.includes(id) || p.views!==null || p.likes!==null) process.exit(1);} "
@@ -61,7 +62,9 @@ jobs:
               grep -Fq '3n2wyfh4x63vg' /tmp/studio-release.json &&
               ! grep -Fq 'c1qeZ3tvuLU' /tmp/studio-release.json &&
               ! grep -Fq 'DgDfRCJAF83' /tmp/studio-release.json &&
-              ! grep -Fq '3n2wcrdnc2owx' /tmp/studio-release.json; then
+              ! grep -Fq '3n2wcrdnc2owx' /tmp/studio-release.json &&
+              grep -Fq '3n2x2cih2fq2r' /tmp/studio-release.json &&
+              ! grep -Fq '3n2wzprxlt63l' /tmp/studio-release.json; then
               ok=1; break
             fi
             sleep 5
