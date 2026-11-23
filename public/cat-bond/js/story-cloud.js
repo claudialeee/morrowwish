@@ -356,8 +356,11 @@ function showBossGate(){
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-boss-start>'+t('开始最终战','Begin final battle')+'</button>'+
   '<button class="cb-cloud-secondary" data-boss-later>'+t('稍后再战','Not yet')+'</button></div></section>';
  document.body.append(overlay);
- overlay.querySelector('[data-boss-later]').onclick=()=>overlay.remove();
- overlay.querySelector('[data-boss-start]').onclick=()=>{overlay.remove();startBoss();};
+ const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
+ const rerender=()=>{close();showBossGate();};
+ window.addEventListener('morrowwish-language-change',rerender);
+ overlay.querySelector('[data-boss-later]').onclick=close;
+ overlay.querySelector('[data-boss-start]').onclick=()=>{close();startBoss();};
 }
 function startBoss(){
  const game=window.__game,boss=bossSpecies();
@@ -376,8 +379,11 @@ function showBossRetry(){
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-retry>'+t('再次挑战','Try again')+'</button>'+
   '<button class="cb-cloud-secondary" data-journal>'+t('查看故事手册','Open journal')+'</button></div></section>';
  document.body.append(overlay);
- overlay.querySelector('[data-retry]').onclick=()=>{overlay.remove();startBoss();};
- overlay.querySelector('[data-journal]').onclick=()=>{overlay.remove();openJournal();};
+ const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
+ const rerender=()=>{close();showBossRetry();};
+ window.addEventListener('morrowwish-language-change',rerender);
+ overlay.querySelector('[data-retry]').onclick=()=>{close();startBoss();};
+ overlay.querySelector('[data-journal]').onclick=()=>{close();openJournal();};
 }
 function playEnding(replay=false){
  const s=storyState();if(!s)return;
