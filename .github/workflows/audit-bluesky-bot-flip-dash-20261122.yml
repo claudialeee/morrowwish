@@ -46,10 +46,17 @@ jobs:
           const hist={};
           for(const x of morning)hist[x.author]=(hist[x.author]||0)+1;
           console.log('BOT_MORNING_SUMMARY '+JSON.stringify({pages,feedTotal:feed.length,earliest,latest:feed[0]?.time,morningEntries:morning.length,uniqueAuthors:Object.keys(hist).length,repeatedAuthors:Object.entries(hist).filter(([k,v])=>v>=2).sort((a,b)=>b[1]-a[1]).slice(0,22),morrowMorning:mo}));
+          // Resolve the bot's own repository PDS: the public AppView does not implement repo.listRecords.
+          const plcResponse=await fetch('https://plc.directory/'+bot,{signal:AbortSignal.timeout(22000)});
+          if(!plcResponse.ok)throw Error('Could not resolve bot DID '+plcResponse.status);
+          const didDoc=await plcResponse.json();
+          const pds=didDoc.service?.find(x=>x.id?.endsWith('#atproto_pds'))?.serviceEndpoint;
+          if(!pds)throw Error('PDS endpoint missing from bot DID document');
+          console.log('BOT_PDS '+pds);
           // Raw AT Proto repost collection is useful even when the reposted original has since been deleted.
           const raw=[];let rcursor=null,rpages=0;
           do{
-            const p=await req('com.atproto.repo.listRecords',{repo:bot,collection:'app.bsky.feed.repost',limit:'100',...(rcursor?{cursor:rcursor}:{})});
+            const p=await req('com.atproto.repo.listRecords',{repo:bot,collection:'app.bsky.feed.repost',limit:'100',...(rcursor?{cursor:rcursor}:{})},pds+'/xrpc/');
             rpages++;
             for(const r of p.records||[]){
               const uri=r.value?.subject?.uri||'';
