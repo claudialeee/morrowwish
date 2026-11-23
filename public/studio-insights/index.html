@@ -263,7 +263,7 @@ function renderSignals(gameRows){
   return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+newMetrics+regions+legacy+feedback+'</article>';
  }).join('');
 }
-function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(j.records)>0;
+function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(r.pageviews)>0;
 $("stats").innerHTML=[
  metricCard(t("statPv"),hasData?format(r.pageviews):"",t("statPvNote")),
  metricCard(t("statStarts"),hasData?format(r.gameStarts??r.starts):"",t("statStartsNote")),
@@ -274,17 +274,19 @@ const displayOrder=['hub','cat-bond','pawsibly-innocent','tiny-town','elsewhere'
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
  // Elsewhere uses the same complete unified metrics as all other games.
- const x=visibleGames.get(gameId)||{game:gameId,pageviews:0,visitors:0,starts:0,retries:0,avgSeconds:0,ends:0,completion:0,shares:0};
- const known=visibleGames.has(gameId);
- const num=k=>known?format(x[k]??0):'';
+ const x=visibleGames.get(gameId)||{game:gameId};
+ // A late session beacon after a reset is not evidence of a page visit.
+ // Neither an orphan session nor an absent field should invent a zero.
+ const known=Number(x.pageviews)>0;
+ const num=k=>known&&x[k]!=null&&Number.isFinite(Number(x[k]))?format(x[k]):'';
  const startRate=known&&x.pageviews>0&&x.startedViews<=x.pageviews?' <small>'+format(x.startRate??pct(x.startedViews,x.pageviews))+'%</small>':'';
  const finishRate=known&&x.starts>0&&x.ends<=x.starts?' <small>'+format(pct(x.ends,x.starts))+'%</small>':'';
  const finished=num('ends')+finishRate;
  // Preserve battle history in gameplay details, not the primary conversion table.
  const isBond=x.game==='cat-bond',unique=isBond?x.historicalVisitFunnel:null,cv=isBond?unique||{}:x.conversion||{};
  // Game conversions count visits, not individual battle rounds.
- const startCell=isBond?(unique?format(unique.startedViews)+(Number(unique.pageviews)>0?' <small>'+format(pct(unique.startedViews,unique.pageviews))+'%</small>':''):''):num('starts')+startRate;
- const finishedCell=isBond?(unique?format(unique.finishedViews)+(Number(unique.startedViews)>0?' <small>'+format(pct(unique.finishedViews,unique.startedViews))+'%</small>':''):''):finished;
+ const startCell=isBond?(known&&unique?format(unique.startedViews)+(Number(unique.pageviews)>0?' <small>'+format(pct(unique.startedViews,unique.pageviews))+'%</small>':''):''):num('starts')+startRate;
+ const finishedCell=isBond?(known&&unique?format(unique.finishedViews)+(Number(unique.startedViews)>0?' <small>'+format(pct(unique.finishedViews,unique.startedViews))+'%</small>':''):''):finished;
  const conv=(a,b)=>Number(b)>0&&Number(a)<=Number(b)?
   format(a)+' / '+format(b)+' · '+format(pct(a,b))+'%':'';
  const c1=conv(cv.startedViews,cv.pageviews);
@@ -407,7 +409,7 @@ async function loadElsewhere(){
 
 function renderCatBondAudit(){
  const el=$("cat-bond-traffic-audit");if(!el)return;
- if(!catBondAudit||!lastData){el.textContent="";return;}
+ if(!catBondAudit||!lastData||(!Number(catBondAudit.total||0)&&!Number(catBondAudit.history?.pageviews||0))){el.textContent="";return;}
  const a=catBondAudit, shown=Number(a.sampledPageviews??lastData.byGame?.find(x=>x.game==="cat-bond")?.pageviews??0),full=Number(a.total||0);
  const daily=(a.byDay||[]).map(x=>x.day.slice(5)+": "+format(x.pageviews)).join(" · ");
  const history=a.history||{};
