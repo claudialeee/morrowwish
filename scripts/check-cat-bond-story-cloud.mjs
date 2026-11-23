@@ -20,6 +20,7 @@ new Function(story);
 new Function(painted);
 new Function(worldmap);
 new Function(game);
+new Function(ui);
 
 for(const [name,source,needles] of [
  ['story',story,['The Last Page','Hollow','暮铃','逆响之主','startPrologue','onRegionEntered','onRegionDiscovery','playEnding','AES-GCM','catbond_cloud_key_v1','expectedRevision']],
