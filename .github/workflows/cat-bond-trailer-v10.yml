@@ -22,7 +22,8 @@ permissions:
   contents: write
 concurrency:
   group: morrowwish-cat-bond-v10-review
-  cancel-in-progress: false
+  # Only the current head may ship: stale in-flight captures caused v10 regression.
+  cancel-in-progress: true
 jobs:
   capture-and-verify:
     runs-on: ubuntu-latest
