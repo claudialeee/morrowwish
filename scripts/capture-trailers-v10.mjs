@@ -499,7 +499,8 @@ try{
   await sleep(3000);
   // Trim the genuine single cast before its after-action effects can resemble
   // a second finisher. The untouched raw recording is retained for QA.
-  shots.push({label:'duo',start:duoStart,duration:Math.min(3.1,stamp()-duoStart-.08)});
+  shots.push({label:'duo',start:duoStart,duration:Math.min(3.1,stamp()-duoStart-.08),
+     artMode:'63-original-painted-storyboards',artSource:duo.artSource,originalArt:duo.originalArt});
   // Preserve the one natural on-screen follow-through: finisher art fades,
   // native arena health bars return and the real rare-cat capture resolves.
   // This is contiguous raw footage, not a second duo cast or another fight.
