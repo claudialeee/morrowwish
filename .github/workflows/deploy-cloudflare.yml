@@ -52,10 +52,12 @@ permissions:
   issues: write
 
 concurrency:
-  group: morrowwish-cloudflare-pages-production
-  # Finish the active deployment even when collaborators push at the same time.
-  # GitHub keeps only the newest pending run, which will deploy after this one.
-  # Avoid endless cancellation of slow installs and loss of release verification.
+  # A failed/aborted review-only render triggers a workflow_run callback whose
+  # deploy job is SKIPPED below. Do not let those skipped callbacks replace an
+  # actual pending push deployment: GitHub retains only one pending run per group.
+  # Successful renders and real push/dispatch deployments retain one safe queue.
+  group: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success' && 'morrowwish-cloudflare-pages-skipped-review' || 'morrowwish-cloudflare-pages-production' }}
+  # Finish the active production deployment even on frequent collaborator pushes.
   cancel-in-progress: false
 
 jobs:
