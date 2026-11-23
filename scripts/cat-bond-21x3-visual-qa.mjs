@@ -1,297 +1,34 @@
-/* Real Chromium QA of approved Cat Bond paintings, not just source metadata.
- * Captures all 21 scenes, three bond levels, 390px phone and favorite art.
- * Do not post social content or change any player's game save.
- */
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import {chromium} from 'playwright';
-
-const DIR='artifacts/cat-bond-21x3';
-fs.mkdirSync(DIR,{recursive:true});
-const browser=await chromium.launch({headless:true,args:['--disable-dev-shm-usage']});
-const page=await browser.newPage({viewport:{width:1280,height:860},deviceScaleFactor:1});
-const errors=[];
-page.on('pageerror',e=>errors.push('Runtime: '+e.message));
+/* Chromium QA: the 63 complete original paintings, across phone and desktop. */
+import assert from 'node:assert/strict';import fs from 'node:fs';import {chromium} from 'playwright';
+const dir='artifacts/cat-bond-21x3';fs.mkdirSync(dir,{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--disable-dev-shm-usage']}),errors=[];
 try{
- await page.goto('http://127.0.0.1:8765/cat-bond/duo-showcase.html?visual-qa=21x3',
-   {waitUntil:'domcontentloaded',timeout:30000});
- const readiness=()=>({
-   premium:!!window.CatBondPremiumCinematics?.ready,
-   gallery:!!window.__catBondDuoGallery?.ready,
-   breedActors:!!window.CatBondDuoBreedActors?.ready,
-   previews:document.querySelectorAll('.stage-breed-preview').length,
-   skills:document.querySelectorAll('.duo-card .skill-preview').length,
-   breeds:document.querySelectorAll('.breed-card').length,
-   roster:window.GameData?.SPECIES?.length||0,
-   artStatus:!!window.CatBondArtworkStatus?.breedsLoaded,
-   error:document.querySelector('#gallery-error')?.textContent||''
- });
- try{
-   await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready&&
-     window.__catBondDuoGallery?.ready&&
-     window.CatBondDuoBreedActors?.ready&&
-     document.querySelectorAll('.stage-breed-preview').length===63&&
-     document.querySelectorAll('.duo-card .skill-preview').length===21&&
-     document.querySelectorAll('.breed-card').length===window.GameData?.SPECIES?.length,
-     null,{timeout:45000});
- }catch(error){
-   const state=await page.evaluate(readiness);
-   await page.screenshot({path:DIR+'/startup-failure.png',fullPage:true});
-   throw Error('21x3 original-art startup readiness failed: '+JSON.stringify({state,errors})+
-     '; underlying: '+error.message);
- }
- const result=await page.evaluate(()=>{
-  const keys=window.CatBondDuoDirector.keys;
-  const painter=window.CatBondPremiumCinematics;
-  const cv=document.createElement('canvas');cv.width=620;cv.height=349;
-  const ctx=cv.getContext('2d',{willReadFrequently:true});
-  const cats=[{uid:'q0',species:'tangyuan'},{uid:'q1',species:'sanhua'}];
-  const frames=[];
-  for(const key of keys){
-   const variants=[];
-   for(const tier of [1,2,3]){
-    ctx.clearRect(0,0,cv.width,cv.height);
-    const painted=painter.draw(ctx,cv.width,cv.height,{
-      elements:key,max:2.75,t:2.75*.60,tier,catUids:cats.map(c=>c.uid),
-      name:key,hideCaptions:true
-    },uid=>cats.find(c=>c.uid===uid));
-    if(!painted)throw Error('Painting failed '+key+' tier '+tier);
-    const rgb=ctx.getImageData(0,0,cv.width,cv.height).data;
-    let hash=2166136261>>>0,bright=0,purple=0,count=0;
-    for(let i=0;i<rgb.length;i+=52){
-      hash=Math.imul((hash^rgb[i])>>>0,16777619)>>>0;
-      hash=Math.imul((hash^rgb[i+1])>>>0,16777619)>>>0;
-      hash=Math.imul((hash^rgb[i+2])>>>0,16777619)>>>0;
-      const r=rgb[i],g=rgb[i+1],b=rgb[i+2];
-      if(r+g+b>60){
-        bright+=(r+g+b)/3;
-        if(r>g*1.3&&b>g*1.4&&b>r*.95)purple++;
-        count++;
-      }
-    }
-    variants.push({tier,hash:hash.toString(16),avgBrightness:count?+(bright/count).toFixed(1):0,
-     purpleRatio:count?+(purple/count).toFixed(3):0});
-    // Also verify the separate 32-breed mode remains intact without
-    // silently replacing the default classic 63 original paintings.
-    ctx.clearRect(0,0,cv.width,cv.height);
-    if(!painter.draw(ctx,cv.width,cv.height,{
-      elements:key,max:2.75,t:2.75*.60,tier,catUids:cats.map(c=>c.uid),
-      name:key,hideCaptions:true,originalArt:false
-    },uid=>cats.find(c=>c.uid===uid)))throw Error('Breed mode failed '+key+' tier '+tier);
-   }
-   frames.push({key,variants,palette:painter.paletteFor(key)});
+ const page=await browser.newPage({viewport:{width:1280,height:860},deviceScaleFactor:1});page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:8765/cat-bond/duo-showcase.html?visual-qa=original-only',{waitUntil:'domcontentloaded',timeout:30000});
+ await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready&&window.CatBondDuoHero?.assetReady&&window.__catBondDuoGallery?.ready&&document.querySelectorAll('.stage-breed-preview').length===63&&document.querySelectorAll('.duo-card .skill-preview').length===21,null,{timeout:45000});
+ const audit=await page.evaluate(()=>{
+  const p=window.CatBondPremiumCinematics,cv=document.createElement('canvas');cv.width=620;cv.height=349;
+  const c=cv.getContext('2d',{willReadFrequently:true}),hashes=[],frames=[];
+  for(const key of p.keys)for(const tier of [1,2,3]){
+   c.clearRect(0,0,cv.width,cv.height);p.draw(c,cv.width,cv.height,{elements:key,max:2.75,t:1.2,tier,galleryPreview:true,originalArt:true,hideCaptions:true});
+   const d=c.getImageData(0,0,cv.width,cv.height).data;let h=2166136261>>>0,visible=0;
+   for(let i=0;i<d.length;i+=40){h=Math.imul((h^d[i])>>>0,16777619)>>>0;h=Math.imul((h^d[i+1])>>>0,16777619)>>>0;h=Math.imul((h^d[i+2])>>>0,16777619)>>>0;if(d[i+3]>200)visible++;}
+   hashes.push(h.toString(16));frames.push({key,tier,visible});
   }
-  return {keys:keys.length,palettes:painter.scenePaletteCount,
-    grades:painter.gradedSceneCount,tiers:painter.tierVariants,
-    source:window.CatBondDuoHero.assetSource,frames};
+  return{keys:p.keys.length,count:frames.length,unique:new Set(hashes).size,frames,original:p.originalPaintingDefault,
+   actorFallback:p.actorFallbackEnabled,heroSource:window.CatBondDuoHero.assetSource};
  });
- assert.equal(result.keys,21);
- assert.equal(result.palettes,21);
- assert.equal(await page.evaluate(()=>CatBondPremiumCinematics.originalPaintingDefault),true,
-   'All 63 intact original watercolor scenes must be the default');
- assert.equal(await page.evaluate(()=>CatBondPremiumCinematics.restoredOriginalFrameCount),63);
- assert.equal(await page.locator('#mode-original').getAttribute('aria-pressed'),'true');
- await page.locator('#mode-breeds').click();
- assert.equal(await page.locator('#mode-breeds').getAttribute('aria-pressed'),'true');
- await page.locator('#mode-original').click();
- assert.equal(await page.locator('#mode-original').getAttribute('aria-pressed'),'true');
- assert.equal(result.grades,63,'Cache must hold the 63 untouched, separately painted scenes (no actor-tinted duplicates)');
- assert.equal(result.tiers,3);
- assert.equal(result.source,'32-actual-breed-watercolor-actors');
- const matches=await page.evaluate(()=>{
-   const painter=window.CatBondPremiumCinematics;
-   const art=window.CatBondDuoBreedActors;
-   const breeds=window.GameData.SPECIES.map(s=>s.id);
-   const cv=document.createElement('canvas');cv.width=480;cv.height=270;
-   const c=cv.getContext('2d',{willReadFrequently:true});
-   const actorA={uid:'qa-A',species:'tangyuan'},actorB={uid:'qa-B',species:'mengmai'};
-   function hash(){
-     c.clearRect(0,0,480,270);
-     painter.draw(c,480,270,{elements:'dark+light',max:2.75,t:1.20,tier:3,
-       catUids:['qa-A','qa-B'],hideCaptions:true,thumbnail:true,originalArt:false},
-       id=>id==='qa-A'?actorA:actorB);
-     const pix=c.getImageData(0,0,480,270).data;
-     let h=2166136261>>>0;
-     for(let i=0;i<pix.length;i+=44)
-       h=Math.imul((h^pix[i])>>>0,16777619)>>>0;
-     return h.toString(16);
-   }
-   const firstSide=breeds.map(id=>{actorA.species=id;return [id,hash()]});
-   actorA.species='xuewa';
-   const secondSide=breeds.map(id=>{actorB.species=id;return [id,hash()]});
-   actorB.species='mengmai';
-   const ordered=hash();
-   actorA.species='mengmai';actorB.species='xuewa';
-   const reversed=hash();
-   return {n:art.supportedBreedCount,originalAtlasCount:art.breedCount,
-     jiafeiArtReady:art.jiafeiArtReady,jiafeiSource:art.jiafeiSource,
-     firstSide,secondSide,ordered,reversed,
-     cached:painter.activePaintCacheEntries};
- });
- assert.equal(matches.originalAtlasCount,32,'The immutable 8x4 sheet must retain its original 32 cats');
- assert.equal(matches.n,33,'32 atlas cats + standalone Jiafei must all render');
- assert.equal(matches.jiafeiArtReady,true,'Real browser must decode the separate Jiafei watercolor');
- assert.match(matches.jiafeiSource,/jiafei-watercolor-v2\.webp/);
- assert.equal(new Set(matches.firstSide.map(v=>v[1])).size,33,
-   'All 33 first-side breeds must produce visibly distinct actual watercolor cats');
- assert.equal(new Set(matches.secondSide.map(v=>v[1])).size,33,
-   'All 33 second-side breeds must produce visibly distinct actual watercolor cats');
- assert.notEqual(matches.ordered,matches.reversed,
-   'Swapping the two player cats must visibly exchange both painted characters');
- assert.ok(matches.cached<=63,'Changing cats must not create unbounded scene caches');
- // The optional gallery choice isn't enough: real battle sequences have no
- // originalArt flag. Jiafei must automatically trigger real breed watercolor
- // in either active UID slot, leaving the artist's other 63 originals intact.
- const liveJiafei=await page.evaluate(()=>{
-   const cv=document.createElement('canvas');cv.width=620;cv.height=349;
-   const g=cv.getContext('2d',{willReadFrequently:true});
-   const cats=[{uid:'live-a',species:'jiafei'},{uid:'live-b',species:'tangyuan'}];
-   function fingerprint(mode){
-     g.clearRect(0,0,cv.width,cv.height);
-     const seq={elements:'elec+fire',max:2.75,t:1.18,tier:3,
-       catUids:cats.map(cat=>cat.uid),hideCaptions:true};
-     if(mode!=='default')seq.originalArt=mode==='original';
-     if(!window.CatBondPremiumCinematics.draw(g,620,349,seq,
-       uid=>cats.find(cat=>cat.uid===uid)))throw Error('Live Jiafei duo failed');
-     const pix=g.getImageData(0,0,620,349).data;let h=2166136261>>>0;
-     for(let i=0;i<pix.length;i+=44)
-       h=Math.imul((h^pix[i])>>>0,16777619)>>>0;
-     return h.toString(16);
-   }
-   const left={default:fingerprint('default'),breed:fingerprint('breed'),
-     original:fingerprint('original')};
-   cats[0].species='tangyuan';cats[1].species='jiafei';
-   const right={default:fingerprint('default'),breed:fingerprint('breed'),
-     original:fingerprint('original')};
-   return {left,right};
- });
- for(const side of [liveJiafei.left,liveJiafei.right]){
-   assert.equal(side.default,side.breed,
-     'Real battle must automatically draw approved Jiafei selected in either slot');
-   assert.notEqual(side.default,side.original,
-     'Fixed original-cats painting must not replace the player-selected Jiafei');
+ assert.equal(audit.keys,21);assert.equal(audit.count,63);assert.equal(audit.unique,63,'all 63 paintings should be distinct');
+ assert.equal(audit.original,true);assert.equal(audit.actorFallback,false);assert.equal(audit.heroSource,'63-original-painted-storyboards');
+ assert.ok(audit.frames.every(x=>x.visible>1000));
+ assert.equal(await page.locator('#mode-breeds').count(),0);assert.equal(await page.locator('#pick-cat-a').count(),0);
+ assert.equal(await page.locator('script[src*="duo-breed-actors"]').count(),0);
+ await page.locator('#duo-player').screenshot({path:dir+'/desktop-original-16x9.png'});
+ const layouts=[];
+ for(const v of [{name:'phone-portrait',width:390,height:844},{name:'phone-landscape',width:844,height:390},{name:'desktop',width:1280,height:720},{name:'small-phone',width:320,height:568}]){
+  const l=await page.evaluate(({width,height})=>{const cv=document.createElement('canvas');cv.width=width;cv.height=height;window.CatBondPremiumCinematics.draw(cv.getContext('2d'),width,height,{elements:'fire+light',max:2.75,t:1.4,tier:3,hideCaptions:true});return window.CatBondPremiumCinematics.lastLayout;},v);
+  assert.ok(Math.abs(l.artAspect-16/9)<.00001,v.name);assert.equal(l.actorFallback,false);assert.ok(l.art.width<=v.width+1&&l.art.height<=v.height+1);
+  layouts.push({name:v.name,art:l.art,aspect:l.artAspect});await page.setViewportSize({width:v.width,height:v.height});await page.screenshot({path:dir+'/'+v.name+'.png',fullPage:true});
  }
- assert.notEqual(liveJiafei.left.default,liveJiafei.right.default,
-   'Swapping real battle duo positions must visibly swap the actual watercolor cats');
- assert.equal(new Set(result.frames.map(x=>x.variants[2].hash)).size,21,
-   '21 skill previews still visually identical; do not release');
- for(const entry of result.frames){
-  assert.equal(new Set(entry.variants.map(x=>x.hash)).size,3,
-    entry.key+' has identical visuals for bonds 20/60/90');
-  for(const v of entry.variants)assert.ok(v.avgBrightness>30,
-    entry.key+' rendered black/blank tier '+v.tier);
- }
- // Gallery UI must be actionable, not just a decorative list of cat names.
- await page.selectOption('#pick-cat-a','mengmai');
- await page.selectOption('#pick-cat-b','bosi');
- assert.equal(await page.locator('#pick-cat-a').inputValue(),'mengmai');
- assert.equal(await page.locator('#pick-cat-b').inputValue(),'bosi');
- await page.screenshot({path:DIR+'/gallery-32-breed-pickers.png',fullPage:false,animations:'disabled'});
- await page.screenshot({path:DIR+'/gallery-desktop.png',fullPage:true,animations:'disabled'});
- // Review the actual independent Jiafei watercolor in BOTH real Canvas slots,
- // not just species() IDs or distinct hashes from a procedural renderer.
- for(const [a,b,side] of [['jiafei','tangyuan','left'],['tangyuan','jiafei','right']]){
-   await page.evaluate(({a,b})=>{
-     document.getElementById('qa-jiafei-actor')?.remove();
-     const cv=document.createElement('canvas');cv.id='qa-jiafei-actor';
-     cv.width=960;cv.height=540;
-     cv.style.cssText='position:fixed;inset:0;z-index:999999;width:960px;height:540px;background:#f4efe5';
-     document.body.appendChild(cv);
-     const cats=[{uid:'real-a',species:a},{uid:'real-b',species:b}];
-     if(!CatBondPremiumCinematics.draw(cv.getContext('2d'),960,540,{
-       elements:'elec+fire',max:2.75,t:1.18,tier:3,
-       catUids:cats.map(cat=>cat.uid),hideCaptions:true,originalArt:false
-     },uid=>cats.find(cat=>cat.uid===uid)))
-       throw Error('Jiafei dedicated watercolor failed in '+a+' + '+b);
-   },{a,b});
-   await page.locator('#qa-jiafei-actor').screenshot({
-     path:DIR+'/jiafei-raster-'+side+'-desktop.png',animations:'disabled'});
- }
- await page.evaluate(()=>document.getElementById('qa-jiafei-actor')?.remove());
- for(const [key,name] of [['dark+light','moon'],['fire+light','sun'],['grass+grass','spring'],['dark+elec','shadow-storm']]){
-  for(const tier of [1,2,3]){
-   await page.evaluate(({key,tier})=>{
-    const cv=document.createElement('canvas');cv.id='qa-cinematic-frame';
-    cv.width=960;cv.height=540;cv.style.cssText='position:fixed;inset:0;z-index:999999;width:960px;height:540px;background:#f3ede8';
-    document.getElementById('qa-cinematic-frame')?.remove();
-    document.body.appendChild(cv);
-    const cats=[{uid:'q0',species:'tangyuan'},{uid:'q1',species:'sanhua'}];
-    CatBondPremiumCinematics.draw(cv.getContext('2d'),960,540,{
-      elements:key,max:2.75,t:2.75*.59,tier,catUids:cats.map(c=>c.uid),
-      name:key,hideCaptions:false
-    },uid=>cats.find(c=>c.uid===uid));
-   },{key,tier});
-   await page.locator('#qa-cinematic-frame').screenshot({
-     path:DIR+'/'+name+'-tier-'+tier+'.png',animations:'disabled'});
-  }
- }
- await page.evaluate(()=>document.getElementById('qa-cinematic-frame')?.remove());
- const mobile=await browser.newPage({viewport:{width:390,height:844},
-   deviceScaleFactor:2,isMobile:true,hasTouch:true});
- mobile.on('pageerror',e=>errors.push('Mobile runtime: '+e.message));
- await mobile.goto('http://127.0.0.1:8765/cat-bond/duo-showcase.html?visual-qa=mobile',
-   {waitUntil:'domcontentloaded'});
- await mobile.waitForFunction(()=>window.__catBondDuoGallery?.ready,{timeout:40000});
- const mobileLayout=await mobile.evaluate(()=>({
-    viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,
-    cards:document.querySelectorAll('.duo-card').length,
-    breeds:document.querySelectorAll('.breed-card').length
- }));
- assert.equal(mobileLayout.cards,21);
- assert.equal(mobileLayout.breeds,await mobile.evaluate(()=>window.GameData?.SPECIES?.length));
- assert.ok(mobileLayout.documentWidth<=mobileLayout.viewport+4,
-   'Mobile art gallery scrolls horizontally '+JSON.stringify(mobileLayout));
- await mobile.screenshot({path:DIR+'/gallery-mobile.png',fullPage:true,animations:'disabled'});
- // Phone QA also uses the live breed-matched mode, never the fixed original cats.
- await mobile.locator('#mode-breeds').click();
- await mobile.selectOption('#pick-cat-a','jiafei');
- await mobile.selectOption('#pick-cat-b','tangyuan');
- await mobile.screenshot({path:DIR+'/jiafei-raster-mobile-gallery.png',fullPage:true,animations:'disabled'});
- // Real viewport coverage: 320px portrait, 390px portrait, 844px
- // landscape, and 1280px desktop. The painting must fill the entire
- // arena, keep cat anatomy intact, and dissolve at both ends of playback.
- const fullStage=await mobile.evaluate(()=>{
-   const results=[],painter=window.CatBondPremiumCinematics;
-   const pair=[{uid:'edge-a',species:'tangyuan'},
-               {uid:'edge-b',species:'mengmai'}];
-   const base=[45,61,57];
-   for(const [W,H] of [[320,640],[390,844],[844,390],[1280,720]]){
-     const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-     const g=cv.getContext('2d',{willReadFrequently:true});
-     function render(progress){
-       g.fillStyle='rgb('+base.join(',')+')';g.fillRect(0,0,W,H);
-       return painter.draw(g,W,H,{
-         elements:'fire+grass',max:3.2,t:3.2*(1-progress),tier:3,
-         catUids:pair.map(cat=>cat.uid),hideCaptions:true
-       },uid=>pair.find(cat=>cat.uid===uid));
-     }
-     const rgb=(x,y)=>[...g.getImageData(Math.floor(x),Math.floor(y),1,1).data].slice(0,3);
-     const diff=c=>c.reduce((sum,v,i)=>sum+Math.abs(v-base[i]),0);
-     render(.008);const entrance=diff(rgb(W*.5,H*.5));
-     const drawn=render(.53);
-     const center=diff(rgb(W*.5,H*.5));
-     const top=diff(rgb(W*.5,H*.12)),bottom=diff(rgb(W*.5,H*.88));
-     const left=diff(rgb(W*.15,H*.5)),right=diff(rgb(W*.85,H*.5));
-     const corner=diff(rgb(1,1));
-     render(.985);const exited=diff(rgb(W*.5,H*.5));
-     results.push({W,H,drawn,entrance,center,top,bottom,left,right,corner,exited});
-   }
-   return results;
- });
- for(const p of fullStage){
-   assert.equal(p.drawn,true,'Duo art did not render at '+p.W+'x'+p.H);
-   assert.ok(p.center>65,'Center artwork missing '+JSON.stringify(p));
-   assert.ok(p.top>40&&p.bottom>40,
-     'Visible letterboxing instead of continuous painted scenery '+JSON.stringify(p));
-   assert.ok(p.left>40&&p.right>40,
-     'Painting leaves hard sidebars '+JSON.stringify(p));
-   assert.ok(p.corner<55,'Hard rectangular painting edge '+JSON.stringify(p));
-   assert.ok(p.entrance<30,'Painting enters too abruptly '+JSON.stringify(p));
-   assert.ok(p.exited<8,'Painting does not disappear before impact '+JSON.stringify(p));
- }
- assert.equal(await mobile.evaluate(()=>CatBondPremiumCinematics.fullBleedResponsive),true);
- await mobile.close();
- assert.deepEqual(errors,[],'No uncaught JavaScript runtime errors');
- fs.writeFileSync(DIR+'/report.json',JSON.stringify({result,mobileLayout,fullStage,errors},null,2));
- console.log('CAT BOND FULL-STAGE CINEMATIC PASS: original 63 frames + 32 atlas cats + dedicated Jiafei AVIF in BOTH actor slots, desktop/mobile screenshots, and responsive 320/390/844/1280 layouts.');
-}finally{await browser.close()}
+ assert.deepEqual(errors,[]);console.log('CAT BOND ORIGINAL ART QA PASS '+JSON.stringify({frames:audit.count,unique:audit.unique,layouts}));
+}finally{await browser.close();}

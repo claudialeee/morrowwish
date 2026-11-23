@@ -201,23 +201,19 @@ try{
       second.push(hash());
     }
     CanvasRenderingContext2D.prototype.scale=nativeScale;
-    const firstHigh=Director.pose('grass+light',.03,640,360);
-    const high=Director.pose('grass+light',.28,640,360);
-    const sep=poses=>Math.abs(poses[1].x-poses[0].x);
     const soundCount=window.MorrowwishAudio?.status?.().combatSounds||0;
     const ids=pairCats.map(c=>c.uid);State.save();
     return {pairs:Director.keys.length,unique:new Set(results).size,
-      moved:second.some((h,i)=>h!==results[i]),
-      motionUnique:Director.isUnique(),highfive:Director.styles['grass+light'],
-      pawApproach:sep(high)<sep(firstHigh),
+      opacityProgresses:second.some((h,i)=>h!==results[i]),motionUnique:Director.isUnique(),
+      source:Hero.assetSource,originalOnly:Hero.originalArtOnly,
       unlockedPair:ids,a:ids[0],b:ids[1],soundCount};
   });
   assert.equal(visual.pairs,21);
   assert.equal(visual.unique,21,'all 21 duo performances should visibly differ');
   assert.equal(visual.motionUnique,true);
-  assert.equal(visual.moved,true,'actual poses and magical attacks must move');
-  assert.equal(visual.highfive,'highfive');
-  assert.equal(visual.pawApproach,true,'high-five kittens must approach one another');
+  assert.equal(visual.opacityProgresses,true,'original painting must fade through its cinematic timeline');
+  assert.equal(visual.source,'63-original-painted-storyboards');
+  assert.equal(visual.originalOnly,true,'actor convergence fallback must remain disabled');
   assert.equal(visual.soundCount,13,'combat sound categories must still load');
   // No one may browse unearned moves: only the current earned pair opens.
   await page.goto(origin+'/cat-bond/duo-preview.html?a='+
