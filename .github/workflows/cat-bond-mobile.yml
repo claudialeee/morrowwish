@@ -54,10 +54,10 @@ jobs:
           # Gate the newly unlocked-only duo UI and the complete 21-motion
           # private QA first, so unrelated map browser failures cannot hide
           # regressions in the core cat-bond abilities.
-          node scripts/cat-bond-ult-visual-smoke.mjs
           node scripts/cat-bond-duo-smoke.mjs
           node scripts/cat-bond-single-painting-smoke.mjs
           node scripts/cat-bond-locked-duo-review.mjs
+          node scripts/cat-bond-ult-visual-smoke.mjs
           node scripts/cat-bond-lazy-memory-smoke.mjs
           node scripts/cat-bond-yard-placement-smoke.mjs
           node scripts/cat-bond-audio-smoke.mjs

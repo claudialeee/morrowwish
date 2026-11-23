@@ -207,11 +207,16 @@ if(!duoPromoCapture.includes('b.autoMode=false;b.duoCharge=0;b.duoCd=999')||
 
 const unlockedPreview=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
 if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!important}')||
-   !unlockedPreview.includes('aspect-ratio:16/9!important')||
-   !unlockedPreview.includes('max-height:40dvh')||
+   !unlockedPreview.includes('width:100%!important;height:auto!important;')||
+   !unlockedPreview.includes('max-height:none;aspect-ratio:16/9!important')||
+   !unlockedPreview.includes('background:linear-gradient(130deg,#fff7eb,#ebe9f8,#e9f4ee)')||
+   !unlockedPreview.includes('id="tier-1"')||!unlockedPreview.includes('id="tier-2"')||
+   !unlockedPreview.includes('id="tier-3"')||
+   !unlockedPreview.includes('Replay all three tiers')||
+   !unlockedPreview.includes('sequenceMode=true')||
    !unlockedPreview.includes("hideCaptions:q.get('embedded')==='1'")||
    !/duo-premium\.js\?v=[\w-]+/.test(unlockedPreview))
- throw Error('Unlocked duo modal must show uncropped artwork without duplicate titles');
+ throw Error('Unlocked duo modal must preserve the watercolor frame and all three unlocked tiers');
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
  if(!bondScriptSources.some(src=>src.startsWith(asset+'?v=')&&src.slice(asset.length+3).length>0))
