@@ -19,7 +19,7 @@ must(fs.existsSync(art)&&fs.statSync(art).size>2_000_000,'63-frame approved atla
 must(original.includes('this.duoCinematic.originalArt=false;'),'Current live duo must use actual watercolor cat breeds');
 must(!original.includes('this.duoCinematic.originalArt=true;'),'Current live duo cannot substitute fixed painting subjects');
 must(painter.includes('duo-storyboard-21x3-v3.webp'),'Premium cinematic no longer loads the canonical atlas');
-must(loader.includes('approved-painted-duo-v13-20261122'),'Old battle JS may remain in browser cache');
+must(/js\/duo-bond\.js\?v=[\w-]+/.test(loader),'Current selected-cat duo JS must be cache-busted');
 must(capture.includes("artMode:'63-original-painted-storyboards'") &&
   capture.includes("originalArt:b.duoCinematic?.originalArt===true"),
   'Capture does not prove real art mode at cast time');
