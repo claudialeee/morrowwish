@@ -16,7 +16,7 @@ const IG_APPROVED={
  "parcel-panic":"DgDfRCJAF83",
  "pocket-aquarium":"DgDfRT3O7EK"
 };
-const igCode=p=>/instagram\\.com\\/(?:reel|p)\\/([A-Za-z0-9_-]+)/.exec(p||"")?.[1]||null;
+const igCode=p=>/instagram[.]com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(p||"")?.[1]||null;
 // Match the exact seven approved video shortcodes, not the UTC date of posting.
 // Meta timestamps are UTC: an upload at 4:30pm Pacific on Nov 22 is Nov 23 UTC,
 // and must not be silently dropped from the launch-campaign dashboard.
