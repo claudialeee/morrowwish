@@ -1,0 +1,134 @@
+name: D1 temporary recovery snapshot probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'recovery/run-probe.trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned Wrangler
+        run: npm ci
+      - name: Back up current D1, temporarily inspect pre-reset snapshot, restore current bookmark
+        env:
+          CLOUDFLARE_D1_RECOVERY_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+          D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          const token=process.env.CLOUDFLARE_D1_RECOVERY_TOKEN;
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          const db=process.env.D1_DATABASE_ID;
+          if(!token||!account||!db) throw new Error('Missing recovery token or database configuration');
+          const base='https://api.cloudflare.com/client/v4';
+          const root='/accounts/'+account+'/d1/database/'+db;
+          async function api(path,init={}) {
+            const res=await fetch(base+path,{...init,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',...(init.headers||{})}});
+            const body=await res.json();
+            if(!res.ok||!body.success) throw new Error('Cloudflare API '+res.status+': '+JSON.stringify(body.errors||body.messages||[]));
+            return body.result;
+          }
+          async function query(sql) {
+            const result=await api(root+'/query',{method:'POST',body:JSON.stringify({sql})});
+            return result?.[0]?.results||[];
+          }
+          async function exportCurrentDatabase(){
+            let state=await api(root+'/export',{method:'POST',body:JSON.stringify({output_format:'polling',dump_options:{compatibility:'d1'}})});
+            const at=state.at_bookmark;
+            if(!at) throw new Error('D1 export did not return its pinned bookmark');
+            for(let i=0;i<90;i++){
+              const status=state.status||state.result?.status;
+              if(status==='complete'){
+                const signed=state.result?.signed_url||state.signed_url;
+                if(!signed) throw new Error('D1 export completed without a signed download URL');
+                const response=await fetch(signed);
+                if(!response.ok) throw new Error('Could not download current D1 backup: HTTP '+response.status);
+                const bytes=Buffer.from(await response.arrayBuffer());
+                if(bytes.length<100) throw new Error('Current D1 backup unexpectedly small');
+                fs.writeFileSync('/tmp/morrowwish-current-d1.sql',bytes);
+                return {atBookmark:at,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')};
+              }
+              if(status==='error') throw new Error('D1 export failed: '+(state.error||JSON.stringify(state.messages||[])));
+              await new Promise(resolve=>setTimeout(resolve,1000));
+              state=await api(root+'/export',{method:'POST',body:JSON.stringify({output_format:'polling',current_bookmark:at})});
+            }
+            throw new Error('D1 export polling timed out');
+          }
+          const targetTimestamp='2026-11-23T00:59:00.000Z';
+          const wranglerOutput=execFileSync('npx',['wrangler','d1','time-travel','info','morrowwish-analytics','--config','wrangler.jsonc','--timestamp',targetTimestamp,'--json'],{
+            cwd:'cloudflare-pages',encoding:'utf8',env:process.env
+          });
+          let parsed=null;try{parsed=JSON.parse(wranglerOutput)}catch{}
+          const targetBookmark=parsed?.bookmark||parsed?.result?.bookmark||wranglerOutput.match(/[0-9a-f]{8}-[0-9a-f]{8}-[0-9a-f]{8}-[0-9a-f]{32}/i)?.[0];
+          if(!targetBookmark) throw new Error('No Time Travel bookmark for '+targetTimestamp+': '+wranglerOutput);
+          const before=await query("SELECT day,category,game,kind,COUNT(*) AS rows FROM events GROUP BY day,category,game,kind ORDER BY day,category,game,kind");
+          const backup=await exportCurrentDatabase();
+          let rollbackBookmark=null;
+          let historical=null;
+          let restoreMessage=null;
+          let rollbackError=null;
+          try{
+            const restored=await api(root+'/time_travel/restore?bookmark='+encodeURIComponent(targetBookmark),{method:'POST'});
+            rollbackBookmark=restored.previous_bookmark;
+            restoreMessage=restored.message||null;
+            if(!rollbackBookmark) throw new Error('Time Travel restore did not return previous_bookmark; refusing to continue');
+            historical=await query("SELECT day,category,game,kind,COUNT(*) AS rows,MIN(id) AS first_id,MAX(id) AS last_id,MIN(ts) AS first_ts,MAX(ts) AS last_ts FROM events WHERE category IN ('arcade','elsewhere','diagnostic') AND day >= '2026-11-22' GROUP BY day,category,game,kind ORDER BY day,category,game,kind");
+          }finally{
+            if(rollbackBookmark){
+              try{
+                await api(root+'/time_travel/restore?bookmark='+encodeURIComponent(rollbackBookmark),{method:'POST'});
+              }catch(e){
+                rollbackError=String(e);
+                try{
+                  const current=await api(root+'/time_travel/bookmark');
+                  if(current?.bookmark!==rollbackBookmark) await api(root+'/time_travel/restore?bookmark='+encodeURIComponent(rollbackBookmark),{method:'POST'});
+                }catch(second){rollbackError+='; retry: '+String(second);}
+              }
+            }
+          }
+          if(!rollbackBookmark) throw new Error('Historical restore did not complete safely; no rollback bookmark was returned');
+          if(rollbackError) throw new Error('Could not restore the original production state: '+rollbackError);
+          const after=await query("SELECT day,category,game,kind,COUNT(*) AS rows FROM events GROUP BY day,category,game,kind ORDER BY day,category,game,kind");
+          const key=x=>[x.day,x.category,x.game,x.kind].join('|');
+          const afterMap=new Map(after.map(x=>[key(x),Number(x.rows)]));
+          const lost=before.filter(x=>(afterMap.get(key(x))||0)<Number(x.rows));
+          if(lost.length) throw new Error('Post-rollback verification found missing pre-existing rows: '+JSON.stringify(lost));
+          const output={
+            generatedAt:new Date().toISOString(),
+            targetTimestamp,targetBookmark,
+            backup:{bytes:backup.bytes,sha256:backup.sha256,atBookmark:backup.atBookmark,keptOnlyOnEphemeralRunner:true},
+            historicalRows:historical,
+            historicalTotalRows:(historical||[]).reduce((n,x)=>n+Number(x.rows||0),0),
+            currentStateRestored:true,
+            currentRowsBefore:before.reduce((n,x)=>n+Number(x.rows||0),0),
+            currentRowsAfter:after.reduce((n,x)=>n+Number(x.rows||0),0),
+            rollbackBookmark,
+            restoreMessage
+          };
+          fs.mkdirSync('recovery',{recursive:true});
+          fs.writeFileSync('recovery/d1-historical-probe.json',JSON.stringify(output,null,2)+'\n');
+          console.log(JSON.stringify(output,null,2));
+          NODE
+      - name: Commit aggregate-only historical probe report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add recovery/d1-historical-probe.json
+          git commit -m "chore(recovery): record pre-reset D1 snapshot counts" || exit 0
+          git push
