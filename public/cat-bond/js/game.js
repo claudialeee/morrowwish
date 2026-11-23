@@ -936,6 +936,7 @@ class Game {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
     this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
+    this.battle.storyBoss=!!opts.storyBoss;
     // Persist the region BEFORE the arena changes this.scene to 'battle'.
     this.battle._analyticsRegion=this._returnScene==='map'
       ?(window.WorldMap?.currentRegion||'unknown'):'yard';
@@ -1669,6 +1670,22 @@ class Game {
       if(!backToMap)document.getElementById('yard-actions').classList.remove('hidden');
       this.battle=null;
       UI.openMasteryChallengeResult(b.wild,performance,reward,win);
+      return;
+    }
+    // The final story encounter uses the existing real-time battle engine, but
+    // defeating Muling is a story resolution, never a cat capture or dex entry.
+    if(b.storyBoss){
+      this.battle=null;
+      if(win){
+        if(!State.S.story||typeof State.S.story!=='object')State.S.story={version:1,fragments:[],visited:{}};
+        State.S.story.bossDefeated=true;
+        State.save();this.refreshHUD();
+        window.CatBondStory?.onBossVictory?.();
+      }else{
+        this._lastBattleLost=true;
+        State.save();this.refreshHUD();
+        window.CatBondStory?.showBossRetry?.();
+      }
       return;
     }
     if (win) {
