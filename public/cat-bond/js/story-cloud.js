@@ -307,17 +307,20 @@ function openJournal(){
   (s.completed?'<button class="cb-cloud-secondary" data-journal-action="ending">'+t('重看结局动画','Replay ending')+'</button>':'')+
   '<button class="cb-cloud-secondary" data-journal-action="cloud">'+t('云存档','Cloud save')+'</button></div></section>';
  document.body.append(overlay);
- overlay.querySelector('.cb-cloud-close').onclick=()=>overlay.remove();
- overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+ const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
+ const rerender=()=>{close();openJournal();};
+ window.addEventListener('morrowwish-language-change',rerender);
+ overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  overlay.querySelector('[data-journal-action="continue"]').onclick=()=>{
-  overlay.remove();
+  close();
   if(allSix(storyState())&&!storyState().bossDefeated){
    if(window.__game?.scene==='map'&&window.WorldMap?.currentRegion==='ruins')showBossReveal();
    else openWorldMapForBoss();
   }else openWorldMapForBoss();
  };
- overlay.querySelector('[data-journal-action="cloud"]')?.addEventListener('click',()=>{overlay.remove();openCloudPanel();});
- overlay.querySelector('[data-journal-action="ending"]')?.addEventListener('click',()=>{overlay.remove();playEnding(true);});
+ overlay.querySelector('[data-journal-action="cloud"]')?.addEventListener('click',()=>{close();openCloudPanel();});
+ overlay.querySelector('[data-journal-action="ending"]')?.addEventListener('click',()=>{close();playEnding(true);});
 }
 function openWorldMapForBoss(){
  const game=window.__game;if(!game)return;
@@ -409,10 +412,12 @@ function renderCloudPanel(){
   '<div class="cb-cloud-body"></div></section>';
  document.body.append(overlay);
  const card=overlay.querySelector('.cb-cloud-card'),body=overlay.querySelector('.cb-cloud-body');
- const close=()=>overlay.remove();
+ const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ let currentStatus='';
  function render(statusText=''){
+  currentStatus=statusText;
   const token=localStorage.getItem(CLOUD_KEY)||'';
   if(token){
    body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||t('云存档已启用。','Cloud save is enabled.'))+'</div>'+
@@ -492,6 +497,14 @@ function renderCloudPanel(){
     :t('操作失败：','Action failed: ')+(error?.message||''));
   }
  }
+ const updateLocale=()=>{
+  const input=body.querySelector('#cb-cloud-code-input')?.value||'';
+  render(localStorage.getItem(CLOUD_KEY)
+   ?t('云存档已启用。','Cloud save is enabled.')
+   :t('还没有启用云存档。','Cloud save is not enabled yet.'));
+  const nextInput=body.querySelector('#cb-cloud-code-input');if(nextInput)nextInput.value=input;
+ };
+ window.addEventListener('morrowwish-language-change',updateLocale);
  render();
 }
 function makeToken(){
