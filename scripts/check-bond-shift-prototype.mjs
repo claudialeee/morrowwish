@@ -51,7 +51,7 @@ test('do not claim both forms were used if only toggled',()=>{
 test('prototype does not import production state, write saves or send analytics',()=>{
   assert.ok(html.includes('type="module" src="./game.js"'));
   assert.ok(game.includes("from './logic.mjs'"));
-  assert.ok(!/localStorage|sessionStorage|State\\.hardReset|State\\.save|fetch\\s*\\(|sendBeacon|arcadeMetric/.test(game.replace(/\/\/.*$/gm,'')));
+  assert.ok(!/localStorage|sessionStorage|State\.hardReset|State\.save|fetch\s*\(|sendBeacon|arcadeMetric/.test(game.replace(/\/\/.*$/gm,'')));
   assert.ok(!/src="\/cat-bond\/js\/|src="\.\.\/\.\.\/js\//.test(html));
   assert.ok(game.includes('window.__bondShiftDebug'));
 });
