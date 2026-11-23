@@ -29,6 +29,7 @@ jobs:
           node-version: '22'
       - name: Install capture tools
         run: |
+          sudo apt-get update -qq && sudo apt-get install -y ffmpeg
           npm install --no-save --package-lock=false playwright sharp
           npx playwright install --with-deps chromium
           ffmpeg -version | head -n 1
