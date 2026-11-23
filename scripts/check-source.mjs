@@ -858,7 +858,7 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
  // Verify the current actual pacing rather than blocking every deploy on
  // obsolete speed constants from its previous harder build.
  if(!parcel.includes('life=4')||
-    !parcel.includes('runwayStart=()=>portrait?108:120,runwayEnd=()=>portrait?477:617')||
+    !parcel.includes('runwayStart=()=>isPortrait()?108:120,runwayEnd=()=>isPortrait()?477:617')||
     !parcel.includes('Math.min(235,108+Math.max(0,delivered-8)*2.8+Math.max(0,time-22)*.16)')||
     !parcel.includes('p?.kind==="express"?1.16')||
     !parcel.includes('queue.shift()'))
