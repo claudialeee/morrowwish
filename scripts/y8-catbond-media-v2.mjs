@@ -278,13 +278,17 @@ try{
   await sleep(1050);
   await page.locator('#secret-close').click({timeout:4000});
   await sleep(150);
+  // Avoid replaying the duo cinematic after its earlier dedicated preview.
+  // The battle still happens in the actual engine with the real roster and SSR
+  // target; recording temporarily runs without an activated expedition duo.
   await page.evaluate(()=>{
     const game=window.__game;game._returnScene='map';
+    if(State.S.duoRelations)State.S.duoRelations.active=[];
+    State.save();
     game.startBattle(State.S.cats.slice(0,2),{...GameData.speciesById('jinwu'),encounterLevel:2});
+    if(game.battle?.duo)throw Error('Unexpected repeated duo in the final battle');
   });
-  await sleep(240);
-  const duoBattle=page.locator('#duo-burst');
-  if(await duoBattle.isVisible().catch(()=>false))await duoBattle.click().catch(()=>{});
+  await sleep(100);
   await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:55000}).catch(async error=>{
     const diagnostics=await page.evaluate(()=>({
       scene:__game.scene, battleResult:__game.battle?.result,
