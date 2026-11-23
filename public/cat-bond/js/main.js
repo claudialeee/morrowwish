@@ -14,30 +14,37 @@ window.addEventListener('DOMContentLoaded', () => {
   window.__game = game;
   UI.init(game);
 
-  // Reset must never erase the player's progress in other Morrow Wish games.
-  const resetBtn = document.getElementById('intro-reset');
-  if(resetBtn){
-    let resetArmed=false,resetTimer=null;
-    const originalResetLabel=resetBtn.textContent;
-    resetBtn.addEventListener('click',()=>{
-      if(!resetArmed){
-        resetArmed=true;
-        resetBtn.classList.add('cb-reset-armed');
-        resetBtn.setAttribute('aria-live','polite');
-        resetBtn.textContent=window.MorrowwishI18n?.get?.()==='zh'
-          ?'⚠ 确认删除全部猫猫存档？再点一次'
-          :'⚠ Erase all Cat Bond progress? Tap again';
-        resetTimer=setTimeout(()=>{
-          resetArmed=false;resetBtn.classList.remove('cb-reset-armed');
-          resetBtn.textContent=originalResetLabel;
+  // A shared two-click reset for both the intro and the in-game Menu.
+  // Reset State BEFORE reloading: pagehide/beforeunload auto-save otherwise
+  // recreates the old save immediately after localStorage.removeItem().
+  // Other Morrow Wish game saves and the language preference are untouched.
+  const bindResetButton = button => {
+    if(!button || button.dataset.cbResetBound==='1')return;
+    button.dataset.cbResetBound='1';
+    let armed=false,restoreTimer=null,originalLabel='';
+    button.addEventListener('click',()=>{
+      if(!armed){
+        armed=true;
+        originalLabel=button.textContent;
+        button.classList.add('cb-reset-armed');
+        button.setAttribute('aria-live','polite');
+        button.textContent=window.MorrowwishI18n?.get?.()==='zh'
+          ?'⚠ 确认清空猫猫存档？再点一次'
+          :'⚠ Erase Cat Bond progress? Click again';
+        restoreTimer=setTimeout(()=>{
+          armed=false;
+          button.classList.remove('cb-reset-armed');
+          button.textContent=originalLabel;
         },5000);
         return;
       }
-      clearTimeout(resetTimer);
-      try{localStorage.removeItem('catbond_save_v1');}catch(e){}
+      clearTimeout(restoreTimer);
+      State.hardReset();
       location.reload();
     });
-  }
+  };
+  window.CatBondBindResetButton=bindResetButton;
+  bindResetButton(document.getElementById('intro-reset'));
 
   // Bind Start before any optional decorations, so mobile GPU issues cannot block play.
   let starting=false;
@@ -96,12 +103,10 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   document.getElementById('intro-start').addEventListener('click', startGame);
-  // CrazyGames asks users to reach real gameplay immediately; skip the full
-  // studio intro and present the starter choice as the first interactive action.
-  if(window.CatBondPlatform?.crazygames){
+  // Keep the original Start Adventure intro in portal previews, too.
+  // The host opens inside the game but should not silently bypass onboarding.
+  if(window.CatBondPlatform?.crazygames)
     document.getElementById('cb-home')?.remove();
-    startGame();
-  }
   try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
   try { paintIntroCatGallery(); } catch(error) { console.warn('Cat gallery unavailable',error); }
   window.__CAT_BOND_READY__=true;
