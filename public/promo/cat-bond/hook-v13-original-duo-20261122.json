@@ -1,0 +1,45 @@
+{
+  "sourceVideo": "/promo/cat-bond/trailer-v13-20261122.mp4",
+  "originalDuoArtMode": "63-original-painted-storyboards",
+  "originalDuoArtSource": "http://127.0.0.1:8795/cat-bond/assets/duo-storyboard-21x3-v3.webp?v=original-63-poses-20261122",
+  "newGameplayCapture": true,
+  "oldHookReused": false,
+  "originalDuoCasts": 1,
+  "scenes": [
+    {
+      "scene": "rare-encounter",
+      "duration": 1.1,
+      "offset": 0.35
+    },
+    {
+      "scene": "duo",
+      "duration": 3.1,
+      "offset": 0
+    },
+    {
+      "scene": "rare-aftermath",
+      "duration": 1.15,
+      "offset": 0
+    },
+    {
+      "scene": "rare-capture",
+      "duration": 3.2,
+      "offset": 0.08
+    },
+    {
+      "scene": "end-card",
+      "duration": 1.2,
+      "offset": 0
+    }
+  ],
+  "earnedRareCapture": true,
+  "socialAutopublish": false,
+  "approved": false,
+  "published": false,
+  "width": 1080,
+  "height": 1920,
+  "duration": 9.766667,
+  "bytes": 1821247,
+  "video": "/promo/cat-bond/hook-v13-original-duo-20261122.mp4",
+  "poster": "/promo/cat-bond/hook-v13-original-duo-20261122.jpg"
+}
