@@ -57,14 +57,32 @@
     "No CrazyGames public listing or submitted review receipt exists."
   ],
   "rightsAndQA": {
-    "gameplaySmoke": "Passed in prior CI; see docs/cat-bond-crazygames-recheck-2026-11-22.md",
+    "gameplaySmoke": "Current live iframe original 63 verified; 10 responsive mouse/touch portal viewports passed 2026-11-22 in GitHub Actions 45100812099.",
     "strangerPlaytest": "Studio owner confirmed independent start-to-finish human playtest in this chat; no test-session recording retained.",
     "portalPreview": "CrazyGames developer preview reached, seven Basic Launch QA answers recorded, and Finalize submission draft page verified.",
     "assetRights": "Studio owner confirmed rights to code, art, and sound in this chat; original licenses not independently audited.",
-    "visualAssets": "All five game-cover and preview assets uploaded and saved; independent human visual signoff for release not yet separately recorded."
+    "visualAssets": "Three polished covers and both native-aspect silent previews rebuilt from verified original-63 art; visually reviewed by assistant, five files saved and verified in CrazyGames draft 2026-11-22 18:51 PT. Final studio owner signoff remains separate."
   },
   "externalPortalDraftId": "cda65c21-75f7-4ce5-b717-62b425097981",
   "portalDraftUrl": "https://developer.crazygames.com/games/cda65c21-75f7-4ce5-b717-62b425097981",
-  "portalSavedAt": "2026-11-23T01:59:23Z",
-  "submissionForReview": false
+  "portalSavedAt": "2026-11-23T02:51:07.548Z",
+  "submissionForReview": false,
+  "mediaReplacedAt": "2026-11-23T02:51:07.548Z",
+  "mediaArtSource": "duo-storyboard-21x3-v3.webp: approved complete 63 original painted duo scenes",
+  "mediaArtifactSource": "GitHub Actions 45102338281; newly polished covers and 17.5s silent genuine game footage",
+  "mediaVerification": {
+    "runId": 45102338281,
+    "artifactId": 14785279032,
+    "draftId": "cda65c21-75f7-4ce5-b717-62b425097981",
+    "originalSceneCount": 63,
+    "filesUploaded": [
+      "cover-landscape.png",
+      "cover-portrait.png",
+      "cover-square.png",
+      "real-gameplay-landscape.mp4",
+      "real-gameplay-portrait.mp4"
+    ],
+    "platformDraftVisibleAfterSave": true,
+    "reviewSubmitted": false
+  }
 }
