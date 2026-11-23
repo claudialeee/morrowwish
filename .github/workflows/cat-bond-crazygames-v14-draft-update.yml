@@ -50,6 +50,12 @@ jobs:
           test -s promotion/cat-bond-crazygames-v14-variety-verified.json
           cp promotion/cat-bond-crazygames-v14-variety-verified.json .check/crazygames-v14-variety/shot-plan-and-qa.json
           echo "Restored two V14 real gameplay clips and independent non-hidden source manifest"
+      - name: Ensure ffprobe is present for independent media verification
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
+          fi
       - name: Strict authentic gameplay, silent clip, size and copy preflight
         run: |
           set -eu
