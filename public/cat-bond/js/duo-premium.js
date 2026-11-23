@@ -320,7 +320,7 @@ function draw(ctx,W,H,seq,lookup){
  // stays present for the choreography, and releases back to live combat
  // BEFORE the separate elemental hit. No instantaneous pop-in/out.
  const opacity=(thumbnail||galleryPreview)?1:
-  smooth(p/.22)*(1-smooth((p-.71)/.29));
+  smooth(p/.22)*(1-smooth((p-.71)/.275));
  if(opacity<=0)return true;
  const portrait=!thumbnail&&W/H<.90;
  // Keep the complete 16:9 original painting only where it fits naturally.

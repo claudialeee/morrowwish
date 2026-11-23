@@ -250,7 +250,7 @@ const unlockedPreview=fs.readFileSync('public/cat-bond/duo-preview.html','utf8')
 if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!important}')||
    !unlockedPreview.includes('height:min(75dvh')||
    !unlockedPreview.includes("hideCaptions:q.get('embedded')==='1'")||
-   !/duo-premium\.js\?v=[\w-]+-20261122/.test(unlockedPreview))
+   !/duo-premium\.js\?v=[\w-]+-2026112[23]/.test(unlockedPreview))
  throw Error('Unlocked duo modal must show uncropped artwork without duplicate titles');
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
 for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
