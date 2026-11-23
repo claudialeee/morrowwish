@@ -14,6 +14,7 @@ on:
       - 'scripts/test-analytics-integrity.mjs' # Analytics contract is a required pre-deploy gate.
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
       - 'scripts/cat-bond-language-audit.mjs' # 19 game screens across desktop, mobile, site, portal.
+      - 'scripts/cat-bond-interaction-language-qa.mjs' # Reproduce real post-click toasts and transactions.
       - 'scripts/check-hidden-story-language.mjs' # Hidden endings and secret event translations are release gates.
       - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
       - 'scripts/test-dashboard-history-browser.mjs' # Historical analytics DOM preservation is a release gate.
@@ -136,6 +137,9 @@ jobs:
           node scripts/language-browser-smoke.mjs
           # Broad rendered localization checks, including gold-coin DOM splitting.
           node scripts/cat-bond-language-audit.mjs
+          # Do not mistake a translated static panel for translated gameplay:
+          # spend coins, buy supplies, claim daily gifts, edit tactics, etc.
+          node scripts/cat-bond-interaction-language-qa.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
@@ -146,6 +150,14 @@ jobs:
         with:
           name: cat-bond-crazygames-yard-dock
           path: .check/crazygames-yard-dock/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Save Cat Bond post-click localization report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-interaction-language
+          path: .check/cat-bond-interaction-language/*
           if-no-files-found: ignore
           retention-days: 7
       - name: Save Cat Bond bilingual whole-game screenshots and audit
