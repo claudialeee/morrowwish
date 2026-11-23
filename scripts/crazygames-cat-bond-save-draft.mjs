@@ -73,9 +73,24 @@ async function authenticated(page){
 async function readStage(p){return {path:new URL(p.url()).pathname,txt:mask(await body(p),2350),buttons:(await p.locator('button:visible').allTextContents().catch(()=>[])).map(x=>x.trim()).filter(Boolean).slice(-20)};}
 async function toDetails(page,ctx,id,log){
  await page.goto(ROOT+'/games/'+id,{waitUntil:'domcontentloaded',timeout:35000});
- await page.getByText(/Upload your game|Game details|QA Results|Finalize submission/i).first().waitFor({timeout:15000}).catch(()=>{});
- await sleep(1300);
- let text=await body(page);
+ // SPA may initially render only the sidebar/beta banner while its draft
+ // API is still loading. Never mistake an empty shell for a missing draft.
+ let text='';
+ for(let attempt=0;attempt<6;attempt++){
+   await sleep(attempt?2800:1400);
+   text=await body(page);
+   if(/Finalize submission|Cover images|Upload your game|Game name|QA Results/.test(text))break;
+   if(attempt===1||attempt===3){
+     await page.reload({waitUntil:'domcontentloaded',timeout:35000}).catch(()=>{});
+   }else if(attempt===4){
+     await page.goto(ROOT+'/games',{waitUntil:'domcontentloaded',timeout:35000});
+     await page.getByText('Cat Bond',{exact:true}).first().waitFor({timeout:12000}).catch(()=>{});
+     const row=page.getByText('Cat Bond',{exact:true}).first();
+     if(await row.count())await row.click({timeout:7000}).catch(()=>{});
+   }
+ }
+ if(!/Finalize submission|Cover images|Upload your game|Game name|QA Results/.test(text))
+   throw Error('Draft not loaded after six guarded attempts at '+new URL(page.url()).pathname+': '+mask(text,1700));
  if(/You already have a game waiting for review/i.test(text))throw Error('CRAZYGAMES_REVIEW_SLOT_OCCUPIED');
  if(text.includes('Finalize submission')&&text.includes('Ready to submit?')){
    // Existing game is already at the last step; safely navigate back to
