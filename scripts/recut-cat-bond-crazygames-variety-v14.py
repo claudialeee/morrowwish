@@ -20,18 +20,21 @@ assert CAT['video']=='/promo/cat-bond/trailer-v13-20261122.mp4'
 LND=json.loads((ROOT/'public/promo/cat-bond/trailer-v13-landscape-20261122.json').read_text())
 assert LND['video']=='/promo/cat-bond/trailer-v13-landscape-20261122.mp4'
 # No whole-screen finisher, regardless of shot content or title.
-BANNED={'duo','rare-aftermath','battle-hud','rare-encounter','end-card'}
+# "duo-partners" is also forbidden: its real-gameplay menu embeds a
+# 63-original finisher thumbnail. Do not show it even as a small card.
+# No dense narrative modal either: player interaction is clearer for a hover.
+BANNED={'duo','duo-partners','rare-aftermath','battle-hud','rare-encounter','end-card'}
 SHOTS=[
-  ('yard',          0.25, 2.05,'explore','Enter a living cat world'),
-  ('cat-upgrade',   2.70, 2.00,'growth','Raise and train cats'),
-  ('duo-partners',  5.85, 1.80,'collection','Choose a two-cat team'),
-  ('duo-promise',  10.38, 1.90,'story','Discover their stories'),
-  ('work-after',   23.30, 1.50,'management','Send cats to work'),
+  ('yard',          0.25, 2.10,'explore','Meet the cats in the garden'),
+  ('cat-upgrade',   2.70, 1.90,'growth','Raise and train cats'),
+  ('tease',        25.70, 2.00,'interaction','Play with the cats'),
+  ('duo-map-walk',  8.48, 1.60,'exploration','Travel together on the real map'),
+  ('work-after',   23.20, 1.70,'management','Send cats to work'),
   ('map-choice',   27.98, 2.00,'exploration','Discover regions'),
-  ('map-explore',  30.45, 2.02,'exploration','Travel the world'),
-  ('battle-skills',42.08, 1.55,'battle','A short taste of real-time skills'),
-  ('rare-capture', 49.25, 2.10,'collection','Welcome a new cat'),
-  ('ssr-showcase', 52.70, 1.90,'collection','Meet a rare companion'),
+  ('map-explore',  30.42, 2.15,'exploration','Visit another region'),
+  ('battle-skills',42.08, 1.60,'battle','Brief real-time skills demonstration'),
+  ('rare-capture', 49.10, 2.25,'collection','Earn and welcome a new cat'),
+  ('ssr-showcase', 52.60, 1.90,'collection','Meet a rare companion'),
 ]
 duration=sum(x[2] for x in SHOTS)
 assert 18<=duration<20
@@ -96,6 +99,7 @@ report={'kind':'real-gameplay-V14-creative-recut-not-ai',
   'durationSeconds':round(duration,3),
   'battleFraction':round(sum(x[2] for x in SHOTS if x[3]=='battle')/duration,3),
   'containsOriginal63DuoCinematic':False,
+  'includesDuoSkillGalleryThumbnail':False,
   'original63CutinExcludedAtSeconds':[44.7,47.8],
   'showcases':[{'scene':n,'startSeconds':s,'seconds':d,'kind':k,'purpose':desc}
                for n,s,d,k,desc in SHOTS],
