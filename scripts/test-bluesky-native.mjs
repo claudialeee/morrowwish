@@ -29,7 +29,7 @@ assert.equal(result.nativeBluesky.postMetricsCount,2);
 assert.equal(result.nativeBluesky.status,'partial');
 assert.equal(result.metricScope.verifiedPosts.find(p=>p.platform==='bluesky'&&p.game==='cat-bond').likes,3);
 assert.equal(bluesky.views,null,'Bluesky public likes must not be mislabeled as views');
-assert.equal(result.platforms.find(p=>p.id==='tiktok').views,94,'TikTok snapshot retained');
+assert.equal(result.platforms.find(p=>p.id==='tiktok').views,null,'deleted Cat Bond V12 TikTok totals stay unavailable');
 assert.equal(result.metricScope.verifiedPosts.filter(p=>p.platform==='bluesky').length,7);
 assert.equal(result.metricScope.verifiedPosts.length,28);
 assert.equal(bskyOverlay(result,{posts:[cat,town]},'ready').metricScope.verifiedPosts.length,28,'refresh replaces, not duplicates, old values');
