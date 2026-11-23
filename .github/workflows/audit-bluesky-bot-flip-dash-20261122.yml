@@ -1,0 +1,43 @@
+name: Audit Flip Dash Bluesky bot engagement
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/audit-bluesky-bot-flip-dash-20261122.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    if: github.event.head_commit.message == 'Audit Flip Dash Bluesky bot engagement'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check latest owner posts, video embeds, facets and reposting accounts
+        env:
+          OWNER_DID: did:plc:d55banmfpsnzmt35hqmmwha7
+        run: |
+          node --input-type=module <<'NODE'
+          const actor=process.env.OWNER_DID;
+          const base='https://public.api.bsky.app/xrpc/';
+          const q=(key,value)=>new URLSearchParams({[key]:value});
+          async function api(method,query){
+            const url=base+method+'?'+new URLSearchParams(query);
+            for(let i=0;i<4;i++){
+              try{
+                const r=await fetch(url,{signal:AbortSignal.timeout(22000)});
+                if(!r.ok)throw new Error('HTTP '+r.status+' '+(await r.text()).slice(0,250));
+                return await r.json();
+              } catch(e){if(i===3)throw e;await new Promise(r=>setTimeout(r,2000*(i+1)));}
+            }
+          }
+          const feed=await api('app.bsky.feed.getAuthorFeed',{actor,limit:'35',filter:'posts_no_replies'});
+          const posts=feed.feed.map(x=>x.post).filter(p=>p.author.did===actor);
+          console.log('OWNER_POSTS='+posts.length);
+          for(const p of posts){
+            const text=p.record?.text||'';
+            const slug=(text.match(/https:\/\/morrowwish\.vercel\.app\/([a-z-]+)\//)||[])[1]||'unknown';
+            const links=(p.record?.facets||[]).flatMap(f=>(f.features||[]).filter(x=>x.$type?.endsWith('#link')).map(x=>x.uri));
+            const tags=(p.record?.facets||[]).flatMap(f=>(f.features||[]).filter(x=>x.$type?.endsWith('#tag')).map(x=>x.tag));
+            const reposts=await api('app.bsky.feed.getRepostedBy',{uri:p.uri,limit:'100'}).catch(e=>({error:String(e)}));
+            console.log('POST',JSON.stringify({slug,uri:p.uri,url:'https://bsky.app/profile/'+actor+'/post/'+p.uri.split('/').at(-1),indexedAt:p.indexedAt,replyCount:p.replyCount,likeCount:p.likeCount,repostCount:p.repostCount,video:p.record?.embed?.$type==='app.bsky.embed.video',text,links,tags,repostedBy:(reposts.repostedBy||[]).map(a=>({handle:a.handle,did:a.did})),error:reposts.error}));
+          }
+          NODE
