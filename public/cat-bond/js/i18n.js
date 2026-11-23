@@ -733,6 +733,7 @@
     '闪避危险弹幕': 'Dodged incoming shot',
     '低血量换猫': 'Low HP: switched cat',
     '恢复斗志': 'Healed morale',
+    '治疗队友': 'Healed ally',
     '展开护盾': 'Shield up',
     '释放必杀技': 'Ultimate cast',
     '强化自身': 'Self buff',

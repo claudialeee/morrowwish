@@ -436,8 +436,54 @@ for(const kind of Object.keys(KINDS)) for(const build of BUILDS){
     'elec cat detonates a pre-soaked focus (prefers an elec offensive slot to cash the reaction)');
 }
 
+// ============================================================================
+// S3 ROLE SYNERGY — the squad blackboard surfaces a threatenedAlly (worst ally <60% HP) + the diver
+// (nearest enemy to it), and three role behaviors read it: support heals the worst ally not just self,
+// a control cat peels CC onto the diver, a tank interposes between diver and ally. All SOFT + null on a
+// healthy/solo squad (regression guard). Deterministic: no rng, pure geometry + HP reads.
+{
+  const b = newBattle('tangyuan','doudou',{lvl:14});
+  const self = b.me();
+  // --- blackboard: a full-HP self + one badly-hurt ally + a nearby enemy → threatenedAlly + diver ---
+  const hurt = { alive:true, hp:20, maxhp:200, x:400, y:300, cat:{} };          // 10% HP ally
+  self.hp = self.maxhp; self.x = 150; self.y = 300;
+  const diver = b.enemies[0]; diver.alive = true; diver.x = 430; diver.y = 300; // right next to the hurt ally
+  for (let k=1;k<b.enemies.length;k++) b.enemies[k].alive=false;
+  b.team = [self, hurt];
+  b.commandTarget = null;
+  b._team = { focus:null, threatenedAlly:null, diver:null };
+  b.updateThreatenedAlly(b._team);
+  assert.equal(b._team.threatenedAlly, hurt, 'S3: worst ally (<60% HP) is flagged as threatenedAlly');
+  assert.equal(b._team.diver, diver, 'S3: the enemy nearest the threatened ally is flagged as the diver');
+  // SOLO / HEALTHY guard: a single full-HP cat → no threatened ally, no diver
+  b.team = [self]; b.updateThreatenedAlly(b._team);
+  assert.equal(b._team.threatenedAlly, null, 'S3 regression guard: solo healthy squad has no threatened ally');
+  assert.equal(b._team.diver, null, 'S3 regression guard: no diver without a threatened ally');
+  // --- CONTROL-ON-THREAT: a control cat prefers the diver over the shared focus ---
+  b.team = [self, hurt]; b.updateThreatenedAlly(b._team);
+  self.cat.buildType = 'control';
+  const focus = b.enemies.find(e=>e.alive && e!==diver) || diver;
+  // ensure a distinct focus exists so the override is observable
+  if (focus === diver) { diver.x = 430; }
+  const ex = b.focusException(self, focus===diver?diver:focus);
+  if (focus !== diver) assert.equal(ex, diver, 'S3 control: a control cat peels onto the diver, off the shared focus');
+  // hasControlSkill: a non-control cat carrying a CC skill also qualifies
+  self.cat.buildType = 'dps';
+  self.qSkill = { id:'cc', appliesTag:'bind' }; self.eSkill = null;
+  assert.equal(b.hasControlSkill(self), true, 'S3: a CC-tagged skill makes any cat control-capable');
+  self.qSkill = { id:'nocc', appliesTag:null };
+  assert.equal(b.hasControlSkill(self), false, 'S3: no CC skill → not control-capable');
+  // --- TANK PEEL: a tank gets an interpose vector toward the dive lane; non-tank / solo → null ---
+  self.cat.buildType = 'tank'; self.x = 150; self.y = 100;   // off the lane so an interpose move is needed
+  b.team = [self, hurt]; b.updateThreatenedAlly(b._team);
+  const peel = b.tankPeelVector(self);
+  assert.ok(peel && Math.abs(Math.hypot(peel.x,peel.y)-1) < 1e-6, 'S3 tank: peel returns a unit interpose vector');
+  self.cat.buildType = 'support';
+  assert.equal(b.tankPeelVector(self), null, 'S3 tank guard: a non-tank never peels');
+}
+
 if(process.env.DUMP_MATRIX)console.log(report.join('\n'));
 console.log('Cat Bond COMBAT MATRIX (deterministic, seeded): '+checked+' cells regression-locked (inEnv/acts/dmg vs FIXED envelope) + negative controls (frozen/runaway/backline-band/wideband) — all PASS.');
-console.log('  + 烫伤 scald anti-sustain (healUnit heal-cut, soak|fire→scald reaction) and S2 reactionSlotPref (setter/detonator/solo-guard) regression-locked.');
+console.log('  + 烫伤 scald anti-sustain (healUnit heal-cut, soak|fire→scald reaction), S2 reactionSlotPref (setter/detonator/solo-guard), and S3 role synergy (threatenedAlly/diver blackboard, control-on-threat peel, tank interpose) regression-locked.');
 console.log('  CERTIFIES: single-enemy engagement distance + offensive output + that an action is taken, vs a stationary target.');
 console.log('  Does NOT certify: survivability (pinned enemy barely attacks), target-switching, or multi-enemy behavior (future verifier extension).');

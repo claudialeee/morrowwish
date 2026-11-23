@@ -1438,8 +1438,14 @@ class CaptureBattle {
     }
     const hp=f.hp/f.maxhp;
     const heal=this.supportSlot(f,'heal');
-    if(hp<.62&&heal){
-      if(this.castSlot(f,heal,aim)!==false){this.markAutoAction(f,'恢复斗志');return;}
+    // S3 SUPPORT — heal the WORST ally, not just self: a healer at full HP still reacts when a
+    // teammate is dying (castSupportSkill/supportBeneficiary already auto-targets the most-hurt
+    // ally). Trigger on EITHER the caster being hurt OR a threatened ally on the blackboard, so a
+    // backline support peels a heal to the frontliner under fire. Solo squad = threatenedAlly null
+    // = unchanged (falls back to the self hp<.62 gate).
+    const allyNeedsHeal = this._team && this._team.threatenedAlly && this._team.threatenedAlly !== f;
+    if((hp<.62||allyNeedsHeal)&&heal){
+      if(this.castSlot(f,heal,aim)!==false){this.markAutoAction(f,'治疗队友');return;}
     }
     const shield=this.supportSlot(f,'shield');
     // FRONTLINER shield uptime: a tank/fighter re-raises its barrier the instant it's off-cooldown
@@ -1517,7 +1523,11 @@ class CaptureBattle {
   // but role exceptions still apply at the per-cat layer (assassin pick-off, support heal — see
   // commandedTarget). Cheap + deterministic: no Date.now/Math.random, O(enemies) once per frame.
   updateTeamBlackboard() {
-    const tb = this._team || (this._team = { focus: null });
+    const tb = this._team || (this._team = { focus: null, threatenedAlly: null, diver: null });
+    // S3 role synergy: the ally in the most danger (lowest HP, under 60%) + the enemy diving it
+    // (the nearest live enemy to that ally). Drives support heal-worst-ally, tank peel, control-on-
+    // threat. Cheap: O(team × enemies) once/frame, deterministic (no rng/Date).
+    this.updateThreatenedAlly(tb);
     // Manual focus-fire always wins — the player's tap is intent (handled in commandedTarget too).
     if (this.commandTarget) {
       const t = this.liveEnemies().find(e => e.i === this.commandTarget.id);
@@ -1526,6 +1536,24 @@ class CaptureBattle {
       this.commandTarget = null;
     }
     tb.focus = this.pickTeamFocus(tb.focus);
+  }
+  // S3: pick the worst-off living ally (lowest HP ratio, must be under 60% to count as "threatened")
+  // and the enemy most likely diving it (nearest live enemy within ~230px). Both null when the squad
+  // is healthy or solo — so a 1-cat squad and a full-HP team see zero behavior change.
+  updateThreatenedAlly(tb) {
+    let worst = null, worstR = 0.60;
+    for (const a of this.team) {
+      if (!a || !a.alive) continue;
+      const r = a.hp / (a.maxhp || 1);
+      if (r < worstR) { worstR = r; worst = a; }
+    }
+    tb.threatenedAlly = worst;
+    tb.diver = null;
+    if (worst) {
+      let best = null, bd = 230;
+      for (const e of this.liveEnemies()) { const d = Math.hypot(e.x - worst.x, e.y - worst.y); if (d < bd) { bd = d; best = e; } }
+      tb.diver = best;
+    }
   }
   // Choose the ONE enemy the squad collapses onto, by a small utility score. Sticky with hysteresis so
   // the focus doesn't ping-pong (which would re-spray damage). Passed the previous focus to bias toward
@@ -1574,8 +1602,18 @@ class CaptureBattle {
   // but an assassin peels to a reachable low-HP backliner (pick-off), matching the owner's "保留一些
   // 分配 / 软集火" choice. Everyone still avoids feeding a reflect wall (unwardedTarget downstream).
   focusException(f, focus) {
+    if (!focus) return null;
     const build = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
-    if (build !== 'assassin' || !focus) return null;
+    // S3 CONTROL-ON-THREAT: a control cat (or any cat carrying a CC skill) prefers to lock the enemy
+    // DIVING the threatened ally rather than the shared focus — peel the burst off the squishy. Only
+    // when a real diver exists on the blackboard and it isn't already the focus; otherwise fall through.
+    const diver = this._team && this._team.diver;
+    if (diver && diver !== focus && diver.alive && (build === 'control' || this.hasControlSkill(f))) {
+      // don't cross the whole arena for it — the diver must be reasonably reachable.
+      if (Math.hypot(diver.x - f.x, diver.y - f.y) < Math.hypot(focus.x - f.x, focus.y - f.y) * 1.4 + 120)
+        return diver;
+    }
+    if (build !== 'assassin') return null;
     // assassin: if a DIFFERENT enemy is low-HP (≤35%) and clearly closer, dive it for the pick-off.
     let best = null, bestD = 1e9;
     for (const e of this.liveEnemies()) {
@@ -1587,6 +1625,30 @@ class CaptureBattle {
     // only deviate if the pick-off is meaningfully closer than the focus (don't cross the whole arena)
     if (best && bestD < Math.hypot(focus.x - f.x, focus.y - f.y) * 0.8) return best;
     return null;
+  }
+  // Does this fighter have an equipped CC skill (bind/dizzy/chill/blind applier)? Used by S3 control-
+  // on-threat so even a non-"control"-build cat that happens to carry CC peels it onto a diver.
+  hasControlSkill(f) {
+    const CC = new Set(['bind', 'dizzy', 'chill', 'blind']);
+    for (const sk of [f.qSkill, f.eSkill]) if (sk && CC.has(sk.appliesTag)) return true;
+    return false;
+  }
+  // S3 TANK PEEL — a unit vector steering a TANK to the interpose point between the diver and the
+  // threatened ally (body-block the dive). Returns null unless: this cat is a tank build, an ally
+  // (not itself) is threatened on the blackboard, a diver exists, and the tank isn't already on top
+  // of the interpose spot. Deterministic, position-only. Solo/healthy squad → null → no change.
+  tankPeelVector(f) {
+    const build = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
+    if (build !== 'tank') return null;
+    const tb = this._team; if (!tb) return null;
+    const ally = tb.threatenedAlly, diver = tb.diver;
+    if (!ally || !diver || !ally.alive || !diver.alive || ally === f) return null;
+    // interpose: a point between diver and ally, biased toward the ally's side so the tank sits in
+    // the dive lane rather than on the diver itself.
+    const ix = ally.x + (diver.x - ally.x) * 0.4, iy = ally.y + (diver.y - ally.y) * 0.4;
+    const vx = ix - f.x, vy = iy - f.y, d = Math.hypot(vx, vy);
+    if (d < 24) return null;                      // already interposed — let the normal band run
+    return { x: vx / d, y: vy / d };
   }
   // An enemy is "warded" while it has a damage-reducing barrier, a reflect wall, or a
   // full protect up — attacking it is wasteful (and firing a projectile into a reflect
@@ -1644,6 +1706,13 @@ class CaptureBattle {
         this.wallFlankVector(f,tgt,'me')){
       const flank=this.wallFlankVector(f,tgt,'me');
       mx=flank.x;my=flank.y;
+    }
+    else if(this.tankPeelVector(f)){
+      // S3 TANK PEEL: a tank bodies up between the diver and the threatened ally (interpose), the
+      // frontline's job. Only fires when THIS cat is the tank, an ally is threatened, and a diver is
+      // on the blackboard — otherwise falls through to the normal band. Position nudge only (no new
+      // damage): steers toward the interpose point, the existing attack logic still runs on tgt.
+      const peel=this.tankPeelVector(f); mx=peel.x; my=peel.y;
     }
     else {
       // same KIT-BASED band as the active cat: brawler allies rush, ranged allies
