@@ -66,6 +66,27 @@ must(info.streams.some(s=>s.codec_type==='video'&&s.width===1080&&s.height===192
 must(info.streams.some(s=>s.codec_type==='audio'),'Trailer music missing');
 must(Number(info.format.duration)>55&&Number(info.format.duration)<60,'Encoded duration mismatch');
 must(Number(info.format.size)>1_000_000,'Encoded video blank or truncated');
+const shortPath='public/promo/cat-bond/hook-v13-original-duo-20261122.mp4';
+const shortReport=JSON.parse(read('public/promo/cat-bond/hook-v13-original-duo-20261122.json'));
+must(shortReport.sourceVideo===cat.video && shortReport.newGameplayCapture===true &&
+ shortReport.oldHookReused===false && shortReport.originalDuoCasts===1 &&
+ shortReport.originalDuoArtMode==='63-original-painted-storyboards' &&
+ shortReport.earnedRareCapture===true && shortReport.published===false,
+ 'Corrected short is using old/duplicated finisher footage');
+must(shortReport.scenes.map(s=>s.scene).join(',')===
+ 'rare-encounter,duo,rare-aftermath,rare-capture,end-card',
+ 'Corrected short must show one duo followed by its real rare capture');
+must(fs.existsSync(shortPath)&&fs.statSync(shortPath).size>300_000,
+ 'No encoded V13 correction short');
+const shortInfo=JSON.parse(execFileSync('ffprobe',['-v','error',
+ '-show_entries','format=duration:stream=codec_type,width,height','-of','json',shortPath],{encoding:'utf8'}));
+must(shortInfo.streams.some(s=>s.codec_type==='video'&&s.width===1080&&s.height===1920) &&
+ shortInfo.streams.some(s=>s.codec_type==='audio') &&
+ Number(shortInfo.format.duration)>9 && Number(shortInfo.format.duration)<11,
+ 'V13 social short audio, resolution or length invalid');
+for(const path of ['public/promo/cat-bond/hook-v13-original-duo-proof.jpg',
+ 'public/promo/cat-bond/hook-v13-rare-result-proof.jpg'])
+ must(fs.existsSync(path)&&fs.statSync(path).size>15000,'Missing short proof '+path);
 const proof='public/promo/cat-bond/v13-duo-original-art-proof.png';
 must(fs.existsSync(proof)&&fs.statSync(proof).size>50_000,'Missing screenshot at real duo attack');
 console.log('V13 ORIGINAL 63-PAINTED-SCENE GAME AND TRAILER QA PASS',
