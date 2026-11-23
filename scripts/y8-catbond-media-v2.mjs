@@ -179,9 +179,10 @@ try{
   // Find a deterministic REAL roaming SSR encounter for the video. This
   // preflight runs in the still-image context, before video recording begins.
   // It searches the shipping WorldMap generator and never fabricates a battle.
+  await page.setViewportSize({width:1366,height:768});
+  await page.waitForTimeout(250);
   const volcanoSeed=await page.evaluate(()=>{
     const originalRandom=Math.random,originalSave=State.save;
-    const start={x:216,y:650};
     const segmentDistance=(p,a,b)=>{
       const dx=b.x-a.x,dy=b.y-a.y;
       const d=dx*dx+dy*dy||1;
@@ -200,7 +201,13 @@ try{
         };
         WorldMap.enterRegion('volcano');
         const spawns=WorldMap.spawns;
-        const jinwus=spawns.filter(s=>s.sp==='jinwu'&&s.x>270&&s.x<1240&&s.y>260&&s.y<720);
+        const view=WorldMap.view,game=window.__game;
+        const start={x:view.px,y:view.py};
+        const jinwus=spawns.filter(s=>{
+          if(s.sp!=='jinwu')return false;
+          const sx=s.x-view.camX,sy=s.y-view.camY;
+          return sx>170&&sx<game.W-170&&sy>170&&sy<game.H-170;
+        });
         for(const jinwu of jinwus){
           const distance=Math.hypot(jinwu.x-start.x,jinwu.y-start.y);
           const clear=spawns.filter(s=>s.sp!=='jinwu')
