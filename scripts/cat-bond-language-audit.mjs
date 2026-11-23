@@ -168,7 +168,32 @@ try{
         // of opening THAT SAME screen directly in Chinese. Unlike a mere
         // "no Han text in English" detector this catches English surviving
         // inside Chinese panels, too.
-        if(profile.lang==='en'&&!['tease'].includes(key)){
+        if(profile.lang==='en'&&key==='tease'){
+          const baseline=await page.evaluate(()=>({
+            text:document.querySelector('#panel .card h2')?.textContent||'',
+            score:document.querySelector('#tz-score')?.textContent||'',
+            active:!!UI._teaseStop
+          }));
+          await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
+          await page.waitForTimeout(130);
+          const switched=await page.evaluate(()=>({
+            text:document.querySelector('#panel .card h2')?.textContent||'',
+            score:document.querySelector('#tz-score')?.textContent||''
+          }));
+          if(!switched.text.includes('逗猫'))
+            failures.push('Active tease game failed to translate to Chinese: '+JSON.stringify(switched));
+          if(switched.score!==baseline.score)
+            failures.push('Locale change restarted or reset active tease score');
+          await page.evaluate(()=>window.MorrowwishI18n.set('en'));
+          await page.waitForTimeout(130);
+          const restored=await page.locator('#panel .card h2').textContent();
+          if(!restored.includes('Cat Teaser'))
+            failures.push('Active tease game failed to restore English title: '+restored);
+          reports.push({host:profile.host,locale:'en-zh-en',
+            viewport:profile.width+'x'+profile.height,screen:key,
+            ok:switched.text.includes('逗猫')&&restored.includes('Cat Teaser'),issues:[]});
+        }
+        if(profile.lang==='en'&&key!=='tease'){
           const route=await page.evaluate(()=>UI._localePanelRoute?.method||null);
           if(!route){
             failures.push(profile.host+' '+profile.width+' '+key+
