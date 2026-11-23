@@ -27,11 +27,21 @@ try{
         origin+'/cat-bond/?utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-playtest&lang=en',
         {waitUntil:'load',timeout:40000});
       assert.equal(response?.status(),200,'Playable route did not load');
-      await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
-      assert.equal(await page.locator('#intro').isVisible(),false,'Portal intro must not block play');
+      // The portal must show the same genuine Start Adventure screen as
+      // the website, not silently place a first-time player in the yard.
+      await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
+      assert.equal(await page.locator('#intro').isVisible(),true,
+        'CrazyGames must show Start Adventure on first load');
+      assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
+        'Yard-only menu must not appear over the opening intro');
       assert.equal(await page.locator('#cb-home').count(),0,'No outbound studio home link');
-      assert.equal(await page.locator('#mw-fullscreen-toggle').isVisible().catch(()=>false),false,
+      assert.equal(await page.locator('#mw-fullscreen-toggle').isVisible().catch(()=>false),
         'Host must own fullscreen');
+      if(touch)await page.locator('#intro-start').tap();
+      else await page.locator('#intro-start').click();
+      await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
+      assert.equal(await page.locator('#intro').isVisible(),false,
+        'Start Adventure must dismiss intro after player interaction');
       const starter=page.locator('#panel.open .dex-cell').first();
       if(touch)await starter.tap();else await starter.click();
       await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
@@ -71,6 +81,8 @@ try{
       assert.ok(menuLayout?.directParent,
         'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
       assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
+      assert.equal(await page.locator('#cg-yard-dock').isVisible(),true,
+        'The complete right-hand Cat Bond menu must appear only in the yard');
       // The unified settings row must NEVER live inside a HUD hidden on the map
       // or during battle. This caught missing top-right controls in portal QA.
       await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
@@ -137,6 +149,14 @@ try{
       if(await auto.count())await auto.click();
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game?.scene==='battle',{timeout:10000});
+      assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
+        'Garden-only navigation must disappear during battle');
+      assert.equal(await page.locator('#tabbar').isVisible(),false,
+        'Garden tab buttons cannot appear during battle');
+      assert.equal(await page.locator('#yard-actions').isVisible(),false,
+        'Garden actions cannot appear during battle');
+      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),true,
+        'Language/audio/share utility toolbar must stay visible in battle');
       // CrazyGames owns the embedding viewport. No floating skill reference
       // button or free-standing panel may cover the arena in any portal size.
       assert.equal(await page.locator('#battle-skill-info-toggle').isVisible(),false,
@@ -314,6 +334,12 @@ try{
         await mapButton.waitFor({state:'visible',timeout:12000});
         await mapButton.click();
         await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
+        assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
+          'Garden-only navigation must disappear in the exploration map');
+        assert.equal(await page.locator('#tabbar').isVisible(),false,
+          'Garden tabs cannot cover the exploration map');
+        assert.equal(await page.locator('#yard-actions').isVisible(),false,
+          'Garden action buttons cannot cover the exploration map');
         const mapPanel=page.locator('#panel.open');
         if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
         await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
@@ -323,7 +349,26 @@ try{
         await page.screenshot({path:dir+'/'+width+'x'+height+'-map.png'});
         await page.locator('#cg-top-tools #map-menu').click();
         await page.locator('#panel.open .explore-menu').waitFor({state:'visible',timeout:10000});
-        await page.locator('#panel.open .panel-dismiss').click();
+        const reset=page.locator('#panel.open #cb-menu-reset');
+        await reset.waitFor({state:'visible',timeout:10000});
+        assert.match(await reset.textContent(),/Reset game/i,
+          'Both portal and main website menus must expose a subtle reset action');
+        // First click only arms a confirmation; do not erase by accident.
+        await reset.click();
+        assert.match(await reset.textContent(),/Erase Cat Bond progress/i);
+        assert.equal(await page.evaluate(()=>State.S.cats.length),2,
+          'First reset click must never delete a player's cats');
+        // The second deliberate click wipes ONLY Cat Bond progress.
+        await page.evaluate(()=>localStorage.setItem('unrelated_game_qa_key','keep'));
+        await reset.click();
+        await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
+        const wiped=await page.evaluate(()=>({
+          cats:JSON.parse(localStorage.getItem('catbond_save_v1')||'{}').cats?.length,
+          unrelated:localStorage.getItem('unrelated_game_qa_key')
+        }));
+        assert.equal(wiped.cats,0,'Confirmed in-menu reset must clear Cat Bond cats');
+        assert.equal(wiped.unrelated,'keep','Reset must preserve unrelated games');
+        await page.evaluate(()=>localStorage.removeItem('unrelated_game_qa_key'));
       }
       assert.deepEqual(errors,[],'Uncaught runtime errors: '+errors.join(' | '));
       console.log('CAT BOND REAL INPUT PASS',width+'x'+height,
