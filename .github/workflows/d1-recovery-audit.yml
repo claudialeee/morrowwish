@@ -1,5 +1,5 @@
-name: D1 recovery read-only audit
-# Recovery probe checks the 16:00 Pacific Nov 22 snapshot.
+name: D1 recovery and safe historical event merge
+# Merge only missing events from the latest verified pre-reset snapshot.
 
 on:
   push:
@@ -113,8 +113,8 @@ jobs:
           fs.writeFileSync('recovery/d1-audit.json',JSON.stringify(output,null,2)+'\n');
           console.log(JSON.stringify(output,null,2));
           NODE
-      - name: Reversibly inspect the pre-reset snapshot and restore current D1 state
-        id: historical_probe
+      - name: Merge historical events while preserving live production data
+        id: historical_merge
         continue-on-error: true
         env:
           CLOUDFLARE_D1_RECOVERY_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
@@ -122,7 +122,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
           D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
           D1_TARGET_TIMESTAMP: 2026-11-23T00:36:56.250Z
-        run: node recovery/d1-recovery-probe.mjs
+        run: node recovery/d1-recovery-merge.mjs
       - name: Upload non-sensitive recovery audit report
         if: always()
         uses: actions/upload-artifact@v4
@@ -130,18 +130,23 @@ jobs:
           name: d1-recovery-audit-${{ github.run_id }}
           path: |
             recovery/d1-audit.json
-            recovery/d1-historical-probe.json
+            recovery/d1-merge-report.json
           retention-days: 7
           if-no-files-found: warn
       - name: Fail if historical probe did not restore production safely
         if: always()
         run: |
-          test -s recovery/d1-historical-probe.json || { echo '::error::No historical probe report was produced'; exit 1; }
+          test -s recovery/d1-merge-report.json || { echo '::error::No D1 merge report was produced'; exit 1; }
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
-          const report=JSON.parse(fs.readFileSync('recovery/d1-historical-probe.json','utf8'));
-          if(report.error||report.rollbackError||report.currentStateRestored!==true){
-            console.error(JSON.stringify({error:report.error,rollbackError:report.rollbackError,currentStateRestored:report.currentStateRestored},null,2));
+          const report=JSON.parse(fs.readFileSync('recovery/d1-merge-report.json','utf8'));
+          if(report.error||report.rollbackError||report.currentStateRestored!==true||report.mergeVerified!==true){
+            console.error(JSON.stringify({
+              error:report.error,
+              rollbackError:report.rollbackError,
+              currentStateRestored:report.currentStateRestored,
+              mergeVerified:report.mergeVerified
+            },null,2));
             process.exit(1);
           }
           NODE
