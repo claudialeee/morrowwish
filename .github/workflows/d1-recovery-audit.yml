@@ -121,7 +121,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
           D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
-          D1_TARGET_TIMESTAMP: 2026-11-23T00:36:45.000Z
+          D1_TARGET_TIMESTAMP: 2026-11-23T00:36:52.500Z
         run: node recovery/d1-recovery-probe.mjs
       - name: Upload non-sensitive recovery audit report
         if: always()
