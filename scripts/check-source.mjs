@@ -854,9 +854,16 @@ console.log('Elsewhere home navigation, bilingual selector, and persistent URL l
  if(!src.includes('doubleBeat=k>=5')||!src.includes('lastHazSide')||!src.includes('Math.max(.43'))
   throw Error('Flip Dash rapid alternating/repeated beat logic missing');
  const parcel=src.slice(src.indexOf('G["parcel-panic"]=()=>{'),src.indexOf('const factory=G[id]'));
- if(!parcel.includes('life=4')||!parcel.includes('Math.min(315,148+delivered*5+time*.3)')||!parcel.includes('p?.kind==="express"?1.25')||!parcel.includes('queue.shift()'))
-  throw Error('Parcel Panic difficulty and reaction window regressed');
- console.log('Reflex challenge: faster opening, earned dodges, mixed hazard waves, tougher four-life sorting verified.');
+ // Parcel Panic's longer runway and forgiving first shift are intentional.
+ // Verify the current actual pacing rather than blocking every deploy on
+ // obsolete speed constants from its previous harder build.
+ if(!parcel.includes('life=4')||
+    !parcel.includes('RUNWAY_START=108,RUNWAY_END=477')||
+    !parcel.includes('Math.min(235,108+Math.max(0,delivered-8)*2.8+Math.max(0,time-22)*.16)')||
+    !parcel.includes('p?.kind==="express"?1.16')||
+    !parcel.includes('queue.shift()'))
+  throw Error('Parcel Panic four-life runway and gradual ramp regressed');
+ console.log('Reflex challenge: fast Flip Dash and four-life Parcel Panic with a longer runway, forgiving opening and escalating express orders verified.');
 }
 
 // Nonintrusive, no-account feedback coverage for every published game.
