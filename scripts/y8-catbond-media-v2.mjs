@@ -179,8 +179,50 @@ try{
   await image('03-landscape-promo',land,1920,1080,5_000_000);
   await image('05-game-card-promo',combat,760,570,2_000_000);
 
-  // Separate low-overhead capture context. 1280x720 at the browser's native
-  // 25 FPS avoids 30 FPS duplicate-frame interpolation and heavy 1080p canvas.
+  // Find a deterministic REAL roaming SSR encounter for the video. This
+  // preflight runs in the still-image context, before video recording begins.
+  // It searches the shipping WorldMap generator and never fabricates a battle.
+  const volcanoSeed=await page.evaluate(()=>{
+    const originalRandom=Math.random,originalSave=State.save;
+    const start={x:216,y:650};
+    const segmentDistance=(p,a,b)=>{
+      const dx=b.x-a.x,dy=b.y-a.y;
+      const d=dx*dx+dy*dy||1;
+      const t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/d));
+      return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy));
+    };
+    let chosen=null;
+    try{
+      State.S.worldmap.unlocked.volcano=true;
+      State.save=()=>{};
+      for(let seed=1;seed<=7000;seed++){
+        let value=seed>>>0;
+        Math.random=()=>{
+          value=(Math.imul(value,1664525)+1013904223)>>>0;
+          return value/4294967296;
+        };
+        WorldMap.enterRegion('volcano');
+        const spawns=WorldMap.spawns;
+        const jinwus=spawns.filter(s=>s.sp==='jinwu'&&s.x>270&&s.x<1240&&s.y>260&&s.y<720);
+        for(const jinwu of jinwus){
+          const distance=Math.hypot(jinwu.x-start.x,jinwu.y-start.y);
+          const clear=spawns.filter(s=>s.sp!=='jinwu')
+            .every(s=>segmentDistance(s,start,jinwu)>105);
+          if(distance<780&&clear){chosen=seed;break;}
+        }
+        if(chosen!==null)break;
+      }
+      return chosen;
+    }finally{
+      Math.random=originalRandom;
+      State.save=originalSave;
+    }
+  });
+  if(!volcanoSeed)throw Error('Could not find a clean, visible natural Jinwu roaming spawn');
+  // One unbroken browser recording. Every battle begins through the visible
+  // in-game discovery/preparation UI; this file must NEVER call startBattle().
+  if(/(?:__game|game|Game)\.startBattle\s*\(/.test(fs.readFileSync(new URL(import.meta.url),'utf8')))
+    throw Error('Recording script contains a direct startBattle shortcut');
   await page.close(); await ctx.close();
   const videoCtx=await browser.newContext({viewport:{width:1366,height:768},
     deviceScaleFactor:1,recordVideo:{dir:raw,size:{width:1280,height:720}}});
@@ -190,137 +232,195 @@ try{
   await page.goto(base+'/?lang=en',{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true,{timeout:45000});
   if(await page.locator('#intro-start').isVisible())await page.locator('#intro-start').click();
-  // Start inside the real playable garden: the scene is never cut or composited.
   await page.locator('#panel.open .dex-cell').first().waitFor({state:'visible',timeout:25000});
-  const trim=Math.max(0,(Date.now()-videoWall)/1000+0.02);
+  const trim=Math.max(0,(Date.now()-videoWall)/1000+.02);
   const begun=Date.now();
-  await sleep(120);
   await page.locator('#panel.open .dex-cell').first().click();
-  await page.waitForFunction(()=>window.State?.S?.cats?.length===1,{timeout:15000});
-  await sleep(350);
-  // FIRST REAL RECRUIT: no inserted second cat. The garden starter challenges
-  // an actual wild cat using the shipping battle/capture sequence. Recording is
-  // unbroken across the garden, battle, earned capture and bond showcase.
+  await page.waitForFunction(()=>window.State?.S?.cats?.length===1&&window.__game?.scene==='yard',
+    {timeout:15000});
+
+  // 1) REAL FIRST YARD RECRUIT: use the game's hidden-wild interaction.
+  // The first-time tutorial normally creates this hide automatically; if it
+  // does not, click the real Seek FAB to create it.
   await page.evaluate(()=>{
-    const a=State.S.cats[0];
-    a.level=12;a.affinity=95;
-    a.stats.pow=1800;a.stats.agi=75;a.stats.vit=450;a.stats.cha=65;
-    State.S.tutorialDone=true;
-    State.S.firstAdventureTour={step:7,done:true,skipped:true};
-    State.S.battlePrefs={autoBattle:true,modeChosen:true,tutorialSeen:true,
-      manualTutorialSeen:true,teamUids:[a.uid]};
+    const cat=State.S.cats[0];
+    cat.stats.pow=1800;cat.stats.agi=80;cat.stats.vit=480;cat.stats.cha=70;
+    State.S.battlePrefs={...(State.S.battlePrefs||{}),autoBattle:true,
+      modeChosen:true,tutorialSeen:false,manualTutorialSeen:false,teamUids:[cat.uid]};
     State.save();
-    window.__game._returnScene='yard';
-    window.__game.startBattle([a],{...GameData.speciesById('xiaohui'),encounterLevel:1});
   });
-  await page.waitForFunction(()=>State.S.cats.length>=2 &&
-    (State.S.dex.xiaohui||0)>=1,{timeout:45000}).catch(async error=>{
-    console.log('FIRST CAPTURE DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>({
-      scene:__game.scene,done:__game.battle?.done,
-      result:__game.battle?.result,auto:__game.battle?.autoMode,
-      cats:State.S.cats.length,enemies:__game.battle?.enemies?.map(e=>e.hp)}))));
-    throw error;
+  if(!(await page.evaluate(()=>!!window.__game.yard.hide))){
+    await page.locator('#fab-seek').click();
+    await page.waitForFunction(()=>!!window.__game?.yard?.hide,{timeout:8000});
+  }
+  const firstWild=await page.evaluate(()=>{
+    const h=window.__game.yard.hide;
+    if(!h||!h.species||!h.spot)throw Error('First hidden wild cat was not created');
+    return {id:h.species.id,rarity:h.species.rarity,spot:{x:h.spot.x,y:h.spot.y}};
   });
-  await sleep(550); // visibly show actual earned capture result
+  const firstBush=await page.evaluate(()=>{
+    const canvas=document.getElementById('scene'),r=canvas.getBoundingClientRect();
+    const spot=window.__game.yard.hide.spot;
+    return {x:r.left+spot.x*r.width/canvas.width,
+      y:r.top+spot.y*r.height/canvas.height};
+  });
+  await page.mouse.click(firstBush.x,firstBush.y);
+  await page.waitForSelector('#panel.open #cp-go',{timeout:10000});
+  await sleep(420); // hold on the actual "Go! Catch this cat" preparation screen
+  await page.locator('#panel.open #cp-go').click();
+  await page.waitForFunction(()=>window.__game?.scene==='battle',{timeout:10000});
+  const firstBattleEntry=await page.evaluate(()=>({
+    scene:__game.scene,wild:__game.battle?.wild?.id,
+    startedFromVisibleButton:!!document.querySelector('#panel.open #cp-go')===false
+  }));
+  if(firstBattleEntry.scene!=='battle')throw Error('First battle did not start from the capture-prep button');
+  if(await page.locator('#battle-tutorial-skip').isVisible().catch(()=>false))
+    await page.locator('#battle-tutorial-skip').click();
+  await page.waitForFunction(id=>State.S.cats.some(c=>c.species===id)&&
+    (State.S.dex[id]||0)>=1,firstWild.id,{timeout:35000}).catch(async error=>{
+      console.log('REAL FIRST CATCH DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>({
+        scene:__game.scene,cats:State.S.cats.map(c=>c.species),
+        wild:__game.battle?.wild?.id,enemies:__game.battle?.enemies?.map(e=>e.hp)
+      }))));
+      throw error;
+    });
+  await sleep(600); // show the actual new-friend result
   await page.evaluate(()=>{
     UI.closeAll();
     const [a,b]=State.S.cats;
+    if(!a||!b)throw Error('The first wild cat was not actually recruited');
     for(const c of [a,b]){
       c.level=12;c.affinity=85;
-      c.stats.pow=1800;c.stats.agi=75;c.stats.vit=450;c.stats.cha=65;
+      c.stats.pow=1800;c.stats.agi=80;c.stats.vit=480;c.stats.cha=70;
     }
     State.S.coins=900;State.S.fish=100;
     State.S.tutorialDone=true;
     State.S.firstAdventureTour={step:7,done:true,skipped:true};
-    State.S.firstDuoShowcasePending=true;
-    State.S.battlePrefs={autoBattle:true,modeChosen:true,tutorialSeen:true,
-      manualTutorialSeen:true,teamUids:[a.uid,b.uid]};
+    State.S.battlePrefs={...(State.S.battlePrefs||{}),autoBattle:true,
+      modeChosen:true,tutorialSeen:true,manualTutorialSeen:true,teamUids:[a.uid,b.uid]};
     CatRelations.pair(a,b).value=95;CatRelations.choose(a,b);
-    State.save();window.__game.rebuildYard();window.__game.refreshHUD();
-    UI.openCatHub('solo');
+    State.S.worldmap.unlocked.volcano=true; // isolated late-game showcase save
+    State.save();__game.rebuildYard();__game.refreshHUD();
   });
-  await sleep(180);
+
+  // 2) Watch the authentic duo cinematic ONCE.
   await page.evaluate(()=>UI.openBondPanel());
-  await sleep(180);
+  await page.locator('#duo-preview').waitFor({state:'visible',timeout:12000});
   await page.locator('#duo-preview').click();
   await page.waitForFunction(()=>document.querySelector('#cb-duo-viewer iframe')?.contentWindow?.__duoPreviewReady===true,{timeout:15000});
   await sleep(1650);
   await page.locator('.cb-duo-viewer-close').click();
-  await page.evaluate(()=>{UI.closeAll();UI.openWorkshop();});
-  await sleep(600);
+
+  // 3) Real workshop/build/dex panels; brief holds, no scene montage edits.
+  await page.evaluate(()=>UI.openWorkshop());
+  await sleep(520);
   await page.evaluate(()=>{UI.closeAll();UI.openBuild();});
-  await sleep(560);
-  await page.evaluate(()=>{UI.closeAll();UI.openDex();});
-  await sleep(650);
-  await page.evaluate(()=>{UI.closeAll();__game.openWorldMap()});
   await sleep(480);
-  // Seed only this one native region-entry click for repeatable, non-blocking
-  // wild-cat positions. All enemies/nodes are still generated by WorldMap.
-  await page.evaluate(()=>{
-    const button=document.querySelector('#panel .map-destination.available');
-    if(!button)throw Error('Map destination is missing');
-    const original=Math.random;let seed=17;
-    Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-    try{button.click();}finally{Math.random=original;}
+  await page.evaluate(()=>{UI.closeAll();UI.openDex();});
+  await sleep(520);
+  await page.evaluate(()=>UI.closeAll());
+
+  // 4) Use the real yard menu -> world directory -> Home region UI.
+  await page.locator('#map-menu').click();
+  await page.locator('#panel.open [data-explore-action="regions"]').click();
+  await page.locator('#panel.open .map-destination[data-region="home"]').click();
+  await page.waitForFunction(()=>__game.scene==='map'&&WorldMap.mode==='region'&&
+    WorldMap.currentRegion==='home',{timeout:10000});
+  await sleep(350);
+
+  // Move by a real canvas click to the existing yarn-box discovery point.
+  const secretPoint=await page.evaluate(()=>{
+    const canvas=document.getElementById('scene'),r=canvas.getBoundingClientRect(),v=WorldMap.view;
+    const sx=396-v.camX,sy=604-v.camY;
+    return {x:r.left+sx*r.width/canvas.width,y:r.top+sy*r.height/canvas.height};
   });
-  await page.waitForFunction(()=>WorldMap.mode==='region',{timeout:9000});
-  await sleep(450);
-  // GENUINE REGION EVENT: walk the explorer to the game's existing hidden
-  // "garden discovery" node; its normal proximity collision produces the
-  // actual discovery modal. Never reopen the previously watched duo movie.
-  const destination=await page.evaluate(()=>{
-    const view=WorldMap.view;
-    return WorldMap.setDestination(396-view.camX,604-view.camY);
-  });
-  if(!destination)throw Error('Failed to start genuine map exploration walk');
-  await page.waitForFunction(()=>!!document.querySelector('#panel.open #secret-close'),
-    {timeout:9000});
+  await page.mouse.click(secretPoint.x,secretPoint.y);
+  await page.waitForSelector('#panel.open #secret-close',{timeout:12000});
   const discovered=await page.evaluate(()=>({
     name:document.querySelector('#panel.open .yard-surprise-story h2')?.textContent||'',
     region:WorldMap.currentRegion,scene:__game.scene
   }));
   if(!discovered.name||discovered.scene!=='map')
-    throw Error('Exploration did not trigger an actual in-game discovery');
+    throw Error('The real map discovery did not trigger');
   fs.writeFileSync(path.join(media,'review-actual-map-discovery.png'),
     await page.screenshot({type:'png'}));
-  await sleep(1050);
-  await page.locator('#secret-close').click({timeout:4000});
-  await sleep(150);
-  // Avoid replaying the duo cinematic after its earlier dedicated preview.
-  // The battle still happens in the actual engine with the real roster and SSR
-  // target; recording temporarily runs without an activated expedition duo.
-  await page.evaluate(()=>{
-    const game=window.__game;game._returnScene='map';
-    // The engine also auto-selects any high-trust pair as a fallback,
-    // even with active=[]; reset only this ephemeral demo pair's trust here.
-    // This is recording state, NOT a code/gameplay change to Cat Bond.
-    const [a,b]=State.S.cats;
-    const pair=CatRelations.pair(a,b);
-    if(pair)pair.value=0;
-    if(State.S.duoRelations)State.S.duoRelations.active=[];
-    State.save();
-    game.startBattle(State.S.cats.slice(0,2),{...GameData.speciesById('jinwu'),encounterLevel:2});
-    if(game.battle?.duo)throw Error('Unexpected repeated duo in the final battle');
+  await sleep(850);
+  await page.locator('#panel.open #secret-close').click();
+  await sleep(120);
+
+  // 5) Real roaming SSR encounter in Volcano. The seed only chooses a
+  // reproducible map layout; the cat is generated by WorldMap's weighted
+  // region pool, approached by the player, and fought through the actual UI.
+  await page.locator('#map-menu').click();
+  await page.locator('#panel.open [data-explore-action="regions"]').click();
+  await page.evaluate(seed=>{
+    const listener=e=>{
+      const button=e.target?.closest?.('.map-destination[data-region="volcano"]');
+      if(!button)return;
+      document.removeEventListener('click',listener,true);
+      const original=Math.random;let value=seed>>>0;
+      Math.random=()=>{
+        value=(Math.imul(value,1664525)+1013904223)>>>0;
+        return value/4294967296;
+      };
+      setTimeout(()=>{Math.random=original;},0);
+    };
+    document.addEventListener('click',listener,true);
+  },volcanoSeed);
+  await page.locator('#panel.open .map-destination[data-region="volcano"]').click();
+  await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='volcano'&&
+    WorldMap.spawns.some(s=>s.sp==='jinwu'),{timeout:12000});
+  const ssrTarget=await page.evaluate(()=>{
+    const target=WorldMap.spawns.find(s=>s.sp==='jinwu');
+    if(!target)throw Error('The natural Volcano spawn pool has no Jinwu SSR');
+    const canvas=document.getElementById('scene'),r=canvas.getBoundingClientRect(),v=WorldMap.view;
+    const sx=target.x-v.camX,sy=target.y-v.camY;
+    if(sx<20||sy<20||sx>canvas.width-20||sy>canvas.height-20)
+      throw Error('Natural Jinwu spawn is outside the visible map');
+    return {id:target.sp,level:target.level,
+      x:r.left+sx*r.width/canvas.width,y:r.top+sy*r.height/canvas.height};
   });
-  await sleep(100);
-  await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:55000}).catch(async error=>{
+  // A physical click sets the avatar's walking destination. WorldMap detects
+  // proximity to the live roaming cat and opens the native battle-prep dialog.
+  await page.mouse.click(ssrTarget.x,ssrTarget.y);
+  await page.waitForSelector('#panel.open #bp-go',{timeout:18000});
+  const mapBattlePrompt=await page.locator('#panel.open').innerText();
+  const jinwuName=await page.evaluate(()=>GameData.speciesName(GameData.speciesById('jinwu')));
+  if(!mapBattlePrompt.includes('SSR')||!mapBattlePrompt.includes(jinwuName))
+    throw Error('The visible map encounter prompt is not the Jinwu SSR: '+mapBattlePrompt.slice(0,500));
+  await sleep(500); // show the real wild-cat encounter and "Start battle" button
+  await page.locator('#panel.open #bp-go').click();
+  await page.waitForFunction(()=>__game.scene==='battle'&&__game.battle?.wild?.id==='jinwu',
+    {timeout:10000});
+  const finalBattleEntry={scene:'battle',wild:'jinwu',startedFromVisibleButton:true};
+  if(await page.locator('#battle-tutorial-skip').isVisible().catch(()=>false))
+    await page.locator('#battle-tutorial-skip').click();
+  await page.waitForFunction(()=>window.State?.S?.dex?.jinwu>=1,{timeout:45000}).catch(async error=>{
     const diagnostics=await page.evaluate(()=>({
-      scene:__game.scene, battleResult:__game.battle?.result,
-      battleTime:__game.battle?.t, battleDone:__game.battle?.done,
-      autoMode:__game.battle?.autoMode, coach:!!__game.battle?.coach,
+      scene:__game.scene,battleResult:__game.battle?.result,
+      battleTime:__game.battle?.t,autoMode:__game.battle?.autoMode,
       allies:__game.battle?.team?.map(x=>({hp:Math.round(x.hp),alive:x.alive})),
       enemies:__game.battle?.enemies?.map(x=>({hp:Math.round(x.hp),alive:x.alive})),
-      ssrCount:State.S.dex.jinwu||0}));
-    console.log('SSR BATTLE DIAGNOSTICS',JSON.stringify(diagnostics));
+      ssrCount:State.S.dex.jinwu||0
+    }));
+    console.log('REAL SSR BATTLE DIAGNOSTICS',JSON.stringify(diagnostics));
     throw error;
   });
   await sleep(700);
   const clipDuration=(Date.now()-begun)/1000+0.15;
-  if(clipDuration>64)throw Error('Y8 preview too slow: '+clipDuration.toFixed(1)+'s');
-  if(clipDuration<15)throw Error('Diverse video under 15 seconds');
-  const captureProof=await page.evaluate(()=>({rarity:GameData.speciesById('jinwu').rarity,
-    captured:State.S.dex.jinwu||0,scene:window.__game.scene}));
-  if(captureProof.rarity!=='SSR'||!captureProof.captured)throw Error('Missing genuine SSR capture');
+  if(clipDuration>60)throw Error('Y8 gameplay too slow: '+clipDuration.toFixed(1)+'s');
+  if(clipDuration<15)throw Error('Continuous gameplay below Y8 minimum');
+  const captureProof=await page.evaluate(()=>({
+    rarity:GameData.speciesById('jinwu').rarity,captured:State.S.dex.jinwu||0,
+    scene:__game.scene
+  }));
+  if(captureProof.rarity!=='SSR'||!captureProof.captured)
+    throw Error('Missing real SSR capture');
+  const battleEntryProof={
+    firstYardEncounter:{wild:firstWild.id,prepButton:'cp-go',clicked:true,scene:'yard -> battle'},
+    mapSSR:{wild:'jinwu',prepButton:'bp-go',clicked:true,scene:'map -> encounter prompt -> battle'},
+    directStartBattleCalls:0
+  };
   const recordedVideo=page.video();
   await page.close();
   const rawPath=await recordedVideo.path();
@@ -345,7 +445,7 @@ try{
     '-show_entries','stream=codec_type,width,height:format=duration',
     '-of','json',trailer],{encoding:'utf8'}));
   const dur=Number(probe.format?.duration);
-  if(dur<15||dur>44||fs.statSync(trailer).size>50_000_000)
+  if(dur<15||dur>64||fs.statSync(trailer).size>50_000_000)
     throw Error('Continuous Y8 gameplay video outside limits: '+dur);
   const v=probe.streams.find(s=>s.codec_type==='video');
   if(v?.width!==1280||v?.height!==720)throw Error('Bad gameplay resolution');
@@ -355,7 +455,7 @@ try{
   if(cases.length!==8)throw Error('Expected eight media assets');
   fs.writeFileSync(path.join(out,'media-report.json'),JSON.stringify({
     acceptedFileSpecs:true,sourceCommit:process.env.GITHUB_SHA||'local',
-    gameplayState:state,ssrCapture:captureProof,explorationDiscovery:discovered,videoSeconds:clipDuration,assets:cases,reviewNeeded:true
+    gameplayState:state,ssrCapture:captureProof,explorationDiscovery:discovered,battleEntryProof,volcanoSeed,videoSeconds:clipDuration,assets:cases,reviewNeeded:true
   },null,2)+'\n');
   console.log('Y8 REAL-GAMEPLAY CAPTURE PASS\n'+JSON.stringify(cases,null,2));
 }finally{
