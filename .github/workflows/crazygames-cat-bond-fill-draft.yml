@@ -33,6 +33,7 @@ jobs:
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ffmpeg
           fi
       - name: Validate new media generation code
+        id: sourcecheck
         run: |
           node --check scripts/record-cat-bond-crazygames-previews.mjs
           node --check scripts/crazygames-cat-bond-cover-from-gameplay.mjs
@@ -42,12 +43,14 @@ jobs:
           node scripts/check-cat-bond-host.mjs
           node scripts/check-cat-bond-premium-21x3.mjs
       - name: QA portal mouse/touch navigation, English and responsive iframe
+        id: playableqa
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/catbond-qa-server.log 2>&1 &
           srv=$!
           trap 'kill "$srv" 2>/dev/null || true' EXIT
           node scripts/cat-bond-crazygames-real-input.mjs
       - name: Verify current deployed iframe is really on approved original-63 art
+        id: liveparity
         run: |
           set -eu
           for i in $(seq 1 24); do
@@ -62,11 +65,13 @@ jobs:
           echo "Live game does not yet match canonical originals: block portal upload." >&2
           exit 1
       - name: Record actual original-63 duo, create NEW covers and silent previews
+        id: media
         run: |
           node scripts/record-cat-bond-crazygames-previews.mjs
           node scripts/crazygames-cat-bond-cover-from-gameplay.mjs
           node scripts/prepare-cat-bond-crazygames-media.mjs
       - name: Check reused files before portal upload
+        id: formats
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -77,12 +82,14 @@ jobs:
           console.log('Five NEW verified 63-original Cat Bond files prepared for portal replacement.');
           NODE
       - name: Login, create or resume Cat Bond, save draft only — NEVER submit
+        id: upload
         env:
           CRAZYGAMES_STUDIO_EMAIL: ${{ secrets.CRAZYGAMES_STUDIO_EMAIL || 'morrowwishgames@gmail.com' }}
           CRAZYGAMES_STUDIO_PASSWORD: ${{ secrets.CRAZYGAMES_STUDIO_PASSWORD }}
           CRAZYGAMES_TARGET_SLUGS: cat-bond
         run: node scripts/crazygames-cat-bond-save-draft.mjs
       - name: Confirm actual portal save and persist verifiable draft receipt
+        id: receipt
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -139,6 +146,13 @@ jobs:
         if: always()
         env:
           JOB_STATUS: ${{ job.status }}
+          SOURCE_CHECK: ${{ steps.sourcecheck.outcome }}
+          PLAYABLE_QA: ${{ steps.playableqa.outcome }}
+          LIVE_PARITY: ${{ steps.liveparity.outcome }}
+          MEDIA_RENDER: ${{ steps.media.outcome }}
+          FORMAT_CHECK: ${{ steps.formats.outcome }}
+          PORTAL_UPLOAD: ${{ steps.upload.outcome }}
+          PORTAL_RECEIPT: ${{ steps.receipt.outcome }}
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -147,6 +161,11 @@ jobs:
           const status={
             checkedAt:new Date().toISOString(),
             workflowStatus:process.env.JOB_STATUS,
+            workflowRunId:Number(process.env.GITHUB_RUN_ID||0),
+            phases:{sourcecheck:process.env.SOURCE_CHECK,playableqa:process.env.PLAYABLE_QA,
+              liveparity:process.env.LIVE_PARITY,media:process.env.MEDIA_RENDER,
+              formats:process.env.FORMAT_CHECK,upload:process.env.PORTAL_UPLOAD,
+              receipt:process.env.PORTAL_RECEIPT},
             portalDraftId:'cda65c21-75f7-4ce5-b717-62b425097981',
             portalScriptStatus:rec?.status||'not-run-or-blocked-before-portal',
             uploaded:rec?.uploaded||[],
