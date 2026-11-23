@@ -1,4 +1,5 @@
 name: Inspect authorized CrazyGames studio portal (read only)
+# 2026-11-22 Cat Bond draft discovery: read-only. Do not submit.
 
 on:
   workflow_dispatch:

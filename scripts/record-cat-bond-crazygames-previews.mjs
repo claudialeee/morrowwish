@@ -38,8 +38,13 @@ try {
     await page.goto(base+'/cat-bond/?platform=crazygames&lang=en',
       {waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForSelector('#panel.open .dex-cell',{timeout:12000});
+    // Hover preview must never record the browser pointer.
+    await page.addStyleTag({content:'*,*::before,*::after{cursor:none!important}'});
     await page.locator('#panel.open .dex-cell').first().click();
     await page.waitForFunction(()=>State.S.cats.length===1,{timeout:10000});
+    // Premium duo artwork must be decoded before any recording begins.
+    await page.waitForFunction(()=>window.CatBondPremiumCinematics?.ready===true &&
+      window.CatBondDuoBreedActors?.ready===true,{timeout:20000});
     // Capture an attainable late-game two-cat action scene. All characters,
     // stats, damage and VFX come from the actual shipping game engine.
     const setup=await page.evaluate(()=>{
@@ -74,9 +79,10 @@ try {
       // not yet fired, press the exact same public battle action once.
       if(fight&&fight.duoUses===0&&fight.duoReady())fight.castDuo();
       return {uses:fight?.duoUses||0,active:window.__game?.scene,
+        originalArt:fight?.duoCinematic?.originalArt,
         tutorialVisible:!!window.__game?.battleHelpOpen};
     });
-    if(filmed.uses<1||filmed.tutorialVisible)
+    if(filmed.uses<1||filmed.tutorialVisible||filmed.originalArt!==false)
       throw Error('Duo action was not visibly filmed: '+JSON.stringify(filmed));
     await sleep(18000);
     if(errors.length)throw Error('Gameplay capture errors: '+errors.join('; '));
