@@ -32,6 +32,7 @@ try {
       recordVideo:{dir,size:{width,height}},
     });
     const page=await context.newPage();
+    const videoStartWall=Date.now();
     const video=page.video();
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
@@ -83,8 +84,34 @@ try {
         tutorialVisible:!!window.__game?.battleHelpOpen};
     });
     if(filmed.uses<1||filmed.tutorialVisible||filmed.originalArt!==true)
-      throw Error('Duo action was not visibly filmed: '+JSON.stringify(filmed));
-    await sleep(18000);
+      throw Error('Approved 63-original duo did not activate: '+JSON.stringify(filmed));
+    const active=await page.evaluate(()=>{
+      const c=window.__game?.battle?.duoCinematic,p=window.CatBondPremiumCinematics;
+      return {live:!!c&&c.t>0,originalArt:c?.originalArt,
+        source:p?.originalPaintingSource,ready:p?.ready,
+        count:p?.restoredOriginalFrameCount,defaultOriginal:p?.originalPaintingDefault};
+    });
+    if(!active.live||active.originalArt!==true||!active.ready||active.count!==63||
+       !active.defaultOriginal||!active.source?.includes('duo-storyboard-21x3-v3.webp'))
+      throw Error('Real ORIGINAL-63 cinematic not verified: '+JSON.stringify(active));
+    // Record exact elapsed time from beginning of Playwright WebM; omit the
+    // starter-selection/setup intro in the 17-second CrazyGames hover preview.
+    const trimStart=Math.max(0,(Date.now()-videoStartWall)/1000-.6);
+    await sleep(700);
+    const proof=await page.evaluate(()=>{
+      const c=window.__game?.battle?.duoCinematic;
+      return {live:!!c&&c.t>0,originalArt:c?.originalArt,
+        source:window.CatBondPremiumCinematics?.originalPaintingSource};
+    });
+    if(!proof.live||proof.originalArt!==true)
+      throw Error('Full original painting ended before cover capture '+JSON.stringify(proof));
+    await page.screenshot({path:dir+'/cat-bond-original-duo-'+label+'.png'});
+    fs.writeFileSync(dir+'/cat-bond-trim-'+label+'.json',JSON.stringify({
+      trimStartSeconds:Number(trimStart.toFixed(3)),originalArt:true,
+      originalSceneCount:63,artSource:proof.source,
+      screenshot:dir+'/cat-bond-original-duo-'+label+'.png'
+    },null,2)+'\n');
+    await sleep(17500);
     if(errors.length)throw Error('Gameplay capture errors: '+errors.join('; '));
     await page.close();
     const src=await video.path();
@@ -92,7 +119,7 @@ try {
     fs.copyFileSync(src,dest);
     await context.close();
     if(fs.statSync(dest).size<10000)throw Error('Gameplay recording is suspiciously small: '+dest);
-    console.log('CAT BOND REAL GAMEPLAY VIDEO PASS',label,JSON.stringify({
+    console.log('CAT BOND REAL ORIGINAL-63 GAMEPLAY VIDEO PASS',label,JSON.stringify({
       width,height,bytes:fs.statSync(dest).size,scene:setup.wild
     }));
   }
