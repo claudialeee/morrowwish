@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-11-23T23:02:45.502Z",
+  "targetTimestamp": "2026-11-23T00:59:00.000Z",
+  "backup": {
+    "atBookmark": "00000281-00000000-0000512c-2cb5df4fdf48be93172d7effddbb8daa",
+    "bytes": 300472,
+    "sha256": "6443ebaf3ebb6b629b6a367e76e045ebc9277cc45320bcfdc57698610586c4d3",
+    "keptOnlyOnEphemeralRunner": true
+  },
+  "historicalRows": [],
+  "historicalTotalRows": 0,
+  "currentRowsBefore": 397,
+  "currentRowsAfter": 397,
+  "rollbackBookmark": "00000281-ffffffff-0000512c-40763a020bf662645fff666972a9d226",
+  "currentStateRestored": true,
+  "error": null,
+  "rollbackError": null,
+  "database": {
+    "name": "morrowwish-analytics",
+    "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
+    "version": "production",
+    "fileSize": 335872
+  },
+  "targetBookmark": "00000202-00000006-0000512c-6954dcca3512d4ed65fa27db547abb16",
+  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 00000202-00000006-0000512c-6954dcca3512d4ed65fa27db547abb16"
+}
