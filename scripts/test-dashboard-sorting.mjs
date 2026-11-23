@@ -106,3 +106,45 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
  assert.ok(!main.includes('79 / 82 · 96.3%</td>'),'Raw battle rates are not visit conversion');
 }
 console.log('Cat Bond historical dashboard gate: 8/26, 79/82, 73, 4, 57, 46, 6, 5, 1 remain visible in zh/en.');
+
+
+// Adversarial coverage gate: every one of the seven playable game worlds has
+// a gameplay detail card; do not silently revert to four flagship cards.
+const sevenIds=['cat-bond','pawsibly-innocent','tiny-town','elsewhere',
+ 'flip-dash','parcel-panic','pocket-aquarium'];
+const allRender=inlineScript.slice(inlineScript.indexOf('function renderSignals('),
+ inlineScript.indexOf('\nfunction render(j)'));
+for(const locale of ['zh','en']){
+ const nodes={};
+ const localized={
+  flipRuns:locale==='zh'?'结束的局数':'Finished runs',
+  flip10:locale==='zh'?'存活至少 10 秒':'Survived at least 10 seconds',
+  flip30:locale==='zh'?'存活至少 30 秒':'Survived at least 30 seconds',
+  parcelSorted:locale==='zh'?'正确分拣':'Correctly sorted',
+  parcelMissed:locale==='zh'?'漏接 / 分错':'Missed / wrong',
+  parcel10:locale==='zh'?'完成至少 10 件的局数':'Runs with 10+ parcels',
+  fishFed:locale==='zh'?'成功投喂':'Successful feeds',
+  fishFinished:locale==='zh'?'完整结束 60 秒':'Completed 60s',
+  fishGood:locale==='zh'?'S / A 评级':'S / A grades'
+ };
+ const env={lang:locale,elsewhereData:null,
+  gameNames:Object.fromEntries(sevenIds.map(id=>[id,{zh:id,en:id}])),
+  escapeHTML:s=>String(s??''),format:n=>String(Number(n||0)),
+  pct:(a,b)=>b?Math.round(a*1000/b)/10:0,
+  t:k=>localized[k]??k,$:id=>(nodes[id]??={innerHTML:''})};
+ vm.runInNewContext(allRender+';globalThis.drawAll=renderSignals;',env);
+ env.drawAll([
+  {game:'flip-dash',pageviews:6,signals:{flip_finished:5,flip_10s:3,flip_30s:2}},
+  {game:'parcel-panic',pageviews:6,signals:{parcel_sorted:25,parcel_missed:4,parcel_ten_sorted:1}},
+  {game:'pocket-aquarium',pageviews:6,signals:{feed_success:18,aquarium_completed:4,aquarium_grade_s:1,aquarium_grade_a:2}}
+ ]);
+ const out=nodes['focus-grid'].innerHTML;
+ for(const id of sevenIds)
+  assert.ok(out.includes('href="/'+id+'/"'),locale+' missing game-world card '+id);
+ for(const [label,number] of [['flipRuns',5],['flip10',3],['flip30',2],
+  ['parcelSorted',25],['parcelMissed',4],['parcel10',1],
+  ['fishFed',18],['fishFinished',4],['fishGood',3]])
+  assert.ok(out.includes(localized[label]+'</span><b>'+number+'</b>'),
+    locale+' missing game telemetry '+label+' = '+number);
+}
+console.log('All seven gameplay worlds: detailed cards, real event keys, and zh/en labels verified.');

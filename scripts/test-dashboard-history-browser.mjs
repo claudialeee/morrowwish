@@ -65,6 +65,12 @@ try{
    assert.equal(cells[4],'1','Historical replay total erased');
    assert.deepEqual(cells.slice(5,8),['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
+   const cards=await page.locator('#focus-grid .focus-card h3 a').evaluateAll(
+    nodes=>nodes.map(n=>n.getAttribute('href')));
+   assert.deepEqual(cards,[
+    '/cat-bond/','/pawsibly-innocent/','/tiny-town/','/elsewhere/',
+    '/flip-dash/','/parcel-panic/','/pocket-aquarium/'
+   ],'Real browser must render gameplay details for ALL seven game worlds');
    const card=page.locator('#focus-grid .focus-card').first();
    const lines=(await card.locator('.focus-line').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
