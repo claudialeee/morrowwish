@@ -27,7 +27,19 @@
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
   <!-- Audio controls are unified in /game-settings.js; obsolete duplicate dock removed. -->
-<meta name="twitter:card" content="summary_large_image"></head>
+<meta name="twitter:card" content="summary_large_image"><style id="cb-battle-help-integrated">
+/* Battle skill reference is part of the ? Controls dialog, never a floating HUD button. */
+#stage #battle-ui #battle-skill-info-toggle,
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-skill-info-toggle,
+html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-actions #battle-skill-info-toggle,
+#stage #battle-ui #battle-skill-guide{display:none!important}
+#battle-help .battle-help-skills{margin:12px 0 0;padding:10px 12px;border:1px solid #d4dbcc;border-radius:12px;background:#fffdf5;color:#4d604f}
+#battle-help .battle-help-skills summary{cursor:pointer;font-weight:850;font-size:13px;line-height:1.45}
+#battle-help .battle-help-skill-row{padding:8px 0 6px;border-top:1px solid #dfe5da}
+#battle-help .battle-help-skill-row:first-of-type{margin-top:9px}
+#battle-help .battle-help-skill-row strong{display:block;font-size:12px;line-height:1.4}
+#battle-help .battle-help-skill-row p{margin:3px 0 0!important;font-size:11.5px;line-height:1.45}
+</style></head>
 <body>
   <a class="cb-home" href="/" id="cb-home" aria-label="返回 Morrow Wish">← Morrow Wish 首页</a>
   <div id="game-root">
@@ -213,12 +225,12 @@
   <script src="js/battle.js?v=original-63-paintings-live-20261122-r1"></script>
   <script src="js/duo-bond.js?v=original-63-paintings-live-20261122-r1"></script>
   <script src="js/ui.js?v=yard-one-tap-build-20261122"></script>
-  <script src="js/game.js?v=bond-region-funnel-v2-20261122"></script>
+  <script src="js/game.js?v=skills-in-controls-20261122-v1"></script>
   <script src="js/main.js?v=live-33-breed-intro-20261122"></script>
   <script src="js/gold-coins.js?v=gold-currency-20261122-v1"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=yard-one-tap-build-20261122"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
-<script src="/game-fullscreen.js?v=yard-guide-left-menu-map-hud-hidden-20261122-v5" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>
+<script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>
 </html>
