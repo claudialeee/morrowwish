@@ -143,6 +143,10 @@ try{
           open:result?.open,coinIcons:audit.coinIcons,price:audit.price,bulk:audit.bulk,
           issues:audit.leaks});
         if(['cat-detail','cat-detail-advanced','shop'].includes(key)){
+          // Force screenshots to show the actual problematic lower training
+          // controls, not merely the upper half of the tall scrollable panel.
+          if(key==='cat-detail')await page.locator('#cd-trainstat').scrollIntoViewIfNeeded();
+          if(key==='cat-detail-advanced')await page.locator('#cd-stat-ten').scrollIntoViewIfNeeded();
           await page.screenshot({path:dir+'/'+profile.host+'-'+profile.lang+
             '-'+profile.width+'-'+key+'.png',fullPage:false});
         }
