@@ -9,22 +9,25 @@
     el.src=SRC;el.alt='coin';el.draggable=false;return el;
   }
   function replace(node){
-    if(node?.nodeType!==3||!node.nodeValue?.includes('🪙'))return;
-    if(node.parentElement?.closest(SKIP))return;
+    if(node?.nodeType!==3||!node.nodeValue?.includes('🪙'))return false;
+    if(node.parentElement?.closest(SKIP))return false;
     const parts=node.nodeValue.split('🪙'),frag=document.createDocumentFragment();
     parts.forEach((part,i)=>{
       if(part)frag.appendChild(document.createTextNode(part));
       if(i<parts.length-1)frag.appendChild(icon());
     });
     node.replaceWith(frag);
+    return true;
   }
   function decorate(root){
-    if(!root)return;
-    if(root.nodeType===3){replace(root);return;}
-    if(root.nodeType!==1||root.matches(SKIP))return;
+    if(!root)return 0;
+    if(root.nodeType===3)return replace(root)?1:0;
+    if(root.nodeType!==1||root.matches(SKIP))return 0;
     const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[];
     let n;while((n=tw.nextNode()))if(n.nodeValue?.includes('🪙'))nodes.push(n);
-    nodes.forEach(replace);
+    let replaced=0;
+    nodes.forEach(node=>{if(replace(node))replaced++});
+    return replaced;
   }
   function draw(ctx,x,y,size=18){
     size=Math.max(7,size);ctx.save();
@@ -46,10 +49,17 @@
     decorate(root);
     const observer=new MutationObserver(records=>{
       observer.disconnect();
+      let converted=0;
       for(const rec of records){
-        if(rec.type==='characterData')replace(rec.target);
-        else for(const node of rec.addedNodes)decorate(node);
+        if(rec.type==='characterData')converted+=replace(rec.target)?1:0;
+        else for(const node of rec.addedNodes)converted+=decorate(node);
       }
+      // A coin glyph is replaced with <img>, splitting a single localized
+      // sentence into multiple text nodes. Translate those NEW fragments now
+      // (and cache their Chinese originals for future EN/ZH toggling), even
+      // if MutationObserver callback ordering would otherwise skip them.
+      // This applies across all panels, both on the website and in portals.
+      if(converted)window.CatBondI18n?.render?.();
       observer.observe(root,{childList:true,subtree:true,characterData:true});
     });
     observer.observe(root,{childList:true,subtree:true,characterData:true});
