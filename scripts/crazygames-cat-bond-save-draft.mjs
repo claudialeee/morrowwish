@@ -275,10 +275,24 @@ async function setIframe(page,game,channel){
  const urlField=page.locator('input[type=url]').first();
  if(!await urlField.count())throw Error('IFrame link input missing');
  await urlField.fill(channel.trackedUrl);
- // Cat Bond uses localStorage for game progress. Never assert that it does
- // not save. Select the accurate option when the platform offers one.
- const needsSave=page.getByText(/yes.*(?:need|save).*progress|progress.*save.*yes/i).first();
- if(await needsSave.count())await needsSave.evaluate(e=>e.click());
+ // CrazyGames' SDK Data Module and CrazyGames-account-backed server save
+ // are NOT integrated. The game currently uses localStorage, not either
+ // platform service. Select the basic/no-platform-save configuration; local
+ // browser progress remains untouched and must be documented as local only.
+ const noPlatformSave=page.getByText('No, the game does not need progress save',{exact:true}).first();
+ if(!(await noPlatformSave.count()))throw Error('CrazyGames save-mode choices changed');
+ await noPlatformSave.evaluate(e=>(e.closest('label')||e).click());
+ await sleep(300);
+ const selected=await page.locator('input[type=radio]:checked').count();
+ if(selected<1)throw Error('CrazyGames save mode not selected');
+ const mobile=page.getByText('The game supports mobile devices',{exact:true}).first();
+ if(await mobile.count()){
+   await mobile.evaluate(e=>{
+      const cb=(e.closest('label')||e.parentElement)?.querySelector('input[type=checkbox]');
+      if(cb&&!cb.checked)(e.closest('label')||e).click();
+   });
+ }
+
  await sleep(500);
  if((await urlField.inputValue())!==channel.trackedUrl)throw Error('IFrame URL mismatched');
  if((await field.inputValue())!==game.title)throw Error('Game title mismatched');

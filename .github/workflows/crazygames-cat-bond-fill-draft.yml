@@ -1,4 +1,5 @@
 name: Fill Cat Bond CrazyGames draft (never submit for review)
+# Current localStorage is not a CrazyGames SDK Data Module account save; no false cloud-save claim.
 on:
   push:
     branches: [main]
