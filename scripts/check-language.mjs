@@ -65,7 +65,7 @@ for(const [zh,en] of coinPricePieces)
 for(const phrase of [
  '消耗 2🐠 小鱼干，提升好感和饱食',
  '已解锁 1 种技能 · 点击替换 Q / E / 必杀。每只猫拥有不同的元素技能与解锁路线。'
-])assert.ok(!/[\\u3400-\\u9fff]/.test(i18n.toEnglish(phrase)),
+])assert.ok(!/[\u3400-\u9fff]/.test(i18n.toEnglish(phrase)),
   'Dynamic bilingual panel copy must not leak Han characters: '+phrase);
 for(const source of mustTranslate){
  const output=i18n.toEnglish(source);
