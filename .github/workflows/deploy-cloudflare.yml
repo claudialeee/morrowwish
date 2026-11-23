@@ -134,6 +134,14 @@ jobs:
           node scripts/cat-bond-crazygames-real-input.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
+      - name: Save CrazyGames yard menu layout screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-crazygames-yard-dock
+          path: .check/crazygames-yard-dock/*.png
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Verify discovery and launch automation
         run: |
           node --check scripts/discovery.mjs
