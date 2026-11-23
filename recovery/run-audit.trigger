@@ -1,1 +1,1 @@
-Run the 16:15 Pacific D1 historical snapshot probe with the updated workflow configuration.
+Probe the 16:30 Pacific Nov 22 checkpoint to continue narrowing the reset time.
