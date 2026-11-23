@@ -68,9 +68,12 @@ jobs:
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const a=JSON.parse(fs.readFileSync('public/promo/cat-bond/trailer-v10-landscape-20261122.json'));
+          const a=JSON.parse(fs.readFileSync('public/promo/cat-bond/trailer-v13-landscape-20261122.json'));
           const b=JSON.parse(fs.readFileSync('public/promo/v12-review.json')).trailers.find(x=>x.slug==='cat-bond');
-          if(a.sourceVideo!==b.video||a.shots.length!==21||a.shots.length!==b.shots.length)
+          if(a.referenceOldVideoForTimingOnly!==b.video||a.oldVideoFramesUsed!==false||
+             a.originalDuoArtMode!=='63-original-painted-storyboards'||
+             !a.originalDuoArtSource?.includes('duo-storyboard-21x3-v3.webp')||
+             a.originalDuoCasts!==1||a.shots.length!==21||a.shots.length!==b.shots.length)
             throw Error('The 21-shot source video was not recreated');
           for(let i=0;i<b.shots.length;i++){
             const x=a.shots[i],y=b.shots[i];
@@ -86,24 +89,26 @@ jobs:
       - name: Save new landscape video and quality frames
         uses: actions/upload-artifact@v4
         with:
-          name: cat-bond-v10-native-landscape
+          name: cat-bond-v13-original-painting-native-landscape
           path: |
-            public/promo/cat-bond/trailer-v10-landscape-20261122.mp4
-            public/promo/cat-bond/trailer-v10-landscape-20261122.jpg
-            public/promo/cat-bond/trailer-v10-landscape-20261122.json
-            public/promo/cat-bond/v10-landscape-*-proof.jpg
+            public/promo/cat-bond/trailer-v13-landscape-20261122.mp4
+            public/promo/cat-bond/trailer-v13-landscape-20261122.jpg
+            public/promo/cat-bond/trailer-v13-landscape-20261122.json
+            public/promo/cat-bond/v13-landscape-*-proof.jpg
+            public/promo/cat-bond/v13-landscape-original-art-proof.png
           retention-days: 14
       - name: Commit only native landscape assets, preserve original portrait video
         run: |
           set -euo pipefail
-          git add public/promo/cat-bond/trailer-v10-landscape-20261122.mp4
-          git add public/promo/cat-bond/trailer-v10-landscape-20261122.jpg
-          git add public/promo/cat-bond/trailer-v10-landscape-20261122.json
-          git add public/promo/cat-bond/v10-landscape-*-proof.jpg
+          git add public/promo/cat-bond/trailer-v13-landscape-20261122.mp4
+          git add public/promo/cat-bond/trailer-v13-landscape-20261122.jpg
+          git add public/promo/cat-bond/trailer-v13-landscape-20261122.json
+          git add public/promo/cat-bond/v13-landscape-*-proof.jpg
+          git add public/promo/cat-bond/v13-landscape-original-art-proof.png
           git diff --cached --quiet && exit 0
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'media(cat-bond): native 16:9 copy of original V10 21-shot trailer'
+          git commit -m 'media(cat-bond): V13 freshly recorded native 16:9 original-painted combo'
           # The recording temporarily changes existing QA stills and covers, which
           # must never be committed, and must not block safe git pull --rebase.
           git restore --worktree .
