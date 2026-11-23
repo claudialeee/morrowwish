@@ -890,6 +890,10 @@
     '消耗 🐠': 'Cost 🐠',
     '✨ 特训': '✨ Training',
     '四项属性永久 +1': 'Permanent +1 to all four stats',
+    // Locale-safe personality/trait fallback labels in the cat detail.
+    '未知': 'Unknown',
+    '未揭晓': 'Undiscovered',
+    '无': 'None',
     '特训 1 次': 'Train Once',
     '消耗 🪙80': 'Cost 🪙80',
     // gold-coins.js converts 🪙 into an <img> and splits DOM text nodes.
