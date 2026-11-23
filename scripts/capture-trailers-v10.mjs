@@ -495,7 +495,7 @@ try{
   });
   if(!duoProof.active||duoProof.visiblePanel||!duoProof.battleUI)
     throw Error('Duo animation is obscured or finished in filmed segment '+JSON.stringify(duoProof));
-  await page.screenshot({path:'public/promo/cat-bond/v10-duo-actual-render-proof.png'});
+  await page.screenshot({path:'public/promo/cat-bond/v13-duo-original-art-proof.png'});
   await sleep(3000);
   // Trim the genuine single cast before its after-action effects can resemble
   // a second finisher. The untouched raw recording is retained for QA.
