@@ -26,8 +26,8 @@ const REGION_PAGES={
   textEn:'The embers remember what happened: the catastrophe erupted from inside the Star Bell. You stayed within it to seal the breach, turning your own memories into the final lock.',
   region:'volcano',chapter:'第四章 · 最后的守铃者',chapterEn:'CHAPTER IV · THE LAST BELLKEEPER'},
  ruins:{id:'ruins-reverse',title:'倒着响的钟',titleEn:'The Bell That Rings Backward',
-  text:'月影遗迹的星盘开始逆转。你终于明白：一路找回的六段旋律，不只是在修复记忆——它们也在替某个人重新启动逆响仪式。',
-  textEn:'The astrolabe begins to turn backward. The six melodies you have recovered are not only restoring memories. They are also restarting a reversed-bell ritual for someone.',
+  text:'月影遗迹的星盘开始逆转。你终于明白：一路找回的旋律，不只是在修复记忆——它们也在替某个人重新启动逆响仪式。',
+  textEn:'The astrolabe begins to turn backward. The melodies you have recovered are not only restoring memories. They are also restarting a reversed-bell ritual for someone.',
   region:'ruins',chapter:'第五章 · 逆响',chapterEn:'CHAPTER V · THE REVERSED BELL'}
 };
 const LAST_PAGE={
@@ -272,10 +272,17 @@ function updateTracker(){
  const visible=game.scene==='map';
  host.classList.toggle('is-visible',visible);
  const count=Math.min(6,s.fragments.length);
- const next=!s.fragments.includes(LAST_PAGE.id)
-  ?(t('寻找月影遗迹中的最后一段记忆','Find the last memory in Moonshadow Ruins'))
-  :s.bossDefeated?t('暮铃已被唤回。打开故事手册重温结局。','Muling has returned. Open the journal to revisit the ending.')
-  :t('前往月影遗迹，面对逆响之主。','Return to Moonshadow Ruins and face the Lord of the Reversed Bell.');
+ const nextRegion=REGIONS.find(id=>!s.fragments.includes(REGION_PAGES[id].id));
+ const regionLabels={
+  home:['阳光花园','Sunlit Garden'],sakura:['樱花林','Sakura Woods'],
+  creek:['溪谷','Creek Valley'],volcano:['火山口','Volcano'],ruins:['月影遗迹','Moonshadow Ruins']
+ };
+ const next=nextRegion
+  ?(isZh()?'探索'+regionLabels[nextRegion][0]+'，寻找记忆回声。':'Explore '+regionLabels[nextRegion][1]+' for its memory echo.')
+  :!s.fragments.includes(LAST_PAGE.id)
+    ?t('在月影遗迹找到隐藏的星光匣，揭开最后一页。','Find the hidden star box in Moonshadow Ruins to reveal the last page.')
+    :s.bossDefeated?t('暮铃已被唤回。打开故事手册重温结局。','Muling has returned. Open the journal to revisit the ending.')
+    :t('前往月影遗迹，面对逆响之主。','Return to Moonshadow Ruins and face the Lord of the Reversed Bell.');
  host.querySelector('.cb-story-tracker-count').textContent=count+'/6';
  host.querySelector('.cb-story-tracker-next').textContent=next;
  host.querySelector('.cb-story-tracker-title').textContent=s.completed?t('最后一页 · 已完成','The Last Page · Complete'):t('主线 · 最后一页','MAIN STORY · THE LAST PAGE');
