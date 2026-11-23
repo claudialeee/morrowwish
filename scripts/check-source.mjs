@@ -197,6 +197,7 @@ if(!approvedDuo.includes('window.CatBondPremiumCinematics?.ready')||
    !fs.existsSync('public/cat-bond/assets/duo-stage-clean-21x3-v2.webp'))
  throw Error('Cat Bond must use all 32 actual watercolor cat breeds, no fixed cat composites or destructive recoloring');
 
+// This gate is paired with check-cat-bond-premium-21x3.mjs and real browser duo QA.
 // Live Cat Bond duel: 21x3 *cat-free* illustrated stages with the player's
 // selected watercolor actors; the complete 63 original fixed paintings are
 // still kept for gallery previews. This must match the real browser duo QA,
