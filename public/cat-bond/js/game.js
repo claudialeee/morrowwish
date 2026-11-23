@@ -115,7 +115,12 @@ class Game {
         const fishAmt=(reward.fish||0)+(reward.treats||0);
         const amounts=[['🪙',coinAmt],['🐠',fishAmt],['✨',reward.luck||0]]
           .filter(([,n])=>n).map(([icon,n])=>icon+'+'+n).join(' ');
-        this.toast((reward.label||(en?'Treasure found!':'发现宝贝'))+' '+amounts);
+        const labelZh=reward.labelZh||(!en?reward.label:'发现宝贝')||'发现宝贝';
+        const labelEn=reward.labelEn||(en?reward.label:'Treasure found!')||'Treasure found!';
+        this.toast({
+          zh:(labelZh+' '+amounts).trim(),
+          en:(labelEn+' '+amounts).trim()
+        });
       }
     });
     WorldMap.onExit(() => { this.scene = 'yard'; this.showYardChrome(); });
@@ -1802,7 +1807,16 @@ class Game {
 
   toast(msg) {
     const wrap = document.getElementById('toasts');if(!wrap)return;
-    const battle=this.scene==='battle',message=String(msg);
+    const localized=!!msg&&typeof msg==='object'&&('zh' in msg||'en' in msg);
+    const currentLocale=()=>{
+      const active=window.MorrowwishI18n?.get?.();
+      if(active==='zh'||active==='en')return active;
+      return (document.documentElement.lang||'en').toLowerCase().startsWith('zh')?'zh':'en';
+    };
+    const battle=this.scene==='battle';
+    const message=localized
+      ?String(currentLocale()==='zh'?(msg.zh??msg.en??''):(msg.en??msg.zh??''))
+      :String(msg);
     if(battle){
       // Ordinary attack/skill/chain messages have their own animations and
       // counters. Repeating each name as a toast hid the cats and hit points.
@@ -1816,6 +1830,19 @@ class Game {
     }
     const el=document.createElement('div');
     el.className=battle?'toast toast-battle':'toast';
+    if(localized){
+      el.dataset.toastZh=String(msg.zh??msg.en??'');
+      el.dataset.toastEn=String(msg.en??msg.zh??'');
+      if(!wrap._mwToastLocaleListener){
+        wrap._mwToastLocaleListener=(event)=>{
+          const locale=event.detail?.lang||currentLocale();
+          wrap.querySelectorAll('.toast[data-toast-zh][data-toast-en]').forEach(node=>{
+            node.textContent=locale==='zh'?node.dataset.toastZh:node.dataset.toastEn;
+          });
+        };
+        window.addEventListener('morrowwish-language-change',wrap._mwToastLocaleListener);
+      }
+    }
     el.textContent=message;wrap.appendChild(el);
     setTimeout(()=>{if(el.isConnected){el.style.opacity='0';el.style.transition='opacity .35s';}},battle?850:1600);
     setTimeout(()=>el.remove(),battle?1250:2100);
