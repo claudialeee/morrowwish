@@ -107,7 +107,8 @@ try{
   await sleep(3600);
   await page.mouse.move(1150,760);
   await sleep(3500);
-  try{await page.locator('#fab-feed').click({force:true,timeout:2500})}catch{}
+  // No action that opens a modal: preview must show gameplay throughout.
+  await page.mouse.move(1050,700);
   await sleep(3500);
   await page.mouse.move(850,750);
   await sleep(3600);
