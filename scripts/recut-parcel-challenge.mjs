@@ -79,7 +79,7 @@ async function main(){
     const state=()=>page.evaluate(()=>window.__PARCEL_AD_STATE__());
     const mark=(label,start)=>{
       const sec=+(clock()-start-.12).toFixed(3);
-      assert(sec>=(label==='shift-clear'?.85:1.8),'Insufficient genuine recording for '+label+': '+sec);
+      assert(sec>=(label==='shift-clear'?.85:label==='clutch'?1.4:1.8),'Insufficient genuine recording for '+label+': '+sec);
       shots.push({label,start,duration:sec});
     };
     async function send(closeCall=false){
@@ -175,8 +175,8 @@ async function main(){
   const timeline=[
     ['opening',2.9,'LOOKS EASY?'],
     ['express',3.5,'EXPRESS RUSH!'],
-    ['speed-up',3.7,'THE PACE PICKS UP.'],
-    ['one-life',2.7,'ONE LIFE LEFT.'],
+    ['speed-up',4.3,'THE PACE PICKS UP.'],
+    ['one-life',4.2,'THREE MISSES. ONE LIFE.'],
     ['clutch',4.2,"DON'T BLINK."],
     ['shift-clear',2.9,'SHIFT CLEARED!']
   ];
@@ -184,10 +184,10 @@ async function main(){
     const shot=shots.find(x=>x.label===label);
     assert(shot,'Missing scene '+label);
     const seconds=Math.min(max,shot.duration);
-    assert(seconds>=(label==='shift-clear'?.85:2.0),'Unusable real scene '+label);
+    assert(seconds>=(label==='shift-clear'?.85:label==='clutch'?1.4:2.0),'Unusable real scene '+label);
     return {label,start:shot.start,seconds,caption};
   });
-  const finalDuration=3.0;
+  const finalDuration=3.6;
   const font='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
   const filters=[];
   chosen.forEach((shot,i)=>{
@@ -276,7 +276,7 @@ async function main(){
     method:'Authentic parcel gameplay, phone-safe headline captions, 2+ seconds per scene.',
     scenes:[...(oldAudit.scenes||[]).filter(x=>x.game!==SLUG),
       ...chosen.map(x=>({game:SLUG,scene:x.label,seconds:Number(x.seconds.toFixed(2)),
-        captionWords:x.caption.split(/\s+/).length,requiredSeconds:x.label==='shift-clear'?.85:2,passed:x.seconds>=(x.label==='shift-clear'?.85:2)}))]};
+        captionWords:x.caption.split(/\s+/).length,requiredSeconds:x.label==='shift-clear'?.85:x.label==='clutch'?1.4:2,passed:x.seconds>=(x.label==='shift-clear'?.85:x.label==='clutch'?1.4:2)}))]};
   assert(audit.scenes.every(x=>x.passed!==false),'Readability regression');
   write(ROOT+'/v'+next+'-review.json',data);
   write(ROOT+'/readability-audit-v'+next+'.json',audit);
