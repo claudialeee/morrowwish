@@ -1,0 +1,31 @@
+name: Prepare GamePix seven-game submission kit
+
+on:
+  push:
+    branches: [gamepix-seven-game-kit-20261122]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+      - run: python -m py_compile scripts/build-gamepix-kits.py
+      - run: python scripts/build-gamepix-kits.py
+      - name: Upload complete kit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morrow-wish-gamepix-seven-games
+          path: |
+            dist/Morrow-Wish-GamePix-Seven-Games-20261122.zip
+            dist/gamepix/
+          compression-level: 0
+          retention-days: 30
