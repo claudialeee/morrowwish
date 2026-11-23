@@ -71,8 +71,8 @@ try{
    const cells=(await gameRow.locator('td').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
    assert.equal(cells[1],String(auditedPV),'Main table PV must use full D1 aggregate');
-   assert.equal(cells[2],mixed?'8 6.6%':'8 30.8%','Main-table starts must use full D1 denominator');
-   assert.equal(cells[3],'7 87.5%','Main-table completions must be unique finished visits');
+   assert.equal(cells[2],'82','Main-table starts must preserve raw battle totals');
+   assert.equal(cells[3],'79 96.3%','Main-table finishes must preserve raw battle totals');
    assert.equal(cells[4],'1','Historical replay total erased');
    assert.deepEqual(cells.slice(5,8),[mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%',
     '7 / 8 · 87.5%',mixed?'7 / 121 · 5.8%':'7 / 26 · 26.9%'],
@@ -121,4 +121,4 @@ try{
 }finally{
  await browser.close();
 }
-console.log('Real Chromium Cat Bond historical dashboard gate passed: 8 bilingual phone/desktop cases, legacy-only and mixed V2; 8/26, 79/82, 73, 4, 57, 46, 6, 5, 1 retained.');
+console.log('Real Chromium Cat Bond dashboard gate passed: raw battle starts/finishes 82/79 plus visit-deduplicated conversion ratios retained across 8 bilingual phone/desktop cases.');
