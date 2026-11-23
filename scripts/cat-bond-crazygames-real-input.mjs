@@ -53,12 +53,19 @@ try{
           const r=el.getBoundingClientRect();
           const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
           return {button:el.id||el.dataset.tab||el.textContent.trim().slice(0,12),
-            rect:rect(el),clickable:el.contains(hit)};
+            rect:rect(el),clickable:el.contains(hit),
+            contentFits:el.scrollWidth<=el.clientWidth+3};
         });
         return {dock:rect(dock),tabs:rect(tabs),actions:rect(actions),
           directParent:tabs.parentElement===dock&&actions.parentElement===dock,
           count:buttons.length,visible,viewport:{width:innerWidth,height:innerHeight}};
       });
+      // Save a real screenshot even if a subsequent layout assertion fails.
+      if([907,1366,390].includes(width)){
+        const dir='.check/crazygames-yard-dock';
+        fs.mkdirSync(dir,{recursive:true});
+        await page.screenshot({path:dir+'/'+width+'x'+height+'-yard.png'});
+      }
       assert.ok(menuLayout?.directParent,
         'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
       assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
@@ -67,7 +74,7 @@ try{
       for(const item of menuLayout.visible){
         const r=item.rect;
         assert.ok(r.width>=40&&r.height>=40&&r.left>=-1&&r.right<=width+1&&
-          r.top>=0&&r.bottom<=height+1&&item.clickable,
+          r.top>=0&&r.bottom<=height+1&&item.clickable&&item.contentFits,
           'Yard control must be visible and clickable: '+JSON.stringify(item));
       }
       if(width>740){
@@ -78,11 +85,6 @@ try{
       }else{
         assert.ok(menuLayout.actions.bottom+2<=menuLayout.tabs.top,
           'Narrow CrazyGames garden actions should sit above bottom tabs: '+JSON.stringify(menuLayout));
-      }
-      if([907,1366,390].includes(width)){
-        const dir='.check/crazygames-yard-dock';
-        fs.mkdirSync(dir,{recursive:true});
-        await page.screenshot({path:dir+'/'+width+'x'+height+'-yard.png'});
       }
       const target=await page.evaluate(()=>{
         const g=window.__game,cv=document.getElementById('scene'),r=cv.getBoundingClientRect();
