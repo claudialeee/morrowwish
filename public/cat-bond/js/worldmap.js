@@ -1163,6 +1163,6 @@
     get mode() { return mode; },
     // read-only view of the current region's roaming spawns (species id + encounter level + any
     // counter-seed mark) — for the counter-floor regression test + telemetry. Never mutate via this.
-    get spawns(){ return world && Array.isArray(world.spawns) ? world.spawns.map(function(s){ return {sp:s.sp, level:s.level, counterSeed:s._counterSeed||null}; }) : []; },
+    get spawns(){ return world && Array.isArray(world.spawns) ? world.spawns.map(function(s){ return {sp:s.sp, level:s.level, x:s.x, y:s.y, counterSeed:s._counterSeed||null}; }) : []; },
   };
 })();
