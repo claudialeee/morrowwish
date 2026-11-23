@@ -189,6 +189,44 @@ try{
       assert.ok(B.header.top>=B.tools.bottom+3,
         'Combat status overlaps upper-right settings: '+JSON.stringify(B));
       assert.equal(B.portalMenu,null,'Explore Menu must hide during active combat');
+      // A clipped name ("Fluf...", "Fro...", "Bub...") is a RELEASE FAILURE,
+      // even if the action button itself is clickable. Inspect live computed
+      // text layout for every equipped skill in every CrazyGames viewport.
+      const actionLayout=await page.evaluate(()=>{
+        const bar=document.querySelector('#battle-ui .move-bar');
+        const rect=el=>{const r=el.getBoundingClientRect();
+          return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height};
+        };
+        return {
+          bar:rect(bar),
+          buttons:[...bar.querySelectorAll('.move')].filter(el=>getComputedStyle(el).display!=='none').map(btn=>{
+            const name=btn.querySelector('.mv-name');
+            const style=getComputedStyle(name);
+            return {id:btn.id,fullName:name.textContent?.trim(),label:rect(name),button:rect(btn),
+              whiteSpace:style.whiteSpace,overflow:style.overflow,textOverflow:style.textOverflow,
+              scrollWidth:name.scrollWidth,clientWidth:name.clientWidth,
+              scrollHeight:name.scrollHeight,clientHeight:name.clientHeight};
+          })
+        };
+      });
+      assert.ok(actionLayout.buttons.length>=5,
+        'Missing CrazyGames combat action buttons: '+JSON.stringify(actionLayout));
+      assert.ok(actionLayout.bar.left>=-2&&actionLayout.bar.right<=width+2&&
+        actionLayout.bar.top>=B.stack.bottom+3&&actionLayout.bar.bottom<=height+2,
+        'Combat skill bar is outside the iframe or crosses HUD: '+JSON.stringify(actionLayout));
+      for(const item of actionLayout.buttons){
+        assert.ok(item.fullName.length>0&&!/[.…]{2,}$/.test(item.fullName),
+          'Skill has an abbreviated or missing label: '+JSON.stringify(item));
+        assert.ok(item.textOverflow!=='ellipsis'&&item.whiteSpace!=='nowrap'&&
+          item.overflow!=='hidden',
+          'Skill label is styled to truncate: '+JSON.stringify(item));
+        assert.ok(item.scrollWidth<=item.clientWidth+2 &&
+          item.scrollHeight<=item.clientHeight+2,
+          'Skill label visually clips characters: '+JSON.stringify(item));
+        assert.ok(item.label.left>=item.button.left-1&&item.label.right<=item.button.right+1&&
+          item.label.top>=item.button.top-1&&item.label.bottom<=item.button.bottom+1,
+          'Full skill name escapes its action button: '+JSON.stringify(item));
+      }
       // Regression stress for the reported two-cat + Reserves screenshot.
       // Clone only a visual card, measure the real CSS geometry synchronously,
       // then restore the live game DOM without changing battle state.
