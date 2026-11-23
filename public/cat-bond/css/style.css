@@ -4847,3 +4847,27 @@ html.cb-cg #stage #battle-ui .move-bar .mv-k{
   html.cb-cg #stage #battle-ui .move-bar .mv-name{font-size:9.5px!important}
   html.cb-cg #stage #battle-ui .move-bar .mv-k{font-size:8.5px!important}
 }
+
+
+/* CrazyGames compact battle help control: icon-only on phones. Game.js sets
+   this button's textContent to "? Controls", so the old 30px CSS width caused
+   that text to spill underneath the Auto button. Keep its full accessible name
+   in aria-label, and render only the visible '?' at narrow widths. */
+@media(max-width:520px){
+  html.cb-cg #stage #battle-ui #cg-battle-hud .battle-tools #battle-help-toggle{
+    flex:0 0 36px!important;
+    width:36px!important;min-width:36px!important;max-width:36px!important;
+    height:32px!important;min-height:32px!important;
+    overflow:hidden!important;
+    margin:0!important;padding:0!important;
+    font-size:0!important;line-height:0!important;
+    white-space:nowrap!important;
+    box-sizing:border-box!important;
+  }
+  html.cb-cg #stage #battle-ui #cg-battle-hud .battle-tools #battle-help-toggle::before{
+    content:"?"!important;
+    display:inline-block!important;
+    font:900 19px/1 system-ui,sans-serif!important;
+    color:#4b6655!important;
+  }
+}
