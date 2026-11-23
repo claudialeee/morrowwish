@@ -39,7 +39,7 @@ const games = [
     text:'WAIT... TWO CATS CAN UNLEASH A LEGENDARY COMBO?! 🐱⚡\n\nBuild your dream cat team, unlock duo attacks, and collect rare cats!\n\nPlay free: '+base+'/cat-bond/\n\n#IndieGame #IndieDev #GameDev #BrowserGame'
   }
 ];
-const releaseStart = Date.parse('2026-11-23T03:30:00.000Z');
+const releaseStart = Date.parse('2026-11-23T03:00:00.000Z');
 for (const [i,g] of games.entries()) {
   if ([...g.text].length > 300) throw Error('Bluesky 300-char limit exceeded for '+g.slug);
   if (g.text.includes('hook-v3')) throw Error('Wrong media for '+g.slug);
