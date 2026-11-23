@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-23T23:05:25.024Z",
-  "targetTimestamp": "2026-11-22T20:00:00.000Z",
+  "generatedAt": "2026-11-23T23:10:02.825Z",
+  "targetTimestamp": "2026-11-23T00:00:00.000Z",
   "backup": {
-    "atBookmark": "00000285-00000000-0000512c-0d5ebe359039f5a27b3e8b2e0c612ea5",
-    "bytes": 300472,
-    "sha256": "6443ebaf3ebb6b629b6a367e76e045ebc9277cc45320bcfdc57698610586c4d3",
+    "atBookmark": "0000028c-00000014-0000512c-20f7c175352c213c83eb3a2b2c9054aa",
+    "bytes": 313204,
+    "sha256": "04e2852ae91d8ebfb187a68f4519bb64375f3c63b9f70d4a57d88a1a62ec739c",
     "keptOnlyOnEphemeralRunner": true
   },
   "historicalRows": [
@@ -13,127 +13,182 @@
       "category": "arcade",
       "game": "cat-bond",
       "kind": "session",
-      "rows": 347,
+      "rows": 454,
       "first_id": 12701,
-      "last_id": 13446,
+      "last_id": 14210,
       "first_ts": 1795371261004,
-      "last_ts": 1795376906970
+      "last_ts": 1795389972464
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "cat-bond",
       "kind": "visit",
-      "rows": 15,
+      "rows": 27,
       "first_id": 12696,
-      "last_id": 13493,
+      "last_id": 14204,
       "first_ts": 1795371253257,
-      "last_ts": 1795377527197
+      "last_ts": 1795389910563
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "session",
+      "rows": 4,
+      "first_id": 13751,
+      "last_id": 14183,
+      "first_ts": 1795380117173,
+      "last_ts": 1795389635290
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "elsewhere",
       "kind": "visit",
-      "rows": 4,
+      "rows": 6,
       "first_id": 13248,
-      "last_id": 13440,
+      "last_id": 14182,
       "first_ts": 1795375006109,
-      "last_ts": 1795376564427
+      "last_ts": 1795389633695
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "session",
+      "rows": 3,
+      "first_id": 13752,
+      "last_id": 13765,
+      "first_ts": 1795380117293,
+      "last_ts": 1795380160375
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "flip-dash",
       "kind": "visit",
-      "rows": 3,
+      "rows": 4,
       "first_id": 13232,
-      "last_id": 13257,
+      "last_id": 13744,
       "first_ts": 1795374855015,
-      "last_ts": 1795375037247
+      "last_ts": 1795380057299
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "hub",
       "kind": "session",
-      "rows": 16,
+      "rows": 121,
       "first_id": 12698,
-      "last_id": 13490,
+      "last_id": 14402,
       "first_ts": 1795371259813,
-      "last_ts": 1795377497818
+      "last_ts": 1795391840618
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "hub",
       "kind": "visit",
-      "rows": 10,
+      "rows": 64,
       "first_id": 12697,
-      "last_id": 13492,
+      "last_id": 14400,
       "first_ts": 1795371258256,
-      "last_ts": 1795377514546
+      "last_ts": 1795391839532
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "session",
+      "rows": 3,
+      "first_id": 13753,
+      "last_id": 13763,
+      "first_ts": 1795380117414,
+      "last_ts": 1795380160347
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "parcel-panic",
       "kind": "visit",
-      "rows": 4,
+      "rows": 5,
       "first_id": 13262,
-      "last_id": 13361,
+      "last_id": 13745,
       "first_ts": 1795375090671,
-      "last_ts": 1795375834728
+      "last_ts": 1795380057400
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "session",
+      "rows": 69,
+      "first_id": 13749,
+      "last_id": 14430,
+      "first_ts": 1795380116854,
+      "last_ts": 1795391919409
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "pawsibly-innocent",
       "kind": "visit",
-      "rows": 3,
+      "rows": 23,
       "first_id": 13165,
-      "last_id": 13435,
+      "last_id": 14412,
       "first_ts": 1795374282549,
-      "last_ts": 1795376319658
+      "last_ts": 1795391906078
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "session",
+      "rows": 3,
+      "first_id": 13754,
+      "last_id": 13766,
+      "first_ts": 1795380117490,
+      "last_ts": 1795380160377
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "pocket-aquarium",
       "kind": "visit",
-      "rows": 5,
+      "rows": 6,
       "first_id": 13266,
-      "last_id": 13471,
+      "last_id": 13746,
       "first_ts": 1795375120788,
-      "last_ts": 1795377386918
+      "last_ts": 1795380057502
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "tiny-town",
       "kind": "session",
-      "rows": 2,
+      "rows": 5,
       "first_id": 13173,
-      "last_id": 13200,
+      "last_id": 13764,
       "first_ts": 1795374317744,
-      "last_ts": 1795374437827
+      "last_ts": 1795380160364
     },
     {
       "day": "2026-11-22",
       "category": "arcade",
       "game": "tiny-town",
       "kind": "visit",
-      "rows": 5,
+      "rows": 6,
       "first_id": 13167,
-      "last_id": 13439,
+      "last_id": 13741,
       "first_ts": 1795374296485,
-      "last_ts": 1795376462071
+      "last_ts": 1795380056956
     }
   ],
-  "historicalTotalRows": 414,
-  "currentRowsBefore": 397,
-  "currentRowsAfter": 397,
-  "rollbackBookmark": "00000285-ffffffff-0000512c-19788c61b2109da07fdde1dbaf0e0c08",
+  "historicalTotalRows": 803,
+  "currentRowsBefore": 414,
+  "currentRowsAfter": 414,
+  "rollbackBookmark": "0000028c-ffffffff-0000512c-ff70facb045cbd7f236b12244590fa5a",
   "currentStateRestored": true,
   "error": null,
   "rollbackError": null,
@@ -141,8 +196,8 @@
     "name": "morrowwish-analytics",
     "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
     "version": "production",
-    "fileSize": 335872
+    "fileSize": 348160
   },
-  "targetBookmark": "000001ba-00000040-0000512b-da06b0e9b1f40c05d2f98d1684da5521",
-  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001ba-00000040-0000512b-da06b0e9b1f40c05d2f98d1684da5521"
+  "targetBookmark": "000001f7-00000054-0000512c-1193dc9939b5eac58397d3c967a507d8",
+  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001f7-00000054-0000512c-1193dc9939b5eac58397d3c967a507d8"
 }
