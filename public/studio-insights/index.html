@@ -395,16 +395,16 @@ async function loadElsewhere(){
 function renderCatBondAudit(){
  const el=$("cat-bond-traffic-audit");if(!el)return;
  if(!catBondAudit||!lastData){el.textContent="";return;}
- const a=catBondAudit, shown=Number(lastData.byGame?.find(x=>x.game==="cat-bond")?.pageviews||0),full=Number(a.total||0);
+ const a=catBondAudit, shown=Number(a.sampledPageviews??lastData.byGame?.find(x=>x.game==="cat-bond")?.pageviews??0),full=Number(a.total||0);
  const daily=(a.byDay||[]).map(x=>x.day.slice(5)+": "+format(x.pageviews)).join(" · ");
  const history=a.history||{};
  const mismatch=shown!==full;
  el.textContent=lang==="zh"?
-   "猫猫纽带 · 数据库全量核对："+a.days+" 天内 "+format(full)+" 次访问；主表 "+format(shown)+" 次。"+
-   (mismatch?" 注意：主表存在漏计，可能达到事件读取上限。":" 两者一致。")+
+   "猫猫纽带 · 数据库全量核对："+a.days+" 天内 "+format(full)+" 次访问；原事件抽样 "+format(shown)+" 次。"+
+   (mismatch?" 已按数据库全量数据修正主表访问及开玩／结算，原抽样存在漏计。":" 两者一致。")+
    " 当前保留的历史浏览量 "+format(history.pageviews||0)+"，最早记录 "+(history.firstDay||"无")+"。逐日："+(daily||"无记录"):
-   "Cat Bond · Full D1 audit: "+a.days+"-day visits "+format(full)+"; main table "+format(shown)+". "+
-   (mismatch?"Main table undercounts, possibly due to its event limit.":"Counts match.")+
+   "Cat Bond · Full D1 audit: "+a.days+"-day visits "+format(full)+"; original sampled count "+format(shown)+". "+
+   (mismatch?"Main visit and conversion counts corrected using full D1 data.":"Counts match.")+
    " Lifetime visits retained "+format(history.pageviews||0)+", earliest "+(history.firstDay||"none")+". Daily: "+(daily||"none");
 }
 async function loadCatBondAudit(){
@@ -413,6 +413,18 @@ async function loadCatBondAudit(){
   if(!response.ok)throw Error("HTTP "+response.status);
   const data=await response.json();
   if(Number(data.days)!==Number($("days").value))return;
+  const row=lastData?.byGame?.find(x=>x.game==="cat-bond");
+  const sampled=Number(row?.pageviews||0);
+  data.sampledPageviews=sampled;
+  const full=Number(data.totals?.pageviews??data.total);
+  if(row&&Number.isSafeInteger(full)&&full>=sampled&&data.totals){
+   row.pageviews=full;
+   row.startedViews=Number(data.totals.startedViews)||0;
+   row.startRate=full>0?Math.round(row.startedViews*1000/full)/10:null;
+   row.historicalVisitFunnel={pageviews:full,startedViews:row.startedViews,
+    finishedViews:Number(data.totals.finishedViews)||0,scope:"full-d1-visit-activity"};
+   render(lastData);
+  }
   catBondAudit=data;renderCatBondAudit();
  }catch{catBondAudit=null;const el=$("cat-bond-traffic-audit");if(el)el.textContent=lang==="zh"?"数据库全量核对暂不可用。":"Full database audit unavailable.";}
 }
@@ -425,7 +437,7 @@ if(lastData)render(lastData);renderCatBondAudit();enhanceSortableTables();setSta
 }
 async function load(){setStatus("loading");$("reload").disabled=true;
 try{const response=await fetch("/api/summary?days="+$("days").value,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
-render(j);loadElsewhere();loadCatBondAudit();$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
+catBondAudit=null;$("cat-bond-traffic-audit").textContent="";render(j);loadElsewhere();loadCatBondAudit();$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
 }catch(e){$("report").hidden=true;setStatus("error",e.message||t("failGeneric"));}finally{$("reload").disabled=false;}}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLanguage(b.dataset.lang)));
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load();}catch(err){setStatus("error",err.message||t("failGeneric"));}});
