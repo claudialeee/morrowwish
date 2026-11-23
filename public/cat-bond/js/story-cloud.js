@@ -266,8 +266,9 @@ function onRegionDiscovery(regionId,reward){
 }
 function updateTracker(){
  const host=document.getElementById('cb-story-tracker');
- const game=window.__game,s=storyState();
- if(!host||!s||!game||!window.__CAT_BOND_STARTED__)return;
+ const game=window.__game;
+ if(!host||!game||!window.__CAT_BOND_STARTED__)return;
+ const s=storyState();if(!s)return;
  const visible=game.scene==='map';
  host.classList.toggle('is-visible',visible);
  const count=Math.min(6,s.fragments.length);
@@ -605,6 +606,9 @@ if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  wrapped.__cbCloudWrapped=true;window.State.save=wrapped;
 }
 function installIntro(){
+ const cloudButton=document.getElementById('intro-cloud-save');
+ const updateCloudLabel=()=>{if(cloudButton)cloudButton.textContent=t('☁️ 云存档','☁️ Cloud save');};
+ updateCloudLabel();window.addEventListener('morrowwish-language-change',updateCloudLabel);
  const start=document.getElementById('intro-start');
  if(start&&!start.dataset.cbStoryBound){
   start.dataset.cbStoryBound='1';
