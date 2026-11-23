@@ -366,7 +366,7 @@ function showBossGate(){
  overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">'+t('终章 · 逆响之钟','FINAL CHAPTER · THE REVERSED BELL')+'</p>'+
   '<h2>'+t('暮铃 · 逆响之主','Muling · Lord of the Reversed Bell')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('它不是为了毁灭世界而战。它只是想让你回来——哪怕代价是夺走所有人的记忆。','Muling does not fight to destroy the world. It only wants you back—even if every other memory must be taken.')+'</p>'+
-  '<div class="cb-boss-emblem">✧</div><p>'+t('带上两位最信任的伙伴，结束逆响仪式。','Bring the two companions you trust most and end the reversed-bell ritual.')+'</p>'+
+  '<div class="cb-boss-emblem">✧</div><p>'+t('带上你最信任的伙伴，结束逆响仪式。','Bring your trusted companions and end the reversed-bell ritual.')+'</p>'+
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-boss-start>'+t('开始最终战','Begin final battle')+'</button>'+
   '<button class="cb-cloud-secondary" data-boss-later>'+t('稍后再战','Not yet')+'</button></div></section>';
  document.body.append(overlay);
