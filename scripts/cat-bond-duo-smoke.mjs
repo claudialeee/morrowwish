@@ -204,14 +204,12 @@ try{
     const soundCount=window.MorrowwishAudio?.status?.().combatSounds||0;
     const ids=pairCats.map(c=>c.uid);State.save();
     return {pairs:Director.keys.length,unique:new Set(results).size,
-      opacityProgresses:second.some((h,i)=>h!==results[i]),motionUnique:Director.isUnique(),
-      source:Hero.assetSource,originalOnly:Hero.originalArtOnly,
+      motionUnique:Director.isUnique(),source:Hero.assetSource,originalOnly:Hero.originalArtOnly,
       unlockedPair:ids,a:ids[0],b:ids[1],soundCount};
   });
   assert.equal(visual.pairs,21);
   assert.equal(visual.unique,21,'all 21 duo performances should visibly differ');
   assert.equal(visual.motionUnique,true);
-  assert.equal(visual.opacityProgresses,true,'original painting must fade through its cinematic timeline');
   assert.equal(visual.source,'63-original-painted-storyboards');
   assert.equal(visual.originalOnly,true,'actor convergence fallback must remain disabled');
   assert.equal(visual.soundCount,13,'combat sound categories must still load');

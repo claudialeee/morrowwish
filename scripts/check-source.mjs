@@ -1126,7 +1126,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbUi.includes('this.openUnlockedDuoViewer(a,b)')||
     !cbUi.includes('thumbnail:true')||
     !cbUi.includes('rel?.value)<20')||
-    !bondPremium.includes('if(!thumbnail&&dual>.09)')||
+    (!bondPremium.includes('get originalPaintingDefault(){return true}')||!bondPremium.includes('get actorFallbackEnabled(){return false}')||!bondPremium.includes('feather(paintingCtx,artW,artH)'))||
     !bondViewer.includes('duo-embedded')||
     !/href="css\/style\.css\?v=[^\"]+"/.test(bondIntro))
    throw Error('Cat Bond intro caption must be below cat art; earned duo cards must replay directly with clean previews');
