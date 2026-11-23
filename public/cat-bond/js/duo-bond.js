@@ -227,10 +227,10 @@ const originalCast=P.castDuo;
 P.castDuo=function(){
  const ok=originalCast.call(this);
  if(ok&&this.duoCinematic){
-  // Live combat must show the two ACTIVE cats in the original watercolor
-  // breed-actor art on the 21x3 cat-free painted scenery. The gallery keeps
-  // the fixed 63 illustrative storyboards; never use their wrong cats here.
-  this.duoCinematic.originalArt=false;
+  // Live combat MUST use the owner-approved complete 63-frame original
+  // two-cat watercolor paintings, also used in the canonical V13 trailer.
+  // This override must remain aligned with the cast in battle.js.
+  this.duoCinematic.originalArt=true;
   this.duoCinematic.tier=this.duo?.tier||1;
   this.duoCinematic.variant=this.duoCinematic.tier>=3?'finale':
    this.duoCinematic.tier>=2?'cross':'pounce';
