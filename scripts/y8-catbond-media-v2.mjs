@@ -130,12 +130,9 @@ try{
   await page.locator('#panel .map-destination.available').first().click({timeout:10000});
   await sleep(850);
   const explore=await view();
-  await page.evaluate(()=>{
-    const game=window.__game;game._returnScene='map';
-    game.startBattle(State.S.cats.slice(0,2),{...GameData.speciesById('jinwu'),encounterLevel:2});
-  });
-  await sleep(950);
-  const combat=await view();
+  // Use the real duo cinematic captured above for the game-card promo;
+  // screenshots stay genuine game frames and never inject a battle scene.
+  const combat=duo;
   for(const [name,pic] of Object.entries({yard,roster,duo,workshop,build,dex,map,explore,combat}))
     fs.writeFileSync(path.join(media,'review-'+name+'.png'),pic);
   await image('02-widescreen-screenshot',explore,1280,720,5_000_000);
