@@ -706,7 +706,7 @@
     '庭院': 'Yard',
     '猫猫': 'Cats',
     '工坊': 'Workshop',
-    '图鉴': 'Codex',
+    '图鉴': 'Catdex',
     '签到': 'Daily',
     '商店': 'Shop',
     '探索世界': 'Explore the world',
@@ -937,7 +937,7 @@
     '收集所有猫猫，解锁隐藏传说种！': 'Collect every cat to unlock hidden legendary species!',
     '已捕获': 'Caught',
     '只 · 基础 力': ' · Base PWR ',
-    '返回图鉴': 'Back to Codex',
+    '返回图鉴': 'Back to Catdex',
 
     // ---- daily ----
     '每日签到': 'Daily Check-in',
@@ -1419,7 +1419,7 @@
     '先收服这个品种，才能挑战金爪评级。': 'Capture this breed first to attempt its Golden Paw rating.',
     '已记录最佳评级。每个品种首次 S 可得金爪徽章，不重复发奖。':
       'Best rating saved. Each breed\'s first S earns a Golden Paw medal; no duplicate rewards.',
-    '图鉴奖励：+': 'Codex reward: +',
+    '图鉴奖励：+': 'Catdex reward: +',
     '战斗奖励：+': 'Battle reward: +',
     '个品种 · 同品种合并展示，点开可管理每一只。': ' breeds · same breed grouped; tap to manage each one.',
     '个探索区域': ' explored regions',
@@ -1483,7 +1483,7 @@
     '进阶修炼：Lv.10 + 好感60 → 第三种元素技能': 'Advanced training: Lv.10 + bond 60 → a third element skill',
     '野猫已经藏在草丛里了，慢慢找吧！': 'A wild cat is already hiding in the grass — take your time finding it!',
     '轻点草坪让猫咪前往 · 拖动草坪查看周围': 'Tap the lawn to send your cat · drag to look around',
-    '🧭 冒险手册 · 图鉴': '🧭 Adventure handbook · Codex',
+    '🧭 冒险手册 · 图鉴': '🧭 Adventure handbook · Catdex',
     '🐈 庭院': '🐈 Yard',
     '🤖 智能自动 · 自动放技能、闪避、必杀 · 点击集火': '🤖 Smart auto · auto skills, dodge, ultimate · tap to focus-fire',
     '🤖 智能自动 ·': '🤖 Smart auto ·',
