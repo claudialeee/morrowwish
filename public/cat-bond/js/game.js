@@ -1637,8 +1637,12 @@ class Game {
       // Resume the region at the exact spot the player left for the fight, instead
       // of rebuilding it and snapping back to the portal entry. Pass the outcome so
       // a captured (won) cat is removed from the map; a fled/lost one resumes roaming.
-      if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
-      else WorldMap.enterRegion(WorldMap.currentRegion);
+      // The story boss is staged on top of the current region, not handed off
+      // from a roaming spawn. Do not remove that region's pending encounter.
+      if(!b.storyBoss){
+        if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
+        else WorldMap.enterRegion(WorldMap.currentRegion);
+      }
     } else {
       this.scene = 'yard';
       // Reset transient battlefield paint state before the very next yard frame.
