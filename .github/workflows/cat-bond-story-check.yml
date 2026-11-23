@@ -11,6 +11,7 @@ on:
       - 'scripts/check-source.mjs'
       - 'scripts/check-cat-bond-story-cloud.mjs'
       - '.github/workflows/cat-bond-story-check.yml'
+      - 'README.md'
   push:
     branches: ['feat/cat-bond-last-page-cloud-save-20261123']
     paths:
@@ -21,6 +22,7 @@ on:
       - 'scripts/check-source.mjs'
       - 'scripts/check-cat-bond-story-cloud.mjs'
       - '.github/workflows/cat-bond-story-check.yml'
+      - 'README.md'
 
 permissions:
   contents: read
