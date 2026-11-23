@@ -478,7 +478,7 @@ try{
    b.duoCharge=100;b.duoCd=0;const ready=b.duoReady();const status=b.team.map(f=>({id:f.cat.uid,alive:f.alive,hp:Math.round(f.hp)}));
     const cast=b.castDuo();
     return {ready,status,cast,uses:b.duoUses,cinematic:!!b.duoCinematic,
-      originalArt:b.duoCinematic?.originalArt===false,
+      originalArt:b.duoCinematic?.originalArt===true,
       selectedCats:b.duoCinematic?.catUids?.map(uid=>b.team.find(f=>f.cat.uid===uid)?.cat?.species||null),
       pair:b.duoCinematic?.elements,
       artSource:window.CatBondPremiumCinematics?.originalPaintingSource||''};
@@ -486,7 +486,7 @@ try{
   if(!duo.cast||duo.uses!==1||!duo.cinematic||!duo.originalArt||
      duo.selectedCats?.length!==2||duo.selectedCats.some(species=>!species)||
      !duo.artSource.includes('duo-storyboard-21x3-v3.webp'))
-     throw Error('Reject invalid v10 duo: live cut-in must retain two selected watercolor cats on approved painted scenery '+JSON.stringify(duo));
+     throw Error('Reject invalid v10 duo: live cut-in must show the approved 63 complete original painted storyboards '+JSON.stringify(duo));
   const duoStart=stamp();
   await sleep(1800);
   const duoProof=await page.evaluate(()=>{
