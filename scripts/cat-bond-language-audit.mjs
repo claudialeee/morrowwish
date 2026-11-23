@@ -49,6 +49,11 @@ try{
       await page.evaluate(()=>{
         State.S.coins=2500;
         State.S.fish=500;
+        // Regression: old "zero mixed-language" checks exposed clever/fortune.
+        // Use a defined personality and an unrevealed trait in every profile.
+        State.S.cats[0].personality='clever';
+        State.S.cats[0].trait='fortune';
+        State.S.cats[0].traitRevealed=false;
         // Give the in-memory test save a second owned cat so Duo and
         // squad menus render substantive content, not an empty placeholder.
         State.S.cats.push(State.makeCat(State.S.cats[0].species));
@@ -153,6 +158,18 @@ try{
         if(profile.lang==='en'&&audit.leaks.length)
           failures.push(profile.host+' '+profile.width+' '+key+' untranslated: '+
             JSON.stringify(audit.leaks.slice(0,12)));
+        if(['cat-detail','cat-detail-advanced'].includes(key)){
+          const traits=await page.locator('#panel .cat-traits-summary').innerText();
+          const required=profile.lang==='en'
+            ?['Personality: Clever','Trait: Undiscovered']
+            :['性格: 机敏','特性: 未揭晓'];
+          for(const label of required)if(!traits.includes(label))
+            failures.push(profile.host+' '+profile.lang+' '+key+
+              ' untranslated trait summary or spoiled hidden trait: '+traits);
+          if(/\b(?:clever|diligent|glutton|fortune|goldpaw|weaver|angler|mischievous)\b/i.test(traits))
+            failures.push(profile.host+' '+profile.lang+' '+key+
+              ' raw personality/trait save code is player visible: '+traits);
+        }
         if(profile.lang==='en'&&key==='cat-detail'){
           if(!/^Cost\s+80/.test(audit.price||''))
             failures.push(profile.host+' cat detail coin label should be Cost 80: '+JSON.stringify(audit));
