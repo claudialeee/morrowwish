@@ -12,6 +12,40 @@ const sizes=[
   [1536,864,false],[1280,720,false],[800,450,true],[1080,607,true],
   [390,844,true],
 ];
+// Browser-level English check for every major playable scene.
+// Coin icons and Canvas text are checked after the real rendering pipeline.
+async function checkEnglish(page,phase,width){
+ await page.waitForTimeout(85);
+ const leaks=await page.evaluate(()=>{
+  const han=/[\u3400-\u9fff]/,out=[];
+  const vis=el=>{
+   if(!el||!el.isConnected||!el.getClientRects().length)return false;
+   if(el.closest('script,style,noscript,head,template'))return false;
+   for(let x=el;x;x=x.parentElement){
+    const css=getComputedStyle(x);
+    if(css.display==='none'||css.visibility==='hidden')return false;
+   }
+   return true;
+  };
+  const root=document.getElementById('game-root')||document.body;
+  const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  while(walk.nextNode()){
+   const n=walk.currentNode,t=(n.nodeValue||'').trim();
+   if(t&&han.test(t)&&vis(n.parentElement))out.push('DOM '+t.slice(0,120));
+  }
+  for(const el of root.querySelectorAll('[title],[aria-label]')){
+   if(!vis(el))continue;
+   for(const a of ['title','aria-label']){
+    const t=el.getAttribute(a)||'';
+    if(han.test(t))out.push(a+' '+t.slice(0,120));
+   }
+  }
+  for(const t of window.__catBondCanvasHan||[])out.push('Canvas '+t);
+  return out.slice(0,30);
+ });
+ assert.deepEqual(leaks,[],'Mixed-language '+phase+' at '+width+'px: '+JSON.stringify(leaks));
+}
+
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
   for(const [width,height,touch] of sizes){
@@ -21,6 +55,21 @@ try{
     });
     const page=await ctx.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
+    await page.addInitScript(()=>{
+      window.__catBondCanvasHan=[];
+      const han=/[\u3400-\u9fff]/;
+      for(const name of ['fillText','strokeText']){
+        const proto=CanvasRenderingContext2D.prototype,orig=proto[name];
+        proto[name]=function(text,...args){
+          const t=String(text);
+          if(document.documentElement.lang==='en'&&han.test(t)){
+            const leaks=window.__catBondCanvasHan;
+            if(leaks.length<25&&!leaks.includes(t))leaks.push(t.slice(0,135));
+          }
+          return orig.call(this,text,...args);
+        };
+      }
+    });
     await page.route('**/api/session',route=>route.fulfill({status:204,body:''}));
     try{
       const response=await page.goto(
@@ -83,6 +132,7 @@ try{
       assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),true,
         'Both independent yard-only navigation groups must appear only in the yard');
+      await checkEnglish(page,'yard',width);
       // The unified settings row must NEVER live inside a HUD hidden on the map
       // or during battle. This caught missing top-right controls in portal QA.
       await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
@@ -174,6 +224,7 @@ try{
         'Garden actions cannot appear during battle');
       assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),true,
         'Language/audio/share utility toolbar must stay visible in battle');
+      await checkEnglish(page,'battle',width);
       // CrazyGames owns the embedding viewport. No floating skill reference
       // button or free-standing panel may cover the arena in any portal size.
       assert.equal(await page.locator('#battle-skill-info-toggle').isVisible(),false,
@@ -340,6 +391,7 @@ try{
       // enemies' HP, call b.finish() or execute internal endBattle() helpers.
       if(width===907){
         await page.locator('#cr-next').waitFor({state:'visible',timeout:120000});
+        await checkEnglish(page,'capture-result',width);
         assert.equal(await page.evaluate(()=>State.S.cats.length),2,
           'Real auto battle must reward the player with a second cat');
         await page.locator('#cr-next').click();
@@ -361,6 +413,7 @@ try{
         if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
         await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
         await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+        await checkEnglish(page,'world-map',width);
         const dir='.check/crazygames-yard-dock';
         fs.mkdirSync(dir,{recursive:true});
         await page.screenshot({path:dir+'/'+width+'x'+height+'-map.png'});
