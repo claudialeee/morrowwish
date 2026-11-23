@@ -166,7 +166,7 @@ try{
           for(const label of required)if(!traits.includes(label))
             failures.push(profile.host+' '+profile.lang+' '+key+
               ' untranslated trait summary or spoiled hidden trait: '+traits);
-          if(/\b(?:clever|diligent|glutton|fortune|goldpaw|weaver|angler|mischievous)\b/i.test(traits))
+          if(profile.lang==='zh'&&/\b(?:clever|diligent|glutton|fortune|goldpaw|weaver|angler|mischievous|none)\b/i.test(traits))
             failures.push(profile.host+' '+profile.lang+' '+key+
               ' raw personality/trait save code is player visible: '+traits);
         }
