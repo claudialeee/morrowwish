@@ -34,7 +34,7 @@ const ytExpected={
  'tiny-town':['64Uh0S9dqmQ',1],
  'elsewhere':['n8bbePy8Unw',3],
  'flip-dash':['cC7akb-kUIo',219],
- 'parcel-panic':['c1qeZ3tvuLU',16],
+ 'parcel-panic':['dHD2UnbmSqU',null],
  'pocket-aquarium':['O3tMbulVPvk',36]
 };
 assert.equal(yt.views,null,'deleted Cat Bond YouTube counts must not be reused');
@@ -43,7 +43,7 @@ for(const [game,[id,views]] of Object.entries(ytExpected)){
  const p=ytPosts.find(x=>x.game===game);
  assert.ok(p?.url.endsWith('/'+id),'expected current approved YouTube Short ID for '+game);
  assert.equal(p.views,views,'owner-verified play count for '+game);
- assert.equal(p.dataSource,game==='cat-bond'?null:'vidiq-youtube-owner-uploads-2026-11-22');
+ assert.equal(p.dataSource,['cat-bond','parcel-panic'].includes(game)?null:'vidiq-youtube-owner-uploads-2026-11-22');
 }
 const tk=snap.platforms.find(x=>x.id==='tiktok');
 assert.equal(tk.published,7,'all 7 TikTok videos published');
