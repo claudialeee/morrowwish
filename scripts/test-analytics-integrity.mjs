@@ -24,13 +24,20 @@ const DB={prepare(sql){
   },
   async all(){
    if(sql.startsWith('SELECT kind,payload FROM events'))return {results:rows.filter(r=>r.category===args[0]&&r.view_id===args[1]).sort((a,b)=>a.id-b.id)};
-   if(sql.startsWith('SELECT day,COUNT(*) AS rawVisits')){
+   if(sql.includes('WITH page_visits AS')){
     const counts=new Map();
+    const sessions=rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='session'&&r.day>=args[1]);
+    const states=new Map();
+    for(const r of sessions){const v=JSON.parse(r.payload||'{}'),z=states.get(r.view_id)||{started:0,finished:0};if(Number(v.starts)>0)z.started=1;if(Number(v.ends)>0)z.finished=1;states.set(r.view_id,z);}
     for(const r of rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit'&&r.day>=args[0])){
-     const item=counts.get(r.day)||{day:r.day,rawVisits:0,keys:new Set()};
-     item.rawVisits++;item.keys.add(r.view_id||'legacy:'+r.visitor+':'+r.day);counts.set(r.day,item);
+     const z=counts.get(r.day)||{day:r.day,rawVisits:0,keys:new Set()};
+     z.rawVisits++;z.keys.add(r.view_id||'legacy:'+r.visitor+':'+r.day);counts.set(r.day,z);
     }
-    return {results:[...counts.values()].sort((a,b)=>a.day.localeCompare(b.day)).map(r=>({day:r.day,rawVisits:r.rawVisits,pageviews:r.keys.size}))};
+    return {results:[...counts.values()].sort((a,b)=>a.day.localeCompare(b.day)).map(x=>({
+     day:x.day,rawVisits:x.rawVisits,pageviews:x.keys.size,
+     startedViews:[...x.keys].filter(id=>states.get(id)?.started).length,
+     finishedViews:[...x.keys].filter(id=>states.get(id)?.started&&states.get(id)?.finished).length
+    }))};
    }
    if(sql.startsWith('SELECT MIN(day) AS firstDay')){
     const visits=rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit');
@@ -140,6 +147,8 @@ assert.equal(auditResponse.status,200,'Owner D1 audit should succeed');
 const audit=await auditResponse.json();
 assert.equal(audit.source,'uncapped-d1-aggregate');
 assert.equal(audit.total,2,'Full D1 audit counts legacy and v11 visits');
+assert.deepEqual(audit.totals,{pageviews:2,startedViews:2,finishedViews:2},
+ 'Uncapped D1 visit funnel counts each visit at most once');
 assert.equal(audit.history.pageviews,2,'Stored lifetime count must not be sampled');
 assert.equal(audit.byDay.reduce((n,r)=>n+r.pageviews,0),2,'Daily counts must reconcile');
 
