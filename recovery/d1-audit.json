@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-23T22:44:30.533Z",
-  "targetRangeStart": "2026-11-22T00:00:00.000-08:00",
+  "generatedAt": "2026-11-23T22:46:33.228Z",
+  "targetRangeStart": "2026-11-22T00:00:00-08:00",
   "database": {
     "name": "morrowwish-analytics",
     "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
@@ -8,52 +8,43 @@
     "created_at": "2026-11-19T08:12:57.602Z",
     "file_size": 335872
   },
-  "currentBookmark": "00000275-00000016-0000512c-55c502a9963063858bb40c1482289c69",
+  "currentBookmark": "00000276-00000000-0000512c-dfbf5b1b24e35c58668ec9eb2f49e324",
   "historicalBookmarks": [
     {
-      "timestamp": "2026-11-22T08:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-22T08:00:00.000Z",
+      "bookmark": "00000198-00000076-0000512b-15bc5ee8dd697c44118612cecbc6c98e"
     },
     {
-      "timestamp": "2026-11-22T12:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-22T12:00:00.000Z",
+      "bookmark": "000001ad-00000035-0000512b-67c1d0d5550d022d5ce2a6e0d3bf50ed"
     },
     {
-      "timestamp": "2026-11-22T16:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-22T16:00:00.000Z",
+      "bookmark": "000001ad-00000035-0000512b-67c1d0d5550d022d5ce2a6e0d3bf50ed"
     },
     {
-      "timestamp": "2026-11-22T20:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-22T20:00:00.000Z",
+      "bookmark": "000001ba-00000040-0000512b-da06b0e9b1f40c05d2f98d1684da5521"
     },
     {
-      "timestamp": "2026-11-23T00:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-23T00:00:00.000Z",
+      "bookmark": "000001f7-00000054-0000512c-1193dc9939b5eac58397d3c967a507d8"
     },
     {
-      "timestamp": "2026-11-23T04:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-23T04:00:00.000Z",
+      "bookmark": "00000216-00000002-0000512c-7be849bf7a812cbc42779db0699ad982"
     },
     {
-      "timestamp": "2026-11-23T08:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-23T08:00:00.000Z",
+      "bookmark": "00000248-0000000c-0000512c-2103b4b837ef77097daef5a9a74f8464"
     },
     {
-      "timestamp": "2026-11-23T12:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-23T12:00:00.000Z",
+      "bookmark": "00000255-00000018-0000512c-82a0cea7b97963454b6df9164b97855b"
     },
     {
-      "timestamp": "2026-11-23T16:00:00+00:00",
-      "bookmark": null,
-      "error": "Error: Cloudflare API 400: [{\"code\":7400,\"message\":\"Invalid property: timestamp => Invalid datetime\"}]"
+      "timestamp": "2026-11-23T16:00:00.000Z",
+      "bookmark": "00000258-00000002-0000512c-aa5febfb59b0d8de34c763da34fe94af"
     }
   ],
   "tables": [
