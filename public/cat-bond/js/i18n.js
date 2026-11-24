@@ -25,6 +25,7 @@
     '云存档': 'Cloud save',
     '最后一页': 'The Last Page',
     '已完成': 'Complete',
+    '系统菜单': 'System menu',
     // Newly surfaced first-capture conversion and progress CTAs. Keep both
     // locales explicit so the English portal never leaks Han characters.
     '战斗奖励与详情': 'Battle rewards & stats',
