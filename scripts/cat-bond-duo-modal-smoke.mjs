@@ -49,6 +49,16 @@ try{
   assert.deepEqual({maxTier:initial.maxTier,mode:initial.mode,activeTier:initial.activeTier},
    {maxTier:3,mode:'sequence',activeTier:1},
    '100 trust must auto-play all three unlocked animations from tier 1');
+  const tierFit=await frame.evaluate(()=>{
+   const selectors=['#duo-canvas','.controls','.tier-controls','#trust-note'];
+   const boxes=selectors.map(selector=>{
+    const el=document.querySelector(selector),r=el.getBoundingClientRect();
+    return {selector,top:r.top,bottom:r.bottom,height:r.height};
+   });
+   return {viewport:window.innerHeight,boxes,bottom:Math.max(...boxes.map(x=>x.bottom))};
+  });
+  assert.ok(tierFit.bottom<=tierFit.viewport+2,
+   'the animation, replay controls and all three trust-tier buttons must fit in one iframe viewport without scrolling: '+JSON.stringify(tierFit));
   assert.match(initial.note,/已解锁全部三档合击演出/);
   assert.equal(initial.source,'63-original-painted-storyboards');
   for(let n=1;n<=3;n++){
