@@ -41,6 +41,10 @@ try{
   assert.equal(entry.manual,true,'must enter manual battle');
   assert.equal(entry.paused,true,'manual tutorial must pause the arena before first input');
   assert.equal(entry.coach,true,'guided action practice must exist');
+  // The Last Page intro can appear over the manual tutorial on a fresh save.
+  // Dismiss it as a real player would before testing the battle coach.
+  const storySkip=page.locator('.cb-story-overlay.is-visible .cb-story-skip');
+  if(await storySkip.isVisible().catch(()=>false))await storySkip.click();
   for(let step=0;step<4;step++){
    const content=await page.locator('#battle-help-body').innerText();
    assert.match(content,/手机|触屏|Phone/,'tutorial must explain touch controls');
@@ -217,7 +221,8 @@ try{
   assert.equal(visual.soundCount,13,'combat sound categories must still load');
   // No one may browse unearned moves: only the current earned pair opens.
   await page.goto(origin+'/cat-bond/duo-preview.html?a='+
-    encodeURIComponent(visual.a)+'&b='+encodeURIComponent(visual.b),
+    encodeURIComponent(visual.a)+'&b='+encodeURIComponent(visual.b)+
+    '&embedded=1&preview=original-three-tier-20261123-v4',
     {waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>window.__duoPreviewReady&&window.CatBondDuoHero?.assetReady,
     {timeout:18000});
@@ -254,6 +259,9 @@ try{
   });
   assert.ok(Math.abs(previewFrame.ratio-16/9)<.02,
     'original art must remain true 16:9 without stretched color side bands');
+  const viewerStyle=await page.locator('.viewer').evaluate(el=>getComputedStyle(el).backgroundImage);
+  assert.match(viewerStyle,/linear-gradient/,
+    'embedded painting must sit in the restored soft watercolor frame');
   await page.locator('.viewer').screenshot({path:'artifacts/cat-bond-21x3/'+profile.name+'-unlocked-duo-preview.png'});
   const stranger=await browser.newContext();
   const locked=await stranger.newPage();
