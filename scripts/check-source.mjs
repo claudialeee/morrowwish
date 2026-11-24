@@ -1411,7 +1411,7 @@ const gardenRegions=['harbor','forest','forge','sky','library','starfall'];
 const gardenCast=['muling','jiedeng','qilan','yahe','yuchuan','jinpo','xiaomao','lingyu','yuanfan','moye','baikan','xingya','lichuan'];
 if(!gardenArt.startsWith('<svg')||!gardenArt.includes('viewBox="0 0 1600 900"')||
    !gardenArtPortrait.startsWith('<svg')||!gardenArtPortrait.includes('viewBox="0 0 900 1600"')||
-   /<text[\s>]/i.test(gardenArt+gardenArtPortrait)||/Cat Bond|Sunlit Garden|Workshop|Catdex/i.test((gardenArt+gardenArtPortrait).replace(/aria-label="[^"]*"/g,'')))
+   /<text[\s>]/i.test(gardenArt+gardenArtPortrait)||/<foreignObject|<button|<input/i.test(gardenArt+gardenArtPortrait))
  throw new Error('Sunlit Garden environment artwork must be a text-free scene plate, not a baked UI mockup');
 if(gardenRegions.some(id=>!gardenCode.includes("id:'"+id+"'"))||
    gardenCast.some(id=>!gardenCode.includes(id)))
