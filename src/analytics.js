@@ -67,8 +67,9 @@ function mainStats(x){
     const startedIds=viewsWith(d=>Number(d.signals?.funnel_first_run)>0||Number(d.starts)>0);
     const finishedIds=viewsWith(d=>Number(d.signals?.funnel_first_finish)>0||Number(d.ends)>0);
     const finishedStarted=[...finishedIds].filter(id=>startedIds.has(id));
-    const funnelAvailable=sessionsOf.some(r=>Number(r.data.signals?.funnel_first_run)>0||
-      Number(r.data.signals?.funnel_first_finish)>0||Number(r.data.starts)>0||Number(r.data.ends)>0);
+    const funnelAvailable=sessionsOf.some(r=>r.view_id&&visitIds.has(r.view_id)&&
+      (Number(r.data.signals?.funnel_first_run)>0||Number(r.data.signals?.funnel_first_finish)>0||
+       Number(r.data.starts)>0||Number(r.data.ends)>0));
     const visitFunnel=funnelAvailable?{pageviews,startedViews:startedIds.size,
       finishedViews:finishedStarted.length,scope:"page-load-funnel"}:null;
     // Funnel denominators always count unique page visits, never battle-count
