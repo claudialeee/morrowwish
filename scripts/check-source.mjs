@@ -135,8 +135,10 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const allGameRows=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&Number(x.pageviews)>0);")||
    !dashboard.includes('format(sumField(allGameRows,"pageviews"))')||
    !dashboard.includes('gamesTrackedTotal:"七款游戏合计"')||
-   dashboard.includes('id="archived-first-round"')||
-   dashboard.includes('const archivedRound=')||
+   !dashboard.includes('id="archived-first-round"')||
+   !dashboard.includes('id="archived-first-round-rows"')||
+   !dashboard.includes('id="archived-first-round-posts"')||
+   !dashboard.includes("const archivedRound=(pulse.publicationRounds?.rounds||[]).find(round=>round.id==='morning-first'&&round.status==='deleted');")||
    !dashboard.includes('statStartsNote:"按页面访问去重，不是战斗次数"')||
    !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
@@ -147,7 +149,7 @@ if(!dashboard.includes("num('pageviews')")||
    dashboard.includes('id="account-overview-rows"')||
    !dashboard.includes('id="video-detail-rows"')||
    dashboard.includes('accountOverviewNote:'))
- throw Error('Dashboard must preserve conversion context and links without counting old Bluesky posts as new videos');
+ throw Error('Dashboard must preserve current conversion context and separately archive deleted first-round metrics without counting them as active posts');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
    !telemetry.includes('window.__MWMiniActive')||
