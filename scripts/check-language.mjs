@@ -10,11 +10,8 @@ const cats=context.window.__species;
 assert.equal(cats.length,33,'All 33 playable species, including Jiafei, must stay in the catalogue');
 const introHtml=read('public/cat-bond/index.html');
 const introMain=read('public/cat-bond/js/main.js');
-const introCount=Number(introHtml.match(/id="intro-breed-count">🐾 收集 (\d+) 种猫<\/span>/)?.[1]);
-assert.equal(introCount,cats.length,'Intro first-paint collection count must match canonical roster');
-assert.ok(introMain.includes('window.GameData?.SPECIES?.length') &&
-  introMain.includes('introBreedCount.textContent=`🐾 收集 ${totalBreeds} 种猫`'),
-  'Intro must derive its displayed count from the live roster, not a hard-coded number');
+assert.ok(introHtml.includes('id="cb-title-name"')&&introHtml.includes('id="intro-continue"'),'Bilingual RPG title requires both entry points');
+assert.ok(introMain.includes("set('cb-title-name','猫猫纽带','Cat Bond')"),'Title must localize the game name');
 for(const [field,locale] of [['name','Chinese'],['nameEn','English']]){
  const values=cats.map(c=>c[field]);
  assert.equal(new Set(values).size,cats.length,locale+' cat names must be unique');

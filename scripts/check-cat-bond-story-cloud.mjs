@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=resonance-title-20261124-v1','js/state.js?v=atomic-save-book-20261124-v5','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v6','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=resonance-title-20261124-v2','js/state.js?v=atomic-save-book-20261124-v5','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v7','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -142,7 +142,17 @@ assert.equal(restoredCloudBook.S.coins,303,'cloud restore must restore the chose
 class FakeStatement{
  constructor(db,sql){this.db=db;this.sql=sql;this.args=[];}
  bind(...args){this.args=args;return this;}
- async run(){assert.ok(this.sql.includes('CREATE TABLE IF NOT EXISTS cat_bond_cloud_saves'));return {success:true};}
+ async run(){
+  if(this.sql.includes('CREATE TABLE IF NOT EXISTS cat_bond_cloud_saves'))return {success:true};
+  if(this.sql.includes('INSERT INTO cat_bond_cloud_saves')){
+   const [keyHash,iv,ciphertext,updatedAt,byteLength,expected]=this.args;
+   const old=this.db.rows.get(keyHash);
+   if((old?.revision??0)!==expected)return {success:true,meta:{changes:0}};
+   this.db.rows.set(keyHash,{key_hash:keyHash,iv,ciphertext,revision:(old?.revision||0)+1,updated_at:updatedAt,byte_length:byteLength});
+   return {success:true,meta:{changes:1}};
+  }
+  throw Error('Unexpected D1 write: '+this.sql);
+ }
  async first(){
   const [hash]=this.args;
   if(this.sql.includes('SELECT iv,ciphertext,revision,updated_at')){
@@ -150,14 +160,6 @@ class FakeStatement{
   }
   if(this.sql.includes('SELECT revision FROM cat_bond_cloud_saves')){
    const row=this.db.rows.get(hash);return row?{revision:row.revision}:null;
-  }
-  if(this.sql.includes('INSERT INTO cat_bond_cloud_saves')){
-   const [keyHash,iv,ciphertext,updatedAt,byteLength,expected]=this.args;
-   const old=this.db.rows.get(keyHash);
-   if((old?.revision??0)!==expected)return null;
-   const row={key_hash:keyHash,iv,ciphertext,revision:(old?.revision||0)+1,updated_at:updatedAt,byte_length:byteLength};
-   this.db.rows.set(keyHash,row);
-   return {revision:row.revision,updated_at:row.updated_at};
   }
   throw new Error('Unexpected SQL in cloud-save test: '+this.sql);
  }

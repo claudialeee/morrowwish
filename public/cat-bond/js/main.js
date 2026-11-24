@@ -136,14 +136,15 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         // Let the player choose their actual companion first; the cinematic
         // then stages that cat waking beneath the garden bench.
-        if(mode==='new'&&!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
+        if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
           window.CatBondStory.startPrologue(enterWorld);
         }else enterWorld();
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
       });
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
-      game.rebuildYard();game.refreshHUD();game.openWorldMap();
+      game.rebuildYard();game.refreshHUD();
+      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();});}else game.openWorldMap();
       const has=o=>o&&Object.values(o).some(v=>v>0);
       const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
       if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
@@ -197,7 +198,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // auto-save periodically
-  setInterval(() => { if (game._lastTs) State.save(); }, 8000);
+  setInterval(() => { if (game._lastTs&&window.__CAT_BOND_STARTED__) State.save(); }, 8000);
   // A native app or Steam wrapper can suspend the WebView without unloading.
   // Persist on both pagehide and backgrounding; keep the save key compatible
   // with existing browser players for eventual cloud-save migration.

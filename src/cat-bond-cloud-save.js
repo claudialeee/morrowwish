@@ -83,16 +83,15 @@ export async function catBondCloudSave(request,env){
         updated_at=excluded.updated_at,
         byte_length=excluded.byte_length
       WHERE cat_bond_cloud_saves.revision=?
-      RETURNING revision,updated_at
-    `).bind(keyHash,iv,ciphertext,now,byteLength,expected).first();
+    `).bind(keyHash,iv,ciphertext,now,byteLength,expected).run();
 
-    if(!saved){
+    if(Number(saved?.meta?.changes)!==1){
       const latest=await env.DB.prepare(
         "SELECT revision FROM cat_bond_cloud_saves WHERE key_hash=?"
       ).bind(keyHash).first();
       return cloudJson({error:"Save changed on another device",conflict:true,slotId,revision:latest?.revision??0},409);
     }
-    return cloudJson({ok:true,slotId,revision:saved.revision,updatedAt:saved.updated_at});
+    return cloudJson({ok:true,slotId,revision:expected+1,updatedAt:now});
   }catch(error){
     console.warn("Cat Bond cloud save failed",String(error?.message||error).slice(0,160));
     return cloudJson({error:"Cloud save temporarily unavailable"},503);
