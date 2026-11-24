@@ -488,7 +488,7 @@ class YardScene {
       x: Math.random() * W, y: 40 + Math.random() * 90, s: 0.7 + Math.random() * 0.6,
       spd: 0.15 + Math.random() * 0.2,
     }));
-    const palette = ['#ff8fb0', '#fff1a8', '#b59bff', '#ff9d6e', '#9be7c4'];
+    const palette = ['#c58f78', '#d9bd82', '#9baa79', '#a5bdb3', '#b99f83'];
     this.flowers = Array.from({ length: 22 }, () => ({
       x: 30 + Math.random() * (W - 60), y: H * 0.42 + Math.random() * (H * 0.52),
       c: palette[Math.floor(Math.random() * palette.length)], ph: Math.random() * 6,
@@ -497,7 +497,7 @@ class YardScene {
     this.petals = Array.from({ length: 16 }, () => ({
       x: Math.random() * W, y: Math.random() * H, vx: -14 - Math.random() * 20, vy: 10 + Math.random() * 16,
       r: 3 + Math.random() * 3, sp: 1 + Math.random() * 2, ph: Math.random() * 6,
-      c: ['#ffb3c7', '#ffd6e6', '#fff1a8'][Math.floor(Math.random() * 3)],
+      c: ['#d6c4a1', '#e7d7b7', '#d7a987'][Math.floor(Math.random() * 3)],
     }));
     // fireflies that glow near the ground (soft bloom)
     this.fireflies = Array.from({ length: 14 }, () => ({
@@ -747,7 +747,7 @@ class YardScene {
     // --- drifting clouds (gentle parallax over the painted sky) ---
     for (const c of this.clouds) {
       c.x += c.spd; if (c.x > W + 80) c.x = -80;
-      ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.save(); ctx.globalAlpha = 0.24; ctx.fillStyle = 'rgba(246,239,220,0.76)';
       for (const [dx, dy, r] of [[0, 0, 18], [18, 4, 14], [-16, 4, 13], [4, -8, 13]])
         { ctx.beginPath(); ctx.arc(c.x + dx * c.s, c.y + dy, r * c.s, 0, Math.PI * 2); ctx.fill(); }
       ctx.restore();
@@ -770,7 +770,7 @@ class YardScene {
     for (const b of this.butterflies) {
       ctx.save(); ctx.translate(b.x, b.y);
       const flap = Math.sin(b.t * 10);
-      ctx.fillStyle = '#ffd36b';
+      ctx.fillStyle = '#d7b77b';
       ctx.beginPath(); ctx.ellipse(-3, 0, 3, 5 * Math.abs(flap) + 1, -0.4, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(3, 0, 3, 5 * Math.abs(flap) + 1, 0.4, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
