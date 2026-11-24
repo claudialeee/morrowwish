@@ -65,10 +65,17 @@ try{
    await scan(page,slug,lang,'landing');
    if(slug==='cat-bond'&&await page.locator('#intro-start').isVisible()){
     await page.locator('#intro-start').click({timeout:7000});
+    await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+    await scan(page,slug,lang,'save slots');
+    await page.locator('#intro-slot-list [data-slot="slot1"]').click({timeout:7000});
+    await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
     await scan(page,slug,lang,'starter');
-    if(await page.locator('#panel .dex-cell').first().isVisible()){
-     await page.locator('#panel .dex-cell').first().click({timeout:7000});
-     await scan(page,slug,lang,'yard');
+    if(await page.locator('#panel.open .dex-cell').first().isVisible()){
+     await page.locator('#panel.open .dex-cell').first().click({timeout:7000});
+     await scan(page,slug,lang,'prologue');
+     await page.locator('.cb-story-overlay.is-visible .cb-story-skip').click({timeout:7000});
+     await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:12000});
+     await scan(page,slug,lang,'world map');
     }
    }
    if(slug==='pocket-aquarium'&&await page.locator('#start').isVisible()){

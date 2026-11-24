@@ -2,6 +2,7 @@
 // the arena; water gun, sustained lightning, short sweeping fire, electric
 // chain, slow seeking orb and physical melee/dash get separate visual frames.
 import assert from 'node:assert/strict';
+import {startNewAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import {chromium} from 'playwright';
@@ -30,8 +31,7 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.__game&&!!window.Battle?.CaptureBattle);
-  await page.locator('#intro-start').click();
-  await page.locator('#panel.open .dex-cell').first().click();
+  await startNewAdventure(page);
   const hashes=[];
   for(const [id,breed,kind] of moves){
    const record=await page.evaluate(({id,breed,kind})=>{

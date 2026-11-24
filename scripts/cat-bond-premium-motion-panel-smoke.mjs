@@ -2,6 +2,7 @@
 // and genuinely distinct visible elemental marks, with one UNBROKEN art piece.
 // Verify the actual interactive panels match the pastel illustrated UI.
 import assert from 'node:assert/strict';
+import {startNewAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
 try{
@@ -42,9 +43,8 @@ try{
   assert.equal(report.motion,true,'each camera must actually move through meaningful keyframes');
   assert.equal(report.frameChanges.filter(x=>x[0]!==x[1]).length,21,
     'all 21 moves must render time-changing pictures');
+  await startNewAdventure(page,{scene:'yard'});
   await page.evaluate(()=>{
-    document.getElementById('intro-start')?.click();
-    UI.closeAll();
     const a=State.makeCat('tangyuan'),b=State.makeCat('sanhua');
     State.S.cats=[a,b];State.S.duoRelations={pairs:{},active:[]};
     CatRelations.choose(a,b);CatRelations.pair(a,b).value=40;
