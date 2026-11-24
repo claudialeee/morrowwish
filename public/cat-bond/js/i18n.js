@@ -20,6 +20,7 @@
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
     '守铃者': 'The Bellkeeper',
+    '主线目标': 'MAIN QUEST',
     '☁️ 云存档': '☁️ Cloud save',
     '云存档': 'Cloud save',
     '最后一页': 'The Last Page',
