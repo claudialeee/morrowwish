@@ -2126,6 +2126,7 @@
   // Consistent names for the new breed and legacy saved visits.
   Object.assign(DICT, {'圆宝':'Pudding', '加菲':'Pudding', '奶奶':'Snowball'});
   DICT["加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。"] = "Pudding is a plush Exotic Shorthair with round cheeks and a chubby belly. This brave kitten loves protecting friends.";
+  Object.assign(DICT, {
     "序章 · 倒着响的铃": "PROLOGUE · A BELL IN REVERSE",
     "第一章 · 空白页": "CHAPTER I · THE BLANK PAGE",
     "第二章 · 旧约": "CHAPTER II · THE OLD PROMISE",
@@ -2142,7 +2143,8 @@
     "在月影遗迹寻找隐藏的星光匣，揭开最后一页。": "Find the hidden star box in Moonshadow Ruins and reveal the last page.",
     "✦ 星铃之路 · 主线冒险": "✦ THE STAR BELL ATLAS · MAIN STORY",
     "当前目标 · MAIN QUEST": "CURRENT OBJECTIVE · MAIN QUEST",
-    "段记忆": "MEMORIES",
+    "段记忆": "MEMORIES"
+  });
   DICT['地图'] = 'Map'; // Prevent a stray Chinese map label on the English home screen.
   var KEYS = Object.keys(DICT).sort(function (a, b) { return b.length - a.length; });
   // Han ideographs + CJK symbols/punctuation + fullwidth forms.
