@@ -1,6 +1,6 @@
-// Mandatory real-browser release gate: historical Cat Bond metrics must remain
-// visible after versioned funnels are added. This uses the ACTUAL dashboard DOM,
-// but injects fixtures into /api/summary; no credentials or real D1 events.
+// Mandatory real-browser release gate: page-level Cat Bond metrics, all seven game-page totals,
+// and separate homepage/sitewide totals must remain correct in the actual dashboard DOM.
+// Fixtures are injected into /api/summary; no credentials or real D1 events.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
@@ -41,10 +41,22 @@ try{
   page.on('pageerror',error=>exceptions.push(error.message));
   const row=sample(mixed);
   const auditedPV=mixed?121:26;
+  const otherGames=[
+   {game:'pawsibly-innocent',pageviews:27,retries:0,visitFunnel:{pageviews:27,startedViews:8,finishedViews:5}},
+   {game:'tiny-town',pageviews:18,retries:0,visitFunnel:{pageviews:18,startedViews:6,finishedViews:0}},
+   {game:'elsewhere',pageviews:15,retries:0},
+   {game:'flip-dash',pageviews:5,retries:0},
+   {game:'parcel-panic',pageviews:11,retries:0,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
+   {game:'pocket-aquarium',pageviews:12,retries:0}
+  ];
+  const gamePageviews=auditedPV+otherGames.reduce((n,x)=>n+x.pageviews,0);
+  const homepagePageviews=131;
+  const sitewidePageviews=gamePageviews+homepagePageviews;
+  const hub={game:'hub',pageviews:homepagePageviews,retries:0};
   const summary={
    updated:'2026-11-23T23:56:00.000Z',from:'2026-11-22T08:00:00.000Z',days:2,records:50,
-   rollup:{pageviews:auditedPV,starts:82,ends:79,retries:1},
-   byGame:[row],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
+   rollup:{pageviews:sitewidePageviews,starts:82,ends:79,retries:1},
+   byGame:[row,...otherGames,hub],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
     platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
       {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
     metricScope:{verifiedPosts:[],activeApprovedPosts:28},
@@ -71,10 +83,13 @@ try{
      'Overall pageviews must be the first headline metric');
    assert.equal(statLabels[1],language==='zh'?'网站首页浏览量':'Homepage views',
      'Homepage views must immediately follow overall pageviews');
-   assert.equal(await page.locator('#promotion-round-history').count(),0,
-     'Promotion round history must be removed from the dashboard');
-   assert.equal(await page.locator('#deleted-round-details').count(),0,
-     'Deleted-post archive must not be rendered');
+   const statValues=await page.locator('#stats .stat .big').allTextContents();
+   assert.equal(statValues[0],String(sitewidePageviews),
+     'Sitewide pageviews must include homepage and all seven games');
+   assert.equal(statValues[1],String(homepagePageviews),
+     'Homepage pageviews must be displayed separately');
+   assert.equal(await page.locator('#archived-first-round').count(),0,
+     'Promotion round archive must not be rendered');
    const visibleText=await page.locator('body').innerText();
    assert.ok(!/统计起点：11\/22 00:00|Since Nov 22, 2026, 12:00 AM PT/.test(visibleText),
      'Reporting start date must not be shown in the dashboard');
@@ -86,12 +101,18 @@ try{
    const cells=(await gameRow.locator('td').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
    assert.equal(cells[1],String(auditedPV),'Main table PV must use full D1 aggregate');
-   assert.equal(cells[2],'82','Main-table starts must preserve raw battle totals');
-   assert.equal(cells[3],'79','Main-table finishes must show only raw round totals');
+   assert.equal(cells[2],'8','Main-table Play count must be page visits that entered gameplay, not raw battles');
+   assert.equal(cells[3],'7','Main-table Finish count must be page visits with a result screen');
    assert.equal(cells[4],'1','Historical replay total erased');
    assert.deepEqual(cells.slice(5,8),[mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%',
     '7 / 8 · 87.5%',mixed?'7 / 121 · 5.8%':'7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
+   const totalCells=(await page.locator('#games-total tr td').allTextContents())
+    .map(s=>s.trim().replace(/\s+/g,' '));
+   assert.equal(totalCells[0],String(gamePageviews),
+    'Seven-game total must include games without gameplay tracking, but exclude homepage');
+   assert.equal(totalCells[1],'26','Total Play must sum page-level tracked visits');
+   assert.equal(totalCells[2],'13','Total Finish must sum page-level tracked visits');
    const cards=await page.locator('#focus-grid .focus-card h3 a').evaluateAll(
     nodes=>nodes.map(n=>n.getAttribute('href')));
    assert.deepEqual(cards,[
@@ -128,4 +149,4 @@ try{
 }finally{
  await browser.close();
 }
-console.log('Real Chromium dashboard gate passed: raw rounds, visit funnel, homepage/pageview order, no promotion archive, and no visible start date across 8 bilingual phone/desktop cases.');
+console.log('Real Chromium dashboard gate passed: page-level play/finish, all-seven-game pageview totals, separate homepage/sitewide totals, no promotion archive, and bilingual phone/desktop rendering.');
