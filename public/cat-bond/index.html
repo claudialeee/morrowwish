@@ -241,6 +241,13 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=safe-reset-i18n-20261124-v2"></script>
   <script src="js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v5"></script>
+  <link rel="stylesheet" href="css/resonance-world.css?v=lr-dev-20261124-1">
+  <script src="js/resonance-world-model.js?v=lr-dev-20261124-1"></script>
+<script src="js/resonance-atlas.js?v=lr-dev-20261124-1"></script>
+<script src="js/resonance-puzzles.js?v=lr-dev-20261124-1"></script>
+<script src="js/resonance-dialogue.js?v=lr-dev-20261124-1"></script>
+<script src="js/resonance-world-ui.js?v=lr-dev-20261124-1"></script>
+  <script>if(new URLSearchParams(location.search).get("resonance-dev")==="1"){window.WorldMap=window.CatBondResonanceWorldUI;if(window.CatBondStory){window.CatBondStory.startPrologue=done=>done();window.CatBondStory.updateTracker=()=>{};}}</script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
 <script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script><!-- Last Page RPG production release trigger 2026-11-23; Cloudflare Pages release verification 2026-11-24. -->
