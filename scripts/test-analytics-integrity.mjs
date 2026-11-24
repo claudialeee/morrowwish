@@ -13,8 +13,7 @@ const DB={prepare(sql){
   bind(...v){args=v;return this},
   async run(){
    if(sql.startsWith('INSERT INTO events'))rows.push({category:args[0],day:args[1],ts:args[2],game:args[3],visitor:args[4],view_id:args[5],run_id:args[6],event_name:args[7],kind:args[8],payload:args[9],id:rows.length+1});
-   else if(sql.startsWith("DELETE FROM events WHERE category IN")){const before=rows.length;for(let i=rows.length-1;i>=0;i--)if(['arcade','elsewhere','diagnostic'].includes(rows[i].category))rows.splice(i,1);return {success:true,meta:{changes:before-rows.length}}}
-   else if(sql.startsWith('DELETE FROM events')){for(let i=rows.length-1;i>=0;i--)if(rows[i].category===args[0]&&rows[i].view_id===args[1])rows.splice(i,1)}
+   else if(sql==='DELETE FROM events WHERE category=? AND view_id=?'){assert.equal(args[0],'diagnostic','Only isolated diagnostic cleanup is allowed');for(let i=rows.length-1;i>=0;i--)if(rows[i].category===args[0]&&rows[i].view_id===args[1])rows.splice(i,1)}
    else throw Error('Unexpected SQL run '+sql);
    return {success:true}
   },
@@ -177,41 +176,41 @@ assert.equal(summary.itch?.pageviews,1,'itch game rollup includes historic itchi
 assert.equal(summary.itch?.starts,1,'itch game rollup includes historic itchio start');
 assert.equal(summary.itch?.games.find(x=>x.game==='cat-bond')?.pageviews,1,'Cat Bond itchio visit mapped back to itch');
 assert.equal(rows.some(x=>x.category==='diagnostic'),false,'no persistent smoke events');
-// A reset must require authenticated same-origin confirmation and clear all
-// reporting categories, while preserving unrelated records and future writes.
+// Regression: no caller, including a fully authenticated owner, may erase history.
 const resetUrl='https://morrowwish.pages.dev/api/reset-metrics';
 const resetReq=(confirm='RESET_METRICS',extra={})=>new Request(resetUrl,{method:'POST',headers:{
  Origin:'https://morrowwish.vercel.app','Content-Type':'application/json',
  'X-Morrowwish-Reset':'confirmed',...extra
 },body:JSON.stringify({confirm})});
-const unauth=await api(resetReq(),env);
-assert.equal(unauth.status,401,'unauthenticated reset rejected');
-assert.equal(rows.length,23,'rejected reset must not affect reporting events');
-const wrongOrigin=await api(resetReq('RESET_METRICS',{'Origin':'https://foreign.example','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
-assert.equal(wrongOrigin.status,403,'cross-origin reset rejected even with key');
-const absentOrigin=await api(resetReq('RESET_METRICS',{'Origin':'','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
-assert.equal(absentOrigin.status,403,'originless reset rejected');
-const invalidConfirm=await api(resetReq('no',{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
-assert.equal(invalidConfirm.status,400,'unconfirmed reset rejected');
-const invalidHeader=await api(resetReq('RESET_METRICS',{'X-Morrowwish-Reset':'','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
-assert.equal(invalidHeader.status,400,'missing reset header rejected');
-const getReset=await api(new Request(resetUrl),env);
-assert.equal(getReset.status,405,'GET may never reset metrics');
 const loginResponse=await api(new Request('https://morrowwish.pages.dev/api/auth',{
  method:'POST',headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}
 }),env);
 assert.equal(loginResponse.status,200);
 const cookie=loginResponse.headers.get('set-cookie')?.split(';')[0];
 assert.ok(cookie?.startsWith('morrowwish_studio_auth='));
-rows.push({category:'other',day:new Date().toISOString().slice(0,10),game:'other',visitor:'control',view_id:'keep-me',payload:'{}',id:999});
-const cleared=await api(resetReq('RESET_METRICS',{Cookie:cookie}),env);
-assert.equal(cleared.status,200,'signed dashboard session can reset metrics');
-assert.deepEqual(await cleared.json(),{ok:true,removed:23},'reset reports removed rows');
-assert.deepEqual(rows.map(x=>x.category),['other'],'non-dashboard records remain');
-const empty=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{Cookie:cookie}}),env);
-assert.equal((await empty.json()).records,0,'dashboard starts empty after reset');
+// Synthetic recovered historical record BEFORE the old Nov 22 cutoff.
+rows.push({id:900,category:'arcade',day:'2026-11-20',ts:Date.parse('2026-11-20T18:00:00Z'),
+ game:'cat-bond',visitor:'recovered-fixture',view_id:'recovered-fixture',kind:'visit',payload:'{}'});
+const beforeReset=JSON.stringify(rows);
+for(const request of [resetReq(),resetReq('RESET_METRICS',{Cookie:cookie}),
+ resetReq('RESET_METRICS',{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}),
+ resetReq('no',{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}),new Request(resetUrl)]){
+ assert.equal((await api(request,env)).status,410,'Destructive reset permanently unavailable');
+ assert.equal(JSON.stringify(rows),beforeReset,'Every stored row must remain byte-for-byte unchanged');
+}
+const retained=await api(new Request('https://morrowwish.pages.dev/api/summary',{
+ headers:{Cookie:cookie}}),env);
+assert.equal(retained.status,200);
+const retainedStats=await retained.json(),retainedBond=retainedStats.byGame.find(g=>g.game==='cat-bond');
+assert.equal(retainedStats.dataCoverage.status,'historical-recovery-unverified');
+assert.equal(retainedStats.byDay.find(d=>d.day==='2026-11-20')?.pageviews,1,'Pre-Nov22 recovered data must be visible');
+assert.equal(retainedBond.pageviews,6,'Recovered historical visit included in total');
+assert.equal(retainedBond.recordedGameEntries,2,'Explicit entry signal only, not mixed starts');
+assert.equal(retainedBond.starts,5,'Legacy raw counter preserved separately');
+const priorArcade=rows.filter(x=>x.category==='arcade').length;
 const restarted=await api(req('/api/session',{kind:'visit',game:'cat-bond',viewId:'new-visit',visitor:'test'}),env);
-assert.equal(restarted.status,202,'fresh post-reset gameplay events still write normally');
-assert.equal(rows.filter(x=>x.category==='arcade').length,1,'tracking restarted');
-console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
+assert.equal(restarted.status,202,'Future gameplay collection still works');
+assert.equal(rows.filter(x=>x.category==='arcade').length,priorArcade+1);
+assert.equal(JSON.stringify(rows.slice(0,-1)),beforeReset,'New collection does not mutate any historical row');
+console.log('Seven-game analytics contract: history preserved, pre-cutoff data included, destructive reset blocked, collection intact.');
 await import('./test-cat-bond-analytics-funnel.mjs');
