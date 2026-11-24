@@ -184,7 +184,11 @@ function runBattle(env, persona, rng){
   // tally only invocations where the actor is the player-controlled cat. This makes
   // skillsUsed reflect what the shipped game did, not what keys were pressed.)
   const wrapCast=(name,slot)=>{ if(typeof b[name]!=='function')return; const orig=b[name].bind(b);
-    b[name]=(...a)=>{ const r=orig(...a); const actor=a[0]; const isMe=(actor===b.me())||(name==='ultimate'); if(isMe&&r!==false)m.skillsUsed[slot]++; return r; }; };
+    b[name]=(...a)=>{ const r=orig(...a); const actor=a[0];
+      // readInput calls skillQ()/skillE()/dodge() with NO fighter arg → actor is undefined and
+      // those methods default to me() internally (the player path). So count actor==null as the
+      // player too, else manual Q/E/dodge went uncounted and skillsUsed under-reported real play.
+      const isMe=(actor==null)||(actor===b.me())||(name==='ultimate'); if(isMe&&r!==false)m.skillsUsed[slot]++; return r; }; };
   wrapCast('skillQ','q'); wrapCast('skillE','e'); wrapCast('ultimate','ult'); wrapCast('dodge','dodge');
   const dt=1/60; let tick=0; const MAXT=60; // sim up to 60s game-time
   while(!b.done && tick<MAXT/dt){
