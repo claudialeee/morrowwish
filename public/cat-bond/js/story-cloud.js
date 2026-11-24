@@ -488,7 +488,11 @@ function playEnding(replay=false){
  const lead=state()?.cats?.find(c=>c.uid===state()?.battlePrefs?.teamUids?.[0])||state()?.cats?.[0];
  s.recordedUid=lead?.uid||'';
  save();
- showSequence('ending',ENDING,()=>{
+ const endingPages=ENDING.map(page=>({...page}));
+ const relationships=npcRoot()?.relationships||{},bondScore=Object.values(relationships).reduce((sum,value)=>sum+(Number(value)||0),0);
+ endingPages[endingPages.length-1].text+='\\n\\n'+(bondScore>=4?'纸鸢、绯枝、渡川、烬禾与星簿都记得你一路上的回答。你们不再只靠过去的约定维系彼此。':'伙伴们记得你曾经的迟疑与坚持。新的羁绊不需要每个人都给出相同的答案。');
+ endingPages[endingPages.length-1].textEn+='\\n\\n'+(bondScore>=4?'Kite, Feizhi, Duchuan, Jinhe and Star Scribe remember the answers you gave along the way. You are no longer held together only by an old promise.':'Your companions remember both your hesitation and your resolve. A new bond does not require everyone to give the same answer.');
+ showSequence('ending',endingPages,()=>{
   window.WorldMap?.exitToYard?.();
   updateTracker();
  },{canSkip:false});
@@ -804,10 +808,23 @@ const NPC_CAST=[
 ];
 function npcRoot(){
  const s=state();if(!s)return null;
- if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},quests:{},completed:0};
- s.npcStory.talked||={};s.npcStory.quests||={};return s.npcStory;
+ if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},quests:{},choices:{},relationships:{},completed:0};
+ s.npcStory.talked||={};s.npcStory.quests||={};s.npcStory.choices||={};s.npcStory.relationships||={};return s.npcStory;
 }
 function npcLocale(npc,key){const en=!isZh();return en?(npc[key+'En']||npc[key]):npc[key];}
+const NPC_CHOICES={
+ kite:{prompt:'纸鸢问：如果一本书记得你，却不记得你的名字，你会相信它吗？',promptEn:'Kite asks: If a book remembers you but not your name, would you trust it?',
+  options:[{id:'trust',label:'我愿意先相信它。',labelEn:'I would choose to trust it first.',reply:'纸鸢轻轻合上书页：“那我也试着相信你一次。”',replyEn:'Kite closes the book gently. “Then I will try trusting you, too.”',bond:1},{id:'proof',label:'我想先知道它忘了什么。',labelEn:'I need to know what it forgot.',reply:'纸鸢点头：“好。怀疑有时比记忆更诚实。”',replyEn:'Kite nods. “Good. Doubt can be more honest than memory.”',bond:0}]},
+ feizhi:{prompt:'绯枝问：如果真相会伤害一个等待你的人，你还要听吗？',promptEn:'Feizhi asks: If the truth would hurt someone waiting for you, would you still hear it?',
+  options:[{id:'truth',label:'要。隐瞒只会让等待更久。',labelEn:'Yes. Silence only makes the waiting longer.',reply:'绯枝把那支签翻到背面：“那就从被涂掉的字开始。”',replyEn:'Feizhi turns the fortune over. “Then we begin with the words someone erased.”',bond:1},{id:'care',label:'先告诉我，谁会因此受伤。',labelEn:'First tell me who would be hurt.',reply:'绯枝收起笑意：“你总是先想到别人。这一点没有变。”',replyEn:'Feizhi stops smiling. “You still think of everyone else first.”',bond:1}]},
+ duchuan:{prompt:'渡川问：你把名字交给河流，是为了逃避，还是为了保护谁？',promptEn:'Duchuan asks: Did you give your name to the river to escape, or to protect someone?',
+  options:[{id:'protect',label:'我是在保护一个重要的人。',labelEn:'I was protecting someone important.',reply:'渡川望向水面：“那么你失去的，不只是名字。”',replyEn:'Duchuan looks into the water. “Then your name was not all you lost.”',bond:1},{id:'unsure',label:'我现在还不知道。',labelEn:'I do not know yet.',reply:'渡川点头：“不知道，也比编一个答案好。”',replyEn:'Duchuan nods. “Not knowing is better than inventing an answer.”',bond:1}]},
+ jinhe:{prompt:'烬禾问：如果守住约定意味着让另一个人误会你，你会原谅守约的人吗？',promptEn:'Jinhe asks: If keeping a promise made someone misunderstand you, could you forgive the one who kept it?',
+  options:[{id:'forgive',label:'我会听完他的理由，再决定。',labelEn:'I would hear the reason before deciding.',reply:'烬禾低下头：“我希望当年有人也这样问过我。”',replyEn:'Jinhe lowers their head. “I wish someone had asked me that back then.”',bond:1},{id:'account',label:'理由不能代替道歉。',labelEn:'A reason is not an apology.',reply:'烬禾没有辩解：“你说得对。我欠的不只是解释。”',replyEn:'Jinhe does not argue. “You are right. I owe more than an explanation.”',bond:1}]},
+ xingce:{prompt:'星簿问：如果六段记忆能拼出一个熟悉的影子，那还是原来的那个人吗？',promptEn:'Star Scribe asks: If six memories can assemble a familiar shadow, is it still the person you knew?',
+  options:[{id:'person',label:'不是。记忆不是一个人。',labelEn:'No. Memories are not a person.',reply:'星簿终于抬起眼睛：“暮铃需要亲耳听见这句话。”',replyEn:'Star Scribe finally looks up. “Muling needs to hear that from you.”',bond:1},{id:'hope',label:'我希望它仍有机会成为自己。',labelEn:'I hope they still have a chance to become themselves.',reply:'星簿合上星盘：“那么结局就不能只由胜负决定。”',replyEn:'Star Scribe closes the astrolabe. “Then the ending cannot be decided by victory alone.”',bond:1}]}
+};
+
 function npcState(npc){
  const root=npcRoot();if(!root)return {accepted:false,found:false,done:false};
  if(!root.quests[npc.id])root.quests[npc.id]={accepted:false,found:false,done:false};
@@ -836,23 +853,27 @@ function npcTalk(id){
  if(species&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(card.querySelector('canvas'),species);
  const actions=card.querySelector('.cb-cloud-actions');
  const add=(label,fn,primary=false)=>{const b=document.createElement('button');b.type='button';b.className=primary?'cb-cloud-primary':'cb-cloud-secondary';b.textContent=label;b.onclick=fn;actions.append(b);};
- if(!root.talked[id]){
-  root.talked[id]=true;npcSave();
-  if(q.found)add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
-  else add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
- }else if(q.found&&!q.done){
-  add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
- }else if(!q.accepted&&!q.done){
-  add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
- }else if(q.done){
-  add(en?'Ask about the Star Bell':'询问星铃',()=>{close();npcLore(npc);},true);
+ if(!root.talked[id]){root.talked[id]=true;npcSave();}
+ const authored=NPC_CHOICES[id];
+ if(authored&&!root.choices[id]){
+  card.querySelector('.cb-npc-dialog-line').textContent=(en?authored.promptEn:authored.prompt);
+  authored.options.forEach(option=>add(en?option.labelEn:option.label,()=>{
+   root.choices[id]=option.id;root.relationships[id]=(root.relationships[id]||0)+(option.bond||0);
+   q.choice=option.id;q.choiceReply=option.reply;q.choiceReplyEn=option.replyEn;
+   npcSave();close();npcTalk(id);
+  },true));
+  add(en?'Leave for now':'稍后再谈',close,false);return;
  }
+ if(q.choiceReply||q.choiceReplyEn)card.querySelector('.cb-npc-dialog-line').textContent+=(en?'\n\n':'\n\n')+(en?q.choiceReplyEn:q.choiceReply);
+ if(q.found&&!q.done)add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
+ else if(!q.accepted&&!q.done)add(en?'Continue the conversation':'继续交谈',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
+ else if(q.done)add(en?'Ask about the Star Bell':'询问星铃',()=>{close();npcLore(npc);},true);
  add(en?'Leave':'离开',close,false);
 }
 function npcLore(npc){
  const en=!isZh(),overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
  overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEMORY SHARED':'一段被分享的记忆')+'</p><h2>'+ (en?npc.en:npc.name)+'</h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"><button class="cb-cloud-primary">'+(en?'Close':'关闭')+'</button></div></section>';
- document.body.append(overlay);overlay.querySelector('.cb-npc-dialog-line').textContent=en?npc.doneEn:npc.done;overlay.querySelector('button').onclick=()=>overlay.remove();
+ document.body.append(overlay);const q=npcState(npc),choice=NPC_CHOICES[npc.id]?.options.find(o=>o.id===q.choice);overlay.querySelector('.cb-npc-dialog-line').textContent=(en?npc.doneEn:npc.done)+(choice?'\n\n'+(en?choice.replyEn:choice.reply):'');overlay.querySelector('button').onclick=()=>overlay.remove();
 }
 function npcDeliver(npc,close){
  const q=npcState(npc);if(!q.found||q.done){close();return;}

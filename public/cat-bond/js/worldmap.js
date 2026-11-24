@@ -770,7 +770,8 @@
       var a = mapNodes[p], b = mapNodes[p + 1];
       var nextOpen = isUnlocked(b.region.id);
       ctx.strokeStyle = nextOpen ? 'rgba(255,211,107,0.55)' : 'rgba(157,123,255,0.22)';
-      ctx.beginPath(); ctx.moveTo(a.px, a.py); ctx.lineTo(b.px, b.py); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(a.px, a.py); ctx.bezierCurveTo(a.px+(b.px-a.px)*.34,a.py-34,b.px-(b.px-a.px)*.34,b.py+34,b.px,b.py); ctx.stroke();
+      for(var step=1;step<=3;step++){var u=step/4,px=(1-u)*(1-u)*(1-u)*a.px+3*(1-u)*(1-u)*u*(a.px+(b.px-a.px)*.34)+3*(1-u)*u*u*(b.px-(b.px-a.px)*.34)+u*u*u*b.px,py=(1-u)*(1-u)*(1-u)*a.py+3*(1-u)*(1-u)*u*(a.py-34)+3*(1-u)*u*u*(b.py+34)+u*u*u*b.py;ctx.fillStyle=nextOpen?'rgba(255,221,151,.72)':'rgba(177,157,213,.3)';ctx.beginPath();ctx.arc(px,py,2.2,0,Math.PI*2);ctx.fill();}
     }
     ctx.setLineDash([]);
 
@@ -826,6 +827,9 @@
         ctx.font=W<420?'9px system-ui':'11px system-ui';ctx.textAlign='center';ctx.textBaseline='top';
         ctx.fillStyle='rgba(238,221,255,.78)';
         ctx.fillText(unlockHint(reg2),mn.px,y+cardH+5);
+      }else{
+        var localNpc=window.CatBondNPC?.forRegion?.(reg2.id)?.[0];
+        if(localNpc){ctx.font=W<420?'800 9px system-ui':'800 11px system-ui';ctx.fillStyle='rgba(255,226,183,.92)';ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText((window.MorrowwishI18n?.get?.()==='zh'?'✦ '+localNpc.name:'✦ '+localNpc.en),mn.px,y+cardH+5);}
       }
     }
 
@@ -840,12 +844,38 @@
       ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
       ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     }
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText('🗺️ 世界地图', W / 2, W<650?105:83);
-    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('点击已解锁区域进入探索', W / 2, W<650?158:105);
-    ctx.textAlign = 'left';
+    // Story-first atlas: chapter, six recovered memories and a concrete next objective.
+    var story=window.State?.S?.story||{},fragments=Array.isArray(story.fragments)?story.fragments:[];
+    var memoryIds={home:'home-bell',sakura:'sakura-promise',creek:'creek-name',volcano:'volcano-seal',ruins:'ruins-reverse'};
+    var nextStoryRegion=REGIONS.find(item=>!fragments.includes(memoryIds[item.id]));
+    var zh=window.MorrowwishI18n?.get?.()==='zh';
+    var chapterNamesZh=['序章 · 倒着响的铃','第一章 · 空白页','第二章 · 旧约','第三章 · 失去的名字','第四章 · 最后的守铃者','第五章 · 逆响','终章 · 最后一页'];
+    var chapterNamesEn=['PROLOGUE · A BELL IN REVERSE','CHAPTER I · THE BLANK PAGE','CHAPTER II · THE OLD PROMISE','CHAPTER III · THE LOST NAME','CHAPTER IV · THE LAST BELLKEEPER','CHAPTER V · THE REVERSED BELL','FINAL CHAPTER · THE LAST PAGE'];
+    var count=Math.min(6,fragments.length),chapter=zh?chapterNamesZh[count]:chapterNamesEn[count];
+    var objective=nextStoryRegion
+      ?(zh?({home:'前往阳光花园，找到纸鸢，追查那本没有名字的 Catdex。',sakura:'前往樱花林，找出被改写的旧约。',creek:'前往溪谷，弄清你为何主动交出自己的名字。',volcano:'前往火山口，找出烬禾隐瞒的灾变真相。',ruins:'前往月影遗迹，查明六段旋律真正的用途。'}[nextStoryRegion.id]):({home:'Find Kite in Sunlit Garden and ask why the Catdex kept a blank page.',sakura:'Uncover who rewrote the old promise in Sakura Woods.',creek:'Learn why you willingly gave your name to the river.',volcano:'Discover what Jinhe concealed about the Star Bell catastrophe.',ruins:'Find out what the six melodies are really meant to do.'}[nextStoryRegion.id]))
+      :(zh?(fragments.includes('last-page')?'返回月影遗迹，面对暮铃，阻止逆响仪式。':'在月影遗迹寻找隐藏的星光匣，揭开最后一页。'):(fragments.includes('last-page')?'Return to Moonshadow Ruins and stop Muling’s reversed-bell ritual.':'Find the hidden star box in Moonshadow Ruins and reveal the last page.'));
+    ctx.save();ctx.textAlign='center';ctx.textBaseline='top';
+    var headW=Math.min(W-28,W<650?460:620),headX=(W-headW)/2,headY=W<650?62:38;
+    ctx.fillStyle='rgba(13,13,29,.76)';roundRect(ctx,headX,headY,headW,62,14);ctx.fill();
+    ctx.strokeStyle='rgba(255,211,145,.38)';ctx.lineWidth=1;roundRect(ctx,headX,headY,headW,62,14);ctx.stroke();
+    ctx.font=(W<420?'800 11px':'800 14px')+' system-ui,sans-serif';ctx.fillStyle='#f8e5c9';
+    ctx.fillText(zh?'✦ 星铃之路 · 主线冒险':'✦ THE STAR BELL ATLAS · MAIN STORY',W/2,headY+8);
+    ctx.font=(W<420?'9px':'10px')+' system-ui,sans-serif';ctx.fillStyle='rgba(242,222,205,.78)';
+    ctx.fillText(chapter+'  ·  '+count+'/6 '+(zh?'段记忆':'MEMORIES'),W/2,headY+29);
+    var barW=Math.min(headW-44,360),barX=(W-barW)/2,barY=headY+48;
+    ctx.fillStyle='rgba(255,255,255,.16)';roundRect(ctx,barX,barY,barW,4,4);ctx.fill();
+    ctx.fillStyle='#e9c58e';roundRect(ctx,barX,barY,barW*count/6,4,4);ctx.fill();
+    var panelW=W-24,panelX=12,panelY=H-66;
+    ctx.fillStyle='rgba(14,16,31,.9)';roundRect(ctx,panelX,panelY,panelW,54,12);ctx.fill();
+    ctx.strokeStyle='rgba(233,197,142,.48)';ctx.lineWidth=1;roundRect(ctx,panelX,panelY,panelW,54,12);ctx.stroke();
+    ctx.textAlign='left';ctx.font=(W<420?'800 9px':'800 10px')+' system-ui,sans-serif';ctx.fillStyle='#e9c58e';
+    ctx.fillText(zh?'当前目标 · MAIN QUEST':'CURRENT OBJECTIVE · MAIN QUEST',panelX+12,panelY+8);
+    ctx.font=(W<420?'10px':'12px')+' system-ui,sans-serif';ctx.fillStyle='#fff5e8';
+    var maxChars=W<420?39:90,shortObjective=objective.length>maxChars?objective.slice(0,maxChars-1)+'…':objective;
+    ctx.fillText(shortObjective,panelX+12,panelY+27);
+    ctx.restore();
+    ctx.textAlign='left';
   }
 
   // Physical relics and signposts replace flat floating emoji markers.
