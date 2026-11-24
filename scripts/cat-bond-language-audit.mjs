@@ -331,11 +331,17 @@ try{
             await page.evaluate(()=>window.MorrowwishI18n.set('en'));
             await page.waitForTimeout(180);
             const backToEnglish=norm(await page.locator('#panel .card').innerText());
-            if(!liveForm&&beforeEnglish!==backToEnglish)
+            if(!liveForm&&beforeEnglish!==backToEnglish){
+              let firstDiff=0;
+              while(firstDiff<beforeEnglish.length&&firstDiff<backToEnglish.length&&
+                beforeEnglish[firstDiff]===backToEnglish[firstDiff])firstDiff++;
+              const start=Math.max(0,firstDiff-100);
               failures.push(profile.host+' '+profile.width+' '+key+
                 ' ZH→EN did not restore original text: '+
-                JSON.stringify({before:beforeEnglish.slice(0,350),
-                  after:backToEnglish.slice(0,350)}));
+                JSON.stringify({beforeLength:beforeEnglish.length,afterLength:backToEnglish.length,
+                  firstDiff,before:beforeEnglish.slice(start,firstDiff+180),
+                  after:backToEnglish.slice(start,firstDiff+180)}));
+            }
             reports.push({host:profile.host,locale:'en-zh-en',
               viewport:profile.width+'x'+profile.height,screen:key,
               ok:switchedZh===nativeZh&&(liveForm||beforeEnglish===backToEnglish),
