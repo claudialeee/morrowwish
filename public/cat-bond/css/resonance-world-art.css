@@ -1,0 +1,57 @@
+/* Original Last Resonance art direction: midnight enamel, aged gold, hand-painted regional vistas. */
+.lr-world{background:radial-gradient(ellipse at 50% 8%,#30475a 0,#182b3a 42%,#0c1827 100%);color:#f2e8d2;font-family:Georgia,"Noto Serif SC",serif;letter-spacing:.01em}
+.lr-head{background:linear-gradient(180deg,rgba(18,32,47,.98),rgba(12,24,37,.97));border-bottom:1px solid #9e8055;box-shadow:0 5px 24px #050c1590;padding:14px 18px 14px 20px}
+.lr-head strong{font:700 19px/1.2 Georgia,"Noto Serif SC",serif;letter-spacing:.06em;color:#f5e7c9;text-shadow:0 2px 12px #d6aa5c35}
+.lr-head span{font:600 12px/1.2 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#d9bd88}
+.lr-head .lr-action{background:linear-gradient(180deg,#5b4a39,#352c2a);border:1px solid #c9a36a;color:#fff0d2;min-height:38px;padding:8px 13px}
+.lr-body{background:linear-gradient(180deg,rgba(11,24,38,.16),rgba(9,19,31,.7));padding:16px 18px 76px;scrollbar-color:#92734e #162638}
+.lr-map-brief{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:18px 20px;margin:0 0 14px;border:1px solid #8b744f;border-radius:12px;background:linear-gradient(120deg,rgba(39,58,72,.96),rgba(20,35,49,.96) 65%,rgba(47,47,55,.94));box-shadow:inset 0 1px #f4dfb52a,0 10px 24px #0004}
+.lr-eyebrow{display:block;color:#d9b978;font:700 10px/1.3 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;margin-bottom:7px}
+.lr-map-copy h2{margin:0 0 6px;color:#f5e7c9;font:700 clamp(24px,3vw,36px)/1.1 Georgia,"Noto Serif SC",serif}
+.lr-map-copy p{margin:0;color:#d0d6d4;font:14px/1.5 system-ui,sans-serif}
+.lr-next-objective{margin-top:8px!important;color:#f0d39b!important;font-size:12px!important}
+.lr-map-metrics{display:grid;grid-template-columns:repeat(3,minmax(74px,1fr));gap:8px}
+.lr-metric{min-width:72px;text-align:center;padding:10px 9px;border-left:1px solid #c7a66d55}
+.lr-metric b{display:block;color:#f3d9a5;font:700 22px/1.1 Georgia,serif}
+.lr-metric small{display:block;color:#bfc9ca;font:10px/1.4 system-ui,sans-serif;letter-spacing:.05em;margin-top:4px}
+.lr-atlas{display:block;width:100%;height:clamp(300px,53vh,650px);border:1px solid #9d8055;border-radius:13px;background:#111e2d;box-shadow:0 16px 40px #0006,inset 0 1px #f4dfb52a;touch-action:none}
+.lr-map-tools{justify-content:flex-end;margin:10px 2px 16px}
+.lr-map-tools .lr-action{min-width:48px;background:linear-gradient(180deg,#334a59,#1b2f40);border-color:#8f805f}
+.lr-region-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
+.lr-region-card{position:relative;display:block;overflow:hidden;min-width:0;aspect-ratio:16/8.5;padding:0;border:1px solid #a78a5e;border-radius:10px;background-color:#1b2b3a;background-repeat:no-repeat;box-shadow:0 8px 20px #0005,inset 0 1px #fff4;cursor:pointer;transition:transform .2s,border-color .2s,filter .2s}
+.lr-region-card:not(:disabled):hover{transform:translateY(-3px);border-color:#f0d49a;filter:brightness(1.08)}
+.lr-region-card:disabled{filter:saturate(.35) brightness(.58);cursor:not-allowed}
+.lr-region-shade{position:absolute;inset:35% 0 0;background:linear-gradient(180deg,transparent,rgba(7,15,25,.94))}
+.lr-region-card-copy{position:absolute;left:13px;right:12px;bottom:10px;text-align:left;display:grid;gap:3px}
+.lr-region-card-copy strong{font:700 17px/1.1 Georgia,"Noto Serif SC",serif;color:#fff0cf;text-shadow:0 2px 8px #000}
+.lr-region-card-copy small{font:11px/1.35 system-ui,sans-serif;color:#d6d8d3}
+.lr-region-hero{position:relative;display:flex;align-items:flex-end;min-height:230px;overflow:hidden;margin:0 0 15px;border:1px solid #a98c61;border-radius:13px;background-color:#172839;background-repeat:no-repeat;background-size:300% 200%;box-shadow:0 12px 30px #0006,inset 0 1px #fff5}
+.lr-region-hero:after{content:"";position:absolute;inset:15% 0 0;background:linear-gradient(180deg,transparent 0%,rgba(7,16,27,.16) 28%,rgba(7,16,27,.94) 100%)}
+.lr-region-hero-copy{position:relative;z-index:1;padding:20px 22px;max-width:720px}
+.lr-region-hero-copy h2{margin:0 0 5px;font:700 clamp(27px,4vw,42px)/1.1 Georgia,"Noto Serif SC",serif;color:#fff0cf;text-shadow:0 2px 12px #000}
+.lr-region-hero-copy p{margin:0;color:#e1d6c0;font:14px/1.45 system-ui,sans-serif;text-shadow:0 1px 8px #000}
+.lr-npc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 16px}
+.lr-npc-card{display:flex;align-items:center;gap:12px;min-width:0;padding:10px 12px;border:1px solid #897454;border-radius:10px;background:linear-gradient(120deg,rgba(49,66,78,.96),rgba(23,39,53,.96));color:#f4e6ca;text-align:left;cursor:pointer;box-shadow:inset 0 1px #fff2;transition:transform .16s,border-color .16s}
+.lr-npc-card:hover{transform:translateY(-2px);border-color:#e2c18a}
+.lr-portrait{flex:0 0 76px;width:76px;height:76px;border:2px solid #d2b17a;border-radius:50%;background-color:#1a2a3b;background-repeat:no-repeat;box-shadow:0 0 0 3px #101d2a,0 4px 14px #0007,inset 0 1px #fff8}
+.lr-npc-copy{display:grid;gap:5px;min-width:0}
+.lr-npc-copy strong{font:700 17px/1.15 Georgia,"Noto Serif SC",serif;color:#f8e9c8}
+.lr-npc-copy small{font:12px/1.4 system-ui,sans-serif;color:#b9c8cb}
+.lr-dialog{display:grid;grid-template-columns:112px minmax(0,1fr);grid-template-rows:1fr auto;gap:12px 16px;align-items:center;padding:16px;border:1px solid #c0a16d;border-radius:12px;background:linear-gradient(120deg,#273b4a,#152638 72%,#2b2c39);box-shadow:0 12px 30px #0006,inset 0 1px #fff3;margin:14px 0}
+.lr-dialog .lr-portrait{grid-row:1 / span 2;width:108px;height:108px}
+.lr-dialog-copy small{font:700 10px/1.3 system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:#d6b578}
+.lr-dialog-copy h3{margin:4px 0 7px;font:700 22px/1.15 Georgia,"Noto Serif SC",serif;color:#fff0d0}
+.lr-dialog-copy p{margin:0;color:#e5dfd1;font:16px/1.65 system-ui,sans-serif;min-height:44px}
+.lr-dialog>.lr-action{grid-column:2;justify-self:end;min-width:140px;background:linear-gradient(180deg,#a47b48,#6b4c34);border-color:#e8ca91;color:#fff4dc}
+.lr-puzzle,.lr-exchange{border:1px solid #9e8258;border-radius:12px;background:linear-gradient(135deg,rgba(39,56,69,.98),rgba(18,32,46,.98));box-shadow:0 10px 24px #0005,inset 0 1px #fff2;padding:16px;margin:14px 0}
+.lr-puzzle h3,.lr-exchange h3{font:700 21px/1.2 Georgia,"Noto Serif SC",serif;color:#f3dfb9}
+.lr-puzzle>p,.lr-exchange>p{font:13px/1.55 system-ui,sans-serif;color:#c8d0ce}
+.lr-values span{background:linear-gradient(180deg,#1b3041,#101e2d);border:1px solid #b49360;border-radius:8px;color:#f5dba8;box-shadow:inset 0 1px #fff2}
+.lr-action{font:600 13px/1.25 system-ui,sans-serif;background:linear-gradient(180deg,#3d5664,#243a49);border:1px solid #a48b64;border-radius:7px;color:#f6e8cd;box-shadow:inset 0 1px #fff2,0 3px 8px #0003}
+.lr-action:not(:disabled):hover{background:linear-gradient(180deg,#536d79,#314c5a);border-color:#f1d39a}
+.lr-action:focus-visible,.lr-region-card:focus-visible,.lr-npc-card:focus-visible{outline:2px solid #f4d99e;outline-offset:3px}
+.lr-exchange .lr-row{border-bottom:1px solid #9c865d55;padding:8px 0}
+.lr-exchange .lr-row span{font:13px/1.4 system-ui,sans-serif;color:#e2d7c4}
+@media(max-width:760px){.lr-map-brief{grid-template-columns:1fr;gap:10px;padding:13px}.lr-map-metrics{grid-template-columns:repeat(3,1fr)}.lr-region-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.lr-region-card-copy strong{font-size:14px}.lr-region-card-copy small{font-size:10px}.lr-region-hero{min-height:190px}.lr-npc-grid{grid-template-columns:1fr}.lr-dialog{grid-template-columns:76px minmax(0,1fr);gap:10px;padding:11px}.lr-dialog .lr-portrait{width:72px;height:72px}.lr-dialog-copy h3{font-size:19px}.lr-dialog-copy p{font-size:14px}.lr-dialog>.lr-action{grid-column:1 / -1;justify-self:stretch}.lr-atlas{height:clamp(260px,43dvh,470px)}}
+@media(max-width:420px){.lr-head{padding-right:108px}.lr-head strong{font-size:14px}.lr-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lr-region-card{aspect-ratio:1.2}.lr-region-card-copy{left:8px;bottom:7px}.lr-region-card-copy strong{font-size:12px}.lr-region-card-copy small{font-size:9px}.lr-portrait{width:64px;height:64px;flex-basis:64px}.lr-npc-card{padding:8px;gap:9px}.lr-npc-copy strong{font-size:15px}.lr-npc-copy small{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.lr-region-card,.lr-npc-card,.lr-action{transition:none}}
