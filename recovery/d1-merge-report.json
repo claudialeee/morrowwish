@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-24T02:30:25.951Z",
+  "generatedAt": "2026-11-24T02:31:15.872Z",
   "databaseName": "morrowwish-analytics",
   "targetTimestamp": "2026-11-23T00:36:56.250Z",
   "startTimestamp": "2026-11-22T08:00:00.000Z",
   "backup": {
-    "atBookmark": "000002d4-00000000-0000512d-7bd1ba8f7f7eea73b9bb8b578282230d",
+    "atBookmark": "000002d6-00000000-0000512d-41baa98d8546891182bb14c47a95e94e",
     "bytes": 963567,
     "sha256": "fbc4046e498f08ed525554a8f8c55f3f8a0cda5fe3ebf7b0b76cded1d175846e",
     "keptOnlyOnEphemeralRunner": true
@@ -172,5 +172,5 @@
   "targetBookmark": "000001ff-00000030-0000512c-656cbe8c5d6d2984be29dcf10edc60ba",
   "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001ff-00000030-0000512c-656cbe8c5d6d2984be29dcf10edc60ba",
   "liveRowsAddedDuringMerge": 0,
-  "currentBookmarkAfterMerge": "000002d6-00000000-0000512d-41baa98d8546891182bb14c47a95e94e"
+  "currentBookmarkAfterMerge": "000002d8-00000000-0000512d-b22c7c2245af7c6345505ffeb1b24929"
 }
