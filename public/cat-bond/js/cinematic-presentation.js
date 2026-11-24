@@ -216,10 +216,8 @@
       image.loading = 'eager';
       image.style.opacity = '0';
       image.style.objectPosition = frame.focus || 'center';
-      image.style.transitionDuration = `${clamp(frame.transitionMs ?? 520, 320, 900)}ms, ${clamp(frame.durationMs || 5600, 1200, 12000)}ms`;
-      this.applyCamera(image, frame.camera, 1, frame.durationMs);
+      this.applyCamera(image, frame.camera, 1, frame.durationMs, frame.transitionMs);
       this.nodes.stack.appendChild(image);
-      (frame.layers || []).forEach(() => {});
       requestAnimationFrame(() => {
         image.style.opacity = '1';
         previous.forEach(node => { node.style.opacity = '0'; });
@@ -239,8 +237,7 @@
         node.draggable = false;
         node.style.opacity = String(clamp(layer.opacity ?? 1, 0, 1));
         node.style.mixBlendMode = layer.blend || 'normal';
-        node.style.transitionDuration = `${clamp(frame.transitionMs ?? 520, 320, 900)}ms, ${clamp(frame.durationMs || 5600, 1200, 12000)}ms`;
-        this.applyCamera(node, frame.camera, Number(layer.depth) || 0, frame.durationMs);
+        this.applyCamera(node, frame.camera, Number(layer.depth) || 0, frame.durationMs, frame.transitionMs);
         this.nodes.stack.appendChild(node);
       });
 
@@ -257,12 +254,12 @@
       });
     }
 
-    applyCamera(node, camera, depth = 1, durationMs = 5600) {
+    applyCamera(node, camera, depth = 1, durationMs = 5600, transitionMs = 520) {
       const reduced = prefersReducedMotion();
       const from = camera?.from || { x: 0, y: 0, scale: 1.02 };
       const to = camera?.to || { x: 0, y: 0, scale: 1.06 };
       const factor = reduced ? 0 : clamp(depth, 0, 1.5);
-      node.style.transitionDuration = `${clamp(durationMs || 5600, 1200, 12000)}ms`;
+      node.style.transition = `transform ${clamp(durationMs || 5600, 1200, 12000)}ms cubic-bezier(.2,.55,.24,1), opacity ${clamp(transitionMs ?? 520, 320, 900)}ms ease`;
       node.style.transform = `translate3d(${Number(from.x || 0) * factor}%,${Number(from.y || 0) * factor}%,0) scale(${reduced ? 1 : Number(from.scale || 1.02)})`;
       if (!reduced) requestAnimationFrame(() => {
         if (!node.isConnected) return;
