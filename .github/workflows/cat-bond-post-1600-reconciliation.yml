@@ -1,0 +1,40 @@
+name: Isolated Cat Bond post-1600 read-only reconciliation
+on:
+  push:
+    branches: ['audit/dashboard-data-integrity-20261123']
+    paths: ['.github/workflows/cat-bond-post-1600-reconciliation.yml']
+permissions:
+  contents: read
+jobs:
+  reconcile:
+    if: github.ref == 'refs/heads/audit/dashboard-data-integrity-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Read only fixed historical slice and emit aggregate counts
+        env:
+          D1_READ_TOKEN: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN || secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          assert.equal(process.env.GITHUB_REF,'refs/heads/audit/dashboard-data-integrity-20261123');
+          assert.ok(process.env.D1_READ_TOKEN);
+          const start=Date.parse('2026-11-23T00:00:00Z'), end=Date.parse('2026-11-24T04:57:18.475Z'), maxId=16972;
+          const sql="SELECT id,kind,ts,view_id,payload FROM events WHERE ts>=? AND ts<=? AND id<=? AND category='arcade' AND game='cat-bond' ORDER BY ts,id LIMIT 1000";
+          const res=await fetch('https://api.cloudflare.com/client/v4/accounts/ad5c7e2459db758ac4a41973f4f6028b/d1/database/fbd62f69-1811-4538-a17f-ecc5be8ad7cc/query',{method:'POST',headers:{Authorization:'Bearer '+process.env.D1_READ_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql,params:[start,end,maxId]})});
+          const j=await res.json();
+          if(!res.ok||!j.success){console.log(JSON.stringify({status:'READ_BLOCKED',http:res.status,errors:j.errors?.map(e=>({code:e.code,message:e.message}))}));process.exit(1);}
+          const raw=j.result[0].results;
+          assert.ok(raw.length<1000);
+          const seen=new Map(), rows=[];let duplicates=0,conflicts=0;
+          for(const r of raw){const p=JSON.parse(r.payload);const k=r.kind==='session'&&r.view_id&&Number.isInteger(p.seq)&&p.seq>=0?JSON.stringify([r.view_id,p.seq]):null;if(k&&seen.has(k)){duplicates++;if(seen.get(k)!==r.payload)conflicts++;continue;}if(k)seen.set(k,r.payload);rows.push({...r,p});}
+          const v=rows.filter(r=>r.kind==='visit'), s=rows.filter(r=>r.kind==='session');
+          const ids=new Set(v.map(r=>r.view_id).filter(Boolean));
+          const sig=(r,k)=>Number(r.p.signals?.[k]||0);
+          const first=new Set(s.filter(r=>ids.has(r.view_id)&&sig(r,'funnel_first_run')>0).map(r=>r.view_id));
+          const finishes=new Set(s.filter(r=>first.has(r.view_id)&&sig(r,'funnel_first_finish')>0).map(r=>r.view_id));
+          const sum=(rs,k)=>rs.reduce((a,r)=>a+Number(r.p[k]||0),0);
+          const signals={};for(const r of s)for(const [k,n] of Object.entries(r.p.signals||{}))signals[k]=(signals[k]||0)+Number(n);
+          const report={status:v.length===54&&conflicts===0?'MATCHED_PRIOR_PV_BOUNDARY':'COVERAGE_MISMATCH',start:new Date(start).toISOString(),end:new Date(end).toISOString(),maxId,rawRows:raw.length,pv:v.length,distinctVisitIds:ids.size,firstPlayPages:first.size,firstFinishPages:finishes.size,unlinkedSessionRows:s.filter(r=>!ids.has(r.view_id)).length,legacyStarts:sum(s,'starts'),legacyEnds:sum(s,'ends'),legacyRetries:sum(s,'retries'),signals,duplicates,conflicts};
+          console.log('POST1600_RESULT '+JSON.stringify(report));
+          NODE
