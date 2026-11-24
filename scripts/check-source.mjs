@@ -92,6 +92,13 @@ const telemetry=fs.readFileSync('public/telemetry.js','utf8');
 // duplicate local game.js tracking events as extra sessions.
 const miniUpgrade=fs.readFileSync('public/upgrade.js','utf8');
 const analyticsSource=fs.readFileSync('src/analytics.js','utf8');
+if(!analyticsSource.includes('2026-11-22T08:00:00.000Z')||
+   !analyticsSource.includes('timeZone:"America/Los_Angeles"')||
+   !analyticsSource.includes('ts>=?')||
+   !dashboard.includes('const REPORT_FROM="2026-11-22T08:00:00.000Z"')||
+   dashboard.includes('id="days"')||
+   !dashboard.includes('periodSince:'))
+ throw new Error('Dashboard reporting must use the complete Nov 22 Pacific-time window');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
 if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid"')||
@@ -124,7 +131,9 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
-   !dashboard.includes('id="bluesky-engagement-rows"')||
+   !dashboard.includes("verifiedPlatforms=['youtube','instagram','tiktok','bluesky']")||
+    !dashboard.includes('<th>Bluesky</th>')||
+    dashboard.includes('id="bluesky-engagement-rows"')||
    dashboard.includes('id="account-overview-rows"')||
    !dashboard.includes('id="video-detail-rows"')||
    dashboard.includes('accountOverviewNote:'))

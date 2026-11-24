@@ -98,6 +98,12 @@ assert.ok(posts.every(p=>!firstRound.posts.some(old=>old.url===p.url)),
 assert.ok(JSON.stringify(snap).indexOf('instagram-historical')<0,'legacy posts absent from snapshot');
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 assert.ok(dashboard.includes('id="video-detail-rows"'),'per-game detail table present');
+assert.ok(dashboard.includes("verifiedPlatforms=['youtube','instagram','tiktok','bluesky']")&&dashboard.includes('<th>Bluesky</th>'),
+ 'Bluesky must be a single column in the same per-game platform table');
+assert.ok(!dashboard.includes('id="bluesky-engagement-rows"'),
+ 'separate Bluesky engagement table must stay removed');
+assert.ok(dashboard.includes("platform==='bluesky'?['likes','reposts','replies','quotes']"),
+ 'Bluesky cells must use interaction counts, never views');
 assert.ok(dashboard.includes('id="promotion-round-history"')&&dashboard.includes('id="round-post-history-rows"'),
  'two-round campaign history must be visible with per-post archived readings');
 assert.ok(dashboard.indexOf('metricCard(t("statPv")')<dashboard.indexOf('metricCard(t("statHome")'),

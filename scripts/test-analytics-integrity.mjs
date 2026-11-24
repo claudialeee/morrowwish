@@ -12,7 +12,7 @@ const DB={prepare(sql){
  return {
   bind(...v){args=v;return this},
   async run(){
-   if(sql.startsWith('INSERT INTO events'))rows.push({category:args[0],day:args[1],game:args[3],visitor:args[4],view_id:args[5],run_id:args[6],event_name:args[7],kind:args[8],payload:args[9],id:rows.length+1});
+   if(sql.startsWith('INSERT INTO events'))rows.push({category:args[0],day:args[1],ts:args[2],game:args[3],visitor:args[4],view_id:args[5],run_id:args[6],event_name:args[7],kind:args[8],payload:args[9],id:rows.length+1});
    else if(sql.startsWith("DELETE FROM events WHERE category IN")){const before=rows.length;for(let i=rows.length-1;i>=0;i--)if(['arcade','elsewhere','diagnostic'].includes(rows[i].category))rows.splice(i,1);return {success:true,meta:{changes:before-rows.length}}}
    else if(sql.startsWith('DELETE FROM events')){for(let i=rows.length-1;i>=0;i--)if(rows[i].category===args[0]&&rows[i].view_id===args[1])rows.splice(i,1)}
    else throw Error('Unexpected SQL run '+sql);
@@ -23,7 +23,10 @@ const DB={prepare(sql){
    return rows.find(r=>r.category===args[0]&&r.view_id===args[1])||null;
   },
   async all(){
-   if(sql.startsWith('SELECT kind,payload FROM events'))return {results:rows.filter(r=>r.category===args[0]&&r.view_id===args[1]).sort((a,b)=>a.id-b.id)};
+   if(sql.startsWith('SELECT id,category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? AND id<?')){
+     return {results:rows.filter(r=>r.category===args[0]&&Number(r.ts)>=Number(args[1])&&Number(r.id)<Number(args[2])).sort((a,b)=>b.id-a.id).slice(0,400)};
+    }
+    if(sql.startsWith('SELECT kind,payload FROM events'))return {results:rows.filter(r=>r.category===args[0]&&r.view_id===args[1]).sort((a,b)=>a.id-b.id)};
    if(sql.includes('WITH page_visits AS')){
     const counts=new Map();
     const sessions=rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='session'&&r.day>=args[1]);
@@ -90,11 +93,19 @@ const oldSession=rows.find(x=>x.game==='cat-bond'&&x.kind==='session');
 rows.push({...oldSession,id:rows.length+1});
 const bad=await api(new Request('https://morrowwish.pages.dev/api/diagnostic-check?probe=bad'),env);
 assert.equal(bad.status,400,'invalid diagnostic token must be rejected');
+// Simulate a browser event stored under the next UTC date but still on the
+// previous Pacific calendar day (Nov 22, 16:30 PT).
+const boundaryVisit=rows.find(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit');
+assert.ok(boundaryVisit,'boundary visit fixture exists');
+boundaryVisit.day='2026-11-23';
+boundaryVisit.ts=Date.parse('2026-11-23T00:30:00.000Z');
 const auth=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1'),env);
 assert.equal(auth.status,401,'real dashboard must remain password protected');
 const response=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 assert.equal(response.status,200);
 const summary=await response.json();
+assert.equal(summary.byDay.find(r=>r.day==='2026-11-22')?.pageviews,1,
+ 'UTC Nov 23 event at 16:30 PT must be grouped into Nov 22 Pacific day');
 for(const g of games){
  const row=summary.byGame.find(x=>x.game===g);
  const endless=g==='flip-dash'||g==='parcel-panic';
@@ -145,7 +156,7 @@ const auditResponse=await api(new Request('https://morrowwish.pages.dev/api/cat-
  headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 assert.equal(auditResponse.status,200,'Owner D1 audit should succeed');
 const audit=await auditResponse.json();
-assert.equal(audit.source,'uncapped-d1-aggregate');
+assert.equal(audit.source,'full-d1-event-read');
 assert.equal(audit.total,2,'Full D1 audit counts legacy and v11 visits');
 assert.deepEqual(audit.totals,{pageviews:2,startedViews:2,finishedViews:2},
  'Uncapped D1 visit funnel counts each visit at most once');

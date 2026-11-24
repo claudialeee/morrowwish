@@ -15,14 +15,14 @@ const historical={
   conversion:{pageviews:0,startedViews:0,finishedViews:0}
 };
 const oldCount={
-  zh:[['成功捕获',73],['遇见稀有猫',4],['捕获稀有猫',57],
-    ['触发双猫合击',46],['庭院建造',6],['惊喜事件',5]],
-  en:[['Cats captured',73],['Rare encounters',4],['Rare cats captured',57],
-    ['Duo attacks',46],['Yard constructions',6],['Surprise events',5]]
+  zh:[['成功捕获',73],['捕获稀有猫',57],['触发双猫合击',46]],
+  en:[['Cats captured',73],['Rare cats captured',57],['Duo attacks used',46]]
 };
 const sample=mixed=>{
  const base=mixed?{
   ...historical,
+  pageviews:121,
+  historicalVisitFunnel:{pageviews:121,startedViews:8,finishedViews:7},
   conversion:{pageviews:4,startedViews:3,finishedViews:2},
   signals:{...historical.signals,bond_battle_start_v2:3,bond_battle_end_v2:2,
     bond_capture_v2:2,bond_rare_attempt_v2:1,bond_rare_capture_v2:1,
@@ -64,9 +64,10 @@ try{
   const exceptions=[];
   page.on('pageerror',error=>exceptions.push(error.message));
   const row=sample(mixed);
+  const auditedPV=mixed?121:26;
   const summary={
-   updated:'2026-11-22T22:00:00.000Z',days:7,records:50,
-   rollup:{pageviews:26,starts:82,ends:79,retries:1},
+   updated:'2026-11-23T23:56:00.000Z',from:'2026-11-22T08:00:00.000Z',days:2,records:50,
+   rollup:{pageviews:auditedPV,starts:82,ends:79,retries:1},
    byGame:[row],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
     platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
       {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
@@ -74,18 +75,11 @@ try{
     publicationRounds:roundFixture
    }
   };
-  await page.route('**/api/summary*',route=>route.fulfill({
-   status:200,contentType:'application/json',body:JSON.stringify(summary)
-  }));
-  const auditedPV=mixed?121:26;
-  await page.route('**/api/cat-bond-traffic-audit*',route=>route.fulfill({
-   status:200,contentType:'application/json',body:JSON.stringify({
-    game:'cat-bond',days:7,source:'uncapped-d1-aggregate',total:auditedPV,
-    totals:{pageviews:auditedPV,startedViews:8,finishedViews:7},
-    byDay:[{day:'2026-11-22',pageviews:auditedPV,startedViews:8,finishedViews:7}],
-    history:{firstDay:'2026-11-16',lastDay:'2026-11-22',pageviews:auditedPV,rawVisits:auditedPV}
-   })
-  }));
+  let requestedSummaryUrl='';
+  await page.route('**/api/summary*',route=>{
+   requestedSummaryUrl=route.request().url();
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(summary)});
+  });
   await page.route('**/api/elsewhere-summary*',route=>route.fulfill({
    status:200,contentType:'application/json',body:JSON.stringify({summary:{}})
   }));
@@ -94,8 +88,8 @@ try{
     waitUntil:'domcontentloaded',timeout:15000
    });
    await page.locator('#report:not([hidden])').waitFor({timeout:12000});
-   await page.waitForFunction(()=>document.querySelector('#cat-bond-traffic-audit')?.textContent?.includes('数据库全量核对')||
-     document.querySelector('#cat-bond-traffic-audit')?.textContent?.includes('Full D1 audit'),null,{timeout:12000});
+   assert.equal(new URL(requestedSummaryUrl).searchParams.get('from'),'2026-11-22T08:00:00.000Z',
+      'Dashboard must request the full fixed Pacific-time reporting window');
    const statLabels=await page.locator('#stats .stat .label').allTextContents();
    assert.equal(statLabels[0],language==='zh'?'页面浏览量':'Pageviews · PV',
      'Overall pageviews must be the first headline metric');
@@ -142,14 +136,6 @@ try{
     assert.ok(lines.some(line=>line.includes(label)&&line.endsWith(String(value))),
       language+' historical Cat Bond '+label+'='+value+' is not visible');
    }
-   assert.ok(lines.some(line=>line.includes('82'))&&lines.some(line=>line.includes('79')),
-     'Raw historic battle counts must remain in the game details');
-   for(const rate of [mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%','7 / 8 · 87.5%'])
-    assert.ok(lines.some(line=>line.includes(rate)),
-      language+' historical ratio missing: '+rate);
-   assert.ok(lines.some(line=>line.endsWith('1')&&
-     (line.includes('重玩次数')||line.includes('Replays'))),
-     language+' historical replays missing');
    if(mixed){
     const details=card.locator('details').first();
     assert.equal(await details.count(),1,'New V2 cohort panel missing');

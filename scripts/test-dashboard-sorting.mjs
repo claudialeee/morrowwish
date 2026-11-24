@@ -116,10 +116,8 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
  vm.runInNewContext(focusCode+';globalThis.draw=renderSignals;',env);
  env.draw([bond]);
  const card=dom['focus-grid'].innerHTML;
- for(const snippet of ['8 / 26 · 30.8%','7 / 8 · 87.5%',
-  '<b>73</b>','<b>4</b>','<b>57</b>','<b>46</b>',
-  '<b>6</b>','<b>5</b>','<b>1</b>','<b>82</b>','<b>79</b>'])
-  assert.ok(card.includes(snippet),locale+' erased Cat Bond metric '+snippet);
+ for(const snippet of ['<b>73</b>','<b>57</b>','<b>46</b>'])
+   assert.ok(card.includes(snippet),locale+' compact Cat Bond metric missing '+snippet);
  if(v2)assert.ok(card.includes('3 / 4 · 75%'),'New cohort must be separate');
  const tableCode=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
   inlineScript.indexOf('\nconst channels=Array.isArray'));
