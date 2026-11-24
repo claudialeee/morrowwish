@@ -123,6 +123,19 @@ window.addEventListener('DOMContentLoaded', () => {
       if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
     }
   };
+  const renderIntroLocale=()=>{
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.innerHTML=en?enText:zh;};
+    set('intro-start','<span>✦</span><strong>开始新的冒险</strong><small>NEW ADVENTURE</small>','<span>✦</span><strong>New Adventure</strong><small>NEW ADVENTURE</small>');
+    set('intro-continue','<span>◈</span><strong>继续故事</strong><small>CONTINUE STORY</small>','<span>◈</span><strong>Continue Story</strong><small>CONTINUE STORY</small>');
+    set('intro-cloud-save','☁️ 云端存档管理','☁️ Cloud Save Manager');
+    const tagline=document.querySelector('.cb-intro-tagline');
+    if(tagline)tagline.textContent=en?'Before the final bell, whose name will you remember?':'最后一声铃响之前，你还记得谁？';
+    const footer=document.querySelector('.cb-intro-footer>span');
+    if(footer)footer.innerHTML=en?'Five chapters · Five lost lands · One unfinished promise · <span id="intro-breed-count">🐾 Collect 33 cat breeds</span>':'五章主线 · 五片失落之地 · 一段未完成的约定 · <span id="intro-breed-count">🐾 收集 33 种猫</span>';
+  };
+  renderIntroLocale();
+  window.addEventListener('morrowwish-language-change',renderIntroLocale);
   document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
   document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
   document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
