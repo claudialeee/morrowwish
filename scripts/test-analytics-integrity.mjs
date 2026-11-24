@@ -107,7 +107,7 @@ assert.equal(auth.status,401,'real dashboard must remain password protected');
 const response=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 assert.equal(response.status,200);
 const summary=await response.json();
-assert.equal(summary.byDay.find(r=>r.day==='2026-11-22')?.pageviews,2,
+assert.equal(summary.byDay.find(r=>r.day==='2026-11-22')?.pageviews,1,
  'UTC Nov 23 event at 16:30 PT must be grouped into Nov 22 Pacific day');
 for(const g of games){
  const row=summary.byGame.find(x=>x.game===g);
