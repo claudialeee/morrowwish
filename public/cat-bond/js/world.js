@@ -726,7 +726,10 @@ class YardScene {
     const dt = 1 / 60;   // fixed step for draw-time ambient motion (petals/fireflies)
 
     // --- hand-painted watercolor backdrop (sky/hills/lake/meadow/tree baked in) ---
-    if (H > W * 1.12 && YARD_BG_PORTRAIT_READY) {
+    const portraitGarden = H > W * 1.12 && YARD_BG_PORTRAIT_READY;
+    const stage = document.getElementById('stage');
+    if (stage) stage.dataset.sunlitGardenBackground = portraitGarden ? 'portrait' : 'landscape';
+    if (portraitGarden) {
       drawCover(ctx, YARD_BG_PORTRAIT, W, H);
     } else if (YARD_BG_READY) {
       drawCover(ctx, YARD_BG, W, H);
