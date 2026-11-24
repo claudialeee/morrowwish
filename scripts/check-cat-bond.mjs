@@ -568,8 +568,11 @@ assert.ok(Math.abs(poiseEnemy.poise/poiseEnemy.poiseMax-(1-.08-.096))<.00001,
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseBattle.t+=2;
 poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
 assert.equal(poiseEnemy.poiseComboHits,1,'idle resets per-enemy combo');
-// a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark
+// a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark.
+// Reset HP too: the earlier basic-poise probes now deal full (un-penalized) damage and
+// would otherwise have killed this low-HP fixture enemy before the skill hit lands.
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
+poiseEnemy.hp=poiseEnemy.maxhp;poiseEnemy.alive=true;
 poiseEnemy.poiseComboHits=0;poiseEnemy.poiseLastHitAt=-99;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,

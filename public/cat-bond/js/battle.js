@@ -5466,13 +5466,13 @@ class CaptureBattle {
       e._effLabelAt = this.t;
       this.vfx.text(e.x, e.y - 64, effLabel, elem >= 1.5 ? '#ff9f6b' : '#9aa8ba', 14);
     }
-    // BASIC-ATTACK TENSION: the basic poke rewards SKILL SETUP. It applies no tags
-    // itself, but roars on a target already afflicted (+45% per active status tag)
-    // and lands softer on an un-marked target — so Q/E priming carries the fight.
+    // BASIC-ATTACK bonus: the basic poke still REWARDS skill setup (+10% per active
+    // status tag, capped +30%) so Q/E priming remains worth it — but it no longer
+    // PENALIZES an un-marked target (owner: 把 *0.7 去掉). A pure-basic player now does
+    // full damage; priming is upside, not a tax that silently halved the masher.
     if (skill.isBasic) {
       const nTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
       if (nTags > 0) dmg *= 1 + Math.min(0.30, 0.10 * nTags);
-      else dmg *= 0.7;
     }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
