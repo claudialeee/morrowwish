@@ -126,7 +126,8 @@ assert.equal(bond?.conversion?.finishedViews,1,'V2 finishes count distinct pages
 assert.equal(bond?.signals.bond_battle_start_v2,1,'duplicate seq cannot inflate battles');
 assert.equal(bond?.signals.bond_battle_end_v2,1,'duplicate seq cannot inflate results');
 for(const g of summary.byGame.filter(g=>g.game!=='hub')){
- assert.equal(g.conversion.pageviews,g.pageviews,g.game+' denominator uses pages');
+ assert.equal(g.conversion.pageviews,g.game==='cat-bond'?1:g.pageviews,
+   g.game+' conversion denominator uses distinct page visits, not raw refresh pageviews');
  assert.equal(g.conversion.visitStart,100,g.game+' visit to play');
  // Flip Dash and Parcel Panic include one extra abandoned visit/run, so
  // completion conversion is correctly 1/2, not a fabricated 100%.
