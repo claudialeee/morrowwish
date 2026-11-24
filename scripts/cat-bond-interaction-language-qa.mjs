@@ -75,6 +75,11 @@ try{
     await prologue.locator('.cb-story-skip').click({timeout:5000});
     await prologue.waitFor({state:'detached',timeout:5000});
    }
+   // The intro/prologue can leave the starter panel closed after Skip.
+   // Open the roster explicitly so the interaction-locale audit starts from
+   // a deterministic, visible catalog instead of timing out on a closed panel.
+   await page.evaluate(()=>window.UI.openCatHub('solo'));
+   await page.waitForFunction(()=>document.querySelector('#panel')?.classList.contains('open'));
    await page.locator('#panel.open .dex-cell').first().click();
    await page.evaluate(()=>{
     const b=State.makeCat(State.S.cats[0].species);
