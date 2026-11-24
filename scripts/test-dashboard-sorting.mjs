@@ -138,11 +138,11 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
 
  const allGames=[
   bond,
-  {game:'pawsibly-innocent',pageviews:27,retries:0,visitFunnel:{pageviews:27,startedViews:8,finishedViews:5}},
-  {game:'tiny-town',pageviews:18,retries:0,visitFunnel:{pageviews:18,startedViews:6,finishedViews:0}},
-  {game:'elsewhere',pageviews:15,retries:0},
+  {game:'pawsibly-innocent',pageviews:28,retries:14,visitFunnel:{pageviews:28,startedViews:9,finishedViews:6}},
+  {game:'tiny-town',pageviews:19,retries:6,visitFunnel:{pageviews:19,startedViews:7,finishedViews:2}},
+  {game:'elsewhere',pageviews:16,retries:0,visitFunnel:{pageviews:16,startedViews:1,finishedViews:1}},
   {game:'flip-dash',pageviews:5,retries:0},
-  {game:'parcel-panic',pageviews:11,retries:0,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
+  {game:'parcel-panic',pageviews:11,retries:1,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
   {game:'pocket-aquarium',pageviews:12,retries:0}
  ];
  const aggregateDom={};
@@ -150,10 +150,10 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
   $:id=>(aggregateDom[id]??={innerHTML:''})};
  vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,aggregateEnv);
  const total=aggregateDom['games-total'].innerHTML;
- assert.ok(total.includes('<td>114</td><td>26</td><td>13</td><td>1</td>'),
-  locale+' seven-game total must include pageviews from games without funnel events');
- assert.ok(total.includes('26 / 82 · 31.7%')&&total.includes('13 / 26 · 50%')&&
-  total.includes('13 / 82 · 15.9%'),
+ assert.ok(total.includes('<td>117</td><td>29</td><td>17</td><td>22</td>'),
+  locale+' seven-game total must include pageviews from untracked games and page-level funnel counts');
+ assert.ok(total.includes('29 / 100 · 29%')&&total.includes('17 / 29 · 58.6%')&&
+  total.includes('17 / 100 · 17%'),
   locale+' aggregate conversion must use only visits with valid gameplay tracking');
 }
 console.log('Cat Bond dashboard gate: play/finish cells use page-level counts; battle counts stay in gameplay details; conversions remain 8/26, 7/8, 7/26 in zh/en.');
