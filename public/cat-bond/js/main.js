@@ -129,6 +129,10 @@ window.addEventListener('DOMContentLoaded', () => {
     set('intro-start','<span>✦</span><strong>开始新的冒险</strong><small>NEW ADVENTURE</small>','<span>✦</span><strong>New Adventure</strong><small>NEW ADVENTURE</small>');
     set('intro-continue','<span>◈</span><strong>继续故事</strong><small>CONTINUE STORY</small>','<span>◈</span><strong>Continue Story</strong><small>CONTINUE STORY</small>');
     set('intro-cloud-save','☁️ 云端存档管理','☁️ Cloud Save Manager');
+    const slotDesc=document.querySelector('.cb-save-picker-desc');
+    if(slotDesc)slotDesc.textContent=en
+      ?'Three independent adventures. Choose a slot to continue or begin a new journey.'
+      :'三个独立旅程。选择一个位置继续，或开启新的冒险。';
     const tagline=document.querySelector('.cb-intro-tagline');
     if(tagline)tagline.textContent=en?'Before the final bell, whose name will you remember?':'最后一声铃响之前，你还记得谁？';
     const footer=document.querySelector('.cb-intro-footer>span');
