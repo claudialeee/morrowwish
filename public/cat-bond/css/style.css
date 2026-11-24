@@ -5139,3 +5139,53 @@ body.cb-exploring #stage #yard-actions{
 @media(prefers-reduced-motion:reduce){
  .cb-story-art,.cb-story-card,.cb-story-scene-glow{animation:none;will-change:auto}
 }
+
+/* Cinematic movement for painted-region story plates: camera drift, light and staged text reveal. */
+.cb-story-scene{perspective:1100px}
+.cb-story-art{transform:scale(1.045);animation:cb-story-camera-drift 18s ease-in-out infinite alternate;filter:saturate(1.06) contrast(1.035)}
+.cb-story-overlay.is-visible .cb-story-scene-glow{animation:cb-story-light-breathe 7s ease-in-out infinite alternate}
+.cb-story-overlay.is-visible .cb-story-card{animation:cb-story-card-arrive .72s cubic-bezier(.18,.78,.22,1) both}
+.cb-story-title{animation:cb-story-title-reveal .55s .12s both}
+.cb-story-copy{animation:cb-story-copy-reveal .65s .2s both}
+.cb-story-scene-mark{animation:cb-story-orbit 22s linear infinite,cb-story-mark-pulse 4.5s ease-in-out infinite alternate}
+@keyframes cb-story-camera-drift{0%{transform:scale(1.045) translate3d(-.4%,.2%,0)}100%{transform:scale(1.13) translate3d(.6%,-.5%,0)}}
+@keyframes cb-story-light-breathe{0%{opacity:.72;filter:brightness(.92)}100%{opacity:1;filter:brightness(1.12)}}
+@keyframes cb-story-card-arrive{from{opacity:0;transform:translate3d(0,28px,0) scale(.985)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@keyframes cb-story-title-reveal{from{opacity:0;transform:translateY(12px);filter:blur(5px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes cb-story-copy-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes cb-story-mark-pulse{from{box-shadow:0 0 40px rgba(255,207,133,.1),inset 0 0 24px rgba(255,207,133,.05)}to{box-shadow:0 0 90px rgba(255,207,133,.26),inset 0 0 48px rgba(255,207,133,.14)}}
+@media(prefers-reduced-motion:reduce){.cb-story-art,.cb-story-overlay.is-visible .cb-story-scene-glow,.cb-story-overlay.is-visible .cb-story-card,.cb-story-title,.cb-story-copy,.cb-story-scene-mark{animation:none!important}}
+@media(max-width:640px){.cb-story-card{width:100%;max-height:76dvh;margin-bottom:0;padding:18px;border-radius:20px 20px 12px 12px}.cb-story-copy{line-height:1.72;margin:12px 0 16px}.cb-story-kicker{margin-top:14px}.cb-story-scene-glow{background:linear-gradient(0deg,rgba(8,10,20,.94),rgba(8,10,20,.2) 75%)}}
+
+/* The prologue and finale are full-screen illustrated cutscenes, not paper cards. */
+.cb-story-overlay{padding:0;place-items:end center;background:#090d18}
+.cb-story-scene{inset:0}
+.cb-story-scene-glow{background:linear-gradient(90deg,rgba(7,10,20,.04),rgba(7,10,20,.02) 42%,rgba(7,10,20,.22)),linear-gradient(0deg,rgba(7,10,20,.94),rgba(7,10,20,.04) 72%)}
+.cb-story-card{width:min(1120px,100%);max-height:43dvh;overflow:auto;align-self:end;justify-self:center;margin:0;padding:clamp(18px,3vw,34px) clamp(20px,5vw,62px) clamp(18px,3vh,28px);border:0;border-top:1px solid rgba(255,231,190,.24);border-radius:0;color:#fff8e9;background:linear-gradient(180deg,rgba(10,15,27,.78),rgba(7,11,21,.96));box-shadow:0 -24px 90px rgba(0,0,0,.24);backdrop-filter:blur(9px)}
+.cb-story-card-top{max-width:960px;margin:0 auto}
+.cb-story-kicker,.cb-story-title,.cb-story-copy,.cb-story-progress,.cb-story-actions{max-width:960px;margin-left:auto;margin-right:auto}
+.cb-story-kicker{margin-top:12px}
+.cb-story-title{font-size:clamp(26px,4vw,46px);line-height:1.12}
+.cb-story-copy{font-size:clamp(14px,1.55vw,18px);line-height:1.72;max-width:920px;margin-top:12px;margin-bottom:14px}
+.cb-story-progress{margin-top:10px;margin-bottom:12px}
+.cb-story-portraits{margin-top:8px}
+.cb-story-skip{margin-right:auto}
+.cb-story-scene-mark{right:clamp(25px,10vw,170px);top:clamp(24px,9vh,95px)}
+@media(max-width:640px){
+ .cb-story-card{max-height:57dvh;padding:14px 18px max(16px,env(safe-area-inset-bottom))}
+ .cb-story-kicker{margin-top:5px}
+ .cb-story-title{font-size:clamp(24px,7vw,34px)}
+ .cb-story-copy{font-size:13px;line-height:1.62;margin:9px auto 11px}
+ .cb-story-progress{margin:8px auto}
+ .cb-story-actions button{min-height:40px;padding:9px 13px}
+ .cb-story-scene-mark{width:clamp(82px,22vw,120px);top:7vh;right:8vw}
+}
+
+.cb-npc-dialog-card{width:min(650px,94vw)}
+.cb-npc-dialog-head{display:grid;grid-template-columns:104px 1fr;gap:16px;align-items:center;margin:12px 0 16px}
+.cb-npc-dialog-head canvas{width:104px;height:104px;object-fit:contain;border-radius:16px;background:radial-gradient(circle,#fff8e9,#e6eee3)}
+.cb-npc-dialog-head h2{margin:0;color:#344b3b;font:800 26px/1.2 Georgia,"Noto Serif SC",serif}
+.cb-npc-dialog-head small{display:block;margin-top:5px;color:#8a7656;font:750 12px/1.4 system-ui}
+.cb-npc-dialog-head span{display:inline-block;margin-top:8px;padding:4px 9px;border-radius:99px;background:#eaf0e4;color:#58705c;font:750 10px/1.4 system-ui}
+.cb-npc-dialog-line{min-height:90px;white-space:pre-line;color:#435548;font:600 14px/1.85 system-ui,"Noto Sans SC",sans-serif}
+@media(max-width:480px){.cb-npc-dialog-head{grid-template-columns:78px 1fr;gap:11px}.cb-npc-dialog-head canvas{width:78px;height:78px}.cb-npc-dialog-head h2{font-size:21px}.cb-npc-dialog-line{font-size:13px;line-height:1.75}}
