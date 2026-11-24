@@ -5778,6 +5778,12 @@ class CaptureBattle {
     if (!f.alive) return;
     // LEVEL GAP: a higher-level wild pack hits genuinely harder (see constructor).
     if (this.enemyLevelMult && this.enemyLevelMult !== 1) dmg *= this.enemyLevelMult;
+    // INTRA-FIGHT TEMPO ENVELOPE (playtest P0: enemy damage was a flat battle-start constant with
+    // NO time term — a wild hit 100% lethality at second 1 = second 7, so fights were a step wall
+    // with no opening→escalation arc and every manual persona died the identical deterministic 428).
+    // Casual only: ramp enemy output 0.55→1.0 over the first ~6s so the opening is a forgiving
+    // feeling-out phase that visibly escalates into full threat. Hardcore stays flat (1.0).
+    if (this.difficultyMode !== 'hardcore') dmg *= 0.55 + 0.45 * Math.max(0, Math.min(1, this.t / 6));
     // MASHER GUARD (owner: 手动更宽容; playtest P0 — the human-piloted active cat is the ONLY
     // unit with no passive evasion: autoDodgeChance protects benched allies + auto-mode but is
     // withheld from me(), so manual+no-dodge is strictly the hardest config). Give the MANUALLY
