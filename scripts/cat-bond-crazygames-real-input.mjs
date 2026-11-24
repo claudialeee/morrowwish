@@ -202,6 +202,13 @@ try{
           Math.abs(gardenButtons[i].rect.left-gardenButtons[0].rect.left)<3,
           'The five garden FABs must form a right-side vertical stack: '+JSON.stringify(gardenButtons));
       }
+      // Yard hide-and-seek is now an optional sanctuary activity, not an
+      // automatic first-run spawn. Start it through the real garden action.
+      if(!(await page.evaluate(()=>!!window.__game?.yard?.hide?.spot))){
+        const seek=page.locator('#fab-seek');
+        if(touch)await seek.tap();else await seek.click();
+      }
+      await page.waitForFunction(()=>!!window.__game?.yard?.hide?.spot,{timeout:10000});
       const target=await page.evaluate(()=>{
         const g=window.__game,cv=document.getElementById('scene'),r=cv.getBoundingClientRect();
         const spot=g?.yard?.hide?.spot;
