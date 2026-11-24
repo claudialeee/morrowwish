@@ -103,6 +103,14 @@ try{
       const starter=page.locator('#panel.open .dex-cell').first();
       if(touch)await starter.tap();else await starter.click();
       await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
+      // The RPG now opens on its regional map after the starter is chosen;
+      // the yard is an optional sanctuary. Return through the real map control
+      // before asserting that yard-only navigation appears.
+      const mapBack=page.locator('#map-back-yard');
+      assert.equal(await mapBack.isVisible(),true,
+        'First-time RPG should open the regional map after choosing a starter');
+      if(touch)await mapBack.tap();else await mapBack.click();
+      await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
       assert.equal(await page.locator('#toasts .toast').count(),0,
         'CrazyGames first quest should not have duplicate overlay toasts');
       // A real player must see one coherent, clickable dock in the CrazyGames
