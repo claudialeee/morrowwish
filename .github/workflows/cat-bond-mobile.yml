@@ -5,6 +5,8 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'public/game-fullscreen.js'
+      - 'scripts/cat-bond-test-start.mjs'
+      - 'scripts/cat-bond-rpg-cinematic-smoke.mjs'
       - 'scripts/cat-bond-touch-smoke.mjs'
       - 'scripts/cat-bond-panel-scroll-smoke.mjs'
       - 'scripts/cat-bond-topbar-smoke.mjs'
@@ -72,6 +74,16 @@ jobs:
           node scripts/cat-bond-panel-scroll-smoke.mjs
           node scripts/cat-bond-crazygames-smoke.mjs
           node scripts/cat-bond-scale-smoke.mjs
+          node scripts/cat-bond-rpg-cinematic-smoke.mjs
+
+      - name: Save RPG prologue and ending cinematic frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-rpg-cinematics
+          path: /tmp/cat-bond-rpg-*.png
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Save legacy art comparison screenshots
         if: always()
