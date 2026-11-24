@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=three-slot-rpg-gateway-20261124-v2','js/state.js?v=atomic-save-book-20261124-v4','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v3','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=three-slot-rpg-gateway-20261124-v2','js/state.js?v=atomic-save-book-20261124-v4','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v5','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -209,6 +209,7 @@ assert.ok(story.includes("const cloudRevisionKey=id=>'catbond_cloud_revision_v2_
 assert.ok(story.includes('State.replaceSaveSlots(entries'),'cloud restore must atomically replace the local save book');
 assert.ok(story.includes('slotId:id,expectedRevision:expected'),'cloud uploads must target one explicit slot');
 assert.ok(story.includes('data-cloud="overwrite"'),'cloud conflict resolution must offer an explicit local overwrite action');
+assert.ok(story.includes('CLOUD_AUTOSYNC_INTERVAL_MS=60000'),'background cloud autosync must be throttled to protect the D1 quota');
 assert.ok(!story.includes('data-delete='),'in-game save manager must not expose destructive slot deletion');
 assert.ok(!main.includes('data-delete-slot'),'title save picker must not expose slot deletion');
 assert.ok(!index.includes('intro-cloud-save'),'title screen must contain only the two primary game entry actions');

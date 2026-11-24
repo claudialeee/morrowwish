@@ -449,21 +449,32 @@ try{
         await reset.waitFor({state:'visible',timeout:10000});
         assert.match(await reset.textContent(),/Reset game/i,
           'Both portal and main website menus must expose a subtle reset action');
-        // First click only arms a confirmation; do not erase by accident.
+        // First click only arms a safe restart; it must not erase game progress.
+        const saveProgress=()=>page.evaluate(()=>{
+          const book=JSON.parse(localStorage.getItem('catbond_save_slots_v1')||'{}');
+          const slots={};
+          for(const [id,record] of Object.entries(book.slots||{})){
+            const snapshot=record.data||{};
+            const state=JSON.parse(JSON.stringify(snapshot.state||snapshot));
+            delete state.lastSeen;delete state.playTimeMs;
+            slots[id]=state;
+          }
+          return slots;
+        });
+        const beforeReset=await saveProgress();
+        assert.ok(Object.keys(beforeReset).length>0,'At least one real save slot must exist before emergency reset');
         await reset.click();
-        assert.match(await reset.textContent(),/Erase Cat Bond progress/i);
+        assert.match(await reset.textContent(),/safe restart|keep all saves/i);
         assert.equal(await page.evaluate(()=>State.S.cats.length),2,
-          'First reset click must not delete owned cats');
-        // The second deliberate click wipes ONLY Cat Bond progress.
+          'First reset click must not alter the current run');
+        // The second deliberate click reloads transient game state but preserves all save slots.
         await page.evaluate(()=>localStorage.setItem('unrelated_game_qa_key','keep'));
         await reset.click();
         await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
-        const wiped=await page.evaluate(()=>({
-          cats:JSON.parse(localStorage.getItem('catbond_save_v1')||'{}').cats?.length,
-          unrelated:localStorage.getItem('unrelated_game_qa_key')
-        }));
-        assert.equal(wiped.cats,0,'Confirmed in-menu reset must clear Cat Bond cats');
-        assert.equal(wiped.unrelated,'keep','Reset must preserve unrelated games');
+        const afterReset=await saveProgress();
+        const unrelated=await page.evaluate(()=>localStorage.getItem('unrelated_game_qa_key'));
+        assert.deepEqual(afterReset,beforeReset,'Emergency reset must preserve all three save-slot progress snapshots');
+        assert.equal(unrelated,'keep','Reset must preserve unrelated games');
         await page.evaluate(()=>localStorage.removeItem('unrelated_game_qa_key'));
       }
       assert.deepEqual(errors,[],'Uncaught runtime errors: '+errors.join(' | '));

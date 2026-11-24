@@ -1,0 +1,30 @@
+name: Cat Bond Cloud Save Live Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/test-cat-bond-cloud-live.mjs'
+      - '.github/workflows/cat-bond-cloud-live-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cat-bond-cloud-live-smoke
+  cancel-in-progress: false
+
+jobs:
+  cloud-save-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify real production Cloudflare D1 slot upload and download
+        run: node scripts/test-cat-bond-cloud-live.mjs

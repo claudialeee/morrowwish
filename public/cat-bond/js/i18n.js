@@ -57,7 +57,7 @@
     '第二招需 Lv.12 且好感达到 60': 'Second move at Lv.12 and bond 60',
     '☰ 庭院菜单': '☰ Yard menu',
     '重置游戏': 'Reset game',
-    '⚠ 确认清空猫猫存档？再点一次': '⚠ Erase Cat Bond progress? Click again',
+    '⚠ 再点一次：安全重启（保留三个存档）': '⚠ Click again: safe restart (keep all saves)',
     // Manual skill-tree progression and the compact phone duo form.
     '攻击技能逐级学会；高阶招式需到训练师处主动学习': 'Unlock attacks gradually; learn advanced moves deliberately with a trainer',
     '继续培养本系与副系技能，并到训练师处学习高阶招式': 'Develop native and secondary skills and visit the trainer for advanced moves',

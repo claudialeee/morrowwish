@@ -932,15 +932,27 @@ async function syncNow(force=false,slotIds=null){
  });
  return syncPromise;
 }
-function queueSync(slotId=State.activeSlot()){
- if(!localStorage.getItem(CLOUD_KEY))return;
- if(Array.isArray(slotId))slotId.forEach(id=>pendingSyncSlots.add(id));
- else if(SAVE_SLOT_IDS.includes(slotId))pendingSyncSlots.add(slotId);
+const CLOUD_AUTOSYNC_INTERVAL_MS=60000;
+function queueSync(slotId=State.activeSlot(),immediate=false){
+ if(!localStorage.getItem(CLOUD_KEY))return Promise.resolve({ok:false,disabled:true});
+ const ids=Array.isArray(slotId)?slotId.filter(id=>SAVE_SLOT_IDS.includes(id)):(SAVE_SLOT_IDS.includes(slotId)?[slotId]:[]);
+ if(!ids.length)return Promise.resolve({ok:false,empty:true});
+ if(immediate){
+  ids.forEach(id=>pendingSyncSlots.delete(id));
+  clearTimeout(syncTimer);
+  return syncNow(false,ids);
+ }
+ ids.forEach(id=>pendingSyncSlots.add(id));
  clearTimeout(syncTimer);
+ const dueAt=Math.min(...[...pendingSyncSlots].map(id=>
+  (Number(localStorage.getItem(cloudSyncTimeKey(id)))||0)+CLOUD_AUTOSYNC_INTERVAL_MS
+ ));
+ const delay=Math.max(2200,dueAt-Date.now());
  syncTimer=setTimeout(()=>{
   const next=[...pendingSyncSlots];pendingSyncSlots.clear();
   if(next.length)syncNow(false,next);
- },2200);
+ },delay);
+ return Promise.resolve({ok:true,queued:true,delay});
 }
 async function copyText(value){
  try{await navigator.clipboard.writeText(value);}
@@ -980,13 +992,17 @@ function openSlotManager(){
     '<button type="button" data-save="'+slot.id+'">'+t('保存游戏','Save Game')+'</button>'+
     '<button type="button" data-load="'+slot.id+'" '+(slot.readable?'':'disabled')+'>'+t('读取游戏','Load Game')+'</button></div></article>';
   }).join('');
-  list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=()=>{
+  list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.save,slot=window.State.listSaveSlots().find(x=>x.id===id);
    if(slot?.exists&&!confirm(t('覆盖存档位 ','Overwrite Save Slot ')+slot.number+t('？其他两个存档不会改变。','? The other two slots will remain unchanged.')))return;
    const result=window.State.saveToSlot(id,{overwriteConfirmed:!!slot?.exists});
    if(!result?.ok){say(t('本机存档写入失败，请检查浏览器存储空间。','Local save failed. Check available browser storage and retry.'));return;}
-   window.CatBondCloudSave?.queue?.(id);
-   say(t('已成功保存到存档位 ','Saved successfully to Slot ')+slot.number+'。');
+   const cloudResult=await window.CatBondCloudSave?.queue?.(id,true);
+   const localMessage=t('已保存到存档位 ','Saved locally to Slot ')+slot.number+'。';
+   say(cloudResult?.ok?localMessage+t(' 云端也已同步。',' Cloud sync completed.'):
+    cloudResult?.conflict?localMessage+t(' 云端版本冲突，尚未覆盖云端。',' Cloud conflict detected; remote data was not overwritten.'):
+    cloudResult?.disabled?localMessage+t(' 云存档尚未启用。',' Cloud save is not enabled.'):
+    localMessage+t(' 云端暂未同步，本机存档安全保留。',' Cloud sync is pending or unavailable; the local save is safe.'));
    render();
   });
   list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
@@ -1076,7 +1092,7 @@ function installIntro(){
 window.addEventListener('DOMContentLoaded',installIntro,{once:true});
 window.addEventListener('morrowwish-language-change',updateTracker);
 window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(false,State.activeSlot());});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(false,State.activeSlot());});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))queueSync(State.activeSlot());});
 
 const NPC_CAST=[
  {id:'kite',region:'home',name:'纸鸢',en:'Kite',role:'Catdex 记录员',roleEn:'Catdex Keeper',species:'xiaohui',x:480,y:650,accent:'#d9b7c1',

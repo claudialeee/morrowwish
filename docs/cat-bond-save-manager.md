@@ -84,6 +84,7 @@ The existing Cloudflare Worker and D1 binding are reused. No paid service or ser
 - PUT /api/cat-bond-cloud-save accepts slotId, encrypted iv and ciphertext, and that slot's expectedRevision.
 - D1 stores one independently revisioned row per slot. The row key is SHA-256 of the recovery code plus the slot suffix; the recovery code and plaintext game state are not stored in D1.
 - A stale revision returns HTTP 409. Normal sync never silently overwrites a remote change.
+- Background autosync is throttled to at most once per minute per slot; an explicit in-game save or cloud-panel sync runs immediately, and page-exit sync is best-effort.
 - The cloud panel lets the player explicitly load cloud slots or confirm that this device should overwrite the cloud slots.
 - The former unslotted cloud row remains readable for one-time migration.
 
