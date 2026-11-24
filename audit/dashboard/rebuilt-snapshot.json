@@ -1,0 +1,564 @@
+{
+  "status": "SNAPSHOT_RECONCILIATION_ONLY_NOT_PRODUCTION_VERIFIED",
+  "source": {
+    "generatedAt": "2026-11-24T02:32:36.396Z",
+    "startTimestamp": "2026-11-22T08:00:00.000Z",
+    "lastEventAt": "2026-11-24T01:41:06.390Z",
+    "rawEventRows": 1317
+  },
+  "catBond": {
+    "pageLoadRows": 78,
+    "distinctPageKeys": 78,
+    "recordedGameEntries": 40,
+    "recordedFirstPlaySignals": 40,
+    "legacyStartedPageVisits": 40,
+    "legacyFinishedPageVisits": 17,
+    "legacyMixedStarts": 116,
+    "legacyEnds": 93,
+    "v11PageVisits": 50,
+    "v11EnteredPageVisits": 31,
+    "v11FinishedPageVisits": 11,
+    "v11EntryRate": 62,
+    "v11FinishPerEntryRate": 35.5,
+    "v11BattleStarts": 14,
+    "v11BattleFinishes": 13,
+    "allHistoricalBattleStarts": null,
+    "allHistoricalBattleFinishes": null,
+    "allHistoricalGameStarts": null,
+    "allHistoricalGameRestarts": null,
+    "legacyRetrySignals": 1,
+    "recordedReplayAfterFinish": 7,
+    "legacyGameplaySignals": {
+      "funnel_first_run": 40,
+      "bond_enter": 40,
+      "bond_battle_start_v2": 14,
+      "bond_region_home_start_v2": 4,
+      "bond_duo_used": 56,
+      "bond_region_creek_start_v2": 2,
+      "bond_rare_attempt_v2": 6,
+      "bond_mastery_medal": 12,
+      "funnel_first_finish": 17,
+      "bond_battle_end_v2": 13,
+      "bond_region_creek_end_v2": 2,
+      "bond_battle_win_v2": 13,
+      "bond_capture": 87,
+      "bond_capture_v2": 13,
+      "bond_rare_capture": 63,
+      "bond_rare_capture_v2": 6,
+      "bond_grade_s": 31,
+      "bond_region_ruins_start_v2": 1,
+      "bond_reunion": 60,
+      "bond_region_ruins_end_v2": 1,
+      "bond_grade_a": 53,
+      "bond_region_home_end_v2": 3,
+      "bond_region_sakura_start_v2": 4,
+      "bond_region_sakura_end_v2": 4,
+      "bond_starter": 5,
+      "bond_wild_spawn": 12,
+      "bond_wild_found": 10,
+      "bond_region_yard_start_v2": 3,
+      "bond_region_yard_end_v2": 3,
+      "bond_first_capture": 3,
+      "bond_continue": 5,
+      "funnel_replay_after_finish": 7,
+      "bond_next_battle_v2": 2,
+      "bond_rare_encounter": 4,
+      "bond_surprise": 6,
+      "bond_yard_built": 6,
+      "bond_grade_b": 3
+    }
+  },
+  "catBondByPacificDay": [
+    {
+      "day": "2026-11-22",
+      "pageLoadRows": 50,
+      "distinctPageKeys": 50,
+      "recordedGameEntries": 24,
+      "recordedFirstPlaySignals": 24,
+      "legacyStartedPageVisits": 24,
+      "legacyFinishedPageVisits": 9,
+      "legacyMixedStarts": 98,
+      "legacyEnds": 83,
+      "v11PageVisits": 23,
+      "v11EnteredPageVisits": 15,
+      "v11FinishedPageVisits": 3,
+      "v11EntryRate": 65.2,
+      "v11FinishPerEntryRate": 20,
+      "v11BattleStarts": 4,
+      "v11BattleFinishes": 3,
+      "allHistoricalBattleStarts": null,
+      "allHistoricalBattleFinishes": null,
+      "allHistoricalGameStarts": null,
+      "allHistoricalGameRestarts": null,
+      "legacyRetrySignals": 1,
+      "recordedReplayAfterFinish": 5,
+      "legacyGameplaySignals": {
+        "funnel_first_run": 24,
+        "bond_enter": 24,
+        "bond_battle_start_v2": 4,
+        "bond_region_home_start_v2": 1,
+        "bond_duo_used": 49,
+        "bond_region_creek_start_v2": 1,
+        "bond_rare_attempt_v2": 2,
+        "bond_mastery_medal": 8,
+        "funnel_first_finish": 9,
+        "bond_battle_end_v2": 3,
+        "bond_region_creek_end_v2": 1,
+        "bond_battle_win_v2": 3,
+        "bond_capture": 77,
+        "bond_capture_v2": 3,
+        "bond_rare_capture": 59,
+        "bond_rare_capture_v2": 2,
+        "bond_grade_s": 26,
+        "bond_region_ruins_start_v2": 1,
+        "bond_reunion": 60,
+        "bond_region_ruins_end_v2": 1,
+        "bond_grade_a": 48,
+        "bond_wild_spawn": 8,
+        "bond_rare_encounter": 4,
+        "bond_wild_found": 7,
+        "bond_surprise": 6,
+        "funnel_replay_after_finish": 5,
+        "bond_continue": 4,
+        "bond_yard_built": 6,
+        "bond_grade_b": 3,
+        "bond_starter": 2,
+        "bond_region_yard_start_v2": 1,
+        "bond_region_yard_end_v2": 1,
+        "bond_first_capture": 1
+      }
+    },
+    {
+      "day": "2026-11-23",
+      "pageLoadRows": 28,
+      "distinctPageKeys": 28,
+      "recordedGameEntries": 16,
+      "recordedFirstPlaySignals": 16,
+      "legacyStartedPageVisits": 16,
+      "legacyFinishedPageVisits": 8,
+      "legacyMixedStarts": 18,
+      "legacyEnds": 10,
+      "v11PageVisits": 27,
+      "v11EnteredPageVisits": 16,
+      "v11FinishedPageVisits": 8,
+      "v11EntryRate": 59.3,
+      "v11FinishPerEntryRate": 50,
+      "v11BattleStarts": 10,
+      "v11BattleFinishes": 10,
+      "allHistoricalBattleStarts": null,
+      "allHistoricalBattleFinishes": null,
+      "allHistoricalGameStarts": null,
+      "allHistoricalGameRestarts": null,
+      "legacyRetrySignals": 0,
+      "recordedReplayAfterFinish": 2,
+      "legacyGameplaySignals": {
+        "funnel_first_run": 16,
+        "bond_enter": 16,
+        "bond_battle_start_v2": 10,
+        "bond_region_home_start_v2": 3,
+        "bond_duo_used": 7,
+        "funnel_first_finish": 8,
+        "bond_battle_end_v2": 10,
+        "bond_region_home_end_v2": 3,
+        "bond_battle_win_v2": 10,
+        "bond_capture": 10,
+        "bond_capture_v2": 10,
+        "bond_grade_a": 5,
+        "bond_region_sakura_start_v2": 4,
+        "bond_rare_attempt_v2": 4,
+        "bond_mastery_medal": 4,
+        "bond_region_sakura_end_v2": 4,
+        "bond_rare_capture": 4,
+        "bond_rare_capture_v2": 4,
+        "bond_grade_s": 5,
+        "bond_region_creek_start_v2": 1,
+        "bond_region_creek_end_v2": 1,
+        "bond_starter": 3,
+        "bond_wild_spawn": 4,
+        "bond_wild_found": 3,
+        "bond_region_yard_start_v2": 2,
+        "bond_region_yard_end_v2": 2,
+        "bond_first_capture": 2,
+        "bond_continue": 1,
+        "funnel_replay_after_finish": 2,
+        "bond_next_battle_v2": 2
+      }
+    }
+  ],
+  "allGames": [
+    {
+      "game": "hub",
+      "pageLoadRows": 125,
+      "distinctPageKeys": 125,
+      "recordedFirstPlaySignals": null,
+      "legacyStarts": 0,
+      "legacyEnds": 0,
+      "legacyStartedPageVisits": 0,
+      "legacyFinishedPageVisits": 0
+    },
+    {
+      "game": "cat-bond",
+      "pageLoadRows": 78,
+      "distinctPageKeys": 78,
+      "recordedFirstPlaySignals": 40,
+      "legacyStarts": 116,
+      "legacyEnds": 93,
+      "legacyStartedPageVisits": 40,
+      "legacyFinishedPageVisits": 17
+    },
+    {
+      "game": "pawsibly-innocent",
+      "pageLoadRows": 27,
+      "distinctPageKeys": 27,
+      "recordedFirstPlaySignals": 8,
+      "legacyStarts": 15,
+      "legacyEnds": 12,
+      "legacyStartedPageVisits": 8,
+      "legacyFinishedPageVisits": 5
+    },
+    {
+      "game": "tiny-town",
+      "pageLoadRows": 17,
+      "distinctPageKeys": 17,
+      "recordedFirstPlaySignals": 5,
+      "legacyStarts": 7,
+      "legacyEnds": 0,
+      "legacyStartedPageVisits": 5,
+      "legacyFinishedPageVisits": 0
+    },
+    {
+      "game": "elsewhere",
+      "pageLoadRows": 15,
+      "distinctPageKeys": 15,
+      "recordedFirstPlaySignals": null,
+      "legacyStarts": 0,
+      "legacyEnds": 0,
+      "legacyStartedPageVisits": 0,
+      "legacyFinishedPageVisits": 0
+    },
+    {
+      "game": "pocket-aquarium",
+      "pageLoadRows": 12,
+      "distinctPageKeys": 12,
+      "recordedFirstPlaySignals": null,
+      "legacyStarts": 0,
+      "legacyEnds": 0,
+      "legacyStartedPageVisits": 0,
+      "legacyFinishedPageVisits": 0
+    },
+    {
+      "game": "parcel-panic",
+      "pageLoadRows": 11,
+      "distinctPageKeys": 11,
+      "recordedFirstPlaySignals": 4,
+      "legacyStarts": 5,
+      "legacyEnds": 1,
+      "legacyStartedPageVisits": 4,
+      "legacyFinishedPageVisits": 1
+    },
+    {
+      "game": "flip-dash",
+      "pageLoadRows": 5,
+      "distinctPageKeys": 5,
+      "recordedFirstPlaySignals": null,
+      "legacyStarts": 0,
+      "legacyEnds": 0,
+      "legacyStartedPageVisits": 0,
+      "legacyFinishedPageVisits": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "Cat Bond duplicate snapshot section matches byGame",
+      "actual": "{\"game\":\"cat-bond\",\"rawRows\":698,\"visitRows\":78,\"uniquePageVisits\":78,\"sessionRows\":620,\"uniqueSessionViews\":64,\"rawBattleStarts\":116,\"rawBattleFinishes\":93,\"rawRetries\":1,\"rawAbandons\":0,\"startedPageVisits\":40,\"finishedPageVisits\":17,\"trackingV11PageVisits\":50,\"trackingV11EnteredViews\":31,\"trackingV11FinishedViews\":11,\"signals\":{\"funnel_first_run\":40,\"bond_enter\":40,\"bond_battle_start_v2\":14,\"bond_region_home_start_v2\":4,\"bond_duo_used\":56,\"bond_region_creek_start_v2\":2,\"bond_rare_attempt_v2\":6,\"bond_mastery_medal\":12,\"funnel_first_finish\":17,\"bond_battle_end_v2\":13,\"bond_region_creek_end_v2\":2,\"bond_battle_win_v2\":13,\"bond_capture\":87,\"bond_capture_v2\":13,\"bond_rare_capture\":63,\"bond_rare_capture_v2\":6,\"bond_grade_s\":31,\"bond_region_ruins_start_v2\":1,\"bond_reunion\":60,\"bond_region_ruins_end_v2\":1,\"bond_grade_a\":53,\"bond_region_home_end_v2\":3,\"bond_region_sakura_start_v2\":4,\"bond_region_sakura_end_v2\":4,\"bond_starter\":5,\"bond_wild_spawn\":12,\"bond_wild_found\":10,\"bond_region_yard_start_v2\":3,\"bond_region_yard_end_v2\":3,\"bond_first_capture\":3,\"bond_continue\":5,\"funnel_replay_after_finish\":7,\"bond_next_battle_v2\":2,\"bond_rare_encounter\":4,\"bond_surprise\":6,\"bond_yard_built\":6,\"bond_grade_b\":3}}",
+      "expected": "{\"game\":\"cat-bond\",\"rawRows\":698,\"visitRows\":78,\"uniquePageVisits\":78,\"sessionRows\":620,\"uniqueSessionViews\":64,\"rawBattleStarts\":116,\"rawBattleFinishes\":93,\"rawRetries\":1,\"rawAbandons\":0,\"startedPageVisits\":40,\"finishedPageVisits\":17,\"trackingV11PageVisits\":50,\"trackingV11EnteredViews\":31,\"trackingV11FinishedViews\":11,\"signals\":{\"funnel_first_run\":40,\"bond_enter\":40,\"bond_battle_start_v2\":14,\"bond_region_home_start_v2\":4,\"bond_duo_used\":56,\"bond_region_creek_start_v2\":2,\"bond_rare_attempt_v2\":6,\"bond_mastery_medal\":12,\"funnel_first_finish\":17,\"bond_battle_end_v2\":13,\"bond_region_creek_end_v2\":2,\"bond_battle_win_v2\":13,\"bond_capture\":87,\"bond_capture_v2\":13,\"bond_rare_capture\":63,\"bond_rare_capture_v2\":6,\"bond_grade_s\":31,\"bond_region_ruins_start_v2\":1,\"bond_reunion\":60,\"bond_region_ruins_end_v2\":1,\"bond_grade_a\":53,\"bond_region_home_end_v2\":3,\"bond_region_sakura_start_v2\":4,\"bond_region_sakura_end_v2\":4,\"bond_starter\":5,\"bond_wild_spawn\":12,\"bond_wild_found\":10,\"bond_region_yard_start_v2\":3,\"bond_region_yard_end_v2\":3,\"bond_first_capture\":3,\"bond_continue\":5,\"funnel_replay_after_finish\":7,\"bond_next_battle_v2\":2,\"bond_rare_encounter\":4,\"bond_surprise\":6,\"bond_yard_built\":6,\"bond_grade_b\":3}}",
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive rawRows",
+      "actual": 698,
+      "expected": 698,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive visitRows",
+      "actual": 78,
+      "expected": 78,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive sessionRows",
+      "actual": 620,
+      "expected": 620,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive rawBattleStarts",
+      "actual": 116,
+      "expected": 116,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive rawBattleFinishes",
+      "actual": 93,
+      "expected": 93,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive rawRetries",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal funnel_first_run",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_enter",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_battle_start_v2",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_home_start_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_duo_used",
+      "actual": 56,
+      "expected": 56,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_creek_start_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_rare_attempt_v2",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_mastery_medal",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal funnel_first_finish",
+      "actual": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_battle_end_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_creek_end_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_battle_win_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_capture",
+      "actual": 87,
+      "expected": 87,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_capture_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_rare_capture",
+      "actual": 63,
+      "expected": 63,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_rare_capture_v2",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_grade_s",
+      "actual": 31,
+      "expected": 31,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_ruins_start_v2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_reunion",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_ruins_end_v2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_grade_a",
+      "actual": 53,
+      "expected": 53,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_home_end_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_sakura_start_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_sakura_end_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_starter",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_wild_spawn",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_wild_found",
+      "actual": 10,
+      "expected": 10,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_yard_start_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_region_yard_end_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_first_capture",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_continue",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal funnel_replay_after_finish",
+      "actual": 7,
+      "expected": 7,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_next_battle_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_rare_encounter",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_surprise",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_yard_built",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond daily additive signal bond_grade_b",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "Cat Bond rows reconcile",
+      "actual": 698,
+      "expected": 698,
+      "pass": true
+    },
+    {
+      "name": "All arcade rows reconcile with scope (this snapshot)",
+      "actual": 1317,
+      "expected": 1317,
+      "pass": true
+    },
+    {
+      "name": "Snapshot reported no sequence duplicates",
+      "actual": 1317,
+      "expected": 1317,
+      "pass": true
+    }
+  ],
+  "limitations": [
+    "Existing aggregate export only; raw event rows not available. No production requests made.",
+    "Signal counts are recorded observations, not proof of full historical coverage. Null means unrecoverable/unverified from this snapshot, not zero.",
+    "Legacy started/finished page counts use mixed counters. They cannot validate game-entry or game-completion conversions.",
+    "V11 page funnel measures entry and at least one battle finish, not entire game completion. V2 battle signal counts in the snapshot are not proven cohort-filtered.",
+    "Daily unique counts are not necessarily additive across midnight.",
+    "Internal QA traffic, missing events, visit retry duplication, and restore completeness cannot be independently verified without raw events and provenance."
+  ],
+  "sourceCommit": "09d1b668c9a79b020ceb724615ae5c3e1e07c0d0",
+  "sourceBlob": "0a483c02abdc06df053b9a6b947c2a44191f2858"
+}
