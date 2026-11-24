@@ -132,6 +132,12 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const c1=conv(cv.startedViews,cv.pageviews)")||
     !dashboard.includes("const c2=conv(cv.finishedViews,cv.startedViews)")||
     !dashboard.includes("const c3=conv(cv.finishedViews,cv.pageviews)")||
+   !dashboard.includes("const allGameRows=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&Number(x.pageviews)>0);")||
+   !dashboard.includes('format(sumField(allGameRows,"pageviews"))')||
+   !dashboard.includes('gamesTrackedTotal:"七款游戏合计"')||
+   dashboard.includes('id="archived-first-round"')||
+   dashboard.includes('const archivedRound=')||
+   !dashboard.includes('statStartsNote:"按页面访问去重，不是战斗次数"')||
    !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
