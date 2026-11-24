@@ -8,11 +8,25 @@ const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{"cont
 const pct=(a,b)=>b?Math.round(a*1000/b)/10:null;
 const tidy=(s,max=100)=>typeof s==="string"?s.slice(0,max):"";
 const uniq=(a)=>new Set(a.filter(Boolean)).size;
-function dateDays(n){const d=new Date();d.setUTCHours(0,0,0,0);const x=[];for(let i=n-1;i>=0;i--)x.push(new Date(d.getTime()-86400000*i).toISOString().slice(0,10));return x;}
-function params(req){const n=Number(new URL(req.url).searchParams.get("days"));return Number.isFinite(n)&&n>=1?Math.min(90,Math.floor(n)):7;}
+const REPORT_FROM="2026-11-22T08:00:00.000Z"; // 00:00 Pacific Time on Nov 22, 2026
+const REPORT_FROM_MS=Date.parse(REPORT_FROM);
+const pacificDate=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"});
+function localDay(ts){
+ const p=Object.fromEntries(pacificDate.formatToParts(new Date(ts)).map(x=>[x.type,x.value]));
+ return p.year+"-"+p.month+"-"+p.day;
+}
+function reportDates(fromTs,toTs=Date.now()){
+ const first=localDay(fromTs),last=localDay(toTs),start=Date.parse(first+"T00:00:00.000Z"),end=Date.parse(last+"T00:00:00.000Z"),out=[];
+ for(let t=start;t<=end;t+=86400000)out.push(new Date(t).toISOString().slice(0,10));
+ return out;
+}
 async function read(req,env,category){
- const days=params(req),dates=dateDays(days);
- const result=await env.DB.prepare("SELECT category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND day>=? ORDER BY id DESC LIMIT 10000").bind(category,dates[0]).all();
+ const requested=Date.parse(new URL(req.url).searchParams.get("from")||REPORT_FROM);
+ const fromTs=Math.max(REPORT_FROM_MS,Number.isFinite(requested)?requested:REPORT_FROM_MS);
+ const dates=reportDates(fromTs);
+ // The reporting window is fixed at Nov 22, 00:00 PT. Do not cap the result:
+ // the previous 10,000-row limit silently truncated high-traffic game data.
+ const result=await env.DB.prepare("SELECT category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? ORDER BY id DESC").bind(category,fromTs).all();
  const raw=result.results||[],seenSequence=new Set();
  const rows=raw.map(r=>({...r,data:JSON.parse(r.payload||"{}")})).filter(r=>{
   // Browser network retry + fallback beacon can repeat an incremental seq.
@@ -24,7 +38,7 @@ async function read(req,env,category){
   if(seenSequence.has(id))return false;
   seenSequence.add(id);return true;
  });
- return {days,dates,rows,partial:raw.length>=10000};
+ return {days:dates.length,dates,from:new Date(fromTs).toISOString(),rows,partial:false};
 }
 function visitors(rows){return uniq(rows.map(r=>r.visitor||r.view_id));}
 function mainStats(x){
@@ -71,7 +85,7 @@ function mainStats(x){
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
-  const byDay=dates.map(day=>{let r=rows.filter(x=>x.day===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(r=>r.view_id||r.visitor+"-"+r.day)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
+  const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(r=>r.view_id||r.visitor+"-"+r.day)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
@@ -172,7 +186,7 @@ function mainStats(x){
     starts:itchGames.reduce((n,z)=>n+z.starts,0),games:itchGames};
   const total=score(rows.filter(r=>r.game!=="hub"));
   const all=score(rows);
-  return {days:x.days,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  return {days:x.days,from:x.from,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
  // Track only the current eight-world dream-life edition, keeping older story editions separate.
@@ -196,7 +210,7 @@ function elsewhereStats(x){
  const continueRates=Array.from({length:4},(_,i)=>{const from=i+1,eligible=has(from,"completed"),continued=runs.filter(r=>r.completed.has(from)&&r.views.has(from+1)).length;return {from,to:from+1,eligible,continued,rate:pct(continued,eligible)};});
  const dropoff=continueRates.filter(r=>r.eligible>0).sort((a,b)=>(b.eligible-b.continued)-(a.eligible-a.continued)||a.from-b.from)[0];
  const worldSummary=worlds.map(world=>{const a=opened.filter(r=>r.world===world),done=a.filter(r=>r.finished).length;return {world,starts:a.length,ends:done,fullRate:pct(done,a.length)};});
- return {updated:new Date().toISOString(),days:x.days,records:rows.length,partial:x.partial,trackingVersion:10,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:5},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
+ return {updated:new Date().toISOString(),days:x.days,from:x.from,records:rows.length,partial:x.partial,trackingVersion:10,summary:{runs:opened.length,completed:finished,fullRate:pct(finished,opened.length),replayVisitors,replayRate:pct(replayVisitors,visitorGroups.size),dropoffChapter:dropoff?.from||null,dropoffRate:dropoff?.rate??null,dropoffLost:dropoff?dropoff.eligible-dropoff.continued:0},funnel:Array.from({length:5},(_,i)=>[{step:(i+1)+"-view",value:has(i+1,"views")},{step:(i+1)+"-complete",value:has(i+1,"completed")}]).flat(),continueRates,worlds:worldSummary};
 }
 const cookieName="morrowwish_studio_auth", ttl=30*24*60*60;
 async function signSession(exp,keyText){
@@ -313,43 +327,7 @@ export async function api(req,env){
   const result=await env.DB.prepare("DELETE FROM events WHERE category IN ('arcade','elsewhere','diagnostic')").run();
   return json({ok:true,removed:result.meta?.changes??null});
  }
- // Read-only owner audit: full D1 visit aggregates, not limited by the
- // 10,000 most recent gameplay events used for the interactive report.
- if(p==="/api/cat-bond-traffic-audit"){
-   if(req.method!=="GET")return json({error:"GET required"},405);
-   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
-   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
-   const days=params(req),from=dateDays(days)[0];
-   const d=await env.DB.prepare(`
-     WITH page_visits AS (
-       SELECT day,COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day) AS visit_key,COUNT(*) AS raw_visits
-       FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit' AND day>=?
-       GROUP BY day,visit_key
-     ), session_views AS (
-       SELECT view_id,
-         MAX(CASE WHEN CAST(json_extract(payload,'$.starts') AS REAL)>0 THEN 1 ELSE 0 END) AS started,
-         MAX(CASE WHEN CAST(json_extract(payload,'$.ends') AS REAL)>0 THEN 1 ELSE 0 END) AS finished
-       FROM events WHERE category='arcade' AND game='cat-bond' AND kind='session' AND day>=? AND view_id<>''
-       GROUP BY view_id
-     )
-     SELECT v.day AS day,COUNT(*) AS pageviews,SUM(v.raw_visits) AS rawVisits,
-       SUM(CASE WHEN s.started=1 THEN 1 ELSE 0 END) AS startedViews,
-       SUM(CASE WHEN s.started=1 AND s.finished=1 THEN 1 ELSE 0 END) AS finishedViews
-     FROM page_visits v LEFT JOIN session_views s ON v.visit_key=s.view_id
-     GROUP BY v.day ORDER BY v.day
-   `).bind(from,from).all();
-   const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
-   const byDay=(d.results||[]).map(r=>({day:String(r.day),rawVisits:Number(r.rawVisits)||0,pageviews:Number(r.pageviews)||0,
-     startedViews:Number(r.startedViews)||0,finishedViews:Number(r.finishedViews)||0}));
-   const history=(h.results||[])[0]||{};
-   const totals=byDay.reduce((sum,r)=>({pageviews:sum.pageviews+r.pageviews,startedViews:sum.startedViews+r.startedViews,
-     finishedViews:sum.finishedViews+r.finishedViews}),{pageviews:0,startedViews:0,finishedViews:0});
-   return json({game:"cat-bond",days,from,source:"uncapped-d1-aggregate",total:totals.pageviews,totals,byDay,history:{
-     firstDay:history.firstDay||null,lastDay:history.lastDay||null,
-     pageviews:Number(history.pageviews)||0,rawVisits:Number(history.rawVisits)||0
-   }});
- }
- if(p==="/api/summary"||p==="/api/elsewhere-summary"){
+if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(req.method!=="GET")return json({error:"GET required"},405);
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
