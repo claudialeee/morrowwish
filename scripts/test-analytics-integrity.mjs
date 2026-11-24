@@ -23,8 +23,8 @@ const DB={prepare(sql){
    return rows.find(r=>r.category===args[0]&&r.view_id===args[1])||null;
   },
   async all(){
-   if(sql.startsWith('SELECT id,category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? AND id<?')){
-     return {results:rows.filter(r=>r.category===args[0]&&Number(r.ts)>=Number(args[1])&&Number(r.id)<Number(args[2])).sort((a,b)=>b.id-a.id).slice(0,400)};
+   if(sql.startsWith('SELECT id,category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? AND (ts,id)<(?,?)')){
+     return {results:rows.filter(r=>r.category===args[0]&&Number(r.ts)>=Number(args[1])&&(Number(r.ts)<Number(args[2])||(Number(r.ts)===Number(args[2])&&Number(r.id)<Number(args[3])))).sort((a,b)=>Number(b.ts)-Number(a.ts)||b.id-a.id).slice(0,400)};
     }
     if(sql.startsWith('SELECT kind,payload FROM events'))return {results:rows.filter(r=>r.category===args[0]&&r.view_id===args[1]).sort((a,b)=>a.id-b.id)};
    if(sql.includes('WITH page_visits AS')){

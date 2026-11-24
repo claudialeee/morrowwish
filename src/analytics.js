@@ -51,9 +51,9 @@ async function read(req,env,category){
  let readCost=0;
  // Keyset pagination avoids the former 10,000-row truncation and remains stable
  // while new visits arrive during a dashboard refresh.
- let beforeId=Number.MAX_SAFE_INTEGER;
+ let beforeTs=Number.MAX_SAFE_INTEGER,beforeId=Number.MAX_SAFE_INTEGER;
  for(;;){
-  const result=await env.DB.prepare("SELECT id,category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? AND id<? ORDER BY id DESC LIMIT 400").bind(category,fromTs,beforeId).all();
+  const result=await env.DB.prepare("SELECT id,category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? AND (ts,id)<(?,?) ORDER BY ts DESC,id DESC LIMIT 400").bind(category,fromTs,beforeTs,beforeId).all();
   if(result.success===false)throw Error(result.error||"D1 analytics query failed");
   const batch=result.results||[];
   readCost+=Number(result.meta?.rows_read??batch.length);
@@ -61,10 +61,13 @@ async function read(req,env,category){
   if(readCost>100000)throw Error("Analytics scan budget exceeded");
   raw.push(...batch);
   if(batch.length<400)break;
-  const next=Number(batch[batch.length-1].id);
-  if(!Number.isSafeInteger(next)||next>=beforeId)throw Error("Analytics pagination did not advance");
-  beforeId=next;
+  const tail=batch[batch.length-1],nextTs=Number(tail.ts),nextId=Number(tail.id);
+  if(!Number.isSafeInteger(nextTs)||!Number.isSafeInteger(nextId)||nextTs>beforeTs||(nextTs===beforeTs&&nextId>=beforeId))throw Error("Analytics pagination did not advance");
+  beforeTs=nextTs;beforeId=nextId;
  }
+ // Keep the previous highest-ID-wins behavior for repeated session sequences,
+ // including historical events inserted after newer events during recovery.
+ raw.sort((a,b)=>Number(b.id)-Number(a.id));
  const seenSequence=new Set();
  const rows=raw.map(r=>({...r,data:JSON.parse(r.payload||"{}")})).filter(r=>{
   // Browser network retry + fallback beacon can repeat an incremental seq.
