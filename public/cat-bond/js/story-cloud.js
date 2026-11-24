@@ -557,8 +557,7 @@ function renderCloudPanel(){
   }
  }
  const updateLocale=()=>{
-  const status=body.querySelector('#cb-cloud-status')?.textContent||'';
-  render(status);
+  render();
  };
  window.addEventListener('morrowwish-language-change',updateLocale);
  render();
