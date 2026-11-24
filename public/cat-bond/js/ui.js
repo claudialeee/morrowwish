@@ -538,7 +538,7 @@ const UI = {
       action('duo','💞','双猫纽带','Cat duos')+
       action('workshop','🧶','工坊收益','Workshop')+
       action('shop','🛒','小卖部','Shop')+
-      action('healteam','🧰','急救包补血 +35% · '+woundedCount+' 个','First-aid kit +35% · '+woundedCount+' needed')+
+      action('healteam','🧰','急救包补血 +35% · '+woundedCount+' 个','First-aid kits +35% · '+woundedCount+' needed')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','世界目录','World directory')+
       '</div><p class="explore-menu-tip">'+(en
