@@ -176,6 +176,12 @@ class CaptureBattle {
     // --- adaptive AI: read the learned player profile, derive this battle's knobs ---
     this.aiP = this.normalizeAiProfile(window.State && State.S && State.S.aiProfile);
     this._aiConf = clamp(this.aiP.battles / 8, 0, 1);       // ramps in over ~8 fights
+    // AUTO-ASSIST (playtest P0: pure-auto is accidentally the HARDEST config — the manual
+    // opening-grace + masher-guard nets are gated !autoMode, so a losing auto player gets
+    // NOTHING). When a casual auto player has lost ≥2 in a row, let those same nets fire at
+    // ~60% strength so repeated auto losses ease too. 0 for manual / hardcore / winning auto.
+    this._autoAssist = (this.autoMode && this.difficultyMode !== 'hardcore'
+      && ((this.aiP.lossStreak || 0) >= 2)) ? 0.6 : 0;
     this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
     // stompStreak (flawless-win count) tightens the knobs: snappier windups, less
     // aim slop, fuller lead — so a player who keeps stomping faces a sharper foe.
@@ -5065,9 +5071,11 @@ class CaptureBattle {
       // first few seconds before they orient). CASUAL + MANUAL only: slow enemy fire a lot
       // for the first ~4s of the fight, decaying to the steady ease, so a human always gets
       // a reaction window from frame 1. Auto mode + hardcore are untouched.
-      if (!this.autoMode && this.difficultyMode !== 'hardcore') {
+      // Full grace for manual casual; reduced (60%) grace for a losing auto player (_autoAssist).
+      const graceScale = (!this.autoMode && this.difficultyMode !== 'hardcore') ? 1 : this._autoAssist;
+      if (graceScale > 0) {
         const grace = Math.max(0, 1 - this.t / 4);        // 1 at t=0 → 0 by 4s
-        manualEase *= 1 + 0.55 * grace;                   // up to ~+55% slower fire at the opening
+        manualEase *= 1 + 0.55 * grace * graceScale;      // up to ~+55% (manual) / ~+33% (losing auto)
       }
       e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
@@ -5791,7 +5799,10 @@ class CaptureBattle {
     // a skill/dodge and leans harder below 30% HP, then DECAYS to nothing the instant the player
     // engages (casts within ~1s) — so it nets a drowning masher without dulling an active pilot.
     // Casual + manual only; auto-mode and hardcore are untouched.
-    if (f === this.me() && !this.autoMode && !this.coach && this.difficultyMode !== 'hardcore') {
+    // Manual active cat always qualifies; a losing auto player gets it at 60% (_autoAssist).
+    const guardScale = (f === this.me() && !this.coach && this.difficultyMode !== 'hardcore')
+      ? (!this.autoMode ? 1 : this._autoAssist) : 0;
+    if (guardScale > 0) {
       // HP STATE is the primary peril signal (playtest P0: a facetanking masher gets bursted
       // from full HP → the old idle-dominated guard gave most of its value when he was SAFE and
       // little when he was dying). lowHp now drives the floor (ramps hard below 40% HP); a small
@@ -5799,7 +5810,7 @@ class CaptureBattle {
       const sinceSkill = this.t - (this._lastSkillT || -99);
       const idle = Math.max(0, Math.min(1, (sinceSkill - 1) / 3));                 // 0 within 1s of a skill → 1 by 4s
       const lowHp = f.maxhp ? Math.max(0, Math.min(1, (0.40 - f.hp / f.maxhp) / 0.40)) : 0; // 0 above 40% HP → 1 at 0%
-      const guard = Math.min(0.45, lowHp * 0.38 + idle * 0.12);                    // cap 45%; low-HP is the main driver
+      const guard = Math.min(0.45, lowHp * 0.38 + idle * 0.12) * guardScale;       // cap 45% (manual); ×0.6 for losing auto
       if (guard > 0 && (f.inv || 0) <= 0) dmg *= (1 - guard);                      // not while already in dodge i-frames
     }
     // First-fight coach: a beginner can take hits to learn, but never dies during
