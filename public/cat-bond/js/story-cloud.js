@@ -431,7 +431,49 @@ function showBossReveal(){
   title:'你找回的每段记忆，都在替它敲响星铃。',titleEn:'Every memory you recovered has been ringing the Bell for them.',
   text:'星盘中央浮现出那只熟悉的猫。它没有咆哮，只是伸出爪子，像从前在樱花树下那样等你牵住。\n\n【暮铃】我知道你会找到这里。你总会回来。\n【你】你拿走了他们的记忆。\n【暮铃】我只想把你带回家。\n\n六段旋律同时亮起。你终于明白：这一路的线索既在帮你找回过去，也在替暮铃完成仪式。',
   textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.\n\n[Muling] I knew you would find me. You always come back.\n[You] You took their memories.\n[Muling] I only wanted to bring you home.\n\nAll six melodies flare. You understand at last: the clues that restored your past have also been completing Muling’s ritual.'
- }],()=>showBossGate(),{canSkip:false});
+ }],()=>showMulingQuestions(()=>showBossGate()),{canSkip:false});
+}
+function showMulingQuestions(done){
+ const root=npcRoot();if(!root)return done?.();
+ root.mulingAnswers||={};
+ const questions=[
+  {id:'cost',prompt:'你什么时候知道，这些记忆不能真正把我带回来？',promptEn:'When did you know these memories could never truly bring me back?',options:[
+   {id:'always',label:'一开始就知道。',labelEn:'You knew from the beginning.',reply:'我知道。但我告诉自己，只要再多一段，就会不一样。',replyEn:'I knew. I kept telling myself that one more memory would make the difference.'},
+   {id:'too_late',label:'第一只猫失去记忆之后？',labelEn:'After the first cat lost a memory?',reply:'那只猫忘了最喜欢的食物。我还是继续了。',replyEn:'That cat forgot their favourite food. I continued anyway.'}]},
+  {id:'restore',prompt:'你想让我记住哪一个你？',promptEn:'Which version of you do you want me to remember?',options:[
+   {id:'old_us',label:'樱花树下，那个等我的小猫。',labelEn:'The kitten who waited for me beneath the cherry tree.',reply:'我只想你记得，我们还没有失去彼此。',replyEn:'I only wanted you to remember that we had not lost each other yet.'},
+   {id:'today',label:'今天的逆响之主。',labelEn:'The one standing here as Lord of the Reversed Bell.',reply:'我不知道现在的我，还能不能被你认出来。',replyEn:'I do not know whether you could recognize who I have become.'}]},
+  {id:'stop',prompt:'如果我不会回到过去，你会停下来吗？',promptEn:'If I cannot return to the past, will you stop?',options:[
+   {id:'return_memories',label:'先把所有人的记忆还回去。',labelEn:'Return everyone’s memories first.',reply:'我会把他们的名字还回去。可是我不知道他们会不会原谅我。',replyEn:'I will return their names. I do not know whether they will forgive me.'},
+   {id:'meet_now',label:'学着认识现在的我，而不是复刻过去。',labelEn:'Learn who I am now instead of recreating the past.',reply:'我不知道怎样放下，但我不想再让他们成为代价。',replyEn:'I do not know how to let go. But I do not want them to be the price anymore.'}]}
+ ];
+ let step=0,selected=null;
+ const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog cb-muling-questions';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">THE LAST PAGE · THREE QUESTIONS</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ document.body.append(overlay);
+ const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
+ const rerender=()=>render();window.addEventListener('morrowwish-language-change',rerender);
+ overlay.querySelector('.cb-cloud-close').onclick=()=>{close();done?.();};
+ function render(){
+  const en=!isZh(),title=overlay.querySelector('h2'),line=overlay.querySelector('.cb-npc-dialog-line'),actions=overlay.querySelector('.cb-cloud-actions');
+  actions.innerHTML='';
+  if(step>=questions.length){
+   title.textContent=en?'The Bell is waiting.':'星铃正在等待。';
+   line.textContent=en?'You have heard what Muling could not say plainly. The truth does not decide what happens next; your choices do.':'你已经听见暮铃无法直说的话。真相不能替你决定接下来发生什么，你的选择才可以。';
+   const b=document.createElement('button');b.type='button';b.className='cb-cloud-primary';b.textContent=en?'Face the Reversed Bell':'面对逆响之钟';b.onclick=()=>{close();done?.();};actions.append(b);return;
+  }
+  const q=questions[step],answer=root.mulingAnswers[q.id];
+  title.textContent=(en?'QUESTION ':'问题 ')+(step+1)+' / 3';
+  line.textContent=(en?q.promptEn:q.prompt)+(answer?'\n\n'+(en?q.options.find(o=>o.id===answer)?.replyEn:q.options.find(o=>o.id===answer)?.reply):'');
+  if(answer){
+   const next=document.createElement('button');next.type='button';next.className='cb-cloud-primary';next.textContent=en?(step===2?'Continue':'Next question'):(step===2?'继续':'下一个问题');next.onclick=()=>{step++;render();};actions.append(next);return;
+  }
+  q.options.forEach(option=>{
+   const b=document.createElement('button');b.type='button';b.className='cb-cloud-primary';b.textContent=en?option.labelEn:option.label;
+   b.onclick=()=>{root.mulingAnswers[q.id]=option.id;npcSave();render();};actions.append(b);
+  });
+ }
+ render();
 }
 function bossSpecies(){
  const base=window.GameData?.speciesById?.('xingchen');
@@ -457,6 +499,53 @@ function showBossGate(){
  window.addEventListener('morrowwish-language-change',rerender);
  overlay.querySelector('[data-boss-later]').onclick=close;
  overlay.querySelector('[data-boss-start]').onclick=()=>{close();startBoss();};
+}
+const MULING_COMBAT_CHOICES=[
+ {id:'truth',label:'我想回来，但我做不到。你确实受了伤。',labelEn:'I wanted to come back. I could not. And you were hurt.',reply:'暮铃的爪子慢慢垂下。它第一次没有把你的回答改写成自己想听的样子。',replyEn:'Muling slowly lowers a paw. For the first time, they do not reshape your answer into the one they wanted.'},
+ {id:'return',label:'先把他们的记忆还回去。我们再谈我们。',labelEn:'Return their memories first. Then we can talk about us.',reply:'暮铃看向那些被困住的名字。星铃的光第一次不再向它聚拢。',replyEn:'Muling looks at the names trapped in the Bell. For the first time, its light stops gathering around them.'},
+ {id:'now',label:'我不会成为你记忆里的那个人。你必须认识现在的我。',labelEn:'I will not become the person in your memories. You must meet who I am now.',reply:'暮铃没有回答。它只是松开了铃绳，像终于明白那不是一条牵引你的线。',replyEn:'Muling does not answer. They loosen their grip on the bell cord, as if finally understanding it was never a leash.'}
+];
+function showMulingCombatChoice(done){
+ const root=npcRoot();if(!root)return done?.();
+ const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog cb-muling-combat-choice';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><p class="cb-cloud-eyebrow">THE UNFINISHED PROMISE</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ document.body.append(overlay);
+ const close=()=>{window.removeEventListener('morrowwish-language-change',render);overlay.remove();};
+ function render(){
+  const en=!isZh(),line=overlay.querySelector('.cb-npc-dialog-line'),actions=overlay.querySelector('.cb-cloud-actions'),title=overlay.querySelector('h2');
+  actions.innerHTML='';title.textContent=en?'Muling asks you to stay.':'暮铃请求你留下。';
+  const chosen=MULING_COMBAT_CHOICES.find(x=>x.id===root.mulingCombatChoice);
+  line.textContent=en
+   ?'The Star Bell trembles. Muling stops attacking. “If I let go, will you disappear again?”'
+   :'星铃开始震颤。暮铃停止攻击：“如果我放手，你是不是又会消失？”';
+  if(chosen){
+   line.textContent+='\\n\\n'+(en?chosen.replyEn:chosen.reply);
+   const b=document.createElement('button');b.type='button';b.className='cb-cloud-primary';b.textContent=en?'Continue the fight':'继续战斗';b.onclick=()=>{close();done?.();};actions.append(b);return;
+  }
+  MULING_COMBAT_CHOICES.forEach(option=>{
+   const b=document.createElement('button');b.type='button';b.className='cb-cloud-primary';b.textContent=en?option.labelEn:option.label;
+   b.onclick=()=>{root.mulingCombatChoice=option.id;npcSave();render();};actions.append(b);
+  });
+ }
+ window.addEventListener('morrowwish-language-change',render);
+ render();
+}
+function onBossPhase(phase,done){
+ if(phase===1){
+  showSequence('memory',[{
+   region:'ruins',kicker:'第一阶段 · 回声',kickerEn:'PHASE I · THE ECHO',
+   title:'你认出了那一招。',titleEn:'You recognize that move.',
+   text:'暮铃使出你们从前在庭院里玩闹时创造的双猫合击。它记得你总把最后一步留给它，也记得那时你们笑得喘不过气。\\n\\n它收集的不是力量，而是你们共同经历过的日子。',textEn:'Muling uses a duo technique you invented together while playing in the garden. They remember how you always saved the final move for them, and how you both laughed until you could hardly breathe.\\n\\nThey have not been collecting power. They have been collecting the days you shared.'
+  }],()=>done?.(),{canSkip:false});
+  return;
+ }
+ if(phase>=2){
+  showSequence('memory',[{
+   region:'ruins',kicker:'第二阶段 · 借来的名字',kickerEn:'PHASE II · THE BORROWED NAMES',
+   title:'伙伴们叫出了记忆主人的名字。',titleEn:'Your companions call the memories by their owners’ names.',
+   text:'无数被夺走的记忆从星铃周围浮现。你的伙伴没有向暮铃攻击，而是逐个叫出那些猫咪的名字。每叫出一个名字，缠在星铃上的光线就松开一分。\\n\\n暮铃终于停下了动作。它问你：“我还能不能把你留下？”',textEn:'Stolen memories rise around the Star Bell. Your companions do not attack Muling. They call each memory by its owner’s name. With every name, one thread loosens.\\n\\nMuling finally stops. “Can I still make you stay?”'
+  }],()=>showMulingCombatChoice(done),{canSkip:false});
+ }
 }
 function startBoss(){
  const game=window.__game,boss=bossSpecies();
@@ -490,6 +579,12 @@ function playEnding(replay=false){
  save();
  const endingPages=ENDING.map(page=>({...page}));
  const relationships=npcRoot()?.relationships||{},bondScore=Object.values(relationships).reduce((sum,value)=>sum+(Number(value)||0),0);
+ const arc=npcRoot()||{},flags=arc.flags||{},answers=arc.mulingAnswers||{};
+ if(flags.person_not_memory){endingPages[2].text=endingPages[2].text.replace('那不是我。那只是你记得的我。','记忆不是一个人。那不是我，只是你记得的我。');endingPages[2].textEn=endingPages[2].textEn.replace('That would not be me. It would only be the version you remember.','A memory is not a person. That would not be me; it would only be the version you remember.');}
+ if(answers.stop==='return_memories'||arc.mulingCombatChoice==='return'){endingPages[2].text+='\n\n【暮铃】我会先把他们的名字还回去。即使他们不再愿意听我解释。';endingPages[2].textEn+='\n\n[Muling] I will return their names first, even if they never want to hear my explanation.';}
+ else if(answers.stop==='meet_now'||arc.mulingCombatChoice==='now'){endingPages[2].text+='\n\n【暮铃】我不知道怎样重新认识你。但我愿意从今天开始。';endingPages[2].textEn+='\n\n[Muling] I do not know how to meet you again. But I am willing to begin today.';}
+ if(flags.accountability){endingPages[2].text+='\n\n【烬禾】这次我不会替任何人决定该不该原谅。我会陪他们听完每一句道歉。';endingPages[2].textEn+='\n\n[Jinhe] This time I will not decide who deserves forgiveness. I will stay and hear every apology.';}
+ if(flags.truth_now){endingPages[3].text+='\n\n绯枝把被删掉的碑文重新刻回去，让后来的人知道牺牲从来不是命运。';endingPages[3].textEn+='\n\nFeizhi restores the erased words to the shrine so no one can call sacrifice destiny again.';}
  endingPages[endingPages.length-1].text+='\\n\\n'+(bondScore>=4?'纸鸢、绯枝、渡川、烬禾与星簿都记得你一路上的回答。你们不再只靠过去的约定维系彼此。':'伙伴们记得你曾经的迟疑与坚持。新的羁绊不需要每个人都给出相同的答案。');
  endingPages[endingPages.length-1].textEn+='\\n\\n'+(bondScore>=4?'Kite, Feizhi, Duchuan, Jinhe and Star Scribe remember the answers you gave along the way. You are no longer held together only by an old promise.':'Your companions remember both your hesitation and your resolve. A new bond does not require everyone to give the same answer.');
  showSequence('ending',endingPages,()=>{
@@ -1004,7 +1099,7 @@ window.CatBondNPC={
  talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
 };
 window.CatBondStory={
- startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
+ startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,onBossPhase,
  onBossVictory,playEnding,updateTracker
 };
 window.CatBondCloudSave={openPanel:openCloudPanelImpl,queue:queueSync,syncNow};

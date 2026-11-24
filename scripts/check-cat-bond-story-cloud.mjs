@@ -27,7 +27,7 @@ new Function(battle);
 new Function(ui);
 
 for(const [name,source,needles] of [
- ['story',story,['The Last Page','Hollow','暮铃','逆响之主','startPrologue','onRegionEntered','onRegionDiscovery','!hasAllRegionPages(s)','ruinsNodes.includes(\'ruins_secret\')','playEnding','AES-GCM','catbond_cloud_key_v1','expectedRevision']],
+ ['story',story,['The Last Page','Hollow','暮铃','逆响之主','startPrologue','onRegionEntered','onRegionDiscovery','!hasAllRegionPages(s)','ruinsNodes.includes(\'ruins_secret\')','playEnding','showMulingQuestions','onBossPhase','showMulingCombatChoice','rescueChoice','person_not_memory','mulingAnswers','AES-GCM','catbond_cloud_key_v1','expectedRevision']],
  ['map landmarks',painted,['storyLandmarks(c,w,h,id,r)',"id==='home'","id==='sakura'","id==='creek'","id==='volcano'","id==='ruins'"]],
  ['world map story hooks',worldmap,['onRegionEntered?.(id)','onRegionDiscovery?.(world.region.id,reward)','npcs: window.CatBondNPC','window.CatBondNPC?.draw?.(ctx,npc,w.t)','window.CatBondNPC.talk(npc.id)']],
  ['final boss',game,['this.battle.storyBoss=!!opts.storyBoss','new Battle.CaptureBattle(this, team, wildSpecies, opts)','if(b.storyBoss)','onBossVictory']],
@@ -36,7 +36,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=story-choices-cloud-slots-20261124-v3','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=']],
+ ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=story-choices-cloud-slots-20261124-v4','js/game.js?v=last-page-boss-three-phase-20261124-v1','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -94,4 +94,6 @@ assert.equal(response.status,400,'malformed encrypted payloads must be rejected'
 response=await catBondCloudSave(req('GET',token),{});
 assert.equal(response.status,503,'missing D1 binding must fail closed');
 
-console.log('Cat Bond The Last Page, five story landmarks, boss flow, encrypted cloud save and revision-conflict checks passed.');
+assert.ok(!story.includes('npcDeliver'),'NPCs must not use fetch-and-deliver quest loops');
+assert.ok(story.includes('showCreekRescueChoice')&&story.includes('showVolcanoAid'),'Creek memory choice must affect the Volcano support scene');
+console.log('Cat Bond The Last Page, character arcs, three boss phases, five story landmarks, encrypted cloud save and revision-conflict checks passed.');

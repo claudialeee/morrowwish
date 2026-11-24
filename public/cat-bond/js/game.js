@@ -597,7 +597,16 @@ class Game {
     }
     else if (this.scene === 'battle' && this.battle) {
       if(this.battleHelpOpen)return; // Pause while the player reads controls.
+      if(this._storyBossPause){this.updateBattleUI();return;}
       this.battle.update(dt);
+      if(this.battle.storyBoss&&!this.battle.done){
+        const phase=(this.battle.enemies||[]).reduce((n,e)=>Math.max(n,e.phase||0),0);
+        if(phase>(this._storyBossPhaseSeen||0)){
+          this._storyBossPhaseSeen=phase;this._storyBossPause=true;
+          const resume=()=>{this._storyBossPause=false;};
+          if(window.CatBondStory?.onBossPhase)window.CatBondStory.onBossPhase(phase,resume);else resume();
+        }
+      }
       this.updateBattleUI();
       if (this.battle.done) this.endBattle();
     }
@@ -938,6 +947,7 @@ class Game {
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
     this.battle = new Battle.CaptureBattle(this, team, wildSpecies, opts);
     this.battle.storyBoss=!!opts.storyBoss;
+    this._storyBossPhaseSeen=0;this._storyBossPause=false;
     // Persist the region BEFORE the arena changes this.scene to 'battle'.
     this.battle._analyticsRegion=this._returnScene==='map'
       ?(window.WorldMap?.currentRegion||'unknown'):'yard';
