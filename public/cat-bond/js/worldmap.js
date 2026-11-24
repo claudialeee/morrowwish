@@ -254,6 +254,7 @@
     buildRegion(id);
     mode = 'region';
     window.CatBondStory?.onRegionEntered?.(id);
+    window.CatBondNPC?.onRegionEntered?.(id);
     return true;
   }
 
@@ -473,6 +474,7 @@
       cam: { x: 0, y: 0 },
       target: null,
       spawns: spawns, nodes: nodes, decor: decor,
+      npcs: window.CatBondNPC?.forRegion?.(id)||[],
       grid: grid, visited: 0,
       portal: { x: WORLD_W * 0.08, y: WORLD_H * 0.5 },
       flash: 0,
@@ -665,6 +667,7 @@
     window.State.save();
     if (cbCollect) cbCollect(reward);
     window.CatBondStory?.onRegionDiscovery?.(world.region.id,reward);
+    window.CatBondNPC?.onDiscovery?.(world.region.id,reward);
   }
 
   // ================================================================
@@ -695,6 +698,12 @@
     // In a region, only the upper-left action returns to the courtyard.
     // Use the header exploration menu’s 世界目录 to change regions.
     if (world && inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
+    if(world&&window.CatBondNPC){
+      const wx=x+world.cam.x,wy=y+world.cam.y;
+      for(const npc of (world.npcs||[])){
+        if(Math.hypot(wx-npc.x,wy-npc.y)<72){window.CatBondNPC.talk(npc.id);return true;}
+      }
+    }
     return false;
   }
 
@@ -985,6 +994,9 @@
 
     // No duplicate back-to-map signpost in the scenery: the right-side
     // map directory is the single explicit region-switching control.
+
+    // Named residents inhabit each region as animated, full-body cats.
+    for(const npc of (w.npcs||[]))window.CatBondNPC?.draw?.(ctx,npc,w.t);
 
     // Small in-world chests, crystals and five unique secret relics.
     for(var j=0;j<w.nodes.length;j++){
