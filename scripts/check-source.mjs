@@ -97,8 +97,10 @@ if(!analyticsSource.includes('2026-11-22T08:00:00.000Z')||
    !analyticsSource.includes('ts>=?')||
    !dashboard.includes('const REPORT_FROM="2026-11-22T08:00:00.000Z"')||
    dashboard.includes('id="days"')||
-   !dashboard.includes('periodSince:'))
- throw new Error('Dashboard reporting must use the complete Nov 22 Pacific-time window');
+   dashboard.includes('periodSince:')||
+   dashboard.includes('统计起点：11/22 00:00')||
+   dashboard.includes('Since Nov 22, 2026, 12:00 AM PT'))
+ throw new Error('Dashboard must keep the fixed Pacific-time data window without showing its start date');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
 if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid"')||
