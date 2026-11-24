@@ -32,8 +32,9 @@ for(const locale of ['zh','en']){
 }
 console.log('Overall pageviews first, homepage views second; both zh/en KPI values and seven-game table preserved.');
 assert.ok(html.includes("const displayOrder=['cat-bond'"),'Game table must start with Cat Bond');
-assert.ok(html.includes('const trackedGames=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&x.visitFunnel&&Number(x.visitFunnel.pageviews)>0)'),
- 'aggregate conversion totals must include only games with funnel instrumentation');
+assert.ok(html.includes('const allGameRows=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&Number(x.pageviews)>0);')&&
+ html.includes('const trackedGames=allGameRows.filter(x=>x.visitFunnel&&Number(x.visitFunnel.pageviews)>0);'),
+ 'aggregate conversion totals must include only games with funnel instrumentation while pageview totals cover all visible games');
 assert.ok(html.includes('totalConv(trackedStarted,trackedVisits)')&&html.includes('totalConv(trackedFinished,trackedStarted)')&&html.includes('totalConv(trackedFinished,trackedVisits)'),
  'aggregate conversion rates must be weighted from summed page-visit counts, not averaged percentages');
 assert.ok(!html.includes('if(x.game==="hub")return'),'Homepage row must not appear in game table');
