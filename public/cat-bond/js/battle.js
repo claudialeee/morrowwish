@@ -5792,11 +5792,15 @@ class CaptureBattle {
     // engages (casts within ~1s) — so it nets a drowning masher without dulling an active pilot.
     // Casual + manual only; auto-mode and hardcore are untouched.
     if (f === this.me() && !this.autoMode && !this.coach && this.difficultyMode !== 'hardcore') {
+      // HP STATE is the primary peril signal (playtest P0: a facetanking masher gets bursted
+      // from full HP → the old idle-dominated guard gave most of its value when he was SAFE and
+      // little when he was dying). lowHp now drives the floor (ramps hard below 40% HP); a small
+      // idle term still rewards non-engagement, and it all decays the instant he casts/dodges.
       const sinceSkill = this.t - (this._lastSkillT || -99);
-      const idleRamp = Math.max(0, Math.min(1, (sinceSkill - 1) / 3));   // 0 within 1s of a skill → full by 4s idle
-      const lowHp = f.maxhp ? Math.max(0, Math.min(1, (0.30 - f.hp / f.maxhp) / 0.30)) : 0; // 0 above 30% → 1 at 0%
-      const guard = Math.min(0.40, idleRamp * 0.28 + lowHp * 0.18);      // cap 40% incoming reduction
-      if (guard > 0 && (f.inv || 0) <= 0) dmg *= (1 - guard);            // not while already in dodge i-frames
+      const idle = Math.max(0, Math.min(1, (sinceSkill - 1) / 3));                 // 0 within 1s of a skill → 1 by 4s
+      const lowHp = f.maxhp ? Math.max(0, Math.min(1, (0.40 - f.hp / f.maxhp) / 0.40)) : 0; // 0 above 40% HP → 1 at 0%
+      const guard = Math.min(0.45, lowHp * 0.38 + idle * 0.12);                    // cap 45%; low-HP is the main driver
+      if (guard > 0 && (f.inv || 0) <= 0) dmg *= (1 - guard);                      // not while already in dodge i-frames
     }
     // First-fight coach: a beginner can take hits to learn, but never dies during
     // the tutorial — damage is gentled and HP floored so the first fight is safe.
