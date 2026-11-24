@@ -642,12 +642,12 @@ async function syncNow(force=false){
  if(syncPromise){syncPending=true;return syncPromise;}
  syncPromise=(async()=>{
   const raw=localStorage.getItem(SAVE_KEY);
-  if(!raw)return {ok:false,empty:true};
   let payload=raw;
   try{
    const book=JSON.parse(localStorage.getItem(SLOT_KEY)||'null');
    if(book?.slots&&typeof book.slots==='object')payload=JSON.stringify({version:2,activeSlot:localStorage.getItem(ACTIVE_SLOT_KEY)||'slot1',slots:book.slots});
   }catch{}
+  if(!payload)return {ok:false,empty:true};
   const encrypted=await encrypt(payload,token);
   const expected=Number(localStorage.getItem(REV_KEY)||0);
   const response=await fetch('/api/cat-bond-cloud-save',{
@@ -700,7 +700,7 @@ function openSlotManager(){
    const date=slot.savedAt?new Date(slot.savedAt).toLocaleString():'';
    const label=slot.exists?slot.chapter:t('空存档位','Empty slot');
    const meta=slot.exists?t(slot.cats+' 只猫 · '+slot.fragments+'/6 段记忆 · '+date,slot.cats+' cats · '+slot.fragments+'/6 memories · '+date):t('尚未开始冒险','No adventure started');
-   return '<article class="cb-slot-manager-row"><div><strong>'+t('存档位 ','Slot ')+slot.number+(slot.id===current?' · '+t('当前','Active'):'')+'</strong><span>'+esc(label)+'</span><small>'+esc(meta)+'</small></div><div class="cb-slot-manager-actions"><button type="button" data-save="'+slot.id+'">'+t('保存到此处','Save here')+'</button><button type="button" data-load="'+slot.id+'" '+(slot.exists?'':'disabled')+'>'+t('读取','Load')+'</button></div></article>';
+   return '<article class="cb-slot-manager-row"><div><strong>'+t('存档位 ','Slot ')+slot.number+(slot.id===current?' · '+t('当前','Active'):'')+'</strong><span>'+esc(label)+'</span><small>'+esc(meta)+'</small></div><div class="cb-slot-manager-actions"><button type="button" data-save="'+slot.id+'">'+t('保存到此处','Save here')+'</button><button type="button" data-load="'+slot.id+'" '+(slot.exists?'':'disabled')+'>'+t('读取','Load')+'</button><button type="button" data-delete="'+slot.id+'" '+(slot.exists?'':'disabled')+'>'+t('删除','Delete')+'</button></div></article>';
   }).join('');
   list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.save,slot=window.State.listSaveSlots().find(x=>x.id===id);
@@ -711,6 +711,14 @@ function openSlotManager(){
    const id=btn.dataset.load;if(id===current){close();return;}
    if(!confirm(t('读取此存档将重新载入游戏。继续吗？','Loading this save will restart the game. Continue?')))return;
    window.State.save();window.State.setActiveSlot(id);location.reload();
+  });
+  list.querySelectorAll('[data-delete]').forEach(btn=>btn.onclick=()=>{
+   const id=btn.dataset.delete;
+   if(!confirm(t('永久删除这个存档？此操作无法撤销。','Permanently delete this save? This cannot be undone.')))return;
+   window.State.deleteSlot(id);
+   window.CatBondCloudSave?.queue?.();
+   if(id===current){close();location.reload();return;}
+   render();
   });
  }
  render();

@@ -68,7 +68,7 @@ window.addEventListener('DOMContentLoaded', () => {
         :(en?'Start a separate journey here':'在这里开启独立冒险');
       const action=mode==='new'?(slot.exists?(en?'Overwrite':'覆盖存档'):(en?'Start here':'在此开始')):(en?'Continue':'继续故事');
       const disabled=mode==='continue'&&!slot.exists;
-      return '<article class="cb-save-slot '+(slot.exists?'has-save':'empty-slot')+'"><div class="cb-save-slot-top"><span class="cb-save-slot-number">'+(en?'SLOT ':'存档位 ')+slot.number+'</span><span class="cb-save-slot-status">'+(slot.exists?(en?'SAVED':'已有进度'):(en?'EMPTY':'空位'))+'</span></div><strong class="cb-save-slot-chapter">'+label+'</strong><small class="cb-save-slot-meta">'+meta+'</small><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></article>';
+      return '<article class="cb-save-slot '+(slot.exists?'has-save':'empty-slot')+'"><div class="cb-save-slot-top"><span class="cb-save-slot-number">'+(en?'SLOT ':'存档位 ')+slot.number+'</span><span class="cb-save-slot-status">'+(slot.exists?(en?'SAVED':'已有进度'):(en?'EMPTY':'空位'))+'</span></div><strong class="cb-save-slot-chapter">'+label+'</strong><small class="cb-save-slot-meta">'+meta+'</small><div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button>'+(slot.exists?'<button type="button" data-delete-slot="'+slot.id+'">'+(en?'Delete':'删除')+'</button>':'')+'</div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
     slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
@@ -78,6 +78,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if(occupied&&!window.confirm(en?'This will replace this slot’s adventure. Continue?':'这会覆盖该存档位的原有冒险。确定继续吗？'))return;
         beginGame('new',id);
       }else beginGame('continue',id);
+    }));
+    slotList.querySelectorAll('[data-delete-slot]').forEach(button=>button.addEventListener('click',()=>{
+      const id=button.dataset.deleteSlot;
+      if(!window.confirm(en?'Delete this saved adventure permanently?':'确定永久删除这个存档吗？'))return;
+      State.deleteSlot(id);
+      window.CatBondCloudSave?.queue?.();
+      if(id===State.activeSlot()){closeSlots();location.reload();return;}
+      openSlots(slotMode);
     }));
   };
   const beginGame=(mode,slotId,afterPrologue=false)=>{

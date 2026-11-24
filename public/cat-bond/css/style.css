@@ -5288,3 +5288,11 @@ body.cb-exploring #stage #yard-actions{
 #intro{overflow-y:auto!important}
 #intro .intro-cat-gallery{display:grid;place-items:center;width:min(100%,420px);height:100%;margin:0 auto}
 #intro #intro-cats{transform:scale(1.7);transform-origin:center bottom}
+
+/* Save archive: separate the primary action from the explicit delete control. */
+.cb-save-slot-actions{display:flex;gap:8px;margin-top:auto}
+.cb-save-slot-actions button{flex:1;min-width:0;margin-top:0!important}
+.cb-save-slot-actions button[data-delete-slot]{flex:0 0 auto;padding-inline:12px;background:rgba(116,53,66,.82);border-color:#c98d98;color:#fff0ef}
+.cb-slot-manager-actions button[data-delete]{background:#713e4a;color:#fff0ef;border-color:#b77c87}
+.cb-slot-manager-actions button[data-delete]:disabled{opacity:.28}
+@media(max-width:560px){.cb-slot-manager-actions{grid-template-columns:1fr 1fr 1fr}}

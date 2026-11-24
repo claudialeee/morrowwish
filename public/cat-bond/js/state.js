@@ -4,6 +4,7 @@ const SAVE_KEY = 'catbond_save_v1';
 const SAVE_SLOTS_KEY = 'catbond_save_slots_v1';
 const ACTIVE_SLOT_KEY = 'catbond_active_slot_v1';
 const SAVE_SLOT_IDS = ['slot1','slot2','slot3'];
+let suppressSave = false;
 
 const DEFAULT_STATE = () => ({
   coins: 50,           // general currency (shop, buildings, skill learning, upgrades)
@@ -190,6 +191,7 @@ function migrateLegacySave() {
   return book;
 }
 function save() {
+  if (suppressSave) return;
   S.lastSeen = Date.now();
   try {
     const raw = JSON.stringify(S);
@@ -201,6 +203,7 @@ function save() {
   } catch (e) {}
 }
 function load(slotId) {
+  suppressSave = false;
   if (slotId) setActiveSlot(slotId);
   const id = activeSlot();
   const book = migrateLegacySave();
@@ -245,6 +248,7 @@ function listSaveSlots() {
 }
 function startNewGame(slotId) {
   if (!SAVE_SLOT_IDS.includes(slotId)) return false;
+  suppressSave = false;
   setActiveSlot(slotId);
   S = DEFAULT_STATE();
   save();
@@ -257,6 +261,7 @@ function loadSlot(slotId) {
 }
 function saveToSlot(slotId) {
   if (!SAVE_SLOT_IDS.includes(slotId)) return false;
+  suppressSave = false;
   setActiveSlot(slotId);
   save();
   return true;
@@ -267,12 +272,14 @@ function deleteSlot(slotId) {
   delete book.slots[slotId];
   writeSlots(book);
   if (slotId === activeSlot()) {
+    suppressSave = true;
     S = DEFAULT_STATE();
     try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
   }
   return true;
 }
 function hardReset() {
+  suppressSave = false;
   S = DEFAULT_STATE();
   save();
 }
