@@ -1,0 +1,29 @@
+name: Cat Bond Cloud Save Live Smoke
+
+on:
+  workflow_run:
+    workflows: ["Deploy Morrow Wish to Cloudflare Pages"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cat-bond-cloud-live-smoke
+  cancel-in-progress: false
+
+jobs:
+  cloud-save-live:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify real production Cloudflare D1 slot upload and download
+        run: node scripts/test-cat-bond-cloud-live.mjs

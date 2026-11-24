@@ -5386,3 +5386,41 @@ body.cb-exploring #stage #yard-actions{
  .cb-story-atmosphere,.cb-story-atmosphere:after{animation:none!important}
  .cb-story-actors canvas{will-change:auto}
 }
+
+
+/* Chat 2 — equal-weight title actions and readable three-slot metadata. */
+.cb-intro-actions{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,560px);gap:clamp(8px,1.5vw,14px)}
+.cb-intro-actions button{min-width:0;min-height:74px;padding:12px clamp(10px,1.8vw,18px)}
+.cb-intro-actions #intro-start,.cb-intro-actions #intro-continue{background:linear-gradient(145deg,#78617d,#4d496b 75%);border-color:#f2ddc588}
+.cb-intro-actions #intro-continue{background:linear-gradient(145deg,#78617d,#4d496b 75%)}
+.cb-intro-actions button strong{font-size:clamp(13px,1.35vw,17px);letter-spacing:.025em;white-space:normal}
+.cb-save-slot{min-width:0}
+.cb-save-slot-meta{min-height:44px;overflow-wrap:anywhere}
+.cb-save-slot-saved-at{display:block;min-height:28px;margin:5px 0 10px;color:#d5c2aa;font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.cb-save-slot.damaged-save{border-color:#c98d98;background:linear-gradient(160deg,#4a3545,#30283b)}
+.cb-save-slot.damaged-save .cb-save-slot-status{color:#ffb8bd}
+.cb-save-slot button:disabled{opacity:.42;cursor:not-allowed}
+.cb-slot-manager-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.cb-slot-manager-actions button{min-width:90px}
+.cb-slot-manager-actions button+button{background:#46516a;color:#f2e7dc;border-color:#9eabc0}
+.cb-cloud-code-row{display:flex;align-items:center;gap:8px;margin:12px 0;padding:10px;border:1px solid #b9a98d66;border-radius:10px;background:#fffaf0}
+.cb-cloud-code-row code{flex:1;min-width:0;color:#35483b;font:800 12px/1.5 ui-monospace,monospace;overflow-wrap:anywhere}
+.cb-cloud-code-row button,.cb-cloud-import button{flex:0 0 auto;border:1px solid #c7b28f;border-radius:8px;padding:9px 12px;background:#c6a77d;color:#29283a;font-weight:850;cursor:pointer}
+.cb-cloud-import{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:16px}
+.cb-cloud-import input{min-width:0;width:100%;border:1px solid #b5a78e;border-radius:9px;padding:10px 12px;background:#fffaf0;color:#35483b;font:600 12px ui-monospace,monospace}
+.cb-cloud-import-label{display:block;margin:14px 0 6px;color:#586a5b;font:800 11px/1.4 system-ui,sans-serif}
+@media(max-width:680px){
+ .cb-intro-actions{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,420px);gap:8px;margin-bottom:8px}
+ .cb-intro-actions button{display:grid;grid-template-columns:1fr;grid-template-rows:auto auto auto;gap:2px;min-height:76px;padding:8px 5px;text-align:center}
+ .cb-intro-actions button>span{grid-row:auto;font-size:20px}
+ .cb-intro-actions button strong{font-size:clamp(11px,3vw,14px);letter-spacing:0}
+ .cb-intro-actions button small{font-size:8px;letter-spacing:.08em}
+ .cb-save-slot-list{grid-template-columns:1fr;gap:9px}
+ .cb-save-slot{min-height:160px}
+ .cb-slot-manager-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cb-cloud-import{grid-template-columns:1fr}
+}
+@media(max-width:360px){
+ .cb-intro-actions button{min-height:72px;padding:7px 3px}
+ .cb-intro-actions button strong{font-size:11px}
+}

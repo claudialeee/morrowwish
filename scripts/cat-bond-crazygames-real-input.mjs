@@ -79,6 +79,16 @@ try{
       // The portal must show the same genuine Start Adventure screen as
       // the website, not silently place a first-time player in the yard.
       await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
+      const titleBounds=await page.evaluate(()=>{
+        const a=document.getElementById('intro-start').getBoundingClientRect(),b=document.getElementById('intro-continue').getBoundingClientRect();
+        return {a:a.toJSON(),b:b.toJSON(),hiddenSettings:getComputedStyle(document.getElementById('mw-game-settings')).display==='none'};
+      });
+      assert.ok(titleBounds.a.right+4<=titleBounds.b.left,'Title actions must be side by side without overlap');
+      assert.ok(Math.abs(titleBounds.a.width-titleBounds.b.width)<2,'Title actions must have equal width');
+      assert.equal(titleBounds.hiddenSettings,true,'Raw settings must not be on the title toolbar');
+      await page.locator('#cb-system-toggle').click();
+      await page.locator('#cb-system-menu [data-system="language"]').waitFor({state:'visible'});
+      await page.locator('#cb-system-menu [data-system="close"]').click();
       assert.equal(await page.locator('#intro').isVisible(),true,
         'CrazyGames must show Start Adventure on first load');
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
@@ -154,7 +164,7 @@ try{
       await checkEnglish(page,'yard',width);
       // The unified settings row must NEVER live inside a HUD hidden on the map
       // or during battle. This caught missing top-right controls in portal QA.
-      await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),false,'Settings must be inside the menu');
       await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
       assert.equal(await page.locator('#cg-top-tools #mw-game-settings button').count(),4,
         'CrazyGames top-right language/music/sound/share controls must survive scene changes');
@@ -248,7 +258,7 @@ try{
         'Garden tab buttons cannot appear during battle');
       assert.equal(await page.locator('#yard-actions').isVisible(),false,
         'Garden actions cannot appear during battle');
-      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),true,
+      assert.equal(await page.locator('#cb-system-toggle').isVisible(),true,
         'Language/audio/share utility toolbar must stay visible in battle');
       await checkEnglish(page,'battle',width);
       // CrazyGames owns the embedding viewport. No floating skill reference
@@ -279,7 +289,7 @@ try{
           charges:rect('#cg-battle-hud #cg-battle-charges'),
           ultimate:rect('#cg-battle-hud #ult-wrap'),
           duo:rect('#cg-battle-hud #duo-burst'),
-          tools:rect('#cg-top-tools #mw-game-settings'),
+          tools:rect('#cb-system-toggle'),
           portalMenu:rect('#cg-top-tools #map-menu')
         };
       });
@@ -438,7 +448,7 @@ try{
         const mapPanel=page.locator('#panel.open');
         if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
         await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
-        await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+        assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),false,'Settings must be inside the menu');
         await checkEnglish(page,'world-map',width);
         const dir='.check/crazygames-yard-dock';
         fs.mkdirSync(dir,{recursive:true});
@@ -449,21 +459,32 @@ try{
         await reset.waitFor({state:'visible',timeout:10000});
         assert.match(await reset.textContent(),/Reset game/i,
           'Both portal and main website menus must expose a subtle reset action');
-        // First click only arms a confirmation; do not erase by accident.
+        // First click only arms a safe restart; it must not erase game progress.
+        const saveProgress=()=>page.evaluate(()=>{
+          const book=JSON.parse(localStorage.getItem('catbond_save_slots_v1')||'{}');
+          const slots={};
+          for(const [id,record] of Object.entries(book.slots||{})){
+            const snapshot=record.data||{};
+            const state=JSON.parse(JSON.stringify(snapshot.state||snapshot));
+            delete state.lastSeen;delete state.playTimeMs;
+            slots[id]=state;
+          }
+          return slots;
+        });
+        const beforeReset=await saveProgress();
+        assert.ok(Object.keys(beforeReset).length>0,'At least one real save slot must exist before emergency reset');
         await reset.click();
-        assert.match(await reset.textContent(),/Erase Cat Bond progress/i);
+        assert.match(await reset.textContent(),/safe restart|keep all saves/i);
         assert.equal(await page.evaluate(()=>State.S.cats.length),2,
-          'First reset click must not delete owned cats');
-        // The second deliberate click wipes ONLY Cat Bond progress.
+          'First reset click must not alter the current run');
+        // The second deliberate click reloads transient game state but preserves all save slots.
         await page.evaluate(()=>localStorage.setItem('unrelated_game_qa_key','keep'));
         await reset.click();
         await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
-        const wiped=await page.evaluate(()=>({
-          cats:JSON.parse(localStorage.getItem('catbond_save_v1')||'{}').cats?.length,
-          unrelated:localStorage.getItem('unrelated_game_qa_key')
-        }));
-        assert.equal(wiped.cats,0,'Confirmed in-menu reset must clear Cat Bond cats');
-        assert.equal(wiped.unrelated,'keep','Reset must preserve unrelated games');
+        const afterReset=await saveProgress();
+        const unrelated=await page.evaluate(()=>localStorage.getItem('unrelated_game_qa_key'));
+        assert.deepEqual(afterReset,beforeReset,'Emergency reset must preserve all three save-slot progress snapshots');
+        assert.equal(unrelated,'keep','Reset must preserve unrelated games');
         await page.evaluate(()=>localStorage.removeItem('unrelated_game_qa_key'));
       }
       assert.deepEqual(errors,[],'Uncaught runtime errors: '+errors.join(' | '));
