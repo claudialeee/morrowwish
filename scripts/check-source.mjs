@@ -1437,7 +1437,7 @@ console.log('Sunlit Garden: original environment source, six sanctuary accents, 
 
 const gardenVisualTest=fs.readFileSync('scripts/sunlit-garden-visual-qa.mjs','utf8');
 const gardenVisualWorkflow=fs.readFileSync('.github/workflows/sunlit-garden-visual-qa.yml','utf8');
-new Function(gardenVisualTest.replace(/^import .*;$/gm,'').replace(/process\.exitCode=1/g,''));
+new Function('return async function(){'+gardenVisualTest.replace(/^import .*;$/gm,'')+'}');
 if(!gardenVisualTest.includes("background:'portrait'")||
    !gardenVisualTest.includes("background:'landscape'")||
    !gardenVisualTest.includes("['cats','facilities','catdex','workshop','bond']")||
