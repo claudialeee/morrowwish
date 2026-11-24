@@ -107,6 +107,8 @@ assert.ok(dashboard.includes("platform==='bluesky'?['likes','reposts','replies',
  'Bluesky cells must use interaction counts, never views');
 assert.ok(dashboard.includes('id="archived-first-round"')&&dashboard.includes('id="archived-first-round-rows"'),
  'deleted first-round metrics must have their own independent archive frame');
+for(const key of ['roundPosts','roundViews','roundLikes','roundComments','roundReposts','roundReplies','roundQuotes','roundCaptured'])
+ assert.equal((dashboard.match(new RegExp(key+':"','g'))||[]).length,2,key+' must have zh/en labels');
 assert.ok(dashboard.includes('id="archived-first-round-posts"'),
  'all 28 first-round post readings must be inspectable by game and platform');
 assert.ok(!dashboard.includes('roundHistoryFirst')&&!dashboard.includes('roundHistorySecond'),
