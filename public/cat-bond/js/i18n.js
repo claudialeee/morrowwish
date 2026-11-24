@@ -1811,6 +1811,7 @@
     "缓慢浮游的电球转向敌人，命中放出感电火花。": "A drifting ball of lightning turns toward enemies and sparks on impact.",
     "雷流喷射": "Lightning Stream",
     "猫咪短暂站定，持续吐出可转向的折线雷电。": "The cat stands briefly and channels steerable zigzag lightning.",
+    "猫咪站定后喷出一道粗壮的雷电光柱，左右横扫三趟，扫中持续感电。": "The cat plants and sprays a thick lightning column, sweeping left-right three times; sweeps keep targets shocked.",
     "雷鸣啸": "Thunder Yowl",
     "戏弄爪": "Playful Swipe",
     "居高临下": "High Ground",

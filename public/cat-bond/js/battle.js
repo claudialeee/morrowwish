@@ -3803,31 +3803,31 @@ class CaptureBattle {
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
+        // 雷流喷射 = a THICK swept lightning COLUMN (owner: "很粗的光柱，左右横扫"), not a thin fold.
+        // Width scales off the skill's b.width (34) so it reads as a beam, and it sweeps L↔R via b.aim
+        // (sweep/sweepPasses). Layers: a wide additive glow column + a bright core + a thin crackle
+        // seam for the electric identity.
+        const W0=b.width||34;
         ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
-        for(const [w,color,a] of [[12,'#4756ae',.37],[5,'#aecbff',.86],[2,'#fff1b4',.97]]){
-          ctx.lineWidth=w;ctx.strokeStyle=color;ctx.globalAlpha=a*k;ctx.beginPath();
-          ctx.moveTo(b._ox,b._oy);
-          const nx=b._ey-b._oy,ny=-(b._ex-b._ox),len=Math.hypot(nx,ny)||1;
-          for(let j=1;j<=13;j++){
-            const u=j/13,off=(Math.sin(j*31.7+Math.floor(this.t*24)*7.1))*9*(1-u*.4);
-            ctx.lineTo(b._ox+(b._ex-b._ox)*u+nx/len*off,
-              b._oy+(b._ey-b._oy)*u+ny/len*off);
-          }
-          ctx.stroke();
+        ctx.globalCompositeOperation='lighter';
+        // wide glow column → mid → core, all width-scaled
+        for(const [wf,color,a] of [[1.9,'#4756ae',.22],[1.0,'#7e9bff',.5],[0.5,'#d6e6ff',.85]]){
+          ctx.lineWidth=W0*wf;ctx.strokeStyle=color;ctx.globalAlpha=a*k;
+          ctx.beginPath();ctx.moveTo(b._ox,b._oy);ctx.lineTo(b._ex,b._ey);ctx.stroke();
         }
-        // Small forks peel away from the main electrical trunk; they remain
-        // subordinate to the actual attack line and never cover the screen.
-        const vx=b._ex-b._ox,vy=b._ey-b._oy,mag=Math.hypot(vx,vy)||1;
-        const px=-vy/mag,py=vx/mag;
-        ctx.strokeStyle='#fff4c2';ctx.lineWidth=1.5;ctx.globalAlpha=.66*k;
-        for(let j=2;j<=9;j+=3){
-          const u=j/12,sign=j%2?1:-1,
-            tx=b._ox+vx*u,ty=b._oy+vy*u;
-          ctx.beginPath();ctx.moveTo(tx,ty);
-          ctx.lineTo(tx+px*sign*12+vx/mag*5,ty+py*sign*12+vy/mag*5);
-          ctx.lineTo(tx+px*sign*21+vx/mag*10,ty+py*sign*21+vy/mag*10);
-          ctx.stroke();
+        // bright white-hot seam with a light electric waver down the centre of the column
+        ctx.globalCompositeOperation='source-over';
+        const nx=b._ey-b._oy,ny=-(b._ex-b._ox),len=Math.hypot(nx,ny)||1;
+        ctx.lineWidth=Math.max(2,W0*0.14);ctx.strokeStyle='#fff6c8';ctx.globalAlpha=.95*k;ctx.beginPath();
+        ctx.moveTo(b._ox,b._oy);
+        for(let j=1;j<=14;j++){
+          const u=j/14,off=(Math.sin(j*31.7+Math.floor(this.t*24)*7.1))*(W0*0.22)*(1-u*.4);
+          ctx.lineTo(b._ox+(b._ex-b._ox)*u+nx/len*off, b._oy+(b._ey-b._oy)*u+ny/len*off);
         }
+        ctx.stroke();
+        // muzzle flare at the caster
+        ctx.globalCompositeOperation='lighter';ctx.fillStyle='#eaf2ff';ctx.globalAlpha=.8*k;
+        ctx.beginPath();ctx.arc(b._ox,b._oy,W0*0.5,0,Math.PI*2);ctx.fill();
         b._ex=_ex0; b._ey=_ey0;                      // restore full-reach for damage tick
         ctx.restore();continue;
       }
