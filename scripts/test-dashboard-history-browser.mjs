@@ -88,8 +88,10 @@ try{
      'Sitewide pageviews must include homepage and all seven games');
    assert.equal(statValues[1],String(homepagePageviews),
      'Homepage pageviews must be displayed separately');
-   assert.equal(await page.locator('#archived-first-round').count(),0,
-     'Promotion round archive must not be rendered');
+   assert.equal(await page.locator('#archived-first-round').count(),1,
+     'Deleted first-round archive container must remain separate from current metrics');
+   assert.equal(await page.locator('#archived-first-round').isVisible(),false,
+     'Archive must stay hidden when the API has no deleted-round data');
    const visibleText=await page.locator('body').innerText();
    assert.ok(!/统计起点：11\/22 00:00|Since Nov 22, 2026, 12:00 AM PT/.test(visibleText),
      'Reporting start date must not be shown in the dashboard');
