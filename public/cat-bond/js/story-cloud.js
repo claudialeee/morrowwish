@@ -510,7 +510,7 @@ function renderCloudPanel(){
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
  overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
   '<p class="cb-cloud-eyebrow">CAT BOND · SAVE & LOAD</p><h2>'+t('云存档','Cloud save')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('游戏会自动保存进度。你也可以手动保存到云端，或读取最近一次云端存档。不需要恢复码或密钥。云档自动绑定当前浏览器。','Your game saves automatically. You can also save to the cloud or load your latest cloud save. No recovery codes or keys. This cloud slot is linked to this browser.')+'</p>'+
+  '<p class="cb-cloud-lead">'+t('云端会同步三个独立存档位。游戏同时在本机自动保存，也可在游戏菜单中手动保存或读取任意存档位。','Cloud sync keeps all three independent save slots. The game also autosaves locally; use the in-game Save Slots menu to save or load any slot manually.')+'</p>'+
   '<div class="cb-cloud-body"></div></section>';
  document.body.append(overlay);
  const body=overlay.querySelector('.cb-cloud-body');
@@ -678,6 +678,39 @@ async function copyText(value){
   document.body.append(input);input.select();document.execCommand('copy');input.remove();
  }
 }
+function openSlotManager(){
+ document.querySelector('.cb-slot-manager')?.remove();
+ const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-slot-manager';
+ overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+  '<p class="cb-cloud-eyebrow">THE LAST PAGE · SAVE ARCHIVE</p><h2>'+t('三个冒险存档位','Three adventure slots')+'</h2>'+
+  '<p class="cb-cloud-lead">'+t('手动保存会把当前进度写入所选位置；读取会重新载入游戏。','Save writes your current progress into the selected slot. Load restarts the game from that slot.')+'</p>'+
+  '<div class="cb-slot-manager-list"></div><p class="cb-cloud-footnote">'+t('自动保存始终写入当前选中的存档位。','Autosave always updates the currently active slot.')+'</p></section>';
+ document.body.append(overlay);
+ const close=()=>overlay.remove();
+ overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ const list=overlay.querySelector('.cb-slot-manager-list');
+ function render(){
+  const current=window.State.activeSlot();
+  list.innerHTML=window.State.listSaveSlots().map(slot=>{
+   const date=slot.savedAt?new Date(slot.savedAt).toLocaleString():'';
+   const label=slot.exists?slot.chapter:t('空存档位','Empty slot');
+   const meta=slot.exists?t(slot.cats+' 只猫 · '+slot.fragments+'/6 段记忆 · '+date,slot.cats+' cats · '+slot.fragments+'/6 memories · '+date):t('尚未开始冒险','No adventure started');
+   return '<article class="cb-slot-manager-row"><div><strong>'+t('存档位 ','Slot ')+slot.number+(slot.id===current?' · '+t('当前','Active'):'')+'</strong><span>'+esc(label)+'</span><small>'+esc(meta)+'</small></div><div class="cb-slot-manager-actions"><button type="button" data-save="'+slot.id+'">'+t('保存到此处','Save here')+'</button><button type="button" data-load="'+slot.id+'" '+(slot.exists?'':'disabled')+'>'+t('读取','Load')+'</button></div></article>';
+  }).join('');
+  list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=()=>{
+   const id=btn.dataset.save,slot=window.State.listSaveSlots().find(x=>x.id===id);
+   if(slot?.exists&&id!==current&&!confirm(t('覆盖这个存档位？','Overwrite this save slot?')))return;
+   window.State.saveToSlot(id);render();
+  });
+  list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
+   const id=btn.dataset.load;if(id===current){close();return;}
+   if(!confirm(t('读取此存档将重新载入游戏。继续吗？','Loading this save will restart the game. Continue?')))return;
+   window.State.save();window.State.setActiveSlot(id);location.reload();
+  });
+ }
+ render();
+}
 function openCloudPanel(){openCloudPanelImpl();}
 function openCloudPanelImpl(){
  if(!window.crypto?.subtle){alert(t('当前浏览器不支持加密云存档。','This browser does not support encrypted cloud saves.'));return;}
@@ -691,13 +724,14 @@ function syncExploreMenuActions(){
  if(!actions)return;
  for(const [action,icon,zh,en] of [
   ['journal','📖','故事手册','Story journal'],
+  ['slots','💾','存档管理','Save slots'],
   ['cloud','☁️','云存档','Cloud save']
  ]){
   let button=actions.querySelector('[data-cb-story-action="'+action+'"]');
   if(!button){
    button=document.createElement('button');button.type='button';
    button.dataset.cbStoryAction=action;
-   button.addEventListener('click',()=>action==='journal'?openJournal():openCloudPanelImpl());
+   button.addEventListener('click',()=>action==='journal'?openJournal():action==='slots'?openSlotManager():openCloudPanelImpl());
    actions.append(button);
   }
   button.innerHTML='<span aria-hidden="true">'+icon+'</span><span>'+t(zh,en)+'</span>';

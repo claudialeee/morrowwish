@@ -255,6 +255,12 @@ function loadSlot(slotId) {
   setActiveSlot(slotId);
   return load(slotId);
 }
+function saveToSlot(slotId) {
+  if (!SAVE_SLOT_IDS.includes(slotId)) return false;
+  setActiveSlot(slotId);
+  save();
+  return true;
+}
 function deleteSlot(slotId) {
   if (!SAVE_SLOT_IDS.includes(slotId)) return false;
   const book = migrateLegacySave();
@@ -398,7 +404,7 @@ window.State = {
   get S() { return S; },
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
-  listSaveSlots, startNewGame, loadSlot, deleteSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
+  listSaveSlots, startNewGame, loadSlot, saveToSlot, deleteSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
   healAllCats, useMedkitForHealth, useMedkitForTeam,

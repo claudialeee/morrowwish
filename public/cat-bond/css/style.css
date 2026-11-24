@@ -5268,3 +5268,16 @@ body.cb-exploring #stage #yard-actions{
 #intro.cb-rpg-intro #intro-cats{display:block;width:min(100%,420px);height:auto;max-height:100%;overflow:visible}
 .cb-intro-hero{overflow:visible}
 .cb-intro-footer #intro-breed-count{color:#e5cda8;font-weight:800}
+
+.cb-slot-manager-card{width:min(760px,100%)}
+.cb-slot-manager-list{display:grid;gap:9px;margin:18px 0}
+.cb-slot-manager-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid #9587a366;border-radius:12px;background:linear-gradient(120deg,#39394f,#292f44);color:#f2e7dc}
+.cb-slot-manager-row>div:first-child{display:grid;gap:4px;min-width:0}
+.cb-slot-manager-row strong{font-size:12px;color:#e8cba4}
+.cb-slot-manager-row span{font-size:14px;font-weight:800}
+.cb-slot-manager-row small{font-size:10px;color:#bcb4c4;line-height:1.4}
+.cb-slot-manager-actions{display:flex;gap:7px;flex:0 0 auto}
+.cb-slot-manager-actions button{border:1px solid #d9c2a888;border-radius:8px;padding:8px 11px;background:#c6a77d;color:#29283a;font-weight:850;cursor:pointer}
+.cb-slot-manager-actions button+button{background:#46516a;color:#f2e7dc;border-color:#9eabc0}
+.cb-slot-manager-actions button:disabled{opacity:.3;cursor:not-allowed}
+@media(max-width:560px){.cb-slot-manager-row{align-items:stretch;flex-direction:column}.cb-slot-manager-actions{display:grid;grid-template-columns:1fr 1fr}}
