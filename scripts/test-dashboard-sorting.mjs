@@ -160,6 +160,8 @@ for(const locale of ['zh','en']){
   t:k=>localized[k]??k,$:id=>(nodes[id]??={innerHTML:''})};
  vm.runInNewContext(allRender+';globalThis.drawAll=renderSignals;',env);
  env.drawAll([
+  {game:'pawsibly-innocent',pageviews:9,signals:{cat_room_1:11,cat_room_8:12,cat_escape:13,cat_caught:14,cat_close_call:15,cat_yarn_distracted:16}},
+  {game:'tiny-town',pageviews:9,signals:{town_combo_discovered:21,town_legendary_unlocked:22,town_neighbor_story:23,town_win:24,town_lose:25,town_replayed:26}},
   {game:'flip-dash',pageviews:6,signals:{flip_finished:5,flip_10s:3,flip_30s:2}},
   {game:'parcel-panic',pageviews:6,signals:{parcel_sorted:25,parcel_missed:4,parcel_ten_sorted:1}},
   {game:'pocket-aquarium',pageviews:6,signals:{feed_success:18,aquarium_completed:4,aquarium_grade_s:1,aquarium_grade_a:2}}
@@ -167,6 +169,10 @@ for(const locale of ['zh','en']){
  const out=nodes['focus-grid'].innerHTML;
  for(const id of sevenIds)
   assert.ok(out.includes('href="/'+id+'/"'),locale+' missing game-world card '+id);
+ for(const [game,expected] of [['pawsibly-innocent',[11,12,13,14,15,16]],['tiny-town',[21,22,23,24,25,26]]]){
+  const card=out.split('href="/'+game+'/"')[1]?.split('</article>')[0]||'';
+  for(const n of expected)assert.ok(card.includes('<b>'+n+'</b>'),locale+' erased historical metric '+game+'='+n);
+ }
  for(const [label,number] of [['flipRuns',5],['flip10',3],['flip30',2],
   ['parcelSorted',25],['parcelMissed',4],['parcel10',1],
   ['fishFed',18],['fishFinished',4],['fishGood',3]])
