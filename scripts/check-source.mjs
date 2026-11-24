@@ -340,7 +340,7 @@ if(!trackerSource.includes('const byChannel=')||!dashboard.includes('j.byChannel
 if(!dashboard.includes('id="channel-rows"') || !dashboard.includes('j.byChannel'))
  throw new Error('Promotion channel UI must retain source-attributed analytics');
 if(!dashboard.includes('id="focus-grid"'))throw new Error('Flagship performance metrics must be visible');
-console.log('Six game analytics cards, compact acquisition channels and actionable telemetry checked.');
+console.log('Seven game analytics cards, compact acquisition channels and actionable telemetry checked.');
 
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
 await import('./check-pawsibly.mjs');

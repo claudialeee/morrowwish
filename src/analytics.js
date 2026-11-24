@@ -348,7 +348,7 @@ export async function api(req,env){
     const byDay=x.dates.map(day=>{
       const visits=x.rows.filter(r=>r.game==="cat-bond"&&r.kind==="visit"&&
         localDay(Number(r.ts)||Date.parse(r.day+"T00:00:00Z"))===day);
-      const pageviews=uniq(visits.map(r=>r.view_id||r.visitor+"-"+r.day)).length;
+      const pageviews=uniq(visits.map(r=>r.view_id||r.visitor+"-"+r.day));
       return {day,pageviews,rawVisits:visits.length};
     });
     const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
