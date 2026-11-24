@@ -2,6 +2,7 @@
 // Uses the REAL battle canvas, original watercolor cats and the integrated
 // CatBondSkillFX hooks. One cast+contact screenshot per skill and device.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import {chromium} from 'playwright';
@@ -20,8 +21,7 @@ try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length>=40
      &&window.CatBondArtworkStatus?.breedsLoaded,null,{timeout:45000});
-   await page.locator('#intro-start').click();
-   await page.locator('#panel.open .dex-cell').first().click();
+   await startNewAdventure(page);
    const ids=await page.evaluate(()=>Array.from(CatBondSkillFX.ids));
    const expected=await page.evaluate(()=>Skills.SKILLS.filter(sk=>!sk.ultCost&&!sk.isBasic).map(sk=>sk.id));
    assert.ok(ids.length>=40,'At least 40 hand-authored normal VFX must remain');

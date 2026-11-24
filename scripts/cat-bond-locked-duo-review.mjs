@@ -1,5 +1,6 @@
 // REVIEW ONLY: players must never see unearned duo art, names, or spoilers.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
 try{
@@ -13,9 +14,8 @@ try{
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:8765/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>window.__game&&window.CatRelations&&window.UI);
-    const init=await page.evaluate(()=>{
-      document.getElementById('intro-start')?.click();
-      UI.closeAll();
+    await startNewAdventure(page);
+  const init=await page.evaluate(()=>{
       const a=State.makeCat('tangyuan'),b=State.makeCat('xiaohui');
       State.S.cats=[a,b];State.S.duoRelations={pairs:{},active:[]};
       window.CatRelations.choose(a,b);

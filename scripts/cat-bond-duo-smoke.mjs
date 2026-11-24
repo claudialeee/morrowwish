@@ -1,6 +1,7 @@
 // Real browser regression for duo personalities, kinetic claw art and
 // four-step pre-battle manual controls on both phone and desktop.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 fs.mkdirSync('artifacts/cat-bond-21x3',{recursive:true});
@@ -22,10 +23,8 @@ try{
   await page.waitForFunction(()=>!!window.__game&&!!window.CatBondDuoHero&&!!window.CatRelations&&!!window.State);
   await page.waitForFunction(()=>window.CatBondDuoHero?.assetReady&&
     window.CatBondDuoHero?.assetCount===21,{timeout:18000});
+  await startNewAdventure(page);
   const entry=await page.evaluate(()=>{
-   // Start through the real button and dismiss its starter chooser.
-   document.getElementById('intro-start').click();
-   window.UI.closeAll();
    const g=window.__game,State=window.State;
    const a=State.makeCat('tangyuan',{affinity:90});
    const b=State.makeCat('xiaohui',{affinity:90});

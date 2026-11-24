@@ -1,6 +1,7 @@
 // Cat Bond 2026 release regression: real artwork, English breed names,
 // useful yard buildings and first-region combat readiness.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
@@ -20,8 +21,7 @@ try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
    await page.waitForFunction(()=>window.__game&&window.World?.BUILDING_PRODUCTION&&
      window.CatBondDuoHero?.assetReady&&window.CatRelations,{timeout:25000});
-   await page.locator('#intro-start').click();
-   await page.locator('#panel.open .dex-cell').first().click();
+   await startNewAdventure(page);
    const result=await page.evaluate(()=>{
     const {S}=State,game=window.__game;
     const saved=window.MorrowwishI18n.get;

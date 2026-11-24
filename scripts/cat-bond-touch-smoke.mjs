@@ -49,8 +49,12 @@ try{
       const start=page.locator('#intro-start');
       assert.ok(await start.isVisible(),'Start button must be visible on phone');
       await start.tap();
+      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+      await page.locator('#intro-slot-list [data-slot="slot1"]').tap({timeout:10000});
       await page.waitForFunction(()=>document.getElementById('intro').classList.contains('hide'),{timeout:10000});
       await page.locator('#panel.open .dex-cell').first().tap({timeout:10000});
+      await page.locator('.cb-story-overlay.is-visible .cb-story-skip').tap({timeout:10000});
+      await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
       assert.equal(await page.evaluate(()=>window.State.S.cats.length),1,'Selecting a starter must work with a finger');
       assert.equal(await page.locator('#panel.open').count(),0,'Starter picker must close after selecting a cat');
       if (width === 390) {
@@ -232,7 +236,11 @@ try{
     const errors=[];lp.on('pageerror',e=>errors.push(e.message));
     await lp.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
     await lp.locator('#intro-start').tap();
+    await lp.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+    await lp.locator('#intro-slot-list [data-slot="slot1"]').tap();
     await lp.locator('#panel.open .dex-cell').first().tap();
+    await lp.locator('.cb-story-overlay.is-visible .cb-story-skip').tap();
+    await lp.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
     await lp.locator('#fab-map').tap();
     // Freeze random encounters only in this camera regression: a roaming
     // wild cat otherwise intermittently switches the test into battle.

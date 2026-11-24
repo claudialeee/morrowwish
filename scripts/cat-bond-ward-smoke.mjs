@@ -1,6 +1,7 @@
 // Live browser QA for paw-grounded ward geometry, drawn over real watercolor
 // combat cats (bubble, full protect, reflect). Phone + desktop; kitten + grown.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
@@ -16,8 +17,7 @@ try{
   try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>window.CatBondWardArt?.draw&&window.__game&&window.State?.makeCat);
-   await page.locator('#intro-start').click();
-   await page.locator('#panel.open .dex-cell').first().click();
+   await startNewAdventure(page);
    for(const ward of ['shieldT','protectT','reflectT'])for(const stage of [0,2]){
     const result=await page.evaluate(({ward,stage})=>{
       const g=window.__game;

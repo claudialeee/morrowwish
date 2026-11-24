@@ -1,6 +1,7 @@
 // Cat Bond regression: cohesive unlocked-only gallery, 13 memories, two
 // earnable map markers per region, atomic bulk shop and retired growth controls.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 const mapSource=fs.readFileSync('public/cat-bond/js/worldmap.js','utf8');
@@ -18,9 +19,8 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8765/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__game&&window.UI&&window.State&&window.CatRelations&&window.Growth);
+  await startNewAdventure(page);
   await page.evaluate(()=>{
-    document.getElementById('intro-start')?.click();
-    UI.closeAll();
     const a=State.makeCat('tangyuan'),b=State.makeCat('xiaohui');
     State.S.cats=[a,b];State.S.duoRelations={pairs:{},active:[]};
     State.S.coins=1200;State.S.fish=1200;

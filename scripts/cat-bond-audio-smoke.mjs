@@ -1,6 +1,7 @@
 // Confirm real short combat sounds, browser gesture unlock and global mute.
 // Checks desktop and touch device so audio doesn't silently fail on phones.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
 const base=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
@@ -14,7 +15,7 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/cat-bond/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.MorrowwishAudio?.effect&&!!window.__game);
-  await page.locator('#intro-start').click();
+  await startNewAdventure(page);
   const status=await page.evaluate(()=>{
    const a=window.MorrowwishAudio;
    if(!a.isEnabled())a.toggle(); // explicit test gesture grants permission

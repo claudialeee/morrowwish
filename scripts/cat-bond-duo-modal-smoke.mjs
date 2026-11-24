@@ -1,5 +1,6 @@
 // End-to-end regression for the exact unlocked duo modal players see.
 import assert from 'node:assert/strict';
+import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 fs.mkdirSync('artifacts/cat-bond-duo-modal',{recursive:true});
@@ -21,9 +22,8 @@ try{
   await page.waitForFunction(()=>!!window.__game&&!!window.UI&&!!window.CatRelations&&!!window.State&&!!window.CatBondDuoHero);
   await page.waitForFunction(()=>window.CatBondDuoHero?.assetReady&&
     window.CatBondDuoHero?.assetCount===21,{timeout:18000});
+  await startNewAdventure(page);
   const pair=await page.evaluate(()=>{
-   document.getElementById('intro-start')?.click();
-   window.UI.closeAll();
    const State=window.State;
    const a=State.makeCat('tangyuan',{affinity:90});
    const b=State.makeCat('xiaohui',{affinity:90});
