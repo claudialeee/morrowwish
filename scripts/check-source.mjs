@@ -1179,7 +1179,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbWorld.includes('const s=this._renderedYardScale||1.2')||
     !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
-    !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
+    !cbWorld.includes("ctx.filter='saturate(1.12) contrast(1.08)'")||
     !cbWorld.includes('this._renderedYardVisualScale=this._renderedYardScale*(growthForm?.scale||1)')||
     !/src="js\/world\.js\?v=[^"]+"/.test(yardIndex)||
     !/src="js\/game\.js\?v=[^"]+"/.test(yardIndex))
