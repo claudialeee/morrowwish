@@ -2126,6 +2126,23 @@
   // Consistent names for the new breed and legacy saved visits.
   Object.assign(DICT, {'圆宝':'Pudding', '加菲':'Pudding', '奶奶':'Snowball'});
   DICT["加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。"] = "Pudding is a plush Exotic Shorthair with round cheeks and a chubby belly. This brave kitten loves protecting friends.";
+    "序章 · 倒着响的铃": "PROLOGUE · A BELL IN REVERSE",
+    "第一章 · 空白页": "CHAPTER I · THE BLANK PAGE",
+    "第二章 · 旧约": "CHAPTER II · THE OLD PROMISE",
+    "第三章 · 失去的名字": "CHAPTER III · THE LOST NAME",
+    "第四章 · 最后的守铃者": "CHAPTER IV · THE LAST BELLKEEPER",
+    "第五章 · 逆响": "CHAPTER V · THE REVERSED BELL",
+    "终章 · 最后一页": "FINAL CHAPTER · THE LAST PAGE",
+    "前往阳光花园，找到纸鸢，追查那本没有名字的 Catdex。": "Go to Sunlit Garden, find Kite, and investigate the nameless Catdex.",
+    "前往樱花林，找出被改写的旧约。": "Go to Sakura Woods and uncover who rewrote the old promise.",
+    "前往溪谷，弄清你为何主动交出自己的名字。": "Go to Creek Valley and learn why you willingly gave your name away.",
+    "前往火山口，找出烬禾隐瞒的灾变真相。": "Go to the Volcano and uncover the catastrophe Jinhe concealed.",
+    "前往月影遗迹，查明六段旋律真正的用途。": "Go to Moonshadow Ruins and discover what the six melodies are truly for.",
+    "返回月影遗迹，面对暮铃，阻止逆响仪式。": "Return to Moonshadow Ruins, face Muling, and stop the reversed-bell ritual.",
+    "在月影遗迹寻找隐藏的星光匣，揭开最后一页。": "Find the hidden star box in Moonshadow Ruins and reveal the last page.",
+    "✦ 星铃之路 · 主线冒险": "✦ THE STAR BELL ATLAS · MAIN STORY",
+    "当前目标 · MAIN QUEST": "CURRENT OBJECTIVE · MAIN QUEST",
+    "段记忆": "MEMORIES",
   DICT['地图'] = 'Map'; // Prevent a stray Chinese map label on the English home screen.
   var KEYS = Object.keys(DICT).sort(function (a, b) { return b.length - a.length; });
   // Han ideographs + CJK symbols/punctuation + fullwidth forms.
