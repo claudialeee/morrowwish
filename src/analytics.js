@@ -57,7 +57,7 @@ function mainStats(x){
   const sum=(r,k)=>r.reduce((a,b)=>a+Math.max(0,Number(b.data[k])||0),0);
   const score=(part)=>{
     const visitsOf=part.filter(r=>r.kind==="visit"),sessionsOf=part.filter(r=>r.kind==="session");
-    const pageviews=uniq(visitsOf.map(pageVisitKey));
+    const pageviews=visitsOf.length;
     const times=sum(sessionsOf,"seconds"),signals={};
     const visitIds=new Set(visitsOf.map(r=>r.view_id).filter(Boolean));
     const viewsWith=(predicate)=>new Set(sessionsOf.filter(r=>predicate(r.data))
@@ -97,7 +97,7 @@ function mainStats(x){
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
-  const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(pageVisitKey)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
+  const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:v.length,visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
@@ -121,15 +121,17 @@ function mainStats(x){
   for(const r of visits){
     if(!eligible.has(r.game))continue;
     const id=pageVisitKey(r);
-    if(seenVisits.has(id))continue;
-    seenVisits.add(id);
     const d=r.data||{};
     const source=normalizeSource(tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct"));
     // Internal navigation is not an acquisition channel; new visits inherit
     // their first-party landing source through telemetry.js.
     if(source==="internal")continue;
-    if(!channels.has(source))channels.set(source,{source,views:0,startedViews:0,starts:0,ends:0,abandons:0,seconds:0});
-    const z=channels.get(source);z.views++;
+    if(!channels.has(source))channels.set(source,{source,pageviews:0,views:0,startedViews:0,starts:0,ends:0,abandons:0,seconds:0});
+    const z=channels.get(source);
+    z.pageviews++; // raw page-load count; refreshes/reopens are real pageviews
+    if(seenVisits.has(id))continue;
+    seenVisits.add(id);
+    z.views++; // distinct page visit, only for conversion denominators
     const events=sessionsByView.get(r.view_id)||[];
     if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
     z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
@@ -138,7 +140,7 @@ function mainStats(x){
     z.seconds+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.seconds)||0),0);
   }
   const byChannel=[...channels.values()].map(z=>({
-    source:z.source,pageviews:z.views,startedViews:z.startedViews,starts:z.starts,ends:z.ends,abandons:z.abandons,
+    source:z.source,pageviews:z.pageviews,startedViews:z.startedViews,starts:z.starts,ends:z.ends,abandons:z.abandons,
     startRate:pct(z.startedViews,z.views),
     seconds:z.seconds,avgSeconds:z.views?Math.round(z.seconds/z.views):0
   })).sort((a,b)=>b.pageviews-a.pageviews);
@@ -350,10 +352,10 @@ export async function api(req,env){
     const byDay=x.dates.map(day=>{
       const visits=x.rows.filter(r=>r.game==="cat-bond"&&r.kind==="visit"&&
         localDay(Number(r.ts)||Date.parse(r.day+"T00:00:00Z"))===day);
-      const pageviews=uniq(visits.map(pageVisitKey));;
+      const pageviews=visits.length;
       return {day,pageviews,rawVisits:visits.length};
     });
-    const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'visit-row:'||id)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
+    const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(*) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
     const history=(h.results||[])[0]||{};
     return json({game:"cat-bond",from:x.from,source:"full-d1-event-read",
       total:Number(f.pageviews)||0,

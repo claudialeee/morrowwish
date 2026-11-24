@@ -46,7 +46,7 @@ const DB={prepare(sql){
     const visits=rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit');
     const days=visits.map(r=>r.day).sort();
     return {results:[{firstDay:days[0]||null,lastDay:days.at(-1)||null,rawVisits:visits.length,
-     pageviews:new Set(visits.map(r=>r.view_id||'visit-row:'+r.id)).size}]};
+     pageviews:visits.length}]};
    }
    assert.match(sql,/SELECT category,day,game/);
    return {results:rows.filter(r=>r.category===args[0]&&r.day>=args[1]).sort((a,b)=>b.id-a.id)};
@@ -88,6 +88,9 @@ for(const g of ['flip-dash','parcel-panic']){
   assert.equal(response.status,202,g+' abandoned-run write');
  }
 }
+// A refresh/reopen can produce another visit row with the same view_id.
+const originalBondVisit=rows.find(x=>x.game==='cat-bond'&&x.kind==='visit');
+rows.push({...originalBondVisit,id:rows.length+1});
 // Duplicate delivery of the same incremental session must not inflate counts.
 const oldSession=rows.find(x=>x.game==='cat-bond'&&x.kind==='session');
 rows.push({...oldSession,id:rows.length+1});
@@ -145,10 +148,10 @@ for(let i=0;i<2;i++)rows.push({id:rows.length+1,category:'arcade',day:'2026-11-2
 const mixedResponse=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{
  headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 const mixed=(await mixedResponse.json()).byGame.find(g=>g.game==='cat-bond');
-assert.equal(mixed.pageviews,4,'Every page load counts, including legacy visits without view IDs');
+assert.equal(mixed.pageviews,5,'Every raw page load counts, including refreshes and legacy visits without view IDs');
 assert.equal(mixed.starts,5,'Preserve five raw battle starts across two visits');
 assert.equal(mixed.ends,4,'Preserve four raw battle finishes across two visits');
-assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[4,2,2],
+assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[5,2,2],
   'Battle rounds count once per matched page load; unlinked legacy page loads remain in the denominator');
 assert.equal(mixed.conversion.pageviews,1,'Legacy PV excluded from V2 funnel');
 assert.equal(mixed.conversion.finishedViews,1,'Legacy finish excluded from V2 funnel');
@@ -161,13 +164,13 @@ const auditResponse=await api(new Request('https://morrowwish.pages.dev/api/cat-
 assert.equal(auditResponse.status,200,'Owner D1 audit should succeed');
 const audit=await auditResponse.json();
 assert.equal(audit.source,'full-d1-event-read');
-assert.equal(audit.total,4,'Full D1 audit counts every page load');
-assert.deepEqual(audit.totals,{pageviews:4,startedViews:2,finishedViews:2},
+assert.equal(audit.total,5,'Full D1 audit counts every raw page load');
+assert.deepEqual(audit.totals,{pageviews:5,startedViews:2,finishedViews:2},
  'Uncapped D1 visit funnel counts each visit at most once');
-assert.equal(audit.history.pageviews,4,'Stored lifetime count must include legacy page loads');
-assert.equal(audit.byDay.reduce((n,r)=>n+r.pageviews,0),4,'Daily counts must reconcile');
+assert.equal(audit.history.pageviews,5,'Stored lifetime count must include refreshes and legacy page loads');
+assert.equal(audit.byDay.reduce((n,r)=>n+r.pageviews,0),5,'Daily raw pageview counts must reconcile');
 
-assert.equal(summary.byChannel.find(x=>x.source==='itch')?.pageviews,1,'legacy itchio visit must appear in itch channel');
+assert.equal(summary.byChannel.find(x=>x.source==='itch')?.pageviews,2,'itch channel counts both original load and refresh');
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.starts,1,'legacy itchio start must appear in itch channel');
 assert.equal(summary.itch?.pageviews,1,'itch game rollup includes historic itchio campaign visit');
 assert.equal(summary.itch?.starts,1,'itch game rollup includes historic itchio start');
