@@ -803,6 +803,117 @@ window.addEventListener('DOMContentLoaded',installIntro,{once:true});
 window.addEventListener('morrowwish-language-change',updateTracker);
 window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(false);});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(false);});
+
+const NPC_CAST=[
+ {id:'kite',region:'home',name:'纸鸢',en:'Kite',role:'Catdex 记录员',roleEn:'Catdex Keeper',species:'xiaohui',x:480,y:650,accent:'#d9b7c1',
+  intro:['你醒了。书上说今天会有人回来。','我没有说是你——是 Catdex 自己翻到了这一页。','如果你想知道过去，先帮我找回旧院子的毛线盒。'],
+  introEn:['You are awake. The book said someone would return today.','I did not say it was you. The Catdex turned to this page by itself.','If you want answers, help me find the old yarn box first.'],
+  quest:'找回旧院子的毛线盒',questEn:'Recover the old garden yarn box',done:'盒底刻着星铃的记号。你以前把它交给一个最信任的人。',doneEn:'The Star Bell mark is carved beneath it. You once gave it to someone you trusted most.'},
+ {id:'feizhi',region:'sakura',name:'绯枝',en:'Feizhi',role:'神社守签人',roleEn:'Shrine Keeper',species:'yinghua',x:520,y:650,accent:'#efadc4',
+  intro:['这支签文每天都会变。我怀疑有人在改写过去。','别担心，我不是要你相信预言。我只想知道是谁在撒谎。','替我找回被风吹走的许愿信吧。'],
+  introEn:['This fortune changes every day. I think someone is rewriting the past.','Do not worry. I am not asking you to believe in prophecy. I want to know who is lying.','Please find the wish note the wind carried away.'],
+  quest:'找回樱花许愿信',questEn:'Recover the shrine wish note',done:'最后一行写着：愿那个没能回家的孩子，也有人等。',doneEn:'The last line reads: may someone be waiting for the child who never made it home.'},
+ {id:'duchuan',region:'creek',name:'渡川',en:'Duchuan',role:'溪谷摆渡人',roleEn:'Creek Ferryman',species:'lanbao',x:500,y:650,accent:'#8fc8d9',
+  intro:['河水会带走东西，也会把东西还回来。','你的名字没有被偷走。你自己把它交给了河。','找到那枚蓝贝壳，我再告诉你为什么。'],
+  introEn:['The river takes things away. Sometimes it brings them back.','Your name was not stolen. You gave it to the river.','Find the blue shell, and I will tell you why.'],
+  quest:'找回溪谷蓝贝壳',questEn:'Recover the blue creek shell',done:'星铃需要一个锚。你不肯让那只小猫成为锚，所以交出了自己的名字。',doneEn:'The Star Bell needed an anchor. You would not let that kitten become it, so you gave up your own name.'},
+ {id:'jinhe',region:'volcano',name:'烬禾',en:'Jinhe',role:'余烬守望者',roleEn:'Ember Warden',species:'senlin',x:540,y:650,accent:'#e7a16f',
+  intro:['别靠近裂缝。这里的火不是从山里烧出来的。','灾变那天，我看见你走进了星铃。','把暖光石带回来，我会告诉你我为什么没拦住你。'],
+  introEn:['Stay away from the fissure. This fire did not come from the mountain.','On the day of the catastrophe, I saw you walk into the Star Bell.','Bring back the ember stone. I will tell you why I did not stop you.'],
+  quest:'找回火山暖光石',questEn:'Recover the warm ember stone',done:'你让我保护其他猫，不要告诉暮铃真相。我遵守了约定，却让它独自误解了你。',doneEn:'You asked me to protect the others and keep the truth from Muling. I kept my promise, and left them alone with the wrong story.'},
+ {id:'xingce',region:'ruins',name:'星簿',en:'Star Scribe',role:'遗迹解读者',roleEn:'Ruins Archivist',species:'yuelian',x:520,y:650,accent:'#b8a5df',
+  intro:['你终于走到这里。六段旋律已经快要齐了。','它们不是钥匙，而是有人拿来拼凑你的记忆。','找到星光匣。之后，我会把隐瞒的一切告诉你。'],
+  introEn:['You finally made it here. The six melodies are almost complete.','They are not keys. Someone is using them to assemble your memories.','Find the star box. Then I will tell you everything I kept from you.'],
+  quest:'找回月影星光匣',questEn:'Recover the Moonshadow star box',done:'暮铃知道仪式无法真正复活你。它还是继续了。悲伤解释了它的选择，却不能替它开脱。',doneEn:'Muling knows the ritual cannot truly bring you back. It continued anyway. Grief explains the choice; it does not excuse it.'}
+];
+function npcRoot(){
+ const s=state();if(!s)return null;
+ if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},quests:{},completed:0};
+ s.npcStory.talked||={};s.npcStory.quests||={};return s.npcStory;
+}
+function npcLocale(npc,key){const en=!isZh();return en?(npc[key+'En']||npc[key]):npc[key];}
+function npcState(npc){
+ const root=npcRoot();if(!root)return {accepted:false,found:false,done:false};
+ if(!root.quests[npc.id])root.quests[npc.id]={accepted:false,found:false,done:false};
+ return root.quests[npc.id];
+}
+function npcSave(){save();window.__game?.refreshHUD?.();}
+function npcTalk(id){
+ const npc=NPC_CAST.find(n=>n.id===id);if(!npc)return;
+ const root=npcRoot();if(!root)return;
+ const q=npcState(npc),en=!isZh();
+ const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
+ const name=en?npc.en:npc.name,role=en?npc.roleEn:npc.role;
+ const status=q.done?(en?'Request complete':'委托已完成'):q.found?(en?'Ready to report':'可以交付'):q.accepted?(en?'In progress':'进行中'):(en?'New request':'新委托');
+ const lines=!root.talked[id]?(en?npc.introEn:npc.intro):[
+  q.done?(en?npc.doneEn:npc.done):q.found?(en?'You found what I was looking for. Will you hand it over?':'你找到了我要的东西。愿意交给我吗？'):q.accepted?(en?'The request is still open. Return when you find the clue.':'委托还在等你。找到线索后再回来。'):(en?'Could you help me recover something that was lost?':'你愿意帮我找回一件遗失的东西吗？')
+ ];
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEETING ON THE ROAD':'旅途中的相遇')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ document.body.append(overlay);
+ const card=overlay.querySelector('.cb-npc-dialog-card'),close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
+ const rerender=()=>{close();npcTalk(id);};
+ window.addEventListener('morrowwish-language-change',rerender);
+ overlay.querySelector('.cb-cloud-close').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ card.querySelector('h2').textContent=name;card.querySelector('small').textContent=role;card.querySelector('span').textContent=status;
+ card.querySelector('.cb-npc-dialog-line').textContent=lines.join('\n\n');
+ const species=window.GameData?.speciesById?.(npc.species);
+ if(species&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(card.querySelector('canvas'),species);
+ const actions=card.querySelector('.cb-cloud-actions');
+ const add=(label,fn,primary=false)=>{const b=document.createElement('button');b.type='button';b.className=primary?'cb-cloud-primary':'cb-cloud-secondary';b.textContent=label;b.onclick=fn;actions.append(b);};
+ if(!root.talked[id]){
+  root.talked[id]=true;npcSave();
+  if(q.found)add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
+  else add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
+ }else if(q.found&&!q.done){
+  add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
+ }else if(!q.accepted&&!q.done){
+  add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
+ }else if(q.done){
+  add(en?'Ask about the Star Bell':'询问星铃',()=>{close();npcLore(npc);},true);
+ }
+ add(en?'Leave':'离开',close,false);
+}
+function npcLore(npc){
+ const en=!isZh(),overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEMORY SHARED':'一段被分享的记忆')+'</p><h2>'+ (en?npc.en:npc.name)+'</h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"><button class="cb-cloud-primary">'+(en?'Close':'关闭')+'</button></div></section>';
+ document.body.append(overlay);overlay.querySelector('.cb-npc-dialog-line').textContent=en?npc.doneEn:npc.done;overlay.querySelector('button').onclick=()=>overlay.remove();
+}
+function npcDeliver(npc,close){
+ const q=npcState(npc);if(!q.found||q.done){close();return;}
+ q.done=true;const root=npcRoot();root.completed=(root.completed||0)+1;
+ state().coins=(state().coins||0)+45;state().fish=(state().fish||0)+2;npcSave();
+ window.arcadeMetric?.('bond_npc_quest_complete',{npc:npc.id,region:npc.region});
+ close();npcLore(npc);
+}
+function npcEntered(region){
+ const npc=NPC_CAST.find(n=>n.region===region);if(!npc||npcRoot()?.talked?.[npc.id])return;
+ window.__game?.toast?.({zh:'发现旅途中的居民：'+npc.name+'。靠近后点击它交谈。',en:'A local resident is nearby: '+npc.en+'. Walk close and tap to talk.'});
+}
+function npcFound(region,reward){
+ const npc=NPC_CAST.find(n=>n.region===region);if(!npc||reward?.discovery?.id!==region)return;
+ const q=npcState(npc);q.found=true;npcSave();
+ if(q.accepted&&!q.done)window.__game?.toast?.({zh:'找到了「'+npc.quest+'」！回去找 '+npc.name+' 交付委托。',en:'Found '+npc.questEn+'! Return to '+npc.en+' to complete the request.'});
+}
+function npcDraw(ctx,npc,time){
+ const sp=window.GameData?.speciesById?.(npc.species);if(!sp)return;
+ const bob=Math.sin(time*1.8+npc.x)*2;
+ ctx.save();ctx.fillStyle='rgba(25,31,37,.22)';ctx.beginPath();ctx.ellipse(npc.x,npc.y+18,28,8,0,0,Math.PI*2);ctx.fill();
+ const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
+ if(draw)draw(ctx,npc.x,npc.y+bob,{species:sp,scale:.92,face:1,t:time,pose:'idle',motion:.08,mood:'happy'});
+ ctx.fillStyle='rgba(24,29,39,.82)';ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+ const label=isZh()?npc.name:npc.en,ww=Math.max(54,ctx.measureText(label).width+18);
+ ctx.beginPath();ctx.roundRect(npc.x-ww/2,npc.y-88+bob,ww,23,10);ctx.fill();
+ ctx.fillStyle='#fff7e8';ctx.fillText(label,npc.x,npc.y-76+bob);
+ const q=npcState(npc),mark=q.done?'✓':q.found?'!':q.accepted?'?':'✦';
+ ctx.fillStyle=q.done?'#d8edcf':'#ffe8ae';ctx.beginPath();ctx.arc(npc.x+30,npc.y-82+bob,10,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#465345';ctx.font='900 11px system-ui';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
+ ctx.restore();
+}
+window.CatBondNPC={
+ forRegion:id=>NPC_CAST.filter(n=>n.region===id),
+ talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
+};
+
 window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
  onBossVictory,playEnding,updateTracker
