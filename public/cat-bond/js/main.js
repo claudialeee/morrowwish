@@ -14,7 +14,7 @@ window.addEventListener('DOMContentLoaded', () => {
   window.__game = game;
   UI.init(game);
 
-  // A shared two-click reset for both the intro and the in-game Menu.
+  // Emergency reset remains available only in the in-game Menu.
   // Reset State BEFORE reloading: pagehide/beforeunload auto-save otherwise
   // recreates the old save immediately after localStorage.removeItem().
   // Other Morrow Wish game saves and the language preference are untouched.
@@ -44,67 +44,85 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   };
   window.CatBondBindResetButton=bindResetButton;
-  bindResetButton(document.getElementById('intro-reset'));
 
-  // Bind Start before any optional decorations, so mobile GPU issues cannot block play.
+  // The intro is a real save-slot gateway: new adventure and continue are separate actions.
   let starting=false;
-  const startGame = () => {
+  const slotPanel=document.getElementById('intro-slot-panel');
+  const slotList=document.getElementById('intro-slot-list');
+  const slotHeading=document.getElementById('intro-slot-heading');
+  let slotMode='continue';
+  const closeSlots=()=>{slotPanel?.classList.remove('is-open');slotPanel?.setAttribute('aria-hidden','true');};
+  const openSlots=mode=>{
+    slotMode=mode;
+    if(!slotPanel||!slotList)return;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    slotHeading.textContent=mode==='new'?(en?'Choose a slot for a new adventure':'选择一个存档位，开始新的冒险'):(en?'Choose a story to continue':'选择要继续的故事');
+    const slots=State.listSaveSlots();
+    slotList.innerHTML=slots.map(slot=>{
+      const date=slot.exists&&slot.savedAt?new Date(slot.savedAt).toLocaleString():'';
+      const label=slot.exists
+        ?(en?'Chapter: '+({ '第一章 · 空白页':'I · The Blank Page','第二章 · 旧约':'II · The Old Promise','第三章 · 失去的名字':'III · The Lost Name','第四章 · 最后的守铃者':'IV · The Last Bellkeeper','第五章 · 逆响':'V · The Reversed Bell','终章 · 最后一页':'Final Chapter · The Last Page','序章 · 倒着响的铃':'Prologue · A Bell in Reverse'}[slot.chapter]||slot.chapter):'章节：'+slot.chapter)
+        :(en?'Empty slot':'空存档位');
+      const meta=slot.exists
+        ?(en?slot.cats+' cats · '+slot.fragments+'/6 memories · '+date:slot.cats+' 只猫 · '+slot.fragments+'/6 段记忆 · '+date)
+        :(en?'Start a separate journey here':'在这里开启独立冒险');
+      const action=mode==='new'?(slot.exists?(en?'Overwrite':'覆盖存档'):(en?'Start here':'在此开始')):(en?'Continue':'继续故事');
+      const disabled=mode==='continue'&&!slot.exists;
+      return '<article class="cb-save-slot '+(slot.exists?'has-save':'empty-slot')+'"><div class="cb-save-slot-top"><span class="cb-save-slot-number">'+(en?'SLOT ':'存档位 ')+slot.number+'</span><span class="cb-save-slot-status">'+(slot.exists?(en?'SAVED':'已有进度'):(en?'EMPTY':'空位'))+'</span></div><strong class="cb-save-slot-chapter">'+label+'</strong><small class="cb-save-slot-meta">'+meta+'</small><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></article>';
+    }).join('');
+    slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
+    slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
+      const id=button.dataset.slot;
+      if(slotMode==='new'){
+        const occupied=State.listSaveSlots().find(s=>s.id===id)?.exists;
+        if(occupied&&!window.confirm(en?'This will replace this slot’s adventure. Continue?':'这会覆盖该存档位的原有冒险。确定继续吗？'))return;
+        beginGame('new',id);
+      }else beginGame('continue',id);
+    }));
+  };
+  const beginGame=(mode,slotId)=>{
     if(starting)return;
     starting=true;
-    try {
+    try{
+      if(mode==='new')State.startNewGame(slotId);
+      else if(!State.loadSlot(slotId))throw new Error('Save slot is empty');
       game.start();
+      closeSlots();
       document.getElementById('intro').classList.add('hide');
       window.__CAT_BOND_STARTED__=true;
-      window.arcadeMetric?.('bond_entered');
-    } catch(error) {
+      window.arcadeMetric?.('bond_entered',{mode,slot:slotId});
+    }catch(error){
       starting=false;
       console.error('Cat Bond start failed',error);
       const hint=document.getElementById('start-error');
       if(hint){hint.hidden=false;hint.textContent=(window.MorrowwishI18n?.get?.()==='zh'?'游戏启动失败，请刷新页面重试：':'Game failed to start. Please refresh: ')+(error?.message||'');}
       return;
     }
-    if (window.Raising) Raising.init();
-
-    // Any time the player has no cats (fresh start OR a save that ended up empty),
-    // offer the starter picker — otherwise the yard stays empty and battles are impossible.
-    if (State.S.cats.length === 0) {
-      UI.openStarter(id => {
-        const starter = State.makeCat(id, { affinity: 20 });
-        if (window.Raising) Raising.decorateNewCat(starter);
-        State.S.cats.push(starter);
-        State.S.dex[id] = (State.S.dex[id] || 0) + 1;
-        State.save();
-        game.rebuildYard();
-        game.refreshHUD();
+    if(window.Raising)Raising.init();
+    if(mode==='new'||State.S.cats.length===0){
+      UI.openStarter(id=>{
+        const starter=State.makeCat(id,{affinity:20});
+        if(window.Raising)Raising.decorateNewCat(starter);
+        State.S.cats.push(starter);State.S.dex[id]=(State.S.dex[id]||0)+1;
+        State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
-        // Start the RPG in the overworld. The garden remains available as an
-        // optional sanctuary for raising, decorating and relaxing between quests.
-        game.openWorldMap();
-        game.refreshFirstQuest?.();
       });
-    } else {
-      // returning player: offline raising report (replaces State.applyIdle)
-      const report = window.Raising ? Raising.applyOffline(Date.now()) : State.applyIdle();
-      game.rebuildYard();
-      game.refreshHUD();
-      game.openWorldMap();
-      // Only greet with the welcome-back report if something actually accumulated
-      // (workshop output, auto-gains, or a visitor). Don't pop an empty "collect"
-      // modal when there's nothing to collect.
-      const has = o => o && Object.values(o).some(v => v > 0);
-      const worthShowing = report && report.minutes >= 1 &&
-        (has(report.produced) || has(report.gains) || (report.visitors && report.visitors.length));
-      if (worthShowing) {
-        setTimeout(() => UI.openWelcomeBack(report), 400);
-      }
+    }else{
+      const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
+      game.rebuildYard();game.refreshHUD();game.openWorldMap();
+      const has=o=>o&&Object.values(o).some(v=>v>0);
+      const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
+      if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
     }
   };
-
-  document.getElementById('intro-start').addEventListener('click', startGame);
-  // Keep the original Start Adventure intro in portal previews, too.
-  // The host opens inside the game but should not silently bypass onboarding.
-  if(window.CatBondPlatform?.crazygames)
-    document.getElementById('cb-home')?.remove();
+  document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
+  document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
+  document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
+  slotPanel?.addEventListener('click',event=>{if(event.target===slotPanel)closeSlots();});
+  window.addEventListener('morrowwish-language-change',()=>{
+    if(slotPanel?.classList.contains('is-open'))openSlots(slotMode);
+  });
+  bindResetButton(document.getElementById('intro-reset'));
   try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
   try { paintIntroCatGallery(); } catch(error) { console.warn('Cat gallery unavailable',error); }
   window.__CAT_BOND_READY__=true;

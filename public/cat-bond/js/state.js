@@ -1,6 +1,9 @@
 // state.js — persistent game state, save/load, and raising/economy logic.
 
 const SAVE_KEY = 'catbond_save_v1';
+const SAVE_SLOTS_KEY = 'catbond_save_slots_v1';
+const ACTIVE_SLOT_KEY = 'catbond_active_slot_v1';
+const SAVE_SLOT_IDS = ['slot1','slot2','slot3'];
 
 const DEFAULT_STATE = () => ({
   coins: 50,           // general currency (shop, buildings, skill learning, upgrades)
@@ -149,26 +152,67 @@ function bondTier(cat) {
   return 0;
 }
 
-// --- persistence ---
-function save() {
-  S.lastSeen = Date.now();
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
+// --- three-slot persistence (legacy single-save migration is automatic) ---
+function readSlots() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SAVE_SLOTS_KEY) || 'null');
+    if (parsed && parsed.version === 1 && parsed.slots && typeof parsed.slots === 'object') return parsed;
+  } catch (e) {}
+  return { version: 1, slots: {} };
 }
-function load() {
+function writeSlots(book) {
+  try { localStorage.setItem(SAVE_SLOTS_KEY, JSON.stringify(book)); return true; }
+  catch (e) { return false; }
+}
+function activeSlot() {
+  const id = localStorage.getItem(ACTIVE_SLOT_KEY);
+  return SAVE_SLOT_IDS.includes(id) ? id : 'slot1';
+}
+function setActiveSlot(id) {
+  if (!SAVE_SLOT_IDS.includes(id)) return false;
+  try { localStorage.setItem(ACTIVE_SLOT_KEY, id); } catch (e) {}
+  return true;
+}
+function migrateLegacySave() {
+  const book = readSlots();
+  if (SAVE_SLOT_IDS.some(id => book.slots[id]?.data)) return book;
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
+      const legacy = JSON.parse(raw);
+      if (legacy && typeof legacy === 'object' && Array.isArray(legacy.cats)) {
+        book.slots.slot1 = { data: legacy, savedAt: Number(legacy.lastSeen) || Date.now(), migrated: true };
+        writeSlots(book);
+        setActiveSlot('slot1');
+      }
+    }
+  } catch (e) {}
+  return book;
+}
+function save() {
+  S.lastSeen = Date.now();
+  try {
+    const raw = JSON.stringify(S);
+    localStorage.setItem(SAVE_KEY, raw);
+    const book = migrateLegacySave();
+    const id = activeSlot();
+    book.slots[id] = { data: S, savedAt: S.lastSeen };
+    writeSlots(book);
+  } catch (e) {}
+}
+function load(slotId) {
+  if (slotId) setActiveSlot(slotId);
+  const id = activeSlot();
+  const book = migrateLegacySave();
+  const entry = book.slots[id];
+  try {
+    const raw = entry?.data ? JSON.stringify(entry.data) : (id === 'slot1' ? localStorage.getItem(SAVE_KEY) : null);
+    if (raw) {
       S = Object.assign(DEFAULT_STATE(), JSON.parse(raw));
-      // Currency migration (4 resources → 2): fold the retired 小鱼干 treats into
-      // 🐠 fish and the retired 🧶 yarn into 🪙 coins, ONCE per old key. Guarding on
-      // key presence (and deleting afterwards) keeps repeated load()s idempotent so
-      // balances never double-count. Legacy yarn lived both at the top level and
-      // under raising.yarn — fold and clear both.
+      // Currency migration (4 resources → 2): fold retired resources into current balances once.
       if ('treats' in S) { S.fish = (S.fish || 0) + (S.treats || 0); delete S.treats; }
       if ('yarn' in S) { S.coins = (S.coins || 0) + (S.yarn || 0); delete S.yarn; }
       if (S.raising && 'yarn' in S.raising) { S.coins = (S.coins || 0) + (S.raising.yarn || 0); delete S.raising.yarn; }
-      // Migrate older saves: every cat must carry a learned-skills list and a
-      // per-cat win counter so the gated skill-learning system never sees undefined.
       if (Array.isArray(S.cats)) for (const c of S.cats) {
         if (!Array.isArray(c.learned)) c.learned = [];
         if (typeof c.battlesWon !== 'number') c.battlesWon = 0;
@@ -176,10 +220,56 @@ function load() {
       return true;
     }
   } catch (e) {}
+  S = DEFAULT_STATE();
   return false;
 }
-function hardReset() { S = DEFAULT_STATE(); save(); }
-
+function listSaveSlots() {
+  const book = migrateLegacySave();
+  return SAVE_SLOT_IDS.map((id, index) => {
+    const entry = book.slots[id];
+    const data = entry?.data;
+    const story = data?.story || {};
+    const fragments = Array.isArray(story.fragments) ? story.fragments.length : 0;
+    const regionCount = Object.values(data?.worldmap?.regions || {}).filter(r => Number(r?.explored) > 0).length;
+    const chapter = fragments >= 6 ? '终章 · 最后一页' : fragments >= 5 ? '第五章 · 逆响' :
+      fragments >= 4 ? '第四章 · 最后的守铃者' : fragments >= 3 ? '第三章 · 失去的名字' :
+      fragments >= 2 ? '第二章 · 旧约' : fragments >= 1 ? '第一章 · 空白页' :
+      (data?.cats?.length ? '序章 · 倒着响的铃' : '尚未开始');
+    return {
+      id, number: index + 1, exists: !!data, savedAt: Number(entry?.savedAt || data?.lastSeen || 0),
+      cats: Array.isArray(data?.cats) ? data.cats.length : 0,
+      coins: Number(data?.coins || 0), chapter, fragments, regionCount,
+      active: id === activeSlot()
+    };
+  });
+}
+function startNewGame(slotId) {
+  if (!SAVE_SLOT_IDS.includes(slotId)) return false;
+  setActiveSlot(slotId);
+  S = DEFAULT_STATE();
+  save();
+  return true;
+}
+function loadSlot(slotId) {
+  if (!SAVE_SLOT_IDS.includes(slotId)) return false;
+  setActiveSlot(slotId);
+  return load(slotId);
+}
+function deleteSlot(slotId) {
+  if (!SAVE_SLOT_IDS.includes(slotId)) return false;
+  const book = migrateLegacySave();
+  delete book.slots[slotId];
+  writeSlots(book);
+  if (slotId === activeSlot()) {
+    S = DEFAULT_STATE();
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  }
+  return true;
+}
+function hardReset() {
+  S = DEFAULT_STATE();
+  save();
+}
 // Expedition health: casual battles always restore everyone to full HP.
 // Hardcore wounds heal automatically in real time (including while offline):
 // 100% over five minutes, no button or timer required.
@@ -308,6 +398,7 @@ window.State = {
   get S() { return S; },
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
+  listSaveSlots, startNewGame, loadSlot, deleteSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
   healAllCats, useMedkitForHealth, useMedkitForTeam,

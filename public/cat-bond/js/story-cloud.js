@@ -3,6 +3,8 @@
 (()=>{
 'use strict';
 const SAVE_KEY='catbond_save_v1';
+const SLOT_KEY='catbond_save_slots_v1';
+const ACTIVE_SLOT_KEY='catbond_active_slot_v1';
 const CLOUD_KEY='catbond_cloud_key_v1';
 const REV_KEY='catbond_cloud_revision_v1';
 const SYNC_KEY='catbond_cloud_synced_at_v1';
@@ -605,9 +607,20 @@ async function restoreWithToken(token){
  const remote=await fetchCloud(token);
  const raw=await decrypt(remote,token);
  const parsed=JSON.parse(raw);
- if(!parsed||typeof parsed!=='object'||!Array.isArray(parsed.cats))
+ if(!parsed||typeof parsed!=='object'||(!Array.isArray(parsed.cats)&&!(parsed.version===2&&parsed.slots&&typeof parsed.slots==='object')))
   throw Error(t('云存档内容无效，未覆盖本机存档。','Cloud save is invalid; local progress was not changed.'));
- localStorage.setItem(SAVE_KEY,raw);
+ if(parsed.version===2&&parsed.slots){
+  localStorage.setItem(SLOT_KEY,JSON.stringify({version:1,slots:parsed.slots}));
+  const active=Object.prototype.hasOwnProperty.call(parsed.slots,parsed.activeSlot)?parsed.activeSlot:'slot1';
+  localStorage.setItem(ACTIVE_SLOT_KEY,active);
+  const activeData=parsed.slots[active]?.data;
+  if(activeData)localStorage.setItem(SAVE_KEY,JSON.stringify(activeData));
+  else localStorage.removeItem(SAVE_KEY);
+ }else{
+  localStorage.setItem(SAVE_KEY,raw);
+  localStorage.setItem(SLOT_KEY,JSON.stringify({version:1,slots:{slot1:{data:parsed,savedAt:parsed.lastSeen||Date.now()}}}));
+  localStorage.setItem(ACTIVE_SLOT_KEY,'slot1');
+ }
  localStorage.setItem(CLOUD_KEY,token);
  localStorage.removeItem(CLOUD_PAUSE_KEY);
  localStorage.setItem(REV_KEY,String(remote.revision||0));
@@ -707,18 +720,7 @@ function installIntro(){
  const cloudButton=document.getElementById('intro-cloud-save');
  const updateCloudLabel=()=>{if(cloudButton)cloudButton.textContent=t('☁️ 云存档','☁️ Cloud save');};
  updateCloudLabel();window.addEventListener('morrowwish-language-change',updateCloudLabel);
- const start=document.getElementById('intro-start');
- if(start&&!start.dataset.cbStoryBound){
-  start.dataset.cbStoryBound='1';
-  let bypass=false;
-  start.addEventListener('click',event=>{
-   if(bypass||readLocal().story?.introSeen)return;
-   event.preventDefault();event.stopImmediatePropagation();
-   startPrologue(()=>{
-    bypass=true;start.click();bypass=false;
-   });
-  },true);
- }
+ // The prologue is launched only after the player chooses a new slot; continuing a save never replays it.
  document.getElementById('intro-cloud-save')?.addEventListener('click',openCloudPanelImpl);
  const stage=document.getElementById('stage');
  if(stage&&!document.getElementById('cb-story-tracker')){

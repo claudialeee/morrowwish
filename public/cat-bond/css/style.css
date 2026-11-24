@@ -5189,3 +5189,75 @@ body.cb-exploring #stage #yard-actions{
 .cb-npc-dialog-head span{display:inline-block;margin-top:8px;padding:4px 9px;border-radius:99px;background:#eaf0e4;color:#58705c;font:750 10px/1.4 system-ui}
 .cb-npc-dialog-line{min-height:90px;white-space:pre-line;color:#435548;font:600 14px/1.85 system-ui,"Noto Sans SC",sans-serif}
 @media(max-width:480px){.cb-npc-dialog-head{grid-template-columns:78px 1fr;gap:11px}.cb-npc-dialog-head canvas{width:78px;height:78px}.cb-npc-dialog-head h2{font-size:21px}.cb-npc-dialog-line{font-size:13px;line-height:1.75}}
+
+/* THE LAST PAGE — cinematic RPG title screen + independent save archive */
+#intro.cb-rpg-intro{isolation:isolate;display:grid;grid-template-rows:auto auto 1fr auto auto;align-content:stretch;justify-items:center;gap:0;padding:clamp(20px,4vh,48px) 24px 18px;overflow:hidden;color:#f8f0e6;background:radial-gradient(ellipse at 50% 35%,#604c72 0%,#2a223f 43%,#151727 100%);text-align:center}
+#intro.cb-rpg-intro:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(10,11,24,.12),transparent 34%,rgba(10,11,24,.3)),radial-gradient(ellipse at 50% 100%,rgba(216,160,125,.18),transparent 56%)}
+#intro.cb-rpg-intro>#intro-stars{z-index:1;opacity:.7}
+.cb-intro-sky{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.cb-intro-moon{position:absolute;width:clamp(110px,18vw,230px);aspect-ratio:1;border-radius:50%;top:9%;left:calc(50% - clamp(55px,9vw,115px));background:radial-gradient(circle at 35% 32%,#fff6dc,#e8cda9 58%,#9c7f91 100%);box-shadow:0 0 55px #eac9b755,0 0 150px #d5b7e322;opacity:.85;animation:cbMoonBreath 8s ease-in-out infinite}
+.cb-intro-bell{position:absolute;top:19%;left:50%;width:clamp(34px,5vw,58px);height:clamp(42px,6vw,68px);transform:translateX(-50%);border:1px solid #f5dfb6aa;border-radius:48% 48% 42% 42%;box-shadow:0 0 26px #f6d6a988,inset 0 0 18px #f6d6a933;opacity:.65;animation:cbBellFloat 6s ease-in-out infinite}
+.cb-intro-bell:after{content:"";position:absolute;left:50%;bottom:-9px;width:1px;height:22px;background:#e9d3b8aa}
+.cb-intro-horizon{position:absolute;left:-10%;right:-10%;bottom:-30%;height:62%;border-radius:50% 50% 0 0;background:radial-gradient(ellipse at 50% 0%,#77718b 0%,#38364f 42%,#1b2034 75%);box-shadow:0 -30px 100px #e0bba522}
+.cb-intro-brand{position:relative;z-index:2;display:flex;flex-direction:column;gap:4px;letter-spacing:.34em;font-size:12px;font-weight:900;color:#e9d5bc}
+.cb-intro-brand i{font-style:normal;font-size:8px;letter-spacing:.42em;color:#b8a9bd}
+.cb-intro-titleblock{position:relative;z-index:2;margin-top:clamp(12px,3vh,34px)}
+.cb-intro-eyebrow{margin:0 0 10px!important;padding:0!important;background:none!important;color:#dfc4b6!important;font-size:10px;letter-spacing:.28em;font-weight:800}
+#intro.cb-rpg-intro .game-logo{font-family:Georgia,"Noto Serif CJK SC","Songti SC",serif;font-size:clamp(42px,7vw,76px);letter-spacing:.12em;line-height:1.12;color:#f5e8d7;text-shadow:0 4px 24px #090a1a,0 0 48px #e3c6d655;animation:cbTitleReveal 1.4s cubic-bezier(.2,.8,.2,1)}
+#intro.cb-rpg-intro .game-logo:after{display:none}
+#intro.cb-rpg-intro .game-logo .logo-en{font-family:Georgia,serif;font-size:clamp(12px,1.6vw,17px);letter-spacing:.62em;margin-top:13px;color:#d7bfae}
+.cb-intro-tagline{margin:18px 0 0!important;padding:0!important;background:none!important;color:#e5d6d0!important;font-family:Georgia,"Noto Serif CJK SC",serif;font-size:clamp(14px,1.8vw,18px);font-weight:500;letter-spacing:.12em}
+.cb-intro-hero{position:relative;z-index:1;align-self:center;display:grid;place-items:center;width:min(38vh,300px);min-height:clamp(100px,21vh,220px);margin:-2vh auto 0;pointer-events:none}
+.cb-intro-ring{position:absolute;width:72%;aspect-ratio:1;border:1px solid #ead7c266;border-radius:50%;box-shadow:0 0 30px #d6b7d522,inset 0 0 30px #d6b7d511;animation:cbRingTurn 28s linear infinite}
+.cb-intro-ring:before,.cb-intro-ring:after{content:"";position:absolute;inset:9%;border:1px solid #d9c5b744;border-radius:50%;transform:rotate(35deg) scaleX(.68)}
+.cb-intro-ring:after{transform:rotate(-35deg) scaleX(.68)}
+.cb-intro-cat-silhouette{position:relative;font-size:clamp(72px,11vh,112px);filter:drop-shadow(0 14px 22px #090b1b99);animation:cbCatFloat 4.8s ease-in-out infinite}
+.cb-intro-orbit{position:absolute;inset:0;display:grid;place-items:center;color:#f0d7a9aa;font-size:18px;letter-spacing:2em;animation:cbRingTurn 34s linear infinite}
+.cb-intro-actions{position:relative;z-index:3;display:grid;grid-template-columns:repeat(2,minmax(210px,280px));gap:16px;width:min(100%,580px);margin:0 auto 12px}
+.cb-intro-actions button{position:relative;display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto;align-items:center;text-align:left;gap:2px 10px;min-height:72px;padding:13px 18px;border-radius:15px;border:1px solid #f2ddc588;color:#f7eadb;background:linear-gradient(145deg,#78617d,#4d496b 75%);box-shadow:0 10px 26px #090b1c66,inset 0 1px 0 #fff5;cursor:pointer;transition:transform .18s,border-color .18s,filter .18s}
+.cb-intro-actions button:hover{transform:translateY(-3px);border-color:#f7dfbb;filter:brightness(1.12)}
+.cb-intro-actions button:active{transform:translateY(0)}
+.cb-intro-actions button>span{grid-row:1/3;display:grid;place-items:center;font-size:25px;color:#f3d8a8}
+.cb-intro-actions button strong{font-size:17px;letter-spacing:.06em}
+.cb-intro-actions button small{font-size:9px;letter-spacing:.22em;color:#e1c9bd}
+.cb-intro-actions #intro-continue{background:linear-gradient(145deg,#555b73,#343d59 78%)}
+.cb-intro-footer{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:20px;color:#c3b5c6;font-size:10px;letter-spacing:.08em}
+.cb-intro-footer button{border:0;background:none;color:#e1cbb8;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+#intro-slot-panel{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px;background:#090b18d9;backdrop-filter:blur(14px);overflow:auto}
+#intro-slot-panel.is-open{display:flex;animation:cbPanelIn .2s ease-out}
+.cb-save-picker-card{position:relative;width:min(850px,100%);max-height:100%;overflow:auto;padding:clamp(22px,4vw,38px);border:1px solid #d7c1aa77;border-radius:20px;background:linear-gradient(145deg,#29283f,#1b2033);box-shadow:0 24px 90px #0009;text-align:left}
+.cb-save-picker-close{position:absolute;right:16px;top:12px;border:0;background:none;color:#e9d9c9;font-size:30px;cursor:pointer}
+.cb-save-picker-kicker{margin:0 0 7px;color:#d4b88f;font-size:9px;letter-spacing:.28em}
+.cb-save-picker-card h2{margin:0;color:#f5e9da;font-family:Georgia,"Noto Serif CJK SC",serif;font-size:clamp(22px,4vw,30px)}
+.cb-save-picker-desc{margin:8px 0 22px;color:#bdb5c6;font-size:12px}
+.cb-save-slot-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.cb-save-slot{display:flex;flex-direction:column;min-height:190px;padding:15px;border:1px solid #8f829c66;border-radius:14px;background:linear-gradient(160deg,#45435c,#292f45);color:#eee2d5}
+.cb-save-slot.empty-slot{background:linear-gradient(160deg,#33384b,#252c40);border-style:dashed}
+.cb-save-slot-top{display:flex;justify-content:space-between;align-items:center;gap:5px;margin-bottom:20px}
+.cb-save-slot-number{font-size:10px;letter-spacing:.18em;color:#e6cda9;font-weight:900}
+.cb-save-slot-status{font-size:9px;color:#b9c8bd}
+.cb-save-slot-chapter{font-size:14px;line-height:1.5;color:#f4e8dc}
+.cb-save-slot-meta{min-height:34px;margin-top:8px;color:#b9b3c2;font-size:10px;line-height:1.5}
+.cb-save-slot button{margin-top:auto;min-height:38px;border:1px solid #d9c2a888;border-radius:9px;background:#c6a77d;color:#29283a;font-weight:900;cursor:pointer}
+.cb-save-slot button:disabled{opacity:.3;cursor:not-allowed}
+#intro.cb-rpg-intro #start-error{z-index:5;color:#ffb8b8;background:#2a1720;padding:8px 12px;border-radius:8px}
+@keyframes cbMoonBreath{0%,100%{transform:scale(1);opacity:.78}50%{transform:scale(1.04);opacity:.96}}
+@keyframes cbBellFloat{0%,100%{translate:0 0;rotate:-3deg}50%{translate:0 -8px;rotate:3deg}}
+@keyframes cbCatFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}
+@keyframes cbRingTurn{to{transform:rotate(360deg)}}
+@keyframes cbTitleReveal{from{opacity:0;filter:blur(9px);transform:translateY(15px);letter-spacing:.28em}to{opacity:1;filter:blur(0);transform:none;letter-spacing:.12em}}
+@keyframes cbPanelIn{from{opacity:0}to{opacity:1}}
+@media(max-width:680px){
+ #intro.cb-rpg-intro{padding:max(20px,env(safe-area-inset-top)) 16px max(15px,env(safe-area-inset-bottom));grid-template-rows:auto auto 1fr auto auto}
+ .cb-intro-titleblock{margin-top:5vh}
+ .cb-intro-hero{width:180px;min-height:clamp(80px,17vh,140px);margin-top:0}
+ .cb-intro-actions{grid-template-columns:1fr;gap:9px;width:min(100%,420px);margin-bottom:10px}
+ .cb-intro-actions button{min-height:61px;padding:9px 15px}
+ .cb-intro-actions button strong{font-size:15px}
+ .cb-intro-footer{flex-direction:column;gap:5px;font-size:9px}
+ .cb-save-slot-list{grid-template-columns:1fr;gap:9px}
+ .cb-save-slot{min-height:140px}
+ .cb-save-slot-top{margin-bottom:8px}
+ .cb-save-picker-card{padding:23px 16px}
+}
+@media(prefers-reduced-motion:reduce){#intro.cb-rpg-intro *{animation:none!important;transition:none!important}}
