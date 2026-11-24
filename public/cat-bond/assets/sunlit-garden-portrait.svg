@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1600" viewBox="0 0 900 1600" role="img" aria-label="Sunlit Garden portrait fantasy environment">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#92b7c7"/><stop offset=".42" stop-color="#d9d6c2"/><stop offset="1" stop-color="#e7cda6"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff1c5" stop-opacity=".9"/><stop offset=".5" stop-color="#ffe2a5" stop-opacity=".35"/><stop offset="1" stop-color="#ffe2a5" stop-opacity="0"/></radialGradient>
+ <linearGradient id="ridge" x2="0" y2="1"><stop stop-color="#829b91"/><stop offset="1" stop-color="#486a5b"/></linearGradient>
+ <linearGradient id="grass" x2="0" y2="1"><stop stop-color="#78946d"/><stop offset=".55" stop-color="#526e50"/><stop offset="1" stop-color="#334e41"/></linearGradient>
+ <linearGradient id="stone" x2="0" y2="1"><stop stop-color="#d3c4a8"/><stop offset="1" stop-color="#8b907d"/></linearGradient>
+ <linearGradient id="roof" x2="0" y2="1"><stop stop-color="#617477"/><stop offset="1" stop-color="#2e4548"/></linearGradient>
+ <linearGradient id="path" x2="0" y2="1"><stop stop-color="#c2b394"/><stop offset="1" stop-color="#766f60"/></linearGradient>
+ <linearGradient id="water" x2="0" y2="1"><stop stop-color="#a0c2b7"/><stop offset=".5" stop-color="#5a8985"/><stop offset="1" stop-color="#2d5258"/></linearGradient>
+ <linearGradient id="glass" x2="0" y2="1"><stop stop-color="#d8e6d4" stop-opacity=".8"/><stop offset="1" stop-color="#62887c" stop-opacity=".7"/></linearGradient>
+ <linearGradient id="leaf" x2="1" y2="1"><stop stop-color="#9aab7c"/><stop offset=".6" stop-color="#56795c"/><stop offset="1" stop-color="#315548"/></linearGradient>
+ <radialGradient id="lamp"><stop stop-color="#fff0b7"/><stop offset=".5" stop-color="#e9bb73"/><stop offset="1" stop-color="#e9bb73" stop-opacity="0"/></radialGradient>
+ <pattern id="grain" width="34" height="31" patternUnits="userSpaceOnUse"><circle cx="5" cy="7" r="1" fill="#fff" opacity=".15"/><path d="M18 22l5-2" stroke="#203b33" opacity=".12"/><circle cx="29" cy="5" r=".8" fill="#fff3d7" opacity=".2"/></pattern>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="900" height="1600" fill="url(#sky)"/>
+<ellipse cx="690" cy="170" rx="280" ry="250" fill="url(#sun)"/><circle cx="690" cy="170" r="57" fill="#fff1c9" opacity=".56"/>
+<path d="M0 420L80 320 160 390 270 265 360 375 470 295 560 385 680 275 790 380 900 305V760H0Z" fill="url(#ridge)"/>
+<g fill="#e0e5d6" opacity=".45"><path d="M240 325l38-44 31 38-20-6-12 12-12-10-12 10Z"/><path d="M650 335l46-52 37 47-24-8-13 15-15-11-14 12Z"/></g>
+<path d="M0 510Q100 430 210 492T420 478Q550 420 650 485T900 480V1600H0Z" fill="#486a55"/>
+<g fill="#355747"><path d="M0 540q24-110 65-124 42 18 62 124Z"/><path d="M100 540q28-123 72-135 46 20 65 135Z"/><path d="M690 540q32-118 76-129 47 18 66 129Z"/></g>
+<path d="M0 590Q140 540 280 588T560 580Q720 535 900 580V1600H0Z" fill="url(#grass)"/>
+<rect y="540" width="900" height="1060" fill="url(#grain)" opacity=".7"/>
+<!-- old tree -->
+<path d="M90 720Q125 580 110 450Q94 340 30 280Q110 318 165 395Q174 280 238 200Q214 330 229 445Q300 345 382 330Q308 425 285 510Q375 480 430 525Q320 548 272 620Q245 700 270 770Z" fill="#493f31" stroke="#9b8968" stroke-width="12"/>
+<g fill="url(#leaf)" stroke="#304f43" stroke-width="5"><path d="M0 365Q0 230 102 190Q140 94 245 125Q318 72 395 152Q475 150 493 245Q522 332 431 394Q340 442 260 398Q170 455 90 410Q20 430 0 365Z"/><path d="M130 220Q165 120 254 145Q326 91 398 170Q453 180 460 265Q438 345 354 343Q275 394 207 330Q138 340 130 220Z" fill="#6e8a66"/></g>
+<g fill="#b2b58a" opacity=".7"><circle cx="50" cy="290" r="13"/><circle cx="125" cy="175" r="12"/><circle cx="225" cy="128" r="14"/><circle cx="320" cy="145" r="15"/><circle cx="425" cy="255" r="13"/><circle cx="350" cy="340" r="12"/></g>
+<g stroke="#c4a36a" fill="none" stroke-width="4"><path d="M210 260v74m-26-44h52m-26 44-14 20m14-20 14 20"/></g>
+<path d="M192 335q18 0 18 15v10h-36v-10q0-15 18-15Z" fill="#e0bd7a" stroke="#795e3d" stroke-width="3"/>
+<!-- cottage -->
+<ellipse cx="270" cy="710" rx="270" ry="48" fill="#213d35" opacity=".3" filter="url(#shadow)"/>
+<g stroke-linejoin="round"><path d="M35 710V490L245 360 465 492V715Z" fill="url(#stone)" stroke="#4e5a4c" stroke-width="8"/><path d="M12 505L244 345 494 505 473 536 245 400 32 538Z" fill="url(#roof)" stroke="#2e4141" stroke-width="10"/><path d="M73 520V685m70-185v201m200-187v186m-78-226v227" stroke="#715b43" stroke-width="10" opacity=".8"/><path d="M47 610H452M47 665H452" stroke="#b8aa8c" stroke-width="4" opacity=".65"/><path d="M188 710V585Q245 530 302 585V710Z" fill="#4c4d43" stroke="#5c4937" stroke-width="8"/><path d="M201 707V592Q245 553 289 592V707Z" fill="#d8a96b" stroke="#e0c28c" stroke-width="6"/><path d="M245 565V708M202 645H289" stroke="#5a4635" stroke-width="7"/><path d="M75 610h55v75H75z" fill="#4a5048" stroke="#6b5a45" stroke-width="5"/><path d="M83 618h39v59H83z" fill="#d9b178"/></g>
+<g><ellipse cx="110" cy="580" rx="44" ry="50" fill="url(#lamp)" opacity=".5"/><path d="M97 551h27l-4 12h-19Z" fill="#4c5144" stroke="#d2b37c" stroke-width="3"/><path d="M100 563h21v31h-21z" fill="#d4a96c" stroke="#4c5144" stroke-width="3"/><ellipse cx="110" cy="579" rx="8" ry="14" fill="#fff0bc"/></g>
+<!-- workshop greenhouse -->
+<ellipse cx="680" cy="890" rx="225" ry="45" fill="#213d35" opacity=".3" filter="url(#shadow)"/>
+<g stroke-linejoin="round"><path d="M490 865V715Q490 610 680 585Q870 610 870 715V865Z" fill="url(#glass)" stroke="#3f625c" stroke-width="10"/><path d="M490 715Q680 555 870 715" fill="none" stroke="#c2d0b6" stroke-width="10"/><path d="M530 676Q680 568 830 676M530 750Q680 660 830 750M530 820Q680 750 830 820" fill="none" stroke="#54756b" stroke-width="6"/><path d="M680 590V865M575 640L600 865M785 640L760 865" stroke="#6c8c7b" stroke-width="6"/><path d="M490 865H870" stroke="#b4a985" stroke-width="12"/><path d="M600 865v-85q35-45 70 0v85m-8-92v92" fill="#a38a63" stroke="#4d5f51" stroke-width="6"/><path d="M675 780h42v85h-42z" fill="#d3a86e" stroke="#4d5f51" stroke-width="5"/></g>
+<!-- archive arch -->
+<g stroke-linejoin="round"><path d="M270 1030V895Q270 790 390 790Q510 790 510 895V1030Z" fill="#526e63" stroke="#b7a47f" stroke-width="11"/><path d="M300 1030V900Q300 825 390 825Q480 825 480 900V1030Z" fill="#293f3d" stroke="#e0d0ad" stroke-width="7"/><path d="M320 1030V905Q320 850 390 850Q460 850 460 905V1030Z" fill="#789185" opacity=".55"/><path d="M270 895Q390 740 510 895" fill="none" stroke="#d9c69f" stroke-width="9"/><path d="M340 1030v-84q50-30 100 0v84" fill="#d0b47c" stroke="#45584d" stroke-width="5"/></g>
+<!-- river and little bridge -->
+<path d="M0 1060Q130 1005 260 1045T520 1040Q660 1005 900 1055V1215Q710 1260 560 1200T260 1190Q120 1240 0 1190Z" fill="url(#water)" stroke="#bdc8b3" stroke-width="8"/>
+<path d="M0 1085Q180 1038 330 1082T650 1080Q790 1040 900 1080" fill="none" stroke="#e3e5d0" stroke-width="8" opacity=".58"/>
+<path d="M200 1080Q390 950 620 1080" fill="none" stroke="#344f4d" stroke-width="35" stroke-linecap="round"/>
+<path d="M200 1070Q390 960 620 1070" fill="none" stroke="#b7ae94" stroke-width="24" stroke-linecap="round"/>
+<path d="M215 1064Q390 980 605 1064" fill="none" stroke="#e4d6bb" stroke-width="4" stroke-linecap="round"/>
+<!-- path descending through the garden -->
+<path d="M310 1150Q380 1105 455 1155Q525 1220 480 1330Q430 1450 505 1600H820Q720 1440 705 1340Q690 1230 620 1160Q500 1080 370 1110Z" fill="url(#path)" stroke="#d0c2a5" stroke-width="7"/>
+<path d="M360 1160Q440 1140 480 1190Q520 1240 460 1350Q420 1450 470 1600" fill="none" stroke="#e8ddc3" stroke-width="6" opacity=".45"/>
+<!-- tea terrace -->
+<ellipse cx="720" cy="1335" rx="150" ry="32" fill="#203d36" opacity=".32" filter="url(#shadow)"/>
+<path d="M600 1270q110-30 220 0l-12 25q-98-18-196 0Z" fill="#74553a" stroke="#d0b17c" stroke-width="6"/>
+<path d="M625 1295v78m170-78v78" stroke="#513f31" stroke-width="12"/>
+<path d="M670 1250q34-23 70 0v18h-70Z" fill="#e0cda7" stroke="#79654b" stroke-width="4"/>
+<path d="M683 1238q24-24 48 0v14h-48Z" fill="#d9b67e" stroke="#6a5944" stroke-width="4"/>
+<!-- open lawn for cats and home activity -->
+<path d="M0 1210Q150 1160 280 1220T500 1220Q650 1165 900 1220V1600H0Z" fill="#536f50" opacity=".52"/>
+<g fill="#334f42"><path d="M0 1400Q100 1330 220 1395T420 1390V1600H0Z"/><path d="M520 1430Q650 1350 750 1410T900 1400V1600H520Z"/></g>
+<g fill="#718e63" stroke="#3b5c48" stroke-width="3"><path d="M30 1435q-32-60-8-75 40 20 8 75Zm44 18q8-66 42-55 10 42-42 55Zm100 20q-33-64 4-78 38 37-4 78Zm600-5q-20-68 17-76 31 40-17 76Zm50 10q8-65 43-58 12 42-43 58Z"/></g>
+<g fill="#d7c6a4" stroke="#695d48" stroke-width="2"><g transform="translate(110 1370) scale(.8)"><circle r="8"/><path d="M0-22q-10-12 0-17 10 5 0 17ZM22 0q12-10 17 0-5 10-17 0ZM0 22q10 12 0 17-10-5 0-17ZM-22 0q-12 10-17 0 5-10 17 0Z"/><circle r="4" fill="#d6b56f"/></g><g transform="translate(780 1470) scale(.75)"><circle r="8"/><path d="M0-22q-10-12 0-17 10 5 0 17ZM22 0q12-10 17 0-5 10-17 0ZM0 22q10 12 0 17-10-5 0-17ZM-22 0q-12 10-17 0 5-10 17 0Z"/><circle r="4" fill="#d6b56f"/></g></g>
+<rect width="900" height="1600" fill="none" stroke="#253b35" stroke-width="24" opacity=".1"/>
+</svg>
