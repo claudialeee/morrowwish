@@ -973,7 +973,7 @@ class CaptureBattle {
   // fire-gate, and skillEngageReach ALL derive from this so the engagement band can never
   // drift past the distance a claw actually connects (the "前排站远挨打" bug). Keyed to the
   // target body radius so a fat enemy is reachable at its edge; ~50px for a standard r=18.
-  meleeReach(target=null){ const r=(target&&target.r)||18; return 42+r*0.45; }
+  meleeReach(target=null){ const r=(target&&target.r)||18; return 60+r*0.45; }  // band ANCHOR ~68px; the swing connects out to ~87 (meleeStrike RANGE 75 + r) so the fighter holds a spot where its claw actually lands (owner: 近战范围提高到 75)
 
   // BASIC attacks are independent of the Q/E planner. An equipped melee basic
   // must close into claw contact; the fallback toy projectile expires after 0.5s.
@@ -1482,8 +1482,12 @@ class CaptureBattle {
       // HARD RULE: never fire a reflectable shot (projectile/beam) at a reflect wall —
       // it bounces straight back as self-damage. Melee/aoe/dash still allowed (not reflected).
       if(tgtReflect&&rangedKind(sk.kind))return false;
-      // Physical claw sweep — single source of truth so the band can't drift past it.
-      if(sk.kind==='melee')return dist<=this.meleeReach(tgt);
+      // Physical claw sweep — fire at the actual CONNECT reach (meleeStrike's RANGE 64 + r, +4 margin),
+      // NOT the tighter ~50px band ANCHOR (meleeReach). A fighter anchors around 50px but its swing
+      // lands out to ~82px; gating the cast at the anchor left a dead zone where the cat was in swing
+      // range yet refused to cast — 松松的荆缠(thornCoil) "一直没打出去" (owner). Same fix already made
+      // for the melee BASIC (basicAttackRange); the Q/E melee gate had been missed.
+      if(sk.kind==='melee')return dist<=75+((tgt&&tgt.r)||18)*0.65+4;
       if(sk.kind==='dash')return dist>55&&dist<185;         // fire while the 175px dash can still reach
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
@@ -2404,7 +2408,7 @@ class CaptureBattle {
     // three-brush rake now follows this geometry; remove the old duplicate
     // 170px crescent + extra pre-hit particle fan. Only real contact gets
     // impact accents through resolveHit and per-skill signatures.
-    const RANGE = 64, ARC = .74;
+    const RANGE = 75, ARC = .74;   // owner: 近战范围提高到 75 (was 64) — longer claw reach so melee connects + fires more reliably
     this.vfx.slash(f.x, f.y, aim, col, RANGE * .87, ARC * .92,
       {heavy: !!skill?.heavy});
     let hit = false, dealtTotal = 0;
