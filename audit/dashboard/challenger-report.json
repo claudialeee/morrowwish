@@ -1,0 +1,1388 @@
+{
+  "status": "CHALLENGER_SQL_PASSED_HISTORICAL_IDENTITY_UNPROVEN",
+  "boundary": {
+    "start": "2026-11-22T08:00:00.000Z",
+    "cutoff": "2026-11-24T04:14:54.641Z",
+    "maxId": 16891,
+    "rawRows": 1342,
+    "arcadeRowsAfterDedup": 1342,
+    "previousLastEventAt": "2026-11-24T01:41:06.390Z",
+    "latestEventAt": "2026-11-24T03:58:36.088Z",
+    "rawDigest": "7e6f3ac1f236fa9a8a187359f888ba9145d1495195fd5b2a778fa3e4fda40dd5"
+  },
+  "checks": [
+    {
+      "name": "cat-bond independent joined firstPlayPages",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent joined firstFinishPages",
+      "actual": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent joined entryPages",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent joined v11Visits",
+      "actual": 51,
+      "expected": 51,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent joined v11EntryPages",
+      "actual": 31,
+      "expected": 31,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent joined v11FinishPages",
+      "actual": 11,
+      "expected": 11,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_battle_end_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_battle_start_v2",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_battle_win_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_capture",
+      "actual": 87,
+      "expected": 87,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_capture_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_continue",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_duo_used",
+      "actual": 56,
+      "expected": 56,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_enter",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_first_capture",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_grade_a",
+      "actual": 53,
+      "expected": 53,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_grade_b",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_grade_s",
+      "actual": 31,
+      "expected": 31,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_mastery_medal",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_next_battle_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_rare_attempt_v2",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_rare_capture",
+      "actual": 63,
+      "expected": 63,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_rare_capture_v2",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_rare_encounter",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_creek_end_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_creek_start_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_home_end_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_home_start_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_ruins_end_v2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_ruins_start_v2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_sakura_end_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_sakura_start_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_yard_end_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_region_yard_start_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_reunion",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_starter",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_surprise",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_wild_found",
+      "actual": 10,
+      "expected": 10,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_wild_spawn",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal bond_yard_built",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal funnel_first_finish",
+      "actual": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal funnel_first_run",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "cat-bond independent signal funnel_replay_after_finish",
+      "actual": 7,
+      "expected": 7,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent joined firstPlayPages",
+      "actual": 8,
+      "expected": 8,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent joined firstFinishPages",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_caught",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_close_call",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_escape",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_fish",
+      "actual": 45,
+      "expected": 45,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_1",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_3",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_4",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_5",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_6",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_7",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_room_8",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_souvenir",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal cat_yarn_distracted",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal funnel_first_finish",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal funnel_first_run",
+      "actual": 8,
+      "expected": 8,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent independent signal funnel_replay_after_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent joined firstPlayPages",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent joined firstFinishPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal funnel_first_run",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_building_moved",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_charter_care",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_club",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_combo_discovered",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_first_build",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_free_day",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_free_mountain",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_legendary_unlocked",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_neighbor_story",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_petition_missed",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_second_wish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "elsewhere independent joined firstPlayPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "elsewhere independent joined firstFinishPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium independent joined firstPlayPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium independent joined firstFinishPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent joined firstPlayPages",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent joined firstFinishPages",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent signal funnel_first_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent signal funnel_first_run",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent signal funnel_replay_after_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent signal parcel_missed",
+      "actual": 9,
+      "expected": 9,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent signal parcel_sorted",
+      "actual": 50,
+      "expected": 50,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic independent signal parcel_ten_sorted",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "flip-dash independent joined firstPlayPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "flip-dash independent joined firstFinishPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub independent joined firstPlayPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub independent joined firstFinishPages",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub independent signal hub_card_cat_bond",
+      "actual": 41,
+      "expected": 41,
+      "pass": true
+    },
+    {
+      "name": "hub independent signal hub_card_elsewhere",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "hub independent signal hub_card_parcel_panic",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "hub independent signal hub_card_pawsibly_innocent",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "hub independent signal hub_card_tiny_town",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical visitRows",
+      "actual": 78,
+      "expected": 78,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical sessionRows",
+      "actual": 620,
+      "expected": 620,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical legacyStarts",
+      "actual": 116,
+      "expected": 116,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical legacyEnds",
+      "actual": 93,
+      "expected": 93,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical legacyRetries",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal funnel_first_run",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_enter",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_battle_start_v2",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_home_start_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_duo_used",
+      "actual": 56,
+      "expected": 56,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_creek_start_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_rare_attempt_v2",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_mastery_medal",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal funnel_first_finish",
+      "actual": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_battle_end_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_creek_end_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_battle_win_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_capture",
+      "actual": 87,
+      "expected": 87,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_capture_v2",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_rare_capture",
+      "actual": 63,
+      "expected": 63,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_rare_capture_v2",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_grade_s",
+      "actual": 31,
+      "expected": 31,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_ruins_start_v2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_reunion",
+      "actual": 60,
+      "expected": 60,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_ruins_end_v2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_grade_a",
+      "actual": 53,
+      "expected": 53,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_home_end_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_sakura_start_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_sakura_end_v2",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_starter",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_wild_spawn",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_wild_found",
+      "actual": 10,
+      "expected": 10,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_yard_start_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_region_yard_end_v2",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_first_capture",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_continue",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal funnel_replay_after_finish",
+      "actual": 7,
+      "expected": 7,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_next_battle_v2",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_rare_encounter",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_surprise",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_yard_built",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "cat-bond historical signal bond_grade_b",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical visitRows",
+      "actual": 27,
+      "expected": 27,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical sessionRows",
+      "actual": 110,
+      "expected": 110,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical legacyStarts",
+      "actual": 15,
+      "expected": 15,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical legacyEnds",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical legacyRetries",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal funnel_first_run",
+      "actual": 8,
+      "expected": 8,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_fish",
+      "actual": 45,
+      "expected": 45,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_yarn_distracted",
+      "actual": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_close_call",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_souvenir",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_1",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal funnel_first_finish",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_escape",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal funnel_replay_after_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_2",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_3",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_4",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_5",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_6",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_7",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_room_8",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "pawsibly-innocent historical signal cat_caught",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical visitRows",
+      "actual": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical sessionRows",
+      "actual": 22,
+      "expected": 22,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical legacyStarts",
+      "actual": 7,
+      "expected": 7,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical legacyEnds",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical legacyRetries",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical signal funnel_first_run",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical signal town_charter_care",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "tiny-town historical signal town_first_build",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "elsewhere historical visitRows",
+      "actual": 15,
+      "expected": 15,
+      "pass": true
+    },
+    {
+      "name": "elsewhere historical sessionRows",
+      "actual": 10,
+      "expected": 10,
+      "pass": true
+    },
+    {
+      "name": "elsewhere historical legacyStarts",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "elsewhere historical legacyEnds",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "elsewhere historical legacyRetries",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium historical visitRows",
+      "actual": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium historical sessionRows",
+      "actual": 9,
+      "expected": 9,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium historical legacyStarts",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium historical legacyEnds",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "pocket-aquarium historical legacyRetries",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical visitRows",
+      "actual": 11,
+      "expected": 11,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical sessionRows",
+      "actual": 20,
+      "expected": 20,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical legacyStarts",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical legacyEnds",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical legacyRetries",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical signal funnel_first_run",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical signal parcel_sorted",
+      "actual": 50,
+      "expected": 50,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical signal parcel_ten_sorted",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical signal parcel_missed",
+      "actual": 9,
+      "expected": 9,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical signal funnel_first_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parcel-panic historical signal funnel_replay_after_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "flip-dash historical visitRows",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "flip-dash historical sessionRows",
+      "actual": 5,
+      "expected": 5,
+      "pass": true
+    },
+    {
+      "name": "flip-dash historical legacyStarts",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "flip-dash historical legacyEnds",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "flip-dash historical legacyRetries",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub historical visitRows",
+      "actual": 125,
+      "expected": 125,
+      "pass": true
+    },
+    {
+      "name": "hub historical sessionRows",
+      "actual": 231,
+      "expected": 231,
+      "pass": true
+    },
+    {
+      "name": "hub historical legacyStarts",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub historical legacyEnds",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub historical legacyRetries",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "hub historical signal hub_card_cat_bond",
+      "actual": 40,
+      "expected": 40,
+      "pass": true
+    },
+    {
+      "name": "hub historical signal hub_card_tiny_town",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "hub historical signal hub_card_elsewhere",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "hub historical signal hub_card_parcel_panic",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "hub historical signal hub_card_pawsibly_innocent",
+      "actual": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "previous window record count",
+      "actual": 1317,
+      "expected": 1317,
+      "pass": true
+    },
+    {
+      "name": "both windows record count",
+      "actual": 1342,
+      "expected": 1342,
+      "pass": true
+    }
+  ],
+  "rawCounts": [
+    {
+      "segment": "newIncrement",
+      "n": 25
+    },
+    {
+      "segment": "previousWindow",
+      "n": 1317
+    }
+  ],
+  "earlierThanReportingStart": [],
+  "coverage": [
+    {
+      "game": "cat-bond",
+      "kind": "session",
+      "n": 621,
+      "firstTs": 1795371261004,
+      "lastTs": 1795487567771
+    },
+    {
+      "game": "cat-bond",
+      "kind": "visit",
+      "n": 79,
+      "firstTs": 1795371253257,
+      "lastTs": 1795487561068
+    },
+    {
+      "game": "elsewhere",
+      "kind": "session",
+      "n": 10,
+      "firstTs": 1795380117173,
+      "lastTs": 1795468079136
+    },
+    {
+      "game": "elsewhere",
+      "kind": "visit",
+      "n": 15,
+      "firstTs": 1795375006109,
+      "lastTs": 1795477339268
+    },
+    {
+      "game": "flip-dash",
+      "kind": "session",
+      "n": 5,
+      "firstTs": 1795380117293,
+      "lastTs": 1795407188094
+    },
+    {
+      "game": "flip-dash",
+      "kind": "visit",
+      "n": 5,
+      "firstTs": 1795374855015,
+      "lastTs": 1795407185065
+    },
+    {
+      "game": "hub",
+      "kind": "session",
+      "n": 238,
+      "firstTs": 1795371259813,
+      "lastTs": 1795492716088
+    },
+    {
+      "game": "hub",
+      "kind": "visit",
+      "n": 130,
+      "firstTs": 1795371258256,
+      "lastTs": 1795492715637
+    },
+    {
+      "game": "parcel-panic",
+      "kind": "session",
+      "n": 20,
+      "firstTs": 1795380117414,
+      "lastTs": 1795466258364
+    },
+    {
+      "game": "parcel-panic",
+      "kind": "visit",
+      "n": 11,
+      "firstTs": 1795375090671,
+      "lastTs": 1795466262797
+    },
+    {
+      "game": "pawsibly-innocent",
+      "kind": "session",
+      "n": 110,
+      "firstTs": 1795380116854,
+      "lastTs": 1795472376175
+    },
+    {
+      "game": "pawsibly-innocent",
+      "kind": "visit",
+      "n": 27,
+      "firstTs": 1795374282549,
+      "lastTs": 1795474074363
+    },
+    {
+      "game": "pocket-aquarium",
+      "kind": "session",
+      "n": 9,
+      "firstTs": 1795380117490,
+      "lastTs": 1795464469953
+    },
+    {
+      "game": "pocket-aquarium",
+      "kind": "visit",
+      "n": 12,
+      "firstTs": 1795375120788,
+      "lastTs": 1795464465112
+    },
+    {
+      "game": "tiny-town",
+      "kind": "session",
+      "n": 32,
+      "firstTs": 1795374317744,
+      "lastTs": 1795492596509
+    },
+    {
+      "game": "tiny-town",
+      "kind": "visit",
+      "n": 18,
+      "firstTs": 1795374296485,
+      "lastTs": 1795492386986
+    }
+  ],
+  "limitations": [
+    "Independent SQL verifies stored counts and joins, not unrecorded player actions.",
+    "Earlier recovery checkpoint identities are unavailable; aggregate equality does not establish historical event identity.",
+    "No browser or production API validation, no production modification.",
+    "No model-agent independence is claimed: this is an independent implementation."
+  ]
+}
