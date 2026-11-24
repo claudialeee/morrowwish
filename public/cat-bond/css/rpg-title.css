@@ -1,0 +1,95 @@
+/* Cat Bond — The Last Resonance. Dedicated title and system UI.
+   Uses the existing original painted garden artwork; no mock image or stock art. */
+#stage #intro.cb-rpg-intro:not(.hide){
+ position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;
+ grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;
+ width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ box-sizing:border-box!important;margin:0!important;padding:48px 26px 26px!important;gap:0!important;
+ background:#182e30!important;overflow:hidden!important;color:#f9ecd7!important;isolation:isolate!important;
+}
+#stage #intro.cb-rpg-intro.hide{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#stage #intro .cb-title-landscape{position:absolute!important;inset:0!important;z-index:0!important;
+ background:linear-gradient(90deg,rgba(11,30,31,.89),rgba(18,40,39,.60) 46%,rgba(17,32,36,.13) 100%),
+ linear-gradient(0deg,rgba(8,21,24,.74),transparent 52%),url('../assets/yard_bg.png') 58% 50%/cover no-repeat;
+ animation:cb-title-drift 24s ease-in-out infinite alternate;pointer-events:none;transform-origin:70% 50%}
+@keyframes cb-title-drift{from{transform:scale(1.015)}to{transform:scale(1.055) translateX(-.5%)}}
+#stage #intro::before{background:linear-gradient(0deg,rgba(7,17,20,.45),transparent 45%)!important;z-index:1!important}
+#stage #intro #intro-stars{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:1!important;opacity:.42!important;pointer-events:none}
+#stage #intro .cb-title-content{position:relative!important;z-index:2!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;gap:clamp(16px,3vh,29px);width:min(100%,680px);margin:0 auto!important;padding:0!important;box-sizing:border-box;text-align:center}
+#stage #intro .cb-intro-brand{font:600 11px/1.5 Georgia,serif!important;color:#dfd4bc!important;letter-spacing:.42em!important;margin:0!important}
+#stage #intro .cb-intro-titleblock{margin:0!important;width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
+#stage #intro .game-logo{font:600 clamp(42px,6.4vw,88px)/1.08 Georgia,'Songti SC','Noto Serif SC',serif!important;
+ letter-spacing:.035em!important;color:#fff1d8!important;text-shadow:0 2px 20px #071d20!important;margin:0!important;animation:none!important}
+#stage #intro .game-logo:after{display:none!important}
+#stage #intro .cb-intro-eyebrow{font:600 clamp(14px,2vw,23px)/1.3 Georgia,'Songti SC',serif!important;letter-spacing:.18em!important;color:#edd0a1!important}
+#stage #intro p:not(#start-error){background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;
+ width:auto!important;max-width:none!important;margin:0!important;padding:0!important;border-radius:0!important}
+#stage #intro .cb-intro-tagline{font:500 clamp(13px,1.5vw,17px)/1.55 system-ui,sans-serif!important;color:#e5e8df!important;letter-spacing:0!important}
+#stage #intro .cb-intro-actions{position:relative!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ width:min(100%,504px)!important;max-width:100%!important;gap:12px!important;margin:5px 0 0!important;padding:0!important}
+#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){
+ position:relative!important;inset:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
+ width:100%!important;max-width:none!important;min-width:0!important;height:auto!important;min-height:54px!important;
+ margin:0!important;padding:12px 9px!important;order:0!important;transform:none!important;white-space:normal!important;
+ border:1px solid #d6b783!important;border-radius:6px!important;color:#fff2dc!important;
+ background:linear-gradient(180deg,#31534e,#203b3a)!important;box-shadow:0 4px 14px #071b2266,inset 0 1px 0 #f1cf8d26!important;text-shadow:none!important;cursor:pointer;
+}
+#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue)::before,
+#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue)::after{content:none!important;display:none!important}
+#stage #intro .cb-intro-actions button strong{font:650 clamp(13px,1.7vw,17px)/1.3 system-ui,sans-serif!important;letter-spacing:.02em!important}
+#stage #intro .cb-intro-actions button:hover{filter:brightness(1.17)!important}
+#stage #intro .cb-intro-actions button:focus-visible{outline:2px solid #fff0bb!important;outline-offset:3px!important}
+#stage #intro [hidden],#stage #cb-system-menu[hidden]{display:none!important}
+#stage #intro #intro-slot-panel{padding:18px!important;overflow:auto!important;background:#071a20dd!important;align-items:center!important;justify-content:center!important}
+#stage #intro #intro-slot-panel:not(.is-open){display:none!important}
+#stage #intro .cb-save-picker-card{width:min(880px,100%)!important;max-height:100%!important;box-sizing:border-box!important;
+ background:linear-gradient(145deg,#233d3e,#152a30)!important;border:1px solid #b99d70!important;border-radius:12px!important;padding:28px!important;color:#f3eadb!important}
+#stage #intro .cb-save-picker-kicker{font:600 11px/1.4 system-ui!important;letter-spacing:.14em!important;color:#d9bb87!important}
+#stage #intro .cb-save-picker-card h2{font:600 clamp(21px,3vw,31px)/1.25 Georgia,'Songti SC',serif!important;color:#fff2dc!important;margin:7px 36px 8px 0!important}
+#stage #intro .cb-save-picker-desc{color:#c9d6ce!important;font:400 13px/1.55 system-ui!important;margin-bottom:20px!important}
+#stage #intro .cb-save-slot-list{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+#stage #intro .cb-save-slot{min-width:0!important;min-height:190px!important;padding:16px!important;border:1px solid #887c62!important;border-radius:8px!important;background:#294446!important;box-sizing:border-box!important;color:#fff0d9!important}
+#stage #intro .cb-save-slot.empty-slot{background:#1d3338!important;border-style:dashed!important;border-color:#7d9794!important}
+#stage #intro .cb-save-slot-top{margin-bottom:12px!important}
+#stage #intro .cb-save-slot-number{color:#e6c797!important;font-size:12px!important;letter-spacing:.08em!important}
+#stage #intro .cb-save-slot-status{color:#b8d0c7!important;font-size:11px!important}
+#stage #intro .cb-save-slot-chapter{color:#fff0d9!important;font-size:15px!important}
+#stage #intro .cb-save-slot-meta,#stage #intro .cb-save-slot-saved-at{min-height:0!important;color:#cbd7d0!important;font-size:12px!important;line-height:1.5!important;overflow-wrap:anywhere!important}
+#stage #intro .cb-save-slot-saved-at{margin:7px 0 15px!important}
+#stage #intro .cb-save-slot-actions button{color:#172d2e!important;background:#e1c18d!important;border:1px solid #ead6b2!important;border-radius:5px!important;font:650 13px/1.3 system-ui!important;min-height:42px!important}
+#stage #intro .cb-save-slot-actions button:disabled{background:#273c40!important;color:#a7bcb7!important;border-color:#506b6c!important;opacity:1!important}
+#stage #intro .cb-save-picker-close{background:transparent!important;border:0!important;color:#f7e5c5!important;box-shadow:none!important}
+#stage #intro [data-delete-slot],#stage .cb-slot-manager [data-delete]{display:none!important}
+html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{display:none!important}
+#stage #cb-system-toggle{display:none!important;position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+ z-index:125!important;min-height:34px!important;padding:7px 13px!important;border:1px solid #d4b786!important;border-radius:6px!important;background:#203b3a!important;color:#fff1d6!important;font:650 13px/1 system-ui!important;cursor:pointer}
+#stage:has(#intro:not(.hide)) #cb-system-toggle,#stage:has(#battle-ui.on) #cb-system-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important}
+#stage #cb-system-menu:not([hidden]){position:absolute!important;inset:0!important;z-index:2147483001!important;display:flex!important;align-items:center!important;justify-content:center!important;background:#071d23a6!important;padding:15px!important;box-sizing:border-box}
+#stage .cb-system-card{width:min(100%,360px);max-height:100%;overflow:auto;box-sizing:border-box;background:#213a3e;color:#f6e8cf;border:1px solid #b99d70;border-radius:10px;padding:18px;box-shadow:0 16px 45px #071b2088}
+#stage .cb-system-card header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#stage .cb-system-card h2{font:600 22px/1.2 Georgia,'Songti SC',serif;margin:0;color:#f9e9d0}
+#stage .cb-system-card header button{border:0;background:none;color:#f7e7cd;font-size:24px;cursor:pointer}
+#stage .cb-system-rows{display:grid;gap:5px}
+#stage .cb-system-rows button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:42px;padding:9px 11px;border:1px solid #66807a;border-radius:5px;background:#29484a;color:#f6ead6;font:600 14px/1.3 system-ui;cursor:pointer;text-align:left}
+#stage .cb-system-rows small{color:#dfc391;font-size:12px}
+#stage .cb-cloud-overlay{z-index:2147483002!important}
+#stage .cb-slot-manager-card{background:linear-gradient(145deg,#233d3e,#152a30)!important;color:#f3eadb!important;border:1px solid #b99d70!important}
+#stage .cb-slot-manager-card h2,#stage .cb-slot-manager-card .cb-cloud-lead,#stage .cb-slot-manager-card .cb-cloud-footnote,#stage .cb-slot-manager-card .cb-cloud-eyebrow{color:#eee1c9!important;background:none!important;box-shadow:none!important}
+#stage .cb-slot-manager-row{background:#294446!important;border-color:#887c62!important}
+#stage .cb-slot-manager-row strong,#stage .cb-slot-manager-row span,#stage .cb-slot-manager-row small{color:#eee1c9!important}
+@media(max-width:680px){
+ #stage #intro.cb-rpg-intro:not(.hide){padding:48px 14px 18px!important}
+ #stage #intro .cb-title-landscape{background-position:65% 50%;background-image:linear-gradient(0deg,rgba(11,30,31,.95),rgba(11,30,31,.55) 58%,rgba(11,30,31,.2)),url('../assets/yard_bg.png')}
+ #stage #intro .cb-title-content{gap:18px}
+ #stage #intro .game-logo{font-size:clamp(34px,10vw,54px)!important}
+ #stage #intro .cb-intro-actions{gap:8px!important}
+ #stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:48px!important;padding:8px 5px!important}
+ #stage #intro .cb-save-picker-card{padding:18px!important}
+ #stage #intro .cb-save-slot-list{grid-template-columns:1fr!important;gap:8px!important}
+ #stage #intro .cb-save-slot{min-height:0!important;padding:12px!important}
+ #stage #intro .cb-save-slot-top{margin-bottom:5px!important}
+ #stage #intro .cb-save-slot-saved-at{margin-bottom:8px!important}
+}
+@media(max-height:450px){#stage #intro .cb-title-content{gap:10px}#stage #intro .game-logo{font-size:clamp(28px,8vh,44px)!important}#stage #intro .cb-intro-titleblock{gap:7px}}
+@media(prefers-reduced-motion:reduce){#stage #intro .cb-title-landscape{animation:none!important}}
