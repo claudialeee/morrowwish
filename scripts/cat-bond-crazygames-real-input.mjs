@@ -88,6 +88,15 @@ try{
         'Host must own fullscreen');
       if(touch)await page.locator('#intro-start').tap();
       else await page.locator('#intro-start').click();
+      // New players first see the illustrated prologue; skip only in this
+      // input/layout fixture so the real starter-picker controls remain tested.
+      const prologue=page.locator('.cb-story-overlay');
+      if(await prologue.count()){
+        await prologue.waitFor({state:'visible',timeout:5000});
+        const skip=prologue.locator('.cb-story-skip');
+        if(touch)await skip.tap({timeout:5000});else await skip.click({timeout:5000});
+        await prologue.waitFor({state:'detached',timeout:5000});
+      }
       await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
       assert.equal(await page.locator('#intro').isVisible(),false,
         'Start Adventure must dismiss intro after player interaction');
