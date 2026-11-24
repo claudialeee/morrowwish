@@ -42,6 +42,12 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
           D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
         run: node audit/dashboard/challenger-sql.mjs
+      - name: Third check - explain pageview difference against previous snapshot
+        env:
+          D1_READ_TOKEN: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN || secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+          D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
+        run: node audit/dashboard/pv-discrepancy.mjs
       - name: Persist aggregate evidence only on audit branch
         if: always()
         run: |
@@ -51,9 +57,10 @@ jobs:
           test -s audit/dashboard/raw-reconciliation.json
           test -s audit/dashboard/challenger-report.json
           test -s audit/dashboard/preview.html
+          test -s audit/dashboard/pv-discrepancy-report.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- audit/dashboard/raw-reconciliation.json audit/dashboard/challenger-report.json audit/dashboard/preview.html
+          git add -- audit/dashboard/raw-reconciliation.json audit/dashboard/challenger-report.json audit/dashboard/preview.html audit/dashboard/pv-discrepancy-report.json
           if ! git diff --cached --quiet; then
             git commit -m "audit only: persist read-only raw reconciliation evidence"
             git push origin HEAD:refs/heads/audit/dashboard-data-integrity-20261123
@@ -66,5 +73,6 @@ jobs:
             audit/dashboard/raw-reconciliation.json
             audit/dashboard/challenger-report.json
             audit/dashboard/preview.html
+            audit/dashboard/pv-discrepancy-report.json
           if-no-files-found: error
           retention-days: 7
