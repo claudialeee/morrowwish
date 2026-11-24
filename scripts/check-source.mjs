@@ -128,8 +128,10 @@ if(requiredChannels.some(name=>!channelIds.includes("'"+name+"'"))||
    dashboard.includes("t('notApplicable')"))
  throw Error('Only launched channels may be shown; omit future promo work and leave unavailable metrics blank');
 if(!dashboard.includes("num('pageviews')")||
-   !dashboard.includes("const finishRate=")||
-   !dashboard.includes("const startRate=")||
+   !dashboard.includes("const cv=x.visitFunnel||{}")||
+   !dashboard.includes("const c1=conv(cv.startedViews,cv.pageviews)")||
+    !dashboard.includes("const c2=conv(cv.finishedViews,cv.startedViews)")||
+    !dashboard.includes("const c3=conv(cv.finishedViews,cv.pageviews)")||
    !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
