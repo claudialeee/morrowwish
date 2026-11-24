@@ -154,7 +154,7 @@
   var cbEncounter = null, cbCollect = null, cbExit = null;
   var world = null;                 // active region runtime (player/camera/entities)
   var t = 0;                        // local clock
-  var mapNodes = [];                // cached {region, px, py, r} for hit-testing
+  var mapNodes = [], mapArtCache = {}; // illustrated atlas cards + hit targets
   var toastCd = 0;
 
   // region world dimensions (bigger than screen → scrollable)
@@ -332,21 +332,6 @@
         pace:.5+Math.random()*.5,
       });
     }
-    // PROGRESSION-KEY FLOOR: a later region can gate behind `unlock.own: <speciesId>` (e.g. volcano
-    // needs 幽幽/youling, which lives ONLY here in creek at SR weight 7). With rarity-weighted rolls +
-    // ~8 spawns, that key cat can fail to appear across a FULL exploration → the map soft-locks and the
-    // player "一直找不到幽幽，无法推进地图" (owner). Guarantee it: if THIS region's pool contains a key
-    // species that a gated region requires AND the player doesn't own it yet, force one spawn to be it.
-    try {
-      const owned = new Set((window.State?.S?.cats || []).map(function (c) { return c.species; }));
-      const keys = REGIONS.map(function (rr) { return rr.unlock && rr.unlock.own; })
-        .filter(function (sp) { return sp && pool.indexOf(sp) >= 0 && !owned.has(sp); });
-      for (const keySp of keys) {
-        if (!spawns.some(function (s) { return s.sp === keySp; }) && spawns.length) {
-          spawns[Math.floor(Math.random() * spawns.length)].sp = keySp;   // re-skin one existing spawn
-        }
-      }
-    } catch (_) {}
     // Every visible roaming cat has an immutable encounter level, before
     // contact, regardless of changes to the team chooser afterward.
     const roster=window.State?.S?.cats||[];
@@ -730,227 +715,136 @@
   // DRAW — node map (overworld)
   // ================================================================
   function drawMap(ctx) {
-    var W = game.W, H = game.H;
-    // dusk sky backdrop
-    var sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, BG);
-    sky.addColorStop(0.6, '#241a38');
-    sky.addColorStop(1, '#140c1e');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    // drifting star motes (parallax-ish ambience)
-    for (var i = 0; i < 46; i++) {
-      var sx = ((i * 137.5 + t * 6) % W);
-      var sy = (i * 53) % (H * 0.7);
-      ctx.globalAlpha = 0.25 + 0.5 * Math.abs(Math.sin(t * 0.8 + i));
-      ctx.fillStyle = i % 5 === 0 ? GOLD : '#fff';
-      ctx.fillRect(sx, sy, 1.6, 1.6);
+    var W=game.W,H=game.H,en=window.MorrowwishI18n?.get?.()!=='zh';
+    var portrait=H>W*1.04;
+    var sky=ctx.createLinearGradient(0,0,W,H);
+    sky.addColorStop(0,'#18253b');sky.addColorStop(.48,'#26354a');sky.addColorStop(1,'#17172b');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    // A softly illuminated atlas surface, not a row of floating circles.
+    var haze=ctx.createRadialGradient(W*.5,H*.48,4,W*.5,H*.48,Math.max(W,H)*.78);
+    haze.addColorStop(0,'rgba(198,171,131,.18)');haze.addColorStop(.58,'rgba(117,135,155,.08)');
+    haze.addColorStop(1,'rgba(10,15,28,.42)');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
+    for(var star=0;star<54;star++){
+      var sx=(star*137.5+t*(2.2+(star%4)) )%W;
+      var sy=(star*53.7+Math.sin(t*.4+star)*7)%(H*.92);
+      ctx.globalAlpha=.18+.45*Math.abs(Math.sin(t*.75+star));
+      ctx.fillStyle=star%6===0?'#ffe5ad':'#fff';
+      ctx.beginPath();ctx.arc(sx,sy,star%7===0?1.8:1,0,Math.PI*2);ctx.fill();
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha=1;
+    var count=Math.min(6,window.State?.S?.story?.fragments?.length||0);
+    var titleY=portrait?76:62;
+    ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='800 '+(portrait?'11px':'12px')+' system-ui,sans-serif';
+    ctx.fillStyle='rgba(245,222,181,.86)';
+    ctx.fillText(en?'THE FIVE LANDS · MAIN STORY':'五片土地 · 主线冒险',W*.5,titleY);
+    ctx.font='700 '+(portrait?'10px':'11px')+' system-ui,sans-serif';
+    ctx.fillStyle='rgba(244,247,239,.72)';
+    ctx.fillText(en?('MEMORY ECHOES  '+count+'/6'):('已找回记忆  '+count+'/6'),W*.5,titleY+20);
+    ctx.restore();
 
-    // resolve node screen positions
-    mapNodes = [];
-    for (var r = 0; r < REGIONS.length; r++) {
-      var reg = REGIONS[r];
-      mapNodes.push({ region: reg, px: 40 + reg.node.x * (W - 80), py: 70 + reg.node.y * (H - 150), r: 30 });
+    var xs=portrait?[.28,.72,.28,.72,.50]:[.12,.31,.50,.69,.88];
+    var ys=portrait?[.24,.38,.52,.66,.80]:[.46,.64,.44,.63,.43];
+    var cardW=portrait?Math.min(154,W*.42):Math.min(168,W*.17);
+    var cardH=portrait?116:122;
+    if(H<520){cardW=Math.min(cardW,140);cardH=104;}
+    mapNodes=[];
+    for(var r=0;r<REGIONS.length;r++){
+      var reg=REGIONS[r],px=W*xs[r],py=H*ys[r];
+      mapNodes.push({region:reg,px,py,w:cardW,h:cardH,x:px-cardW/2,y:py-cardH/2,
+        r:Math.hypot(cardW*.5,cardH*.5)+7});
     }
 
-    // connecting paths (dashed, glowing) between consecutive regions
-    ctx.lineWidth = 3; ctx.setLineDash([2, 10]); ctx.lineCap = 'round';
-    for (var p = 0; p < mapNodes.length - 1; p++) {
-      var a = mapNodes[p], b = mapNodes[p + 1];
-      var nextOpen = isUnlocked(b.region.id);
-      ctx.strokeStyle = nextOpen ? 'rgba(255,211,107,0.55)' : 'rgba(157,123,255,0.22)';
-      ctx.beginPath(); ctx.moveTo(a.px, a.py); ctx.lineTo(b.px, b.py); ctx.stroke();
-    }
-    ctx.setLineDash([]);
-
-    // region nodes
-    for (var n = 0; n < mapNodes.length; n++) {
-      var mn = mapNodes[n], reg2 = mn.region, open = isUnlocked(reg2.id);
-      var th = reg2.theme;
-      var pulse = 1 + Math.sin(t * 2 + n) * 0.06;
-      if (open) glowDot(ctx, mn.px, mn.py, mn.r * 2.1 * pulse, th.accent, 0.35);
-      // disc
-      var g = ctx.createRadialGradient(mn.px - 8, mn.py - 10, 4, mn.px, mn.py, mn.r);
-      if (open) { g.addColorStop(0, th.ground2); g.addColorStop(1, th.ground); }
-      else { g.addColorStop(0, '#3a3348'); g.addColorStop(1, '#262233'); }
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(mn.px, mn.py, mn.r, 0, Math.PI * 2); ctx.fill();
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = (cur === reg2.id) ? GOLD : (open ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.14)');
-      ctx.stroke();
-
-      if (!open) {
-        ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.fillText('🔒', mn.px, mn.py);
-      } else {
-        // explored ring
-        var prog = ensureSave().regions[reg2.id];
-        var frac = prog ? prog.explored : 0;
-        if (frac > 0) {
-          ctx.lineWidth = 4; ctx.strokeStyle = th.accent;
-          ctx.beginPath(); ctx.arc(mn.px, mn.py, mn.r + 5, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke();
-        }
-        ctx.font = '18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fff';
-        ctx.fillText('★'.repeat(Math.min(3, reg2.difficulty)), mn.px, mn.py - 2);
-      }
-
-      // label
-      ctx.font = '600 14px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillStyle = open ? '#fff' : 'rgba(255,255,255,0.45)';
-      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?reg2.name:reg2.sub, mn.px, mn.py + mn.r + 6);
-      if (!open) {
-        ctx.font = '11px system-ui, sans-serif';
-        ctx.fillStyle = PURPLE;
-        ctx.fillText(unlockHint(reg2), mn.px, mn.py + mn.r + 24);
+    // A continuous route threads through the illustrated region cards.
+    ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();
+    for(var p=0;p<mapNodes.length;p++){
+      var node=mapNodes[p];
+      if(p===0)ctx.moveTo(node.px,node.py);
+      else{
+        var prev=mapNodes[p-1],midX=(prev.px+node.px)*.5;
+        var midY=(prev.py+node.py)*.5+(portrait?(p%2?12:-12):(p%2?24:-24));
+        ctx.quadraticCurveTo(midX,midY,node.px,node.py);
       }
     }
+    ctx.strokeStyle='rgba(8,13,25,.55)';ctx.lineWidth=9;ctx.stroke();
+    ctx.setLineDash([3,10]);ctx.lineWidth=3;
+    ctx.strokeStyle='rgba(245,207,142,.78)';ctx.shadowColor='rgba(255,213,145,.55)';ctx.shadowBlur=12;ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
 
-    // A real, accessible return button is now in the left header slot.
-    // Draw the legacy canvas affordance only when the shared header is absent.
-    if (!globalThis.document?.getElementById('cb-yard-return')) {
+    for(var n=0;n<mapNodes.length;n++){
+      var mn=mapNodes[n],reg2=mn.region,open=isUnlocked(reg2.id);
+      var progress=ensureSave().regions[reg2.id]||{explored:0};
+      var current=cur===reg2.id;
+      var x=mn.x,y=mn.y,w=mn.w,h=mn.h,radius=14;
+      var art=mapArtCache[reg2.id];
+      if(!art&&window.CatBondPaintedRegions?.build){
+        try{art=window.CatBondPaintedRegions.build(reg2.id,620,450);mapArtCache[reg2.id]=art;}catch(e){}
+      }
+      ctx.save();
+      ctx.shadowColor=current?'rgba(255,218,153,.72)':(open?'rgba(11,18,31,.42)':'rgba(0,0,0,.25)');
+      ctx.shadowBlur=current?22:12;ctx.shadowOffsetY=5;
+      ctx.fillStyle='#f5ead5';roundRect(ctx,x-3,y-3,w+6,h+6,radius+3);ctx.fill();
+      ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+      roundRect(ctx,x,y,w,h,radius);ctx.clip();
+      if(art)ctx.drawImage(art,x,y,w,h-26);
+      else{ctx.fillStyle=reg2.theme.ground;ctx.fillRect(x,y,w,h-26);}
+      var shade=ctx.createLinearGradient(0,y,0,y+h-26);
+      shade.addColorStop(0,'rgba(15,20,32,.02)');shade.addColorStop(.65,'rgba(14,19,31,.08)');
+      shade.addColorStop(1,'rgba(12,17,28,.54)');ctx.fillStyle=shade;ctx.fillRect(x,y,w,h-26);
+      if(!open){ctx.fillStyle='rgba(17,21,36,.64)';ctx.fillRect(x,y,w,h-26);}
+      ctx.fillStyle=open?'#fffaf0':'#d9d2c9';ctx.fillRect(x,y+h-26,w,26);
+      ctx.restore();
+
+      ctx.save();roundRect(ctx,x,y,w,h,radius);
+      ctx.lineWidth=current?3:1.5;
+      ctx.strokeStyle=current?'#ffe2a6':(open?'rgba(255,247,225,.88)':'rgba(180,171,188,.5)');
+      ctx.shadowColor=current?'rgba(255,219,150,.65)':'transparent';ctx.shadowBlur=current?15:0;ctx.stroke();
+      ctx.shadowBlur=0;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='800 '+(portrait?'11px':'12px')+' system-ui,sans-serif';
+      ctx.fillStyle=open?'#354255':'#77717b';
+      ctx.fillText(en?reg2.sub:reg2.name,x+w/2,y+h-13,w-12);
+      if(open){
+        var stars=Math.min(3,reg2.difficulty);
+        ctx.font='800 11px system-ui,sans-serif';ctx.fillStyle='#fff4cf';
+        ctx.fillText('✦'.repeat(stars),x+w-18,y+15);
+        var frac=Math.max(0,Math.min(1,progress.explored||0));
+        ctx.fillStyle='rgba(37,48,61,.28)';roundRect(ctx,x+9,y+h-4,w-18,2,2);ctx.fill();
+        if(frac>0){ctx.fillStyle='#d5a95f';roundRect(ctx,x+9,y+h-4,(w-18)*frac,2,2);ctx.fill();}
+      }else{
+        ctx.font='800 18px system-ui,sans-serif';ctx.fillStyle='#fff0d4';
+        ctx.fillText('✧',x+w/2,y+h*.42);
+        ctx.font='600 8px system-ui,sans-serif';ctx.fillStyle='#756e7b';
+        var prevRegion=regionById(reg2.unlock?.after);
+        var lockText=en
+          ?('Explore '+(prevRegion?.sub||'previous land')+' · '+Math.round((reg2.unlock?.explore||0)*100)+'%')
+          :('需探索'+(prevRegion?.name||'前一区域')+' '+Math.round((reg2.unlock?.explore||0)*100)+'%');
+        ctx.fillText(lockText,x+w/2,y+h-34,w-10);
+      }
+      ctx.restore();
+      // Tiny route waypoint glows make the journey feel alive without hiding art.
+      var pulse=.55+.45*Math.sin(t*2+n*1.4);
+      ctx.save();ctx.globalAlpha=.28+.28*pulse;
+      ctx.fillStyle=open?'#ffe0a0':'#b5a9ca';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=12;
+      ctx.beginPath();ctx.arc(mn.px,mn.py-mn.h*.5+4,3+pulse*1.3,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+
+    // Shared header provides the real back control; keep a canvas fallback for
+    // standalone embeds and preserve the original tap target.
+    if(!globalThis.document?.getElementById('cb-yard-return')){
       var back=backBounds(),bbx=back.x,bby=back.y,bbw=back.w,bbh=back.h;
-      ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
-      ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-      ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
-      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
+      ctx.fillStyle='rgba(30,34,48,.88)';roundRect(ctx,bbx,bby,bbw,bbh,12);ctx.fill();
+      ctx.strokeStyle='rgba(255,231,190,.6)';ctx.lineWidth=1.3;roundRect(ctx,bbx,bby,bbw,bbh,12);ctx.stroke();
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=(W<=360?'700 13px':'700 15px')+' system-ui,sans-serif';
+      ctx.fillStyle='#fff';ctx.fillText(en?'← Yard':'← 回庭院',bbx+bbw/2,bby+bbh/2);
     }
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.fillText('🗺️ 世界地图', W / 2, W<650?105:83);
-    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('点击已解锁区域进入探索', W / 2, W<650?158:105);
-    ctx.textAlign = 'left';
-  }
-
-  // Physical relics and signposts replace flat floating emoji markers.
-  // Everything is in the same world coordinate system as the cats.
-  function drawWorldRelic(ctx,node,region,t){
-    const x=node.x,y=node.y,secret=node.kind==='secret',rare=node.kind==='rare';
-    ctx.save();
-    const contactY=y+16;
-    ctx.fillStyle='rgba(32,40,38,.22)';
-    ctx.beginPath();ctx.ellipse(x+5,contactY+3,23,6,0,0,Math.PI*2);ctx.fill();
-    if(secret){
-      if(region==='home'){
-        ctx.fillStyle='#96735b';ctx.fillRect(x-20,y-3,40,21);
-        ctx.fillStyle='#cba786';ctx.fillRect(x-23,y-11,46,11);
-        ctx.strokeStyle='#f7e3be';ctx.lineWidth=2;
-        ctx.beginPath();ctx.arc(x,y-6,7,0,Math.PI*1.7);ctx.stroke();
-      }else if(region==='sakura'){
-        ctx.save();ctx.rotate(-.16);
-        ctx.fillStyle='#fbf2e7';ctx.fillRect(x-20,y-13,40,30);
-        ctx.strokeStyle='#d6aab7';ctx.lineWidth=2;
-        ctx.beginPath();ctx.moveTo(x-20,y-12);ctx.lineTo(x,y+3);ctx.lineTo(x+20,y-12);ctx.stroke();
-        ctx.restore();
-      }else if(region==='creek'){
-        ctx.fillStyle='#d8cbb5';ctx.beginPath();ctx.arc(x,y+3,18,Math.PI,0);ctx.closePath();ctx.fill();
-        for(let i=-2;i<=2;i++){ctx.strokeStyle='#fbf5dd';ctx.lineWidth=2;
-          ctx.beginPath();ctx.moveTo(x,y+16);ctx.lineTo(x+i*7,y-11);ctx.stroke();}
-      }else if(region==='volcano'){
-        ctx.fillStyle='#554e56';ctx.beginPath();
-        ctx.moveTo(x-23,y+17);ctx.lineTo(x-12,y-20);ctx.lineTo(x+7,y-33);
-        ctx.lineTo(x+23,y+18);ctx.closePath();ctx.fill();
-        ctx.strokeStyle='#f8b47c';ctx.lineWidth=4;
-        ctx.beginPath();ctx.moveTo(x+6,y-29);ctx.lineTo(x,y-11);ctx.lineTo(x+7,y+13);ctx.stroke();
-      }else{
-        ctx.fillStyle='#b9b5ca';ctx.fillRect(x-19,y-25,38,45);
-        ctx.strokeStyle='#e5d7c4';ctx.lineWidth=3;
-        ctx.beginPath();ctx.arc(x,y-3,12,-2.1,1.4);ctx.stroke();
-        ctx.fillStyle='#faf1d4';ctx.beginPath();ctx.arc(x+3,y-5,3,0,Math.PI*2);ctx.fill();
-      }
-    }else if(node.kind==='duo'){
-      // Paired stone kittens physically inhabit the memory site.
-      for(const side of [-1,1]){
-        const xx=x+side*15;
-        ctx.fillStyle='#b9a69e';ctx.beginPath();ctx.ellipse(xx,y+5,12,17,0,0,Math.PI*2);ctx.fill();
-        ctx.beginPath();ctx.moveTo(xx-11,y-8);ctx.lineTo(xx-8,y-25);ctx.lineTo(xx,y-13);
-        ctx.lineTo(xx+8,y-25);ctx.lineTo(xx+11,y-8);ctx.fill();
-        ctx.fillStyle='#fff1d9';ctx.beginPath();ctx.arc(xx-side*3,y-1,2,0,Math.PI*2);ctx.fill();
-      }
-      ctx.strokeStyle='#e4b7c1';ctx.lineWidth=4;ctx.beginPath();
-      ctx.moveTo(x-13,y-18);ctx.quadraticCurveTo(x,y-38,x+13,y-18);ctx.stroke();
-      ctx.fillStyle='#ffefd0';ctx.beginPath();ctx.arc(x,y-28,5,0,Math.PI*2);ctx.fill();
-    }else if(rare){
-      ctx.fillStyle=({home:'#c39f73',sakura:'#f0b8d0',creek:'#91cfdb',volcano:'#b77c61',ruins:'#aaa4d6'})[region]||'#8b9aac';ctx.beginPath();ctx.moveTo(x-9,y+18);ctx.lineTo(x-17,y-6);
-      ctx.lineTo(x,y-27);ctx.lineTo(x+19,y-6);ctx.lineTo(x+8,y+18);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#d7ebec';ctx.beginPath();ctx.moveTo(x,y-26);ctx.lineTo(x+18,y-6);
-      ctx.lineTo(x+4,y+5);ctx.closePath();ctx.fill();
-    }else if(node.kind==='forage'){
-      // A living herb or plant clump; creek forage becomes a silvery fish.
-      if(region==='creek'||region==='ruins'){
-        ctx.fillStyle=region==='creek'?'#d9eff0':'#e1d8fa';
-        ctx.beginPath();ctx.ellipse(x,y,21,11,0,0,Math.PI*2);ctx.fill();
-        ctx.beginPath();ctx.moveTo(x-16,y);ctx.lineTo(x-29,y-11);ctx.lineTo(x-29,y+11);ctx.closePath();ctx.fill();
-        ctx.fillStyle='#617a89';ctx.beginPath();ctx.arc(x+11,y-3,2.2,0,Math.PI*2);ctx.fill();
-      }else{
-        ctx.strokeStyle='#699a6b';ctx.lineWidth=4;
-        ctx.beginPath();ctx.moveTo(x,y+19);ctx.lineTo(x,y-21);ctx.stroke();
-        for(const side of [-1,1])for(let i=0;i<3;i++){
-          ctx.fillStyle=region==='volcano'?'#d0a66c':region==='sakura'?'#f3adc7':'#87b78c';
-          ctx.beginPath();ctx.ellipse(x+side*(8+i*3),y-12+i*12,12,6,side*.6,0,Math.PI*2);ctx.fill();
-        }
-      }
-    }else if(node.kind==='play'){
-      // A toy with wrapped thread, not a treasure chest.
-      ctx.fillStyle=region==='volcano'?'#e7b990':region==='ruins'?'#c6bde3':
-        region==='creek'?'#a8d6d8':region==='sakura'?'#f9c2d0':'#deb49a';
-      ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#fff3df';ctx.lineWidth=2;
-      for(let i=-2;i<=2;i++){ctx.beginPath();ctx.arc(x,y,7+i*3,-1.7,1.8);ctx.stroke();}
-      ctx.strokeStyle='#dbc99e';ctx.lineWidth=2;ctx.beginPath();
-      ctx.moveTo(x+10,y+10);ctx.quadraticCurveTo(x+26,y+23,x+31,y+8);ctx.stroke();
-    }else if(node.kind==='cache'){
-      // Small coin pouch or shrine offering, visually different from plants/toys.
-      ctx.fillStyle=region==='volcano'?'#8e6960':region==='ruins'?'#8e8ba6':'#a58a6f';
-      ctx.beginPath();ctx.moveTo(x-16,y-15);ctx.lineTo(x+16,y-15);
-      ctx.quadraticCurveTo(x+28,y+12,x,y+21);ctx.quadraticCurveTo(x-28,y+12,x-16,y-15);ctx.fill();
-      ctx.strokeStyle='#f4d39a';ctx.lineWidth=3;ctx.beginPath();
-      ctx.moveTo(x-12,y-13);ctx.quadraticCurveTo(x,y-5,x+12,y-13);ctx.stroke();
-      // The visible currency is always a silver minted coin, even inside pouches.
-       ctx.fillStyle='#ffe9a0';ctx.strokeStyle='#b58427';ctx.lineWidth=1.6;
-       ctx.beginPath();ctx.arc(x,y+5,7,0,Math.PI*2);ctx.fill();ctx.stroke();
-       ctx.strokeStyle='#fff8d8';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y+5,4.7,0,Math.PI*2);ctx.stroke();
-    }else{
-      // Visual reward identity depends on the biome, never the same box.
-      if(region==='sakura'){
-        ctx.strokeStyle='#a17681';ctx.lineWidth=4;ctx.beginPath();
-        ctx.moveTo(x-18,y+15);ctx.lineTo(x+6,y-12);ctx.stroke();
-        for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ctx.fillStyle=i%2?'#f3b5cd':'#ffedf0';
-          ctx.beginPath();ctx.ellipse(x+6+Math.cos(a)*12,y-12+Math.sin(a)*11,9,5,a,0,Math.PI*2);ctx.fill();}
-        ctx.fillStyle='#fff0a5';ctx.beginPath();ctx.arc(x+6,y-12,4,0,Math.PI*2);ctx.fill();
-      }else if(region==='creek'){
-        ctx.fillStyle='#f0e4d0';ctx.beginPath();ctx.ellipse(x,y+6,21,15,0,Math.PI,0);ctx.closePath();ctx.fill();
-        for(let i=-2;i<=2;i++){ctx.strokeStyle='#9cc5bd';ctx.lineWidth=2;ctx.beginPath();
-          ctx.moveTo(x,y+19);ctx.lineTo(x+i*8,y-9);ctx.stroke();}
-      }else if(region==='volcano'){
-        ctx.fillStyle='#64565a';ctx.beginPath();ctx.moveTo(x-22,y+18);ctx.lineTo(x-14,y-6);
-        ctx.lineTo(x+7,y-28);ctx.lineTo(x+23,y+18);ctx.closePath();ctx.fill();
-        ctx.strokeStyle='#f3ae70';ctx.lineWidth=5;ctx.beginPath();
-        ctx.moveTo(x+7,y-25);ctx.lineTo(x-5,y-1);ctx.lineTo(x+8,y+14);ctx.stroke();
-      }else if(region==='ruins'){
-        ctx.fillStyle='#a4a7c5';ctx.beginPath();ctx.ellipse(x,y,19,20,0,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle='#eee4be';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,10,-2.1,1.5);ctx.stroke();
-        ctx.fillStyle='#fff7dc';ctx.beginPath();ctx.arc(x+8,y-6,3,0,Math.PI*2);ctx.fill();
-      }else{
-        ctx.fillStyle='#b68e70';ctx.beginPath();ctx.ellipse(x,y+4,21,16,0,0,Math.PI*2);ctx.fill();
-        for(let i=0;i<4;i++){ctx.strokeStyle='#f8d8a6';ctx.lineWidth=2;
-          ctx.beginPath();ctx.arc(x,y+4,7+i*4,-2,2);ctx.stroke();}
-      }
-    }
-    // Discovery sparkle clings to the object and does not float as a sticker.
-    const glint=Math.max(0,Math.sin(t*3+node.bob))*5;
-    if(glint>1){ctx.fillStyle='rgba(255,247,213,.65)';
-      ctx.beginPath();ctx.ellipse(x+17,y-13,1.5+glint*.3,1.5+glint*.3,0,0,Math.PI*2);ctx.fill();}
+    ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='700 '+(portrait?'10px':'11px')+' system-ui,sans-serif';
+    ctx.fillStyle='rgba(255,247,228,.76)';
+    ctx.fillText(en?'Tap a painted region to continue your journey':'点击绘制好的区域，继续主线冒险',W*.5,H-(portrait?20:18));
     ctx.restore();
   }
-  // ================================================================
-  // DRAW — region exploration
-  // ================================================================
+
   function drawRegion(ctx) {
     var w = world; if (!w) return;
     var W = game.W, H = game.H, th = w.region.theme, cam = w.cam;
