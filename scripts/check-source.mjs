@@ -41,6 +41,9 @@ if(!dashboard.includes('const homePageviews=games.find(x=>x.game==="hub")?.pagev
  throw Error('Homepage overview must appear as one top-level pageview metric, not a game-table row');
 
 const social=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
+if(!Array.isArray(social.publicationRounds?.rounds)||
+   !social.publicationRounds.rounds.some(round=>round.id==='morning-first'&&round.status==='deleted'))
+ throw Error('Removed dashboard archive must not delete preserved first-round campaign evidence');
 const newVideoSources=['youtube','tiktok','instagram','bluesky'];
 const verifiedSocialPosts=social.metricScope?.verifiedPosts||[];
 const nativeHosts={youtube:['youtube.com','youtu.be'],tiktok:['tiktok.com'],instagram:['instagram.com'],bluesky:['bsky.app']};
@@ -140,6 +143,8 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes('id="archived-first-round-posts"')||
    !dashboard.includes("const archivedRound=(pulse.publicationRounds?.rounds||[]).find(round=>round.id==='morning-first'&&round.status==='deleted');")||
    !dashboard.includes('statStartsNote:"按页面访问去重，不是战斗次数"')||
+   dashboard.includes('firstRoundTitle:')||
+   dashboard.includes('roundOpenPost:')||
    !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
