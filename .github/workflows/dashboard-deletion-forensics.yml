@@ -1,0 +1,66 @@
+name: Isolated deletion request forensics
+on:
+  push:
+    branches: ['audit/dashboard-data-integrity-20261123']
+    paths: ['.github/workflows/dashboard-deletion-forensics.yml']
+permissions:
+  contents: write
+jobs:
+  forensics:
+    if: github.ref == 'refs/heads/audit/dashboard-data-integrity-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/dashboard-data-integrity-20261123
+      - name: Query retained logs only, no D1 queries or writes
+        env:
+          CF_READ: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN || secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const token=process.env.CF_READ;
+          const base='https://api.cloudflare.com/client/v4/accounts/ad5c7e2459db758ac4a41973f4f6028b';
+          const result={generatedAt:new Date().toISOString(),status:'DELETION_ACTOR_UNVERIFIED',queries:[]};
+          async function call(label,url,body,extract){
+            try{
+              const r=await fetch(base+url,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
+              const j=await r.json();
+              const row={label,httpStatus:r.status,success:j.success,errors:(j.errors||[]).map(e=>({code:e.code,message:e.message}))};
+              if(r.ok&&j.success)Object.assign(row,extract(j));
+              result.queries.push(row);
+            }catch(e){result.queries.push({label,error:e.name});}
+          }
+          const since='2026-11-22T06:20:00Z',before='2026-11-23T01:00:00Z';
+          await call('account audit logs','/logs/audit?since='+encodeURIComponent(since)+'&before='+encodeURIComponent(before),null,j=>{
+            const a=Array.isArray(j.result)?j.result:[];
+            const related=a.filter(x=>/d1|morrowwish|reset.metrics/i.test(JSON.stringify(x)));
+            return {returned:a.length,pagination:j.result_info||null,related:related.map(x=>({id:x.id,action:x.action,when:x.when||x.timestamp||x.action?.time,resourceType:x.resource?.type,resourceId:x.resource?.id,actorType:x.actor?.type,actorId:x.actor?.id,actionResult:x.action?.result})).slice(0,100)};
+          });
+          await call('legacy account audit logs','/audit_logs?since='+encodeURIComponent(since)+'&before='+encodeURIComponent(before)+'&per_page=100',null,j=>{
+            const a=Array.isArray(j.result)?j.result:[];
+            return {returned:a.length,pagination:j.result_info||null,related:a.filter(x=>/d1|morrowwish|reset.metrics/i.test(JSON.stringify(x))).map(x=>({id:x.id,action:x.action,when:x.when,resource:x.resource?.type,actorType:x.actor?.type,actorId:x.actor?.id})).slice(0,100)};
+          });
+          const timeframe={from:Date.parse(since),to:Date.parse(before)};
+          for(const key of ['$workers.event.request.path','$metadata.message']){
+            await call('worker reset request '+key,'/workers/observability/telemetry/query',{queryId:'audit-reset-20261122',timeframe,dry:true,view:'events',limit:100,parameters:{filters:[{key,operation:'includes',type:'string',value:'/api/reset-metrics'}]}},j=>{
+              const a=j.result?.events;
+              const events=Array.isArray(a)?a:Array.isArray(a?.events)?a.events:[];
+              return {eventCount:events.length,shape:Object.keys(j.result||{}),events:events.map(x=>({timestamp:x.timestamp||x.$metadata?.timestamp,method:x.$workers?.event?.request?.method||x.event?.request?.method,path:x.$workers?.event?.request?.path||x.event?.request?.path,status:x.$workers?.event?.response?.status||x.event?.response?.status,rayId:x.$workers?.event?.rayId||x.$metadata?.id,service:x.$metadata?.service})).slice(0,100)};
+            });
+          }
+          result.limitations=['Log query success without matching events does not establish that no reset occurred; retention, sampling, scope and pagination can limit results.','No credentials, request headers, body or user IP addresses persisted.','No SQL, restore, deployment or production configuration change made.'];
+          fs.writeFileSync('audit/dashboard/deletion-log-evidence.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result,null,2));
+          NODE
+      - name: Save aggregate log evidence on audit branch only
+        run: |
+          set -eu
+          test "$GITHUB_REF" = refs/heads/audit/dashboard-data-integrity-20261123
+          test "$(git branch --show-current)" = audit/dashboard-data-integrity-20261123
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- audit/dashboard/deletion-log-evidence.json
+          git commit -m "audit only: record deletion log access and evidence"
+          git push origin HEAD:refs/heads/audit/dashboard-data-integrity-20261123
