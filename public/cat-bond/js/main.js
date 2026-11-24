@@ -57,6 +57,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if(!slotPanel||!slotList)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     slotHeading.textContent=mode==='new'?(en?'Choose a slot for a new adventure':'选择一个存档位，开始新的冒险'):(en?'Choose a story to continue':'选择要继续的故事');
+    const slotDesc=document.querySelector('.cb-save-picker-desc');
+    if(slotDesc)slotDesc.textContent=en?'Three independent adventures. Choose a slot to continue or begin a new journey.':'三个独立旅程。选择一个位置继续，或开启新的冒险。';
     const slots=State.listSaveSlots();
     slotList.innerHTML=slots.map(slot=>{
       const date=slot.exists&&slot.savedAt?new Date(slot.savedAt).toLocaleString():'';
