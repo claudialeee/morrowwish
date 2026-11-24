@@ -15,7 +15,7 @@ const REGION_PAGES={
   title: "庭院门口的铃声",
   titleEn: "The Bell at the Garden Gate",
   text: "【纸鸢】你醒了。\n【你】刚才是谁在叫我？\n【纸鸢】我只听见铃响。可奇怪的是，铃声传来之前，你的影子先回头了。\n\n木凳下有一只旧毛线盒，里面压着半张双猫合影。照片边缘被烧焦，其中一只猫的脸恰好缺失。背面写着：听见铃声，就回家。",
-  textEn: "[Kite] You are awake.\n[You] Who called me?\n[Kite] I only heard the bell. The strange thing is… your shadow turned around before the sound arrived.\n\nBeneath the bench lies an old yarn box and half of a photograph. One kitten’s face has been burned away. On the back: When the bell rings, come home.",
+  textEn: "[Kite] You are awake.\n[You] Who called me?\n[Kite] I only heard the bell. The strange thing is… your shadow turned around before the sound arrived. The blank places left behind are called the Hollow.\n\nBeneath the bench lies an old yarn box and half of a photograph. One kitten’s face has been burned away. On the back: When the bell rings, come home.",
   region: "home",
   chapter: "第一章 · 空白页",
   chapterEn: "CHAPTER I · THE BLANK PAGE"
