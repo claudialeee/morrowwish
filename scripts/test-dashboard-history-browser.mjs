@@ -103,21 +103,31 @@ try{
    assert.equal(statValues[1],String(homepagePageviews),
      'Homepage pageviews must be displayed separately');
    const archive=page.locator('#archived-first-round');
-   assert.equal(await archive.isVisible(),true,'Deleted first-round archive must remain visible separately');
-   assert.equal(await archive.locator('#archived-first-round-rows tr').count(),4,
-     'First-round platform totals must retain all four native platforms');
-   assert.equal(await page.locator('#archived-first-round-posts tr').count(),28,
-     'First-round archive must retain all 28 individual video records');
-   assert.equal(await page.locator('#archived-first-round-heading').innerText(),
+   assert.equal(await archive.isVisible(),true,'Deleted first-round archive disclosure must remain visible');
+   assert.equal(await archive.evaluate(el=>el.open),false,'Deleted history must be collapsed on initial load');
+   assert.equal(await archive.locator('#archived-first-round-heading').innerText(),
      language==='zh'?'11/22 早间首发 · 已删除数据':'Nov 22 morning first release · deleted archive',
      'First-round archive heading must be localized');
+   assert.equal(await archive.locator('#archived-first-round-posts').isVisible(),false,
+     'Archived post details must remain hidden while the outer archive is collapsed');
+   await archive.locator('summary').first().click();
+   assert.equal(await archive.evaluate(el=>el.open),true,'Archive should expand on demand');
+   assert.equal(await archive.locator('#archived-first-round-rows tr').count(),4,
+     'First-round platform totals must retain all four native platforms');
+   assert.equal(await archive.locator('#archived-first-round-posts tr').count(),28,
+     'First-round archive must retain all 28 individual video records');
    const archiveHeaders=await archive.locator('table').first().locator('thead th').allTextContents();
    assert.equal(archiveHeaders[0],language==='zh'?'平台':'Platform',
      'First-round archive table headings must be localized');
-   await archive.locator('details').first().evaluate(el=>el.open=true);
+   const postDetails=archive.locator('details').first();
+   assert.equal(await postDetails.evaluate(el=>el.open),false,'Individual deleted video records must also start collapsed');
+   await postDetails.locator('summary').click();
    assert.equal(await page.locator('#archived-first-round-posts a').first().innerText(),
      language==='zh'?'打开原帖':'Open original post',
      'Archived post links must have localized labels');
+   assert.equal(await page.locator('#games-total').count(),0,'Seven-game aggregate row must be removed');
+   assert.equal(await page.locator('#games tfoot').count(),0,'Game table must not render a totals footer');
+   assert.equal(await page.locator('#games tr').count(),7,'All seven individual game rows must remain');
    const visibleText=await page.locator('body').innerText();
    assert.ok(!/统计起点：11\/22 00:00|Since Nov 22, 2026, 12:00 AM PT/.test(visibleText),
      'Reporting start date must not be shown in the dashboard');
@@ -135,12 +145,11 @@ try{
    assert.deepEqual(cells.slice(5,8),[mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%',
     '7 / 8 · 87.5%',mixed?'7 / 121 · 5.8%':'7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
-   const totalCells=(await page.locator('#games-total tr td').allTextContents())
-    .map(s=>s.trim().replace(/\s+/g,' '));
-   assert.equal(totalCells[0],String(gamePageviews),
-    'Seven-game total must include games without gameplay tracking, but exclude homepage');
-   assert.equal(totalCells[1],'29','Total Play must sum page-level tracked visits');
-   assert.equal(totalCells[2],'17','Total Finish must sum page-level tracked visits');
+   const gameTableWrap=page.locator('#games').locator('xpath=ancestor::div[contains(@class,"table-wrap")]').first();
+   assert.equal(await gameTableWrap.evaluate(el=>getComputedStyle(el).borderTopWidth),'0px',
+     'Current game table must not have an outer frame');
+   assert.equal(await page.locator('#video-metrics-detail').evaluate(el=>getComputedStyle(el).borderTopWidth),'0px',
+     'Current native-video metrics must not have an outer frame');
    const cards=await page.locator('#focus-grid .focus-card h3 a').evaluateAll(
     nodes=>nodes.map(n=>n.getAttribute('href')));
    assert.deepEqual(cards,[
@@ -177,4 +186,4 @@ try{
 }finally{
  await browser.close();
 }
-console.log('Real Chromium dashboard gate passed: page-level play/finish, all-seven-game pageview totals, separate homepage/sitewide totals, visible 28-post first-round archive, and bilingual phone/desktop rendering.');
+console.log('Real Chromium dashboard gate passed: page-level play/finish, seven individual game rows, no aggregate row, flat current tables, and a collapsed bilingual 28-post deleted-history archive on phone and desktop.');

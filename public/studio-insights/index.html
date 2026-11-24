@@ -62,13 +62,21 @@ a{color:#a56a83}a:hover{color:#684f7f}
  .focus-card .studio-advanced summary{font-size:10px}
  @media(max-width:900px){.focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
  @media(max-width:540px){.focus-grid{grid-template-columns:1fr}.focus-card{padding:11px}}
+/* Flat current-data tables; deleted launch history is collapsed by default. */
+.panel.table-wrap{border:0;background:transparent;border-radius:0;box-shadow:none;padding:0}
+.native-video-metrics{border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+.archive-first-round{border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+.archive-first-round>summary{cursor:pointer;color:#8f6c7d;font-size:13px;font-weight:850;padding:8px 0}
+.archive-first-round[open]>summary{margin-bottom:12px}
+.archive-first-round-posts{border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+.archive-first-round-posts>summary{cursor:pointer;color:#91818c;font-size:12px;font-weight:800;padding:8px 0}
 </style></head><body><main class="wrap">
 <div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
 <div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><button id="reload" type="button" data-i18n="refresh"></button><button id="reset-metrics" class="reset-metrics" type="button" data-i18n="resetMetrics"></button></div></div>
 <section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
 <div id="report" hidden><div class="stats" id="stats"></div>
 
-<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th></tr></thead><tbody id="games"></tbody><tfoot id="games-total"></tfoot></table></div><p class="description" data-i18n="bondHistoryNote" style="margin:9px 2px 0;line-height:1.6"></p><p class="description" data-i18n="gamesTotalNote" style="margin:6px 2px 0;line-height:1.6"></p></section>
+<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th></tr></thead><tbody id="games"></tbody></table></div><p class="description" data-i18n="bondHistoryNote" style="margin:9px 2px 0;line-height:1.6"></p></section>
 
 <section class="section" id="promotion-channels">
  <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
@@ -83,21 +91,22 @@ a{color:#a56a83}a:hover{color:#684f7f}
  <p id="video-detail-note" class="description" style="margin:7px 1px;font-size:12px;line-height:1.7"></p>
 </section>
 
-<section class="ew-details archive-first-round" id="archived-first-round" aria-labelledby="archived-first-round-heading" hidden style="margin-top:16px">
- <div class="section-head"><div><h3 id="archived-first-round-heading" data-i18n="firstRoundTitle"></h3><p class="description" data-i18n="firstRoundDesc"></p></div></div>
- <div class="panel table-wrap" style="margin-top:10px"><table class="table compact-channels" style="min-width:900px">
+<details class="ew-details archive-first-round" id="archived-first-round" aria-labelledby="archived-first-round-heading" hidden style="margin-top:16px">
+ <summary id="archived-first-round-heading" data-i18n="firstRoundTitle"></summary>
+ <p class="description" data-i18n="firstRoundDesc" style="margin:0 0 10px;line-height:1.6"></p>
+ <div class="table-wrap" style="margin-top:10px"><table class="table compact-channels" style="min-width:900px">
   <thead><tr><th data-i18n="roundPlatform"></th><th data-i18n="roundPosts"></th><th data-i18n="roundViews"></th><th data-i18n="roundLikes"></th><th data-i18n="roundComments"></th><th data-i18n="roundReposts"></th><th data-i18n="roundReplies"></th><th data-i18n="roundQuotes"></th><th data-i18n="roundCaptured"></th></tr></thead>
   <tbody id="archived-first-round-rows"></tbody>
  </table></div>
  <p id="archived-first-round-note" class="description" style="margin:8px 1px 0;font-size:11px;line-height:1.6"></p>
- <details class="ew-details archive-first-round-posts" style="margin-top:14px;padding-top:12px">
+ <details class="archive-first-round-posts" style="margin-top:14px">
   <summary data-i18n="firstRoundPostsTitle" style="cursor:pointer;color:var(--muted);font-weight:850;padding:8px 0"></summary>
-  <div class="panel table-wrap" style="margin-top:10px"><table class="table compact-channels" style="min-width:1180px">
+  <div class="table-wrap" style="margin-top:10px"><table class="table compact-channels" style="min-width:1180px">
    <thead><tr><th data-i18n="colGame"></th><th data-i18n="roundPlatform"></th><th data-i18n="roundOpenPost"></th><th data-i18n="roundViews"></th><th data-i18n="roundLikes"></th><th data-i18n="roundComments"></th><th data-i18n="roundShares"></th><th data-i18n="roundReposts"></th><th data-i18n="roundReplies"></th><th data-i18n="roundQuotes"></th><th data-i18n="roundCaptured"></th></tr></thead>
    <tbody id="archived-first-round-posts"></tbody>
   </table></div>
  </details>
-</section>
+</details>
 
 <p id="hub-funnel" class="description" style="margin:12px 1px 0;font-size:12px;line-height:1.7"></p>
 </section>
@@ -120,8 +129,8 @@ today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 �
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
 trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"开玩、结算按单次游戏页访问去重：开玩＝该次访问进入游戏，结算＝该次访问至少出现一次正常结算画面，胜负都算；同次访问多局只计一次。猫猫纽带的开玩以玩家点击开始、进入游戏世界为准，不按战斗次数计算。没有对应埋点时留空。游戏页每次真实加载计一次浏览，重复打开和刷新均计入；首页浏览量单独列出。点击表头可排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"各游戏 · 玩法明细",focusDesc:"七款游戏各保留三项核心玩法指标；转化率见上方总表，没有记录的指标保持空白。",trendMore:"查看流量趋势",
-colGame:"游戏",colPv:"游戏页浏览量",colVisitStart:"访问→开玩（页面）",colStartFinish:"开玩→结算（页面）",colVisitFinish:"访问→结算（页面）",colVisitors:"访客",colStarts:"开玩",colRetries:"重玩",colTime:"平均会话",colEnds:"结算",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"七款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
-homeFunnelLabel:"主页→游戏（新版）：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelYouTube:"YouTube：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台原生数据按游戏合并展示；Bluesky 显示点赞、转发、回复和引用，不把互动数冒充播放量。网站访问和游戏事件来自本站真实埋点。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"按游戏合并展示 YouTube、Instagram、TikTok 和 Bluesky 原生数据；Bluesky 仅显示互动数，不显示播放量。",gamesTrackedTotal:"七款游戏合计",gamesTotalNote:"表格页面浏览量合计覆盖全部七款游戏；顶部全站页面浏览量还包含首页，首页浏览量单独展示。开玩、结算及后三列转化率只统计有对应埋点的页面访问。猫猫纽带的开玩按点击开始进入游戏世界计算，不按战斗次数计算；缺失数据留空。",
+colGame:"游戏",colPv:"游戏页浏览量",colVisitStart:"访问开玩率",colStartFinish:"开玩结算率",colVisitFinish:"访问结算率",colVisitors:"访客",colStarts:"开玩",colRetries:"重玩",colTime:"平均会话",colEnds:"结算",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"七款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
+homeFunnelLabel:"主页游戏点击：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelYouTube:"YouTube 引流：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台原生数据按游戏合并展示；Bluesky 显示点赞、转发、回复和引用，不把互动数冒充播放量。网站访问和游戏事件来自本站真实埋点。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"按游戏合并展示 YouTube、Instagram、TikTok 和 Bluesky 原生数据；Bluesky 仅显示互动数，不显示播放量。",
 
 
 
@@ -141,8 +150,8 @@ today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
 trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Play and Finish count each game-page visit once: Play means the player entered gameplay during that visit; Finish means the visit reached at least one normal results screen, win or loss. Multiple rounds in one visit count once. For Cat Bond, Play means pressing Start to enter the game world—not starting a battle. Missing tracking stays blank. Every real game-page load counts as one pageview, including refreshes and repeat opens; homepage views are shown separately.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"All games · gameplay details",focusDesc:"Three core gameplay metrics per game; conversion rates remain in the table above. Missing records stay blank.",trendMore:"Traffic trends",
-colGame:"Game",colPv:"Game pageviews",colVisitStart:"Visit → play (page visits)",colStartFinish:"Play → finish (page visits)",colVisitFinish:"Visit → finish (page visits)",colVisitors:"Visitors",colStarts:"Played",colRetries:"Replays",colTime:"Avg. session",colEnds:"Finished",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
-homeFunnelLabel:"Homepage → game (new): {clickers}/{visits} visits chose a game ({rate})",homeFunnelYouTube:"YouTube: {clickers}/{visits} visits chose a game ({rate})",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native platform metrics are combined by game. Bluesky shows likes, reposts, replies and quotes, never a fabricated view count. Site visits and gameplay events use first-party tracking.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Native YouTube, Instagram, TikTok and Bluesky metrics are combined by game. Bluesky shows interactions only, not views.",gamesTrackedTotal:"All seven games",gamesTotalNote:"The table pageview total includes all seven games. The sitewide pageview headline also includes the homepage, which is shown separately. Starts, finishes and conversion rates include only visits with corresponding gameplay tracking. For Cat Bond, Play means pressing Start to enter the game world—not starting a battle. Missing metrics stay blank.",
+colGame:"Game",colPv:"Game pageviews",colVisitStart:"Visit-to-play rate",colStartFinish:"Play-to-finish rate",colVisitFinish:"Visit-to-finish rate",colVisitors:"Visitors",colStarts:"Played",colRetries:"Replays",colTime:"Avg. session",colEnds:"Finished",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
+homeFunnelLabel:"Homepage game clicks: {clickers}/{visits} visits chose a game · {rate}",homeFunnelYouTube:"YouTube traffic: {clickers}/{visits} visits chose a game · {rate}",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native platform metrics are combined by game. Bluesky shows likes, reposts, replies and quotes, never a fabricated view count. Site visits and gameplay events use first-party tracking.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Native YouTube, Instagram, TikTok and Bluesky metrics are combined by game. Bluesky shows interactions only, not views.",
 
 
 
@@ -225,8 +234,8 @@ function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=
 
 function renderSignals(gameRows){
  const games=new Map((gameRows||[]).map(x=>[x.game,x]));
- const W={zh:{start:"访问→开玩（去重）",finish:"开玩→结算（去重）",replay:"重玩次数",next:"继续挑战（新）",caught:"成功捕获",rareSeen:"遇见稀有猫（庭院）",rare:"捕获稀有猫",v2Note:"猫猫纽带的新口径从更新后开始；旧数据不补算。",legacyNote:"旧版稀有遭遇仅记庭院草丛，不能与全部捕获比较。",regionTitle:"探索区域战斗结算率（新版）",regionLabels:{yard:"庭院",home:"起始花园",sakura:"樱花林",creek:"溪流谷",volcano:"火山口",ruins:"月影遗迹",unknown:"未知来源"},duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
- en:{start:"Visit → play (unique)",finish:"Play → finish (unique)",replay:"Replays",next:"Next battles (new)",caught:"Cats captured",rareSeen:"Rare encounters (yard)",rare:"Rare cats captured",v2Note:"New Cat Bond data only; legacy events are not backfilled.",legacyNote:"Old rare encounters counted yard spawns only, not all catches.",regionTitle:"Battle finish rate by region (new)",regionLabels:{yard:"Yard",home:"Home garden",sakura:"Sakura woods",creek:"Creek valley",volcano:"Volcano",ruins:"Moonshadow ruins",unknown:"Unknown"},duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
+ const W={zh:{start:"访问开玩",finish:"开玩结算",replay:"重玩次数",next:"继续挑战（新）",caught:"成功捕获",rareSeen:"遇见稀有猫（庭院）",rare:"捕获稀有猫",v2Note:"猫猫纽带的新口径从更新后开始；旧数据不补算。",legacyNote:"旧版稀有遭遇仅记庭院草丛，不能与全部捕获比较。",regionTitle:"探索区域战斗结算率（新版）",regionLabels:{yard:"庭院",home:"起始花园",sakura:"樱花林",creek:"溪流谷",volcano:"火山口",ruins:"月影遗迹",unknown:"未知来源"},duo:"触发双猫合击",yard:"庭院建造",surprise:"惊喜事件",room1:"第一关通关",room8:"第八关通关",escaped:"成功逃脱",seen:"被主人发现",near:"险中逃脱",yarn:"诱饵成功",combo:"发现居民组合",legend:"解锁传奇愿望",resident:"触发居民故事",townWin:"成功结局",townLose:"失败结局",townReplay:"重新开镇",storyFinish:"故事完读率",storyReplay:"人生重玩率",storyYes:"愿意再玩",storyMaybe:"考虑再玩",bond:"探索与双猫搭档",heist:"挑战、惊险和通关",town:"居民组合与结局",story:"人生选择与体验反馈"},
+ en:{start:"Visits that played",finish:"Plays that finished",replay:"Replays",next:"Next battles (new)",caught:"Cats captured",rareSeen:"Rare encounters (yard)",rare:"Rare cats captured",v2Note:"New Cat Bond data only; legacy events are not backfilled.",legacyNote:"Old rare encounters counted yard spawns only, not all catches.",regionTitle:"Battle finish rate by region (new)",regionLabels:{yard:"Yard",home:"Home garden",sakura:"Sakura woods",creek:"Creek valley",volcano:"Volcano",ruins:"Moonshadow ruins",unknown:"Unknown"},duo:"Duo attacks used",yard:"Yard constructions",surprise:"Surprise events",room1:"Level 1 cleared",room8:"Level 8 cleared",escaped:"Successful escapes",seen:"Caught by owner",near:"Close calls",yarn:"Successful decoys",combo:"Resident combos",legend:"Legendary wishes",resident:"Resident story scenes",townWin:"Successful endings",townLose:"Unsuccessful endings",townReplay:"Town restarts",storyFinish:"Story completion rate",storyReplay:"Replay rate",storyYes:"Would play another life",storyMaybe:"Might play another life",bond:"Exploration and duo bonding",heist:"Challenge, near escapes and progression",town:"Combinations and endings",story:"Life choices and feedback"}}[lang];
  const cards=[
  {id:'cat-bond',priority:1,subtitle:W.bond,items:[['caught','bond_capture'],['rare','bond_rare_capture'],['duo','bond_duo_used']]},
  {id:'pawsibly-innocent',priority:1,subtitle:W.heist,items:[['escaped','cat_escape'],['near','cat_close_call'],['yarn','cat_yarn_distracted']]},
@@ -261,9 +270,9 @@ function renderSignals(gameRows){
   const feedback=g.id==='pawsibly-innocent'&&Number(signals.play_feedback_fun)>0?'<p class="focus-subtitle">'+escapeHTML(t('feelPrefix'))+' · '+format(signals.play_feedback_fun)+'</p>':'';
   const legacy='';
    const newMetrics=bond&&active?'<details class="studio-advanced"><summary>'+
-   escapeHTML(lang==='zh'?'新版漏斗（更新后的访问）':'New funnel (post-update visits)')+
-   '</summary>'+line(lang==='zh'?'新版访问→开玩':'New visit → play',ratio(cv.startedViews,cv.pageviews))+
-   line(lang==='zh'?'新版战斗→结算':'New battle → finish',
+   escapeHTML(lang==='zh'?'新版漏斗 · 更新后访问':'New funnel · post-update visits')+
+   '</summary>'+line(lang==='zh'?'新版访问开玩':'New visits that played',ratio(cv.startedViews,cv.pageviews))+
+   line(lang==='zh'?'新版战斗结算':'New battles finished',
       ratio(signals.bond_battle_end_v2||0,signals.bond_battle_start_v2||0))+
    line(W.next,format(signals.bond_next_battle_v2||0))+
    line(lang==='zh'?'新版稀有挑战':'New rare attempts',format(signals.bond_rare_attempt_v2||0))+
@@ -309,18 +318,6 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url="/"+encodeURIComponent(x.game)+"/";
  return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+startCell+'</td><td>'+finishedCell+'</td><td>'+num('retries')+'</td><td>'+c1+'</td><td>'+c2+'</td><td>'+c3+'</td></tr>';
 }).join("");
-// All seven games contribute pageviews; only games with valid funnels contribute conversion denominators.
-const allGameRows=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&Number(x.pageviews)>0);
-const trackedGames=allGameRows.filter(x=>x.visitFunnel&&Number(x.visitFunnel.pageviews)>0);
-const sumField=(items,field)=>items.reduce((n,x)=>n+Math.max(0,Number(x?.[field])||0),0);
-const trackedVisits=trackedGames.reduce((n,x)=>n+Math.max(0,Number(x.visitFunnel.pageviews)||0),0);
-const trackedStarted=trackedGames.reduce((n,x)=>n+Math.max(0,Number(x.visitFunnel.startedViews)||0),0);
-const trackedFinished=trackedGames.reduce((n,x)=>n+Math.max(0,Number(x.visitFunnel.finishedViews)||0),0);
-const totalStarts=trackedGames.length&&trackedGames.every(x=>x.visitFunnel?.startedViews!=null)?format(trackedStarted):'';
-const totalFinished=trackedGames.length&&trackedGames.every(x=>x.visitFunnel?.finishedViews!=null)?format(trackedFinished):'';
-const totalRetries=allGameRows.length&&allGameRows.every(x=>x.retries!=null&&Number.isFinite(Number(x.retries)))?format(sumField(allGameRows,"retries")):'';
-const totalConv=(a,b)=>b>0&&a<=b?format(a)+' / '+format(b)+' · '+format(pct(a,b))+'%':'';
-$("games-total").innerHTML=allGameRows.length?'<tr class="total-row"><th>'+escapeHTML(t("gamesTrackedTotal"))+'</th><td>'+format(sumField(allGameRows,"pageviews"))+'</td><td>'+totalStarts+'</td><td>'+totalFinished+'</td><td>'+totalRetries+'</td><td>'+totalConv(trackedStarted,trackedVisits)+'</td><td>'+totalConv(trackedFinished,trackedStarted)+'</td><td>'+totalConv(trackedFinished,trackedVisits)+'</td></tr>':'';
 const channels=Array.isArray(j.byChannel)?j.byChannel:[];
 const sourceAliases={itch:['itch','itch.io','itchio','itch.zone'],youtube:['youtube','youtube.com','youtu.be','m.youtube.com'],tiktok:['tiktok','tiktok.com'],instagram:['instagram','instagram.com','l.instagram.com'],bluesky:['bluesky','bsky.app','bsky.social']};
 const siteFor=id=>channels.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));

@@ -98,7 +98,11 @@ assert.ok(posts.every(p=>!firstRound.posts.some(old=>old.url===p.url)),
 assert.ok(JSON.stringify(snap).indexOf('instagram-historical')<0,'legacy posts absent from snapshot');
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 assert.ok(dashboard.includes('id="video-detail-rows"'),'per-game detail table present');
-assert.ok(dashboard.includes('id="games-total"')&&dashboard.includes('gamesTrackedTotal'),'weighted tracked-funnel total row present');
+assert.ok(!dashboard.includes('id="games-total"')&&!dashboard.includes('gamesTrackedTotal')&&!dashboard.includes('gamesTotalNote'),
+ 'per-game metrics must not render an aggregate row');
+assert.ok(dashboard.includes('colVisitStart:"访问开玩率"')&&dashboard.includes('colStartFinish:"开玩结算率"')&&
+ dashboard.includes('colVisitFinish:"访问结算率"'),
+ 'per-game conversion headers must use concise labels without arrows or parentheses');
 assert.ok(dashboard.includes("verifiedPlatforms=['youtube','instagram','tiktok','bluesky']")&&dashboard.includes('<th>Bluesky</th>'),
  'Bluesky must be a single column in the same per-game platform table');
 assert.ok(!dashboard.includes('id="bluesky-engagement-rows"'),

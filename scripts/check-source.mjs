@@ -133,14 +133,22 @@ if(requiredChannels.some(name=>!channelIds.includes("'"+name+"'"))||
 if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("const cv=x.visitFunnel||{}")||
    !dashboard.includes("const c1=conv(cv.startedViews,cv.pageviews)")||
-    !dashboard.includes("const c2=conv(cv.finishedViews,cv.startedViews)")||
-    !dashboard.includes("const c3=conv(cv.finishedViews,cv.pageviews)")||
-   !dashboard.includes("const allGameRows=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&Number(x.pageviews)>0);")||
-   !dashboard.includes('format(sumField(allGameRows,"pageviews"))')||
-   !dashboard.includes('gamesTrackedTotal:"七款游戏合计"')||
-   !dashboard.includes('id="archived-first-round"')||
-   !dashboard.includes('id="archived-first-round-rows"')||
-   !dashboard.includes('id="archived-first-round-posts"')||
+   !dashboard.includes("const c2=conv(cv.finishedViews,cv.startedViews)")||
+   !dashboard.includes("const c3=conv(cv.finishedViews,cv.pageviews)")||
+   !dashboard.includes('colVisitStart:"访问开玩率"')||
+   !dashboard.includes('colStartFinish:"开玩结算率"')||
+   !dashboard.includes('colVisitFinish:"访问结算率"')||
+   !dashboard.includes('colVisitStart:"Visit-to-play rate"')||
+   !dashboard.includes('colStartFinish:"Play-to-finish rate"')||
+   !dashboard.includes('colVisitFinish:"Visit-to-finish rate"')||
+   dashboard.includes('id="games-total"')||
+   dashboard.includes('gamesTrackedTotal:')||
+   dashboard.includes('gamesTotalNote:')||
+   !dashboard.includes('<details class="ew-details archive-first-round" id="archived-first-round"')||
+   !dashboard.includes('class="archive-first-round-posts"')||
+   !dashboard.includes('.panel.table-wrap{border:0;background:transparent;border-radius:0;box-shadow:none;padding:0}')||
+   !dashboard.includes('.native-video-metrics{border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important}')||
+   !dashboard.includes('.archive-first-round{border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important}')||
    !dashboard.includes("const archivedRound=(pulse.publicationRounds?.rounds||[]).find(round=>round.id==='morning-first'&&round.status==='deleted');")||
    !dashboard.includes('statStartsNote:"按页面访问去重，不是战斗次数"')||
    !dashboard.includes('firstRoundTitle:"11/22 早间首发 · 已删除数据"')||
@@ -151,12 +159,12 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
    !dashboard.includes("verifiedPlatforms=['youtube','instagram','tiktok','bluesky']")||
-    !dashboard.includes('<th>Bluesky</th>')||
-    dashboard.includes('id="bluesky-engagement-rows"')||
+   !dashboard.includes('<th>Bluesky</th>')||
+   dashboard.includes('id="bluesky-engagement-rows"')||
    dashboard.includes('id="account-overview-rows"')||
    !dashboard.includes('id="video-detail-rows"')||
    dashboard.includes('accountOverviewNote:'))
- throw Error('Dashboard must preserve current conversion context and separately archive deleted first-round metrics without counting them as active posts');
+ throw Error('Dashboard must keep per-game conversion data, omit aggregate rows, flatten current tables and collapse deleted history without losing its 28-post archive');
 if(!miniUpgrade.includes('window.__MWMiniActive=true')||
    !miniUpgrade.includes('event("run_abandoned",{reason:"restart"}')||
    !telemetry.includes('window.__MWMiniActive')||

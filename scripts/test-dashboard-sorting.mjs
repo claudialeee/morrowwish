@@ -32,13 +32,23 @@ for(const locale of ['zh','en']){
 }
 console.log('Overall pageviews first, homepage views second; both zh/en KPI values and seven-game table preserved.');
 assert.ok(html.includes("const displayOrder=['cat-bond'"),'Game table must start with Cat Bond');
-assert.ok(html.includes('const allGameRows=displayOrder.map(id=>visibleGames.get(id)).filter(x=>x&&Number(x.pageviews)>0);')&&
- html.includes('const trackedGames=allGameRows.filter(x=>x.visitFunnel&&Number(x.visitFunnel.pageviews)>0);'),
- 'aggregate conversion totals must include only games with funnel instrumentation while pageview totals cover all visible games');
-assert.ok(html.includes('totalConv(trackedStarted,trackedVisits)')&&html.includes('totalConv(trackedFinished,trackedStarted)')&&html.includes('totalConv(trackedFinished,trackedVisits)'),
- 'aggregate conversion rates must be weighted from summed page-visit counts, not averaged percentages');
-assert.ok(!html.includes('if(x.game==="hub")return'),'Homepage row must not appear in game table');
-console.log('Homepage pageviews shown once above seven games; all-site rollup preserved.');
+assert.ok(!html.includes('id="games-total"')&&!html.includes('gamesTrackedTotal')&&
+ !html.includes('gamesTotalNote')&&!html.includes('total-row'),
+ 'Game performance table must not render an aggregate row');
+for(const key of ['colVisitStart','colStartFinish','colVisitFinish']){
+ const labels=[...html.matchAll(new RegExp(key+':"([^"]+)"','g'))].map(match=>match[1]);
+ assert.equal(labels.length,2,key+' must have zh/en labels');
+ assert.ok(labels.every(label=>!/[→()]/.test(label)),key+' labels must be concise, without arrows or parentheses');
+}
+assert.ok(html.includes('.panel.table-wrap{border:0;background:transparent;border-radius:0;box-shadow:none;padding:0}'),
+ 'Current data tables must not have an outer frame');
+assert.ok(html.includes('<details class="ew-details archive-first-round" id="archived-first-round"')&&
+ !html.includes('<section class="ew-details archive-first-round"'),
+ 'Deleted first-round history must use a collapsed disclosure');
+assert.ok(html.includes('class="archive-first-round-posts"'),
+ 'Individual deleted posts must remain in a second collapsed disclosure');
+assert.ok(!html.includes('→'),'Dashboard labels must not use arrow notation');
+console.log('Seven-game table has concise bilingual rates, flat table styling, and no aggregate row.');
 
 for(const name of ['games','channel-rows']){
  assert.ok(html.includes('id="'+name+'"'),'Missing sortable dashboard table: '+name);
@@ -136,25 +146,8 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
  assert.ok(!main.includes('79 / 82 · 96.3%</td>'),
   'Raw battle totals must not replace visit-deduplicated conversion columns');
 
- const allGames=[
-  bond,
-  {game:'pawsibly-innocent',pageviews:28,retries:14,visitFunnel:{pageviews:28,startedViews:9,finishedViews:6}},
-  {game:'tiny-town',pageviews:19,retries:6,visitFunnel:{pageviews:19,startedViews:7,finishedViews:2}},
-  {game:'elsewhere',pageviews:16,retries:0,visitFunnel:{pageviews:16,startedViews:1,finishedViews:1}},
-  {game:'flip-dash',pageviews:5,retries:0},
-  {game:'parcel-panic',pageviews:11,retries:1,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
-  {game:'pocket-aquarium',pageviews:12,retries:0}
- ];
- const aggregateDom={};
- const aggregateEnv={...env,fixture:allGames,
-  $:id=>(aggregateDom[id]??={innerHTML:''})};
- vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,aggregateEnv);
- const total=aggregateDom['games-total'].innerHTML;
- assert.ok(total.includes('<td>117</td><td>29</td><td>17</td><td>22</td>'),
-  locale+' seven-game total must include pageviews from untracked games and page-level funnel counts');
- assert.ok(total.includes('29 / 100 · 29%')&&total.includes('17 / 29 · 58.6%')&&
-  total.includes('17 / 100 · 17%'),
-  locale+' aggregate conversion must use only visits with valid gameplay tracking');
+ assert.ok(!html.includes('games-total')&&!html.includes('totalConv'),
+  'No seven-game aggregate row or aggregate conversion renderer may remain');
 }
 console.log('Cat Bond dashboard gate: play/finish cells use page-level counts; battle counts stay in gameplay details; conversions remain 8/26, 7/8, 7/26 in zh/en.');
 
