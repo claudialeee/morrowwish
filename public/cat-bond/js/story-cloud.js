@@ -794,113 +794,197 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 const NPC_CAST=[
  {id:'kite',region:'home',name:'纸鸢',en:'Kite',role:'Catdex 记录员',roleEn:'Catdex Keeper',species:'xiaohui',x:480,y:650,accent:'#d9b7c1',
-  intro:['你醒了。书上说今天会有人回来。','我没有说是你——是 Catdex 自己翻到了这一页。','如果你想知道过去，先帮我找回旧院子的毛线盒。'],
-  introEn:['You are awake. The book said someone would return today.','I did not say it was you. The Catdex turned to this page by itself.','If you want answers, help me find the old yarn box first.'],
-  quest:'找回旧院子的毛线盒',questEn:'Recover the old garden yarn box',done:'盒底刻着星铃的记号。你以前把它交给一个最信任的人。',doneEn:'The Star Bell mark is carved beneath it. You once gave it to someone you trusted most.'},
+  intro:['你醒来时，铃声已经停了。','“醒来”和“被叫回来”不是一回事。','这本 Catdex 替你留着一页空白。我一直不确定，那究竟是等待，还是警告。'],
+  introEn:['The bell had already stopped when you woke.','Waking up and being called back are not the same thing.','This Catdex kept a blank page for you. I have never known whether it was an invitation or a warning.'],
+  reveal:['我藏了被撕下的那一页。它记录着你和暮铃最后一次争执。','你说：“别替我决定我能承受什么。”','我害怕你看见真相后会转身离开，所以替你决定了该看见什么。现在我知道，这和当年的沉默没有区别。'],
+  revealEn:['I hid the page that was torn out. It records your last argument with Muling.','You said, “Do not decide what I can bear for me.”','I feared the truth would make you turn away, so I decided what you were allowed to see. I understand now that this is another kind of silence.'],
+  after:['我把残页放回 Catdex 了。它没有替你写下答案。','这次，最后一页留给你自己。'],
+  afterEn:['I have returned the torn page to the Catdex. It does not answer the question for you.','This time, the last page belongs to you.'],
+  epilogue:['我终于学会了记录一件事，而不替它决定意义。','你写下的新名字，我会好好保管。'],
+  epilogueEn:['I have finally learned to record something without deciding what it must mean.','I will keep the new name you wrote safe.']},
  {id:'feizhi',region:'sakura',name:'绯枝',en:'Feizhi',role:'神社守签人',roleEn:'Shrine Keeper',species:'yinghua',x:520,y:650,accent:'#efadc4',
-  intro:['这支签文每天都会变。我怀疑有人在改写过去。','别担心，我不是要你相信预言。我只想知道是谁在撒谎。','替我找回被风吹走的许愿信吧。'],
-  introEn:['This fortune changes every day. I think someone is rewriting the past.','Do not worry. I am not asking you to believe in prophecy. I want to know who is lying.','Please find the wish note the wind carried away.'],
-  quest:'找回樱花许愿信',questEn:'Recover the shrine wish note',done:'最后一行写着：愿那个没能回家的孩子，也有人等。',doneEn:'The last line reads: may someone be waiting for the child who never made it home.'},
+  intro:['别把签文当成预言。我只是替人保管问题。','这张纸被改过太多次，薄得快要透光了。','有些人害怕的不是未来，而是过去终于有了名字。'],
+  introEn:['Do not mistake a fortune for a prophecy. I only keep people’s questions safe.','This paper has been rewritten so many times it is almost translucent.','Some people do not fear the future. They fear the past finally having a name.'],
+  reveal:['我改写了神社的旧预言。原文曾被用来为星铃实验辩护。','我删掉了“自愿交出名字”那几个字，以为这样就没人会再把牺牲说成命运。','可被删掉的真相不会消失，只会让后来的人更难理解彼此。'],
+  revealEn:['I rewrote the shrine’s old prophecy. The original words were used to justify the Star Bell experiment.','I removed the words “a name given willingly,” believing no one could turn sacrifice into destiny if the words were gone.','But an erased truth does not disappear. It only makes it harder for those left behind to understand one another.'],
+  after:['我会把原文重新刻回石碑。不是为了恢复传统，而是让后来的人知道它曾经错在哪里。'],
+  afterEn:['I will carve the original words back into the stone—not to restore the tradition, but to show where it went wrong.'],
+  epilogue:['神社不再替任何人预言结局。','每一张新签都从一个问题开始。'],
+  epilogueEn:['The shrine no longer predicts anyone’s ending.','Every new fortune begins with a question.']},
  {id:'duchuan',region:'creek',name:'渡川',en:'Duchuan',role:'溪谷摆渡人',roleEn:'Creek Ferryman',species:'lanbao',x:500,y:650,accent:'#8fc8d9',
-  intro:['河水会带走东西，也会把东西还回来。','你的名字没有被偷走。你自己把它交给了河。','找到那枚蓝贝壳，我再告诉你为什么。'],
-  introEn:['The river takes things away. Sometimes it brings them back.','Your name was not stolen. You gave it to the river.','Find the blue shell, and I will tell you why.'],
-  quest:'找回溪谷蓝贝壳',questEn:'Recover the blue creek shell',done:'星铃需要一个锚。你不肯让那只小猫成为锚，所以交出了自己的名字。',doneEn:'The Star Bell needed an anchor. You would not let that kitten become it, so you gave up your own name.'},
+  intro:['河水会带走东西，也会把东西还回来。','名字很轻。把它交出去的人，通常知道自己在做什么。','你一直看着水面，像是在等谁先开口。'],
+  introEn:['The river carries things away. Sometimes it brings them back.','A name is light. Those who give one away usually know what they are doing.','You keep watching the water, as if waiting for someone else to speak first.'],
+  reveal:['河没有偷走你的名字。是你亲手把它放进水里。','你不想让星铃把暮铃变成封印的锚，所以把自己的名字交给了河。','你知道这样一来，暮铃也许再也找不到你。你还是做了。'],
+  revealEn:['The river did not steal your name. You placed it in the current yourself.','You would not let the Star Bell use Muling as the seal’s anchor, so you gave the river your name instead.','You knew Muling might never find you again. You chose it anyway.'],
+  after:['河水没有替你保管一个旧答案。它只是让你有机会重新决定，什么值得带走。'],
+  afterEn:['The river did not keep an old answer for you. It gave you the chance to decide what is worth carrying forward.'],
+  epilogue:['渡船仍会经过这里。','只是这次，我会把灯留给所有想回家的人。'],
+  epilogueEn:['The ferry will keep crossing this river.','This time, I will leave the lantern lit for everyone trying to find their way home.']},
  {id:'jinhe',region:'volcano',name:'烬禾',en:'Jinhe',role:'余烬守望者',roleEn:'Ember Warden',species:'senlin',x:540,y:650,accent:'#e7a16f',
-  intro:['别靠近裂缝。这里的火不是从山里烧出来的。','灾变那天，我看见你走进了星铃。','把暖光石带回来，我会告诉你我为什么没拦住你。'],
-  introEn:['Stay away from the fissure. This fire did not come from the mountain.','On the day of the catastrophe, I saw you walk into the Star Bell.','Bring back the ember stone. I will tell you why I did not stop you.'],
-  quest:'找回火山暖光石',questEn:'Recover the warm ember stone',done:'你让我保护其他猫，不要告诉暮铃真相。我遵守了约定，却让它独自误解了你。',doneEn:'You asked me to protect the others and keep the truth from Muling. I kept my promise, and left them alone with the wrong story.'},
+  intro:['别把安静当成安全。星铃还在发热。','我记得封印合上的声音。比火山喷发的声音更清楚。','如果你想问那一天发生了什么，先听完，再决定要不要恨我。'],
+  introEn:['Do not mistake quiet for safety. The Star Bell is still hot.','I remember the sound of the seal closing more clearly than the eruption.','If you want to ask what happened that day, hear me out before deciding whether to hate me.'],
+  reveal:['我看见你转身走回星铃。你让我先带其他猫离开。','我关上了外面的门。暮铃只看见门合上，以为你选择了离开。','我本可以喊出真相。我没有。我把沉默称作守约，其实也有一部分是懦弱。'],
+  revealEn:['I saw you turn back toward the Star Bell. You told me to get the other cats out first.','I closed the outer gate. Muling saw only the door shut and believed you had chosen to leave.','I could have shouted the truth. I did not. I called my silence loyalty. Part of it was cowardice.'],
+  after:['如果你见到暮铃，不必替我求情。','我会留下来，亲自向那些被伤害的猫解释，也承担修复的责任。'],
+  afterEn:['If you see Muling, do not ask them to forgive me.','I will stay and answer to the cats who were hurt. I will help repair what I helped seal away.'],
+  epilogue:['我没有请求所有人原谅我。','我只答应每天把门打开，直到他们愿意相信这里安全为止。'],
+  epilogueEn:['I did not ask everyone to forgive me.','I promised to open the gate every day until they believe this place is safe again.']},
  {id:'xingce',region:'ruins',name:'星簿',en:'Star Scribe',role:'遗迹解读者',roleEn:'Ruins Archivist',species:'yuelian',x:520,y:650,accent:'#b8a5df',
-  intro:['你终于走到这里。六段旋律已经快要齐了。','它们不是钥匙，而是有人拿来拼凑你的记忆。','找到星光匣。之后，我会把隐瞒的一切告诉你。'],
-  introEn:['You finally made it here. The six melodies are almost complete.','They are not keys. Someone is using them to assemble your memories.','Find the star box. Then I will tell you everything I kept from you.'],
-  quest:'找回月影星光匣',questEn:'Recover the Moonshadow star box',done:'暮铃知道仪式无法真正复活你。它还是继续了。悲伤解释了它的选择，却不能替它开脱。',doneEn:'Muling knows the ritual cannot truly bring you back. It continued anyway. Grief explains the choice; it does not excuse it.'}
+  intro:['星铃不回答问题。它只会重复你最放不下的那一句。','我读过最后一段乐谱。','我知道它会走向哪里，却一直没有告诉任何人。'],
+  introEn:['The Star Bell does not answer questions. It repeats the words you cannot let go.','I have read the final movement of the score.','I know where it leads. I have not told anyone.'],
+  reveal:['我知道逆响不能复原你。它只能制造一个足够像你的回声。','我以为你会在仪式完成前阻止暮铃，所以把真相留到最后。','我把怯懦伪装成研究，把别人的希望当成自己的筹码。这不是旁观，是共谋。'],
+  revealEn:['I knew the Reversed Bell could not restore you. It could only make an echo convincing enough to resemble you.','I thought you would stop Muling before the ritual was complete, so I kept the truth until the end.','I disguised fear as research and used other people’s hope as leverage. That was not observation. It was complicity.'],
+  after:['六段旋律原本是纪念，不是钥匙。','暮铃改写了最后一个音。我看见了，却没有阻止。'],
+  afterEn:['The six melodies were written as a memorial, not a key.','Muling changed the final note. I saw it happen, and did nothing.'],
+  epilogue:['我会把乐谱公开，也会把自己的沉默写进去。','历史不该只留下听起来体面的部分。'],
+  epilogueEn:['I will publish the score, including the part where I stayed silent.','History should not preserve only the parts that sound respectable.']}
 ];
+const NPC_CHOICES={
+ kite:{prompt:'纸鸢问：如果一本记录完整，却让你误会一个人，你会先相信记录，还是先听当事人说话？',promptEn:'Kite asks: If a complete record made you misunderstand someone, would you trust the record or hear the person first?',
+  options:[
+   {id:'hear_people',flag:'hear_people',bond:2,label:'我会先听当事人的声音。',labelEn:'I would hear the person first.',reply:'纸鸢把爪子从书脊上移开：“那我会把残页交给你。”',replyEn:'Kite takes a paw off the book spine. “Then I will show you the missing page.”'},
+   {id:'question_record',flag:'question_records',bond:1,label:'先找出每一处删改。',labelEn:'First, show me every alteration.',reply:'纸鸢点头：“记录也应该接受质疑。”',replyEn:'Kite nods. “Records should be questioned, too.”'}]},
+ feizhi:{prompt:'绯枝问：如果真相会让一个等待你的人受伤，你希望现在听见，还是等记忆自己回来？',promptEn:'Feizhi asks: If the truth might hurt someone waiting for you, would you hear it now or let the memory return in its own time?',
+  options:[
+   {id:'truth_now',flag:'truth_now',bond:2,label:'现在告诉我。等待不该靠谎言维持。',labelEn:'Tell me now. Waiting should not be built on a lie.',reply:'绯枝收起笑容：“好。那我们从被涂掉的字开始。”',replyEn:'Feizhi stops smiling. “Then we begin with the words someone erased.”'},
+   {id:'patience',flag:'patience',bond:1,label:'让我自己想起来，再面对它。',labelEn:'Let me remember it myself before I face it.',reply:'绯枝轻轻点头：“有些答案需要自己走到面前。”',replyEn:'Feizhi nods. “Some answers must be reached on your own.”'}]},
+ duchuan:{prompt:'渡川问：如果取回自己的名字，会让另一个人再次成为封印的代价，你还会取回来吗？',promptEn:'Duchuan asks: If reclaiming your name could make someone else the seal’s price again, would you still take it back?',
+  options:[
+   {id:'protect_muling',flag:'protect_muling',bond:2,label:'我不会再让别人替我付出这种代价。',labelEn:'I will not let someone else pay that price for me again.',reply:'渡川望向河面：“你还是先看见了别人。”',replyEn:'Duchuan looks toward the water. “You still see the other person first.”'},
+   {id:'claim_name',flag:'claim_name',bond:1,label:'我需要知道自己是谁，才能作出选择。',labelEn:'I need to know who I am before I can choose.',reply:'渡川点头：“知道自己是谁，也是一种责任。”',replyEn:'Duchuan nods. “Knowing who you are is also a responsibility.”'}]},
+ jinhe:{prompt:'烬禾问：如果守约让另一个人误会了你，你能原谅守约的人吗？',promptEn:'Jinhe asks: If keeping a promise made someone misunderstand you, could you forgive the one who kept it?',
+  options:[
+   {id:'accountability',flag:'accountability',bond:2,label:'理由不能代替道歉。先承担，再谈原谅。',labelEn:'A reason is not an apology. Take responsibility first.',reply:'烬禾没有辩解：“你说得对。我欠的不只是解释。”',replyEn:'Jinhe does not argue. “You are right. I owe more than an explanation.”'},
+   {id:'compassion',flag:'compassion',bond:1,label:'我会听完理由，但不会假装没有伤害。',labelEn:'I will hear the reason, but I will not pretend no one was hurt.',reply:'烬禾低下头：“这已经比我当年给自己的宽容多了。”',replyEn:'Jinhe lowers her head. “That is more grace than I gave myself.”'}]},
+ xingce:{prompt:'星簿问：如果一段回忆能完美复刻一个人，你会把它叫作复活吗？',promptEn:'Star Scribe asks: If a memory could perfectly recreate someone, would you call that resurrection?',
+  options:[
+   {id:'person',flag:'person_not_memory',bond:2,label:'不会。记忆不是一个人。',labelEn:'No. A memory is not a person.',reply:'星簿终于抬起眼睛：“暮铃需要亲耳听见这句话。”',replyEn:'Star Scribe finally looks up. “Muling needs to hear that from you.”'},
+   {id:'echo',flag:'echo_can_matter',bond:1,label:'回声仍然重要，但不能代替活着的人。',labelEn:'An echo matters, but it cannot replace someone living.',reply:'星簿合上星盘：“那么我们必须让它听见区别。”',replyEn:'Star Scribe closes the astrolabe. “Then we must make Muling hear the difference.”'}]}
+};
 function npcRoot(){
  const s=state();if(!s)return null;
- if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},quests:{},choices:{},relationships:{},completed:0};
- s.npcStory.talked||={};s.npcStory.quests||={};s.npcStory.choices||={};s.npcStory.relationships||={};return s.npcStory;
-}
-function npcLocale(npc,key){const en=!isZh();return en?(npc[key+'En']||npc[key]):npc[key];}
-const NPC_CHOICES={
- kite:{prompt:'纸鸢问：如果一本书记得你，却不记得你的名字，你会相信它吗？',promptEn:'Kite asks: If a book remembers you but not your name, would you trust it?',
-  options:[{id:'trust',label:'我愿意先相信它。',labelEn:'I would choose to trust it first.',reply:'纸鸢轻轻合上书页：“那我也试着相信你一次。”',replyEn:'Kite closes the book gently. “Then I will try trusting you, too.”',bond:1},{id:'proof',label:'我想先知道它忘了什么。',labelEn:'I need to know what it forgot.',reply:'纸鸢点头：“好。怀疑有时比记忆更诚实。”',replyEn:'Kite nods. “Good. Doubt can be more honest than memory.”',bond:0}]},
- feizhi:{prompt:'绯枝问：如果真相会伤害一个等待你的人，你还要听吗？',promptEn:'Feizhi asks: If the truth would hurt someone waiting for you, would you still hear it?',
-  options:[{id:'truth',label:'要。隐瞒只会让等待更久。',labelEn:'Yes. Silence only makes the waiting longer.',reply:'绯枝把那支签翻到背面：“那就从被涂掉的字开始。”',replyEn:'Feizhi turns the fortune over. “Then we begin with the words someone erased.”',bond:1},{id:'care',label:'先告诉我，谁会因此受伤。',labelEn:'First tell me who would be hurt.',reply:'绯枝收起笑意：“你总是先想到别人。这一点没有变。”',replyEn:'Feizhi stops smiling. “You still think of everyone else first.”',bond:1}]},
- duchuan:{prompt:'渡川问：你把名字交给河流，是为了逃避，还是为了保护谁？',promptEn:'Duchuan asks: Did you give your name to the river to escape, or to protect someone?',
-  options:[{id:'protect',label:'我是在保护一个重要的人。',labelEn:'I was protecting someone important.',reply:'渡川望向水面：“那么你失去的，不只是名字。”',replyEn:'Duchuan looks into the water. “Then your name was not all you lost.”',bond:1},{id:'unsure',label:'我现在还不知道。',labelEn:'I do not know yet.',reply:'渡川点头：“不知道，也比编一个答案好。”',replyEn:'Duchuan nods. “Not knowing is better than inventing an answer.”',bond:1}]},
- jinhe:{prompt:'烬禾问：如果守住约定意味着让另一个人误会你，你会原谅守约的人吗？',promptEn:'Jinhe asks: If keeping a promise made someone misunderstand you, could you forgive the one who kept it?',
-  options:[{id:'forgive',label:'我会听完他的理由，再决定。',labelEn:'I would hear the reason before deciding.',reply:'烬禾低下头：“我希望当年有人也这样问过我。”',replyEn:'Jinhe lowers their head. “I wish someone had asked me that back then.”',bond:1},{id:'account',label:'理由不能代替道歉。',labelEn:'A reason is not an apology.',reply:'烬禾没有辩解：“你说得对。我欠的不只是解释。”',replyEn:'Jinhe does not argue. “You are right. I owe more than an explanation.”',bond:1}]},
- xingce:{prompt:'星簿问：如果六段记忆能拼出一个熟悉的影子，那还是原来的那个人吗？',promptEn:'Star Scribe asks: If six memories can assemble a familiar shadow, is it still the person you knew?',
-  options:[{id:'person',label:'不是。记忆不是一个人。',labelEn:'No. Memories are not a person.',reply:'星簿终于抬起眼睛：“暮铃需要亲耳听见这句话。”',replyEn:'Star Scribe finally looks up. “Muling needs to hear that from you.”',bond:1},{id:'hope',label:'我希望它仍有机会成为自己。',labelEn:'I hope they still have a chance to become themselves.',reply:'星簿合上星盘：“那么结局就不能只由胜负决定。”',replyEn:'Star Scribe closes the astrolabe. “Then the ending cannot be decided by victory alone.”',bond:1}]}
-};
-
-function npcState(npc){
- const root=npcRoot();if(!root)return {accepted:false,found:false,done:false};
- if(!root.quests[npc.id])root.quests[npc.id]={accepted:false,found:false,done:false};
- return root.quests[npc.id];
+ if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},choices:{},relationships:{},revealed:{},memoryReady:{},visited:{},responses:{},flags:{},completed:0};
+ const root=s.npcStory;
+ root.talked||={};root.choices||={};root.relationships||={};root.revealed||={};root.memoryReady||={};root.visited||={};root.responses||={};root.flags||={};
+ return root;
 }
 function npcSave(){save();window.__game?.refreshHUD?.();}
+function npcHasMemory(npc){
+ const page=REGION_PAGES[npc.region],s=storyState();
+ return !!(page&&s?.fragments?.includes(page.id));
+}
+function showCreekRescueChoice(){
+ const root=npcRoot();if(!root||root.rescueChoice)return;
+ const en=!isZh(),overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog cb-rescue-memory';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEMORY TO PROTECT':'必须先保护的记忆')+'</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ document.body.append(overlay);
+ overlay.querySelector('h2').textContent=en?'Two memories are slipping beneath the current.':'两段记忆正在被河水带走。';
+ overlay.querySelector('.cb-npc-dialog-line').textContent=en
+  ?'A frightened kitten remembers the way home. Duchuan remembers the promise that kept Muling from becoming the seal. You can stabilize only one before the current changes.'
+  :'一只受惊的小猫还记得回家的路。渡川记得那句让暮铃没有成为封印代价的约定。水流正在改变，你只能先稳住其中一段。';
+ const close=()=>{overlay.remove();};
+ const choose=(id)=>{
+  root.rescueChoice=id;root.flags[id==='kitten'?'saved_kitten_memory':'saved_ferryman_testimony']=true;
+  npcSave();close();
+  window.__game?.toast?.(id==='kitten'
+   ?{zh:'你稳住了小猫回家的记忆。它记得一条穿过火山烟尘的安全小路。',en:'You preserved the kitten’s way home. It remembers a safe path through the volcanic smoke.'}
+   :{zh:'你稳住了渡川的证词。河上的灯会为火山中的幸存者指路。',en:'You preserved Duchuan’s testimony. The river lanterns will guide survivors through the volcano.'});
+ };
+ const add=(zh,en,id)=>{const b=document.createElement('button');b.type='button';b.className='cb-cloud-primary';b.textContent=en?en:zh;b.onclick=()=>choose(id);overlay.querySelector('.cb-cloud-actions').append(b);};
+ add('保护小猫记得的回家路线','Preserve the kitten’s way home','kitten');
+ add('保护渡川关于封印的证词','Preserve Duchuan’s testimony','ferryman');
+}
+function showVolcanoAid(root){
+ if(root.volcanoAidShown||!root.rescueChoice)return;
+ root.volcanoAidShown=true;npcSave();
+ const page=root.rescueChoice==='kitten'?{
+  region:'volcano',kicker:'援手 · 记得回家的路',kickerEn:'AN ALLY · THE WAY HOME',
+  title:'有人把路带来了。',titleEn:'Someone brought the way home.',
+  text:'绯枝带着溪谷那只小猫赶到火山。小猫没有带来武器，只记得一条穿过烟尘的路。它把爪子按在地上，火光沿着那条路一盏盏亮起。\\n\\n【绯枝】你当时保护了它的记忆。现在，它来保护其他人。',textEn:'Feizhi reaches the volcano with the kitten from Creek Valley. The kitten carries no weapon, only the path it remembers through the smoke. It places a paw on the ground, and lights begin to glow along the route.\\n\\n[Feizhi] You protected its memory. Now it is here to help protect everyone else.'
+ }:{
+  region:'volcano',kicker:'援手 · 河灯作证',kickerEn:'AN ALLY · THE RIVER BEARS WITNESS',
+  title:'河上的灯没有熄灭。',titleEn:'The river lanterns did not go dark.',
+  text:'渡川把摆渡船驶进火山外缘的熔岩河道。河灯一盏接一盏亮起，为被困的猫咪标出撤离路线。\\n\\n【渡川】你保护了证词。现在，我会让所有人都听见它。',textEn:'Duchuan guides his ferry into the lava channel at the volcano’s edge. River lanterns ignite one by one, marking an evacuation route for the trapped cats.\\n\\n[Duchuan] You protected the testimony. Now I will make sure everyone hears it.'
+ };
+ setTimeout(()=>afterPanelClosed(()=>showSequence('memory',[page],()=>updateTracker(),{canSkip:false})),180);
+}
 function npcTalk(id){
  const npc=NPC_CAST.find(n=>n.id===id);if(!npc)return;
  const root=npcRoot();if(!root)return;
- const q=npcState(npc),en=!isZh();
+ const en=!isZh(),choice=NPC_CHOICES[id],hasChoice=!!root.choices[id],hasMemory=npcHasMemory(npc)||!!root.memoryReady[id];
+ let stage=!hasChoice?'intro':(hasMemory&&!root.revealed[id]?'reveal':(state()?.story?.bossDefeated?'epilogue':'after'));
+ if(stage==='reveal'){root.revealed[id]=true;root.completed=(root.completed||0)+1;npcSave();}
+ root.talked[id]=true;
+ let lines=stage==='intro'?(en?npc.introEn:npc.intro):
+  stage==='reveal'?(en?npc.revealEn:npc.reveal):
+  stage==='epilogue'?(en?npc.epilogueEn:npc.epilogue):(en?npc.afterEn:npc.after);
+ lines=lines.slice();
+ const response=root.responses[id];
+ if(response)lines.push(en?response.en:response.zh);
+ if(stage==='reveal'&&id==='jinhe'&&root.rescueChoice){
+  lines.push(root.rescueChoice==='kitten'
+   ?(en?'The kitten you protected has come with Feizhi. Its remembered path is guiding the others out.':'你保护过的小猫和绯枝一起来了。它记得的路线正在帮助其他猫撤离。')
+   :(en?'Duchuan’s lanterns have reached the outer gate. His testimony will not be lost again.':'渡川的河灯已经抵达外门。他的证词不会再被埋没。'));
+ }
+ if(stage==='reveal'&&id==='xingce'&&root.rescueChoice){
+  lines.push(root.rescueChoice==='kitten'
+   ?(en?'The kitten’s memory survived because you chose a living path over a convenient record.':'小猫的记忆被保住了，因为你选择了活着的路，而不是一份方便的记录。')
+   :(en?'Duchuan’s testimony survived. The Bell can no longer hide behind an incomplete account.':'渡川的证词被保住了。星铃再也不能躲在不完整的记录后面。'));
+ }
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
- const name=en?npc.en:npc.name,role=en?npc.roleEn:npc.role;
- const status=q.done?(en?'Request complete':'委托已完成'):q.found?(en?'Ready to report':'可以交付'):q.accepted?(en?'In progress':'进行中'):(en?'New request':'新委托');
- const lines=!root.talked[id]?(en?npc.introEn:npc.intro):[
-  q.done?(en?npc.doneEn:npc.done):q.found?(en?'You found what I was looking for. Will you hand it over?':'你找到了我要的东西。愿意交给我吗？'):q.accepted?(en?'The request is still open. Return when you find the clue.':'委托还在等你。找到线索后再回来。'):(en?'Could you help me recover something that was lost?':'你愿意帮我找回一件遗失的东西吗？')
- ];
- overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEETING ON THE ROAD':'旅途中的相遇')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A CONVERSATION THAT CHANGES':'一次会改变旅程的对话')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
  document.body.append(overlay);
  const card=overlay.querySelector('.cb-npc-dialog-card'),close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>{close();npcTalk(id);};
  window.addEventListener('morrowwish-language-change',rerender);
  overlay.querySelector('.cb-cloud-close').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
- card.querySelector('h2').textContent=name;card.querySelector('small').textContent=role;card.querySelector('span').textContent=status;
+ card.querySelector('h2').textContent=en?npc.en:npc.name;
+ card.querySelector('small').textContent=en?npc.roleEn:npc.role;
+ card.querySelector('span').textContent=stage==='intro'?(en?'FIRST MEETING':'初次相遇'):stage==='reveal'?(en?'A MEMORY SURFACED':'记忆回响'):stage==='epilogue'?(en?'AFTER THE ENDING':'结局之后'):(en?'ON THE ROAD':'旅途中的对话');
  card.querySelector('.cb-npc-dialog-line').textContent=lines.join('\n\n');
  const species=window.GameData?.speciesById?.(npc.species);
  if(species&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(card.querySelector('canvas'),species);
  const actions=card.querySelector('.cb-cloud-actions');
  const add=(label,fn,primary=false)=>{const b=document.createElement('button');b.type='button';b.className=primary?'cb-cloud-primary':'cb-cloud-secondary';b.textContent=label;b.onclick=fn;actions.append(b);};
- if(!root.talked[id]){root.talked[id]=true;npcSave();}
- const authored=NPC_CHOICES[id];
- if(authored&&!root.choices[id]){
-  card.querySelector('.cb-npc-dialog-line').textContent=lines.join('\\n\\n')+'\\n\\n'+(en?authored.promptEn:authored.prompt);
-  authored.options.forEach(option=>add(en?option.labelEn:option.label,()=>{
-   root.choices[id]=option.id;root.relationships[id]=(root.relationships[id]||0)+(option.bond||0);
-   q.choice=option.id;q.choiceReply=option.reply;q.choiceReplyEn=option.replyEn;
+ if(stage==='intro'&&!hasChoice&&choice){
+  card.querySelector('.cb-npc-dialog-line').textContent=lines.join('\n\n')+'\n\n'+(en?choice.promptEn:choice.prompt);
+  choice.options.forEach(option=>add(en?option.labelEn:option.label,()=>{
+   root.choices[id]=option.id;root.flags[option.flag]=true;
+   root.relationships[id]=(root.relationships[id]||0)+(option.bond||1);
+   root.responses[id]={zh:option.reply,en:option.replyEn};
    npcSave();close();npcTalk(id);
   },true));
   add(en?'Leave for now':'稍后再谈',close,false);return;
  }
- if(q.choiceReply||q.choiceReplyEn)card.querySelector('.cb-npc-dialog-line').textContent+=(en?'\n\n':'\n\n')+(en?q.choiceReplyEn:q.choiceReply);
- if(q.found&&!q.done)add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
- else if(!q.accepted&&!q.done)add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
- else if(q.done)add(en?'Ask about the Star Bell':'询问星铃',()=>{close();npcLore(npc);},true);
- add(en?'Leave':'离开',close,false);
-}
-function npcLore(npc){
- const en=!isZh(),overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
- overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEMORY SHARED':'一段被分享的记忆')+'</p><h2>'+ (en?npc.en:npc.name)+'</h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"><button class="cb-cloud-primary">'+(en?'Close':'关闭')+'</button></div></section>';
- document.body.append(overlay);const q=npcState(npc),choice=NPC_CHOICES[npc.id]?.options.find(o=>o.id===q.choice);overlay.querySelector('.cb-npc-dialog-line').textContent=(en?npc.doneEn:npc.done)+(choice?'\n\n'+(en?choice.replyEn:choice.reply):'');overlay.querySelector('button').onclick=()=>overlay.remove();
-}
-function npcDeliver(npc,close){
- const q=npcState(npc);if(!q.found||q.done){close();return;}
- q.done=true;const root=npcRoot();root.completed=(root.completed||0)+1;
- state().coins=(state().coins||0)+45;state().fish=(state().fish||0)+2;npcSave();
- window.arcadeMetric?.('bond_npc_quest_complete',{npc:npc.id,region:npc.region});
- close();npcLore(npc);
+ if(stage==='reveal')add(en?'Ask what happens next':'追问接下来会怎样',()=>{
+  const extra=en?npc.afterEn:npc.after;
+  card.querySelector('.cb-npc-dialog-line').textContent+='\n\n'+extra.join('\n\n');
+ },true);
+ add(en?'Close':'离开',close,false);
 }
 function npcEntered(region){
- const npc=NPC_CAST.find(n=>n.region===region);if(!npc||npcRoot()?.talked?.[npc.id])return;
- window.__game?.toast?.({zh:'发现旅途中的居民：'+npc.name+'。靠近后点击它交谈。',en:'A local resident is nearby: '+npc.en+'. Walk close and tap to talk.'});
+ const npc=NPC_CAST.find(n=>n.region===region);if(!npc)return;
+ const root=npcRoot();if(!root)return;
+ const first=!root.visited[npc.id];root.visited[npc.id]=true;
+ if(npcHasMemory(npc))root.memoryReady[npc.id]=true;
+ if(first){
+  npcSave();
+  window.__game?.toast?.({zh:'你听见有人哼着熟悉的旋律。靠近 '+npc.name+'，听听它为什么记得这段曲子。',en:'Someone is humming a familiar melody. Approach '+npc.en+' to learn why they remember it.'});
+ }
+ if(region==='volcano')showVolcanoAid(root);
 }
 function npcFound(region,reward){
- const npc=NPC_CAST.find(n=>n.region===region);if(!npc||reward?.discovery?.id!==region)return;
- const q=npcState(npc);q.found=true;npcSave();
- if(q.accepted&&!q.done)window.__game?.toast?.({zh:'找到了「'+npc.quest+'」！回去找 '+npc.name+' 交付委托。',en:'Found '+npc.questEn+'! Return to '+npc.en+' to complete the request.'});
+ const npc=NPC_CAST.find(n=>n.region===region);if(!npc)return;
+ if(reward?.discovery?.id!==region)return;
+ const root=npcRoot();if(!root)return;
+ root.memoryReady[npc.id]=true;npcSave();
+ if(region==='creek'&&!root.rescueChoice){
+  setTimeout(()=>afterPanelClosed(showCreekRescueChoice,0),180);
+ }
 }
 function npcDraw(ctx,npc,time){
  const sp=window.GameData?.speciesById?.(npc.species);if(!sp)return;
+ const root=npcRoot()||{choices:{},revealed:{}};
  const bob=Math.sin(time*1.8+npc.x)*2;
  ctx.save();ctx.fillStyle='rgba(25,31,37,.22)';ctx.beginPath();ctx.ellipse(npc.x,npc.y+18,28,8,0,0,Math.PI*2);ctx.fill();
  const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
@@ -909,8 +993,9 @@ function npcDraw(ctx,npc,time){
  const label=isZh()?npc.name:npc.en,ww=Math.max(54,ctx.measureText(label).width+18);
  ctx.beginPath();ctx.roundRect(npc.x-ww/2,npc.y-88+bob,ww,23,10);ctx.fill();
  ctx.fillStyle='#fff7e8';ctx.fillText(label,npc.x,npc.y-76+bob);
- const q=npcState(npc),mark=q.done?'✓':q.found?'!':q.accepted?'?':'✦';
- ctx.fillStyle=q.done?'#d8edcf':'#ffe8ae';ctx.beginPath();ctx.arc(npc.x+30,npc.y-82+bob,10,0,Math.PI*2);ctx.fill();
+ const memory=npcHasMemory(npc)||!!root.memoryReady[npc.id];
+ const mark=!root.choices[npc.id]?'✦':(memory&&!root.revealed[npc.id]?'!':(state()?.story?.bossDefeated?'★':'·'));
+ ctx.fillStyle=mark==='!'?'#ffd36b':mark==='★'?'#c8e7bd':'#ffe8ae';ctx.beginPath();ctx.arc(npc.x+30,npc.y-82+bob,10,0,Math.PI*2);ctx.fill();
  ctx.fillStyle='#465345';ctx.font='900 11px system-ui';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
  ctx.restore();
 }
@@ -918,7 +1003,6 @@ window.CatBondNPC={
  forRegion:id=>NPC_CAST.filter(n=>n.region===id),
  talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
 };
-
 window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
  onBossVictory,playEnding,updateTracker
