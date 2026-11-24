@@ -2018,8 +2018,12 @@ class CaptureBattle {
         if(wardPlaced)window.CatBondSkillFX?.support(this,t,sk);
         return wardPlaced;  // three shield verbs (on friend or self)
       }else if(sk.tags?.includes('camo')){
-        // 纸箱埋伏 Box Ambush: brief untargetable (i-frames) + prime the next hit to stagger.
-        t.inv=Math.max(t.inv||0,1.2); t._ambush=true;
+        // 纸箱埋伏 Box Ambush: 钻进纸箱短暂"隐身不可被选中" (owner spec): single-target attacks can't
+        // hit it, but AOE/fields still do — and the cat can STILL MOVE + ATTACK, its next hit breaks
+        // camo for a stagger + double dmg. Implemented as an UNTARGETABLE timer (_camoT), NOT full
+        // invuln: _camoT makes enemies skip it when aiming + makes resolveHit drop SINGLE-target hits
+        // only (aoe/field pass). A short real i-frame (0.25s) just covers the cast itself.
+        t._camoT = Math.max(t._camoT || 0, 3.0); t._ambush = true;  // untargetable (not invuln): AOE still lands
         this.vfx.ring(t.x,t.y,{r0:14,vr:120,life:.5,color:'#b9e6a0',width:3});
         this.vfx.text(t.x,t.y-34,window.MorrowwishI18n?.get?.()!=='zh'?'ambush!':'埋伏!','#cdeeb4',14);
       }else if(sk.tags?.includes('knead')){
@@ -4210,6 +4214,7 @@ class CaptureBattle {
       }
       for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt;
       if (f.inv > 0) f.inv -= dt;
+      if (f._camoT > 0) { f._camoT -= dt; if (f._camoT <= 0) f._ambush = false; }  // camo (纸箱) untargetable window; lapses the ambush too
       if (f.dashT > 0) f.dashT -= dt;
       else if(f.pounce){
         f.pounce=false;f._pounceSkill=null;f._pounceDmg=null;
@@ -4686,9 +4691,19 @@ class CaptureBattle {
       e.pose = 'pounce';
       return;
     }
-    // target the nearest ALIVE team cat (so the enemy engages whoever's closest)
-    let me = null, md = 1e9;
-    for (const tf of this.team) { if (!tf.alive) continue; const d = Math.hypot(tf.x - e.x, tf.y - e.y); if (d < md) { md = d; me = tf; } }
+    // target the nearest ALIVE team cat — but PREFER a NON-camo'd one (纸箱隐身 is 不可被选中): a
+    // camo'd cat can't be the aim target while a visible teammate exists. Fall back to a camo'd cat
+    // only if the whole team is hidden, so a 1v1 enemy still has a position to hold (it just can't
+    // land single-target hits — resolveHit drops those; only AOE/fields connect).
+    let me = null, md = 1e9, meAny = null, mdAny = 1e9;
+    for (const tf of this.team) {
+      if (!tf.alive) continue;
+      const d = Math.hypot(tf.x - e.x, tf.y - e.y);
+      if (d < mdAny) { mdAny = d; meAny = tf; }
+      if ((tf._camoT || 0) > 0) continue;              // skip hidden cats when picking the aim target
+      if (d < md) { md = d; me = tf; }
+    }
+    me = me || meAny;
     if(e._bondLureUntil>this.t)
       me=this.team.find(f=>f.alive&&f.cat.uid===e._bondLureUid)||me;
     if (!me) return;
@@ -5682,6 +5697,11 @@ class CaptureBattle {
   resolveHit(target, side, skill, dmg, x, y, proj) {
     if (!target || !target.alive) return { blocked: false, reflected: false, dealt: 0 };
     if ((target.inv || 0) > 0 || (target.flash || 0) > 0) return { blocked: false, reflected: false, dealt: 0 };
+    // 纸箱隐身 (camo): untargetable to SINGLE-target attacks — they whiff — but AOE/fields still land
+    // (owner: "纸箱潜伏之后敌人就无法打中他，除非 aoe"). Field ticks pass skill.field; true aoe skills
+    // pass kind 'aoe'. Everything else (projectile/beam/melee/pounce aimed at this cat) is dropped.
+    if ((target._camoT || 0) > 0 && !(skill && (skill.kind === 'aoe' || skill.field)))
+      return { blocked: false, reflected: false, dealt: 0 };
     const col = this.elemColor(skill && skill.element);
     // 1) PROTECT (守护): fully blocks the next hit of any kind for its window.
     if ((target.protectT || 0) > 0) {
@@ -5743,7 +5763,7 @@ class CaptureBattle {
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
-      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
+      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; amb._camoT = 0; this.triggerStagger(target); }  // attacking breaks camo + forces the stagger
       // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
       const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('me→enemy', skill, dmg, dealt, target, proj);
