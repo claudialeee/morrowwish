@@ -238,9 +238,15 @@ function listSaveSlots() {
       fragments >= 4 ? '第四章 · 最后的守铃者' : fragments >= 3 ? '第三章 · 失去的名字' :
       fragments >= 2 ? '第二章 · 旧约' : fragments >= 1 ? '第一章 · 空白页' :
       (data?.cats?.length ? '序章 · 倒着响的铃' : '尚未开始');
+    // A slot counts as "has progress" only if it holds REAL play — at least one cat
+    // or a story fragment. A bare autosave shell ({cats:[],...}) must read as EMPTY so
+    // it shows "空存档位 / 在此开始", not a ghost "已有进度 · 0 只猫 · <timestamp>" entry
+    // the player can't actually continue (owner: empty slots wrongly marked saved).
+    const catCount = Array.isArray(data?.cats) ? data.cats.length : 0;
+    const hasProgress = !!data && (catCount > 0 || fragments > 0);
     return {
-      id, number: index + 1, exists: !!data, savedAt: Number(entry?.savedAt || data?.lastSeen || 0),
-      cats: Array.isArray(data?.cats) ? data.cats.length : 0,
+      id, number: index + 1, exists: hasProgress, savedAt: hasProgress ? Number(entry?.savedAt || data?.lastSeen || 0) : 0,
+      cats: catCount,
       coins: Number(data?.coins || 0), chapter, fragments, regionCount,
       active: id === activeSlot()
     };

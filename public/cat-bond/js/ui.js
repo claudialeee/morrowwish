@@ -2363,7 +2363,9 @@ const UI = {
       fish:{icon:'🐠',zh:'小鱼',en:'Fish',coins:60,fish:0,fishGain:1},
       'stone:夜影石':{icon:'🌑',zh:'夜影石',en:'Shadow Stone',coins:0,fish:3,stone:'夜影石'},
       'stone:月华露':{icon:'🌙',zh:'月华露',en:'Moon Dew',coins:0,fish:4,stone:'月华露'},
-      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'}
+      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'},
+      'stone:翠藤芽':{icon:'🌿',zh:'翠藤芽',en:'Jade Sprout',coins:0,fish:4,stone:'翠藤芽'},
+      'stone:流光珠':{icon:'⚡',zh:'流光珠',en:'Voltlight Pearl',coins:0,fish:4,stone:'流光珠'}
     };
     return items[what]||null;
   },
@@ -2379,7 +2381,7 @@ const UI = {
       [1,10,50].includes(this._shopQuantity)?this._shopQuantity:1;
     const qtyButton=(n,txt)=>'<button type="button" class="btn '+(n===quantity?'gold':'ghost')+
       '" data-shop-qty="'+n+'" aria-pressed="'+String(n===quantity)+'">'+txt+'</button>';
-    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
+    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶','stone:翠藤芽','stone:流光珠'];
     const rows=shopKeys.map(key=>{
       const item=this.shopItem(key),max=this.shopMaxAffordable(key);
       const count=quantity==='max'?max:quantity;

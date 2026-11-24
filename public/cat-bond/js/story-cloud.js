@@ -376,10 +376,23 @@ function showSequence(kind,pages,done,options={}){
  }
 }
 function persistIntroSeen(){
+ // Mark the prologue seen on the LIVE game state and persist through the normal
+ // save path (the active save slot), NOT the legacy single-save key. The old code
+ // wrote {story:{version,introSeen}} straight into catbond_save_v1 AND replaced
+ // state().story with that stub — clobbering the fresh new-game state and the
+ // three-slot save, which bounced the player back to the intro right after the
+ // "继续冒险" button (owner: 点继续冒险后跳回开头). Keep the legacy write only as a
+ // best-effort fallback when the game state isn't up yet.
+ const S=state();
+ if(S){
+  S.story=(S.story&&typeof S.story==='object')?S.story:{};
+  S.story.version=1;S.story.introSeen=true;
+  try{window.State?.save?.();}catch{}
+  return;
+ }
  const data=readLocal();data.story=data.story&&typeof data.story==='object'?data.story:{};
  data.story.version=1;data.story.introSeen=true;
  writeLocal(data);
- if(state()){state().story=data.story;}
 }
 function startPrologue(done){
  showSequence('prologue',PROLOGUE,()=>{
