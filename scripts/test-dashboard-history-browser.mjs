@@ -60,7 +60,21 @@ try{
     platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
       {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
     metricScope:{verifiedPosts:[],activeApprovedPosts:28},
-    
+    publicationRounds:{rounds:[{
+     id:'morning-first',status:'deleted',deletedWindow:'2026-11-22',
+     platforms:{
+      youtube:{posts:7,views:458,likes:4,comments:0,capturedAt:'2026-11-22T14:14:13-08:00'},
+      instagram:{posts:7,views:363,likes:11,comments:0,capturedAt:'2026-11-22T13:05:00-08:00'},
+      tiktok:{posts:7,views:94,likes:1,comments:0,capturedAt:'2026-11-22T13:05:00-08:00'},
+      bluesky:{posts:7,views:null,likes:14,reposts:14,replies:0,quotes:0,capturedAt:'2026-11-22T14:14:13-08:00'}
+     },
+     posts:Array.from({length:28},(_,index)=>({
+      platform:['youtube','instagram','tiktok','bluesky'][Math.floor(index/7)],
+      game:promoGames[index%7],url:'https://example.com/first-round/'+index,
+      views:index===0?13:null,likes:0,comments:0,shares:0,reposts:0,replies:0,quotes:0,
+      capturedAt:'2026-11-22T14:14:13-08:00'
+     }))
+    }]}
    }
   };
   let requestedSummaryUrl='';
@@ -88,6 +102,22 @@ try{
      'Sitewide pageviews must include homepage and all seven games');
    assert.equal(statValues[1],String(homepagePageviews),
      'Homepage pageviews must be displayed separately');
+   const archive=page.locator('#archived-first-round');
+   assert.equal(await archive.isVisible(),true,'Deleted first-round archive must remain visible separately');
+   assert.equal(await archive.locator('#archived-first-round-rows tr').count(),4,
+     'First-round platform totals must retain all four native platforms');
+   assert.equal(await page.locator('#archived-first-round-posts tr').count(),28,
+     'First-round archive must retain all 28 individual video records');
+   assert.equal(await page.locator('#archived-first-round-heading').innerText(),
+     language==='zh'?'11/22 早间首发 · 已删除数据':'Nov 22 morning first release · deleted archive',
+     'First-round archive heading must be localized');
+   const archiveHeaders=await archive.locator('table').first().locator('thead th').allTextContents();
+   assert.equal(archiveHeaders[0],language==='zh'?'平台':'Platform',
+     'First-round archive table headings must be localized');
+   await archive.locator('details').first().evaluate(el=>el.open=true);
+   assert.equal(await page.locator('#archived-first-round-posts a').first().innerText(),
+     language==='zh'?'打开原帖':'Open original post',
+     'Archived post links must have localized labels');
    const visibleText=await page.locator('body').innerText();
    assert.ok(!/统计起点：11\/22 00:00|Since Nov 22, 2026, 12:00 AM PT/.test(visibleText),
      'Reporting start date must not be shown in the dashboard');
@@ -147,4 +177,4 @@ try{
 }finally{
  await browser.close();
 }
-console.log('Real Chromium dashboard gate passed: page-level play/finish, all-seven-game pageview totals, separate homepage/sitewide totals, bilingual phone/desktop rendering.');
+console.log('Real Chromium dashboard gate passed: page-level play/finish, all-seven-game pageview totals, separate homepage/sitewide totals, visible 28-post first-round archive, and bilingual phone/desktop rendering.');
