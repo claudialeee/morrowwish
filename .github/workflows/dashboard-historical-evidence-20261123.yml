@@ -1,0 +1,70 @@
+name: Isolated pre-morning historical evidence discovery 20261123
+on:
+  push:
+    branches: ['audit/dashboard-data-integrity-20261123']
+    paths: ['.github/workflows/dashboard-historical-evidence-20261123.yml']
+permissions:
+  contents: write
+jobs:
+  history:
+    if: github.ref == 'refs/heads/audit/dashboard-data-integrity-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/dashboard-data-integrity-20261123
+      - name: Discover pre-morning historical checkpoints without restore or export
+        env:
+          D1_READ_TOKEN: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN || secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+          D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          assert.equal(process.env.GITHUB_REF,'refs/heads/audit/dashboard-data-integrity-20261123');
+          const token=process.env.D1_READ_TOKEN;assert.ok(token);
+          const account='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID;
+          const db=account+'/d1/database/'+process.env.D1_DATABASE_ID;
+          const headers={Authorization:'Bearer '+token,'Content-Type':'application/json'};
+          async function get(url){
+            const r=await fetch(url,{method:'GET',headers,signal:AbortSignal.timeout(15000)});
+            const j=await r.json();return {status:r.status,success:j.success,result:j.result,errors:(j.errors||[]).map(e=>({code:e.code,message:e.message}))};
+          }
+          async function query(sql,params=[]){
+            assert.match(sql,/^SELECT\\b/i);assert.ok(!/;|\\b(INSERT|UPDATE|DELETE|DROP|ALTER|REPLACE|CREATE|ATTACH|PRAGMA|VACUUM)\\b/i.test(sql));
+            const r=await fetch(db+'/query',{method:'POST',headers,body:JSON.stringify({sql,params}),signal:AbortSignal.timeout(15000)});
+            const j=await r.json();if(!r.ok||!j.success||!Array.isArray(j.result?.[0]?.results))throw Error('Read failed '+r.status);return j.result[0].results;
+          }
+          const dates=['2026-11-19T12:00:00-08:00','2026-11-20T12:00:00-08:00','2026-11-21T12:00:00-08:00','2026-11-21T22:25:00-08:00','2026-11-21T23:59:00-08:00','2026-11-22T00:00:00-08:00','2026-11-22T06:00:00-08:00','2026-11-22T08:00:00-08:00','2026-11-22T09:00:00-08:00','2026-11-22T10:00:00-08:00','2026-11-22T10:13:00-08:00','2026-11-22T10:14:00-08:00','2026-11-22T10:15:00-08:00','2026-11-22T11:00:00-08:00','2026-11-22T12:00:00-08:00','2026-11-22T16:36:30-08:00'];
+          const points=[];
+          for(const local of dates){
+            const iso=new Date(local).toISOString();
+            try {const r=await get(db+'/time_travel/bookmark?timestamp='+encodeURIComponent(iso));points.push({local,iso,httpStatus:r.status,available:!!r.result?.bookmark,bookmark:r.result?.bookmark??null,errors:r.errors});}catch(e){points.push({local,iso,error:e.name});}
+          }
+          const cutoff=Date.now();
+          const [{maxId}]=await query('SELECT COALESCE(MAX(id),0) AS maxId FROM events');
+          const stored=await query("SELECT category,game,kind,COUNT(*) AS n,MIN(id) AS firstId,MAX(id) AS lastId,MIN(ts) AS firstTs,MAX(ts) AS lastTs FROM events WHERE id<=? AND ts<=? GROUP BY category,game,kind",[maxId,cutoff]);
+          const morning=[];
+          for(const local of dates){const ts=Date.parse(local);
+            const [r]=await query("SELECT COUNT(*) AS n,COUNT(DISTINCT view_id) AS distinctIds FROM events WHERE game='cat-bond' AND category='arcade' AND kind='visit' AND ts<=? AND id<=?",[ts,maxId]);
+            morning.push({local,storedRowsBeforeOrAt:r.n,distinctIds:r.distinctIds});
+          }
+          const backupDiscovery={};
+          try{const r=await get(account+'/d1/database?name=morrowwish');backupDiscovery.d1={httpStatus:r.status,matchingDatabases:Array.isArray(r.result)?r.result.filter(x=>/morrowwish|analytics/i.test(x.name||'')).map(x=>({name:x.name,version:x.version,created_at:x.created_at})):[],errors:r.errors};}catch(e){backupDiscovery.d1={error:e.name};}
+          try{const r=await get(account+'/r2/buckets');const b=Array.isArray(r.result)?r.result:r.result?.buckets;backupDiscovery.r2={httpStatus:r.status,matchingBuckets:Array.isArray(b)?b.filter(x=>/morrow|backup|analytics/i.test(x.name||'')).map(x=>({name:x.name,creation_date:x.creation_date})):[],errors:r.errors};}catch(e){backupDiscovery.r2={error:e.name};}
+          const result={generatedAt:new Date().toISOString(),status:'HISTORICAL_CHECKPOINT_METADATA_ONLY',userObservation:{reportedPV:85,when:'2026-11-22 morning PST',source:'owner recollection, not raw data'},scope:{cutoff:new Date(cutoff).toISOString(),maxId},stored,morning,points,backupDiscovery,limitations:['Bookmarks do not expose historical rows. Never restore, export or fork production.','No historical visit count is inferred from bookmark metadata.','Stored rows may be a surviving subset of original events.']};
+          fs.writeFileSync('audit/dashboard/historical-evidence.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result,null,2));
+          NODE
+      - name: Persist checkpoint metadata only to isolated audit branch
+        run: |
+          set -eu
+          test "$GITHUB_REF" = refs/heads/audit/dashboard-data-integrity-20261123
+          test "$(git branch --show-current)" = audit/dashboard-data-integrity-20261123
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- audit/dashboard/historical-evidence.json
+          git commit -m "audit only: preserve historical checkpoint and surviving data evidence"
+          git push origin HEAD:refs/heads/audit/dashboard-data-integrity-20261123
