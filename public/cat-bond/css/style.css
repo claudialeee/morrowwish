@@ -5180,3 +5180,12 @@ body.cb-exploring #stage #yard-actions{
  .cb-story-actions button{min-height:40px;padding:9px 13px}
  .cb-story-scene-mark{width:clamp(82px,22vw,120px);top:7vh;right:8vw}
 }
+
+.cb-npc-dialog-card{width:min(650px,94vw)}
+.cb-npc-dialog-head{display:grid;grid-template-columns:104px 1fr;gap:16px;align-items:center;margin:12px 0 16px}
+.cb-npc-dialog-head canvas{width:104px;height:104px;object-fit:contain;border-radius:16px;background:radial-gradient(circle,#fff8e9,#e6eee3)}
+.cb-npc-dialog-head h2{margin:0;color:#344b3b;font:800 26px/1.2 Georgia,"Noto Serif SC",serif}
+.cb-npc-dialog-head small{display:block;margin-top:5px;color:#8a7656;font:750 12px/1.4 system-ui}
+.cb-npc-dialog-head span{display:inline-block;margin-top:8px;padding:4px 9px;border-radius:99px;background:#eaf0e4;color:#58705c;font:750 10px/1.4 system-ui}
+.cb-npc-dialog-line{min-height:90px;white-space:pre-line;color:#435548;font:600 14px/1.85 system-ui,"Noto Sans SC",sans-serif}
+@media(max-width:480px){.cb-npc-dialog-head{grid-template-columns:78px 1fr;gap:11px}.cb-npc-dialog-head canvas{width:78px;height:78px}.cb-npc-dialog-head h2{font-size:21px}.cb-npc-dialog-line{font-size:13px;line-height:1.75}}
