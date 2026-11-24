@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 1600 900" role="img" aria-labelledby="t d"><title id="t">Misttide Harbor — 霁潮港</title><desc id="d">Original cinematic fantasy environment key art for Cat Bond: The Last Resonance.</desc><defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#1b3347"/><stop offset=".68" stop-color="#66838b"/><stop offset="1" stop-color="#263b48"/></linearGradient>
+<linearGradient id="brass" x2="1" y2="1"><stop stop-color="#6c4c34"/><stop offset=".3" stop-color="#e2c18a"/><stop offset=".7" stop-color="#a97948"/><stop offset="1" stop-color="#5c402d"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff0c7" stop-opacity=".75"/><stop offset=".35" stop-color="#e9c58c" stop-opacity=".23"/><stop offset="1" stop-color="#e9c58c" stop-opacity="0"/></radialGradient>
+<pattern id="grain" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="5" cy="8" r="1" fill="#fff" opacity=".12"/><circle cx="24" cy="21" r=".8" fill="#0b1821" opacity=".14"/><path d="M8 30l8-2M28 5l4 1" stroke="#fff" stroke-opacity=".07"/></pattern>
+</defs><rect width="1600" height="900" fill="url(#sky)"/><circle cx="1280" cy="160" r="420" fill="url(#glow)"/>
+<path d="334e5b" fill="#526d74" opacity=".58"/><path d="526d74" fill="##66838b" opacity=".74"/>
+<g><path d="M0 510L170 380 320 430 470 310 620 400 800 285 980 380 1160 290 1370 390 1600 300V650H0Z" fill="#344f5d"/>
+<path d="M1030 565L1120 295H1240L1320 565Z" fill="#425a63"/><path d="M1125 300L1180 230 1235 300Z" fill="#9b846c"/><rect x="1145" y="328" width="70" height="218" fill="#d0c0a3"/><rect x="1160" y="355" width="40" height="42" fill="#253d4b"/><path d="M1132 310H1228" stroke="url(#brass)" stroke-width="18"/><circle cx="1180" cy="276" r="44" fill="url(#glow)"/>
+<path d="M1180 274L120 490 120 520 1180 294Z" fill="#f6e2b6" opacity=".18"/>
+<path d="M0 680Q260 610 510 680T980 665T1600 680V900H0Z" fill="#1b3341"/>
+<g fill="#c6b89d"><path d="M180 620L270 515 360 620Z"/><path d="M340 640L445 500 550 640Z"/><path d="M550 645L620 550 700 645Z"/></g>
+<g fill="#324955"><rect x="220" y="620" width="30" height="56"/><rect x="390" y="620" width="35" height="62"/><rect x="590" y="635" width="25" height="45"/></g>
+<path d="M0 780Q250 740 490 785T980 780T1600 790" stroke="#a9c4c3" stroke-opacity=".3" stroke-width="8" fill="none"/><g fill="none" stroke-linecap="round"><path d="M0 835Q180 790 360 830T740 825T1100 840T1600 820" stroke="#d3d1c2" stroke-opacity=".25" stroke-width="4"/><path d="M70 900L220 780 520 780 640 900" stroke="#a58b6b" stroke-width="24"/><path d="M90 855H570M160 805V895M300 790V895M470 795V895" stroke="#d1b58a" stroke-width="7"/></g>
+<path d="M0 770Q300 720 550 770T1050 760T1600 770V900H0Z" fill="##263b48" opacity=".56"/>
+<rect width="1600" height="900" fill="url(#grain)" opacity=".8"/><rect x="2" y="2" width="1596" height="896" fill="none" stroke="#ead8b8" stroke-opacity=".14" stroke-width="3"/></svg>

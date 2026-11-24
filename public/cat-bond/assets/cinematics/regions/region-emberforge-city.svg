@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 1600 900" role="img" aria-labelledby="t d"><title id="t">Emberforge City — 赤炉环城</title><desc id="d">Original cinematic fantasy environment key art for Cat Bond: The Last Resonance.</desc><defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#241e2a"/><stop offset=".68" stop-color="#665051"/><stop offset="1" stop-color="#302a32"/></linearGradient>
+<linearGradient id="brass" x2="1" y2="1"><stop stop-color="#6c4c34"/><stop offset=".3" stop-color="#e2c18a"/><stop offset=".7" stop-color="#a97948"/><stop offset="1" stop-color="#5c402d"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff0c7" stop-opacity=".75"/><stop offset=".35" stop-color="#e9c58c" stop-opacity=".23"/><stop offset="1" stop-color="#e9c58c" stop-opacity="0"/></radialGradient>
+<pattern id="grain" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="5" cy="8" r="1" fill="#fff" opacity=".12"/><circle cx="24" cy="21" r=".8" fill="#0b1821" opacity=".14"/><path d="M8 30l8-2M28 5l4 1" stroke="#fff" stroke-opacity=".07"/></pattern>
+</defs><rect width="1600" height="900" fill="url(#sky)"/><circle cx="920" cy="320" r="440" fill="url(#glow)"/>
+<path d="453b43" fill="#66504d" opacity=".58"/><path d="66504d" fill="##665051" opacity=".74"/>
+<g><path d="M0 530L180 320 340 440 510 245 680 410 850 210 1030 390 1200 260 1390 420 1600 280V680H0Z" fill="#49434b"/>
+<path d="M580 650L625 395 760 300 895 395 940 650Z" fill="#765b55"/><path d="M635 395L760 285 880 395Z" fill="#b07a58"/><path d="M690 650V470Q760 390 830 470V650Z" fill="#171f26"/><path d="M730 650V490Q760 455 790 490V650Z" fill="#efb06a"/><circle cx="760" cy="500" r="155" fill="url(#glow)" opacity=".38"/>
+<path d="M0 760Q240 680 480 750T920 735T1300 750T1600 720V900H0Z" fill="#302b35"/>
+<path d="M0 840Q250 760 480 820T900 810T1260 830T1600 790" fill="none" stroke="#b45b3d" stroke-width="44"/><path d="M0 840Q250 760 480 820T900 810T1260 830T1600 790" fill="none" stroke="#f0b36c" stroke-width="13"/>
+<g fill="none" stroke="#c79d70" stroke-width="12"><path d="M120 730V590Q220 470 320 590V730"/><path d="M1280 730V560Q1380 440 1480 560V730"/></g>
+<path d="M430 610H1160M490 610V730M1090 610V730" stroke="#b18c69" stroke-width="22"/><g fill="none" stroke-linecap="round"><path d="M0 900Q200 830 430 870T850 860T1250 870T1600 845" stroke="#171e26" stroke-width="80"/><path d="M110 860Q310 790 480 845T860 840T1200 850" stroke="#c16b43" stroke-width="8"/><path d="M100 790L160 730 220 790M1390 810L1460 740 1530 810" stroke="#a58a75" stroke-width="10"/></g>
+<path d="M0 770Q300 720 550 770T1050 760T1600 770V900H0Z" fill="##302a32" opacity=".56"/>
+<rect width="1600" height="900" fill="url(#grain)" opacity=".8"/><rect x="2" y="2" width="1596" height="896" fill="none" stroke="#ead8b8" stroke-opacity=".14" stroke-width="3"/></svg>

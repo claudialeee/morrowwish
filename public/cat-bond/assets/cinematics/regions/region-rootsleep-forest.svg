@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 1600 900" role="img" aria-labelledby="t d"><title id="t">Rootsleep Forest — 眠根林</title><desc id="d">Original cinematic fantasy environment key art for Cat Bond: The Last Resonance.</desc><defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#152c2b"/><stop offset=".68" stop-color="#496c54"/><stop offset="1" stop-color="#243d34"/></linearGradient>
+<linearGradient id="brass" x2="1" y2="1"><stop stop-color="#6c4c34"/><stop offset=".3" stop-color="#e2c18a"/><stop offset=".7" stop-color="#a97948"/><stop offset="1" stop-color="#5c402d"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff0c7" stop-opacity=".75"/><stop offset=".35" stop-color="#e9c58c" stop-opacity=".23"/><stop offset="1" stop-color="#e9c58c" stop-opacity="0"/></radialGradient>
+<pattern id="grain" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="5" cy="8" r="1" fill="#fff" opacity=".12"/><circle cx="24" cy="21" r=".8" fill="#0b1821" opacity=".14"/><path d="M8 30l8-2M28 5l4 1" stroke="#fff" stroke-opacity=".07"/></pattern>
+</defs><rect width="1600" height="900" fill="url(#sky)"/><circle cx="720" cy="130" r="440" fill="url(#glow)"/>
+<path d="28483e" fill="#45654b" opacity=".58"/><path d="45654b" fill="##496c54" opacity=".74"/>
+<g><path d="M400 900Q460 640 510 420Q550 200 660 90Q800 170 820 420Q850 660 950 900Z" fill="#5d513e"/><path d="M570 900Q610 620 670 340Q715 220 755 160Q800 340 810 570L870 900Z" fill="#88724f"/>
+<path d="M630 420Q420 330 230 250M730 360Q920 260 1110 210M550 550Q340 500 150 620M820 540Q1050 450 1270 520" fill="none" stroke="#806d4b" stroke-width="34" stroke-linecap="round"/>
+<g fill="#5e835f"><ellipse cx="280" cy="240" rx="260" ry="160"/><ellipse cx="620" cy="150" rx="300" ry="150"/><ellipse cx="970" cy="190" rx="280" ry="155"/><ellipse cx="1330" cy="280" rx="300" ry="170"/></g>
+<g fill="#9ab17e" opacity=".65"><ellipse cx="250" cy="220" rx="160" ry="90"/><ellipse cx="650" cy="105" rx="180" ry="88"/><ellipse cx="1030" cy="175" rx="170" ry="90"/><ellipse cx="1370" cy="270" rx="180" ry="100"/></g>
+<path d="M0 750Q240 700 460 770T900 760T1320 740T1600 770V900H0Z" fill="#1c3a30"/>
+<path d="M0 830Q250 780 480 840T940 820T1600 830" stroke="#80a78b" stroke-width="22" fill="none"/>
+<path d="M250 430L400 430 440 490 220 490Z M990 430L1160 430 1200 490 960 490Z" fill="#967d5b"/>
+<path d="M285 410L330 360 385 410Z M1020 410L1080 355 1140 410Z" fill="#c2a77b"/>
+<path d="M320 490Q660 570 1080 475" stroke="#b49a70" stroke-width="15" fill="none"/><g fill="none" stroke-linecap="round"><path d="M0 900Q170 760 320 820T640 860T960 820T1300 830T1600 800" stroke="#66845e" stroke-width="36"/><path d="M160 820Q240 730 330 690M1400 900Q1320 760 1200 710" stroke="#806b4d" stroke-width="24"/></g>
+<path d="M0 770Q300 720 550 770T1050 760T1600 770V900H0Z" fill="##243d34" opacity=".56"/>
+<rect width="1600" height="900" fill="url(#grain)" opacity=".8"/><rect x="2" y="2" width="1596" height="896" fill="none" stroke="#ead8b8" stroke-opacity=".14" stroke-width="3"/></svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 1600 900" role="img" aria-labelledby="t d"><title id="t">Skyspine Isles — 云脊群岛</title><desc id="d">Original cinematic fantasy environment key art for Cat Bond: The Last Resonance.</desc><defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#314e67"/><stop offset=".68" stop-color="#91b1b7"/><stop offset="1" stop-color="#718c91"/></linearGradient>
+<linearGradient id="brass" x2="1" y2="1"><stop stop-color="#6c4c34"/><stop offset=".3" stop-color="#e2c18a"/><stop offset=".7" stop-color="#a97948"/><stop offset="1" stop-color="#5c402d"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff0c7" stop-opacity=".75"/><stop offset=".35" stop-color="#e9c58c" stop-opacity=".23"/><stop offset="1" stop-color="#e9c58c" stop-opacity="0"/></radialGradient>
+<pattern id="grain" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="5" cy="8" r="1" fill="#fff" opacity=".12"/><circle cx="24" cy="21" r=".8" fill="#0b1821" opacity=".14"/><path d="M8 30l8-2M28 5l4 1" stroke="#fff" stroke-opacity=".07"/></pattern>
+</defs><rect width="1600" height="900" fill="url(#sky)"/><circle cx="1180" cy="120" r="430" fill="url(#glow)"/>
+<path d="536e7b" fill="#819c9b" opacity=".58"/><path d="819c9b" fill="##91b1b7" opacity=".74"/>
+<g><g fill="#536e7a"><path d="M70 500Q180 340 390 430L455 515Q260 580 70 500Z"/><path d="M500 360Q680 190 890 300L950 385Q700 450 500 360Z"/><path d="M1040 500Q1230 320 1460 430L1540 520Q1280 580 1040 500Z"/></g>
+<g fill="#94b29f"><path d="M130 500L200 430 260 485 320 415 410 495Z"/><path d="M580 360L650 295 720 345 785 270 875 355Z"/><path d="M1100 500L1190 420 1260 480 1330 400 1450 500Z"/></g>
+<path d="M250 500Q280 630 340 790M760 380Q770 520 830 700M1230 510Q1240 630 1290 760" stroke="#b8d9d2" stroke-width="34" fill="none" opacity=".65"/>
+<path d="M340 790Q470 710 620 760M830 700Q950 640 1070 700" stroke="#c4a77d" stroke-width="18" fill="none"/>
+<path d="M450 510Q650 600 800 470M960 470Q1120 570 1290 500" stroke="#725d51" stroke-width="15" fill="none"/>
+<path d="M1350 440V300M1315 335L1350 300 1385 335M1350 300L1310 270M1350 300L1390 265" stroke="#d8c59c" stroke-width="7" fill="none"/>
+<path d="M0 760Q250 690 460 760T850 740T1260 760T1600 730V900H0Z" fill="#506d78"/><g fill="none" stroke-linecap="round"><path d="M0 870Q200 810 410 850T820 840T1220 850T1600 820" stroke="#d6ded2" stroke-opacity=".5" stroke-width="12"/><path d="M220 900L350 810 480 900M1100 900L1220 820 1360 900" stroke="#b79a70" stroke-width="17"/></g>
+<path d="M0 770Q300 720 550 770T1050 760T1600 770V900H0Z" fill="##718c91" opacity=".56"/>
+<rect width="1600" height="900" fill="url(#grain)" opacity=".8"/><rect x="2" y="2" width="1596" height="896" fill="none" stroke="#ead8b8" stroke-opacity=".14" stroke-width="3"/></svg>

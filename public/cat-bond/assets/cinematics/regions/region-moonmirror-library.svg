@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 1600 900" role="img" aria-labelledby="t d"><title id="t">Moonmirror Library — 月镜书库</title><desc id="d">Original cinematic fantasy environment key art for Cat Bond: The Last Resonance.</desc><defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#1a2942"/><stop offset=".68" stop-color="#5a637e"/><stop offset="1" stop-color="#30394f"/></linearGradient>
+<linearGradient id="brass" x2="1" y2="1"><stop stop-color="#6c4c34"/><stop offset=".3" stop-color="#e2c18a"/><stop offset=".7" stop-color="#a97948"/><stop offset="1" stop-color="#5c402d"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff0c7" stop-opacity=".75"/><stop offset=".35" stop-color="#e9c58c" stop-opacity=".23"/><stop offset="1" stop-color="#e9c58c" stop-opacity="0"/></radialGradient>
+<pattern id="grain" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="5" cy="8" r="1" fill="#fff" opacity=".12"/><circle cx="24" cy="21" r=".8" fill="#0b1821" opacity=".14"/><path d="M8 30l8-2M28 5l4 1" stroke="#fff" stroke-opacity=".07"/></pattern>
+</defs><rect width="1600" height="900" fill="url(#sky)"/><circle cx="1180" cy="150" r="450" fill="url(#glow)"/>
+<path d="39475f" fill="#68728b" opacity=".58"/><path d="68728b" fill="##5a637e" opacity=".74"/>
+<g><path d="M440 680V330L540 235 640 330V680Z" fill="#55627b"/><path d="M495 680V365L540 320 585 365V680Z" fill="#202c43"/>
+<path d="M700 680V245L820 130 940 245V680Z" fill="#798198"/><path d="M755 680V290L820 220 885 290V680Z" fill="#27354c"/>
+<path d="M1000 680V350L1080 255 1160 350V680Z" fill="#68738b"/><path d="M1035 680V390L1080 335 1125 390V680Z" fill="#243147"/>
+<g fill="#c5b9ce"><path d="M430 330L540 205 650 330Z"/><path d="M680 245L820 70 960 245Z"/><path d="M990 350L1080 225 1170 350Z"/></g>
+<g fill="#eadcc4"><rect x="520" y="410" width="42" height="110"/><rect x="800" y="355" width="42" height="150"/><rect x="1060" y="430" width="38" height="90"/></g>
+<ellipse cx="810" cy="755" rx="680" ry="125" fill="#202d45"/><ellipse cx="810" cy="745" rx="580" ry="62" fill="#8791a6" opacity=".5"/><ellipse cx="810" cy="745" rx="410" ry="28" fill="none" stroke="#d8cde1" stroke-opacity=".55" stroke-width="6"/>
+<path d="M0 820Q300 770 600 830T1200 810T1600 820V900H0Z" fill="#252f47"/>
+<g fill="#d6d1e0"><circle cx="330" cy="190" r="3"/><circle cx="1240" cy="250" r="4"/><circle cx="1410" cy="160" r="3"/><circle cx="250" cy="320" r="3"/></g><g fill="none" stroke-linecap="round"><path d="M180 860Q480 800 780 850T1380 840" stroke="#c9d3dc" stroke-opacity=".35" stroke-width="8"/><path d="M250 900L360 835 480 900M1190 900L1300 830 1430 900" stroke="#8f9bb1" stroke-width="14"/></g>
+<path d="M0 770Q300 720 550 770T1050 760T1600 770V900H0Z" fill="##30394f" opacity=".56"/>
+<rect width="1600" height="900" fill="url(#grain)" opacity=".8"/><rect x="2" y="2" width="1596" height="896" fill="none" stroke="#ead8b8" stroke-opacity=".14" stroke-width="3"/></svg>
