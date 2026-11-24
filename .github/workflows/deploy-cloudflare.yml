@@ -263,6 +263,30 @@ jobs:
             done
             test "$ready" = 1 || { echo "::error::Page $route returned $code after retries"; exit 1; }
           done
+          # Verify Tiny Town's exact production HTML references and asset bytes.
+          # A 200 page response alone could still serve stale cached JavaScript/CSS.
+          expected_town_js=$(grep -oE 'game-v4.js[?]v=[^"]+' public/tiny-town/index.html | head -1)
+          expected_town_css=$(grep -oE 'compact-v5.css[?]v=[^"]+' public/tiny-town/index.html | head -1)
+          test -n "$expected_town_js" && test -n "$expected_town_css" || {
+            echo '::error::Tiny Town source asset references are missing'; exit 1;
+          }
+          town_latest=0
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if curl -fsSL --max-time 20 -o /tmp/tiny-town-live.html "https://morrowwish.pages.dev/tiny-town/?verify=$GITHUB_SHA&attempt=$attempt" \
+              && grep -Fq "$expected_town_js" /tmp/tiny-town-live.html \
+              && grep -Fq "$expected_town_css" /tmp/tiny-town-live.html \
+              && curl -fsSL --max-time 20 -o /tmp/tiny-town-live.js "https://morrowwish.pages.dev/tiny-town/$expected_town_js&verify=$GITHUB_SHA&attempt=$attempt" \
+              && curl -fsSL --max-time 20 -o /tmp/tiny-town-live.css "https://morrowwish.pages.dev/tiny-town/$expected_town_css&verify=$GITHUB_SHA&attempt=$attempt" \
+              && cmp -s public/tiny-town/game-v4.js /tmp/tiny-town-live.js \
+              && cmp -s public/tiny-town/compact-v5.css /tmp/tiny-town-live.css; then
+              town_latest=1; break
+            fi
+            sleep 3
+          done
+          test "$town_latest" = 1 || {
+            echo '::error::Tiny Town production HTML/JS/CSS is stale or differs from source'; exit 1;
+          }
+          echo "Tiny Town LIVE verified against $GITHUB_SHA: exact game-v4.js and compact-v5.css bytes match production."
           good=0
           for attempt in 1 2 3 4 5; do
             code=$(curl -sSL --max-time 15 -o /dev/null -w '%{http_code}' 'https://morrowwish.pages.dev/api/summary?days=7')
