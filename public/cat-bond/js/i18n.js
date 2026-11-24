@@ -509,6 +509,7 @@
     '⚠️ 重击来袭 — 离开红圈！': '⚠️ Heavy attack incoming — leave the red circle!',
     '收服成功': 'Capture successful',
     '🏠 收服成功！': '🏠 Cat captured!',
+    '✦ 险胜！': '✦ CLUTCH!',
     '⚡ 必杀就绪 — 按 R 释放': '⚡ Ultimate ready — press R',
     '用技能 (Q/E) 破防才能收服！': 'Use skills (Q/E) to break its guard and capture it!',
 

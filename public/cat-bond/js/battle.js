@@ -202,6 +202,10 @@ class CaptureBattle {
     this._debug = false;              // live recording flag (button-toggled)
     this._dbgLog = [];                // always allocated so the recorder guard is simple; stays empty unless recording
     this.shakeT = 0; this.flash = 0;
+    // PLAYER-DANGER FEEDBACK (playtest P0): active-cat HP fraction (draw() paints a focal red
+    // vignette+pulse below CRIT_HP_FRAC), lowest team-HP dip this fight (→ 险胜/Clutch win beat),
+    // and a critical-entry latch so the heartbeat sting fires once per dip, not every frame.
+    this.CRIT_HP_FRAC = 0.25; this._dangerFrac = 1; this._minTeamHpDip = 1; this._inCrit = false;
     // HIT-FEEL: trauma-based camera shake (Nijman). On a hit we add trauma (0..1);
     // the camera offset in draw() = maxShake * trauma² (squared falloff), decaying
     // ~1.8/s. shakeTrauma replaces the old shakeT-that-never-moved-the-camera.
@@ -4306,6 +4310,22 @@ class CaptureBattle {
     // fire, two can telegraph at once, less manual breathing room. Threat you feel
     // now, not a +10% statline next run. 0 → 1 as the stomp drags on.
     const teamHpFrac = this.team.reduce((n,f)=>n+Math.max(0,f.hp),0)/Math.max(1,this.team.reduce((n,f)=>n+f.maxhp,0));
+    // PLAYER-DANGER FEEDBACK (playtest P0 — "fights are close but you never FEEL it"): track the
+    // ACTIVE cat's HP fraction so draw() can paint a focal red vignette + pulse, and remember the
+    // fight's lowest dip so the win screen can mark a 险胜/Clutch. All read-only off existing HP —
+    // zero balance effect. CRITICAL = below this threshold; one-shot heartbeat sting on first entry.
+    const meNow = this.me();
+    const meFrac = (meNow && meNow.alive && meNow.maxhp) ? meNow.hp / meNow.maxhp : 1;
+    this._dangerFrac = meFrac;                                     // consumed by draw()
+    this._minTeamHpDip = Math.min(this._minTeamHpDip == null ? 1 : this._minTeamHpDip, teamHpFrac);
+    if (!this.coach) {
+      if (meFrac <= this.CRIT_HP_FRAC && !this._inCrit) {
+        this._inCrit = true;                                      // entered critical: one heartbeat cue
+        if (meNow && meNow.alive) window.MorrowwishAudio?.effect?.('combat_hurt');
+      } else if (meFrac > this.CRIT_HP_FRAC + 0.06) {
+        this._inCrit = false;                                     // left critical (small hysteresis)
+      }
+    }
     this._pressure = (!this.coach && this.t > 5 && teamHpFrac > 0.88 && !this._stalled)
       ? Math.min(1, (this._pressure || 0) + dt * 0.45) : Math.max(0, (this._pressure || 0) - dt * 0.5);
     // CLOSING / "收网" — a TIME-driven ramp (0 at 45s → 1 at 70s), independent of HP so it is
@@ -4558,7 +4578,12 @@ class CaptureBattle {
     this.captureSeq = { t: 1.35, max: 1.35, x: e ? e.x : this.W / 2, y: e ? e.y : this.H / 2,
       sp: e ? e.sp : null, cat: e };
     if (e) { e.pose = 'idle'; e.captured = true; }     // it sits down, no longer hostile
-    this.slowmo = Math.max(this.slowmo, 0.5);
+    // CLUTCH beat (playtest P0): if the fight's lowest team-HP dip went below CLUTCH_DIP, this win was
+    // a knife-edge survival — mark it so the capture beat reads 险胜/Clutch (a bigger relief moment)
+    // instead of looking identical to a comfortable win. Flag only; the banner is drawn in the capture
+    // overlay. Pure cosmetic off the already-tracked _minTeamHpDip.
+    this._clutch = (this._minTeamHpDip != null && this._minTeamHpDip < 0.15);
+    this.slowmo = Math.max(this.slowmo, this._clutch ? 0.7 : 0.5);
     this.flash = Math.max(this.flash, 0.25);
     this.enemyProjectiles = [];                         // clear any darts still in the air
     window.MorrowwishAudio?.effect?.('capture');
@@ -6053,6 +6078,20 @@ class CaptureBattle {
 
     if (this.flash > 0) { ctx.fillStyle = `rgba(157,123,255,${this.flash})`; ctx.fillRect(0, 0, W, H); }
 
+    // PLAYER-DANGER VIGNETTE (playtest P0): when the active cat is in critical HP, paint a red
+    // screen-EDGE vignette (transparent center so gameplay stays readable) that deepens as HP nears 0
+    // and pulses like a heartbeat — the focal "you're on the ropes" cue the corner HP bar never gave.
+    // Pure overlay off this._dangerFrac; no effect on sim. Suppressed during the capture beat / coach.
+    if (!this.captureSeq && !this.coach && this._dangerFrac < this.CRIT_HP_FRAC) {
+      const sev = 1 - this._dangerFrac / this.CRIT_HP_FRAC;          // 0 at threshold → 1 at 0 HP
+      const pulse = 0.72 + 0.28 * Math.sin(this.t * (6 + sev * 5));  // heartbeat quickens as HP falls
+      const a = (0.16 + 0.30 * sev) * pulse;
+      const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.max(W, H) * 0.62);
+      g.addColorStop(0, 'rgba(200,24,40,0)');
+      g.addColorStop(1, `rgba(200,24,40,${a.toFixed(3)})`);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+
     // Legacy full-screen ULT cinematic disabled; duo animations are separate.
 
     this.drawPackMorale(ctx, W);
@@ -6565,6 +6604,12 @@ class CaptureBattle {
       ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
       ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=18;
       ctx.fillText(en?'🏠 TAMED!':'🏠 收服成功！',W/2,this.topMargin+70);
+      // CLUTCH sub-banner (playtest P0): a knife-edge win reads differently from a comfy one.
+      if(this._clutch){
+        ctx.font='900 '+((this.game.isTouch?17:23)*pop)+'px system-ui, sans-serif';
+        ctx.fillStyle='#ff6b6b';ctx.shadowColor='#ffb3b3';ctx.shadowBlur=14;
+        ctx.fillText(en?'✦ CLUTCH!':'✦ 险胜！',W/2,this.topMargin+104);
+      }
       ctx.restore();
     }
     // Ult-ready announcement banner (one-time when the meter first fills).
