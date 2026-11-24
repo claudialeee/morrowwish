@@ -1,0 +1,2 @@
+// Original vector art commissioned for the Last Resonance module.
+window.CatBondResonanceArt={atlasUrl:"assets/resonance-atlas.svg",sceneUrl:"assets/resonance-scenes.svg",portraitUrl:"assets/resonance-portraits.svg",regionIndex:{harbor:0,forest:1,forge:2,sky:3,library:4,starfall:5},portraitIndex:{"cape-lantern":0,qilan:1,yahe:2,yuchuan:3,jinpo:4,xiaomao:5,lingyu:6,yuanfan:7,moye:8,baikan:9,xingya:10,lichuan:11,muling:12,player:13},portraitCell:256};
