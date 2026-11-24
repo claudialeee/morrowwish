@@ -5296,3 +5296,6 @@ body.cb-exploring #stage #yard-actions{
 .cb-slot-manager-actions button[data-delete]{background:#713e4a;color:#fff0ef;border-color:#b77c87}
 .cb-slot-manager-actions button[data-delete]:disabled{opacity:.28}
 @media(max-width:560px){.cb-slot-manager-actions{grid-template-columns:1fr 1fr 1fr}}
+
+/* The title screen has a later, equally-specific grid rule. Hidden must win after that rule or it blocks the playable game underneath. */
+#intro.cb-rpg-intro.hide{display:none!important;visibility:hidden!important;pointer-events:none!important;}
