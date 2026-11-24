@@ -2,19 +2,19 @@
   "status": "CHALLENGER_SQL_PASSED_HISTORICAL_IDENTITY_UNPROVEN",
   "boundary": {
     "start": "2026-11-22T08:00:00.000Z",
-    "cutoff": "2026-11-24T04:14:54.641Z",
-    "maxId": 16891,
-    "rawRows": 1342,
-    "arcadeRowsAfterDedup": 1342,
+    "cutoff": "2026-11-24T04:54:01.551Z",
+    "maxId": 16967,
+    "rawRows": 1418,
+    "arcadeRowsAfterDedup": 1400,
     "previousLastEventAt": "2026-11-24T01:41:06.390Z",
-    "latestEventAt": "2026-11-24T03:58:36.088Z",
-    "rawDigest": "7e6f3ac1f236fa9a8a187359f888ba9145d1495195fd5b2a778fa3e4fda40dd5"
+    "latestEventAt": "2026-11-24T04:53:55.277Z",
+    "rawDigest": "ca848021d0de745bdae58a2d2057c91d26c31260110ac8ed2e58c9c5be19b80f"
   },
   "checks": [
     {
       "name": "cat-bond independent joined firstPlayPages",
-      "actual": 40,
-      "expected": 40,
+      "actual": 41,
+      "expected": 41,
       "pass": true
     },
     {
@@ -25,20 +25,20 @@
     },
     {
       "name": "cat-bond independent joined entryPages",
-      "actual": 40,
-      "expected": 40,
+      "actual": 41,
+      "expected": 41,
       "pass": true
     },
     {
       "name": "cat-bond independent joined v11Visits",
-      "actual": 51,
-      "expected": 51,
+      "actual": 53,
+      "expected": 53,
       "pass": true
     },
     {
       "name": "cat-bond independent joined v11EntryPages",
-      "actual": 31,
-      "expected": 31,
+      "actual": 32,
+      "expected": 32,
       "pass": true
     },
     {
@@ -91,8 +91,8 @@
     },
     {
       "name": "cat-bond independent signal bond_enter",
-      "actual": 40,
-      "expected": 40,
+      "actual": 41,
+      "expected": 41,
       "pass": true
     },
     {
@@ -223,8 +223,8 @@
     },
     {
       "name": "cat-bond independent signal bond_starter",
-      "actual": 5,
-      "expected": 5,
+      "actual": 6,
+      "expected": 6,
       "pass": true
     },
     {
@@ -241,8 +241,8 @@
     },
     {
       "name": "cat-bond independent signal bond_wild_spawn",
-      "actual": 12,
-      "expected": 12,
+      "actual": 13,
+      "expected": 13,
       "pass": true
     },
     {
@@ -259,8 +259,8 @@
     },
     {
       "name": "cat-bond independent signal funnel_first_run",
-      "actual": 40,
-      "expected": 40,
+      "actual": 41,
+      "expected": 41,
       "pass": true
     },
     {
@@ -271,14 +271,14 @@
     },
     {
       "name": "pawsibly-innocent independent joined firstPlayPages",
-      "actual": 8,
-      "expected": 8,
+      "actual": 9,
+      "expected": 9,
       "pass": true
     },
     {
       "name": "pawsibly-innocent independent joined firstFinishPages",
-      "actual": 5,
-      "expected": 5,
+      "actual": 6,
+      "expected": 6,
       "pass": true
     },
     {
@@ -289,26 +289,26 @@
     },
     {
       "name": "pawsibly-innocent independent signal cat_close_call",
-      "actual": 14,
-      "expected": 14,
+      "actual": 16,
+      "expected": 16,
       "pass": true
     },
     {
       "name": "pawsibly-innocent independent signal cat_escape",
-      "actual": 12,
-      "expected": 12,
+      "actual": 13,
+      "expected": 13,
       "pass": true
     },
     {
       "name": "pawsibly-innocent independent signal cat_fish",
-      "actual": 45,
-      "expected": 45,
+      "actual": 49,
+      "expected": 49,
       "pass": true
     },
     {
       "name": "pawsibly-innocent independent signal cat_room_1",
-      "actual": 5,
-      "expected": 5,
+      "actual": 6,
+      "expected": 6,
       "pass": true
     },
     {
@@ -355,8 +355,8 @@
     },
     {
       "name": "pawsibly-innocent independent signal cat_souvenir",
-      "actual": 12,
-      "expected": 12,
+      "actual": 13,
+      "expected": 13,
       "pass": true
     },
     {
@@ -367,14 +367,14 @@
     },
     {
       "name": "pawsibly-innocent independent signal funnel_first_finish",
-      "actual": 5,
-      "expected": 5,
+      "actual": 6,
+      "expected": 6,
       "pass": true
     },
     {
       "name": "pawsibly-innocent independent signal funnel_first_run",
-      "actual": 8,
-      "expected": 8,
+      "actual": 9,
+      "expected": 9,
       "pass": true
     },
     {
@@ -384,27 +384,39 @@
       "pass": true
     },
     {
+      "name": "pawsibly-innocent independent signal play_feedback_fun",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
       "name": "tiny-town independent joined firstPlayPages",
-      "actual": 6,
-      "expected": 6,
+      "actual": 7,
+      "expected": 7,
       "pass": true
     },
     {
       "name": "tiny-town independent joined firstFinishPages",
-      "actual": 0,
-      "expected": 0,
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal funnel_first_finish",
+      "actual": 2,
+      "expected": 2,
       "pass": true
     },
     {
       "name": "tiny-town independent signal funnel_first_run",
-      "actual": 6,
-      "expected": 6,
+      "actual": 7,
+      "expected": 7,
       "pass": true
     },
     {
       "name": "tiny-town independent signal town_building_moved",
-      "actual": 1,
-      "expected": 1,
+      "actual": 2,
+      "expected": 2,
       "pass": true
     },
     {
@@ -414,27 +426,57 @@
       "pass": true
     },
     {
-      "name": "tiny-town independent signal town_club",
+      "name": "tiny-town independent signal town_charter_dream",
       "actual": 1,
       "expected": 1,
       "pass": true
     },
     {
-      "name": "tiny-town independent signal town_combo_discovered",
-      "actual": 1,
-      "expected": 1,
-      "pass": true
-    },
-    {
-      "name": "tiny-town independent signal town_first_build",
+      "name": "tiny-town independent signal town_city_mutation",
       "actual": 2,
       "expected": 2,
       "pass": true
     },
     {
-      "name": "tiny-town independent signal town_free_day",
+      "name": "tiny-town independent signal town_club",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_combo_discovered",
+      "actual": 9,
+      "expected": 9,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_ending_cat",
       "actual": 1,
       "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_ending_sky",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_epic_wonder",
+      "actual": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_first_build",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_free_day",
+      "actual": 4,
+      "expected": 4,
       "pass": true
     },
     {
@@ -444,39 +486,87 @@
       "pass": true
     },
     {
+      "name": "tiny-town independent signal town_free_rest",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_free_sea",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_free_stars",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
       "name": "tiny-town independent signal town_legendary_unlocked",
+      "actual": 6,
+      "expected": 6,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_lose",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_neighbor_story",
+      "actual": 4,
+      "expected": 4,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_petition_met",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_petition_missed",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "tiny-town independent signal town_second_wish",
       "actual": 2,
       "expected": 2,
       "pass": true
     },
     {
-      "name": "tiny-town independent signal town_neighbor_story",
-      "actual": 1,
-      "expected": 1,
-      "pass": true
-    },
-    {
-      "name": "tiny-town independent signal town_petition_missed",
-      "actual": 1,
-      "expected": 1,
-      "pass": true
-    },
-    {
-      "name": "tiny-town independent signal town_second_wish",
+      "name": "tiny-town independent signal town_win",
       "actual": 1,
       "expected": 1,
       "pass": true
     },
     {
       "name": "elsewhere independent joined firstPlayPages",
-      "actual": 0,
-      "expected": 0,
+      "actual": 1,
+      "expected": 1,
       "pass": true
     },
     {
       "name": "elsewhere independent joined firstFinishPages",
-      "actual": 0,
-      "expected": 0,
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "elsewhere independent signal funnel_first_finish",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "elsewhere independent signal funnel_first_run",
+      "actual": 1,
+      "expected": 1,
       "pass": true
     },
     {
@@ -565,14 +655,14 @@
     },
     {
       "name": "hub independent signal hub_card_cat_bond",
-      "actual": 41,
-      "expected": 41,
+      "actual": 42,
+      "expected": 42,
       "pass": true
     },
     {
       "name": "hub independent signal hub_card_elsewhere",
-      "actual": 1,
-      "expected": 1,
+      "actual": 2,
+      "expected": 2,
       "pass": true
     },
     {
@@ -583,8 +673,8 @@
     },
     {
       "name": "hub independent signal hub_card_pawsibly_innocent",
-      "actual": 14,
-      "expected": 14,
+      "actual": 15,
+      "expected": 15,
       "pass": true
     },
     {
@@ -1249,15 +1339,15 @@
     },
     {
       "name": "both windows record count",
-      "actual": 1342,
-      "expected": 1342,
+      "actual": 1418,
+      "expected": 1418,
       "pass": true
     }
   ],
   "rawCounts": [
     {
       "segment": "newIncrement",
-      "n": 25
+      "n": 101
     },
     {
       "segment": "previousWindow",
@@ -1269,30 +1359,37 @@
     {
       "game": "cat-bond",
       "kind": "session",
-      "n": 621,
+      "n": 625,
       "firstTs": 1795371261004,
-      "lastTs": 1795487567771
+      "lastTs": 1795494204087
     },
     {
       "game": "cat-bond",
       "kind": "visit",
-      "n": 79,
+      "n": 81,
       "firstTs": 1795371253257,
-      "lastTs": 1795487561068
+      "lastTs": 1795494182966
+    },
+    {
+      "game": "elsewhere",
+      "kind": "",
+      "n": 18,
+      "firstTs": 1795495813597,
+      "lastTs": 1795495840528
     },
     {
       "game": "elsewhere",
       "kind": "session",
-      "n": 10,
+      "n": 13,
       "firstTs": 1795380117173,
-      "lastTs": 1795468079136
+      "lastTs": 1795495848299
     },
     {
       "game": "elsewhere",
       "kind": "visit",
-      "n": 15,
+      "n": 16,
       "firstTs": 1795375006109,
-      "lastTs": 1795477339268
+      "lastTs": 1795495810055
     },
     {
       "game": "flip-dash",
@@ -1311,16 +1408,16 @@
     {
       "game": "hub",
       "kind": "session",
-      "n": 238,
+      "n": 244,
       "firstTs": 1795371259813,
-      "lastTs": 1795492716088
+      "lastTs": 1795495855140
     },
     {
       "game": "hub",
       "kind": "visit",
-      "n": 130,
+      "n": 133,
       "firstTs": 1795371258256,
-      "lastTs": 1795492715637
+      "lastTs": 1795495848405
     },
     {
       "game": "parcel-panic",
@@ -1339,16 +1436,16 @@
     {
       "game": "pawsibly-innocent",
       "kind": "session",
-      "n": 110,
+      "n": 118,
       "firstTs": 1795380116854,
-      "lastTs": 1795472376175
+      "lastTs": 1795496035277
     },
     {
       "game": "pawsibly-innocent",
       "kind": "visit",
-      "n": 27,
+      "n": 28,
       "firstTs": 1795374282549,
-      "lastTs": 1795474074363
+      "lastTs": 1795495855265
     },
     {
       "game": "pocket-aquarium",
@@ -1367,16 +1464,16 @@
     {
       "game": "tiny-town",
       "kind": "session",
-      "n": 32,
+      "n": 61,
       "firstTs": 1795374317744,
-      "lastTs": 1795492596509
+      "lastTs": 1795495805557
     },
     {
       "game": "tiny-town",
       "kind": "visit",
-      "n": 18,
+      "n": 19,
       "firstTs": 1795374296485,
-      "lastTs": 1795492386986
+      "lastTs": 1795495489317
     }
   ],
   "limitations": [
