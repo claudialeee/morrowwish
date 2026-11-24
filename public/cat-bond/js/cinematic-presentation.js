@@ -48,7 +48,8 @@
 @keyframes cbcp-fade-in{from{opacity:0}to{opacity:1}}
 @media(max-width:680px){
  .cbcp-root,.cbcp-shell{min-height:240px}
- .cbcp-stage{aspect-ratio:4/3;min-height:0}
+  .cbcp-stage{aspect-ratio:4/3;min-height:0}
+@media(max-width:680px) and (orientation:portrait){.cbcp-stage{aspect-ratio:3/4}.cbcp-art,.cbcp-layer{object-position:center 44%}}
  .cbcp-heading{max-width:64%}
  .cbcp-kicker{font-size:9px;letter-spacing:.14em}
  .cbcp-title{font-size:clamp(19px,5.2vw,28px)}
@@ -92,8 +93,9 @@
       this.root = typeof root === 'string' ? document.querySelector(root) : root;
       if (!this.root) throw new Error('Cinematic root element was not found');
       this.options = options;
-      this.language = options.language || 'zh';
+      this.language = typeof options.language === 'string' ? options.language : 'zh';
       this.languageProvider = typeof options.language === 'function' ? options.language : null;
+      this.forcedLanguage = null;
       this.scenes = new Map();
       this.scene = null;
       this.frameIndex = 0;
@@ -168,7 +170,7 @@
     }
 
     currentLanguage() {
-      const supplied = this.languageProvider?.();
+      const supplied = this.forcedLanguage || this.languageProvider?.();
       const candidate = supplied || this.language;
       return String(candidate).toLowerCase().startsWith('en') ? 'en' : 'zh';
     }
@@ -204,7 +206,7 @@
       if (!this.scene) return;
       const frame = this.scene.frames[this.frameIndex];
       const lang = this.currentLanguage();
-      this.nodes.stack.innerHTML = '';
+      const previous = Array.from(this.nodes.stack.children);
       const image = document.createElement('img');
       image.className = 'cbcp-art cbcp-crossfade';
       image.src = frame.image;
@@ -212,8 +214,20 @@
       image.draggable = false;
       image.decoding = 'async';
       image.loading = 'eager';
-      this.applyCamera(image, frame.camera);
+      image.style.opacity = '0';
+      image.style.objectPosition = frame.focus || 'center';
+      image.style.transitionDuration = `${clamp(frame.transitionMs ?? 520, 320, 900)}ms, ${clamp(frame.durationMs || 5600, 1200, 12000)}ms`;
+      this.applyCamera(image, frame.camera, 1, frame.durationMs);
       this.nodes.stack.appendChild(image);
+      (frame.layers || []).forEach(() => {});
+      requestAnimationFrame(() => {
+        image.style.opacity = '1';
+        previous.forEach(node => { node.style.opacity = '0'; });
+      });
+      previous.forEach(node => {
+        node.addEventListener('transitionend', () => node.remove(), { once: true });
+        window.setTimeout(() => node.remove(), 980);
+      });
 
       (frame.layers || []).forEach(layer => {
         if (!layer?.image) return;
@@ -225,7 +239,8 @@
         node.draggable = false;
         node.style.opacity = String(clamp(layer.opacity ?? 1, 0, 1));
         node.style.mixBlendMode = layer.blend || 'normal';
-        this.applyCamera(node, frame.camera, Number(layer.depth) || 0);
+        node.style.transitionDuration = `${clamp(frame.transitionMs ?? 520, 320, 900)}ms, ${clamp(frame.durationMs || 5600, 1200, 12000)}ms`;
+        this.applyCamera(node, frame.camera, Number(layer.depth) || 0, frame.durationMs);
         this.nodes.stack.appendChild(node);
       });
 
@@ -242,11 +257,12 @@
       });
     }
 
-    applyCamera(node, camera, depth = 1) {
+    applyCamera(node, camera, depth = 1, durationMs = 5600) {
       const reduced = prefersReducedMotion();
       const from = camera?.from || { x: 0, y: 0, scale: 1.02 };
       const to = camera?.to || { x: 0, y: 0, scale: 1.06 };
       const factor = reduced ? 0 : clamp(depth, 0, 1.5);
+      node.style.transitionDuration = `${clamp(durationMs || 5600, 1200, 12000)}ms`;
       node.style.transform = `translate3d(${Number(from.x || 0) * factor}%,${Number(from.y || 0) * factor}%,0) scale(${reduced ? 1 : Number(from.scale || 1.02)})`;
       if (!reduced) requestAnimationFrame(() => {
         if (!node.isConnected) return;
@@ -370,6 +386,7 @@
 
     setLanguage(language) {
       this.language = String(language).toLowerCase().startsWith('en') ? 'en' : 'zh';
+      this.forcedLanguage = this.language;
       if (this.scene) {
         this.nodes.title.textContent = localized(this.scene.title, this.currentLanguage());
         this.nodes.kicker.textContent = localized(this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
