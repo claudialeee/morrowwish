@@ -68,6 +68,13 @@ try{
   try{
    await page.goto(root+'/cat-bond/?lang='+p.lang+mode,{waitUntil:'load',timeout:30000});
    await page.locator('#intro-start').click();
+   // The first-run cinematic prologue now precedes the starter picker.
+   const prologue=page.locator('.cb-story-overlay');
+   if(await prologue.count()){
+    await prologue.waitFor({state:'visible',timeout:5000});
+    await prologue.locator('.cb-story-skip').click({timeout:5000});
+    await prologue.waitFor({state:'detached',timeout:5000});
+   }
    await page.locator('#panel.open .dex-cell').first().click();
    await page.evaluate(()=>{
     const b=State.makeCat(State.S.cats[0].species);
