@@ -1,0 +1,60 @@
+name: Isolated dashboard challenger SQL 20261123
+on:
+  push:
+    branches: ['audit/dashboard-data-integrity-20261123']
+    paths:
+      - '.github/workflows/dashboard-challenger-audit-20261123.yml'
+      - 'audit/dashboard/challenger-sql.mjs'
+permissions:
+  contents: write
+concurrency:
+  group: isolated-dashboard-challenger-20261123
+  cancel-in-progress: false
+jobs:
+  challenger:
+    if: github.ref == 'refs/heads/audit/dashboard-data-integrity-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/dashboard-data-integrity-20261123
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Branch and source checks
+        run: |
+          set -eu
+          test "$GITHUB_REF" = refs/heads/audit/dashboard-data-integrity-20261123
+          test "$(git branch --show-current)" = audit/dashboard-data-integrity-20261123
+          node --check audit/dashboard/challenger-sql.mjs
+      - name: Independently cross-check historical and new events
+        env:
+          D1_READ_TOKEN: ${{ secrets.CLOUDFLARE_D1_READ_TOKEN || secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+          D1_DATABASE_ID: fbd62f69-1811-4538-a17f-ecc5be8ad7cc
+        run: node audit/dashboard/challenger-sql.mjs
+      - name: Persist aggregate evidence and offline preview on audit branch only
+        if: always()
+        run: |
+          set -eu
+          test "$GITHUB_REF" = refs/heads/audit/dashboard-data-integrity-20261123
+          test "$(git branch --show-current)" = audit/dashboard-data-integrity-20261123
+          test -s audit/dashboard/challenger-report.json
+          test -s audit/dashboard/preview.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- audit/dashboard/challenger-report.json audit/dashboard/preview.html
+          if ! git diff --cached --quiet; then
+            git commit -m "audit only: persist independent SQL challenger and offline preview"
+            git push origin HEAD:refs/heads/audit/dashboard-data-integrity-20261123
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isolated-dashboard-challenger-preview
+          path: |
+            audit/dashboard/challenger-report.json
+            audit/dashboard/preview.html
+          if-no-files-found: error
+          retention-days: 7
