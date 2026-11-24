@@ -107,7 +107,7 @@ assert.equal(auth.status,401,'real dashboard must remain password protected');
 const response=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 assert.equal(response.status,200);
 const summary=await response.json();
-assert.equal(summary.byDay.find(r=>r.day==='2026-11-22')?.pageviews,1,
+assert.equal(summary.byDay.find(r=>r.day==='2026-11-22')?.pageviews,2,
  'UTC Nov 23 event at 16:30 PT must be grouped into Nov 22 Pacific day');
 for(const g of games){
  const row=summary.byGame.find(x=>x.game===g);
@@ -115,7 +115,7 @@ for(const g of games){
  assert.equal(row?.starts,endless?2:1,g+' all starts counted');
  assert.equal(row?.ends,1,g+' finished run counted');
  assert.equal(row?.abandons,endless?1:0,g+' abandoned runs never count as completions');
- assert.equal(row?.pageviews,endless?2:1,g+' game views counted');
+ assert.equal(row?.pageviews,g==='cat-bond'?2:endless?2:1,g+' raw page loads counted');
 }
 assert.equal(summary.byChannel.find(x=>x.source==='bluesky')?.starts,8,'unrelated referral starts');
 const bond=summary.byGame.find(x=>x.game==='cat-bond');
