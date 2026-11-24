@@ -856,7 +856,7 @@ function npcTalk(id){
  if(!root.talked[id]){root.talked[id]=true;npcSave();}
  const authored=NPC_CHOICES[id];
  if(authored&&!root.choices[id]){
-  card.querySelector('.cb-npc-dialog-line').textContent=(en?authored.promptEn:authored.prompt);
+  card.querySelector('.cb-npc-dialog-line').textContent=lines.join('\\n\\n')+'\\n\\n'+(en?authored.promptEn:authored.prompt);
   authored.options.forEach(option=>add(en?option.labelEn:option.label,()=>{
    root.choices[id]=option.id;root.relationships[id]=(root.relationships[id]||0)+(option.bond||0);
    q.choice=option.id;q.choiceReply=option.reply;q.choiceReplyEn=option.replyEn;
@@ -866,7 +866,7 @@ function npcTalk(id){
  }
  if(q.choiceReply||q.choiceReplyEn)card.querySelector('.cb-npc-dialog-line').textContent+=(en?'\n\n':'\n\n')+(en?q.choiceReplyEn:q.choiceReply);
  if(q.found&&!q.done)add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
- else if(!q.accepted&&!q.done)add(en?'Continue the conversation':'继续交谈',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
+ else if(!q.accepted&&!q.done)add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
  else if(q.done)add(en?'Ask about the Star Bell':'询问星铃',()=>{close();npcLore(npc);},true);
  add(en?'Leave':'离开',close,false);
 }
