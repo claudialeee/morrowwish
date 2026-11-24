@@ -29,8 +29,8 @@ window.addEventListener('DOMContentLoaded', () => {
         button.classList.add('cb-reset-armed');
         button.setAttribute('aria-live','polite');
         button.textContent=window.MorrowwishI18n?.get?.()==='zh'
-          ?'⚠ 确认清空猫猫存档？再点一次'
-          :'⚠ Erase Cat Bond progress? Click again';
+          ?'⚠ 再点一次：安全重启（保留三个存档）'
+          :'⚠ Click again: safe restart (keep all saves)';
         restoreTimer=setTimeout(()=>{
           armed=false;
           button.classList.remove('cb-reset-armed');
@@ -45,57 +45,81 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   window.CatBondBindResetButton=bindResetButton;
 
-  // The intro is a real save-slot gateway: new adventure and continue are separate actions.
+  // The title gateway offers two equal entry points into three isolated saves.
   let starting=false;
   const slotPanel=document.getElementById('intro-slot-panel');
   const slotList=document.getElementById('intro-slot-list');
   const slotHeading=document.getElementById('intro-slot-heading');
   let slotMode='continue';
   const closeSlots=()=>{slotPanel?.classList.remove('is-open');slotPanel?.setAttribute('aria-hidden','true');};
+  const escapeText=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const openSlots=mode=>{
     slotMode=mode;
     if(!slotPanel||!slotList)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     slotHeading.textContent=mode==='new'?(en?'Choose a slot for a new adventure':'选择一个存档位，开始新的冒险'):(en?'Choose a story to continue':'选择要继续的故事');
     const slotDesc=document.querySelector('.cb-save-picker-desc');
-    if(slotDesc)slotDesc.textContent=en?'Three independent adventures. Choose a slot to continue or begin a new journey.':'三个独立旅程。选择一个位置继续，或开启新的冒险。';
+    if(slotDesc)slotDesc.textContent=en?'Three independent adventures. Choose a slot to continue or begin a new journey.':'三个独立旅程。每个存档位都是独立冒险，可以继续或重新开始。';
     const slots=State.listSaveSlots();
     slotList.innerHTML=slots.map(slot=>{
-      const date=slot.exists&&slot.savedAt?new Date(slot.savedAt).toLocaleString():'';
-      const label=slot.exists
-        ?(en?'Chapter: '+({ '第一章 · 空白页':'I · The Blank Page','第二章 · 旧约':'II · The Old Promise','第三章 · 失去的名字':'III · The Lost Name','第四章 · 最后的守铃者':'IV · The Last Bellkeeper','第五章 · 逆响':'V · The Reversed Bell','终章 · 最后一页':'Final Chapter · The Last Page','序章 · 倒着响的铃':'Prologue · A Bell in Reverse'}[slot.chapter]||slot.chapter):'章节：'+slot.chapter)
-        :(en?'Empty slot':'空存档位');
-      const meta=slot.exists
-        ?(en?slot.cats+' cats · '+slot.fragments+'/6 memories · '+date:slot.cats+' 只猫 · '+slot.fragments+'/6 段记忆 · '+date)
-        :(en?'Start a separate journey here':'在这里开启独立冒险');
-      const action=mode==='new'?(slot.exists?(en?'Overwrite':'覆盖存档'):(en?'Start here':'在此开始')):(en?'Continue':'继续故事');
-      const disabled=mode==='continue'&&!slot.exists;
-      return '<article class="cb-save-slot '+(slot.exists?'has-save':'empty-slot')+'"><div class="cb-save-slot-top"><span class="cb-save-slot-number">'+(en?'SLOT ':'存档位 ')+slot.number+'</span><span class="cb-save-slot-status">'+(slot.exists?(en?'SAVED':'已有进度'):(en?'EMPTY':'空位'))+'</span></div><strong class="cb-save-slot-chapter">'+label+'</strong><small class="cb-save-slot-meta">'+meta+'</small><div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button>'+(slot.exists?'<button type="button" data-delete-slot="'+slot.id+'">'+(en?'Delete':'删除')+'</button>':'')+'</div></article>';
+      const date=slot.lastSavedAt?new Date(slot.lastSavedAt).toLocaleString(en?'en-US':'zh-CN'):'';
+      const chapterMap={
+        '第一章 · 空白页':'I · The Blank Page',
+        '第二章 · 旧约':'II · The Old Promise',
+        '第三章 · 失去的名字':'III · The Lost Name',
+        '第四章 · 最后的守铃者':'IV · The Last Bellkeeper',
+        '第五章 · 逆响':'V · The Reversed Bell',
+        '终章 · 最后一页':'Final Chapter · The Last Page',
+        '序章 · 倒着响的铃':'Prologue · A Bell in Reverse'
+      };
+      const chapter=slot.corrupt
+        ?(en?'Damaged save':'存档数据损坏')
+        :slot.exists
+          ?(en?'Chapter: '+(chapterMap[slot.chapter]||slot.chapter):'章节：'+slot.chapter)
+          :(en?'Empty slot':'空存档位');
+      const region=en?slot.regionLabelEn:slot.regionLabelZh;
+      const played=en?'Played '+slot.gameTimeLabel:'游戏时间 '+slot.gameTimeLabel;
+      const progress=en?slot.cats+' cats · '+slot.fragments+'/6 memories':slot.cats+' 只猫 · '+slot.fragments+'/6 段记忆';
+      const detail=slot.corrupt
+        ?(en?'This save cannot be read. Start a new adventure here to replace it.':'无法读取此存档。可以在二次确认后重新开始并覆盖。')
+        :slot.exists
+          ?region+' · '+played+' · '+progress
+          :(en?'No adventure has been started in this slot.':'这个存档位尚未开始冒险。');
+      const saved=slot.exists&&!slot.corrupt
+        ?(en?'Last saved: ':'最后保存：')+date
+        :slot.corrupt?(en?'Recovery unavailable':'无法恢复'):'';
+      const action=mode==='new'
+        ?(slot.exists?(en?'Overwrite slot':'覆盖存档'):(en?'Start here':'在此开始'))
+        :(slot.readable?(en?'Continue':'继续故事'):(en?'Empty':'空存档'));
+      const disabled=mode==='continue'&&!slot.readable;
+      return '<article class="cb-save-slot '+(slot.exists?'has-save':'empty-slot')+(slot.corrupt?' damaged-save':'')+'">'+
+        '<div class="cb-save-slot-top"><span class="cb-save-slot-number">'+(en?'SLOT ':'存档位 ')+slot.number+'</span>'+
+        '<span class="cb-save-slot-status">'+(slot.corrupt?(en?'DAMAGED':'损坏'):slot.exists?(en?'SAVED':'已有进度'):(en?'EMPTY':'空位'))+'</span></div>'+
+        '<strong class="cb-save-slot-chapter">'+escapeText(chapter)+'</strong>'+
+        '<small class="cb-save-slot-meta">'+escapeText(detail)+'</small>'+
+        '<small class="cb-save-slot-saved-at">'+escapeText(saved)+'</small>'+
+        '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
     slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
-        const occupied=State.listSaveSlots().find(s=>s.id===id)?.exists;
-        if(occupied&&!window.confirm(en?'This will replace this slot’s adventure. Continue?':'这会覆盖该存档位的原有冒险。确定继续吗？'))return;
-        beginGame('new',id);
+        const selected=State.listSaveSlots().find(s=>s.id===id);
+        const occupied=!!selected?.exists;
+        if(occupied&&!window.confirm(en
+          ?'Overwrite Save Slot '+selected.number+'? Its existing adventure will be replaced. The other two slots will remain untouched.'
+          :'确定覆盖存档位 '+selected.number+'？原有冒险将被替换，另外两个存档位不会受到影响。'))return;
+        beginGame('new',id,occupied);
       }else beginGame('continue',id);
     }));
-    slotList.querySelectorAll('[data-delete-slot]').forEach(button=>button.addEventListener('click',()=>{
-      const id=button.dataset.deleteSlot;
-      if(!window.confirm(en?'Delete this saved adventure permanently?':'确定永久删除这个存档吗？'))return;
-      State.deleteSlot(id);
-      window.CatBondCloudSave?.queue?.();
-      if(id===State.activeSlot()){closeSlots();location.reload();return;}
-      openSlots(slotMode);
-    }));
   };
-  const beginGame=(mode,slotId)=>{
+  const beginGame=(mode,slotId,overwriteConfirmed=false)=>{
     if(starting)return;
     starting=true;
     try{
-      if(mode==='new')State.startNewGame(slotId);
-      else if(!State.loadSlot(slotId))throw new Error('Save slot is empty');
+      if(mode==='new'){
+        if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
+      }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
@@ -138,7 +162,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.innerHTML=en?enText:zh;};
     set('intro-start','<span>✦</span><strong>开始新的冒险</strong><small>NEW ADVENTURE</small>','<span>✦</span><strong>New Adventure</strong><small>NEW ADVENTURE</small>');
     set('intro-continue','<span>◈</span><strong>继续故事</strong><small>CONTINUE STORY</small>','<span>◈</span><strong>Continue Story</strong><small>CONTINUE STORY</small>');
-    set('intro-cloud-save','☁️ 云端存档管理','☁️ Cloud Save Manager');
     const slotDesc=document.querySelector('.cb-save-picker-desc');
     if(slotDesc)slotDesc.textContent=en
       ?'Three independent adventures. Choose a slot to continue or begin a new journey.'
@@ -153,6 +176,11 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
   document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
   document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
+  // In-game Load Game returns to the selected slot after a clean page restart.
+  const resumeKey='catbond_resume_slot_v1';
+  let resumeSlot=null;
+  try{resumeSlot=sessionStorage.getItem(resumeKey);sessionStorage.removeItem(resumeKey);}catch(e){}
+  if(State.SAVE_SLOT_IDS.includes(resumeSlot))setTimeout(()=>beginGame('continue',resumeSlot),0);
   slotPanel?.addEventListener('click',event=>{if(event.target===slotPanel)closeSlots();});
   window.addEventListener('morrowwish-language-change',()=>{
     if(slotPanel?.classList.contains('is-open'))openSlots(slotMode);

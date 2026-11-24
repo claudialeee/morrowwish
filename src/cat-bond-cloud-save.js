@@ -12,6 +12,8 @@ async function tokenHash(token){
   return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 
+const SAVE_SLOT_IDS=new Set(["slot1","slot2","slot3"]);
+
 export async function catBondCloudSave(request,env){
   if(!env?.DB)return cloudJson({error:"Cloud save storage unavailable"},503);
   if(request.method!=="GET"&&request.method!=="PUT")
@@ -20,7 +22,6 @@ export async function catBondCloudSave(request,env){
   const match=(request.headers.get("authorization")||"").match(/^Bearer ([A-Za-z0-9_-]{43})$/);
   if(!match)return cloudJson({error:"A valid recovery code is required"},401);
 
-  const keyHash=await tokenHash(match[1]);
   try{
     await env.DB.prepare(`CREATE TABLE IF NOT EXISTS cat_bond_cloud_saves (
       key_hash TEXT PRIMARY KEY,
@@ -32,12 +33,18 @@ export async function catBondCloudSave(request,env){
     )`).run();
 
     if(request.method==="GET"){
+      const requested=new URL(request.url).searchParams.get("slot");
+      const slotId=requested||null;
+      if(slotId&&!SAVE_SLOT_IDS.has(slotId))return cloudJson({error:"Invalid save slot"},400);
+      // Keep the old unslotted row readable for one-time migration. New clients
+      // address a separately hashed row for each slot, each with its own revision.
+      const keyHash=await tokenHash(match[1]+(slotId?":cat-bond-slot:"+slotId:""));
       const row=await env.DB.prepare(
         "SELECT iv,ciphertext,revision,updated_at FROM cat_bond_cloud_saves WHERE key_hash=?"
       ).bind(keyHash).first();
       return row
-        ?cloudJson({exists:true,iv:row.iv,ciphertext:row.ciphertext,revision:row.revision,updatedAt:row.updated_at})
-        :cloudJson({exists:false,revision:0});
+        ?cloudJson({exists:true,slotId,iv:row.iv,ciphertext:row.ciphertext,revision:row.revision,updatedAt:row.updated_at})
+        :cloudJson({exists:false,slotId,revision:0});
     }
 
     const declared=Number(request.headers.get("content-length")||0);
@@ -47,6 +54,9 @@ export async function catBondCloudSave(request,env){
     if(byteLength>700000)return cloudJson({error:"Save is too large"},413);
     let body;
     try{body=JSON.parse(raw);}catch{return cloudJson({error:"Invalid save payload"},400);}
+
+    const slotId=body?.slotId??null;
+    if(slotId!==null&&!SAVE_SLOT_IDS.has(slotId))return cloudJson({error:"Invalid save slot"},400);
     const iv=body?.iv,ciphertext=body?.ciphertext,expected=body?.expectedRevision;
     if(typeof iv!=="string"||!/^[A-Za-z0-9_-]{16}$/.test(iv)||
        typeof ciphertext!=="string"||ciphertext.length<24||
@@ -54,12 +64,13 @@ export async function catBondCloudSave(request,env){
        !Number.isSafeInteger(expected)||expected<0)
       return cloudJson({error:"Invalid encrypted save"},400);
 
+    const keyHash=await tokenHash(match[1]+(slotId?":cat-bond-slot:"+slotId:""));
     const current=await env.DB.prepare(
       "SELECT revision FROM cat_bond_cloud_saves WHERE key_hash=?"
     ).bind(keyHash).first();
     const currentRevision=current?.revision??0;
     if(currentRevision!==expected)
-      return cloudJson({error:"Save changed on another device",conflict:true,revision:currentRevision},409);
+      return cloudJson({error:"Save changed on another device",conflict:true,slotId,revision:currentRevision},409);
 
     const now=Date.now();
     const saved=await env.DB.prepare(`
@@ -79,9 +90,9 @@ export async function catBondCloudSave(request,env){
       const latest=await env.DB.prepare(
         "SELECT revision FROM cat_bond_cloud_saves WHERE key_hash=?"
       ).bind(keyHash).first();
-      return cloudJson({error:"Save changed on another device",conflict:true,revision:latest?.revision??0},409);
+      return cloudJson({error:"Save changed on another device",conflict:true,slotId,revision:latest?.revision??0},409);
     }
-    return cloudJson({ok:true,revision:saved.revision,updatedAt:saved.updated_at});
+    return cloudJson({ok:true,slotId,revision:saved.revision,updatedAt:saved.updated_at});
   }catch(error){
     console.warn("Cat Bond cloud save failed",String(error?.message||error).slice(0,160));
     return cloudJson({error:"Cloud save temporarily unavailable"},503);
