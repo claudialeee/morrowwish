@@ -6,6 +6,10 @@ const YARD_BG = new Image();
 YARD_BG.src = 'assets/sunlit-garden-cinematic.svg?v=sunlit-garden-art-v1';
 let YARD_BG_READY = false;
 YARD_BG.onload = () => { YARD_BG_READY = true; };
+const YARD_BG_PORTRAIT = new Image();
+YARD_BG_PORTRAIT.src = 'assets/sunlit-garden-portrait.svg?v=sunlit-garden-portrait-v1';
+let YARD_BG_PORTRAIT_READY = false;
+YARD_BG_PORTRAIT.onload = () => { YARD_BG_PORTRAIT_READY = true; };
 // draw an image to fully cover (w,h), centered, preserving aspect ratio
 function drawCover(ctx, img, w, h) {
   const ir = img.width / img.height, cr = w / h;
@@ -722,7 +726,9 @@ class YardScene {
     const dt = 1 / 60;   // fixed step for draw-time ambient motion (petals/fireflies)
 
     // --- hand-painted watercolor backdrop (sky/hills/lake/meadow/tree baked in) ---
-    if (YARD_BG_READY) {
+    if (H > W * 1.12 && YARD_BG_PORTRAIT_READY) {
+      drawCover(ctx, YARD_BG_PORTRAIT, W, H);
+    } else if (YARD_BG_READY) {
       drawCover(ctx, YARD_BG, W, H);
     } else {
       // fallback: procedural soft dawn until the painting loads
