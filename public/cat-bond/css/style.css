@@ -2683,7 +2683,7 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  #cb-duo-viewer{padding:7px}
  #cb-duo-viewer .cb-duo-viewer-shell{padding:47px 5px 5px;border-radius:16px;
    max-height:calc(100dvh - 14px)}
- #cb-duo-viewer iframe{height:min(44dvh,380px);min-height:330px}
+ #cb-duo-viewer iframe{height:min(74dvh,650px);min-height:430px}
  #cb-duo-viewer .cb-duo-viewer-close{right:7px}
  #cb-duo-viewer .cb-duo-viewer-title{left:12px}
 }
