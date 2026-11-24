@@ -185,7 +185,8 @@ for(const language of ['zh','en'])for(const fixture of [
  {game:'flip-dash',pageviews:0,starts:0,ends:0,retries:0,
   conversion:{pageviews:0,startedViews:0,finishedViews:0}},
  {game:'flip-dash',pageviews:2,starts:null,ends:null,retries:null},
- {game:'flip-dash',pageviews:2,starts:0,ends:0,retries:0}
+ {game:'flip-dash',pageviews:2,retries:0,
+  visitFunnel:{pageviews:2,startedViews:0,finishedViews:0}}
 ]){
  const nodes={};
  const env={lang:language,fixture:[fixture],gameNames:{'flip-dash':{zh:'翻转冲刺',en:'Flip Dash'}},
