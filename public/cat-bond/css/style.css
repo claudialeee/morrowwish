@@ -5299,3 +5299,18 @@ body.cb-exploring #stage #yard-actions{
 
 /* The title screen has a later, equally-specific grid rule. Hidden must win after that rule or it blocks the playable game underneath. */
 #intro.cb-rpg-intro.hide{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+
+/* Full-scene character staging: the chosen starter and the chapter's key character
+   appear inside the painted world, not as tiny portraits inside a text card. */
+.cb-story-actors{position:absolute;z-index:3;left:0;right:0;bottom:clamp(245px,39vh,390px);height:min(58vh,590px);display:flex;align-items:flex-end;justify-content:space-between;padding:0 clamp(3vw,9vw,150px);pointer-events:none;overflow:hidden}
+.cb-story-actors canvas{display:block;width:min(43vw,520px);height:100%;object-fit:contain;opacity:0;transform:translate3d(0,30px,0) scale(.96);filter:drop-shadow(0 22px 28px rgba(0,0,0,.42));animation:cb-story-actor-arrive .85s cubic-bezier(.18,.78,.22,1) .08s forwards}
+.cb-story-actors canvas:first-child{object-position:left bottom}
+.cb-story-actors canvas:last-child{object-position:right bottom;animation-delay:.22s}
+.cb-story-actors.has-shadow canvas:last-child{filter:drop-shadow(0 0 24px rgba(191,170,255,.46)) brightness(.72) saturate(.82)}
+@keyframes cb-story-actor-arrive{to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@media(max-width:640px){
+ .cb-story-actors{bottom:54dvh;height:36dvh;padding:0 0}
+ .cb-story-actors canvas{width:53vw;max-width:260px}
+ .cb-story-actors.has-shadow canvas:last-child{opacity:.86}
+}
+@media(prefers-reduced-motion:reduce){.cb-story-actors canvas{animation:none!important;opacity:1;transform:none}}

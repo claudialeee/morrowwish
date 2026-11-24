@@ -90,20 +90,12 @@ window.addEventListener('DOMContentLoaded', () => {
       openSlots(slotMode);
     }));
   };
-  const beginGame=(mode,slotId,afterPrologue=false)=>{
+  const beginGame=(mode,slotId)=>{
     if(starting)return;
     starting=true;
-    if(mode==='new'&&!afterPrologue){
-      State.startNewGame(slotId);
-      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
-        starting=false;
-        window.CatBondStory.startPrologue(()=>{State.save();beginGame('new',slotId,true);});
-        return;
-      }
-    }
     try{
-      if(mode==='new'&&!afterPrologue)State.startNewGame(slotId);
-      else if(mode==='continue'&&!State.loadSlot(slotId))throw new Error('Save slot is empty');
+      if(mode==='new')State.startNewGame(slotId);
+      else if(!State.loadSlot(slotId))throw new Error('Save slot is empty');
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
@@ -122,7 +114,15 @@ window.addEventListener('DOMContentLoaded', () => {
         const starter=State.makeCat(id,{affinity:20});
         if(window.Raising)Raising.decorateNewCat(starter);
         State.S.cats.push(starter);State.S.dex[id]=(State.S.dex[id]||0)+1;
-        State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();
+        State.save();
+        const enterWorld=()=>{
+          State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();
+        };
+        // Let the player choose their actual companion first; the cinematic
+        // then stages that cat waking beneath the garden bench.
+        if(mode==='new'&&!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
+          window.CatBondStory.startPrologue(enterWorld);
+        }else enterWorld();
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
       });
     }else{

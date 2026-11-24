@@ -253,6 +253,29 @@ function renderPortraits(root){
  const sp=bossSpecies();
  if(muling&&sp&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(muling,sp);
 }
+function renderStoryActors(root,page,kind,index){
+ const left=root.querySelector('[data-cb-scene-player]'),right=root.querySelector('[data-cb-scene-companion]');
+ const S=state(),cat=S?.cats?.find(c=>c.uid===S.battlePrefs?.teamUids?.[0])||S?.cats?.[0];
+ const playerSpecies=cat&&window.GameData?.speciesById?.(cat.species);
+ const isMuling=kind==='ending'||kind==='reveal'||(kind==='prologue'&&(index===0||index===2))||(kind==='memory'&&page.region==='ruins'&&page.id==='last-page');
+ let companionSpecies=null,shadow=false;
+ if(isMuling){companionSpecies=bossSpecies();shadow=true;}
+ else{
+  const npc=NPC_CAST?.find(n=>n.region===page.region);
+  companionSpecies=npc&&window.GameData?.speciesById?.(npc.species);
+ }
+ const paint=(canvas,species,face,mood)=>{
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');if(!ctx||!species)return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const draw=window.CatArt?.drawCat;if(!draw)return;
+  draw(ctx,canvas.width*.5,canvas.height*.78,{species,scale:2.05,face,pose:'sit',mood,t:performance.now()/1000});
+ };
+ paint(left,playerSpecies,1,'curious');
+ paint(right,companionSpecies,-1,shadow?'calm':'happy');
+ const layer=root.querySelector('.cb-story-actors');
+ if(layer){layer.dataset.mode=kind;layer.classList.toggle('has-shadow',shadow);layer.classList.toggle('has-player',!!playerSpecies);layer.classList.toggle('has-companion',!!companionSpecies);}
+}
 function showSequence(kind,pages,done,options={}){
  document.querySelector('.cb-story-overlay')?.remove();
  let index=0,closed=false;
@@ -260,6 +283,7 @@ function showSequence(kind,pages,done,options={}){
  overlay.className='cb-story-overlay';
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
  overlay.innerHTML='<div class="cb-story-scene"><canvas class="cb-story-art" aria-hidden="true"></canvas><div class="cb-story-scene-glow"></div>'+
+  '<div class="cb-story-actors" aria-hidden="true"><canvas data-cb-scene-player width="520" height="500"></canvas><canvas data-cb-scene-companion width="520" height="500"></canvas></div>'+
   '<div class="cb-story-scene-mark" aria-hidden="true">✦</div></div>'+
   '<section class="cb-story-card"><div class="cb-story-card-top"><span class="cb-story-brand">MORROW · WISH</span><span class="cb-story-step"></span></div>'+
   '<p class="cb-story-kicker"></p><h1 class="cb-story-title"></h1><p class="cb-story-copy"></p>'+
@@ -271,6 +295,7 @@ function showSequence(kind,pages,done,options={}){
  const render=()=>{
   const page=pages[index],en=!isZh();
   drawBackdrop(canvas,page.region||'home');
+  renderStoryActors(overlay,page,kind,index);
   overlay.querySelector('.cb-story-step').textContent=String(index+1).padStart(2,'0')+' / '+String(pages.length).padStart(2,'0');
   overlay.querySelector('.cb-story-kicker').textContent=en?(page.kickerEn||page.chapterEn||'THE LAST PAGE'):(page.kicker||page.chapter||'最后一页');
   overlay.querySelector('.cb-story-title').textContent=en?(page.titleEn||page.title):(page.title||page.titleEn);
