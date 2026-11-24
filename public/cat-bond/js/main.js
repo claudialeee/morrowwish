@@ -80,12 +80,20 @@ window.addEventListener('DOMContentLoaded', () => {
       }else beginGame('continue',id);
     }));
   };
-  const beginGame=(mode,slotId)=>{
+  const beginGame=(mode,slotId,afterPrologue=false)=>{
     if(starting)return;
     starting=true;
+    if(mode==='new'&&!afterPrologue){
+      State.startNewGame(slotId);
+      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
+        starting=false;
+        window.CatBondStory.startPrologue(()=>{State.save();beginGame('new',slotId,true);});
+        return;
+      }
+    }
     try{
-      if(mode==='new')State.startNewGame(slotId);
-      else if(!State.loadSlot(slotId))throw new Error('Save slot is empty');
+      if(mode==='new'&&!afterPrologue)State.startNewGame(slotId);
+      else if(mode==='continue'&&!State.loadSlot(slotId))throw new Error('Save slot is empty');
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
@@ -122,7 +130,6 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('morrowwish-language-change',()=>{
     if(slotPanel?.classList.contains('is-open'))openSlots(slotMode);
   });
-  bindResetButton(document.getElementById('intro-reset'));
   try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
   try { paintIntroCatGallery(); } catch(error) { console.warn('Cat gallery unavailable',error); }
   window.__CAT_BOND_READY__=true;
@@ -195,70 +202,20 @@ function startIntroStars() {
 // Intro artwork: show real, expressive in-game cat breeds rather than the
 // empty decorative canvas. Kept static to minimize battery use on phones.
 function paintIntroCatGallery() {
-  const canvas = document.getElementById('intro-cats');
-  if (!canvas || !window.CatArt || !window.GameData) return;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  // A few hand-drawn meadow accents; never hide the cats behind UI.
-  const leaves = [
-    [38,132,16,-.35],[65,146,11,.35],[180,151,14,-.45],
-    [337,154,10,.3],[385,140,13,-.4],[523,151,12,.45],
-    [658,141,16,-.3],[699,150,9,.25]
-  ];
-  for (const [x,y,r,tilt] of leaves) {
-    ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
-    ctx.fillStyle='rgba(124,166,119,.27)';
-    ctx.beginPath();ctx.ellipse(0,0,r,r*.3,0,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-  }
-  for (const [x,y,r] of [[73,67,3],[195,50,2.5],[352,68,3],[527,45,2],[653,74,3]]) {
-    ctx.fillStyle='rgba(223,165,121,.52)';
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-  }
-  const ids=['tangyuan','dundun','niuniu','yunduo'];
-  const xs=[114,278,442,606];
-  const poses=['sit','loaf','sit','sit'];
-  // The watercolor source breeds do NOT have the same painted silhouette
-  // dimensions. Using one sprite scale makes the dark/cream pair visibly
-  // larger than the orange/gray pair. Normalize each rendered alpha silhouette
-  // instead of stretching its face, changing breed art, or guessing CSS sizes.
-  const catBottom=h-15,targetHeight=132,maxWidth=140;
-  ids.forEach((id,i)=>{
-    const species=GameData.speciesById(id);
-    if (!species) return;
-    const o={species,scale:1.42,face:i%2===0?1:-1,
-      pose:poses[i],mood:'happy',t:.5+i*.6};
-    try{
-      const scratch=document.createElement('canvas');
-      scratch.width=240;scratch.height=240;
-      const sc=scratch.getContext('2d',{willReadFrequently:true});
-      if(!sc)throw new Error('No canvas context');
-      CatArt.drawCat(sc,120,142,o);
-      const pixels=sc.getImageData(0,0,240,240).data;
-      let minX=240,minY=240,maxX=-1,maxY=-1;
-      // Ignore subpixel shadow haze so all four HEADS/PAWS, not their
-      // transparent padded atlases, determine the same displayed height.
-      for(let y=0;y<240;y++)for(let x=0;x<240;x++){
-        if(pixels[(y*240+x)*4+3]<40)continue;
-        if(x<minX)minX=x;if(x>maxX)maxX=x;
-        if(y<minY)minY=y;if(y>maxY)maxY=y;
-      }
-      if(maxY<minY)throw new Error('Illustration not decoded');
-      const srcW=maxX-minX+1,srcH=maxY-minY+1;
-      const ratio=Math.min(targetHeight/srcH,maxWidth/srcW);
-      const drawW=srcW*ratio,drawH=srcH*ratio;
-      ctx.save();ctx.imageSmoothingEnabled=true;
-      ctx.imageSmoothingQuality='high';
-      ctx.drawImage(scratch,minX,minY,srcW,srcH,
-        xs[i]-drawW/2,catBottom-drawH,drawW,drawH);
-      ctx.restore();
-    }catch(_){
-      // Legacy browser fallback retains intact cat art at approximate balance.
-      const scale=[1.96,1.83,1.62,1.62][i];
-      CatArt.drawCat(ctx,xs[i],h-42*scale-8,{...o,scale});
-    }
-  });
+  const canvas=document.getElementById('intro-cats');
+  if(!canvas||!window.CatArt||!window.GameData)return;
+  const ctx=canvas.getContext('2d');if(!ctx)return;
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const species=GameData.speciesById('yunduo')||GameData.SPECIES?.[0];
+  if(!species)return;
+  const glow=ctx.createRadialGradient(w*.5,h*.68,4,w*.5,h*.68,h*.48);
+  glow.addColorStop(0,'rgba(245,218,179,.28)');glow.addColorStop(1,'rgba(245,218,179,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+  ctx.save();
+  ctx.shadowColor='rgba(8,10,23,.55)';ctx.shadowBlur=28;ctx.shadowOffsetY=14;
+  CatArt.drawCat(ctx,w*.5,h*.83,{species,scale:2.15,face:1,pose:'sit',mood:'curious',t:0});
+  ctx.restore();
+  ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Georgia';ctx.textAlign='center';
+  ctx.fillText('✦',w*.18,h*.34);ctx.fillText('✧',w*.82,h*.22);ctx.fillText('✦',w*.72,h*.72);
 }

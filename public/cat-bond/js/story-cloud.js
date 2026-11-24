@@ -639,7 +639,12 @@ async function syncNow(force=false){
  syncPromise=(async()=>{
   const raw=localStorage.getItem(SAVE_KEY);
   if(!raw)return {ok:false,empty:true};
-  const encrypted=await encrypt(raw,token);
+  let payload=raw;
+  try{
+   const book=JSON.parse(localStorage.getItem(SLOT_KEY)||'null');
+   if(book?.slots&&typeof book.slots==='object')payload=JSON.stringify({version:2,activeSlot:localStorage.getItem(ACTIVE_SLOT_KEY)||'slot1',slots:book.slots});
+  }catch{}
+  const encrypted=await encrypt(payload,token);
   const expected=Number(localStorage.getItem(REV_KEY)||0);
   const response=await fetch('/api/cat-bond-cloud-save',{
    method:'PUT',headers:{'content-type':'application/json',Authorization:'Bearer '+token},
