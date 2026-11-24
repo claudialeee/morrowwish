@@ -427,20 +427,8 @@ function showBossReveal(){
  showSequence('reveal',[{
   region:'ruins',kicker:'最后一页 · 逆响仪式',kickerEn:'THE LAST PAGE · THE REVERSED RITUAL',
   title:'你找回的每段记忆，都在替它敲响星铃。',titleEn:'Every memory you recovered has been ringing the Bell for them.',
-  text:'星盘中央浮现出那只熟悉的猫。它没有咆哮，只是伸出爪子，像从前在樱花树下那样等你牵住。
-
-【暮铃】我知道你会找到这里。你总会回来。
-【你】你拿走了他们的记忆。
-【暮铃】我只想把你带回家。
-
-六段旋律同时亮起。你终于明白：这一路的线索既在帮你找回过去，也在替暮铃完成仪式。',
-  textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.
-
-[Muling] I knew you would find me. You always come back.
-[You] You took their memories.
-[Muling] I only wanted to bring you home.
-
-All six melodies flare. You understand at last: the clues that restored your past have also been completing Muling’s ritual.'
+  text:'星盘中央浮现出那只熟悉的猫。它没有咆哮，只是伸出爪子，像从前在樱花树下那样等你牵住。\n\n【暮铃】我知道你会找到这里。你总会回来。\n【你】你拿走了他们的记忆。\n【暮铃】我只想把你带回家。\n\n六段旋律同时亮起。你终于明白：这一路的线索既在帮你找回过去，也在替暮铃完成仪式。',
+  textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.\n\n[Muling] I knew you would find me. You always come back.\n[You] You took their memories.\n[Muling] I only wanted to bring you home.\n\nAll six melodies flare. You understand at last: the clues that restored your past have also been completing Muling’s ritual.'
  }],()=>showBossGate(),{canSkip:false});
 }
 function bossSpecies(){
