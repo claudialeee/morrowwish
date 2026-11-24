@@ -1,3 +1,7 @@
+> **ARCHIVED — NON-CANONICAL (2026-11-24).** This draft is superseded in full by the new authoritative Cat Bond RPG canon in [docs/cat-bond-rpg/README.md](cat-bond-rpg/README.md). Do not use this document to design, write, implement, or QA the current RPG story. Its characters, five-land structure, memory/Catdex premise, reversals, seal rules, and ending are historical only. Existing game code may still contain legacy elements; this archive does not describe the new canon.
+
+---
+
 # CAT BOND — THE LAST PAGE
 ## Narrative bible · Canonical story draft · 2026-11-23
 
