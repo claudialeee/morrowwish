@@ -1,0 +1,26 @@
+import fs from 'node:fs';
+import {fileURLToPath} from 'node:url';
+const base=new URL('../public/cat-bond/js/',import.meta.url);
+const names=["resonance-world-model","resonance-atlas","resonance-puzzles","resonance-dialogue","resonance-world-ui"];
+const sources=names.map(n=>fs.readFileSync(new URL(n+'.js',base),'utf8'));
+const result=(function test(sources){
+ class Element{constructor(tag){this.tagName=tag;this.children=[];this.style={setProperty(){}};this.hidden=false;this.disabled=false;this.textContent="";this.listeners={};}append(...a){this.children.push(...a);}replaceChildren(){this.children=[];}setAttribute(){}addEventListener(name,fn){this.listeners[name]=fn;}removeEventListener(){}getBoundingClientRect(){return {width:600,height:500,left:0,top:0};}}
+ const stage=new Element("stage");const doc={createElement:t=>new Element(t),getElementById:id=>id==="stage"?stage:null};const win={MorrowwishI18n:{get:()=>"en"},addEventListener(){}};let slot={};const State={get S(){return slot},save:()=>({ok:true})};const GameData={speciesById:id=>({id})};const ResizeObserver=class{observe(){}};let count=0;
+ for(const s of sources)new Function("window","document","State","GameData","ResizeObserver","requestAnimationFrame",s)(win,doc,State,GameData,ResizeObserver,()=>{});
+ const U=win.CatBondResonanceWorldUI,M=win.CatBondResonanceModel,P=win.CatBondResonancePuzzles,D=win.CatBondResonanceDialogue;const g={scene:"map"};U.init(g);U.enterMap();
+ const descendants=e=>[e,...e.children.flatMap(descendants)];const buttons=()=>descendants(stage).filter(e=>e.tagName==="button"&&!e.disabled);const click=(pred)=>{const b=buttons().find(e=>pred(e.textContent));if(!b)throw Error("button unavailable: "+buttons().map(e=>e.textContent).join("|"));b.listeners.click();count++;};
+ const exact=x=>click(t=>t===x);const drain=()=>{let n=0;while(buttons().some(e=>["Next","End conversation"].includes(e.textContent))){click(t=>["Next","End conversation"].includes(t));if(++n>50)throw Error("dialogue loop");}};
+ function solve(d){if(d.kind==="heat"){let [a,b]=d.initial;while(a<d.target[0]){exact("Heat");a+=5;b+=5;}while(b>d.target[1]){exact("Vent");b-=5;}while(b<d.target[1]){exact("Pressurize");b+=5;}exact("Test");}else if(d.kind==="wind"){for(const w of d.winds)exact(w===1?"Descend":w===-1?"Climb":"Hold");}else if(d.kind==="memory"){for(const n of d.target)exact("Record "+(n+1));exact("Test");}else{for(let i=0;i<3;i++){const lim=d.kind==="flow"?3:4;let v=d.initial[i];while(v!==d.target[i]){exact("Adjust "+(i+1));v=(v+1)%lim;}}exact("Test");}drain();}
+ const labels={"restore-sanctuary":"Restore sanctuary","recover-melody":"Recover melody","distributed-control":"Share observatory control","community-agreement":"Agree on shared waterways","public-accountability":"Agree on worker safety responsibilities","inward-call":"Face the last inward call","identity-reveal":"Confront Muling","betrayal-reveal":"Examine the routing record","reverse-plan-reveal":"Confront Muling's plan","muling-conversation":"Talk to Muling","ring-ready":"Verify all reciprocal exchanges"};
+ const state=()=>State.S.lastResonanceWorld;
+ let steps=0;for(const r of M.REGIONS){if(!U.enterRegion(r.id))throw Error("locked region "+r.id);while(M.next(state())?.region===r.id){const n=M.next(state()),a=n.pending[0];if(a==="ring-ready"){for(const l of M.LINKS){for(const [k,id] of [["abSent",l.a],["abReceived",l.b],["baSent",l.b],["baReceived",l.a]]){if(state().links[l.id][k])continue;U.enterRegion(id);const before=JSON.stringify(state().links[l.id]);const row=descendants(stage).filter(e=>e.className==="lr-row").find(e=>e.children[0]?.tagName==="span"&&e.children[0].textContent===M.REGIONS.find(x=>x.id===(id===l.a?l.b:l.a)).en);if(!row)throw Error("no exchange row");const b=row.children.find(e=>e.tagName==="button"&&!e.disabled&&e.textContent.startsWith(k.endsWith("Sent")?"Send":"Accept"));if(!b)throw Error("no exchange "+l.id+k);b.listeners.click();count++;if(before===JSON.stringify(state().links[l.id]))throw Error("exchange did not advance");}}U.enterRegion(r.id);exact(labels[a]);drain();}
+ else if(a.startsWith("meet:")){const id=a.slice(5);click(t=>t.startsWith(D.cast[id][1]+" · "));drain();}
+ else if(a==="choice")exact(D.choices[r.choices[0]][1]);
+ else if(a==="local-response"){for(const id of r.npcs)click(t=>t.startsWith(D.cast[id][1]+" · "));}
+ else if(P.definition(r.id,a))solve(P.definition(r.id,a));
+ else {exact(labels[a]);drain();}
+ steps++;if(M.next(state())?.scene===n.scene&&M.next(state())?.pending.includes(a))throw Error("action not recorded "+a+" / "+n.scene);if(steps>150)throw Error("stalled");
+ } }
+ if(state().scene!=="B-01"||!M.ringReady(state()))throw Error("campaign not ready");if(!state().reveals.reversePlan)throw Error("missing reveal");const first=slot;slot={};U.init(g);U.enterMap();if(state().chapter!==1||state().reveals.identity)throw Error("slot leakage");slot=first;U.init(g);U.enterMap();if(state().scene!=="B-01")throw Error("slot restore failed");return {passed:true,steps,clicks:count,exchanges:24};
+})(sources);
+console.log(JSON.stringify(result));
