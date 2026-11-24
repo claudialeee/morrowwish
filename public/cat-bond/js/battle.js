@@ -1492,6 +1492,10 @@ class CaptureBattle {
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
       if(sk.id==='prismBeam')return dist<525;                // actual piercing ray reach
+      // BEAM (水枪/雷流喷射): fire only within the beam's REAL reach, not the generic 460 projectile
+      // cap — a 270-reach beam opening from 450px just sprayed empty air far from the enemy (owner:
+      // "雷流喷射这个猫总是离了很远就开始喷"). Small +20 margin so an edge target still triggers it.
+      if(sk.kind==='beam')return dist < (sk.reach||300)+20;
       return dist<460;
     };
     // S2 ELEMENT-REACTION SETUP: a SOFT reorder of which equipped skill fires first, keyed on the
@@ -3835,21 +3839,27 @@ class CaptureBattle {
         const W0=b.width||34;
         const dx=b._ex-b._ox,dy=b._ey-b._oy,L=Math.hypot(dx,dy)||1;
         const ux=dx/L,uy=dy/L,px=-uy,py=ux;                       // along + perpendicular unit vectors
-        const SEG=Math.max(6,Math.round(L/26));
+        // Big zigzag: the kink amplitude must EXCEED the stroke widths or a fat glow stroke paints
+        // over the jaggedness and it reads as a smooth rod (the "不像闪电束" bug). Amplitude ≈ ±1.4×W0
+        // (wide, sharp zigzag), SEG shorter so each leg is a crisp diagonal, strokes kept THIN relative
+        // to the amplitude so the bolt shape stays visible.
+        const SEG=Math.max(7,Math.round(L/34));
+        const amp=W0*1.4;
         const seed=Math.floor(this.t*30);                        // re-roll the kinks ~30×/s for live crackle
         const rand=(j)=>{const s=Math.sin((j*127.1+seed*8.17))*43758.5;return (s-Math.floor(s))*2-1;};
         const pts=[];
         for(let j=0;j<=SEG;j++){
           const u=j/SEG;
-          // taper the jitter at both ends so the bolt visibly roots at the caster + stabs the target
-          const taper=Math.sin(u*Math.PI);
-          const off=(j===0||j===SEG)?0:rand(j)*W0*0.5*taper;
+          const taper=Math.sin(u*Math.PI);                       // root at caster, stab the target
+          const off=(j===0||j===SEG)?0:rand(j)*amp*taper;
           pts.push([b._ox+dx*u+px*off, b._oy+dy*u+py*off]);
         }
         const spine=()=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let j=1;j<pts.length;j++)ctx.lineTo(pts[j][0],pts[j][1]);ctx.stroke();};
         ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.globalCompositeOperation='lighter';
-        for(const [wf,color,a] of [[1.1,'#5668c8',.26],[0.55,'#8fb0ff',.6],[0.22,'#eaf4ff',.95]]){
-          ctx.lineWidth=Math.max(1.5,W0*wf);ctx.strokeStyle=color;ctx.globalAlpha=a*k;spine();
+        // outer haze is a soft WIDE stroke on the SAME jagged path (a diffuse aura, not a filled rod),
+        // then progressively thinner bright cores so the sharp zigzag silhouette dominates.
+        for(const [w,color,a] of [[W0*0.7,'#4a59b8',.18],[W0*0.3,'#8fb0ff',.5],[6,'#cfe2ff',.8],[2.5,'#ffffff',.98]]){
+          ctx.lineWidth=w;ctx.strokeStyle=color;ctx.globalAlpha=a*k;spine();
         }
         // branching forks that peel off the trunk and fade — the signature lightning tell
         ctx.lineWidth=Math.max(1.2,W0*0.12);ctx.strokeStyle='#dcebff';ctx.globalAlpha=.7*k;
