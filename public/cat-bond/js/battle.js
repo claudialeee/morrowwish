@@ -3693,6 +3693,31 @@ class CaptureBattle {
     return p;
   }
 
+  // SPLIT BALL-LIGHTNING (owner): when 球状闪电 hits, burst into 3 small homing orbs. Each prefers a
+  // DISTINCT OTHER enemy; if `hitEnemy` was the only one, they fan out tangentially, orbit for a beat
+  // (_orbitDelay) then home back onto it — "绕一圈再打回来". Children carry p._split so they don't
+  // re-split, deal a fraction of the parent's damage, and expire quickly so they can't loop forever.
+  splitLightningOrb(parent, hitEnemy) {
+    const others = this.liveEnemies().filter(e => e !== hitEnemy);
+    const childDmg = Math.max(1, parent.dmg * 0.4);
+    const childSkill = { element: 'elec', appliesTag: 'shock', homing: 4.2 };
+    for (let i = 0; i < 3; i++) {
+      // fan the 3 orbs out around the impact so the burst reads before they seek
+      const fan = (-1 + i) * 0.9 + (this.rng() - 0.5) * 0.3;
+      const base = parent.ang != null ? parent.ang : 0;
+      const o = this.spawnProj(parent.x, parent.y, base + fan, 150, childDmg, 'me', '#bfe0ff', 8, 'lightningOrb', childSkill, 1.1);
+      if (!o) continue;
+      o._split = true;                         // never splits again
+      o.spd = 150;                             // homing reads p.spd
+      if (others.length) {
+        o._homeTarget = others[i % others.length];   // spread across the other enemies
+      } else {
+        o._homeTarget = hitEnemy; o._orbitDelay = 0.28;   // lone target: arc out, then curve back in
+      }
+    }
+    this.vfx.burst(parent.x, parent.y, { count: 12, color: '#d9ecff', speed: 150, life: .3, r: 2.4 });
+  }
+
   // 对波 — PROJECTILE CLASH. When a player shot and a wild shot overlap mid-air
   // they collide instead of flying through each other (the anime "wave clash").
   // Each shot's clash POWER = dmg × radius, and the attacker's element can win the
@@ -3803,30 +3828,41 @@ class CaptureBattle {
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
-        // 雷流喷射 = a THICK swept lightning COLUMN (owner: "很粗的光柱，左右横扫"), not a thin fold.
-        // Width scales off the skill's b.width (34) so it reads as a beam, and it sweeps L↔R via b.aim
-        // (sweep/sweepPasses). Layers: a wide additive glow column + a bright core + a thin crackle
-        // seam for the electric identity.
+        // 雷流喷射 = a THICK lightning BOLT that locks the target (like 水枪). It must READ as lightning,
+        // not a smooth laser rod: build ONE jagged zigzag spine (random per-segment lateral kinks that
+        // re-roll each frame), stroke it at descending widths (wide glow → core → white-hot) so the WHOLE
+        // column is jagged, then peel a few branching forks off it. b.width (34) sets the trunk thickness.
         const W0=b.width||34;
-        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
-        ctx.globalCompositeOperation='lighter';
-        // wide glow column → mid → core, all width-scaled
-        for(const [wf,color,a] of [[1.9,'#4756ae',.22],[1.0,'#7e9bff',.5],[0.5,'#d6e6ff',.85]]){
-          ctx.lineWidth=W0*wf;ctx.strokeStyle=color;ctx.globalAlpha=a*k;
-          ctx.beginPath();ctx.moveTo(b._ox,b._oy);ctx.lineTo(b._ex,b._ey);ctx.stroke();
+        const dx=b._ex-b._ox,dy=b._ey-b._oy,L=Math.hypot(dx,dy)||1;
+        const ux=dx/L,uy=dy/L,px=-uy,py=ux;                       // along + perpendicular unit vectors
+        const SEG=Math.max(6,Math.round(L/26));
+        const seed=Math.floor(this.t*30);                        // re-roll the kinks ~30×/s for live crackle
+        const rand=(j)=>{const s=Math.sin((j*127.1+seed*8.17))*43758.5;return (s-Math.floor(s))*2-1;};
+        const pts=[];
+        for(let j=0;j<=SEG;j++){
+          const u=j/SEG;
+          // taper the jitter at both ends so the bolt visibly roots at the caster + stabs the target
+          const taper=Math.sin(u*Math.PI);
+          const off=(j===0||j===SEG)?0:rand(j)*W0*0.5*taper;
+          pts.push([b._ox+dx*u+px*off, b._oy+dy*u+py*off]);
         }
-        // bright white-hot seam with a light electric waver down the centre of the column
-        ctx.globalCompositeOperation='source-over';
-        const nx=b._ey-b._oy,ny=-(b._ex-b._ox),len=Math.hypot(nx,ny)||1;
-        ctx.lineWidth=Math.max(2,W0*0.14);ctx.strokeStyle='#fff6c8';ctx.globalAlpha=.95*k;ctx.beginPath();
-        ctx.moveTo(b._ox,b._oy);
-        for(let j=1;j<=14;j++){
-          const u=j/14,off=(Math.sin(j*31.7+Math.floor(this.t*24)*7.1))*(W0*0.22)*(1-u*.4);
-          ctx.lineTo(b._ox+(b._ex-b._ox)*u+nx/len*off, b._oy+(b._ey-b._oy)*u+ny/len*off);
+        const spine=()=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let j=1;j<pts.length;j++)ctx.lineTo(pts[j][0],pts[j][1]);ctx.stroke();};
+        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.globalCompositeOperation='lighter';
+        for(const [wf,color,a] of [[1.1,'#5668c8',.26],[0.55,'#8fb0ff',.6],[0.22,'#eaf4ff',.95]]){
+          ctx.lineWidth=Math.max(1.5,W0*wf);ctx.strokeStyle=color;ctx.globalAlpha=a*k;spine();
         }
-        ctx.stroke();
+        // branching forks that peel off the trunk and fade — the signature lightning tell
+        ctx.lineWidth=Math.max(1.2,W0*0.12);ctx.strokeStyle='#dcebff';ctx.globalAlpha=.7*k;
+        for(let j=2;j<pts.length-1;j+=3){
+          const sign=rand(j*5)>0?1:-1, blen=W0*(0.6+0.5*Math.abs(rand(j*3)));
+          const bx=pts[j][0],by=pts[j][1];
+          ctx.beginPath();ctx.moveTo(bx,by);
+          ctx.lineTo(bx+px*sign*blen*0.6+ux*blen*0.3, by+py*sign*blen*0.6+uy*blen*0.3);
+          ctx.lineTo(bx+px*sign*blen+ux*blen*0.7, by+py*sign*blen+uy*blen*0.7);
+          ctx.stroke();
+        }
         // muzzle flare at the caster
-        ctx.globalCompositeOperation='lighter';ctx.fillStyle='#eaf2ff';ctx.globalAlpha=.8*k;
+        ctx.fillStyle='#eaf4ff';ctx.globalAlpha=.8*k;
         ctx.beginPath();ctx.arc(b._ox,b._oy,W0*0.5,0,Math.PI*2);ctx.fill();
         b._ex=_ex0; b._ey=_ey0;                      // restore full-reach for damage tick
         ctx.restore();continue;
@@ -4430,8 +4466,15 @@ class CaptureBattle {
     // ---- projectiles ----
     for (const p of this.projectiles) {
       // HOMING: steer toward the nearest valid target, capped turn rate, keep speed.
-      if (p.homing) {
-        const tgt = p.owner === 'me' ? this.nearestEnemy(p.x, p.y) : this.nearestEnemyTeamCat({ x: p.x, y: p.y });
+      // Split ball-lightning orbits tangentially for a beat before its homing engages, so a lone
+      // target gets the "绕一圈再打回来" arc instead of an instant U-turn. Decrements here.
+      if (p._orbitDelay > 0) p._orbitDelay -= dt;
+      if (p.homing && !(p._orbitDelay > 0)) {
+        // honor a specific assigned target (split orbs each take a distinct enemy / the original),
+        // falling back to nearest when it's gone or none was assigned.
+        let tgt = null;
+        if (p._homeTarget && p._homeTarget.alive) tgt = p._homeTarget;
+        else tgt = p.owner === 'me' ? this.nearestEnemy(p.x, p.y) : this.nearestEnemyTeamCat({ x: p.x, y: p.y });
         if (tgt) {
           const want = Math.atan2(tgt.y - p.y, tgt.x - p.x);
           let d = want - p.ang; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
@@ -4476,6 +4519,10 @@ class CaptureBattle {
               this.vfx.impact(p.x,p.y,'#ffe1a1');
               this.vfx.burst(p.x,p.y,{count:15,color:'#b6d5ff',
                 speed:130,life:.28,r:2.5});
+              // SPLIT (owner): the ball lightning bursts into 3 small ball-lightnings on contact.
+              // If OTHER enemies exist, each homes one of them; if this was the only enemy, they
+              // orbit once then re-strike it. Guard p._split so a split-orb doesn't split again.
+              if(!p._split)this.splitLightningOrb(p,e);
             }
             // fireball keeps its owner-authored area splash (routed through resolveHit)
             if (p.kind === 'fireball' && r.dealt > 0) {
