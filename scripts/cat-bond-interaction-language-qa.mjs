@@ -75,10 +75,15 @@ try{
     await prologue.locator('.cb-story-skip').click({timeout:5000});
     await prologue.waitFor({state:'detached',timeout:5000});
    }
-   // The intro/prologue can leave the starter panel closed after Skip.
-   // Open the roster explicitly so the interaction-locale audit starts from
-   // a deterministic, visible catalog instead of timing out on a closed panel.
-   await page.evaluate(()=>window.UI.openCatHub('solo'));
+   // This QA path skips the capture tutorial, so seed one deterministic test
+   // cat when the save is still empty before opening the roster. Test fixture
+   // setup only; this does not change the shipped starter/capture flow.
+   await page.evaluate(()=>{
+    State.S.cats=Array.isArray(State.S.cats)?State.S.cats:[];
+    if(!State.S.cats.length)State.S.cats.push(State.makeCat(GameData.SPECIES[0].id));
+    State.save();
+    window.UI.openCatHub('solo');
+   });
    await page.waitForFunction(()=>document.querySelector('#panel')?.classList.contains('open'));
    await page.locator('#panel.open .dex-cell').first().click();
    await page.evaluate(()=>{
