@@ -111,6 +111,11 @@ try{
         'First-time RPG should open the regional map after choosing a starter');
       if(touch)await mapBack.tap();else await mapBack.click();
       await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
+      // Scene state flips before the map panel's close transition and yard
+      // chrome have finished updating. Assert the actual rendered yard, not
+      // only the internal scene flag.
+      await page.locator('#panel.open').waitFor({state:'hidden',timeout:10000});
+      await page.locator('#cg-yard-dock').waitFor({state:'visible',timeout:10000});
       assert.equal(await page.locator('#toasts .toast').count(),0,
         'CrazyGames first quest should not have duplicate overlay toasts');
       // A real player must see one coherent, clickable dock in the CrazyGames
