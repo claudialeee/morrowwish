@@ -143,6 +143,18 @@ jobs:
             recovery/d1-analytics-audit.json
           retention-days: 7
           if-no-files-found: warn
+      - name: Persist non-sensitive recovery results for direct verification
+        if: always()
+        run: |
+          if [ -f recovery/d1-merge-report.json ] || [ -f recovery/d1-analytics-audit.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add recovery/d1-merge-report.json recovery/d1-analytics-audit.json recovery/d1-audit.json 2>/dev/null || true
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(recovery): persist D1 merge and analytics audit"
+              git push
+            fi
+          fi
       - name: Fail if historical probe did not restore production safely
         if: always()
         run: |
