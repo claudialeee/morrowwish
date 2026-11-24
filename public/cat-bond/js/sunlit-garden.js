@@ -64,7 +64,7 @@
   function init(controller){
     game=controller||window.__game||null;ensureRoot();
     window.addEventListener('morrowwish-language-change',renderLabels);
-    if(game?.scene==='yard')enter();return api;
+    return api;
   }
   function enter(){
     if(!game||game.scene!=='yard')return;
