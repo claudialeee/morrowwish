@@ -354,32 +354,35 @@ function afterPanelClosed(callback,attempt=0){
 function onRegionEntered(id){
  const s=storyState();if(!s||!REGIONS.includes(id))return;
  if(!s.introSeen)return;
- let pages=[];
- if(!s.visited[id]){
-  s.visited[id]=true;
-  const page=REGION_PAGES[id];
-  if(page){markFragment(page.id);pages.push(page);}
- }
+ s.visited[id]=true;
+ // Entering a land introduces its people and clues, but does not award its
+ // memory. The player must explore the illustrated area and find its relic.
  const ruinsNodes=state()?.worldmap?.regions?.ruins?.nodes||[];
- if(id==='ruins'&&hasAllRegionPages(s)&&ruinsNodes.includes('ruins_secret')&&!s.fragments.includes(LAST_PAGE.id)){
-  markFragment(LAST_PAGE.id);pages.push(LAST_PAGE);
- }
- if(pages.length){
-  save();
-  setTimeout(()=>afterPanelClosed(()=>showSequence('memory',pages,()=>{updateTracker();if(allSix(storyState()))showBossReveal();})),140);
- }else{
-  updateTracker();
-  if(allSix(s)&&!s.bossDefeated&&id==='ruins')setTimeout(showBossReveal,140);
- }
-}
-function onRegionDiscovery(regionId,reward){
- if(regionId!=='ruins'||reward?.discovery?.id!=='ruins')return;
- const s=storyState();if(!s||!s.introSeen||!hasAllRegionPages(s))return;
- if(markFragment(LAST_PAGE.id)){
+ if(hasAllRegionPages(s)&&ruinsNodes.includes('ruins_secret')&&!s.fragments.includes(LAST_PAGE.id)){
+  markFragment(LAST_PAGE.id);
   setTimeout(()=>afterPanelClosed(()=>showSequence('reveal',[LAST_PAGE],()=>{
    if(allSix(storyState()))showBossReveal();
   })),220);
+ }else updateTracker();
+ save();
+}
+function onRegionDiscovery(regionId,reward){
+ const page=REGION_PAGES[regionId];
+ if(!page||reward?.discovery?.id!==regionId)return;
+ const s=storyState();if(!s||!s.introSeen)return;
+ const pages=[];
+ if(markFragment(page.id))pages.push(page);
+ const ruinsNodes=state()?.worldmap?.regions?.ruins?.nodes||[];
+ // The last page appears only after all five regional memories AND the
+ // Moonshadow relic have been found, regardless of discovery order.
+ if(hasAllRegionPages(s)&&ruinsNodes.includes('ruins_secret')&&!s.fragments.includes(LAST_PAGE.id)){
+  markFragment(LAST_PAGE.id);pages.push(LAST_PAGE);
  }
+ if(pages.length){
+  setTimeout(()=>afterPanelClosed(()=>showSequence(regionId==='ruins'&&pages.length>1?'reveal':'memory',pages,()=>{
+   updateTracker();if(allSix(storyState()))showBossReveal();
+  },{canSkip:false})),220);
+ }else updateTracker();
 }
 function updateTracker(){
  const host=document.getElementById('cb-story-tracker');

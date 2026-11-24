@@ -138,8 +138,10 @@ class Game {
     document.getElementById('hud').classList.add('hidden');
     document.getElementById('yard-actions').classList.add('hidden');
     this.yard?.refreshYardSwitch();
+    this.completeFirstAdventureStep?.('map');
     WorldMap.enterMap();
-    UI.openMapChooser();
+    // The overworld atlas is the RPG home screen. Region directory remains
+    // available from Menu, but must never cover the map on first entry.
   }
   showYardChrome() {
     if(this.scene!=='yard')return;

@@ -36,7 +36,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=story-actors-starter-order-20261124-v3','js/main.js?v=starter-before-prologue-20261124-v5','id="intro-cloud-save"','js/story-cloud.js?v=story-choices-cloud-slots-20261124-v4','js/game.js?v=last-page-boss-three-phase-20261124-v1','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=story-actors-starter-order-20261124-v3','js/main.js?v=starter-before-prologue-20261124-v5','id="intro-cloud-save"','js/story-cloud.js?v=story-memory-on-discovery-20261124-v5','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v3','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -95,5 +95,8 @@ response=await catBondCloudSave(req('GET',token),{});
 assert.equal(response.status,503,'missing D1 binding must fail closed');
 
 assert.ok(!story.includes('npcDeliver'),'NPCs must not use fetch-and-deliver quest loops');
+assert.ok(story.includes('if(!page||reward?.discovery?.id!==regionId)return'),'Regional memories must be earned by finding their unique relics');
+assert.ok(worldmap.includes('if(hasAllRegionPages(s)&&ruinsNodes.includes(\'ruins_secret\')'),'The last page must require all five memories and the Moonshadow relic');
+assert.ok(game.includes('WorldMap.enterMap();')&&!game.includes('UI.openMapChooser();'),'The overworld atlas must open before the region directory');
 assert.ok(story.includes('showCreekRescueChoice')&&story.includes('showVolcanoAid'),'Creek memory choice must affect the Volcano support scene');
 console.log('Cat Bond The Last Page, character arcs, three boss phases, five story landmarks, encrypted cloud save and revision-conflict checks passed.');

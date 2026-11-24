@@ -757,79 +757,129 @@
     }
     ctx.globalAlpha = 1;
 
-    // resolve node screen positions
-    mapNodes = [];
-    for (var r = 0; r < REGIONS.length; r++) {
-      var reg = REGIONS[r];
-      mapNodes.push({ region: reg, px: 40 + reg.node.x * (W - 80), py: 70 + reg.node.y * (H - 150), r: W<420?43:58 });
+    // Story target is highlighted directly on the atlas. The region relics,
+    // not a separate list, are the landmarks that advance the campaign.
+    var story=window.State?.S?.story||{},fragments=Array.isArray(story.fragments)?story.fragments:[];
+    var memoryIds={home:'home-bell',sakura:'sakura-promise',creek:'creek-name',volcano:'volcano-seal',ruins:'ruins-reverse'};
+    var nextStoryRegion=REGIONS.find(item=>!fragments.includes(memoryIds[item.id]));
+    var storyTarget=nextStoryRegion?nextStoryRegion.id:'ruins';
+    var zh=window.MorrowwishI18n?.get?.()==='zh';
+    var portraitAtlas=W<650&&H>W*1.15;
+    var compactAtlas=W<650&&!portraitAtlas;
+    var cardW=W<420?96:(W<650?116:148);
+    var cardH=W<420?66:(W<650?80:104);
+    mapNodes=[];
+    for(var r=0;r<REGIONS.length;r++){
+      var reg=REGIONS[r],px,py;
+      if(portraitAtlas){
+        var top=Math.max(142,H*.17),bottom=Math.min(H-132,H*.84),step=(bottom-top)/4;
+        px=W*(r%2===0?.28:.72);
+        py=bottom-r*step;
+      }else if(compactAtlas){
+        px=W*(.1+r*.2);
+        py=H*.52+(r===1||r===3?-9:9);
+      }else{
+        px=40+reg.node.x*(W-80);
+        py=70+reg.node.y*(H-150);
+      }
+      mapNodes.push({region:reg,px,py,r:Math.max(cardW,cardH)*.59,cardW,cardH});
     }
 
-    // connecting paths (dashed, glowing) between consecutive regions
-    ctx.lineWidth = 3; ctx.setLineDash([2, 10]); ctx.lineCap = 'round';
-    for (var p = 0; p < mapNodes.length - 1; p++) {
-      var a = mapNodes[p], b = mapNodes[p + 1];
-      var nextOpen = isUnlocked(b.region.id);
-      ctx.strokeStyle = nextOpen ? 'rgba(255,211,107,0.55)' : 'rgba(157,123,255,0.22)';
-      ctx.beginPath(); ctx.moveTo(a.px, a.py); ctx.bezierCurveTo(a.px+(b.px-a.px)*.34,a.py-34,b.px-(b.px-a.px)*.34,b.py+34,b.px,b.py); ctx.stroke();
-      for(var step=1;step<=3;step++){var u=step/4,px=(1-u)*(1-u)*(1-u)*a.px+3*(1-u)*(1-u)*u*(a.px+(b.px-a.px)*.34)+3*(1-u)*u*u*(b.px-(b.px-a.px)*.34)+u*u*u*b.px,py=(1-u)*(1-u)*(1-u)*a.py+3*(1-u)*(1-u)*u*(a.py-34)+3*(1-u)*u*u*(b.py+34)+u*u*u*b.py;ctx.fillStyle=nextOpen?'rgba(255,221,151,.72)':'rgba(177,157,213,.3)';ctx.beginPath();ctx.arc(px,py,2.2,0,Math.PI*2);ctx.fill();}
-    }
-    ctx.setLineDash([]);
-
-    // Painted region cards replace generic glowing circles. Each miniature is
-    // cropped from the exact authored exploration environment used in that land.
-    for (var n = 0; n < mapNodes.length; n++) {
-      var mn = mapNodes[n], reg2 = mn.region, open = isUnlocked(reg2.id);
-      var th = reg2.theme, pulse = 1 + Math.sin(t * 2 + n) * .025;
-      var cardW=W<420?76:118,cardH=W<420?54:82;
-      var x=mn.px-cardW/2,y=mn.py-cardH/2;
+    // A continuous route links the five painted lands. Its glow intensifies
+    // toward the next story destination and dims beyond locked chapters.
+    ctx.lineCap='round';
+    for(var p=0;p<mapNodes.length-1;p++){
+      var a=mapNodes[p],b=mapNodes[p+1],nextOpen=isUnlocked(b.region.id);
+      var routeActive=storyTarget===b.region.id||storyTarget===a.region.id;
       ctx.save();
-      ctx.shadowColor=open?th.accent:'rgba(0,0,0,.5)';
-      ctx.shadowBlur=open?18*pulse:7;
-      ctx.fillStyle='#171b2a';roundRect(ctx,x-3,y-3,cardW+6,cardH+6,13);ctx.fill();
+      ctx.strokeStyle=nextOpen?(routeActive?'rgba(255,219,145,.82)':'rgba(255,211,107,.48)'):'rgba(157,123,255,.2)';
+      ctx.lineWidth=routeActive?5:3;
+      ctx.setLineDash(routeActive?[1,7]:[2,10]);
+      ctx.beginPath();
+      if(portraitAtlas||compactAtlas){
+        var bendX=(a.px+b.px)/2+(p%2===0?18:-18);
+        ctx.moveTo(a.px,a.py);ctx.bezierCurveTo(bendX,a.py,bendX,b.py,b.px,b.py);
+      }else{
+        ctx.moveTo(a.px,a.py);
+        ctx.bezierCurveTo(a.px+(b.px-a.px)*.34,a.py-34,b.px-(b.px-a.px)*.34,b.py+34,b.px,b.py);
+      }
+      ctx.stroke();ctx.setLineDash([]);
+      if(routeActive){
+        ctx.shadowColor='rgba(255,215,143,.7)';ctx.shadowBlur=12;
+        ctx.strokeStyle='rgba(255,240,205,.28)';ctx.lineWidth=1.5;ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Each stop is a large crop of its own hand-authored exploration art,
+    // framed as a place on the world map rather than a generic glowing dot.
+    for(var n=0;n<mapNodes.length;n++){
+      var mn=mapNodes[n],reg2=mn.region,open=isUnlocked(reg2.id);
+      var th=reg2.theme,pulse=1+Math.sin(t*2+n)*.035;
+      var cw=mn.cardW,ch=mn.cardH,x=mn.px-cw/2,y=mn.py-ch/2;
+      var target=storyTarget===reg2.id&&open;
+      ctx.save();
+      ctx.shadowColor=target?'#ffd98f':(open?th.accent:'rgba(0,0,0,.5)');
+      ctx.shadowBlur=target?28*pulse:(open?18*pulse:7);
+      ctx.fillStyle='#171b2a';roundRect(ctx,x-4,y-4,cw+8,ch+8,15);ctx.fill();
       ctx.shadowBlur=0;
-      ctx.save();roundRect(ctx,x,y,cardW,cardH,10);ctx.clip();
+      ctx.save();roundRect(ctx,x,y,cw,ch,11);ctx.clip();
       var art=mapArtCache[reg2.id];
       if(!art&&window.CatBondPaintedRegions?.build){
         art=window.CatBondPaintedRegions.build(reg2.id,720,500);
         if(art)mapArtCache[reg2.id]=art;
       }
-      if(art)ctx.drawImage(art,0,0,art.width,art.height,x,y,cardW,cardH);
-      else{ctx.fillStyle=th.ground;ctx.fillRect(x,y,cardW,cardH);}
-      var shade=ctx.createLinearGradient(0,y,0,y+cardH);
-      shade.addColorStop(0,'rgba(8,12,22,.02)');shade.addColorStop(.55,'rgba(8,12,22,.08)');shade.addColorStop(1,'rgba(8,12,22,.78)');
-      ctx.fillStyle=shade;ctx.fillRect(x,y,cardW,cardH);
-      if(!open){ctx.fillStyle='rgba(9,12,22,.64)';ctx.fillRect(x,y,cardW,cardH);}
+      if(art)ctx.drawImage(art,0,0,art.width,art.height,x,y,cw,ch);
+      else{ctx.fillStyle=th.ground;ctx.fillRect(x,y,cw,ch);}
+      var shade=ctx.createLinearGradient(0,y,0,y+ch);
+      shade.addColorStop(0,'rgba(8,12,22,.01)');
+      shade.addColorStop(.52,'rgba(8,12,22,.06)');
+      shade.addColorStop(1,'rgba(8,12,22,.82)');
+      ctx.fillStyle=shade;ctx.fillRect(x,y,cw,ch);
+      if(!open){ctx.fillStyle='rgba(9,12,22,.66)';ctx.fillRect(x,y,cw,ch);}
       ctx.restore();
-      ctx.lineWidth=(cur===reg2.id?3:1.5);
-      ctx.strokeStyle=cur===reg2.id?GOLD:(open?'rgba(255,244,218,.82)':'rgba(255,255,255,.24)');
-      roundRect(ctx,x,y,cardW,cardH,10);ctx.stroke();
-      const label=window.MorrowwishI18n?.get?.()==='zh'?reg2.name:reg2.sub;
+      ctx.lineWidth=target?3.5:(cur===reg2.id?2.5:1.5);
+      ctx.strokeStyle=target?'#ffe3a7':(cur===reg2.id?GOLD:(open?'rgba(255,244,218,.82)':'rgba(255,255,255,.24)'));
+      roundRect(ctx,x,y,cw,ch,11);ctx.stroke();
       ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.font=(W<420?'800 10px':'800 13px')+' system-ui,sans-serif';
       ctx.fillStyle=open?'#fff9e9':'rgba(255,255,255,.66)';
-      ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=5;
-      ctx.fillText(label,mn.px,y+cardH-12);
+      ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=6;
+      ctx.fillText(zh?reg2.name:reg2.sub,mn.px,y+ch-14);
       ctx.shadowBlur=0;
       if(!open){
-        ctx.font=(W<420?'15px':'19px')+' serif';
-        ctx.fillText('🔒',mn.px,y+cardH*.38);
+        ctx.font=(W<420?'15px':'19px')+' serif';ctx.fillText('🔒',mn.px,y+ch*.36);
       }else{
         const prog=ensureSave().regions[reg2.id],frac=prog?prog.explored:0;
         if(frac>0){
           ctx.strokeStyle=th.accent;ctx.lineWidth=3;
-          ctx.beginPath();ctx.arc(x+cardW-9,y+10,5,-Math.PI/2,-Math.PI/2+frac*Math.PI*2);ctx.stroke();
+          ctx.beginPath();ctx.arc(x+cw-11,y+11,6,-Math.PI/2,-Math.PI/2+frac*Math.PI*2);ctx.stroke();
         }
-        ctx.fillStyle='rgba(255,235,196,.95)';ctx.font=W<420?'9px system-ui':'11px system-ui';
-        ctx.fillText('★'.repeat(Math.min(3,reg2.difficulty)),x+cardW-13,y+12);
+        ctx.fillStyle='rgba(255,235,196,.98)';
+        ctx.font=W<420?'9px system-ui':'11px system-ui';
+        ctx.fillText('★'.repeat(Math.min(3,reg2.difficulty)),x+cw-17,y+12);
       }
       ctx.restore();
-      if(!open){
-        ctx.font=W<420?'9px system-ui':'11px system-ui';ctx.textAlign='center';ctx.textBaseline='top';
+      if(target){
+        ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.font=(W<420?'800 8px':'800 10px')+' system-ui,sans-serif';
+        ctx.fillStyle='#ffe2a4';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=5;
+        ctx.fillText(zh?'✦ 主线目标':'✦ MAIN QUEST',mn.px,y-13);
+        ctx.restore();
+      }else if(!open){
+        ctx.font=W<420?'8px system-ui':'10px system-ui';
+        ctx.textAlign='center';ctx.textBaseline='top';
         ctx.fillStyle='rgba(238,221,255,.78)';
-        ctx.fillText(unlockHint(reg2),mn.px,y+cardH+5);
+        var lockLabel=unlockHint(reg2);
+        if(lockLabel.length>(W<420?20:34))lockLabel=lockLabel.slice(0,W<420?19:33)+'…';
+        ctx.fillText(lockLabel,mn.px,y+ch+7);
       }else{
         var localNpc=window.CatBondNPC?.forRegion?.(reg2.id)?.[0];
-        if(localNpc){ctx.font=W<420?'800 9px system-ui':'800 11px system-ui';ctx.fillStyle='rgba(255,226,183,.92)';ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText((window.MorrowwishI18n?.get?.()==='zh'?'✦ '+localNpc.name:'✦ '+localNpc.en),mn.px,y+cardH+5);}
+        if(localNpc){
+          ctx.font=W<420?'800 8px system-ui':'800 10px system-ui';
+          ctx.fillStyle='rgba(255,226,183,.92)';ctx.textAlign='center';ctx.textBaseline='top';
+          ctx.fillText('✦ '+(zh?localNpc.name:localNpc.en),mn.px,y+ch+7);
+        }
       }
     }
 
@@ -845,10 +895,6 @@
       ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     }
     // Story-first atlas: chapter, six recovered memories and a concrete next objective.
-    var story=window.State?.S?.story||{},fragments=Array.isArray(story.fragments)?story.fragments:[];
-    var memoryIds={home:'home-bell',sakura:'sakura-promise',creek:'creek-name',volcano:'volcano-seal',ruins:'ruins-reverse'};
-    var nextStoryRegion=REGIONS.find(item=>!fragments.includes(memoryIds[item.id]));
-    var zh=window.MorrowwishI18n?.get?.()==='zh';
     var chapterNamesZh=['序章 · 倒着响的铃','第一章 · 空白页','第二章 · 旧约','第三章 · 失去的名字','第四章 · 最后的守铃者','第五章 · 逆响','终章 · 最后一页'];
     var chapterNamesEn=['PROLOGUE · A BELL IN REVERSE','CHAPTER I · THE BLANK PAGE','CHAPTER II · THE OLD PROMISE','CHAPTER III · THE LOST NAME','CHAPTER IV · THE LAST BELLKEEPER','CHAPTER V · THE REVERSED BELL','FINAL CHAPTER · THE LAST PAGE'];
     var count=Math.min(6,fragments.length),chapter=zh?chapterNamesZh[count]:chapterNamesEn[count];
