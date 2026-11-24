@@ -1,0 +1,49 @@
+name: Isolated dashboard live read comparison 20261123
+on:
+  push:
+    branches: ['audit/dashboard-data-integrity-20261123']
+    paths: ['.github/workflows/dashboard-live-read-audit-20261123.yml']
+permissions:
+  contents: write
+jobs:
+  compare:
+    if: github.ref == 'refs/heads/audit/dashboard-data-integrity-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/dashboard-data-integrity-20261123
+      - name: Read-only authenticated traffic audit on both origins, if key is available
+        env:
+          ANALYTICS_KEY: ${{ secrets.ARCADE_ANALYTICS_KEY }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const key=process.env.ANALYTICS_KEY;
+          const report={generatedAt:new Date().toISOString(),status:'UNVERIFIED',origins:[]};
+          if(!key) report.status='BLOCKED_NO_DASHBOARD_READ_CREDENTIAL';
+          else {
+            for(const origin of ['https://morrowwish.vercel.app','https://morrowwish.pages.dev']){
+              try {
+                const res=await fetch(origin+'/api/cat-bond-traffic-audit?from=2026-11-22T08%3A00%3A00.000Z',{method:'GET',headers:{'x-analytics-key':key,'cache-control':'no-cache'},redirect:'error',signal:AbortSignal.timeout(15000)});
+                let body=null;
+                if(res.ok){const j=await res.json();body={from:j.from,total:j.total,totals:j.totals,byDay:j.byDay,history:j.history};}
+                report.origins.push({origin,status:res.status,observedAt:new Date().toISOString(),body});
+              } catch(e){report.origins.push({origin,error:e.name});}
+            }
+            report.status=report.origins.every(x=>x.status===200&&Number.isFinite(x.body?.total))?'LIVE_API_READ_COMPLETE':'LIVE_API_READ_BLOCKED_OR_FAILED';
+          }
+          fs.writeFileSync('audit/dashboard/live-read-report.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report,null,2));
+          NODE
+      - name: Persist result only in audit branch
+        run: |
+          set -eu
+          test "$GITHUB_REF" = refs/heads/audit/dashboard-data-integrity-20261123
+          test "$(git branch --show-current)" = audit/dashboard-data-integrity-20261123
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- audit/dashboard/live-read-report.json
+          git commit -m "audit only: record live traffic read result without credential or production writes"
+          git push origin HEAD:refs/heads/audit/dashboard-data-integrity-20261123
