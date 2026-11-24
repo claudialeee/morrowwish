@@ -127,15 +127,15 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,{...env,fixture:[bond]});
  const main=dom.games.innerHTML;
- assert.ok(main.includes('<td>82</td><td>79</td><td>1</td>'),
-  locale+' main table must preserve raw battle starts/finishes');
+ assert.ok(main.includes('<td>8</td><td>7</td><td>1</td>'),
+  locale+' main table must show page-level plays and finishes, not raw battle counts');
  assert.ok(!main.includes('<td>82 <small>')&&!main.includes('<td>79 <small>'),locale+' raw round totals must not carry extra conversion percentages');
  for(const ratio of ['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'])
   assert.ok(main.includes('<td>'+ratio+'</td>'),locale+' per-visit conversion missing: '+ratio);
  assert.ok(!main.includes('79 / 82 · 96.3%</td>'),
   'Raw battle totals must not replace visit-deduplicated conversion columns');
 }
-console.log('Cat Bond dashboard gate: raw battle totals stay separate; page-load conversions remain 8/26, 7/8, 7/26 in zh/en.');
+console.log('Cat Bond dashboard gate: play/finish cells use page-level counts; battle counts stay in gameplay details; conversions remain 8/26, 7/8, 7/26 in zh/en.');
 
 
 // Adversarial coverage gate: every one of the seven playable game worlds has

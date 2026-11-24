@@ -58,8 +58,10 @@ function summarizeGame(game, rows) {
   const sessions = rows.filter(r => r.kind === "session");
   const visitKeys = new Set(visits.map(r => r.view_id || ("visit-row:" + String(r.id))));
   const visitIds = new Set(visits.map(r => r.view_id).filter(Boolean));
+  const isBond = game === "cat-bond";
   const startedIds = new Set(sessions.filter(r => visitIds.has(r.view_id) &&
-    (Number(r.data?.signals?.funnel_first_run) > 0 || Number(r.data?.starts) > 0)).map(r => r.view_id));
+    (isBond ? Number(r.data?.signals?.bond_enter) > 0 :
+      Number(r.data?.signals?.funnel_first_run) > 0 || Number(r.data?.starts) > 0)).map(r => r.view_id));
   const finishedIds = new Set(sessions.filter(r => visitIds.has(r.view_id) &&
     (Number(r.data?.signals?.funnel_first_finish) > 0 || Number(r.data?.ends) > 0)).map(r => r.view_id));
   const finishedStarted = [...finishedIds].filter(id => startedIds.has(id));

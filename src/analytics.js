@@ -64,7 +64,12 @@ function mainStats(x){
       .map(r=>r.view_id).filter(id=>visitIds.has(id)));
     // First-run/first-finish signals are the canonical page-load funnel.
     // Legacy rows fall back to real counters; each page load contributes once.
-    const startedIds=viewsWith(d=>Number(d.signals?.funnel_first_run)>0||Number(d.starts)>0);
+    const isBond=part.every(r=>r.game==="cat-bond"||!r.game)&&
+      part.some(r=>r.game==="cat-bond");
+    // Cat Bond "play" means entering the game world (bond_entered), not
+    // starting an individual battle. Other games use their first-run signal.
+    const startedIds=viewsWith(d=>isBond?Number(d.signals?.bond_enter)>0:
+      Number(d.signals?.funnel_first_run)>0||Number(d.starts)>0);
     const finishedIds=viewsWith(d=>Number(d.signals?.funnel_first_finish)>0||Number(d.ends)>0);
     const finishedStarted=[...finishedIds].filter(id=>startedIds.has(id));
     const funnelAvailable=sessionsOf.some(r=>r.view_id&&visitIds.has(r.view_id)&&
@@ -81,8 +86,6 @@ function mainStats(x){
       Number(r.data.signals?.bond_enter)>0).map(r=>r.view_id));
     const v2Finished=new Set(sessionsOf.filter(r=>v2Entered.has(r.view_id)&&
       Number(r.data.signals?.bond_battle_end_v2)>0).map(r=>r.view_id));
-    const isBond=part.every(r=>r.game==="cat-bond"||!r.game)&&
-      part.some(r=>r.game==="cat-bond");
     const pv=isBond?v2Ids.size:distinctPageVisits;
     const entered=isBond?v2Entered.size:startedIds.size;
     const finished=isBond?v2Finished.size:finishedStarted.length;
