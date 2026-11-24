@@ -227,7 +227,7 @@ function enhanceSortableTables(){
  }
 }
 function dateFormat(x){return new Date(x).toLocaleString(lang==="zh"?"zh-CN":"en-US");}
-function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lang==="zh"?t("failGeneric"):lastError});}else status.textContent=t(kind);}
+function setStatus(kind,error=""){statusKind=kind;lastError=error;const status=$("status");status.className="status"+(kind==="error"||kind==="denied"?" error":"");if(kind==="stale"&&lastData){status.className="status error";status.textContent=(lang==="zh"?"未更新，保留上次成功读取：":"Not refreshed; last successful snapshot: ")+dateFormat(lastData.updated);}else if(kind==="loaded"&&lastData){status.textContent=t("loaded",{date:dateFormat(lastData.updated)});}else if(kind==="denied"){status.textContent=t("invalidPassword");}else if(kind==="error"){status.textContent=t("error",{error:lang==="zh"?t("failGeneric"):lastError});}else status.textContent=t(kind);}
 function metricCard(label,value,note){return '<div class="stat"><div class="label">'+escapeHTML(label)+'</div><div class="big">'+escapeHTML(value)+'</div><div class="note">'+escapeHTML(note)+'</div></div>';}
 function nameFor(x){return t(x)===x?x:t(x);}
 function breakdown(id,rows){const el=$(id),data=Array.isArray(rows)?rows:[],max=Math.max(1,...data.map(a=>Number(a.value)||0));el.innerHTML=data.length?data.map(x=>{const label=nameFor(x.name||"unknown"),number=Math.max(0,Number(x.value)||0);return '<div class="metric-row"><div class="name" title="'+escapeHTML(label)+'">'+escapeHTML(label)+'</div><div class="track"><div class="fill" style="width:'+Math.max(1,Math.min(100,100*number/max))+'%"></div></div><div class="n">'+format(number)+'</div></div>';}).join(""):"";}
@@ -427,13 +427,13 @@ const chunks=[t("coverageDays",{records:format(j.records)}),
 if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=hasData?chunks.filter(Boolean).join(" "):"";$("report").hidden=false;enhanceSortableTables();}
 
 let elsewhereData=null;
+let dashboardNextRead=0,dashboardLoading=false;
 async function loadElsewhere(){
- elsewhereData=null;
  try{
   const res=await fetch('/api/elsewhere-summary?'+reportQuery,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});
   if(!res.ok)throw Error('Story API unavailable');
   elsewhereData=await res.json();
- }catch{elsewhereData=null}
+ }catch{/* Keep the last successful story snapshot. */}
  if(lastData)renderSignals(lastData.byGame||[]);
 }
 
@@ -444,13 +444,20 @@ for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.plac
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
 if(lastData)render(lastData);enhanceSortableTables();setStatus(statusKind,lastError);
 }
-async function load(){setStatus("loading");$("reload").disabled=true;
-try{const response=await fetch("/api/summary?"+reportQuery,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok)throw Error(j.error||"HTTP "+response.status);
-render(j);loadElsewhere();$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
-}catch(e){$("report").hidden=true;setStatus("error",e.message||t("failGeneric"));}finally{$("reload").disabled=false;}}
+async function load(force=false){
+if(dashboardLoading||(!force&&Date.now()<dashboardNextRead))return;
+dashboardLoading=true;setStatus("loading");$("reload").disabled=true;
+try{const response=await fetch("/api/summary?"+reportQuery,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok){
+ const retry=Number(response.headers?.get("Retry-After"));
+ dashboardNextRead=Date.now()+Math.max(60000,Number.isFinite(retry)?retry*1000:0);
+ throw Error(j.error||"HTTP "+response.status);
+ }
+render(j);await loadElsewhere();dashboardNextRead=Date.now()+120000;$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
+ }catch(e){dashboardNextRead=Math.max(dashboardNextRead,Date.now()+60000);$("report").hidden=!lastData;setStatus(lastData?"stale":"error",e.message||t("failGeneric"));}
+ finally{dashboardLoading=false;$("reload").disabled=false;}}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLanguage(b.dataset.lang)));
-$("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load();}catch(err){setStatus("error",err.message||t("failGeneric"));}});
-$("reload").addEventListener("click",load);
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load(true);}catch(err){setStatus("error",err.message||t("failGeneric"));}});
+$("reload").addEventListener("click",()=>{if(Date.now()<dashboardNextRead){if(lastData)setStatus("stale");return;}load();});
 $("reset-metrics").addEventListener("click",async()=>{
  if(!window.confirm(t("resetConfirm")))return;
  const button=$("reset-metrics");button.disabled=true;$("reload").disabled=true;setStatus("resetting");
@@ -461,13 +468,13 @@ $("reset-metrics").addEventListener("click",async()=>{
    body:JSON.stringify({confirm:"RESET_METRICS"})
   });
   if(!response.ok)throw Error("HTTP "+response.status);
-  await load();
+  lastData=null;elsewhereData=null;dashboardNextRead=0;
+  await load(true);
   if(statusKind==="loaded")setStatus("resetDone");
  }catch(e){setStatus("resetFailed");}
  finally{button.disabled=false;$("reload").disabled=false;}
 });
 applyLanguage(lang);load();
-// Refresh on a live dashboard without creating new posts or consuming external aggregator quotas.
-setInterval(()=>{if(!document.hidden && $("login").hidden && !$("reload").disabled)load();},10*60*1000);
+// Manual refresh only: idle dashboards do not consume D1 reads.
 })();
 </script></body></html>

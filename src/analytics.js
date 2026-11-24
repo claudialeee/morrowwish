@@ -22,16 +22,43 @@ function reportDates(fromTs,toTs=Date.now()){
  while(cursor<=end){out.push(cursor.toISOString().slice(0,10));cursor.setUTCDate(cursor.getUTCDate()+1);}
  return out;
 }
+// Cache only completed private event snapshots, never public CDN content.
+const analyticsStates=new WeakMap();
+const analyticsTTL=120000;
+function analyticsState(env){
+ let z=analyticsStates.get(env.DB);
+ if(!z){z={snapshots:new Map(),until:0,quota:false};analyticsStates.set(env.DB,z);}
+ return z;
+}
+function analyticsUnavailable(z){
+ const r=json({error:z.quota?"D1 daily read limit reached; stored records are not changed.":"Analytics temporarily unavailable; no partial counts returned."},503);
+ r.headers.set("Retry-After",String(Math.max(1,Math.ceil((z.until-Date.now())/1000))));
+ return r;
+}
+function analyticsFailure(error,z){
+ z.quota=/quota|daily.{0,30}limit|row.{0,30}read.{0,30}limit|exceeded.{0,40}limit/i.test(String(error?.message||error));
+ const now=Date.now();
+ z.until=z.quota?Math.floor(now/86400000)*86400000+86400000:now+60000;
+ return analyticsUnavailable(z);
+}
 async function read(req,env,category){
  const requested=Date.parse(new URL(req.url).searchParams.get("from")||REPORT_FROM);
  const fromTs=Number.isFinite(requested)?Math.max(REPORT_FROM_MS,requested):REPORT_FROM_MS;
  const dates=reportDates(fromTs),raw=[];
+ const z=analyticsState(env),cacheKey=fromTs===REPORT_FROM_MS&&env.ANALYTICS_CACHE_MS!=="0"?category:null;
+ const previous=cacheKey?z.snapshots.get(cacheKey):null;
+ if(previous&&Date.now()-previous.at<analyticsTTL)return {...previous.value,dates,days:dates.length};
+ let readCost=0;
  // Keyset pagination avoids the former 10,000-row truncation and remains stable
  // while new visits arrive during a dashboard refresh.
  let beforeId=Number.MAX_SAFE_INTEGER;
  for(;;){
   const result=await env.DB.prepare("SELECT id,category,day,game,ts,visitor,view_id,run_id,event_name,kind,payload FROM events WHERE category=? AND ts>=? AND id<? ORDER BY id DESC LIMIT 400").bind(category,fromTs,beforeId).all();
+  if(result.success===false)throw Error(result.error||"D1 analytics query failed");
   const batch=result.results||[];
+  readCost+=Number(result.meta?.rows_read??batch.length);
+  // Never present truncated reports as totals.
+  if(readCost>100000)throw Error("Analytics scan budget exceeded");
   raw.push(...batch);
   if(batch.length<400)break;
   const next=Number(batch[batch.length-1].id);
@@ -49,7 +76,9 @@ async function read(req,env,category){
   if(seenSequence.has(id))return false;
   seenSequence.add(id);return true;
  });
- return {days:dates.length,dates,from:new Date(fromTs).toISOString(),rows,partial:false};
+ const value={days:dates.length,dates,from:new Date(fromTs).toISOString(),rows,partial:false};
+ if(cacheKey)z.snapshots.set(cacheKey,{at:Date.now(),value});
+ return value;
 }
 function visitors(rows){return uniq(rows.map(r=>r.visitor||r.view_id));}
 function mainStats(x){
@@ -342,6 +371,7 @@ export async function api(req,env){
   // Clear only anonymous dashboard events. Never destroy the D1 table, schema,
   // player saves, campaign schedules or static provider status snapshots.
   const result=await env.DB.prepare("DELETE FROM events WHERE category IN ('arcade','elsewhere','diagnostic')").run();
+  analyticsStates.delete(env.DB);
   return json({ok:true,removed:result.meta?.changes??null});
  }
   // Keep an authenticated verification endpoint, but use the same complete
@@ -350,6 +380,9 @@ export async function api(req,env){
     if(req.method!=="GET")return json({error:"GET required"},405);
     if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
     if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
+    const state=analyticsState(env);
+    if(Date.now()<state.until)return analyticsUnavailable(state);
+    try{
     const x=await read(req,env,"arcade"),stats=mainStats(x);
     const row=stats.byGame.find(g=>g.game==="cat-bond"),f=row?.historicalVisitFunnel||{};
     const byDay=x.dates.map(day=>{
@@ -358,21 +391,36 @@ export async function api(req,env){
       const pageviews=visits.length;
       return {day,pageviews,rawVisits:visits.length};
     });
-    const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(*) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
-    const history=(h.results||[])[0]||{};
+    let history=env.ANALYTICS_CACHE_MS!=="0"&&state.history&&Date.now()-state.history.at<analyticsTTL?state.history.value:null;
+    if(!history){
+      const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(*) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
+      if(h.success===false)throw Error(h.error||"D1 analytics query failed");
+      history=(h.results||[])[0]||{};
+      state.history={at:Date.now(),value:history};
+    }
     return json({game:"cat-bond",from:x.from,source:"full-d1-event-read",
       total:Number(row?.pageviews)||0,
       totals:{pageviews:Number(row?.pageviews)||0,startedViews:Number(f.startedViews)||0,finishedViews:Number(f.finishedViews)||0},
       byDay,
       history:{firstDay:history.firstDay||null,lastDay:history.lastDay||null,
         pageviews:Number(history.pageviews)||0,rawVisits:Number(history.rawVisits)||0}});
+    }catch(error){return analyticsFailure(error,state);}
   }
 if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(req.method!=="GET")return json({error:"GET required"},405);
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
-  const x=await read(req,env,p==="/api/summary"?"arcade":"elsewhere");
-  return json(p==="/api/summary"?{...mainStats(x),socialPulse:await socialPulseFor(env,typeof SOCIAL_CAMPAIGN==="undefined"?null:SOCIAL_CAMPAIGN)}:elsewhereStats(x));
+  const state=analyticsState(env);
+  if(Date.now()<state.until)return analyticsUnavailable(state);
+  try{
+    const category=p==="/api/summary"?"arcade":"elsewhere";
+    const x=await read(req,env,category);
+    const result=category==="arcade"?mainStats(x):elsewhereStats(x);
+    const saved=state.snapshots.get(category);
+    if(saved?.value.rows===x.rows)result.updated=new Date(saved.at).toISOString();
+    if(category==="arcade")result.socialPulse=await socialPulseFor(env,typeof SOCIAL_CAMPAIGN==="undefined"?null:SOCIAL_CAMPAIGN);
+    return json(result);
+  }catch(error){return analyticsFailure(error,state);}
  }
  return json({error:"Not found"},404);
 }

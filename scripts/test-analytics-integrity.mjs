@@ -53,7 +53,7 @@ const DB={prepare(sql){
   }
  }
 }};
-const env={DB,ARCADE_ANALYTICS_KEY:'local-test-key-not-a-secret'};
+const env={DB,ARCADE_ANALYTICS_KEY:'local-test-key-not-a-secret',ANALYTICS_CACHE_MS:'0'};
 const req=(route,data)=>new Request('https://morrowwish.pages.dev'+route,{
  method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)
 });
@@ -213,5 +213,15 @@ assert.equal((await empty.json()).records,0,'dashboard starts empty after reset'
 const restarted=await api(req('/api/session',{kind:'visit',game:'cat-bond',viewId:'new-visit',visitor:'test'}),env);
 assert.equal(restarted.status,202,'fresh post-reset gameplay events still write normally');
 assert.equal(rows.filter(x=>x.category==='arcade').length,1,'tracking restarted');
+env.ANALYTICS_CACHE_MS='120000';
+const originalPrepare=DB.prepare;let reportReads=0;
+DB.prepare=function(sql){if(sql.startsWith('SELECT id,category,day,game,ts'))reportReads++;return originalPrepare.call(this,sql);};
+const cachedReq=()=>new Request('https://morrowwish.pages.dev/api/summary',{headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}});
+const firstCached=await api(cachedReq(),env);assert.equal(firstCached.status,200);
+const firstSnapshot=await firstCached.json(),firstReads=reportReads;
+assert.ok(firstReads>0);
+const nextCached=await api(cachedReq(),env);assert.equal(nextCached.status,200);
+assert.equal(reportReads,firstReads,'repeat reads reuse the complete event snapshot');
+assert.equal((await nextCached.json()).updated,firstSnapshot.updated,'snapshot timestamp is not fabricated');
 console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
 await import('./test-cat-bond-analytics-funnel.mjs');
