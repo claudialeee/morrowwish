@@ -1,0 +1,52 @@
+name: Isolated dashboard repair acceptance
+on:
+  push:
+    branches: ['audit/dashboard-data-integrity-20261123']
+    paths:
+      - '.github/workflows/dashboard-repair-acceptance.yml'
+      - 'src/analytics.js'
+      - 'public/studio-insights/index.html'
+      - 'scripts/test-analytics-integrity.mjs'
+      - 'scripts/test-dashboard-sorting.mjs'
+      - 'scripts/test-dashboard-history-browser.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: isolated-dashboard-repair-acceptance
+  cancel-in-progress: true
+jobs:
+  local-tests:
+    if: github.ref == 'refs/heads/audit/dashboard-data-integrity-20261123'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Actual API contract with synthetic isolated in-memory rows
+        run: node scripts/test-analytics-integrity.mjs
+      - name: Bilingual dashboard contract and independent safety guard
+        run: |
+          node scripts/test-dashboard-sorting.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const api=fs.readFileSync('src/analytics.js','utf8');
+          const html=fs.readFileSync('public/studio-insights/index.html','utf8');
+          assert.ok(!api.includes("DELETE FROM events WHERE category IN"));
+          assert.match(api,/reset-metrics.*410/);
+          assert.ok(!html.includes('id="reset-metrics"'));
+          assert.ok(!html.includes('fetch("/api/reset-metrics"'));
+          for(const key of ['bond_capture','bond_rare_encounter','bond_rare_capture','bond_duo_used','bond_yard_built','bond_surprise'])assert.ok(html.includes(key));
+          console.log('No destructive metrics route; six historic signals present.');
+          NODE
+      - name: Actual Chromium local dashboard only (no production network)
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install chromium
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/mw-audit-server.log 2>&1 &
+          sleep 2
+          node scripts/test-dashboard-history-browser.mjs
