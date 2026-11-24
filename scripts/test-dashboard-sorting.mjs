@@ -94,7 +94,7 @@ console.log('Dashboard columns sort numerically, retain real zeros, leave missin
 // replace historic Cat Bond activity with blanks. This invokes the actual
 // dashboard renderers for both languages and mixed/legacy-only cohorts.
 const historicalBond={game:'cat-bond',pageviews:26,startedViews:8,startRate:30.8,
- starts:82,ends:79,retries:1,
+ recordedGameEntries:8,recordedFirstFinishPages:7,starts:82,ends:79,retries:1,
  visitFunnel:{pageviews:26,startedViews:8,finishedViews:7},
  conversion:{pageviews:0,startedViews:0,finishedViews:0},
  signals:{bond_capture:73,bond_rare_encounter:4,bond_rare_capture:57,
@@ -116,15 +116,15 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
  vm.runInNewContext(focusCode+';globalThis.draw=renderSignals;',env);
  env.draw([bond]);
  const card=dom['focus-grid'].innerHTML;
- for(const snippet of ['<b>73</b>','<b>57</b>','<b>46</b>'])
+ for(const snippet of ['<b>73</b>','<b>4</b>','<b>57</b>','<b>46</b>','<b>6</b>','<b>5</b>','<b>82</b>','<b>79</b>'])
    assert.ok(card.includes(snippet),locale+' compact Cat Bond metric missing '+snippet);
  if(v2)assert.ok(card.includes('3 / 4 · 75%'),'New cohort must be separate');
  const tableCode=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,{...env,fixture:[bond]});
  const main=dom.games.innerHTML;
- assert.ok(main.includes('<td>82</td><td>79</td><td>1</td>'),
-  locale+' main table must preserve raw battle starts/finishes');
+ assert.ok(main.includes('<td>8</td><td>7</td><td>1</td>'),
+  locale+' main table must use explicit recorded entry and first-finish counts');
  assert.ok(!main.includes('<td>82 <small>')&&!main.includes('<td>79 <small>'),locale+' raw round totals must not carry extra conversion percentages');
  for(const ratio of ['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'])
   assert.ok(main.includes('<td>'+ratio+'</td>'),locale+' per-visit conversion missing: '+ratio);
