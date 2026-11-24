@@ -5505,3 +5505,11 @@ body.cb-exploring #stage #yard-actions{
   .sg-hotspot{min-height:32px;padding:4px 8px;font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.sg-hotspots,.sg-hotspot{transition:none}}
+
+@media(orientation:portrait) and (max-width:700px){
+  .sg-hotspot-cats{left:15%;top:67%}
+  .sg-hotspot-facilities{left:25%;top:32%}
+  .sg-hotspot-catdex{left:54%;top:53%}
+  .sg-hotspot-workshop{left:79%;top:43%}
+  .sg-hotspot-bond{left:78%;top:72%}
+}
