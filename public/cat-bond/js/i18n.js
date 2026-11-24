@@ -19,6 +19,15 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    '💾 存档 / 读档': '💾 Save / Load',
+    '存档 / 读档': 'Save / Load',
+    '✦ 找回被抹去的记忆，揭开最后一页的真相 ✦': '✦ Recover erased memories and uncover the truth of the Last Page ✦',
+    '探索五片土地，收集六段记忆，结识伙伴，挑战逆响之主。': 'Explore five lands, recover six memories, meet allies and face the Lord of the Reversed Bell.',
+    '📖 主线剧情 · 六段记忆': '📖 Main story · Six memories',
+    '🗺️ 五片土地 · 秘境探索': '🗺️ Five lands · Hidden paths',
+    '⚔️ 实时战斗 · 区域 Boss': '⚔️ Real-time combat · Region bosses',
+    '💞 双猫羁绊 · 三段合击': '💞 Duo bonds · Three-tier attacks',
+    '从庭院出发，寻找失落的记忆': 'Begin in the garden and recover lost memories',
     '守铃者': 'The Bellkeeper',
     '☁️ 云存档': '☁️ Cloud save',
     '云存档': 'Cloud save',
@@ -509,7 +518,6 @@
     '⚠️ 重击来袭 — 离开红圈！': '⚠️ Heavy attack incoming — leave the red circle!',
     '收服成功': 'Capture successful',
     '🏠 收服成功！': '🏠 Cat captured!',
-    '✦ 险胜！': '✦ CLUTCH!',
     '⚡ 必杀就绪 — 按 R 释放': '⚡ Ultimate ready — press R',
     '用技能 (Q/E) 破防才能收服！': 'Use skills (Q/E) to break its guard and capture it!',
 
@@ -734,7 +742,6 @@
     '闪避危险弹幕': 'Dodged incoming shot',
     '低血量换猫': 'Low HP: switched cat',
     '恢复斗志': 'Healed morale',
-    '治疗队友': 'Healed ally',
     '展开护盾': 'Shield up',
     '释放必杀技': 'Ultimate cast',
     '强化自身': 'Self buff',
@@ -745,7 +752,6 @@
     '🎮 手动': '🎮 Manual',
     '🏳️ 撤退': '🏳️ Retreat',
     '撤退': 'Retreat',
-    '调试': 'Debug', '记录本场伤害明细（调试）': 'Record this fight’s damage (debug)',
     ' 记录': ' Log',
     '记录本场战斗的伤害明细（仅调试）': 'Log this fight’s damage breakdown (debug only)',
     '🐛 开始记录本场伤害明细': '🐛 Recording this fight’s damage',
@@ -1194,7 +1200,6 @@
     // ---- status tags ----
     '灼烧': 'Burn', '淋湿': 'Soak', '感电': 'Shock', '浸油': 'Oil',
     '冰冻': 'Freeze', '眩晕': 'Dizzy', '流血': 'Bleed', '失明': 'Blind', '束缚': 'Bind',
-    '烫伤': 'Scald', '烫伤重创!': 'Scald — grievous!', '烫伤 治疗↓': 'Scald — healing cut', '治疗被烫伤削弱': 'healing cut by scald',
 
     // ---- bond tiers ----
     '灵魂纽带': 'Soul Bond',
@@ -2259,8 +2264,8 @@
     // Chinese mode needs an explicit Chinese form (it has no Han to convert).
     try {
       document.title = lang() === 'en'
-        ? 'Cat Bond — Raise cats, capture wild ones | Morrow Wish'
-        : '猫猫纽带 — 养猫、收服野猫 | Morrow Wish';
+        ? 'Cat Bond — A story-driven cat RPG | Morrow Wish'
+        : '猫猫纽带 — 剧情冒险 RPG | Morrow Wish';
     } catch (e) {}
     if (observer) observer.observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ATTRS });
     busy = false;

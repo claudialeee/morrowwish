@@ -4,14 +4,17 @@ import {webcrypto} from 'node:crypto';
 
 globalThis.crypto??=webcrypto;
 const read=path=>fs.readFile(new URL('../'+path,import.meta.url),'utf8');
-const [story,painted,worldmap,game,battle,ui,index,worker,state,serverSource,buildSource,deploySource]=await Promise.all([
+const [story,cinematic,painted,worldmap,game,battle,ui,index,duoPreview,styles,worker,state,serverSource,buildSource,deploySource]=await Promise.all([
  read('public/cat-bond/js/story-cloud.js'),
+ read('public/cat-bond/js/rpg-cinematic.js'),
  read('public/cat-bond/js/painted-regions.js'),
  read('public/cat-bond/js/worldmap.js'),
  read('public/cat-bond/js/game.js'),
  read('public/cat-bond/js/battle.js'),
  read('public/cat-bond/js/ui.js'),
  read('public/cat-bond/index.html'),
+ read('public/cat-bond/duo-preview.html'),
+ read('public/cat-bond/css/style.css'),
  read('src/worker.js'),
  read('public/cat-bond/js/state.js'),
  read('src/cat-bond-cloud-save.js'),
@@ -20,6 +23,7 @@ const [story,painted,worldmap,game,battle,ui,index,worker,state,serverSource,bui
 ]);
 
 new Function(story);
+new Function(cinematic);
 new Function(painted);
 new Function(worldmap);
 new Function(game);
@@ -36,7 +40,14 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['id="intro-cloud-save"','js/story-cloud.js?v=last-page-rpg-cloud-save-20261123-v11','js/game.js?v=last-page-boss-20261123-v3','js/battle.js?v=last-page-solo-boss-20261123-v2']],
+ ['entry points and cache versions',index,['id="intro-cloud-save"','id="intro-language"','js/rpg-cinematic.js?v=cinematic-painted-scenes-20261123-v1','js/story-cloud.js?v=rpg-cinematic-save-slots-20261123-v12','js/game.js?v=rpg-first-onboarding-skip-20261123-v4','js/worldmap.js?v=rpg-painted-atlas-20261123-v2','js/battle.js?v=camo-untargetable-20261124-v1']],
+
+ ['cinematic opening',cinematic,['window.CatBondRpgCinematic','drawBell','drawShockwaves','CatArt.drawCat','CatBondPaintedRegions?.build','requestAnimationFrame']],
+ ['cinematic and save/load UX',story,['cb-story-language','跳过片头','CatBondRpgCinematic?.play','SLOTS_KEY','function saveSlot(slot)','function loadSlot(slot)','导出存档文件','导入存档文件','No account or key to enter']],
+ ['illustrated RPG atlas',worldmap,['mapArtCache','THE FIVE LANDS','window.CatBondPaintedRegions.build(reg2.id,620,450)','Tap a painted region','ctx.quadraticCurveTo']],
+ ['optional onboarding',game,['version:2','step:5,done:true,skipped:true','firstAdventureTour()']],
+ ['same-screen duo tiers',duoPreview,['html.duo-embedded #unlocked:not([hidden])','html.duo-embedded .tier-controls','overflow:hidden','data-tier']],
+ ['cinematic and slot layout styles',styles,['.cb-story-top-controls','#intro-language','.cb-save-slots','.cb-save-slot-actions','#cb-duo-viewer iframe{','height:min(72dvh,620px)']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){

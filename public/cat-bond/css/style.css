@@ -5139,3 +5139,126 @@ body.cb-exploring #stage #yard-actions{
 @media(prefers-reduced-motion:reduce){
  .cb-story-art,.cb-story-card,.cb-story-scene-glow{animation:none;will-change:auto}
 }
+
+
+/* RPG cinematic presentation: full-bleed painted scenes, animated characters,
+   a compact subtitle rail, and visible language / skip controls. */
+#intro{position:relative}
+#intro-language{
+ position:absolute;z-index:12;top:max(12px,env(safe-area-inset-top,0px));right:14px;
+ min-width:66px;min-height:40px;padding:8px 13px;border:1px solid rgba(255,244,220,.46);
+ border-radius:13px;color:#fff5df;background:rgba(28,31,47,.58);
+ font:850 12px/1 system-ui,sans-serif;letter-spacing:.06em;backdrop-filter:blur(8px);
+}
+#intro-language:hover{background:rgba(54,56,76,.82)}
+.cb-story-overlay{display:block!important;padding:0!important;overflow:hidden!important;background:#090d18!important}
+.cb-story-scene{position:absolute;inset:0;background:#141c2a}
+.cb-story-art{display:block;width:100%;height:100%;transform:none!important;animation:none!important;will-change:auto}
+.cb-story-scene-glow{
+ background:linear-gradient(90deg,rgba(7,12,24,.03),rgba(7,12,24,0) 48%,rgba(7,12,24,.12)),
+ linear-gradient(0deg,rgba(7,11,21,.38),transparent 64%)!important;
+}
+.cb-story-scene-mark{display:none!important}
+.cb-story-top-controls{
+ position:absolute;z-index:5;top:max(16px,env(safe-area-inset-top,0px));right:clamp(14px,3vw,36px);
+ display:flex;align-items:center;gap:9px;
+}
+.cb-story-top-controls button{
+ min-height:42px;padding:9px 15px;border-radius:13px;cursor:pointer;
+ font:850 12px/1 system-ui,sans-serif;letter-spacing:.03em;
+ backdrop-filter:blur(12px);box-shadow:0 6px 22px rgba(0,0,0,.22);
+}
+.cb-story-language{
+ border:1px solid rgba(255,239,205,.42)!important;color:#fff3d9!important;
+ background:rgba(23,31,46,.62)!important;
+}
+.cb-story-skip{
+ border:1px solid rgba(255,239,205,.5)!important;color:#fff5df!important;
+ background:rgba(31,31,43,.7)!important;
+}
+.cb-story-skip[hidden]{display:none!important}
+.cb-story-card{
+ position:absolute!important;z-index:3;left:50%;right:auto;bottom:clamp(13px,2.6vh,28px);
+ transform:translateX(-50%);width:min(1020px,92vw)!important;max-height:40dvh!important;
+ overflow:auto;padding:clamp(17px,2.3vw,25px) clamp(19px,3vw,34px) 17px!important;
+ margin:0!important;border:1px solid rgba(255,232,194,.28)!important;border-left:3px solid #d9b47b!important;
+ border-radius:17px!important;color:#fff8ea!important;
+ background:linear-gradient(112deg,rgba(13,20,34,.91),rgba(27,27,43,.83))!important;
+ box-shadow:0 18px 55px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.07)!important;
+ backdrop-filter:blur(14px);
+ animation:cb-story-card-in .55s cubic-bezier(.2,.72,.2,1) both;
+}
+.cb-story-card-top{gap:10px}
+.cb-story-brand,.cb-story-step{font-size:10px;letter-spacing:.16em}
+.cb-story-kicker{margin:10px 0 6px!important;font-size:10px;letter-spacing:.18em}
+.cb-story-title{
+ max-width:900px!important;margin:0!important;font-size:clamp(25px,3.6vw,42px)!important;
+ line-height:1.15!important;letter-spacing:.01em;
+}
+.cb-story-copy{
+ max-width:920px!important;margin:9px 0 12px!important;
+ color:rgba(255,249,237,.9)!important;font-size:clamp(13px,1.3vw,16px)!important;
+ line-height:1.62!important;
+}
+.cb-story-progress{gap:6px;margin:10px 0 11px!important}
+.cb-story-progress span{height:3px}
+.cb-story-actions{justify-content:flex-end}
+.cb-story-actions button{min-height:42px;padding:10px 20px}
+.cb-story-next{min-width:126px}
+.cb-story-portraits{margin:4px 0 8px}
+@keyframes cb-story-card-in{
+ from{opacity:0;transform:translate(-50%,18px)}
+ to{opacity:1;transform:translate(-50%,0)}
+}
+.cb-story-tracker{top:68px}
+.cb-save-slots{display:grid;gap:9px;margin:12px 0 8px}
+.cb-save-slot{
+ display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
+ padding:12px;border:1px solid #e2d8c8;border-radius:13px;
+ background:linear-gradient(135deg,#fffdf7,#f5f0e7);
+}
+.cb-save-slot-info{min-width:0}
+.cb-save-slot-info strong{display:block;color:#425548;font:850 13px/1.35 system-ui,sans-serif}
+.cb-save-slot-info small{display:block;margin-top:3px;color:#748073;font:600 10px/1.45 system-ui,sans-serif}
+.cb-save-slot-info span{display:block;margin-top:3px;color:#a18b66;font:750 9px/1.35 system-ui,sans-serif}
+.cb-save-slot-actions{display:flex;gap:7px}
+.cb-save-slot-actions button{min-width:66px;min-height:38px;padding:8px 12px}
+.cb-save-file-actions{margin:11px 0 4px}
+.cb-save-file-actions button{min-height:40px}
+.cb-save-load-card .cb-cloud-lead{margin-bottom:10px}
+.cb-save-load-card .cb-cloud-footnote{margin-top:8px}
+#cb-duo-viewer iframe{
+ height:min(82dvh,700px)!important;min-height:0!important;
+}
+@media(max-width:600px){
+ #intro-language{top:max(10px,env(safe-area-inset-top,0px));right:10px;min-height:38px}
+ .cb-story-top-controls{top:max(10px,env(safe-area-inset-top,0px));right:10px;gap:6px}
+ .cb-story-top-controls button{min-height:40px;padding:8px 12px}
+ .cb-story-card{
+  left:50%!important;bottom:10px!important;width:calc(100% - 16px)!important;
+  max-height:42dvh!important;padding:14px 14px 12px!important;border-radius:15px!important;
+ }
+ .cb-story-kicker{margin:7px 0 5px!important;font-size:9px}
+ .cb-story-title{font-size:clamp(22px,6.3vw,29px)!important;line-height:1.16!important}
+ .cb-story-copy{font-size:12px!important;line-height:1.55!important;margin:7px 0 9px!important}
+ .cb-story-progress{margin:8px 0 9px!important}
+ .cb-story-actions button{min-height:40px;padding:9px 15px}
+ .cb-story-tracker{top:60px;left:8px;width:min(220px,calc(100% - 16px))}
+ .cb-save-slot{grid-template-columns:1fr;gap:8px;padding:10px}
+ .cb-save-slot-actions button{flex:1}
+ .cb-save-file-actions{grid-template-columns:1fr 1fr}
+ #cb-duo-viewer iframe{height:min(72dvh,620px)!important;min-height:0!important}
+}
+@media(max-height:620px) and (orientation:landscape){
+ .cb-story-card{max-height:43dvh!important;bottom:8px!important;padding:12px 20px 10px!important}
+ .cb-story-kicker{margin:5px 0 4px!important}
+ .cb-story-copy{margin:6px 0 7px!important;line-height:1.45!important}
+ .cb-story-progress{margin:6px 0!important}
+ .cb-story-top-controls{top:8px}
+ .cb-story-top-controls button{min-height:36px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cb-story-card{animation:none!important}
+}
+
+#intro-breed-count{display:block;margin:1px auto;color:rgba(255,245,225,.72);font:700 10px/1.35 system-ui,sans-serif}

@@ -7,6 +7,7 @@ const CLOUD_KEY='catbond_cloud_key_v1';
 const REV_KEY='catbond_cloud_revision_v1';
 const SYNC_KEY='catbond_cloud_synced_at_v1';
 const CLOUD_PAUSE_KEY='catbond_cloud_paused_v1';
+const SLOTS_KEY='catbond_save_slots_v1';
 const CODE_PREFIX='CB1.';
 const REGIONS=['home','sakura','creek','volcano','ruins'];
 const REGION_PAGES={
@@ -173,26 +174,34 @@ function renderPortraits(root){
 }
 function showSequence(kind,pages,done,options={}){
  document.querySelector('.cb-story-overlay')?.remove();
- let index=0,closed=false;
- const overlay=document.createElement('div');
- overlay.className='cb-story-overlay';
+ let index=0,closed=false,stopCinematic=null;
+ const overlay=document.createElement('div');overlay.className='cb-story-overlay';
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
- overlay.innerHTML='<div class="cb-story-scene"><canvas class="cb-story-art" aria-hidden="true"></canvas><div class="cb-story-scene-glow"></div>'+
-  '<div class="cb-story-scene-mark" aria-hidden="true">✦</div></div>'+
+ overlay.innerHTML='<div class="cb-story-scene"><canvas class="cb-story-art" aria-hidden="true"></canvas><div class="cb-story-scene-glow"></div></div>'+
+  '<div class="cb-story-top-controls"><button type="button" class="cb-story-language" aria-label="Switch language">EN</button>'+
+  '<button type="button" class="cb-story-skip"></button></div>'+
   '<section class="cb-story-card"><div class="cb-story-card-top"><span class="cb-story-brand">MORROW · WISH</span><span class="cb-story-step"></span></div>'+
   '<p class="cb-story-kicker"></p><h1 class="cb-story-title"></h1><p class="cb-story-copy"></p>'+
   '<div class="cb-story-portraits"><figure><canvas data-cb-player-portrait width="180" height="150"></canvas><figcaption></figcaption></figure>'+
   '<span class="cb-story-portrait-link" aria-hidden="true">✦</span><figure><canvas data-cb-muling-portrait width="180" height="150"></canvas><figcaption></figcaption></figure></div>'+
-  '<div class="cb-story-progress"></div><div class="cb-story-actions"><button type="button" class="cb-story-skip"></button><button type="button" class="cb-story-next"></button></div></section>';
+  '<div class="cb-story-progress"></div><div class="cb-story-actions"><button type="button" class="cb-story-next"></button></div></section>';
  document.body.append(overlay);
  const canvas=overlay.querySelector('.cb-story-art');
+ const languageButton=overlay.querySelector('.cb-story-language');
+ const skipButton=overlay.querySelector('.cb-story-skip');
+ languageButton.onclick=()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh');
  const render=()=>{
   const page=pages[index],en=!isZh();
-  drawBackdrop(canvas,page.region||'home');
+  if(stopCinematic){stopCinematic();stopCinematic=null;}
+  if(window.CatBondRpgCinematic?.play)
+   stopCinematic=window.CatBondRpgCinematic.play(canvas,page,{kind,index,total:pages.length});
+  else drawBackdrop(canvas,page.region||'home');
   overlay.querySelector('.cb-story-step').textContent=String(index+1).padStart(2,'0')+' / '+String(pages.length).padStart(2,'0');
   overlay.querySelector('.cb-story-kicker').textContent=en?(page.kickerEn||page.chapterEn||'THE LAST PAGE'):(page.kicker||page.chapter||'最后一页');
   overlay.querySelector('.cb-story-title').textContent=en?(page.titleEn||page.title):(page.title||page.titleEn);
   overlay.querySelector('.cb-story-copy').textContent=en?(page.textEn||page.text):(page.text||page.textEn);
+  languageButton.textContent=en?'中文':'EN';
+  languageButton.setAttribute('aria-label',en?'Switch to Chinese':'Switch to English');
   const mulingCaption=overlay.querySelector('.cb-story-portraits figure:last-child figcaption');
   if(mulingCaption)mulingCaption.textContent=t('暮铃','Muling');
   const progress=overlay.querySelector('.cb-story-progress');
@@ -206,22 +215,23 @@ function showSequence(kind,pages,done,options={}){
    const fig=overlay.querySelector('.cb-story-portraits figure:first-child figcaption');
    if(fig)fig.textContent=cat?window.State.catName(cat):t('你','You');
   }
-  overlay.querySelector('.cb-story-skip').textContent=options.canSkip===false?'':t('跳过','Skip');
-  overlay.querySelector('.cb-story-skip').hidden=options.canSkip===false;
+  skipButton.textContent=kind==='prologue'?t('跳过片头','Skip intro'):t('跳过','Skip');
+  skipButton.hidden=options.canSkip===false;
   overlay.querySelector('.cb-story-next').textContent=index===pages.length-1
    ?(kind==='ending'?t('写下新篇章','Begin the next chapter'):t('继续冒险','Continue'))
-   :t('下一页','Next');
+   :t('下一幕','Next scene');
  };
  const close=()=>{
   if(closed)return;closed=true;
   window.removeEventListener('morrowwish-language-change',render);
+  if(stopCinematic){stopCinematic();stopCinematic=null;}
   overlay.classList.add('is-leaving');
   setTimeout(()=>{overlay.remove();done?.();},220);
  };
  overlay.querySelector('.cb-story-next').onclick=()=>{
   if(index<pages.length-1){index++;render();}else close();
  };
- overlay.querySelector('.cb-story-skip').onclick=close;
+ skipButton.onclick=close;
  window.addEventListener('morrowwish-language-change',render);
  requestAnimationFrame(()=>overlay.classList.add('is-visible'));
  render();
@@ -279,7 +289,7 @@ function updateTracker(){
  const game=window.__game;
  if(!host||!game||!window.__CAT_BOND_STARTED__)return;
  const s=storyState();if(!s)return;
- const visible=game.scene==='map';
+ const visible=game.scene==='map'||game.scene==='yard';
  host.classList.toggle('is-visible',visible);
  const count=Math.min(6,s.fragments.length);
  const nextRegion=REGIONS.find(id=>!s.fragments.includes(REGION_PAGES[id].id));
@@ -423,118 +433,156 @@ function createTracker(){
  el.innerHTML='<span class="cb-story-tracker-top"><strong class="cb-story-tracker-title"></strong><b class="cb-story-tracker-count"></b></span><span class="cb-story-tracker-next"></span>';
  el.addEventListener('click',openJournal);stage.append(el);
 }
+function readSaveSlots(){
+ try{const value=JSON.parse(localStorage.getItem(SLOTS_KEY)||'{}');return value&&typeof value==='object'?value:{};}
+ catch{return {};}
+}
+function saveSlots(value){localStorage.setItem(SLOTS_KEY,JSON.stringify(value));}
+function slotRevisionKey(slot){return slot===1?REV_KEY:'catbond_cloud_slot_'+slot+'_revision_v1';}
+function ensureDeviceToken(){
+ let token=localStorage.getItem(CLOUD_KEY)||'';
+ if(!token&&window.crypto?.getRandomValues){
+  token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');
+ }
+ return token;
+}
+async function tokenForSlot(slot){
+ const device=ensureDeviceToken();
+ if(!device||!window.crypto?.subtle)throw Error(t('当前浏览器暂不支持云端备份。','Cloud backup is unavailable in this browser.'));
+ if(slot===1)return device;
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(device+':cat-bond-save-slot:'+slot));
+ return toB64url(new Uint8Array(digest));
+}
+function validSave(raw){
+ try{const data=JSON.parse(raw);return !!data&&typeof data==='object'&&Array.isArray(data.cats);}
+ catch{return false;}
+}
+async function uploadSlotSnapshot(slot,raw){
+ const token=await tokenForSlot(slot),revKey=slotRevisionKey(slot);
+ const encrypted=await encrypt(raw,token),expected=Number(localStorage.getItem(revKey)||0);
+ const response=await fetch('/api/cat-bond-cloud-save',{
+  method:'PUT',headers:{'content-type':'application/json',Authorization:'Bearer '+token},
+  body:JSON.stringify({...encrypted,expectedRevision:expected}),cache:'no-store'
+ });
+ const data=await response.json().catch(()=>({}));
+ if(response.status===409)return {ok:false,conflict:true,revision:data.revision};
+ if(!response.ok)throw Error(data.error||'Cloud save failed');
+ localStorage.setItem(revKey,String(data.revision||0));
+ return {ok:true,updatedAt:data.updatedAt||Date.now()};
+}
+async function downloadSlotSnapshot(slot){
+ const token=await tokenForSlot(slot),remote=await fetchCloud(token);
+ const raw=await decrypt(remote,token);
+ if(!validSave(raw))throw Error(t('云端存档内容无效。','The cloud save is invalid.'));
+ localStorage.setItem(slotRevisionKey(slot),String(remote.revision||0));
+ return {raw,updatedAt:remote.updatedAt||Date.now()};
+}
+function saveSlotLabel(slot){
+ return t('存档位 '+slot,'Save slot '+slot);
+}
 function renderCloudPanel(){
  document.querySelector('.cb-cloud-overlay')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
- overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
-  '<p class="cb-cloud-eyebrow">CAT BOND · PRIVATE CLOUD SAVE</p><h2>'+t('云存档','Cloud save')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('存档在上传前会在本机使用 AES-GCM 加密。服务器只保存密文；恢复码是唯一的解密钥匙。','Your save is encrypted on this device with AES-GCM before upload. The server stores ciphertext only; your recovery code is the decryption key.')+'</p>'+
-  '<div class="cb-cloud-body"></div></section>';
+ overlay.innerHTML='<section class="cb-cloud-card cb-save-load-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+  '<p class="cb-cloud-eyebrow">CAT BOND · SAVE / LOAD</p><h2>'+t('存档与读档','Save & Load')+'</h2>'+
+  '<p class="cb-cloud-lead">'+t('三个存档槽，随时保存或读取进度。第 1 槽自动云端备份；其他槽位也会尝试同步。无需创建账号或输入密钥。','Three save slots. Save or load your adventure at any time. Slot 1 backs up automatically; the other slots can sync too. No account or key to enter.')+'</p>'+
+  '<div class="cb-cloud-status" id="cb-cloud-status">'+t('当前进度会自动保存。你也可以手动保存到任意槽位。','Your progress saves automatically. You can also save manually to any slot.')+'</div>'+
+  '<div class="cb-save-slots" id="cb-save-slots"></div>'+
+  '<div class="cb-cloud-actions cb-save-file-actions"><button class="cb-cloud-secondary" type="button" data-save-export>'+t('导出存档文件','Export save file')+'</button>'+
+  '<button class="cb-cloud-secondary" type="button" data-save-import>'+t('导入存档文件','Import save file')+'</button></div>'+
+  '<input id="cb-save-import-file" type="file" accept="application/json,.json" hidden>'+
+  '<p class="cb-cloud-footnote">'+t('导出文件可用于另一台设备。读取存档会替换当前设备的猫猫纽带进度，不影响其他游戏。','Use an exported file to move progress to another device. Loading a save replaces Cat Bond progress on this device only.')+'</p></section>';
  document.body.append(overlay);
- const card=overlay.querySelector('.cb-cloud-card'),body=overlay.querySelector('.cb-cloud-body');
- const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
+ const body=overlay.querySelector('#cb-save-slots'),status=overlay.querySelector('#cb-cloud-status');
+ const setStatus=message=>{if(status)status.textContent=message;};
+ const close=()=>overlay.remove();
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
- let currentStatus='';
- function render(statusText=''){
-  currentStatus=statusText;
-  const token=localStorage.getItem(CLOUD_KEY)||'';
-  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
-  if(token){
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||(paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.'):t('云存档已启用。','Cloud save is enabled.')) )+'</div>'+
-    '<label class="cb-cloud-label">'+t('跨设备恢复码（请妥善保存）','Cross-device recovery code (keep it safe)')+'</label>'+
-    '<div class="cb-cloud-code" id="cb-cloud-code">'+esc(CODE_PREFIX+token)+'</div>'+
-    '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="copy">'+t('复制恢复码','Copy recovery code')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="sync">'+t('立即同步','Sync now')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('从云端恢复','Restore from cloud')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="replace">'+t('用本机覆盖云端','Replace cloud with this device')+'</button></div>'+
-    '<p class="cb-cloud-footnote">'+t('不要把恢复码发给他人。忘记恢复码后，服务器无法解密你的存档。','Do not share this code. If it is lost, the server cannot decrypt your save.')+'</p>';
-  }else{
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||t('还没有启用云存档。','Cloud save is not enabled yet.'))+'</div>'+
-    '<button class="cb-cloud-primary cb-cloud-enable" data-cloud="enable">'+t('为当前设备启用加密云存档','Enable encrypted cloud save')+'</button>'+
-    '<div class="cb-cloud-divider">'+t('或在新设备上输入恢复码','Or enter a recovery code on a new device')+'</div>'+
-    '<label class="cb-cloud-label" for="cb-cloud-code-input">'+t('恢复码','Recovery code')+'</label>'+
-    '<input id="cb-cloud-code-input" class="cb-cloud-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="CB1.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">'+
-    '<button class="cb-cloud-secondary" data-cloud="import">'+t('恢复此云存档','Restore this cloud save')+'</button>'+
-    '<p class="cb-cloud-footnote">'+t('恢复会替换当前设备的猫猫纽带存档；其他游戏的存档不受影响。','Restoring replaces only the Cat Bond save on this device. Other games are untouched.')+'</p>';
-  }
-  body.querySelectorAll('[data-cloud]').forEach(button=>button.onclick=()=>cloudAction(button.dataset.cloud));
+ function drawSlots(){
+  const slots=readSaveSlots();
+  body.innerHTML=[1,2,3].map(slot=>{
+   const item=slots[String(slot)],has=!!(item?.raw&&validSave(item.raw));
+   const time=has&&item.savedAt?new Date(item.savedAt).toLocaleString():t('暂无手动存档','No manual save yet');
+   return '<article class="cb-save-slot"><div class="cb-save-slot-info"><strong>'+saveSlotLabel(slot)+'</strong>'+
+    '<small data-slot-time="'+slot+'">'+esc(time)+'</small><span>'+(slot===1?t('自动云备份主槽','Auto-backup slot'):t('手动存档槽','Manual save slot'))+'</span></div>'+
+    '<div class="cb-save-slot-actions"><button type="button" class="cb-cloud-primary" data-save-slot="'+slot+'">'+t('保存','Save')+'</button>'+
+    '<button type="button" class="cb-cloud-secondary" data-load-slot="'+slot+'">'+t('读取','Load')+'</button></div></article>';
+  }).join('');
+  body.querySelectorAll('[data-save-slot]').forEach(button=>button.onclick=()=>saveSlot(Number(button.dataset.saveSlot)));
+  body.querySelectorAll('[data-load-slot]').forEach(button=>button.onclick=()=>loadSlot(Number(button.dataset.loadSlot)));
  }
- async function cloudAction(action){
-  const status=body.querySelector('#cb-cloud-status');
-  const say=msg=>{if(status)status.textContent=msg;};
+ async function saveSlot(slot){
   try{
-   if(action==='enable'){
-    const hasLocal=!!localStorage.getItem(SAVE_KEY);
-    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');localStorage.removeItem(CLOUD_PAUSE_KEY);
-    render(hasLocal
-     ?t('已生成恢复码，正在安排首次加密同步。','Recovery code created. Initial encrypted sync is queued.')
-     :t('已生成恢复码。开始游戏并创建存档后会自动上传。','Recovery code created. It will upload automatically after your first game save.'));
-    if(hasLocal)queueSync();
-    return;
-   }
-   if(action==='copy'){
-    const code=CODE_PREFIX+(localStorage.getItem(CLOUD_KEY)||'');
-    await copyText(code);say(t('恢复码已复制。请保存到安全的地方。','Recovery code copied. Store it somewhere safe.'));
-    return;
-   }
-   if(action==='sync'){
-    if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'){
-     if(!confirm(t('检测到本机进度刚刚被重置。要用新进度覆盖旧云存档吗？','This device was just reset. Replace the previous cloud save with this new progress?')))return;
-     localStorage.removeItem(CLOUD_PAUSE_KEY);
+   if(!window.State?.S)throw Error(t('请先开始游戏。','Start the game first.'));
+   window.State.save();
+   const raw=localStorage.getItem(SAVE_KEY);
+   if(!validSave(raw)||!JSON.parse(raw).cats.length)throw Error(t('先开始冒险并收服第一只猫，再保存进度。','Start your adventure and befriend your first cat before saving.'));
+   const slots=readSaveSlots();slots[String(slot)]={raw,savedAt:Date.now()};saveSlots(slots);
+   const time=body.querySelector('[data-slot-time="'+slot+'"]');
+   if(time)time.textContent=new Date().toLocaleString();
+   setStatus(t('本机存档已保存。正在备份到云端…','Saved on this device. Backing up to the cloud…'));
+   if(slot===1&&localStorage.getItem(CLOUD_PAUSE_KEY)==='1'){
+    if(!confirm(t('本机存档重置后，云端旧进度仍保留。确定用当前进度覆盖云端第 1 槽吗？','The cloud still has the previous save after a local reset. Replace cloud slot 1 with the current progress?'))) {
+     setStatus(t('本机已保存；云端旧存档未覆盖。','Saved locally; the previous cloud save was left untouched.'));
+     return;
     }
-    say(t('正在加密并同步…','Encrypting and syncing…'));
-    const result=await syncNow(true);
-    say(result.conflict?t('检测到另一台设备有更新。请选择恢复云端或覆盖云端。','A newer save exists on another device. Restore it or explicitly replace it.')
-     :result.ok?t('云存档已同步。','Cloud save synced.')
-     :result.empty?t('当前设备还没有游戏存档。','This device has no game save yet.')
-     :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and try again.'));
-    return;
-   }
-   if(action==='restore'){
-    const token=localStorage.getItem(CLOUD_KEY);if(!token)throw Error('No recovery code');
-    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('这会替换当前设备的猫猫纽带进度。继续吗？','This replaces the Cat Bond progress on this device. Continue?')))return;
-    say(t('正在下载并解密云存档…','Downloading and decrypting cloud save…'));
-    await restoreWithToken(token);return;
-   }
-   if(action==='replace'){
-    if(!confirm(t('将用当前设备的存档覆盖云端版本。继续吗？','Replace the cloud version with this device’s save?')))return;
-    const token=localStorage.getItem(CLOUD_KEY);
-    let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
-    localStorage.setItem(REV_KEY,String(remote.revision||0));
     localStorage.removeItem(CLOUD_PAUSE_KEY);
-    const result=await syncNow(true);
-    say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.')
-     :result.ok?t('云端已更新为本机存档。','Cloud save replaced with this device.')
-     :t('本机存档尚未同步，请稍后重试。','The local save could not be uploaded. Please retry.'));
-    return;
    }
-   if(action==='import'){
-    const code=body.querySelector('#cb-cloud-code-input')?.value||'';
-    const token=parseCode(code);
-    if(!token)throw Error(t('恢复码格式不正确。','Invalid recovery code.'));
-    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('这会替换当前设备的猫猫纽带进度。继续吗？','This replaces the Cat Bond progress on this device. Continue?')))return;
-    say(t('正在下载并解密云存档…','Downloading and decrypting cloud save…'));
-    await restoreWithToken(token);return;
-   }
-  }catch(error){
-   say(error?.message==='Cloud save not found'
-    ?t('没有找到这个恢复码对应的云存档。','No cloud save was found for this recovery code.')
-    :t('操作失败：','Action failed: ')+(error?.message||''));
-  }
+   clearTimeout(syncTimer);
+   const result=slot===1?await syncNow(true):await uploadSlotSnapshot(slot,raw);
+   setStatus(result?.ok
+    ?t('存档已保存，并已完成云端备份。','Save complete. Cloud backup is up to date.')
+    :result?.conflict?t('本机存档已保存；云端有更新版本，请先读取云端存档再决定。','Saved locally. The cloud has a newer version; load it before choosing which version to keep.')
+    :t('本机存档已保存；云端备份暂不可用。','Saved locally. Cloud backup is temporarily unavailable.'));
+  }catch(error){setStatus(t('保存失败：','Save failed: ')+(error?.message||''));}
  }
- const updateLocale=()=>{
-  const input=body.querySelector('#cb-cloud-code-input')?.value||'';
-  const token=localStorage.getItem(CLOUD_KEY);
-  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
-  render(token
-   ?paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.')
-    :t('云存档已启用。','Cloud save is enabled.')
-   :t('还没有启用云存档。','Cloud save is not enabled yet.'));
-  const nextInput=body.querySelector('#cb-cloud-code-input');if(nextInput)nextInput.value=input;
+ async function loadSlot(slot){
+  try{
+   setStatus(t('正在读取存档位 '+slot+'…','Loading save slot '+slot+'…'));
+   let raw=null,source='local';
+   const local=readSaveSlots()[String(slot)];
+   try{
+    const remote=await downloadSlotSnapshot(slot);
+    if(local?.raw&&validSave(local.raw)&&Number(local.savedAt||0)>Number(remote.updatedAt||0)){
+     raw=local.raw;source='local';
+    }else{raw=remote.raw;source='cloud';}
+   }catch(error){
+    if(local?.raw&&validSave(local.raw))raw=local.raw;
+    else throw error;
+   }
+   if(!validSave(raw))throw Error(t('这个槽位没有有效存档。','This slot has no valid save.'));
+   const slots=readSaveSlots();slots[String(slot)]={raw,savedAt:Date.now()};saveSlots(slots);
+   localStorage.setItem(SAVE_KEY,raw);
+   setStatus(source==='cloud'?t('云端存档读取成功，正在恢复游戏…','Cloud save loaded. Restoring your game…'):t('本机存档读取成功，正在恢复游戏…','Local save loaded. Restoring your game…'));
+   setTimeout(()=>location.reload(),180);
+  }catch(error){setStatus(t('读取失败：','Load failed: ')+(error?.message||''));}
+ }
+ overlay.querySelector('[data-save-export]').onclick=()=>{
+  try{
+   const raw=localStorage.getItem(SAVE_KEY);
+   if(!validSave(raw))throw Error(t('当前没有可导出的游戏进度。','There is no game progress to export.'));
+   const blob=new Blob([JSON.stringify({format:'cat-bond-save',version:1,exportedAt:new Date().toISOString(),save:JSON.parse(raw)},null,2)],{type:'application/json'});
+   const url=URL.createObjectURL(blob),a=document.createElement('a');
+   a.href=url;a.download='cat-bond-save.json';document.body.append(a);a.click();a.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1200);
+   setStatus(t('存档文件已导出。','Save file exported.'));
+  }catch(error){setStatus(t('导出失败：','Export failed: ')+(error?.message||''));}
  };
- window.addEventListener('morrowwish-language-change',updateLocale);
- render();
+ const importInput=overlay.querySelector('#cb-save-import-file');
+ overlay.querySelector('[data-save-import]').onclick=()=>importInput.click();
+ importInput.onchange=async()=>{
+  const file=importInput.files?.[0];if(!file)return;
+  try{
+   const data=JSON.parse(await file.text()),saveData=data?.save||data,raw=JSON.stringify(saveData);
+   if(!validSave(raw))throw Error(t('文件不是有效的猫猫纽带存档。','This is not a valid Cat Bond save file.'));
+   if(!confirm(t('导入会替换当前设备的猫猫纽带进度。继续吗？','Importing replaces the current Cat Bond progress on this device. Continue?')))return;
+   localStorage.setItem(SAVE_KEY,raw);
+   setStatus(t('存档文件导入成功，正在恢复游戏…','Save file imported. Restoring your game…'));
+   setTimeout(()=>location.reload(),180);
+  }catch(error){setStatus(t('导入失败：','Import failed: ')+(error?.message||''));}
+  finally{importInput.value='';}
+ };
+ drawSlots();
 }
 function makeToken(){
  const bytes=crypto.getRandomValues(new Uint8Array(32));
@@ -594,8 +642,8 @@ function setSyncStatus(status){
  const el=document.getElementById('cb-cloud-status');if(el)el.textContent=status;
 }
 async function syncNow(force=false){
- const token=localStorage.getItem(CLOUD_KEY);
- if(!token)return {ok:false,disabled:true};
+ const token=localStorage.getItem(CLOUD_KEY)||ensureDeviceToken();
+ if(!token||!window.crypto?.subtle)return {ok:false,disabled:true};
  if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'&&!force){
   setSyncStatus(t('本机重置后已暂停自动同步。请先恢复旧云档，或明确选择覆盖。','Auto-sync is paused after a local reset. Restore the old cloud save or explicitly replace it.'));
   return {ok:false,paused:true};
@@ -627,6 +675,8 @@ async function syncNow(force=false){
  return syncPromise;
 }
 function queueSync(){
+ if(!window.crypto?.subtle)return;
+ if(!localStorage.getItem(CLOUD_KEY))ensureDeviceToken();
  if(!localStorage.getItem(CLOUD_KEY)||localStorage.getItem(CLOUD_PAUSE_KEY)==='1')return;
  clearTimeout(syncTimer);
  syncTimer=setTimeout(()=>syncNow(false),2200);
@@ -640,7 +690,7 @@ async function copyText(value){
 }
 function openCloudPanel(){openCloudPanelImpl();}
 function openCloudPanelImpl(){
- if(!window.crypto?.subtle){alert(t('当前浏览器不支持加密云存档。','This browser does not support encrypted cloud saves.'));return;}
+ if(window.crypto?.subtle)ensureDeviceToken();
  renderCloudPanel();
 }
 // Patch the existing menu, rather than adding another floating HUD button.
@@ -657,7 +707,7 @@ if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
     actions.append(button);
    };
    add('journal','📖',t('故事手册','Story journal'));
-   add('cloud','☁️',t('云存档','Cloud save'));
+   add('cloud','💾',t('存档 / 读档','Save / Load'));
   }
   return result;
  };
@@ -678,8 +728,12 @@ if(window.State?.save&&!window.State.save.__cbCloudWrapped){
 }
 function installIntro(){
  const cloudButton=document.getElementById('intro-cloud-save');
- const updateCloudLabel=()=>{if(cloudButton)cloudButton.textContent=t('☁️ 云存档','☁️ Cloud save');};
+ const updateCloudLabel=()=>{if(cloudButton)cloudButton.textContent=t('💾 存档 / 读档','💾 Save / Load');};
  updateCloudLabel();window.addEventListener('morrowwish-language-change',updateCloudLabel);
+ const languageButton=document.getElementById('intro-language');
+ const updateIntroLanguage=()=>{if(languageButton)languageButton.textContent=isZh()?'EN':'中文';};
+ updateIntroLanguage();window.addEventListener('morrowwish-language-change',updateIntroLanguage);
+ languageButton?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  const start=document.getElementById('intro-start');
  if(start&&!start.dataset.cbStoryBound){
   start.dataset.cbStoryBound='1';
@@ -692,7 +746,7 @@ function installIntro(){
    });
   },true);
  }
- document.getElementById('intro-cloud-save')?.addEventListener('click',openCloudPanelImpl);
+ cloudButton?.addEventListener('click',openCloudPanelImpl);
  const stage=document.getElementById('stage');
  if(stage&&!document.getElementById('cb-story-tracker')){
   const tracker=document.createElement('button');tracker.id='cb-story-tracker';tracker.type='button';tracker.className='cb-story-tracker';
@@ -715,5 +769,5 @@ window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
  onBossVictory,playEnding,updateTracker
 };
-window.CatBondCloudSave={openPanel:openCloudPanelImpl,queue:queueSync,syncNow};
+window.CatBondCloudSave={openPanel:openCloudPanelImpl,queue:queueSync,syncNow,saveSlot:async slot=>{const raw=localStorage.getItem(SAVE_KEY);if(!validSave(raw))return {ok:false};const slots=readSaveSlots();slots[String(slot)]={raw,savedAt:Date.now()};saveSlots(slots);return slot===1?syncNow(true):uploadSlotSnapshot(slot,raw);},loadSlot:async slot=>{const remote=await downloadSlotSnapshot(slot);localStorage.setItem(SAVE_KEY,remote.raw);location.reload();}};
 })();

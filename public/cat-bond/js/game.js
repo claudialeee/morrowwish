@@ -364,13 +364,14 @@ class Game {
   }
   // A save-backed, opt-out walkthrough AFTER the first successful capture.
   // Progress is earned by opening the real gameplay panels, never by timers.
+  // RPG-first onboarding: the multi-step raising/workshop tour is optional now.
+  // Old saves are migrated out of the forced tour; players can still replay it
+  // deliberately from the Guide button when they want help.
   firstAdventureTour(){
     const S=State.S;
     if(!S||(S.catchCount||0)<1)return null;
-    if(!S.firstAdventureTour&&(S.catchCount||0)<=2){
-      S.firstAdventureTour={
-        step:(S.petCount||0)>0?1:0,done:false,skipped:false
-      };
+    if(!S.firstAdventureTour||S.firstAdventureTour.version!==2){
+      S.firstAdventureTour={step:5,done:true,skipped:true,version:2};
       State.save();
     }
     return S.firstAdventureTour||null;
@@ -400,7 +401,7 @@ class Game {
 
   replayFirstAdventureTour(){
     if((State.S.catchCount||0)<1)return;
-    State.S.firstAdventureTour={step:0,done:false,skipped:false};
+    State.S.firstAdventureTour={step:0,done:false,skipped:false,version:2};
     State.save();
     if(this.scene!=='yard'){
       this.scene='yard';this.battle=null;this.showYardChrome();

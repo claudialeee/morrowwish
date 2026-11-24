@@ -58,6 +58,53 @@ html.duo-embedded #locked{margin:6px 0 0}
  html.duo-embedded .controls{margin:6px 0 3px}
  html.duo-embedded .controls button{min-height:40px}
 }
+
+
+/* Embedded modal layout: keep the 16:9 original painting and all three
+   trust-tier selectors inside one fixed viewport, with no inner scrolling. */
+html.duo-embedded body{
+ height:100dvh;min-height:0;margin:0;padding:5px 7px 6px;
+ overflow:hidden;display:flex;align-items:center;justify-content:center;background:transparent;
+}
+html.duo-embedded main{
+ width:100%;height:100%;max-height:100%;max-width:none;margin:0;
+ display:flex;flex-direction:column;min-height:0;
+}
+html.duo-embedded #unlocked:not([hidden]){
+ flex:1 1 auto;min-height:0;height:100%;
+ display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;
+ overflow:hidden;
+}
+html.duo-embedded #unlocked[hidden]{display:none!important}
+html.duo-embedded .viewer{
+ flex:0 1 auto;min-height:0;width:100%;padding:3px;
+ border-radius:13px;box-shadow:0 3px 13px #8b789018;
+}
+html.duo-embedded #duo-canvas{
+ width:100%!important;height:auto!important;max-height:60dvh!important;
+ aspect-ratio:16/9!important;object-fit:contain;
+}
+html.duo-embedded .tier-controls{
+ order:1;flex:0 0 auto;gap:6px;margin:3px 0 0;
+}
+html.duo-embedded .tier-controls button{
+ min-height:38px;padding:6px 7px;font-size:clamp(10px,2.8vw,12px);
+}
+html.duo-embedded .controls{
+ order:2;flex:0 0 auto;gap:7px;margin:4px 0 0;
+}
+html.duo-embedded .controls button{min-height:34px;padding:7px 12px;font-size:11px}
+html.duo-embedded #trust-note{display:none!important}
+html.duo-embedded #skill-title{display:none!important}
+@media(max-width:550px){
+ html.duo-embedded body{padding:4px 5px 5px}
+ html.duo-embedded #duo-canvas{max-height:54dvh!important}
+ html.duo-embedded .tier-controls{gap:5px;margin-top:3px}
+ html.duo-embedded .tier-controls button{min-height:37px;padding:6px 4px}
+ html.duo-embedded .controls{margin-top:4px}
+ html.duo-embedded .controls button{min-height:33px}
+}
+
 </style>
 </head>
 <body><main>
