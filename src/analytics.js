@@ -8,6 +8,7 @@ const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{"cont
 const pct=(a,b)=>b?Math.round(a*1000/b)/10:null;
 const tidy=(s,max=100)=>typeof s==="string"?s.slice(0,max):"";
 const uniq=(a)=>new Set(a.filter(Boolean)).size;
+const pageVisitKey=(r)=>r.view_id||("visit-row:"+String(r.id));
 const REPORT_FROM="2026-11-22T08:00:00.000Z"; // Nov 22, 00:00 Pacific
 const REPORT_FROM_MS=Date.parse(REPORT_FROM);
 const pacificDate=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"});
@@ -56,15 +57,20 @@ function mainStats(x){
   const sum=(r,k)=>r.reduce((a,b)=>a+Math.max(0,Number(b.data[k])||0),0);
   const score=(part)=>{
     const visitsOf=part.filter(r=>r.kind==="visit"),sessionsOf=part.filter(r=>r.kind==="session");
-    const pageviews=uniq(visitsOf.map(r=>r.view_id||r.visitor+"-"+r.day));
-    const startedViews=uniq(sessionsOf.filter(r=>Number(r.data.starts)>0).map(r=>r.view_id));
+    const pageviews=uniq(visitsOf.map(pageVisitKey));
     const times=sum(sessionsOf,"seconds"),signals={};
     const visitIds=new Set(visitsOf.map(r=>r.view_id).filter(Boolean));
     const viewsWith=(predicate)=>new Set(sessionsOf.filter(r=>predicate(r.data))
       .map(r=>r.view_id).filter(id=>visitIds.has(id)));
-    const startedIds=viewsWith(d=>Number(d.starts)>0);
-    const finishedIds=viewsWith(d=>Number(d.ends)>0);
+    // First-run/first-finish signals are the canonical page-load funnel.
+    // Legacy rows fall back to real counters; each page load contributes once.
+    const startedIds=viewsWith(d=>Number(d.signals?.funnel_first_run)>0||Number(d.starts)>0);
+    const finishedIds=viewsWith(d=>Number(d.signals?.funnel_first_finish)>0||Number(d.ends)>0);
     const finishedStarted=[...finishedIds].filter(id=>startedIds.has(id));
+    const funnelAvailable=sessionsOf.some(r=>Number(r.data.signals?.funnel_first_run)>0||
+      Number(r.data.signals?.funnel_first_finish)>0||Number(r.data.starts)>0||Number(r.data.ends)>0);
+    const visitFunnel=funnelAvailable?{pageviews,startedViews:startedIds.size,
+      finishedViews:finishedStarted.length,scope:"page-load-funnel"}:null;
     // Funnel denominators always count unique page visits, never battle-count
     // / visit. Cat Bond's old starts mixed game entry and fighting, so only
     // visits explicitly tagged with v11 tracking can enter its new funnel.
@@ -76,26 +82,21 @@ function mainStats(x){
       Number(r.data.signals?.bond_battle_end_v2)>0).map(r=>r.view_id));
     const isBond=part.every(r=>r.game==="cat-bond"||!r.game)&&
       part.some(r=>r.game==="cat-bond");
-    const pv=isBond?v2Ids.size:visitIds.size;
+    const pv=isBond?v2Ids.size:pageviews;
     const entered=isBond?v2Entered.size:startedIds.size;
     const finished=isBond?v2Finished.size:finishedStarted.length;
-    const conversion={pageviews:pv,startedViews:entered,finishedViews:finished,
+    const conversion=funnelAvailable||isBond?{pageviews:pv,startedViews:entered,finishedViews:finished,
       visitStart:pct(entered,pv),startFinish:pct(finished,entered),
-      visitFinish:pct(finished,pv),version:isBond?11:null};
-    // All-version observed visit funnel: one qualifying event per page visit.
-    // Legacy starts/finishes represent observed battle activity, not v11 entry.
-    const historicalVisitFunnel=isBond?{
-      pageviews:visitIds.size,startedViews:startedIds.size,
-      finishedViews:finishedStarted.length,scope:"all-version-visit-activity"
-    }:null;
+      visitFinish:pct(finished,pv),version:isBond?11:null}:null;
+    const historicalVisitFunnel=isBond?visitFunnel:null;
     for(const r of sessionsOf)for(const [k,v] of Object.entries(r.data.signals||{})){
       if(/^[a-z0-9_-]{2,40}$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>0)signals[k]=(signals[k]||0)+Math.min(10000,Number(v));
     }
-    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews,startRate:pct(startedViews,pageviews),starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion,historicalVisitFunnel};
+    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews:startedIds.size,startRate:funnelAvailable?pct(startedIds.size,pageviews):null,visitFunnel,starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion,historicalVisitFunnel};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
-  const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(r=>r.view_id||r.visitor+"-"+r.day)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
+  const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:uniq(v.map(pageVisitKey)),visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
@@ -118,7 +119,7 @@ function mainStats(x){
   const channels=new Map(),seenVisits=new Set();
   for(const r of visits){
     if(!eligible.has(r.game))continue;
-    const id=r.view_id||r.visitor+"-"+r.day+"-"+r.game;
+    const id=pageVisitKey(r);
     if(seenVisits.has(id))continue;
     seenVisits.add(id);
     const d=r.data||{};
@@ -150,7 +151,7 @@ function mainStats(x){
   }
   const homeBySource=new Map(),homeClickCounts=Object.fromEntries(featuredIds.map(id=>[id,0])),seenHomeViews=new Set();
   for(const v of visits.filter(v=>v.game==="hub"&&v.data.hubClickVersion===1)){
-    const id=v.view_id||v.visitor+"-"+v.day;
+    const id=pageVisitKey(v);
     if(seenHomeViews.has(id))continue;seenHomeViews.add(id);
     const d=v.data||{};
     const source=normalizeSource(tidy(d.utmSource,45)||(d.source==="external"&&d.referrer?tidy(d.referrer,60):d.source==="internal"?"internal":"direct"));
@@ -178,7 +179,7 @@ function mainStats(x){
     if(!eligible.has(v.game))continue;
     const d=v.data||{},ref=String(d.referrer||"").toLowerCase(),utm=String(d.utmSource||"").toLowerCase();
     if(!["itch","itch.io","itchio"].includes(utm)&&!/(^|\.)itch\.(io|zone)$/.test(ref))continue;
-    const id=v.game+":"+(v.view_id||v.visitor+"-"+v.day);
+    const id=v.game+":"+pageVisitKey(v);
     if(itchSeen.has(id))continue;itchSeen.add(id);
     if(!itchByGame.has(v.game))itchByGame.set(v.game,{game:v.game,pageviews:0,startedViews:0,starts:0,ends:0,completions:0,seconds:0});
     const z=itchByGame.get(v.game),events=sessionsByView.get(v.view_id)||[];
@@ -348,10 +349,10 @@ export async function api(req,env){
     const byDay=x.dates.map(day=>{
       const visits=x.rows.filter(r=>r.game==="cat-bond"&&r.kind==="visit"&&
         localDay(Number(r.ts)||Date.parse(r.day+"T00:00:00Z"))===day);
-      const pageviews=uniq(visits.map(r=>r.view_id||r.visitor+"-"+r.day));
+      const pageviews=uniq(visits.map(pageVisitKey));;
       return {day,pageviews,rawVisits:visits.length};
     });
-    const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'legacy:'||COALESCE(visitor,'')||':'||day)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
+    const h=await env.DB.prepare("SELECT MIN(day) AS firstDay,MAX(day) AS lastDay,COUNT(*) AS rawVisits,COUNT(DISTINCT COALESCE(NULLIF(view_id,''),'visit-row:'||id)) AS pageviews FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'").all();
     const history=(h.results||[])[0]||{};
     return json({game:"cat-bond",from:x.from,source:"full-d1-event-read",
       total:Number(f.pageviews)||0,

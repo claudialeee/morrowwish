@@ -104,8 +104,8 @@ assert.ok(!dashboard.includes('id="bluesky-engagement-rows"'),
  'separate Bluesky engagement table must stay removed');
 assert.ok(dashboard.includes("platform==='bluesky'?['likes','reposts','replies','quotes']"),
  'Bluesky cells must use interaction counts, never views');
-assert.ok(dashboard.includes('id="promotion-round-history"')&&dashboard.includes('id="round-post-history-rows"'),
- 'two-round campaign history must be visible with per-post archived readings');
+assert.ok(!dashboard.includes('id="promotion-round-history"')&&!dashboard.includes('id="round-post-history-rows"'),
+ 'deleted/current promotion-round archive must not be shown in the dashboard');
 assert.ok(dashboard.indexOf('metricCard(t("statPv")')<dashboard.indexOf('metricCard(t("statHome")'),
  'homepage views must immediately follow overall pageviews');
 const build=fs.readFileSync('scripts/build-pages.mjs','utf8');

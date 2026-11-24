@@ -19,7 +19,7 @@ assert.ok(statsPrefix.startsWith('function render(j)')&&pvCardIndex>=0&&homeCard
 for(const locale of ['zh','en']){
  const nodes={};
  const homeLabel=locale==='zh'?'网站首页浏览量':'Homepage views';
- const pvLabel=locale==='zh'?'页面浏览量':'Pageviews · PV';
+ const pvLabel=locale==='zh'?'全站页面浏览量':'All pageviews';
  const env={lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
   t:key=>key==='statHome'?homeLabel:key==='statPv'?pvLabel:key,format:n=>String(n),
   metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
@@ -95,7 +95,7 @@ console.log('Dashboard columns sort numerically, retain real zeros, leave missin
 // dashboard renderers for both languages and mixed/legacy-only cohorts.
 const historicalBond={game:'cat-bond',pageviews:26,startedViews:8,startRate:30.8,
  starts:82,ends:79,retries:1,
- historicalVisitFunnel:{pageviews:26,startedViews:8,finishedViews:7},
+ visitFunnel:{pageviews:26,startedViews:8,finishedViews:7},
  conversion:{pageviews:0,startedViews:0,finishedViews:0},
  signals:{bond_capture:73,bond_rare_encounter:4,bond_rare_capture:57,
   bond_duo_used:46,bond_yard_built:6,bond_surprise:5}};
@@ -123,14 +123,15 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,{...env,fixture:[bond]});
  const main=dom.games.innerHTML;
- assert.ok(main.includes('<td>82</td><td>79 <small>96.3%</small></td><td>1</td>'),
+ assert.ok(main.includes('<td>82</td><td>79</td><td>1</td>'),
   locale+' main table must preserve raw battle starts/finishes');
+ assert.ok(!main.includes('<td>82 <small>')&&!main.includes('<td>79 <small>'),locale+' raw round totals must not carry extra conversion percentages');
  for(const ratio of ['8 / 26 · 30.8%','7 / 8 · 87.5%','7 / 26 · 26.9%'])
   assert.ok(main.includes('<td>'+ratio+'</td>'),locale+' per-visit conversion missing: '+ratio);
  assert.ok(!main.includes('79 / 82 · 96.3%</td>'),
   'Raw battle totals must not replace visit-deduplicated conversion columns');
 }
-console.log('Cat Bond dashboard gate: raw battle starts/finishes 82/79 remain visible; visit conversions stay 8/26, 7/8, 7/26 in zh/en.');
+console.log('Cat Bond dashboard gate: raw battle totals stay separate; page-load conversions remain 8/26, 7/8, 7/26 in zh/en.');
 
 
 // Adversarial coverage gate: every one of the seven playable game worlds has

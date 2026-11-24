@@ -34,7 +34,7 @@ const DB={prepare(sql){
     for(const r of sessions){const v=JSON.parse(r.payload||'{}'),z=states.get(r.view_id)||{started:0,finished:0};if(Number(v.starts)>0)z.started=1;if(Number(v.ends)>0)z.finished=1;states.set(r.view_id,z);}
     for(const r of rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit'&&r.day>=args[0])){
      const z=counts.get(r.day)||{day:r.day,rawVisits:0,keys:new Set()};
-     z.rawVisits++;z.keys.add(r.view_id||'legacy:'+r.visitor+':'+r.day);counts.set(r.day,z);
+     z.rawVisits++;z.keys.add(r.view_id||'visit-row:'+r.id);counts.set(r.day,z);
     }
     return {results:[...counts.values()].sort((a,b)=>a.day.localeCompare(b.day)).map(x=>({
      day:x.day,rawVisits:x.rawVisits,pageviews:x.keys.size,
@@ -46,7 +46,7 @@ const DB={prepare(sql){
     const visits=rows.filter(r=>r.category==='arcade'&&r.game==='cat-bond'&&r.kind==='visit');
     const days=visits.map(r=>r.day).sort();
     return {results:[{firstDay:days[0]||null,lastDay:days.at(-1)||null,rawVisits:visits.length,
-     pageviews:new Set(visits.map(r=>r.view_id||'legacy:'+r.visitor+':'+r.day)).size}]};
+     pageviews:new Set(visits.map(r=>r.view_id||'visit-row:'+r.id)).size}]};
    }
    assert.match(sql,/SELECT category,day,game/);
    return {results:rows.filter(r=>r.category===args[0]&&r.day>=args[1]).sort((a,b)=>b.id-a.id)};
@@ -138,14 +138,18 @@ for(const event of [
  {kind:'session',game:'cat-bond',viewId:'legacy-bond',visitor:'legacy',
   starts:4,ends:3,signals:{bond_enter:1,bond_rare_encounter:4,bond_rare_capture:57}}
 ])assert.equal((await api(req('/api/session',event),env)).status,202,'legacy fixture accepted');
+// Same visitor/day, no view_id: count both raw page loads separately.
+for(let i=0;i<2;i++)rows.push({id:rows.length+1,category:'arcade',day:'2026-11-22',
+ ts:Date.parse('2026-11-22T18:00:00.000Z')+i,game:'cat-bond',visitor:'legacy-no-view',
+ view_id:null,kind:'visit',payload:'{}'});
 const mixedResponse=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{
  headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}}),env);
 const mixed=(await mixedResponse.json()).byGame.find(g=>g.game==='cat-bond');
-assert.equal(mixed.pageviews,2,'Raw PV preserves legacy visit');
+assert.equal(mixed.pageviews,4,'Every page load counts, including legacy visits without view IDs');
 assert.equal(mixed.starts,5,'Preserve five raw battle starts across two visits');
 assert.equal(mixed.ends,4,'Preserve four raw battle finishes across two visits');
-assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[2,2,2],
-  'A legacy visit with four battle starts counts as one distinct visit in conversion');
+assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[4,2,2],
+  'Battle rounds count once per matched page load; unlinked legacy page loads remain in the denominator');
 assert.equal(mixed.conversion.pageviews,1,'Legacy PV excluded from V2 funnel');
 assert.equal(mixed.conversion.finishedViews,1,'Legacy finish excluded from V2 funnel');
 assert.equal(mixed.signals.bond_rare_encounter,4,'Old encounter counts preserved');
@@ -157,11 +161,11 @@ const auditResponse=await api(new Request('https://morrowwish.pages.dev/api/cat-
 assert.equal(auditResponse.status,200,'Owner D1 audit should succeed');
 const audit=await auditResponse.json();
 assert.equal(audit.source,'full-d1-event-read');
-assert.equal(audit.total,2,'Full D1 audit counts legacy and v11 visits');
-assert.deepEqual(audit.totals,{pageviews:2,startedViews:2,finishedViews:2},
+assert.equal(audit.total,4,'Full D1 audit counts every page load');
+assert.deepEqual(audit.totals,{pageviews:4,startedViews:2,finishedViews:2},
  'Uncapped D1 visit funnel counts each visit at most once');
-assert.equal(audit.history.pageviews,2,'Stored lifetime count must not be sampled');
-assert.equal(audit.byDay.reduce((n,r)=>n+r.pageviews,0),2,'Daily counts must reconcile');
+assert.equal(audit.history.pageviews,4,'Stored lifetime count must include legacy page loads');
+assert.equal(audit.byDay.reduce((n,r)=>n+r.pageviews,0),4,'Daily counts must reconcile');
 
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.pageviews,1,'legacy itchio visit must appear in itch channel');
 assert.equal(summary.byChannel.find(x=>x.source==='itch')?.starts,1,'legacy itchio start must appear in itch channel');
@@ -178,7 +182,7 @@ const resetReq=(confirm='RESET_METRICS',extra={})=>new Request(resetUrl,{method:
 },body:JSON.stringify({confirm})});
 const unauth=await api(resetReq(),env);
 assert.equal(unauth.status,401,'unauthenticated reset rejected');
-assert.equal(rows.length,21,'rejected reset must not affect reporting events');
+assert.equal(rows.length,23,'rejected reset must not affect reporting events');
 const wrongOrigin=await api(resetReq('RESET_METRICS',{'Origin':'https://foreign.example','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
 assert.equal(wrongOrigin.status,403,'cross-origin reset rejected even with key');
 const absentOrigin=await api(resetReq('RESET_METRICS',{'Origin':'','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
@@ -198,7 +202,7 @@ assert.ok(cookie?.startsWith('morrowwish_studio_auth='));
 rows.push({category:'other',day:new Date().toISOString().slice(0,10),game:'other',visitor:'control',view_id:'keep-me',payload:'{}',id:999});
 const cleared=await api(resetReq('RESET_METRICS',{Cookie:cookie}),env);
 assert.equal(cleared.status,200,'signed dashboard session can reset metrics');
-assert.deepEqual(await cleared.json(),{ok:true,removed:21},'reset reports removed rows');
+assert.deepEqual(await cleared.json(),{ok:true,removed:23},'reset reports removed rows');
 assert.deepEqual(rows.map(x=>x.category),['other'],'non-dashboard records remain');
 const empty=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{Cookie:cookie}}),env);
 assert.equal((await empty.json()).records,0,'dashboard starts empty after reset');
