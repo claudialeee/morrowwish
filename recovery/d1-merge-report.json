@@ -1,0 +1,176 @@
+{
+  "generatedAt": "2026-11-24T02:30:25.951Z",
+  "databaseName": "morrowwish-analytics",
+  "targetTimestamp": "2026-11-23T00:36:56.250Z",
+  "startTimestamp": "2026-11-22T08:00:00.000Z",
+  "backup": {
+    "atBookmark": "000002d4-00000000-0000512d-7bd1ba8f7f7eea73b9bb8b578282230d",
+    "bytes": 963567,
+    "sha256": "fbc4046e498f08ed525554a8f8c55f3f8a0cda5fe3ebf7b0b76cded1d175846e",
+    "keptOnlyOnEphemeralRunner": true
+  },
+  "historicalTotalRows": 819,
+  "historicalRowsByGame": [
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "session",
+      "rows": 454
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "visit",
+      "rows": 27
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "session",
+      "rows": 4
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "elsewhere",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "session",
+      "rows": 3
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "flip-dash",
+      "kind": "visit",
+      "rows": 4
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "session",
+      "rows": 121
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "visit",
+      "rows": 64
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "session",
+      "rows": 3
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "parcel-panic",
+      "kind": "visit",
+      "rows": 5
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "session",
+      "rows": 69
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pawsibly-innocent",
+      "kind": "visit",
+      "rows": 23
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "session",
+      "rows": 3
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "pocket-aquarium",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "session",
+      "rows": 5
+    },
+    {
+      "day": "2026-11-22",
+      "category": "arcade",
+      "game": "tiny-town",
+      "kind": "visit",
+      "rows": 6
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "session",
+      "rows": 9
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "cat-bond",
+      "kind": "visit",
+      "rows": 2
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "session",
+      "rows": 3
+    },
+    {
+      "day": "2026-11-23",
+      "category": "arcade",
+      "game": "hub",
+      "kind": "visit",
+      "rows": 2
+    }
+  ],
+  "currentRowsBeforeMerge": 1317,
+  "currentRowsAfterMerge": 1317,
+  "totalRowsBeforeMerge": 1317,
+  "totalRowsAfterMerge": 1317,
+  "restoredRows": 0,
+  "duplicatesSkipped": 819,
+  "insertedIdRange": null,
+  "currentStateRestored": true,
+  "mergeVerified": true,
+  "error": null,
+  "rollbackError": null,
+  "database": {
+    "name": "morrowwish-analytics",
+    "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
+    "version": "production",
+    "fileSize": 970752
+  },
+  "targetBookmark": "000001ff-00000030-0000512c-656cbe8c5d6d2984be29dcf10edc60ba",
+  "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001ff-00000030-0000512c-656cbe8c5d6d2984be29dcf10edc60ba",
+  "liveRowsAddedDuringMerge": 0,
+  "currentBookmarkAfterMerge": "000002d6-00000000-0000512d-41baa98d8546891182bb14c47a95e94e"
+}
