@@ -120,7 +120,10 @@ for (let round = 1; round <= ROUNDS; round++) {
       ));
     }
   );
-  allCritiques.push(...voiced.flat().filter(Boolean));
+  // Drop entries whose critique agent returned null (StructuredOutput retry-cap exhausted): a null
+  // c.critique crashed the Synthesize step (c.critique.verdict on null). Guard here so one failed
+  // adversary call can't abort the whole run.
+  allCritiques.push(...voiced.flat().filter(c => c && c.critique));
   allVoices = allVoices.concat(okSims.map(s => ({ persona:s.persona, label:s.label })));
   log(`Round ${round}: ${allCritiques.length} adversarial critiques generated`);
 }
