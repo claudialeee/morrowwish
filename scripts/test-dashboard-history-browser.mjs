@@ -38,7 +38,7 @@ const archivePosts=['youtube','instagram','tiktok','bluesky'].flatMap(platform=>
  views:platform==='bluesky'?null:archiveMetrics[platform][i],
  likes:platform==='youtube'?(i===4||i===5?2:0):platform==='instagram'?[1,2,1,1,2,2,2][i]:
   platform==='tiktok'?(i===3?1:0):2,
- reposts:platform==='bluesky'?(i===6?5:i===5?3:i===2||i===3||i===4?2:1):null,
+ reposts:platform==='bluesky'?2:null,
  replies:0,quotes:0,deleted:true
 })));
 const roundFixture={rounds:[

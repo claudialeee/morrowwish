@@ -12,17 +12,25 @@ assert.doesNotThrow(()=>new vm.Script(inlineScript,{filename:'studio-insights/in
 // The homepage is a single KPI above the table, never a fake eighth game.
 // The selected-period hub count must not be replaced by the all-site total.
 const statsPrefix=inlineScript.slice(inlineScript.indexOf('function render(j)'),inlineScript.indexOf('const displayOrder='));
-assert.ok(statsPrefix.startsWith('function render(j)')&&statsPrefix.includes('metricCard(t("statHome")'),'Top homepage metric missing');
+const pvCardIndex=statsPrefix.indexOf('metricCard(t("statPv")');
+const homeCardIndex=statsPrefix.indexOf('metricCard(t("statHome")');
+assert.ok(statsPrefix.startsWith('function render(j)')&&pvCardIndex>=0&&homeCardIndex>pvCardIndex,
+ 'Overall pageviews must be first and homepage views must immediately follow');
 for(const locale of ['zh','en']){
- const nodes={};const label=locale==='zh'?'网站首页浏览量':'Homepage views';
+ const nodes={};
+ const homeLabel=locale==='zh'?'网站首页浏览量':'Homepage views';
+ const pvLabel=locale==='zh'?'页面浏览量':'Pageviews · PV';
  const env={lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
-  t:key=>key==='statHome'?label:key,format:n=>String(n),
+  t:key=>key==='statHome'?homeLabel:key==='statPv'?pvLabel:key,format:n=>String(n),
   metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
- vm.runInNewContext(statsPrefix+"}\\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});".replace('\\n','\n'),env);
+ vm.runInNewContext(statsPrefix+"}\\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});".replace('\\\\n','\\n'),env);
  const html=nodes.stats.innerHTML;
- assert.ok(html.startsWith('<div data-name="'+label+'">37</div>'),locale+' homepage KPI must show 37 views');
- assert.ok(html.includes('<div data-name="statPv">123</div>'),locale+' all-site PV total must remain 123');
+ assert.ok(html.startsWith('<div data-name="'+pvLabel+'">123</div>'),locale+' overall pageviews must show 123 first');
+ assert.ok(html.includes('<div data-name="'+homeLabel+'">37</div>'),locale+' homepage KPI must show 37 views');
+ assert.ok(html.indexOf('<div data-name="'+pvLabel+'">123</div>')<html.indexOf('<div data-name="'+homeLabel+'">37</div>'),
+  locale+' homepage views must immediately follow total pageviews');
 }
+console.log('Overall pageviews first, homepage views second; both zh/en KPI values and seven-game table preserved.');
 assert.ok(html.includes("const displayOrder=['cat-bond'"),'Game table must start with Cat Bond');
 assert.ok(!html.includes('if(x.game==="hub")return'),'Homepage row must not appear in game table');
 console.log('Homepage pageviews shown once above seven games; all-site rollup preserved.');
