@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-11-24T05:52:12.677Z",
+  "status": "DELETION_ACTOR_UNVERIFIED",
+  "queries": [
+    {
+      "label": "account audit logs",
+      "httpStatus": 403,
+      "success": false,
+      "errors": [
+        {
+          "code": 10000,
+          "message": "Authentication error"
+        }
+      ]
+    },
+    {
+      "label": "legacy account audit logs",
+      "httpStatus": 403,
+      "success": false,
+      "errors": [
+        {
+          "code": 10000,
+          "message": "Authentication error"
+        }
+      ]
+    },
+    {
+      "label": "worker reset request $workers.event.request.path",
+      "httpStatus": 403,
+      "success": false,
+      "errors": [
+        {
+          "message": "Forbidden"
+        }
+      ]
+    },
+    {
+      "label": "worker reset request $metadata.message",
+      "httpStatus": 403,
+      "success": false,
+      "errors": [
+        {
+          "message": "Forbidden"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Log query success without matching events does not establish that no reset occurred; retention, sampling, scope and pagination can limit results.",
+    "No credentials, request headers, body or user IP addresses persisted.",
+    "No SQL, restore, deployment or production configuration change made."
+  ]
+}
