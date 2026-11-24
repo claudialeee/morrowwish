@@ -5,7 +5,7 @@ for (const file of [
   'public/elsewhere/app.js','public/telemetry.js','public/lang.js',
   'public/zh-site.js','public/zh-stories.js','public/zh-polish.js',
   'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/pawsibly-innocent/index.html','public/pawsibly-innocent/game.js','public/icons/pawsibly-innocent.svg',
-  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/sunlit-garden-cinematic.svg','public/cat-bond/assets/sunlit-garden-portrait.svg','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
+  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/sunlit-garden-cinematic.svg','public/cat-bond/assets/sunlit-garden-portrait.svg','scripts/sunlit-garden-visual-qa.mjs','.github/workflows/sunlit-garden-visual-qa.yml','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
@@ -1434,3 +1434,15 @@ if(!gardenWorld.includes('assets/sunlit-garden-cinematic.svg')||
    !gardenCss.includes('@media(max-width:700px)'))
  throw new Error('Sunlit Garden artwork, lifecycle, interaction and responsive UI must be integrated into the live game source');
 console.log('Sunlit Garden: original environment source, six sanctuary accents, NPC adapter and game integration verified.');
+
+const gardenVisualTest=fs.readFileSync('scripts/sunlit-garden-visual-qa.mjs','utf8');
+const gardenVisualWorkflow=fs.readFileSync('.github/workflows/sunlit-garden-visual-qa.yml','utf8');
+new Function(gardenVisualTest.replace(/^import .*;$/gm,'').replace(/process\.exitCode=1/g,''));
+if(!gardenVisualTest.includes("background:'portrait'")||
+   !gardenVisualTest.includes("background:'landscape'")||
+   !gardenVisualTest.includes("['cats','facilities','catdex','workshop','bond']")||
+   !gardenVisualWorkflow.includes('pull_request:')||
+   !gardenVisualWorkflow.includes('actions/upload-artifact@v4'))
+ throw new Error('Garden visual QA must cover desktop, both phone orientations, existing feature panels and screenshot artifacts');
+console.log('Sunlit Garden: Playwright visual QA covers desktop, portrait and landscape mobile with screenshots.');
+
