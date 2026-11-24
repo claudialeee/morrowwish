@@ -253,36 +253,63 @@ function renderPortraits(root){
  const sp=bossSpecies();
  if(muling&&sp&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(muling,sp);
 }
-function renderStoryActors(root,page,kind,index){
+function renderStoryActors(root,page,kind,index,time=performance.now()/1000){
  const left=root.querySelector('[data-cb-scene-player]'),right=root.querySelector('[data-cb-scene-companion]');
  const S=state(),cat=S?.cats?.find(c=>c.uid===S.battlePrefs?.teamUids?.[0])||S?.cats?.[0];
  const playerSpecies=cat&&window.GameData?.speciesById?.(cat.species);
- const isMuling=kind==='ending'||kind==='reveal'||(kind==='prologue'&&(index===0||index===2))||(kind==='memory'&&page.region==='ruins'&&page.id==='last-page');
+ const isMuling=kind==='ending'||kind==='reveal'||
+  (kind==='prologue'&&(index===0||index===2))||
+  (kind==='memory'&&page.region==='ruins'&&page.id==='last-page');
  let companionSpecies=null,shadow=false;
  if(isMuling){companionSpecies=bossSpecies();shadow=true;}
  else{
   const npc=NPC_CAST?.find(n=>n.region===page.region);
   companionSpecies=npc&&window.GameData?.speciesById?.(npc.species);
  }
- const paint=(canvas,species,face,mood)=>{
+ // Draw the real watercolor breed asset directly. The CatMotion world-scale
+ // adapter intentionally caps map/battle sprites; cinematic performers need
+ // a larger stage while keeping the same original painted fur and face.
+ const paint=(canvas,species,face,mood,phase)=>{
   if(!canvas)return;
   const ctx=canvas.getContext('2d');if(!ctx||!species)return;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const draw=window.CatArt?.drawCat;if(!draw)return;
-  draw(ctx,canvas.width*.5,canvas.height*.78,{species,scale:2.05,face,pose:'sit',mood,t:performance.now()/1000});
+  draw(ctx,canvas.width*.5,canvas.height*.78,{
+   species,scale:2.05,face,pose:'walk',motion:.14,
+   stride:time*1.8+phase,mood,t:time
+  });
  };
- paint(left,playerSpecies,1,'curious');
- paint(right,companionSpecies,-1,shadow?'calm':'happy');
+ paint(left,playerSpecies,1,'curious',0);
+ paint(right,companionSpecies,-1,shadow?'calm':'happy',.85);
  const layer=root.querySelector('.cb-story-actors');
- if(layer){layer.dataset.mode=kind;layer.classList.toggle('has-shadow',shadow);layer.classList.toggle('has-player',!!playerSpecies);layer.classList.toggle('has-companion',!!companionSpecies);}
+ if(layer){
+  layer.dataset.mode=kind;
+  layer.classList.toggle('has-shadow',shadow);
+  layer.classList.toggle('has-player',!!playerSpecies);
+  layer.classList.toggle('has-companion',!!companionSpecies);
+ }
+}
+function playStoryCue(kind,index,total){
+ const audio=window.MorrowwishAudio;
+ if(kind==='prologue'&&index===0){
+  audio?.effect?.('discover');
+  audio?.note?.(660);
+  setTimeout(()=>audio?.note?.(330),180);
+ }else if(kind==='reveal'||(kind==='memory'&&index===0)){
+  audio?.effect?.('ready');
+ }else if(kind==='ending'&&index===total-1){
+  audio?.effect?.('complete');
+ }else if(kind==='memory'){
+  audio?.effect?.('discover');
+ }
 }
 function showSequence(kind,pages,done,options={}){
  document.querySelector('.cb-story-overlay')?.remove();
- let index=0,closed=false;
+ let index=0,closed=false,actorRaf=0,lastActorPaint=0,lastCue='';
  const overlay=document.createElement('div');
  overlay.className='cb-story-overlay';
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
- overlay.innerHTML='<div class="cb-story-scene"><canvas class="cb-story-art" aria-hidden="true"></canvas><div class="cb-story-scene-glow"></div>'+
+ overlay.innerHTML='<div class="cb-story-scene"><canvas class="cb-story-art" aria-hidden="true"></canvas><div class="cb-story-scene-glow"></div><div class="cb-story-atmosphere" aria-hidden="true"></div>'+
   '<div class="cb-story-actors" aria-hidden="true"><canvas data-cb-scene-player width="520" height="500"></canvas><canvas data-cb-scene-companion width="520" height="500"></canvas></div>'+
   '<div class="cb-story-scene-mark" aria-hidden="true">✦</div></div>'+
   '<section class="cb-story-card"><div class="cb-story-card-top"><span class="cb-story-brand">MORROW · WISH</span><span class="cb-story-step"></span></div>'+
@@ -294,8 +321,11 @@ function showSequence(kind,pages,done,options={}){
  const canvas=overlay.querySelector('.cb-story-art');
  const render=()=>{
   const page=pages[index],en=!isZh();
+  overlay.dataset.kind=kind;overlay.dataset.region=page.region||'home';overlay.dataset.sceneIndex=String(index);
   drawBackdrop(canvas,page.region||'home');
-  renderStoryActors(overlay,page,kind,index);
+  renderStoryActors(overlay,page,kind,index,performance.now()/1000);
+  const cueKey=kind+':'+index;
+  if(lastCue!==cueKey){lastCue=cueKey;playStoryCue(kind,index,pages.length);}
   overlay.querySelector('.cb-story-step').textContent=String(index+1).padStart(2,'0')+' / '+String(pages.length).padStart(2,'0');
   overlay.querySelector('.cb-story-kicker').textContent=en?(page.kickerEn||page.chapterEn||'THE LAST PAGE'):(page.kicker||page.chapter||'最后一页');
   overlay.querySelector('.cb-story-title').textContent=en?(page.titleEn||page.title):(page.title||page.titleEn);
@@ -321,6 +351,7 @@ function showSequence(kind,pages,done,options={}){
  };
  const close=()=>{
   if(closed)return;closed=true;
+  if(actorRaf)cancelAnimationFrame(actorRaf);
   window.removeEventListener('morrowwish-language-change',render);
   overlay.classList.add('is-leaving');
   setTimeout(()=>{overlay.remove();done?.();},220);
@@ -332,6 +363,17 @@ function showSequence(kind,pages,done,options={}){
  window.addEventListener('morrowwish-language-change',render);
  requestAnimationFrame(()=>overlay.classList.add('is-visible'));
  render();
+ if(!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+  const animateActors=now=>{
+   if(closed||!overlay.isConnected)return;
+   if(now-lastActorPaint>=66){
+    renderStoryActors(overlay,pages[index],kind,index,now/1000);
+    lastActorPaint=now;
+   }
+   actorRaf=requestAnimationFrame(animateActors);
+  };
+  actorRaf=requestAnimationFrame(animateActors);
+ }
 }
 function persistIntroSeen(){
  const data=readLocal();data.story=data.story&&typeof data.story==='object'?data.story:{};
