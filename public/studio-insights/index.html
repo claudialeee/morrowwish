@@ -71,6 +71,21 @@ a{color:#a56a83}a:hover{color:#684f7f}
  <thead><tr><th data-i18n="colGame"></th><th>YouTube</th><th>Instagram</th><th>TikTok</th></tr></thead><tbody id="video-detail-rows"></tbody></table></div>
  <p id="video-detail-note" class="description" style="margin:7px 1px;font-size:12px;line-height:1.7"></p>
 </section>
+<section class="ew-details native-video-metrics" id="promotion-round-history" aria-labelledby="promotion-round-heading" hidden style="margin-top:14px">
+ <h3 id="promotion-round-heading" data-i18n="roundHistoryTitle"></h3>
+ <p class="description" data-i18n="roundHistoryDesc" style="margin:7px 1px 10px;line-height:1.7"></p>
+ <div class="panel table-wrap"><table class="table compact-channels">
+  <thead><tr><th data-i18n="roundHistoryPlatform"></th><th data-i18n="roundHistoryFirst"></th><th data-i18n="roundHistorySecond"></th></tr></thead>
+  <tbody id="promotion-round-rows"></tbody>
+ </table></div>
+ <details class="ew-details" id="deleted-round-details" hidden style="margin-top:12px">
+  <summary data-i18n="roundHistoryDetails"></summary>
+  <div class="panel table-wrap" style="margin-top:10px"><table class="table compact-channels">
+   <thead><tr><th data-i18n="colGame"></th><th>YouTube</th><th>Instagram</th><th>TikTok</th><th>Bluesky</th></tr></thead>
+   <tbody id="round-post-history-rows"></tbody>
+  </table></div>
+ </details>
+</section>
 <div class="panel" id="bluesky-engagement" hidden style="margin-top:14px">
  <div class="section-head"><h3 data-i18n="blueskyNativeTitle" style="font-size:14px;margin:0"></h3><span id="bluesky-updated" class="description"></span></div>
  <div class="table-wrap"><table class="table compact-channels"><thead><tr><th data-i18n="colGame"></th><th data-i18n="blueskyLikes"></th><th data-i18n="blueskyReposts"></th><th data-i18n="blueskyReplies"></th><th data-i18n="blueskyQuotes"></th></tr></thead><tbody id="bluesky-engagement-rows"></tbody></table></div>
@@ -95,7 +110,7 @@ accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。�
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
 trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"开局和完成显示实际游戏局数；右侧转化按页面访问去重计算。浏览量包含重复打开与刷新，不代表独立玩家人数。点击表头可排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"各游戏 · 玩法明细",focusDesc:"覆盖全部七款游戏的实际玩法事件。各游戏转化率请看上方总表；缺失事件不伪造数字。",trendMore:"查看流量趋势",
 colGame:"游戏",colPv:"浏览量",colVisitStart:"访问→开玩",colStartFinish:"开玩→结算",colVisitFinish:"访问→结算",colVisitors:"访客",colStarts:"开局",colRetries:"重玩",colTime:"平均会话",colEnds:"完成",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"六款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
-homeFunnelLabel:"主页→游戏（新版）：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelYouTube:"YouTube：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台播放只计入已核实的新视频；访问、开局和结算来自本站真实埋点。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"只显示 11 月 22 日获批宣传片的官方视频指标。点击数字或「打开视频」查看原帖。",
+homeFunnelLabel:"主页→游戏（新版）：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelYouTube:"YouTube：{clickers}/{visits} 次访问点击了游戏（{rate}）",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台播放只统计晚间重发的当前有效视频；早间首发已删除，历史数据单独保留。访问、开局和结算来自本站真实埋点。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"以下为晚间第二轮当前有效视频的原生指标。首轮已删除视频的历史数据见下方发布轮次记录。",roundHistoryTitle:"推广发布轮次 · 历史与当前",roundHistoryDesc:"11/22 早间首发已删除，保留删除前最后一次已核实的平台读数；晚间重发是当前有效版本。第二轮空白代表原生数据尚未返回，不是 0。",roundHistoryPlatform:"平台",roundHistoryFirst:"早间首发 · 已删除",roundHistorySecond:"晚间重发 · 当前有效",roundHistoryDetails:"展开首轮已删除的 28 条视频及逐条历史数据",roundPosts:"条视频",roundViews:"播放",roundLikes:"点赞",roundComments:"评论",roundReposts:"转发",roundReplies:"回复",roundQuotes:"引用",roundPending:"原生数据待刷新",roundNoViews:"无公开播放量",roundCaptured:"采集于",roundDeleted:"已删除",
 
 
 
@@ -116,7 +131,7 @@ accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access c
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
 trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Starts and finishes show actual gameplay rounds; conversion columns on the right deduplicate by page visit. Pageviews include repeat opens and refreshes, not unique players.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"All games · gameplay details",focusDesc:"Gameplay events for all seven games. Visit-to-play conversion is shown in the table above; missing records are not invented.",trendMore:"Traffic trends",
 colGame:"Game",colPv:"PV",colVisitStart:"Visit → play",colStartFinish:"Play → finish",colVisitFinish:"Visit → finish",colVisitors:"Visitors",colStarts:"Started",colRetries:"Replays",colTime:"Avg. session",colEnds:"Completed",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
-homeFunnelLabel:"Homepage → game (new): {clickers}/{visits} visits chose a game ({rate})",homeFunnelYouTube:"YouTube: {clickers}/{visits} visits chose a game ({rate})",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native views include verified new videos only. Visits, starts and finishes use first-party events.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Metrics cover the approved November 22 campaign videos. Select a metric or Open video to view the original post.",
+homeFunnelLabel:"Homepage → game (new): {clickers}/{visits} visits chose a game ({rate})",homeFunnelYouTube:"YouTube: {clickers}/{visits} visits chose a game ({rate})",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Platform metrics show the active evening repost only. The deleted morning round is archived separately; site visits, starts and finishes use first-party events.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"These are native metrics for the active evening repost. Historical readings for the deleted first round are recorded below.",roundHistoryTitle:"Promotion rounds · history and current",roundHistoryDesc:"The Nov 22 morning batch was deleted; its last verified readings are retained. The evening repost is the active version. Blank second-round metrics mean native readings are pending, not zero.",roundHistoryPlatform:"Platform",roundHistoryFirst:"Morning first post · deleted",roundHistorySecond:"Evening repost · active",roundHistoryDetails:"Show all 28 deleted first-round videos and their historical readings",roundPosts:"videos",roundViews:"Views",roundLikes:"Likes",roundComments:"Comments",roundReposts:"Reposts",roundReplies:"Replies",roundQuotes:"Quotes",roundPending:"Native metrics pending",roundNoViews:"No public view count",roundCaptured:"Captured",roundDeleted:"Deleted",
 
 
 
@@ -267,8 +282,8 @@ function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)
 const homePageviews=games.find(x=>x.game==="hub")?.pageviews;
 const homeKnown=homePageviews!=null&&Number.isFinite(Number(homePageviews))&&Number(homePageviews)>0;
 $("stats").innerHTML=[
- metricCard(t("statHome"),homeKnown?format(homePageviews):"",t("statHomeNote")),
  metricCard(t("statPv"),hasData?format(r.pageviews):"",t("statPvNote")),
+ metricCard(t("statHome"),homeKnown?format(homePageviews):"",t("statHomeNote")),
  metricCard(t("statStarts"),hasData?format(r.gameStarts??r.starts):"",t("statStartsNote")),
  metricCard(t("statFinished"),hasData?format(games.filter(z=>z.game!=="hub").reduce((n,z)=>n+Number(z.ends||0),0)):"",t("statFinishedNote")),
  metricCard(t("statRetries"),hasData?format(r.retries):"",t("statRetriesNote"))
@@ -368,6 +383,62 @@ $("video-detail-rows").innerHTML=videoGames.map(id=>{
  return '<tr><td class="game-name">'+escapeHTML(gameNames[id]?.[lang]||id)+'</td>'+cells.join('')+'</tr>';
 }).join('');
 $("video-detail-note").textContent=verifiedVideos.length?t("videoDetailNote"):"";
+
+const publicationRounds=Array.isArray(pulse.publicationRounds?.rounds)?pulse.publicationRounds.rounds:[];
+const firstRound=publicationRounds.find(round=>round.id==="morning-first");
+const activeRound=publicationRounds.find(round=>round.id==="evening-repost");
+const roundPlatformIds=["youtube","instagram","tiktok","bluesky"];
+const roundPlatformNames={youtube:"YouTube Shorts",instagram:"Instagram Reels",tiktok:"TikTok",bluesky:"Bluesky"};
+const roundMetricLabels={views:t("roundViews"),likes:t("roundLikes"),comments:t("roundComments"),
+ reposts:t("roundReposts"),replies:t("roundReplies"),quotes:t("roundQuotes")};
+const archivedRoundSummary=id=>{
+ const m=firstRound?.platforms?.[id]||{},fields=id==="bluesky"?["likes","reposts","replies","quotes"]:["views","likes","comments"];
+ const values=fields.filter(k=>Number.isSafeInteger(m[k])).map(k=>roundMetricLabels[k]+" "+format(m[k]));
+ if(id==="bluesky")values.unshift(t("roundNoViews"));
+ const captured=m.capturedAt?" · "+t("roundCaptured")+" "+localDate(m.capturedAt):"";
+ return format(m.posts||7)+" "+t("roundPosts")+" · "+values.join(" · ")+captured;
+};
+const activeRoundSummary=id=>{
+ const m=activeRound?.platforms?.[id]||{};
+ const rows=(pulse.metricScope?.verifiedPosts||[]).filter(post=>post.platform===id);
+ const count=Number(m.posts)||rows.length||7;
+ const fields=id==="bluesky"?["likes","reposts","replies","quotes"]:["views","likes","comments"];
+ const values=[];
+ for(const field of fields){
+  const known=rows.filter(post=>post.checkedAt&&Number.isSafeInteger(post[field]));
+  if(known.length){
+   const total=known.reduce((n,post)=>n+post[field],0);
+   values.push(roundMetricLabels[field]+" "+format(total)+(known.length<count?" ("+known.length+"/"+count+")":""));
+  }else if(Number.isSafeInteger(m[field])){
+   values.push(roundMetricLabels[field]+" "+format(m[field]));
+  }
+ }
+ if(id==="bluesky")values.unshift(t("roundNoViews"));
+ if(!values.length)values.push(t("roundPending"));
+ const stateKey={youtube:"nativeYouTube",instagram:"nativeInstagram",tiktok:"nativeTikTok",bluesky:"nativeBluesky"}[id];
+ const checked=pulse[stateKey]?.checkedAt||m.capturedAt;
+ const captured=checked?" · "+t("roundCaptured")+" "+localDate(checked):"";
+ return format(count)+" "+t("roundPosts")+" · "+values.join(" · ")+captured;
+};
+$("promotion-round-history").hidden=!(firstRound&&activeRound);
+$("promotion-round-rows").innerHTML=firstRound&&activeRound?roundPlatformIds.map(id=>{
+ const name=platformLinks[id]?'<a href="'+platformLinks[id]+'" target="_blank" rel="noopener noreferrer"><strong>'+roundPlatformNames[id]+'</strong></a>':'<strong>'+roundPlatformNames[id]+'</strong>';
+ return '<tr><td>'+name+'</td><td>'+escapeHTML(archivedRoundSummary(id))+'</td><td>'+escapeHTML(activeRoundSummary(id))+'</td></tr>';
+}).join(''):"";
+const archivedPosts=Array.isArray(firstRound?.posts)?firstRound.posts:[];
+$("deleted-round-details").hidden=archivedPosts.length===0;
+$("round-post-history-rows").innerHTML=videoGames.map(game=>{
+ const cells=roundPlatformIds.map(platform=>{
+  const post=archivedPosts.find(item=>item.platform===platform&&item.game===game);
+  if(!post)return "<td></td>";
+  const fields=platform==="bluesky"?["likes","reposts","replies"]:["views","likes"];
+  const metrics=fields.filter(field=>Number.isSafeInteger(post[field])).map(field=>roundMetricLabels[field]+" "+format(post[field]));
+  const label=metrics.length?metrics.join(" · "):t("roundNoViews");
+  return '<td><a href="'+escapeHTML(post.url)+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(label)+'</a> <small>'+t("roundDeleted")+'</small></td>';
+ });
+ return '<tr><td class="game-name">'+escapeHTML(gameNames[game]?.[lang]||game)+'</td>'+cells.join("")+'</tr>';
+}).join("");
+
 // Bluesky has no comparable public video-play count. Report its real
 // interactions separately instead of treating likes/reposts as views.
 const bskyItems=verifiedVideos.filter(p=>p.platform==='bluesky');

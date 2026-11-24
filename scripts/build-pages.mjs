@@ -54,10 +54,18 @@ if (approvedGames.length !== 7 || new Set(approvedGames.map(game => game.slug)).
     new Set(approvedPosts.map(post => post.url)).size !== 28) {
   throw Error('Expected 28 unique approved publication links from the November 22 campaign');
 }
+const metricsSnapshot = JSON.parse(fs.readFileSync(path.join(base, 'promotion', 'social-metrics-snapshot.json'), 'utf8'));
+if (!Array.isArray(metricsSnapshot.publicationRounds?.rounds) ||
+    metricsSnapshot.publicationRounds.rounds.length !== 2 ||
+    metricsSnapshot.publicationRounds.rounds[0].status !== 'deleted' ||
+    metricsSnapshot.publicationRounds.rounds[1].status !== 'active') {
+  throw Error('The deleted morning round and active evening repost must remain separately recorded');
+}
 const social = {
   platforms: [{id:'itch'}, ...nativePlatforms.map(id => ({id, published: 7}))],
   metricScope: {type:'approved-short-videos-only', campaignStart:campaignDate, historicalExcluded:true,
-    activeApprovedPosts:approvedPosts.length, verifiedPosts:approvedPosts}
+    activeApprovedPosts:approvedPosts.length, verifiedPosts:approvedPosts},
+  publicationRounds: metricsSnapshot.publicationRounds
 };
 const nativeHelpers = ['social-native.js','social-schedule.js'].map(file=>
   fs.readFileSync(path.join(base,'src',file),'utf8').replace(/^export /gm,'')).join('\n');

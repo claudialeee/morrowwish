@@ -20,13 +20,41 @@ const oldCount={
   en:[['Cats captured',73],['Rare encounters',4],['Rare cats captured',57],
     ['Duo attacks',46],['Yard constructions',6],['Surprise events',5]]
 };
-const sample=mixed=>mixed?{
+const sample=mixed=>{
+ const base=mixed?{
   ...historical,
   conversion:{pageviews:4,startedViews:3,finishedViews:2},
   signals:{...historical.signals,bond_battle_start_v2:3,bond_battle_end_v2:2,
     bond_capture_v2:2,bond_rare_attempt_v2:1,bond_rare_capture_v2:1,
     bond_region_yard_start_v2:2,bond_region_yard_end_v2:2}
-}:historical;
+ }:historical;
+ return base;
+};
+const promoGames=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
+const archiveMetrics={youtube:[13,53,1,3,245,87,56],instagram:[6,11,3,1,254,45,43],
+ tiktok:[12,21,18,23,2,18,0],bluesky:[2,2,2,3,2,2,6]};
+const archivePosts=['youtube','instagram','tiktok','bluesky'].flatMap(platform=>promoGames.map((game,i)=>({
+ platform,game,url:'https://example.test/'+platform+'/'+game,
+ views:platform==='bluesky'?null:archiveMetrics[platform][i],
+ likes:platform==='youtube'?(i===4||i===5?2:0):platform==='instagram'?[1,2,1,1,2,2,2][i]:
+  platform==='tiktok'?(i===3?1:0):2,
+ reposts:platform==='bluesky'?(i===6?5:i===5?3:i===2||i===3||i===4?2:1):null,
+ replies:0,quotes:0,deleted:true
+})));
+const roundFixture={rounds:[
+ {id:'morning-first',status:'deleted',posts:archivePosts,platforms:{
+  youtube:{posts:7,views:458,likes:4,comments:0,capturedAt:'2026-11-22T14:14:13-08:00'},
+  instagram:{posts:7,views:363,likes:11,comments:0,capturedAt:'2026-11-22T13:05:00-08:00'},
+  tiktok:{posts:7,views:94,likes:1,comments:0,capturedAt:'2026-11-22T13:05:00-08:00'},
+  bluesky:{posts:7,views:null,likes:14,reposts:14,replies:0,quotes:0,capturedAt:'2026-11-22T14:14:13-08:00'}
+ }},
+ {id:'evening-repost',status:'active',postsCount:28,platforms:{
+  youtube:{posts:7,views:null,likes:null,comments:null},
+  instagram:{posts:7,views:null,likes:null,comments:null},
+  tiktok:{posts:7,views:null,likes:null,comments:null},
+  bluesky:{posts:7,views:null,likes:19,reposts:16,replies:1,quotes:0,capturedAt:'2026-11-23T04:00:41.086Z'}
+ }}
+]};
 const browser=await chromium.launch({headless:true});
 try{
  for(const language of ['zh','en'])for(const mixed of [false,true])
@@ -39,7 +67,12 @@ try{
   const summary={
    updated:'2026-11-22T22:00:00.000Z',days:7,records:50,
    rollup:{pageviews:26,starts:82,ends:79,retries:1},
-   byGame:[row],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{}
+   byGame:[row],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
+    platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
+      {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
+    metricScope:{verifiedPosts:[],activeApprovedPosts:28},
+    publicationRounds:roundFixture
+   }
   };
   await page.route('**/api/summary*',route=>route.fulfill({
    status:200,contentType:'application/json',body:JSON.stringify(summary)
@@ -63,6 +96,25 @@ try{
    await page.locator('#report:not([hidden])').waitFor({timeout:12000});
    await page.waitForFunction(()=>document.querySelector('#cat-bond-traffic-audit')?.textContent?.includes('数据库全量核对')||
      document.querySelector('#cat-bond-traffic-audit')?.textContent?.includes('Full D1 audit'),null,{timeout:12000});
+   const statLabels=await page.locator('#stats .stat .label').allTextContents();
+   assert.equal(statLabels[0],language==='zh'?'页面浏览量':'Pageviews · PV',
+     'Overall pageviews must be the first headline metric');
+   assert.equal(statLabels[1],language==='zh'?'网站首页浏览量':'Homepage views',
+     'Homepage views must immediately follow overall pageviews');
+   const roundRows=page.locator('#promotion-round-rows tr');
+   assert.equal(await roundRows.count(),4,'All four promotion platforms need two-round metrics');
+   const youtubeRound=await roundRows.filter({hasText:'YouTube Shorts'}).textContent();
+   assert.ok(youtubeRound.includes('458'),'Deleted morning YouTube snapshot must be visible');
+   assert.ok(youtubeRound.includes(language==='zh'?'原生数据待刷新':'Native metrics pending'),
+     'Current YouTube round must not inherit deleted views');
+   const blueskyRound=await roundRows.filter({hasText:'Bluesky'}).textContent();
+   for(const value of ['14','19','16','1'])assert.ok(blueskyRound.includes(value),
+     'Bluesky first/current round engagement missing: '+value);
+   const deletedDetails=page.locator('#deleted-round-details');
+   assert.equal(await deletedDetails.count(),1,'Deleted first-round detail archive must exist');
+   await deletedDetails.evaluate(el=>el.open=true);
+   assert.equal(await page.locator('#round-post-history-rows tr').count(),7,
+     'All seven games must retain their deleted first-round post links and readings');
    assert.deepEqual(exceptions,[],'Dashboard JS exceptions: '+exceptions.join('; '));
    const gameRow=page.locator('#games tr').filter({
     has:page.locator('a[href="/cat-bond/"]')
@@ -121,4 +173,4 @@ try{
 }finally{
  await browser.close();
 }
-console.log('Real Chromium Cat Bond dashboard gate passed: raw battle starts/finishes 82/79 plus visit-deduplicated conversion ratios retained across 8 bilingual phone/desktop cases.');
+console.log('Real Chromium dashboard gate passed: Cat Bond history, pageview/homepage metric order, and both deleted/current promotion rounds across 8 bilingual phone/desktop cases.');

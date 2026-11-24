@@ -73,9 +73,38 @@ for(const [game,shortcode] of Object.entries(igExpected)){
 assert.equal(snap.accountOverview,undefined,'historical promo summaries must never ship');
 assert.equal(snap.metricScope.campaignStart,'2026-11-22','approved campaign begins Nov 22');
 assert.ok(posts.every(p=>p.publishedAt==='2026-11-22'),'only this launch campaign is tracked');
+const rounds=snap.publicationRounds?.rounds||[];
+assert.equal(rounds.length,2,'both Nov 22 publication rounds must be preserved');
+const firstRound=rounds.find(x=>x.id==='morning-first');
+const activeRound=rounds.find(x=>x.id==='evening-repost');
+assert.equal(firstRound?.status,'deleted','morning round must be marked deleted');
+assert.equal(firstRound?.posts.length,28,'all 28 deleted first-round posts must remain archived');
+assert.deepEqual([
+ firstRound.platforms.youtube.views,firstRound.platforms.instagram.views,
+ firstRound.platforms.tiktok.views,firstRound.platforms.bluesky.likes,
+ firstRound.platforms.bluesky.reposts
+],[458,363,94,14,14],'first-round last observed native metrics must be preserved');
+assert.equal(activeRound?.status,'active','evening repost is the current round');
+assert.equal(activeRound?.postsCount,28,'all 28 current reposts are represented');
+assert.equal(activeRound.platforms.youtube.views,null,'deleted YouTube views cannot transfer to current posts');
+assert.equal(activeRound.platforms.instagram.views,null,'deleted Instagram views cannot transfer to current posts');
+assert.equal(activeRound.platforms.tiktok.views,null,'deleted TikTok views cannot transfer to current posts');
+assert.deepEqual([
+ activeRound.platforms.bluesky.likes,activeRound.platforms.bluesky.reposts,
+ activeRound.platforms.bluesky.replies
+],[19,16,1],'current Bluesky native engagement snapshot retained');
+assert.ok(posts.every(p=>!firstRound.posts.some(old=>old.url===p.url)),
+ 'deleted first-round URLs must never enter the current native allowlist');
 assert.ok(JSON.stringify(snap).indexOf('instagram-historical')<0,'legacy posts absent from snapshot');
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 assert.ok(dashboard.includes('id="video-detail-rows"'),'per-game detail table present');
+assert.ok(dashboard.includes('id="promotion-round-history"')&&dashboard.includes('id="round-post-history-rows"'),
+ 'two-round campaign history must be visible with per-post archived readings');
+assert.ok(dashboard.indexOf('metricCard(t("statPv")')<dashboard.indexOf('metricCard(t("statHome")'),
+ 'homepage views must immediately follow overall pageviews');
+const build=fs.readFileSync('scripts/build-pages.mjs','utf8');
+assert.ok(build.includes('publicationRounds: metricsSnapshot.publicationRounds'),
+ 'private dashboard Worker must receive the archived round history');
 assert.ok(dashboard.includes("post.checkedAt&&Number.isSafeInteger(post[key])"),'unknown views blank, not zero');
 assert.ok(dashboard.includes('igNativePosts.length'), 'partial Instagram provider totals must show verified coverage');
 assert.ok(dashboard.includes("p.checkedAt&&"), 'partial Instagram totals must exclude missing native readings');

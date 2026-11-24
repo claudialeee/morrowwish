@@ -11,6 +11,19 @@ The private [Studio Insights dashboard](https://morrowwish.vercel.app/studio-ins
 
 The existing D1 cache has a refresh lease per provider. Bluesky reads refresh after 10 minutes and the other providers after 15 minutes. The dashboard checks every 10 minutes while visible. The GitHub Actions refresh runs twice hourly, including while the dashboard is closed, and uses a short-lived GitHub OIDC token restricted to the main-branch refresh workflow. GitHub can delay scheduled runs. A failed upstream request retains the previous native reading and its timestamp with a five-minute retry cooldown. Missing values in a successful partial response remain null. A total is shown only when all seven posts have a value for that metric. Player visits, campaign attribution, game starts and conversions retain their existing source.
 
+## November 22 two-round publication history
+
+The 10:00 PT morning batch was later deleted. Its last observed native readings are preserved in `promotion/social-metrics-snapshot.json` under `publicationRounds.rounds[morning-first]` and shown separately in Studio Insights. The evening repost is the only active native allowlist and remains the only source for current platform totals.
+
+| Platform | Morning batch before deletion | Evening repost (current snapshot) |
+| --- | ---: | ---: |
+| YouTube Shorts | 7 videos · 458 views · 4 likes | 7 videos · native refresh pending |
+| Instagram Reels | 7 videos · 363 plays · 11 likes | 7 videos · native refresh pending |
+| TikTok | 7 videos · 94 plays · 1 like | 7 videos · native refresh pending |
+| Bluesky | 7 posts · 14 likes · 14 reposts | 7 posts · 19 likes · 16 reposts · 1 reply |
+
+The first-round per-post URLs and captured readings are retained for audit, marked deleted, and never included in `metricScope.verifiedPosts`, provider allowlists, or current totals. Missing second-round YouTube/Instagram/TikTok metrics are pending native readings, not zero and not replaced with first-round counts.
+
 ## Production activation
 
 - Add credentials only as Cloudflare Pages production secrets for `morrowwish`, then deploy. Never put credential values in a commit or command output.
