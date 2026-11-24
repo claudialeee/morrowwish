@@ -9,7 +9,7 @@ const pct=(a,b)=>b?Math.round(a*1000/b)/10:null;
 const tidy=(s,max=100)=>typeof s==="string"?s.slice(0,max):"";
 const uniq=(a)=>new Set(a.filter(Boolean)).size;
 const pageVisitKey=(r)=>r.view_id||("visit-row:"+String(r.id));
-const REPORT_FROM="2026-11-22T08:00:00.000Z"; // Nov 22, 00:00 Pacific
+const REPORT_FROM="2026-11-19T08:00:00.000Z"; // Database creation day; retain earlier recovered records.
 const REPORT_FROM_MS=Date.parse(REPORT_FROM);
 const pacificDate=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"});
 function localDay(ts){
@@ -93,7 +93,9 @@ function mainStats(x){
     for(const r of sessionsOf)for(const [k,v] of Object.entries(r.data.signals||{})){
       if(/^[a-z0-9_-]{2,40}$/.test(k)&&Number.isFinite(Number(v))&&Number(v)>0)signals[k]=(signals[k]||0)+Math.min(10000,Number(v));
     }
-    return {pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews:startedIds.size,startRate:funnelAvailable?pct(startedIds.size,distinctPageVisits):null,visitFunnel,starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion,historicalVisitFunnel};
+    const recordedGameEntries=isBond?(Object.hasOwn(signals,"bond_enter")?signals.bond_enter:null):null;
+    const recordedFirstFinishPages=isBond?viewsWith(d=>Number(d.signals?.funnel_first_finish)>0).size:null;
+    return {recordedGameEntries,recordedFirstFinishPages,pageviews,visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews:startedIds.size,startRate:funnelAvailable?pct(startedIds.size,distinctPageVisits):null,visitFunnel,starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion,historicalVisitFunnel};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
@@ -324,23 +326,8 @@ export async function api(req,env){
   if(results.length)await env.DB.prepare("DELETE FROM events WHERE category=? AND view_id=?").bind("diagnostic",probe).run();
   return json({recorded:visits.length>0,sessionRecorded:sessions.length>0,startRecorded:sawStart,endRecorded:sawEnd,removed:results.length>0});
  }
- if(p==="/api/reset-metrics"){
-  if(req.method!=="POST")return json({error:"POST required"},405);
-  if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
-  // Require a first-party browser request, not just an authenticated cross-site form.
-  const caller=req.headers.get("Origin")||req.headers.get("Referer");
-  let callerOrigin;try{callerOrigin=new URL(caller).origin}catch{return json({error:"Origin required"},403)}
-  if(!new Set([new URL(req.url).origin,"https://morrowwish.vercel.app"]).has(callerOrigin))return json({error:"Origin not allowed"},403);
-  if((req.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase()!=="application/json")return json({error:"JSON required"},415);
-  if(req.headers.get("X-Morrowwish-Reset")!=="confirmed")return json({error:"Confirmation header required"},400);
-  if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
-  let data;try{data=await req.json()}catch{return json({error:"Invalid JSON"},400)}
-  if(data?.confirm!=="RESET_METRICS")return json({error:"Confirmation required"},400);
-  // Clear only anonymous dashboard events. Never destroy the D1 table, schema,
-  // player saves, campaign schedules or static provider status snapshots.
-  const result=await env.DB.prepare("DELETE FROM events WHERE category IN ('arcade','elsewhere','diagnostic')").run();
-  return json({ok:true,removed:result.meta?.changes??null});
- }
+ // Retired permanently: even authenticated legacy clients cannot delete reporting history.
+ if(p==="/api/reset-metrics")return json({error:"Historical metrics deletion is disabled"},410);
   // Keep an authenticated verification endpoint, but use the same complete
   // Pacific-time event read as the dashboard instead of a separate UTC aggregate.
   if(p==="/api/cat-bond-traffic-audit"){
@@ -369,7 +356,7 @@ if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(!env.ARCADE_ANALYTICS_KEY)return json({error:"Dashboard key not configured"},503);
   if(req.headers.get("x-analytics-key")!==env.ARCADE_ANALYTICS_KEY && !(await hasSession(req,env)))return json({error:"Access denied"},401);
   const x=await read(req,env,p==="/api/summary"?"arcade":"elsewhere");
-  return json(p==="/api/summary"?{...mainStats(x),socialPulse:await socialPulseFor(env,typeof SOCIAL_CAMPAIGN==="undefined"?null:SOCIAL_CAMPAIGN)}:elsewhereStats(x));
+  return json(p==="/api/summary"?{...mainStats(x),dataCoverage:{status:"historical-recovery-unverified",requestedFrom:x.from,earliestStoredEvent:x.rows.length?new Date(x.rows.reduce((m,r)=>Math.min(m,Number(r.ts)||Infinity),Infinity)).toISOString():null},socialPulse:await socialPulseFor(env,typeof SOCIAL_CAMPAIGN==="undefined"?null:SOCIAL_CAMPAIGN)}:elsewhereStats(x));
  }
  return json({error:"Not found"},404);
 }
