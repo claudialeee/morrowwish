@@ -507,36 +507,25 @@ function renderCloudPanel(){
  document.querySelector('.cb-cloud-overlay')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
  overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
-  '<p class="cb-cloud-eyebrow">CAT BOND · PRIVATE CLOUD SAVE</p><h2>'+t('云存档','Cloud save')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('存档在上传前会在本机使用 AES-GCM 加密。服务器只保存密文；恢复码是唯一的解密钥匙。','Your save is encrypted on this device with AES-GCM before upload. The server stores ciphertext only; your recovery code is the decryption key.')+'</p>'+
+  '<p class="cb-cloud-eyebrow">CAT BOND · SAVE & LOAD</p><h2>'+t('云存档','Cloud save')+'</h2>'+
+  '<p class="cb-cloud-lead">'+t('游戏会自动保存进度。你也可以手动保存到云端，或读取最近一次云端存档。不需要恢复码或密钥。云档自动绑定当前浏览器。','Your game saves automatically. You can also save to the cloud or load your latest cloud save. No recovery codes or keys. This cloud slot is linked to this browser.')+'</p>'+
   '<div class="cb-cloud-body"></div></section>';
  document.body.append(overlay);
- const card=overlay.querySelector('.cb-cloud-card'),body=overlay.querySelector('.cb-cloud-body');
+ const body=overlay.querySelector('.cb-cloud-body');
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
- let currentStatus='';
- function render(statusText=''){
-  currentStatus=statusText;
+ function render(status=''){
   const token=localStorage.getItem(CLOUD_KEY)||'';
-  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
   if(token){
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||(paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.'):t('云存档已启用。','Cloud save is enabled.')) )+'</div>'+
-    '<label class="cb-cloud-label">'+t('跨设备恢复码（请妥善保存）','Cross-device recovery code (keep it safe)')+'</label>'+
-    '<div class="cb-cloud-code" id="cb-cloud-code">'+esc(CODE_PREFIX+token)+'</div>'+
-    '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="copy">'+t('复制恢复码','Copy recovery code')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="sync">'+t('立即同步','Sync now')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('从云端恢复','Restore from cloud')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="replace">'+t('用本机覆盖云端','Replace cloud with this device')+'</button></div>'+
-    '<p class="cb-cloud-footnote">'+t('不要把恢复码发给他人。忘记恢复码后，服务器无法解密你的存档。','Do not share this code. If it is lost, the server cannot decrypt your save.')+'</p>';
+   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(status||t('云存档已就绪。','Cloud save is ready.'))+'</div>'+
+    '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="sync">'+t('立即保存','Save now')+'</button>'+
+    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('读取云端存档','Load cloud save')+'</button></div>'+
+    '<p class="cb-cloud-footnote">'+t('自动保存已开启。读取云档会替换当前设备的猫猫纽带进度。','Automatic sync is enabled. Loading replaces the Cat Bond progress on this device.')+'</p>';
   }else{
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||t('还没有启用云存档。','Cloud save is not enabled yet.'))+'</div>'+
-    '<button class="cb-cloud-primary cb-cloud-enable" data-cloud="enable">'+t('为当前设备启用加密云存档','Enable encrypted cloud save')+'</button>'+
-    '<div class="cb-cloud-divider">'+t('或在新设备上输入恢复码','Or enter a recovery code on a new device')+'</div>'+
-    '<label class="cb-cloud-label" for="cb-cloud-code-input">'+t('恢复码','Recovery code')+'</label>'+
-    '<input id="cb-cloud-code-input" class="cb-cloud-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="CB1.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">'+
-    '<button class="cb-cloud-secondary" data-cloud="import">'+t('恢复此云存档','Restore this cloud save')+'</button>'+
-    '<p class="cb-cloud-footnote">'+t('恢复会替换当前设备的猫猫纽带存档；其他游戏的存档不受影响。','Restoring replaces only the Cat Bond save on this device. Other games are untouched.')+'</p>';
+   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(status||t('尚未建立云端存档。','No cloud save has been created yet.'))+'</div>'+
+    '<button class="cb-cloud-primary cb-cloud-enable" data-cloud="enable">'+t('启用云存档','Enable cloud save')+'</button>'+
+    '<p class="cb-cloud-footnote">'+t('启用后会自动同步当前浏览器中的游戏进度。','Once enabled, game progress in this browser will sync automatically.')+'</p>';
   }
   body.querySelectorAll('[data-cloud]').forEach(button=>button.onclick=()=>cloudAction(button.dataset.cloud));
  }
@@ -545,73 +534,31 @@ function renderCloudPanel(){
   const say=msg=>{if(status)status.textContent=msg;};
   try{
    if(action==='enable'){
-    const hasLocal=!!localStorage.getItem(SAVE_KEY);
-    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');localStorage.removeItem(CLOUD_PAUSE_KEY);
-    render(hasLocal
-     ?t('已生成恢复码，正在安排首次加密同步。','Recovery code created. Initial encrypted sync is queued.')
-     :t('已生成恢复码。开始游戏并创建存档后会自动上传。','Recovery code created. It will upload automatically after your first game save.'));
-    if(hasLocal)queueSync();
-    return;
-   }
-   if(action==='copy'){
-    const code=CODE_PREFIX+(localStorage.getItem(CLOUD_KEY)||'');
-    await copyText(code);say(t('恢复码已复制。请保存到安全的地方。','Recovery code copied. Store it somewhere safe.'));
-    return;
-   }
-   if(action==='sync'){
-    if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'){
-     if(!confirm(t('检测到本机进度刚刚被重置。要用新进度覆盖旧云存档吗？','This device was just reset. Replace the previous cloud save with this new progress?')))return;
-     localStorage.removeItem(CLOUD_PAUSE_KEY);
-    }
-    say(t('正在加密并同步…','Encrypting and syncing…'));
+    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');
+    render(t('云存档已启用，正在保存当前进度。','Cloud save enabled. Saving current progress…'));
     const result=await syncNow(true);
-    say(result.conflict?t('检测到另一台设备有更新。请选择恢复云端或覆盖云端。','A newer save exists on another device. Restore it or explicitly replace it.')
-     :result.ok?t('云存档已同步。','Cloud save synced.')
-     :result.empty?t('当前设备还没有游戏存档。','This device has no game save yet.')
-     :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and try again.'));
+    say(result.ok?t('云端存档已创建。','Cloud save created.'):result.empty?t('开始游戏后会自动保存。','Your progress will sync after you start playing.'):t('云端暂不可用，请稍后重试。','Cloud is unavailable. Please try again.'));
+    return;
+   }
+   const token=localStorage.getItem(CLOUD_KEY);if(!token)throw Error('Cloud save is not enabled');
+   if(action==='sync'){
+    say(t('正在保存进度…','Saving progress…'));
+    const result=await syncNow(true);
+    say(result.ok?t('保存成功。','Saved successfully.'):result.conflict?t('云端有更新版本，请先读取云端存档。','A newer cloud save exists. Load it before saving again.'):result.empty?t('当前还没有游戏进度。','There is no game progress to save yet.'):t('保存失败，请检查网络后重试。','Save failed. Check your connection and try again.'));
     return;
    }
    if(action==='restore'){
-    const token=localStorage.getItem(CLOUD_KEY);if(!token)throw Error('No recovery code');
-    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('这会替换当前设备的猫猫纽带进度。继续吗？','This replaces the Cat Bond progress on this device. Continue?')))return;
-    say(t('正在下载并解密云存档…','Downloading and decrypting cloud save…'));
-    await restoreWithToken(token);return;
-   }
-   if(action==='replace'){
-    if(!confirm(t('将用当前设备的存档覆盖云端版本。继续吗？','Replace the cloud version with this device’s save?')))return;
-    const token=localStorage.getItem(CLOUD_KEY);
-    let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
-    localStorage.setItem(REV_KEY,String(remote.revision||0));
-    localStorage.removeItem(CLOUD_PAUSE_KEY);
-    const result=await syncNow(true);
-    say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.')
-     :result.ok?t('云端已更新为本机存档。','Cloud save replaced with this device.')
-     :t('本机存档尚未同步，请稍后重试。','The local save could not be uploaded. Please retry.'));
-    return;
-   }
-   if(action==='import'){
-    const code=body.querySelector('#cb-cloud-code-input')?.value||'';
-    const token=parseCode(code);
-    if(!token)throw Error(t('恢复码格式不正确。','Invalid recovery code.'));
-    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('这会替换当前设备的猫猫纽带进度。继续吗？','This replaces the Cat Bond progress on this device. Continue?')))return;
-    say(t('正在下载并解密云存档…','Downloading and decrypting cloud save…'));
+    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('读取云端存档会替换当前设备的猫猫纽带进度。继续吗？','Loading the cloud save replaces Cat Bond progress on this device. Continue?')))return;
+    say(t('正在读取云端存档…','Loading cloud save…'));
     await restoreWithToken(token);return;
    }
   }catch(error){
-   say(error?.message==='Cloud save not found'
-    ?t('没有找到这个恢复码对应的云存档。','No cloud save was found for this recovery code.')
-    :t('操作失败：','Action failed: ')+(error?.message||''));
+   say(error?.message==='Cloud save not found'?t('暂时没有可读取的云端存档。','There is no cloud save to load yet.'):t('操作失败：','Action failed: ')+(error?.message||''));
   }
  }
  const updateLocale=()=>{
-  const input=body.querySelector('#cb-cloud-code-input')?.value||'';
-  const token=localStorage.getItem(CLOUD_KEY);
-  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
-  render(token
-   ?paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.')
-    :t('云存档已启用。','Cloud save is enabled.')
-   :t('还没有启用云存档。','Cloud save is not enabled yet.'));
-  const nextInput=body.querySelector('#cb-cloud-code-input');if(nextInput)nextInput.value=input;
+  const status=body.querySelector('#cb-cloud-status')?.textContent||'';
+  render(status);
  };
  window.addEventListener('morrowwish-language-change',updateLocale);
  render();
@@ -743,14 +690,7 @@ if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
  };
  wrapped.__lastPage=true;window.UI.openExploreMenu=wrapped;
 }
-if(window.State?.hardReset&&!window.State.hardReset.__cbCloudWrapped){
- const original=window.State.hardReset.bind(window.State);
- const wrapped=function(...args){
-  if(localStorage.getItem(CLOUD_KEY))localStorage.setItem(CLOUD_PAUSE_KEY,'1');
-  return original(...args);
- };
- wrapped.__cbCloudWrapped=true;window.State.hardReset=wrapped;
-}
+// A reset starts a fresh local run; the next save may replace this browser's cloud slot.
 if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  const original=window.State.save.bind(window.State);
  const wrapped=function(...args){const result=original(...args);try{queueSync();}catch{}return result;};
