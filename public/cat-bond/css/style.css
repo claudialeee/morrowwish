@@ -5261,3 +5261,10 @@ body.cb-exploring #stage #yard-actions{
  .cb-save-picker-card{padding:23px 16px}
 }
 @media(prefers-reduced-motion:reduce){#intro.cb-rpg-intro *{animation:none!important;transition:none!important}}
+
+/* Keep the cinematic scenery and modal layered above the intro's base grid. */
+#intro.cb-rpg-intro>.cb-intro-sky{position:absolute!important;inset:0;z-index:0!important}
+#intro.cb-rpg-intro>#intro-slot-panel{position:absolute!important;inset:0;z-index:20!important}
+#intro.cb-rpg-intro #intro-cats{display:block;width:min(100%,420px);height:auto;max-height:100%;overflow:visible}
+.cb-intro-hero{overflow:visible}
+.cb-intro-footer #intro-breed-count{color:#e5cda8;font-weight:800}
