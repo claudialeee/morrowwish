@@ -23,7 +23,7 @@ for(const locale of ['zh','en']){
  const env={lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
   t:key=>key==='statHome'?homeLabel:key==='statPv'?pvLabel:key,format:n=>String(n),
   metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
- vm.runInNewContext(statsPrefix+"}\\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});".replace('\\n','\n'),env);
+ vm.runInNewContext(statsPrefix+"}\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});",env);
  const html=nodes.stats.innerHTML;
  assert.ok(html.startsWith('<div data-name="'+pvLabel+'">123</div>'),locale+' overall pageviews must show 123 first');
  assert.ok(html.includes('<div data-name="'+homeLabel+'">37</div>'),locale+' homepage KPI must show 37 views');
