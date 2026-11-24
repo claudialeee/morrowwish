@@ -10,26 +10,56 @@ const CLOUD_PAUSE_KEY='catbond_cloud_paused_v1';
 const CODE_PREFIX='CB1.';
 const REGIONS=['home','sakura','creek','volcano','ruins'];
 const REGION_PAGES={
- home:{id:'home-bell',title:'庭院门口的铃声',titleEn:'The Bell at the Garden Gate',
-  text:'很久以前，有两只小猫约好：无论走到多远，只要听见星铃，就一定要回来。你记得那只猫的影子，却想不起它的名字。',
-  textEn:'Long ago, two kittens made a promise: wherever life took them, they would return when the Star Bell rang. You remember a small shadow beside you, but not its name.',
-  region:'home',chapter:'第一章 · 空白页',chapterEn:'CHAPTER I · THE BLANK PAGE'},
- sakura:{id:'sakura-promise',title:'花瓣下的约定',titleEn:'A Promise Beneath the Petals',
-  text:'樱花神社的旧签写着：星铃只能敲响一次。那一天，你把铃绳交给了最信任的伙伴。',
-  textEn:'An old shrine fortune says the Star Bell may be rung only once. On that day, you placed its cord in the paws of the one you trusted most.',
-  region:'sakura',chapter:'第二章 · 旧约',chapterEn:'CHAPTER II · THE OLD PROMISE'},
- creek:{id:'creek-name',title:'被河水带走的名字',titleEn:'The Name the River Carried',
-  text:'溪水映出一段模糊的画面：你主动交出了自己的名字。那不是被夺走的惩罚，而是你亲手做出的选择。',
-  textEn:'The creek reflects a blurred memory: you gave your name away willingly. It was not taken as punishment. It was your choice.',
-  region:'creek',chapter:'第三章 · 失去的名字',chapterEn:'CHAPTER III · THE LOST NAME'},
- volcano:{id:'volcano-seal',title:'星铃灾变',titleEn:'The Star Bell Catastrophe',
-  text:'火山深处的余烬记得真相：灾变从星铃内部爆发。你留在钟中封住裂隙，把自己的记忆化作最后一道封印。',
-  textEn:'The embers remember what happened: the catastrophe erupted from inside the Star Bell. You stayed within it to seal the breach, turning your own memories into the final lock.',
-  region:'volcano',chapter:'第四章 · 最后的守铃者',chapterEn:'CHAPTER IV · THE LAST BELLKEEPER'},
- ruins:{id:'ruins-reverse',title:'倒着响的钟',titleEn:'The Bell That Rings Backward',
-  text:'月影遗迹的星盘开始逆转。你终于明白：一路找回的旋律，不只是在修复记忆——它们也在替某个人重新启动逆响仪式。',
-  textEn:'The astrolabe begins to turn backward. The melodies you have recovered are not only restoring memories. They are also restarting a reversed-bell ritual for someone.',
-  region:'ruins',chapter:'第五章 · 逆响',chapterEn:'CHAPTER V · THE REVERSED BELL'}
+ home: {
+  id: "home-bell",
+  title: "庭院门口的铃声",
+  titleEn: "The Bell at the Garden Gate",
+  text: "【纸鸢】你醒了。\n【你】刚才是谁在叫我？\n【纸鸢】我只听见铃响。可奇怪的是，铃声传来之前，你的影子先回头了。\n\n木凳下有一只旧毛线盒，里面压着半张双猫合影。照片边缘被烧焦，其中一只猫的脸恰好缺失。背面写着：听见铃声，就回家。",
+  textEn: "[Kite] You are awake.\n[You] Who called me?\n[Kite] I only heard the bell. The strange thing is… your shadow turned around before the sound arrived.\n\nBeneath the bench lies an old yarn box and half of a photograph. One kitten’s face has been burned away. On the back: When the bell rings, come home.",
+  region: "home",
+  chapter: "第一章 · 空白页",
+  chapterEn: "CHAPTER I · THE BLANK PAGE"
+ },
+ sakura: {
+  id: "sakura-promise",
+  title: "花瓣下的约定",
+  titleEn: "A Promise Beneath the Petals",
+  text: "【绯枝】这支签不是预言，是有人后来补上去的。\n【你】补了什么？\n【绯枝】原文不是“星铃只能敲响一次”，而是“星铃只能由一个自愿交出名字的人敲响”。\n\n花瓣间闪过旧日画面：你把铃绳交给一只小猫。它笑着说：“你总会忘东西。那这次，换我替你记住。”",
+  textEn: "[Feizhi] This fortune is not a prophecy. Someone added those words later.\n[You] What did it say before?\n[Feizhi] Not “The Star Bell may ring only once.” It said, “The Star Bell may be rung only by one who gives their name willingly.”\n\nA memory flickers between the petals: you hand the bell cord to a kitten. They laugh. “You always lose things. This time, let me remember for you.”",
+  region: "sakura",
+  chapter: "第二章 · 旧约",
+  chapterEn: "CHAPTER II · THE OLD PROMISE"
+ },
+ creek: {
+  id: "creek-name",
+  title: "被河水带走的名字",
+  titleEn: "The Name the River Carried",
+  text: "【渡川】河水没有偷走你的名字。是你把它放进水里。\n【你】为什么？\n【渡川】因为星铃需要一个锚。你不肯让它落在那只小猫身上。\n\n倒影里，暮铃抓住你的爪子。\n【暮铃】答应我，你会回来。\n【你】我会尽力。\n【暮铃】我不要尽力。我要你答应。",
+  textEn: "[Duchuan] The river did not steal your name. You placed it in the current.\n[You] Why would I do that?\n[Duchuan] The Bell needed an anchor. You would not let it be that kitten.\n\nIn the reflection, Muling catches your paw.\n[Muling] Promise you will come back.\n[You] I will try.\n[Muling] I do not want “try.” I want a promise.",
+  region: "creek",
+  chapter: "第三章 · 失去的名字",
+  chapterEn: "CHAPTER III · THE LOST NAME"
+ },
+ volcano: {
+  id: "volcano-seal",
+  title: "星铃灾变",
+  titleEn: "The Star Bell Catastrophe",
+  text: "【烬禾】我亲眼看见你回头。出口就在身后，你却走进了钟里。\n【你】暮铃呢？\n【烬禾】它只看见门关上。没人告诉它，你是留下来，不是逃走。\n\n火山深处，六道记忆丝线正从各地汇入星铃。每亮起一道，钟内的影子就更像你一分。",
+  textEn: "[Jinhe] I saw you turn back. The exit was behind you. You walked into the Bell.\n[You] What happened to Muling?\n[Jinhe] They only saw the door close. No one told them you stayed. They thought you ran.\n\nDeep in the volcano, six threads of memory flow toward the Star Bell. With every thread, the silhouette inside looks more like you.",
+  region: "volcano",
+  chapter: "第四章 · 最后的守铃者",
+  chapterEn: "CHAPTER IV · THE LAST BELLKEEPER"
+ },
+ ruins: {
+  id: "ruins-reverse",
+  title: "倒着响的钟",
+  titleEn: "The Bell That Rings Backward",
+  text: "【星簿】这些旋律不是钥匙。它们是你们共同经历过的六段记忆。\n【你】那为什么它们会启动星铃？\n【星簿】暮铃在用它们拼出一个“你”。可记忆能拼出回声，拼不回一个人。\n\n星盘转向你。最后一页浮现出熟悉的字迹：如果世界不肯把你还给我，我就让世界只剩下你。",
+  textEn: "[Star Scribe] These melodies are not keys. They are six memories you once shared.\n[You] Then why are they starting the Bell?\n[Star Scribe] Muling is using them to assemble an “you.” Memories can make an echo. They cannot restore a person.\n\nThe astrolabe turns toward you. The final page bears familiar handwriting: If the world will not give you back, I will make a world with only you left in it.",
+  region: "ruins",
+  chapter: "第五章 · 逆响",
+  chapterEn: "CHAPTER V · THE REVERSED BELL"
+ }
 };
 const LAST_PAGE={
  id:'last-page',title:'最后一页：暮铃',titleEn:'The Last Page: Muling',
@@ -38,48 +68,98 @@ const LAST_PAGE={
  region:'ruins',chapter:'终章 · 最后一页',chapterEn:'FINAL CHAPTER · THE LAST PAGE'
 };
 const PROLOGUE=[
- {region:'home',kicker:'猫猫纽带 · 最后一页',kickerEn:'CAT BOND · THE LAST PAGE',
-  title:'每只猫，都有一页自己的故事。',titleEn:'Every cat has a page of its own.',
-  text:'在这片世界，名字、经历与羁绊，都被写进一本会呼吸的书——Catdex。它记录每只猫曾经是谁，也记得它们与谁并肩。',
-  textEn:'In this world, names, memories and bonds are written in a living book: the Catdex. It remembers who every cat has been, and who stood beside them.'},
- {region:'sakura',kicker:'空白蔓延之地',kickerEn:'THE HOLLOW',
-  title:'被遗忘的地方，会慢慢变空。',titleEn:'Where memories vanish, the world grows hollow.',
-  text:'当一段重要记忆消失，Catdex 就会留下空白。空白蔓延之处，被称为 Hollow。没有名字的猫，也会逐渐从世界上消失。',
-  textEn:'When an important memory disappears, the Catdex leaves a blank page. Where the blankness spreads, the world becomes Hollow. A nameless cat can slowly vanish from it.'},
- {region:'creek',kicker:'初醒之时',kickerEn:'A STRANGE AWAKENING',
-  title:'你在一座安静的庭院醒来。',titleEn:'You wake in a quiet garden.',
-  text:'你没有名字，也想不起自己从哪里来。但你能听见空白页的声音——那是一声倒着响的铃。',
-  textEn:'You have no name and no memory of where you came from. Yet you can hear the blank pages: a bell ringing backward.'},
- {region:'volcano',kicker:'星铃中的声音',kickerEn:'A VOICE IN THE BELL',
-  title:'远处有人在呼唤你。',titleEn:'Someone is calling from beyond the bell.',
-  text:'“这一次，我不会再让你离开。”声音很轻，却像等了很久。你不知道它是谁，只知道它认得你。',
-  textEn:'“This time, I will not let you leave again.” The voice is quiet, but it sounds as if it has waited a very long time. You do not know who it is. It knows you.'},
- {region:'ruins',kicker:'旅程开始',kickerEn:'YOUR JOURNEY BEGINS',
-  title:'去找回那些被抹去的名字。',titleEn:'Find the names that were erased.',
-  text:'探索五片土地，结识新的伙伴，收集散落的记忆。可那本书似乎早已为你留好最后一页。',
-  textEn:'Explore five lands, meet new companions and gather the memories scattered across the world. Yet the book seems to have reserved its final page for you.'}
+ {
+  region: "home",
+  kicker: "序章 · 倒着响的铃",
+  kickerEn: "PROLOGUE · A BELL IN REVERSE",
+  title: "先响起的，是你的影子。",
+  titleEn: "Your shadow moved before the bell.",
+  text: "夜色压低了庭院的树梢。一根旧铃绳挂在枝头，风没有吹，它却轻轻摆动。\n\n一只小猫伸出爪子。铃声响起——不是从远处传来，而是从每个人的记忆里倒退回来。",
+  textEn: "Night lowers the garden branches. An old bell cord hangs from a tree. There is no wind, yet it begins to sway.\n\nA kitten reaches out. The bell rings—not from somewhere far away, but backwards through everyone’s memory."
+ },
+ {
+  region: "home",
+  kicker: "第一幕 · 空白页",
+  kickerEn: "SCENE I · THE BLANK PAGE",
+  title: "“你迟到了。”",
+  titleEn: "“You are late.”",
+  text: "你在木凳下醒来。面前站着一只抱着旧书的猫。\n\n【纸鸢】你迟到了。\n【你】我们认识？\n【纸鸢】我不知道。但这本书一直替你留着位置。\n\nCatdex 自动翻开第一页。上面没有名字，只有一道像被爪子反复划过的空白。",
+  textEn: "You wake beneath a garden bench. A cat stands nearby, holding an old book.\n\n[Kite] You are late.\n[You] Do we know each other?\n[Kite] I do not know. But this book has kept a place for you.\n\nThe Catdex opens by itself. Its first page has no name—only a blank scratched over and over."
+ },
+ {
+  region: "sakura",
+  kicker: "第二幕 · 不完整的约定",
+  kickerEn: "SCENE II · AN UNFINISHED PROMISE",
+  title: "“我会尽力回来。”",
+  titleEn: "“I will try to come back.”",
+  text: "一段记忆从铃绳里闪过：两只小猫坐在樱花树下。\n\n【小猫】不许说尽力。\n【你】那我该说什么？\n【小猫】说你一定会回来。\n\n你张开嘴，却没有声音。画面里的另一只猫替你笑了笑，把铃绳系在自己腕上。",
+  textEn: "A memory flickers from the bell cord: two kittens beneath a cherry tree.\n\n[Kitten] Do not say “I will try.”\n[You] What should I say, then?\n[Kitten] Say you will come back.\n\nYou open your mouth, but no sound comes. The other kitten smiles for you and ties the cord around their wrist."
+ },
+ {
+  region: "creek",
+  kicker: "第三幕 · 醒来的名字",
+  kickerEn: "SCENE III · THE NAME THAT WOKE",
+  title: "有人还记得你。",
+  titleEn: "Someone still remembers you.",
+  text: "画面骤然熄灭。你听见水声、急促的脚步，还有一道被截断的呼唤。\n\n【未知的声音】这一次，我不会再让你离开。\n\n纸鸢合上 Catdex。\n【纸鸢】如果它真的找到了你，千万别急着答应它任何事。",
+  textEn: "The vision cuts to black. You hear rushing water, hurried paws, and a voice cut short.\n\n[Unknown voice] This time, I will not let you leave.\n\nKite closes the Catdex.\n[Kite] If it has truly found you, do not promise it anything. Not yet."
+ },
+ {
+  region: "home",
+  kicker: "旅程开始",
+  kickerEn: "THE JOURNEY BEGINS",
+  title: "先找到那些还记得自己的人。",
+  titleEn: "Find those who still remember themselves.",
+  text: "你可以从庭院出发，沿着地图寻找失去记忆的猫咪。每一段回声都属于一个真实的人，也可能属于你不愿想起的过去。\n\n纸鸢把一枚旧铃扣交给你。它背面刻着两个字：暮铃。",
+  textEn: "Leave the sanctuary and follow the world map to find cats losing their memories. Every echo belongs to a real person—and may belong to a past you are not ready to face.\n\nKite gives you an old bell clasp. Two words are engraved on its back: Muling."
+ }
 ];
 const ENDING=[
- {region:'ruins',kicker:'逆响之钟归于沉寂',kickerEn:'THE REVERSED BELL FALLS SILENT',
-  title:'暮铃终于停下了。',titleEn:'At last, Muling falls silent.',
-  text:'六道记忆锁在伙伴们的羁绊中逐一解开。逆响停止，其他猫咪的名字与记忆从钟声里回到它们身边。',
-  textEn:'One by one, the six memory locks yield to the bonds you have built. The reversed bell falls silent, and every stolen name and memory returns to its owner.'},
- {region:'volcano',kicker:'记忆归来',kickerEn:'THE MEMORY RETURNS',
-  title:'你从未抛下暮铃。',titleEn:'You never abandoned Muling.',
-  text:'暮铃终于看见那一天的完整记忆：你不是离开它，而是留下来封住灾变。它等了这么久，却一直把牺牲当成了告别。',
-  textEn:'Muling finally sees the whole memory: you did not leave them. You stayed behind to seal the catastrophe. They waited all this time, mistaking your sacrifice for goodbye.'},
- {region:'creek',kicker:'另一种羁绊',kickerEn:'A DIFFERENT KIND OF BOND',
-  title:'羁绊不是把谁留在原地。',titleEn:'A bond is not a chain.',
-  text:'你没有要求暮铃忘记过去，也没有答应永远不再离开。你们选择从今天开始重新同行——这一次，不再靠夺取记忆证明彼此重要。',
-  textEn:'You do not ask Muling to forget the past, and you do not promise never to leave again. You choose to walk together from today—not by taking memories, but by making new ones.'},
- {region:'ruins',kicker:'CATDEX · 第一页',kickerEn:'THE CATDEX · PAGE ONE',
-  title:'最后一页，写回了你的名字。',titleEn:'The last page writes your name again.',
-  text:'Catdex 恢复了你曾经的记忆，却没有抹去现在的你。第一页记录着你的新名字、你的伙伴，以及你们共同完成的故事。',
-  textEn:'The Catdex restores your old memories without erasing who you are now. Its first page records your new name, your companions and the story you wrote together.'},
- {region:'home',kicker:'新的清晨',kickerEn:'A NEW MORNING',
-  title:'星铃再次响起。',titleEn:'The Star Bell rings once more.',
-  text:'清晨，你和暮铃坐在庭院门口。伙伴们在阳光里追逐，Catdex 翻开了新的空白页。故事没有回到从前——它终于有了未来。',
-  textEn:'At dawn, you and Muling sit by the garden gate. Your companions chase the sunlight, and the Catdex opens a fresh blank page. The story does not return to what it was. At last, it has a future.'}
+ {
+  region: "ruins",
+  kicker: "终幕 · 未完成的愿望",
+  kickerEn: "FINALE · THE UNFINISHED WISH",
+  title: "“你终于回来了。”",
+  titleEn: "“You finally came back.”",
+  text: "暮铃站在星铃中央。它身边浮着无数被夺走的记忆，像一片没有星星的夜空。\n\n【暮铃】我把每一段都记得很清楚。你喜欢晒太阳，讨厌下雨，害怕我一个人睡着。只要拼得足够完整，你就会回来。\n【你】那不是我。那只是你记得的我。",
+  textEn: "Muling stands at the heart of the Star Bell. Stolen memories drift around them like a night without stars.\n\n[Muling] I remember everything. You loved sunbeams, hated rain, and worried I would fall asleep alone. If I make the picture complete enough, you will come back.\n[You] That would not be me. It would only be the version you remember."
+ },
+ {
+  region: "volcano",
+  kicker: "真相 · 门的另一边",
+  kickerEn: "THE TRUTH · THE OTHER SIDE OF THE DOOR",
+  title: "你没有离开它。",
+  titleEn: "You did not leave them.",
+  text: "最后一道封印松开。暮铃终于看见那一天：你把它推向出口，自己转身走进星铃。你喊了它的名字，可封印吞掉了声音。\n\n【暮铃】我等了这么久……\n【你】我知道。可你让别人替我们承受了这份等待。",
+  textEn: "The final seal breaks. Muling finally sees that day: you pushed them toward the exit and turned back into the Star Bell. You called their name, but the seal swallowed your voice.\n\n[Muling] I waited so long…\n[You] I know. But you made everyone else pay for that waiting."
+ },
+ {
+  region: "creek",
+  kicker: "选择 · 羁绊不是枷锁",
+  kickerEn: "CHOICE · A BOND IS NOT A CHAIN",
+  title: "“我不能答应永远不离开。”",
+  titleEn: "“I cannot promise never to leave.”",
+  text: "你没有替暮铃抹去罪责，也没有把它留在黑暗里。你要求它亲手归还每一段记忆，向每一只被伤害的猫道歉。\n\n【暮铃】如果我再听见铃声，你会来吗？\n【你】我会尽力回来。现在，这句话终于足够了。",
+  textEn: "You do not erase Muling’s wrongdoing, and you do not leave them in the dark. You ask them to return every memory and face every cat they hurt.\n\n[Muling] If I hear the bell again, will you come?\n[You] I will try to come back. This time, that is enough."
+ },
+ {
+  region: "ruins",
+  kicker: "Catdex · 第一页",
+  kickerEn: "THE CATDEX · PAGE ONE",
+  title: "名字，不必从过去借来。",
+  titleEn: "A name does not have to come from the past.",
+  text: "记忆回到每一位主人身边。Catdex 没有把你变回从前的样子；它留下了你现在的伙伴、选择和旅程。你在第一页写下一个新的名字。\n\n暮铃没有替你写。它把笔放在你手边，第一次学会等待你的回答。",
+  textEn: "Every memory returns to its owner. The Catdex does not turn you into who you used to be; it keeps the companions, choices and journey you have now. You write a new name on its first page.\n\nMuling does not write it for you. They set the pen beside your paw and, for the first time, wait for your answer."
+ },
+ {
+  region: "home",
+  kicker: "尾声 · 新的清晨",
+  kickerEn: "EPILOGUE · A NEW MORNING",
+  title: "这一次，铃声没有倒流。",
+  titleEn: "This time, the bell rings forward.",
+  text: "庭院门口，阳光落在两只猫之间。暮铃把旧铃绳放在地上，没有系住任何人的爪子。\n\n远处传来伙伴们的笑声。Catdex 翻开新的一页。故事没有回到过去——它终于可以继续向前。",
+  textEn: "At the garden gate, sunlight falls between two cats. Muling lays the old bell cord on the ground; it is tied around no one’s paw.\n\nYour companions laugh in the distance. The Catdex opens a new page. The story does not return to the past. At last, it can move forward."
+ }
 ];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const isZh=()=>window.MorrowwishI18n?.get?.()==='zh';
@@ -345,10 +425,22 @@ function showBossReveal(){
  const s=storyState();if(!s||!allSix(s)||s.bossDefeated)return;
  document.querySelector('.cb-story-overlay')?.remove();
  showSequence('reveal',[{
-  region:'ruins',kicker:'最后一页',kickerEn:'THE LAST PAGE',
-  title:'那道声音，终于有了名字。',titleEn:'The voice finally has a name.',
-  text:'暮铃就在星盘另一端。六段旋律已经启动逆响仪式。现在，你必须阻止它继续夺走其他猫咪的记忆。',
-  textEn:'Muling is waiting beyond the astrolabe. The six melodies have started the reversed-bell ritual. You must stop it before more memories are taken.'
+  region:'ruins',kicker:'最后一页 · 逆响仪式',kickerEn:'THE LAST PAGE · THE REVERSED RITUAL',
+  title:'你找回的每段记忆，都在替它敲响星铃。',titleEn:'Every memory you recovered has been ringing the Bell for them.',
+  text:'星盘中央浮现出那只熟悉的猫。它没有咆哮，只是伸出爪子，像从前在樱花树下那样等你牵住。
+
+【暮铃】我知道你会找到这里。你总会回来。
+【你】你拿走了他们的记忆。
+【暮铃】我只想把你带回家。
+
+六段旋律同时亮起。你终于明白：这一路的线索既在帮你找回过去，也在替暮铃完成仪式。',
+  textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.
+
+[Muling] I knew you would find me. You always come back.
+[You] You took their memories.
+[Muling] I only wanted to bring you home.
+
+All six melodies flare. You understand at last: the clues that restored your past have also been completing Muling’s ritual.'
  }],()=>showBossGate(),{canSkip:false});
 }
 function bossSpecies(){
