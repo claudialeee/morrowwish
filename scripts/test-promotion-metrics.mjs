@@ -98,14 +98,19 @@ assert.ok(posts.every(p=>!firstRound.posts.some(old=>old.url===p.url)),
 assert.ok(JSON.stringify(snap).indexOf('instagram-historical')<0,'legacy posts absent from snapshot');
 const dashboard=fs.readFileSync('public/studio-insights/index.html','utf8');
 assert.ok(dashboard.includes('id="video-detail-rows"'),'per-game detail table present');
+assert.ok(dashboard.includes('id="games-total"')&&dashboard.includes('gamesTrackedTotal'),'weighted tracked-funnel total row present');
 assert.ok(dashboard.includes("verifiedPlatforms=['youtube','instagram','tiktok','bluesky']")&&dashboard.includes('<th>Bluesky</th>'),
  'Bluesky must be a single column in the same per-game platform table');
 assert.ok(!dashboard.includes('id="bluesky-engagement-rows"'),
  'separate Bluesky engagement table must stay removed');
 assert.ok(dashboard.includes("platform==='bluesky'?['likes','reposts','replies','quotes']"),
  'Bluesky cells must use interaction counts, never views');
-assert.ok(!dashboard.includes('id="promotion-round-history"')&&!dashboard.includes('id="round-post-history-rows"'),
- 'deleted/current promotion-round archive must not be shown in the dashboard');
+assert.ok(dashboard.includes('id="archived-first-round"')&&dashboard.includes('id="archived-first-round-rows"'),
+ 'deleted first-round metrics must have their own independent archive frame');
+assert.ok(dashboard.includes('id="archived-first-round-posts"'),
+ 'all 28 first-round post readings must be inspectable by game and platform');
+assert.ok(!dashboard.includes('roundHistoryFirst')&&!dashboard.includes('roundHistorySecond'),
+ 'the deleted/current comparison table must stay removed');
 assert.ok(dashboard.indexOf('metricCard(t("statPv")')<dashboard.indexOf('metricCard(t("statHome")'),
  'homepage views must immediately follow overall pageviews');
 const build=fs.readFileSync('scripts/build-pages.mjs','utf8');

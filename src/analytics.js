@@ -133,7 +133,7 @@ function mainStats(x){
     seenVisits.add(id);
     z.views++; // distinct page visit, only for conversion denominators
     const events=sessionsByView.get(r.view_id)||[];
-    if(events.some(s=>Number(s.data.starts)>0))z.startedViews++;
+    if(events.some(s=>Number(s.data.signals?.funnel_first_run)>0||Number(s.data.starts)>0))z.startedViews++;
     z.starts+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.starts)||0),0);
     z.ends+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.ends)||0),0);
     z.abandons+=events.reduce((n,s)=>n+Math.max(0,Number(s.data.abandons)||0),0);

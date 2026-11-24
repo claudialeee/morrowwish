@@ -56,9 +56,12 @@ function dedupe(rows) {
 function summarizeGame(game, rows) {
   const visits = rows.filter(r => r.kind === "visit");
   const sessions = rows.filter(r => r.kind === "session");
-  const visitIds = new Set(visits.map(r => r.view_id || (r.visitor + "-" + r.day)).filter(Boolean));
-  const startedIds = new Set(sessions.filter(r => Number(r.data?.starts) > 0).map(r => r.view_id).filter(id => id && visitIds.has(id)));
-  const finishedIds = new Set(sessions.filter(r => Number(r.data?.ends) > 0).map(r => r.view_id).filter(id => id && visitIds.has(id)));
+  const visitKeys = new Set(visits.map(r => r.view_id || ("visit-row:" + String(r.id))));
+  const visitIds = new Set(visits.map(r => r.view_id).filter(Boolean));
+  const startedIds = new Set(sessions.filter(r => visitIds.has(r.view_id) &&
+    (Number(r.data?.signals?.funnel_first_run) > 0 || Number(r.data?.starts) > 0)).map(r => r.view_id));
+  const finishedIds = new Set(sessions.filter(r => visitIds.has(r.view_id) &&
+    (Number(r.data?.signals?.funnel_first_finish) > 0 || Number(r.data?.ends) > 0)).map(r => r.view_id));
   const finishedStarted = [...finishedIds].filter(id => startedIds.has(id));
   const v11Visits = new Set(visits.filter(r => Number(r.data?.trackingVersion) >= 11 && r.view_id).map(r => r.view_id));
   const v11Entered = new Set(sessions.filter(r => v11Visits.has(r.view_id) && Number(r.data?.signals?.bond_enter) > 0).map(r => r.view_id));
@@ -73,7 +76,7 @@ function summarizeGame(game, rows) {
     game,
     rawRows:rows.length,
     visitRows:visits.length,
-    uniquePageVisits:visitIds.size,
+    uniquePageVisits:visitKeys.size,
     sessionRows:sessions.length,
     uniqueSessionViews:uniq(sessions.map(r=>r.view_id)),
     rawBattleStarts:sum(sessions,"starts"),

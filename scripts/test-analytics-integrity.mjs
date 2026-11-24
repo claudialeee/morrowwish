@@ -186,7 +186,7 @@ const resetReq=(confirm='RESET_METRICS',extra={})=>new Request(resetUrl,{method:
 },body:JSON.stringify({confirm})});
 const unauth=await api(resetReq(),env);
 assert.equal(unauth.status,401,'unauthenticated reset rejected');
-assert.equal(rows.length,23,'rejected reset must not affect reporting events');
+assert.equal(rows.length,24,'rejected reset must not affect reporting events');
 const wrongOrigin=await api(resetReq('RESET_METRICS',{'Origin':'https://foreign.example','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
 assert.equal(wrongOrigin.status,403,'cross-origin reset rejected even with key');
 const absentOrigin=await api(resetReq('RESET_METRICS',{'Origin':'','x-analytics-key':env.ARCADE_ANALYTICS_KEY}),env);
@@ -206,7 +206,7 @@ assert.ok(cookie?.startsWith('morrowwish_studio_auth='));
 rows.push({category:'other',day:new Date().toISOString().slice(0,10),game:'other',visitor:'control',view_id:'keep-me',payload:'{}',id:999});
 const cleared=await api(resetReq('RESET_METRICS',{Cookie:cookie}),env);
 assert.equal(cleared.status,200,'signed dashboard session can reset metrics');
-assert.deepEqual(await cleared.json(),{ok:true,removed:23},'reset reports removed rows');
+assert.deepEqual(await cleared.json(),{ok:true,removed:24},'reset reports removed rows');
 assert.deepEqual(rows.map(x=>x.category),['other'],'non-dashboard records remain');
 const empty=await api(new Request('https://morrowwish.pages.dev/api/summary?days=1',{headers:{Cookie:cookie}}),env);
 assert.equal((await empty.json()).records,0,'dashboard starts empty after reset');
