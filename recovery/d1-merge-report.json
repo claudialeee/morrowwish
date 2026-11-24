@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-24T02:32:26.150Z",
+  "generatedAt": "2026-11-24T04:29:13.304Z",
   "databaseName": "morrowwish-analytics",
   "targetTimestamp": "2026-11-23T00:36:56.250Z",
   "startTimestamp": "2026-11-22T08:00:00.000Z",
   "backup": {
-    "atBookmark": "000002d8-00000000-0000512d-b22c7c2245af7c6345505ffeb1b24929",
-    "bytes": 963567,
-    "sha256": "fbc4046e498f08ed525554a8f8c55f3f8a0cda5fe3ebf7b0b76cded1d175846e",
+    "atBookmark": "000002ef-00000000-0000512d-1478009b1fa70b6309198aa8e05df390",
+    "bytes": 986980,
+    "sha256": "a79177e4fc04da15910da7d11d5eaafa5f7d85906c598192d49eb168e972ae4c",
     "keptOnlyOnEphemeralRunner": true
   },
   "historicalTotalRows": 819,
@@ -152,10 +152,10 @@
       "rows": 2
     }
   ],
-  "currentRowsBeforeMerge": 1317,
-  "currentRowsAfterMerge": 1317,
-  "totalRowsBeforeMerge": 1317,
-  "totalRowsAfterMerge": 1317,
+  "currentRowsBeforeMerge": 1351,
+  "currentRowsAfterMerge": 1351,
+  "totalRowsBeforeMerge": 1351,
+  "totalRowsAfterMerge": 1351,
   "restoredRows": 0,
   "duplicatesSkipped": 819,
   "insertedIdRange": null,
@@ -167,10 +167,10 @@
     "name": "morrowwish-analytics",
     "uuid": "fbd62f69-1811-4538-a17f-ecc5be8ad7cc",
     "version": "production",
-    "fileSize": 970752
+    "fileSize": 995328
   },
   "targetBookmark": "000001ff-00000030-0000512c-656cbe8c5d6d2984be29dcf10edc60ba",
   "restoreMessage": "Resetting Durable Object to restore database to bookmark: 000001ff-00000030-0000512c-656cbe8c5d6d2984be29dcf10edc60ba",
   "liveRowsAddedDuringMerge": 0,
-  "currentBookmarkAfterMerge": "000002da-00000000-0000512d-310b1fdef87c4011b85145d1ce1078eb"
+  "currentBookmarkAfterMerge": "000002f1-00000000-0000512d-954af6c43f76fd6e5a390e5fe18775a8"
 }
