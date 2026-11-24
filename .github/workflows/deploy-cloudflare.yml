@@ -24,6 +24,7 @@ on:
       - 'scripts/test-dashboard-history-browser.mjs' # Historical analytics DOM preservation is a release gate.
       - 'scripts/test-dashboard-sorting.mjs' # Dashboard regressions must retrigger release validation.
       - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
+      - 'scripts/cat-bond-rpg-cinematic-smoke.mjs'
       - 'scripts/cat-bond-crazygames-real-input.mjs' # Re-run visual/real-input portal checks when menu QA changes.
       - 'scripts/check-cat-bond-invariants.mjs' # Retest new skill/build invariants on release.
       - 'scripts/check-cat-bond-map-return.mjs' # Re-run release gate when map-return regression fixture changes.
@@ -146,6 +147,7 @@ jobs:
           node scripts/cat-bond-interaction-language-qa.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
+          node scripts/cat-bond-rpg-cinematic-smoke.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
       - name: Save CrazyGames yard menu layout screenshots

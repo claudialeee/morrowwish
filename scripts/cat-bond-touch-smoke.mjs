@@ -95,7 +95,15 @@ try{
       // Isolate navigation QA from randomly spawning wild cats that can
       // immediately open a separate prebattle dialog before the menu tap.
       await page.evaluate(()=>window.WorldMap.onEncounter(()=>{}));
-      await page.locator('#panel.open .map-destination.available').first().tap();
+      await page.waitForFunction(()=>WorldMap.mode==='map'&&WorldMap.atlasTargets.some(n=>n.unlocked));
+      assert.equal(await page.locator('#panel.open').count(),0,'World atlas must not be covered by a region picker');
+      const destination=await page.evaluate(()=>{
+        const n=WorldMap.atlasTargets.find(n=>n.unlocked),r=document.getElementById('scene').getBoundingClientRect();
+        return {x:r.left+n.x,y:r.top+n.y,id:n.id,hit:document.elementFromPoint(r.left+n.x,r.top+n.y)?.id};
+      });
+      assert.equal(destination.hit,'scene','Atlas destination must be tappable');
+      await page.touchscreen.tap(destination.x,destination.y);
+      await page.waitForFunction(id=>WorldMap.mode==='region'&&WorldMap.currentRegion===id,destination.id);
       await page.locator('#map-menu').waitFor({state:'visible'});
       const beforeMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
       assert.equal(beforeMenu.scene,'map','Opening a region must stay in exploration');

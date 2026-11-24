@@ -91,28 +91,22 @@ try{
       await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
       const firstSlot=page.locator('#intro-slot-list [data-slot="slot1"]');
       if(touch)await firstSlot.tap();else await firstSlot.click();
-      // New players first see the illustrated prologue; skip only in this
-      // input/layout fixture so the real starter-picker controls remain tested.
-      const prologue=page.locator('.cb-story-overlay');
-      if(await prologue.count()){
-        await prologue.waitFor({state:'visible',timeout:5000});
-        const skip=prologue.locator('.cb-story-skip');
-        if(touch)await skip.tap({timeout:5000});else await skip.click({timeout:5000});
-        await prologue.waitFor({state:'detached',timeout:5000});
-      }
       await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
-      assert.equal(await page.locator('#intro').isVisible(),false,
-        'Start Adventure must dismiss intro after player interaction');
+      assert.equal(await page.locator('#intro').isVisible(),false,'Start must dismiss intro');
       const starter=page.locator('#panel.open .dex-cell').first();
       if(touch)await starter.tap();else await starter.click();
       await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
-      // The RPG now opens on its regional map after the starter is chosen;
-      // the yard is an optional sanctuary. Return through the real map control
-      // before asserting that yard-only navigation appears.
-      const mapBack=page.locator('#map-back-yard');
-      assert.equal(await mapBack.isVisible(),true,
-        'First-time RPG should open the regional map after choosing a starter');
-      if(touch)await mapBack.tap();else await mapBack.click();
+      const prologue=page.locator('.cb-story-overlay.is-visible');
+      await prologue.waitFor({state:'visible',timeout:15000});
+      const skip=prologue.locator('.cb-story-skip');
+      if(!(await skip.isVisible())){if(touch)await prologue.locator('.cb-story-next').tap();else await prologue.locator('.cb-story-next').click();}
+      if(touch)await skip.tap();else await skip.click();
+      await prologue.waitFor({state:'detached',timeout:10000});
+      await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map'&&WorldMap.atlasTargets.length===5);
+      assert.equal(await page.locator('#panel.open').count(),0,'Atlas is the primary RPG screen');
+      // Real canvas back affordance in the portal (the host owns fullscreen).
+      const back=await page.evaluate(()=>{const r=document.getElementById('scene').getBoundingClientRect();return{x:r.left+28,y:r.top+24};});
+      if(touch)await page.touchscreen.tap(back.x,back.y);else await page.mouse.click(back.x,back.y);
       await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
       // Scene state flips before the map panel's close transition and yard
       // chrome have finished updating. Assert the actual rendered yard, not

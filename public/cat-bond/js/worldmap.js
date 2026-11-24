@@ -1270,6 +1270,8 @@
     update: update,
     draw: draw,
     handleTap: handleTap,
+    // Read-only rendered positions for accessibility and native-input regression tests.
+    get atlasTargets(){return mode==='map'?mapNodes.map(n=>({id:n.region.id,x:n.px,y:n.py,width:n.cardW,height:n.cardH,unlocked:isUnlocked(n.region.id)})):[];},
     setDestination: setDestination,
     panBy: panBy,
     get view(){return world&&{camX:world.cam.x,camY:world.cam.y,px:world.px,py:world.py,panMode:!!world.panMode,target:!!world.target};},

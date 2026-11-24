@@ -39,6 +39,8 @@
   // Reparent the original nodes so existing game listeners and IDs survive.
   if(crazygames && typeof document.addEventListener==='function'){
     const mountYardDock=()=>{
+      // Portal players must not have outbound first-party navigation, even hidden.
+      document.querySelectorAll('a.cb-home').forEach(el=>el.remove());
       const stage=document.getElementById('stage');
       const tabs=document.getElementById('tabbar');
       const actions=document.getElementById('yard-actions');

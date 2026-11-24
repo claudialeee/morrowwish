@@ -36,7 +36,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=last-page-watercolor-cutscenes-20261124-v4','js/main.js?v=starter-before-prologue-20261124-v5','id="intro-cloud-save"','js/story-cloud.js?v=last-page-watercolor-cutscenes-20261124-v6','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v4','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=last-page-watercolor-cutscenes-20261124-v4','js/main.js?v=starter-before-prologue-20261124-v5','id="intro-cloud-save"','js/story-cloud.js?v=last-page-watercolor-cutscenes-20261124-v6','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
