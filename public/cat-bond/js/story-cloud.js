@@ -377,23 +377,10 @@ function showSequence(kind,pages,done,options={}){
  }
 }
 function persistIntroSeen(){
- // Mark the prologue seen on the LIVE game state and persist through the normal
- // save path (the active save slot), NOT the legacy single-save key. The old code
- // wrote {story:{version,introSeen}} straight into catbond_save_v1 AND replaced
- // state().story with that stub — clobbering the fresh new-game state and the
- // three-slot save, which bounced the player back to the intro right after the
- // "继续冒险" button (owner: 点继续冒险后跳回开头). Keep the legacy write only as a
- // best-effort fallback when the game state isn't up yet.
- const S=state();
- if(S){
-  S.story=(S.story&&typeof S.story==='object')?S.story:{};
-  S.story.version=1;S.story.introSeen=true;
-  try{window.State?.save?.();}catch{}
-  return;
- }
- const data=readLocal();data.story=data.story&&typeof data.story==='object'?data.story:{};
- data.story.version=1;data.story.introSeen=true;
- writeLocal(data);
+ const S=state();if(!S)return;
+ S.story=S.story&&typeof S.story==='object'?S.story:{};
+ S.story.version=S.story.version||1;S.story.introSeen=true;
+ save();
 }
 function startPrologue(done){
  showSequence('prologue',PROLOGUE,()=>{
@@ -841,16 +828,17 @@ async function restoreWithToken(token){
   found=true;
  }
  let legacyMigrated=false;
- if(!found){
+ if(!SAVE_SLOT_IDS.every(id=>entries[id])){
   const legacy=await fetchCloud(token);
   if(legacy.exists){
    const parsed=JSON.parse(await decrypt(legacy,token));
    if(parsed?.version===2&&validSavePayload(parsed.slots)){
     for(const id of SAVE_SLOT_IDS){
+     if(entries[id])continue;
      const data=parsed.slots[id]?.data;
      if(validSavePayload(data)){entries[id]={data,savedAt:parsed.slots[id]?.savedAt||data.lastSeen||legacy.updatedAt,revision:1};found=true;}
     }
-   }else if(validSavePayload(parsed)&&Array.isArray(parsed.cats)){
+   }else if(!entries.slot1&&validSavePayload(parsed)&&Array.isArray(parsed.cats)){
     entries.slot1={data:parsed,savedAt:parsed.lastSeen||legacy.updatedAt,revision:1};found=true;
    }
    legacyMigrated=found;
@@ -872,6 +860,7 @@ async function restoreWithToken(token){
   const migration=await syncNow(false);
   if(!migration.ok)console.warn('Legacy cloud save was restored locally; per-slot cloud migration will retry on the next save.');
  }
+ State.hardReset();
  location.reload();
 }
 let syncTimer=null,syncPromise=null,lastStatus='';
@@ -907,8 +896,8 @@ async function syncNow(force=false,slotIds=null){
  if(!token)return {ok:false,disabled:true};
  const requested=slotIds?(Array.isArray(slotIds)?slotIds:[slotIds]):SAVE_SLOT_IDS.slice();
  if(syncPromise){
-  requested.forEach(id=>pendingSyncSlots.add(id));
-  return syncPromise;
+  await syncPromise;
+  return syncNow(force,requested);
  }
  syncPromise=(async()=>{
   const results=[];

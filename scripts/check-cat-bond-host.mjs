@@ -54,7 +54,10 @@ assert.equal(links[3].hidden,false,'Non-game external links are evaluated separa
 assert.ok(html.indexOf('src="js/platform.js')>0&&
   html.indexOf('src="js/platform.js')<html.indexOf('rel="stylesheet"'),
   'Host mode must be set before the game CSS and deferred scripts load');
-assert.match(html,/收集 33 种猫/);
+assert.match(html,/id="intro-start"/);
+assert.match(html,/id="intro-continue"/);
+assert.match(html,/id="cb-system-toggle"/);
+assert.ok(!html.includes('id="intro-reset"'));
 assert.ok(telemetry.includes("CatBondPlatform?.firstPartyAnalytics===false"),
   'Third-party mode disables first-party tracking');
 assert.ok(telemetry.includes('if(!disabled&&navigator.globalPrivacyControl'),
