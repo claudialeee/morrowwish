@@ -772,12 +772,13 @@
     for(var r=0;r<REGIONS.length;r++){
       var reg=REGIONS[r],px,py;
       if(portraitAtlas){
-        var top=Math.max(142,H*.17),bottom=Math.min(H-132,H*.84),step=(bottom-top)/4;
+        var top=Math.max(176,H*.22),bottom=Math.min(H-128,H*.85),step=(bottom-top)/4;
+        cardH=Math.min(cardH,Math.max(42,step*.62));
         px=W*(r%2===0?.28:.72);
         py=bottom-r*step;
       }else if(compactAtlas){
-        px=W*(.1+r*.2);
-        py=H*.52+(r===1||r===3?-9:9);
+        px=W*(.12+r*.19);
+        py=H*.51+(r%2===0?0:-8);
       }else{
         px=40+reg.node.x*(W-80);
         py=70+reg.node.y*(H-150);
