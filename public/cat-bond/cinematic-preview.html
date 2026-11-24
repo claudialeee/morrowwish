@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cat Bond — Cinematic Art Preview</title>
+<style>
+:root{color-scheme:dark;background:#0e1b25;color:#f0e5d0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;padding:22px;background:radial-gradient(ellipse at 50% 0,#2b4350,#0e1b25 70%);min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;max-width:1500px;margin:0 auto 18px}
+h1{font:600 clamp(22px,3vw,34px)/1.2 Georgia,serif;margin:0;color:#f1dfbf}
+header p{margin:5px 0 0;color:#aab9b5;font-size:13px}
+nav{display:flex;flex-wrap:wrap;gap:8px;max-width:1500px;margin:0 auto 14px}
+nav button{border:1px solid #8d7959;border-radius:4px;background:#1a303b;color:#eee0c5;padding:10px 13px;min-height:42px;cursor:pointer}
+nav button:hover{background:#294751}nav button:focus-visible{outline:2px solid #f0d29a;outline-offset:2px}
+#preview{max-width:1500px;height:min(78vh,900px);min-height:480px;margin:0 auto;border:1px solid #a98b5e;box-shadow:0 24px 80px #0008}
+#status{max-width:1500px;margin:10px auto;color:#aebdb8;font-size:12px}
+@media(max-width:680px){body{padding:10px}#preview{height:78svh;min-height:380px}}
+</style>
+</head>
+<body>
+<header><div><h1>CAT BOND · THE LAST RESONANCE</h1><p>Original cinematic source preview · branch-only · not production-integrated</p></div><span id="status">Choose a canon scene to preview.</span></header>
+<nav id="scene-list" aria-label="Cinematic scenes"></nav>
+<div id="preview" data-catbond-cinematic></div>
+<script src="js/cinematic-presentation.js"></script>
+<script src="js/cinematic-scenes.js"></script>
+<script>
+(() => {
+ const root=document.querySelector('[data-catbond-cinematic]');
+ const status=document.getElementById('status');
+ const player=window.CatBondCinematicPresentation.create(root,{
+   language:()=>document.documentElement.lang,
+   onComplete:({sceneId})=>{status.textContent='Completed: '+sceneId;},
+   onSkip:({sceneId})=>{status.textContent='Skipped: '+sceneId;}
+ });
+ player.registerAll(window.CatBondCinematicScenes);
+ const nav=document.getElementById('scene-list');
+ window.CatBondCinematicScenes.forEach(scene=>{
+   const button=document.createElement('button');
+   button.type='button';
+   button.textContent=scene.sourceSceneId+' · '+(scene.title.zh||scene.id);
+   button.addEventListener('click',()=>{document.documentElement.lang='zh';player.setLanguage('zh');player.play(scene.id);status.textContent='Playing: '+scene.id;});
+   nav.appendChild(button);
+ });
+ const language=document.createElement('button');
+ language.type='button';language.textContent='EN / 中文';
+ language.addEventListener('click',()=>{const lang=document.documentElement.lang==='zh'?'en':'zh';document.documentElement.lang=lang;player.setLanguage(lang);});
+ nav.appendChild(language);
+})();
+</script>
+</body>
+</html>
