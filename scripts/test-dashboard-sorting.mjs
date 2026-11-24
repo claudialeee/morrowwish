@@ -191,7 +191,7 @@ for(const language of ['zh','en'])for(const fixture of [
  const nodes={};
  const env={lang:language,fixture:[fixture],gameNames:{'flip-dash':{zh:'翻转冲刺',en:'Flip Dash'}},
   escapeHTML:s=>String(s??''),format:n=>String(n),pct:(a,b)=>b?Math.round(a*1000/b)/10:0,
-  $:id=>(nodes[id]??={innerHTML:''})};
+  t:key=>key,$:id=>(nodes[id]??={innerHTML:''})};
  const script=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+script,env);
