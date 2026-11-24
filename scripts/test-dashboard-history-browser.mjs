@@ -42,20 +42,20 @@ try{
   const row=sample(mixed);
   const auditedPV=mixed?121:26;
   const otherGames=[
-   {game:'pawsibly-innocent',pageviews:27,retries:0,visitFunnel:{pageviews:27,startedViews:8,finishedViews:5}},
-   {game:'tiny-town',pageviews:18,retries:0,visitFunnel:{pageviews:18,startedViews:6,finishedViews:0}},
-   {game:'elsewhere',pageviews:15,retries:0},
+   {game:'pawsibly-innocent',pageviews:28,retries:14,visitFunnel:{pageviews:28,startedViews:9,finishedViews:6}},
+   {game:'tiny-town',pageviews:19,retries:6,visitFunnel:{pageviews:19,startedViews:7,finishedViews:2}},
+   {game:'elsewhere',pageviews:16,retries:0,visitFunnel:{pageviews:16,startedViews:1,finishedViews:1}},
    {game:'flip-dash',pageviews:5,retries:0},
-   {game:'parcel-panic',pageviews:11,retries:0,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
+   {game:'parcel-panic',pageviews:11,retries:1,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
    {game:'pocket-aquarium',pageviews:12,retries:0}
   ];
   const gamePageviews=auditedPV+otherGames.reduce((n,x)=>n+x.pageviews,0);
-  const homepagePageviews=131;
+  const homepagePageviews=134;
   const sitewidePageviews=gamePageviews+homepagePageviews;
   const hub={game:'hub',pageviews:homepagePageviews,retries:0};
   const summary={
    updated:'2026-11-23T23:56:00.000Z',from:'2026-11-22T08:00:00.000Z',days:2,records:50,
-   rollup:{pageviews:sitewidePageviews,starts:82,ends:79,retries:1},
+   rollup:{pageviews:sitewidePageviews,starts:148,ends:110,retries:22},
    byGame:[row,...otherGames,hub],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
     platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
       {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
@@ -113,8 +113,8 @@ try{
     .map(s=>s.trim().replace(/\s+/g,' '));
    assert.equal(totalCells[0],String(gamePageviews),
     'Seven-game total must include games without gameplay tracking, but exclude homepage');
-   assert.equal(totalCells[1],'26','Total Play must sum page-level tracked visits');
-   assert.equal(totalCells[2],'13','Total Finish must sum page-level tracked visits');
+   assert.equal(totalCells[1],'29','Total Play must sum page-level tracked visits');
+   assert.equal(totalCells[2],'17','Total Finish must sum page-level tracked visits');
    const cards=await page.locator('#focus-grid .focus-card h3 a').evaluateAll(
     nodes=>nodes.map(n=>n.getAttribute('href')));
    assert.deepEqual(cards,[
@@ -151,4 +151,4 @@ try{
 }finally{
  await browser.close();
 }
-console.log('Real Chromium dashboard gate passed: page-level play/finish, all-seven-game pageview totals, separate homepage/sitewide totals, no promotion archive, and bilingual phone/desktop rendering.');
+console.log('Real Chromium dashboard gate passed: page-level play/finish, all-seven-game pageview totals, separate homepage/sitewide totals, preserved source archive, no visible promotion archive, and bilingual phone/desktop rendering.');
