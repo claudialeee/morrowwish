@@ -665,26 +665,38 @@ function openCloudPanelImpl(){
  if(!window.crypto?.subtle){alert(t('当前浏览器不支持加密云存档。','This browser does not support encrypted cloud saves.'));return;}
  renderCloudPanel();
 }
-// Patch the existing menu, rather than adding another floating HUD button.
+// Keep the two Last Page actions attached to the existing expedition menu.
+// The main UI rebuilds this panel on a language change; sync after that rebuild
+// as well, so narrow/portal layouts never retain stale or missing labels.
+function syncExploreMenuActions(){
+ const actions=document.querySelector('#panel .explore-menu-actions');
+ if(!actions)return;
+ for(const [action,icon,zh,en] of [
+  ['journal','📖','故事手册','Story journal'],
+  ['cloud','☁️','云存档','Cloud save']
+ ]){
+  let button=actions.querySelector('[data-cb-story-action="'+action+'"]');
+  if(!button){
+   button=document.createElement('button');button.type='button';
+   button.dataset.cbStoryAction=action;
+   button.addEventListener('click',()=>action==='journal'?openJournal():openCloudPanelImpl());
+   actions.append(button);
+  }
+  button.innerHTML='<span aria-hidden="true">'+icon+'</span><span>'+t(zh,en)+'</span>';
+ }
+}
 if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
  const original=window.UI.openExploreMenu;
  const wrapped=function(...args){
   const result=original.apply(this,args);
-  const actions=document.querySelector('#panel .explore-menu-actions');
-  if(actions&&!actions.querySelector('[data-cb-story-action]')){
-   const add=(action,icon,label)=>{
-    const button=document.createElement('button');button.type='button';button.dataset.cbStoryAction=action;
-    button.innerHTML='<span aria-hidden="true">'+icon+'</span><span>'+label+'</span>';
-    button.addEventListener('click',()=>action==='journal'?openJournal():openCloudPanelImpl());
-    actions.append(button);
-   };
-   add('journal','📖',t('故事手册','Story journal'));
-   add('cloud','☁️',t('云存档','Cloud save'));
-  }
+  syncExploreMenuActions();
   return result;
  };
  wrapped.__lastPage=true;window.UI.openExploreMenu=wrapped;
 }
+window.addEventListener('morrowwish-language-change',()=>{
+ setTimeout(syncExploreMenuActions,0);
+});
 // A reset starts a fresh local run; the next save may replace this browser's cloud slot.
 if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  const original=window.State.save.bind(window.State);
