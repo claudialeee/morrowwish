@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="Emberforge battle arena">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#101b28"/><stop offset=".52" stop-color="#27333d"/><stop offset="1" stop-color="#5a3a2d"/></linearGradient>
+ <linearGradient id="basalt" x2=".15" y2="1"><stop stop-color="#5b5b59"/><stop offset=".45" stop-color="#343d43"/><stop offset="1" stop-color="#171f29"/></linearGradient>
+ <linearGradient id="copper" x2=".8" y2="1"><stop stop-color="#e2b57b"/><stop offset=".2" stop-color="#9d6849"/><stop offset=".55" stop-color="#60463b"/><stop offset="1" stop-color="#292d33"/></linearGradient>
+ <linearGradient id="molten" x2="0" y2="1"><stop stop-color="#fff1bd"/><stop offset=".2" stop-color="#ffb45f"/><stop offset=".55" stop-color="#d75d32"/><stop offset="1" stop-color="#722c25"/></linearGradient>
+ <radialGradient id="furnaceGlow"><stop stop-color="#ffe6a2" stop-opacity=".9"/><stop offset=".22" stop-color="#f28b4d" stop-opacity=".55"/><stop offset="1" stop-color="#d65c37" stop-opacity="0"/></radialGradient>
+ <radialGradient id="smoke"><stop stop-color="#a0a5a2" stop-opacity=".28"/><stop offset="1" stop-color="#5c6670" stop-opacity="0"/></radialGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#55514b"/><stop offset=".45" stop-color="#343b40"/><stop offset="1" stop-color="#141e28"/></linearGradient>
+ <pattern id="stone" width="112" height="76" patternUnits="userSpaceOnUse"><path d="M0 2H52L59 37H0M59 37H112V75H64Z" fill="none" stroke="#9b9588" stroke-opacity=".15" stroke-width="2"/><path d="M8 12l12-4m57 38 18-5" stroke="#d6c6aa" stroke-opacity=".08" stroke-width="3"/></pattern>
+ <pattern id="engrave" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M22 4L39 22 22 40 5 22Z M22 11L32 22 22 33 12 22Z" fill="none" stroke="#e5b779" stroke-opacity=".35" stroke-width="1.3"/></pattern>
+ <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="18" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="35"/></filter>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="17"/><feColorMatrix values="0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .34 0 0 0 .12 0"/></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#sky)"/>
+<ellipse cx="1000" cy="400" rx="750" ry="460" fill="url(#furnaceGlow)"/>
+<g opacity=".45" fill="#19242e">
+ <path d="M0 520V305h120v-98h74v313h72V350h102v-95h90v260h75V210h80v310h92V325h115v-92h82v287h105V310h92v210h100V175h74v345h110V320h80v200h90V250h90v270h120v-90h78v90h100v220H0Z"/>
+ <path d="M0 412h192v-28h75v28h170v-44h72v44h164v-25h100v25h150v-52h70v52h180v-38h80v38h130v-24h72v24h185v-50h80v50h140v180H0Z" fill="#27333b"/>
+</g>
+<g opacity=".65" fill="none" stroke="#b47c56" stroke-width="18">
+ <path d="M95 520V300q0-105 110-105t110 105v220M420 515V270q0-90 94-90t94 90v245M1360 520V240q0-120 125-120t125 120v280M1650 520V315q0-92 96-92t96 92v205"/>
+</g>
+<g>
+ <path d="M760 535V272q0-220 200-220t200 220v263Z" fill="#26323a" stroke="#9c7255" stroke-width="22"/>
+ <path d="M812 530V285q0-160 148-160t148 160v245Z" fill="#171e25" stroke="#d2a06c" stroke-width="9"/>
+ <path d="M845 505V295q0-120 115-120t115 120v210Z" fill="url(#molten)" opacity=".9" filter="url(#glow)"/>
+ <path d="M882 500V310q0-80 78-80t78 80v190Z" fill="#3a2724" stroke="#f0bc78" stroke-width="8"/>
+ <path d="M925 500V310q0-38 35-38t35 38v190Z" fill="#ffbf72" opacity=".85"/>
+ <path d="M730 535H1190M785 250H1135M820 185H1100" stroke="#c18a60" stroke-width="16"/>
+ <path d="M780 532l-45 65h480l-45-65" fill="#6c594a" stroke="#b58c65" stroke-width="10"/>
+ <path d="M870 120l-22-70h224l-22 70" fill="#39444b" stroke="#b58c65" stroke-width="12"/>
+ <path d="M905 48l55-42 55 42" fill="none" stroke="#d8b17b" stroke-width="12"/>
+</g>
+<g fill="none" stroke="#a87552" stroke-width="14" opacity=".9">
+ <path d="M0 455H580q60 0 100 65l90 115M1920 440H1400q-70 0-110 70l-80 120"/>
+ <path d="M180 300v250m-35-215h70M550 260v280m-35-240h70M1430 255v285m-35-250h70M1740 290v260m-35-225h70"/>
+ <path d="M320 380h180v-55h95M1490 370h180v-55h90"/>
+</g>
+<g fill="none" stroke="#d18b57" stroke-width="10" opacity=".75">
+ <path d="M0 610H540l120 120h-180L390 650H0M1920 610h-530l-120 120h180l90-80h380"/>
+ <path d="M230 515v130M310 515v130M1600 515v130M1680 515v130"/>
+</g>
+<g opacity=".7">
+ <ellipse cx="960" cy="450" rx="530" ry="300" fill="url(#furnaceGlow)"/>
+ <ellipse cx="960" cy="440" rx="430" ry="260" fill="url(#smoke)"/>
+ <path d="M250 530q-60-110 10-200t150-10q-100 60-55 210M1440 525q70-170 160-120t40 210q-80-110-200-90" fill="#8e9697" opacity=".16" filter="url(#soft)"/>
+</g>
+<!-- suspended chains and crane arms -->
+<g stroke="#5f6260" stroke-width="10" fill="none">
+ <path d="M580 0v170l-65 70v110M1340 0v125l80 70v170M270 0v155l55 60v150M1660 0v150l-60 65v150"/>
+ <path d="M550 320h70m-105-28h140M1380 365h90m-120-30h150"/>
+</g>
+<g fill="#b88b61" stroke="#352e2b" stroke-width="7">
+ <circle cx="580" cy="355" r="24"/><circle cx="1420" cy="385" r="24"/><circle cx="325" cy="370" r="18"/><circle cx="1600" cy="370" r="18"/>
+</g>
+<!-- midground furnace catwalk -->
+<path d="M0 610L420 610 510 670H1410l90-60h420v165H0Z" fill="url(#basalt)" stroke="#9a7454" stroke-width="12"/>
+<path d="M0 640H430l90 65h880l90-65h430" fill="none" stroke="#d4a276" stroke-width="8"/>
+<path d="M0 610H1920" stroke="#e5b98b" stroke-width="4" opacity=".4"/>
+<!-- molten channels -->
+<path d="M0 810l330-50 190 70-130 250H0Z" fill="#241f24" stroke="#b27651" stroke-width="18"/>
+<path d="M0 835l330-48 138 60-104 233H0Z" fill="url(#molten)" opacity=".88"/>
+<path d="M1920 805l-330-50-190 70 130 250h390Z" fill="#241f24" stroke="#b27651" stroke-width="18"/>
+<path d="M1920 835l-330-48-138 60 104 233h362Z" fill="url(#molten)" opacity=".88"/>
+<path d="M580 1080l140-260h480l140 260" fill="#211f24" stroke="#9d7457" stroke-width="18"/>
+<path d="M720 1080l120-230h240l120 230" fill="#302c2c" stroke="#d08b56" stroke-width="8"/>
+<!-- playable floor -->
+<path d="M0 735Q960 680 1920 735V1080H0Z" fill="url(#floor)"/>
+<path d="M0 735Q960 680 1920 735V1080H0Z" fill="url(#stone)" opacity=".65"/>
+<path d="M0 745Q960 692 1920 745" fill="none" stroke="#b6a18a" stroke-opacity=".48" stroke-width="8"/>
+<g stroke="#b18a66" stroke-opacity=".4" fill="none" stroke-width="5">
+ <path d="M960 720L960 1080M740 720L420 1080M1180 720L1500 1080M520 735L140 1080M1400 735L1780 1080"/>
+ <path d="M0 840Q960 800 1920 840M0 940Q960 900 1920 940M0 1030Q960 1000 1920 1030"/>
+</g>
+<g fill="none" stroke="#f2b26d" stroke-width="5" opacity=".7">
+ <path d="M760 860l-42 70 65 38-20 72M1160 850l44 80-60 40 20 75M420 790l-28 45 34 28M1500 790l28 45-34 28"/>
+</g>
+<!-- foreground forge tools and railings -->
+<g stroke="#b58a66" stroke-width="12" fill="none">
+ <path d="M0 690h250v-70h110v70h220M1920 690h-250v-70h-110v70h-220"/>
+ <path d="M100 690v65m70-65v65m70-65v65m1510-65v65m70-65v65m70-65v65"/>
+</g>
+<g fill="#a5a09a" opacity=".4"><path d="M70 720l60-24 60 24-60 22Z"/><path d="M1780 720l60-24 60 24-60 22Z"/></g>
+<!-- sparks, soot and atmosphere -->
+<g fill="#ffc47d">
+ <circle cx="390" cy="480" r="4"/><circle cx="500" cy="360" r="3"/><circle cx="680" cy="550" r="5"/><circle cx="1250" cy="460" r="4"/><circle cx="1510" cy="510" r="3"/><circle cx="1700" cy="430" r="4"/><circle cx="920" cy="630" r="3"/>
+</g>
+<g fill="#ff9a58" opacity=".45"><circle cx="320" cy="600" r="11"/><circle cx="620" cy="520" r="8"/><circle cx="1300" cy="600" r="9"/><circle cx="1660" cy="590" r="10"/></g>
+<rect width="1920" height="1080" filter="url(#grain)" opacity=".18"/>
+<rect width="1920" height="1080" fill="none" stroke="#0b1119" stroke-width="70" opacity=".28"/>
+</svg>

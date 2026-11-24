@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+<defs>
+ <linearGradient id="iron" x2=".8" y2="1"><stop stop-color="#b0a08a"/><stop offset=".18" stop-color="#65676a"/><stop offset=".48" stop-color="#303a42"/><stop offset="1" stop-color="#151d25"/></linearGradient>
+ <linearGradient id="brass" x2=".8" y2="1"><stop stop-color="#f0c98c"/><stop offset=".25" stop-color="#b17b4d"/><stop offset=".62" stop-color="#69483b"/><stop offset="1" stop-color="#302b2c"/></linearGradient>
+ <radialGradient id="core"><stop stop-color="#fff0b4"/><stop offset=".28" stop-color="#ffb15e"/><stop offset=".62" stop-color="#c94c2d"/><stop offset="1" stop-color="#582b2b"/></radialGradient>
+ <linearGradient id="shadow" x2="0" y2="1"><stop stop-color="#29323a"/><stop offset="1" stop-color="#101821"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <pattern id="etch" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M13 2L23 13 13 24 3 13Z" fill="none" stroke="#e5bb7b" stroke-opacity=".45" stroke-width="1.5"/></pattern>
+</defs>
+<ellipse cx="322" cy="575" rx="205" ry="36" fill="#090f15" opacity=".52"/>
+<!-- segmented tail -->
+<path d="M430 385q125 8 136 93t-63 91" fill="none" stroke="#1c2730" stroke-width="42" stroke-linecap="round"/>
+<path d="M430 385q125 8 136 93t-63 91" fill="none" stroke="url(#brass)" stroke-width="25" stroke-linecap="round" stroke-dasharray="27 9"/>
+<path d="M495 548l-30 40 54-13Z" fill="#a36a49" stroke="#222b32" stroke-width="8"/>
+<!-- back legs -->
+<path d="M205 405q-52 75-37 151l-27 30q-12 20 13 27l91-3q23-11 8-31l-4-94 65-50Z" fill="url(#iron)" stroke="#161e25" stroke-width="13"/>
+<path d="M380 415q47 63 39 142l34 23q17 17-5 31l-89-1q-24-11-11-34l-12-90-48-51Z" fill="url(#iron)" stroke="#161e25" stroke-width="13"/>
+<!-- paws -->
+<path d="M142 568l-31 34q-9 22 19 25l104-4q23-12 2-31l-17-24Z" fill="url(#brass)" stroke="#252d33" stroke-width="10"/>
+<path d="M385 570l-8 34q-3 22 24 23l90-4q24-12 2-30l-34-25Z" fill="url(#brass)" stroke="#252d33" stroke-width="10"/>
+<path d="M148 603h76m191 5h65" stroke="#f1d19a" stroke-width="5" opacity=".55"/>
+<!-- body and chest -->
+<path d="M180 295q42-72 133-72t149 68l-10 143q-68 65-137 59-95 3-151-62Z" fill="url(#iron)" stroke="#171f28" stroke-width="16"/>
+<path d="M204 315q112-79 232 0l-22 103q-90 58-185 0Z" fill="url(#brass)" stroke="#272f34" stroke-width="10"/>
+<path d="M238 330q82-49 164 0l-12 83q-78 45-142 0Z" fill="url(#core)" stroke="#f0c27b" stroke-width="9" filter="url(#glow)"/>
+<circle cx="320" cy="370" r="47" fill="none" stroke="#ffe5a9" stroke-width="7"/>
+<circle cx="320" cy="370" r="31" fill="none" stroke="#7c4130" stroke-width="7" stroke-dasharray="12 7"/>
+<path d="M320 329v82M279 370h82" stroke="#ffe7b4" stroke-width="4" opacity=".8"/>
+<!-- shoulders -->
+<path d="M168 280q-66-44-83 29l22 88q35 30 90-3l25-77Z" fill="url(#brass)" stroke="#1c252c" stroke-width="13"/>
+<path d="M472 280q67-44 84 29l-22 88q-35 30-90-3l-25-77Z" fill="url(#brass)" stroke="#1c252c" stroke-width="13"/>
+<path d="M111 318l43-31 42 41-31 48-50-8ZM526 318l-43-31-42 41 31 48 50-8Z" fill="url(#etch)" stroke="#d7a86e" stroke-width="4"/>
+<!-- arms and hammer paws -->
+<path d="M112 365q-42 46-29 101l36 24q41-19 54-64l-7-54Z" fill="url(#iron)" stroke="#161f28" stroke-width="12"/>
+<path d="M527 365q44 46 31 101l-37 24q-40-19-53-64l7-54Z" fill="url(#iron)" stroke="#161f28" stroke-width="12"/>
+<path d="M87 454l-26 25 16 64q17 23 49 6l19-42-28-43Z" fill="url(#brass)" stroke="#1b252c" stroke-width="11"/>
+<path d="M554 454l26 25-16 64q-17 23-49 6l-19-42 28-43Z" fill="url(#brass)" stroke="#1b252c" stroke-width="11"/>
+<path d="M69 500l30-16 27 15-10 34-36 5ZM571 500l-30-16-27 15 10 34 36 5Z" fill="#f0c88a" opacity=".7"/>
+<!-- head, ears and mane -->
+<path d="M219 200l-27-112q-4-23 21-14l97 82M421 200l27-112q4-23-21-14l-97 82" fill="url(#iron)" stroke="#1a2229" stroke-width="15"/>
+<path d="M224 170l-8-55 67 57M416 170l8-55-67 57" fill="#7b5141" stroke="#e0b57a" stroke-width="7"/>
+<path d="M190 205q12-93 130-100 118 7 130 100l-28 101q-49 62-102 62-62 0-102-62Z" fill="url(#brass)" stroke="#171f27" stroke-width="16"/>
+<path d="M206 212q20-78 114-80 94 2 114 80l-25 82q-41 43-89 43-48 0-89-43Z" fill="url(#iron)" stroke="#c08a5c" stroke-width="7"/>
+<path d="M206 207q-20 44-3 89l27-12 10-62ZM434 207q20 44 3 89l-27-12-10-62Z" fill="#536069"/>
+<!-- brow and eyes -->
+<path d="M238 231q34-26 70-4M332 227q36-22 70 4" fill="none" stroke="#1a232b" stroke-width="15" stroke-linecap="round"/>
+<path d="M245 245q30-24 57 0l-8 22q-27 15-49-3ZM338 245q27-24 57 0l-1 19q-23 18-49 3Z" fill="#f0b96b" filter="url(#glow)"/>
+<ellipse cx="274" cy="254" rx="7" ry="13" fill="#222a31"/><ellipse cx="366" cy="254" rx="7" ry="13" fill="#222a31"/>
+<path d="M289 291q31-19 62 0-8 35-31 36-23-1-31-36Z" fill="#a7a19a" stroke="#31383d" stroke-width="6"/>
+<path d="M319 302l-7 8 7 5 7-5Z" fill="#272d31"/>
+<path d="M320 315q-21 19-39 8m39-8q21 19 39 8" fill="none" stroke="#e3c99d" stroke-width="5"/>
+<!-- forehead crest and rivets -->
+<path d="M320 113l25 45-25 35-25-35Z" fill="url(#brass)" stroke="#e7c28c" stroke-width="6"/>
+<path d="M320 126v49m-14-18h28" stroke="#f7dfae" stroke-width="4"/>
+<g fill="#e7c08b" stroke="#453832" stroke-width="3"><circle cx="220" cy="300" r="8"/><circle cx="420" cy="300" r="8"/><circle cx="195" cy="375" r="8"/><circle cx="445" cy="375" r="8"/><circle cx="245" cy="452" r="8"/><circle cx="396" cy="452" r="8"/></g>
+<!-- etched armor markings -->
+<path d="M220 344l35 29-15 47m180-76-35 29 15 47M210 399l26 15m194-15-26 15" fill="none" stroke="#f1c48c" stroke-width="5" opacity=".8"/>
+<path d="M252 285q-25 25-12 47m148-47q25 25 12 47" fill="none" stroke="#e6bc7d" stroke-width="5"/>
+</svg>
