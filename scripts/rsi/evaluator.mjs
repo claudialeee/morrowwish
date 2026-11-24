@@ -203,9 +203,14 @@ const DEFAULT_CONFIG = {
   ai: {},
 };
 
-// scenario → enemy count. solo-pinned/solo-live are 1; multi is 3.
-const SCENARIOS = ['solo-pinned', 'solo-live', 'multi'];
-const SCN_ENEMIES = { 'solo-pinned': 1, 'solo-live': 1, 'multi': 3 };
+// scenario → enemy count. solo-pinned/solo-live are 1; multi is 3; solo-rusher is 1 (aggressive).
+// solo-rusher (owner-approved RSI harness fix, Option 2): a single enemy with BOOSTED aggression +
+// move speed + fire rate that actively CLOSES the gap, so a stand-at-range kiter gets chased down and
+// punished instead of farming safe chip. This is the ENVIRONMENT half of the passivity fix (the idle
+// penalty in propose.mjs is the SCORING half): an active policy wins here because it survives + trades,
+// not because the rubric says so. Keeps solo-pinned (pure output) + solo-live/multi (default AI) intact.
+const SCENARIOS = ['solo-pinned', 'solo-live', 'multi', 'solo-rusher'];
+const SCN_ENEMIES = { 'solo-pinned': 1, 'solo-live': 1, 'multi': 3, 'solo-rusher': 1 };
 
 // ---- build a battle for (config,seed,scenario). Mirrors the matrix's makeCell boot, then rebuilds
 // the enemy pack to the scenario's fixed count so results are comparable + deterministic. ----
@@ -237,6 +242,17 @@ function buildBattle(config, seed, scenario) {
   for (const e of enemies) {
     if (epin.hp != null) { e.maxhp = e.hp = epin.hp; e.poise = e.poiseMax = Math.round(epin.hp * 0.6); }
     if (epin.dmg != null) e.dmg = epin.dmg;
+  }
+  // solo-rusher: make the lone enemy an aggressive pursuer so passivity is punished (Option 2). Boost
+  // aggro (drives pursuit + fire cadence in updateEnemyAI), move speed (runs the kiter down), and fire
+  // rate; nudge its preferred band inward so it crowds a stand-at-range cat. Deterministic (no rng).
+  if (scenario === 'solo-rusher') {
+    for (const e of enemies) {
+      e.aggro = 1;                                   // max pursuit intent (updateEnemyAI pursue/fire gates)
+      e.speed = (e.speed || 150) * 1.5;              // outrun a kiter's retreat
+      e.fireRate = Math.max(0.3, (e.fireRate || 0.8) * 0.6);  // fire more often
+      e._rusher = true;                              // tag (available to any future reach tuning)
+    }
   }
 
   // apply AI-param candidates / controls
