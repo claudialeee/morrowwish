@@ -210,7 +210,7 @@ const DEFAULT_CONFIG = {
 // penalty in propose.mjs is the SCORING half): an active policy wins here because it survives + trades,
 // not because the rubric says so. Keeps solo-pinned (pure output) + solo-live/multi (default AI) intact.
 const SCENARIOS = ['solo-pinned', 'solo-live', 'multi', 'solo-rusher'];
-const SCN_ENEMIES = { 'solo-pinned': 1, 'solo-live': 1, 'multi': 3, 'solo-rusher': 1 };
+const SCN_ENEMIES = { 'solo-pinned': 1, 'solo-live': 1, 'multi': 3, 'solo-rusher': 3 };
 
 // ---- build a battle for (config,seed,scenario). Mirrors the matrix's makeCell boot, then rebuilds
 // the enemy pack to the scenario's fixed count so results are comparable + deterministic. ----
@@ -248,10 +248,16 @@ function buildBattle(config, seed, scenario) {
   // rate; nudge its preferred band inward so it crowds a stand-at-range cat. Deterministic (no rng).
   if (scenario === 'solo-rusher') {
     for (const e of enemies) {
+      // HARSHER rusher (owner opt-b): the passive stand-at-max control was still edging baseline on
+      // HELD-OUT seeds, so make standing at range genuinely BLEED. Faster than any kiter's retreat,
+      // fires often + harder, and crucially a DISTANCE-SCALED damage/fire ramp so the farther you sit,
+      // the more it punishes you — a kiter can no longer farm safe chip. An engaged brawler (hugging)
+      // sits at the ramp's floor, so active play is rewarded relative to passive. Deterministic.
       e.aggro = 1;                                   // max pursuit intent (updateEnemyAI pursue/fire gates)
-      e.speed = (e.speed || 150) * 1.5;              // outrun a kiter's retreat
-      e.fireRate = Math.max(0.3, (e.fireRate || 0.8) * 0.6);  // fire more often
-      e._rusher = true;                              // tag (available to any future reach tuning)
+      e.speed = (e.speed || 150) * 2.0;              // decisively outruns a kiter's retreat
+      e.fireRate = Math.max(0.22, (e.fireRate || 0.8) * 0.45);  // fires much more often
+      e.dmg = (e.dmg || 20) * 1.35;                  // shots sting harder
+      e._rusher = true;                              // honored by the distance ramp in runScenarioInner
     }
   }
 
@@ -298,11 +304,29 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016 } =
   const teamInitHp = b.team.reduce((n, t) => n + (t.hp || 0), 0);
   const enemyInitHp = b.enemies.reduce((n, e) => n + (e.maxhp || 0), 0);
 
+  const rusher = scenario === 'solo-rusher';
   let acts = 0, posFrames = 0, killTime = null;
   for (let i = 0; i < frames; i++) {
     const beforeEnemyHp = b.enemies.reduce((n, e) => n + Math.max(0, e.alive ? e.hp : 0), 0);
     b.update(dt);
     if (pinned) { e0.x = ex; e0.y = ey; if (e0.vx != null) e0.vx = 0; if (e0.vy != null) e0.vy = 0; }
+    // RUSHER DISTANCE-PUNISH (owner opt-b): a passive kiter sitting far from the pursuer BLEEDS — a
+    // per-second HP drain that scales with distance beyond ~90px (an engaged brawler at the ramp floor
+    // pays ~nothing). This is the environment making "stand at max range" genuinely bad, so the judge's
+    // survival/output terms crater for a kiter without any scoring hack. Deterministic; rusher-only.
+    if (rusher) {
+      const mf = b.me && b.me();
+      if (mf && mf.alive) {
+        // distance to the NEAREST live pursuer (a kiter far from the WHOLE pack bleeds; a brawler
+        // in the thick of it sits at the ramp floor and pays ~nothing).
+        let nd = Infinity;
+        for (const en of b.enemies) { if (!en || !en.alive) continue; const d = Math.hypot(en.x - mf.x, en.y - mf.y); if (d < nd) nd = d; }
+        if (isFinite(nd)) {
+          const far = Math.max(0, nd - 90) / 240;        // 0 at ≤90px → ~1 at 330px
+          if (far > 0) mf.hp = Math.max(0, mf.hp - mf.maxhp * 0.08 * far * dt); // up to ~8%/s at max range
+        }
+      }
+    }
 
     const me = b.me();
     const live = b.liveEnemies();
