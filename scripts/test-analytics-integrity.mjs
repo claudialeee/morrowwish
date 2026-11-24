@@ -151,8 +151,8 @@ const mixed=(await mixedResponse.json()).byGame.find(g=>g.game==='cat-bond');
 assert.equal(mixed.pageviews,5,'Every raw page load counts, including refreshes and legacy visits without view IDs');
 assert.equal(mixed.starts,5,'Preserve five raw battle starts across two visits');
 assert.equal(mixed.ends,4,'Preserve four raw battle finishes across two visits');
-assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[5,2,2],
-  'Battle rounds count once per matched page load; unlinked legacy page loads remain in the denominator');
+assert.deepEqual([mixed.historicalVisitFunnel.pageviews,mixed.historicalVisitFunnel.startedViews,mixed.historicalVisitFunnel.finishedViews],[4,2,2],
+  'Conversion columns count distinct page visits; raw pageviews separately include refreshes');
 assert.equal(mixed.conversion.pageviews,1,'Legacy PV excluded from V2 funnel');
 assert.equal(mixed.conversion.finishedViews,1,'Legacy finish excluded from V2 funnel');
 assert.equal(mixed.signals.bond_rare_encounter,4,'Old encounter counts preserved');
