@@ -178,13 +178,22 @@ function runBattle(env, persona, rng){
   const startHp=b.team.reduce((s,f)=>s+f.maxhp,0);
   let lastHp=b.team.reduce((s,f)=>s+Math.max(0,f.hp),0);
   const origCastWard=b.castWard.bind(b); b.castWard=(f,t)=>{const r=origCastWard(f,t);if(r&&f===b.me())m.shieldFired++;return r;};
+  // REAL-CAST instrumentation (fix: the old code counted KEYPRESSES, which over-counts
+  // held mouse + double-counts, and reported casts the engine never actually ran — e.g. a
+  // skill pressed on cooldown. Wrap the engine's own cast methods like castWard above and
+  // tally only invocations where the actor is the player-controlled cat. This makes
+  // skillsUsed reflect what the shipped game did, not what keys were pressed.)
+  const wrapCast=(name,slot)=>{ if(typeof b[name]!=='function')return; const orig=b[name].bind(b);
+    b[name]=(...a)=>{ const r=orig(...a); const actor=a[0]; const isMe=(actor===b.me())||(name==='ultimate'); if(isMe&&r!==false)m.skillsUsed[slot]++; return r; }; };
+  wrapCast('skillQ','q'); wrapCast('skillE','e'); wrapCast('ultimate','ult'); wrapCast('dodge','dodge');
   const dt=1/60; let tick=0; const MAXT=60; // sim up to 60s game-time
   while(!b.done && tick<MAXT/dt){
     obs.i=tick;
     persona.tick(b,game,obs);
-    // count intentions (held key this tick that was not held last tick = a press)
+    // q/e/ult/dodge are now counted via real-cast wrappers (see wrapCast above), NOT keypresses.
+    // Basic has no single engine method (it's the mouse-held poke), so approximate its ACTIVITY by
+    // ticks the attack button is held — kept as a coarse engagement signal, not a precise fire count.
     const K=game.keys||{};
-    for(const [key,slot] of [['q','q'],['e','e'],['r','ult'],[' ','dodge']]) if(K[key]&&!obs._prev[key])m.skillsUsed[slot]++;
     if(game.mouse&&game.mouse.down)m.skillsUsed.basic++;
     if(K['p']&&!obs._prev['p'])m.usedAuto=true;
     obs._prev=Object.assign({},K);
@@ -201,6 +210,12 @@ function runBattle(env, persona, rng){
     tick++;
   }
   const timedOut = !b.done && tick>=MAXT/dt;
+  const won = b.result==='win';
+  // Persist the battle outcome into the adaptive AI profile (lossStreak / stompStreak),
+  // exactly as the shipped game does at battle end. Without this the sim ran every battle
+  // with a pristine profile, so the casual MERCY BAND (which reads lossStreak) NEVER armed
+  // and the sim over-reported unwinnable 0/8 walls the live game would already soften.
+  try{ if(typeof b.commitAiProfile==='function') b.commitAiProfile(won); }catch(e){}
   const hpLeft=b.team.reduce((s,f)=>s+Math.max(0,f.hp),0);
   return {
     result: m.fled?'fled':timedOut?'timeout':(b.result||'unknown'),
