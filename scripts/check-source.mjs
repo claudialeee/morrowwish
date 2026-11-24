@@ -143,8 +143,10 @@ if(!dashboard.includes("num('pageviews')")||
    !dashboard.includes('id="archived-first-round-posts"')||
    !dashboard.includes("const archivedRound=(pulse.publicationRounds?.rounds||[]).find(round=>round.id==='morning-first'&&round.status==='deleted');")||
    !dashboard.includes('statStartsNote:"按页面访问去重，不是战斗次数"')||
-   dashboard.includes('firstRoundTitle:')||
-   dashboard.includes('roundOpenPost:')||
+   !dashboard.includes('firstRoundTitle:"11/22 早间首发 · 已删除数据"')||
+   !dashboard.includes('firstRoundTitle:"Nov 22 morning first release · deleted archive"')||
+   !dashboard.includes('roundOpenPost:"打开原帖"')||
+   !dashboard.includes('roundOpenPost:"Open original post"')||
    !dashboard.includes("reportedPlatforms.filter(p=>platformIds.has(p.id))")||
    !dashboard.includes("blueskyPublished:")||
    !dashboard.includes("bluesky:'https://bsky.app/profile/morrowwishgames.bsky.social'") ||
