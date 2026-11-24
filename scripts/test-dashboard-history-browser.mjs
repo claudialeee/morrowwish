@@ -3,6 +3,8 @@
 // but injects fixtures into /api/summary; no credentials or real D1 events.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import fs from 'node:fs';
+fs.mkdirSync('audit/dashboard/browser-screenshots',{recursive:true});
 
 const historical={
   game:'cat-bond',pageviews:26,visitors:3,startedViews:8,startRate:30.8,
@@ -52,6 +54,7 @@ try{
    }
   };
   let requestedSummaryUrl='';
+  await page.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
   await page.route('**/api/summary*',route=>{
    requestedSummaryUrl=route.request().url();
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(summary)});
@@ -126,6 +129,7 @@ try{
       'Legacy data cannot be fabricated into an empty V2 cohort');
    }
    assert.deepEqual(exceptions,[],'Page errors after rendering and interaction');
+   await page.screenshot({path:'audit/dashboard/browser-screenshots/'+language+'-'+viewport.width+'-'+(mixed?'mixed':'legacy')+'.png',fullPage:true});
   }finally{
    await context.close();
   }
