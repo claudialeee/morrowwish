@@ -209,12 +209,26 @@ function paintIntroCatGallery() {
   ctx.clearRect(0,0,w,h);
   const species=GameData.speciesById('yunduo')||GameData.SPECIES?.[0];
   if(!species)return;
-  const glow=ctx.createRadialGradient(w*.5,h*.68,4,w*.5,h*.68,h*.48);
+  const scratch=document.createElement('canvas');scratch.width=240;scratch.height=240;
+  const sc=scratch.getContext('2d',{willReadFrequently:true});if(!sc)return;
+  CatArt.drawCat(sc,120,142,{species,scale:1.42,face:1,pose:'sit',mood:'curious',t:.4});
+  const pixels=sc.getImageData(0,0,240,240).data;
+  let minX=240,minY=240,maxX=-1,maxY=-1;
+  for(let y=0;y<240;y++)for(let x=0;x<240;x++){
+    if(pixels[(y*240+x)*4+3]<40)continue;
+    if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+  }
+  if(maxY<minY)return;
+  const srcW=maxX-minX+1,srcH=maxY-minY+1;
+  const catBottom=h-15,targetHeight=132,maxWidth=140;
+  const ratio=Math.min(targetHeight/srcH,maxWidth/srcW);
+  const drawW=srcW*ratio,drawH=srcH*ratio;
+  const glow=ctx.createRadialGradient(w*.5,h*.65,4,w*.5,h*.65,h*.48);
   glow.addColorStop(0,'rgba(245,218,179,.28)');glow.addColorStop(1,'rgba(245,218,179,0)');
   ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
-  ctx.save();
-  ctx.shadowColor='rgba(8,10,23,.55)';ctx.shadowBlur=28;ctx.shadowOffsetY=14;
-  CatArt.drawCat(ctx,w*.5,h*.83,{species,scale:2.15,face:1,pose:'sit',mood:'curious',t:0});
+  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.shadowColor='rgba(8,10,23,.55)';ctx.shadowBlur=22;ctx.shadowOffsetY=10;
+  ctx.drawImage(scratch,minX,minY,srcW,srcH,w*.5-drawW*.5,catBottom-drawH,drawW,drawH);
   ctx.restore();
   ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Georgia';ctx.textAlign='center';
   ctx.fillText('✦',w*.18,h*.34);ctx.fillText('✧',w*.82,h*.22);ctx.fillText('✦',w*.72,h*.72);

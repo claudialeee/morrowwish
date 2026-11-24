@@ -5281,3 +5281,10 @@ body.cb-exploring #stage #yard-actions{
 .cb-slot-manager-actions button+button{background:#46516a;color:#f2e7dc;border-color:#9eabc0}
 .cb-slot-manager-actions button:disabled{opacity:.3;cursor:not-allowed}
 @media(max-width:560px){.cb-slot-manager-row{align-items:stretch;flex-direction:column}.cb-slot-manager-actions{display:grid;grid-template-columns:1fr 1fr}}
+
+/* Retain compact layout contracts while the redesigned title keeps the primary actions prominent. */
+#intro #intro-start{order:0!important;background:linear-gradient(145deg,#887092,#55476e)}
+#intro .intro-features{order:1!important}
+#intro{overflow-y:auto!important}
+#intro .intro-cat-gallery{display:grid;place-items:center;width:min(100%,420px);height:100%;margin:0 auto}
+#intro #intro-cats{transform:scale(1.7);transform-origin:center bottom}
