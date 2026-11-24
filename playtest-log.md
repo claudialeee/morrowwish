@@ -939,3 +939,23 @@ Mutation vs parent: tighter contact band (30–60 vs 34–72), inward recharge b
 
 ## RSI cycle 2026-11-24T20:49:37Z: no agent proposal beat the MOBA judge; archive coverage 2/64.
 Baseline won this run (judge 0.668); best agent was `allin-when-hurt` 0.641 (kite-at-full, dive <50% HP) — beat its own baseline ref (0.591) but not the engine default. Control `stand-at-max-range` ranked last (0.512 vs 0.668) → control-CHECK PASS on held-out seeds [13,202,999]. **Cross-cycle note:** the proven glass-cannon (20-46) scored 0.681 two cycles ago but only 0.596 here — confirming optimize re-seeds the enemy/seed config each run, so absolute scores are NOT comparable across cycles and there is no stable all-time "best" (the archive is per-run). Direction-level findings hold (hug > stand-at-max; ~20px sweet spot). Harness-only, findings-only: no band applied, no commit, no push. (Standing caveat: playtest just re-confirmed the sim-harness counts keypresses not casts + never arms commitAiProfile — the RSI judge shares that evaluator, so these absolute numbers carry that noise until the harness is fixed.)
+
+## Playtest cron 2026-11-24T20:35Z (6 personas × 8 battles; FIRST run under auto-fix-P0 cron; branch cat-bond-autofix-difficulty)
+**Headline:** *"Combat has real depth but zero structure and a blind instrument — every manual persona dies the identical deterministic 428 while the playtest harness literally can't see the controls they press, so the whole 2-3/10 dataset was tuned against a counter that reports zeros."* 49 critiques, 62/64 agents (2 StructuredOutput fails).
+
+**P0s (auto-fix candidates this cycle):**
+- **P0-1 · Blind instrument, still partly blind.** My prior harness fix wraps `skillQ/skillE/ultimate/dodge` but the adversary found manual Q/E/dodge paths where the fighter arg is implicit/null, so `actor===b.me()` misses them. Fix: `isMe=(actor==null)||(actor===b.me())||(name==='ultimate')`. Harness-only numeric → **AUTO-FIX**.
+- **P0-2 · Deterministic 428 death — no intra-fight difficulty envelope.** Enemy damage is a battle-start constant (`enemyLevelMult` applied flat at L5780); NO time term, so a wild hits 100% lethality at second 1 = second 7. No opening/mid/climax arc. Fix: `enemyTempoEnvelope()=0.55+0.45*clamp(t/6)` (hardcore flat 1.0), one multiply at the damage site → casual opening is forgiving and visibly escalates. Local numeric, casual-gated → **AUTO-FIX**.
+
+**P1s (findings-only):**
+- Convert aggression/panic into survivability — re-key the masher guard off an incoming-hit-frequency (panic/overwhelm) signal instead of idle-since-skill, raise the low-HP cap.
+- Teacher must react to repeated failure: stop stamping a timed-out tutorial step as "learned"; add a recurring skill-reminder keyed to lossStreak≥2 + zero skills fired, naming the unused control.
+- Make Q/E the burst payoff (hitstop/shake/skill-pop floater), not an invisible debuff timer.
+- Pay the loss path: 87% of runs dead-end on a screen granting nothing — award partial XP scaled by damage dealt + tick battlesWon.
+
+**P2s (findings-only):** auto-mode shouldn't be de-facto hard mode (extend opening grace to auto + lossStreak-scaled autoDodge); close the kiter dead-zone (closing-term enemy move-speed decoupled from aggro); make the lethal moment + dodge legible (damage-event-gated danger cue, near-fatal flash).
+
+**AUTO-FIX OUTCOME (this cycle):**
+- ✅ P0-1 (blind instrument) → commit `1cd836ae` — `isMe=(actor==null)||...` counts manual Q/E/dodge. Verified: npm check + 4 combat scripts green.
+- ✅ P0-2 (intra-fight tempo envelope) → commit `b6ff2754` — casual enemy dmg ramps 0.55→1.0 over first ~6s, hardcore flat. Verified: npm check + 4 combat scripts green; envelope math confirmed (0.55@t0 → 1.0@t6).
+- 0 reverts. P1/P2 left findings-only per cron. Branch cat-bond-autofix-difficulty; NOT pushed.
