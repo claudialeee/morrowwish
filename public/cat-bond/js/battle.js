@@ -2413,7 +2413,7 @@ class CaptureBattle {
     // 170px crescent + extra pre-hit particle fan. Only real contact gets
     // impact accents through resolveHit and per-skill signatures.
     const RANGE = 75, ARC = .74;   // owner: 近战范围提高到 75 (was 64) — longer claw reach so melee connects + fires more reliably
-    this.vfx.slash(f.x, f.y, aim, col, RANGE * .87, ARC * .92,
+    this.vfx.slash(f.x, f.y, aim, col, RANGE * .78, ARC * .92,
       {heavy: !!skill?.heavy});
     let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {

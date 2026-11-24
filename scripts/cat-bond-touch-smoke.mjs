@@ -55,6 +55,8 @@ try{
       await page.locator('#panel.open .dex-cell').first().tap({timeout:10000});
       await page.locator('.cb-story-overlay.is-visible .cb-story-skip').tap({timeout:10000});
       await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
+      await page.evaluate(()=>window.WorldMap.exitToYard());
+      await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
       assert.equal(await page.evaluate(()=>window.State.S.cats.length),1,'Selecting a starter must work with a finger');
       assert.equal(await page.locator('#panel.open').count(),0,'Starter picker must close after selecting a cat');
       if (width === 390) {
@@ -241,6 +243,8 @@ try{
     await lp.locator('#panel.open .dex-cell').first().tap();
     await lp.locator('.cb-story-overlay.is-visible .cb-story-skip').tap();
     await lp.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
+    await lp.evaluate(()=>window.WorldMap.exitToYard());
+    await lp.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
     await lp.locator('#fab-map').tap();
     // Freeze random encounters only in this camera regression: a roaming
     // wild cat otherwise intermittently switches the test into battle.
