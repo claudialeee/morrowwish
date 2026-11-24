@@ -485,17 +485,63 @@ function selectWish(id){
  selected=id;send('town_wish_selected',{week:S.day,legendary:LEGENDARY_WISHES.includes(id)});render();preview(-1);return true;
 }
 function renderCards(){
- const el=$('cards');el.innerHTML='';if(S.ended||selected==='relocate')return;
+ const el=$('cards');if(!el||!S)return;
+ const title=$('cardsTitle'),description=title?.nextElementSibling,hint=$('pickHint');
+ el.innerHTML='';
+ if(S.ended){
+  el.classList.add('is-complete');
+  if(title)title.textContent=t('Your seven-day story is complete','七日旅程已经完成');
+  if(description)description.textContent=t('Your town has reached its own ending. Revisit the story or begin a new town.','你的小镇已经迎来自己的结局。可以重看故事，也可以重新开始。');
+  if(hint)hint.textContent=t('This town is complete. Your next story can begin whenever you are ready.','本局已经完成，准备好时就可以开启下一座小镇。');
+  const endingTitle=$('endTitle')?.textContent?.trim()||t('A town of your own','属于你的小镇');
+  const icons={cat:'🐈',sky:'☁️',party:'🎆',art:'🎨',calm:'🌷',coast:'🐚',roaming:'🚂',flight:'🪽',chaos:'🌈'};
+  const card=document.createElement('section');card.className='town-complete-card';
+  const top=document.createElement('div');top.className='town-complete-top';
+  const mark=document.createElement('span');mark.className='town-complete-mark';mark.textContent=icons[S.ending]||'✦';
+  const kicker=document.createElement('small');kicker.className='town-complete-kicker';kicker.textContent=t('YOUR SEVEN-DAY STORY','你的七日故事');
+  const heading=document.createElement('strong');heading.className='town-complete-heading';heading.textContent=endingTitle;
+  const grade=document.createElement('span');grade.className='town-complete-grade';grade.textContent=t('Grade ','本局评级 ')+(S.grade||'—');
+  top.append(mark,kicker,heading,grade);
+  const copy=document.createElement('p');copy.className='town-complete-copy';copy.textContent=t('Seven days of wishes became a town and a story that belongs to you.','七天的愿望，最终变成了一座独一无二的小镇和属于你的故事。');
+  const stats=document.createElement('div');stats.className='town-complete-stats';
+  [[t('Imagination','想象力'),String(S.wonder)],[t('Harmony','友爱'),String(S.peace)+'/10'],[t('Discoveries','发现'),String(S.found.length)]].forEach(item=>{
+   const stat=document.createElement('div');stat.className='town-complete-stat';
+   const value=document.createElement('strong');value.textContent=item[1];
+   const label=document.createElement('small');label.textContent=item[0];
+   stat.append(value,label);stats.append(stat);
+  });
+  const actions=document.createElement('div');actions.className='town-complete-actions';
+  const again=document.createElement('button');again.type='button';again.className='button primary';again.textContent=t('Build another town','再建一座小镇');again.addEventListener('click',restart);
+  const replay=document.createElement('button');replay.type='button';replay.className='button';replay.textContent=t('Replay ending','重看结局');replay.addEventListener('click',()=>$('end').classList.add('show'));
+  actions.append(again,replay);card.append(top,copy,stats,actions);el.append(card);
+  return;
+ }
+ el.classList.remove('is-complete');
+ if(selected==='relocate'){
+  if(title)title.textContent=t('Move one building','搬迁一座建筑');
+  if(description)description.textContent=t('Choose an empty plot on the map to place the selected building.','点击地图上的空地，选择建筑的新位置。');
+  if(hint)hint.textContent=t('Tap an empty plot to finish the move.','点击一块空地完成搬迁。');
+  return;
+ }
  const shown=offers();
-  if(selected&&LEGENDARY_WISHES.includes(selected)&&!shown.includes(selected))shown[2]=selected;
-  for(const id of shown){
+ if(!shown.length){
+  if(title)title.textContent=t('A new town is waiting','还有新的小镇在等你');
+  if(description)description.textContent=t('There are no wishes left to place in this run.','本局已经没有可放置的愿望了。');
+  if(hint)hint.textContent=t('Start another town to explore a different story.','重新开始，探索另一种生活。');
+  const empty=document.createElement('div');empty.className='town-complete-card';
+  const message=document.createElement('strong');message.className='town-complete-heading';message.textContent=t('All wishes explored','所有愿望都已探索');
+  const again=document.createElement('button');again.type='button';again.className='button primary';again.textContent=t('Build another town','再建一座小镇');again.addEventListener('click',restart);
+  empty.append(message,again);el.append(empty);return;
+ }
+ if(selected&&LEGENDARY_WISHES.includes(selected)&&!shown.includes(selected))shown[2]=selected;
+ for(const id of shown){
   const c=byId[id],b=document.createElement('button');b.type='button';b.className='wish-card'+(id===selected?' selected':'')+(LEGENDARY_WISHES.includes(id)?' legendary-card':'');b.setAttribute('aria-pressed',String(id===selected));
   const fans=residents.filter(r=>r.likes.includes(id)),critics=residents.filter(r=>r.dislikes.includes(id)),effect=wishEffect(c);
   b.innerHTML='<span class="wish-icon">'+c.icon+'</span><span class="wish-copy"><b>'+t(c.en,c.zh)+'</b>'+(LEGENDARY_WISHES.includes(id)?'<small class="rare-mark">'+t('✦ LEGENDARY','✦ 传奇')+'</small>':'')+'<small>'+t(c.descEn,c.descZh)+'</small><span class="wish-variety">'+(effect.variety.newVibe?t('✦ New lifestyle +8','✦ 新生活方式 +8')+' ':'')+(effect.variety.spotlight?t('☀ Today’s spark +7','☀ 今日灵感 +7'):'')+'</span><em>'+t('Imagination +'+effect.wonder+' · Harmony '+(effect.peace>=0?'+':'')+effect.peace,'想象力 +'+effect.wonder+' · 友爱 '+(effect.peace>=0?'+':'')+effect.peace)+'</em><span class="wish-reactions">'+(fans.length?'<span class="fan">♥ '+fans.map(x=>x.name).join('、')+'</span>':'')+(critics.length?'<span class="critic">− '+critics.map(x=>x.name).join('、')+'</span>':'')+'</span></span><span class="wish-next">›</span>';
   b.onclick=()=>selectWish(id);
   el.appendChild(b);
  }
- $('pickHint').textContent=selected?t('Touch the landscape to bring it to life.','点击地图，让这个愿望成为现实。'):t('Three beautiful possibilities. Which sounds like you?','三种美好的生活，你更想体验哪一种？');
+ if(hint)hint.textContent=selected?t('Touch the landscape to bring it to life.','点击地图，让这个愿望成为现实。'):t('Three beautiful possibilities. Which sounds like you?','三种美好的生活，你更想体验哪一种？');
 }
 function renderNews(){
  $('news').innerHTML=S.news.length?S.news.map(n=>'<p>'+esc(t(n.en,n.zh))+'</p>').join(''):'<p>'+t('No one needs to work. What should everyone do tomorrow?','不需要再上班了。那么，明天做什么？')+'</p>';

@@ -784,3 +784,36 @@ html.mw-fs-active[data-mw-fullscreen-game="tiny-town"] .app{overflow:hidden!impo
  .app .town-prompts #liveNotice{min-height:25px;padding:3px 6px;font-size:11px!important}
  .app .town-prompts #preview{min-height:24px;padding:3px 6px!important;font-size:10px!important}
 }
+
+
+/* Post-game state: never leave the wish panel looking broken after the ending. */
+.app .cards.is-complete{flex:1 1 0;min-height:0}
+.app .town-complete-card{
+ flex:1 1 auto;min-height:220px;width:100%;box-sizing:border-box;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+ padding:20px 16px;border:1px solid #ead8e8;border-radius:18px;
+ background:radial-gradient(ellipse at 50% 0%,#f8e7f4 0,transparent 62%),linear-gradient(145deg,#fffaf4,#fff1ed);
+ box-shadow:inset 0 1px #fff,0 8px 20px #856a9a16;text-align:center;overflow:hidden
+}
+.app .town-complete-top{display:flex;flex-direction:column;align-items:center;gap:5px}
+.app .town-complete-mark{font-size:38px;line-height:1.1;filter:drop-shadow(0 3px 4px #88618c30)}
+.app .town-complete-kicker{font-size:9px;font-weight:950;letter-spacing:.1em;color:#aa84a6}
+.app .town-complete-heading{font-size:18px;line-height:1.2;font-weight:950;color:#624b70}
+.app .town-complete-grade{padding:4px 10px;border-radius:99px;background:#f8e8bf;color:#9a6b3e;font-size:10px;font-weight:950}
+.app .town-complete-copy{max-width:330px;margin:0;color:#8f8191;font-size:11px;line-height:1.5}
+.app .town-complete-stats{width:min(100%,340px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.app .town-complete-stat{display:flex;flex-direction:column;gap:3px;padding:9px 4px;border:1px solid #efdfeb;border-radius:11px;background:#fffaf8}
+.app .town-complete-stat strong{font-size:17px;line-height:1.1;color:#685275;font-variant-numeric:tabular-nums}
+.app .town-complete-stat small{font-size:9px;color:#9a899a;font-weight:800}
+.app .town-complete-actions{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px}
+.app .town-complete-actions .button{min-height:36px}
+@media(max-width:700px){
+ .app .cards.is-complete{order:0;display:block;flex:0 0 auto;min-height:0;max-height:none;width:100%}
+ .app .town-complete-card{min-height:68px;padding:7px 9px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;text-align:left}
+ .app .town-complete-top{min-width:0;flex-direction:row;align-items:center;gap:6px}
+ .app .town-complete-mark{font-size:23px}
+ .app .town-complete-kicker,.app .town-complete-grade,.app .town-complete-copy,.app .town-complete-stats,.app .town-complete-actions .button:not(.primary){display:none}
+ .app .town-complete-heading{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .app .town-complete-actions{justify-content:flex-end}
+ .app .town-complete-actions .button{min-height:32px;padding:5px 8px;font-size:10px;white-space:nowrap}
+}
