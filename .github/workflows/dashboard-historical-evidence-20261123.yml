@@ -33,7 +33,7 @@ jobs:
             const j=await r.json();return {status:r.status,success:j.success,result:j.result,errors:(j.errors||[]).map(e=>({code:e.code,message:e.message}))};
           }
           async function query(sql,params=[]){
-            assert.match(sql,/^SELECT\\b/i);assert.ok(!/;|\\b(INSERT|UPDATE|DELETE|DROP|ALTER|REPLACE|CREATE|ATTACH|PRAGMA|VACUUM)\\b/i.test(sql));
+            assert.match(sql,/^SELECT\b/i);assert.ok(!/;|\b(INSERT|UPDATE|DELETE|DROP|ALTER|REPLACE|CREATE|ATTACH|PRAGMA|VACUUM)\b/i.test(sql));
             const r=await fetch(db+'/query',{method:'POST',headers,body:JSON.stringify({sql,params}),signal:AbortSignal.timeout(15000)});
             const j=await r.json();if(!r.ok||!j.success||!Array.isArray(j.result?.[0]?.results))throw Error('Read failed '+r.status);return j.result[0].results;
           }
