@@ -1414,7 +1414,7 @@ if(!gardenArt.startsWith('<svg')||!gardenArt.includes('viewBox="0 0 1600 900"')|
 if(gardenRegions.some(id=>!gardenCode.includes("id:'"+id+"'"))||
    gardenCast.some(id=>!gardenCode.includes(id)))
  throw new Error('Sunlit Garden must expose all six canonical sanctuary accents and home NPC anchors');
-if(!gardenCode.includes('State.S')||!gardenCode.includes('resonance')||
+if(!gardenCode.includes('window.State?.S')||!gardenCode.includes('resonance')||
    !gardenCode.includes('registerNarrativeAdapter')||
    !gardenCode.includes('drawHomeNpc')||!gardenCode.includes('interactHomeNpc')||
    gardenCode.includes('localStorage')||gardenCode.includes('indexedDB')||
