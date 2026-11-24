@@ -77,19 +77,17 @@ window.addEventListener('DOMContentLoaded', () => {
         game.rebuildYard();
         game.refreshHUD();
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
-        // Immediate discovery after selecting a first cat: no six-tab tutorial detour.
-        game.yard.startHideAndSeek();
+        // Start the RPG in the overworld. The garden remains available as an
+        // optional sanctuary for raising, decorating and relaxing between quests.
+        game.openWorldMap();
         game.refreshFirstQuest?.();
-        // CrazyGames first quest already gives this instruction in-place.
-        // Never stack duplicate first-capture toasts over a narrow iframe.
-        if(!window.CatBondPlatform?.crazygames)
-          game.toast(window.MorrowwishI18n?.get?.()==='zh'?'🌿 院子里藏着一只野猫！点击发光的草丛找到它。':'🌿 A wild cat is hiding! Tap the glowing grass to find it.');
       });
     } else {
       // returning player: offline raising report (replaces State.applyIdle)
       const report = window.Raising ? Raising.applyOffline(Date.now()) : State.applyIdle();
       game.rebuildYard();
       game.refreshHUD();
+      game.openWorldMap();
       // Only greet with the welcome-back report if something actually accumulated
       // (workshop output, auto-gains, or a visitor). Don't pop an empty "collect"
       // modal when there's nothing to collect.
