@@ -45,6 +45,8 @@ try{
       await page.waitForFunction(()=>window.UI&&window.State&&window.CatBondI18n,
         {timeout:15000});
       await page.locator('#intro-start').click({timeout:10000});
+      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+      await page.locator('#intro-slot-list [data-slot="slot1"]').click({timeout:10000});
       // New players see the cinematic prologue before the starter picker.
       // Skip it in this setup fixture so the audit can continue into the
       // real starter-selection and in-game panels without mutating story state.

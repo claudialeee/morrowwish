@@ -68,6 +68,8 @@ try{
   try{
    await page.goto(root+'/cat-bond/?lang='+p.lang+mode,{waitUntil:'load',timeout:30000});
    await page.locator('#intro-start').click();
+   await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
    // The first-run cinematic prologue now precedes the starter picker.
    const prologue=page.locator('.cb-story-overlay');
    if(await prologue.count()){

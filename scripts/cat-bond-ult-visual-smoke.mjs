@@ -27,6 +27,8 @@ try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__game&&window.State&&window.Battle?.CaptureBattle);
   await page.locator('#intro-start').click();
+  await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+  await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   // Complete the real starter picker so the intro/panel cannot cover the arena.
   await page.locator('#panel.open .dex-cell').first().click();
   const hashes=[];

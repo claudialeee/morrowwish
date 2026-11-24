@@ -88,6 +88,9 @@ try{
         'Host must own fullscreen');
       if(touch)await page.locator('#intro-start').tap();
       else await page.locator('#intro-start').click();
+      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
+      const firstSlot=page.locator('#intro-slot-list [data-slot="slot1"]');
+      if(touch)await firstSlot.tap();else await firstSlot.click();
       // New players first see the illustrated prologue; skip only in this
       // input/layout fixture so the real starter-picker controls remain tested.
       const prologue=page.locator('.cb-story-overlay');
