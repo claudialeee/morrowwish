@@ -36,7 +36,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=story-actors-starter-order-20261124-v3','js/main.js?v=starter-before-prologue-20261124-v5','id="intro-cloud-save",'js/story-cloud.js?v=story-choices-cloud-slots-20261124-v4','js/game.js?v=last-page-boss-three-phase-20261124-v1','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=story-actors-starter-order-20261124-v3','js/main.js?v=starter-before-prologue-20261124-v5','id="intro-cloud-save"','js/story-cloud.js?v=story-choices-cloud-slots-20261124-v4','js/game.js?v=last-page-boss-three-phase-20261124-v1','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
