@@ -5156,3 +5156,27 @@ body.cb-exploring #stage #yard-actions{
 @keyframes cb-story-mark-pulse{from{box-shadow:0 0 40px rgba(255,207,133,.1),inset 0 0 24px rgba(255,207,133,.05)}to{box-shadow:0 0 90px rgba(255,207,133,.26),inset 0 0 48px rgba(255,207,133,.14)}}
 @media(prefers-reduced-motion:reduce){.cb-story-art,.cb-story-overlay.is-visible .cb-story-scene-glow,.cb-story-overlay.is-visible .cb-story-card,.cb-story-title,.cb-story-copy,.cb-story-scene-mark{animation:none!important}}
 @media(max-width:640px){.cb-story-card{width:100%;max-height:76dvh;margin-bottom:0;padding:18px;border-radius:20px 20px 12px 12px}.cb-story-copy{line-height:1.72;margin:12px 0 16px}.cb-story-kicker{margin-top:14px}.cb-story-scene-glow{background:linear-gradient(0deg,rgba(8,10,20,.94),rgba(8,10,20,.2) 75%)}}
+
+/* The prologue and finale are full-screen illustrated cutscenes, not paper cards. */
+.cb-story-overlay{padding:0;place-items:end center;background:#090d18}
+.cb-story-scene{inset:0}
+.cb-story-scene-glow{background:linear-gradient(90deg,rgba(7,10,20,.04),rgba(7,10,20,.02) 42%,rgba(7,10,20,.22)),linear-gradient(0deg,rgba(7,10,20,.94),rgba(7,10,20,.04) 72%)}
+.cb-story-card{width:min(1120px,100%);max-height:43dvh;overflow:auto;align-self:end;justify-self:center;margin:0;padding:clamp(18px,3vw,34px) clamp(20px,5vw,62px) clamp(18px,3vh,28px);border:0;border-top:1px solid rgba(255,231,190,.24);border-radius:0;color:#fff8e9;background:linear-gradient(180deg,rgba(10,15,27,.78),rgba(7,11,21,.96));box-shadow:0 -24px 90px rgba(0,0,0,.24);backdrop-filter:blur(9px)}
+.cb-story-card-top{max-width:960px;margin:0 auto}
+.cb-story-kicker,.cb-story-title,.cb-story-copy,.cb-story-progress,.cb-story-actions{max-width:960px;margin-left:auto;margin-right:auto}
+.cb-story-kicker{margin-top:12px}
+.cb-story-title{font-size:clamp(26px,4vw,46px);line-height:1.12}
+.cb-story-copy{font-size:clamp(14px,1.55vw,18px);line-height:1.72;max-width:920px;margin-top:12px;margin-bottom:14px}
+.cb-story-progress{margin-top:10px;margin-bottom:12px}
+.cb-story-portraits{margin-top:8px}
+.cb-story-skip{margin-right:auto}
+.cb-story-scene-mark{right:clamp(25px,10vw,170px);top:clamp(24px,9vh,95px)}
+@media(max-width:640px){
+ .cb-story-card{max-height:57dvh;padding:14px 18px max(16px,env(safe-area-inset-bottom))}
+ .cb-story-kicker{margin-top:5px}
+ .cb-story-title{font-size:clamp(24px,7vw,34px)}
+ .cb-story-copy{font-size:13px;line-height:1.62;margin:9px auto 11px}
+ .cb-story-progress{margin:8px auto}
+ .cb-story-actions button{min-height:40px;padding:9px 13px}
+ .cb-story-scene-mark{width:clamp(82px,22vw,120px);top:7vh;right:8vw}
+}
