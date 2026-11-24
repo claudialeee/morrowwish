@@ -6055,6 +6055,7 @@ class CaptureBattle {
 
   // themed battle backdrop; recolors per world-map region (this.theme)
   drawArenaBackground(ctx, W, H) {
+    if(this.storyEncounter && window.CatBondForgeCombat?.drawBackground){window.CatBondForgeCombat.drawBackground(ctx,W,H,this);return;}
     if(window.CatBondScenery && CatBondScenery.drawBattle(ctx,W,H,this.t,this.theme))return;
     const t = this.t, horizon = H * 0.34;
     const th = this.theme || {};
@@ -6294,6 +6295,13 @@ class CaptureBattle {
         ctx.quadraticCurveTo(1,8,18,0);ctx.fill();
         ctx.fillStyle='#fff0bf';ctx.beginPath();ctx.moveTo(14,0);
         ctx.quadraticCurveTo(-1,-3,-5,0);ctx.quadraticCurveTo(-1,4,14,0);ctx.fill();
+      }else if(p.kind==='forge-slag'){
+        ctx.rotate(p.ang+this.t*1.8);
+        ctx.fillStyle='#a9482e';ctx.strokeStyle='#ffd39a';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(p.r*1.8,0);ctx.lineTo(p.r*.25,-p.r*1.15);
+        ctx.lineTo(-p.r*1.4,-p.r*.65);ctx.lineTo(-p.r*.8,p.r*.7);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle='rgba(255,236,190,.9)';ctx.beginPath();ctx.moveTo(p.r,0);ctx.lineTo(-p.r*.35,-p.r*.38);ctx.lineTo(-p.r*.55,p.r*.34);ctx.closePath();ctx.fill();
       }else if(p.kind==='fur'){
         // The basic yarn attack reads as a little thread bundle, not another light ball.
         ctx.rotate(this.t*7+p.ang);
@@ -6444,12 +6452,16 @@ class CaptureBattle {
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
       window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
-      (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
-        species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
-        stride:e.stride,motion:e.motion||0,
-        pose:e.frozen?'idle':e.pose,
-        mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
-      });
+      if(e.visualKind==='forge-guardian' && window.CatBondForgeCombat?.drawEnemy){
+        window.CatBondForgeCombat.drawEnemy(ctx,e,this);
+      }else{
+        (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
+          species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
+          stride:e.stride,motion:e.motion||0,
+          pose:e.frozen?'idle':e.pose,
+          mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
+        });
+      }
       if (_pouncePrep) ctx.restore();
       // WHITE connect-flash: an additive white bloom over the body for 1-2 frames so a
       // landed hit POPS (replaces the old translucent fade that read as "vanish").

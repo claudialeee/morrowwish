@@ -11,6 +11,15 @@ window.addEventListener('DOMContentLoaded', () => {
     introBreedCount.textContent=`🐾 收集 ${totalBreeds} 种猫`;
   }
   const game = new Game();
+  const forgePreviewRequested = new URLSearchParams(location.search).get('combat') === 'forge';
+  const maybeLaunchForgePreview = () => {
+    if (!forgePreviewRequested || window.__CB_FORGE_PREVIEW_LAUNCHED__) return;
+    window.__CB_FORGE_PREVIEW_LAUNCHED__ = true;
+    setTimeout(() => {
+      try { window.CatBondForgeCombat?.launch(game); }
+      catch (error) { window.__CB_FORGE_PREVIEW_LAUNCHED__ = false; console.error('Forge preview launch failed', error); }
+    }, 350);
+  };
   window.__game = game;
   UI.init(game);
 
@@ -132,7 +141,7 @@ window.addEventListener('DOMContentLoaded', () => {
         State.S.cats.push(starter);State.S.dex[id]=(State.S.dex[id]||0)+1;
         State.save();
         const enterWorld=()=>{
-          State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();
+          State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();maybeLaunchForgePreview();
         };
         // Let the player choose their actual companion first; the cinematic
         // then stages that cat waking beneath the garden bench.
@@ -144,7 +153,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
       game.rebuildYard();game.refreshHUD();
-      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();});}else game.openWorldMap();
+      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();maybeLaunchForgePreview();});}else {game.openWorldMap();maybeLaunchForgePreview();}
       const has=o=>o&&Object.values(o).some(v=>v>0);
       const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
       if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
