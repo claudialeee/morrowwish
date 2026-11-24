@@ -623,10 +623,6 @@ function setSyncStatus(status){
 async function syncNow(force=false){
  const token=localStorage.getItem(CLOUD_KEY);
  if(!token)return {ok:false,disabled:true};
- if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'&&!force){
-  setSyncStatus(t('本机重置后已暂停自动同步。请先恢复旧云档，或明确选择覆盖。','Auto-sync is paused after a local reset. Restore the old cloud save or explicitly replace it.'));
-  return {ok:false,paused:true};
- }
  if(syncPromise){syncPending=true;return syncPromise;}
  syncPromise=(async()=>{
   const raw=localStorage.getItem(SAVE_KEY);
@@ -654,7 +650,7 @@ async function syncNow(force=false){
  return syncPromise;
 }
 function queueSync(){
- if(!localStorage.getItem(CLOUD_KEY)||localStorage.getItem(CLOUD_PAUSE_KEY)==='1')return;
+ if(!localStorage.getItem(CLOUD_KEY))return;
  clearTimeout(syncTimer);
  syncTimer=setTimeout(()=>syncNow(false),2200);
 }
