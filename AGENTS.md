@@ -4,6 +4,7 @@ You are contributing to the EXISTING Morrow Wish browser-game studio. Do not cre
 
 ## Read first
 1. Read `README.md`, `CLAUDE.md`, `package.json`, and the current `main` branch.
+2. For any Cat Bond RPG narrative, map, NPC, dialogue, cinematic, or story-system task, read `docs/cat-bond-rpg/README.md` and all three linked canon documents before editing. The new `The Last Resonance` Bible is the sole current story authority; `docs/cat-bond-the-last-page-story-bible.md` is a deprecated archive and must not be used as canon.
 2. Read the specific game and shared files relevant to your task; inspect existing conventions instead of assuming that your own template is compatible.
 3. If the request is unclear on a design detail, use existing styling and conventions as defaults, but complete the implementation and tests rather than stopping after a proposal.
 
