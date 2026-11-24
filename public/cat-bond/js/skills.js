@@ -450,16 +450,16 @@
   // Status-tag metadata so battle.js can tick them uniformly.
   // dps = fraction of target maxhp per second (0 for crowd-control tags).
   const TAG_INFO = {
-    burn:  { name: '灼烧', ttl: 4.0, dps: 0.03, color: '#ff7a3c' },
+    burn:  { name: '灼烧', ttl: 4.0, dps: 0.015, color: '#ff7a3c' },  // ALL DoTs trimmed (owner), burn kept HIGHEST: 1.5%/s. maxhp-scaled + refreshes on every fire hit, so it was a permanent defense-ignoring drain; fire's identity stays burn+reactions, not raw DoT.
     soak:  { name: '淋湿', ttl: 5.0, dps: 0,    color: '#4aa8ff' },
-    shock: { name: '感电', ttl: 3.0, dps: 0.02, color: '#ffd23c' },
+    shock: { name: '感电', ttl: 3.0, dps: 0.009, color: '#ffd23c' },  // 0.9%/s (was 2%) — lowest DoT; elec's bite is reactions/CC, not the tick.
     oil:   { name: '浸油', ttl: 6.0, dps: 0,    color: '#8a6bff' },
     // Tiered CC (see battle.js tickStatus): chill = hard freeze (no move/attack),
     // dizzy = full stun (shortest — it's the strongest), bind = root only (can still
     // attack, so it can run a little longer). Durations trimmed — CC felt too long.
     chill: { name: '冰冻', ttl: 2.2, dps: 0,    color: '#9ec8ff' },
     dizzy: { name: '眩晕', ttl: 1.4, dps: 0,    color: '#c9b6ff' },
-    bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
+    bleed: { name: '流血', ttl: 4.5, dps: 0.012,color: '#ff6b6b' },  // 1.2%/s (was 2.5%) — second-highest DoT, under burn.
     blind: { name: '失明', ttl: 2.6, dps: 0,    color: '#ffe9a8' },
     bind:  { name: '束缚', ttl: 3.0, dps: 0,    color: '#6fcf5f' },
     // --- advanced debuffs ---
