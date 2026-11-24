@@ -10,26 +10,56 @@ const CLOUD_PAUSE_KEY='catbond_cloud_paused_v1';
 const CODE_PREFIX='CB1.';
 const REGIONS=['home','sakura','creek','volcano','ruins'];
 const REGION_PAGES={
- home:{id:'home-bell',title:'庭院门口的铃声',titleEn:'The Bell at the Garden Gate',
-  text:'很久以前，有两只小猫约好：无论走到多远，只要听见星铃，就一定要回来。你记得那只猫的影子，却想不起它的名字。',
-  textEn:'Long ago, two kittens made a promise: wherever life took them, they would return when the Star Bell rang. You remember a small shadow beside you, but not its name.',
-  region:'home',chapter:'第一章 · 空白页',chapterEn:'CHAPTER I · THE BLANK PAGE'},
- sakura:{id:'sakura-promise',title:'花瓣下的约定',titleEn:'A Promise Beneath the Petals',
-  text:'樱花神社的旧签写着：星铃只能敲响一次。那一天，你把铃绳交给了最信任的伙伴。',
-  textEn:'An old shrine fortune says the Star Bell may be rung only once. On that day, you placed its cord in the paws of the one you trusted most.',
-  region:'sakura',chapter:'第二章 · 旧约',chapterEn:'CHAPTER II · THE OLD PROMISE'},
- creek:{id:'creek-name',title:'被河水带走的名字',titleEn:'The Name the River Carried',
-  text:'溪水映出一段模糊的画面：你主动交出了自己的名字。那不是被夺走的惩罚，而是你亲手做出的选择。',
-  textEn:'The creek reflects a blurred memory: you gave your name away willingly. It was not taken as punishment. It was your choice.',
-  region:'creek',chapter:'第三章 · 失去的名字',chapterEn:'CHAPTER III · THE LOST NAME'},
- volcano:{id:'volcano-seal',title:'星铃灾变',titleEn:'The Star Bell Catastrophe',
-  text:'火山深处的余烬记得真相：灾变从星铃内部爆发。你留在钟中封住裂隙，把自己的记忆化作最后一道封印。',
-  textEn:'The embers remember what happened: the catastrophe erupted from inside the Star Bell. You stayed within it to seal the breach, turning your own memories into the final lock.',
-  region:'volcano',chapter:'第四章 · 最后的守铃者',chapterEn:'CHAPTER IV · THE LAST BELLKEEPER'},
- ruins:{id:'ruins-reverse',title:'倒着响的钟',titleEn:'The Bell That Rings Backward',
-  text:'月影遗迹的星盘开始逆转。你终于明白：一路找回的旋律，不只是在修复记忆——它们也在替某个人重新启动逆响仪式。',
-  textEn:'The astrolabe begins to turn backward. The melodies you have recovered are not only restoring memories. They are also restarting a reversed-bell ritual for someone.',
-  region:'ruins',chapter:'第五章 · 逆响',chapterEn:'CHAPTER V · THE REVERSED BELL'}
+ home: {
+  id: "home-bell",
+  title: "庭院门口的铃声",
+  titleEn: "The Bell at the Garden Gate",
+  text: "【纸鸢】你醒了。\n【你】刚才是谁在叫我？\n【纸鸢】我只听见铃响。可奇怪的是，铃声传来之前，你的影子先回头了。\n\n木凳下有一只旧毛线盒，里面压着半张双猫合影。照片边缘被烧焦，其中一只猫的脸恰好缺失。背面写着：听见铃声，就回家。",
+  textEn: "[Kite] You are awake.\n[You] Who called me?\n[Kite] I only heard the bell. The strange thing is… your shadow turned around before the sound arrived. The blank places left behind are called the Hollow.\n\nBeneath the bench lies an old yarn box and half of a photograph. One kitten’s face has been burned away. On the back: When the bell rings, come home.",
+  region: "home",
+  chapter: "第一章 · 空白页",
+  chapterEn: "CHAPTER I · THE BLANK PAGE"
+ },
+ sakura: {
+  id: "sakura-promise",
+  title: "花瓣下的约定",
+  titleEn: "A Promise Beneath the Petals",
+  text: "【绯枝】这支签不是预言，是有人后来补上去的。\n【你】补了什么？\n【绯枝】原文不是“星铃只能敲响一次”，而是“星铃只能由一个自愿交出名字的人敲响”。\n\n花瓣间闪过旧日画面：你把铃绳交给一只小猫。它笑着说：“你总会忘东西。那这次，换我替你记住。”",
+  textEn: "[Feizhi] This fortune is not a prophecy. Someone added those words later.\n[You] What did it say before?\n[Feizhi] Not “The Star Bell may ring only once.” It said, “The Star Bell may be rung only by one who gives their name willingly.”\n\nA memory flickers between the petals: you hand the bell cord to a kitten. They laugh. “You always lose things. This time, let me remember for you.”",
+  region: "sakura",
+  chapter: "第二章 · 旧约",
+  chapterEn: "CHAPTER II · THE OLD PROMISE"
+ },
+ creek: {
+  id: "creek-name",
+  title: "被河水带走的名字",
+  titleEn: "The Name the River Carried",
+  text: "【渡川】河水没有偷走你的名字。是你把它放进水里。\n【你】为什么？\n【渡川】因为星铃需要一个锚。你不肯让它落在那只小猫身上。\n\n倒影里，暮铃抓住你的爪子。\n【暮铃】答应我，你会回来。\n【你】我会尽力。\n【暮铃】我不要尽力。我要你答应。",
+  textEn: "[Duchuan] The river did not steal your name. You placed it in the current.\n[You] Why would I do that?\n[Duchuan] The Bell needed an anchor. You would not let it be that kitten.\n\nIn the reflection, Muling catches your paw.\n[Muling] Promise you will come back.\n[You] I will try.\n[Muling] I do not want “try.” I want a promise.",
+  region: "creek",
+  chapter: "第三章 · 失去的名字",
+  chapterEn: "CHAPTER III · THE LOST NAME"
+ },
+ volcano: {
+  id: "volcano-seal",
+  title: "星铃灾变",
+  titleEn: "The Star Bell Catastrophe",
+  text: "【烬禾】我亲眼看见你回头。出口就在身后，你却走进了钟里。\n【你】暮铃呢？\n【烬禾】它只看见门关上。没人告诉它，你是留下来，不是逃走。\n\n火山深处，六道记忆丝线正从各地汇入星铃。每亮起一道，钟内的影子就更像你一分。",
+  textEn: "[Jinhe] I saw you turn back. The exit was behind you. You walked into the Bell.\n[You] What happened to Muling?\n[Jinhe] They only saw the door close. No one told them you stayed. They thought you ran.\n\nDeep in the volcano, six threads of memory flow toward the Star Bell. With every thread, the silhouette inside looks more like you.",
+  region: "volcano",
+  chapter: "第四章 · 最后的守铃者",
+  chapterEn: "CHAPTER IV · THE LAST BELLKEEPER"
+ },
+ ruins: {
+  id: "ruins-reverse",
+  title: "倒着响的钟",
+  titleEn: "The Bell That Rings Backward",
+  text: "【星簿】这些旋律不是钥匙。它们是你们共同经历过的六段记忆。\n【你】那为什么它们会启动星铃？\n【星簿】暮铃在用它们拼出一个“你”。可记忆能拼出回声，拼不回一个人。\n\n星盘转向你。最后一页浮现出熟悉的字迹：如果世界不肯把你还给我，我就让世界只剩下你。",
+  textEn: "[Star Scribe] These melodies are not keys. They are six memories you once shared.\n[You] Then why are they starting the Bell?\n[Star Scribe] Muling is using them to assemble an “you.” Memories can make an echo. They cannot restore a person.\n\nThe astrolabe turns toward you. The final page bears familiar handwriting: If the world will not give you back, I will make a world with only you left in it.",
+  region: "ruins",
+  chapter: "第五章 · 逆响",
+  chapterEn: "CHAPTER V · THE REVERSED BELL"
+ }
 };
 const LAST_PAGE={
  id:'last-page',title:'最后一页：暮铃',titleEn:'The Last Page: Muling',
@@ -38,48 +68,98 @@ const LAST_PAGE={
  region:'ruins',chapter:'终章 · 最后一页',chapterEn:'FINAL CHAPTER · THE LAST PAGE'
 };
 const PROLOGUE=[
- {region:'home',kicker:'猫猫纽带 · 最后一页',kickerEn:'CAT BOND · THE LAST PAGE',
-  title:'每只猫，都有一页自己的故事。',titleEn:'Every cat has a page of its own.',
-  text:'在这片世界，名字、经历与羁绊，都被写进一本会呼吸的书——Catdex。它记录每只猫曾经是谁，也记得它们与谁并肩。',
-  textEn:'In this world, names, memories and bonds are written in a living book: the Catdex. It remembers who every cat has been, and who stood beside them.'},
- {region:'sakura',kicker:'空白蔓延之地',kickerEn:'THE HOLLOW',
-  title:'被遗忘的地方，会慢慢变空。',titleEn:'Where memories vanish, the world grows hollow.',
-  text:'当一段重要记忆消失，Catdex 就会留下空白。空白蔓延之处，被称为 Hollow。没有名字的猫，也会逐渐从世界上消失。',
-  textEn:'When an important memory disappears, the Catdex leaves a blank page. Where the blankness spreads, the world becomes Hollow. A nameless cat can slowly vanish from it.'},
- {region:'creek',kicker:'初醒之时',kickerEn:'A STRANGE AWAKENING',
-  title:'你在一座安静的庭院醒来。',titleEn:'You wake in a quiet garden.',
-  text:'你没有名字，也想不起自己从哪里来。但你能听见空白页的声音——那是一声倒着响的铃。',
-  textEn:'You have no name and no memory of where you came from. Yet you can hear the blank pages: a bell ringing backward.'},
- {region:'volcano',kicker:'星铃中的声音',kickerEn:'A VOICE IN THE BELL',
-  title:'远处有人在呼唤你。',titleEn:'Someone is calling from beyond the bell.',
-  text:'“这一次，我不会再让你离开。”声音很轻，却像等了很久。你不知道它是谁，只知道它认得你。',
-  textEn:'“This time, I will not let you leave again.” The voice is quiet, but it sounds as if it has waited a very long time. You do not know who it is. It knows you.'},
- {region:'ruins',kicker:'旅程开始',kickerEn:'YOUR JOURNEY BEGINS',
-  title:'去找回那些被抹去的名字。',titleEn:'Find the names that were erased.',
-  text:'探索五片土地，结识新的伙伴，收集散落的记忆。可那本书似乎早已为你留好最后一页。',
-  textEn:'Explore five lands, meet new companions and gather the memories scattered across the world. Yet the book seems to have reserved its final page for you.'}
+ {
+  region: "home",
+  kicker: "序章 · 倒着响的铃",
+  kickerEn: "PROLOGUE · A BELL IN REVERSE",
+  title: "先响起的，是你的影子。",
+  titleEn: "Your shadow moved before the bell.",
+  text: "夜色压低了庭院的树梢。一根旧铃绳挂在枝头，风没有吹，它却轻轻摆动。\n\n一只小猫伸出爪子。铃声响起——不是从远处传来，而是从每个人的记忆里倒退回来。",
+  textEn: "Night lowers the garden branches. An old bell cord hangs from a tree. There is no wind, yet it begins to sway.\n\nA kitten reaches out. The bell rings—not from somewhere far away, but backwards through everyone’s memory."
+ },
+ {
+  region: "home",
+  kicker: "第一幕 · 空白页",
+  kickerEn: "SCENE I · THE BLANK PAGE",
+  title: "“你迟到了。”",
+  titleEn: "“You are late.”",
+  text: "你在木凳下醒来。面前站着一只抱着旧书的猫。\n\n【纸鸢】你迟到了。\n【你】我们认识？\n【纸鸢】我不知道。但这本书一直替你留着位置。\n\nCatdex 自动翻开第一页。上面没有名字，只有一道像被爪子反复划过的空白。",
+  textEn: "You wake beneath a garden bench. A cat stands nearby, holding an old book.\n\n[Kite] You are late.\n[You] Do we know each other?\n[Kite] I do not know. But this book has kept a place for you.\n\nThe Catdex opens by itself. Its first page has no name—only a blank scratched over and over."
+ },
+ {
+  region: "sakura",
+  kicker: "第二幕 · 不完整的约定",
+  kickerEn: "SCENE II · AN UNFINISHED PROMISE",
+  title: "“我会尽力回来。”",
+  titleEn: "“I will try to come back.”",
+  text: "一段记忆从铃绳里闪过：两只小猫坐在樱花树下。\n\n【小猫】不许说尽力。\n【你】那我该说什么？\n【小猫】说你一定会回来。\n\n你张开嘴，却没有声音。画面里的另一只猫替你笑了笑，把铃绳系在自己腕上。",
+  textEn: "A memory flickers from the bell cord: two kittens beneath a cherry tree.\n\n[Kitten] Do not say “I will try.”\n[You] What should I say, then?\n[Kitten] Say you will come back.\n\nYou open your mouth, but no sound comes. The other kitten smiles for you and ties the cord around their wrist."
+ },
+ {
+  region: "creek",
+  kicker: "第三幕 · 醒来的名字",
+  kickerEn: "SCENE III · THE NAME THAT WOKE",
+  title: "有人还记得你。",
+  titleEn: "Someone still remembers you.",
+  text: "画面骤然熄灭。你听见水声、急促的脚步，还有一道被截断的呼唤。\n\n【未知的声音】这一次，我不会再让你离开。\n\n纸鸢合上 Catdex。\n【纸鸢】如果它真的找到了你，千万别急着答应它任何事。",
+  textEn: "The vision cuts to black. You hear rushing water, hurried paws, and a voice cut short.\n\n[Unknown voice] This time, I will not let you leave.\n\nKite closes the Catdex.\n[Kite] If it has truly found you, do not promise it anything. Not yet."
+ },
+ {
+  region: "home",
+  kicker: "旅程开始",
+  kickerEn: "THE JOURNEY BEGINS",
+  title: "先找到那些还记得自己的人。",
+  titleEn: "Find those who still remember themselves.",
+  text: "你可以从庭院出发，沿着地图寻找失去记忆的猫咪。每一段回声都属于一个真实的人，也可能属于你不愿想起的过去。\n\n纸鸢把一枚旧铃扣交给你。它背面刻着两个字：暮铃。",
+  textEn: "Leave the sanctuary and follow the world map to find cats losing their memories. Every echo belongs to a real person—and may belong to a past you are not ready to face.\n\nKite gives you an old bell clasp. Two words are engraved on its back: Muling."
+ }
 ];
 const ENDING=[
- {region:'ruins',kicker:'逆响之钟归于沉寂',kickerEn:'THE REVERSED BELL FALLS SILENT',
-  title:'暮铃终于停下了。',titleEn:'At last, Muling falls silent.',
-  text:'六道记忆锁在伙伴们的羁绊中逐一解开。逆响停止，其他猫咪的名字与记忆从钟声里回到它们身边。',
-  textEn:'One by one, the six memory locks yield to the bonds you have built. The reversed bell falls silent, and every stolen name and memory returns to its owner.'},
- {region:'volcano',kicker:'记忆归来',kickerEn:'THE MEMORY RETURNS',
-  title:'你从未抛下暮铃。',titleEn:'You never abandoned Muling.',
-  text:'暮铃终于看见那一天的完整记忆：你不是离开它，而是留下来封住灾变。它等了这么久，却一直把牺牲当成了告别。',
-  textEn:'Muling finally sees the whole memory: you did not leave them. You stayed behind to seal the catastrophe. They waited all this time, mistaking your sacrifice for goodbye.'},
- {region:'creek',kicker:'另一种羁绊',kickerEn:'A DIFFERENT KIND OF BOND',
-  title:'羁绊不是把谁留在原地。',titleEn:'A bond is not a chain.',
-  text:'你没有要求暮铃忘记过去，也没有答应永远不再离开。你们选择从今天开始重新同行——这一次，不再靠夺取记忆证明彼此重要。',
-  textEn:'You do not ask Muling to forget the past, and you do not promise never to leave again. You choose to walk together from today—not by taking memories, but by making new ones.'},
- {region:'ruins',kicker:'CATDEX · 第一页',kickerEn:'THE CATDEX · PAGE ONE',
-  title:'最后一页，写回了你的名字。',titleEn:'The last page writes your name again.',
-  text:'Catdex 恢复了你曾经的记忆，却没有抹去现在的你。第一页记录着你的新名字、你的伙伴，以及你们共同完成的故事。',
-  textEn:'The Catdex restores your old memories without erasing who you are now. Its first page records your new name, your companions and the story you wrote together.'},
- {region:'home',kicker:'新的清晨',kickerEn:'A NEW MORNING',
-  title:'星铃再次响起。',titleEn:'The Star Bell rings once more.',
-  text:'清晨，你和暮铃坐在庭院门口。伙伴们在阳光里追逐，Catdex 翻开了新的空白页。故事没有回到从前——它终于有了未来。',
-  textEn:'At dawn, you and Muling sit by the garden gate. Your companions chase the sunlight, and the Catdex opens a fresh blank page. The story does not return to what it was. At last, it has a future.'}
+ {
+  region: "ruins",
+  kicker: "终幕 · 未完成的愿望",
+  kickerEn: "FINALE · THE UNFINISHED WISH",
+  title: "“你终于回来了。”",
+  titleEn: "“You finally came back.”",
+  text: "暮铃站在星铃中央。它身边浮着无数被夺走的记忆，像一片没有星星的夜空。\n\n【暮铃】我把每一段都记得很清楚。你喜欢晒太阳，讨厌下雨，害怕我一个人睡着。只要拼得足够完整，你就会回来。\n【你】那不是我。那只是你记得的我。",
+  textEn: "Muling stands at the heart of the Star Bell. Stolen memories drift around them like a night without stars.\n\n[Muling] I remember everything. You loved sunbeams, hated rain, and worried I would fall asleep alone. If I make the picture complete enough, you will come back.\n[You] That would not be me. It would only be the version you remember."
+ },
+ {
+  region: "volcano",
+  kicker: "真相 · 门的另一边",
+  kickerEn: "THE TRUTH · THE OTHER SIDE OF THE DOOR",
+  title: "你没有离开它。",
+  titleEn: "You did not leave them.",
+  text: "最后一道封印松开。暮铃终于看见那一天：你把它推向出口，自己转身走进星铃。你喊了它的名字，可封印吞掉了声音。\n\n【暮铃】我等了这么久……\n【你】我知道。可你让别人替我们承受了这份等待。",
+  textEn: "The final seal breaks. Muling finally sees that day: you pushed them toward the exit and turned back into the Star Bell. You called their name, but the seal swallowed your voice.\n\n[Muling] I waited so long…\n[You] I know. But you made everyone else pay for that waiting."
+ },
+ {
+  region: "creek",
+  kicker: "选择 · 羁绊不是枷锁",
+  kickerEn: "CHOICE · A BOND IS NOT A CHAIN",
+  title: "“我不能答应永远不离开。”",
+  titleEn: "“I cannot promise never to leave.”",
+  text: "你没有替暮铃抹去罪责，也没有把它留在黑暗里。你要求它亲手归还每一段记忆，向每一只被伤害的猫道歉。\n\n【暮铃】如果我再听见铃声，你会来吗？\n【你】我会尽力回来。现在，这句话终于足够了。",
+  textEn: "You do not erase Muling’s wrongdoing, and you do not leave them in the dark. You ask them to return every memory and face every cat they hurt.\n\n[Muling] If I hear the bell again, will you come?\n[You] I will try to come back. This time, that is enough."
+ },
+ {
+  region: "ruins",
+  kicker: "Catdex · 第一页",
+  kickerEn: "THE CATDEX · PAGE ONE",
+  title: "名字，不必从过去借来。",
+  titleEn: "A name does not have to come from the past.",
+  text: "记忆回到每一位主人身边。Catdex 没有把你变回从前的样子；它留下了你现在的伙伴、选择和旅程。你在第一页写下一个新的名字。\n\n暮铃没有替你写。它把笔放在你手边，第一次学会等待你的回答。",
+  textEn: "Every memory returns to its owner. The Catdex does not turn you into who you used to be; it keeps the companions, choices and journey you have now. You write a new name on its first page.\n\nMuling does not write it for you. They set the pen beside your paw and, for the first time, wait for your answer."
+ },
+ {
+  region: "home",
+  kicker: "尾声 · 新的清晨",
+  kickerEn: "EPILOGUE · A NEW MORNING",
+  title: "这一次，铃声没有倒流。",
+  titleEn: "This time, the bell rings forward.",
+  text: "庭院门口，阳光落在两只猫之间。暮铃把旧铃绳放在地上，没有系住任何人的爪子。\n\n远处传来伙伴们的笑声。Catdex 翻开新的一页。故事没有回到过去——它终于可以继续向前。",
+  textEn: "At the garden gate, sunlight falls between two cats. Muling lays the old bell cord on the ground; it is tied around no one’s paw.\n\nYour companions laugh in the distance. The Catdex opens a new page. The story does not return to the past. At last, it can move forward."
+ }
 ];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const isZh=()=>window.MorrowwishI18n?.get?.()==='zh';
@@ -345,10 +425,10 @@ function showBossReveal(){
  const s=storyState();if(!s||!allSix(s)||s.bossDefeated)return;
  document.querySelector('.cb-story-overlay')?.remove();
  showSequence('reveal',[{
-  region:'ruins',kicker:'最后一页',kickerEn:'THE LAST PAGE',
-  title:'那道声音，终于有了名字。',titleEn:'The voice finally has a name.',
-  text:'暮铃就在星盘另一端。六段旋律已经启动逆响仪式。现在，你必须阻止它继续夺走其他猫咪的记忆。',
-  textEn:'Muling is waiting beyond the astrolabe. The six melodies have started the reversed-bell ritual. You must stop it before more memories are taken.'
+  region:'ruins',kicker:'最后一页 · 逆响仪式',kickerEn:'THE LAST PAGE · THE REVERSED RITUAL',
+  title:'你找回的每段记忆，都在替它敲响星铃。',titleEn:'Every memory you recovered has been ringing the Bell for them.',
+  text:'星盘中央浮现出那只熟悉的猫。它没有咆哮，只是伸出爪子，像从前在樱花树下那样等你牵住。\n\n【暮铃】我知道你会找到这里。你总会回来。\n【你】你拿走了他们的记忆。\n【暮铃】我只想把你带回家。\n\n六段旋律同时亮起。你终于明白：这一路的线索既在帮你找回过去，也在替暮铃完成仪式。',
+  textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.\n\n[Muling] I knew you would find me. You always come back.\n[You] You took their memories.\n[Muling] I only wanted to bring you home.\n\nAll six melodies flare. You understand at last: the clues that restored your past have also been completing Muling’s ritual.'
  }],()=>showBossGate(),{canSkip:false});
 }
 function bossSpecies(){
@@ -427,36 +507,25 @@ function renderCloudPanel(){
  document.querySelector('.cb-cloud-overlay')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
  overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
-  '<p class="cb-cloud-eyebrow">CAT BOND · PRIVATE CLOUD SAVE</p><h2>'+t('云存档','Cloud save')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('存档在上传前会在本机使用 AES-GCM 加密。服务器只保存密文；恢复码是唯一的解密钥匙。','Your save is encrypted on this device with AES-GCM before upload. The server stores ciphertext only; your recovery code is the decryption key.')+'</p>'+
+  '<p class="cb-cloud-eyebrow">CAT BOND · SAVE & LOAD</p><h2>'+t('云存档','Cloud save')+'</h2>'+
+  '<p class="cb-cloud-lead">'+t('游戏会自动保存进度。你也可以手动保存到云端，或读取最近一次云端存档。不需要恢复码或密钥。云档自动绑定当前浏览器。','Your game saves automatically. You can also save to the cloud or load your latest cloud save. No recovery codes or keys. This cloud slot is linked to this browser.')+'</p>'+
   '<div class="cb-cloud-body"></div></section>';
  document.body.append(overlay);
- const card=overlay.querySelector('.cb-cloud-card'),body=overlay.querySelector('.cb-cloud-body');
+ const body=overlay.querySelector('.cb-cloud-body');
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
- let currentStatus='';
- function render(statusText=''){
-  currentStatus=statusText;
+ function render(status=''){
   const token=localStorage.getItem(CLOUD_KEY)||'';
-  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
   if(token){
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||(paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.'):t('云存档已启用。','Cloud save is enabled.')) )+'</div>'+
-    '<label class="cb-cloud-label">'+t('跨设备恢复码（请妥善保存）','Cross-device recovery code (keep it safe)')+'</label>'+
-    '<div class="cb-cloud-code" id="cb-cloud-code">'+esc(CODE_PREFIX+token)+'</div>'+
-    '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="copy">'+t('复制恢复码','Copy recovery code')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="sync">'+t('立即同步','Sync now')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('从云端恢复','Restore from cloud')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="replace">'+t('用本机覆盖云端','Replace cloud with this device')+'</button></div>'+
-    '<p class="cb-cloud-footnote">'+t('不要把恢复码发给他人。忘记恢复码后，服务器无法解密你的存档。','Do not share this code. If it is lost, the server cannot decrypt your save.')+'</p>';
+   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(status||t('云存档已就绪。','Cloud save is ready.'))+'</div>'+
+    '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="sync">'+t('立即保存','Save now')+'</button>'+
+    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('读取云端存档','Load cloud save')+'</button></div>'+
+    '<p class="cb-cloud-footnote">'+t('自动保存已开启。读取云档会替换当前设备的猫猫纽带进度。','Automatic sync is enabled. Loading replaces the Cat Bond progress on this device.')+'</p>';
   }else{
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(statusText||t('还没有启用云存档。','Cloud save is not enabled yet.'))+'</div>'+
-    '<button class="cb-cloud-primary cb-cloud-enable" data-cloud="enable">'+t('为当前设备启用加密云存档','Enable encrypted cloud save')+'</button>'+
-    '<div class="cb-cloud-divider">'+t('或在新设备上输入恢复码','Or enter a recovery code on a new device')+'</div>'+
-    '<label class="cb-cloud-label" for="cb-cloud-code-input">'+t('恢复码','Recovery code')+'</label>'+
-    '<input id="cb-cloud-code-input" class="cb-cloud-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="CB1.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">'+
-    '<button class="cb-cloud-secondary" data-cloud="import">'+t('恢复此云存档','Restore this cloud save')+'</button>'+
-    '<p class="cb-cloud-footnote">'+t('恢复会替换当前设备的猫猫纽带存档；其他游戏的存档不受影响。','Restoring replaces only the Cat Bond save on this device. Other games are untouched.')+'</p>';
+   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status">'+esc(status||t('尚未建立云端存档。','No cloud save has been created yet.'))+'</div>'+
+    '<button class="cb-cloud-primary cb-cloud-enable" data-cloud="enable">'+t('启用云存档','Enable cloud save')+'</button>'+
+    '<p class="cb-cloud-footnote">'+t('启用后会自动同步当前浏览器中的游戏进度。','Once enabled, game progress in this browser will sync automatically.')+'</p>';
   }
   body.querySelectorAll('[data-cloud]').forEach(button=>button.onclick=()=>cloudAction(button.dataset.cloud));
  }
@@ -465,73 +534,30 @@ function renderCloudPanel(){
   const say=msg=>{if(status)status.textContent=msg;};
   try{
    if(action==='enable'){
-    const hasLocal=!!localStorage.getItem(SAVE_KEY);
-    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');localStorage.removeItem(CLOUD_PAUSE_KEY);
-    render(hasLocal
-     ?t('已生成恢复码，正在安排首次加密同步。','Recovery code created. Initial encrypted sync is queued.')
-     :t('已生成恢复码。开始游戏并创建存档后会自动上传。','Recovery code created. It will upload automatically after your first game save.'));
-    if(hasLocal)queueSync();
-    return;
-   }
-   if(action==='copy'){
-    const code=CODE_PREFIX+(localStorage.getItem(CLOUD_KEY)||'');
-    await copyText(code);say(t('恢复码已复制。请保存到安全的地方。','Recovery code copied. Store it somewhere safe.'));
-    return;
-   }
-   if(action==='sync'){
-    if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'){
-     if(!confirm(t('检测到本机进度刚刚被重置。要用新进度覆盖旧云存档吗？','This device was just reset. Replace the previous cloud save with this new progress?')))return;
-     localStorage.removeItem(CLOUD_PAUSE_KEY);
-    }
-    say(t('正在加密并同步…','Encrypting and syncing…'));
+    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);localStorage.setItem(REV_KEY,'0');
+    render(t('云存档已启用，正在保存当前进度。','Cloud save enabled. Saving current progress…'));
     const result=await syncNow(true);
-    say(result.conflict?t('检测到另一台设备有更新。请选择恢复云端或覆盖云端。','A newer save exists on another device. Restore it or explicitly replace it.')
-     :result.ok?t('云存档已同步。','Cloud save synced.')
-     :result.empty?t('当前设备还没有游戏存档。','This device has no game save yet.')
-     :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and try again.'));
+    say(result.ok?t('云端存档已创建。','Cloud save created.'):result.empty?t('开始游戏后会自动保存。','Your progress will sync after you start playing.'):t('云端暂不可用，请稍后重试。','Cloud is unavailable. Please try again.'));
+    return;
+   }
+   const token=localStorage.getItem(CLOUD_KEY);if(!token)throw Error('Cloud save is not enabled');
+   if(action==='sync'){
+    say(t('正在保存进度…','Saving progress…'));
+    const result=await syncNow(true);
+    say(result.ok?t('保存成功。','Saved successfully.'):result.conflict?t('云端有更新版本，请先读取云端存档。','A newer cloud save exists. Load it before saving again.'):result.empty?t('当前还没有游戏进度。','There is no game progress to save yet.'):t('保存失败，请检查网络后重试。','Save failed. Check your connection and try again.'));
     return;
    }
    if(action==='restore'){
-    const token=localStorage.getItem(CLOUD_KEY);if(!token)throw Error('No recovery code');
-    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('这会替换当前设备的猫猫纽带进度。继续吗？','This replaces the Cat Bond progress on this device. Continue?')))return;
-    say(t('正在下载并解密云存档…','Downloading and decrypting cloud save…'));
-    await restoreWithToken(token);return;
-   }
-   if(action==='replace'){
-    if(!confirm(t('将用当前设备的存档覆盖云端版本。继续吗？','Replace the cloud version with this device’s save?')))return;
-    const token=localStorage.getItem(CLOUD_KEY);
-    let remote;try{remote=await fetchCloud(token);}catch(error){if(error?.message==='Cloud save not found')remote={revision:0};else throw error;}
-    localStorage.setItem(REV_KEY,String(remote.revision||0));
-    localStorage.removeItem(CLOUD_PAUSE_KEY);
-    const result=await syncNow(true);
-    say(result.conflict?t('云端仍有更新，请重试。','Cloud changed again; retry.')
-     :result.ok?t('云端已更新为本机存档。','Cloud save replaced with this device.')
-     :t('本机存档尚未同步，请稍后重试。','The local save could not be uploaded. Please retry.'));
-    return;
-   }
-   if(action==='import'){
-    const code=body.querySelector('#cb-cloud-code-input')?.value||'';
-    const token=parseCode(code);
-    if(!token)throw Error(t('恢复码格式不正确。','Invalid recovery code.'));
-    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('这会替换当前设备的猫猫纽带进度。继续吗？','This replaces the Cat Bond progress on this device. Continue?')))return;
-    say(t('正在下载并解密云存档…','Downloading and decrypting cloud save…'));
+    if(localStorage.getItem(SAVE_KEY)&&!confirm(t('读取云端存档会替换当前设备的猫猫纽带进度。继续吗？','Loading the cloud save replaces Cat Bond progress on this device. Continue?')))return;
+    say(t('正在读取云端存档…','Loading cloud save…'));
     await restoreWithToken(token);return;
    }
   }catch(error){
-   say(error?.message==='Cloud save not found'
-    ?t('没有找到这个恢复码对应的云存档。','No cloud save was found for this recovery code.')
-    :t('操作失败：','Action failed: ')+(error?.message||''));
+   say(error?.message==='Cloud save not found'?t('暂时没有可读取的云端存档。','There is no cloud save to load yet.'):t('操作失败：','Action failed: ')+(error?.message||''));
   }
  }
  const updateLocale=()=>{
-  const input=body.querySelector('#cb-cloud-code-input')?.value||'';
-  const token=localStorage.getItem(CLOUD_KEY);
-  const paused=localStorage.getItem(CLOUD_PAUSE_KEY)==='1';
-  render(token
-   ?paused?t('本机进度已重置，自动同步已暂停。请恢复旧云档，或明确覆盖。','Local progress was reset; auto-sync is paused. Restore the old cloud save or explicitly replace it.')
-    :t('云存档已启用。','Cloud save is enabled.')
-   :t('还没有启用云存档。','Cloud save is not enabled yet.'));
-  const nextInput=body.querySelector('#cb-cloud-code-input');if(nextInput)nextInput.value=input;
+  render();
  };
  window.addEventListener('morrowwish-language-change',updateLocale);
  render();
@@ -596,10 +622,6 @@ function setSyncStatus(status){
 async function syncNow(force=false){
  const token=localStorage.getItem(CLOUD_KEY);
  if(!token)return {ok:false,disabled:true};
- if(localStorage.getItem(CLOUD_PAUSE_KEY)==='1'&&!force){
-  setSyncStatus(t('本机重置后已暂停自动同步。请先恢复旧云档，或明确选择覆盖。','Auto-sync is paused after a local reset. Restore the old cloud save or explicitly replace it.'));
-  return {ok:false,paused:true};
- }
  if(syncPromise){syncPending=true;return syncPromise;}
  syncPromise=(async()=>{
   const raw=localStorage.getItem(SAVE_KEY);
@@ -627,7 +649,7 @@ async function syncNow(force=false){
  return syncPromise;
 }
 function queueSync(){
- if(!localStorage.getItem(CLOUD_KEY)||localStorage.getItem(CLOUD_PAUSE_KEY)==='1')return;
+ if(!localStorage.getItem(CLOUD_KEY))return;
  clearTimeout(syncTimer);
  syncTimer=setTimeout(()=>syncNow(false),2200);
 }
@@ -663,14 +685,7 @@ if(window.UI?.openExploreMenu&&!window.UI.openExploreMenu.__lastPage){
  };
  wrapped.__lastPage=true;window.UI.openExploreMenu=wrapped;
 }
-if(window.State?.hardReset&&!window.State.hardReset.__cbCloudWrapped){
- const original=window.State.hardReset.bind(window.State);
- const wrapped=function(...args){
-  if(localStorage.getItem(CLOUD_KEY))localStorage.setItem(CLOUD_PAUSE_KEY,'1');
-  return original(...args);
- };
- wrapped.__cbCloudWrapped=true;window.State.hardReset=wrapped;
-}
+// A reset starts a fresh local run; the next save may replace this browser's cloud slot.
 if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  const original=window.State.save.bind(window.State);
  const wrapped=function(...args){const result=original(...args);try{queueSync();}catch{}return result;};
@@ -711,6 +726,117 @@ window.addEventListener('DOMContentLoaded',installIntro,{once:true});
 window.addEventListener('morrowwish-language-change',updateTracker);
 window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(false);});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))syncNow(false);});
+
+const NPC_CAST=[
+ {id:'kite',region:'home',name:'纸鸢',en:'Kite',role:'Catdex 记录员',roleEn:'Catdex Keeper',species:'xiaohui',x:480,y:650,accent:'#d9b7c1',
+  intro:['你醒了。书上说今天会有人回来。','我没有说是你——是 Catdex 自己翻到了这一页。','如果你想知道过去，先帮我找回旧院子的毛线盒。'],
+  introEn:['You are awake. The book said someone would return today.','I did not say it was you. The Catdex turned to this page by itself.','If you want answers, help me find the old yarn box first.'],
+  quest:'找回旧院子的毛线盒',questEn:'Recover the old garden yarn box',done:'盒底刻着星铃的记号。你以前把它交给一个最信任的人。',doneEn:'The Star Bell mark is carved beneath it. You once gave it to someone you trusted most.'},
+ {id:'feizhi',region:'sakura',name:'绯枝',en:'Feizhi',role:'神社守签人',roleEn:'Shrine Keeper',species:'yinghua',x:520,y:650,accent:'#efadc4',
+  intro:['这支签文每天都会变。我怀疑有人在改写过去。','别担心，我不是要你相信预言。我只想知道是谁在撒谎。','替我找回被风吹走的许愿信吧。'],
+  introEn:['This fortune changes every day. I think someone is rewriting the past.','Do not worry. I am not asking you to believe in prophecy. I want to know who is lying.','Please find the wish note the wind carried away.'],
+  quest:'找回樱花许愿信',questEn:'Recover the shrine wish note',done:'最后一行写着：愿那个没能回家的孩子，也有人等。',doneEn:'The last line reads: may someone be waiting for the child who never made it home.'},
+ {id:'duchuan',region:'creek',name:'渡川',en:'Duchuan',role:'溪谷摆渡人',roleEn:'Creek Ferryman',species:'lanbao',x:500,y:650,accent:'#8fc8d9',
+  intro:['河水会带走东西，也会把东西还回来。','你的名字没有被偷走。你自己把它交给了河。','找到那枚蓝贝壳，我再告诉你为什么。'],
+  introEn:['The river takes things away. Sometimes it brings them back.','Your name was not stolen. You gave it to the river.','Find the blue shell, and I will tell you why.'],
+  quest:'找回溪谷蓝贝壳',questEn:'Recover the blue creek shell',done:'星铃需要一个锚。你不肯让那只小猫成为锚，所以交出了自己的名字。',doneEn:'The Star Bell needed an anchor. You would not let that kitten become it, so you gave up your own name.'},
+ {id:'jinhe',region:'volcano',name:'烬禾',en:'Jinhe',role:'余烬守望者',roleEn:'Ember Warden',species:'senlin',x:540,y:650,accent:'#e7a16f',
+  intro:['别靠近裂缝。这里的火不是从山里烧出来的。','灾变那天，我看见你走进了星铃。','把暖光石带回来，我会告诉你我为什么没拦住你。'],
+  introEn:['Stay away from the fissure. This fire did not come from the mountain.','On the day of the catastrophe, I saw you walk into the Star Bell.','Bring back the ember stone. I will tell you why I did not stop you.'],
+  quest:'找回火山暖光石',questEn:'Recover the warm ember stone',done:'你让我保护其他猫，不要告诉暮铃真相。我遵守了约定，却让它独自误解了你。',doneEn:'You asked me to protect the others and keep the truth from Muling. I kept my promise, and left them alone with the wrong story.'},
+ {id:'xingce',region:'ruins',name:'星簿',en:'Star Scribe',role:'遗迹解读者',roleEn:'Ruins Archivist',species:'yuelian',x:520,y:650,accent:'#b8a5df',
+  intro:['你终于走到这里。六段旋律已经快要齐了。','它们不是钥匙，而是有人拿来拼凑你的记忆。','找到星光匣。之后，我会把隐瞒的一切告诉你。'],
+  introEn:['You finally made it here. The six melodies are almost complete.','They are not keys. Someone is using them to assemble your memories.','Find the star box. Then I will tell you everything I kept from you.'],
+  quest:'找回月影星光匣',questEn:'Recover the Moonshadow star box',done:'暮铃知道仪式无法真正复活你。它还是继续了。悲伤解释了它的选择，却不能替它开脱。',doneEn:'Muling knows the ritual cannot truly bring you back. It continued anyway. Grief explains the choice; it does not excuse it.'}
+];
+function npcRoot(){
+ const s=state();if(!s)return null;
+ if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},quests:{},completed:0};
+ s.npcStory.talked||={};s.npcStory.quests||={};return s.npcStory;
+}
+function npcLocale(npc,key){const en=!isZh();return en?(npc[key+'En']||npc[key]):npc[key];}
+function npcState(npc){
+ const root=npcRoot();if(!root)return {accepted:false,found:false,done:false};
+ if(!root.quests[npc.id])root.quests[npc.id]={accepted:false,found:false,done:false};
+ return root.quests[npc.id];
+}
+function npcSave(){save();window.__game?.refreshHUD?.();}
+function npcTalk(id){
+ const npc=NPC_CAST.find(n=>n.id===id);if(!npc)return;
+ const root=npcRoot();if(!root)return;
+ const q=npcState(npc),en=!isZh();
+ const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
+ const name=en?npc.en:npc.name,role=en?npc.roleEn:npc.role;
+ const status=q.done?(en?'Request complete':'委托已完成'):q.found?(en?'Ready to report':'可以交付'):q.accepted?(en?'In progress':'进行中'):(en?'New request':'新委托');
+ const lines=!root.talked[id]?(en?npc.introEn:npc.intro):[
+  q.done?(en?npc.doneEn:npc.done):q.found?(en?'You found what I was looking for. Will you hand it over?':'你找到了我要的东西。愿意交给我吗？'):q.accepted?(en?'The request is still open. Return when you find the clue.':'委托还在等你。找到线索后再回来。'):(en?'Could you help me recover something that was lost?':'你愿意帮我找回一件遗失的东西吗？')
+ ];
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEETING ON THE ROAD':'旅途中的相遇')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ document.body.append(overlay);
+ const card=overlay.querySelector('.cb-npc-dialog-card'),close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
+ const rerender=()=>{close();npcTalk(id);};
+ window.addEventListener('morrowwish-language-change',rerender);
+ overlay.querySelector('.cb-cloud-close').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ card.querySelector('h2').textContent=name;card.querySelector('small').textContent=role;card.querySelector('span').textContent=status;
+ card.querySelector('.cb-npc-dialog-line').textContent=lines.join('\n\n');
+ const species=window.GameData?.speciesById?.(npc.species);
+ if(species&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(card.querySelector('canvas'),species);
+ const actions=card.querySelector('.cb-cloud-actions');
+ const add=(label,fn,primary=false)=>{const b=document.createElement('button');b.type='button';b.className=primary?'cb-cloud-primary':'cb-cloud-secondary';b.textContent=label;b.onclick=fn;actions.append(b);};
+ if(!root.talked[id]){
+  root.talked[id]=true;npcSave();
+  if(q.found)add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
+  else add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
+ }else if(q.found&&!q.done){
+  add(en?'Hand over the clue':'交付线索',()=>npcDeliver(npc,close),true);
+ }else if(!q.accepted&&!q.done){
+  add(en?'Accept request':'接受委托',()=>{q.accepted=true;npcSave();close();npcTalk(id);},true);
+ }else if(q.done){
+  add(en?'Ask about the Star Bell':'询问星铃',()=>{close();npcLore(npc);},true);
+ }
+ add(en?'Leave':'离开',close,false);
+}
+function npcLore(npc){
+ const en=!isZh(),overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A MEMORY SHARED':'一段被分享的记忆')+'</p><h2>'+ (en?npc.en:npc.name)+'</h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"><button class="cb-cloud-primary">'+(en?'Close':'关闭')+'</button></div></section>';
+ document.body.append(overlay);overlay.querySelector('.cb-npc-dialog-line').textContent=en?npc.doneEn:npc.done;overlay.querySelector('button').onclick=()=>overlay.remove();
+}
+function npcDeliver(npc,close){
+ const q=npcState(npc);if(!q.found||q.done){close();return;}
+ q.done=true;const root=npcRoot();root.completed=(root.completed||0)+1;
+ state().coins=(state().coins||0)+45;state().fish=(state().fish||0)+2;npcSave();
+ window.arcadeMetric?.('bond_npc_quest_complete',{npc:npc.id,region:npc.region});
+ close();npcLore(npc);
+}
+function npcEntered(region){
+ const npc=NPC_CAST.find(n=>n.region===region);if(!npc||npcRoot()?.talked?.[npc.id])return;
+ window.__game?.toast?.({zh:'发现旅途中的居民：'+npc.name+'。靠近后点击它交谈。',en:'A local resident is nearby: '+npc.en+'. Walk close and tap to talk.'});
+}
+function npcFound(region,reward){
+ const npc=NPC_CAST.find(n=>n.region===region);if(!npc||reward?.discovery?.id!==region)return;
+ const q=npcState(npc);q.found=true;npcSave();
+ if(q.accepted&&!q.done)window.__game?.toast?.({zh:'找到了「'+npc.quest+'」！回去找 '+npc.name+' 交付委托。',en:'Found '+npc.questEn+'! Return to '+npc.en+' to complete the request.'});
+}
+function npcDraw(ctx,npc,time){
+ const sp=window.GameData?.speciesById?.(npc.species);if(!sp)return;
+ const bob=Math.sin(time*1.8+npc.x)*2;
+ ctx.save();ctx.fillStyle='rgba(25,31,37,.22)';ctx.beginPath();ctx.ellipse(npc.x,npc.y+18,28,8,0,0,Math.PI*2);ctx.fill();
+ const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
+ if(draw)draw(ctx,npc.x,npc.y+bob,{species:sp,scale:.92,face:1,t:time,pose:'idle',motion:.08,mood:'happy'});
+ ctx.fillStyle='rgba(24,29,39,.82)';ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+ const label=isZh()?npc.name:npc.en,ww=Math.max(54,ctx.measureText(label).width+18);
+ ctx.beginPath();ctx.roundRect(npc.x-ww/2,npc.y-88+bob,ww,23,10);ctx.fill();
+ ctx.fillStyle='#fff7e8';ctx.fillText(label,npc.x,npc.y-76+bob);
+ const q=npcState(npc),mark=q.done?'✓':q.found?'!':q.accepted?'?':'✦';
+ ctx.fillStyle=q.done?'#d8edcf':'#ffe8ae';ctx.beginPath();ctx.arc(npc.x+30,npc.y-82+bob,10,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#465345';ctx.font='900 11px system-ui';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
+ ctx.restore();
+}
+window.CatBondNPC={
+ forRegion:id=>NPC_CAST.filter(n=>n.region===id),
+ talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
+};
+
 window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,
  onBossVictory,playEnding,updateTracker
