@@ -1,0 +1,16 @@
+# Chat 4 — narrative runtime (PARTIAL)
+Canon: The Last Resonance. Source script blob e76fb300981187f2db7a799588425dbe4ad7323f. 40 namespaced scenes, 198 Chinese key dialogue lines extracted verbatim, authored English translation, 14 named cast IDs, 8 choice points, 6 reciprocal links, 13 postgame task definitions. The official script is a critical-dialogue draft; this is not a complete optional dialogue screenplay.
+ 
+## Integration
+Import campaign.mjs and makeEngine(campaign, savedNarrative) from public/cat-bond/js/resonance/. Instantiate per active slot and discard on slot change. Persist successful result.state in State.S.resonance through existing State.save()/SaveManager. No second storage or cloud system. Proposed region ID mappings: garden/harbor/forest/forge/sky/library/starfall. Do not mount into old campaign or edit other teams' modules. Present only current scene, not the spoiler-containing catalog. P-02 is audience-facing cinematic as prescribed, not player memory recovery.
+ 
+- view(): current scene, cursor, choice, outstanding operation IDs, region availability, Muling phase, reciprocal state, support profiles.
+- choose(id), nextLine(): state updates; trust and support-method descriptors differ by choice. Battle and map need to consume them for actual gameplay differences.
+- record(sceneId, operation): trusted host only, after actual world/puzzle/battle/cinematic action; never a generic completion button. For melody, verify local cats answer First Note; repair must be physical; loss must not be recorded as victory.
+- exchange({a,b,stage,actor,action}): four distinct ordered verified steps sendA, receiveB, sendB, receiveA. Required action IDs in campaign.links. Adapter verifies meaningful free response and receipt, not prerecorded signal. All six required at F-04.
+- supportAction(region,action): B-03 only, after actual named NPC support and protection. Six unique support actions plus battle victory required before Muling's final unlock.
+- finish(): requires dialogue, choice, actual operation evidence, and ring/support gates. postgame(id,operation): after ending and verified repair/reunion/challenge. No duplicated completion. Return {ok:true,state} or {ok:false,reason}. No currency grants yet; atomic reward integration pending.
+- snapshot() returns independent JSON. No one global state. Restore by passing saved snapshot into makeEngine.
+ 
+## Evidence and limitations
+JS runtime self-test actually executed before commit: {"scenes":40,"lines":198,"successfulTransitions":398,"postgame":13}. Simulated trusted host actions, not real game play. Tests cover sequence, early-scene rejection, no click-only completion, duplicates, bilingual presence, JSON restore, six reciprocal exchanges, support, postgame and three isolated engine instances plus alternate trust. Run node scripts/test-cat-bond-resonance.mjs from repository checkout. Full npm check, real UI, map/puzzle integration, Catdex/Duo adapters, final battle effects, formal postgame dialogue, character art, screenshots and independent QA are NOT complete. No verified art generation quota; no stand-in artwork. No merge or deploy. Do not represent this as finished game.
