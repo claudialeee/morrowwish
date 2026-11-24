@@ -5,7 +5,7 @@ for (const file of [
   'public/elsewhere/app.js','public/telemetry.js','public/lang.js',
   'public/zh-site.js','public/zh-stories.js','public/zh-polish.js',
   'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/pawsibly-innocent/index.html','public/pawsibly-innocent/game.js','public/icons/pawsibly-innocent.svg',
-  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/sunlit-garden-cinematic.svg','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
+  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/sunlit-garden-cinematic.svg','public/cat-bond/assets/sunlit-garden-portrait.svg','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
@@ -1401,6 +1401,7 @@ await import('./check-cat-bond-story-cloud.mjs');
 // Sunlit Garden: source, artwork and cross-module ownership regression gate.
 const gardenCode=fs.readFileSync('public/cat-bond/js/sunlit-garden.js','utf8');
 const gardenArt=fs.readFileSync('public/cat-bond/assets/sunlit-garden-cinematic.svg','utf8');
+const gardenArtPortrait=fs.readFileSync('public/cat-bond/assets/sunlit-garden-portrait.svg','utf8');
 const gardenWorld=fs.readFileSync('public/cat-bond/js/world.js','utf8');
 const gardenGame=fs.readFileSync('public/cat-bond/js/game.js','utf8');
 const gardenHtml=fs.readFileSync('public/cat-bond/index.html','utf8');
@@ -1409,7 +1410,8 @@ new Function(gardenCode);
 const gardenRegions=['harbor','forest','forge','sky','library','starfall'];
 const gardenCast=['muling','jiedeng','qilan','yahe','yuchuan','jinpo','xiaomao','lingyu','yuanfan','moye','baikan','xingya','lichuan'];
 if(!gardenArt.startsWith('<svg')||!gardenArt.includes('viewBox="0 0 1600 900"')||
-   /<text[\s>]/i.test(gardenArt)||/Cat Bond|Sunlit Garden|Workshop|Catdex/i.test(gardenArt.replace(/aria-label="[^"]*"/g,'')))
+   !gardenArtPortrait.startsWith('<svg')||!gardenArtPortrait.includes('viewBox="0 0 900 1600"')||
+   /<text[\s>]/i.test(gardenArt+gardenArtPortrait)||/Cat Bond|Sunlit Garden|Workshop|Catdex/i.test((gardenArt+gardenArtPortrait).replace(/aria-label="[^"]*"/g,'')))
  throw new Error('Sunlit Garden environment artwork must be a text-free scene plate, not a baked UI mockup');
 if(gardenRegions.some(id=>!gardenCode.includes("id:'"+id+"'"))||
    gardenCast.some(id=>!gardenCode.includes(id)))
@@ -1421,6 +1423,8 @@ if(!gardenCode.includes('window.State?.S')||!gardenCode.includes('resonance')||
    gardenCode.includes('State.S.story'))
  throw new Error('Garden must read canonical per-slot state and delegate NPC art/dialogue without another save/story system');
 if(!gardenWorld.includes('assets/sunlit-garden-cinematic.svg')||
+   !gardenWorld.includes('assets/sunlit-garden-portrait.svg')||
+   !gardenWorld.includes('H > W * 1.12')||
    !gardenWorld.includes('SunlitGarden?.draw?.(ctx,W,H,t)')||
    !gardenGame.includes('SunlitGarden?.enter?.()')||
    !gardenGame.includes('SunlitGarden?.leave?.()')||
