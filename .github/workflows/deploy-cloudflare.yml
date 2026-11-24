@@ -18,6 +18,7 @@ on:
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
       - 'scripts/cat-bond-language-audit.mjs' # 19 game screens across desktop, mobile, site, portal.
       - 'scripts/cat-bond-interaction-language-qa.mjs' # Reproduce real post-click toasts and transactions.
+      # RPG prologue setup is covered by the updated browser fixtures below.
       - 'scripts/check-hidden-story-language.mjs' # Hidden endings and secret event translations are release gates.
       - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
       - 'scripts/test-dashboard-history-browser.mjs' # Historical analytics DOM preservation is a release gate.
