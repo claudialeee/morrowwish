@@ -1,4 +1,4 @@
-// Locked script dialogue (Chinese) + authored English localization. No legacy story.
+// Locked script dialogue + authored localization and optional ambient interactions.
 export const campaign = {
   "canon": "The Last Resonance",
   "version": 1,
@@ -64,7 +64,13 @@ export const campaign = {
         "zh": "无名守铃者",
         "en": "Bellkeeper"
       },
-      "region": "garden"
+      "region": "garden",
+      "artDirection": {
+        "zh": "青年成年猫，柔和而坚毅；旅行斗篷、旧铃绳；保持玩家选定的猫咪外观",
+        "en": "Young adult; gentle determination; travel cloak and worn bell cord; preserve chosen player-cat appearance"
+      },
+      "expressionNotes": "谨慎观察、惊讶、坚定、温暖",
+      "artStatus": "unproduced"
     },
     "muling": {
       "id": "muling",
@@ -72,7 +78,13 @@ export const campaign = {
         "zh": "暮铃",
         "en": "Muling"
       },
-      "region": "garden"
+      "region": "garden",
+      "artDirection": {
+        "zh": "细长而优雅的成年母猫，烟银长毛与琥珀眼，靛青旅行披肩；旧铜铃坠始终一致；最终战使用独立环形铃器与仪式服，而非放大原角色",
+        "en": "Slender adult silver-smoke longhair, amber eyes, indigo travel mantle; consistent aged bronze bell pendant. Finale: distinct ritual attire and ring instrument, never an enlarged sprite."
+      },
+      "expressionNotes": "平静、冷幽默、紧张敲铃、悲伤、警惕、悔意、释然",
+      "artStatus": "unproduced"
     },
     "jiedeng": {
       "id": "jiedeng",
@@ -80,7 +92,13 @@ export const campaign = {
         "zh": "岬灯",
         "en": "Jiedeng"
       },
-      "region": "harbor"
+      "region": "harbor",
+      "artDirection": {
+        "zh": "老年宽肩深灰猫，厚毛、风雨磨损的海岸守灯衣，旧灯钥匙；站姿沉稳",
+        "en": "Older broad-shouldered slate cat, dense fur, weathered keeper coat and lighthouse key; grounded posture"
+      },
+      "expressionNotes": "沉默、忧虑、坚决、释然",
+      "artStatus": "unproduced"
     },
     "qilan": {
       "id": "qilan",
@@ -88,7 +106,13 @@ export const campaign = {
         "zh": "栖蓝",
         "en": "Qilan"
       },
-      "region": "harbor"
+      "region": "harbor",
+      "artDirection": {
+        "zh": "年轻修长蓝灰短毛猫，海青领航围巾、潮汐图；动作敏捷",
+        "en": "Young slender blue-gray shorthair, teal navigator scarf and tide chart; quick movement"
+      },
+      "expressionNotes": "好奇、急躁、勇敢、喜悦",
+      "artStatus": "unproduced"
     },
     "yahe": {
       "id": "yahe",
@@ -96,7 +120,13 @@ export const campaign = {
         "zh": "芽禾",
         "en": "Yahe"
       },
-      "region": "forest"
+      "region": "forest",
+      "artDirection": {
+        "zh": "年轻暖棕斑纹猫，植物编织药袋，眼神明亮，前倾姿态",
+        "en": "Young warm-brown tabby, woven herbal satchel, bright eyes, forward stance"
+      },
+      "expressionNotes": "热情、怀疑、担忧、欣慰",
+      "artStatus": "unproduced"
     },
     "yuchuan": {
       "id": "yuchuan",
@@ -104,7 +134,13 @@ export const campaign = {
         "zh": "榆川",
         "en": "Yuchuan"
       },
-      "region": "forest"
+      "region": "forest",
+      "artDirection": {
+        "zh": "成年厚实深棕猫，长眉、根系护具和测水刻尺，安静的姿态",
+        "en": "Sturdy dark-brown adult with long brows, root work gear and water gauge; quiet stance"
+      },
+      "expressionNotes": "克制、固执、专注、信任",
+      "artStatus": "unproduced"
     },
     "jinpo": {
       "id": "jinpo",
@@ -112,7 +148,13 @@ export const campaign = {
         "zh": "烬婆",
         "en": "Jinpo"
       },
-      "region": "forge"
+      "region": "forge",
+      "artDirection": {
+        "zh": "老年结实玳瑁猫，烧蚀皮革围裙、护目镜与锻锤；独特不对称轮廓",
+        "en": "Older muscular tortoiseshell, scorched leather apron, goggles and hammer; asymmetric silhouette"
+      },
+      "expressionNotes": "严厉、羞愧、专注、骄傲",
+      "artStatus": "unproduced"
     },
     "xiaomao": {
       "id": "xiaomao",
@@ -120,7 +162,13 @@ export const campaign = {
         "zh": "小铆",
         "en": "Xiaomao"
       },
-      "region": "forge"
+      "region": "forge",
+      "artDirection": {
+        "zh": "年轻瘦小狸花猫，偏大的机械工具带、护腕、铆钉图纸；灵活的耳朵",
+        "en": "Lean young tabby, oversized tool belt, wrist guards and rivet drawings; expressive ears"
+      },
+      "expressionNotes": "兴奋、不服、专注、成就感",
+      "artStatus": "unproduced"
     },
     "lingyu": {
       "id": "lingyu",
@@ -128,7 +176,13 @@ export const campaign = {
         "zh": "翎羽",
         "en": "Lingyu"
       },
-      "region": "sky"
+      "region": "sky",
+      "artDirection": {
+        "zh": "成熟银白虎斑猫，长腿、修身飞行披风和风向计，保护性的站姿",
+        "en": "Mature silver tabby, long legs, fitted flight mantle and wind gauge; protective stance"
+      },
+      "expressionNotes": "认真、戒备、动摇、欣慰",
+      "artStatus": "unproduced"
     },
     "yuanfan": {
       "id": "yuanfan",
@@ -136,7 +190,13 @@ export const campaign = {
         "zh": "远帆",
         "en": "Yuanfan"
       },
-      "region": "sky"
+      "region": "sky",
+      "artDirection": {
+        "zh": "年轻奶油色长腿猫，轻型飞翼背带、磨损飞行日志，向前的剪影",
+        "en": "Young cream long-legged cat, light glider harness and worn flight log; forward silhouette"
+      },
+      "expressionNotes": "期待、委屈、坚定、自豪",
+      "artStatus": "unproduced"
     },
     "moye": {
       "id": "moye",
@@ -144,7 +204,13 @@ export const campaign = {
         "zh": "墨页",
         "en": "Moye"
       },
-      "region": "library"
+      "region": "library",
+      "artDirection": {
+        "zh": "成年黑色长毛猫，窄眼、层叠墨色档案袍、银色书签；动作精确",
+        "en": "Adult black longhair, narrow eyes, layered ink archivist robe and silver bookmark; precise movement"
+      },
+      "expressionNotes": "疏离、迟疑、忧虑、坦然",
+      "artStatus": "unproduced"
     },
     "baikan": {
       "id": "baikan",
@@ -152,7 +218,13 @@ export const campaign = {
         "zh": "白栞",
         "en": "Baikan"
       },
-      "region": "library"
+      "region": "library",
+      "artDirection": {
+        "zh": "年轻白底灰斑猫，不对称书卷肩带、镜片与档案笔，眼神锐利",
+        "en": "Young white-and-gray cat, asymmetric folio strap, lens and archive pen; sharp gaze"
+      },
+      "expressionNotes": "求知、急切、震惊、温和",
+      "artStatus": "unproduced"
     },
     "xingya": {
       "id": "xingya",
@@ -160,7 +232,13 @@ export const campaign = {
         "zh": "星芽",
         "en": "Xingya"
       },
-      "region": "starfall"
+      "region": "starfall",
+      "artDirection": {
+        "zh": "年轻琥珀色短毛猫，锐利轮廓、星图机械护腕、观测仪；紧绷姿态",
+        "en": "Young amber shorthair, angular silhouette, star-map bracer and observatory instrument; tense posture"
+      },
+      "expressionNotes": "专注、争执、惊愕、信任",
+      "artStatus": "unproduced"
     },
     "lichuan": {
       "id": "lichuan",
@@ -168,7 +246,13 @@ export const campaign = {
         "zh": "砾川",
         "en": "Lichuan"
       },
-      "region": "starfall"
+      "region": "starfall",
+      "artDirection": {
+        "zh": "成年沙色长毛猫，粗粝旅装、星罗盘、长围巾，宽厚稳定的剪影",
+        "en": "Adult sandy longhair, rugged caravan gear, star compass and long scarf; steady broad silhouette"
+      },
+      "expressionNotes": "冷幽默、怀疑、沉着、宽慰",
+      "artStatus": "unproduced"
     }
   },
   "scenes": [
@@ -184,7 +268,9 @@ export const campaign = {
       "requires": [
         "cinematic:prologue-montage"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "prologue:P-02",
@@ -304,7 +390,9 @@ export const campaign = {
       "requires": [
         "cinematic:sacrifice"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "prologue:P-03",
@@ -318,7 +406,9 @@ export const campaign = {
       "requires": [
         "cinematic:waiting"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "prologue:P-04",
@@ -403,7 +493,9 @@ export const campaign = {
       "requires": [
         "explore:garden-bell"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "prologue:P-05",
@@ -460,7 +552,9 @@ export const campaign = {
       "requires": [
         "travel:harbor"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "harbor:H-01",
@@ -517,7 +611,9 @@ export const campaign = {
       "requires": [
         "npc:harbor-arrival"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "harbor:H-02",
@@ -586,7 +682,9 @@ export const campaign = {
           "npc": "jiedeng",
           "method": "keeper-trust"
         }
-      ]
+      ],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "harbor:H-03",
@@ -643,7 +741,11 @@ export const campaign = {
       "requires": [
         "explore:tide-logbook"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [
+        "explore:tide-logbook"
+      ],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "harbor:H-04",
@@ -699,7 +801,9 @@ export const campaign = {
           "npc": "jiedeng",
           "method": "precise-beacon"
         }
-      ]
+      ],
+      "lineGate": [],
+      "choiceTiming": "beforeAction"
     },
     {
       "id": "harbor:H-05",
@@ -757,7 +861,9 @@ export const campaign = {
         "repair:harbor",
         "melody:harbor"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forest:R-01",
@@ -800,7 +906,9 @@ export const campaign = {
       "requires": [
         "npc:forest-dispute"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forest:R-02",
@@ -862,7 +970,11 @@ export const campaign = {
           "npc": "yuchuan",
           "method": "root-stability"
         }
-      ]
+      ],
+      "lineGate": [
+        "explore:scent-trail"
+      ],
+      "choiceTiming": "beforeAction"
     },
     {
       "id": "forest:R-03",
@@ -905,7 +1017,9 @@ export const campaign = {
       "requires": [
         "puzzle:paired-water-gates"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forest:R-04",
@@ -963,7 +1077,9 @@ export const campaign = {
         "repair:forest",
         "melody:forest"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forge:E-01",
@@ -1006,7 +1122,9 @@ export const campaign = {
       "requires": [
         "npc:forge-dispute"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forge:E-02",
@@ -1061,7 +1179,11 @@ export const campaign = {
           "npc": "jinpo",
           "method": "shared-repair"
         }
-      ]
+      ],
+      "lineGate": [
+        "puzzle:safety-blueprint"
+      ],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forge:E-03",
@@ -1091,7 +1213,9 @@ export const campaign = {
         "puzzle:heat-pressure",
         "battle:forge-guardian"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forge:E-04",
@@ -1149,7 +1273,9 @@ export const campaign = {
         "repair:forge",
         "melody:forge"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "sky:S-01",
@@ -1192,7 +1318,9 @@ export const campaign = {
       "requires": [
         "npc:sky-dispute"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "sky:S-02",
@@ -1228,7 +1356,11 @@ export const campaign = {
       "requires": [
         "explore:flight-recorder"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [
+        "explore:flight-recorder"
+      ],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "sky:S-03",
@@ -1283,7 +1415,9 @@ export const campaign = {
           "npc": "lingyu",
           "method": "escort-flight"
         }
-      ]
+      ],
+      "lineGate": [],
+      "choiceTiming": "beforeAction"
     },
     {
       "id": "sky:S-04",
@@ -1382,7 +1516,9 @@ export const campaign = {
       "requires": [
         "npc:broken-pendant"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "sky:S-05",
@@ -1397,7 +1533,9 @@ export const campaign = {
         "repair:sky",
         "melody:sky"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-01",
@@ -1440,7 +1578,9 @@ export const campaign = {
       "requires": [
         "npc:archive-dispute"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-02",
@@ -1454,7 +1594,9 @@ export const campaign = {
       "requires": [
         "puzzle:mirror-records"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-03",
@@ -1574,7 +1716,9 @@ export const campaign = {
       "requires": [
         "npc:identity-confrontation"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-04",
@@ -1673,7 +1817,11 @@ export const campaign = {
           "npc": "muling",
           "method": "understand"
         }
-      ]
+      ],
+      "lineGate": [
+        "explore:routing-record"
+      ],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-05",
@@ -1765,7 +1913,9 @@ export const campaign = {
           "npc": "moye",
           "method": "verified-records"
         }
-      ]
+      ],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "starfall:F-01",
@@ -1808,7 +1958,9 @@ export const campaign = {
       "requires": [
         "npc:central-dispute"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "starfall:F-02",
@@ -1823,7 +1975,9 @@ export const campaign = {
         "puzzle:star-map",
         "explore:catastrophe-record"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "starfall:F-03",
@@ -1950,7 +2104,9 @@ export const campaign = {
       "requires": [
         "npc:central-ruin"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "starfall:F-04",
@@ -2021,7 +2177,13 @@ export const campaign = {
           "npc": "lichuan",
           "method": "distributed-repair"
         }
-      ]
+      ],
+      "lineGate": [
+        "puzzle:distributed-routing",
+        "repair:starfall",
+        "melody:starfall"
+      ],
+      "choiceTiming": "beforeAction"
     },
     {
       "id": "starfall:F-05",
@@ -2064,7 +2226,9 @@ export const campaign = {
       "requires": [
         "cinematic:inward-call"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "finale:B-01",
@@ -2114,7 +2278,9 @@ export const campaign = {
       "requires": [
         "battle:inward-gates"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "finale:B-02",
@@ -2136,7 +2302,9 @@ export const campaign = {
       "requires": [
         "battle:identify-echo"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "finale:B-03",
@@ -2180,7 +2348,11 @@ export const campaign = {
         "battle:central-echo",
         "mechanism:muling-unlock"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [
+        "battle:central-echo"
+      ],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "finale:B-04",
@@ -2237,7 +2409,9 @@ export const campaign = {
       "requires": [
         "cinematic:final-note"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "epilogue:E-01",
@@ -2251,7 +2425,9 @@ export const campaign = {
       "requires": [
         "cinematic:regional-reunion"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "epilogue:E-02",
@@ -2265,7 +2441,9 @@ export const campaign = {
       "requires": [
         "npc:public-accountability"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "epilogue:E-03",
@@ -2322,7 +2500,9 @@ export const campaign = {
       "requires": [
         "npc:second-garden-key"
       ],
-      "choices": []
+      "choices": [],
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     }
   ],
   "side": [
@@ -2390,6 +2570,216 @@ export const campaign = {
       "id": "postgame:ruins",
       "region": "starfall",
       "operation": "postgame:ruins-victory"
+    }
+  ],
+  "ambient": [
+    {
+      "id": "muling:tea",
+      "npc": "muling",
+      "region": "garden",
+      "after": "prologue:P-05",
+      "before": "library:M-04",
+      "operation": "ambient:brew-bitter-tea",
+      "text": {
+        "zh": "苦一点才好。甜茶只会让我忘了自己刚才在想什么。",
+        "en": "Bitter is better. Sweet tea only makes me forget what I was thinking."
+      },
+      "action": "sip-tea"
+    },
+    {
+      "id": "muling:map",
+      "npc": "muling",
+      "region": "harbor",
+      "after": "harbor:H-01",
+      "before": "library:M-04",
+      "operation": "ambient:inspect-map",
+      "text": {
+        "zh": "地图没有画错。是我们刚才把左边当成了右边。好吧，是我。",
+        "en": "The map isn't wrong. We mistook left for right. Fine. I did."
+      },
+      "action": "check-map"
+    },
+    {
+      "id": "muling:cooking",
+      "npc": "muling",
+      "region": "garden",
+      "after": "forest:R-04",
+      "before": "library:M-04",
+      "operation": "ambient:share-cooked-meal",
+      "text": {
+        "zh": "我按图纸做的。为什么锅里还会冒烟？……别尝。",
+        "en": "I followed the diagram. Why is the pot still smoking? ...Don't taste it."
+      },
+      "action": "burnt-meal"
+    },
+    {
+      "id": "muling:bells",
+      "npc": "muling",
+      "region": "sky",
+      "after": "sky:S-04",
+      "before": "library:M-04",
+      "operation": "ambient:repair-broken-bell",
+      "text": {
+        "zh": "铃舌不见了。先把它放好吧，等找到合适的零件再说。",
+        "en": "The tongue is missing. Let's keep it safe until we find a part that fits."
+      },
+      "action": "repair-bell"
+    },
+    {
+      "id": "muling:accountability",
+      "npc": "muling",
+      "region": "garden",
+      "after": "epilogue:E-03",
+      "operation": "ambient:repair-garden-bell",
+      "text": {
+        "zh": "这次先问问大家要不要修。我不替他们决定。",
+        "en": "Let's ask everyone if they want it repaired first. I won't decide for them."
+      },
+      "action": "ask-permission"
+    },
+    {
+      "id": "jiedeng:maintain-lighthouse",
+      "npc": "jiedeng",
+      "region": "harbor",
+      "after": "harbor:H-05",
+      "operation": "ambient:maintain-lighthouse",
+      "text": {
+        "zh": "灯会一直亮着。船要不要出海，由领航员自己决定。",
+        "en": "The light will stay on. Whether to sail is the navigator's choice."
+      },
+      "action": "maintain-lighthouse"
+    },
+    {
+      "id": "qilan:chart-harbor",
+      "npc": "qilan",
+      "region": "harbor",
+      "after": "harbor:H-05",
+      "operation": "ambient:chart-harbor",
+      "text": {
+        "zh": "这张新航图，下一趟出发时就能用上。",
+        "en": "This new chart will be ready for our next voyage."
+      },
+      "action": "chart-harbor"
+    },
+    {
+      "id": "yahe:plant-herbs",
+      "npc": "yahe",
+      "region": "forest",
+      "after": "forest:R-04",
+      "operation": "ambient:plant-herbs",
+      "text": {
+        "zh": "我们一起看看水渠，再决定种什么。",
+        "en": "Let's check the channels together before we decide what to plant."
+      },
+      "action": "plant-herbs"
+    },
+    {
+      "id": "yuchuan:inspect-water",
+      "npc": "yuchuan",
+      "region": "forest",
+      "after": "forest:R-04",
+      "operation": "ambient:inspect-water",
+      "text": {
+        "zh": "今天的水量已经记下来了。芽禾也看过。",
+        "en": "Today's water levels are recorded. Yahe has checked them too."
+      },
+      "action": "inspect-water"
+    },
+    {
+      "id": "jinpo:test-safety",
+      "npc": "jinpo",
+      "region": "forge",
+      "after": "forge:E-04",
+      "operation": "ambient:test-safety",
+      "text": {
+        "zh": "图纸给小铆看过了。谁发现问题，谁就先说。",
+        "en": "Xiaomao has checked the diagram. Whoever sees a problem speaks first."
+      },
+      "action": "test-safety"
+    },
+    {
+      "id": "xiaomao:assemble-part",
+      "npc": "xiaomao",
+      "region": "forge",
+      "after": "forge:E-04",
+      "operation": "ambient:assemble-part",
+      "text": {
+        "zh": "师傅没抢走我的扳手。你看，新的阀门能用了！",
+        "en": "Master didn't take my wrench away. Look, the new valve works!"
+      },
+      "action": "assemble-part"
+    },
+    {
+      "id": "lingyu:prepare-flight",
+      "npc": "lingyu",
+      "region": "sky",
+      "after": "sky:S-05",
+      "operation": "ambient:prepare-flight",
+      "text": {
+        "zh": "远帆选路线，我负责检查风向。",
+        "en": "Yuanfan chooses the route. I'll check the wind."
+      },
+      "action": "prepare-flight"
+    },
+    {
+      "id": "yuanfan:deliver-cargo",
+      "npc": "yuanfan",
+      "region": "sky",
+      "after": "sky:S-05",
+      "operation": "ambient:deliver-cargo",
+      "text": {
+        "zh": "这是我自己选的路线。你要一起飞吗？",
+        "en": "I chose this route myself. Want to fly with me?"
+      },
+      "action": "deliver-cargo"
+    },
+    {
+      "id": "moye:catalog-record",
+      "npc": "moye",
+      "region": "library",
+      "after": "library:M-05",
+      "operation": "ambient:catalog-record",
+      "text": {
+        "zh": "档案开放了，私人记录也有妥善的查阅方式。",
+        "en": "The archive is open. Personal records have a proper way to be consulted."
+      },
+      "action": "catalog-record"
+    },
+    {
+      "id": "baikan:verify-document",
+      "npc": "baikan",
+      "region": "library",
+      "after": "library:M-05",
+      "operation": "ambient:verify-document",
+      "text": {
+        "zh": "我找到了另一份原件。这次先核对，再公布。",
+        "en": "I found another original. This time we'll verify it before releasing it."
+      },
+      "action": "verify-document"
+    },
+    {
+      "id": "xingya:align-observatory",
+      "npc": "xingya",
+      "region": "starfall",
+      "after": "starfall:F-04",
+      "operation": "ambient:align-observatory",
+      "text": {
+        "zh": "每个聚落都能检查自己的数据。这样比我一个人盯着可靠。",
+        "en": "Every settlement can inspect its own readings. That's safer than me watching alone."
+      },
+      "action": "align-observatory"
+    },
+    {
+      "id": "lichuan:guide-caravan",
+      "npc": "lichuan",
+      "region": "starfall",
+      "after": "starfall:F-04",
+      "operation": "ambient:guide-caravan",
+      "text": {
+        "zh": "下一趟我不独自走。港口那边有人等着回信。",
+        "en": "I won't travel alone next time. Someone at the harbor is waiting for an answer."
+      },
+      "action": "guide-caravan"
     }
   ]
 };
