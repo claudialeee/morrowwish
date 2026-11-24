@@ -1,15 +1,15 @@
 {
   "status": "RAW_RECONCILIATION_PASSED_COVERAGE_NOT_PROVEN",
-  "generatedAt": "2026-11-24T04:54:06.442Z",
+  "generatedAt": "2026-11-24T04:57:21.562Z",
   "scope": {
     "start": "2026-11-22T08:00:00.000Z",
-    "cutoff": "2026-11-24T04:54:01.551Z",
-    "maxId": 16967,
-    "rawRows": 1418,
-    "arcadeRowsAfterDedup": 1400,
+    "cutoff": "2026-11-24T04:57:18.475Z",
+    "maxId": 16972,
+    "rawRows": 1423,
+    "arcadeRowsAfterDedup": 1405,
     "previousLastEventAt": "2026-11-24T01:41:06.390Z",
-    "latestEventAt": "2026-11-24T04:53:55.277Z",
-    "rawDigest": "ca848021d0de745bdae58a2d2057c91d26c31260110ac8ed2e58c9c5be19b80f"
+    "latestEventAt": "2026-11-24T04:55:45.567Z",
+    "rawDigest": "9b9b72d65e11b1344b294163b443bfb395210c3a84e5da56e52224e448778f7d"
   },
   "duplicateSessionRows": 0,
   "conflictingSequenceCount": 0,
@@ -87,7 +87,7 @@
       "visitRows": 28,
       "pageLoadsById": 28,
       "missingVisitIds": 0,
-      "sessionRows": 118,
+      "sessionRows": 119,
       "unsequencedSessions": 0,
       "unlinkedSessionRows": 0,
       "recordedFirstPlay": 9,
@@ -234,10 +234,10 @@
     },
     {
       "game": "hub",
-      "visitRows": 133,
-      "pageLoadsById": 133,
+      "visitRows": 134,
+      "pageLoadsById": 134,
       "missingVisitIds": 0,
-      "sessionRows": 244,
+      "sessionRows": 247,
       "unsequencedSessions": 0,
       "unlinkedSessionRows": 5,
       "recordedFirstPlay": 0,
@@ -533,7 +533,7 @@
           "visitRows": 3,
           "pageLoadsById": 3,
           "missingVisitIds": 0,
-          "sessionRows": 47,
+          "sessionRows": 48,
           "unsequencedSessions": 0,
           "unlinkedSessionRows": 0,
           "recordedFirstPlay": 2,
@@ -672,10 +672,10 @@
         },
         {
           "game": "hub",
-          "visitRows": 31,
-          "pageLoadsById": 31,
+          "visitRows": 32,
+          "pageLoadsById": 32,
           "missingVisitIds": 0,
-          "sessionRows": 59,
+          "sessionRows": 62,
           "unsequencedSessions": 0,
           "unlinkedSessionRows": 2,
           "recordedFirstPlay": 0,
@@ -841,7 +841,7 @@
         "visitRows": 1,
         "pageLoadsById": 1,
         "missingVisitIds": 0,
-        "sessionRows": 8,
+        "sessionRows": 9,
         "unsequencedSessions": 0,
         "unlinkedSessionRows": 0,
         "recordedFirstPlay": 1,
@@ -1096,10 +1096,10 @@
         }
       },
       "afterOldCutoff": {
-        "visitRows": 8,
-        "pageLoadsById": 8,
+        "visitRows": 9,
+        "pageLoadsById": 9,
         "missingVisitIds": 0,
-        "sessionRows": 13,
+        "sessionRows": 16,
         "unsequencedSessions": 0,
         "unlinkedSessionRows": 0,
         "recordedFirstPlay": 0,
@@ -1120,14 +1120,14 @@
   "checks": [
     {
       "name": "raw count",
-      "actual": 1418,
-      "expected": 1418,
+      "actual": 1423,
+      "expected": 1423,
       "pass": true
     },
     {
       "name": "fixed boundary count after read",
-      "actual": 1418,
-      "expected": 1418,
+      "actual": 1423,
+      "expected": 1423,
       "pass": true
     },
     {
@@ -1192,8 +1192,8 @@
     },
     {
       "name": "pawsibly-innocent SQL sessionRows",
-      "actual": 118,
-      "expected": 118,
+      "actual": 119,
+      "expected": 119,
       "pass": true
     },
     {
@@ -1324,20 +1324,20 @@
     },
     {
       "name": "hub SQL visitRows",
-      "actual": 133,
-      "expected": 133,
+      "actual": 134,
+      "expected": 134,
       "pass": true
     },
     {
       "name": "hub SQL pageLoadsById",
-      "actual": 133,
-      "expected": 133,
+      "actual": 134,
+      "expected": 134,
       "pass": true
     },
     {
       "name": "hub SQL sessionRows",
-      "actual": 244,
-      "expected": 244,
+      "actual": 247,
+      "expected": 247,
       "pass": true
     },
     {
@@ -1396,8 +1396,8 @@
     },
     {
       "name": "fixed boundary final count",
-      "actual": 1418,
-      "expected": 1418,
+      "actual": 1423,
+      "expected": 1423,
       "pass": true
     }
   ],

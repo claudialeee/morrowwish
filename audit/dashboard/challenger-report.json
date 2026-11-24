@@ -2,13 +2,13 @@
   "status": "CHALLENGER_SQL_PASSED_HISTORICAL_IDENTITY_UNPROVEN",
   "boundary": {
     "start": "2026-11-22T08:00:00.000Z",
-    "cutoff": "2026-11-24T04:54:01.551Z",
-    "maxId": 16967,
-    "rawRows": 1418,
-    "arcadeRowsAfterDedup": 1400,
+    "cutoff": "2026-11-24T04:57:18.475Z",
+    "maxId": 16972,
+    "rawRows": 1423,
+    "arcadeRowsAfterDedup": 1405,
     "previousLastEventAt": "2026-11-24T01:41:06.390Z",
-    "latestEventAt": "2026-11-24T04:53:55.277Z",
-    "rawDigest": "ca848021d0de745bdae58a2d2057c91d26c31260110ac8ed2e58c9c5be19b80f"
+    "latestEventAt": "2026-11-24T04:55:45.567Z",
+    "rawDigest": "9b9b72d65e11b1344b294163b443bfb395210c3a84e5da56e52224e448778f7d"
   },
   "checks": [
     {
@@ -1339,15 +1339,15 @@
     },
     {
       "name": "both windows record count",
-      "actual": 1418,
-      "expected": 1418,
+      "actual": 1423,
+      "expected": 1423,
       "pass": true
     }
   ],
   "rawCounts": [
     {
       "segment": "newIncrement",
-      "n": 101
+      "n": 106
     },
     {
       "segment": "previousWindow",
@@ -1408,16 +1408,16 @@
     {
       "game": "hub",
       "kind": "session",
-      "n": 244,
+      "n": 247,
       "firstTs": 1795371259813,
-      "lastTs": 1795495855140
+      "lastTs": 1795496145567
     },
     {
       "game": "hub",
       "kind": "visit",
-      "n": 133,
+      "n": 134,
       "firstTs": 1795371258256,
-      "lastTs": 1795495848405
+      "lastTs": 1795496048529
     },
     {
       "game": "parcel-panic",
@@ -1436,9 +1436,9 @@
     {
       "game": "pawsibly-innocent",
       "kind": "session",
-      "n": 118,
+      "n": 119,
       "firstTs": 1795380116854,
-      "lastTs": 1795496035277
+      "lastTs": 1795496048313
     },
     {
       "game": "pawsibly-innocent",

@@ -1,0 +1,160 @@
+{
+  "status": "PV_CHECK_PASSED_AT_FIXED_BOUNDARY",
+  "scope": {
+    "start": "2026-11-22T08:00:00.000Z",
+    "cutoff": "2026-11-24T04:57:18.475Z",
+    "maxId": 16972,
+    "rawRows": 1423,
+    "arcadeRowsAfterDedup": 1405,
+    "previousLastEventAt": "2026-11-24T01:41:06.390Z",
+    "latestEventAt": "2026-11-24T04:55:45.567Z",
+    "rawDigest": "9b9b72d65e11b1344b294163b443bfb395210c3a84e5da56e52224e448778f7d"
+  },
+  "productionSourceContract": "Repository main src/analytics.js uses category=arcade, kind=visit, raw visit row count; not an authenticated deployed browser observation.",
+  "userReportedPV": 85,
+  "actualPV": 81,
+  "differenceFromUser": -4,
+  "previousBoundary": {
+    "cutoff": "2026-11-24T04:54:01.551Z",
+    "maxId": 16967,
+    "pv": 81
+  },
+  "newPVByMinute": [],
+  "byHour": [
+    {
+      "hour": "2026-11-22T18:00:00Z",
+      "n": 10
+    },
+    {
+      "hour": "2026-11-22T19:00:00Z",
+      "n": 5
+    },
+    {
+      "hour": "2026-11-22T20:00:00Z",
+      "n": 6
+    },
+    {
+      "hour": "2026-11-22T21:00:00Z",
+      "n": 5
+    },
+    {
+      "hour": "2026-11-22T23:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-23T00:00:00Z",
+      "n": 2
+    },
+    {
+      "hour": "2026-11-23T04:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-23T05:00:00Z",
+      "n": 4
+    },
+    {
+      "hour": "2026-11-23T06:00:00Z",
+      "n": 10
+    },
+    {
+      "hour": "2026-11-23T07:00:00Z",
+      "n": 6
+    },
+    {
+      "hour": "2026-11-23T08:00:00Z",
+      "n": 2
+    },
+    {
+      "hour": "2026-11-23T12:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-23T15:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-23T16:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-23T19:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-23T20:00:00Z",
+      "n": 4
+    },
+    {
+      "hour": "2026-11-23T22:00:00Z",
+      "n": 5
+    },
+    {
+      "hour": "2026-11-23T23:00:00Z",
+      "n": 5
+    },
+    {
+      "hour": "2026-11-24T00:00:00Z",
+      "n": 4
+    },
+    {
+      "hour": "2026-11-24T01:00:00Z",
+      "n": 4
+    },
+    {
+      "hour": "2026-11-24T02:00:00Z",
+      "n": 1
+    },
+    {
+      "hour": "2026-11-24T04:00:00Z",
+      "n": 2
+    }
+  ],
+  "categories": [
+    {
+      "category": "arcade",
+      "n": 81
+    }
+  ],
+  "earlierThanReportingStart": [],
+  "firstCatBondVisitAt": "2026-11-22T18:14:13.257Z",
+  "lastCatBondVisitAt": "2026-11-24T04:23:02.966Z",
+  "checks": [
+    {
+      "name": "Direct COUNT(*) vs raw JS visit rows",
+      "actual": 81,
+      "expected": 81,
+      "pass": true
+    },
+    {
+      "name": "Direct distinct view IDs vs raw JS",
+      "actual": 81,
+      "expected": 81,
+      "pass": true
+    },
+    {
+      "name": "Previous cutoff reproduce 81",
+      "actual": 81,
+      "expected": 81,
+      "pass": true
+    },
+    {
+      "name": "Previous plus new PV equals fresh PV",
+      "actual": 81,
+      "expected": 81,
+      "pass": true
+    },
+    {
+      "name": "Hourly PV sum equals fresh PV",
+      "actual": 81,
+      "expected": 81,
+      "pass": true
+    }
+  ],
+  "limitations": [
+    "User observation timestamp, dashboard build and exact displayed filters not supplied. Matching 85 at a later boundary does not prove the exact time of the user observation.",
+    "Authenticated production API/browser not queried; cannot establish current deployed UI value from repository source alone.",
+    "No earlier deleted/unrecorded data can be inferred from present D1.",
+    "Three independent computation paths, not three independent AI agents."
+  ]
+}
