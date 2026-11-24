@@ -512,12 +512,13 @@ function renderCloudPanel(){
   body.querySelectorAll('[data-load-slot]').forEach(button=>button.onclick=()=>loadSlot(Number(button.dataset.loadSlot)));
  }
  async function saveSlot(slot){
+  let localSaved=false;
   try{
    if(!window.State?.S)throw Error(t('请先开始游戏。','Start the game first.'));
    window.State.save();
    const raw=localStorage.getItem(SAVE_KEY);
    if(!validSave(raw)||!JSON.parse(raw).cats.length)throw Error(t('先开始冒险并收服第一只猫，再保存进度。','Start your adventure and befriend your first cat before saving.'));
-   const slots=readSaveSlots();slots[String(slot)]={raw,savedAt:Date.now()};saveSlots(slots);
+   const slots=readSaveSlots();slots[String(slot)]={raw,savedAt:Date.now()};saveSlots(slots);localSaved=true;
    const time=body.querySelector('[data-slot-time="'+slot+'"]');
    if(time)time.textContent=new Date().toLocaleString();
    setStatus(t('本机存档已保存。正在备份到云端…','Saved on this device. Backing up to the cloud…'));
@@ -534,7 +535,7 @@ function renderCloudPanel(){
     ?t('存档已保存，并已完成云端备份。','Save complete. Cloud backup is up to date.')
     :result?.conflict?t('本机存档已保存；云端有更新版本，请先读取云端存档再决定。','Saved locally. The cloud has a newer version; load it before choosing which version to keep.')
     :t('本机存档已保存；云端备份暂不可用。','Saved locally. Cloud backup is temporarily unavailable.'));
-  }catch(error){setStatus(t('保存失败：','Save failed: ')+(error?.message||''));}
+  }catch(error){setStatus(localSaved?t('本机存档已保存；云端备份失败：','Saved locally; cloud backup failed: ')+(error?.message||''):t('保存失败：','Save failed: ')+(error?.message||''));}
  }
  async function loadSlot(slot){
   try{
