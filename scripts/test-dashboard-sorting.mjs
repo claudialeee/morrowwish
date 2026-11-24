@@ -20,7 +20,7 @@ for(const locale of ['zh','en']){
  const nodes={};
  const homeLabel=locale==='zh'?'网站首页浏览量':'Homepage views';
  const pvLabel=locale==='zh'?'全站页面浏览量':'All pageviews';
- const env={lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
+ const env={lang:locale,lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
   t:key=>key==='statHome'?homeLabel:key==='statPv'?pvLabel:key,format:n=>String(n),
   metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
  vm.runInNewContext(statsPrefix+"}\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});",env);
