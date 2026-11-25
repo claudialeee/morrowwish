@@ -55,23 +55,23 @@ export function exchangeOptions(bridge,region,links){
 }
 export function createExplorer(bridge,region){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
- const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set();
+ const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set();
  pos=closest(path,pos).p;
  function walk(x,y){
-  if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||bridge.world().location!==region)return false;
+  if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||!live())return false;
   const target=closest(path,[x,y]),start=closest(path,pos);
   travel=[];if(target.i>start.i){for(let i=start.i+1;i<=target.i;i++)travel.push(path[i]);}else if(target.i<start.i){for(let i=start.i;i>target.i;i--)travel.push(path[i]);}travel.push(target.p);dest=travel.shift();return true;
  }
  function tick(dt){
-  if(!dest)return;let remaining=Math.max(0,Math.min(.1,dt))*.48;
+  if(!live()){dest=null;travel=[];return;}if(!dest)return;let remaining=Math.max(0,Math.min(.1,dt))*.48;
   while(dest&&remaining>0){const d=distance(pos,dest);if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
  }
- function near(p){return !dest&&distance(pos,p)<.072;}
+ function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function interact(op){
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
-  active={sceneId:v.current.id,operation:op,region};puzzle=createPuzzle(op);if(puzzle?.type==="melody")puzzle.participants=[...invited];
+  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};
   if(!op.startsWith("explore:"))return {ok:false,reason:"unimplemented"};
   return complete();
@@ -91,7 +91,7 @@ export function createExplorer(bridge,region){
  }
  function deliverCargo(){
   if(!cargo||!near(cargoPoints()[cargo.to]))return {ok:false,reason:"walk-to-recipient"};
-  const result=bridge.exchange(cargo.a,cargo.b,{region,stage:cargo.stage,action:cargo.action,verified:true});
+  const result=bridge.exchange(cargo.a,cargo.b,{region,stage:cargo.stage,action:cargo.action,verified:true,token:bridge.capture()});
   if(result.ok)cargo=null;return result;
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46)}));}
