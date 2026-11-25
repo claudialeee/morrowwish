@@ -59,27 +59,19 @@ window.addEventListener('DOMContentLoaded', () => {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     slotHeading.textContent=mode==='new'?(en?'Choose a slot for a new adventure':'选择一个存档位，开始新的冒险'):(en?'Choose a story to continue':'选择要继续的故事');
     const slotDesc=document.querySelector('.cb-save-picker-desc');
-    if(slotDesc)slotDesc.textContent=en?'Three independent adventures. Choose a slot to continue or begin a new journey.':'三个独立旅程。每个存档位都是独立冒险，可以继续或重新开始。';
+    if(slotDesc)slotDesc.textContent=mode==='new'?(en?'Select an empty slot, or confirm an overwrite.':'选择空存档位，或确认覆盖已有存档。'):(en?'Select an existing adventure.':'选择要读取的存档。');
     const slots=State.listSaveSlots();
     slotList.innerHTML=slots.map(slot=>{
       const date=slot.lastSavedAt?new Date(slot.lastSavedAt).toLocaleString(en?'en-US':'zh-CN'):'';
-      const chapterMap={
-        '第一章 · 空白页':'I · The Blank Page',
-        '第二章 · 旧约':'II · The Old Promise',
-        '第三章 · 失去的名字':'III · The Lost Name',
-        '第四章 · 最后的守铃者':'IV · The Last Bellkeeper',
-        '第五章 · 逆响':'V · The Reversed Bell',
-        '终章 · 最后一页':'Final Chapter · The Last Page',
-        '序章 · 倒着响的铃':'Prologue · A Bell in Reverse'
-      };
       const chapter=slot.corrupt
-        ?(en?'Damaged save':'存档数据损坏')
+        ?(en?'Damaged save':'存档损坏')
         :slot.exists
-          ?(en?'Chapter: '+(chapterMap[slot.chapter]||slot.chapter):'章节：'+slot.chapter)
+          ?(en?slot.chapterLabelEn:slot.chapterLabelZh)
           :(en?'Empty slot':'空存档位');
       const region=en?slot.regionLabelEn:slot.regionLabelZh;
-      const played=en?'Played '+slot.gameTimeLabel:'游戏时间 '+slot.gameTimeLabel;
-      const progress=en?slot.cats+' cats · '+slot.fragments+'/6 memories':slot.cats+' 只猫 · '+slot.fragments+'/6 段记忆';
+      const mins=Math.floor((slot.playTimeMs||0)/60000);
+      const played=en?'Played '+Math.floor(mins/60)+'h '+(mins%60)+'m':'游戏时间 '+Math.floor(mins/60)+'小时 '+(mins%60)+'分钟';
+      const progress=en?slot.cats+' cats':slot.cats+' 只猫';
       const detail=slot.corrupt
         ?(en?'This save cannot be read. Start a new adventure here to replace it.':'无法读取此存档。可以在二次确认后重新开始并覆盖。')
         :slot.exists
@@ -144,14 +136,15 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         // Let the player choose their actual companion first; the cinematic
         // then stages that cat waking beneath the garden bench.
-        if(mode==='new'&&!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
+        if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
           window.CatBondStory.startPrologue(enterWorld);
         }else enterWorld();
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
       });
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
-      game.rebuildYard();game.refreshHUD();game.openWorldMap();
+      game.rebuildYard();game.refreshHUD();
+      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();});}else game.openWorldMap();
       const has=o=>o&&Object.values(o).some(v=>v>0);
       const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
       if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
@@ -159,17 +152,18 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   const renderIntroLocale=()=>{
     const en=window.MorrowwishI18n?.get?.()!=='zh';
-    const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.innerHTML=en?enText:zh;};
-    set('intro-start','<span>✦</span><strong>开始新的冒险</strong><small>NEW ADVENTURE</small>','<span>✦</span><strong>New Adventure</strong><small>NEW ADVENTURE</small>');
-    set('intro-continue','<span>◈</span><strong>继续故事</strong><small>CONTINUE STORY</small>','<span>◈</span><strong>Continue Story</strong><small>CONTINUE STORY</small>');
-    const slotDesc=document.querySelector('.cb-save-picker-desc');
-    if(slotDesc)slotDesc.textContent=en
-      ?'Three independent adventures. Choose a slot to continue or begin a new journey.'
-      :'三个独立旅程。选择一个位置继续，或开启新的冒险。';
+    const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.textContent=en?enText:zh;};
+    set('cb-title-name','猫猫纽带','Cat Bond');
+    set('cb-title-subtitle','最后的回响','The Last Resonance');
+    const start=document.querySelector('#intro-start strong');
+    const next=document.querySelector('#intro-continue strong');
+    if(start)start.textContent=en?'New Adventure':'开始新的冒险';
+    if(next)next.textContent=en?'Continue Story':'继续故事';
     const tagline=document.querySelector('.cb-intro-tagline');
-    if(tagline)tagline.textContent=en?'Before the final bell, whose name will you remember?':'最后一声铃响之前，你还记得谁？';
-    const footer=document.querySelector('.cb-intro-footer>span');
-    if(footer)footer.innerHTML=en?'Five chapters · Five lost lands · One unfinished promise · <span id="intro-breed-count">🐾 Collect 33 cat breeds</span>':'五章主线 · 五片失落之地 · 一段未完成的约定 · <span id="intro-breed-count">🐾 收集 33 种猫</span>';
+    if(tagline)tagline.textContent=en?'When the world forgets, bonds will guide you home.':'当世界忘记彼此，羁绊仍能引你归来。';
+    const kicker=document.querySelector('.cb-save-picker-kicker');
+    if(kicker)kicker.textContent=en?'Save Archive':'存档';
+    document.getElementById('intro-slot-close')?.setAttribute('aria-label',en?'Close':'关闭');
   };
   renderIntroLocale();
   window.addEventListener('morrowwish-language-change',renderIntroLocale);
@@ -186,7 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if(slotPanel?.classList.contains('is-open'))openSlots(slotMode);
   });
   try { startIntroStars(); } catch(error) { console.warn('Intro decoration unavailable',error); }
-  try { paintIntroCatGallery(); } catch(error) { console.warn('Cat gallery unavailable',error); }
+  installCatBondSystemMenu();
   window.__CAT_BOND_READY__=true;
 
   // dev screenshot harness: ?autodev seeds a lively yard & skips the intro
@@ -204,14 +198,14 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // auto-save periodically
-  setInterval(() => { if (game._lastTs) State.save(); }, 8000);
+  setInterval(() => { if (game._lastTs&&window.__CAT_BOND_STARTED__) State.save(); }, 8000);
   // A native app or Steam wrapper can suspend the WebView without unloading.
   // Persist on both pagehide and backgrounding; keep the save key compatible
   // with existing browser players for eventual cloud-save migration.
-  window.addEventListener('beforeunload', () => State.save());
-  window.addEventListener('pagehide', () => State.save());
+  window.addEventListener('beforeunload', () => {if(window.__CAT_BOND_STARTED__) State.save();});
+  window.addEventListener('pagehide', () => {if(window.__CAT_BOND_STARTED__) State.save();});
   document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'hidden') State.save();
+    if(document.visibilityState === 'hidden' && window.__CAT_BOND_STARTED__) State.save();
   });
 });
 
@@ -287,4 +281,56 @@ function paintIntroCatGallery() {
   ctx.restore();
   ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Georgia';ctx.textAlign='center';
   ctx.fillText('✦',w*.18,h*.34);ctx.fillText('✧',w*.82,h*.22);ctx.fillText('✦',w*.72,h*.72);
+}
+
+
+// Cat Bond's system menu exposes the real existing game controls, not copies
+// of their persisted state. Shared controls are kept mounted but not displayed.
+function installCatBondSystemMenu(){
+ const toggle=document.getElementById('cb-system-toggle'),menu=document.getElementById('cb-system-menu');
+ if(!toggle||!menu)return;
+ const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
+ const t=(a,b)=>zh()?a:b;
+ const close=()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false');};
+ const open=()=>{menu.hidden=false;toggle.setAttribute('aria-expanded','true');render();menu.querySelector('button')?.focus();};
+ const native=sel=>document.querySelector(sel);
+ function render(){
+  toggle.textContent=t('菜单','Menu');
+  toggle.setAttribute('aria-label',t('打开系统菜单','Open system menu'));
+  menu.setAttribute('aria-label',t('系统菜单','System menu'));
+  if(menu.hidden)return;
+  const title=!window.__CAT_BOND_STARTED__;
+  const active=sel=>native(sel)?.getAttribute('aria-pressed')==='true';
+  const rows=[
+    ['language',t('语言','Language'),t('中文','English')],
+    ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
+    ['music',t('音乐','Music'),active('.mw-settings-music')?t('开启','On'):t('关闭','Off')],
+    ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
+    ['share',t('分享游戏','Share game'),''],
+    ['cloud',t('云存档','Cloud saves'),''],
+    ...(!title?[['slots',t('保存 / 读取游戏','Save / Load game'),''],['title',t('返回标题画面','Return to title'),'']]:[])
+  ];
+  menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
+  menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
+   const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
+   if(id==='close'){close();toggle.focus();return;}
+   if(id==='cloud'||id==='slots'){close();window.CatBondCloudSave?.[id==='cloud'?'openPanel':'openSlots']?.();return;}
+   if(id==='title'){
+    if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
+    const result=State.save();
+    if(!result?.ok){alert(t('保存失败，未返回标题。','Save failed. The game remains open.'));return;}
+    State.hardReset();location.reload();return;
+   }
+   if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}
+   native(selectors[id])?.click();
+   if(id==='share')close();else setTimeout(render,120);
+  });
+ }
+ toggle.onclick=()=>menu.hidden?open():close();
+ menu.onclick=e=>{if(e.target===menu)close();};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){e.preventDefault();close();}});
+ window.addEventListener('morrowwish-language-change',render);
+ window.addEventListener('morrowwish-fullscreen-change',render);
+ window.CatBondSystemMenu={open,close};
+ render();
 }

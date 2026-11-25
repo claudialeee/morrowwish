@@ -1153,16 +1153,9 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const bondIntro=fs.readFileSync('public/cat-bond/index.html','utf8');
  const bondViewer=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');
  const bondPremium=fs.readFileSync('public/cat-bond/js/duo-premium.js','utf8');
- // Gallery and caption are independent siblings. Start Adventure is intentionally
- // between them, so the previous adjacent-sibling regex blocked deployment.
- const galleryMarkup=bondIntro.match(/<div class="intro-cat-gallery">([\s\S]*?)<\/div>/);
- const galleryEnd=galleryMarkup ? bondIntro.indexOf(galleryMarkup[0])+galleryMarkup[0].length : -1;
- const ctaAfterGallery=bondIntro.indexOf('id="intro-start"',galleryEnd);
- const captionAfterCta=bondIntro.indexOf('class="intro-gallery-caption"',ctaAfterGallery);
- if(!galleryMarkup||!galleryMarkup[1].includes('id="intro-cats"')||
-    galleryMarkup[1].includes('class="intro-gallery-caption"')||
-    galleryEnd<0||ctaAfterGallery<galleryEnd||captionAfterCta<ctaAfterGallery||
-    !cbCss.includes('#intro > .intro-gallery-caption')||
+ // New RPG title is landscape art with equal independent entry actions.
+ const titleCss=fs.readFileSync('public/cat-bond/css/rpg-title.css','utf8');
+ if(!bondIntro.includes('class="cb-title-landscape"')||!bondIntro.includes('id="intro-start"')||!bondIntro.includes('id="intro-continue"')||!bondIntro.includes('id="cb-system-toggle"')||bondIntro.includes('id="intro-reset"')||!titleCss.includes('repeat(2,minmax(0,1fr))')||
     !cbUi.includes('this.openUnlockedDuoViewer(entry.a,entry.b)')||
     !cbUi.includes('this.openUnlockedDuoViewer(a,b)')||
     !cbUi.includes('thumbnail:true')||
@@ -1223,23 +1216,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
      throw Error('Battle blend/filter leaked into yard redraw');
  }};
  gameForTest.draw();
- // First-run CTA precedes optional feature cards so short screens never cut it
- // off; six normal skill elements have animated casts + readable hit marks.
  const cbMain=fs.readFileSync('public/cat-bond/js/main.js','utf8');
- const startIndex=bondIntro.indexOf('id="intro-start"');
- const featuresIndex=bondIntro.indexOf('class="intro-features"');
- const captionIndex=bondIntro.indexOf('class="intro-gallery-caption"');
- if(startIndex<0||captionIndex<0||startIndex>=captionIndex||
-    !cbMain.includes('sc.getImageData(0,0,240,240)')||
-    !cbMain.includes('Math.min(targetHeight/srcH,maxWidth/srcW)')||
-    !/js\/main\.js\?v=[a-z0-9][\w.-]*/i.test(bondIntro)||
-    !cbCss.includes('#intro #intro-start{background:linear-gradient('))
-   throw Error('Cat Bond must balance intro kitten silhouettes and make Start primary');
- if(startIndex<0||featuresIndex<0||startIndex>=featuresIndex||
-    !cbMain.includes('const catBottom=h-15,targetHeight=132,maxWidth=140')||
-    !cbCss.includes("#intro #intro-start{")||
-    !cbCss.includes("order:0!important")||
-    !cbCss.includes("overflow-y:auto!important")||
+ if(!cbMain.includes('installCatBondSystemMenu()')||!cbMain.includes("openSlots('new')")||!cbMain.includes("openSlots('continue')")||!titleCss.includes('button:is(#intro-start,#intro-continue)')||
     !cbBattle.includes("regularSkillAccent(f,element,angle=0,isBasic=false,hit=false)")||
     !cbBattle.includes("drawRegularSkillAccent(ctx,v,k,p)")||
     !cbBattle.includes("this.regularSkillAccent(f,f.element,aim,true)")||

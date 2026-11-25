@@ -440,10 +440,17 @@ function listSaveSlots() {
     const story = data?.story || {};
     const fragments = Array.isArray(story.fragments) ? story.fragments.length : 0;
     const regionCount = Object.values(data?.worldmap?.regions || {}).filter(r => Number(r?.explored) > 0).length;
-    const chapter = fragments >= 6 ? '终章 · 最后一页' : fragments >= 5 ? '第五章 · 逆响' :
-      fragments >= 4 ? '第四章 · 最后的守铃者' : fragments >= 3 ? '第三章 · 失去的名字' :
-      fragments >= 2 ? '第二章 · 旧约' : fragments >= 1 ? '第一章 · 空白页' :
-      (data?.cats?.length ? '序章 · 倒着响的铃' : '尚未开始');
+    // New narrative code may supply localized chapter metadata directly. Do
+    // not label a legacy save with a chapter from the retired campaign.
+    const chapterNumber=Number(story.chapterNumber??story.currentChapter??story.chapter);
+    const explicitChapter=story.chapterTitle;
+    const chapterLabelZh=typeof explicitChapter?.zh==='string'?explicitChapter.zh:
+      Number.isInteger(chapterNumber)&&chapterNumber>0?'第 '+chapterNumber+' 章':
+      data?.cats?.length?'冒险进行中':'尚未开始';
+    const chapterLabelEn=typeof explicitChapter?.en==='string'?explicitChapter.en:
+      Number.isInteger(chapterNumber)&&chapterNumber>0?'Chapter '+chapterNumber:
+      data?.cats?.length?'Adventure in progress':'Not started';
+    const chapter=chapterLabelZh;
     const regionId = data?.worldmap?.current || 'home';
     const region = typeof WorldMap !== 'undefined' ? WorldMap.REGIONS?.find(item => item.id === regionId) : null;
     const names = regionNames[regionId] || [region?.name || regionId, region?.sub || region?.nameEn || regionId];
@@ -462,7 +469,7 @@ function listSaveSlots() {
       revision: Number(entry?.revision) || 0,
       cats: Array.isArray(data?.cats) ? data.cats.length : 0,
       coins: Number(data?.coins || 0),
-      chapter,
+      chapter, chapterLabelZh, chapterLabelEn,
       fragments,
       regionCount,
       regionId,
@@ -552,20 +559,6 @@ function replaceSaveSlots(entries, activeId) {
     else localStorage.removeItem(SAVE_KEY);
   } catch (e) {}
   return { ok: true, activeSlot: nextActive, count: Object.keys(slots).length };
-}
-function deleteSlot(slotId, options = {}) {
-  if (!SAVE_SLOT_IDS.includes(slotId) || !options.confirmed) return false;
-  const book = migrateLegacySave();
-  if (!book.slots[slotId]) return false;
-  delete book.slots[slotId];
-  const result = writeSlots(book);
-  if (!result.ok) return false;
-  if (slotId === activeSlot()) {
-    const next = SAVE_SLOT_IDS.find(id => book.slots[id]) || 'slot1';
-    setActiveSlot(next);
-    suppressSave = true;
-  }
-  return true;
 }
 function hardReset() {
   // Emergency recovery only: the caller reloads the page to clear transient
@@ -727,7 +720,7 @@ window.State = {
   get S() { return S; },
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
-  listSaveSlots, startNewGame, loadSlot, saveToSlot, deleteSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
+  listSaveSlots, startNewGame, loadSlot, saveToSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
   getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,

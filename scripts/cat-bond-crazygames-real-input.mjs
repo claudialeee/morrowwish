@@ -79,6 +79,16 @@ try{
       // The portal must show the same genuine Start Adventure screen as
       // the website, not silently place a first-time player in the yard.
       await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
+      const titleBounds=await page.evaluate(()=>{
+        const a=document.getElementById('intro-start').getBoundingClientRect(),b=document.getElementById('intro-continue').getBoundingClientRect();
+        return {a:a.toJSON(),b:b.toJSON(),hiddenSettings:getComputedStyle(document.getElementById('mw-game-settings')).display==='none'};
+      });
+      assert.ok(titleBounds.a.right+4<=titleBounds.b.left,'Title actions must be side by side without overlap');
+      assert.ok(Math.abs(titleBounds.a.width-titleBounds.b.width)<2,'Title actions must have equal width');
+      assert.equal(titleBounds.hiddenSettings,true,'Raw settings must not be on the title toolbar');
+      await page.locator('#cb-system-toggle').click();
+      await page.locator('#cb-system-menu [data-system="language"]').waitFor({state:'visible'});
+      await page.locator('#cb-system-menu [data-system="close"]').click();
       assert.equal(await page.locator('#intro').isVisible(),true,
         'CrazyGames must show Start Adventure on first load');
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
@@ -154,7 +164,7 @@ try{
       await checkEnglish(page,'yard',width);
       // The unified settings row must NEVER live inside a HUD hidden on the map
       // or during battle. This caught missing top-right controls in portal QA.
-      await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),false,'Settings must be inside the menu');
       await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
       assert.equal(await page.locator('#cg-top-tools #mw-game-settings button').count(),4,
         'CrazyGames top-right language/music/sound/share controls must survive scene changes');
@@ -248,7 +258,7 @@ try{
         'Garden tab buttons cannot appear during battle');
       assert.equal(await page.locator('#yard-actions').isVisible(),false,
         'Garden actions cannot appear during battle');
-      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),true,
+      assert.equal(await page.locator('#cb-system-toggle').isVisible(),true,
         'Language/audio/share utility toolbar must stay visible in battle');
       await checkEnglish(page,'battle',width);
       // CrazyGames owns the embedding viewport. No floating skill reference
@@ -279,7 +289,7 @@ try{
           charges:rect('#cg-battle-hud #cg-battle-charges'),
           ultimate:rect('#cg-battle-hud #ult-wrap'),
           duo:rect('#cg-battle-hud #duo-burst'),
-          tools:rect('#cg-top-tools #mw-game-settings'),
+          tools:rect('#cb-system-toggle'),
           portalMenu:rect('#cg-top-tools #map-menu')
         };
       });
@@ -438,7 +448,7 @@ try{
         const mapPanel=page.locator('#panel.open');
         if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
         await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
-        await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
+        assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),false,'Settings must be inside the menu');
         await checkEnglish(page,'world-map',width);
         const dir='.check/crazygames-yard-dock';
         fs.mkdirSync(dir,{recursive:true});

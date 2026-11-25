@@ -25,6 +25,7 @@
   <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
   <script src="js/platform.js?v=portal-no-outbound-20261124-v4"></script>
   <link rel="stylesheet" href="css/style.css?v=three-slot-save-manager-20261124-v1" />
+  <link rel="stylesheet" href="css/rpg-title.css?v=resonance-title-1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -169,36 +170,35 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
 
       <div class="studio-stamp">🌙 MORROW·WISH</div>
 
-      <!-- The Last Page: cinematic title and three independent save slots -->
+      <!-- Title screen: independent from gameplay HUD and legacy single-button CSS. -->
       <div id="intro" class="cb-rpg-intro">
-        <div class="cb-intro-sky" aria-hidden="true"><span class="cb-intro-moon"></span><span class="cb-intro-bell"></span><span class="cb-intro-horizon"></span><span class="cb-intro-particles"></span></div>
+        <div class="cb-title-landscape" aria-hidden="true"></div>
         <canvas id="intro-stars" aria-hidden="true"></canvas>
-        <div class="cb-intro-brand"><span> MORROW · WISH </span><i>AN ORIGINAL CAT RPG</i></div>
-        <div class="cb-intro-titleblock">
-          <p class="cb-intro-eyebrow">THE LAST PAGE · A STORY OF MEMORY AND PROMISE</p>
-          <h1 class="game-logo">猫猫纽带<span class="logo-en">CAT BOND</span></h1>
-          <p class="cb-intro-tagline">最后一声铃响之前，你还记得谁？</p>
-        </div>
-        <div class="cb-intro-hero" aria-hidden="true"><div class="cb-intro-ring"></div><div class="intro-cat-gallery"><canvas id="intro-cats" width="420" height="280" role="img" aria-label="A painted kitten beneath the Star Bell"></canvas></div><div class="cb-intro-orbit">✦　✧　✦</div></div>
-        <div class="cb-intro-actions">
-          <button class="cb-intro-primary" id="intro-start" type="button"><span>✦</span><strong>开始新的冒险</strong><small>NEW ADVENTURE</small></button>
-          <button class="cb-intro-secondary" id="intro-continue" type="button"><span>◈</span><strong>继续故事</strong><small>CONTINUE STORY</small></button>
-        </div>
-        <div class="intro-features" hidden><span>33 cat breeds</span><span>Bonded duo techniques</span></div><div class="intro-gallery-caption" hidden></div>
-        <div class="cb-intro-footer">
-          <span>五章主线 · 五片失落之地 · 一段未完成的约定 · <span id="intro-breed-count">🐾 收集 33 种猫</span></span>
+        <div class="cb-title-content">
+          <div class="cb-intro-brand">MORROW WISH</div>
+          <div class="cb-intro-titleblock">
+            <h1 class="game-logo" id="cb-title-name">猫猫纽带</h1>
+            <p class="cb-intro-eyebrow" id="cb-title-subtitle">最后的回响</p>
+            <p class="cb-intro-tagline">当世界忘记彼此，羁绊仍能引你归来。</p>
+          </div>
+          <div class="cb-intro-actions">
+            <button class="cb-intro-primary" id="intro-start" type="button"><strong>开始新的冒险</strong></button>
+            <button class="cb-intro-secondary" id="intro-continue" type="button"><strong>继续故事</strong></button>
+          </div>
         </div>
         <p id="start-error" hidden role="alert"></p>
         <section id="intro-slot-panel" class="cb-save-picker" aria-hidden="true">
           <div class="cb-save-picker-card">
             <button id="intro-slot-close" type="button" class="cb-save-picker-close" aria-label="Close">×</button>
-            <p class="cb-save-picker-kicker">THE LAST PAGE · SAVE ARCHIVE</p>
+            <p class="cb-save-picker-kicker">存档</p>
             <h2 id="intro-slot-heading">选择存档</h2>
             <p class="cb-save-picker-desc"></p>
             <div id="intro-slot-list" class="cb-save-slot-list"></div>
           </div>
         </section>
       </div>
+      <button type="button" id="cb-system-toggle" aria-haspopup="dialog" aria-expanded="false">菜单</button>
+      <section id="cb-system-menu" role="dialog" aria-modal="true" aria-label="系统菜单" hidden></section>
     </div>
   </div>
 
@@ -215,7 +215,7 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/skills.js?v=thunderstream-gate-charge-jagged-20261124-v1"></script>
   <script src="js/growth.js?v=growth-feature-retired-20261122"></script>
   <script src="js/adult-art.js?v=compact-grown-proportions-20261122"></script>
-  <script src="js/state.js?v=atomic-save-book-20261124-v4"></script>
+  <script src="js/state.js?v=atomic-save-book-20261124-v5"></script>
   <script src="js/cat-relationships.js?v=two-currency-duomem-20261122"></script>
   <script src="js/raising.js?v=two-currency-20261122"></script>
   <script src="js/painted-regions.js?v=last-page-landmarks-20261123-v1"></script>
@@ -236,27 +236,11 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/duo-bond.js?v=original-63-paintings-live-20261122-r1"></script>
   <script src="js/ui.js?v=duo-modal-three-tier-fit-20261123-v6"></script>
   <script src="js/game.js?v=overworld-first-20261124-v2"></script>
-  <script src="js/main.js?v=three-slot-rpg-gateway-20261124-v2"></script>
+  <script src="js/main.js?v=resonance-title-20261124-v2"></script>
   <script src="js/gold-coins.js?v=gold-i18n-coordination-20261123-v2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
-  <script src="js/i18n.js?v=safe-reset-i18n-20261124-v2"></script>
-  <script src="js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v5"></script>
-  <!-- Chat 3 integration branch: no independent Last Resonance state or legacy map UI. -->
-  <link rel="stylesheet" href="css/resonance-canonical-world.css?v=canonical-world-20261124-1">
-  <script type="module">
-    import { worldRuntime } from './js/resonance/world-runtime.mjs';
-    window.WorldMap=worldRuntime;
-    // Only delegate to the official story host; never award prologue evidence here.
-    // Cloud-save API remains untouched in story-cloud.js until Supervisor integration.
-    if(window.CatBondStory){
-      window.CatBondStory.startPrologue=done=>{
-        if(window.CatBondNarrativeHost?.startPrologue)window.CatBondNarrativeHost.startPrologue(done);
-        else done?.();
-      };
-      window.CatBondStory.updateTracker=()=>{};
-      window.CatBondStory.openJournal=()=>window.CatBondNarrativeHost?.openJournal?.();
-    }
-  </script>
+  <script src="js/i18n.js?v=safe-reset-i18n-20261124-v3"></script>
+  <script src="js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v7"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
 <script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script><!-- Last Page RPG production release trigger 2026-11-23; Cloudflare Pages release verification 2026-11-24. -->
