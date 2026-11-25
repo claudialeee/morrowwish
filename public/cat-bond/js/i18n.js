@@ -222,6 +222,7 @@
     '召唤队友': 'Summon partner',
     '脉冲伤害 · ': 'Pulse damage · ',
     '回复领域': 'Healing zone',
+    '陨石来袭!': 'Meteor incoming!',
     '埋伏!': 'Ambush!',
     '必杀冷却中：': 'Ultimate cooling down: ',
     '换猫还需 ': 'Next cat swap in ',

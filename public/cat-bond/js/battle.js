@@ -2580,6 +2580,28 @@ class CaptureBattle {
       const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
       if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
     }
+    // METEOR (陨石术): a sky-drop, not a horizontal lob — the flaming rock FALLS from above
+    // onto the landing point (owner: "应该是从天而降"). Spawn it high above tx and send it
+    // straight down as a fireball, with a growing target reticle so it reads as incoming.
+    const sky = sk && (sk.id === 'meteor' || (sk.field && sk.element === 'fire' && sk.kind === 'aoe'));
+    if (sky) {
+      // 陨石术 DIAGONAL sky-fall (owner: 一个陨石斜斜地从上面掉下来砸中): originate high up and
+      // to one side of the landing point, so the rock streaks in at ~60° instead of dropping
+      // straight down. Side is chosen away from the arena edge so it stays on-screen.
+      const dropX = 300, dropY = 440;                              // diagonal offset of the spawn point
+      const side = (tx > this.W * 0.5) ? -1 : 1;                   // come in from the roomier side
+      const sx = clamp(tx - side * dropX, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+      const sy = Math.max(this.topMargin - 60, ty - dropY);
+      const ang = Math.atan2(ty - sy, tx - sx), dist = Math.hypot(tx - sx, ty - sy);
+      const speed = 640;                                           // fast incoming
+      const p = this.spawnProj(sx, sy, ang, speed, dmg, 'me', col, 15, 'meteor', sk, dist / speed + 0.02);
+      p.burst = { r: R, dmg, skill: sk, col, tx, ty };             // detonates at the landing point on expiry
+      p._meteor = true;                                            // heavy fiery comet trail (added in update loop)
+      // landing telegraph: a shrinking reticle on the ground where the rock will hit
+      this.vfx.ring(tx, ty, { r0: R, vr: -R * 1.4, life: dist / speed + 0.02, color: col, width: 3 });
+      this.vfx.text(tx, ty - 8, window.MorrowwishI18n?.get?.()!=='zh' ? 'METEOR!' : '陨石来袭!', col, 13);
+      return;
+    }
     const ang = Math.atan2(ty - f.y, tx - f.x), dist = Math.hypot(tx - f.x, ty - f.y);
     const speed = 300;                              // deliberately slow → readable/dodgeable
     this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
@@ -4564,6 +4586,9 @@ class CaptureBattle {
         const maxPts = 9;
         if (p._hist.length > maxPts * 2) p._hist.splice(0, p._hist.length - maxPts * 2);
       }
+      // METEOR: a falling-rock skill still gets a heavy fiery comet trail each frame
+      // even though it's a burst projectile (which otherwise skips the ribbon above).
+      if (p._meteor) { this.vfx.trail(p.x, p.y, p.color, 13); this.vfx.trail(p.x, p.y, '#ffdb84', 7); }
       // A lobbed AOE flies OVER enemies to its landing point, then bursts (it does
       // not collide on contact). Show its target ring; detonate on arrival/expiry.
       if (p.burst) {
@@ -6389,6 +6414,30 @@ class CaptureBattle {
           ctx.beginPath();ctx.moveTo(Math.cos(a)*p.r*.67,Math.sin(a)*p.r*.67);
           ctx.lineTo(Math.cos(a+.35)*(p.r+6),Math.sin(a+.35)*(p.r+6));ctx.stroke();
         }
+      }else if(p.kind==='meteor'){
+        // 陨石: a dark rocky core wrapped in a streaking flame tail, oriented along flight.
+        ctx.rotate(p.ang);
+        const fl=Math.sin(this.t*30);
+        // flame tail trailing BEHIND the rock (negative x = backward along travel)
+        ctx.fillStyle='#ff8a3c';ctx.beginPath();ctx.moveTo(10,0);
+        ctx.quadraticCurveTo(-18,-12-fl*3,-46,-4+fl*2);
+        ctx.quadraticCurveTo(-20,0,-46,6-fl*2);
+        ctx.quadraticCurveTo(-18,12+fl*3,10,0);ctx.fill();
+        ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.moveTo(8,0);
+        ctx.quadraticCurveTo(-12,-6,-32,-2+fl);
+        ctx.quadraticCurveTo(-14,0,-32,4-fl);
+        ctx.quadraticCurveTo(-12,6,8,0);ctx.fill();
+        // rocky core: a jagged dark polygon with a hot rim
+        ctx.rotate(this.t*4);
+        const R=p.r||15, pts=7;
+        ctx.beginPath();
+        for(let i=0;i<pts;i++){const a=i/pts*Math.PI*2;const rr=R*(i%2?0.72:1);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+        ctx.closePath();
+        ctx.fillStyle='#3a2318';ctx.fill();
+        ctx.lineWidth=2.5;ctx.strokeStyle='#ff7a33';ctx.stroke();
+        // molten cracks
+        ctx.strokeStyle='#ffb867';ctx.lineWidth=1.3;
+        ctx.beginPath();ctx.moveTo(-R*.4,-R*.3);ctx.lineTo(R*.2,R*.1);ctx.lineTo(-R*.1,R*.5);ctx.stroke();
       }else if(p.kind==='fireball'){
         ctx.rotate(p.ang);
         const flicker=Math.sin(this.t*26)*3;
