@@ -60,7 +60,23 @@ function inventory(focusCraft=false){
  actions.append(button(tr("喂食全员","Feed companions"),()=>window.UI.navigateTo(()=>window.UI.openFeed())),button(tr("急救包治疗队伍","Heal party with kits"),()=>{
  const result=window.State.useMedkitForTeam(window.UI.getPreferredBattleTeam());game().refreshHUD?.();game().toast(result.ok?tr("已治疗队伍","Party healed"):window.UI.medkitFailureText(result,tr(false,true)));inventory();
  }));
- host.append(actions,node("h3","",tr("制作配方","Crafting recipes")));
+ host.append(actions);
+ const recovery=node("section","rb-recovery");recovery.append(node("h3","",tr("冒险准备","Expedition recovery")));
+ recovery.append(node("p","rb-rule",window.State.difficulty()==="casual"?tr("休闲模式：战后自动恢复生命。","Casual: HP refills after battle."):tr("急救包恢复35%生命；探索时每分钟恢复20%，返回花园立即休息恢复。","First-aid kits restore 35% HP. Recover 20% each minute or rest in the garden.")));
+ const team=node("div","rb-recovery-grid");
+ for(const [i,cat] of window.UI.getPreferredBattleTeam().entries()){
+  const f=window.UI.battleCatFacts(cat),card=node("article","rb-recovery-cat"),art=node("canvas","rb-recovery-art");
+  art.width=90;art.height=100;art.setAttribute("aria-hidden","true");
+  const details=node("div","rb-recovery-info");
+  details.append(node("strong","",window.State.catName(cat)),node("small","",tr(i<2?"首发":"替补",i<2?"Starter":"Reserve")+" · Lv."+f.level+" · "+f.elementLabel),node("small","",tr("生命 ","HP ")+f.hp+"/"+f.maxHp));
+  const hp=node("progress","rb-health");hp.max=100;hp.value=f.hpPercent;hp.setAttribute("aria-label",tr("生命值","Health"));details.append(hp);
+  const heal=button(tr("单猫急救","Heal cat"),()=>{const live=state().cats.find(x=>x.uid===cat.uid);if(!live)return;const result=window.State.useMedkitForHealth(live);game().refreshHUD?.();game().toast(result.ok?tr("生命已恢复","Health restored"):window.UI.medkitFailureText(result,tr(false,true)));inventory()});
+  heal.disabled=f.hpPercent>=100||!(s.medkits>=1);heal.dataset.bookHeal=cat.uid;
+  const gear=button(tr("技能","Skills"),()=>window.UI.navigateTo(()=>window.UI.openSkillEditor(cat)));
+  const buttons=node("div","rb-recovery-actions");buttons.append(heal,gear);details.append(buttons);card.append(art,details);team.append(card);
+  requestAnimationFrame(()=>{if(alive()&&art.isConnected)window.CatArt.renderCatThumb(art,window.GameData.speciesById(cat.species),cat)});
+ }
+ recovery.append(team);host.append(recovery,node("h3","",tr("制作配方","Crafting recipes")));
  const list=node("div","rb-recipes");list.id="rb-recipes";
  for(const recipe of recipes){const unlocked=!recipe.region||s.resonance?.sanctuaries?.includes(recipe.region);
  const card=node("article","rb-recipe");card.append(node("strong","",tr(...recipe.name)),node("p","",tr("消耗 ","Costs ")+recipe.coins+tr(" 金币 · "," coins · ")+recipe.fish+tr(" 小鱼干"," fish")),node("p","",tr("获得 ","Creates ")+recipe.count+" × "+tr(...recipe.item)));
@@ -105,7 +121,13 @@ function install(){
  window.addEventListener("cat-bond-resonance-changed",()=>{if(active&&!alive())ui.closeAll()});
  const guard=new MutationObserver(()=>{if(active&&!alive())ui.closeAll()});
  guard.observe(stage(),{childList:true,subtree:false,attributes:true,attributeFilter:["class"]});
- document.addEventListener("keydown",e=>{if(e.key==="Escape"&&alive()&&!document.getElementById("cb-duo-viewer")&&document.getElementById("cb-system-menu")?.hidden!==false){e.preventDefault();e.stopImmediatePropagation();dismiss()}},true);
+ document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape"||!active)return;
+  const viewer=document.getElementById("cb-duo-viewer"),system=document.getElementById("cb-system-menu");
+  if(viewer){e.preventDefault();e.stopImmediatePropagation();viewer.querySelector(".cb-duo-viewer-close")?.click();return}
+  if(system?.hidden===false){e.preventDefault();e.stopImmediatePropagation();window.CatBondSystemMenu?.close?.();return}
+  if(alive()){e.preventDefault();e.stopImmediatePropagation();dismiss()}
+ },true);
 }
 window.ResonanceBook=Object.freeze({open,isOpen:()=>alive(),close:dismiss,canOpen:()=>installed&&!blocked()});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();

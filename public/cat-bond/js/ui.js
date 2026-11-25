@@ -617,6 +617,8 @@ const UI = {
   },
 
   medkitFailureText(result,en){
+    if(result?.reason==='save-failed')return en?'Save failed. No first-aid kits were spent.':'保存失败，未消耗急救包。';
+    if(result?.reason==='cat')return en?'Companion is no longer in this save.':'该猫咪已不在当前存档。';
     return result?.reason==='medkit'
       ?(en?'Need '+(result.cost||1)+' first-aid kits. Buy them in the shop.':'急救包不足（需要 '+(result.cost||1)+' 个），可去小卖部购买。')
       :(en?'All cats are at full HP.':'猫猫血量已经满啦！');
@@ -1309,6 +1311,7 @@ const UI = {
         <div class="st-btns">
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
+          ${st.active?'<button class="btn ghost tiny-btn" data-act="unassign" data-id="'+st.id+'">'+(en?'Recall cat':'召回猫咪')+'</button>':''}
           <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
           <button class="btn ghost tiny-btn" data-act="upgrade5" data-id="${st.id}"
             ${State.S.coins<cost.coins?'disabled':''}>
@@ -1389,6 +1392,16 @@ const UI = {
         (en?'Not enough materials':'升级材料不足'));
       if(upgraded)State.save();
       this.game.refreshHUD();this.openWorkshop();
+    }else if(act==='unassign'){
+      const st=State.S.raising?.stations?.find(x=>x.id===id);
+      if(!st?.assignedUid)return;
+      const uid=st.assignedUid,done=R.unassignCat(id);
+      if(!done?.ok)return;
+      let saved=false;try{saved=State.save()?.ok===true}catch{}
+      if(!saved)st.assignedUid=uid;
+      else this.game.rebuildYard?.();
+      this.game.toast(saved?(en?'Companion recalled. Stored resources remain available.':'猫咪已召回，未领取的资源仍然保留。'):(en?'Save failed. Companion assignment unchanged.':'保存失败，派工状态未改变。'));
+      this.openWorkshop();
     }else if(act==='assign'){
       this.navigateTo(()=>this.openCatPicker(en?'Choose a working cat':'选择上工的猫',uid=>{
         const x=R.assignCat(id,uid);

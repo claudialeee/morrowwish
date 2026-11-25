@@ -91,6 +91,11 @@ for(const profile of [
    await collect.click();
    assert.ok(await page.evaluate(()=>State.S.coins)>wallet,'Actual workshop resource payout');
   }
+  const recall=page.locator('[data-act="unassign"][data-id="st_sun"]');
+  if(await recall.isVisible()){
+   await recall.click();
+   assert.equal(await page.evaluate(()=>Raising.stationsView().find(st=>st.id==='st_sun').assignedUid),null);
+  }
   await page.locator('[data-book-tab="daily"]').click();
   if(await page.locator('#claim').isEnabled())await page.locator('#claim').click();
   assert.equal(await page.locator('#claim').isEnabled(),false,'Daily reward cannot be collected twice');
@@ -144,6 +149,7 @@ for(const profile of [
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('.rb-brand strong').innerText(),/Resonance Book/);
+  assert.ok(await page.locator('[data-book-heal]').count()>0,'Individual party recovery retained');
   const inv=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,medkits:State.S.medkits}));
   const field=page.locator('[data-book-recipe="field-kit"]');
   assert.ok(await field.isEnabled(),'New save has material for a field kit after daily reward');
