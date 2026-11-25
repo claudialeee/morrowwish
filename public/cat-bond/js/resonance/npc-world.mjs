@@ -1,6 +1,7 @@
 // Canonical NPC presence and companion presentation adapter.
 // Does not duplicate quest, trust, region progression, or the Muling arc.
 import {campaign} from "./campaign.mjs";
+import {mountHomeConversation} from "./home-conversations.mjs";
 const root=new URL("../../assets/npc/",import.meta.url);
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
 const frames=[load("muling-follow-sprite.svg"),load("muling-follow-step-a.svg"),load("muling-follow-step-b.svg")];
@@ -37,6 +38,7 @@ function install(){
  function interactFollower({x,y,playerX,playerY,region,radius=36,reach=120}){if(!followerHit(x,y,radius)||Math.hypot(playerX-follower.x,playerY-follower.y)>reach)return false;return talk("muling",region)}
  function talk(id,region,requestedScene){
   const v=api.view();if(requestedScene&&requestedScene!==v.current?.id)return false;
+  if(region==="garden"&&v.ending)return mountHomeConversation(id,api);
   const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region}):{ok:false};
   if(r.ok){api.showCurrent();return true}
   const p=api.npcProfile(id);
