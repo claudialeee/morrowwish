@@ -1,5 +1,12 @@
 name: Cat Bond Harbor NPC playable sample QA
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-harbor-npc-smoke.mjs'
+      - 'scripts/test-cat-bond-harbor-sample.mjs'
+      - '.github/workflows/cat-bond-harbor-npc-qa.yml'
   push:
     branches: [rpg/narrative-engine]
     paths:
