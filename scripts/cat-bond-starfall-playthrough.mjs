@@ -61,15 +61,30 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await puzzle("Furnace controls",["Heat","Heat","Heat","Heat","Vent","Vent","Vent"]);
  await chapterDialog("forge:E-03");
  await button("Forge guardian").click();
+ // Match the verified Chapter III release player's setup. No direct save, HP or timer writes.
+ await page.locator("#bp-best-team").click();
+ const duo=page.locator("#bp-chosen-duo");if(await duo.isVisible())await duo.click();
+ await page.locator('#panel [data-battle-auto="true"]').click();
  await page.locator("#bp-go").click();
  await page.locator("#battle-ui.on").waitFor();
+ await page.locator("#cb-forge-hud").waitFor({timeout:15000});
+ assert.equal(await page.evaluate(()=>!!__game.battle?.forgeState),true,"Must enter actual story guardian, not a wild encounter");
  const tutorial=page.locator("#battle-tutorial-skip");if(await tutorial.isVisible())await tutorial.click();
- if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator("#btn-auto").click();
+ if(await page.locator("#battle-help").isVisible()){if(await tutorial.isVisible())await tutorial.click();else await page.locator("#battle-help-start").click();}
+ await page.locator("#battle-help").waitFor({state:"hidden"});
+ assert.equal(await page.evaluate(()=>__game.battle.autoMode),true);
  await shot("forge-guardian");
- const result=page.locator("#cb-forge-result");const support=page.locator("[data-forge-support-button]");
- for(let i=0;i<100&&!await result.isVisible();i++){if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(2000);}
- try{await result.waitFor({timeout:60000});}catch(error){await shot("forge-battle-timeout");console.error("Forge normal-flow battle blocked",await page.evaluate(()=>{const b=__game.battle;return {scene:__game.scene,t:b?.t,done:b?.done,auto:b?.autoMode,help:__game.battleHelpOpen,tutorial:!!__game.battleTutorial,state:b?.forgeState,team:b?.team?.map(c=>({hp:c.hp,alive:c.alive})),enemies:b?.enemies?.map(c=>({hp:c.hp,alive:c.alive}))}}));throw error;}
- assert.ok((await get()).completed.includes("forge:E-03")||!(await get()).objective.includes("battle:forge-guardian"),"Forge guardian must actually be won");
+ const result=page.locator("#cb-forge-result"),support=page.locator("[data-forge-support-button]");
+ try{
+  for(let i=0;i<100&&!await result.isVisible();i++){
+   if(await page.evaluate(()=>__game.scene!=="battle"||!__game.battle?.forgeState))throw Error("Guardian battle exited without its result panel");
+   if(await support.isVisible()&&await support.isEnabled())await support.click({timeout:3000}).catch(()=>{});
+   await page.waitForTimeout(1800);
+  }
+  await result.waitFor({timeout:60000});
+ }catch(error){await shot("forge-battle-timeout");console.error("Forge normal-flow battle blocked",await page.evaluate(()=>({scene:__game.scene,forgeState:__game.battle?.forgeState,story:__game.battle?.storyEncounter,toast:document.getElementById("toasts")?.textContent,body:document.body.innerText.slice(-1500),objective:CatBondResonance.view().objective})));throw error;}
+ assert.equal(await result.locator("h2").innerText(),"FURNACE STABILIZED","Normal guardian battle must actually be won");
+ assert.ok((await get()).completed.includes("forge:E-03")||!(await get()).objective.includes("battle:forge-guardian"),"Forge guardian win must persist");
  await result.locator("[data-forge-return]").click();
  await scene("forge:E-04");
  await puzzle("Hearth sanctuary",["Heat","Heat","Heat","Heat","Vent"]);
