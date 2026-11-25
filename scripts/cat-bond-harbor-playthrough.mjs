@@ -48,6 +48,32 @@ try {
         if (await close.isVisible()) await close.click();
       }
     }
+    async function readForestDialogue(id,choice) {
+      const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
+      await dialogue.waitFor();
+      if(choice){await button(choice,dialogue).click();}
+      const observed=[];
+      while(await dialogue.isVisible()){
+        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?v.current.lines[v.cursor]:null},id);
+        if(!line)break;
+        await dialogue.locator('.res-line').getByText(line.text.en,{exact:true}).waitFor();
+        if(['yahe','yuchuan','muling'].includes(line.speaker)){
+          const portrait=dialogue.locator('.res-portrait');
+          await portrait.waitFor({state:'visible'});await portrait.evaluate(img=>img.decode());
+        }
+        await dialogue.locator('[data-res-language]').click();
+        assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
+        await dialogue.locator('.res-line').getByText(line.text.zh,{exact:true}).waitFor();
+        if(!observed.length)await shot(id.replace(':','-')+'-zh-dialogue');
+        await dialogue.locator('[data-res-language]').click();
+        assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'en');
+        await dialogue.locator('.res-line').getByText(line.text.en,{exact:true}).waitFor();
+        observed.push(line.speaker);
+        await button('Continue',dialogue).click();
+      }
+      if(await dialogue.isVisible())await button('Close',dialogue).click();
+      if(!choice)assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
+    }
     async function puzzle(label, inputs) {
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
@@ -237,10 +263,10 @@ try {
     await page.locator('.rw-world:not([hidden]) .rw-surface').waitFor();
     await button('Rootsleep Forest').click();
     await button('Talk to Yahe').click();
-    await readDialogue('forest:R-01');
+    await readForestDialogue('forest:R-01');
     await scene('forest:R-02');
     await button('Talk to Yahe').click();
-    await readDialogue('forest:R-02','Prioritize the gardens');
+    await readForestDialogue('forest:R-02','Prioritize the gardens');
     await button('Scent on damp moss · 1/3').waitFor();
     await tapLandmark(.31,.58);
     await button('Scent on damp moss · 1/3').click();
@@ -260,7 +286,7 @@ try {
     await button('Medicine at the root channel · 3/3').waitFor();
     await tapLandmark(.69,.53);
     await button('Medicine at the root channel · 3/3').click();
-    await readDialogue('forest:R-02');
+    await readForestDialogue('forest:R-02');
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
@@ -274,15 +300,23 @@ try {
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
     for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
     await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
-    await readDialogue('forest:R-03');
+    await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
     await button('Invite Yahe').click();
     await button('Invite Yahe').waitFor({state:'hidden'});
+    // Reload through the real title and continue menu, not through save mutation.
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await scene('forest:R-04');await button('Invite Yuchuan').waitFor();
+    assert.equal(await button('Invite Yahe').count(),0,'Forest invitation survives reload');
     await button('Invite Yuchuan').click();
     await button('Invite Yuchuan').waitFor({state:'hidden'});
-    await puzzle('Living Roots',['Middle','Low','High']);
-    await readDialogue('forest:R-04');
+    await button('Living Roots').click();const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
+    for(const note of ['Middle','Low','High'])await button(note,melodyControls).click();
+    await page.waitForFunction(()=>document.querySelector('.rw-puzzle-controls button')?.disabled===true);
+    await page.waitForTimeout(950);await shot('forest-living-roots-ceremony');
+    await melodyControls.waitFor({state:'hidden'});
+    await readForestDialogue('forest:R-04');
     await scene('forge:E-01');
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest']);
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
