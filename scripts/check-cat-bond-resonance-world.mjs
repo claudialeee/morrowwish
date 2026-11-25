@@ -105,11 +105,25 @@ console.log(JSON.stringify((function test(){
  for(const region of campaign.regions){
   ok(b.enter(region),"postgame travel");let x=createExplorer(b,region),q=x.homeQuest();
   assert(q&&!q.repaired,"letter available");assert(!x.meetHomeResident(x.localNpcs()[0].id).ok,"no reunion before repair");
-  walk(x,q.point);const beforeRepair=JSON.stringify(State.S);assert(!b.finishHomeRepair(region,runtime.capture()).ok,"repair without solved mechanism");assert(JSON.stringify(State.S)===beforeRepair,"invalid repair changed save");ok(x.startHomeRepair(),"repair after ending");solve(x);letters++;
+  walk(x,q.point);const beforeRepair=JSON.stringify(State.S);assert(!b.finishHomeRepair(region,runtime.capture()).ok,"repair without solved mechanism");assert(JSON.stringify(State.S)===beforeRepair,"invalid repair changed save");const repairCoins=State.S.coins,repairFish=State.S.fish;ok(x.startHomeRepair(),"repair after ending");solve(x);letters++;assert(State.S.coins===repairCoins+25&&State.S.fish===repairFish+2,"exact letter reward "+region);assert(!x.startHomeRepair().ok,"duplicate repair "+region);assert(State.S.coins===repairCoins+25&&State.S.fish===repairFish+2,"duplicate repair reward "+region);assert(State.loadSlot("slot1"),"reload after letter "+region);
   x=createExplorer(b,region);assert(x.homeQuest()?.repaired,"letter saved");
-  for(const n of x.localNpcs()){walk(x,n.point);assert(!b.meetHomeResident(n.id,[0,0],runtime.capture()).ok,"forged NPC location rejected");ok(x.meetHomeResident(n.id),"invite resident");x=createExplorer(b,region);}
+  for(const n of x.localNpcs()){walk(x,n.point);assert(!b.meetHomeResident(n.id,[0,0],runtime.capture()).ok,"forged NPC location rejected");const beforeCoins=State.S.coins,beforeFish=State.S.fish,last=x.homeQuest().actors.filter(a=>!a.visited).length===1;ok(x.meetHomeResident(n.id),"invite resident");assert(State.S.coins===beforeCoins+(last?40:0)&&State.S.fish===beforeFish+(last?3:0),"exact reunion reward "+n.id);assert(!x.meetHomeResident(n.id).ok,"duplicate NPC "+n.id);assert(State.S.coins===beforeCoins+(last?40:0)&&State.S.fish===beforeFish+(last?3:0),"duplicate NPC reward "+n.id);const snapshot=JSON.stringify(State.S.resonance);assert(State.loadSlot("slot1"),"reload after NPC "+n.id);assert(JSON.stringify(State.S.resonance)===snapshot,"NPC narrative persistence "+n.id);x=createExplorer(b,region);}
   assert(!x.homeQuest(),"reunion completed");reunions++;assert(runtime.residents("garden").length===1+reunions*2,"only actual reunited residents appear in garden");
  }
  assert(b.view().returned.length===12&&b.view().postgame.length===12,"all six regional reunions persisted");
+ // Fixture-based transaction regression only: actual combat is covered by the browser matrix.
+ ok(b.enter("starfall"),"ruins travel");
+ const cash=State.S.coins,fish=State.S.fish,proof={attemptId:"audit-first",duoPromise:false,verified:true,outcome:"win",token:runtime.capture()};
+ assert(!runtime.commitRuinsVictory({...proof,outcome:"loss"}).ok,"loss awarded ruins prize");
+ assert(!runtime.commitRuinsVictory({...proof,verified:false}).ok,"unverified victory awarded prize");
+ ok(runtime.commitRuinsVictory(proof),"first verified ruins clear");
+ assert(State.S.coins===cash+100&&State.S.fish===fish+5,"first ruins reward exact");
+ assert(!runtime.commitRuinsVictory(proof).ok,"duplicate ruins attempt");
+ assert(State.S.coins===cash+100&&State.S.fish===fish+5,"duplicate ruins prize");
+ ok(runtime.commitRuinsVictory({...proof,attemptId:"audit-duo",duoPromise:true,token:runtime.capture()}),"duo ruins clear");
+ assert(State.S.coins===cash+145&&State.S.fish===fish+8,"repeat duo ruins reward exact");
+ assert(b.view().ruins.clears===2&&b.view().ruins.duoClears===1&&b.view().postgame.length===13,"ruins state exact");
+ const save=JSON.stringify(State.S.resonance);assert(State.loadSlot("slot1"),"ruins reload");assert(JSON.stringify(State.S.resonance)===save,"ruins progress persistence");assert(State.S.coins===cash+145&&State.S.fish===fish+8,"ruins currency persistence");
+ assert(!runtime.commitRuinsVictory({...proof,attemptId:"audit-duo",token:runtime.capture()}).ok,"duplicate ruins after reload");
  return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,letters,reunions,canonicalEnding:b.view().ending};
 })()));

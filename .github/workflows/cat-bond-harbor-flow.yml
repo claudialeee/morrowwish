@@ -6,6 +6,7 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'scripts/check-cat-bond-resonance-world.mjs'
       - 'scripts/cat-bond-starfall-playthrough.mjs'
       - 'scripts/cat-bond-finale-real-playthrough.mjs'
       - 'scripts/cat-bond-local-cloud-server.mjs'
