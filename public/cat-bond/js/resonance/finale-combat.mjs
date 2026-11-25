@@ -29,6 +29,27 @@ export function rhythm(phase,impostor){
  // Both images use the same species and palette. The anomaly is the response timing.
  return impostor?[.24,.92]:[.24,1.52];
 }
+export function supportEffects(profile,project,{bonded=false,pledge=false}={}){
+ const methods=Array.isArray(profile?.methods)?profile.methods:[];
+ // Canonical choices trade faster coordination for a sturdier local support action.
+ const tactics={
+  "navigator-trust":[.18,0],"keeper-trust":[0,3],
+  "rapid-rescue":[.45,0],"precise-beacon":[0,8],
+  "herbal-supplies":[0,8],"root-stability":[.45,0],
+  "worker-transparency":[.45,0],"shared-repair":[0,8],
+  "fast-courier":[.45,0],"escort-flight":[0,8],
+  "full-records":[.45,0],"verified-records":[0,8],
+  "coordinated-repair":[.45,0],"distributed-repair":[0,8]
+ };
+ let speed=0,shield=0;
+ for(const method of new Set(methods)){const t=tactics[method];if(t){speed+=t[0];shield+=t[1];}}
+ const trust=Object.values(profile?.trust||{}).reduce((n,v)=>n+(Number.isFinite(v)?v:0),0);
+ const level=Number.isInteger(project?.level)?Math.max(0,Math.min(3,project.level)):0;
+ const visits=level&&Number.isInteger(project?.visits)?Math.max(0,Math.min(4,project.visits)):0;
+ const gardenSpeed=level*.12+visits*.05,gardenShield=level*2;
+ return {required:Math.max(1.8,4-Math.min(1,Math.max(0,trust)*.12)-speed-gardenSpeed-(bonded?.6:0)-(pledge?.35:0)),
+  pulseDamage:Math.max(12,32-shield-gardenShield),speed,shield,gardenLevel:level};
+}
 export function holdProgress(progress,dt,near,interrupted,required){
  return clamp(progress+(near&&!interrupted?dt:-dt*.5),0,required);
 }
@@ -59,6 +80,11 @@ function install(){
   return arenaArt.get(frame);
  }
  const host=()=>window.CatBondResonance;
+ const regionalEffects=(b,region)=>{
+  const pair=b.duo,bonded=!!(pair&&b.duoUses>0&&b.team.filter(x=>x.alive&&[pair.a.uid,pair.b.uid].includes(x.cat.uid)).length===2);
+  const pledge=!!(bonded&&window.CatRelations?.memoryList?.(pair.a,pair.b)?.includes("sakura"));
+  return supportEffects(host()?.supportProfile?.(region),window.State.S.sunlitGarden?.projects?.[region],{bonded,pledge});
+ };
  const alive=b=>b.team.filter(f=>f.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
  const notice=(b,zh,en)=>b.game.toast({zh,en});
@@ -116,7 +142,9 @@ function install(){
   const enemyName=document.getElementById("wild-name");
   if(enemyName)enemyName.textContent=first?tr("暮铃","Muling"):tr("空白回响","Hollow Echo");
   const next=f.nodes.find(node=>!node.done);
-  const reply=next?tr(...REPLY_OBJECTIVES[next.region]):tr("六段旋律已归位，攻击中央回响。","All six melodies have returned. Strike the central echo.");
+  const effect=next&&f.id==="finale:B-03"?regionalEffects(b,next.region):null;
+  const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园 Lv."," · Garden Lv.")+effect.gardenLevel:""):"";
+  const reply=next?tr(...REPLY_OBJECTIVES[next.region])+bonus:tr("六段旋律已归位，攻击中央回响。","All six melodies have returned. Strike the central echo.");
   set("[data-finale-objective]",first?tr("打断六个逆响锁。挡住袭向地区伙伴的铃声。","Break all six inward locks. Intercept bell pulses aimed at the regional allies."):second?tr("观察回应节拍；攻击第二次敲击过早的回响。","Observe the reply rhythm. Strike the echo whose second beat is too early."):reply);
   set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/6":second?f.confirmed.size+"/2":f.nodes.filter(n=>n.done).length+"/6");
   const clue=el.querySelector("button");
@@ -198,7 +226,7 @@ function install(){
  function releasePulse(b,f,c){
   const n=f.nodes[c.node],r=56;
   const guards=alive(b).filter(x=>distance(x,c)<=r);
-  if(n&&!n.done&&!guards.length){n.integrity=Math.max(0,n.integrity-32);n.progress=0;if(n.integrity===0){notice(b,"地区伙伴无法继续行动。","A regional ally group can no longer continue.");b.finish(false);}}
+  if(n&&!n.done&&!guards.length){n.integrity=Math.max(0,n.integrity-(f.id==="finale:B-03"?regionalEffects(b,n.region).pulseDamage:32));n.progress=0;if(n.integrity===0){notice(b,"地区伙伴无法继续行动。","A regional ally group can no longer continue.");b.finish(false);}}
   for(const cat of guards)b.resolveHit(cat,"wild",{element:"dark",kind:"aoe",isBasic:false},Math.max(7,cat.maxhp*.12),cat.x,cat.y);
   b.vfx.ring(c.x,c.y,{r0:12,vr:220,life:.55,color:"#ddc095",width:6});
  }
@@ -258,10 +286,8 @@ function install(){
   const me=b.me();
   // Auto mode performs the same physical movement and protection requirement, not a free progress flag.
   if(b.autoMode&&me?.alive&&!b.duoRun&&!me.dashT&&!me.rootT){const dx=next.x-me.x,dy=next.y-me.y,l=Math.hypot(dx,dy);if(l>18){const step=Math.min(l,105*d);me.x+=dx/l*step;me.y+=dy/l*step;}}
-  const support=host().supportProfile?.(next.region),trust=Object.values(support?.trust||{}).reduce((a,c)=>a+c,0),methods=support?.methods||[];
-  const bonded=b.duo&&b.duoUses>0&&alive(b).filter(x=>[b.duo.a.uid,b.duo.b.uid].includes(x.cat.uid)).length===2;
-  const memories=b.duo&&window.CatRelations?.memoryList?.(b.duo.a,b.duo.b)||[];const pledge=memories.includes("sakura")&&bonded;
-  const need=Math.max(1.8,4.0-Math.min(1.0,Math.max(0,trust)*.12)-(methods.length?.4:0)-(bonded?.6:0)-(pledge?.35:0));
+  const need=regionalEffects(b,next.region).required;
+  if(next.required!==need){next.required=need;paint(b);}
   const near=alive(b).some(x=>distance(x,next)<=56);
   next.progress=holdProgress(next.progress,d,near,false,need);next.required=need;
   if(next.progress>=need){
