@@ -15,9 +15,11 @@ try{
   const waitTrack=id=>page.waitForFunction(id=>{const s=MorrowwishMusic.status();return s.track===id&&s.playing&&s.currentTime>.05},id,{timeout:90000});
   await waitTrack('title');
   const title=await page.evaluate(()=>MorrowwishMusic.status());
+  assert.equal(title.source,'recorded-mp3:title','must use actual compressed original recording');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
   await waitTrack('opening');
+  assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'recorded-mp3:opening');
   await page.locator('.cbcp-pause').click();
   await page.waitForFunction(()=>MorrowwishMusic.status().audioState==='suspended');
   await page.locator('.cbcp-pause').click();

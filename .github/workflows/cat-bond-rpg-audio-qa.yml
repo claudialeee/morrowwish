@@ -4,17 +4,31 @@ on:
     branches: [rpg/cat-bond-takeover]
     types: [opened, synchronize, reopened, ready_for_review]
 permissions:
-  contents: read
+  contents: write
 jobs:
   audio:
-    if: github.head_ref == 'rpg/release-audio'
+    if: github.head_ref == 'rpg/release-audio' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: rpg/release-audio
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Render original score with licensed instruments
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fluidsynth fluid-soundfont-gm ffmpeg
+          node scripts/render-cat-bond-score.mjs
+          git add public/cat-bond/assets/audio/
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Render original Cat Bond orchestral recordings and license"
+            git push origin HEAD:refs/heads/rpg/release-audio
+          fi
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Audio real browser acceptance

@@ -49,7 +49,7 @@ const instruments={
 function arrange(id){
  const p=P[id]||P.title,[bpm,key,mode,motif,lead,pad,acc,chords]=p;
  const song=id.startsWith('song-'),climax=id==='finale3'||id==='ending'||id==='opening',battle=id.startsWith('boss-')||id.startsWith('finale')||id==='battle';
- const bars=song?8:climax?24:16,notes=[];
+ const bars=song?8:climax?32:16,notes=[];
  const add=(t,d,m,i,v,pan=0)=>{if(t>=0&&t<bars*4&&d>0)notes.push({t,d:Math.min(d,bars*4-t),m,i,v,pan});};
  for(let bar=0;bar<bars;bar++){
   const t=bar*4,c=chords[bar%chords.length],part=Math.floor(bar/4),root=degree(key-24,mode,c);
@@ -59,7 +59,7 @@ function arrange(id){
   for(let j=0;j<rhythm;j++){const dt=j*4/rhythm;add(t+dt,Math.min(.8,4/rhythm),degree(key-12,mode,c+arp[(j+bar)%arp.length]),acc==='drum'?'piano':acc,.32+(j%3===0?.15:0),j%2?.39:-.39);}
   if(battle){for(const beat of [0,1.5,2.5])add(t+beat,.28,beat===0?36:43,'drum',beat===0?.95:.48,-.1);}
   if(bar%2===0){
-   const selected=id==='finale3'?R[Math.floor(bar/4)%6]:climax?(bar<4||bar>=20?'star':R[(Math.floor(bar/4)-1)%6]):motif;
+   const selected=climax?(bar<4||bar>=28?'star':R[Math.floor(bar/4)-1]):motif;
    const phrase=motifs[selected];let at=t;
    for(let j=0;j<phrase.length;j++){
     const [d,len]=phrase[j],variation=(bar%8===6&&j>=phrase.length-3)?-1:0;
@@ -67,6 +67,7 @@ function arrange(id){
     add(at,len*.93,pitch,lead,.81+(j%3===0?.15:0),-.12);
     if(part>0&&j%2===0)add(at+.06,len*.81,degree(key,mode,d-2),pad,.30,.35);
     if(climax&&part>=3)add(at+.04,len*.85,pitch+12,'bell',.28,.40);
+    if((id==='finale3'||id==='ending')&&part>=5&&j%2===0){const returnNote=motifs.star[j%motifs.star.length][0];add(at+.12,len*.8,degree(key,mode,returnNote-7),'flute',.34,-.37);}
     at+=len;
    }
   }
