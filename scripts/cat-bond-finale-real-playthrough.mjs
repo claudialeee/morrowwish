@@ -102,6 +102,15 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  await beginBattle('Approach the Star Bell',false);
  await page.locator('[data-finale-clue]').click();await page.waitForFunction(()=>__game.battle?.enemies?.filter(e=>e.alive).every(e=>Number.isFinite(e.echoGap)));
  await shot('B-02-catdex');
+ if(name==='portrait'){
+  const fit=await page.evaluate(()=>{
+   const panel=document.getElementById('cb-finale-hud'),rect=panel.getBoundingClientRect(),frame=document.getElementById('battle-ui').getBoundingClientRect();
+   const visible=el=>el.getClientRects().length&&!el.hidden&&getComputedStyle(el).visibility!=='hidden';
+   const overlap=(a,b)=>a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;
+   const controls=[...document.querySelectorAll('#battle-ui .move-bar .move,#battle-touch-joystick,#duo-burst,#ult-wrap,#battle-squad-rail')].filter(visible);
+   return {inside:rect.top>=frame.top-1&&rect.bottom<=frame.bottom+1&&rect.left>=frame.left-1&&rect.right<=frame.right+1,clear:controls.every(el=>!overlap(rect,el.getBoundingClientRect()))};
+  });assert.deepEqual(fit,{inside:true,clear:true},'Portrait Catdex must not cover battle controls or team rails');
+ }
  const targets=await page.evaluate(()=>{const list=__game.battle.enemies.filter(e=>e.alive&&e.echoCat&&State.S.dex[e.echoCat.species]>0);return {genuine:list.find(e=>Math.abs(e.echoGap-e.echoHabit)<.2)?.i,falseReply:list.find(e=>Math.abs(e.echoGap-e.echoHabit)>.2)?.i};});
  assert.ok(Number.isInteger(targets.genuine)&&Number.isInteger(targets.falseReply),'Real recorded pair with measured rhythms');
  await page.locator('[data-finale-focus] [data-echo="'+targets.genuine+'"]').click();
