@@ -78,3 +78,11 @@
  .rw-atlas-wide .rw-system-nav .rw-button,.rw-atlas-wide .rw-regions .rw-button{font-size:11px;min-height:38px;padding:5px 7px}
  .rw-atlas-wide .rw-hint,.rw-atlas-wide .rw-next{font-size:11px}
 }
+
+/* Harbor landscape keeps the entire painting and mechanism on screen; only the separate quest rail scrolls. */
+@media(max-height:500px) and (orientation:landscape){
+ .rw-world[data-region="harbor"].rw-forest-landscape{top:44px;padding:6px 10px 10px;background:radial-gradient(ellipse at 24% 8%,#324f62,#192f43 52%,#0d1d2f)}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-shell{max-width:min(100%,calc((100dvh - 108px)*16/9))}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
+}

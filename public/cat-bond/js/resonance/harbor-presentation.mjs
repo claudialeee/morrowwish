@@ -119,3 +119,18 @@ export function paintHarborPuzzle(c,p,lang,cast,frame){
  if(p.mistakes)text(c,(l?"Try again · ":"重新尝试 · ")+p.mistakes,480,449,14,"#edbb9e");
  c.restore();return true;
 }
+
+// Final harbor ceremony: authored twilight illustration, resident portraits and a moving beacon.
+export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
+ const t=reduced()?2.4:elapsed,u=Math.min(1,t/3),ease=u*u*(3-2*u),w=960,h=540,zh=lang==="zh";
+ c.save();c.scale(c.canvas.width/w,c.canvas.height/h);
+ const z=1+.07*ease,scale=Math.max(w/img.naturalWidth,h/img.naturalHeight)*z,dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+ c.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);
+ const night=c.createLinearGradient(0,h*.34,0,h);night.addColorStop(0,"rgba(10,24,36,0)");night.addColorStop(.65,"rgba(10,24,36,.4)");night.addColorStop(1,"rgba(8,19,30,.96)");c.fillStyle=night;c.fillRect(0,0,w,h);
+ for(let i=0;i<4;i++){const q=(t*.36+i*.25)%1; c.beginPath();c.ellipse(480,290,28+q*150,9+q*46,0,0,TAU);c.strokeStyle="rgba(201,231,205,"+(.52*(1-q))+")";c.lineWidth=2.2;c.stroke();}
+ glow(c,480,284,125,"rgba(255,219,157,.22)");
+ for(const [id,x,y,s] of [["jiedeng",330,389,1.55],["qilan",630,389,1.55],["muling",480,383,1.12]])drawResident?.(c,id,{x,y,scale:s,time:t});
+ for(let i=0;i<30;i++){const a=i*2.399+t*.23,rad=35+(i%10)*14+t*6;circle(c,480+Math.cos(a)*rad,285+Math.sin(a)*rad*.43-t*12,1.4+i%3*.5,"rgba(248,228,170,"+(.25+.25*Math.sin(t*2+i))+")");}
+ text(c,zh?"归潮调":"The Song of Returning Tides",480,439,32,cream);text(c,zh?"灯塔复明 · 港口重新记起同伴与航路":"The beacon shines. The harbor remembers its companions and routes.",480,479,17,teal,"center",850);
+ c.restore();
+}
