@@ -6,3 +6,6 @@
 
 #battle-ui .cb-region-combat{top:var(--cb-rpg-hud-top,110px);pointer-events:none}.cb-region-combat button{pointer-events:auto}
 @media(max-width:600px){#battle-ui .cb-region-combat{left:auto;right:10px;transform:none;max-width:calc(100% - 92px)}}
+
+/* Authored Duo and ultimate artwork must not be obscured by regional attack controls. */
+#battle-ui .cb-region-combat[data-cinematic="true"],#battle-ui .cb-region-combat[data-cinematic="true"] button{visibility:hidden;pointer-events:none}
