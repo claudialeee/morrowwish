@@ -34,6 +34,8 @@ try {
       const reveal=async()=>{if(await target.isVisible())return;await all.waitFor({state:'attached',timeout:30000});if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
        const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');
        if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();
+       const region=world.locator('.rw-region-toggle[aria-expanded="false"]');
+       if(await region.count()&&await all.first().evaluate(el=>!!el.closest('#rw-region-actions')))await region.click();
        if(await target.isVisible())return;
        const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
        const press=async locator=>options.hasTouch?locator.tap():locator.click();
@@ -493,7 +495,7 @@ try {
     if(name==='landscape'){
       const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
       assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
-      assert(layout.canvas.right<=layout.rail.x&&layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls must sit beside, not cover, the canvas');
+      assert(layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls remain in the stage');
     }
     if(name==='portrait'){const box=await page.locator('.rw-surface').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
     await shot('forest-upper-gate');

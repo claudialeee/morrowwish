@@ -122,3 +122,23 @@
  #stage #battle-ui .battle-tools #battle-help-toggle{overflow:hidden}
  #stage #battle-ui .battle-tools .battle-top-label{display:none!important}
 }
+
+#stage #panel.open:not(.rb-open)>.card,
+#stage #panel.rb-open .rb-navigation{
+ border-radius:12px;
+ border-color:#d4b8a4;
+}
+#stage #panel :is(.panel-back,.rb-home,.rb-close,.rb-action,.rb-craft-link).btn,
+#stage #panel .cat-highlight-card .btn.ghost{
+ background:#f7eadb;color:#483747;border-color:#cbb8a0;
+}
+#stage #panel .cat-highlight-card :is(h2,h3),#stage #panel.rb-open .rb-brand strong{
+ color:#493948;
+}
+#stage #panel .cat-highlight-card .dex-cell:not(.locked){
+ border-color:#d8c3b1;background:#fff8ed;color:#493948;
+}
+#stage #panel .cat-highlight-card .dex-cell:not(.locked):focus-visible{
+ outline:2px solid #785789;outline-offset:2px;
+}
+#stage .sg-prologue-guide :is(h2,h3,strong,p){color:#493948}

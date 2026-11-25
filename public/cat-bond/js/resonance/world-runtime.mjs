@@ -42,7 +42,7 @@ function waterworksHit([x,y]){
 }
 
 function install(){
- let atlasMenuOpen=false,waterDrag=null,melodyDemoNote=-1,melodyDemoSequence=[];
+ let regionMenuOpen=false,atlasMenuOpen=false,waterDrag=null,melodyDemoNote=-1,melodyDemoSequence=[];
  let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
  function scheduleFit(){if(fitFrame)return;fitFrame=requestAnimationFrame(()=>{fitFrame=0;fitRail();});}
  function fitRail(){
@@ -59,7 +59,7 @@ function install(){
   const style=getComputedStyle(host),available=host.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-head.offsetHeight-12;
   const limit=Math.max(104,Math.floor(wide?available:Math.min(available-100,available*.67)));
   host.style.setProperty("--rw-rail-limit",limit+"px");
-  if(mode==="map")return;
+  if(mode==="map"||host.classList.contains("rw-region-compact"))return;
   const pager=rail.querySelector(".rw-fit-pages"),items=[...rail.children].filter(el=>el!==pager);
   for(const el of items){el.removeAttribute("data-fit-hidden");for(const child of el.querySelectorAll("[data-fit-hidden]"))child.removeAttribute("data-fit-hidden");}
   pager.hidden=true;
@@ -129,6 +129,27 @@ function install(){
    fitRail();
    return;
   }
+  const compact=!puzzle&&!ceremony;
+  host.classList.toggle("rw-region-compact",compact);
+  if(compact){
+   const hint=host.querySelector(".rw-next");
+   if(hint&&brand){const summary=brand.querySelector(".rw-fit-summary");if(summary){summary.textContent=hint.textContent;summary.title=hint.textContent;}}
+   const toggle=B(tr("探索操作","Explore actions"),()=>{
+    regionMenuOpen=!regionMenuOpen;
+    rail.hidden=!regionMenuOpen;
+    toggle.setAttribute("aria-expanded",String(regionMenuOpen));
+    if(regionMenuOpen)fitRail();
+   });
+   toggle.classList.add("rw-region-toggle");
+   toggle.setAttribute("aria-controls","rw-region-actions");
+   toggle.setAttribute("aria-expanded",String(regionMenuOpen));
+   rail.id="rw-region-actions";
+   rail.hidden=!regionMenuOpen;
+   const camera=items.find(el=>el.matches(".rw-camera-controls"));
+   if(camera)items.splice(items.indexOf(camera),1);
+   if(message)items.splice(items.indexOf(message),1);
+   host.append(toggle);
+  }
   for(const el of items)rail.append(el);
   const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>prev.fitNavigate?.()),next=B(tr("下一组操作","More actions"),()=>next.fitNavigate?.()),counter=E("output","","");
   prev.dataset.fitPrev="";next.dataset.fitNext="";counter.setAttribute("aria-live","polite");
@@ -144,7 +165,7 @@ function install(){
  e.addEventListener("touchcancel",()=>{touch=null;},{passive:true});
  e.addEventListener("touchend",event=>{const start=touch;touch=null;if(!start||event.touches.length||e.disabled||!e.isConnected||owner!==State.S||game?.scene!=="map")return;const t=[...event.changedTouches].find(t=>t.identifier===start.id);if(!t||Math.hypot(t.clientX-start.x,t.clientY-start.y)>10||!e.contains(document.elementFromPoint(t.clientX,t.clientY)))return;event.preventDefault();lastTouch=performance.now();activate();},{passive:false});
  e.onclick=event=>{if(event?.detail!==0&&performance.now()-lastTouch<750)return;return activate();};return e};
- function current(){if(slot!==State.S){ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
+ function current(){if(slot!==State.S){regionMenuOpen=false;ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
  const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)+":"+JSON.stringify(State.S.resonance?.ambientDone||[])};
  function init(g){game=g;current();if(host)return;host=E("section","rw-world");image("forge");host.hidden=true;document.getElementById("stage").append(host);for(let ev of ["morrowwish-language-change","cat-bond-resonance-changed"])window.addEventListener(ev,()=>{if(game.scene==="map")render()});
   if(typeof window.ResizeObserver==="function"){fitObserver=new window.ResizeObserver(scheduleFit);fitObserver.observe(host.parentElement);}
@@ -155,8 +176,8 @@ function install(){
    current();host.replaceChildren();host.hidden=true;canvas=ctx=null;
    if(game.scene==="map")render();
   });}
- function enterMap(){current();ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;atlasMenuOpen=false;zoom=1;pan=[0,0];followCamera=false;render();return true;}
- function enterRegion(id){const b=current();ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true});pending=null;notice="";zoom=1.45;centerCamera(explorer.position);followCamera=true;if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
+ function enterMap(){current();host?.classList.remove("rw-region-compact");ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;atlasMenuOpen=false;zoom=1;pan=[0,0];followCamera=false;render();return true;}
+ function enterRegion(id){regionMenuOpen=false;const b=current();ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true});pending=null;notice="";zoom=1.45;centerCamera(explorer.position);followCamera=true;if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
  function spawnWild(id){
   const p=explorer.layout.paths;
   // Harbor is the RPG's introductory hunting region. Before the first
