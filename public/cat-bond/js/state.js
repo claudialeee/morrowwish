@@ -213,7 +213,7 @@ function readSlots() {
     const backup = localStorage.getItem(SAVE_BACKUP_KEY);
     if (backup) {
       const restored = upgradeSaveBook(JSON.parse(backup));
-      if (Object.keys(restored.slots).length) return restored;
+      if (Object.keys(restored.slots).length || Object.keys(restored.deleted || {}).length) return restored;
     }
   } catch (e) {}
   return emptySaveBook();
@@ -448,11 +448,11 @@ function listSaveSlots() {
   const regionNames = {
     garden: ['阳光花园', 'Sunlit Garden'],
     harbor: ['霁潮港', 'Misttide Harbor'],
-    forest: ['眠根森林', 'Rootsleep Forest'],
+    forest: ['眠根林', 'Rootsleep Forest'],
     forge: ['赤炉环城', 'Emberforge City'],
-    sky: ['天脊群岛', 'Skyspine Isles'],
-    library: ['月镜藏书城', 'Moonmirror Library'],
-    starfall: ['坠星原野', 'Starfall Expanse'],
+    sky: ['云脊群岛', 'Skyspine Isles'],
+    library: ['月镜书库', 'Moonmirror Library'],
+    starfall: ['星坠原', 'Starfall Expanse'],
     home: ['阳光花园', 'Sunlit Garden'],
     sakura: ['樱花林', 'Sakura Woods'],
     creek: ['溪谷', 'Creek Valley'],
@@ -565,8 +565,8 @@ function importSaveSlot(slotId, data, metadata = {}) {
 }
 function deletedSaveSlot(id) {
   if (!SAVE_SLOT_IDS.includes(id)) return null;
-  const item = readSlots().deleted?.[id];
-  return item && !readSlots().slots[id] ? cloneSaveData(item) : null;
+  const book = readSlots(), item = book.deleted?.[id];
+  return item && !book.slots[id] ? cloneSaveData(item) : null;
 }
 function deleteSaveSlot(id, options = {}) {
   if (!SAVE_SLOT_IDS.includes(id)) return {ok:false, reason:'invalid_slot'};
