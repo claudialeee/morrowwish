@@ -22,7 +22,7 @@
 .cbcp-root{position:relative;isolation:isolate;width:100%;height:100%;min-height:260px;color:#f2e8d5;background:#101d28;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
 .cbcp-root[hidden]{display:none!important}
 .cbcp-shell{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;width:100%;height:100%;min-height:260px;overflow:hidden;background:#101d28}
-.cbcp-stage{position:relative;isolation:isolate;overflow:hidden;min-height:0;aspect-ratio:16/9;background:radial-gradient(ellipse at 50% 42%,#52616a 0%,#263744 54%,#101d28 100%)}
+.cbcp-stage{position:relative;isolation:isolate;overflow:hidden;min-height:0;background:radial-gradient(ellipse at 50% 42%,#52616a 0%,#263744 54%,#101d28 100%)}
 .cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
 .cbcp-layer{pointer-events:none}
 .cbcp-vignette{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(0deg,rgba(6,15,22,.83),transparent 36%,rgba(6,15,22,.14) 100%),radial-gradient(ellipse at center,transparent 42%,rgba(5,12,19,.42) 100%)}
@@ -48,8 +48,10 @@
 @keyframes cbcp-fade-in{from{opacity:0}to{opacity:1}}
 @media(max-width:680px){
  .cbcp-root,.cbcp-shell{min-height:240px}
-  .cbcp-stage{aspect-ratio:4/3;min-height:0}
-@media(max-width:680px) and (orientation:portrait){.cbcp-stage{aspect-ratio:3/4}.cbcp-art,.cbcp-layer{object-position:center 44%}}
+  .cbcp-stage{aspect-ratio:auto;min-height:0}
+ .cbcp-art,.cbcp-layer{object-fit:contain;background:#101d28}
+ .cbcp-topline{flex-wrap:wrap}
+ .cbcp-heading{max-width:100%}
  .cbcp-heading{max-width:64%}
  .cbcp-kicker{font-size:9px;letter-spacing:.14em}
  .cbcp-title{font-size:clamp(19px,5.2vw,28px)}
@@ -65,7 +67,7 @@
  .cbcp-subtitle-wrap{bottom:10px}
  .cbcp-subtitle{font-size:clamp(13px,3vh,17px);line-height:1.35}
  .cbcp-footer{padding:5px 9px}
- .cbcp-tool,.cbcp-action{min-height:36px;padding:7px 10px}
+ .cbcp-tool,.cbcp-action{min-height:44px;padding:7px 10px}
 }
 @media(prefers-reduced-motion:reduce){
  .cbcp-art,.cbcp-layer{transition:none!important;will-change:auto}
@@ -75,7 +77,7 @@
 
   function validateScene(scene) {
     if (!scene || typeof scene !== 'object') throw new TypeError('Scene must be an object');
-    if (typeof scene.id !== 'string' || !scene.id.includes('/')) throw new TypeError('Scene id must be namespaced, e.g. chapter-v/M-03');
+    if (typeof scene.id !== 'string' || !/^(prologue|harbor|forest|forge|sky|library|starfall|finale|epilogue):[A-Z]-\d{2}$/.test(scene.id)) throw new TypeError('Scene id must match Chat 4, e.g. library:M-03');
     if (!Array.isArray(scene.frames) || scene.frames.length === 0) throw new TypeError('Scene must contain at least one authored frame');
     scene.frames.forEach((frame, index) => {
       if (!frame || typeof frame.image !== 'string' || !frame.image.trim()) {
@@ -105,6 +107,9 @@
       this.paused = false;
       this.destroyed = false;
       this.audio = null;
+      this.renderToken = 0;
+      this.activeImage = null;
+      this.frameReady = false;
       this._onKeyDown = event => this.handleKeyDown(event);
       this._onVisibility = () => {
         if (document.hidden && this.scene && !this.paused) this.pause();
@@ -162,7 +167,7 @@
         continue: this.root.querySelector('.cbcp-continue'),
         progress: this.root.querySelector('.cbcp-progress')
       };
-      this.nodes.language.addEventListener('click', () => this.setLanguage(this.language === 'zh' ? 'en' : 'zh'));
+      this.nodes.language.addEventListener('click', () => this.requestLanguage(this.currentLanguage() === 'zh' ? 'en' : 'zh'));
       this.nodes.pause.addEventListener('click', () => this.paused ? this.resume() : this.pause());
       this.nodes.skip.addEventListener('click', () => this.skip());
       this.nodes.continue.addEventListener('click', () => this.next());
@@ -191,14 +196,13 @@
       const scene = typeof sceneId === 'object' ? sceneId : this.scenes.get(sceneId);
       if (!scene) throw new Error(`Unknown cinematic scene: ${sceneId}`);
       validateScene(scene);
-      this.clearTimer();
+      this.stop();
       this.scene = scene;
       this.frameIndex = clamp(options.frameIndex, 0, scene.frames.length - 1);
       this.frameElapsedMs = Math.max(0, Number(options.elapsedMs) || 0);
       this.paused = !!options.paused;
       this.root.hidden = false;
       this.renderFrame();
-      if (!this.paused) this.startTimer();
       return this;
     }
 
@@ -206,52 +210,68 @@
       if (!this.scene) return;
       const frame = this.scene.frames[this.frameIndex];
       const lang = this.currentLanguage();
+      const token = ++this.renderToken;
+      this.frameReady = false;
+      this.nodes.continue.disabled = true;
+      const fail = () => {
+        if (token !== this.renderToken || !this.scene) return;
+        const sceneId = this.scene.id;
+        this.stop();
+        this.options.onError?.({sceneId, reason:'image-load-failed', image:frame.image});
+      };
+      const ready = () => {
+        if (token !== this.renderToken || !this.scene) return;
+        this.frameReady = true;
+        this.nodes.kicker.textContent = localized(this.scene.kicker, lang) || localized(this.scene.chapter, lang);
+        this.nodes.title.textContent = localized(this.scene.title, this.currentLanguage());
+        this.renderSubtitle();
+        this.renderProgress();
+        this.updateControls();
+        this.nodes.continue.disabled = false;
+        this.playSfx(frame.sfx);
+        this.options.onFrameChange?.({sceneId:this.scene.id,frameIndex:this.frameIndex,frameId:frame.id||null});
+        if (!this.paused) this.startTimer();
+      };
+      // A subtitle change on the same authored shot must not restart zoom or fade.
+      if (this.activeImage === frame.image && this.nodes.stack.querySelector('.cbcp-art')) { ready(); return; }
       const previous = Array.from(this.nodes.stack.children);
       const image = document.createElement('img');
-      image.className = 'cbcp-art cbcp-crossfade';
-      image.src = frame.image;
+      image.className = 'cbcp-art';
       image.alt = localized(frame.alt, lang);
       image.draggable = false;
       image.decoding = 'async';
-      image.loading = 'eager';
       image.style.opacity = '0';
       image.style.objectPosition = frame.focus || 'center';
-      this.applyCamera(image, frame.camera, 1, frame.durationMs, frame.transitionMs);
+      image.addEventListener('error', fail, {once:true});
+      image.addEventListener('load', async () => {
+        try { await image.decode?.(); } catch (_) { fail(); return; }
+        if (token !== this.renderToken || !this.scene) { image.remove(); return; }
+        this.activeImage = frame.image;
+        this.applyCamera(image, frame.camera, 1, frame.durationMs, frame.transitionMs);
+        requestAnimationFrame(() => {
+          if (token !== this.renderToken) return;
+          image.style.opacity = '1';
+          for (const node of previous) {
+            node.style.opacity = '0';
+            window.setTimeout(() => node.remove(), Math.max(980,Number(frame.transitionMs)||0));
+          }
+        });
+        for (const layer of frame.layers || []) {
+          if (!layer.image) continue;
+          const node = document.createElement('img');
+          node.className = 'cbcp-layer';
+          node.alt = '';
+          node.setAttribute('aria-hidden','true');
+          node.style.opacity = String(clamp(layer.opacity ?? 1,0,1));
+          node.style.mixBlendMode = layer.blend || 'normal';
+          node.src = layer.image;
+          this.applyCamera(node,frame.camera,Number(layer.depth)||0,frame.durationMs,frame.transitionMs);
+          this.nodes.stack.appendChild(node);
+        }
+        ready();
+      }, {once:true});
       this.nodes.stack.appendChild(image);
-      requestAnimationFrame(() => {
-        image.style.opacity = '1';
-        previous.forEach(node => { node.style.opacity = '0'; });
-      });
-      previous.forEach(node => {
-        node.addEventListener('transitionend', () => node.remove(), { once: true });
-        window.setTimeout(() => node.remove(), 980);
-      });
-
-      (frame.layers || []).forEach(layer => {
-        if (!layer?.image) return;
-        const node = document.createElement('img');
-        node.className = 'cbcp-layer';
-        node.src = layer.image;
-        node.alt = '';
-        node.setAttribute('aria-hidden', 'true');
-        node.draggable = false;
-        node.style.opacity = String(clamp(layer.opacity ?? 1, 0, 1));
-        node.style.mixBlendMode = layer.blend || 'normal';
-        this.applyCamera(node, frame.camera, Number(layer.depth) || 0, frame.durationMs, frame.transitionMs);
-        this.nodes.stack.appendChild(node);
-      });
-
-      this.nodes.kicker.textContent = localized(this.scene.kicker, lang) || localized(this.scene.chapter, lang);
-      this.nodes.title.textContent = localized(this.scene.title, lang);
-      this.renderSubtitle();
-      this.renderProgress();
-      this.updateControls();
-      this.playSfx(frame.sfx);
-      this.options.onFrameChange?.({
-        sceneId: this.scene.id,
-        frameIndex: this.frameIndex,
-        frameId: frame.id || null
-      });
+      image.src = frame.image;
     }
 
     applyCamera(node, camera, depth = 1, durationMs = 5600, transitionMs = 520) {
@@ -305,7 +325,7 @@
 
     startTimer(remainingOverride) {
       this.clearTimer();
-      if (!this.scene || this.paused || this.scene.mode === 'manual') return;
+      if (!this.scene || !this.frameReady || this.paused || this.scene.mode === 'manual') return;
       const duration = Number(this.scene.frames[this.frameIndex]?.durationMs) || 0;
       if (duration <= 0) return;
       const remaining = remainingOverride == null ? Math.max(0, duration - this.frameElapsedMs) : Math.max(0, remainingOverride);
@@ -316,20 +336,20 @@
     clearTimer() {
       if (this.timer != null) window.clearTimeout(this.timer);
       this.timer = null;
+      this.frameStartedAt = 0;
     }
 
     next() {
-      if (!this.scene || this.paused) return;
+      if (!this.scene || !this.frameReady || this.paused) return;
       this.clearTimer();
       if (this.frameIndex < this.scene.frames.length - 1) {
         this.frameIndex += 1;
         this.frameElapsedMs = 0;
+        this.frameStartedAt = 0;
         this.renderFrame();
-        this.startTimer();
       } else {
         const completed = this.scene;
-        this.scene = null;
-        this.root.hidden = true;
+        this.stop();
         this.options.onComplete?.({ sceneId: completed.id, sourceSceneId: completed.sourceSceneId || null });
       }
     }
@@ -381,6 +401,11 @@
       return this;
     }
 
+    requestLanguage(language) {
+      this.options.onLanguageChange?.(language);
+      return this.setLanguage(language);
+    }
+
     setLanguage(language) {
       this.language = String(language).toLowerCase().startsWith('en') ? 'en' : 'zh';
       this.forcedLanguage = this.language;
@@ -405,12 +430,10 @@
     }
 
     skip() {
-      if (!this.scene || !this.scene.allowSkip) return false;
+      if (!this.scene || !this.frameReady || !this.scene.allowSkip) return false;
       const skipped = this.scene;
       const snapshot = this.snapshot();
-      this.clearTimer();
-      this.scene = null;
-      this.root.hidden = true;
+      this.stop();
       this.options.onSkip?.({
         sceneId: skipped.id,
         sourceSceneId: skipped.sourceSceneId || null,
@@ -422,6 +445,10 @@
     stop() {
       this.clearTimer();
       this.scene = null;
+      this.renderToken++;
+      this.activeImage = null;
+      this.frameReady = false;
+      this.nodes.stack.replaceChildren();
       this.paused = false;
       this.frameElapsedMs = 0;
       this.root.hidden = true;

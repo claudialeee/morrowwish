@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "project": "Cat Bond — The Last Resonance",
   "branch": "rpg/cinematic-art-direction",
   "sourceCanon": [
@@ -8,7 +8,7 @@
     "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
   ],
   "status": "branch-only; not integrated into production",
-  "reviewStatus": "character sheets rejected; replacement painterly character assets pending",
+  "reviewStatus": "FAIL: all geometric vector studies quarantined; no approved production shots",
   "assets": [
     {
       "id": "region-misttide-harbor",
@@ -18,7 +18,9 @@
       "sourceSceneId": null,
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "region-rootsleep-forest",
@@ -28,7 +30,9 @@
       "sourceSceneId": null,
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "region-emberforge-city",
@@ -38,7 +42,9 @@
       "sourceSceneId": null,
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "region-skyspine-isles",
@@ -48,7 +54,9 @@
       "sourceSceneId": null,
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "region-moonmirror-library",
@@ -58,7 +66,9 @@
       "sourceSceneId": null,
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "region-starfall-expanse",
@@ -68,98 +78,116 @@
       "sourceSceneId": null,
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "p01-six-sanctuaries",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/prologue/p01-six-sanctuaries.svg",
-      "sceneKey": "prologue/P-01",
+      "sceneKey": "prologue:P-01",
       "sourceSceneId": "P-01",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "p02-first-bellkeepers-choice",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/prologue/p02-first-bellkeepers-choice.svg",
-      "sceneKey": "prologue/P-02",
+      "sceneKey": "prologue:P-02",
       "sourceSceneId": "P-02",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "p03-years-of-waiting",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/prologue/p03-years-of-waiting.svg",
-      "sceneKey": "prologue/P-03",
+      "sceneKey": "prologue:P-03",
       "sourceSceneId": "P-03",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "p04-awakening",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/prologue/p04-awakening.svg",
-      "sceneKey": "prologue/P-04",
+      "sceneKey": "prologue:P-04",
       "sourceSceneId": "P-04",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "p05-the-journey",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/prologue/p05-the-journey.svg",
-      "sceneKey": "prologue/P-05",
+      "sceneKey": "prologue:P-05",
       "sourceSceneId": "P-05",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "b03-six-notes-return",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/finale/b03-six-notes-return.svg",
-      "sceneKey": "finale/B-03",
+      "sceneKey": "finale:B-03",
       "sourceSceneId": "B-03",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "e01-six-regions-answer",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/epilogue/e01-six-regions-answer.svg",
-      "sceneKey": "epilogue/E-01",
+      "sceneKey": "epilogue:E-01",
       "sourceSceneId": "E-01",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     },
     {
       "id": "e03-sunlit-garden",
       "kind": "cinematic-key-art",
       "path": "assets/cinematics/epilogue/e03-sunlit-garden.svg",
-      "sceneKey": "epilogue/E-03",
+      "sceneKey": "epilogue:E-03",
       "sourceSceneId": "E-03",
       "format": "svg",
       "canvas": "2400x1350",
-      "status": "original-vector-key-art"
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
     }
   ],
   "sceneKeys": [
-    "prologue/P-01",
-    "prologue/P-02",
-    "prologue/P-03",
-    "prologue/P-04",
-    "prologue/P-05",
-    "finale/B-03",
-    "epilogue/E-01",
-    "epilogue/E-03"
+    "prologue:P-01",
+    "prologue:P-02",
+    "prologue:P-03",
+    "prologue:P-04",
+    "prologue:P-05",
+    "finale:B-03",
+    "epilogue:E-01",
+    "epilogue:E-03"
   ],
   "characters": [
     "岬灯",
@@ -193,5 +221,8 @@
       "id": "regional-npc-roster",
       "reason": "Rejected: generic low-detail vector cats, insufficient individual identity."
     }
-  ]
+  ],
+  "approvedShots": {},
+  "canonicalSceneIdFormat": "chapter:sourceSceneId",
+  "storyAuthority": "Chat 4 engine and campaign; no independent cinematic narrative state."
 }
