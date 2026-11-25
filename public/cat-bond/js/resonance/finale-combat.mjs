@@ -1,4 +1,5 @@
 // Real-time finale adapter for the existing CaptureBattle; narrative state remains in the active slot.
+import {campaign} from "./campaign.mjs";
 import {REGION_KITS} from "./regional-combat.mjs";
 export const PHASES=Object.freeze({
  "finale:B-01":"battle:inward-gates",
@@ -6,6 +7,17 @@ export const PHASES=Object.freeze({
  "finale:B-03":"battle:central-echo"
 });
 const REGIONS=Object.keys(REGION_KITS);
+const ALLIES=Object.fromEntries(REGIONS.map(region=>[
+ region,Object.values(campaign.cast).filter(actor=>actor.region===region)
+]));
+const REPLY_OBJECTIVES={
+ harbor:["守护岬灯与栖蓝，接通灯塔信号。","Guard Jiedeng and Qilan as they align the lighthouse signal."],
+ forest:["守护芽禾与榆川，维持双向树根水道。","Guard Yahe and Yuchuan as they reopen the paired root channel."],
+ forge:["守护烬婆与小铆，稳定声闸。","Guard Jinpo and Xiaomao as they stabilize the sound gate."],
+ sky:["守护翎羽与远帆，将旋律送过空中航路。","Guard Lingyu and Yuanfan as they carry the melody across the air route."],
+ library:["守护墨页与白栞，辨出正确的旋律次序。","Guard Moye and Baikan as they identify the authentic melody order."],
+ starfall:["守护星芽与砾川，校准星图并接回港口。","Guard Xingya and Lichuan as they align the star map and close the route to Harbor."]
+};
 const ACTIONS=["lighthouse-signal","paired-root-channel","sound-gate-repair","aerial-melody","authentic-melody-order","star-map-alignment"];
 const COLORS=["#7ccedc","#a8cc86","#ed9967","#c6e1f0","#cab1e3","#f1d39c"];
 const clamp=(n,a,b)=>Math.min(Math.max(n,a),b);
@@ -24,8 +36,11 @@ export function holdProgress(progress,dt,near,interrupted,required){
 function positionObjectiveHud(panel){
  if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
  if(!host||!top)return;
- const hr=host.getBoundingClientRect(),tr=top.getBoundingClientRect();
- if(hr.height&&tr.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(tr.bottom-hr.top+7)+"px");
+ const frame=host.getBoundingClientRect(),topbar=top.getBoundingClientRect();
+ const narrow=window.matchMedia("(max-width:600px)").matches;
+ const rail=host.querySelector(narrow?"#battle-squad-rail":"#ult-wrap")?.getBoundingClientRect();
+ const bottom=Math.max(topbar.bottom,rail?.height?rail.bottom:0);
+ if(frame.height&&topbar.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(bottom-frame.top+7)+"px");
 }
 
 function install(){
@@ -88,7 +103,11 @@ function install(){
   const set=(sel,t)=>{const n=el.querySelector(sel);if(n&&n.textContent!==t)n.textContent=t;};
   set("[data-finale-title]",tr(...sceneTitle[f.id]));
   const first=f.id==="finale:B-01",second=f.id==="finale:B-02";
-  set("[data-finale-objective]",first?tr("打断六个逆响锁。挡住袭向地区伙伴的铃声。","Break all six inward locks. Intercept bell pulses aimed at the regional allies."):second?tr("观察回应节拍；攻击第二次敲击过早的回响。","Observe the reply rhythm. Strike the echo whose second beat is too early."):tr("靠近六组地区伙伴，保护他们完成旋律。全部归位后攻击中央回响。","Stand near each allied group and defend its melody. Strike the central echo after all six return."));
+  const enemyName=document.getElementById("wild-name");
+  if(enemyName)enemyName.textContent=first?tr("暮铃","Muling"):tr("空白回响","Hollow Echo");
+  const next=f.nodes.find(node=>!node.done);
+  const reply=next?tr(...REPLY_OBJECTIVES[next.region]):tr("六段旋律已归位，攻击中央回响。","All six melodies have returned. Strike the central echo.");
+  set("[data-finale-objective]",first?tr("打断六个逆响锁。挡住袭向地区伙伴的铃声。","Break all six inward locks. Intercept bell pulses aimed at the regional allies."):second?tr("观察回应节拍；攻击第二次敲击过早的回响。","Observe the reply rhythm. Strike the echo whose second beat is too early."):reply);
   set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/6":second?f.confirmed.size+"/2":f.nodes.filter(n=>n.done).length+"/6");
   const clue=el.querySelector("button");clue.hidden=!second;clue.textContent=tr("查看 Catdex 记录","Check Catdex record");
  }
@@ -182,7 +201,7 @@ function install(){
   if(b.autoMode&&me?.alive&&!b.duoRun&&!me.dashT&&!me.rootT){const dx=next.x-me.x,dy=next.y-me.y,l=Math.hypot(dx,dy);if(l>18){const step=Math.min(l,105*d);me.x+=dx/l*step;me.y+=dy/l*step;}}
   const support=host().supportProfile?.(next.region),trust=Object.values(support?.trust||{}).reduce((a,c)=>a+c,0),methods=support?.methods||[];
   const bonded=b.duo&&b.duoUses>0&&alive(b).filter(x=>[b.duo.a.uid,b.duo.b.uid].includes(x.cat.uid)).length===2;
-  const memories=b.duo&&window.CatRelations?.memoryList?.(b.duo.a,b.duo.b)||[];const pledge=memories.length>0&&bonded;
+  const memories=b.duo&&window.CatRelations?.memoryList?.(b.duo.a,b.duo.b)||[];const pledge=memories.includes("sakura")&&bonded;
   const need=Math.max(1.8,4.0-Math.min(1.0,Math.max(0,trust)*.12)-(methods.length?.4:0)-(bonded?.6:0)-(pledge?.35:0));
   const near=alive(b).some(x=>distance(x,next)<=56);
   next.progress=holdProgress(next.progress,d,near,false,need);next.required=need;
@@ -210,10 +229,19 @@ function install(){
   const seq=this.captureSeq;this.captureSeq=null;try{draw.call(this,ctx);}finally{this.captureSeq=seq;}
   if(this.duoCinematic||this.ultCinematic)return;
   ctx.save();ctx.lineWidth=2;
-  if(f.id!=="finale:B-02")for(const [i,n] of f.nodes.entries()){
+  if(f.id!=="finale:B-02")for(const n of f.nodes){
     ctx.strokeStyle=n.color;ctx.fillStyle="rgba(20,28,42,.82)";ctx.beginPath();ctx.arc(n.x,n.y,24,0,Math.PI*2);ctx.fill();ctx.stroke();
     ctx.globalAlpha=n.done?.95:.58;ctx.strokeStyle=n.color;ctx.beginPath();ctx.arc(n.x,n.y,19,-Math.PI/2,-Math.PI/2+Math.PI*2*(n.done?1:f.id==="finale:B-03"?n.progress/(n.required||4):n.integrity/100));ctx.stroke();
-    ctx.globalAlpha=1;ctx.textAlign="center";ctx.font="700 10px system-ui";ctx.fillStyle="#f4e5c7";ctx.fillText(tr(...REGION_KITS[n.region].name),n.x,n.y-31);
+    ctx.globalAlpha=1;
+    if(f.id==="finale:B-03"){
+      const actors=ALLIES[n.region];
+      for(const [j,actor] of actors.entries()){
+        window.CatBondResonanceNPC?.drawResident?.(ctx,actor.id,{
+          x:n.x+(j-.5)*26,y:n.y+15,scale:.43,time:f.elapsed
+        });
+      }
+    }
+    ctx.textAlign="center";ctx.font="700 10px system-ui";ctx.fillStyle="#f4e5c7";ctx.fillText(tr(...REGION_KITS[n.region].name),n.x,n.y-31);
   }
   if(f.cast){ctx.strokeStyle="#eac19a";ctx.fillStyle="rgba(218,132,100,.17)";ctx.beginPath();ctx.arc(f.cast.x,f.cast.y,56,0,Math.PI*2);ctx.fill();ctx.stroke();}
   ctx.restore();
