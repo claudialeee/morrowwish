@@ -86,7 +86,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   };
   if(initialMode!=='cinematic'){handoff(initialMode);return {ok:true,mode:initialMode};}
   const [{mountResonanceCinematics},manifest]=await Promise.all([
-   import('../resonance-cinematic.mjs?v=continuous-opening-20261125'),
+   import('../resonance-cinematic.mjs?v=continuous-opening-release-20261125'),
    fetch(new URL('../../assets/cinematics/asset-manifest.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('missing-cinematic-manifest');return r.json()})
   ]);
   if(!live())return {ok:false,reason:'slot-changed'};

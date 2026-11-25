@@ -134,17 +134,23 @@ jobs:
                 await page.screenshot({path:'preview-'+prefix+'-opening.png'});
                 // Use actual player controls; this is a smoke test, not the separate full campaign gate.
                 // The opening also advances naturally; never wait for an earlier scene after it passed.
-                for(let i=0;i<3;i++){
-                  const id=await page.evaluate(()=>CatBondResonance.view().current?.id);
-                  if(id==='prologue:P-04')break;
-                  if(!['prologue:P-01','prologue:P-02','prologue:P-03'].includes(id))throw Error('Unexpected opening scene '+id);
-                  await page.locator('.cbcp-skip').click();
-                  await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id);
-                }
+                await page.locator('.cbcp-skip').click();
                 await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
                 await page.locator('#panel .cat-starter-card .dex-cell').first().click();
                 await page.waitForFunction(()=>State.S.cats.length===1&&State.listSaveSlots().find(s=>s.id==='slot1')?.exists);
                 const uid=await page.evaluate(()=>State.S.cats[0].uid);
+                const completed=await page.evaluate(()=>State.S.resonance.completed.slice(0,3).join(','));
+                if(completed!=='prologue:P-01,prologue:P-02,prologue:P-03')throw Error('Single skip must preserve every opening checkpoint');
+                if(await page.locator('#yard-actions').isVisible())throw Error('Garden floating dock must be hidden');
+                await page.locator('#map-menu').click();
+                const menu=page.locator('#cb-system-menu');
+                await menu.waitFor({state:'visible'});
+                for(const id of ['yard-map','yard-book','yard-build','yard-seek','yard-play','yard-feed']){
+                  if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing menu action '+id);
+                }
+                await page.screenshot({path:'preview-'+prefix+'-garden-menu.png'});
+                await menu.locator('[data-system="close"]').click();
+                await page.screenshot({path:'preview-'+prefix+'-garden.png'});
                 await page.reload();
                 await page.locator('#intro-continue').click();
                 await page.locator('#intro-slot-list [data-slot="slot1"]').click();

@@ -115,8 +115,7 @@ for(const profile of [
   // A normal new save has earned its own coins through production and Daily.
   // No injected resources, buildings, story progress or simulated clicks.
   let relocated=null,relocatedDecor=null;
-  const facilities=page.locator('[data-garden-action="facilities"]');
-  const openFacilities=async()=>{await facilities.click();await checkVisible('#panel.open [data-build="scratcher"]')};
+  const openFacilities=async()=>{await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="yard-build"]').click();await checkVisible('#panel.open [data-build="scratcher"]')};
   const chooseSpot=async moving=>{
    const spot=await page.evaluate(moving=>{
     const g=window.__game,cv=document.querySelector('#scene'),r=cv.getBoundingClientRect(),old=g.yard.placement?.relocating;
@@ -194,6 +193,9 @@ for(const profile of [
   await page.locator('.rw-system-nav').waitFor({state:'attached'});
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
+  const questSummary=page.locator('.rw-atlas-menu > summary');
+  if(!(await page.locator('.rw-atlas-menu').evaluate(el=>el.open)))await questSummary.click();
+  await checkVisible('.rw-current');
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
   if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}

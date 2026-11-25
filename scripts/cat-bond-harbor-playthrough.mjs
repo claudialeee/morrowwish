@@ -487,18 +487,18 @@ try {
     await tapLandmark(.42,.28);
     await button('Herbs on the canopy path · 2/3').click();
     await button('Medicine at the root channel · 3/3').waitFor();
-    await tapLandmark(.69,.53);
+    // The actual trail action now walks the cat to the third scent before recording it.
     await button('Medicine at the root channel · 3/3').click();
     await readForestDialogue('forest:R-02');
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
     if(name==='landscape'){
-      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
+      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-shell').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
       assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
       assert(layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls remain in the stage');
     }
-    if(name==='portrait'){const box=await page.locator('.rw-surface').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
+    if(name==='portrait'){const box=await page.locator('.rw-shell').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
     await shot('forest-upper-gate');
     await button('Paired water gates').click();
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
