@@ -22,7 +22,7 @@ jobs:
       github.ref == 'refs/heads/cat-bond-preview' &&
       (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Publish verified Cat Bond preview: '))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,18 +47,47 @@ jobs:
           TESTED_MERGE="$(git rev-parse FETCH_HEAD)"
           test "$(git rev-parse "$TESTED_MERGE^2")" = "$SOURCE_SHA"
           test "$(git rev-parse "$TESTED_MERGE^{tree}")" = "$(git rev-parse "$SOURCE_SHA^{tree}")"
-          gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$SOURCE_SHA" -f event=pull_request -F per_page=100 > /tmp/cat-bond-acceptance.json
           export SOURCE_SHA
-          python3 - <<'PY'
-          import json
+          # An explicit publish request may arrive while the exact candidate's
+          # already-started QA is running. Wait for it; never publish on failure.
+          for attempt in $(seq 1 120); do
+            gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$SOURCE_SHA" -f event=pull_request -F per_page=100 > /tmp/cat-bond-acceptance.json
+            if python3 - <<'PY'
+          import json, os, sys
           runs = json.load(open('/tmp/cat-bond-acceptance.json'))['workflow_runs']
-          matches = [r for r in runs if r['name'] == 'Cat Bond final release acceptance' and r['head_branch'] == 'rpg/release-combined-next' and r.get('display_title') == 'Full release QA ' + __import__('os').environ.get('SOURCE_SHA', '')]
-          assert matches, 'No explicitly requested full acceptance for exact source'
-          run = max(matches, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
-          assert run['status'] == 'completed' and run['conclusion'] == 'success', f'Full acceptance not passed: {run["id"]}'
+          sha = os.environ['SOURCE_SHA']
+          exact = [r for r in runs if r.get('head_sha') == sha and r.get('head_branch') == 'rpg/release-combined-next']
+          full = [r for r in exact if r.get('path') == '.github/workflows/cat-bond-final-release-qa.yml' and r.get('display_title') == 'Full release QA ' + sha]
+          daily = [r for r in exact if r.get('path') == '.github/workflows/cat-bond-dev-qa.yml']
+          if not full or not daily:
+              print('Exact candidate QA not yet visible', flush=True)
+              sys.exit(10)
+          run = max(full, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
+          inc = max(daily, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
+          for check in (run, inc):
+              if check['status'] == 'completed' and check['conclusion'] != 'success':
+                  print(f'QA rejected: {check["id"]} {check["conclusion"]}', flush=True)
+                  sys.exit(11)
+          if any(c['status'] != 'completed' for c in (run, inc)):
+              print('Exact candidate QA still executing', run['id'], inc['id'], flush=True)
+              sys.exit(10)
           open('/tmp/cat-bond-full-campaign-run','w').write(str(run['id']))
-          print('Full release acceptance PASS', run['id'])
+          print('Full and incremental release acceptance PASS', run['id'], inc['id'])
           PY
+            then
+              break
+            else
+              code=$?
+              test "$code" = 10 || exit "$code"
+              sleep 30
+            fi
+          done
+          test -s /tmp/cat-bond-full-campaign-run
+          # Reject any change to the candidate or tested PR while waiting.
+          git fetch origin rpg/release-combined-next
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
+          git fetch origin refs/pull/109/merge
+          test "$(git rev-parse FETCH_HEAD)" = "$TESTED_MERGE"
           FULL_RUN=$(cat /tmp/cat-bond-full-campaign-run)
           gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs/$FULL_RUN/jobs?filter=latest&per_page=100" > /tmp/cat-bond-campaign-jobs.json
           python3 - <<'PY'
@@ -130,6 +159,10 @@ jobs:
         run: |
           set -eu
           test -n "$CLOUDFLARE_API_TOKEN"
+          git fetch origin rpg/release-combined-next
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
+          git fetch origin refs/pull/109/merge
+          test "$(git rev-parse FETCH_HEAD)" = "$TESTED_MERGE"
           WRANGLER="$PWD/node_modules/.bin/wrangler"
           cd /tmp/cat-bond-preview
           "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$SOURCE_SHA"
