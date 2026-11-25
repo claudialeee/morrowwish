@@ -51,6 +51,11 @@ for(const profile of [
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
+  await page.locator('#mw-fullscreen-toggle').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
+  await screenshot('fullscreen-title');
+  await page.locator('#mw-fullscreen-toggle').click();
+  await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
   await checkVisible('#intro-slot-list [data-slot]');
@@ -76,6 +81,11 @@ for(const profile of [
   else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
   for(const id of ['prologue:P-04','prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
   await waitMap();
+  await page.locator('.rw-system-nav').waitFor();
+  assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
+  assert.equal(await page.locator('.rw-region-status').count(),6);
+  assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
+  await screenshot('world-atlas');
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
   assert.ok(first);
   await openInGameSlots();
@@ -97,11 +107,19 @@ for(const profile of [
   await page.locator('[data-cb-story-action="system"]').click();
   await page.locator('[data-system="title"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
-  await openTitleSlots();
-  await page.locator('[data-remove-save="slot1"]').click();
+  // Start the third slot through the actual title picker, preserving the two earlier adventures.
+  await page.locator('#intro-start').click();
+  await page.locator('#intro-slot-list [data-slot="slot3"]').click();
+  await checkVisible('#panel.open .dex-cell');
+  assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
+  assert.equal(await page.evaluate(()=>State.S.cats.length),0);
+  await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
+  await page.locator('#intro-continue').click();
+  await page.locator('[data-title-delete="slot1"]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
   assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot2').data.state.cats[0].uid),first);
-  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3')),null);
+  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.length),0);
+  assert.equal(await page.locator('[data-title-delete="slot1"]').count(),0);
   await screenshot('title-after-delete');
   assert.deepEqual(errors,[],'no page runtime exceptions');
   console.log('PASS title/save normal flow '+profile.name);

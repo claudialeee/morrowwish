@@ -130,3 +130,13 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 #stage #intro .cb-title-delete{background:transparent!important;color:#e4b5a6!important;border-color:#98786b!important;margin-top:5px!important}
 @media(max-height:450px){#stage #intro .cb-title-content{gap:7px!important;padding-bottom:0!important;align-self:center}#stage #intro .cb-intro-tagline{font-size:11px!important}}
 @media(prefers-reduced-motion:reduce){#stage #intro .cb-title-landscape{animation:none!important}}
+
+/* Expose the actual shared settings rail (not duplicate controls). The title
+   system menu remains separate for save management and return-to-title. */
+html body #stage #cb-header-actions #mw-game-settings{display:flex!important}
+html body #stage #cb-header-actions #mw-fullscreen-toggle{display:inline-flex!important}
+html body #stage #cb-header-actions #mw-game-settings .mw-settings-music,
+html body #stage #cb-header-actions #mw-game-settings .mw-settings-share{display:none!important}
+#stage:has(#intro:not(.hide)) #cb-system-toggle,#stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 124px)!important}
+#stage:has(#intro-slot-panel.is-open) #cb-system-toggle{visibility:hidden!important}
+@media(max-width:420px){#stage:has(#intro:not(.hide)) #cb-system-toggle,#stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 112px)!important}}

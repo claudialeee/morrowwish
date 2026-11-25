@@ -79,7 +79,8 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    }
    try{
     onWorld?.();
-    // Continuing a completed opening lands on the atlas, not an old region overlay.
+    // Preserve exact saved exploration when returning to an active region.
+    if(initial.current?.chapter===rootState.resonanceExploration?.location)window.WorldMap?.resumeRegion?.();
    }finally{dispose();}
   };
   if(initialMode!=='cinematic'){handoff(initialMode);return {ok:true,mode:initialMode};}
