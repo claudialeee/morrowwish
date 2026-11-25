@@ -8,6 +8,7 @@ import "./chapter-cinematics.mjs";
 import "./forge-combat-runtime.mjs";
 import "./regional-combat.mjs";
 import "./finale-combat.mjs";
+import "./resonance-book.mjs";
 
 window.__CAT_BOND_CANONICAL_RELEASE__ = true;
 // Production entry may use approved shots or the explicitly authorized opening
