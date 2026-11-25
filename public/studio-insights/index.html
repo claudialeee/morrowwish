@@ -189,7 +189,8 @@ function renderRange(){
  const range=lastData?.range;
  $("applied-range").textContent=reportQuery===BASE_QUERY?t("dateAll"):range?.start&&range?.end?t("dateApplied",{start:range.start,end:range.end}):"";
 }
-function setDateBusy(busy){for(const id of ["date-preset","date-start","date-end","apply-date"])$(id).disabled=busy;}
+function setDateBusy(busy){for(const id of ["date-preset","date-start","date-end","apply-date","reset-metrics"])$(id).disabled=busy;}
+function matchesRange(data,query){const p=new URLSearchParams(query);return !p.has("startDate")||(data?.range?.start===p.get("startDate")&&data?.range?.end===p.get("endDate")&&data?.range?.timeZone==="America/Los_Angeles");}
 
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
@@ -479,7 +480,7 @@ async function loadElsewhere(query){
  try{
   const res=await fetch('/api/elsewhere-summary?'+query,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});
   if(!res.ok)throw Error('Story API unavailable');
-  elsewhereData=await res.json();
+  const data=await res.json();if(!matchesRange(data,query))throw Error('Story range mismatch');elsewhereData=data;
  }catch{/* Keep the last successful story snapshot. */}
  if(lastData)renderSignals(lastData.byGame||[]);
 }
@@ -500,6 +501,7 @@ try{const response=await fetch("/api/summary?"+query,{headers:key?{"x-analytics-
  dashboardBlockedUntil=dashboardNextRead=Date.now()+Math.max(60000,Number.isFinite(retry)?retry*1000:0);
  throw Error(j.error||"HTTP "+response.status);
  }
+if(!matchesRange(j,query))throw Error("Analytics date range mismatch");
 if(query!==reportQuery)elsewhereData=null;reportQuery=query;render(j);renderRange();await loadElsewhere(query);dashboardBlockedUntil=0;dashboardNextRead=Date.now()+120000;$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
  }catch(e){dashboardBlockedUntil=dashboardNextRead=Math.max(dashboardNextRead,Date.now()+60000);$("report").hidden=!lastData;setStatus(lastData?"stale":"error",e.message||t("failGeneric"));}
  finally{dashboardLoading=false;$("reload").disabled=false;setDateBusy(false);}}
@@ -510,7 +512,7 @@ $("apply-date").addEventListener("click",()=>{const query=selectedQuery();if(que
 $("reload").addEventListener("click",()=>{if(Date.now()<dashboardNextRead){if(lastData)setStatus("stale");return;}load();});
 $("reset-metrics").addEventListener("click",async()=>{
  if(!window.confirm(t("resetConfirm")))return;
- const button=$("reset-metrics");button.disabled=true;$("reload").disabled=true;setStatus("resetting");
+ const button=$("reset-metrics");setDateBusy(true);$("reload").disabled=true;setStatus("resetting");
  try{
   const response=await fetch("/api/reset-metrics",{
    method:"POST",credentials:"same-origin",cache:"no-store",
@@ -522,7 +524,7 @@ $("reset-metrics").addEventListener("click",async()=>{
   await load(true);
   if(statusKind==="loaded")setStatus("resetDone");
  }catch(e){setStatus("resetFailed");}
- finally{button.disabled=false;$("reload").disabled=false;}
+ finally{setDateBusy(false);$("reload").disabled=false;}
 });
 syncDateControls();applyLanguage(lang);load();
 // Manual refresh only: idle dashboards do not consume D1 reads.
