@@ -9,6 +9,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disab
 let failed=false;
 for(const profile of [
  {name:'desktop',width:1280,height:800,mobile:false},
+ {name:'phone-narrow',width:320,height:568,mobile:true},
  {name:'phone-portrait',width:390,height:844,mobile:true},
  {name:'phone-landscape',width:844,height:390,mobile:true}
 ]){
@@ -94,13 +95,18 @@ for(const profile of [
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
-  if(profile.name!=='phone-portrait'){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  const realPress=async locator=>{await locator.scrollIntoViewIfNeeded();const hit=await locator.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();};
   for(const name of ['Catdex','Party','Raise cats','Workshop']){
-   await page.locator('.rw-system-nav').getByRole('button',{name,exact:true}).click();
+   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true}));
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
-   const close=page.locator('#panel .close-btn,#panel [data-close],#panel .panel-close,#panel-close').first();
-   if(await close.isVisible())await close.click();else await page.keyboard.press('Escape');
+   if(name==='Catdex'){
+    const owned=page.locator('#panel .dex-cell:not(.locked)').first();await realPress(owned);
+    await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
+    await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
+   }
+   await realPress(page.locator('#panel.open > .panel-dismiss'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
   await screenshot('world-atlas');
