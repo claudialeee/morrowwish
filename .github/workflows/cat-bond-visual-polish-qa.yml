@@ -1,0 +1,58 @@
+name: Cat Bond visual polish — before and after
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-visual-compare.mjs'
+      - '.github/workflows/cat-bond-visual-polish-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-visual-polish-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    if: github.head_ref == 'rpg/release-visual-polish'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci && npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Capture real baseline and candidate gameplay UI
+        shell: bash
+        run: |
+          set -uo pipefail
+          before=a80833cd3d10d3fd9c2065b1d931f8cdb7a19d23
+          git fetch --depth=1 origin "$before" || exit 1
+          git worktree add --detach /tmp/cat-bond-visual-before "$before" || exit 1
+          result=0
+          for label in before after; do
+            root="$PWD"
+            if [ "$label" = before ]; then root=/tmp/cat-bond-visual-before; fi
+            node "$root/scripts/cat-bond-local-cloud-server.mjs" >/tmp/visual-"$label".log 2>&1 &
+            server=$!
+            trap 'kill "$server" 2>/dev/null || true' EXIT
+            for attempt in {1..30}; do
+              curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break
+              sleep 1
+            done
+            VISUAL_OUT="artifacts/cat-bond-visual/$label" node scripts/cat-bond-visual-compare.mjs || result=1
+            kill "$server" 2>/dev/null || true
+            wait "$server" 2>/dev/null || true
+            trap - EXIT
+          done
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-visual-before-after
+          path: artifacts/cat-bond-visual/
+          if-no-files-found: error
+          retention-days: 5
