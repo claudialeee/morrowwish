@@ -1022,7 +1022,7 @@ const UI = {
         </section></div>
       <div class="btn-row">
         ${showPairChooser?'':('<button class="btn gold" id="duo-choose" '+(!ok?'disabled':'')+'>'+(selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档'))+'</button>')}
-        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.medkits||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.fish||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`,preserveScroll);
@@ -1062,7 +1062,15 @@ const UI = {
     });
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
-      CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
+      // Explicitly forming a battle duo also assigns both starting positions.
+      // Retain the player's other eligible team members as reserves.
+      if(!CatRelations.choose(a,b))return;
+      const eligible=new Set((State.S.cats||[]).map(c=>c.uid));
+      const prior=this.getPreferredBattleTeam().map(c=>c.uid);
+      const teamUids=[...new Set([a.uid,b.uid,...prior])].filter(uid=>eligible.has(uid)).slice(0,5);
+      State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids};
+      State.save();
+      this._duoPicked=[a.uid,b.uid];
       this.game.yard?.entities?.filter(e=>[a.uid,b.uid].includes(e.cat.uid))
         .forEach(e=>{e.emote('💞',3);e.pettedGlow=1.5;});
       this.game.refreshHUD();
@@ -2718,6 +2726,13 @@ const UI = {
     if(this._localePanelRerendering&&this._localePanelRerenderAuto!==null)
       auto=!!this._localePanelRerenderAuto;
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
+    const chosenDuo=window.CatRelations?.chosen?.()||[];
+    const duoHint=chosenDuo.length===2
+      ? ((window.CatRelations?.pair?.(...chosenDuo)?.value||0)<20
+        ? (en?'Your chosen duo needs 20 trust to unlock its special move.':'搭档默契达到20才能解锁合击。'):'')
+      : ((State.S.cats||[]).length<2
+        ? (en?'Befriend another wild cat to unlock your first duo. Solo battles are still available.':'收服第二只猫即可解锁首个搭档，仍可单猫出战。')
+        : (en?'Choose a duo in Cat Duos under Raise cats before using a duo move.':'请在猫咪养成的双猫页面选择搭档，再使用合击。'));
     const squadMarkup=
       '<details class="prep-advanced prep-team-details" id="battle-team-details">'+
       '<summary><strong>'+(en?'Battle team · edit':'出战队伍 · 点击调整')+'</strong>'+
@@ -2740,7 +2755,8 @@ const UI = {
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
       <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button>
-      ${(window.CatRelations?.chosen?.()||[]).length===2?`<button id="bp-chosen-duo" type="button" class="btn ghost">${en?'Field chosen duo':'双猫搭档首发'}</button>`:''}</div>
+      ${chosenDuo.length===2?`<button id="bp-chosen-duo" type="button" class="btn ghost">${en?'Field chosen duo':'双猫搭档首发'}</button>`:''}</div>
+      ${duoHint?`<p class="sub" id="bp-duo-hint">${duoHint}</p>`:''}
       ${this.battlePrepSkillCard(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en)}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>

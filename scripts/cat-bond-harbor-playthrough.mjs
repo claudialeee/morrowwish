@@ -308,21 +308,30 @@ try {
     await page.getByText('灯塔 · 已复明',{exact:true}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('en'));
 
-    // Follow a normal encounter through the actual battle setup and tutorial.
-    await button('Approach wild cat').click();
-    await page.locator('#bp-go').click();
-    await page.locator('#battle-ui.on').waitFor();
-    await shot('battle');
-    assert.equal(await page.evaluate(() => window.__game.battle.regionalCombat?.region),'harbor');
-    const tutorial = page.locator('#battle-tutorial-skip');
-    if (await tutorial.isVisible()) await tutorial.click();
-    await page.waitForFunction(() => window.__game.scene === 'map', null, {timeout:75000});
-    assert.equal(await page.evaluate(() => WorldMap.currentRegion),'harbor');
-    const resultClose=page.locator('#cr-ok,#battle-recovery-ok');
-    await resultClose.waitFor();
-    const captured=await resultClose.getAttribute('id')==='cr-ok';
-    assert.equal(await page.evaluate(() => State.S.catchCount || 0),captured?1:0);
-    await resultClose.click();
+    // A lost optional encounter cannot prove a Duo exists. Use normal retry
+    // and actual battle inputs until the first capture unlocks it, without
+    // changing HP, affinity, save flags, encounter RNG or the story engine.
+    let captured=false;
+    for(let attempt=1;attempt<=4&&!captured;attempt++){
+      await button('Approach wild cat').click({timeout:30000});
+      await page.locator('#panel [data-battle-auto="true"]').click();
+      await page.locator('#bp-go').click();
+      await page.locator('#battle-ui.on').waitFor();
+      await shot('battle-attempt-'+attempt);
+      assert.equal(await page.evaluate(() => window.__game.battle.regionalCombat?.region),'harbor');
+      const tutorial=page.locator('#battle-tutorial-skip');
+      if(await tutorial.isVisible())await tutorial.click();
+      await page.waitForFunction(()=>window.__game.scene==='map',null,{timeout:120000});
+      assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'harbor');
+      const resultClose=page.locator('#cr-ok,#battle-recovery-ok');
+      await resultClose.waitFor();
+      captured=await resultClose.getAttribute('id')==='cr-ok';
+      assert.equal(await page.evaluate(()=>State.S.catchCount||0),captured?1:0);
+      await shot('harbor-capture-result-'+attempt);
+      await resultClose.click();
+    }
+    assert(captured,'Earn the first capture through actual gameplay before testing a Duo');
+    assert(await page.evaluate(()=>{const pair=CatRelations.chosen();return pair.length===2&&CatRelations.pair(...pair).value>=20;}),'First capture must unlock a real chosen Duo');
     await button('Sunlit Garden',page.locator('.rw-head')).click();
     await page.waitForFunction(() => window.__game.scene === 'yard');
     await shot('garden-return');
