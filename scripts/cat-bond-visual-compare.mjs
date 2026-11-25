@@ -89,6 +89,7 @@ try{
      await page.locator('.cbcp-art').first().evaluate(img=>img.decode());
      if(id==='prologue:P-01')await shot('opening');
      await page.locator('.cbcp-skip').click();
+     if(out.endsWith('/after'))break;
     }
     await scene('prologue:P-04');const starter=page.locator('#panel .cat-starter-card .dex-cell').first();await starter.waitFor();await shot('starter');
     await starter.click();await button('Talk to Muling','与暮铃交谈',page.locator('.sg-prologue-guide')).click();

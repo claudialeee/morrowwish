@@ -29,7 +29,7 @@ try{
   await menu.locator('[data-system="music"]').click();
   await waitTrack('title');
   await menu.locator('[data-system="close"]').click();
-  assert.equal(title.source,'recorded-mp3:title','must use actual compressed original recording');
+  assert.equal(title.source,'quality-ogg:enchanted-valley','must use the new licensed recording');
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
@@ -40,8 +40,8 @@ try{
   await page.locator('.cbcp-pause').click();
   await waitTrack('opening');
   await page.locator('.cbcp-skip').click();
-  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-02');
-  await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
+  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-04');
+  assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,3)),['prologue:P-01','prologue:P-02','prologue:P-03']);
   await page.evaluate(()=>MorrowwishMusic.setEnabled(false));
   await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
   await page.reload();

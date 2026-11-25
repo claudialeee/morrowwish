@@ -46,6 +46,8 @@ window.CatBondSceneFit=(()=>{
  return Object.freeze({rect,draw});
 })();
 function drawGardenArtwork(ctx,img,w,h){
+ const fit=gardenArtFit(img.naturalWidth||img.width,img.naturalHeight||img.height,w,h);
+ if(fit.cover){ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);return fit;}
  return window.CatBondSceneFit.draw(ctx,img,w,h,{top:"#e7d9cb",bottom:"#d9bca6",edgeFilter:"blur(22px) saturate(.85)",edgeOpacity:.86});
 }
 
@@ -65,19 +67,25 @@ function drawGardenProp(ctx,id,x,y,depth){
 // Persist plot-relative coordinates, not device pixels. x/y are the current
 // canvas projection retained for existing collision, movement and rendering.
 // Every interactive ground coordinate belongs to the actual contained painting.
+function gardenArtFit(iw,ih,w,h){
+ // Modest vertical crop on ordinary landscape displays only; preserve full
+ // painting for narrow, portrait and ultrawide layouts.
+ if(w/h>=iw/ih&&w/h<=2.15&&w>=h){const scale=w/iw,dw=iw*scale,dh=ih*scale;return {x:0,y:(h-dh)/2,width:dw,height:dh,scale,cover:true};}
+ return window.CatBondSceneFit.rect(iw,ih,w,h);
+}
 function gardenArtworkRect(W,H){
  const portrait=H>W*1.12,img=portrait?YARD_BG_PORTRAIT:YARD_BG;
  const iw=img.naturalWidth|| (portrait?900:1600),ih=img.naturalHeight||(portrait?1600:900);
- return window.CatBondSceneFit.rect(iw,ih,Math.max(1,W),Math.max(1,H));
+ return gardenArtFit(iw,ih,Math.max(1,W),Math.max(1,H));
 }
 function gardenGround(W,H){
  const f=gardenArtworkRect(W,H),margin=Math.min(56,f.width*.22);
  const top=f.y+Math.min(f.height*.54,Math.max(0,f.height-88)),bottom=f.y+Math.max(top-f.y+20,f.height-72);
- return {left:f.x+margin,right:f.x+f.width-margin,top,bottom:Math.min(f.y+f.height,bottom)};
+ return {left:f.x+margin,right:f.x+f.width-margin,top,bottom:Math.min(H-10,f.y+f.height,bottom)};
 }
 function gardenPlot(W,H){
  const f=gardenArtworkRect(W,H),margin=Math.min(56,Math.max(Math.min(30,f.width*.18),f.width*.10)),top=f.y+Math.min(f.height*.50,Math.max(0,f.height-96)),bottom=f.y+Math.max(top-f.y+20,f.height-56);
- return {left:f.x+margin,top,width:Math.max(1,f.width-2*margin),height:Math.max(1,Math.min(f.y+f.height,bottom)-top)};
+ return {left:f.x+margin,top,width:Math.max(1,f.width-2*margin),height:Math.max(1,Math.min(H-10,f.y+f.height,bottom)-top)};
 }
 function legacyGardenPlot(W,H){
  const left=Math.min(56,Math.max(30,W*.10)),top=Math.min(H*.50,H-96);

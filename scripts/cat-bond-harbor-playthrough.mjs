@@ -44,7 +44,7 @@ try {
       };
       const click=target.click.bind(target),wait=target.waitFor.bind(target),enabled=target.isEnabled.bind(target);
       target.isEnabled=async opts=>{await reveal();return enabled(opts)};
-      target.click=async opts=>{await reveal();return click(opts)};
+      target.click=async opts=>{if(scope===page&&['+','−','Overview','Follow cat'].includes(name)){await page.locator('#map-menu').click();const label={'+':'Zoom in','−':'Zoom out','Overview':'Overview','Follow cat':'Follow cat'}[name];return page.locator('#cb-system-menu').getByRole('button',{name:label,exact:true}).click(opts);}await reveal();return click(opts)};
       target.waitFor=async opts=>{if(opts?.state==='hidden'&&/^(Invite |Deliver )/.test(name))return all.waitFor({...opts,state:'detached'});if(!opts||!['hidden','detached'].includes(opts.state))await reveal();return wait(opts)};
       if(/^(Invite |Returning Tides)/.test(name))target.count=()=>all.count();
       return target;
@@ -58,7 +58,7 @@ try {
     const shot = async id => {
       const expected=expectedAudio[id]||(id.startsWith('battle-attempt-')?'battle':null);
       if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'&&expected){
-        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source===(track==='forest'?'quality-ogg:enchanted-valley':'recorded-mp3:'+track)&&s.activeMusicSources<=2;},expected,{timeout:15000});
+        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source===(['title','garden','atlas','harbor','forest','postgarden'].includes(track)?'quality-ogg:enchanted-valley':'recorded-mp3:'+track)&&s.activeMusicSources<=2;},expected,{timeout:15000});
         const audio=await page.evaluate(()=>MorrowwishMusic.status());assert.equal(audio.audioState,'running');audioEvidence.push({checkpoint:id,...audio});
       }
       const cinematic=page.locator('.cbcp-root:not([hidden])');
@@ -84,7 +84,7 @@ try {
        });
        assert.deepEqual(fit,{inside:true,art:true,subtitle:true,layers:true},id+' actual cinematic stage fit and loaded actor layers');
       }else if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
-       const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&(w.classList.contains("rw-region-compact")||rail.scrollHeight<=rail.clientHeight+2),buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length&&(!w.classList.contains('rw-region-compact')||!rail.contains(b))).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
+       const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),shell=s.parentElement.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&shell.top>=stage.top-1&&shell.bottom<=stage.bottom+1&&shell.left>=stage.left-1&&shell.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&(w.classList.contains("rw-region-compact")||rail.scrollHeight<=rail.clientHeight+2),buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length&&(!w.classList.contains('rw-region-compact')||!rail.contains(b))).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
       }
       return page.screenshot({path:out+'/'+name+'-'+id+'.png'});
@@ -97,7 +97,7 @@ try {
       // and pan. Read the painted transform rather than mutating the game.
       await surface.scrollIntoViewIfNeeded();
       await page.waitForFunction(()=>!!document.querySelector('.rw-surface')?.dataset.camera);
-      const project=()=>surface.evaluate((el,{x,y})=>{const [z,px,py]=JSON.parse(el.dataset.camera),r=el.getBoundingClientRect(),u=x*z+px,v=y*z+py;return {x:r.left+r.width*u,y:r.top+r.height*v,visible:u>=.015&&u<=.985&&v>=.015&&v<=.985};},{x,y});
+      const project=()=>surface.evaluate((el,{x,y})=>{const [z,px,py]=JSON.parse(el.dataset.camera),r=el.getBoundingClientRect(),u=x*z+px,v=y*z+py;const shell=el.parentElement.getBoundingClientRect(),sx=r.left+r.width*u,sy=r.top+r.height*v;return {x:sx,y:sy,visible:u>=.015&&u<=.985&&v>=.015&&v<=.985&&sx>=shell.left+4&&sx<=shell.right-4&&sy>=shell.top+4&&sy<=shell.bottom-4};},{x,y});
       let point=await project();
       if(!point.visible){await button('Overview').click();await page.waitForFunction(()=>document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]');point=await project();}
       assert.ok(point.visible,'Landmark must be visible before pointer input');
@@ -266,6 +266,7 @@ try {
         await scene('prologue:P-02');
       } else {
         await page.locator('.cbcp-skip').click();
+        break;
       }
     }
 
@@ -486,18 +487,18 @@ try {
     await tapLandmark(.42,.28);
     await button('Herbs on the canopy path · 2/3').click();
     await button('Medicine at the root channel · 3/3').waitFor();
-    await tapLandmark(.69,.53);
+    // The actual trail action now walks the cat to the third scent before recording it.
     await button('Medicine at the root channel · 3/3').click();
     await readForestDialogue('forest:R-02');
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
     if(name==='landscape'){
-      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
+      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-shell').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
       assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
       assert(layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls remain in the stage');
     }
-    if(name==='portrait'){const box=await page.locator('.rw-surface').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
+    if(name==='portrait'){const box=await page.locator('.rw-shell').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
     await shot('forest-upper-gate');
     await button('Paired water gates').click();
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
@@ -595,13 +596,12 @@ try {
     assert(await page.evaluate(()=>CatBondResonance.ambientAvailable('garden').some(a=>a.id==='muling:cooking')));
     assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forest')?.unlocked));
     await shot('forest-home');
-    const mapHit=await page.locator('#fab-map').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});
-    assert(mapHit,'Garden map button must not be obscured by the cat roster');await page.locator('#fab-map').click();
+    assert.equal(await page.locator('#fab-map').isVisible(),false,'Garden map belongs in the menu');await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="yard-map"]').click();
     await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
     await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
-    await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await page.locator('.rw-surface').evaluate(c=>Promise.allSettled(c.parentElement.getAnimations().map(a=>a.finished)));const forgeRect=await page.locator('.rw-surface').boundingBox();assert(forgeRect&&forgeRect.y>=0&&forgeRect.y+forgeRect.height<=options.viewport.height+1,'Forge painting fully visible');await shot('forge-silent');
+    await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await page.locator('.rw-surface').evaluate(c=>Promise.allSettled(c.parentElement.getAnimations().map(a=>a.finished)));const forgeRect=await page.locator('.rw-shell').boundingBox();assert(forgeRect&&forgeRect.y>=0&&forgeRect.y+forgeRect.height<=options.viewport.height+1,'Forge painting fully visible');await shot('forge-silent');
     await ship('forge','Cooling water and herbs');
     await button('Talk to Xiaomao').click();
     await readForgeDialogue('forge:E-01');await scene('forge:E-02');
@@ -874,7 +874,7 @@ try {
     const finale=await continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship,skyFlight,startAtFinale:true});
     assert.deepEqual(errors,[]);results.push({profile:name,captured,forestComplete:true,forgeComplete:true,skyComplete:true,libraryComplete:true,starfall,finale});await context.close();continue;
     }
-    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forge')?.unlocked));await shot('forge-garden-restoration');await page.locator('#fab-map').click();await button('Rootsleep Forest').click();
+    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forge')?.unlocked));await shot('forge-garden-restoration');await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="yard-map"]').click();await button('Rootsleep Forest').click();
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
     await button('World atlas',page.locator('.rw-head')).click();

@@ -81,10 +81,9 @@ for(const profile of [
   assert.match(await page.locator('#intro-slot-heading').innerText(),/Choose a slot/);
   await screenshot('three-slots-en');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  for(const n of [1,2,3]){
-   await page.waitForFunction(n=>CatBondResonance.view().current?.id==='prologue:P-0'+n&&document.querySelector('.cbcp-art')?.naturalWidth>0&&document.querySelector('.cbcp-skip')&&!document.querySelector('.cbcp-skip').disabled,n);
-   await page.locator('.cbcp-skip').click();
-  }
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
+  await page.locator('.cbcp-skip').click();
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
   await checkVisible('#panel.open .dex-cell');
   const starters=page.locator('.cat-story-starter-card .dex-cell');
   assert.deepEqual(await starters.evaluateAll(cells=>cells.map(cell=>cell.dataset.id)),['jinjc','yunduo']);

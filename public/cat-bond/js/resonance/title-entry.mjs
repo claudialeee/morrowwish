@@ -45,7 +45,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
  if(!rootState||!slot){window.CatBondOpeningCover?.hide();return {ok:false,reason:'no-active-slot'};}
  window.__CAT_BOND_CANONICAL_ACTIVE__=true;
  const same=()=>window.State.S===rootState&&window.State.activeSlot()===slot;
- let closed=false,controller=null,root=null,removeError=null,launching=false,runtime=null;
+ let closed=false,controller=null,root=null,removeError=null,launching=false,runtime=null,skipRemaining=false;
  const persistCheckpoint=pending=>{if(!same()||!pending?.snapshot)return;const previous=rootState.openingPresentation;rootState.openingPresentation={slot,revision:pending.revision,snapshot:pending.snapshot};if(!window.State.save()?.ok){if(previous===undefined)delete rootState.openingPresentation;else rootState.openingPresentation=previous;}};
  const onPageHide=()=>{if(same())persistCheckpoint(controller?.snapshot?.());dispose();};
  const onSlotChange=()=>{if(!same())dispose();};
@@ -86,7 +86,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   };
   if(initialMode!=='cinematic'){handoff(initialMode);return {ok:true,mode:initialMode};}
   const [{mountResonanceCinematics},manifest]=await Promise.all([
-   import('../resonance-cinematic.mjs'),
+   import('../resonance-cinematic.mjs?v=continuous-opening-release-20261125'),
    fetch(new URL('../../assets/cinematics/asset-manifest.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('missing-cinematic-manifest');return r.json()})
   ]);
   if(!live())return {ok:false,reason:'slot-changed'};
@@ -98,6 +98,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    openingRelease:true,
    staging:false, // Opening may use only explicitly authorized release art.
    onCheckpoint:persistCheckpoint,
+   decorateScene:scene=>{scene.title={zh:'最后的回响',en:'The Last Resonance'};scene.openingFlow=true;scene.openingFinal=scene.id==='prologue:P-03';},
    getSlotKey:()=>window.State.activeSlot(),language:lang,
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onResolved:result=>{
@@ -105,7 +106,8 @@ export async function startCanonicalOpening(game,{onWorld}={}){
     const finished=finishCinematicScene(runtime,result.sceneId);
     if(!finished.ok){showError(finished.reason);return;}
     delete rootState.openingPresentation;window.State.save();
-    queueMicrotask(()=>{if(live())advance();});
+    if(result.skipped)skipRemaining=true;
+    setTimeout(()=>{if(live())advance();},0);
    },
    onError:result=>showError(result?.reason||'cinematic-failed')
   });
@@ -114,7 +116,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    const mode=classifyPrologue(runtime.view());
    if(mode!=='cinematic'){handoff(mode);return;}
    launching=true;
-   try{const saved=rootState.openingPresentation,view=runtime.view();const resume=saved?.slot===slot&&saved.revision===view.revision&&saved.snapshot?.sceneId===view.current.id&&Number.isInteger(saved.snapshot.frameIndex)&&saved.snapshot.frameIndex>=0&&Number.isFinite(saved.snapshot.elapsedMs)&&saved.snapshot.elapsedMs>=0?{slot,revision:saved.revision,snapshot:{...saved.snapshot,paused:true}}:null;const result=await controller.playCurrent(resume);if(!result.ok&&live()){delete rootState.openingPresentation;window.State.save();showError(result.reason);}return result;}
+   try{const saved=rootState.openingPresentation,view=runtime.view();const resume=saved?.slot===slot&&saved.revision===view.revision&&saved.snapshot?.sceneId===view.current.id&&Number.isInteger(saved.snapshot.frameIndex)&&saved.snapshot.frameIndex>=0&&Number.isFinite(saved.snapshot.elapsedMs)&&saved.snapshot.elapsedMs>=0?{slot,revision:saved.revision,snapshot:{...saved.snapshot,paused:true}}:null;const result=await controller.playCurrent(resume,{skip:skipRemaining});if(!result.ok&&live()){delete rootState.openingPresentation;window.State.save();showError(result.reason);}return result;}
    catch(e){const reason=e.message||'cinematic-failed';showError(reason);return {ok:false,reason};}
    finally{launching=false;}
   };
