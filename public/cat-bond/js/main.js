@@ -308,7 +308,8 @@ function installCatBondSystemMenu(){
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
     ['cloud',t('云存档','Cloud saves'),''],
-    ...(!title?[['slots',t('保存 / 读取游戏','Save / Load game'),''],['title',t('返回标题画面','Return to title'),'']]:[])
+    ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
+    ...(!title?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
   menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
   menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
