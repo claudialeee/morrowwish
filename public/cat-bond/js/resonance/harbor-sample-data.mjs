@@ -11,7 +11,7 @@ export const harborSample = {
    {speaker:"jiedeng",text:{zh:"灯亮了，船就会回来。可有些船不应该再出海。",en:"If the light comes on, the boats will return. But some boats should never sail again."}},
    {speaker:"qilan",text:{zh:"你又在说以前的事情。",en:"You're talking about the past again."}},
    {speaker:"jiedeng",text:{zh:"你根本不知道以前发生了什么。",en:"You have no idea what happened back then."}},
-   {speaker:"qilan",text:{zh:"那你倒是告诉我！",en:"Then tell me!"}},
+   {speaker:"qilan",text:{zh:"那你倒是告诉我啊！",en:"Then tell me!"}},
    {speaker:"jiedeng",text:{zh:"我不想再看见有人因为一盏灯而受伤。",en:"I don't want anyone else hurt because of a light."}}
   ],
   choices:[
